@@ -1,0 +1,26 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Eruptive center (Active volcanic centers on Io)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+-115.18	25.02	:	Amirani
+-33.36	-17.46	:	Kanehekili
+57.42	18.41	:	Loki
+150.1	-29.64	:	Marduk
+-57.3	-50.29	:	Masubi
+-122.28	19.69	:	Maui
+104.72	-18.71	:	Pele
+-153.94	-1.52	:	Prometheus
+22.79	45.37	:	Surt
+-133.12	39.2	:	Thor
+-171.75	29.33	:	Volund
+-172.29	18.7	:	Zamama

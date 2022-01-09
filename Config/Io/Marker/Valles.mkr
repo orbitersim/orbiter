@@ -1,18 +1,17 @@
 BEGIN_HEADER
 InitialState on
-ShapeIdx 1
-ColourIdx 1
+ColourIdx 3
+ShapeIdx 0
 Size 0.5
 DistanceFactor 1
 END_HEADER
 
-;Catena, caatenae (Chain of craters)
+;Vallis, valles (Valley)
 
 ;Source: https://planetarynames.wr.usgs.gov/
 ;Updated 3 January 2022
 
 BEGIN_DATA
-;46.72	-8.81	:	[Mazda Catena]
-;54.52	0.53	:	[Reshet Catena]
-;-123.53	62.76	:	[Tvashtar Catena]
+-72.76	0.31	:	Tawhaki Vallis
+
 

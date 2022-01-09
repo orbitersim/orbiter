@@ -1,0 +1,38 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 3
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Mons, montes (Mountain)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+90.89	-3.75	:	Boösaule Montes
+121.52	-31.95	:	CaucasusMons
+116.65	-75.4	:	Crimea Mons
+163.31	-25.1	:	Dorian Montes
+103.03	-41.56	:	Egypt Mons
+24.22	-47.94	:	Euboea Montes
+-126.44	26.32	:	Euxine Mons
+-88.95	18.5	:	Gish Bar Mons
+-46.61	-70.12	:	Haemus Montes
+-81.96	-4.68	:	Hi'iaka Montes
+123.76	9.04	:	Ionian Mons
+-104.2	15.54	:	Monan Mons
+-67.05	22.67	:	Mongibello Mons
+109.54	53.65	:	Nile Montes
+144.24	4.28	:	Ot Mons
+114.59	-8.02	:	Pillan Mons
+158.74	-36.4	:	Rata Mons
+-134.13	-10.76	:	Seth Mons
+-71.41	-12.04	:	Shamshu Mons
+87.65	-52.62	:	Silpium Mons
+-97.81	26.33	:	Skythia Mons
+-161.57	-28.42	:	Tohil Mons
+-77.18	38.43	:	Zal Montes
+

@@ -1,0 +1,30 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 4
+Size 0.5
+Distance Factor 1
+
+END_HEADER
+
+;Fluctus, fluctūs (Flow terrain)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+25.4	9.03	:	Acala Fluctus
+-149.19	31.63	:	Arinna Fluctus
+173.01	20.29	:	Donar Fluctus
+8.9	-44.87	:	Euboea Fluctūs
+1.2	10.92	:	Fjorgynn Fluctus
+-33.37	-17.18	:	Kanehekili Fluctus
+153.56	40.13	:	Lei-Kung Fluctus
+-44.93	13.48	:	Lei-zi Fluctus
+148.67	-26.8	:	Marduk Fluctus
+-57.77	-50.89	:	Masubi Fluctus
+-150.76	14.03	:	Sobo Fluctus
+-163.45	-1.27	:	Tsũi Goab Fluctus
+3.49	-17.32	:	Tung Yo Fluctus
+-16.14	-33.12	:	Uta Fluctus
+

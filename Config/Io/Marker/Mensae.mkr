@@ -1,0 +1,26 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 3
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Mensa, mensae (A flat-topped prominence with cliff-like edges)
+
+;Source: https://planetarynames.wr.usgs.gov/
+:Updated 3 January 2022
+
+BEGIN_DATA
+-121.4	-16.82	:	Capaneus Mensa
+5.47	-79.92	:	Echo Mensa
+120.05	-53.05	:	Epaphus Mensa
+113.66	-43.65	:	Hermes Mensa
+56	-62.28	:	Iynx Mensa
+-30.86	-51.8	:	Pan Mensa
+-152.17	-2.49	:	Prometheus Mensa
+-115.37	-52.37	:	Telegonus Mensa
+-119.94	61.6	:	Tvashtar Mensa
+
+
