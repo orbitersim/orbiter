@@ -1,1 +1,53 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+
+BEGIN_DATA
+175.59	-70.56	:	Accolon
+163.96	-35.4	:	Arthur
+-82.51	14.71	:	Balin
+-160.75	43.93	:	Ban
+-149.42	9.57	:	Bedivere
+-172.3	41.82	:	Bors
+98.38	47.84	:	Dagonet
+-80.71	2.35	:	Dynas
+-107	46.33	:	Elaine
+61.81	-44.57	:	Gaheris
+-145.31	-45.32	:	Galahad
+72.22	-43.06	:	Gareth
+98.92	-58.54	:	Gawain
+36.3	-17.6	:	Gwynevere
+-111.76	-1.38	:	Herschel
+128.79	-41.99	:	Igraine
+-33.78	-47.24	:	Iseult
+-120.54	44.61	:	Kay
+70.82	-62.27	:	Lamerok
+31.51	-9.46	:	Launcelot
+128.4	-31.46	:	Lot
+139.65	40.75	:	Lucas
+-0.06	-8.96	:	Marhaus
+51.68	-26.28	:	Mark
+-77.19	-74.93	:	Melyodas
+140.99	-38.43	:	Merlin
+140.32	4.15	:	Modred
+115.02	24.21	:	Morgan
+52.7	-0.36	:	Nero
+-162	3.39	:	Palomides
+-135.45	29.76	:	Pellinore
+-178.86	-3.01	:	Percivale
+12.51	32.46	:	Royns
+-26	-52.32	:	Tristram
+109.83	-35.16	:	Uther
+
+
 
