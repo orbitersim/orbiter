@@ -1,0 +1,62 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Linea, lineae (A dark or bright elongate marking, may be curved or straight)
+
+;Source = https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+-122.6	-61	:	Adonis Linea
+86.9	12.8	:	Agave Linea
+146.5	-43.8	:	Agenor Linea
+-175.9	-25.1	:	Alphesiboea Linea
+80.7	11.7	:	Androgeos Linea
+164.4	-1.7	:	Argiope Linea
+89.2	14.9	:	Asterius Linea
+147.9	-75.8	:	Astypalaea Linea
+-165.1	18.2	:	Autonoë Linea
+128.6	9.3	:	Belus Linea
+-0.1	-44.7	:	Butterdon Linea
+168.3	38.7	:	Cadmus Linea
+55.8	-1.4	:	Chthonius Linea
+-18.3	17.8	:	Corick Linea
+-111.7	7.7	:	Drizzlecomb Linea
+-161	48.3	:	Drumskinny Linea
+174.8	-11.6	:	Echion Linea
+-45.7	-11.4	:	Euphemus Linea
+129.1	57.8	:	Glaukos Linea
+-171.7	28	:	Harmonia Linea
+35.6	-12.1	:	Hyperenor Linea
+-174.6	-1.7	:	Ino Linea
+146.7	-38.8	:	Katreus Linea
+48	-41	:	Kennet Linea
+179	-54	:	Libya Linea
+123.3	56	:	Mehen Linea
+60.5	-41	:	Merrivale Linea
+164.8	47.2	:	Minos Linea
+148.7	-38.7	:	Onga Linea
+-173.6	35.5	:	Pelagon Linea
+171.7	-19.8	:	Pelorus Linea
+40.1	-29.8	:	Phineus Linea
+171.2	16.6	:	Phoenix Linea
+159.5	19.3	:	Rhadamanthys Linea
+-92.9	-49.5	:	Sarpedon Linea
+-171.7	65.4	:	Sharpitor Linea
+114.5	59.3	:	Sparti Linea
+-27.4	-0.8	:	Staldon Linea
+160.8	26.9	:	Tectamus Linea
+-177.2	-0.8	:	Telephassa Linea
+176	-66.1	:	Thasus Linea
+-154.5	-59.2	:	Thynia Linea
+102	47.7	:	Tormsdale Linea
+120.6	48.6	:	Udaeus Linea
+164	-16.7	:	Yelland Linea
+
+

@@ -1,0 +1,59 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+
+BEGIN_DATA
+-177.5	-43	:	Áine
+-177.47	13.82	:	Amaethon
+129.4	-14.7	:	Amergin
+-75.1	-12.6	:	Angus
+-169.5	1.4	:	Avagddu
+-97.8	-52.8	:	Balor
+-98.66	37.64	:	Bress
+-81.3	10.8	:	Brigid
+-81.1	-26.5	:	Camulus
+178.1	2.6	:	Cilix
+-76.4	-2.5	:	Cliodhna
+-88.1	-36.9	:	Cormac
+-168.74	37.35	:	Dagda
+152.7	-65.4	:	Deirdre
+-102	-61.3	:	Diarmuid
+-84.4	-55.3	:	Dylan
+-79.8	-31.9	:	Elathan
+126.67	-50.48	:	Eochaid
+57.2	-37.3	:	Govannan
+-99.4	-59.7	:	Gráinne
+15.46	9.14	:	Gwern
+-81.6	-60.5	:	Gwydion
+138.2	-1.8	:	Llyr
+102.43	-40.2	:	Luchtar
+-44.31	27.99	:	Lug
+162.1	-16.8	:	Mael Dúin
+-78.9	58.8	:	Maeve
+120.3	3.1	:	Manannán
+176.3	-25.6	:	Math
+21.25	3.65	:	Midir
+-152.6	-4.9	:	Morvran
+143.1	21.1	:	Niamh
+72.14	87.45	:	Ogma
+146.6	-52.3	:	Oisín
+-159.1	-66.1	:	Pryderi
+88.6	-25.2	:	Pwyll
+165.1	-80.9	:	Rhiannon
+-138	-22.8	:	Taliesin
+-164.4	0.8	:	Tegid
+-172.36	59.92	:	Tuag
+-90.7	-48.5	:	Uaithne
+
+
+

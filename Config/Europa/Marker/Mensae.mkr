@@ -1,0 +1,20 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 3
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Mensa, mensae (A flat-topped prominence with cliff-like edges)
+
+;Source: https://planetarynames.wr.usgs.gov/
+:Updated 3 January 2022
+
+BEGIN_DATA
+-75.08	42.75	:	Belenos Mensa
+134.69	-0.45	:	Borvo Mensa
+134.2	-2.51	:	Grannus Mensa
+
+

@@ -1,0 +1,22 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Fossa - Long, narrow shallow depression
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+-82.08	1.2	:	Beenalaght Fossa
+19.29	6.68	:	Eightercua Fossa
+121.76	3.34	:	Kerlescan Fossae
+5.64	44.69	:	Kermario Fossae
+-155.19	-34.24	:	Maughanasilly Fossa
+-177.87	-51.98	:	Ménec Fossae
+
+
