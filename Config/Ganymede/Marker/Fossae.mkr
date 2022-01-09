@@ -1,0 +1,20 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Fossa - Long, narrow shallow depression
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+132.8	-11.7	:	Lakhamu Fossa
+-128	50.4	:	Lakhmu Fossae
+-150.5	38.5	:	Zu Fossae
+
+
+

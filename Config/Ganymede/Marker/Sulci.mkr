@@ -1,0 +1,52 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+Sulcus, sulci (Subparallel furrows and ridges)
+
+;Source = https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+166	39	:	Akitu Sulcus
+161.3	18.9	:	Anshar Sulcus
+134.8	-37.5	:	Apsu Sulci
+-4	52.4	:	Aquarius Sulcus
+-4	-34	:	Arbela Sulcus
+-95.5	-22.5	:	Babylon Sulci
+0	-60	:	Borsippa Sulcus
+135	-81	:	Bubastis Sulci
+160.3	37.6	:	Byblus Sulcus
+-12.7	-31.5	:	Dardanus Sulcus
+-2.5	83.7	:	Dukug Sulcus
+160	60	:	Elam Sulci
+-179.2	-7.3	:	Erech Sulcus
+46.5	-11.8	:	Harpagia Sulcus
+111.54	-9.49	:	Hursag Sulcus
+143.4	-6.4	:	Kishar Sulcus
+-164.01	-8.99	:	Lagash Sulcus
+100	2	:	Larsa Sulci
+150	34	:	Mashu Sulcus
+-180	-39	:	Mummu Sulci
+-7.8	-7	:	Mysia Sulci
+-53	23.2	:	Nineveh Sulcus
+176.65	35.41	:	Nippur Sulcus
+43.6	49.5	:	Nun Sulci
+-168.2	68.4	:	Philae Sulcus
+150.1	44.5	:	Philus Sulcus
+-20.6	12	:	Phrygia Sulcus
+128.25	-19.62	:	Shuruppak Sulcus
+-15.3	33.7	:	Sicyon Sulcus
+-170.2	-19.9	:	Sippar Sulcus
+150.9	4.14	:	Tiamat Sulcus
+110.5	4.1	:	Umma Sulcus
+-177.5	49.5	:	Ur Sulcus
+-160	3.4	:	Uruk Sulcus
+-71.1	43	:	Xibalba Sulcus
+
+		

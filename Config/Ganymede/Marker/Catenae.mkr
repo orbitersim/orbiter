@@ -1,0 +1,19 @@
+BEGIN_HEADER
+InitialState on
+ShapeIdx 1
+ColourIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Catena, caatenae (Chain of craters)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+-13.86	38.84	:	Enki Catena
+10.73	32.9	:	Khnum Catena
+7.1	15.4	:	Nanshe Catena
+82.4	7.1	:	Terah Catena
+

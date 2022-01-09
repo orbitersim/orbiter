@@ -1,0 +1,21 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Regio, regiones (A large area marked by reflectivity or color ;distinctions from adjacent areas, or a broad geographic region)
+
+;Source = https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+-11.6	-6.8	:	Barnard Regio
+-127	45	:	Galileo Regio
+172.3	2.5	:	Marius Regio
+115	-12	:	Melotte Regio
+-6.4	-33.1	:	Nicholson Regio
+-28	34	:	Perrine Regio
