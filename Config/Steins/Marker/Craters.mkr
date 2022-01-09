@@ -1,1 +1,41 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+
+BEGIN_DATA
+1.8	57.6	:	Agate
+20.7	-7	:	Alexandrite
+53.8	29.5	:	Almandine
+75.6	9.6	:	Amazonite
+-16.8	28.9	:	Amethyst
+120.3	7.2	:	Aquamarine
+29.6	-2	:	Chrysoberyl
+-19.4	13.7	:	Citrine
+13.4	-54.6	:	Diamond
+139.3	-3.9	:	Emerald
+-21.7	-8.6	:	Garnet
+-24.7	-18	:	Jade
+-30.3	-31.5	:	Lapis
+49.9	11.8	:	Malachite
+43.6	-10.6	:	Obsidian
+8.9	10.9	:	Onyx
+-22.2	1.1	:	Opal
+-24	-25.1	:	Peridot
+31.3	-31.3	:	Sapphire
+0	-7.7	:	Topaz
+-12.4	-20.9	:	Tourmaline
+113.4	-31.6	:	Turquoise
+-25	-13.5	:	Zircon
+
+
 
