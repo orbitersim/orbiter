@@ -1,0 +1,40 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 21 December 2021
+
+BEGIN_DATA
+-80	40	:	Agrona Linea
+-10	-40	:	Antiope Linea
+15	14	:	Badb Linea
+-56	35.9	:	Breksta Linea
+-113.5	-58	:	Discordia Linea
+0	20	:	Guor Linea
+;15	19	:	[Hariasa Linea]
+-15	-42	:	Hippolyta Linea
+-150	-17	:	Jokwa Linea
+-23.5	-60.5	:	Kalaipahoa Linea
+-54	-44	:	Kara Linea
+-67	62.2	:	Lampedo Linea
+-5	-48	:	Molpadia Linea
+-49	-54.5	:	Morrigan Linea
+60.7	9	:	Ningal Lineae
+-16	-54	:	Penardun Linea
+-160	-77.3	:	Sarykyz Linea
+-100	-61	:	Sui-ur Linea
+81.3	79.4	:	Szél-anya Lineae
+47.1	81.4	:	Tezan Lineae
+-128	-24	:	Thaukhud Linea
+-147	-10	:	Veleda Linea
+;20	54	:	[Vihansa Linea]
+21	12	:	Virtus Linea
+
+
+
