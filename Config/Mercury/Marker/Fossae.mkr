@@ -1,0 +1,18 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Fossa, fossae (Long, narrow depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+88.5	-32.77	:	Borobudur Fossae
+162.83	30.19	:	Pantheon Fossae
+
+
