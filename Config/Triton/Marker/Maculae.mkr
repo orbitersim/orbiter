@@ -1,0 +1,22 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Macula, maculae (Dark spot, may be irregular)
+
+;Source = https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+63	-27.5	:	Akupara Maculae
+31.7	-27.5	:	Doro Macula
+78	-31	:	Kikimora Maculae
+14	-25.5	:	Namazu Macula
+-10.5	13	:	Rem Maculae
+36.5	-31	:	Viviane Macula
+68	-24.5	:	Zin Maculae

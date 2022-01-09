@@ -1,1 +1,27 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+
+BEGIN_DATA
+24.5	26	:	Amarum
+34	20.5	:	Andvari
+44	-12	:	Cay
+57	-14.5	:	Ilomba
+61	-16.5	:	Kurma
+63.5	-18.5	:	Mazomba
+71.5	-3	:	Ravgga
+65.5	-25	:	Tangaroa
+28.5	-17	:	Vodyanoy
+
+
 

@@ -1,0 +1,19 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Planitia, planitiae (Low plain)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+24	28	:	Ruach Planitia
+27	-5	:	Ryugu Planitia
+36	-4	:	Sipapu Planitia
+14.5	34	:	Tuonela Planitia
+

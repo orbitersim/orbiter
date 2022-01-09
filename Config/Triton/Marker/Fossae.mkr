@@ -1,0 +1,20 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Fossa - Long, narrow shallow depression
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+44	-13.5	:	Jumna Fossae
+21.5	8	:	Raz Fossae
+56.2	3	:	Yenisey Fossa
+
+
+

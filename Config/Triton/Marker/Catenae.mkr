@@ -1,0 +1,17 @@
+BEGIN_HEADER
+InitialState on
+ShapeIdx 1
+ColourIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Catena, catenae (Chain of craters)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+35.5	14	:	Kraken Catena
+33.5	22	:	Set Catena
+

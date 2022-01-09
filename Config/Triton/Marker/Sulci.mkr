@@ -1,0 +1,29 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+Sulcus, sulci (Subparallel furrows and ridges)
+
+;Source = https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+3	-38	:	Bia Sulci
+-10	-13	:	Boynne Sulci
+-55	2	:	Ho Sulci
+-24.5	23	:	Kormet Sulci
+9	7	:	Leipter Sulci
+-39	3.8	:	Lo Sulci
+-32	-6	:	Ob Sulci
+-23	17	:	Ormet Sulci
+-10	23.5	:	Slidr Sulci
+-23	33.5	:	Tano Sulci
+59	-11	:	Vimur Sulci
+-13	2	:	Yasu Sulci
+
+		

@@ -1,0 +1,25 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Cavus, cavi (Hollows, irregular steep-sided depressions usually in arrays or clusters)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+-58.5	20	:	Apep Cavus
+-52	16	:	Bheki Cavus
+-15	29	:	Dagon Cavus
+-18	26	:	Hekt Cavus
+-15	14.5	:	Hirugo Cavus
+-2	7.5	:	Kasyapa Cavus
+4	41	:	Kulilu Cavus
+6	38	:	Mah Cavus
+-17	-7	:	Mangwe Cavus
+23	35	:	Ukupanio Cavus
