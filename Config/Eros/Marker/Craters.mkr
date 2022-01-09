@@ -1,0 +1,55 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+
+BEGIN_DATA
+-12.2	-3.5	:	Abelard
+-130.5	7.9	:	Aida
+126.9	-22.5	:	Avtandil
+-27.3	-61	:	Bovary
+124	46.6	:	Casanova
+-171.1	9.1	:	Catherine
+129.8	8.1	:	Cupid
+3.3	29.5	:	Don Juan
+109.2	-57.7	:	Don Quixote
+87.1	-76.1	:	Dulcinea
+-170	13.5	:	Eurydice
+-62.7	-3.7	:	Fujitsubo
+176.9	-10.2	:	Galatea
+-54.1	-20.6	:	Gamba
+-88.6	-19.5	:	Genji
+-167.9	7.4	:	Heathcliff
+77.7	21.2	:	Himeros
+-130.9	-9.4	:	Hios
+66.5	74.2	:	Jahan
+-161.3	6.8	:	Kastytis
+149.7	25.6	:	Leander
+-23.5	-3	:	Leylie
+162.3	-35.2	:	Lolita
+-170	79.4	:	Mahal
+-28.8	3.8	:	Majnoon
+174.4	67.1	:	Mélisande
+-7.1	18.2	:	Narcissus
+-176.7	25.6	:	Orpheus
+-105.6	-73.2	:	Pao-yü
+138.7	63.1	:	Pelléas
+-94.6	31.6	:	Psyche
+168.9	-1.8	:	Pygmalion
+-115.1	-5.2	:	Radames
+-12.5	-14.2	:	Selene
+-126.1	-47	:	Tai-yü
+-3.3	56.4	:	Tutanekai
+151.6	14.6	:	Valentine
+
+
+
