@@ -1,0 +1,25 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+
+BEGIN_DATA
+-8.28	17.09	:	Cora
+40.58	58.53	:	Dorothy
+-51.4	25.5	:	Nasreddin
+-45.9	-15.7	:	Nemo
+-103.7	55.2	:	Pirx
+35.4	20.7	:	Revati
+-28.8	-16.1	:	Sadko
+
+
+
