@@ -1,0 +1,19 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+Sulcus, sulci (Subparallel furrows and ridges)
+
+;Source = https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+-100	-32	:	Naples Sulcus
+-67	-15	:	Syracusa Sulcus
+
+		

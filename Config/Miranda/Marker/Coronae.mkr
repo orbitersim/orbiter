@@ -1,0 +1,18 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 0
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Corona, coronae (Ovoid-shaped feature)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+73.7	-29.1	:	Arden Corona
+-102.9	-24.8	:	Elsinore Corona
+-34.3	-66.9	:	Inverness Corona
+
