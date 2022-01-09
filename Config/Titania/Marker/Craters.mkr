@@ -1,1 +1,33 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+
+BEGIN_DATA
+3.9	-20.1	:	Adriana
+-8.8	-55.8	:	Bona
+-68.6	-42.4	:	Calphurnia
+-26.4	-44.8	:	Elinor
+-72.9	-15.8	:	Gertrude
+-38.8	-23.8	:	Imogen
+-21.2	-19.2	:	Iras
+-74.1	-55.3	:	Jessica
+-28.1	-51.2	:	Katherine
+-82.9	-14.7	:	Lucetta
+-44	-15.5	:	Marina
+-57.8	-11.9	:	Mopsa
+-50.8	-24.3	:	Phrynia
+45.2	-12.4	:	Ursula
+4.2	-34.5	:	Valeria
+
+
 

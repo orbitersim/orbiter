@@ -1,0 +1,19 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Chasma, chasmata (A deep, elongated, steep-sided depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+32.6	-8.5	:	Belmont Chasma
+-25	-33.3	:	Messina Chasmata
+
+
+
