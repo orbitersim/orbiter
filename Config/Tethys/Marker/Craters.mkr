@@ -1,1 +1,68 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+
+BEGIN_DATA
+35.62	0.6	:	Achilles
+-6.23	-41.44	:	Aietes
+78	-28.41	:	Ajax
+147.39	30.31	:	Alcinous
+-128.7	-14.87	:	Amphinomus
+-32.37	51.31	:	Anticleia
+73.85	-59.89	:	Antinous
+61	-4.67	:	Arete
+-54.66	-12.6	:	Circe
+-18.21	-59.37	:	Demodocus
+70.58	38.12	:	Diomedes
+149.67	-30.15	:	Dolius
+96.31	53.43	:	Elpenor
+121.09	7.86	:	Euanthes
+-51.12	23.1	:	Eumaeus
+-171.21	18.71	:	Eupithes
+113.5	52.54	:	Eurycleia
+-27.68	-5.07	:	Eurylochus
+-65	-35.65	:	Eurymachus
+-4.96	44.4	:	Halius
+-148.69	-38.4	:	Hermione
+54.15	-5.89	:	Icarius
+115.19	-27	:	Irus
+-67.46	-46.36	:	Laertes
+-118.66	21.53	:	Leocritus
+-123.84	-4.26	:	Leucothea
+-119.33	2.52	:	Maron
+-143.31	25.5	:	Medon
+167.39	-58.5	:	Melanthius
+-44.16	0.25	:	Mentor
+54.82	-72.19	:	Naubolos
+-5	84.4	:	Nausicaa
+-25.72	-19.38	:	Neleus
+-64.81	-54	:	Nestor
+-128.89	32.82	:	Odysseus
+-93.44	28.13	:	Oenops
+-43.85	-20.39	:	Ormenus
+110.78	-10.83	:	Penelope
+-34.86	8	:	Periboea
+73.78	11.32	:	Phemius
+175.29	2.32	:	Philoetius
+-86.41	1.38	:	Polycaste
+77.02	-3.48	:	Polyphemus
+-101.3	-55.71	:	Poseidon
+-65.22	-75.63	:	Rhexenor
+24.82	-1.77	:	Salmoneus
+-0.83	60.39	:	Teiresias
+20.62	54	:	Telemachus
+3.11	-34.53	:	Telemus
+154.37	-14.43	:	Theoclymenus
+
+
 
