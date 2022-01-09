@@ -1,0 +1,26 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Chasma, chasmata (A deep, elongated, steep-sided depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+93.3	11.56	:	Aurunca Chasmata
+95	-46	:	Drepanum Chasma
+58.65	4.94	:	Eurotas Chasmata
+-69.5	28.98	:	Larissa Chasma
+-63.93	20	:	Latium Chasma
+112.83	17.7	:	Padua Chasmata
+44	-48	:	Palatine Chasmata
+-69.3	60	:	Tibur Chasmata
+
+
+
