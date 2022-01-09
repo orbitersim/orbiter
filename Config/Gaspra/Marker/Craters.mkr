@@ -1,0 +1,49 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+
+BEGIN_DATA
+-160.3	47.9	:	Aix
+-65	65	:	Alupka
+-55	46	:	Baden-Baden
+-3	25	:	Badgastein
+-122	55	:	Bagnoles
+-9.7	13.4	:	Bath
+-58.4	3.9	:	Beppu
+-103.3	27.7	:	Brookton
+-2	30	:	Calistoga
+-88.8	29.7	:	Carlsbad
+0	8.6	:	Charax
+-118.9	22.4	:	Helwan
+-86.9	11.9	:	Ixtapan
+-65	55	:	Katsiveli
+-35	49	:	Krynica
+1.9	16.5	:	Lisdoonvarna
+-140	42	:	Loutraki
+-46.5	23.5	:	Mandal
+-155	62	:	Manikaran
+-81.8	35.4	:	Marienbad
+-65.9	15	:	Miskhor
+-164.4	15.1	:	Moree
+-4.9	15	:	Ramlösa
+-20.7	31.7	:	Rio Hondo
+-30.7	18.8	:	Rotorua
+90	50	:	Saratoga
+-152	51.5	:	Spa
+104	59	:	Tang-Shan
+-10	29	:	Yalova
+98.7	57.6	:	Yalta
+-118	23	:	Zohar
+
+
+
