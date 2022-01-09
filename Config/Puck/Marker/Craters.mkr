@@ -1,1 +1,22 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+;3 craters, coordinates not yet assigned.
+
+BEGIN_DATA
+0	0	:	Bogle
+0	0	:	Butz
+0	0	:	Lob
+
+
 
