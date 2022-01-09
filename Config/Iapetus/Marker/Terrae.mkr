@@ -1,0 +1,18 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Terra, terrae (Extensive land mass)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+120.5	37	:	Roncevaux Terra
+-180	-45	:	Saragossa Terra
+	
