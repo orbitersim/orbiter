@@ -1,1 +1,22 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+
+BEGIN_DATA
+90	0	:	Castor
+55	-30	:	Idas
+80	10	:	Lynceus
+20	58	:	Phoibe
+
+
 
