@@ -1,1 +1,30 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+
+BEGIN_DATA
+42.2	-33.6	:	Alberich
+44.3	-37.4	:	Fin
+27.8	-12.7	:	Gob
+-14.3	-10.8	:	Kanaloa
+13.9	-22.9	:	Malingee
+8.2	-42.7	:	Minepa
+4.3	-9.2	:	Peri
+-13.7	-30.8	:	Setibos
+-28.3	-1.8	:	Skynd
+-48.4	-4.7	:	Vuver
+1.8	-30	:	Wokolo
+-86.4	-7.9	:	Wunda
+-33.8	-23.3	:	Zlyden
+
 
