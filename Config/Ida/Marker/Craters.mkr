@@ -1,1 +1,39 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+
+BEGIN_DATA
+0	-6.5	:	Afon
+18.9	-5.7	:	Atea
+-142.8	30.5	:	Azzurra
+29.2	-27.8	:	Bilemot
+-24.8	-13.4	:	Castellana
+23.6	12.8	:	Choukoutien
+39.9	-13.2	:	Fingal
+179	-7	:	Kartchner
+41.1	-32	:	Kazumura
+161.2	0.8	:	Lascaux
+-2.9	7.9	:	Lechuguilla
+-179.7	-18.3	:	Mammoth
+90.5	-28.3	:	Manjang
+-157.3	-6.3	:	Orgnac
+5.2	-4.3	:	Padirac
+52	-2	:	Peacock
+-0.1	-42.9	:	Postojna
+54.1	-4.1	:	Sterkfontein
+126.5	-27.9	:	Stiffe
+113.8	2	:	Undara
+-16.1	12.2	:	Viento
+
+
 
