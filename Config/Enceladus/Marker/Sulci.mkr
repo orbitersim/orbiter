@@ -1,0 +1,36 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+Sulcus, sulci (Subparallel furrows and ridges)
+
+;Source = https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+-137.56	-75.63	:	Alexandria Sulcus
+1.4	-50.7	:	Al-Medinah Sulci
+168.2	9.7	:	Al-Yaman Sulci
+-79.1	29.1	:	Andalús Sulci
+129.46	-86.91	:	Baghdad Sulcus
+-109.32	16.67	:	Bulak Sulcus
+-154.48	-81.62	:	Cairo Sulcus
+-149.4	-70.78	:	Camphor Sulcus
+63.94	-52.07	:	Cashmere Sulci
+74.13	-80.59	:	Damascus Sulcus
+54	27.26	:	Hamah Sulci
+114.07	26.39	:	Harran Sulci
+73.92	-27.69	:	Labtayt Sulci
+58	-10.89	:	Láhej Sulci
+-135.8	-54.4	:	Makran Sulci
+160.3	18	:	Misr Sulci
+23.27	-58.1	:	Mosul Sulci
+32.5	30	:	Samarkand Sulci
+-39.4	-57.2	:	Shiraz Sulcus
+-107.3	-16.4	:	Sind Sulci
+	

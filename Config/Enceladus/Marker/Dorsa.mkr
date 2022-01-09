@@ -1,0 +1,19 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 3
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Dorsum, dorsa (Ridge)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+
+BEGIN_DATA
+73.83	3.19	:	Cufa Dorsa
+79.46	5.74	:	Ebony Dorsum
+
+
