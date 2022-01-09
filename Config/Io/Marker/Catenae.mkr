@@ -1,9 +1,0 @@
-BEGIN_HEADER
-InitialState on
-ColourIdx 4
-END_HEADER
-
-BEGIN_DATA
-46.72	-8.81	:	[Mazda Catena]			;Changed to Mazda Paterae
-+54.52	+0.53	:	[Reshet Catena]			;Changed to Reshet Patera
--123.53	+62.76	:	[Tvashtar Catena]		;Changed to Tvashtar Paterae
