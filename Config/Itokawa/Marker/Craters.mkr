@@ -1,1 +1,28 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+
+BEGIN_DATA
+14	-17	:	Catalina
+-91	34	:	Fuchinobe
+-155	-76	:	Gando
+-155	-18	:	Hammaguira
+45	-28	:	Kamisunagawa
+-116	6	:	Kamoi
+102	-10	:	Komaba
+162	1	:	Laurel
+-116	-40	:	Miyabaru
+-41	-28	:	San Marco
+
+
 
