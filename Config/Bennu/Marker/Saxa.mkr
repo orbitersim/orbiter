@@ -1,0 +1,39 @@
+BEGIN_HEADER
+InitialState on
+;Saxa - Rocks
+
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 2 January 2022
+
+BEGIN_DATA
+-24.33	25.44	:	Aellopus Saxum
+150.36	3.46	:	Aetos Saxum
+-103.49	-17.96	:	Amihan Saxum
+127.59	-45.86	:	Benben Saxum
+-145.72	48.08	:	Boobrie Saxum
+-100.35	-10.26	:	Camulatz Saxum
+-24.77	18.42	:	Celaeno Saxum
+-110.53	-4.97	:	Ciinkwia Saxum
+64.42	-32.68	:	Dodo Saxum
+105.45	9.86	:	Gamayun Saxum
+92.48	4.59	:	Gargoyle Saxum
+17.96	18.53	:	Gullinkambi Saxum
+43.25	-29.77	:	Huginn Saxum
+66.31	5.03	:	Kongamato Saxum
+48.68	-29.34	:	Muninn Saxum
+-31.75	25.09	:	Ocypete Saxum
+-68.92	-44.86	:	Odette Saxum
+-65.92	-42.74	:	Odile Saxum
+166.75	-40.45	:	Pouakai Saxum
+25.36	-23.46	:	Roc Saxum
+4.05	-25.32	:	Simurgh Saxum
+88.26	13.4	:	Strix Saxum
+45.1	-47.94	:	Thorondor Saxum
+
