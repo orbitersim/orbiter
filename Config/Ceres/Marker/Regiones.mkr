@@ -1,0 +1,17 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Regio, regiones (A large area marked by reflectivity or color ;distinctions from adjacent areas, or a broad geographic region)
+
+
+;Source = https://planetarynames.wr.usgs.gov/
+;Updated 
+
+BEGIN_DATA
+-110.22	19.49	:	Homowo Regio

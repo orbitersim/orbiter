@@ -1,0 +1,17 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Fossa - Long, narrow shallow depression
+
+;Source: https://planetarynames.wr.usgs.gov/Page/MERCURY/target
+;File created 3 January 2022
+
+BEGIN_DATA
+-75.95	1.71	:	Nabanna Fossa
+
+

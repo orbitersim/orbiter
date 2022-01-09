@@ -1,0 +1,29 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Sulcus, sulci (Subparallel furrows and ridges)
+
+;Source = https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+-24.39	28.78	:	Aymuray Tholi
+-121.09	20.04	:	Bagach Tholus
+-120.35	19.61	:	Cerealia Tholus
+10.38	42.15	:	Cosecha Tholus
+5.21	3.82	:	Dalien Tholus
+-39.29	43.31	:	Hosil Tholus
+-119.41	19.85	:	Kekri Tholus
+-33.32	32.06	:	Kwanzaa Tholus
+-121.34	19.66	:	Lohri Tholus
+-33.7	20.2	:	Lughnasa Tholus
+-66.62	38.62	:	Mikeli Tholus
+6.64	-21.62	:	Wangala Tholus
+
+		

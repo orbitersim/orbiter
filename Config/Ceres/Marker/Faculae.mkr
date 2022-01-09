@@ -1,0 +1,18 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Facula - Bright spot
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+-120.4	19.7	:	Cerealia Facula
+-120.78	19.47	:	Pasola Facula
+-118	20.2	:	Vinalia Faculae
+

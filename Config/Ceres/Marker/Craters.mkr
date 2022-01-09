@@ -1,0 +1,133 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Crater - circular depression, likely impact origin
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+
+BEGIN_DATA
+-66.91	33.2	:	Abellio
+65.96	25.82	:	Achita
+8.43	-48.14	:	Annona
+11.79	-13.92	:	Anura
+97.68	23.43	:	Aristaeus
+-40.12	83.03	:	Asari
+-102.16	-73.07	:	Attis
+131.9	22.8	:	Axomama
+-141.6	-6.66	:	Azacca
+-34.65	17.71	:	Begbalel
+-3.75	-33.71	:	Belun
+-59.79	-42.35	:	Besua
+79.6	86.2	:	Bilwis
+145.2	86.4	:	Binayo
+93.21	1.74	:	Bonsu
+84.37	-22.77	:	Braciaca
+143.61	-1.19	:	Cacaguat
+-146.8	85.3	:	Cachimana
+141.22	18.95	:	Centeotl
+131.2	-58.58	:	Chaminuka
+65.73	39.9	:	Coniraya
+-159.5	-20.7	:	Consus
+-72.69	45.33	:	Cozobi
+-23.24	58.63	:	Dada
+-44.5	81.7	:	Damia
+138.23	24.3	:	Dantu
+76.4	-44.21	:	Darzamat
+-107.69	59.5	:	Datan
+78.1	81.8	:	Dikhan
+5.88	-40.79	:	Doliku
+4.29	39.2	:	Duginavi
+158.2	11.1	:	Emesh
+-100.9	78.9	:	Enkimdu
+45.52	52.93	:	Ernutet
+-164.3	43.24	:	Ezinu
+-47.89	29.15	:	Fejokoo
+178.22	-31.31	:	Fluusa
+86.16	30.81	:	Gaue
+-101.19	57	:	Geshtin
+30.76	76.56	:	Ghanan
+27.75	51.42	:	Hakumyi
+-25.4	25.9	:	Halki
+79.44	-60.86	:	Hamori
+-2.29	-16.08	:	Hatipowa
+10.77	5.8	:	Haulani
+-168.96	10.87	:	Heneb
+94.06	11.23	:	Homshuk
+168.53	48.15	:	Ialonus
+45.61	33.84	:	Ikapati
+89.22	14.13	:	Inamahari
+155.1	31.8	:	Inkosazana
+124.87	-10.71	:	Insitor
+2.3	-69.2	:	Jacheongbi
+125.27	52.09	:	Jaja
+21.25	-24.08	:	Jarimba
+-75.26	67.9	:	Jarovit
+168.48	-35.9	:	Juling
+-43.6	51.6	:	Jumis
+-138.6	61.4	:	Kahukura
+-137.57	42.82	:	Kaikara
+0	-2.1	:	Kait
+-65.4	23.8	:	Kaneki
+123.99	-10.77	:	Kerwan
+126.33	50.32	:	Kiriamma
+-95.7	4.9	:	Kirnis
+124.5	18.3	:	Kokopelli
+17.31	-19.34	:	Kondos
+178.83	-10.09	:	Kumitoga
+173.2	-39.44	:	Kupalo
+159.42	65.03	:	Laukumate
+37.8	42.56	:	Liber
+-131.17	-6.53	:	Lociyo
+-55.63	-36.61	:	Lono
+-165.81	-40.8	:	Meanderi
+146.22	36.54	:	Megwomets
+-126.27	49.93	:	Messor
+-136.8	75.9	:	Mlezi
+-6	-62.24	:	Mondamin
+-166.21	18.28	:	Nawish
+-139.46	6.19	:	Nepen
+-96.74	30.3	:	Ninsar
+-87.7	-54	:	Nunghui
+-120.67	19.82	:	Occator
+37.96	-25.95	:	Oltagon
+71.67	58.03	:	Omonga
+-0.4	42.21	:	Oxo
+-28.6	39.7	:	Peko
+36.99	-15.37	:	Piuku
+119.01	8.1	:	Rao
+77.5	-67.3	:	Ratumaibulu
+61.63	-3.21	:	Razeka
+-11.29	3.21	:	Rongo
+-26.98	58.9	:	Roskva
+-45.3	36.5	:	Sedana
+-104.95	-66.42	:	Sekhet
+33.93	-3.66	:	Shakaema
+28.1	69	:	Shennong
+46.2	-48.07	:	Sintana
+88.59	-19.82	:	Tafakula
+44.79	-6.59	:	Tahu
+-79.52	50.76	:	Takel
+-121.98	-39.06	:	Tawals
+-24.4	23.2	:	Telepinu
+31	-71.3	:	Thrud
+-7.8	-29.82	:	Tibong
+155.95	-48.32	:	Toharu
+88.38	-32.35	:	Tupo
+-110.76	-45.66	:	Urvara
+-58.96	36.23	:	Victa
+95.12	43.02	:	Vinotonus
+-49.4	0.7	:	Xevioso
+93.21	56.66	:	Xochipilli
+-67.52	-42.58	:	Yalode
+38.34	-70.36	:	Zadeni
+114	69.9	:	Zatik
+
+
+
