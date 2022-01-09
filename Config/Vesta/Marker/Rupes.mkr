@@ -1,0 +1,19 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Rupes, rupēs (Scarp)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+-43.92	-53.47	:	Agonium Rupes
+-127.24	-49.42	:	Matronalia Rupes
+107.59	-73.75	:	Parentatio Rupes
+
+
