@@ -1270,6 +1270,9 @@ bool Orbiter::KillVessels ()
 			}
 #ifdef INLINEGRAPHICS
 			oclient->clbkDeleteVessel ((OBJHANDLE)vessel);
+#else
+			if (gclient)
+				gclient->clbkDeleteVessel((OBJHANDLE)vessel);
 #endif
 			// broadcast vessel destruction to all vessels
 			g_psys->BroadcastVessel (MSG_KILLVESSEL, vessel);
@@ -1778,11 +1781,13 @@ const Mesh *Orbiter::LoadMeshGlobal (const char *fname, LoadMeshClbkFunc fClbk)
 VOID Orbiter::Output2DData ()
 {
 	g_pane->Draw ();
-	for (DWORD i = 0; i < nsnote; i++)
-		snote[i]->Render();
-	if (snote_playback && pConfig->CfgRecPlayPrm.bShowNotes) snote_playback->Render();
-	if (g_select->IsActive()) g_select->Display (0/*oclient->m_pddsRenderTarget*/);
-	if (g_input->IsActive()) g_input->Display (0/*oclient->m_pddsRenderTarget*/);
+	if (g_pane) {
+		for (DWORD i = 0; i < nsnote; i++)
+			snote[i]->Render();
+		if (snote_playback && pConfig->CfgRecPlayPrm.bShowNotes) snote_playback->Render();
+		if (g_select->IsActive()) g_select->Display(0/*oclient->m_pddsRenderTarget*/);
+		if (g_input->IsActive()) g_input->Display(0/*oclient->m_pddsRenderTarget*/);
+	}
 
 #ifdef INLINEGRAPHICS
 #ifdef OUTPUT_DBG
@@ -1874,7 +1879,7 @@ bool Orbiter::BeginTimeStep (bool running)
 void Orbiter::EndTimeStep (bool running)
 {
 	if (running) {
-		g_psys->FinaliseUpdate ();
+		if (g_psys) g_psys->FinaliseUpdate ();
 		//ModulePostStep();
 	}
 
@@ -1882,7 +1887,7 @@ void Orbiter::EndTimeStep (bool running)
 	td.EndStep (running);
 
 	// Update panels
-	g_camera->Update ();                           // camera
+	if (g_camera) g_camera->Update ();                           // camera
 	if (g_pane) g_pane->Update (td.SimT1, td.SysT1);
 
 	// Update visual states
