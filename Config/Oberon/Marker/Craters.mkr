@@ -1,1 +1,27 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+
+BEGIN_DATA
+65.4	-27.5	:	Antony
+61.1	-26.6	:	Caesar
+-14.8	-11.4	:	Coriolanus
+19	-22.1	:	Falstaff
+44.4	-46.1	:	Hamlet
+31.5	-5.4	:	Lear
+112.5	-58.4	:	Macbeth
+42.9	-66	:	Othello
+89.4	-28.7	:	Romeo
+
+
 
