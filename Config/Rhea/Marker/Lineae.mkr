@@ -1,0 +1,19 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Linea, lineae (A dark or bright elongate marking, may be curved or straight)
+
+;Source = https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+-128.8	-1.8	:	Kirinyaga Linea
+52	45	:	Kunlun Linea
+
+
