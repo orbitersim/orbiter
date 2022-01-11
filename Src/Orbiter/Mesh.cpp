@@ -311,25 +311,25 @@ void Mesh::AddMesh (Mesh &mesh)
 
 bool Mesh::DeleteGroup (DWORD grp)
 {
-	if (grp < nGrp) {
-		delete []Grp[grp].Vtx;
-		delete []Grp[grp].Idx;
+	if (nGrp == 1) { // delete the only group
+		delete []Grp;
+		nGrp = 0;
+	} else if (grp < nGrp && grp > 0) { // delete selected group
+		if (Grp[grp].Vtx) delete []Grp[grp].Vtx;
+		if (Grp[grp].Idx) delete []Grp[grp].Idx;
 		if (Grp[grp].VtxBuf) Grp[grp].VtxBuf->Release();
 
-		if (nGrp == 1) { // delete the only group
-			delete []Grp;
-		} else {
-			GroupSpec *tmp_Grp = new GroupSpec[nGrp-1]; TRACENEW
-			for (DWORD i = 0, j = 0; i < nGrp; i++)
-				if (i != grp) tmp_Grp[j++] = Grp[i];
-			delete []Grp;
-			Grp = tmp_Grp;
-		}
+		// redo group
+		GroupSpec * tmp_Grp = new GroupSpec[nGrp - 1]; TRACENEW
+		for (DWORD i = 0, j = 0; i < nGrp; i++)
+			if (i != grp) tmp_Grp[j++] = Grp[i];
+		delete []Grp;
+		Grp = tmp_Grp;
 		nGrp--;
-		return true;
 	} else {
 		return false;
 	}
+	return true;
 }
 
 int Mesh::GetGroup (DWORD grp, GROUPREQUESTSPEC *grs)
