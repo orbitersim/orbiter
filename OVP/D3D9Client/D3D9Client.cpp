@@ -1191,7 +1191,7 @@ bool D3D9Client::clbkDisplayFrame()
 //	static int iRefrState = 0;
 	double time = D3D9GetTime();
 
-	if (!bRunning) {
+	if (!bRunning && pDevice) {
 		RECT txt = _RECT( loadd_x, loadd_y, loadd_x+loadd_w, loadd_y+loadd_h );
 		pDevice->StretchRect(pSplashScreen, NULL, pBackBuffer, NULL, D3DTEXF_POINT);
 		pDevice->StretchRect(pTextScreen, NULL, pBackBuffer, &txt, D3DTEXF_POINT);

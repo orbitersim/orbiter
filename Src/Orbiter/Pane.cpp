@@ -626,7 +626,7 @@ void Pane::Update (double simt, double syst)
 
 void Pane::Draw ()
 {
-	if (!g_camera->IsExternal() && !vcockpit && hud) {
+	if (g_camera && !g_camera->IsExternal() && !vcockpit && hud) {
 		oapi::Sketchpad *skp = gc->clbkGetSketchpad (0);
 		if (skp) {
 			SetSketchpadDefault (skp);

@@ -1027,7 +1027,7 @@ bool HUD::DrawCenterMarker (oapi::Sketchpad *skp) const
 void HUD::DrawLadderBar (oapi::Sketchpad *skp, double lwcosa, double lwsina,
 	double dcosa, double dsina, int phi10, bool mark_subzero)
 {
-	int x1, y1, x2, y2, dx, dy, dx1, dy1, dx2, dy2;
+	int x1, y1, x2, y2, dx, dy, dx1, dy1, dx2=0, dy2=0;
 	char cbuf[5];
 
 	bool is_subzero = (phi10 < 0);
