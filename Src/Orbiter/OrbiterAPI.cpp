@@ -1351,7 +1351,7 @@ DLLEXPORT MESHHANDLE oapiCreateMesh (DWORD ngrp, MESHGROUP *grp)
 DLLEXPORT void oapiDeleteMesh (MESHHANDLE hMesh)
 {
 	Mesh *mesh = (Mesh*)hMesh;
-	delete mesh;
+	if (mesh) delete mesh;
 }
 
 DLLEXPORT void oapiParticleSetLevelRef (PSTREAM_HANDLE ph, double *lvl)
