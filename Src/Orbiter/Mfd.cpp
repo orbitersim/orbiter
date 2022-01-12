@@ -385,6 +385,7 @@ bool Instrument::UnregisterUserMode (int id)
 	if (i == nGlobalModes) return false;
 
 	delete []GlobalMode[i].spec->name;
+	GlobalMode[i].spec->name = NULL;
 	delete GlobalMode[i].spec;
 	delete GlobalMode[i].oldspec; // obsolete
 	MFDMODE *tmp = new MFDMODE[nGlobalModes-1]; TRACENEW
@@ -456,6 +457,7 @@ void Instrument::ClearDisabledModes ()
 {
 	if (nDisabledModes) {
 		delete []DisabledModes;
+		DisabledModes = NULL;
 		nDisabledModes = 0;
 	}
 }

@@ -232,6 +232,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 				for (i = 0; i < ndat; i++)
 					e[i] = (INT16)tmp[i];
 				delete []tmp;
+				tmp = NULL;
 				}
 				break;
 			case -16:
@@ -329,6 +330,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 						}
 					}
 					delete []tmp;
+					tmp = NULL;
 					}
 					break;
 				case -16: {
@@ -343,6 +345,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 						}
 					}
 					delete []tmp;
+					tmp = NULL;
 					}
 					break;
 				}

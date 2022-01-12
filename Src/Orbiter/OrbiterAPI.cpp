@@ -377,107 +377,135 @@ DLLEXPORT OBJHANDLE oapiGetDockStatus (DOCKHANDLE dock)
 
 DLLEXPORT void oapiSetEmptyMass (OBJHANDLE hVessel, double mass)
 {
-	((Vessel*)hVessel)->SetEmptyMass (mass);
+	if ((Vessel*)hVessel) ((Vessel*)hVessel)->SetEmptyMass (mass);
 }
 
 DLLEXPORT void oapiGetGlobalPos (OBJHANDLE hObj, VECTOR3 *pos)
 {
-	Vector gp (((Body*)hObj)->GPos());
-	pos->x = gp.x, pos->y = gp.y, pos->z = gp.z;
+	if (((Body*)hObj)->s0) {
+		Vector gp(((Body*)hObj)->GPos());
+		pos->x = gp.x, pos->y = gp.y, pos->z = gp.z;
+	}
 }
 
 DLLEXPORT void oapiGetGlobalVel (OBJHANDLE hObj, VECTOR3 *vel)
 {
-	Vector gv (((Body*)hObj)->GVel());
-	vel->x = gv.x, vel->y = gv.y, vel->z = gv.z;
+	if (((Body*)hObj)->s0) {
+		Vector gv(((Body*)hObj)->GVel());
+		vel->x = gv.x, vel->y = gv.y, vel->z = gv.z;
+	}
 }
 
 DLLEXPORT void oapiGetFocusGlobalPos (VECTOR3 *pos)
 {
-	Vector gp (g_focusobj->GPos());
+	Vector gp(g_focusobj->GPos());
 	pos->x = gp.x, pos->y = gp.y, pos->z = gp.z;
 }
 
 DLLEXPORT void oapiGetFocusGlobalVel (VECTOR3 *vel)
 {
-	Vector gv (g_focusobj->GVel());
+	Vector gv(g_focusobj->GVel());
 	vel->x = gv.x, vel->y = gv.y, vel->z = gv.z;
 }
 
 DLLEXPORT void oapiGetRelativePos (OBJHANDLE hObj, OBJHANDLE hRef, VECTOR3 *pos)
 {
-	Vector dp (((Body*)hObj)->GPos()-((Body*)hRef)->GPos());
-	pos->x = dp.x, pos->y = dp.y, pos->z = dp.z;
+	if (((Body*)hObj)->s0 && ((Body*)hRef)->s0) {
+		Vector dp(((Body*)hObj)->GPos()-((Body*)hRef)->GPos());
+		pos->x = dp.x, pos->y = dp.y, pos->z = dp.z;
+	}
 }
 
 DLLEXPORT void oapiGetRelativeVel (OBJHANDLE hObj, OBJHANDLE hRef, VECTOR3 *vel)
 {
-	Vector dv (((Body*)hObj)->GVel()-((Body*)hRef)->GVel());
-	vel->x = dv.x, vel->y = dv.y, vel->z = dv.z;
+	if (((Body*)hObj)->s0 && ((Body*)hRef)->s0) {
+		Vector dv(((Body*)hObj)->GVel() - ((Body*)hRef)->GVel());
+		vel->x = dv.x, vel->y = dv.y, vel->z = dv.z;
+	}
 }
 
 DLLEXPORT void oapiGetFocusRelativePos (OBJHANDLE hRef, VECTOR3 *pos)
 {
-	Vector dp (g_focusobj->GPos()-((Body*)hRef)->GPos());
-	pos->x = dp.x, pos->y = dp.y, pos->z = dp.z;
+	if (((Body*)hRef)->s0) {
+		Vector dp(g_focusobj->GPos() - ((Body*)hRef)->GPos());
+		pos->x = dp.x, pos->y = dp.y, pos->z = dp.z;
+	}
 }
 
 DLLEXPORT void oapiGetFocusRelativeVel (OBJHANDLE hRef, VECTOR3 *vel)
 {
-	Vector dv (g_focusobj->GVel()-((Body*)hRef)->GVel());
-	vel->x = dv.x, vel->y = dv.y, vel->z = dv.z;
+	if (((Body*)hRef)->s0) {
+		Vector dv(g_focusobj->GVel() - ((Body*)hRef)->GVel());
+		vel->x = dv.x, vel->y = dv.y, vel->z = dv.z;
+	}
 }
 
 DLLEXPORT void oapiGetBarycentre (OBJHANDLE hObj, VECTOR3 *bary)
 {
-	Vector b(((CelestialBody*)hObj)->Barycentre());
-	bary->x = b.x, bary->y = b.y, bary->z = b.z;
+	if (((Body*)hObj)->s0) {
+		Vector b(((CelestialBody*)hObj)->Barycentre());
+		bary->x = b.x, bary->y = b.y, bary->z = b.z;
+	}
 }
 
 DLLEXPORT void oapiGetRotationMatrix (OBJHANDLE hObj, MATRIX3 *mat)
 {
-	const Matrix &m = ((Body*)hObj)->GRot();
-	for (int i = 0; i < 9; i++) mat->data[i] = m.data[i];
+	if (((Body*)hObj)->s0) {
+		const Matrix& m = ((Body*)hObj)->GRot();
+		for (int i = 0; i < 9; i++) mat->data[i] = m.data[i];
+	}
 }
 
 DLLEXPORT void oapiGlobalToLocal (OBJHANDLE hObj, const VECTOR3 *glob, VECTOR3 *loc)
 {
-	Vector vloc;
-	((Body*)hObj)->GlobalToLocal (Vector(glob->x, glob->y, glob->z), vloc);
-	loc->x = vloc.x, loc->y = vloc.y, loc->z = vloc.z;
+	if (((Body*)hObj)->s0) {
+		Vector vloc;
+		((Body*)hObj)->GlobalToLocal(Vector(glob->x, glob->y, glob->z), vloc);
+		loc->x = vloc.x, loc->y = vloc.y, loc->z = vloc.z;
+	}
 }
 
 DLLEXPORT void oapiLocalToGlobal (OBJHANDLE hObj, const VECTOR3 *loc, VECTOR3 *glob)
 {
-	Vector vglob;
-	((Body*)hObj)->LocalToGlobal (Vector(loc->x, loc->y, loc->z), vglob);
-	glob->x = vglob.x, glob->y = vglob.y, glob->z = vglob.z;
+	if (((Body*)hObj)->s0) {
+		Vector vglob;
+		((Body*)hObj)->LocalToGlobal(Vector(loc->x, loc->y, loc->z), vglob);
+		glob->x = vglob.x, glob->y = vglob.y, glob->z = vglob.z;
+	}
 }
 
 DLLEXPORT void oapiEquToLocal (OBJHANDLE hObj, double lng, double lat, double rad, VECTOR3 *loc)
 {
-	Vector vloc;
-	((Body*)hObj)->EquatorialToLocal (lng, lat, rad, vloc);
-	loc->x = vloc.x, loc->y = vloc.y, loc->z = vloc.z;
+	if (((Body*)hObj)->s0) {
+		Vector vloc;
+		((Body*)hObj)->EquatorialToLocal(lng, lat, rad, vloc);
+		loc->x = vloc.x, loc->y = vloc.y, loc->z = vloc.z;
+	}
 }
 
 DLLEXPORT void oapiLocalToEqu (OBJHANDLE hObj, const VECTOR3 &loc, double *lng, double *lat, double *rad)
 {
-	Vector vloc (loc.x, loc.y, loc.z);
-	((Body*)hObj)->LocalToEquatorial (vloc, *lng, *lat, *rad);
+	if (((Body*)hObj)->s0) {
+		Vector vloc(loc.x, loc.y, loc.z);
+		((Body*)hObj)->LocalToEquatorial(vloc, *lng, *lat, *rad);
+	}
 }
 
 DLLEXPORT void oapiEquToGlobal (OBJHANDLE hObj, double lng, double lat, double rad, VECTOR3 *glob)
 {
-	Vector vglob;
-	((Body*)hObj)->EquatorialToGlobal (lng, lat, rad, vglob);
-	glob->x = vglob.x, glob->y = vglob.y, glob->z = vglob.z;
+	if (((Body*)hObj)->s0) {
+		Vector vglob;
+		((Body*)hObj)->EquatorialToGlobal(lng, lat, rad, vglob);
+		glob->x = vglob.x, glob->y = vglob.y, glob->z = vglob.z;
+	}
 }
 
 DLLEXPORT void oapiGlobalToEqu (OBJHANDLE hObj, const VECTOR3 &glob, double *lng, double *lat, double *rad)
 {
-	Vector vglob (glob.x, glob.y, glob.z);
-	((Body*)hObj)->GlobalToEquatorial (vglob, *lng, *lat, *rad);
+	if (((Body*)hObj)->s0) {
+		Vector vglob(glob.x, glob.y, glob.z);
+		((Body*)hObj)->GlobalToEquatorial(vglob, *lng, *lat, *rad);
+	}
 }
 
 DLLEXPORT double oapiOrthodome (double lng1, double lat1, double lng2, double lat2)
@@ -487,10 +515,15 @@ DLLEXPORT double oapiOrthodome (double lng1, double lat1, double lng2, double la
 
 DLLEXPORT BOOL oapiGetAltitude (OBJHANDLE hVessel, double *alt)
 {
-	const SurfParam *sp = ((Vessel*)hVessel)->GetSurfParam();
-	if (sp) {
-		*alt = sp->alt0;
-		return TRUE;
+	if ((Vessel*)hVessel) {
+		const SurfParam *sp = ((Vessel*)hVessel)->GetSurfParam();
+		if (sp) {
+			*alt = sp->alt0;
+			return TRUE;
+		}
+		else {
+			return FALSE;
+		}
 	} else {
 		return FALSE;
 	}
@@ -498,21 +531,30 @@ DLLEXPORT BOOL oapiGetAltitude (OBJHANDLE hVessel, double *alt)
 
 DLLEXPORT BOOL oapiGetAltitude (OBJHANDLE hVessel, AltitudeMode mode, double *alt)
 {
-	const SurfParam *sp = ((Vessel*)hVessel)->GetSurfParam();
-	if (sp) {
-		*alt = (mode == ALTMODE_MEANRAD ? sp->alt0 : sp->alt);
-		return TRUE;
+	if ((Vessel*)hVessel) {
+		const SurfParam* sp = ((Vessel*)hVessel)->GetSurfParam();
+		if (sp) {
+			*alt = (mode == ALTMODE_MEANRAD ? sp->alt0 : sp->alt);
+			return TRUE;
+		}
+		else {
+			return FALSE;
+		}
 	} else {
 		return FALSE;
-	}	
+	}
 }
 
 DLLEXPORT BOOL oapiGetPitch (OBJHANDLE hVessel, double *pitch)
 {
-	const SurfParam *sp = ((Vessel*)hVessel)->GetSurfParam();
-	if (sp) {
-		*pitch = sp->pitch;
-		return TRUE;
+	if ((Vessel*)hVessel) {
+		const SurfParam *sp = ((Vessel*)hVessel)->GetSurfParam();
+		if (sp) {
+			*pitch = sp->pitch;
+			return TRUE;
+		} else {
+			return FALSE;
+		}
 	} else {
 		return FALSE;
 	}
@@ -520,10 +562,15 @@ DLLEXPORT BOOL oapiGetPitch (OBJHANDLE hVessel, double *pitch)
 
 DLLEXPORT BOOL oapiGetBank (OBJHANDLE hVessel, double *bank)
 {
-	const SurfParam *sp = ((Vessel*)hVessel)->GetSurfParam();
-	if (sp) {
-		*bank = sp->bank;
-		return TRUE;
+	if ((Vessel*)hVessel) {
+		const SurfParam *sp = ((Vessel*)hVessel)->GetSurfParam();
+		if (sp) {
+			*bank = sp->bank;
+			return TRUE;
+		}
+		else {
+			return FALSE;
+		}
 	} else {
 		return FALSE;
 	}
@@ -531,10 +578,14 @@ DLLEXPORT BOOL oapiGetBank (OBJHANDLE hVessel, double *bank)
 
 DLLEXPORT BOOL oapiGetHeading (OBJHANDLE hVessel, double *heading)
 {
-	const SurfParam *sp = ((Vessel*)hVessel)->GetSurfParam();
-	if (sp) {
-		*heading = sp->dir;
-		return TRUE;
+	if ((Vessel*)hVessel) {
+		const SurfParam *sp = ((Vessel*)hVessel)->GetSurfParam();
+		if (sp) {
+			*heading = sp->dir;
+			return TRUE;
+		} else {
+			return FALSE;
+		}
 	} else {
 		return FALSE;
 	}
@@ -542,12 +593,16 @@ DLLEXPORT BOOL oapiGetHeading (OBJHANDLE hVessel, double *heading)
 
 DLLEXPORT BOOL oapiGetEquPos (OBJHANDLE hVessel, double *longitude, double *latitude, double *radius)
 {
-	const SurfParam *sp = ((Vessel*)hVessel)->GetSurfParam();
-	if (sp) {
-		*longitude = sp->lng;
-		*latitude  = sp->lat;
-		*radius    = sp->rad;
-		return TRUE;
+	if ((Vessel*)hVessel) {
+		const SurfParam *sp = ((Vessel*)hVessel)->GetSurfParam();
+		if (sp) {
+			*longitude = sp->lng;
+			*latitude  = sp->lat;
+			*radius    = sp->rad;
+			return TRUE;
+		} else {
+			return FALSE;
+		}
 	} else {
 		return FALSE;
 	}

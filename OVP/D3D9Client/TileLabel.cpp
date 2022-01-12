@@ -49,10 +49,12 @@ TileLabel::~TileLabel ()
 			delete label[i];
 		}
 		delete []label;
+		label = NULL;
 	}
 	if (nrenderbuf)
 	{
 		delete []renderlabel;
+		renderlabel = NULL;
 		// delete the list, not the labels themselves, since they are just
 		// references to ancestor entries
 	}

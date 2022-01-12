@@ -289,6 +289,7 @@ void Panel::ReleaseAreas ()
 		delete area[i];
 	}
 	delete []area;
+	area = NULL;
 	narea = nareabuf = 0;
 }
 

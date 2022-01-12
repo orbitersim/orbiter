@@ -98,6 +98,7 @@ Pane::~Pane ()
 		for (i = 0; i < nemfd; i++)
 			delete emfd[i];
 		delete []emfd;
+		emfd = NULL;
 	}
 	FreeResources ();
 	if (mibar)    delete mibar;

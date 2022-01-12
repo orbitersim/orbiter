@@ -245,6 +245,7 @@ void SetEnvironmentVars ()
 		sprintf (cbuf, "PATH=%s;Modules", ppath);
 		_putenv (cbuf);
 		delete []cbuf;
+		cbuf = NULL;
 	} else {
 		_putenv ("PATH=Modules");
 	}
@@ -495,8 +496,12 @@ VOID Orbiter::CloseApp (bool fast_shutdown)
 		if (ddeserver) delete ddeserver;
 		if (script) delete script;
 		if (ncustomcmd) {
-			for (DWORD i = 0; i < ncustomcmd; i++) delete []customcmd[i].label;
+			for (DWORD i = 0; i < ncustomcmd; i++) {
+				delete []customcmd[i].label;
+				customcmd[i].label = NULL;
+			}
 			delete []customcmd;
+			customcmd = NULL;
 		}
 		oapiUnregisterCustomControls (hInst);
 	}
@@ -583,6 +588,7 @@ void Orbiter::UnloadModule (const char *name)
 		if (!_stricmp (module[i].name, name)) break;
 	if (i == nmodule) return; // not present
 	delete []module[i].name;
+	module[i].name = NULL;
 	delete module[i].module;
 	FreeLibrary (module[i].hMod);
 	if (nmodule > 1) {
@@ -607,6 +613,7 @@ void Orbiter::UnloadModule (HINSTANCE hi)
 		if (hi == module[i].hMod) break;
 	if (i == nmodule) return; // not present
 	delete []module[i].name;
+	module[i].name = NULL;
 	delete module[i].module;
 	FreeLibrary (module[i].hMod);
 	if (nmodule > 1) {
@@ -890,6 +897,7 @@ void Orbiter::CloseSession ()
 		if (nsnote) {
 			for (DWORD i = 0; i < nsnote; i++) delete snote[i];
 			delete []snote;
+			snote = NULL;
 			nsnote = 0;
 		}
 		InlineDialog::GlobalExit (gclient);
@@ -1216,6 +1224,9 @@ void Orbiter::InsertVessel (Vessel *vessel)
 		module[k].module->clbkNewVessel ((OBJHANDLE)vessel);
 #ifdef INLINEGRAPHICS
 	oclient->clbkNewVessel ((OBJHANDLE)vessel);
+#else
+	if (gclient)
+		gclient->clbkNewVessel((OBJHANDLE)vessel);
 #endif // INLINEGRAPHICS
 
 	if (pDlgMgr) pDlgMgr->BroadcastMessage (MSG_CREATEVESSEL, vessel);
@@ -1305,6 +1316,9 @@ void Orbiter::NotifyObjectJump (const Body *obj, const Vector &shift)
 
 #ifdef INLINEGRAPHICS
 	oclient->GetScene()->Update (g_psys, &g_camera, 1, false/*m_bRunning*/, false);
+#else
+	if (gclient)
+		gclient->clbkVesselJump((OBJHANDLE)obj);
 #endif // INLINEGRAPHICS
 }
 
@@ -1924,6 +1938,9 @@ bool Orbiter::Timejump (double _mjd, int pmode)
 
 #ifdef INLINEGRAPHICS
 	if (oclient) oclient->clbkTimeJump (td.SimT0, tjump.dt, _mjd);
+#else
+	if (gclient)
+		gclient->clbkTimeJump(td.SimT0, tjump.dt, _mjd);
 #endif
 	for (DWORD i = 0; i < nmodule; i++)
 		module[i].module->clbkTimeJump (td.SimT0, tjump.dt, _mjd);

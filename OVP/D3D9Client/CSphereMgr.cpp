@@ -128,9 +128,11 @@ CSphereManager::~CSphereManager ()
 			for (DWORD i = 0; i < ntex; ++i)
 				ReleaseTex(texbuf[i]);
 			delete []texbuf;
+			texbuf = NULL;
 		}
 	}
 	delete []tiledesc;
+	tiledesc = NULL;
 }
 
 // =======================================================================

@@ -35,7 +35,7 @@ bool SolveLUSystem(int n, double *A, double *b, double *x, double *det)
 	for (int k=0;k<n;k++) {
 		int r = 0; double d = 0.0; 
 		for (int s=k;s<n;s++) if (fabs(A[s*n+k])>d) { d = fabs(A[s*n+k]); r = s; }
-		if (d==0.0) { LogErr("Singular Matrix in SolveLUSystem()"); delete []p; return false; }
+		if (d == 0.0) { LogErr("Singular Matrix in SolveLUSystem()"); delete []p; p = NULL; return false; }
 		if (r!=k) { // Do Swaps
 			for (int i=0;i<n;i++) { double x = A[k*n+i]; A[k*n+i] = A[r*n+i]; A[r*n+i] = x; } 
 			int x=p[k]; p[k]=p[r]; p[r]=x; e++;
@@ -46,6 +46,7 @@ bool SolveLUSystem(int n, double *A, double *b, double *x, double *det)
 	for (int i=n-1;i>=0;i--) { for (int j=i+1;j<n;j++) x[i] -= A[i*n+j]*x[j]; x[i] /= A[i*n+i]; }
 	if (det) { *det = 1.0; for (int i=0;i<n;i++) *det *= A[i*n+i]; if (e&1) *det*=-1.0; } 
 	delete []p;
+	p = NULL;
 	return true;
 }
 
@@ -650,7 +651,9 @@ bool SolveXScatter(double h0, double R, double R1, double *r, double angle, int 
 	}
 
 	delete []v; delete []q;
+	v = NULL; q = NULL;
 	delete []y;	delete []M;
+	y = NULL; M = NULL;
 
 	return bRet;
 }

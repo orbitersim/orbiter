@@ -25,7 +25,9 @@ D3D9Config::~D3D9Config ()
 {
 	WriteParams ();
 	delete []DebugFont;
+	DebugFont = NULL;
 	delete []SolCfg;
+	SolCfg = NULL;
 }
 
 void D3D9Config::Reset ()

@@ -1965,6 +1965,7 @@ bool D3D9Client::clbkSaveSurfaceToImage(SURFHANDLE surf, const char *fname, Imag
 			bRet = WriteImageDataToFile(ID, fname, fmt, quality);
 
 			delete []ID.data;
+			ID.data = NULL;
 			pSystem->UnlockRect();
 		}
 
@@ -1997,6 +1998,7 @@ bool D3D9Client::clbkSaveSurfaceToImage(SURFHANDLE surf, const char *fname, Imag
 		bRet = WriteImageDataToFile(ID, fname, fmt, quality);
 
 		delete []ID.data;
+		ID.data = NULL;
 		pSurf->UnlockRect();
 		return bRet;
 	}

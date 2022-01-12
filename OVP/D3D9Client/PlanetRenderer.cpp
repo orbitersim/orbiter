@@ -216,6 +216,11 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	delete []macro[2].Definition;
 	delete []macro[3].Definition;
 	delete []macro[4].Definition;
+	macro[0].Definition = NULL;
+	macro[1].Definition = NULL;
+	macro[2].Definition = NULL;
+	macro[3].Definition = NULL;
+	macro[4].Definition = NULL;
 
 	if (errors) {
 		LogErr("Effect Error: %s",(char*)errors->GetBufferPointer());

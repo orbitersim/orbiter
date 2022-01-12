@@ -442,6 +442,7 @@ void ImageProcessing::SetBool(const char *var, const bool *val, int bytes)
 	}
 
 	delete []data;
+	data = NULL;
 }
 
 

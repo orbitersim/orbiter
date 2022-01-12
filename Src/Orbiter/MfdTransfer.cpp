@@ -78,7 +78,9 @@ Instrument_Transfer::~Instrument_Transfer ()
 	delete shpel;
 	delete shpel2;
 	delete []path;
+	path = NULL;
 	delete []pathp;
+	pathp = NULL;
 }
 
 HELPCONTEXT *Instrument_Transfer::HelpTopic () const

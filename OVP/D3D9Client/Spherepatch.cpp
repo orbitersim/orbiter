@@ -225,6 +225,9 @@ void CreateSphere (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, DWORD nrings, bool hemi
 	
 	delete []Vtx;
 	delete []Idx;
+
+	Vtx = NULL;
+	Idx = NULL;
 	mesh.vtx = NULL;
 	mesh.idx = NULL;
 }
@@ -346,6 +349,8 @@ void CreateSpherePatch (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, int nlng, int nlat
 	delete []Vtx;
 	delete []Idx;
 
+	Vtx = NULL;
+	Idx = NULL;
 	mesh.vtx = NULL;
 	mesh.idx = NULL;	
 

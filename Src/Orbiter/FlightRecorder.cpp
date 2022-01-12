@@ -269,7 +269,10 @@ void Vessel::FRecorder_Save (bool force)
 
 	// engine attributes
 	if (nfrec_eng != nthruster) {
-		if (nfrec_eng) delete []frec_eng;
+		if (nfrec_eng) {
+			delete []frec_eng;
+			frec_eng = NULL;
+		}
 		if (nthruster) {
 			frec_eng = new double[nfrec_eng = nthruster]; TRACENEW
 			for (j = 0; j < nthruster; j++) frec_eng[j] = -1;
@@ -327,17 +330,23 @@ void Vessel::FRecorder_Clear ()
 {
 	if (nfrec) {
 		delete []frec;
+		frec = NULL;
 		nfrec = 0;
 	}
 	if (nfrec_att) {
 		delete []frec_att;
+		frec_att = NULL;
 		nfrec_att = 0;
 	}
 	if (nfrec_eng) {
 		delete []frec_eng;
+		frec_eng = NULL;
 		nfrec_eng = 0;
 	}
-	if (FRfname) delete []FRfname;
+	if (FRfname) {
+		delete []FRfname;
+		FRfname = NULL;
+	}
 	if (FRatc_stream) {
 		delete FRatc_stream;
 		FRatc_stream = 0;

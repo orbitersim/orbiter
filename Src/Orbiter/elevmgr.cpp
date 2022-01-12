@@ -104,6 +104,7 @@ INT16 *ElevationManager::LoadElevationTile (int lvl, int ilat, int ilng, double 
 					for (i = 0; i < ndat; i++)
 						elev[i] = (INT16)tmp[i];
 					delete []tmp;
+					tmp = NULL;
 					}
 					break;
 				case -16:
@@ -191,6 +192,7 @@ bool ElevationManager::LoadElevationTile_mod (int lvl, int ilat, int ilng, doubl
 						}
 					}
 					delete []tmp;
+					tmp = NULL;
 					}
 					break;
 				case -16: {
@@ -205,6 +207,7 @@ bool ElevationManager::LoadElevationTile_mod (int lvl, int ilat, int ilng, doubl
 						}
 					}
 					delete []tmp;
+					tmp = NULL;
 					}
 					break;
 				}

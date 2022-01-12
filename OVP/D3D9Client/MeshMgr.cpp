@@ -32,6 +32,7 @@ void MeshManager::DeleteAll()
 	for (i=0;i<nmlist;i++) delete mlist[i].mesh;
 	if (nmlistbuf) {
 		delete []mlist;
+		mlist = NULL;
 		nmlist = nmlistbuf = 0;
 	}
 }
