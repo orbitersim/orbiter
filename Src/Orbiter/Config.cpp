@@ -793,10 +793,17 @@ bool Config::Load(const char *fname)
 
 Config::~Config()
 {
-	if (Root) delete []Root;
+	if (Root) {
+		delete []Root;
+		Root = NULL;
+	}
 	if (nactmod) {
-		for (int i = 0; i < nactmod; i++) delete []actmod[i];
+		for (int i = 0; i < nactmod; i++) {
+			delete []actmod[i];
+			actmod[i] = NULL;
+		}
 		delete []actmod;
+		actmod = NULL;
 	}
 }
 

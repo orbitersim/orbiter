@@ -87,15 +87,23 @@ TileManager::~TileManager ()
 		for (i = 0; i < ntex; ++i)
 			ReleaseTex(texbuf[i]);
 		delete []texbuf;
+		texbuf = NULL;
 	}
 	if (nmask && specbuf) {
 		for (i = 0; i < nmask; ++i)
 			ReleaseTex(specbuf[i]);
 		delete []specbuf;
+		specbuf = NULL;
 	}
 	DELETE_SURFACE(microtex);
-	if (tiledesc) delete []tiledesc;
-	if (objname) delete []objname;
+	if (tiledesc) {
+		delete []tiledesc;
+		tiledesc = NULL;
+	}
+	if (objname) {
+		delete []objname;
+		objname = NULL;
+	}
 }
 
 // =======================================================================
@@ -154,7 +162,11 @@ bool TileManager::LoadPatchData ()
 					nmask++;
 			}
 		}
-		if (tflag) delete []tflag;
+		if (tflag) {
+			delete []tflag;
+			tflag = NULL;
+		}
+
 		return true;
 	}
 }
@@ -217,6 +229,7 @@ bool TileManager::LoadTileData ()
 
 			tilever = 0;
 			delete []idxlist;
+			idxlist = NULL;
 		}
 	}
 
@@ -230,6 +243,7 @@ bool TileManager::LoadTileData ()
 
 	fclose (file);
 	delete []tfs;
+	tfs = NULL;
 	return true;
 }
 
@@ -299,7 +313,7 @@ void TileManager::LoadTextures (char *modstr)
 			tiledesc[i].tex = texbuf[i];
 	} else {
 		delete []texbuf;
-		texbuf = 0;
+		texbuf = NULL;
 		bNoTextures = true;
 		// no textures at all!
 	}
@@ -353,12 +367,14 @@ void TileManager::PreloadTileTextures (TILEDESC *tile8, DWORD ntex, DWORD nmask)
 			if (texbuf[i])
 				ReleaseTex(texbuf[i]);
 		delete []texbuf;
+		texbuf = NULL;
 	}
 	if (nm) {
 		for (i = 0; i < nm; i++)
 			if (maskbuf[i])
 				ReleaseTex(maskbuf[i]);
 		delete []maskbuf;
+		maskbuf = NULL;
 	}
 }
 
@@ -957,6 +973,7 @@ TileBuffer::~TileBuffer()
 				delete buf[i];
 			}
 		delete []buf;
+		buf = NULL;
 	}
 }
 
@@ -1006,6 +1023,7 @@ TILEDESC *TileBuffer::AddTile ()
 		if (nbuf) {
 			memcpy (tmp, buf, nbuf*sizeof(TILEDESC*));
 			delete []buf;
+			buf = NULL;
 		}
 		memset (tmp+nbuf, 0, 16*sizeof(TILEDESC*));
 		buf = tmp;

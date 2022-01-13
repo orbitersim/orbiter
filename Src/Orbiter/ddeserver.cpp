@@ -29,13 +29,17 @@ DDEServer::~DDEServer ()
 {
 	int i;
 
-	if (nclient) delete []client;
+	if (nclient) {
+		delete []client;
+		client = NULL;
+	}
 	GlobalDeleteAtom (aApp);
 	GlobalDeleteAtom (aTopic);
 
 	for (i = 0; i < nitem; i++)
 		GlobalDeleteAtom (aItem[i]);
 	delete []aItem;
+	aItem = NULL;
 }
 
 void DDEServer::MsgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

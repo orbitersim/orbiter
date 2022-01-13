@@ -47,8 +47,12 @@ CelestialSphere::~CelestialSphere()
 			svtx[i]->Release();
 		}
 		delete []svtx;
+		svtx = NULL;
 	}
-	if (ncline) delete []cnstvtx;
+	if (ncline) {
+		delete []cnstvtx;
+		cnstvtx = NULL;
+	}
 	grdlng->Release();
 	grdlat->Release();
 }
@@ -87,12 +91,12 @@ void CelestialSphere::LoadStars ()
 		float lng, lat, mag;
 	} *data = new StarRec[maxNumVertices];
 
-	if (prm->mag_lo <= prm->mag_hi) { delete []data; return; }
+	if (prm->mag_lo <= prm->mag_hi) { delete []data; data = NULL; return; }
 
 	// Read binary data from file
 	FILE *f;
 	fopen_s(&f, "Star.bin", "rb");
-	if (!f) { delete []data; return; }
+	if (!f) { delete []data; data = NULL; return; }
 	while (nv = DWORD(fread (data, sizeof(StarRec), maxNumVertices, f))) {
 		// limit number of stars to predefined magnitude - SHOULD BE BINARY SEARCH
 		for (i = 0; i < nv; i++)
@@ -145,6 +149,7 @@ void CelestialSphere::LoadStars ()
 	for (i = 0; i < (DWORD)plvl; i++) lvlid[i] = idx;
 
 	delete []data;
+	data = NULL;
 }
 
 // ==============================================================
@@ -173,6 +178,7 @@ void CelestialSphere::LoadConstellationLines()
 		}
 	}
 	delete []cline;
+	cline = NULL;
 }
 
 // ==============================================================

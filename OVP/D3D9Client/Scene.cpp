@@ -291,13 +291,17 @@ Scene::~Scene ()
 	for (int i = 0; i < ARRAYSIZE(psShmRT); i++) SAFE_RELEASE(psShmRT[i]);
 	for (int i = 0; i < ARRAYSIZE(pBlrTemp); i++) SAFE_RELEASE(pBlrTemp[i]);
 
-	if (Lights) delete []Lights;
+	if (Lights) {
+		delete []Lights;
+		Lights = NULL;
+	}
 	if (cspheremgr) delete cspheremgr;
 
 	// Particle Streams
 	if (nstream) {
 		for (DWORD j=0;j<nstream;j++) delete pstream[j];
 		delete []pstream;
+		pstream = NULL;
 	}
 
 	DeleteAllCustomCameras();

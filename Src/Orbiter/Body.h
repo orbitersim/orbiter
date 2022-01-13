@@ -143,8 +143,8 @@ public:
 
 	inline const VISHANDLE *GetVishandlePtr() const { return &hVis; }
 
-	StateVectors *s0;    // body state at time t0
-	StateVectors *s1;    // new body state at time t0+dt during update phase
+	StateVectors *s0 = NULL;    // body state at time t0
+	StateVectors *s1 = NULL;    // new body state at time t0+dt during update phase
 
 	// Operations on updated state vectors (only accessible during update phase
 	// AFTER the object has been updated)

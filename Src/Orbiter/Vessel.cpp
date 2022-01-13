@@ -197,7 +197,10 @@ Vessel::~Vessel ()
 	FRecorder_Clear();
 	ClearDockDefinitions ();
 	if (modIntf.ovcExit) modIntf.ovcExit(modIntf.v);
-	if (classname) delete []classname;
+	if (classname) {
+		delete []classname;
+		classname = NULL;
+	}
 	ClearMeshes();
 	ClearThrusterDefinitions();
 	ClearPropellantResources();
@@ -216,8 +219,14 @@ Vessel::~Vessel ()
 		g_psys->BroadcastVessel (MSG_KILLNAVSENDER, xpdr);
 		delete xpdr;
 	}
-	if (nnav) delete []nav;
-	if (onlinehelp) delete []onlinehelp;
+	if (nnav) {
+		delete []nav;
+		nav = NULL;
+	}
+	if (onlinehelp) {
+		delete []onlinehelp;
+		onlinehelp = NULL;
+	}
 	ClearModule();
 	g_pOrbiter->UpdateDeallocationProgress();
 }
@@ -1435,6 +1444,7 @@ void Vessel::ClearThrusterDefinitions ()
 		tgs = thruster_grp_default+grp;
 		if (tgs->nts) {
 			delete []tgs->ts;
+			tgs->ts = NULL;
 			tgs->nts = 0;
 		}
 	}
@@ -1442,10 +1452,14 @@ void Vessel::ClearThrusterDefinitions ()
 	if (nthruster_grp_user) {
 		for (grp = 0; grp < nthruster_grp_user; grp++) {
 			tgs = thruster_grp_user[grp];
-			if (tgs->nts) delete []tgs->ts;
+			if (tgs->nts) {
+				delete []tgs->ts;
+				tgs->ts = NULL;
+			}
 			delete tgs;
 		}
 		delete []thruster_grp_user;
+		thruster_grp_user = NULL;
 		nthruster_grp_user = 0;
 	}
 	// delete thrusters
@@ -1453,6 +1467,7 @@ void Vessel::ClearThrusterDefinitions ()
 		for (DWORD i = 0; i < nthruster; i++)
 			delete thruster[i];
 		delete []thruster;
+		thruster = NULL;
 		nthruster = 0;
 	}
 	ResetMass(); // bring fuel mass up to date
@@ -1469,6 +1484,7 @@ void Vessel::ClearExhaustDefinitions ()
 		for (i = 0; i < nexhaust; i++)
 			delete exhaust[i];
 		delete []exhaust;
+		exhaust = NULL;
 		nexhaust = 0;
 	}
 	// delete old-style exhaust definitions
@@ -1476,6 +1492,7 @@ void Vessel::ClearExhaustDefinitions ()
 		for (i = 0; i < noexhaust; i++)
 			delete oexhaust[i];
 		delete []oexhaust;
+		oexhaust = NULL;
 		noexhaust = 0;
 	}
 }
@@ -1487,6 +1504,7 @@ void Vessel::ClearExhaustStreamDefinitions ()
 	if (ncontrail) {
 		for (DWORD i = 0; i < ncontrail; i++) contrail[i]->Detach();
 		delete []contrail;
+		contrail = NULL;
 		ncontrail = 0;
 	}
 }
@@ -1522,13 +1540,17 @@ ThrustGroupSpec *Vessel::CreateThrusterGroup (ThrustSpec **ts, DWORD nts, THGROU
 
 	if (thgt < THGROUP_USER) { // define a standard group
 		tgs = thruster_grp_default + thgt;
-		if (tgs->nts) delete []tgs->ts; // already defined - deallocate
+		if (tgs->nts) {
+			delete []tgs->ts; // already defined - deallocate
+			tgs->ts = NULL;
+		}
 	} else {                   // define a user defined group
 		ThrustGroupSpec **tmp = new ThrustGroupSpec*[nthruster_grp_user+1]; TRACENEW
 		if (nthruster_grp_user) {
 			for (i = 0; i < nthruster_grp_user; i++)
 				tmp[i] = thruster_grp_user[i];
 			delete []thruster_grp_user;
+			thruster_grp_user = NULL;
 		}
 		thruster_grp_user = tmp;
 		tgs = thruster_grp_user[nthruster_grp_user++] = new ThrustGroupSpec; TRACENEW
@@ -1569,6 +1591,7 @@ bool Vessel::DeleteThrusterGroup (ThrustGroupSpec *tgs, THGROUP_TYPE thgt, bool 
 			while (thruster_grp_user[i]->nts) DelThruster (thruster_grp_user[i]->ts[0]);
 		} else if (thruster_grp_user[i]->nts) {
 			delete []thruster_grp_user[i]->ts;
+			thruster_grp_user[i]->ts = NULL;
 		}
 		delete thruster_grp_user[i];
 		if (nthruster_grp_user > 1) {
@@ -1605,6 +1628,7 @@ bool Vessel::DeleteThrusterGroup (ThrustGroupSpec *tgs, bool delth)
 		while (thruster_grp_user[i]->nts) DelThruster (thruster_grp_user[i]->ts[0]);
 	} else if (thruster_grp_user[i]->nts) {
 		delete []thruster_grp_user[i]->ts;
+		thruster_grp_user[i]->ts = NULL;
 	}
 	delete thruster_grp_user[i];
 	ThrustGroupSpec **tmp;
@@ -1630,6 +1654,7 @@ bool Vessel::DeleteThrusterGroup (THGROUP_TYPE thgt, bool delth)
 		while (tgs->nts) DelThruster (tgs->ts[0]); // this also takes care of removing the thruster from the group
 	} else {     // keep thrusters
 		delete []tgs->ts;
+		tgs->ts = NULL;
 		tgs->nts = 0;
 	}
 	return true;
@@ -1772,6 +1797,7 @@ void Vessel::ClearAirfoilDefinitions ()
 	if (nairfoil) {
 		for (DWORD i = 0; i < nairfoil; i++) delete airfoil[i];
 		delete []airfoil;
+		airfoil = NULL;
 		nairfoil = 0;
 	}
 }
@@ -1853,6 +1879,7 @@ void Vessel::ClearControlSurfaceDefinitions ()
 	if (nctrlsurf) {
 		for (DWORD i = 0; i < nctrlsurf; i++) delete ctrlsurf[i];
 		delete []ctrlsurf;
+		ctrlsurf = NULL;
 		nctrlsurf = 0;
 	}
 }
@@ -1928,6 +1955,7 @@ void Vessel::ClearVariableDragElements ()
 	if (ndragel) {
 		for (DWORD i = 0; i < ndragel; i++) delete dragel[i];
 		delete []dragel;
+		dragel = NULL;
 		ndragel = 0;
 	}
 }
@@ -2290,6 +2318,7 @@ void Vessel::ClearReentryStreams ()
 		for (DWORD i = 0; i < nreentrystream; i++)
 			reentrystream[i]->Detach();
 		delete []reentrystream;
+		reentrystream = NULL;
 		nreentrystream = 0;
 	}
 }
@@ -2449,6 +2478,7 @@ void Vessel::ClearPropellantResources ()
 		for (i = 0; i < ntank; i++)
 			delete tank[i];
 		delete []tank;
+		tank = NULL;
 		ntank = 0;
 	}
 
@@ -2560,6 +2590,7 @@ void Vessel::ClearDockDefinitions ()
 			delete dock[i];
 		}
 		delete []dock;
+		dock = NULL;
 		ndock = 0;
 	}
 }
@@ -2848,6 +2879,7 @@ void Vessel::ClearAttachments ()
 		for (DWORD i = 0; i < npattach; i++)
 			delete pattach[i];
 		delete []pattach;
+		pattach = NULL;
 		npattach = 0;
 	}
 	if (ncattach) {
@@ -2856,6 +2888,7 @@ void Vessel::ClearAttachments ()
 			delete cattach[i];
 		}
 		delete []cattach;
+		cattach = NULL;
 		ncattach = 0;
 	}
 }
@@ -3083,6 +3116,7 @@ void Vessel::ClearBeacons ()
 {
 	if (nbeacon) {
 		delete []beacon;
+		beacon = NULL;
 		nbeacon = 0;
 	}
 }
@@ -3218,6 +3252,7 @@ void Vessel::ClearMeshes (bool retain_anim)
 	for (UINT i = 0; i < nmesh; i++)
 		if (meshlist[i]) delete meshlist[i];
 	delete []meshlist;
+	meshlist = NULL;
 	nmesh = 0;
 	mesh_crc = 0;
 	ScanMeshCaps();
@@ -5299,6 +5334,7 @@ bool Vessel::UnregisterMFDMode (int id)
 	if (i == nmfdmode) return false;
 
 	delete []mfdmode[i].spec->name;
+	mfdmode[i].spec->name = NULL;
 	delete mfdmode[i].spec;
 	delete mfdmode[i].oldspec;
 	MFDMODE *tmp = NULL;
@@ -5411,7 +5447,7 @@ void Vessel::RegisterVisual (VISHANDLE vis)
 
 	RigidBody::RegisterVisual (vis);
 
-	if (modIntf.v->Version() >= 1)
+	if (modIntf.v && modIntf.v->Version() >= 1)
 		((VESSEL2*)modIntf.v)->clbkVisualCreated (vis, 1);
 	g_pane->RedrawCockpitAreas (PANEL_REDRAW_INIT);
 }
@@ -5420,7 +5456,7 @@ void Vessel::UnregisterVisual ()
 {
 	if (!hVis) return; // nothing to do
 
-	if (modIntf.v->Version() >= 1)
+	if (modIntf.v && modIntf.v->Version() >= 1)
 		((VESSEL2*)modIntf.v)->clbkVisualDestroyed (hVis, 1);
 
 	RigidBody::UnregisterVisual();
@@ -5428,7 +5464,7 @@ void Vessel::UnregisterVisual ()
 
 bool Vessel::SetGenericCockpit () const
 {
-	if (modIntf.v->Version() >= 1)
+	if (modIntf.v && modIntf.v->Version() >= 1)
 		return ((VESSEL2*)modIntf.v)->clbkLoadGenericCockpit();
 	else
 		return true;
@@ -5436,7 +5472,7 @@ bool Vessel::SetGenericCockpit () const
 
 bool Vessel::LoadPanel (int which) const
 {
-	if (modIntf.v->Version() >= 1)
+	if (modIntf.v && modIntf.v->Version() >= 1)
 		return ((VESSEL2*)modIntf.v)->clbkLoadPanel (which);
 	else
 		return false;
@@ -5444,7 +5480,7 @@ bool Vessel::LoadPanel (int which) const
 
 bool Vessel::LoadPanel2D (int which, Panel2D *panel) const
 {
-	if (modIntf.v->Version() >= 2) {
+	if (modIntf.v && modIntf.v->Version() >= 2) {
 		oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();
 		if (gc) {
 			DWORD viewW, viewH;
@@ -5457,7 +5493,7 @@ bool Vessel::LoadPanel2D (int which, Panel2D *panel) const
 
 bool Vessel::PanelRedrawEvent (int id, int event, SURFHANDLE surf, void *context) const
 {
-	if (modIntf.v->Version() >= 2 && ((VESSEL3*)modIntf.v)->clbkPanelRedrawEvent (id, event, surf, context))
+	if (modIntf.v && modIntf.v->Version() >= 2 && ((VESSEL3*)modIntf.v)->clbkPanelRedrawEvent (id, event, surf, context))
 		return true;
 	else if (modIntf.v->Version() >= 1)
 		return ((VESSEL2*)modIntf.v)->clbkPanelRedrawEvent (id, event, surf);
@@ -5467,7 +5503,7 @@ bool Vessel::PanelRedrawEvent (int id, int event, SURFHANDLE surf, void *context
 
 bool Vessel::PanelMouseEvent (int id, int event, int mx, int my, void *context) const
 {
-	if (modIntf.v->Version() >= 2 && ((VESSEL3*)modIntf.v)->clbkPanelMouseEvent (id, event, mx, my, context))
+	if (modIntf.v && modIntf.v->Version() >= 2 && ((VESSEL3*)modIntf.v)->clbkPanelMouseEvent (id, event, mx, my, context))
 		return true;
 	else if (modIntf.v->Version() >= 1)
 		return ((VESSEL2*)modIntf.v)->clbkPanelMouseEvent (id, event, mx, my);
@@ -5477,7 +5513,7 @@ bool Vessel::PanelMouseEvent (int id, int event, int mx, int my, void *context) 
 
 bool Vessel::LoadVC (int id) const
 {
-	if (modIntf.v->Version() >= 1)
+	if (modIntf.v && modIntf.v->Version() >= 1)
 		return ((VESSEL2*)modIntf.v)->clbkLoadVC (id);
 	else
 		return false;
@@ -5485,7 +5521,7 @@ bool Vessel::LoadVC (int id) const
 
 bool Vessel::VCRedrawEvent (int id, int event, SURFHANDLE surf) const
 {
-	if (modIntf.v->Version() >= 1)
+	if (modIntf.v && modIntf.v->Version() >= 1)
 		return ((VESSEL2*)modIntf.v)->clbkVCRedrawEvent (id, event, surf);
 	else
 		return false;
@@ -5493,7 +5529,7 @@ bool Vessel::VCRedrawEvent (int id, int event, SURFHANDLE surf) const
 
 bool Vessel::VCMouseEvent (int id, int event, Vector &p) const
 {
-	if (modIntf.v->Version() >= 1)
+	if (modIntf.v && modIntf.v->Version() >= 1)
 		return ((VESSEL2*)modIntf.v)->clbkVCMouseEvent (id, event, _V(p.x,p.y,p.z));
 	else
 		return false;
@@ -5568,9 +5604,14 @@ void Vessel::ClearAnimSeqs (void)
 {
 	UINT i;
 	for (i = 0; i < nanimseq; i++)
-		if (animseq[i].ncomp) delete []animseq[i].comp;
-	if (nanimseq)
+		if (animseq[i].ncomp) {
+			delete []animseq[i].comp;
+			animseq[i].comp = NULL;
+		}
+	if (nanimseq) {
 		delete []animseq;
+		animseq = NULL;
+	}
 	nanimseq = 0;
 }
 
@@ -5713,6 +5754,7 @@ bool Vessel::DelAnimation (UINT an)
 				for (UINT k = 0; k < A.comp[j]->nchildren; k++)
 					delete A.comp[j]->children[k];
 				delete []A.comp[j]->children;
+				A.comp[j]->children = NULL;
 			}
 			delete A.comp[j];
 		}
@@ -5736,14 +5778,18 @@ void Vessel::ClearAnimations (bool reset)
 					//for (UINT k = 0; k < anim[i].comp[j]->nchildren; k++)
 					//	delete anim[i].comp[j]->children[k];
 					delete []anim[i].comp[j]->children;
+					anim[i].comp[j]->children = NULL;
 				}
 				delete anim[i].comp[j];
 			}
 			delete []anim[i].comp;
+			anim[i].comp = NULL;
 		}
 	}
-	if (nanim)
+	if (nanim) {
 		delete []anim;
+		anim = NULL;
+	}
 	nanim = 0;
 }
 
@@ -5856,8 +5902,14 @@ bool Vessel::Read (ifstream &scn)
 		res = ParseScenarioEx (scn, vsptr);
 	}
 	SetStateEx (vsptr);
-	if (vs.nfuel) delete []vs.fuel;
-	if (vs.nthruster) delete []vs.thruster;
+	if (vs.nfuel) {
+		delete []vs.fuel;
+		vs.fuel = NULL;
+	}
+	if (vs.nthruster) {
+		delete []vs.thruster;
+		vs.thruster = NULL;
+	}
 	return res;
 }
 
@@ -7559,6 +7611,7 @@ UINT VESSEL::AddAttExhaustRef (const VECTOR3 &pos, const VECTOR3 &dir, double ws
 	if (n) {
 		memcpy (tmp, vessel->oexhaust, n*sizeof(OldExhaustSpec*));
 		delete []vessel->oexhaust;
+		vessel->oexhaust = NULL;
 	}
 	tmp[n] = new OldExhaustSpec; TRACENEW
 	tmp[n]->ref = MakeVector(pos);

@@ -91,6 +91,7 @@ void DlgVishelper::Clear ()
 		for (int i = 0; i < nTab; i++)
 			delete pTab[i];
 		delete []pTab;
+		pTab = NULL;
 		nTab = 0;
 	}
 }

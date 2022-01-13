@@ -65,6 +65,7 @@ void PlanetarySystem::Clear ()
 					for (k = 0; k < 2; k++)
 						if (labellist[i].list[j].label[k]) delete []labellist[i].list[j].label[k];
 				delete []labellist[i].list;
+				labellist[i].list = NULL;
 			}
 		}
 		delete []labellist;
@@ -75,23 +76,28 @@ void PlanetarySystem::Clear ()
 	if (nbody) {
 		for (k = 0; k < nbody; k++) delete body[k]; // delete actual objects
 		delete []body; // delete list
+		body = NULL;
 		nbody = 0;
 	}
 	if (nstar) {
 		delete []star;
+		star = NULL;
 		nstar = 0;
 	}
 	if (nplanet) {
 		delete []planet;
+		planet = NULL;
 		nplanet = 0;
 	}
 	if (ngrav) {
 		delete []grav;
+		grav = NULL;
 		ngrav = 0;
 	}
 	if (nsupervessel) {
 		for (DWORD k = 0; k < nsupervessel; k++) delete supervessel[k];
 		delete []supervessel;
+		supervessel = NULL;
 		nsupervessel = 0;
 	}
 }
@@ -429,7 +435,10 @@ bool PlanetarySystem::DelBody (Body *_body)
 	for (i = 0; i < nbody; i++)
 		if (body[i] == _body) break;
 	if (i == nbody) return false;
-	delete body[i]; // delete actual body
+	delete []body[i]; // delete actual body
+	body[i]->s0 = NULL;
+	body[i]->s1 = NULL;
+	body[i] = NULL;
 	if (nbody > 1) {
 		tmp = new Body*[nbody-1]; TRACENEW
 		for (j = k = 0; j < nbody; j++)

@@ -1365,6 +1365,7 @@ void Camera::ClearPresets ()
 		for (DWORD i = 0; i < npreset; i++)
 			delete preset[i];
 		delete []preset;
+		preset = NULL;
 		npreset = 0;
 	}
 }

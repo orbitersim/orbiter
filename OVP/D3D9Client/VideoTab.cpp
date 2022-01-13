@@ -1044,6 +1044,7 @@ void VideoTab::InitCreditsDialog(HWND hWnd)
 	else LogErr("Failed to read a file \\Modules\\D3D9Client\\Credits.rtf Error=%u",GetLastError());
 
 	delete []credits;
+	credits = NULL;
 
 	CloseHandle(hFile);
 

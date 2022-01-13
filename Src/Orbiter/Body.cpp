@@ -76,8 +76,14 @@ Body::Body(char* fname)
 
 Body::~Body ()
 {
-	if (name) delete []name;
-	if (filename) delete[]filename;
+	if (name) {
+		delete []name;
+		name = NULL;
+	}
+	if (filename) {
+		delete []filename;
+		filename = NULL;
+	}
 }
 
 void Body::Setup ()

@@ -448,6 +448,7 @@ void HazeManager2::CreateRingBuffers()
 	}
 
 	delete []pVrt;
+	pVrt = NULL;
 }
 
 // -----------------------------------------------------------------------
@@ -484,6 +485,7 @@ void HazeManager2::CreateSkydomeBuffers(int index)
 	}
 
 	delete []pVrt;
+	pVrt = NULL;
 }
 
 // -----------------------------------------------------------------------

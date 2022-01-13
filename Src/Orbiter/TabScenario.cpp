@@ -393,6 +393,7 @@ void Html2Text (char **pbuf)
 	};
 	std::string str(buf);
 	delete []buf;
+	buf = NULL;
 	for (i = 0; i < ntagpair; i++) {
 		while ((p = str.find (tagpair[i].src)) != std::string::npos)
 			str.replace (p, strlen(tagpair[i].src), tagpair[i].tgt, strlen(tagpair[i].tgt));
@@ -468,6 +469,7 @@ void Text2Html (char **pbuf)
 	};
 	std::string str(buf);
 	delete []buf;
+	buf = NULL;
 	for (i = 0; i < nsympair; i++) {
 		p = 0;
 		while ((p = str.find (sympair[i].src, p)) != std::string::npos) {
@@ -559,7 +561,10 @@ void orbiter::ScenarioTab::ScenarioChanged ()
 					have_info = true;
 				}
 			}
-			if (buf) delete []buf;
+			if (buf) {
+				delete []buf;
+				buf = NULL;
+			}
 		}
 	}
 
@@ -694,6 +699,7 @@ INT_PTR CALLBACK orbiter::ScenarioTab::SaveProc (HWND hWnd, UINT uMsg, WPARAM wP
 				return TRUE;
 			}
 			delete []desc;
+			desc = NULL;
 			// fall through
 		case IDCANCEL:
 			EndDialog (hWnd, TRUE);

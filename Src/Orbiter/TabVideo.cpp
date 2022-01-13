@@ -36,8 +36,10 @@ orbiter::DefVideoTab::DefVideoTab (const LaunchpadDialog *lp): LaunchpadTab (lp)
 
 orbiter::DefVideoTab::~DefVideoTab()
 {
-	if (strInfo)
-		delete[]strInfo;
+	if (strInfo) {
+		delete []strInfo;
+		strInfo = NULL;
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -228,7 +230,7 @@ void orbiter::DefVideoTab::SelectClientIndex(UINT idx)
 void orbiter::DefVideoTab::SetInfoString(PSTR str)
 {
 	if (strInfo)
-		delete[]strInfo;
+		delete []strInfo;
 	strInfo = new char[strlen(str) + 1];
 	strcpy(strInfo, str);
 }

@@ -75,8 +75,11 @@ orbiter::LaunchpadDialog::~LaunchpadDialog ()
 	if (ntab) {
 		for (i = 0; i < ntab; i++) delete Tab[i];
 		delete []Tab;
+		Tab = NULL;
 		delete []pagidx;
+		pagidx = NULL;
 		delete []tabidx;
+		tabidx = NULL;
 	}
 	DestroyWindow (hWait);
 	DeleteObject (hDlgBrush);

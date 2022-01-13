@@ -355,6 +355,7 @@ char* _fgets(char* cbuf, int num, FILE* stream, bool keepOneSpace)
 
 	if(fgets(temp, num, stream) == NULL) {
 		delete []temp;
+		temp = NULL;
 		return NULL;
 	}
 

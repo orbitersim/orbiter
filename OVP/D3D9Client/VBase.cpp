@@ -142,8 +142,10 @@ vBase::vBase (OBJHANDLE _hObj, const Scene *scene, vPlanet *_vP): vObject (_hObj
 			}
 		}
 		tilemesh = new D3D9Mesh(ntile, (const MESHGROUPEX**)grps, texs);	
-		delete []grps; 
+		delete []grps;
+		grps = NULL;
         delete []texs;
+		texs = NULL;
 	}
 
 	// load meshes for generic structures
@@ -240,10 +242,12 @@ vBase::~vBase ()
 	if (nstructure_bs) {
 		for (i = 0; i < nstructure_bs; i++)	delete structure_bs[i];
 		delete []structure_bs;
+		structure_bs = NULL;
 	}
 	if (nstructure_as) {
 		for (i = 0; i < nstructure_as; i++)	delete structure_as[i];
 		delete []structure_as;
+		structure_as = NULL;
 	}
 
 	if (runwayLights) {
@@ -252,6 +256,7 @@ vBase::~vBase ()
 			SAFE_DELETE(runwayLights[i]);
 		}
 		delete[] runwayLights;
+		runwayLights = NULL;
 	}
 
 	if (taxiLights) {

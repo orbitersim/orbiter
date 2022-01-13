@@ -352,6 +352,12 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	delete []macro[3].Definition;
 	delete []macro[4].Definition;
 	delete []macro[5].Definition;
+	macro[0].Definition = NULL;
+	macro[1].Definition = NULL;
+	macro[2].Definition = NULL;
+	macro[3].Definition = NULL;
+	macro[4].Definition = NULL;
+	macro[5].Definition = NULL;
 
 	if (errors) {
 		LogErr("Effect Error: %s",(char*)errors->GetBufferPointer());

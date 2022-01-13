@@ -120,8 +120,11 @@ void VideoTab::DeviceChanged (D3D7Enum_DeviceInfo *dev)
 	for (i = 0; i < 2; i++)
 		EnableWindow (GetDlgItem (hVid, IDC_VID_FULL+i), dev->bDesktopCompatible);
 	delete []wres;
+	wres = NULL;
 	delete []hres;
+	hres = NULL;
 	delete []bpp;
+	bpp = NULL;
 }
 
 // =======================================================================
