@@ -322,7 +322,7 @@ void slingshot::graphupdate(Sketchpad *sketchpad, Graph *graph,basefunction *bas
 
 void minorejectplan::wordupdate(Sketchpad *sketchpad, int width, int height, basefunction *base)
 {
-	char buffer[20];
+	char buffer[20]="";
 	int linespacing=height/24;
 	int pos=16*linespacing;
 	int len;

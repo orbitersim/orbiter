@@ -219,7 +219,7 @@ void transxstate::savecurrent(FILEHANDLE scn)
 	if (saveflag) return;
 	saveflag=true;
 	//Save each function
-	char buffer[20];//Too big, but who cares!
+	char buffer[20]="";//Too big, but who cares!
 	strcpy(buffer,"FNumber");
 	oapiWriteScenario_int(scn,buffer,baselist.size());
 	std::deque<class basefunction*>::iterator a;
@@ -492,7 +492,7 @@ bool transxstate::doupdate(Sketchpad *sketchpad, int tw, int th,unsigned int cur
 		cvarfunction->processvisiblevars();//Update any visibility changes
 		cfunction->doupdate(sketchpad,tw,th,currview);
 	}
-	char buffer[20];
+	char buffer[20]="";
 	int length=snprintf(buffer,sizeof(buffer)-1,"Stage %i:%i",curfunction,(int)baselist.size());
 	sketchpad->Text(tw/2,0,buffer,length);
 	length=sprintf(buffer,"Vars Stage %i",curvarfunction);

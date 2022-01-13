@@ -153,7 +153,7 @@ bool SelectVariableBody(void *id, char *str, void *usrdata)
 
 void TextShow(Sketchpad *sketchpad,const char *label,int wpos,int hpos,OBJHANDLE handle)
 {
-	char buffer[30],buffer2[20];
+	char buffer[30]="", buffer2[20]="";
 	oapiGetObjectName(handle,buffer2,20);
 	strcpy(buffer,label);
 	strcat(buffer,buffer2);
@@ -184,7 +184,7 @@ void TextForm(char *buffer,const char *label,double value)
 		index[0]='T';
 	}
 	strcpy(buffer,label);
-	char buffer2[20];
+	char buffer2[20]="";
 	sprintf(buffer2,"%.4g",value);
 	strcat(buffer2,index);
 	strcat(buffer,buffer2);
@@ -193,7 +193,7 @@ void TextForm(char *buffer,const char *label,double value)
 
 void TextShow(Sketchpad *sketchpad,const char *label, int wpos, int hpos, double value)
 {
-	char buffer[30];
+	char buffer[30]="";
 	TextForm(buffer,label,value);
 
 	int length=strlen(buffer);

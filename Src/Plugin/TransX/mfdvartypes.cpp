@@ -199,7 +199,7 @@ void MFDvarmoon::ch_adjmode()
 void MFDvarmoon::showadjustment(Sketchpad *sketchpad, int width, int line) const
 // This shows the mode of adjustment currently in force for the current MFDvariable
 {
-	char buffer[20];
+	char buffer[20]="";
 	int ypos=int(7*line);
 	int xpos=int(width/2);
 	int length;
@@ -286,7 +286,7 @@ bool MFDvarmoon::validate()
 
 bool MFDvarmoon::show(Sketchpad *sketchpad, int width, int line)
 {
-	char buffer[20];
+	char buffer[20]="";
 	if (target!=NULL)
 	{
 		oapiGetObjectName(target,buffer,20);
@@ -337,7 +337,7 @@ void MFDvarfloat::init(MFDvarhandler *vars,int viewmode1,int viewmode2,char *vna
 
 bool MFDvarshiplist::show(Sketchpad *sketchpad,int width,int line)
 {
-	char buffer[20];
+	char buffer[20]="";
 	liststring *entry=static_cast<liststring*>(iterator->current());//It is this type
 	if (entry==NULL)
 		strcpy(buffer,"New Plan");
@@ -374,7 +374,7 @@ void MFDvarshiplist::dec_variable()
 
 bool MFDvarfloat::show(Sketchpad *sketchpad, int width, int line)
 {
-	char buffer[20];
+	char buffer[20]="";
 	int linecentre=(int) width/2;
 	int linepos= 6*line;
 	strcpy(buffer,name);
@@ -433,7 +433,7 @@ void MFDvarfloat::chm_adjmode()
 void MFDvarfloat::showadjustment(Sketchpad *sketchpad, int width, int line) const
 // This shows the mode of adjustment currently in force for the current MFDvariable
 {
-	char buffer[MAX_NAME_LENGTH];
+	char buffer[MAX_NAME_LENGTH]="";
 	int ypos=int(7*line);
 	int xpos=int(width/2);
 	int length;
@@ -550,7 +550,7 @@ MFDvarfloat::~MFDvarfloat()
 
 bool MFDsemiintdiscrete::show(Sketchpad *sketchpad, int width, int line)
 {
-	char buffer[20];
+	char buffer[20]="";
 	double temp=value*0.5;
 	sprintf(buffer,"%.1f",temp);
 	showgeneric(sketchpad, width, line,buffer);
@@ -559,7 +559,7 @@ bool MFDsemiintdiscrete::show(Sketchpad *sketchpad, int width, int line)
 
 bool MFDvarMJD::show(Sketchpad *sketchpad, int width, int line)
 {
-	char buffer[20];
+	char buffer[20]="";
 	sprintf(buffer,"%.4f", value);
 	showgeneric(sketchpad, width, line, buffer);
 	return true;
@@ -668,7 +668,7 @@ void MFDvarangle::init(MFDvarhandler *vars,char *vname, bool vloop)
 
 bool MFDvarangle::show(Sketchpad *sketchpad, int width, int line)
 {
-	char buffer[20];
+	char buffer[20]="";
 	sprintf(buffer,"%.4f'", value/PI*180);
 	showgeneric(sketchpad, width,line,buffer);
 	return true;
