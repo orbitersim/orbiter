@@ -16,14 +16,14 @@ struct ElevationTile {
 	~ElevationTile() { if (data) delete []data; }
 	void Clear() { if (data) { delete[]data; data = 0; } last_access = 0.0; }
 	INT16 *data;
-	int lvl, tgtlvl;
-	double latmin, latmax;
-	double lngmin, lngmax;
-	double emin, emax;
-	double last_access;
-	int lat0, lng0;
-	bool celldiag;
-	int nmlidx;
+	int lvl = 0, tgtlvl = 0;
+	double latmin = 0, latmax = 0;
+	double lngmin = 0, lngmax = 0;
+	double emin = 0, emax = 0;
+	double last_access = 0;
+	int lat0 = 0, lng0 = 0;
+	bool celldiag = false;
+	int nmlidx = 0;
 	Vector normal;
 };
 

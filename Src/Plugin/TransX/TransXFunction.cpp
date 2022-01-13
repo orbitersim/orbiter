@@ -113,14 +113,14 @@ void TransXFunction::findfinish(FILEHANDLE scn)
 
 void TransXFunction::savedouble(FILEHANDLE scn, double savenumber)
 {
-	char buffer[80];
+	char buffer[80]="";
 	sprintf(buffer," %.12g",savenumber);
 	oapiWriteScenario_string(scn,"Double",buffer);
 }
 
 void TransXFunction::savevector(FILEHANDLE scn, VECTOR3 &vector)
 {
-	char buffer[100];
+	char buffer[100]="";
 	sprintf(buffer," %.12g %.12g %.12g",vector.x,vector.y,vector.z);
 	oapiWriteScenario_string(scn,"Vector",buffer);
 }

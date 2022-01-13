@@ -81,7 +81,7 @@ void MFDvariable::setcmdnugget(cmdnugget *nugget)
 bool MFDvariable::showgeneric(Sketchpad *sketchpad,int width,int line, char *inbuff)
 {
 // This is a helper function that formats output to the MFD screen
-	char buffer[MAX_NAME_LENGTH];
+	char buffer[MAX_NAME_LENGTH]="";
 	int linecentre=(int) width/2;
 	int linepos= 6*line;
 	int inlength=strlen(inbuff);

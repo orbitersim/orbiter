@@ -943,7 +943,7 @@ void basefunction::doupdate(Sketchpad *sketchpad,int tw, int th,int viewmode)
 					TextShow(sketchpad,"Focus ApD:", wpos,hpos, craft.getapodistance());
 				}
 				hpos+=linespacing;
-				char buffer[20];
+				char buffer[20]="";
 				int length=snprintf(buffer, sizeof(buffer) - 1, "Pe MJD:   %.4f",(craft.getpedeltatime()+craft.gettimestamp())/SECONDS_PER_DAY+simstartMJD);
 				sketchpad->Text(wpos,hpos,buffer, length);
 				hpos+=linespacing;

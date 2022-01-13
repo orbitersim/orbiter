@@ -35,7 +35,7 @@ void MFDvarhandler::addtolist(MFDvariable *item)
 
 void MFDvarhandler::saveallvariables(FILEHANDLE scn)
 {
-	char buffer[80];
+	char buffer[80]="";
 	class dblliter *iterator=listhead.getiterator();
 	class MFDvariable *pointer=static_cast<MFDvariable*>(iterator->front());
 	while (pointer!=NULL)
