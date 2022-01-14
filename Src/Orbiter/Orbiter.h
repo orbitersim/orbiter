@@ -27,8 +27,12 @@ class OrbiterServer;
 class OrbiterClient;
 class PlaybackEditor;
 class MemStat;
-class DDEServer;
 class ImageIO;
+
+#ifndef NODDESERVER
+class DDEServer;
+#endif
+
 namespace orbiter {
 	class ConsoleNG;
 	class LaunchpadDialog;
@@ -409,6 +413,7 @@ private:
 	orbiter::ConsoleNG* m_pConsole;    // The console window opened when Orbiter server is launched without a graphics client
 	DInput         *pDI;
 	HINSTANCE       hInst;         // orbiter instance handle
+	HWND            hQueueWnd;     // message queue handle
 	HWND            hRenderWnd;    // render window handle (NULL if no render support)
 	HWND            hBk;           // background window handle (demo mode only)
 	BOOL            bRenderOnce;   // flag for single frame render request
@@ -480,10 +485,14 @@ private:
 	DWORD ncustomcmd;
 	friend class DlgFunction;
 
+#ifndef NODDESERVER
 	// DDE interface
 	DDEServer *ddeserver;
 	void DDEInit (HWND hClient, ATOM topic);
 	void DDERequest (HWND hClient, int format, ATOM item);
+#else
+	void *ddeserver;
+#endif
 
 public:
 #ifndef INLINEGRAPHICS

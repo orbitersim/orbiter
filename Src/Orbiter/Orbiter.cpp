@@ -40,7 +40,6 @@
 #include "Dialogs.h"
 #include "DialogWin.h"
 #include "Script.h"
-#include "ddeserver.h"
 #include "Memstat.h"
 #include "CustomControls.h"
 #include "Help.h"
@@ -49,6 +48,10 @@
 #include "DlgCtrl.h"
 #include "GraphicsAPI.h"
 #include "ConsoleManager.h"
+
+#ifndef NODDESERVER
+#include "ddeserver.h"
+#endif
 
 #ifdef INLINEGRAPHICS
 #include "OGraphics.h"
@@ -515,11 +518,12 @@ VOID Orbiter::CloseApp (bool fast_shutdown)
 int Orbiter::GetVersion () const
 {
 	static int v = 0;
+	int n;
 	if (!v) {
 		static char *mstr[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 		char ms[32];
 		int day, month, year;
-		sscanf (__DATE__, "%s%d%d", ms, &day, &year);
+		n = sscanf (__DATE__, "%s%d%d", ms, &day, &year);
 		for (month = 0; month < 12; month++)
 			if (!_strnicmp (ms, mstr[month], 3)) break;
 		v = (year%100)*10000 + (month+1)*100 + day;
@@ -773,13 +777,17 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 	//snote_playback = new ScreenNote (this, viewW, viewH);
 #endif // INLINEGRAPHICS
 
-	ddeserver = new DDEServer (hRenderWnd);
-
 	bSession = true;
 	bVisible = (hRenderWnd != NULL);
 	bRunning = bRequestRunning = true;
 	bRenderOnce = FALSE;
 	g_bForceUpdate = true;
+
+#ifndef NODDESERVER
+	if (hRenderWnd) hQueueWnd = hRenderWnd; // TODO: Create window without render
+	if (hQueueWnd)  ddeserver = new DDEServer(hQueueWnd);
+#endif
+
 #ifdef UNDEF
 	if (pCfg->CfgLogicPrm.bStartPaused) {
 		BeginTimeStep (true);
@@ -2713,12 +2721,14 @@ LRESULT Orbiter::MsgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         break;
 
+#ifndef NODDESERVER
 		// DDE dynamic data exchange support
 	case WM_DDE_INITIATE:
 	case WM_DDE_REQUEST:
 	case WM_DDE_ACK:
 		if (ddeserver) ddeserver->MsgProc (hWnd, uMsg, wParam, lParam);
 		break;
+#endif
 
 	case WM_NCHITTEST:
         // Prevent the user from selecting the menu in fullscreen mode
@@ -2850,60 +2860,6 @@ void Orbiter::CloseDialog (HWND hDlg)
 HWND Orbiter::IsDialog (HINSTANCE hInstance, DWORD resId)
 {
 	return (pDlgMgr ? pDlgMgr->IsEntry (hInstance, resId) : NULL);
-}
-
-//-----------------------------------------------------------------------------
-// DDE (dynamic data exchange) interface
-//-----------------------------------------------------------------------------
-void Orbiter::DDEInit (HWND hClient, ATOM topic)
-{
-	char cbuf[256];
-	if (topic) {
-		GlobalGetAtomName (topic, cbuf, 256);
-		if (!_stricmp (cbuf, "data")) {
-			ATOM app = GlobalAddAtom ("orbiter");
-			ATOM tpc = GlobalAddAtom ("data");
-			SendMessage (hClient, WM_DDE_ACK, (WPARAM)hRenderWnd, MAKELPARAM (app, tpc));
-			GlobalDeleteAtom (app);
-			GlobalDeleteAtom (tpc);
-		}
-	}
-}
-
-void Orbiter::DDERequest (HWND hClient, int format, ATOM item)
-{
-	char citem[256], cbuf[256]; cbuf[0] = '\0';
-	GlobalGetAtomName (item, citem, 256);
-	if (!_stricmp (citem, "simtime")) {
-		sprintf (cbuf, "%f", td.SimT0);
-	} else if (!_stricmp (citem, "altitude")) {
-		const SurfParam *sp = g_focusobj->GetSurfParam ();
-		if (sp) sprintf (cbuf, "%f", sp->alt);
-	} else if (!_stricmp (citem, "airspeed")) {
-		const SurfParam *sp = g_focusobj->GetSurfParam ();
-		if (sp) sprintf (cbuf, "%f", sp->airspd);
-	} else if (!_stricmp (citem, "cpos")) {
-		const CelestialBody *cbody = g_focusobj->ElRef();
-		if (cbody) {
-			Vector p (g_focusobj->GPos() - cbody->GPos());
-			sprintf (cbuf, "%g %g %g", p.x, p.y, p.z);
-		}
-	}
-	if (cbuf[0]) { // request can be served
-		HGLOBAL hData = GlobalAlloc (GMEM_MOVEABLE | GMEM_DDESHARE, (LONG)sizeof(DDEDATA) + lstrlen(cbuf) + 1);
-		DDEDATA *pData = (DDEDATA*)GlobalLock (hData);
-		pData->cfFormat = CF_TEXT;
-		pData->fResponse = 1;
-		pData->fRelease = 1;
-		pData->fAckReq = 0;
-		lstrcpy ((LPSTR)pData->Value, (LPSTR)cbuf);
-		GlobalUnlock (hData);
-		ATOM a = GlobalAddAtom (citem);
-		LPARAM lParam = PackDDElParam (WM_DDE_ACK, (UINT_PTR)hData, a);
-		PostMessage (hClient, WM_DDE_DATA, (WPARAM)hRenderWnd, lParam);
-	} else {       // request can't be served
-		// to do
-	}
 }
 
 //=============================================================================
