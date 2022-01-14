@@ -45,7 +45,7 @@ protected:
 	// Send a vessel list to hClient
 	void VesselList (HWND hClient);
 
-	DDEDATA *AllocDatablock (DWORD bufsize);
+	DDEDATA *AllocDatablock (size_t bufsize);
 
 	bool isVessel (Vessel *v);
 	bool isBody (Body *b);

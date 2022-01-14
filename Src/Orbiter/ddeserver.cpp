@@ -58,7 +58,7 @@ void DDEServer::MsgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 bool DDEServer::DDEInit (HWND hServer, HWND hClient, ATOM app, ATOM topic)
 {
-	char cbuf[256];
+	char cbuf[256] = "";
 
 	if (aApp) {
 		GlobalGetAtomName (app, cbuf, 256);
@@ -76,8 +76,8 @@ bool DDEServer::DDEInit (HWND hServer, HWND hClient, ATOM app, ATOM topic)
 
 bool DDEServer::DDERequest (HWND hServer, HWND hClient, WORD fmt, ATOM item)
 {
-	int i;
-	char cbuf[256];
+	int i, n;
+	char cbuf[256] = "";
 
 	// 1. check for static request strings
 	for (i = 0; i < nitem; i++)
@@ -91,22 +91,25 @@ bool DDEServer::DDERequest (HWND hServer, HWND hClient, WORD fmt, ATOM item)
 	// 2. check for dynamic request strings
 	GlobalGetAtomName (item, cbuf, 256);
 	if (!strncmp (cbuf, "get_vesselid", 12)) {
-		int idx;
-		sscanf(cbuf+13, "%d", &idx);
+		int idx = 0;
+		n = sscanf(cbuf+13, "%i", &idx);
 		idx--; // switch from 1-based to 0-based
 		get_vesselid (hClient, item, idx);
+		return true;
+	} else if (!strncmp(cbuf, "get_vesselcount", 15)) {
+		get_vesselcount(hClient, item);
 		return true;
 	} else if (!strncmp (cbuf, "get_objid", 9)) {
 		if (get_objid (hClient, item, cbuf+10))
 			return true;
 	} else if (!strncmp (cbuf, "get_name", 8)) {
-		int id;
-		sscanf(cbuf+9, "%d", &id);
+		LONG_PTR id = 0;
+		n = sscanf(cbuf+9, "%llu", &id);
 		if (get_name (hClient, item, id))
 			return true;
 	} else if (!strncmp (cbuf, "get_size", 8)) {
-		int id;
-		sscanf (cbuf+9, "%d", &id);
+		LONG_PTR id = 0;
+		n = sscanf (cbuf+9, "%llu", &id);
 		if (get_size (hClient, item, id))
 			return true;
 	} else if (!strncmp (cbuf, "get_state", 9)) {
@@ -114,8 +117,8 @@ bool DDEServer::DDERequest (HWND hServer, HWND hClient, WORD fmt, ATOM item)
 			return true;
 	}
 
-	DDEACK ddeack = {0, 0, 0, 0}; // bAppReturnCode = 0x0000 -> Normal
-	SendMessage (hClient, WM_DDE_ACK, (WPARAM)hServer, PackDDElParam(WM_DDE_ACK, *(UINT*)&ddeack, item));
+	// PackDDElParam(WM_DDE_ACK, 0x0000 -> negative ACK | 0x8000 -> positive ACK, item)
+	PostMessage(hClient, WM_DDE_ACK, (WPARAM)hServer, PackDDElParam(WM_DDE_ACK, 0x8000, item));
 	return false;
 }
 
@@ -139,13 +142,21 @@ bool DDEServer::AddClient (HWND hclient)
 	return true;
 }
 
-DDEDATA *DDEServer::AllocDatablock (DWORD bufsize)
+DDEDATA *DDEServer::AllocDatablock (size_t bufsize)
 {
-	DDEDATA *ddedata = (DDEDATA*)GlobalAlloc (0, sizeof(DDEDATA)+bufsize);
-	memset (ddedata, 0, sizeof(DDEDATA)+bufsize);
+	HGLOBAL hData;
+	DDEDATA* ddedata;
+
+	if (!(hData = GlobalAlloc(GMEM_MOVEABLE, sizeof(DDEDATA) + bufsize + 3))) return false;
+	if (!(ddedata = (DDEDATA FAR*) GlobalLock(hData))) { GlobalFree(hData); return false; }
+
 	ddedata->fResponse = TRUE;
-	ddedata->fRelease = TRUE;
-	ddedata->cfFormat = CF_TEXT;
+	ddedata->fRelease  = TRUE;
+	ddedata->fAckReq   = FALSE;
+	ddedata->cfFormat  = CF_TEXT;
+
+	memset(ddedata->Value, 0x00, bufsize + 2);
+
 	return ddedata;
 }
 
@@ -176,7 +187,7 @@ void DDEServer::get_vesselcount (HWND hClient, ATOM item)
 	DWORD nvessel = (g_psys ? g_psys->nVessel() : 0);
 	DDEDATA *ddedata = AllocDatablock (256);
 	char *cbuf = (char*)ddedata->Value;
-	sprintf (cbuf, "%d", nvessel);
+	sprintf (cbuf, "%i", nvessel);
 	PostMessage (hClient, WM_DDE_DATA, (WPARAM)hServer, PackDDElParam(WM_DDE_DATA,(UINT_PTR)ddedata,item));
 }
 
@@ -191,7 +202,7 @@ void DDEServer::get_vesselid (HWND hClient, ATOM item, DWORD idx)
 	}
 	DDEDATA *ddedata = AllocDatablock (32);
 	char *cbuf = (char*)ddedata->Value;
-	sprintf (cbuf, "%p", id);
+	sprintf (cbuf, "%llu", (LONG_PTR)id);
 	PostMessage (hClient, WM_DDE_DATA, (WPARAM)hServer, PackDDElParam(WM_DDE_DATA,(UINT_PTR)ddedata,item));
 }
 
@@ -200,10 +211,10 @@ bool DDEServer::get_objid (HWND hClient, ATOM item, char *fmtstr)
 	if (!g_psys) return false;
 	
 	Body *id = 0;
-	int idx;
+	int  idx = 0;
 	DWORD n;
 	// check for index
-	n = (DWORD)sscanf (fmtstr, "%d", &idx);
+	n = (DWORD)sscanf (fmtstr, "%i", &idx);
 	if (n) {
 		DWORD nobj = g_psys->nObj();
 		if (n < nobj)
@@ -217,7 +228,7 @@ bool DDEServer::get_objid (HWND hClient, ATOM item, char *fmtstr)
 	if (id) {
 		DDEDATA *ddedata = AllocDatablock(32);
 		char *cbuf = (char*)ddedata->Value;
-		sprintf (cbuf, "%p", id);
+		sprintf (cbuf, "%llu", (LONG_PTR)id);
 		PostMessage (hClient, WM_DDE_DATA, (WPARAM)hServer, PackDDElParam(WM_DDE_DATA,(UINT_PTR)ddedata,item));
 		return true;
 	} else {
@@ -259,7 +270,7 @@ bool DDEServer::get_state (HWND hClient, ATOM item, char *fmtstr)
 	bool mapequ = false;
 	char *c;
 	c = strtok (fmtstr,",");
-	n = sscanf(c, "%lld", &id);
+	n = sscanf(c, "%llu", &id);
 	if (!n) return false;
 
 	// Currently, this function is only defined for vessels
