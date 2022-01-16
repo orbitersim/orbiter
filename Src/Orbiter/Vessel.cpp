@@ -7695,7 +7695,7 @@ void VESSEL::ShiftCG (const VECTOR3 &shift)
 	vessel->ShiftDocks (vs);
 	vessel->ShiftLightEmitters (nshift);
 	vessel->campos.Set (vessel->campos+vs);
-	if (g_pane) g_pane->ShiftVC (vs);
+	if ((g_pane) && (g_focusobj == vessel)) g_pane->ShiftVC (vs);
 	ShiftCentreOfMass (shift);
 }
 
