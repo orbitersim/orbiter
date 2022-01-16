@@ -443,7 +443,7 @@ bool CameraMFD::Update(oapi::Sketchpad *pSkp)
 
 	hShell->Title (pSkp, text);
 
-	sprintf_s(text, 256, "[%s] FOV=%0.0f° Ofs=%2.2f[m]", paci[bParent], fov*2.0, offset);
+	sprintf_s(text, 256, "[%s] FOV=%0.0f%c Ofs=%2.2f[m]", paci[bParent], fov*2.0, (char)176/*°*/, offset);
 
 	pSkp->Text(10, H - tbgh, text, lstrlen(text));
 	

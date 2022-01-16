@@ -443,7 +443,9 @@ namespace oapi {
 	*/
 	typedef union FMATRIX4 
 	{
-		FMATRIX4() {}
+		FMATRIX4() {
+			m11 = m12 = m13, m14 = m21 = m22 = m23 = m24 = m31 = m32 = m33 = m34 = m41 = m42 = m43 = m44 = 0;
+		}
 
 		FMATRIX4(float m11, float m12, float m13, float m14,
 				 float m21, float m22, float m23, float m24,
