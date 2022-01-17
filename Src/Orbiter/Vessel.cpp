@@ -4139,7 +4139,7 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 	E_comp = 0.0;  // compression energy
 
 	int i, j;
-	double alt, tdymin;
+	double alt = 0, tdymin = 0;
 	static int *tidx = new int[3];
 	static double *tdy = new double[3];
 	static double *fn = new double[3];
@@ -4191,8 +4191,8 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 		flat = new double[ntdy];
 	}
 
-	ElevationManager *emgr = ((Planet*)proxybody)->ElevMgr();
-	int reslvl;
+	ElevationManager* emgr = (cbody->Type() == OBJTP_PLANET ? ((Planet*)cbody)->ElevMgr() : 0);
+	int reslvl = 1;
 	if (emgr) reslvl = (int)(32.0-log(max(alt,100))*LOG2);
 
 	Vector shift = tmul(ps.R, s->pos - ps.pos);

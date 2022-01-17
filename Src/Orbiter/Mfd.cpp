@@ -1215,10 +1215,12 @@ void UpdateEllipse (int cntx, int cnty, double scale,
 void UpdateHyperbola (int cntx, int cnty, int IW, int IH, double scale,
 	const Elements *el, const Matrix &rot, const Matrix &irot, oapi::IVECTOR2 *pt)
 {
+	if (isnan(scale) || scale == 0) return;
+
 	int i;
 	int idx = ELNH-1;
 	Vector asc, desc, v[ELN-1];
-	double phi, cphi, sphi, r, x, y, len;
+	double phi, cphi, sphi, r, x, y, len = 1;
 	double p = el->PeDist()*(1.0+el->e); // parameter of polar equation
 	double radmax = 1.5*cntx/scale;
 	double phimax = acos ((p/radmax - 1.0)/el->e);

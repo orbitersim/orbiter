@@ -414,7 +414,7 @@ void Instrument_Surface::UpdateTapes ()
 	g_pOrbiter->FillSurface (tapes1, tapecol);
 	g_pOrbiter->FillSurface (tapes2, tapecol);
 
-	char cbuf[6];
+	char cbuf[20] = "";
 	int i, y, xofs, tcki;
 	int dy1 = (hrzr*2)/5, dy2 = (accr*2)/5;
 	RECT r = {0, 0, cw, 0};

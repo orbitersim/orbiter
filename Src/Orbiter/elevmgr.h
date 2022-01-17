@@ -55,10 +55,10 @@ protected:
 
 private:
 	const CelestialBody *cbody;
-	int maxlvl;
-	int mode;  // elevation mode (0=no elevation, 1=linear interpolation, 2=cubic interpolation)
-	double elev_res;  // elevation resolution [m]
-	DWORD tilesource; // bit 1: try loading from cache, bit 2: try loading from archive
+	int maxlvl = 0;
+	int mode = 0;  // elevation mode (0=no elevation, 1=linear interpolation, 2=cubic interpolation)
+	double elev_res = 1;  // elevation resolution [m]
+	DWORD tilesource = 2; // bit 1: try loading from cache, bit 2: try loading from archive
 	ZTreeMgr *treeMgr[5];
 };
 
