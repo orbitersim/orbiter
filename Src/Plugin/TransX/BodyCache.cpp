@@ -1,4 +1,9 @@
-/* Copyright (c) 2007 Duncan Sharpe, Steve Arch
+/* Copyright © 2007-9 Steve Arch, Duncan Sharpe
+** Copyright © 2011 atomicdryad - 'ENT' button & Pen allocation fix
+** Copyright © 2013 Dimitris Gatsoulis (dgatsoulis) - Hacks
+** Copyright © 2013 Szymon Ender (Enjo) - Auto-Min™, Auto-Center™ & other hacks
+**
+** X11 License ("MIT License")
 **
 ** Permission is hereby granted, free of charge, to any person obtaining a copy
 ** of this software and associated documentation files (the "Software"), to deal
@@ -18,34 +23,37 @@
 ** OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ** THE SOFTWARE.*/
 
-#ifndef __TRANSX_H
-#define __TRANSX_H
-#include "OrbiterAPI.h"
-#include "graph.h"
+#include "BodyCache.h"
+#include "BodyProvider.h"
 
-class TransxMFD: public MFD2 {
-public:
-	TransxMFD (DWORD w, DWORD h, VESSEL *Vessel, UINT mfd);
-	~TransxMFD();
-	char *ButtonLabel (int bt);
-	int  ButtonMenu (const MFDBUTTONMENU **menu) const;
-	bool ConsumeKeyImmediate(char *kstate);
-	bool ConsumeButton(int bt, int event);
-	bool ConsumeKeyBuffered(DWORD key);
-	bool Update (oapi::Sketchpad *sketchpad);
-	void WriteStatus(FILEHANDLE scn) const;
-	void ReadStatus(FILEHANDLE scn);
-	static OAPI_MSGTYPE MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam);
+BodyCache::BodyCache()
+: m_handle(NULL)
+, m_gbody(NULL)
+{}
 
-	int getwidth();
-	int getheight();
-	static int GetMfdCount(){return MfdCount;}
-	bool isvalid() { return valid;};
-private:
-	class viewstate *viewstate;// Pointer to viewstate
-	static int MfdCount;
+BodyCache::BodyCache(OBJHANDLE handle, GBODY * gbody)
+: m_handle(handle)
+, m_gbody(gbody)
+{}
 
-	bool valid;
-};
+BodyCache::~BodyCache(){}
 
-#endif
+
+
+bool BodyCache::NeedsUpdate( OBJHANDLE handle )
+{
+    //return true; // For testing
+    return handle != m_handle;
+}
+
+GBODY * BodyCache::Gbody()
+{
+    return m_gbody;
+}
+
+/*
+OBJHANDLE BodyCache::Handle()
+{
+    return m_handle;
+}
+*/
