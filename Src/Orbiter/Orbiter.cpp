@@ -184,7 +184,7 @@ int _matherr(struct _exception *except )
 // Application entry containing message loop
 
 
-INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, PSTR strCmdLine, INT nCmdShow)
+INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdShow)
 {
 #ifdef INLINEGRAPHICS
 	// determine whether another instance already exists
@@ -748,8 +748,10 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 
 	LOGOUT("Finished initialising status");
 
-	g_camera->InitState (scenario, g_focusobj);
-	if (g_pane) g_pane->SetFOV (g_camera->Aperture());
+	if (g_camera) {
+		g_camera->InitState (scenario, g_focusobj);
+		if (g_pane) g_pane->SetFOV (g_camera->Aperture());
+	}
 	LOGOUT ("Finished initialising camera");
 
 	if (gclient) {
@@ -789,7 +791,7 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 	}
 #endif
 	FRecorder_Reset();
-	if (bPlayback = g_focusobj->bFRplayback) {
+	if ((g_focusobj) && (bPlayback = g_focusobj->bFRplayback)) {
 		FRecorder_OpenPlayback (pState->PlaybackDir());
 		if (g_pane && g_pane->MIBar()) g_pane->MIBar()->SetPlayback(true);
 	}
@@ -1845,7 +1847,7 @@ bool Orbiter::BeginTimeStep (bool running)
 		// enforce interval 10ms for first 3 time steps
 		deltat = 1e-2;
 		ms_prev = ms_curr-10;
-		fine_counter.QuadPart = hi_curr.QuadPart - fine_counter_freq.QuadPart/100;
+		if (use_fine_counter) fine_counter.QuadPart = hi_curr.QuadPart - fine_counter_freq.QuadPart/100;
 		launch_tick--;
 	} else {
 		// standard time update
@@ -1881,7 +1883,7 @@ bool Orbiter::BeginTimeStep (bool running)
 	}
 
 	ms_prev = ms_curr;
-	fine_counter = hi_curr;
+	if (use_fine_counter) fine_counter = hi_curr;
 	td.BeginStep (deltat, running);
 
 	if (!running) return true;
