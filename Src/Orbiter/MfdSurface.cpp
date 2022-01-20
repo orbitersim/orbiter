@@ -679,7 +679,7 @@ void Instrument_Surface::UpdateDraw (oapi::Sketchpad *skp)
 	//double dt = SimT - updT + instrDT; // last step interval
 	double v, dt = td.SimT1 - psimt;
 	double pspd = spd;
-	bool spd_valid;
+	bool spd_valid = false;
 	psimt = td.SimT1;
 
 	char cbuf[32];
@@ -984,13 +984,14 @@ void Instrument_Surface::SetSize (const Spec &spec)
 bool Instrument_Surface::ReadParams (ifstream &ifs)
 {
 	char cbuf[256], *pc;
+	int n = 0;
 	if (!FindScnHeader (ifs)) return false;
 	for (;;) {
 		if (!ifs.getline (cbuf, 256)) return false;
 		pc = trim_string (cbuf);
 		if (!_strnicmp (pc, "END_MFD", 7)) break;
 		if (!_strnicmp (pc, "SPDMODE", 7)) {
-			sscanf (pc+7, "%d", &spdmode);
+			n = sscanf (pc+7, "%d", &spdmode);
 			if (spdmode <= 0 || spdmode > 4) spdmode = 1;
 		}
 	}

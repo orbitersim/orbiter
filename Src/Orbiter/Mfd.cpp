@@ -936,17 +936,18 @@ char *Instrument::ModeLabel (int bt)
 	static char label[4] = "===";
 	char *c;
 	int n, slot, pg;
-	const MFDMODE *mode;
+	const MFDMODE *mode=0;
 
 	// skip previous pages
 	for (n = slot = pg = 0; n < nGlobalModes+nVesselModes; n++) {
 		mode = (n < nGlobalModes ? GlobalMode+n : VesselMode+(n-nGlobalModes));
-		if (IsDisabledMode (mode->id)) continue;
+		if (mode && IsDisabledMode (mode->id)) continue;
 		if (pg == modepage && slot == bt) break;
 		if (++slot == nbt) pg++, slot = 0;
 	}
 	if (n >= nGlobalModes+nVesselModes) return 0;
-	strncpy (label, mode->spec->name, 3);
+	if (mode) strncpy (label, mode->spec->name, 3);
+	else return 0;
 	for (c = label; *c; c++) *c = toupper (*c);
 	return label;
 }
