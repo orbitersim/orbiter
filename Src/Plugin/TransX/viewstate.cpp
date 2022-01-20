@@ -6,10 +6,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,8 +21,8 @@
 #define STRICT
 
 #include <windows.h>
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include "orbitersdk.h"
 #include "shiplist.h"
 #include "viewstate.h"
@@ -82,7 +82,7 @@ void viewstate::restoresave(FILEHANDLE scn)
 	state->restoresave(scn);
 }
 
-bool viewstate::doupdate(Sketchpad *sketchpad,int tw,int th,TransxMFD *mfdptr)
+bool viewstate::doupdate(oapi::Sketchpad *sketchpad,int tw,int th,TransxMFD *mfdptr)
 {
 	int numfunctions=state->getnumfunctions();
 	if (viewfunction>numfunctions && numfunctions>0) viewfunction=numfunctions;

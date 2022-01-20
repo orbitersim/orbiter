@@ -6,10 +6,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -36,8 +36,9 @@ public:
 	bool baseonexisting(class transxstate *existing);
 
 	virtual void dolowpriaction();
+	void UpdateForOptimiser();
 
-	bool doupdate(Sketchpad *sketchpad,int tw, int th, unsigned int curfunction,int currview, unsigned int curvarfunction, int currvarview,class TransxMFD *tmfdpointer);
+	bool doupdate(oapi::Sketchpad *sketchpad,int tw, int th, unsigned int curfunction,int currview, unsigned int curvarfunction, int currvarview,class TransxMFD *tmfdpointer);
 	void savecurrent(FILEHANDLE scn);
 	bool restoresave(FILEHANDLE scn);
 
@@ -58,7 +59,7 @@ public:
 	class basefunction *getbasefn(unsigned int stagenumber);
 	class shipptrs *getshipptrs(){return shipptrs;};
 	void setshipptrs(class shipptrs *ptr){shipptrs=ptr;};
-	void showinitialstage(Sketchpad *sketchpad,int linespacing,int tw);
+	void showinitialstage(oapi::Sketchpad *sketchpad,int linespacing,int tw);
 	bool checkbasefunction();//checks if first function should now be deleted due to non-validity
 private:
 	bool initfunctions();

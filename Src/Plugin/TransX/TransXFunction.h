@@ -6,10 +6,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -40,13 +40,14 @@ class TransXFunction: public MFDFunction
 {
 public:
 	enum PenIdentifier
-	{ 
+	{
 		Hollow = -1,
 		Green = 0,
 		Blue,
 		Yellow,
 		Red,
 		Grey,
+		GreyDashed,
 		White,
 		NUM_PENS
 	};
@@ -67,12 +68,13 @@ protected:
 	double simstartMJD; //Time at which current scenario commenced
 	class MFDvarhandler vars; //Variable set associated with this MFDFunction
 	class transxstate *state; //Pointer to calling transxstate
-	static Pen *pens[NUM_PENS];//Replacement pens for MFD
-	static Brush *brush[NUM_PENS];
+	static oapi::Pen *pens[NUM_PENS];//Replacement pens for MFD
+	static oapi::Brush *brush[NUM_PENS];
 
 public:
-	static Pen* SelectDefaultPen(Sketchpad *sketchpad, int value);
-	static Brush* TransXFunction::SelectBrush(Sketchpad *sketchpad, int value);
+	void UpdateAllPlans();
+	static oapi::Pen* SelectDefaultPen(oapi::Sketchpad *sketchpad, int value);
+	static oapi::Brush* TransXFunction::SelectBrush(oapi::Sketchpad *sketchpad, int value);
 
 	MFDvarhandler* getvariablehandler();//Passes pointer to variable handler
 	TransXFunction(class transxstate *tstate, OBJHANDLE thmajor, OBJHANDLE thminor, OBJHANDLE thtarget, OBJHANDLE thcraft, OBJHANDLE thbase);//Constructor
@@ -90,7 +92,7 @@ public:
 	bool loadvector(FILEHANDLE scn, VECTOR3 *loadedvector);
 	void saveorbit(FILEHANDLE scn, const OrbitElements &saveorbit);//Saves an orbit structure
 	bool loadorbit(FILEHANDLE scn, OrbitElements *loadorbit);//Loads an orbit structure
-	virtual void doupdate(Sketchpad *sketchpad, int tw, int th, int viewmode){return;};//overloaded to create views
+	virtual void doupdate(oapi::Sketchpad *sketchpad, int tw, int th, int viewmode){return;};//overloaded to create views
 	MFDvariable *getcurrentvariable(int view);
 	void gethandles(OBJHANDLE *thmajor, OBJHANDLE *thminor, OBJHANDLE *thtarget, OBJHANDLE *thcraft, OBJHANDLE *thbase); //Gets handles
 	OBJHANDLE gethmajor(){return hmajor;};//Return central body

@@ -1,4 +1,9 @@
-Copyright (c) 2007 Duncan Sharpe, Steve Arch
+Copyright © 2007-9 Steve Arch, Duncan Sharpe
+Copyright © 2011 atomicdryad - 'ENT' button & Pen allocation fix
+Copyright © 2013 Dimitris Gatsoulis (dgatsoulis) - Hacks
+Copyright © 2013 Szymon Ender (Enjo) - other hacks
+
+X11 License ("MIT License")
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

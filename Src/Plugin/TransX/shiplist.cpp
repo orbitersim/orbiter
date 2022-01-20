@@ -6,10 +6,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,8 +21,8 @@
 #define STRICT
 
 #include <windows.h>
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include "orbitersdk.h"
 #include "parser.h"
 #include "mapfunction.h"
@@ -43,7 +43,7 @@ shipptrs::shipptrs()
 
 shipptrs::shipptrs(OBJHANDLE hcraft)
 {
-	ZeroMemory(shipname, SHIPNAME_LENGTH);	
+	ZeroMemory(shipname, SHIPNAME_LENGTH);
 	oapiGetObjectName(hcraft,shipname,SHIPNAME_LENGTH - 1);
 	state=new transxstate(hcraft,this);//A new plan base for this vessel
 	subcreate();
@@ -139,7 +139,7 @@ void shipptrs::restoreallships(FILEHANDLE scn)
 	}
 }
 
-	
+
 void shipptrs::savecurrent(FILEHANDLE scn)
 {
 	oapiWriteScenario_string(scn,"Ship ",shipname);
@@ -150,7 +150,7 @@ void shipptrs::restorecurrent(FILEHANDLE scn)
 {
 	state->restoresave(scn);
 }
-	
+
 class shipptrs *shipptrs::getshipptrs()
 {
 	OBJHANDLE hcraft=oapiGetFocusObject();
