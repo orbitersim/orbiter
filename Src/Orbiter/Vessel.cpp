@@ -434,7 +434,7 @@ void Vessel::DefaultGenericCaps ()
 void Vessel::ReadGenericCaps (ifstream &ifs)
 {
 	char item[256], cbuf[256];
-	UINT i;
+	UINT i, n=0;
 	VECTOR3 tmp;
 	double d;
 	bool b;
@@ -524,7 +524,7 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 		GetItemReal (ifs, "COG_OverGround", cog_elev);  // obsolete
 
 	if (GetItemString (ifs, "CW", cbuf))
-		sscanf (cbuf, "%lf%lf%lf%lf", CWz, CWz+1, &CWx, &CWy);
+		n = sscanf (cbuf, "%lf%lf%lf%lf", CWz, CWz+1, &CWx, &CWy);
 	GetItemReal   (ifs, "WingAspect", wingaspect);
 	GetItemReal   (ifs, "WingEffectiveness", wingeff);
 	GetItemVector (ifs, "CrossSections", cs);
@@ -2449,7 +2449,7 @@ void Vessel::DelPropellantResource (TankSpec *ts)
 
 	// remove resource
 	for (i = ntank-1; (int)i >= 0; i--) {
-		if (tank[i] == ts) {
+		if (tank && tank[i] == ts) {
 			TankSpec **tmp;
 			if (ntank > 1) {
 				tmp = new TankSpec*[ntank-1]; TRACENEW
@@ -5495,7 +5495,7 @@ bool Vessel::PanelRedrawEvent (int id, int event, SURFHANDLE surf, void *context
 {
 	if (modIntf.v && modIntf.v->Version() >= 2 && ((VESSEL3*)modIntf.v)->clbkPanelRedrawEvent (id, event, surf, context))
 		return true;
-	else if (modIntf.v->Version() >= 1)
+	else if (modIntf.v && modIntf.v->Version() >= 1)
 		return ((VESSEL2*)modIntf.v)->clbkPanelRedrawEvent (id, event, surf);
 	else
 		return false;
@@ -5505,7 +5505,7 @@ bool Vessel::PanelMouseEvent (int id, int event, int mx, int my, void *context) 
 {
 	if (modIntf.v && modIntf.v->Version() >= 2 && ((VESSEL3*)modIntf.v)->clbkPanelMouseEvent (id, event, mx, my, context))
 		return true;
-	else if (modIntf.v->Version() >= 1)
+	else if (modIntf.v && modIntf.v->Version() >= 1)
 		return ((VESSEL2*)modIntf.v)->clbkPanelMouseEvent (id, event, mx, my);
 	else
 		return false;
@@ -5676,11 +5676,11 @@ bool Vessel::DelAnimationComponent (UINT an, ANIMATIONCOMP *comp)
 
 	// delete all children of comp
 	while (comp->nchildren) {
-		if (DelAnimationComponent (an, comp->children[0])) continue;
+		if (comp->children && DelAnimationComponent (an, comp->children[0])) continue;
 		// If the animation component could not be found in animation an, search the complete list of animations
 		// Note: it would be better if each animation component had a reference to its animation object
 		for (i = 0; i < nanim; i++)
-			if (DelAnimationComponent (i, comp->children[0])) break;
+			if (comp->children && DelAnimationComponent (i, comp->children[0])) break;
 		if (i == nanim) {
 			// Problem: component not found in any animation object - THIS SHOULD NOT HAPPEN!
 			// We just remove the child reference from the list
@@ -5688,7 +5688,7 @@ bool Vessel::DelAnimationComponent (UINT an, ANIMATIONCOMP *comp)
 			if (comp->nchildren > 1) {
 				ch = new ANIMATIONCOMP*[comp->nchildren-1]; TRACENEW
 				for (j = 1; j < comp->nchildren; j++)
-					ch[j-1] = comp->children[j];
+					if (comp->children) ch[j-1] = comp->children[j];
 			}
 			delete []comp->children;
 			comp->children = ch;
@@ -5772,7 +5772,7 @@ void Vessel::ClearAnimations (bool reset)
 	BroadcastVisMsg (EVENT_VESSEL_CLEARANIM, (UINT)reset); // clear animations on visuals
 
 	for (UINT i = 0; i < nanim; i++) {
-		if (anim[i].ncomp) {
+		if (anim[i].ncomp && anim[i].comp != NULL) {
 			for (UINT j = 0; j < anim[i].ncomp; j++) {
 				if (anim[i].comp[j]->nchildren) {
 					//for (UINT k = 0; k < anim[i].comp[j]->nchildren; k++)
