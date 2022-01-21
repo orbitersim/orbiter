@@ -93,7 +93,7 @@ void Camera::SetFrustumLimits (double nearlimit, double farlimit)
 bool Camera::Direction2Viewport(const VECTOR3 &dir, int &x, int &y)
 {
 	D3DVECTOR homog;
-	D3DVECTOR idir = {-dir.x, -dir.y, -dir.z};
+	D3DVECTOR idir = {(D3DVALUE)-dir.x, (D3DVALUE)-dir.y, (D3DVALUE)-dir.z};
 	D3DMAT_VectorMatrixMultiply (&homog, &idir, &mProjView);
 	if (homog.x >= -1.0f && homog.y <= 1.0f && homog.z >= 0.0) {
 		if (_hypot(homog.x, homog.y) < 1e-6) {

@@ -18,7 +18,7 @@
 // =======================================================================
 
 struct DeviceData {
-	DWORD dwDevice;
+	int   dwDevice;
 	DWORD dwMode;
 	BOOL  bFullscreen;
 	BOOL  bStereo;

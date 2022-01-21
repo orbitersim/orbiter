@@ -619,7 +619,7 @@ void OrbiterGraphics::clbkRenderScene ()
 	// Set camera view transformation
 	static D3DMATRIX mView = Identity;
 	SetD3DRotation (mView, g_camera->GRot());
-	D3DRECT rect = {0,0,m_pFramework->GetRenderWidth(),m_pFramework->GetRenderHeight()};
+	D3DRECT rect = {(LONG)0,(LONG)0,(LONG)m_pFramework->GetRenderWidth(),(LONG)m_pFramework->GetRenderHeight()};
 
 	// Render the scene
 	if (bUseStereo && m_pDeviceInfo->bStereo && !m_pDeviceInfo->bWindowed) {
@@ -1703,7 +1703,7 @@ bool OrbiterGraphics::clbkBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDL
 		bltflag = DDBLT_WAIT;
 		if (flag & BLT_SRCCOLORKEY) bltflag |= DDBLT_KEYSRC;
 		if (flag & BLT_TGTCOLORKEY) bltflag |= DDBLT_KEYDEST;
-		RECT dstrct = {tgtx, tgty, tgtx+ddsd.dwWidth, tgty+ddsd.dwHeight};
+		RECT dstrct = {(LONG)tgtx, (LONG)tgty, (LONG)(tgtx+ddsd.dwWidth), (LONG)(tgty+ddsd.dwHeight)};
 		hr = ps_tgt->Blt (&dstrct, ps_src, NULL, bltflag, NULL);
 		if (hr != S_OK)
 			LOGOUT_DDERR (hr);
@@ -1713,7 +1713,7 @@ bool OrbiterGraphics::clbkBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDL
 
 bool OrbiterGraphics::clbkBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src, DWORD srcx, DWORD srcy, DWORD w, DWORD h, DWORD flag) const
 {
-	RECT srcr = {srcx, srcy, srcx+w, srcy+h};
+	RECT srcr = {(LONG)srcx, (LONG)srcy, (LONG)(srcx+w), (LONG)(srcy+h)};
 	LPDIRECTDRAWSURFACE7 ps_tgt = (tgt ? (LPDIRECTDRAWSURFACE7)tgt : m_pddsRenderTarget);
 	LPDIRECTDRAWSURFACE7 ps_src = (LPDIRECTDRAWSURFACE7)src;
 	DWORD bltflag = DDBLTFAST_WAIT;
@@ -1724,8 +1724,8 @@ bool OrbiterGraphics::clbkBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDL
 		bltflag = DDBLT_WAIT;
 		if (flag & BLT_SRCCOLORKEY) bltflag |= DDBLT_KEYSRC;
 		if (flag & BLT_TGTCOLORKEY) bltflag |= DDBLT_KEYDEST;
-		RECT dstrct = {tgtx, tgty, tgtx+w, tgty+h};
-		RECT srcrct = {srcx, srcy, srcx+w, srcy+h};
+		RECT dstrct = {(LONG)tgtx, (LONG)tgty, (LONG)(tgtx+w), (LONG)(tgty+h)};
+		RECT srcrct = {(LONG)srcx, (LONG)srcy, (LONG)(srcx+w), (LONG)(srcy+h)};
 		hr = ps_tgt->Blt (&dstrct, ps_src, &srcrct, bltflag, NULL);
 		if (hr != S_OK)
 			LOGOUT_DDERR (hr);
@@ -1738,8 +1738,8 @@ bool OrbiterGraphics::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWOR
 {
 	LPDIRECTDRAWSURFACE7 ps_tgt = (tgt ? (LPDIRECTDRAWSURFACE7)tgt : m_pddsRenderTarget);
 	LPDIRECTDRAWSURFACE7 ps_src = (LPDIRECTDRAWSURFACE7)src;
-	RECT srcr = {srcx, srcy, srcx+srcw, srcy+srch};
-	RECT tgtr = {tgtx, tgty, tgtx+tgtw, tgty+tgth};
+	RECT srcr = {(LONG)srcx, (LONG)srcy, (LONG)(srcx+srcw), (LONG)(srcy+srch)};
+	RECT tgtr = {(LONG)tgtx, (LONG)tgty, (LONG)(tgtx+tgtw), (LONG)(tgty+tgth)};
 	DWORD bltflag = DDBLT_WAIT;
 	if (flag & BLT_SRCCOLORKEY) bltflag |= DDBLT_KEYSRC;
 	if (flag & BLT_TGTCOLORKEY) bltflag |= DDBLT_KEYDEST;
@@ -1755,8 +1755,8 @@ bool OrbiterGraphics::clbkBltCK (SURFHANDLE tgt, DWORD tgtx, DWORD tgty,
 bool OrbiterGraphics::clbkScaleBltCK (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgtw, DWORD tgth,
 	SURFHANDLE src, DWORD srcx, DWORD srcy, DWORD srcw, DWORD srch, DWORD ck) const
 {
-	RECT srcr = {srcx, srcy, srcx+srcw, srcy+srch};
-	RECT tgtr = {tgtx, tgty, tgtx+tgtw, tgty+tgth};
+	RECT srcr = {(LONG)srcx, (LONG)srcy, (LONG)(srcx+srcw), (LONG)(srcy+srch)};
+	RECT tgtr = {(LONG)tgtx, (LONG)tgty, (LONG)(tgtx+tgtw), (LONG)(tgty+tgth)};
 
 	DWORD dwCC;
 	static DDBLTFX ddbltfx = { 0 };
@@ -1793,7 +1793,7 @@ bool OrbiterGraphics::clbkFillSurface (SURFHANDLE surf, DWORD col) const
 
 bool OrbiterGraphics::clbkFillSurface (SURFHANDLE surf, DWORD tgtx, DWORD tgty, DWORD w, DWORD h, DWORD col) const
 {
-	RECT r = {tgtx, tgty, tgtx+w, tgty+h};
+	RECT r = {(LONG)tgtx, (LONG)tgty, (LONG)(tgtx+w), (LONG)(tgty+h)};
 	DDBLTFX bltfx;
 	ZeroMemory (&bltfx, sizeof(bltfx));
 	bltfx.dwSize = sizeof(bltfx);

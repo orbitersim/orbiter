@@ -259,7 +259,7 @@ bool DDEServer::get_state (HWND hClient, ATOM item, char *fmtstr)
 	bool mapequ = false;
 	char *c;
 	c = strtok (fmtstr,",");
-	n = sscanf(c, "%lld", &id);
+	n = sscanf(c, "%lld", (long long *)&id);
 	if (!n) return false;
 
 	// Currently, this function is only defined for vessels
