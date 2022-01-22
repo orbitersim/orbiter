@@ -923,6 +923,7 @@ void VVessel::RenderAttachmentMarkers (LPDIRECT3DDEVICE7 dev, bool pa)
 bool VVessel::ModLighting (LPD3DLIGHT7 light)
 {
 	const CelestialBody *cb = vessel->ProxyPlanet();
+	if (!cb) return false;
 	Star *sun = g_psys->GetStar(0); // should really loop over all suns
 	Vector S(sun->GPos() - vessel->GPos());
 	double s = S.length();

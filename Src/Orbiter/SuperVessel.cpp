@@ -754,7 +754,7 @@ void SuperVessel::UpdateProxies ()
 
 void SuperVessel::SetOrbitReference (CelestialBody *body)
 {
-	if (body != cbody) {               // otherwise nothing to do
+	if (body && body != cbody) {               // otherwise nothing to do
 		cbody = body;
 		el->Setup (mass, cbody->Mass(), el->MJDepoch());
 		bOrbitStabilised = false;      // enforce recalculation of elements

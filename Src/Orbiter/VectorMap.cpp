@@ -241,6 +241,7 @@ void VectorMap::Update ()
 #endif
 
 	double lng, lat, rad;
+	if (!cbody) return;
 
 	if (centermode == 1) {
 		const SurfParam *sp = g_focusobj->GetSurfParam();

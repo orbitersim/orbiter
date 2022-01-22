@@ -436,9 +436,9 @@ bool PlanetarySystem::DelBody (Body *_body)
 		if (body[i] == _body) break;
 	if (i == nbody) return false;
 	delete []body[i]; // delete actual body
-	body[i]->s0 = NULL;
-	body[i]->s1 = NULL;
-	body[i] = NULL;
+	if (body[i]->s0) body[i]->s0 = NULL;
+	if (body[i]->s1) body[i]->s1 = NULL;
+	if (body[i]) body[i] = NULL;
 	if (nbody > 1) {
 		tmp = new Body*[nbody-1]; TRACENEW
 		for (j = k = 0; j < nbody; j++)

@@ -2963,7 +2963,7 @@ bool Vessel::DetachChild (AttachmentSpec *asp, double v)
 
 bool Vessel::DetachFromParent (double v)
 {
-	if (!attach) return false; // we are not attached to any parent
+	if (!attach || !proxybody) return false; // we are not attached to any parent
 	Vessel *prnt = attach->mate;
 
 	Vector vel(s0->vel);
@@ -4148,6 +4148,7 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 	static DWORD ntdy = 3;
 
 	static StateVectors ls; // local state
+	if (!proxybody) return false;
 	StateVectors ps = proxybody->InterpolateState (tfrac); // intermediate planet state; should probably be passed in as function argument
 	SurfParam surfp; // intermediate surface parameters; should probably be passed in as function argument
 
@@ -6366,7 +6367,9 @@ const OBJHANDLE VESSEL::GetGravityRef () const
 
 const OBJHANDLE VESSEL::GetSurfaceRef () const
 {
-	return (OBJHANDLE)vessel->GetSurfParam()->ref;
+	const SurfParam *sp = vessel->GetSurfParam();
+	if (sp)	return (OBJHANDLE)sp->ref;
+	else return NULL;
 }
 
 const OBJHANDLE VESSEL::GetAtmRef () const

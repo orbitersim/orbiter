@@ -86,7 +86,7 @@ int Panel2D::SetBackground (SURFHANDLE *hSurface, DWORD nsurf, MESHHANDLE hMesh,
 		hSurf = new SURFHANDLE[nSurf];
 		for (DWORD i = 0; i < nsurf; i++) {
 			hSurf[i] = hSurface[i];
-			gc->clbkIncrSurfaceRef (hSurface[i]);
+			if (hSurf[i]) gc->clbkIncrSurfaceRef (hSurface[i]);
 		}
 	} else hSurf = 0;
 	hBkgMesh = hMesh;
