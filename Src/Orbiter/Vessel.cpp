@@ -7726,12 +7726,14 @@ void VESSEL::GlobalRot (const VECTOR3 &rloc, VECTOR3 &rglob) const
 
 void VESSEL::HorizonRot (const VECTOR3 &rloc, VECTOR3 &rhorizon) const
 {
+	if (!vessel->proxyplanet) return;
 	Vector h (mul (vessel->sp.L2H, tmul (vessel->proxyplanet->GRot(), mul (vessel->GRot(), MakeVector(rloc)))));
 	rhorizon = _V(h.x, h.y, h.z);
 }
 
 void VESSEL::HorizonInvRot (const VECTOR3 &rhorizon, VECTOR3 &rloc) const
 {
+	if (!vessel->proxyplanet) return;
 	Vector r (tmul (vessel->GRot(), mul (vessel->proxyplanet->GRot(), tmul (vessel->sp.L2H, MakeVector (rhorizon)))));
 	rloc = _V(r.x, r.y, r.z);
 }
