@@ -6622,7 +6622,8 @@ double VESSEL::GetYaw () const
 double VESSEL::GetSurfaceElevation () const
 {
 	const SurfParam *sp = vessel->GetSurfParam();
-	return sp->elev;
+	if (sp) return sp->elev;
+	else return 0.0;
 }
 
 VECTOR3 VESSEL::GetSurfaceNormal () const
