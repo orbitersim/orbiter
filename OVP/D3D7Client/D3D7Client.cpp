@@ -1106,7 +1106,7 @@ bool D3D7Client::clbkBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src
 		bltflag = DDBLT_WAIT;
 		if (flag & BLT_SRCCOLORKEY) bltflag |= DDBLT_KEYSRC;
 		if (flag & BLT_TGTCOLORKEY) bltflag |= DDBLT_KEYDEST;
-		RECT dstrct = {(LONG)tgtx, (LONG)tgty, tgtx+ddsd.dwWidth, tgty+ddsd.dwHeight};
+		RECT dstrct = {(LONG)tgtx, (LONG)tgty, (LONG)(tgtx+ddsd.dwWidth), LONG(tgty+ddsd.dwHeight)};
 		hr = ps_tgt->Blt (&dstrct, ps_src, NULL, bltflag, NULL);
 		if (hr != S_OK)
 			LOGOUT_DDERR (hr);
@@ -1116,7 +1116,7 @@ bool D3D7Client::clbkBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src
 
 bool D3D7Client::clbkBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src, DWORD srcx, DWORD srcy, DWORD w, DWORD h, DWORD flag) const
 {
-	RECT srcr = {(LONG)srcx, (LONG)srcy, (LONG)srcx+w, (LONG)srcy+h};
+	RECT srcr = {(LONG)srcx, (LONG)srcy, (LONG)(srcx+w), (LONG)(srcy+h)};
 	LPDIRECTDRAWSURFACE7 ps_tgt = (tgt ? (LPDIRECTDRAWSURFACE7)tgt : pddsRenderTarget);
 	LPDIRECTDRAWSURFACE7 ps_src = (LPDIRECTDRAWSURFACE7)src;
 	DWORD bltflag = DDBLTFAST_WAIT;
@@ -1127,8 +1127,8 @@ bool D3D7Client::clbkBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src
 		bltflag = DDBLT_WAIT;
 		if (flag & BLT_SRCCOLORKEY) bltflag |= DDBLT_KEYSRC;
 		if (flag & BLT_TGTCOLORKEY) bltflag |= DDBLT_KEYDEST;
-		RECT dstrct = {(LONG)tgtx, (LONG)tgty, (LONG)tgtx+w, (LONG)tgty+h};
-		RECT srcrct = {(LONG)srcx, (LONG)srcy, (LONG)srcx+w, (LONG)srcy+h};
+		RECT dstrct = {(LONG)tgtx, (LONG)tgty, (LONG)(tgtx+w), (LONG)(tgty+h)};
+		RECT srcrct = {(LONG)srcx, (LONG)srcy, (LONG)(srcx+w), (LONG)(srcy+h)};
 		hr = ps_tgt->Blt (&dstrct, ps_src, &srcrct, bltflag, NULL);
 		if (hr != S_OK)
 			LOGOUT_DDERR (hr);
@@ -1141,8 +1141,8 @@ bool D3D7Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 {
 	LPDIRECTDRAWSURFACE7 ps_tgt = (tgt ? (LPDIRECTDRAWSURFACE7)tgt : pddsRenderTarget);
 	LPDIRECTDRAWSURFACE7 ps_src = (LPDIRECTDRAWSURFACE7)src;
-	RECT srcr = {(LONG)srcx, (LONG)srcy, (LONG)srcx+srcw, (LONG)srcy+srch};
-	RECT tgtr = {(LONG)tgtx, (LONG)tgty, (LONG)tgtx+tgtw, (LONG)tgty+tgth};
+	RECT srcr = {(LONG)srcx, (LONG)srcy, (LONG)(srcx+srcw), (LONG)(srcy+srch)};
+	RECT tgtr = {(LONG)tgtx, (LONG)tgty, (LONG)(tgtx+tgtw), (LONG)(tgty+tgth)};
 	DWORD bltflag = DDBLT_WAIT;
 	if (flag & BLT_SRCCOLORKEY) bltflag |= DDBLT_KEYSRC;
 	if (flag & BLT_TGTCOLORKEY) bltflag |= DDBLT_KEYDEST;
@@ -1160,7 +1160,7 @@ bool D3D7Client::clbkFillSurface (SURFHANDLE surf, DWORD col) const
 
 bool D3D7Client::clbkFillSurface (SURFHANDLE surf, DWORD tgtx, DWORD tgty, DWORD w, DWORD h, DWORD col) const
 {
-	RECT r = {(LONG)tgtx, (LONG)tgty, (LONG)tgtx+w, (LONG)tgty+h};
+	RECT r = {(LONG)tgtx, (LONG)tgty, (LONG)(tgtx+w), (LONG)(tgty+h)};
 	DDBLTFX bltfx;
 	ZeroMemory (&bltfx, sizeof(bltfx));
 	bltfx.dwSize = sizeof(bltfx);
