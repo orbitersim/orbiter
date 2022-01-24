@@ -534,6 +534,7 @@ void D3D9Effect::SetViewProjMatrix(LPD3DXMATRIX pVP)
 
 void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 {
+	if (!hPlanet) return;
 	VECTOR3 cam, pla, sun;
 	OBJHANDLE hSun = oapiGetGbodyByIndex(0); // generalise later
 	cam = gc->GetScene()->GetCameraGPos();

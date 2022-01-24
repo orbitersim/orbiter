@@ -600,6 +600,7 @@ void Instrument_Surface::UpdateBlt ()
 	if (!g_pOrbiter->GetGraphicsClient()) return; // no graphics available
 
 	sp = vessel->GetSurfParam();
+	if (!sp) return;
 	if (sp && sp->ref->Type() == OBJTP_PLANET)
 		atmc = ((Planet*)sp->ref)->AtmParams();
 	else

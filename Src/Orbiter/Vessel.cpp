@@ -2963,7 +2963,7 @@ bool Vessel::DetachChild (AttachmentSpec *asp, double v)
 
 bool Vessel::DetachFromParent (double v)
 {
-	if (!attach) return false; // we are not attached to any parent
+	if (!attach || !proxybody) return false; // we are not attached to any parent
 	Vessel *prnt = attach->mate;
 
 	Vector vel(s0->vel);
@@ -4148,6 +4148,7 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 	static DWORD ntdy = 3;
 
 	static StateVectors ls; // local state
+	if (!proxybody) return false;
 	StateVectors ps = proxybody->InterpolateState (tfrac); // intermediate planet state; should probably be passed in as function argument
 	SurfParam surfp; // intermediate surface parameters; should probably be passed in as function argument
 
@@ -6366,7 +6367,9 @@ const OBJHANDLE VESSEL::GetGravityRef () const
 
 const OBJHANDLE VESSEL::GetSurfaceRef () const
 {
-	return (OBJHANDLE)vessel->GetSurfParam()->ref;
+	const SurfParam *sp = vessel->GetSurfParam();
+	if (sp)	return (OBJHANDLE)sp->ref;
+	else return NULL;
 }
 
 const OBJHANDLE VESSEL::GetAtmRef () const
@@ -6619,7 +6622,8 @@ double VESSEL::GetYaw () const
 double VESSEL::GetSurfaceElevation () const
 {
 	const SurfParam *sp = vessel->GetSurfParam();
-	return sp->elev;
+	if (sp) return sp->elev;
+	else return 0.0;
 }
 
 VECTOR3 VESSEL::GetSurfaceNormal () const
@@ -7722,12 +7726,14 @@ void VESSEL::GlobalRot (const VECTOR3 &rloc, VECTOR3 &rglob) const
 
 void VESSEL::HorizonRot (const VECTOR3 &rloc, VECTOR3 &rhorizon) const
 {
+	if (!vessel->proxyplanet) return;
 	Vector h (mul (vessel->sp.L2H, tmul (vessel->proxyplanet->GRot(), mul (vessel->GRot(), MakeVector(rloc)))));
 	rhorizon = _V(h.x, h.y, h.z);
 }
 
 void VESSEL::HorizonInvRot (const VECTOR3 &rhorizon, VECTOR3 &rloc) const
 {
+	if (!vessel->proxyplanet) return;
 	Vector r (tmul (vessel->GRot(), mul (vessel->proxyplanet->GRot(), tmul (vessel->sp.L2H, MakeVector (rhorizon)))));
 	rloc = _V(r.x, r.y, r.z);
 }

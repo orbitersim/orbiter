@@ -174,7 +174,7 @@ CFG_RECPLAYPRM CfgRecPlayPrm_default = {
 };
 
 CFG_DEVPRM CfgDevPrm_default = {
-	-1,			// Device_idx (-1=undefined)
+	-1,	        // Device_idx (-1=undefined)
 	0,			// Device_mode
 	true,		// bForceEnum (enumerate devices at each simulation start)
 	false,		// bFullscreen (default to window mode)
