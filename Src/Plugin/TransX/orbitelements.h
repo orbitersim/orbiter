@@ -6,10 +6,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -18,9 +18,11 @@
 ** OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ** THE SOFTWARE.*/
 
+
 #pragma once
 
-using namespace oapi;
+#include <OrbiterSDK.h>
+
 
 class OrbitElements{
 private:
@@ -54,13 +56,13 @@ public:
 	void gettimeorbit(int *orbitnumber,double *orbittime, double timefromnow) const;
 	OrbitElements(OBJHANDLE hmajor, OBJHANDLE hminor); //Constructor
 	OrbitElements(VECTOR3 rposition, VECTOR3 rvelocity, double gmplanet); //Constructor using pos and vel vectors
-	double getvelocityatdist(double radius);//Calculates velocity using energy calculation - gives results even outside area of current orbit
+	double getvelocityatdist(double radius) const;//Calculates velocity using energy calculation - gives results even outside area of current orbit
 	void init(OBJHANDLE hmajor, OBJHANDLE hminor);//Initialiser
 	void init(const VECTOR3 &rposition, const VECTOR3 &rvelocity, double gmplanet); //Initialiser using pos and vel vectors
 	void init(const VECTOR3 &rposition, const VECTOR3 &rvelocity, double ttimestamp, double gmplanet); //Initialiser that pushes out a timestamp as well
 	void minortomajorinit(const OrbitElements &craftinrmin, const OrbitElements &rmininrmaj, double soisize);
 	void majortominorinit(OBJHANDLE target, OBJHANDLE object, const class Intercept &closestapproach, double soisize);//Going from major to minor
-	void draworbit(Sketchpad *sketchpad, const class Graph *graph, bool drawradius) const; //Draws an orbit in window and projection described in graph
+	void draworbit(oapi::Sketchpad *sketchpad, const class Graph *graph, bool drawradius) const; //Draws an orbit in window and projection described in graph
 	//Can be called even if orbit.isvalid() is false
 	void setinvalid(){valid=false;};//Forces an existing orbit structure into invalidity
 	//The routines below generally ASSUME that orbit has been initialised

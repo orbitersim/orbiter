@@ -6,10 +6,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,18 +21,20 @@
 #define STRICT
 
 #include "orbitersdk.h"
+#include "orbiterapi.h"
 #include "basefunction.h"
 #include "transxstate.h"
 #include "TransXFunction.h"
 #include "mfd.h"
-
 #include "transx.h"
+
+#define GGRAV_ 6.67259e-11
 
 extern double debug;
 
 basefunction::basefunction(class transxstate *tstate, class basefunction *tpreviousfunc, OBJHANDLE thmajor, OBJHANDLE thminor,OBJHANDLE thcraft)
 : TransXFunction(tstate, thmajor, thminor,thcraft)
-{ 
+{
 	iplantype=0;
 	previousfunc=tpreviousfunc;
 	nextfunc=NULL;
@@ -88,13 +90,13 @@ bool basefunction::soistatus()
 	double soi=mappointer->getsoisize(hmajor);
 	VECTOR3 posvector;
 	oapiGetRelativePos(hmajor,hcraft,&posvector);
-	if (soi*soi*4<length2(posvector)) return false;
+	if (soi*soi*4<length2my(posvector)) return false;
 
 	//Check that we're not too far inside target SOI
 	if (hmajtarget==NULL) return true;
 	soi=mappointer->getsoisize(hmajtarget);
 	oapiGetRelativePos(hmajtarget,hcraft,&posvector);
-	if (soi*soi>length2(posvector)) return false;
+	if (soi*soi>length2my(posvector)) return false;
 	return true;
 }
 
@@ -419,7 +421,7 @@ bool basefunction::initialisevars()
 	m_chplvel.init(&vars,4,4,"Ch. plane vel.", 0, -1e8, 1e8, 0.1,1000);
 	m_intwith.init(&vars,2,2,"Intercept with",0,3,"Auto","Plan","Manoeuvre","Focus","");
 	m_orbitsahead.init(&vars,2,2,"Orbits to Icept",0);
-	m_graphprj.init(&vars,2,2,"Graph projection",0,3, "Ecliptic","Focus","Manoeuvre","Plan","");
+	m_graphprj.init(&vars,2,2,"Graph projection",0,4, "Ecliptic","Focus","Manoeuvre","Plan","Edge On");
 	m_scale.init(&vars,2,2,"Scale to view",0,2,"All","Target","Craft","","");
 	m_advanced.init(&vars,2,2,"Advanced",0,1,"Off","On","","","");
 	valid=true;
@@ -500,11 +502,11 @@ bool basefunction::initialisevars()
 	return true;
 }
 
-void basefunction::processvisiblevars()
+void basefunction::processvisiblevars(int currview)
 {//Deals with changes in variable visibility
 	switchadvanced();
 	switchplantype();
-	switchmanoeuvremode();
+	switchmanoeuvremode(currview);
 	autoplan();
 }
 
@@ -512,7 +514,7 @@ void basefunction::switchplantype()
 {
 	m_planinitial.setshow(false);
 	m_planthrough.setshow(false);
-	m_planminor.setshow(false);	
+	m_planminor.setshow(false);
 	switch (m_plantype){
 	case 0:
 		m_planinitial.setshow(true);
@@ -527,7 +529,7 @@ void basefunction::switchplantype()
 }
 
 
-void basefunction::switchmanoeuvremode()
+void basefunction::switchmanoeuvremode(int currview)
 {
 	if (m_manoeuvremode==1)
 	{
@@ -613,7 +615,7 @@ void basefunction::calculate(VECTOR3 *targetvel)
 	// Get positions of major, minor bodies and spacecraft
 	if (previousfunc==NULL)
 	{
-		hcontext=mappointer->getmajor(hmajor);		
+		hcontext=mappointer->getmajor(hmajor);
 		if (hcontext!=hmajor)
 		{
 			context.init(hcontext,hmajor);//the orbit of hmajor around its boss
@@ -629,7 +631,7 @@ void basefunction::calculate(VECTOR3 *targetvel)
 		oapiGetRelativeVel(hcraft,hmajor,&vel);
 		oapiGetRelativePos(hcraft,hmajor,&pos);
 		double distance=length(pos);
-		double velenergy=length2(vel)*0.5;
+		double velenergy=length2my(vel)*0.5;
 		double overallenergy=-GRAVITY*oapiGetMass(hmajor)/distance+velenergy;
 		craft.init(hmajor, hcraft);
 		if (hminor==NULL)
@@ -677,6 +679,7 @@ void basefunction::calculate(VECTOR3 *targetvel)
 			previousfunc->getcraftorbitattarget(&craft);
 		}
 	}
+
 	//Calculate the plan update
 	if (planpointer!=NULL)
 	{
@@ -738,7 +741,7 @@ void basefunction::calculate(VECTOR3 *targetvel)
 	}
 }
 
-OrbitElements basefunction::getpassforwardorbit()
+const OrbitElements & basefunction::getpassforwardorbit()
 {
 	switch (interceptwith)
 	{
@@ -752,16 +755,17 @@ OrbitElements basefunction::getpassforwardorbit()
 	return craft;
 }
 
-void basefunction::doupdate(Sketchpad *sketchpad,int tw, int th,int viewmode)
+void basefunction::doupdate(oapi::Sketchpad *sketchpad,int tw, int th,int viewmode)
 {
 	if (!valid) return;
 	if (!m_target.validate()) hmajtarget=NULL;
 	int linespacing=th/24;
 	VECTOR3 targetvel;
 	calculate(&targetvel);
+
 	int wpos=0;
 	int hpos=linespacing;
-	char buffer[20];
+	char buffer[20]="";
 	OrbitElements plan;
 	if (planpointer!=NULL)
 	{
@@ -807,22 +811,25 @@ void basefunction::doupdate(Sketchpad *sketchpad,int tw, int th,int viewmode)
 		break;
 	}
 	sketchpad->Text(wpos,hpos,buffer,strlen(buffer));
+	graph.setviewwindow(0,0,tw,th);
 	if (viewmode==1 && hypormaj.isvalid())//Target view
 	{
 		double timeoffset=(m_ejdate-simstartMJD)*SECONDS_PER_DAY-craft.gettimestamp();
 		VECTOR3 craftpos,craftvel;
 		craft.timetovectors(timeoffset,&deltavel);//New eccentricity insensitive timetovectors
 		deltavel.getposvel(&craftpos,&craftvel);
+		VECTOR3 diffTgtVel = targetvel-craftvel;
 		VESSEL *pV=oapiGetVesselInterface(hcraft);
-		double rvel=graph.vectorpointdisplay(sketchpad, targetvel-craftvel, state->GetMFDpointer(), pV, false);
+		double rvel=graph.vectorpointdisplay(sketchpad, diffTgtVel, state->GetMFDpointer(), pV, false);
+		double burnStart = GetBurnStart(pV, THGROUP_MAIN, timeoffset, rvel);
 		TextShow(sketchpad,"Delta V: ",0,18*linespacing,rvel);
-		TextShow(sketchpad,"T to Mnvre ",0,19*linespacing,timeoffset);
-		TextShow(sketchpad,"Begin Burn",0,20*linespacing,GetBurnStart(pV, timeoffset, rvel));
+		TextShow(sketchpad,"T to Mnvre: ",0,19*linespacing,timeoffset);
+		TextShow(sketchpad,"Begin Burn: ",0,20*linespacing,burnStart);
 	}
 	else
 	{
 		VECTOR3 ntemp={0,-1,0};
-		graph.setviewwindow(0,0,tw,th);
+		VECTOR3 edgeon={0,0,-1};
 		graph.setprojection(ntemp);
 		switch (m_graphprj)
 		{
@@ -835,21 +842,24 @@ void basefunction::doupdate(Sketchpad *sketchpad,int tw, int th,int viewmode)
 		case 3:
 			graph.setprojection(plan);
 			break;
+        case 4:
+			graph.setprojection(edgeon);
+			break;
 		}
 		if (planpointer!=NULL && viewmode==3)
 		{
-			if (!planpointer->maingraph(sketchpad,&graph,this)) 
+			if (!planpointer->maingraph(sketchpad,&graph,this))
 			{
 				planpointer->wordupdate(sketchpad,tw,th,this);
 				return;
 			}
 		}
-		double scale=0;	
+		double scale=0;
 
 		// Set the viewscale for the graph
 		graph.setviewscale(scale);
-		graph.setviewscalesize(oapiGetSize(hmajor));//Ensure no zoom inside the central body
-		if (m_scale!=1 || !target.isvalid()) //Only set viewscale to view these if user desires it
+		graph.setviewscalesize(oapiGetSize(hmajor)*1.2);//Ensure no zoom inside the central body
+		if (m_scale!=1)// || !target.isvalid()) //Only set viewscale to view these if user desires it
 		{
 			if (previousexists && craft.geteccentricity()>1)
 			{
@@ -869,7 +879,9 @@ void basefunction::doupdate(Sketchpad *sketchpad,int tw, int th,int viewmode)
 		}
 
 		// Draw the craft orbit
+//////////////////////////////////////////////////	FIXME
 		SelectDefaultPen(sketchpad,Green);
+//////////////////////////////////////////////////	This kills pens[]
 		graph.draworbit(craft, sketchpad, !previousexists);
 
 		//Draw the minor object orbit
@@ -890,9 +902,9 @@ void basefunction::doupdate(Sketchpad *sketchpad,int tw, int th,int viewmode)
 
 		//Draw the central body
 		SelectDefaultPen(sketchpad,PEN_ATMOSPHERE);
-		graph.drawatmosphere(sketchpad,hmajor); 
+		graph.drawatmosphere(sketchpad,hmajor);
 		SelectDefaultPen(sketchpad,Grey);
-		graph.drawplanet(sketchpad,hmajor); 
+		graph.drawplanet(sketchpad,hmajor);
 
 		// If there is a target, draw it, and if there's an intercept,the targeting lines
 		if (target.isvalid())
@@ -906,16 +918,20 @@ void basefunction::doupdate(Sketchpad *sketchpad,int tw, int th,int viewmode)
 				primary.getpositions(&craftpos,&targetpos);
 				graph.drawtwovector(sketchpad, craftpos,targetpos);
 				primary.getplanecept(&intersect);
-				SelectDefaultPen(sketchpad,Grey);
+				SelectDefaultPen(sketchpad,GreyDashed);
+				// Draws orbits intersection line with plane change
 				graph.drawvectorline(sketchpad,intersect);
+				SelectDefaultPen(sketchpad,Grey);
+				VECTOR3 intersectRef = GetLineOfNodes(); // No change plane line of nodes
+				graph.drawvectorline(sketchpad,intersectRef);
 
 				//Describe targeting quality
 				int hpos=8*linespacing;
 				int wpos=0;
-				int len=sprintf(buffer, "Cl. App. (rough)");
-				sketchpad->Text(wpos, hpos, buffer, len);
+				double closestApp = length(craftpos-targetpos);
+				TextShow(sketchpad, "Cl. App.: ", wpos, hpos, closestApp);
 				hpos+=linespacing;
-				TextShow(sketchpad, " ", wpos, hpos, length(craftpos-targetpos));
+				TextShow(sketchpad, "Hohmann dv: ", wpos, hpos, GetHohmannDV());
 				hpos+=linespacing;
 				VECTOR3 relvel;
 				primary.getrelvel(&relvel);
@@ -923,7 +939,7 @@ void basefunction::doupdate(Sketchpad *sketchpad,int tw, int th,int viewmode)
 				hpos+=linespacing;
 				double intercepttime=primary.gettimeintercept();
 				double arrmjd=oapiTime2MJD(intercepttime);
-				len=sprintf(buffer,"Enc. MJD %.4f", arrmjd);
+				int len=snprintf(buffer, sizeof(buffer) - 1, "Enc. MJD %.4f", arrmjd);
 				sketchpad->Text(wpos, hpos, buffer, len);
 			}
 		}
@@ -943,12 +959,12 @@ void basefunction::doupdate(Sketchpad *sketchpad,int tw, int th,int viewmode)
 					TextShow(sketchpad,"Focus ApD:", wpos,hpos, craft.getapodistance());
 				}
 				hpos+=linespacing;
-				char buffer[20];
-				int length=sprintf(buffer,"Pe MJD:   %.4f",(craft.getpedeltatime()+craft.gettimestamp())/SECONDS_PER_DAY+simstartMJD);
+				char buffer[20]="";
+				int length=snprintf(buffer, sizeof(buffer) - 1, "Pe MJD:   %.4f",(craft.getpedeltatime()+craft.gettimestamp())/SECONDS_PER_DAY+simstartMJD);
 				sketchpad->Text(wpos,hpos,buffer, length);
 				hpos+=linespacing;
 				VECTOR3 south = {0, -1, 0};
-				length = sprintf(buffer, "Inc:      %.4g°", 180/PI*acos(cosangle(south, craft.getplanevector())));
+				length = snprintf(buffer, sizeof(buffer) - 1, "Inc:      %.4g°", 180/PI*acos(cosangle(south, craft.getplanevector())));
 				sketchpad->Text(wpos,hpos,buffer, length);
 				hpos+=linespacing;
 			}
@@ -957,7 +973,7 @@ void basefunction::doupdate(Sketchpad *sketchpad,int tw, int th,int viewmode)
 				TextShow(sketchpad,"Hyp PeD ",wpos,hpos,hypormaj.getpedistance());
 				hpos+=linespacing;
 				double timeatped=(hypormaj.gettimestamp()+hypormaj.getpedeltatime())/SECONDS_PER_DAY+simstartMJD;
-				int length=sprintf(buffer,"H. Pe MJD %.2f",timeatped);
+				int length=snprintf(buffer, sizeof(buffer) - 1, "H. Pe MJD %.2f", timeatped);
 				sketchpad->Text(wpos,hpos,buffer,length);
 			}
 		}
@@ -982,17 +998,77 @@ void basefunction::Getmode2hypo(VECTOR3 *targetvel)
 	mode2orbittime.getposvel(&ejradius,&ejvel);
 
 	//basisorbit.timetovectors(difftime, &ejradius, &ejvel);
-	VECTOR3 forward=unitise(ejvel)*m_prograde;
-	VECTOR3 outward=unitise(crossp(ejvel, basisorbit.getplanevector()))*m_outwardvel;
-	VECTOR3 sideward=unitise(basisorbit.getplanevector())*m_chplvel;
+	VECTOR3 forward=unit(ejvel)*m_prograde;
+	VECTOR3 outward=unit(crossp(ejvel, basisorbit.getplanevector()))*m_outwardvel;
+	VECTOR3 sideward=unit(basisorbit.getplanevector())*m_chplvel;
 	VECTOR3 ejectvector=forward+outward+sideward; //=Eject vector in basisorbit frame
 
 	VECTOR3 hypopos, hypovel;
 	// Add to basisorbit vectors at eject time to give ejection vector in rmaj
-	hypopos=ejradius; 
-	hypovel=ejectvector+ejvel; 
+	hypopos=ejradius;
+	hypovel=ejectvector+ejvel;
 	*targetvel=hypovel;
 
 	//Create hypothetical orbit in rmaj
 	hypormaj.init(hypopos, hypovel, (m_ejdate-simstartMJD)*SECONDS_PER_DAY, basisorbit.getgmplanet());
+}
+
+bool basefunction::IsPlanSlingshot()
+{
+    return getplanpointer() && getplanpointer()->getplanid() == 3;
+}
+
+double basefunction::GetTimeIntercept()
+{
+    double intercepttime=primary.gettimeintercept();
+	double arrmjd=oapiTime2MJD(intercepttime);
+	return arrmjd;
+}
+
+double basefunction::GetHohmannDVExtend(double r1, double r2, double mass)
+{
+	const double m_mi = mass * GGRAV_;
+	if (r1 > r2)
+		std::swap(r1, r2);
+
+	const double dv = sqrt(m_mi / r1) * (sqrt(2 * r2 / (r1 + r2)) - 1);
+	return dv;
+}
+
+double basefunction::GetHohmannDV()
+{
+    OBJHANDLE currentMinor = hminor ? hminor : oapiGetFocusObject(); // Eject or Manoeuvre?
+    if (!currentMinor || !hmajor || !hmajtarget)
+        return 0;
+    VECTOR3 posSrc, posTgt;
+    oapiGetRelativePos(currentMinor, hmajor, &posSrc);
+    oapiGetRelativePos(hmajtarget, hmajor, &posTgt);
+    double radSrc = length(posSrc);
+    double radTgt = length(posTgt);
+    double dv = GetHohmannDVExtend(radSrc, radTgt, oapiGetMass(hmajor));
+    if (radTgt > radSrc)
+        return dv;
+    else
+        return -dv;
+}
+
+VECTOR3 basefunction::GetPlaneAxis(const OBJHANDLE hObj, const OBJHANDLE hRef)
+{
+	VECTOR3 pos, vel;
+	oapiGetRelativePos(hObj, hRef, &pos);
+	oapiGetRelativeVel(hObj, hRef, &vel);
+	const VECTOR3& axis = crossp(pos, vel);
+
+	return axis;
+}
+
+VECTOR3 basefunction::GetLineOfNodes()
+{
+    OBJHANDLE currentMinor = hminor ? hminor : oapiGetFocusObject(); // Eject or Manoeuvre?
+   if (!currentMinor || !hmajor || !hmajtarget)
+        return _V(0,0,0);
+    const VECTOR3 & planeMinor = GetPlaneAxis(currentMinor, hmajor);
+    const VECTOR3 & planeMajor = GetPlaneAxis(hmajtarget, hmajor);
+	const VECTOR3 & lineOfNodes = crossp(planeMinor, planeMajor);
+    return lineOfNodes;
 }

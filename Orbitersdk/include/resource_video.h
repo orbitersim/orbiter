@@ -2,8 +2,9 @@
 // Licensed under the MIT License
 
 // Video tab resource identifiers
-
+#ifndef IDD_PAGE_DEV
 #define IDD_PAGE_DEV      180 // video parameter subdialog
+#endif
 
 #define IDC_VID_DEVICE   1602 // video device list
 #define IDC_VID_FULL     1603 // "fullscreen" button

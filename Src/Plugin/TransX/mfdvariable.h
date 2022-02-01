@@ -6,10 +6,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,8 +26,6 @@ class cmdnugget;
 
 #define MAX_NAME_LENGTH			20
 #define MAX_HELPSTRING_LENGTH	40
-
-using namespace oapi;
 
 class MFDvariable : listelement
 {
@@ -50,8 +48,8 @@ public:
 	void initialise(class MFDvarhandler *vars,int viewmode1,int viewmode2);
 	virtual ~MFDvariable();
 	void setshow(bool value);
-	bool showgeneric(Sketchpad *sketchpad,int width,int line, char *inbuff);
-	virtual void showadjustment(Sketchpad *sketchpad, int width, int line) const {}; //Show the adjustment mode
+	bool showgeneric(oapi::Sketchpad *sketchpad,int width,int line, char *inbuff);
+	virtual void showadjustment(oapi::Sketchpad *sketchpad, int width, int line) const {}; //Show the adjustment mode
 	void gethelpstrings(char *help1, char *help2) const;//Returns help strings
 	void sethelpstrings(char *help1, char *help2);//Sets help strings
 	void getname(char *buffer) const;
@@ -62,7 +60,8 @@ public:
 	virtual void chm_adjmode() {};
 	virtual void inc_variable() = 0; //Increase the variable
 	virtual void dec_variable() {inc_variable();}; //Decrease the variable
-	virtual bool show(Sketchpad *sketchpad, int width, int line);
+	virtual void enter_variable() {};	// = 0;//{}; // typing skills FTW
+	virtual bool show(oapi::Sketchpad *sketchpad, int width, int line);
 	virtual void sethandle(OBJHANDLE tpointer);
 	virtual void setall(class MFDvariable *var);
 	virtual OBJHANDLE gethandle() const;

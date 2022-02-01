@@ -86,7 +86,7 @@ int Panel2D::SetBackground (SURFHANDLE *hSurface, DWORD nsurf, MESHHANDLE hMesh,
 		hSurf = new SURFHANDLE[nSurf];
 		for (DWORD i = 0; i < nsurf; i++) {
 			hSurf[i] = hSurface[i];
-			gc->clbkIncrSurfaceRef (hSurface[i]);
+			if (hSurf[i]) gc->clbkIncrSurfaceRef (hSurface[i]);
 		}
 	} else hSurf = 0;
 	hBkgMesh = hMesh;
@@ -154,6 +154,7 @@ int Panel2D::RegisterMFDGeometry (int MFD_id, int nmesh, int ngroup)
 	if (hBkgMesh) {
 		Mesh *mesh = (Mesh*)hBkgMesh;
 		GroupSpec *grp = mesh->GetGroup (ngroup);
+		if (!grp) return 0;
 		grp->TexIdx = TEXIDX_MFD0 + MFD_id;
 		float xmin, xmax, ymin, ymax;
 		xmin = xmax = grp->Vtx[0].x, ymin = ymax = grp->Vtx[0].y;
@@ -237,6 +238,7 @@ void Panel2D::SetTransformation ()
 		for (mfd = 0; mfd < MAXMFD; mfd++) {
 			if (mfdspec[mfd].nmsh >= 0) {
 				GroupSpec *grp = mesh->GetGroup (mfdspec[mfd].ngrp);
+				if (!grp) return;
 				w = (int)((mfdspec[mfd].right-mfdspec[mfd].left)*panelscale+0.5);
 				h = (int)((mfdspec[mfd].bottom-mfdspec[mfd].top)*panelscale+0.5);
 				// make multiple of 4
@@ -501,6 +503,7 @@ void Panel2D::ReleaseAreas ()
 		delete area[i];
 	}
 	delete []area;
+	area = NULL;
 	narea = nareabuf = 0;
 }
 

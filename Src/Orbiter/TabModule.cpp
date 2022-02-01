@@ -32,11 +32,15 @@ orbiter::ModuleTab::~ModuleTab ()
 	if (nmodulerec) {
 		for (i = 0; i < nmodulerec; i++) {
 			delete []modulerec[i]->name;
-			if (modulerec[i]->info)
+			modulerec[i]->name = NULL;
+			if (modulerec[i]->info) {
 				delete []modulerec[i]->info;
+				modulerec[i]->info = NULL;
+			}
 			delete modulerec[i];
 		}
 		delete []modulerec;
+		modulerec = NULL;
 	}
 }
 

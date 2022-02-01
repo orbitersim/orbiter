@@ -256,6 +256,9 @@ typedef struct {
 	HFONT hFont[1];
 	HPEN hPen[3];
 	HBRUSH hBrush[2];
+	oapi::Font* pFont[1];
+	oapi::Pen* pPen[3];
+	oapi::Brush* pBrush[2];
 } GDIParams;
 
 #define AID_MFD1_LBUTTONS      0

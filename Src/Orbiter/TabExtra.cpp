@@ -37,6 +37,7 @@ orbiter::ExtraTab::~ExtraTab ()
 	if (nExtPrm) {
 		for (DWORD i = 0; i < nExtPrm; i++) delete ExtPrm[i];
 		delete []ExtPrm;
+		ExtPrm = NULL;
 	}
 }
 

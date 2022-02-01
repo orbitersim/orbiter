@@ -104,6 +104,7 @@ INT16 *ElevationManager::LoadElevationTile (int lvl, int ilat, int ilng, double 
 					for (i = 0; i < ndat; i++)
 						elev[i] = (INT16)tmp[i];
 					delete []tmp;
+					tmp = NULL;
 					}
 					break;
 				case -16:
@@ -191,6 +192,7 @@ bool ElevationManager::LoadElevationTile_mod (int lvl, int ilat, int ilng, doubl
 						}
 					}
 					delete []tmp;
+					tmp = NULL;
 					}
 					break;
 				case -16: {
@@ -205,6 +207,7 @@ bool ElevationManager::LoadElevationTile_mod (int lvl, int ilat, int ilng, doubl
 						}
 					}
 					delete []tmp;
+					tmp = NULL;
 					}
 					break;
 				}
@@ -419,7 +422,7 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 	return e*elev_res;
 }
 
-void ElevationManager::ElevationGrid (int ilat, int ilng, int lvl, int pilat, int pilng, int plvl, INT16* pelev, INT16 *elev, double *emean) const
+void ElevationManager::ElevationGrid (int ilat, int ilng, int lvl, int pilat, int pilng, int plvl, INT16 *pelev, float *elev, double *emean) const
 {
 	int i, j, nmean;
 	int nlng = 2 << lvl;
@@ -441,7 +444,7 @@ void ElevationManager::ElevationGrid (int ilat, int ilng, int lvl, int pilat, in
 	int plat0 = -1000, plng0 = -1000;
 	bool pcelldiag = false;
 
-	INT16 *elev_base = elev + elev_stride+1;
+	float *elev_base = elev + elev_stride+1;
 	INT16 *pelev_base = pelev + elev_stride+1;
 	if (emean) {
 		*emean = 0.0;
@@ -511,7 +514,113 @@ void ElevationManager::ElevationGrid (int ilat, int ilng, int lvl, int pilat, in
 			}
 			plat0 = lat0;
 			plng0 = lng0;
-			elev_base[i*elev_stride+j] = (INT16)e;
+			elev_base[i*elev_stride+j] = (float)e;
+			if (emean && i >= 0 && j >= 0 && i <= elev_grid && j <= elev_grid) {
+				*emean += e;
+				nmean++;
+			}
+		}
+	}
+	if (emean && nmean)
+		*emean /= nmean;
+}
+
+
+
+void ElevationManager::ElevationGrid(int ilat, int ilng, int lvl, int pilat, int pilng, int plvl, INT16* pelev, INT16* elev, double* emean) const
+{
+	int i, j, nmean;
+	int nlng = 2 << lvl;
+	int nlat = 1 << lvl;
+	double lng, lat, e;
+	double latmin = Pi05 * (double)(nlat - 2 * ilat - 2) / (double)nlat;
+	double latmax = Pi05 * (double)(nlat - 2 * ilat) / (double)nlat;
+	double lngmin = Pi * (double)(2 * ilng - nlng) / (double)nlng;
+	double lngmax = Pi * (double)(2 * ilng - nlng + 2) / (double)nlng;
+	double dlat = (latmax - latmin) / elev_grid;
+	double dlng = (lngmax - lngmin) / elev_grid;
+
+	int pnlng = 2 << plvl;
+	int pnlat = 1 << plvl;
+	double platmin = Pi05 * (double)(pnlat - 2 * pilat - 2) / (double)pnlat;
+	double platmax = Pi05 * (double)(pnlat - 2 * pilat) / (double)pnlat;
+	double plngmin = Pi * (double)(2 * pilng - pnlng) / (double)pnlng;
+	double plngmax = Pi * (double)(2 * pilng - pnlng + 2) / (double)pnlng;
+	int plat0 = -1000, plng0 = -1000;
+	bool pcelldiag = false;
+
+	INT16* elev_base = elev + elev_stride + 1;
+	INT16* pelev_base = pelev + elev_stride + 1;
+	if (emean) {
+		*emean = 0.0;
+		nmean = 0;
+	}
+	for (i = -1; i <= elev_grid + 1; i++) {
+		lat = latmin + i * dlat;
+		double latidx = (lat - platmin) * elev_grid / (platmax - platmin);
+		int lat0 = (int)floor(latidx);
+		for (j = -1; j <= elev_grid + 1; j++) {
+			lng = lngmin + j * dlng;
+			double lngidx = (lng - plngmin) * elev_grid / (plngmax - plngmin);
+			int lng0 = (int)floor(lngidx);
+
+			INT16* eptr = pelev_base + lat0 * elev_stride + lng0;
+			if (mode == 1) { // linear interpolation
+
+				double w_lat = latidx - lat0;
+				double w_lng = lngidx - lng0;
+				e = (1.0 - w_lat) * (eptr[0] * (1.0 - w_lng) + eptr[1] * w_lng) + w_lat * (eptr[elev_stride] * (1.0 - w_lng) + eptr[elev_stride + 1] * w_lng);
+
+			}
+			else { // cubic spline interpolation
+
+			 // take care of boundaries
+				int latstencil[4] = { -elev_stride,0,elev_stride,2 * elev_stride };
+				int lngstencil[4] = { -1,0,1,2 };
+				if (lat0 < 0) latstencil[0] = 0;
+				else if (lat0 >= elev_grid) latstencil[3] = elev_stride;
+				if (lng0 < 0) lngstencil[0] = 0;
+				else if (lng0 >= elev_grid) lngstencil[3] = 1;
+
+				double a_m1, a_0, a_p1, a_p2, b_m1, b_0, b_p1, b_p2;
+				double tlat = latidx - lat0;
+				double tlng = lngidx - lng0;
+				a_m1 = eptr[latstencil[0] + lngstencil[0]];
+				a_0 = eptr[latstencil[0] + lngstencil[1]];
+				a_p1 = eptr[latstencil[0] + lngstencil[2]];
+				a_p2 = eptr[latstencil[0] + lngstencil[3]];
+				b_m1 = 0.5 * (2.0 * a_0 + tlng * (-a_m1 + a_p1) +
+					tlng * tlng * (2.0 * a_m1 - 5.0 * a_0 + 4.0 * a_p1 - a_p2) +
+					tlng * tlng * tlng * (-a_m1 + 3.0 * a_0 - 3.0 * a_p1 + a_p2));
+				a_m1 = eptr[latstencil[1] + lngstencil[0]];
+				a_0 = eptr[latstencil[1] + lngstencil[1]];
+				a_p1 = eptr[latstencil[1] + lngstencil[2]];
+				a_p2 = eptr[latstencil[1] + lngstencil[3]];
+				b_0 = 0.5 * (2.0 * a_0 + tlng * (-a_m1 + a_p1) +
+					tlng * tlng * (2.0 * a_m1 - 5.0 * a_0 + 4.0 * a_p1 - a_p2) +
+					tlng * tlng * tlng * (-a_m1 + 3.0 * a_0 - 3.0 * a_p1 + a_p2));
+				a_m1 = eptr[latstencil[2] + lngstencil[0]];
+				a_0 = eptr[latstencil[2] + lngstencil[1]];
+				a_p1 = eptr[latstencil[2] + lngstencil[2]];
+				a_p2 = eptr[latstencil[2] + lngstencil[3]];
+				b_p1 = 0.5 * (2.0 * a_0 + tlng * (-a_m1 + a_p1) +
+					tlng * tlng * (2.0 * a_m1 - 5.0 * a_0 + 4.0 * a_p1 - a_p2) +
+					tlng * tlng * tlng * (-a_m1 + 3.0 * a_0 - 3.0 * a_p1 + a_p2));
+				a_m1 = eptr[latstencil[3] + lngstencil[0]];
+				a_0 = eptr[latstencil[3] + lngstencil[1]];
+				a_p1 = eptr[latstencil[3] + lngstencil[2]];
+				a_p2 = eptr[latstencil[3] + lngstencil[3]];
+				b_p2 = 0.5 * (2.0 * a_0 + tlng * (-a_m1 + a_p1) +
+					tlng * tlng * (2.0 * a_m1 - 5.0 * a_0 + 4.0 * a_p1 - a_p2) +
+					tlng * tlng * tlng * (-a_m1 + 3.0 * a_0 - 3.0 * a_p1 + a_p2));
+				e = 0.5 * (2.0 * b_0 + tlat * (-b_m1 + b_p1) +
+					tlat * tlat * (2.0 * b_m1 - 5.0 * b_0 + 4.0 * b_p1 - b_p2) +
+					tlat * tlat * tlat * (-b_m1 + 3.0 * b_0 - 3.0 * b_p1 + b_p2));
+				e = max(-32767.0, min(32766.0, e));
+			}
+			plat0 = lat0;
+			plng0 = lng0;
+			elev_base[i * elev_stride + j] = (INT16)e;
 			if (emean && i >= 0 && j >= 0 && i <= elev_grid && j <= elev_grid) {
 				*emean += e;
 				nmean++;

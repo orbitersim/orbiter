@@ -972,7 +972,7 @@ void CreateSpherePatch (LPDIRECT3D7 d3d, LPDIRECT3DDEVICE7 dev, VBMESH &mesh, in
 			tmp = Idx[i+1], Idx[i+1] = Idx[i+2], Idx[i+2] = tmp;
 
 	D3DVERTEXBUFFERDESC vbd = 
-		{ sizeof(D3DVERTEXBUFFERDESC), VB_MemFlag | D3DVBCAPS_WRITEONLY, FVF_2TEX, nVtx };
+		{ sizeof(D3DVERTEXBUFFERDESC), VB_MemFlag | D3DVBCAPS_WRITEONLY, FVF_2TEX, (DWORD)nVtx };
 	d3d->CreateVertexBuffer (&vbd, &mesh.vb, 0);
 	LPVOID data;
 	mesh.vb->Lock (DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&data, NULL);

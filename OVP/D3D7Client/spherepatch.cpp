@@ -282,7 +282,7 @@ void CreateSpherePatch (const oapi::D3D7Client *gclient, VBMESH &mesh, int nlng,
 			tmp = Idx[i+1], Idx[i+1] = Idx[i+2], Idx[i+2] = tmp;
 
 	D3DVERTEXBUFFERDESC vbd = 
-	{ sizeof(D3DVERTEXBUFFERDESC), vbMemCaps | D3DVBCAPS_WRITEONLY, FVF_2TEX, nVtx };
+	{ sizeof(D3DVERTEXBUFFERDESC), vbMemCaps | D3DVBCAPS_WRITEONLY, FVF_2TEX, (DWORD)nVtx };
 	d3d->CreateVertexBuffer (&vbd, &mesh.vb, 0);
 	LPVOID data;
 	mesh.vb->Lock (DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&data, NULL);

@@ -248,7 +248,7 @@ void Scene::InitGDI ()
 
 	const int fsize[4] = {12, 16, 20, 26};
 	for (int i = 0; i < 4; i++)
-		label_font[i] = gc->clbkCreateFont(fsize[i], true, "Arial", oapi::Font::BOLD);
+		label_font[i] = gc->clbkCreateFont(fsize[i], true, "Arial", FONT_BOLD);
 	label_pen = gc->clbkCreatePen(1, 0, RGB(255,255,255));
 }
 
@@ -872,10 +872,10 @@ void Scene::AllocGrids ()
 void Scene::Render3DLabel (const Vector &gp, char *label, double scale, DWORD colour)
 {
 	static VERTEX_TL1TEX Vtx[4] = {
-		{0,0,0,0,D3DRGBA(1,1,1,1),0.001f,0.001f},
-		{0,0,0,0,D3DRGBA(1,1,1,1),1.000f,0.001f},
-		{0,0,0,0,D3DRGBA(1,1,1,1),0.001f,1.000f},
-		{0,0,0,0,D3DRGBA(1,1,1,1),1.000f,1.000f}
+		{0,0,0,0,(D3DCOLOR)D3DRGBA(1,1,1,1),0.001f,0.001f},
+		{0,0,0,0,(D3DCOLOR)D3DRGBA(1,1,1,1),1.000f,0.001f},
+		{0,0,0,0,(D3DCOLOR)D3DRGBA(1,1,1,1),0.001f,1.000f},
+		{0,0,0,0,(D3DCOLOR)D3DRGBA(1,1,1,1),1.000f,1.000f}
 	};
 	static WORD Idx[6] = {0,1,2,3,2,1};
 

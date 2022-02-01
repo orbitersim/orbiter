@@ -711,6 +711,7 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, INT16 *elev, double globelev)
 	LOGOUT_DDERR (mesh.vb->Unlock());
 	LOGOUT_DDERR (mesh.vb->Optimize (dev, 0));
 	delete []Vtx;
+	Vtx = NULL;
 	mesh.nv  = nVtx;
 	mesh.idx = Idx;
 	mesh.ni  = nIdx;

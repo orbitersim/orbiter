@@ -6,10 +6,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -63,7 +63,7 @@ int transxstate::movetonextfunction(unsigned int curvarfunction)
 
 	OBJHANDLE tmajor,tminor,actualhmajor;
 	VESSELSTATUS status;
-	oapiGetVesselInterface(hcraft)->GetStatus(status);	
+	oapiGetVesselInterface(hcraft)->GetStatus(status);
 	if (status.status==1 && !cfunction->getpreviousfunc()) // craft is landed and we are in the first stage
 		cfunction->setplanstate(0, 1); // force an escape plan
 	cfunction->updateplan();
@@ -127,9 +127,14 @@ int transxstate::inc_viewmode(unsigned int curfunction,int currview)
 	return baselist[curfunction-1]->calcnewview(currview,curfunction==1);
 }
 
+void transxstate::UpdateForOptimiser()
+{
+    //if (viewmode == 3)
+    dolowpriaction();
+}
+
 void transxstate::dolowpriaction()
 {
-
 	if (!initflag) return;//do not attempt to run if initialisation incomplete
 	if (checkdelete()) return;
 	//Do nothing most of the time, to reduce system load on orbiter
@@ -145,17 +150,15 @@ void transxstate::dolowpriaction()
 		currcalcfunction=0;
 		checkbasefunction();
 	}
-	VECTOR3 temp;
-	if (currcalcfunction>=(int)baselist.size())
-	{
-		currcalcfunction=-1;
-		return;
+	if (currcalcfunction < (int)baselist.size()) {		// fixed negative logic bug
+		VECTOR3 temp;
+		baselist[currcalcfunction]->calculate(&temp);
+		currcalcfunction++;
+		addaction(0);
+	} else {
+		currcalcfunction = 0;
 	}
-	baselist[currcalcfunction]->calculate(&temp);
-	currcalcfunction++;
-	addaction(0);
 }
-
 
 bool transxstate::checkbasefunction()
 {
@@ -219,7 +222,7 @@ void transxstate::savecurrent(FILEHANDLE scn)
 	if (saveflag) return;
 	saveflag=true;
 	//Save each function
-	char buffer[20];//Too big, but who cares!
+	char buffer[20]="";//Too big, but who cares!
 	strcpy(buffer,"FNumber");
 	oapiWriteScenario_int(scn,buffer,baselist.size());
 	std::deque<class basefunction*>::iterator a;
@@ -371,7 +374,7 @@ bool transxstate::initialisevars()
 
 
 bool transxstate::initfunctions()//sets up transxstate if no saved state to reload
-{	
+{
 	//Create some default values for these functions
 	OBJHANDLE thmajor,thminor;
 	thminor=NULL;
@@ -386,7 +389,7 @@ bool transxstate::initfunctions()//sets up transxstate if no saved state to relo
 }
 
 basefunction *transxstate::getpreviousfunction(int positionnumber)
-{//retained for backward compatibility 
+{//retained for backward compatibility
 	return getbasefn(positionnumber);
 }
 
@@ -412,7 +415,7 @@ transxstate::~transxstate()
 	todeletelist.clear();
 }
 
-bool transxstate::doupdate(Sketchpad *sketchpad, int tw, int th,unsigned int curfunction,int currview, unsigned int curvarfunction, int currvarview,TransxMFD *tmfdpointer)
+bool transxstate::doupdate(oapi::Sketchpad *sketchpad, int tw, int th,unsigned int curfunction,int currview, unsigned int curvarfunction, int currvarview,TransxMFD *tmfdpointer)
 {
 	saveflag=false;
 	selectshipvars=(curvarfunction<1);
@@ -489,18 +492,31 @@ bool transxstate::doupdate(Sketchpad *sketchpad, int tw, int th,unsigned int cur
 	}
 	else
 	{
-		cvarfunction->processvisiblevars();//Update any visibility changes
+		cvarfunction->processvisiblevars(currview);//Update any visibility changes
 		cfunction->doupdate(sketchpad,tw,th,currview);
 	}
-	char buffer[20];
-	int length=sprintf(buffer,"Stage %i:%z",curfunction,baselist.size());
+	char buffer[20]="";
+	int length=snprintf(buffer,sizeof(buffer)-1,"Stage %i:%i",curfunction,(int)baselist.size());
 	sketchpad->Text(tw/2,0,buffer,length);
 	length=sprintf(buffer,"Vars Stage %i",curvarfunction);
 	sketchpad->Text(tw/2,4*linespacing,buffer,length);
+
+	// Send info about current bodies
+    if (curfunction - 1 < baselist.size())
+    {
+        basefunction * baseFunc = baselist[curfunction - 1];
+        mapfunction * mapptr = baseFunc->getmappointer();
+        if (mapptr)
+        {
+            OBJHANDLE hmajor = baseFunc->gethmajor();
+            OBJHANDLE currBody = mapptr->getcurrbody(oapiGetFocusObject());
+        }
+    }
+
 	return true;
 }
 
-void transxstate::showinitialstage(Sketchpad *sketchpad,int linespacing,int tw)
+void transxstate::showinitialstage(oapi::Sketchpad *sketchpad,int linespacing,int tw)
 {
 	sketchpad->Text(tw/2,0,"General Setup",13);
 }

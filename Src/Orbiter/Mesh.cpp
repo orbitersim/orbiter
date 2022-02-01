@@ -62,6 +62,7 @@ void Triangle::SetNodes (int n0, int n1, int n2)
 
 Mesh::Mesh ()
 {
+	name = NULL;
 	nGrp = nMtrl = nTex = 0;
 	GrpVis   = 0;
 	GrpSetup = false;
@@ -70,6 +71,7 @@ Mesh::Mesh ()
 
 Mesh::Mesh (NTVERTEX *vtx, DWORD nvtx, WORD *idx, DWORD nidx, DWORD matidx, DWORD texidx)
 {
+	name = NULL;
 	nGrp = nMtrl = nTex = 0;
 	GrpVis   = 0;
 	GrpSetup = false;
@@ -80,6 +82,7 @@ Mesh::Mesh (NTVERTEX *vtx, DWORD nvtx, WORD *idx, DWORD nidx, DWORD matidx, DWOR
 
 Mesh::Mesh (const Mesh &mesh)
 {
+	name = NULL;
 	nGrp = nMtrl = nTex = 0;
 	GrpVis = 0;
 	GrpSetup = false;
@@ -127,6 +130,7 @@ void Mesh::Set (const Mesh &mesh)
 	} else {
 		GrpVis = 0;
 	}
+	SetName(mesh.GetName());
 	bModulateMatAlpha = mesh.bModulateMatAlpha;
 }
 
@@ -140,8 +144,11 @@ void Mesh::Setup ()
 	DWORD g;
 	if (GrpVis) { // allocated already
 		delete []GrpCnt;
+		GrpCnt = NULL;
 		delete []GrpRad;
+		GrpRad = NULL;
 		delete []GrpVis;
+		GrpVis = 0;
 	}
 	GrpCnt  = new D3DVECTOR[nGrp]; TRACENEW
 	GrpRad  = new D3DVALUE[nGrp]; TRACENEW
@@ -194,9 +201,13 @@ int Mesh::AddGroup (NTVERTEX *vtx, DWORD nvtx, WORD *idx, DWORD nidx,
 		memcpy (tmp_Rad, GrpRad, nGrp*sizeof(D3DVALUE));
 		memcpy (tmp_Vis, GrpVis, nGrp*sizeof(DWORD));
 		delete []Grp;
+		Grp = NULL;
 		delete []GrpCnt;
+		GrpCnt = NULL;
 		delete []GrpRad;
+		GrpRad = NULL;
 		delete []GrpVis;
+		GrpVis = 0;
 	}
 	Grp = tmp_Grp;
 	GrpCnt = tmp_Cnt;
@@ -247,6 +258,7 @@ bool Mesh::AddGroupBlock (DWORD grp, const NTVERTEX *vtx, DWORD nvtx, const WORD
 	if (g->nVtx) {
 		memcpy (v, g->Vtx, g->nVtx*sizeof(NTVERTEX));
 		delete []g->Vtx;
+		g->Vtx = NULL;
 	}
 	if (nvtx) {
 		memcpy (v+g->nVtx, vtx, nvtx*sizeof(NTVERTEX));
@@ -258,6 +270,7 @@ bool Mesh::AddGroupBlock (DWORD grp, const NTVERTEX *vtx, DWORD nvtx, const WORD
 	if (g->nIdx) {
 		memcpy (i, g->Idx, g->nIdx*sizeof(WORD));
 		delete []g->Idx;
+		g->Idx = NULL;
 	}
 	if (nidx) {
 		for (DWORD j = 0; j < nidx; j++)
@@ -307,25 +320,26 @@ void Mesh::AddMesh (Mesh &mesh)
 
 bool Mesh::DeleteGroup (DWORD grp)
 {
-	if (grp < nGrp) {
-		delete []Grp[grp].Vtx;
-		delete []Grp[grp].Idx;
+	if (nGrp == 1) { // delete the only group
+		delete []Grp;
+		Grp = NULL;
+		nGrp = 0;
+	} else if (grp < nGrp && grp > 0) { // delete selected group
+		if (Grp[grp].Vtx) { delete []Grp[grp].Vtx; Grp[grp].Vtx = NULL; }
+		if (Grp[grp].Idx) { delete []Grp[grp].Idx; Grp[grp].Idx = NULL; }
 		if (Grp[grp].VtxBuf) Grp[grp].VtxBuf->Release();
 
-		if (nGrp == 1) { // delete the only group
-			delete []Grp;
-		} else {
-			GroupSpec *tmp_Grp = new GroupSpec[nGrp-1]; TRACENEW
-			for (DWORD i = 0, j = 0; i < nGrp; i++)
-				if (i != grp) tmp_Grp[j++] = Grp[i];
-			delete []Grp;
-			Grp = tmp_Grp;
-		}
+		// redo group
+		GroupSpec * tmp_Grp = new GroupSpec[nGrp - 1]; TRACENEW
+		for (DWORD i = 0, j = 0; i < nGrp; i++)
+			if (i != grp) tmp_Grp[j++] = Grp[i];
+		delete []Grp;
+		Grp = tmp_Grp;
 		nGrp--;
-		return true;
 	} else {
 		return false;
 	}
+	return true;
 }
 
 int Mesh::GetGroup (DWORD grp, GROUPREQUESTSPEC *grs)
@@ -423,7 +437,10 @@ int Mesh::AddMaterial (D3DMATERIAL7 &mtrl)
 	D3DMATERIAL7 *tmp_Mtrl = new D3DMATERIAL7[nMtrl+1]; TRACENEW
 	memcpy (tmp_Mtrl, Mtrl, sizeof(D3DMATERIAL7)*nMtrl);
 	memcpy (tmp_Mtrl+nMtrl, &mtrl, sizeof(D3DMATERIAL7));
-	if (nMtrl) delete []Mtrl;
+	if (nMtrl) {
+		delete []Mtrl;
+		Mtrl = NULL;
+	}
 	Mtrl = tmp_Mtrl;
 	return nMtrl++;
 }
@@ -460,21 +477,31 @@ void Mesh::Clear ()
 	for (DWORD i = 0; i < nGrp; i++) {
 		delete []Grp[i].Vtx;
 		delete []Grp[i].Idx;
+		Grp[i].Vtx = NULL;
+		Grp[i].Idx = NULL;
 		if (Grp[i].VtxBuf) Grp[i].VtxBuf->Release();
 	}
 	if (nGrp) {
 		delete []Grp;
+		Grp = NULL;
 		nGrp = 0;
 	}
 	if (nMtrl) {
 		delete []Mtrl;
+		Mtrl = NULL;
 		nMtrl = 0;
 	}
 	if (GrpVis) {
 		delete []GrpCnt;
+		GrpCnt = NULL;
 		delete []GrpRad;
+		GrpRad = NULL;
 		delete []GrpVis;
 		GrpVis = 0;
+	}
+	if (name) {
+		delete []name;
+		name = NULL;
 	}
 	GrpSetup = false;
 	ReleaseTextures ();
@@ -702,6 +729,7 @@ void Mesh::CalcNormals (DWORD grp, bool missingonly)
 			vtx[i].nx /= len, vtx[i].ny /= len, vtx[i].nz /= len;
 		}
 	delete []calcNml;
+	calcNml = NULL;
 }
 
 void Mesh::CalcTexCoords (DWORD grp)
@@ -734,6 +762,7 @@ int Mesh::AddTexture (SURFHANDLE tex)
 	if (nTex) {
 		memcpy (tmp, Tex, nTex*sizeof(SURFHANDLE));
 		delete []Tex;
+		Tex = NULL;
 	}
 	Tex = tmp;
 	Tex[nTex] = tex;
@@ -768,6 +797,7 @@ void Mesh::ReleaseTextures ()
 #endif // INLINEGRAPHICS
 			}
 		delete []Tex;
+		Tex = NULL;
 		nTex = 0;
 	}
 }
@@ -795,6 +825,20 @@ void Mesh::GlobalEnableSpecular (bool enable)
 void Mesh::EnableMatAlpha (bool enable)
 {
 	bModulateMatAlpha = enable;
+}
+
+const char* Mesh::GetName() const
+{
+	return name;
+}
+
+void Mesh::SetName(const char* n)
+{
+	if (n) {
+		int len = lstrlen(n) + 1;
+		name = new char[len];
+		strcpy_s(name, len, n);
+	}
 }
 
 DWORD Mesh::Render (LPDIRECT3DDEVICE7 dev)
@@ -1046,6 +1090,7 @@ istream &operator>> (istream &is, Mesh &mesh)
 					NTVERTEX &v = vtx[i];
 					if (!is.getline (cbuf, 256)) {
 						delete []vtx;
+						vtx = NULL;
 						nvtx = 0;
 						break;
 					}
@@ -1063,7 +1108,9 @@ istream &operator>> (istream &is, Mesh &mesh)
 				for (i = j = 0; i < ntri; i++) {
 					if (!is.getline (cbuf, 256)) {
 						delete []vtx;
+						vtx = NULL;
 						delete []idx;
+						idx = NULL;
 						nvtx = nidx = 0;
 						break;
 					}
@@ -1111,6 +1158,7 @@ istream &operator>> (istream &is, Mesh &mesh)
 			mesh.AddMaterial (mtrl);
 		}
 		delete []matname;
+		matname = NULL;
 	}
 
 	// read texture list
@@ -1266,9 +1314,11 @@ const Mesh *MeshManager::LoadMesh (const char *fname, bool *firstload)
 		if (nmlist) {
 			memcpy (tmp, mlist, nmlist*sizeof(MeshBuffer));
 			delete []mlist;
+			mlist = NULL;
 		}
 		mlist = tmp;
 	}
+	mesh->SetName(fname);
 	mlist[nmlist].mesh = mesh;
 	mlist[nmlist].crc  = crc;
 	strncpy (mlist[nmlist].fname, fname, 32);
@@ -1285,6 +1335,7 @@ bool LoadMesh (const char *meshname, Mesh &mesh)
 	ifstream ifs (g_pOrbiter->MeshPath (meshname), ios::in);
 	ifs >> mesh;
 	if (ifs.good()) {
+		mesh.SetName(meshname);
 		return true;
 	} else {
 		LOGOUT_ERR ("Mesh not found: %s", g_pOrbiter->MeshPath (meshname));

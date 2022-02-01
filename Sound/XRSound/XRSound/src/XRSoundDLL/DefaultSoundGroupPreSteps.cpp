@@ -180,14 +180,16 @@ void RandomDefaultSoundGroupPreStep::ResetTimer()
 
 void RandomDefaultSoundGroupPreStep::clbkPreStep(const double simt, const double simdt, const double mjd)
 {
+    double m_systemUptime = XRSoundDLL::GetSystemUptime();
+
     if (m_nextPlayTime < 0)
         ResetTimer();       // it's the first time through here, so initialize the timer
 
     // if it's time to play a random sound, confirm with the subclass that it's OK to play it now
-    if (XRSoundDLL::GetSystemUptime() >= m_nextPlayTime)
+    if (m_systemUptime >= m_nextPlayTime)
     {
         ResetTimer();
-        _ASSERTE(XRSoundDLL::GetSystemUptime() > simt);
+        //_ASSERTE(m_systemUptime > simt); // simulator time can be bigger than system time using a very fast time acceleration
 
         if (ShouldPlayNow(simt, simdt, mjd))
             PlayRandom();

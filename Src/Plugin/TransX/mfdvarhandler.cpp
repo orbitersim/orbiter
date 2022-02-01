@@ -6,10 +6,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,8 +21,8 @@
 #define STRICT
 
 #include <windows.h>
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include "orbitersdk.h"
 #include "mfd.h"
 #include "parser.h"
@@ -35,7 +35,7 @@ void MFDvarhandler::addtolist(MFDvariable *item)
 
 void MFDvarhandler::saveallvariables(FILEHANDLE scn)
 {
-	char buffer[80];
+	char buffer[80]="";
 	class dblliter *iterator=listhead.getiterator();
 	class MFDvariable *pointer=static_cast<MFDvariable*>(iterator->front());
 	while (pointer!=NULL)

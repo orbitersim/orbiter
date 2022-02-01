@@ -57,7 +57,7 @@ void InlineDialog::GlobalInit (oapi::GraphicsClient *gclient)
 	draw.fontH = (int)(viewH*0.02*scale);
 	if (draw.fontH < 8) draw.fontH = 8;
 	draw.fontNorm = gclient->clbkCreateFont (draw.fontH, true, face1);
-	draw.fontInactive = gclient->clbkCreateFont (draw.fontH, true, face1, oapi::Font::ITALIC);
+	draw.fontInactive = gclient->clbkCreateFont (draw.fontH, true, face1, FONT_ITALIC);
 	draw.fontInput = gclient->clbkCreateFont (draw.fontH, false, "Courier New");
 }
 
@@ -89,15 +89,26 @@ Select::Select (oapi::GraphicsClient *gclient, HWND hwnd): InlineDialog (gclient
 Select::~Select ()
 {
 	if (alen) {
-		for (int i = 0; i < alen; i++) delete []buf[i];
+		for (int i = 0; i < alen; i++) {
+			delete []buf[i];
+			buf[i] = NULL;
+		}
 		delete []buf;
+		buf = NULL;
 		delete []buflen;
+		buflen = 0;
 	}
 	if (llen) {
-		for (int i = 0; i < llen; i++) delete []lbuf[i];
+		for (int i = 0; i < llen; i++) {
+			delete []lbuf[i];
+			lbuf[i] = NULL;
+		}
 		delete []lbuf;
+		lbuf = NULL;
 		delete []lbuflen;
+		lbuflen = 0;
 		delete []lcur;
+		lcur = 0;
 	}
 }
 
@@ -586,7 +597,9 @@ InputBox::InputBox (oapi::GraphicsClient *gclient, HWND hwnd, int _buflen): Inli
 InputBox::~InputBox ()
 {
 	delete []buf;
+	buf = NULL;
 	delete []title;
+	title = NULL;
 }
 
 void InputBox::SetTitle (const char *_title)

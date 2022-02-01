@@ -241,7 +241,7 @@ void AnimState2::SaveState (FILEHANDLE scn, const char *label)
 {
 	if (state) {
 		char cbuf[256];
-		sprintf (cbuf, "%0.4lf %0.4lf", state, speed);
+		snprintf (cbuf, sizeof(cbuf) - 1, "%0.4lf %0.4lf", state, speed);
 		oapiWriteScenario_string (scn, (char*)label, cbuf);
 	}
 }

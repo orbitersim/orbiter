@@ -6,10 +6,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -33,17 +33,17 @@ public:
 		Rectangle
 	};
 
-	void drawvectorline(Sketchpad *sketchpad, const VECTOR3 &line);//Draws vector line at current projection & scaling
-	void drawplanet(Sketchpad *sketchpad, OBJHANDLE body); //Draw circle representing planet
-	void drawatmosphere(Sketchpad *sketchpad, OBJHANDLE body); //Draw circle representing atmosphere
+	void drawvectorline(oapi::Sketchpad *sketchpad, const VECTOR3 &line);//Draws vector line at current projection & scaling
+	void drawplanet(oapi::Sketchpad *sketchpad, OBJHANDLE body); //Draw circle representing planet
+	void drawatmosphere(oapi::Sketchpad *sketchpad, OBJHANDLE body); //Draw circle representing atmosphere
 	void setprojection(const OrbitElements &torbit);//View set from orbit's plane vector
 	void setprojection(const VECTOR3 &projection);// View set from vector
 	void setprojection(const VECTOR3 &txaxis, const VECTOR3 &tyaxis, const VECTOR3 &tzaxis);//Explicitly set axes
-	void drawvector(Sketchpad *sketchpad,const VECTOR3 &line1);//Draw vector using current projection & scale
-	void drawmarker(Sketchpad *sketchpad, const VECTOR3 location, Shape shape);	// draws a marker at the specified location
-	void drawtwovector(Sketchpad *sketchpad, const VECTOR3 &line1, const VECTOR3 &line2);//Draw two vectors using current projection & scaling
-	void draworbit(const class OrbitElements &element, Sketchpad *sketchpad, bool drawradius);//Calls draworbit in orbitelements
-	double vectorpointdisplay(Sketchpad *sketchpad, const VECTOR3 &target, MFD2 *mfd, VESSEL *vessel, bool isposition);//Nice little pointer utility
+	void drawvector(oapi::Sketchpad *sketchpad,const VECTOR3 &line1);//Draw vector using current projection & scale
+	void drawmarker(oapi::Sketchpad *sketchpad, const VECTOR3 & location, Shape shape);	// draws a marker at the specified location
+	void drawtwovector(oapi::Sketchpad *sketchpad, const VECTOR3 &line1, const VECTOR3 &line2);//Draw two vectors using current projection & scaling
+	void draworbit(const class OrbitElements &element, oapi::Sketchpad *sketchpad, bool drawradius);//Calls draworbit in orbitelements
+	double vectorpointdisplay(oapi::Sketchpad *sketchpad, const VECTOR3 &target, MFD2 *mfd, VESSEL *vessel, bool isposition);//Nice little pointer utility
 	void setviewscale(const class OrbitElements &orbit);//Set scale of picture using orbit size
 	void setviewscale(double temp);//Set scale using a number
 	void setviewscalesize(double temp);//Set scale using a distance size
@@ -51,7 +51,7 @@ public:
 	void getviewwindow(DWORD *xstart, DWORD *ystart, DWORD *xend, DWORD *yend);//Get back above info
 	double getviewscale();//Get viewscale number
 private:
-	void drawcircle(Sketchpad *sketchpad, double size); //Draw circle representing planet
+	void drawcircle(oapi::Sketchpad *sketchpad, double size); //Draw circle representing planet
 	VECTOR3 xaxis, yaxis, zaxis; // projection vectors
 	DWORD ixstart, iystart, ixend, iyend, windowsize;//window parameters
 	double scale;//scaling factor for diagram

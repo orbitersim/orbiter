@@ -75,7 +75,8 @@ public:
 	 *   \ref oapi::Font::Font
 	 * \sa clbkReleaseFont, GDIFont
 	 */
-	oapi::Font *clbkCreateFont (int height, bool prop, const char *face, oapi::Font::Style style = oapi::Font::NORMAL, int orientation = 0) const;
+	oapi::Font *clbkCreateFont (int height, bool prop, const char *face, FontStyle style = FontStyle::FONT_NORMAL, int orientation = 0) const;
+	oapi::Font* clbkCreateFontEx(int height, char* face, int width = 0, int weight = 400, FontStyle style = FontStyle::FONT_NORMAL, float spacing = 0.0f) const;
 
 	/**
 	 * \brief De-allocates a font resource.
@@ -166,7 +167,7 @@ public:
 	 * \return Previously selected font.
 	 * \sa GDIFont, GDIClient::clbkCreateFont
 	 */
-	oapi::Font *SetFont (oapi::Font *font) const;
+	oapi::Font *SetFont (oapi::Font *font);
 
 	/**
 	 * \brief Selects a new pen to use.
@@ -174,7 +175,7 @@ public:
 	 * \return Previously selected pen.
 	 * \sa GDIPen, GDIClient::clbkCreatePen
 	 */
-	oapi::Pen *SetPen (oapi::Pen *pen) const;
+	oapi::Pen *SetPen (oapi::Pen *pen);
 
 	/**
 	 * \brief Selects a new brush to use.
@@ -182,7 +183,7 @@ public:
 	 * \return Previously selected brush.
 	 * \sa GDIBrush, GDIClient::clbkCreateBrush
 	 */
-	oapi::Brush *SetBrush (oapi::Brush *brush) const;
+	oapi::Brush *SetBrush (oapi::Brush *brush);
 
 	/**
 	 * \brief Set horizontal and vertical text alignment.
@@ -441,7 +442,8 @@ public:
 	 * \note If the specified face name is not recognised, then 'sans' is
 	 *   selected for \e prop==true, and 'fixed' is selected for \e prop==false.
 	 */
-	GDIFont (int height, bool prop, const char *face, Style style=NORMAL, int orientation=0);
+	GDIFont (int height, bool prop, const char *face, FontStyle style= FontStyle::FONT_NORMAL, int orientation=0);
+	GDIFont (int height, char* face, int width, int weight, FontStyle style, float spacing);
 
 	/**
 	 * \brief Font destructor.

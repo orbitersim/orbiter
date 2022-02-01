@@ -146,13 +146,22 @@ GenericEvent::GenericEvent (PlaybackEditor *_editor, double _t0, char *_tag, cha
 
 GenericEvent::~GenericEvent ()
 {
-	if (tag) delete []tag;
-	if (content) delete []content;
+	if (tag) {
+		delete []tag;
+		tag = NULL;
+	}
+	if (content) {
+		delete []content;
+		content = NULL;
+	}
 }
 
 void GenericEvent::SetTag (char *_tag)
 {
-	if (tag) delete []tag;
+	if (tag) {
+		delete []tag;
+		tag = NULL;
+	}
 	if (_tag) {
 		tag = new char[strlen(_tag)+1]; TRACENEW
 		strcpy (tag, _tag);
@@ -161,7 +170,10 @@ void GenericEvent::SetTag (char *_tag)
 
 void GenericEvent::SetContent (char *_content)
 {
-	if (content) delete []content;
+	if (content) {
+		delete []content;
+		content = NULL;
+	}
 	if (_content) {
 		content = new char[strlen(_content)+1]; TRACENEW
 		strcpy (content, _content);
@@ -455,12 +467,18 @@ NoteEvent::NoteEvent (PlaybackEditor *_editor, double _t0, char *_note): Playbac
 
 NoteEvent::~NoteEvent ()
 {
-	if (note) delete []note;
+	if (note) {
+		delete []note;
+		note = NULL;
+	}
 }
 
 void NoteEvent::SetNote (char *_note)
 {
-	if (note) delete []note;
+	if (note) {
+		delete []note;
+		note = NULL;
+	}
 	if (_note) {
 		note = new char[strlen(_note)+1]; TRACENEW
 		strcpy (note, _note);

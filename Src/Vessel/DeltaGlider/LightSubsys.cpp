@@ -86,7 +86,7 @@ void InstrumentLight::SetLight (bool on, bool force)
 			mat.emissive.b *= scale;
 		}
 		oapiSetMaterial (DG()->vcmesh, 11, on ? &mat : &norm);
-		GROUPEDITSPEC ges = {on ? GRPEDIT_ADDUSERFLAG : GRPEDIT_DELUSERFLAG, 0x18, 0,0,0};
+		GROUPEDITSPEC ges = {(DWORD)(on ? GRPEDIT_ADDUSERFLAG : GRPEDIT_DELUSERFLAG), 0x18, 0,0,0};
 		oapiEditMeshGroup (DG()->vcmesh, GRP_LIT_LABELS_VC, &ges);
 	}
 }

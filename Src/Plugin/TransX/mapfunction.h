@@ -6,10 +6,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,32 +23,23 @@
 
 #include "mfdfunction.h"
 #include "orbitelements.h"
-#include "list"
-#include "map"
-using namespace std;
-
-struct GBODY{
-	OBJHANDLE bodyhandle;
-	GBODY *parent, *next, *previous; // next and previous bodies orbiting same body
-	list <GBODY*> satellites;
-	double soisize2;
-	double gravbodyratio2;
-	double mass;
-} ;
+#include "BodyProvider.h"
+#include "BodyCache.h"
 
 class mapfunction: public MFDFunction
 {
 private:
 	void InitialiseSolarSystem();
-	GBODY *sun; // a tree of the sun, its satellites, the satellites' satellites etc.
-	map<OBJHANDLE, GBODY*> bodyMap;
+    BodyProvider m_bodyProvider;
 	bool initialised;
 	static class mapfunction *themap;
 	VECTOR3 getweightedvector(OBJHANDLE, void(OBJHANDLE, VECTOR3*));
+
+	BodyCache cacheMajor, cacheFistsMoon, cacheLastMoon, cacheNextPeer, cachePreviousPeer, cacheSOISize, cacheCurrBody;
 public:
 	mapfunction();
 	~mapfunction();
-	void DeleteGBody(GBODY *body);
+
 	static class mapfunction *getthemap();
 	virtual void dolowpriaction();
 	bool getinitialised(){return initialised;};

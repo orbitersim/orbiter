@@ -260,8 +260,12 @@ NavManager::~NavManager ()
 void NavManager::Clear ()
 {
 	if (nbuf) {
-		for (DWORD i = 0; i < nnav; i++) delete []nav[i];
+		for (DWORD i = 0; i < nnav; i++) {
+			delete []nav[i];
+			nav[i] = NULL;
+		}
 		delete []nav;
+		nav = NULL;
 		nbuf = nnav = 0;
 	}
 }

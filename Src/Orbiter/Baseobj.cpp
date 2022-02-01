@@ -472,6 +472,7 @@ void Block::Deactivate ()
 {
 	if (dyndata) {
 		delete []dyndata->databuf;
+		dyndata->databuf = NULL;
 		delete dyndata;
 		dyndata = 0;
 	}
@@ -784,6 +785,7 @@ void Hangar::Deactivate ()
 {
 	if (dyndata) {
 		delete []dyndata->Vtx;
+		dyndata->Vtx = NULL;
 		delete dyndata;
 		dyndata = 0;
 	}
@@ -1099,6 +1101,7 @@ void Hangar2::Deactivate ()
 {
 	if (dyndata) {
 		delete []dyndata->Vtx;
+		dyndata->Vtx = NULL;
 		delete dyndata;
 		dyndata = 0;
 	}
@@ -1338,6 +1341,7 @@ void Hangar3::Deactivate ()
 {
 	if (dyndata) {
 		delete []dyndata->Vtx;
+		dyndata->Vtx = NULL;
 		delete dyndata;
 		dyndata = 0;
 	}
@@ -1430,6 +1434,7 @@ void Tank::Deactivate ()
 {
 	if (dyndata) {
 		delete []dyndata->Vtx;
+		dyndata->Vtx = NULL;
 		delete dyndata;
 		dyndata = 0;
 	}
@@ -1944,7 +1949,10 @@ Runway::Runway (const Base *_base): BaseObject (_base)
 Runway::~Runway ()
 {
 	Deactivate();
-	if (nrwseg) delete []rwseg;
+	if (nrwseg) {
+		delete []rwseg;
+		rwseg = NULL;
+	}
 }
 
 bool Runway::GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
@@ -1998,7 +2006,10 @@ int Runway::Read (istream &is)
 			sscanf (cp+3, "%d%f", &i, &freq);
 			ILSfreq[i-1] = freq;
 		} else if (!_stricmp (label, "NRWSEG")) {
-			if (nrwseg) delete []rwseg;
+			if (nrwseg) {
+				delete []rwseg;
+				rwseg = NULL;
+			}
 			sscanf (cp+6, "%d", &nrwseg);
 			if (nrwseg) {
 				rwseg = new RWSEG[nrwseg]; TRACENEW
@@ -2102,7 +2113,9 @@ void Runway::Deactivate ()
 {
 	if (dyndata) {
 		delete []dyndata->RwVtx;
+		dyndata->RwVtx = NULL;
 		delete []dyndata->RwIdx;
+		dyndata->RwIdx = NULL;
 		delete dyndata;
 		dyndata = 0;
 	}
@@ -2472,7 +2485,9 @@ void RunwayLights::Deactivate ()
 {
 	if (dyndata) {
 		delete []dyndata->Vtx;
+		dyndata->Vtx = NULL;
 		delete []dyndata->Idx;
+		dyndata->Idx = NULL;
 		delete dyndata;
 		dyndata = 0;
 	}
@@ -2612,8 +2627,11 @@ void BeaconArray::Activate ()
 void BeaconArray::Deactivate ()
 {
 	delete []Vtx;
+	Vtx = NULL;
 	delete []Idx;
+	Idx = NULL;
 	delete []Pos;
+	Pos = NULL;
 	delete lightmat;
 }
 
@@ -2843,6 +2861,7 @@ void Train1::Deactivate ()
 {
 	if (dyndata) {
 		delete []dyndata->Vtx;
+		dyndata->Vtx = NULL;
 		delete dyndata;
 		dyndata = 0;
 	}
@@ -3148,7 +3167,9 @@ void Train2::Deactivate ()
 {
 	if (dyndata) {
 		delete []dyndata->rail;
+		dyndata->rail = NULL;
 		delete []dyndata->rshvtx;
+		dyndata->rshvtx = NULL;
 		delete dyndata;
 		dyndata = 0;
 	}
@@ -3535,12 +3556,18 @@ void SolarPlant::Activate ()
 void SolarPlant::Deactivate ()
 {
 	delete []ppos;
+	ppos = NULL;
 	delete []Vtx;
+	Vtx = NULL;
 	delete []Idx;
+	Idx = NULL;
 	delete []flash;
+	flash = NULL;
 	if (g_pOrbiter->Cfg()->CfgVisualPrm.bShadows) {
 		delete []ShVtx;
+		ShVtx = NULL;
 		delete []ShIdx;
+		ShIdx = NULL;
 	}
 }
 

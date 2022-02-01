@@ -187,7 +187,7 @@ public:
 	void InitVC (int vc);
 	inline bool ScramVersion() const { return ssys_scram != NULL; }
 	void DrawHUD (int mode, const HUDPAINTSPEC *hps, HDC hDC);
-	void DrawNeedle (HDC hDC, int x, int w, double rad, double angle, double *pangle = 0, double speed = PI);
+	void DrawNeedle (oapi::Sketchpad* pSkp, int x, int w, double rad, double angle, double *pangle = 0, double speed = PI);
 	void UpdateStatusIndicators();
 	void SetPassengerVisuals ();
 	void SetDamageVisuals ();
@@ -337,7 +337,7 @@ private:
 typedef struct {
 	HINSTANCE hDLL;
 	DWORD col[4];
-	HPEN pen[2];
+	oapi::Pen *pen[2];
 	SURFHANDLE surf;
 } GDIParams;
 

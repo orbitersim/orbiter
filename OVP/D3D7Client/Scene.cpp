@@ -813,7 +813,7 @@ void Scene::InitGDIResources ()
 
 	const int fsize[4] = {12, 16, 20, 26};
 	for (int i = 0; i < 4; i++)
-		label_font[i] = gc->clbkCreateFont(fsize[i], true, "Arial", oapi::Font::BOLD);
+		label_font[i] = gc->clbkCreateFont(fsize[i], true, "Arial", FontStyle::FONT_BOLD);
 	label_pen = gc->clbkCreatePen(1, 0, RGB(255,255,255));
 }
 

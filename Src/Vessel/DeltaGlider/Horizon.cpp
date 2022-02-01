@@ -94,7 +94,7 @@ void InstrAtt::Redraw (NTVERTEX *Vtx)
 
 	// speed and altitude readout
 	for (int disp = 0; disp < 3; disp++) {
-		char *c, *str, cbuf[6];
+		char *c, *str, cbuf[20] = "";
 		int vofs, maxnum;
 		switch (disp) {
 		case 0: vofs = 16; maxnum = 6; str = DispStr (alt)+1; break;

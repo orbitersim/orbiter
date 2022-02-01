@@ -105,7 +105,7 @@ VOID Find2DConvexHull( DWORD dwNumInVertices, VECTOR2D* pInVertices,
 	static DWORD dwElementSize = sizeof(DWORD) + sizeof(VECTOR2D*);
 	if (dwNumInVertices > dwVtxBuf) {
 		if (dwVtxBuf) delete []pIndices;
-		pIndices      = (WORD*)(new BYTE[(dwNumInVertices+1)*dwElementSize]); TRACENEW
+		pIndices = (WORD*)(new BYTE[(dwNumInVertices+1)*dwElementSize]); TRACENEW
 		dwVtxBuf = dwNumInVertices;
 	}
     DWORD dwNumIndices  = 0;

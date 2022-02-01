@@ -6,10 +6,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -20,8 +20,8 @@
 
 #define STRICT
 #include <windows.h>
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include "orbitersdk.h"
 #include "mfd.h"
 #include "transxstate.h"
@@ -29,7 +29,7 @@
 #include "transx.h"
 
 TransXFunction::TransXFunction(class transxstate *tstate, OBJHANDLE thmajor, OBJHANDLE thminor, OBJHANDLE thtarget, OBJHANDLE thcraft, OBJHANDLE thbase)
-{	
+{
 	state=tstate;
 	sethandles(thmajor,thminor,thtarget,thcraft,thbase);
 	simstartMJD=oapiTime2MJD(0);
@@ -66,13 +66,18 @@ void TransXFunction::restoreself(FILEHANDLE scn)
 	char *bufferpointer;
 	char tempbuffer[18], finalbuffer[18];
 	bool ok;
-	do 
+	do
 	{
 		ok=oapiReadScenario_nextline(scn,bufferpointer);
 		strncpy(tempbuffer,bufferpointer,16);
 		sscanf(tempbuffer,"%s",finalbuffer);
 	}
 	while (strcmp(finalbuffer,"Finish")!=0 && ok==true);
+}
+
+void TransXFunction::UpdateAllPlans()
+{
+	state->UpdateForOptimiser();
 }
 
 bool TransXFunction::loadhandle(FILEHANDLE scn,OBJHANDLE *handle)
@@ -113,14 +118,14 @@ void TransXFunction::findfinish(FILEHANDLE scn)
 
 void TransXFunction::savedouble(FILEHANDLE scn, double savenumber)
 {
-	char buffer[80];
+	char buffer[80]="";
 	sprintf(buffer," %.12g",savenumber);
 	oapiWriteScenario_string(scn,"Double",buffer);
 }
 
 void TransXFunction::savevector(FILEHANDLE scn, VECTOR3 &vector)
 {
-	char buffer[100];
+	char buffer[100]="";
 	sprintf(buffer," %.12g %.12g %.12g",vector.x,vector.y,vector.z);
 	oapiWriteScenario_string(scn,"Vector",buffer);
 }
@@ -302,23 +307,29 @@ void TransXFunction::gethandles(OBJHANDLE *thmajor, OBJHANDLE *thminor, OBJHANDL
 	*thcraft=hcraft;
 	*thbase=hbase;
 }
-
 void TransXFunction::initpens(void)								//(rbd+)
 {
-	if (!pens[Green])	pens[Green]		= oapiCreatePen(1, 1 , RGB(0x00, 0xFF, 0x00));	// Green - stands for craft
-	if (!pens[Blue])	pens[Blue]		= oapiCreatePen(1, 1 , RGB(0x00, 0x00, 0xCD));	// Blue - stands for planet
-	if (!pens[Yellow])	pens[Yellow]	= oapiCreatePen(2,	  1	, RGB(0xCD, 0xCD, 0x00));	// Bright yellow - hypos
-	if (!pens[Red])		pens[Red]		= oapiCreatePen(1, 1 , RGB(0xFF, 0x00, 0x00));	// Bright red - unused, but danger
-	if (!pens[Grey])	pens[Grey]		= oapiCreatePen(1, 1 , RGB(0xC0, 0xC0, 0xC0));	// Light Grey
-	if (!pens[White])	pens[White]		= oapiCreatePen(1, 1 , RGB(0xFF, 0xFF, 0xFF));	// Bright white - unused
-	if (!brush[Green])	brush[Green]    = oapiCreateBrush (RGB(0x00, 0xFF, 0x00));
-	if (!brush[Blue])	brush[Blue]		= oapiCreateBrush (RGB(0x00, 0x00, 0xCD));
-	if (!brush[Yellow])	brush[Yellow]	= oapiCreateBrush (RGB(0xCD, 0xCD, 0x00));
-	if (!brush[Red])	brush[Red]		= oapiCreateBrush (RGB(0xFF, 0x00, 0x00));
-	if (!brush[Grey])	brush[Grey]		= oapiCreateBrush (RGB(0xC0, 0xC0, 0xC0));
-	if (!brush[White])	brush[White]	= oapiCreateBrush (RGB(0xFF, 0xFF, 0xFF));
+    DWORD green =   RGB(0x00, 0xFF, 0x00);
+    DWORD blue =    RGB(0x64, 0x95, 0xED);
+    DWORD yellow =  RGB(0xCD, 0xCD, 0x00);
+    DWORD red =     RGB(0xFF, 0x00, 0x00);
+    DWORD grey =    RGB(0xC0, 0xC0, 0xC0);
+    DWORD white =   RGB(0xFF, 0xFF, 0xFF);
+	if (!pens[Green])	pens[Green]		= oapiCreatePen(1, 1, green);	// Green - stands for craft
+	if (!pens[Blue])	pens[Blue]		= oapiCreatePen(1, 1, blue);	// Blue - stands for planet
+	if (!pens[Yellow])	pens[Yellow]	= oapiCreatePen(2, 1, yellow);	// Bright yellow - hypos
+	if (!pens[Red])		pens[Red]		= oapiCreatePen(1, 1, red);	    // Bright red - unused, but danger
+	if (!pens[Grey])	pens[Grey]		= oapiCreatePen(1, 1, grey);	// Light Grey
+	if (!pens[GreyDashed])	pens[GreyDashed] = oapiCreatePen(2, 1, grey);	// Light Grey dashed for line of nodes
+	if (!pens[White])	pens[White]		= oapiCreatePen(1, 1, white);	// Bright white - unused
+	if (!brush[Green])	brush[Green]    = oapiCreateBrush (green);
+	if (!brush[Blue])	brush[Blue]		= oapiCreateBrush (blue);
+	if (!brush[Yellow])	brush[Yellow]	= oapiCreateBrush (yellow);
+	if (!brush[Red])	brush[Red]		= oapiCreateBrush (red);
+	if (!brush[Grey])	brush[Grey]		= oapiCreateBrush (grey);
+	if (!brush[GreyDashed])	brush[GreyDashed] = oapiCreateBrush (grey);
+	if (!brush[White])	brush[White]	= oapiCreateBrush (white);
 }
-
 
 void TransXFunction::deletepens()
 {
@@ -335,15 +346,23 @@ void TransXFunction::deletepens()
 	}
 }
 															//(rbd-)
-Pen* TransXFunction::SelectDefaultPen(Sketchpad *sketchpad, int value)
+oapi::Pen* TransXFunction::SelectDefaultPen(oapi::Sketchpad *sketchpad, int value)
 {
-	if(value < NUM_PENS) //(rbd+)
-		return sketchpad->SetPen(pens[value]);
-	else
-		return sketchpad->SetPen(pens[Green]);
+	oapi::Pen* ret;
+	if(value < NUM_PENS) {//(rbd+)
+		ret=sketchpad->SetPen(pens[value]);
+	} else {
+		ret=sketchpad->SetPen(pens[Green]);
+	}
+	if(ret==NULL) {
+		char dstr[256];
+		sprintf(dstr,"TransX: SelectDefaultPen(%i): Pen got nuked, fixing.",value);oapiWriteLog(dstr);
+		initpens();
+	}
+	return ret;
 }
 
-Brush* TransXFunction::SelectBrush(Sketchpad *sketchpad, int value)
+oapi::Brush* TransXFunction::SelectBrush(oapi::Sketchpad *sketchpad, int value)
 {
 	if(value < NUM_PENS && value >= 0) //(rbd+)
 		return sketchpad->SetBrush(brush[value]);		// Custom brush
@@ -369,5 +388,5 @@ void TransXFunction::gethelp(char *help1,char *help2,char *help3,char *help4,cha
 	strcpy(help5,helpstring5);
 }
 
-Pen* TransXFunction::pens[NUM_PENS] = {0};
-Brush* TransXFunction::brush[NUM_PENS] = {0};
+oapi::Pen* TransXFunction::pens[NUM_PENS] = {0};
+oapi::Brush* TransXFunction::brush[NUM_PENS] = {0};

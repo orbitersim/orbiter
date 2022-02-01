@@ -6,10 +6,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,8 +21,8 @@
 #define STRICT
 
 #include <windows.h>
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include "orbitersdk.h"
 #include "mfd.h"
 #include "intercept.h"
@@ -34,6 +34,7 @@ Intercept::Intercept()
 	gain=1;
 	lasttimecorrection=0;
 	fullorbits=halforbits=-1;
+	shouldUpdateBarycenter = true;
 }
 
 void Intercept::resetintercept()
@@ -97,7 +98,7 @@ void Intercept::improveinterceptstraightline(const OrbitElements &craft, const O
 	double craftangle=acos(craftcosthi);
 	if (craftsinthi<0) craftangle=-craftangle;
 	craftangle+=(-diff)*sqrt(craft.getangmomentum2())/(craftradius*craftradius);
-	
+
 	//Get time corrected cos and sin of thi
 	craftcosthi=cos(craftangle);
 	craftsinthi=sin(craftangle);
@@ -107,7 +108,7 @@ void Intercept::improveinterceptstraightline(const OrbitElements &craft, const O
 	OrbitElements *targetaboutbarycentreorbit = target.getminorbarycentricorbit();
 
 	// modify orbit if it target is based around the barycentre.
-	if(targetaboutbarycentreorbit != NULL)
+	if(targetaboutbarycentreorbit != NULL && shouldUpdateBarycenter)
 	{
 	VECTOR3 pos, vel;
 	targetaboutbarycentreorbit->timetovectors(diff, &pos, &vel);
@@ -121,7 +122,7 @@ void Intercept::improveinterceptstraightline(const OrbitElements &craft, const O
 	crafttimeest=craft.GetTimeToThi(craftcosthi,craftsinthi,fullorbits,halforbits)+timeoffset;
 	if (crafttimeest-icepttimeoffset>craftorbittime/4)
 	{//You've just hit a border point on the orbit system
-		adjustorbitsdown();//This 
+		adjustorbitsdown();//This
 		crafttimeest=craft.GetTimeToThi(craftcosthi,craftsinthi,fullorbits,halforbits)+timeoffset;
 	}
 	//targettimeest=target.GetTimeToThi(targetcosthi,targetsinthi);
@@ -154,7 +155,7 @@ void Intercept::improveinterceptstraightline(const OrbitElements &craft, const O
 	relcraftpos=icraftpos-itargetpos;
 	iceptalpha=icraftpos;
 	iceptbeta=itargetpos;
-	
+
 	icepttimeoffset=crafttimeest+timecorrection*gain;
 	itimeintercept=icepttimeoffset+target.gettimestamp();
 	if (length(relcraftpos)*3>length(icraftpos))//Allows method to switch back if solution is no longer good
@@ -193,10 +194,10 @@ void Intercept::updateintercept(const OrbitElements &craft, const OrbitElements 
 
 	const OrbitElements *alpha, *beta;
 	//The inversion functionality no longer matters - timetovectors is now good enough to avoid the problem
-	
+
 	alpha=&craft;
 	beta=&target;
-	
+
 	double betacos=beta->getcurrcosthi();
 	double alphacos=alpha->getcurrcosthi();
 	double alphasin;
@@ -252,7 +253,7 @@ void Intercept::updateintercept(const OrbitElements &craft, const OrbitElements 
 	alphatime.getposvel(&betaposa,&betavela);
 	betatime.getposvel(&betaposb,&betavelb);
 
-	bool abetter=(length2(betaposa-alphaposa)<length2(betaposb-alphaposb)); //Picks best on grounds of distance
+	bool abetter=(length2my(betaposa-alphaposa)<length2my(betaposb-alphaposb)); //Picks best on grounds of distance
 	if (timea<timeoffset)
 	{
 		if (craftorbitsahead<0.3)
@@ -269,7 +270,7 @@ void Intercept::updateintercept(const OrbitElements &craft, const OrbitElements 
 		//a is better
 		iceptradius=(length(betaposa)+iceptradius)/2;// Takes average of new and old as this converges better
 		itimeintercept=timea;
-		if (length2(betaposa-alphaposa)*9<length2(alphaposa))
+		if (length2my(betaposa-alphaposa)*9<length2my(alphaposa))
 		{
 			iceptmethod=2;
 			icepttimeoffset=timea;
@@ -284,7 +285,7 @@ void Intercept::updateintercept(const OrbitElements &craft, const OrbitElements 
 		//b is better
 		iceptradius=(length(betaposb)+iceptradius)/2;
 		itimeintercept=timeb;
-		if (length2(betaposb-alphaposb)*9<length2(alphaposb))
+		if (length2my(betaposb-alphaposb)*9<length2my(alphaposb))
 		{
 			iceptmethod=2;
 			icepttimeoffset=timeb;

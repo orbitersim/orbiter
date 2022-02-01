@@ -766,7 +766,7 @@ double VesselXRSoundEngine::GetPlasmaLevel()
     const double extTemp = GetExternalTemperature();
     const double noseconeTemp = extTemp + degreesK;
 
-    const double noseconeTempLimit = 2840 + 273;  // convert to kelvin
+    const double noseconeTempLimit = (double)2840 + (double)273;  // convert to kelvin
     const double minVisibilityTemp = noseconeTempLimit * 0.387;  // tweaked to coincide with Orbiter visual plasma; org in XR code was 0.387
     const double maxVisibilityTemp = noseconeTempLimit * 0.80;  // was 0.80 in XR code; also tweaked to coincide with Orbiter visual plasma
 

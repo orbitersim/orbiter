@@ -385,6 +385,7 @@ bool Instrument::UnregisterUserMode (int id)
 	if (i == nGlobalModes) return false;
 
 	delete []GlobalMode[i].spec->name;
+	GlobalMode[i].spec->name = NULL;
 	delete GlobalMode[i].spec;
 	delete GlobalMode[i].oldspec; // obsolete
 	MFDMODE *tmp = new MFDMODE[nGlobalModes-1]; TRACENEW
@@ -456,6 +457,7 @@ void Instrument::ClearDisabledModes ()
 {
 	if (nDisabledModes) {
 		delete []DisabledModes;
+		DisabledModes = NULL;
 		nDisabledModes = 0;
 	}
 }
@@ -664,7 +666,7 @@ void Instrument::SetSize (const Spec &spec, bool defer_alloc)
 		cw = 10, ch = 16; // temporary defaults
 		mfdfont[0] = gc->clbkCreateFont (-h, false, "Fixed");
 		mfdfont[1] = gc->clbkCreateFont (-(h*3)/4, true, "Sans");
-		mfdfont[2] = gc->clbkCreateFont (-(h*3)/4, true, "Sans", oapi::Font::NORMAL, 900);
+		mfdfont[2] = gc->clbkCreateFont (-(h*3)/4, true, "Sans", FONT_NORMAL, 900);
 		mfdfont[3] = gc->clbkCreateFont (-h, true, "Sans");
 
 		oapi::Sketchpad *skp = gc->clbkGetSketchpad (surf);
@@ -682,11 +684,27 @@ void Instrument::AllocSurface (DWORD w, DWORD h)
 {
 	if (!gc) return;
 
-	DWORD attrib = OAPISURFACE_SKETCHPAD | OAPISURFACE_NOALPHA;
-	attrib |= (use_skp_interface ? OAPISURFACE_RENDERTARGET : OAPISURFACE_GDI);
+	if (IsRuningInExternMFD())
+	{
+		DWORD attrib = OAPISURFACE_NOALPHA;
+		attrib |= (use_skp_interface ? OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE : OAPISURFACE_GDI | OAPISURFACE_TEXTURE);
+		surf = gc->clbkCreateSurfaceEx(w, h, attrib);
+		//tex = gc->clbkCreateSurfaceEx(w, h, attrib); // no need for tex
+		if (surf) ClearSurface();
+		return;
+	}
 
-	surf = gc->clbkCreateSurfaceEx (w, h, attrib);
-	tex  = gc->clbkCreateSurfaceEx (w, h, OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE);
+	DWORD s_attrib = 0;
+	DWORD t_attrib = OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE | 0;
+
+	s_attrib |= (use_skp_interface ? OAPISURFACE_RENDERTARGET : OAPISURFACE_GDI | OAPISURFACE_TEXTURE);
+	
+	// Add mipmaps in virtual cockpit mode
+	t_attrib |= (pane->panelmode == 3 ? OAPISURFACE_MIPMAPS : 0);
+	
+	surf = gc->clbkCreateSurfaceEx (w, h, s_attrib);
+	tex  = gc->clbkCreateSurfaceEx (w, h, t_attrib);
+
 	if (surf) ClearSurface();
 }
 
@@ -781,7 +799,7 @@ bool Instrument::Update (double upDTscale)
 				EndDrawHDC (hDC);
 			}
 		}
-		gc->clbkBlt (tex, 0, 0, surf);
+		if (tex) gc->clbkBlt (tex, 0, 0, surf); // 'tex' not used in ExternMFD
 		updT = td.SimT1 + instrDT * upDTscale;
 		updSysT = td.SysT1 + 0.1; // don't exceed 10Hz update rate
 		return true;
@@ -910,7 +928,7 @@ void Instrument::DisplayModes (int page)
 		slot++;
 	}
 	EndDraw (skp);
-	gc->clbkBlt (tex, 0, 0, surf);
+	if (tex) gc->clbkBlt (tex, 0, 0, surf);
 }
 
 char *Instrument::ModeLabel (int bt)
@@ -918,17 +936,18 @@ char *Instrument::ModeLabel (int bt)
 	static char label[4] = "===";
 	char *c;
 	int n, slot, pg;
-	const MFDMODE *mode;
+	const MFDMODE *mode=0;
 
 	// skip previous pages
 	for (n = slot = pg = 0; n < nGlobalModes+nVesselModes; n++) {
 		mode = (n < nGlobalModes ? GlobalMode+n : VesselMode+(n-nGlobalModes));
-		if (IsDisabledMode (mode->id)) continue;
+		if (mode && IsDisabledMode (mode->id)) continue;
 		if (pg == modepage && slot == bt) break;
 		if (++slot == nbt) pg++, slot = 0;
 	}
 	if (n >= nGlobalModes+nVesselModes) return 0;
-	strncpy (label, mode->spec->name, 3);
+	if (mode) strncpy (label, mode->spec->name, 3);
+	else return 0;
 	for (c = label; *c; c++) *c = toupper (*c);
 	return label;
 }
@@ -972,7 +991,7 @@ void Instrument::DrawMenu ()
 		}
 	}
 	EndDraw (skp);
-	gc->clbkBlt (tex, 0, 0, surf);
+	if (tex) gc->clbkBlt (tex, 0, 0, surf);
 }
 
 void Instrument::OpenSelect_CelBody (char *title, Select::Callbk enter_cbk, DWORD flag)
@@ -1197,10 +1216,12 @@ void UpdateEllipse (int cntx, int cnty, double scale,
 void UpdateHyperbola (int cntx, int cnty, int IW, int IH, double scale,
 	const Elements *el, const Matrix &rot, const Matrix &irot, oapi::IVECTOR2 *pt)
 {
+	if (isnan(scale) || scale == 0) return;
+
 	int i;
 	int idx = ELNH-1;
 	Vector asc, desc, v[ELN-1];
-	double phi, cphi, sphi, r, x, y, len;
+	double phi, cphi, sphi, r, x, y, len = 1;
 	double p = el->PeDist()*(1.0+el->e); // parameter of polar equation
 	double radmax = 1.5*cntx/scale;
 	double phimax = acos ((p/radmax - 1.0)/el->e);

@@ -6,10 +6,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,8 +21,9 @@
 #define STRICT
 #define ORBITER_MODULE
 #include <windows.h>
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
+#include <string>
 #include "orbitersdk.h"
 
 #include "mfd.h"
@@ -64,32 +65,32 @@ TransxMFD::~TransxMFD()
 }
 
 // Called by Orbiter when a screen update is needed
-bool TransxMFD::Update (Sketchpad *sketchpad)
+bool TransxMFD::Update (oapi::Sketchpad *sketchpad)
 {
-	Title (sketchpad, "TransX MFD");
-	Pen *pen = GetDefaultPen (TransXFunction::Green); // Retrieves a default MFD pen
+    Title (sketchpad, "TransX MFD");
+	oapi::Pen *pen = GetDefaultPen (TransXFunction::Green); // Retrieves a default MFD pen
 	valid=viewstate->doupdate(sketchpad,W,H,this);
 	shipptrs::refreshsave();//allow save again, as new values are now available
 	sketchpad->SetPen(pen);
-	if (!valid) 
+	if (!valid)
 		return false;
 	int linespacing=H/24;
 	
 	if (debug!=0)
 	{
-		char buffer[20];
+		char buffer[20]="";
 
 		int length=sprintf(buffer,"Debug:%g",debug);
 		sketchpad->Text(0, linespacing*22, buffer, length);
 	}
 
 	MFDvariable *varpointer=viewstate->GetCurrVariable();
-	if (varpointer==NULL) 
+	if (varpointer==NULL)
 		return false;
 	varpointer->show(sketchpad,W,linespacing);
 
 	return true;
-	// From Martins (http://www.orbiter-forum.com/project.php?issueid=210#note1142): 
+	// From Martins (http://www.orbiter-forum.com/project.php?issueid=210#note1142):
 	// The return value is currently ignored.
 	// It may be used in the future to indicate if the surface was redrawn, for optimisation purposes (removal of unneccesary surface copies).
 }
@@ -109,7 +110,7 @@ OAPI_MSGTYPE TransxMFD::MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lpara
 {
 	switch (msg) {
 	case OAPI_MSG_MFD_OPENED:
-		return (OAPI_MSGTYPE)new TransxMFD (LOWORD(wparam), HIWORD(wparam), (VESSEL*)lparam, mfd);
+		return (OAPI_MSGTYPE) new TransxMFD (LOWORD(wparam), HIWORD(wparam), (VESSEL*)lparam, mfd);
 	}
 	return 0;
 }
@@ -117,7 +118,7 @@ OAPI_MSGTYPE TransxMFD::MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lpara
 char *TransxMFD::ButtonLabel (int bt)
 // Routine to pass button label back to Orbiter. Called by Orbiter
 {
-	char *label[] = {"HLP","FWD","BCK", "VW","VAR","-VR", "ADJ", "-AJ","++", "--","EXE"};
+	char *label[] = {"HLP","FWD","BCK", "VW","VAR","-VR", "ADJ", "-AJ","++", "--","EXE","ENT"};
 	return (bt < sizeof(label) / sizeof(char*) ? label[bt] : 0);
 }
 
@@ -135,7 +136,8 @@ int TransxMFD::ButtonMenu (const MFDBUTTONMENU **menu) const
 		{"Set adjustment", "method (-)", '}'},
 		{"Increment", "variable", '='},
 		{"Decrement", "variable", '-'},
-		{"Execute","Command",'X'}
+		{"Execute","Command",'X'},
+		{"Enter value","variable",'E'},
 	};
 	if (menu) *menu = mnu;
 	return sizeof(mnu) / sizeof(MFDBUTTONMENU);
@@ -165,12 +167,12 @@ bool TransxMFD::ConsumeKeyImmediate(char *kstate)
 bool TransxMFD::ConsumeButton(int bt, int event)
 // Deal with mouse pressing of keys
 {
-	static const DWORD btkey[11]={OAPI_KEY_H, OAPI_KEY_F, OAPI_KEY_R, OAPI_KEY_W, OAPI_KEY_PERIOD, 
-		OAPI_KEY_COMMA, OAPI_KEY_LBRACKET, OAPI_KEY_RBRACKET, OAPI_KEY_EQUALS, OAPI_KEY_MINUS, OAPI_KEY_X};
+	static const DWORD btkey[12]={OAPI_KEY_H, OAPI_KEY_F, OAPI_KEY_R, OAPI_KEY_W, OAPI_KEY_PERIOD,
+		OAPI_KEY_COMMA, OAPI_KEY_LBRACKET, OAPI_KEY_RBRACKET, OAPI_KEY_EQUALS, OAPI_KEY_MINUS, OAPI_KEY_X, OAPI_KEY_E};
 	if (!valid) return false;
 	MFDvariable *varpointer=viewstate->GetCurrVariable();
 	if ((event & PANEL_MOUSE_LBDOWN) && (bt<8 || bt==10)) return ConsumeKeyBuffered (btkey[bt]);
-	if (bt>9) return false; //No buttons above 10
+	if (bt>9 && bt != 11) return false; //No buttons above 10
 	if (varpointer==NULL) return false;
 	if (event & PANEL_MOUSE_LBDOWN)
 	{
@@ -185,7 +187,6 @@ bool TransxMFD::ConsumeButton(int bt, int event)
 		varpointer->inc_variable();
 	return true;
 }
-
 
 bool TransxMFD::ConsumeKeyBuffered (DWORD key)
 {
@@ -233,13 +234,16 @@ bool TransxMFD::ConsumeKeyBuffered (DWORD key)
 	case OAPI_KEY_EQUALS:
 		if (access) currvar->inc_variable();
 		return true;
+	case OAPI_KEY_E:
+		if(access) currvar->enter_variable();
+		return true;
 	}
 	return false; //Key not one of cases above
 }
 
 void TransxMFD::WriteStatus(FILEHANDLE scn) const
 {
-	if (!valid) 
+	if (!valid)
 		return;
 	shipptrs::saveallships(scn);
 }

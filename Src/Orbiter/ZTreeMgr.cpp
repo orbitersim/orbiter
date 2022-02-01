@@ -65,8 +65,10 @@ TreeTOC::TreeTOC()
 
 TreeTOC::~TreeTOC()
 {
-	if (ntreebuf)
-		delete []tree;
+	if (ntreebuf) {
+		delete[] tree;
+		tree = NULL;
+	}
 }
 
 // -----------------------------------------------------------------------
@@ -111,6 +113,7 @@ ZTreeMgr::ZTreeMgr(const char *PlanetPath, Layer _layer)
 ZTreeMgr::~ZTreeMgr()
 {
 	delete []path;
+	path = NULL;
 	if (treef) fclose(treef);
 }
 
@@ -186,6 +189,7 @@ DWORD ZTreeMgr::ReadData(DWORD idx, BYTE **outp)
 
 	DWORD ndata = Inflate(zbuf, zsize, ebuf, esize);
 	delete []zbuf;
+	zbuf = NULL;
 
 	if (!ndata) {
 		delete []ebuf;
@@ -210,4 +214,5 @@ DWORD ZTreeMgr::Inflate(const BYTE *inp, DWORD ninp, BYTE *outp, DWORD noutp)
 void ZTreeMgr::ReleaseData(BYTE *data)
 {
 	delete []data;
+	data = NULL;
 }

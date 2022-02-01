@@ -272,6 +272,7 @@ void Camera::SetCMode (const CameraMode *cm)
 			case CameraMode_Track::TM_GLOBAL:        mode = CAMERA_GLOBALFRAME;      break;
 			case CameraMode_Track::TM_TARGETTOREF:   mode = CAMERA_TARGETTOOBJECT;   break;
 			case CameraMode_Track::TM_TARGETFROMREF: mode = CAMERA_TARGETFROMOBJECT; break;
+			default: mode = CAMERA_GLOBALFRAME;
 			}
 			SetTrackMode (mode, (const Body*)cmt->GetRef());
 		}
@@ -342,6 +343,7 @@ CameraMode *Camera::GetCMode () const
 			cmg->SetPosition (go.lng, go.lat, go.alt, (OBJHANDLE)dirref);
 			if (!go.tgtlock) cmg->SetOrientation (go.phi, go.tht);
 			} break;
+		default: cm = new CameraMode_Cockpit; TRACENEW
 		}
 	} else {
 		cm = new CameraMode_Cockpit; TRACENEW
@@ -387,7 +389,7 @@ void Camera::Attach (Body *_target, int mode)
 		grot.Set (target->GRot());
 		if (extmode == CAMERA_ABSDIRECTION)
 			gdir = mul (target->GRot(), mul (rrot, Vector (0,0,1)));
-		if ((extmode == CAMERA_TARGETTOOBJECT || extmode == CAMERA_TARGETTOOBJECT)
+		if ((extmode == CAMERA_TARGETTOOBJECT || extmode == CAMERA_TARGETFROMOBJECT)
 			&& dirref == target) extmode = CAMERA_TARGETRELATIVE; // sanity check
 	} else {
 		SetViewInternal();
@@ -1365,6 +1367,7 @@ void Camera::ClearPresets ()
 		for (DWORD i = 0; i < npreset; i++)
 			delete preset[i];
 		delete []preset;
+		preset = NULL;
 		npreset = 0;
 	}
 }
@@ -1394,7 +1397,7 @@ bool Camera::DelPreset (DWORD idx)
 	}
 	delete []preset;
 	preset = tmp;
-	npreset--;
+	if (npreset > 0) npreset--;
 	return true;
 }
 
@@ -1412,9 +1415,10 @@ CameraMode *Camera::GetPreset (DWORD idx)
 
 bool Camera::Read (ifstream &ifs)
 {
-	char cbuf[256], ctrackmode[64], cdirref[64], *pc;
+	char cbuf[256] = "", ctrackmode[64] = "", cdirref[64] = "", * pc = NULL;
 	Body *tg = 0;
 	double rd = 4.0, ph = 0.0, th = 0.0;
+	int n = 0;
 	go.tgtlock = true;
 
 	if (!FindLine (ifs, "BEGIN_CAMERA")) return false;
@@ -1431,22 +1435,22 @@ bool Camera::Read (ifstream &ifs)
 			if (!_strnicmp (pc, "Extern", 6)) external_view = true;
 			else                             external_view = false;
 		} else if (!_strnicmp (pc, "POS", 3)) {
-			sscanf (pc+3, "%lf%lf%lf", &rd, &ph, &th);
+			n = sscanf (pc+3, "%lf%lf%lf", &rd, &ph, &th);
 			ph *= RAD, th *= RAD;
 		} else if (!_strnicmp (pc, "FOV", 3)) {
 			double a;
-			sscanf (pc+3, "%lf", &a);
+			n = sscanf (pc+3, "%lf", &a);
 			if (a < 10.0) a = 10.0;
 			else if (a > 160.0) a = 160.0;
 			a *= RAD*0.5;
 			ap_int = ap_ext = a;
 		} else if (!_strnicmp (pc, "TRACKMODE", 9)) {
-			sscanf (pc+9, "%s%s", ctrackmode, cdirref);
+			n = sscanf (pc+9, "%s%s", ctrackmode, cdirref);
 		} else if (!_strnicmp (pc, "GROUNDLOCATION", 14)) {
-			sscanf (pc+14, "%lf%lf%lf", &go.lng, &go.lat, &go.alt);
+			n = sscanf (pc+14, "%lf%lf%lf", &go.lng, &go.lat, &go.alt);
 			go.lng *= RAD, go.lat *= RAD;
 		} else if (!_strnicmp (pc, "GROUNDDIRECTION", 15)) {
-			sscanf (pc+15, "%lf%lf", &go.phi, &go.tht);
+			n = sscanf (pc+15, "%lf%lf", &go.phi, &go.tht);
 			go.phi *= RAD, go.tht *= RAD;
 			go.tgtlock = false;
 		} else if (!_strnicmp (pc, "BEGIN_PRESET", 12)) {
@@ -1587,6 +1591,8 @@ CameraMode *CameraMode::Create (char *str)
 		cm = new CameraMode_Track; TRACENEW
 	} else if (!_stricmp (tc, "Ground")) {
 		cm = new CameraMode_Ground; TRACENEW
+	} else {
+		cm = new CameraMode_Cockpit; TRACENEW
 	}
 	
 	if (!(pc = strtok (NULL, ":")) || !(cm->target = (OBJHANDLE)g_psys->GetObj (trim_string (pc), true))) {

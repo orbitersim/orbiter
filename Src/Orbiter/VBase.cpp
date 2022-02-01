@@ -234,8 +234,8 @@ void VBase::SetupShadowMeshes ()
 	LPDIRECT3D7 d3d = gc->GetDirect3D7();
 	D3DVERTEXBUFFERDESC vbd = {
 		sizeof(D3DVERTEXBUFFERDESC), 
-		gc->isTLDevice() ? 0 : D3DVBCAPS_SYSTEMMEMORY,
-		D3DFVF_XYZ, 0
+		gc->isTLDevice() ? (DWORD)0 : (DWORD)D3DVBCAPS_SYSTEMMEMORY,
+		(DWORD)D3DFVF_XYZ, (DWORD)0
 	};
 	VERTEX_XYZ *vtx;
 	for (i = 0; i < nshmesh; i++) {

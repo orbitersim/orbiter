@@ -114,8 +114,14 @@ CelestialBody::CelestialBody (char *fname)
 CelestialBody::~CelestialBody ()
 {
 	ClearModule();
-	if (nsecondary) delete []secondary;
-	if (njcoeff) delete []jcoeff;
+	if (nsecondary) {
+		delete []secondary;
+		secondary = NULL;
+	}
+	if (njcoeff) {
+		delete []jcoeff;
+		jcoeff = NULL;
+	}
 }
 
 void CelestialBody::DefaultParam ()

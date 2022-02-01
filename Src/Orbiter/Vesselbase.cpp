@@ -241,7 +241,7 @@ void VesselBase::PostUpdate ()
 
 void VesselBase::UpdateSurfParams ()
 {
-	sp.Set (s1 ? *s1 : *s0, proxybody->s1 ? *proxybody->s1 : *proxybody->s0, proxybody, &etile, &windp);
+	if (proxybody) sp.Set (s1 ? *s1 : *s0, proxybody->s1 ? *proxybody->s1 : *proxybody->s0, proxybody, &etile, &windp);
 }
 
 // =======================================================================

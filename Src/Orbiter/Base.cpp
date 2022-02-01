@@ -86,6 +86,7 @@ Base::Base (char *fname, Planet *_planet, double _lng, double _lat)
 				if (nvor) {
 					memcpy (tmp, vor, nvor*sizeof(Nav*));
 					delete []vor;
+					vor = NULL;
 				}
 				vor = tmp;
 				vor[nvor++] = nv;
@@ -180,19 +181,19 @@ Base::Base (char *fname, Planet *_planet, double _lng, double _lat)
 
 Base::~Base ()
 {
-	if (npad) delete []lspec;
-	if (nrwy) delete []rwy;
-	if (nobj) delete []obj;
-	if (nvor) delete []vor;
+	if (npad) {	delete []lspec; lspec = NULL; }
+	if (nrwy) { delete []rwy; rwy = NULL; }
+	if (nobj) { delete []obj; obj = NULL; }
+	if (nvor) { delete []vor; vor = NULL; }
 	//if (genmsh_os) delete genmsh_os;
 	//if (genmsh_us) delete genmsh_us;
 	// Need to think about this! Destructor tries to release mesh textures,
 	// but in this case they are not managed by the mesh.
 
-	if (objmsh_os) delete []objmsh_os;
-	if (objmsh_us) delete []objmsh_us;
-	if (objmsh_sh) delete []objmsh_sh;
-	if (sh_elev) delete []sh_elev;
+	if (objmsh_os) { delete []objmsh_os; objmsh_os = NULL; }
+	if (objmsh_us) { delete []objmsh_us; objmsh_us = NULL; }
+	if (objmsh_sh) { delete []objmsh_sh; objmsh_sh = NULL; }
+	if (sh_elev) { delete []sh_elev; sh_elev = NULL; }
 }
 
 void Base::CreateStaticDeviceObjects ()
@@ -241,8 +242,10 @@ void Base::CreateStaticDeviceObjects ()
 					if (ngenerictex) {
 						memcpy (tmp_list, generic_tex_name, ngenerictex*sizeof(char*));
 						delete []generic_tex_name;
+						generic_tex_name = NULL;
 						memcpy (tmp_id, generic_tex_id, ngenerictex*sizeof(LONGLONG));
 						delete []generic_tex_id;
+						generic_tex_id = NULL;
 					}
 					generic_tex_name = tmp_list;
 					generic_tex_id = tmp_id;
@@ -287,10 +290,14 @@ void Base::DestroyStaticDeviceObjects ()
 	// destroy meshes
 	if (ngenericmesh) {
 		int i;
-		for (i = 0; i < ngenericmesh; i++)
+		for (i = 0; i < ngenericmesh; i++) {
 			delete []generic_mesh_name[i];
+			generic_mesh_name[i] = NULL;
+		}
 		delete []generic_mesh_name;
+		generic_mesh_name = NULL;
 		delete []generic_obj_mesh;
+		generic_obj_mesh = NULL;
 		ngenericmesh = 0;
 	}
 #endif // !NOGRAPHICS
@@ -300,10 +307,14 @@ void Base::DestroyStaticDeviceObjects ()
 			if (generic_dtex[i]) gclient->clbkReleaseTexture (generic_dtex[i]);
 			if (generic_ntex[i]) gclient->clbkReleaseTexture (generic_ntex[i]);
 			delete []generic_tex_name[i];
+			generic_tex_name[i] = NULL;
 		}
 		delete []generic_tex_name;
+		generic_tex_name = NULL;
 		delete []generic_dtex;
+		generic_dtex = NULL;
 		delete []generic_ntex;
+		generic_ntex = NULL;
 	}
 }
 
@@ -390,6 +401,7 @@ void Base::DestroySurfaceTiles ()
 			}
 		}
 		delete []tile;
+		tile = NULL;
 		ntile = ntilebuf = 0;
 	}
 }
@@ -551,6 +563,7 @@ void Base::ScanObjectMeshes () const
 				}
 			}
 			delete []grp;
+			grp = NULL;
 			if (i==0) objmsh_us[nobjmsh_us++] = mesh;
 			else      objmsh_os[nobjmsh_os++] = mesh;
 		}

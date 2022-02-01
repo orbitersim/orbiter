@@ -738,6 +738,7 @@ int Vessel::TouchdownPointsFromFile (const char *fname)
 						tdp[i].stiffness = 1e6;
 						if (res < 3) {
 							delete []tdp;
+							tdp = NULL;
 							return 2;
 						}
 					}
@@ -748,5 +749,6 @@ int Vessel::TouchdownPointsFromFile (const char *fname)
 
 	SetTouchdownPoints (tdp, ntdp);
 	delete []tdp;
+	tdp = NULL;
 	return 0;
 }

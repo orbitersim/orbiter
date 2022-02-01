@@ -201,9 +201,12 @@ void orbiter::VisualTab::VisualsChanged ()
 void orbiter::VisualTab::EmptyCSphereList ()
 {
 	if (ncsphere_img) {
-		for (int i = 0; i < ncsphere_img; i++)
+		for (int i = 0; i < ncsphere_img; i++) {
 			delete []csphere_img_path[i];
+			csphere_img_path[i] = NULL;
+		}
 		delete []csphere_img_path;
+		csphere_img_path = NULL;
 		ncsphere_img = 0;
 	}
 }
@@ -217,6 +220,7 @@ void orbiter::VisualTab::AddCSphereList (const char *c)
 	if (ncsphere_img) {
 		memcpy (tmp, csphere_img_path, ncsphere_img*sizeof(char*));
 		delete []csphere_img_path;
+		csphere_img_path = NULL;
 	}
 	csphere_img_path = tmp;
 	csphere_img_path[ncsphere_img] = new char[len+1];

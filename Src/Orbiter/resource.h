@@ -24,7 +24,9 @@
 #define IDD_PAGE_OPT                    173
 #define IDD_PAGE_VIS                    174
 #define IDD_PAGE_MOD                    175
+#ifndef IDD_PAGE_DEV
 #define IDD_PAGE_DEV                    176
+#endif
 #define IDD_PAGE_JOY                    177
 #define IDD_PAGE_EXT                    178
 #define IDD_PAGE_ABT                    179
