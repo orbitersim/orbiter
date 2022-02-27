@@ -7,10 +7,8 @@ DistanceFactor 1
 
 END_HEADER
 
-;Linea, lineae (A dark or bright elongate marking, may be curved or straight)
-
-;Source = https://planetarynames.wr.usgs.gov/
-;Updated 3 January 2022
+;Source = https://planetarynames.wr.usgs.gov
+;Updated 16 December 2021
 
 BEGIN_DATA
 -122.6	-61	:	Adonis Linea
@@ -21,7 +19,7 @@ BEGIN_DATA
 164.4	-1.7	:	Argiope Linea
 89.2	14.9	:	Asterius Linea
 147.9	-75.8	:	Astypalaea Linea
--165.1	18.2	:	Autonoë Linea
+-165.1	18.2	:	Autonoe Linea			; Autonoë Linea
 128.6	9.3	:	Belus Linea
 -0.1	-44.7	:	Butterdon Linea
 168.3	38.7	:	Cadmus Linea
@@ -58,5 +56,4 @@ BEGIN_DATA
 102	47.7	:	Tormsdale Linea
 120.6	48.6	:	Udaeus Linea
 164	-16.7	:	Yelland Linea
-
 

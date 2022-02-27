@@ -3,17 +3,15 @@ InitialState on
 ColourIdx 1
 ShapeIdx 1
 Size 0.5
-DistanceFactor 1
+DistanceFactor 0.5
+
 END_HEADER
 
-;Crater, craters (A circular depression)
-
-;Source: https://planetarynames.wr.usgs.gov/
-;Updated 3 January 2022
-
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 29 November 2021
 
 BEGIN_DATA
--177.5	-43	:	Áine
+-177.5	-43	:	Aine			; Áine
 -177.47	13.82	:	Amaethon
 129.4	-14.7	:	Amergin
 -75.1	-12.6	:	Angus
@@ -32,7 +30,7 @@ BEGIN_DATA
 -79.8	-31.9	:	Elathan
 126.67	-50.48	:	Eochaid
 57.2	-37.3	:	Govannan
--99.4	-59.7	:	Gráinne
+-99.4	-59.7	:	Grainne			; Gráinne
 15.46	9.14	:	Gwern
 -81.6	-60.5	:	Gwydion
 138.2	-1.8	:	Llyr
@@ -54,6 +52,4 @@ BEGIN_DATA
 -164.4	0.8	:	Tegid
 -172.36	59.92	:	Tuag
 -90.7	-48.5	:	Uaithne
-
-
 
