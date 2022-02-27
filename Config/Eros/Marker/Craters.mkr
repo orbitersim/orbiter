@@ -38,16 +38,16 @@ BEGIN_DATA
 162.3	-35.2	:	Lolita
 -170	79.4	:	Mahal
 -28.8	3.8	:	Majnoon
-174.4	67.1	:	Mélisande
+174.4	67.1	:	Melisande			; Mélisande
 -7.1	18.2	:	Narcissus
 -176.7	25.6	:	Orpheus
--105.6	-73.2	:	Pao-yü
-138.7	63.1	:	Pelléas
+-105.6	-73.2	:	Pao-yu				; Pao-yü
+138.7	63.1	:	Pelleas				; Pelléas
 -94.6	31.6	:	Psyche
 168.9	-1.8	:	Pygmalion
 -115.1	-5.2	:	Radames
 -12.5	-14.2	:	Selene
--126.1	-47	:	Tai-yü
+-126.1	-47	:	Tai-yu				; Tai-yü
 -3.3	56.4	:	Tutanekai
 151.6	14.6	:	Valentine
 
