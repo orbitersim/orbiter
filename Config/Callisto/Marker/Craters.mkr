@@ -3,15 +3,12 @@ InitialState on
 ColourIdx 1
 ShapeIdx 1
 Size 0.5
-DistanceFactor 1
+DistanceFactor 0.6
+
 END_HEADER
 
-;Crater - circular depression, likely impact origin
-
-;Source: https://planetarynames.wr.usgs.gov/Page/MERCURY/target
-;Updated 2 January 2022
-
-
+;Source = https://planetarynames.wr.usgs.gov
+;Updated 17 December 2021
 
 BEGIN_DATA
 -79.7	75.5	:	Adal
@@ -24,7 +21,7 @@ BEGIN_DATA
 137.3	-9.9	:	Alfr
 -55.9	59	:	Áli
 -0.5	44	:	Ánarr
-;-8.2	50.5	:	[Aningan]
+;-8.2	50.5	:	[Aningan]		;dropped
 -67.5	-85.6	:	Arcas
 35.9	51.8	:	Askr
 -80.6	-30.9	:	Audr
@@ -32,7 +29,7 @@ BEGIN_DATA
 -178.2	35.4	:	Aziren
 -11.7	28.9	:	Balkr
 -70.5	-31.5	:	Barri
--20	49.1	:	Bavörr
+-20	49.1	:	Bavorr			; Bavörr
 -80.2	62.6	:	Beli
 -74.1	-53.6	:	Biflindi
 -60.7	75.5	:	Bragi
@@ -63,28 +60,28 @@ BEGIN_DATA
 -52.1	-85.3	:	Ginandi
 -34.6	57.2	:	Gisl
 115	49	:	Gloi
-40.3	57.3	:	Göll
--114.1	60	:	Göndul
+40.3	57.3	:	Goll			; Göll
+-114.1	60	:	Gondul			; Göndul
 145.4	41.5	:	Grimr
 -104.7	64.6	:	Gunnr
 -48.8	63.7	:	Gymir
--131.9	76.2	:	Hábrok
+-131.9	76.2	:	Habrok			; Hábrok
 44.9	25	:	Haki
-2	-3.5	:	Hár
+2	-3.5	:	Har			; Hár
 3	-63.5	:	Heimdall
 -23.4	64.5	:	Hepti
 -171.5	63.1	:	Hijsi
--89.2	69.1	:	Hödr
+-89.2	69.1	:	Hödr			; Hödr
 99.1	-33.7	:	Hoenir
--4.8	-11.8	:	Högni
--108.2	43.9	:	Höldr
+-4.8	-11.8	:	Hogni			; Högni
+-108.2	43.9	:	Holdr			; Höldr
 44	5.6	:	Igaluk
 -167.2	-29.9	:	Ilma
 38.6	-5.8	:	Ivarr
 -82.7	-38.6	:	Jalkr
 -118	58.9	:	Jumal
 -11.8	65.7	:	Jumo
--116.3	48.2	:	Kári
+-116.3	48.2	:	Kari			; Kári
 29.4	56.4	:	Karl
 -90.9	-76.8	:	Keelut
 -121.9	62.9	:	Kul'
@@ -102,7 +99,7 @@ BEGIN_DATA
 -119.3	66.4	:	Modi
 -69.7	-56.4	:	Nakki
 29	57	:	Nama
--46	-1.5	:	Nár
+-46	-1.5	:	Nar			; Nár
 -56.4	-16.9	:	Nerrivik
 -94.9	66.4	:	Nidi
 -164.3	31.4	:	Nirkes
@@ -131,7 +128,7 @@ BEGIN_DATA
 -16.2	53.7	:	Sholmo
 -29	35.9	:	Sigyn
 -31.9	-49.7	:	Skeggold
-44.4	55.6	:	Sköll
+44.4	55.6	:	Skoll			; Sköll
 -37.9	10	:	Skuld
 -135.6	55.9	:	Sudri
 34.8	67.1	:	Sumbur
@@ -156,6 +153,4 @@ BEGIN_DATA
 -102.3	31.6	:	Vutash
 -99.7	51.5	:	Ymir
 -85.7	-54.7	:	Yuryung
-
-
 
