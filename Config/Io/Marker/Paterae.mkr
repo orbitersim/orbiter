@@ -7,10 +7,8 @@ DistanceFactor 1
 
 END_HEADER
 
-;Patera, paterae (An irregular crater, or a complex one with scalloped edges)
-
-;Source: https://planetarynames.wr.usgs.gov/
-;Updated 3 January 2022
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 28 November 2021
 
 BEGIN_DATA
 -142.17	12.78	:	Ababinili Patera
@@ -23,7 +21,7 @@ BEGIN_DATA
 23.39	-73.57	:	Aramazd Patera
 -101.49	-38.99	:	Arusha Patera
 134.42	-8.84	:	Asha Patera
-81.35	30.87	:	Ātar Patera
+81.35	30.87	:	Atar Patera		; Ātar Patera
 50.03	-48.45	:	Aten Patera
 88.41	-39.81	:	Babbar Patera
 -156.16	11.46	:	Balder Patera
@@ -102,7 +100,7 @@ BEGIN_DATA
 -3.61	-64.96	:	Nusku Patera
 16.84	0.32	:	Nyambe Patera
 142.62	-1.14	:	Ot Patera
-1.45	-45.69	:	Päive Patera
+1.45	-45.69	:	Paive Patera		; Päive Patera
 14.41	-34.2	:	Pautiwa Patera
 116.71	-12.3	:	Pillan Patera
 55.25	-18.5	:	Podja Patera
@@ -119,7 +117,7 @@ BEGIN_DATA
 -139.74	14.72	:	Ruaumoko Patera
 -1.65	0.2	:	Ruwa Patera
 -123.19	48.51	:	Savitr Patera
-56.28	-2.94	:	Sêd Patera
+56.28	-2.94	:	Sed Patera		; Sêd Patera
 56.21	-32.86	:	Sengen Patera
 166.13	-52.29	:	Sethlaus Patera
 -132.03	-5.31	:	Seth Patera
@@ -148,7 +146,7 @@ BEGIN_DATA
 -141.15	-18.68	:	Tupan Patera
 -123.53	62.76	:	Tvashtar Paterae
 -18.48	30.82	:	Ukko Patera
-72.78	-40.74	:	Ülgen Patera
+72.78	-40.74	:	Ulgen Patera		; Ülgen Patera
 -22.52	-35.86	:	Uta Patera
 9.27	-24.19	:	Vahagn Patera
 79.93	-61.75	:	Viracocha Patera
@@ -157,5 +155,4 @@ BEGIN_DATA
 134.17	-32.55	:	Wayland Patera
 -132.34	9.62	:	Yaw Patera
 -74.46	40.14	:	Zal Patera
-
 

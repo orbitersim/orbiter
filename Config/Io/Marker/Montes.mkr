@@ -4,16 +4,15 @@ ColourIdx 5
 ShapeIdx 3
 Size 0.5
 DistanceFactor 1
+
 END_HEADER
 
-;Mons, montes (Mountain)
-
-;Source: https://planetarynames.wr.usgs.gov/
-;Updated 3 January 2022
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 28 November 2021
 
 BEGIN_DATA
-90.89	-3.75	:	Boösaule Montes
-121.52	-31.95	:	CaucasusMons
+90.89	-3.75	:	Boosaule Montes		; Boösaule Montes
+121.52	-31.95	:	Caucasus Mons
 116.65	-75.4	:	Crimea Mons
 163.31	-25.1	:	Dorian Montes
 103.03	-41.56	:	Egypt Mons

@@ -7,10 +7,8 @@ Distance Factor 1
 
 END_HEADER
 
-;Fluctus, fluctūs (Flow terrain)
-
-;Source: https://planetarynames.wr.usgs.gov/
-;Updated 3 January 2022
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 28 November 2021
 
 BEGIN_DATA
 25.4	9.03	:	Acala Fluctus
@@ -24,7 +22,6 @@ BEGIN_DATA
 148.67	-26.8	:	Marduk Fluctus
 -57.77	-50.89	:	Masubi Fluctus
 -150.76	14.03	:	Sobo Fluctus
--163.45	-1.27	:	Tsũi Goab Fluctus
+-163.45	-1.27	:	Tsui Goab Fluctus		; Tsũi Goab Fluctus
 3.49	-17.32	:	Tung Yo Fluctus
 -16.14	-33.12	:	Uta Fluctus
-

@@ -7,12 +7,10 @@ DistanceFactor 1
 
 END_HEADER
 
-;Tholus, tholi (Small domical mountain or hill)
-
-;Source: https://planetarynames.wr.usgs.gov/
-;Updated 3 January 2022
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 28 November 2021
 
 BEGIN_DATA
 12.3	-11.92	:	Apis Tholus
 12.35	-16.21	:	Inachus Tholus
--162.95	-0.18	:	Tsũi Goab Tholus
+-162.95	-0.18	:	Tsui Goab Tholus		; Tsũi Goab Tholus
