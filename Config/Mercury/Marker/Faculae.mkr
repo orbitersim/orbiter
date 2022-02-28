@@ -1,3 +1,5 @@
+;Facula - Bright spot
+
 BEGIN_HEADER
 InitialState on
 ColourIdx 5
@@ -6,10 +8,8 @@ Size 0.5
 DistanceFactor 1
 END_HEADER
 
-;Facula, facula (Bright spot)
-
 ;Source: https://planetarynames.wr.usgs.gov/Page/MERCURY/target
-;Updated 3 January 2022
+;File created 17 November 2021
 
 BEGIN_DATA
 145.4	21.7	:	Abeeso Facula
@@ -24,7 +24,7 @@ BEGIN_DATA
 160.8	14.5	:	Ibab Facula
 162.3	14	:	Inyoka Faculae
 164	14.9	:	Maciji Facula
-17.8	-52.7	:	Nākahi Facula
+17.8	-52.7	:	Nakahi Facula			; Nākahi Facula
 64.5	36	:	Nathair Facula
 57.3	35.9	:	Neidr Facula
 165.3	15.4	:	Nzoka Facula
