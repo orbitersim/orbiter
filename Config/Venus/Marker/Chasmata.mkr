@@ -7,7 +7,7 @@ DistanceFactor 1
 
 END_HEADER
 ;Source: https://planetarynames.wr.usgs.gov
-;Updated 21 December 2021
+;62 items updated, 1 new added 21 November 2021
 
 BEGIN_DATA
 -68	32	:	Aikhylu Chasma
@@ -48,7 +48,7 @@ BEGIN_DATA
 -92.5	26	:	Latona Chasma
 -145	-0.8	:	Lesavka Chasma
 89.3	46.2	:	Medeina Chasma
-50.7	51	:	Mežas-Mate Chasma
+50.7	51	:	Mezas-Mate Chasma			; Mežas-Mate Chasma
 -43.5	78.3	:	Misne Chasma
 -112.7	39.5	:	Mist Chasma
 24.6	68.9	:	Morana Chasma
@@ -72,7 +72,5 @@ BEGIN_DATA
 -18.4	75.6	:	Vires-Akka Chasma
 70	-54	:	Xaratanga Chasma
 -148	9	:	Zewana Chasma
--89	18.5	:	Žverine Chasma
-
-
+-89	18.5	:	Zverine Chasma			; Žverine Chasma
 

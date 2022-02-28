@@ -7,7 +7,7 @@ DistanceFactor 1
 END_HEADER
 
 ;Source: https://planetarynames.wr.usgs.gov
-;Updated 21 December 2021
+;updated 21 November 2021
 
 BEGIN_DATA
 -11	-7.5	:	Alpan Fluctus
@@ -39,7 +39,7 @@ BEGIN_DATA
 -4.5	-54	:	Mylitta Fluctus
 135	-61	:	Nambubi Fluctus
 136	-81	:	Naunet Fluctus
--9	49.3	:	Neago Fluctūs
+-9	49.3	:	Neago Fluctus			; Neago Fluctūs
 35	0	:	Nekhebet Fluctus
 105	-37	:	Ney-Anki Fluctus
 -154	-5.5	:	Ningyo Fluctus
@@ -61,5 +61,3 @@ BEGIN_DATA
 67	-38	:	Vut-Ami Fluctus
 152	-80.6	:	Yagami Fluctus
 -108.7	37.7	:	Zipaltonal Fluctus
-
-

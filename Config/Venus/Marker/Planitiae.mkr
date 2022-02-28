@@ -8,7 +8,7 @@ DistanceFactor 1
 END_HEADER
 
 ;Source: https://planetarynames.wr.usgs.gov
-;Updated 21 December 2021
+;updated 25 November 2021
 
 BEGIN_DATA
 25	-73	:	Aibarchin Planitia
@@ -31,7 +31,7 @@ BEGIN_DATA
 117	-58	:	Laimdota Planitia
 -12.5	-47.3	:	Lavinia Planitia
 65.1	44	:	Leda Planitia
--70	60	:	Libuše Planitia
+-70	60	:	Libuse Planitia			; Libuše Planitia
 145	18	:	Llorona Planitia
 120.5	80.5	:	Louhi Planitia
 98	43	:	Lowana Planitia
@@ -52,6 +52,4 @@ BEGIN_DATA
 -152.4	53.8	:	Vinmara Planitia
 -143	-30	:	Wawalag Planitia
 157	-40	:	Zhibek Planitia
-
-
 

@@ -7,7 +7,7 @@ DistanceFactor 1
 END_HEADER
 
 ;Source: https://planetarynames.wr.usgs.gov
-;Updated 21 December 2021
+;updated 21 November 2021
 
 BEGIN_DATA
 -86.9	-44.8	:	Abeona Mons
@@ -21,14 +21,14 @@ BEGIN_DATA
 -133	-78.5	:	Atsyrkhus Mons
 -112	-60	:	Awenhai Mons
 -81	65.5	:	Bagbartu Mons
-21.9	34	:	Bécuma Mons
+21.9	34	:	Becuma Mons		; Bécuma Mons
 -5.1	45.8	:	Bunzi Mons
 -65.4	-45.4	:	Chloris Mons
 -114	-38	:	Chuginadak Mons
 -27.5	-31.5	:	Cipactli Mons
 150.9	53	:	Ciuacoatl Mons
 -83.2	34.8	:	Copacati Mons
-;-126.9	44.1	:	[Cotis Mons]
+;-126.9	44.1	:	[Cotis Mons]		;removed 1985, Name changed to Cotis Tholus
 -26	58.5	:	Danu Montes
 34	0.5	:	Dzalarhons Mons
 134	-59	:	Egle Mons
@@ -37,7 +37,7 @@ BEGIN_DATA
 158	7	:	Fand Mons
 -51	-43.5	:	Faravari Mons
 -26.2	74.1	:	Freyja Montes
-;-123.6	35.9	:	[Furki Mons]
+;-123.6	35.9	:	[Furki Mons]		;removed 1985, name changed to Furki Tholus
 102.2	-20.2	:	Gauri Mons
 -0.9	21.9	:	Gula Mons
 58.5	-47.5	:	Gurshi Mons
@@ -63,13 +63,13 @@ BEGIN_DATA
 172.7	2.8	:	Lamashtu Mons
 91	-68.5	:	Lanig Mons
 56	-59.5	:	Loo-Wit Mons
-;-109	-12	:	[Ludjatako Mons]
+;-109	-12	:	[Ludjatako Mons]		;removed 1997, name changed to Ludjatako Corona
 -165.4	0.5	:	Maat Mons
 3.3	65.2	:	Maxwell Montes
 -144.8	-15.1	:	Mbokomu Mons
 119.3	62.8	:	Melia Mons
 -151	9.5	:	Mem Loimis Mons
-;-122.7	43	:	[Mentha Mons]
+;-122.7	43	:	[Mentha Mons]			;removed 1985, name changed to Mentha Tholus
 -89.7	-38.1	:	Mertseger Mons
 -107	71	:	Metis Mons
 -79.5	-27.8	:	Mielikki Mons
@@ -101,7 +101,7 @@ BEGIN_DATA
 -5.5	75.7	:	Sarasvati Mons
 -119.5	44.5	:	Sekmet Mons
 28	-43	:	Sephira Mons
-;33.2	26.3	:	[Seshat Mons]
+;33.2	26.3	:	[Seshat Mons]			;removed 1991
 -152	39.4	:	Shala Mons
 -62.7	-42.3	:	Siduri Mons
 -7.6	22	:	Sif Mons
@@ -132,6 +132,4 @@ BEGIN_DATA
 -166	17	:	Yolkai-Estsan Mons
 -75	-18	:	Yunya-mana Mons
 163.5	18	:	Zaltu Mons
-
-
 

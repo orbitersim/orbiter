@@ -8,7 +8,7 @@ DistanceFactor 1
 END_HEADER
 
 ;Source: https://planetarynames.wr.usgs.gov
-;Updated 21 December 2021
+;updated 21 November 2021
 
 BEGIN_DATA
 131	67	:	Aife Fossae
@@ -23,14 +23,14 @@ BEGIN_DATA
 109.5	50.2	:	Friagabi Fossae
 -31	-5	:	Gulaim Fossae
 148.5	29	:	Hanekasa Fossae
-;159.4	45.4	:	[Hildr Fossa]
+;159.4	45.4	:	[Hildr Fossa]		;dropped 1985
 -105.4	71.9	:	Ilbis Fossae
--18	28	:	Karra-māhte Fossae
+-18	28	:	Karra-mahte Fossae			; Karra-māhte Fossae
 -57	-13	:	Khosedem Fossae
 -27.5	-12	:	Magura Fossae
 64.9	63.6	:	Manto Fossae
 -107.5	64.5	:	Minerva Fossae
-;-112.7	39.5	:	[Mist Fossae]
+;-112.7	39.5	:	[Mist Fossae]		1985, changed to Mist Chasma
 159.3	-35.6	:	Naguchitsa Fossae
 -23	-70.2	:	Naijok Fossae
 2.7	2.5	:	Namjyalma Fossae
@@ -45,6 +45,4 @@ BEGIN_DATA
 7	-48	:	Yenkhoboy Fossae
 -136	48	:	Yuzut-Arkh Fossae
 -178	-67.5	:	Zheztyrnak Fossae
-
-
 

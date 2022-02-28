@@ -8,7 +8,7 @@ DistanceFactor 1
 END_HEADER
 
 ;Source: https://planetarynames.wr.usgs.gov
-;Updated 21 December 2021
+;updated 21 November 2021
 
 BEGIN_DATA
 -127	75.1	:	Akka Tholus
@@ -21,9 +21,9 @@ BEGIN_DATA
 -113	48.7	:	Ashtart Tholus
 -110.65	-34.05	:	Azimua Tholi
 130.3	57.8	:	Bast Tholus
-;-114	49	:	[Brigit Tholus]
+;-114	49	:	[Brigit Tholus]			;removed 1985
 -127	44.3	:	Cotis Tholus
-6.3	24.2	:	Dröl-ma Tholus
+6.3	24.2	:	Drol-ma Tholus			; Dröl-ma Tholus
 -130	75.5	:	Eirene Tholus
 -17.8	37.6	:	Evaki Tholus
 91.3	23.7	:	Ezili Tholus
@@ -69,6 +69,4 @@ BEGIN_DATA
 -127.8	76.1	:	Yansa Tholus
 -18.5	-13.8	:	Yurt-Ava Tholus
 -24.7	-9.4	:	Zorya Tholus
-
-
 
