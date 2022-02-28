@@ -3,13 +3,12 @@ InitialState on
 ColourIdx 1
 ShapeIdx 1
 Size 0.5
-DistanceFactor 4
+DistanceFactor 3
 
 END_HEADER
-;Crater, craters (A circular depression)
 
 ;Source: https://planetarynames.wr.usgs.gov
-;Updated 4 January 2022
+;Created 26 November 2021
 
 BEGIN_DATA
 -91	60	:	Clustril
@@ -20,7 +19,7 @@ BEGIN_DATA
 -163	62	:	Gulliver
 150	-80	:	Hall
 -54	-11	:	Limtoc
-63	-7	:	Öpik
+63	-7	:	Opik			; Öpik
 -39	41	:	Reldresal
 177	53	:	Roche
 -154	-27.5	:	Sharpless
