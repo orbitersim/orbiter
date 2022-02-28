@@ -3,305 +3,309 @@ InitialState on
 ColourIdx 1
 ShapeIdx 1
 Size 0.5
-DistanceFactor 0.75
+DistanceFactor 1
+
 END_HEADER
 
 ;Crater, craters (A circular depression)
-;D's are done, E +longitude going down
+
+Start E going down
+
 ;Source: https://planetarynames.wr.usgs.gov
-;Updated 3 January 2022
+;Updated 23 November 2021
 
 BEGIN_DATA
-111.1	15.91	:	Aban
-123.16	45.43	:	Achar
--3.22	-3.06	:	Ada
-163.1	30.91	:	Adams
--88.89	-69.88	:	Agassiz
-0.05	-5.14	:	Airy
-0	-5.07	:	Airy-0
-103.14	16.49	:	Ajon
--60.24	-35.46	:	Aki
--46.49	20.41	:	Aktaj
--37.12	23.48	:	Alamos
--49.02	22.96	:	Albany
--35.01	-41.47	:	Albi
-125.34	-47.44	:	Alexey Tolstoy
--26.68	-24.34	:	Alga
--38.14	-34.91	:	Alitus
+111	16.08	:	Aban
+123.07	45.76	:	Achar
+-3.3	-3.09	:	Ada
+162.98	31.2	:	Adams
+-88.89	-70.11	:	Agassiz
+-0.05	-5.17	:	Airy
+0	-5.07	:	Airy-0		;even though the visual is off, left it at longitude 0
+103.05	16.66	:	Ajon
+-60.34	-35.76	:	Aki
+-46.58	20.62	:	Aktaj
+-37.21	23.72	:	Alamos
+-49.11	23.19	:	Albany
+-35.1	-41.79	:	Albi
+125.22	-47.79	:	Alexey Tolstoy
+-26.77	-24.58	:	Alga
+-38.23	-35.19	:	Alitus
 -31.09	-15.14	:	Alnif
--0.02	9.84	:	Alofi
-;-57.4	23.45	:	[Amet]
--47	23	:	Amsterdam
--4.73	-5.33	:	Andapa
-76.95	18.65	:	Angelica
-105.64	20.01	:	Angu
--69.56	-31.84	:	Aniak
--47.73	23.16	:	Annapolis
-60.83	21.38	:	Antoniadi
-89.02	-37.28	:	Apia
--9.47	39.88	:	Apt
-29.93	10.22	:	Arago
--15.03	42.41	:	Arandas
--50.17	23.33	:	Argas
-110.24	-23.8	:	Arica
--63.68	-15.84	:	Arima
--24.79	-41.09	:	Arkhangelsky
-122.71	-40.04	:	Arrhenius
--54.29	21.38	:	Arta
-130.98	-34.8	:	Artik
-154.68	-3.63	:	Asau
-4.93	-46.97	:	Asimov
--23.15	-21.39	:	Aspen
-80.14	-27.17	:	Auce
-96.87	-15.76	:	Auki
--69.77	-10.97	:	Avan
-109.66	-35.93	:	Avarua
--78.97	21.28	:	Aveiro
--159.76	-40.82	:	Avire
--92.03	38.18	:	Ayacucho
-91.58	-38.98	:	Ayr
--42.51	-42.07	:	Azul
--40.32	-5.48	:	Azusa
--71.44	-36	:	Babakin
-102.7	18.66	:	Bacht
-118.6	32.99	:	Bacolor
--50.69	20.35	:	Bada
-62.14	-32.79	:	Badwater
--43.32	-3.5	:	Bahn
-103.78	18.05	:	Bak
-15.73	-22.97	:	Bakhuysen
--33.88	-3.82	:	Balboa
-65.48	22.76	:	Baldet
--26.55	-23.82	:	Balta
--54.66	-42.27	:	Baltisk
--53.24	16.2	:	Balvicar
-115.67	-25.79	:	Bam
--41.59	-3.36	:	Bamba
--3.1	39.71	:	Bamberg
--4.32	10.76	:	Banes
--30.71	17.51	:	Banff
--55.5	19.42	:	Banh
--19.5	-25.25	:	Bar
--68.75	47.33	:	Barabashov
-61.59	-61.06	:	Barnard
-110.7	-24.8	:	Baro
--29.02	7.97	:	Barsukov
-25.67	7.44	:	Barth
-107	17.82	:	Basin
--36.65	-7.55	:	Batoka
--29.5	21.5	:	Batoş
-84.15	-28.91	:	Batson
--55.1	-28.37	:	Baucau
-28.3	-24.72	:	Baum
-132.68	46.41	:	Baykonyr
-93.38	-27.78	:	Bazas
--7.94	21.89	:	Becquerel
--8.17	-14.47	:	Beer
-56.71	-39.58	:	Beloha
-102.4	18.01	:	Beltra
-77.38	18.48	:	Belva
--158.01	-45.02	:	Belyov
--43.23	21.57	:	Belz
--27.74	-22.4	:	Bend
--40.55	-55.78	:	Bentham
--19.04	-22.31	:	Bentong
--154.21	-23.24	:	Bernard
--37.6	-4.4	:	Berseba
-81.24	5.27	:	Beruri
--78.65	-23.13	:	Betio
-134.53	41.75	:	Bhor
--95.29	-63.85	:	Bianchini
--34.75	-24.78	:	Bigbee
--45.54	25.1	:	Bira
--56.83	20.22	:	Bise
--29.15	-26.31	:	Bison
-171.48	-43.01	:	Bjerknes
-108.76	18.3	:	Bland
--31.46	21.58	:	Bled
--20.96	-25.9	:	Blitta
--55.85	23.6	:	Blois
-110.03	23.47	:	Bluff
--36.9	-27.23	:	Blunck
-162.49	-14.82	:	Boeddicker
-83.27	-44.31	:	Bogia
--28.8	-24.16	:	Bogra
--31.6	20.58	:	Bok
--53.99	25.35	:	Bole
-106.13	-27.6	:	Bombala
--35.94	-32.79	:	Bond
--30.39	42	:	Bonestell
--105.19	81.26	:	Boola
--6.3	-2.96	:	Bopolu
--33.68	18.17	:	Bor
--48.89	23.13	:	Bordeaux
--27.87	-24.34	:	Boru
-27.27	-18.46	:	Bouguer
-111.32	-22.89	:	Boulia
--32.18	-44.14	:	Bozkir
-85.8	2.58	:	Bradbury
--119.03	-53.81	:	Brashear
-149.63	37.64	:	Bree
--48.64	23.7	:	Bremerhaven
-89.68	-9.98	:	Briault
--47.08	21.9	:	Bridgetown
--46.93	22.09	:	Bristol
--56.89	23.51	:	Broach
--55.21	-10.7	:	Bronkhorst
-111.34	21.7	:	Brush
-134.52	50.36	:	Bulhar
--48.59	-33.82	:	Bunge
--142.1	-38.07	:	Bunnik
-117.1	-72.29	:	Burroughs
--156.33	-13.88	:	Burton
--32.41	-23.25	:	Buta
--38.91	-5.08	:	Butte
--66.47	-25.73	:	Byala
-127.83	-65.22	:	Byrd
--33.95	-4.97	:	Byske
--49.03	23.15	:	Cádiz
--3.55	4.73	:	Cagli
--47.46	23.56	:	Cairns
--38.65	26.46	:	Calahorra
--54.87	18.27	:	Calamar
--28.87	-25.14	:	Calbe
-109.64	17.7	:	Camargo
--51.61	2.26	:	Camichel
--38	-0.71	:	Camiling
--42.17	-44.65	:	Camiri
-165.58	-54.25	:	Campbell
--27.81	-21.8	:	Campos
--14.59	48.21	:	Can
--80.08	24.35	:	Canala
-89.86	-31.19	:	Cañas
-135.83	46.83	:	Canaveral
-132.66	47.2	:	Canberra
--89.59	41.85	:	Cangwu
-116.48	10.23	:	Canillo
-52.03	-19.42	:	Cankuzo
--60.62	21.36	:	Canso
--51.72	14.84	:	Cantoura
-14.31	6.58	:	Capen
--31.98	-19.65	:	Cardona
--17.97	-23.25	:	Cartago
-32.11	23.35	:	Cassini
-175.3	-14.7	:	Castril
--26.98	51.67	:	Catota
--35.64	21.61	:	Cave
--100.68	-28.95	:	Caxias
-113.62	-35.93	:	Cayon
--38.89	23.64	:	Cefalù
-22.12	32.2	:	Cerulli
+-0.09	9.94	:	Alofi
+;-57.4	23.45	:	[Amet]			;dropped 
+-47.09	23.23	:	Amsterdam
+-4.83	-5.39	:	Andapa
+76.865	18.86	:	Angelica
+105.54	20.22	:	Angu
+-69.68	-32.1	:	Aniak
+-47.836	23.521	:	Annapolis
+60.835	21.1	:	Antoniadi
+88.91	-37.6	:	Apia
+-9.55	40.2	:	Apt
+29.78	10.3	:	Arago			;large faint crater with one crater at the top, several small ones inside
+-15.1	42.73	:	Arandas
+-50.25	23.56	:	Argas
+110.15	-23.04	:	Arica
+-63.76	-16.02	:	Arima
+-24.85	-41.49	:	Arkhangelsky
+122.7	-40.41	:	Arrhenius
+-54.38	21.6	:	Arta
+130.89	-35.11	:	Artik
+154.57	-3.7	:	Asau
+4.93	-47.3	:	Asimov
+-23.23	-21.61	:	Aspen
+80.06	-27.44	:	Auce
+96.77	-15.94	:	Auki
+-69.85	-11.1	:	Avan
+109.58	-36.21	:	Avarua
+-79.06	21.49	:	Aveiro
+-159.85	-41.14	:	Avire
+-92.13	38.49	:	Ayacucho
+91.47	-39.3	:	Ayr
+-42.61	-42.37	:	Azul
+-40.41	-5.52	:	Azusa
+-71.62	-36.3	:	Babakin
+102.6	18.86	:	Bacht
+118.51	33.29	:	Bacolor
+-50.77	20.56	:	Bada
+62.05	-33.12	:	Badwater
+-43.39	-3.53	:	Bahn
+103.69	18.24	:	Bak
+15.63	-23.18	:	Bakhuysen
+-33.97	-3.86	:	Balboa
+65.38	23.01	:	Baldet
+-26.63	-24.05	:	Balta
+-54.77	-42.58	:	Baltisk
+-53.31	16.37	:	Balvicar
+115.58	-26.05	:	Bam
+-41.66	-3.4	:	Bamba
+-3.18	40	:	Bamberg
+-4.42	10.87	:	Banes
+-30.8	17.7	:	Banff
+-55.59	19.62	:	Banh
+-19.57	-25.49	:	Bar
+-68.85	47.61	:	Barabashov
+61.43	-61.28	:	Barnard
+110.62	-25.06	:	Baro
+-29.11	8.04	:	Barsukov
+25.59	7.52	:	Barth
+106.9	18	:	Basin
+-36.55	-7.63	:	Batoka
+-29.58	21.73	:	Batos		; Batoş
+84.12	-29.17	:	Batson
+-55.2	-28.65	:	Baucau
+28.2	-24.96	:	Baum
+132.585	46.735	:	Baykonyr
+93.28	-28.04	:	Bazas
+-8.01	22.06	:	Becquerel		;Becquerel is the larger, older crater
+-8.26	-14.59	:	Beer
+56.6	-39.87	:	Beloha
+102.31	18.2	:	Beltra
+77.24	18.7	:	Belva			;Very small crater at NW edge of Jezero
+-158.02	-45.24	:	Belyov			;tiny crater northwest of Reutov?
+-43.32	21.79	:	Belz
+-27.82	-22.63	:	Bend
+-40.63	-56.08	:	Bentham
+-19.13	-22.53	:	Bentong
+-154.30	-23.45	:	Bernard
+-37.7	-4.46	:	Berseba
+81.16	5.31	:	Beruri
+-78.75	-23.38	:	Betio
+134.44	42.06	:	Bhor
+-95.4	-64.15	:	Bianchini
+-34.82	-25.01	:	Bigbee
+-45.62	25.35	:	Bira
+-56.92	20.44	:	Bise
+-29.24	-26.56	:	Bison
+171.38	-43.34	:	Bjerknes
+108.66	18.49	:	Bland
+-31.54	21.81	:	Bled
+-21.06	-26.15	:	Blitta
+-55.94	23.84	:	Blois
+109.94	23.7	:	Bluff
+-37	-27.5	:	Blunck
+162.37	-14.94	:	Boeddicker
+83.16	-44.66	:	Bogia
+-28.9	-24.41	:	Bogra
+-31.69	20.8	:	Bok
+-54.08	25.61	:	Bole
+106.06	-27.87	:	Bombala
+-36.05	-33.06	:	Bond				;the big one, not the little one to the left
+-30.47	42.3	:	Bonestell
+-105.47	81.32	:	Boola
+-6.39	-3	:	Bopolu
+-33.77	18.36	:	Bor
+-48.74	23.11	:	Bordeaux
+-27.95	-24.59	:	Boru
+27.17	-18.66	:	Bouguer				;the big crater, not the two little ones near the marker
+111.23	-23.11	:	Boulia
+-32.31	-44.43	:	Bozkir
+85.69	2.61	:	Bradbury
+-119.23	-54.13	:	Brashear
+149.53	37.96	:	Bree
+-48.73	23.93	:	Bremerhaven
+89.59	-10.1	:	Briault
+-47.165	22.118	:	Bridgetown
+-47.01	22.32	:	Bristol
+-56.98	23.75	:	Broach
+-55.29	-10.82	:	Bronkhorst
+111.25	21.92	:	Brush
+134.43	50.68	:	Bulhar
+-48.71	-34.15	:	Bunge
+-142.17	-38.39	:	Bunnik
+116.64	-72.35	:	Burroughs
+-156.34	-13.99	:	Burton
+-32.5	-23.48	:	Buta
+-39	-5.14	:	Butte
+-66.56	-26	:	Byala
+127.83	-65.47	:	Byrd
+-34.04	-5.02	:	Byske
+-49.115	23.37	:	Cadiz			; Cádiz
+-3.64	4.77	:	Cagli
+-47.55	23.79	:	Cairns			; the bigger one, not the small one on the left
+-38.71	26.74	:	Calahorra
+-54.96	18.47	:	Calamar
+-28.97	-25.39	:	Calbe
+109.55	17.88	:	Camargo
+-51.72	2.29	:	Camichel
+-38.09	-0.73	:	Camiling
+-42.25	-45.02	:	Camiri
+165.48	-54.54	:	Campbell
+-27.91	-22.02	:	Campos
+-14.67	48.53	:	Can
+-80.18	24.59	:	Canala
+89.75	-31.49	:	Canas			; Cañas
+135.74	47.16	:	Canaveral
+132.56	47.53	:	Canberra
+-89.68	42.17	:	Cangwu
+116.39	10.35	:	Canillo
+51.96	-19.64	:	Cankuzo
+-60.71	21.58	:	Canso
+-51.8	14.98	:	Cantoura			;look closely, it's actually a double
+14.21	6.64	:	Capen
+-32.07	-19.85	:	Cardona
+-18.06	-23.47	:	Cartago
+31.98	23.52	:	Cassini				;the old, big one, not the little one to the SE of the marker
+175.3	-14.7	:	Castril				;the old, big one, not the smaller ones nearby
+-27.07	51.98	:	Catota
+-35.73	21.84	:	Cave
+-100.78	-29.24	:	Caxias
+113.54	-36.22	:	Cayon				;the smaller one overlapping with a larger one to the north (Fancy)
+-38.98	23.88	:	Cefalu			; Cefalù
+22.04	32.47	:	Cerulli
 102.41	15.1	:	Chafe
 50.96	-60.86	:	Chaman
--24.38	14.29	:	Chamba
--124.29	-65.84	:	Chamberlin
--57.34	23.47	:	Changsŏng
--20.55	-22.35	:	Chapais
--47.8	22.63	:	Charleston
--168.47	-68.56	:	Charlier
--83.99	38.15	:	Charlieu
--94.94	35.38	:	Chatturat
--55.91	23.35	:	Chauk
--19.44	-24.2	:	Cheb
+-24.47	14.42	:	Chamba
+-124.3	-66.19	:	Chamberlin
+-57.45	23.71	:	Changsong			; Changsŏng
+-20.65	-22.56	:	Chapais
+-47.885	22.855	:	Charleston
+-168.54	-68.74	:	Charlier
+-84.07	38.45	:	Charlieu
+-95.03	35.68	:	Chatturat
+-56	23.59	:	Chauk
+-19.54	-24.44	:	Cheb
 112.24	-22.91	:	Chefu
--26.81	-24.28	:	Chekalin
--59.65	1.57	:	Chia
--39.68	-1.42	:	Chimbote
-124.12	41.2	:	Chincoteague
--42.14	-4.52	:	Chinju
--55.46	22.5	:	Chinook
--56.01	21.68	:	Chive
--37.24	-41.19	:	Choctaw
--2.52	38.57	:	Chom
-18.72	-32.43	:	Choyr
--72.42	38.47	:	Chukhung
-83.43	6.13	:	Chupadero
--29.31	16.93	:	Chur
-129.48	-35.71	:	Cilaos
--25.53	-22.17	:	Circle
--133.2	-55.14	:	Clark
--47.67	20.56	:	Clogh
--52.05	21.47	:	Clova
--27.3	-23.86	:	Cluny
--27.03	-25.79	:	Cobalt
--90.31	-54.9	:	Coblentz
--153.6	-11.7	:	Cobres
--5.31	4.18	:	Coimbra
--47.07	22.75	:	Colón
--165.98	-29.29	:	Columbus
--158.51	-19.59	:	Comas Sola
--34.2	-4.22	:	Conches
--34.02	16.53	:	Concord
--108.35	-23.69	:	Cooma
--168.83	-48.84	:	Copernicus
-137.56	42.88	:	Corby
-141.71	16.95	:	Corinto
-159.42	-38.79	:	Corozal
-104.02	14.98	:	Cost
--16.12	44.1	:	Cray
--38.85	-6.05	:	Creel
--19.53	-24.84	:	Crewe
-174.79	-14.55	:	Crivitz
--10.14	5.08	:	Crommelin
--157.69	-30.2	:	Cross
--69.31	82.21	:	Crotone
-163.03	-42.91	:	Cruls
--1.97	38.46	:	Cruz
-93.23	-35.84	:	Cue
--53.93	-8.84	:	Culter
--4.75	28.78	:	Curie
--47.35	-47.28	:	Cypress
-91.58	-40.48	:	Daan
-77.95	18.34	:	Dacono
--41.8	-7.29	:	Daet
--23.12	-66.29	:	Daly
--156.37	-15.73	:	Dampier
--32.79	-72.49	:	Dana
--7.05	7.97	:	Danielson
-107	21.96	:	Dank
--51.01	17.78	:	Darvel
--19.15	-56.97	:	Darwin
-0.09	45.96	:	Davies
--39.26	1.47	:	Da Vinci
-38.06	-9.11	:	Dawes
--17.3	-23.95	:	Deba
--157.99	-42.25	:	Dechu
--45.5	-23.72	:	Degana
--2.51	38.21	:	Dein
--164.64	-25.14	:	Dejnev
--39.17	-45.96	:	Delta
-33.52	-17.43	:	Denning
--51.89	22.64	:	Dersu
--30.61	-45.41	:	Dese
-70.29	-80.62	:	Deseado
--53.13	-42.76	:	Dessau
-171	-13.31	:	de Vaucouleurs
--42.66	-0.36	:	Dia-Cau
-157.22	13.27	:	Dilly
--17.49	-23.71	:	Dingo
--101.46	-30.03	:	Dinorwic
--16.5	-25.03	:	Dison
--55.91	17.78	:	Dixie
-119.62	10.92	:	Doba
--53.67	-10.01	:	Dogana
--145.76	77.17	:	Dokka
--127.08	-60.62	:	Dokuchaev
--4.26	-21.59	:	Dollfus
--125.61	51.38	:	Domoni
-109.51	23.53	:	Doon
--70.54	-51.34	:	Douglass
-110.24	-31.66	:	Dowa
-175.78	-15.98	:	Downe
--49.58	19.88	:	Dromore
--55.2	-34.97	:	Dubki
--39.14	7.76	:	Dukhan
-84.56	3.62	:	Dulovo
-93.58	5.45	:	Du Martheray
--48.53	-80.84	:	Dunhuang
--137.06	-37.49	:	Dunkassa
--54.02	22.49	:	Dush
--49.6	-71.62	:	Du Toit
--70.47	-80.51	:	Dzeng
+-26.94	-24.5	:	Chekalin			;the big one containing Alga and Balta
+-59.78	1.58	:	Chia
+-39.776	-1.423	:	Chimbote
+124.02	41.52	:	Chincoteague
+-42.25	-4.57	:	Chinju
+-55.55	22.73	:	Chinook
+-56.1	21.9	:	Chive
+-37.34	-41.52	:	Choctaw
+-2.6	38.89	:	Chom
+18.61	-32.69	:	Choyr
+-72.52	38.78	:	Chukhung
+83.35	6.2	:	Chupadero
+-29.4	17.12	:	Chur
+129.34	-36	:	Cilaos				;the larger one, not the smaller one inside (Gasa)
+-25.61	-22.4	:	Circle
+-133.28	-55.48	:	Clark
+-47.68	20.53	:	Clogh
+-52.13	21.68	:	Clova
+-27.39	-24.1	:	Cluny
+-27.12	-26.05	:	Cobalt
+-90.38	-55.2	:	Coblentz
+-153.68	-11.79	:	Cobres
+-5.41	4.23	:	Coimbra
+-47.15	22.98	:	Colon			; Colón
+-166.07	-29.56	:	Columbus
+-158.59	-19.82	:	Comas Sola
+-34.31	-4.28	:	Conches
+-34.12	16.93	:	Concord
+-108.43	-23.93	:	Cooma
+-168.96	-49.2	:	Copernicus
+137.47	43.19	:	Corby
+141.61	17.11	:	Corinto
+159.33	-39.1	:	Corozal
+103.93	15.14	:	Cost
+-16.2	44.42	:	Cray
+-38.95	-6.11	:	Creel
+-19.6	-25.08	:	Crewe
+174.69	-14.71	:	Crivitz				
+-10.22	5.06	:	Crommelin
+-157.78	-30.5	:	Cross
+-69.4	82.3	:	Crotone
+162.93	-43.24	:	Cruls
+-1.75	38.67	:	Cruz
+93.14	-36.15	:	Cue
+-54.02	-8.94	:	Culter
+-4.82	29.02	:	Curie
+-47.45	-47.61	:	Cypress
+91.48	-40.8	:	Daan
+77.86	18.54	:	Dacono
+-41.88	-7.36	:	Daet
+-23.18	-66.49	:	Daly				;larger crater SW with overlapping large crater to NW, middle-sized crater near N edge
+-32.79	-72.69	:	Dana
+-7.14	8.05	:	Danielson
+106.91	22.17	:	Dank
+-51.11	17.97	:	Darvel
+-19.39	-57.38	:	Darwin
+0	46.25	:	Davies
+-39.38	1.47	:	Da Vinci
+38.04	-9.14	:	Dawes
+-17.39	-24.18	:	Deba
+-158.09	-42.58	:	Dechu
+-45.59	-23.96	:	Degana				;larger crater with middle size crater at NW portion
+-2.61	38.51	:	Dein
+-164.76	-25.39	:	Dejnev
+-39.27	-46.29	:	Delta
+33.36	-17.61	:	Denning
+-51.97	22.86	:	Dersu
+-30.7	-45.74	:	Dese
+70.09	-80.74	:	Deseado
+-53.23	-43.09	:	Dessau
+170.86	-13.45	:	de Vaucouleurs			;large, very faint crater, has a couple smaller faint craters, 
+							;several smaller, more prominent craters
+-42.75	-0.37	:	Dia-Cau				;the large crater, not the small one in the middle
+157.13	13.41	:	Dilly				;very small crater
+-17.57	-23.94	:	Dingo
+-101.57	-30.34	:	Dinorwic
+-16.58	-25.29	:	Dison
+-56	17.97	:	Dixie
+119.53	11.03	:	Doba
+-53.78	-10.12	:	Dogana
+-146.02	77.32	:	Dokka
+-127.23	-60.88	:	Dokuchaev
+-4.36	-21.81	:	Dollfus				;marker is next to a small crater, inside a larger faint crater, 
+							;Dollfus is the very larger crater, extremely faint
+-125.68	51.71	:	Domoni
+109.4	23.76	:	Doon
+-70.63	-51.65	:	Douglass
+110.16	-31.97	:	Dowa
+175.69	-16.16	:	Downe
+-49.67	20.08	:	Dromore
+-55.3	-35.27	:	Dubki
+-39.23	7.85	:	Dukhan
+84.47	3.66	:	Dulovo
+93.47	5.46	:	Du Martheray
+-48.68	-80.93	:	Dunhuang
+-137.15	-37.81	:	Dunkassa
+-54.105	22.725	:	Dush
+-49.72	-71.83	:	Du Toit
+-70.56	-80.62	:	Dzeng
 -29.91	-28.48	:	Eads
 -8.17	43.81	:	Eagle
 -33.3	-23.98	:	Eberswalde
@@ -369,9 +373,9 @@ BEGIN_DATA
 -9.06	48.25	:	Garm
 -69.69	-11.52	:	Garni
 141.28	-6.39	:	Garu
-129.4	-35.72	:	Gasa
+129.3	-36.03	:	Gasa				;the one inside the larger one (Cilaos)
 112.53	24.61	:	Gastre
-;-21.13	-20.87	:	[Gatico]
+;-21.13	-20.87	:	[Gatico]			;dropped
 86.08	-68	:	Gilbert
 5.55	15.76	:	Gill
 -26.59	-20.62	:	Glazov
@@ -394,16 +398,14 @@ BEGIN_DATA
 112.89	-38.59	:	Greg
 -38.99	25.4	:	Grindavik
 -35.7	-20.67	:	Gringauz
--30.84	-21.47	:	Grójec
+-30.84	-21.47	:	Grojec			; Grójec
 -44.55	-4.06	:	Groves
 -45.03	25.66	:	Guaymas
 -20.5	-21.54	:	Guir
-109.9	24.98	:	Gujiang
 109.02	15.85	:	Gulch
 146.66	-0.17	:	Gunjur
 102.92	-43.67	:	Gunnison
 175.52	-14.53	:	Gusev
-110.23	24.96	:	Gutian
 -3.16	38.96	:	Gwash
 156.97	-19.26	:	Hadley
 -56.14	-26.01	:	Halba
@@ -413,23 +415,23 @@ BEGIN_DATA
 -32.5	-44.67	:	Ham
 132.51	48.68	:	Hamaguir
 -32.75	20.25	:	Hamelin
--88.59	37.69	:	Handlová
--28.01	-27.46	:	Harad̦
+-88.59	37.69	:	Handlova			; Handlová
+-28.01	-27.46	:	Harad				; Harad̦
 75.74	20.74	:	Hargraves
 66.81	-21.9	:	Harris
-77.72	18.53	:	Hartwell
+77.62	18.72	:	Hartwell			;very small crater north center of Jezero
 -15.86	-38.66	:	Hartwig
 85.01	3.19	:	Hashir
 -95.22	-70.5	:	Heaviside
 -124.56	68.33	:	Heimdal
-116.31	-64.48	:	Heinlein
+116.21	-64.75	:	Heinlein
 -21.27	-45.4	:	Helmholtz
 -147.73	-63.49	:	Henbury
 23.45	10.79	:	Henry
 53.9	-59.72	:	Henry Moore
 -58.65	19.31	:	Herculaneum
 129.89	-14.48	:	Herschel
-;-35.5	-44.46	:	[Hilo]
+;-35.5	-44.46	:	[Hilo]			;dropped, crater cannot be located in imagery
 -151.2	-44.45	:	Hipparchus
 138.35	47.06	:	Hīt
 -34.02	-26.04	:	Holden
@@ -439,7 +441,7 @@ BEGIN_DATA
 -10.3	44.84	:	Hope
 140.75	-32.06	:	Horowitz
 135.95	48.23	:	Houston
-132.69	46.72	:	Hsūanch'eng
+132.69	46.72	:	Hsuanch'eng			; Hsūanch'eng
 -39.77	-3.64	:	Huancayo
 155.84	-49.04	:	Huggins
 23.69	-39.18	:	Hunten
@@ -470,10 +472,10 @@ BEGIN_DATA
 37.61	2.69	:	Janssen
 83.85	-9.37	:	Jarry-Desloges
 154.18	-69.64	:	Jeans
-;-52.3	23.65	:	[Jeki]
+;-52.3	23.65	:	[Jeki]			;dropped
 -10.57	39.88	:	Jen
-77.69	18.41	:	Jezero
--37.92	-48.42	:	Jezža
+77.62	18.59	:	Jezero			;The big one where Mars 2020 Perseverence landed, contains Belva and Hartwell
+-37.92	-48.42	:	Jezza			; Jezža
 -1.74	8.77	:	Jiji
 -53.95	25.11	:	Jijiga
 132.3	47.47	:	Jodrell
@@ -483,7 +485,7 @@ BEGIN_DATA
 -42.69	-74.5	:	Joly
 -19.83	-18.88	:	Jones
 83.4	-28.38	:	Jori
-76.43	-27.19	:	Jörn
+76.43	-27.19	:	Jorn			; Jörn
 86.44	-21.29	:	Jumla
 107.59	18.15	:	Kachug
 135.73	47.32	:	Kagoshima
@@ -507,7 +509,6 @@ BEGIN_DATA
 -17.58	-24.44	:	Kantang
 14.35	-0.12	:	Kaporo
 -32.15	-45.57	:	Karpinsk
--156.4	-15.69	:	Karratha
 -19.32	-23.28	:	Karshi
 -52.46	-40.85	:	Kartabo
 -131.74	18.4	:	Karzok
@@ -528,7 +529,6 @@ BEGIN_DATA
 122.23	45.99	:	Keul'
 102	20.73	:	Khanpur
 -42	-7.21	:	Kholm
--156.97	-16.29	:	Khujirt
 112.96	-20.94	:	Khurli
 -178.18	-29.13	:	Kibuye
 -54.31	-45.64	:	Kifrī
@@ -575,7 +575,7 @@ BEGIN_DATA
 -35.51	-43.96	:	Kushva
 -48.07	-34.94	:	Labria
 -39.76	-4.27	:	Lachute
--5.99	48.01	:	Laf
+-5.9	48.01	:	Laf
 -8.29	49.86	:	Lagarto
 -20.64	-26.99	:	Lamas
 25.39	-19.97	:	Lambert
@@ -589,7 +589,7 @@ BEGIN_DATA
 -62.46	-20.61	:	Lassell
 138.31	-9.31	:	Lasswitz
 -107.48	-74.3	:	Lau
-107.12	-61.11	:	Laylá
+107.12	-61.11	:	Layla			; Laylá
 -19.47	-20.29	:	Lebu
 -45.92	13.01	:	Lederberg
 57.75	3.08	:	Leighton
@@ -625,7 +625,7 @@ BEGIN_DATA
 -25.94	-20.67	:	Longa
 95.1	31.32	:	Longboh
 113.45	-18.84	:	Loon
-98.04	-14.57	:	López
+98.04	-14.57	:	Lopez			; López
 -28.33	-19.83	:	Lorica
 -76.23	-35.08	:	Los
 -11.8	46.32	:	Lota
@@ -637,7 +637,6 @@ BEGIN_DATA
 51.91	-11.55	:	Lucaya
 -36.91	17.26	:	Luck
 -47.42	-44.25	:	Luga
-110.13	24.83	:	Lukeqin
 -37.37	-29.53	:	Luki
 131.82	-18.23	:	Luqa
 -3.09	38.7	:	Lutsk
@@ -645,7 +644,7 @@ BEGIN_DATA
 -31.95	24.42	:	Lydda
 -15.47	-69.91	:	Lyell
 29.34	50.47	:	Lyot
-2.77	-10.65	:	Mädler
+2.77	-10.65	:	Madler			; Mädler
 135.44	48.45	:	Madrid
 -53.15	-44.02	:	Mafra
 -46.07	-34.52	:	Magadi
@@ -655,7 +654,6 @@ BEGIN_DATA
 -46.69	11.89	:	Magong
 -54.22	-41.56	:	Maidstone
 49.01	-76.54	:	Main
-109.9	25.04	:	Maji
 84.33	-33.26	:	Majuro
 -40.47	28.43	:	Makhambet
 -24.72	18	:	Malino
@@ -663,7 +661,7 @@ BEGIN_DATA
 -33.61	-4.66	:	Manah
 -53.63	12.22	:	Mandora
 -37.57	-3.58	:	Manti
--27.47	-22.15	:	Manzī
+-27.47	-22.15	:	Manzi			; Manzī
 -31.96	-61.92	:	Maraldi
 111.03	17.65	:	Marbach
 -158.15	-9.98	:	Marca
@@ -696,20 +694,19 @@ BEGIN_DATA
 139.65	48.16	:	Mie
 -0.04	2.47	:	Mikumi
 -20.75	-27.16	:	Mila
--146.58	54.46	:	Milankovič
+-146.58	54.46	:	Milankovic			; Milankovič
 -41.49	-52.41	:	Milford
 -149.64	-53.95	:	Millman
 85.1	-21.19	:	Millochau
 -12.24	-23.46	:	Milna
 -51.76	22.12	:	Mirtos
-;-35.5	-0.89	:	[Misk]
+;-35.5	-0.89	:	[Misk]				;dropped, crater cannot be located in imagery
 -109.13	-24.68	:	Mistretta
 76.01	-67.53	:	Mitchel
 -6.95	-2.87	:	Miyamoto
 87.98	-39.61	:	Mliba
 -39.95	-35.93	:	Moanda
 -5.35	42.89	:	Mohawk
-110.14	24.77	:	Mohe
 -32.99	7.48	:	Mojave
 149.27	-27.5	:	Molesworth
 18.77	-47.01	:	Moni
@@ -719,10 +716,10 @@ BEGIN_DATA
 -20.57	-23.77	:	Moroz
 109.49	19.23	:	Moss
 -19.31	24.32	:	Muara
-127.89	-25.74	:	Müller
+127.89	-25.74	:	Muller				; Müller
 -22.45	-23.64	:	Murgoo
 28.06	-23.29	:	Murray
-;-55.7	24.54	:	[Musmar]
+;-55.7	24.54	:	[Musmar]			;dropped
 -35.76	22.36	:	Mut
 -55.21	0.6	:	Mutch
 -42.13	22.91	:	Naar
@@ -764,7 +761,7 @@ BEGIN_DATA
 85.11	-35.25	:	Njesko
 -24.31	-25.43	:	Noma
 -11.27	-19.27	:	Noord
--158.76	-52.37	:	Nordenskiöld
+-158.76	-52.37	:	Nordenskiold			; Nordenskiöld
 -54.48	18.52	:	Northport
 -10.69	-24.9	:	Novara
 169.55	-38.04	:	Nqutu
@@ -782,7 +779,7 @@ BEGIN_DATA
 -54.22	19.87	:	Olenek
 -57.66	22.96	:	Olom
 104.02	20.6	:	Ome
--25.21	-25.36	:	Ōmura
+-25.21	-25.36	:	Omura			; Ōmura
 102.48	16.13	:	Onon
 -34.17	-52.43	:	Oodnadatta
 -32.34	17.22	:	Oraibi
@@ -797,7 +794,7 @@ BEGIN_DATA
 -23.08	-26.9	:	Pabo
 37.6	-41.1	:	Pai
 -42.04	-7.66	:	Paks
-108.7	-31.31	:	Pál
+108.7	-31.31	:	Pal				; Pál
 102.02	21.04	:	Palana
 -157.86	-41.57	:	Palikir
 110.9	-2.69	:	Palos
@@ -820,8 +817,7 @@ BEGIN_DATA
 102.79	15.53	:	Phon
 -53.23	19.82	:	Pica
 -132.61	-33.48	:	Pickering
-111.74	18.37	:	Piña
-110.7	25.98	:	Pingle
+111.74	18.37	:	Pina				; Piña
 -36.76	-2.92	:	Pinglo
 -1.45	4.48	:	Piscinas
 -62.28	-9.27	:	Pital
@@ -845,16 +841,15 @@ BEGIN_DATA
 130.7	-54.12	:	Priestley
 -49.11	21.69	:	Princeton
 29.72	-47.63	:	Proctor
--157.6	-45.88	:	Ptolemaeus
--76.62	-36.41	:	Puławy
--41.13	20.62	:	Puńsk
+-157.69	-46.17	:	Ptolemaeus		;not that little one, the really big, old crater
+-76.62	-36.41	:	Pulawy			; Puławy
+-41.13	20.62	:	Punsk			; Puńsk
 130.76	-37.36	:	Pursat
 137.26	83.93	:	Puyo
 -30.08	16.79	:	Pylos
 -173.94	-43.43	:	Qaqortoq
 -150.3	16.43	:	Qara
-103.09	17.13	:	Qibā
-110.26	25.11	:	Qidu
+103.09	17.13	:	Qiba			; Qibā
 40.67	34.27	:	Quenisset
 -49.25	18.19	:	Quick
 89.25	-41.86	:	Quines
@@ -875,7 +870,7 @@ BEGIN_DATA
 62.68	42.04	:	Renaudot
 -43.63	-43.45	:	Rengo
 108.87	-27.94	:	Resen
--157.71	-45.07	:	Reutov
+-157.81	-45.4	:	Reutov
 166.93	-9.63	:	Reuyl
 -28.5	-24.28	:	Revda
 -86.14	40.48	:	Reykholt
@@ -927,7 +922,7 @@ BEGIN_DATA
 50.23	-24.37	:	Schaeberle
 16.77	-2.71	:	Schiaparelli
 -77.9	-72.07	:	Schmidt
-50.7	19.93	:	Schöner
+50.7	19.93	:	Schoner				; Schöner
 55.99	-1.9	:	Schroeter
 99.41	-39.5	:	Sebec
 102.15	-57.84	:	Secchi
@@ -960,7 +955,7 @@ BEGIN_DATA
 -84.46	-47.34	:	Slipher
 -102.73	-65.76	:	Smith
 140.86	-23.73	:	Soffen
--55.15	21.43	:	Sögel
+-55.15	21.43	:	Sogel			; Sögel
 -40.68	-42.37	:	Sokol
 108.95	-26.74	:	Solano
 -51.26	-9.73	:	Somerset
@@ -970,7 +965,7 @@ BEGIN_DATA
 86.38	-58.01	:	Spallanzani
 -38.43	-3.7	:	Spry
 -52.26	22.02	:	Spur
--100.71	-30.74	:	Srīpur
+-100.71	-30.74	:	Sripur			; Srīpur
 -59.5	3.75	:	Stege
 -169.35	54.57	:	Steinheim
 -115.37	-67.75	:	Steno
@@ -981,14 +976,14 @@ BEGIN_DATA
 106.67	-18.91	:	Suata
 -54.59	23.69	:	Sucre
 -178.49	-66.88	:	Suess
--38.22	16.34	:	Sūf
+-38.22	16.34	:	Suf			; Sūf
 -78.61	18.17	:	Sulak
 -48.67	-36.53	:	Sumgin
 -30.64	16.85	:	Surt
 86.1	-27.41	:	Suzhi
 -33.67	26.45	:	Swanage
 -53.06	42.42	:	Sytinskaya
--58.33	-35.5	:	Tábor
+-58.33	-35.5	:	Tabor			; Tábor
 -35.04	-45.1	:	Tabou
 85.66	-35.2	:	Taejin
 -28.65	-26.02	:	Tak
@@ -1022,7 +1017,6 @@ BEGIN_DATA
 175.98	-14.47	:	Thira
 92.35	-41.11	:	Thom
 -25.72	-23.37	:	Thule
-109.93	25.07	:	Tianzhushan
 -54.87	12.56	:	Tibrikot
 87.04	-30.74	:	Tignish
 35.93	13.28	:	Tikhonravov
@@ -1042,12 +1036,12 @@ BEGIN_DATA
 161.92	3.56	:	Tombaugh
 -44.55	-42.4	:	Tombe
 125.88	16.26	:	Tomini
-;-52.2	-44.86	:	[Tōno]
+;-52.2	-44.86	:	[Tono]			;Tōno, dropped, crater cannot be located in imagery
 -152.24	23.21	:	Tooting
 -92.21	15.83	:	Topola
 114.08	17.87	:	Torbay
 71.82	17.04	:	Toro
--51.18	-44.29	:	Torsö
+-51.18	-44.29	:	Torso			; Torsö
 97.81	-27.89	:	Torup
 109.05	-23.38	:	Trinidad
 -168.02	-37.09	:	Triolet
@@ -1069,7 +1063,7 @@ BEGIN_DATA
 -36.09	-2.8	:	Tuskegee
 146.12	-49.41	:	Tycho Brahe
 169.97	39.73	:	Tyndall
--157.96	-45.04	:	Tyuratam
+-158.05	-45.36	:	Tyuratam			;tiny crater on the left edge of Reutov?
 -18.32	-10.63	:	Ubud
 77.35	81.92	:	Udzha
 76.91	17.95	:	Ulricehamn
@@ -1083,7 +1077,7 @@ BEGIN_DATA
 15.79	38.24	:	Vaduz
 -36.64	-44.32	:	Valga
 -55.76	20.1	:	Valverde
--53.69	-43.61	:	Vätö
+-53.69	-43.61	:	Vato			; Vätö
 -32.79	17.96	:	Vaux
 64.12	-9.22	:	Verlaine
 -4.45	5.9	:	Vernal
@@ -1101,7 +1095,7 @@ BEGIN_DATA
 -13.28	-36.77	:	Vogel
 135.03	48.1	:	Volgograd
 -51.24	23	:	Vol'sk
--58.7	-64.27	:	Von Kármán
+-58.7	-64.27	:	Von Karman			; Von Kármán
 -19.99	-26.94	:	Voo
 -53.53	23.34	:	Voza
 -33.64	21.36	:	Wabash
@@ -1119,7 +1113,6 @@ BEGIN_DATA
 -4.07	-64.3	:	Wegener
 114.57	-65.53	:	Weinbaum
 122.4	-59.94	:	Wells
-109.44	25.22	:	Wenjiashi
 -6.19	45.67	:	Wer
 -40.53	-2.01	:	Wicklow
 139.75	-10.57	:	Wien
@@ -1138,18 +1131,14 @@ BEGIN_DATA
 -151.01	-58.51	:	Wright
 -102.8	-31.81	:	Wukari
 0.99	10.24	:	Wulai
-;113.8	15.92	:	[Wum]
-110.1	24.91	:	Wuxing
+;113.8	15.92	:	[Wum]				;dropped, crater cannot be located in imagery
 60.21	-55.1	:	Wynn-Williams
 -3.94	0.78	:	Xainza
-110.11	25.66	:	Xibaipo
 112.63	15.09	:	Xui
 -3.15	43.03	:	Yakima
 -38.58	17.37	:	Yala
 106.17	21.81	:	Yalata
 84.23	4.93	:	Yalgoo
-110.06	24.89	:	Yangliuqing
-109.7	25.03	:	Yaodian
 -39.15	22.27	:	Yar
 -137.45	-43.88	:	Yaren
 -29.03	18.13	:	Yat
@@ -1166,14 +1155,12 @@ BEGIN_DATA
 -1.5	-3.41	:	Zarand
 113.05	12.09	:	Zaranj
 -102.59	-29.1	:	Zhigou
-109.8	24.87	:	Zhouzhuang
 -32.94	-31.81	:	Zilair
 -36.54	18.54	:	Zir
 -41.69	-33.76	:	Zongo
--42.16	-2.27	:	Žulanka
+-42.16	-2.27	:	Zulanka			; Žulanka
 -133.07	-28.67	:	Zumba
 -29.58	19.22	:	Zuni
 166.19	7.7	:	Zunil
 174.32	-13.85	:	Zutphen
-
 
