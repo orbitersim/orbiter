@@ -17,7 +17,7 @@ BEGIN_DATA
 123.6	65.9	:	Albano Lacus
 -128.9	76.8	:	Annecy Lacus
 -124.9	78.1	:	Arala Lacus
-121.2	69.3	:	Atitlán Lacus
+121.2	69.3	:	Atitlan Lacus			; Atitlán Lacus
 -87.5	82.9	:	Balaton Lacus
 -10.28	75.75	:	Bolsena Lacus
 -43.8	85.3	:	Brienz Lacus
@@ -37,7 +37,7 @@ BEGIN_DATA
 -137.2	76.1	:	Ihotry Lacus
 -111.8	71.1	:	Imogene Lacus
 24	73	:	Jingpo Lacus
-123.1	66.9	:	Junín Lacus
+123.1	66.9	:	Junin Lacus			; Junín Lacus
 -56.6	86.3	:	Karakul Lacus
 157.83	-86.3	:	Kayangan Lacus
 -121	87	:	Kivu Lacus
@@ -52,7 +52,7 @@ BEGIN_DATA
 156.5	84.44	:	Müggel Lacus
 -126.3	74.8	:	Muzhwi Lacus
 -131.8	71.9	:	Mweru Lacus
--135.28	78.19	:	Mývatn Lacus
+-135.28	78.19	:	Myvatn Lacus			; Mývatn Lacus
 -32.16	81.11	:	Neagh Lacus
 -128.9	75.5	:	Negra Lacus
 138.1	71.8	:	Ohrid Lacus
@@ -82,13 +82,13 @@ BEGIN_DATA
 -162.41	-86.37	:	Tsomgo Lacus
 83.45	-39.27	:	Urmia Lacus
 114.3	69.6	:	Uvs Lacus
-136.9	70.4	:	Vänern Lacus
+136.9	70.4	:	Vanern Lacus			; Vänern Lacus
 -137.3	74.2	:	Van Lacus
 -125.7	72	:	Viedma Lacus
 -126	81.6	:	Waikare Lacus
 32.32	68.77	:	Weija Lacus
 -153.31	78.05	:	Winnipeg Lacus
--72.9	82.3	:	Xolotlán Lacus
+-72.9	82.3	:	Xolotlan Lacus			; Xolotlán Lacus
 -110.8	73	:	Yessey Lacus
 -54.1	78.1	:	Yojoa Lacus
 -132.2	73.4	:	Ypoa Lacus
