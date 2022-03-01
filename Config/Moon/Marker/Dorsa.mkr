@@ -1,0 +1,57 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 3
+Size 0.5
+DistanceFactor 0.75
+END_HEADER
+
+;Dorsum, dorsa (Ridge)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 
+
+
+BEGIN_DATA
+28.65	23.61	:	Dorsa Aldrovandi
+56.77	-1.56	:	Dorsa Andrusov
+-40.34	28.29	:	Dorsa Argand
+30.57	14.04	:	Dorsa Barlow
+-56.78	26.18	:	Dorsa Burnet
+47.7	0.21	:	Dorsa Cato
+89.6	2.26	:	Dorsa Dana
+-38.31	-11.06	:	Dorsa Ewing
+52.83	-4.21	:	Dorsa Geikie
+63.65	13.79	:	Dorsa Harker
+23.52	19.76	:	Dorsa Lister
+52.48	-7.77	:	Dorsa Mawson
+-42.36	-9.88	:	Dorsa Rubey
+25.53	26.41	:	Dorsa Smirnov
+13.7	18.65	:	Dorsa Sorby
+-18.85	26.91	:	Dorsa Stille
+64.06	20.02	:	Dorsa Tetyaev
+-56.96	29.77	:	Dorsa Whiston
+-36.27	24.77	:	Dorsum Arduino
+19.17	26.86	:	Dorsum Azara
+-39.55	30.76	:	Dorsum Bucher
+14.3	19.43	:	Dorsum Buckland
+51.22	0.76	:	Dorsum Cayeux
+90.41	1.15	:	Dorsum Cloos
+49.19	1.42	:	Dorsum Cushman
+8.71	24.38	:	Dorsum Gast
+-14.19	29.76	:	Dorsum Grabau
+-18.26	-9.92	:	Dorsum Guettard
+-29.83	32.2	:	Dorsum Heim
+-17.47	27.93	:	Dorsum Higazy
+-21	25.8	:	[Dorsum Lambert]
+22.66	18.32	:	Dorsum Nicol
+-52.28	29.01	:	Dorsum Niggli
+52.09	19.31	:	Dorsum Oppel
+11.09	25.14	:	Dorsum Owen
+-60	32.34	:	Dorsum Scilla
+57.15	11.63	:	Dorsum Termier
+-31.42	24.4	:	Dorsum Thera
+11.95	23.6	:	Dorsum Von Cotta
+-24.82	29.55	:	Dorsum Zirkel
+
+

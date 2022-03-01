@@ -1,0 +1,45 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 1
+DistanceFactor 1.25
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 
+
+
+BEGIN_DATA
+107.35	6.76	:	Al-Khwarizmi G
+-172.02	-11.81	:	Amici M
+46.64	-67.08	:	Boussingault E
+113.29	0.13	:	Buisson Z
+-158.18	7.8	:	Engel'gardt (Engelhardt) B
+-136.3	-11.21	:	Evans Q
+110.27	3.34	:	Firsov S
+-44.25	-3.25	:	Flamsteed P
+-154.46	-14.85	:	Galois Q
+-84.55	46.51	:	Gerard Q Outer
+168.5	-12.91	:	Heaviside K
+-131.44	29.18	:	Kovalevskaya Q
+-76.67	-31.33	:	Lagrange R
+-74.35	-24.9	:	Lamarck D
+119.12	-13.19	:	Langemak N
+-176.27	-28.51	:	Leeuwenhoek E
+-179.09	-25.33	:	Nassau F
+-78.03	10.23	:	Olbers D
+-175.37	-22.84	:	Orlov Y
+55.61	74.78	:	Petermann R
+-23.82	69.18	:	Philolaus G
+-73.78	48.73	:	Repsold C
+-66.52	-10.26	:	Rocca W
+-172.15	-28.54	:	Rumford T
+166.44	-35.98	:	Thomson M
+-80.34	12	:	Vasco da Gama P
+174.95	-49.44	:	Von Karman M			; Von Kármán M
+
+
+

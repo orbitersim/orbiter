@@ -1,0 +1,24 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Rupes, rupēs (Scarp)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 18 January 2022
+
+BEGIN_DATA
+23.12	-24.32	:	Rupes Altai
+-33.6	30.67	:	Rupes Boris
+37.08	9.31	:	Rupes Cauchy
+-33.17	-28.03	:	Rupes Kelvin
+-45.92	-25.14	:	Rupes Liebig
+-22.84	-30.21	:	Rupes Mercator
+-7.7	-21.67	:	Rupes Recta
+-47.53	26.97	:	Rupes Toscanelli
+
+

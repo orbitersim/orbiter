@@ -1,0 +1,56 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 3
+Size 0.5
+DistanceFactor 0.75
+END_HEADER
+
+;Mons, montes (Mountain)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 16 January 2022
+
+BEGIN_DATA
+0.5	0.5	:	Mons 10
+;-29.2	23.3	:	[Mons Euler]
+5.33	18.66	:	Mons Agnes
+-3.71	19.32	:	Mons Ampere			; Mons Ampère
+120.56	5.18	:	Mons Andre			; Mons André
+121.04	5.03	:	Mons Ardeshir
+29.01	19.33	:	Mons Argaeus
+0.38	21.73	:	Mons Bradley
+-35.79	29.42	:	Mons Delisle
+120.3	5	:	Mons Dieter
+120.87	5.58	:	Mons Dilip
+35.71	14.61	:	Mons Esam
+120.59	4.79	:	Mons Ganau
+-39.59	36.07	:	Mons Gruithuisen Delta
+-40.72	36.56	:	Mons Gruithuisen Gamma
+4.12	26.69	:	Mons Hadley
+3.71	25.72	:	Mons Hadley Delta
+-50.21	-12.19	:	Mons Hansteen
+-52.12	42.56	:	Mons Heng
+-52.94	27.5	:	Mons Herodotus
+-52.26	45.71	:	Mons Hua
+-2.86	19.92	:	Mons Huygens
+-25.51	27.66	:	Mons La Hire
+61.92	18.47	:	Mons Latreille
+35.5	20.34	:	Mons Maraldi
+-19.84	-11.84	:	Mons Moro
+21.74	-10	:	Mons Penck
+-8.87	45.82	:	Mons Pico
+-0.92	40.72	:	Mons Piton
+-58.38	40.76	:	Mons Rumker			; Mons Rümker
+175.83	-44.56	:	Mons Tai
+63.26	11.91	:	Mons Usov
+-32.52	22.35	:	Mons Vinogradov
+30.74	19.33	:	Mons Vitruvius
+-6.8	16.88	:	Mons Wolff
+0.44	45.41	:	Mont Blanc
+-41.29	26.89	:	Montes Harbinger
+-19.72	48.3	:	Montes Recti
+43.17	2.72	:	Montes Secchi
+-5.21	34.47	:	Montes Spitzbergen
+
+

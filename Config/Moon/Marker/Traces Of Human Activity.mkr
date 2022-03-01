@@ -1,0 +1,131 @@
+; Traces of manned human activity on the lunar surface, various landing site
+; locations and impact points of assorted hardware - as far as known.
+;
+; This is real-life data and as such might differ from Orbiter add-ons,
+; depending on what data the respective add-on author has been referring to.
+; Coordinate points like these are subject to constant refinement and further
+; improvement due to our increasingly better understanding of the shape of the
+; Moon. Particularly as far as the Apollo landing sites are concerned, this
+; here is the latest and best data we have.
+: Impact site coordinate source = https://nssdc.gsfc.nasa.gov/planetary/lunar/lunar_artifact_impacts.html
+BEGIN_HEADER
+InitialState on
+ColourIdx 2
+ShapeIdx 5
+Size 0.5
+Distance Factor 0.00001
+END_HEADER
+
+BEGIN_DATA
+0         	30	        : 	Luna 2 impact		;MJD36823.376667, location approximate
+;unknown	unknown		:	Luna 2 booster 3rd stage;unknown
+-130.7     	-15.5        	: 	Ranger 4 impact		;MJD37777.868056, location approximate
+21.4806      	9.3864	        : 	Ranger 6 impact		;MJD38427.392037, LRO data
+-20.677		-10.634       	: 	Ranger 7 impact		;MJD38607.559595, LRO data
+24.7881     	2.6376        	: 	Ranger 8 impact		;LRO data
+-2.3884      	-12.8281       	: 	Ranger 9 impact		;LRO data
+-25.48         	-1.35          	: 	Luna 5 crash		;approximate
+-49        	9           	: 	Luna 7 crash		;approximate
+-63.3      	9.1       	: 	Luna 8 crash		;approximate
+-64.37	     	7.13       	: 	Luna 9 lander		;approximate
+-43.3398   	-2.4745        	: 	Surveyor 1 lander	;LRO data
+;unknown	unknown		:	Luna 10 impact		;unknown
+;unknown	unknown		:	Luna 11 impact		;unknown
+-12		5.5		:	Surveyor 2 impact	;approximate
+160.71       	6.35           	: 	Lunar Orbiter 1 impact	;approximate
+-62.05     	18.87      	: 	Luna 13 lander		;approximate
+;unknown	unknown		:	Luna 12 impact		;whereabouts unknown	
+-23.41791    	-3.01612       	: 	Surveyor 3 lander	;LRO data, see Apollo 12
+;-1.5?     	0.5?	       	: 	Surveyor 4 crash	;unknown, rough estimation
+23.1943     	1.4551      	: 	Surveyor 5 lander	;LRO data
+-92.7      	14.3       	: 	Lunar Orbiter 3 impact	;approximate
+119.1     	3           	: 	Lunar Orbiter 2 impact	;approximate
+-1.4275      	0.4742      	: 	Surveyor 6 lander	;LRO data
+;unknown	unknown		:	Lunar Orbiter 4 impact	;unknown
+-11.5127    	-40.9812      	: 	Surveyor 7 lander	;LRO data
+-83.04        	-2.79        	: 	Lunar Orbiter 5 impact	;approximate
+;unknown	unknown		:	Luna 14 impact		;unknown	
+;unknown	unknown		:	Apollo 10 LM descent stg;unknown
+23.47314	0.67416		:	Apollo 11 LM descent stg;LRO data
+60        	17          	: 	Luna 15 crash		;aproximate
+;unknown	unknown		:	Apollo 11 LM ascent stg	;unknown
+-23.4219  	-3.0128		:	Apollo 12 LM descent stg;LRO data, see Surveyor 3
+-21.2		-3.94		:	Apollo 12 LM ascent stg	;approximate
+-27.8875     	-2.555        	: 	A13 SIVB impact		;LRO data
+56.3638      	-0.5137	      	: 	Luna 16 descent stage	;LRO data
+-35.00163      	38.23764       	: 	Luna 17 lander		;LRO data 	
+-26.0305     	-8.18        	: 	A14 SIVB impact		;LRO data
+-17.47194  	-3.64589     	: 	Apollo 14 LM descent stg;LRO data
+-19.67     	-3.42        	: 	Apollo 14 LM ascent stg	;approximate		
+-11.8245     	-1.2897        	: 	A15 SIVB impact		;LRO data
+3.6333   	26.13239    	: 	Apollo 15 LM descent stg;LRO data
+0.25      	26.36       	: 	A15 LM ascent stage	;approximate
+56.66      	3.76       	: 	Luna 18 crash		;approximate
+;unknown	unknown		:	Apollo 15 subsatellite	;unknown
+56.6242     	3.7863       	: 	Luna 20 descent stage	;LRO data
+-24.623      	1.921         	: 	A16 SIVB impact		;LRO data
+15.5011  	-8.9734     	: 	Apollo 16 LM descent stg;LRO data
+;unknown	unknown		:	Apollo 16 LM ascent stg	;unknown
+111.9		10.16		:	Apollo 16 subsatellite	;approximate
+;unknown	;unknown	:	Apollo 16 MS boom	;unknown
+-12.3307     	-4.1681        	: 	A17 SIVB impact		;LRO data
+30.7723  	20.1911    	: 	Apollo 17 LM descent stg;LRO data
+30.49     	19.97       	: 	Apollo 17 LM ascent stg	;approximate	
+;unknown	unknownq	:	Luna 19 impact		;unknown
+30.4076      	25.9994        	: 	Luna 21 lander		;LRO data                       
+30.9222		25.8323		: 	Lunochod 2 Rover	;LRO data
+;unknown	unknown		:	Explorer 35/IMP-E impact;unknown
+62.1511      	12.6667	     	: 	Luna 23 lander		;LRO data
+;unknown	unknown		:	Luna 22 impact		;unknown
+62.2129     	12.7142	       	: 	Luna 24 descent stage	;LRO data
+;unknown	;unknown	:	Explorer 49/RAE-B	;unknown
+55.3      	-34	        : 	Hiten impact		;approximate
+;unknown	unknown		:	Hagoromo impact		;unknown
+42      	-87.7        	: 	Lunar Prospector impact	;approximate
+-46.2		-34.4		:	SMART-1 impact		;approximate
+-30		-89		:	Chandraya'an 1 MIP impct;approximate
+;unknown	unknown		:	Ouna impact		;unknown
+-159.033	28.213		:	Okina impact		;approximate
+52.36		-1.5		:	Chang'e 1		;approximate
+80.4		-65.5		:	Kaguya impact		;approximate
+-48.7093	-84.6796	:	LCROSS Centaur impact	;approximate
+-26.594		75.6088		:	GRAIL A impact		;LRO data
+-19.5117	44.1214		:	Chang'e 3 lander	;LRO data
+-93.2494	11.8494		:	LADEE impact		;LRO data
+177.589		-45.457		:	Chang'e 4 lander	;LRO data
+19.3496		32.5956		:	Beresheet impact	;LRO data
+159.517		16.6956		:	Longjiang 2 impact	;LRO data
+22.784		-70.881		:	Vikram impact		;LRO data
+51.9161		-43.0576	:	Chang'e 5 lander	;LRO data
+0		-30		:	Chang'e 5 Ascent impact	;approximate
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

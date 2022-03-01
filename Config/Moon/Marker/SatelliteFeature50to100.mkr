@@ -1,0 +1,312 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 0.75
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 19 January 2022
+
+
+BEGIN_DATA
+;-78.1	41.1	:	[Lavoisier D]
+;86.5	37.07	:	[Riemann A]
+;131.56	25.15	:	[Vernadskiy B]
+82.39	-34.55	:	Abel L
+83.52	-32.38	:	Abel M
+-28.77	-20.3	:	Agatharchides P
+175.57	-13.76	:	Aitken C
+107.92	9.09	:	Al-Khwarizmi B
+111.74	-22.69	:	Alden C
+-109.41	20.38	:	Alter W
+-175.47	-8.75	:	Amici U
+-61.21	68.08	:	Anaximander B
+-50.68	65.78	:	Anaximander D
+-40.5	73.75	:	Anaximenes G
+98.77	-50.82	:	Anuchin Q
+39.6	68.77	:	Arnold A
+-143.69	10.01	:	Artem'ev G
+42.5	48.61	:	Atlas E
+12.27	-23.87	:	Azophi G
+-61.17	58.65	:	Babbage D
+96.51	3.11	:	Babcock H
+103.82	-18.37	:	Backlund L
+48.28	75.61	:	Baillaud A
+-63.25	-68.74	:	Bailly B
+-82.57	20.49	:	Balboa B
+89.17	-31.34	:	Barnard D
+150.26	-12.67	:	Beijerinck V
+87.41	58.65	:	Bel'kovich A
+-99.04	21.91	:	Bell T
+139.72	20.65	:	Belyaev Q
+175.19	-19.94	:	Bergstrand Q
+57	-53.9	:	Biela Z
+-144.81	57.4	:	Birkhoff K
+-150.42	61.62	:	Birkhoff X
+115.61	-38.26	:	Bjerknes E
+-150.01	29.82	:	Blazhko R
+61.12	-73.98	:	Boguslawsky B
+126.66	-36.48	:	Bolyai L
+124.42	-32.05	:	Bolyai W
+-80.57	63.42	:	Boole A
+-88.83	61.73	:	Boole H
+10.31	11.47	:	Boscovich P
+53.87	-69.96	:	Boussingault A
+47.04	-65.69	:	Boussingault B
+-77.45	-40.57	:	Bouvard M
+-76.51	-38.43	:	Bouvard N
+-176.32	-76.37	:	Brashear P
+141.32	43.85	:	Bridgman F
+71.41	-50.26	:	Brisbane E
+72.82	-52.89	:	Brisbane Z
+172.9	19.74	:	Buys-Ballot Q
+174.73	22.54	:	Buys-Ballot Z
+18.51	62.2	:	C. Mayer D
+-54.58	-82.26	:	Cabeus B
+-28.59	-35.44	:	Capuanus P
+127.43	-45.66	:	Carver M
+-37.63	-72.68	:	Casatus A
+-68.47	8.66	:	Cavalerius D
+170.15	41.54	:	Chandler P
+-171.19	55.4	:	Chappell E
+139.51	-14.21	:	Chauvenet J
+165.42	-44.76	:	Chretien C			; Chrétien C
+-163.67	28.78	:	Cockcroft N
+-112.57	21.92	:	Comrie K
+-169.56	-1.74	:	Congreve Q
+-170.75	0.4	:	Congreve U
+8.35	-64.7	:	Curtius D
+-178.91	-4.15	:	Daedalus C
+177.46	-3.34	:	Daedalus W
+-61.38	-5.08	:	Damoiseau M
+122.86	-10.06	:	Danjon X
+-177.1	28.01	:	Dante C
+-72.29	-19.96	:	Darwin B
+-7.25	-11.05	:	Davy Y
+-137.73	-66.3	:	Dawson V
+34.52	78.86	:	De Sitter L
+37.57	81.11	:	De Sitter M
+141.24	-5.5	:	Dellinger B
+-0.5	-54.07	:	Deluc A
+141.3	-16.97	:	Denning R
+142.47	-13.76	:	Denning Y
+-108.77	-67.93	:	Doerfel Y
+-51.48	-38.21	:	Drebbel E
+-126.13	59.19	:	Dyson Q
+-88.25	16.69	:	Einstein A
+110.03	-7.71	:	Einthoven M
+-37.88	3.23	:	Encke T
+67.75	59.86	:	Endymion B
+50.71	53.51	:	Endymion J
+-27.69	-4.52	:	Euclides P
+-156.21	38.37	:	Evershed D
+-158.42	35.53	:	Evershed E
+44.4	-44.64	:	Fabricius A
+113.51	2.75	:	Firsov K
+-124.56	-58.99	:	Fizeau G
+-140.43	-58.66	:	Fizeau S
+106.17	17.79	:	Fleming W
+-145.06	46.12	:	Fowler A
+63.41	-42.31	:	Fraunhofer J
+64.12	-36.1	:	Furnerius F
+65.5	-35.72	:	Furnerius V
+-152.46	-13.52	:	Galois A
+156.06	-45.53	:	Garavito Y
+48.58	33.84	:	Geminus E
+15.15	-35.8	:	Gemma Frisius A
+-83.13	46.54	:	Gerard Q Inner
+-126.37	-24.23	:	Gerasimovich R
+136.37	-4.88	:	Glazenap P
+125.94	0.19	:	Gregory Q
+47.1	-58.26	:	Hagecius A
+-34.02	-40.31	:	Hainzel A
+74.96	-57.84	:	Hanno H
+79.52	14.43	:	Hansen B
+114.75	35.58	:	Harriot A
+63.3	-31.11	:	Hase D
+71.11	63.01	:	Hayn A
+85.75	68.01	:	Hayn F
+75.62	-19.38	:	Hecataeus B
+79.69	-19.6	:	Hecataeus K
+-78.06	5.4	:	Hedin A
+-100.93	23.37	:	Helberg C
+60.55	-64.46	:	Helmholtz F
+5.14	-50.51	:	Heraclitus D
+173.71	-52.08	:	Hess Z
+-134.3	74.64	:	Heymans F
+147.83	-29.13	:	Holetschek R
+29.82	-54.91	:	Hommel C
+85.62	19.45	:	Hubble C
+-171.42	-4.55	:	Icarus D
+90.62	-58.52	:	Jeans N
+86.93	-56.65	:	Jeans S
+86.97	-54.68	:	Jeans U
+-143.89	25.82	:	Joule L
+145.3	-37.9	:	Jules Verne P
+18.7	-11.36	:	Kant D
+79.35	-3.68	:	Kastner G			; Kästner G
+163.21	-13.06	:	Keeler L
+158.21	-8.77	:	Keeler V
+-141.73	18.33	:	Kekule V			; Kekulé V
+124.46	36.03	:	Kidinnu E
+11.55	-60.23	:	Kinau R
+-153.22	-0.73	:	Korolev C
+-157.37	-8.5	:	Korolev M
+-126.11	54.66	:	Kramers C
+-175.03	-0.52	:	Krasovskiy L
+-177.09	3.64	:	Krasovskiy T
+-165.21	38.54	:	Krylov A
+12.73	-0.16	:	Lade A
+-72.85	-29.01	:	Lagrange E
+-63.83	-32.97	:	Lagrange W
+-70.96	-25.15	:	Lamarck A
+105.7	-43.06	:	Lamb G
+-20.66	23.88	:	Lambert R
+117.9	-6.88	:	Langemak X
+-101.5	28.69	:	Laue U
+96.35	-25.86	:	Lauritsen Z
+-80.39	40.88	:	Lavoisier E
+-139.56	-42.57	:	Leavitt Z
+-39.7	-29.83	:	Lee M
+75.15	-31.6	:	Legendre D
+72.21	-29.79	:	Legendre K
+-119.38	25.7	:	Leucippus Q
+2.95	-50.57	:	Lilius D
+-112.44	-57.49	:	Lippmann L
+-18	-49.91	:	Longomontanus Z
+156.51	-68.2	:	Lyman Q
+156.11	-64.28	:	Lyman T
+78	-51.5	:	Lyot H
+83.15	-54.25	:	Lyot L
+-41.47	3.53	:	Maestlin R
+55.99	-48.79	:	Mallet J
+162.38	5.68	:	Mandel'shtam A
+159.79	4.4	:	Mandel'shtam R
+36.08	16.74	:	Maraldi D
+74.62	-39.67	:	Marinus B
+-91.79	48.17	:	McLaughlin C
+-147.19	-9.74	:	Mechnikov D
+-96.74	15.73	:	Mees Y
+-107.2	-51.51	:	Mendel J
+-116.72	-46.55	:	Mendel V
+69	46.13	:	Mercurius D
+18.87	70.45	:	Meton C
+24.46	72.16	:	Meton D
+-127.59	68.29	:	Mezentsev M
+113.56	-32.71	:	Milne K
+112.52	-35.9	:	Milne M
+108.08	-37.47	:	Milne P
+107.66	-34.37	:	Milne Q
+103.38	11.19	:	Moiseev Z
+130.2	4.92	:	Morozov F
+100.64	-61.16	:	Moulton H
+62.44	84.95	:	Nansen F
+-179.38	-23.67	:	Nassau D
+122.28	-6.99	:	Necho P
+-20.82	-80.05	:	Newton A
+-18.96	-78.08	:	Newton G
+166.81	34.17	:	Nusl Y			; Nušl Y
+-67.89	55.6	:	Oenopides R
+119.73	20.74	:	Olcott E
+137.08	56.63	:	Olivier N
+164.94	-41.71	:	Oresme U
+165.39	-40.75	:	Oresme V
+138.53	-5.33	:	Pannekoek R
+167.3	-22.59	:	Paracelsus E
+161.88	-24.79	:	Paracelsus P
+-147.6	49.47	:	Paraskevopoulos H
+-155.26	48.57	:	Paraskevopoulos S
+-168.69	38.33	:	Parsons D
+-139.57	-17.93	:	Paschen K
+-140.62	-16.3	:	Paschen M
+134.57	-18.94	:	Patsaev K
+141.95	-32.47	:	Pavlov M
+139.86	-33.84	:	Pavlov P
+138.68	-27.91	:	Pavlov T
+138.61	-26.65	:	Pavlov V
+14.37	-62.93	:	Pentland DA
+-124.91	41.7	:	Perrine G
+-128.87	41.97	:	Perrine S
+70.8	-25.04	:	Phillips D
+72.23	-25.15	:	Phillips W
+-32.82	71.23	:	Philolaus C
+-27.66	74.37	:	Philolaus D
+31.78	-26.36	:	Piccolomini F
+-7.87	-41.45	:	Pictet E
+121.1	-49.45	:	Pikel'ner S
+-82.39	-60.33	:	Pingré S
+135.1	-55.81	:	Planck Z
+6.09	-23.99	:	Playfair G
+171.06	-56.59	:	Poincare E			; Poincaré E
+168.6	-57.93	:	Poincare F			; Poincaré F
+-74.5	77.56	:	Poncelet C
+68.17	-57.6	:	Pontecoulant F			; Pontécoulant F
+134.34	-4.75	:	Prager G
+-178.77	-16.56	:	Racah K
+45.75	-29.39	:	Reichenbach T
+48.92	-34.24	:	Rheita E
+178.81	69.05	:	Roberts R
+-70.32	-13.76	:	Rocca A
+-69.14	-15.29	:	Rocca Q
+-75.54	-16.23	:	Rocca Z
+39.81	26.54	:	Romer P				; Römer P
+34.45	24.15	:	Romer R				; Römer R
+24.39	-28.39	:	Rothmann G
+-162.7	51.48	:	Rowland M
+-163.21	58.64	:	Rowland Y
+114.64	85.89	:	Rozhdestvenskiy W
+103.32	5.64	:	Saenger B
+108.22	1.45	:	Saha C
+101.89	-4.23	:	Saha N
+-48.5	-42.91	:	Schickard P
+-37.74	-50.6	:	Schiller H
+-135.17	51.02	:	Schlesinger B
+155.19	1.22	:	Schliemann A
+88.16	-20.38	:	Schorr A
+75.34	4.19	:	Schubert G
+72.65	1.79	:	Schubert N
+8.15	75.57	:	Scoresby M
+127.55	44.33	:	Segers M
+115.08	30.56	:	Seyfert A
+-5.17	-75.89	:	Short B
+137.97	20.59	:	Siedentopf G
+16.1	-69.9	:	Simpelius A
+10.1	-75.17	:	Simpelius B
+8.29	-71.56	:	Simpelius D
+-56.7	-8.16	:	Sirsalis E
+-62.04	-10.37	:	Sirsalis Z
+-170.27	-22.93	:	Sniadecki Q
+163.53	14.94	:	Spencer Jones W
+4.29	-43.71	:	Stofler D			; Stöfler D
+2.49	-42.11	:	Stofler J			; Stöfler J
+-131.82	-17.93	:	Stromgren A			; Strömgren A
+134.3	-6.82	:	Ten Bruggencate Y
+-5.63	-24.06	:	Thebit P
+-149.51	-5.63	:	Timiryazev S
+99	-27.95	:	Titius Q
+28.14	-5.24	:	Torricelli R
+-147.68	9.01	:	Tsander (Zander) B
+-80.78	13.86	:	Vasco da Gama F
+-83.51	9.91	:	Vasco da Gama R
+-137.48	0.03	:	Vavilov D
+157.59	-6.81	:	Ventris N
+129	25.82	:	Vernadskiy X
+117.07	-2.49	:	Vesalius D
+91.05	33.64	:	Vestine T
+-116.41	47.11	:	Wegener W
+-38.95	-6.64	:	Wichmann R
+147.96	39.26	:	Wiener K
+-158.14	-20.08	:	Wilsing V
+-106.23	32.04	:	Winlock M
+121.61	-24.92	:	Zhiritskiy F
+-102.42	62.48	:	Zsigmondy A
+-107.28	59.36	:	Zsigmondy S
+
+
+
+
+

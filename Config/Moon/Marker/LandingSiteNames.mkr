@@ -1,0 +1,98 @@
+--; Miscellaneous labels
+
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 5
+Size 0.25t
+Distance Factor 0.61
+END_HEADER
+
+BEGIN_DATA
+3.6842		25.9226	:	Apennine Front
+15.4238		-9.0836	:	Baby Ray
+30.7729		19.9803	:	Bear Mountain
+-23.4298	-3.0198	:	Bench
+-23.4182	-3.0134	:	Block
+30.8652		20.2745	:	Bowen-Apollo
+3.5119		26.0365	:	Bridge
+30.6746		20.172	:	Bronte			; Brontë
+30.7324		20.1947	:	Camelot
+15.5164		-9.1	:	Cinco
+30.8429		20.2501	:	Cochise
+-17.4336	-3.6248	:	Cone
+-23.4345	-2.9976	:	Crescent
+23.4727		0.6738	:	Double
+-17.4819	-3.6422	:	Doublet
+3.6624		26.0368	:	Dune
+3.6496		26.0608	:	Earthlight
+3.5991		26.0296	:	Elbow
+30.7846		20.1201	:	Emory
+15.513		-8.9107	:	End
+30.3071		20.3075	:	Falcon
+30.3417		20.3786	:	Family Mountain
+15.4491		-8.9728	:	Flag
+-17.4397	-3.6369	:	Flank
+15.547		-8.945	:	Gator
+-19.5123	44.1184	:	Guang Han Gong
+15.4647		-8.9747	:	Halfway
+-23.4222	-3.0201	:	Halo
+-23.4268	-3.014	:	Head
+30.7454		20.0931	:	Hess-Apollo
+30.7103		20.1851	:	Horatio
+3.6572		26.1035	:	Index
+15.4504		-8.8406	:	Kiva
+30.554		20.1702	:	Lara
+3.6357		26.1264	:	Last
+30.5282		20.1631	:	Light Mantle
+23.4756		0.6743	:	Little West
+30.726		20.1043	:	Mackin
+-23.4354	-3.0032	:	Middle Crescent
+40		1.13	:	Mount Marilyn
+30.521		20.1178	:	Nansen-Apollo
+3.5933		26.2544	:	North Complex
+30.7186		20.5364	:	North Massif
+15.4843		-8.8151	:	North Ray
+-17.4241	-3.7196	:	Old Nameless
+15.4972		-8.9218	:	Palmetto
+3.6409		26.154	:	Plain
+15.4521		-8.9764	:	Plum
+30.7633		20.1606	:	Powell
+15.5582		-8.8368	:	Ravine
+3.6233		26.0728	:	Rhysling
+30.586		20.2931	:	Scarp
+31.0635		20.2391	:	Sculptured Hills
+30.8158		20.2434	:	Shakespeare
+-23.4344	-3.0209	:	Sharp-Apollo
+30.8129		20.1838	:	Sherlock
+30.6254		20.2172	:	Shorty
+15.5086		-8.67	:	Smoky Mountains
+-23.4196	-3.0151	:	Snowman
+3.7051		26.0219	:	South Cluster
+30.3545		19.9087	:	South Massif
+15.3827		-9.1493	:	South Ray
+15.4774		-8.9816	:	Spook
+15.5023		-8.9834	:	Spot
+3.6668		25.9819	:	Spur
+3.538		25.9633	:	St. George
+-51.92		43.06	:	Statio Tianchuan
+177.6		-45.45	:	Statio Tianhe
+23.4732		0.6741	:	Statio Tranquillitatis
+30.7947		20.1465	:	Steno-Apollo
+15.5724		-9.1704	:	Stone Mountain
+15.481		-9.0924	:	Stubby
+-23.42		-3.016	:	Surveyor
+30.7867		20.0702	:	Taurus-Littrow Valley
+3.562		26.1452	:	Terrace
+30.6044		20.1874	:	Tortilla Flat
+15.4309		-9.0481	:	Trap
+30.7695		20.1763	:	Trident
+-17.4668	-3.6507	:	Triplet
+30.8306		20.2335	:	Van Serg
+30.6748		20.2211	:	Victory
+-17.4602	-3.6446	:	Weird
+30.8915		20.343	:	Wessex Cleft
+23.4908		0.6705	:	West
+15.4573		-9.0673	:	Wreck
+
+

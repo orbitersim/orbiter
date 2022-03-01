@@ -1,0 +1,96 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.1
+DistanceFactor 1
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 21 January 2022
+
+
+BEGIN_DATA
+-35.01	38.32	:	Albert
+-32.34	20.48	:	Ango
+30.57	20.17	:	Ballet
+-35.01	38.28	:	Borya
+5.26	18.71	:	Dag
+-35.01	38.27	:	Gena
+-35.01	38.25	:	Igor
+27.48	18.95	:	Isis
+27.63	18.53	:	Jerik
+-35	38.31	:	Kolya
+-35.02	38.26	:	Kostya
+-35.01	38.31	:	Leonid
+62.21	12.71	:	Lev
+-34.2	28.49	:	Louise
+11.36	24.47	:	Manuel
+27.39	18.93	:	Mary
+-34.98	38.2	:	Nikolya
+5.27	18.61	:	Osama
+27.65	18.65	:	Osiris
+27.45	19.03	:	Robert
+-32.3	20.31	:	Rosa
+-49.41	44	:	Shen Kuo
+25.23	-13.33	:	Shioli
+-35	38.23	:	Slava
+29.76	19.91	:	Stella
+-6.3	-11	:	Susan
+-19.49	44.15	:	Tai Wei
+-19.45	44.1	:	Tian Shi
+-35.02	38.29	:	Valera
+-34.98	38.2	:	Vasya
+-35.03	38.27	:	Vitya
+-51.93	43.06	:	Xu Guangqi
+10.99	24.56	:	Yoshi
+-19.52	44.12	:	Zi Wei
+;39	14.7	:	[Abduh]
+;95.6	-3.6	:	[Ariosto]
+;93.55	-9	:	[Austen]
+;95	-8	:	[Balzac]
+;123.1	-23.2	:	[Baudelaire]
+;30	14.9	:	[Bernini]
+;83	-7.8	:	[Cellini]
+;99.2	-3.4	:	[Cervantes]
+;82	-6.6	:	[Chekov]
+;132.4	-17.7	:	[Chenier]
+;134.8	12.3	:	[Corneille]
+;90.7	-11.3	:	[Dario]
+;80.5	-6	:	[Defoe]
+;84.5	2	:	[Doyle]
+;81.7	-5.3	:	[Dumas]
+;34.7	14	:	[El Greco]
+;-25.7	-9.4	:	[Eppinger]
+;130.2	-15	:	[Grimm]
+;132	-14.4	:	[Heine]
+;133.6	-24.3	:	[Homer]
+;92.9	-0.7	:	[Hugo]
+;38	12.3	:	[Hussein]
+;50.4	10.2	:	[James]
+;89	-8.7	:	[Johnson]
+;90.6	-3.5	:	[Li Po]
+;91.3	-7.5	:	[Longfellow]
+;10.9	24.4	:	[Lorca]
+;120.1	-23.1	:	[Mann]
+;90.9	-1.6	:	[Milton]
+;99.5	-4.4	:	[Montaigne]
+;92.3	-6.2	:	[Montesquieu]
+;84.7	-11.7	:	[Novalis]
+;88.8	2.8	:	[Pirandello]
+;89	-9.5	:	[Pope]
+;99	-8.3	:	[Racine]
+;133.2	-25	:	[Sappho]
+;82	-6.6	:	[Shekhov (Chekhov)]
+;119.8	-21.5	:	[Sophocles]
+;92	-0.7	:	[Tasso]
+;93.3	-4.2	:	[Tolstoy]
+;133	-26.3	:	[Vergil]
+;100.3	-11.9	:	[Voltaire]
+;87	-10.8	:	[Zola]
+
+
+
+
