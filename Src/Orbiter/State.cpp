@@ -61,8 +61,11 @@ bool State::Read (const char *fname)
 	mjd0 = MJD (time (NULL)); // default to current system time
 	mjd0 += UTC_CT_diff*day;  // map from UTC to CT (or TDB) time scales
 	mjd = mjd0;
+	strcpy (solsys, "Sol");         // default name
+	memset (context, 0, 64);
 	memset (scnhelp, 0, 128);       // no scenario help by default
 	memset (script, 0, 128);        // no scenario script by default
+	memset (playback, 0, 128);
 
 	if (FindLine (ifs, "BEGIN_ENVIRONMENT")) {
 		for (;;) {
