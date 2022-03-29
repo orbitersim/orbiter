@@ -13,15 +13,12 @@ on:
 jobs:
   build:
     name: Build with CMake
-    env:
-      CMAKE_BUILD_PARALLEL_LEVEL: 2
-      VCToolsInstallDir: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Tools\\MSVC\\14.29.30133\\"
     strategy:
       fail-fast: false
       matrix:
         architecture: [x64, x86]
       
-    runs-on: windows-latest
+    runs-on: windows-2019
 
     steps:
     - name: Checkout
@@ -30,7 +27,12 @@ jobs:
     - name: Setup Problem Matcher
       uses: ammaraskar/msvc-problem-matcher@master
       
-    - name: Prepare
+    - name: Setup MSVC Console
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: ${{ matrix.architecture }}
+
+    - name: Create directories
       run: |
         mkdir out\build
         mkdir out\install
@@ -40,19 +42,22 @@ jobs:
       with:
         path: ${{ github.workspace }}/out/build/Extern/irrKlang/${{ matrix.architecture }}
         key: irrKlang-${{ matrix.architecture }}
-      
-    - name: Build & Test
-      shell: cmd
+
+    - name: Configure
       working-directory: ${{ github.workspace }}/out/build
-      run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.architecture }}
-        cmake -G Ninja ../.. -DORBITER_MAKE_DOC=OFF -DIRRKLANG_DIR:STRING="irrKlang_DOWNLOAD"
-        cmake --build . --config RelWithDebInfo
-        ctest --config RelWithDebInfo .
+      run: cmake -G Ninja ../.. -DORBITER_MAKE_DOC=OFF -DIRRKLANG_DIR:STRING="irrKlang_DOWNLOAD"
+
+    - name: Build
+      working-directory: ${{ github.workspace }}/out/build
+      run: cmake --build . --config RelWithDebInfo
+
+    - name: Test
+      working-directory: ${{ github.workspace }}/out/build
+      run: ctest --config RelWithDebInfo .
 
     - name: Install
-      run: cmake --install . --prefix  ${{ github.workspace }}/out/install
       working-directory: ${{ github.workspace }}/out/build
+      run: cmake --install . --prefix  ${{ github.workspace }}/out/install
 
     - name: Pack
       if: ${{ github.ref == 'refs/heads/main' }}
