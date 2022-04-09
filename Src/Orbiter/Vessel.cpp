@@ -6592,44 +6592,43 @@ bool VESSEL::GetHorizonAirspeedVector (VECTOR3 &v) const
 double VESSEL::GetAOA () const
 {
 	const SurfParam *sp = vessel->GetSurfParam();
-	return -atan2 (sp->airvel_ship.y, sp->airvel_ship.z);
+	return sp ? -atan2 (sp->airvel_ship.y, sp->airvel_ship.z): 0.0;
 }
 
 double VESSEL::GetSlipAngle () const
 {
 	const SurfParam *sp = vessel->GetSurfParam();
-	return -atan2 (sp->airvel_ship.x, sp->airvel_ship.z);
+	return sp ? -atan2 (sp->airvel_ship.x, sp->airvel_ship.z): 0.0;
 }
 
 double VESSEL::GetPitch () const
 {
 	const SurfParam *sp = vessel->GetSurfParam();
-	return sp->pitch;
+	return sp ? sp->pitch: 0.0;
 }
 
 double VESSEL::GetBank () const
 {
 	const SurfParam *sp = vessel->GetSurfParam();
-	return sp->bank;
+	return sp ? sp->bank: 0.0;
 }
 
 double VESSEL::GetYaw () const
 {
 	const SurfParam *sp = vessel->GetSurfParam();
-	return sp->dir;
+	return sp ? sp->dir: 0.0;
 }
 
 double VESSEL::GetSurfaceElevation () const
 {
 	const SurfParam *sp = vessel->GetSurfParam();
-	if (sp) return sp->elev;
-	else return 0.0;
+	return sp ? sp->elev: 0.0;
 }
 
 VECTOR3 VESSEL::GetSurfaceNormal () const
 {
 	const SurfParam *sp = vessel->GetSurfParam();
-	return _V(sp->surfnml.x, sp->surfnml.y, sp->surfnml.z);
+	return sp ? _V(sp->surfnml.x, sp->surfnml.y, sp->surfnml.z): _V(0,0,0);
 }
 
 double VESSEL::GetLift (void) const

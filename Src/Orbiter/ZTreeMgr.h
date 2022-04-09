@@ -94,7 +94,7 @@ public:
 	DWORD ReadData(DWORD idx, BYTE **outp);
 
 	inline DWORD ReadData(int lvl, int ilat, int ilng, BYTE **outp)
-	{ return ReadData(Idx(lvl, ilat, ilng), outp); }
+	{ return (ilat < 0 || ilng < 0) ? 0 : ReadData(Idx(lvl, ilat, ilng), outp); }
 
 	void ReleaseData(BYTE *data);
 

@@ -245,7 +245,7 @@ void VectorMap::Update ()
 
 	if (centermode == 1) {
 		const SurfParam *sp = g_focusobj->GetSurfParam();
-		if (sp->ref == cbody)
+		if (sp && sp->ref == cbody)
 			SetCenter (sp->lng, sp->lat);
 	} else if (centermode == 2) {
 		if (GetObjPos (selection, lng, lat))
