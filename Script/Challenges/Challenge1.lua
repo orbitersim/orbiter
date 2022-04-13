@@ -28,9 +28,9 @@ end
 function hscore2str (hscore,mark)
     local str
     if #hscore > 0 then
-        str = 'High score list:\n\n'..string.format('%s   %s', 'Fuel used', 'Name')..'\n----------------------------------'
+        str = 'High score list:\n\n'..string.format('%s . . . %s', 'Fuel used', 'Name')..'\n----------------------------------'
         for i=1,#hscore do
-			str = str..'\n'..string.format('%08.2f    %s', hscore[i][2], hscore[i][1])
+			str = str..'\n'..string.format('%08.2f . . . %s', hscore[i][2], hscore[i][1])
             if mark==i then str = str..'   <====' end
         end
     else
@@ -89,7 +89,7 @@ while v:get_propellantmass (hp0) + v:get_propellantmass(hp1) == m1 do
     end
 end
 
-note:set_pos (0.05,0.2,0.5,0.5)
+note:set_pos (0.05,0.25,0.5,0.5)
 note:set_size (1.2)
 
 -- wait for docking event
