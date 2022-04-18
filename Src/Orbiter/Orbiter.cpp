@@ -235,18 +235,19 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, PSTR strCmdLine, INT nCmdSho
 	return 0;
 }
 
-void SetEnvironmentVars ()
+static void AddToPathEnvironmentVariable(const std::string& path)
 {
-	// Set search path to "Modules" subdirectory so that DLLs are found
 	char *ppath = getenv ("PATH");
 	if (ppath) {
-		char *cbuf = new char[strlen(ppath)+15]; TRACENEW
-		sprintf (cbuf, "PATH=%s;Modules", ppath);
-		_putenv (cbuf);
-		delete []cbuf;
+		_putenv (("PATH=" + std::string(ppath) + ";" + path).c_str());
 	} else {
 		_putenv ("PATH=Modules");
 	}
+}
+
+void SetEnvironmentVars ()
+{
+	AddToPathEnvironmentVariable ("Modules"); // Set search path to "Modules" subdirectory so that DLLs are found
 	_getcwd (cwd, 512);
 }
 
@@ -538,12 +539,25 @@ void Orbiter::LoadFixedModules ()
 	_findclose (fh);
 }
 
+static bool FileExists(const std::string& path)
+{
+	return access(path.c_str(), 0) != -1;
+}
+
 //-----------------------------------------------------------------------------
 // Name: LoadModule()
 // Desc: Load a named plugin DLL
 //-----------------------------------------------------------------------------
 HINSTANCE Orbiter::LoadModule (const char *path, const char *name)
 {
+	// If module has a subfolder, add it to the path so any additional DLL dependencies can be found
+	std::string moduleSubfolder = std::string(path) + "\\" + name;
+	if (FileExists(moduleSubfolder))
+	{
+		AddToPathEnvironmentVariable(moduleSubfolder);
+	}
+
+	// Load the module DLL
 	char cbuf[256];
 	sprintf (cbuf, "%s\\%s.dll", path, name);
 
