@@ -175,27 +175,61 @@ void orbiter::DefVideoTab::EnumerateClients(HWND hTab)
 	SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_SETCURSEL, 0, 0);
 }
 
-//-----------------------------------------------------------------------------
+static bool FileExists(const char* path)
+{
+	return access(path, 0) != -1;
+}
 
+//! @param extension is a file extension without the '.'
+static bool HasExtension(const char* filepath, const char* extension)
+{
+	std::string str(filepath);
+	return (str.substr(str.find_last_of(".") + 1) == extension);
+}
+
+static std::string GetNameWithoutFileExtension(const char* filepath)
+{
+	std::string str(filepath);
+	return str.substr(0, str.find_last_of("."));
+}
+
+//-----------------------------------------------------------------------------
+//! Find Graphics engine DLLs in dir
 void orbiter::DefVideoTab::ScanDir(HWND hTab, const PSTR dir)
 {
-	char pattern[256], name[256];
-	sprintf(pattern, "%s\\*.dll", dir);
+	char pattern[256], filepath[256];
+	sprintf(pattern, "%s\\*", dir);
 	struct _finddata_t fdata;
 	intptr_t fh = _findfirst(pattern, &fdata);
 	if (fh == -1) return; // nothing found
 	do {
-		sprintf(name, "%s\\%s", dir, fdata.name);
-		HMODULE hMod = LoadLibraryEx(name, 0, LOAD_LIBRARY_AS_DATAFILE);
+		if (fdata.attrib & _A_SUBDIR && fdata.name[0]!='.') // directory found
+		{
+			// Skip if directory does not contain plugin with same name as directory
+			sprintf(filepath, "%s\\%s\\%s.dll", dir, fdata.name, fdata.name);
+			if (!FileExists(filepath))
+			{
+				continue;
+			}
+		}
+		else // file found
+		{
+			if (!HasExtension(fdata.name, "dll")) // skip if not a DLL
+			{
+				continue;
+			}
+			sprintf(filepath, "%s\\%s", dir, fdata.name);
+		}
+
+		// We've found a potential module DLL. Load it.
+		HMODULE hMod = LoadLibraryEx(filepath, 0, LOAD_LIBRARY_AS_DATAFILE);
 		if (hMod) {
 			char catstr[256];
+			std::string clientname = GetNameWithoutFileExtension(fdata.name);
 			// read category string
 			if (LoadString(hMod, 1001, catstr, 256)) {
 				if (!strcmp(catstr, "Graphics engines")) {
-					char clientname[256];
-					strncpy(clientname, fdata.name, strlen(fdata.name) - 4);
-					clientname[strlen(fdata.name) - 4] = '\0';
-					SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_ADDSTRING, 0, (LPARAM)clientname);
+					SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_ADDSTRING, 0, (LPARAM)clientname.c_str());
 				}
 			}
 		}

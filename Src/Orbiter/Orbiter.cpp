@@ -538,17 +538,61 @@ void Orbiter::LoadFixedModules ()
 	_findclose (fh);
 }
 
+static bool FileExists(const char* path)
+{
+	return access(path, 0) != -1;
+}
+
+//! Finds legacy module consisting of a single DLL
+//! @return true on success
+//! @param cbufOut returns path to the plugin DLL
+static bool FindStandaloneDll(const char *path, const char *name, char* cbufOut)
+{
+	sprintf (cbufOut, "%s\\%s.dll", path, name);
+	return FileExists(cbufOut);
+}
+
+//! Finds module consisting of a plugin DLL inside a plugin-specific folder
+//! @return true on success
+//! @param cbufOut returns path to the plugin DLL
+static bool FindDllInPluginFolder(const char *path, const char *name, char* cbufOut)
+{
+	sprintf(cbufOut, "%s\\%s\\%s.dll", path, name, name);
+	return FileExists(cbufOut);
+}
+
 //-----------------------------------------------------------------------------
 // Name: LoadModule()
 // Desc: Load a named plugin DLL
 //-----------------------------------------------------------------------------
 HINSTANCE Orbiter::LoadModule (const char *path, const char *name)
 {
-	char cbuf[256];
-	sprintf (cbuf, "%s\\%s.dll", path, name);
+	register_module = NULL; // Clear the module. The loaded library may optionally populate it on LoadLibrary() call below.
 
-	register_module = NULL; // clear the module
-	HINSTANCE hi = LoadLibrary (cbuf);
+	// Load the module DLL
+	HINSTANCE hi = NULL;
+	char cbuf[256];
+	if (FindStandaloneDll(path, name, cbuf)) // try to find standalone plugin file
+	{
+		hi = LoadLibrary (cbuf);
+	}
+	else // try to find plugin in a plugin folder
+	{
+		char cbuf2[256];
+		if (FindDllInPluginFolder(path, name, cbuf2))
+		{
+			// Convert to absolute path, otherwise LoadLibraryEx fails with error code 87.
+			// See https://stackoverflow.com/questions/36275535/loadlibraryex-error-87-the-parameter-is-incorrect
+			sprintf(cbuf, "%s\\%s", cwd, cbuf2);
+			hi = LoadLibraryEx(cbuf, NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+		}
+		else
+		{
+			LOGOUT_ERR("Could not find a module named %s. Tried %s and %s.", name, cbuf, cbuf2);
+			return NULL;
+		}
+	}
+
 	if (hi) {
 		struct DLLModule *tmp = new struct DLLModule[nmodule+1]; TRACENEW
 		if (nmodule) {
