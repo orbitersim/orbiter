@@ -1341,9 +1341,11 @@ void Orbiter::SetWarpFactor (double warp, bool force, double delay)
 	const double EPS = 1e-6;
 	double MaxWarpLocal = MaxWarpLimit;
 	double alt = 0;
+	double fvq = 0;
 	if (g_focusobj != NULL) {
 		alt = g_focusobj->Altitude();
-		if (alt < 100000 && alt > 10) MaxWarpLocal = 10;
+		g_focusobj->DynPressure(fvq);
+		if (fvq > 30 && alt > 10) MaxWarpLocal = 10;
 	}
 	if      (warp < MinWarpLimit) warp = MinWarpLimit;
 	else if (warp > MaxWarpLocal) warp = MaxWarpLocal;
