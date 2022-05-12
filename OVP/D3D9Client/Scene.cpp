@@ -3332,7 +3332,7 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 	Camera.vNear = (vPlanet *)GetVisObject(Camera.hNear);
 
 	// Something is very wrong... abort...
-	if (Camera.hObj_proxy == NULL || Camera.vProxy == NULL) return;
+	if (Camera.hObj_proxy == NULL || Camera.vProxy == NULL || Camera.vNear == NULL) return;
 
 	// Camera altitude over the proxy
 	VECTOR3 pos;
