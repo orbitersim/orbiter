@@ -186,7 +186,6 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	// Initialize post processing effects --------------------------------------------------------------------------------------------------
 	//
 	pLightBlur = NULL;
-	pFlare = NULL;
 
 	if (Config->PostProcess) {
 
@@ -203,10 +202,6 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 		// Load postprocessing effects
 		if (Config->PostProcess == PP_DEFAULT)
 			pLightBlur = new ImageProcessing(pDevice, "Modules/D3D9Client/LightBlur.hlsl", "PSMain", flags);
-
-		if (Config->PostProcess == PP_LENSFLARE)
-			pFlare = new ImageProcessing(pDevice, "Modules/D3D9Client/LensFlare.hlsl", "PSMain", flags);
-
 
 		if (pLightBlur) {
 			BufSize = pLightBlur->FindDefine("BufferDivider");
@@ -276,7 +271,6 @@ Scene::~Scene ()
 	SAFE_DELETE(pGDIOverlay);
 	SAFE_DELETE(pBlur);
 	SAFE_DELETE(pLightBlur);
-	SAFE_DELETE(pFlare);
 	SAFE_DELETE(pIrradiance);
 	SAFE_DELETE(csphere);
 	SAFE_RELEASE(pOffscreenTarget);
@@ -1879,8 +1873,8 @@ void Scene::RenderMainScene()
 		D3DXVECTOR2 sbf = D3DXVECTOR2(1.0f / float(blur.Width), 1.0f / float(blur.Height));
 
 
-		if (pLightBlur->IsOK()) {
-
+		if (pLightBlur->IsOK())
+		{
 			float fInt = float(Config->GFXIntensity);
 			float fDst = float(Config->GFXDistance);
 			float fThr = float(Config->GFXThreshold);
@@ -1890,7 +1884,7 @@ void Scene::RenderMainScene()
 			pDevice->StretchRect(pOffscreenTarget, NULL, psgBuffer[GBUF_COLOR], NULL, D3DTEXF_POINT);
 
 			pLightBlur->SetFloat("vSB", &sbf, sizeof(D3DXVECTOR2));
-			pLightBlur->SetFloat("vBB", &scr, sizeof(D3DXVECTOR2));
+			//pLightBlur->SetFloat("vBB", &scr, sizeof(D3DXVECTOR2));
 			pLightBlur->SetBool("bBlendIn", false);
 			pLightBlur->SetBool("bBlur", false);
 
@@ -1902,7 +1896,7 @@ void Scene::RenderMainScene()
 			// -----------------------------------------------------
 			pLightBlur->SetBool("bSample", true);
 			pLightBlur->SetTextureNative("tBack", ptgBuffer[GBUF_COLOR], IPF_POINT | IPF_CLAMP);
-			pLightBlur->SetTextureNative("tCLUT", pTextures[TEX_CLUT], IPF_LINEAR | IPF_CLAMP);
+			//pLightBlur->SetTextureNative("tCLUT", pTextures[TEX_CLUT], IPF_LINEAR | IPF_CLAMP);
 			pLightBlur->SetOutputNative(0, psgBuffer[GBUF_BLUR]);
 
 			if (!pLightBlur->Execute(true)) LogErr("pLightBlur Execute Failed");
@@ -1913,7 +1907,7 @@ void Scene::RenderMainScene()
 
 			for (int i = 0; i < iGensPerFrame; i++) {
 
-				pLightBlur->SetInt("PassId", i);
+				//pLightBlur->SetInt("PassId", i);
 
 				pLightBlur->SetBool("bDir", false);
 				pLightBlur->SetTextureNative("tBlur", ptgBuffer[GBUF_BLUR], IPF_POINT | IPF_CLAMP);
@@ -1941,62 +1935,14 @@ void Scene::RenderMainScene()
 		}
 	}
 
-	// -------------------------------------------------------------------------------------------------------
-	// Render Lens Flare
-	// -------------------------------------------------------------------------------------------------------
-
-	if (pFlare) {
-
-		D3DSURFACE_DESC colr;
-
-		psgBuffer[GBUF_COLOR]->GetDesc(&colr);
-
-		if (pFlare->IsOK())
-		{
-			OBJHANDLE hSun = oapiGetObjectByIndex(0);
-			VECTOR3 sunPos = _V(0, 0, 0);
-			oapiGetGlobalPos(hSun, &sunPos);
-			sunPos -= GetCameraGPos();
-			SUNVISPARAMS sunParams = GetSunScreenVisualState();
-
-			pDevice->StretchRect(pBackBuffer, NULL, psgBuffer[GBUF_COLOR], NULL, D3DTEXF_POINT);
-			pFlare->SetTextureNative("tBack", ptgBuffer[GBUF_COLOR], IPF_LINEAR | IPF_CLAMP);
-			pFlare->SetTextureNative("tCLUT", pTextures[TEX_CLUT], IPF_CLAMP | IPF_LINEAR);
-
-			/*D3DXVECTOR3 vLightPos = D3DXVEC(sunPos);
-			pFlare->SetFloat("vLightPos", &sunParams.position, sizeof(D3DXVECTOR2));
-			pFlare->SetFloat("vLightColor", &sunParams.color, sizeof(D3DXCOLOR));
-			pFlare->SetBool("bVisible", &sunParams.visible);*/
-			pFlare->SetStruct("sunParams", &sunParams, sizeof(SUNVISPARAMS));
-			pFlare->SetBool("bCockpitCamera", oapiCameraInternal());
-
-			D3DXVECTOR2 vResolution = D3DXVECTOR2(float(colr.Width), float(colr.Height));
-			pFlare->SetFloat("vResolution", &vResolution, sizeof(D3DXVECTOR2));
-
-			float fSize = float(length(sunPos / 150e9));
-			pFlare->SetFloat("fSize", &fSize, sizeof(float));
-
-			float fBrightness = 1.0f; //TODO: Implement brightness config
-			pFlare->SetFloat("fBrightness", &sunParams.brightness, sizeof(float));
-
-			// -------------------------
-			pFlare->SetOutputNative(0, gc->GetBackBuffer());
-
-			if (!pFlare->Execute(true)) LogErr("pFlare Execute Failed");
-		}
-		else
-		{
-			LogErr("pFlare is not OK.");
-		}
-	}
-
+	
 
 	// -------------------------------------------------------------------------------------------------------
 	// Render GDI Overlay to backbuffer directly
 	// -------------------------------------------------------------------------------------------------------
 
-
-	if (pGDIOverlay) {
+	if (pGDIOverlay)
+	{
 		if (pGDIOverlay->IsOK())
 		{
 			gc->bGDIClear = true; // Must clear background before continuing drawing into overlay

@@ -216,6 +216,7 @@ void D3D9Pad::Reset()
 	pTgt = NULL;
 	pDep = NULL;
 	zfar = 1.0f;
+	tgt = { 0,0,0,0 };
 }
 
 
@@ -387,7 +388,7 @@ void D3D9Pad::BeginDrawing(LPDIRECT3DSURFACE9 pRenderTgt, LPDIRECT3DSURFACE9 pDe
 	
 	pTgt = pRenderTgt;
 	pDep = pDepthStensil;
-
+	tgt = { 0, 0, (long)tgt_desc.Width, (long)tgt_desc.Height };
 	Change = SKPCHG_ALL;
 }
 

@@ -2331,7 +2331,7 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 
 	// Check Blt conditions
 	//
-	bool bCK = SURFACE(src)->GetColorKey() != SURF_NO_CK;	// ColorKey In Use
+	bool bCK = (SURFACE(src)->GetColorKey() != SURF_NO_CK) && (SURFACE(src)->GetColorKey() != 0);	// ColorKey In Use
 	bool bCL = (srcw != tgtw) || (srch != tgth);		// Scaling In Use
 	bool bSC = SURFACE(src)->IsCompressed();			// Compressed source
 
@@ -2413,9 +2413,10 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 		{
 			Sketchpad* pSkp = clbkGetSketchpad_const(tgt);
 
-			if (SURFACE(src)->GetColorKey() != SURF_NO_CK)
+			if (bCK)
 			{
-				pSkp->ColorKey(src, &rs, tgtx, tgty);
+				if (bCL) ((D3D9Pad*)pSkp)->ColorKeyStretch(src, &rs, &rt);
+				else pSkp->ColorKey(src, &rs, tgtx, tgty);
 				clbkReleaseSketchpad_const(pSkp);
 				return true;
 			}

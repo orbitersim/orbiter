@@ -963,7 +963,7 @@ HRESULT D3DMAT_MatrixInvert (D3DXMATRIX *res, D3DXMATRIX *a)
 
 // ============================================================================
 //
-LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *file, const char *function, const char *options, LPD3DXCONSTANTTABLE *pConst)
+LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *file, const char *function, const char *name, const char* options, LPD3DXCONSTANTTABLE *pConst)
 {
 	ID3DXBuffer* pErrors = NULL;
 	ID3DXBuffer* pCode = NULL;
@@ -972,9 +972,59 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 	char *str = NULL;
 	char *tok = NULL;
 
+	string path(file);
+	char filename[MAX_PATH];
+
+	string last = path.substr(path.find_last_of("\\/") + 1);
+	sprintf_s(filename, MAX_PATH, "Cache/Shaders/%s_%s_%s.bin", name, function, last.c_str());
+
+	if (Config->ShaderCacheUse)
+	{
+		// Browse Shader Cache --------------------
+		//
+		HANDLE hCacheRead = CreateFile(filename, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+		if (hCacheRead != INVALID_HANDLE_VALUE) {
+			FILETIME cacheWrite, mainWrite;
+			if (GetFileTime(hCacheRead, NULL, NULL, &cacheWrite))
+			{
+				HANDLE hRead = CreateFile(file, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+				if (hRead != INVALID_HANDLE_VALUE)
+				{
+					if (GetFileTime(hRead, NULL, NULL, &mainWrite))
+					{
+						if (CompareFileTime(&cacheWrite, &mainWrite) == 1)
+						{
+							DWORD size = GetFileSize(hCacheRead, NULL);
+							DWORD* buffer = new DWORD[(size >> 2) + 1];
+							if (ReadFile(hCacheRead, buffer, size, NULL, NULL)) {
+								HR(pDev->CreatePixelShader(buffer, &pShader));
+								HR(D3DXGetShaderConstantTable(buffer, pConst));
+							}
+							delete[] buffer;
+						}
+					}
+					CloseHandle(hRead);
+				}
+			}
+			CloseHandle(hCacheRead);
+
+			if (pShader) {
+				LogOapi("Shader Created From Cache: %s", filename);
+				return pShader;
+			}
+		}
+	}
+
+
+
+	// Invalid Cache data, Recompile the shader --------------------
+	//
 	D3DXMACRO macro[16];
 	memset(&macro, 0, 16*sizeof(D3DXMACRO));
 	bool bDisassemble = false;
+
+	LogAlw("Compiling a Shader [%s] function [%s]...", file, function);
 
 	if (options) {
 		int m = 0;
@@ -987,10 +1037,9 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 			if (strcmp(tok, "DISASM") == 0) bDisassemble = true;
 			else macro[m++].Name = tok;
 			tok = strtok(NULL, ";, ");
+			LogAlw("Macro (%s)", tok);
 		}
 	}
-
-	LogAlw("Compiling a Shader [%s] function [%s]...", file, function);
 
 	HR(D3DXCompileShaderFromFileA(file, macro, NULL, function, "ps_3_0", flags, &pCode, &pErrors, pConst));
 
@@ -1005,6 +1054,26 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 		SAFE_DELETEA(str);
 		return NULL;
 	}
+
+
+	// Save Shader into a Cache
+	//
+	if (Config->ShaderCacheUse)
+	{
+		HANDLE hCache = CreateFile(filename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+		if (hCache != INVALID_HANDLE_VALUE) {
+			if (!WriteFile(hCache, pCode->GetBufferPointer(), pCode->GetBufferSize(), NULL, NULL))
+			{
+				LogErr("CreateShaderCache: WriteFile Error: 0x%X", GetLastError());
+			}
+			CloseHandle(hCache);
+		}
+		else {
+			LogErr("CreateShaderCache: CreateFile Error: 0x%X", GetLastError());
+			LogErr("Path=[%s]", filename);
+		}
+	}
+
 
 	if (bDisassemble && pCode) {
 		LPD3DXBUFFER pBuffer = NULL;
@@ -1031,22 +1100,67 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 
 // ============================================================================
 //
-LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *file, const char *function, const char *options, LPD3DXCONSTANTTABLE *pConst)
+LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *file, const char *function, const char* name, const char *options, LPD3DXCONSTANTTABLE *pConst)
 {
 	ID3DXBuffer* pErrors = NULL;
 	ID3DXBuffer* pCode = NULL;
 	LPDIRECT3DVERTEXSHADER9 pShader = NULL;
 	DWORD flags = 0;
 
+
+	string path(file);
+	char filename[MAX_PATH];
+
+	string last = path.substr(path.find_last_of("\\/") + 1);
+	sprintf_s(filename, MAX_PATH, "Cache/Shaders/%s_%s_%s.bin", name, function, last.c_str());
+
+	if (Config->ShaderCacheUse)
+	{
+		// Browse Shader Cache --------------------
+		//
+		HANDLE hCacheRead = CreateFile(filename, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+		if (hCacheRead != INVALID_HANDLE_VALUE) {
+			FILETIME cacheWrite, mainWrite;
+			if (GetFileTime(hCacheRead, NULL, NULL, &cacheWrite))
+			{
+				HANDLE hRead = CreateFile(file, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+				if (hRead != INVALID_HANDLE_VALUE)
+				{
+					if (GetFileTime(hRead, NULL, NULL, &mainWrite))
+					{
+						if (CompareFileTime(&cacheWrite, &mainWrite) == 1)
+						{
+							DWORD size = GetFileSize(hCacheRead, NULL);
+							DWORD* buffer = new DWORD[(size >> 2) + 1];
+							if (ReadFile(hCacheRead, buffer, size, NULL, NULL)) {
+								HR(pDev->CreateVertexShader(buffer, &pShader));
+								HR(D3DXGetShaderConstantTable(buffer, pConst));
+							}
+							delete[] buffer;
+						}
+					}
+					CloseHandle(hRead);
+				}
+			}
+			CloseHandle(hCacheRead);
+
+			if (pShader) {
+				LogOapi("Shader Created From Cache: %s", filename);
+				return pShader;
+			}
+		}
+	}
+
 	char *str = NULL;
 	char *tok = NULL;
 
-	D3DXMACRO macro[16];
-	memset(&macro, 0, 16*sizeof(D3DXMACRO));
+	D3DXMACRO macro[32];
+	memset(&macro, 0, 32*sizeof(D3DXMACRO));
 
 	if (options) {
 		int m = 0;
-		int l = lstrlen(options);
+		int l = lstrlen(options) + 1;
 		str = new char[l];
 		strcpy_s(str, l, options);
 		tok = strtok(str,";, ");
@@ -1070,6 +1184,26 @@ LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *
 		LogErr("Failed to compile a shader [%s] [%s]", file, function);
 		SAFE_DELETEA(str);
 		return NULL;
+	}
+
+
+	// Save Shader into a Cache
+	//
+	if (Config->ShaderCacheUse)
+	{
+		HANDLE hCache = CreateFile(filename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+		if (hCache != INVALID_HANDLE_VALUE) {
+			if (!WriteFile(hCache, pCode->GetBufferPointer(), pCode->GetBufferSize(), NULL, NULL))
+			{
+				LogErr("CreateShaderCache: WriteFile Error: 0x%X", GetLastError());
+			}
+			CloseHandle(hCache);
+		}
+		else {
+			LogErr("CreateShaderCache: CreateFile Error: 0x%X", GetLastError());
+			LogErr("Path=[%s]", filename);
+		}
 	}
 
 	HR(pDev->CreateVertexShader((DWORD*)pCode->GetBufferPointer(), &pShader));
@@ -1602,5 +1736,183 @@ D3DXCOLOR SketchMesh::GetMaterial(DWORD idx)
 }
 
 
+
+
+
+ShaderClass::ShaderClass(LPDIRECT3DDEVICE9 pDev, const char* file, const char* vs, const char* ps, const char *name, const char* options) :
+	pPS(), pVS(), pPSCB(NULL), pVSCB(NULL), pDev(pDev), fn(file), psn(ps), vsn(vs), sn(name)
+{
+	for (int i = 0; i < ARRAYSIZE(pTextures); i++) pTextures[i] = {};
+	pPS = CompilePixelShader(pDev, file, ps, name, options, &pPSCB);
+	pVS = CompileVertexShader(pDev, file, vs, name, options, &pVSCB);
+}
+
+
+
+ShaderClass::~ShaderClass()
+{
+	SAFE_RELEASE(pPS);
+	SAFE_RELEASE(pVS);
+	SAFE_RELEASE(pPSCB);
+	SAFE_RELEASE(pVSCB);
+}
+
+
+void ShaderClass::ClearTextures()
+{
+	for (int idx = 0; idx < ARRAYSIZE(pTextures); idx++) pTextures[idx].pTex = NULL;
+}
+
+
+void ShaderClass::Activate()
+{
+	HR(pDev->SetVertexShader(pVS));
+	HR(pDev->SetPixelShader(pPS));
+}
+
+
+void ShaderClass::Setup(LPDIRECT3DVERTEXDECLARATION9 pDecl, bool bZ, int blend)
+{
+	D3DSURFACE_DESC desc;
+	LPDIRECT3DSURFACE9 pTgt = NULL;
+
+	HR(pDev->GetRenderTarget(0, &pTgt));
+
+	if (pTgt) pTgt->GetDesc(&desc);
+	else {
+		LogErr("ShaderClass::Setup No render target is set");
+		return;
+	}
+
+	SAFE_RELEASE(pTgt);
+
+	D3DVIEWPORT9 VP;
+	VP.X = 0;
+	VP.Y = 0;
+	VP.Width = desc.Width;
+	VP.Height = desc.Height;
+	VP.MinZ = 0.0f;
+	VP.MaxZ = 1.0f;
+
+	HR(pDev->SetViewport(&VP));
+
+	HR(pDev->SetVertexShader(pVS));
+	HR(pDev->SetPixelShader(pPS));
+	HR(pDev->SetVertexDeclaration(pDecl));
+
+	HR(pDev->SetRenderState(D3DRS_POINTSPRITEENABLE, false));
+	HR(pDev->SetRenderState(D3DRS_ALPHATESTENABLE, false));
+	HR(pDev->SetRenderState(D3DRS_STENCILENABLE, false));
+	HR(pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0xF));
+
+	HR(pDev->SetRenderState(D3DRS_ZENABLE, bZ));
+	HR(pDev->SetRenderState(D3DRS_ZWRITEENABLE, bZ));
+
+	HR(pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, (blend != 0)));
+
+	if (blend == 1) {
+		HR(pDev->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
+		HR(pDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
+		HR(pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
+	}
+
+	if (blend == 2) {
+		HR(pDev->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
+		HR(pDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE));
+		HR(pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
+	}
+
+	// Set textures and samplers -----------------------------------------------
+	//
+	for (int idx = 0; idx < ARRAYSIZE(pTextures); idx++)
+	{
+		if (pTextures[idx].pTex == NULL) continue;
+
+		DWORD flags = pTextures[idx].Flags;
+
+		if (flags & IPF_CLAMP_U)		pDev->SetSamplerState(idx, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
+		else if (flags & IPF_MIRROR_U)	pDev->SetSamplerState(idx, D3DSAMP_ADDRESSU, D3DTADDRESS_MIRROR);
+		else							pDev->SetSamplerState(idx, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP);
+
+		if (flags & IPF_CLAMP_V)		pDev->SetSamplerState(idx, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
+		else if (flags & IPF_MIRROR_V)	pDev->SetSamplerState(idx, D3DSAMP_ADDRESSV, D3DTADDRESS_MIRROR);
+		else							pDev->SetSamplerState(idx, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);
+
+		if (flags & IPF_CLAMP_W)		pDev->SetSamplerState(idx, D3DSAMP_ADDRESSW, D3DTADDRESS_CLAMP);
+		else if (flags & IPF_MIRROR_W)	pDev->SetSamplerState(idx, D3DSAMP_ADDRESSW, D3DTADDRESS_MIRROR);
+		else							pDev->SetSamplerState(idx, D3DSAMP_ADDRESSW, D3DTADDRESS_WRAP);
+
+		DWORD filter = D3DTEXF_POINT;
+
+		if (flags & IPF_LINEAR) filter = D3DTEXF_LINEAR;
+		if (flags & IPF_PYRAMIDAL) filter = D3DTEXF_PYRAMIDALQUAD;
+		if (flags & IPF_GAUSSIAN) filter = D3DTEXF_GAUSSIANQUAD;
+		if (flags & IPF_ANISOTROPIC) filter = D3DTEXF_ANISOTROPIC;
+
+		HR(pDev->SetSamplerState(idx, D3DSAMP_SRGBTEXTURE, false));
+		HR(pDev->SetSamplerState(idx, D3DSAMP_MAXANISOTROPY, pTextures[idx].AnisoLvl));
+		HR(pDev->SetSamplerState(idx, D3DSAMP_MAGFILTER, filter));
+		HR(pDev->SetSamplerState(idx, D3DSAMP_MINFILTER, filter));
+		HR(pDev->SetSamplerState(idx, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR));
+
+		HR(pDev->SetTexture(idx, pTextures[idx].pTex));
+	}
+}
+
+
+
+void ShaderClass::SetTexture(const char* name, LPDIRECT3DTEXTURE9 pTex, UINT flags, UINT aniso)
+{
+	D3DXHANDLE hVar = pPSCB->GetConstantByName(NULL, name);
+
+	if (!hVar) {
+		LogErr("Shader::SetTexture() Invalid variable name [%s]. File[%s], Entrypoint[%s], Shader[%s]", name, fn.c_str(), psn.c_str(), sn.c_str());
+		return;
+	}
+
+	DWORD idx = pPSCB->GetSamplerIndex(hVar);
+
+	assert(idx < 16);
+
+	if (!pTex) {
+		pTextures[idx].pTex = NULL;
+		return;
+	}
+
+	pTextures[idx].pTex = pTex;
+	pTextures[idx].Flags = flags;
+	pTextures[idx].AnisoLvl = aniso;
+}
+
+
+
+void ShaderClass::SetPSConstants(const char* name, void* data, UINT bytes)
+{
+	D3DXHANDLE hVar = pPSCB->GetConstantByName(NULL, name);
+
+	if (!hVar) {
+		LogErr("Shader::SetPSConstants() Invalid variable name [%s]. File[%s], Entrypoint[%s], Shader[%s]", name, fn.c_str(), psn.c_str(), sn.c_str());
+		return;
+	}
+
+	if (pPSCB->SetValue(pDev, hVar, data, bytes) != S_OK) {
+		LogErr("Shader::SetPSConstants() Failed. Variable[%s], File[%s], Entrypoint[%s]", name, fn.c_str(), psn.c_str());
+	}
+}
+
+void ShaderClass::SetVSConstants(const char* name, void* data, UINT bytes)
+{
+	D3DXHANDLE hVar = pVSCB->GetConstantByName(NULL, name);
+
+	if (!hVar) {
+		LogErr("Shader::SetVSConstants() Invalid variable name [%s]. File[%s], Entrypoint[%s], Shader[%s]", name, fn.c_str(), psn.c_str(), sn.c_str());
+		return;
+	}
+
+	if (pVSCB->SetValue(pDev, hVar, data, bytes) != S_OK) {
+		LogErr("Shader::SetVSConstants() Failed. Variable[%s], File[%s], Entrypoint[%s]", name, fn.c_str(), vsn.c_str());
+	}
+}
+	
 
 

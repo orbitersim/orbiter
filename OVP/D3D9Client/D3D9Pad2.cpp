@@ -134,7 +134,7 @@ void D3D9Pad::CopyRect(const SURFHANDLE hSrc, const LPRECT _s, int tx, int ty)
 
 // ===============================================================================================
 //
-void D3D9Pad::StretchRect(const SURFHANDLE hSrc, const LPRECT _s, const LPRECT t)
+void D3D9Pad::StretchRect(const SURFHANDLE hSrc, const LPRECT _s, const LPRECT _t)
 {
 #ifdef SKPDBG 
 	Log("StretchRect(0x%X)", DWORD(hSrc));
@@ -145,6 +145,7 @@ void D3D9Pad::StretchRect(const SURFHANDLE hSrc, const LPRECT _s, const LPRECT t
 	if (Topology(TRIANGLE)) {
 
 		LPRECT s = CheckRect(hSrc, _s);
+		LPRECT t = _t ? _t : &tgt;
 
 		AddRectIdx(vI);
 
@@ -243,6 +244,44 @@ void D3D9Pad::ColorKey(const SURFHANDLE hSrc, const LPRECT _s, int tx, int ty)
 		Vtx[vI - 3].fnc = f;
 		Vtx[vI - 4].fnc = f;
 	}
+}
+
+
+// ===============================================================================================
+//
+void D3D9Pad::ColorKeyStretch(const SURFHANDLE hSrc, const LPRECT _s, const LPRECT _t)
+{
+#ifdef SKPDBG 
+	Log("StretchRect(0x%X)", DWORD(hSrc));
+#endif
+
+	TexChange(hSrc);
+
+	DWORD dwBak = dwBlendState;
+
+	SetBlendState(BlendState((dwBak & 0xF) | BlendState::FILTER_POINT));
+
+	if (Topology(TRIANGLE)) {
+
+		LPRECT s = CheckRect(hSrc, _s);
+		LPRECT t = _t ? _t : &tgt;
+
+		AddRectIdx(vI);
+
+		SkpVtxII(Vtx[vI++], t->left, t->top, s->left, s->top);
+		SkpVtxII(Vtx[vI++], t->left, t->bottom, s->left, s->bottom);
+		SkpVtxII(Vtx[vI++], t->right, t->bottom, s->right, s->bottom);
+		SkpVtxII(Vtx[vI++], t->right, t->top, s->right, s->top);
+
+		DWORD x = SKPSW_TEXTURE | SKPSW_COLORKEY | SKPSW_CENTER;
+
+		Vtx[vI - 1].fnc = x;
+		Vtx[vI - 2].fnc = x;
+		Vtx[vI - 3].fnc = x;
+		Vtx[vI - 4].fnc = x;
+	}
+
+	SetBlendState(BlendState(dwBak));
 }
 
 

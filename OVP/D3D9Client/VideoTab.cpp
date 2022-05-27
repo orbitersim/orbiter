@@ -683,7 +683,6 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessage(hWnd, IDC_POSTPROCESS, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hWnd, IDC_POSTPROCESS, CB_ADDSTRING, 0, (LPARAM)"None");
 	SendDlgItemMessageA(hWnd, IDC_POSTPROCESS, CB_ADDSTRING, 0, (LPARAM)"Light glow");
-	SendDlgItemMessageA(hWnd, IDC_POSTPROCESS, CB_ADDSTRING, 0, (LPARAM)"LensFlare");
 	SendDlgItemMessage(hWnd, IDC_POSTPROCESS, CB_SETCURSEL, 0, 0);
 
 	// Local Lights -----------------------------------------

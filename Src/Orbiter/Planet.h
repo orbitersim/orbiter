@@ -227,6 +227,7 @@ protected:
 	Vector hazecol;          // horizon haze colour
 	Vector tintcol;          // atmospheric tint colour
 	double minelev;          // minimum elevation as read from config file
+	double maxelev;          // maximum elevation as read from config file
 	double crot_t, crot_offset; // cloud layer rotation time and offset
 	double shadowalpha;      // depth of object shadows (1=black, 0=none)
 	double shadowcol;        // depth of object shadows (0=black, 1=none) OBSOLETE

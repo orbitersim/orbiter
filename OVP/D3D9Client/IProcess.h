@@ -104,6 +104,7 @@ public:
 	void	SetMesh(const MESHHANDLE hMesh, const char *tex = NULL, gcIPInterface::ipicull = gcIPInterface::ipicull::None);
 
 	bool	Execute(bool bInScene = false);
+	bool	Execute(const char *shader, bool bInScene);
 	bool	ExecuteTemplate(bool bInScene = false, gcIPInterface::ipitemplate tmp = gcIPInterface::ipitemplate::Rect);
 	bool    Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScene = false, gcIPInterface::ipitemplate tmp = gcIPInterface::ipitemplate::Rect, int gpr = -1);
 

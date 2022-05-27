@@ -187,6 +187,7 @@ Planet::Planet (double _mass, double _mean_radius)
 	min_cloud_level = 100;
 	max_cloud_level = 0;
 	minelev      = 0.0;
+	maxelev = 0.0;
 	AtmInterface = 0;
 	atm_attenuationalt = 0.0;
 	bHasCloudlayer = false;
@@ -222,6 +223,7 @@ Planet::Planet (char *fname)
 	horizon_excess = 0.002;
 	bb_excess    = 0.0;
 	minelev      = 0.0;
+	maxelev = 0.0;
 	labelLegend  = NULL;
 	nLabelLegend = 0;
 	ifstream ifs (g_pOrbiter->ConfigPath (fname));
@@ -298,6 +300,7 @@ Planet::Planet (char *fname)
 	}
 	shadowcol = 1.0-shadowalpha;
 	GetItemReal (ifs, "MinElevation", minelev);
+	GetItemReal (ifs, "MaxElevation", maxelev);
 	GetItemReal (ifs, "ElevationResolution", elev_res);
 
 	bHasRings = (GetItemReal (ifs, "RingMinRadius", ringmin) &&
@@ -818,6 +821,8 @@ const void *Planet::GetParam (DWORD paramtype) const
 		return (const void*)&bb_excess;
 	case OBJPRM_PLANET_MINELEVATION:
 		return (const void*)&minelev;
+	case OBJPRM_PLANET_MAXELEVATION:
+		return (const void*)&maxelev;
 	case OBJPRM_PLANET_ELEVRESOLUTION:
 		return (const void*)&elev_res;
 	}

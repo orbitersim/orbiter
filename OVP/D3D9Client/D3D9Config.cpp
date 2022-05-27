@@ -87,6 +87,7 @@ void D3D9Config::Reset ()
 	bCloudNormals		= 1;
 	bFlats				= 0;
 	DebugBreak			= 0;
+	ShaderCacheUse		= 1;
 
 	GFXIntensity = 0.5;
 	GFXDistance = 0.8;
@@ -174,6 +175,7 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "NormalmappedClouds", i))			bCloudNormals = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "TerrainFlats", i))					bFlats = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "DebugBreak", i))					DebugBreak = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "ShaderCacheUse", i))				ShaderCacheUse = max(0, min(1, i));
 	if (oapiReadItem_float (hFile, "OrbitalShadowMult", d))			    OrbitalShadowMult = max(0.5, min(10.0, d));
 
 	if (oapiReadItem_float (hFile, "GFXIntensity", d))					GFXIntensity = max(0.0, min(1.0, d));
@@ -253,6 +255,7 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int   (hFile, "NormalmappedClouds", bCloudNormals);
 	oapiWriteItem_int   (hFile, "TerrainFlats", bFlats);
 	oapiWriteItem_int	(hFile, "DebugBreak", DebugBreak);
+	oapiWriteItem_int	(hFile, "ShaderCacheUse", ShaderCacheUse);
 	oapiWriteItem_float (hFile, "OrbitalShadowMult", OrbitalShadowMult);
 
 	oapiWriteItem_float (hFile, "GFXIntensity", GFXIntensity);

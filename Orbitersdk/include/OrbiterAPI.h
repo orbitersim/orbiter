@@ -2160,6 +2160,13 @@ const UINT ALLDOCKS = (UINT)-1;
  *   (Parameter type: int)
  */
 #define OBJPRM_PLANET_LABELENGINE        0x001E
+
+ /**
+  * \brief Maximum planet elevation [m] relative to mean radius.
+  *   (Parameter type: double)
+  */
+#define OBJPRM_PLANET_MAXELEVATION		 0x001F
+
 //@}
 
 typedef int (*KeyFunc)(const char *keybuf);

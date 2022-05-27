@@ -478,7 +478,7 @@ private:
 	SurfNative *pLblSrf;
 	CSphereManager *cspheremgr;
 
-	class ImageProcessing *pLightBlur, *pBlur, *pFlare, *pGDIOverlay, *pIrradiance;
+	class ImageProcessing *pLightBlur, *pBlur, *pGDIOverlay, *pIrradiance;
 
 	class vVessel *vFocus;
 	VOBJREC *vobjEnv, *vobjIrd;

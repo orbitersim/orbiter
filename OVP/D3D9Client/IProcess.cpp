@@ -19,6 +19,9 @@ ImageProcessing::ImageProcessing(LPDIRECT3DDEVICE9 pDev, const char *_file, cons
 	, pPSConst(NULL)
 	, pDepth(NULL)
 	, pDepthBak(NULL)
+	, pMesh(NULL)
+	, hPos(NULL)
+	, hSiz(NULL)
 	, hVP(NULL)
 	, mesh_cull(gcIPInterface::ipicull::None)
 	, desc()
@@ -28,10 +31,10 @@ ImageProcessing::ImageProcessing(LPDIRECT3DDEVICE9 pDev, const char *_file, cons
 	for (int i=0;i<ARRAYSIZE(pTextures);i++) pTextures[i].hTex = NULL;
 	for (int i=0;i<4;i++) pRtg[i] = pRtgBak[i] = NULL;
 
-	if (_vsentry) pVertex = CompileVertexShader(pDevice, _file, _vsentry, NULL, &pVSConst);
-	else pVertex = CompileVertexShader(pDevice, "Modules/D3D9Client/IPI.hlsl", "VSMain", NULL, &pVSConst);
+	if (_vsentry) pVertex = CompileVertexShader(pDevice, _file, _vsentry, "IPIVS", NULL, &pVSConst);
+	else pVertex = CompileVertexShader(pDevice, "Modules/D3D9Client/IPI.hlsl", "VSMain", "IPIVS", NULL, &pVSConst);
 
-	pPixel   = CompilePixelShader(pDevice, _file, _psentry, _ppf, &pPSConst);
+	pPixel   = CompilePixelShader(pDevice, _file, _psentry, "IPIPS", _ppf, &pPSConst);
 	pOcta	 = new SMVERTEX[10];
 
 	Shaders[string(_psentry)].pPixel = pPixel;
@@ -103,7 +106,7 @@ bool ImageProcessing::CompileShader(const char *Entry)
 {
 	string name(Entry);
 	LPD3DXCONSTANTTABLE pPSC = NULL;
-	Shaders[name].pPixel = CompilePixelShader(pDevice, file, Entry, ppf, &pPSC);
+	Shaders[name].pPixel = CompilePixelShader(pDevice, file, Entry, "IPIPS2", ppf, &pPSC);
 	Shaders[name].pPSConst = pPSC;
 	return ((Shaders[name].pPixel != NULL) && (Shaders[name].pPSConst != NULL));
 }
@@ -120,6 +123,7 @@ bool ImageProcessing::Activate(const char *Entry)
 		LogErr("ImageProcessing::Activate() FAILED Entry=%s", Entry);
 		return false;
 	}
+	strcpy_s(entry, 31, Entry);
 	pPixel = Shaders[name].pPixel;
 	pPSConst = Shaders[name].pPSConst;
 	return true;
@@ -227,6 +231,15 @@ bool ImageProcessing::Execute(bool bInScene)
 
 // ================================================================================================
 //
+bool ImageProcessing::Execute(const char *shader, bool bInScene)
+{
+	Activate(shader);
+	return Execute(0, 0, 0, bInScene, gcIPInterface::ipitemplate::Rect);
+}
+
+
+// ================================================================================================
+//
 bool ImageProcessing::ExecuteTemplate(bool bInScene, gcIPInterface::ipitemplate mode)
 {
 	return Execute(0, 0, 0, bInScene, mode);
@@ -246,13 +259,15 @@ bool ImageProcessing::Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScen
 	HR(pDevice->SetPixelShader(pPixel));
 	HR(pDevice->SetVertexDeclaration(pPosTexDecl));
 
-	HR(pDevice->SetRenderState(D3DRS_ZENABLE, false));
+	DWORD BakFill;
+	pDevice->GetRenderState(D3DRS_FILLMODE, &BakFill);
+
 	HR(pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID));
-	HR(pDevice->SetRenderState(D3DRS_ZWRITEENABLE, false));
 	HR(pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
 	HR(pDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, (blendop!=0)));
 	HR(pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, false));
 	HR(pDevice->SetRenderState(D3DRS_STENCILENABLE, false));
+	HR(pDevice->SetRenderState(D3DRS_COLORWRITEENABLE, 0xF));
 
 	if (blendop) {
 		HR(pDevice->SetRenderState(D3DRS_BLENDOP, blendop));
@@ -276,17 +291,25 @@ bool ImageProcessing::Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScen
 	for (int i=0;i<4;i++) {
 		pDevice->GetRenderTarget(i, &pRtgBak[i]);
 		pDevice->SetRenderTarget(i, pRtg[i]);
+		if (pRtg[i]) {
+			if (i == 1) { HR(pDevice->SetRenderState(D3DRS_COLORWRITEENABLE1, 0xF)); }
+			if (i == 2) { HR(pDevice->SetRenderState(D3DRS_COLORWRITEENABLE2, 0xF)); }
+			if (i == 3) { HR(pDevice->SetRenderState(D3DRS_COLORWRITEENABLE3, 0xF)); }
+		}
 	}
 
 	// Set Depth-Stencil surface ----------------------------------------------
 	//
-	if (pDepth) {
-		
-		HR(pDevice->SetRenderState(D3DRS_ZENABLE, false));
-		HR(pDevice->SetRenderState(D3DRS_ZWRITEENABLE, false));
+	if (pDepth) {	
+		HR(pDevice->SetRenderState(D3DRS_ZENABLE, true));
+		HR(pDevice->SetRenderState(D3DRS_ZWRITEENABLE, true));
 
 		pDevice->GetDepthStencilSurface(&pDepthBak);
 		pDevice->SetDepthStencilSurface(pDepth);
+	}
+	else {
+		HR(pDevice->SetRenderState(D3DRS_ZENABLE, false));
+		HR(pDevice->SetRenderState(D3DRS_ZWRITEENABLE, false));
 	}
 
 	// Set textures and samplers -----------------------------------------------
@@ -385,6 +408,8 @@ bool ImageProcessing::Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScen
 		HR(pDevice->SetTexture(idx, NULL));
 	}
 
+	HR(pDevice->SetRenderState(D3DRS_FILLMODE, BakFill));
+
 	return true;
 }
 
@@ -396,7 +421,7 @@ void ImageProcessing::SetFloat(const char *var, const void *val, int bytes)
 	D3DXHANDLE hVar = pPSConst->GetConstantByName(NULL, var);
 
 	if (!hVar) {
-		//LogErr("IPInterface::SetFloat() Invalid variable name [%s]. File[%s], Entrypoint[%s]", var, file, entry);
+		LogErr("IPInterface::SetFloat() Invalid variable name [%s]. File[%s], Entrypoint[%s]", var, file, entry);
 		return;
 	}
 
@@ -413,7 +438,7 @@ void ImageProcessing::SetInt(const char *var, const int *val, int bytes)
 	D3DXHANDLE hVar = pPSConst->GetConstantByName(NULL, var);
 
 	if (!hVar) {
-		//LogErr("IPInterface::SetInt() Invalid variable name [%s]. File[%s], Entrypoint[%s]", var, file, entry);
+		LogErr("IPInterface::SetInt() Invalid variable name [%s]. File[%s], Entrypoint[%s]", var, file, entry);
 		return;
 	}
 
@@ -430,7 +455,7 @@ void ImageProcessing::SetBool(const char *var, const bool *val, int bytes)
 	D3DXHANDLE hVar = pPSConst->GetConstantByName(NULL, var);
 
 	if (!hVar) {
-		//LogErr("IPInterface::SetBool() Invalid variable name [%s]. File[%s], Entrypoint[%s]", var, file, entry);
+		LogErr("IPInterface::SetBool() Invalid variable name [%s]. File[%s], Entrypoint[%s]", var, file, entry);
 		return;
 	}
 
@@ -453,7 +478,7 @@ void ImageProcessing::SetStruct(const char *var, const void *val, int bytes)
 	D3DXHANDLE hVar = pPSConst->GetConstantByName(NULL, var);
 
 	if (!hVar) {
-		//LogErr("IPInterface::SetStruct() Invalid variable name [%s]. File[%s], Entrypoint[%s]", var, file, entry);
+		LogErr("IPInterface::SetStruct() Invalid variable name [%s]. File[%s], Entrypoint[%s]", var, file, entry);
 		return;
 	}
 
@@ -571,7 +596,7 @@ void ImageProcessing::SetTexture(const char *var, SURFHANDLE hTex, DWORD flags)
 	D3DXHANDLE hVar = pPSConst->GetConstantByName(NULL, var);
 
 	if (!hVar) {
-		//LogErr("IPInterface::SetTexture() Invalid variable name [%s]. File[%s], Entrypoint[%s]", var, file, entry);
+		LogErr("IPInterface::SetTexture() Invalid variable name [%s]. File[%s], Entrypoint[%s]", var, file, entry);
 		return;
 	}
 
@@ -595,7 +620,7 @@ void ImageProcessing::SetTextureNative(const char *var, LPDIRECT3DBASETEXTURE9 h
 	D3DXHANDLE hVar = pPSConst->GetConstantByName(NULL, var);
 
 	if (!hVar) {
-		//LogErr("IPInterface::SetTextureNative() Invalid variable name [%s]. File[%s], Entrypoint[%s]", var, file, entry);
+		LogErr("IPInterface::SetTextureNative() Invalid variable name [%s]. File[%s], Entrypoint[%s]", var, file, entry);
 		return;
 	}
 
@@ -638,9 +663,7 @@ void ImageProcessing::SetOutputNative(int id, LPDIRECT3DSURFACE9 hSrf)
 {
 	if (id<0) id=0;
 	if (id>3) id=3;
-
-	if (hSrf) pRtg[id] = hSrf;
-	else 	  pRtg[id] = NULL;
+	pRtg[id] = hSrf;
 }
 
 

@@ -532,6 +532,7 @@ public:
 	void FillTetragon(DWORD c, const FVECTOR2 pt[4]);
 	void Clear(DWORD color = 0, bool bColor = true, bool bDepth = true);
 	void SetClipDistance(float _near, float _far);
+	void ColorKeyStretch(const SURFHANDLE hSrc, const LPRECT _s = NULL, const LPRECT t = NULL);
 	
 
 	// ===============================================================================
@@ -629,6 +630,7 @@ private:
 	float zfar;
 	int cx, cy;
 	RECT src;
+	RECT tgt;
 
 	D3DSURFACE_DESC	   tgt_desc;
 	LPDIRECT3DSURFACE9 pTgt;

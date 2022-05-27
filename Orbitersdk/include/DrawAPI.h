@@ -22,6 +22,10 @@
 #include "OrbiterAPI.h"
 #include <assert.h>
 
+#ifdef D3D9CLIENT_EXPORTS
+#include "d3dx9.h"
+#endif
+
 /// \brief Poly object handle
 typedef void* HPOLY;
 
@@ -159,6 +163,15 @@ namespace oapi {
 			z = float(v.z);
 		}
 
+#ifdef D3D9CLIENT_EXPORTS
+		FVECTOR3(const D3DXVECTOR3 &v)
+		{
+			x = float(v.x);
+			y = float(v.y);
+			z = float(v.z);
+		}
+#endif
+
 		inline FVECTOR3& operator*= (float f)
 		{
 			x *= f; y *= f; z *= f;
@@ -216,6 +229,17 @@ namespace oapi {
 			return FVECTOR3(x - f.x, y - f.y, z - f.z);
 		}
 
+		inline FVECTOR3 operator-() const
+		{
+			return FVECTOR3(-x, -y, -z);
+		}
+
+#ifdef D3D9CLIENT_EXPORTS
+		inline operator D3DXVECTOR3()
+		{
+			return D3DXVECTOR3(x, y, z);
+		}
+#endif
 		float x, y, z;
 	} FVECTOR3;
 
@@ -337,6 +361,16 @@ namespace oapi {
 			w = float(_w);
 		}
 
+#ifdef D3D9CLIENT_EXPORTS
+		FVECTOR4(const D3DXVECTOR4& v)
+		{
+			x = float(v.x);
+			y = float(v.y);
+			z = float(v.z);
+			w = float(v.w);
+		}
+#endif
+
 
 		inline FVECTOR4 operator* (float f) const
 		{
@@ -394,6 +428,18 @@ namespace oapi {
 		{
 			return FVECTOR4(x - f.x, y - f.y, z - f.z, w - f.w);
 		}
+
+		inline FVECTOR4 operator-() const
+		{
+			return FVECTOR4(-x,  -y, -z, -w);
+		}
+
+#ifdef D3D9CLIENT_EXPORTS
+		inline operator D3DXVECTOR4()
+		{
+			return D3DXVECTOR4(x, y, z, w);
+		}
+#endif
 
 		float data[4];
 		struct { float x, y, z, w; };
@@ -461,6 +507,13 @@ namespace oapi {
 		FMATRIX4(const float* pSrc) {
 			for (int i = 0; i < 16; i++) data[i] = pSrc[i];
 		}
+
+#ifdef D3D9CLIENT_EXPORTS
+		FMATRIX4(const D3DXMATRIX& m)
+		{
+			memcpy_s(data, sizeof(FMATRIX4), &m, sizeof(m));
+		}
+#endif
 
 		void Zero()
 		{
@@ -588,6 +641,36 @@ namespace oapi {
 	inline FVECTOR4 lerp(const FVECTOR4& a, const FVECTOR4& b, float x)
 	{
 		return a + (b - a) * x;
+	}
+
+	inline FVECTOR3 pow(const FVECTOR3& x, float y)
+	{
+		return FVECTOR3(::pow(x.x, y), ::pow(x.y, y), ::pow(x.z, y));
+	}
+
+	inline FVECTOR4 pow(const FVECTOR4& x, float y)
+	{
+		return FVECTOR4(::pow(x.x, y), ::pow(x.y, y), ::pow(x.z, y), ::pow(x.w, y));
+	}
+
+	inline FVECTOR3 pow(const FVECTOR3& x, const FVECTOR3 &y)
+	{
+		return FVECTOR3(::pow(x.x, y.x), ::pow(x.y, y.y), ::pow(x.z, y.z));
+	}
+
+	inline FVECTOR4 pow(const FVECTOR4& x, const FVECTOR4 &y)
+	{
+		return FVECTOR4(::pow(x.x, y.x), ::pow(x.y, y.y), ::pow(x.z, y.z), ::pow(x.w, y.w));
+	}
+
+	inline FVECTOR3 exp(const FVECTOR3& x)
+	{
+		return FVECTOR3(::exp(x.x), ::exp(x.y), ::exp(x.z));
+	}
+
+	inline FVECTOR4 exp(const FVECTOR4& x)
+	{
+		return FVECTOR4(::exp(x.x), ::exp(x.y), ::exp(x.z), ::exp(x.w));
 	}
 
 
@@ -1239,10 +1322,10 @@ public:
 	* \brief [DX9] Copy 'Blit' a rectangle
 	* \param hSrc Source surface handle
 	* \param src Source rectangle, (or NULL for whole surface)
-	* \param tgt Target rectangle, (must be defined)
+	* \param tgt Target rectangle, (or NULL for whole surface)
 	* \note Can alpha-blend and mirror by a use of negative width/height in source rectangle
 	*/
-	virtual void StretchRect(const SURFHANDLE hSrc, const LPRECT src, const LPRECT tgt) { assert(false); }
+	virtual void StretchRect(const SURFHANDLE hSrc, const LPRECT src = NULL, const LPRECT tgt = NULL) { assert(false); }
 
 	/**
 	* \brief [DX9] Copy 'Blit' a rectangle with rotation and scaling

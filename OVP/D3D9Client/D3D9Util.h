@@ -13,6 +13,13 @@
 #include "DrawAPI.h"
 #include <d3d9.h>
 #include <d3dx9.h>
+#include <string>
+#include "gcCore.h"
+
+#define float2 FVECTOR2
+#define float3 FVECTOR3
+#define float4 FVECTOR4
+#define float4x4 FMATRIX4 
 
 #ifdef _DEBUG
 #ifndef _TRACE
@@ -335,6 +342,41 @@ extern IDirect3DVertexDeclaration9	*pPosTexDecl;
 extern IDirect3DVertexDeclaration9	*pPatchVertexDecl;
 extern IDirect3DVertexDeclaration9	*pSketchpadDecl;
 
+
+
+class ShaderClass
+{
+	
+
+public:
+			ShaderClass(LPDIRECT3DDEVICE9 pDev, const char* file, const char* vs, const char* ps, const char* name, const char* options);
+		   ~ShaderClass();
+	void	ClearTextures();
+	void	Activate();
+	void	Setup(LPDIRECT3DVERTEXDECLARATION9 pDecl, bool bZ, int blend);
+	void	SetTexture(const char* name, LPDIRECT3DTEXTURE9 pTex, UINT Flags = IPF_CLAMP | IPF_ANISOTROPIC, UINT AnisoLvl = 4);
+	void	SetPSConstants(const char* name, void* data, UINT bytes);
+	void	SetVSConstants(const char* name, void* data, UINT bytes);
+	LPDIRECT3DDEVICE9 GetDevice() { return pDev; }
+
+private:
+
+	struct TexParams
+	{
+		LPDIRECT3DTEXTURE9 pTex;
+		UINT Flags;
+		UINT AnisoLvl;
+	} pTextures[16];
+
+	LPD3DXCONSTANTTABLE pPSCB, pVSCB;
+	LPDIRECT3DPIXELSHADER9 pPS;
+	LPDIRECT3DVERTEXSHADER9 pVS;
+	LPDIRECT3DDEVICE9 pDev;
+	std::string fn, psn, vsn, sn;
+};
+
+
+
 inline void swap(double &a, double &b)
 {
 	double c = a; a = b; b = c;
@@ -494,8 +536,8 @@ bool CopyBuffer(LPDIRECT3DRESOURCE9 _pDst, LPDIRECT3DRESOURCE9 _pSrc);
 void D3D9TuneInit(D3D9Tune *);
 int LoadPlanetTextures(const char* fname, LPDIRECT3DTEXTURE9* ppdds, DWORD flags, int amount);
 
-LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *file, const char *function, const char *options=NULL, LPD3DXCONSTANTTABLE *pConst=NULL);
-LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *file, const char *function, const char *options=NULL, LPD3DXCONSTANTTABLE *pConst=NULL);
+LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *file, const char *function, const char* name, const char *options, LPD3DXCONSTANTTABLE *pConst);
+LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *file, const char *function, const char* name, const char *options, LPD3DXCONSTANTTABLE *pConst);
 
 DWORD BuildDate();
 
