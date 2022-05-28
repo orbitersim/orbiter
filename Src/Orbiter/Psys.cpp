@@ -434,9 +434,11 @@ bool PlanetarySystem::DelBody (Body *_body)
 	for (i = 0; i < nbody; i++)
 		if (body[i] == _body) break;
 	if (i == nbody) return false; // body not found in list
-	if (body[i]->s0) body[i]->s0 = NULL;
-	if (body[i]->s1) body[i]->s1 = NULL;
-	delete []body[i]; // delete actual body
+
+	//if (body[i]->s0) body[i]->s0 = NULL; // s0 is used in vessel destructor due to undocking of
+	//if (body[i]->s1) body[i]->s1 = NULL; // vessels before deletion.
+	
+	delete []body[i]; // delete actual body/vessel
 	Body** tmp;
 	if (nbody > 1) {
 		tmp = new Body*[nbody-1]; TRACENEW
