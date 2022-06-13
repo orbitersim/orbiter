@@ -35,6 +35,7 @@ const double ISP = 4e3;
 // Interface for derived vessel class: Dragonfly
 // ==========================================================
 
+
 class Dragonfly: public VESSEL2 {
 public:
 	Dragonfly (OBJHANDLE hObj, int fmodel);
