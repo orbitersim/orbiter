@@ -1413,12 +1413,12 @@ HubInside
 MATERIAL Hull
 1 1 1 1
 1 1 1 1
-0 0 0 1
+0.5 0.5 0.5 1 10
 0.1 0.1 0.1 1
 MATERIAL DefaultMaterial
 1 1 1 1
 1 1 1 1
-0 0 0 1
+0.5 0.5 0.5 1 10
 0 0 0 1
 MATERIAL HubInside
 1 1 1 1
