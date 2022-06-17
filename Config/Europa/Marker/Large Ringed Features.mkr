@@ -1,0 +1,17 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Cryptic ringed features
+
+;Source = https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+25.5	-16.7	:	Callanish
+-146.6	33.6	:	Tyre
+	

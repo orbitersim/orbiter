@@ -1,0 +1,583 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 0.75
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 19 January 2022
+
+
+BEGIN_DATA
+174.77	-57.58	:	Abbe
+116.63	0.96	:	Abul Wafa			; Abul Wáfa
+13.91	-13.87	:	Abulfeda
+68.39	-31.89	:	Adams
+-31.11	-19.85	:	Agatharchides
+92.62	18.07	:	Al-Biruni
+107.01	7.02	:	Al-Khwarizmi
+-177.88	-48.63	:	Alder
+-131.85	-67.94	:	Alekhin
+13.69	40.25	:	Alexander
+5.13	-30.6	:	Aliacensis
+-107.8	18.74	:	Alter
+-172.23	-10.06	:	Amici
+-10.17	73.48	:	Anaxagoras
+-51.44	66.97	:	Anaximander
+-44.98	72.49	:	Anaximenes
+79.72	-12.92	:	Ansgarius
+101.66	-48.85	:	Anuchin
+7.87	-26.96	:	Apianus
+60.96	4.51	:	Apollonius
+158.17	37.05	:	Appleton
+-3.99	29.72	:	Archimedes
+1.21	33.88	:	Aristillus
+17.32	50.24	:	Aristoteles
+35.83	66.98	:	Arnold
+103.79	25.44	:	Artamonov
+-145.22	10.4	:	Artem'ev
+-1.93	-18.26	:	Arzachel
+44.38	46.74	:	Atlas
+-97.28	39.63	:	Avicenna
+-82.03	-44.75	:	Baade
+94.14	4.13	:	Babcock
+103.35	-16.22	:	Backlund
+19.1	-51.04	:	Baco
+37.35	74.61	:	Baillaud
+-83.31	19.24	:	Balboa
+-151.96	-53.32	:	Baldet
+80.01	5.28	:	Banachiewicz
+157.93	-23.85	:	Barbier
+16.81	-44.98	:	Barocius
+-150.43	-28.22	:	Barringer
+7.59	71.28	:	Barrow
+-89.85	24.51	:	Bartels
+86.58	37.11	:	Beals
+28.82	-18.08	:	Beaumont
+129.5	40.79	:	Becquerel
+125.07	-2.57	:	Becvar				; Bečvář
+79.41	-16.61	:	Behaim
+151.84	-13.4	:	Beijerinck
+-96.53	21.98	:	Bell
+-164.85	-60.72	:	Bellinsgauzen (Bellingshausen)
+-128.23	-17.25	:	Belopol'skiy
+143.11	23.1	:	Belyaev
+-105.24	25.13	:	Berkner
+-163.61	-63.04	:	Berlage
+69.99	33.5	:	Berosus
+-45.16	-63.4	:	Bettinus
+-165.31	-55.5	:	Bhabha
+148.46	78.35	:	Bi Sheng
+51.63	-54.99	:	Biela
+174.01	-30.17	:	Birkeland
+-10.7	65.12	:	Birmingham
+2.44	-25.32	:	Blanchinus
+-147.86	31.37	:	Blazhko
+43.26	-72.9	:	Boguslawsky
+-86.52	12.71	:	Bohr
+-90.41	-74.82	:	Boltzmann
+-17.33	-8.38	:	Bonpland
+-87.29	63.79	:	Boole
+-148.25	-39.06	:	Borman
+-169.36	-53.95	:	Bose
+88.68	45.75	:	Boss
+177.89	-53.29	:	Boyle
+-103.44	42.33	:	Bragg
+-171.57	-73.54	:	Brashear
+-158.37	17.25	:	Bredikhin
+39.11	-39.09	:	Brenner
+136.98	43.39	:	Bridgman
+-134.67	25.9	:	Bronk
+90.91	-9.86	:	Brunner
+17.68	-38.9	:	Buch
+112.95	-1.47	:	Buisson
+-22.26	-20.75	:	Bullialdus
+-85.46	41.4	:	Bunsen
+56.39	31.11	:	Burckhardt
+19.96	-38.04	:	Busching			; Büsching
+174.82	20.86	:	Buys-Ballot
+10.07	85.43	:	Byrd
+-65.38	-24.73	:	Byrgius
+-170.21	-61.24	:	Cabannes
+153.5	-60.41	:	Cailleux
+168.7	-47.67	:	Cajori
+-99.73	55.5	:	Cannizzaro
+81.36	19.88	:	Cannon
+118.69	38.04	:	Cantor
+-26.73	-34.09	:	Capuanus
+-51.23	69.52	:	Carpenter
+127.6	-43.46	:	Carver
+113.3	-51.95	:	Cassegrain
+4.64	40.25	:	Cassini
+23.55	-17.98	:	Catharina
+-66.93	5.1	:	Cavalerius
+-53.78	-24.63	:	Cavendish
+31.67	29.88	:	Chacornac
+-154.63	-39.06	:	Chaffee
+9.09	79.58	:	Challis
+96.04	-58.83	:	Chamberlin
+171.76	43.65	:	Chandler
+-100.47	50.09	:	Chapman
+-91.24	-61.29	:	Chappe
+-176.77	54.53	:	Chappell
+137.2	-11.64	:	Chauvenet
+174.41	47.01	:	Chernyshev
+51.57	45.01	:	Chevallier
+162.99	-46.11	:	Chretien			; Chrétien
+13.86	-47.84	:	Clairaut
+119.35	-38.67	:	Clark
+-77.4	60.32	:	Cleostratus
+-162.91	31.09	:	Cockcroft
+46.02	-15.26	:	Colombo
+-113.17	23.39	:	Comrie
+-122.05	21.59	:	Comstock
+69.58	12.1	:	Condorcet
+-167.84	-0.28	:	Congreve
+175.92	52.68	:	Cooper
+-20.08	9.62	:	Copernicus
+-152.91	-50.48	:	Cori
+171.8	0.56	:	Coriolis
+-115	54.46	:	Coulomb
+-90.86	67.24	:	Cremona
+150.51	-46.98	:	Crocco
+-147.95	-67.46	:	Crommelin
+4.4	-67.08	:	Curtius
+69.4	71.82	:	Cusanus
+9.69	-50.29	:	Cuvier
+157.37	-20.37	:	Cyrano
+24.07	-13.29	:	Cyrillus
+179.4	-5.83	:	Daedalus
+-84.45	17.07	:	Dalton
+123.9	-11.42	:	Danjon
+180	25.36	:	Dante
+-174.97	-37.93	:	Davisson
+-163.33	-76.94	:	De Forest
+143	49.38	:	De Moraes
+38.57	79.81	:	De Sitter
+-176.78	-19.68	:	De Vries
+17.39	-1.94	:	Delambre
+140.7	-6.87	:	Dellinger
+-73.42	70.25	:	Desargues
+110.91	24.35	:	Deutsch
+-108.53	-68.97	:	Doerfel
+97.99	-31.35	:	Donner
+-41.51	-28.48	:	Doppelmayer
+-122.72	35.5	:	Douglass
+97.09	10.24	:	Dreyer
+-156.15	-33.21	:	Dryden
+179.46	44.68	:	Duner			; Dunér
+-121.71	60.87	:	Dyson
+99.02	20.99	:	Dziewulski
+99.27	24.88	:	Edison
+-142.51	-63.21	:	Eijkman
+110.06	-5.06	:	Einthoven
+-100.64	9.01	:	Elvey
+-4.62	67.5	:	Epigenes
+-11.32	14.47	:	Eratosthenes
+98.54	5.68	:	Erro
+-141.83	47.41	:	Esnault-Pelterie
+109.34	28.15	:	Espin
+30.57	76.26	:	Euctemon
+16.23	44.27	:	Eudoxus
+-133.78	-9.63	:	Evans
+-159.51	35.3	:	Evershed
+41.84	-42.75	:	Fabricius
+8.75	-42.45	:	Faraday
+125.03	-58.25	:	Fechner
+4.86	-38.18	:	Fernelius
+-177.72	-42.29	:	Finsen
+63.43	7.25	:	Firmicus
+112.7	4.2	:	Firsov
+-3.73	-3.33	:	Flammarion
+131.85	25.45	:	Florensky
+-19.75	87.04	:	Florey
+-53.1	-30.31	:	Fourier
+-16.97	-6.06	:	Fra Mauro
+47.64	38.73	:	Franklin
+59.06	-39.52	:	Fraunhofer
+170.89	25	:	Freundlich
+-111.63	80	:	Froelich
+-118.9	37.41	:	Frost
+-147.36	36.21	:	Gadomski
+-84.56	49.51	:	Galvani
+111.17	-79.42	:	Ganswindt
+156.78	-47.21	:	Garavito
+-12.74	-33.91	:	Gauricus
+131.22	17.41	:	Gavrilov
+56.66	34.42	:	Geminus
+13.37	-34.33	:	Gemma Frisius
+-80.51	44.54	:	Gerard
+-123.42	-22.95	:	Gerasimovich
+84.27	-18.37	:	Gibbs
+75.95	-63.77	:	Gill
+97.4	14.25	:	Ginzel
+45.03	-10.05	:	Goclenius
+89.13	15.15	:	Goddard
+133.12	3.69	:	Green
+127.28	1.76	:	Gregory
+-147.98	-46.92	:	Grissom
+-10.3	-67.04	:	Gruemberger
+-14.19	-11.57	:	Guericke
+-173.38	45.16	:	Guillaume
+88.91	-40.34	:	Gum
+41.25	-8.61	:	Gutenberg
+117.12	11.63	:	Guyot
+-94.63	83.4	:	Haber
+46.63	-59.92	:	Hagecius
+135.95	-48.32	:	Hagen
+73.55	31.22	:	Hahn
+-33.52	-41.23	:	Hainzel
+91.71	-74.13	:	Hale
+84.41	-42.77	:	Hamilton
+71.38	-56.46	:	Hanno
+79.65	-38.31	:	Harlan
+114.4	33.2	:	Harriot
+135.45	2.71	:	Hartmann
+-80.47	-6.14	:	Hartwig
+-146.51	19.35	:	Harvey
+62.68	-29.37	:	Hase
+133.16	81.51	:	Haskin
+-5.17	-87.45	:	Haworth
+83.87	64.56	:	Hayn
+85.6	-81.77	:	Hedervari			; Hédervári
+-17.82	-39.48	:	Heinsius
+-102.46	22.63	:	Helberg
+-152.33	12.7	:	Henyey
+6.42	-49.31	:	Heraclitus
+39.21	46.82	:	Hercules
+104.56	13.32	:	Hertz
+174.19	-54.47	:	Hess
+-30.42	-24.92	:	Hippalus
+-146.54	70.26	:	Hippocrates
+159.23	-51.01	:	Hopmann
+-123.89	-17.25	:	Houzeau
+86.91	22.29	:	Hubble
+-1.52	-41.07	:	Huggins
+122.3	6.83	:	Ibn Firnas
+91.14	14.14	:	Ibn Yunus
+-173.26	-5.49	:	Icarus
+112.69	-81.35	:	Idel'son
+-68.95	-47.49	:	Inghirami
+-129.16	-14.38	:	Ioffe
+147.49	-17.57	:	Isaev
+-163.32	22.05	:	Jackson
+11.3	-56.82	:	Jacobi
+89.5	8.63	:	Jansky
+91.51	-55.58	:	Jeans
+95.98	-42.01	:	Jenner
+-144.14	27.15	:	Joule
+15.21	9.17	:	Julius Caesar
+6.48	-36.49	:	Kaiser
+-116.29	14.72	:	Kamerlingh Onnes
+25.84	62.99	:	Kane
+166.8	72.61	:	Karpinskiy
+-142.28	-52.06	:	Karrer
+-138.47	16.31	:	Kekule			; Kekulé
+111.87	-14.13	:	Khvol'son
+-147.18	2.72	:	Kibal'chich
+122.95	35.79	:	Kidinnu
+84.11	-6.41	:	Kiess
+120.49	4.96	:	King
+-45.48	-67.01	:	Kircher
+-156.66	68.34	:	Kirkwood
+-140.36	-32.48	:	Kleymenov
+-141.76	36.93	:	Klute
+150.33	-42.13	:	Koch
+153.95	14.24	:	Kohlschutter			; Kohlschütter
+-115.01	10.79	:	Kolhorster			; Kolhörster
+152.25	24.59	:	Komarov
+115.8	-15.33	:	Kondratyuk
+158.34	19.56	:	Konstantinov
+118.85	14.43	:	Kostinskiy
+129.59	-46.64	:	Kozyrev
+-72.72	16.56	:	Krafft
+-127.98	53.28	:	Kramers
+-175.63	3.79	:	Krasovskiy
+104.1	-53.44	:	Kugler
+-154.63	41.98	:	Kulik
+1.08	-23.68	:	La Caille
+76.28	-10.67	:	La Perouse			; La Pérouse
+-107.83	41.29	:	Lacchini
+9.99	-1.33	:	Lade
+-22.36	-44.48	:	Lagalla
+64.56	-14.76	:	Lame				; Lamé
+23.32	5.14	:	Lamont
+131.51	-31.17	:	Lampland
+132.36	-9.5	:	Lane
+162.69	44.17	:	Langevin
+-86.05	51.17	:	Langley
+-128.89	-35.85	:	Langmuir
+-179.67	31.85	:	Larmor
+-97.05	28.29	:	Laue
+96.31	-27.54	:	Lauritsen
+-81.25	38.17	:	Lavoisier
+30.5	26.66	:	Le Monnier
+-139.89	-44.86	:	Leavitt
+-164.89	7.84	:	Lebedinskiy
+70.02	-28.92	:	Legendre
+-56.17	-39.96	:	Lehmann
+-149.98	-61.36	:	Lemaître
+-116.41	29.24	:	Leucippus
+-109.05	1.67	:	Leuschner
+-4.27	-35.78	:	Lexell
+154.84	42.11	:	Ley
+6.54	-47.19	:	Licetus
+6.09	-54.6	:	Lilius
+-99.22	70.03	:	Lindblad
+24.77	-32.35	:	Lindenau
+-179.38	-2.15	:	Lipskiy
+113.07	9.76	:	Lobachevskiy
+-146.78	-17.42	:	Lodygin
+98.28	27.35	:	Lomonosov
+129.17	-6.33	:	Love
+-109.51	82.08	:	Lovelace
+-103.42	-12.97	:	Lowell
+-121.24	-8.22	:	Lucretius
+89.36	26.43	:	Lyapunov
+162.47	-64.96	:	Lyman
+67.99	-1.92	:	Maclaurin
+45.97	21.26	:	Macrobius
+-168.65	-40.75	:	Maksutov
+11.4	-85	:	Malapert
+54.05	-45.41	:	Mallet
+26.37	-67.51	:	Manzinus
+145.2	-9.48	:	Marconi
+76.57	-39.38	:	Marinus
+-139.06	-28.46	:	Mariotte
+-93.88	-14.52	:	Maunder
+-170.86	-15.72	:	McKellar
+-92.83	47.01	:	McLaughlin
+-166.09	16.63	:	McMath
+-148.99	-10.47	:	Mechnikov
+-96.18	13.57	:	Mees
+122.94	24.3	:	Meggers
+113.1	-10.87	:	Meitner
+66.07	46.66	:	Mercurius
+-117.45	74.83	:	Merrill
+-49.34	-21.49	:	Mersenius
+125.53	12.11	:	Meshcherskiy
+43.37	-40.42	:	Metius
+-129.64	71.77	:	Mezentsev
+171.35	76.53	:	Milankovic			; Milankovič
+0.78	-39.37	:	Miller
+121.52	46.76	:	Millikan
+-161.73	24.67	:	Mineur
+-154.65	17.76	:	Mitra
+103.26	9.44	:	Moiseev
+-20.76	-45.83	:	Montanari
+-160.08	47.06	:	Montgolfier
+-177.55	37.25	:	Moore
+-175.29	21.9	:	Morse
+-90.2	20.95	:	Moseley
+-26.82	78.38	:	Mouchez
+97.57	-60.91	:	Moulton
+-0.21	5.07	:	Murchison
+29.93	-63.65	:	Mutus
+154.05	19.51	:	Nagaoka
+0.14	-41.04	:	Nasireddin
+-56.39	-50.49	:	Nasmyth
+177.34	-24.91	:	Nassau
+39.01	-58.58	:	Nearch
+135.77	-81.07	:	Nefed'ev
+25.02	68.21	:	Neison
+125.17	-26.68	:	Neujmin
+70.92	-71.16	:	Neumayer
+-17.44	-76.52	:	Newton
+-120.15	72.2	:	Niepce
+-170.8	-44.57	:	Nishina
+-101.39	14.73	:	Nobel
+53.27	-85.28	:	Nobile
+3.79	-34.9	:	Nonius
+-114.18	66.35	:	Nother (Noether)		; Nöther (Noether)
+167.45	32.19	:	Nusl				; Nušl
+157.29	-30.42	:	O'Day
+162.43	-38.67	:	Obruchev
+-64.2	57.13	:	Oenopides
+-113.78	18.32	:	Ohm
+76.09	-43.76	:	Oken
+-76.14	7.3	:	Olbers
+117.79	20.57	:	Olcott
+138.44	58.72	:	Olivier
+-102.22	58.21	:	Omar Khayyam
+169.22	-42.61	:	Oresme
+-175.08	-25.77	:	Orlov
+-94.63	62.6	:	Paneth
+140.69	-4.2	:	Pannekoek
+163.95	10.15	:	Papaleksi
+163.44	-22.92	:	Paracelsus
+-150.34	50.09	:	Paraskevopoulos
+-108.91	25.88	:	Parenago
+103.69	-33.29	:	Parkhurst
+3.29	-14.57	:	Parrot
+133.6	-16.77	:	Patsaev
+137.35	-44.76	:	Pauli
+145.29	44.24	:	Pawsey
+24.4	88.63	:	Peary
+67.8	-46.4	:	Peirescius
+11.34	-64.57	:	Pentland
+128.8	-9.99	:	Perepelkin
+-175.73	47.02	:	Perkin
+-127.95	42.11	:	Perrine
+67.89	74.35	:	Petermann
+-115.28	36.92	:	Petropavlovskiy
+88.18	-61.36	:	Petrov
+-110.83	-62.73	:	Petzval
+-32.88	72.22	:	Philolaus
+32.2	-29.7	:	Piccolomini
+-7.49	-43.56	:	Pictet
+-86.7	-60.17	:	Pilatre				; Pilâtre
+-73.95	-58.64	:	Pingre				; Pingré
+139.93	-20.34	:	Pirquet
+30.57	-50.61	:	Pitiscus
+119.29	-35.06	:	Pizzetti
+-154.86	-24.62	:	Plummer
+79.05	24.18	:	Plutarch
+-146.21	78.9	:	Poinsot
+115.01	25.57	:	Polzunov
+-54.57	75.91	:	Poncelet
+14.36	-28.42	:	Pontanus
+66.07	-58.78	:	Pontecoulant			; Pontécoulant
+99.38	16.93	:	Popov
+-10.18	-56.15	:	Porter
+29.99	31.88	:	Posidonius
+130.78	-3.99	:	Prager
+141.54	-59.62	:	Prandtl
+108.47	-56.71	:	Priestley
+94.86	-1.54	:	Purkyne				; Purkyně
+-135.3	42.66	:	Quetelet
+23.46	-34.78	:	Rabbi Levi
+-179.87	-13.5	:	Racah
+-159.63	14.78	:	Raimond
+145.04	-40.02	:	Ramsay
+-114.63	38.95	:	Razumov
+0.73	-2.45	:	Reaumur				; Réaumur
+-87.88	54.04	:	Regnault
+47.95	-30.48	:	Reichenbach
+47.17	-37.1	:	Rheita
+26.43	-37.02	:	Riccius
+177.05	74.92	:	Ricco
+92.38	-15.37	:	Ritz
+-174.25	70.66	:	Roberts
+-105.37	21.84	:	Robertson
+-72.89	-12.89	:	Rocca
+43.15	-55.49	:	Rosenberger
+130.68	-40.82	:	Rosseland
+-169.8	-28.81	:	Rumford
+-103.73	46.78	:	Rynin
+16.64	-23.75	:	Sacrobosco
+102.8	4.49	:	Saenger
+-139.21	32.38	:	Sanford
+44.06	-20.99	:	Santbech
+-121.14	49.12	:	Sarton
+-9.44	-39.28	:	Sasserides
+-3.88	-43.38	:	Saussure
+109.14	-27.26	:	Scaliger
+117.71	-26.33	:	Schaeberle
+158.24	69.04	:	Schjellerup
+-138.98	47.12	:	Schlesinger
+155.12	-1.99	:	Schliemann
+-83.39	-5.93	:	Schluter			; Schlüter
+-163.73	41.34	:	Schneller
+24.69	-76.64	:	Schomberger
+89.8	-19.45	:	Schorr
+81.01	2.78	:	Schubert
+60.81	42.42	:	Schumacher
+14.13	77.73	:	Scoresby
+147.23	73.74	:	Seares
+-143.09	-6.97	:	Sechenov
+-48.68	-58.96	:	Segner
+152.47	-32.65	:	Seidel
+173.1	12.37	:	Sharonov
+172.42	32.52	:	Shayn
+45.91	-88.14	:	Shoemaker
+-7.68	-74.54	:	Short
+-116.82	19.38	:	Shternberg (Sternberg)
+135.08	22.05	:	Siedentopf
+154.81	-26.93	:	Sierpinski
+103.65	-65.89	:	Sikorsky
+14.74	-72.61	:	Simpelius
+160.27	49.28	:	Slipher
+-96.91	60.22	:	Smoluchowski
+55.7	-29.33	:	Snellius
+165.84	13.06	:	Spencer Jones
+149.98	10.07	:	St. John
+-13.77	10.48	:	Stadius
+46.66	-48.71	:	Steinheil
+-118.2	-39.58	:	Stetson
+54.14	-32.49	:	Stevinus
+-88.11	52.36	:	Stokes
+146.65	57.14	:	Stormer				; Störmer
+54.42	61.94	:	Strabo
+164.7	-5.6	:	Stratton
+-10.74	-46.58	:	Street
+-132.37	-21.74	:	Stromgren			; Strömgren
+135.71	-29.32	:	Subbotin
+108.76	37.62	:	Sumner
+-81.22	82.65	:	Sylvester
+46.54	5.5	:	Taruntius
+-136.28	31.96	:	Teisserenc
+134.66	-9.58	:	Ten Bruggencate
+-4.02	-22.01	:	Thebit
+26.28	-11.45	:	Theophilus
+-169.5	74.86	:	Thiessen
+161.33	24.2	:	Tikhomirov
+172.29	61.66	:	Tikhov
+-147.15	-5.09	:	Timiryazev
+176.7	6.89	:	Tiselius
+100.66	-26.75	:	Titius
+167.14	29.33	:	Trumpler
+142.64	-48.66	:	Tseraskiy (Ceraski)
+-11.22	-43.3	:	Tycho
+-81.96	32.67	:	Ulugh Beigh
+174.26	6.65	:	Valier
+-83.94	13.78	:	Vasco da Gama
+-138.77	-0.87	:	Vavilov
+63.27	-45.41	:	Vega
+162.51	-0.1	:	Vening Meinesz
+130.43	23.11	:	Vernadskiy
+114.79	-3.23	:	Vesalius
+93.68	33.87	:	Vestine
+131.08	9.77	:	Vetchinkin
+-56.53	-29.31	:	Vieta
+38.69	-53.39	:	Vlacq
+131.64	56.55	:	Volterra
+126.73	51.92	:	von Békésy
+-78.08	41.04	:	von Braun
+-133.01	-24.84	:	Von der Pahlen
+153.25	40.28	:	Von Neumann
+-141.93	42.19	:	Von Zeipel
+-138.91	-9.96	:	Wan-Hoo (Van-Gu)
+-60.44	-49.53	:	Wargentin
+128.18	-25.7	:	Waterman
+-124.05	-62.59	:	Watson
+48.48	-49.6	:	Watt
+-113.81	45.21	:	Wegener
+-19.59	-31.76	:	Weiss
+3.29	-28.03	:	Werner
+90.71	-68.88	:	Wexler
+85.43	-6.09	:	Widmannstätten
+19.58	-29.58	:	Wilkins
+-155.05	-20.97	:	Wilsing
+-42.83	-69.33	:	Wilson
+-105.92	35.4	:	Winlock
+-121.83	43.66	:	Wood
+56.62	-23.9	:	Wrottesley
+-16.06	-34.04	:	Wurzelbauer
+161.87	58.16	:	Yamamoto
+50.98	-41.54	:	Young
+5.25	-60.92	:	Zach
+21.89	-31.94	:	Zagut
+166.86	-28.74	:	Zelinskiy
+72.98	45.15	:	Zeno
+168.4	18.34	:	Zernike
+-167.28	7.55	:	Zhukovskiy
+-105.3	59.52	:	Zsigmondy
+-50.65	-61.38	:	Zucchius
+
+
+
+

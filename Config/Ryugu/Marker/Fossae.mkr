@@ -1,0 +1,19 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Fossa - Long, narrow shallow depression
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+-63.4	32.1	:	Horai Fossa
+166.2	-50.5	:	Tokoyo Fossa
+
+
+

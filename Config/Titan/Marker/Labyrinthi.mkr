@@ -1,0 +1,39 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Labyrinthi - intersecting ridges or valleys
+
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 4 January 2022
+
+BEGIN_DATA
+145	39.2	:	Anbus Labyrinthus
+-31	-66	:	Corrin Labyrinthus
+-36.7	-83	:	Ecaz Labyrinthus
+110	-77.9	:	Gammu Labyrinthus
+-75	56.8	:	Gamont Labyrinthus
+120.7	-69.3	:	Gansireed Labyrinthus
+98.3	83	:	Ginaz Labyrinthus
+-106.8	-35.3	:	Grumman Labyrinthus
+-101.4	-72.3	:	Harmonthep Labyrinthus
+71	86.24	:	Ipyr Labyrinthus
+144.7	-47.7	:	Junction Labyrinthus
+11.34	52.37	:	Kaitain Labyrinthus
+-96.27	-35.7	:	Kronin Labyrinthus
+-124	-81.8	:	Lampadas Labyrinthus
+-149.5	-48.2	:	Lankiveil Labyrinthus
+-138	-83.4	:	Lernaeus Labyrinthus
+140.8	-68.8	:	Muritan Labyrinthus
+-35.8	-74.2	:	Naraj Labyrinthus
+-88.1	75.1	:	Niushe Labyrinthus
+-31	-72.4	:	Palma Labyrinthus
+161	41.8	:	Richese Labyrinthus
+95.8	45.6	:	Salusa Labyrinthus
+-28.9	-77.9	:	Sikun Labyrinthus
+-16	-48	:	Tleilax Labyrinthus
+-32.2	-80.5	:	Tupile Labyrinthus

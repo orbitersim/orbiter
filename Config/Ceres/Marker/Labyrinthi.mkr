@@ -1,0 +1,15 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Labyrinthi - intersecting ridges or valleys
+
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 3 January 2022
+
+BEGIN_DATA
+-122.16	17.49	:	Makahiki Labyrinthus

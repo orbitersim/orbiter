@@ -1,0 +1,25 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Fossa - Long, narrow shallow depression
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+36.68	-8.76	:	Anbar Fossae
+-19.9	39.8	:	Bassorah Fossa
+134.2	-24	:	Bishangarh Fossae
+-5.42	9.65	:	Daryabar Fossa
+1.74	11.3	:	Isbanir Fossa
+94	33	:	Kaukabán Fossae
+123.13	-19	:	Khorasan Fossa
+;134.83	26.89	:	[Samaria Fossa]
+
+
+

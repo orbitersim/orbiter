@@ -1,0 +1,21 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+
+BEGIN_DATA
+164	36	:	Bahloo
+-132	71	:	Helios
+177	61	:	Jarilo
+-171	3	:	Meri
+
+

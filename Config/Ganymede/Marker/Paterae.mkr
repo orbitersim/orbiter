@@ -1,0 +1,23 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Patera, paterae (An irregular crater, or a complex one with scalloped edges)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+41.9	-24.23	:	Hammamat Patera
+-171.37	-77.35	:	Hamra Patera
+171.54	-31.35	:	Musa Patera
+176.74	-30.93	:	Natrun Patera
+177.18	-30.66	:	Rum Patera
+-142.15	-46.65	:	Yaroun Patera
+
+

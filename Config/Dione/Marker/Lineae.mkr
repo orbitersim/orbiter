@@ -1,0 +1,20 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Linea, lineae (A dark or bright elongate marking, may be curved or straight)
+
+;Source = https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+;38.1	12.7	:	[Carthage Linea]
+;149.3	-20	:	[Padua Linea]
+;54.6	-40.6	:	[Palatine Linea]
+
+

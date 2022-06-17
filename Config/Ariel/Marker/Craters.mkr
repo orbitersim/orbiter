@@ -1,0 +1,35 @@
+;Crater - impact crater
+
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 0.75
+
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 2 January 2022
+
+BEGIN_DATA
+-108.7	-15.5	:	Abans
+-23.5	-46.9	:	Agape
+-135.7	-53.1	:	Ataksak
+31.9	-17	:	Befana
+-32.1	-22.5	:	Berylune
+23	-22.3	:	Deive
+-108.9	-12	:	Djadek
+-20.3	-71.5	:	Domovoy
+19	-15.8	:	Finvara
+22.5	-77.5	:	Gwyn
+33.7	-37.8	:	Huon
+44.4	-21.3	:	Laica
+-7.8	-38.8	:	Mab
+8.9	-52.9	:	Melusine
+-115.6	-21.9	:	Oonagh
+-99.2	-18.3	:	Rima
+-80.3	-68.7	:	Yangoor
+
+
+

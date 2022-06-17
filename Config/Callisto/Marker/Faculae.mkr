@@ -1,0 +1,16 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Facula - Bright spot
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 2 January 2022
+
+BEGIN_DATA
+77.3	4.5	:	Kol Facula
+

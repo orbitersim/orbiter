@@ -1,0 +1,144 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Albedo Feature (Geographic area distinguished by amount of reflected light)
+
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 3 January 2022
+
+BEGIN_DATA
+145	-4.94	:	Aeolis
+50	9.88	:	Aeria
+130	39.67	:	Aetheria
+130	9.88	:	Aethiopis
+-140	0	:	Amazonis
+110	4.94	:	Amenthes
+-105	-44.66	:	Aonium Sinus
+30	19.78	:	Arabia
+-100	44.66	:	Arcadia
+-25	-44.66	:	Argyre
+25	47.66	:	Arnon
+-50	-14.83	:	Aurorae Sinus
+110	-39.67	:	Ausonia
+-50	59.71	:	Baltia
+70	54.68	:	Boreosyrtis
+-75	2.96	:	Candor
+100	39.67	:	Casius
+150	49.67	:	Cebrenia
+40	59.71	:	Cecropia
+-93	19.78	:	Ceraunius
+155	14.83	:	Cerberus
+0	-49.67	:	Chalce
+100	-49.67	:	Chersonesus
+-30	9.88	:	Chryse
+-110	-49.67	:	Chrysokeras
+-110	-34.68	:	Claritas
+80	54.68	:	Copais Palus
+-65	-14.83	:	Coprates
+130	-4.94	:	Cyclopia
+0	39.67	:	Cydonia
+55	-3.95	:	Deltoton Sinus
+20	-59.71	:	Depressio Hellespontica
+20	-14.83	:	Deucalionis Regio
+0	34.68	:	Deuteronilus
+180	49.67	:	Diacria
+40	49.67	:	Dioscuria
+15	0	:	Edom
+170	-44.66	:	Electris
+150	24.74	:	Elysium
+140	-44.66	:	Eridania
+140	22	:	Eunostos
+25	19.78	:	Euphrates
+0	14.83	:	Gehon
+70	-39.67	:	Hellas
+35	-49.67	:	Hellespontus
+120	-19.78	:	Hesperia
+15	14.83	:	Hiddekel
+-60	74.83	:	Hyperboreus (Lacus)
+65	-19.78	:	Iapygia (Iapigia)
+-130	-39.67	:	Icaria
+180	-69.78	:	II Thyle I
+;85	19.78	:	[Isidis Regio]
+30	39.67	:	Ismenius Lacus
+-40	9.88	:	Jamuna
+-63	-4.94	:	Juventae Fons
+160	0	:	Laestrygon (Laestrigon)
+160	69.78	:	Lemuria
+90	0	:	Libya
+-65	14.83	:	Lunae Palus
+-30	44.66	:	Mare Acidalium
+-10	-59.71	:	Mare Australe
+180	59.71	:	Mare Boreum
+150	-57.7	:	Mare Chronium
+140	-19.78	:	Mare Cimmerium
+-40	-24.74	:	Mare Erythraeum
+90	-39.67	:	Mare Hadriacum
+40	-29.71	:	Mare Serpentis
+-155	-29.71	:	Mare Sirenum
+105	-19.78	:	Mare Tyrrhenum
+-25	-9.88	:	Margaritifer Sinus
+-150	-19.78	:	Memnonia
+75	34.68	:	Meroe
+10	19.78	:	Moab
+90	7.91	:	Moeris Lacus
+-72	-27.72	:	Nectar
+88	37.67	:	Neith Regio
+100	19.78	:	Nepenthes
+-55	-44.66	:	Nereidum Fretum
+-30	29.71	:	Niliacus Lacus
+-55	29.71	:	Nilokeras
+70	41.66	:	Nilosyrtis
+-130	19.78	:	Nix Olympica
+30	-44.66	:	Noachis
+-65	-44.66	:	Ogygis Regio
+160	79.88	:	Olympia
+-65	-9.88	:	Ophir
+0	59.71	:	Ortygia
+-18	7.91	:	Oxia Palus
+-12	19.78	:	Oxus
+160	59.71	:	Panchaia
+44	-24.74	:	Pandorae Fretum
+-155	-49.67	:	Phaethontis
+40	19.78	:	Phison
+172.2	31	:	Phlegra
+-110	-11.86	:	Phoenicis Lacus
+-70	-39.67	:	Phrixi Regio
+80	-64.74	:	Promethei Sinus
+175	44.66	:	Propontis
+-50	-22.76	:	Protei Regio
+45	41.66	:	Protonilus
+-38	-14.83	:	Pyrrhae Regio
+-147.9	60.21	:	Scandia
+-70	-19.78	:	Sinai
+0	-4.94	:	Sinus Meridiani
+20	-7.91	:	Sinus Sabaeus
+115	44.66	:	Sithonius Lacus
+-90	-27.72	:	Solis Lacus
+160	29.71	:	Styx
+-100	-19.78	:	Syria
+70	9.88	:	Syrtis Major
+-70	49.67	:	Tanais
+-70	39.67	:	Tempe
+-100	0	:	Tharsis
+-85	-34.68	:	Thaumasia
+105	29.71	:	Thoth
+-10	9.88	:	Thymiamata
+-85	-4.94	:	Tithonius Lacus
+-80	29.71	:	Tractus Albus
+92	-24.74	:	Trinacria
+162	19.78	:	Trivium Charontis
+100	69.78	:	Uchronia
+70	49.67	:	Umbra
+110	49.67	:	Utopia
+-15	-34.68	:	Vulcani Pelagus
+-50	9.88	:	Xanthe
+40	-39.67	:	Yaonis Regio
+165	0	:	Zephyria
+
+
+	

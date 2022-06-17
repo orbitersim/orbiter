@@ -1,0 +1,19 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Palus, paludes ("Swamp"; small plain)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 
+
+BEGIN_DATA
+-27.54	-32	:	Palus Epidemiarum
+0	27.36	:	Palus Putredinis
+44.72	13.69	:	Palus Somni
+
+

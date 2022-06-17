@@ -1,0 +1,19 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 4
+Size 0.5
+DistanceFactor 0.5
+END_HEADER
+
+;Fossa - Long, narrow shallow depression
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated
+
+BEGIN_DATA
+;0	0	:	[Fossa Casals]
+;0	0	:	[Fossa Cauchy]
+
+
+

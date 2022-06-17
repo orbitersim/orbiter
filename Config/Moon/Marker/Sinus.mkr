@@ -1,0 +1,24 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 4
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Sinus, sinūs ("Bay"; small plain; on Titan, bays within seas or lakes of liquid hydrocarbons)
+
+;Source = https://planetarynames.wr.usgs.gov/
+;Updated 18 January 2022
+
+BEGIN_DATA
+-8.34	12.1	:	Sinus Aestuum
+37.29	19.92	:	Sinus Amoris
+27.49	-5.41	:	Sinus Asperitatis
+42.47	10.98	:	Sinus Concordiae
+2.04	17.99	:	Sinus Fidei
+17.87	11.72	:	Sinus Honoris
+-31.67	45.01	:	Sinus Iridum
+-1.85	32.36	:	Sinus Lunicus
+-50.86	50.26	:	Sinus Roris
+58.52	1.12	:	Sinus Successus

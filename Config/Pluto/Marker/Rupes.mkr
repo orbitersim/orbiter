@@ -1,0 +1,18 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Rupes, rupēs (Scarp)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+108.9	27.13	:	Piri Rupes
+163.19	-19.66	:	Ride Rupes
+
+

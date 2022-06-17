@@ -1,0 +1,18 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Planum, plana (Plateau or high plain)
+
+;Source: https://planetarynames.wr.usgs.gov
+;updated 3 January 2022
+
+BEGIN_DATA
+;-130	15	:	[Erntedank Planum]
+-130	15	:	Hanami Planum
+

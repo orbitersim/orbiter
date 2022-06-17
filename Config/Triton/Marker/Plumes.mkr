@@ -1,0 +1,18 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 3
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Plume, plumes (Cryo-volcanic features on Triton)
+
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+35	-57	:	Hili
+-0.5	-50.5	:	Mahilani
+

@@ -1,0 +1,76 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+
+BEGIN_DATA
+-92.92	37.53	:	Abisme
+-154.9	42.7	:	Acelin
+176.4	6.6	:	Adelroth
+84	53.4	:	Almeric
+69.2	-40.7	:	Anseïs
+38.8	14.9	:	Astor
+135.1	16.4	:	Baligant
+165.3	33.3	:	Basan
+-111.8	-52	:	Basbrun
+172.1	-0.7	:	Basile
+140.3	62.1	:	Berenger
+50.2	76	:	Besgun
+-93	70.7	:	Bevon
+-178	38	:	Bramimond
+101.2	55	:	Charlemagne
+-71.6	18.3	:	Clarin
+-116.9	30.4	:	Climborin
+-114.2	0.9	:	Corsablis
+-84.9	36.6	:	Dapamort
+95.3	-40.5	:	Engelier
+-173.5	1.6	:	Escremiz
+139.3	0.9	:	Eudropin
+-82.6	33.8	:	Falsaron
+-19.8	-44.3	:	Ganelon
+119.5	-3.2	:	Garlon
+-173.4	58.6	:	Geboin
+127	-45.6	:	Gerin
+110.9	71.9	:	Godefroy
+145.5	17.7	:	Grandoyne
+90	10.6	:	Hamon
+45	18	:	Ivon
+-83.4	12.4	:	Johun
+-2.5	13	:	Jurfaleu
+-159.8	65.2	:	Lorant
+-118.2	-15.2	:	Malprimis
+-41.3	5.9	:	Malun
+-135.8	27.7	:	Margaris
+-176.1	39.2	:	Marsilion
+172.6	-3.5	:	Matthay
+89.8	67.9	:	Milon
+30.7	9.3	:	Naimon
+163	-33.2	:	Nevelon
+84.9	42.5	:	Ogier
+159.2	62.5	:	Oliver
+12.2	33.3	:	Othon
+-33	-39	:	Pinabel
+173	1.5	:	Priamon
+-166.2	-64.4	:	Rabel
+-25.2	73.3	:	Roland
+-99	-0.1	:	Rugis
+61.4	6.5	:	Samson
+-8	-55	:	Thierry
+2	57	:	Tibbald
+147.7	-9.9	:	Timozel
+171.6	-0.2	:	Torleu
+-28.4	16.9	:	Turgis
+-1.4	47.7	:	Turpin
+-104.4	29.6	:	Valdebron
+
+
+

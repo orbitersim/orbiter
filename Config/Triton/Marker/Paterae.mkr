@@ -1,0 +1,22 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Patera, paterae (An irregular crater, or a complex one with scalloped edges)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+24.5	26	:	Dilolo Patera
+5.5	28	:	Gandvik Patera
+14	39	:	Kasu Patera
+43	10.5	:	Kibu Patera
+28.5	17	:	Leviathan Patera
+
+

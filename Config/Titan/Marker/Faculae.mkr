@@ -1,0 +1,30 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Facula - Bright spot
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+173	-11	:	Antilia Faculae
+-16.1	11.6	:	Bazaruto Facula
+-29.2	-11.1	:	Coats Facula
+-150.1	9.4	:	Crete Facula
+-1.2	-10.8	:	Elba Facula
+-151	-5.4	:	Kerguelen Facula
+-174.2	-6.6	:	Mindanao Facula
+-159	2	:	Nicobar Faculae
+-166.7	5	:	Oahu Facula
+-145.6	2.4	:	Santorini Facula
+-164.1	-10.4	:	Shikoku Facula
+-39.8	-12.5	:	[Sotra Facula]
+177.4	-11.5	:	Texel Facula
+-143.1	8.8	:	Tortola Facula
+-138.4	7	:	Vis Facula
+

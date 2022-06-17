@@ -1,0 +1,25 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Fossa - Long, narrow shallow depression
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+-32.1	65.18	:	Argiletum Fossae
+-130.8	47.47	:	Arpi Fossae
+23.25	11.93	:	Carthage Fossae
+58.46	39.27	:	Clusium Fossae
+-96	0.66	:	Fidena Fossae
+-76.48	-31.84	:	Helorus Fossa
+23.45	-45.6	:	Himella Fossa
+-82.43	-8.16	:	Petelia Fossae
+
+
+

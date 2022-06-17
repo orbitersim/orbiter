@@ -1,0 +1,18 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 3
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Dorsum, dorsa (Ridge)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 16 November 2021
+
+
+BEGIN_DATA
+-29.65	27.2	:	Antoniadi Dorsum
+-164.3	23.26	:	Schiaparelli Dorsum
+

@@ -1,0 +1,22 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Terra, terrae (Extensive land mass)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+-130.12	46.07	:	Hayabusa Terra
+-167.6	56.58	:	Pioneer Terra
+85.49	33.96	:	Vega Terra
+117.62	56.89	:	Venera Terra
+150.97	12.34	:	Viking Terra
+153.52	60.08	:	Voyager Terra
+	

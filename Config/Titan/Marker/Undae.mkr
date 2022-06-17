@@ -1,0 +1,21 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 3
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Unda, undae (Dunes)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+133.14	13.79	:	Aura Undae
+145	-6	:	Boreas Undae
+149.7	-7.5	:	Eurus Undae
+148.9	-10	:	Notus Undae
+142.9	-8.5	:	Zephyrus Undae
+	

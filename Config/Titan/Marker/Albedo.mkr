@@ -1,0 +1,30 @@
+BEGIN_HEADER
+InitialState on
+ShapeIdx 0
+ColourIdx 5
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Albedo Feature (Geographic area distinguished by amount of reflected light)
+
+
+;Source: https://planetarynames.wr.usgs.gov/
+;updated 4 January 2022
+
+BEGIN_DATA
+20	10	:	Aaru
+150	-10	:	Adiri
+-20	-10	:	Aztlan
+105	-5	:	Belet
+155	-30	:	Ching-tu
+-175	15	:	Dilmun
+-30	5	:	Fensal
+0	-70	:	Mezzoramia
+-15	0	:	Quivira
+40	-5	:	Senkyo
+-165	-10	:	Shangri-La
+-10	-40	:	Tsegihi
+-100	-15	:	Xanadu
+
+

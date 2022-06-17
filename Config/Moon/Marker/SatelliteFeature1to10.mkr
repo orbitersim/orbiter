@@ -1,0 +1,2867 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.2
+DistanceFactor 0.601
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 
+
+
+BEGIN_DATA
+;-31.88	20.69	:	[Euler K]
+;-45	28.91	:	[Krieger D]
+;-43.72	26.32	:	[Prinz A]
+;-43.26	26.86	:	[Prinz B]
+77.46	-34.69	:	Abel K
+9.65	-21.76	:	Abenezra D
+10.34	-21.58	:	Abenezra F
+11	-20.53	:	Abenezra G
+12.71	-21.09	:	Abenezra H
+10.69	-19.92	:	Abenezra J
+10.14	-16.76	:	Abulfeda E
+8.94	-13.1	:	Abulfeda G
+9.56	-13.84	:	Abulfeda H
+10.03	-15.49	:	Abulfeda J
+10.58	-14.92	:	Abulfeda K
+10.67	-14.09	:	Abulfeda L
+11.16	-15.47	:	Abulfeda O
+11.54	-15.5	:	Abulfeda P
+12.22	-12.86	:	Abulfeda Q
+12.97	-12.79	:	Abulfeda R
+13.3	-12.28	:	Abulfeda S
+13.71	-14.86	:	Abulfeda T
+13.8	-12.97	:	Abulfeda U
+13.85	-12.55	:	Abulfeda W
+13.99	-15.01	:	Abulfeda X
+14.05	-12.76	:	Abulfeda Y
+15.18	-14.73	:	Abulfeda Z
+-31.71	-21.52	:	Agatharchides B
+-31.86	-20.26	:	Agatharchides F
+-26.84	-20.17	:	Agatharchides G
+-26.79	-21.12	:	Agatharchides L
+-26.71	-19.24	:	Agatharchides O
+-30.85	-18.36	:	Agatharchides R
+-30.59	-17.75	:	Agatharchides S
+-27.8	-18.32	:	Agatharchides T
+9.46	6.2	:	Agrippa B
+8.44	5.16	:	Agrippa E
+11.37	4.3	:	Agrippa F
+10.7	4.75	:	Agrippa H
+8.34	-18.13	:	Airy D
+7.26	-18.2	:	Airy F
+5.69	-18.74	:	Airy H
+6.08	-19.05	:	Airy J
+7.54	-20.47	:	Airy L
+8.18	-17.85	:	Airy N
+8.35	-16.75	:	Airy O
+8.35	-15.88	:	Airy P
+8.78	-19.6	:	Airy R
+9.39	-17.28	:	Airy S
+9.14	-17.5	:	Airy V
+10.12	-18.95	:	Airy X
+173.99	-16.71	:	Aitken G
+172.74	-17.63	:	Aitken N
+93.06	18.42	:	Al-Biruni C
+3.03	-9.34	:	Albategnius A
+3.71	-10.33	:	Albategnius C
+7.14	-11.36	:	Albategnius D
+6.19	-11.14	:	Albategnius J
+6.31	-12.08	:	Albategnius L
+4.16	-8.92	:	Albategnius M
+4.54	-9.89	:	Albategnius N
+4.43	-13.62	:	Albategnius O
+4.49	-13.02	:	Albategnius P
+6.05	-13.35	:	Albategnius S
+6.06	-12.66	:	Albategnius T
+14.94	40.78	:	Alexander A
+15.14	40.28	:	Alexander B
+14.95	38.52	:	Alexander C
+19.35	40.52	:	Alexander K
+20.14	-4.05	:	Alfraganus D
+19	-4.62	:	Alfraganus E
+20.84	-3.54	:	Alfraganus F
+21.23	-2.67	:	Alfraganus G
+19.54	-5.25	:	Alfraganus K
+19.56	-5.66	:	Alfraganus M
+5.42	-32.7	:	Aliacensis C
+6.82	-33.19	:	Aliacensis D
+2.32	-30.42	:	Aliacensis E
+3.84	-32.66	:	Aliacensis F
+4.7	-33.39	:	Aliacensis G
+6.01	-31.81	:	Aliacensis H
+6.26	-31.43	:	Aliacensis K
+6.78	-29.64	:	Aliacensis X
+7.33	-30.11	:	Aliacensis Y
+4.49	-30.05	:	Aliacensis Z
+15.32	-17.79	:	Almanon A
+15.54	-18.6	:	Almanon D
+13.63	-17.91	:	Almanon E
+14.27	-15.92	:	Almanon F
+14.61	-17.93	:	Almanon G
+15.22	-19.03	:	Almanon H
+15.43	-15.84	:	Almanon K
+16.58	-19	:	Almanon L
+17	-18.08	:	Almanon Q
+15.88	-18.17	:	Almanon R
+-0.91	45.81	:	Alpes B
+-6.88	-15.13	:	Alpetragius B
+-6.17	-13.75	:	Alpetragius C
+-6.1	-18.01	:	Alpetragius H
+-5.7	-18.05	:	Alpetragius J
+-2.27	-14.87	:	Alphonsus A
+-4.87	-14.4	:	Alphonsus C
+-3.39	-12.35	:	Alphonsus G
+-0.53	-15.62	:	Alphonsus H
+-2.51	-15.14	:	Alphonsus J
+-3.72	-12.02	:	Alphonsus L
+-1.92	-14.39	:	Alphonsus R
+-4.46	-14.99	:	Alphonsus X
+-1.92	-14.71	:	Alphonsus Y
+-11.36	70.35	:	Anaxagoras B
+-41.06	65.29	:	Anaximander H
+-55.21	66.32	:	Anaximander R
+-53.6	68.35	:	Anaximander S
+-52.27	67.3	:	Anaximander T
+-48.5	64.14	:	Anaximander U
+-38.06	68.94	:	Anaximenes B
+11.15	-9.01	:	Andel C			; Anděl C
+11.71	-10.79	:	Andel D			; Anděl D
+12.22	-12.02	:	Andel E			; Anděl E
+11.08	-8.34	:	Andel F			; Anděl F
+12.31	-10.94	:	Andel G			; Anděl G
+11.31	-6.67	:	Andel H			; Anděl H
+11.41	-7.54	:	Andel J			; Anděl J
+11.56	-5.83	:	Andel K			; Anděl K
+11.34	-10.24	:	Andel N			; Anděl N
+12.7	-11.4	:	Andel S			; Anděl S
+13.24	-11.25	:	Andel T			; Anděl T
+-41.15	30.92	:	Angstrom A		; Angström A
+-44.19	31.76	:	Angstrom B		; Angström B
+78.79	-11.25	:	Ansgarius M
+8.19	-28.85	:	Apianus E
+6.33	-28.14	:	Apianus F
+7.64	-28.12	:	Apianus G
+8.64	-28.15	:	Apianus H
+8.52	-26.33	:	Apianus J
+9.31	-27.48	:	Apianus K
+10.85	-29.12	:	Apianus L
+10.29	-24.78	:	Apianus M
+9.91	-28.89	:	Apianus N
+10.4	-25.19	:	Apianus V
+7.46	-25.6	:	Apianus W
+7.02	-28.34	:	Apianus X
+61.77	4.73	:	Apollonius M
+59.87	4.89	:	Apollonius U
+62.6	4.88	:	Apollonius Y
+20.82	3.43	:	Arago B
+21.48	3.89	:	Arago C
+22.39	6.91	:	Arago D
+22.71	8.51	:	Arago E
+5.43	24.18	:	Aratus B
+9.46	24.08	:	Aratus C
+11.18	24.56	:	Aratus CA
+8.61	24.37	:	Aratus D
+-1.53	31.63	:	Archimedes C
+-2.69	32.2	:	Archimedes D
+-7.2	25	:	Archimedes E
+-8.15	29.14	:	Archimedes G
+-7.02	23.89	:	Archimedes H
+-2.61	25.04	:	Archimedes L
+-3.21	26.12	:	Archimedes M
+-3.89	24.15	:	Archimedes N
+-2.5	25.94	:	Archimedes P
+-2.43	28.52	:	Archimedes Q
+-6.61	26.07	:	Archimedes R
+-2.73	29.56	:	Archimedes S
+-5.03	30.3	:	Archimedes T
+-1.96	32.83	:	Archimedes U
+-4.01	32.98	:	Archimedes V
+-6.25	23.8	:	Archimedes W
+-8.02	31.03	:	Archimedes X
+-9.5	29.97	:	Archimedes Y
+-1.41	26.88	:	Archimedes Z
+0.53	55.73	:	Archytas G
+0.9	56.19	:	Archytas L
+9.22	62.9	:	Archytas U
+5.2	61.29	:	Archytas W
+6.75	-16.54	:	Argelander A
+5.1	-15.6	:	Argelander B
+5.72	-16.28	:	Argelander C
+17.49	4.64	:	Ariadaeus A
+15.06	4.9	:	Ariadaeus B
+17.03	4.88	:	Ariadaeus D
+18.01	4.32	:	Ariadaeus F
+-46.85	26.28	:	Aristarchus B
+-42.88	23.73	:	Aristarchus D
+-45.74	22.61	:	Aristarchus H
+-43.03	22.83	:	Aristarchus N
+-46.28	19.29	:	Aristarchus S
+-46.5	19.67	:	Aristarchus T
+-48.64	19.73	:	Aristarchus U
+-48.49	25.49	:	Aristarchus Z
+4.53	33.64	:	Aristillus A
+-1.93	34.8	:	Aristillus B
+14.71	47.48	:	Aristoteles D
+27.26	53.5	:	Aristoteles M
+26.84	52.9	:	Aristoteles N
+33.82	65.9	:	Arnold J
+43.59	68.29	:	Arnold M
+-1.51	-18.06	:	Arzachel A
+-2.98	-17.06	:	Arzachel B
+-3.71	-17.49	:	Arzachel C
+-2.14	-20.19	:	Arzachel D
+-2.05	-18.69	:	Arzachel H
+-1.62	-18.38	:	Arzachel K
+0.13	-19.96	:	Arzachel L
+-0.87	-20.65	:	Arzachel M
+-2.27	-20.42	:	Arzachel N
+-1.3	-17.68	:	Arzachel T
+-4.26	-18.27	:	Arzachel Y
+23.55	-53.58	:	Asclepi C
+24.15	-52.26	:	Asclepi E
+24.8	-53.5	:	Asclepi G
+48.62	51.33	:	Atlas L
+44.22	44.43	:	Atlas W
+45.1	45.12	:	Atlas X
+2.17	30.92	:	Autolycus A
+5.43	31.21	:	Autolycus K
+18.31	13.77	:	Auwers A
+61.3	8.34	:	Auzout L
+60.04	8.7	:	Auzout R
+61.05	9.39	:	Auzout U
+61.31	9.34	:	Auzout V
+13.06	-21.81	:	Azophi C
+13.39	-24.32	:	Azophi D
+13.77	-23.48	:	Azophi E
+13.84	-22.31	:	Azophi F
+13.17	-21.29	:	Azophi J
+-59.63	57.05	:	Babbage B
+-61.61	58.47	:	Babbage E
+-51.34	60.97	:	Babbage U
+-50.28	60.3	:	Babbage X
+95.14	1.19	:	Babcock K
+16.29	-51.73	:	Baco D
+17.65	-50.37	:	Baco F
+17.16	-54.47	:	Baco G
+18.95	-52.07	:	Baco H
+16.75	-49.6	:	Baco L
+17.95	-49.27	:	Baco M
+19.88	-52.12	:	Baco O
+19.73	-51.04	:	Baco P
+19.77	-53.87	:	Baco T
+19.3	-52.47	:	Baco U
+21.11	-53.39	:	Baco W
+14.96	-53.11	:	Baco Z
+35.18	51	:	Baily B
+30.53	51.51	:	Baily K
+-9.19	-36.92	:	Ball B
+-8.18	-36.53	:	Ball E
+71.55	-20.76	:	Balmer M
+69.82	-19.92	:	Balmer N
+70.5	-18.69	:	Balmer Q
+69.14	-18.71	:	Balmer R
+67.63	-18.57	:	Balmer S
+74.75	7.57	:	Banachiewicz E
+19.18	-46.06	:	Barocius D
+22.49	-48.22	:	Barocius EC
+21.93	-45.75	:	Barocius O
+21.82	-42.5	:	Barocius S
+6	69.28	:	Barrow H
+9.14	67.61	:	Barrow M
+-35.49	-51.74	:	Bayer G
+-31.19	-50.69	:	Bayer M
+-29.37	-48.33	:	Bayer N
+-29.68	-51.72	:	Bayer P
+-35.61	-52.42	:	Bayer R
+-30.32	-49.25	:	Bayer T
+-31.4	-48.4	:	Bayer U
+-31.76	-47.56	:	Bayer V
+-33.41	-48.04	:	Bayer W
+-33.81	-53.42	:	Bayer X
+-33.61	-49.12	:	Bayer Z
+27.93	-20.25	:	Beaumont C
+26.59	-18.37	:	Beaumont F
+27.14	-20.37	:	Beaumont G
+28.53	-17.08	:	Beaumont H
+26.5	-19.95	:	Beaumont J
+30.07	-17.52	:	Beaumont K
+30.02	-14.46	:	Beaumont L
+27.77	-16.96	:	Beaumont N
+30.72	-17.94	:	Beaumont R
+-8.62	27.27	:	Beer A
+-9.05	25.68	:	Beer B
+-7.85	27.84	:	Beer E
+73.55	-16.11	:	Behaim N
+47.62	-13.19	:	Bellot A
+47.72	-13.55	:	Bellot B
+70.89	32.19	:	Berosus K
+48.87	36.74	:	Berzelius A
+47.03	35.57	:	Berzelius K
+47.96	36.25	:	Berzelius T
+53.1	38.14	:	Berzelius W
+-42.64	16.03	:	Bessarion C
+-41.73	19.77	:	Bessarion D
+-37.35	15.37	:	Bessarion E
+-40.36	14.9	:	Bessarion G
+-41.48	15.26	:	Bessarion H
+-34.98	15.06	:	Bessarion V
+-36.94	16.7	:	Bessarion W
+19.86	27.34	:	Bessel D
+14.74	21.14	:	Bessel G
+20	25.69	:	Bessel H
+-42.38	-63.21	:	Bettinus E
+-44.02	-62.97	:	Bettinus F
+-44.74	-61.6	:	Bettinus G
+-43.82	-64.62	:	Bettinus H
+-35.7	47.55	:	Bianchini D
+-32.79	46.7	:	Bianchini G
+-32.86	48.08	:	Bianchini H
+-30.67	48.37	:	Bianchini M
+-31.07	48.55	:	Bianchini N
+-33.81	48.55	:	Bianchini W
+56.58	-56.61	:	Biela E
+54.85	-56.52	:	Biela F
+54.4	-58.02	:	Biela H
+49.92	-53.92	:	Biela T
+48.45	-53.73	:	Biela V
+-46.34	-14.34	:	Billy A
+-49.14	-16.08	:	Billy C
+-49.81	-14.97	:	Billy E
+-49.84	-15.65	:	Billy H
+-48.86	-12.97	:	Billy K
+51.14	-22.11	:	Biot C
+50.35	-24.34	:	Biot D
+50.87	-24.77	:	Biot E
+49.8	-21.45	:	Biot T
+-11.24	63.52	:	Birmingham B
+-10.23	64.58	:	Birmingham G
+-10.64	64.46	:	Birmingham H
+-13.17	65.05	:	Birmingham K
+-8.24	-22.49	:	Birt A
+-10.27	-22.29	:	Birt B
+-8.37	-23.69	:	Birt C
+-9.88	-21.08	:	Birt D
+-9.66	-20.72	:	Birt E
+-9.15	-22.34	:	Birt F
+-8.28	-23.19	:	Birt G
+-9.15	-23.07	:	Birt H
+-9.5	-23	:	Birt J
+-9.69	-22.4	:	Birt K
+-9.36	-21.66	:	Birt L
+-22.15	-64.72	:	Blancanus A
+-27.5	-65.19	:	Blancanus F
+-25.19	-63.13	:	Blancanus G
+-23.59	-65.61	:	Blancanus H
+-25.86	-63.26	:	Blancanus N
+-21.43	-64.34	:	Blancanus V
+-20.33	-60.96	:	Blancanus W
+1.55	-25.23	:	Blanchinus B
+4.17	-25.03	:	Blanchinus D
+4.99	-24.81	:	Blanchinus K
+2.58	-25.22	:	Blanchinus M
+-3.08	8.74	:	Bode B
+-4.77	12.23	:	Bode C
+-3.32	7.27	:	Bode D
+-3.45	12.42	:	Bode E
+-3.56	6.34	:	Bode G
+-6.53	12.21	:	Bode H
+-2.28	9.3	:	Bode K
+-3.81	5.62	:	Bode L
+-3.88	10.97	:	Bode N
+43.57	-74.41	:	Boguslawsky A
+34.84	-70.45	:	Boguslawsky M
+39.68	-14.71	:	Bohnenberger F
+40.39	-14.9	:	Bohnenberger J
+41.89	-17.95	:	Bohnenberger N
+-17.5	-10.23	:	Bonpland C
+-18.28	-10.16	:	Bonpland D
+-19.37	-7.34	:	Bonpland F
+-18.81	-11.61	:	Bonpland G
+-19.97	-11.37	:	Bonpland H
+-20.4	-11.39	:	Bonpland J
+-21.21	-7.55	:	Bonpland L
+-21.48	-9.41	:	Bonpland N
+-21.56	-10.93	:	Bonpland P
+-18.62	-10.7	:	Bonpland R
+-77.7	63.6	:	Boole B
+46.12	-24.57	:	Borda D
+47.89	-26.19	:	Borda F
+45.31	-26.31	:	Borda G
+12.63	9.46	:	Boscovich A
+9.22	9.79	:	Boscovich B
+11.96	8.47	:	Boscovich C
+12.19	8.97	:	Boscovich D
+11.37	10.44	:	Boscovich F
+-33.89	52.61	:	Bouguer A
+-33.07	53.36	:	Bouguer B
+44.81	-63.58	:	Boussingault D
+52.51	-71.44	:	Boussingault G
+-84.36	-35.52	:	Bouvard R
+-0.35	22.89	:	Bradley H
+-0.74	23.27	:	Bradley K
+-34.31	20.73	:	Brayley B
+-39.46	21.39	:	Brayley C
+-32.88	20.02	:	Brayley D
+-39.82	21.27	:	Brayley E
+-34.1	21.09	:	Brayley F
+-36.44	24.17	:	Brayley G
+-41.72	21.21	:	Brayley K
+-42.65	20.91	:	Brayley L
+-36.76	25.06	:	Brayley S
+17.35	-47.01	:	Breislak A
+18.21	-47.72	:	Breislak B
+18.85	-48.96	:	Breislak C
+18.68	-48.09	:	Breislak D
+19.08	-47.87	:	Breislak E
+19.42	-48.53	:	Breislak F
+41.9	-37.45	:	Brenner B
+41.99	-36.56	:	Brenner C
+38.65	-36.29	:	Brenner D
+38.67	-37.01	:	Brenner H
+36.55	-37.71	:	Brenner J
+37.12	-38.01	:	Brenner K
+36.61	-38.16	:	Brenner L
+36.72	-38.76	:	Brenner M
+36.58	-38.97	:	Brenner N
+35.21	-38.81	:	Brenner P
+35.84	-39.26	:	Brenner Q
+36.19	-38.44	:	Brenner S
+-66.95	25.02	:	Briggs C
+-18.48	-46.91	:	Brown F
+-16.88	-45.51	:	Brown G
+16.95	-37.89	:	Buch B
+16.48	-39.68	:	Buch D
+16.5	-38.98	:	Buch E
+-24.03	-21.74	:	Bullialdus E
+-24.91	-22.51	:	Bullialdus F
+-23.7	-23.27	:	Bullialdus G
+-19.36	-22.75	:	Bullialdus H
+-24.46	-20.23	:	Bullialdus L
+-19.18	-18.58	:	Bullialdus Y
+59	31.6	:	Burckhardt C
+57.49	32.04	:	Burckhardt G
+23.46	42.7	:	Burg B			; Bürg B
+7.03	-14.8	:	Burnham A
+7.22	-15.36	:	Burnham B
+6.88	-14.35	:	Burnham F
+7.4	-13.69	:	Burnham K
+7.57	-14.3	:	Burnham L
+9.02	-14.12	:	Burnham M
+9.47	-14.63	:	Burnham T
+20.43	-38.37	:	Busching A			; Büsching A
+19.53	-37.3	:	Busching C			; Büsching C
+20.95	-39.1	:	Busching F			; Büsching F
+21.54	-39.57	:	Busching G			; Büsching G
+21.06	-37.46	:	Busching H			; Büsching H
+22.21	-39.55	:	Busching J			; Büsching J
+18.66	-38.02	:	Busching K			; Büsching K
+-60.85	-26.5	:	Byrgius R
+-61.6	-25.06	:	Byrgius T
+-67.9	-26.07	:	Byrgius V
+-65.55	-25.74	:	Byrgius X
+-32.62	37.23	:	C. Herschel C
+-34.69	34.21	:	C. Herschel E
+-31.44	36.2	:	C. Herschel U
+-33.49	36.46	:	C. Herschel V
+19.62	62.09	:	C. Mayer F
+10.07	36.08	:	Calippus B
+11.31	36.38	:	Calippus D
+11.89	38.92	:	Calippus E
+10	40.58	:	Calippus F
+11.55	41.3	:	Calippus G
+-29.24	-29.32	:	Campanus B
+-31.36	-28.66	:	Campanus G
+-28.42	-26.7	:	Campanus K
+-27.41	-27.84	:	Campanus X
+-28.22	-27.88	:	Campanus Y
+36.87	-9.47	:	Capella B
+37.53	-6.79	:	Capella D
+37.38	-8.17	:	Capella H
+36.06	-9.5	:	Capella J
+35.21	-6.05	:	Capella R
+34.18	-6.94	:	Capella T
+-26.71	-36.97	:	Capuanus F
+-27.27	-39.4	:	Capuanus H
+-26.56	-37.91	:	Capuanus K
+-25.68	-37.5	:	Capuanus M
+-70.8	12.8	:	Cardanus E
+-75.04	11.51	:	Cardanus G
+-77.04	14.12	:	Cardanus K
+-77.31	14.9	:	Cardanus M
+-26.64	35.36	:	Carlini A
+-22.89	35.1	:	Carlini C
+-16.03	32.98	:	Carlini D
+-20.5	31.59	:	Carlini E
+-25.06	32.63	:	Carlini G
+-24.47	32.43	:	Carlini H
+-23.72	31.08	:	Carlini K
+-24.83	31.31	:	Carlini L
+-27.24	37.91	:	Carlini S
+-58.69	70.28	:	Carpenter T
+-54.68	71.91	:	Carpenter V
+-60.24	72.37	:	Carpenter W
+-63.02	71.86	:	Carpenter Y
+3.87	40.02	:	Cassini B
+7.34	42.98	:	Cassini E
+7.28	40.92	:	Cassini F
+5.46	44.73	:	Cassini G
+4.09	45.19	:	Cassini K
+4.41	43.99	:	Cassini L
+3.75	41.38	:	Cassini M
+1.86	44.83	:	Cassini P
+4.25	42.35	:	Cassini W
+8.08	44.06	:	Cassini X
+2.16	41.98	:	Cassini Y
+2.38	43.48	:	Cassini Z
+21.4	-16.94	:	Catharina D
+21.26	-17.16	:	Catharina E
+23.06	-19.54	:	Catharina F
+25.37	-19.31	:	Catharina H
+22.18	-19.45	:	Catharina J
+23.89	-20.06	:	Catharina K
+24.21	-20.96	:	Catharina L
+20.73	-19.27	:	Catharina M
+37.86	12.07	:	Cauchy A
+35.83	9.7	:	Cauchy B
+38.86	8.16	:	Cauchy C
+40.29	10.02	:	Cauchy D
+38.57	8.83	:	Cauchy E
+36.8	9.55	:	Cauchy F
+35.05	7.62	:	Cauchy M
+42.28	8.79	:	Cauchy U
+41.44	8.96	:	Cauchy V
+41.67	10.57	:	Cauchy W
+-69.32	5.84	:	Cavalerius C
+-70.05	7.67	:	Cavalerius E
+-65.39	8.11	:	Cavalerius F
+-69.38	10.29	:	Cavalerius K
+-70.25	10.46	:	Cavalerius L
+-67.55	10.08	:	Cavalerius U
+-67.4	6.94	:	Cavalerius W
+-66.7	9.21	:	Cavalerius X
+-69.91	10.69	:	Cavalerius Y
+-69.67	11.05	:	Cavalerius Z
+-53.77	-21.71	:	Cavendish L
+-53.91	-21.97	:	Cavendish M
+-54.48	-22.07	:	Cavendish N
+-51.68	-24.16	:	Cavendish P
+-52.51	-23.76	:	Cavendish S
+-55.22	-24.76	:	Cavendish T
+19.63	-34.65	:	Celsius B
+20.04	-32.92	:	Celsius E
+20.11	-33.84	:	Celsius H
+32.99	-0.43	:	Censorinus A
+31.44	-2.02	:	Censorinus B
+33.66	-1.84	:	Censorinus H
+31.33	-1.04	:	Censorinus J
+28.85	-1.02	:	Censorinus K
+31.23	-2.77	:	Censorinus L
+31.16	-3.22	:	Censorinus T
+34.44	-1.51	:	Censorinus U
+35.45	-0.65	:	Censorinus V
+37.49	-1.02	:	Censorinus W
+31.58	29.82	:	Chacornac A
+31.91	28.94	:	Chacornac B
+32.58	30.78	:	Chacornac C
+151.69	-4.08	:	Chaplygin B
+137.78	-13.31	:	Chauvenet L
+135.47	-11.11	:	Chauvenet U
+56.6	46.2	:	Chevallier F
+50.86	43.52	:	Chevallier K
+-22.52	-35.68	:	Cichus F
+-22.5	-32.81	:	Cichus H
+-20.05	-36.63	:	Cichus K
+-21.74	-30.58	:	Cichus N
+11.64	-47.26	:	Clairaut G
+12.11	-49.12	:	Clairaut H
+13.76	-46.26	:	Clairaut M
+11.71	-49.09	:	Clairaut P
+-43.91	-36.32	:	Clausius A
+-45.73	-36.58	:	Clausius E
+-41.01	-37.09	:	Clausius G
+-39.63	-37.87	:	Clausius H
+-42.73	-37.21	:	Clausius J
+-22.08	-55.44	:	Clavius F
+-16.66	-56.99	:	Clavius O
+-15.42	-53.25	:	Clavius R
+-15.22	-60.68	:	Clavius T
+-16.25	-56	:	Clavius W
+-17.81	-60.25	:	Clavius X
+-16.22	-58.02	:	Clavius Y
+57.63	22.43	:	Cleomedes H
+54.41	23.79	:	Cleomedes L
+51.66	24.19	:	Cleomedes M
+52.52	24.72	:	Cleomedes N
+56.2	24.7	:	Cleomedes P
+56.69	24.81	:	Cleomedes Q
+58.95	29.46	:	Cleomedes S
+-79.3	62.28	:	Cleostratus L
+-75.2	61.5	:	Cleostratus M
+-73.77	60.62	:	Cleostratus N
+-73.2	59.58	:	Cleostratus P
+-73.28	58.89	:	Cleostratus R
+43.44	-14.01	:	Colombo G
+43.62	-14.3	:	Colombo J
+46.44	-15.83	:	Colombo K
+47.9	-15.11	:	Colombo P
+45.46	-18.97	:	Colombo T
+68.16	11.35	:	Condorcet E
+72.61	8.98	:	Condorcet N
+69.95	10.12	:	Condorcet X
+4.38	19.68	:	Conon A
+3.07	18.72	:	Conon W
+1.82	22.34	:	Conon Y
+49.21	-17.76	:	Cook A
+51.64	-17.3	:	Cook B
+51.28	-18.19	:	Cook C
+53.38	-20.17	:	Cook D
+55.1	-18.43	:	Cook E
+55.37	-17.59	:	Cook F
+48.69	-18.94	:	Cook G
+-18.9	9.52	:	Copernicus A
+-22.39	7.5	:	Copernicus B
+-15.44	7.12	:	Copernicus C
+-24.8	12.2	:	Copernicus D
+-22.7	6.4	:	Copernicus E
+-22.24	5.89	:	Copernicus F
+-21.51	5.92	:	Copernicus G
+-18.29	6.89	:	Copernicus H
+-23.94	10.13	:	Copernicus J
+-17.08	13.48	:	Copernicus L
+-23.31	6.91	:	Copernicus N
+-16.06	10.11	:	Copernicus P
+-16.84	8.06	:	Copernicus R
+52.39	-12.55	:	Crozier B
+51.95	-12.67	:	Crozier E
+51	-12.79	:	Crozier F
+49.99	-12.02	:	Crozier G
+51.5	-10	:	Crozier L
+51.36	-8.84	:	Crozier M
+-64.47	-14.18	:	Cruger F			; Crüger F
+-68.07	-17.89	:	Cruger G			; Crüger G
+-65.35	-18.01	:	Cruger H			; Crüger H
+4.38	-69.36	:	Curtius C
+2.65	-66.86	:	Curtius F
+2.92	-66	:	Curtius G
+7.99	-69.35	:	Curtius H
+9.68	-69.15	:	Curtius K
+9.47	-68.35	:	Curtius L
+8.43	-65.58	:	Curtius M
+59.59	69.43	:	Cusanus H
+11.74	-50	:	Cuvier C
+7.47	-50.84	:	Cuvier G
+8.74	-49.28	:	Cuvier J
+10.02	-52.28	:	Cuvier K
+10.85	-53.42	:	Cuvier M
+12.07	-53.53	:	Cuvier N
+13.15	-51.13	:	Cuvier R
+26.63	-15.66	:	Cyrillus G
+-1.83	-65.7	:	Cysatus B
+-6.08	-65.17	:	Cysatus D
+-3.68	-64.03	:	Cysatus F
+-0.43	-65.65	:	Cysatus G
+-0.02	-66.86	:	Cysatus H
+13.64	1.94	:	D'Arrest A
+13.61	0.96	:	D'Arrest B
+35.78	-12.25	:	Daguerre K
+35.68	-15.14	:	Daguerre U
+34.46	-14.07	:	Daguerre X
+35.36	-13.92	:	Daguerre Y
+34.67	-14.97	:	Daguerre Z
+-59.12	-8.28	:	Damoiseau BA
+-62.3	-7.89	:	Damoiseau F
+-55.76	-2.51	:	Damoiseau G
+-62.15	-4.07	:	Damoiseau J
+25.85	37.05	:	Daniell D
+31.55	35.93	:	Daniell W
+31.81	36.6	:	Daniell X
+-26.43	-14.82	:	Darney B
+-27.06	-14.51	:	Darney D
+-25.44	-12.43	:	Darney E
+-26.46	-13.32	:	Darney F
+-21.45	-14.35	:	Darney J
+-8.94	-10.89	:	Davy B
+-7	-11.22	:	Davy C
+-9.48	-10.19	:	Davy K
+-7.17	-12.96	:	Davy U
+-51.82	-26.24	:	de Gasparis C
+-50.21	-25.64	:	de Gasparis D
+-49.54	-26.43	:	de Gasparis E
+-49.44	-26.25	:	de Gasparis F
+-49.39	-26.98	:	de Gasparis G
+61.58	60.43	:	De La Rue P
+60.91	62.09	:	De La Rue R
+42	78.78	:	De Sitter G
+-58.84	-17.85	:	De Vico B
+-58.93	-18.98	:	De Vico G
+-59.3	-19.9	:	De Vico H
+-58.43	-20.08	:	De Vico K
+-57.89	-19.87	:	De Vico L
+-59.29	-21.06	:	De Vico M
+-61.93	-19.77	:	De Vico N
+-63.49	-19.53	:	De Vico S
+-60.26	-20.47	:	De Vico X
+-60.44	-20.36	:	De Vico Y
+-65.78	45.97	:	Dechen A
+-64.34	44.15	:	Dechen B
+-69.89	45.94	:	Dechen C
+-60.51	46.14	:	Dechen D
+19.64	-1.64	:	Delambre B
+17.54	-1.12	:	Delambre D
+19.25	-1.06	:	Delambre F
+2.02	-22.01	:	Delaunay A
+-38.46	29	:	Delisle K
+-6.4	-60.9	:	Deluc L
+-4.53	-62.93	:	Deluc O
+-4.85	-58.94	:	Deluc P
+-3.62	-59.05	:	Deluc Q
+0.21	-62.11	:	Deluc S
+-3.13	-55.89	:	Deluc T
+-2.97	-59.1	:	Deluc U
+1.59	-61.97	:	Deluc V
+-1.91	-61.76	:	Deluc W
+6.46	3.01	:	Dembowski A
+6.19	2.52	:	Dembowski B
+32.47	61.61	:	Democritus A
+31.23	62.95	:	Democritus D
+40.81	63.15	:	Democritus K
+37.12	63.61	:	Democritus M
+-67.69	68.52	:	Desargues K
+16.3	-11.02	:	Descartes C
+17.65	1.68	:	Dionysius A
+15.81	2.96	:	Dionysius B
+-32.54	29.08	:	Diophantus B
+-34.74	27.29	:	Diophantus C
+-36.38	26.91	:	Diophantus D
+12.5	-8.2	:	Dollond D
+15.7	-10.26	:	Dollond E
+12.53	-8.78	:	Dollond L
+16.91	-10.12	:	Dollond M
+14.97	-9.41	:	Dollond T
+15.97	-7.3	:	Dollond U
+15.44	-7.9	:	Dollond V
+4.49	-19.7	:	Donati A
+3.41	-19.97	:	Donati C
+5.75	-22.12	:	Donati D
+97.96	-32.17	:	Donner M
+-44.12	-30.33	:	Doppelmayer C
+-45.91	-31.84	:	Doppelmayer D
+-41.2	-24.52	:	Doppelmayer J
+-40.79	-24.04	:	Doppelmayer K
+-40.63	-23.65	:	Doppelmayer L
+-44.7	-29.21	:	Doppelmayer N
+-42.87	-29.09	:	Doppelmayer P
+-43.33	-29.26	:	Doppelmayer R
+-43.72	-28.14	:	Doppelmayer S
+-43.37	-25.97	:	Doppelmayer T
+-45.71	-29.82	:	Doppelmayer V
+-45.76	-33.59	:	Doppelmayer W
+-46.17	-33.14	:	Doppelmayer Y
+29.19	-44.53	:	Dove Z
+-23.41	17.86	:	Draper A
+-21.51	17.07	:	Draper C
+-51.07	-38.99	:	Drebbel A
+-45.47	-41.74	:	Drebbel H
+-50.94	-40.3	:	Drebbel L
+-41.55	-41.29	:	Drebbel M
+-52.56	-41.34	:	Drebbel N
+-51.93	-39.72	:	Drebbel P
+69.43	1.89	:	Dubyago F
+68.95	1.84	:	Dubyago G
+69.19	2.33	:	Dubyago H
+68.31	1.51	:	Dubyago K
+68.12	1.94	:	Dubyago L
+68.12	2.56	:	Dubyago M
+66.96	1.46	:	Dubyago N
+66.39	2.52	:	Dubyago R
+69.74	6.51	:	Dubyago W
+73.03	6.5	:	Dubyago X
+68.19	4.24	:	Dubyago Y
+70.93	3.89	:	Dubyago Z
+-32.67	-28.79	:	Dunthorne A
+-31.68	-31.36	:	Dunthorne B
+-32.57	-29.42	:	Dunthorne C
+-34.06	-29.94	:	Dunthorne D
+8.92	50.59	:	Egede B
+13	50.19	:	Egede C
+10.43	49.74	:	Egede E
+12.53	52.02	:	Egede F
+6.94	52	:	Egede G
+12.21	49.78	:	Egede M
+11.1	49.76	:	Egede N
+10.48	47.79	:	Egede P
+-76.12	-23.43	:	Eichstadt D
+65.66	24.11	:	Eimmart A
+62.11	23.29	:	Eimmart F
+-31.24	-37.37	:	Elger A
+-32.1	-37.12	:	Elger B
+-36.45	0.66	:	Encke C
+-40.2	0.35	:	Encke E
+-38.79	4.79	:	Encke G
+-37.4	4	:	Encke H
+-39.59	5.24	:	Encke J
+-37.24	1.37	:	Encke K
+-35.12	4.49	:	Encke M
+-37.15	4.59	:	Encke N
+-40.33	0.95	:	Encke X
+-36.45	5.86	:	Encke Y
+52.2	51.18	:	Endymion K
+71.39	55.48	:	Endymion L
+71.08	52.69	:	Endymion M
+69.63	52.4	:	Endymion N
+50.03	52.94	:	Endymion X
+57.97	55.78	:	Endymion Y
+0.15	68.35	:	Epigenes D
+-8.12	67.11	:	Epigenes F
+-7.01	68.97	:	Epigenes G
+-6.32	69.53	:	Epigenes H
+-27.58	-42.34	:	Epimenides C
+-8.33	18.34	:	Eratosthenes A
+-8.7	18.7	:	Eratosthenes B
+-12.39	16.89	:	Eratosthenes C
+-10.9	17.44	:	Eratosthenes D
+-10.89	17.93	:	Eratosthenes E
+-9.91	17.69	:	Eratosthenes F
+-12.25	13.31	:	Eratosthenes H
+-9.26	12.85	:	Eratosthenes K
+-13.59	14.02	:	Eratosthenes M
+-25.81	-9.4	:	Euclides D
+-25.13	-6.34	:	Euclides E
+-33.73	-6.37	:	Euclides F
+-28.59	-6.47	:	Euclides J
+-24.72	-4.23	:	Euclides K
+-28.23	-10.45	:	Euclides M
+28.43	75.93	:	Euctemon K
+32.95	75.41	:	Euctemon N
+17.35	45.66	:	Eudoxus B
+13.22	43.35	:	Eudoxus D
+21.17	44.4	:	Eudoxus E
+18.78	45.41	:	Eudoxus G
+20.29	40.8	:	Eudoxus J
+20.27	43.89	:	Eudoxus U
+18.81	43.07	:	Eudoxus V
+-34.07	24.7	:	Euler E
+-27.96	21.14	:	Euler F
+-27.39	20.68	:	Euler G
+-28.57	25.33	:	Euler H
+-31.51	22.25	:	Euler J
+-28.97	21.4	:	Euler L
+10.3	-42.68	:	Faraday K
+-20.19	5.98	:	Fauth A
+-19.32	5.8	:	Fauth B
+-18.85	5.23	:	Fauth C
+-18.46	6	:	Fauth D
+-20.72	5.39	:	Fauth E
+-17.45	5.4	:	Fauth F
+-16.27	5.25	:	Fauth G
+-16.22	4.78	:	Fauth H
+3.12	-21.2	:	Faye A
+4.5	-22.65	:	Faye B
+19.87	-19.95	:	Fermat E
+20.14	-22.14	:	Fermat F
+19.99	-19.44	:	Fermat G
+20.66	-23.15	:	Fermat H
+4.12	-37.45	:	Fernelius B
+4.37	-38.94	:	Fernelius C
+6.16	-38.28	:	Fernelius D
+6.57	-38.4	:	Fernelius E
+64.96	6.44	:	Firmicus A
+63.61	8.08	:	Firmicus E
+61.76	6.53	:	Firmicus F
+61.9	6.93	:	Firmicus G
+60.2	7.44	:	Firmicus H
+-2.5	-1.95	:	Flammarion A
+-4.57	-4.04	:	Flammarion B
+-3.76	-2.02	:	Flammarion C
+-4.78	-3.03	:	Flammarion D
+-2.39	-2.13	:	Flammarion W
+-3.04	-2.87	:	Flammarion X
+-3.19	-3.73	:	Flammarion Y
+-1.47	-2.26	:	Flammarion Z
+-43.81	-5.93	:	Flamsteed B
+-46.33	-5.52	:	Flamsteed C
+-44.95	-3.19	:	Flamsteed D
+-46.1	-3.71	:	Flamsteed E
+-41.15	-4.73	:	Flamsteed F
+-51.77	-5.88	:	Flamsteed H
+-49.33	-6.67	:	Flamsteed J
+-43.73	-3.11	:	Flamsteed K
+-40.87	-3.46	:	Flamsteed L
+-40.68	-2.33	:	Flamsteed M
+-52.39	-3.47	:	Flamsteed S
+-50.31	-3.61	:	Flamsteed U
+-47.4	-2.3	:	Flamsteed X
+-47.85	-1.3	:	Flamsteed Z
+-98.58	-32.67	:	Focas U
+-56.46	-15.55	:	Fontana B
+-59.95	-16.21	:	Fontana F
+-58.07	-13.99	:	Fontana H
+-57.45	-13.26	:	Fontana K
+-57.71	-17.21	:	Fontana M
+-58.47	-17.25	:	Fontana W
+-58.43	-16.68	:	Fontana Y
+-18.37	59.57	:	Fontenelle G
+-20.15	64.1	:	Fontenelle H
+-15.77	69.66	:	Fontenelle K
+-16.62	66.54	:	Fontenelle L
+-28.86	63.15	:	Fontenelle M
+-29.75	64.06	:	Fontenelle N
+-17.26	64.2	:	Fontenelle P
+-18.77	64.32	:	Fontenelle R
+-26.85	65.32	:	Fontenelle S
+-25.88	66.38	:	Fontenelle T
+-27.81	60.57	:	Fontenelle X
+-52.74	-30.2	:	Fourier L
+-53.2	-30.37	:	Fourier M
+-56.58	-33.47	:	Fourier N
+-55.07	-31.12	:	Fourier P
+-51.38	-34.25	:	Fourier R
+-20.96	-5.47	:	Fra Mauro A
+-21.7	-4.03	:	Fra Mauro B
+-21.69	-5.45	:	Fra Mauro C
+-17.62	-4.82	:	Fra Mauro D
+-16.83	-6	:	Fra Mauro E
+-16.97	-6.73	:	Fra Mauro F
+-16.33	-2.21	:	Fra Mauro G
+-15.58	-4.15	:	Fra Mauro H
+-18.65	-2.62	:	Fra Mauro J
+-16.8	-2.54	:	Fra Mauro K
+-17.46	-5.35	:	Fra Mauro N
+-16.54	-5.44	:	Fra Mauro P
+-15.6	-2.27	:	Fra Mauro R
+-19.41	-2.06	:	Fra Mauro T
+-16.83	-1.33	:	Fra Mauro W
+-16.74	-4.11	:	Fra Mauro Y
+-14.66	-3.81	:	Fra Mauro Z
+33.21	-20.67	:	Fracastorius L
+32.92	-21.81	:	Fracastorius M
+33.96	-23.28	:	Fracastorius N
+33.34	-25.51	:	Fracastorius P
+33.23	-25.21	:	Fracastorius Q
+33.68	-23.88	:	Fracastorius R
+31.97	-19.03	:	Fracastorius S
+35.69	-22.7	:	Fracastorius W
+31.02	-23.06	:	Fracastorius X
+48.12	40.09	:	Franklin G
+43.74	37.12	:	Franklin H
+43.69	37.81	:	Franklin W
+68.88	-42.1	:	Fraunhofer L
+55.64	-37.89	:	Fraunhofer T
+60.57	-39.72	:	Fraunhofer X
+60.94	-33.57	:	Furnerius N
+63.46	-33.88	:	Furnerius X
+62.94	-33.49	:	Furnerius Z
+36.87	31.58	:	G. Bond A
+-61.94	13.91	:	Galilaei E
+-66.31	12.29	:	Galilaei F
+-68.81	11.55	:	Galilaei H
+-62.04	12.97	:	Galilaei J
+-62.79	12.93	:	Galilaei K
+-58.61	13.25	:	Galilaei L
+-56.93	13.28	:	Galilaei M
+-64.77	15.46	:	Galilaei S
+-61.47	16.16	:	Galilaei T
+-60.4	17.11	:	Galilaei V
+-60.61	17.83	:	Galilaei W
+22.27	53.99	:	Galle A
+17.54	55.56	:	Galle B
+-88.07	47.33	:	Galvani D
+-17.72	3.35	:	Gambart D
+-17.24	1.04	:	Gambart E
+-16.96	0.09	:	Gambart F
+-12.04	1.94	:	Gambart G
+-10.62	3.21	:	Gambart H
+-18.2	-0.7	:	Gambart J
+-14.22	3.91	:	Gambart K
+-15.28	3.27	:	Gambart L
+-11.72	5.38	:	Gambart M
+-14.94	-0.54	:	Gambart N
+-20.8	-0.7	:	Gambart R
+-13.24	-0.05	:	Gambart S
+98.99	-9.66	:	Ganskiy (Hansky) F
+31.09	59.5	:	Gartner C			; Gärtner C
+33.96	58.51	:	Gartner D			; Gärtner D
+43.82	61.58	:	Gartner E			; Gärtner E
+-43.63	-18.45	:	Gassendi E
+-45.02	-15.03	:	Gassendi F
+-44.67	-16.75	:	Gassendi G
+-37.1	-21.62	:	Gassendi J
+-43.74	-18.78	:	Gassendi K
+-41.79	-20.39	:	Gassendi L
+-39.15	-18.61	:	Gassendi M
+-39.32	-18.07	:	Gassendi N
+-40.75	-17.29	:	Gassendi P
+-37.85	-21.94	:	Gassendi R
+-35.44	-19.05	:	Gassendi T
+-43.73	-17.66	:	Gassendi W
+-38.51	-20.91	:	Gassendi Y
+37.8	-11.57	:	Gaudibert C
+36.34	-10.61	:	Gaudibert D
+39.16	-11.18	:	Gaudibert J
+-10.73	-35.26	:	Gauricus C
+-11.88	-32.58	:	Gauricus E
+-13.39	-38.24	:	Gauricus H
+-12	-32.34	:	Gauricus J
+-13.97	-33.35	:	Gauricus K
+-13.88	-34.06	:	Gauricus L
+-13.7	-34.42	:	Gauricus M
+-12.74	-32.44	:	Gauricus N
+-12.5	-35.09	:	Gauricus P
+-13.32	-34.87	:	Gauricus R
+-21.18	16.21	:	Gay-Lussac B
+-22.55	15.42	:	Gay-Lussac C
+-21.06	14.58	:	Gay-Lussac D
+-19.65	14.01	:	Gay-Lussac F
+-18.89	13.86	:	Gay-Lussac G
+-23.33	13.41	:	Gay-Lussac H
+-21.85	11.36	:	Gay-Lussac J
+-20.92	12.62	:	Gay-Lussac N
+11.84	-19.25	:	Geber D
+12.96	-20.55	:	Geber E
+13.15	-19.96	:	Geber F
+12.49	-18	:	Geber H
+15.85	-20.06	:	Geber J
+10.55	-17.64	:	Geber K
+159.03	-16.1	:	Geiger L
+47.43	34.27	:	Geminus W
+10.29	-35.85	:	Gemma Frisius F
+10.92	-37.5	:	Gemma Frisius K
+11.8	-34.82	:	Gemma Frisius L
+12.46	-34.34	:	Gemma Frisius M
+12.81	-32.56	:	Gemma Frisius O
+12.78	-31.81	:	Gemma Frisius P
+14.75	-35.83	:	Gemma Frisius Q
+15.29	-37.15	:	Gemma Frisius R
+15.03	-35.28	:	Gemma Frisius S
+16.41	-34.92	:	Gemma Frisius T
+16.76	-34.61	:	Gemma Frisius U
+9.61	-35.2	:	Gemma Frisius Z
+-79.97	46.11	:	Gerard D
+-80.99	44.52	:	Gerard E
+-82.28	43.78	:	Gerard F
+-88.47	46.82	:	Gerard J
+-77.28	43.95	:	Gerard K
+-76.48	43.22	:	Gerard L
+70.98	-64.08	:	Gill H
+49.92	13.64	:	Glaisher F
+49.45	13.74	:	Glaisher H
+48.77	13.41	:	Glaisher L
+48.56	13.12	:	Glaisher M
+47.58	13.09	:	Glaisher N
+139.88	-1.73	:	Glazenap F
+44.47	-9.22	:	Goclenius B
+9.66	2.67	:	Godin A
+8.38	1.54	:	Godin C
+8.24	0.97	:	Godin D
+12.37	1.66	:	Godin E
+10.97	1.93	:	Godin G
+-2.45	72.5	:	Goldschmidt A
+-6.78	70.61	:	Goldschmidt B
+-6.1	71.17	:	Goldschmidt C
+13.64	-31.92	:	Goodacre B
+14.13	-32.3	:	Goodacre C
+15.01	-33.42	:	Goodacre D
+15.49	-32.99	:	Goodacre E
+14.55	-32.02	:	Goodacre F
+16.06	-32.77	:	Goodacre H
+-17.05	-19.23	:	Gould A
+-18.5	-20.53	:	Gould B
+-16.65	-18.85	:	Gould P
+-14.97	-18.22	:	Gould U
+-16.92	-20.91	:	Gould X
+-15.88	-20.59	:	Gould Y
+-15.16	-19.56	:	Gould Z
+-61.59	-2.65	:	Grimaldi C
+-71.52	-4.88	:	Grimaldi H
+-66.71	-7.56	:	Grimaldi N
+-68.37	-7.96	:	Grimaldi P
+-71.36	-8.5	:	Grimaldi R
+-72.41	-5.88	:	Grimaldi X
+31.72	37.47	:	Grove Y
+-15.4	-65.9	:	Gruemberger C
+-14.68	-68.35	:	Gruemberger D
+-7.32	-63.82	:	Gruemberger E
+-6.43	-63.03	:	Gruemberger F
+-38.75	35.65	:	Gruithuisen B
+-44.39	37.39	:	Gruithuisen E
+-37.98	36.27	:	Gruithuisen F
+-44.01	36.59	:	Gruithuisen G
+-38.47	33.32	:	Gruithuisen H
+-42.73	35.39	:	Gruithuisen K
+-43.16	36.94	:	Gruithuisen M
+-40.57	37.17	:	Gruithuisen P
+-45.33	37.15	:	Gruithuisen R
+-45.68	37.47	:	Gruithuisen S
+-17.29	-11.15	:	Guericke A
+-14.62	-11.99	:	Guericke D
+-12.06	-10.02	:	Guericke E
+-15.02	-14.01	:	Guericke G
+-14.29	-12.45	:	Guericke H
+-13.43	-10.62	:	Guericke J
+-13.31	-15.15	:	Guericke K
+-12.47	-12.93	:	Guericke M
+-9.93	-12.55	:	Guericke N
+-14.7	-15.06	:	Guericke P
+42.61	-10.23	:	Gutenberg F
+39.06	-6.75	:	Gutenberg H
+40.82	-7.3	:	Gutenberg K
+0.99	-5.9	:	Gylden C			; Gyldén C
+0.6	-5.46	:	Gylden K			; Gyldén K
+2.8	25.48	:	Hadley C
+55.93	-61.7	:	Hagecius L
+53.33	-59.91	:	Hagecius P
+-24.67	-38.69	:	Haidinger A
+-23.16	-38.63	:	Haidinger F
+-26.23	-39.52	:	Haidinger N
+-25.67	-38.57	:	Haidinger P
+-33	-37.55	:	Hainzel G
+-37.68	-41.11	:	Hainzel S
+-36.89	-36.66	:	Hainzel X
+-35.43	-37.7	:	Hainzel Z
+35.88	34.71	:	Hall C
+36.9	35.47	:	Hall J
+34.26	35.57	:	Hall K
+37.83	35.7	:	Hall X
+36.94	36.34	:	Hall Y
+4.45	-8.48	:	Halley B
+6.63	-9.88	:	Halley C
+5.51	-9.16	:	Halley G
+5.82	-8.57	:	Halley K
+68.22	-52.3	:	Hanno F
+66.06	-55.39	:	Hanno Y
+-52.26	-12.76	:	Hansteen A
+-52.68	-12.73	:	Hansteen B
+-53.41	-13.9	:	Hansteen K
+-53.15	-13.55	:	Hansteen L
+-74.75	42.39	:	Harding C
+-67.64	42.85	:	Harding D
+-64.42	40.75	:	Harding H
+-43.77	56.24	:	Harpalus B
+-50.98	52.77	:	Harpalus E
+-53.34	53.8	:	Harpalus H
+-50.4	51.55	:	Harpalus S
+-49.57	50.12	:	Harpalus T
+-79.86	-5.76	:	Hartwig A
+66.28	62.84	:	Hayn M
+74.58	68.47	:	Hayn T
+-76.09	5.24	:	Hedin R
+-75.22	5.69	:	Hedin S
+-72.96	4.24	:	Hedin T
+-20.75	-38.82	:	Heinsius D
+-19.73	-40.55	:	Heinsius F
+-18.56	-37.51	:	Heinsius H
+-20.45	-39.32	:	Heinsius J
+-18.6	-38.58	:	Heinsius K
+-18.46	-41.25	:	Heinsius L
+-14.77	-37.35	:	Heinsius N
+-14.92	-38.84	:	Heinsius O
+-20.79	-40.22	:	Heinsius R
+-17	-39.66	:	Heinsius S
+-16.6	-39.76	:	Heinsius T
+-31.93	32.73	:	Heis A
+-31.11	31.66	:	Heis D
+-21.3	37.95	:	Helicon B
+-26.26	40.08	:	Helicon C
+-24.18	40.49	:	Helicon E
+-24.91	41.77	:	Helicon G
+-6.21	-34.63	:	Hell E
+-3.82	-31.73	:	Hell H
+-6.87	-29.7	:	Hell J
+-5.3	-34.09	:	Hell K
+-4.72	-30.65	:	Hell L
+-4.77	-30.35	:	Hell M
+-5	-30.06	:	Hell N
+-5.77	-32.54	:	Hell P
+-4.47	-33	:	Hell Q
+-6.56	-32.72	:	Hell R
+-6.27	-33.53	:	Hell S
+-7.04	-33.7	:	Hell T
+-9.2	-33.4	:	Hell U
+-8.83	-32.83	:	Hell V
+-8.67	-32.56	:	Hell W
+-9.2	-31.96	:	Hell X
+-57.2	-24.42	:	Henry A
+-56.44	-24.28	:	Henry B
+-59.21	-24.87	:	Henry D
+-60.13	-24.61	:	Henry Freres E			; Henry Frères E
+-58.1	-22.86	:	Henry Freres G			; Henry Frères G
+-56.83	-22.31	:	Henry Freres H			; Henry Frères H
+-57.9	-21.52	:	Henry Freres R			; Henry Frères R
+-56.48	-20.5	:	Henry Freres S			; Henry Frères S
+-55.61	-22.79	:	Henry J
+-55.7	-23.22	:	Henry K
+-57.55	-25.46	:	Henry L
+-58.46	-26.11	:	Henry N
+-58.97	-25.7	:	Henry P
+-34.27	40.91	:	Heraclides A
+-32.76	43.01	:	Heraclides E
+-33.72	38.56	:	Heraclides F
+4.54	-49.41	:	Heraclitus A
+6.22	-48.89	:	Heraclitus C
+6.55	-49.74	:	Heraclitus E
+36.7	47.87	:	Hercules B
+35.36	42.74	:	Hercules C
+39.73	44.79	:	Hercules D
+38.7	45.8	:	Hercules E
+41.04	51.33	:	Hercules H
+36.44	44.12	:	Hercules J
+36.96	44.26	:	Hercules K
+-35.65	-13.82	:	Herigonius E
+-35.04	-15.48	:	Herigonius F
+-32.46	-15.27	:	Herigonius G
+-33.22	-17.12	:	Herigonius H
+-36.46	-12.83	:	Herigonius K
+-58.27	0.4	:	Hermann A
+-57.25	-0.33	:	Hermann B
+-60.67	-0.16	:	Hermann C
+-54.13	-2.32	:	Hermann D
+-52.04	0.19	:	Hermann E
+-55.61	1.3	:	Hermann F
+-61.93	0.87	:	Hermann H
+-57.53	2.6	:	Hermann J
+-58.36	2.43	:	Hermann K
+-59.23	2.44	:	Hermann L
+-55.79	0.55	:	Hermann R
+-55.61	0.94	:	Hermann S
+-52.14	21.52	:	Herodotus A
+-55.47	22.57	:	Herodotus B
+-55.05	21.94	:	Herodotus C
+-50.33	24.68	:	Herodotus G
+-50.07	26.77	:	Herodotus H
+-51.97	24.51	:	Herodotus K
+-53.19	26.11	:	Herodotus L
+-50.12	23.64	:	Herodotus N
+-53.95	27.37	:	Herodotus R
+-53.43	27.68	:	Herodotus S
+-53.81	27.88	:	Herodotus T
+-3.18	-5.01	:	Herschel C
+-4.39	-5.79	:	Herschel F
+-3.45	-6.31	:	Herschel H
+-4.28	-6.42	:	Herschel J
+-2.72	-5.36	:	Herschel X
+-17.54	-27.16	:	Hesiodus B
+-16.43	-29.39	:	Hesiodus D
+-15.35	-27.91	:	Hesiodus E
+-19.51	-28.77	:	Hesiodus Z
+-60.91	3.05	:	Hevelius D
+-65.78	2.96	:	Hevelius E
+-70.08	1.58	:	Hevelius K
+-70.48	2.04	:	Hevelius L
+7.44	-8.71	:	Hind C
+-32.85	-23.82	:	Hippalus A
+-30.39	-25.23	:	Hippalus B
+-30.64	-24.14	:	Hippalus C
+1.73	-6.99	:	Hipparchus B
+2.1	-4.47	:	Hipparchus D
+2.23	-4.23	:	Hipparchus E
+2.47	-4.2	:	Hipparchus F
+2.28	-5.48	:	Hipparchus H
+4.98	-4.85	:	Hipparchus N
+2.7	-4.75	:	Hipparchus P
+2.87	-8.5	:	Hipparchus Q
+3.53	-7.15	:	Hipparchus T
+3.55	-6.77	:	Hipparchus U
+7.72	-5.08	:	Hipparchus W
+9.06	-8.56	:	Hipparchus Z
+64.17	-19.02	:	Holden T
+27.45	-59.89	:	Hommel M
+28.25	-58.7	:	Hommel O
+32.17	-60.89	:	Hommel X
+30.86	-60.48	:	Hommel Y
+30.51	-59.95	:	Hommel Z
+-36.02	56.96	:	Horrebow C
+-38.82	57.96	:	Horrebow D
+-41.84	59.82	:	Horrebow G
+7.62	-4.07	:	Horrocks M
+4.74	-3.19	:	Horrocks U
+-30.75	4.37	:	Hortensius A
+-29.5	5.26	:	Hortensius B
+-26.73	5.93	:	Hortensius C
+-32.38	5.4	:	Hortensius D
+-25.66	7.04	:	Hortensius F
+-26.17	8.13	:	Hortensius G
+-31.18	5.88	:	Hortensius H
+-2.27	-40.66	:	Huggins A
+-1.92	19.77	:	Huygens A
+5.66	6.32	:	Hyginus A
+5.07	7.61	:	Hyginus B
+8.31	7.69	:	Hyginus C
+4.33	11.4	:	Hyginus D
+8.52	8.75	:	Hyginus E
+8.61	7.99	:	Hyginus F
+5.93	10.97	:	Hyginus G
+7.01	5.94	:	Hyginus H
+21.32	-4.69	:	Hypatia B
+22.68	-3.15	:	Hypatia D
+20.42	-0.35	:	Hypatia E
+21.47	-4.14	:	Hypatia F
+22.96	-2.68	:	Hypatia G
+24.06	-4.48	:	Hypatia H
+21.25	-2.01	:	Hypatia R
+22.35	-50.78	:	Ideler B
+23.23	-51.34	:	Ideler C
+-67.5	-44.45	:	Inghirami W
+33.21	-8.06	:	Isidorus A
+31.65	-4.8	:	Isidorus C
+31.67	-6.42	:	Isidorus G
+32.63	-3.95	:	Isidorus H
+33.34	-8.92	:	Isidorus K
+31.54	-7.95	:	Isidorus U
+30.81	-8.88	:	Isidorus V
+32.37	-9.49	:	Isidorus W
+-39	60.01	:	J. Herschel B
+-38.17	60.47	:	J. Herschel D
+-39.47	62.96	:	J. Herschel K
+-40.22	61.01	:	J. Herschel L
+-33.11	57.35	:	J. Herschel M
+-33.04	60.15	:	J. Herschel N
+-33.01	63.61	:	J. Herschel P
+-30.7	62.59	:	J. Herschel R
+10.55	-58.65	:	Jacobi H
+10.84	-56.98	:	Jacobi K
+15.38	-55.45	:	Jacobi L
+12.16	-57.96	:	Jacobi M
+11.75	-56.56	:	Jacobi N
+14.03	-55.85	:	Jacobi Q
+13.76	-55.47	:	Jacobi R
+14.85	-57.6	:	Jacobi S
+15.22	-56.11	:	Jacobi T
+13.17	-55.1	:	Jacobi U
+10.85	-56.24	:	Jacobi W
+11.82	-59.13	:	Jacobi Z
+28.46	15.72	:	Jansen D
+27.83	14.47	:	Jansen E
+26.02	9.3	:	Jansen G
+28.39	11.34	:	Jansen H
+29.67	11.5	:	Jansen K
+30.09	14.69	:	Jansen L
+33.48	11.35	:	Jansen T
+32.29	11.95	:	Jansen U
+29.47	10.22	:	Jansen W
+28.56	13.4	:	Jansen Y
+34.91	-42.89	:	Janssen C
+41.71	-46.43	:	Janssen H
+32.12	-41.43	:	Janssen N
+39.76	-45.5	:	Janssen P
+39.36	-46.35	:	Janssen Q
+41.83	-50.42	:	Janssen S
+13.94	9.76	:	Julius Caesar B
+15.34	7.3	:	Julius Caesar C
+16.51	7.19	:	Julius Caesar D
+13.58	8.77	:	Julius Caesar H
+13.68	9.31	:	Julius Caesar J
+5.53	-36.64	:	Kaiser B
+7.37	-37.08	:	Kaiser D
+7.14	-34.94	:	Kaiser E
+7.16	-34.33	:	Kaiser R
+27.05	61.24	:	Kane A
+23.24	59.66	:	Kane F
+25.34	59.25	:	Kane G
+20.82	-9.16	:	Kant H
+19.71	-9.91	:	Kant N
+17.16	-12.03	:	Kant O
+17.38	-10.82	:	Kant P
+18.72	-13.05	:	Kant Q
+19.73	-11.56	:	Kant S
+20.1	-11.3	:	Kant T
+17.32	-10.38	:	Kant Z
+70.32	-14.44	:	Kapteyn F
+71.95	-13.08	:	Kapteyn K
+72.56	-11.21	:	Kapteyn Z
+-31.57	-27.49	:	Kelvin A
+-32.18	-27.67	:	Kelvin B
+-32.75	-27.58	:	Kelvin C
+-33.22	-27.92	:	Kelvin D
+-31.89	-26.72	:	Kelvin E
+-35.7	-26.84	:	Kelvin F
+-33.95	-26.23	:	Kelvin G
+-35.33	7.74	:	Kepler B
+-41.89	7.42	:	Kepler D
+-44.02	7.38	:	Kepler E
+-39.09	8.31	:	Kepler F
+-33.99	12.21	:	Kepler P
+-34.61	9	:	Kepler T
+-21.93	-28.77	:	Kies B
+-26.17	-26.07	:	Kies C
+-18.55	-24.93	:	Kies D
+-22.83	-28.76	:	Kies E
+19.18	-61.66	:	Kinau B
+20.13	-60.22	:	Kinau E
+13.41	-62.26	:	Kinau F
+19.73	-59.82	:	Kinau H
+16.08	-59.59	:	Kinau J
+18.11	-58.6	:	Kinau K
+18.73	-59.31	:	Kinau L
+15.4	-61.41	:	Kinau N
+17.36	-61.42	:	Kinau P
+-6.93	36.52	:	Kirch E
+-6.05	38.01	:	Kirch F
+-8.09	37.4	:	Kirch G
+-6.94	39.05	:	Kirch H
+-4	39.23	:	Kirch K
+-9.96	39.61	:	Kirch M
+-19.71	-69.22	:	Klaproth C
+-20.73	-70.35	:	Klaproth D
+2.98	-11.38	:	Klein A
+1.78	-12.52	:	Klein B
+2.54	-12.58	:	Klein C
+-24.09	-24.78	:	Konig A				; König A
+-86.35	-16.89	:	Kopff B
+-71.8	15.91	:	Krafft E
+-64.76	17.23	:	Krafft U
+-80.52	-30	:	Krasnov A
+-44.7	27.73	:	Krieger C
+5.8	-26.98	:	Krusenstern A
+-32.39	-0.22	:	Kunowsky C
+-28.84	1.53	:	Kunowsky D
+-30.8	1.69	:	Kunowsky G
+-29.99	1.12	:	Kunowsky H
+0.4	-22.87	:	La Caille A
+1.37	-20.96	:	La Caille B
+3.39	-23.6	:	La Caille F
+0.75	-24.79	:	La Caille H
+0.86	-22.54	:	La Caille J
+1.37	-24.69	:	La Caille L
+-30.87	53.51	:	La Condamine D
+-32.09	57.73	:	La Condamine E
+-31.09	57.39	:	La Condamine F
+-28.18	54.91	:	La Condamine G
+-26.69	53.17	:	La Condamine H
+-19.45	56.06	:	La Condamine J
+-25.64	51.92	:	La Condamine K
+-26.85	53.64	:	La Condamine L
+-26.72	54.24	:	La Condamine M
+-25.65	53.88	:	La Condamine N
+-25.65	55.18	:	La Condamine O
+-23.62	52.93	:	La Condamine P
+-24	52.69	:	La Condamine Q
+-21.33	55.03	:	La Condamine R
+-25.21	57.35	:	La Condamine S
+-29.76	59.3	:	La Condamine T
+-22.72	54.54	:	La Condamine U
+-24.14	54.52	:	La Condamine V
+-21.51	57.22	:	La Condamine X
+-23.46	28.53	:	La Hire A
+-23.03	27.69	:	La Hire B
+74.7	-9.27	:	La Perouse A			; La Pérouse A
+76.57	-11.17	:	La Perouse D			; La Pérouse D
+-60.56	-37.06	:	Lacroix B
+-58.41	-35.67	:	Lacroix L
+-53.85	-35.22	:	Lacroix P
+9.48	-0.13	:	Lade U
+9.03	-0.21	:	Lade V
+8.63	0.25	:	Lade W
+11.04	-1.72	:	Lade X
+-27.11	-44.43	:	Lagalla H
+-25.8	-46.68	:	Lagalla M
+-26.64	-47.39	:	Lagalla T
+-24.3	-46.92	:	Lagalla V
+-69.3	-32.51	:	Lagrange A
+-68.98	-34.04	:	Lagrange J
+-69.31	-28.72	:	Lagrange X
+-9.02	-3.13	:	Lalande B
+-6.91	-5.6	:	Lalande C
+-7.48	-6.2	:	Lalande D
+-10.77	-3.51	:	Lalande E
+-10.08	-2.65	:	Lalande F
+-7.96	-6.2	:	Lalande G
+-5.74	-5.58	:	Lalande N
+-7.56	-5.18	:	Lalande T
+-8.16	-3.17	:	Lalande U
+-69.8	-22.85	:	Lamarck B
+-75.81	-26.8	:	Lamarck E
+-74.42	-26.76	:	Lamarck F
+-21.49	26.46	:	Lambert A
+-20.13	24.34	:	Lambert B
+-20.29	28.47	:	Lambert T
+-22.66	24.49	:	Lambert W
+64.14	-13.35	:	Lame K				; Lamé K
+68.68	-14.41	:	Lame L				; Lamé L
+67.13	-12.89	:	Lame N				; Lamé N
+65.9	-13.09	:	Lame W				; Lamé W
+63.75	-7.76	:	Langrenus R
+64.79	-6.72	:	Langrenus S
+57.15	-12.65	:	Langrenus U
+55.94	-13.23	:	Langrenus V
+-31.15	0.18	:	Lansberg A
+-28.14	-2.49	:	Lansberg B
+-30.35	-1.84	:	Lansberg E
+-30.78	-2.19	:	Lansberg F
+-29.48	-0.64	:	Lansberg G
+-26.41	-3.56	:	Lansberg L
+-26.44	-1.91	:	Lansberg N
+-23.03	-2.36	:	Lansberg P
+-27.87	1.2	:	Lansberg X
+-28.19	0.7	:	Lansberg Y
+-26.93	43.74	:	Laplace A
+-19.86	51.35	:	Laplace B
+-20.3	50.33	:	Laplace E
+-19.86	45.55	:	Laplace F
+-21.06	51.74	:	Laplace L
+-19.93	52.22	:	Laplace M
+-6.88	-16.77	:	Lassell A
+-7.69	-16.22	:	Lassell B
+-9.36	-14.68	:	Lassell C
+-10.48	-14.59	:	Lassell D
+-10.22	-18.24	:	Lassell E
+-12.49	-17.15	:	Lassell F
+-8.99	-14.82	:	Lassell G
+-11.27	-14.54	:	Lassell H
+-10.47	-14.78	:	Lassell J
+-8.95	-15.08	:	Lassell K
+-8.8	-14.21	:	Lassell M
+-8.57	-18.29	:	Lassell S
+-8.83	-17.07	:	Lassell T
+-74.43	39.74	:	Lavoisier K
+-74.98	39.74	:	Lavoisier L
+29.62	24.97	:	Le Monnier H
+30.26	27.75	:	Le Monnier K
+-17.32	38.17	:	Le Verrier A
+-12.88	40.19	:	Le Verrier B
+-12.35	39.74	:	Le Verrier D
+-17.01	42.42	:	Le Verrier E
+-20.67	38.96	:	Le Verrier S
+-20.74	39.87	:	Le Verrier T
+-13.18	37.26	:	Le Verrier U
+-14.29	37.83	:	Le Verrier V
+-13.98	39.39	:	Le Verrier W
+-12.16	41.6	:	Le Verrier X
+-38.85	-30.85	:	Lee H
+-42.96	-30.83	:	Lee S
+-42.1	-30.05	:	Lee T
+78.17	-32.44	:	Legendre H
+71.61	-28.17	:	Legendre M
+70.5	-27.47	:	Legendre N
+69.28	-27.31	:	Legendre P
+-50.53	-36.44	:	Lehmann K
+-52.04	-36.42	:	Lehmann L
+-34.88	-37.34	:	Lepaute F
+-35.32	-34.44	:	Lepaute L
+-39.1	-12.15	:	Letronne A
+-41.3	-11.27	:	Letronne B
+-38.49	-10.71	:	Letronne C
+-46.13	-9.23	:	Letronne F
+-46.17	-12.67	:	Letronne H
+-43.69	-14.37	:	Letronne K
+-44.29	-14.32	:	Letronne L
+-44.24	-11.96	:	Letronne M
+-39.83	-12.33	:	Letronne N
+-42.77	-12.48	:	Letronne T
+-5.38	-36.56	:	Lexell F
+-4.94	-37.3	:	Lexell G
+-4.88	-36.58	:	Lexell H
+-6.12	-36.04	:	Lexell L
+3.2	-47.85	:	Licetus A
+4.4	-47.99	:	Licetus D
+-0.01	-45.59	:	Licetus K
+1.05	-47.3	:	Licetus L
+1.85	-46.84	:	Licetus M
+2.21	-45.57	:	Licetus N
+9.68	-47.25	:	Licetus Q
+3.84	-45.29	:	Licetus R
+6.61	-45.89	:	Licetus T
+7.44	-47.03	:	Licetus U
+8.5	-45.99	:	Licetus W
+-60.11	28.97	:	Lichtenberg A
+-61.52	33.25	:	Lichtenberg B
+-65.45	33.19	:	Lichtenberg F
+-58.9	31.52	:	Lichtenberg H
+51.92	11.48	:	Lick C
+50.65	10.62	:	Lick E
+50.92	10.07	:	Lick G
+52.79	10.17	:	Lick K
+49.1	8.72	:	Lick L
+-47.15	-25.01	:	Liebig B
+-45.78	-24.67	:	Liebig F
+-45.13	-24.83	:	Liebig J
+0.66	-50.14	:	Lilius G
+0.75	-50.55	:	Lilius H
+2.4	-54.94	:	Lilius L
+2.81	-56.29	:	Lilius M
+2.7	-49.05	:	Lilius N
+3.54	-55.5	:	Lilius O
+3.77	-55.97	:	Lilius P
+4.31	-54.7	:	Lilius R
+7.4	-55.94	:	Lilius T
+7.58	-53.6	:	Lilius U
+8.33	-53.81	:	Lilius W
+9.84	-53.63	:	Lilius X
+24.93	-30.44	:	Lindenau D
+26.49	-31.68	:	Lindenau E
+26.36	-32.5	:	Lindenau F
+27.3	-33.28	:	Lindenau G
+14.37	28.98	:	Linne A				; Linné A
+14.17	30.54	:	Linne B				; Linné B
+17.11	28.73	:	Linne D				; Linné D
+13.95	32.34	:	Linne F				; Linné F
+13.3	35.9	:	Linne G				; Linné G
+13.77	33.77	:	Linne H				; Linné H
+-11.45	-26.72	:	Lippershey K
+-11.78	-25.77	:	Lippershey L
+-10.9	-24.28	:	Lippershey M
+-9.57	-24.53	:	Lippershey N
+-8.38	-26.37	:	Lippershey P
+-10.18	-26.71	:	Lippershey R
+-11.13	-25.3	:	Lippershey T
+32.81	23.7	:	Littrow D
+30.99	-44.12	:	Lockyer A
+-32.54	-22.32	:	Loewy A
+-32.98	-23.21	:	Loewy B
+-32.08	-23.07	:	Loewy G
+-31.99	-22.78	:	Loewy H
+-67.59	-1.76	:	Lohrmann E
+-69	-0.48	:	Lohrmann M
+-70.19	-0.6	:	Lohrmann N
+-18.11	-51.35	:	Longomontanus E
+-23.32	-52.02	:	Longomontanus H
+-23.29	-48.61	:	Longomontanus M
+-25.31	-48.13	:	Longomontanus P
+-20.6	-52.06	:	Longomontanus Q
+-26.32	-52.45	:	Longomontanus R
+-22.75	-46.8	:	Longomontanus T
+-22.09	-51.98	:	Longomontanus U
+-19	-50.8	:	Longomontanus V
+-21.36	-47.13	:	Longomontanus W
+-17.77	-52.97	:	Longomontanus X
+-28.38	-52.41	:	Longomontanus Y
+-45.34	43.28	:	Louville A
+-46.52	44.06	:	Louville B
+-52.14	46.85	:	Louville D
+-45.95	43.18	:	Louville E
+-55.22	46.78	:	Louville K
+-52.21	45.6	:	Louville P
+39.88	-4.89	:	Lubbock C
+41.79	-2.67	:	Lubbock H
+38.35	-5.15	:	Lubbock K
+39.29	-4.99	:	Lubbock L
+39.53	-2.93	:	Lubbock P
+-23.49	-16.52	:	Lubiniezky D
+-21.86	-18.34	:	Lubiniezky F
+-20.28	-15.36	:	Lubiniezky G
+-21.21	-17.01	:	Lubiniezky H
+22.8	36.05	:	Luther H
+23.33	37.49	:	Luther K
+24.36	36.19	:	Luther X
+24.41	38.14	:	Luther Y
+39.6	14.32	:	Lyell A
+38.46	14.36	:	Lyell B
+39.39	15.14	:	Lyell C
+40.86	15.28	:	Lyell K
+78.83	-46.88	:	Lyot T
+18	11.3	:	Maclear A
+46.81	18.71	:	Macrobius E
+40.84	22.8	:	Macrobius N
+47.63	20.4	:	Macrobius Q
+42.78	24.94	:	Macrobius U
+43.27	25.39	:	Macrobius V
+42.17	22.92	:	Macrobius X
+42.15	23.58	:	Macrobius Y
+42.54	24.32	:	Macrobius Z
+29.79	-9.53	:	Madler A				; Mädler A
+31.17	-12.68	:	Madler D				; Mädler D
+-42.2	1.98	:	Maestlin G
+-43.57	4.64	:	Maestlin H
+-2.87	-50	:	Maginus J
+-9.38	-50.4	:	Maginus M
+-2.33	-50.85	:	Maginus Q
+-10.55	-48.83	:	Maginus R
+-7.1	-52.39	:	Maginus T
+-8.21	-47.38	:	Maginus U
+-7.41	-49.41	:	Maginus V
+-7.94	-49.42	:	Maginus W
+-7.76	-51.39	:	Maginus X
+-9.18	-51.96	:	Maginus Y
+-46.1	38.64	:	Mairan C
+-37.24	37.81	:	Mairan E
+-45.17	40.31	:	Mairan F
+-50.83	40.9	:	Mairan G
+-40.06	39.31	:	Mairan H
+-41.1	40.83	:	Mairan K
+-43.22	39.07	:	Mairan L
+-45.59	39.19	:	Mairan N
+-48.39	41.79	:	Mairan T
+-44.14	42.8	:	Mairan Y
+54.33	-45.07	:	Mallet E
+7.28	16.61	:	Manilius B
+10.34	12.07	:	Manilius C
+6.99	13.24	:	Manilius D
+9.76	15.47	:	Manilius G
+8.63	17.8	:	Manilius H
+11.18	11.96	:	Manilius K
+10.62	13.35	:	Manilius T
+10.81	13.74	:	Manilius U
+12.9	13.41	:	Manilius W
+13.35	14.43	:	Manilius X
+11.69	16.4	:	Manilius Z
+19.11	4.64	:	Manners A
+22.7	-63.54	:	Manzinus M
+27.47	-69.98	:	Manzinus N
+25.06	-65	:	Manzinus O
+29.33	-67.93	:	Manzinus P
+36.3	20.02	:	Maraldi A
+36.88	18.37	:	Maraldi N
+33.19	20.32	:	Maraldi R
+36.09	13.17	:	Maraldi W
+-1.96	14.9	:	Marco Polo A
+-1.88	17.18	:	Marco Polo B
+-5.01	14.03	:	Marco Polo C
+-3.79	14.93	:	Marco Polo D
+-4.53	15.73	:	Marco Polo F
+-1.93	16.72	:	Marco Polo G
+-1.69	17.81	:	Marco Polo H
+-1.27	17.9	:	Marco Polo J
+-1.5	18.13	:	Marco Polo K
+-1.02	13.63	:	Marco Polo T
+146.91	-8.34	:	Marconi C
+70.97	-39.62	:	Marinus J
+-45.07	11.4	:	Marius D
+-52.73	12.13	:	Marius E
+-45.3	12.11	:	Marius F
+-50.6	12.09	:	Marius G
+-50.39	11.32	:	Marius H
+-46.91	10.45	:	Marius J
+-50.7	9.4	:	Marius K
+-55.7	15.88	:	Marius L
+-55.01	17.38	:	Marius M
+-54.74	18.72	:	Marius N
+-51.34	17.9	:	Marius P
+-56.28	16.5	:	Marius Q
+-50.31	13.64	:	Marius R
+-47.13	13.81	:	Marius S
+-47.7	9.56	:	Marius U
+-48.31	9.87	:	Marius V
+-49.73	9.4	:	Marius W
+-54.99	9.73	:	Marius X
+-50.77	9.78	:	Marius Y
+-62.04	50.1	:	Markov F
+-56.25	49.99	:	Markov G
+-28.77	-29.96	:	Marth K
+28.96	1.97	:	Maskelyne B
+32.67	1.07	:	Maskelyne C
+26.7	2.3	:	Maskelyne G
+32.63	3.14	:	Maskelyne J
+29.69	3.23	:	Maskelyne K
+27.88	7.8	:	Maskelyne M
+30.36	5.35	:	Maskelyne N
+34.14	0.47	:	Maskelyne P
+36.59	-0.04	:	Maskelyne T
+29.21	0.8	:	Maskelyne W
+27.39	1.27	:	Maskelyne X
+28.16	1.73	:	Maskelyne Y
+30.13	42.92	:	Mason A
+29.66	41.84	:	Mason B
+-26.8	51.37	:	Maupertuis B
+-25.1	49.33	:	Maupertuis K
+-29.24	51.34	:	Maupertuis L
+10.76	-38.71	:	Maurolycus C
+9.71	-38.43	:	Maurolycus E
+11.51	-44.51	:	Maurolycus G
+10.39	-38.3	:	Maurolycus H
+13.94	-42.57	:	Maurolycus J
+12.66	-39.99	:	Maurolycus K
+14.44	-42.11	:	Maurolycus L
+14.02	-41.08	:	Maurolycus N
+12.69	-38.13	:	Maurolycus P
+16.22	-40.91	:	Maurolycus R
+17.01	-42.08	:	Maurolycus S
+11.42	-41.34	:	Maurolycus T
+15.15	-42.86	:	Maurolycus W
+42.05	35.11	:	Maury B
+37.78	38.27	:	Maury D
+40.09	39.04	:	Maury J
+41.07	39.47	:	Maury K
+42.5	40.29	:	Maury L
+42.55	40.86	:	Maury M
+43.29	39.97	:	Maury T
+37.07	39.31	:	Maury U
+48.95	-15.6	:	McClure A
+49.33	-15.49	:	McClure B
+52.71	-14.19	:	McClure N
+53.36	-13.73	:	McClure S
+-33.02	-45.4	:	Mee D
+-41.62	-44.45	:	Mee K
+-41.55	-44	:	Mee L
+-29.25	-45.91	:	Mee M
+-42.26	-45.26	:	Mee N
+-33.81	-43.61	:	Mee Q
+-43.44	-44.08	:	Mee R
+-38.31	-42.56	:	Mee T
+-34.02	-42.96	:	Mee U
+-42.56	-45.53	:	Mee V
+-35.69	-43.64	:	Mee W
+-36.04	-41.55	:	Mee X
+-36.93	-44.46	:	Mee Y
+13.39	17.07	:	Menelaus A
+14.48	14.81	:	Menelaus C
+16.31	13.23	:	Menelaus D
+15.89	13.58	:	Menelaus E
+-27.83	-30.64	:	Mercator A
+-25.2	-29.16	:	Mercator B
+-27.04	-29.15	:	Mercator C
+-25.37	-29.33	:	Mercator D
+-26.85	-30.1	:	Mercator E
+-26.88	-29.67	:	Mercator F
+-22.78	-30.63	:	Mercator K
+-23.55	-30.77	:	Mercator L
+-23.7	-30.21	:	Mercator M
+-46.13	-22.51	:	Mersenius E
+-52.92	-20.99	:	Mersenius J
+-50.94	-21.25	:	Mersenius K
+-48.41	-19.94	:	Mersenius L
+-48.56	-21.34	:	Mersenius M
+-49.41	-22.13	:	Mersenius N
+-47.68	-19.4	:	Mersenius R
+-50.12	-23.01	:	Mersenius U
+-50.67	-22.93	:	Mersenius V
+-50.96	-23.05	:	Mersenius W
+-48.01	-22.45	:	Mersenius X
+-48.31	-22.68	:	Mersenius Y
+-50.75	-21.04	:	Mersenius Z
+48.06	-0.9	:	Messier B
+46.32	-3.59	:	Messier D
+45.43	-3.35	:	Messier E
+52.16	-1.6	:	Messier J
+51.87	-1.26	:	Messier L
+42.84	-39.8	:	Metius E
+42.74	-39.12	:	Metius F
+45.25	-40.37	:	Metius G
+18.17	71.39	:	Meton B
+28.12	72.76	:	Meton G
+17.49	67.46	:	Meton W
+-32.07	9.25	:	Milichius A
+-29.44	11.2	:	Milichius C
+-28.27	7.97	:	Milichius D
+-28.15	10.62	:	Milichius E
+-30.4	8.49	:	Milichius K
+2.99	-38.03	:	Miller D
+2.75	-38.93	:	Miller E
+0.83	-39.92	:	Miller K
+19.44	48.53	:	Mitchell B
+21.73	47.7	:	Mitchell E
+29.06	65.98	:	Moigno C
+23.17	-1.05	:	Moltke A
+25.19	-1.05	:	Moltke B
+-18.1	-44.82	:	Montanari W
+-18.28	48.52	:	Montes Recti B
+128.8	5.57	:	Morozov C
+-7.39	-2.73	:	Mosting B			; Mösting B
+-8.11	-1.81	:	Mosting C			; Mösting C
+-5.12	-0.37	:	Mosting D			; Mösting D
+-7.37	-0.77	:	Mosting K			; Mösting K
+-3.43	-0.69	:	Mosting L			; Mösting L
+-23.05	78.35	:	Mouchez B
+2.13	-8.14	:	Muller A			; Müller A
+1.48	-7.86	:	Muller F			; Müller F
+2.41	-7.89	:	Muller O			; Müller O
+0.08	4.44	:	Murchison T
+23.29	-62.81	:	Mutus J
+21.51	-57.89	:	Mutus K
+30.37	-62.3	:	Mutus Q
+-1.16	-39.47	:	Nasireddin B
+-57.79	-49.92	:	Nasmyth E
+-53.96	-49.64	:	Nasmyth G
+-60.73	33.57	:	Naumann G
+40.09	-28.26	:	Neander B
+37.66	-34.85	:	Neander M
+41.07	-28.45	:	Neander P
+41.46	-28.91	:	Neander Q
+38.41	-29.95	:	Neander T
+38.08	-31.26	:	Neander V
+38.36	-32.31	:	Neander W
+37.76	-33.05	:	Neander X
+38.17	-34.6	:	Neander Y
+41.96	-33.84	:	Neander Z
+38.09	-57.17	:	Nearch D
+38.12	-63.1	:	Nearch F
+39.96	-63.46	:	Nearch G
+40.58	-57.73	:	Nearch H
+37.55	-57.41	:	Nearch J
+35.15	-58.61	:	Nearch M
+26.71	67.36	:	Neison A
+25.81	67.32	:	Neison B
+23.03	66.94	:	Neison C
+22.48	67.9	:	Neison D
+-15.14	-73.06	:	Newton F
+25.58	-41.78	:	Nicolai D
+22.04	-40.65	:	Nicolai J
+25.87	-41.56	:	Nicolai R
+-13.57	-20.15	:	Nicollet B
+-12.27	-23.26	:	Nicollet D
+-43.52	-47.91	:	Noggerath A			; Nöggerath A
+-43.56	-47.02	:	Noggerath B			; Nöggerath A
+-43.9	-45.22	:	Noggerath E			; Nöggerath E
+-46.96	-48.07	:	Noggerath F			; Nöggerath F
+-46.39	-44.97	:	Noggerath K			; Nöggerath K
+-47.3	-45.2	:	Noggerath L			; Nöggerath L
+-41.94	-47.69	:	Noggerath P			; Nöggerath P
+-46.28	-44.45	:	Noggerath S			; Nöggerath S
+1.11	-35.49	:	Nonius C
+1.67	-35.57	:	Nonius D
+3.74	-35.93	:	Nonius F
+5.67	-34.76	:	Nonius G
+4.22	-35.93	:	Nonius Q
+3.3	-35.94	:	Nonius R
+4.21	-34.82	:	Nonius S
+-61.19	55.83	:	Oenopides K
+-61.85	55.55	:	Oenopides L
+-61.02	55.48	:	Oenopides M
+-70.15	58.19	:	Oenopides S
+-68.81	57.25	:	Oenopides T
+-63.16	57.64	:	Oenopides X
+-63.48	57.02	:	Oenopides Y
+-67.1	58.96	:	Oenopides Z
+47.18	43.35	:	Oersted A
+44.72	42.41	:	Oersted U
+78.14	-42.79	:	Oken L
+75.48	-41.8	:	Oken M
+-74.67	8.4	:	Olbers G
+-74.55	8.69	:	Olbers H
+-73.12	9.13	:	Olbers V
+-17.91	-17.04	:	Opelt E
+-18.8	-18.09	:	Opelt F
+-17.29	-16.85	:	Opelt G
+-17.34	-15.82	:	Opelt H
+-17.09	-13.62	:	Opelt K
+-0.35	-0.49	:	Oppolzer A
+-0.38	-1.72	:	Oppolzer K
+-2.6	-39.12	:	Orontius A
+-3.16	-39.96	:	Orontius B
+-4.82	-39.59	:	Orontius E
+-6.74	-9.06	:	Palisa A
+-6.47	-7.73	:	Palisa C
+-6.91	-8.68	:	Palisa D
+-7.37	-9.68	:	Palisa P
+-6.33	-9.09	:	Palisa W
+-2.64	4.2	:	Pallas B
+-1.12	4.49	:	Pallas C
+-2.63	2.37	:	Pallas D
+-1.59	4.64	:	Pallas H
+0.49	7.02	:	Pallas N
+-1.59	1.67	:	Pallas V
+-1.26	3.6	:	Pallas W
+-3.23	5.14	:	Pallas X
+-48.32	-30.84	:	Palmieri B
+-47.8	-32.58	:	Palmieri G
+166.34	-25.82	:	Paracelsus H
+162.13	-25.32	:	Paracelsus N
+2.41	-13.64	:	Parrot B
+0.91	-18.05	:	Parrot L
+1.93	-18	:	Parrot M
+0.43	-13.79	:	Parrot N
+2.54	-16.96	:	Parrot O
+2.92	-18.74	:	Parrot P
+1.06	-15.12	:	Parrot Q
+3.55	-15.94	:	Parrot S
+4.14	-15.92	:	Parrot T
+4.44	-14.02	:	Parrot U
+1.47	-13.19	:	Parrot W
+1.86	-14.53	:	Parrot X
+0.69	-13.94	:	Parrot Y
+-13.06	-8.93	:	Parry B
+-12.74	-6.86	:	Parry C
+-15.73	-7.93	:	Parry D
+-16.35	-8.4	:	Parry E
+-14.76	-7.66	:	Parry F
+-14.7	-6.32	:	Parry L
+73.11	-45.4	:	Peirescius H
+14.63	-64.52	:	Pentland J
+17.06	-64.55	:	Pentland M
+14.35	-67.85	:	Pentland P
+61.64	-26.15	:	Petavius A
+62.04	75.29	:	Petermann S
+76.1	75.02	:	Petermann X
+-89.07	-24.88	:	Pettit C
+71.16	-26.51	:	Phillips C
+68.72	-24.55	:	Phillips G
+71.31	-25.25	:	Phillips H
+-18.36	68.11	:	Philolaus F
+-51.88	-53.79	:	Phocylides B
+-51.78	-53.2	:	Phocylides D
+-62.55	-56.83	:	Phocylides L
+-60.87	-56.54	:	Phocylides V
+-50.77	-50.52	:	Phocylides X
+-50.92	-50.07	:	Phocylides Z
+-66.38	-37.5	:	Piazzi B
+-64.79	-40.23	:	Piazzi G
+-65.76	-40.19	:	Piazzi H
+-68.15	-37.41	:	Piazzi K
+-67.56	-35.88	:	Piazzi M
+-3.37	40.53	:	Piazzi Smyth B
+-4.24	45.08	:	Piazzi Smyth M
+-2.77	40.88	:	Piazzi Smyth U
+-4.78	40.92	:	Piazzi Smyth V
+-1.86	42.25	:	Piazzi Smyth W
+-3.45	42.85	:	Piazzi Smyth Y
+-4.59	42.15	:	Piazzi Smyth Z
+54.56	9.73	:	Picard K
+54.31	10.32	:	Picard L
+53.95	10.21	:	Picard M
+53.62	8.82	:	Picard P
+60.27	13.18	:	Picard Y
+27.68	-27.92	:	Piccolomini H
+29.71	-25.72	:	Piccolomini K
+26.26	-27.37	:	Piccolomini N
+29.07	-28.54	:	Piccolomini T
+29.17	-26.8	:	Piccolomini W
+31.5	-27.03	:	Piccolomini X
+7.05	-1.58	:	Pickering A
+7.39	-2.11	:	Pickering B
+6.15	-1.54	:	Pickering C
+-6.66	47.25	:	Pico C
+-11.3	43.46	:	Pico D
+-10.31	43.02	:	Pico E
+-10.21	42.25	:	Pico F
+-10.43	46.63	:	Pico G
+-7.55	44.68	:	Pico K
+-7.8	-42.74	:	Pictet C
+-8.22	-41.59	:	Pictet N
+-71.04	-56.46	:	Pingre W			; Pingré W
+-79.15	-58.79	:	Pingre X			; Pingré X
+-13.23	-31.46	:	Pitatus A
+-12	-30.9	:	Pitatus D
+-10.19	-28.93	:	Pitatus E
+-13.58	-26.53	:	Pitatus J
+-8.95	-30.42	:	Pitatus K
+-8.68	-29.1	:	Pitatus L
+-14.73	-31.21	:	Pitatus R
+-11.22	-29.41	:	Pitatus T
+-11.71	-29.02	:	Pitatus V
+26.44	-48.25	:	Pitiscus J
+33.59	-51.27	:	Pitiscus L
+27.93	-47.09	:	Pitiscus T
+33.28	-49.05	:	Pitiscus U
+34.31	-49.41	:	Pitiscus V
+-0.95	39.83	:	Piton A
+-0.16	39.35	:	Piton B
+121.68	-33.27	:	Pizzetti C
+26.18	41.76	:	Plana D
+23.59	40.55	:	Plana E
+24	39.83	:	Plana F
+22.94	39.06	:	Plana G
+-19.46	53.37	:	Plato C
+-14.57	49.69	:	Plato D
+-16.19	49.77	:	Plato E
+-17.4	51.72	:	Plato F
+-6.28	52.14	:	Plato G
+-4.58	49.05	:	Plato J
+-3.26	46.83	:	Plato K
+-3.58	46.79	:	Plato KA
+-15.5	53.11	:	Plato M
+-15.43	52.31	:	Plato O
+-15.21	51.53	:	Plato P
+-4.85	54.61	:	Plato Q
+-18.46	53.78	:	Plato R
+-15.02	53.86	:	Plato S
+-11.27	54.58	:	Plato T
+-7.39	49.61	:	Plato U
+-7.37	55.86	:	Plato V
+-17.81	57.24	:	Plato W
+-13.82	50.2	:	Plato X
+-16.31	53.18	:	Plato Y
+7.59	-23.23	:	Playfair B
+7.92	-24.35	:	Playfair C
+8.71	-24.27	:	Playfair D
+8.89	-21.81	:	Playfair E
+8.09	-21.91	:	Playfair F
+8.49	-23.4	:	Playfair H
+9.28	-24.27	:	Playfair J
+9.79	-23.29	:	Playfair K
+24.17	12.99	:	Plinius A
+26.27	14.09	:	Plinius B
+71.64	25.88	:	Plutarch L
+7.62	-33.96	:	Poisson M
+8.4	-30.75	:	Poisson N
+9.12	-35.05	:	Poisson O
+8.83	-31.93	:	Poisson P
+8.41	-30.05	:	Poisson R
+11.43	-30.01	:	Poisson S
+11.98	-29.64	:	Poisson W
+12.25	-29.05	:	Poisson X
+10.75	-29.79	:	Poisson Z
+27.9	-26.89	:	Polybius D
+26.18	-24.44	:	Polybius E
+22.7	-22.53	:	Polybius G
+22.69	-21.2	:	Polybius H
+23.48	-22.8	:	Polybius J
+28.19	-22.01	:	Polybius L
+22.08	-21.4	:	Polybius M
+27.5	-25.13	:	Polybius Q
+27.31	-25.63	:	Polybius R
+29.04	-25.22	:	Polybius V
+-55.7	75.82	:	Poncelet H
+-58.09	79.33	:	Poncelet R
+21.33	-28.37	:	Pons G
+22.25	-26.99	:	Pons H
+22.05	-24.87	:	Pons J
+22.73	-27.37	:	Pons K
+20.87	-27.52	:	Pons L
+22.92	-25.95	:	Pons N
+23.05	-24.94	:	Pons P
+15.24	-31.15	:	Pontanus A
+13.11	-30.09	:	Pontanus J
+12.65	-25.76	:	Pontanus K
+13.41	-28.64	:	Pontanus L
+14.09	-29.65	:	Pontanus M
+13.83	-24.69	:	Pontanus N
+14.69	-29.94	:	Pontanus P
+14.4	-27.41	:	Pontanus Q
+15.61	-28.2	:	Pontanus R
+16.77	-31.51	:	Pontanus S
+16.53	-29.24	:	Pontanus T
+17.47	-29.48	:	Pontanus U
+17.55	-29.13	:	Pontanus W
+12.81	-27.88	:	Pontanus Z
+66.17	-58.78	:	Pontecoulant H			; Pontécoulant H
+29.69	31.13	:	Posidonius C
+19.7	30.55	:	Posidonius E
+27.13	32.82	:	Posidonius F
+27.23	34.79	:	Posidonius G
+30.01	34.36	:	Posidonius M
+21.04	29.7	:	Posidonius N
+20.13	31.65	:	Posidonius W
+24.91	30.03	:	Posidonius Y
+22.95	30.75	:	Posidonius Z
+43.58	12.94	:	Proclus C
+43.99	17.05	:	Proclus J
+45.19	16.43	:	Proclus M
+46.21	17.47	:	Proclus W
+45.13	17.69	:	Proclus X
+44.9	17.42	:	Proclus Y
+44.75	17.94	:	Proclus Z
+-6.79	-47.05	:	Proctor A
+-6.73	-46.54	:	Proctor B
+-6.65	-47.61	:	Proctor C
+-5.16	-45.42	:	Proctor E
+-5.34	-47.83	:	Proctor F
+-4.9	-47.77	:	Proctor G
+-2.64	-45.75	:	Proctor H
+5.67	56.43	:	Protagoras B
+0.54	49.53	:	Protagoras E
+-3.28	-10.11	:	Ptolemaeus C
+-2.6	-8.29	:	Ptolemaeus D
+0.02	-7.15	:	Ptolemaeus G
+-5.45	-7.13	:	Ptolemaeus H
+-5.4	-9.66	:	Ptolemaeus J
+-4.68	-8.23	:	Ptolemaeus K
+-4.01	-8.85	:	Ptolemaeus L
+-3.42	-9.39	:	Ptolemaeus M
+-3.6	-7.24	:	Ptolemaeus O
+-3.17	-11.4	:	Ptolemaeus P
+-1.17	-6.67	:	Ptolemaeus R
+-0.53	-10.55	:	Ptolemaeus S
+-0.01	-7.49	:	Ptolemaeus T
+1.33	-9.16	:	Ptolemaeus W
+0.29	-11.02	:	Ptolemaeus X
+0.7	-9.37	:	Ptolemaeus Y
+-39.82	-26.53	:	Puiseux A
+-38.97	-25.7	:	Puiseux B
+-37.9	-24.7	:	Puiseux C
+-36.23	-25.76	:	Puiseux D
+-38.9	-23.42	:	Puiseux F
+-37.87	-28.26	:	Puiseux G
+-37.08	-27.4	:	Puiseux H
+-1.94	-26.17	:	Purbach A
+-0.03	-24.6	:	Purbach F
+-4.57	-25.2	:	Purbach K
+-5.4	-26.3	:	Purbach N
+-3.86	-24.8	:	Purbach O
+-3.72	-26.49	:	Purbach P
+-0.04	-25.92	:	Purbach Q
+-3.26	-26.53	:	Purbach R
+-2.29	-27.26	:	Purbach S
+-0.92	-24.69	:	Purbach T
+-0.36	-26.75	:	Purbach V
+-1.19	-25.42	:	Purbach X
+-80.54	67.38	:	Pythagoras M
+-75.6	65.34	:	Pythagoras P
+-65	67.75	:	Pythagoras S
+-51.66	62.5	:	Pythagoras T
+-49.35	63.21	:	Pythagoras W
+-21.74	20.47	:	Pytheas A
+-19.39	17.5	:	Pytheas B
+-19.13	18.81	:	Pytheas C
+-20.54	21.09	:	Pytheas D
+-19.12	18.14	:	Pytheas E
+-19.14	16.55	:	Pytheas F
+-17.73	21.62	:	Pytheas G
+-16.53	20.5	:	Pytheas H
+-21.19	21.63	:	Pytheas J
+-16.18	19.91	:	Pytheas K
+-16.89	18.62	:	Pytheas L
+-17.76	19.9	:	Pytheas M
+-20.5	22.57	:	Pytheas N
+-19.45	21.78	:	Pytheas U
+-23.71	21.71	:	Pytheas W
+20.18	-36.48	:	Rabbi Levi H
+22.68	-37.65	:	Rabbi Levi J
+23.59	-36.51	:	Rabbi Levi N
+24.98	-35.67	:	Rabbi Levi O
+25.79	-33.73	:	Rabbi Levi Q
+-31.43	-33.5	:	Ramsden A
+0.83	-4.26	:	Reaumur B			; Réaumur B
+0.21	-3.5	:	Reaumur C			; Réaumur C
+2.76	-0.24	:	Reaumur D			; Réaumur D
+1.01	-3.82	:	Reaumur K			; Réaumur K
+2.74	-3.25	:	Reaumur W			; Réaumur W
+-0.65	-2.92	:	Reaumur X			; Réaumur X
+0.54	-1.3	:	Reaumur Y			; Réaumur Y
+-0.7	-28.03	:	Regiomontanus A
+-3.75	-29.06	:	Regiomontanus B
+-5.24	-28.77	:	Regiomontanus C
+-6.26	-28.27	:	Regiomontanus E
+-3.45	-28.34	:	Regiomontanus G
+-4.08	-28.63	:	Regiomontanus H
+-1.93	-29.43	:	Regiomontanus J
+-0.05	-30.26	:	Regiomontanus K
+0.98	-29.69	:	Regiomontanus L
+-2.14	-29.56	:	Regiomontanus M
+0.1	-28.91	:	Regiomontanus N
+-0.03	-28.43	:	Regiomontanus R
+-2.01	-28.59	:	Regiomontanus S
+-2.9	-28.28	:	Regiomontanus T
+-1.37	-29.47	:	Regiomontanus W
+-1.63	-30.14	:	Regiomontanus Y
+-2.96	-27.47	:	Regiomontanus Z
+46.67	-30.59	:	Reichenbach L
+42.95	-27	:	Reichenbach R
+43.2	-27.17	:	Reichenbach S
+58.71	-49.49	:	Reimarus F
+62.83	-47.85	:	Reimarus S
+-51.51	5.13	:	Reiner A
+-51.52	3.5	:	Reiner C
+-49.64	1.9	:	Reiner E
+-54.34	3.23	:	Reiner G
+-54.76	9.1	:	Reiner H
+-53.98	8.11	:	Reiner K
+-54.66	7.97	:	Reiner L
+-56.25	8.62	:	Reiner M
+-57.6	5.37	:	Reiner N
+-50.92	1.38	:	Reiner Q
+-50.84	2.26	:	Reiner S
+-52.32	3.68	:	Reiner T
+-52.58	4.1	:	Reiner U
+-21.79	4.16	:	Reinhold A
+-24.57	4.36	:	Reinhold C
+-24.6	2.59	:	Reinhold D
+-21.42	3.36	:	Reinhold F
+-19.83	4.83	:	Reinhold G
+-20.98	4.27	:	Reinhold H
+-25.43	1.58	:	Reinhold N
+-76.98	51.84	:	Repsold A
+-75.33	47.75	:	Repsold S
+-75.41	50.77	:	Repsold V
+-79.88	52.6	:	Repsold W
+6.8	1.6	:	Rhaeticus B
+6.17	0.84	:	Rhaeticus D
+5.93	-0.12	:	Rhaeticus E
+6.41	0.97	:	Rhaeticus G
+5.34	-1.03	:	Rhaeticus H
+3.18	-0.71	:	Rhaeticus J
+3.81	1.02	:	Rhaeticus M
+44.21	-35.17	:	Rheita C
+50.09	-39.05	:	Rheita D
+51.66	-39.81	:	Rheita H
+49.41	-35.08	:	Rheita N
+-72.95	-5.79	:	Riccioli U
+-73.35	-3.04	:	Riccioli Y
+25.62	-39.17	:	Riccius K
+26.83	-41.55	:	Riccius L
+27.68	-36.19	:	Riccius O
+30.66	-41.44	:	Riccius R
+26.47	-37.15	:	Riccius S
+24.97	-36.34	:	Riccius T
+29.11	-35.85	:	Riccius Y
+7.74	-11.34	:	Ritchey A
+8.93	-11.98	:	Ritchey B
+9.18	-10.95	:	Ritchey C
+9.21	-10.26	:	Ritchey D
+7.65	-10.52	:	Ritchey F
+9.47	-12.39	:	Ritchey M
+18.74	3.65	:	Ritter D
+93.01	-16.25	:	Ritz J
+37.06	27.66	:	Romer C			; Römer C
+35.72	25.95	:	Romer H			; Römer H
+37.95	22.38	:	Romer J			; Römer J
+34.61	25.29	:	Romer M			; Römer M
+40.41	26.44	:	Romer W			; Römer W
+36.31	25.76	:	Romer Y			; Römer Y
+40.6	-56.09	:	Rosenberger F
+41.45	-53.99	:	Rosenberger G
+44.67	-52.69	:	Rosenberger L
+44.13	-54.48	:	Rosenberger N
+43.22	-56.71	:	Rosenberger T
+20.17	11.38	:	Ross B
+18.93	11.62	:	Ross C
+23.32	12.57	:	Ross D
+23.41	11.04	:	Ross E
+24.23	10.91	:	Ross F
+24.86	10.68	:	Ross G
+21.81	10.24	:	Ross H
+34.43	-18.55	:	Rosse C
+-33.22	-57.29	:	Rost N
+27.59	-29.46	:	Rothmann A
+29.19	-32.94	:	Rothmann E
+28.01	-29.19	:	Rothmann F
+25.73	-29.39	:	Rothmann J
+24.36	-28.86	:	Rothmann K
+-58.09	41.58	:	Rumker C			; Rümker C
+-57.14	38.64	:	Rumker E			; Rümker E
+-57.28	37.26	:	Rumker F			; Rümker F
+-52.76	40.33	:	Rumker H			; Rümker H
+-56.04	42.25	:	Rumker K			; Rümker K
+-57.33	43.57	:	Rumker L			; Rümker L
+-63.08	42.58	:	Rumker S			; Rümker S
+-64.75	42.51	:	Rumker T			; Rümker T
+-76.57	28.09	:	Russell F
+-11.58	-62.57	:	Rutherfurd B
+-8.96	-63.32	:	Rutherfurd D
+-8.38	-62.83	:	Rutherfurd E
+19.46	1.24	:	Sabine A
+22.92	1.02	:	Sabine C
+14.53	-23.61	:	Sacrobosco J
+14.69	-22.9	:	Sacrobosco K
+15.12	-25.61	:	Sacrobosco L
+16.27	-25.3	:	Sacrobosco M
+16.56	-27.09	:	Sacrobosco N
+16.05	-21.19	:	Sacrobosco O
+17.32	-20.7	:	Sacrobosco P
+14.3	-23.99	:	Sacrobosco U
+16.13	-24.56	:	Sacrobosco V
+17.28	-24.38	:	Sacrobosco W
+45.14	-21.14	:	Santbech D
+44.39	-22.96	:	Santbech G
+42.88	-20.47	:	Santbech H
+43.12	-19.23	:	Santbech K
+39.46	-21.37	:	Santbech L
+40	-21.42	:	Santbech P
+38.75	-23.41	:	Santbech R
+38.04	-24.13	:	Santbech T
+38.83	-24.03	:	Santbech U
+39.33	-24.68	:	Santbech V
+42.46	-25.18	:	Santbech X
+42.94	-25.32	:	Santbech Y
+42.98	-25.88	:	Santbech Z
+-11.23	-39.52	:	Sasserides B
+-7.72	-38.96	:	Sasserides E
+-7.39	-38.97	:	Sasserides K
+-6.63	-40.09	:	Sasserides L
+-7.06	-38.72	:	Sasserides N
+12.26	-4.01	:	Saunder A
+9.81	-3.93	:	Saunder B
+10.52	-2.77	:	Saunder C
+9.74	-2.38	:	Saunder S
+10.39	-4.07	:	Saunder T
+-4.02	-42.27	:	Saussure B
+-4.64	-44.34	:	Saussure F
+-25.26	-56.89	:	Scheiner F
+-27.46	-56.35	:	Scheiner H
+-26.08	-58.05	:	Scheiner K
+-35.22	-65.87	:	Scheiner L
+-28.9	-58.79	:	Scheiner Q
+-24.27	-57.99	:	Scheiner R
+-25.33	-58.39	:	Scheiner S
+-36.31	-60.96	:	Scheiner U
+-37.02	-60.61	:	Scheiner V
+-37.66	-60.37	:	Scheiner W
+-24.86	-59.58	:	Scheiner X
+-25.39	-59.13	:	Scheiner Y
+-62.1	22.97	:	Schiaparelli A
+-62.22	25.83	:	Schiaparelli C
+-62.07	27.12	:	Schiaparelli E
+-57.72	-45.77	:	Schickard D
+-59.8	-44.12	:	Schickard L
+-58.98	-44.19	:	Schickard M
+-54.69	-41.3	:	Schickard N
+-53.05	-42.74	:	Schickard Q
+-53.82	-44.13	:	Schickard R
+-50.37	-44.81	:	Schickard T
+-58.19	-45.12	:	Schickard W
+-51.26	-43.55	:	Schickard X
+-57.6	-47.44	:	Schickard Y
+-49.36	-55.08	:	Schiller D
+-48.8	-54.59	:	Schiller E
+-38.3	-51.24	:	Schiller G
+-36.69	-49.64	:	Schiller J
+-41.26	-48.22	:	Schiller M
+-41.98	-53.63	:	Schiller N
+-43.66	-53.58	:	Schiller P
+-45.87	-52.25	:	Schiller R
+-41.29	-50.77	:	Schiller T
+-90.01	-5.06	:	Schlüter U
+19.31	-78.98	:	Schomberger J
+13.56	-79.28	:	Schomberger K
+34.41	-75.13	:	Schomberger X
+27.29	-73.58	:	Schomberger Z
+139.33	-75.28	:	Schrodinger G			; Schrödinger G
+-7.8	4.81	:	Schroter A			; Schröter A
+-9.79	8.26	:	Schroter C			; Schröter C
+-9.53	4.49	:	Schroter D			; Schröter D
+-6.83	2.36	:	Schroter E			; Schröter E
+-9.44	3.17	:	Schroter G			; Schröter G
+-8.63	3.16	:	Schroter H			; Schröter H
+-6.12	8.51	:	Schroter J			; Schröter J
+-7.93	3.09	:	Schroter K			; Schröter K
+-7.43	1.77	:	Schroter L			; Schröter L
+-11.68	6.94	:	Schroter M			; Schröter M
+-9.2	7.07	:	Schroter S			; Schröter S
+-8.01	7.03	:	Schroter T			; Schröter T
+-6.68	4.08	:	Schroter U			; Schröter U
+-7.74	4.83	:	Schroter W			; Schröter W
+79.34	2.14	:	Schubert A
+49.23	67.7	:	Schwabe K
+52.52	69.62	:	Schwabe W
+56.6	68.33	:	Schwabe X
+41.47	3.26	:	Secchi A
+41.52	3.66	:	Secchi B
+44.57	3.94	:	Secchi G
+45.5	-0.17	:	Secchi K
+42.19	1.08	:	Secchi U
+43.67	-0.77	:	Secchi X
+3.04	-1.88	:	Seeliger A
+2.1	-2.14	:	Seeliger S
+4.31	-2.2	:	Seeliger T
+-47.03	-57.27	:	Segner A
+-48.61	-58.64	:	Segner H
+-54.46	-56.17	:	Segner K
+-47.31	-58.76	:	Segner L
+-45.49	-59.78	:	Segner M
+-44.74	-59.34	:	Segner N
+-60.52	22.04	:	Seleucus A
+-63.92	22.43	:	Seleucus E
+-42.17	44.83	:	Sharp D
+-38.06	46.96	:	Sharp J
+-38.56	47.5	:	Sharp K
+-38.23	45.78	:	Sharp L
+-41.46	47.39	:	Sharp M
+-48.68	47.41	:	Sharp U
+-47.06	46.23	:	Sharp V
+-45.44	50.2	:	Sharp W
+18.96	60	:	Sheepshanks A
+21.09	60.32	:	Sheepshanks B
+57	44.05	:	Shuckburgh E
+13.22	6.93	:	Silberschlag A
+11.22	7.49	:	Silberschlag D
+12.73	5.2	:	Silberschlag E
+13.85	5.73	:	Silberschlag G
+16.33	-70.52	:	Simpelius M
+24.09	-71.36	:	Simpelius N
+3.98	-75.29	:	Simpelius P
+32.59	7.78	:	Sinas A
+31	9.65	:	Sinas E
+34.27	9.57	:	Sinas G
+33.56	10.01	:	Sinas H
+33.7	10.31	:	Sinas J
+33.08	6.81	:	Sinas K
+-57.47	-10.39	:	Sirsalis K
+51.41	-29.02	:	Snellius C
+51.46	-28.71	:	Snellius D
+54.95	-27.41	:	Snellius X
+121.17	-0.8	:	Soddy P
+-11.09	1.1	:	Sommering A			; Sömmering A
+-10.33	2.14	:	Sommering P			; Sömmering P
+17.21	8.33	:	Sosigenes B
+18.97	7.22	:	Sosigenes C
+-50.41	57.28	:	South A
+-49.57	55.81	:	South C
+-49.13	55.27	:	South D
+-53	56.7	:	South E
+-54.09	57.13	:	South F
+-53.25	55	:	South G
+-48.18	57.25	:	South H
+-50.19	59.17	:	South K
+-51.02	55.31	:	South M
+25.62	-46.32	:	Spallanzani A
+28.57	-46.19	:	Spallanzani D
+-7.1	32.71	:	Spitzbergen A
+-8.81	32.88	:	Spitzbergen C
+-8.76	33.3	:	Spitzbergen D
+-2.07	-3.44	:	Sporer A			; Spörer A
+-14.84	10.44	:	Stadius A
+-13.62	11.84	:	Stadius B
+-12.9	9.74	:	Stadius C
+-15.35	10.29	:	Stadius D
+-15.63	12.61	:	Stadius E
+-15.67	13.02	:	Stadius F
+-14.77	11.24	:	Stadius G
+-13.98	11.62	:	Stadius H
+-16.1	13.82	:	Stadius J
+-13.66	9.67	:	Stadius K
+-12.96	10.12	:	Stadius L
+-16.57	14.73	:	Stadius M
+-15.65	9.4	:	Stadius N
+-15.23	11.75	:	Stadius P
+-14.81	11.48	:	Stadius Q
+-15.26	12.25	:	Stadius R
+-15.58	12.9	:	Stadius S
+-15.75	13.18	:	Stadius T
+-16.45	13.97	:	Stadius U
+-16.48	14.12	:	Stadius W
+51.97	-48.63	:	Steinheil K
+51.65	-31.86	:	Stevinus A
+52.62	-30.61	:	Stevinus F
+55.27	-34.26	:	Stevinus K
+51.07	-30.69	:	Stevinus S
+33.5	-37.39	:	Stiborius B
+32.39	-35.8	:	Stiborius F
+35.78	-37.33	:	Stiborius G
+35.57	-36.07	:	Stiborius J
+33.35	-34.96	:	Stiborius L
+32.69	-35.46	:	Stiborius M
+32.84	-36.36	:	Stiborius N
+33.89	-33.22	:	Stiborius P
+8.09	-41.02	:	Stofler M			; Stöfler M
+1.19	-43.37	:	Stofler O			; Stöfler O
+1.73	-42.25	:	Stofler R			; Stöfler R
+5.71	-44.89	:	Stofler S			; Stöfler S
+8.1	-39.69	:	Stofler T			; Stöfler T
+9.58	-40.17	:	Stofler U			; Stöfler U
+5.5	-40.58	:	Stofler X			; Stöfler X
+5.43	-40.03	:	Stofler Y			; Stöfler Y
+3.08	-40.33	:	Stofler Z			; Stöfler Z
+-16.72	-48.25	:	Street F
+-13.7	-48.74	:	Street J
+-13.18	-47.56	:	Street K
+-13.61	-50.74	:	Street L
+-10.34	-48.29	:	Street N
+-11.98	-45.63	:	Street P
+-14.61	-49.16	:	Street R
+-14.83	-48.99	:	Street S
+-15.21	-49.29	:	Street T
+-73.71	22.48	:	Struve F
+-73.07	23.46	:	Struve K
+-47.39	5.66	:	Suess B
+-46.59	4.67	:	Suess D
+-44.72	1.16	:	Suess F
+-48.46	3.41	:	Suess G
+-45.75	3.96	:	Suess H
+-48.53	6.89	:	Suess J
+-50.08	6.55	:	Suess K
+-50.56	6.08	:	Suess L
+8.93	22.08	:	Sulpicius Gallus A
+12.97	17.98	:	Sulpicius Gallus B
+6.31	19.8	:	Sulpicius Gallus G
+5.74	20.55	:	Sulpicius Gallus H
+8.72	20.4	:	Sulpicius Gallus M
+-26.8	12.23	:	T. Mayer D
+-26.19	16.04	:	T. Mayer E
+-28.94	12.87	:	T. Mayer F
+-27.17	17.35	:	T. Mayer G
+-25.44	11.68	:	T. Mayer H
+-27.66	18.12	:	T. Mayer K
+-24.72	13.2	:	T. Mayer L
+-25.81	14.91	:	T. Mayer M
+-25.61	13.56	:	T. Mayer N
+-26.39	11.63	:	T. Mayer R
+-28.34	11.66	:	T. Mayer S
+-26.15	14.18	:	T. Mayer Z
+19.79	-13.7	:	Tacitus C
+20.13	-13.95	:	Tacitus E
+17.55	-17.09	:	Tacitus F
+18.23	-17.46	:	Tacitus G
+18.52	-17.83	:	Tacitus H
+19.59	-14.99	:	Tacitus J
+19.99	-13.12	:	Tacitus K
+20.9	-14.4	:	Tacitus L
+21.48	-13.97	:	Tacitus M
+19.43	-16.95	:	Tacitus N
+21.89	-13.94	:	Tacitus O
+20.46	-18	:	Tacitus Q
+19.69	-16.7	:	Tacitus R
+19.09	-14.5	:	Tacitus S
+18.17	-15.89	:	Tacitus X
+21.08	13.47	:	Tacquet C
+18.23	-57.56	:	Tannerus A
+20.68	-55.63	:	Tannerus K
+22.2	-57.54	:	Tannerus L
+20.91	-55	:	Tannerus M
+24.12	-55.91	:	Tannerus N
+46.67	3.29	:	Taruntius B
+49.88	0.33	:	Taruntius H
+51.57	0.65	:	Taruntius K
+54.33	2.23	:	Taruntius O
+51.58	0.06	:	Taruntius P
+47.85	6.14	:	Taruntius R
+42.35	4.85	:	Taruntius S
+47.4	3.6	:	Taruntius T
+50.13	5.54	:	Taruntius U
+14.75	-5.65	:	Taylor C
+15.69	-5.34	:	Taylor D
+39.9	58.59	:	Thales W
+-6.28	-22.29	:	Thebit B
+-4.12	-21.27	:	Thebit C
+-8.26	-19.79	:	Thebit D
+-4.65	-23.12	:	Thebit E
+-5.37	-23.04	:	Thebit F
+-5.53	-22.55	:	Thebit J
+-3.79	-23.14	:	Thebit K
+-4.8	-20.2	:	Thebit R
+-6	-20.67	:	Thebit T
+-5.87	-20.35	:	Thebit U
+13.27	-2.19	:	Theon Junior B
+14.63	-2.38	:	Theon Junior C
+15.39	-0.2	:	Theon Senior A
+14.12	0.17	:	Theon Senior B
+14.51	-1.42	:	Theon Senior C
+25.23	-10.59	:	Theophilus B
+26.29	-12.6	:	Theophilus K
+28.61	-7.79	:	Theophilus W
+-12.18	27.88	:	Timocharis B
+-14.21	24.81	:	Timocharis C
+-15.19	23.9	:	Timocharis D
+-17.14	24.64	:	Timocharis E
+-16.62	23.65	:	Timocharis H
+51.37	20.65	:	Tisserand B
+49.47	21.76	:	Tisserand D
+29.17	-2.63	:	Torricelli B
+29.37	-4.22	:	Torricelli F
+26.94	-1.44	:	Torricelli G
+25.31	-3.35	:	Torricelli H
+25.09	-3.64	:	Torricelli J
+25.22	-4.04	:	Torricelli K
+24.27	-3.47	:	Torricelli L
+29.2	-6.11	:	Torricelli N
+29.89	-6.5	:	Torricelli P
+27.51	-4.26	:	Torricelli T
+49.4	27.8	:	Tralles C
+5.95	3.48	:	Triesnecker D
+2.48	5.55	:	Triesnecker E
+4.82	4.1	:	Triesnecker F
+5.19	3.66	:	Triesnecker G
+2.7	3.34	:	Triesnecker H
+2.45	3.25	:	Triesnecker J
+0.24	47.45	:	Trouvelot G
+4.51	49.92	:	Trouvelot H
+-14.75	-1.09	:	Turner A
+-10.62	-0.97	:	Turner B
+-12.25	-2.41	:	Turner C
+-14.12	-1.64	:	Turner F
+-12.98	-2.82	:	Turner H
+-13.43	-3.86	:	Turner K
+-12.61	-3.44	:	Turner L
+-11.82	-4.23	:	Turner M
+-12.06	-2.88	:	Turner N
+-12.47	-1	:	Turner Q
+-13.46	-44.12	:	Tycho C
+-15.92	-45.29	:	Tycho H
+-14.38	-45.18	:	Tycho K
+-13.06	-45.44	:	Tycho P
+-13.68	-41.91	:	Tycho R
+-16.3	-43.47	:	Tycho S
+-15.43	-41.72	:	Tycho V
+1.35	8.72	:	Ukert A
+0.4	8.96	:	Ukert E
+-0.61	11.03	:	Ukert J
+3.76	6.47	:	Ukert K
+2.93	7.77	:	Ukert P
+3.24	8.73	:	Ukert V
+2.33	9.51	:	Ukert W
+1.85	9.16	:	Ukert X
+0.21	10.11	:	Ukert Y
+-79.3	32.79	:	Ulugh Beigh B
+-83.46	35.7	:	Ulugh Beigh M
+173.5	4.79	:	Valier P
+60.27	-44.59	:	Vega H
+61.5	-15.3	:	Vendelinus H
+62.44	-13.82	:	Vendelinus K
+57.98	-15.4	:	Vendelinus S
+62.8	-13.49	:	Vendelinus T
+58.73	-15.91	:	Vendelinus U
+55.92	-15.55	:	Vendelinus V
+58.7	-14.59	:	Vendelinus W
+62.41	-17.2	:	Vendelinus Z
+-54.3	-27.84	:	Vieta D
+-58.25	-26.95	:	Vieta E
+-57.87	-26.79	:	Vieta F
+-57.12	-29.37	:	Vieta G
+-56.39	-29.1	:	Vieta H
+-56.06	-28.89	:	Vieta J
+-55.15	-28	:	Vieta K
+-60.42	-29.5	:	Vieta L
+-60.8	-29.79	:	Vieta M
+-58.05	-27.52	:	Vieta P
+-57.61	-26.52	:	Vieta R
+-35.82	-29.18	:	Vitello E
+-37.67	-32.2	:	Vitello G
+-35.32	-31.63	:	Vitello L
+-36.02	-32.39	:	Vitello M
+-36.09	-32.12	:	Vitello N
+-38.43	-31.2	:	Vitello P
+-37.06	-32.95	:	Vitello R
+-35.23	-30.84	:	Vitello S
+-39.76	-33.81	:	Vitello T
+-40.68	-32.22	:	Vitello X
+34.61	13.89	:	Vitruvius G
+30.68	18.94	:	Vitruvius L
+31.51	16.13	:	Vitruvius M
+5.57	-14.06	:	Vogel A
+5.3	-14.08	:	Vogel C
+134.03	-13.47	:	Volkov F
+-83.53	54.53	:	Volta B
+8.25	65.69	:	W. Bond C
+3.21	63.6	:	W. Bond D
+9.46	64.45	:	W. Bond F
+6.86	63.07	:	W. Bond G
+-5.6	19.18	:	Wallace A
+-6.42	17.65	:	Wallace C
+-5.71	17.84	:	Wallace D
+-9.08	21.29	:	Wallace H
+-6.79	19.31	:	Wallace K
+-5.16	21.83	:	Wallace T
+-1.43	-30.48	:	Walther B
+2.09	-33.15	:	Walther F
+-4.02	-32.59	:	Walther G
+-1.58	-34.5	:	Walther J
+-1.41	-34.09	:	Walther K
+-0.98	-31.96	:	Walther L
+-0.4	-34.06	:	Walther M
+-0.22	-33.74	:	Walther N
+-0.22	-35.63	:	Walther O
+0.18	-35.4	:	Walther P
+0.24	-33.57	:	Walther Q
+0.34	-35.81	:	Walther R
+1.74	-33.48	:	Walther T
+2.61	-33.5	:	Walther U
+-60.48	-47.47	:	Wargentin H
+-58	-48.31	:	Wargentin K
+-59.09	-48.05	:	Wargentin M
+-56.74	-48.72	:	Wargentin P
+46.41	-50.35	:	Watt A
+48.3	-50.28	:	Watt B
+55.13	-49.7	:	Watt E
+56	-51.53	:	Watt K
+47.86	-52.29	:	Watt S
+51.14	-51.78	:	Watt T
+51.76	-52.14	:	Watt U
+51.98	-51.28	:	Watt W
+58.37	-0.85	:	Webb B
+57.52	-2.38	:	Webb D
+61.05	0.94	:	Webb E
+61	1.47	:	Webb F
+61.22	1.67	:	Webb G
+59.44	-2.15	:	Webb H
+62.73	0.16	:	Webb L
+63.81	-0.26	:	Webb M
+63.62	-0.32	:	Webb N
+61.24	-1.13	:	Webb Q
+56.23	1.85	:	Webb U
+58.12	3.02	:	Webb W
+58.25	3.22	:	Webb X
+-42.12	-59.61	:	Weigel C
+-41.2	-57.5	:	Weigel F
+-35.73	-57.86	:	Weigel G
+35.52	-26.95	:	Weinek A
+36.54	-26.01	:	Weinek D
+37.58	-25.39	:	Weinek E
+38.16	-25.14	:	Weinek F
+38.51	-28.66	:	Weinek H
+39.71	-26.19	:	Weinek L
+39.96	-25.83	:	Weinek M
+-18.68	-30.63	:	Weiss A
+-18.43	-31.24	:	Weiss B
+-20.42	-30.7	:	Weiss D
+3.17	-27.12	:	Werner D
+0.72	-27.39	:	Werner E
+0.73	-25.79	:	Werner F
+1.2	-27.59	:	Werner G
+14.13	4.69	:	Whewell A
+14.47	5	:	Whewell B
+-36.92	-7.37	:	Wichmann A
+-39.22	-7.14	:	Wichmann B
+-37.45	-4.67	:	Wichmann C
+-36.12	-5.41	:	Wichmann D
+-23.16	-42.38	:	Wilhelm F
+-23.81	-42.55	:	Wilhelm H
+-22.13	-40.48	:	Wilhelm L
+-17.37	-43.96	:	Wilhelm M
+-18.58	-43.78	:	Wilhelm N
+-18.44	-43.2	:	Wilhelm Q
+-21.97	-41.37	:	Wilhelm R
+-21.83	-41.82	:	Wilhelm S
+-21	-41.29	:	Wilhelm T
+-20.58	-41.47	:	Wilhelm U
+-19.62	-43.93	:	Wilhelm V
+-20.38	-42.6	:	Wilhelm W
+-20.98	-44.6	:	Wilhelm Y
+-20.34	-44.83	:	Wilhelm Z
+18.92	-29.55	:	Wilkins B
+19.42	-28.37	:	Wilkins E
+20.39	-30.35	:	Wilkins F
+18.41	-29.99	:	Wilkins G
+18.49	-28.67	:	Wilkins H
+38.18	43.6	:	Williams F
+38.83	41.28	:	Williams M
+36.44	42.13	:	Williams N
+38.37	42.5	:	Williams R
+30.27	-37.72	:	Wohler A			; Wöhler A
+30.77	-37.25	:	Wohler B			; Wöhler B
+31.14	-36.25	:	Wohler D			; Wöhler D
+30.12	-38.94	:	Wohler E			; Wöhler E
+33.84	-40.16	:	Wohler F			; Wöhler F
+35.53	-40.14	:	Wohler G			; Wöhler G
+-18.49	-22.29	:	Wolf A
+-14.55	-24.13	:	Wolf C
+-16.39	-23.95	:	Wolf E
+-14.96	-22.02	:	Wolf F
+-16.86	-22.6	:	Wolf G
+-14.73	-23.01	:	Wolf H
+-7.75	15.79	:	Wolff A
+-8.74	16.03	:	Wolff B
+-48.79	33.16	:	Wollaston D
+-48.14	28.36	:	Wollaston N
+-49.94	29.26	:	Wollaston P
+-50.87	29.47	:	Wollaston R
+-52.87	30.99	:	Wollaston U
+-53.98	30.89	:	Wollaston V
+54.93	-23.57	:	Wrottesley A
+56.87	-24.97	:	Wrottesley B
+-15.1	-35.04	:	Wurzelbauer C
+-18.25	-35.95	:	Wurzelbauer F
+-17.29	-35.3	:	Wurzelbauer H
+-17.89	-34.87	:	Wurzelbauer L
+-16.06	-32.14	:	Wurzelbauer M
+-14.66	-35.91	:	Wurzelbauer O
+-14.28	-35.14	:	Wurzelbauer P
+-15.2	-32.76	:	Wurzelbauer W
+-14.46	-33.67	:	Wurzelbauer X
+-17.68	-33.13	:	Wurzelbauer Y
+-78.95	59.58	:	Xenophanes C
+-75.99	56.94	:	Xenophanes G
+-79.62	54.8	:	Xenophanes M
+50.67	15.9	:	Yerkes E
+50.49	15.24	:	Yerkes V
+50.74	-41	:	Young B
+55.39	-42.43	:	Young R
+53.88	-43.36	:	Young S
+0.46	-58.54	:	Zach G
+2.88	-59.17	:	Zach H
+6.11	-57.48	:	Zach K
+6.87	-57.28	:	Zach M
+17.51	-30.32	:	Zagut F
+20.76	-30.02	:	Zagut H
+22.17	-31.75	:	Zagut K
+22.72	-30.75	:	Zagut M
+23.45	-31.21	:	Zagut N
+20.82	-30.65	:	Zagut R
+22.63	-33.38	:	Zagut S
+21.48	-7.08	:	Zollner A			; Zöllner A
+18.28	-8.82	:	Zollner E			; Zöllner E
+20.87	-7.32	:	Zollner G			; Zöllner G
+19.13	-7.09	:	Zollner H			; Zöllner H
+20.82	-6.53	:	Zollner K			; Zöllner K
+-56.67	-60.11	:	Zucchius F
+-53.57	-17.22	:	Zupus A
+-54.52	-17.61	:	Zupus B
+-54.07	-17.33	:	Zupus F
+-56.43	-18.22	:	Zupus V
+-55	-18.89	:	Zupus X
+-49.73	-17.43	:	Zupus Y
+-50.34	-18.24	:	Zupus Z
+
+
+
+

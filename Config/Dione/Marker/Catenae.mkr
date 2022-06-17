@@ -1,0 +1,18 @@
+BEGIN_HEADER
+InitialState on
+ShapeIdx 1
+ColourIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Catena, catenae (Chain of craters)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;File created 3 January 2022
+
+BEGIN_DATA
+63.6	-78	:	Aufidus Catena
+32.85	8.79	:	Pactolus Catena
+-141.7	-15.3	:	Pantagias Catenae
+

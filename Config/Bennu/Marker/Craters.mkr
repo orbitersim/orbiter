@@ -1,0 +1,30 @@
+;Crater - impact crater
+
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 2 January 2022
+
+BEGIN_DATA
+111.93	-0.08	:	Alicanto
+-35.01	-44.36	:	Bralgah
+-36.3	-41.4	:	Dinewan
+41.78	55.07	:	Hokioi
+152.3	-1.12	:	Huhuk
+115.36	-26.13	:	Lilitu
+-90.9	-8.79	:	Minokawa
+125.67	-4.23	:	Ohnivak
+-30.17	23.53	:	Pegasus
+97.34	-19.02	:	Sampati
+88.13	11.78	:	Wuchowsen
+84.34	-17.03	:	Wututu
+
+
+

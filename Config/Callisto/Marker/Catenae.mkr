@@ -1,0 +1,23 @@
+BEGIN_HEADER
+InitialState on
+ShapeIdx 1
+ColourIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Catena - chain of craters
+
+;Source: https://planetarynames.wr.usgs.gov/
+;File created 2 January 2022
+
+BEGIN_DATA
+-15.5	-8.9	:	Eikin Catena
+-64.8	8.2	:	Fimbulthul Catena
+12.8	48.9	:	Geirvimul Catena
+-54.2	68.5	:	Gipul Catena
+-47.1	35.5	:	Gomul Catena
+16.9	-19.5	:	Gunntro Catena
+-103.9	49.2	:	Sid Catena
+-37.2	10.6	:	Svol Catena
+

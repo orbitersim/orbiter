@@ -1,0 +1,19 @@
+tt;Vallis - valley
+
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;https://planetarynames.wr.usgs.gov
+;Updated 2 January 2022
+
+BEGIN_DATA
+10.2	-10.4	:	Leprechaun Vallis
+-20	-14.9	:	Sprite Vallis
+
+

@@ -1,0 +1,20 @@
+;Crater - circular depression, likely impact origin
+
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 1 January 2022
+
+BEGIN_DATA
+-90	-80	:	Gaea
+-35	55	:	Pan
+
+
+
+

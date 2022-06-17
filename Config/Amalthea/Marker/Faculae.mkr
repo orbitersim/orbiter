@@ -1,0 +1,17 @@
+;Facula - Bright spot
+
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov/Page/MERCURY/target
+;File created 2 January 2022
+
+BEGIN_DATA
+-175	20	:	Ida Facula
+-170	-20	:	Lyctos Facula
+

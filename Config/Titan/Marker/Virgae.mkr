@@ -1,0 +1,23 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Virga, virgae (A streak or stripe of color)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+-151	-19	:	Bacab Virgae
+-166	-35	:	Hobal Virga
+-137	-36	:	Kalseru Virga
+-162	-27	:	Perkunas Virgae
+-32	-25	:	Shiwanni Virgae
+-179.75	23.84	:	Tishtrya Virgae
+152.3	23.73	:	Tlaloc Virgae
+124.7	45.2	:	Uanui Virgae
+		

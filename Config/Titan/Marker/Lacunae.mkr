@@ -1,0 +1,25 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Lacuna, lacunae (Irregularly shaped depression on Titan having the appearance of a dry lake bed)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+132.4	68.2	:	Atacama Lacuna
+134.9	72.6	:	Eyre Lacuna
+139	66.7	:	Jerid Lacuna
+143	88.4	:	Kutch Lacuna
+147.4	64.9	:	Melrhir Lacuna
+-94	65.81	:	Nakuru Lacuna
+146.1	66.7	:	Ngami Lacuna
+135.1	66.1	:	Racetrack Lacuna
+131.6	66.3	:	Uyuni Lacuna
+-33.1	-76.8	:	Veliko Lacuna
+-109	68.88	:	Woytchugga Lacuna

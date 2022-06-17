@@ -1,0 +1,20 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Chaos, chaoses (Distinctive area of broken terrain)
+
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 3 January 2022
+
+BEGIN_DATA
+-80.5	13.4	:	Arran Chaos
+87.3	9.7	:	Conamara Chaos
+-83.8	22.4	:	Murias Chaos
+87	-26	:	Narberth Chaos
+-75	25.4	:	Rathmore Chaos

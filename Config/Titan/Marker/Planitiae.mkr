@@ -1,0 +1,24 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Planitia, planitiae (Low plain)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+-117	-78.4	:	Arrakis Planitia
+97.3	-66.3	:	Buzzell Planitia
+134	31	:	Caladan Planitia
+-23.5	-5	:	Chusuk Planitia
+2.98	5.22	:	Giedi Planitia
+15.05	-60.59	:	Hagal Planitia
+-24	48	:	Poritrin Planitia
+159.04	-82.79	:	Romo Planitia
+5	-71.04	:	Rossak Planitia
+

@@ -1,0 +1,32 @@
+; Traces of manned human activity on the lunar surface, various landing site
+; locations and impact points of assorted hardware - as far as known.
+;
+; This is real-life data and as such might differ from Orbiter add-ons,
+; depending on what data the respective add-on author has been referring to.
+; Coordinate points like these are subject to constant refinement and further
+; improvement due to our increasingly better understanding of the shape of the
+; Moon. Particularly as far as the Apollo landing sites are concerned, this
+; here is the latest and best data we have.
+: Impact site coordinate source = https://nssdc.gsfc.nasa.gov/planetary/lunar/lunar_artifact_impacts.html
+BEGIN_HEADER
+InitialState on
+ColourIdx 2
+ShapeIdx 5
+Size 0.5
+Distance Factor 0.66
+END_HEADER
+
+BEGIN_DATA
+23.47307  	0.67345		:	LRRR			;Apollo 11
+-23.4249  	-3.0098		:	ALSEP			;Apollo 12
+-35.0081	38.315		:	Lunochod 1 rover	;LRO data
+-17.47768  	-3.64419     	: 	ALSEP			;Apollo 14
+-17.47865  	-3.64417     	: 	LRRR			;Apollo 14
+3.62991   	26.13406    	: 	ALSEP			;Apollo 15
+3.62850   	26.13341    	: 	LRRR			;Apollo 15
+15.4986  	-8.9759     	: 	ALSEP			;Apollo 16
+30.7655  	20.1923    	: 	ALSEP			;Apollo 17
+-49.61		-84.719		:	LCROSS spacecraft impact;approximate
+-26.8341	75.6508		:	GRAIL B impact		;LRO data
+-19.5122	44.1208		:	Yutu Rover		;Chang'e 3, LRO data
+177.59		-45.46		:	Yutu lander		;Chang'e 4, LRO data

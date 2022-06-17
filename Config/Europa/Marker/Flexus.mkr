@@ -1,0 +1,20 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 3
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Flexus, flexūs (A very low curvilinear ridge with a scalloped pattern)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+-171.7	-59.5	:	Cilicia Flexus
+-174.1	-68.2	:	Delphi Flexus
+-144.6	-42.1	:	Gortyna Flexus
+161.6	-44.5	:	Phocis Flexus
+176.6	-66.4	:	Sidon Flexus

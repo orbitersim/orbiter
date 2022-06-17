@@ -1,0 +1,40 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 4
+ShapeIdx 0
+Size 0.5
+DistanceFactor 0.5
+END_HEADER
+
+;Mare, maria (“Sea”; on the Moon, low albedo, relatively smooth plain, 
+;generally of large extent; on Mars, 
+;dark albedo areas of no known geological significance; on Titan, 
+;large expanses of dark materials thought to be liquid hydrocarbons)
+
+
+;Source = https://planetarynames.wr.usgs.gov/
+;Updated 
+
+BEGIN_DATA
+67.58	22.43	:	Mare Anguis
+91.99	-47.77	:	Mare Australe
+-22.31	-10.53	:	Mare Cognitum
+59.1	16.18	:	Mare Crisium
+53.67	-7.83	:	Mare Fecunditatis
+-0.01	57.59	:	Mare Frigoris
+81.54	56.92	:	Mare Humboldtianum
+-38.57	-24.48	:	Mare Humorum
+-14.91	34.72	:	Mare Imbrium
+164.83	-33.25	:	Mare Ingenii
+-30.64	7.79	:	Mare Insularum
+86.52	12.7	:	Mare Marginis
+148.12	27.28	:	Mare Moscoviense
+34.6	-15.19	:	Mare Nectaris
+-17.29	-20.59	:	Mare Nubium
+-94.67	-19.87	:	Mare Orientale
+18.36	27.29	:	Mare Serenitatis
+87.05	-1.71	:	Mare Smythii
+65.3	1.3	:	Mare Spumans
+30.83	8.35	:	Mare Tranquillitatis
+68.66	7.49	:	Mare Undarum
+4.09	13.2	:	Mare Vaporum

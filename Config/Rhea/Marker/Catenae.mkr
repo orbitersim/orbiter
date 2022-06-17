@@ -1,0 +1,21 @@
+BEGIN_HEADER
+InitialState on
+ShapeIdx 1
+ColourIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Catena, catenae (Chain of craters)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+116	-70	:	Koykamou Catena
+16.5	48.5	:	Mouru Catena
+31.5	-44.7	:	Onokoro Catenae
+-87	32	:	Puchou Catenae
+-174	-39.5	:	Thebeksan Catena
+-79	22.5	:	Wungaran Catenae
+

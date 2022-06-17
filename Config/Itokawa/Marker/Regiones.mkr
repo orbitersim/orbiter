@@ -1,0 +1,22 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Regio, regiones (A large area marked by reflectivity or color ;distinctions from adjacent areas, or a broad geographic region)
+
+;Source = https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+-158	28	:	Arcoona Regio
+-128	-40	:	LINEAR Regio
+60	-70	:	MUSES-C Regio
+-153	33	:	Ohsumi Regio
+15	80	:	Sagamihara Regio
+90	40	:	Uchinoura Regio
+117	-39	:	Yoshinobu Regio

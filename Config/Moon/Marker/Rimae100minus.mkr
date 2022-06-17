@@ -1,0 +1,85 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 4
+Size 0.5
+DistanceFactor 0.75
+END_HEADER
+
+;Rima, rimae (Fissure)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 
+
+BEGIN_DATA
+;62.5	-29.4	:	[Rima Hase]
+;-26	48	:	[Rima Laplace]
+;-2	15.4	:	[Rima Marco Polo]
+;43.8	29.9	:	[Rima Newcomb]
+;-1.8	-9.2	:	[Rima Ptolemaeus]
+;85.5	-6.1	:	[Rima Widmannstätten]
+;-105	-25.1	:	[Rimae Golitsyn]
+;-45	-20	:	[Rimae Liebig]
+;-13.7	10.5	:	[Rimae Stadius]
+-28.56	-20.38	:	Rima Agatharchides
+3	53.63	:	Rima Archytas
+-38.65	26.66	:	Rima Artsimovich
+-48.04	-14.74	:	Rima Billy
+-9.28	-21.4	:	Rima Birt
+12.66	37.03	:	Rima Calippus
+29.3	19.95	:	Rima Carmen
+56.51	27.98	:	Rima Cleomedes
+-53.8	30.03	:	Rima Cleopatra
+1.85	18.69	:	Rima Conon
+26.63	17.58	:	Rima Dawes
+-32.35	30.87	:	Rima Delisle
+-4.67	-2.38	:	Rima Flammarion
+61.17	-35.3	:	Rima Furnerius
+35.77	58.84	:	Rima Gartner			; Rima Gärtner
+-22.33	13.18	:	Rima Gay-Lussac
+-52.99	-12.09	:	Rima Hansteen
+29.51	14.5	:	Rima Jansen
+-46.26	29.29	:	Rima Krieger
+-51.54	47.61	:	Rima Louville
+27.74	18.59	:	Rima Marcello
+44.55	-0.76	:	Rima Messier
+1.28	-1.53	:	Rima Oppolzer
+2.47	-2.84	:	Rima Reaumur			; Rima Réaumur
+27.71	18.55	:	Rima Reiko
+29.62	19.71	:	Rima Rudolf
+-6.25	1.28	:	Rima Schroter			; Rima Schröter
+103.01	-25.82	:	Rima Siegfried
+11.28	24.59	:	Rima Sung-Mei
+-31.37	13.26	:	Rima T. Mayer
+-0.75	25.2	:	Rima Vladimir
+-31.43	19.98	:	Rima Wan-Yu
+4.79	16.62	:	Rima Yangel'
+-30.46	25.02	:	Rima Zahia
+-1.94	-13.4	:	Rimae Alphonsus
+54.33	4.39	:	Rimae Apollonius
+-1.38	-18.31	:	Rimae Arzachel
+44.42	46.82	:	Rimae Atlas
+11.27	9.87	:	Rimae Boscovich
+25.27	44.7	:	Rimae Burg			; Rimae Bürg
+-50.3	-24.99	:	Rimae de Gasparis
+-44.53	-26.23	:	Rimae Doppelmayer
+-97.54	-27.68	:	Rimae Focas
+3.73	28.11	:	Rimae Fresnel
+-39.87	-17.47	:	Rimae Gassendi
+19.9	12.23	:	Rimae Maclear
+-40.48	2.88	:	Rimae Maestlin
+-22.82	51.24	:	Rimae Maupertuis
+17.77	17.1	:	Rimae Menelaus
+-18.14	-13.64	:	Rimae Opelt
+-47.17	-27.83	:	Rimae Palmieri
+-13.62	-29.84	:	Rimae Pitatus
+29.61	32.03	:	Rimae Posidonius
+-43.51	27.05	:	Rimae Prinz
+17.97	3.5	:	Rimae Ritter
+44.08	0.99	:	Rimae Secchi
+9.99	20.65	:	Rimae Sulpicius Gallus
+46.83	5.83	:	Rimae Taruntius
+5.87	33.04	:	Rimae Theaetetus
+-84.03	11.55	:	Rimae Vasco da Gama
+
+

@@ -1,0 +1,16 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Planitia - low plain
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated
+
+BEGIN_DATA
+135	23	:	Vendimia Planitia
+

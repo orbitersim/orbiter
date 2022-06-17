@@ -1,0 +1,30 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Vallis, valles (Valley)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 18 January 2022
+
+BEGIN_DATA
+3.63	49.21	:	Vallis Alpes
+-77.23	-45.55	:	Vallis Baade
+-88.86	10.25	:	Vallis Bohr
+-82.32	-38.45	:	Vallis Bouvard
+35.04	-7.39	:	Vallis Capella
+11.08	24.54	:	Vallis Christel
+-72.59	-43.95	:	Vallis Inghirami
+11.26	24.5	:	Vallis Krishna
+64.64	-26.16	:	Vallis Palitzsch
+126.16	-57.26	:	Vallis Planck
+51.65	-42.51	:	Vallis Rheita
+104.88	-66.52	:	Vallis Schrodinger			; Vallis Schrödinger
+-51.58	26.16	:	Vallis Schroteri			; Vallis Schröteri
+57.84	-30.93	:	Vallis Snellius
+
+

@@ -1,0 +1,18 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Chasma, chasmata (A deep, elongated, steep-sided depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+-36.5	-16.3	:	Mommer Chasma
+
+
+

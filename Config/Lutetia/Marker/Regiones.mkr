@@ -1,0 +1,23 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Regio, regiones (A large area marked by reflectivity or color ;distinctions from adjacent areas, or a broad geographic region)
+
+;Source = https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+-154	28	:	Achaia Regio
+-42	69	:	Baetica Regio
+-78	19	:	Etruria Regio
+0	-65	:	Goldschmidt Regio
+101	34	:	Narbonensis Regio
+10	41	:	Noricum Regio
+30	23	:	Pannonia Regio
+-55	-20	:	Raetia Regio

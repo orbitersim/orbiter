@@ -1,0 +1,71 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+
+BEGIN_DATA
+49.98	57.87	:	Ahmad
+120.61	61.68	:	Ajib
+-22.14	62.69	:	Aladdin
+168.38	5.26	:	Al-Bakbuk
+53.45	35.52	:	Al-Fakik
+159.22	50.48	:	Al-Haddar
+-17.51	56.84	:	Ali Baba
+-178.66	-18.88	:	Al-Kuz
+158.25	-21.09	:	Al-Mustazi
+64.98	38.58	:	Ayyub
+11.51	17.73	:	Aziz
+-61.37	14.7	:	Bahman
+178.51	-15.43	:	Behram
+110.35	51.55	:	Dalilah
+78.74	58.07	:	Duban
+157.96	41.51	:	Dunyazad
+70.01	45.39	:	Fitnah
+79.22	38.74	:	Ghanim
+118.85	81.12	:	Gharib
+134.26	36.47	:	Harun
+171.09	-31.57	:	Hassan
+79.59	48.25	:	Hisham
+134.98	47.6	:	Ishak
+22.44	34.6	:	Ja’afar
+-157.4	-30.65	:	Jansha
+12.91	53.76	:	Julnar
+-32.25	-40.62	:	Kamar
+-173.05	42.35	:	Kasim
+174.14	-4.1	:	Khusrau
+26.42	-37.16	:	Ma’aruf
+56.99	38.2	:	Marjanah
+65.73	66.27	:	Masrur
+163.83	31.75	:	Morgiana
+-11.59	73.85	:	Musa
+175.05	-30.76	:	Mustafa
+86.03	17.89	:	Omar
+-159.8	-40.03	:	Otbah
+-25.56	22.95	:	Parwez
+40.86	62.04	:	Peri-Banu
+-155.11	-21.12	:	Perizadah
+-178.88	-32.41	:	Rayya
+63.82	-23.9	:	Sabur
+-4.4	-5.99	:	Salih
+-1.23	61.69	:	Samad
+158.4	46.5	:	Shahrazad
+133.31	57.71	:	Shahryar
+178.74	-17.59	:	Shakashik
+58.09	16.42	:	Sharrkan
+-172.82	-2.27	:	Shirin
+148.39	66.97	:	Sindbad
+74.21	53.95	:	Yunan
+-26.97	69.52	:	Zaynab
+177.95	-22.23	:	Zumurrud
+
+
+

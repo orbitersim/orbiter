@@ -1,0 +1,21 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Chasma, chasmata (A deep, elongated, steep-sided depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+80.4	27.8	:	Argo Chasma
+-118.2	72.5	:	Caleuche Chasma
+-65.6	4.8	:	Mandjet Chasma
+
+
+

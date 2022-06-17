@@ -1,0 +1,24 @@
+;Chasmata - Deep, elongated, steep-sided depression
+
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 2 January 2022
+
+BEGIN_DATA
+-22.4	-16	:	Brownie Chasma
+-114	-33.7	:	Kachina Chasmata
+-33.1	-28.3	:	Kewpie Chasma
+-12.5	-27.6	:	Korrigan Chasma
+-5.8	-32.1	:	Kra Chasma
+5.1	-20.4	:	Pixie Chasma
+-7	-48.6	:	Sylph Chasma
+
+

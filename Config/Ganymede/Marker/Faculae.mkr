@@ -1,0 +1,31 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Facula - Bright spot
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+-153.44	33.33	:	Abydos Facula
+170.2	28.3	:	Akhmin Facula
+-94.3	29	:	Bigeh Facula
+144.7	16	:	Busiris Facula
+156.8	13.3	:	Buto Facula
+151	10	:	Coptos Facula
+;103	0	:	[Dendera Facula]
+-147.1	25.7	:	Edfu Facula
+-147	18.5	:	Heliopolis Facula
+164.7	22.3	:	Hermopolis Facula
+-131.91	14.1	:	Memphis Facula
+;124	4.8	:	[Ombos Facula]
+;117.8	-26.1	:	[Punt Facula]
+;-14.2	37.9	:	[Sais Facula]
+-143	7	:	Siwah Facula
+-160.96	37.6	:	Tettu Facula
+157.8	7.1	:	Thebes Facula

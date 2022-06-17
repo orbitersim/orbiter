@@ -1,0 +1,16 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Cavus, cavi (Hollows, irregular steep-sided depressions usually in arrays or clusters)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+-168	-25	:	Moyle Cavus

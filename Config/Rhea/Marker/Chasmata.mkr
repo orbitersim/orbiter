@@ -1,0 +1,24 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Chasma, chasmata (A deep, elongated, steep-sided depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+81	25	:	Avaiki Chasmata
+70	38	:	Galunlati Chasmata
+;52.5	46	:	[Kun Lun Chasma]
+;-95.3	26.1	:	[Pu Chou Chasma]
+93.5	-33	:	Pulag Chasma
+100	-35	:	Vaupas Chasma
+79.5	-28	:	Yamsi Chasmata
+
+
+

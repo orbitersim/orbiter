@@ -1,0 +1,18 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Regio, regiones (A large area marked by reflectivity or color ;distinctions from adjacent areas, or a broad geographic region)
+
+;Source = https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+-25	18	:	Bubembe Regio
+37	20	:	Monad Regio
+-3	-37	:	Uhlanga Regio

@@ -1,0 +1,24 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Planum, plana (Plateau or high plain)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;updated 3 January 2022
+
+BEGIN_DATA
+42.19	-47.9	:	Argos Planum
+101.99	-22.58	:	Danube Planum
+11.77	-59.07	:	Dodona Planum
+-24.45	-45.48	:	Ethiopia Planum
+-18.37	-54.39	:	Hybristes Planum
+27.29	-35.29	:	Iopolis Planum
+90.57	-41.99	:	Lyrcea Planum
+94.18	-72.33	:	Nemea Planum
+

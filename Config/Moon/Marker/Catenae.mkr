@@ -1,0 +1,35 @@
+BEGIN_HEADER
+InitialState on
+ShapeIdx 1
+ColourIdx 1
+Size 0.5
+DistanceFactor 0.75
+END_HEADER
+
+;Catena, catenae (Chain of craters)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated
+
+BEGIN_DATA
+16.7	-16.59	:	Catena Abulfeda
+105.77	26.09	:	Catena Artamonov
+27.49	18.5	:	Catena Brigitte
+-6.27	-10.98	:	Catena Davy
+100.27	18.78	:	Catena Dziewulski
+129.8	-0.59	:	Catena Gregory
+84.7	-21.98	:	Catena Humboldt
+-72.25	14.91	:	Catena Krafft
+136.6	37.25	:	Catena Kurchatov
+-111.3	5.07	:	Catena Leuschner (GDL)
+29.61	22.23	:	Catena Littrow
+-126.45	-4.03	:	Catena Lucretius (RNII)
+139.22	6.63	:	Catena Mendeleev
+-113.58	-0.44	:	Catena Michelson (GIRD)
+-31.86	19.76	:	Catena Pierre
+111.91	37.89	:	Catena Sumner
+-83.12	79.99	:	Catena Sylvester
+48.71	3.04	:	Catena Taruntius
+-13.21	29.09	:	Catena Timocharis
+-30.38	24.41	:	Catena Yuri
+

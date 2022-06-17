@@ -1,0 +1,21 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Source = https://planetarynames.wr.usgs.gov
+;Updated 21 December 2021
+
+BEGIN_DATA
+-158.9	30.3	:	Fornax Rupes
+109.9	67.5	:	Gabie Rupes
+71.1	6	:	Hestia Rupes
+-18.8	76.8	:	Uorsar Rupes
+-38.1	55.3	:	Ut Rupes
+22	-43.5	:	Vaidilute Rupes
+-36.1	58.3	:	Vesta Rupes
+

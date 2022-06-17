@@ -1,0 +1,18 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Fluctus, fluctūs (Flow terrain)
+
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 3 January 2022
+
+BEGIN_DATA
+143.03	30.96	:	Galaxias Fluctūs
+-95.68	35.93	:	Tantalus Fluctus
+155.53	0.72	:	Zephyria Fluctus
+

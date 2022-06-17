@@ -1,0 +1,19 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Cryptic ringed features
+
+;Source = https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+-150.8	-10.9	:	Guabonito
+-7.7	-30.5	:	Nath
+18.8	5	:	Paxsi
+-137.3	2	:	Veles
+	

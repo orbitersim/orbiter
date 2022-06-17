@@ -1,0 +1,21 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+Palus, paludes ("Swamp"; small plain)
+
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 3 January 2022
+
+BEGIN_DATA
+137.42	-4.47	:	Aeolis Palus
+148.15	5.78	:	Cerberus Palus
+-77.27	12.29	:	Echus Palus
+77.3	-27.25	:	Hadriacus Palus
+56.71	-35.06	:	Peneus Palus
+
+		

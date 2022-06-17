@@ -1,0 +1,90 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+
+BEGIN_DATA
+116.63	50.1	:	Acestes
+-46.57	-61.66	:	Adrastus
+-46.27	25.89	:	Aeneas
+64.51	-52.89	:	Alcander
+135.44	-7.73	:	Allecto
+122.97	-9.96	:	Amastrus
+80.19	5.17	:	Amata
+-88.62	-37.52	:	Amycus
+-65	-34	:	Anchises
+-89.96	-63.38	:	Anna
+-11.54	-7	:	Antenor
+127.82	33.43	:	Ascanius
+-8.79	32.65	:	Assaracus
+-147.73	9.9	:	Aulestes
+-46.4	65.72	:	Butes
+-79.63	-24.71	:	Caieta
+-60.61	-4.36	:	Camilla
+113.78	-39.84	:	Cassandra
+84.7	-2.38	:	Catillus
+91.55	0.39	:	Coras
+-88.53	-43.35	:	Cretheus
+-76.32	49.19	:	Creusa
+58.86	-15.38	:	Daucus
+80.07	29.75	:	Dercennus
+-18.82	-23.97	:	Dido
+149.46	-10.93	:	Entellus
+-104.76	-35	:	Erulus
+-65.96	-0.1	:	Eumelus
+0	-74.36	:	Euryalus
+-145	-57	:	Evander
+134.82	-35.94	:	Fadus
+63.75	46.77	:	Galaesus
+83.69	84.33	:	Haemon
+-53.72	-59.17	:	Halys
+-156.11	34.68	:	Herbesus
+114.08	-22.13	:	Iasus
+13.73	-0.5	:	Ilia
+-76.41	-18.47	:	Italus
+-102.95	-13.56	:	Lagus
+104.39	53.67	:	Lamyrus
+48.58	7.17	:	Larides
+-26.46	14.65	:	Latagus
+159	52.19	:	Latinus
+-22.76	34.81	:	Lausus
+-126.63	24	:	Liger
+-131.25	22.15	:	Lucagus
+-24.35	18.44	:	Magus
+-55.39	-35	:	Massicus
+-93.29	6	:	Metiscus
+177	19.16	:	Mezentius
+-90.73	12.82	:	Murranus
+25	-68.18	:	Nisus
+8.4	44.47	:	Oebalus
+119	-3	:	Pagasus
+-63	-3.3	:	Palinurus
+-166.58	-77.4	:	Phaleris
+-131.29	81.2	:	Phorbas
+72.6	-46.25	:	Prytanis
+-31.9	-13.58	:	Remus
+-36.8	-56.47	:	Ripheus
+-26.85	-8.15	:	Romulus
+173.34	-43.65	:	Sabinus
+-104.2	4.93	:	Sagaris
+178.27	65.09	:	Salius
+27.74	-32.7	:	Silvius
+26.5	55.92	:	Sulmo
+-97.2	-16.2	:	Telon
+115	-2.6	:	Tereus
+50.85	14	:	Thymber
+170.27	29.11	:	Tiburtus
+14.69	15.59	:	Turnus
+72.1	24.7	:	Tyrrhus
+91.49	-13.84	:	Volcens
+
+

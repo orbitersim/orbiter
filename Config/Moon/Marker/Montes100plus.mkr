@@ -1,0 +1,30 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 3
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Mons, montes (Mountain)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 16 January 2022
+
+BEGIN_DATA
+-54.07	29.06	:	Montes Agricola
+-0.58	48.36	:	Montes Alpes
+0.03	19.87	:	Montes Apenninus
+-5.25	25.39	:	Montes Archimedes
+-23.62	14.57	:	Montes Carpatus
+9.93	37.52	:	Montes Caucasus
+-94.93	-19.44	:	Montes Cordillera
+12.03	17.11	:	Montes Haemus
+-36.11	47.49	:	Montes Jura
+41.51	-14.05	:	Montes Pyrenaeus
+-27.6	-7.48	:	Montes Riphaeus
+-94.95	-19.49	:	Montes Rook
+40.34	27.32	:	Montes Taurus
+-13.19	47.89	:	Montes Teneriffe
+
+

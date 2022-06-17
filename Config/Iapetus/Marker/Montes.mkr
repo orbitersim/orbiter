@@ -1,0 +1,27 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 3
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Mons, montes (Mountain)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+;Note, planetarynames gives the latitude as zero for all these features,
+;The map shows all the Montes lined up along the equator, so seems correct.
+
+BEGIN_DATA
+143.3	0	:	Carcassone Montes
+153.8	0	:	Cordova Mons
+-176	0	:	Gayne Mons
+169.6	0	:	Haltile Mons
+13.7	0	:	Seville Mons
+166.3	0	:	Sorence  Mons
+-136	0	:	Toledo Montes
+-64.7	0	:	Tortelosa Montes
+-170.6	0	:	Valterne Mons
+

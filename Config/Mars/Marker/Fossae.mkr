@@ -1,0 +1,79 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Fossa, fossae (Long, narrow depression)
+
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 3 January 2022
+
+BEGIN_DATA
+-135.02	38.27	:	Acheron Fossae
+-126	-8.49	:	Aganippe Fossa
+-106.82	49.39	:	Alba Fossae
+150.78	18.09	:	Albor Fossae
+102.68	9.07	:	Amenthes Fossae
+-88.98	38.19	:	Atrax Fossa
+-87.98	-7.43	:	Calydon Fossa
+-110.15	27	:	Ceraunius Fossae
+166.37	11.28	:	Cerberus Fossae
+-39.59	-51.67	:	Chalce Fossa
+-104.24	-27.89	:	Claritas Fossae
+56.78	36.65	:	Coloe Fossae
+-80.86	-35.82	:	Coracis Fossae
+-121.17	31.25	:	Cyane Fossae
+-76.75	2.61	:	Echus Fossae
+146.14	24.08	:	Elysium Fossae
+-30.94	-27.27	:	Erythraea Fossa
+-92.69	4.64	:	Fortuna Fossae
+142	36.63	:	Galaxias Fossae
+-129.56	3.55	:	Gigas Fossae
+-127.6	14.83	:	Gordii Fossae
+-126.04	27.35	:	Halex Fossae
+122.85	20.84	:	Hephaestus Fossae
+137.06	21.44	:	Hyblaeus Fossae
+-125.16	-48.09	:	Icaria Fossae
+-51.2	37.33	:	Idaeus Fossae
+38.35	41.31	:	Ismeniae Fossae
+-115.83	19.77	:	Jovis Fossae
+;-95	20.68	:	[Labeatis Fossae]
+-84.53	24.58	:	Labeatis Fossae
+-145.88	-17.27	:	Mangala Fossa
+-76.12	44.34	:	Mareotis Fossae
+-164.2	-2.17	:	Medusae Fossae
+-71.52	-26.28	:	Melas Fossae
+-153.82	-23.63	:	Memnonia Fossae
+-57.16	-23.09	:	Nectaris Fossae
+-71.77	-14.73	:	Nia Fossae
+76.69	22.02	:	Nili Fossae
+-57.83	24.59	:	Nilokeras Fossa
+-98.85	-2.69	:	Noctis Fossae
+-29.51	-61.58	:	Oceanidum Fossa
+-113.92	24.85	:	Olympica Fossae
+-117.09	-9.63	:	Oti Fossae
+-111.29	4.15	:	Pavonis Fossae
+66.31	50.39	:	Pyramus Fossae
+-23.8	-29.2	:	Pyrrhae Fossae
+110.07	25.08	:	Qidu Fossae
+-70	20.36	:	Sacra Fossae
+-78.67	-14.08	:	Sinai Fossae
+-162.74	-35.57	:	Sirenum Fossae
+149.83	26.92	:	Stygis Fossae
+-86.49	38.74	:	Tanais Fossae
+-96.09	49.83	:	Tantalus Fossae
+-71.4	40.42	:	Tempe Fossae
+-91.05	-47.75	:	Thaumasia Fossae
+;-82.5	-6.33	:	[Tithoniae Fossae]
+-83.04	-4.32	:	Tithoniae Fossae
+-101.28	25.89	:	Tractus Fossae
+105.8	-22.23	:	Tyrrhena Fossae
+-123.07	9.95	:	Ulysses Fossae
+-90.13	25.29	:	Uranius Fossae
+109.84	25.12	:	Yaodian Fossae
+144.19	23.93	:	Zephyrus Fossae
+
+		

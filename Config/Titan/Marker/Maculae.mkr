@@ -1,0 +1,22 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Macula, maculae (Dark spot, may be irregular)
+
+;Source = https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+-114.7	-24	:	Eir Macula
+-27	31.2	:	Elpis Macula
+-87.3	50	:	Ganesa Macula
+163.7	23.5	:	Genetaska Macula
+-37.2	17.6	:	Omacatl Macula
+79.6	-41.1	:	Polaznik Macula
+-56	50	:	Polelya Macula

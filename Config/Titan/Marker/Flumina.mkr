@@ -1,0 +1,26 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 4
+Size 0.5
+Distance Factor 1
+END_HEADER
+
+;Flumen, flumina (Channel on Titan that might carry liquid)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+62.76	84.29	:	Apanohuaya Flumen
+-28.8	-73.7	:	Celadon Flumina
+-78.5	19.3	:	Elivagar Flumina
+144.45	76.81	:	Gihon Flumen
+167.15	-70.24	:	Hubur Flumen
+165.25	-70.9	:	Karesos Flumen
+105	72.21	:	Kokytos Flumina
+-90.12	87.33	:	Sambation Flumina
+166.49	-74.55	:	Saraswati Flumen
+117.75	72.9	:	Vid Flumina
+117.24	83.47	:	Xanthus Flumen
+

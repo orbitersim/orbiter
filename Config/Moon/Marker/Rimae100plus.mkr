@@ -1,0 +1,68 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Rima, rimae (Fissure)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 18 January 2022
+
+BEGIN_DATA
+;-51	26	:	[Rima Schröter]
+-53.42	29.25	:	Rima Agricola
+13.44	6.48	:	Rima Ariadaeus
+-0.6	24.17	:	Rima Bradley
+-36.35	22.3	:	Rima Brayley
+-71.14	11.32	:	Rima Cardanus
+38.07	10.42	:	Rima Cauchy
+-33.67	28.7	:	Rima Diophantus
+-25.37	17.37	:	Rima Draper
+-30.31	21.08	:	Rima Euler
+35.25	32.86	:	Rima G. Bond
+-59.2	12.91	:	Rima Galilaei
+3.15	25.72	:	Rima Hadley
+-21.85	-30.54	:	Rima Hesiodus
+6.77	7.62	:	Rima Hyginus
+-46.83	38.28	:	Rima Mairan
+-49.54	16.37	:	Rima Marius
+-32.87	8.03	:	Rima Milichius
+-50.36	46.02	:	Rima Sharp
+23.69	58.28	:	Rima Sheepshanks
+-47.14	6.62	:	Rima Suess
+-4.53	26.34	:	Rimae Archimedes
+-47.25	27.52	:	Rimae Aristarchus
+-3.22	9.54	:	Rimae Bode
+31.24	29.01	:	Rimae Chacornac
+24.33	37.53	:	Rimae Daniell
+-66.66	-19.84	:	Rimae Darwin
+-84.36	45.54	:	Rimae Gerard
+42.88	-7.84	:	Rimae Goclenius
+-63.9	-6.18	:	Rimae Grimaldi
+36.42	-4.42	:	Rimae Gutenberg
+67.78	-34.71	:	Rimae Hase
+-36.75	-13.92	:	Rimae Herigonius
+-66.38	0.81	:	Rimae Hevelius
+-29.36	-25.6	:	Rimae Hippalus
+22.78	-0.34	:	Rimae Hypatia
+39.26	-45.8	:	Rimae Janssen
+-88.1	-14.68	:	Rimae Kopff
+30.47	22.47	:	Rimae Littrow
+-46.53	-20.69	:	Rimae Mersenius
+-16.52	-8.07	:	Rimae Parry
+60.48	-25.23	:	Rimae Petavius
+-93.63	-25.22	:	Rimae Pettit
+-3.02	50.88	:	Rimae Plato
+23.14	17.05	:	Rimae Plinius
+-31.32	-32.93	:	Rimae Ramsden
+-80.46	50.74	:	Rimae Repsold
+-73.07	-1.52	:	Rimae Riccioli
+34.86	26.98	:	Rimae Romer			; Rimae Römer
+-61.36	-15.01	:	Rimae Sirsalis
+18.72	8.08	:	Rimae Sosigenes
+4.83	5.1	:	Rimae Triesnecker
+-53.76	-15.46	:	Rimae Zupus
+

@@ -1,0 +1,18 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Regio, regiones (A large area marked by reflectivity or color ;distinctions from adjacent areas, or a broad geographic region)
+
+;Source = https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+34	-23	:	Palisa Regio
+-176	-11	:	Pola Regio
+2	8	:	Vienna Regio

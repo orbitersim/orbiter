@@ -1,0 +1,18 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Rima, rimae (Fissure)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+39	53	:	Rhodanus Rimae
+-131	33	:	Tiberis Rimae
+
+

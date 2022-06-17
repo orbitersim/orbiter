@@ -1,0 +1,18 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 3
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Mons, montes (Mountain)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+38.74	-9.48	:	Butler Mons
+7.05	-5.12	:	Clarke Montes
+30.8	3.6	:	Kubrick Mons
+

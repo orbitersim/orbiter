@@ -1,0 +1,24 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+;Note: planetarynames gave both craters the same coordinates, 0 0.
+;Their image shows both craters near the left edge of the image,
+;no map available.
+
+
+BEGIN_DATA
+0	0	:	Hilairea
+0	0	:	Pollux
+
+
+

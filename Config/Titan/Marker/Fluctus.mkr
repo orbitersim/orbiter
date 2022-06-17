@@ -1,0 +1,21 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 4
+Size 0.5
+Distance Factor 1
+
+END_HEADER
+
+;Fluctus, fluctūs (Flow terrain)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+-118.4	39.8	:	Ara Fluctus
+-77.8	50.5	:	Leilah Fluctus
+-38.53	-11.78	:	Mohini Fluctus
+-37.75	47.3	:	Rohe Fluctus
+-46	49	:	Winia Fluctus
+

@@ -1,0 +1,24 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Chasma, chasmata (A deep, elongated, steep-sided depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+-147	35	:	Avalon Chasma
+-23.4	-43	:	Camelot Chasma
+-122.7	19	:	Oeta Chasma
+56.25	-23.56	:	Ossa Chasma
+19.59	-28.12	:	Pangea Chasma
+109.92	-25.31	:	Pelion Chasma
+;146.65	-51.76	:	[Tintagil Chasma]
+
+
+

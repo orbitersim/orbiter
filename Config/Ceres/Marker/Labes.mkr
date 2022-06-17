@@ -1,0 +1,20 @@
+
+
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;;Labes - landslide debris
+
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 3 January 2022
+
+BEGIN_DATA
+39.21	78.38	:	Dankdag Labes
+-43.98	51.23	:	Onam Labes
+26.81	50.55	:	Sukkot Labes
+

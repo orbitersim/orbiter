@@ -1,0 +1,19 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 3
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Montes - mountain or mountain range
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+-43.8	-10.48	:	Ahuna Mons
+-48.99	6.02	:	Liberalia Mons
+12	85.5	:	Yamor Mons
+;12	85.5	:	[Ysolo Mons]
+

@@ -1,0 +1,34 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Lacus, lacūs ("Lake" or small plain; on Titan, a "lake" or small, dark plain with discrete, sharp boundaries)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 16 January 2022
+
+BEGIN_DATA
+-68.57	-14.83	:	Lacus Aestatis
+-83.17	-11.81	:	Lacus Autumni
+44.32	23.18	:	Lacus Bonitatis
+8.61	16.8	:	Lacus Doloris
+-43.58	-35.65	:	Lacus Excellentiae
+5.36	18.52	:	Lacus Felicitatis
+12.27	16.33	:	Lacus Gaudii
+13.97	15.01	:	Lacus Hiemalis
+12.05	14.32	:	Lacus Lenitatis
+175.5	19.41	:	Lacus Luxuriae
+27.32	45.13	:	Lacus Mortis
+-168.52	-20.39	:	Lacus Oblivionis
+7.27	19.22	:	Lacus Odii
+61.93	7.84	:	Lacus Perseverantiae
+103.88	-27.52	:	Lacus Solitudinis
+30.8	37.56	:	Lacus Somniorum
+65.2	43.46	:	Lacus Spei
+56.21	46.77	:	Lacus Temporis
+-27.95	-39.42	:	Lacus Timoris
+-85.91	-16.48	:	Lacus Veris

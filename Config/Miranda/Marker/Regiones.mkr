@@ -1,0 +1,19 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Regio, regiones (A large area marked by reflectivity or color ;distinctions from adjacent areas, or a broad geographic region)
+
+;Source = https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+11.9	-31.5	:	Dunsinane Regio
+-110	-15	:	Ephesus Regio
+-179.8	-39.6	:	Mantua Regio
+-42.8	-30	:	Sicilia Regio

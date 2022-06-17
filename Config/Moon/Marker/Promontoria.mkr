@@ -1,0 +1,25 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Promontoria, raised moutainous cape
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 18 January 2022
+
+BEGIN_DATA
+65.73	13.87	:	Promontorium Agarum
+1.77	42.4	:	Promontorium Agassiz
+21.94	16.8	:	Promontorium Archerusia
+1.14	43.31	:	Promontorium Deville
+4.75	28.63	:	Promontorium Fresnel
+-34.1	40.6	:	Promontorium Heraclides
+-33.45	-26.95	:	Promontorium Kelvin
+-25.51	46.84	:	Promontorium Laplace
+-7.34	-18.63	:	Promontorium Taenarium
+
+

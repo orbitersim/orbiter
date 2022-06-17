@@ -1,0 +1,21 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Macula, maculae (Dark spot, may be irregular)
+
+;Source = https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+BEGIN_DATA
+-166.8	-53.6	:	Boeotia Macula
+134.3	-1.6	:	Castalia Macula
+168.7	-62.5	:	Cyclades Macula
+178.8	-46.7	:	Thera Macula
+-172.1	-45.9	:	Thrace Macula
+;-147	31.7	:	[Tyre Macula]

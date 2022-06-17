@@ -1,0 +1,47 @@
+BEGIN_HEADER
+InitialState on
+ShapeIdx 0
+ColourIdx 5
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Albedo Feature (Geographic area distinguished by amount of reflected light)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;updated 3 January 2022
+
+BEGIN_DATA
+45	45	:	Apollonia
+-90	45	:	Aurora
+0	-72.5	:	Australia
+0	75	:	Borea
+-135	45	:	Caduceata
+90	-41	:	Cyllene
+-120	40	:	Gallia
+-170	40	:	Heliocaminus
+5	-45	:	Hesperis
+135	45	:	Liguria
+50	5	:	Pentas
+-167	0	:	Phaethontias
+90	0	:	Pieria
+-140	15	:	Pleias
+-90	55	:	Solitudo Admetei
+70	-15	:	Solitudo Alarum
+70	25	:	Solitudo Aphrodites
+25	-10	:	Solitudo Argiphontae
+150	-35	:	Solitudo Atlantis
+130	0	:	Solitudo Criophori
+-180	-10	:	Solitudo Helii
+-45	-45	:	Solitudo Hermae Trismegisti
+-115	25	:	Solitudo Horarum
+0	0	:	Solitudo Iovis
+-107	0	:	Solitudo Lycaonis
+-155	-15	:	Solitudo Maiae
+-100	-35	:	Solitudo Martis
+-150	30	:	Solitudo Neptuni
+135	-41	:	Solitudo Persephones
+135	25	:	Solitudo Phoenicis
+-142.5	-45	:	Solitudo Promethei
+-36	0	:	Tricrena
+

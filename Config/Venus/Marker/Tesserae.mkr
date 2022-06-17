@@ -1,0 +1,83 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 1
+DistanceFactor 1
+
+END_HEADER
+
+;Source: https://planetarynames.usgs.gov
+;Updated 21 December 2021
+
+BEGIN_DATA
+55	30	:	Adrasthea Tesserae
+137	53.3	:	Ananke Tessera
+175	35	:	Athena Tessera
+-56	71.5	:	Atropos Tessera
+-160	61	:	Bathkol Tessera
+-90	-3	:	Chimon-mana Tessera
+29	-42	:	Clidna Tessera
+-25.1	56.4	:	Clotho Tessera
+23	-62	:	Cocomama Tessera
+71.8	57.4	:	Dekla Tessera
+-64	-8	:	Dolya Tessera
+-116	-60	:	Dou-Mu Tesserae
+45.1	69.9	:	Fortuna Tessera
+38	-1	:	Gbadu Tessera
+121	17	:	Gegute Tessera
+-110	-39	:	Giltine Tesserae
+127	6	:	Haasttse-baad Tessera
+;54	-42	:	[Hikuleo Tesserae]
+-110	-53	:	Humai Tessera
+101	-28	:	Husbishag Tesserae
+42.23	-8.76	:	Istustaya Tesserae
+-42.4	75.7	:	Itzpapalotl Tessera
+-16.59	65.05	:	Jyestha Tesserae
+27	36	:	Kruchina Tesserae
+108.8	39.5	:	Kutue Tessera
+-59.9	44.4	:	Lachesis Tessera
+-171	29	:	Lahevhev Tesserae
+48.5	55	:	Laima Tessera
+15	-51	:	Lhamo Tessera
+134	40	:	Likho Tesserae
+38.5	9.2	:	Mafdet Tessera
+157	70	:	Mago-Halmi Tesserae
+-55	-52	:	Magu Tessera
+44	22	:	Mamitu Tesserae
+64	-4	:	Manatum Tessera
+-0.5	39	:	Manzan-Gurme Tesserae
+77.9	48.1	:	Meni Tessera
+103.1	65.8	:	Meskhent Tessera
+30	-20	:	Minu-Anni Tessera
+-49.5	58.7	:	Moira Tessera
+-66	5	:	Nedolya Tesserae
+-179	40	:	Nemesis Tesserae
+-97	-50	:	Norna Tesserae
+160	-49	:	Nortia Tesserae
+157	-9	:	Nuahine Tessera
+85	82	:	Oddibjord Tessera
+49	-33	:	Pasom-mana Tesserae
+48.5	-1.5	:	Salus Tessera
+-68	50	:	Senectus Tesserae
+173.5	-54	:	Shait Tessera
+97.7	31.9	:	Shimti Tessera
+134	24	:	Snotra Tesserae
+-117	-45	:	Sopdet Tesserae
+-90	33	:	Sudenitsa Tesserae
+112	-37	:	Sudice Tessera
+76.8	42.6	:	Tellus Tessera
+54	-42	:	Tushita Tesserae
+14.5	-44	:	Tyche Tessera
+174.5	-40	:	Urd Tessera
+-95	-43	:	Ustrecha Tesserae
+40	27	:	Vako-nana Tesserae
+160	-58	:	Verpeja Tesserae
+-120.3	56.1	:	Virilis Tesserae
+62	-30	:	Xi Wang-mu Tessera
+-99	39	:	Yuki-Onne Tessera
+-60	33	:	Zirka Tessera
+
+
+
+

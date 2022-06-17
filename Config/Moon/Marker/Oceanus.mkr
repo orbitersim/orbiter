@@ -1,0 +1,19 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 4
+ShapeIdx 0
+Size 0.5
+DistanceFactor 2
+END_HEADER
+
+;Mare, maria (“Sea”; on the Moon, low albedo, relatively smooth plain, 
+;generally of large extent; on Mars, 
+;dark albedo areas of no known geological significance; on Titan, 
+;large expanses of dark materials thought to be liquid hydrocarbons)
+
+
+;Source = https://planetarynames.wr.usgs.gov/
+;Updated 
+
+BEGIN_DATA
+-56.68	20.67	:	Oceanus Procellarum

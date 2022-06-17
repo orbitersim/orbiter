@@ -1,0 +1,20 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
+END_HEADER
+
+;Terra, terrae (Extensive land mass)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+12	-13.5	:	Garotman Terra
+37.3	6.4	:	Tollan Terra
+19.88	2.83	:	Tsiipiya Terra
+36	-19.5	:	Yalaing Terra
+		

@@ -1,0 +1,17 @@
+BEGIN_HEADER
+InitialState on
+ShapeIdx 3
+ColourIdx 5
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Arcus, arcūs (arc-shaped feature)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;updated 4 January 2022
+
+BEGIN_DATA
+-79	-28	:	Hotei Arcus
+
+
