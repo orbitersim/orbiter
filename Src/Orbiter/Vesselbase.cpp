@@ -127,6 +127,7 @@ void SurfParam::SetLanded (double _lng, double _lat, double _alt, double _dir, c
 {
 	static const double eps = 1e-6;
 
+	if (_ref == NULL) return;
 	ref = _ref;
 	Planet *planet = (ref->Type() == OBJTP_PLANET ? (Planet*)ref : 0);
 
