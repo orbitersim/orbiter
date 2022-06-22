@@ -8,7 +8,6 @@ add_subdirectory(Pltex)
 add_subdirectory(Shipedit)
 add_subdirectory(scramble)
 add_subdirectory(texpack)
-#add_subdirectory(tileedit/qt)
 
 # We do this as an external project to invoke x64 toolchain
 ExternalProject_Add(plsplit
@@ -24,13 +23,11 @@ ExternalProject_Add(plsplit
 )
 # Install project output from here instead from inside the external project
 # to make cpack aware of it
-if (EXISTS ${CMAKE_CURRENT_BINARY_DIR}/plsplit/plsplit.exe)
-	install(PROGRAMS
-		${CMAKE_CURRENT_BINARY_DIR}/plsplit/plsplit.exe
-		plsplit/DxTex.exe
-		DESTINATION ${ORBITER_INSTALL_UTILS_DIR}
-	)
-endif()
+install(PROGRAMS
+	${CMAKE_CURRENT_BINARY_DIR}/plsplit/plsplit.exe
+	plsplit/DxTex.exe
+	DESTINATION ${ORBITER_INSTALL_UTILS_DIR}
+)
 
 # tileedit is another 64-bit project. This also requires
 # Qt5 so will only be built if that is available
