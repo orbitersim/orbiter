@@ -117,8 +117,8 @@ CFG_CAPTUREPRM CfgCapturePrm_default = {
 CFG_INSTRUMENTPRM CfgInstrumentPrm_default = {
 	2,          // bMfdPow2 (auto from driver caps)
 	384,        // MfdHiresThreshold (switch to 512x512 at this size if pow2 is active)
-	512,		// PanelMFDHUDSize
-	256         // VCMfdSize
+	512,        // PanelMFDHUDSize
+	1024        // VCMfdSize
 };
 
 CFG_VISHELPPRM CfgVisHelpPrm_default = {
