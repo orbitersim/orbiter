@@ -1021,24 +1021,24 @@ void Scene::RenderDirectionMarker (const Vector &rdir, const char *label1, const
 			LineTo (hDC, x+scale, y); LineTo (hDC, x, y+scale);
 			LineTo (hDC, x-scale, y); LineTo (hDC, x, y-scale);
 			break;
-		case 3: { // delta
+		case 3: { // nabla
 			int scl1 = (int)(scale*1.1547);
 			MoveToEx (hDC, x, y-scale, NULL);
 			LineTo (hDC, x+scl1, y+scale); LineTo (hDC, x-scl1, y+scale); LineTo (hDC, x, y-scale);
 			} break;
-		case 4: { // nabla
+		case 4: { // delta
 			int scl1 = (int)(scale*1.1547);
 			MoveToEx (hDC, x, y+scale, NULL);
 			LineTo (hDC, x+scl1, y-scale); LineTo (hDC, x-scl1, y-scale); LineTo (hDC, x, y+scale);
 			} break;
-		case 5: { // cross
+		case 5: { // crosshair
 			int scl1 = scale/4;
 			MoveToEx (hDC, x, y-scale, NULL); LineTo (hDC, x, y-scl1);
 			MoveToEx (hDC, x, y+scale, NULL); LineTo (hDC, x, y+scl1);
 			MoveToEx (hDC, x-scale, y, NULL); LineTo (hDC, x-scl1, y);
 			MoveToEx (hDC, x+scale, y, NULL); LineTo (hDC, x+scl1, y);
 			} break;
-		case 6: { // X
+		case 6: { // rotated crosshair
 			int scl1 = scale/4;
 			MoveToEx (hDC, x-scale, y-scale, NULL); LineTo (hDC, x-scl1, y-scl1);
 			MoveToEx (hDC, x-scale, y+scale, NULL); LineTo (hDC, x-scl1, y+scl1);
