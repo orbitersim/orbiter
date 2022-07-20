@@ -4,6 +4,7 @@
 set(MESH_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Meshes)
 set(TEXTURE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Textures)
 set(CONFIG_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Config)
+set(THUMBNAIL_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Thumbnail)
 
 add_library(Atlantis SHARED
 	AscentAP.cpp
@@ -66,6 +67,11 @@ add_custom_command(
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${TEXTURE_SOURCE_DIR}/ ${ORBITER_BINARY_TEXTURES_DIR}/Atlantis
 )
 
+add_custom_command(
+	TARGET Atlantis PRE_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${THUMBNAIL_SOURCE_DIR}/ ${CMAKE_BINARY_DIR}/Images/Vessels/Default
+)
+
 add_dependencies(Atlantis
 	${OrbiterTgt}
 	Orbitersdk
@@ -93,4 +99,7 @@ install(DIRECTORY ${MESH_SOURCE_DIR}/
 )
 install(DIRECTORY ${TEXTURE_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_TEXTURES_DIR}/Atlantis
+)
+install(DIRECTORY ${THUMBNAIL_SOURCE_DIR}/
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Images/Vessels/Default
 )

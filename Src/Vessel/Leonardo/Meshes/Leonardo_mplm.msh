@@ -2492,12 +2492,12 @@ MATERIAL issb3
 0.150 0.150 0.150 1 30
 0 0 0 1
 TEXTURES 9
-ISSPANEL.dds
-ISSMOD.dds
-D_RING.dds
-ISSDISH.dds
-ISSCOVER.dds
-ISSBS.dds
-issItalian.dds
-ISSLEO.dds
-ISSB3.dds
+ISS\isspanel.dds
+ISS\issmod.dds
+ISS\d_ring.dds
+ISS\issdish.dds
+ISS\isscover.dds
+ISS\issbs.dds
+ISS\issItalian.dds
+ISS\issleo.dds
+ISS\issb3.dds

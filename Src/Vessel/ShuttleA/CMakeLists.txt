@@ -5,6 +5,7 @@ set(MESH_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Meshes)
 set(TEXTURE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Textures)
 set(CONFIG_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Config)
 set(SCRIPT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Script)
+set(THUMBNAIL_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Thumbnail)
 
 add_library(ShuttleA SHARED
 	adiball.cpp
@@ -74,6 +75,11 @@ add_custom_command(
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${SCRIPT_SOURCE_DIR}/ ${CMAKE_BINARY_DIR}/Script/ShuttleA
 )
 
+add_custom_command(
+	TARGET ShuttleA PRE_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${THUMBNAIL_SOURCE_DIR}/ ${CMAKE_BINARY_DIR}/Images/Vessels/Default
+)
+
 # ShuttleA payload class
 add_subdirectory(ShuttleA_PL)
 
@@ -93,6 +99,9 @@ install(DIRECTORY ${TEXTURE_SOURCE_DIR}/
 )
 install(DIRECTORY ${SCRIPT_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Script/ShuttleA
+)
+install(DIRECTORY ${THUMBNAIL_SOURCE_DIR}/
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Images/Vessels/Default
 )
 
 if(ORBITER_MAKE_DOC)

@@ -1,6 +1,8 @@
 # Copyright (c) Martin Schweiger
 # Licensed under the MIT License
 
+set(VESSEL_NAME Leonardo)
+
 set(MESH_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Meshes)
 set(TEXTURE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Textures)
 set(CONFIG_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Config)
@@ -38,17 +40,17 @@ add_custom_command(
 	DEPENDS ${srclist}
 )
 
-add_custom_target(ISS
+add_custom_target(${VESSEL_NAME}
 	DEPENDS ${cfg_tgtlist} ${msh_tgtlist} ${tex_tgtlist} ${thmb_tgtlist}
 )
 
-set_target_properties(ISS
+set_target_properties(${VESSEL_NAME}
 	PROPERTIES
 	FOLDER Vessels
 )
 
 add_dependencies(${OrbiterTgt}
-	ISS
+	${VESSEL_NAME}
 )
 
 # Installation

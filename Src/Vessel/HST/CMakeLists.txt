@@ -7,6 +7,7 @@ set(ADD_SCRIPT_SUPPORT 1)
 set(MESH_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Meshes)
 set(TEXTURE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Textures)
 set(CONFIG_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Config)
+set(THUMBNAIL_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Thumbnail)
 
 add_library(HST SHARED
 	HST.cpp
@@ -54,6 +55,11 @@ add_custom_command(
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${TEXTURE_SOURCE_DIR}/ ${ORBITER_BINARY_TEXTURES_DIR}   # this should really go to its own subdirectory
 )
 
+add_custom_command(
+	TARGET HST PRE_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${THUMBNAIL_SOURCE_DIR}/ ${CMAKE_BINARY_DIR}/Images/Vessels/Default
+)
+
 #Installation
 install(TARGETS HST
 	RUNTIME
@@ -67,4 +73,7 @@ install(DIRECTORY ${MESH_SOURCE_DIR}/
 )
 install(DIRECTORY ${TEXTURE_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_TEXTURES_DIR}
+)
+install(DIRECTORY ${THUMBNAIL_SOURCE_DIR}/
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Images/Vessels/Default
 )

@@ -1,6 +1,8 @@
 # Copyright (c) Martin Schweiger
 # Licensed under the MIT License
 
+set(VESSEL_NAME LDEF)
+
 set(MESH_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Meshes)
 set(TEXTURE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Textures)
 set(CONFIG_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Config)
@@ -22,11 +24,11 @@ add_custom_command(
 	DEPENDS ${srclist}
 )
 
-srcdir_to_tgtlist("${TEXTURE_SOURCE_DIR}" "${ORBITER_BINARY_TEXTURES_DIR}/ISS" srclist tgtlist)
+srcdir_to_tgtlist("${TEXTURE_SOURCE_DIR}" "${ORBITER_BINARY_TEXTURES_DIR}" srclist tgtlist)
 set(tex_tgtlist ${tgtlist})
 add_custom_command(
 	OUTPUT ${tgtlist}
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${TEXTURE_SOURCE_DIR}/ ${ORBITER_BINARY_TEXTURES_DIR}/ISS
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${TEXTURE_SOURCE_DIR}/ ${ORBITER_BINARY_TEXTURES_DIR}
 	DEPENDS ${srclist}
 )
 
@@ -38,17 +40,17 @@ add_custom_command(
 	DEPENDS ${srclist}
 )
 
-add_custom_target(ISS
+add_custom_target(${VESSEL_NAME}
 	DEPENDS ${cfg_tgtlist} ${msh_tgtlist} ${tex_tgtlist} ${thmb_tgtlist}
 )
 
-set_target_properties(ISS
+set_target_properties(${VESSEL_NAME}
 	PROPERTIES
 	FOLDER Vessels
 )
 
 add_dependencies(${OrbiterTgt}
-	ISS
+	${VESSEL_NAME}
 )
 
 # Installation
@@ -59,7 +61,7 @@ install(DIRECTORY ${MESH_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Meshes
 )
 install(DIRECTORY ${TEXTURE_SOURCE_DIR}/
-	DESTINATION ${ORBITER_INSTALL_TEXTURES_DIR}/ISS
+	DESTINATION ${ORBITER_INSTALL_TEXTURES_DIR}
 )
 install(DIRECTORY ${THUMBNAIL_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Images/Vessels/Default
