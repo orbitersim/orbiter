@@ -16,11 +16,11 @@ add_custom_command(
 	DEPENDS ${srclist}
 )
 
-srcdir_to_tgtlist("${MESH_SOURCE_DIR}" "${ORBITER_BINARY_MESH_DIR}" srclist tgtlist)
+srcdir_to_tgtlist("${MESH_SOURCE_DIR}" "${ORBITER_BINARY_MESH_DIR}/ISS" srclist tgtlist)
 set(msh_tgtlist ${tgtlist})
 add_custom_command(
 	OUTPUT ${tgtlist}
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${MESH_SOURCE_DIR}/ ${ORBITER_BINARY_MESH_DIR}
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${MESH_SOURCE_DIR}/ ${ORBITER_BINARY_MESH_DIR}/ISS
 	DEPENDS ${srclist}
 )
 
@@ -58,7 +58,7 @@ install(DIRECTORY ${CONFIG_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Config/Vessels
 )
 install(DIRECTORY ${MESH_SOURCE_DIR}/
-	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Meshes
+	DESTINATION ${ORBITER_INSTALL_MESH_DIR}/ISS
 )
 install(DIRECTORY ${TEXTURE_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_TEXTURES_DIR}/ISS
