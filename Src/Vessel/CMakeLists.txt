@@ -9,10 +9,13 @@ set(VESSEL_COMMON_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Common)
 
 # The individual vessel projects
 add_subdirectory(Atlantis)
+add_subdirectory(Carina)
 add_subdirectory(DeltaGlider)
 add_subdirectory(Dragonfly)
 add_subdirectory(HST)
 add_subdirectory(ISS)
+add_subdirectory(LDEF)
+add_subdirectory(Leonardo)
 add_subdirectory(MMU)
 add_subdirectory(Quadcopter)
 add_subdirectory(ScriptVessel)
