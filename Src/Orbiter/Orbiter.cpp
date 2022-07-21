@@ -1455,13 +1455,18 @@ VOID Orbiter::IncFOV (double dfov)
 //-----------------------------------------------------------------------------
 bool Orbiter::SaveScenario (const char *fname, const char *desc)
 {
-	pState->Update (desc);
+	pState->Update ();
 
 	ofstream ofs (ScnPath (fname));
 	if (ofs) {
 
 		// save scenario state
-		pState->Write (ofs, pConfig->CfgDebugPrm.bSaveExitScreen ? "CurrentState_img" : "CurrentState");
+		if (desc) {
+			pState->Write(ofs, desc, 0);
+		}
+		else {
+			pState->Write(ofs, 0, pConfig->CfgDebugPrm.bSaveExitScreen ? "CurrentState_img" : "CurrentState");
+		}
 		g_camera->Write (ofs);
 		if (g_pane) g_pane->Write (ofs);
 		g_psys->Write (ofs);
