@@ -161,8 +161,12 @@ bool ScnEditor::SaveScenario (HWND hDlg)
 {
 	char fname[256], desc[4096];
 	GetWindowText (GetDlgItem (hDlg, IDC_EDIT1), fname, 256);
-	GetWindowText (GetDlgItem (hDlg, IDC_EDIT2), desc, 4096);
-	return oapiSaveScenario (fname, desc);
+	if (SendDlgItemMessage(hDlg, IDC_RADIO1, BM_GETCHECK, 0, 0) == BST_CHECKED) {
+		return oapiSaveScenario(fname, 0);
+	} else {
+		GetWindowText(GetDlgItem(hDlg, IDC_EDIT2), desc, 4096);
+		return oapiSaveScenario(fname, desc);
+	}
 }
 
 void ScnEditor::InitDialog (HWND _hDlg)
@@ -872,6 +876,8 @@ INT_PTR EditorTab_New::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 EditorTab_Save::EditorTab_Save (ScnEditor *editor) : ScnEditorTab (editor)
 {
 	CreateTab (IDD_TAB_SAVE, EditorTab_Save::DlgProc);
+	SendDlgItemMessage(hTab, IDC_RADIO1, BM_SETCHECK, BST_CHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_RADIO2, BM_SETCHECK, BST_UNCHECKED, 0);
 }
 
 char *EditorTab_Save::HelpTopic ()
@@ -884,6 +890,14 @@ INT_PTR EditorTab_Save::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	switch (uMsg) {
 	case WM_COMMAND:
 		switch (LOWORD (wParam)) {
+		case IDC_RADIO1:
+			if (HIWORD(wParam) == BN_CLICKED)
+				EnableWindow(GetDlgItem(hTab, IDC_EDIT2), FALSE);
+			return TRUE;
+		case IDC_RADIO2:
+			if (HIWORD(wParam) == BN_CLICKED)
+				EnableWindow(GetDlgItem(hTab, IDC_EDIT2), TRUE);
+			return TRUE;
 		case IDC_BACK:
 			SwitchTab (0);
 			return TRUE;

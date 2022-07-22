@@ -23,9 +23,9 @@ public:
 	const char *Focus() const { return focus; }
 	const char *ScnHelp() const { return (scnhelp[0] ? scnhelp : 0); }
 	const char *PlaybackDir() const { return (playback[0] ? playback : scenario); }
-	void Update (const char *_desc = 0);
+	void Update ();
 	bool Read (const char *fname);
-	void Write (std::ostream &ofs, const char *help) const;
+	void Write (std::ostream &ofs, const char *desc, const char *help) const;
 	// load/save scenario state
 
 private:
@@ -38,7 +38,6 @@ private:
 	char focus[64];     // current focus vessel
 	char scnhelp[128];  // scenario help file
 	char playback[128]; // playback folder name, if applicable
-	const char *desc;
 
 };
 

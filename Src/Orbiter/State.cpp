@@ -28,7 +28,6 @@ extern TimeData td;
 
 State::State ()
 {
-	desc = 0;
 	mjd = mjd0 = MJD (time (NULL)); // default to current system time
 	strcpy (solsys, "Sol");         // default name
 	memset (scenario, 0, 256);
@@ -38,9 +37,8 @@ State::State ()
 	memset (playback, 0, 128);
 }
 
-void State::Update (const char *_desc)
+void State::Update ()
 {
-	desc = _desc;
 	mjd  = td.MJD1;
 	strcpy (focus, g_focusobj->Name());
 }
@@ -106,13 +104,15 @@ bool State::Read (const char *fname)
 	return true;
 }
 
-void State::Write (ostream &ofs, const char *help) const
+void State::Write (ostream &ofs, const char *desc, const char *help) const
 {
 	ofs.setf (ios::fixed, ios::floatfield);
 	ofs.precision (10); // need very high precision MJD output
 	if (desc) {
 		ofs << "BEGIN_DESC" << endl;
-		ofs << desc << endl; // need to break lines
+		for (const char* c = desc; *c; c++)
+			if (*c != '\r') ofs << *c; // DOS madness! Get rid of CR so output stream can add it again ... 
+		ofs << endl;
 		ofs << "END_DESC" << endl << endl;
 	}
 	ofs << "BEGIN_ENVIRONMENT" << endl;
@@ -122,10 +122,12 @@ void State::Write (ostream &ofs, const char *help) const
 		ofs << "  Context " << context << endl;
 	if (script[0])
 		ofs << "  Script " << script << endl;
-	if (scnhelp[0])
-		ofs << "  Help " << scnhelp << endl;
-	else if (help)
-		ofs << "  Help " << help << endl;
+	if (!desc) {
+		if (scnhelp[0])
+			ofs << "  Help " << scnhelp << endl;
+		else if (help)
+			ofs << "  Help " << help << endl;
+	}
 	if (playback[0])
 		ofs << "  Playback " << playback << endl;
 	ofs << "END_ENVIRONMENT" << endl << endl;
