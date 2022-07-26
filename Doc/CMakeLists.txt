@@ -69,18 +69,22 @@ install(FILES ${out}
 
 # ScenarioEditor.pdf -----------------------------------------------------
 
-doc_to_pdf_arglist("ScenarioEditor" arglist src out)
+odt_to_pdf_arglist("ScenarioEditor" arglist src out)
 add_custom_command(
 	OUTPUT ${out}
-	COMMAND ${DOC_TO_PDF_COMPILER} ${arglist}
+	COMMAND ${ODT_TO_PDF_COMPILER} ${arglist}
 	DEPENDS ${src}
 	JOB_POOL soffice
 )
 add_custom_target(ScenarioEditorDoc
 	DEPENDS ${out}
 )
-add_dependencies(OrbiterDoc
+add_dependencies(${OrbiterTgt}
 	ScenarioEditorDoc
+)
+set_target_properties(ScenarioEditorDoc
+	PROPERTIES
+	FOLDER Doc
 )
 install(FILES ${out}
 	DESTINATION ${ORBITER_INSTALL_DOC_DIR}
