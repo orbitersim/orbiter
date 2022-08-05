@@ -128,30 +128,6 @@ install(FILES ${out}
 	DESTINATION ${ORBITER_INSTALL_DOC_DIR}
 )
 
-# DeltaGlider.pdf --------------------------------------------------------
-
-# Note: DeltaGlider doc should be moved to the DeltaGlider package build
-odt_to_pdf_arglist("DeltaGlider" arglist src out)
-add_custom_command(
-	OUTPUT ${out}
-	COMMAND ${ODT_TO_PDF_COMPILER} ${arglist}
-	DEPENDS ${src}
-	JOB_POOL soffice
-)
-add_custom_target(DeltaGliderDoc
-	DEPENDS ${out}
-)
-add_dependencies(OrbiterDoc
-	DeltaGliderDoc
-)
-set_target_properties(DeltaGliderDoc
-	PROPERTIES
-	FOLDER Doc
-)
-install(FILES ${out}
-	DESTINATION ${ORBITER_INSTALL_DOC_DIR}
-)
-
 # ShuttleA.pdf -----------------------------------------------------------
 
 doc_to_pdf_arglist("ShuttleA" arglist src out)
