@@ -147,48 +147,6 @@ install(FILES ${out}
 	DESTINATION ${ORBITER_INSTALL_DOC_DIR}
 )
 
-# Atlantis.pdf -----------------------------------------------------------
-
-# Note: Atlantis doc should be moved to the Atlantis package build
-odt_to_pdf_arglist("Atlantis" arglist src out)
-add_custom_command(
-	OUTPUT ${out}
-	COMMAND ${ODT_TO_PDF_COMPILER} ${arglist}
-	DEPENDS ${src}
-	JOB_POOL soffice
-)
-add_custom_target(AtlantisDoc
-	DEPENDS ${out}
-)
-add_dependencies(OrbiterDoc
-	AtlantisDoc
-)
-set_target_properties(AtlantisDoc
-	PROPERTIES
-	FOLDER Doc
-)
-install(FILES ${out}
-	DESTINATION ${ORBITER_INSTALL_DOC_DIR}
-)
-
-# Atlantis_MMU_Sat_30.pdf ------------------------------------------------
-
-set(name Atlantis_MMU_Sat_30.pdf)
-set(out ${ORBITER_BINARY_ROOT_DIR}/Doc/${name})
-add_custom_command(
-	OUTPUT ${out}
-	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${name} ${out}
-)
-add_custom_target(DocMMU
-	DEPENDS ${out}
-)
-add_dependencies(OrbiterDoc
-	DocMMU
-)
-install(FILES ${out}
-	DESTINATION ${ORBITER_INSTALL_DOC_DIR}
-)
-
 # Technotes --------------------------------------------------------------
 
 add_subdirectory(Technotes)

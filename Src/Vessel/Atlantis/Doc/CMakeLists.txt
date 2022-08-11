@@ -1,6 +1,6 @@
-# DeltaGlider.pdf --------------------------------------------------------
+# Atlantis.pdf --------------------------------------------------------
 
-set(document "DeltaGlider")
+set(document "Atlantis")
 set(outdir ${ORBITER_BINARY_DOC_DIR})
 set(src ${CMAKE_CURRENT_SOURCE_DIR}/${document}.odt)
 set(out ${outdir}/${document}.pdf)
@@ -11,13 +11,13 @@ add_custom_command(
 	DEPENDS ${src}
 	JOB_POOL soffice
 )
-add_custom_target(DeltaGliderDoc
+add_custom_target(AtlantisDoc
 	DEPENDS ${out}
 )
-add_dependencies(DeltaGlider
-	DeltaGliderDoc
+add_dependencies(Atlantis
+	AtlantisDoc
 )
-set_target_properties(DeltaGliderDoc
+set_target_properties(AtlantisDoc
 	PROPERTIES
 	FOLDER Doc
 )
