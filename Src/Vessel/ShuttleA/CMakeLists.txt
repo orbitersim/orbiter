@@ -96,5 +96,6 @@ install(DIRECTORY ${SCRIPT_SOURCE_DIR}/
 )
 
 if(ORBITER_MAKE_DOC)
+	add_subdirectory(Doc)
 	add_subdirectory(Help)
 endif()

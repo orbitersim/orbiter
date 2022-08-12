@@ -105,25 +105,6 @@ install(FILES ${out}
 	DESTINATION ${ORBITER_INSTALL_DOC_DIR}
 )
 
-# ShuttleA.pdf -----------------------------------------------------------
-
-doc_to_pdf_arglist("ShuttleA" arglist src out)
-add_custom_command(
-	OUTPUT ${out}
-	COMMAND ${DOC_TO_PDF_COMPILER} ${arglist}
-	DEPENDS ${src}
-	JOB_POOL soffice
-)
-add_custom_target(ShuttleADoc
-	DEPENDS ${out}
-)
-add_dependencies(OrbiterDoc
-	ShuttleADoc
-)
-install(FILES ${out}
-	DESTINATION ${ORBITER_INSTALL_DOC_DIR}
-)
-
 # Technotes --------------------------------------------------------------
 
 add_subdirectory(Technotes)
