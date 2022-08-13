@@ -67,25 +67,6 @@ install(FILES ${out}
 	DESTINATION ${ORBITER_INSTALL_DOC_DIR}
 )
 
-# Change.pdf -------------------------------------------------------------
-
-doc_to_pdf_arglist("Change" arglist src out)
-add_custom_command(
-	OUTPUT ${out}
-	COMMAND ${DOC_TO_PDF_COMPILER} ${arglist}
-	DEPENDS ${src}
-	JOB_POOL soffice
-)
-add_custom_target(OrbiterChangeDoc
-	DEPENDS ${out}
-)
-add_dependencies(OrbiterDoc
-	OrbiterChangeDoc
-)
-install(FILES ${out}
-	DESTINATION ${ORBITER_INSTALL_DOC_DIR}
-)
-
 # Credit.pdf -------------------------------------------------------------
 
 doc_to_pdf_arglist("Credit" arglist src out)
