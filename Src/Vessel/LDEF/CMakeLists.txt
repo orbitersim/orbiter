@@ -1,7 +1,7 @@
 # Copyright (c) Martin Schweiger
 # Licensed under the MIT License
 
-set(VESSEL_NAME ISS)
+set(VESSEL_NAME LDEF)
 
 set(MESH_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Meshes)
 set(TEXTURE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Textures)
@@ -16,19 +16,19 @@ add_custom_command(
 	DEPENDS ${srclist}
 )
 
-srcdir_to_tgtlist("${MESH_SOURCE_DIR}" "${ORBITER_BINARY_MESH_DIR}/${VESSEL_NAME}" srclist tgtlist)
+srcdir_to_tgtlist("${MESH_SOURCE_DIR}" "${ORBITER_BINARY_MESH_DIR}" srclist tgtlist)
 set(msh_tgtlist ${tgtlist})
 add_custom_command(
 	OUTPUT ${tgtlist}
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${MESH_SOURCE_DIR}/ ${ORBITER_BINARY_MESH_DIR}/${VESSEL_NAME}
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${MESH_SOURCE_DIR}/ ${ORBITER_BINARY_MESH_DIR}
 	DEPENDS ${srclist}
 )
 
-srcdir_to_tgtlist("${TEXTURE_SOURCE_DIR}" "${ORBITER_BINARY_TEXTURES_DIR}/${VESSEL_NAME}" srclist tgtlist)
+srcdir_to_tgtlist("${TEXTURE_SOURCE_DIR}" "${ORBITER_BINARY_TEXTURES_DIR}" srclist tgtlist)
 set(tex_tgtlist ${tgtlist})
 add_custom_command(
 	OUTPUT ${tgtlist}
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${TEXTURE_SOURCE_DIR}/ ${ORBITER_BINARY_TEXTURES_DIR}/${VESSEL_NAME}
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${TEXTURE_SOURCE_DIR}/ ${ORBITER_BINARY_TEXTURES_DIR}
 	DEPENDS ${srclist}
 )
 
@@ -58,10 +58,10 @@ install(DIRECTORY ${CONFIG_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Config/Vessels
 )
 install(DIRECTORY ${MESH_SOURCE_DIR}/
-	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Meshes/${VESSEL_NAME}
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Meshes
 )
 install(DIRECTORY ${TEXTURE_SOURCE_DIR}/
-	DESTINATION ${ORBITER_INSTALL_TEXTURES_DIR}/${VESSEL_NAME}
+	DESTINATION ${ORBITER_INSTALL_TEXTURES_DIR}
 )
 install(DIRECTORY ${THUMBNAIL_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Images/Vessels/Default
