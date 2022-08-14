@@ -31,6 +31,7 @@
 #include "auxpodctrl.h"
 #include "InstrVs.h"
 #include "resource.h"
+#include "meshres.h"
 #include <math.h>
 #include <stdio.h>
 
@@ -157,15 +158,11 @@ void ShuttleA::DefineAnimations ()
 	static UINT RightPodGrp[4] = {6,8,10,11};
 	static MGROUP_ROTATE rightpod(0,RightPodGrp,4,_V(0,0,0),_V(1,0,0),(float)PI);
 
-	
-	
-
 	// Register animation for hover/retro pods
 	anim_pod[0] = CreateAnimation (0);
 	AddAnimationComponent (anim_pod[0], 0.0f,1.0f, &leftpod);
 	anim_pod[1] = CreateAnimation (0);
 	AddAnimationComponent (anim_pod[1], 0.0f,1.0f,&rightpod);
-
 
 	static UINT UpperDockHatch = 19;
 	static MGROUP_ROTATE upperhatch(0,&UpperDockHatch,1,_V(0,0.554f,18.677401f),_V(-1,0,0),(float)PI);
@@ -173,17 +170,19 @@ void ShuttleA::DefineAnimations ()
 	static MGROUP_ROTATE lowerhatch(0,&LowerDockHatch,1,_V(0,-0.554f,18.677401f),_V(1,0,0),(float)PI);
 	anim_dock = CreateAnimation (0);
 	AddAnimationComponent (anim_dock,0.0f,1.0f, &upperhatch);
-	AddAnimationComponent (anim_dock,0.2f,1.0f,  &lowerhatch);
-
-	static UINT OuterAirlock = 20;
-	static MGROUP_ROTATE outerairlock(0,&OuterAirlock,1,_V(0,-0.498895f,18.6131f),_V(1,0,0),(float)(0.4f*PI));
+	AddAnimationComponent (anim_dock,0.2f,1.0f, &lowerhatch);
 
 	// outer airlock
+	static UINT OuterAirlock_groups = GRP_Docking_Hatch;
+	static MGROUP_ROTATE OuterAirlock_anim(0, &OuterAirlock_groups, 1, _V(0, 0.498895f, 18.6131f), _V(1, 0, 0), (float)(0.55f*PI));
 	anim_lock[0] = CreateAnimation (0);
-	AddAnimationComponent (anim_lock[0], 0.0f ,1.0f,&outerairlock);
+	AddAnimationComponent (anim_lock[0], 0.0f ,1.0f, &OuterAirlock_anim);
 	
-	// inner airlock - dummy
+	// inner airlock
+	static UINT InnerAirlock_groups = GRP_Airlock_Hatch;
+	static MGROUP_ROTATE InnerAirlock_anim(0, &InnerAirlock_groups, 1, _V(0, -0.807869f, 16.5474f), _V(1, 0, 0), (float)(0.47f * PI));
 	anim_lock[1] = CreateAnimation (0);
+	AddAnimationComponent(anim_lock[1], 0.0f, 1.0f, &InnerAirlock_anim);
 
 	//Gear animation
 	static UINT GEAR_left_leg[3]={30,32,34};
@@ -221,8 +220,6 @@ void ShuttleA::DefineAnimations ()
 	static MGROUP_ROTATE MGEAR_right_leg_mid_p2(0,&GEAR_right_leg_mid_p2,1,_V(2.464f,-1.718f,0.0f),_V(0,0,1),0.5235f);
 	static MGROUP_ROTATE MGEAR_right_leg_back_p1(0,&GEAR_right_leg_back_p1,1,_V(2.49f,-1.942f,0.0f),_V(0,0,1),0.9948f);
 	static MGROUP_ROTATE MGEAR_right_leg_back_p2(0,&GEAR_right_leg_back_p2,1,_V(1.947f,-1.718f,0.0f),_V(0,0,1),0.5235f);
-
-
 
 	anim_gear = CreateAnimation(0.0);
 	AddAnimationComponent (anim_gear, 0.0f, 0.5f, &MGEAR_left_leg_first);
@@ -289,7 +286,6 @@ void ShuttleA::DefineAnimations ()
 	static UINT RCS_mode_switch=33;
 	static MGROUP_ROTATE MRCS_mode_switch(1,&RCS_mode_switch,1,_V(-0.479842445f,2.100993049f,16.32856942f),//added 0.10 to Z
 																_V(0.996194179f,0.036831321f,-0.078997542f),1.570796327f);
-		
 	anim_rcs_mode= CreateAnimation(0.5);
 	AddAnimationComponent(anim_rcs_mode,0.0f,1.0f,&MRCS_mode_switch);
 
@@ -314,7 +310,6 @@ void ShuttleA::DefineAnimations ()
 	anim_gear_switch = CreateAnimation(0.5);
 	AddAnimationComponent(anim_gear_switch,0.0f,1.0f,&MGEAR_switch);
 
-
 	//CARGO ARM switch
 
 	static UINT CARGO_switch=54;
@@ -322,7 +317,6 @@ void ShuttleA::DefineAnimations ()
 														_V(0.0f,0.061554834f,-0.998103703f),1.570796327f/2.0f);
 	anim_cargo_switch = CreateAnimation(0.5);
 	AddAnimationComponent(anim_cargo_switch,0.0f,1.0f,&MCARGO_switch);
-
 }
 
 // --------------------------------------------------------------
