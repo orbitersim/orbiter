@@ -1326,8 +1326,8 @@ void ShuttleA::clbkLoadStateEx (FILEHANDLE scn, void *vs)
 			sscanf (line+9, "%d%lf", &dock_status, &dock_proc);
 		} else if (!_strnicmp (line, "AIRLOCK", 7)) {
 			sscanf (line+7, "%d%lf", &lock_status[0], &lock_proc[0]);
-		} else if (!_strnicmp (line, "IAIRLOCK", 7)) {
-			sscanf (line+7, "%d%lf", &lock_status[1], &lock_proc[1]);
+		} else if (!_strnicmp (line, "IAIRLOCK", 8)) {
+			sscanf (line+8, "%d%lf", &lock_status[1], &lock_proc[1]);
 		} else if (!_strnicmp (line, "GEAR", 4)) {
 			sscanf (line+4, "%d%lf", &gear_status, &gear_proc);
 		} else if (!_strnicmp (line, "PAYLOAD MASS", 12)) {
