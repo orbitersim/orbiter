@@ -1095,6 +1095,7 @@ void ShuttleA::clbkSetClassCaps (FILEHANDLE cfg)
 	int i, j;
 
 	SetSize (17.0);
+	SetClipRadius(19.0);
 	SetPMI (_V(86.6, 89.8, 5.5));
 	SetEmptyMass (EMPTY_MASS);
 	payload_mass = 0.0;
