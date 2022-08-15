@@ -174,13 +174,13 @@ void ShuttleA::DefineAnimations ()
 
 	// outer airlock
 	static UINT OuterAirlock_groups = GRP_Docking_Hatch;
-	static MGROUP_ROTATE OuterAirlock_anim(0, &OuterAirlock_groups, 1, _V(0, 0.498895f, 18.6131f), _V(1, 0, 0), (float)(0.55f*PI));
+	static MGROUP_ROTATE OuterAirlock_anim(0, &OuterAirlock_groups, 1, _V(0.498895f, 0.0f, 18.6131f), _V(0, -1, 0), (float)(0.51f*PI));
 	anim_lock[0] = CreateAnimation (0);
 	AddAnimationComponent (anim_lock[0], 0.0f ,1.0f, &OuterAirlock_anim);
 	
 	// inner airlock
 	static UINT InnerAirlock_groups = GRP_Airlock_Hatch;
-	static MGROUP_ROTATE InnerAirlock_anim(0, &InnerAirlock_groups, 1, _V(0, -0.807869f, 16.5474f), _V(1, 0, 0), (float)(0.47f * PI));
+	static MGROUP_ROTATE InnerAirlock_anim(0, &InnerAirlock_groups, 1, _V(-0.4102f, 0.0f, 16.5474f), _V(0, -1, 0), (float)(0.55f * PI));
 	anim_lock[1] = CreateAnimation (0);
 	AddAnimationComponent(anim_lock[1], 0.0f, 1.0f, &InnerAirlock_anim);
 
