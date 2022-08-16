@@ -12,9 +12,9 @@ p.header { margin-top: -1.5em; margin-bottom: -1.5em; font-size: 75%; text-align
 a.header:link { color: #008080; text-decoration: none }
 a.header:visited { color: #008080; text-decoration: none }
 
-h1 { font-weight: normal; font-size: 150%; color: blue; background-color: #E0E0FF; margin-bottom:0.5em; padding: 0.1em; }
-h2 { font-weight: normal; font-size: 120%; color: blue; margin-bottom: 0.5em;  }
-h3 { font-weight: normal; font-size: 100%; color: blue; margin-bottom: 0; }
+h1 { font-weight: normal; font-size: 150%; color: #000080; background-color: #E6E6FF; margin-bottom:0.5em; padding: 0.1em; }
+h2 { font-weight: normal; font-size: 120%; color: #000080; background-color: #E6E6FF; margin-bottom: 0.5em;  }
+h3 { font-weight: normal; font-size: 100%; color: #000080; margin-bottom: 0; }
 
 ul {margin-left: 2em; margin-top: 0em; margin-bottom: 0em }
 

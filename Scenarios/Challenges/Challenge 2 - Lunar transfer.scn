@@ -1,6 +1,6 @@
-BEGIN_DESC
-Challenge 2. Transfer to the moon and dock with orbiting wheel, Luna-Ob1. Minimize fuel use.
-END_DESC
+BEGIN_URLDESC
+Default\Challenges\Challenge2,Index
+END_URLDESC
 
 BEGIN_ENVIRONMENT
   System Sol

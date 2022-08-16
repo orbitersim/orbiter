@@ -1,8 +1,9 @@
-BEGIN_DESC
-A standard DG Mk4 (left) and a scramjet DG-S (right) showing off their animations. Note the air intakes under the fuselage of the DG-S. Open the
+BEGIN_HYPERDESC
+<h1>Delta-glider: DG and DG-S</h1>
+<p>A standard DG Mk4 (left) and a scramjet DG-S (right) showing off their animations. Note the air intakes under the fuselage of the DG-S. Open the
 control panel (Ctrl-Space) to play with the various elements, or hop into
-the cockpit (F1) and use the mouse to operate the glider.
-END_DESC
+the cockpit (F1) and use the mouse to operate the glider.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

@@ -1,6 +1,6 @@
-BEGIN_HYPERDESC
-<h1>Space Shuttle ascent autopilot</h1>
-END_HYPERDESC
+BEGIN_URLDESC
+Default\ShuttleAscentAp,Index
+END_URLDESC
 
 BEGIN_ENVIRONMENT
   System Sol

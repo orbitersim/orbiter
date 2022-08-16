@@ -1,9 +1,6 @@
-BEGIN_DESC
-Checklist mission 2. Transfer between space stations in Earth orbit.
-
-
-For a step-by-step tutorial, see the Orbiter Manual, or ingame help (Alt-F1) during the simulation.
-END_DESC
+BEGIN_URLDESC
+Default\Checklists\Checklist2,Checklist2
+END_URLDESC
 
 BEGIN_ENVIRONMENT
   System Sol

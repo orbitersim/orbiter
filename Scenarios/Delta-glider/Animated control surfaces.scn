@@ -1,7 +1,8 @@
-BEGIN_DESC
-Use the joystick or keyboard cursor controls to see the Glider's elevons and rudder at work.
-The airbrake can be deployed with Ctrl-B.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Delta-glider: Control surfaces</h1>
+<p>Use the joystick or keyboard cursor controls to see the Glider's elevons and rudder at work.</p>
+<p>The airbrake can be deployed with B [+ B] and retracted with Ctrl-B [+ Ctrl-B].</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol
@@ -75,6 +76,7 @@ GL-01:DeltaGlider
   AROT -171.51 -5.80 126.30
   VROT -0.27 0.08 0.00
   RCSMODE 0
+  AFCMODE 7
   PRPLEVEL 0:0.929 1:1.000
   THLEVEL 0:1.000 1:1.000
   NAVFREQ 94 524 84 114

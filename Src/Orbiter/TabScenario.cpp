@@ -19,7 +19,7 @@
 using namespace std;
 
 extern TCHAR* CurrentScenario;
-const char *htmlstyle = "<style type=""text/css"">body{font-family:Arial;font-size:12px} p{margin-top:0;margin-bottom:0.5em} h1{font-size:150%;font-weight:normal;margin-bottom:0.5em;color:blue;background-color:#E0E0FF;padding:0.1em}</style>";
+const char *htmlstyle = "<style type=""text/css"">body{font-family:Arial;font-size:12px} p{margin-top:0;margin-bottom:0.5em} h1{font-size:150%;font-weight:normal;margin-bottom:0.5em;color:#000080;background-color:#E6E6FF;padding:0.1em}</style>";
 
 //-----------------------------------------------------------------------------
 
@@ -509,31 +509,6 @@ void orbiter::ScenarioTab::ScenarioChanged ()
 		break;
 	}
 	if (ifs) {
-#ifdef UNDEF
-		if (FindLine (ifs, "BEGIN_ENVIRONMENT")) {
-			while (ifs.getline (cbuf, 256) && _strnicmp (pc = trim_string(cbuf), "END_ENVIRONMENT", 15)) {
-				if (!_strnicmp (pc, "HELP", 4)) {
-					strncpy (scnhelp, trim_string (pc+4), 127);
-
-					char str[256], url[256], *path, *topic;
-					strcpy (str, scnhelp);
-					path = strtok (str, ",");
-					topic = strtok (NULL, "\n");
-					if (htmldesc) {
-						if (topic)
-							sprintf (url, "its:Html\\Scenarios\\%s.chm::%s.htm", path, topic);
-						else
-							sprintf (url, "%s\\Html\\Scenarios\\%s.htm", _getcwd(url,256), path);
-						DisplayHTMLPage (GetDlgItem (hTab, IDC_SCN_HTML), url);
-						have_info = true;
-					} else {
-						// activate the "info" button for external display
-					}
-				}
-			}
-		}
-#endif
-
 		if (!have_info) {
 			char *buf;
 			if (htmldesc) {

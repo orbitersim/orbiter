@@ -1,7 +1,6 @@
-BEGIN_HYPERDESC
-<h1>Orbiter 2016: Across the Alps</h1>
-<p>Fly across the Alps in a Delta-glider and enjoy the new surface elevation support.</p>
-END_HYPERDESC
+BEGIN_URLDESC
+Default\Alps2016,Index
+END_URLDESC
 
 BEGIN_ENVIRONMENT
   System Sol
