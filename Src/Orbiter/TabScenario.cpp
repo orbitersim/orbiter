@@ -509,6 +509,7 @@ void orbiter::ScenarioTab::ScenarioChanged ()
 		break;
 	}
 	if (ifs) {
+#ifdef UNDEF
 		if (FindLine (ifs, "BEGIN_ENVIRONMENT")) {
 			while (ifs.getline (cbuf, 256) && _strnicmp (pc = trim_string(cbuf), "END_ENVIRONMENT", 15)) {
 				if (!_strnicmp (pc, "HELP", 4)) {
@@ -531,22 +532,38 @@ void orbiter::ScenarioTab::ScenarioChanged ()
 				}
 			}
 		}
+#endif
 
 		if (!have_info) {
 			char *buf;
 			if (htmldesc) {
-				buf = ScanFileDesc (ifs, "HYPERDESC");
-				if (!buf) {
-					buf = ScanFileDesc (ifs, "DESC");
-					if (buf) Text2Html (&buf);
-				}
-				if (buf) { // prepend style preamble
-					char *buf2 = new char[strlen(htmlstyle)+strlen(buf)+1];
-					strcpy (buf2, htmlstyle); strcat (buf2, buf);
-					delete []buf;
-					buf = buf2;
-					DisplayHTMLStr (GetDlgItem (hTab, IDC_SCN_HTML), buf);
+				buf = ScanFileDesc(ifs, "URLDESC");
+				if (buf) {
+					char url_ref[256], url[256], *path, *topic;
+					strncpy(url_ref, trim_string(buf), 255);
+					path = strtok(url_ref, ",");
+					topic = strtok(NULL, "\n");
+					if (topic)
+						sprintf(url, "its:Html\\Scenarios\\%s.chm::%s.htm", path, topic);
+					else
+						sprintf(url, "%s\\Html\\Scenarios\\%s.htm", _getcwd(url, 256), path);
+					DisplayHTMLPage(GetDlgItem(hTab, IDC_SCN_HTML), url);
 					have_info = true;
+				}
+				else {
+					buf = ScanFileDesc(ifs, "HYPERDESC");
+					if (!buf) {
+						buf = ScanFileDesc(ifs, "DESC");
+						if (buf) Text2Html(&buf);
+					}
+					if (buf) { // prepend style preamble
+						char* buf2 = new char[strlen(htmlstyle) + strlen(buf) + 1];
+						strcpy(buf2, htmlstyle); strcat(buf2, buf);
+						delete[]buf;
+						buf = buf2;
+						DisplayHTMLStr(GetDlgItem(hTab, IDC_SCN_HTML), buf);
+						have_info = true;
+					}
 				}
 			} else {
 				buf = ScanFileDesc (ifs, "DESC");

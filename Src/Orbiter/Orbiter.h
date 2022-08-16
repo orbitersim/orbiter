@@ -147,7 +147,7 @@ public:
 	bool Timejump (double _mjd, int pmode);
 	void Suspend (void); // elapsed time between Suspend() and Resume() is ignored
 	void Resume (void); // A Suspend/Resume pair must be closed within a time step
-	bool SaveScenario (const char *fname, const char *desc);
+	bool SaveScenario (const char *fname, const char *desc, int desc_type);
 	void SaveConfig ();
 	VOID Quicksave ();
 	void StartCaptureFrames () { video_skip_count = 0; bCapture = true; }
