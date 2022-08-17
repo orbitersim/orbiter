@@ -159,14 +159,34 @@ void ScnEditor::SetBasePosition (HWND hDlg)
 
 bool ScnEditor::SaveScenario (HWND hDlg)
 {
-	char fname[256], desc[4096];
-	GetWindowText (GetDlgItem (hDlg, IDC_EDIT1), fname, 256);
-	if (SendDlgItemMessage(hDlg, IDC_RADIO1, BM_GETCHECK, 0, 0) == BST_CHECKED) {
-		return oapiSaveScenario(fname, 0);
-	} else {
-		GetWindowText(GetDlgItem(hDlg, IDC_EDIT2), desc, 4096);
-		return oapiSaveScenario(fname, desc);
+	char fname[256], title[256], text[4096], desc[4096];
+	GetWindowText(GetDlgItem(hDlg, IDC_EDIT1), fname, 256);
+	GetWindowText(GetDlgItem(hDlg, IDC_EDIT3), title, 256);
+	GetWindowText(GetDlgItem(hDlg, IDC_EDIT2), text, 4096);
+
+	if (strlen(title)) {
+		sprintf(desc, "<h1>%s</h1>\n", title);
 	}
+	else {
+		desc[0] = '\0';
+	}
+	if (strlen(text)) {
+		strcat(desc, "<p>");
+		int j = strlen(desc);
+		for (int i = 0; i < strlen(text) && j < 4090; i++) {
+			if (text[i] == '\r') {
+				continue;
+			}
+			else if (text[i] == '\n') {
+				strcpy(desc + j, "</p>\n<p>");
+				j = strlen(desc);
+			}
+			else
+				desc[j++] = text[i];
+		}
+		strcpy(desc + j, "</p>");
+	}
+	return oapiSaveScenario(fname, desc);
 }
 
 void ScnEditor::InitDialog (HWND _hDlg)
@@ -890,14 +910,6 @@ INT_PTR EditorTab_Save::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	switch (uMsg) {
 	case WM_COMMAND:
 		switch (LOWORD (wParam)) {
-		case IDC_RADIO1:
-			if (HIWORD(wParam) == BN_CLICKED)
-				EnableWindow(GetDlgItem(hTab, IDC_EDIT2), FALSE);
-			return TRUE;
-		case IDC_RADIO2:
-			if (HIWORD(wParam) == BN_CLICKED)
-				EnableWindow(GetDlgItem(hTab, IDC_EDIT2), TRUE);
-			return TRUE;
 		case IDC_BACK:
 			SwitchTab (0);
 			return TRUE;
