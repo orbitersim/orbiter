@@ -1,8 +1,10 @@
-BEGIN_DESC
-Olympus base on Mars: new atmospheric rendering parameters provide more realistic skies. Note the blue tint above the horizon.
-
-To check out the effect from higher up, take the small 1-seated Shuttle-PB for a spin.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Martian atmosphere colours</h1>
+<p>Olympus base on Mars: new atmospheric rendering parameters provide more
+realistic skies. Note the blue tint above the horizon.</p>
+<p>To check out the effect from higher up, take the small 1-seated Shuttle-PB
+for a spin.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

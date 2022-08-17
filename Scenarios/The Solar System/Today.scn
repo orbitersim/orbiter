@@ -1,6 +1,7 @@
-BEGIN_DESC
-The solar system at present.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Today</h1>
+<p>The solar system at present.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

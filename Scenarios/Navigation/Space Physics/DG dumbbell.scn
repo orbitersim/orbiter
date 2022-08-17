@@ -1,12 +1,12 @@
-BEGIN_DESC
-Two connected delta gliders demonstrate the effect of gravitational field
+BEGIN_HYPERDESC
+<h1>DG dumbbell</h1>
+<p>Two connected delta gliders demonstrate the effect of gravitational field
 gradients on distributed vessel masses. The system swings around its tidally
 locked equilibrium state. The camera is pointing towards the centre of the Earth
-to demonstrate the effect more clearly.
-
-Make sure that "gravity-gradient torque" is enabled in the Launchpad dialog.
-Speed up the simulation to 100x.
-END_DESC
+to demonstrate the effect more clearly.</p>
+<p>Make sure that "gravity-gradient torque" is enabled in the Launchpad dialog.
+Speed up the simulation to 100x.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

@@ -1,6 +1,7 @@
-BEGIN_DESC
-Assembling the components of a custom space station with the new Dragonfly class tug.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Dragonfly: Station building</h1>
+<p>Assembling the components of a custom space station with the new Dragonfly class tug.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

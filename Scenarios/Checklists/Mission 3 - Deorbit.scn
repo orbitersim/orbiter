@@ -1,6 +1,16 @@
 BEGIN_URLDESC
 Default\Checklists\Checklist3,Checklist3
 END_URLDESC
+BEGIN_DESC
+Mission 3: De-orbit from Mir
+
+
+This mission completes your orbital roundtrip with a re-entry to return to Kennedy Space
+Center. 
+
+
+For instructions, launch the scenario, then open the Help window (Alt-F1).
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

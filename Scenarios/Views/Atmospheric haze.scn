@@ -1,6 +1,7 @@
-BEGIN_DESC
-Improved rendering of atmospheric effects from orbit.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Atmospheric haze</h1>
+<p>Improved rendering of atmospheric effects from orbit.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

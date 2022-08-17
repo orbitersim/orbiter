@@ -1,6 +1,16 @@
 BEGIN_URLDESC
 Default\Challenges\Challenge1,Index
 END_URLDESC
+BEGIN_DESC
+Orbiter Challenges: 1
+
+
+The task: Fly the Delta-glider to the International Space Station on as little fuel
+as possible. 
+
+
+For details, launch the scenario, then open the Help window (Alt-F1).
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

@@ -376,80 +376,60 @@ struct ReplacementPair {
 	char *src, *tgt;
 };
 
-void Html2Text (char **pbuf)
+void Html2Text(std::string& str)
 {
-	if (!pbuf) return;
-	char *buf = *pbuf;
-	int i, p;
+	std::string::size_type n0, n1;
 
-	// 1. perform subsitutions of known html tags
-	const int ntagpair = 5;
-	ReplacementPair tagpair[ntagpair] = {
-		{"<h1>", "\r\n"},
-		{"</h1> \r\n", "\r\n\r\n"},
-		{"</h1>", "\r\n\r\n"},
-		{"<p>", ""},
-		{"</p>", "\r\n"}
-	};
-	std::string str(buf);
-	delete []buf;
-	for (i = 0; i < ntagpair; i++) {
-		while ((p = str.find (tagpair[i].src)) != std::string::npos)
-			str.replace (p, strlen(tagpair[i].src), tagpair[i].tgt, strlen(tagpair[i].tgt));
-	}
-	const char *cbuf = str.c_str();
+	// 1. remove all newlines
+	for (int i = str.size() - 1; i >= 0; i--)
+		if (str[i] == '\r')
+			str.erase(i, 1);
+	for (int i = str.size() - 1; i >= 0; i--)
+		if (str[i] == '\n')
+			str[i] = ' ';
 
-	// 2. remove all remaining tags
-	int nbuf = 0, nbuflen = 256;
-	char *outbuf = new char[nbuflen];
-	bool skip = false;
-	for (i = 0; cbuf[i]; i++) {
-		if (skip) {
-			if (cbuf[i] == '>') skip = false;
-		} else if (cbuf[i] == '<') {
-			skip = true;
-		} else if (nbuf > 0 && outbuf[nbuf-1] == '\n' && cbuf[i] == ' ') {
-		} else {
-			AppendChar (outbuf, nbuflen, cbuf[i], nbuf++);
+	// 2. substitute some html tags and symbols
+	const std::string tag[4] = { "</h1> ", "</p> ", "</h1>", "</p>" };
+	const std::string tag_subst[4] = { "\r\n\r\n", "\r\n\r\n", "\r\n\r\n", "\r\n\r\n" };
+	for (int i = 0; i < 4; i++) {
+		n0 = 0;
+		while ((n0 = str.find(tag[i], n0)) != std::string::npos) {
+			str.replace(n0, tag[i].size(), tag_subst[i]);
+			n0 += tag_subst[i].size();
 		}
 	}
-	AppendChar (outbuf, nbuflen, '\0', nbuf++);
 
-	// 3. perform subsitutions of known html symbols
-	const int nsympair = 5;
-	ReplacementPair sympair[nsympair] = {
-		{"&gt;", ">"},
-		{"&lt;", "<"},
-		{"&ge;", ">="},
-		{"&le;", "<="},
-		{"&amp;", "\001"}
-	};
-	str = outbuf;
-	delete []outbuf;
-	for (i = 0; i < nsympair; i++) {
-		while ((p = str.find (sympair[i].src) ) != std::string::npos)
-			str.replace (p, strlen(sympair[i].src), sympair[i].tgt, strlen(sympair[i].tgt));
+	// 3. remove remaining tags
+	n0 = 0;
+	while ((n0 = str.find("<", n0)) != std::string::npos) {
+		n1 = str.find(">", n0);
+		if (n1 != std::string::npos)
+			str.erase(n0, n1 - n0 + 1);
 	}
-	cbuf = str.c_str();
 
-	// 4. remove all remaining sybols
-	nbuf = 0, nbuflen = 256;
-	outbuf = new char[nbuflen];
-	skip = false;
-	for (i = 0; cbuf[i]; i++) {
-		if (skip) {
-			if (cbuf[i] == ';') skip = false;
-		} else if (cbuf[i] == '&') {
-			skip = true;
-		} else if (cbuf[i] == '\001') { // replace the '&' placeholder
-			AppendChar (outbuf, nbuflen, '&', nbuf++);
-		} else {
-			AppendChar (outbuf, nbuflen, cbuf[i], nbuf++);
+	// 4. substitute some symbols
+	const std::string sym[5] = { "&gt;", "&lt;", "&ge;", "&le;", "&amp;" };
+	const std::string sym_subst[5] = { ">", "<", ">=", "<=", "\001" };
+	for (int i = 0; i < 5; i++) {
+		n0 = 0;
+		while ((n0 = str.find(sym[i], n0)) != std::string::npos) {
+			str.replace(n0, sym[i].size(), sym_subst[i]);
+			n0 += sym_subst[i].size();
 		}
 	}
-	AppendChar (outbuf, nbuflen, '\0', nbuf++);
 
-	*pbuf = outbuf;
+	// 5. remove remaining symbols
+	n0 = 0;
+	while ((n0 = str.find("&", n0)) != std::string::npos) {
+		n1 = str.find(";", n0);
+		if (n1 != std::string::npos)
+			str.erase(n0, n1 - n0 + 1);
+	}
+
+	// 6. restore ampersands
+	for (int i = 0; i < str.size(); i++)
+		if (str[i] == '\001')
+			str[i] = '&';
 }
 
 void Text2Html (char **pbuf)
@@ -541,13 +521,13 @@ void orbiter::ScenarioTab::ScenarioChanged ()
 					}
 				}
 			} else {
-				buf = ScanFileDesc (ifs, "DESC");
-				if (!buf) {
-					buf = ScanFileDesc (ifs, "HYPERDESC");
-					if (buf) Html2Text (&buf);
-				}
-				if (buf) {
-					SetWindowText (GetDlgItem (hTab, IDC_SCN_DESC), buf);
+				if (buf = ScanFileDesc (ifs, "DESC")) {
+					SetWindowText(GetDlgItem(hTab, IDC_SCN_DESC), buf);
+					have_info = true;
+				} else if (buf = ScanFileDesc (ifs, "HYPERDESC")) {
+					std::string str(buf);
+					Html2Text(str);
+					SetWindowText(GetDlgItem(hTab, IDC_SCN_DESC), str.c_str());
 					have_info = true;
 				}
 			}

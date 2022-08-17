@@ -225,7 +225,7 @@ public:
 	inline bool    IsRunning() const { return bRunning; }
 	inline bool    UseStencil() const { return bUseStencil; }
 	inline void    SetFastExit (bool fexit) { bFastExit = fexit; }
-	inline bool    UseHtmlInline () { return (pConfig->CfgDebugPrm.bHtmlScnDesc == 1 || pConfig->CfgDebugPrm.bHtmlScnDesc == 2 && !bWINEenv); }
+	inline bool    UseHtmlInline() { return (pConfig->CfgDebugPrm.bHtmlScnDesc == 1 || pConfig->CfgDebugPrm.bHtmlScnDesc == 2 && !bWINEenv); }
 
 	// DirectInput components
 	inline CDIFramework7 *GetDInput() const { return pDI->GetDIFrame(); }

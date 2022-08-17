@@ -1,12 +1,15 @@
-BEGIN_DESC
-Smack! Rescue is the starting scenario for a 9-minute flight recording playback based on the original supplied scenario "Smack!" which is still found in the Delta-glider folder.  
-
-
-This annotated playback shows and describes the events in the first part of chapter 2 of "Go Play In Space (Second Edition)" by Bruce Irving with Andy McSorley, available at Andy's web site, www.virtualspaceflight.com.  That chapter and this playback explain a few very basic orbital operations in Orbiter. 
-
-
-Note that the axial rotation of the two approaching Delta Gliders in this scenario has no special utility other than it looks pretty cool.  If you were in a real spacecraft spinning like this, you probably would not enjoy it for very long!
-END_DESC
+BEGIN_HYPERDESC
+<h1>Smack! Rescue</h1>
+<p>The starting scenario for a 9-minute flight recording playback based on the original
+supplied scenario "Smack!" which is still found in the Delta-glider folder.</p>
+<p>This annotated playback shows and describes the events in the first part of chapter 2
+of "Go Play In Space (Second Edition)" by Bruce Irving with Andy McSorley, available
+at Andy's web site, www.virtualspaceflight.com. That chapter and this playback explain
+a few very basic orbital operations in Orbiter.</p>
+<p>Note that the axial rotation of the two approaching Delta Gliders in this scenario has
+no special utility other than it looks pretty cool. If you were in a real spacecraft
+spinning like this, you probably would not enjoy it for very long!</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

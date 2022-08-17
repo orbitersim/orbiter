@@ -1,6 +1,9 @@
-BEGIN_DESC
-The Dragonfly, a versatile orbital payload pusher. To familiarise yourself with Radu Poenaru's panels and systems simulation, see the Dragonfly Operations Handbook.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Dragonfly</h1>
+<p>The Dragonfly, a versatile orbital payload pusher.</p>
+<p>To familiarise yourself with Radu Poenaru's panels and systems simulation,
+see the Dragonfly Operations Handbook.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

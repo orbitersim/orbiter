@@ -30,7 +30,12 @@ while the other starts to rotate under the influence of\
 gravity gradient torque.'
 
 note:set_text (intro)
-proc.wait_sysdt(10);
+proc.wait_sysdt(10)
+
+note:set_text ('If the effect doesn\'t show, make sure that\
+the Gravity gradient torque option is ticked in the Parameters\
+tab of the Orbiter Launchpad.')
+proc.wait_sysdt(10)
 
 note:set_text ('Speeding up the simulation time ...')
 oapi.set_tacc(100)

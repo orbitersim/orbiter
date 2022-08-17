@@ -1,6 +1,13 @@
 BEGIN_URLDESC
 Default\Alps2016,Index
 END_URLDESC
+BEGIN_DESC
+Orbiter 2016: Fly across the Alps
+
+
+Orbiter now supports planetary surface elevations. Take a DG on a flight across the Alps,
+finally in 3D.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol
