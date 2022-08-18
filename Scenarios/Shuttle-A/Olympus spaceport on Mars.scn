@@ -1,7 +1,8 @@
-BEGIN_DESC
-Start in a Shuttle-A class transport from Olympus spaceport on Mars,
-located to the south of Olympus Mons.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Olympus Spaceport on Mars</h1>
+<p>Start in a Shuttle-A class transport from Olympus spaceport on Mars,
+located to the south of Olympus Mons.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

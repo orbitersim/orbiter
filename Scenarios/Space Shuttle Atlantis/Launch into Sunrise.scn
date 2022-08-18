@@ -1,8 +1,9 @@
-BEGIN_DESC
-Prepare for an early morning launch with Space Shuttle Atlantis. The sun has
+BEGIN_HYPERDESC
+<h1>Launch into sunrise</h1>
+<p>Prepare for an early morning launch with Space Shuttle Atlantis. The sun has
 not yet risen at the Cape, but you will catch the first rays of the morning
-sun on your way to orbit!
-END_DESC
+sun on your way to orbit!</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

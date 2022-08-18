@@ -1,6 +1,9 @@
-BEGIN_DESC
-Start a delivery trip from Brighton Beach. Drop the 120 tons into the Indian Ocean, then return to LEO and back to Brighton Beach for a 8 days trip. Needs accurate orbit planning as fuel is limited.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Shuttle-A: On the Moon</h1>
+<p>Start a delivery trip from Brighton Beach. Drop the 120 tons into the Indian Ocean,
+then return to LEO and back to Brighton Beach for a 8 days trip. Needs accurate orbit
+planning as fuel is limited.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

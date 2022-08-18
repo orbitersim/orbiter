@@ -1,12 +1,12 @@
-BEGIN_DESC
+BEGIN_HYPERDESC
 <h1>Space Shuttle final approach</h1>
-Final approach to SLF runway 33 at the Kennedy Space Center.
-Initially pitch down to -15°. Use the PAPI indicators ahead of the runway for glideslope adjustment.
-Use the split rudder speed brake (Ctrl-B) to bleed off airspeed.
-On approach, slowly raise the nose to touch down with an AOA of approx. +10°.
+<p>Final approach to SLF runway 33 at the Kennedy Space Center.</p>
+<p>Initially pitch down to -15°. Use the PAPI indicators ahead of the runway for glideslope adjustment.
+Use the split rudder speed brake (Ctrl-B) to bleed off airspeed.</p>
+<p>On approach, slowly raise the nose to touch down with an AOA of approx. +10°.
 Lower your gear during the final flare-up, about 10 seconds before touchdown.
-Touchdown speed is approximately 100 m/s.
-END_DESC
+Touchdown speed is approximately 100 m/s.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

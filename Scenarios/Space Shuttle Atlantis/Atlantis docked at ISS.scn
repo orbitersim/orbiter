@@ -1,6 +1,7 @@
-BEGIN_DESC
-Start in Space Shuttle Atlantis, docked at the International Space Station.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Atlantis docked at ISS</h1>
+<p>Start in Space Shuttle Atlantis, docked at the International Space Station.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

@@ -1,6 +1,7 @@
-BEGIN_DESC
-Shortly after re-entry, ready to drop the cargo and return to LEO
-END_DESC
+BEGIN_HYPERDESC
+<h1>Shuttle-A drop</h1>
+<p>Shortly after re-entry, ready to drop the cargo and return to LEO.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

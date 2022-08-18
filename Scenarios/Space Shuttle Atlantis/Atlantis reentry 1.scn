@@ -1,6 +1,7 @@
-BEGIN_DESC
-Atlantis reentry scenario 1: Crossing the north American west coast line, 4500km to Cape Canaveral.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Atlantis reentry scenario 1</h1>
+<p>Crossing the north American west coast line, 4500km to Cape Canaveral.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

@@ -1,8 +1,8 @@
-BEGIN_DESC
-Sunrise in space: See the International Space Station emerge from Earth's shadow.
-
-Orbiter now supports shadowing of vessels by planets.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Light and darkness</h1>
+<p>Sunrise in space: See the International Space Station emerge from Earth's shadow.</p>
+<p>Orbiter now supports shadowing of vessels by planets.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

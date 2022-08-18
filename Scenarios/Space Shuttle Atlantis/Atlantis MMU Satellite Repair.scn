@@ -1,10 +1,10 @@
-BEGIN_DESC
-Fly to the Carina with the MMU to make Emergency Repairs!
-
-Press 'E' to start your EVA mission, followed by 'Ctrl-D' to push away from the airlock.
-
-Once you are free of the airlock, tilt backwards using 'Numpad2'. The satellite should soon come into view trailing the shuttle.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Atlantis MMU satellite repair</h1>
+<p>Fly to the Carina with the MMU (Manned Maneuvering Unit) to make Emergency Repairs!</p>
+<p>Press 'E' to start your EVA mission, followed by 'Ctrl-D' to push away from the airlock.</p>
+<p>Once you are free of the airlock, tilt backwards using 'Numpad2'. The satellite should
+soon come into view trailing the shuttle.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol
