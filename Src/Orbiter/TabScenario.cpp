@@ -388,7 +388,7 @@ void Html2Text(std::string& str)
 		if (str[i] == '\n')
 			str[i] = ' ';
 
-	// 2. substitute some html tags and symbols
+	// 2. substitute some html tags
 	const std::string tag[4] = { "</h1> ", "</p> ", "</h1>", "</p>" };
 	const std::string tag_subst[4] = { "\r\n\r\n", "\r\n\r\n", "\r\n\r\n", "\r\n\r\n" };
 	for (int i = 0; i < 4; i++) {
@@ -432,35 +432,20 @@ void Html2Text(std::string& str)
 			str[i] = '&';
 }
 
-void Text2Html (char **pbuf)
+void Text2Html(std::string& str)
 {
-	if (!pbuf) return;
-	char *buf = *pbuf, *outbuf;
-	int i, p, tlen;
+	std::string::size_type n0;
 
-	// 1. Perform substitutions of special characters
-	const int nsympair = 4;
-	ReplacementPair sympair[nsympair] = {
-		{"&", "&amp;"},
-		{"<", "&lt;"},
-		{">", "&gt;"},
-		{"\r\n", "<br />"}
-	};
-	std::string str(buf);
-	delete []buf;
-	for (i = 0; i < nsympair; i++) {
-		p = 0;
-		while ((p = str.find (sympair[i].src, p)) != std::string::npos) {
-			tlen = strlen(sympair[i].tgt);
-			str.replace (p, strlen(sympair[i].src), sympair[i].tgt, tlen);
-			p += tlen;
+	// 1. substitute some symbols
+	const std::string sym[6] = { "&", ">=", "<=", ">", "<", "\r\n" }; // the order is relevant here
+	const std::string sym_subst[6] = { "&amp;", "&ge;", "&le;", "&gt;", "&lt;", "<br />"};
+	for (int i = 0; i < 6; i++) {
+		n0 = 0;
+		while ((n0 = str.find(sym[i], n0)) != std::string::npos) {
+			str.replace(n0, sym[i].size(), sym_subst[i]);
+			n0 += sym_subst[i].size();
 		}
 	}
-	const char *cbuf = str.c_str();
-
-	outbuf = new char[strlen(cbuf)+1];
-	strcpy (outbuf, cbuf);
-	*pbuf = outbuf;
 }
 
 //-----------------------------------------------------------------------------
@@ -509,7 +494,13 @@ void orbiter::ScenarioTab::ScenarioChanged ()
 					buf = ScanFileDesc(ifs, "HYPERDESC");
 					if (!buf) {
 						buf = ScanFileDesc(ifs, "DESC");
-						if (buf) Text2Html(&buf);
+						if (buf) {
+							std::string str(buf);
+							Text2Html(str);
+							delete[]buf;
+							buf = new char[str.size() + 1];
+							strcpy(buf, str.c_str());
+						}
 					}
 					if (buf) { // prepend style preamble
 						char* buf2 = new char[strlen(htmlstyle) + strlen(buf) + 1];

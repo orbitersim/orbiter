@@ -1,6 +1,7 @@
-BEGIN_DESC
-Arriving at jupiter to sling to Saturn.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Jupiter sling</h1>
+<p>Arriving at jupiter to sling to Saturn.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

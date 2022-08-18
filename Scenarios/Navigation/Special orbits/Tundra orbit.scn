@@ -1,6 +1,10 @@
-BEGIN_DESC
-This is a highly elliptic geosynchronous orbit with an orbital period of one siderial day (23 hours, 56 minutes 4 seconds). This type of orbit allows to "park" a satellite at high latitudes for extended periods of time, when it moves through its apoapsis.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Tundra orbit</h1>
+<p>This is a highly elliptic geosynchronous orbit with an orbital period of one
+siderial day (23 hours, 56 minutes 4 seconds). This type of orbit allows to
+"park" a satellite at high latitudes for extended periods of time, when it moves
+through its apoapsis.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol
