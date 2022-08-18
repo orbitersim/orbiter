@@ -1,19 +1,27 @@
-BEGIN_DESC
-Launch the Space Shuttle from Kennedy Space Center to retrieve the LDEF
-satellite from orbit.
-END_DESC
+BEGIN_HYPERDESC
+<h1>LDEF retrieval</h1>
+<p>Originally, the retrieval of the LDEF (Long Duration Exposure Facility) from orbit
+was planned for March 19, 1985. However, the schedule slipped, also because of the
+Challenger disaster. It was finally returned from orbit by Shuttle mission STS-32 on
+January 12, 1990, shortly before it would have burned up in the atmosphere.</p>
+<p>Your mission: Launch the Space Shuttle from Kennedy Space Center pad L39A to
+retrieve the LDEF satellite from orbit.</p>
+<p>Use the ascent autopilot MFD mode to program launch azimuth 90 (due east) and orbit
+altitude 330 km. The LDEF passes over Cape Canaveral in its next orbit, so your launch
+window is open.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol
-  Date MJD 51982.9579980208
+  Date MJD 47900.524306
 END_ENVIRONMENT
 
 BEGIN_FOCUS
-  Ship STS-101
+  Ship STS-32R
 END_FOCUS
 
 BEGIN_CAMERA
-  TARGET STS-101
+  TARGET STS-32R
   MODE Extern
   POS 4.04 0.52 -94.23
   TRACKMODE TargetRelative
@@ -21,36 +29,25 @@ BEGIN_CAMERA
 END_CAMERA
 
 BEGIN_HUD
-  TYPE Docking
+  TYPE Surface
 END_HUD
 
 BEGIN_MFD Left
-  TYPE Docking
+  TYPE Map
+  REF Earth
+  TARGET LDEF
+  ZOOM 4
 END_MFD
 
 BEGIN_MFD Right
-  TYPE Map
-  REF Earth
-  BTARGET Cape Canaveral
-  OTARGET LDEF
+  TYPE User
+  MODE AscentAP
 END_MFD
 
-
 BEGIN_SHIPS
-ISS:ProjectAlpha_ISS
-  STATUS Orbiting Earth
-  RPOS -5276059.08 -3658024.87 2054732.96
-  RVEL -4573.128 6120.372 -841.265
-  AROT 110.00 -10.00 80.00
-  PRPLEVEL 0:1.000
-  IDS 0:1 100 1:2 100 2:3 100 3:4 100 4:5 100
-  NAVFREQ 0 0
-  XPDR 466
-END
-STS-101:Atlantis
+STS-32R:Atlantis
   STATUS Landed Earth
-  BASE Cape Canaveral:11
-  POS -80.6208630 28.6270927
+  POS -80.6041320 28.6081970
   HEADING 180.57
   ALT 47.361
   AROT 151.063 -8.225 4.515
@@ -67,9 +64,9 @@ STS-101:Atlantis
 END
 LDEF:LDEF
   STATUS Orbiting Earth
-  RPOS 5742508.47 1399609.31 -3011619.40
-  RVEL 3334.163 1019.737 6937.887
-  AROT 16.11 -45.98 -115.76
+  RPOS -5699253.406 -593010.394 3501445.700
+  RVEL -3175.5646 5650.4327 -4148.3582
+  AROT 16.110 -45.980 -115.760
   NAVFREQ 0 0
   XPDR 470
 END
