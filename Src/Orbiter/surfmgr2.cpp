@@ -97,8 +97,12 @@ void SurfTile::Load ()
 	ok = false;
 	owntex = true;
 	if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
-		sprintf (path, "%s\\Surf\\%02d\\%06d\\%06d", mgr->Cbody()->Name(), lvl+4, ilat, ilng);
-		ok = (g_texmanager2->OpenTexture (path, ".dds", 0, &tex, flag) != 0);
+		sprintf(path, "%s\\Surf\\%02d\\%06d\\%06d.dds", mgr->DataRootDir().c_str(), lvl + 4, ilat, ilng);
+		FILE* f = fopen(path, "rb");
+		if (f) {
+			ok = (g_texmanager2->ReadCompatibleSurface(f, &tex, flag) == DD_OK);
+			fclose(f);
+		}
 	}
 	if (!ok && smgr->treeMgr[0]) { // try loading from compressed archive
 		BYTE *buf;
@@ -122,8 +126,12 @@ void SurfTile::Load ()
 		if (owntex) {
 			ok = false;
 			if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
-				sprintf (path, "%s\\Mask\\%02d\\%06d\\%06d", mgr->Cbody()->Name(), lvl+4, ilat, ilng);
-				ok = (g_texmanager2->OpenTexture (path, ".dds", 0, &ltex, flag) != 0);
+				sprintf(path, "%s\\Mask\\%02d\\%06d\\%06d.dds", mgr->DataRootDir().c_str(), lvl + 4, ilat, ilng);
+				FILE* f = fopen(path, "rb");
+				if (f) {
+					ok = (g_texmanager2->ReadCompatibleSurface(f, &ltex, flag) == DD_OK);
+					fclose(f);
+				}
 			}
 			if (!ok && smgr->treeMgr[1]) { // try loading from compressed archive
 				BYTE *buf;

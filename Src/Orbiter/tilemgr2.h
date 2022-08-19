@@ -207,6 +207,9 @@ public:
 	inline const Planet *Cbody() const { return cbody; }
 	// Private member const access functions
 
+	/// \brief Return the root directory containing the body's texture data (surface, elevation, mask, cloud tiles)
+	inline const std::string& DataRootDir() const { return m_dataRootDir; }
+
 	template<class TileType>
 	QuadTreeNode<TileType> *FindNode (QuadTreeNode<TileType> root[2], int lvl, int ilng, int ilat);
 	// Returns the node at the specified position, or 0 if it doesn't exist
@@ -233,6 +236,7 @@ protected:
 	// loads one of the four subnodes of 'node', given by 'idx'
 
 	const Planet *cbody;			// the planet we are rendering
+	std::string m_dataRootDir;      // the root directory (usually ending in the cbody's name) for all tile data (textures, elevations, etc.)
 
 	static TileLoader *loader;		// pointer to global tile loader
 	static configPrm cprm;
