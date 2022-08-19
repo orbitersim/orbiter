@@ -100,7 +100,7 @@ void SurfTile::Load ()
 		sprintf(path, "%s\\Surf\\%02d\\%06d\\%06d.dds", mgr->DataRootDir().c_str(), lvl + 4, ilat, ilng);
 		FILE* f = fopen(path, "rb");
 		if (f) {
-			ok = (g_texmanager2->ReadCompatibleSurface(f, &tex, flag) == DD_OK);
+			ok = (g_texmanager2->ReadCompatibleSurface(f, &tex, flag) == S_OK);
 			fclose(f);
 		}
 	}
@@ -129,7 +129,7 @@ void SurfTile::Load ()
 				sprintf(path, "%s\\Mask\\%02d\\%06d\\%06d.dds", mgr->DataRootDir().c_str(), lvl + 4, ilat, ilng);
 				FILE* f = fopen(path, "rb");
 				if (f) {
-					ok = (g_texmanager2->ReadCompatibleSurface(f, &ltex, flag) == DD_OK);
+					ok = (g_texmanager2->ReadCompatibleSurface(f, &ltex, flag) == S_OK);
 					fclose(f);
 				}
 			}

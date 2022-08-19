@@ -731,6 +731,9 @@ TileManager2Base::TileManager2Base (const vPlanet *vplanet, int _maxres, int _gr
 	camera = gc->GetScene()->GetCamera();
 	emgr = oapiElevationManager(obj);
 	elevRes = *(double*)oapiGetObjectParam (obj, OBJPRM_PLANET_ELEVRESOLUTION);
+	char path[1024];
+	gc->PlanetTexturePath(cbody_name, path);
+	m_dataRootDir = path;
 }
 
 // -----------------------------------------------------------------------
