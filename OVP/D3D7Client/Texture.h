@@ -28,10 +28,19 @@ public:
 	TextureManager (oapi::D3D7Client *gclient);
 	~TextureManager ();
 
+	/// \brief Load a DDS texture from file into a DX7 surface.
+	/// \param fname file name including extension (.dds). Any included paths are interpreted relative to
+	///    the default texture directories (usually .\Textures and .\Textures2).
+	/// \param ppdds pointer to pointer to surface which receives the texture data.
+	/// \param flags passed on to ReadTexture
+	/// \return S_OK if successful, S_FALSE otherwise
+	/// \note This follows the standard Orbiter texture loading convention: First check if the file is found
+	///    in the high-resolution texture directory (usually .\Textures2 or below), then check the low-resolution
+	///    directory (usually .\Textures or below).
+	/// \note Don't use this function to load planetary surface or cloud textures that use the quadtree mechanism,
+	///    because they can be redirected to a different directory.
+	/// \sa ReadTexture(FILE*, LPDIRECTDRAWSURFACE7*, DWORD)
 	HRESULT LoadTexture (const char *fname, LPDIRECTDRAWSURFACE7 *ppdds, DWORD flags);
-	// Read a texture from file 'fname' into the DX7 surface
-	// pointed to by 'ppdds'.
-	// flags: passed on to ReadTexture
 
 	HRESULT LoadTexture (const char *fname, long ofs, LPDIRECTDRAWSURFACE7 *ppdds, DWORD flags = 0);
 	// Read a single texture from a multi-texture file at offset ofs

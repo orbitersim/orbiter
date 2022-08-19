@@ -30,6 +30,12 @@ public:
 	// flags: bit 0 set: force creation in system memory
 	//        bit 1 set: uncompress texture
 
+	HRESULT ReadCompatibleSurface(FILE* file, LPDIRECTDRAWSURFACE7* ppdds, DWORD flags = 0);
+	// Read a DDS surface from an open stream
+	// Uncompress if required by the current device
+	// flags: bit 1 set: force map to uncompressed surface, even if hardware understands compression format
+	//        other flags are passed on to ReadDDSSurface
+
 	int ReadTextures (FILE *file, LPDIRECTDRAWSURFACE7 *pptex, int n, DWORD flags = 0);
 	// Read up to 'n' textures from an open stream into texture
 	// array 'pptex'. Return value is actual number of textures read
@@ -70,12 +76,6 @@ private:
 
 	HRESULT ReadDDSSurfaceFromMemory (BYTE *buf, DWORD nbuf,
 		DDSURFACEDESC2 *pddsd, LPDIRECTDRAWSURFACE7* ppddsDXT, DWORD flags);
-
-	HRESULT ReadCompatibleSurface (FILE *file, LPDIRECTDRAWSURFACE7 *ppdds, DWORD flags = 0);
-	// Read a DDS surface from an open stream
-	// Uncompress if required by the current device
-	// flags: bit 1 set: force map to uncompressed surface, even if hardware understands compression format
-	//        other flags are passed on to ReadDDSSurface
 
 	HRESULT FindBestPixelFormatMatch (DDPIXELFORMAT ddsdDDSTexture,
 		DDPIXELFORMAT *pddsdBestMatch);

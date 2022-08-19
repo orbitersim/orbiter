@@ -215,6 +215,9 @@ public:
 	inline const int GridRes() const { return gridRes; }
 	inline const double ElevRes() const { return elevRes; }
 
+	/// \brief Return the root directory containing the body's texture data (surface, elevation, mask, cloud tiles)
+	inline const std::string& DataRootDir() const { return m_dataRootDir; }
+
 protected:
 	MATRIX4 WorldMatrix (int ilng, int nlng, int ilat, int nlat);
 	void SetWorldMatrix (const MATRIX4 &W);
@@ -224,6 +227,7 @@ protected:
 	// loads one of the four subnodes of 'node', given by 'idx'
 
 	static configPrm cprm;
+	std::string m_dataRootDir;       // the root directory (usually ending in the cbody's name) for all tile data (textures, elevations, etc.)
 	double obj_size;                 // planet radius
 	static TileLoader *loader;
 
