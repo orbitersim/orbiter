@@ -87,19 +87,17 @@ SurfTile::~SurfTile ()
 
 void SurfTile::Load ()
 {
-	bool bLoadMip = true; // for now
+	const bool bLoadMip = true; // for now
 	bool ok;
-
 	DWORD flag = (bLoadMip ? 0:4);
-	char path[256];
+	char path[512];
 
 	// Load surface texture
 	ok = false;
 	owntex = true;
 	if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
 		sprintf(path, "%s\\Surf\\%02d\\%06d\\%06d.dds", mgr->DataRootDir().c_str(), lvl + 4, ilat, ilng);
-		FILE* f = fopen(path, "rb");
-		if (f) {
+		if (FILE* f = fopen(path, "rb")) {
 			ok = (g_texmanager2->ReadCompatibleSurface(f, &tex, flag) == S_OK);
 			fclose(f);
 		}
@@ -127,8 +125,7 @@ void SurfTile::Load ()
 			ok = false;
 			if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
 				sprintf(path, "%s\\Mask\\%02d\\%06d\\%06d.dds", mgr->DataRootDir().c_str(), lvl + 4, ilat, ilng);
-				FILE* f = fopen(path, "rb");
-				if (f) {
+				if (FILE* f = fopen(path, "rb")) {
 					ok = (g_texmanager2->ReadCompatibleSurface(f, &ltex, flag) == S_OK);
 					fclose(f);
 				}
@@ -179,12 +176,11 @@ INT16 *SurfTile::ReadElevationFile (int lvl, int ilat, int ilng, double tgt_res,
 	INT16 ofs;
 	double scale, offset;
 	char path[256];
-	FILE *f;
 
 	// Elevation data
 	if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
 		sprintf (path, "%s\\Elev\\%02d\\%06d\\%06d.elv", mgr->DataRootDir().c_str(), lvl, ilat, ilng);
-		if (f = fopen (path, "rb")) {
+		if (FILE* f = fopen (path, "rb")) {
 			e = new INT16[ndat];
 			// read the elevation file header
 			fread (&hdr, sizeof(ELEVFILEHEADER), 1, f);
@@ -261,7 +257,7 @@ INT16 *SurfTile::ReadElevationFile (int lvl, int ilat, int ilng, double tgt_res,
 		INT16 offset;
 		if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
 			sprintf (path, "%s\\Elev_mod\\%02d\\%06d\\%06d.elv", mgr->DataRootDir().c_str(), lvl, ilat, ilng);
-			if (f = fopen (path, "rb")) {
+			if (FILE* f = fopen (path, "rb")) {
 				fread (&hdr, sizeof(ELEVFILEHEADER), 1, f);
 				if (hdr.hdrsize != sizeof(ELEVFILEHEADER)) {
 					fseek (f, hdr.hdrsize, SEEK_SET);
