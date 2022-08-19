@@ -1,6 +1,8 @@
-BEGIN_DESC
-Challenge 3. Same as Challenge 2 but this time you need to consider plane alignments. Minimize fuel use.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Orbiter Challenges: 3</h1>
+<p>This is the same as Challenge 2, but this time you need to consider plane alignments.
+Minimise fuel use.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

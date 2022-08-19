@@ -1,6 +1,7 @@
-BEGIN_DESC
-We have the first mid course correction set up and ready to burn.
-END_DESC
+BEGIN_HYPERDESC
+<h1>First MCC ready</h1>
+<p>We have the first mid course correction set up and ready to burn.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

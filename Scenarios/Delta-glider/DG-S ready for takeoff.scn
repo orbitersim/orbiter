@@ -1,9 +1,10 @@
-BEGIN_DESC
-The Scramjet delta-glider (DG-S) is ready for takeoff from runway 33 of the
-Shuttle Landing Facility (SLF) at Kennedy Space Center.
-
-Take off using main engines and climb to 10km. Then try the air-breathing scramjet engines and test the performance for different speeds and altitudes.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Delta-glider: Ready for takeoff</h1>
+<p>The Scramjet delta-glider (DG-S) is ready for takeoff from runway 33 of the
+Shuttle Landing Facility (SLF) at Kennedy Space Center.</p>
+<p>Take off using main engines and climb to 10km. Then try the air-breathing
+scramjet engines and test the performance for different speeds and altitudes.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

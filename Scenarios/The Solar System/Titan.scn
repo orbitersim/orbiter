@@ -1,6 +1,8 @@
-BEGIN_DESC
-Saturn moons: Titan. Now with atmosphere, cloud layer and new surface textures from the Cassini mission.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Titan</h1>
+<p>Saturn moons: Titan. Now with atmosphere, cloud layer and new surface textures
+from the Cassini mission.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

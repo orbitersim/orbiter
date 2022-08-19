@@ -1,6 +1,7 @@
-BEGIN_DESC
-Orbiter now uses Jens Meyer's new Moon textures by default.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Moon</h1>
+<p>Orbiter now uses Jens Meyer's new Moon textures by default.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

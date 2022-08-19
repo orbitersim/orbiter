@@ -1,7 +1,14 @@
-BEGIN_HYPERDESC
-<h1>Orbiter 2016: A quick aerial tour of Kennedy Space Center</h1>
-<p>Here is a playback to showcase the new look of the KSC in the latest Orbiter edition: higher resolution surface textures, vegetation roughness, improved water surfaces and remodelled launch pads.</p>
-END_HYPERDESC
+BEGIN_URLDESC
+Default\KSCtour2016,Index
+END_URLDESC
+BEGIN_DESC
+Orbiter 2016: A quick aerial tour of Kennedy Space Center
+
+
+Here is a pre-recorded flight showcasing the new look of the KSC in the latest
+Orbiter edition: higher resolution surface textures, vegetation roughness,
+improved water surfaces and remodelled launch pads.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

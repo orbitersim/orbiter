@@ -1,7 +1,8 @@
-BEGIN_DESC
-New additive rendering of objects through atmospheric layers.
-The Moon now looks much more realistic from the surface of Earth during the daytime.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Moon through atmosphere</h1>
+<p>New additive rendering of objects through atmospheric layers.</p>
+<p>The Moon now looks much more realistic from the surface of Earth during the daytime.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

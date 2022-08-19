@@ -1,8 +1,12 @@
-BEGIN_DESC
-DG-ISS sync/rendezvous and dock recording.  If you play back with time acceleration as recorded, the replay will take 36 minutes of real time for 6.5 hours of simulated time.  
-
-In addition to the on-screen notes in this recording, this scenario is explained in more detail in chapter 5 ("Dancing in the Dark") of the second edition of "Go Play In Space," available at http://www.aovi93.dsl.pipex.com/play_in_space.htm (free download).
-END_DESC
+BEGIN_HYPERDESC
+<h1>DG-ISS docking</h1>
+<p>A recorded approach and docking of a DG spaceplane to the International Space Station.</p>
+<p>If you play back with time acceleration as recorded, the replay will take 36 minutes
+of real time for 6.5 hours of simulated time.</p>
+<p>In addition to the on-screen notes in this recording, this scenario is explained in
+more detail in chapter 5 ("Dancing in the Dark") of the second edition of "Go Play In
+Space," available at http://www.aovi93.dsl.pipex.com/play_in_space.htm (free download).</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

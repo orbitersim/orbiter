@@ -1,6 +1,7 @@
-BEGIN_DESC
-A fully powered-up and functional Dragonfly and a couple of docking modules for practice!
-END_DESC
+BEGIN_HYPERDESC
+<h1>Dragonfly: Powered up</h1>
+<p>A fully powered-up and functional Dragonfly and a couple of docking modules for practice!</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

@@ -1,12 +1,9 @@
-BEGIN_DESC
-Tutorial playback scenario:
-
-
-Space Shuttle Atlantis on final approach to the landing facility at Kennedy Space Center.
-
-
-Playback duration: 3min 55sec.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Space Shuttle final approach</h1>
+<p>This tutorial scenario contains a playback of Space Shuttle Atlantis on final
+approach to the landing facility at Kennedy Space Center.</p>
+<p>Playback duration: 3min 55sec.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

@@ -1,8 +1,7 @@
-BEGIN_DESC
-Lunar tranfer - Stage 1:
-
-Before ejection from low Earth orbit using the Tranfer MFD.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Lunar tranfer - Stage 1</h1>
+<p>Before ejection from low Earth orbit using the Tranfer MFD.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

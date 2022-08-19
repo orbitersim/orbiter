@@ -1,8 +1,15 @@
+BEGIN_URLDESC
+Default\Checklists\Checklist3,Checklist3
+END_URLDESC
 BEGIN_DESC
-Checklist mission 3. Undock from MIR, deorbit and return to the Kennedy Space Center.
+Mission 3: De-orbit from Mir
 
 
-For a step-by-step tutorial, see the Orbiter Manual, or ingame help (Alt-F1) during the simulation.
+This mission completes your orbital roundtrip with a re-entry to return to Kennedy Space
+Center. 
+
+
+For instructions, launch the scenario, then open the Help window (Alt-F1).
 END_DESC
 
 BEGIN_ENVIRONMENT

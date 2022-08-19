@@ -1,9 +1,9 @@
-BEGIN_DESC
-Saturn moons: Tethys with large impact crater. Now with new textures from the Cassini mission.
-
-
-The orange object in the background is Titan, another of Saturn's moons.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Tethys</h1>
+<p>Saturn moons: Tethys with large impact crater. Now with new textures from
+the Cassini mission.</p>
+<p>The orange object in the background is Titan, another of Saturn's moons.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

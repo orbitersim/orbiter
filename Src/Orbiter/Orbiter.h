@@ -147,7 +147,7 @@ public:
 	bool Timejump (double _mjd, int pmode);
 	void Suspend (void); // elapsed time between Suspend() and Resume() is ignored
 	void Resume (void); // A Suspend/Resume pair must be closed within a time step
-	bool SaveScenario (const char *fname, const char *desc);
+	bool SaveScenario (const char *fname, const char *desc, int desc_type);
 	void SaveConfig ();
 	VOID Quicksave ();
 	void StartCaptureFrames () { video_skip_count = 0; bCapture = true; }
@@ -225,7 +225,7 @@ public:
 	inline bool    IsRunning() const { return bRunning; }
 	inline bool    UseStencil() const { return bUseStencil; }
 	inline void    SetFastExit (bool fexit) { bFastExit = fexit; }
-	inline bool    UseHtmlInline () { return (pConfig->CfgDebugPrm.bHtmlScnDesc == 1 || pConfig->CfgDebugPrm.bHtmlScnDesc == 2 && !bWINEenv); }
+	inline bool    UseHtmlInline() { return (pConfig->CfgDebugPrm.bHtmlScnDesc == 1 || pConfig->CfgDebugPrm.bHtmlScnDesc == 2 && !bWINEenv); }
 
 	// DirectInput components
 	inline CDIFramework7 *GetDInput() const { return pDI->GetDIFrame(); }

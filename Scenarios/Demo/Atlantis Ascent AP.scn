@@ -9,7 +9,6 @@ BEGIN_ENVIRONMENT
   System Sol
   Date MJD 51983.4913485774
   Script Demos/atlantis_ascent
-  Help CurrentState_img
 END_ENVIRONMENT
 
 BEGIN_FOCUS

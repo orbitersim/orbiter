@@ -1,8 +1,18 @@
+BEGIN_URLDESC
+Default\Checklists\Checklist2,Checklist2
+END_URLDESC
 BEGIN_DESC
-Checklist mission 2. Transfer between space stations in Earth orbit.
+Mission 2: ISS to Mir transfer
 
 
-For a step-by-step tutorial, see the Orbiter Manual, or ingame help (Alt-F1) during the simulation.
+This mission performs an orbital transfer from the International Space Station to the
+Russian Mir station (which in Orbiter's virtual reality is still happily in Earth orbit).
+Note that in Orbiter, Mir is placed in an ecliptic orbit to make it a platform for
+interplanetary missions. This means that ISS and Mir have a very high relative
+inclination which makes the transfer very expensive in terms of fuel expenditure. 
+
+
+For instructions, launch the scenario, then open the Help window (Alt-F1).
 END_DESC
 
 BEGIN_ENVIRONMENT

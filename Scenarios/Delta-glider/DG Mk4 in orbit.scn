@@ -1,13 +1,11 @@
-BEGIN_DESC
-Take control of the latest version of the Delta-glider in orbit.
-A good opportunity to get familiar with the new panel layout, in particular the revised engine gimbal controls.
-
-Also try out the new virtual cockpit mode by pressing F8.
-
-Note that this is the standard DG edition of the new Delta-glider, so the scramjet-specific controls of the DG-S version are missing here.
-
-Don't forget to have a look out of the cockpit to see the new and improved rendering of Earth's atmospheric haze.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Delta-glider: In orbit</h1>
+<p>Take control of the latest version of the Delta-glider in orbit.</p>
+<p>A good opportunity to get familiar with the new panel layout, in particular the revised engine gimbal controls.</p>
+<p>Also try out the new virtual cockpit mode by pressing F8.</p>
+<p>Note that this is the standard DG edition of the new Delta-glider, so the scramjet-specific controls of the DG-S version are missing here.</p>
+<p>Don't forget to have a look out of the cockpit to see the new and improved rendering of Earth's atmospheric haze.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

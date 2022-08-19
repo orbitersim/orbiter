@@ -1,6 +1,7 @@
-BEGIN_DESC
-Saturn moons: Mimas. Now with new textures from the Cassini mission.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Mimas</h1>
+<p>Saturn moons: Mimas. Now with new textures from the Cassini mission.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

@@ -104,16 +104,19 @@ bool State::Read (const char *fname)
 	return true;
 }
 
-void State::Write (ostream &ofs, const char *desc, const char *help) const
+void State::Write (ostream &ofs, const char *desc, int desc_fmt, const char *help) const
 {
+	const std::string descTypeStr[3] = { "DESC", "HYPERDESC", "URLDESC" };
+
 	ofs.setf (ios::fixed, ios::floatfield);
 	ofs.precision (10); // need very high precision MJD output
 	if (desc) {
-		ofs << "BEGIN_DESC" << endl;
+		if (desc_fmt < 0 || desc_fmt > 2) desc_fmt = 0;
+		ofs << "BEGIN_" << descTypeStr[desc_fmt] << std::endl;
 		for (const char* c = desc; *c; c++)
 			if (*c != '\r') ofs << *c; // DOS madness! Get rid of CR so output stream can add it again ... 
 		ofs << endl;
-		ofs << "END_DESC" << endl << endl;
+		ofs << "END_" << descTypeStr[desc_fmt] << endl << endl;
 	}
 	ofs << "BEGIN_ENVIRONMENT" << endl;
 	ofs << "  System " << solsys << endl;
@@ -122,12 +125,10 @@ void State::Write (ostream &ofs, const char *desc, const char *help) const
 		ofs << "  Context " << context << endl;
 	if (script[0])
 		ofs << "  Script " << script << endl;
-	if (!desc) {
-		if (scnhelp[0])
-			ofs << "  Help " << scnhelp << endl;
-		else if (help)
-			ofs << "  Help " << help << endl;
-	}
+	if (scnhelp[0])
+		ofs << "  Help " << scnhelp << endl;
+	else if (help)
+		ofs << "  Help " << help << endl;
 	if (playback[0])
 		ofs << "  Playback " << playback << endl;
 	ofs << "END_ENVIRONMENT" << endl << endl;

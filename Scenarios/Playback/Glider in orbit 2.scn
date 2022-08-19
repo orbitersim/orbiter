@@ -1,6 +1,9 @@
-BEGIN_DESC
-Playback\Glider in orbit 2
-END_DESC
+BEGIN_HYPERDESC
+<h1>Playback: Glider in orbit 2</h1>
+<p>Showcasing the Delta-glider animations:</p>
+<p>A DG opens its nosecone, airlocks and top hatch. The radiator is
+deployed, and for good measure, the landing gear lowered.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

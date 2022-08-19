@@ -1,6 +1,7 @@
-BEGIN_DESC
-The generic "glass cockpit" view has been extended with mouse-activated buttons for MFD displays, RCS and nav modes.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Delta-glider: Glass cockpit</h1>
+<p>The generic "glass cockpit" view has been extended with mouse-activated buttons for MFD displays, RCS and nav modes.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

@@ -1,6 +1,7 @@
-BEGIN_DESC
-The second mid course correction on the trip to Jupiter is ready to burn.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Second MCC ready</h1>
+<p>The second mid course correction on the trip to Jupiter is ready to burn.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

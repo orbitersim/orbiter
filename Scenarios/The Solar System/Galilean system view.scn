@@ -1,6 +1,7 @@
-BEGIN_DESC
-View of Europa, with Jupiter in the background and Io passing below.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Galilean system view</h1>
+<p>View of Europa, with Jupiter in the background and Io passing below.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

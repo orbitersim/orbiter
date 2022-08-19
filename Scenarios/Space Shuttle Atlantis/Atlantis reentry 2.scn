@@ -1,6 +1,7 @@
-BEGIN_DESC
-Atlantis reentry scenario 2: Preparing for final approach, 1500km to touchdown.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Atlantis reentry scenario 2</h1>
+<p>Preparing for final approach, 1500km to touchdown.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

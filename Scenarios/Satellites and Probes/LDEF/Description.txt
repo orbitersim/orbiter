@@ -1,0 +1,13 @@
+BEGIN_HYPERDESC
+<h1>Long Duration Exposure Facility (LDEF)</h1>
+<p>The LDEF was a large orbital material research platform containing
+multiple experiments to test the effect of the outer space environment on
+electronic systems, materials and spore survival.</p>
+<p>Deployed in orbit on April 7, 1984 by Shuttle Challenger and intended for
+retrieval after one year, the LDEF satellite was stranded
+in orbit for six years after the Challenger accident. The crew of STS-32
+recovered the LDEF from its decaying orbit on January 11, 1990, two months
+before it would have re-entered the Earth's atmosphere and would have been 
+destroyed.</p>
+<p>LDEF mesh by Don Gallagher.</p>
+END_HYPERDESC

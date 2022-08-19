@@ -1,6 +1,26 @@
-BEGIN_HYPERDESC
-<h1>Welcome to Orbiter 2016!</h1>
-END_HYPERDESC
+BEGIN_URLDESC
+Default\Welcome2016,Index
+END_URLDESC
+BEGIN_DESC
+Welcome to Orbiter 2016!
+
+
+The new Edition of Orbiter Space Flight Simulator has finally arrived. This version
+supports surface elevation, higher texture resolutions for planetary surfaces and
+cloud layers, more realistic visualisation of water surfaces and other visual
+improvements.
+
+
+Under the hood, a redesigned physics engine drives the simulator, including improved
+surface impact modelling and timestep subsampling.
+
+
+Some of the default spacecraft have received improvements to their instrument panels
+and subsystem design.
+
+
+Launch this scenario for a pre-recorded tour of the highlights in this edition.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

@@ -1,12 +1,11 @@
-BEGIN_DESC
-Watch Space Shuttle Atlantis stabilise its attitude in orbit under the influence of gravity gradient torque.
-
-
-Make sure that "gravity-gradient torque" is enabled in the Launchpad dialog.
-
-
-Time-accelerate up to 100x. It takes about a day to reach equilibrium (tail-down or head-down attitude).
-END_DESC
+BEGIN_HYPERDESC
+<h1>Shuttle tidal force example</h1>
+<p>Watch Space Shuttle Atlantis stabilise its attitude in orbit under
+the influence of gravity gradient torque.</p>
+<p>Make sure that "gravity-gradient torque" is enabled in the Launchpad dialog.</p>
+<p>Time-accelerate up to 100x. It takes about a day to reach equilibrium
+(tail-down or head-down attitude).</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

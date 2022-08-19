@@ -1,15 +1,13 @@
-BEGIN_DESC
-Entering a true orbit around the Mars moon Phobos is not possible even at low altitude, because its
-weak gravity is entirely dominated by the gravitational field of the much more
-massive Mars.
-
-This scenario demonstrates a Phobos 'pseudo-orbit' which is actually an orbit
+BEGIN_HYPERDESC
+<h1>Orbiting Phobos</h1>
+<p>Entering a true orbit around the Mars moon Phobos is not possible even at low
+altitude, because its weak gravity is entirely dominated by the gravitational field
+of the much more massive Mars.</p>
+<p>This scenario demonstrates a Phobos 'pseudo-orbit' which is actually an orbit
 around Mars, with the same orbital period as Phobos, and slightly perturbed
-eccentricity.
-
-
-Try also time acceleration and the external preset view (Ctrl-F1, Preset).
-END_DESC
+eccentricity.</p>
+<p>Try also time acceleration and the external preset view (Ctrl-F1, Preset).</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

@@ -1,16 +1,15 @@
-BEGIN_DESC
-A geostationary orbit is a circular orbit above Earth's equator (inclination 0
+BEGIN_HYPERDESC
+<h1>Geostationary orbit</h1>
+<p>A geostationary orbit is a circular orbit above Earth's equator (inclination 0
 degrees) whose orbital period is equal to the length of a siderial day (23 hours,
 56 minutes and 4 seconds). This corresponds to a semi-major axis of about
 42160 km. A satellite placed in such an orbit remains stationary above the same
 point on the equator, which is quite useful for many applications, such as
-communication satellites.
-
-
-In this scenario, a glider is placed in a geostationary orbit above Africa's east
+communication satellites.</p>
+<p>In this scenario, a glider is placed in a geostationary orbit above Africa's east
 coast. Note that the vessel indicator in the Map MFD does not move. Try opening
-a surface MFD and check the ground speed readout.
-END_DESC
+a surface MFD and check the ground speed readout.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

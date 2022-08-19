@@ -1,6 +1,17 @@
-BEGIN_HYPERDESC
-<h1>Space Shuttle ascent autopilot</h1>
-END_HYPERDESC
+BEGIN_URLDESC
+Default\ShuttleAscentAp,Index
+END_URLDESC
+BEGIN_DESC
+Space Shuttle ascent autopilot
+
+
+The default Space Shuttle Atlantis bundled with Orbiter now contains a built-in ascent
+autopilot.
+
+
+For instructions on configuring and executing the autopilot, launch the scenario, then
+open the Help window (Alt-F1).
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

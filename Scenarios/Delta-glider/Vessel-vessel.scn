@@ -1,11 +1,12 @@
-BEGIN_DESC
-Two delta-gliders docked in orbit. The camera focus is on the PB shuttle in
+BEGIN_HYPERDESC
+<h1>Delta-glider: Vessel-vessel</h1>
+<p>Two delta-gliders docked in orbit. The camera focus is on the PB shuttle in
 the background to provide an inertial frame of reference. Try the attitude
 controls on the glider to see how the body dynamics are affected by the
 "super-structure" assembly. For example, note how different roll and pitch
 moments behave. Or switch the camera focus to one of the gliders, then get the
-assembly to spin with a short hover thrust burst, and undock with Ctrl-D!
-END_DESC
+assembly to spin with a short hover thrust burst, and undock with Ctrl-D!</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

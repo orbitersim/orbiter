@@ -1,8 +1,9 @@
-BEGIN_DESC
-Line up with SLF runway 33 and touch down with Atlantis.
-Remember to deploy the airbrake surfaces (Ctrl-B) and lower the
-landing gear (G) before the final flare.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Atlantis landing preparation</h1>
+<p>Line up with SLF runway 33 and touch down with Atlantis.</p>
+<p>Remember to deploy the airbrake surfaces (Ctrl-B) and lower the
+landing gear (G) before the final flare.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

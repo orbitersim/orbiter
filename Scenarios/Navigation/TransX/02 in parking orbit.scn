@@ -1,6 +1,7 @@
-BEGIN_DESC
-Have achieved the ~200x200 Km agl parking orbit in plane with the plan.
-END_DESC
+BEGIN_HYPERDESC
+<h1>In parking orbit</h1>
+<p>Have achieved the ~200x200 kkm agl parking orbit in plane with the plan.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

@@ -1,6 +1,7 @@
-BEGIN_DESC
-A view of Saturn and its ring system.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Saturn</h1>
+<p>A view of Saturn and its ring system.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

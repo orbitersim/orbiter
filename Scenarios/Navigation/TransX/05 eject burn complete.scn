@@ -1,6 +1,8 @@
-BEGIN_DESC
-Eject burn complete. We are now on our way to Jupiter with subsequent sling to Saturn.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Eject burn complete</h1>
+<p>Eject burn complete. We are now on our way to Jupiter with subsequent
+sling to Saturn.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

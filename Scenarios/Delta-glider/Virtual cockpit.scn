@@ -1,9 +1,10 @@
-BEGIN_DESC
-After launching this scenario, click the right mouse button and drag the mouse to look around in the cockpit.
+BEGIN_HYPERDESC
+<h1>Delta-glider: Virtual cockpit</h1>
+<p>After launching this scenario, click the right mouse button and drag the mouse to look around in the cockpit.
 Check out the various instruments, controls and the head-up display. Use F8 to
 switch to different cockpit modes. For more info on the Delta-glider, open
-help (Alt-F1) during the simulation, and click on the Vessel tab.
-END_DESC
+help (Alt-F1) during the simulation, and click on the Vessel tab.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

@@ -1,6 +1,7 @@
-BEGIN_DESC
-Challenge 4. Land safely at Kennedy Space Center without refueling.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Orbiter Challenges: 4</h1>
+<p>Land safely at Kennedy Space Center without refueling.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

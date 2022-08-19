@@ -1,6 +1,7 @@
-BEGIN_DESC
-Third and final MCC ready to burn before our sling of Jupiter to Saturn.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Third MCC ready</h1>
+<p>Third and final MCC ready to burn before our sling of Jupiter to Saturn.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

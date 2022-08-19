@@ -899,8 +899,8 @@ void Orbiter::CloseSession ()
 
 	if      (bRecord)   ToggleRecorder();
 	else if (bPlayback) EndPlayback();
-	char *desc = "Current scenario state\n\n\nContains the latest simulation state.";
-	SaveScenario (CurrentScenario, desc);
+	char* desc = pConfig->CfgDebugPrm.bSaveExitScreen ? "CurrentState_img" : "CurrentState";
+	SaveScenario (CurrentScenario, desc, 2);
 	if (hScnInterp) {
 		script->DelInterpreter (hScnInterp);
 		hScnInterp = NULL;
@@ -1453,7 +1453,7 @@ VOID Orbiter::IncFOV (double dfov)
 // Name: SaveScenario()
 // Desc: save current status in-game
 //-----------------------------------------------------------------------------
-bool Orbiter::SaveScenario (const char *fname, const char *desc)
+bool Orbiter::SaveScenario (const char *fname, const char *desc, int desc_type)
 {
 	pState->Update ();
 
@@ -1461,12 +1461,8 @@ bool Orbiter::SaveScenario (const char *fname, const char *desc)
 	if (ofs) {
 
 		// save scenario state
-		if (desc) {
-			pState->Write(ofs, desc, 0);
-		}
-		else {
-			pState->Write(ofs, 0, pConfig->CfgDebugPrm.bSaveExitScreen ? "CurrentState_img" : "CurrentState");
-		}
+		pState->Write(ofs, desc, desc_type, 0);
+		//pState->Write(ofs, 0, pConfig->CfgDebugPrm.bSaveExitScreen ? "CurrentState_img" : "CurrentState");
 		g_camera->Write (ofs);
 		if (g_pane) g_pane->Write (ofs);
 		g_psys->Write (ofs);
@@ -1497,7 +1493,7 @@ VOID Orbiter::Quicksave ()
 	for (i = strlen(ScenarioName)-1; i > 0; i--)
 		if (ScenarioName[i-1] == '\\') break;
 	sprintf (fname, "Quicksave\\%s %04d", ScenarioName+i, ++g_qsaveid);
-	SaveScenario (fname, desc);
+	SaveScenario (fname, desc, 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -1526,7 +1522,7 @@ VOID Orbiter::SavePlaybackScn (const char *fname)
 	char desc[256], scn[256] = "Playback\\";
 	sprintf (desc, "Orbiter playback scenario at T = %0.0f", td.SimT0);
 	strcat (scn, fname);
-	SaveScenario (scn, desc);
+	SaveScenario (scn, desc, 0);
 }
 
 const char *Orbiter::GetDefRecordName (void) const
