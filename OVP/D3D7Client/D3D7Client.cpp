@@ -44,7 +44,7 @@ struct G_PARAM {
 	D3D7Client* client;             // the client soliton
 	LaunchpadItem* lpiD3D7;         // "Extra" group header: D3D7 configuration items
 	LaunchpadItem* lpiPlanetRender; // "Extra" item: planet render parameters
-} g_Param = { 0, 0, 0, 0 };
+} g_Param = { 0, nullptr, nullptr, nullptr };
 
 // ==============================================================
 // API interface
@@ -87,7 +87,7 @@ DLLCLBK void ExitModule (HINSTANCE hDLL)
 	if (g_Param.client) {
 		oapiUnregisterGraphicsClient (g_Param.client);
 		delete g_Param.client;
-		g_Param.client = 0;
+		g_Param.client = nullptr;
 	}
 }
 

@@ -159,7 +159,7 @@ int InterpreterList::DelInterpreter (InterpreterList::Environment *env)
 // ==============================================================
 // API interface
 
-static InterpreterList *g_IList = NULL;
+static InterpreterList *g_IList = nullptr;
 
 DLLCLBK void InitModule (HINSTANCE hDLL)
 {
@@ -169,7 +169,10 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 
 DLLCLBK void ExitModule (HINSTANCE hDLL)
 {
-	// note g_IList has already been deleted by Orbiter
+	if (g_IList) {
+		delete g_IList;
+		g_IList = nullptr;
+	}
 }
 
 // interpreter-specific callback functions
