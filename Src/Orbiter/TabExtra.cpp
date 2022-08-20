@@ -27,17 +27,17 @@ extern Orbiter *g_pOrbiter;
 
 orbiter::ExtraTab::ExtraTab (const LaunchpadDialog *lp): LaunchpadTab (lp)
 {
-	nExtPrm = 0;
+	m_internalPrm = 0;
 }
 
 //-----------------------------------------------------------------------------
 
 orbiter::ExtraTab::~ExtraTab ()
 {
-	if (nExtPrm) {
-		for (DWORD i = 0; i < nExtPrm; i++) delete ExtPrm[i];
-		delete []ExtPrm;
-	}
+	// at this point, only the internally created entries should be left
+	// so they should be safe to delete
+	for (int i = 0; i < m_ExtPrm.size(); i++)
+		delete m_ExtPrm[i];
 }
 
 //-----------------------------------------------------------------------------
@@ -58,22 +58,22 @@ void orbiter::ExtraTab::Create ()
 void orbiter::ExtraTab::GetConfig (const Config *cfg)
 {
 	HTREEITEM ht;
-	ht = RegisterExtraParam (new ExtraPropagation (this), NULL); TRACENEW
-	RegisterExtraParam (new ExtraDynamics (this), ht); TRACENEW
-	//RegisterExtraParam (new ExtraAngDynamics (this), ht); TRACENEW
-	RegisterExtraParam (new ExtraStabilisation (this), ht); TRACENEW
-	ht = RegisterExtraParam (new ExtraInstruments (this), NULL); TRACENEW
-	RegisterExtraParam (new ExtraMfdConfig (this), ht); TRACENEW
-	RegisterExtraParam (new ExtraVesselConfig (this), NULL); TRACENEW
-	RegisterExtraParam (new ExtraPlanetConfig (this), NULL); TRACENEW
-	ht = RegisterExtraParam (new ExtraDebug (this), NULL); TRACENEW
-	RegisterExtraParam (new ExtraShutdown (this), ht); TRACENEW
-	RegisterExtraParam (new ExtraFixedStep (this), ht); TRACENEW
-	RegisterExtraParam (new ExtraRenderingOptions (this), ht); TRACENEW
-	RegisterExtraParam (new ExtraTimerSettings (this), ht); TRACENEW
-	RegisterExtraParam (new ExtraLaunchpadOptions (this), ht); TRACENEW
-	RegisterExtraParam (new ExtraLogfileOptions (this), ht); TRACENEW
-	RegisterExtraParam (new ExtraPerformanceSettings (this), ht); TRACENEW
+	ht = RegisterExtraParam(new ExtraPropagation(this), NULL); TRACENEW
+	RegisterExtraParam(new ExtraDynamics(this), ht); TRACENEW
+	RegisterExtraParam(new ExtraStabilisation(this), ht); TRACENEW
+	ht = RegisterExtraParam(new ExtraInstruments(this), NULL); TRACENEW
+	RegisterExtraParam(new ExtraMfdConfig(this), ht); TRACENEW
+	RegisterExtraParam(new ExtraVesselConfig(this), NULL); TRACENEW
+	RegisterExtraParam(new ExtraPlanetConfig(this), NULL); TRACENEW
+	ht = RegisterExtraParam(new ExtraDebug(this), NULL); TRACENEW
+	RegisterExtraParam(new ExtraShutdown(this), ht); TRACENEW
+	RegisterExtraParam(new ExtraFixedStep(this), ht); TRACENEW
+	RegisterExtraParam(new ExtraRenderingOptions(this), ht); TRACENEW
+	RegisterExtraParam(new ExtraTimerSettings(this), ht); TRACENEW
+	RegisterExtraParam(new ExtraLaunchpadOptions(this), ht); TRACENEW
+	RegisterExtraParam(new ExtraLogfileOptions(this), ht); TRACENEW
+	RegisterExtraParam(new ExtraPerformanceSettings(this), ht); TRACENEW
+	m_internalPrm = m_ExtPrm.size();
 	SetWindowText (GetDlgItem (hTab, IDC_EXT_TEXT), "Advanced and addon-specific configuration parameters.\r\n\r\nClick on an item to get a description.\r\n\r\nDouble-click to open or expand.");
 	int listw = cfg->CfgWindowPos.LaunchpadExtListWidth;
 	if (!listw) {
@@ -143,13 +143,7 @@ HTREEITEM orbiter::ExtraTab::RegisterExtraParam (LaunchpadItem *item, HTREEITEM 
 	if (hti) return hti;
 
 	// add extra parameter instance to list
-	LaunchpadItem **tmp = new LaunchpadItem*[nExtPrm+1]; TRACENEW
-	if (nExtPrm) {
-		memcpy (tmp, ExtPrm, nExtPrm*sizeof(LaunchpadItem*));
-		delete []ExtPrm;
-	}
-	ExtPrm = tmp;
-	ExtPrm[nExtPrm++] = item;
+	m_ExtPrm.push_back(item);
 
 	// if a name is provided, add item to tree list
 	char *name = item->Name();
@@ -170,20 +164,11 @@ HTREEITEM orbiter::ExtraTab::RegisterExtraParam (LaunchpadItem *item, HTREEITEM 
 
 bool orbiter::ExtraTab::UnregisterExtraParam (LaunchpadItem *item)
 {
-	DWORD i, j, k;
-	for (i = 0; i < nExtPrm; i++) {
-		if (ExtPrm[i] == item) {
-			TreeView_DeleteItem (GetDlgItem (hTab, IDC_EXT_LIST), item->hItem);
-			LaunchpadItem **tmp = 0;
-			if (nExtPrm > 1) {
-				tmp = new LaunchpadItem*[nExtPrm-1]; TRACENEW
-				for (j = k = 0; j < nExtPrm; j++)
-					if (j != i) tmp[k++] = ExtPrm[j];
-			}
-			delete []ExtPrm;
-			ExtPrm = tmp;
-			nExtPrm--;
-			item->clbkWriteConfig (); // save state before removing
+	for (auto it = m_ExtPrm.begin(); it != m_ExtPrm.end(); it++) {
+		if (*it == item) {
+			TreeView_DeleteItem(GetDlgItem(hTab, IDC_EXT_LIST), item->hItem); // remove entry from UI
+			item->clbkWriteConfig(); // allow item to save state before removing
+			m_ExtPrm.erase(it);        // delete the container - the actual item has to be deleted by the caller
 			return true;
 		}
 	}
@@ -227,8 +212,8 @@ HTREEITEM orbiter::ExtraTab::FindExtraParamChild (const HTREEITEM parent)
 
 void orbiter::ExtraTab::WriteExtraParams ()
 {
-	for (DWORD i = 0; i < nExtPrm; i++)
-		ExtPrm[i]->clbkWriteConfig ();
+	for (auto it = m_ExtPrm.begin(); it != m_ExtPrm.end(); it++)
+		(*it)->clbkWriteConfig();
 }
 
 //-----------------------------------------------------------------------------

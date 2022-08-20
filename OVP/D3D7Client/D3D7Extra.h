@@ -29,7 +29,7 @@ public:
 
 class D3D7PlanetRenderCfg: public LaunchpadItem {
 public:
-	D3D7PlanetRenderCfg (oapi::D3D7Client *_gc, D3D7Config *_cfg);
+	D3D7PlanetRenderCfg (oapi::D3D7Client *_gc);
 	char *Name ();
 	char *Description ();
 	void InitDialog (HWND hDlg);
