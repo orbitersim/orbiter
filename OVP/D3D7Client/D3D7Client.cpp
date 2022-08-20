@@ -84,11 +84,11 @@ DLLCLBK void ExitModule (HINSTANCE hDLL)
 	delete g_Param.lpiD3D7;
 	g_Param.lpiD3D7 = 0;
 
-	//if (g_client) {
-	//	oapiUnregisterGraphicsClient (g_client);
-	//	delete g_client;
-	//	g_client = 0;
-	//}
+	if (g_Param.client) {
+		oapiUnregisterGraphicsClient (g_Param.client);
+		delete g_Param.client;
+		g_Param.client = 0;
+	}
 }
 
 // ==============================================================

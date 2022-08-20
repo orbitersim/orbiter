@@ -600,7 +600,7 @@ HINSTANCE Orbiter::LoadModule (const char *path, const char *name)
 			delete []module;
 		}
 		module = tmp;
-		module[nmodule].module = (register_module ? register_module : new oapi::Module (hi));
+		module[nmodule].module = register_module; // may be 0
 		module[nmodule].hMod = hi;
 		module[nmodule].name = new char[strlen(name)+1]; TRACENEW
 		strcpy (module[nmodule].name, name);
@@ -624,7 +624,6 @@ void Orbiter::UnloadModule (const char *name)
 		if (!_stricmp (module[i].name, name)) break;
 	if (i == nmodule) return; // not present
 	delete []module[i].name;
-	delete module[i].module;
 	FreeLibrary (module[i].hMod);
 	if (nmodule > 1) {
 		tmp = new struct DLLModule[nmodule-1]; TRACENEW
@@ -648,7 +647,6 @@ void Orbiter::UnloadModule (HINSTANCE hi)
 		if (hi == module[i].hMod) break;
 	if (i == nmodule) return; // not present
 	delete []module[i].name;
-	delete module[i].module;
 	FreeLibrary (module[i].hMod);
 	if (nmodule > 1) {
 		tmp = new struct DLLModule[nmodule-1]; TRACENEW
@@ -856,7 +854,8 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 	g_psys->PostCreation ();
 
 	for (i = 0; i < nmodule; i++) {
-		module[i].module->clbkSimulationStart (rendermode);
+		if (module[i].module)
+			module[i].module->clbkSimulationStart (rendermode);
 		CHECKCWD(cwd,module[i].name);
 	}
 
@@ -941,7 +940,8 @@ void Orbiter::CloseSession ()
 			gclient->clbkDestroyRenderWindow (false); // destroy graphics objects
 
 		for (i = 0; i < nmodule; i++)
-			module[i].module->clbkSimulationEnd();
+			if (module[i].module)
+				module[i].module->clbkSimulationEnd();
 
 		hRenderWnd = NULL;
 		pDI->DestroyDevices();
@@ -954,7 +954,8 @@ void Orbiter::CloseSession ()
 		}
 
 		for (i = 0; i < nmodule; i++)
-			module[i].module->clbkSimulationEnd();
+			if (module[i].module)
+				module[i].module->clbkSimulationEnd();
 
 		hRenderWnd = NULL;
 		pDI->DestroyDevices();
@@ -1188,8 +1189,9 @@ void Orbiter::Freeze (bool bFreeze)
 	bSession = !bFreeze;
 
 	// broadcast pause state to plugins
-	for (DWORD k = 0; k < nmodule; k++) {
-		module[k].module->clbkPause (bFreeze);
+	for (DWORD i = 0; i < nmodule; i++) {
+		if (module[i].module)
+			module[i].module->clbkPause (bFreeze);
 	}
 	if (bFreeze) Suspend ();
 	else Resume ();
@@ -1218,7 +1220,8 @@ Vessel *Orbiter::SetFocusObject (Vessel *vessel, bool setview)
 	g_focusobj->FocusChanged (true, g_focusobj, g_pfocusobj);
 
 	for (DWORD i = 0; i < nmodule; i++)
-		module[i].module->clbkFocusChanged (g_focusobj, g_pfocusobj);
+		if (module[i].module)
+			module[i].module->clbkFocusChanged (g_focusobj, g_pfocusobj);
 		//if (module[i].intf->opcFocusChanged)
 		//	module[i].intf->opcFocusChanged (g_focusobj, g_pfocusobj);
 
@@ -1247,8 +1250,9 @@ void Orbiter::InsertVessel (Vessel *vessel)
 	g_psys->AddVessel (vessel);
 
 	// broadcast vessel creation to plugins
-	for (DWORD k = 0; k < nmodule; k++)
-		module[k].module->clbkNewVessel ((OBJHANDLE)vessel);
+	for (DWORD i = 0; i < nmodule; i++)
+		if (module[i].module)
+			module[i].module->clbkNewVessel ((OBJHANDLE)vessel);
 #ifdef INLINEGRAPHICS
 	oclient->clbkNewVessel ((OBJHANDLE)vessel);
 #endif // INLINEGRAPHICS
@@ -1301,7 +1305,8 @@ bool Orbiter::KillVessels ()
 				SetView (g_focusobj, 1);
 			// broadcast vessel destruction to plugins
 			for (DWORD k = 0; k < nmodule; k++) {
-				module[k].module->clbkDeleteVessel ((OBJHANDLE)vessel);
+				if (module[k].module)
+					module[k].module->clbkDeleteVessel ((OBJHANDLE)vessel);
 			}
 #ifdef INLINEGRAPHICS
 			oclient->clbkDeleteVessel ((OBJHANDLE)vessel);
@@ -1333,7 +1338,8 @@ void Orbiter::NotifyObjectJump (const Body *obj, const Vector &shift)
 
 	// notify plugins
 	for (DWORD k = 0; k < nmodule; k++)
-		module[k].module->clbkVesselJump ((OBJHANDLE)obj);
+		if (module[k].module)
+			module[k].module->clbkVesselJump ((OBJHANDLE)obj);
 
 #ifdef INLINEGRAPHICS
 	oclient->GetScene()->Update (g_psys, &g_camera, 1, false/*m_bRunning*/, false);
@@ -1408,7 +1414,8 @@ void Orbiter::ApplyWarpFactor ()
 {
 	double nwarp = td.Warp();
 	for (DWORD i = 0; i < nmodule; i++)
-		module[i].module->clbkTimeAccChanged (nwarp, td.Warp());
+		if (module[i].module)
+			module[i].module->clbkTimeAccChanged (nwarp, td.Warp());
 	if (g_pane) g_pane->SetWarp (nwarp);
 	bRealtime = (fabs (nwarp-1.0) < 1e-6);
 }
@@ -1846,7 +1853,8 @@ bool Orbiter::BeginTimeStep (bool running)
 
 		// broadcast pause state to plugins
 		for (DWORD k = 0; k < nmodule; k++)
-			module[k].module->clbkPause (isPaused);
+			if (module[k].module)
+				module[k].module->clbkPause (isPaused);
 	}
 
 	// Note that for times > 1e6 the simulation time is represented by
@@ -1957,7 +1965,8 @@ bool Orbiter::Timejump (double _mjd, int pmode)
 	if (oclient) oclient->clbkTimeJump (td.SimT0, tjump.dt, _mjd);
 #endif
 	for (DWORD i = 0; i < nmodule; i++)
-		module[i].module->clbkTimeJump (td.SimT0, tjump.dt, _mjd);
+		if (module[i].module)
+			module[i].module->clbkTimeJump (td.SimT0, tjump.dt, _mjd);
 
 	return true;
 }
@@ -2027,7 +2036,8 @@ void Orbiter::ModulePreStep ()
 {
 	DWORD i;
 	for (i = 0; i < nmodule; i++)
-		module[i].module->clbkPreStep (td.SimT0, td.SimDT, td.MJD0);
+		if (module[i].module)
+			module[i].module->clbkPreStep (td.SimT0, td.SimDT, td.MJD0);
 	for (i = 0; i < g_psys->nVessel(); i++)
 		g_psys->GetVessel(i)->ModulePreStep (td.SimT0, td.SimDT, td.MJD0);
 }
@@ -2042,7 +2052,8 @@ void Orbiter::ModulePostStep ()
 	for (i = 0; i < g_psys->nVessel(); i++)
 		g_psys->GetVessel(i)->ModulePostStep (td.SimT1, td.SimDT, td.MJD1);
 	for (i = 0; i < nmodule; i++)
-		module[i].module->clbkPostStep (td.SimT1, td.SimDT, td.MJD1);
+		if (module[i].module)
+			module[i].module->clbkPostStep (td.SimT1, td.SimDT, td.MJD1);
 }
 
 //-----------------------------------------------------------------------------
@@ -2564,8 +2575,9 @@ bool Orbiter::BroadcastMouseEvent (UINT event, DWORD state, DWORD x, DWORD y)
 {
 	bool consume = false;
 	for (DWORD k = 0; k < nmodule; k++) {
-		if (module[k].module->clbkProcessMouse (event, state, x, y))
-			consume = true;
+		if (module[k].module)
+			if (module[k].module->clbkProcessMouse (event, state, x, y))
+				consume = true;
 	}
 	return consume;
 }
@@ -2574,8 +2586,9 @@ bool Orbiter::BroadcastImmediateKeyboardEvent (char *kstate)
 {
 	bool consume = false;
 	for (DWORD k = 0; k < nmodule; k++)
-		if (module[k].module->clbkProcessKeyboardImmediate (kstate, bRunning))
-			consume = true;
+		if (module[k].module)
+			if (module[k].module->clbkProcessKeyboardImmediate (kstate, bRunning))
+				consume = true;
 	return consume;
 }
 
@@ -2587,8 +2600,9 @@ void Orbiter::BroadcastBufferedKeyboardEvent (char *kstate, DIDEVICEOBJECTDATA *
 		DWORD key = dod[i].dwOfs;
 
 		for (DWORD k = 0; k < nmodule; k++) {
-			if (module[k].module->clbkProcessKeyboardBuffered (key, kstate, bRunning))
-				consume = true;
+			if (module[k].module)
+				if (module[k].module->clbkProcessKeyboardBuffered (key, kstate, bRunning))
+					consume = true;
 		}
 		if (consume) dod[i].dwData = 0; // remove key from process queue
 	}
