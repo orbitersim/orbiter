@@ -744,13 +744,13 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 	// Generate logical world objects
 #ifdef INLINEGRAPHICS
 	// these should be called from withing oclient
-	CreatePatchDeviceObjects (oclient->m_pD3D, oclient->m_pd3dDevice);
+	CreatePatchDeviceObjects (oclient->m_pD3D, oclient->m_pD3DDevice);
 	VObject::CreateDeviceObjects (oclient);
-	PatchManager::CreateDeviceObjects (oclient->m_pD3D, oclient->m_pd3dDevice);
-	TileManager::CreateDeviceObjects (oclient->m_pD3D, oclient->m_pd3dDevice);
-	TileManager2Base::CreateDeviceObjects (oclient->m_pD3D, oclient->m_pd3dDevice);
-	CSphereManager::CreateDeviceObjects (oclient->m_pD3D, oclient->m_pd3dDevice);
-	VVessel::CreateDeviceObjects (oclient->m_pd3dDevice);
+	PatchManager::CreateDeviceObjects (oclient->m_pD3D, oclient->m_pD3DDevice);
+	TileManager::CreateDeviceObjects (oclient->m_pD3D, oclient->m_pD3DDevice);
+	TileManager2Base::CreateDeviceObjects (oclient->m_pD3D, oclient->m_pD3DDevice);
+	CSphereManager::CreateDeviceObjects (oclient->m_pD3D, oclient->m_pD3DDevice);
+	VVessel::CreateDeviceObjects (oclient->m_pD3DDevice);
 #endif // INLINEGRAPHICS
 	if (gclient) {
 		Base::CreateStaticDeviceObjects();
@@ -1645,40 +1645,40 @@ HRESULT Orbiter::InitDeviceObjects ()
 	// All of this should be moved into the inline graphics client!
 #ifdef INLINEGRAPHICS
     D3DVIEWPORT7 vp;
-    oclient->m_pd3dDevice->GetViewport(&vp);
+    oclient->m_pD3DDevice->GetViewport(&vp);
 	// viewport-related code here
 
     // Turn on lighting. Light will be set during FrameMove() call
-	oclient->m_pd3dDevice->SetRenderState (D3DRENDERSTATE_LIGHTING, bEnableLighting);
-	oclient->m_pd3dDevice->SetRenderState (D3DRENDERSTATE_AMBIENT, g_pOrbiter->Cfg()->AmbientColour);
+	oclient->m_pD3DDevice->SetRenderState (D3DRENDERSTATE_LIGHTING, bEnableLighting);
+	oclient->m_pD3DDevice->SetRenderState (D3DRENDERSTATE_AMBIENT, g_pOrbiter->Cfg()->AmbientColour);
 
 	//if (!pCWorld->LoadRRTextures(m_hWnd, "textures.dat"))
 	//	LOGOUT("LoadRRTextures failed");
 
     // Set miscellaneous renderstates
-	oclient->m_pd3dDevice->SetRenderState (D3DRENDERSTATE_DITHERENABLE, TRUE);
-    oclient->m_pd3dDevice->SetRenderState (D3DRENDERSTATE_ZENABLE, TRUE);
-	oclient->m_pd3dDevice->SetRenderState (D3DRENDERSTATE_FILLMODE, pConfig->CfgDebugPrm.bWireframeMode ? D3DFILL_WIREFRAME : D3DFILL_SOLID);
-	oclient->m_pd3dDevice->SetRenderState (D3DRENDERSTATE_SHADEMODE, D3DSHADE_GOURAUD);
-	oclient->m_pd3dDevice->SetRenderState (D3DRENDERSTATE_SPECULARENABLE, FALSE);
-    oclient->m_pd3dDevice->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
-	oclient->m_pd3dDevice->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_INVSRCALPHA);
-	oclient->m_pd3dDevice->SetRenderState (D3DRENDERSTATE_NORMALIZENORMALS, pConfig->CfgDebugPrm.bNormaliseNormals ? TRUE : FALSE);
+	oclient->m_pD3DDevice->SetRenderState (D3DRENDERSTATE_DITHERENABLE, TRUE);
+    oclient->m_pD3DDevice->SetRenderState (D3DRENDERSTATE_ZENABLE, TRUE);
+	oclient->m_pD3DDevice->SetRenderState (D3DRENDERSTATE_FILLMODE, pConfig->CfgDebugPrm.bWireframeMode ? D3DFILL_WIREFRAME : D3DFILL_SOLID);
+	oclient->m_pD3DDevice->SetRenderState (D3DRENDERSTATE_SHADEMODE, D3DSHADE_GOURAUD);
+	oclient->m_pD3DDevice->SetRenderState (D3DRENDERSTATE_SPECULARENABLE, FALSE);
+    oclient->m_pD3DDevice->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
+	oclient->m_pD3DDevice->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_INVSRCALPHA);
+	oclient->m_pD3DDevice->SetRenderState (D3DRENDERSTATE_NORMALIZENORMALS, pConfig->CfgDebugPrm.bNormaliseNormals ? TRUE : FALSE);
 
 	// Set texture renderstates
     //D3DTextr_RestoreAllTextures( pd3dDevice );
-    oclient->m_pd3dDevice->SetTextureStageState (0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-    oclient->m_pd3dDevice->SetTextureStageState (0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-    oclient->m_pd3dDevice->SetTextureStageState (0, D3DTSS_COLOROP,   D3DTOP_MODULATE);
-	oclient->m_pd3dDevice->SetTextureStageState (0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
-	oclient->m_pd3dDevice->SetTextureStageState (0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
-	oclient->m_pd3dDevice->SetTextureStageState (1, D3DTSS_MINFILTER, D3DTFN_LINEAR);
-	oclient->m_pd3dDevice->SetTextureStageState (1, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
+    oclient->m_pD3DDevice->SetTextureStageState (0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+    oclient->m_pD3DDevice->SetTextureStageState (0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+    oclient->m_pD3DDevice->SetTextureStageState (0, D3DTSS_COLOROP,   D3DTOP_MODULATE);
+	oclient->m_pD3DDevice->SetTextureStageState (0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
+	oclient->m_pD3DDevice->SetTextureStageState (0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
+	oclient->m_pD3DDevice->SetTextureStageState (1, D3DTSS_MINFILTER, D3DTFN_LINEAR);
+	oclient->m_pD3DDevice->SetTextureStageState (1, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
 
 	viewW = oclient->viewW;
 	viewH = oclient->viewH;
 
-	g_texmanager = new TextureManager (oclient->m_pd3dDevice, MAX_TEXTURE_BUFSIZE); TRACENEW
+	g_texmanager = new TextureManager (oclient->m_pD3DDevice, MAX_TEXTURE_BUFSIZE); TRACENEW
 	g_texmanager->SetTexturePath (pConfig->CfgDirPrm.TextureDir);
 	//g_texmanager2 = new TextureManager2 (oclient->m_pd3dDevice); TRACENEW
 #endif // INLINEGRAPHICS
@@ -1697,9 +1697,9 @@ HRESULT Orbiter::InitDeviceObjects ()
 HRESULT Orbiter::RestoreDeviceObjects ()
 {
 #ifdef INLINEGRAPHICS
-	RestorePatchDeviceObjects (oclient->m_pD3D, oclient->m_pd3dDevice);
-	PatchManager::RestoreDeviceObjects (oclient->m_pD3D, oclient->m_pd3dDevice);
-	g_pane->RestoreDeviceObjects (oclient->m_pD3D, oclient->m_pd3dDevice);
+	RestorePatchDeviceObjects (oclient->m_pD3D, oclient->m_pD3DDevice);
+	PatchManager::RestoreDeviceObjects (oclient->m_pD3D, oclient->m_pD3DDevice);
+	g_pane->RestoreDeviceObjects (oclient->m_pD3D, oclient->m_pD3DDevice);
 #endif // INLINEGRAPHICS
 	return S_OK;
 }

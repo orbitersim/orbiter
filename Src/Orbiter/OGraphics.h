@@ -112,7 +112,7 @@ public:
 	inline CD3DFramework7*      GetFramework() const  { return m_pFramework; }
 	inline LPDIRECTDRAW7        GetDirectDraw() const { return m_pDD; }
 	inline LPDIRECT3D7          GetDirect3D7() const  { return m_pD3D; }
-    inline LPDIRECT3DDEVICE7    GetDevice()		 	  { return m_pd3dDevice; }
+    inline LPDIRECT3DDEVICE7    GetDevice()		 	  { return m_pD3DDevice; }
 	inline LPDIRECTDRAWSURFACE7 GetRenderTarget()     {
 		return m_pddsRenderTarget;
 	}
@@ -202,7 +202,7 @@ private:
 	CD3DFramework7      *m_pFramework;
 	LPDIRECTDRAW7        m_pDD;
 	LPDIRECT3D7          m_pD3D;
-	LPDIRECT3DDEVICE7    m_pd3dDevice;
+	LPDIRECT3DDEVICE7    m_pD3DDevice;
     LPDIRECTDRAWSURFACE7 m_pddsRenderTarget;
 	LPDIRECTDRAWSURFACE7 m_pddsRenderTargetLeft; // For stereo modes (not supported)
 	DDSURFACEDESC2       m_ddsdRenderTarget;

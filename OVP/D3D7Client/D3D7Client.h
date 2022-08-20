@@ -38,6 +38,7 @@ class D3D7Config;
 class MeshManager;
 class TextureManager;
 class Scene;
+class D3D7PlanetRenderCfg;
 
 HRESULT clbkConfirmDevice (DDCAPS*, D3DDEVICEDESC7*);
 
@@ -64,6 +65,7 @@ class D3D7Client: public GDIClient {
 	friend class ::Scene;
 	friend class ::MeshManager;
 	friend class ::TextureManager;
+	friend class ::D3D7PlanetRenderCfg;
 
 public:
 	D3D7Client (HINSTANCE hInstance);
@@ -262,13 +264,13 @@ public:
 	inline const D3D7Config *Cfg() const { return cfg; }
 
 	/// Returns the DirectDraw object
-    inline const LPDIRECTDRAW7        GetDirectDraw() const   { return pDD; }
+    inline const LPDIRECTDRAW7        GetDirectDraw() const   { return m_pDD; }
 
 	/// Returns the Direct3D object
-	inline const LPDIRECT3D7          GetDirect3D7() const    { return pD3D; }
+	inline const LPDIRECT3D7          GetDirect3D7() const    { return m_pD3D; }
 
 	/// Returns the Direct3D device
-    inline const LPDIRECT3DDEVICE7    GetDevice() const       { return pd3dDevice; }
+    inline const LPDIRECT3DDEVICE7    GetDevice() const       { return m_pD3DDevice; }
 
 	/// Returns the render surface
 	inline const LPDIRECTDRAWSURFACE7 GetRenderTarget() const { return pddsRenderTarget; }
@@ -640,9 +642,9 @@ private:
 	void LogRenderParams () const;
 
     D3D7Enum_DeviceInfo* m_pDeviceInfo;
-	LPDIRECTDRAW7        pDD;
-    LPDIRECT3D7          pD3D;
-    LPDIRECT3DDEVICE7    pd3dDevice;
+	LPDIRECTDRAW7        m_pDD;
+    LPDIRECT3D7          m_pD3D;
+    LPDIRECT3DDEVICE7    m_pD3DDevice;
     LPDIRECTDRAWSURFACE7 pddsRenderTarget;
 	LPDIRECTDRAWCLIPPER  clipper;
 	CD3DFramework7* m_pFramework;
@@ -660,7 +662,7 @@ private:
 	MeshManager *meshmgr;   // mesh manager
 	TextureManager *texmgr; // texture manager
 
-	LaunchpadItem *lpiCfg, *lpiPlanetRender;
+	//LaunchpadItem *lpiCfg, *lpiPlanetRender;
 
 	// Load status output parameters
 	struct {

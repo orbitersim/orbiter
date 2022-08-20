@@ -36,8 +36,15 @@
 
 using namespace oapi;
 
-HINSTANCE g_hInst = 0;
-D3D7Client *g_client = 0;
+// ==============================================================
+// Global parameters
+
+struct G_PARAM {
+	HINSTANCE hInst;                // module instance handle
+	D3D7Client* client;             // the client soliton
+	LaunchpadItem* lpiD3D7;         // "Extra" group header: D3D7 configuration items
+	LaunchpadItem* lpiPlanetRender; // "Extra" item: planet render parameters
+} g_Param = { 0, 0, 0, 0 };
 
 // ==============================================================
 // API interface
@@ -48,12 +55,20 @@ D3D7Client *g_client = 0;
 
 DLLCLBK void InitModule (HINSTANCE hDLL)
 {
-	g_hInst = hDLL;
-	g_client = new D3D7Client (hDLL);
-	if (!oapiRegisterGraphicsClient (g_client)) {
-		delete g_client;
-		g_client = 0;
+	g_Param.hInst = hDLL;
+	g_Param.client = new D3D7Client (hDLL);
+	if (!oapiRegisterGraphicsClient (g_Param.client)) {
+		oapiWriteLogError("Failed to register the D3D7 graphics client.");
+		delete g_Param.client;
+		g_Param.client = 0;
+		// may not be a good idea to continue here - will probably crash later
 	}
+
+	// Create and register the Launchpad "Extra" entries for the client
+	g_Param.lpiD3D7 = new D3D7ClientCfg;
+	LAUNCHPADITEM_HANDLE hL = oapiRegisterLaunchpadItem(g_Param.lpiD3D7);
+	g_Param.lpiPlanetRender = new D3D7PlanetRenderCfg(g_Param.client);
+	oapiRegisterLaunchpadItem(g_Param.lpiPlanetRender, hL);
 }
 
 // ==============================================================
@@ -61,6 +76,14 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 
 DLLCLBK void ExitModule (HINSTANCE hDLL)
 {
+	// Un-register and delete the Launchpad "Extra" entries for the client
+	oapiUnregisterLaunchpadItem(g_Param.lpiPlanetRender);
+	delete g_Param.lpiPlanetRender;
+	g_Param.lpiPlanetRender = 0;
+	oapiUnregisterLaunchpadItem(g_Param.lpiD3D7);
+	delete g_Param.lpiD3D7;
+	g_Param.lpiD3D7 = 0;
+
 	//if (g_client) {
 	//	oapiUnregisterGraphicsClient (g_client);
 	//	delete g_client;
@@ -74,8 +97,11 @@ DLLCLBK void ExitModule (HINSTANCE hDLL)
 
 D3D7Client::D3D7Client (HINSTANCE hInstance): GDIClient (hInstance)
 {
-	m_pFramework     = NULL;
-	pd3dDevice       = NULL;
+	m_pFramework     = nullptr;
+	m_pDD            = nullptr;
+	m_pD3D           = nullptr;
+	m_pD3DDevice     = nullptr;
+	m_pDeviceInfo    = nullptr;
 	pddsRenderTarget = NULL;
 	hRenderWnd       = NULL;
 	bFullscreen      = false;
@@ -91,12 +117,6 @@ D3D7Client::D3D7Client (HINSTANCE hInstance): GDIClient (hInstance)
 
 	// Create the parameter manager
 	cfg              = new D3D7Config;
-
-	// Register the "Extra" entries for the client
-	lpiCfg = new D3D7ClientCfg;
-	LAUNCHPADITEM_HANDLE hL = oapiRegisterLaunchpadItem (lpiCfg);
-	lpiPlanetRender = new D3D7PlanetRenderCfg (this, cfg);
-	oapiRegisterLaunchpadItem (lpiPlanetRender, hL);
 }
 
 // ==============================================================
@@ -105,11 +125,6 @@ D3D7Client::~D3D7Client ()
 {
 	// Unregister graphics client
 	oapiUnregisterGraphicsClient (this);
-	// Unregister the "Extra" entries
-	oapiUnregisterLaunchpadItem (lpiPlanetRender);
-	delete lpiPlanetRender;
-	oapiUnregisterLaunchpadItem (lpiCfg);
-	delete lpiCfg;
 
 	delete cfg;
 	SAFE_DELETE (m_pFramework);
@@ -394,7 +409,7 @@ bool D3D7Client::clbkSetMeshProperty (DEVMESHHANDLE hMesh, DWORD property, DWORD
 
 void D3D7Client::clbkPreOpenPopup ()
 {
-	if (clipper) pDD->FlipToGDISurface();
+	if (clipper) m_pDD->FlipToGDISurface();
 }
 
 // ==============================================================
@@ -440,9 +455,9 @@ HRESULT D3D7Client::Initialise3DEnvironment ()
 		dwFrameworkFlags))) {
 		LOGOUT ("3D environment ok");
 
-		pDD        = m_pFramework->GetDirectDraw();
-        pD3D       = m_pFramework->GetDirect3D();
-        pd3dDevice = m_pFramework->GetD3DDevice();
+		m_pDD        = m_pFramework->GetDirectDraw();
+        m_pD3D       = m_pFramework->GetDirect3D();
+        m_pD3DDevice = m_pFramework->GetD3DDevice();
 		pddsRenderTarget = m_pFramework->GetRenderSurface();
 
 		// Get dimensions of the render surface 
@@ -473,7 +488,7 @@ HRESULT D3D7Client::Initialise3DEnvironment ()
 
 		// Create clipper object
 		if (bFullscreen) {
-			if (pDD->CreateClipper (0, &clipper, NULL) == DD_OK)
+			if (m_pDD->CreateClipper (0, &clipper, NULL) == DD_OK)
 				clipper->SetHWnd (0, hRenderWnd);
 		}
 
@@ -525,7 +540,7 @@ void D3D7Client::Cleanup3DEnvironment ()
 		clipper = NULL;
 	}
 	m_pFramework->DestroyObjects();
-	pd3dDevice = NULL;
+	m_pD3DDevice = nullptr;
 	pddsRenderTarget = NULL;
 	viewW = viewH = viewBPP = 0;
 }
@@ -887,11 +902,11 @@ void D3D7Client::clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3
 
 	DWORD vtxFmt = D3DFVF_XYZRHW | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0);
 	DWORD dAlpha;
-	pd3dDevice->GetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, &dAlpha);
-	pd3dDevice->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
-	pd3dDevice->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP);
+	m_pD3DDevice->GetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, &dAlpha);
+	m_pD3DDevice->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+	m_pD3DDevice->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP);
 	if (transparent)
-		pd3dDevice->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_ONE);
+		m_pD3DDevice->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_ONE);
 	float rhw = 1;
 	DWORD i, j, nvtx, ngrp = oapiMeshGroupCount (hMesh);
 	SURFHANDLE surf = 0, newsurf;
@@ -917,7 +932,7 @@ void D3D7Client::clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3
 			newsurf = oapiGetTextureHandle (hMesh, grp->TexIdx+1);
 		}
 		if (newsurf != surf) {
-			pd3dDevice->SetTexture (0, (LPDIRECTDRAWSURFACE7)(surf = newsurf));
+			m_pD3DDevice->SetTexture (0, (LPDIRECTDRAWSURFACE7)(surf = newsurf));
 		}
 
 		nvtx = grp->nVtx;
@@ -937,14 +952,14 @@ void D3D7Client::clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3
 			tgtvtx->tu = srcvtx->tu;
 			tgtvtx->tv = srcvtx->tv;
 		}
-		pd3dDevice->DrawIndexedPrimitive (D3DPT_TRIANGLELIST, vtxFmt, hvtx, nvtx, grp->Idx, grp->nIdx, 0);
+		m_pD3DDevice->DrawIndexedPrimitive (D3DPT_TRIANGLELIST, vtxFmt, hvtx, nvtx, grp->Idx, grp->nIdx, 0);
 	}
 	
-	pd3dDevice->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
+	m_pD3DDevice->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
 	if (transparent)
-		pd3dDevice->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_INVSRCALPHA);
+		m_pD3DDevice->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_INVSRCALPHA);
 	if (dAlpha != TRUE)
-		pd3dDevice->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, dAlpha);
+		m_pD3DDevice->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, dAlpha);
 }
 
 // =======================================================================
@@ -954,19 +969,19 @@ void D3D7Client::clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3
 	bool reset = false;
 	DWORD alphaop, alphaarg2, tfactor;
 	if (alpha < 1.0f) {
-		pd3dDevice->GetTextureStageState (0, D3DTSS_ALPHAOP, &alphaop);
-		pd3dDevice->GetTextureStageState (0, D3DTSS_ALPHAARG2, &alphaarg2);
-		pd3dDevice->GetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, &tfactor);
-		pd3dDevice->SetTextureStageState (0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-		pd3dDevice->SetTextureStageState (0, D3DTSS_ALPHAARG2, D3DTA_TFACTOR);
-		pd3dDevice->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(1,1,1,alpha));
+		m_pD3DDevice->GetTextureStageState (0, D3DTSS_ALPHAOP, &alphaop);
+		m_pD3DDevice->GetTextureStageState (0, D3DTSS_ALPHAARG2, &alphaarg2);
+		m_pD3DDevice->GetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, &tfactor);
+		m_pD3DDevice->SetTextureStageState (0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+		m_pD3DDevice->SetTextureStageState (0, D3DTSS_ALPHAARG2, D3DTA_TFACTOR);
+		m_pD3DDevice->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(1,1,1,alpha));
 		reset = true;
 	}
 	clbkRender2DPanel (hSurf, hMesh, T, additive);
 	if (reset) {
-		pd3dDevice->SetTextureStageState (0, D3DTSS_ALPHAOP, alphaop);
-		pd3dDevice->SetTextureStageState (0, D3DTSS_ALPHAARG2, alphaarg2);
-		pd3dDevice->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, tfactor);
+		m_pD3DDevice->SetTextureStageState (0, D3DTSS_ALPHAOP, alphaop);
+		m_pD3DDevice->SetTextureStageState (0, D3DTSS_ALPHAARG2, alphaarg2);
+		m_pD3DDevice->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, tfactor);
 	}
 }
 
@@ -992,7 +1007,7 @@ SURFHANDLE D3D7Client::clbkCreateSurface (DWORD w, DWORD h, SURFHANDLE hTemplate
 		((LPDIRECTDRAWSURFACE7)hTemplate)->GetPixelFormat (&ddsd.ddpfPixelFormat);
 		ddsd.dwFlags |= DDSD_PIXELFORMAT;
 	}
-	if ((hr = pDD->CreateSurface (&ddsd, &surf, NULL)) != DD_OK) {
+	if ((hr = m_pDD->CreateSurface (&ddsd, &surf, NULL)) != DD_OK) {
 		LOGOUT_DDERR (hr);
 		return NULL;
 	}
@@ -1020,7 +1035,7 @@ SURFHANDLE D3D7Client::clbkCreateSurfaceEx (DWORD w, DWORD h, DWORD attrib)
 		ddsd.ddsCaps.dwCaps |= DDSCAPS_VIDEOMEMORY;
 	if ((attrib & OAPISURFACE_ALPHA) && !(attrib & (OAPISURFACE_GDI | OAPISURFACE_SKETCHPAD)))
 		ddsd.ddpfPixelFormat.dwFlags |=  DDPF_ALPHAPIXELS; // enable alpha channel
-	if ((hr = pDD->CreateSurface (&ddsd, &surf, NULL)) != DD_OK) {
+	if ((hr = m_pDD->CreateSurface (&ddsd, &surf, NULL)) != DD_OK) {
 		LOGOUT_DDERR (hr);
 		return NULL;
 	}
@@ -1043,7 +1058,7 @@ SURFHANDLE D3D7Client::clbkCreateTexture (DWORD w, DWORD h)
 	GetFramework()->GetBackBuffer()->GetPixelFormat (&ddsd.ddpfPixelFormat);
 	// take pixel format from render surface (should make it compatible)
 	ddsd.ddpfPixelFormat.dwFlags &= ~DDPF_ALPHAPIXELS; // turn off alpha data
-	pDD->CreateSurface (&ddsd, &surf, NULL);
+	m_pDD->CreateSurface (&ddsd, &surf, NULL);
 	return surf;
 }
 
