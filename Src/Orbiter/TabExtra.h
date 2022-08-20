@@ -39,6 +39,10 @@ namespace orbiter {
 		// as a root (top level) item. Otherwise it appears as a sub-item under
 		// the parent item.
 
+		/// \brief Unregister an item in the Extra list
+		/// \param item LaunchpadItem to be unregistered
+		/// \return true if item was found and unregistered
+		/// \note This function does not 
 		bool UnregisterExtraParam(LaunchpadItem* item);
 		// Unregister an item in the "Extra" list.
 
@@ -54,8 +58,8 @@ namespace orbiter {
 		// (internal "extra" items use the Config class to write to Orbiter.cfg)
 
 	private:
-		LaunchpadItem** ExtPrm;  // list of parameter items on "Extra" list
-		DWORD nExtPrm;
+		std::vector<LaunchpadItem*> m_ExtPrm; // list of parameter items on "Extra" list
+		int m_internalPrm;                    // number of internally created entries
 
 		SplitterCtrl splitListDesc;  // splitter control for extras list(left) and description(right)
 		RECT r_pane, r_edit0;
