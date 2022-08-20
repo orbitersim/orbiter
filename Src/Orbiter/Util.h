@@ -31,6 +31,9 @@ char *uscram (const char *str);
 // create the directories 
 bool MakePath (const char *fname);
 
+// case-insensitive comparison of std::strings
+bool iequal(const std::string& s1, const std::string& s2);
+
 // conversion between Vector and VECTOR3 structures
 
 inline Vector MakeVector (const VECTOR3 &v)

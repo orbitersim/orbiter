@@ -405,7 +405,7 @@ bool GetItemVECTOR (istream &is, const char *label, VECTOR3 &val)
 	return true;
 }
 
-bool FindLine (istream &is, char *line)
+bool FindLine (istream &is, const char *line)
 {
 	bool ok = false;
 	is.seekg (0); // rewind stream

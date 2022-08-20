@@ -172,8 +172,16 @@ public:
 
 	// plugin module loading/unloading
 	HINSTANCE LoadModule (const char *path, const char *name);   // load a plugin
-	void UnloadModule (const char *name); // unload a plugin
-	void UnloadModule (HINSTANCE hi);
+
+	/// \brief Unload a DLL plugin identified by its name
+	/// \param name DLL name
+	/// \return true on success (module found and unloaded)
+	bool UnloadModule (const std::string &name);
+
+	/// \brief Unload a DLL plugin identified by its instance handle
+	/// \param hDLL DLL handle
+	/// \return true on success (module found and unloaded)
+	bool UnloadModule (HINSTANCE hDLL);
 
 	Vessel *SetFocusObject (Vessel *vessel, bool setview = true);
 	// Select a new user-controlled vessel
@@ -460,19 +468,19 @@ private:
 	VOID SavePlaybackScn (const char *fname);
 
 	// === The plugin module interface ===
-	struct DLLModule {               // list of plugin modules
-		oapi::Module *module;
-		HINSTANCE hMod;
-		//OPC_Interface *intf;
-		char *name;
-	} *module;
-	DWORD nmodule;                  // number of plugins
+	struct DLLModule {
+		HINSTANCE hDLL;        // DLL instance handle
+		oapi::Module* pModule; // pointer to module instance, if the plugin registered one
+		std::string sName;     // DLL name
+	};
+	std::list<DLLModule> m_Plugin;
 
 	oapi::Module *register_module;  // used during module registration
 	friend OAPIFUNC void oapiRegisterModule (oapi::Module* module);
 
 	void LoadFixedModules ();                   // load all startup plugins
-	OPC_Proc FindModuleProc (DWORD nmod, const char *procname);
+
+	OPC_Proc FindModuleProc (HINSTANCE hDLL, const char *procname);
 	// returns address of a procedure in a plugin module, or NULL if procedure not found
 
 	// list of custom commands
