@@ -595,7 +595,7 @@ HINSTANCE Orbiter::LoadModule (const char *path, const char *name)
 
 	if (hDLL) {
 		DLLModule module = { hDLL, register_module, std::string(name) };
-		// register_module may be 0 if the DLL didn't register an oapi::Module instance
+		LOGOUT("Loading module %s", name);
 		m_Plugin.push_back(module);
 	} else {
 		DWORD err = GetLastError();
@@ -611,6 +611,7 @@ HINSTANCE Orbiter::LoadModule (const char *path, const char *name)
 bool Orbiter::UnloadModule (const std::string &name)
 {
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++) {
+		LOGOUT("Unloading module %s", it->sName.c_str());
 		if (iequal(it->sName, name)) {
 			FreeLibrary(it->hDLL);
 			m_Plugin.erase(it);
@@ -628,6 +629,7 @@ bool Orbiter::UnloadModule (HINSTANCE hDLL)
 {
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++) {
 		if (it->hDLL == hDLL) {
+			LOGOUT("Unloading module %s", it->sName.c_str());
 			FreeLibrary(it->hDLL);
 			m_Plugin.erase(it);
 			return true;

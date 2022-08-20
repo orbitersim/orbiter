@@ -19,6 +19,7 @@ extern TimeData td;
 char logname[256] = "Orbiter.log";
 char logs[256] = "";
 bool finelog = false;
+DWORD t0 = 0;
 
 LogOutFunc logOut = 0;
 
@@ -27,6 +28,7 @@ void InitLog (char *logfile, bool append)
 	strcpy (logname, logfile);
 	ofstream ofs (logname, append ? ios::app : ios::out);
 	ofs << "**** " << logname << endl;
+	t0 = timeGetTime();
 }
 
 void SetLogOutFunc(LogOutFunc func)
@@ -49,9 +51,8 @@ void LogOut (const char *msg, ...)
 
 void LogOutVA(const char *format, va_list ap)
 {
-	extern TimeData td;
 	FILE *f = fopen(logname, "a+t");
-	fprintf(f, "%010.3f: ", td.SysT0);
+	fprintf(f, "%010.3f: ", (timeGetTime() - t0) * 1e-3);
 	vfprintf(f, format, ap);
 	fputc('\n', f);
 	fclose(f);
@@ -64,11 +65,10 @@ void LogOutVA(const char *format, va_list ap)
 void LogOutFine (const char *msg, ...)
 {
 	if (finelog) {
-		extern TimeData td;
 		va_list ap;
 		va_start (ap, msg);
 		FILE *f = fopen (logname, "a+t");
-		fprintf (f, "%010.3f: ", td.SysT0);
+		fprintf (f, "%010.3f: ", (timeGetTime() - t0) * 1e-3);
 		vfprintf (f, msg, ap);
 		fputc ('\n', f);
 		fclose (f);
