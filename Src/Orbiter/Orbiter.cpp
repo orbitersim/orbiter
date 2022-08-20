@@ -479,6 +479,7 @@ VOID Orbiter::CloseApp (bool fast_shutdown)
 	if (!fast_shutdown) {
 #ifdef INLINEGRAPHICS
 		if (oclient) {
+			oclient->clbkCleanup();
 			delete oclient;
 			oclient = 0;
 			gclient = 0;
@@ -595,7 +596,7 @@ HINSTANCE Orbiter::LoadModule (const char *path, const char *name)
 
 	if (hDLL) {
 		DLLModule module = { hDLL, register_module, std::string(name) };
-		LOGOUT("Loading module %s", name);
+		LOGOUT("Loading module %s (oapi::Module interface: %s)", name, register_module ? "yes" : "no");
 		m_Plugin.push_back(module);
 	} else {
 		DWORD err = GetLastError();
@@ -611,8 +612,8 @@ HINSTANCE Orbiter::LoadModule (const char *path, const char *name)
 bool Orbiter::UnloadModule (const std::string &name)
 {
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++) {
-		LOGOUT("Unloading module %s", it->sName.c_str());
 		if (iequal(it->sName, name)) {
+			LOGOUT("Unloading module %s", it->sName.c_str());
 			FreeLibrary(it->hDLL);
 			m_Plugin.erase(it);
 			return true;

@@ -67,6 +67,7 @@ public:
 	~OrbiterGraphics ();
 	void clbkRefreshVideoData ();
 	bool clbkInitialise ();
+	void clbkCleanup();
 	HWND clbkCreateRenderWindow ();
 	void clbkPostCreation ();
 	bool clbkSplashLoadMsg (const char *msg, int line);
@@ -197,6 +198,10 @@ private:
 	bool bUseZBuffer;       // supports z-buffer? (should always be true!)
     bool bUseStereo;        // stereo view enabled device? (not supported)
 	bool bNoVSync;
+
+	// The Launchpad "Extra" entries added by the client
+	LaunchpadItem* m_lpiGroup;
+	LaunchpadItem* m_lpiPlanetRenderOptions;
 
 	// Framework objects
 	CD3DFramework7      *m_pFramework;

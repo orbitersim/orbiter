@@ -16,12 +16,12 @@ using namespace std;
 extern char DBG_MSG[256];
 extern TimeData td;
 
-char logname[256] = "Orbiter.log";
-char logs[256] = "";
-bool finelog = false;
-DWORD t0 = 0;
+static char logname[256] = "Orbiter.log";
+static char logs[256] = "";
+static bool finelog = false;
+static DWORD t0 = 0;
 
-LogOutFunc logOut = 0;
+static LogOutFunc logOut = 0;
 
 void InitLog (char *logfile, bool append)
 {

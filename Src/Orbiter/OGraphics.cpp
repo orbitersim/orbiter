@@ -388,6 +388,9 @@ OrbiterGraphics::OrbiterGraphics (Orbiter *po): GDIClient (po->GetInstance())
 	bUseStereo             = false;
 	bNoVSync               = false;
 	lstatus.bkgDC          = 0;
+
+	m_lpiGroup               = nullptr;
+	m_lpiPlanetRenderOptions = nullptr;
 }
 
 // =======================================================================
@@ -398,12 +401,24 @@ OrbiterGraphics::~OrbiterGraphics ()
 	if (scene) delete scene;
 	if (m_pFramework) delete m_pFramework;
 	D3D7Enum_FreeResources ();
+
+	// The following resources should already have been freed at this point
+
 	if (GetPenCount())
 		LOGOUT_WARN("Sketchpad pens still allocated: %d", GetPenCount());
 	if (GetBrushCount())
 		LOGOUT_WARN("Sketchpad brushes still allocated: %d", GetBrushCount());
 	if (GetFontCount())
 		LOGOUT_WARN("Sketchpad fonts still allocated: %d", GetFontCount());
+
+	if (m_lpiGroup) {
+		LOGOUT_WARN("Launchpad item still allocated: m_lpiGroup");
+		delete m_lpiGroup;
+	}
+	if (m_lpiPlanetRenderOptions) {
+		LOGOUT_WARN("Launchpad item still allocated: m_lpiPlanetRenderOptions");
+		delete m_lpiPlanetRenderOptions;
+	}
 }
 
 // =======================================================================
@@ -582,10 +597,23 @@ bool OrbiterGraphics::clbkInitialise ()
 	// render parameter dialogs in extra tab
 	orbiter::LaunchpadDialog *launchpad = g_pOrbiter->Launchpad();
 	orbiter::ExtraTab *tExtra = launchpad->GetExtraTab();
-	HTREEITEM ht = launchpad->RegisterExtraParam (new Extra_RenderOptions (tExtra), NULL); TRACENEW
-	launchpad->RegisterExtraParam (new Extra_PlanetRenderOptions (tExtra), ht); TRACENEW
+	HTREEITEM ht = launchpad->RegisterExtraParam (m_lpiGroup = new Extra_RenderOptions(tExtra), NULL);
+	launchpad->RegisterExtraParam (m_lpiPlanetRenderOptions = new Extra_PlanetRenderOptions(tExtra), ht);
 
 	return true;
+}
+
+// =======================================================================
+
+void OrbiterGraphics::clbkCleanup()
+{
+	orbiter::LaunchpadDialog* launchpad = g_pOrbiter->Launchpad();
+	launchpad->UnregisterExtraParam(m_lpiPlanetRenderOptions);
+	delete m_lpiPlanetRenderOptions;
+	m_lpiPlanetRenderOptions = nullptr;
+	launchpad->UnregisterExtraParam(m_lpiGroup);
+	delete m_lpiGroup;
+	m_lpiGroup = nullptr;
 }
 
 // =======================================================================
