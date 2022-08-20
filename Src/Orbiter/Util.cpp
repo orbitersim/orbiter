@@ -57,6 +57,18 @@ bool MakePath (const char *fname)
 	return res == ERROR_SUCCESS;
 }
 
+bool iequal(const std::string& s1, const std::string& s2)
+{
+	unsigned int len = s1.size();
+	if (s2.size() != len)
+		return false;
+	for (unsigned int i = 0; i < len; i++) {
+		if (tolower(s1[i]) != tolower(s2[i]))
+			return false;
+	}
+	return true;
+}
+
 static bool need_timer_setup = true;
 static LARGE_INTEGER fine_counter_freq; // high-precision tick frequency
 static LARGE_INTEGER hi_start;

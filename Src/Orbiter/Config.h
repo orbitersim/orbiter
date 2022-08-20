@@ -316,7 +316,7 @@ bool GetItemBool   (std::istream &is, const char *label, bool &val);
 bool GetItemVector (std::istream &is, const char *label, Vector &val);
 bool GetItemVECTOR (std::istream &is, const char *label, VECTOR3 &val);
 
-bool FindLine      (std::istream &is, char *line);
+bool FindLine      (std::istream &is, const char *line);
 // scans stream 'is' from beginning for a line beginning with 'line' 
 // and leaves file pointer on the beginning of the next line
 // return value is false if line is not found

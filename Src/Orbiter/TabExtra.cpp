@@ -36,6 +36,9 @@ orbiter::ExtraTab::~ExtraTab ()
 {
 	// at this point, only the internally created entries should be left
 	// so they should be safe to delete
+	if (m_ExtPrm.size() > m_internalPrm)
+		LOGOUT_WARN("Orphaned Launchpad Extra entries: %d. Some plugins may not have un-registered their entries.",
+			m_ExtPrm.size() - m_internalPrm);
 	for (int i = 0; i < m_ExtPrm.size(); i++)
 		delete m_ExtPrm[i];
 }

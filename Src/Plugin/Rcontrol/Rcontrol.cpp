@@ -118,7 +118,7 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 	// Register custom dialog controls
 	oapiRegisterCustomControls (hDLL);
 
-	// Register the module
+	// Create and register the module
 	g_Param.rcontrol = new RControl (hDLL);
 	oapiRegisterModule (g_Param.rcontrol);
 }
@@ -132,6 +132,7 @@ DLLCLBK void ExitModule (HINSTANCE hDLL)
 	// Unregister custom dialog controls
 	oapiUnregisterCustomControls (hDLL);
 
+	// Delete the module
 	delete g_Param.rcontrol;
 }
 
