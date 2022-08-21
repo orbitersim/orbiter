@@ -240,12 +240,12 @@ bool D3D7Client::clbkSplashLoadMsg (const char *msg, int line)
 
 void D3D7Client::clbkCloseSession (bool fastclose)
 {
+	GlobalExit();
 	GDIClient::clbkCloseSession (fastclose);
 	if (scene) {
 		delete scene;
 		scene = NULL;
 	}
-	GlobalExit();
 }
 
 // ==============================================================
@@ -519,8 +519,8 @@ HRESULT D3D7Client::Initialise3DEnvironment ()
 
 void D3D7Client::GlobalExit()
 {
-	TileManager::GlobalExit();
 	TileManager2Base::GlobalExit();
+	TileManager::GlobalExit();
 	D3D7ParticleStream::GlobalExit();
 	vVessel::GlobalExit();
 	vStar::GlobalExit();
