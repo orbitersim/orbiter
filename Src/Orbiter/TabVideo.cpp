@@ -203,21 +203,17 @@ void orbiter::DefVideoTab::ScanDir(HWND hTab, const PSTR dir)
 	intptr_t fh = _findfirst(pattern, &fdata);
 	if (fh == -1) return; // nothing found
 	do {
-		if (fdata.attrib & _A_SUBDIR && fdata.name[0]!='.') // directory found
-		{
-			// Skip if directory does not contain plugin with same name as directory
+		if (fdata.attrib & _A_SUBDIR) { // directory found
+			if (fdata.name[0] == '.')
+				continue; // skip self and parent directory entries
+			// Special case: look for DLLs in subdirectories if subdir and DLL names match
 			sprintf(filepath, "%s\\%s\\%s.dll", dir, fdata.name, fdata.name);
 			if (!FileExists(filepath))
-			{
 				continue;
-			}
 		}
-		else // file found
-		{
+		else { // file found
 			if (!HasExtension(fdata.name, "dll")) // skip if not a DLL
-			{
 				continue;
-			}
 			sprintf(filepath, "%s\\%s", dir, fdata.name);
 		}
 

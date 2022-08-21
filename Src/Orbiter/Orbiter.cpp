@@ -186,6 +186,16 @@ int _matherr(struct _exception *except )
 
 INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, PSTR strCmdLine, INT nCmdShow)
 {
+#ifndef INLINEGRAPHICS
+	// Verify working directory
+	char dir[1024];
+	GetCurrentDirectory(1024, dir);
+	// If the server version was launched from its own subdirectory, step back
+	// up to the Orbiter main directory
+	if (strlen(dir) >= 15 && !stricmp (dir+strlen(dir)-15, "\\Modules\\Server"))
+		SetCurrentDirectory("..\\..");
+#endif
+
 #ifdef INLINEGRAPHICS
 	// determine whether another instance already exists
 	hMutex = CreateMutex (NULL, TRUE, "Test");
