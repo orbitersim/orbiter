@@ -472,6 +472,7 @@ private:
 		HINSTANCE hDLL;        // DLL instance handle
 		oapi::Module* pModule; // pointer to module instance, if the plugin registered one
 		std::string sName;     // DLL name
+		bool bLocalAlloc;      // locally allocated; should be freed by Orbiter core
 	};
 	std::list<DLLModule> m_Plugin;
 
