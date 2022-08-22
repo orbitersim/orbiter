@@ -605,7 +605,8 @@ HINSTANCE Orbiter::LoadModule (const char *path, const char *name)
 	}
 
 	if (hDLL) {
-		DLLModule module = { hDLL, register_module, std::string(name) };
+		DLLModule module = { hDLL, register_module ? register_module : new oapi::Module(hDLL), std::string(name), !register_module };
+		// If the DLL doesn't provide a Module interface, create a default one which provides the legacy callbacks
 		LOGOUT("Loading module %s (oapi::Module interface: %s)", name, register_module ? "yes" : "no");
 		m_Plugin.push_back(module);
 	} else {
@@ -624,6 +625,8 @@ bool Orbiter::UnloadModule (const std::string &name)
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++) {
 		if (iequal(it->sName, name)) {
 			LOGOUT("Unloading module %s", it->sName.c_str());
+			if (it->bLocalAlloc)
+				delete it->pModule;
 			FreeLibrary(it->hDLL);
 			m_Plugin.erase(it);
 			return true;
@@ -641,6 +644,8 @@ bool Orbiter::UnloadModule (HINSTANCE hDLL)
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++) {
 		if (it->hDLL == hDLL) {
 			LOGOUT("Unloading module %s", it->sName.c_str());
+			if (it->bLocalAlloc)
+				delete it->pModule;
 			FreeLibrary(it->hDLL);
 			m_Plugin.erase(it);
 			return true;
@@ -844,7 +849,7 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 	g_psys->PostCreation ();
 
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++) {
-		if (it->pModule) it->pModule->clbkSimulationStart(rendermode);
+		it->pModule->clbkSimulationStart(rendermode);
 		CHECKCWD(cwd, it->sName.c_str());
 	}
 
@@ -929,7 +934,7 @@ void Orbiter::CloseSession ()
 			gclient->clbkDestroyRenderWindow (false); // destroy graphics objects
 
 		for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++)
-			if (it->pModule) it->pModule->clbkSimulationEnd();
+			it->pModule->clbkSimulationEnd();
 
 		hRenderWnd = NULL;
 		pDI->DestroyDevices();
@@ -942,7 +947,7 @@ void Orbiter::CloseSession ()
 		}
 
 		for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++)
-			if (it->pModule) it->pModule->clbkSimulationEnd();
+			it->pModule->clbkSimulationEnd();
 
 		hRenderWnd = NULL;
 		pDI->DestroyDevices();
@@ -1177,7 +1182,7 @@ void Orbiter::Freeze (bool bFreeze)
 
 	// broadcast pause state to plugins
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++)
-		if (it->pModule) it->pModule->clbkPause(bFreeze);
+		it->pModule->clbkPause(bFreeze);
 
 	if (bFreeze) Suspend ();
 	else Resume ();
@@ -1206,7 +1211,7 @@ Vessel *Orbiter::SetFocusObject (Vessel *vessel, bool setview)
 	g_focusobj->FocusChanged (true, g_focusobj, g_pfocusobj);
 
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++)
-		if (it->pModule) it->pModule->clbkFocusChanged(g_focusobj, g_pfocusobj);
+		it->pModule->clbkFocusChanged(g_focusobj, g_pfocusobj);
 
 	if (pDlgMgr) pDlgMgr->BroadcastMessage (MSG_FOCUSVESSEL, vessel);
 	DlgHelp::SetVesselHelp (g_focusobj->HelpContext());
@@ -1234,7 +1239,7 @@ void Orbiter::InsertVessel (Vessel *vessel)
 
 	// broadcast vessel creation to plugins
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++)
-		if (it->pModule) it->pModule->clbkNewVessel((OBJHANDLE)vessel);
+		it->pModule->clbkNewVessel((OBJHANDLE)vessel);
 
 #ifdef INLINEGRAPHICS
 	oclient->clbkNewVessel ((OBJHANDLE)vessel);
@@ -1289,7 +1294,7 @@ bool Orbiter::KillVessels ()
 
 			// broadcast vessel destruction to plugins
 			for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++)
-				if (it->pModule) it->pModule->clbkDeleteVessel((OBJHANDLE)vessel);
+				it->pModule->clbkDeleteVessel((OBJHANDLE)vessel);
 
 #ifdef INLINEGRAPHICS
 			oclient->clbkDeleteVessel ((OBJHANDLE)vessel);
@@ -1321,7 +1326,7 @@ void Orbiter::NotifyObjectJump (const Body *obj, const Vector &shift)
 
 	// notify plugins
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++)
-		if (it->pModule) it->pModule->clbkVesselJump((OBJHANDLE)obj);
+		it->pModule->clbkVesselJump((OBJHANDLE)obj);
 
 #ifdef INLINEGRAPHICS
 	oclient->GetScene()->Update (g_psys, &g_camera, 1, false/*m_bRunning*/, false);
@@ -1398,7 +1403,7 @@ void Orbiter::ApplyWarpFactor ()
 
 	// notify plugins
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++)
-		if (it->pModule) it->pModule->clbkTimeAccChanged(nwarp, td.Warp());
+		it->pModule->clbkTimeAccChanged(nwarp, td.Warp());
 
 	if (g_pane) g_pane->SetWarp (nwarp);
 	bRealtime = (fabs (nwarp-1.0) < 1e-6);
@@ -1836,7 +1841,7 @@ bool Orbiter::BeginTimeStep (bool running)
 
 		// broadcast pause state to plugins
 		for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++)
-			if (it->pModule) it->pModule->clbkPause(isPaused);
+			it->pModule->clbkPause(isPaused);
 	}
 
 	// Note that for times > 1e6 the simulation time is represented by
@@ -1949,7 +1954,7 @@ bool Orbiter::Timejump (double _mjd, int pmode)
 
 	// broadcast to modules
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++)
-		if (it->pModule) it->pModule->clbkTimeJump(td.SimT0, tjump.dt, _mjd);
+		it->pModule->clbkTimeJump(td.SimT0, tjump.dt, _mjd);
 
 	return true;
 }
@@ -2019,7 +2024,7 @@ void Orbiter::ModulePreStep ()
 {
 	// broadcast to modules
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++)
-		if (it->pModule) it->pModule->clbkPreStep(td.SimT0, td.SimDT, td.MJD0);
+		it->pModule->clbkPreStep(td.SimT0, td.SimDT, td.MJD0);
 
 	// broadcast to vessels
 	for (DWORD i = 0; i < g_psys->nVessel(); i++)
@@ -2038,7 +2043,7 @@ void Orbiter::ModulePostStep ()
 
 	// broadcast to modules
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++)
-		if (it->pModule) it->pModule->clbkPostStep(td.SimT1, td.SimDT, td.MJD1);
+		it->pModule->clbkPostStep(td.SimT1, td.SimDT, td.MJD1);
 }
 
 //-----------------------------------------------------------------------------
