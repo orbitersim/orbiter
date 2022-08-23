@@ -9,7 +9,6 @@
 // Dialog box for displaying simulation frame rate.
 // ==============================================================
 
-#define STRICT
 #define ORBITER_MODULE
 #include <windows.h>
 #include "Orbitersdk.h"
@@ -21,9 +20,11 @@
 
 namespace oapi {
 
+	/// \brief Plugin for graphically displaying frame rate and time step length.
 	class Framerate : public Module {
 	public:
 		/// \brief Soliton instance server for Framerate plugin
+		/// \param hDLL nodule instance handle
 		static Framerate* GetInstance(HINSTANCE hDLL);
 
 		/// \brief Soliton instance destructor
@@ -83,33 +84,39 @@ namespace oapi {
 		double m_simT;           ///> current simulation time
 		double m_DT;             ///> sample interval
 		DWORD m_fcount;          ///> frame counter
-		bool m_disp;             ///> dialog open?
 	};
 
 }; // namespace oapi
 
 
-// =================================================================================
+// ==============================================================
 // API interface
-// =================================================================================
+// ==============================================================
 
+/// \brief Module entry point 
+/// \param hDLL module handle
 DLLCLBK void InitModule (HINSTANCE hDLL)
 {
 	// Create and register the module
 	oapiRegisterModule(oapi::Framerate::GetInstance(hDLL));
 }
 
+/// \brief Module exit point 
+/// \param hDLL module handle
 DLLCLBK void ExitModule (HINSTANCE hDLL)
 {
 	// Delete the module
 	oapi::Framerate::DelInstance();
 }
 
-// =================================================================================
+
+// ==============================================================
 // Framerate module interface class
-// =================================================================================
+// ==============================================================
 
 oapi::Framerate* oapi::Framerate::self = nullptr;
+
+// --------------------------------------------------------------
 
 oapi::Framerate* oapi::Framerate::GetInstance(HINSTANCE hDLL)
 {
@@ -118,12 +125,17 @@ oapi::Framerate* oapi::Framerate::GetInstance(HINSTANCE hDLL)
 	return self;
 }
 
+// --------------------------------------------------------------
+
 void oapi::Framerate::DelInstance()
 {
-	if (self)
+	if (self) {
 		delete self;
-	self = nullptr;
+		self = nullptr;
+	}
 }
+
+// --------------------------------------------------------------
 
 oapi::Framerate::Framerate(HINSTANCE hDLL)
 	: Module(hDLL)
@@ -155,10 +167,11 @@ oapi::Framerate::Framerate(HINSTANCE hDLL)
 	m_simT = 0.0;
 	m_DT = 1.0;
 	m_fcount = 0;
-	m_disp = false;
 	m_showGraph[0] = true;
 	m_showGraph[1] = false;
 }
+
+// --------------------------------------------------------------
 
 oapi::Framerate::~Framerate()
 {
@@ -173,12 +186,12 @@ oapi::Framerate::~Framerate()
 	self = 0;
 }
 
-// ---------------------------------------------------------------------------------
+// --------------------------------------------------------------
 // Per-frame update
 
 void oapi::Framerate::clbkPreStep(double simt, double simdt, double mjd)
 {
-	if (!m_disp) return; // flight data dialog not open
+	if (!m_hDlg) return; // flight data dialog not open
 
 	double syst = oapiGetSysTime(); // ignore time acceleration for graph updates
 	m_fcount++;
@@ -205,7 +218,7 @@ void oapi::Framerate::clbkPreStep(double simt, double simdt, double mjd)
 	}
 }
 
-// ---------------------------------------------------------------------------------
+// --------------------------------------------------------------
 // Set up the dialog window
 
 INT_PTR oapi::Framerate::InitDialog(HWND hDlg)
@@ -222,12 +235,11 @@ INT_PTR oapi::Framerate::InitDialog(HWND hDlg)
 	SendDlgItemMessage(hDlg, IDC_SHOW_FRAMERATE, BM_SETCHECK, m_showGraph[0] ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hDlg, IDC_SHOW_TIMESTEP, BM_SETCHECK, m_showGraph[1] ? BST_CHECKED : BST_UNCHECKED, 0);
 	ArrangeGraphs(hDlg);
-	m_disp = true;
 
 	return TRUE;
 }
 
-// ---------------------------------------------------------------------------------
+// --------------------------------------------------------------
 // Destroy the dialog window
 
 INT_PTR oapi::Framerate::DestroyDialog()
@@ -236,11 +248,11 @@ INT_PTR oapi::Framerate::DestroyDialog()
 		delete m_graph[i];
 		m_graph[i] = 0;
 	}
-	m_disp = false;
+	m_hDlg = NULL;
 	return 0;
 }
 
-// ---------------------------------------------------------------------------------
+// --------------------------------------------------------------
 // Toggle graph display
 
 INT_PTR oapi::Framerate::ToggleGraph(int which)
@@ -253,7 +265,7 @@ INT_PTR oapi::Framerate::ToggleGraph(int which)
 	return 0;
 }
 
-// ---------------------------------------------------------------------------------
+// --------------------------------------------------------------
 // Arrange graphs in dialog window after resizing
 
 void oapi::Framerate::ArrangeGraphs(HWND hDlg)
@@ -277,10 +289,14 @@ void oapi::Framerate::ArrangeGraphs(HWND hDlg)
 		SWP_NOZORDER | SWP_NOCOPYBITS | (m_showGraph[1] ? SWP_SHOWWINDOW : SWP_HIDEWINDOW));
 }
 
+// --------------------------------------------------------------
+
 void oapi::Framerate::hookOpenDlg(void* context)
 {
 	self->clbkOpenDlg(context);
 }
+
+// --------------------------------------------------------------
 
 void oapi::Framerate::clbkOpenDlg(void* context)
 {
@@ -288,12 +304,14 @@ void oapi::Framerate::clbkOpenDlg(void* context)
 	if (hDlg) m_hDlg = hDlg; // otherwise open already
 }
 
+// --------------------------------------------------------------
+
 INT_PTR CALLBACK oapi::Framerate::hookDlgMsgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	return self->DlgMsgProc(hDlg, uMsg, wParam, lParam);
 }
 
-// ---------------------------------------------------------------------------------
+// --------------------------------------------------------------
 // Framerate dialog message handler
 
 INT_PTR oapi::Framerate::DlgMsgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
