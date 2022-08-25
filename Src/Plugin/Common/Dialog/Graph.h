@@ -32,6 +32,11 @@ public:
 	~Graph();
 	static void InitGDI ();
 	static void FreeGDI ();
+
+	/// \brief Returns graph title
+	/// \return Graph title
+	const std::string& Title() const { return m_title; }
+
 	void SetTitle (const std::string &title);
 	void SetXLabel (const std::string &label);
 	void SetYLabel (const std::string &label);

@@ -35,10 +35,6 @@ public:
 
 	virtual ~FlightDataGraph();
 
-	/// \brief Returns graph title
-	/// \return Graph title
-	const std::string& Title() const { return m_title; }
-
 	/// \brief Adds a new data point to the graph and log file
 	/// \param v vessel pointer
 	/// \param f log file handle, if applicable
@@ -47,9 +43,6 @@ public:
 	/// \brief Writes data type column header to log file
 	/// \param f log file handle
 	virtual void WriteHeader (FILE *f) = 0;
-
-private:
-	std::string m_title; ///> graph title
 };
 
 // ==============================================================

@@ -43,8 +43,8 @@ FlightDataGraph* FlightDataGraph::CreateGraph(const std::string& title)
 
 FlightDataGraph::FlightDataGraph(const std::string &title, int _nplot)
 	: Graph(_nplot)
-	, m_title(title)
 {
+	SetTitle(title);
 }
 
 FlightDataGraph::~FlightDataGraph()
