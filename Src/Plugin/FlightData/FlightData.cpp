@@ -249,6 +249,8 @@ void oapi::FlightData::clbkPreStep(double simt, double simdt, double mjd)
 
 void oapi::FlightData::clbkNewVessel(OBJHANDLE hVessel)
 {
+	if (!m_hDlg) return; // dialog window not open
+
 	ResetVesselList(m_hDlg);
 }
 
@@ -257,6 +259,8 @@ void oapi::FlightData::clbkNewVessel(OBJHANDLE hVessel)
 
 void oapi::FlightData::clbkDeleteVessel(OBJHANDLE hVessel)
 {
+	if (!m_hDlg) return; // dialog window not open
+
 	VESSEL* v = oapiGetVesselInterface(hVessel);
 	if (v == m_pVessel) {
 		m_pVessel = oapiGetFocusInterface();
