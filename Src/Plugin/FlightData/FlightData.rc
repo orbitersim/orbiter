@@ -79,41 +79,6 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_DATA                "Altitude"
-    IDS_DATA2               "Airspeed"
-    IDS_DATA3               "Mach number"
-    IDS_DATA4               "Freestream temperature"
-    IDS_DATA5               "Pressure"
-    IDS_DATA6               "Angle of Attack"
-    IDS_DATA7               "Lift and Drag"
-    IDS_DATA8               "L/D"
-    IDS_DATA9               "Mass"
-    IDS_YLABEL              "Alititude: km"
-    IDS_YLABEL2             "Airspeed: m/s"
-    IDS_YLABEL3             "Mach number"
-    IDS_YLABEL4             "Temp: K"
-    IDS_YLABEL5             "Pressure: kPa"
-    IDS_YLABEL6             "AOA: deg"
-END
-
-STRINGTABLE 
-BEGIN
-    IDS_YLABEL7             "Lift, Drag: kN"
-    IDS_YLABEL8             "L/D"
-    IDS_YLABEL9             "Mass: kg"
-    IDS_LEGEND              "Alt"
-    IDS_LEGEND2             "Speed"
-    IDS_LEGEND3             "Mach"
-    IDS_LEGEND4             "Temp"
-    IDS_LEGEND5             "Static&Dynamic"
-    IDS_LEGEND6             "Vertical&Horizontal"
-    IDS_LEGEND7             "Lift&Drag"
-    IDS_LEGEND8             "L/D"
-    IDS_LEGEND9             "Mass"
-END
-
-STRINGTABLE 
-BEGIN
     IDS_INFO                "FLIGHT DATA:\r\n\r\nDisplay or record various spacecraft parameters during a simulation.\r\n\r\nThe flight data window can be opened by selecting the ""Flight data monitor"" entry in the Custom Functions dialog (Ctrl-F4)."
     IDS_TYPE                "Tools and dialogs"
 END

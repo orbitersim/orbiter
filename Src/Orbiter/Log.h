@@ -21,15 +21,20 @@ void LogOutFine (const char *msg, ...);   // Write a message to the log file if 
 void LogOut ();                       // Write current message to log file
 void LogOut_Error (const char *func, const char *file, int line, const char *msg, ...);  // Write error message to log file
 void LogOut_ErrorVA(const char *func, const char *file, int line, const char *msg, va_list ap);
+void LogOut_Warning(const char* func, const char* file, int line, const char* msg, ...);  // Write general warning to log file
+void LogOut_WarningVA(const char* func, const char* file, int line, const char* msg, va_list ap);
+void LogOut_Obsolete(char* func, char* msg = 0);      // Write obsolete-function warning to log file
 void LogOut_LastError (const char *func, const char *file, int line);             // Write formatted string from GetLastError
 void LogOut_DDErr (HRESULT hr, const char *func, const char *file, int line);     // Write DirectDraw error to log file
 void LogOut_DIErr (HRESULT hr, const char *func, const char *file, int line);     // Write DirectInput error to log file
 void LogOut_DPErr (HRESULT hr, const char *func, const char *file, int line);     // Write DirectPlay error to log file
-void LogOut_Obsolete (char *func, char *msg = 0);      // Write obsolete-function warning to log file
-void LogOut_Warning (const char *func, const char *file, int line, const char *msg, ...);            // Write general warning to log file
 
+// Message formatting components
 void LogOut_Error_Start();
 void LogOut_Error_End();
+void LogOut_Warning_Start();
+void LogOut_Warning_End();
+void LogOut_Obsolete_Start();
 void LogOut_Location(const char* func, const char* file, int line);
 
 #ifdef GENERATE_LOG

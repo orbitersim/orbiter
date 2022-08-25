@@ -103,6 +103,21 @@ void LogOut_Error_End()
 	LogOut("===============================================================");
 }
 
+void LogOut_Warning_Start()
+{
+	LogOut("--------------------------- WARNING: --------------------------");
+}
+
+void LogOut_Warning_End()
+{
+	LogOut("---------------------------------------------------------------");
+}
+
+void LogOut_Obsolete_Start()
+{
+	LogOut("-------------------------- OBSOLETE: --------------------------");
+}
+
 void LogOut_Location(const char* func, const char* file, int line)
 {
 	LogOut("[%s | %s | %d]", func, file, line);
@@ -115,6 +130,14 @@ void LogOut_ErrorVA(const char *func, const char *file, int line, const char *ms
 	LogOutVA(msg, ap);
 	LogOut_Location(func, file, line);
 	LogOut_Error_End();
+}
+
+void LogOut_WarningVA(const char* func, const char* file, int line, const char* msg, va_list ap)
+{
+	LogOut_Warning_Start();
+	LogOutVA(msg, ap);
+	LogOut_Location(func, file, line);
+	LogOut_Warning_End();
 }
 
 void LogOut_LastError (const char *func, const char *file, int line)
@@ -325,32 +348,26 @@ void LogOut_DPErr (HRESULT hr, const char *func, const char *file, int line) {
 	LogOut ("---------------------------------------------------------------");
 }
 
-void LogOut_Obsolete (char *func, char *msg)
-{
-	LogOut ("---------------------------------------------------------------");
-	strcpy (logs, ">>> WARNING: Obsolete API function used: ");
-	strcat (logs, func);
-	LogOut ();
-	if (msg) LogOut (msg);
-	else {
-		LogOut ("At least one active module is accessing an obsolete interface function.");
-		LogOut ("Addons which rely on obsolete functions may not be compatible with");
-		LogOut ("future versions of Orbiter.");
-	}
-	LogOut ("---------------------------------------------------------------");
-}
-
-void LogOut_Warning (const char *func, const char *file, int line, const char *msg, ...)
+void LogOut_Warning(const char* func, const char* file, int line, const char* msg, ...)
 {
 	va_list ap;
-	FILE *f = fopen (logname, "a+t");
-	fputs ("--------------------------- WARNING: --------------------------\n>>> ", f);
-	va_start (ap,msg);
-	vfprintf (f, msg, ap);
+	va_start(ap, msg);
+	LogOut_WarningVA(func, file, line, msg, ap);
 	va_end(ap);
-	fprintf (f, "\n>>> [%s | %s | %d]\n", func, file, line);
-	fputs ("---------------------------------------------------------------\n", f);
-	fclose (f);
+}
+
+void LogOut_Obsolete(char* func, char* msg)
+{
+	LogOut_Obsolete_Start();
+	LogOut("Obsolete API function used: %s", func);
+	if (msg)
+		LogOut(msg);
+	else {
+		LogOut("At least one active module is accessing an obsolete interface function.");
+		LogOut("Addons which rely on obsolete functions may not be compatible with");
+		LogOut("future versions of Orbiter.");
+	}
+	LogOut_Warning_End();
 }
 
 void tracenew (char *fname, int line)

@@ -86,7 +86,7 @@ namespace oapi {
 		DWORD m_fcount;          ///> frame counter
 	};
 
-}; // namespace oapi
+} // namespace oapi
 
 
 // ==============================================================
@@ -182,8 +182,6 @@ oapi::Framerate::~Framerate()
 
 	// Unregister the custom command for calling the plugin
 	oapiUnregisterCustomCmd(m_dwCmd);
-
-	self = 0;
 }
 
 // --------------------------------------------------------------
@@ -191,7 +189,7 @@ oapi::Framerate::~Framerate()
 
 void oapi::Framerate::clbkPreStep(double simt, double simdt, double mjd)
 {
-	if (!m_hDlg) return; // flight data dialog not open
+	if (!m_hDlg) return; // dialog window not open
 
 	double syst = oapiGetSysTime(); // ignore time acceleration for graph updates
 	m_fcount++;

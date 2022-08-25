@@ -12,7 +12,9 @@
 #ifndef __GRAPH_H
 #define __GRAPH_H
 
-#include "windows.h"
+#include <windows.h>
+#include <string>
+#include <vector>
 
 const int MAXPLOT = 3;
 const int NDATA = 200;
@@ -25,14 +27,20 @@ struct GDIres {
 
 class Graph {
 public:
-	Graph (int _nplot = 1);
+	Graph(int nplot = 1);
+	Graph(const Graph& graph);
 	~Graph();
 	static void InitGDI ();
 	static void FreeGDI ();
-	void SetTitle (const char *_title);
-	void SetXLabel (const char *_label);
-	void SetYLabel (const char *_label);
-	void SetLegend (const char *_legend);
+
+	/// \brief Returns graph title
+	/// \return Graph title
+	const std::string& Title() const { return m_title; }
+
+	void SetTitle (const std::string &title);
+	void SetXLabel (const std::string &label);
+	void SetYLabel (const std::string &label);
+	void SetLegend (const std::string &legend);
 	void ResetData();
 	void AppendDataPoint (float val);
 	void AppendDataPoints (float *val);
@@ -43,19 +51,17 @@ protected:
 	void SetAutoTicks ();
 
 private:
-	int nplot;
-	float **data;
-	float vmin, vmax;
-	float data_tickscale;
-	float data_dtick;
-	float data_tickmin;
-	int data_minortick;
-	int ndata;
-	int idx;
-	char *title;
-	char *xlabel, *ylabel;
-	char *legend;
-	int *legend_idx;
+	std::vector<std::vector<float>> m_data;
+	float m_vmin, m_vmax;
+	float m_tickscale;
+	float m_dtick;
+	float m_tickmin;
+	int m_minortick;
+	int m_ndata;
+	int m_idx;
+	std::string m_title;
+	std::string m_xlabel, m_ylabel;
+	std::vector<std::string> m_legend;
 	static GDIres gdi;
 };
 
