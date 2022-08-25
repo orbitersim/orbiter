@@ -49,7 +49,6 @@ FlightDataGraph::FlightDataGraph(const std::string &title, int _nplot)
 
 FlightDataGraph::~FlightDataGraph()
 {
-	int i = 0;
 }
 
 // ==============================================================

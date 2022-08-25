@@ -42,6 +42,14 @@ namespace oapi {
 		/// \brief Time step notification callback
 		void clbkPreStep(double simt, double simdt, double mjd);
 
+		/// \brief Vessel creation notification callback
+		/// \param hVessel Handle of new vessel
+		void clbkNewVessel(OBJHANDLE hVessel);
+
+		/// \brief Vessel deletion notification callback
+		/// \param hVessel Handle of vessel to be deleted 
+		void clbkDeleteVessel(OBJHANDLE hVessel);
+
 		/// \brief Entry point for dialog message procedure
 		static INT_PTR CALLBACK hookDlgMsgProc(HWND hDlg, UINT uInt, WPARAM wParam, LPARAM lParam);
 
@@ -70,6 +78,9 @@ namespace oapi {
 		/// \brief Re-initialise the vessel selection list 
 		/// \param hDlg dialog handle
 		void ResetVesselList(HWND hDlg);
+
+		/// \brief Reset all data graphs
+		void ResetData();
 
 		/// \brief Switch monitoring focus to a new vessel 
 		void PickVesselFromList(HWND hDlg);
@@ -234,6 +245,27 @@ void oapi::FlightData::clbkPreStep(double simt, double simdt, double mjd)
 }
 
 // --------------------------------------------------------------
+// vessel creation notification
+
+void oapi::FlightData::clbkNewVessel(OBJHANDLE hVessel)
+{
+	ResetVesselList(m_hDlg);
+}
+
+// --------------------------------------------------------------
+// vessel deletion notification
+
+void oapi::FlightData::clbkDeleteVessel(OBJHANDLE hVessel)
+{
+	VESSEL* v = oapiGetVesselInterface(hVessel);
+	if (v == m_pVessel) {
+		m_pVessel = oapiGetFocusInterface();
+		ResetData();
+	}
+	ResetVesselList(m_hDlg);
+}
+
+// --------------------------------------------------------------
 // Set up the dialog window
 
 INT_PTR oapi::FlightData::InitDialog(HWND hDlg)
@@ -294,6 +326,14 @@ void oapi::FlightData::ResetVesselList(HWND hDlg)
 	}
 	i = SendDlgItemMessage(hDlg, IDC_VESSELLIST, CB_FINDSTRINGEXACT, -1, (LPARAM)m_pVessel->GetName());
 	SendDlgItemMessage(hDlg, IDC_VESSELLIST, CB_SETCURSEL, (i != CB_ERR ? i : 0), 0);
+}
+
+// --------------------------------------------------------------
+
+void oapi::FlightData::ResetData()
+{
+	for (auto it = m_graph.begin(); it != m_graph.end(); it++)
+		(*it)->ResetData();
 }
 
 // --------------------------------------------------------------
@@ -514,8 +554,7 @@ INT_PTR oapi::FlightData::DlgMsgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 			if (m_bLogging) WriteLogHeader(m_bRecording);
 			return TRUE;
 		case IDC_RESET:
-			for (auto it = m_graph.begin(); it != m_graph.end(); it++)
-				(*it)->ResetData();
+			ResetData();
 			return TRUE;
 		}
 		break;
