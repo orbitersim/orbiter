@@ -79,7 +79,7 @@ namespace oapi {
 		int m_hovergauge;      ///> hover throttle slider position
 	};
 
-}; // namespace oapi
+} // namespace oapi
 
 
 // ==============================================================
