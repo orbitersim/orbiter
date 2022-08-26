@@ -338,6 +338,18 @@ bool D3D7Client::clbkParticleStreamExists (const ParticleStream *ps)
 
 // ==============================================================
 
+SURFHANDLE D3D7Client::clbkLoadSurface(const char* fname, DWORD attrib, bool bPath)
+{
+	DWORD flags = 0;
+	if (attrib & OAPISURFACE_SYSMEM)     flags |= 0x1;
+	if (attrib & OAPISURFACE_UNCOMPRESS) flags |= 0x2;
+	if (attrib & OAPISURFACE_NOMIPMAPS)  flags |= 0x4;
+	if (attrib & OAPISURFACE_SHARED)     flags |= 0x8;
+	return clbkLoadTexture(fname, flags);
+}
+
+// ==============================================================
+
 SURFHANDLE D3D7Client::clbkLoadTexture (const char *fname, DWORD flags)
 {
 	if (!texmgr) return NULL;
