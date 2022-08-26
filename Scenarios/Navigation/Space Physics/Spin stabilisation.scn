@@ -1,19 +1,17 @@
-BEGIN_DESC
-The attitude of an object can be stabilised by spinning it rapidly around
+BEGIN_HYPERDESC
+<h1>Spin stabilisation</h1>
+<p>The attitude of an object can be stabilised by spinning it rapidly around
 one of its axes of symmetry.
 In this scenario, two rockets are placed in a low orbit. One is spinning
 around its axis at 1Hz, the other is not. The spinning rocket maintains its
 global orientation, while the other starts to rotate under the influence
-of gravity gradient torque.
-
-Speed up to 100x and watch the behaviour of both rockets.
-
-Try killing the angular velocity of the spinning rocket (using the Scenario
-Editor) and see what happens.
-
-This scenario requires gravity gradient torque enabled in the "Parameters" tab
-of the Orbiter Launchpad.
-END_DESC
+of gravity gradient torque.</p>
+<p>Speed up to 100x and watch the behaviour of both rockets.</p>
+<p>Try killing the angular velocity of the spinning rocket (using the Scenario
+Editor) and see what happens.</p>
+<p>This scenario requires gravity gradient torque enabled in the "Parameters" tab
+of the Orbiter Launchpad.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

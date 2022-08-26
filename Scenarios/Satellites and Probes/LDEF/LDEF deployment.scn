@@ -1,0 +1,69 @@
+BEGIN_HYPERDESC
+<h1>LDEF deployment</h1>
+<p>Deploy the LDEF (Long Duration Exposure Facility) platform in orbit using
+the Shuttle's remote manipulator arm.
+Press Ctrl-Space and pick "RMS operation" to bring up the dialog for controlling
+the arm.</p>
+<p>After releasing the satellite, return the Shuttle back to Kennedy
+Space Center.</p>
+END_HYPERDESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 45797.952994
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship STS-41-C
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET STS-41-C
+  MODE Extern
+  POS 3.523502 26.960479 42.884879
+  TRACKMODE GlobalFrame
+  FOV 29.23
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Orbit
+  REF AUTO
+END_HUD
+
+BEGIN_MFD Left
+  TYPE Map
+  REF Earth
+  ZOOM 4
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Orbit
+  PROJ Ship
+  FRAME Equator
+  ALT
+  REF Earth
+END_MFD
+
+BEGIN_SHIPS
+STS-41-C:Atlantis
+  STATUS Orbiting Earth
+  RPOS 3887825.830 857364.605 -5572924.667
+  RVEL 5983.2302 1652.3508 4435.1061
+  AROT 12.140 -34.959 71.582
+  PRPLEVEL 0:0.45
+  NAVFREQ 0 0
+  CONFIGURATION 3
+  CARGODOOR 1 1.0000
+  GEAR 0 0.0000
+  KUBAND 0 0.0000
+  ARM_STATUS 0.5000 0.0000 0.0000 0.5000 0.5000 0.5000
+  SAT_OFS_X 0
+  SAT_OFS_Y -2.2
+  SAT_OFS_Z 1.2
+END
+LDEF:LDEF
+  STATUS Orbiting Earth
+  ATTACHED 0:0,STS-41-C
+  NAVFREQ 0 0
+END
+END_SHIPS

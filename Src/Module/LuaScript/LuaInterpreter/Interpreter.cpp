@@ -603,6 +603,7 @@ int Interpreter::RunChunk (const char *chunk, int n)
 				else {
 					oapiWriteLogError(error);
 				}
+				is_busy = false;
 				return res;
 			}
 		}

@@ -1,10 +1,11 @@
-BEGIN_DESC
-You are descending into the thick atmosphere of Venus.
-
-If you have selected the complex flight model, then the high atmospheric pressure at lower altitudes will render your engines ineffective,
-and below an altitude of about 40km they will stop producing thrust altogether.
-So if you want to keep airborne, you need to stabilise your orbit soon.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Delta-glider: Venus descent</h1>
+<p>You are descending into the thick atmosphere of Venus.</p>
+<p>If you have selected the complex flight model, then the high atmospheric
+pressure at lower altitudes will render your engines ineffective, and below
+an altitude of about 40km they will stop producing thrust altogether.
+So if you want to keep airborne, you need to stabilise your orbit soon.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

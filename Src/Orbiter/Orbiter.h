@@ -147,7 +147,7 @@ public:
 	bool Timejump (double _mjd, int pmode);
 	void Suspend (void); // elapsed time between Suspend() and Resume() is ignored
 	void Resume (void); // A Suspend/Resume pair must be closed within a time step
-	bool SaveScenario (const char *fname, const char *desc);
+	bool SaveScenario (const char *fname, const char *desc, int desc_type);
 	void SaveConfig ();
 	VOID Quicksave ();
 	void StartCaptureFrames () { video_skip_count = 0; bCapture = true; }
@@ -172,8 +172,16 @@ public:
 
 	// plugin module loading/unloading
 	HINSTANCE LoadModule (const char *path, const char *name);   // load a plugin
-	void UnloadModule (const char *name); // unload a plugin
-	void UnloadModule (HINSTANCE hi);
+
+	/// \brief Unload a DLL plugin identified by its name
+	/// \param name DLL name
+	/// \return true on success (module found and unloaded)
+	bool UnloadModule (const std::string &name);
+
+	/// \brief Unload a DLL plugin identified by its instance handle
+	/// \param hDLL DLL handle
+	/// \return true on success (module found and unloaded)
+	bool UnloadModule (HINSTANCE hDLL);
 
 	Vessel *SetFocusObject (Vessel *vessel, bool setview = true);
 	// Select a new user-controlled vessel
@@ -225,7 +233,7 @@ public:
 	inline bool    IsRunning() const { return bRunning; }
 	inline bool    UseStencil() const { return bUseStencil; }
 	inline void    SetFastExit (bool fexit) { bFastExit = fexit; }
-	inline bool    UseHtmlInline () { return (pConfig->CfgDebugPrm.bHtmlScnDesc == 1 || pConfig->CfgDebugPrm.bHtmlScnDesc == 2 && !bWINEenv); }
+	inline bool    UseHtmlInline() { return (pConfig->CfgDebugPrm.bHtmlScnDesc == 1 || pConfig->CfgDebugPrm.bHtmlScnDesc == 2 && !bWINEenv); }
 
 	// DirectInput components
 	inline CDIFramework7 *GetDInput() const { return pDI->GetDIFrame(); }
@@ -460,30 +468,26 @@ private:
 	VOID SavePlaybackScn (const char *fname);
 
 	// === The plugin module interface ===
-	struct DLLModule {               // list of plugin modules
-		oapi::Module *module;
-		HINSTANCE hMod;
-		//OPC_Interface *intf;
-		char *name;
-	} *module;
-	DWORD nmodule;                  // number of plugins
+	struct DLLModule {
+		HINSTANCE hDLL;        // DLL instance handle
+		oapi::Module* pModule; // pointer to module instance, if the plugin registered one
+		std::string sName;     // DLL name
+		bool bLocalAlloc;      // locally allocated; should be freed by Orbiter core
+	};
+	std::list<DLLModule> m_Plugin;
 
 	oapi::Module *register_module;  // used during module registration
 	friend OAPIFUNC void oapiRegisterModule (oapi::Module* module);
 
 	void LoadFixedModules ();                   // load all startup plugins
-	OPC_Proc FindModuleProc (DWORD nmod, const char *procname);
+
+	OPC_Proc FindModuleProc (HINSTANCE hDLL, const char *procname);
 	// returns address of a procedure in a plugin module, or NULL if procedure not found
 
 	// list of custom commands
 	CUSTOMCMD *customcmd;
 	DWORD ncustomcmd;
 	friend class DlgFunction;
-
-	// DDE interface
-	DDEServer *ddeserver;
-	void DDEInit (HWND hClient, ATOM topic);
-	void DDERequest (HWND hClient, int format, ATOM item);
 
 public:
 #ifndef INLINEGRAPHICS

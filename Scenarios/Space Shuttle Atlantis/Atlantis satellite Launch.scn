@@ -1,6 +1,10 @@
-BEGIN_DESC
+BEGIN_HYPERDESC
+<h1>Atlantis launch</h1>
+<p>Start this scenario with Space Shuttle Atlantis on Launchpad 39B ready for liftoff</p>
+<p>The payload consists of a Carina crew rescue vehicle prototype. It can be used for
+orbital payload release and recapture exercises.</p>
 Contains the latest simulation state.
-END_DESC
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

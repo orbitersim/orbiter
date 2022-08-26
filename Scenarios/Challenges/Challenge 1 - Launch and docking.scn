@@ -1,6 +1,15 @@
+BEGIN_URLDESC
+Default\Challenges\Challenge1,Index
+END_URLDESC
 BEGIN_DESC
-Challenge scenario: Launch the Delta-glider to orbit and dock with the ISS,
-using as little fuel as possible.
+Orbiter Challenges: 1
+
+
+The task: Fly the Delta-glider to the International Space Station on as little fuel
+as possible. 
+
+
+For details, launch the scenario, then open the Help window (Alt-F1).
 END_DESC
 
 BEGIN_ENVIRONMENT
@@ -53,6 +62,7 @@ GL-01:DeltaGlider
   POS -80.6826440 28.5970140
   HEADING 330.01
   RCSMODE 0
+  AFCMODE 7
   PRPLEVEL 0:1.000 1:1.000
   NAVFREQ 466 588 84 114
   XPDR 0

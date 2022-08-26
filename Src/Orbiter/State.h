@@ -23,9 +23,17 @@ public:
 	const char *Focus() const { return focus; }
 	const char *ScnHelp() const { return (scnhelp[0] ? scnhelp : 0); }
 	const char *PlaybackDir() const { return (playback[0] ? playback : scenario); }
-	void Update (const char *_desc = 0);
+	void Update ();
+
+	/// \brief Read state from scenario file
 	bool Read (const char *fname);
-	void Write (std::ostream &ofs, const char *help) const;
+
+	/// \brief Write state as scenario file
+	/// \param ofs scenario file stream
+	/// \param desc description string (0 for none)
+	/// \param desc_fmt description format: 0 = text (DESC), 1 = inline html (HYPERDESC), 2 = external file (URLDESC)
+	/// \param help scenario help url (html or chm,index page) (0 for none)
+	void Write (std::ostream &ofs, const char *desc = 0, int desc_fmt = 0, const char *help = 0) const;
 	// load/save scenario state
 
 private:
@@ -38,7 +46,6 @@ private:
 	char focus[64];     // current focus vessel
 	char scnhelp[128];  // scenario help file
 	char playback[128]; // playback folder name, if applicable
-	const char *desc;
 
 };
 

@@ -1,6 +1,8 @@
-BEGIN_DESC
-Start the Simulator with Atlantis docked to the ISS. The Leonardo mplm is in the Atlantis cargo bay. 
-END_DESC
+BEGIN_HYPERDESC
+<h1>Atlantis ISS resupply</h1>
+<p>Start the Simulator with Atlantis docked to the ISS.
+The Leonardo mplm is in the Atlantis cargo bay.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

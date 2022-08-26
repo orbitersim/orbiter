@@ -1,6 +1,8 @@
-BEGIN_DESC
-Playback\Atlantis undocking
-END_DESC
+BEGIN_HYPERDESC
+<h1>Playback: Atlantis undocking</h1>
+<p>Watch Space Shuttle Atlantis undocking from the International Space Station
+and preparing for a return to Earth.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

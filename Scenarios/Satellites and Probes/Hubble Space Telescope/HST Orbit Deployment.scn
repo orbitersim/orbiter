@@ -1,44 +1,55 @@
-BEGIN_DESC
-The Hubble Space Telescope is being pulled out of the Shuttle Cargo Bay.
+BEGIN_HYPERDESC
+<h1>HST orbit deployment (Mission STS-31R)</h1>
+<p>The Hubble Space Telescope is being pulled out of the Shuttle Cargo Bay.
 Complete the deployment operation using the Manipulator Arm control pad
 (Ctrl-Space). After detaching the telescope, switch focus (F3) to the HST
 and unfold the solar arrays (Ctrl-3), deploy the high-gain antennae (Ctrl-1),
-and open the main telescope hatch (Ctrl-2).
-END_DESC
+and open the main telescope hatch (Ctrl-2).</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol
-  Date MJD 51982.9628835070
+  Date MJD 48006.514905
 END_ENVIRONMENT
 
 BEGIN_FOCUS
-  Ship STS-101
+  Ship STS-31R
 END_FOCUS
 
 BEGIN_CAMERA
-  TARGET STS-101
+  TARGET STS-31R
   MODE Extern
-  POS 2.356634 48.276620 24.815634
+  POS 2.356634 105.572400 13.356478
   TRACKMODE GlobalFrame
   FOV 40.00
 END_CAMERA
 
 BEGIN_HUD
-  TYPE Docking
+  TYPE Orbit
+  REF AUTO
 END_HUD
 
 BEGIN_MFD Left
-  TYPE Docking
+  TYPE Map
+  REF Earth
+  ZOOM 4
 END_MFD
 
+BEGIN_MFD Right
+  TYPE Orbit
+  PROJ Ship
+  FRAME Equator
+  ALT
+  REF Earth
+END_MFD
 
 BEGIN_SHIPS
-STS-101:Atlantis
+STS-31R:Atlantis
   STATUS Orbiting Earth
-  RPOS 6406930.24 1645449.51 158920.03
-  RVEL -255.076 120.121 7779.345
-  AROT 23.47 -54.57 63.47
-  PRPLEVEL 0:0.991
+  RPOS 5956411.626 -1578168.426 -3288371.143
+  RVEL 3495.7351 -692.3912 6661.4754
+  AROT 9.178 -26.980 73.109
+  PRPLEVEL 0:0.45
   NAVFREQ 0 0
   CONFIGURATION 3
   CARGODOOR 1 1.0000
@@ -51,7 +62,7 @@ STS-101:Atlantis
 END
 HST:HST
   STATUS Orbiting Earth
-  ATTACHED 1:1,STS-101
+  ATTACHED 1:1,STS-31R
   NAVFREQ 0 0
   ANT 0 0.0000
   HATCH 0 0.0000

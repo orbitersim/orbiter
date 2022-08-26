@@ -81,18 +81,20 @@ SurfTile::~SurfTile ()
 
 void SurfTile::Load ()
 {
-	bool bLoadMip = true; // for now
+	const bool bLoadMip = true; // for now
 	bool ok;
-
 	DWORD flag = (bLoadMip ? 0:4);
-	char path[256];
+	char path[512];
 
 	// Load surface texture
 	ok = false;
 	owntex = true;
 	if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
-		sprintf (path, "%s\\Surf\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
-		ok = (mgr->GClient()->GetTexMgr()->LoadTexture (path, &tex, flag) == S_OK);
+		sprintf(path, "%s\\Surf\\%02d\\%06d\\%06d.dds", mgr->DataRootDir().c_str(), lvl + 4, ilat, ilng);
+		if (FILE* f = fopen(path, "rb")) {
+			ok = (mgr->GClient()->GetTexMgr()->ReadTexture(f, &tex, flag) == S_OK);
+			fclose(f);
+		}
 	}
 	if (!ok && smgr->ZTreeManager(0)) { // try loading from compressed archive
 		BYTE *buf;
@@ -116,8 +118,11 @@ void SurfTile::Load ()
 		if (owntex) {
 			ok = false;
 			if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
-				sprintf (path, "%s\\Mask\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
-				ok = (mgr->GClient()->GetTexMgr()->LoadTexture (path, &ltex, flag) == S_OK);
+				sprintf (path, "%s\\Mask\\%02d\\%06d\\%06d.dds", mgr->DataRootDir().c_str(), lvl + 4, ilat, ilng);
+				if (FILE* f = fopen(path, "rb")) {
+					ok = (mgr->GClient()->GetTexMgr()->ReadTexture(f, &ltex, flag) == S_OK);
+					fclose(f);
+				}
 			}
 			if (!ok && smgr->ZTreeManager(1)) { // try loading from compressed archive
 				BYTE *buf;
@@ -156,22 +161,20 @@ void SurfTile::Load ()
 
 // -----------------------------------------------------------------------
 
-INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int ilng, double tgt_res, double *mean_elev)
+INT16 *SurfTile::ReadElevationFile (int lvl, int ilat, int ilng, double tgt_res, double *mean_elev)
 {
 	const int ndat = TILE_ELEVSTRIDE*TILE_ELEVSTRIDE;
 	ELEVFILEHEADER hdr;
 	INT16 *e = NULL;
 	INT16 ofs;
 	double scale, offset;
-	char path[256], texpath[256];
-	FILE *f;
+	char path[256];
 	int i;
 
 	// Elevation data
 	if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
-		sprintf (path, "%s\\Elev\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
-		mgr->GClient()->PlanetTexturePath(path, texpath);
-		if (f = fopen(texpath, "rb")) {
+		sprintf (path, "%s\\Elev\\%02d\\%06d\\%06d.elv", mgr->DataRootDir().c_str(), lvl, ilat, ilng);
+		if (FILE* f = fopen(path, "rb")) {
 			e = new INT16[ndat];
 			// read the elevation file header
 			fread (&hdr, sizeof(ELEVFILEHEADER), 1, f);
@@ -247,9 +250,8 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 		INT16 offset;
 		bool do_rescale, do_shift;
 		if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
-			sprintf (path, "%s\\Elev_mod\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
-			mgr->GClient()->PlanetTexturePath(path, texpath);
-			if (f = fopen(texpath, "rb")) {
+			sprintf (path, "%s\\Elev_mod\\%02d\\%06d\\%06d.elv", mgr->DataRootDir().c_str(), lvl, ilat, ilng);
+			if (FILE* f = fopen(path, "rb")) {
 				fread (&hdr, sizeof(ELEVFILEHEADER), 1, f);
 				if (hdr.hdrsize != sizeof(ELEVFILEHEADER)) {
 					fseek (f, hdr.hdrsize, SEEK_SET);
@@ -349,7 +351,7 @@ bool SurfTile::LoadElevationData ()
 	if (!mode) return false;
 
 	int ndat = TILE_ELEVSTRIDE*TILE_ELEVSTRIDE;
-	elev = ReadElevationFile (mgr->CbodyName(), lvl+4, ilat, ilng, mgr->ElevRes());
+	elev = ReadElevationFile (lvl + 4, ilat, ilng, mgr->ElevRes());
 	if (elev) {
 
 		has_elevfile = true;
@@ -976,13 +978,11 @@ void TileManager2<SurfTile>::LoadZTrees()
 {
 	treeMgr = new ZTreeMgr*[ntreeMgr = 5];
 	if (cprm.tileLoadFlags & 0x0002) {
-		char cbuf[256];
-		GClient()->PlanetTexturePath (CbodyName(), cbuf);
-		treeMgr[0] = ZTreeMgr::CreateFromFile(cbuf, ZTreeMgr::LAYER_SURF);
-		treeMgr[1] = ZTreeMgr::CreateFromFile(cbuf, ZTreeMgr::LAYER_MASK);
-		treeMgr[2] = ZTreeMgr::CreateFromFile(cbuf, ZTreeMgr::LAYER_ELEV);
-		treeMgr[3] = ZTreeMgr::CreateFromFile(cbuf, ZTreeMgr::LAYER_ELEVMOD);
-		treeMgr[4] = ZTreeMgr::CreateFromFile(cbuf, ZTreeMgr::LAYER_LABEL);
+		treeMgr[0] = ZTreeMgr::CreateFromFile(m_dataRootDir.c_str(), ZTreeMgr::LAYER_SURF);
+		treeMgr[1] = ZTreeMgr::CreateFromFile(m_dataRootDir.c_str(), ZTreeMgr::LAYER_MASK);
+		treeMgr[2] = ZTreeMgr::CreateFromFile(m_dataRootDir.c_str(), ZTreeMgr::LAYER_ELEV);
+		treeMgr[3] = ZTreeMgr::CreateFromFile(m_dataRootDir.c_str(), ZTreeMgr::LAYER_ELEVMOD);
+		treeMgr[4] = ZTreeMgr::CreateFromFile(m_dataRootDir.c_str(), ZTreeMgr::LAYER_LABEL);
 	} else {
 		for (int i = 0; i < ntreeMgr; i++)
 			treeMgr[i] = 0;

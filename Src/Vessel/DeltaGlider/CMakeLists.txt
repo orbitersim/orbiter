@@ -3,8 +3,10 @@
 
 set(MESH_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Meshes)
 set(TEXTURE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Textures)
+set(TEXTURE2_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Textures2)
 set(CONFIG_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Config)
 set(SCRIPT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Script)
+set(THUMBNAIL_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Thumbnail)
 
 add_library(DeltaGlider SHARED
 	DeltaGlider.cpp
@@ -99,7 +101,17 @@ add_custom_command(
 
 add_custom_command(
 	TARGET DeltaGlider PRE_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${TEXTURE2_SOURCE_DIR}/ ${ORBITER_BINARY_TEXTURES2_DIR}/DG
+)
+
+add_custom_command(
+	TARGET DeltaGlider PRE_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${SCRIPT_SOURCE_DIR}/ ${CMAKE_BINARY_DIR}/Script/DG
+)
+
+add_custom_command(
+	TARGET DeltaGlider PRE_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${THUMBNAIL_SOURCE_DIR}/ ${CMAKE_BINARY_DIR}/Images/Vessels/Default
 )
 
 add_dependencies(DeltaGlider
@@ -128,11 +140,18 @@ install(DIRECTORY ${MESH_SOURCE_DIR}/
 install(DIRECTORY ${TEXTURE_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_TEXTURES_DIR}/DG
 )
+install(DIRECTORY ${TEXTURE2_SOURCE_DIR}/
+	DESTINATION ${ORBITER_INSTALL_TEXTURES2_DIR}/DG
+)
 install(DIRECTORY ${SCRIPT_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Script/DG
+)
+install(DIRECTORY ${THUMBNAIL_SOURCE_DIR}/
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Images/Vessels/Default
 )
 
 add_subdirectory(DGConfigurator)
 if(ORBITER_MAKE_DOC)
+	add_subdirectory(Doc)
 	add_subdirectory(Help)
 endif()

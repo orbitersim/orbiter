@@ -1,6 +1,9 @@
-BEGIN_DESC
-The DeltaGlider in low orbit around Venus (courtesy Jim "BigJimW" Williams). Drop below the cloud layer to get a glimpse at the new surface textures. But beware of the dense atmosphere!
-END_DESC
+BEGIN_HYPERDESC
+<h1>Venus</h1>
+<p>The DeltaGlider in low orbit around Venus (courtesy Jim "BigJimW" Williams).
+Drop below the cloud layer to get a glimpse at the new surface textures. But
+beware of the dense atmosphere!</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

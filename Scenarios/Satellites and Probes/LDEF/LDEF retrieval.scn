@@ -1,0 +1,73 @@
+BEGIN_HYPERDESC
+<h1>LDEF retrieval</h1>
+<p>Originally, the retrieval of the LDEF (Long Duration Exposure Facility) from orbit
+was planned for March 19, 1985. However, the schedule slipped, also because of the
+Challenger disaster. It was finally returned from orbit by Shuttle mission STS-32 on
+January 12, 1990, shortly before it would have burned up in the atmosphere.</p>
+<p>Your mission: Launch the Space Shuttle from Kennedy Space Center pad L39A to
+retrieve the LDEF satellite from orbit.</p>
+<p>Use the ascent autopilot MFD mode to program launch azimuth 90 (due east) and orbit
+altitude 330 km. The LDEF passes over Cape Canaveral in its next orbit, so your launch
+window is open.</p>
+END_HYPERDESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 47900.524306
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship STS-32R
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET STS-32R
+  MODE Extern
+  POS 4.04 0.52 -94.23
+  TRACKMODE TargetRelative
+  FOV 50.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Surface
+END_HUD
+
+BEGIN_MFD Left
+  TYPE Map
+  REF Earth
+  TARGET LDEF
+  ZOOM 4
+END_MFD
+
+BEGIN_MFD Right
+  TYPE User
+  MODE AscentAP
+END_MFD
+
+BEGIN_SHIPS
+STS-32R:Atlantis
+  STATUS Landed Earth
+  POS -80.6041320 28.6081970
+  HEADING 180.57
+  ALT 47.361
+  AROT 151.063 -8.225 4.515
+  PRPLEVEL 0:1.000 1:1.000 2:1.000
+  NAVFREQ 0 0
+  CONFIGURATION 0
+  CARGODOOR 0 0.0000
+  GEAR 0 0.0000
+  KUBAND 0 0.0000
+  ARM_STATUS 0.5000 0.0000 0.0000 0.5000 0.5000 0.5000
+  SAT_OFS_X 0.000
+  SAT_OFS_Y -2.200
+  SAT_OFS_Z 1.200
+END
+LDEF:LDEF
+  STATUS Orbiting Earth
+  RPOS -5699253.406 -593010.394 3501445.700
+  RVEL -3175.5646 5650.4327 -4148.3582
+  AROT 16.110 -45.980 -115.760
+  NAVFREQ 0 0
+  XPDR 470
+END
+END_SHIPS

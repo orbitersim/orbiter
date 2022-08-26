@@ -434,7 +434,7 @@ void Vessel::DefaultGenericCaps ()
 void Vessel::ReadGenericCaps (ifstream &ifs)
 {
 	char item[256], cbuf[256];
-	UINT i, n=0;
+	UINT i;
 	VECTOR3 tmp;
 	double d;
 	bool b;
@@ -524,7 +524,7 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 		GetItemReal (ifs, "COG_OverGround", cog_elev);  // obsolete
 
 	if (GetItemString (ifs, "CW", cbuf))
-		n = sscanf (cbuf, "%lf%lf%lf%lf", CWz, CWz+1, &CWx, &CWy);
+		sscanf (cbuf, "%lf%lf%lf%lf", CWz, CWz+1, &CWx, &CWy);
 	GetItemReal   (ifs, "WingAspect", wingaspect);
 	GetItemReal   (ifs, "WingEffectiveness", wingeff);
 	GetItemVector (ifs, "CrossSections", cs);
@@ -7698,6 +7698,7 @@ void VESSEL::ShiftCG (const VECTOR3 &shift)
 	vessel->ShiftDocks (vs);
 	vessel->ShiftLightEmitters (nshift);
 	vessel->campos.Set (vessel->campos+vs);
+	// only shift the vc of this vessel
 	if ((g_pane) && (g_focusobj == vessel)) g_pane->ShiftVC (vs);
 	ShiftCentreOfMass (shift);
 }

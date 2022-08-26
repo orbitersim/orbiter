@@ -1,7 +1,8 @@
-BEGIN_DESC
-Dione with Saturn in the background and an edge-on view of the ring system.
-Red Titan is just visible above the plane of the rings.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Dione</h1>
+<p>Dione with Saturn in the background and an edge-on view of the ring system.
+Red Titan is just visible above the plane of the rings.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

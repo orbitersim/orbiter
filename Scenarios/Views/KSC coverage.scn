@@ -1,6 +1,8 @@
-BEGIN_DESC
-The area of high-resolution texture coverage around the Kennedy Space Center has been extended.
-END_DESC
+BEGIN_HYPERDESC
+<h1>KSC coverage</h1>
+<p>The area of high-resolution texture coverage around the Kennedy Space Center
+has been extended.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

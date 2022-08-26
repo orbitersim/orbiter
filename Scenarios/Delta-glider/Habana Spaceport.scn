@@ -1,9 +1,10 @@
-BEGIN_DESC
-Launch the glider from Habana spaceport at dusk.
-You can either take off directly from the pad with your hover engines, or taxi to the runway and use main engines.
-
-This DG-S is equipped with scramjet engines which can be operated at airspeeds between Mach 3-8.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Delta-glider: Habana Spaceport</h1>
+<p>Launch the glider from Habana spaceport at dusk.</p>
+<p>The ship is too heavy for a vertical liftoff with its hover engines. (Try it!)</p>
+<p>Instead, taxi to the runway and use main engines for a horizontal takeoff.</p>
+<p>This DG-S is equipped with scramjet engines which can be operated at airspeeds between Mach 3-8.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

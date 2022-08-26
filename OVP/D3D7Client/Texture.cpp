@@ -159,12 +159,7 @@ HRESULT TextureManager::LoadTexture (const char *fname, LPDIRECTDRAWSURFACE7 *pp
 	FILE* ftex = 0;
 	char cpath[256];
 	*ppdds = 0;
-	gc->PlanetTexturePath(fname, cpath);
-	if (ftex = fopen(cpath, "rb")) {
-		hr = ReadTexture(ftex, ppdds, flags);
-		fclose(ftex);
-	}
-	else if (gc->TexturePath(fname, cpath)) {
+	if (gc->TexturePath(fname, cpath)) {
 		ftex = fopen(cpath, "rb");
 		if (ftex) {
 			hr = ReadTexture(ftex, ppdds, flags);
@@ -182,12 +177,7 @@ HRESULT TextureManager::LoadTexture (const char *fname, long ofs, LPDIRECTDRAWSU
 	FILE* ftex = 0;
 	char cpath[256];
 	*ppdds = 0;
-	gc->PlanetTexturePath(fname, cpath);
-	if (ftex = fopen(cpath, "rb")) {
-		fseek(ftex, ofs, SEEK_SET);
-		hr = ReadTexture(ftex, ppdds, flags);
-		fclose(ftex);
-	} else if (gc->TexturePath(fname, cpath)) {
+	if (gc->TexturePath(fname, cpath)) {
 		ftex = fopen(cpath, "rb");
 		if (ftex) {
 			fseek(ftex, ofs, SEEK_SET);
@@ -205,14 +195,7 @@ int TextureManager::LoadTextures (const char *fname, LPDIRECTDRAWSURFACE7 *ppdds
 	char cpath[256];
 	int ntex = 0;
 	FILE* ftex = 0;
-	gc->PlanetTexturePath(fname, cpath);
-	if (ftex = fopen(cpath, "rb")) {
-		for (ntex = 0; ntex < n; ntex++) {
-			if (FAILED(ReadTexture(ftex, ppdds + ntex, flags)))
-				break;
-		}
-		fclose(ftex);
-	} else if (gc->TexturePath(fname, cpath)) {
+	if (gc->TexturePath(fname, cpath)) {
 		ftex = fopen(cpath, "rb");
 		if (ftex) {
 			for (ntex = 0; ntex < n; ntex++) {

@@ -1,8 +1,16 @@
+BEGIN_URLDESC
+Default\Checklists\Checklist1,Checklist1
+END_URLDESC
 BEGIN_DESC
-Checklist mission 1. Launch the Delta-glider from Kennedy Space Center, and dock with the International Space Station.
+Mission 1: Delta-glider to ISS
 
 
-For a step-by-step tutorial, see the Orbiter Manual, or ingame help (Alt-F1) during the simulation.
+In this mission we launch the Delta-glider into orbit from runway 33 of the Shuttle
+Landing Fa­cility (SLF) at the Kennedy Space Center, and perform a rendezvous and
+docking manoeuvre with the International Space Station. 
+
+
+For instructions, launch the scenario, then open the Help window (Alt-F1).
 END_DESC
 
 BEGIN_ENVIRONMENT
@@ -33,6 +41,7 @@ BEGIN_MFD Right
   TYPE Map
   REF Earth
   OTARGET ISS
+  DISP 62639
 END_MFD
 
 BEGIN_PANEL
@@ -72,6 +81,7 @@ GL-01:DeltaGlider
   POS -80.6825040 28.5968040
   HEADING 330.01
   RCSMODE 0
+  AFCMODE 7
   PRPLEVEL 0:0.995 1:1.000
   NAVFREQ 94 524 84 114
   XPDR 0

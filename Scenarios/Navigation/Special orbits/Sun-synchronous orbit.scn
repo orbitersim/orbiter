@@ -1,16 +1,15 @@
-BEGIN_DESC
-A sun-synchronous orbit is a near-polar orbit with an inclination of slightly
+BEGIN_HYPERDESC
+<h1>Sun-synchronous orbit</h1>
+<p>A sun-synchronous orbit is a near-polar orbit with an inclination of slightly
 more than 90 degrees. At this inclination, the line of nodes moves at a rate
 of 360 degrees per year (nearly 1 degree per day), due to the nonspherical
 distortion of Earth's gravitational field. Thus, the orbital plane
-retains its relative orientation with respect to the sun.
-
-
-In this example, the orbit is set up to continuously move along the Earth's terminator.
-
-
-Note: You must activate "nonspherical gravity sources" in the Launchpad for this scenario to work!
-END_DESC
+retains its relative orientation with respect to the sun.</p>
+<p>In this example, the orbit is set up to continuously move along the Earth's
+terminator.</p>
+<p>Note: You must activate "nonspherical gravity sources" in the Launchpad for
+this scenario to work!</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

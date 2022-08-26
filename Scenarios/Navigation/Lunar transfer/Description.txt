@@ -1,0 +1,8 @@
+BEGIN_HYPERDESC
+<h1>Lunar transfer</h1>
+<p>Two scenarios representing snapshots of a lunar mission.</p>
+<p>The first scenario has a Shuttle-A in low Earth orbit, preparing for
+trans-lunar injection to set it on a transfer orbit to intercept the Moon.</p>
+<p>The second scenario shows the same vessel some time later, after the TLI burn
+has completed.</p>
+END_HYPERDESC

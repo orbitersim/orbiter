@@ -11,14 +11,14 @@
 // ORBITER Space Flight Simulator
 #define NAME1 @@ORBITER Space Flight Simulator@@
 
-// © 2000-2021 Martin Schweiger
-#define SIG1A @@© 2000-2021 Martin Schweiger@@
+// © 2000-2022 Martin Schweiger
+#define SIG1A @@© 2000-2022 Martin Schweiger@@
 
-// Copyright (c) 2000-2021 Martin Schweiger
-#define SIG1B @@Copyright (c) 2000-2021 Martin Schweiger@@
+// Copyright (c) 2000-2022 Martin Schweiger
+#define SIG1B @@Copyright (c) 2000-2022 Martin Schweiger@@
 
-// (c) 2000-2021
-#define SIG1AA @@(c) 2000-2021@@
+// (c) 2000-2022
+#define SIG1AA @@(c) 2000-2022@@
 
 // Martin Schweiger
 #define SIG1AB @@Martin Schweiger@@

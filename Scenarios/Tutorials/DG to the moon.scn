@@ -1,13 +1,12 @@
-BEGIN_DESC
-This flight is an example of a complete and quite extensive mission:
+BEGIN_HYPERDESC
+<h1>DG to the Moon</h1>
+<p>This flight is an example of a complete and quite extensive mission:
 Take-off from Cape Canaveral with a Delta-glider into low Earth orbit,
 translunar insertion, lunar orbit, and touchdown at the fictional Brighton
-Beach base on the moon.
-
-On-screen annotations explain the actions at various stages of the flight.
-
-The whole playback, including default time acceleration, runs for about one hour.
-END_DESC
+Beach base on the moon.</p>
+<p>On-screen annotations explain the actions at various stages of the flight.</p>
+<p>The whole playback, including default time acceleration, runs for about one hour.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

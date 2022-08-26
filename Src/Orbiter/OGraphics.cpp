@@ -377,13 +377,13 @@ OrbiterGraphics::OrbiterGraphics (Orbiter *po): GDIClient (po->GetInstance())
 	scene                  = NULL;
 	vtab                   = NULL;
 	clipper                = NULL;
-    m_pFramework           = NULL;
-	m_pDD                  = NULL;
-	m_pD3D                 = NULL;
-	m_pd3dDevice           = NULL;
-    m_pddsRenderTarget     = NULL;
+    m_pFramework           = nullptr;
+	m_pDD                  = nullptr;
+	m_pD3D                 = nullptr;
+	m_pD3DDevice           = nullptr;
+	m_pDeviceInfo          = nullptr;
+	m_pddsRenderTarget     = NULL;
 	m_pddsRenderTargetLeft = NULL;
-	m_pDeviceInfo          = NULL;
 	viewW = viewH          = 0;
 	viewBPP                = 0;
 	bFullscreen            = false;
@@ -391,6 +391,9 @@ OrbiterGraphics::OrbiterGraphics (Orbiter *po): GDIClient (po->GetInstance())
 	bUseStereo             = false;
 	bNoVSync               = false;
 	lstatus.bkgDC          = 0;
+
+	m_lpiGroup               = nullptr;
+	m_lpiPlanetRenderOptions = nullptr;
 }
 
 // =======================================================================
@@ -401,12 +404,24 @@ OrbiterGraphics::~OrbiterGraphics ()
 	if (scene) delete scene;
 	if (m_pFramework) delete m_pFramework;
 	D3D7Enum_FreeResources ();
+
+	// The following resources should already have been freed at this point
+
 	if (GetPenCount())
 		LOGOUT_WARN("Sketchpad pens still allocated: %d", GetPenCount());
 	if (GetBrushCount())
 		LOGOUT_WARN("Sketchpad brushes still allocated: %d", GetBrushCount());
 	if (GetFontCount())
 		LOGOUT_WARN("Sketchpad fonts still allocated: %d", GetFontCount());
+
+	if (m_lpiGroup) {
+		LOGOUT_WARN("Launchpad item still allocated: m_lpiGroup");
+		delete m_lpiGroup;
+	}
+	if (m_lpiPlanetRenderOptions) {
+		LOGOUT_WARN("Launchpad item still allocated: m_lpiPlanetRenderOptions");
+		delete m_lpiPlanetRenderOptions;
+	}
 }
 
 // =======================================================================
@@ -585,10 +600,23 @@ bool OrbiterGraphics::clbkInitialise ()
 	// render parameter dialogs in extra tab
 	orbiter::LaunchpadDialog *launchpad = g_pOrbiter->Launchpad();
 	orbiter::ExtraTab *tExtra = launchpad->GetExtraTab();
-	HTREEITEM ht = launchpad->RegisterExtraParam (new Extra_RenderOptions (tExtra), NULL); TRACENEW
-	launchpad->RegisterExtraParam (new Extra_PlanetRenderOptions (tExtra), ht); TRACENEW
+	HTREEITEM ht = launchpad->RegisterExtraParam (m_lpiGroup = new Extra_RenderOptions(tExtra), NULL);
+	launchpad->RegisterExtraParam (m_lpiPlanetRenderOptions = new Extra_PlanetRenderOptions(tExtra), ht);
 
 	return true;
+}
+
+// =======================================================================
+
+void OrbiterGraphics::clbkCleanup()
+{
+	orbiter::LaunchpadDialog* launchpad = g_pOrbiter->Launchpad();
+	launchpad->UnregisterExtraParam(m_lpiPlanetRenderOptions);
+	delete m_lpiPlanetRenderOptions;
+	m_lpiPlanetRenderOptions = nullptr;
+	launchpad->UnregisterExtraParam(m_lpiGroup);
+	delete m_lpiGroup;
+	m_lpiGroup = nullptr;
 }
 
 // =======================================================================
@@ -625,18 +653,18 @@ void OrbiterGraphics::clbkRenderScene ()
 	if (bUseStereo && m_pDeviceInfo->bStereo && !m_pDeviceInfo->bWindowed) {
 
 		// TODO: Translate view matrix for left eye
-		m_pd3dDevice->SetTransform (D3DTRANSFORMSTATE_VIEW, &mView);
-		m_pd3dDevice->SetRenderTarget (m_pddsRenderTargetLeft, 0);
+		m_pD3DDevice->SetTransform (D3DTRANSFORMSTATE_VIEW, &mView);
+		m_pD3DDevice->SetRenderTarget (m_pddsRenderTargetLeft, 0);
 		scene->Render (&rect);
 
 		// TODO: Translate view matrix for right eye
-		m_pd3dDevice->SetTransform (D3DTRANSFORMSTATE_VIEW, &mView);
-		m_pd3dDevice->SetRenderTarget (m_pddsRenderTarget, 0);
+		m_pD3DDevice->SetTransform (D3DTRANSFORMSTATE_VIEW, &mView);
+		m_pD3DDevice->SetRenderTarget (m_pddsRenderTarget, 0);
 		scene->Render (&rect);
 
 	} else {
 	
-		m_pd3dDevice->SetTransform (D3DTRANSFORMSTATE_VIEW, &mView);
+		m_pD3DDevice->SetTransform (D3DTRANSFORMSTATE_VIEW, &mView);
 		scene->Render (&rect);
 
 	}
@@ -888,11 +916,11 @@ void OrbiterGraphics::clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MA
 
 	DWORD vtxFmt = D3DFVF_XYZRHW | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0);
 	DWORD dAlpha;
-	m_pd3dDevice->GetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, &dAlpha);
-	m_pd3dDevice->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
-	m_pd3dDevice->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP);
+	m_pD3DDevice->GetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, &dAlpha);
+	m_pD3DDevice->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+	m_pD3DDevice->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP);
 	if (transparent)
-		m_pd3dDevice->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_ONE);
+		m_pD3DDevice->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_ONE);
 	float rhw = 1;
 	DWORD i, j, nvtx, ngrp = oapiMeshGroupCount (hMesh);
 	SURFHANDLE surf = (SURFHANDLE)-1, newsurf = 0;
@@ -905,8 +933,8 @@ void OrbiterGraphics::clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MA
 		if (grp->UsrFlag & 0x2) continue; // skip this group
 
 		if (grp->UsrFlag & 0x8) { // additive blend
-			m_pd3dDevice->SetRenderState (D3DRENDERSTATE_SRCBLEND, D3DBLEND_ONE);
-			m_pd3dDevice->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_ONE);
+			m_pD3DDevice->SetRenderState (D3DRENDERSTATE_SRCBLEND, D3DBLEND_ONE);
+			m_pD3DDevice->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_ONE);
 		}
 
 		if (grp->TexIdx == SPEC_DEFAULT) {
@@ -923,7 +951,7 @@ void OrbiterGraphics::clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MA
 			newsurf = oapiGetTextureHandle (hMesh, grp->TexIdx+1);
 		}
 		if (newsurf != surf) {
-			m_pd3dDevice->SetTexture (0, (LPDIRECTDRAWSURFACE7)(surf = newsurf));
+			m_pD3DDevice->SetTexture (0, (LPDIRECTDRAWSURFACE7)(surf = newsurf));
 		}
 
 		nvtx = grp->nVtx;
@@ -943,19 +971,19 @@ void OrbiterGraphics::clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MA
 			tgtvtx->tu = srcvtx->tu;
 			tgtvtx->tv = srcvtx->tv;
 		}
-		m_pd3dDevice->DrawIndexedPrimitive (D3DPT_TRIANGLELIST, vtxFmt, hvtx, nvtx, grp->Idx, grp->nIdx, 0);
+		m_pD3DDevice->DrawIndexedPrimitive (D3DPT_TRIANGLELIST, vtxFmt, hvtx, nvtx, grp->Idx, grp->nIdx, 0);
 
 		if (grp->UsrFlag & 0x8) { // reset additive
-			m_pd3dDevice->SetRenderState (D3DRENDERSTATE_SRCBLEND, D3DBLEND_SRCALPHA);
-			m_pd3dDevice->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_INVSRCALPHA);
+			m_pD3DDevice->SetRenderState (D3DRENDERSTATE_SRCBLEND, D3DBLEND_SRCALPHA);
+			m_pD3DDevice->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_INVSRCALPHA);
 		}
 	}
 	
-	m_pd3dDevice->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
+	m_pD3DDevice->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
 	if (transparent)
-		m_pd3dDevice->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_INVSRCALPHA);
+		m_pD3DDevice->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_INVSRCALPHA);
 	if (dAlpha != TRUE)
-		m_pd3dDevice->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, dAlpha);
+		m_pD3DDevice->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, dAlpha);
 }
 
 // =======================================================================
@@ -965,19 +993,19 @@ void OrbiterGraphics::clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MA
 	bool reset = false;
 	DWORD alphaop, alphaarg2, tfactor;
 	if (alpha < 1.0f) {
-		m_pd3dDevice->GetTextureStageState (0, D3DTSS_ALPHAOP, &alphaop);
-		m_pd3dDevice->GetTextureStageState (0, D3DTSS_ALPHAARG2, &alphaarg2);
-		m_pd3dDevice->GetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, &tfactor);
-		m_pd3dDevice->SetTextureStageState (0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-		m_pd3dDevice->SetTextureStageState (0, D3DTSS_ALPHAARG2, D3DTA_TFACTOR);
-		m_pd3dDevice->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(1,1,1,alpha));
+		m_pD3DDevice->GetTextureStageState (0, D3DTSS_ALPHAOP, &alphaop);
+		m_pD3DDevice->GetTextureStageState (0, D3DTSS_ALPHAARG2, &alphaarg2);
+		m_pD3DDevice->GetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, &tfactor);
+		m_pD3DDevice->SetTextureStageState (0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+		m_pD3DDevice->SetTextureStageState (0, D3DTSS_ALPHAARG2, D3DTA_TFACTOR);
+		m_pD3DDevice->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(1,1,1,alpha));
 		reset = true;
 	}
 	clbkRender2DPanel (hSurf, hMesh, T, additive);
 	if (reset) {
-		m_pd3dDevice->SetTextureStageState (0, D3DTSS_ALPHAOP, alphaop);
-		m_pd3dDevice->SetTextureStageState (0, D3DTSS_ALPHAARG2, alphaarg2);
-		m_pd3dDevice->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, tfactor);
+		m_pD3DDevice->SetTextureStageState (0, D3DTSS_ALPHAOP, alphaop);
+		m_pD3DDevice->SetTextureStageState (0, D3DTSS_ALPHAARG2, alphaarg2);
+		m_pD3DDevice->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, tfactor);
 	}
 }
 
@@ -987,7 +1015,7 @@ void OrbiterGraphics::clbkSetCamera (double aspect, double tan_ap, double nearpl
 {
 	static D3DMATRIX mProj;
 
-	if (m_pd3dDevice) {
+	if (m_pD3DDevice) {
 		ZeroMemory (&mProj, sizeof (D3DMATRIX));
 		mProj._11 = (FLOAT)(aspect / tan_ap);
 		mProj._22 = (FLOAT)(1.0    / tan_ap);
@@ -995,7 +1023,7 @@ void OrbiterGraphics::clbkSetCamera (double aspect, double tan_ap, double nearpl
 		mProj._34 = 1.0f;
 
 		// register new projection matrix with device
-		m_pd3dDevice->SetTransform (D3DTRANSFORMSTATE_PROJECTION, &mProj);
+		m_pD3DDevice->SetTransform (D3DTRANSFORMSTATE_PROJECTION, &mProj);
 	}
 }
 
@@ -1022,7 +1050,7 @@ HRESULT OrbiterGraphics::Init3DEnvironment ()
 
 		m_pDD        = m_pFramework->GetDirectDraw();
         m_pD3D       = m_pFramework->GetDirect3D();
-        m_pd3dDevice = m_pFramework->GetD3DDevice();
+        m_pD3DDevice = m_pFramework->GetD3DDevice();
 
 		m_pddsRenderTarget        = m_pFramework->GetRenderSurface();
         m_pddsRenderTargetLeft    = m_pFramework->GetRenderSurfaceLeft();
@@ -1044,7 +1072,7 @@ HRESULT OrbiterGraphics::Init3DEnvironment ()
 		LogRenderParams();
 
 		// Create texture manager
-		g_texmanager2 = new TextureManager2 (m_pd3dDevice); TRACENEW
+		g_texmanager2 = new TextureManager2 (m_pD3DDevice); TRACENEW
 
 		// Create clipper object
 		if (bFullscreen) {

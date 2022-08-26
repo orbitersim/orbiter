@@ -1,18 +1,22 @@
-BEGIN_DESC
-Space Shuttle Atlantis is ready for launching the Hubble Space Telescope from Pad 39B at the Kennedy Space Center.
-END_DESC
+BEGIN_HYPERDESC
+<h1>HST launch (Mission STS-31R)</h1>
+<p>Space Shuttle Atlantis is ready for launching the Hubble Space Telescope from
+Pad 39B at the Kennedy Space Center.</p>
+<p>Historically, mission STS-31R was flown by Space Shuttle Discovery, launched on
+24 April 1990. In Orbiter, Atlantis is repurposed for the mission.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol
-  Date MJD 48005.523507
+  Date MJD 48005.52083333
 END_ENVIRONMENT
 
 BEGIN_FOCUS
-  Ship STS-31
+  Ship STS-31R
 END_FOCUS
 
 BEGIN_CAMERA
-  TARGET STS-31
+  TARGET STS-31R
   MODE Extern
   POS 2.89 -0.51 -70.39
   TRACKMODE TargetRelative
@@ -33,22 +37,7 @@ BEGIN_MFD Right
 END_MFD
 
 BEGIN_SHIPS
-ISS:ProjectAlpha_ISS
-  STATUS Orbiting Earth
-  RPOS -3833430.64 5480334.56 -803952.35
-  RVEL 6169.424 3967.476 -2315.171
-  AROT 110.00 -10.00 80.00
-  PRPLEVEL 0:1.000
-  IDS 0:1 10 1:2 10 2:3 10 3:4 10 4:5 10
-  NAVFREQ 0 0
-  XPDR 466
-END
-Mir
-  STATUS Orbiting Earth
-  ELEMENTS 6671000.0 0.00060 3.50000 360.00000 0.05110 157.31997 51982.90674797
-  AROT 5.00 10.00 15.00
-END
-STS-31:Atlantis
+STS-31R:Atlantis
   STATUS Landed Earth
   BASE Cape Canaveral
   POS -80.6208630 28.6270927
@@ -69,7 +58,7 @@ STS-31:Atlantis
   ASCENTAP 0 0 1 541384 1.5704 -1.40710 0.49964
 END
 HST:HST
-  ATTACHED 0:0,STS-31
+  ATTACHED 0:0,STS-31R
   STATUS Orbiting Earth
   ANT 0 0.0000
   HATCH 0 0.0000

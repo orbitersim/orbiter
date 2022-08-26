@@ -1,8 +1,12 @@
-BEGIN_DESC
-A preliminary virtual cockpit for Space Shuttle Atlantis with limited functionality. (Expect an improved version soon!)
-Have a look around the flight deck and enjoy the view of Earth through
-the windows.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Atlantis cockpit</h1>
+<p>A virtual cockpit for Space Shuttle Atlantis with partial functionality.</p>
+<p>Have a look around the flight deck and enjoy the view of Earth through the windows.</p>
+<p>Commander, pilot and payload specialist positions can be switched with
+Ctrl-LeftArrow, Ctrl-RightArrow and Ctrl-DownArrow.</p>
+From the payload specialist position, you also have access to panel R13L which implements
+payload bay door operations.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

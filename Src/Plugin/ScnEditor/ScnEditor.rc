@@ -1,6 +1,3 @@
-// Copyright (c) Martin Schweiger
-// Licensed under the MIT License
-
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
@@ -16,13 +13,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.K.) resources
+// English (United Kingdom) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENG)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 #pragma code_page(1252)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -257,12 +252,15 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     PUSHBUTTON      "Cancel",IDC_BACK,52,221,50,14
     GROUPBOX        "",IDC_STATIC,-2,213,267,29
-    LTEXT           "Scenario file name:",IDC_STATIC,0,0,61,8
-    EDITTEXT        IDC_EDIT1,0,11,263,14,ES_AUTOHSCROLL
-    LTEXT           "Description:",IDC_STATIC,0,35,38,8
-    EDITTEXT        IDC_EDIT2,0,46,263,167,ES_MULTILINE | ES_WANTRETURN | WS_VSCROLL
+    EDITTEXT        IDC_EDIT1,10,12,246,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT3,10,60,246,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT2,10,91,246,115,ES_MULTILINE | ES_WANTRETURN | WS_VSCROLL
     PUSHBUTTON      "Save",IDOK,0,221,50,14
     PUSHBUTTON      "Help",IDHELP,213,221,50,14
+    GROUPBOX        "Scenario file name",IDC_STATIC,0,0,263,33
+    GROUPBOX        "Description",IDC_STATIC,0,38,263,175
+    LTEXT           "Title",IDC_STATIC,9,50,14,8
+    LTEXT           "Text",IDC_STATIC,10,81,15,8
 END
 
 IDD_TAB_EDIT5 DIALOGEX 2, 2, 263, 235
@@ -446,7 +444,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_EDITOR, DIALOG
     BEGIN
@@ -454,6 +452,14 @@ BEGIN
         RIGHTMARGIN, 265
         TOPMARGIN, 2
         BOTTOMMARGIN, 237
+    END
+
+    IDD_TAB_SAVE, DIALOG
+    BEGIN
+    END
+
+    IDD_TAB_DATE, DIALOG
+    BEGIN
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -491,17 +497,33 @@ END
 //
 
 IDB_PAUSE               BITMAP                  "Bitmaps\\pause.bmp"
+
 IDB_TREEICON_FOLDER1    BITMAP                  "Bitmaps\\Folder1.bmp"
+
 IDB_TREEICON_FOLDER2    BITMAP                  "Bitmaps\\Folder2.bmp"
+
 IDB_TREEICON_FILE1      BITMAP                  "Bitmaps\\File1.bmp"
+
 IDB_TREEICON_FILE2      BITMAP                  "Bitmaps\\File2.bmp"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_TAB_SAVE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_ERR1                "Selected dock is already in use."
     IDS_ERR2                "Selected dock on target vessel is already in use."
@@ -513,13 +535,13 @@ BEGIN
     IDS_PROP4               "Destroy vessel"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_INFO                "SCENARIO EDITOR:\r\n\r\nCreate and delete spacecraft during the simulation - Edit position, orientation, orbital elements, surface location, fuel status and docking connections - Reset the simulation time.\r\n\r\nThe scenario editor can be opened by selecting the ""Scenario editor"" entry in the Custom Functions dialog (Ctrl-F4)."
     IDS_TYPE                "Tools and dialogs"
 END
 
-#endif    // English (U.K.) resources
+#endif    // English (United Kingdom) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

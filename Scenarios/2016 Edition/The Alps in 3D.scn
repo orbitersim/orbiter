@@ -1,7 +1,13 @@
-BEGIN_HYPERDESC
-<h1>Orbiter 2016: Across the Alps</h1>
-<p>Fly across the Alps in a Delta-glider and enjoy the new surface elevation support.</p>
-END_HYPERDESC
+BEGIN_URLDESC
+Default\Alps2016,Index
+END_URLDESC
+BEGIN_DESC
+Orbiter 2016: Fly across the Alps
+
+
+Orbiter now supports planetary surface elevations. Take a DG on a flight across the Alps,
+finally in 3D.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

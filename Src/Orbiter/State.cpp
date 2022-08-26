@@ -28,7 +28,6 @@ extern TimeData td;
 
 State::State ()
 {
-	desc = 0;
 	mjd = mjd0 = MJD (time (NULL)); // default to current system time
 	strcpy (solsys, "Sol");         // default name
 	memset (scenario, 0, 256);
@@ -38,9 +37,8 @@ State::State ()
 	memset (playback, 0, 128);
 }
 
-void State::Update (const char *_desc)
+void State::Update ()
 {
-	desc = _desc;
 	mjd  = td.MJD1;
 	strcpy (focus, g_focusobj->Name());
 }
@@ -107,14 +105,19 @@ bool State::Read (const char *fname)
 	return true;
 }
 
-void State::Write (ostream &ofs, const char *help) const
+void State::Write (ostream &ofs, const char *desc, int desc_fmt, const char *help) const
 {
+	const std::string descTypeStr[3] = { "DESC", "HYPERDESC", "URLDESC" };
+
 	ofs.setf (ios::fixed, ios::floatfield);
 	ofs.precision (10); // need very high precision MJD output
 	if (desc) {
-		ofs << "BEGIN_DESC" << endl;
-		ofs << desc << endl; // need to break lines
-		ofs << "END_DESC" << endl << endl;
+		if (desc_fmt < 0 || desc_fmt > 2) desc_fmt = 0;
+		ofs << "BEGIN_" << descTypeStr[desc_fmt] << std::endl;
+		for (const char* c = desc; *c; c++)
+			if (*c != '\r') ofs << *c; // DOS madness! Get rid of CR so output stream can add it again ... 
+		ofs << endl;
+		ofs << "END_" << descTypeStr[desc_fmt] << endl << endl;
 	}
 	ofs << "BEGIN_ENVIRONMENT" << endl;
 	ofs << "  System " << solsys << endl;

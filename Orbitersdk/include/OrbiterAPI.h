@@ -2421,11 +2421,10 @@ OAPIFUNC void oapiGetViewportSize (DWORD *w, DWORD *h, DWORD *bpp = 0);
  *
  * Plugin modules that use an interface class instance derived
  * from oapi::Module must register it with this function during module
- * initialisation (typically in the body of InitModule).
+ * initialisation, in the body of InitModule.
  * \param module pointer to the interface class instance
- * \note The DLL should \e not delete the module instance in
- *   ExitModule. Orbiter destroys all registered modules automatically
- *   when required.
+ * \note The DLL must delete the oapi::Module instance in the body of
+ *   ExitModule.
  */
 OAPIFUNC void oapiRegisterModule (oapi::Module *module);
 

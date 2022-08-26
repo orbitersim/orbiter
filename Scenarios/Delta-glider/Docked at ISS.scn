@@ -1,8 +1,11 @@
-BEGIN_DESC
-Start in a glider docked to the International Space Station.
-
-Current location: above central China.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Delta-glider: Docked at ISS</h1>
+<p>Start in a glider docked to the International Space Station.</p>
+<p>Undock with Ctrl-D. Use the RCS in linear mode to back away from the station.</p>
+<p>Get some docking practice by targeting a different docking port on the station and flying an approach to the dock.</p>
+<p>Plan a return to a surface base and deorbit with a retrograde burn.</p>
+<p>Current location: above central China.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

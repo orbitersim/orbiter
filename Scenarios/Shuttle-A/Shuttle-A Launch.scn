@@ -1,19 +1,17 @@
-BEGIN_DESC
-A Shuttle-A class transport vessel is ready for take-off from Habana International Spaceport.
-
-This vessel class is primarily used for orbital operations and low-gravity low-atmosphere planet descents.
-Launching it from Earth can be a challenge.
-
-To take off, you need the auxiliary pods in hover configuration
-in addition to the standard hover thrusters.
-
-Once free of the pad, set a climb angle of 60 deg. and adjust hovers to maintain zero angle of attack.
-
-As you leave the lower atmosphere and gather speed, reduce your climb angle and slowly reduce hover
-thrust.
-
-You should just about be able to make LEO before running out of fuel.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Shuttle-A launch</h1>
+<p>A Shuttle-A class transport vessel is ready for take-off from Habana International
+Spaceport.</p>
+<p>This vessel class is primarily used for orbital operations and low-gravity
+low-atmosphere planet descents. Launching it from Earth can be a challenge.</p>
+<p>To take off, you need the auxiliary pods in hover configuration
+in addition to the standard hover thrusters.</p>
+<p>Once free of the pad, set a climb angle of 60 deg. and adjust hovers to maintain
+zero angle of attack.</p>
+<p>As you leave the lower atmosphere and gather speed, reduce your climb angle and
+slowly reduce hover thrust.</p>
+<p>You should just about be able to make LEO before running out of fuel.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

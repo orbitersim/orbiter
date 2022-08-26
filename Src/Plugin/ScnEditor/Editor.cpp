@@ -159,10 +159,34 @@ void ScnEditor::SetBasePosition (HWND hDlg)
 
 bool ScnEditor::SaveScenario (HWND hDlg)
 {
-	char fname[256], desc[4096];
-	GetWindowText (GetDlgItem (hDlg, IDC_EDIT1), fname, 256);
-	GetWindowText (GetDlgItem (hDlg, IDC_EDIT2), desc, 4096);
-	return oapiSaveScenario (fname, desc);
+	char fname[256], title[256], text[4096], desc[4096];
+	GetWindowText(GetDlgItem(hDlg, IDC_EDIT1), fname, 256);
+	GetWindowText(GetDlgItem(hDlg, IDC_EDIT3), title, 256);
+	GetWindowText(GetDlgItem(hDlg, IDC_EDIT2), text, 4096);
+
+	if (strlen(title)) {
+		sprintf(desc, "<h1>%s</h1>\n", title);
+	}
+	else {
+		desc[0] = '\0';
+	}
+	if (strlen(text)) {
+		strcat(desc, "<p>");
+		int j = strlen(desc);
+		for (int i = 0; i < strlen(text) && j < 4090; i++) {
+			if (text[i] == '\r') {
+				continue;
+			}
+			else if (text[i] == '\n') {
+				strcpy(desc + j, "</p>\n<p>");
+				j = strlen(desc);
+			}
+			else
+				desc[j++] = text[i];
+		}
+		strcpy(desc + j, "</p>");
+	}
+	return oapiSaveScenario(fname, desc);
 }
 
 void ScnEditor::InitDialog (HWND _hDlg)
@@ -872,6 +896,8 @@ INT_PTR EditorTab_New::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 EditorTab_Save::EditorTab_Save (ScnEditor *editor) : ScnEditorTab (editor)
 {
 	CreateTab (IDD_TAB_SAVE, EditorTab_Save::DlgProc);
+	SendDlgItemMessage(hTab, IDC_RADIO1, BM_SETCHECK, BST_CHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_RADIO2, BM_SETCHECK, BST_UNCHECKED, 0);
 }
 
 char *EditorTab_Save::HelpTopic ()

@@ -1,3 +1,4 @@
-BEGIN_DESC
-A collection of interesting orbits.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Special orbits</h1>
+<p>A collection of interesting orbits.</p>
+END_HYPERDESC

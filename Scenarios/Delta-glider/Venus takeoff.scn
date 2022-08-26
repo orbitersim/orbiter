@@ -1,10 +1,15 @@
-BEGIN_DESC
-Launch the delta-glider from Venus and see how it handles under extreme dynamic pressures.
-
-
-Warning: You must disable the complex flight model for this scenario, otherwise your engines will not work under the enormous atmospheric pressure at the
-Venus surface.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Delta-glider: Venus takeoff</h1>
+<p>You have descended though the thick atmosphere of Venus, and set your glider down
+on the surface.</p>
+<p>Luckily, your ship is incredibly sturdy, and can withstand the atmospheric pressure.</p>
+<p>After admiring the view from the cockpit (an EVA would be unwise in this environment),
+you decide to take off again and head back.</p>
+<p>After igniting your engines, you discover a fatal flaw in your mission design:
+The enormous amient atmospheric pressure overpowers your engines and prevents them from
+expelling any exhaust gases. You are stuck!</p>
+<p>Your only option at this point is to disable the complex flight model and cheat the laws of physics.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

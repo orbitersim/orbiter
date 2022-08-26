@@ -1,9 +1,17 @@
+BEGIN_URLDESC
+Default\Checklists\Quickstart,Quickstart
+END_URLDESC
 BEGIN_DESC
-For newcomers eager to get off the ground: This is the starting scenario for the Quickstart mission in the Orbiter Manual.
+Quickstart
 
-Launch your Delta-glider from the Shuttle Landing Facility at the Kennedy Space Center.
 
-The Quickstart tutorial is available during the simulation by opening the Help window (Alt-F1) and selecting the Scenario button.
+This section demonstrates how to take off and land with one of Orbiter's default
+spacecraft, the Delta-glider. If you are using Orbiter for the first time, this will
+help to familiarise yourself with some basic concepts of spacecraft and camera
+control. Consult the Orbiter Manual for further details. 
+
+
+For instructions, launch the scenario, then open the Help window (Alt-F1).
 END_DESC
 
 BEGIN_ENVIRONMENT

@@ -1,7 +1,8 @@
-BEGIN_DESC
-A few vistas from around our Solar System. To visit them, launch Orbiter, then open the Camera
-dialog (Ctrl-F1), click the Preset button, and select views from the list.
-END_DESC
+BEGIN_HYPERDESC
+<h1>Grand tour</h1>
+<p>A few vistas from around our Solar System. To visit them, launch Orbiter, then open
+the Camera dialog (Ctrl-F1), click the Preset button, and select views from the list.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

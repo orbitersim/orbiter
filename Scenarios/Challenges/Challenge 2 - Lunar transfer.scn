@@ -1,5 +1,15 @@
+BEGIN_URLDESC
+Default\Challenges\Challenge2,Index
+END_URLDESC
 BEGIN_DESC
-Challenge 2. Transfer to the moon and dock with orbiting wheel, Luna-Ob1. Minimize fuel use.
+Orbiter Challenges: 2
+
+
+You are piloting a Delta-glider from low Earth orbit to rendezvous with a space station
+orbiting the moon.
+
+
+For details, launch the scenario, then open the Help window (Alt-F1).
 END_DESC
 
 BEGIN_ENVIRONMENT

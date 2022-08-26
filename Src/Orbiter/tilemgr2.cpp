@@ -870,6 +870,9 @@ TileManager2Base::TileManager2Base (const Planet *_cbody, int _maxres, int _grid
 	// set persistent parameters
 	prm.maxlvl = max (0, _maxres-4);
 	gridRes = _gridres;
+	char path[1024];
+	g_pOrbiter->Cfg()->PTexPath(path, cbody->Name());
+	m_dataRootDir = path;
 }
 
 // -----------------------------------------------------------------------

@@ -1,11 +1,12 @@
-BEGIN_DESC
-Orbiter playback scenario at T = 4
-END_DESC
+BEGIN_HYPERDESC
+<h1>DG stunts (Recording tutorial)</h1>
+<p>A small tutorial introducing Orbiter's flight recording and playback capabilities.</p>
+<p>(And a lively tour of the Kennedy Space Center with a DG spaceplane.)</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol
   Date MJD 55269.6691348312
-  Help CurrentState_img
 END_ENVIRONMENT
 
 BEGIN_FOCUS

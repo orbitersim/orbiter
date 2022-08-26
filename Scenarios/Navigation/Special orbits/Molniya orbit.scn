@@ -1,14 +1,17 @@
-BEGIN_DESC
-Molniya orbits are highly eccentric Earth orbits with periods of approximately 12 hours (2 revolutions per day).
-The orbital inclination is chosen so the rate of change of perigee is zero, thus both apogee and perigee can be maintained over fixed latitudes.
+BEGIN_HYPERDESC
+<h1>Molniya orbit</h1>
+<p>Molniya orbits are highly eccentric Earth orbits with periods of approximately 12
+hours (2 revolutions per day). The orbital inclination is chosen so the rate of change
+of perigee is zero, thus both apogee and perigee can be maintained over fixed latitudes.
 This condition occurs at inclinations of 63.4 degrees and 116.6 degrees.
-For these orbits the argument of perigee is typically placed in the southern hemisphere, so the satellite remains above the northern hemisphere near apogee for approximately 11 hours per orbit.
+For these orbits the argument of perigee is typically placed in the southern hemisphere,
+so the satellite remains above the northern hemisphere near apogee for approximately 11
+hours per orbit.
 This orientation can provide good ground coverage at high northern latitudes.
-(from: Orbital, Mechanics, http://www.braeunig.us/space/orbmech.htm)
-
-
-The orbit in this example places a Dragonfly once a day alternatingly above North America and above central Asia.
-END_DESC
+(from: Orbital, Mechanics, http://www.braeunig.us/space/orbmech.htm)</p>
+<p>The orbit in this example places a Dragonfly once a day alternatingly above North
+America and above central Asia.</p>
+END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol

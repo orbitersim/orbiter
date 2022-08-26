@@ -1,6 +1,6 @@
-BEGIN_HYPERDESC
-<h1>Earth views in Orbiter 2016</h1>
-END_HYPERDESC
+BEGIN_URLDESC
+Default\Earthview2016,Index
+END_URLDESC
 
 BEGIN_ENVIRONMENT
   System Sol

@@ -24,6 +24,14 @@ void ConsoleInterpreter::LoadAPI ()
 		{NULL, NULL}
 	};
 	luaL_openlib (L, "term", termLib, 0);
+
+	// also replace built-in print so it works as expected in the console
+	static const struct luaL_Reg printlib[] = {
+		{"print", termOut},
+		{NULL, NULL}
+	};
+	lua_getglobal(L, "_G");
+	luaL_register(L, NULL, printlib);
 }
 
 void ConsoleInterpreter::term_strout (const char *str, bool iserr)

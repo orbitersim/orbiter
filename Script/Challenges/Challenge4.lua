@@ -28,9 +28,9 @@ end
 function hscore2str (hscore,mark)
     local str
     if #hscore > 0 then
-        str = 'High score list:\n\n'..string.format('%s   %s', 'Fuel used', 'Name')..'\n----------------------------------'
+        str = 'High score list:\n\n'..string.format('%s . . . %s', 'Fuel used', 'Name')..'\n----------------------------------'
         for i=1,#hscore do
-			str = str..'\n'..string.format('%08.2f    %s', hscore[i][2], hscore[i][1])
+			str = str..'\n'..string.format('%08.2f . . . %s', hscore[i][2], hscore[i][1])
             if mark==i then str = str..'   <====' end
         end
     else
@@ -90,6 +90,12 @@ while v:get_propellantmass (hp0) + v:get_propellantmass(hp1) == m1 do
         break
     end
 end
+m1a = v:get_propellantmass (hp0)
+m1b = v:get_propellantmass (hp1)
+if m1a + m1b > m1 then
+	note:set_text('Mission failed!')
+	error('Script terminated.')
+end
 
 note:set_pos (0.05,0.2,0.5,0.5)
 note:set_size (1.2)
@@ -98,8 +104,16 @@ note:set_size (1.2)
 planet = v:is_landed()
 contact = false
 while planet==nil do
-    m1a = v:get_propellantmass (hp0)
-    m1b = v:get_propellantmass (hp1)
+    m1a_new = v:get_propellantmass (hp0)
+    m1b_new = v:get_propellantmass (hp1)
+	if m1a_new > m1a or m1b_new > m1b then
+		note:set_text('Mission failed!')
+		error('Script terminated.')
+	else
+		m1a = m1a_new
+		m1b = m1b_new
+	end
+	note:set_text('check')
     alt = v:get_altitude()
     if contact == false then
         contact = v:get_groundcontact()

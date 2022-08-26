@@ -12,7 +12,6 @@ set(common_src
 	cmdline.cpp
 	Config.cpp
 	console_ng.cpp
-	ddeserver.cpp
 	Element.cpp
 	elevmgr.cpp
 	Help.cpp

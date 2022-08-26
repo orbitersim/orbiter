@@ -31,9 +31,11 @@ char *D3D7ClientCfg::Description ()
 }
 
 
-D3D7PlanetRenderCfg::D3D7PlanetRenderCfg (oapi::D3D7Client *_gc, D3D7Config *_cfg)
-: LaunchpadItem (), gc(_gc), cfg(_cfg)
-{}
+D3D7PlanetRenderCfg::D3D7PlanetRenderCfg (oapi::D3D7Client *_gc)
+: LaunchpadItem (), gc(_gc)
+{
+	cfg = gc->cfg;
+}
 
 char *D3D7PlanetRenderCfg::Name ()
 {
@@ -49,8 +51,8 @@ char *D3D7PlanetRenderCfg::Description ()
 
 bool D3D7PlanetRenderCfg::clbkOpen (HWND hLaunchpad)
 {
-	extern HINSTANCE g_hInst;
-	return OpenDialog (g_hInst, hLaunchpad, IDD_EXTRA_PLANETRENDER, DlgProc);
+	HINSTANCE hInst = gc->GetModule();
+	return OpenDialog (hInst, hLaunchpad, IDD_EXTRA_PLANETRENDER, DlgProc);
 }
 
 void D3D7PlanetRenderCfg::InitDialog (HWND hDlg)
