@@ -34,13 +34,6 @@ set(D3D9_SOURCE_DIR ${CMAKE_SOURCE_DIR}/OVP/D3D9Client)
 set(ShaderDir ${D3D9_SOURCE_DIR}/shaders)
 set(IncludeDir ${CMAKE_SOURCE_DIR}/Orbitersdk/include)
 
-add_custom_command(
-	OUTPUT ${IncludeDir}/gcCoreAPI.h
-	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-	COMMAND InterfaceBuilder.exe ${D3D9_SOURCE_DIR}/gcCore.h ${IncludeDir}/gcCoreAPI.h ${D3D9_SOURCE_DIR}/gcCore.cpp
-	VERBATIM
-)
-
 set(SourceFiles
 	AABBUtil.cpp
 	AtmoControls.cpp
@@ -191,11 +184,6 @@ add_library(D3D9Client MODULE
 	D3D9Client.rc
 )
 
-add_dependencies(D3D9Client
-	${OrbiterTgt}
-	Orbitersdk
-)
-
 target_include_directories(D3D9Client PUBLIC
 	${ORBITER_SOURCE_SDK_INCLUDE_DIR}
 	${DXSDK_DIR}/Include
@@ -237,11 +225,19 @@ set_target_properties(D3D9Client
 	FOLDER OVP
 )
 
-add_custom_command(
-	TARGET D3D9Client PRE_BUILD
+add_custom_command(OUTPUT ${IncludeDir}/gcCoreAPI.h
 	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 	COMMAND InterfaceBuilder.exe ${D3D9_SOURCE_DIR}/gcCore.h ${IncludeDir}/gcCoreAPI.h ${D3D9_SOURCE_DIR}/gcCore.cpp
 	VERBATIM
+)
+add_custom_target(D3D9Client_Interface
+	DEPENDS ${IncludeDir}/gcCoreAPI.h
+)
+
+add_dependencies(D3D9Client
+	${OrbiterTgt}
+	Orbitersdk
+	D3D9Client_Interface
 )
 
 install(TARGETS D3D9Client
