@@ -34,6 +34,8 @@ set(D3D9_SOURCE_DIR ${CMAKE_SOURCE_DIR}/OVP/D3D9Client)
 set(ShaderDir ${D3D9_SOURCE_DIR}/shaders)
 set(IncludeDir ${CMAKE_SOURCE_DIR}/Orbitersdk/include)
 
+set(InterfaceBuilder ${D3D9_SOURCE_DIR}/samples/InterfaceBuilder/InterfaceBuilder.exe)
+
 set(SourceFiles
 	AABBUtil.cpp
 	AtmoControls.cpp
@@ -232,7 +234,7 @@ add_custom_command(
 
 add_custom_command(OUTPUT ${IncludeDir}/gcCoreAPI.h
 	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-	COMMAND InterfaceBuilder.exe ${D3D9_SOURCE_DIR}/gcCore.h ${IncludeDir}/gcCoreAPI.h ${D3D9_SOURCE_DIR}/gcCore.cpp
+	COMMAND ${InterfaceBuilder} ${D3D9_SOURCE_DIR}/gcCore.h ${IncludeDir}/gcCoreAPI.h ${D3D9_SOURCE_DIR}/gcCore.cpp
 	VERBATIM
 )
 add_custom_target(D3D9Client_Interface
