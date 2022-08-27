@@ -38,7 +38,7 @@ public:
     // Methods only invoked by XRSoundDLL (our Orbiter module class).  Because these are non-virtual, it is impossible for XRSoundLib to invoke them
     // because it cannot link with them when the Orbiter vessel using XRSoundLib tries to link.
     bool HasFocus() const { return (oapiGetFocusObject() == m_hVessel); }
-    bool InCockpitView() const { return (HasFocus() && oapiCameraInternalFocus()); }
+    bool InCockpitView() const { return (HasFocus() && oapiCameraInternal()); }
     bool InAtmosphere();
     bool IsLanded();    // can't be const; we get the vessel * from Orbiter
     bool InReentry();   // ditto
