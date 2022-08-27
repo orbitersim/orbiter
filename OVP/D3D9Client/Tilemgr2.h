@@ -82,6 +82,8 @@ typedef union {
 	};
 } TILEBOUNDS;
 
+bool FileExists(const char* path);
+
 // =======================================================================
 
 /**
@@ -398,6 +400,8 @@ public:
 	void SetMinMaxElev(double min, double max);
 	void ResetMinMaxElev();
 
+	/// \brief Return the root directory containing the body's texture data (surface, elevation, mask, cloud tiles)
+	inline const std::string& DataRootDir() const { return m_dataRootDir; }
 
 protected:
 	MATRIX4 WorldMatrix (int ilng, int nlng, int ilat, int nlat);
@@ -412,6 +416,8 @@ protected:
 	double max_elev;				 // maximum renderred elevation
 	static TileLoader *loader;
 	const vPlanet *vp;				 // the planet visual
+	std::string m_dataRootDir;       // the root directory (usually ending in the cbody's name) for all tile data (textures, elevations, etc.)
+
 private:
 	bool bSet;						 // This is related to GetMin/MaxElevation
 	OBJHANDLE obj;                   // the planet object

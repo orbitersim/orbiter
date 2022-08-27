@@ -17,12 +17,24 @@
 #include "OapiExtension.h"
 
 #include <stack>
+#include <io.h>
 
 // =======================================================================
 // Externals
 static TEXCRDRANGE2 fullrange = {0,1,0,1};
 
 int SURF_MAX_PATCHLEVEL2 = 18; // move this somewhere else
+
+
+bool FileExists(const char* path)
+{
+	bool exists;
+	struct _finddata_t fd;
+	intptr_t fh = _findfirst(path, &fd);
+	if (exists = (fh != -1))
+		_findclose(fh);
+	return exists;
+}
 
 
 // =======================================================================
@@ -1067,6 +1079,10 @@ TileManager2Base::TileManager2Base (const vPlanet *vplanet, int _maxres, int _gr
 	for (int i=0;i<NPOOLS;i++) VtxPoolSize[i]=IdxPoolSize[i]=0;
 	ResetMinMaxElev();
 	LogClr("Teal", "Planet ElevRes %s = %g", vplanet->GetName(), elevRes);
+
+	char path[1024];
+	gc->PlanetTexturePath(cbody_name, path);
+	m_dataRootDir = path;
 }
 
 // -----------------------------------------------------------------------

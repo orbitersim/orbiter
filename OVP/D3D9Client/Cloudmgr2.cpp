@@ -45,10 +45,9 @@ void CloudTile::PreLoad()
 	bool ok = false;
 
 	if (cmgr->DoLoadIndividualFiles(0)) { // try loading from individual tile file
-		char path[MAX_PATH], fname[128];
-		sprintf_s (fname, ARRAYSIZE(fname), "%s\\Cloud\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
-		ok = mgr->GetClient()->TexturePath(fname, path);
-		ok = ok && LoadTextureFile(path, &pPreSrf, false);
+		char path[MAX_PATH];
+		sprintf_s (path, MAX_PATH, "%s\\Cloud\\%02d\\%06d\\%06d.dds", mgr->DataRootDir().c_str(), lvl+4, ilat, ilng);
+		ok = LoadTextureFile(path, &pPreSrf, false);
 	}
 	if (!ok && cmgr->ZTreeManager(0)) { // try loading from compressed archive
 		BYTE *buf;
@@ -230,9 +229,7 @@ void TileManager2<CloudTile>::LoadZTrees()
 {
 	treeMgr = new ZTreeMgr*[ntreeMgr = 1]();
 	if (cprm.tileLoadFlags & 0x0002) {
-		char path[MAX_PATH];
-		GetClient()->TexturePath(CbodyName(), path);
-		treeMgr[0] = ZTreeMgr::CreateFromFile(path, ZTreeMgr::LAYER_CLOUD);
+		treeMgr[0] = ZTreeMgr::CreateFromFile(m_dataRootDir.c_str(), ZTreeMgr::LAYER_CLOUD);
 	}
 }
 
@@ -244,8 +241,8 @@ void TileManager2<CloudTile>::InitHasIndividualFiles()
 	hasIndividualFiles = new bool[ntreeMgr]();
 	if (cprm.tileLoadFlags & 0x0001) {
 		char path[MAX_PATH], dummy[MAX_PATH];
-		sprintf_s(path, "%s\\Cloud", CbodyName());
-		hasIndividualFiles[0] = GetClient()->TexturePath(path, dummy);
+		sprintf_s(path, MAX_PATH, "%s\\Cloud", m_dataRootDir.c_str());
+		hasIndividualFiles[0] = FileExists(path);
 	}
 }
 
