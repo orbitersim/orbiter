@@ -225,6 +225,11 @@ set_target_properties(D3D9Client
 	FOLDER OVP
 )
 
+add_custom_command(
+	TARGET D3D9Client PRE_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${D3D9_SOURCE_DIR}/shaders/ ${ORBITER_BINARY_MODULE_DIR}/D3D9Client
+)
+
 add_custom_command(OUTPUT ${IncludeDir}/gcCoreAPI.h
 	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 	COMMAND InterfaceBuilder.exe ${D3D9_SOURCE_DIR}/gcCore.h ${IncludeDir}/gcCoreAPI.h ${D3D9_SOURCE_DIR}/gcCore.cpp
