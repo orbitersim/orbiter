@@ -155,6 +155,7 @@ public:
     CString AudioGreeting;
 
     CString MainEngines;
+    CString MainUserEngines;
     CString HoverEngines;
     CString RetroEngines;
 
