@@ -7,14 +7,6 @@ configure_file(D3D9ClientConfig.h.in D3D9ClientConfig.h)
 # set(CMAKE_CXX_STANDARD 11)
 # set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-# Location of DirectX SDK
-# set(DXSDK_DIR "C:/Program Files (x86)/Microsoft DirectX SDK (June 2010)")
-
-if (NOT "$ENV{DXSDK_DIR}" STREQUAL "")
-	file(TO_CMAKE_PATH "$ENV{DXSDK_DIR}" DXSDK_DIR)
-else()
-    set(DXSDK_DIR "C:/Program Files (x86)/Microsoft DirectX SDK (June 2010)")
-endif()
 set(DXSDK_LIB_DIR ${DXSDK_DIR}/lib/${ARCH})
 
 set(ORBITER_SOURCE_SDK_INCLUDE_DIR "${CMAKE_BINARY_DIR}/Orbitersdk/include" "${CMAKE_SOURCE_DIR}/Orbitersdk/include")

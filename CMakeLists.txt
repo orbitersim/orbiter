@@ -22,6 +22,12 @@ set_property(GLOBAL PROPERTY JOB_POOLS latex=1 soffice=1 htmlhelp=1)
 # Group projects in VS
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+# Locally defined cmake modules
+set(CMAKE_MODULE_PATH
+	${CMAKE_SOURCE_DIR}/cmake
+	${CMAKE_MODULE_PATH}
+)
+
 if(CMAKE_SIZEOF_VOID_P EQUAL 8) # 64-bit build?
 	set(BUILD64 1)
 	set(ARCH "x64")
@@ -251,6 +257,12 @@ endif()
 #)
 
 option(
+	ORBITER_BUILD_D3D9CLIENT
+	"Build the D3D9 graphics client"
+	ON
+)
+
+option(
 	ORBITER_BUILD_XRSOUND
 	"Build XRSound module to enable sound in Orbiter"
 	ON
@@ -283,6 +295,21 @@ if(ORBITER_BUILD_XRSOUND)
 		PATH
 		"Root folder of irrKlang installation."
 	)
+endif()
+
+if(ORBITER_BUILD_D3D9CLIENT)
+	find_package(DXSDK
+	)
+	set(DXSDK_DIR
+		${DXSDK_DIR}
+		CACHE
+		PATH
+		"Installation directory of DirectX SDK (June 2010)"
+	)
+	if(${DXSDK_DIR} STREQUAL "DXSDK_DIR-NOTFOUND")
+		message(WARNING "DirectX SDK not found. The D3D9 graphics client will not be built.")
+		set(ORBITER_BUILD_D3D9CLIENT OFF)
+	endif()
 endif()
 
 if (ORBITER_MAKE_DOC)
