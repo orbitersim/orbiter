@@ -257,10 +257,6 @@ add_subdirectory(samples/DX9ExtMFD)
 add_subdirectory(samples/GenericCamera)
 add_subdirectory(samples/TerrainToolBox)
 
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/Meshes/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Meshes)
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/Config/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Config)
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/Textures/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Textures)
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/Orbitersdk/doc/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/doc)
 install(DIRECTORY ${D3D9_SOURCE_DIR}/shaders/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Modules/D3D9Client)
 install(DIRECTORY ${D3D9_SOURCE_DIR}/samples/DrawOrbits/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/DrawOrbits)
 install(DIRECTORY ${D3D9_SOURCE_DIR}/samples/DX9ExtMFD/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/DX9ExtMFD)
@@ -268,4 +264,4 @@ install(DIRECTORY ${D3D9_SOURCE_DIR}/samples/GenericCamera/ DESTINATION ${ORBITE
 install(DIRECTORY ${D3D9_SOURCE_DIR}/samples/TerrainToolBox/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/TerrainToolBox)
 install(FILES ${IncludeDir}/gcCoreAPI.h DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/include)
 install(FILES ${IncludeDir}/gcGUI.h DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/include)
-
+install(FILES ${ORBITER_SOURCE_SDK_DIR}/doc/Orbiter2DGraphics.pdf DESTINATION ${ORBITER_INSTALL_SDK_DIR}/doc)
