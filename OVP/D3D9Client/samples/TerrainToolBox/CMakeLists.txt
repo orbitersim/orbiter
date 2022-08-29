@@ -19,18 +19,14 @@ add_dependencies(TerrainToolBox
 )
 
 target_link_libraries(TerrainToolBox
-	orbiter.lib
-	orbitersdk.lib
+	${OrbiterTgt}
+	Orbitersdk
 	Msimg32.lib
 	Comctl32.lib
 )
 
 target_include_directories(TerrainToolBox
-	PUBLIC ${ORBITER_SOURCE_SDK_INCLUDE_DIR}
-)
-
-target_link_directories(TerrainToolBox
-	PUBLIC ${ORBITER_SOURCE_SDK_LIB_DIR}
+	PUBLIC ${INCLUDE_TARGET_DIR}
 )
 
 set_target_properties(TerrainToolBox

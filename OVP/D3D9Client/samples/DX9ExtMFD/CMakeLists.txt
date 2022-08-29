@@ -12,18 +12,13 @@ add_dependencies(DX9ExtMFD
 )
 
 target_link_libraries(DX9ExtMFD
-	orbiter.lib
-	orbitersdk.lib
+	${OrbiterTgt}
+	Orbitersdk
 )
 
 target_include_directories(DX9ExtMFD
-	PUBLIC ${ORBITER_SOURCE_SDK_INCLUDE_DIR}
+	PUBLIC ${INCLUDE_TARGET_DIR}
 )
-
-target_link_directories(DX9ExtMFD PUBLIC
-	${ORBITER_SOURCE_SDK_LIB_DIR}
-)
-
 
 set_target_properties(DX9ExtMFD
 	PROPERTIES

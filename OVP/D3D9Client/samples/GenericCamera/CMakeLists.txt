@@ -13,16 +13,12 @@ add_dependencies(GenericCamera
 )
 
 target_link_libraries(GenericCamera
-	orbiter.lib
-	orbitersdk.lib
+	${OrbiterTgt}
+	Orbitersdk
 )
 
 target_include_directories(GenericCamera
-	PUBLIC ${ORBITER_SOURCE_SDK_INCLUDE_DIR}
-)
-
-target_link_directories(GenericCamera PUBLIC
-	${ORBITER_SOURCE_SDK_LIB_DIR}
+	PUBLIC ${INCLUDE_TARGET_DIR}
 )
 
 set_target_properties(GenericCamera

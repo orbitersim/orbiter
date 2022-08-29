@@ -9,12 +9,9 @@ configure_file(D3D9ClientConfig.h.in D3D9ClientConfig.h)
 
 set(DXSDK_LIB_DIR ${DXSDK_DIR}/lib/${ARCH})
 
-set(ORBITER_SOURCE_SDK_INCLUDE_DIR "${CMAKE_BINARY_DIR}/Orbitersdk/include" "${CMAKE_SOURCE_DIR}/Orbitersdk/include")
-set(ORBITER_SOURCE_SDK_LIB_DIR ${CMAKE_BINARY_DIR}/Orbitersdk/lib)
-
 set(D3D9_SOURCE_DIR ${CMAKE_SOURCE_DIR}/OVP/D3D9Client)
 set(ShaderDir ${D3D9_SOURCE_DIR}/shaders)
-set(IncludeDir ${CMAKE_SOURCE_DIR}/Orbitersdk/include)
+set(INCLUDE_TARGET_DIR ${ORBITER_BINARY_SDK_DIR}/include)
 
 set(InterfaceBuilder ${D3D9_SOURCE_DIR}/samples/InterfaceBuilder/InterfaceBuilder.exe)
 
@@ -125,8 +122,8 @@ set(IncludeFiles
 )
 
 set(APIHeaders
-    ${IncludeDir}/gcGUI.h
-	${IncludeDir}/gcCoreAPI.h
+    ${INCLUDE_TARGET_DIR}/gcGUI.h
+	${INCLUDE_TARGET_DIR}/gcCoreAPI.h
 )
 
 set(ShaderFiles
@@ -174,7 +171,7 @@ target_include_directories(D3D9Client PUBLIC
 )
 
 target_link_directories(D3D9Client PUBLIC
-	${ORBITER_SOURCE_SDK_LIB_DIR}
+	${ORBITER_BINARY_SDK_DIR}/lib
 	${DXSDK_LIB_DIR}
 )
 
@@ -214,13 +211,14 @@ add_custom_command(
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${D3D9_SOURCE_DIR}/shaders/ ${ORBITER_BINARY_MODULE_DIR}/D3D9Client
 )
 
-add_custom_command(OUTPUT ${IncludeDir}/gcCoreAPI.h
+add_custom_command(OUTPUT ${INCLUDE_TARGET_DIR}/gcCoreAPI.h ${INCLUDE_TARGET_DIR}/gcGUI.h
 	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-	COMMAND ${InterfaceBuilder} ${D3D9_SOURCE_DIR}/gcCore.h ${IncludeDir}/gcCoreAPI.h ${D3D9_SOURCE_DIR}/gcCore.cpp
+	COMMAND ${InterfaceBuilder} ${D3D9_SOURCE_DIR}/gcCore.h ${INCLUDE_TARGET_DIR}/gcCoreAPI.h ${D3D9_SOURCE_DIR}/gcCore.cpp
+	COMMAND ${CMAKE_COMMAND} -E copy ${D3D9_SOURCE_DIR}/gcGUI.h ${INCLUDE_TARGET_DIR}/gcGUI.h
 	VERBATIM
 )
 add_custom_target(D3D9Client_Interface
-	DEPENDS ${IncludeDir}/gcCoreAPI.h
+	DEPENDS ${INCLUDE_TARGET_DIR}/gcCoreAPI.h
 )
 
 add_dependencies(D3D9Client
@@ -244,6 +242,6 @@ install(DIRECTORY ${D3D9_SOURCE_DIR}/samples/DrawOrbits/ DESTINATION ${ORBITER_I
 install(DIRECTORY ${D3D9_SOURCE_DIR}/samples/DX9ExtMFD/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/DX9ExtMFD)
 install(DIRECTORY ${D3D9_SOURCE_DIR}/samples/GenericCamera/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/GenericCamera)
 install(DIRECTORY ${D3D9_SOURCE_DIR}/samples/TerrainToolBox/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/TerrainToolBox)
-install(FILES ${IncludeDir}/gcCoreAPI.h DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/include)
-install(FILES ${IncludeDir}/gcGUI.h DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/include)
+install(FILES ${INCLUDE_TARGET_DIR}/gcCoreAPI.h DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/include)
+install(FILES ${INCLUDE_TARGET_DIR}/gcGUI.h DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/include)
 install(FILES ${ORBITER_SOURCE_SDK_DIR}/doc/Orbiter2DGraphics.pdf DESTINATION ${ORBITER_INSTALL_SDK_DIR}/doc)
