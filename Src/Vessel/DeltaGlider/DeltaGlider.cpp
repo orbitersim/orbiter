@@ -995,14 +995,14 @@ void DeltaGlider::clbkSetClassCaps (FILEHANDLE cfg)
 	CreateThrusterGroup (th_att_rot+2, 2, THGROUP_ATT_PITCHDOWN);
 	CreateThrusterGroup (th_att_lin,   2, THGROUP_ATT_UP);
 	CreateThrusterGroup (th_att_lin+2, 2, THGROUP_ATT_DOWN);
-	AddExhaust (th_att_rot[0], 0.6,  0.078, _V(-0.75,-0.7,  9.65), _V(0,-1,0));
-	AddExhaust (th_att_rot[0], 0.6,  0.078, _V( 0.75,-0.7,  9.65), _V(0,-1,0));
-	AddExhaust (th_att_rot[1], 0.79, 0.103, _V(-0.1 , 0.55,-7.3 ), _V(0, 1,0));
-	AddExhaust (th_att_rot[1], 0.79, 0.103, _V( 0.1 , 0.55,-7.3 ), _V(0, 1,0));
-	AddExhaust (th_att_rot[2], 0.6,  0.078, _V(-0.8,-0.25, 9.6), _V(0, 1,0));
-	AddExhaust (th_att_rot[2], 0.6,  0.078, _V( 0.8,-0.25, 9.6), _V(0, 1,0));
-	AddExhaust (th_att_rot[3], 0.79, 0.103, _V(-0.1, -0.55,-7.3 ), _V(0,-1,0));
-	AddExhaust (th_att_rot[3], 0.79, 0.103, _V( 0.1, -0.55,-7.3 ), _V(0,-1,0));
+	AddExhaust (th_att_rot[0], 0.6,  0.078, _V( -0.816081, -0.616431, 9.594813 ), _V(0,-1,0));
+	AddExhaust (th_att_rot[0], 0.6,  0.078, _V( 0.816081, -0.616431, 9.594813 ), _V(0,-1,0));
+	AddExhaust (th_att_rot[1], 0.79, 0.103, _V( -0.120063, 0.409999, -7.357354 ), _V(0, 1,0));
+	AddExhaust (th_att_rot[1], 0.79, 0.103, _V( 0.120063, 0.409999, -7.357354 ), _V(0, 1,0));
+	AddExhaust (th_att_rot[2], 0.6,  0.078, _V( -0.816081, -0.35857, 9.594813 ), _V(0, 1,0));
+	AddExhaust (th_att_rot[2], 0.6,  0.078, _V( 0.816081, -0.35857, 9.594813 ), _V(0, 1,0));
+	AddExhaust (th_att_rot[3], 0.79, 0.103, _V( -0.120063, -0.409999, -7.357354 ), _V(0,-1,0));
+	AddExhaust (th_att_rot[3], 0.79, 0.103, _V( 0.120063, -0.409999, -7.357354 ), _V(0,-1,0));
 
 	th_att_rot[0] = th_att_lin[0] = CreateThruster (_V(0,0, 6), _V(-1,0,0), MAX_RCS_THRUST, ph_rcs, ISP);
 	th_att_rot[1] = th_att_lin[3] = CreateThruster (_V(0,0,-6), _V( 1,0,0), MAX_RCS_THRUST, ph_rcs, ISP);
@@ -1012,10 +1012,10 @@ void DeltaGlider::clbkSetClassCaps (FILEHANDLE cfg)
 	CreateThrusterGroup (th_att_rot+2, 2, THGROUP_ATT_YAWRIGHT);
 	CreateThrusterGroup (th_att_lin,   2, THGROUP_ATT_LEFT);
 	CreateThrusterGroup (th_att_lin+2, 2, THGROUP_ATT_RIGHT);
-	AddExhaust (th_att_rot[0], 0.6,  0.078, _V(1.0,-0.48,9.35), _V(1,0,0));
-	AddExhaust (th_att_rot[1], 0.94, 0.122, _V(-2.2,0.2,-6.0), _V(-1,0,0));
-	AddExhaust (th_att_rot[2], 0.6,  0.078, _V(-1.0,-0.48,9.35), _V(-1,0,0));
-	AddExhaust (th_att_rot[3], 0.94, 0.122, _V(2.2,0.2,-6.0), _V(1,0,0));
+	AddExhaust (th_att_rot[0], 0.6,  0.078, _V( 0.888971, -0.488177, 9.3408 ), _V(1,0,0));
+	AddExhaust (th_att_rot[1], 0.94, 0.122, _V( -2.029295, 0.182903, -6.043046 ), _V(-1,0,0));
+	AddExhaust (th_att_rot[2], 0.6,  0.078, _V( -0.888971, -0.488177, 9.3408 ), _V(-1,0,0));
+	AddExhaust (th_att_rot[3], 0.94, 0.122, _V( 2.029295, 0.182903, -6.043046 ), _V(1,0,0));
 
 	th_att_rot[0] = CreateThruster (_V( 6,0,0), _V(0, 1,0), MAX_RCS_THRUST, ph_rcs, ISP);
 	th_att_rot[1] = CreateThruster (_V(-6,0,0), _V(0,-1,0), MAX_RCS_THRUST, ph_rcs, ISP);
@@ -1023,19 +1023,19 @@ void DeltaGlider::clbkSetClassCaps (FILEHANDLE cfg)
 	th_att_rot[3] = CreateThruster (_V( 6,0,0), _V(0,-1,0), MAX_RCS_THRUST, ph_rcs, ISP);
 	CreateThrusterGroup (th_att_rot, 2, THGROUP_ATT_BANKLEFT);
 	CreateThrusterGroup (th_att_rot+2, 2, THGROUP_ATT_BANKRIGHT);
-	AddExhaust (th_att_rot[0], 1.03, 0.134, _V(-5.1, 0.2,0.4), _V(0, 1,0));
-	AddExhaust (th_att_rot[1], 1.03, 0.134, _V( 5.1,-0.8,0.4), _V(0,-1,0));
-	AddExhaust (th_att_rot[2], 1.03, 0.134, _V( 5.1, 0.2,0.4), _V(0, 1,0));
-	AddExhaust (th_att_rot[3], 1.03, 0.134, _V(-5.1,-0.8,0.4), _V(0,-1,0));
+	AddExhaust (th_att_rot[0], 1.03, 0.134, _V( -5.121185, -0.073903, 0.375386 ), _V(0, 1,0));
+	AddExhaust (th_att_rot[1], 1.03, 0.134, _V( 5.121185, -0.654322, 0.375386 ), _V(0,-1,0));
+	AddExhaust (th_att_rot[2], 1.03, 0.134, _V( 5.121185, -0.073903, 0.375386 ), _V(0, 1,0));
+	AddExhaust (th_att_rot[3], 1.03, 0.134, _V( -5.121185, -0.654322, 0.375386 ), _V(0,-1,0));
 
 	th_att_lin[0] = CreateThruster (_V(0,0,-7), _V(0,0, 1), 2*MAX_RCS_THRUST, ph_rcs, ISP);
 	th_att_lin[1] = CreateThruster (_V(0,0, 7), _V(0,0,-1), 2*MAX_RCS_THRUST, ph_rcs, ISP);
 	CreateThrusterGroup (th_att_lin,   1, THGROUP_ATT_FORWARD);
 	CreateThrusterGroup (th_att_lin+1, 1, THGROUP_ATT_BACK);
-	AddExhaust (th_att_lin[0], 0.6, 0.078, _V(0,-0.2,-7.6), _V(0,0,-1));
-	AddExhaust (th_att_lin[0], 0.6, 0.078, _V(0,0.22,-7.6), _V(0,0,-1));
-	AddExhaust (th_att_lin[1], 0.6, 0.078, _V(-0.82,-0.49,9.8), _V(0,0,1));
-	AddExhaust (th_att_lin[1], 0.6, 0.078, _V( 0.82,-0.49,9.8), _V(0,0,1));
+	AddExhaust (th_att_lin[0], 0.6, 0.078, _V( 0.0, -0.228914, -7.462329 ), _V(0,0,-1));
+	AddExhaust (th_att_lin[0], 0.6, 0.078, _V( 0.0, 0.229, -7.462329 ), _V(0,0,-1));
+	AddExhaust (th_att_lin[1], 0.6, 0.078, _V( -0.817096, -0.488177, 9.729635 ), _V(0,0,1));
+	AddExhaust (th_att_lin[1], 0.6, 0.078, _V( 0.817096, -0.488177, 9.729635 ), _V(0,0,1));
 
 	COLOUR4 col_d = {0.9,0.8,1,0};
 	COLOUR4 col_s = {1.9,0.8,1,0};
