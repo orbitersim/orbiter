@@ -658,11 +658,12 @@ void AscentApMfd::UpdatePg_Gbl (oapi::Sketchpad *skp)
 {
 	double pitch, yaw;
 	int i;
-	int s2 = W/16;
+	int iW = (int)W;
+	int s2 = iW/16;
 	int s1 = s2*2;
-	int cx = W/2;
+	int cx = iW/2;
 	int cy = ch*3+s1;
-	int ssme_cx[3] = {(2*W)/10, (8*W)/10, cx};
+	int ssme_cx[3] = {(2*iW)/10, (8*iW)/10, cx};
 	int ssme_cy[3] = {cy+(3*s1)/2, cy+(3*s1)/2, cy};
 
 	skp->SetTextAlign (oapi::Sketchpad::CENTER);
@@ -674,7 +675,7 @@ void AscentApMfd::UpdatePg_Gbl (oapi::Sketchpad *skp)
 
 	if (ap->GetVessel()->status < 2) {
 		int srb_cy = H-s1-ch;
-		int srb_cx[2] = {(2*W)/10, (8*W)/10};
+		int srb_cx[2] = {(2*iW)/10, (8*iW)/10};
 		skp->Line (0, srb_cy-s1-ch*2, W, srb_cy-s1-ch*2);
 		skp->Text (W/2, srb_cy-s1-(3*ch)/2, "Gimbal SRB", 10);
 		for (i = 0; i < 2; i++) {
@@ -1455,9 +1456,9 @@ const char *MetStr (double met)
 	} else
 		str[0] = ' ';
 	h = (int)(met/3600.0);
-	met -= h*3600;
+	met -= (double)h*3600;
 	m = (int)(met/60.0);
-	met -= m*60;
+	met -= (double)m*60;
 	int nh = (h < 100 ? 2:3);
 	h = min(h,999);
 	sprintf (str+1, "%0*d:%02d:%04.1f", nh, h, m, met);

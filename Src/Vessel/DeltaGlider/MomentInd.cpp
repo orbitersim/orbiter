@@ -51,7 +51,7 @@ void AngRateIndicator::Reset2D (int panelid, MESHHANDLE hMesh)
 		if (!vtxbuf_2D) {
 			vtxbuf_2D = new NTVERTEX[nvtx];
 			memcpy (vtxbuf_2D, grp->Vtx+vtxofs, nvtx*sizeof(NTVERTEX));
-			w0_2D = vtxbuf_2D[0].x - vtxbuf_2D[1].x;
+			w0_2D = (double)vtxbuf_2D[0].x - (double)vtxbuf_2D[1].x;
 			for (int i = 0; i < 3; i++) {
 				xcnt_2D[i] = vtxbuf_2D[6+i*7].x;
 				ycnt_2D[i] = vtxbuf_2D[6+i*21].y;
@@ -73,9 +73,9 @@ void AngRateIndicator::ResetVC (DEVMESHHANDLE hMesh)
 
 	if (!vtxbuf_VC) {
 		vtxbuf_VC = new NTVERTEX[nvtx];
-		GROUPREQUESTSPEC grs = {vtxbuf_VC, nvtx, 0, 0, 0, 0, 0, 0};
+		GROUPREQUESTSPEC grs = {vtxbuf_VC, (DWORD)nvtx, 0, 0, 0, 0, 0, 0};
 		oapiGetMeshGroup(hMesh,	GRP_ANGVEL_DISP_OVR_VC, &grs);
-		w0_VC = vtxbuf_VC[0].x - vtxbuf_VC[1].x;
+		w0_VC = (double)vtxbuf_VC[0].x - (double)vtxbuf_VC[1].x;
 		for (i = 0; i < 3; i++) {
 			xcnt_VC[i] = vtxbuf_VC[6+i*7].x;
 			ycnt_VC[i] = vtxbuf_VC[6+i*21].y;
@@ -207,7 +207,7 @@ bool AngRateIndicator::RedrawVC (DEVMESHHANDLE hMesh, SURFHANDLE surf)
 		}
 	}
 
-	GROUPEDITSPEC ges = {GRPEDIT_VTXCRD, 0, vtx, nvtx, 0};
+	GROUPEDITSPEC ges = {GRPEDIT_VTXCRD, 0, vtx, (DWORD)nvtx, 0};
 	oapiEditMeshGroup(hMesh, GRP_ANGVEL_DISP_OVR_VC, &ges);
 	return false;
 }

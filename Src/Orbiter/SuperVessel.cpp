@@ -147,9 +147,9 @@ SuperVessel::SuperVessel (Vessel *vessel1, Vessel *vessel2, int port1, int port2
 	// init acc and gfielddata
 
 	UpdateProxies();
-	cpos = s0->pos - cbody->s0->pos;
-	cvel = s0->vel - cbody->s0->vel;
-	proxyT    = -(double)rand()*100.0/(double)RAND_MAX - 1.0;
+	if (cbody) cpos = s0->pos - cbody->s0->pos; else cpos = { 0, 0, 0 };
+	if (cbody) cvel = s0->vel - cbody->s0->vel; else cvel = { 0, 0, 0 };
+	proxyT = -(double)rand()*100.0/(double)RAND_MAX - 1.0;
 
 	// register with vessels
 	for (i = 0; i < 2; i++) {
@@ -169,7 +169,10 @@ SuperVessel::SuperVessel (Vessel *vessel1, Vessel *vessel2, int port1, int port2
 
 SuperVessel::~SuperVessel()
 {
-	if (nv) delete []vlist;
+	if (nv) {
+		delete []vlist;
+		vlist = NULL;
+	}
 }
 
 // =======================================================================
@@ -239,6 +242,7 @@ void SuperVessel::Detach (Vessel *vessel, DWORD port, double vsep)
 			//vessel2->acc = g_psys->Gacc (vessel2->rpos, vessel2, &vessel2->gfielddata);
 			vessel2->SetSuperStruct (NULL);
 			delete []vlist;
+			vlist = NULL;
 			nv = 0;
 		} else { // remove vessel1 from superstructure
 			SubVesselData *tmp = new SubVesselData[nv-1]; TRACENEW
@@ -750,7 +754,7 @@ void SuperVessel::UpdateProxies ()
 
 void SuperVessel::SetOrbitReference (CelestialBody *body)
 {
-	if (body != cbody) {               // otherwise nothing to do
+	if (body && body != cbody) {               // otherwise nothing to do
 		cbody = body;
 		el->Setup (mass, cbody->Mass(), el->MJDepoch());
 		bOrbitStabilised = false;      // enforce recalculation of elements

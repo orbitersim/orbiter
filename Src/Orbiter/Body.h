@@ -31,6 +31,7 @@ public:
 	virtual int Type() const { return OBJTP_GENERIC; }
 
 	inline char *Name() const { return name; }
+	inline const char* FileName() const { return filename; }
 
 	virtual const void *GetParam (DWORD paramtype) const { return 0; }
 
@@ -142,8 +143,8 @@ public:
 
 	inline const VISHANDLE *GetVishandlePtr() const { return &hVis; }
 
-	StateVectors *s0;    // body state at time t0
-	StateVectors *s1;    // new body state at time t0+dt during update phase
+	StateVectors *s0 = NULL;    // body state at time t0
+	StateVectors *s1 = NULL;    // new body state at time t0+dt during update phase
 
 	// Operations on updated state vectors (only accessible during update phase
 	// AFTER the object has been updated)
@@ -177,6 +178,7 @@ protected:
 	void Setup ();       // initialise body with default params
 
 	char *name;          // object name
+	char *filename;	
 
 	Vector rpos_base, rpos_add; // base and incremental parts of rpos
 	Vector rvel_base, rvel_add; // base and incremental parts of rvel

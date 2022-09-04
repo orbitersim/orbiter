@@ -18,7 +18,7 @@
 // =======================================================================
 
 struct DeviceData {
-	DWORD dwDevice;
+	int   dwDevice;
 	DWORD dwMode;
 	BOOL  bFullscreen;
 	BOOL  bStereo;
@@ -142,6 +142,8 @@ public:
     int clbkSetMeshMaterial (DEVMESHHANDLE hMesh, DWORD matidx, const MATERIAL *mat);
 	int clbkMeshMaterial (DEVMESHHANDLE hMesh, DWORD matidx, MATERIAL *mat);
 	bool clbkSetMeshProperty (DEVMESHHANDLE hMesh, DWORD property, DWORD value);
+	int clbkSetMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp mat, const oapi::FVECTOR4* in);
+	int clbkMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp mat, oapi::FVECTOR4* out);
 
 	// surface functions
 	SURFHANDLE clbkCreateSurface (DWORD w, DWORD h, SURFHANDLE hTemplate = NULL);

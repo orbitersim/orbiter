@@ -20,6 +20,8 @@ spare time.
 Orbiter is now published as an Open Source project under the MIT License (see
 [LICENSE](./LICENSE) file for details).
 
+D3D9Client graphics engine is licensed under LGPL, see [LGPL](./OVP/D3D9Client/LGPL.txt)
+
 ## Installation
 
 Get the Orbiter source repository from github

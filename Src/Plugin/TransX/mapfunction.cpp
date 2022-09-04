@@ -6,10 +6,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,22 +21,22 @@
 #define STRICT
 
 #include <windows.h>
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include "orbitersdk.h"
 #include "mfd.h"
 #include "mapfunction.h"
+
+using namespace std;
 
 mapfunction *mapfunction::themap=NULL;
 
 mapfunction::~mapfunction()
 {
-	DeleteGBody(sun); // deallocate memory recursively
 	themap=NULL;
 }
 
-mapfunction::mapfunction() : 
-sun(NULL)
+mapfunction::mapfunction()
 {
 	initialised=false;
 	addaction(0);//Place single low priority action into queue
@@ -49,25 +49,17 @@ mapfunction *mapfunction::getthemap()
 	return themap;
 }
 
-void mapfunction::DeleteGBody(GBODY *body)
-{
-	if(body)
-	{
-		// recursively eletes the GBODY and the tree of satellites 
-		list<GBODY*>::iterator it;
-		for(it = body->satellites.begin(); it != body->satellites.end(); ++it)
-			DeleteGBody(*it);
-		body->satellites.clear();
-		delete body;
-	}
-}
-
 void mapfunction::dolowpriaction()
 {//Function is called multiple times - addaction(0) prompts it to be recalled
 	//System allows large initialisation computation to be broken up into parts
 	// and staged through multiple timesteps
 	InitialiseSolarSystem();
 	initialised=true;
+}
+
+void mapfunction::InitialiseSolarSystem()
+{
+    m_bodyProvider.InitialiseSolarSystem();
 }
 
 OBJHANDLE mapfunction::getcurrbody(OBJHANDLE vessel)//Finds current body for current focus vessel
@@ -77,7 +69,7 @@ OBJHANDLE mapfunction::getcurrbody(OBJHANDLE vessel)//Finds current body for cur
 	double distance2,bodyfromparent2;
 	oapiGetGlobalPos(vessel,&currentpos);
 	GBODY *currentsoi=NULL;
-	GBODY *body = sun;
+	GBODY *body = m_bodyProvider.GetSun();
 	while(body)
 	{//Recomputes distance as time may have passed since initialisation
 		oapiGetGlobalPos(body->bodyhandle,&bodypos);
@@ -86,10 +78,10 @@ OBJHANDLE mapfunction::getcurrbody(OBJHANDLE vessel)//Finds current body for cur
 		else
 			oapiGetGlobalPos(body->parent->bodyhandle,&parentpos);
 		relvector=parentpos-bodypos;
-		bodyfromparent2=length2(relvector);
+		bodyfromparent2=length2my(relvector);
 		relvector=currentpos-bodypos;
-		distance2=length2(relvector);
-		if (distance2<body->gravbodyratio2*bodyfromparent2 || body == sun)//In this soi
+		distance2=length2my(relvector);
+		if (distance2<body->gravbodyratio2*bodyfromparent2 || body == m_bodyProvider.GetSun())//In this soi
 		{
 			currentsoi=body;
 			if(body->satellites.size() > 0)
@@ -105,20 +97,22 @@ OBJHANDLE mapfunction::getcurrbody(OBJHANDLE vessel)//Finds current body for cur
 	//We now have the actual body for this object
 	return currentsoi->bodyhandle;
 }
-	
+
 double mapfunction::getsoisize(OBJHANDLE handle)
 {
+    if (cacheSOISize.NeedsUpdate(handle))
+        cacheSOISize = BodyCache(handle, m_bodyProvider.GetBody(handle));
+    GBODY *body = cacheSOISize.Gbody();
 	double radius;
-	if(!bodyMap[handle])
+	if(!body)
 		return 0;	// probably a craft or something similar.
-	if (bodyMap[handle]->parent == NULL)
+	if (body->parent == NULL)
 		return 1e80;//virtually infinite SOI for largest body
 	else
 	{
-		GBODY *body = bodyMap[handle];
 		OBJHANDLE parent = body->parent->bodyhandle;
 		VECTOR3 vecradius;
-		
+
 		oapiGetRelativePos(parent,handle,&vecradius);
 		radius=sqrt(dotp(vecradius,vecradius)*body->gravbodyratio2);
 	}
@@ -128,7 +122,10 @@ double mapfunction::getsoisize(OBJHANDLE handle)
 
 OBJHANDLE mapfunction::getfirstmoon(OBJHANDLE handle)
 {
-	GBODY* body = bodyMap[handle];
+    if (cacheFistsMoon.NeedsUpdate(handle))
+        cacheFistsMoon = BodyCache(handle, m_bodyProvider.GetBody(handle));
+    GBODY *body = cacheFistsMoon.Gbody();
+
 	if(body)
 		if(body->satellites.size() > 0)
 			return body->satellites.front()->bodyhandle;
@@ -137,7 +134,10 @@ OBJHANDLE mapfunction::getfirstmoon(OBJHANDLE handle)
 
 OBJHANDLE mapfunction::getlastmoon(OBJHANDLE handle)
 {
-	GBODY* body = bodyMap[handle];
+    if (cacheLastMoon.NeedsUpdate(handle))
+        cacheLastMoon = BodyCache(handle, m_bodyProvider.GetBody(handle));
+    GBODY *body = cacheLastMoon.Gbody();
+
 	if(body)
 		if(body->satellites.size() > 0)
 			return body->satellites.back()->bodyhandle;
@@ -146,33 +146,45 @@ OBJHANDLE mapfunction::getlastmoon(OBJHANDLE handle)
 
 OBJHANDLE mapfunction::getnextpeer(OBJHANDLE handle)
 {
-	if(bodyMap[handle])
-		if(bodyMap[handle]->next)
-			return bodyMap[handle]->next->bodyhandle;
+    if (cacheNextPeer.NeedsUpdate(handle))
+        cacheNextPeer = BodyCache(handle, m_bodyProvider.GetBody(handle));
+    GBODY *body = cacheNextPeer.Gbody();
+
+	if(body)
+		if(body->next)
+			return body->next->bodyhandle;
 	return NULL;
 }
 
 OBJHANDLE mapfunction::getpreviouspeer(OBJHANDLE handle)
-{	
-	if(bodyMap[handle])
-		if(bodyMap[handle]->previous)
-			return bodyMap[handle]->previous->bodyhandle;
+{
+    if (cachePreviousPeer.NeedsUpdate(handle))
+        cachePreviousPeer = BodyCache(handle, m_bodyProvider.GetBody(handle));
+    GBODY *body = cachePreviousPeer.Gbody();
+
+	if(body)
+		if(body->previous)
+			return body->previous->bodyhandle;
 	return NULL;
 }
 
 
 OBJHANDLE mapfunction::getmajor(OBJHANDLE handle)
 {
-	if(bodyMap[handle])
-		if(bodyMap[handle]->parent)
-			return bodyMap[handle]->parent->bodyhandle;
+    if (cacheMajor.NeedsUpdate(handle))
+        cacheMajor = BodyCache(handle, m_bodyProvider.GetBody(handle));
+    GBODY *body = cacheMajor.Gbody();
+
+	if(body)
+		if(body->parent)
+			return body->parent->bodyhandle;
 	return NULL;
 }
 
 VECTOR3 mapfunction::getweightedvector(OBJHANDLE body, void (*func)(OBJHANDLE, VECTOR3*))
 {
 	OBJHANDLE moon = getfirstmoon(body);
-	double totalmass = oapiGetMass(body), bodymass;
+	double totalmass = oapiGetMass(body);
 	VECTOR3 barycentre = {0,0,0}, bodypos;
 	func(body, &bodypos);
 	barycentre.x += bodypos.x * totalmass;
@@ -182,12 +194,12 @@ VECTOR3 mapfunction::getweightedvector(OBJHANDLE body, void (*func)(OBJHANDLE, V
 	while(moon)
 	{
 		func(moon, &bodypos);
-		bodymass = oapiGetMass(moon);
+		double bodymass = oapiGetMass(moon);
 		barycentre.x += bodypos.x * bodymass;
 		barycentre.y += bodypos.y * bodymass;
 		barycentre.z += bodypos.z * bodymass;
 		totalmass += bodymass;
-		
+
 		moon = getnextpeer(moon);
 	}
 
@@ -208,63 +220,6 @@ VECTOR3 mapfunction::getbarycentre(OBJHANDLE body)
 	return getweightedvector(body, &oapiGetGlobalPos);
 }
 
-void mapfunction::InitialiseSolarSystem()
-{
-	int totalbodies=oapiGetGbodyCount();
-	list<GBODY*> templist; // used for easy accesss to the bodies rather than traversing the tree
-	for (int i = 0; i < totalbodies; i++)
-	{
-		GBODY *body = new GBODY;
-		body->next = body->previous = NULL;
-
-		body->bodyhandle = oapiGetGbodyByIndex(i);
-		body->mass = oapiGetMass(body->bodyhandle);
-		bodyMap[body->bodyhandle] = body;
-		if(i == 0)
-		{
-			// The central star
-			body->soisize2 = 1e100;//Infinite SOI
-			body->parent = body->next = body->previous = NULL;//Sun is its own parent!
-			sun = body;
-		}
-		else
-		{
-			// gravbodyratio2 and soisize
-			// Find the parent body (what it is orbiting)
-			list<GBODY*>::iterator it = templist.begin();
-			GBODY* currparent;
-			double currdistance2;
-			while(it != templist.end())
-			{
-				char itname[30], name[30];
-				oapiGetObjectName((*it)->bodyhandle, itname, 30);
-				oapiGetObjectName(body->bodyhandle, name, 30);
-				
-				VECTOR3 pos;
-				oapiGetRelativePos(body->bodyhandle, (*it)->bodyhandle, &pos);
-				double distance2 = dotp(pos, pos);
-				if(distance2 < (*it)->soisize2)
-				{
-					currparent = *it;
-					currdistance2 = distance2;
-				}
-	
-				it++;
-			}
-			body->parent = currparent;
-			if(body->parent->satellites.size() > 0)
-			{
-				body->previous = body->parent->satellites.back();
-				body->previous->next = body;
-			}
-			body->parent->satellites.push_back(body);
-			body->gravbodyratio2 = pow(body->mass / body->parent->mass, 0.8);
-			body->soisize2 = currdistance2 * body->gravbodyratio2;//Internal soi size
-		}
-		templist.push_back(body); // add it to the temp list
-	}
-}
-
 double mapfunction::GetApproxAtmosphericLimit(OBJHANDLE body)
 {
 	static map<OBJHANDLE, double> atmLimit;
@@ -272,7 +227,7 @@ double mapfunction::GetApproxAtmosphericLimit(OBJHANDLE body)
 		return 0;
 	if(atmLimit[body] != 0)
 		return atmLimit[body];	// return the limit if we have already found it
-	
+
 	// Perform a binary search (trial and error) to see find the altitude for a given static pressure
 	double alt = oapiGetPlanetAtmConstants(body)->radlimit;
 	double step = oapiGetPlanetAtmConstants(body)->radlimit / 2;

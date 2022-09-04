@@ -6,10 +6,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -20,8 +20,8 @@
 
 #define STRICT
 #include <windows.h>
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include "orbitersdk.h"
 #include "mapfunction.h"
 #include "mfd.h"
@@ -35,7 +35,6 @@ bool minorejectplan::init(class MFDvarhandler *vars, class basefunction *base)
 {
 	double radius;
 	radius=oapiGetSize(base->gethmajor());
-
 	m_ped.init(vars,3,3,"Pe Distance", radius*1.2, 0, radius*1000, 0.05, 1000);
 	m_ejorient.init(vars,"Ej Orientation", true);
 	m_equatorial.init(vars,3,3,"Equatorial view",0,1,"No","Yes","","","");
@@ -87,8 +86,8 @@ void slingshot::calculate(class MFDvarhandler *vars,basefunction *base)
 	if (next==NULL) return;//No way to know where slingshot should go, so stop here
 	//First, get handed-on orbit from previous
 	planorbit.setinvalid();
-	
-	OrbitElements craft=base->getcraftorbit();
+
+	const OrbitElements & craft=base->getcraftorbit();
 	VECTOR3 inward={0,0,0};
 	if (craft.isvalid())
 		craft.getinfinityvelvector(false,&inward);
@@ -117,7 +116,7 @@ void slingshot::calculate(class MFDvarhandler *vars,basefunction *base)
 				eventtime=0;
 				ejecttime=nextplan->geteventtime();//Get from future variable if nothing else
 			}
-			ejectvelocity2=length2(ejectvector);
+			ejectvelocity2=length2my(ejectvector);
 		}
 		else
 			return;
@@ -167,7 +166,7 @@ void slingshot::calculate(class MFDvarhandler *vars,basefunction *base)
 	//set up coordinate system
 	ratiotoradius=periapsisguess/oapiGetSize(hmajor);
 	VECTOR3 asvel=inward*(1/inwardvelocity);
-	VECTOR3 rightangletovel=unitise(asvel*dotp(asvel,ejectvector)-ejectvector);
+	VECTOR3 rightangletovel=unit(asvel*dotp(asvel,ejectvector)-ejectvector);
 	double cosfirst=sqrt(1-sinfirst*sinfirst);
 	VECTOR3 peposition=(rightangletovel*cosfirst+asvel*sinfirst)*periapsisguess;
 	VECTOR3 pevel=rightangletovel*(-sinfirst)+asvel*cosfirst;
@@ -175,7 +174,7 @@ void slingshot::calculate(class MFDvarhandler *vars,basefunction *base)
 		pevel=pevel*sqrt(inwardvelocity*inwardvelocity+2*gmhmajor/periapsisguess);
 	else
 		pevel=pevel*sqrt(ejectvelocity2+2*gmhmajor/periapsisguess);
-	
+
 	planorbit.init(peposition,pevel,ejecttime,gmhmajor);
 }
 
@@ -196,10 +195,10 @@ void minorejectplan::graphscale(Graph *graph)
 		oapiGetFocusRelativeVel(hmajor, &svelocity); //This is the velocity under the ship
 		oapiGetFocusShipAirspeedVector(&relvector);
 		svelocity=svelocity-relvector; //This is the velocity of the surface
-		svelocity=unitise(svelocity); //Unitise to give vector parallel to rotation
+		svelocity=unit(svelocity); //unit to give vector parallel to rotation
 		oapiGetFocusRelativePos(hmajor,&craftpos);
-		VECTOR3 tradius=unitise(craftpos);//Get unit radius vector
-		VECTOR3 tvector=unitise(crossp(tradius, svelocity));
+		VECTOR3 tradius=unit(craftpos);//Get unit radius vector
+		VECTOR3 tvector=unit(crossp(tradius, svelocity));
 		double longitude, latitude, tnumber;
 		oapiGetFocusEquPos(&longitude, &latitude, &tnumber);//Only works if current planet's surface dominates
 		double cosl=cos(-latitude);
@@ -217,9 +216,9 @@ void slingshot::graphscale(Graph *graph)
 		graph->setviewscale(planorbit);
 }
 
-bool minorejectplan::maingraph(Sketchpad *sketchpad,Graph *graph, basefunction *base)
+bool minorejectplan::maingraph(oapi::Sketchpad *sketchpad,Graph *graph, basefunction *base)
 {
-	OrbitElements craft=base->getcraftorbit();
+	const OrbitElements & craft=base->getcraftorbit();
 	if (craft.isvalid() && planorbit.isvalid())
 	{
 		// Draw intersect line
@@ -227,7 +226,7 @@ bool minorejectplan::maingraph(Sketchpad *sketchpad,Graph *graph, basefunction *
 		VECTOR3 intersect=planorbit.getintersectvector(craft);
 		graph->drawvectorline(sketchpad,intersect);
 		// Draw Ascending Node (filled)
-		intersect = unitise(intersect) * this->ibase->getcraftorbit().getapodistance(); // Put markers out of the way
+		intersect = unit(intersect) * this->ibase->getcraftorbit().getapodistance(); // Put markers out of the way
 		base->SelectBrush(sketchpad, TransXFunction::Grey);
 		graph->drawmarker(sketchpad, -intersect, Graph::Circle);
 		// Draw Descending Node (hollow)
@@ -237,9 +236,9 @@ bool minorejectplan::maingraph(Sketchpad *sketchpad,Graph *graph, basefunction *
 	return true;
 }
 
-bool slingshot::maingraph(Sketchpad *sketchpad,Graph *graph,basefunction *base)
+bool slingshot::maingraph(oapi::Sketchpad *sketchpad,Graph *graph,basefunction *base)
 {
-	OrbitElements craft=base->getcraftorbit();
+	const OrbitElements & craft=base->getcraftorbit();
 	OBJHANDLE hmajor=base->gethmajor();
 	double planetsize=oapiGetSize(hmajor);
 	if (!craft.isvalid()) return true;
@@ -255,9 +254,9 @@ bool slingshot::maingraph(Sketchpad *sketchpad,Graph *graph,basefunction *base)
 	graph->setprojection(velvector);
 
 	oapi::Pen *pen=base->SelectDefaultPen(sketchpad,TransXFunction::PEN_ATMOSPHERE);
-	graph->drawatmosphere(sketchpad,hmajor); 
+	graph->drawatmosphere(sketchpad,hmajor);
 	pen=base->SelectDefaultPen(sketchpad,TransXFunction::Grey);
-	graph->drawplanet(sketchpad,hmajor); 
+	graph->drawplanet(sketchpad,hmajor);
 	pen=base->SelectDefaultPen(sketchpad,TransXFunction::Green);
 	graph->drawvector(sketchpad,craftpos);
 	pen=base->SelectDefaultPen(sketchpad,TransXFunction::Yellow);
@@ -266,10 +265,10 @@ bool slingshot::maingraph(Sketchpad *sketchpad,Graph *graph,basefunction *base)
 }
 
 
-void encounterplan::graphupdate(Sketchpad *sketchpad,Graph *graph,basefunction *base)
+void encounterplan::graphupdate(oapi::Sketchpad *sketchpad,Graph *graph,basefunction *base)
 {
 	drawnbase=false;
-	Pen* pen=base->SelectDefaultPen(sketchpad,TransXFunction::Yellow);
+	oapi::Pen* pen=base->SelectDefaultPen(sketchpad,TransXFunction::Yellow);
 	OBJHANDLE hvessel=base->gethcraft();
 	VESSEL *curfocus=oapiGetVesselInterface(hvessel);
 	VESSELSTATUS status;
@@ -279,8 +278,8 @@ void encounterplan::graphupdate(Sketchpad *sketchpad,Graph *graph,basefunction *
 	OBJHANDLE hmaj=base->gethmajor();
 	oapiGetRelativePos(surfbase,hmaj,&baseposition);
 	double rot = oapiGetPlanetPeriod(hmaj);
-	OrbitElements craft=base->getcraftorbit();
-	
+	const OrbitElements & craft=base->getcraftorbit();
+
 	// Get the base position at the Pe/impact by rotating the body by the time until Pe/impact
 	double radius = oapiGetSize(hmaj);
 	double deltatime;
@@ -292,14 +291,14 @@ void encounterplan::graphupdate(Sketchpad *sketchpad,Graph *graph,basefunction *
 	oapiGetPlanetObliquityMatrix(hmaj, &oblrot);
 	MATRIX3 invoblrot = getinvmatrix(oblrot);
 	double theta = 2 * PI * deltatime / rot; // angle rotated by planet in 1 second
-	MATRIX3 majrot = {cos(theta), 0, -sin(theta), 
+	MATRIX3 majrot = {cos(theta), 0, -sin(theta),
 					  0,		  1, 0,
 					  sin(theta), 0, cos(theta)};
 	VECTOR3 v1 = mul(invoblrot, baseposition);
 	VECTOR3 v2 = mul(majrot, v1);
 	baseposition = mul(oblrot, v2);
 
-	double distance2=length2(baseposition);
+	double distance2=length2my(baseposition);
 	double radius2=radius*radius;
 	if (radius2*1.5>distance2)
 	{
@@ -309,29 +308,29 @@ void encounterplan::graphupdate(Sketchpad *sketchpad,Graph *graph,basefunction *
 }
 
 
-void slingshot::graphupdate(Sketchpad *sketchpad, Graph *graph,basefunction *base)
+void slingshot::graphupdate(oapi::Sketchpad *sketchpad, Graph *graph,basefunction *base)
 {
-	Pen* pen=base->SelectDefaultPen(sketchpad,TransXFunction::Yellow);
+	oapi::Pen* pen=base->SelectDefaultPen(sketchpad,TransXFunction::Yellow);
 	planorbit.draworbit(sketchpad,graph,false);
-	OrbitElements craft=base->getcraftorbit();
+	const OrbitElements & craft=base->getcraftorbit();
 	if (!craft.isvalid()) return;
-	VECTOR3 intersect=planorbit.getintersectvector(craft);
+	const VECTOR3 & intersect=planorbit.getintersectvector(craft);
 	pen=base->SelectDefaultPen(sketchpad,TransXFunction::Grey);
 	graph->drawvectorline(sketchpad,intersect);
 }
 
-void minorejectplan::wordupdate(Sketchpad *sketchpad, int width, int height, basefunction *base)
+void minorejectplan::wordupdate(oapi::Sketchpad *sketchpad, int width, int height, basefunction *base)
 {
 	char buffer[20];
 	int linespacing=height/24;
 	int pos=16*linespacing;
 	int len;
-	OrbitElements craft=base->getcraftorbit();
+	const OrbitElements & craft=base->getcraftorbit();
 	if (!craft.isvalid() || !planorbit.isvalid()) return;
 	OBJHANDLE hcraft=base->gethcraft();
 	VESSEL *pV=oapiGetVesselInterface(hcraft);
 	VESSELSTATUS status;
-	pV->GetStatus(status);	
+	pV->GetStatus(status);
 	double angle=180/PI*acos(cosangle(planorbit.getplanevector(),craft.getplanevector()));
 	VECTOR3 tpos,tvel;
 	tpos=status.rpos;
@@ -398,7 +397,7 @@ void minorejectplan::wordupdate(Sketchpad *sketchpad, int width, int height, bas
 	{
 		TextShow(sketchpad,"T to Pe:",0,pos,timefromstamp);
 		pos+=linespacing;
-		TextShow(sketchpad,"Begin Burn:",0,pos,GetBurnStart(pV, timefromstamp, deltav));
+		TextShow(sketchpad,"Begin Burn:",0,pos,GetBurnStart(pV, THGROUP_MAIN, timefromstamp, deltav));
 		pos+=linespacing;
 		double angle=180/PI*acos(cosangle(planpos,craftpos));
 		TextShow(sketchpad,"Ang. to Pe:",0,pos,angle);
@@ -414,11 +413,11 @@ void minorejectplan::wordupdate(Sketchpad *sketchpad, int width, int height, bas
 }
 
 
-void slingshot::wordupdate(Sketchpad *sketchpad, int width, int height, basefunction *base)
+void slingshot::wordupdate(oapi::Sketchpad *sketchpad, int width, int height, basefunction *base)
 {
 	int linespacing=height/24;
 	int pos=15*linespacing;
-	OrbitElements craft=base->getcraftorbit();
+	const OrbitElements & craft=base->getcraftorbit();
 	if (!craft.isvalid() || !planorbit.isvalid()) return;
 	TextShow(sketchpad,"R. Inc:",0,pos,180*acos(cosangle(planorbit.getplanevector(),craft.getplanevector()))/PI);
 	pos+=linespacing;
@@ -436,7 +435,7 @@ void slingshot::wordupdate(Sketchpad *sketchpad, int width, int height, basefunc
 		pos+=linespacing;
 		OBJHANDLE hcraft=base->gethcraft();
 		VESSEL *pV=oapiGetVesselInterface(hcraft);
-		TextShow(sketchpad,"Begin Burn",0,pos,GetBurnStart(pV, timetope, (outplanpevel-craftreqvel)));
+		TextShow(sketchpad,"Begin Burn",0,pos,GetBurnStart(pV, THGROUP_MAIN, timetope, (outplanpevel-craftreqvel)));
 		pos+=linespacing;
 	}
 }
@@ -447,12 +446,13 @@ void encounterplan::getplanorbit(OrbitElements *planorbit)
 }
 
 
-void encounterplan::wordupdate(Sketchpad *sketchpad, int width, int height, basefunction *base)
+void encounterplan::wordupdate(oapi::Sketchpad *sketchpad, int width, int height, basefunction *base)
 {
 	int linespacing=height/24;
-	int pos=18*linespacing;
-	OrbitElements craft=base->getmanoeuvreorbit();
-	if (!craft.isvalid()) craft=base->getcraftorbit();//Gets manoeuvre if it's valid, otherwise craft
+	int pos=16*linespacing;
+	//OrbitElements craft=base->getmanoeuvreorbit();
+	//if (!craft.isvalid()) craft=base->getcraftorbit();//Gets manoeuvre if it's valid, otherwise craft
+	const OrbitElements & craft = base->getmanoeuvreorbit().isvalid() ? base->getmanoeuvreorbit() : base->getcraftorbit();
 
 	OBJHANDLE hmajor=base->gethmajor();
 	double radius=oapiGetSize(hmajor);
@@ -495,12 +495,14 @@ void encounterplan::wordupdate(Sketchpad *sketchpad, int width, int height, base
 		pos+=linespacing;
 		TextShow(sketchpad,"Capture Delta:",0,pos,actualpevelocity-escvelocity);
 		pos+=linespacing;
+		TextShow(sketchpad,"Circ. Delta:",0,pos,actualpevelocity-(escvelocity/1.4142135623731));
+		pos+=linespacing;
 
 		VECTOR3 position,velocity;
 		craft.radiustovectors(ped+10,false,&position,&velocity);
 		if (m_drawbase==0 && drawnbase)
 		{
-			VECTOR3 plane=unitise(craft.getplanevector());
+			VECTOR3 plane=unit(craft.getplanevector());
 			double distoffplane=dotp(plane,baseposition);
 			TextShow(sketchpad,"Offplane Dist:",0,pos,distoffplane);
 			pos+=linespacing;
@@ -526,30 +528,40 @@ void encounterplan::wordupdate(Sketchpad *sketchpad, int width, int height, base
 	}
 
 	VECTOR3 ecliptic={0,-1,0};
-	double inclination=acos(dotp(unitise(craft.getplanevector()),ecliptic));
+	double inclination=acos(dotp(unit(craft.getplanevector()),ecliptic));
 	inclination=inclination/PI*180;
 	TextShow(sketchpad,"Inclination:",0,pos,inclination);
 	pos+=linespacing;
-	VECTOR3 lanvector=unitise(crossp(craft.getplanevector(),ecliptic));
+	VECTOR3 lanvector=unit(crossp(craft.getplanevector(),ecliptic));
 	double lan=acos(lanvector.x)/PI*180;
 	if (lanvector.z<0) lan=-lan;
 	TextShow(sketchpad,"LAN ",0,pos,lan);
 }
 
-
-void majejectplan::wordupdate(Sketchpad *sketchpad,int width, int height, basefunction *base)
+void majejectplan::wordupdate(oapi::Sketchpad *sketchpad,int width, int height, basefunction *base)
 {
-	if (ratioorbit>0)
-	{
-		int linespacing=height/24;
-		int pos=15*linespacing;
-		TextShow(sketchpad,"Pe/Pl Rad:",0,pos,ratioorbit);
-	}
+    int linespacing=height/24;
+    int wspace=width/19;
+    int wpos=9*wspace;
+
+    if (ratioorbit>0) //Don't show if View: Sling Direct
+    {
+        TextShow(sketchpad,"Pe/Pl Rad:",0,15*linespacing,ratioorbit);
+    }
+    else
+    {
+        double numDays = base->GetTimeIntercept() - m_ejdate;
+        TextShow(sketchpad,"TOF (days):",wpos,22*linespacing,numDays);
+        double totaldv=length(ejectvector);
+        if (totaldv>0.1)
+        {
+            //bottom right, watch both glass cockpit AND panel view for correct placement.
+            TextShow(sketchpad,"Total DeltaV:",wpos,23*linespacing,totaldv);
+        }
+    }
 }
 
-
-
-void minorejectplan::graphupdate(Sketchpad *sketchpad, Graph *graph,basefunction *base)
+void minorejectplan::graphupdate(oapi::Sketchpad *sketchpad, Graph *graph,basefunction *base)
 {
 	base->SelectDefaultPen(sketchpad,TransXFunction::Yellow);
 	planorbit.draworbit(sketchpad,graph,true);
@@ -561,7 +573,7 @@ void majejectplan::graphscale(Graph *graph)
 		graph->setviewscale(planorbit);
 }
 
-void majejectplan::graphupdate(Sketchpad *sketchpad, Graph *graph,basefunction *base)
+void majejectplan::graphupdate(oapi::Sketchpad *sketchpad, Graph *graph,basefunction *base)
 {
 	base->SelectDefaultPen(sketchpad,TransXFunction::Yellow);
 	planorbit.draworbit(sketchpad,graph,false);
@@ -570,8 +582,8 @@ void majejectplan::graphupdate(Sketchpad *sketchpad, Graph *graph,basefunction *
 bool slingejectplan::init(class MFDvarhandler *vars, class basefunction *base)
 {
 	m_totalvel.init(vars,3,3,"Velocity.",0, 0,1e8,0.1,1000);
-	m_outwardangle.init(vars,"Outward angle",true);
-	m_incangle.init(vars,"Inc. angle",false);
+	m_outwardangle.init(vars, "Outward angle",true);
+	m_incangle.init(vars, "Inc. angle",false);
 	m_inheritvel.init(vars,3,3,"Inherit Vel.",0,1,"Yes","No","","","");
 	m_ejdate.init(vars,3,3,"Eject date",0,0,1e20,0.000005,1000000);
 	m_ejdate=oapiGetSimMJD();//Temporary default.
@@ -607,6 +619,7 @@ bool majorejectplan::init(class MFDvarhandler *vars, class basefunction *base)
 	m_inheritvel=1;//MFDvariable capabilities not used in this class
 	m_outwardvel.init(vars,3,3,"Outward vel.", 0,-1e8,1e8,0.1,1000);
 	m_chplvel.init(vars,3,3,"Ch. plane vel.", 0, -1e8, 1e8, 0.1,1000);
+
 	m_prograde.sethelpstrings(
 		"Positive to move outward from MAJ",
 		"Negative to move inward toward MAJ");
@@ -628,21 +641,19 @@ bool majorejectplan::init(class MFDvarhandler *vars, class basefunction *base)
 	return true;
 }
 
-
-
 void majorejectplan::calcejectvector(const VECTOR3 &rminplane,const VECTOR3 &minorvel, double inheritedvelocity)
 {//Final param not used here
-	VECTOR3 forward=unitise(minorvel)*m_prograde;
-	VECTOR3 outward=unitise(crossp(minorvel, rminplane))*m_outwardvel;
-	VECTOR3 sideward=unitise(rminplane)*m_chplvel;
+	VECTOR3 forward=unit(minorvel)*m_prograde;
+	VECTOR3 outward=unit(crossp(minorvel, rminplane))*m_outwardvel;
+	VECTOR3 sideward=unit(rminplane)*m_chplvel;
 	ejectvector=forward+outward+sideward; //=Eject vector in RMin frame
 }
 
 void slingejectplan::calcejectvector(const VECTOR3 &rminplane,const VECTOR3 &minorvel, double inheritedvelocity)
 {
-	VECTOR3 forward=unitise(minorvel)*m_outwardangle.getcos()*m_incangle.getcos();
-	VECTOR3 outward=unitise(crossp(minorvel,rminplane))*m_outwardangle.getsin()*m_incangle.getcos();
-	VECTOR3 sideward=unitise(rminplane)*m_incangle.getsin();
+	VECTOR3 forward=unit(minorvel)*m_outwardangle.getcos()*m_incangle.getcos();
+	VECTOR3 outward=unit(crossp(minorvel,rminplane))*m_outwardangle.getsin()*m_incangle.getcos();
+	VECTOR3 sideward=unit(rminplane)*m_incangle.getsin();
 	ejectvector=forward+outward+sideward;
 	if (m_inheritvel==0 && inheritedvelocity>0)
 		ejectvector=ejectvector*inheritedvelocity;
@@ -654,7 +665,7 @@ void slingejectplan::calcejectvector(const VECTOR3 &rminplane,const VECTOR3 &min
 void majejectplan::calculate(class MFDvarhandler *vars,basefunction *base)
 {
 	//get the position and velocity vectors of the minor planet at the eject time
-	OrbitElements rmin=base->getminororbit();
+	const OrbitElements & rmin=base->getminororbit();
 	VECTOR3 minorpos,minorvel;
 	planorbit.setinvalid();
 	mapfunction *map=mapfunction::getthemap();
@@ -686,7 +697,7 @@ void majejectplan::calculate(class MFDvarhandler *vars,basefunction *base)
 
 	//derive the velocity vector described by the variables
 	calcejectvector(rmin.getplanevector(),minorvel,escvel);//Calculates ejectvector
-	double ejectvector2=length2(ejectvector);
+	double ejectvector2=length2my(ejectvector);
 	if (ejectvector2<1) return;
 	if (fabs(ejectvector2-escvel*escvel)*20<escvel*escvel && craftinrmin.isvalid())
 		planorbit.minortomajorinit(craftinrmin,rmin,soisize);
@@ -766,9 +777,9 @@ void minorejectplan::calculate(class MFDvarhandler *vars,basefunction *base)
 
 	//Set up temporary coordinate system
 	VECTOR3 rminplane=(base->getcontextorbit()).getplanevector();
-	VECTOR3 txaxis=unitise(ejectvector);
-	VECTOR3 tzaxis=unitise(crossp(ejectvector, rminplane));
-	VECTOR3 tyaxis=unitise(crossp(ejectvector, tzaxis));
+	VECTOR3 txaxis=unit(ejectvector);
+	VECTOR3 tzaxis=unit(crossp(ejectvector, rminplane));
+	VECTOR3 tyaxis=unit(crossp(ejectvector, tzaxis));
 	double ejorientsinvalue = m_ejorient.getsin();
 	double ejorientcosvalue = m_ejorient.getcos();
 	VECTOR3 tnaxis=tzaxis*ejorientcosvalue+tyaxis*ejorientsinvalue;
@@ -785,7 +796,7 @@ void minorejectplan::calculate(class MFDvarhandler *vars,basefunction *base)
 	double costhiinfangle=1/ecc;
 	double sinthiinfangle=sqrt(1-costhiinfangle*costhiinfangle);
 
-	// Use this, in conjunction with other elements, to obtain 
+	// Use this, in conjunction with other elements, to obtain
 	//radius and velocity vectors for periapsis of required orbit
 	VECTOR3 periposvector=(txaxis*(-costhiinfangle)+tnaxis*sinthiinfangle)*peridistance; //Periapsis position vector
 	double tvel=sqrt(2*gmhmajor/peridistance+ejectvelocity2); // Velocity size at periapsis
@@ -793,7 +804,7 @@ void minorejectplan::calculate(class MFDvarhandler *vars,basefunction *base)
 
 	// Create orbit for hypothetical orbit in rmin
 	planorbit.init(periposvector, perivelvector, ejecttime, gmhmajor);
-	
+
 	//use that and the periapsis distance to calculate the eccentricity
 	//use that and the rotation vector to generate the required vectors
 	//make the orbit, then track back to also give parameters to pass to the major function

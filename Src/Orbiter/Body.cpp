@@ -44,7 +44,7 @@ Body::Body (double _mass, double _size)
 	size = _size;
 }
 
-Body::Body (char *fname)
+Body::Body(char* fname)
 {
 	char *cpath = g_pOrbiter->ConfigPath (fname);
 
@@ -54,6 +54,9 @@ Body::Body (char *fname)
 	Setup ();
 	ifstream ifs (cpath);
 	if (!ifs) return;
+	
+	filename = new char[lstrlen(cpath) + 1];
+	strcpy(filename, cpath);
 
 	char cbuf[256], *_name = 0;
 	if (GetItemString (ifs, "Name", cbuf)) _name = cbuf;
@@ -73,7 +76,14 @@ Body::Body (char *fname)
 
 Body::~Body ()
 {
-	if (name) delete []name;
+	if (name) {
+		delete []name;
+		name = NULL;
+	}
+	if (filename) {
+		delete []filename;
+		filename = NULL;
+	}
 }
 
 void Body::Setup ()
@@ -86,6 +96,7 @@ void Body::Setup ()
 	name        = 0;
 	mass        = 0.0;
 	size        = 0.0;
+	filename	= NULL;
 	albedo.Set (1,1,1);
 	vislimit    = spotlimit = 1e-3;       // default visibility limit
 	updcount = irand (100); // spread update times

@@ -6,10 +6,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -35,7 +35,7 @@ private:
 	class basefunction *previousfunc,*nextfunc;
 	void setnextfunc(class basefunction *temp){nextfunc=temp;};
 	void setpreviousfunc(class basefunction *temp){previousfunc=temp;};
-	void switchmanoeuvremode();
+	void switchmanoeuvremode(int currview);
 	void switchadvanced();
 	void loadplan(int plan);
 	void Getmode2hypo(VECTOR3 *targetvel);
@@ -70,27 +70,34 @@ public:
 	void calculate(VECTOR3 *targetvel);
 	int calcnewview(int oldview,bool firststage);
 	bool soistatus();
-	void processvisiblevars();
+	void processvisiblevars(int currview);
 	void updateplan();//Actually changes the plan
 	void setplanstate(int plantype,int plan);//selects the type of plan to be carried out
 	void setnextplanstate(int plantype,int plan,int targettype);
 	void getplanstate(int *xplantype,int *xplan,int *targettype);
-	virtual void doupdate(Sketchpad *sketchpad, int tw, int th,int viewmode);
+	virtual void doupdate(oapi::Sketchpad *sketchpad, int tw, int th,int viewmode);
 
 	virtual void saveself(FILEHANDLE scn);
 	virtual void restoreself(FILEHANDLE scn);
 	void handlesfornextfunction(OBJHANDLE *thmajor, OBJHANDLE *thminor);
 	class plan *getplanpointer(){return planpointer;};
-	OrbitElements getcraftorbit(){return craft;};
-	OrbitElements getpassforwardorbit();
+	mapfunction * getmappointer(){return mappointer;}
+	const OrbitElements & getcraftorbit(){return craft;};
+	const OrbitElements & getpassforwardorbit();
 	void getcraftorbitattarget(OrbitElements *tcraft);
-	OrbitElements getcontextorbit(){return context;};//Returns copy of context orbit
-	OrbitElements getminororbit(){return rmin;};
-	OrbitElements getmanoeuvreorbit(){return hypormaj;};
-	OrbitElements gettargetorbit(){return target;};//Returns copy of target orbit
+	const OrbitElements & getcontextorbit(){return context;};//Returns copy of context orbit
+	const OrbitElements & getminororbit(){return rmin;};
+	const OrbitElements & getmanoeuvreorbit(){return hypormaj;};
+	const OrbitElements & gettargetorbit(){return target;};//Returns copy of target orbit
 	basefunction(class transxstate *tstate, class basefunction *tpreviousfunc,OBJHANDLE thmajor, OBJHANDLE thminor,OBJHANDLE thcraft);
 	basefunction(class transxstate *tstate, class basefunction *tpreviousfunc, class basefunction *templbase, OBJHANDLE thcraft);
 	~basefunction();
+    bool IsPlanSlingshot();
+    double GetTimeIntercept();
+	double GetHohmannDVExtend(double r1, double r2, double mass);
+    double GetHohmannDV(); // Calculate Hohmann transfer dv
+	VECTOR3 basefunction::GetPlaneAxis(const OBJHANDLE hObj, const OBJHANDLE hRef);
+    VECTOR3 GetLineOfNodes();
 };
 
 #endif

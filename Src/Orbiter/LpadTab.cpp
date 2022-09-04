@@ -34,7 +34,9 @@ orbiter::LaunchpadTab::~LaunchpadTab ()
 	if (hTab) DestroyWindow (hTab);
 	if (nitem) {
 		delete []item;
+		item = NULL;
 		delete []itempos;
+		itempos = NULL;
 	}
 }
 
@@ -102,7 +104,9 @@ void orbiter::LaunchpadTab::RegisterItemPositions (int *_item, int _nitem)
 {
 	if (nitem) {
 		delete []item;
+		item = NULL;
 		delete []itempos; // clear existing list
+		itempos = NULL;
 	}
 	if (nitem = _nitem) {
 		item = new int[nitem]; TRACENEW

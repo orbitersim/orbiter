@@ -98,6 +98,7 @@ Pane::~Pane ()
 		for (i = 0; i < nemfd; i++)
 			delete emfd[i];
 		delete []emfd;
+		emfd = NULL;
 	}
 	FreeResources ();
 	if (mibar)    delete mibar;
@@ -626,7 +627,7 @@ void Pane::Update (double simt, double syst)
 
 void Pane::Draw ()
 {
-	if (!g_camera->IsExternal() && !vcockpit && hud) {
+	if (g_camera && !g_camera->IsExternal() && !vcockpit && hud) {
 		oapi::Sketchpad *skp = gc->clbkGetSketchpad (0);
 		if (skp) {
 			SetSketchpadDefault (skp);
@@ -678,7 +679,8 @@ void Pane::TriggerPanelRedrawArea (int pid, int aid)
 	if (panel) {
 		if (panel->GetId() == pid) {
 			int idx = panel->AreaIndex (aid);
-			panel->RedrawArea (idx, PANEL_REDRAW_USER);
+			if (idx >= 0)
+				panel->RedrawArea (idx, PANEL_REDRAW_USER);
 		}
 	} else if (panel2d) {
 		if (panel2d->GetId() == pid) {
@@ -713,11 +715,14 @@ bool Pane::BltPanelAreaBackground (int aid, SURFHANDLE surf)
 {
 	if (panel) {
 		int idx = panel->AreaIndex (aid);
-		return panel->BltAreaBackground (idx, surf);
+		if (idx >= 0)
+			return panel->BltAreaBackground (idx, surf);
 	} else if (vcockpit) {
 		int idx = vcockpit->AreaIndex (aid);
-		return vcockpit->BltAreaBackground (idx, surf);
-	} else return false;
+		if (idx >= 0)
+			return vcockpit->BltAreaBackground (idx, surf);
+	}
+	return false;
 }
 
 void Pane::TriggerVCRedrawArea (int vcid, int aid)

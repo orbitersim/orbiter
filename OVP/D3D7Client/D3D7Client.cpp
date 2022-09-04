@@ -159,7 +159,7 @@ bool D3D7Client::clbkInitialise ()
 
     // Select a device using user parameters from config file.
 	VIDEODATA *data = GetVideoData();
-	DeviceId dev_id = {data->deviceidx, data->modeidx, data->fullscreen, false};
+	DeviceId dev_id = {(DWORD)data->deviceidx, (DWORD)data->modeidx, (DWORD)data->fullscreen, false};
 
 	if (!(m_pDeviceInfo = PickDevice (&dev_id)))
 		if (FAILED (D3D7Enum_SelectDefaultDevice (&m_pDeviceInfo))) {
@@ -334,6 +334,18 @@ ParticleStream *D3D7Client::clbkCreateReentryStream (PARTICLESTREAMSPEC *pss,
 bool D3D7Client::clbkParticleStreamExists (const ParticleStream *ps)
 {
 	return false;
+}
+
+// ==============================================================
+
+SURFHANDLE D3D7Client::clbkLoadSurface(const char* fname, DWORD attrib, bool bPath)
+{
+	DWORD flags = 0;
+	if (attrib & OAPISURFACE_SYSMEM)     flags |= 0x1;
+	if (attrib & OAPISURFACE_UNCOMPRESS) flags |= 0x2;
+	if (attrib & OAPISURFACE_NOMIPMAPS)  flags |= 0x4;
+	if (attrib & OAPISURFACE_SHARED)     flags |= 0x8;
+	return clbkLoadTexture(fname, flags);
 }
 
 // ==============================================================
@@ -1121,7 +1133,7 @@ bool D3D7Client::clbkBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src
 		bltflag = DDBLT_WAIT;
 		if (flag & BLT_SRCCOLORKEY) bltflag |= DDBLT_KEYSRC;
 		if (flag & BLT_TGTCOLORKEY) bltflag |= DDBLT_KEYDEST;
-		RECT dstrct = {tgtx, tgty, tgtx+ddsd.dwWidth, tgty+ddsd.dwHeight};
+		RECT dstrct = {(LONG)tgtx, (LONG)tgty, (LONG)(tgtx+ddsd.dwWidth), LONG(tgty+ddsd.dwHeight)};
 		hr = ps_tgt->Blt (&dstrct, ps_src, NULL, bltflag, NULL);
 		if (hr != S_OK)
 			LOGOUT_DDERR (hr);
@@ -1131,7 +1143,7 @@ bool D3D7Client::clbkBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src
 
 bool D3D7Client::clbkBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src, DWORD srcx, DWORD srcy, DWORD w, DWORD h, DWORD flag) const
 {
-	RECT srcr = {srcx, srcy, srcx+w, srcy+h};
+	RECT srcr = {(LONG)srcx, (LONG)srcy, (LONG)(srcx+w), (LONG)(srcy+h)};
 	LPDIRECTDRAWSURFACE7 ps_tgt = (tgt ? (LPDIRECTDRAWSURFACE7)tgt : pddsRenderTarget);
 	LPDIRECTDRAWSURFACE7 ps_src = (LPDIRECTDRAWSURFACE7)src;
 	DWORD bltflag = DDBLTFAST_WAIT;
@@ -1142,8 +1154,8 @@ bool D3D7Client::clbkBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src
 		bltflag = DDBLT_WAIT;
 		if (flag & BLT_SRCCOLORKEY) bltflag |= DDBLT_KEYSRC;
 		if (flag & BLT_TGTCOLORKEY) bltflag |= DDBLT_KEYDEST;
-		RECT dstrct = {tgtx, tgty, tgtx+w, tgty+h};
-		RECT srcrct = {srcx, srcy, srcx+w, srcy+h};
+		RECT dstrct = {(LONG)tgtx, (LONG)tgty, (LONG)(tgtx+w), (LONG)(tgty+h)};
+		RECT srcrct = {(LONG)srcx, (LONG)srcy, (LONG)(srcx+w), (LONG)(srcy+h)};
 		hr = ps_tgt->Blt (&dstrct, ps_src, &srcrct, bltflag, NULL);
 		if (hr != S_OK)
 			LOGOUT_DDERR (hr);
@@ -1156,8 +1168,8 @@ bool D3D7Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 {
 	LPDIRECTDRAWSURFACE7 ps_tgt = (tgt ? (LPDIRECTDRAWSURFACE7)tgt : pddsRenderTarget);
 	LPDIRECTDRAWSURFACE7 ps_src = (LPDIRECTDRAWSURFACE7)src;
-	RECT srcr = {srcx, srcy, srcx+srcw, srcy+srch};
-	RECT tgtr = {tgtx, tgty, tgtx+tgtw, tgty+tgth};
+	RECT srcr = {(LONG)srcx, (LONG)srcy, (LONG)(srcx+srcw), (LONG)(srcy+srch)};
+	RECT tgtr = {(LONG)tgtx, (LONG)tgty, (LONG)(tgtx+tgtw), (LONG)(tgty+tgth)};
 	DWORD bltflag = DDBLT_WAIT;
 	if (flag & BLT_SRCCOLORKEY) bltflag |= DDBLT_KEYSRC;
 	if (flag & BLT_TGTCOLORKEY) bltflag |= DDBLT_KEYDEST;
@@ -1175,7 +1187,7 @@ bool D3D7Client::clbkFillSurface (SURFHANDLE surf, DWORD col) const
 
 bool D3D7Client::clbkFillSurface (SURFHANDLE surf, DWORD tgtx, DWORD tgty, DWORD w, DWORD h, DWORD col) const
 {
-	RECT r = {tgtx, tgty, tgtx+w, tgty+h};
+	RECT r = {(LONG)tgtx, (LONG)tgty, (LONG)(tgtx+w), (LONG)(tgty+h)};
 	DDBLTFX bltfx;
 	ZeroMemory (&bltfx, sizeof(bltfx));
 	bltfx.dwSize = sizeof(bltfx);

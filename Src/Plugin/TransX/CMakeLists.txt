@@ -1,4 +1,6 @@
 add_library(TransX SHARED
+	BodyCache.cpp
+	BodyProvider.cpp
     basefunction.cpp
     doublelink.cpp
     globals.cpp

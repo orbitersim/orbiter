@@ -24,6 +24,7 @@
 #include "Mesh.h"
 #include "MenuInfoBar.h"
 #include "zlib.h"
+#include "DrawAPI.h"
 
 #ifdef INLINEGRAPHICS  // should be temporary
 #include "OGraphics.h"
@@ -265,6 +266,11 @@ DLLEXPORT void oapiGetObjectName (OBJHANDLE hObj, char *name, int n)
 	strncpy (name, ((Body*)hObj)->Name(), n);
 }
 
+DLLEXPORT const char *oapiGetObjectFileName(OBJHANDLE hObj)
+{
+	return ((Body*)hObj)->FileName();
+}
+
 DLLEXPORT OBJHANDLE oapiGetFocusObject ()
 {
 	return (OBJHANDLE)g_focusobj;
@@ -371,107 +377,135 @@ DLLEXPORT OBJHANDLE oapiGetDockStatus (DOCKHANDLE dock)
 
 DLLEXPORT void oapiSetEmptyMass (OBJHANDLE hVessel, double mass)
 {
-	((Vessel*)hVessel)->SetEmptyMass (mass);
+	if ((Vessel*)hVessel) ((Vessel*)hVessel)->SetEmptyMass (mass);
 }
 
 DLLEXPORT void oapiGetGlobalPos (OBJHANDLE hObj, VECTOR3 *pos)
 {
-	Vector gp (((Body*)hObj)->GPos());
-	pos->x = gp.x, pos->y = gp.y, pos->z = gp.z;
+	if (((Body*)hObj)->s0) {
+		Vector gp(((Body*)hObj)->GPos());
+		pos->x = gp.x, pos->y = gp.y, pos->z = gp.z;
+	}
 }
 
 DLLEXPORT void oapiGetGlobalVel (OBJHANDLE hObj, VECTOR3 *vel)
 {
-	Vector gv (((Body*)hObj)->GVel());
-	vel->x = gv.x, vel->y = gv.y, vel->z = gv.z;
+	if (((Body*)hObj)->s0) {
+		Vector gv(((Body*)hObj)->GVel());
+		vel->x = gv.x, vel->y = gv.y, vel->z = gv.z;
+	}
 }
 
 DLLEXPORT void oapiGetFocusGlobalPos (VECTOR3 *pos)
 {
-	Vector gp (g_focusobj->GPos());
+	Vector gp(g_focusobj->GPos());
 	pos->x = gp.x, pos->y = gp.y, pos->z = gp.z;
 }
 
 DLLEXPORT void oapiGetFocusGlobalVel (VECTOR3 *vel)
 {
-	Vector gv (g_focusobj->GVel());
+	Vector gv(g_focusobj->GVel());
 	vel->x = gv.x, vel->y = gv.y, vel->z = gv.z;
 }
 
 DLLEXPORT void oapiGetRelativePos (OBJHANDLE hObj, OBJHANDLE hRef, VECTOR3 *pos)
 {
-	Vector dp (((Body*)hObj)->GPos()-((Body*)hRef)->GPos());
-	pos->x = dp.x, pos->y = dp.y, pos->z = dp.z;
+	if (((Body*)hObj)->s0 && ((Body*)hRef)->s0) {
+		Vector dp(((Body*)hObj)->GPos()-((Body*)hRef)->GPos());
+		pos->x = dp.x, pos->y = dp.y, pos->z = dp.z;
+	}
 }
 
 DLLEXPORT void oapiGetRelativeVel (OBJHANDLE hObj, OBJHANDLE hRef, VECTOR3 *vel)
 {
-	Vector dv (((Body*)hObj)->GVel()-((Body*)hRef)->GVel());
-	vel->x = dv.x, vel->y = dv.y, vel->z = dv.z;
+	if (((Body*)hObj)->s0 && ((Body*)hRef)->s0) {
+		Vector dv(((Body*)hObj)->GVel() - ((Body*)hRef)->GVel());
+		vel->x = dv.x, vel->y = dv.y, vel->z = dv.z;
+	}
 }
 
 DLLEXPORT void oapiGetFocusRelativePos (OBJHANDLE hRef, VECTOR3 *pos)
 {
-	Vector dp (g_focusobj->GPos()-((Body*)hRef)->GPos());
-	pos->x = dp.x, pos->y = dp.y, pos->z = dp.z;
+	if (((Body*)hRef)->s0) {
+		Vector dp(g_focusobj->GPos() - ((Body*)hRef)->GPos());
+		pos->x = dp.x, pos->y = dp.y, pos->z = dp.z;
+	}
 }
 
 DLLEXPORT void oapiGetFocusRelativeVel (OBJHANDLE hRef, VECTOR3 *vel)
 {
-	Vector dv (g_focusobj->GVel()-((Body*)hRef)->GVel());
-	vel->x = dv.x, vel->y = dv.y, vel->z = dv.z;
+	if (((Body*)hRef)->s0) {
+		Vector dv(g_focusobj->GVel() - ((Body*)hRef)->GVel());
+		vel->x = dv.x, vel->y = dv.y, vel->z = dv.z;
+	}
 }
 
 DLLEXPORT void oapiGetBarycentre (OBJHANDLE hObj, VECTOR3 *bary)
 {
-	Vector b(((CelestialBody*)hObj)->Barycentre());
-	bary->x = b.x, bary->y = b.y, bary->z = b.z;
+	if (((Body*)hObj)->s0) {
+		Vector b(((CelestialBody*)hObj)->Barycentre());
+		bary->x = b.x, bary->y = b.y, bary->z = b.z;
+	}
 }
 
 DLLEXPORT void oapiGetRotationMatrix (OBJHANDLE hObj, MATRIX3 *mat)
 {
-	const Matrix &m = ((Body*)hObj)->GRot();
-	for (int i = 0; i < 9; i++) mat->data[i] = m.data[i];
+	if (((Body*)hObj)->s0) {
+		const Matrix& m = ((Body*)hObj)->GRot();
+		for (int i = 0; i < 9; i++) mat->data[i] = m.data[i];
+	}
 }
 
 DLLEXPORT void oapiGlobalToLocal (OBJHANDLE hObj, const VECTOR3 *glob, VECTOR3 *loc)
 {
-	Vector vloc;
-	((Body*)hObj)->GlobalToLocal (Vector(glob->x, glob->y, glob->z), vloc);
-	loc->x = vloc.x, loc->y = vloc.y, loc->z = vloc.z;
+	if (((Body*)hObj)->s0) {
+		Vector vloc;
+		((Body*)hObj)->GlobalToLocal(Vector(glob->x, glob->y, glob->z), vloc);
+		loc->x = vloc.x, loc->y = vloc.y, loc->z = vloc.z;
+	}
 }
 
 DLLEXPORT void oapiLocalToGlobal (OBJHANDLE hObj, const VECTOR3 *loc, VECTOR3 *glob)
 {
-	Vector vglob;
-	((Body*)hObj)->LocalToGlobal (Vector(loc->x, loc->y, loc->z), vglob);
-	glob->x = vglob.x, glob->y = vglob.y, glob->z = vglob.z;
+	if (((Body*)hObj)->s0) {
+		Vector vglob;
+		((Body*)hObj)->LocalToGlobal(Vector(loc->x, loc->y, loc->z), vglob);
+		glob->x = vglob.x, glob->y = vglob.y, glob->z = vglob.z;
+	}
 }
 
 DLLEXPORT void oapiEquToLocal (OBJHANDLE hObj, double lng, double lat, double rad, VECTOR3 *loc)
 {
-	Vector vloc;
-	((Body*)hObj)->EquatorialToLocal (lng, lat, rad, vloc);
-	loc->x = vloc.x, loc->y = vloc.y, loc->z = vloc.z;
+	if (((Body*)hObj)->s0) {
+		Vector vloc;
+		((Body*)hObj)->EquatorialToLocal(lng, lat, rad, vloc);
+		loc->x = vloc.x, loc->y = vloc.y, loc->z = vloc.z;
+	}
 }
 
 DLLEXPORT void oapiLocalToEqu (OBJHANDLE hObj, const VECTOR3 &loc, double *lng, double *lat, double *rad)
 {
-	Vector vloc (loc.x, loc.y, loc.z);
-	((Body*)hObj)->LocalToEquatorial (vloc, *lng, *lat, *rad);
+	if (((Body*)hObj)->s0) {
+		Vector vloc(loc.x, loc.y, loc.z);
+		((Body*)hObj)->LocalToEquatorial(vloc, *lng, *lat, *rad);
+	}
 }
 
 DLLEXPORT void oapiEquToGlobal (OBJHANDLE hObj, double lng, double lat, double rad, VECTOR3 *glob)
 {
-	Vector vglob;
-	((Body*)hObj)->EquatorialToGlobal (lng, lat, rad, vglob);
-	glob->x = vglob.x, glob->y = vglob.y, glob->z = vglob.z;
+	if (((Body*)hObj)->s0) {
+		Vector vglob;
+		((Body*)hObj)->EquatorialToGlobal(lng, lat, rad, vglob);
+		glob->x = vglob.x, glob->y = vglob.y, glob->z = vglob.z;
+	}
 }
 
 DLLEXPORT void oapiGlobalToEqu (OBJHANDLE hObj, const VECTOR3 &glob, double *lng, double *lat, double *rad)
 {
-	Vector vglob (glob.x, glob.y, glob.z);
-	((Body*)hObj)->GlobalToEquatorial (vglob, *lng, *lat, *rad);
+	if (((Body*)hObj)->s0) {
+		Vector vglob(glob.x, glob.y, glob.z);
+		((Body*)hObj)->GlobalToEquatorial(vglob, *lng, *lat, *rad);
+	}
 }
 
 DLLEXPORT double oapiOrthodome (double lng1, double lat1, double lng2, double lat2)
@@ -481,10 +515,15 @@ DLLEXPORT double oapiOrthodome (double lng1, double lat1, double lng2, double la
 
 DLLEXPORT BOOL oapiGetAltitude (OBJHANDLE hVessel, double *alt)
 {
-	const SurfParam *sp = ((Vessel*)hVessel)->GetSurfParam();
-	if (sp) {
-		*alt = sp->alt0;
-		return TRUE;
+	if ((Vessel*)hVessel) {
+		const SurfParam *sp = ((Vessel*)hVessel)->GetSurfParam();
+		if (sp) {
+			*alt = sp->alt0;
+			return TRUE;
+		}
+		else {
+			return FALSE;
+		}
 	} else {
 		return FALSE;
 	}
@@ -492,21 +531,30 @@ DLLEXPORT BOOL oapiGetAltitude (OBJHANDLE hVessel, double *alt)
 
 DLLEXPORT BOOL oapiGetAltitude (OBJHANDLE hVessel, AltitudeMode mode, double *alt)
 {
-	const SurfParam *sp = ((Vessel*)hVessel)->GetSurfParam();
-	if (sp) {
-		*alt = (mode == ALTMODE_MEANRAD ? sp->alt0 : sp->alt);
-		return TRUE;
+	if ((Vessel*)hVessel) {
+		const SurfParam* sp = ((Vessel*)hVessel)->GetSurfParam();
+		if (sp) {
+			*alt = (mode == ALTMODE_MEANRAD ? sp->alt0 : sp->alt);
+			return TRUE;
+		}
+		else {
+			return FALSE;
+		}
 	} else {
 		return FALSE;
-	}	
+	}
 }
 
 DLLEXPORT BOOL oapiGetPitch (OBJHANDLE hVessel, double *pitch)
 {
-	const SurfParam *sp = ((Vessel*)hVessel)->GetSurfParam();
-	if (sp) {
-		*pitch = sp->pitch;
-		return TRUE;
+	if ((Vessel*)hVessel) {
+		const SurfParam *sp = ((Vessel*)hVessel)->GetSurfParam();
+		if (sp) {
+			*pitch = sp->pitch;
+			return TRUE;
+		} else {
+			return FALSE;
+		}
 	} else {
 		return FALSE;
 	}
@@ -514,10 +562,15 @@ DLLEXPORT BOOL oapiGetPitch (OBJHANDLE hVessel, double *pitch)
 
 DLLEXPORT BOOL oapiGetBank (OBJHANDLE hVessel, double *bank)
 {
-	const SurfParam *sp = ((Vessel*)hVessel)->GetSurfParam();
-	if (sp) {
-		*bank = sp->bank;
-		return TRUE;
+	if ((Vessel*)hVessel) {
+		const SurfParam *sp = ((Vessel*)hVessel)->GetSurfParam();
+		if (sp) {
+			*bank = sp->bank;
+			return TRUE;
+		}
+		else {
+			return FALSE;
+		}
 	} else {
 		return FALSE;
 	}
@@ -525,10 +578,14 @@ DLLEXPORT BOOL oapiGetBank (OBJHANDLE hVessel, double *bank)
 
 DLLEXPORT BOOL oapiGetHeading (OBJHANDLE hVessel, double *heading)
 {
-	const SurfParam *sp = ((Vessel*)hVessel)->GetSurfParam();
-	if (sp) {
-		*heading = sp->dir;
-		return TRUE;
+	if ((Vessel*)hVessel) {
+		const SurfParam *sp = ((Vessel*)hVessel)->GetSurfParam();
+		if (sp) {
+			*heading = sp->dir;
+			return TRUE;
+		} else {
+			return FALSE;
+		}
 	} else {
 		return FALSE;
 	}
@@ -536,12 +593,16 @@ DLLEXPORT BOOL oapiGetHeading (OBJHANDLE hVessel, double *heading)
 
 DLLEXPORT BOOL oapiGetEquPos (OBJHANDLE hVessel, double *longitude, double *latitude, double *radius)
 {
-	const SurfParam *sp = ((Vessel*)hVessel)->GetSurfParam();
-	if (sp) {
-		*longitude = sp->lng;
-		*latitude  = sp->lat;
-		*radius    = sp->rad;
-		return TRUE;
+	if ((Vessel*)hVessel) {
+		const SurfParam *sp = ((Vessel*)hVessel)->GetSurfParam();
+		if (sp) {
+			*longitude = sp->lng;
+			*latitude  = sp->lat;
+			*radius    = sp->rad;
+			return TRUE;
+		} else {
+			return FALSE;
+		}
 	} else {
 		return FALSE;
 	}
@@ -1328,6 +1389,11 @@ DLLEXPORT const MESHHANDLE oapiLoadMeshGlobal (const char *fname, LoadMeshClbkFu
 	return (const MESHHANDLE)g_pOrbiter->LoadMeshGlobal (fname, fClbk);
 }
 
+DLLEXPORT const char* oapiGetMeshFilename(MESHHANDLE hMesh)
+{
+	return hMesh ? ((Mesh*)hMesh)->GetName() : NULL;
+}
+
 DLLEXPORT MESHHANDLE oapiCreateMesh (DWORD ngrp, MESHGROUP *grp)
 {
 	Mesh *mesh = new Mesh;
@@ -1340,7 +1406,7 @@ DLLEXPORT MESHHANDLE oapiCreateMesh (DWORD ngrp, MESHGROUP *grp)
 DLLEXPORT void oapiDeleteMesh (MESHHANDLE hMesh)
 {
 	Mesh *mesh = (Mesh*)hMesh;
-	delete mesh;
+	if (mesh) delete mesh;
 }
 
 DLLEXPORT void oapiParticleSetLevelRef (PSTREAM_HANDLE ph, double *lvl)
@@ -1363,6 +1429,13 @@ DLLEXPORT SURFHANDLE oapiLoadTexture (const char *fname, bool dynamic)
 {
 	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();
 	if (gc) return gc->clbkLoadTexture (fname, 8 & (dynamic ? 3:0));
+	else return NULL;
+}
+
+DLLEXPORT SURFHANDLE oapiLoadSurfaceEx(const char* fname, DWORD attrib, bool bPath)
+{
+	oapi::GraphicsClient* gc = g_pOrbiter->GetGraphicsClient();
+	if (gc) return gc->clbkLoadSurface(fname, attrib, bPath);
 	else return NULL;
 }
 
@@ -1477,6 +1550,18 @@ DLLEXPORT int oapiMeshMaterial (DEVMESHHANDLE hMesh, DWORD matidx, MATERIAL *mat
 {
 	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();
 	return (gc ? gc->clbkMeshMaterial (hMesh, matidx, mat) : 1);
+}
+
+DLLEXPORT int oapiMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp mat, oapi::FVECTOR4 *out)
+{
+	oapi::GraphicsClient* gc = g_pOrbiter->GetGraphicsClient();
+	return (gc ? gc->clbkMeshMaterialEx(hMesh, matidx, mat, out) : 1);
+}
+
+DLLEXPORT int oapiSetMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp mat, const oapi::FVECTOR4* in)
+{
+	oapi::GraphicsClient* gc = g_pOrbiter->GetGraphicsClient();
+	return (gc ? gc->clbkSetMeshMaterialEx(hMesh, matidx, mat, in) : 1);
 }
 
 DLLEXPORT int oapiSetMaterial (DEVMESHHANDLE hMesh, DWORD matidx, const MATERIAL *mat)
@@ -1796,7 +1881,7 @@ DLLEXPORT oapi::Font *oapiCreateFont (int height, bool prop, char *face, FontSty
 {
 	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();
 	oapi::Font *font = NULL;
-	if (gc) font = gc->clbkCreateFont (height, prop, face, (oapi::Font::Style)style);
+	if (gc) font = gc->clbkCreateFont (height, prop, face, style);
 	return font;
 }
 
@@ -1804,7 +1889,26 @@ DLLEXPORT oapi::Font *oapiCreateFont (int height, bool prop, const char *face, F
 {
 	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();
 	oapi::Font *font = NULL;
-	if (gc) font = gc->clbkCreateFont (height, prop, face, (oapi::Font::Style)style, orientation);
+	if (gc) font = gc->clbkCreateFont (height, prop, face, style, orientation);
+	return font;
+}
+
+/**
+	* \brief Create a Font
+	* \param height Font height
+	* \param face Name of the font
+	* \param width Width of the font (0 for default aspect ration)
+	* \param weight Font thikness (400 for default weight)
+	* \param style A combination of \see FontStyle flags (0 for default)
+	* \param spacing A spacing between charters in a string (0.0f for default)
+	* \return A pointer to a created or pre-existing font or NULL in a case of an error.
+	*/
+
+DLLEXPORT oapi::Font* oapiCreateFontEx(int height, char* face, int width, int weight, FontStyle style, float spacing)
+{
+	oapi::GraphicsClient* gc = g_pOrbiter->GetGraphicsClient();
+	oapi::Font* font = NULL;
+	if (gc) font = gc->clbkCreateFontEx(height, face, width, weight, style, spacing);
 	return font;
 }
 
@@ -1854,6 +1958,12 @@ DLLEXPORT void oapiReleaseDC (SURFHANDLE surf, HDC hDC)
 	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();
 	if (gc && surf && hDC)
 		gc->clbkReleaseSurfaceDC (surf, hDC);
+}
+
+DLLEXPORT bool oapiGetSurfaceSize(SURFHANDLE hSrf, int *width, int *height)
+{
+	oapi::GraphicsClient* gc = g_pOrbiter->GetGraphicsClient();
+	return (gc ? gc->clbkGetSurfaceSize(hSrf, (DWORD*)width, (DWORD*)height) : false);
 }
 
 DLLEXPORT SURFHANDLE oapiCreateSurface (int width, int height)

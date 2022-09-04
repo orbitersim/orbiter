@@ -6,10 +6,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,8 +21,8 @@
 #define STRICT
 
 #include <windows.h>
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include "orbitersdk.h"
 #include "shiplist.h"
 #include <list>
@@ -36,7 +36,7 @@ using namespace std;
 
 DLLCLBK void InitModule (HINSTANCE hDLL)
 {
-	static char name[] = "TransX";
+    static char name[] = "TransX";
 	MFDMODESPECEX spec;
 	spec.name    = name;
 	spec.msgproc = TransxMFD::MsgProc;
@@ -46,7 +46,7 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 	kstream.open("config\\transx.cfg",NULL);	// this could be any file really.
 	if( kstream )
 	{
-		try 
+		try
 		{
 			char kbuf;
 			kstream >> kbuf;
@@ -56,10 +56,10 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 			{
 				case 65 : spec.key = OAPI_KEY_A; break;
 				case 66 : spec.key = OAPI_KEY_B; break;
-				case 67 : spec.key = OAPI_KEY_C; break; 
+				case 67 : spec.key = OAPI_KEY_C; break;
 				case 68 : spec.key = OAPI_KEY_D; break;
 				case 69 : spec.key = OAPI_KEY_E; break;
-				case 70 : spec.key = OAPI_KEY_F; break; 
+				case 70 : spec.key = OAPI_KEY_F; break;
 				case 71 : spec.key = OAPI_KEY_G; break;
 				case 72 : spec.key = OAPI_KEY_H; break;
 				case 73 : spec.key = OAPI_KEY_I; break;
@@ -70,14 +70,14 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 				case 78 : spec.key = OAPI_KEY_N; break;
 				case 79 : spec.key = OAPI_KEY_O; break;
 				case 80 : spec.key = OAPI_KEY_P; break;
-				case 81 : spec.key = OAPI_KEY_Q; break; 
-				case 82 : spec.key = OAPI_KEY_R; break; 
+				case 81 : spec.key = OAPI_KEY_Q; break;
+				case 82 : spec.key = OAPI_KEY_R; break;
 				case 83 : spec.key = OAPI_KEY_S; break;
-				case 84 : spec.key = OAPI_KEY_T; break; 
+				case 84 : spec.key = OAPI_KEY_T; break;
 				case 85 : spec.key = OAPI_KEY_U; break;
 				case 86 : spec.key = OAPI_KEY_V; break;
 				case 87 : spec.key = OAPI_KEY_W; break;
-				case 88 : spec.key = OAPI_KEY_X; break; 
+				case 88 : spec.key = OAPI_KEY_X; break;
 				case 89 : spec.key = OAPI_KEY_Y; break;
 				case 90 : spec.key = OAPI_KEY_Z; break;
 
@@ -110,7 +110,7 @@ DLLCLBK void opcCloseRenderViewport()
 	// since opcCloseRenderViewport() is called BEFORE the TransX destructors,
 	// which means that either GetMfdCount()>0 or shipptrs::destroyshipptrs()
 	// has already be called from TransX::~TransX(). Also see note in
-	// viewstate::preparetoclose(). A developer should have a look at this. 
+	// viewstate::preparetoclose(). A developer should have a look at this.
 
 	if (TransxMFD::GetMfdCount()==0)
 	{// MFD's all closed - up to me to clean up!
@@ -145,13 +145,20 @@ DLLCLBK void opcPostStep(double SimT, double SimDT, double mjd)
 	}
 }
 
+bool SelectVariableFloat(void *id, char *str, void *usrdata) {
+	return ((MFDvarfloat*)usrdata)->SetVariableFloat(str);
+}
+
+bool SelectVariableAngle(void *id, char *str, void *usrdata) { // siiiiigh
+	return ((MFDvarangle*)usrdata)->SetVariableAngle(str);
+}
 
 bool SelectVariableBody(void *id, char *str, void *usrdata)
 {
 	return ((MFDvarmoon*)usrdata)->SetVariableBody(str);
 }
 
-void TextShow(Sketchpad *sketchpad,const char *label,int wpos,int hpos,OBJHANDLE handle)
+void TextShow(oapi::Sketchpad *sketchpad,const char *label,int wpos,int hpos,OBJHANDLE handle)
 {
 	char buffer[30],buffer2[20];
 	oapiGetObjectName(handle,buffer2,20);
@@ -184,33 +191,31 @@ void TextForm(char *buffer,const char *label,double value)
 		index[0]='T';
 	}
 	strcpy(buffer,label);
-	char buffer2[20];
+	char buffer2[20]="";
 	sprintf(buffer2,"%.4g",value);
 	strcat(buffer2,index);
 	strcat(buffer,buffer2);
 }
-	
 
-void TextShow(Sketchpad *sketchpad,const char *label, int wpos, int hpos, double value)
+
+void TextShow(oapi::Sketchpad *sketchpad,const char *label, int wpos, int hpos, double value)
 {
-	char buffer[30];
+	char buffer[30]="";
 	TextForm(buffer,label,value);
 
 	int length=strlen(buffer);
 	sketchpad->Text( wpos, hpos, buffer, length);
 }
 
-
-// Standard vector functions
-// Create vector of length 1
-VECTOR3 unitise (const VECTOR3 &vector)
+// Find length of vector
+double length2my(const VECTOR3 &v)
 {
-	return vector / length(vector);
+	return v.x*v.x + v.y*v.y + v.z*v.z;
 }
 
 double cosangle(const VECTOR3 &veca,const VECTOR3 &vecb)
 {
-	return dotp(veca,vecb)/sqrt(length2(veca)*length2(vecb));
+	return dotp(veca,vecb)/sqrt(length2my(veca)*length2my(vecb));
 }
 
 void getinvrotmatrix(VECTOR3 arot, MATRIX3 *invrotmatrix)//arot not really a vector - see arot defn from vessel struct
@@ -250,7 +255,7 @@ MATRIX3 getinvmatrix(const MATRIX3 mat)
 	double det = getdeterminant(mat);
 	if(det == 0)
 		return out; // prevent devide by zero
-	
+
 	out.m11 =  (mat.m22 * mat.m33 - mat.m23 * mat.m32) / det;
 	out.m21 = -(mat.m21 * mat.m33 - mat.m23 * mat.m31) / det;
 	out.m31 =  (mat.m21 * mat.m32 - mat.m22 * mat.m31) / det;
@@ -264,10 +269,23 @@ MATRIX3 getinvmatrix(const MATRIX3 mat)
 	return out;
 }
 
-void AddVesselToStack(VESSEL *vessel, list<VESSEL*> &stack)
+VECTOR3 GetRotationToTarget(VESSEL * vessel, const VECTOR3 & target)
+{
+    VECTOR3 trtarget;
+	VESSELSTATUS status;
+    vessel->GetStatus(status);
+	VECTOR3 arot=status.arot;
+	MATRIX3 rotmatrix;
+	getinvrotmatrix(arot,&rotmatrix);
+	trtarget = mul(rotmatrix, target);
+
+	return trtarget;
+}
+
+void AddVesselToStack(VESSEL *vessel, vector<VESSEL*> &stack)
 {
 	// Is the vessel in the stack
-	for(list<VESSEL*>::iterator it = stack.begin(); it != stack.end(); it++)
+	for(vector<VESSEL*>::iterator it = stack.begin(); it != stack.end(); it++)
 		if(*it == vessel)
 			return;	// return early as the vessel is already in the stack
 
@@ -285,13 +303,13 @@ void AddVesselToStack(VESSEL *vessel, list<VESSEL*> &stack)
 double GetStackMass(VESSEL *vessel)
 {
 	// Create a list with all the vessels in the stack contained in the list
-	list<VESSEL*> stack;
+	vector<VESSEL*> stack;
 	AddVesselToStack(vessel, stack);
 
 	// Get the total mass of all the vessels in the list.
 	double stackMass = 0.0;
-	for(list<VESSEL*>::iterator it = stack.begin(); it != stack.end(); it++)
-		stackMass += ((VESSEL*)*it)->GetMass();
+	for(vector<VESSEL*>::iterator it = stack.begin(); it != stack.end(); it++)
+		stackMass += (*it)->GetMass();
 	return stackMass;
 }
 
@@ -302,7 +320,7 @@ double GetBurnTime(VESSEL *vessel, double deltaV)
 		deltaV = -deltaV;
     double T = 0, isp = 0;
 	const int numThrusters = vessel->GetGroupThrusterCount(THGROUP_MAIN);
-	for(int i = 0; i < numThrusters; ++i) 
+	for(int i = 0; i < numThrusters; ++i)
 	{
 		THRUSTER_HANDLE thruster = vessel->GetGroupThruster(THGROUP_MAIN,i);
 		T += vessel->GetThrusterMax0(thruster);
@@ -311,13 +329,13 @@ double GetBurnTime(VESSEL *vessel, double deltaV)
 	return - (isp * GetStackMass(vessel) / T * (exp(-deltaV / isp) - 1.0));
 }
 
-double GetBurnStart(VESSEL *vessel, double instantaneousBurnTime, double deltaV)
+double GetBurnTimeVariadic(VESSEL* vessel, THGROUP_TYPE thGroupType, double deltaV)
 {
 	double thrust = 0, isp = 0;
-	const int numThrusters = vessel->GetGroupThrusterCount(THGROUP_MAIN);
-	for(int i = 0; i < numThrusters; ++i) 
+	const int numThrusters = vessel->GetGroupThrusterCount(thGroupType);
+	for (int i = 0; i < numThrusters; ++i)
 	{
-		THRUSTER_HANDLE thruster = vessel->GetGroupThruster(THGROUP_MAIN,i);
+		THRUSTER_HANDLE thruster = vessel->GetGroupThruster(thGroupType, i);
 		thrust += vessel->GetThrusterMax0(thruster);
 		isp += vessel->GetThrusterIsp0(thruster);
 	}
@@ -331,7 +349,12 @@ double GetBurnStart(VESSEL *vessel, double instantaneousBurnTime, double deltaV)
 	double totalBurnTime = GetBurnTime(vessel, deltaV);
 
 	// magic formula calculated from equations of motion of an object under non-uniform acceleration but uniform jerk
-	double startBurn =  instantaneousBurnTime + (startAccel * totalBurnTime) / (2 * startAccel + jerk * totalBurnTime) - totalBurnTime;
+	double startBurn = (startAccel * totalBurnTime) / (2 * startAccel + jerk * totalBurnTime) - totalBurnTime;
+	return startBurn;
+}
 
+double GetBurnStart(VESSEL *vessel, THGROUP_TYPE thGroupType, double instantaneousBurnTime, double deltaV)
+{
+	double startBurn = instantaneousBurnTime + GetBurnTimeVariadic(vessel, thGroupType, deltaV);
 	return startBurn;
 }

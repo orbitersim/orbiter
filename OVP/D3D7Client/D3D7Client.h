@@ -180,6 +180,12 @@ public:
 	bool clbkParticleStreamExists (const oapi::ParticleStream *ps);
 
 	/**
+	 * \brief Surface request
+	 * \note For now this is just a dummy implementation that redirects to clbkLoadTexture
+	 */
+	SURFHANDLE clbkLoadSurface(const char* fname, DWORD attrib, bool bPath = false);
+
+	/**
 	 * \brief Texture request
 	 *
 	 * Read a single texture in DXT? format from a file into a device-specific

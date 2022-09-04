@@ -307,11 +307,22 @@ void GraphicsClient::Render2DOverlay ()
 // ======================================================================
 
 bool GraphicsClient::ElevationGrid (ELEVHANDLE hElev, int ilat, int ilng, int lvl,
-	int pilat, int pilng, int plvl, INT16 *pelev, INT16 *elev, double *emean) const
+	int pilat, int pilng, int plvl, INT16 *pelev, float *elev, double *emean) const
 {
 	if (!hElev) return false;
 	ElevationManager *emgr = (ElevationManager*)hElev;
 	emgr->ElevationGrid (ilat, ilng, lvl, pilat, pilng, plvl, pelev, elev, emean);
+	return true;
+}
+
+// ======================================================================
+
+bool GraphicsClient::ElevationGrid(ELEVHANDLE hElev, int ilat, int ilng, int lvl,
+	int pilat, int pilng, int plvl, INT16* pelev, INT16* elev, double* emean) const
+{
+	if (!hElev) return false;
+	ElevationManager* emgr = (ElevationManager*)hElev;
+	emgr->ElevationGrid(ilat, ilng, lvl, pilat, pilng, plvl, pelev, elev, emean);
 	return true;
 }
 
@@ -379,7 +390,7 @@ void GraphicsClient::ShowDefaultSplash ()
 	DWORD x0 = 10;//rw-fontsize*25;
 	DWORD y0 = rh-fontsize; //tgty + (DWORD)(rw*0.078);
 	if (splashFont) clbkReleaseFont (splashFont);
-	splashFont = clbkCreateFont(fontsize,true,"Arial",oapi::Font::NORMAL);
+	splashFont = clbkCreateFont(fontsize,true,"Arial", FONT_NORMAL);
 	skp->SetFont (splashFont);
 	skp->SetTextColor (texcol);
 	skp->SetTextAlign (oapi::Sketchpad::LEFT, oapi::Sketchpad::TOP);

@@ -22,6 +22,12 @@ set_property(GLOBAL PROPERTY JOB_POOLS latex=1 soffice=1 htmlhelp=1)
 # Group projects in VS
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+# Locally defined cmake modules
+set(CMAKE_MODULE_PATH
+	${CMAKE_SOURCE_DIR}/cmake
+	${CMAKE_MODULE_PATH}
+)
+
 if(CMAKE_SIZEOF_VOID_P EQUAL 8) # 64-bit build?
 	set(BUILD64 1)
 	set(ARCH "x64")
@@ -30,6 +36,14 @@ else()
 	set(BUILD64 0)
 	set(ARCH "x86")
 	set(PLATFORM_STRING "Win32")
+endif()
+
+if (NOT ${CMAKE_GENERATOR} STREQUAL "Ninja")
+	message(STATUS "USING: MultiCore VS Solution")
+	set(CompileFlags "/MP")
+else()
+	message(STATUS "USING: Ninja Configuration")
+	set(CompileFlags "")
 endif()
 
 # Define directories and file paths for some common binaries
@@ -42,7 +56,6 @@ set(ORBITER_SOURCE_MODULE_DIR ${ORBITER_SOURCE_ROOT_DIR}/Src/Plugin)
 set(ORBITER_SOURCE_SDK_DIR ${ORBITER_SOURCE_ROOT_DIR}/Orbitersdk)
 set(ORBITER_SOURCE_SDK_INCLUDE_DIR ${ORBITER_SOURCE_SDK_DIR}/include)
 set(ORBITER_SOURCE_HTML_DIR ${ORBITER_SOURCE_ROOT_DIR}/Html)
-set(ORBITER_SOURCE_SDK_DIR ${ORBITER_SOURCE_ROOT_DIR}/Orbitersdk)
 
 set(ORBITER_BINARY_ROOT_DIR ${CMAKE_BINARY_DIR})
 set(ORBITER_BINARY_CONFIG_DIR ${ORBITER_BINARY_ROOT_DIR}/Config)
@@ -131,7 +144,6 @@ add_custom_target(CopyData ALL
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Script/ ${CMAKE_BINARY_DIR}/Script
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Config/ ${CMAKE_BINARY_DIR}/Config
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Flights/ ${CMAKE_BINARY_DIR}/Flights
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Orbitersdk/include/ ${CMAKE_BINARY_DIR}/Orbitersdk/include
 	COMMAND ${CMAKE_COMMAND} -E make_directory ${ORBITER_BINARY_SDK_DIR}/lib/Lua
 	COMMAND ${CMAKE_COMMAND} -E copy ${LUA_DLL_DIR}/lua5.1.lib ${ORBITER_BINARY_SDK_DIR}/lib/Lua/
 	COMMAND ${CMAKE_COMMAND} -E copy ${LUA_DLL_DIR}/lua5.1.dll ${CMAKE_BINARY_DIR}
@@ -243,6 +255,12 @@ endif()
 #)
 
 option(
+	ORBITER_BUILD_D3D9CLIENT
+	"Build the D3D9 graphics client"
+	ON
+)
+
+option(
 	ORBITER_BUILD_XRSOUND
 	"Build XRSound module to enable sound in Orbiter"
 	ON
@@ -275,6 +293,21 @@ if(ORBITER_BUILD_XRSOUND)
 		PATH
 		"Root folder of irrKlang installation."
 	)
+endif()
+
+if(ORBITER_BUILD_D3D9CLIENT)
+	find_package(DXSDK
+	)
+	set(DXSDK_DIR
+		${DXSDK_DIR}
+		CACHE
+		PATH
+		"Installation directory of DirectX SDK (June 2010)"
+	)
+	if(${DXSDK_DIR} STREQUAL "DXSDK_DIR-NOTFOUND")
+		message(WARNING "DirectX SDK not found. The D3D9 graphics client will not be built.")
+		set(ORBITER_BUILD_D3D9CLIENT OFF)
+	endif()
 endif()
 
 if (ORBITER_MAKE_DOC)

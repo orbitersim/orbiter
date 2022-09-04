@@ -148,6 +148,7 @@ void DlgCamera::Clear ()
 		for (int i = 0; i < nTab; i++)
 			delete pTab[i];
 		delete []pTab;
+		pTab = NULL;
 		nTab = 0;
 	}
 }
@@ -682,27 +683,29 @@ INT_PTR CALLBACK TabView::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 	switch (uMsg) {
 	case WM_INITDIALOG:
-		return pTab->Init (hWnd);
+		pTab->Init(hWnd);
+		return FALSE;
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) {
 		case IDC_CAM_VIEW_TGTREL:
 			g_camera->SetTrackMode (CAMERA_TARGETRELATIVE);
-			return TRUE;
+			return FALSE;
 		case IDC_CAM_VIEW_ABSDIR:
 			g_camera->SetTrackMode (CAMERA_ABSDIRECTION);
-			return TRUE;
+			return FALSE;
 		case IDC_CAM_VIEW_GLOBAL:
 			g_camera->SetTrackMode (CAMERA_GLOBALFRAME);
-			return TRUE;
+			return FALSE;
 		case IDC_CAM_VIEW_TGTTO:
 		case IDC_CAM_VIEW_TGTFROM: {
+			SetFocus(GetDlgItem(hWnd, LOWORD(wParam)));
 			char cbuf[256];
 			GetWindowText (GetDlgItem (hWnd, IDC_CAM_VIEW_REFLIST), cbuf, 256);
 			Body *obj = g_psys->GetObj (cbuf, true);
 			if (!obj) obj = g_psys->GetBase (cbuf, true);
 			if (obj && obj != g_camera->Target())
 				g_camera->SetTrackMode (LOWORD(wParam) == IDC_CAM_VIEW_TGTTO ? CAMERA_TARGETTOOBJECT : CAMERA_TARGETFROMOBJECT, obj);
-			} return TRUE;
+			} return FALSE;
 		}
 		break;
 	}

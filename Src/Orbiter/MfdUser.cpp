@@ -233,10 +233,13 @@ GraphMFD::~GraphMFD ()
 {
 	if (ngraph) {
 		for (int g = 0; g < ngraph; g++) {
-			if (graph[g].nplot)
+			if (graph[g].nplot) {
 				delete []graph[g].plot;
+				graph[g].plot = NULL;
+			}
 		}
 		delete []graph;
+		graph = NULL;
 	}
 }
 
@@ -263,6 +266,7 @@ void GraphMFD::AddPlot (int g, float *absc, float *data, int ndata, int col, int
 	if (np) {
 		memcpy (tmp_plot, graph[g].plot, np*sizeof(GRAPH::PLOT));
 		delete []graph[g].plot;
+		graph[g].plot = NULL;
 	}
 	tmp_plot[np].absc  = absc;
 	tmp_plot[np].data  = data;

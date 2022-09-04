@@ -187,6 +187,7 @@ Planet::Planet (double _mass, double _mean_radius)
 	min_cloud_level = 100;
 	max_cloud_level = 0;
 	minelev      = 0.0;
+	maxelev = 0.0;
 	AtmInterface = 0;
 	atm_attenuationalt = 0.0;
 	bHasCloudlayer = false;
@@ -222,6 +223,7 @@ Planet::Planet (char *fname)
 	horizon_excess = 0.002;
 	bb_excess    = 0.0;
 	minelev      = 0.0;
+	maxelev = 0.0;
 	labelLegend  = NULL;
 	nLabelLegend = 0;
 	ifstream ifs (g_pOrbiter->ConfigPath (fname));
@@ -298,6 +300,7 @@ Planet::Planet (char *fname)
 	}
 	shadowcol = 1.0-shadowalpha;
 	GetItemReal (ifs, "MinElevation", minelev);
+	GetItemReal (ifs, "MaxElevation", maxelev);
 	GetItemReal (ifs, "ElevationResolution", elev_res);
 
 	bHasRings = (GetItemReal (ifs, "RingMinRadius", ringmin) &&
@@ -433,32 +436,45 @@ Planet::~Planet ()
 		for (d = 0; d < nbase; d++)
 			delete baselist[d];
 		delete []baselist;
+		baselist = NULL;
 	}
 	if (nobserver) {
 		for (i = 0; i < nobserver; i++) {
 			delete []observer[i]->site;
+			observer[i]->site = NULL;
 			delete observer[i];
 		}
 		delete []observer;
+		observer = NULL;
 	}
 	if (labellist) {
 		for (i = 0; i < nlabellist; i++) {
 			if (labellist[i].list) {
 				for (j = 0; j < labellist[i].length; j++)
 					for (k = 0; k < 2; k++)
-						if (labellist[i].list[j].label[k]) delete []labellist[i].list[j].label[k];
+						if (labellist[i].list[j].label[k]) {
+							delete []labellist[i].list[j].label[k];
+							labellist[i].list[j].label[k] = NULL;
+						}
 				delete []labellist[i].list;
+				labellist[i].list = NULL;
 			}
 		}
 		delete []labellist;
 		labellist = NULL;
 		nlabellist = 0;
 	}
-	if (labelpath) delete []labelpath;
+	if (labelpath) {
+		delete []labelpath;
+		labelpath = NULL;
+	}
 	if (nLabelLegend) {
-		for (i = 0; i < nLabelLegend; i++)
+		for (i = 0; i < nLabelLegend; i++) {
 			delete []labelLegend[i].name;
+			labelLegend[i].name = NULL;
+		}
 		delete []labelLegend;
+		labelLegend = NULL;
 	}
 	g_pOrbiter->UpdateDeallocationProgress();
 }
@@ -805,6 +821,8 @@ const void *Planet::GetParam (DWORD paramtype) const
 		return (const void*)&bb_excess;
 	case OBJPRM_PLANET_MINELEVATION:
 		return (const void*)&minelev;
+	case OBJPRM_PLANET_MAXELEVATION:
+		return (const void*)&maxelev;
 	case OBJPRM_PLANET_ELEVRESOLUTION:
 		return (const void*)&elev_res;
 	}
@@ -844,7 +862,10 @@ void Planet::InitDeviceObjects ()
 			ringtex = new LPDIRECTDRAWSURFACE7[3]; TRACENEW
 			nringtex = g_texmanager2->ReadTextures (file, ringtex, 3);
 			fclose (file);
-			if (!nringtex) delete []ringtex;
+			if (!nringtex) {
+				delete []ringtex;
+				ringtex = NULL;
+			}
 		}
 	}
 #endif

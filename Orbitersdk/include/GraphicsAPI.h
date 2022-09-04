@@ -398,19 +398,9 @@ public:
 	 * \note If the request refers to a static surface that has already be loaded, or if the
 	 *   client buffers the unmodified surfaces after loading, it can simply return a handle to
 	 *   the existing surface object, instead of reading it again from file.
-	 * \note The attrib bitflag can contain one of the following main attributes:
-	 *  - OAPISURFACE_RO: Load the surface to be readable by the GPU pipeline
-	 *  - OAPISURFACE_RW: Load the surface to be readable and writable by the GPU pipeline
-	 *  - OAPISURFACE_GDI: Load the surface to be readable and writable by the CPU, and can be blitted into an uncompressed RO or RW surface without alpha channel
-	 *  - OAPISURFACE_STATIC: Load the surface to be readable by the GPU pipeline
-     *  In addition, the flag can contain any of the following auxiliary attributes:
-	 *  - OAPISURFACE_MIPMAPS: Load the mipmaps for the surface from file, or create them if necessary
-	 *  - OAPISURFACE_NOMIPMAPS: Don't load mipmaps, even if they are available in the file
-	 *  - OAPISURFACE_NOALPHA: Load the surface without an alpha channel
-	 *  - OAPISURFACE_UNCOMPRESS: Uncompress the surface on loading.
 	 * \sa oapiCreateSurface(DWORD,DWORD,DWORD)
 	 */
-	virtual SURFHANDLE clbkLoadSurface (const char *fname, DWORD attrib)
+	virtual SURFHANDLE clbkLoadSurface (const char *fname, DWORD attrib, bool bPath = false)
 	{ return NULL; }
 
 	/**
@@ -460,6 +450,7 @@ public:
 	 * \default None, returns 2 ("client does not support operation").
 	 */
 	virtual int clbkSetMeshMaterial (DEVMESHHANDLE hMesh, DWORD matidx, const MATERIAL *mat) { return 2; }
+	virtual int clbkSetMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp prp, const oapi::FVECTOR4* in) { return 2; }
 
 	/**
 	 * \brief Retrieve the properties of one of the mesh materials.
@@ -470,6 +461,7 @@ public:
 	 * \default None, returns 2 ("client does not support operation").
 	 */
 	virtual int clbkMeshMaterial (DEVMESHHANDLE hMesh, DWORD matidx, MATERIAL *mat) { return 2; }
+	virtual int clbkMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp prp, oapi::FVECTOR4* out) { return 2; }
 
 	/**
      * \brief Set custom properties for a device-specific mesh.
@@ -1257,8 +1249,9 @@ public:
 	 *   \ref oapi::Font::Font
 	 * \sa clbkReleaseFont, oapi::Font
 	 */
-	virtual Font *clbkCreateFont (int height, bool prop, const char *face, oapi::Font::Style style = oapi::Font::NORMAL, int orientation = 0) const { return NULL; }
-
+	virtual Font *clbkCreateFont (int height, bool prop, const char *face, FontStyle style = FontStyle::FONT_NORMAL, int orientation = 0) const { return NULL; }
+	virtual Font* clbkCreateFontEx (int height, char* face, int width = 0, int weight = 400, FontStyle style = FontStyle::FONT_NORMAL, float spacing = 0.0f) const { return NULL; }
+		
 	/**
 	 * \brief De-allocate a font resource.
 	 * \param font pointer to font resource
@@ -1351,7 +1344,10 @@ public:
 	 *   i.e. the area of the destination tile must be contained in the ancestor area.
 	 */
 	bool ElevationGrid (ELEVHANDLE emgr, int ilat, int ilng, int lvl,
-		int pilat, int pilng, int plvl, INT16 *pelev, INT16 *elev, double *emean=0) const;
+		int pilat, int pilng, int plvl, INT16 *pelev, float *elev, double *emean=0) const;
+
+	bool ElevationGrid(ELEVHANDLE emgr, int ilat, int ilng, int lvl,
+		int pilat, int pilng, int plvl, INT16* pelev, INT16* elev, double* emean = 0) const;
 
 	/**
 	 * \brief Filter elevation grid data
