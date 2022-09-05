@@ -546,8 +546,29 @@ public:
 	}
 	// return the average thrust level for a thruster group
 
+	inline double GetThrusterGroupLevel_User() const
+	{
+		double level = 0.0;
+		int    number = 0;;
+		ThrustGroupSpec* tgs;
+
+		for (DWORD i = 0; i < nthruster_grp_user; i++)
+		{
+			tgs = thruster_grp_user[i];
+			for (DWORD ii = 0; ii < tgs->nts; ii++)
+			{
+				level += tgs->ts[ii]->level;
+				number++;
+			}
+		}
+		return (number ? level / number : 0.0);
+	}
+	
 	inline double GetThrusterGroupLevel (THGROUP_TYPE thg) const
-	{ return GetThrusterGroupLevel (thruster_grp_default+thg); }
+	{   if(thg < THGROUP_USER)
+		 return GetThrusterGroupLevel (thruster_grp_default+thg); 
+	    else return GetThrusterGroupLevel_User();
+	}
 	// return average thrust level for a group defined by a group identifier
 
 	inline double GetThrusterGroupMaxth (const ThrustGroupSpec *tgs) const
