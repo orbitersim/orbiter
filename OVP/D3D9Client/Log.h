@@ -31,7 +31,7 @@ typedef struct {
 	double peak;
 } D3D9Time;
 
-extern int uEnableLog;  // This value is controlling log opeation ( Config->DebugLvl )
+extern int uEnableLog;  // This value is controlling log operation ( Config->DebugLvl )
 extern int iEnableLog;
 extern int EnableLogStack[16];
 extern std::queue<std::string> D3D9DebugQueue;

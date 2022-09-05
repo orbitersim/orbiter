@@ -21,7 +21,7 @@ struct TexFlow {
 	BOOL Emis;		// Enable Emission Maps
 	BOOL Spec;		// Enable Specular Maps
 	BOOL Refl;		// Enable Reflection Maps
-	BOOL Transl;	// Enble translucent effect
+	BOOL Transl;	// Enable translucent effect
 	BOOL Transm;	// Enable transmissive effect
 	BOOL Rghn;		// Enable roughness map
 	BOOL Norm;		// Enable normal map
@@ -123,7 +123,7 @@ public:
 	static D3DXHANDLE	eLights;     ///< Additional light sources
 	static D3DXHANDLE	eKernel;
 
-	// Auxilliary params ----------------------------------------------
+	// Auxiliary params ----------------------------------------------
 	static D3DXHANDLE   eModAlpha;     ///< BOOL multiply material alpha with texture alpha
 	static D3DXHANDLE	eFullyLit;     ///< BOOL
 	static D3DXHANDLE	eFlow;		   ///< BOOL

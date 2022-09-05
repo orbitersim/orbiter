@@ -34,7 +34,7 @@ class D3D9Pad;
  * A "vObject" is the visual representation of an Orbiter object (vessel,
  * planet/moon/sun, surface base). vObjects usually have one or more meshes
  * associated with them that define their visual appearance, but they can be
- * arbitrarily complex (e.g. planets with clould layers, atmospheric haze,
+ * arbitrarily complex (e.g. planets with cloud layers, atmospheric haze,
  * etc.)
  * Visual objects don't persist like their "logical" counterparts, but are
  * created and deleted as they pass in and out of the visual range of a
@@ -165,8 +165,8 @@ public:
 	inline const VECTOR3 &GlobalPos() const { return gpos; }
 
 	/**
-	 * \brief Returns a unit vertor pointing towards the sun
-	 * \return A unit vertor pointing towards the sun [<b>m</b>]
+	 * \brief Returns a unit vector pointing towards the sun
+	 * \return A unit vector pointing towards the sun [<b>m</b>]
 	 * \note The returned vector is expressed in the ecliptic frame.
 	 */
 	inline const VECTOR3 &SunDirection() const { return sundir; }

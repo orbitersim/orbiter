@@ -139,7 +139,7 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 			bstepdown = false;
 		else {
 			// Keep a tile allocated as long as the tile can be seen from a current camera position.
-			// We have multible views and only the active (current) view is checked here.
+			// We have multiple views and only the active (current) view is checked here.
 			tile->state = Tile::Invisible;
 			return;
 		}
@@ -176,7 +176,7 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 	}
 
 	if (!bstepdown) {	
-		// Search elevated tilels from sub-trees
+		// Search elevated tiles from sub-trees
 		// This can severally impact in performance if used incorrectly
 		if ((ElevMode == eElevMode::ForcedElevated) && (tile->IsElevated() == false)) bstepdown = true;	
 	}

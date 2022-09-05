@@ -31,7 +31,7 @@ struct ENVCAMREC {
 	WORD			nAttc;			///< Number of attachments points in a list
 	WORD			nDock;			///< Number of docking ports in a list
 	BYTE *			pOmitAttc;		///< Omit attachments
-	BYTE *			pOmitDock;		///< Omit cessels in docking ports
+	BYTE *			pOmitDock;		///< Omit vessels in docking ports
 };
 
 /**

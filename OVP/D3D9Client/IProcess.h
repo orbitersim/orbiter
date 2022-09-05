@@ -82,7 +82,7 @@ public:
 	void	SetVSStruct(const char *var, const void *val, int bytes);
 
 	// ----------------------------------------------------------------------------------
-	// SetTexture can be used to assign a taxture and a sampler state flags to a sampler
+	// SetTexture can be used to assign a texture and a sampler state flags to a sampler
 	// In a shader code sampler is defined as (e.g. sampler mySamp; ) where "mySamp" is
 	// the variable passed to SetTexture function. It's then used in a shader code like
 	// tex2D(mySamp, float2(x,y))

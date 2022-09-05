@@ -13,7 +13,7 @@
  * \brief Global planet renderer object
  *
  * The global planet renderer object provides objects and handles
- * (like D3DX Tech HANDLEs) usefull to all rendering instances.
+ * (like D3DX Tech HANDLEs) useful to all rendering instances.
  */
 class PlanetRenderer {
 

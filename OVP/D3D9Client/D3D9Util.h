@@ -313,7 +313,7 @@ typedef struct {
 	D3DXVECTOR3		normal;			///< Normal vector in local vessel coordinates
 	D3DXVECTOR3		pos;			///< Position in local vessel coordinates
 	int				idx;			///< Index that was picked
-	float			u, v;			///< Barycentric coords
+	float			u, v;			///< Barycentric coordinates
 } D3D9Pick;
 
 typedef struct {
@@ -615,7 +615,7 @@ double toDoubleOrNaN (const std::string &str);
 // case insensitive compare
 bool startsWith (const std::string &haystack, const std::string &needle);
 
-// case insensitive conatins
+// case insensitive contains
 bool contains (const std::string &haystack, const std::string &needle);
 
 // case insensitive find
@@ -627,7 +627,7 @@ size_t rfind_ci (const std::string &haystack, const std::string &needle);
 // parse assignments like "foo=bar", "foo = bar" or even "foo= bar ; with comment"
 std::pair<std::string, std::string> &splitAssignment (const std::string &line, const char delim = '=');
 
-// replace all occurances of 's' in 'subj' by 't'
+// replace all occurrences of 's' in 'subj' by 't'
 std::string::size_type replace_all (std::string &subj, const std::string &s, const std::string &t);
 
 // -----------------------------------------------------------------------------------

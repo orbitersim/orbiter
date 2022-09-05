@@ -12,16 +12,16 @@
 
 
 typedef struct ScatterParams {
-	ScatterParams();			///< Defaut c'tor
+	ScatterParams();			///< Default c'tor
 	union {
 		double data[ATM_SLIDER_COUNT];  // ATTENTION: Order of params must match with slider indexes
 		struct {
 			double red;			///< Red wave length
-			double green;		///< Green wavw length
+			double green;		///< Green wave length
 			double blue;		///< Blue wave length
 			double rpow;		///< Rayleigh power
 			double rin;			///< in-scatter strength
-			double rout;		///< out-scatter strenght
+			double rout;		///< out-scatter strength
 			double rphase;		///< Rayleigh phase
 			double mie;			///< scale factor for mie scattering
 			double mphase;		///< g-constant in HG phase function

@@ -173,7 +173,7 @@ protected:
 
 	LPDIRECT3DTEXTURE9 *texbuf;		// texture buffer for surface textures (level <= 8)
 	LPDIRECT3DTEXTURE9 *specbuf;	// texture buffer for specular masks (level <= 8);
-	SURFHANDLE microtex;	// microtexture overlay
+	SURFHANDLE microtex;			// microtexture overlay
 
 	// object-independent configuration data
 	static bool bGlobalSpecular;     // user wants specular reflections
@@ -205,8 +205,8 @@ protected:
 
 	struct RENDERPARAM {
 		LPDIRECT3DDEVICE9 dev;       // render device
-		D3DXMATRIX wmat;              // world matrix
-		D3DXMATRIX wmat_tmp;          // copy of world matrix used as work buffer
+		D3DXMATRIX wmat;             // world matrix
+		D3DXMATRIX wmat_tmp;         // copy of world matrix used as work buffer
 		int tgtlvl;                  // target resolution level
 		MATRIX3 grot;                // planet rotation matrix
 		VECTOR3 cpos;                // planet offset vector (in global frame)
