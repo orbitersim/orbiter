@@ -76,6 +76,7 @@ void DialogManager::Clear ()
 	lastEntry = NULL;
 	if (nListBuf) {
 		delete []DlgList;
+		DlgList = NULL;
 		nListBuf = 0;
 	}
 	nList = 0;

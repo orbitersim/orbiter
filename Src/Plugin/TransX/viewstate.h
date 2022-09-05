@@ -6,10 +6,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,8 +23,6 @@
 
 #include "transx.h"
 #include "transxstate.h"
-
-using namespace std;
 
 class viewstate
 {
@@ -40,9 +38,9 @@ class viewstate
 	void selfdownshift();
 	void resetshift();
 public:
-	bool doupdate(Sketchpad *sketchpad, int tw, int th, TransxMFD *mfdptr);
+	bool doupdate(oapi::Sketchpad *sketchpad, int tw, int th, TransxMFD *mfdptr);
 	bool getrenderviewport(){return renderviewport;};
-	class MFDvariable *GetCurrVariable(); 
+	class MFDvariable *GetCurrVariable();
 	static void preparetoclose();
 	void setmfdactive(bool temp){mfdactive=temp;};
 	void movetonextfunction();

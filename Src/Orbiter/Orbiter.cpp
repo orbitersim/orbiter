@@ -184,7 +184,7 @@ int _matherr(struct _exception *except )
 // Application entry containing message loop
 
 
-INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, PSTR strCmdLine, INT nCmdShow)
+INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdShow)
 {
 #ifndef INLINEGRAPHICS
 	// Verify working directory
@@ -255,6 +255,7 @@ void SetEnvironmentVars ()
 		sprintf (cbuf, "PATH=%s;Modules", ppath);
 		_putenv (cbuf);
 		delete []cbuf;
+		cbuf = NULL;
 	} else {
 		_putenv ("PATH=Modules");
 	}
@@ -503,8 +504,12 @@ VOID Orbiter::CloseApp (bool fast_shutdown)
 		if (pState)   delete pState;
 		if (script) delete script;
 		if (ncustomcmd) {
-			for (DWORD i = 0; i < ncustomcmd; i++) delete []customcmd[i].label;
+			for (DWORD i = 0; i < ncustomcmd; i++) {
+				delete []customcmd[i].label;
+				customcmd[i].label = NULL;
+			}
 			delete []customcmd;
+			customcmd = NULL;
 		}
 		oapiUnregisterCustomControls (hInst);
 	}
@@ -776,8 +781,10 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 
 	LOGOUT("Finished initialising status");
 
-	g_camera->InitState (scenario, g_focusobj);
-	if (g_pane) g_pane->SetFOV (g_camera->Aperture());
+	if (g_camera) {
+		g_camera->InitState (scenario, g_focusobj);
+		if (g_pane) g_pane->SetFOV (g_camera->Aperture());
+	}
 	LOGOUT ("Finished initialising camera");
 
 	if (gclient) {
@@ -815,7 +822,7 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 	}
 #endif
 	FRecorder_Reset();
-	if (bPlayback = g_focusobj->bFRplayback) {
+	if ((g_focusobj) && (bPlayback = g_focusobj->bFRplayback)) {
 		FRecorder_OpenPlayback (pState->PlaybackDir());
 		if (g_pane && g_pane->MIBar()) g_pane->MIBar()->SetPlayback(true);
 	}
@@ -918,6 +925,7 @@ void Orbiter::CloseSession ()
 		if (nsnote) {
 			for (DWORD i = 0; i < nsnote; i++) delete snote[i];
 			delete []snote;
+			snote = NULL;
 			nsnote = 0;
 		}
 		InlineDialog::GlobalExit (gclient);
@@ -1243,6 +1251,9 @@ void Orbiter::InsertVessel (Vessel *vessel)
 
 #ifdef INLINEGRAPHICS
 	oclient->clbkNewVessel ((OBJHANDLE)vessel);
+#else
+	if (gclient)
+		gclient->clbkNewVessel((OBJHANDLE)vessel);
 #endif // INLINEGRAPHICS
 
 	if (pDlgMgr) pDlgMgr->BroadcastMessage (MSG_CREATEVESSEL, vessel);
@@ -1298,6 +1309,9 @@ bool Orbiter::KillVessels ()
 
 #ifdef INLINEGRAPHICS
 			oclient->clbkDeleteVessel ((OBJHANDLE)vessel);
+#else
+			if (gclient)
+				gclient->clbkDeleteVessel((OBJHANDLE)vessel);
 #endif
 			// broadcast vessel destruction to all vessels
 			g_psys->BroadcastVessel (MSG_KILLVESSEL, vessel);
@@ -1330,6 +1344,9 @@ void Orbiter::NotifyObjectJump (const Body *obj, const Vector &shift)
 
 #ifdef INLINEGRAPHICS
 	oclient->GetScene()->Update (g_psys, &g_camera, 1, false/*m_bRunning*/, false);
+#else
+	if (gclient)
+		gclient->clbkVesselJump((OBJHANDLE)obj);
 #endif // INLINEGRAPHICS
 }
 
@@ -1809,11 +1826,13 @@ const Mesh *Orbiter::LoadMeshGlobal (const char *fname, LoadMeshClbkFunc fClbk)
 VOID Orbiter::Output2DData ()
 {
 	g_pane->Draw ();
-	for (DWORD i = 0; i < nsnote; i++)
-		snote[i]->Render();
-	if (snote_playback && pConfig->CfgRecPlayPrm.bShowNotes) snote_playback->Render();
-	if (g_select->IsActive()) g_select->Display (0/*oclient->m_pddsRenderTarget*/);
-	if (g_input->IsActive()) g_input->Display (0/*oclient->m_pddsRenderTarget*/);
+	if (g_pane) {
+		for (DWORD i = 0; i < nsnote; i++)
+			snote[i]->Render();
+		if (snote_playback && pConfig->CfgRecPlayPrm.bShowNotes) snote_playback->Render();
+		if (g_select->IsActive()) g_select->Display(0/*oclient->m_pddsRenderTarget*/);
+		if (g_input->IsActive()) g_input->Display(0/*oclient->m_pddsRenderTarget*/);
+	}
 
 #ifdef INLINEGRAPHICS
 #ifdef OUTPUT_DBG
@@ -1857,7 +1876,7 @@ bool Orbiter::BeginTimeStep (bool running)
 		// enforce interval 10ms for first 3 time steps
 		deltat = 1e-2;
 		ms_prev = ms_curr-10;
-		fine_counter.QuadPart = hi_curr.QuadPart - fine_counter_freq.QuadPart/100;
+		if (use_fine_counter) fine_counter.QuadPart = hi_curr.QuadPart - fine_counter_freq.QuadPart/100;
 		launch_tick--;
 	} else {
 		// standard time update
@@ -1893,7 +1912,7 @@ bool Orbiter::BeginTimeStep (bool running)
 	}
 
 	ms_prev = ms_curr;
-	fine_counter = hi_curr;
+	if (use_fine_counter) fine_counter = hi_curr;
 	td.BeginStep (deltat, running);
 
 	if (!running) return true;
@@ -1905,7 +1924,7 @@ bool Orbiter::BeginTimeStep (bool running)
 void Orbiter::EndTimeStep (bool running)
 {
 	if (running) {
-		g_psys->FinaliseUpdate ();
+		if (g_psys) g_psys->FinaliseUpdate ();
 		//ModulePostStep();
 	}
 
@@ -1913,7 +1932,7 @@ void Orbiter::EndTimeStep (bool running)
 	td.EndStep (running);
 
 	// Update panels
-	g_camera->Update ();                           // camera
+	if (g_camera) g_camera->Update ();                           // camera
 	if (g_pane) g_pane->Update (td.SimT1, td.SysT1);
 
 	// Update visual states
@@ -1950,6 +1969,9 @@ bool Orbiter::Timejump (double _mjd, int pmode)
 
 #ifdef INLINEGRAPHICS
 	if (oclient) oclient->clbkTimeJump (td.SimT0, tjump.dt, _mjd);
+#else
+	if (gclient)
+		gclient->clbkTimeJump(td.SimT0, tjump.dt, _mjd);
 #endif
 
 	// broadcast to modules

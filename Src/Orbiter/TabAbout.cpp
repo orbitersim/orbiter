@@ -47,6 +47,10 @@ void orbiter::AboutTab::Create ()
 	strcat (cbuf, "\r\n");
 	strcat (cbuf, uscram(SIG6));
 	SetWindowText (GetDlgItem (hTab, IDC_ABT_TXT_WEBADDR), cbuf);
+#ifndef INLINEGRAPHICS
+	strcpy(cbuf, "D3D9Client module by Jarmo Nikkanen and Peter Schneider");
+	SendDlgItemMessage(hTab, IDC_ABT_LBOX_COMPONENT, LB_ADDSTRING, 0, (LPARAM)cbuf);
+#endif
 	strcpy(cbuf, "XRSound module Copyright (c) Doug Beachy");
 	SendDlgItemMessage(hTab, IDC_ABT_LBOX_COMPONENT, LB_ADDSTRING, 0, (LPARAM)cbuf);
 

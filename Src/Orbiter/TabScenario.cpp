@@ -522,7 +522,10 @@ void orbiter::ScenarioTab::ScenarioChanged ()
 					have_info = true;
 				}
 			}
-			if (buf) delete []buf;
+			if (buf) {
+				delete []buf;
+				buf = NULL;
+			}
 		}
 	}
 
@@ -657,6 +660,7 @@ INT_PTR CALLBACK orbiter::ScenarioTab::SaveProc (HWND hWnd, UINT uMsg, WPARAM wP
 				return TRUE;
 			}
 			delete []desc;
+			desc = NULL;
 			// fall through
 		case IDCANCEL:
 			EndDialog (hWnd, TRUE);

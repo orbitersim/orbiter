@@ -13,6 +13,10 @@ on:
 jobs:
   build:
     name: Build with CMake
+    
+    env:
+      DXSDK_DIR: "${{ github.workspace }}\\DXSDK"
+      
     strategy:
       fail-fast: false
       matrix:
@@ -36,16 +40,33 @@ jobs:
       run: |
         mkdir out\build
         mkdir out\install
-      
+    
     - name: Cache irrKlang package
       uses: actions/cache@v2
       with:
         path: ${{ github.workspace }}/out/build/Extern/irrKlang/${{ matrix.architecture }}
         key: irrKlang-${{ matrix.architecture }}
+        
+    - name: Cache DirectX SDK
+      id:   cache
+      uses: actions/cache@v2
+      with:
+        path: "${{ github.workspace }}\\DXSDK"
+        key:  dxsdk_jun10
+
+    - name: Download DirectX SDK
+      if:   steps.cache.outputs.cache-hit != 'true'
+      shell: cmd
+      run: |
+         curl -L https://download.microsoft.com/download/a/e/7/ae743f1f-632b-4809-87a9-aa1bb3458e31/DXSDK_Jun10.exe -o DXSDK_Jun10.exe
+         7z x DXSDK_Jun10.exe DXSDK/Include
+         7z x DXSDK_Jun10.exe DXSDK/Lib
+         del DXSDK_Jun10.exe
+         dir /S /B DXSDK
 
     - name: Configure
       working-directory: ${{ github.workspace }}/out/build
-      run: cmake -G Ninja ../.. -DORBITER_MAKE_DOC=OFF -DIRRKLANG_DIR:STRING="irrKlang_DOWNLOAD"
+      run: cmake -G Ninja ../.. -DORBITER_MAKE_DOC=OFF -DIRRKLANG_DIR:STRING="irrKlang_DOWNLOAD" -DDXSDK_DIR:PATH="${{ github.workspace }}\\DXSDK"
 
     - name: Build
       working-directory: ${{ github.workspace }}/out/build

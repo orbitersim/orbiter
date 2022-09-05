@@ -178,7 +178,9 @@ void VectorMap::AllocCustomResources ()
 		for (i = 0; i < nCustomMkr; i++)
 			DeleteObject (penCustomMkr[i]);
 		delete []penCustomMkr;
+		penCustomMkr = NULL;
 		delete []colCustomMkr;
+		colCustomMkr = NULL;
 	}
 	nCustomMkr = mkrset.nset;
 	if (nCustomMkr) {
@@ -221,7 +223,9 @@ void VectorMap::CloseGDIResources ()
 		for (i = 0; i < nCustomMkr; i++)
 			DeleteObject (penCustomMkr[i]);
 		delete []penCustomMkr;
+		penCustomMkr = NULL;
 		delete []colCustomMkr;
+		colCustomMkr = NULL;
 		nCustomMkr = 0;
 	}
 }
@@ -237,10 +241,11 @@ void VectorMap::Update ()
 #endif
 
 	double lng, lat, rad;
+	if (!cbody) return;
 
 	if (centermode == 1) {
 		const SurfParam *sp = g_focusobj->GetSurfParam();
-		if (sp->ref == cbody)
+		if (sp && sp->ref == cbody)
 			SetCenter (sp->lng, sp->lat);
 	} else if (centermode == 2) {
 		if (GetObjPos (selection, lng, lat))
@@ -1492,7 +1497,11 @@ CustomMkrSpec::CustomMkrSpec()
 
 CustomMkrSpec::~CustomMkrSpec()
 {
-	if (nvtx) delete []vtx;
+	if (nvtx) {
+		delete []vtx;
+		vtx = NULL;
+		nvtx = 0;
+	}
 }
 
 void CustomMkrSpec::Connect (oapi::GraphicsClient::LABELLIST *ll)
@@ -1561,7 +1570,10 @@ Groundtrack::Groundtrack()
 
 Groundtrack::~Groundtrack()
 {
-	delete []vtx;
+	if (nvtx) {
+		delete []vtx;
+		vtx = NULL;
+	}
 }
 
 void Groundtrack::Reset (const CelestialBody *body, const Elements *_el)

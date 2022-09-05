@@ -546,6 +546,7 @@ HRESULT TextureManager2::SurfaceFromData (RAWDDS &dds, LPDIRECTDRAWSURFACE7 *ppt
 
 LFail:
 	delete []dds.data;
+	dds.data = NULL;
 	return hr;
 }
 
@@ -989,6 +990,7 @@ TextureManager::~TextureManager ()
 {
 	Clear();
 	delete []pfp;
+	pfp = NULL;
 }
 
 void TextureManager::UnsetDevice ()

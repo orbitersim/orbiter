@@ -74,7 +74,11 @@ SURFHANDLE HUD::LoadTexture (int idx)
 		case 3: strcat (cbuf, "_blue"); break;
 	}
 	strcat (cbuf, ".dds");
-	return gc->clbkLoadTexture (cbuf, 0x4);
+#ifdef INLINEGRAPHICS
+	return gc->clbkLoadTexture(cbuf, 0x4);
+#else
+	return gc->clbkLoadSurface(cbuf, OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE);
+#endif
 }
 
 void HUD::Draw (oapi::Sketchpad *skp)
@@ -1023,7 +1027,7 @@ bool HUD::DrawCenterMarker (oapi::Sketchpad *skp) const
 void HUD::DrawLadderBar (oapi::Sketchpad *skp, double lwcosa, double lwsina,
 	double dcosa, double dsina, int phi10, bool mark_subzero)
 {
-	int x1, y1, x2, y2, dx, dy, dx1, dy1, dx2, dy2;
+	int x1, y1, x2, y2, dx, dy, dx1, dy1, dx2=0, dy2=0;
 	char cbuf[5];
 
 	bool is_subzero = (phi10 < 0);

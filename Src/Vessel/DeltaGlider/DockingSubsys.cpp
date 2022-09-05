@@ -393,7 +393,7 @@ bool NoseconeIndicator::RedrawVC (DEVMESHHANDLE hMesh, SURFHANDLE surf)
 		GROUPEDITSPEC ges;
 		static WORD vtxofs = VC_NCONE_INDICATOR_vofs;
 		static const DWORD nvtx = 2;
-		static WORD vidx[nvtx] = {vtxofs,vtxofs+1};
+		static WORD vidx[nvtx] = {vtxofs,WORD(vtxofs+1)};
 		static float v[2] = {0.2427f,0.3003f};
 		NTVERTEX vtx[nvtx];
 		for (DWORD i = 0; i < nvtx; i++)

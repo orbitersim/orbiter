@@ -164,6 +164,7 @@ void InstrAOA::AddMeshData2D (MESHHANDLE hMesh, DWORD grpidx)
 void InstrAOA::Redraw (NTVERTEX *vtx, NTVERTEX *vtxr)
 {
 	double aoa = vessel->GetAOA();
+	if (isnan(aoa)) return;
 	double aoa_abs = fabs(aoa);
 
 	// tape range limits
@@ -231,7 +232,7 @@ void InstrAOA::Redraw (NTVERTEX *vtx, NTVERTEX *vtxr)
 	static double tu_num[4] = {numx/texw,(numx+numw)/texw,numx/texw,(numx+numw)/texw};
 	static double tv_num[4] = {(numy+numh)/texh,(numy+numh)/texh,numy/texh,numy/texh};
 	int i, j;
-	char *c, aoastr[6];
+	char *c, aoastr[6] = "";
 	sprintf (aoastr, DEG*aoa_abs < 10.0 ? "%+0.1f" : "%+0.0f", aoa*DEG);
 	for (c = aoastr, i = 0; i < 4; c++, i++) {
 		if (*c >= '0' && *c <= '9') {
@@ -259,10 +260,11 @@ bool InstrAOA::Redraw2D (SURFHANDLE surf)
 {
 	if (grp) {
 		double aoa = vessel->GetAOA();
+		if (isnan(aoa)) return false;
 		double aoa_abs = fabs(aoa);
 
 		int i, j;
-		char *c, aoastr[6];
+		char *c, aoastr[20] = "";
 		sprintf (aoastr, DEG*aoa_abs < 10.0 ? "%+0.1f" : "%+0.0f", aoa*DEG);
 
 		// tape range limits

@@ -6,10 +6,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -20,8 +20,8 @@
 
 #define STRICT
 #include <windows.h>
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include "orbitersdk.h"
 #include "mfd.h"
 #include "cmdnugget.h"
@@ -38,8 +38,8 @@ MFDvariable::MFDvariable()
 
 void MFDvariable::execute()
 {
-	if (inugget!=NULL) 
-	{	
+	if (inugget!=NULL)
+	{
 		inugget->execute();
 		execstatus=1;
 	}
@@ -78,10 +78,10 @@ void MFDvariable::setcmdnugget(cmdnugget *nugget)
 	inugget=nugget;
 }
 
-bool MFDvariable::showgeneric(Sketchpad *sketchpad,int width,int line, char *inbuff)
+bool MFDvariable::showgeneric(oapi::Sketchpad *sketchpad,int width,int line, char *inbuff)
 {
 // This is a helper function that formats output to the MFD screen
-	char buffer[MAX_NAME_LENGTH];
+	char buffer[MAX_NAME_LENGTH]="";
 	int linecentre=(int) width/2;
 	int linepos= 6*line;
 	int inlength=strlen(inbuff);
@@ -110,7 +110,7 @@ bool MFDvariable::showgeneric(Sketchpad *sketchpad,int width,int line, char *inb
 	return true;
 }
 
-bool MFDvariable::show(Sketchpad *sketchpad, int width, int line)
+bool MFDvariable::show(oapi::Sketchpad *sketchpad, int width, int line)
 //This is a virtual function that will not normally be used. Although MFDvariable is not
 // a pure virtual class, it is only the derived classes that are created in practice.
 // All these show() functions describe the MFDvariable on the screen
@@ -149,7 +149,7 @@ OBJHANDLE MFDvariable::gethandle() const
 	return temp;
 }
 
-MFDvariable::~MFDvariable() 
+MFDvariable::~MFDvariable()
 {
 	if (inugget!=NULL) delete inugget;
 }

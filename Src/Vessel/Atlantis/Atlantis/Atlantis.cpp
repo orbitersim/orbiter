@@ -21,6 +21,7 @@
 #include "meshres.h"
 #include "meshres_vc.h"
 #include "resource.h"
+#include "DrawAPI.h"
 #include <stdio.h>
 #include <fstream>
 
@@ -1179,14 +1180,12 @@ void Atlantis::UpdateMesh ()
 
 	// update MFD brightness
 	if (vis) {
-		int i;
-		MATERIAL mat;
-		memset (&mat, 0, sizeof(MATERIAL));
+		oapi::FVECTOR4 mat;
 		DEVMESHHANDLE hMesh = GetDevMesh (vis, mesh_vc);
-		for (i = 0; i < 10; i++) {
-			mat.emissive.r = mat.emissive.g = mat.emissive.b = (float)mfdbright[i];
-			mat.emissive.a = 1.0f;
-			oapiSetMaterial (hMesh, 10+i, &mat);
+		for (int i = 0; i < 10; i++) {
+			mat.rgb = (float)mfdbright[i];
+			mat.a = 1.0f;
+			oapiSetMaterialEx (hMesh, 10+i, MatProp::Light, &mat);
 		}
 	}
 }
@@ -1264,31 +1263,35 @@ void Atlantis::SetAnimationArm (UINT anim, double state)
 
 void Atlantis::RedrawPanel_MFDButton (SURFHANDLE surf, int mfd)
 {
-	HDC hDC = oapiGetDC (surf);
+	using namespace oapi;
+
+	Sketchpad *pSkp = oapiGetSketchpad(surf);
 
 	// D. Beachy: BUGFIX: if MFD powered off, cover separator lines and do not paint buttons
     if (oapiGetMFDMode(mfd) == MFD_NONE) {
         RECT r = { 0,0,255,13 };
-        FillRect(hDC, &r, (HBRUSH)GetStockObject(BLACK_BRUSH));
+		pSkp->SetPen(NULL);
+		pSkp->SetBrush(g_Param.brush[0]);
+        pSkp->Rectangle(r.left, r.top, r.right, r.bottom);
     } else {   // MFD powered on
-		HFONT pFont = (HFONT)SelectObject (hDC, g_Param.font[0]);
-		SetTextColor (hDC, RGB(0,255,216));
-		SetTextAlign (hDC, TA_CENTER);
-		SetBkMode (hDC, TRANSPARENT);
+		auto pOld = pSkp->SetFont(g_Param.font[0]);
+		pSkp->SetTextColor (RGB(0,255,216));
+		pSkp->SetTextAlign (Sketchpad::CENTER, Sketchpad::TOP);
+		pSkp->SetBackgroundMode(Sketchpad::BK_TRANSPARENT);
+
 		const char *label;
 		int x = 24;
 
 		for (int bt = 0; bt < 5; bt++) {
 			if (label = oapiMFDButtonLabel (mfd, bt)) {
-				TextOut (hDC, x, 1, label, strlen(label));
+				pSkp->Text (x, 1, label, strlen(label));
 				x += 42;
 			} else break;
 		}
-		TextOut (hDC, 234, 1, "PG", 2);
-		SelectObject (hDC, pFont);
+		pSkp->Text (234, 1, "PG", 2);
+		pSkp->SetFont(pOld);
 	}
-
-	oapiReleaseDC (surf, hDC);
+	oapiReleaseSketchpad(pSkp);
 }
 
 // ==============================================================
@@ -2236,16 +2239,14 @@ DLLCLBK void InitModule (HINSTANCE hModule)
 	g_Param.tkbk_label = oapiCreateSurface (LOADBMP (IDB_TKBKLABEL));
 
 	// allocate GDI resources
-	g_Param.font[0] = CreateFont (-11, 0, 0, 0, 400, 0, 0, 0, 0, 0, 0, 0, 0, "Arial");
+	g_Param.font[0] = oapiCreateFont(-11, false, "Arial");
+	g_Param.brush[0] = oapiCreateBrush(0x000000);
 }
 
 DLLCLBK void ExitModule (HINSTANCE hModule)
 {
 	oapiUnregisterCustomControls (hModule);
 	oapiDestroySurface (g_Param.tkbk_label);
-
-	// deallocate GDI resources
-	DeleteObject (g_Param.font[0]);
 }
 
 // --------------------------------------------------------------

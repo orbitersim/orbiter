@@ -149,7 +149,8 @@ void Instrument_HSI::UpdateDraw (oapi::Sketchpad *skp)
 		}
 		if (sp && bsignal) {
 			Orthodome (sp->lng, sp->lat, tlng, tlat, adist, bdir);
-			adist *= vessel->ProxyPlanet()->Size();
+			Body * planet = vessel->ProxyPlanet();
+			if (planet) adist *= planet->Size();
 			brg = posangle (bdir);
 			bdir -= hsi[i].obs;
 			if      (bdir <  -Pi) bdir += Pi2;

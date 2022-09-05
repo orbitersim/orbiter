@@ -78,7 +78,7 @@ void FuelMFD::ResetVC (DEVMESHHANDLE hMesh)
 	vc_grp.nVtx = 20;
 	if (!vc_grp.Vtx) vc_grp.Vtx = new NTVERTEX[vc_grp.nVtx];
 
-	GROUPEDITSPEC ges = { GRPEDIT_SETUSERFLAG, isScram ? 3 : 0, 0, 0, 0 };
+	GROUPEDITSPEC ges = { GRPEDIT_SETUSERFLAG, (DWORD)(isScram ? 3 : 0), 0, 0, 0 };
 	oapiEditMeshGroup(hMesh, GRP_PROPELLANT_STATUS_NOSCRAM_VC, &ges);
 	ges.UsrFlag = (isScram ? 0 : 3);
 	oapiEditMeshGroup(hMesh, GRP_PROPELLANT_STATUS_SCRAM_VC, &ges);
