@@ -1,5 +1,5 @@
 find_path(DXSDK_DIR
-	Utilities/bin/dx_setenv.cmd
+	Include/d3dx9.h
 	HINTS "C:/Program Files (x86)/Microsoft DirectX SDK (June 2010)"
 	PATHS ENV DXSDK_DIR
 )
