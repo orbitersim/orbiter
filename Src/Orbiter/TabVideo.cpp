@@ -105,7 +105,9 @@ void orbiter::DefVideoTab::OnGraphicsClientLoaded(oapi::GraphicsClient* gc, cons
 	int newIdx = SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_FINDSTRING, -1, (LPARAM)fname);
 	if (newIdx != oldIdx) {
 		SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_SETCURSEL, newIdx, 0);
-		SelectClientIndex(newIdx);
+		ShowInterface(hTab, newIdx > 0);
+		pCfg->AddModule(fname); // make the graphics client "active" so it is loaded on next app start
+		idxClient = newIdx;
 	}
 
 	HMODULE hMod = LoadLibraryEx(moduleName, 0, LOAD_LIBRARY_AS_DATAFILE);
@@ -240,15 +242,14 @@ void orbiter::DefVideoTab::ScanDir(HWND hTab, const PSTR dir)
 void orbiter::DefVideoTab::SelectClientIndex(UINT idx)
 {
 	char name[256];
-	if (idxClient) {
+	if (idxClient) { // unload the current client
 		SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_GETLBTEXT, idxClient, (LPARAM)name);
 		pCfg->DelModule(name);
 		pLp->App()->UnloadModule(name);
 	}
-	if (idxClient = idx) {
+	if (idxClient = idx) { // load the new client
 		const char* path = "Modules\\Plugin";
 		SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_GETLBTEXT, idxClient, (LPARAM)name);
-		pCfg->AddModule(name);
 		pLp->App()->LoadModule(path, name);
 	}
 	else

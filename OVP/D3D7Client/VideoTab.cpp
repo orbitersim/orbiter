@@ -138,6 +138,13 @@ void VideoTab::Initialise (D3D7Enum_DeviceInfo *dev)
 	DWORD i, ndev, idx;
 	D3D7Enum_GetDevices (&devlist, &ndev);
 
+	// Make sure all controls are reset to default configurations in case another client
+	// modified them
+	SetWindowText(GetDlgItem(hTab, IDC_VID_ENUM), "Always enumerate devices");
+	EnableWindow(GetDlgItem(hTab, IDC_VID_ENUM), true);
+	SetWindowText(GetDlgItem(hTab, IDC_VID_STENCIL), "Try stencil buffer");
+	EnableWindow(GetDlgItem(hTab, IDC_VID_STENCIL), true);
+
 	SendDlgItemMessage (hTab, IDC_VID_DEVICE, CB_RESETCONTENT, 0, 0);
 	for (i = 0; i < ndev; i++) {
 		SendMessage (GetDlgItem (hTab, IDC_VID_DEVICE), CB_ADDSTRING, 0,
