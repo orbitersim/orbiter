@@ -24,6 +24,8 @@
 #include <cmath>
 #include "Vecmat.h"
 #include "PinesGrav.h"
+#include "Orbiter.h"
+#include "log.h"
 
 PinesGravProp::PinesGravProp(CelestialBody* celestialbody)
 {
@@ -105,7 +107,7 @@ inline void PinesGravProp::GenerateAssocLegendreMatrix(int maxDegree)
 
 }
 
-bool PinesGravProp::readGravModel(char* filename, int cutoff)
+int PinesGravProp::readGravModel(char* filename, int cutoff)
 {
 	FILE* gravModelFile;
 	char gravFileLine[512];
@@ -120,16 +122,16 @@ bool PinesGravProp::readGravModel(char* filename, int cutoff)
 		A = new double[NM((size_t)cutoff + 3, (size_t)cutoff + 3)]; //FIXME move to read function
 	}
 	catch (std::bad_alloc) {
-		return false;
+		return 2; //Could not allocate space
 	}
 	numCoeff = 0;
 
 	C[0] = 0;
 	S[0] = 0;
 
-	fopen_s(&gravModelFile, filename, "rt");
+	int file_error;
 
-	if (gravModelFile) {
+	if (file_error == 0 && gravModelFile) {
 		while (fgets(gravFileLine, 511, gravModelFile))
 		{
 			if (feof(gravModelFile))
@@ -147,7 +149,7 @@ bool PinesGravProp::readGravModel(char* filename, int cutoff)
 					&referenceLat,
 					&referenceLon)) {
 					maxLines = NM(order, degree);
-					return false;
+					return 3; //Bad first line format
 				}
 				numCoeff = linecount += 2;
 			}
@@ -158,17 +160,15 @@ bool PinesGravProp::readGravModel(char* filename, int cutoff)
 				if (!sscanf(gravFileLine, " %*d , %*d , %lf , %lf , %*lf , %*lf \n",
 					&C[lineindex],
 					&S[lineindex])) {
-					return false;
+					return 4;//Bad coefficient line format
 				}
 				numCoeff = linecount++;
 			}
 		}
-		//log: successfully loaded numCoeff gravity coefficients for [planet]
-		return true;
+		return 0; //successfully loaded gravity coefficients
 	}
 	else {
-		//some error goes into the log here
-		return false;
+		return 1; //Could Not Open File
 	}
 }
 

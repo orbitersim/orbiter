@@ -28,7 +28,7 @@ class PinesGravProp
 public:
 	PinesGravProp(CelestialBody* celestialbody);
 	~PinesGravProp();
-	bool readGravModel(char* filename, int cutoff);
+	int readGravModel(char* filename, int cutoff);
 	Vector GetPinesGrav(const Vector rposmax, const int maxDegree, const int maxOrder);
 private:
 	CelestialBody* parentBody;

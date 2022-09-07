@@ -689,13 +689,13 @@ Vector SingleGacc_perturbation (const Vector &rpos, const CelestialBody *body)
 
 	if (body->UseComplexGravity() && body->usePines()) {
 		Matrix rot = body->GRot();
-		Vector lpos = mul(rot,rpos);
+		Vector lpos = tmul(rot,rpos);
+		lpos.x = -lpos.x; //Convert to Orbiter's lefthandedness
 		CelestialBody* unconstbody = const_cast<CelestialBody*>(body);
-		dg = unconstbody->pinesAccel(rpos,10,10);
-		return dg;
+		dg = unconstbody->pinesAccel(lpos/1000.0,120,120);
+		return dg*1000.0;
 	}
-
-	if (body->UseComplexGravity() && body->nJcoeff() > 0) {
+	else if (body->UseComplexGravity() && body->nJcoeff() > 0) {
 
 		const double eps = 1e-10; // perturbation limit
 		double d  = rpos.length();

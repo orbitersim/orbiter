@@ -68,7 +68,34 @@ CelestialBody::CelestialBody (char *fname)
 	GetItemReal (ifs, "PrecessionLAN", lan_ref);
 
 	if (GetItemString(ifs, "GravModel", cbuf) && GetItemInt(ifs, "GravCoeff", gravcoeff)) {
-		usePinesGravity = pinesgrav.readGravModel(cbuf, gravcoeff);
+		char logbuff[256] = "GRAV COEFF LOADED : ";
+		char gravModelFileName[512];
+		sprintf(gravModelFileName, cbuf);
+		//strcat(gravModelFileName, cbuf);
+		int readResult = 0;
+
+		readResult = pinesgrav.readGravModel(cbuf, gravcoeff);
+
+		LOGOUT(gravModelFileName);
+		if (readResult == 0) {
+			LOGOUT("IT WORKS");
+		}
+		else if (readResult == 1) {
+			LOGOUT("GRAVITY MODEL ERROR: COEFFICIENT FILE NOT FOUND");
+		}
+		else if (readResult == 2) {
+			LOGOUT("GRAVITY MODEL ERROR: COULD NOT ALLOCATE SPACE FOR GRAVITY MODEL");
+		}
+		else if (readResult == 3) {
+			LOGOUT("GRAVITY MODEL ERROR: BAD COEFFICIENT LINE FORMAT");
+		}
+		else if (readResult == 4) {
+			LOGOUT("GRAVITY MODEL ERROR: BAD HEADDER LINE FORMAT");
+		}
+
+		if (readResult == 0) {
+			usePinesGravity = true;
+		}
 	}
 
 	if (GetItemString (ifs, "JCoeff", cbuf)) {
