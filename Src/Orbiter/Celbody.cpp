@@ -71,7 +71,6 @@ CelestialBody::CelestialBody (char *fname)
 		char logbuff[256] = "GRAV COEFF LOADED : ";
 		char gravModelFileName[512];
 		sprintf(gravModelFileName, cbuf);
-		//strcat(gravModelFileName, cbuf);
 		int readResult = 0;
 
 		readResult = pinesgrav.readGravModel(cbuf, gravcoeff);

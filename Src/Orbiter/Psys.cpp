@@ -688,12 +688,30 @@ Vector SingleGacc_perturbation (const Vector &rpos, const CelestialBody *body)
 	Vector dg;
 
 	if (body->UseComplexGravity() && body->usePines()) {
+		
+		//Rotate position vector into the planet's local frame
 		Matrix rot = body->GRot();
-		Vector lpos = tmul(rot,rpos);
-		lpos.x = -lpos.x; //Convert to Orbiter's lefthandedness
+		Vector lpos = tmul(rot,rpos)/1000.0;
+		
+
+		//Convert to right-handed
+		double temp_y;
+		temp_y = lpos.y;
+		lpos.y = lpos.z; 
+		lpos.z = temp_y;
+
+		//get aceleration vector from spherical harmonics
 		CelestialBody* unconstbody = const_cast<CelestialBody*>(body);
-		dg = unconstbody->pinesAccel(lpos/1000.0,120,120);
-		return dg*1000.0;
+		dg = unconstbody->pinesAccel(lpos,120,120);
+		
+		//Convert back to Orbiter's lefthandedness
+		temp_y = dg.y;
+		dg.y = dg.z;
+		dg.z = temp_y;
+		
+		dg = mul(rot, dg)*1000.0;
+
+		return dg;
 	}
 	else if (body->UseComplexGravity() && body->nJcoeff() > 0) {
 
