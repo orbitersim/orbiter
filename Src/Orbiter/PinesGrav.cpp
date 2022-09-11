@@ -44,6 +44,7 @@ PinesGravProp::PinesGravProp(CelestialBody* celestialbody)
 	R = NULL;
 	I = NULL;
 	numCoeff = 0;
+	CoeffCutoff = 0;
 
 	r = 0.0;
 	s = 0.0;
@@ -112,6 +113,7 @@ int PinesGravProp::readGravModel(char* filename, int cutoff)
 	FILE* gravModelFile = nullptr;
 	char gravFileLine[512];
 	bool isEOF = false;
+	CoeffCutoff = cutoff;
 	unsigned int linecount = 0;
 	unsigned int maxLines = (cutoff * cutoff + cutoff) / 2 + cutoff;
 	try {

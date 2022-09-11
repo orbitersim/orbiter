@@ -126,6 +126,9 @@ public:
 	inline Vector pinesAccel(const Vector rposmax, const int maxDegree, const int maxOrder) {
 		return pinesgrav.GetPinesGrav(rposmax, maxDegree, maxOrder);
 	}
+	inline const unsigned int GetPinesCutoff() { 
+		return pinesgrav.GetCoeffCutoff(); 
+	}
 
 protected:
 	//Matrix R_ref_rel;     // rotation matrix for tilting the axis of rotation (including precession)

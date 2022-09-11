@@ -702,7 +702,8 @@ Vector SingleGacc_perturbation (const Vector &rpos, const CelestialBody *body)
 
 		//get aceleration vector from spherical harmonics
 		CelestialBody* unconstbody = const_cast<CelestialBody*>(body);
-		dg = unconstbody->pinesAccel(lpos,120,120);
+		unsigned int maxDegreeOrder = unconstbody->GetPinesCutoff();
+		dg = unconstbody->pinesAccel(lpos, maxDegreeOrder, maxDegreeOrder);
 		
 		//Convert back to Orbiter's lefthandedness
 		temp_y = dg.y;
