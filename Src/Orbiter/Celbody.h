@@ -123,10 +123,10 @@ public:
 
 	// returns true if the body uses Pines Algorithm to calculate gravitational acceleration from spherical harmonics
 	inline bool usePines() const { return usePinesGravity; }
-	inline Vector pinesAccel(const Vector rposmax, const int maxDegree, const int maxOrder) {
+	inline Vector pinesAccel(const Vector rposmax, const int maxDegree, const int maxOrder){
 		return pinesgrav.GetPinesGrav(rposmax, maxDegree, maxOrder);
 	}
-	inline const unsigned int GetPinesCutoff() { 
+	inline unsigned int GetPinesCutoff() const {
 		return pinesgrav.GetCoeffCutoff(); 
 	}
 

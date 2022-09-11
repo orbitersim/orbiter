@@ -30,7 +30,7 @@ public:
 	~PinesGravProp();
 	int readGravModel(char* filename, int cutoff);
 	Vector GetPinesGrav(const Vector rposmax, const int maxDegree, const int maxOrder);
-	inline const unsigned int GetCoeffCutoff() { return CoeffCutoff; }
+	inline unsigned int GetCoeffCutoff() const { return CoeffCutoff; }
 private:
 	CelestialBody* parentBody;
 	inline void GenerateAssocLegendreMatrix(int maxDegree);

@@ -700,10 +700,13 @@ Vector SingleGacc_perturbation (const Vector &rpos, const CelestialBody *body)
 		lpos.y = lpos.z; 
 		lpos.z = temp_y;
 
+		unsigned int maxDegreeOrder = body->GetPinesCutoff();
 		//get aceleration vector from spherical harmonics
-		CelestialBody* unconstbody = const_cast<CelestialBody*>(body);
-		unsigned int maxDegreeOrder = unconstbody->GetPinesCutoff();
-		dg = unconstbody->pinesAccel(lpos, maxDegreeOrder, maxDegreeOrder);
+		{
+			//Limit scope of the const cast. the internal state of body.PinesGravProp does need to change when this finction is called.
+			CelestialBody* unconstbody = const_cast<CelestialBody*>(body);
+			dg = unconstbody->pinesAccel(lpos, maxDegreeOrder, maxDegreeOrder);
+		}
 		
 		//Convert back to Orbiter's lefthandedness
 		temp_y = dg.y;
