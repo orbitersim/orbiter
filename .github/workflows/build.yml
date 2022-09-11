@@ -12,7 +12,7 @@ on:
 
 jobs:
   build:
-    name: Build with CMake
+    name: Build
     
     env:
       DXSDK_DIR: "${{ github.workspace }}\\DXSDK"
@@ -65,20 +65,16 @@ jobs:
          dir /S /B DXSDK
 
     - name: Configure
-      working-directory: ${{ github.workspace }}/out/build
-      run: cmake -G Ninja ../.. -DORBITER_MAKE_DOC=OFF -DIRRKLANG_DIR:STRING="irrKlang_DOWNLOAD" -DDXSDK_DIR:PATH="${{ github.workspace }}\\DXSDK"
+      run: cmake . --preset windows-${{ matrix.architecture }}-release -DORBITER_MAKE_DOC=OFF -DIRRKLANG_DIR:STRING="irrKlang_DOWNLOAD" -DDXSDK_DIR:PATH="${{ github.workspace }}\\DXSDK"
 
     - name: Build
-      working-directory: ${{ github.workspace }}/out/build
-      run: cmake --build . --config RelWithDebInfo
+      run: cmake . --preset windows-${{ matrix.architecture }}-release
 
     - name: Test
-      working-directory: ${{ github.workspace }}/out/build
-      run: ctest --config RelWithDebInfo .
+      run: ctest . --preset windows-${{ matrix.architecture }}-release
 
     - name: Install
-      working-directory: ${{ github.workspace }}/out/build
-      run: cmake --install . --prefix  ${{ github.workspace }}/out/install
+      run: cmake . --preset windows-${{ matrix.architecture }}-release --install --prefix ${{ github.workspace }}/out/install
 
     - name: Pack
       if: ${{ github.ref == 'refs/heads/main' }}
