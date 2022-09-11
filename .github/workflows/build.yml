@@ -68,10 +68,10 @@ jobs:
       run: cmake . --preset windows-${{ matrix.architecture }}-release -DORBITER_MAKE_DOC=OFF -DIRRKLANG_DIR:STRING="irrKlang_DOWNLOAD" -DDXSDK_DIR:PATH="${{ github.workspace }}\\DXSDK"
 
     - name: Build
-      run: cmake . --preset windows-${{ matrix.architecture }}-release
+      run: cmake . --preset windows-${{ matrix.architecture }}-release --build
 
     - name: Test
-      run: ctest . --preset windows-${{ matrix.architecture }}-release --build
+      run: ctest . --preset windows-${{ matrix.architecture }}-release
 
     - name: Install
       run: cmake . --preset windows-${{ matrix.architecture }}-release --install --prefix ${{ github.workspace }}/out/install
