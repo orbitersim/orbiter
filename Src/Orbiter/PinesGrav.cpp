@@ -121,7 +121,7 @@ int PinesGravProp::readGravModel(char* filename, int cutoff)
 		S = new double[(size_t)NM(cutoff + 1, cutoff + 1)];
 		R = new double[(size_t)cutoff + 2];
 		I = new double[(size_t)cutoff + 2];
-		A = new double[NM((size_t)cutoff + 3, (size_t)cutoff + 3)]; //FIXME move to read function
+		A = new double[NM((size_t)cutoff + 3, (size_t)cutoff + 3)];
 	}
 	catch (std::bad_alloc) {
 		return 2; //Could not allocate space
