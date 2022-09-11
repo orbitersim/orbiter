@@ -67,7 +67,7 @@ CelestialBody::CelestialBody (char *fname)
 	GetItemReal (ifs, "PrecessionObliquity", eps_ref);
 	GetItemReal (ifs, "PrecessionLAN", lan_ref);
 
-	if (GetItemString(ifs, "GravModel", cbuf) && GetItemInt(ifs, "GravCoeff", gravcoeff)) {
+	if (GetItemString(ifs, "GravModelPath", cbuf) && GetItemInt(ifs, "GravCoeffCutoff", gravcoeff)) {
 		char logbuff[256] = "GRAV COEFF LOADED : ";
 		char gravModelFileName[512];
 		sprintf(gravModelFileName, cbuf);
