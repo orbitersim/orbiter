@@ -11,7 +11,7 @@
 
 #include <fstream>
 #include <iomanip>
-#include <string.h>
+#include <string>
 #include <stdio.h>
 #include "Orbiter.h"
 #include "Config.h"
