@@ -167,7 +167,6 @@ int PinesGravProp::readGravModel(char* filename, int cutoff)
 				numCoeff = linecount++;
 			}
 		}
-		GenerateAssocLegendreMatrix(cutoff);
 		return 0; //successfully loaded gravity coefficients
 	}
 	else {
@@ -206,7 +205,7 @@ Vector PinesGravProp::GetPinesGrav(const Vector rpos, const int maxDegree, const
 	g4 = 0.0;
 
 	int nmodel = 0;
-
+	GenerateAssocLegendreMatrix(maxDegree);
 	for (int n = 0; n <= maxDegree; n++) {
 
 		g1temp = 0.0;
