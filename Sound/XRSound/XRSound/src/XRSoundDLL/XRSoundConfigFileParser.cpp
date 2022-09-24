@@ -233,7 +233,6 @@ bool XRSoundConfigFileParser::ParseLine(const char *pSection, const char *pPrope
         else PARSE_STRING_PROPERTY(LandedWind)
         else PARSE_STRING_PROPERTY(AudioGreeting)
         else PARSE_STRING_PROPERTY(MainEngines)
-        else PARSE_STRING_PROPERTY(MainUserEngines)
         else PARSE_STRING_PROPERTY(HoverEngines)
         else PARSE_STRING_PROPERTY(RetroEngines)
         else PARSE_STRING_PROPERTY(RCSAttackPlusX)

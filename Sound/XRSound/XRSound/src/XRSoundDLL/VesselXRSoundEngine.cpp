@@ -585,7 +585,6 @@ void VesselXRSoundEngine::LoadDefaultSounds()
     AddDefaultSound(new DockingRadarDefaultSoundPreStep(this), XRSound::DockingRadarBeep, GetConfig().DockingRadarBeep, XRSound::PlaybackType::InternalOnly);
 
     AddDefaultSound(new EngineDefaultSoundPreStep(this, THGROUP_MAIN, 0.20f, 1.0f), XRSound::MainEngines, GetConfig().MainEngines, XRSound::PlaybackType::BothViewFar);
-    AddDefaultSound(new EngineDefaultSoundPreStep(this, THGROUP_USER, 0.20f, 1.0f), XRSound::MainUserEngines, GetConfig().MainEngines, XRSound::PlaybackType::BothViewFar);
     AddDefaultSound(new EngineDefaultSoundPreStep(this, THGROUP_RETRO, 0.10f, 0.60f), XRSound::RetroEngines, GetConfig().RetroEngines, XRSound::PlaybackType::BothViewFar);
     AddDefaultSound(new EngineDefaultSoundPreStep(this, THGROUP_HOVER, 0.20f, 1.0f), XRSound::HoverEngines, GetConfig().HoverEngines, XRSound::PlaybackType::BothViewFar);
     AddDefaultSound(new RCSDefaultSoundPreStep(this), XRSound::RCSSustain, GetConfig().RCSSustain, XRSound::PlaybackType::BothViewMedium);
