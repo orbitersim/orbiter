@@ -2781,7 +2781,7 @@ public:
 	bool DelThrusterGroup (THGROUP_TYPE thgt, bool delth = false) const;
 
 	/**
-	 * \brief Returns the handle of a default thruster group.
+	 * \brief Returns the handle of a thruster group (default or user-defined).
 	 * \param thgt thruster group type (see \ref thrusterparam)
 	 * \return thruster group handle (or NULL if no group is defined for the
 	 *   specified type).
@@ -2842,8 +2842,8 @@ public:
 	THRUSTER_HANDLE GetGroupThruster (THGROUP_HANDLE thg, DWORD idx) const;
 
 	/**
-	 * \brief Returns a handle for a thruster that belongs to a standard thruster
-	 *   group.
+	 * \brief Returns a handle for a thruster that belongs to a thruster
+	 *   group (default or user-defined).
 	 * \param thgt thruster group enumeration type (see \ref thrusterparam)
 	 * \param idx thruster index (0 <= idx < GetGroupThrusterCount())
 	 * \return Thruster handle

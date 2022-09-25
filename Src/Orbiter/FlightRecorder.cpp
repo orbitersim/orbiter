@@ -479,7 +479,7 @@ bool Vessel::FRecorder_Read (const char *scname)
 
 void Vessel::FRecorder_Play ()
 {
-	dASSERT(s1, "Update state not available.");
+	dCHECK(s1, "Update state not available.")
 	StateVectors *sv = s1;
 
 	if (fstatus == FLIGHTSTATUS_FREEFLIGHT) {

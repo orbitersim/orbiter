@@ -397,11 +397,6 @@ void Vessel::DefaultGenericCaps ()
 	ncontrail          = 0;
 	nreentrystream     = 0;
 	nemitter           = 0;
-	nthruster_grp_user = 0;
-	for (i = 0; i < 15; i++) {
-		thruster_grp_default[i].nts = 0;
-		thruster_grp_default[i].maxth_sum = 0.0;
-	}
 	ntank              = 0;
 	def_tank           = 0;
 	for (i = 0; i < 6; i++)
@@ -1126,7 +1121,7 @@ bool Vessel::isOrbitStabilised () const
 
 bool Vessel::SetTouchdownPoints (const TOUCHDOWNVTX *tdvtx, DWORD ntp)
 {
-	dASSERT(ntp >= 3, "Vessel::SetTouchdownPoints: at least 3 points must be provided");
+	dCHECK(ntp >= 3, "Vessel::SetTouchdownPoints: at least 3 points must be provided");
 
 	static const double eps = 1e-12;
 	DWORD i;
@@ -1337,7 +1332,7 @@ bool Vessel::DelThruster (ThrustSpec *ts)
 
 	// remove from default thruster group lists
 	for (i = 0; i < 15; i++) {
-		tgs = thruster_grp_default+i;
+		tgs = &thruster_grp_default[i];
 		for (j = 0; j < tgs->nts; j++) {
 			if (tgs->ts[j] == ts) {
 				if (tgs->nts > 1) {
@@ -1353,7 +1348,7 @@ bool Vessel::DelThruster (ThrustSpec *ts)
 		}
 	}
 	// remove from user thruster group lists
-	for (i = 0; i < nthruster_grp_user; i++) {
+	for (i = 0; i < thruster_grp_user.size(); i++) {
 		tgs = thruster_grp_user[i];
 		for (j = 0; j < tgs->nts; j++) {
 			if (tgs->ts[j] == ts) {
@@ -1440,8 +1435,8 @@ void Vessel::ClearThrusterDefinitions ()
 	ClearExhaustStreamDefinitions();
 
 	// delete the default group definitions
-	for (grp = 0; grp < 15; grp++) {
-		tgs = thruster_grp_default+grp;
+	for (grp = 0; grp < thruster_grp_default.size(); grp++) {
+		tgs = &thruster_grp_default[grp];
 		if (tgs->nts) {
 			delete []tgs->ts;
 			tgs->ts = NULL;
@@ -1449,8 +1444,8 @@ void Vessel::ClearThrusterDefinitions ()
 		}
 	}
 	// delete the user group definitions
-	if (nthruster_grp_user) {
-		for (grp = 0; grp < nthruster_grp_user; grp++) {
+	if (thruster_grp_user.size()) {
+		for (grp = 0; grp < thruster_grp_user.size(); grp++) {
 			tgs = thruster_grp_user[grp];
 			if (tgs->nts) {
 				delete []tgs->ts;
@@ -1458,9 +1453,7 @@ void Vessel::ClearThrusterDefinitions ()
 			}
 			delete tgs;
 		}
-		delete []thruster_grp_user;
-		thruster_grp_user = NULL;
-		nthruster_grp_user = 0;
+		thruster_grp_user.clear();
 	}
 	// delete thrusters
 	if (nthruster) {
@@ -1513,18 +1506,21 @@ void Vessel::ClearExhaustStreamDefinitions ()
 
 void Vessel::SetThrusterMax0 (ThrustSpec *ts, double maxth0)
 {
+	dCHECK(ts, "Zero ThrustSpec pointer not permitted.")
+	dCHECK(maxth0 >= 0.0, "Max thrust must be >= 0")
+
 	if (ts->maxth0 != maxth0) {
 		double dth = maxth0 - ts->maxth0;
 		ts->maxth0 = maxth0;
+
 		// re-calculate max group thrusts
-		DWORD i;
-		for (i = 0; i < 15; i++) {
-			ThrustGroupSpec *tgs = thruster_grp_default+i;
-			if (IsGroupThruster (tgs, ts))
-				tgs->maxth_sum += dth;
+		for (auto it = thruster_grp_default.begin(); it != thruster_grp_default.end(); it++) {
+			ThrustGroupSpec& tgs = *it;
+			if (IsGroupThruster(&tgs, ts))
+				tgs.maxth_sum += dth;
 		}
-		for (i = 0; i < nthruster_grp_user; i++) {
-			ThrustGroupSpec *tgs = thruster_grp_user[i];
+		for (auto it = thruster_grp_user.begin(); it != thruster_grp_user.end(); it++) {
+			ThrustGroupSpec* tgs = *it;
 			if (IsGroupThruster (tgs, ts))
 				tgs->maxth_sum += dth;
 		}
@@ -1536,25 +1532,22 @@ void Vessel::SetThrusterMax0 (ThrustSpec *ts, double maxth0)
 ThrustGroupSpec *Vessel::CreateThrusterGroup (ThrustSpec **ts, DWORD nts, THGROUP_TYPE thgt)
 {
 	DWORD i;
-	ThrustGroupSpec *tgs;
-
-	if (thgt < THGROUP_USER) { // define a standard group
-		tgs = thruster_grp_default + thgt;
-		if (tgs->nts) {
-			delete []tgs->ts; // already defined - deallocate
-			tgs->ts = NULL;
-		}
-	} else {                   // define a user defined group
-		ThrustGroupSpec **tmp = new ThrustGroupSpec*[nthruster_grp_user+1]; TRACENEW
-		if (nthruster_grp_user) {
-			for (i = 0; i < nthruster_grp_user; i++)
-				tmp[i] = thruster_grp_user[i];
-			delete []thruster_grp_user;
-			thruster_grp_user = NULL;
-		}
-		thruster_grp_user = tmp;
-		tgs = thruster_grp_user[nthruster_grp_user++] = new ThrustGroupSpec; TRACENEW
+	ThrustGroupSpec* tgs = GetThrusterGroup(thgt);
+	if (!tgs && thgt >= THGROUP_USER) { // new user-defined group requested
+		i = thgt - THGROUP_USER;
+		if (i >= thruster_grp_user.size())
+			thruster_grp_user.resize(i + 1);
+		tgs = thruster_grp_user[i] = new ThrustGroupSpec;
 	}
+	dCHECK(tgs, "Invalid THGROUP_TYPE")
+
+	// clear the group, if it has been defined previously
+	if (tgs->nts) {
+		delete[]tgs->ts;
+		tgs->ts = nullptr;
+		tgs->nts = 0;
+	}
+
 	tgs->ts = new ThrustSpec*[tgs->nts = nts]; TRACENEW
 	tgs->maxth_sum = 0.0;
 	for (i = 0; i < nts; i++) {
@@ -1574,40 +1567,6 @@ ThrustGroupSpec *Vessel::CreateThrusterGroup (ThrustSpec **ts, DWORD nts, THGROU
 
 // ==============================================================
 
-bool Vessel::DeleteThrusterGroup (ThrustGroupSpec *tgs, THGROUP_TYPE thgt, bool delth)
-{
-	// OBSOLETE
-
-	if (thgt < THGROUP_USER) { // delete a standard group
-		if (tgs != thruster_grp_default + thgt) return false; // group specs don't match
-		return DeleteThrusterGroup (thgt, delth);
-	} else {                   // delete a user defined group
-		DWORD i, j, k;
-		ThrustGroupSpec **tmp;
-		for (i = 0; i < nthruster_grp_user; i++)
-			if (tgs == thruster_grp_user[i]) break;
-		if (i == nthruster_grp_user) return false;            // group not found
-		if (delth) { // destroy thrusters
-			while (thruster_grp_user[i]->nts) DelThruster (thruster_grp_user[i]->ts[0]);
-		} else if (thruster_grp_user[i]->nts) {
-			delete []thruster_grp_user[i]->ts;
-			thruster_grp_user[i]->ts = NULL;
-		}
-		delete thruster_grp_user[i];
-		if (nthruster_grp_user > 1) {
-			tmp = new ThrustGroupSpec*[nthruster_grp_user-1]; TRACENEW
-			for (j = k = 0; j < nthruster_grp_user; j++)
-				if (j != i) tmp[k++] = thruster_grp_user[j];
-		} else tmp = 0;
-		delete []thruster_grp_user;
-		thruster_grp_user = tmp;
-		nthruster_grp_user--;
-		return true;
-	}
-}
-
-// ==============================================================
-
 bool Vessel::DeleteThrusterGroup (ThrustGroupSpec *tgs, bool delth)
 {
 	DWORD i, j, k;
@@ -1616,11 +1575,18 @@ bool Vessel::DeleteThrusterGroup (ThrustGroupSpec *tgs, bool delth)
 	if (!tgs) return false;
 
 	// Check if default group type
-	for (i = THGROUP_MAIN; i <= THGROUP_ATT_BACK; i++)
-		if (tgs == thruster_grp_default+i)
-			return DeleteThrusterGroup ((THGROUP_TYPE)i, delth);
+	for (i = 0; i < thruster_grp_default.size(); i++)
+		if (tgs == &thruster_grp_default[i])
+			return DeleteThrusterGroup((THGROUP_TYPE)i, delth);
 
-	// Check for user-defined group
+	// Check if user-defined group
+	for (i = 0; i < thruster_grp_user.size(); i++)
+		if (tgs == thruster_grp_user[i])
+			return DeleteThrusterGroup((THGROUP_TYPE)(THGROUP_USER + i), delth);
+
+	return false;
+
+#ifdef UNDEF
 	for (i = 0; i < nthruster_grp_user; i++)
 		if (tgs == thruster_grp_user[i]) break;
 	if (i == nthruster_grp_user) return false;            // group not found
@@ -1641,30 +1607,86 @@ bool Vessel::DeleteThrusterGroup (ThrustGroupSpec *tgs, bool delth)
 	thruster_grp_user = tmp;
 	nthruster_grp_user--;
 	return true;
+#endif
 }
 
 // ==============================================================
 
 bool Vessel::DeleteThrusterGroup (THGROUP_TYPE thgt, bool delth)
 {
-	if (thgt >= THGROUP_USER) return false;
-	ThrustGroupSpec *tgs = thruster_grp_default + thgt;
-	if (!tgs->nts) return false;
-	if (delth) { // destroy thrusters
-		while (tgs->nts) DelThruster (tgs->ts[0]); // this also takes care of removing the thruster from the group
-	} else {     // keep thrusters
-		delete []tgs->ts;
-		tgs->ts = NULL;
+	ThrustGroupSpec* tgs = GetThrusterGroup(thgt);
+	if (!tgs) return false;
+
+	bool success = (tgs->nts > 0);
+
+	if (delth) { // delete the thrusters
+		while (tgs->nts) DelThruster(tgs->ts[0]);
+		// this also takes care of removing the thruster from the group
+	}
+	else { // delete the list but not the thrusters
+		delete[]tgs->ts;
+		tgs->ts = nullptr;
 		tgs->nts = 0;
 	}
-	return true;
+
+	if (thgt >= THGROUP_USER) {
+		delete tgs;
+		thruster_grp_user[thgt - THGROUP_USER] = nullptr;
+	}
+
+	// If the group was user-defined, the user-defined list is not shrunk here even if the
+	// group was at the end of the list
+
+	return success;
 }
 
 // ==============================================================
 
-void Vessel::IncThrusterGroupLevel (ThrustGroupSpec *tgs, double dlevel)
+ThrustGroupSpec* Vessel::GetThrusterGroup(THGROUP_TYPE thgt)
+{
+	ThrustGroupSpec* tgs = nullptr;
+	if (thgt < THGROUP_USER)
+		tgs = &thruster_grp_default[thgt];
+	else if (thgt - THGROUP_USER < thruster_grp_user.size())
+		tgs = thruster_grp_user[thgt - THGROUP_USER];
+	return tgs;
+}
+
+const ThrustGroupSpec* Vessel::GetThrusterGroup(THGROUP_TYPE thgt) const
+{
+	const ThrustGroupSpec* tgs = nullptr;
+	if (thgt < THGROUP_USER)
+		tgs = &thruster_grp_default[thgt];
+	else if (thgt - THGROUP_USER < thruster_grp_user.size())
+		tgs = thruster_grp_user[thgt - THGROUP_USER];
+	return tgs;
+}
+
+// ==============================================================
+
+void Vessel::SetThrusterGroupLevel(THGROUP_TYPE thgt, double level)
+{
+	ThrustGroupSpec* tgs = GetThrusterGroup(thgt);
+	if (tgs)
+		SetThrusterGroupLevel(tgs, level);
+}
+
+// ==============================================================
+
+void Vessel::SetThrusterGroupOverride(THGROUP_TYPE thgt, double level)
+{
+	ThrustGroupSpec* tgs = GetThrusterGroup(thgt);
+	if (tgs)
+		SetThrusterGroupOverride(tgs, level);
+}
+
+// ==============================================================
+
+void Vessel::IncThrusterGroupLevel(ThrustGroupSpec *tgs, double dlevel)
 {
 	if (bFRplayback) return;
+
+	dCHECK(tgs, "Zero ThrustGroupSpec pointer not permitted.")
 
 	for (DWORD i = 0; i < tgs->nts; i++)
 		IncThrusterLevel (tgs->ts[i], dlevel);
@@ -1672,14 +1694,64 @@ void Vessel::IncThrusterGroupLevel (ThrustGroupSpec *tgs, double dlevel)
 
 // ==============================================================
 
+void Vessel::IncThrusterGroupLevel(THGROUP_TYPE thgt, double dlevel)
+{
+	ThrustGroupSpec* tgs = GetThrusterGroup(thgt);
+	if (tgs)
+		IncThrusterGroupLevel(tgs, dlevel);
+}
+
+// ==============================================================
+
+void Vessel::IncThrusterGroupOverride(THGROUP_TYPE thgt, double dlevel)
+{
+	ThrustGroupSpec* tgs = GetThrusterGroup(thgt);
+	if (tgs)
+		IncThrusterGroupOverride(tgs, dlevel);
+}
+
+// ==============================================================
+
+double Vessel::GetThrusterGroupLevel(const ThrustGroupSpec *tgs) const
+{
+	dCHECK(tgs, "Zero ThrustGroupSpec pointer not permitted.")
+
+	double level = 0.0;
+	for (DWORD i = 0; i < tgs->nts; i++)
+		level += tgs->ts[i]->level;
+	return (tgs->nts ? level / tgs->nts : 0.0);
+}
+
+// ==============================================================
+
+double Vessel::GetThrusterGroupLevel(THGROUP_TYPE thgt) const
+{
+	const ThrustGroupSpec* tgs = GetThrusterGroup(thgt);
+	return (tgs ? GetThrusterGroupLevel(tgs) : 0.0);
+}
+
+// ==============================================================
+
+double Vessel::GetThrusterGroupMaxth(THGROUP_TYPE thgt) const
+{
+	const ThrustGroupSpec* tgs = GetThrusterGroup(thgt);
+	return (tgs ? GetThrusterGroupMaxth(tgs) : 0.0);
+}
+
+// ==============================================================
+
 Vector Vessel::GetThrusterGroupForce (THGROUP_TYPE thgt) const
 {
-	if (thgt >= THGROUP_USER) return Vector(0,0,0);
-	return GetThrusterGroupForce (thruster_grp_default + thgt);
+	const ThrustGroupSpec* tgs = GetThrusterGroup(thgt);
+	return (tgs ? GetThrusterGroupForce(tgs) : Vector(0, 0, 0));
 }
+
+// ==============================================================
 
 Vector Vessel::GetThrusterGroupForce (const ThrustGroupSpec *tgs) const
 {
+	dCHECK(tgs, "Zero ThrustGroupSpec pointer not permitted.")
+
 	Vector F;
 	for (DWORD i = 0; i < tgs->nts; i++)
 		F += GetThrusterForce (tgs->ts[i]);
@@ -3319,7 +3391,7 @@ int Vessel::MeshModified (MESHHANDLE hMesh, UINT grp, DWORD modflag)
 
 void Vessel::InitLanded (Planet *planet, double lng, double lat, double dir, const Matrix *hrot, double cgelev, bool asComponent)
 {
-	dASSERT(!g_bStateUpdate, "Vessel::InitLanded must not be called during state update"); // not valid during update phase
+	dCHECK(!g_bStateUpdate, "Vessel::InitLanded must not be called during state update") // not valid during update phase
 
 	Vector nml;
 	int i;
@@ -3677,17 +3749,16 @@ bool Vessel::GetSuperStructCG (Vector &cg) const
 }
 
 // =======================================================================
-// Return the maximum (vacuum) angular moment produced by all thrusters of
-// a given attitude thruster group. This also works if the vessel is part
-// of a super-structure
 
 double Vessel::MaxAngularMoment (int axis) const
 {
+	dCHECK(axis >= 0 && axis < 6, "Invalid axis index.")
+
 	if (!supervessel) return max_angular_moment[axis];
 	Vector vcg;
 	VECTOR3 M = {0,0,0};
 	supervessel->GetCG (this, vcg);
-	const ThrustGroupSpec *tgs = thruster_grp_default + (THGROUP_ATT_PITCHUP+axis);
+	const ThrustGroupSpec *tgs = &thruster_grp_default[THGROUP_ATT_PITCHUP+axis];
 	ThrustSpec **ts = tgs->ts;
 	int i, nts = tgs->nts;
 	for (i = 0; i < nts; i++)
@@ -7367,7 +7438,7 @@ void VESSEL::SetTouchdownPoints (const VECTOR3 &pt1, const VECTOR3 &pt2, const V
 
 void VESSEL::SetTouchdownPoints (const TOUCHDOWNVTX *tdvtx, DWORD ntdvtx) const
 {
-	dASSERT (ntdvtx >= 3, "VESSEL::SetTouchdownPoints: at least 3 points must be provided");
+	dCHECK(ntdvtx >= 3, "VESSEL::SetTouchdownPoints: at least 3 points must be provided")
 	vessel->SetTouchdownPoints (tdvtx, ntdvtx);
 }
 
@@ -7632,26 +7703,26 @@ void VESSEL::AddAttExhaustMode (UINT idx, ATTITUDEMODE mode, int axis, int dir) 
 	case ATTMODE_ROT:
 		switch (axis) {
 		case 0:
-			tgs = vessel->thruster_grp_default + (dir ? THGROUP_ATT_PITCHDOWN : THGROUP_ATT_PITCHUP);
+			tgs = &vessel->thruster_grp_default[dir ? THGROUP_ATT_PITCHDOWN : THGROUP_ATT_PITCHUP];
 			break;
 		case 1:
-			tgs = vessel->thruster_grp_default + (dir ? THGROUP_ATT_YAWRIGHT : THGROUP_ATT_YAWLEFT);
+			tgs = &vessel->thruster_grp_default[dir ? THGROUP_ATT_YAWRIGHT : THGROUP_ATT_YAWLEFT];
 			break;
 		case 2:
-			tgs = vessel->thruster_grp_default + (dir ? THGROUP_ATT_BANKLEFT : THGROUP_ATT_BANKRIGHT);
+			tgs = &vessel->thruster_grp_default[dir ? THGROUP_ATT_BANKLEFT : THGROUP_ATT_BANKRIGHT];
 			break;
 		}
 		break;
 	case ATTMODE_LIN:
 		switch (axis) {
 		case 0:
-			tgs = vessel->thruster_grp_default + (dir ? THGROUP_ATT_LEFT : THGROUP_ATT_RIGHT);
+			tgs = &vessel->thruster_grp_default[dir ? THGROUP_ATT_LEFT : THGROUP_ATT_RIGHT];
 			break;
 		case 1:
-			tgs = vessel->thruster_grp_default + (dir ? THGROUP_ATT_DOWN : THGROUP_ATT_UP);
+			tgs = &vessel->thruster_grp_default[dir ? THGROUP_ATT_DOWN : THGROUP_ATT_UP];
 			break;
 		case 2:
-			tgs = vessel->thruster_grp_default + (dir ? THGROUP_ATT_BACK : THGROUP_ATT_FORWARD);
+			tgs = &vessel->thruster_grp_default[dir ? THGROUP_ATT_BACK : THGROUP_ATT_FORWARD];
 			break;
 		}
 		break;
@@ -8126,12 +8197,11 @@ THGROUP_HANDLE VESSEL::CreateThrusterGroup (THRUSTER_HANDLE *th, int nth, THGROU
 	return (THGROUP_HANDLE)vessel->CreateThrusterGroup ((ThrustSpec**)th, nth, thgt);
 }
 
+// OBSOLETE
 bool VESSEL::DelThrusterGroup (THGROUP_HANDLE &thg, THGROUP_TYPE thgt, bool delth) const
 {
-	// OBSOLETE
-	bool ok = vessel->DeleteThrusterGroup ((ThrustGroupSpec*)thg, thgt, delth);
-	thg = NULL;
-	return ok;
+	if (thg != (THGROUP_HANDLE)vessel->GetThrusterGroup(thgt)) return false;
+	return DelThrusterGroup(thg);
 }
 
 bool VESSEL::DelThrusterGroup (THGROUP_HANDLE thg, bool delth) const
@@ -8146,12 +8216,13 @@ bool VESSEL::DelThrusterGroup (THGROUP_TYPE thgt, bool delth) const
 
 THGROUP_HANDLE VESSEL::GetThrusterGroupHandle (THGROUP_TYPE thgt) const
 {
-	return (THGROUP_HANDLE)(vessel->thruster_grp_default+thgt);
+	ThrustGroupSpec* tgs = vessel->GetThrusterGroup(thgt);
+	return (THGROUP_HANDLE)tgs;
 }
 
 THGROUP_HANDLE VESSEL::GetUserThrusterGroupHandleByIndex (DWORD idx) const
 {
-	if (idx >= vessel->nthruster_grp_user) return 0;
+	if (idx >= vessel->thruster_grp_user.size()) return 0;
 	return (THGROUP_HANDLE)vessel->thruster_grp_user[idx];
 }
 
@@ -8173,13 +8244,13 @@ THRUSTER_HANDLE VESSEL::GetGroupThruster (THGROUP_HANDLE thg, DWORD idx) const
 
 THRUSTER_HANDLE VESSEL::GetGroupThruster (THGROUP_TYPE thgt, DWORD idx) const
 {
-	ThrustGroupSpec *tgs = vessel->thruster_grp_default+thgt;
-	return (idx < tgs->nts ? (THRUSTER_HANDLE)(tgs->ts[idx]) : NULL);
+	ThrustGroupSpec* tgs = vessel->GetThrusterGroup(thgt);
+	return (THRUSTER_HANDLE)(tgs && idx < tgs->nts ? tgs->ts[idx] : nullptr);
 }
 
 DWORD VESSEL::GetUserThrusterGroupCount () const
 {
-	return vessel->nthruster_grp_user;
+	return vessel->thruster_grp_user.size();
 }
 
 bool VESSEL::ThrusterGroupDefined (THGROUP_TYPE thgt) const
