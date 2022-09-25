@@ -136,6 +136,7 @@ public:
 	bool clbkParticleStreamExists (const oapi::ParticleStream *ps);
 
 	// texture functions
+	SURFHANDLE clbkLoadSurface(const char* fname, DWORD attrib, bool bPath = false);
 	SURFHANDLE clbkLoadTexture (const char *fname, DWORD flags = 0);
 	void clbkReleaseTexture (SURFHANDLE hTex);
 	bool clbkSetMeshTexture (DEVMESHHANDLE hMesh, DWORD texidx, SURFHANDLE tex);

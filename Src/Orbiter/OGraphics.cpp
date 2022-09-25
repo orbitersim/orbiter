@@ -1456,6 +1456,16 @@ bool OrbiterGraphics::clbkParticleStreamExists (const oapi::ParticleStream *ps)
 // Texture functions
 // =======================================================================
 
+SURFHANDLE OrbiterGraphics::clbkLoadSurface(const char* fname, DWORD attrib, bool bPath)
+{
+	DWORD flags = 0;
+	if (attrib & OAPISURFACE_SYSMEM)     flags |= 0x1;
+	if (attrib & OAPISURFACE_UNCOMPRESS) flags |= 0x2;
+	if (attrib & OAPISURFACE_NOMIPMAPS)  flags |= 0x4;
+	if (attrib & OAPISURFACE_SHARED)     flags |= 0x8;
+	return clbkLoadTexture(fname, flags);
+}
+
 SURFHANDLE OrbiterGraphics::clbkLoadTexture (const char *fname, DWORD flags)
 {
 	LPDIRECTDRAWSURFACE7 tex =  NULL;
