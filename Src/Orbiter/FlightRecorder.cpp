@@ -610,8 +610,11 @@ void Vessel::FRecorder_PlayEvent ()
 						for (i = 0; i < NTHGROUP; i++)
 							if (!_strnicmp (s, THGROUPSTR[i], strlen (THGROUPSTR[i]))) break;
 						if (i < NTHGROUP && sscanf (s+strlen(THGROUPSTR[i])+1, "%lf", &lvl)) {
-							for (DWORD j = 0; j < thruster_grp_default[i].nts; j++)
-								SetThrusterLevel_playback (thruster_grp_default[i].ts[j], lvl);
+							ThrustGroupSpec* tgs = GetThrusterGroup((THGROUP_TYPE)i);
+							if (tgs) {
+								for (auto it = tgs->ts.begin(); it != tgs->ts.end(); it++)
+									SetThrusterLevel_playback(*it, lvl);
+							}
 						}
 					}
 				}

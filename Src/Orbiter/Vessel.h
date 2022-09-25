@@ -96,10 +96,9 @@ typedef struct {      // logical thruster definition
 } ThrustSpec;
 
 struct ThrustGroupSpec {      // thruster group definition
-	ThrustSpec **ts;        // list of thrusters
-	DWORD nts;              // number of thrusters
-	double maxth_sum;       // sum of maxth of all components
-	ThrustGroupSpec() { ts = nullptr;  nts = 0; maxth_sum = 0.0; }
+	std::vector<ThrustSpec*> ts; // list of thrusters
+	double maxth_sum;            // sum of maxth of all components
+	ThrustGroupSpec() { maxth_sum = 0.0; }
 };
 
 typedef struct {      // obsolete exhaust render definition
@@ -508,16 +507,21 @@ public:
 	ThrustGroupSpec* GetThrusterGroup(THGROUP_TYPE thgt);
 	const ThrustGroupSpec* GetThrusterGroup(THGROUP_TYPE thgt) const;
 
-	inline DWORD NumThrusters (THGROUP_TYPE thg) const
-	{ return thruster_grp_default[thg].nts; }
-	// number of thrusters in thruster group thg
+	/**
+	 * \brief Return the number of thrusters in a group.
+	 * \param thgt Thruster group ID (see \ref THGROUP_TYPE). This can be one of the
+	 *    default types or a user-defined type (THGROUP_USER+x)
+	 * \return Number of thrusters assigned to the group
+	 */
+	DWORD NumThrusters(THGROUP_TYPE thgt) const;
 
-	inline bool IsGroupThruster (ThrustGroupSpec *tgs, ThrustSpec *ts)
-	{ for (DWORD i = 0; i < tgs->nts; i++)
-	      if (tgs->ts[i] == ts) return true;
-	  return false;
-	}
-	// returns true if ts is a member of tgs, false otherwise
+	/**
+	 * \brief Check if a thruster is member of a thruster group
+	 * \param tgs Pointer to thruster group object (must not be 0)
+	 * \param ts Pointer to thruster object
+	 * \return True if ts is a member of group tgs, false otherwise.
+	 */
+	bool IsGroupThruster(ThrustGroupSpec* tgs, ThrustSpec* ts) const;
 
 	/**
 	 * \brief Set the permanent thruster level for all thrusters in a group
@@ -527,8 +531,9 @@ public:
 	inline void SetThrusterGroupLevel (ThrustGroupSpec *tgs, double level)
 	{
 		dCHECK(tgs, "Zero ThrustGroupSpec pointer not permitted.")
-		for (DWORD i = 0; i < tgs->nts; i++)
-			SetThrusterLevel (tgs->ts[i], level);
+
+		for (auto it = tgs->ts.begin(); it != tgs->ts.end(); it++)
+			SetThrusterLevel(*it, level);
 	}
 
 	/**
@@ -549,8 +554,9 @@ public:
 	inline void SetThrusterGroupOverride(ThrustGroupSpec* tgs, double level)
 	{
 		dCHECK(tgs, "Zero ThrustGroupSpec pointer not permitted.")
-		for (DWORD i = 0; i < tgs->nts; i++)
-			SetThrusterOverride(tgs->ts[i], level);
+
+		for (auto it = tgs->ts.begin(); it != tgs->ts.end(); it++)
+			SetThrusterOverride(*it, level);
 	}
 
 	/**
@@ -597,8 +603,9 @@ public:
 	inline void IncThrusterGroupOverride (ThrustGroupSpec *tgs, double dlevel)
 	{
 		dCHECK(tgs, "Zero ThrustGroupSpec pointer not permitted.")
-		for (DWORD i = 0; i < tgs->nts; i++)
-			IncThrusterOverride (tgs->ts[i], dlevel);
+
+		for (auto it = tgs->ts.begin(); it != tgs->ts.end(); it++)
+			IncThrusterOverride (*it, dlevel);
 	}
 
 	/**

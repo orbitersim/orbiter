@@ -244,10 +244,10 @@ bool Vessel::ParseScenarioLine2 (char *line, void *status)
 
 		if (sscanf (line+11, "%lf", &lvl)) {
 			if (lvl > 0) {
-				for (n = 0; n < thruster_grp_default[THGROUP_MAIN].nts; n++) {
-					ThrustSpec *ts = thruster_grp_default[THGROUP_MAIN].ts[n];
+				ThrustGroupSpec& tgs = thruster_grp_default[THGROUP_MAIN];
+				for (auto it = tgs.ts.begin(); it != tgs.ts.end(); it++) {
 					for (nn = 0; nn < nthruster; nn++) {
-						if (thruster[nn] == ts) {
+						if (thruster[nn] == *it) {
 							VESSELSTATUS2::THRUSTSPEC *tmp = new VESSELSTATUS2::THRUSTSPEC[vs->nthruster+1]; TRACENEW
 							if (vs->nthruster) { memcpy (tmp, vs->thruster, vs->nthruster*sizeof (VESSELSTATUS2::THRUSTSPEC)); delete []vs->thruster; }
 							tmp[vs->nthruster].idx = nn;
@@ -258,10 +258,10 @@ bool Vessel::ParseScenarioLine2 (char *line, void *status)
 					}
 				}
 			} else if (lvl < 0) {
-				for (n = 0; n < thruster_grp_default[THGROUP_RETRO].nts; n++) {
-					ThrustSpec *ts = thruster_grp_default[THGROUP_RETRO].ts[n];
+				ThrustGroupSpec& tgs = thruster_grp_default[THGROUP_RETRO];
+				for (auto it = tgs.ts.begin(); it != tgs.ts.end(); it++) {
 					for (nn = 0; nn < nthruster; nn++) {
-						if (thruster[nn] == ts) {
+						if (thruster[nn] == *it) {
 							VESSELSTATUS2::THRUSTSPEC *tmp = new VESSELSTATUS2::THRUSTSPEC[vs->nthruster+1]; TRACENEW
 							if (vs->nthruster) { memcpy (tmp, vs->thruster, vs->nthruster*sizeof (VESSELSTATUS2::THRUSTSPEC)); delete []vs->thruster; }
 							tmp[vs->nthruster].idx = nn;
@@ -276,10 +276,10 @@ bool Vessel::ParseScenarioLine2 (char *line, void *status)
 	} else if (!_strnicmp (line, "ENGINE_HOVR", 11)) { // old style hover thruster status
 
 		if (sscanf (line+11, "%lf", &lvl) && lvl > 0) {
-			for (n = 0; n < thruster_grp_default[THGROUP_HOVER].nts; n++) {
-				ThrustSpec *ts = thruster_grp_default[THGROUP_HOVER].ts[n];
+			ThrustGroupSpec& tgs = thruster_grp_default[THGROUP_HOVER];
+			for (auto it = tgs.ts.begin(); it != tgs.ts.end(); it++) {
 				for (nn = 0; nn < nthruster; nn++) {
-					if (thruster[nn] == ts) {
+					if (thruster[nn] == *it) {
 						VESSELSTATUS2::THRUSTSPEC *tmp = new VESSELSTATUS2::THRUSTSPEC[vs->nthruster+1]; TRACENEW
 						if (vs->nthruster) { memcpy (tmp, vs->thruster, vs->nthruster*sizeof (VESSELSTATUS2::THRUSTSPEC)); delete []vs->thruster; }
 						tmp[vs->nthruster].idx = nn;
