@@ -308,7 +308,7 @@ void Vessel::SetDefaultState ()
 	nosewheeldir        = 0.0;
 	bGroundProximity    = false;
 	sp.is_in_atm        = false;
-	bThrustEngaged      = false;
+	m_bThrustEngaged    = false;
 	bForceActive        = false;
 	rpressure           = g_pOrbiter->Cfg()->CfgPhysicsPrm.bRadiationPressure;
 	Lift = Drag         = 0.0;
@@ -344,7 +344,7 @@ void Vessel::DefaultGenericCaps ()
 	clipradius         = 0.0; // flag for clipradius=size
 	vislimit           = spotlimit = 1e-3;
 	emass              = 1e3;
-	isp_default        = 5e4;
+	m_defaultIsp       = 5e4;
 	cog_elev           = 5.0;
 	CWz[0]             = 0.1;
 	CWz[1]             = 0.3;
@@ -391,7 +391,6 @@ void Vessel::DefaultGenericCaps ()
 	attach             = 0;
 	enablefocus        = true;
 	extpassmesh        = false;
-	nthruster          = 0;
 	nexhaust           = 0;
 	noexhaust          = 0;
 	ncontrail          = 0;
@@ -491,7 +490,7 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 		else       CreatePropellantResource (d);
 	}
 
-	GetItemReal   (ifs, "Isp", isp_default);
+	GetItemReal   (ifs, "Isp", m_defaultIsp);
 
 	if (GetItemReal (ifs, "MaxMainThrust", d))
 		SetMaxThrust_old (ENGINE_MAIN, d);
@@ -536,146 +535,146 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 
 
 	// main engine exhaust refs
-	if (thruster_grp_default[0].ts.size()) {
+	if (m_thrusterGroupDef[0].ts.size()) {
 		for (i = 0;; i++) {
 			sprintf (cbuf, "MEngineRef%d", i+1);
 			if (!GetItemVECTOR (ifs, cbuf, tmp)) break;
-			EXHAUSTSPEC es = {(THRUSTER_HANDLE)thruster_grp_default[0].ts[0], NULL, &tmp, NULL, 16.0, 1.0, 0.0, 0.0, NULL, EXHAUST_CONSTANTPOS};
+			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[0].ts[0], NULL, &tmp, NULL, 16.0, 1.0, 0.0, 0.0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
 	}
 	// retro engine exhaust refs
-	if (thruster_grp_default[1].ts.size()) {
+	if (m_thrusterGroupDef[1].ts.size()) {
 		for (i = 0;; i++) {
 			sprintf (cbuf, "REngineRef%d", i+1);
 			if (!GetItemVECTOR (ifs, cbuf, tmp)) break;
-			EXHAUSTSPEC es = {(THRUSTER_HANDLE)thruster_grp_default[1].ts[0], NULL, &tmp, NULL, 8.0, 0.5, 0.0, 0.0, NULL, EXHAUST_CONSTANTPOS};
+			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[1].ts[0], NULL, &tmp, NULL, 8.0, 0.5, 0.0, 0.0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
 	}
 	// hover engine exhaust refs
-	if (thruster_grp_default[2].ts.size()) {
+	if (m_thrusterGroupDef[2].ts.size()) {
 		for (i = 0;; i++) {
 			sprintf (cbuf, "HEngineRef%d", i+1);
 			if (!GetItemVECTOR (ifs, cbuf, tmp)) break;
-			EXHAUSTSPEC es = {(THRUSTER_HANDLE)thruster_grp_default[2].ts[0], NULL, &tmp, NULL, 12.0, 1.0, 0.0, 0.0, NULL, EXHAUST_CONSTANTPOS};
+			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[2].ts[0], NULL, &tmp, NULL, 12.0, 1.0, 0.0, 0.0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
 	}
 	// attitude thruster exhaust refs
 	if (GetItemVECTOR (ifs, "AttRefX00", tmp)) {
-		if (thruster_grp_default[THGROUP_ATT_PITCHUP].ts.size() >= 1) {
-			EXHAUSTSPEC es = {(THRUSTER_HANDLE)thruster_grp_default[THGROUP_ATT_PITCHUP].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
+		if (m_thrusterGroupDef[THGROUP_ATT_PITCHUP].ts.size() >= 1) {
+			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_PITCHUP].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
-		if (thruster_grp_default[THGROUP_ATT_UP].ts.size()) {
-			EXHAUSTSPEC es = {(THRUSTER_HANDLE)thruster_grp_default[THGROUP_ATT_UP].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
+		if (m_thrusterGroupDef[THGROUP_ATT_UP].ts.size()) {
+			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_UP].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
 	}
 	if (GetItemVECTOR (ifs, "AttRefX01", tmp)) {
-		if (thruster_grp_default[THGROUP_ATT_PITCHUP].ts.size() >= 2) {
-			EXHAUSTSPEC es = {(THRUSTER_HANDLE)thruster_grp_default[THGROUP_ATT_PITCHUP].ts[1], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
+		if (m_thrusterGroupDef[THGROUP_ATT_PITCHUP].ts.size() >= 2) {
+			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_PITCHUP].ts[1], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
-		if (thruster_grp_default[THGROUP_ATT_DOWN].ts.size()) {
-			EXHAUSTSPEC es = {(THRUSTER_HANDLE)thruster_grp_default[THGROUP_ATT_DOWN].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
+		if (m_thrusterGroupDef[THGROUP_ATT_DOWN].ts.size()) {
+			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_DOWN].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
 	}
 	if (GetItemVECTOR (ifs, "AttRefX10", tmp)) {
-		if (thruster_grp_default[THGROUP_ATT_PITCHDOWN].ts.size() >= 1) {
-			EXHAUSTSPEC es = {(THRUSTER_HANDLE)thruster_grp_default[THGROUP_ATT_PITCHDOWN].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
+		if (m_thrusterGroupDef[THGROUP_ATT_PITCHDOWN].ts.size() >= 1) {
+			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_PITCHDOWN].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
-		if (thruster_grp_default[THGROUP_ATT_DOWN].ts.size()) {
-			EXHAUSTSPEC es = {(THRUSTER_HANDLE)thruster_grp_default[THGROUP_ATT_DOWN].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
+		if (m_thrusterGroupDef[THGROUP_ATT_DOWN].ts.size()) {
+			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_DOWN].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
 	}
 	if (GetItemVECTOR (ifs, "AttRefX11", tmp)) {
-		if (thruster_grp_default[THGROUP_ATT_PITCHDOWN].ts.size() >= 2) {
-			EXHAUSTSPEC es = {(THRUSTER_HANDLE)thruster_grp_default[THGROUP_ATT_PITCHDOWN].ts[1], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
+		if (m_thrusterGroupDef[THGROUP_ATT_PITCHDOWN].ts.size() >= 2) {
+			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_PITCHDOWN].ts[1], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
-		if (thruster_grp_default[THGROUP_ATT_UP].ts.size()) {
-			EXHAUSTSPEC es = {(THRUSTER_HANDLE)thruster_grp_default[THGROUP_ATT_UP].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
+		if (m_thrusterGroupDef[THGROUP_ATT_UP].ts.size()) {
+			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_UP].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
 	}
 	if (GetItemVECTOR (ifs, "AttRefY01", tmp)) {
-		if (thruster_grp_default[THGROUP_ATT_YAWLEFT].ts.size() >= 1) {
-			EXHAUSTSPEC es = {(THRUSTER_HANDLE)thruster_grp_default[THGROUP_ATT_YAWLEFT].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
+		if (m_thrusterGroupDef[THGROUP_ATT_YAWLEFT].ts.size() >= 1) {
+			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_YAWLEFT].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
-		if (thruster_grp_default[THGROUP_ATT_LEFT].ts.size()) {
-			EXHAUSTSPEC es = {(THRUSTER_HANDLE)thruster_grp_default[THGROUP_ATT_LEFT].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
+		if (m_thrusterGroupDef[THGROUP_ATT_LEFT].ts.size()) {
+			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_LEFT].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
 	}
 	if (GetItemVECTOR (ifs, "AttRefY00", tmp)) {
-		if (thruster_grp_default[THGROUP_ATT_YAWLEFT].ts.size() >= 2) {
-			EXHAUSTSPEC es = {(THRUSTER_HANDLE)thruster_grp_default[THGROUP_ATT_YAWLEFT].ts[1], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
+		if (m_thrusterGroupDef[THGROUP_ATT_YAWLEFT].ts.size() >= 2) {
+			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_YAWLEFT].ts[1], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
-		if (thruster_grp_default[THGROUP_ATT_RIGHT].ts.size()) {
-			EXHAUSTSPEC es = {(THRUSTER_HANDLE)thruster_grp_default[THGROUP_ATT_RIGHT].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
+		if (m_thrusterGroupDef[THGROUP_ATT_RIGHT].ts.size()) {
+			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_RIGHT].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
 	}
 	if (GetItemVECTOR (ifs, "AttRefY11", tmp)) {
-		if (thruster_grp_default[THGROUP_ATT_YAWRIGHT].ts.size() >= 1) {
-			EXHAUSTSPEC es = {(THRUSTER_HANDLE)thruster_grp_default[THGROUP_ATT_YAWRIGHT].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
+		if (m_thrusterGroupDef[THGROUP_ATT_YAWRIGHT].ts.size() >= 1) {
+			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_YAWRIGHT].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
-		if (thruster_grp_default[THGROUP_ATT_RIGHT].ts.size()) {
-			EXHAUSTSPEC es = {(THRUSTER_HANDLE)thruster_grp_default[THGROUP_ATT_RIGHT].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
+		if (m_thrusterGroupDef[THGROUP_ATT_RIGHT].ts.size()) {
+			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_RIGHT].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
 	}
 	if (GetItemVECTOR (ifs, "AttRefY10", tmp)) {
-		if (thruster_grp_default[THGROUP_ATT_YAWRIGHT].ts.size() >= 2) {
-			EXHAUSTSPEC es = {(THRUSTER_HANDLE)thruster_grp_default[THGROUP_ATT_YAWRIGHT].ts[1], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
+		if (m_thrusterGroupDef[THGROUP_ATT_YAWRIGHT].ts.size() >= 2) {
+			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_YAWRIGHT].ts[1], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
-		if (thruster_grp_default[THGROUP_ATT_LEFT].ts.size()) {
-			EXHAUSTSPEC es = {(THRUSTER_HANDLE)thruster_grp_default[THGROUP_ATT_LEFT].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
+		if (m_thrusterGroupDef[THGROUP_ATT_LEFT].ts.size()) {
+			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_LEFT].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
 	}
 	if (GetItemVECTOR (ifs, "AttRefZ00", tmp))
-		if (thruster_grp_default[THGROUP_ATT_BANKRIGHT].ts.size() >= 1) {
-			EXHAUSTSPEC es = {(THRUSTER_HANDLE)thruster_grp_default[THGROUP_ATT_BANKRIGHT].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
+		if (m_thrusterGroupDef[THGROUP_ATT_BANKRIGHT].ts.size() >= 1) {
+			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_BANKRIGHT].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
 	if (GetItemVECTOR (ifs, "AttRefZ01", tmp))
-		if (thruster_grp_default[THGROUP_ATT_BANKRIGHT].ts.size() >= 2) {
-			EXHAUSTSPEC es = {(THRUSTER_HANDLE)thruster_grp_default[THGROUP_ATT_BANKRIGHT].ts[1], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
+		if (m_thrusterGroupDef[THGROUP_ATT_BANKRIGHT].ts.size() >= 2) {
+			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_BANKRIGHT].ts[1], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
 	if (GetItemVECTOR (ifs, "AttRefZ11", tmp))
-		if (thruster_grp_default[THGROUP_ATT_BANKLEFT].ts.size() >= 1) {
-			EXHAUSTSPEC es = {(THRUSTER_HANDLE)thruster_grp_default[THGROUP_ATT_BANKLEFT].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
+		if (m_thrusterGroupDef[THGROUP_ATT_BANKLEFT].ts.size() >= 1) {
+			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_BANKLEFT].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
 	if (GetItemVECTOR (ifs, "AttRefZ10", tmp))
-		if (thruster_grp_default[THGROUP_ATT_BANKLEFT].ts.size() >= 2) {
-			EXHAUSTSPEC es = {(THRUSTER_HANDLE)thruster_grp_default[THGROUP_ATT_BANKLEFT].ts[1], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
+		if (m_thrusterGroupDef[THGROUP_ATT_BANKLEFT].ts.size() >= 2) {
+			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_BANKLEFT].ts[1], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
-	if (thruster_grp_default[THGROUP_ATT_BACK].ts.size()) {
+	if (m_thrusterGroupDef[THGROUP_ATT_BACK].ts.size()) {
 		for (i = 0;; i++) {
 			sprintf (cbuf, "LongAttRef0%d", i);
 			if (!GetItemVECTOR (ifs, cbuf, tmp)) break;
-			EXHAUSTSPEC es = {(THRUSTER_HANDLE)thruster_grp_default[THGROUP_ATT_BACK].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
+			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_BACK].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
 	}
-	if (thruster_grp_default[THGROUP_ATT_FORWARD].ts.size()) {
+	if (m_thrusterGroupDef[THGROUP_ATT_FORWARD].ts.size()) {
 		for (i = 0;; i++) {
 			sprintf (cbuf, "LongAttRef1%d", i);
 			if (!GetItemVECTOR (ifs, cbuf, tmp)) break;
-			EXHAUSTSPEC es = {(THRUSTER_HANDLE)thruster_grp_default[THGROUP_ATT_FORWARD].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
+			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_FORWARD].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
 	}
@@ -1229,9 +1228,9 @@ bool Vessel::GetWeightVector (Vector &G) const
 
 bool Vessel::GetThrustVector (Vector &T) const
 {
-	if (bThrustEngaged) T.Set (Thrust);
-	else                T.Set (0,0,0);
-	return bThrustEngaged;
+	if (m_bThrustEngaged) T.Set (Thrust);
+	else                  T.Set (0,0,0);
+	return m_bThrustEngaged;
 }
 
 // ==============================================================
@@ -1292,23 +1291,20 @@ bool Vessel::GetTorqueVector (Vector &M) const
 ThrustSpec *Vessel::CreateThruster (const Vector &pos, const Vector &dir, double maxth0,
 	TankSpec *ts, double isp0, double isp_ref, double p_ref)
 {
-	ThrustSpec **tmp = new ThrustSpec*[nthruster+1]; TRACENEW
-	if (nthruster) {
-		memcpy (tmp, thruster, nthruster*sizeof(ThrustSpec*));
-		delete []thruster;
-	}
-	thruster = tmp;
-	thruster[nthruster] = new ThrustSpec; TRACENEW
-	thruster[nthruster]->ref    = MakeVECTOR3(pos);
-	thruster[nthruster]->dir    = MakeVECTOR3(dir.unit());
-	thruster[nthruster]->maxth0 = maxth0;
-	thruster[nthruster]->tank   = ts;
-	thruster[nthruster]->isp0   = (isp0 > 0.0 ? isp0 : isp_default);
-	thruster[nthruster]->pfac   = (isp_ref > 0.0 ? (isp0-isp_ref)/(p_ref*isp0) : 0.0);
-	thruster[nthruster]->level  = 
-	thruster[nthruster]->level_permanent =
-	thruster[nthruster]->level_override = 0.0;
-	return thruster[nthruster++];
+	ThrustSpec* thruster = new ThrustSpec;
+	thruster->ref = MakeVECTOR3(pos);
+	thruster->dir = MakeVECTOR3(dir.unit());
+	thruster->maxth0 = maxth0;
+	thruster->tank = ts;
+	thruster->isp0 = (isp0 > 0.0 ? isp0 : m_defaultIsp);
+	thruster->pfac = (isp_ref > 0.0 ? (isp0 - isp_ref) / (p_ref * isp0) : 0.0);
+	thruster->level = 0.0;
+	thruster->level_permanent = 0.0;
+	thruster->level_override = 0.0;
+
+	m_thruster.push_back(thruster);
+
+	return thruster;
 }
 
 // ==============================================================
@@ -1331,7 +1327,7 @@ bool Vessel::DelThruster (ThrustSpec *ts)
 	}
 
 	// remove from default thruster group lists
-	for (auto it = thruster_grp_default.begin(); it != thruster_grp_default.end(); it++) {
+	for (auto it = m_thrusterGroupDef.begin(); it != m_thrusterGroupDef.end(); it++) {
 		ThrustGroupSpec* tgs = &(*it);
 		for (auto its = tgs->ts.begin(); its != tgs->ts.end(); its++) {
 			if (*its == ts)
@@ -1339,7 +1335,7 @@ bool Vessel::DelThruster (ThrustSpec *ts)
 		}
 	}
 	// remove from user thruster group lists
-	for (auto it = thruster_grp_user.begin(); it != thruster_grp_user.end(); it++) {
+	for (auto it = m_thrusterGroupUsr.begin(); it != m_thrusterGroupUsr.end(); it++) {
 		ThrustGroupSpec* tgs = *it;
 		for (auto its = tgs->ts.begin(); its != tgs->ts.end(); its++) {
 			if (*its == ts)
@@ -1347,21 +1343,11 @@ bool Vessel::DelThruster (ThrustSpec *ts)
 		}
 	}
 	// remove from full thruster list
-	for (i = 0; i < nthruster; i++) {
-		if (thruster[i] == ts) {
-			delete thruster[i];
-			if (nthruster > 1) {
-				tmp = new ThrustSpec*[nthruster-1]; TRACENEW
-				for (j = k = 0; j < nthruster; j++)
-					if (j != i) tmp[k++] = thruster[j];
-			} else {
-				tmp = 0;
-			}
-			delete []thruster;
-			thruster = tmp;
-			nthruster--;
-			return true;
-		}
+	auto it = std::find(m_thruster.begin(), m_thruster.end(), ts);
+	if (it != m_thruster.end()) {
+		delete *it;
+		m_thruster.erase(it);
+		return true;
 	}
 	return false;
 }
@@ -1370,10 +1356,8 @@ bool Vessel::DelThruster (ThrustSpec *ts)
 
 void Vessel::ShiftThrusters (const Vector &shift)
 {
-	DWORD i;
-	for (i = 0; i < nthruster; i++) {
-		thruster[i]->ref += MakeVECTOR3(shift);
-	}
+	for (auto it = m_thruster.begin(); it != m_thruster.end(); it++)
+		(*it)->ref += MakeVECTOR3(shift);
 }
 
 // ==============================================================
@@ -1417,26 +1401,23 @@ void Vessel::ClearThrusterDefinitions ()
 	ClearExhaustStreamDefinitions();
 
 	// delete the default group definitions
-	for (auto it = thruster_grp_default.begin(); it != thruster_grp_default.end(); it++) {
+	for (auto it = m_thrusterGroupDef.begin(); it != m_thrusterGroupDef.end(); it++) {
 		ThrustGroupSpec* tgs = &(*it);
 		tgs->ts.clear();
 		tgs->maxth_sum = 0.0;
 	}
 	// delete the user group definitions
-	for (auto it = thruster_grp_user.begin(); it != thruster_grp_user.end(); it++) {
+	for (auto it = m_thrusterGroupUsr.begin(); it != m_thrusterGroupUsr.end(); it++) {
 		ThrustGroupSpec* tgs = *it;
 		delete tgs;
 	}
-	thruster_grp_user.clear();
+	m_thrusterGroupUsr.clear();
 
 	// delete thrusters
-	if (nthruster) {
-		for (DWORD i = 0; i < nthruster; i++)
-			delete thruster[i];
-		delete []thruster;
-		thruster = NULL;
-		nthruster = 0;
-	}
+	for (auto it = m_thruster.begin(); it != m_thruster.end(); it++)
+		delete *it;
+	m_thruster.clear();
+
 	ResetMass(); // bring fuel mass up to date
 }
 
@@ -1488,12 +1469,12 @@ void Vessel::SetThrusterMax0 (ThrustSpec *ts, double maxth0)
 		ts->maxth0 = maxth0;
 
 		// re-calculate max group thrusts
-		for (auto it = thruster_grp_default.begin(); it != thruster_grp_default.end(); it++) {
+		for (auto it = m_thrusterGroupDef.begin(); it != m_thrusterGroupDef.end(); it++) {
 			ThrustGroupSpec& tgs = *it;
 			if (IsGroupThruster(&tgs, ts))
 				tgs.maxth_sum += dth;
 		}
-		for (auto it = thruster_grp_user.begin(); it != thruster_grp_user.end(); it++) {
+		for (auto it = m_thrusterGroupUsr.begin(); it != m_thrusterGroupUsr.end(); it++) {
 			ThrustGroupSpec* tgs = *it;
 			if (IsGroupThruster (tgs, ts))
 				tgs->maxth_sum += dth;
@@ -1509,9 +1490,9 @@ ThrustGroupSpec *Vessel::CreateThrusterGroup (ThrustSpec **ts, DWORD nts, THGROU
 	ThrustGroupSpec* tgs = GetThrusterGroup(thgt);
 	if (!tgs && thgt >= THGROUP_USER) { // new user-defined group requested
 		i = thgt - THGROUP_USER;
-		if (i >= thruster_grp_user.size())
-			thruster_grp_user.resize(i + 1);
-		tgs = thruster_grp_user[i] = new ThrustGroupSpec;
+		if (i >= m_thrusterGroupUsr.size())
+			m_thrusterGroupUsr.resize(i + 1);
+		tgs = m_thrusterGroupUsr[i] = new ThrustGroupSpec;
 	}
 	dCHECK(tgs, "Invalid THGROUP_TYPE")
 
@@ -1542,13 +1523,13 @@ bool Vessel::DeleteThrusterGroup (ThrustGroupSpec *tgs, bool delth)
 	if (!tgs) return false;
 
 	// Check if default group type
-	for (i = 0; i < thruster_grp_default.size(); i++)
-		if (tgs == &thruster_grp_default[i])
+	for (i = 0; i < m_thrusterGroupDef.size(); i++)
+		if (tgs == &m_thrusterGroupDef[i])
 			return DeleteThrusterGroup((THGROUP_TYPE)i, delth);
 
 	// Check if user-defined group
-	for (i = 0; i < thruster_grp_user.size(); i++)
-		if (tgs == thruster_grp_user[i])
+	for (i = 0; i < m_thrusterGroupUsr.size(); i++)
+		if (tgs == m_thrusterGroupUsr[i])
 			return DeleteThrusterGroup((THGROUP_TYPE)(THGROUP_USER + i), delth);
 
 	return false;
@@ -1572,7 +1553,7 @@ bool Vessel::DeleteThrusterGroup (THGROUP_TYPE thgt, bool delth)
 
 	if (thgt >= THGROUP_USER) {
 		delete tgs;
-		thruster_grp_user[thgt - THGROUP_USER] = nullptr;
+		m_thrusterGroupUsr[thgt - THGROUP_USER] = nullptr;
 	}
 
 	// If the group was user-defined, the user-defined list is not shrunk here even if the
@@ -1587,9 +1568,9 @@ ThrustGroupSpec* Vessel::GetThrusterGroup(THGROUP_TYPE thgt)
 {
 	ThrustGroupSpec* tgs = nullptr;
 	if (thgt < THGROUP_USER)
-		tgs = &thruster_grp_default[thgt];
-	else if (thgt - THGROUP_USER < thruster_grp_user.size())
-		tgs = thruster_grp_user[thgt - THGROUP_USER];
+		tgs = &m_thrusterGroupDef[thgt];
+	else if (thgt - THGROUP_USER < m_thrusterGroupUsr.size())
+		tgs = m_thrusterGroupUsr[thgt - THGROUP_USER];
 	return tgs;
 }
 
@@ -1599,9 +1580,9 @@ const ThrustGroupSpec* Vessel::GetThrusterGroup(THGROUP_TYPE thgt) const
 {
 	const ThrustGroupSpec* tgs = nullptr;
 	if (thgt < THGROUP_USER)
-		tgs = &thruster_grp_default[thgt];
-	else if (thgt - THGROUP_USER < thruster_grp_user.size())
-		tgs = thruster_grp_user[thgt - THGROUP_USER];
+		tgs = &m_thrusterGroupDef[thgt];
+	else if (thgt - THGROUP_USER < m_thrusterGroupUsr.size())
+		tgs = m_thrusterGroupUsr[thgt - THGROUP_USER];
 	return tgs;
 }
 
@@ -2060,33 +2041,33 @@ bool Vessel::SetMaxThrust_old (ENGINETYPE eng, double maxth)
 
 	switch (eng) {
 	case ENGINE_MAIN:
-		if (!thruster_grp_default[THGROUP_MAIN].ts.size()) {
-			ts = CreateThruster (Vector(0,0,0), Vector(0,0,1), maxth, tnk, isp_default);
+		if (!m_thrusterGroupDef[THGROUP_MAIN].ts.size()) {
+			ts = CreateThruster (Vector(0,0,0), Vector(0,0,1), maxth, tnk, m_defaultIsp);
 			CreateThrusterGroup (&ts, 1, THGROUP_MAIN);
 			return true;
-		} else if (thruster_grp_default[THGROUP_MAIN].ts.size() == 1) {
-			thruster_grp_default[THGROUP_MAIN].ts[0]->maxth0 = 
-			thruster_grp_default[THGROUP_MAIN].maxth_sum = maxth;
+		} else if (m_thrusterGroupDef[THGROUP_MAIN].ts.size() == 1) {
+			m_thrusterGroupDef[THGROUP_MAIN].ts[0]->maxth0 = 
+			m_thrusterGroupDef[THGROUP_MAIN].maxth_sum = maxth;
 			return true;
 		} else return false;
 	case ENGINE_RETRO:
-		if (!thruster_grp_default[THGROUP_RETRO].ts.size()) {
-			ts = CreateThruster (Vector(0,0,0), Vector(0,0,-1), maxth, tnk, isp_default);
+		if (!m_thrusterGroupDef[THGROUP_RETRO].ts.size()) {
+			ts = CreateThruster (Vector(0,0,0), Vector(0,0,-1), maxth, tnk, m_defaultIsp);
 			CreateThrusterGroup (&ts, 1, THGROUP_RETRO);
 			return true;
-		} else if (thruster_grp_default[THGROUP_RETRO].ts.size() == 1) {
-			thruster_grp_default[THGROUP_RETRO].ts[0]->maxth0 = 
-			thruster_grp_default[THGROUP_RETRO].maxth_sum = maxth;
+		} else if (m_thrusterGroupDef[THGROUP_RETRO].ts.size() == 1) {
+			m_thrusterGroupDef[THGROUP_RETRO].ts[0]->maxth0 = 
+			m_thrusterGroupDef[THGROUP_RETRO].maxth_sum = maxth;
 			return true;
 		} else return false;
 	case ENGINE_HOVER:
-		if (!thruster_grp_default[THGROUP_HOVER].ts.size()) {
-			ts = CreateThruster (Vector(0,0,0), Vector(0,1,0), maxth, tnk, isp_default);
+		if (!m_thrusterGroupDef[THGROUP_HOVER].ts.size()) {
+			ts = CreateThruster (Vector(0,0,0), Vector(0,1,0), maxth, tnk, m_defaultIsp);
 			CreateThrusterGroup (&ts, 1, THGROUP_HOVER);
 			return true;
-		} else if (thruster_grp_default[THGROUP_HOVER].ts.size() == 1) {
-			thruster_grp_default[THGROUP_HOVER].ts[0]->maxth0 = 
-			thruster_grp_default[THGROUP_HOVER].maxth_sum = maxth;
+		} else if (m_thrusterGroupDef[THGROUP_HOVER].ts.size() == 1) {
+			m_thrusterGroupDef[THGROUP_HOVER].ts[0]->maxth0 = 
+			m_thrusterGroupDef[THGROUP_HOVER].maxth_sum = maxth;
 			return true;
 		} else return false;
 	}
@@ -2101,38 +2082,38 @@ void Vessel::CreateDefaultAttitudeSet (double maxth)
 	TankSpec *tnk = (ntank ? tank[0] : 0);
 
 	// linear groups
-	ts_lin = CreateThruster (Vector (0,0,0), Vector (0, 1,0), maxth, tnk, isp_default);
+	ts_lin = CreateThruster (Vector (0,0,0), Vector (0, 1,0), maxth, tnk, m_defaultIsp);
 	CreateThrusterGroup (&ts_lin, 1, THGROUP_ATT_UP);
-	ts_lin = CreateThruster (Vector (0,0,0), Vector (0,-1,0), maxth, tnk, isp_default);
+	ts_lin = CreateThruster (Vector (0,0,0), Vector (0,-1,0), maxth, tnk, m_defaultIsp);
 	CreateThrusterGroup (&ts_lin, 1, THGROUP_ATT_DOWN);
-	ts_lin = CreateThruster (Vector (0,0,0), Vector (-1,0,0), maxth, tnk, isp_default);
+	ts_lin = CreateThruster (Vector (0,0,0), Vector (-1,0,0), maxth, tnk, m_defaultIsp);
 	CreateThrusterGroup (&ts_lin, 1, THGROUP_ATT_LEFT);
-	ts_lin = CreateThruster (Vector (0,0,0), Vector ( 1,0,0), maxth, tnk, isp_default);
+	ts_lin = CreateThruster (Vector (0,0,0), Vector ( 1,0,0), maxth, tnk, m_defaultIsp);
 	CreateThrusterGroup (&ts_lin, 1, THGROUP_ATT_RIGHT);
-	ts_lin = CreateThruster (Vector (0,0,0), Vector (0,0, 1), maxth, tnk, isp_default);
+	ts_lin = CreateThruster (Vector (0,0,0), Vector (0,0, 1), maxth, tnk, m_defaultIsp);
 	CreateThrusterGroup (&ts_lin, 1, THGROUP_ATT_FORWARD);
-	ts_lin = CreateThruster (Vector (0,0,0), Vector (0,0,-1), maxth, tnk, isp_default);
+	ts_lin = CreateThruster (Vector (0,0,0), Vector (0,0,-1), maxth, tnk, m_defaultIsp);
 	CreateThrusterGroup (&ts_lin, 1, THGROUP_ATT_BACK);
 
 	// rotational groups
 	maxth *= 0.5; // since each group has 2 thrusters
-	ts_rot[0] = CreateThruster (Vector(0,0, size), Vector(0, 1,0), maxth, tnk, isp_default);
-	ts_rot[1] = CreateThruster (Vector(0,0,-size), Vector(0,-1,0), maxth, tnk, isp_default);
+	ts_rot[0] = CreateThruster (Vector(0,0, size), Vector(0, 1,0), maxth, tnk, m_defaultIsp);
+	ts_rot[1] = CreateThruster (Vector(0,0,-size), Vector(0,-1,0), maxth, tnk, m_defaultIsp);
 	CreateThrusterGroup (ts_rot, 2, THGROUP_ATT_PITCHUP);
-	ts_rot[0] = CreateThruster (Vector(0,0, size), Vector(0,-1,0), maxth, tnk, isp_default);
-	ts_rot[1] = CreateThruster (Vector(0,0,-size), Vector(0, 1,0), maxth, tnk, isp_default);
+	ts_rot[0] = CreateThruster (Vector(0,0, size), Vector(0,-1,0), maxth, tnk, m_defaultIsp);
+	ts_rot[1] = CreateThruster (Vector(0,0,-size), Vector(0, 1,0), maxth, tnk, m_defaultIsp);
 	CreateThrusterGroup (ts_rot, 2, THGROUP_ATT_PITCHDOWN);
-	ts_rot[0] = CreateThruster (Vector(0,0, size), Vector(-1,0,0), maxth, tnk, isp_default);
-	ts_rot[1] = CreateThruster (Vector(0,0,-size), Vector( 1,0,0), maxth, tnk, isp_default);
+	ts_rot[0] = CreateThruster (Vector(0,0, size), Vector(-1,0,0), maxth, tnk, m_defaultIsp);
+	ts_rot[1] = CreateThruster (Vector(0,0,-size), Vector( 1,0,0), maxth, tnk, m_defaultIsp);
 	CreateThrusterGroup (ts_rot, 2, THGROUP_ATT_YAWLEFT);
-	ts_rot[0] = CreateThruster (Vector(0,0, size), Vector( 1,0,0), maxth, tnk, isp_default);
-	ts_rot[1] = CreateThruster (Vector(0,0,-size), Vector(-1,0,0), maxth, tnk, isp_default);
+	ts_rot[0] = CreateThruster (Vector(0,0, size), Vector( 1,0,0), maxth, tnk, m_defaultIsp);
+	ts_rot[1] = CreateThruster (Vector(0,0,-size), Vector(-1,0,0), maxth, tnk, m_defaultIsp);
 	CreateThrusterGroup (ts_rot, 2, THGROUP_ATT_YAWRIGHT);
-	ts_rot[0] = CreateThruster (Vector( size,0,0), Vector(0, 1,0), maxth, tnk, isp_default);
-	ts_rot[1] = CreateThruster (Vector(-size,0,0), Vector(0,-1,0), maxth, tnk, isp_default);
+	ts_rot[0] = CreateThruster (Vector( size,0,0), Vector(0, 1,0), maxth, tnk, m_defaultIsp);
+	ts_rot[1] = CreateThruster (Vector(-size,0,0), Vector(0,-1,0), maxth, tnk, m_defaultIsp);
 	CreateThrusterGroup (ts_rot, 2, THGROUP_ATT_BANKLEFT);
-	ts_rot[0] = CreateThruster (Vector(-size,0,0), Vector(0, 1,0), maxth, tnk, isp_default);
-	ts_rot[1] = CreateThruster (Vector( size,0,0), Vector(0,-1,0), maxth, tnk, isp_default);
+	ts_rot[0] = CreateThruster (Vector(-size,0,0), Vector(0, 1,0), maxth, tnk, m_defaultIsp);
+	ts_rot[1] = CreateThruster (Vector( size,0,0), Vector(0,-1,0), maxth, tnk, m_defaultIsp);
 	CreateThrusterGroup (ts_rot, 2, THGROUP_ATT_BANKRIGHT);
 }
 
@@ -2476,8 +2457,8 @@ void Vessel::DelPropellantResource (TankSpec *ts)
 	DWORD i, j, k;
 
 	// unlink thrusters which refer to ts
-	for (i = 0; i < nthruster; i++)
-		if (thruster[i]->tank == ts) thruster[i]->tank = 0;
+	for (auto it = m_thruster.begin(); it != m_thruster.end(); it++)
+		if ((*it)->tank == ts) (*it)->tank = nullptr;
 
 	// if we delete the default tank, reset
 	if (def_tank == ts) def_tank = 0;
@@ -2502,15 +2483,13 @@ void Vessel::DelPropellantResource (TankSpec *ts)
 
 void Vessel::ClearPropellantResources ()
 {
-	DWORD i;
-
 	// unlink all thrusters from their fuel resources
-	for (i = 0; i < nthruster; i++)
-		thruster[i]->tank = 0;
+	for (auto it = m_thruster.begin(); it != m_thruster.end(); it++)
+		(*it)->tank = nullptr;
 
 	// remove all fuel resources
 	if (ntank) {
-		for (i = 0; i < ntank; i++)
+		for (DWORD i = 0; i < ntank; i++)
 			delete tank[i];
 		delete []tank;
 		tank = NULL;
@@ -3721,7 +3700,7 @@ double Vessel::MaxAngularMoment (int axis) const
 	Vector vcg;
 	VECTOR3 M = {0,0,0};
 	supervessel->GetCG (this, vcg);
-	const ThrustGroupSpec *tgs = &thruster_grp_default[THGROUP_ATT_PITCHUP+axis];
+	const ThrustGroupSpec *tgs = &m_thrusterGroupDef[THGROUP_ATT_PITCHUP+axis];
 	for (auto it = tgs->ts.begin(); it != tgs->ts.end(); it++)
 		M += crossp ((*it)->dir * (*it)->maxth0, (*it)->ref-MakeVECTOR3(vcg));
 	return length (M);
@@ -3752,7 +3731,7 @@ void Vessel::UpdateBodyForces ()
 {
 	Lift = Drag = 0.0;
 
-	if (nthruster) UpdateThrustForces ();
+	if (m_thruster.size()) UpdateThrustForces ();
 	if (CtrlSurfSyncMode) ApplyControlSurfaceLevels ();
 	if (fstatus != FLIGHTSTATUS_LANDED) {
 		if (sp.is_in_atm) UpdateAerodynamicForces ();
@@ -3909,27 +3888,28 @@ void Vessel::UpdateThrustForces ()
 	for (j = 0; j < ntank; j++) tank[j]->pmass = tank[j]->mass;
 
 	// update thruster-induced forces
-	bThrustEngaged = false;
+	m_bThrustEngaged = false;
 	Thrust.Set (0,0,0);
-	for (j = 0; j < nthruster; j++) {
-		if (thruster[j]->level = max (0.0, min (1.0, thruster[j]->level_permanent + thruster[j]->level_override))) {
-			if ((ts = thruster[j]->tank) && ts->mass) {        // fuel available?
-				th = thruster[j]->maxth0 * thruster[j]->level; // vacuum thrust
-				if (burnfuel) {                                // consume fuel
-					ts->mass -= th/(ts->efficiency * thruster[j]->isp0) * td.SimDT;
+	for (auto it = m_thruster.begin(); it != m_thruster.end(); it++) {
+		ThrustSpec* thruster = *it;
+		if (thruster->level = max (0.0, min (1.0, thruster->level_permanent + thruster->level_override))) {
+			if ((ts = thruster->tank) && ts->mass) {     // fuel available?
+				th = thruster->maxth0 * thruster->level; // vacuum thrust
+				if (burnfuel) {                          // consume fuel
+					ts->mass -= th/(ts->efficiency * thruster->isp0) * td.SimDT;
 					if (ts->mass < 0.0) ts->mass = 0.0;
 				}
-				th *= ThrusterAtmScale (thruster[j], sp.atmp);  // atmospheric thrust scaling
-				F = MakeVector(thruster[j]->dir * th);
+				th *= ThrusterAtmScale (thruster, sp.atmp);  // atmospheric thrust scaling
+				F = MakeVector(thruster->dir * th);
 				Thrust += F;
-				Amom_add += crossp (F, MakeVector(thruster[j]->ref));
-				bThrustEngaged = true;
-			} else thruster[j]->level = thruster[j]->level_permanent = 0.0; // no fuel
+				Amom_add += crossp (F, MakeVector(thruster->ref));
+				m_bThrustEngaged = true;
+			} else thruster->level = thruster->level_permanent = 0.0; // no fuel
 		}
-		thruster[j]->level_override = 0.0; // reset temporary thruster level
-		//thruster[j]->level = thruster[j]->level_permanent;
+		thruster->level_override = 0.0; // reset temporary thruster level
+		//thruster->level = thruster->level_permanent;
 	}
-	if (bThrustEngaged) Flin_add += Thrust;
+	if (m_bThrustEngaged) Flin_add += Thrust;
 }
 
 // =======================================================================
@@ -6059,10 +6039,10 @@ void Vessel::WriteDefault (ostream &ofs) const
 	}
 	if (!needlabel) ofs << endl;
 
-	for (i = 0, needlabel = true; i < nthruster; i++)
-		if (thruster[i]->level_permanent) {
+	for (i = 0, needlabel = true; i < m_thruster.size(); i++)
+		if (m_thruster[i]->level_permanent) {
 			if (needlabel) { ofs << "  THLEVEL"; needlabel = false; }
-			ofs << ' ' << i << ':' << thruster[i]->level_permanent;
+			ofs << ' ' << i << ':' << m_thruster[i]->level_permanent;
 		}
 	if (!needlabel) ofs << endl;
 
@@ -6201,7 +6181,7 @@ double VESSEL::GetFuelRate () const
 
 double VESSEL::GetISP () const
 {
-	return vessel->isp_default;
+	return vessel->m_defaultIsp;
 }
 
 double VESSEL::GetMaxThrust (ENGINETYPE eng) const
@@ -6897,7 +6877,7 @@ double VESSEL::GetGravityGradientDamping () const
 
 void VESSEL::SetISP (double isp) const
 {
-	vessel->isp_default = isp;
+	vessel->m_defaultIsp = isp;
 }
 
 void VESSEL::SetMaxThrust (ENGINETYPE eng, double th) const
@@ -7570,16 +7550,16 @@ UINT VESSEL::AddExhaustRef (EXHAUSTTYPE exh, VECTOR3 &pos, double lscale, double
 
 	switch (exh) {
 	case EXHAUST_MAIN:
-		if (!vessel->thruster_grp_default[THGROUP_MAIN].ts.size()) return 0; // not defined
-		th = vessel->thruster_grp_default[THGROUP_MAIN].ts[0];
+		if (!vessel->m_thrusterGroupDef[THGROUP_MAIN].ts.size()) return 0; // not defined
+		th = vessel->m_thrusterGroupDef[THGROUP_MAIN].ts[0];
 		break;
 	case EXHAUST_RETRO:
-		if (!vessel->thruster_grp_default[THGROUP_RETRO].ts.size()) return 0; // not defined
-		th = vessel->thruster_grp_default[THGROUP_RETRO].ts[0];
+		if (!vessel->m_thrusterGroupDef[THGROUP_RETRO].ts.size()) return 0; // not defined
+		th = vessel->m_thrusterGroupDef[THGROUP_RETRO].ts[0];
 		break;
 	case EXHAUST_HOVER:
-		if (!vessel->thruster_grp_default[THGROUP_HOVER].ts.size()) return 0; // not defined
-		th = vessel->thruster_grp_default[THGROUP_HOVER].ts[0];
+		if (!vessel->m_thrusterGroupDef[THGROUP_HOVER].ts.size()) return 0; // not defined
+		th = vessel->m_thrusterGroupDef[THGROUP_HOVER].ts[0];
 		break;
 	default: return 0;
 	}
@@ -7664,26 +7644,26 @@ void VESSEL::AddAttExhaustMode (UINT idx, ATTITUDEMODE mode, int axis, int dir) 
 	case ATTMODE_ROT:
 		switch (axis) {
 		case 0:
-			tgs = &vessel->thruster_grp_default[dir ? THGROUP_ATT_PITCHDOWN : THGROUP_ATT_PITCHUP];
+			tgs = &vessel->m_thrusterGroupDef[dir ? THGROUP_ATT_PITCHDOWN : THGROUP_ATT_PITCHUP];
 			break;
 		case 1:
-			tgs = &vessel->thruster_grp_default[dir ? THGROUP_ATT_YAWRIGHT : THGROUP_ATT_YAWLEFT];
+			tgs = &vessel->m_thrusterGroupDef[dir ? THGROUP_ATT_YAWRIGHT : THGROUP_ATT_YAWLEFT];
 			break;
 		case 2:
-			tgs = &vessel->thruster_grp_default[dir ? THGROUP_ATT_BANKLEFT : THGROUP_ATT_BANKRIGHT];
+			tgs = &vessel->m_thrusterGroupDef[dir ? THGROUP_ATT_BANKLEFT : THGROUP_ATT_BANKRIGHT];
 			break;
 		}
 		break;
 	case ATTMODE_LIN:
 		switch (axis) {
 		case 0:
-			tgs = &vessel->thruster_grp_default[dir ? THGROUP_ATT_LEFT : THGROUP_ATT_RIGHT];
+			tgs = &vessel->m_thrusterGroupDef[dir ? THGROUP_ATT_LEFT : THGROUP_ATT_RIGHT];
 			break;
 		case 1:
-			tgs = &vessel->thruster_grp_default[dir ? THGROUP_ATT_DOWN : THGROUP_ATT_UP];
+			tgs = &vessel->m_thrusterGroupDef[dir ? THGROUP_ATT_DOWN : THGROUP_ATT_UP];
 			break;
 		case 2:
-			tgs = &vessel->thruster_grp_default[dir ? THGROUP_ATT_BACK : THGROUP_ATT_FORWARD];
+			tgs = &vessel->m_thrusterGroupDef[dir ? THGROUP_ATT_BACK : THGROUP_ATT_FORWARD];
 			break;
 		}
 		break;
@@ -8004,13 +7984,12 @@ void VESSEL::ClearThrusterDefinitions () const
 
 THRUSTER_HANDLE VESSEL::GetThrusterHandleByIndex (DWORD idx) const
 {
-	if (idx >= vessel->nthruster) return 0;
-	return (THRUSTER_HANDLE)vessel->thruster[idx];
+	return (THRUSTER_HANDLE)(idx < vessel->m_thruster.size() ? vessel->m_thruster[idx] : nullptr);
 }
 
 DWORD VESSEL::GetThrusterCount (void) const
 {
-	return vessel->nthruster;
+	return (DWORD)vessel->m_thruster.size();
 }
 
 void VESSEL::SetThrusterRef (THRUSTER_HANDLE th, const VECTOR3 &pos) const
@@ -8183,8 +8162,8 @@ THGROUP_HANDLE VESSEL::GetThrusterGroupHandle (THGROUP_TYPE thgt) const
 
 THGROUP_HANDLE VESSEL::GetUserThrusterGroupHandleByIndex (DWORD idx) const
 {
-	if (idx >= vessel->thruster_grp_user.size()) return 0;
-	return (THGROUP_HANDLE)vessel->thruster_grp_user[idx];
+	if (idx >= vessel->m_thrusterGroupUsr.size()) return 0;
+	return (THGROUP_HANDLE)vessel->m_thrusterGroupUsr[idx];
 }
 
 DWORD VESSEL::GetGroupThrusterCount (THGROUP_HANDLE thg) const
@@ -8213,7 +8192,7 @@ THRUSTER_HANDLE VESSEL::GetGroupThruster (THGROUP_TYPE thgt, DWORD idx) const
 
 DWORD VESSEL::GetUserThrusterGroupCount () const
 {
-	return vessel->thruster_grp_user.size();
+	return vessel->m_thrusterGroupUsr.size();
 }
 
 bool VESSEL::ThrusterGroupDefined (THGROUP_TYPE thgt) const

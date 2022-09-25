@@ -1290,7 +1290,7 @@ protected:
 	// Returns true if any part of the vessel is in contact with a planet surface
 	// Should be called only after update phase, and assumes that sp is up to date.
 
-	bool ThrustEngaged () const { return bThrustEngaged; }
+	bool ThrustEngaged () const { return m_bThrustEngaged; }
 
 	bool IsComponent () const { return supervessel != 0 || attach; }
 	const VesselBase *GetSuperStructure () const;
@@ -1486,18 +1486,13 @@ private:
 	// check for mesh parameters
 
 	// thruster specs
-	ThrustSpec **thruster;                       // list of thruster definitions
-	DWORD nthruster;                             // length of thruster list
-	double isp_default;                          // default fuel specific impulse [m/s] for new thrusters
-	bool bThrustEngaged;                         // true if any thrusters are engaged at current time step
+	std::vector<ThrustSpec*> m_thruster;         ///< list of thruster definitions
+	double m_defaultIsp;                         ///< default fuel specific impulse [m/s] for new thrusters
+	bool m_bThrustEngaged;                       ///< true if any thrusters are engaged at current time step
 
 	// thruster group specs
-	std::array<ThrustGroupSpec, 15> thruster_grp_default; ///< list of default user groups (see THGROUP_TYPE in OrbiterAPI.h)
-	std::vector<ThrustGroupSpec*> thruster_grp_user;      ///< list of user-defined groups
-
-	//ThrustGroupSpec thruster_grp_default[15];    // list of default thruster groups (see THGROUP_TYPE in Orbitersdk.h)
-	//ThrustGroupSpec **thruster_grp_user;         // list of user-defined groups
-	//DWORD nthruster_grp_user;                    // length of thruster_grp_user
+	std::array<ThrustGroupSpec, 15> m_thrusterGroupDef; ///< list of default thruster groups (see THGROUP_TYPE in OrbiterAPI.h)
+	std::vector<ThrustGroupSpec*> m_thrusterGroupUsr;   ///< list of user-defined groups
 
 	// exhaust specs
 	EXHAUSTSPEC **exhaust;                       // list of exhaust definitions
