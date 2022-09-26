@@ -42,14 +42,14 @@ jobs:
         mkdir out\install
     
     - name: Cache irrKlang package
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ${{ github.workspace }}/out/build/Extern/irrKlang/${{ matrix.architecture }}
         key: irrKlang-${{ matrix.architecture }}
         
     - name: Cache DirectX SDK
       id:   cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: "${{ github.workspace }}\\DXSDK"
         key:  dxsdk_jun10
