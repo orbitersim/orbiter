@@ -1595,7 +1595,8 @@ enum THGROUP_TYPE {
 	THGROUP_ATT_DOWN,        ///< translation: move down
 	THGROUP_ATT_FORWARD,     ///< translation: move forward
 	THGROUP_ATT_BACK,        ///< translation: move back
-	THGROUP_USER = 0x40      ///< user-defined group
+	THGROUP_USER = 0x40,     ///< user-defined group
+	THGROUP_USER_LAST = 0xFF ///< range limit for user-defined groups
 };
 //@}
 
