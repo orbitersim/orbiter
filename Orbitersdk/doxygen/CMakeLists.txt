@@ -3,9 +3,14 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DI
 
 set(out ${ORBITER_BINARY_SDK_DIR}/doc/API_Reference.chm)
 
+file(GLOB_RECURSE doxysrc
+	${ORBITER_SOURCE_SDK_DIR}/include/*
+)
+
 set(api_ref_out "")
 add_custom_command(
 	OUTPUT ${out}
+	DEPENDS ${doxysrc}
 	COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile 2> nul
 	COMMAND ${CMAKE_COMMAND} -E copy_if_different html/API_Reference.chm ${out}
 	JOB_POOL htmlhelp

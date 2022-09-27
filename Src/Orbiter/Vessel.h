@@ -22,10 +22,13 @@
 #define __VESSEL_H
 
 #include "Vesselbase.h"
+#include "Vesselbase.h"
 #include "elevmgr.h"
+#include <array>
 #include <fstream>
 #include "Orbitersdk.h"
 #include "GraphicsAPI.h"
+#include "Log.h"
 
 class Elements;
 class CelestialBody;
@@ -92,11 +95,11 @@ typedef struct {      // logical thruster definition
 	TankSpec *tank;         // propellant resource for this thruster
 } ThrustSpec;
 
-typedef struct {      // thruster group definition
-	ThrustSpec **ts;        // list of thrusters
-	DWORD nts;              // number of thrusters
-	double maxth_sum;       // sum of maxth of all components
-} ThrustGroupSpec;
+struct ThrustGroupSpec {      // thruster group definition
+	std::vector<ThrustSpec*> ts; // list of thrusters
+	double maxth_sum;            // sum of maxth of all components
+	ThrustGroupSpec() { maxth_sum = 0.0; }
+};
 
 typedef struct {      // obsolete exhaust render definition
 	Vector ref;             // exhaust reference pos
@@ -463,104 +466,213 @@ public:
 	// ========================================================================
 	// thruster group management
 
+	/**
+	 * \brief Assemble a set of thrusters into a logical group
+	 * \param ts Array of thruster specifications to be grouped
+	 * \param nts Length of the thruster array
+	 * \param thgt Thruster group ID (see \ref THGROUP_TYPE). This can be one of the
+	 *    default types or a user-defined type (THGROUP_USER+x)
+	 * \note Multiple user-defined groups can be created (x >= 0)
+	 * \note If the type ID refers to a group already previously created (default or
+	 *    user-defined), the previous definition is overwritten.
+	 */
 	ThrustGroupSpec *CreateThrusterGroup (ThrustSpec **ts, DWORD nts, THGROUP_TYPE thgt);
-	// assemble a set of thrusters into a logical group
 
-	bool DeleteThrusterGroup (ThrustGroupSpec *tgs, THGROUP_TYPE thgt, bool delth = false);
-	// OBSOLETE
-	// remove a thruster group definition
-	// If delth==true, the associated thrusters are also destroyed
-
+	/**
+	 * \brief Remove a thruster group definition
+	 * \param tgs Pointer to thruster group object
+	 * \param delth If true, the associated thrusters are also destroyed
+	 * \return True if successful, false if group had not previously been created by the
+	 *    vessel or didn't contain any thrusters
+	 */
 	bool DeleteThrusterGroup (ThrustGroupSpec *tgs, bool delth = false);
-	// remove a thruster group definition
-	// If delth==true, the associated thrusters are also destroyed
 
+	/**
+	 * \brief Remove a thruster group definition
+	 * \param thgt Thruster group ID (see \ref THGROUP_TYPE). This can be one of the
+	 *    default types or a user-defined type (THGROUP_USER+x)
+	 * \param delth If true, the associated thrusters are also destroyed
+	 * \return True if successful, false if group had not previously been created by the vessel
+	 */
 	bool DeleteThrusterGroup (THGROUP_TYPE thgt, bool delth = false);
-	// Remove a default thruster group definition.
-	// If delth==true, the associated thrusters are also destroyed
 
-	inline DWORD NumThrusters (THGROUP_TYPE thg) const
-	{ return thruster_grp_default[thg].nts; }
-	// number of thrusters in thruster group thg
+	/**
+	 * \brief Return the thruster group object pointer for a thruster group type.
+	 * \param thgt Thruster group ID (see \ref THGROUP_TYPE). This can be one of the
+	 *    default types or a user-defined type (THGROUP_USER+x)
+	 * \return Thruster group object pointer, or 0 if not defined.
+	 * \note For a default group (< THGROUP_USER), this always returns a valid pointer,
+	 *    even if the vessel hasn't created that group.
+	 */
+	ThrustGroupSpec* GetThrusterGroup(THGROUP_TYPE thgt);
+	const ThrustGroupSpec* GetThrusterGroup(THGROUP_TYPE thgt) const;
 
-	inline bool IsGroupThruster (ThrustGroupSpec *tgs, ThrustSpec *ts)
-	{ for (DWORD i = 0; i < tgs->nts; i++)
-	      if (tgs->ts[i] == ts) return true;
-	  return false;
-	}
-	// returns true if ts is a member of tgs, false otherwise
+	/**
+	 * \brief Return the number of thrusters in a group.
+	 * \param thgt Thruster group ID (see \ref THGROUP_TYPE). This can be one of the
+	 *    default types or a user-defined type (THGROUP_USER+x)
+	 * \return Number of thrusters assigned to the group
+	 */
+	DWORD NumThrusters(THGROUP_TYPE thgt) const;
 
+	/**
+	 * \brief Check if a thruster is member of a thruster group
+	 * \param tgs Pointer to thruster group object (must not be 0)
+	 * \param ts Pointer to thruster object
+	 * \return True if ts is a member of group tgs, false otherwise.
+	 */
+	bool IsGroupThruster(ThrustGroupSpec* tgs, ThrustSpec* ts) const;
+
+	/**
+	 * \brief Set the permanent thruster level for all thrusters in a group
+	 * \param tgs Pointer to thruster group object (must not be 0)
+	 * \param level Thruster level to be applied to all thrusters in the group (0-1)
+	 */
 	inline void SetThrusterGroupLevel (ThrustGroupSpec *tgs, double level)
 	{
-		for (DWORD i = 0; i < tgs->nts; i++)
-			SetThrusterLevel (tgs->ts[i], level);
-	}
-	// set permanent thruster level for all thrusters in group 'tgs'
+		dCHECK(tgs, "Zero ThrustGroupSpec pointer not permitted.")
 
-	inline void SetThrusterGroupOverride (ThrustGroupSpec *tgs, double level)
+		for (auto it = tgs->ts.begin(); it != tgs->ts.end(); it++)
+			SetThrusterLevel(*it, level);
+	}
+
+	/**
+	 * \brief Set the permanent thruster level for all thrusters in a group
+	 * \param thgt Thruster group specifier. This can be a default group (see \ref THGROUP_TYPE)
+	 *    or a user-defined type (THGROUP_USER+x)
+	 * \param level Thruster level to be applied to all thrusters in the group (0-1)
+	 */
+	void SetThrusterGroupLevel(THGROUP_TYPE thgt, double level);
+
+	/**
+	 * \brief Set the single-step thruster level for all thrusters in a group
+	 * \param tgs Pointer to thruster group object (must not be 0)
+	 * \param level Thruster level to be applied to all thrusters in the group (0-1)
+	 * \note This thrust level is only applied for the current time step, after which it
+	 *    reverts to the permanent level.
+	 */
+	inline void SetThrusterGroupOverride(ThrustGroupSpec* tgs, double level)
 	{
-		for (DWORD i = 0; i < tgs->nts; i++)
-			SetThrusterOverride (tgs->ts[i], level);
-	}
-	// set single-step level for all thrusters in group 'tgs'
+		dCHECK(tgs, "Zero ThrustGroupSpec pointer not permitted.")
 
-	inline void SetThrusterGroupLevel (THGROUP_TYPE thg, double level)
-	{
-		SetThrusterGroupLevel (thruster_grp_default+thg, level);
-	}
-	// set permanent thruster level for all thrusters in default group thg (excluding THGROUP_USER)
-
-	inline void SetThrusterGroupOverride (THGROUP_TYPE thg, double level)
-	{
-		SetThrusterGroupOverride (thruster_grp_default+thg, level);
+		for (auto it = tgs->ts.begin(); it != tgs->ts.end(); it++)
+			SetThrusterOverride(*it, level);
 	}
 
+	/**
+	 * \brief Set the single-step thruster level for all thrusters in a group
+	 * \param thgt Thruster group specifier. This can be a default group (see \ref THGROUP_TYPE)
+	 *    or a user-defined type (THGROUP_USER+x)
+	 * \param level Thruster level to be applied to all thrusters in the group (0-1)
+	 * \note This thrust level is only applied for the current time step, after which it
+	 *    reverts to the permanent level.
+	 */
+	void SetThrusterGroupOverride(THGROUP_TYPE thgt, double level);
+
+	/**
+	 * \brief Add a differential to the level of all thrusters in a group
+	 * \param tgs Pointer to thruster group object (must not be 0)
+	 * \param dlevel thrust group differential (can be negative)
+	 * \note The resulting level is clamped to range 0-1.
+	 * \note If the initial thrust levels were different, they will still be different
+	 *    after this call.
+	 */
 	void IncThrusterGroupLevel (ThrustGroupSpec *tgs, double dlevel);
-	// add 'dlevel' to all thruster levels in group 'tgs'
 
-	inline void IncThrusterGroupLevel (THGROUP_TYPE thg, double dlevel)
-	{
-		IncThrusterGroupLevel (thruster_grp_default+thg, dlevel);
-	}
-	// add 'dlevel' to all thruster levels in the default group thg (excluding THGROUP_USER)
+	/**
+	 * \brief Add a differential to the level of all thrusters in a group
+	 * \param thgt Thruster group specifier. This can be a default group (see \ref THGROUP_TYPE)
+	 *    or a user-defined type (THGROUP_USER+x)
+	 * \param dlevel thrust group differential (can be negative)
+	 * \note The resulting level is clamped to range 0-1.
+	 * \note If the initial thrust levels were different, they will still be different
+	 *    after this call.
+	 */
+	void IncThrusterGroupLevel(THGROUP_TYPE thgt, double dlevel);
 
+	/**
+	 * \brief Add a differential to the single-step level of all thrusters in a group
+	 * \param tgs Pointer to thruster group object (must not be 0)
+	 * \param dlevel thrust group differential (can be negative)
+	 * \note The resulting level is clamped to range 0-1.
+	 * \note If the initial thrust levels were different, they will still be different
+	 *    after this call.
+	 * \note The thrust level is increased only for the current time step, after which it
+	 *    reverts to the permanent level.
+	 */
 	inline void IncThrusterGroupOverride (ThrustGroupSpec *tgs, double dlevel)
 	{
-		for (DWORD i = 0; i < tgs->nts; i++)
-			IncThrusterOverride (tgs->ts[i], dlevel);
-	}
-	// add 'dlevel' to the temporary settings of all thrusters in group 'tgs'
-	// note that this method doesn't clamp to [0..1]
+		dCHECK(tgs, "Zero ThrustGroupSpec pointer not permitted.")
 
-	inline void IncThrusterGroupOverride (THGROUP_TYPE thg, double dlevel)
-	{
-		IncThrusterGroupOverride (thruster_grp_default+thg, dlevel);
+		for (auto it = tgs->ts.begin(); it != tgs->ts.end(); it++)
+			IncThrusterOverride (*it, dlevel);
 	}
 
-	inline double GetThrusterGroupLevel (const ThrustGroupSpec *tgs) const
-	{
-		double level = 0.0;
-		for (DWORD i = 0; i < tgs->nts; i++)
-			level += tgs->ts[i]->level;
-		return (tgs->nts ? level/tgs->nts : 0.0);
-	}
-	// return the average thrust level for a thruster group
+	/**
+	 * \brief Add a differential to the single-step level of all thrusters in a group
+	 * \param thgt Thruster group specifier. This can be a default group (see \ref THGROUP_TYPE)
+	 *    or a user-defined type (THGROUP_USER+x)
+	 * \param dlevel thrust group differential (can be negative)
+	 * \note The resulting level is clamped to range 0-1.
+	 * \note If the initial thrust levels were different, they will still be different
+	 *    after this call.
+	 * \note The thrust level is increased only for the current time step, after which it
+	 *    reverts to the permanent level.
+	 */
+	void IncThrusterGroupOverride(THGROUP_TYPE thgt, double dlevel);
 
-	inline double GetThrusterGroupLevel (THGROUP_TYPE thg) const
-	{ return GetThrusterGroupLevel (thruster_grp_default+thg); }
-	// return average thrust level for a group defined by a group identifier
+	/**
+	 * \brief Return the average thrust level of a thruster group
+	 * \param tgs Pointer to thruster group object (must not be 0)
+	 * \return Average current thrust level (0-1)
+	 */
+	double GetThrusterGroupLevel(const ThrustGroupSpec* tgs) const;
 
+	/**
+	 * \brief Return the average thrust level of a thruster group
+	 * \param thgt Thruster group specifier. This can be a default group (see \ref THGROUP_TYPE)
+	 *    or a user-defined type (THGROUP_USER+x)
+	 * \return Average current thrust level (0-1)
+	 */
+	double GetThrusterGroupLevel(THGROUP_TYPE thgt) const;
+
+	/**
+	 * \brief Return sum of vaccum thrust ratings of the thrusters in a group
+	 * \param tgs Pointer to thruster group object (must not be 0)
+	 * \return Sum of vacuum thrust ratings [N]
+	 * \note The returned value is not necessarily the effective total thrust rating of
+	 *    the group, because the thrusters may not be aligned.
+	 */
 	inline double GetThrusterGroupMaxth (const ThrustGroupSpec *tgs) const
-	{ return tgs->maxth_sum; }
-	// return the sum of max thrust ratings (vacuum) for all thrusters in a group
-	// (not necessarily the max total thrust, since thrusters may not be parallel)
+	{
+		dCHECK(tgs, "Zero ThrustGroupSpec pointer not permitted.")
+		return tgs->maxth_sum;
+	}
 
-	inline double GetThrusterGroupMaxth (THGROUP_TYPE thg) const
-	{ return thruster_grp_default[thg].maxth_sum; }
+	/**
+	 * \brief Return sum of vaccum thrust ratings of the thrusters in a group
+	 * \param thgt Thruster group specifier. This can be a default group (see \ref THGROUP_TYPE)
+	 *    or a user-defined type (THGROUP_USER+x)
+	 * \return Sum of vacuum thrust ratings [N]
+	 * \note The returned value is not necessarily the effective total thrust rating of
+	 *    the group, because the thrusters may not be aligned.
+	 */
+	double GetThrusterGroupMaxth(THGROUP_TYPE thgt) const;
 
+	/**
+	 * \brief Return the linear force vector currently produced by all thrusters in a group
+	 * \param thgt Thruster group specifier. This can be a default group (see \ref THGROUP_TYPE)
+	 *    or a user-defined type (THGROUP_USER+x)
+	 * \return Current linear force vector generated by the group [N]
+	 */
 	Vector GetThrusterGroupForce (THGROUP_TYPE thgt) const;
+
+	/**
+	 * \brief Return the linear force vector currently produced by all thrusters in a group
+	 * \param tgs Pointer to thruster group object (must not be 0)
+	 * \return Current linear force vector generated by the group [N]
+	 */
 	Vector GetThrusterGroupForce (const ThrustGroupSpec *tgs) const;
-	// returns linear force F currently produced by all thrusters in group tgs
 
 	void IncMainRetroLevel (double dlevel);
 	// This is a special treatment of the main/retro groups: increase forward thrust by
@@ -1178,7 +1290,7 @@ protected:
 	// Returns true if any part of the vessel is in contact with a planet surface
 	// Should be called only after update phase, and assumes that sp is up to date.
 
-	bool ThrustEngaged () const { return bThrustEngaged; }
+	bool ThrustEngaged () const { return m_bThrustEngaged; }
 
 	bool IsComponent () const { return supervessel != 0 || attach; }
 	const VesselBase *GetSuperStructure () const;
@@ -1191,10 +1303,13 @@ protected:
 	// given a force vector F and attack point r, this updates the linear and angular force
 	// vectors Flin and Amom for the rigid-body model
 
+	/**
+	 * \brief Return the magnitude of the maximum vacuum angular moment produced by all thrusters of a given RCS attitude group
+	 * \param axis Rotation axis index (0-5). The index is related to the thruster group by THGROUP_ATT_PITCHUP + axis
+	 * \return Magnitude of max. angular moment [Nm]
+	 * \note This also works if the vessel is part of a super-structure.
+	 */
 	double MaxAngularMoment (int axis) const;
-	// Return the maximum (vacuum) angular moment produced by all thrusters of
-	// a given attitude thruster group. This also works if the vessel is part
-	// of a super-structure
 
 	inline void SetDefaultPropellant (TankSpec *ts)
 	{ def_tank = ts; }
@@ -1371,15 +1486,13 @@ private:
 	// check for mesh parameters
 
 	// thruster specs
-	ThrustSpec **thruster;                       // list of thruster definitions
-	DWORD nthruster;                             // length of thruster list
-	double isp_default;                          // default fuel specific impulse [m/s] for new thrusters
-	bool bThrustEngaged;                         // true if any thrusters are engaged at current time step
+	std::vector<ThrustSpec*> m_thruster;         ///< list of thruster definitions
+	double m_defaultIsp;                         ///< default fuel specific impulse [m/s] for new thrusters
+	bool m_bThrustEngaged;                       ///< true if any thrusters are engaged at current time step
 
 	// thruster group specs
-	ThrustGroupSpec thruster_grp_default[15];    // list of default thruster groups (see THGROUP_TYPE in Orbitersdk.h)
-	ThrustGroupSpec **thruster_grp_user;         // list of user-defined groups
-	DWORD nthruster_grp_user;                    // length of thruster_grp_user
+	std::array<ThrustGroupSpec, 15> m_thrusterGroupDef; ///< list of default thruster groups (see THGROUP_TYPE in OrbiterAPI.h)
+	std::vector<ThrustGroupSpec*> m_thrusterGroupUsr;   ///< list of user-defined groups
 
 	// exhaust specs
 	EXHAUSTSPEC **exhaust;                       // list of exhaust definitions

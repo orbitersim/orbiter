@@ -132,7 +132,7 @@ void Body::RPlace (const Vector &rpos, const Vector &rvel)
 
 void Body::SetRPos (const Vector &p)
 {
-	dASSERT(s1, "Update state not available");
+	dCHECK(s1, "Update state not available")
 	rpos_base = s1->pos = p;
 	rpos_add.Set (0,0,0);
 }
@@ -151,14 +151,14 @@ void Body::FlushRPos ()
 
 void Body::SetRVel (const Vector &v)
 {
-	dASSERT(s1, "Update state not available");
+	dCHECK(s1, "Update state not available")
 	rvel_base = s1->vel = v;
 	rvel_add.Set (0,0,0);
 }
 
 void Body::AddRVel (const Vector &dv)
 {
-	dASSERT(s1, "Update state not available");
+	dCHECK(s1, "Update state not available")
 	rvel_base += dv;
 	s1->vel = rvel_base + rvel_add;
 }

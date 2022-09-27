@@ -102,9 +102,9 @@ bool Vessel::ParseScenarioLine (char *line, VESSELSTATUS &vs)
 				if (n < ntank && tank[n] == def_tank) vs.fuel = lvl;
 	} else if (!_strnicmp (line, "THLEVEL", 7)) {
 		for (pd = strtok (line+7, " "); pd; pd = strtok (NULL, " ")) {
-			if (sscanf (pd, "%d%c%lf", &n, &c, &lvl) == 3 && n < nthruster) {
-				thruster[n]->level = thruster[n]->level_permanent = lvl;
-				thruster[n]->level_override = 0.0;
+			if (sscanf (pd, "%d%c%lf", &n, &c, &lvl) == 3 && n < m_thruster.size()) {
+				m_thruster[n]->level = m_thruster[n]->level_permanent = lvl;
+				m_thruster[n]->level_override = 0.0;
 			}
 		}
 	} else if (!_strnicmp (line, "IDS", 3)) {
@@ -244,10 +244,10 @@ bool Vessel::ParseScenarioLine2 (char *line, void *status)
 
 		if (sscanf (line+11, "%lf", &lvl)) {
 			if (lvl > 0) {
-				for (n = 0; n < thruster_grp_default[THGROUP_MAIN].nts; n++) {
-					ThrustSpec *ts = thruster_grp_default[THGROUP_MAIN].ts[n];
-					for (nn = 0; nn < nthruster; nn++) {
-						if (thruster[nn] == ts) {
+				ThrustGroupSpec& tgs = m_thrusterGroupDef[THGROUP_MAIN];
+				for (auto it = tgs.ts.begin(); it != tgs.ts.end(); it++) {
+					for (nn = 0; nn < m_thruster.size(); nn++) {
+						if (m_thruster[nn] == *it) {
 							VESSELSTATUS2::THRUSTSPEC *tmp = new VESSELSTATUS2::THRUSTSPEC[vs->nthruster+1]; TRACENEW
 							if (vs->nthruster) { memcpy (tmp, vs->thruster, vs->nthruster*sizeof (VESSELSTATUS2::THRUSTSPEC)); delete []vs->thruster; }
 							tmp[vs->nthruster].idx = nn;
@@ -258,10 +258,10 @@ bool Vessel::ParseScenarioLine2 (char *line, void *status)
 					}
 				}
 			} else if (lvl < 0) {
-				for (n = 0; n < thruster_grp_default[THGROUP_RETRO].nts; n++) {
-					ThrustSpec *ts = thruster_grp_default[THGROUP_RETRO].ts[n];
-					for (nn = 0; nn < nthruster; nn++) {
-						if (thruster[nn] == ts) {
+				ThrustGroupSpec& tgs = m_thrusterGroupDef[THGROUP_RETRO];
+				for (auto it = tgs.ts.begin(); it != tgs.ts.end(); it++) {
+					for (nn = 0; nn < m_thruster.size(); nn++) {
+						if (m_thruster[nn] == *it) {
 							VESSELSTATUS2::THRUSTSPEC *tmp = new VESSELSTATUS2::THRUSTSPEC[vs->nthruster+1]; TRACENEW
 							if (vs->nthruster) { memcpy (tmp, vs->thruster, vs->nthruster*sizeof (VESSELSTATUS2::THRUSTSPEC)); delete []vs->thruster; }
 							tmp[vs->nthruster].idx = nn;
@@ -276,10 +276,10 @@ bool Vessel::ParseScenarioLine2 (char *line, void *status)
 	} else if (!_strnicmp (line, "ENGINE_HOVR", 11)) { // old style hover thruster status
 
 		if (sscanf (line+11, "%lf", &lvl) && lvl > 0) {
-			for (n = 0; n < thruster_grp_default[THGROUP_HOVER].nts; n++) {
-				ThrustSpec *ts = thruster_grp_default[THGROUP_HOVER].ts[n];
-				for (nn = 0; nn < nthruster; nn++) {
-					if (thruster[nn] == ts) {
+			ThrustGroupSpec& tgs = m_thrusterGroupDef[THGROUP_HOVER];
+			for (auto it = tgs.ts.begin(); it != tgs.ts.end(); it++) {
+				for (nn = 0; nn < m_thruster.size(); nn++) {
+					if (m_thruster[nn] == *it) {
 						VESSELSTATUS2::THRUSTSPEC *tmp = new VESSELSTATUS2::THRUSTSPEC[vs->nthruster+1]; TRACENEW
 						if (vs->nthruster) { memcpy (tmp, vs->thruster, vs->nthruster*sizeof (VESSELSTATUS2::THRUSTSPEC)); delete []vs->thruster; }
 						tmp[vs->nthruster].idx = nn;
@@ -534,15 +534,15 @@ void Vessel::SetState2 (const void *status)
 
 	// set thruster status
 	if (vs->flag & VS_THRUSTRESET)
-		for (idx = 0; idx < nthruster; idx++)
-			thruster[idx]->level_permanent = 0;
+		for (auto it = m_thruster.begin(); it != m_thruster.end(); it++)
+			(*it)->level_permanent = 0;
 	if (vs->flag & VS_THRUSTLIST) {
 		for (i = 0; i < vs->nthruster; i++) {
 			idx = vs->thruster[i].idx;
 			lvl = vs->thruster[i].level;
-			if (idx < nthruster) {
-				thruster[idx]->level_permanent = lvl;
-				thruster[idx]->level = min (1.0, lvl+thruster[idx]->level_override);
+			if (idx < m_thruster.size()) {
+				m_thruster[idx]->level_permanent = lvl;
+				m_thruster[idx]->level = min (1.0, lvl + m_thruster[idx]->level_override);
 			}
 		}
 	}
@@ -683,11 +683,11 @@ void Vessel::GetState2 (void *status)
 		}
 	}
 	if (vs->flag & VS_THRUSTLIST) {
-		vs->nthruster = nthruster;
-		if (!vs->thruster) { vs->thruster = new VESSELSTATUS2::THRUSTSPEC[nthruster]; TRACENEW }
-		for (i = 0; i < nthruster; i++) {
+		vs->nthruster = m_thruster.size();
+		if (!vs->thruster) { vs->thruster = new VESSELSTATUS2::THRUSTSPEC[m_thruster.size()]; TRACENEW }
+		for (i = 0; i < m_thruster.size(); i++) {
 			vs->thruster[i].idx = i;
-			vs->thruster[i].level = thruster[i]->level;
+			vs->thruster[i].level = m_thruster[i]->level;
 		}
 	}
 	if (vs->flag & VS_DOCKINFOLIST) {

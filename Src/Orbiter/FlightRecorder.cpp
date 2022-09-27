@@ -268,14 +268,14 @@ void Vessel::FRecorder_Save (bool force)
 	}
 
 	// engine attributes
-	if (nfrec_eng != nthruster) {
+	if (nfrec_eng != m_thruster.size()) {
 		if (nfrec_eng) {
 			delete []frec_eng;
 			frec_eng = NULL;
 		}
-		if (nthruster) {
-			frec_eng = new double[nfrec_eng = nthruster]; TRACENEW
-			for (j = 0; j < nthruster; j++) frec_eng[j] = -1;
+		if (m_thruster.size()) {
+			frec_eng = new double[nfrec_eng = m_thruster.size()]; TRACENEW
+			for (j = 0; j < m_thruster.size(); j++) frec_eng[j] = -1;
 			frec_eng_simt = -1e10; // force output
 		}
 		else frec_eng = 0;
@@ -284,8 +284,8 @@ void Vessel::FRecorder_Save (bool force)
 	dt = td.SimT1-frec_eng_simt;
 	alim = min (0.2, 0.1/dt);
 	ofstream ofs;
-	for (j = 0; j < nthruster; j++) {
-		if (fabs(frec_eng[j]-thruster[j]->level) > alim || force) {
+	for (j = 0; j < m_thruster.size(); j++) {
+		if (fabs(frec_eng[j]-m_thruster[j]->level) > alim || force) {
 			if (!bfopen) {
 				frec_eng_simt = td.SimT1;
 				char cbuf[256];
@@ -294,7 +294,7 @@ void Vessel::FRecorder_Save (bool force)
 				ofs << setprecision(10) << (frec_eng_simt-Tofs) << " ENG";
 				bfopen = true;
 			}
-			ofs << ' ' << j << ':' << setprecision(2) << (frec_eng[j] = thruster[j]->level);
+			ofs << ' ' << j << ':' << setprecision(2) << (frec_eng[j] = m_thruster[j]->level);
 		}
 	}
 	if (bfopen) {
@@ -479,7 +479,7 @@ bool Vessel::FRecorder_Read (const char *scname)
 
 void Vessel::FRecorder_Play ()
 {
-	dASSERT(s1, "Update state not available.");
+	dCHECK(s1, "Update state not available.")
 	StateVectors *sv = s1;
 
 	if (fstatus == FLIGHTSTATUS_FREEFLIGHT) {
@@ -605,13 +605,16 @@ void Vessel::FRecorder_PlayEvent ()
 			if (!_stricmp (s, "ENG")) {
 				while (s = strtok (NULL, " \t\n")) {
 					if (sscanf (s, "%d%c%lf", &id, &c, &lvl) == 3 && c == ':') {
-						if (id < nthruster) SetThrusterLevel_playback (thruster[id], lvl);
+						if (id < m_thruster.size()) SetThrusterLevel_playback (m_thruster[id], lvl);
 					} else {
 						for (i = 0; i < NTHGROUP; i++)
 							if (!_strnicmp (s, THGROUPSTR[i], strlen (THGROUPSTR[i]))) break;
 						if (i < NTHGROUP && sscanf (s+strlen(THGROUPSTR[i])+1, "%lf", &lvl)) {
-							for (DWORD j = 0; j < thruster_grp_default[i].nts; j++)
-								SetThrusterLevel_playback (thruster_grp_default[i].ts[j], lvl);
+							ThrustGroupSpec* tgs = GetThrusterGroup((THGROUP_TYPE)i);
+							if (tgs) {
+								for (auto it = tgs->ts.begin(); it != tgs->ts.end(); it++)
+									SetThrusterLevel_playback(*it, lvl);
+							}
 						}
 					}
 				}
