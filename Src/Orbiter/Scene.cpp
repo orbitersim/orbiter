@@ -130,6 +130,10 @@ Scene::Scene (OrbiterGraphics *og)
 
 	//csphere = new CSphereManager;
 
+	ncnst = ncnstlabel = 0;
+	vb_target = nullptr;
+	vb_cnstlabel = nullptr;
+
 	LoadStars ();
 	LoadConstellations ();
 	AllocGrids ();
@@ -755,38 +759,43 @@ int Scene::LoadConstellations ()
 {
 	extern double g_farplane;
 	const int maxn = 1000;
-	const float rad = (float)(0.5*g_farplane);
-	int i, n;
-	double xz;
+	const double rad = 0.5 * g_farplane;
+	int i;
 	struct {
 		float lng1, lat1;
 		float lng2, lat2;
 	} rec;
+
 	// load lines
 	FILE *f = fopen ("Constell.bin", "rb");
-	if (!f) return 0;
-	cnstvtx = new VERTEX_XYZ[maxn*2]; TRACENEW
-	for (n = 0; n < maxn; n++) {
-		if (!fread (&rec, sizeof(rec), 1, f)) break;
-		xz = rad * cos (rec.lat1);
-		cnstvtx[n*2].x = (float)(xz * cos(rec.lng1));
-		cnstvtx[n*2].z = (float)(xz * sin(rec.lng1));
-		cnstvtx[n*2].y = (float)(rad * sin(rec.lat1));
-		xz = rad * cos (rec.lat2);
-		cnstvtx[n*2+1].x = (float)(xz * cos(rec.lng2));
-		cnstvtx[n*2+1].z = (float)(xz * sin(rec.lng2));
-		cnstvtx[n*2+1].y = (float)(rad * sin(rec.lat2));
+	if (!f) {
+		LOGOUT_WARN("Constellation data base for celestial sphere (Constell.bin) not found. Disabling constellation lines.");
+		return 0;
 	}
-	if (n < maxn) {
-		VERTEX_XYZ *tmp = new VERTEX_XYZ[n*2]; TRACENEW
-		memcpy (tmp, cnstvtx, n*2*sizeof(VERTEX_XYZ));
+	cnstvtx = new VERTEX_XYZ[maxn*2]; TRACENEW
+	for (i = 0; i < maxn; i++) {
+		if (!fread (&rec, sizeof(rec), 1, f)) break;
+		double lat1 = (double)rec.lat1, lng1 = (double)rec.lng1, lat2 = (double)rec.lat2, lng2 = (double)rec.lng2;
+		double xz = rad * cos (lat1);
+		cnstvtx[i*2].x = (float)(xz * cos(lng1));
+		cnstvtx[i*2].z = (float)(xz * sin(lng1));
+		cnstvtx[i*2].y = (float)(rad * sin(lat1));
+		xz = rad * cos (lat2);
+		cnstvtx[i*2+1].x = (float)(xz * cos(lng2));
+		cnstvtx[i*2+1].z = (float)(xz * sin(lng2));
+		cnstvtx[i*2+1].y = (float)(rad * sin(lat2));
+	}
+	if (i < maxn) {
+		VERTEX_XYZ *tmp = new VERTEX_XYZ[i*2]; TRACENEW
+		memcpy (tmp, cnstvtx, i*2*sizeof(VERTEX_XYZ));
 		delete []cnstvtx;
 		cnstvtx = tmp;
 	}
+	ncnst = i;
 	fclose (f);
+
 	// load labels
 	f = fopen ("Constell2.bin", "rb");
-	ncnstlabel = 0;
 	if (f) {
 		struct {
 			double lng, lat;
@@ -804,7 +813,7 @@ int Scene::LoadConstellations ()
 		vb_cnstlabel->Lock (DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbpos, NULL);
 		for (i = 0; i < MAXCONST; i++) {
 			if (!fread (&buf, sizeof(buf), 1, f)) break;
-			xz = cos(buf.lat);
+			double xz = cos(buf.lat);
 			vbpos[i].x = (float)(xz * cos(buf.lng));
 			vbpos[i].z = (float)(xz * sin(buf.lng));
 			vbpos[i].y = (float)(sin(buf.lat));
@@ -820,7 +829,10 @@ int Scene::LoadConstellations ()
 		fclose(f);
 		ncnstlabel = i;
 	}
-	return ncnst = n;
+	else {
+		LOGOUT_WARN("Constellation data base for celestial sphere (Constell2.bin) not found. Disabling constellation labels.");
+	}
+	return ncnst;
 }
 
 //#pragma optimize("g",on)
