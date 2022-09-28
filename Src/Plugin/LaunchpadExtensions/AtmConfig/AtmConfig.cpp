@@ -280,7 +280,7 @@ INT_PTR CALLBACK AtmConfig::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
-		SetWindowLongPtr (hWnd, DWLP_USER, (LONG)lParam); // store class instance for later reference
+		SetWindowLongPtr (hWnd, DWLP_USER, (LONG_PTR)lParam); // store class instance for later reference
 		((AtmConfig*)lParam)->InitDialog (hWnd);
 		break;
 	case WM_COMMAND:
