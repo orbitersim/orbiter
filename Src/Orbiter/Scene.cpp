@@ -643,7 +643,13 @@ DWORD Scene::LoadStars ()
 	bool logmap = g_pOrbiter->Cfg()->CfgVisualPrm.StarPrm.map_log;   // linear/log mapping flag
 
 	if (mag_lo <= mag_hi) {
-		LOGOUT_ERR("Inconsistent magnitude limits for background star brightness. Disabling background stars.");
+		LOGOUT_WARN("Inconsistent magnitude limits for background star brightness. Disabling background stars.");
+		return 0;
+	}
+	// open file for star data
+	FILE* f = fopen("Star.bin", "rb");
+	if (!f) { // error reading data base
+		LOGOUT_WARN("Star data base for celestial sphere (Star.bin) not found. Disabling background stars.");
 		return 0;
 	}
 
@@ -656,7 +662,7 @@ DWORD Scene::LoadStars ()
 
 	extern double g_farplane;
 	DWORD lvl, plvl = 256;
-	const float rad = (float)(0.5*g_farplane);
+	const double rad = 0.5 * g_farplane;
 	// Make sure stars are within the fustrum limit
 	// Since they are rendered without z-buffer, the actual distance doesn't matter
 	float c;
@@ -685,8 +691,6 @@ DWORD Scene::LoadStars ()
 #pragma pack()
 
 	// read binary data from file
-	FILE *f = fopen ("Star.bin", "rb");
-	if (!f) return 0; // error reading data base
 	while (nv = fread (data, sizeof(StarRec), buflen, f)) {
 		// limit number of stars to predefined magnitude - SHOULD BE BINARY SEARCH
 		for (i = 0; i < nv; i++)
@@ -705,11 +709,12 @@ DWORD Scene::LoadStars ()
 			svtx[nsbuf]->Lock (DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
 			for (j = 0; j < nv; j++) {
 				StarRec &rec = data[j];
+				double rlat = (double)rec.lat, rlng = (double)rec.lng;
 				VERTEX_XYZC &v = vbuf[j];
-				xz = rad * cos (rec.lat);
-				v.x = (float)(xz * cos (rec.lng));
-				v.z = (float)(xz * sin (rec.lng));
-				v.y = (float)(rad * sin (rec.lat));
+				xz = rad * cos (rlat);
+				v.x = (float)(xz * cos (rlng));
+				v.z = (float)(xz * sin (rlng));
+				v.y = (float)(rad * sin (rlat));
 
 				if (logmap)
 					c = (float)min (1.0, max (brt_min, exp(-(rec.mag-mag_hi)*a)));
