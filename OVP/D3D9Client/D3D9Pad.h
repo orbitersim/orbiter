@@ -106,7 +106,7 @@ struct SkpVtx {
 
 	float x, y, l;			// vertex x, y, length
 	float nx, ny;			// next point
-	float px, py;			// perivous point
+	float px, py;			// previous point
 	DWORD clr, fnc;
 };
 
@@ -651,7 +651,7 @@ private:
 
 
 	// -------------------------------------------------------------------------
-	bool  _isSaveBuffer;   ///< Flag indicasting that the 'save buffer' can be used
+	bool  _isSaveBuffer;   ///< Flag indicating that the 'save buffer' can be used
 	char* _saveBuffer;     ///< 'Save' string buffer  (null-terminated @ len)
 	int   _saveBufferSize; ///< Current size of the 'save' string buffer
 

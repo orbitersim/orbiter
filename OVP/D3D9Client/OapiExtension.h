@@ -240,7 +240,7 @@ private:
 
 	// Planet rendering parameters
 	static DWORD elevationMode;
-	static bool tileLoadThread; ///< Whether to load planet tiles inseparate thread [true|false]
+	static bool tileLoadThread; ///< Whether to load planet tiles in separate thread [true|false]
 	// Body forces
 	static DWORD showBodyForceVectorsFlags;
 	static float bodyForceScale;   // [0.25..4.0]

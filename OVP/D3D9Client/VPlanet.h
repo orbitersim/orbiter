@@ -189,7 +189,7 @@ private:
 	bool bObjectShadow;       // render object shadows on surface
 	bool bFog;                // render distance fog?
 	FogParam fog;             // distance fog render parameters
-	D3D9Mesh *mesh;           // mesh for nonspherical body
+	D3D9Mesh *mesh;           // mesh for non-spherical body
 	VECTOR3	vRefPoint;		  // Auxiliary reference point for normal mapped water
 	ScatterParams SPrm;		  // Parameters for atmospheric configuration dialog
 	ScatterParams OPrm;		  // Parameters for atmospheric configuration dialog

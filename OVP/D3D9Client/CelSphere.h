@@ -104,7 +104,7 @@ protected:
 	void AllocGrids ();
 
 private:
-	oapi::D3D9Client *gc; ///< pointer to grahics client
+	oapi::D3D9Client *gc; ///< pointer to graphics client
 	float sphere_r;       ///< render radius for celestial sphere
 	DWORD nsbuf;          ///< number of vertex buffers for star positions
 //	DWORD nstar;          ///< total number of stars across all buffers

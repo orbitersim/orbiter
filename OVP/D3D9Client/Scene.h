@@ -219,7 +219,7 @@ public:
 	SUNVISPARAMS GetSunScreenVisualState();
 
 	/**
-	 * \brief Gets sun diffuse color (accounting for atmospheric shift)
+	 * \brief Gets sun diffuse colour (accounting for atmospheric shift)
 	 */
 	D3DXCOLOR GetSunDiffColor();
 

@@ -167,7 +167,7 @@ protected:
 	
 
 	/**
-	 * \brief Preloades a surface tile data into a system memory from a tile loader thread
+	 * \brief Preloads a surface tile data into a system memory from a tile loader thread
 	 */
 	virtual void PreLoad() = 0;
 
@@ -272,7 +272,7 @@ namespace eElevMode {
 
 
 /**
- * \brief Base class for tile managment classes.
+ * \brief Base class for tile management classes.
  *
  * Rendering of planetary surfaces using texture tiles at
  * variable resolutions (new version).
@@ -301,12 +301,12 @@ public:
 		const vPlanet::RenderPrm *rprm;	///< render parameters inherited from the vPlanet object
 		int maxlvl;						///< max tile level
 		MATRIX4 dwmat;					///< planet world matrix, double precision
-		MATRIX4 dwmat_tmp;				///< modifyable planet world matrix, double precision
+		MATRIX4 dwmat_tmp;				///< modifiable planet world matrix, double precision
 		MATRIX4 dviewproj;				///< view+projection matrix, double precision
 		MATRIX3 grot;					///< planet rotation matrix
 		VECTOR3 cpos;					///< planet offset vector (in global frame)
 		VECTOR3 cdir;					///< camera direction from planet centre (in planet frame)
-		VECTOR3 sdir;					///< sun direction in local planet coords
+		VECTOR3 sdir;					///< sun direction in local planet coordinates
 		double cdist;					///< camera distance from planet centre (in units of planet radii)
 		double viewap;					///< aperture of surface cap visible from camera pos
 		double scale;					///< scale factor
@@ -412,8 +412,8 @@ protected:
 	// loads one of the four subnodes of 'node', given by 'idx'
 
 	double obj_size;                 // planet radius
-	double min_elev;				 // minimum renderred elevation
-	double max_elev;				 // maximum renderred elevation
+	double min_elev;				 // minimum rendered elevation
+	double max_elev;				 // maximum rendered elevation
 	static TileLoader *loader;
 	const vPlanet *vp;				 // the planet visual
 	std::string m_dataRootDir;       // the root directory (usually ending in the cbody's name) for all tile data (textures, elevations, etc.)

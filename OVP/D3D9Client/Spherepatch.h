@@ -35,9 +35,9 @@ struct VBMESH {
 	DWORD nv_cur;					
 	DWORD nf_cur;					
 	VECTOR4 Box[8];					// bounding box vertices
-	D3DXVECTOR3 bsCnt;					// bounding sphere position
+	D3DXVECTOR3 bsCnt;				// bounding sphere position
 	float  bsRad;					// bounding sphere radius
-	bool bBox;						// true if bouinding box data is valid
+	bool bBox;						// true if bounding box data is valid
 };
 
 void CreateSphere(LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, DWORD nrings, bool hemisphere, int which_half, int texres);
