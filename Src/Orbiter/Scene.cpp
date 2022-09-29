@@ -749,7 +749,7 @@ DWORD Scene::LoadStars ()
 	}
 
 	for (i = 0; i < plvl; i++) lvlid[i] = idx;
-	LOGOUT("Loading %d records from star database", nsvtx);
+	LOGOUT("Loaded %d records from star database", nsvtx);
 
 	delete []data;
 	return nsvtx;
