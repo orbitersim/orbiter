@@ -1620,7 +1620,10 @@ protected:
 	// Functions for the celestial sphere
 public:
 #pragma pack(1)
-	struct StarRec { float lng, lat, mag; };
+	struct StarRec {
+		float lng, lat, mag;
+		WORD specidx;
+	};
 
 	/**
 	 * \brief Load star data from Orbiter's data base file.

@@ -87,9 +87,12 @@ void CelestialSphere::LoadStars ()
 	nsvtx = 0;
 	svtx = new LPDIRECT3DVERTEXBUFFER9[bufsize];
 
+#pragma pack(1)
 	struct StarRec {
 		float lng, lat, mag;
+		WORD specidx;
 	} *data = new StarRec[maxNumVertices];
+#pragma pack()
 
 	if (prm->mag_lo <= prm->mag_hi) { delete []data; data = NULL; return; }
 
@@ -121,10 +124,20 @@ void CelestialSphere::LoadStars ()
 				v.z = (float)(xz * sin (rec.lng));
 				v.y = (float)(sphere_r * sin (rec.lat));
 
+				// magnitude
 				if (prm->map_log) c = (float)min (1.0, max (prm->brt_min, exp(-(rec.mag-prm->mag_hi)*a)));
 				else 			  c = (float)min (1.0, max (prm->brt_min, a*rec.mag+b));
 
-				v.col = D3DXCOLOR(c,c,c,1);
+				// colour
+				double red_factor = (rec.specidx > 35 ? 1.0 : rec.specidx * 0.3 / 35 + 0.7);
+				double green_factor = (rec.specidx > 20 && rec.specidx < 50 ? 1.0 : rec.specidx <= 20 ? rec.specidx * 0.3 / 35 + 0.83 : (70 - rec.specidx) * 0.3 / 35 + 0.83);
+				double blue_factor = (rec.specidx < 35 ? 1.0 : 0.7 + (70 - rec.specidx) * 0.3 / 35);
+				double rescale = 3.0 / (red_factor + green_factor + blue_factor);
+				float cr = min(c * red_factor * rescale, 1.0);
+				float cg = min(c * green_factor * rescale, 1.0);
+				float cb = min(c * blue_factor * rescale, 1.0);
+
+				v.col = D3DXCOLOR(cr,cg,cb,1);
 				lvl = (int)(c*256.0*0.5);
 				if (lvl > 255) lvl = 255;
 				for (k = lvl; k < (DWORD)plvl; k++) lvlid[k] = idx;

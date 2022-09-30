@@ -691,6 +691,7 @@ DWORD Scene::LoadStars ()
 #pragma pack(1)
 	struct StarRec {
 		float lng, lat, mag;
+		WORD specidx;
 	} *data = new StarRec[buflen]; TRACENEW
 #pragma pack()
 
@@ -720,12 +721,22 @@ DWORD Scene::LoadStars ()
 				v.z = (float)(xz * sin (rlng));
 				v.y = (float)(rad * sin (rlat));
 
+				// magnitude
 				if (logmap)
 					c = (float)min (1.0, max (brt_min, exp(-(rec.mag-mag_hi)*a)));
 				else
 					c = (float)min (1.0, max (brt_min, a*rec.mag+b));
 
-				v.col = D3DRGBA (c,c,c,1);
+				// colour
+				double red_factor = (rec.specidx > 35 ? 1.0 : rec.specidx * 0.3/35 + 0.7);
+				double green_factor = (rec.specidx > 20 && rec.specidx < 50 ? 1.0 : rec.specidx <= 20 ? rec.specidx * 0.3/35 + 0.83 : (70 - rec.specidx) * 0.3/35 + 0.83);
+				double blue_factor = (rec.specidx < 35 ? 1.0 : 0.7 + (70 - rec.specidx) * 0.3/35);
+				double rescale = 3.0 / (red_factor + green_factor + blue_factor);
+				float cr = min(c * red_factor * rescale, 1.0);
+				float cg = min(c * green_factor * rescale, 1.0);
+				float cb = min(c * blue_factor * rescale, 1.0);
+
+				v.col = D3DRGBA (cr,cg,cb,1);
 				lvl = (DWORD)(c*256.0*0.5);
 				if (lvl > 255) lvl = 255;
 				for (DWORD k = lvl; k < plvl; k++) lvlid[k] = idx;

@@ -69,6 +69,12 @@ void CelestialSphere::LoadStars ()
 	} else {
 		oapiWriteLog("WARNING: Inconsistent magnitude limits for background star brightness. Disabling background stars.");
 	}
+	// open file for star data
+	FILE* f = fopen("Star.bin", "rb");
+	if (!f) {
+		oapiWriteLog("WARNING: Star data base for celestial sphere (Star.bin) not found. Disabling background stars.");
+		return;
+	}
 
 	float c;
 	int lvl, plvl = 256;
@@ -85,11 +91,11 @@ void CelestialSphere::LoadStars ()
 	if (prm->mag_lo <= prm->mag_hi) return;
 
 	// Read binary data from file
-	FILE *f = fopen ("Star.bin", "rb");
-	if (!f) return;
 
+#pragma pack(1)
 	struct StarRec {
 		float lng, lat, mag;
+		WORD specidx;
 	} *data = new StarRec[buflen];
 
 	while (nv = fread (data, sizeof(StarRec), buflen, f)) {
@@ -116,12 +122,22 @@ void CelestialSphere::LoadStars ()
 				v.z = (float)(xz * sin (rec.lng));
 				v.y = (float)(sphere_r * sin (rec.lat));
 
+				// magnitude
 				if (prm->map_log)
 					c = (float)min (1.0, max (prm->brt_min, exp(-(rec.mag-prm->mag_hi)*a)));
 				else
 					c = (float)min (1.0, max (prm->brt_min, a*rec.mag+b));
 
-				v.col = D3DRGBA (c,c,c,1);
+				// colour
+				double red_factor = (rec.specidx > 35 ? 1.0 : rec.specidx * 0.3 / 35 + 0.7);
+				double green_factor = (rec.specidx > 20 && rec.specidx < 50 ? 1.0 : rec.specidx <= 20 ? rec.specidx * 0.3 / 35 + 0.83 : (70 - rec.specidx) * 0.3 / 35 + 0.83);
+				double blue_factor = (rec.specidx < 35 ? 1.0 : 0.7 + (70 - rec.specidx) * 0.3 / 35);
+				double rescale = 3.0 / (red_factor + green_factor + blue_factor);
+				float cr = min(c * red_factor * rescale, 1.0);
+				float cg = min(c * green_factor * rescale, 1.0);
+				float cb = min(c * blue_factor * rescale, 1.0);
+
+				v.col = D3DRGBA (cr,cg,cb,1);
 				lvl = (int)(c*256.0*0.5);
 				if (lvl > 255) lvl = 255;
 				for (k = lvl; k < (DWORD)plvl; k++) lvlid[k] = idx;
