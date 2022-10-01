@@ -311,7 +311,6 @@ void ShuttleA::DefineAnimations ()
 	AddAnimationComponent(anim_gear_switch,0.0f,1.0f,&MGEAR_switch);
 
 	//CARGO ARM switch
-
 	static UINT CARGO_switch=54;
 	static MGROUP_ROTATE MCARGO_switch (1, &CARGO_switch,1, _V(-0.212890075f,2.616076201f,15.97764079f),
 														_V(0.0f,0.061554834f,-0.998103703f),1.570796327f/2.0f);
@@ -696,18 +695,18 @@ void ShuttleA::ComputePayloadMass()
 // --------------------------------------------------------------
 void ShuttleA::RedrawPanel_MFDButton (SURFHANDLE surf, int mfd, int side)
 {
-	HDC hDC = oapiGetDC (surf);
-	SelectObject (hDC, g_Param.hFont[0]);
-	SetTextColor (hDC, RGB(0, 200, 0));
-	SetTextAlign (hDC, TA_CENTER);
-	SetBkMode (hDC, TRANSPARENT);
+	oapi::Sketchpad* pSkp = oapiGetSketchpad(surf);
+	pSkp->SetFont(g_Param.pFont[0]);
+	pSkp->SetTextColor(RGB(0, 200, 0));
+	pSkp->SetTextAlign(oapi::Sketchpad::CENTER);
+	pSkp->SetBackgroundMode(oapi::Sketchpad::BK_TRANSPARENT);
 	const char *label;
 	for (int bt = 0; bt < 6; bt++) {
 		if (label = oapiMFDButtonLabel (mfd, bt+side*6))
-			TextOut (hDC, 13, 3+38*bt, label, strlen(label));
+			pSkp->Text (13, 3+38*bt, label, strlen(label));
 		else break;
 	}
-	oapiReleaseDC (surf, hDC);
+	oapiReleaseSketchpad(pSkp);
 }
 
 // --------------------------------------------------------------
