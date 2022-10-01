@@ -61,108 +61,79 @@ CelestialSphere::~CelestialSphere()
 
 void CelestialSphere::LoadStars ()
 {
+	nsvtx = nsbuf = 0;
+
 	StarRenderPrm *prm = (StarRenderPrm*)gc->GetConfigParam (CFGPRM_STARRENDERPRM);
 
-	double a, b, xz;
-
-	if (prm->mag_lo > prm->mag_hi) {
-		if (prm->map_log) {
-			// scaling factors for logarithmic brightness mapping
-			a = -log(prm->brt_min)/(prm->mag_lo-prm->mag_hi);
-		} else {
-			// scaling factors for linear brightness mapping
-			a = (1.0-prm->brt_min)/(prm->mag_hi-prm->mag_lo);
-			b = prm->brt_min - prm->mag_lo*a;
-		}
-	} else {
-		oapiWriteLog("D3D9: WARNING: Inconsistent magnitude limits for background star brightness. Disabling background stars.");
+	if (prm->mag_lo <= prm->mag_hi) {
+		oapiWriteLog("WARNING: Inconsistent magnitude limits for background star brightness. Disabling background stars.");
+		return;
 	}
 
-	DWORD nv;
+	// Read the star database
+	const std::vector<oapi::GraphicsClient::StarRec> starList = gc->LoadStarData(prm->mag_lo);
+
+	DWORD i, j, nv, k, idx = 0;
+	double a, b, xz;
 	float c;
 	int lvl, plvl = 256;
-	DWORD i, j, k, idx = 0;
-	DWORD bufsize = 16;
-	nsbuf = 0;
-	nsvtx = 0;
-	svtx = new LPDIRECT3DVERTEXBUFFER9[bufsize];
 
-#pragma pack(1)
-	struct StarRec {
-		float lng, lat, mag;
-		WORD specidx;
-	} *data = new StarRec[maxNumVertices];
-#pragma pack()
-
-	if (prm->mag_lo <= prm->mag_hi) { delete []data; data = NULL; return; }
-
-	// Read binary data from file
-	FILE *f;
-	fopen_s(&f, "Star.bin", "rb");
-	if (!f) { delete []data; data = NULL; return; }
-	while (nv = DWORD(fread (data, sizeof(StarRec), maxNumVertices, f))) {
-		// limit number of stars to predefined magnitude - SHOULD BE BINARY SEARCH
-		for (i = 0; i < nv; i++)
-			if (data[i].mag > prm->mag_lo) { nv = i; break; }
-		if (nv) {
-			if (nsbuf >= bufsize) { // grow vertex buffer list
-				LPDIRECT3DVERTEXBUFFER9 *tmp = new LPDIRECT3DVERTEXBUFFER9[bufsize+16];
-				memcpy (tmp, svtx, bufsize*sizeof(LPDIRECT3DVERTEXBUFFER9));
-				delete []svtx;
-				svtx = tmp;
-				bufsize += 16;
-			}
-			
-			pDevice->CreateVertexBuffer(UINT(nv*sizeof(VERTEX_XYZC)), D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &svtx[nsbuf], NULL);
-			VERTEX_XYZC *vbuf;
-			svtx[nsbuf]->Lock(0, 0, (LPVOID*)&vbuf, 0);
-			for (j = 0; j < nv; j++) {
-				StarRec &rec = data[j];
-				VERTEX_XYZC &v = vbuf[j];
-				xz = sphere_r * cos (rec.lat);
-				v.x = (float)(xz * cos (rec.lng));
-				v.z = (float)(xz * sin (rec.lng));
-				v.y = (float)(sphere_r * sin (rec.lat));
-
-				// magnitude
-				if (prm->map_log) c = (float)min (1.0, max (prm->brt_min, exp(-(rec.mag-prm->mag_hi)*a)));
-				else 			  c = (float)min (1.0, max (prm->brt_min, a*rec.mag+b));
-
-				// colour
-				double red_factor = (rec.specidx > 35 ? 1.0 : rec.specidx * 0.3 / 35 + 0.7);
-				double green_factor = (rec.specidx > 20 && rec.specidx < 50 ? 1.0 : rec.specidx <= 20 ? rec.specidx * 0.3 / 35 + 0.83 : (70 - rec.specidx) * 0.3 / 35 + 0.83);
-				double blue_factor = (rec.specidx < 35 ? 1.0 : 0.7 + (70 - rec.specidx) * 0.3 / 35);
-				double rescale = 3.0 / (red_factor + green_factor + blue_factor);
-				float cr = min(c * red_factor * rescale, 1.0);
-				float cg = min(c * green_factor * rescale, 1.0);
-				float cb = min(c * blue_factor * rescale, 1.0);
-
-				v.col = D3DXCOLOR(cr,cg,cb,1);
-				lvl = (int)(c*256.0*0.5);
-				if (lvl > 255) lvl = 255;
-				for (k = lvl; k < (DWORD)plvl; k++) lvlid[k] = idx;
-				plvl = lvl;
-				idx++;
-			}
-			svtx[nsbuf]->Unlock();
-			nsvtx += nv;
-			nsbuf++;
-		}
-		if (nv < maxNumVertices) break;
+	if (prm->map_log) { // scaling factors for logarithmic brightness mapping
+		a = -log(prm->brt_min)/(prm->mag_lo-prm->mag_hi);
 	}
-	fclose (f);
+	else {              // scaling factors for linear brightness mapping
+		a = (1.0-prm->brt_min)/(prm->mag_hi-prm->mag_lo);
+		b = prm->brt_min - prm->mag_lo*a;
+	}
 
-	if (bufsize > nsbuf) { // shrink buffer list to size
-		LPDIRECT3DVERTEXBUFFER9 *tmp = new LPDIRECT3DVERTEXBUFFER9[nsbuf];
-		memcpy (tmp, svtx, nsbuf*sizeof(LPDIRECT3DVERTEXBUFFER9));
-		delete []svtx;
-		svtx = tmp;
+	// convert star database to vertex buffers
+	nsvtx = starList.size();
+	nsbuf = (nsvtx + maxNumVertices - 1) / maxNumVertices; // number of buffers required
+	svtx = new LPDIRECT3DVERTEXBUFFER9[nsbuf];
+	for (i = idx = 0; i < nsbuf; i++) {
+		nv = min(maxNumVertices, nsvtx - i * maxNumVertices);
+		pDevice->CreateVertexBuffer(UINT(nv*sizeof(VERTEX_XYZC)), D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &svtx[i], NULL);
+		VERTEX_XYZC *vbuf;
+		svtx[i]->Lock(0, 0, (LPVOID*)&vbuf, 0);
+		for (j = 0; j < nv; j++) {
+			const oapi::GraphicsClient::StarRec& rec = starList[idx];
+
+			// position
+			double rlat = (double)rec.lat, rlng = (double)rec.lng;
+			VERTEX_XYZC &v = vbuf[j];
+			xz = (double)sphere_r * cos(rlat);
+			v.x = (float)(xz * cos(rlng));
+			v.z = (float)(xz * sin(rlng));
+			v.y = (float)(sphere_r * sin(rlat));
+
+			// brightness
+			if (prm->map_log)
+				c = (float)min (1.0, max (prm->brt_min, exp(-(rec.mag-prm->mag_hi)*a)));
+			else
+				c = (float)min (1.0, max (prm->brt_min, a*rec.mag+b));
+
+			// colour
+			const double slope = 0.3;   // simple encoding of spectral class index to colour curves
+			double r_scale = (rec.specidx > 35 ? 1.0 : 1.0 + (rec.specidx / 35 - 1.0) * slope);
+			double g_scale = (rec.specidx > 20 && rec.specidx < 50 ? 1.0 : rec.specidx <= 20 ? 1.0 + (rec.specidx - 20) * slope / 35 : 1.0 + (50 - rec.specidx) * slope / 35);
+			double b_scale = (rec.specidx < 35 ? 1.0 : 1.0 + ((70 - rec.specidx) / 35 - 1.0) * slope);
+			double rescale = 3.0 / (r_scale + g_scale + b_scale); // rescale to maintain brightness
+			float cr = min(c * rescale * r_scale, 1.0);
+			float cg = min(c * rescale * g_scale, 1.0);
+			float cb = min(c * rescale * b_scale, 1.0);
+			v.col = D3DXCOLOR(cr,cg,cb,1);
+
+			// compute brightness cutoff levels for rendering stars through atmosphere
+			lvl = (int)(c*256.0*0.5);
+			if (lvl > 255) lvl = 255;
+			for (int k = lvl; k < plvl; k++) lvlid[k] = idx;
+			plvl = lvl;
+			idx++;
+		}
+		svtx[i]->Unlock();
 	}
 
 	for (i = 0; i < (DWORD)plvl; i++) lvlid[i] = idx;
-
-	delete []data;
-	data = NULL;
 }
 
 // ==============================================================

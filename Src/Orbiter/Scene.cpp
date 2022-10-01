@@ -640,6 +640,8 @@ static int lvlid[256];
 
 DWORD Scene::LoadStars ()
 {
+	nsvtx = nsbuf = 0;
+
 	// parameters for mapping an apparent magnitude value to a pixel colour intensity
 	double mag_hi = g_pOrbiter->Cfg()->CfgVisualPrm.StarPrm.mag_hi;  // visual magnitude for max display brightness
 	double mag_lo = g_pOrbiter->Cfg()->CfgVisualPrm.StarPrm.mag_lo;  // highest magnitude to be displayed
@@ -650,119 +652,86 @@ DWORD Scene::LoadStars ()
 		LOGOUT_WARN("Inconsistent magnitude limits for background star brightness. Disabling background stars.");
 		return 0;
 	}
-	// open file for star data
-	FILE* f = fopen("Star.bin", "rb");
-	if (!f) { // error reading data base
-		LOGOUT_WARN("Star data base for celestial sphere (Star.bin) not found. Disabling background stars.");
-		return 0;
-	}
 
-	DWORD i, j, idx = 0, nv;
-	DWORD buflen = D3DMAXNUMVERTICES;
-	DWORD bufsize = 16;
-	double a, b;
-	nsvtx = 0;
-	nsbuf = 0;
+	// Read the star database
+	const std::vector<oapi::GraphicsClient::StarRec> starList = gc->LoadStarData(mag_lo);
+
+	const DWORD buflen = D3DMAXNUMVERTICES;
+	DWORD i, j, nv, idx = 0;
+	double a, b, xz;
+	float c;
+	DWORD lvl, plvl = 256;
 
 	extern double g_farplane;
-	DWORD lvl, plvl = 256;
 	const double rad = 0.5 * g_farplane;
 	// Make sure stars are within the fustrum limit
 	// Since they are rendered without z-buffer, the actual distance doesn't matter
-	float c;
-	double xz;
 
 	D3DVERTEXBUFFERDESC vbdesc;
 	vbdesc.dwSize = sizeof (D3DVERTEXBUFFERDESC);
 	vbdesc.dwCaps = (gc->GetFramework()->IsTLDevice() ? 0 : D3DVBCAPS_SYSTEMMEMORY);
 	vbdesc.dwFVF  = D3DFVF_XYZ | D3DFVF_DIFFUSE;
 
-	svtx = new LPDIRECT3DVERTEXBUFFER7[bufsize]; TRACENEW
-
-	if (logmap) {
-		// scaling factors for logarithmic brightness mapping
+	if (logmap) {   // scaling factors for logarithmic brightness mapping
 		a = -log(brt_min)/(mag_lo-mag_hi);
-	} else {
-		// scaling factors for linear brightness mapping
+	}
+	else {        // scaling factors for linear brightness mapping
 		a = (1.0-brt_min)/(mag_hi-mag_lo);
 		b = brt_min - mag_lo*a;
 	}
 
-#pragma pack(1)
-	struct StarRec {
-		float lng, lat, mag;
-		WORD specidx;
-	} *data = new StarRec[buflen]; TRACENEW
-#pragma pack()
+	// convert star database to vertex buffers
+	nsvtx = starList.size();
+	nsbuf = (nsvtx + buflen - 1) / buflen; // number of buffers required
+	svtx = new LPDIRECT3DVERTEXBUFFER7[nsbuf];
+	for (i = idx = 0; i < nsbuf; i++) {
+		nv = min(buflen, nsvtx - i * buflen);
+		vbdesc.dwNumVertices = nv;
+		gc->GetDirect3D7()->CreateVertexBuffer(&vbdesc, svtx + i, 0);
+		VERTEX_XYZC* vbuf;
+		svtx[i]->Lock(DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
+		for (j = 0; j < nv; j++) {
+			const oapi::GraphicsClient::StarRec& rec = starList[idx];
 
-	// read binary data from file
-	while (nv = fread (data, sizeof(StarRec), buflen, f)) {
-		// limit number of stars to predefined magnitude - SHOULD BE BINARY SEARCH
-		for (i = 0; i < nv; i++)
-			if (data[i].mag > mag_lo) { nv = i; break; }
-		if (nv) {
-			if (nsbuf >= bufsize) { // grow vertex buffer list
-				LPDIRECT3DVERTEXBUFFER7 *tmp = new LPDIRECT3DVERTEXBUFFER7[bufsize + 16];
-				memcpy (tmp, svtx, bufsize*sizeof(LPDIRECT3DVERTEXBUFFER7*));
-				delete []svtx;
-				svtx = tmp;
-				bufsize += 16;
-			}
-			vbdesc.dwNumVertices = nv;
-			g_pOrbiter->GetInlineGraphicsClient()->GetDirect3D7()->CreateVertexBuffer (&vbdesc, svtx+nsbuf, 0);
-			VERTEX_XYZC *vbuf;
-			svtx[nsbuf]->Lock (DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
-			for (j = 0; j < nv; j++) {
-				StarRec &rec = data[j];
-				double rlat = (double)rec.lat, rlng = (double)rec.lng;
-				VERTEX_XYZC &v = vbuf[j];
-				xz = rad * cos (rlat);
-				v.x = (float)(xz * cos (rlng));
-				v.z = (float)(xz * sin (rlng));
-				v.y = (float)(rad * sin (rlat));
+			// position
+			double rlat = (double)rec.lat, rlng = (double)rec.lng;
+			VERTEX_XYZC& v = vbuf[j];
+			xz = rad * cos(rlat);
+			v.x = (float)(xz * cos(rlng));
+			v.z = (float)(xz * sin(rlng));
+			v.y = (float)(rad * sin(rlat));
 
-				// magnitude
-				if (logmap)
-					c = (float)min (1.0, max (brt_min, exp(-(rec.mag-mag_hi)*a)));
-				else
-					c = (float)min (1.0, max (brt_min, a*rec.mag+b));
+			// brightness
+			if (logmap)
+				c = (float)min(1.0, max(brt_min, exp(-(rec.mag - mag_hi) * a)));
+			else
+				c = (float)min(1.0, max(brt_min, a * rec.mag + b));
 
-				// colour
-				double red_factor = (rec.specidx > 35 ? 1.0 : rec.specidx * 0.3/35 + 0.7);
-				double green_factor = (rec.specidx > 20 && rec.specidx < 50 ? 1.0 : rec.specidx <= 20 ? rec.specidx * 0.3/35 + 0.83 : (70 - rec.specidx) * 0.3/35 + 0.83);
-				double blue_factor = (rec.specidx < 35 ? 1.0 : 0.7 + (70 - rec.specidx) * 0.3/35);
-				double rescale = 3.0 / (red_factor + green_factor + blue_factor);
-				float cr = min(c * red_factor * rescale, 1.0);
-				float cg = min(c * green_factor * rescale, 1.0);
-				float cb = min(c * blue_factor * rescale, 1.0);
+			// colour
+			const double slope = 0.3;   // simple encoding of spectral class index to colour curves
+			double r_scale = (rec.specidx > 35 ? 1.0 : 1.0 + (rec.specidx / 35 - 1.0) * slope);
+			double g_scale = (rec.specidx > 20 && rec.specidx < 50 ? 1.0 : rec.specidx <= 20 ? 1.0 + (rec.specidx - 20) * slope / 35 : 1.0 + (50 - rec.specidx) * slope / 35);
+			double b_scale = (rec.specidx < 35 ? 1.0 : 1.0 + ((70 - rec.specidx) / 35 - 1.0) * slope);
+			double rescale = 3.0 / (r_scale + g_scale + b_scale); // rescale to maintain brightness
+			float cr = min(c * rescale * r_scale, 1.0);
+			float cg = min(c * rescale * g_scale, 1.0);
+			float cb = min(c * rescale * b_scale, 1.0);
+			v.col = D3DRGBA(cr, cg, cb, 1);
 
-				v.col = D3DRGBA (cr,cg,cb,1);
-				lvl = (DWORD)(c*256.0*0.5);
-				if (lvl > 255) lvl = 255;
-				for (DWORD k = lvl; k < plvl; k++) lvlid[k] = idx;
-				plvl = lvl;
-				idx++;
-			}
-			svtx[nsbuf]->Unlock();
-			svtx[nsbuf]->Optimize (dev, 0);
-			nsvtx += nv;
-			nsbuf++;
+			// compute brightness cutoff levels for rendering stars through atmosphere
+			lvl = (DWORD)(c * 256.0 * 0.5);
+			if (lvl > 255) lvl = 255;
+			for (DWORD k = lvl; k < plvl; k++) lvlid[k] = idx;
+			plvl = lvl;
+			idx++;
 		}
-		if (nv < buflen) break;
-	}
-	fclose (f);
-	
-	if (bufsize > nsbuf) { // shrink buffer list to size
-		LPDIRECT3DVERTEXBUFFER7 *tmp = new LPDIRECT3DVERTEXBUFFER7[nsbuf];
-		memcpy (tmp, svtx, nsbuf*sizeof(LPDIRECT3DVERTEXBUFFER7*));
-		delete []svtx;
-		svtx = tmp;
+		svtx[i]->Unlock();
+		svtx[i]->Optimize(dev, 0);
 	}
 
 	for (i = 0; i < plvl; i++) lvlid[i] = idx;
 	LOGOUT("Loaded %d records from star database", nsvtx);
 
-	delete []data;
 	return nsvtx;
 }
 

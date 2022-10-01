@@ -1620,22 +1620,34 @@ protected:
 	// Functions for the celestial sphere
 public:
 #pragma pack(1)
+	/**
+	 * \brief Star database record structure, as used by \ref LoadStarData
+	 * \note The spectral class index is a linear encoding of the star's
+	 *    spectral class, from O0 (0) to M9 (69) for classes OBANGKM. Since
+	 *    the spectral information is only used for modifying the render
+	 *    colour by Orbiter, any additional classes present in the original
+	 *    database have been mapped to those seven classes. For example,
+	 *    all red giant classes (R, N, C, S) have been mapped to M.
+	 */
 	struct StarRec {
-		float lng, lat, mag;
-		WORD specidx;
+		float lng; ///< ecliptic longitude (J2000) [rad]
+		float lat; ///< ecliptic latitude (J2000) [rad]
+		float mag; ///< apparent magnitude
+		WORD specidx; ///< spectral class index (0-69)
 	};
 
 	/**
 	 * \brief Load star data from Orbiter's data base file.
      *
-	 * Load up to 'n' data records from the default data base (in decreasing
-	 * order of apparent magnitude).
-	 * \param n Requested number of stars
-	 * \param rec Pointer to an array receiving the data.
-	 * \return The actual number of loaded stars
-	 * \note rec must be allocated to size >= n on call.
+	 * Load database records up to apparent magnitude \a maxAppMag (database
+	 * is assumed to be sorted in decreasing brightness). The Hipparcos
+	 * catalog contains ~118000 entries up to magnitude ~9, although some
+	 * entries with higher magnitudes are present.
+	 * \param maxAppMag apparent magnitude limit. The returned records are
+	 *    truncated at this magnitude.
+	 * \return Vector of database records.
 	 */
-	DWORD LoadStars (DWORD n, StarRec *rec);
+	const std::vector<StarRec> LoadStarData(double maxAppMag) const;
 
 	struct ConstRec { float lng1, lat1, lng2, lat2; };
 

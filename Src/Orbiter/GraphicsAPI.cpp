@@ -728,14 +728,31 @@ INT_PTR GraphicsClient::LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wPar
 // ==================================================================
 // Functions for the celestial sphere
 
-DWORD GraphicsClient::LoadStars (DWORD n, StarRec *rec)
+const std::vector<GraphicsClient::StarRec> GraphicsClient::LoadStarData(double maxAppMag) const
 {
-	// read binary data from file
-	FILE *f = fopen ("Star.bin", "rb");
-	if (!f) return 0; // error reading data base
-	n = fread (rec, sizeof(StarRec), n, f);
-	fclose (f);
-	return n;
+	std::vector<GraphicsClient::StarRec> rec;
+	rec.resize(0x20000); // should be large enough to hold the entire Hipparcos list
+
+	FILE* f = fopen("Star.bin", "rb");
+	if (f) {
+		const int chunksize = 0x1000;
+		int i, s, n = 0;
+		while (s = fread(rec.data() + n, sizeof(GraphicsClient::StarRec), chunksize, f)) {
+			for (i = 0; i < s && rec[n].mag <= maxAppMag; i++, n++);
+			if (i < s) {
+				rec.resize(n);
+				rec.shrink_to_fit();
+				break;
+			}
+			if (rec.size() < n + chunksize)
+				rec.resize(n + chunksize);
+		}
+		fclose(f);
+	}
+	else {
+		LOGOUT_WARN("Star data base for celestial sphere (Star.bin) not found. Disabling background stars.");
+	}
+	return rec;
 }
 
 // ==================================================================
