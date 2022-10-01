@@ -847,6 +847,8 @@ bool ShuttleA::RedrawPanel_EngineIndicator (SURFHANDLE surf)
 // --------------------------------------------------------------
 bool ShuttleA::RedrawPanel_PodangleIndicator (SURFHANDLE surf)
 {
+	// obsolete but still used by VC
+
 	const int cntx[2] = {36,110}, cnty = 14;
 	const int txtx[2] = {45,119}, txty =  0;
 	const double rad = 24.0, radi = 29.0, radw = 36.0;
@@ -857,41 +859,40 @@ bool ShuttleA::RedrawPanel_PodangleIndicator (SURFHANDLE surf)
 	double angle, angle1, angle2;
 	char cbuf[16];
 
-	HDC hDC = oapiGetDC (surf);
-	SelectObject (hDC, g_Param.hFont[0]);
-	SetBkMode (hDC, TRANSPARENT);
+	oapi::Sketchpad* pSkp = oapiGetSketchpad(surf);
+	pSkp->SetFont(g_Param.pFont[0]);
+	pSkp->SetBackgroundMode(oapi::Sketchpad::BK_TRANSPARENT);
 
 	for (i = 0; i < 2; i++) {
 		// draw preset indicator
-		SelectObject (hDC, g_Param.hPen[1]);
+		pSkp->SetPen(g_Param.pPen[1]);
 		angle = pod_angle_request[i];
 		angle1 = angle-da;
 		angle2 = angle+da;
 		x = cntx[i]-(int)(radi*cos(angle)), y = cnty+(int)(radi*sin(angle));
-		MoveToEx (hDC, x, y, NULL);
-		LineTo (hDC, cntx[i]-(int)(radw*cos(angle1)), cnty+(int)(radw*sin(angle1)));
-		LineTo (hDC, cntx[i]-(int)(radw*cos(angle2)), cnty+(int)(radw*sin(angle2)));
-		LineTo (hDC, x, y);
+		pSkp->MoveTo(x, y);
+		pSkp->LineTo(cntx[i] - (int)(radw * cos(angle1)), cnty + (int)(radw * sin(angle1)));
+		pSkp->LineTo(cntx[i] - (int)(radw * cos(angle2)), cnty + (int)(radw * sin(angle2)));
+		pSkp->LineTo(x, y);
 		ia = (int)(DEG*angle+0.5);
 		if      (ia < 90) sprintf (cbuf, "%02dR", ia);
 		else if (ia > 90) sprintf (cbuf, "%02dF", 180-ia);
 		else              sprintf (cbuf, "90");
-		SetTextColor (hDC, RGB(220,220,120));
-		TextOut (hDC, txtx[i]-27, txty, cbuf, strlen(cbuf));
+		pSkp->SetTextColor(RGB(220, 220, 120));
+		pSkp->Text(txtx[i] - 27, txty, cbuf, strlen(cbuf));
 
 		// draw pod status indicator
-		SelectObject (hDC, g_Param.hPen[0]);
+		pSkp->SetPen(g_Param.pPen[0]);
 		angle = pod_angle[i];
-		MoveToEx (hDC, cntx[i], cnty, NULL);
-		LineTo (hDC, cntx[i]-(int)(rad*cos(angle)), cnty+(int)(rad*sin(angle)));
+		pSkp->Line(cntx[i], cnty, cntx[i] - (int)(rad * cos(angle)), cnty + (int)(rad * sin(angle)));
 		ia = (int)(DEG*angle+0.5);
 		if      (ia < 90) sprintf (cbuf, "%02dR", ia);
 		else if (ia > 90) sprintf (cbuf, "%02dF", 180-ia);
 		else              sprintf (cbuf, "90");
-		SetTextColor (hDC, RGB(120,220,120));
-		TextOut (hDC, txtx[i], txty, cbuf, strlen(cbuf));
+		pSkp->SetTextColor(RGB(120, 220, 120));
+		pSkp->Text(txtx[i], txty, cbuf, strlen(cbuf));
 	}
-	oapiReleaseDC (surf, hDC);
+	oapiReleaseSketchpad(pSkp);
 	return true;
 }
 
