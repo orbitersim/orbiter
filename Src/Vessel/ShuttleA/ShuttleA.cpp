@@ -2501,6 +2501,10 @@ DLLCLBK void ExitModule (HINSTANCE hModule)
 	for (i = 0; i < 3; i++) DeleteObject (g_Param.hPen[i]);
 	for (i = 0; i < 2; i++) DeleteObject (g_Param.hBrush[i]);
 
+	for (i = 0; i < 1; i++) oapiReleaseFont(g_Param.pFont[i]);
+	for (i = 0; i < 3; i++) oapiReleasePen(g_Param.pPen[i]);
+	for (i = 0; i < 2; i++) oapiReleaseBrush(g_Param.pBrush[i]);
+
 	// deallocated 2D panel texture
 	oapiDestroySurface (ShuttleA::panel2dtex);
 	oapiDestroySurface (ShuttleA::paneleltex);
