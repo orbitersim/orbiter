@@ -2468,20 +2468,13 @@ DLLCLBK void InitModule (HINSTANCE hModule)
 	g_Param.hDLL = hModule;
 	oapiRegisterCustomControls (hModule);
 
-	// allocate GDI resources
+	// allocate Sketchpad resources
 	g_Param.pFont[0] = oapiCreateFont(-10, false, "Arial");
 	g_Param.pPen[0] = oapiCreatePen(1, 3, RGB(120, 220, 120));
 	g_Param.pPen[1] = oapiCreatePen(1, 1, RGB(220, 220, 120));
 	g_Param.pPen[2] = oapiCreatePen(1, 1, RGB(0, 0, 0));
-	g_Param.pBrush[0] = oapiCreateBrush(0x008000);
-	g_Param.pBrush[1] = oapiCreateBrush(0x000000);
-
-	g_Param.hFont[0] = CreateFont (-10, 0, 0, 0, 400, 0, 0, 0, 0, 0, 0, 0, 0, "Arial");
-	g_Param.hPen[0] = CreatePen (PS_SOLID, 3, RGB (120,220,120));
-	g_Param.hPen[1] = CreatePen (PS_SOLID, 1, RGB (220,220,120));
-	g_Param.hPen[2] = CreatePen (PS_SOLID, 1, RGB (0,0,0));
-	g_Param.hBrush[0] = CreateSolidBrush (RGB(0,128,0));
-	g_Param.hBrush[1] = CreateSolidBrush (RGB(0,0,0));
+	g_Param.pBrush[0] = oapiCreateBrush(RGB(0, 96, 0));
+	g_Param.pBrush[1] = oapiCreateBrush(RGB(0, 0, 0));
 
 	// load 2D panel texture
 	ShuttleA::panel2dtex = oapiLoadTexture ("ShuttleA\\panel2d.dds");
@@ -2495,16 +2488,12 @@ DLLCLBK void InitModule (HINSTANCE hModule)
 DLLCLBK void ExitModule (HINSTANCE hModule)
 {
 	int i;
-	// deallocate GDI resources
-	for (i = 0; i < 1; i++) DeleteObject (g_Param.hFont[i]);
-	for (i = 0; i < 3; i++) DeleteObject (g_Param.hPen[i]);
-	for (i = 0; i < 2; i++) DeleteObject (g_Param.hBrush[i]);
-
+	// deallocate Sketchpad resources
 	for (i = 0; i < 1; i++) oapiReleaseFont(g_Param.pFont[i]);
 	for (i = 0; i < 3; i++) oapiReleasePen(g_Param.pPen[i]);
 	for (i = 0; i < 2; i++) oapiReleaseBrush(g_Param.pBrush[i]);
 
-	// deallocated 2D panel texture
+	// deallocate 2D panel surfaces
 	oapiDestroySurface (ShuttleA::panel2dtex);
 	oapiDestroySurface (ShuttleA::paneleltex);
 	oapiDestroySurface (ShuttleA::aditex);
