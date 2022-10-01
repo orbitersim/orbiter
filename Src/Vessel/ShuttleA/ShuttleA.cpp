@@ -784,9 +784,11 @@ bool ShuttleA::RedrawPanel_Podlevel (SURFHANDLE surf)
 // --------------------------------------------------------------
 bool ShuttleA::RedrawPanel_EngineIndicator (SURFHANDLE surf)
 {
+	// obsolete but still used by VC
+
 	const double rad = 25.0;
 	const int cntx[2] = {29, 95};
-	const int txtx[2] = {16, 83};
+	const int txtx[2] = {17, 83};
 	const int cnty[3] = {29, 96, 163};
 	const int txty0a =  34, txty0b =  46;
 	const int txty1a = 101, txty1b = 113;
@@ -797,48 +799,45 @@ bool ShuttleA::RedrawPanel_EngineIndicator (SURFHANDLE surf)
 	char cbuf[16];
 	double m = GetMass();
 
-	HDC hDC = oapiGetDC (surf);
-	SelectObject (hDC, g_Param.hFont[0]);
-	SelectObject (hDC, g_Param.hPen[0]);
-	SetTextColor (hDC, RGB(120,220,120));
-	SetTextAlign (hDC, TA_RIGHT);
-	SetBkMode (hDC, TRANSPARENT);
+	oapi::Sketchpad* pSkp = oapiGetSketchpad(surf);
+	pSkp->SetFont(g_Param.pFont[0]);
+	pSkp->SetPen(g_Param.pPen[0]);
+	pSkp->SetTextColor(RGB(120, 220, 120));
+	pSkp->SetTextAlign(oapi::Sketchpad::RIGHT);
+	pSkp->SetBackgroundMode(oapi::Sketchpad::BK_TRANSPARENT);
 
 	for (i = 0; i < 2; i++) {
 		level = GetThrusterLevel (th_main[i]);
 		th    = level*GetThrusterMax (th_main[i]);
 		angle = level * (1.5*PI);
 		dx = rad*cos(angle), dy = rad*sin(angle);
-		MoveToEx (hDC, cntx[i], cnty[0], NULL);
-		LineTo (hDC, cntx[i]-(int)dx, cnty[0]-(int)dy);
+		pSkp->Line(cntx[i], cnty[0], cntx[i] - (int)dx, cnty[0] - (int)dy);
 		sprintf (cbuf, "%0.0f", th*1e-3);
-		TextOut (hDC, txtx[i], txty0a, cbuf, strlen(cbuf));
+		pSkp->Text(txtx[i], txty0a, cbuf, strlen(cbuf));
 		sprintf (cbuf, "%0.1f", th/m);
-		TextOut (hDC, txtx[i], txty0b, cbuf, strlen (cbuf));
+		pSkp->Text(txtx[i], txty0b, cbuf, strlen(cbuf));
 
 		level = GetThrusterLevel (th_hover[i]);
 		th    = level*GetThrusterMax (th_hover[i]);
 		angle = level * (1.5*PI);
 		dx = rad*cos(angle), dy = rad*sin(angle);
-		MoveToEx (hDC, cntx[i], cnty[1], NULL);
-		LineTo (hDC, cntx[i]-(int)dx, cnty[1]-(int)dy);
+		pSkp->Line(cntx[i], cnty[1], cntx[i] - (int)dx, cnty[1] - (int)dy);
 		sprintf (cbuf, "%0.0f", th*1e-3);
-		TextOut (hDC, txtx[i], txty1a, cbuf, strlen(cbuf));
+		pSkp->Text(txtx[i], txty1a, cbuf, strlen(cbuf));
 		sprintf (cbuf, "%0.1f", th/m);
-		TextOut (hDC, txtx[i], txty1b, cbuf, strlen (cbuf));
+		pSkp->Text(txtx[i], txty1b, cbuf, strlen(cbuf));
 
 		level = GetThrusterLevel (th_pod[i]);
 		th    = level*GetThrusterMax (th_pod[i]);
 		angle = level * (1.5*PI);
 		dx = rad*cos(angle), dy = rad*sin(angle);
-		MoveToEx (hDC, cntx[i], cnty[2], NULL);
-		LineTo (hDC, cntx[i]-(int)dx, cnty[2]-(int)dy);
+		pSkp->Line(cntx[i], cnty[2], cntx[i] - (int)dx, cnty[2] - (int)dy);
 		sprintf (cbuf, "%0.0f", th*1e-3);
-		TextOut (hDC, txtx[i], txty2a, cbuf, strlen(cbuf));
+		pSkp->Text(txtx[i], txty2a, cbuf, strlen(cbuf));
 		sprintf (cbuf, "%0.1f", th/m);
-		TextOut (hDC, txtx[i], txty2b, cbuf, strlen (cbuf));
+		pSkp->Text(txtx[i], txty2b, cbuf, strlen(cbuf));
 	}
-	oapiReleaseDC (surf, hDC);
+	oapiReleaseSketchpad(pSkp);
 
 	return true;
 }
