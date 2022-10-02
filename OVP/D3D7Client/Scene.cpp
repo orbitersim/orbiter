@@ -378,8 +378,15 @@ void Scene::Render ()
 	dev->SetTransform (D3DTRANSFORMSTATE_WORLD, &ident);
 	dev->SetTexture (0,0);
 	dev->SetRenderState (D3DRENDERSTATE_ZENABLE, FALSE);
+	dev->SetRenderState(D3DRENDERSTATE_ZVISIBLE, FALSE);
 	dev->SetRenderState (D3DRENDERSTATE_ZWRITEENABLE, FALSE);
 	dev->SetRenderState (D3DRENDERSTATE_LIGHTING, FALSE);
+
+	// stretch the z limits to make sure everything is rendered (z-fighting
+	// is not an issue here because everything is rendered without z-tests)
+	double npl = cam->GetNearlimit();
+	double fpl = cam->GetFarlimit();
+	cam->SetFrustumLimits(0.1, 1e10);
 
 	// use explicit colours
 	dev->SetTextureStageState (0, D3DTSS_COLORARG1, D3DTA_TFACTOR);
@@ -453,6 +460,7 @@ void Scene::Render ()
 
 	csphere->RenderStars (dev, (DWORD)-1, &bgcol);
 	cspheremgr->Render (dev, 8, bglvl);
+
 
 	// turn on lighting
 	dev->SetRenderState (D3DRENDERSTATE_LIGHTING, TRUE);
@@ -558,7 +566,9 @@ void Scene::Render ()
 
 	// turn z-buffer back on
 	dev->SetRenderState (D3DRENDERSTATE_ZENABLE, TRUE);
+	dev->SetRenderState(D3DRENDERSTATE_ZVISIBLE, TRUE);
 	dev->SetRenderState (D3DRENDERSTATE_ZWRITEENABLE, TRUE);
+	cam->SetFrustumLimits(npl, fpl);
 
 	// render the vessel objects
 	//cam->SetFustrumLimits (1, 1e5);
@@ -704,11 +714,11 @@ void Scene::RenderDirectionMarker (HDC hDC, const VECTOR3 &rdir, const char *lab
 	bool local_hdc = (hDC == 0);
 	int x, y;
 	D3DVECTOR homog;
-	D3DVECTOR dir = {(float)-rdir.x, (float)-rdir.y, (float)-rdir.z};
+	D3DVECTOR dir = {(float)rdir.x, (float)rdir.y, (float)rdir.z};
 	D3DMAT_VectorMatrixMultiply (&homog, &dir, cam->GetProjectionViewMatrix());
 	if (homog.x >= -1.0f && homog.x <= 1.0f &&
 		homog.y >= -1.0f && homog.y <= 1.0f &&
-		homog.z >=  0.0f) {
+		homog.z <  1.0f) {
 		if (hypot (homog.x, homog.y) < 1e-6) {
 			x = viewW/2, y = viewH/2;
 		} else {

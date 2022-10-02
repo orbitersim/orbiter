@@ -1649,6 +1649,32 @@ public:
 	 */
 	const std::vector<StarRec> LoadStarData(double maxAppMag) const;
 
+	struct StarRenderRec {
+		float x;
+		float y;
+		float z;
+		float brightness;
+		float r;
+		float g;
+		float b;
+	};
+
+	/**
+	 * \brief Map the star data to a list that can be used for rendering.
+	 * 
+	 * This function maps the star data read by \ref LoadStarData into a form
+	 * that makes it easier to build a vertex list for rendering onto the celestial
+	 * sphere. The ecliptic coordinates (longitude, latitude) are converted to
+	 * Cartesian coordinates (x,y,z) assuming radius 1 for the celestial sphere.
+	 * The apparent magnitude is mapped into a brightness value (0-1), using the user
+	 * settings for star brightness. In addition, the spectral class information
+	 * is mapped into red, green and blue components (0-1).
+	 * \param starRec star data list as provided by \ref LoadStarData
+	 * \param prm user choice for star render parameters
+	 * \return List of transformed star data
+	 */
+	const std::vector<StarRenderRec> StarData2RenderData(const std::vector<StarRec>& starRec, const StarRenderPrm &prm) const;
+
 	struct ConstRec { float lng1, lat1, lng2, lat2; };
 
 	/**

@@ -1233,6 +1233,10 @@ void Scene::RenderMainScene()
 
 	DWORD plnmode = *(DWORD*)gc->GetConfigParam(CFGPRM_PLANETARIUMFLAG);
 
+	float npl = GetCameraNearPlane();
+	float fpl = GetCameraFarPlane();
+	SetCameraFrustumLimits(0.1, 1e10);
+
 	if (plnmode & PLN_ENABLE) {
 
 		float linebrt = 1.0f - float(sky_color.x+sky_color.y+sky_color.z) / 3.0f;
@@ -1349,6 +1353,8 @@ void Scene::RenderMainScene()
 
 		pSketch->EndDrawing(); //SKETCHPAD_LABELS
 	}
+
+	SetCameraFrustumLimits(npl, fpl);
 
 
 	// ---------------------------------------------------------------------------------------------

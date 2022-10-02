@@ -757,6 +757,58 @@ const std::vector<GraphicsClient::StarRec> GraphicsClient::LoadStarData(double m
 
 // ==================================================================
 
+const std::vector<GraphicsClient::StarRenderRec> GraphicsClient::StarData2RenderData(const std::vector<StarRec>& starRec, const StarRenderPrm& prm) const
+{
+	std::vector<GraphicsClient::StarRenderRec> renderRec;
+	double a, b;
+	float c;
+
+	if (prm.mag_lo <= prm.mag_hi) {
+		LOGOUT_WARN("Inconsistent magnitude limits for background star brightness. Disabling background stars.");
+		return renderRec;
+	}
+
+	if (prm.map_log) { // scaling factors for logarithmic brightness mapping
+		a = -log(prm.brt_min) / (prm.mag_lo - prm.mag_hi);
+	}
+	else {              // scaling factors for linear brightness mapping
+		a = (1.0 - prm.brt_min) / (prm.mag_hi - prm.mag_lo);
+		b = prm.brt_min - prm.mag_lo * a;
+	}
+
+	renderRec.resize(starRec.size());
+	for (size_t i = 0; i < starRec.size(); i++) {
+		const GraphicsClient::StarRec& rec = starRec[i];
+
+		// position
+		double rlat = rec.lat, rlng = rec.lng;
+		double xz = cos(rlat);
+		renderRec[i].x = (float)(xz * cos(rlng));
+		renderRec[i].z = (float)(xz * sin(rlng));
+		renderRec[i].y = (float)(sin(rlat));
+
+		// brightness
+		if (prm.map_log)
+			c = (float)min(1.0, max(prm.brt_min, ::exp(-(rec.mag - prm.mag_hi) * a)));
+		else
+			c = (float)min(1.0, max(prm.brt_min, a * rec.mag + b));
+		renderRec[i].brightness = c;
+
+		// colour
+		const double slope = 0.3;   // simple encoding of spectral class index to colour curves
+		double r_scale = (rec.specidx > 35 ? 1.0 : 1.0 + (rec.specidx / 35 - 1.0) * slope);
+		double g_scale = (rec.specidx > 20 && rec.specidx < 50 ? 1.0 : rec.specidx <= 20 ? 1.0 + (rec.specidx - 20) * slope / 35 : 1.0 + (50 - rec.specidx) * slope / 35);
+		double b_scale = (rec.specidx < 35 ? 1.0 : 1.0 + ((70 - rec.specidx) / 35 - 1.0) * slope);
+		double rescale = 3.0 / (r_scale + g_scale + b_scale); // rescale to maintain brightness
+		renderRec[i].r = min(c * rescale * r_scale, 1.0);
+		renderRec[i].g = min(c * rescale * g_scale, 1.0);
+		renderRec[i].b = min(c * rescale * b_scale, 1.0);
+	}
+	return renderRec;
+}
+
+// ==================================================================
+
 DWORD GraphicsClient::LoadConstellationLines (DWORD n, ConstRec *rec)
 {
 	FILE *f = fopen ("Constell.bin", "rb");

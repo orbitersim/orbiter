@@ -25,7 +25,7 @@ using namespace oapi;
 CelestialSphere::CelestialSphere (D3D7Client *_gc)
 {
 	gc = _gc;
-	sphere_r = 1e3f; // the actual render distance for the celestial sphere
+	sphere_r = 1e6f; // the actual render distance for the celestial sphere
 	                 // is irrelevant, since it is rendered without z-buffer,
 	                 // but it must be within the fustrum limits - check this
 	                 // in case the near and far planes are dynamically changed!
@@ -57,31 +57,21 @@ void CelestialSphere::LoadStars ()
 
 	StarRenderPrm *prm = (StarRenderPrm*)gc->GetConfigParam (CFGPRM_STARRENDERPRM);
 
-	if (prm->mag_lo <= prm->mag_hi) {
-		oapiWriteLog("WARNING: Inconsistent magnitude limits for background star brightness. Disabling background stars.");
-		return;
-	}
-
 	// Read the star database
 	const std::vector<oapi::GraphicsClient::StarRec> starList = gc->LoadStarData(prm->mag_lo);
+	if (!starList.size()) return;
+
+	// convert to render parameters
+	const std::vector<oapi::GraphicsClient::StarRenderRec> renderList = gc->StarData2RenderData(starList, *prm);
+	if (!renderList.size()) return;
 
 	const DWORD buflen = D3DMAXNUMVERTICES;
 	DWORD i, j, nv, idx = 0;
-	double a, b, xz;
-	float c;
 	int lvl, plvl = 256;
 
 	D3DVERTEXBUFFERDESC vbdesc;
 	gc->SetDefault (vbdesc);
 	vbdesc.dwFVF = D3DFVF_XYZ | D3DFVF_DIFFUSE;
-
-	if (prm->map_log) { // scaling factors for logarithmic brightness mapping
-		a = -log(prm->brt_min) / (prm->mag_lo - prm->mag_hi);
-	}
-	else {              // scaling factors for linear brightness mapping
-		a = (1.0 - prm->brt_min) / (prm->mag_hi - prm->mag_lo);
-		b = prm->brt_min - prm->mag_lo * a;
-	}
 
 	// convert star database to vertex buffers
 	nsvtx = starList.size();
@@ -94,35 +84,15 @@ void CelestialSphere::LoadStars ()
 		VERTEX_XYZC *vbuf;
 		svtx[i]->Lock (DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
 		for (j = 0; j < nv; j++) {
-			const oapi::GraphicsClient::StarRec& rec = starList[idx];
+			const oapi::GraphicsClient::StarRenderRec& rec = renderList[idx];
+			VERTEX_XYZC& v = vbuf[j];
+			v.x = rec.x;
+			v.y = rec.y;
+			v.z = rec.z;
+			v.col = D3DRGBA(rec.r, rec.g, rec.b, 1);
 				
-			// position
-			double rlat = (double)rec.lat, rlng = (double)rec.lng;
-			VERTEX_XYZC &v = vbuf[j];
-			xz = (double)sphere_r * cos(rlat);
-			v.x = (float)(xz * cos(rlng));
-			v.z = (float)(xz * sin(rlng));
-			v.y = (float)(sphere_r * sin(rlat));
-
-			// brightness
-			if (prm->map_log)
-				c = (float)min (1.0, max (prm->brt_min, exp(-(rec.mag-prm->mag_hi)*a)));
-			else
-				c = (float)min (1.0, max (prm->brt_min, a*rec.mag+b));
-
-			// colour
-			const double slope = 0.3;   // simple encoding of spectral class index to colour curves
-			double r_scale = (rec.specidx > 35 ? 1.0 : 1.0 + (rec.specidx / 35 - 1.0) * slope);
-			double g_scale = (rec.specidx > 20 && rec.specidx < 50 ? 1.0 : rec.specidx <= 20 ? 1.0 + (rec.specidx - 20) * slope / 35 : 1.0 + (50 - rec.specidx) * slope / 35);
-			double b_scale = (rec.specidx < 35 ? 1.0 : 1.0 + ((70 - rec.specidx) / 35 - 1.0) * slope);
-			double rescale = 3.0 / (r_scale + g_scale + b_scale); // rescale to maintain brightness
-			float cr = min(c * rescale * r_scale, 1.0);
-			float cg = min(c * rescale * g_scale, 1.0);
-			float cb = min(c * rescale * b_scale, 1.0);
-			v.col = D3DRGBA(cr, cg, cb, 1);
-
 			// compute brightness cutoff levels for rendering stars through atmosphere
-			lvl = (int)(c*256.0*0.5);
+			lvl = (int)(rec.brightness * 256.0 * 0.5);
 			if (lvl > 255) lvl = 255;
 			for (int k = lvl; k < plvl; k++) lvlid[k] = idx;
 			plvl = lvl;

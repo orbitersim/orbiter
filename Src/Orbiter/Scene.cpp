@@ -642,6 +642,8 @@ DWORD Scene::LoadStars ()
 {
 	nsvtx = nsbuf = 0;
 
+	StarRenderPrm* prm = (StarRenderPrm*)gc->GetConfigParam(CFGPRM_STARRENDERPRM);
+
 	// parameters for mapping an apparent magnitude value to a pixel colour intensity
 	double mag_hi = g_pOrbiter->Cfg()->CfgVisualPrm.StarPrm.mag_hi;  // visual magnitude for max display brightness
 	double mag_lo = g_pOrbiter->Cfg()->CfgVisualPrm.StarPrm.mag_lo;  // highest magnitude to be displayed
@@ -655,6 +657,11 @@ DWORD Scene::LoadStars ()
 
 	// Read the star database
 	const std::vector<oapi::GraphicsClient::StarRec> starList = gc->LoadStarData(mag_lo);
+	if (!starList.size()) return 0;
+
+	// convert to render parameters
+	const std::vector<oapi::GraphicsClient::StarRenderRec> renderList = gc->StarData2RenderData(starList, *prm);
+	if (!renderList.size()) return 0;
 
 	const DWORD buflen = D3DMAXNUMVERTICES;
 	DWORD i, j, nv, idx = 0;
@@ -663,7 +670,7 @@ DWORD Scene::LoadStars ()
 	DWORD lvl, plvl = 256;
 
 	extern double g_farplane;
-	const double rad = 0.5 * g_farplane;
+	const double rad = 1.0; //0.5 * g_farplane;
 	// Make sure stars are within the fustrum limit
 	// Since they are rendered without z-buffer, the actual distance doesn't matter
 
@@ -687,7 +694,7 @@ DWORD Scene::LoadStars ()
 	for (i = idx = 0; i < nsbuf; i++) {
 		nv = min(buflen, nsvtx - i * buflen);
 		vbdesc.dwNumVertices = nv;
-		gc->GetDirect3D7()->CreateVertexBuffer(&vbdesc, svtx + i, 0);
+		g_pOrbiter->GetInlineGraphicsClient()->GetDirect3D7()->CreateVertexBuffer(&vbdesc, svtx + i, 0);
 		VERTEX_XYZC* vbuf;
 		svtx[i]->Lock(DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
 		for (j = 0; j < nv; j++) {
@@ -995,10 +1002,10 @@ void Scene::RenderDirectionMarker (const Vector &rdir, const char *label1, const
 	if (!scale) scale = viewH/80;
 
 	D3DVECTOR homog;
-	D3DMath_VectorMatrixMultiply (homog, D3DMath_Vector (-rdir.x, -rdir.y, -rdir.z), *g_camera->D3D_ProjViewMatrix());
+	D3DMath_VectorMatrixMultiply (homog, D3DMath_Vector (rdir.x, rdir.y, rdir.z), *g_camera->D3D_ProjViewMatrix());
 	if (homog.x >= -1.0f && homog.x <= 1.0f &&
 			homog.y >= -1.0f && homog.y <= 1.0f &&
-			homog.z >=  0.0) {
+			homog.z < 1.0f) {
 		if (_hypot (homog.x, homog.y) < 1e-6) {
 			x = viewW/2, y = viewH/2;
 		} else {
@@ -1160,20 +1167,18 @@ void Scene::Render (D3DRECT* vp_rect)
 	}
 
 	dev->SetRenderState (D3DRENDERSTATE_ZENABLE, FALSE);
+	dev->SetRenderState(D3DRENDERSTATE_ZVISIBLE, FALSE);
 	dev->SetRenderState (D3DRENDERSTATE_ZWRITEENABLE, FALSE);
 	dev->SetRenderState (D3DRENDERSTATE_LIGHTING, FALSE);
 
 	// render background stars, celestial markers and grids
 	DWORD flagPItem = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagPlanetarium;
 	if (ns || flagPItem & PLN_ENABLE) {
-		g_camera->SetFrustumLimits (fpl*0.1, fpl);
+		g_camera->SetFrustumLimits (0.1, 1e10);
 		// set limits to some arbitrary values (everything in there is
 		// rendered without z-tests)
 		dev->SetTransform (D3DTRANSFORMSTATE_WORLD, &ident);
 		dev->SetTexture (0,0);
-		//dev->SetRenderState (D3DRENDERSTATE_ZENABLE, FALSE);
-		//dev->SetRenderState (D3DRENDERSTATE_ZWRITEENABLE, FALSE);
-		//dev->SetRenderState (D3DRENDERSTATE_LIGHTING, FALSE);
 		if ((flagPItem & PLN_ENABLE) /*&& bglvl < cnstlimit*/) {
 
 			dev->SetTextureStageState (0, D3DTSS_COLORARG1, D3DTA_TFACTOR);
@@ -1248,7 +1253,7 @@ void Scene::Render (D3DRECT* vp_rect)
 					vb_target->Lock (DDLOCK_WAIT | DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR, (LPVOID*)&vbpos, NULL);
 					bool bfull = (flagPItem & PLN_CNSTLONG) == PLN_CNSTLONG;
 					for (n = 0; n < ncnstlabel; n++) {
-						if (vbpos[n].z < 0 && vbpos[n].x >= 0 && vbpos[n].y >= 0 && vbpos[n].x < viewW && vbpos[n].y < viewH) {
+						if (vbpos[n].z < 1.0f && vbpos[n].x >= 0 && vbpos[n].y >= 0 && vbpos[n].x < viewW && vbpos[n].y < viewH) {
 							TextOut (hDC, (DWORD)vbpos[n].x, (DWORD)vbpos[n].y+gdires.hFont1_scale/2, bfull ? cnstlabel[n].full : cnstlabel[n].abbr, bfull ? cnstlabel[n].len : 3);
 						}
 					}
@@ -1275,7 +1280,6 @@ void Scene::Render (D3DRECT* vp_rect)
 						const oapi::GraphicsClient::LABELSPEC *uls = list[i].list;
 						for (j = 0; j < list[i].length; j++) {
 							Vector sp (uls[j].pos.x,uls[j].pos.y,uls[j].pos.z);
-							//if (dotp (sp, g_camera->GPos() - sp) >= 0.0) // surface point visible?
 							RenderDirectionMarker (sp, uls[j].label[0], uls[j].label[1], hDC, shape, size);
 						}
 					}
@@ -1289,9 +1293,6 @@ void Scene::Render (D3DRECT* vp_rect)
 		for (i = j = 0; i < ns; i += D3DMAXNUMVERTICES, j++)
 			dev->DrawPrimitiveVB (D3DPT_POINTLIST, svtx[j], 0, min (ns-i, D3DMAXNUMVERTICES), 0);
 
-		//dev->SetRenderState (D3DRENDERSTATE_ZENABLE, TRUE);
-		//dev->SetRenderState (D3DRENDERSTATE_ZWRITEENABLE, TRUE);
-		//dev->SetRenderState (D3DRENDERSTATE_LIGHTING, TRUE);
 		g_camera->SetFrustumLimits (npl, fpl); // reset fustrum limits
 	}
 
@@ -1305,6 +1306,7 @@ void Scene::Render (D3DRECT* vp_rect)
 	}
 
 	dev->SetRenderState (D3DRENDERSTATE_ZENABLE, TRUE);
+	dev->SetRenderState(D3DRENDERSTATE_ZVISIBLE, TRUE);
 	dev->SetRenderState (D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 	dev->SetRenderState (D3DRENDERSTATE_LIGHTING, TRUE);
 
