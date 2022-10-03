@@ -110,29 +110,23 @@ void CelestialSphere::LoadStars ()
 
 void CelestialSphere::LoadConstellationLines()
 {
-	gc->WriteLog("[Loading Constellations]");
-	const DWORD maxline = 1000; // plenty for default data base, but check with custom data bases!
+	ncline = 0;
 
-	GraphicsClient::ConstRec *cline = new GraphicsClient::ConstRec[maxline];
-	ncline = gc->LoadConstellationLines (maxline, cline);
-	if (ncline) {
-		cnstvtx = new VERTEX_XYZ[ncline*2]; // two end points per line
-		DWORD n;
-		double xz;
-		for (n = 0; n < ncline; n++) {
-			GraphicsClient::ConstRec *rec = cline+n;
-			xz = sphere_r * cos (rec->lat1);
-			cnstvtx[n*2].x = (float)(xz * cos(rec->lng1));
-			cnstvtx[n*2].z = (float)(xz * sin(rec->lng1));
-			cnstvtx[n*2].y = (float)(sphere_r * sin(rec->lat1));
-			xz = sphere_r * cos (rec->lat2);
-			cnstvtx[n*2+1].x = (float)(xz * cos(rec->lng2));
-			cnstvtx[n*2+1].z = (float)(xz * sin(rec->lng2));
-			cnstvtx[n*2+1].y = (float)(sphere_r * sin(rec->lat2));
-		}
+	// Read constellation line database
+	const std::vector<oapi::GraphicsClient::ConstRec> clineList = gc->LoadConstellationLineData();
+	if (!clineList.size()) return;
+
+	// convert to render parameters
+	const std::vector<oapi::GraphicsClient::ConstRenderRec> clineVtx = gc->ConstellationLineData2RenderData(clineList);
+	if (!clineVtx.size()) return;
+
+	ncline = clineVtx.size() / 2;
+	cnstvtx = new VERTEX_XYZ[ncline * 2];
+	for (int i = 0; i < ncline * 2; i++) {
+		cnstvtx[i].x = clineVtx[i].x;
+		cnstvtx[i].y = clineVtx[i].y;
+		cnstvtx[i].z = clineVtx[i].z;
 	}
-	delete []cline;
-	cline = NULL;
 }
 
 // ==============================================================

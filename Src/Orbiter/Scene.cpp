@@ -744,49 +744,31 @@ DWORD Scene::LoadStars ()
 
 int Scene::LoadConstellations ()
 {
-	extern double g_farplane;
-	const int maxn = 1000;
-	const double rad = 0.5 * g_farplane;
-	int i;
-	struct {
-		float lng1, lat1;
-		float lng2, lat2;
-	} rec;
+	ncnst = 0;
 
-	// load lines
-	FILE *f = fopen ("Constell.bin", "rb");
-	if (!f) {
-		LOGOUT_WARN("Constellation data base for celestial sphere (Constell.bin) not found. Disabling constellation lines.");
-		return 0;
+	// Read constellation line database
+	const std::vector<oapi::GraphicsClient::ConstRec> clineList = gc->LoadConstellationLineData();
+	if (!clineList.size()) return 0;
+
+	// convert to render parameters
+	const std::vector<oapi::GraphicsClient::ConstRenderRec> clineVtx = gc->ConstellationLineData2RenderData(clineList);
+	if (!clineVtx.size()) return 0;
+
+	ncnst = clineVtx.size() / 2;
+	cnstvtx = new VERTEX_XYZ[ncnst * 2];
+	for (int i = 0; i < ncnst * 2; i++) {
+		cnstvtx[i].x = clineVtx[i].x;
+		cnstvtx[i].y = clineVtx[i].y;
+		cnstvtx[i].z = clineVtx[i].z;
 	}
-	cnstvtx = new VERTEX_XYZ[maxn*2]; TRACENEW
-	for (i = 0; i < maxn; i++) {
-		if (!fread (&rec, sizeof(rec), 1, f)) break;
-		double lat1 = (double)rec.lat1, lng1 = (double)rec.lng1, lat2 = (double)rec.lat2, lng2 = (double)rec.lng2;
-		double xz = rad * cos (lat1);
-		cnstvtx[i*2].x = (float)(xz * cos(lng1));
-		cnstvtx[i*2].z = (float)(xz * sin(lng1));
-		cnstvtx[i*2].y = (float)(rad * sin(lat1));
-		xz = rad * cos (lat2);
-		cnstvtx[i*2+1].x = (float)(xz * cos(lng2));
-		cnstvtx[i*2+1].z = (float)(xz * sin(lng2));
-		cnstvtx[i*2+1].y = (float)(rad * sin(lat2));
-	}
-	if (i < maxn) {
-		VERTEX_XYZ *tmp = new VERTEX_XYZ[i*2]; TRACENEW
-		memcpy (tmp, cnstvtx, i*2*sizeof(VERTEX_XYZ));
-		delete []cnstvtx;
-		cnstvtx = tmp;
-	}
-	ncnst = i;
-	fclose (f);
 
 	// load labels
-	f = fopen ("Constell2.bin", "rb");
+	FILE* f = fopen ("Constell2.bin", "rb");
 	if (f) {
 		struct {
 			double lng, lat;
 		} buf;
+		int i;
 		D3DVERTEXBUFFERDESC vbdesc;
 		vbdesc.dwSize = sizeof (D3DVERTEXBUFFERDESC);
 		vbdesc.dwCaps = D3DVBCAPS_SYSTEMMEMORY; // 0;
