@@ -217,7 +217,8 @@ private:
 	STARLIGHT *starlight;
 	int nstarlight;        // number of star light objects in the list
 
-	VERTEX_XYZ *cnstvtx;
+	LPDIRECT3DVERTEXBUFFER7 cvtx;  // vertex buffer for constellation lines
+	int ncvtx;                     // number of constellation line vertices
 
 	LPDIRECT3DVERTEXBUFFER7 *svtx; // vertex buffers for star positions
 	DWORD nsbuf;                   // number of star vertex buffers
@@ -225,7 +226,6 @@ private:
 
 	LPDIRECT3DVERTEXBUFFER7 grdlng, grdlat; // vertex buffers for gridlines
 
-	int ncnst;
 	DWORD ncnstlabel;
 	struct CnstLabel {
 		char abbr[3];

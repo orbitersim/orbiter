@@ -49,10 +49,7 @@ CelestialSphere::~CelestialSphere()
 		delete []svtx;
 		svtx = NULL;
 	}
-	if (ncline) {
-		delete []cnstvtx;
-		cnstvtx = NULL;
-	}
+	cvtx->Release();
 	grdlng->Release();
 	grdlat->Release();
 }
@@ -110,7 +107,7 @@ void CelestialSphere::LoadStars ()
 
 void CelestialSphere::LoadConstellationLines()
 {
-	ncline = 0;
+	ncvtx = 0;
 
 	// Read constellation line database
 	const std::vector<oapi::GraphicsClient::ConstRec> clineList = gc->LoadConstellationLineData();
@@ -120,13 +117,17 @@ void CelestialSphere::LoadConstellationLines()
 	const std::vector<oapi::GraphicsClient::ConstRenderRec> clineVtx = gc->ConstellationLineData2RenderData(clineList);
 	if (!clineVtx.size()) return;
 
-	ncline = clineVtx.size() / 2;
-	cnstvtx = new VERTEX_XYZ[ncline * 2];
-	for (int i = 0; i < ncline * 2; i++) {
-		cnstvtx[i].x = clineVtx[i].x;
-		cnstvtx[i].y = clineVtx[i].y;
-		cnstvtx[i].z = clineVtx[i].z;
+	// create vertex buffer
+	ncvtx = clineVtx.size();
+	pDevice->CreateVertexBuffer(sizeof(VERTEX_XYZ)*ncvtx, D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &cvtx, NULL);
+	VERTEX_XYZ* vbuf;
+	cvtx->Lock(0, 0, (LPVOID*)&vbuf, 0);
+	for (int i = 0; i < ncvtx; i++) {
+		vbuf[i].x = clineVtx[i].x;
+		vbuf[i].y = clineVtx[i].y;
+		vbuf[i].z = clineVtx[i].z;
 	}
+	cvtx->Unlock();
 }
 
 // ==============================================================
@@ -206,8 +207,9 @@ void CelestialSphere::RenderConstellations(ID3DXEffect *FX)
 	UINT numPasses = 0;
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));
+	HR(pDevice->SetStreamSource(0, cvtx, 0, sizeof(VERTEX_XYZ)));
 	HR(pDevice->SetVertexDeclaration(pPositionDecl));
-	HR(pDevice->DrawPrimitiveUP(D3DPT_LINELIST, ncline, cnstvtx, sizeof(VERTEX_XYZ)));
+	HR(pDevice->DrawPrimitive(D3DPT_LINELIST, 0, ncvtx));
 	HR(FX->EndPass());
 	HR(FX->End());	
 }

@@ -130,7 +130,7 @@ Scene::Scene (OrbiterGraphics *og)
 
 	//csphere = new CSphereManager;
 
-	ncnst = ncnstlabel = 0;
+	ncvtx = ncnstlabel = 0;
 	vb_target = nullptr;
 	vb_cnstlabel = nullptr;
 
@@ -174,10 +174,10 @@ Scene::~Scene ()
 	}
 	if (nsun) delete []vsun;
 	if (nstarlight) delete []starlight;
-	if (ncnst) delete []cnstvtx;
 	if (csphere) delete csphere;
 	if (csphere2) delete csphere2;
 
+	cvtx->Release();
 	grdlng->Release();
 	grdlat->Release();
 
@@ -744,7 +744,7 @@ DWORD Scene::LoadStars ()
 
 int Scene::LoadConstellations ()
 {
-	ncnst = 0;
+	ncvtx = 0;
 
 	// Read constellation line database
 	const std::vector<oapi::GraphicsClient::ConstRec> clineList = gc->LoadConstellationLineData();
@@ -754,13 +754,27 @@ int Scene::LoadConstellations ()
 	const std::vector<oapi::GraphicsClient::ConstRenderRec> clineVtx = gc->ConstellationLineData2RenderData(clineList);
 	if (!clineVtx.size()) return 0;
 
-	ncnst = clineVtx.size() / 2;
-	cnstvtx = new VERTEX_XYZ[ncnst * 2];
-	for (int i = 0; i < ncnst * 2; i++) {
-		cnstvtx[i].x = clineVtx[i].x;
-		cnstvtx[i].y = clineVtx[i].y;
-		cnstvtx[i].z = clineVtx[i].z;
+	// create vertex buffer
+	ncvtx = clineVtx.size();
+	if (ncvtx > D3DMAXNUMVERTICES) {
+		LOGOUT_WARN("Number of constellation line vertices too large (%d). Truncating to %d.", ncvtx, D3DMAXNUMVERTICES);
+		ncvtx = D3DMAXNUMVERTICES;
 	}
+	D3DVERTEXBUFFERDESC vbdesc;
+	vbdesc.dwSize = sizeof(D3DVERTEXBUFFERDESC);
+	vbdesc.dwCaps = (gc->GetFramework()->IsTLDevice() ? 0 : D3DVBCAPS_SYSTEMMEMORY);
+	vbdesc.dwFVF = D3DFVF_XYZ;
+	vbdesc.dwNumVertices = ncvtx;
+	g_pOrbiter->GetInlineGraphicsClient()->GetDirect3D7()->CreateVertexBuffer(&vbdesc, &cvtx, 0);
+	VERTEX_XYZ* vbuf;
+	cvtx->Lock(DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
+	for (int i = 0; i < ncvtx; i++) {
+		vbuf[i].x = clineVtx[i].x;
+		vbuf[i].y = clineVtx[i].y;
+		vbuf[i].z = clineVtx[i].z;
+	}
+	cvtx->Unlock();
+	cvtx->Optimize(dev, 0);
 
 	// load labels
 	FILE* f = fopen ("Constell2.bin", "rb");
@@ -801,7 +815,7 @@ int Scene::LoadConstellations ()
 	else {
 		LOGOUT_WARN("Constellation data base for celestial sphere (Constell2.bin) not found. Disabling constellation labels.");
 	}
-	return ncnst;
+	return ncvtx / 2;
 }
 
 //#pragma optimize("g",on)
@@ -1218,9 +1232,9 @@ void Scene::Render (D3DRECT* vp_rect)
 					dev->SetTransform (D3DTRANSFORMSTATE_WORLD, &ident);
 				}
 			}
-			if ((flagPItem & PLN_CONST) && ncnst) {          // render constellation lines
+			if ((flagPItem & PLN_CONST) && ncvtx) {          // render constellation lines
 				dev->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(cc.x,cc.y,cc.z,1));
-				dev->DrawPrimitive (D3DPT_LINELIST, D3DFVF_XYZ, cnstvtx, ncnst*2, 0);
+				dev->DrawPrimitiveVB(D3DPT_LINELIST, cvtx, 0, ncvtx, 0);
 			}
 			if ((flagPItem & PLN_CNSTLABEL) && ncnstlabel) { // render constellation labels
 				res = vb_target->ProcessVertices (D3DVOP_TRANSFORM, 0, ncnstlabel, vb_cnstlabel, 0, dev, 0);

@@ -44,7 +44,7 @@ CelestialSphere::~CelestialSphere ()
 		for (i = 0; i < nsbuf; i++)	svtx[i]->Release();
 		delete []svtx;
 	}
-	if (ncline) delete []cnstvtx;
+	cvtx->Release();
 	grdlng->Release();
 	grdlat->Release();
 }
@@ -109,7 +109,7 @@ void CelestialSphere::LoadStars ()
 
 void CelestialSphere::LoadConstellationLines ()
 {
-	ncline = 0;
+	ncvtx = 0;
 
 	// Read constellation line database
 	const std::vector<oapi::GraphicsClient::ConstRec> clineList = gc->LoadConstellationLineData();
@@ -119,13 +119,27 @@ void CelestialSphere::LoadConstellationLines ()
 	const std::vector<oapi::GraphicsClient::ConstRenderRec> clineVtx = gc->ConstellationLineData2RenderData(clineList);
 	if (!clineVtx.size()) return;
 
-	ncline = clineVtx.size() / 2;
-	cnstvtx = new VERTEX_XYZ[ncline * 2];
-	for (int i = 0; i < ncline * 2; i++) {
-		cnstvtx[i].x = clineVtx[i].x;
-		cnstvtx[i].y = clineVtx[i].y;
-		cnstvtx[i].z = clineVtx[i].z;
+	// create vertex buffer
+	ncvtx = clineVtx.size();
+	if (ncvtx > D3DMAXNUMVERTICES) {
+		oapiWriteLogError("Number of constellation line vertices too large (%d). Truncating to %d.", ncvtx, D3DMAXNUMVERTICES);
+		ncvtx = D3DMAXNUMVERTICES;
 	}
+	D3DVERTEXBUFFERDESC vbdesc;
+	vbdesc.dwSize = sizeof(D3DVERTEXBUFFERDESC);
+	vbdesc.dwCaps = (gc->GetFramework()->IsTLDevice() ? 0 : D3DVBCAPS_SYSTEMMEMORY);
+	vbdesc.dwFVF = D3DFVF_XYZ;
+	vbdesc.dwNumVertices = ncvtx;
+	gc->GetDirect3D7()->CreateVertexBuffer(&vbdesc, &cvtx, 0);
+	VERTEX_XYZ* vbuf;
+	cvtx->Lock(DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
+	for (int i = 0; i < ncvtx; i++) {
+		vbuf[i].x = clineVtx[i].x;
+		vbuf[i].y = clineVtx[i].y;
+		vbuf[i].z = clineVtx[i].z;
+	}
+	cvtx->Unlock();
+	cvtx->Optimize(gc->GetDevice(), 0);
 }
 
 // ==============================================================
@@ -201,7 +215,7 @@ void CelestialSphere::RenderStars (LPDIRECT3DDEVICE7 dev, DWORD nmax, const VECT
 void CelestialSphere::RenderConstellations (LPDIRECT3DDEVICE7 dev, VECTOR3 &col)
 {
 	dev->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(col.x,col.y,col.z,1));
-	dev->DrawPrimitive (D3DPT_LINELIST, D3DFVF_XYZ, cnstvtx, ncline*2, 0);
+	dev->DrawPrimitiveVB (D3DPT_LINELIST, cvtx, 0, ncvtx, 0);
 }
 
 // ==============================================================

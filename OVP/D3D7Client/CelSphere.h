@@ -101,9 +101,9 @@ private:
 	DWORD nsvtx;          // total number of vertices over all buffers
 	//DWORD nstar;          // total number of stars across all buffers
 	LPDIRECT3DVERTEXBUFFER7 *svtx; // star vertex buffers
-	int lvlid[256];       // star brightness hash table
-	DWORD ncline;         // number of constellation lines
-	VERTEX_XYZ  *cnstvtx; // vertex list of constellation lines
+	int lvlid[256];                // star brightness hash table
+	DWORD ncvtx;                   // number of constellation line vertices
+	LPDIRECT3DVERTEXBUFFER7 cvtx;  // vertex buffer for constellation lines
 	LPDIRECT3DVERTEXBUFFER7 grdlng, grdlat; // vertex buffers for grid lines
 };
 
