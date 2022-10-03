@@ -84,7 +84,7 @@ public:
 	 * \brief Number of stars loaded from the data base
 	 * \return Number of stars available
 	 */
-	inline DWORD NStar() const { return nsvtx; }
+	inline DWORD NStar() const { return m_nsVtx; }
 
 protected:
 	/**
@@ -104,18 +104,15 @@ protected:
 	void AllocGrids ();
 
 private:
-	oapi::D3D9Client *gc; ///< pointer to graphics client
-	float sphere_r;       ///< render radius for celestial sphere
-	DWORD nsbuf;          ///< number of vertex buffers for star positions
-//	DWORD nstar;          ///< total number of stars across all buffers
-	UINT maxNumVertices;  ///< number of vertices to use for one chunk at star-drawing
-	DWORD nsvtx;          ///< total number of vertices over all buffers
-	LPDIRECT3DVERTEXBUFFER9 *svtx; ///< star vertex buffers
-	int lvlid[256];       ///< star brightness hash table
-	LPDIRECT3DVERTEXBUFFER9 cvtx; ///< constellation line vertex buffer
-	DWORD ncvtx;          ///< number of constellation line vertices
-	LPDIRECT3DVERTEXBUFFER9 grdlng, grdlat; ///< vertex buffers for grid lines
-	D3DXMATRIX mWorld;    ///< world matrix
+	oapi::D3D9Client *m_gc;  ///< pointer to graphics client
+	UINT maxNumVertices;     ///< number of vertices to use for one chunk at star-drawing
+	DWORD m_nsBuf;           ///< number of vertex buffers for star positions
+	DWORD m_nsVtx;           ///< total number of vertices over all buffers
+	LPDIRECT3DVERTEXBUFFER9 *m_sVtx; ///< star vertex buffers
+	int m_lvlIdx[256];       ///< star brightness hash table
+	DWORD m_ncVtx;           ///< number of constellation line vertices
+	LPDIRECT3DVERTEXBUFFER9 m_cVtx; ///< constellation line vertex buffer
+	LPDIRECT3DVERTEXBUFFER9 m_grdLngVtx, m_grdLatVtx; ///< vertex buffers for grid lines
 	LPDIRECT3DDEVICE9 pDevice; ///< DirectX9 device
 };
 

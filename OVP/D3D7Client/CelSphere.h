@@ -28,7 +28,7 @@
  */
 class CelestialSphere {
 public:
-	CelestialSphere (oapi::D3D7Client *_gc);
+	CelestialSphere (oapi::D3D7Client *gc);
 	~CelestialSphere ();
 
 	/**
@@ -81,7 +81,7 @@ public:
 	 * \brief Number of stars loaded from the data base
 	 * \return Number of stars available
 	 */
-	inline DWORD NStar() const { return nsvtx; }
+	inline DWORD NStar() const { return m_nsVtx; }
 
 protected:
 	void LoadStars ();
@@ -95,16 +95,14 @@ protected:
 	// (e.g. celestial or ecliptic)
 
 private:
-	oapi::D3D7Client *gc;
-	float sphere_r;       // render radius for celestial sphere
-	DWORD nsbuf;          // number of vertex buffers for star positions
-	DWORD nsvtx;          // total number of vertices over all buffers
-	//DWORD nstar;          // total number of stars across all buffers
-	LPDIRECT3DVERTEXBUFFER7 *svtx; // star vertex buffers
-	int lvlid[256];                // star brightness hash table
-	DWORD ncvtx;                   // number of constellation line vertices
-	LPDIRECT3DVERTEXBUFFER7 cvtx;  // vertex buffer for constellation lines
-	LPDIRECT3DVERTEXBUFFER7 grdlng, grdlat; // vertex buffers for grid lines
+	oapi::D3D7Client *m_gc;
+	DWORD m_nsBuf;          // number of vertex buffers for star positions
+	DWORD m_nsVtx;          // total number of vertices over all buffers
+	LPDIRECT3DVERTEXBUFFER7 *m_sVtx; // star vertex buffers
+	int m_lvlIdx[256];               // star brightness hash table
+	DWORD m_ncVtx;                   // number of constellation line vertices
+	LPDIRECT3DVERTEXBUFFER7 m_cVtx;  // vertex buffer for constellation lines
+	LPDIRECT3DVERTEXBUFFER7 m_grdLngVtx, m_grdLatVtx; // vertex buffers for grid lines
 };
 
 #endif // !__CELSPHERE_H

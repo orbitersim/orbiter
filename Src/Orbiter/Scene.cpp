@@ -822,8 +822,6 @@ int Scene::LoadConstellations ()
 
 void Scene::AllocGrids ()
 {
-	extern double g_farplane;
-	const double rad = 0.5*g_farplane;
 	int i, j, idx;
 	double lng, lat, xz, y;
 
@@ -837,8 +835,8 @@ void Scene::AllocGrids ()
 	grdlng->Lock (DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
 	for (j = idx = 0; j <= 10; j++) {
 		lat = (j-5)*15*RAD;
-		xz = rad * cos(lat);
-		y  = rad * sin(lat);
+		xz = cos(lat);
+		y  = sin(lat);
 		for (i = 0; i <= NSEG; i++) {
 			lng = Pi2 * (double)i/(double)NSEG;
 			vbuf[idx].x = (float)(xz * cos(lng));
@@ -857,8 +855,8 @@ void Scene::AllocGrids ()
 		lng = j*15*RAD;
 		for (i = 0; i <= NSEG; i++) {
 			lat = Pi2 * (double)i/(double)NSEG;
-			xz = rad * cos(lat);
-			y  = rad * sin(lat);
+			xz = cos(lat);
+			y  = sin(lat);
 			vbuf[idx].x = (float)(xz * cos(lng));
 			vbuf[idx].z = (float)(xz * sin(lng));
 			vbuf[idx].y = (float)y;
