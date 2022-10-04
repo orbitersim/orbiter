@@ -77,32 +77,31 @@ public:
 	 */
 	void RenderGrid (LPDIRECT3DDEVICE7 dev, VECTOR3 &col, bool eqline = true);
 
-	/**
-	 * \brief Number of stars loaded from the data base
-	 * \return Number of stars available
-	 */
-	inline DWORD NStar() const { return m_nsVtx; }
-
 protected:
+	/**
+	 * \brief Load star database from file.
+	 */
 	void LoadStars ();
-	// Load star coordinates from file
 
+	/**
+	 * \brief Load constellation line database from file.
+	 */
 	void LoadConstellationLines ();
-	// Load constellation line data from file
 
+	/**
+	 * \brief Allocate vertex list for rendering grid lines
+	 *    (e.g. celestial or ecliptic)
+	 */
 	void AllocGrids ();
-	// Allocate vertex list for rendering grid lines
-	// (e.g. celestial or ecliptic)
 
 private:
-	oapi::D3D7Client *m_gc;
-	DWORD m_nsBuf;          // number of vertex buffers for star positions
-	DWORD m_nsVtx;          // total number of vertices over all buffers
-	LPDIRECT3DVERTEXBUFFER7 *m_sVtx; // star vertex buffers
-	int m_lvlIdx[256];               // star brightness hash table
-	DWORD m_ncVtx;                   // number of constellation line vertices
-	LPDIRECT3DVERTEXBUFFER7 m_cVtx;  // vertex buffer for constellation lines
-	LPDIRECT3DVERTEXBUFFER7 m_grdLngVtx, m_grdLatVtx; // vertex buffers for grid lines
+	oapi::D3D7Client *m_gc;          ///< pointer to graphics client
+	DWORD m_nsVtx;                   ///< total number of vertices over all buffers
+	std::vector<LPDIRECT3DVERTEXBUFFER7> m_sVtx; ///< star vertex buffers
+	int m_lvlIdx[256];               ///< star brightness hash table
+	DWORD m_ncVtx;                   ///< number of constellation line vertices
+	LPDIRECT3DVERTEXBUFFER7 m_cVtx;  ///< vertex buffer for constellation lines
+	LPDIRECT3DVERTEXBUFFER7 m_grdLngVtx, m_grdLatVtx; ///< vertex buffers for grid lines
 };
 
 #endif // !__CELSPHERE_H

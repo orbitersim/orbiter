@@ -220,8 +220,9 @@ private:
 	LPDIRECT3DVERTEXBUFFER7 cvtx;  // vertex buffer for constellation lines
 	int ncvtx;                     // number of constellation line vertices
 
-	LPDIRECT3DVERTEXBUFFER7 *svtx; // vertex buffers for star positions
-	DWORD nsbuf;                   // number of star vertex buffers
+	std::vector<LPDIRECT3DVERTEXBUFFER7> svtx; // vertex buffers for star positions
+	//LPDIRECT3DVERTEXBUFFER7 *svtx; // vertex buffers for star positions
+	//DWORD nsbuf;                   // number of star vertex buffers
 	DWORD nsvtx;                   // total number of vertices over all buffers
 
 	LPDIRECT3DVERTEXBUFFER7 grdlng, grdlat; // vertex buffers for gridlines

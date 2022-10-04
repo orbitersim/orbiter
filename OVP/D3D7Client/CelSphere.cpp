@@ -34,11 +34,8 @@ CelestialSphere::CelestialSphere (D3D7Client *gc)
 
 CelestialSphere::~CelestialSphere ()
 {
-	if (m_nsBuf) {
-		for (size_t i = 0; i < m_nsBuf; i++)
-			m_sVtx[i]->Release();
-		delete []m_sVtx;
-	}
+	for (auto it = m_sVtx.begin(); it != m_sVtx.end(); it++)
+		(*it)->Release();
 	m_cVtx->Release();
 	m_grdLngVtx->Release();
 	m_grdLatVtx->Release();
@@ -48,7 +45,7 @@ CelestialSphere::~CelestialSphere ()
 
 void CelestialSphere::LoadStars ()
 {
-	m_nsVtx = m_nsBuf = 0;
+	m_nsVtx = 0;
 
 	StarRenderPrm *prm = (StarRenderPrm*)m_gc->GetConfigParam (CFGPRM_STARRENDERPRM);
 
@@ -70,14 +67,14 @@ void CelestialSphere::LoadStars ()
 
 	// convert star database to vertex buffers
 	m_nsVtx = starList.size();
-	m_nsBuf = (m_nsVtx + buflen - 1) / buflen; // number of buffers required
-	m_sVtx = new LPDIRECT3DVERTEXBUFFER7[m_nsBuf];
-	for (i = idx = 0; i < m_nsBuf; i++) {
-		nv = min(buflen, m_nsVtx - i * buflen);
+	DWORD nbuf = (m_nsVtx + buflen - 1) / buflen; // number of buffers required
+	m_sVtx.resize(nbuf);
+	for (auto it = m_sVtx.begin(); it != m_sVtx.end(); it++) {
+		nv = min(buflen, m_nsVtx - idx);
 		vbdesc.dwNumVertices = nv;
-		m_gc->GetDirect3D7()->CreateVertexBuffer (&vbdesc, m_sVtx + i, 0);
+		m_gc->GetDirect3D7()->CreateVertexBuffer (&vbdesc, &*it, 0);
 		VERTEX_XYZC *vbuf;
-		m_sVtx[i]->Lock (DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
+		(*it)->Lock (DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
 		for (j = 0; j < nv; j++) {
 			const oapi::GraphicsClient::StarRenderRec& rec = renderList[idx];
 			VERTEX_XYZC& v = vbuf[j];
@@ -93,8 +90,8 @@ void CelestialSphere::LoadStars ()
 			plvl = lvl;
 			idx++;
 		}
-		m_sVtx[i]->Unlock();
-		m_sVtx[i]->Optimize (m_gc->GetDevice(), 0);
+		(*it)->Unlock();
+		(*it)->Optimize (m_gc->GetDevice(), 0);
 	}
 
 	for (i = 0; i < (DWORD)plvl; i++) m_lvlIdx[i] = idx;

@@ -101,7 +101,7 @@ Scene::Scene (OrbiterGraphics *og)
 	nobj = nsun = cobj = nbuf = 0;
 	nstarlight  = 0;
 	nstream     = 0;
-	nsbuf = nsvtx = 0;
+	nsvtx = 0;
 	gcanvas = 0;
 	csphere = 0;
 	csphere2 = 0;
@@ -177,10 +177,6 @@ Scene::~Scene ()
 	if (csphere) delete csphere;
 	if (csphere2) delete csphere2;
 
-	cvtx->Release();
-	grdlng->Release();
-	grdlat->Release();
-
 	for (i = 0; i < ncnstlabel; i++)
 		delete []cnstlabel[i].full;
 
@@ -199,12 +195,16 @@ Scene::~Scene ()
 //		delete []exhausttex;
 //	}
 
-	if (vb_target) vb_target->Release();
-	if (vb_cnstlabel) vb_cnstlabel->Release();
-	if (nsbuf) {
-		for (i = 0; i < nsbuf; i++)	svtx[i]->Release();
-		delete []svtx;
-	}
+	for (auto it = svtx.begin(); it != svtx.end(); it++)
+		(*it)->Release();
+	cvtx->Release();
+	grdlng->Release();
+	grdlat->Release();
+	if (vb_target)
+		vb_target->Release();
+	if (vb_cnstlabel)
+		vb_cnstlabel->Release();
+
 	FreeGDI();
 
 	VObject::scene = NULL;
@@ -640,23 +640,12 @@ static int lvlid[256];
 
 DWORD Scene::LoadStars ()
 {
-	nsvtx = nsbuf = 0;
+	nsvtx = 0;
 
 	StarRenderPrm* prm = (StarRenderPrm*)gc->GetConfigParam(CFGPRM_STARRENDERPRM);
 
-	// parameters for mapping an apparent magnitude value to a pixel colour intensity
-	double mag_hi = g_pOrbiter->Cfg()->CfgVisualPrm.StarPrm.mag_hi;  // visual magnitude for max display brightness
-	double mag_lo = g_pOrbiter->Cfg()->CfgVisualPrm.StarPrm.mag_lo;  // highest magnitude to be displayed
-	double brt_min = g_pOrbiter->Cfg()->CfgVisualPrm.StarPrm.brt_min;// lowest display brightness
-	bool logmap = g_pOrbiter->Cfg()->CfgVisualPrm.StarPrm.map_log;   // linear/log mapping flag
-
-	if (mag_lo <= mag_hi) {
-		LOGOUT_WARN("Inconsistent magnitude limits for background star brightness. Disabling background stars.");
-		return 0;
-	}
-
 	// Read the star database
-	const std::vector<oapi::GraphicsClient::StarRec> starList = gc->LoadStarData(mag_lo);
+	const std::vector<oapi::GraphicsClient::StarRec> starList = gc->LoadStarData(prm->mag_lo);
 	if (!starList.size()) return 0;
 
 	// convert to render parameters
@@ -665,79 +654,43 @@ DWORD Scene::LoadStars ()
 
 	const DWORD buflen = D3DMAXNUMVERTICES;
 	DWORD i, j, nv, idx = 0;
-	double a, b, xz;
-	float c;
 	DWORD lvl, plvl = 256;
-
-	extern double g_farplane;
-	const double rad = 1.0; //0.5 * g_farplane;
-	// Make sure stars are within the fustrum limit
-	// Since they are rendered without z-buffer, the actual distance doesn't matter
 
 	D3DVERTEXBUFFERDESC vbdesc;
 	vbdesc.dwSize = sizeof (D3DVERTEXBUFFERDESC);
 	vbdesc.dwCaps = (gc->GetFramework()->IsTLDevice() ? 0 : D3DVBCAPS_SYSTEMMEMORY);
 	vbdesc.dwFVF  = D3DFVF_XYZ | D3DFVF_DIFFUSE;
 
-	if (logmap) {   // scaling factors for logarithmic brightness mapping
-		a = -log(brt_min)/(mag_lo-mag_hi);
-	}
-	else {        // scaling factors for linear brightness mapping
-		a = (1.0-brt_min)/(mag_hi-mag_lo);
-		b = brt_min - mag_lo*a;
-	}
-
 	// convert star database to vertex buffers
 	nsvtx = starList.size();
-	nsbuf = (nsvtx + buflen - 1) / buflen; // number of buffers required
-	svtx = new LPDIRECT3DVERTEXBUFFER7[nsbuf];
-	for (i = idx = 0; i < nsbuf; i++) {
-		nv = min(buflen, nsvtx - i * buflen);
+	DWORD nbuf = (nsvtx + buflen - 1) / buflen; // number of buffers required
+	svtx.resize(nbuf);
+	for (auto it = svtx.begin(); it != svtx.end(); it++) {
+		nv = min(buflen, nsvtx - idx);
 		vbdesc.dwNumVertices = nv;
-		g_pOrbiter->GetInlineGraphicsClient()->GetDirect3D7()->CreateVertexBuffer(&vbdesc, svtx + i, 0);
+		g_pOrbiter->GetInlineGraphicsClient()->GetDirect3D7()->CreateVertexBuffer(&vbdesc, &*it, 0);
 		VERTEX_XYZC* vbuf;
-		svtx[i]->Lock(DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
+		(*it)->Lock(DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
 		for (j = 0; j < nv; j++) {
-			const oapi::GraphicsClient::StarRec& rec = starList[idx];
-
-			// position
-			double rlat = (double)rec.lat, rlng = (double)rec.lng;
+			const oapi::GraphicsClient::StarRenderRec& rec = renderList[idx];
 			VERTEX_XYZC& v = vbuf[j];
-			xz = rad * cos(rlat);
-			v.x = (float)(xz * cos(rlng));
-			v.z = (float)(xz * sin(rlng));
-			v.y = (float)(rad * sin(rlat));
-
-			// brightness
-			if (logmap)
-				c = (float)min(1.0, max(brt_min, exp(-(rec.mag - mag_hi) * a)));
-			else
-				c = (float)min(1.0, max(brt_min, a * rec.mag + b));
-
-			// colour
-			const double slope = 0.3;   // simple encoding of spectral class index to colour curves
-			double r_scale = (rec.specidx > 35 ? 1.0 : 1.0 + (rec.specidx / 35 - 1.0) * slope);
-			double g_scale = (rec.specidx > 20 && rec.specidx < 50 ? 1.0 : rec.specidx <= 20 ? 1.0 + (rec.specidx - 20) * slope / 35 : 1.0 + (50 - rec.specidx) * slope / 35);
-			double b_scale = (rec.specidx < 35 ? 1.0 : 1.0 + ((70 - rec.specidx) / 35 - 1.0) * slope);
-			double rescale = 3.0 / (r_scale + g_scale + b_scale); // rescale to maintain brightness
-			float cr = min(c * rescale * r_scale, 1.0);
-			float cg = min(c * rescale * g_scale, 1.0);
-			float cb = min(c * rescale * b_scale, 1.0);
-			v.col = D3DRGBA(cr, cg, cb, 1);
+			v.x = rec.x;
+			v.y = rec.y;
+			v.z = rec.z;
+			v.col = D3DRGBA(rec.r, rec.g, rec.b, 1);
 
 			// compute brightness cutoff levels for rendering stars through atmosphere
-			lvl = (DWORD)(c * 256.0 * 0.5);
+			lvl = (DWORD)(rec.brightness * 256.0 * 0.5);
 			if (lvl > 255) lvl = 255;
 			for (DWORD k = lvl; k < plvl; k++) lvlid[k] = idx;
 			plvl = lvl;
 			idx++;
 		}
-		svtx[i]->Unlock();
-		svtx[i]->Optimize(dev, 0);
+		(*it)->Unlock();
+		(*it)->Optimize(dev, 0);
 	}
 
 	for (i = 0; i < plvl; i++) lvlid[i] = idx;
-	LOGOUT("Loaded %d records from star database", nsvtx);
 
 	return nsvtx;
 }

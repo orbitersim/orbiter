@@ -28,9 +28,9 @@ class CelestialSphere {
 public:
 	/**
 	 * \brief Create a new celestial sphere object.
-	 * \param _gc pointer to graphics client
+	 * \param gc pointer to graphics client
 	 */
-	explicit CelestialSphere(oapi::D3D9Client *_gc);
+	explicit CelestialSphere(oapi::D3D9Client *gc);
 
 	/**
 	 * \brief Destructor
@@ -80,12 +80,6 @@ public:
 	 */
 	void RenderGrid(ID3DXEffect *fx, bool eqline = true);
 	
-	/**
-	 * \brief Number of stars loaded from the data base
-	 * \return Number of stars available
-	 */
-	inline DWORD NStar() const { return m_nsVtx; }
-
 protected:
 	/**
 	 * \brief Load star coordinates from file
@@ -105,15 +99,14 @@ protected:
 
 private:
 	oapi::D3D9Client *m_gc;  ///< pointer to graphics client
+	LPDIRECT3DDEVICE9 m_pDevice; ///< DirectX9 device
 	UINT maxNumVertices;     ///< number of vertices to use for one chunk at star-drawing
-	DWORD m_nsBuf;           ///< number of vertex buffers for star positions
 	DWORD m_nsVtx;           ///< total number of vertices over all buffers
-	LPDIRECT3DVERTEXBUFFER9 *m_sVtx; ///< star vertex buffers
+	std::vector<LPDIRECT3DVERTEXBUFFER9> m_sVtx; ///< star vertex buffers
 	int m_lvlIdx[256];       ///< star brightness hash table
 	DWORD m_ncVtx;           ///< number of constellation line vertices
 	LPDIRECT3DVERTEXBUFFER9 m_cVtx; ///< constellation line vertex buffer
 	LPDIRECT3DVERTEXBUFFER9 m_grdLngVtx, m_grdLatVtx; ///< vertex buffers for grid lines
-	LPDIRECT3DDEVICE9 pDevice; ///< DirectX9 device
 };
 
 #endif // !__CELSPHERE_H

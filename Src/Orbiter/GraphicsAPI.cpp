@@ -739,15 +739,15 @@ const std::vector<GraphicsClient::StarRec> GraphicsClient::LoadStarData(double m
 		int i, s, n = 0;
 		while (s = fread(rec.data() + n, sizeof(GraphicsClient::StarRec), chunksize, f)) {
 			for (i = 0; i < s && rec[n].mag <= maxAppMag; i++, n++);
-			if (i < s) {
-				rec.resize(n);
-				rec.shrink_to_fit();
+			if (i < s)
 				break;
-			}
 			if (rec.size() < n + chunksize)
 				rec.resize(n + chunksize);
 		}
 		fclose(f);
+		rec.resize(n);
+		rec.shrink_to_fit();
+		LOGOUT("Loaded %d records from star database", n);
 	}
 	else {
 		LOGOUT_WARN("Star data base for celestial sphere (Star.bin) not found. Disabling background stars.");
@@ -787,18 +787,23 @@ const std::vector<GraphicsClient::StarRenderRec> GraphicsClient::StarData2Render
 		renderRec[i].z = (float)(xz * sin(rlng));
 		renderRec[i].y = (float)(sin(rlat));
 
-		// brightness
+		// brightness from apparent magnitude
 		if (prm.map_log)
 			c = (float)min(1.0, max(prm.brt_min, ::exp(-(rec.mag - prm.mag_hi) * a)));
 		else
 			c = (float)min(1.0, max(prm.brt_min, a * rec.mag + b));
 		renderRec[i].brightness = c;
 
-		// colour
-		const double slope = 0.3;   // simple encoding of spectral class index to colour curves
-		double r_scale = (rec.specidx > 35 ? 1.0 : 1.0 + (rec.specidx / 35 - 1.0) * slope);
-		double g_scale = (rec.specidx > 20 && rec.specidx < 50 ? 1.0 : rec.specidx <= 20 ? 1.0 + (rec.specidx - 20) * slope / 35 : 1.0 + (50 - rec.specidx) * slope / 35);
-		double b_scale = (rec.specidx < 35 ? 1.0 : 1.0 + ((70 - rec.specidx) / 35 - 1.0) * slope);
+		// colour from spectral class index
+		double r_scale = (rec.specidx < 25 ? rec.specidx / 25.0 * (1.0 - 0.75) + 0.75 :
+			                                 1.0);
+		double g_scale = (rec.specidx < 20 ? rec.specidx / 20.0 * (1.0 - 0.85) + 0.85 :
+			              rec.specidx < 50 ? 1.0 :
+			                                 (70 - rec.specidx) / 20.0 * (1.0 - 0.75) + 0.75);
+		double b_scale = (rec.specidx < 30 ? 1.0 :
+			                                 (70 - rec.specidx) / 40.0 * (1.0 - 0.6) + 0.6);
+
+		// rescale for overall brightness
 		double rescale = 3.0 / (r_scale + g_scale + b_scale); // rescale to maintain brightness
 		renderRec[i].r = min(c * rescale * r_scale, 1.0);
 		renderRec[i].g = min(c * rescale * g_scale, 1.0);
