@@ -132,7 +132,6 @@ Scene::Scene (OrbiterGraphics *og)
 	vb_cnstlabel = nullptr;
 
 	LoadConstellations ();
-	AllocGrids ();
 
 	// some general-use textures
 	char cbuf[256];
@@ -192,8 +191,6 @@ Scene::~Scene ()
 //		delete []exhausttex;
 //	}
 
-	grdlng->Release();
-	grdlat->Release();
 	if (vb_target)
 		vb_target->Release();
 	if (vb_cnstlabel)
@@ -675,55 +672,6 @@ void Scene::LoadConstellations ()
 	}
 }
 
-//#pragma optimize("g",on)
-
-void Scene::AllocGrids ()
-{
-	int i, j, idx;
-	double lng, lat, xz, y;
-
-	D3DVERTEXBUFFERDESC vbdesc;
-	vbdesc.dwSize = sizeof (D3DVERTEXBUFFERDESC);
-	vbdesc.dwCaps = (g_pOrbiter->GetInlineGraphicsClient()->GetFramework()->IsTLDevice() ? 0 : D3DVBCAPS_SYSTEMMEMORY);
-	vbdesc.dwFVF  = D3DFVF_XYZ;
-	vbdesc.dwNumVertices = (NSEG+1) * 11;
-	g_pOrbiter->GetInlineGraphicsClient()->GetDirect3D7()->CreateVertexBuffer (&vbdesc, &grdlng, 0);
-	VERTEX_XYZ *vbuf;
-	grdlng->Lock (DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
-	for (j = idx = 0; j <= 10; j++) {
-		lat = (j-5)*15*RAD;
-		xz = cos(lat);
-		y  = sin(lat);
-		for (i = 0; i <= NSEG; i++) {
-			lng = Pi2 * (double)i/(double)NSEG;
-			vbuf[idx].x = (float)(xz * cos(lng));
-			vbuf[idx].z = (float)(xz * sin(lng));
-			vbuf[idx].y = (float)y;
-			idx++;
-		}
-	}
-	grdlng->Unlock();
-	grdlng->Optimize (dev, 0);
-
-	vbdesc.dwNumVertices = (NSEG+1) * 12;
-	g_pOrbiter->GetInlineGraphicsClient()->GetDirect3D7()->CreateVertexBuffer (&vbdesc, &grdlat, 0);
-	grdlat->Lock (DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
-	for (j = idx = 0; j < 12; j++) {
-		lng = j*15*RAD;
-		for (i = 0; i <= NSEG; i++) {
-			lat = Pi2 * (double)i/(double)NSEG;
-			xz = cos(lat);
-			y  = sin(lat);
-			vbuf[idx].x = (float)(xz * cos(lng));
-			vbuf[idx].z = (float)(xz * sin(lng));
-			vbuf[idx].y = (float)y;
-			idx++;
-		}
-	}
-	grdlat->Unlock ();
-	grdlat->Optimize (dev, 0);
-}
-
 void Scene::Render3DLabel (const Vector &gp, char *label, double scale, DWORD colour)
 {
 	static VERTEX_TL1TEX Vtx[4] = {
@@ -793,15 +741,6 @@ void Scene::Render3DLabel (const Vector &gp, char *label, double scale, DWORD co
 		dev->SetRenderState (D3DRENDERSTATE_COLORKEYENABLE, FALSE);
 		dev->SetTexture (0,0);
 	}
-}
-
-void Scene::RenderGrid (bool render_eq)
-{
-	int i;
-	for (i = 0; i <= 10; i++) if (render_eq || i != 5)
-		dev->DrawPrimitiveVB  (D3DPT_LINESTRIP, grdlng, i*(NSEG+1), NSEG+1, 0);
-	for (i = 0; i < 12; i++)
-		dev->DrawPrimitiveVB (D3DPT_LINESTRIP, grdlat, i*(NSEG+1), NSEG+1, 0);
 }
 
 HDC Scene::GetLabelDC (int mode)
@@ -1035,8 +974,9 @@ void Scene::Render (D3DRECT* vp_rect)
 		double colScale = 1.0 - bglvl; // feature brightness modifier for lit background
 
 		if (flagPItem & PLN_EGRID) {                     // render ecliptic grid
-			dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(0, 0, 0.4, 1));
-			RenderGrid((flagPItem & PLN_ECL) == 0);
+			m_celSphere->RenderGrid(dev, Vector(0, 0, 0.4) * colScale, (flagPItem & PLN_ECL) == 0);
+			//dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(0, 0, 0.4, 1));
+			//RenderGrid((flagPItem & PLN_ECL) == 0);
 		}
 		if (flagPItem & PLN_ECL) {
 			m_celSphere->RenderGreatCircle(dev, Vector(0, 0, 0.8) * colScale);
@@ -1063,10 +1003,7 @@ void Scene::Render (D3DRECT* vp_rect)
 			}
 			dev->SetTransform(D3DTRANSFORMSTATE_WORLD, prot);
 			if (flagPItem & PLN_CGRID) {
-				dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(0.35, 0, 0.35, 1));
-				RenderGrid((flagPItem & PLN_EQU) == 0);
-			}
-			if (flagPItem & PLN_EQU) {
+				m_celSphere->RenderGrid(dev, Vector(0.3, 0, 0.3) * colScale, false);
 				m_celSphere->RenderGreatCircle(dev, Vector(0.7, 0, 0.7) * colScale);
 			}
 			dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);

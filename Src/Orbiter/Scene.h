@@ -86,20 +86,12 @@ public:
 	// read constellation lines from data base
 	// return value is number of records (lines) read
 
-	void AllocGrids ();
-	// allocate vertices for coordinate grids (ecliptic)
-
 	int BgBrightnessLevel () const
 	{ return atmidx; }
 	// return render brightness level of sky background [0..255]
 
 	void Render (D3DRECT* vp_rect);
 	// Render the scene in vp using device dev
-
-	void RenderGrid (bool render_eq);
-	// Render a grid (e.g. ecliptic or equatorial frame) on celestial sphere
-	// if render_eq == false, the equator line (lat=0) is not rendered (so it
-	// can be done in a different colour)
 
 	void Render3DLabel (const Vector &p, char *label, double scale = 1.0, DWORD colour = D3DRGBA(1,1,1,1));
 	// Render text "label" at position p using current world matrix
@@ -218,7 +210,7 @@ private:
 	STARLIGHT *starlight;
 	int nstarlight;        // number of star light objects in the list
 
-	LPDIRECT3DVERTEXBUFFER7 grdlng, grdlat; // vertex buffers for gridlines
+	//LPDIRECT3DVERTEXBUFFER7 grdlng, grdlat; // vertex buffers for gridlines
 
 	DWORD ncnstlabel;
 	struct CnstLabel {

@@ -257,3 +257,15 @@ void CelestialSphere::RenderGreatCircle(LPDIRECT3DDEVICE7 dev, Vector& col)
 	dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(col.x, col.y, col.z, 1));
 	dev->DrawPrimitiveVB(D3DPT_LINESTRIP, m_grdLngVtx, 5 * (NSEG + 1), NSEG + 1, 0);
 }
+
+// ==============================================================
+
+void CelestialSphere::RenderGrid(LPDIRECT3DDEVICE7 dev, Vector& col, bool eqline)
+{
+	int i;
+	dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(col.x, col.y, col.z, 1));
+	for (i = 0; i <= 10; i++) if (eqline || i != 5)
+		dev->DrawPrimitiveVB(D3DPT_LINESTRIP, m_grdLngVtx, i * (NSEG + 1), NSEG + 1, 0);
+	for (i = 0; i < 12; i++)
+		dev->DrawPrimitiveVB(D3DPT_LINESTRIP, m_grdLatVtx, i * (NSEG + 1), NSEG + 1, 0);
+}

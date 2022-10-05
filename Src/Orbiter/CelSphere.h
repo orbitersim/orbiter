@@ -47,6 +47,20 @@ public:
 	 */
 	void RenderGreatCircle(LPDIRECT3DDEVICE7 dev, Vector& col);
 
+	/**
+	 * \brief Render grid lines on the celestial sphere in a given colour.
+	 * \param dev render device
+	 * \param col RGB line colour (0..1 for each component)
+	 * \param eqline indicates if the equator line should be drawn
+	 * \note By default (i.e. for identity world matrix), this draws the
+	 *   ecliptic grid. To render a grid for any other reference frame,
+	 *   the world matrix must be adjusted accordingly before call.
+	 * \note If eqline==false, then the latitude=0 line is not drawn.
+	 *   This is useful if the line should be drawn in a different colour
+	 *   with RenderGreatCircle().
+	 */
+	void RenderGrid(LPDIRECT3DDEVICE7 dev, Vector& col, bool eqline = true);
+
 protected:
 	/**
 	 * \brief Load star database from file.
