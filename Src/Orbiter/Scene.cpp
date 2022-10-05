@@ -40,7 +40,6 @@ extern DWORD g_vtxcount;
 extern DWORD g_tilecount;
 extern char DBG_MSG[256];
 
-static Vector cc(0.4,0.3,0.2); // constellation line colour
 static COLORREF labelcol[6] = {0x00FFFF, 0xFFFF00, 0x4040FF, 0xFF00FF, 0x40FF40, 0xFF8080};
 
 D3DMATERIAL7 Scene::default_mtrl = {
@@ -101,7 +100,7 @@ Scene::Scene (OrbiterGraphics *og)
 	nobj = nsun = cobj = nbuf = 0;
 	nstarlight  = 0;
 	nstream     = 0;
-	nsvtx = 0;
+	m_celSphere = new CelestialSphere(gc);
 	gcanvas = 0;
 	csphere = 0;
 	csphere2 = 0;
@@ -115,7 +114,7 @@ Scene::Scene (OrbiterGraphics *og)
 	if (locallight)
 		lightlist = new LIGHTLIST[maxlight];
 
-	bglvl = 0;
+	atmidx = 0;
 
 	zclearflag = D3DCLEAR_ZBUFFER;
 	bool bstencil = (g_pOrbiter->Cfg()->CfgDevPrm.bTryStencil &&
@@ -123,18 +122,15 @@ Scene::Scene (OrbiterGraphics *og)
 	if (bstencil) zclearflag |= D3DCLEAR_STENCIL;
 	// use stencil buffers (for shadow rendering etc.)
 
-	//Vector cc (g_pOrbiter->Cfg()->ConstellationCol);
-	cnstlimit = (int)((cc.x + cc.y + cc.z)/3.0*256.0);
 	star_lght = (g_pOrbiter->Cfg()->CfgVisualPrm.bSpecular ? &starlight_specular : &starlight_nospecular);
 	Mesh::GlobalEnableSpecular (g_pOrbiter->Cfg()->CfgVisualPrm.bSpecular);
 
 	//csphere = new CSphereManager;
 
-	ncvtx = ncnstlabel = 0;
+	ncnstlabel = 0;
 	vb_target = nullptr;
 	vb_cnstlabel = nullptr;
 
-	LoadStars ();
 	LoadConstellations ();
 	AllocGrids ();
 
@@ -172,6 +168,7 @@ Scene::~Scene ()
 			delete pstream[i];
 		delete []pstream;
 	}
+	delete m_celSphere;
 	if (nsun) delete []vsun;
 	if (nstarlight) delete []starlight;
 	if (csphere) delete csphere;
@@ -195,9 +192,6 @@ Scene::~Scene ()
 //		delete []exhausttex;
 //	}
 
-	for (auto it = svtx.begin(); it != svtx.end(); it++)
-		(*it)->Release();
-	cvtx->Release();
 	grdlng->Release();
 	grdlat->Release();
 	if (vb_target)
@@ -638,97 +632,8 @@ static int lvlid[256];
 
 #pragma optimize("g",off)
 
-DWORD Scene::LoadStars ()
+void Scene::LoadConstellations ()
 {
-	nsvtx = 0;
-
-	StarRenderPrm* prm = (StarRenderPrm*)gc->GetConfigParam(CFGPRM_STARRENDERPRM);
-
-	// Read the star database
-	const std::vector<oapi::GraphicsClient::StarRec> starList = gc->LoadStarData(prm->mag_lo);
-	if (!starList.size()) return 0;
-
-	// convert to render parameters
-	const std::vector<oapi::GraphicsClient::StarRenderRec> renderList = gc->StarData2RenderData(starList, *prm);
-	if (!renderList.size()) return 0;
-
-	const DWORD buflen = D3DMAXNUMVERTICES;
-	DWORD i, j, nv, idx = 0;
-	DWORD lvl, plvl = 256;
-
-	D3DVERTEXBUFFERDESC vbdesc;
-	vbdesc.dwSize = sizeof (D3DVERTEXBUFFERDESC);
-	vbdesc.dwCaps = (gc->GetFramework()->IsTLDevice() ? 0 : D3DVBCAPS_SYSTEMMEMORY);
-	vbdesc.dwFVF  = D3DFVF_XYZ | D3DFVF_DIFFUSE;
-
-	// convert star database to vertex buffers
-	nsvtx = starList.size();
-	DWORD nbuf = (nsvtx + buflen - 1) / buflen; // number of buffers required
-	svtx.resize(nbuf);
-	for (auto it = svtx.begin(); it != svtx.end(); it++) {
-		nv = min(buflen, nsvtx - idx);
-		vbdesc.dwNumVertices = nv;
-		g_pOrbiter->GetInlineGraphicsClient()->GetDirect3D7()->CreateVertexBuffer(&vbdesc, &*it, 0);
-		VERTEX_XYZC* vbuf;
-		(*it)->Lock(DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
-		for (j = 0; j < nv; j++) {
-			const oapi::GraphicsClient::StarRenderRec& rec = renderList[idx];
-			VERTEX_XYZC& v = vbuf[j];
-			v.x = rec.x;
-			v.y = rec.y;
-			v.z = rec.z;
-			v.col = D3DRGBA(rec.r, rec.g, rec.b, 1);
-
-			// compute brightness cutoff levels for rendering stars through atmosphere
-			lvl = (DWORD)(rec.brightness * 256.0 * 0.5);
-			if (lvl > 255) lvl = 255;
-			for (DWORD k = lvl; k < plvl; k++) lvlid[k] = idx;
-			plvl = lvl;
-			idx++;
-		}
-		(*it)->Unlock();
-		(*it)->Optimize(dev, 0);
-	}
-
-	for (i = 0; i < plvl; i++) lvlid[i] = idx;
-
-	return nsvtx;
-}
-
-int Scene::LoadConstellations ()
-{
-	ncvtx = 0;
-
-	// Read constellation line database
-	const std::vector<oapi::GraphicsClient::ConstRec> clineList = gc->LoadConstellationLineData();
-	if (!clineList.size()) return 0;
-
-	// convert to render parameters
-	const std::vector<oapi::GraphicsClient::ConstRenderRec> clineVtx = gc->ConstellationLineData2RenderData(clineList);
-	if (!clineVtx.size()) return 0;
-
-	// create vertex buffer
-	ncvtx = clineVtx.size();
-	if (ncvtx > D3DMAXNUMVERTICES) {
-		LOGOUT_WARN("Number of constellation line vertices too large (%d). Truncating to %d.", ncvtx, D3DMAXNUMVERTICES);
-		ncvtx = D3DMAXNUMVERTICES;
-	}
-	D3DVERTEXBUFFERDESC vbdesc;
-	vbdesc.dwSize = sizeof(D3DVERTEXBUFFERDESC);
-	vbdesc.dwCaps = (gc->GetFramework()->IsTLDevice() ? 0 : D3DVBCAPS_SYSTEMMEMORY);
-	vbdesc.dwFVF = D3DFVF_XYZ;
-	vbdesc.dwNumVertices = ncvtx;
-	g_pOrbiter->GetInlineGraphicsClient()->GetDirect3D7()->CreateVertexBuffer(&vbdesc, &cvtx, 0);
-	VERTEX_XYZ* vbuf;
-	cvtx->Lock(DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
-	for (int i = 0; i < ncvtx; i++) {
-		vbuf[i].x = clineVtx[i].x;
-		vbuf[i].y = clineVtx[i].y;
-		vbuf[i].z = clineVtx[i].z;
-	}
-	cvtx->Unlock();
-	cvtx->Optimize(dev, 0);
-
 	// load labels
 	FILE* f = fopen ("Constell2.bin", "rb");
 	if (f) {
@@ -768,7 +673,6 @@ int Scene::LoadConstellations ()
 	else {
 		LOGOUT_WARN("Constellation data base for celestial sphere (Constell2.bin) not found. Disabling constellation labels.");
 	}
-	return ncvtx / 2;
 }
 
 //#pragma optimize("g",on)
@@ -900,11 +804,6 @@ void Scene::RenderGrid (bool render_eq)
 		dev->DrawPrimitiveVB (D3DPT_LINESTRIP, grdlat, i*(NSEG+1), NSEG+1, 0);
 }
 
-void Scene::RenderEqLine ()
-{
-	dev->DrawPrimitiveVB (D3DPT_LINESTRIP, grdlng, 5*(NSEG+1), NSEG+1, 0);
-}
-
 HDC Scene::GetLabelDC (int mode)
 {
 	HDC hDC;
@@ -935,6 +834,32 @@ double Scene::MinParticleCameraDist() const
 		}
 	}
 	return mincamparticledist;
+}
+
+Vector Scene::SkyColour()
+{
+	Vector col;
+	const Planet* pp = g_camera->ProxyPlanet();
+	if (pp && pp->HasAtmosphere()) {
+		const ATMCONST* atmp = pp->AtmParams();
+		Vector pc(g_camera->GPos() - pp->GPos());
+		double cdist = pc.length();
+		if (cdist < atmp->radlimit) {
+			ATMPARAM prm;
+			pp->GetAtmParam(cdist - pp->Size(), 0, 0, &prm);
+			Vector ps(-pp->GPos());
+			ps.unify();
+			double coss = (pc & ps) / cdist;
+			double intens = min(1.0, (1.0839 * coss + 0.4581)) * sqrt(prm.rho / atmp->rho0);
+			// => intensity=0 at sun zenith distance 115°
+			//    intensity=1 at sun zenith distance 60°
+			if (intens > 0.0)
+				col += Vector(atmp->color0.x * intens, atmp->color0.y * intens, atmp->color0.z * intens);
+		}
+		for (int i = 0; i < 3; i++)
+			if (col.data[i] > 1.0) col.data[i] = 1.0;
+	}
+	return col;
 }
 
 void Scene::RenderObjectMarker (const Vector &gpos, const char *label1, const char *label2, HDC hDC, int mode, int scale)
@@ -1011,46 +936,13 @@ void Scene::Render (D3DRECT* vp_rect)
 	HRESULT res;
 	g_vtxcount = g_tilecount = 0;
 
-	// select background colour in atmosphere
-	if (g_camera->ProxyPlanet() && g_camera->ProxyPlanet()->HasAtmosphere()) {
-		const Planet *pp = g_camera->ProxyPlanet();
-		const ATMCONST *atmp = pp->AtmParams();
-		Vector pc (g_camera->GPos() - pp->GPos());
-		double cdist = pc.length();
-		if (cdist < atmp->radlimit) {
-			ATMPARAM prm;
-			pp->GetAtmParam (cdist-pp->Size(), 0, 0, &prm);
-			Vector ps (-pp->GPos());
-			ps.unify();
-			double coss = (pc & ps) / cdist;
-			//double intens = min (1.0,(0.9*coss+0.5)) * sqrt (dns/atmp->rho0);
-			double intens = min (1.0,(1.0839*coss+0.4581)) * sqrt (prm.rho/atmp->rho0);
-			// => intensity=0 at sun zenith distance 115°
-			//    intensity=1 at sun zenith distance 60°
-			if (intens > 0.0) {
-				col += Vector (atmp->color0.x*intens, atmp->color0.y*intens, atmp->color0.z*intens);
-			}
-		}
-	}
-	for (i = 0; i < 3; i++) if (col.data[i] > 1.0) col.data[i] = 1.0;
-	bgcol.Set (col);
-	D3DCOLOR bg_rgba = D3DRGBA (bgcol.x, bgcol.y, bgcol.z, 1);
+	bgcol = SkyColour();
+	double bglvl = (bgcol.x + bgcol.y + bgcol.z) / 3.0;
+	atmidx = min(255, (int)(bglvl * 1.5 * 255.0));
 
     // Clear the viewport
+	D3DCOLOR bg_rgba = D3DRGBA(bgcol.x, bgcol.y, bgcol.z, 1);
 	dev->Clear (0, NULL, D3DCLEAR_TARGET|zclearflag, bg_rgba, 1.0f, 0L);
-
-	float npl = (float)g_camera->Nearplane(), fpl = (float)g_camera->Farplane();
-	// remember default fustrum limits
-
-	int ns = nsvtx;
-	bglvl = 0;
-	if (nsvtx) {
-		if (bg_rgba) { // suppress stars darker than the background
-			bglvl = (bg_rgba & 0xff) + ((bg_rgba >> 8) & 0xff) + ((bg_rgba >> 16) & 0xff);
-			bglvl = min (bglvl/2, 255);
-			ns = lvlid[bglvl];
-		}
-	}
 
     // Begin the scene
 	res = dev->BeginScene ();
@@ -1113,6 +1005,9 @@ void Scene::Render (D3DRECT* vp_rect)
 				AddLocalLight (lightlist[i].plight, lightlist[i].vobj, i);
 	}
 
+	// render celestial sphere (without z-buffer)
+	dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
+	dev->SetTexture(0, 0);
 	dev->SetRenderState (D3DRENDERSTATE_ZENABLE, FALSE);
 	dev->SetRenderState(D3DRENDERSTATE_ZVISIBLE, FALSE);
 	dev->SetRenderState (D3DRENDERSTATE_ZWRITEENABLE, FALSE);
@@ -1120,128 +1015,133 @@ void Scene::Render (D3DRECT* vp_rect)
 
 	// render background stars, celestial markers and grids
 	DWORD flagPItem = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagPlanetarium;
-	if (ns || flagPItem & PLN_ENABLE) {
-		g_camera->SetFrustumLimits (0.1, 1e10);
-		// set limits to some arbitrary values (everything in there is
-		// rendered without z-tests)
-		dev->SetTransform (D3DTRANSFORMSTATE_WORLD, &ident);
-		dev->SetTexture (0,0);
-		if ((flagPItem & PLN_ENABLE) /*&& bglvl < cnstlimit*/) {
 
-			dev->SetTextureStageState (0, D3DTSS_COLORARG1, D3DTA_TFACTOR);
-			dev->SetTextureStageState (0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
+	// stretch the z limits to make sure everything is rendered (z-fighting
+	// is not an issue here because everything is rendered without z-tests)
+	double npl = g_camera->Nearplane();
+	double fpl = g_camera->Farplane();
+	g_camera->SetFrustumLimits (0.1, 1e10);
 
-			DWORD dstblend;
-			dev->GetRenderState (D3DRENDERSTATE_DESTBLEND, &dstblend);
-			dev->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_ONE);
-			dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+	if (flagPItem & PLN_ENABLE) {
 
-			if (flagPItem & PLN_EGRID) {                     // render ecliptic grid
-				dev->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(0,0,0.4,1));
-				RenderGrid ((flagPItem & PLN_ECL) == 0);
-			}
-			if (flagPItem & PLN_ECL) {
-				dev->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(0,0,0.6,1));
-				RenderEqLine ();
-			}
-			if (flagPItem & PLN_CGRID) {                     // render celestial grid
-				Planet *p = g_psys->GetPlanet ("Earth");
-				D3DMATRIX *prot;
-				if (p) {
-					static D3DMATRIX rot = {0,0,0,0,  0,0,0,0,  0,0,0,0,  0,0,0,1};
-					double eps = p->Obliquity();
-					double lan = p->EqLng();
-					float coso = (float)cos(eps), sino = (float)sin(eps);
-					float cosl = (float)cos(lan), sinl = (float)sin(lan);
-					rot._11 = cosl; rot._13 = sinl;
-					rot._21 = -sino*sinl; rot._22 = coso; rot._23 = sino*cosl;
-					rot._31 = -coso*sinl; rot._32 = -sino; rot._33 = coso*cosl;
-					prot = &rot;
-				} else { // Default values: J2000
-					static double eps = 0.4092797095927;
-					static double coso = cos(eps), sino = sin(eps);
-					static D3DMATRIX rot = {1.0f,0.0f,0.0f,0.0f,  0.0f,(float)coso,(float)sino,0.0f,  0.0f,-(float)sino,(float)coso,0.0f,  0.0f,0.0f,0.0f,1.0f};
-					prot = &rot;
-				}
-				dev->SetTransform (D3DTRANSFORMSTATE_WORLD, prot);
-				dev->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(0.35,0,0.35,1));
-				RenderGrid (false);
-				dev->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(0.6,0,0.6,1));
-				RenderEqLine ();
-				dev->SetTransform (D3DTRANSFORMSTATE_WORLD, &ident);
-			}
-			if (flagPItem & PLN_EQU) {                       // render target equator grid
-				const Body *ref = g_camera->Target();
-				if (ref && ref->Type() == OBJTP_VESSEL) ref = ((Vessel*)ref)->ElRef();
-				if (ref && ref->Type() == OBJTP_PLANET) {
-					D3DMATRIX rot;
-					VMAT_identity (rot);
-					SetInvD3DRotation (rot, ref->GRot());
-					dev->SetTransform (D3DTRANSFORMSTATE_WORLD, &rot);
-					dev->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(0,0.6,0,1));
-					RenderEqLine ();
-					dev->SetTransform (D3DTRANSFORMSTATE_WORLD, &ident);
-				}
-			}
-			if ((flagPItem & PLN_CONST) && ncvtx) {          // render constellation lines
-				dev->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(cc.x,cc.y,cc.z,1));
-				dev->DrawPrimitiveVB(D3DPT_LINELIST, cvtx, 0, ncvtx, 0);
-			}
-			if ((flagPItem & PLN_CNSTLABEL) && ncnstlabel) { // render constellation labels
-				res = vb_target->ProcessVertices (D3DVOP_TRANSFORM, 0, ncnstlabel, vb_cnstlabel, 0, dev, 0);
-				if (res == D3D_OK) {
-					HDC hDC;
-					g_pOrbiter->GetInlineGraphicsClient()->GetRenderTarget()->GetDC (&hDC);
-					SelectObject (hDC, gdires.hFont1);
-					SetTextAlign (hDC, TA_CENTER | TA_BOTTOM);
-					SetTextColor (hDC, 0xA0A0A0);
-					SetBkMode (hDC, TRANSPARENT);
-					VB_XYZ *vbpos;
-					vb_target->Lock (DDLOCK_WAIT | DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR, (LPVOID*)&vbpos, NULL);
-					bool bfull = (flagPItem & PLN_CNSTLONG) == PLN_CNSTLONG;
-					for (n = 0; n < ncnstlabel; n++) {
-						if (vbpos[n].z < 1.0f && vbpos[n].x >= 0 && vbpos[n].y >= 0 && vbpos[n].x < viewW && vbpos[n].y < viewH) {
-							TextOut (hDC, (DWORD)vbpos[n].x, (DWORD)vbpos[n].y+gdires.hFont1_scale/2, bfull ? cnstlabel[n].full : cnstlabel[n].abbr, bfull ? cnstlabel[n].len : 3);
-						}
-					}
-					vb_target->Unlock();
-					SelectObject (hDC, GetStockObject (SYSTEM_FONT));
-					g_pOrbiter->GetInlineGraphicsClient()->GetRenderTarget()->ReleaseDC (hDC);
-				}
-			}
-			dev->SetRenderState (D3DRENDERSTATE_DESTBLEND, dstblend);
-			dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
+		// use explicit colours
+		dev->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TFACTOR);
+		dev->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
 
-			if (flagPItem & PLN_CCMARK) { // celestial markers
-				int nlist;
-				HDC hDC = 0;
-				oapi::GraphicsClient::LABELLIST *list = g_psys->LabelList (&nlist);
-				for (i = 0; i < nlist; i++) {
-					if (list[i].active) {
-						int col = list[i].colour;
-						int shape = list[i].shape;
-						int size = (int)(viewH/80.0*list[i].size+0.5);
-						if (!hDC) hDC = GetLabelDC (1);
-						SelectObject (hDC, gdires.hPen[col]);
-						SetTextColor (hDC, labelcol[col]);
-						const oapi::GraphicsClient::LABELSPEC *uls = list[i].list;
-						for (j = 0; j < list[i].length; j++) {
-							Vector sp (uls[j].pos.x,uls[j].pos.y,uls[j].pos.z);
-							RenderDirectionMarker (sp, uls[j].label[0], uls[j].label[1], hDC, shape, size);
-						}
-					}
-				}
-				if (hDC) ReleaseLabelDC (hDC);
-			}
-			dev->SetTextureStageState (0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-			dev->SetTextureStageState (0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+		DWORD dstblend;
+		dev->GetRenderState(D3DRENDERSTATE_DESTBLEND, &dstblend);
+		dev->SetRenderState(D3DRENDERSTATE_DESTBLEND, D3DBLEND_ONE);
+		dev->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+		double colScale = 1.0 - bglvl; // feature brightness modifier for lit background
+
+		if (flagPItem & PLN_EGRID) {                     // render ecliptic grid
+			dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(0, 0, 0.4, 1));
+			RenderGrid((flagPItem & PLN_ECL) == 0);
 		}
-		// stars
-		for (i = j = 0; i < ns; i += D3DMAXNUMVERTICES, j++)
-			dev->DrawPrimitiveVB (D3DPT_POINTLIST, svtx[j], 0, min (ns-i, D3DMAXNUMVERTICES), 0);
+		if (flagPItem & PLN_ECL) {
+			m_celSphere->RenderGreatCircle(dev, Vector(0, 0, 0.8) * colScale);
+		}
+		if (flagPItem & (PLN_CGRID|PLN_EQU)) {                     // render celestial grid
+			Planet* p = g_psys->GetPlanet("Earth");
+			D3DMATRIX* prot;
+			if (p) {
+				static D3DMATRIX rot = { 0,0,0,0,  0,0,0,0,  0,0,0,0,  0,0,0,1 };
+				double eps = p->Obliquity();
+				double lan = p->EqLng();
+				float coso = (float)cos(eps), sino = (float)sin(eps);
+				float cosl = (float)cos(lan), sinl = (float)sin(lan);
+				rot._11 = cosl; rot._13 = sinl;
+				rot._21 = -sino * sinl; rot._22 = coso; rot._23 = sino * cosl;
+				rot._31 = -coso * sinl; rot._32 = -sino; rot._33 = coso * cosl;
+				prot = &rot;
+			}
+			else { // Default values: J2000
+				static double eps = 0.4092797095927;
+				static double coso = cos(eps), sino = sin(eps);
+				static D3DMATRIX rot = { 1.0f,0.0f,0.0f,0.0f,  0.0f,(float)coso,(float)sino,0.0f,  0.0f,-(float)sino,(float)coso,0.0f,  0.0f,0.0f,0.0f,1.0f };
+				prot = &rot;
+			}
+			dev->SetTransform(D3DTRANSFORMSTATE_WORLD, prot);
+			if (flagPItem & PLN_CGRID) {
+				dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(0.35, 0, 0.35, 1));
+				RenderGrid((flagPItem & PLN_EQU) == 0);
+			}
+			if (flagPItem & PLN_EQU) {
+				m_celSphere->RenderGreatCircle(dev, Vector(0.7, 0, 0.7) * colScale);
+			}
+			dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
+		}
+		if (flagPItem & PLN_EQU) {                       // render target equator grid - should be different flag!
+			const Body* ref = g_camera->Target();
+			if (ref && ref->Type() == OBJTP_VESSEL) ref = ((Vessel*)ref)->ElRef();
+			if (ref && ref->Type() == OBJTP_PLANET) {
+				D3DMATRIX rot;
+				VMAT_identity(rot);
+				SetInvD3DRotation(rot, ref->GRot());
+				dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &rot);
+				m_celSphere->RenderGreatCircle(dev, Vector(0, 0.6, 0)* colScale);
+				dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
+			}
+		}
+		if (flagPItem & PLN_CONST) {          // render constellation lines
+			m_celSphere->RenderConstellationLines(dev, Vector(0.4, 0.3, 0.2) * colScale);
+		}
+		if ((flagPItem & PLN_CNSTLABEL) && ncnstlabel) { // render constellation labels
+			res = vb_target->ProcessVertices(D3DVOP_TRANSFORM, 0, ncnstlabel, vb_cnstlabel, 0, dev, 0);
+			if (res == D3D_OK) {
+				HDC hDC;
+				g_pOrbiter->GetInlineGraphicsClient()->GetRenderTarget()->GetDC(&hDC);
+				SelectObject(hDC, gdires.hFont1);
+				SetTextAlign(hDC, TA_CENTER | TA_BOTTOM);
+				SetTextColor(hDC, 0xA0A0A0);
+				SetBkMode(hDC, TRANSPARENT);
+				VB_XYZ* vbpos;
+				vb_target->Lock(DDLOCK_WAIT | DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR, (LPVOID*)&vbpos, NULL);
+				bool bfull = (flagPItem & PLN_CNSTLONG) == PLN_CNSTLONG;
+				for (n = 0; n < ncnstlabel; n++) {
+					if (vbpos[n].z < 1.0f && vbpos[n].x >= 0 && vbpos[n].y >= 0 && vbpos[n].x < viewW && vbpos[n].y < viewH) {
+						TextOut(hDC, (DWORD)vbpos[n].x, (DWORD)vbpos[n].y + gdires.hFont1_scale / 2, bfull ? cnstlabel[n].full : cnstlabel[n].abbr, bfull ? cnstlabel[n].len : 3);
+					}
+				}
+				vb_target->Unlock();
+				SelectObject(hDC, GetStockObject(SYSTEM_FONT));
+				g_pOrbiter->GetInlineGraphicsClient()->GetRenderTarget()->ReleaseDC(hDC);
+			}
+		}
 
-		g_camera->SetFrustumLimits (npl, fpl); // reset fustrum limits
+		if (flagPItem & PLN_CCMARK) { // celestial markers
+			int nlist;
+			HDC hDC = 0;
+			oapi::GraphicsClient::LABELLIST* list = g_psys->LabelList(&nlist);
+			for (i = 0; i < nlist; i++) {
+				if (list[i].active) {
+					int col = list[i].colour;
+					int shape = list[i].shape;
+					int size = (int)(viewH / 80.0 * list[i].size + 0.5);
+					if (!hDC) hDC = GetLabelDC(1);
+					SelectObject(hDC, gdires.hPen[col]);
+					SetTextColor(hDC, labelcol[col]);
+					const oapi::GraphicsClient::LABELSPEC* uls = list[i].list;
+					for (j = 0; j < list[i].length; j++) {
+						Vector sp(uls[j].pos.x, uls[j].pos.y, uls[j].pos.z);
+						RenderDirectionMarker(sp, uls[j].label[0], uls[j].label[1], hDC, shape, size);
+					}
+				}
+			}
+			if (hDC) ReleaseLabelDC(hDC);
+		}
+
+		// revert to standard colour selection and turn off alpha blending
+		dev->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+		dev->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+		dev->SetRenderState(D3DRENDERSTATE_DESTBLEND, dstblend);
+		dev->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
 	}
+
+	// stars
+	m_celSphere->RenderStars(dev, (DWORD)-1, &bgcol);
+
+	g_camera->SetFrustumLimits (npl, fpl); // reset fustrum limits
 
 	if (csphere2) {
 		VPlanet::RenderPrm rprm;
@@ -1249,7 +1149,7 @@ void Scene::Render (D3DRECT* vp_rect)
 		csphere2->Render(dev, m_WMcsphere, 0, false, rprm);
 	}
 	else if (csphere) {
-		csphere->Render(dev, 8, bglvl);
+		csphere->Render(dev, 8, atmidx);
 	}
 
 	dev->SetRenderState (D3DRENDERSTATE_ZENABLE, TRUE);

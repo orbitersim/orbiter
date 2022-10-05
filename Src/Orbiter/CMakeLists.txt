@@ -127,6 +127,7 @@ set(common_src
 # Sources for DX7 built-in graphics version only
 set(graphics_src
 # DX7 inline graphics
+	CelSphere.cpp
 	cloudmgr2.cpp
 	CSphereMgr.cpp
 	cspheremgr2.cpp

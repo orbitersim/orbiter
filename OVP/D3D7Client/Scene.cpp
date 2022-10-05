@@ -52,7 +52,7 @@ Scene::Scene (D3D7Client *_gc, DWORD w, DWORD h)
 	zclearflag = D3DCLEAR_ZBUFFER;
 	if (stencilDepth) zclearflag |= D3DCLEAR_STENCIL;
 	cam = new Camera (dev, w, h);
-	csphere = new CelestialSphere (gc);
+	m_celSphere = new CelestialSphere (gc);
 	vobjFirst = vobjLast = NULL;
 	nstream = 0;
 	iVCheck = 0;
@@ -72,7 +72,7 @@ Scene::~Scene ()
 {
 	while (vobjFirst) DelVisualRec (vobjFirst);
 	delete cam;
-	delete csphere;
+	delete m_celSphere;
 	delete light;
 	delete cspheremgr;
 	if (nstream) {
@@ -388,12 +388,12 @@ void Scene::Render ()
 	double fpl = cam->GetFarlimit();
 	cam->SetFrustumLimits(0.1, 1e10);
 
-	// use explicit colours
-	dev->SetTextureStageState (0, D3DTSS_COLORARG1, D3DTA_TFACTOR);
-	dev->SetTextureStageState (0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
-
 	// planetarium mode (celestial sphere elements)
 	if (plnmode & PLN_ENABLE) {
+
+		// use explicit colours
+		dev->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TFACTOR);
+		dev->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
 
 		DWORD dstblend;
 		dev->GetRenderState (D3DRENDERSTATE_DESTBLEND, &dstblend);
@@ -403,9 +403,9 @@ void Scene::Render ()
 
 		// render ecliptic grid
 		if (plnmode & PLN_EGRID)
-			csphere->RenderGrid (dev, _V(0,0,0.4)*linebrt, !(plnmode & PLN_ECL));
+			m_celSphere->RenderGrid (dev, _V(0,0,0.4)*linebrt, !(plnmode & PLN_ECL));
 		if (plnmode & PLN_ECL)
-			csphere->RenderGreatCircle (dev, _V(0,0,0.8)*linebrt);
+			m_celSphere->RenderGreatCircle (dev, _V(0,0,0.8)*linebrt);
 
 		// render celestial grid
 		if (plnmode & (PLN_CGRID|PLN_EQU)) {
@@ -414,18 +414,15 @@ void Scene::Render ()
 			static D3DMATRIX rot = {1.0f,0.0f,0.0f,0.0f,  0.0f,(float)coso,(float)sino,0.0f,  0.0f,-(float)sino,(float)coso,0.0f,  0.0f,0.0f,0.0f,1.0f};
 			dev->SetTransform (D3DTRANSFORMSTATE_WORLD, &rot);
 			if (plnmode & PLN_CGRID)
-				csphere->RenderGrid (dev, _V(0.35,0,0.35)*linebrt, !(plnmode & PLN_EQU));
+				m_celSphere->RenderGrid (dev, _V(0.35,0,0.35)*linebrt, !(plnmode & PLN_EQU));
 			if (plnmode & PLN_EQU)
-				csphere->RenderGreatCircle (dev, _V(0.7,0,0.7)*linebrt);
+				m_celSphere->RenderGreatCircle (dev, _V(0.7,0,0.7)*linebrt);
 			dev->SetTransform (D3DTRANSFORMSTATE_WORLD, &ident);
 		}
 
 		// render constellation lines
 		if (plnmode & PLN_CONST)
-			csphere->RenderConstellations (dev, _V(0.4,0.3,0.2)*linebrt);
-
-		dev->SetRenderState (D3DRENDERSTATE_DESTBLEND, dstblend);
-		dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
+			m_celSphere->RenderConstellationLines(dev, _V(0.4, 0.3, 0.2) * linebrt);
 
 		if (plnmode & PLN_CCMARK) {
 			const GraphicsClient::LABELLIST *list;
@@ -452,15 +449,16 @@ void Scene::Render ()
 			}
 			if (hDC) gc->clbkReleaseSurfaceDC (0, hDC);
 		}
+
+		// revert to standard colour selection and turn off alpha blending
+		dev->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+		dev->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+		dev->SetRenderState(D3DRENDERSTATE_DESTBLEND, dstblend);
+		dev->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
 	}
 
-	// revert to standard colour selection
-	dev->SetTextureStageState (0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-	dev->SetTextureStageState (0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-
-	csphere->RenderStars (dev, (DWORD)-1, &bgcol);
+	m_celSphere->RenderStars (dev, (DWORD)-1, &bgcol);
 	cspheremgr->Render (dev, 8, bglvl);
-
 
 	// turn on lighting
 	dev->SetRenderState (D3DRENDERSTATE_LIGHTING, TRUE);

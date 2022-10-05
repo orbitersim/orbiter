@@ -12,6 +12,7 @@
 #include "D3d7util.h"
 #include "Vobject.h"
 #include "Body.h"
+#include "CelSphere.h"
 #include "cspheremgr2.h"
 
 #define MAXCONST 88      // max number of constellations
@@ -81,11 +82,7 @@ public:
 	inline void SetDefaultMaterial () { dev->SetMaterial (&default_mtrl); }
 	inline void SetShadowMaterial () { dev->SetMaterial (&shadow_mtrl); }
 
-	DWORD LoadStars ();
-	// read star positions from data base
-	// return value is number of stars read
-
-	int LoadConstellations ();
+	void LoadConstellations ();
 	// read constellation lines from data base
 	// return value is number of records (lines) read
 
@@ -93,7 +90,7 @@ public:
 	// allocate vertices for coordinate grids (ecliptic)
 
 	int BgBrightnessLevel () const
-	{ return bglvl; }
+	{ return atmidx; }
 	// return render brightness level of sky background [0..255]
 
 	void Render (D3DRECT* vp_rect);
@@ -103,9 +100,6 @@ public:
 	// Render a grid (e.g. ecliptic or equatorial frame) on celestial sphere
 	// if render_eq == false, the equator line (lat=0) is not rendered (so it
 	// can be done in a different colour)
-
-	void RenderEqLine ();
-	// Render lat=0 line of a grid (e.g. for ecliptic or equatorial frame)
 
 	void Render3DLabel (const Vector &p, char *label, double scale = 1.0, DWORD colour = D3DRGBA(1,1,1,1));
 	// Render text "label" at position p using current world matrix
@@ -146,13 +140,15 @@ private:
 	VStar   **vsun;           // list of sun visual
 	int       nsun;           // number of suns
 
+	CelestialSphere* m_celSphere;  // celestial sphere background
+
 	D3D7ParticleStream **pstream; // list of particle streams
 	DWORD                nstream; // number of streams
 
 	bool locallight;    // enable local light sources
 	DWORD maxlight;     // max number of light sources
 	bool sunvis;        // sun visible (for glare calculation)
-	int  bglvl;         // sky background brightness level
+	int  atmidx;        // sky background brightness level (0-255)
 	Vector bgcol;       // current sky background colour
 	mutable double mincamparticledist; // minimum distance between camera and any particle in the scene
 
@@ -195,6 +191,11 @@ private:
 	HDC GetLabelDC (int mode);
 	void ReleaseLabelDC (HDC hDC);
 
+	/**
+	 * \brief Return sky background colour based on atmospheric parameters of closest planet
+	 */
+	Vector SkyColour();
+
 	LPDIRECT3DDEVICE7 dev;      // D3D device
 
 	LPDIRECTDRAWSURFACE7 gtex[4];
@@ -217,14 +218,6 @@ private:
 	STARLIGHT *starlight;
 	int nstarlight;        // number of star light objects in the list
 
-	LPDIRECT3DVERTEXBUFFER7 cvtx;  // vertex buffer for constellation lines
-	int ncvtx;                     // number of constellation line vertices
-
-	std::vector<LPDIRECT3DVERTEXBUFFER7> svtx; // vertex buffers for star positions
-	//LPDIRECT3DVERTEXBUFFER7 *svtx; // vertex buffers for star positions
-	//DWORD nsbuf;                   // number of star vertex buffers
-	DWORD nsvtx;                   // total number of vertices over all buffers
-
 	LPDIRECT3DVERTEXBUFFER7 grdlng, grdlat; // vertex buffers for gridlines
 
 	DWORD ncnstlabel;
@@ -233,8 +226,6 @@ private:
 		char *full;
 		int len;
 	} cnstlabel[MAXCONST];
-
-	int cnstlimit;     // brightness limit for constellations
 
 	struct GDIRes {
 		HFONT hFont1;

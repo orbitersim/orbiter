@@ -50,7 +50,7 @@ public:
 	 * \note Suggestion: render additively onto background, so that the lines
 	 *   are never darker than the background sky.
 	 */
-	void RenderConstellations (LPDIRECT3DDEVICE7 dev, VECTOR3 &col);
+	void RenderConstellationLines (LPDIRECT3DDEVICE7 dev, VECTOR3 &col);
 
 	/**
 	 * \brief Render a great circle on the celestial sphere in a given colour.
@@ -81,12 +81,12 @@ protected:
 	/**
 	 * \brief Load star database from file.
 	 */
-	void LoadStars ();
+	void LoadStars();
 
 	/**
 	 * \brief Load constellation line database from file.
 	 */
-	void LoadConstellationLines ();
+	void LoadConstellationLines();
 
 	/**
 	 * \brief Allocate vertex list for rendering grid lines
