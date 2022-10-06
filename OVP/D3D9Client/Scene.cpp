@@ -1286,7 +1286,7 @@ void Scene::RenderMainScene()
 			HR(FX->SetMatrix(eWVP, GetProjectionViewMatrix()));
 			D3DXVECTOR4 vColor(0.4f*linebrt, 0.3f*linebrt, 0.2f*linebrt, 1.0f);
 			HR(FX->SetVector(eColor, &vColor));
-			csphere->RenderConstellations(FX);
+			csphere->RenderConstellationLines(FX);
 		}
 	}
 
@@ -1318,17 +1318,13 @@ void Scene::RenderMainScene()
 
 			// constellation labels --------------------------------------------------
 			if (plnmode & PLN_CNSTLABEL) {
-				const GraphicsClient::LABELSPEC *ls;
-				DWORD n, nlist;
-				char *label;
-
 				pSketch->SetTextColor(labelCol[5]);
 				pSketch->SetPen(lblPen[5]);
 
-				nlist = gc->GetConstellationMarkers(&ls);
-				for (n = 0; n < nlist; ++n) {
-					label = (plnmode & PLN_CNSTLONG) ? ls[n].label[0] : ls[n].label[1];
-					RenderDirectionMarker(pSketch, ls[n].pos, NULL, label, -1, 0);
+				const std::vector<oapi::GraphicsClient::ConstLabelRenderRec>& data = csphere->GetConstellationLabels();
+				for (auto it = data.begin(); it != data.end(); it++) {
+					const char* label = (plnmode & PLN_CNSTLONG ? (*it).fullLabel.c_str() : (*it).abbrLabel.c_str());
+					RenderDirectionMarker(pSketch, (*it).pos, NULL, label, -1, 0);
 				}
 			}
 			// celestial marker (stars) names ----------------------------------------

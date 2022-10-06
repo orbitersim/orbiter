@@ -31,6 +31,7 @@ CelestialSphere::CelestialSphere(D3D9Client *gc)
 {
 	LoadStars ();
 	LoadConstellationLines ();
+	LoadConstellationLabels();
 	AllocGrids ();
 }
 
@@ -123,6 +124,14 @@ void CelestialSphere::LoadConstellationLines()
 
 // ==============================================================
 
+void CelestialSphere::LoadConstellationLabels()
+{
+	// Read constellation label database
+	m_cLabel = m_gc->ConstellationLabelData2RenderData(m_gc->LoadConstellationLabelData());
+}
+
+// ==============================================================
+
 void CelestialSphere::AllocGrids ()
 {
 	int i, j, idx;
@@ -191,7 +200,7 @@ void CelestialSphere::RenderStars(ID3DXEffect *FX, DWORD nmax, const VECTOR3 *bg
 
 // ==============================================================
 
-void CelestialSphere::RenderConstellations(ID3DXEffect *FX)
+void CelestialSphere::RenderConstellationLines(ID3DXEffect *FX)
 {
 	_TRACE;
 	UINT numPasses = 0;

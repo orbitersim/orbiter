@@ -37,6 +37,11 @@ public:
 	 */
 	~CelestialSphere();
 
+	const std::vector<oapi::GraphicsClient::ConstLabelRenderRec>& GetConstellationLabels() const
+	{
+		return m_cLabel;
+	}
+
 	/**
 	 * \brief Render stars as pixels on the celestial sphere
 	 * \param fx  render effect
@@ -55,7 +60,7 @@ public:
 	 * \note Suggestion: render additively onto background, so that the lines
 	 *   are never darker than the background sky.
 	 */
-	void RenderConstellations(ID3DXEffect *fx);
+	void RenderConstellationLines(ID3DXEffect *fx);
 
 	/**
 	 * \brief Render a great circle on the celestial sphere in a given colour.
@@ -92,6 +97,11 @@ protected:
 	void LoadConstellationLines ();
 
 	/**
+	 * \brief Load constellation label database from file.
+	 */
+	void LoadConstellationLabels();
+
+	/**
 	 * \brief Allocate vertex list for rendering grid lines
 	 *        (e.g. celestial or ecliptic)
 	 */
@@ -106,6 +116,7 @@ private:
 	int m_lvlIdx[256];       ///< star brightness hash table
 	DWORD m_ncVtx;           ///< number of constellation line vertices
 	LPDIRECT3DVERTEXBUFFER9 m_cVtx; ///< constellation line vertex buffer
+	std::vector<oapi::GraphicsClient::ConstLabelRenderRec> m_cLabel; ///< list of label records
 	LPDIRECT3DVERTEXBUFFER9 m_grdLngVtx, m_grdLatVtx; ///< vertex buffers for grid lines
 };
 

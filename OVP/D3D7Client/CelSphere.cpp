@@ -16,6 +16,7 @@
 
 #include "CelSphere.h"
 
+struct VB_XYZ { float x, y, z; };
 #define NSEG 64 // number of segments in celestial grid lines
 
 using namespace oapi;
@@ -27,7 +28,17 @@ CelestialSphere::CelestialSphere (D3D7Client *gc)
 {
 	LoadStars ();
 	LoadConstellationLines ();
+	LoadConstellationLabels();
 	AllocGrids ();
+
+	vb_target = nullptr;
+	vb_cnstlabel = nullptr;
+
+	GraphicsClient::VIDEODATA* vdata = m_gc->GetVideoData();
+	m_viewW = vdata->winw;
+	m_viewH = vdata->winh;
+	DWORD fontScale = max(m_viewH / 60, 14);
+	m_cLabelFont = m_gc->clbkCreateFont(fontScale, true, "Arial", FONT_ITALIC);
 }
 
 // ==============================================================
@@ -39,6 +50,13 @@ CelestialSphere::~CelestialSphere ()
 	m_cVtx->Release();
 	m_grdLngVtx->Release();
 	m_grdLatVtx->Release();
+
+	if (vb_target)
+		vb_target->Release();
+	if (vb_cnstlabel)
+		vb_cnstlabel->Release();
+
+	m_gc->clbkReleaseFont(m_cLabelFont);
 }
 
 // ==============================================================
@@ -136,6 +154,31 @@ void CelestialSphere::LoadConstellationLines()
 
 // ==============================================================
 
+void CelestialSphere::LoadConstellationLabels()
+{
+	// Read constellation label database
+	m_cLabel = m_gc->ConstellationLabelData2RenderData(m_gc->LoadConstellationLabelData());
+	if (!m_cLabel.size()) return;
+
+	D3DVERTEXBUFFERDESC vbdesc;
+	vbdesc.dwSize = sizeof(D3DVERTEXBUFFERDESC);
+	vbdesc.dwCaps = D3DVBCAPS_SYSTEMMEMORY; // 0;
+	vbdesc.dwFVF = D3DFVF_XYZ;
+	vbdesc.dwNumVertices = m_cLabel.size();
+	VB_XYZ* vbpos;
+	m_gc->GetDirect3D7()->CreateVertexBuffer(&vbdesc, &vb_cnstlabel, 0);
+	m_gc->GetDirect3D7()->CreateVertexBuffer(&vbdesc, &vb_target, 0);
+	vb_cnstlabel->Lock(DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbpos, NULL);
+	for (int i = 0; i < m_cLabel.size(); i++) {
+		vbpos[i].x = (float)m_cLabel[i].pos.x;
+		vbpos[i].y = (float)m_cLabel[i].pos.y;
+		vbpos[i].z = (float)m_cLabel[i].pos.z;
+	}
+	vb_cnstlabel->Unlock();
+}
+
+// ==============================================================
+
 void CelestialSphere::AllocGrids ()
 {
 	int i, j, idx;
@@ -208,6 +251,28 @@ void CelestialSphere::RenderConstellationLines (LPDIRECT3DDEVICE7 dev, VECTOR3 &
 {
 	dev->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(col.x,col.y,col.z,1));
 	dev->DrawPrimitiveVB (D3DPT_LINELIST, m_cVtx, 0, m_ncVtx, 0);
+}
+
+// ==============================================================
+
+void CelestialSphere::RenderConstellationLabels(LPDIRECT3DDEVICE7 dev, bool full)
+{
+	if (vb_target->ProcessVertices(D3DVOP_TRANSFORM, 0, m_cLabel.size(), vb_cnstlabel, 0, dev, 0) == D3D_OK) {
+		oapi::Sketchpad* skp = m_gc->clbkGetSketchpad(0);
+		skp->SetFont(m_cLabelFont);
+		skp->SetTextAlign(oapi::Sketchpad::CENTER, oapi::Sketchpad::BOTTOM);
+		skp->SetTextColor(0xA0A0A0);
+		skp->SetBackgroundMode(oapi::Sketchpad::BK_TRANSPARENT);
+		VB_XYZ* vbpos;
+		vb_target->Lock(DDLOCK_WAIT | DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR, (LPVOID*)&vbpos, NULL);
+		for (int n = 0; n < m_cLabel.size(); n++) {
+			if (vbpos[n].z < 1.0f && vbpos[n].x >= 0 && vbpos[n].y >= 0 && vbpos[n].x < m_viewW && vbpos[n].y < m_viewH) {
+				skp->Text((DWORD)vbpos[n].x, (DWORD)vbpos[n].y, full ? m_cLabel[n].fullLabel.c_str() : m_cLabel[n].abbrLabel.c_str(), full ? m_cLabel[n].fullLabel.size() : 3);
+			}
+		}
+		vb_target->Unlock();
+		m_gc->clbkReleaseSketchpad(skp);
+	}
 }
 
 // ==============================================================

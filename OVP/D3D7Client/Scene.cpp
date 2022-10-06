@@ -423,6 +423,9 @@ void Scene::Render ()
 		// render constellation lines
 		if (plnmode & PLN_CONST)
 			m_celSphere->RenderConstellationLines(dev, _V(0.4, 0.3, 0.2) * linebrt);
+		// render constellation labels
+		if (plnmode & PLN_CNSTLABEL)
+			m_celSphere->RenderConstellationLabels(dev, (plnmode & PLN_CNSTLONG) == PLN_CNSTLONG);
 
 		if (plnmode & PLN_CCMARK) {
 			const GraphicsClient::LABELLIST *list;

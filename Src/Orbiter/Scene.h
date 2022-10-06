@@ -82,10 +82,6 @@ public:
 	inline void SetDefaultMaterial () { dev->SetMaterial (&default_mtrl); }
 	inline void SetShadowMaterial () { dev->SetMaterial (&shadow_mtrl); }
 
-	void LoadConstellations ();
-	// read constellation lines from data base
-	// return value is number of records (lines) read
-
 	int BgBrightnessLevel () const
 	{ return atmidx; }
 	// return render brightness level of sky background [0..255]
@@ -205,19 +201,8 @@ private:
 	LPDIRECTDRAWSURFACE7 gcanvas;
 	// multipurpose texture of size CANVAS_SIZE
 
-	LPDIRECT3DVERTEXBUFFER7 vb_target, vb_cnstlabel;
-
 	STARLIGHT *starlight;
 	int nstarlight;        // number of star light objects in the list
-
-	//LPDIRECT3DVERTEXBUFFER7 grdlng, grdlat; // vertex buffers for gridlines
-
-	DWORD ncnstlabel;
-	struct CnstLabel {
-		char abbr[3];
-		char *full;
-		int len;
-	} cnstlabel[MAXCONST];
 
 	struct GDIRes {
 		HFONT hFont1;

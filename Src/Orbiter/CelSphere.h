@@ -36,6 +36,8 @@ public:
 	 */
 	void RenderConstellationLines(LPDIRECT3DDEVICE7 dev, const Vector& col);
 
+	void RenderConstellationLabels(LPDIRECT3DDEVICE7 dev, bool full);
+
 	/**
 	 * \brief Render a great circle on the celestial sphere in a given colour.
 	 * \param dev render device
@@ -72,12 +74,21 @@ protected:
 	 */
 	void LoadConstellationLines();
 
+	/**
+	 * \brief Load constellation label database from file. 
+	 */
 	void LoadConstellationLabels();
 
+	/**
+	 * \brief Allocate vertex list for rendering grid lines
+	 *    (e.g. celestial or ecliptic)
+	 */
 	void AllocGrids();
 
 private:
 	OrbiterGraphics* m_gc;          ///< pointer to graphics client
+	DWORD m_viewW;                  ///< render viewport width [pixel]
+	DWORD m_viewH;                  ///< render viewport height [pixel]
 	DWORD m_nsVtx;                  ///< total number of vertices over all buffers
 	std::vector<LPDIRECT3DVERTEXBUFFER7> m_sVtx; ///< star vertex buffers
 	int m_lvlIdx[256];               ///< star brightness hash table
@@ -85,14 +96,11 @@ private:
 	LPDIRECT3DVERTEXBUFFER7 m_cVtx;  ///< vertex buffer for constellation lines
 	LPDIRECT3DVERTEXBUFFER7 m_grdLngVtx, m_grdLatVtx; ///< vertex buffers for grid lines
 
-	DWORD ncnstlabel;
-	struct CnstLabel {
-		char abbr[3];
-		char* full;
-		int len;
-	} cnstlabel[MAXCONST];
+	std::vector<oapi::GraphicsClient::ConstLabelRenderRec> m_cLabel; ///< list of label records
 
 	LPDIRECT3DVERTEXBUFFER7 vb_target, vb_cnstlabel;
+
+	oapi::Font *m_cLabelFont;
 };
 
 #endif // !__CELSPHERE_H

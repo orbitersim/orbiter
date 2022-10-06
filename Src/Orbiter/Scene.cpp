@@ -127,12 +127,6 @@ Scene::Scene (OrbiterGraphics *og)
 
 	//csphere = new CSphereManager;
 
-	ncnstlabel = 0;
-	vb_target = nullptr;
-	vb_cnstlabel = nullptr;
-
-	LoadConstellations ();
-
 	// some general-use textures
 	char cbuf[256];
 	FILE *file;
@@ -173,9 +167,6 @@ Scene::~Scene ()
 	if (csphere) delete csphere;
 	if (csphere2) delete csphere2;
 
-	for (i = 0; i < ncnstlabel; i++)
-		delete []cnstlabel[i].full;
-
 	for (i = 0; i < 4; i++)
 		if (gtex[i]) gtex[i]->Release();
 
@@ -190,11 +181,6 @@ Scene::~Scene ()
 //			exhausttex[j].tex->Release();
 //		delete []exhausttex;
 //	}
-
-	if (vb_target)
-		vb_target->Release();
-	if (vb_cnstlabel)
-		vb_cnstlabel->Release();
 
 	FreeGDI();
 
@@ -627,51 +613,6 @@ void Scene::Timejump (PlanetarySystem *psys, Camera **camlist, DWORD ncam, bool 
 
 static int lvlid[256];
 
-#pragma optimize("g",off)
-
-void Scene::LoadConstellations ()
-{
-	// load labels
-	FILE* f = fopen ("Constell2.bin", "rb");
-	if (f) {
-		struct {
-			double lng, lat;
-		} buf;
-		int i;
-		D3DVERTEXBUFFERDESC vbdesc;
-		vbdesc.dwSize = sizeof (D3DVERTEXBUFFERDESC);
-		vbdesc.dwCaps = D3DVBCAPS_SYSTEMMEMORY; // 0;
-		vbdesc.dwFVF  = D3DFVF_XYZ;
-		vbdesc.dwNumVertices = MAXCONST+1;
-		// NOTE: without buffersize "+1", after calling ProcessVertices a CTD occurs on exit
-		// at rare occasions (device bug?)
-		VB_XYZ *vbpos;
-		g_pOrbiter->GetInlineGraphicsClient()->GetDirect3D7()->CreateVertexBuffer (&vbdesc, &vb_cnstlabel, 0);
-		g_pOrbiter->GetInlineGraphicsClient()->GetDirect3D7()->CreateVertexBuffer (&vbdesc, &vb_target, 0);
-		vb_cnstlabel->Lock (DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbpos, NULL);
-		for (i = 0; i < MAXCONST; i++) {
-			if (!fread (&buf, sizeof(buf), 1, f)) break;
-			double xz = cos(buf.lat);
-			vbpos[i].x = (float)(xz * cos(buf.lng));
-			vbpos[i].z = (float)(xz * sin(buf.lng));
-			vbpos[i].y = (float)(sin(buf.lat));
-			if (!fread (cnstlabel[i].abbr, 3, 1, f)) break;
-			if (!fread (&cnstlabel[i].len, sizeof (int), 1, f)) break;
-			cnstlabel[i].full = new char[cnstlabel[i].len]; TRACENEW
-			if (!fread (cnstlabel[i].full, cnstlabel[i].len, 1, f)) {
-				delete []cnstlabel[i].full;
-				break;
-			}
-		}
-		vb_cnstlabel->Unlock();
-		fclose(f);
-		ncnstlabel = i;
-	}
-	else {
-		LOGOUT_WARN("Constellation data base for celestial sphere (Constell2.bin) not found. Disabling constellation labels.");
-	}
-}
-
 void Scene::Render3DLabel (const Vector &gp, char *label, double scale, DWORD colour)
 {
 	static VERTEX_TL1TEX Vtx[4] = {
@@ -975,8 +916,6 @@ void Scene::Render (D3DRECT* vp_rect)
 
 		if (flagPItem & PLN_EGRID) {                     // render ecliptic grid
 			m_celSphere->RenderGrid(dev, Vector(0, 0, 0.4) * colScale, (flagPItem & PLN_ECL) == 0);
-			//dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(0, 0, 0.4, 1));
-			//RenderGrid((flagPItem & PLN_ECL) == 0);
 		}
 		if (flagPItem & PLN_ECL) {
 			m_celSphere->RenderGreatCircle(dev, Vector(0, 0, 0.8) * colScale);
@@ -1008,7 +947,7 @@ void Scene::Render (D3DRECT* vp_rect)
 			}
 			dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
 		}
-		if (flagPItem & PLN_EQU) {                       // render target equator grid - should be different flag!
+		if (flagPItem & PLN_EQU) {                       // render target equator grid
 			const Body* ref = g_camera->Target();
 			if (ref && ref->Type() == OBJTP_VESSEL) ref = ((Vessel*)ref)->ElRef();
 			if (ref && ref->Type() == OBJTP_PLANET) {
@@ -1023,27 +962,8 @@ void Scene::Render (D3DRECT* vp_rect)
 		if (flagPItem & PLN_CONST) {          // render constellation lines
 			m_celSphere->RenderConstellationLines(dev, Vector(0.4, 0.3, 0.2) * colScale);
 		}
-		if ((flagPItem & PLN_CNSTLABEL) && ncnstlabel) { // render constellation labels
-			res = vb_target->ProcessVertices(D3DVOP_TRANSFORM, 0, ncnstlabel, vb_cnstlabel, 0, dev, 0);
-			if (res == D3D_OK) {
-				HDC hDC;
-				g_pOrbiter->GetInlineGraphicsClient()->GetRenderTarget()->GetDC(&hDC);
-				SelectObject(hDC, gdires.hFont1);
-				SetTextAlign(hDC, TA_CENTER | TA_BOTTOM);
-				SetTextColor(hDC, 0xA0A0A0);
-				SetBkMode(hDC, TRANSPARENT);
-				VB_XYZ* vbpos;
-				vb_target->Lock(DDLOCK_WAIT | DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR, (LPVOID*)&vbpos, NULL);
-				bool bfull = (flagPItem & PLN_CNSTLONG) == PLN_CNSTLONG;
-				for (n = 0; n < ncnstlabel; n++) {
-					if (vbpos[n].z < 1.0f && vbpos[n].x >= 0 && vbpos[n].y >= 0 && vbpos[n].x < viewW && vbpos[n].y < viewH) {
-						TextOut(hDC, (DWORD)vbpos[n].x, (DWORD)vbpos[n].y + gdires.hFont1_scale / 2, bfull ? cnstlabel[n].full : cnstlabel[n].abbr, bfull ? cnstlabel[n].len : 3);
-					}
-				}
-				vb_target->Unlock();
-				SelectObject(hDC, GetStockObject(SYSTEM_FONT));
-				g_pOrbiter->GetInlineGraphicsClient()->GetRenderTarget()->ReleaseDC(hDC);
-			}
+		if (flagPItem & PLN_CNSTLABEL) {      // render constellation labels
+			m_celSphere->RenderConstellationLabels(dev, (flagPItem& PLN_CNSTLONG) == PLN_CNSTLONG);
 		}
 
 		if (flagPItem & PLN_CCMARK) { // celestial markers

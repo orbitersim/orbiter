@@ -85,10 +85,6 @@ _D3D9Stats D3D9Stats;
 bool bFreeze = false;
 bool bFreezeEnable = false;
 
-// Module local constellation marker storage
-static GraphicsClient::LABELSPEC *g_cm_list = NULL;
-static DWORD g_cm_list_count = 0;
-
 // Debuging Brush-, Pen- and Font-accounting
 std::set<Font *> g_fonts;
 std::set<Pen *> g_pens;
@@ -269,15 +265,6 @@ D3D9Client::~D3D9Client()
 {
 	LogAlw("D3D9Client destructor called");
 	SAFE_DELETE(vtab);
-
-	// Free constellation names memory (if allocted)
-	if (g_cm_list) {
-		for (DWORD n = 0; n < g_cm_list_count; ++n) {
-			delete[] g_cm_list[n].label[0];
-			delete[] g_cm_list[n].label[1];
-		}
-		delete[] g_cm_list;
-	}
 }
 
 
@@ -2552,74 +2539,6 @@ void D3D9Client::BltError(SURFHANDLE src, SURFHANDLE tgt, const LPRECT s, const 
 
 
 #pragma endregion
-
-// =======================================================================
-// Constellation name functions
-// =======================================================================
-
-DWORD D3D9Client::GetConstellationMarkers(const LABELSPEC **cm_list) const
-{
-	if ( !g_cm_list ) {
-		#pragma pack(1)
-		// File entry struct
-		typedef struct {
-			double lng;    ///< longitude
-			double lat;    ///< latitude
-			char   abr[3]; ///< abbreviation (short name)
-			long   len;    ///< length of 'fullname'
-		} ConstellEntry;
-		#pragma pack()
-
-		FILE* file = NULL;
-		const size_t e_size = sizeof(ConstellEntry);
-		const float sphere_r = 1e6f; // the actual render distance for the celestial sphere
-		                             // is irrelevant, since it is rendered without z-buffer,
-		                             // but it must be within the frustum limits - check this
-		                             // in case the near and far planes are dynamically changed!
-
-		if ( 0 != fopen_s(&file, ".\\Constell2.bin", "rb") || file == NULL ) {
-			LogErr("Could not open 'Constell2.bin'");
-			return 0;
-		}
-
-		ConstellEntry f_entry;
-		LABELSPEC *p_out;
-
-		// Get number of labels from file
-		while ( !feof(file) && (1 == fread(&f_entry, e_size, 1 , file)) ) {
-			++g_cm_list_count;
-			fseek(file, f_entry.len, SEEK_CUR);
-		}
-
-		rewind(file);
-
-		g_cm_list = new LABELSPEC[g_cm_list_count]();
-
-		for (p_out = g_cm_list; !feof(file); ++p_out) {
-			if ( 1 == fread(&f_entry, e_size, 1 , file)) {
-				p_out->label[0] = new char[f_entry.len+1]();
-				p_out->label[1] = new char[4]();
-				// position
-				double xz = sphere_r * cos(f_entry.lat);
-				p_out->pos.x = xz * cos(f_entry.lng);
-				p_out->pos.z = xz * sin(f_entry.lng);
-				p_out->pos.y = sphere_r * sin(f_entry.lat);
-				// fullname
-				fread(p_out->label[0], sizeof(char), f_entry.len, file);
-				// shortname
-				p_out->label[1][0] = f_entry.abr[0];
-				p_out->label[1][1] = f_entry.abr[1];
-				p_out->label[1][2] = f_entry.abr[2];
-			}
-		}
-
-		fclose(file);
-	}
-
-	*cm_list = g_cm_list;
-
-	return g_cm_list_count;
-}
 
 // =======================================================================
 // GDI functions

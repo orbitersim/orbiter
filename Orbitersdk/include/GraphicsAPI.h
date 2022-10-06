@@ -1707,6 +1707,23 @@ public:
 	const std::vector<ConstRenderRec> ConstellationLineData2RenderData(const std::vector<ConstRec>& clineRec) const;
 #pragma pack()
 
+	struct ConstLabelRec {
+		std::string fullLabel;
+		std::string abbrLabel;
+		float lngCnt;
+		float latCnt;
+	};
+
+	const std::vector<ConstLabelRec> LoadConstellationLabelData() const;
+
+	struct ConstLabelRenderRec {
+		std::string fullLabel;
+		std::string abbrLabel;
+		VECTOR3 pos;
+	};
+
+	const std::vector<ConstLabelRenderRec> ConstellationLabelData2RenderData(const std::vector<ConstLabelRec>& clabelRec) const;
+
 	// ==================================================================
 	/// \name Marker and label-related methods
 	// @{
