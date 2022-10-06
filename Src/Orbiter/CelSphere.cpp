@@ -151,7 +151,7 @@ void CelestialSphere::LoadConstellationLabels()
 	vbdesc.dwSize = sizeof(D3DVERTEXBUFFERDESC);
 	vbdesc.dwCaps = D3DVBCAPS_SYSTEMMEMORY; // 0;
 	vbdesc.dwFVF = D3DFVF_XYZ;
-	vbdesc.dwNumVertices = m_cLabel.size();
+	vbdesc.dwNumVertices = m_cLabel.size()+1;
 	VB_XYZ* vbpos;
 	m_gc->GetDirect3D7()->CreateVertexBuffer(&vbdesc, &vb_cnstlabel, 0);
 	m_gc->GetDirect3D7()->CreateVertexBuffer(&vbdesc, &vb_target, 0);

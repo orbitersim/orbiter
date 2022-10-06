@@ -592,7 +592,7 @@ void Planet::ScanLabelLists (ifstream &cfg)
 					labellist = tmp;
 				}
 				ll = labellist+nlabellist;
-				strncpy (ll->name, fname, 64);
+				ll->name = fname;
 				ll->marker.clear();
 				ll->colour  = 1;
 				ll->shape   = 0;

@@ -1735,14 +1735,14 @@ public:
 	 * \brief Label list description for celestial and surface markers
 	 */
 	struct LABELLIST {
-		char name[64];   ///< list name
-		std::vector< LABELSPEC> marker;
-		int colour;      ///< marker colour index (0-5)
-		int shape;       ///< marker shape index (0-4)
-		float size;      ///< marker size factor
-		float distfac;   ///< marker distance cutout factor
-		DWORD flag;      ///< reserved
-		bool active;     ///< active list flag
+		std::string name; ///< list name
+		std::vector< LABELSPEC> marker; ///< list of markers
+		int colour;       ///< marker colour index (0-5)
+		int shape;        ///< marker shape index (0-4)
+		float size;       ///< marker size factor
+		float distfac;    ///< marker distance cutout factor
+		DWORD flag;       ///< reserved
+		bool active;      ///< active list flag
 	};
 
 	/**
