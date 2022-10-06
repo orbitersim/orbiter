@@ -1323,8 +1323,8 @@ void Scene::RenderMainScene()
 
 				const std::vector<oapi::GraphicsClient::ConstLabelRenderRec>& data = csphere->GetConstellationLabels();
 				for (auto it = data.begin(); it != data.end(); it++) {
-					const char* label = (plnmode & PLN_CNSTLONG ? (*it).fullLabel.c_str() : (*it).abbrLabel.c_str());
-					RenderDirectionMarker(pSketch, (*it).pos, NULL, label, -1, 0);
+					const std::string& label = (plnmode & PLN_CNSTLONG ? (*it).fullLabel : (*it).abbrLabel);
+					RenderDirectionMarker(pSketch, (*it).pos, std::string(), label, -1, 0);
 				}
 			}
 			// celestial marker (stars) names ----------------------------------------
@@ -1341,7 +1341,8 @@ void Scene::RenderMainScene()
 						pSketch->SetPen(lblPen[list[n].colour]);
 
 						const GraphicsClient::LABELSPEC *ls = list[n].list;
-						for (int i = 0; i < list[n].length; i++) RenderDirectionMarker(pSketch, ls[i].pos, ls[i].label[0], ls[i].label[1], list[n].shape, size);
+						for (int i = 0; i < list[n].length; i++)
+							RenderDirectionMarker(pSketch, ls[i].pos, ls[i].label[0], ls[i].label[1], list[n].shape, size);
 					}
 				}
 			}
@@ -1491,7 +1492,7 @@ void Scene::RenderMainScene()
 
 					pSketch->SetTextColor(labelCol[0]);
 					pSketch->SetPen(lblPen[0]);
-					RenderObjectMarker(pSketch, pp, name, 0, 0, viewH / 80);
+					RenderObjectMarker(pSketch, pp, std::string(name), std::string(), 0, viewH / 80);
 				}
 
 				if (isActive && (plnmode & PLN_SURFMARK) && (oapiGetObjectType(hObj) == OBJTP_PLANET))
@@ -1562,7 +1563,7 @@ void Scene::RenderMainScene()
 							if (dotp(bpos, cpos - bpos) >= 0.0 && apprad > LABEL_DISTLIMIT) { // surface point visible?
 								char name[64]; oapiGetObjectName(hBase, name, 63);
 								VECTOR3 sp = mul(prot, bpos) + ppos;
-								RenderObjectMarker(pSketch, sp, name, NULL, 0, size);
+								RenderObjectMarker(pSketch, sp, std::string(name), std::string(), 0, size);
 							}
 						}
 					}
@@ -2084,7 +2085,7 @@ void Scene::RenderVesselMarker(vVessel *vV, D3D9Pad *pSketch)
 {
 	DWORD plnmode = *(DWORD*)gc->GetConfigParam(CFGPRM_PLANETARIUMFLAG);
 	if ((plnmode & (PLN_ENABLE | PLN_VMARK)) == (PLN_ENABLE | PLN_VMARK)) {
-		RenderObjectMarker(pSketch, vV->GlobalPos(), vV->GetName(), 0, 0, viewH / 80);
+		RenderObjectMarker(pSketch, vV->GlobalPos(), std::string(vV->GetName()), std::string(), 0, viewH / 80);
 	}
 }
 
@@ -2830,9 +2831,9 @@ bool Scene::WorldToScreenSpace(const VECTOR3 &wpos, oapi::IVECTOR2 *pt, D3DXMATR
 
 // ===========================================================================================
 //
-void Scene::RenderDirectionMarker(oapi::Sketchpad *pSkp, const VECTOR3 &rdir, const char *label1, const char *label2, int mode, int scale)
+void Scene::RenderDirectionMarker(oapi::Sketchpad *pSkp, const VECTOR3 &rdir, const std::string& label1, const std::string& label2, int mode, int scale)
 {
-	int x, y;
+	int x, y, len;
 	D3DXVECTOR3 homog;
 	D3DXVECTOR3 dir((float)-rdir.x, (float)-rdir.y, (float)-rdir.z);
 
@@ -2897,14 +2898,14 @@ void Scene::RenderDirectionMarker(oapi::Sketchpad *pSkp, const VECTOR3 &rdir, co
 			} break;
 		}
 
-		if (label1) pSkp->Text(x, y-scale, label1, lstrlen(label1));
-		if (label2) pSkp->Text(x, y+scale+labelSize[0], label2, lstrlen(label2));
+		if (len = label1.size()) pSkp->Text(x, y-scale, label1.c_str(), len);
+		if (len = label2.size()) pSkp->Text(x, y+scale+labelSize[0], label2.c_str(), len);
 	}
 }
 
 // ===========================================================================================
 //
-void Scene::RenderObjectMarker(oapi::Sketchpad *pSkp, const VECTOR3 &gpos, const char *label1, const char *label2, int mode, int scale)
+void Scene::RenderObjectMarker(oapi::Sketchpad *pSkp, const VECTOR3 &gpos, const std::string& label1, const std::string& label2, int mode, int scale)
 {
 	VECTOR3 dp (gpos - GetCameraGPos());
 	normalise (dp);

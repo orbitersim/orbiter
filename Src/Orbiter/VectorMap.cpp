@@ -1091,7 +1091,7 @@ void VectorMap::DrawCustomMarkerSet (int idx)
 				SetPixel (hDCmem, x, y, colCustomMkr[idx]);
 			} else {
 				Ellipse (hDCmem, x-2, y-2, x+3, y+3);
-				if (drawlabel && (label = set->list->list[i].label[0])) {
+				if (drawlabel && (label = set->list->list[i].label[0].c_str())) {
 					WCHAR wlabel[256];
 					MultiByteToWideChar(CP_UTF8, 0, label, -1, wlabel, 256);
 					TextOutW (hDCmem, x+3, y, wlabel, wcslen(wlabel));

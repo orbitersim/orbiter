@@ -109,7 +109,7 @@ protected:
 	 * \param mode marker shape
 	 * \param scale marker size
 	 */
-	void RenderDirectionMarker (HDC hDC, const VECTOR3 &rdir, const char *label1, const char *label2, int mode, int scale);
+	void RenderDirectionMarker (HDC hDC, const VECTOR3 &rdir, const std::string& label1, const std::string& label2, int mode, int scale);
 
 	/**
 	 * \brief Render a single marker at a given global position
@@ -120,7 +120,7 @@ protected:
 	 * \param mode marker shape
 	 * \param scale marker size
 	 */
-	void RenderObjectMarker (HDC hDC, const VECTOR3 &gpos, const char *label1, const char *label2, int mode, int scale);
+	void RenderObjectMarker (HDC hDC, const VECTOR3 &gpos, const std::string& label1, const std::string& label2, int mode, int scale);
 
 	void AddLocalLight (const LightEmitter *le, const vObject *vo, DWORD idx);
 

@@ -742,14 +742,14 @@ Vector Scene::SkyColour()
 	return col;
 }
 
-void Scene::RenderObjectMarker (const Vector &gpos, const char *label1, const char *label2, HDC hDC, int mode, int scale)
+void Scene::RenderObjectMarker (const Vector &gpos, const std::string& label1, const std::string& label2, HDC hDC, int mode, int scale)
 {
 	RenderDirectionMarker ((gpos-g_camera->GPos()).unit(), label1, label2, hDC, mode, scale);
 }
 
-void Scene::RenderDirectionMarker (const Vector &rdir, const char *label1, const char *label2, HDC hDC, int mode, int scale)
+void Scene::RenderDirectionMarker (const Vector &rdir, const std::string& label1, const std::string& label2, HDC hDC, int mode, int scale)
 {
-	int x, y;
+	int x, y, len;
 	bool local_hdc = (hDC == 0);
 	if (!scale) scale = viewH/80;
 
@@ -802,8 +802,10 @@ void Scene::RenderDirectionMarker (const Vector &rdir, const char *label1, const
 			MoveToEx (hDC, x+scale, y+scale, NULL); LineTo (hDC, x+scl1, y+scl1);
 			} break;
 		}
-		if (label1) TextOut (hDC, x, y-scale, label1, strlen (label1));
-		if (label2) TextOut (hDC, x, y+scale+gdires.hFont1_scale, label2, strlen (label2));
+		if (len = label1.size())
+			TextOut (hDC, x, y-scale, label1.c_str(), len);
+		if (len = label2.size())
+			TextOut (hDC, x, y+scale+gdires.hFont1_scale, label2.c_str(), len);
 		if (local_hdc) ReleaseLabelDC (hDC);
 	}
 }
@@ -1044,7 +1046,7 @@ void Scene::Render (D3DRECT* vp_rect)
 		vo->Render (dev);
 		if (flagPItem & PLN_ENABLE) {
 			if (flagPItem & PLN_CMARK)
-				RenderObjectMarker (vo->GetBody()->GPos(), vo->GetBody()->Name(), 0);
+				RenderObjectMarker (vo->GetBody()->GPos(), std::string(vo->GetBody()->Name()), std::string());
 			if ((flagPItem & PLN_SURFMARK) && vo->GetBody()->Type() == OBJTP_PLANET) {
 				Planet *pl = (Planet*)vo->GetBody();
 				double lng, lat, apprad = vo->AppRad()/(0.5*viewH);
@@ -1056,7 +1058,7 @@ void Scene::Render (D3DRECT* vp_rect)
 						base->EquPos (lng, lat);
 						pl->EquatorialToGlobal (lng, lat, pl->Size(), sp);
 						if (dotp (sp - pl->GPos(), g_camera->GPos() - sp) >= 0.0) // surface point visible?
-							RenderObjectMarker (sp, base->Name(), 0, hDC, 0);
+							RenderObjectMarker (sp, std::string(base->Name()), std::string(), hDC, 0);
 					}
 					ReleaseLabelDC (hDC);
 				}
@@ -1080,7 +1082,7 @@ void Scene::Render (D3DRECT* vp_rect)
 						if (found) {
 							if (sp.dist2 (cloc) < 2.5e11 && dotp (sp, cloc-sp) >= 0.0) { // surface point visible?
 								sprintf (cbuf, "%0.2f", nav->GetFreq());
-								RenderObjectMarker (mul (pl->GRot(), sp) + pl->GPos(), cbuf, 0, hDC, 0);
+								RenderObjectMarker (mul (pl->GRot(), sp) + pl->GPos(), std::string(cbuf), std::string(), hDC, 0);
 							}
 						}
 					}
@@ -1156,7 +1158,7 @@ void Scene::Render (D3DRECT* vp_rect)
 		if (body->Type() != OBJTP_PLANET && body->Type() != OBJTP_SURFBASE && body->Type() != OBJTP_STAR) {
 			vobj[i]->Render (dev);
 			if ((flagPItem & (PLN_ENABLE|PLN_VMARK)) == (PLN_ENABLE|PLN_VMARK))
-				RenderObjectMarker (body->GPos(), body->Name(), 0);
+				RenderObjectMarker (body->GPos(), std::string(body->Name()), std::string());
 		}
 	}
 

@@ -492,7 +492,7 @@ void Scene::Render ()
 				char name[256];
 				oapiGetObjectName (hObj, name, 256);
 				oapiGetGlobalPos (hObj, &pp);
-				RenderObjectMarker (0, pp, name, 0, 0, viewH/80);
+				RenderObjectMarker (0, pp, std::string(name), std::string(), 0, viewH/80);
 			}
 			if ((plnmode & PLN_SURFMARK) && (oapiGetObjectType (hObj) == OBJTP_PLANET)) {
 				int label_format = *(int*)oapiGetObjectParam(hObj, OBJPRM_PLANET_LABELENGINE);
@@ -586,7 +586,7 @@ void Scene::Render ()
 				char name[256];
 				oapiGetGlobalPos (hObj, &gpos);
 				oapiGetObjectName (hObj, name, 256);
-				RenderObjectMarker (0, gpos, name, 0, 0, viewH/80);
+				RenderObjectMarker (0, gpos, std::string(name), std::string(), 0, viewH/80);
 			}
 		}
 	}
@@ -710,10 +710,10 @@ HDC Scene::GetLabelDC (int mode)
 
 // ==============================================================
 
-void Scene::RenderDirectionMarker (HDC hDC, const VECTOR3 &rdir, const char *label1, const char *label2, int mode, int scale)
+void Scene::RenderDirectionMarker (HDC hDC, const VECTOR3 &rdir, const std::string& label1, const std::string& label2, int mode, int scale)
 {
 	bool local_hdc = (hDC == 0);
-	int x, y;
+	int x, y, len;
 	D3DVECTOR homog;
 	D3DVECTOR dir = {(float)rdir.x, (float)rdir.y, (float)rdir.z};
 	D3DMAT_VectorMatrixMultiply (&homog, &dir, cam->GetProjectionViewMatrix());
@@ -765,13 +765,16 @@ void Scene::RenderDirectionMarker (HDC hDC, const VECTOR3 &rdir, const char *lab
 			MoveToEx (hDC, x+scale, y+scale, NULL); LineTo (hDC, x+scl1, y+scl1);
 			} break;
 		}
-		if (label1) TextOut (hDC, x, y-scale, label1, strlen (label1));
-		if (label2) TextOut (hDC, x, y+scale+labelSize[0], label2, strlen (label2));
-		if (local_hdc) gc->clbkReleaseSurfaceDC (0, hDC);
+		if (len = label1.size())
+			TextOut (hDC, x, y-scale, label1.c_str(), len);
+		if (len = label2.size())
+			TextOut (hDC, x, y+scale+labelSize[0], label2.c_str(), len);
+		if (local_hdc)
+			gc->clbkReleaseSurfaceDC (0, hDC);
 	}
 }
 
-void Scene::RenderObjectMarker (HDC hDC, const VECTOR3 &gpos, const char *label1, const char *label2, int mode, int scale)
+void Scene::RenderObjectMarker (HDC hDC, const VECTOR3 &gpos, const std::string& label1, const std::string& label2, int mode, int scale)
 {
 	VECTOR3 dp (gpos - *cam->GetGPos());
 	normalise (dp);

@@ -450,12 +450,6 @@ Planet::~Planet ()
 	if (labellist) {
 		for (i = 0; i < nlabellist; i++) {
 			if (labellist[i].list) {
-				for (j = 0; j < labellist[i].length; j++)
-					for (k = 0; k < 2; k++)
-						if (labellist[i].list[j].label[k]) {
-							delete []labellist[i].list[j].label[k];
-							labellist[i].list[j].label[k] = NULL;
-						}
 				delete []labellist[i].list;
 				labellist[i].list = NULL;
 			}
@@ -658,7 +652,8 @@ void Planet::ScanLabelLists (ifstream &cfg)
 					if (ll->length == nlistbuf) {
 						oapi::GraphicsClient::LABELSPEC *tmp = new oapi::GraphicsClient::LABELSPEC[nlistbuf += 64];
 						if (ll->length) {
-							memcpy (tmp, ll->list, ll->length*sizeof(oapi::GraphicsClient::LABELSPEC));
+							for (int i = 0; i < ll->length; i++)
+								tmp[i] = ll->list[i];
 							delete []ll->list;
 						}
 						ll->list = tmp;
@@ -668,14 +663,12 @@ void Planet::ScanLabelLists (ifstream &cfg)
 					//ll->list[ll->length].pos.x = Rad (lng);
 					//ll->list[ll->length].pos.y = Rad (lat);
 					for (i = 0; i < 2; i++) {
-						ll->list[ll->length].label[i] = 0;
+						ll->list[ll->length].label[i].clear();
 						if (pc = strtok (NULL, ":")) {
 							pc2 = trim_string (pc);
 							int len = strlen(pc2);
-							if (len) {
-								ll->list[ll->length].label[i] = new char[len+1]; TRACENEW
-								strcpy (ll->list[ll->length].label[i], pc2);
-							}
+							if (len)
+								ll->list[ll->length].label[i] = pc2;
 						}
 					}
 					ll->length++;

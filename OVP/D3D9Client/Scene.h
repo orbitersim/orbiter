@@ -379,7 +379,7 @@ protected:
 	 * \param mode marker shape
 	 * \param scale marker size
 	 */
-	void RenderDirectionMarker(oapi::Sketchpad *pSkp, const VECTOR3 &rdir, const char *label1, const char *label2, int mode, int scale);
+	void RenderDirectionMarker(oapi::Sketchpad *pSkp, const VECTOR3 &rdir, const std::string& label1, const std::string& label2, int mode, int scale);
 
 	/**
 	 * \brief Render a single marker at a given global position
@@ -390,7 +390,7 @@ protected:
 	 * \param mode marker shape
 	 * \param scale marker size
 	 */
-	void RenderObjectMarker(oapi::Sketchpad *pSkp, const VECTOR3 &gpos, const char *label1, const char *label2, int mode, int scale);
+	void RenderObjectMarker(oapi::Sketchpad *pSkp, const VECTOR3 &gpos, const std::string& label1, const std::string& label2, int mode, int scale);
 
 private:
 

@@ -1729,7 +1729,7 @@ public:
 	// @{
 	struct LABELSPEC {
 		VECTOR3 pos;
-		char *label[2];
+		std::string label[2];
 	};
 	/**
 	 * \brief Label list description for celestial and surface markers

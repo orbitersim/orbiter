@@ -92,8 +92,8 @@ public:
 	void Render3DLabel (const Vector &p, char *label, double scale = 1.0, DWORD colour = D3DRGBA(1,1,1,1));
 	// Render text "label" at position p using current world matrix
 
-	void RenderDirectionMarker (const Vector &rdir, const char *label1, const char *label2 = 0, HDC hDC = 0, int mode = 0, int scale = 0);
-	void RenderObjectMarker (const Vector &gpos, const char *label1, const char *label2 = 0, HDC hDC = 0, int mode = 0, int scale = 0);
+	void RenderDirectionMarker (const Vector &rdir, const std::string& label1, const std::string& label2 = 0, HDC hDC = 0, int mode = 0, int scale = 0);
+	void RenderObjectMarker (const Vector &gpos, const std::string& label1, const std::string& label2 = 0, HDC hDC = 0, int mode = 0, int scale = 0);
 	// Render a box with label to mark an object at global position gpos
 
 	void RenderVesselShadows ();
