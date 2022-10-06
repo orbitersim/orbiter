@@ -13,6 +13,9 @@ struct VB_XYZ { float x, y, z; };
 CelestialSphere::CelestialSphere(OrbiterGraphics* og)
 	: m_gc(og)
 {
+	vb_target = nullptr;
+	vb_cnstlabel = nullptr;
+
 	LoadStars();
 	LoadConstellationLines();
 	LoadConstellationLabels();

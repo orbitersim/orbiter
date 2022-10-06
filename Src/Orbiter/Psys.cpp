@@ -59,12 +59,6 @@ void PlanetarySystem::Clear ()
 		labelpath = 0;
 	}
 	if (labellist) {
-		for (i = 0; i < nlabellist; i++) {
-			if (labellist[i].list) {
-				delete []labellist[i].list;
-				labellist[i].list = NULL;
-			}
-		}
 		delete []labellist;
 		labellist = NULL;
 		nlabellist = 0;
@@ -305,14 +299,14 @@ void PlanetarySystem::ScanLabelLists (ifstream &cfg)
 			// read label header
 			if (scanheader) {
 				if (nlabellist == nlabellistbuf) { // increase buffer
-					oapi::GraphicsClient::LABELLIST *tmp = new oapi::GraphicsClient::LABELLIST[nlabellistbuf += 8]; TRACENEW
-					memcpy (tmp, labellist, nlabellist*sizeof(oapi::GraphicsClient::LABELLIST));
+					oapi::GraphicsClient::LABELLIST *tmp = new oapi::GraphicsClient::LABELLIST[nlabellistbuf += 8];
+					for (int i = 0; i < nlabellist; i++)
+						tmp[i] = labellist[i];
 					if (nlabellist) delete []labellist;
 					labellist = tmp;
 				}
 				ll = labellist+nlabellist;
-				ll->list    = NULL;
-				ll->length  = 0;
+				ll->marker.clear();
 				ll->colour  = 1;
 				ll->shape   = 0;
 				ll->size    = 1.0f;
@@ -356,26 +350,16 @@ void PlanetarySystem::ScanLabelLists (ifstream &cfg)
 			bool celestialpos = ((ll->flag & 1) != 0);
 
 			// read label list for active labels, if not already present
-			if (ll->active && !ll->list) {
-				ll->length = 0;
+			if (ll->active && !ll->marker.size()) {
 				int nlistbuf = 0;
 				double lng, lat;
 				int nl;
-				char *pc, *pc2;
+				char *pc;
 				FindLine (ulf, "BEGIN_DATA");
 				for (nl = 0;; nl++) {
 					if (!ulf.getline (cbuf, 256)) break;
 					pc = strtok (cbuf, ":");
 					if (!pc || sscanf (pc, "%lf%lf", &lng, &lat) != 2) continue;
-					if (ll->length == nlistbuf) {
-						oapi::GraphicsClient::LABELSPEC *tmp = new oapi::GraphicsClient::LABELSPEC[nlistbuf += 64]; TRACENEW
-						if (ll->length) {
-							for (int i = 0; i < ll->length; i++)
-								tmp[i] = ll->list[i];
-							delete []ll->list;
-						}
-						ll->list = tmp;
-					}
 					lng = Rad(lng);
 					lat = Rad(lat);
 					if (celestialpos) {
@@ -384,20 +368,17 @@ void PlanetarySystem::ScanLabelLists (ifstream &cfg)
 						double ra = lng, dc = lat;
 						Equ2Ecl (coseps, sineps, ra, dc, lng, lat);
 					}
+					oapi::GraphicsClient::LABELSPEC ls;
 					double xz = cos(lat);
-					ll->list[ll->length].pos.y = sin(lat);
-					ll->list[ll->length].pos.x = xz * cos(lng);
-					ll->list[ll->length].pos.z = xz * sin(lng);
+					ls.pos.y = sin(lat);
+					ls.pos.x = xz * cos(lng);
+					ls.pos.z = xz * sin(lng);
 					for (i = 0; i < 2; i++) {
-						ll->list[ll->length].label[i].clear();
 						if (pc = strtok (NULL, ":")) {
-							pc2 = trim_string (pc);
-							int len = strlen(pc2);
-							if (len)
-								ll->list[ll->length].label[i] = pc2;
+							ls.label[i] = trim_string(pc);
 						}
 					}
-					ll->length++;
+					ll->marker.push_back(ls);
 				}
 			}
 			nlabellist++;

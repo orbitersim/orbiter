@@ -1736,8 +1736,7 @@ public:
 	 */
 	struct LABELLIST {
 		char name[64];   ///< list name
-		LABELSPEC *list; ///< marker array
-		int length;      ///< length of the marker array
+		std::vector< LABELSPEC> marker;
 		int colour;      ///< marker colour index (0-5)
 		int shape;       ///< marker shape index (0-4)
 		float size;      ///< marker size factor

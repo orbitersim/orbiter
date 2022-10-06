@@ -444,8 +444,8 @@ void Scene::Render ()
 					int col = list[n].colour;
 					SelectObject (hDC, hLabelPen[col]);
 					SetTextColor (hDC, labelCol[col]);
-					const GraphicsClient::LABELSPEC *ls = list[n].list;
-					for (i = 0; i < list[n].length; i++) {
+					const std::vector<oapi::GraphicsClient::LABELSPEC>& ls = list[n].marker;
+					for (i = 0; i < ls.size(); i++) {
 						RenderDirectionMarker (hDC, ls[i].pos, ls[i].label[0], ls[i].label[1], list[n].shape, size);
 					}
 				}
@@ -522,9 +522,9 @@ void Scene::Render ()
 							int col = list[n].colour;
 							SelectObject (hDC, hLabelPen[col]);
 							SetTextColor (hDC, labelCol[col]);
-							const GraphicsClient::LABELSPEC *ls = list[n].list;
+							const std::vector<oapi::GraphicsClient::LABELSPEC>& ls = list[n].marker;
 							VECTOR3 sp;
-							for (j = 0; j < list[n].length; j++) {
+							for (j = 0; j < ls.size(); j++) {
 								if (dotp (ls[j].pos, cpos-ls[j].pos) >= 0.0) { // surface point visible?
 									sp = mul (prot, ls[j].pos) + ppos;
 									RenderObjectMarker (hDC, sp, ls[j].label[0], ls[j].label[1], list[n].shape, size);

@@ -980,8 +980,8 @@ void Scene::Render (D3DRECT* vp_rect)
 					if (!hDC) hDC = GetLabelDC(1);
 					SelectObject(hDC, gdires.hPen[col]);
 					SetTextColor(hDC, labelcol[col]);
-					const oapi::GraphicsClient::LABELSPEC* uls = list[i].list;
-					for (j = 0; j < list[i].length; j++) {
+					const std::vector< oapi::GraphicsClient::LABELSPEC>& uls = list[i].marker;
+					for (j = 0; j < uls.size(); j++) {
 						Vector sp(uls[j].pos.x, uls[j].pos.y, uls[j].pos.z);
 						RenderDirectionMarker(sp, uls[j].label[0], uls[j].label[1], hDC, shape, size);
 					}
@@ -1105,8 +1105,8 @@ void Scene::Render (D3DRECT* vp_rect)
 								}
 								SelectObject (hDC, gdires.hPen[col]);
 								SetTextColor (hDC, labelcol[col]);
-								const oapi::GraphicsClient::LABELSPEC *uls = list[k].list;
-								for (j = 0; j < list[k].length; j++) {
+								const std::vector< oapi::GraphicsClient::LABELSPEC>& uls = list[k].marker;
+								for (j = 0; j < uls.size(); j++) {
 									mp = MakeVector (uls[j].pos);
 									if (dotp (mp, cp-mp) >= 0.0) { // surface point visible?
 										sp = mul (pl->GRot(), mp) + pl->GPos();
