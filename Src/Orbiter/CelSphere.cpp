@@ -18,7 +18,7 @@ OGCelestialSphere::OGCelestialSphere(OrbiterGraphics* og)
 	vb_cnstlabel = nullptr;
 
 	InitStars();
-	LoadConstellationLines();
+	InitConstellationLines();
 	LoadConstellationLabels();
 	AllocGrids();
 
@@ -75,10 +75,10 @@ void OGCelestialSphere::InitStars()
 		for (j = 0; j < nv; j++) {
 			const StarRenderRec& rec = sList[idx];
 			VERTEX_XYZC& v = vbuf[j];
-			v.x = rec.x;
-			v.y = rec.y;
-			v.z = rec.z;
-			v.col = D3DRGBA(rec.r, rec.g, rec.b, 1);
+			v.x = (D3DVALUE)rec.pos.x;
+			v.y = (D3DVALUE)rec.pos.y;
+			v.z = (D3DVALUE)rec.pos.z;
+			v.col = D3DRGBA(rec.col.x, rec.col.y, rec.col.z, 1);
 
 			// compute brightness cutoff levels for rendering stars through atmosphere
 			lvl = (int)(rec.brightness * 256.0 * 0.5);
@@ -96,20 +96,14 @@ void OGCelestialSphere::InitStars()
 
 // ==============================================================
 
-void OGCelestialSphere::LoadConstellationLines()
+void OGCelestialSphere::InitConstellationLines()
 {
-	m_ncVtx = 0;
-
-	// Read constellation line database
-	const std::vector<oapi::GraphicsClient::ConstRec> clineList = m_gc->LoadConstellationLineData();
-	if (!clineList.size()) return;
-
 	// convert to render parameters
-	const std::vector<oapi::GraphicsClient::ConstRenderRec> clineVtx = m_gc->ConstellationLineData2RenderData(clineList);
-	if (!clineVtx.size()) return;
+	const std::vector<VECTOR3> clineVtx = LoadConstellationLines();
+	m_ncVtx = clineVtx.size();
+	if (!m_ncVtx) return;
 
 	// create vertex buffer
-	m_ncVtx = clineVtx.size();
 	if (m_ncVtx > D3DMAXNUMVERTICES) {
 		oapiWriteLogError("Number of constellation line vertices too large (%d). Truncating to %d.", m_ncVtx, D3DMAXNUMVERTICES);
 		m_ncVtx = D3DMAXNUMVERTICES;
@@ -123,9 +117,9 @@ void OGCelestialSphere::LoadConstellationLines()
 	VERTEX_XYZ* vbuf;
 	m_cVtx->Lock(DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
 	for (int i = 0; i < m_ncVtx; i++) {
-		vbuf[i].x = clineVtx[i].x;
-		vbuf[i].y = clineVtx[i].y;
-		vbuf[i].z = clineVtx[i].z;
+		vbuf[i].x = (D3DVALUE)clineVtx[i].x;
+		vbuf[i].y = (D3DVALUE)clineVtx[i].y;
+		vbuf[i].z = (D3DVALUE)clineVtx[i].z;
 	}
 	m_cVtx->Unlock();
 	m_cVtx->Optimize(m_gc->GetDevice(), 0);

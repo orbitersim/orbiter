@@ -95,7 +95,7 @@ protected:
 	/**
 	 * \brief Load constellation line data from file
 	 */
-	void LoadConstellationLines ();
+	void InitConstellationLines ();
 
 	/**
 	 * \brief Load constellation label database from file.

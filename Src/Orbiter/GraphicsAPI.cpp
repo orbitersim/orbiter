@@ -728,57 +728,6 @@ INT_PTR GraphicsClient::LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wPar
 // ==================================================================
 // Functions for the celestial sphere
 
-const std::vector<GraphicsClient::ConstRec> GraphicsClient::LoadConstellationLineData() const
-{
-	std::vector<GraphicsClient::ConstRec> rec;
-	rec.resize(0x1000);
-
-	FILE* f = fopen("Constell.bin", "rb");
-	if (f) {
-		const int chunksize = 0x1000;
-		int s, n = 0;
-		while (s = fread(rec.data() + n, sizeof(GraphicsClient::ConstRec), chunksize, f)) {
-			n += s;
-			if (s < chunksize)
-				break;
-			else
-				rec.resize(n + chunksize);
-		}
-		fclose(f);
-		rec.resize(n);
-		rec.shrink_to_fit();
-	}
-	else {
-		LOGOUT_WARN("Constellation data base for celestial sphere (Constell.bin) not found. Disabling constellation lines.");
-	}
-	return rec;
-}
-
-// ==================================================================
-
-const std::vector<GraphicsClient::ConstRenderRec> GraphicsClient::ConstellationLineData2RenderData(const std::vector<ConstRec>& clineRec) const
-{
-	std::vector<GraphicsClient::ConstRenderRec> renderRec;
-	renderRec.resize(clineRec.size() * 2);
-	for (int i = 0; i < clineRec.size(); i++) {
-		double lng1 = (double)clineRec[i].lng1;
-		double lat1 = (double)clineRec[i].lat1;
-		double lng2 = (double)clineRec[i].lng2;
-		double lat2 = (double)clineRec[i].lat2;
-		double xz = cos(lat1);
-		renderRec[i * 2].x = (float)(xz * cos(lng1));
-		renderRec[i * 2].z = (float)(xz * sin(lng1));
-		renderRec[i * 2].y = (float)sin(lat1);
-		xz = cos(lat2);
-		renderRec[i * 2 + 1].x = (float)(xz * cos(lng2));
-		renderRec[i * 2 + 1].z = (float)(xz * sin(lng2));
-		renderRec[i * 2 + 1].y = (float)sin(lat2);
-	}
-	return renderRec;
-}
-
-// ==================================================================
-
 const std::vector<GraphicsClient::ConstLabelRec> GraphicsClient::LoadConstellationLabelData() const
 {
 	std::vector<GraphicsClient::ConstLabelRec> rec;

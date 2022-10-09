@@ -30,9 +30,8 @@ namespace oapi {
 	public:
 		CelestialSphere(GraphicsClient* gc);
 
-//#pragma pack(push,1)
 		/**
-		 * \brief Star database record structure, as used by \ref LoadStarData
+		 * \brief Star database record structure, as used by \ref LoadStarData.
 		 * \note The spectral class index is a linear encoding of the star's
 		 *    spectral class, from O0 (0) to M9 (69) for classes OBANGKM. Since
 		 *    the spectral information is only used for modifying the render
@@ -40,13 +39,12 @@ namespace oapi {
 		 *    database have been mapped to those seven classes. For example,
 		 *    all red giant classes (R, N, C, S) have been mapped to M.
 		 */
-		struct StarRec {
-			double lng; ///< ecliptic longitude (J2000) [rad]
-			double lat; ///< ecliptic latitude (J2000) [rad]
-			double mag; ///< apparent magnitude
+		struct StarDataRec {
+			double lng;   ///< ecliptic longitude (J2000) [rad]
+			double lat;   ///< ecliptic latitude (J2000) [rad]
+			double mag;   ///< apparent magnitude
 			WORD specidx; ///< spectral class index (0-69)
 		};
-//#pragma pack(pop)
 
 		/**
 		 * \brief Star render data record structure, as returned by \ref StarData2RenderData
@@ -54,17 +52,47 @@ namespace oapi {
 		 *    parameters contained in \ref StarRenderPrm.
 		 */
 		struct StarRenderRec {
-			float x;           ///< vertex x coordinate
-			float y;           ///< vertex y coordinate
-			float z;           ///< vertex z coordinate
-			float brightness;  ///< apparent brightness level (0-1)
-			float r;           ///< red intensity (0-1)
-			float g;           ///< green intensity (0-1)
-			float b;           ///< blue intensity (0-1)
+			VECTOR3 pos;       ///< render vertex coordinates (on unit sphere)
+			VECTOR3 col;       ///< render colour (x=r, y=g, z=b, range 0-1)
+			double brightness; ///< render brightness (mean of colour channels)
+		};
+
+		/**
+		 * \brief Record for constellation line data.
+		 * \note Constellation lines are assumed to consist of a collection of straight
+		 *   line segments. Each record represents one line segment.
+		 * \note Each record contains the two end point coordinates (ecliptic longitude and
+		 *   latitude) of the line in the J2000 ecliptic reference frame.
+		 */
+		struct LineDataRec {
+			double lng1;  ///< longitude of endpoint 1
+			double lat1;  ///< latitude of endpoint 1
+			double lng2;  ///< longitude of endpoint 2
+			double lat2;  ///< latitude of endpoint 2
 		};
 
 	protected:
-		const std::vector<StarRenderRec> LoadStars();
+		/**
+		 * \brief Load star data from the database file and pre-process them
+		 *    according to user-defined display parameters.
+		 * \return Vector of \ref StarRenderRec records providing information for
+		 *    displaying stars on the celestial sphere.
+		 * \note The returned records provide graphics-client independent data.
+		 *    Client-specific implementations of CelestialSphere should map these
+		 *    data into device-dependent data structures for rendering.
+		 */
+		const std::vector<StarRenderRec> LoadStars() const;
+
+		/**
+		 * \brief Load constellation line data from the database file and pre-process
+		 *    them for use by graphics clients.
+		 * \return Vector of vertex points for constellation line segments on the
+		 *    unit sphere.
+		 * \note Each pair of consecutive points in the vector defines the endpoints
+		 *    of a line segment in a constellation. The length of the vector is an
+		 *    even number. The points are located on the unit sphere (radius 1). 
+		 */
+		const std::vector<VECTOR3> LoadConstellationLines() const;
 
 		GraphicsClient* m_gc;
 
@@ -80,7 +108,7 @@ namespace oapi {
 		 *    truncated at this magnitude.
 		 * \return Vector of database records.
 		 */
-		const std::vector<StarRec> LoadStarData(double maxAppMag) const;
+		const std::vector<StarDataRec> LoadStarData(double maxAppMag) const;
 
 		/**
 		 * \brief Map the star data to a list that can be used for rendering.
@@ -96,7 +124,15 @@ namespace oapi {
 		 * \param prm user choice for star render parameters
 		 * \return List of transformed star data
 		 */
-		const std::vector<StarRenderRec> StarData2RenderData(const std::vector<StarRec>& starRec, const StarRenderPrm& prm) const;
+		const std::vector<StarRenderRec> StarData2RenderData(const std::vector<StarDataRec>& starRec, const StarRenderPrm& prm) const;
+
+		/**
+		 * \brief Load constellation line data from Orbiter's data base file.
+		 * \return Vector of line segment database records.
+		 */
+		const std::vector<LineDataRec> LoadConstellationLineData() const;
+
+		const std::vector<VECTOR3> ConstellationLineData2RenderData(const std::vector<LineDataRec>& clineRec) const;
 	};
 
 }

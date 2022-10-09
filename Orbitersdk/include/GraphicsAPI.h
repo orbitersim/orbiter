@@ -1619,49 +1619,6 @@ protected:
 	// ==================================================================
 	// Functions for the celestial sphere
 public:
-#pragma pack(1)
-	/**
-	 * \brief Star render data record structure, as returned by \ref StarData2RenderData
-	 * \note The brightness level is computed using the user-defined brightness mapping
-	 *    parameters contained in \ref StarRenderPrm.
-	 */
-	//struct StarRenderRec {
-	//	float x;           ///< vertex x coordinate
-	//	float y;           ///< vertex y coordinate
-	//	float z;           ///< vertex z coordinate
-	//	float brightness;  ///< apparent brightness level (0-1)
-	//	float r;           ///< red intensity (0-1)
-	//	float g;           ///< green intensity (0-1)
-	//	float b;           ///< blue intensity (0-1)
-	//};
-
-	/**
-	 * \brief Record for constellation line data.
-	 * \note Constellation lines are assumed to consist of a collection of straight
-	 *   line segments. Each record represents one line segment.
-	 * \note Each record contains the two end point coordinates (ecliptic longitude and
-	 *   latitude) of the line in the J2000 ecliptic reference frame.
-	 */
-	struct ConstRec {
-		float lng1;  ///< longitude of endpoint 1
-		float lat1;  ///< latitude of endpoint 1
-		float lng2;  ///< longitude of endpoint 2
-		float lat2;  ///< latitude of endpoint 2
-	};
-
-	/**
-	 * \brief Load constellation line data from Orbiter's data base file.
-	 * \return Vector of line segment database records.
-	 */
-	const std::vector<ConstRec> LoadConstellationLineData() const;
-
-	struct ConstRenderRec {
-		float x, y, z;
-	};
-
-	const std::vector<ConstRenderRec> ConstellationLineData2RenderData(const std::vector<ConstRec>& clineRec) const;
-#pragma pack()
-
 	struct ConstLabelRec {
 		std::string fullLabel;
 		std::string abbrLabel;

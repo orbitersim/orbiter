@@ -73,7 +73,7 @@ protected:
 	/**
 	 * \brief Load constellation line database from file.
 	 */
-	void LoadConstellationLines();
+	void InitConstellationLines();
 
 	/**
 	 * \brief Load constellation label database from file. 

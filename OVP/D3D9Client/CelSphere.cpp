@@ -30,10 +30,10 @@ D3D9CelestialSphere::D3D9CelestialSphere(D3D9Client *gc)
 	, m_pDevice(gc->GetDevice())
 	, maxNumVertices(gc->GetHardwareCaps()->MaxPrimitiveCount)
 {
-	InitStars ();
-	LoadConstellationLines ();
+	InitStars();
+	InitConstellationLines();
 	LoadConstellationLabels();
-	AllocGrids ();
+	AllocGrids();
 }
 
 // ==============================================================
@@ -69,10 +69,10 @@ void D3D9CelestialSphere::InitStars ()
 		for (j = 0; j < nv; j++) {
 			const oapi::CelestialSphere::StarRenderRec& rec = sList[idx];
 			VERTEX_XYZC &v = vbuf[j];
-			v.x = rec.x;
-			v.y = rec.y;
-			v.z = rec.z;
-			v.col = D3DXCOLOR(rec.r, rec.g, rec.b, 1);
+			v.x = (float)rec.pos.x;
+			v.y = (float)rec.pos.y;
+			v.z = (float)rec.pos.z;
+			v.col = D3DXCOLOR(rec.col.x, rec.col.y, rec.col.z, 1);
 
 			// compute brightness cutoff levels for rendering stars through atmosphere
 			lvl = (int)(rec.brightness * 256.0 * 0.5);
@@ -89,27 +89,21 @@ void D3D9CelestialSphere::InitStars ()
 
 // ==============================================================
 
-void D3D9CelestialSphere::LoadConstellationLines()
+void D3D9CelestialSphere::InitConstellationLines()
 {
-	m_ncVtx = 0;
-
-	// Read constellation line database
-	const std::vector<oapi::GraphicsClient::ConstRec> clineList = m_gc->LoadConstellationLineData();
-	if (!clineList.size()) return;
-
 	// convert to render parameters
-	const std::vector<oapi::GraphicsClient::ConstRenderRec> clineVtx = m_gc->ConstellationLineData2RenderData(clineList);
-	if (!clineVtx.size()) return;
+	const std::vector<VECTOR3> clineVtx = LoadConstellationLines();
+	m_ncVtx = clineVtx.size();
+	if (!m_ncVtx) return;
 
 	// create vertex buffer
-	m_ncVtx = clineVtx.size();
 	m_pDevice->CreateVertexBuffer(sizeof(VERTEX_XYZ)*m_ncVtx, D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &m_cVtx, NULL);
 	VERTEX_XYZ* vbuf;
 	m_cVtx->Lock(0, 0, (LPVOID*)&vbuf, 0);
 	for (int i = 0; i < m_ncVtx; i++) {
-		vbuf[i].x = clineVtx[i].x;
-		vbuf[i].y = clineVtx[i].y;
-		vbuf[i].z = clineVtx[i].z;
+		vbuf[i].x = (float)clineVtx[i].x;
+		vbuf[i].y = (float)clineVtx[i].y;
+		vbuf[i].z = (float)clineVtx[i].z;
 	}
 	m_cVtx->Unlock();
 }
