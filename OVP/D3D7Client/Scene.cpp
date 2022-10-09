@@ -52,7 +52,7 @@ Scene::Scene (D3D7Client *_gc, DWORD w, DWORD h)
 	zclearflag = D3DCLEAR_ZBUFFER;
 	if (stencilDepth) zclearflag |= D3DCLEAR_STENCIL;
 	cam = new Camera (dev, w, h);
-	m_celSphere = new CelestialSphere (gc);
+	m_celSphere = new D3D7CelestialSphere (gc);
 	vobjFirst = vobjLast = NULL;
 	nstream = 0;
 	iVCheck = 0;

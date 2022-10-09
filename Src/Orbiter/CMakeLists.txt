@@ -98,6 +98,7 @@ set(common_src
 	MfdUser.cpp
 # API implementations
 	CamAPI.cpp
+	CelSphereAPI.cpp
 	DrawAPI.cpp
 	GraphicsAPI.cpp
 	MFDAPI.cpp

@@ -427,7 +427,7 @@ private:
 	LPDIRECT3DDEVICE9 pDevice; // render device
 	DWORD viewW, viewH;        // render viewport size
 	DWORD stencilDepth;        // stencil buffer bit depth
-	CelestialSphere *csphere;  // celestial sphere background
+	D3D9CelestialSphere *csphere;  // celestial sphere background
 	DWORD iVCheck;             // index of last object checked for visibility
 	//DWORD dwRenderPass;		   // Currently active render pass
 	bool  bLocalLight;         // enable local light sources

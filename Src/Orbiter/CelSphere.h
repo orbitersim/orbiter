@@ -1,19 +1,20 @@
 // Copyright (c) Martin Schweiger
 // Licensed under the MIT License
 
-#ifndef __CELSPHERE_H
-#define __CELSPHERE_H
+#ifndef __OGCELSPHERE_H
+#define __OGCELSPHERE_H
 
+#include "CelSphereAPI.h"
 #include "OGraphics.h"
 #include "D3D7Util.h"
 #include "Vecmat.h"
 
 #define MAXCONST 88      // max number of constellations
 
-class CelestialSphere {
+class OGCelestialSphere : public oapi::CelestialSphere {
 public:
-	CelestialSphere(OrbiterGraphics* og);
-	~CelestialSphere();
+	OGCelestialSphere(OrbiterGraphics* og);
+	~OGCelestialSphere();
 
 	/**
 	 * \brief Render stars as pixels on the celestial sphere
@@ -65,9 +66,9 @@ public:
 
 protected:
 	/**
-	 * \brief Load star database from file.
+	 * \brief Prepare the star vertex list from the star database.
 	 */
-	void LoadStars();
+	void InitStars();
 
 	/**
 	 * \brief Load constellation line database from file.
@@ -103,4 +104,4 @@ private:
 	oapi::Font *m_cLabelFont;
 };
 
-#endif // !__CELSPHERE_H
+#endif // !__OGCELSPHERE_H

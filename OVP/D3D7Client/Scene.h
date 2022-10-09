@@ -130,7 +130,7 @@ private:
 	DWORD viewW, viewH;        // render viewport size
 	DWORD stencilDepth;        // stencil buffer bit depth
 	Camera *cam;               // camera object
-	CelestialSphere *m_celSphere;  // celestial sphere background
+	D3D7CelestialSphere *m_celSphere; // celestial sphere background
 	DWORD iVCheck;             // index of last object checked for visibility
 	DWORD zclearflag;          // z and stencil buffer clear flag
 

@@ -14,9 +14,10 @@
 // background (stars, constellations, grids, labels, etc.)
 // ==============================================================
 
-#ifndef __CELSPHERE_H
-#define __CELSPHERE_H
+#ifndef __D3D7CELSPHERE_H
+#define __D3D7CELSPHERE_H
 
+#include "CelSphereAPI.h"
 #include "D3D7Client.h"
 #include "D3D7Util.h"
 
@@ -26,10 +27,10 @@
  * Loads star and constellation information from data bases and uses them to
  * celestial sphere background.
  */
-class CelestialSphere {
+class D3D7CelestialSphere: public oapi::CelestialSphere {
 public:
-	CelestialSphere (oapi::D3D7Client *gc);
-	~CelestialSphere ();
+	D3D7CelestialSphere (oapi::D3D7Client *gc);
+	~D3D7CelestialSphere ();
 
 	/**
 	 * \brief Render stars as pixels on the celestial sphere
@@ -81,9 +82,9 @@ public:
 
 protected:
 	/**
-	 * \brief Load star database from file.
+	 * \brief Prepare the star vertex list from the star database.
 	 */
-	void LoadStars();
+	void InitStars();
 
 	/**
 	 * \brief Load constellation line database from file.
@@ -117,4 +118,4 @@ private:
 	oapi::Font* m_cLabelFont;
 };
 
-#endif // !__CELSPHERE_H
+#endif // !__D3D7CELSPHERE_H

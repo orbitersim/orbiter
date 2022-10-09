@@ -5,9 +5,10 @@
 // Copyright (C) 2006-2016 Martin Schweiger
 // ==============================================================
 
-#ifndef __CELSPHERE_H
-#define __CELSPHERE_H
+#ifndef __D3D9CELSPHERE_H
+#define __D3D9CELSPHERE_H
 
+#include "CelSphereAPI.h"
 #include "D3D9Client.h"
 #include "D3D9Util.h"
 
@@ -23,19 +24,19 @@
  * render the celestial sphere background (stars, constellations, grids,
  * labels, etc.)
  */
-class CelestialSphere {
+class D3D9CelestialSphere : public oapi::CelestialSphere {
 
 public:
 	/**
 	 * \brief Create a new celestial sphere object.
 	 * \param gc pointer to graphics client
 	 */
-	explicit CelestialSphere(oapi::D3D9Client *gc);
+	explicit D3D9CelestialSphere(oapi::D3D9Client *gc);
 
 	/**
 	 * \brief Destructor
 	 */
-	~CelestialSphere();
+	~D3D9CelestialSphere();
 
 	const std::vector<oapi::GraphicsClient::ConstLabelRenderRec>& GetConstellationLabels() const
 	{
@@ -87,9 +88,9 @@ public:
 	
 protected:
 	/**
-	 * \brief Load star coordinates from file
+	 * \brief Prepare the star vertex list from the star database.
 	 */
-	void LoadStars ();
+	void InitStars ();
 
 	/**
 	 * \brief Load constellation line data from file
@@ -120,4 +121,4 @@ private:
 	LPDIRECT3DVERTEXBUFFER9 m_grdLngVtx, m_grdLatVtx; ///< vertex buffers for grid lines
 };
 
-#endif // !__CELSPHERE_H
+#endif // !__D3D9CELSPHERE_H

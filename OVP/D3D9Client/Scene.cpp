@@ -105,7 +105,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	SetCameraAperture(float(RAD*50.0), float(viewH)/float(viewW));
 	SetCameraFrustumLimits(2.5f, 5e6f); // initial limits
 
-	csphere = new CelestialSphere(gc);
+	csphere = new D3D9CelestialSphere(gc);
 	Lights = new D3D9Light[MAX_SCENE_LIGHTS];
 
 	bLocalLight = *(bool*)gc->GetConfigParam(CFGPRM_LOCALLIGHT);

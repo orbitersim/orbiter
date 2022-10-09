@@ -23,10 +23,11 @@ using namespace oapi;
 
 // ==============================================================
 
-CelestialSphere::CelestialSphere (D3D7Client *gc)
-	: m_gc(gc)
+D3D7CelestialSphere::D3D7CelestialSphere (D3D7Client *gc)
+	: oapi::CelestialSphere(gc)
+	, m_gc(gc)
 {
-	LoadStars ();
+	InitStars ();
 	LoadConstellationLines ();
 	LoadConstellationLabels();
 	AllocGrids ();
@@ -43,7 +44,7 @@ CelestialSphere::CelestialSphere (D3D7Client *gc)
 
 // ==============================================================
 
-CelestialSphere::~CelestialSphere ()
+D3D7CelestialSphere::~D3D7CelestialSphere ()
 {
 	for (auto it = m_sVtx.begin(); it != m_sVtx.end(); it++)
 		(*it)->Release();
@@ -61,19 +62,11 @@ CelestialSphere::~CelestialSphere ()
 
 // ==============================================================
 
-void CelestialSphere::LoadStars()
+void D3D7CelestialSphere::InitStars()
 {
-	m_nsVtx = 0;
-
-	StarRenderPrm *prm = (StarRenderPrm*)m_gc->GetConfigParam (CFGPRM_STARRENDERPRM);
-
-	// Read the star database
-	const std::vector<oapi::GraphicsClient::StarRec> starList = m_gc->LoadStarData(prm->mag_lo);
-	if (!starList.size()) return;
-
-	// convert to render parameters
-	const std::vector<oapi::GraphicsClient::StarRenderRec> renderList = m_gc->StarData2RenderData(starList, *prm);
-	if (!renderList.size()) return;
+	const std::vector<oapi::CelestialSphere::StarRenderRec> sList = LoadStars();
+	m_nsVtx = sList.size();
+	if (!m_nsVtx) return;
 
 	const DWORD buflen = D3DMAXNUMVERTICES;
 	DWORD i, j, nv, idx = 0;
@@ -84,7 +77,6 @@ void CelestialSphere::LoadStars()
 	vbdesc.dwFVF = D3DFVF_XYZ | D3DFVF_DIFFUSE;
 
 	// convert star database to vertex buffers
-	m_nsVtx = starList.size();
 	DWORD nbuf = (m_nsVtx + buflen - 1) / buflen; // number of buffers required
 	m_sVtx.resize(nbuf);
 	for (auto it = m_sVtx.begin(); it != m_sVtx.end(); it++) {
@@ -94,7 +86,7 @@ void CelestialSphere::LoadStars()
 		VERTEX_XYZC *vbuf;
 		(*it)->Lock (DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
 		for (j = 0; j < nv; j++) {
-			const oapi::GraphicsClient::StarRenderRec& rec = renderList[idx];
+			const oapi::CelestialSphere::StarRenderRec& rec = sList[idx];
 			VERTEX_XYZC& v = vbuf[j];
 			v.x = rec.x;
 			v.y = rec.y;
@@ -117,7 +109,7 @@ void CelestialSphere::LoadStars()
 
 // ==============================================================
 
-void CelestialSphere::LoadConstellationLines()
+void D3D7CelestialSphere::LoadConstellationLines()
 {
 	m_ncVtx = 0;
 
@@ -154,7 +146,7 @@ void CelestialSphere::LoadConstellationLines()
 
 // ==============================================================
 
-void CelestialSphere::LoadConstellationLabels()
+void D3D7CelestialSphere::LoadConstellationLabels()
 {
 	// Read constellation label database
 	m_cLabel = m_gc->ConstellationLabelData2RenderData(m_gc->LoadConstellationLabelData());
@@ -164,7 +156,7 @@ void CelestialSphere::LoadConstellationLabels()
 	vbdesc.dwSize = sizeof(D3DVERTEXBUFFERDESC);
 	vbdesc.dwCaps = D3DVBCAPS_SYSTEMMEMORY; // 0;
 	vbdesc.dwFVF = D3DFVF_XYZ;
-	vbdesc.dwNumVertices = m_cLabel.size();
+	vbdesc.dwNumVertices = m_cLabel.size() + 1;
 	VB_XYZ* vbpos;
 	m_gc->GetDirect3D7()->CreateVertexBuffer(&vbdesc, &vb_cnstlabel, 0);
 	m_gc->GetDirect3D7()->CreateVertexBuffer(&vbdesc, &vb_target, 0);
@@ -179,7 +171,7 @@ void CelestialSphere::LoadConstellationLabels()
 
 // ==============================================================
 
-void CelestialSphere::AllocGrids ()
+void D3D7CelestialSphere::AllocGrids ()
 {
 	int i, j, idx;
 	double lng, lat, xz, y;
@@ -227,7 +219,7 @@ void CelestialSphere::AllocGrids ()
 
 // ==============================================================
 
-void CelestialSphere::RenderStars (LPDIRECT3DDEVICE7 dev, DWORD nmax, const VECTOR3 *bgcol)
+void D3D7CelestialSphere::RenderStars (LPDIRECT3DDEVICE7 dev, DWORD nmax, const VECTOR3 *bgcol)
 {
 	// render in chunks, because some graphics cards have a limit in the
 	// vertex list size
@@ -247,7 +239,7 @@ void CelestialSphere::RenderStars (LPDIRECT3DDEVICE7 dev, DWORD nmax, const VECT
 
 // ==============================================================
 
-void CelestialSphere::RenderConstellationLines (LPDIRECT3DDEVICE7 dev, VECTOR3 &col)
+void D3D7CelestialSphere::RenderConstellationLines (LPDIRECT3DDEVICE7 dev, VECTOR3 &col)
 {
 	dev->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(col.x,col.y,col.z,1));
 	dev->DrawPrimitiveVB (D3DPT_LINELIST, m_cVtx, 0, m_ncVtx, 0);
@@ -255,7 +247,7 @@ void CelestialSphere::RenderConstellationLines (LPDIRECT3DDEVICE7 dev, VECTOR3 &
 
 // ==============================================================
 
-void CelestialSphere::RenderConstellationLabels(LPDIRECT3DDEVICE7 dev, bool full)
+void D3D7CelestialSphere::RenderConstellationLabels(LPDIRECT3DDEVICE7 dev, bool full)
 {
 	if (vb_target->ProcessVertices(D3DVOP_TRANSFORM, 0, m_cLabel.size(), vb_cnstlabel, 0, dev, 0) == D3D_OK) {
 		oapi::Sketchpad* skp = m_gc->clbkGetSketchpad(0);
@@ -277,7 +269,7 @@ void CelestialSphere::RenderConstellationLabels(LPDIRECT3DDEVICE7 dev, bool full
 
 // ==============================================================
 
-void CelestialSphere::RenderGreatCircle (LPDIRECT3DDEVICE7 dev, VECTOR3 &col)
+void D3D7CelestialSphere::RenderGreatCircle (LPDIRECT3DDEVICE7 dev, VECTOR3 &col)
 {
 	dev->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(col.x,col.y,col.z,1));
 	dev->DrawPrimitiveVB (D3DPT_LINESTRIP, m_grdLngVtx, 5*(NSEG+1), NSEG+1, 0);
@@ -285,7 +277,7 @@ void CelestialSphere::RenderGreatCircle (LPDIRECT3DDEVICE7 dev, VECTOR3 &col)
 
 // ==============================================================
 
-void CelestialSphere::RenderGrid (LPDIRECT3DDEVICE7 dev, VECTOR3 &col, bool eqline)
+void D3D7CelestialSphere::RenderGrid (LPDIRECT3DDEVICE7 dev, VECTOR3 &col, bool eqline)
 {
 	int i;
 	dev->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(col.x,col.y,col.z,1));

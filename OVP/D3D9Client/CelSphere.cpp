@@ -24,12 +24,13 @@ using namespace oapi;
 
 // ==============================================================
 
-CelestialSphere::CelestialSphere(D3D9Client *gc)
-	: m_gc(gc)
+D3D9CelestialSphere::D3D9CelestialSphere(D3D9Client *gc)
+	: oapi::CelestialSphere(gc)
+	, m_gc(gc)
 	, m_pDevice(gc->GetDevice())
 	, maxNumVertices(gc->GetHardwareCaps()->MaxPrimitiveCount)
 {
-	LoadStars ();
+	InitStars ();
 	LoadConstellationLines ();
 	LoadConstellationLabels();
 	AllocGrids ();
@@ -37,7 +38,7 @@ CelestialSphere::CelestialSphere(D3D9Client *gc)
 
 // ==============================================================
 
-CelestialSphere::~CelestialSphere()
+D3D9CelestialSphere::~D3D9CelestialSphere()
 {
 	for (auto it = m_sVtx.begin(); it != m_sVtx.end(); it++)
 		(*it)->Release();
@@ -48,25 +49,16 @@ CelestialSphere::~CelestialSphere()
 
 // ==============================================================
 
-void CelestialSphere::LoadStars ()
+void D3D9CelestialSphere::InitStars ()
 {
-	m_nsVtx = 0;
-
-	StarRenderPrm *prm = (StarRenderPrm*)m_gc->GetConfigParam (CFGPRM_STARRENDERPRM);
-
-	// Read the star database
-	const std::vector<oapi::GraphicsClient::StarRec> starList = m_gc->LoadStarData(prm->mag_lo);
-	if (!starList.size()) return;
-
-	// convert to render parameters
-	const std::vector<oapi::GraphicsClient::StarRenderRec> renderList = m_gc->StarData2RenderData(starList, *prm);
-	if (!renderList.size()) return;
+	const std::vector<oapi::CelestialSphere::StarRenderRec> sList = LoadStars();
+	m_nsVtx = sList.size();
+	if (!m_nsVtx) return;
 
 	DWORD i, j, nv, k, idx = 0;
 	int lvl, plvl = 256;
 
 	// convert star database to vertex buffers
-	m_nsVtx = starList.size();
 	DWORD nbuf = (m_nsVtx + maxNumVertices - 1) / maxNumVertices; // number of buffers required
 	m_sVtx.resize(nbuf);
 	for (auto it = m_sVtx.begin(); it != m_sVtx.end(); it++) {
@@ -75,7 +67,7 @@ void CelestialSphere::LoadStars ()
 		VERTEX_XYZC *vbuf;
 		(*it)->Lock(0, 0, (LPVOID*)&vbuf, 0);
 		for (j = 0; j < nv; j++) {
-			const oapi::GraphicsClient::StarRenderRec& rec = renderList[idx];
+			const oapi::CelestialSphere::StarRenderRec& rec = sList[idx];
 			VERTEX_XYZC &v = vbuf[j];
 			v.x = rec.x;
 			v.y = rec.y;
@@ -97,7 +89,7 @@ void CelestialSphere::LoadStars ()
 
 // ==============================================================
 
-void CelestialSphere::LoadConstellationLines()
+void D3D9CelestialSphere::LoadConstellationLines()
 {
 	m_ncVtx = 0;
 
@@ -124,7 +116,7 @@ void CelestialSphere::LoadConstellationLines()
 
 // ==============================================================
 
-void CelestialSphere::LoadConstellationLabels()
+void D3D9CelestialSphere::LoadConstellationLabels()
 {
 	// Read constellation label database
 	m_cLabel = m_gc->ConstellationLabelData2RenderData(m_gc->LoadConstellationLabelData());
@@ -132,7 +124,7 @@ void CelestialSphere::LoadConstellationLabels()
 
 // ==============================================================
 
-void CelestialSphere::AllocGrids ()
+void D3D9CelestialSphere::AllocGrids ()
 {
 	int i, j, idx;
 	double lng, lat, xz, y;
@@ -173,7 +165,7 @@ void CelestialSphere::AllocGrids ()
 
 // ==============================================================
 
-void CelestialSphere::RenderStars(ID3DXEffect *FX, DWORD nmax, const VECTOR3 *bgcol)
+void D3D9CelestialSphere::RenderStars(ID3DXEffect *FX, DWORD nmax, const VECTOR3 *bgcol)
 {
 	_TRACE;
 
@@ -200,7 +192,7 @@ void CelestialSphere::RenderStars(ID3DXEffect *FX, DWORD nmax, const VECTOR3 *bg
 
 // ==============================================================
 
-void CelestialSphere::RenderConstellationLines(ID3DXEffect *FX)
+void D3D9CelestialSphere::RenderConstellationLines(ID3DXEffect *FX)
 {
 	_TRACE;
 	UINT numPasses = 0;
@@ -215,7 +207,7 @@ void CelestialSphere::RenderConstellationLines(ID3DXEffect *FX)
 
 // ==============================================================
 
-void CelestialSphere::RenderGreatCircle(ID3DXEffect *FX)
+void D3D9CelestialSphere::RenderGreatCircle(ID3DXEffect *FX)
 {
 	_TRACE;
 	UINT numPasses = 0;
@@ -231,7 +223,7 @@ void CelestialSphere::RenderGreatCircle(ID3DXEffect *FX)
 
 // ==============================================================
 
-void CelestialSphere::RenderGrid(ID3DXEffect *FX, bool eqline)
+void D3D9CelestialSphere::RenderGrid(ID3DXEffect *FX, bool eqline)
 {
 	_TRACE;
 	int i;

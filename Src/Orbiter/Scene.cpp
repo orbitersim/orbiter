@@ -100,7 +100,7 @@ Scene::Scene (OrbiterGraphics *og)
 	nobj = nsun = cobj = nbuf = 0;
 	nstarlight  = 0;
 	nstream     = 0;
-	m_celSphere = new CelestialSphere(gc);
+	m_celSphere = new OGCelestialSphere(gc);
 	gcanvas = 0;
 	csphere = 0;
 	csphere2 = 0;

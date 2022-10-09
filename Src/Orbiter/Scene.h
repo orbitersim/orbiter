@@ -128,7 +128,7 @@ private:
 	VStar   **vsun;           // list of sun visual
 	int       nsun;           // number of suns
 
-	CelestialSphere* m_celSphere;  // celestial sphere background
+	OGCelestialSphere* m_celSphere;  // celestial sphere background
 
 	D3D7ParticleStream **pstream; // list of particle streams
 	DWORD                nstream; // number of streams
