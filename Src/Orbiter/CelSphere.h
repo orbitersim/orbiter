@@ -13,7 +13,7 @@
 
 class OGCelestialSphere : public oapi::CelestialSphere {
 public:
-	OGCelestialSphere(OrbiterGraphics* og);
+	OGCelestialSphere(OrbiterGraphics* gc, Scene* scene);
 	~OGCelestialSphere();
 
 	/**
@@ -37,7 +37,7 @@ public:
 	 */
 	void RenderConstellationLines(LPDIRECT3DDEVICE7 dev, const Vector& col);
 
-	void RenderConstellationLabels(LPDIRECT3DDEVICE7 dev, bool full);
+	void RenderConstellationLabels(bool fullName);
 
 	/**
 	 * \brief Render a great circle on the celestial sphere in a given colour.
@@ -86,8 +86,19 @@ protected:
 	 */
 	void AllocGrids();
 
+	/**
+	 * \brief Convert a direction into viewport coordinates
+	 * \param dir direction in the ecliptic frame provided as a point on the
+	 *    celestial sphere.
+	 * \param x x-position in the viewport window [pixel]
+	 * \param y y-position in the viewport window [pixel]
+	 * \return true if point is visible in the viewport, false otherwise.
+	 */
+	virtual bool EclDir2WindowPos(const VECTOR3& dir, int& x, int& y) const;
+
 private:
 	OrbiterGraphics* m_gc;          ///< pointer to graphics client
+	Scene* m_scene;                 ///< pointer to scene object
 	DWORD m_viewW;                  ///< render viewport width [pixel]
 	DWORD m_viewH;                  ///< render viewport height [pixel]
 	DWORD m_nsVtx;                  ///< total number of vertices over all buffers
@@ -95,13 +106,10 @@ private:
 	int m_lvlIdx[256];               ///< star brightness hash table
 	DWORD m_ncVtx;                   ///< number of constellation line vertices
 	LPDIRECT3DVERTEXBUFFER7 m_cVtx;  ///< vertex buffer for constellation lines
+	std::vector<oapi::GraphicsClient::ConstLabelRenderRec> m_cLabel; ///< list of constellation labels
 	LPDIRECT3DVERTEXBUFFER7 m_grdLngVtx, m_grdLatVtx; ///< vertex buffers for grid lines
 
-	std::vector<oapi::GraphicsClient::ConstLabelRenderRec> m_cLabel; ///< list of label records
-
-	LPDIRECT3DVERTEXBUFFER7 vb_target, vb_cnstlabel;
-
-	oapi::Font *m_cLabelFont;
+	oapi::Font *m_cLabelFont;        ///< font for constellation labels
 };
 
 #endif // !__OGCELSPHERE_H

@@ -81,14 +81,14 @@ const std::vector<oapi::CelestialSphere::StarDataRec> oapi::CelestialSphere::Loa
 
 // --------------------------------------------------------------
 
-const std::vector<oapi::CelestialSphere::StarRenderRec> oapi::CelestialSphere::StarData2RenderData(const std::vector<oapi::CelestialSphere::StarDataRec>& starRec, const StarRenderPrm& prm) const
+const std::vector<oapi::CelestialSphere::StarRenderRec> oapi::CelestialSphere::StarData2RenderData(const std::vector<oapi::CelestialSphere::StarDataRec>& starDataRec, const StarRenderPrm& prm) const
 {
-	std::vector<StarRenderRec> renderRec;
+	std::vector<StarRenderRec> starRenderRec;
 	double a, b, c;
 
 	if (prm.mag_lo <= prm.mag_hi) {
 		LOGOUT_WARN("Inconsistent magnitude limits for background star brightness. Disabling background stars.");
-		return renderRec;
+		return starRenderRec;
 	}
 
 	if (prm.map_log) { // scaling factors for logarithmic brightness mapping
@@ -99,23 +99,23 @@ const std::vector<oapi::CelestialSphere::StarRenderRec> oapi::CelestialSphere::S
 		b = prm.brt_min - prm.mag_lo * a;
 	}
 
-	renderRec.resize(starRec.size());
-	for (size_t i = 0; i < starRec.size(); i++) {
-		const StarDataRec& rec = starRec[i];
+	starRenderRec.resize(starDataRec.size());
+	for (size_t i = 0; i < starDataRec.size(); i++) {
+		const StarDataRec& rec = starDataRec[i];
 
 		// position
 		double rlat = rec.lat, rlng = rec.lng;
 		double xz = cos(rlat);
-		renderRec[i].pos.x = xz * cos(rlng);
-		renderRec[i].pos.z = xz * sin(rlng);
-		renderRec[i].pos.y = sin(rlat);
+		starRenderRec[i].pos.x = xz * cos(rlng);
+		starRenderRec[i].pos.z = xz * sin(rlng);
+		starRenderRec[i].pos.y = sin(rlat);
 
 		// brightness from apparent magnitude
 		if (prm.map_log)
 			c = min(1.0, max(prm.brt_min, ::exp(-(rec.mag - prm.mag_hi) * a)));
 		else
 			c = min(1.0, max(prm.brt_min, a * rec.mag + b));
-		renderRec[i].brightness = c;
+		starRenderRec[i].brightness = c;
 
 		// colour from spectral class index
 		double r_scale = (rec.specidx < 25 ? rec.specidx / 25.0 * (1.0 - 0.75) + 0.75 :
@@ -128,11 +128,11 @@ const std::vector<oapi::CelestialSphere::StarRenderRec> oapi::CelestialSphere::S
 
 		// rescale for overall brightness
 		double rescale = 3.0 / (r_scale + g_scale + b_scale); // rescale to maintain brightness
-		renderRec[i].col.x = min(c * rescale * r_scale, 1.0);
-		renderRec[i].col.y = min(c * rescale * g_scale, 1.0);
-		renderRec[i].col.z = min(c * rescale * b_scale, 1.0);
+		starRenderRec[i].col.x = min(c * rescale * r_scale, 1.0);
+		starRenderRec[i].col.y = min(c * rescale * g_scale, 1.0);
+		starRenderRec[i].col.z = min(c * rescale * b_scale, 1.0);
 	}
-	return renderRec;
+	return starRenderRec;
 }
 
 // --------------------------------------------------------------
@@ -180,23 +180,143 @@ const std::vector<oapi::CelestialSphere::LineDataRec> oapi::CelestialSphere::Loa
 
 // --------------------------------------------------------------
 
-const std::vector<VECTOR3> oapi::CelestialSphere::ConstellationLineData2RenderData(const std::vector<oapi::CelestialSphere::LineDataRec>& clineRec) const
+const std::vector<VECTOR3> oapi::CelestialSphere::ConstellationLineData2RenderData(const std::vector<oapi::CelestialSphere::LineDataRec>& lineDataRec) const
 {
-	std::vector<VECTOR3> renderRec;
-	renderRec.resize(clineRec.size() * 2);
-	for (int i = 0; i < clineRec.size(); i++) {
-		double lng1 = (double)clineRec[i].lng1;
-		double lat1 = (double)clineRec[i].lat1;
-		double lng2 = (double)clineRec[i].lng2;
-		double lat2 = (double)clineRec[i].lat2;
+	std::vector<VECTOR3> lineRenderRec;
+	lineRenderRec.resize(lineDataRec.size() * 2);
+	for (int i = 0; i < lineDataRec.size(); i++) {
+		double lng1 = (double)lineDataRec[i].lng1;
+		double lat1 = (double)lineDataRec[i].lat1;
+		double lng2 = (double)lineDataRec[i].lng2;
+		double lat2 = (double)lineDataRec[i].lat2;
 		double xz = cos(lat1);
-		renderRec[i * 2].x = (float)(xz * cos(lng1));
-		renderRec[i * 2].z = (float)(xz * sin(lng1));
-		renderRec[i * 2].y = (float)sin(lat1);
+		lineRenderRec[i * 2].x = (float)(xz * cos(lng1));
+		lineRenderRec[i * 2].z = (float)(xz * sin(lng1));
+		lineRenderRec[i * 2].y = (float)sin(lat1);
 		xz = cos(lat2);
-		renderRec[i * 2 + 1].x = (float)(xz * cos(lng2));
-		renderRec[i * 2 + 1].z = (float)(xz * sin(lng2));
-		renderRec[i * 2 + 1].y = (float)sin(lat2);
+		lineRenderRec[i * 2 + 1].x = (float)(xz * cos(lng2));
+		lineRenderRec[i * 2 + 1].z = (float)(xz * sin(lng2));
+		lineRenderRec[i * 2 + 1].y = (float)sin(lat2);
+	}
+	return lineRenderRec;
+}
+
+// --------------------------------------------------------------
+
+const std::vector<oapi::GraphicsClient::ConstLabelRec> oapi::CelestialSphere::LoadConstellationLabelData() const
+{
+	std::vector<GraphicsClient::ConstLabelRec> rec;
+
+	FILE* f = fopen("Constell2.bin", "rb");
+	if (f) {
+		double pos[2];
+		char abbr[4] = "xxx";
+		int nfull = 256;
+		char* full = new char[nfull];
+		int labelLen;
+		GraphicsClient::ConstLabelRec r;
+		while (fread(pos, sizeof(double), 2, f) == 2) {
+			r.lngCnt = pos[0];
+			r.latCnt = pos[1];
+			if (fread(abbr, sizeof(char), 3, f) != 3)
+				break;
+			r.abbrLabel = abbr;
+			if (!fread(&labelLen, sizeof(int), 1, f))
+				break;
+			if (labelLen >= nfull) {
+				char* tmp = new char[nfull = labelLen + 1];
+				delete[]full;
+				full = tmp;
+			}
+			if (fread(full, sizeof(char), labelLen, f) != labelLen)
+				break;
+			full[labelLen] = '\0';
+			r.fullLabel = full;
+			rec.push_back(r);
+		}
+		delete[]full;
+		fclose(f);
+	}
+	else {
+		LOGOUT_WARN("Constellation data base for celestial sphere (Constell2.bin) not found. Disabling constellation labels.");
+	}
+	return rec;
+}
+
+// --------------------------------------------------------------
+
+const std::vector<oapi::GraphicsClient::ConstLabelRenderRec> oapi::CelestialSphere::ConstellationLabelData2RenderData(const std::vector<GraphicsClient::ConstLabelRec>& clabelRec) const
+{
+	std::vector<GraphicsClient::ConstLabelRenderRec> renderRec;
+	renderRec.resize(clabelRec.size());
+	for (int i = 0; i < clabelRec.size(); i++) {
+		renderRec[i].abbrLabel = clabelRec[i].abbrLabel;
+		renderRec[i].fullLabel = clabelRec[i].fullLabel;
+		double xz = cos(clabelRec[i].latCnt);
+		renderRec[i].pos.x = xz * cos(clabelRec[i].lngCnt);
+		renderRec[i].pos.z = xz * sin(clabelRec[i].lngCnt);
+		renderRec[i].pos.y = sin(clabelRec[i].latCnt);
 	}
 	return renderRec;
+}
+
+void oapi::CelestialSphere::RenderMarker(oapi::Sketchpad* pSkp, const VECTOR3& rdir, const std::string& label1, const std::string& label2, int mode, int scale)
+{
+	if (!pSkp)
+		return;
+
+	int x, y, len;
+
+	if (EclDir2WindowPos(rdir, x, y)) {
+
+		switch (mode) {
+
+		case 0: // box
+			pSkp->Rectangle(x - scale, y - scale, x + scale + 1, y + scale + 1);
+			break;
+
+		case 1: // circle
+			pSkp->Ellipse(x - scale, y - scale, x + scale + 1, y + scale + 1);
+			break;
+
+		case 2: // diamond
+			pSkp->MoveTo(x, y - scale);
+			pSkp->LineTo(x + scale, y); pSkp->LineTo(x, y + scale);
+			pSkp->LineTo(x - scale, y); pSkp->LineTo(x, y - scale);
+			break;
+
+		case 3: { // nabla
+			int scl1 = (int)(scale * 1.1547);
+			pSkp->MoveTo(x, y - scale);
+			pSkp->LineTo(x + scl1, y + scale); pSkp->LineTo(x - scl1, y + scale); pSkp->LineTo(x, y - scale);
+		} break;
+
+		case 4: { // delta
+			int scl1 = (int)(scale * 1.1547);
+			pSkp->MoveTo(x, y + scale);
+			pSkp->LineTo(x + scl1, y - scale); pSkp->LineTo(x - scl1, y - scale); pSkp->LineTo(x, y + scale);
+		} break;
+
+		case 5: { // crosshair
+			int scl1 = scale / 4;
+			pSkp->MoveTo(x, y - scale); pSkp->LineTo(x, y - scl1);
+			pSkp->MoveTo(x, y + scale); pSkp->LineTo(x, y + scl1);
+			pSkp->MoveTo(x - scale, y); pSkp->LineTo(x - scl1, y);
+			pSkp->MoveTo(x + scale, y); pSkp->LineTo(x + scl1, y);
+		} break;
+
+		case 6: { // rotated crosshair
+			int scl1 = scale / 4;
+			pSkp->MoveTo(x - scale, y - scale); pSkp->LineTo(x - scl1, y - scl1);
+			pSkp->MoveTo(x - scale, y + scale); pSkp->LineTo(x - scl1, y + scl1);
+			pSkp->MoveTo(x + scale, y - scale); pSkp->LineTo(x + scl1, y - scl1);
+			pSkp->MoveTo(x + scale, y + scale); pSkp->LineTo(x + scl1, y + scl1);
+		} break;
+		}
+
+		if (len = label1.size())
+			pSkp->Text(x, y - scale, label1.c_str(), len);
+		if (len = label2.size())
+			pSkp->Text(x, y + scale + 15, label2.c_str(), len);
+	}
 }

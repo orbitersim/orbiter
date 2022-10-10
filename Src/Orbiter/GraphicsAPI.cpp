@@ -728,65 +728,6 @@ INT_PTR GraphicsClient::LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wPar
 // ==================================================================
 // Functions for the celestial sphere
 
-const std::vector<GraphicsClient::ConstLabelRec> GraphicsClient::LoadConstellationLabelData() const
-{
-	std::vector<GraphicsClient::ConstLabelRec> rec;
-
-	FILE* f = fopen("Constell2.bin", "rb");
-	if (f) {
-		double pos[2];
-		char abbr[4] = "xxx";
-		int nfull = 256;
-		char* full = new char[nfull];
-		int labelLen;
-		GraphicsClient::ConstLabelRec r;
-		while (fread(pos, sizeof(double), 2, f) == 2) {
-			r.lngCnt = pos[0];
-			r.latCnt = pos[1];
-			if (fread(abbr, sizeof(char), 3, f) != 3)
-				break;
-			r.abbrLabel = abbr;
-			if (!fread(&labelLen, sizeof(int), 1, f))
-				break;
-			if (labelLen >= nfull) {
-				char* tmp = new char[nfull = labelLen + 1];
-				delete[]full;
-				full = tmp;
-			}
-			if (fread(full, sizeof(char), labelLen, f) != labelLen)
-				break;
-			full[labelLen] = '\0';
-			r.fullLabel = full;
-			rec.push_back(r);
-		}
-		delete[]full;
-		fclose(f);
-	}
-	else {
-		LOGOUT_WARN("Constellation data base for celestial sphere (Constell2.bin) not found. Disabling constellation labels.");
-	}
-	return rec;
-}
-
-// ==================================================================
-
-const std::vector<GraphicsClient::ConstLabelRenderRec> GraphicsClient::ConstellationLabelData2RenderData(const std::vector<GraphicsClient::ConstLabelRec>& clabelRec) const
-{
-	std::vector<GraphicsClient::ConstLabelRenderRec> renderRec;
-	renderRec.resize(clabelRec.size());
-	for (int i = 0; i < clabelRec.size(); i++) {
-		renderRec[i].abbrLabel = clabelRec[i].abbrLabel;
-		renderRec[i].fullLabel = clabelRec[i].fullLabel;
-		double xz = cos(clabelRec[i].latCnt);
-		renderRec[i].pos.x = xz * cos(clabelRec[i].lngCnt);
-		renderRec[i].pos.z = xz * sin(clabelRec[i].lngCnt);
-		renderRec[i].pos.y = sin(clabelRec[i].latCnt);
-	}
-	return renderRec;
-}
-
-// ==================================================================
-
 DWORD GraphicsClient::GetCelestialMarkers (const LABELLIST **cm_list) const
 {
 	int nlist;

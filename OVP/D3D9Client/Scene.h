@@ -371,17 +371,6 @@ public:
 protected:
 
 	/**
-	 * \brief Render a single marker for a given direction
-	 * \param hDC device context
-	 * \param rdir normalised direction from camera in global (ecliptic) frame
-	 * \param label1 label above marker
-	 * \param label2 label below marker
-	 * \param mode marker shape
-	 * \param scale marker size
-	 */
-	void RenderDirectionMarker(oapi::Sketchpad *pSkp, const VECTOR3 &rdir, const std::string& label1, const std::string& label2, int mode, int scale);
-
-	/**
 	 * \brief Render a single marker at a given global position
 	 * \param hDC device context
 	 * \param gpos global position (ecliptic frame)

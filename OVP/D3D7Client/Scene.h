@@ -98,29 +98,18 @@ protected:
 	 * \param mode marker mode
 	 * \return Drawing device context
 	 */
-	HDC GetLabelDC (int mode);
-
-	/**
-	 * \brief Render a single marker for a given direction
-	 * \param hDC device context
-	 * \param rdir normalised direction from camera in global (ecliptic) frame
-	 * \param label1 label above marker
-	 * \param label2 label below marker
-	 * \param mode marker shape
-	 * \param scale marker size
-	 */
-	void RenderDirectionMarker (HDC hDC, const VECTOR3 &rdir, const std::string& label1, const std::string& label2, int mode, int scale);
+	oapi::Sketchpad* GetLabelSkp (int mode);
 
 	/**
 	 * \brief Render a single marker at a given global position
-	 * \param hDC device context
+	 * \param pSkp Sketchpad drawing context
 	 * \param gpos global position (ecliptic frame)
 	 * \param label1 label above marker
 	 * \param label2 label below marker
 	 * \param mode marker shape
 	 * \param scale marker size
 	 */
-	void RenderObjectMarker (HDC hDC, const VECTOR3 &gpos, const std::string& label1, const std::string& label2, int mode, int scale);
+	void RenderObjectMarker (oapi::Sketchpad* pSkp, const VECTOR3 &gpos, const std::string& label1, const std::string& label2, int mode, int scale);
 
 	void AddLocalLight (const LightEmitter *le, const vObject *vo, DWORD idx);
 
@@ -168,12 +157,11 @@ private:
 	// Sky background colour based on atmospheric parameters of closest planet
 
 	// GDI resources
-	static COLORREF labelCol[6];
-	HPEN hLabelPen[6];
-	HFONT hLabelFont[1];
+	static COLORREF labelCol[7];
+	oapi::Pen* labelPen[7];
+	oapi::Font* labelFont[4];
+	oapi::Font* markerFont;
 	int labelSize[1];
-	oapi::Font *label_font[4];
-	oapi::Pen *label_pen;
 
 	void InitGDIResources();
 	void ExitGDIResources();

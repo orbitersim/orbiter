@@ -105,7 +105,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	SetCameraAperture(float(RAD*50.0), float(viewH)/float(viewW));
 	SetCameraFrustumLimits(2.5f, 5e6f); // initial limits
 
-	csphere = new D3D9CelestialSphere(gc);
+	csphere = new D3D9CelestialSphere(gc, this);
 	Lights = new D3D9Light[MAX_SCENE_LIGHTS];
 
 	bLocalLight = *(bool*)gc->GetConfigParam(CFGPRM_LOCALLIGHT);
@@ -1300,32 +1300,22 @@ void Scene::RenderMainScene()
 
 
 	// -------------------------------------------------------------------------------------------------------
-	// Sketchpad for planetarium mode labels and markers
+	// render star markers
 	// -------------------------------------------------------------------------------------------------------
 
-	D3D9Pad *pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
+	if (plnmode & PLN_ENABLE) {
 
-	if (pSketch) {
+		// Sketchpad for planetarium mode labels and markers
+		D3D9Pad* pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
 
-		pSketch->SetFont(pLabelFont);
-		pSketch->SetTextAlign(Sketchpad::CENTER, Sketchpad::BOTTOM);
+		if (pSketch) {
 
-		// -------------------------------------------------------------------------------------------------------
-		// render star markers
-		// -------------------------------------------------------------------------------------------------------
-
-		if (plnmode & PLN_ENABLE) {
+			pSketch->SetFont(pLabelFont);
+			pSketch->SetTextAlign(Sketchpad::CENTER, Sketchpad::BOTTOM);
 
 			// constellation labels --------------------------------------------------
 			if (plnmode & PLN_CNSTLABEL) {
-				pSketch->SetTextColor(labelCol[5]);
-				pSketch->SetPen(lblPen[5]);
-
-				const std::vector<oapi::GraphicsClient::ConstLabelRenderRec>& data = csphere->GetConstellationLabels();
-				for (auto it = data.begin(); it != data.end(); it++) {
-					const std::string& label = (plnmode & PLN_CNSTLONG ? (*it).fullLabel : (*it).abbrLabel);
-					RenderDirectionMarker(pSketch, (*it).pos, std::string(), label, -1, 0);
-				}
+				csphere->RenderConstellationLabels(pSketch, plnmode & PLN_CNSTLONG);
 			}
 			// celestial marker (stars) names ----------------------------------------
 			if (plnmode & PLN_CCMARK) {
@@ -1342,13 +1332,12 @@ void Scene::RenderMainScene()
 
 						const std::vector<oapi::GraphicsClient::LABELSPEC>& ls = list[n].marker;
 						for (int i = 0; i < ls.size(); i++)
-							RenderDirectionMarker(pSketch, ls[i].pos, ls[i].label[0], ls[i].label[1], list[n].shape, size);
+							csphere->RenderMarker(pSketch, ls[i].pos, ls[i].label[0], ls[i].label[1], list[n].shape, size);
 					}
 				}
 			}
+			pSketch->EndDrawing(); //SKETCHPAD_LABELS
 		}
-
-		pSketch->EndDrawing(); //SKETCHPAD_LABELS
 	}
 
 	SetCameraFrustumLimits(npl, fpl);
@@ -1603,7 +1592,7 @@ void Scene::RenderMainScene()
 
 	if ((plnmode & PLN_ENABLE) && (plnmode & PLN_LMARK))
 	{
-		pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
+		D3D9Pad* pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
 		pSketch->SetPen(label_pen);
 
 		int fontidx = -1;
@@ -1646,7 +1635,7 @@ void Scene::RenderMainScene()
 	D3D9Effect::UpdateEffectCamera(Camera.hObj_proxy);
 
 
-	pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
+	D3D9Pad* pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
 	pSketch->SetTextColor(labelCol[0]);
 	pSketch->SetPen(lblPen[0]);
 
@@ -2828,88 +2817,13 @@ bool Scene::WorldToScreenSpace(const VECTOR3 &wpos, oapi::IVECTOR2 *pt, D3DXMATR
 	return !bClip;
 }
 
-
-// ===========================================================================================
-//
-void Scene::RenderDirectionMarker(oapi::Sketchpad *pSkp, const VECTOR3 &rdir, const std::string& label1, const std::string& label2, int mode, int scale)
-{
-	int x, y, len;
-	D3DXVECTOR3 homog;
-	D3DXVECTOR3 dir((float)-rdir.x, (float)-rdir.y, (float)-rdir.z);
-
-	if (D3DXVec3Dot(&dir, &Camera.z)>0) return;
-
-	D3DXVec3TransformCoord(&homog, &dir, GetProjectionViewMatrix());
-
-	if (homog.x >= -1.0f && homog.x <= 1.0f &&
-		homog.y >= -1.0f && homog.y <= 1.0f) {
-
-		if (_hypot (homog.x, homog.y) < 1e-6) {
-			x = viewW/2;
-			y = viewH/2;
-		}
-		else {
-			x = (int)(viewW*0.5*(1.0f+homog.x));
-			y = (int)(viewH*0.5*(1.0f-homog.y));
-		}
-
-		switch (mode) {
-
-			case 0: // box
-				pSkp->Rectangle(x-scale, y-scale, x+scale+1, y+scale+1);
-				break;
-
-			case 1: // circle
-				pSkp->Ellipse(x-scale, y-scale, x+scale+1, y+scale+1);
-				break;
-
-			case 2: // diamond
-				pSkp->MoveTo(x, y-scale);
-				pSkp->LineTo(x+scale, y); pSkp->LineTo(x, y+scale);
-				pSkp->LineTo(x-scale, y); pSkp->LineTo(x, y-scale);
-				break;
-
-			case 3: { // delta
-				int scl1 = (int)(scale*1.1547);
-				pSkp->MoveTo(x, y-scale);
-				pSkp->LineTo(x+scl1, y+scale); pSkp->LineTo(x-scl1, y+scale); pSkp->LineTo(x, y-scale);
-			} break;
-
-			case 4: { // nabla
-				int scl1 = (int)(scale*1.1547);
-				pSkp->MoveTo(x, y+scale);
-				pSkp->LineTo(x+scl1, y-scale); pSkp->LineTo(x-scl1, y-scale); pSkp->LineTo(x, y+scale);
-			} break;
-
-			case 5: { // cross
-				int scl1 = scale/4;
-				pSkp->MoveTo(x, y-scale); pSkp->LineTo(x, y-scl1);
-				pSkp->MoveTo(x, y+scale); pSkp->LineTo(x, y+scl1);
-				pSkp->MoveTo(x-scale, y); pSkp->LineTo(x-scl1, y);
-				pSkp->MoveTo(x+scale, y); pSkp->LineTo(x+scl1, y);
-			} break;
-
-			case 6: { // X
-				int scl1 = scale/4;
-				pSkp->MoveTo(x-scale, y-scale); pSkp->LineTo(x-scl1, y-scl1);
-				pSkp->MoveTo(x-scale, y+scale); pSkp->LineTo(x-scl1, y+scl1);
-				pSkp->MoveTo(x+scale, y-scale); pSkp->LineTo(x+scl1, y-scl1);
-				pSkp->MoveTo(x+scale, y+scale); pSkp->LineTo(x+scl1, y+scl1);
-			} break;
-		}
-
-		if (len = label1.size()) pSkp->Text(x, y-scale, label1.c_str(), len);
-		if (len = label2.size()) pSkp->Text(x, y+scale+labelSize[0], label2.c_str(), len);
-	}
-}
-
 // ===========================================================================================
 //
 void Scene::RenderObjectMarker(oapi::Sketchpad *pSkp, const VECTOR3 &gpos, const std::string& label1, const std::string& label2, int mode, int scale)
 {
 	VECTOR3 dp (gpos - GetCameraGPos());
 	normalise (dp);
-	RenderDirectionMarker(pSkp, dp, label1, label2, mode, scale);
+	csphere->RenderMarker(pSkp, dp, label1, label2, mode, scale);
 }
 
 // ===========================================================================================

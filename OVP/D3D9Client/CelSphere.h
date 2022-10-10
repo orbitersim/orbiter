@@ -31,7 +31,7 @@ public:
 	 * \brief Create a new celestial sphere object.
 	 * \param gc pointer to graphics client
 	 */
-	explicit D3D9CelestialSphere(oapi::D3D9Client *gc);
+	explicit D3D9CelestialSphere(oapi::D3D9Client *gc, Scene* scene);
 
 	/**
 	 * \brief Destructor
@@ -63,6 +63,8 @@ public:
 	 */
 	void RenderConstellationLines(ID3DXEffect *fx);
 
+	void RenderConstellationLabels(D3D9Pad* pSketch, bool fullName);
+
 	/**
 	 * \brief Render a great circle on the celestial sphere in a given colour.
 	 * \param fx  render effect
@@ -85,7 +87,7 @@ public:
 	 *   with RenderGreatCircle().
 	 */
 	void RenderGrid(ID3DXEffect *fx, bool eqline = true);
-	
+
 protected:
 	/**
 	 * \brief Prepare the star vertex list from the star database.
@@ -108,8 +110,19 @@ protected:
 	 */
 	void AllocGrids ();
 
+	/**
+	 * \brief Convert a direction into viewport coordinates
+	 * \param dir direction in the ecliptic frame provided as a point on the
+	 *    celestial sphere.
+	 * \param x x-position in the viewport window [pixel]
+	 * \param y y-position in the viewport window [pixel]
+	 * \return true if point is visible in the viewport, false otherwise.
+	 */
+	virtual bool EclDir2WindowPos(const VECTOR3& dir, int& x, int& y) const;
+
 private:
 	oapi::D3D9Client *m_gc;  ///< pointer to graphics client
+	Scene* m_scene;          ///< pointer to scene object
 	LPDIRECT3DDEVICE9 m_pDevice; ///< DirectX9 device
 	UINT maxNumVertices;     ///< number of vertices to use for one chunk at star-drawing
 	DWORD m_nsVtx;           ///< total number of vertices over all buffers

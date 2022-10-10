@@ -14,7 +14,9 @@
 // ==============================================================
 
 #include "CelSphere.h"
+#include "Scene.h"
 #include "D3D9Config.h"
+#include "D3D9Pad.h"
 #include "AABBUtil.h"
 
 
@@ -24,9 +26,10 @@ using namespace oapi;
 
 // ==============================================================
 
-D3D9CelestialSphere::D3D9CelestialSphere(D3D9Client *gc)
+D3D9CelestialSphere::D3D9CelestialSphere(D3D9Client *gc, Scene *scene)
 	: oapi::CelestialSphere(gc)
 	, m_gc(gc)
+	, m_scene(scene)
 	, m_pDevice(gc->GetDevice())
 	, maxNumVertices(gc->GetHardwareCaps()->MaxPrimitiveCount)
 {
@@ -113,7 +116,7 @@ void D3D9CelestialSphere::InitConstellationLines()
 void D3D9CelestialSphere::LoadConstellationLabels()
 {
 	// Read constellation label database
-	m_cLabel = m_gc->ConstellationLabelData2RenderData(m_gc->LoadConstellationLabelData());
+	m_cLabel = ConstellationLabelData2RenderData(LoadConstellationLabelData());
 }
 
 // ==============================================================
@@ -201,6 +204,19 @@ void D3D9CelestialSphere::RenderConstellationLines(ID3DXEffect *FX)
 
 // ==============================================================
 
+void D3D9CelestialSphere::RenderConstellationLabels(D3D9Pad* pSketch, bool fullName)
+{
+	pSketch->SetTextColor(0xFF8080);
+
+	//const std::vector<oapi::GraphicsClient::ConstLabelRenderRec>& data = GetConstellationLabels();
+	for (auto it = m_cLabel.begin(); it != m_cLabel.end(); it++) {
+		const std::string& label = (fullName ? (*it).fullLabel : (*it).abbrLabel);
+		RenderMarker(pSketch, (*it).pos, std::string(), label, -1, 0);
+	}
+}
+
+// ==============================================================
+
 void D3D9CelestialSphere::RenderGreatCircle(ID3DXEffect *FX)
 {
 	_TRACE;
@@ -234,4 +250,32 @@ void D3D9CelestialSphere::RenderGrid(ID3DXEffect *FX, bool eqline)
 		HR(m_pDevice->DrawPrimitive(D3DPT_LINESTRIP, i * (NSEG+1), NSEG));
 	HR(FX->EndPass());
 	HR(FX->End());	
+}
+
+// ==============================================================
+
+bool D3D9CelestialSphere::EclDir2WindowPos(const VECTOR3& dir, int& x, int& y) const
+{
+	D3DXVECTOR3 homog;
+	D3DXVECTOR3 fdir((float)dir.x, (float)dir.y, (float)dir.z);
+
+	D3DXVec3TransformCoord(&homog, &fdir, m_scene->GetProjectionViewMatrix());
+
+	if (homog.x >= -1.0f && homog.x <= 1.0f &&
+		homog.y >= -1.0f && homog.y <= 1.0f &&
+		homog.z < 1.0f) {
+
+		if (_hypot(homog.x, homog.y) < 1e-6) {
+			x = m_scene->ViewW() / 2;
+			y = m_scene->ViewH() / 2;
+		}
+		else {
+			x = (int)(m_scene->ViewW() * 0.5 * (1.0 + homog.x));
+			y = (int)(m_scene->ViewH() * 0.5 * (1.0 - homog.y));
+		}
+		return true;
+	}
+	else {
+		return false;
+	}
 }

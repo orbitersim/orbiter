@@ -287,6 +287,12 @@ public:
 	/// Returns a pointer to the scene object
 	inline       Scene*               GetScene() const        { return scene; }
 
+	/// Returns the width of the render viewport [pixel]
+	inline DWORD GetViewW() const { return viewW; }
+
+	/// Returns the height of the render viewport [pixel]
+	inline DWORD GetViewH() const { return viewH; }
+
 	/// Returns a pointer to the texture manager
 	inline       TextureManager*      GetTexMgr() const       { return texmgr; }
 

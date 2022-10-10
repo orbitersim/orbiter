@@ -71,6 +71,19 @@ namespace oapi {
 			double lat2;  ///< latitude of endpoint 2
 		};
 
+		/**
+		 * \brief Render a marker for a given direction on the celestial sphere.
+		 * \param pSkp Sketchpad context
+		 * \param rdir normalised direction from camera in global (ecliptic) frame
+		 * \param label1 label above marker
+		 * \param label2 label below marker
+		 * \param mode marker shape
+		 * \param scale marker size
+		 * \note The required sketchpad settings (font, pen, font and line colours)
+		 ^     must have been applied to the Sketchpad context before the call.
+		 */
+		virtual void RenderMarker(oapi::Sketchpad* pSkp, const VECTOR3& rdir, const std::string& label1, const std::string& label2, int mode, int scale);
+
 	protected:
 		/**
 		 * \brief Load star data from the database file and pre-process them
@@ -94,6 +107,16 @@ namespace oapi {
 		 */
 		const std::vector<VECTOR3> LoadConstellationLines() const;
 
+		/**
+		 * \brief Convert a direction into viewport coordinates
+		 * \param dir direction in the ecliptic frame provided as a point on the
+		 *    celestial sphere.
+		 * \param x x-position in the viewport window [pixel]
+		 * \param y y-position in the viewport window [pixel]
+		 * \return true if point is visible in the viewport, false otherwise.
+		 */
+		virtual bool EclDir2WindowPos(const VECTOR3& dir, int& x, int& y) const = 0;
+
 		GraphicsClient* m_gc;
 
 	private:
@@ -111,20 +134,20 @@ namespace oapi {
 		const std::vector<StarDataRec> LoadStarData(double maxAppMag) const;
 
 		/**
-		 * \brief Map the star data to a list that can be used for rendering.
+		 * \brief Map star data to a list that can be used for rendering.
 		 *
 		 * This function maps the star data read by \ref LoadStarData into a form
 		 * that makes it easier to build a vertex list for rendering onto the celestial
 		 * sphere. The ecliptic coordinates (longitude, latitude) are converted to
-		 * Cartesian coordinates (x,y,z) assuming radius 1 for the celestial sphere.
+		 * Cartesian coordinates (x,y,z) on the unit sphere (radius 1).
 		 * The apparent magnitude is mapped into a brightness value (0-1), using the user
 		 * settings for star brightness. In addition, the spectral class information
 		 * is mapped into red, green and blue components (0-1).
-		 * \param starRec star data list as provided by \ref LoadStarData
+		 * \param starDataRec star data list as provided by \ref LoadStarData
 		 * \param prm user choice for star render parameters
 		 * \return List of transformed star data
 		 */
-		const std::vector<StarRenderRec> StarData2RenderData(const std::vector<StarDataRec>& starRec, const StarRenderPrm& prm) const;
+		const std::vector<StarRenderRec> StarData2RenderData(const std::vector<StarDataRec>& starDataRec, const StarRenderPrm& prm) const;
 
 		/**
 		 * \brief Load constellation line data from Orbiter's data base file.
@@ -132,7 +155,24 @@ namespace oapi {
 		 */
 		const std::vector<LineDataRec> LoadConstellationLineData() const;
 
-		const std::vector<VECTOR3> ConstellationLineData2RenderData(const std::vector<LineDataRec>& clineRec) const;
+		/**
+		 * \brief Map constellation line data to a list that can be used for rendering.
+		 * 
+		 * This function maps the star data read by \ref LoadConstellationLineData into
+		 * a form that makes it easier to build a vertex list for rendering onto the
+		 * celestial sphere. The ecliptic coordinates (longitude, latitude) of the line
+		 * segment end points are converted to Cartesian coordinates (x,y,z) on the unit
+		 * sphere (radius 1) and stored in a VECTOR3 array.
+		 * \param lineDataRec constellation line data list as provided by
+		 *    \ref LoadConstellationLineData.
+		 * \return List of constellation line end points
+		 */
+		const std::vector<VECTOR3> ConstellationLineData2RenderData(const std::vector<LineDataRec>& lineDataRec) const;
+
+	protected:
+		const std::vector<GraphicsClient::ConstLabelRec> LoadConstellationLabelData() const;
+
+		const std::vector<GraphicsClient::ConstLabelRenderRec> ConstellationLabelData2RenderData(const std::vector<GraphicsClient::ConstLabelRec>& clabelRec) const;
 	};
 
 }

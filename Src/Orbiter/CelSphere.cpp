@@ -2,30 +2,30 @@
 // Licensed under the MIT License
 
 #include "CelSphere.h"
+#include "Scene.h"
+#include "Camera.h"
 #include "Vecmat.h"
+#include "D3dmath.h"
 #include "Log.h"
 
-struct VB_XYZ { float x, y, z; };
 #define NSEG 64
 
 // ==============================================================
 
-OGCelestialSphere::OGCelestialSphere(OrbiterGraphics* og)
-	: oapi::CelestialSphere(og)
-	, m_gc(og)
+OGCelestialSphere::OGCelestialSphere(OrbiterGraphics* gc, Scene* scene)
+	: oapi::CelestialSphere(gc)
+	, m_gc(gc)
+	, m_scene(scene)
 {
-	vb_target = nullptr;
-	vb_cnstlabel = nullptr;
-
 	InitStars();
 	InitConstellationLines();
 	LoadConstellationLabels();
 	AllocGrids();
 
-	m_viewW = m_gc->GetViewW();
-	m_viewH = m_gc->GetViewH();
+	m_viewW = gc->GetViewW();
+	m_viewH = gc->GetViewH();
 	DWORD fontScale = max(m_viewH / 60, 14);
-	m_cLabelFont = m_gc->clbkCreateFont(fontScale, true, "Arial", FONT_ITALIC);
+	m_cLabelFont = gc->clbkCreateFont(fontScale, true, "Arial", FONT_ITALIC);
 }
 
 // ==============================================================
@@ -37,11 +37,6 @@ OGCelestialSphere::~OGCelestialSphere()
 	m_cVtx->Release();
 	m_grdLngVtx->Release();
 	m_grdLatVtx->Release();
-
-	if (vb_target)
-		vb_target->Release();
-	if (vb_cnstlabel)
-		vb_cnstlabel->Release();
 
 	m_gc->clbkReleaseFont(m_cLabelFont);
 }
@@ -130,24 +125,7 @@ void OGCelestialSphere::InitConstellationLines()
 void OGCelestialSphere::LoadConstellationLabels()
 {
 	// Read constellation label database
-	m_cLabel = m_gc->ConstellationLabelData2RenderData(m_gc->LoadConstellationLabelData());
-	if (!m_cLabel.size()) return;
-
-	D3DVERTEXBUFFERDESC vbdesc;
-	vbdesc.dwSize = sizeof(D3DVERTEXBUFFERDESC);
-	vbdesc.dwCaps = D3DVBCAPS_SYSTEMMEMORY; // 0;
-	vbdesc.dwFVF = D3DFVF_XYZ;
-	vbdesc.dwNumVertices = m_cLabel.size() + 1;
-	VB_XYZ* vbpos;
-	m_gc->GetDirect3D7()->CreateVertexBuffer(&vbdesc, &vb_cnstlabel, 0);
-	m_gc->GetDirect3D7()->CreateVertexBuffer(&vbdesc, &vb_target, 0);
-	vb_cnstlabel->Lock(DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbpos, NULL);
-	for (int i = 0; i < m_cLabel.size(); i++) {
-		vbpos[i].x = (float)m_cLabel[i].pos.x;
-		vbpos[i].y = (float)m_cLabel[i].pos.y;
-		vbpos[i].z = (float)m_cLabel[i].pos.z;
-	}
-	vb_cnstlabel->Unlock();
+	m_cLabel = ConstellationLabelData2RenderData(LoadConstellationLabelData());
 }
 
 // ==============================================================
@@ -229,24 +207,21 @@ void OGCelestialSphere::RenderConstellationLines(LPDIRECT3DDEVICE7 dev, const Ve
 
 // ==============================================================
 
-void OGCelestialSphere::RenderConstellationLabels(LPDIRECT3DDEVICE7 dev, bool full)
+void OGCelestialSphere::RenderConstellationLabels(bool fullName)
 {
-	if (vb_target->ProcessVertices(D3DVOP_TRANSFORM, 0, m_cLabel.size(), vb_cnstlabel, 0, dev, 0) == D3D_OK) {
-		oapi::Sketchpad* skp = m_gc->clbkGetSketchpad(0);
-		skp->SetFont(m_cLabelFont);
-		skp->SetTextAlign(oapi::Sketchpad::CENTER, oapi::Sketchpad::BOTTOM);
-		skp->SetTextColor(0xA0A0A0);
-		skp->SetBackgroundMode(oapi::Sketchpad::BK_TRANSPARENT);
-		VB_XYZ* vbpos;
-		vb_target->Lock(DDLOCK_WAIT | DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR, (LPVOID*)&vbpos, NULL);
-		for (int n = 0; n < m_cLabel.size(); n++) {
-			if (vbpos[n].z < 1.0f && vbpos[n].x >= 0 && vbpos[n].y >= 0 && vbpos[n].x < m_viewW && vbpos[n].y < m_viewH) {
-				skp->Text((DWORD)vbpos[n].x, (DWORD)vbpos[n].y, full ? m_cLabel[n].fullLabel.c_str() : m_cLabel[n].abbrLabel.c_str(), full ? m_cLabel[n].fullLabel.size() : 3);
-			}
-		}
-		vb_target->Unlock();
-		m_gc->clbkReleaseSketchpad(skp);
+	oapi::Sketchpad* pSkp = m_gc->clbkGetSketchpad(0);
+	pSkp->SetFont(m_cLabelFont);
+	pSkp->SetTextAlign(oapi::Sketchpad::CENTER, oapi::Sketchpad::BOTTOM);
+	pSkp->SetTextColor(0xA0A0A0);
+	pSkp->SetBackgroundMode(oapi::Sketchpad::BK_TRANSPARENT);
+
+	//const std::vector<oapi::GraphicsClient::ConstLabelRenderRec>& data = GetConstellationLabels();
+	for (auto it = m_cLabel.begin(); it != m_cLabel.end(); it++) {
+		const std::string& label = (fullName ? (*it).fullLabel : (*it).abbrLabel);
+		RenderMarker(pSkp, (*it).pos, std::string(), label, -1, 0);
 	}
+
+	m_gc->clbkReleaseSketchpad(pSkp);
 }
 
 // ==============================================================
@@ -267,4 +242,32 @@ void OGCelestialSphere::RenderGrid(LPDIRECT3DDEVICE7 dev, Vector& col, bool eqli
 		dev->DrawPrimitiveVB(D3DPT_LINESTRIP, m_grdLngVtx, i * (NSEG + 1), NSEG + 1, 0);
 	for (i = 0; i < 12; i++)
 		dev->DrawPrimitiveVB(D3DPT_LINESTRIP, m_grdLatVtx, i * (NSEG + 1), NSEG + 1, 0);
+}
+
+// ==============================================================
+
+bool OGCelestialSphere::EclDir2WindowPos(const VECTOR3& dir, int& x, int& y) const
+{
+	extern Camera* g_camera;
+	D3DVECTOR homog;
+	D3DVECTOR fdir = { (float)dir.x, (float)dir.y, (float)dir.z };
+
+	D3DMath_VectorMatrixMultiply(homog, fdir, *g_camera->D3D_ProjViewMatrix());
+	if (homog.x >= -1.0f && homog.x <= 1.0f &&
+		homog.y >= -1.0f && homog.y <= 1.0f &&
+		homog.z < 1.0f) {
+
+		if (hypot(homog.x, homog.y) < 1e-6) {
+			x = m_viewW / 2;
+			y = m_viewH / 2;
+		}
+		else {
+			x = (int)(m_viewW * 0.5 * (1.0 + homog.x));
+			y = (int)(m_viewH * 0.5 * (1.0 - homog.y));
+		}
+		return true;
+	}
+	else {
+		return false;
+	}
 }

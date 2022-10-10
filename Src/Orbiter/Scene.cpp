@@ -100,7 +100,7 @@ Scene::Scene (OrbiterGraphics *og)
 	nobj = nsun = cobj = nbuf = 0;
 	nstarlight  = 0;
 	nstream     = 0;
-	m_celSphere = new OGCelestialSphere(gc);
+	m_celSphere = new OGCelestialSphere(gc, this);
 	gcanvas = 0;
 	csphere = 0;
 	csphere2 = 0;
@@ -965,7 +965,7 @@ void Scene::Render (D3DRECT* vp_rect)
 			m_celSphere->RenderConstellationLines(dev, Vector(0.4, 0.3, 0.2) * colScale);
 		}
 		if (flagPItem & PLN_CNSTLABEL) {      // render constellation labels
-			m_celSphere->RenderConstellationLabels(dev, (flagPItem& PLN_CNSTLONG) == PLN_CNSTLONG);
+			m_celSphere->RenderConstellationLabels((flagPItem & PLN_CNSTLONG) == PLN_CNSTLONG);
 		}
 
 		if (flagPItem & PLN_CCMARK) { // celestial markers
