@@ -154,8 +154,6 @@ private:
 
 	void InitGDIResources();
 	void ExitGDIResources();
-
-	CSphereManager *cspheremgr;
 };
 
 #endif // !__SCENE_H

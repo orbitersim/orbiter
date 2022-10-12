@@ -21,6 +21,8 @@
 #include "D3D7Client.h"
 #include "D3D7Util.h"
 
+class CSphereManager;
+
 /**
  * \brief Rendering methods for the background celestial sphere.
  *
@@ -78,6 +80,13 @@ public:
 	 */
 	void RenderGrid (LPDIRECT3DDEVICE7 dev, VECTOR3 &col, bool eqline = true);
 
+	/**
+	 * \brief Render a background image on the celestial sphere.
+	 * \param dev render device
+	 * \param bglvl atmospheric background brightness
+	 */
+	void RenderBkgImage(LPDIRECT3DDEVICE7 dev, int bglvl);
+
 protected:
 	/**
 	 * \brief Prepare the star vertex list from the star database.
@@ -107,6 +116,7 @@ protected:
 
 private:
 	oapi::D3D7Client *m_gc;          ///< pointer to graphics client
+	CSphereManager* cspheremgr;      ///< background image manager
 	Scene* m_scene;                  ///< pointer to scene object
 	DWORD m_viewW;                   ///< render viewport width [pixel]
 	DWORD m_viewH;                   ///< render viewport height [pixel]

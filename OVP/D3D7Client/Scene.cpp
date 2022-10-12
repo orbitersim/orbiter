@@ -24,7 +24,7 @@
 #include "VVessel.h"
 #include "VBase.h"
 #include "Particle.h"
-#include "CSphereMgr.h"
+//#include "CSphereMgr.h"
 
 using namespace oapi;
 
@@ -65,7 +65,6 @@ Scene::Scene (D3D7Client *_gc, DWORD w, DWORD h)
 		lightlist = new LIGHTLIST[maxlight];
 	memset (&bg_rgba, 0, sizeof (D3DCOLOR));
 	InitGDIResources();
-	cspheremgr = new CSphereManager (_gc, this);
 }
 
 Scene::~Scene ()
@@ -74,7 +73,6 @@ Scene::~Scene ()
 	delete cam;
 	delete m_celSphere;
 	delete light;
-	delete cspheremgr;
 	if (nstream) {
 		for (DWORD j = 0; j < nstream; j++)
 			delete pstream[j];
@@ -387,7 +385,7 @@ void Scene::Render ()
 	cam->SetFrustumLimits(0.1, 1e10);
 
 	// celestial sphere background
-	cspheremgr->Render(dev, 8, bglvl);
+	m_celSphere->RenderBkgImage(dev, bglvl);
 
 	dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
 	dev->SetTexture(0, 0);

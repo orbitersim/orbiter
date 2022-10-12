@@ -15,6 +15,7 @@
 // ==============================================================
 
 #include "CelSphere.h"
+#include "CSphereMgr.h"
 #include "Scene.h"
 #include "Camera.h"
 
@@ -32,6 +33,7 @@ D3D7CelestialSphere::D3D7CelestialSphere (D3D7Client* gc, Scene* scene)
 	InitStars();
 	InitConstellationLines();
 	AllocGrids();
+	cspheremgr = new CSphereManager(gc, scene);
 
 	m_viewW = gc->GetViewW();
 	m_viewH = gc->GetViewH();
@@ -46,6 +48,7 @@ D3D7CelestialSphere::~D3D7CelestialSphere ()
 	m_cVtx->Release();
 	m_grdLngVtx->Release();
 	m_grdLatVtx->Release();
+	delete cspheremgr;
 }
 
 // ==============================================================
@@ -220,6 +223,13 @@ void D3D7CelestialSphere::RenderGrid (LPDIRECT3DDEVICE7 dev, VECTOR3 &col, bool 
 		dev->DrawPrimitiveVB (D3DPT_LINESTRIP, m_grdLngVtx, i*(NSEG+1), NSEG+1, 0);
 	for (i = 0; i < 12; i++)
 		dev->DrawPrimitiveVB (D3DPT_LINESTRIP, m_grdLatVtx, i*(NSEG+1), NSEG+1, 0);
+}
+
+// ==============================================================
+
+void D3D7CelestialSphere::RenderBkgImage(LPDIRECT3DDEVICE7 dev, int bglvl)
+{
+	cspheremgr->Render(dev, 8, bglvl);
 }
 
 // ==============================================================

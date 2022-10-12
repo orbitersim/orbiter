@@ -67,6 +67,8 @@ public:
 
 	/**
 	 * \brief Render a background image on the celestial sphere.
+	 * \param dev render device
+	 * \param bglvl atmospheric background brightness
 	 */
 	void RenderBkgImage(LPDIRECT3DDEVICE7 dev, int bglvl);
 
