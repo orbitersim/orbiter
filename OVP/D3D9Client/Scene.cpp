@@ -1319,11 +1319,10 @@ void Scene::RenderMainScene()
 			}
 			// celestial marker (stars) names ----------------------------------------
 			if (plnmode & PLN_CCMARK) {
-				const GraphicsClient::LABELLIST *list;
-				DWORD n, nlist;
-				nlist = gc->GetCelestialMarkers(&list);
+				DWORD n;
+				const std::vector<GraphicsClient::LABELLIST>& list = gc->GetCelestialMarkers();
 
-				for (n = 0; n < nlist; n++) {
+				for (n = 0; n < list.size(); n++) {
 					if (list[n].active) {
 						int size = (int)(viewH / 80.0*list[n].size + 0.5);
 

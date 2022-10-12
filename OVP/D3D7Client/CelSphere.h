@@ -41,7 +41,7 @@ public:
 	 *   of stars darker than the background is suppressed.
 	 * \note All device parameters are assumed to be set correctly on call.
 	 */
-	void RenderStars (LPDIRECT3DDEVICE7 dev, DWORD nmax = (DWORD)-1, const VECTOR3 *bgcol = 0);
+	void RenderStars (LPDIRECT3DDEVICE7 dev, DWORD nmax = (DWORD)-1, const VECTOR3* bgcol = 0);
 
 	/**
 	 * \brief Render constellation lines on the celestial sphere
@@ -51,9 +51,7 @@ public:
 	 * \note Suggestion: render additively onto background, so that the lines
 	 *   are never darker than the background sky.
 	 */
-	void RenderConstellationLines (LPDIRECT3DDEVICE7 dev, VECTOR3 &col);
-
-	void RenderConstellationLabels(bool fullName);
+	void RenderConstellationLines (LPDIRECT3DDEVICE7 dev, VECTOR3& col);
 
 	/**
 	 * \brief Render a great circle on the celestial sphere in a given colour.
@@ -92,11 +90,6 @@ protected:
 	void InitConstellationLines();
 
 	/**
-	 * \brief Load constellation label database from file.
-	 */
-	void LoadConstellationLabels();
-
-	/**
 	 * \brief Allocate vertex list for rendering grid lines
 	 *    (e.g. celestial or ecliptic)
 	 */
@@ -122,10 +115,7 @@ private:
 	int m_lvlIdx[256];               ///< star brightness hash table
 	DWORD m_ncVtx;                   ///< number of constellation line vertices
 	LPDIRECT3DVERTEXBUFFER7 m_cVtx;  ///< vertex buffer for constellation lines
-	std::vector<oapi::GraphicsClient::ConstLabelRenderRec> m_cLabel; ///< list of constellation labels
 	LPDIRECT3DVERTEXBUFFER7 m_grdLngVtx, m_grdLatVtx; ///< vertex buffers for grid lines
-
-	oapi::Font* m_cLabelFont;        ///< font for constellation labels
 };
 
 #endif // !__D3D7CELSPHERE_H

@@ -94,13 +94,6 @@ public:
 
 protected:
 	/**
-	 * \brief Return a render window device context for drawing markers.
-	 * \param mode marker mode
-	 * \return Drawing device context
-	 */
-	oapi::Sketchpad* GetLabelSkp (int mode);
-
-	/**
 	 * \brief Render a single marker at a given global position
 	 * \param pSkp Sketchpad drawing context
 	 * \param gpos global position (ecliptic frame)
@@ -157,11 +150,7 @@ private:
 	// Sky background colour based on atmospheric parameters of closest planet
 
 	// GDI resources
-	static COLORREF labelCol[7];
-	oapi::Pen* labelPen[7];
 	oapi::Font* labelFont[4];
-	oapi::Font* markerFont;
-	int labelSize[1];
 
 	void InitGDIResources();
 	void ExitGDIResources();

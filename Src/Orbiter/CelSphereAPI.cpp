@@ -12,6 +12,23 @@
 oapi::CelestialSphere::CelestialSphere(oapi::GraphicsClient* gc)
 	: m_gc(gc)
 {
+	LoadConstellationLabels();
+
+	gc->clbkGetViewportSize(&m_viewW, &m_viewH);
+	m_cLabelFont = gc->clbkCreateFont(max(m_viewH / 50, 14), true, "Arial", FONT_ITALIC);
+	m_markerFont = gc->clbkCreateFont(max(m_viewH / 75, 12), true, "Arial");
+	for (int i = 0; i < 7; i++)
+		m_markerPen[i] = gc->clbkCreatePen(1, 0, MarkerColor(i));
+}
+
+// --------------------------------------------------------------
+
+oapi::CelestialSphere::~CelestialSphere()
+{
+	m_gc->clbkReleaseFont(m_cLabelFont);
+	m_gc->clbkReleaseFont(m_markerFont);
+	for (int i = 0; i < 7; i++)
+		m_gc->clbkReleasePen(m_markerPen[i]);
 }
 
 // --------------------------------------------------------------
@@ -31,6 +48,69 @@ const std::vector<VECTOR3> oapi::CelestialSphere::LoadConstellationLines() const
 {
 	// Read the constellation line database and convert to render parameters
 	return ConstellationLineData2RenderData(LoadConstellationLineData());
+}
+
+// --------------------------------------------------------------
+
+void oapi::CelestialSphere::LoadConstellationLabels()
+{
+	// Read constellation label database
+	m_cLabel = ConstellationLabelData2RenderData(LoadConstellationLabelData());
+}
+
+
+// --------------------------------------------------------------
+
+void oapi::CelestialSphere::RenderConstellationLabels(oapi::Sketchpad** ppSkp, bool fullName)
+{
+	EnsureMarkerDrawingContext(ppSkp, m_cLabelFont, 0xA0A0A0);
+
+	for (auto it = m_cLabel.begin(); it != m_cLabel.end(); it++) {
+		const std::string& label = (*it).label[fullName ? 0 : 1];
+		RenderMarker(*ppSkp, (*it).pos, std::string(), label, -1, 0);
+	}
+}
+
+// --------------------------------------------------------------
+
+void oapi::CelestialSphere::RenderCelestialMarkers(oapi::Sketchpad** ppSkp)
+{
+	oapi::Font* font = m_markerFont;
+	const std::vector<oapi::GraphicsClient::LABELLIST>& markerLists = m_gc->GetCelestialMarkers();
+	for (auto it = markerLists.begin(); it != markerLists.end(); it++) {
+		if ((*it).active) {
+			int size = (int)(m_viewH / 80.0 * (*it).size + 0.5);
+			int col = (*it).colour;
+			const std::vector<oapi::GraphicsClient::LABELSPEC>& ls = (*it).marker;
+			EnsureMarkerDrawingContext(ppSkp, font, MarkerColor(col), MarkerPen(col));
+			font = nullptr; // need to set it only once
+			for (auto mkr = ls.begin(); mkr != ls.end(); mkr++) {
+				RenderMarker(*ppSkp, (*mkr).pos, (*mkr).label[0], (*mkr).label[1], (*it).shape, size);
+			}
+		}
+	}
+}
+
+// --------------------------------------------------------------
+
+oapi::Font* oapi::CelestialSphere::MarkerFont() const
+{
+	return m_markerFont;
+}
+
+// --------------------------------------------------------------
+
+oapi::Pen* oapi::CelestialSphere::MarkerPen(DWORD idx) const
+{
+	return (idx < 7 ? m_markerPen[idx] : 0);
+}
+
+// --------------------------------------------------------------
+
+COLORREF oapi::CelestialSphere::MarkerColor(DWORD idx) const
+{
+	COLORREF col[7] = { 0x00FFFF, 0xFFFF00, 0x4040FF, 0xFF00FF, 0x40FF40, 0xFF8080, 0xFFFFFF };
+	return (idx < 7 ? col[idx] : 0xFFFFFF);
 }
 
 // --------------------------------------------------------------
@@ -245,13 +325,13 @@ const std::vector<oapi::GraphicsClient::ConstLabelRec> oapi::CelestialSphere::Lo
 
 // --------------------------------------------------------------
 
-const std::vector<oapi::GraphicsClient::ConstLabelRenderRec> oapi::CelestialSphere::ConstellationLabelData2RenderData(const std::vector<GraphicsClient::ConstLabelRec>& clabelRec) const
+const std::vector<oapi::GraphicsClient::LABELSPEC> oapi::CelestialSphere::ConstellationLabelData2RenderData(const std::vector<GraphicsClient::ConstLabelRec>& clabelRec) const
 {
-	std::vector<GraphicsClient::ConstLabelRenderRec> renderRec;
+	std::vector<GraphicsClient::LABELSPEC> renderRec;
 	renderRec.resize(clabelRec.size());
 	for (int i = 0; i < clabelRec.size(); i++) {
-		renderRec[i].abbrLabel = clabelRec[i].abbrLabel;
-		renderRec[i].fullLabel = clabelRec[i].fullLabel;
+		renderRec[i].label[0] = clabelRec[i].fullLabel;
+		renderRec[i].label[1] = clabelRec[i].abbrLabel;
 		double xz = cos(clabelRec[i].latCnt);
 		renderRec[i].pos.x = xz * cos(clabelRec[i].lngCnt);
 		renderRec[i].pos.z = xz * sin(clabelRec[i].lngCnt);
@@ -266,6 +346,7 @@ void oapi::CelestialSphere::RenderMarker(oapi::Sketchpad* pSkp, const VECTOR3& r
 		return;
 
 	int x, y, len;
+	if (!scale) scale = m_viewH / 80;
 
 	if (EclDir2WindowPos(rdir, x, y)) {
 
@@ -319,4 +400,22 @@ void oapi::CelestialSphere::RenderMarker(oapi::Sketchpad* pSkp, const VECTOR3& r
 		if (len = label2.size())
 			pSkp->Text(x, y + scale + 15, label2.c_str(), len);
 	}
+}
+
+
+// ==============================================================
+
+void oapi::CelestialSphere::EnsureMarkerDrawingContext(oapi::Sketchpad** ppSkp, oapi::Font* font, COLORREF textcol, oapi::Pen* pen)
+{
+	if (!*ppSkp) {
+		*ppSkp = m_gc->clbkGetSketchpad(0);
+		(*ppSkp)->SetBackgroundMode(oapi::Sketchpad::BK_TRANSPARENT);
+		(*ppSkp)->SetTextAlign(oapi::Sketchpad::CENTER, oapi::Sketchpad::BOTTOM);
+	}
+	if (font)
+		(*ppSkp)->SetFont(font);
+	if (textcol)
+		(*ppSkp)->SetTextColor(textcol);
+	if (pen)
+		(*ppSkp)->SetPen(pen);
 }

@@ -113,14 +113,6 @@ void D3D9CelestialSphere::InitConstellationLines()
 
 // ==============================================================
 
-void D3D9CelestialSphere::LoadConstellationLabels()
-{
-	// Read constellation label database
-	m_cLabel = ConstellationLabelData2RenderData(LoadConstellationLabelData());
-}
-
-// ==============================================================
-
 void D3D9CelestialSphere::AllocGrids ()
 {
 	int i, j, idx;
@@ -208,9 +200,9 @@ void D3D9CelestialSphere::RenderConstellationLabels(D3D9Pad* pSketch, bool fullN
 {
 	pSketch->SetTextColor(0xFF8080);
 
-	//const std::vector<oapi::GraphicsClient::ConstLabelRenderRec>& data = GetConstellationLabels();
-	for (auto it = m_cLabel.begin(); it != m_cLabel.end(); it++) {
-		const std::string& label = (fullName ? (*it).fullLabel : (*it).abbrLabel);
+	const std::vector<oapi::GraphicsClient::LABELSPEC>& label = ConstellationLabels();
+	for (auto it = label.begin(); it != label.end(); it++) {
+		const std::string& label = (*it).label[fullName ? 0 : 1];
 		RenderMarker(pSketch, (*it).pos, std::string(), label, -1, 0);
 	}
 }

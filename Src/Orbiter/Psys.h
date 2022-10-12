@@ -186,12 +186,15 @@ public:
 	friend Vector SingleGacc (const Vector &rpos, const CelestialBody *body);
 	friend Vector SingleGacc_perturbation (const Vector &rpos, const CelestialBody *body);
 
-	oapi::GraphicsClient::LABELLIST *LabelList (int *nlist = 0) { if (nlist) *nlist = nlabellist; return labellist; }
-	void ScanLabelLists (std::ifstream &cfg);
+	const std::vector<oapi::GraphicsClient::LABELLIST> &LabelList() const
+	{ return m_labelList; }
+	std::vector<oapi::GraphicsClient::LABELLIST>& LabelList()
+	{ return m_labelList; }
+	void ScanLabelLists (std::ifstream &cfg, bool bScanHeaders = false);
 
 	void ActivatePlanetLabels(bool activate);
 
-	intptr_t FindFirst (int type, _finddata_t *fdata, char *path, char *fname);
+	intptr_t FindFirst (int type, _finddata_t *fdata, char *fname);
 	intptr_t FindNext (intptr_t fh, _finddata_t *fdata, char *fname);
 
 private:
@@ -211,9 +214,10 @@ private:
 	// List of "massive" objects (those producing a
 	// gravitational field: stars, planets, moons)
 
-	oapi::GraphicsClient::LABELLIST *labellist;
-	int nlabellist;
-	char *labelpath;
+	std::vector< oapi::GraphicsClient::LABELLIST> m_labelList; ///< list of celestial markers
+	//oapi::GraphicsClient::LABELLIST *labellist;
+	//int nlabellist;
+	std::string m_labelPath; ///< directory containing celestial marker lists for this planetary system
 
 	DWORD nvessel;
 	Vessel **vessel;

@@ -37,8 +37,6 @@ public:
 	 */
 	void RenderConstellationLines(LPDIRECT3DDEVICE7 dev, const Vector& col);
 
-	void RenderConstellationLabels(bool fullName);
-
 	/**
 	 * \brief Render a great circle on the celestial sphere in a given colour.
 	 * \param dev render device
@@ -76,11 +74,6 @@ protected:
 	void InitConstellationLines();
 
 	/**
-	 * \brief Load constellation label database from file. 
-	 */
-	void LoadConstellationLabels();
-
-	/**
 	 * \brief Allocate vertex list for rendering grid lines
 	 *    (e.g. celestial or ecliptic)
 	 */
@@ -106,7 +99,6 @@ private:
 	int m_lvlIdx[256];               ///< star brightness hash table
 	DWORD m_ncVtx;                   ///< number of constellation line vertices
 	LPDIRECT3DVERTEXBUFFER7 m_cVtx;  ///< vertex buffer for constellation lines
-	std::vector<oapi::GraphicsClient::ConstLabelRenderRec> m_cLabel; ///< list of constellation labels
 	LPDIRECT3DVERTEXBUFFER7 m_grdLngVtx, m_grdLatVtx; ///< vertex buffers for grid lines
 
 	oapi::Font *m_cLabelFont;        ///< font for constellation labels

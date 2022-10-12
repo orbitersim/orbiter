@@ -728,11 +728,9 @@ INT_PTR GraphicsClient::LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wPar
 // ==================================================================
 // Functions for the celestial sphere
 
-DWORD GraphicsClient::GetCelestialMarkers (const LABELLIST **cm_list) const
+const std::vector<GraphicsClient::LABELLIST>& GraphicsClient::GetCelestialMarkers() const
 {
-	int nlist;
-	*cm_list = g_psys->LabelList (&nlist);
-	return (DWORD)nlist;
+	return g_psys->LabelList();
 }
 
 // ==================================================================

@@ -92,8 +92,7 @@ public:
 	void Render3DLabel (const Vector &p, char *label, double scale = 1.0, DWORD colour = D3DRGBA(1,1,1,1));
 	// Render text "label" at position p using current world matrix
 
-	void RenderDirectionMarker (const Vector &rdir, const std::string& label1, const std::string& label2 = 0, HDC hDC = 0, int mode = 0, int scale = 0);
-	void RenderObjectMarker (const Vector &gpos, const std::string& label1, const std::string& label2 = 0, HDC hDC = 0, int mode = 0, int scale = 0);
+	void RenderObjectMarker (oapi::Sketchpad* pSkp, const Vector &gpos, const std::string& label1, const std::string& label2 = 0, int mode = 0, int scale = 0);
 	// Render a box with label to mark an object at global position gpos
 
 	void RenderVesselShadows ();
@@ -148,8 +147,8 @@ private:
 
 	DWORD zclearflag;   // flag for zbuffer clear calls (including/excluding stencil buffer)
 
-	void InitGDI();
-	void FreeGDI();
+	void InitGDIResources();
+	void ExitGDIResources();
 	// allocate and free GDI resources (fonts, pens, brushes)
 
 	void UpdateVisuals (PlanetarySystem *psys, Camera **camlist, int ncam, bool force = false);
@@ -176,9 +175,6 @@ private:
 	void CreateCSphere(const char *path);
 	// Create the texture manager for the celestial background
 
-	HDC GetLabelDC (int mode);
-	void ReleaseLabelDC (HDC hDC);
-
 	/**
 	 * \brief Return sky background colour based on atmospheric parameters of closest planet
 	 */
@@ -204,13 +200,10 @@ private:
 	STARLIGHT *starlight;
 	int nstarlight;        // number of star light objects in the list
 
-	struct GDIRes {
-		HFONT hFont1;
-		HPEN  hPen[6];
-		int hFont1_scale;
-	} gdires;
-	oapi::Font *label_font[4];
-	oapi::Pen *label_pen;
+	// Sketchpad resources
+	oapi::Font* labelFont[4];
+
+	//oapi::Pen *label_pen;
 
 	CSphereManager *csphere;
 	CsphereManager *csphere2;

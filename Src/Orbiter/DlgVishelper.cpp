@@ -645,15 +645,15 @@ DlgCustomCLabels::DlgCustomCLabels (HINSTANCE hInstance, HWND hParent, void *con
 void DlgCustomCLabels::Refresh (HWND hDlg)
 {
 	int n, nlist;
-	char cbuf[256], cpath[256];
+	char cbuf[256];
 
 	SendDlgItemMessage (hDlg, IDC_CLBL_LIST, LB_RESETCONTENT, 0, 0);
 
-	oapi::GraphicsClient::LABELLIST *list = g_psys->LabelList (&nlist);
-	if (!nlist) return;
+	const std::vector< oapi::GraphicsClient::LABELLIST>& list = g_psys->LabelList();
+	if (!list.size()) return;
 
 	_finddata_t fdata;
-	long fh = g_psys->FindFirst (FILETYPE_MARKER, &fdata, cpath, cbuf);
+	long fh = g_psys->FindFirst (FILETYPE_MARKER, &fdata, cbuf);
 	if (fh >= 0) {
 		n = 0;
 		do {
@@ -672,8 +672,8 @@ void DlgCustomCLabels::Select (HWND hDlg)
 {
 	int i, sel, nlist;
 
-	oapi::GraphicsClient::LABELLIST *list = g_psys->LabelList (&nlist);
-	if (!nlist) return;
+	std::vector<oapi::GraphicsClient::LABELLIST>& list = g_psys->LabelList();
+	if (!list.size()) return;
 
 	for (i = 0; i < nlist; i++) {
 		sel = SendDlgItemMessage (hDlg, IDC_CLBL_LIST, LB_GETSEL, i, 0);

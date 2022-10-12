@@ -1626,11 +1626,11 @@ public:
 		float latCnt;
 	};
 
-	struct ConstLabelRenderRec {
-		std::string fullLabel;
-		std::string abbrLabel;
-		VECTOR3 pos;
-	};
+	//struct ConstLabelRenderRec {
+	//	std::string fullLabel;
+	//	std::string abbrLabel;
+	//	VECTOR3 pos;
+	//};
 
 	// ==================================================================
 	/// \name Marker and label-related methods
@@ -1659,7 +1659,7 @@ public:
 	 * \return number of lists in the array
 	 * \sa LABELLIST
 	 */
-	DWORD GetCelestialMarkers (const LABELLIST **cm_list) const;
+	const std::vector<LABELLIST>& GetCelestialMarkers() const;
 
 	/**
 	 * \brief Returns an array of surface marker lists for a planet

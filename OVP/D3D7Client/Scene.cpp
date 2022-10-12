@@ -375,8 +375,6 @@ void Scene::Render ()
 	DWORD plnmode = *(DWORD*)gc->GetConfigParam (CFGPRM_PLANETARIUMFLAG);
 
 	// render celestial sphere (without z-buffer)
-	dev->SetTransform (D3DTRANSFORMSTATE_WORLD, &ident);
-	dev->SetTexture (0,0);
 	dev->SetRenderState (D3DRENDERSTATE_ZENABLE, FALSE);
 	dev->SetRenderState(D3DRENDERSTATE_ZVISIBLE, FALSE);
 	dev->SetRenderState (D3DRENDERSTATE_ZWRITEENABLE, FALSE);
@@ -387,6 +385,12 @@ void Scene::Render ()
 	double npl = cam->GetNearlimit();
 	double fpl = cam->GetFarlimit();
 	cam->SetFrustumLimits(0.1, 1e10);
+
+	// celestial sphere background
+	cspheremgr->Render(dev, 8, bglvl);
+
+	dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
+	dev->SetTexture(0, 0);
 
 	// planetarium mode (celestial sphere elements)
 	if (plnmode & PLN_ENABLE) {
@@ -424,29 +428,18 @@ void Scene::Render ()
 		if (plnmode & PLN_CONST)
 			m_celSphere->RenderConstellationLines(dev, _V(0.4, 0.3, 0.2) * linebrt);
 
+		oapi::Sketchpad* pSkp = nullptr;
+
 		// render constellation labels
 		if (plnmode & PLN_CNSTLABEL)
-			m_celSphere->RenderConstellationLabels((plnmode & PLN_CNSTLONG) == PLN_CNSTLONG);
+			m_celSphere->RenderConstellationLabels(&pSkp, (plnmode & PLN_CNSTLONG) == PLN_CNSTLONG);
 
-		if (plnmode & PLN_CCMARK) {
-			const GraphicsClient::LABELLIST *list;
-			DWORD n, nlist;
-			oapi::Sketchpad* pSkp = nullptr;
-			nlist = gc->GetCelestialMarkers (&list);
-			for (n = 0; n < nlist; n++) {
-				if (list[n].active) {
-					int size = (int)(viewH / 80.0 * list[n].size + 0.5);
-					int col = list[n].colour;
-					const std::vector<oapi::GraphicsClient::LABELSPEC>& ls = list[n].marker;
-					if (!pSkp) pSkp = GetLabelSkp(0);
-					pSkp->SetPen(labelPen[col]);
-					pSkp->SetTextColor(labelCol[col]);
-					for (i = 0; i < ls.size(); i++)
-						m_celSphere->RenderMarker (pSkp, ls[i].pos, ls[i].label[0], ls[i].label[1], list[n].shape, size);
-				}
-			}
-			if (pSkp) gc->clbkReleaseSketchpad (pSkp);
-		}
+		// render celestial sphere markers
+		if (plnmode & PLN_CCMARK)
+			m_celSphere->RenderCelestialMarkers(&pSkp);
+
+		if (pSkp)
+			gc->clbkReleaseSketchpad(pSkp);
 
 		// revert to standard colour selection and turn off alpha blending
 		dev->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
@@ -456,7 +449,6 @@ void Scene::Render ()
 	}
 
 	m_celSphere->RenderStars (dev, (DWORD)-1, &bgcol);
-	cspheremgr->Render (dev, 8, bglvl);
 
 	// turn on lighting
 	dev->SetRenderState (D3DRENDERSTATE_LIGHTING, TRUE);
@@ -482,61 +474,62 @@ void Scene::Render ()
 		OBJHANDLE hObj = plist[i].vo->Object();
 		plist[i].vo->Render (dev);
 		if (plnmode & PLN_ENABLE) {
-			bool bObjMarker = plnmode & PLN_CMARK;
-			bool bSurfMarker = (plnmode & PLN_SURFMARK) && (oapiGetObjectType(hObj) == OBJTP_PLANET);
-			if (bObjMarker || bSurfMarker) {
-				oapi::Sketchpad* pSkp = GetLabelSkp(0);
-				if (bObjMarker) {
-					VECTOR3 pp;
-					char name[256];
-					oapiGetObjectName(hObj, name, 256);
-					oapiGetGlobalPos(hObj, &pp);
-					RenderObjectMarker(pSkp, pp, std::string(name), std::string(), 0, viewH / 80);
-				}
-				if (bSurfMarker) {
-					int label_format = *(int*)oapiGetObjectParam(hObj, OBJPRM_PLANET_LABELENGINE);
-					if (label_format < 2 && (plnmode & PLN_LMARK)) { // user-defined planetary surface labels
-						double rad = oapiGetSize(hObj);
-						double apprad = rad / (plist[i].dist * cam->GetTanAp());
-						const GraphicsClient::LABELLIST* list;
-						DWORD n, nlist;
-						MATRIX3 prot;
-						VECTOR3 ppos, cpos;
-						bool bNeedSetup = true;
-						nlist = gc->GetSurfaceMarkers(hObj, &list);
-						for (n = 0; n < nlist; n++) {
-							if (list[n].active && apprad * list[n].distfac > LABEL_DISTLIMIT) {
-								if (bNeedSetup) {
-									oapiGetRotationMatrix(hObj, &prot);
-									oapiGetGlobalPos(hObj, &ppos);
-									const VECTOR3* cp = cam->GetGPos();
-									cpos = tmul(prot, *cp - ppos); // camera in local planet coords
-									bNeedSetup = false;
-								}
-								int size = (int)(viewH / 80.0 * list[n].size + 0.5);
-								int col = list[n].colour;
-								pSkp->SetPen(labelPen[col]);
-								pSkp->SetTextColor(labelCol[col]);
-								const std::vector<oapi::GraphicsClient::LABELSPEC>& ls = list[n].marker;
-								VECTOR3 sp;
-								for (j = 0; j < ls.size(); j++) {
-									if (dotp(ls[j].pos, cpos - ls[j].pos) >= 0.0) { // surface point visible?
-										sp = mul(prot, ls[j].pos) + ppos;
-										RenderObjectMarker(pSkp, sp, ls[j].label[0], ls[j].label[1], list[n].shape, size);
-									}
+			oapi::Sketchpad* pSkp = nullptr;
+			oapi::Font* font = m_celSphere->MarkerFont();
+			if (plnmode & PLN_CMARK) {
+				VECTOR3 pp;
+				char name[256];
+				oapiGetObjectName(hObj, name, 256);
+				oapiGetGlobalPos(hObj, &pp);
+				m_celSphere->EnsureMarkerDrawingContext(&pSkp, font, m_celSphere->MarkerColor(0), m_celSphere->MarkerPen(0));
+				font = nullptr;
+				RenderObjectMarker(pSkp, pp, std::string(name), std::string(), 0, viewH / 80);
+			}
+			if ((plnmode & PLN_SURFMARK) && (oapiGetObjectType(hObj) == OBJTP_PLANET)) {
+				font = nullptr;
+				int label_format = *(int*)oapiGetObjectParam(hObj, OBJPRM_PLANET_LABELENGINE);
+				if (label_format < 2 && (plnmode & PLN_LMARK)) { // user-defined planetary surface labels
+					double rad = oapiGetSize(hObj);
+					double apprad = rad / (plist[i].dist * cam->GetTanAp());
+					const GraphicsClient::LABELLIST* list;
+					DWORD n, nlist;
+					MATRIX3 prot;
+					VECTOR3 ppos, cpos;
+					bool bNeedSetup = true;
+					nlist = gc->GetSurfaceMarkers(hObj, &list);
+					for (n = 0; n < nlist; n++) {
+						if (list[n].active && apprad * list[n].distfac > LABEL_DISTLIMIT) {
+							if (bNeedSetup) {
+								oapiGetRotationMatrix(hObj, &prot);
+								oapiGetGlobalPos(hObj, &ppos);
+								const VECTOR3* cp = cam->GetGPos();
+								cpos = tmul(prot, *cp - ppos); // camera in local planet coords
+								bNeedSetup = false;
+							}
+							int size = (int)(viewH / 80.0 * list[n].size + 0.5);
+							int col = list[n].colour;
+							m_celSphere->EnsureMarkerDrawingContext(&pSkp, font, m_celSphere->MarkerColor(col), m_celSphere->MarkerPen(col));
+							font = nullptr;
+							const std::vector<oapi::GraphicsClient::LABELSPEC>& ls = list[n].marker;
+							VECTOR3 sp;
+							for (j = 0; j < ls.size(); j++) {
+								if (dotp(ls[j].pos, cpos - ls[j].pos) >= 0.0) { // surface point visible?
+									sp = mul(prot, ls[j].pos) + ppos;
+									RenderObjectMarker(pSkp, sp, ls[j].label[0], ls[j].label[1], list[n].shape, size);
 								}
 							}
 						}
 					}
 				}
-				gc->clbkReleaseSketchpad(pSkp);
 			}
+			if (pSkp)
+				gc->clbkReleaseSketchpad(pSkp);
 		}
 	}
 
 	// render new-style surface markers
 	if ((plnmode & PLN_ENABLE) && (plnmode & PLN_LMARK)) {
-		oapi::Sketchpad *skp = 0;
+		oapi::Sketchpad *pSkp = 0;
 		int fontidx = -1;
 		for (i = 0; i < np; i++) {
 			OBJHANDLE hObj = plist[i].vo->Object();
@@ -545,21 +538,17 @@ void Scene::Render ()
 				plist[i].vo->ActivateLabels(true);
 			int label_format = *(int*)oapiGetObjectParam(hObj, OBJPRM_PLANET_LABELENGINE);
 			if (label_format == 2) {
-				if (!skp) {
-					skp = gc->clbkGetSketchpad(0);
-					skp->SetPen(labelPen[6]);
-				}
-				((vPlanet*)plist[i].vo)->RenderLabels(dev, skp, labelFont, &fontidx);
+				m_celSphere->EnsureMarkerDrawingContext(&pSkp, 0, 0, m_celSphere->MarkerPen(6));
+				((vPlanet*)plist[i].vo)->RenderLabels(dev, pSkp, labelFont, &fontidx);
 			}
 		}
 		surfLabelsActive = true;
-		if (skp)
-			gc->clbkReleaseSketchpad(skp);
+		if (pSkp)
+			gc->clbkReleaseSketchpad(pSkp);
 	} else {
 		if (surfLabelsActive)
 			surfLabelsActive = false;
 	}
-
 
 	// turn z-buffer back on
 	dev->SetRenderState (D3DRENDERSTATE_ZENABLE, TRUE);
@@ -574,19 +563,30 @@ void Scene::Render ()
 	for (pv = vobjFirst; pv; pv = pv->next) {
 		if (!pv->vobj->IsActive()) continue;
 		OBJHANDLE hObj = pv->vobj->Object();
-		oapi::Sketchpad* pSkp = nullptr;
 		if (oapiGetObjectType (hObj) == OBJTP_VESSEL) {
 			pv->vobj->Render (dev);
 			if (hObj == hFocus) vFocus = (vVessel*)pv->vobj; // remember focus visual
-			if ((plnmode & (PLN_ENABLE|PLN_VMARK)) == (PLN_ENABLE|PLN_VMARK)) {
-				VECTOR3 gpos;
-				char name[256];
-				oapiGetGlobalPos (hObj, &gpos);
-				oapiGetObjectName (hObj, name, 256);
-				if (!pSkp)
-					pSkp = GetLabelSkp(0);
-				RenderObjectMarker (pSkp, gpos, std::string(name), std::string(), 0, viewH/80);
-			}
+		}
+	}
+
+	if ((plnmode & (PLN_ENABLE | PLN_VMARK)) == (PLN_ENABLE | PLN_VMARK)) {
+		oapi::Sketchpad* pSkp = nullptr;
+		oapi::Font* font = m_celSphere->MarkerFont();
+		oapi::Pen* pen = m_celSphere->MarkerPen(0);
+		COLORREF col = m_celSphere->MarkerColor(0);
+		for (pv = vobjFirst; pv; pv = pv->next) {
+			if (!pv->vobj->IsActive()) continue;
+			OBJHANDLE hObj = pv->vobj->Object();
+			VECTOR3 gpos;
+			char name[256];
+			oapiGetGlobalPos(hObj, &gpos);
+			oapiGetObjectName(hObj, name, 256);
+			m_celSphere->EnsureMarkerDrawingContext(&pSkp, font, col, pen);
+			font = nullptr;
+			pen = nullptr;
+			col = 0;
+			RenderObjectMarker(pSkp, gpos, std::string(name), std::string(), 0, viewH / 80);
+
 		}
 		if (pSkp)
 			gc->clbkReleaseSketchpad(pSkp);
@@ -697,20 +697,6 @@ void Scene::RenderVesselShadows (OBJHANDLE hPlanet, float depth) const
 
 // ==============================================================
 
-oapi::Sketchpad* Scene::GetLabelSkp (int mode)
-{
-	oapi::Sketchpad* pSkp = gc->clbkGetSketchpad(0);
-	if (pSkp) {
-		pSkp->SetBrush(NULL);
-		pSkp->SetPen(labelPen[mode]);
-		pSkp->SetFont(markerFont);
-		pSkp->SetTextColor(labelCol[mode]);
-		pSkp->SetBackgroundMode(Sketchpad::BK_TRANSPARENT);
-		pSkp->SetTextAlign(Sketchpad::CENTER, Sketchpad::BOTTOM);
-	}
-	return pSkp;
-}
-
 void Scene::RenderObjectMarker (oapi::Sketchpad* pSkp, const VECTOR3 &gpos, const std::string& label1, const std::string& label2, int mode, int scale)
 {
 	VECTOR3 dp (gpos - *cam->GetGPos());
@@ -757,11 +743,6 @@ void Scene::DelParticleStream (DWORD idx)
 
 void Scene::InitGDIResources ()
 {
-	for (int i = 0; i < 7; i++)
-		labelPen[i] = gc->clbkCreatePen(1, 0, labelCol[i]);
-	labelSize[0] = max (viewH/60, 14);
-	markerFont = gc->clbkCreateFont(labelSize[0], true, "Arial");
-
 	const int fsize[4] = {12, 16, 20, 26};
 	for (int i = 0; i < 4; i++)
 		labelFont[i] = gc->clbkCreateFont(fsize[i], true, "Arial", FontStyle::FONT_BOLD);
@@ -769,14 +750,8 @@ void Scene::InitGDIResources ()
 
 void Scene::ExitGDIResources ()
 {
-	int i;
-	for (i = 0; i < 7; i++)
-		gc->clbkReleasePen(labelPen[i]);
-
 	for (int i = 0; i < 4; i++)
 		gc->clbkReleaseFont(labelFont[i]);
-
-	gc->clbkReleaseFont(markerFont);
 }
 
 int distcomp (const void *arg1, const void *arg2)
@@ -785,5 +760,3 @@ int distcomp (const void *arg1, const void *arg2)
 	double d2 = ((PList*)arg2)->dist;
 	return (d1 > d2 ? -1 : d1 < d2 ? 1 : 0);
 }
-
-COLORREF Scene::labelCol[7] = {0x00FFFF, 0xFFFF00, 0x4040FF, 0xFF00FF, 0x40FF40, 0xFF8080, 0xFFFFFF};

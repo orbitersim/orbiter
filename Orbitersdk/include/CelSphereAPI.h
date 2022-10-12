@@ -30,6 +30,8 @@ namespace oapi {
 	public:
 		CelestialSphere(GraphicsClient* gc);
 
+		virtual ~CelestialSphere();
+
 		/**
 		 * \brief Star database record structure, as used by \ref LoadStarData.
 		 * \note The spectral class index is a linear encoding of the star's
@@ -84,6 +86,16 @@ namespace oapi {
 		 */
 		virtual void RenderMarker(oapi::Sketchpad* pSkp, const VECTOR3& rdir, const std::string& label1, const std::string& label2, int mode, int scale);
 
+		virtual void RenderConstellationLabels(oapi::Sketchpad** ppSkp, bool fullName);
+
+		virtual void RenderCelestialMarkers(oapi::Sketchpad** ppSkp);
+
+		virtual oapi::Font* MarkerFont() const;
+		virtual oapi::Pen* MarkerPen(DWORD idx) const;
+		virtual COLORREF MarkerColor(DWORD idx) const;
+
+		virtual void EnsureMarkerDrawingContext(oapi::Sketchpad** ppSkp, oapi::Font* font = 0, COLORREF textcol = 0, oapi::Pen* pen = 0);
+
 	protected:
 		/**
 		 * \brief Load star data from the database file and pre-process them
@@ -106,6 +118,14 @@ namespace oapi {
 		 *    even number. The points are located on the unit sphere (radius 1). 
 		 */
 		const std::vector<VECTOR3> LoadConstellationLines() const;
+
+		/**
+		 * \brief Load constellation label database from file into \ref m_cLabel array.
+		 */
+		virtual void LoadConstellationLabels();
+
+		const std::vector<oapi::GraphicsClient::LABELSPEC>& ConstellationLabels() const
+		{ return m_cLabel; }
 
 		/**
 		 * \brief Convert a direction into viewport coordinates
@@ -169,10 +189,17 @@ namespace oapi {
 		 */
 		const std::vector<VECTOR3> ConstellationLineData2RenderData(const std::vector<LineDataRec>& lineDataRec) const;
 
+		std::vector<oapi::GraphicsClient::LABELSPEC> m_cLabel; ///< list of constellation labels
+
+		DWORD m_viewW, m_viewH;          ///< viewport dimensions
+		oapi::Font* m_cLabelFont;        ///< font for constellation labels
+		oapi::Font* m_markerFont;        ///< font for celestial sphere markers
+		oapi::Pen* m_markerPen[7];       ///< pens for celestial sphere markers
+
 	protected:
 		const std::vector<GraphicsClient::ConstLabelRec> LoadConstellationLabelData() const;
 
-		const std::vector<GraphicsClient::ConstLabelRenderRec> ConstellationLabelData2RenderData(const std::vector<GraphicsClient::ConstLabelRec>& clabelRec) const;
+		const std::vector<GraphicsClient::LABELSPEC> ConstellationLabelData2RenderData(const std::vector<GraphicsClient::ConstLabelRec>& clabelRec) const;
 	};
 
 }

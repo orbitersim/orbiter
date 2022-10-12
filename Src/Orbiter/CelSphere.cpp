@@ -19,7 +19,6 @@ OGCelestialSphere::OGCelestialSphere(OrbiterGraphics* gc, Scene* scene)
 {
 	InitStars();
 	InitConstellationLines();
-	LoadConstellationLabels();
 	AllocGrids();
 
 	m_viewW = gc->GetViewW();
@@ -122,14 +121,6 @@ void OGCelestialSphere::InitConstellationLines()
 
 // ==============================================================
 
-void OGCelestialSphere::LoadConstellationLabels()
-{
-	// Read constellation label database
-	m_cLabel = ConstellationLabelData2RenderData(LoadConstellationLabelData());
-}
-
-// ==============================================================
-
 void OGCelestialSphere::AllocGrids()
 {
 	int i, j, idx;
@@ -203,25 +194,6 @@ void OGCelestialSphere::RenderConstellationLines(LPDIRECT3DDEVICE7 dev, const Ve
 {
 	dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(col.x, col.y, col.z, 1));
 	dev->DrawPrimitiveVB(D3DPT_LINELIST, m_cVtx, 0, m_ncVtx, 0);
-}
-
-// ==============================================================
-
-void OGCelestialSphere::RenderConstellationLabels(bool fullName)
-{
-	oapi::Sketchpad* pSkp = m_gc->clbkGetSketchpad(0);
-	pSkp->SetFont(m_cLabelFont);
-	pSkp->SetTextAlign(oapi::Sketchpad::CENTER, oapi::Sketchpad::BOTTOM);
-	pSkp->SetTextColor(0xA0A0A0);
-	pSkp->SetBackgroundMode(oapi::Sketchpad::BK_TRANSPARENT);
-
-	//const std::vector<oapi::GraphicsClient::ConstLabelRenderRec>& data = GetConstellationLabels();
-	for (auto it = m_cLabel.begin(); it != m_cLabel.end(); it++) {
-		const std::string& label = (fullName ? (*it).fullLabel : (*it).abbrLabel);
-		RenderMarker(pSkp, (*it).pos, std::string(), label, -1, 0);
-	}
-
-	m_gc->clbkReleaseSketchpad(pSkp);
 }
 
 // ==============================================================

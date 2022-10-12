@@ -230,7 +230,6 @@ void CSphereManager::Render (LPDIRECT3DDEVICE7 dev, int level, int bglvl)
 	rcam.premul (ecl2gal);
 	RenderParam.camdir.Set (rcam.m13, rcam.m23, rcam.m33);
 
-	dev->SetRenderState (D3DRENDERSTATE_LIGHTING, FALSE);
 	dev->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_ONE);
 	dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
 	dev->SetRenderState (D3DRENDERSTATE_CULLMODE, D3DCULL_CW);
@@ -258,18 +257,17 @@ void CSphereManager::Render (LPDIRECT3DDEVICE7 dev, int level, int bglvl)
 	}
 	ReleaseMutex (tilebuf->hQueueMutex);
 
-	dev->SetRenderState (D3DRENDERSTATE_LIGHTING, TRUE);
 	dev->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_INVSRCALPHA);
 	dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
 	dev->SetRenderState (D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
 	dev->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
 
 	if (intens < 1.0f) {
+		dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, 0xFFFFFFFF);
 		dev->SetTextureStageState (0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
 		dev->SetTextureStageState (0, D3DTSS_ALPHAARG2, D3DTA_CURRENT);
 	}
-
-	//sprintf (DBG_MSG, "total: %d, after radius culling: %d, after in-view culling: %d", ntot, nrad, nrender);
+	dev->SetTexture(0, 0);
 }
 
 // =======================================================================
