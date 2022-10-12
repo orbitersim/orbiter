@@ -14,6 +14,7 @@
 // ==============================================================
 
 #include "CelSphere.h"
+#include "CSphereMgr.h"
 #include "Scene.h"
 #include "D3D9Config.h"
 #include "D3D9Pad.h"
@@ -37,6 +38,7 @@ D3D9CelestialSphere::D3D9CelestialSphere(D3D9Client *gc, Scene *scene)
 	InitConstellationLines();
 	LoadConstellationLabels();
 	AllocGrids();
+	m_bkgImgMgr = new CSphereManager(gc, scene);
 }
 
 // ==============================================================
@@ -48,6 +50,7 @@ D3D9CelestialSphere::~D3D9CelestialSphere()
 	m_cVtx->Release();
 	m_grdLngVtx->Release();
 	m_grdLatVtx->Release();
+	delete m_bkgImgMgr;
 }
 
 // ==============================================================
@@ -242,6 +245,12 @@ void D3D9CelestialSphere::RenderGrid(ID3DXEffect *FX, bool eqline)
 		HR(m_pDevice->DrawPrimitive(D3DPT_LINESTRIP, i * (NSEG+1), NSEG));
 	HR(FX->EndPass());
 	HR(FX->End());	
+}
+
+void D3D9CelestialSphere::RenderBkgImage(LPDIRECT3DDEVICE9 dev, int bglvl)
+{
+	m_bkgImgMgr->Render(dev, 8, bglvl);
+	dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 }
 
 // ==============================================================

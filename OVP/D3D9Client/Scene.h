@@ -29,7 +29,6 @@
 class vObject;
 class vPlanet;
 class D3D9ParticleStream;
-class CSphereManager;
 class D3D9Text;
 class D3D9Pad;
 
@@ -465,7 +464,6 @@ private:
 	oapi::Font *pDebugFont;
 
 	SurfNative *pLblSrf;
-	CSphereManager *cspheremgr;
 
 	class ImageProcessing *pLightBlur, *pBlur, *pGDIOverlay, *pIrradiance;
 

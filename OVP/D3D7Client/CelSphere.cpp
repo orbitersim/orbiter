@@ -33,7 +33,7 @@ D3D7CelestialSphere::D3D7CelestialSphere (D3D7Client* gc, Scene* scene)
 	InitStars();
 	InitConstellationLines();
 	AllocGrids();
-	cspheremgr = new CSphereManager(gc, scene);
+	m_bkgImgMgr = new CSphereManager(gc, scene);
 
 	m_viewW = gc->GetViewW();
 	m_viewH = gc->GetViewH();
@@ -48,7 +48,7 @@ D3D7CelestialSphere::~D3D7CelestialSphere ()
 	m_cVtx->Release();
 	m_grdLngVtx->Release();
 	m_grdLatVtx->Release();
-	delete cspheremgr;
+	delete m_bkgImgMgr;
 }
 
 // ==============================================================
@@ -229,7 +229,7 @@ void D3D7CelestialSphere::RenderGrid (LPDIRECT3DDEVICE7 dev, VECTOR3 &col, bool 
 
 void D3D7CelestialSphere::RenderBkgImage(LPDIRECT3DDEVICE7 dev, int bglvl)
 {
-	cspheremgr->Render(dev, 8, bglvl);
+	m_bkgImgMgr->Render(dev, 8, bglvl);
 }
 
 // ==============================================================

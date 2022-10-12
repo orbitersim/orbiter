@@ -24,7 +24,6 @@
 #include "VVessel.h"
 #include "VBase.h"
 #include "Particle.h"
-//#include "CSphereMgr.h"
 
 using namespace oapi;
 

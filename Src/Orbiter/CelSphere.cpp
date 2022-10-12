@@ -18,8 +18,8 @@ OGCelestialSphere::OGCelestialSphere(OrbiterGraphics* gc, Scene* scene)
 	, m_gc(gc)
 	, m_scene(scene)
 {
-	csphere = nullptr;
-	csphere2 = nullptr;
+	m_bkgImgMgr = nullptr;
+	m_bkgImgMgr2 = nullptr;
 
 	InitStars();
 	InitConstellationLines();
@@ -42,10 +42,10 @@ OGCelestialSphere::~OGCelestialSphere()
 	m_grdLngVtx->Release();
 	m_grdLatVtx->Release();
 
-	if (csphere)
-		delete csphere;
-	if (csphere2)
-		delete csphere2;
+	if (m_bkgImgMgr)
+		delete m_bkgImgMgr;
+	if (m_bkgImgMgr2)
+		delete m_bkgImgMgr2;
 
 	m_gc->clbkReleaseFont(m_cLabelFont);
 }
@@ -180,13 +180,13 @@ void OGCelestialSphere::AllocGrids()
 
 void OGCelestialSphere::InitBackgroundManager()
 {
-	if (csphere) {
-		delete csphere;
-		csphere = nullptr;
+	if (m_bkgImgMgr) {
+		delete m_bkgImgMgr;
+		m_bkgImgMgr = nullptr;
 	}
-	if (csphere2) {
-		delete csphere2;
-		csphere2 = nullptr;
+	if (m_bkgImgMgr2) {
+		delete m_bkgImgMgr2;
+		m_bkgImgMgr2 = nullptr;
 	}
 
 	char* cTexPath = (char*)m_gc->GetConfigParam(CFGPRM_CSPHERETEXTURE);
@@ -197,7 +197,7 @@ void OGCelestialSphere::InitBackgroundManager()
 
 	DWORD fa = GetFileAttributes(cbuf);
 	if (0 /*fa & FILE_ATTRIBUTE_DIRECTORY*/) {  // This requires more work
-		csphere2 = new CsphereManager(cTexPath, 8, 8);
+		m_bkgImgMgr2 = new CsphereManager(cTexPath, 8, 8);
 
 		Matrix R(2000, 0, 0, 0, 2000, 0, 0, 0, 2000), ecl2gal;
 		double theta = 60.25 * RAD; // 60.18*RAD;
@@ -216,7 +216,7 @@ void OGCelestialSphere::InitBackgroundManager()
 			0, 0, 0, 1);
 	}
 	else {
-		csphere = new CSphereManager;
+		m_bkgImgMgr = new CSphereManager;
 	}
 }
 
@@ -273,13 +273,13 @@ void OGCelestialSphere::RenderGrid(LPDIRECT3DDEVICE7 dev, Vector& col, bool eqli
 
 void OGCelestialSphere::RenderBkgImage(LPDIRECT3DDEVICE7 dev, int bglvl)
 {
-	if (csphere2) {
+	if (m_bkgImgMgr2) {
 		VPlanet::RenderPrm rprm;
 		memset(&rprm, 0, sizeof(VPlanet::RenderPrm));
-		csphere2->Render(dev, m_WMcsphere, 0, false, rprm);
+		m_bkgImgMgr2->Render(dev, m_WMcsphere, 0, false, rprm);
 	}
-	else if (csphere) {
-		csphere->Render(dev, 8, bglvl);
+	else if (m_bkgImgMgr) {
+		m_bkgImgMgr->Render(dev, 8, bglvl);
 	}
 }
 

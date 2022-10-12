@@ -107,8 +107,8 @@ protected:
 
 private:
 	OrbiterGraphics* m_gc;          ///< pointer to graphics client
-	CSphereManager* csphere;        ///< background image manager (old version)
-	CsphereManager* csphere2;       ///< background image manager (new version)
+	CSphereManager* m_bkgImgMgr;    ///< background image manager (old version)
+	CsphereManager* m_bkgImgMgr2;   ///< background image manager (new version)
 	Scene* m_scene;                 ///< pointer to scene object
 	DWORD m_viewW;                  ///< render viewport width [pixel]
 	DWORD m_viewH;                  ///< render viewport height [pixel]

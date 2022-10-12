@@ -13,7 +13,6 @@
 #include "Vobject.h"
 #include "Body.h"
 #include "CelSphere.h"
-//#include "cspheremgr2.h"
 
 #define MAXCONST 88      // max number of constellations
 #define CANVAS_SIZE 256  // size of multi-purpose texture

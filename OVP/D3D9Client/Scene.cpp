@@ -11,7 +11,7 @@
 #include "VVessel.h"
 #include "VBase.h"
 #include "Particle.h"
-#include "CSphereMgr.h"
+#include "PlanetRenderer.h"
 #include "D3D9Util.h"
 #include "D3D9Config.h"
 #include "D3D9Surface.h"
@@ -123,8 +123,6 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	iVCheck = 0;
 
 	InitGDIResources();
-
-	cspheremgr = new CSphereManager(_gc, this);
 
 	while (true) {
 		float dx = 0;
@@ -289,7 +287,6 @@ Scene::~Scene ()
 		delete []Lights;
 		Lights = NULL;
 	}
-	if (cspheremgr) delete cspheremgr;
 
 	// Particle Streams
 	if (nstream) {
@@ -1219,23 +1216,21 @@ void Scene::RenderMainScene()
 		PlanetRenderer::InitializeScattering(vPl);
 	}
 
-	// -------------------------------------------------------------------------------------------------------
-	// Render Celestial Sphere Background Image
-	// -------------------------------------------------------------------------------------------------------
-
-	cspheremgr->Render(pDevice, 8, bglvl);
-
-	pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-
-	// -------------------------------------------------------------------------------------------------------
-	// planetarium mode (celestial sphere elements)
-	// -------------------------------------------------------------------------------------------------------
-
 	DWORD plnmode = *(DWORD*)gc->GetConfigParam(CFGPRM_PLANETARIUMFLAG);
 
 	float npl = GetCameraNearPlane();
 	float fpl = GetCameraFarPlane();
 	SetCameraFrustumLimits(0.1, 1e10);
+
+	// -------------------------------------------------------------------------------------------------------
+	// Render Celestial Sphere Background Image
+	// -------------------------------------------------------------------------------------------------------
+
+	csphere->RenderBkgImage(pDevice, bglvl);
+
+	// -------------------------------------------------------------------------------------------------------
+	// planetarium mode (celestial sphere elements)
+	// -------------------------------------------------------------------------------------------------------
 
 	if (plnmode & PLN_ENABLE) {
 

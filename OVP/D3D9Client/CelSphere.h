@@ -83,6 +83,13 @@ public:
 	 */
 	void RenderGrid(ID3DXEffect *fx, bool eqline = true);
 
+	/**
+	 * \brief Render a background image on the celestial sphere.
+	 * \param dev render device
+	 * \param bglvl atmospheric background brightness
+	 */
+	void RenderBkgImage(LPDIRECT3DDEVICE9 dev, int bglvl);
+
 protected:
 	/**
 	 * \brief Prepare the star vertex list from the star database.
@@ -111,14 +118,15 @@ protected:
 	virtual bool EclDir2WindowPos(const VECTOR3& dir, int& x, int& y) const;
 
 private:
-	oapi::D3D9Client *m_gc;  ///< pointer to graphics client
-	Scene* m_scene;          ///< pointer to scene object
-	LPDIRECT3DDEVICE9 m_pDevice; ///< DirectX9 device
-	UINT maxNumVertices;     ///< number of vertices to use for one chunk at star-drawing
-	DWORD m_nsVtx;           ///< total number of vertices over all buffers
+	oapi::D3D9Client *m_gc;         ///< pointer to graphics client
+	CSphereManager* m_bkgImgMgr;    ///< background image manager
+	Scene* m_scene;                 ///< pointer to scene object
+	LPDIRECT3DDEVICE9 m_pDevice;    ///< DirectX9 device
+	UINT maxNumVertices;            ///< number of vertices to use for one chunk at star-drawing
+	DWORD m_nsVtx;                  ///< total number of vertices over all buffers
 	std::vector<LPDIRECT3DVERTEXBUFFER9> m_sVtx; ///< star vertex buffers
-	int m_lvlIdx[256];       ///< star brightness hash table
-	DWORD m_ncVtx;           ///< number of constellation line vertices
+	int m_lvlIdx[256];              ///< star brightness hash table
+	DWORD m_ncVtx;                  ///< number of constellation line vertices
 	LPDIRECT3DVERTEXBUFFER9 m_cVtx; ///< constellation line vertex buffer
 	LPDIRECT3DVERTEXBUFFER9 m_grdLngVtx, m_grdLatVtx; ///< vertex buffers for grid lines
 };

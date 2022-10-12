@@ -116,7 +116,7 @@ protected:
 
 private:
 	oapi::D3D7Client *m_gc;          ///< pointer to graphics client
-	CSphereManager* cspheremgr;      ///< background image manager
+	CSphereManager* m_bkgImgMgr;     ///< background image manager
 	Scene* m_scene;                  ///< pointer to scene object
 	DWORD m_viewW;                   ///< render viewport width [pixel]
 	DWORD m_viewH;                   ///< render viewport height [pixel]
