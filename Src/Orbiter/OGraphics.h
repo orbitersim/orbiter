@@ -105,6 +105,7 @@ public:
 	void clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3 *T, bool additive = false);
 	void clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3 *T, float alpha, bool additive = false);
 
+	Config* Cfg();
 	inline Scene *GetScene() { return scene; }
 	inline DWORD GetViewW() const { return viewW; }
 	inline DWORD GetViewH() const { return viewH; }

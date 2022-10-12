@@ -19,7 +19,6 @@
 #include "VPlanet.h"
 #include "Vstar.h"
 #include "VBase.h"
-#include "CSphereMgr.h"
 #include "Log.h"
 #include "D3dmath.h"
 #include "resource.h"
@@ -102,11 +101,8 @@ Scene::Scene (OrbiterGraphics *og)
 	nstream     = 0;
 	m_celSphere = new OGCelestialSphere(gc, this);
 	gcanvas = 0;
-	csphere = 0;
-	csphere2 = 0;
 	RegisterDevices (og->GetDevice());
 	InitGDIResources();
-	Init();
 	sunvis = false;
 	if (!og->clbkGetRenderParam (RP_MAXLIGHTS, &maxlight) || (LONG)maxlight < 0) maxlight = 8;
 	if (g_pOrbiter->Cfg()->CfgVisualPrm.MaxLight)
@@ -165,8 +161,6 @@ Scene::~Scene ()
 	delete m_celSphere;
 	if (nsun) delete []vsun;
 	if (nstarlight) delete []starlight;
-	if (csphere) delete csphere;
-	if (csphere2) delete csphere2;
 
 	for (i = 0; i < 4; i++)
 		if (gtex[i]) gtex[i]->Release();
@@ -212,13 +206,6 @@ void Scene::RegisterDevices (LPDIRECT3DDEVICE7 dv)
 
 void Scene::UnregisterDevices ()
 {
-}
-
-void Scene::Init()
-{
-	if (csphere) delete csphere;
-	if (csphere2) delete csphere2;
-	CreateCSphere(g_pOrbiter->Cfg()->CfgVisualPrm.CSphereBgPath);
 }
 
 void Scene::InitGDIResources ()
@@ -536,39 +523,6 @@ void Scene::DelParticleStream (DWORD idx)
 	nstream--;
 }
 
-void Scene::CreateCSphere(const char *path)
-{
-	csphere = 0;
-	csphere2 = 0;
-	if (!path[0]) return;
-
-	char cbuf[256];
-	g_pOrbiter->Cfg()->TexPath(cbuf, path);
-	DWORD fa = GetFileAttributes(cbuf);
-	if (0 /*fa & FILE_ATTRIBUTE_DIRECTORY*/) {
-		csphere2 = new CsphereManager(path, 8, 8);
-
-		Matrix R(2000, 0, 0, 0, 2000, 0, 0, 0, 2000), ecl2gal;
-		double theta = 60.25*RAD; // 60.18*RAD;
-		double phi = 90.09*RAD; // 90.02*RAD;
-		double lambda = 173.64*RAD; // 173.6*RAD;
-		double sint = sin(theta), cost = cos(theta);
-		double sinp = sin(phi), cosp = cos(phi);
-		double sinl = sin(lambda), cosl = cos(lambda);
-		ecl2gal.Set(cosp, 0, sinp, 0, 1, 0, -sinp, 0, cosp);
-		ecl2gal.premul(Matrix(1, 0, 0, 0, cost, sint, 0, -sint, cost));
-		ecl2gal.premul(Matrix(cosl, 0, sinl, 0, 1, 0, -sinl, 0, cosl));
-		R.premul(ecl2gal);
-		m_WMcsphere = _M(R.m11, R.m12, R.m13, 0,
-			             R.m21, R.m22, R.m23, 0,
-			             R.m31, R.m32, R.m33, 0,
-			             0    , 0    , 0    , 1);
-	}
-	else {
-		csphere = new CSphereManager;
-	}
-}
-
 bool Scene::ParticleStreamExists (const oapi::ParticleStream *_pstream) const
 {
 	for (DWORD i = 0; i < nstream; i++)
@@ -809,14 +763,7 @@ void Scene::Render (D3DRECT* vp_rect)
 	g_camera->SetFrustumLimits (0.1, 1e10);
 
 	// celestial sphere background
-	if (csphere2) {
-		VPlanet::RenderPrm rprm;
-		memset(&rprm, 0, sizeof(VPlanet::RenderPrm));
-		csphere2->Render(dev, m_WMcsphere, 0, false, rprm);
-	}
-	else if (csphere) {
-		csphere->Render(dev, 8, atmidx);
-	}
+	m_celSphere->RenderBkgImage(dev, atmidx);
 
 	dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
 	dev->SetTexture(0, 0);

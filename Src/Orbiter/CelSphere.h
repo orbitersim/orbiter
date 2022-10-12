@@ -6,10 +6,13 @@
 
 #include "CelSphereAPI.h"
 #include "OGraphics.h"
+#include "cspheremgr2.h"
 #include "D3D7Util.h"
 #include "Vecmat.h"
 
 #define MAXCONST 88      // max number of constellations
+
+class CSphereManager;
 
 class OGCelestialSphere : public oapi::CelestialSphere {
 public:
@@ -62,6 +65,11 @@ public:
 	 */
 	void RenderGrid(LPDIRECT3DDEVICE7 dev, Vector& col, bool eqline = true);
 
+	/**
+	 * \brief Render a background image on the celestial sphere.
+	 */
+	void RenderBkgImage(LPDIRECT3DDEVICE7 dev, int bglvl);
+
 protected:
 	/**
 	 * \brief Prepare the star vertex list from the star database.
@@ -80,6 +88,12 @@ protected:
 	void AllocGrids();
 
 	/**
+	 * \brief Set up the render manager for showing a background image
+	 *    on the celestial sphere.
+	 */
+	void InitBackgroundManager();
+
+	/**
 	 * \brief Convert a direction into viewport coordinates
 	 * \param dir direction in the ecliptic frame provided as a point on the
 	 *    celestial sphere.
@@ -91,6 +105,8 @@ protected:
 
 private:
 	OrbiterGraphics* m_gc;          ///< pointer to graphics client
+	CSphereManager* csphere;        ///< background image manager (old version)
+	CsphereManager* csphere2;       ///< background image manager (new version)
 	Scene* m_scene;                 ///< pointer to scene object
 	DWORD m_viewW;                  ///< render viewport width [pixel]
 	DWORD m_viewH;                  ///< render viewport height [pixel]
@@ -100,6 +116,7 @@ private:
 	DWORD m_ncVtx;                   ///< number of constellation line vertices
 	LPDIRECT3DVERTEXBUFFER7 m_cVtx;  ///< vertex buffer for constellation lines
 	LPDIRECT3DVERTEXBUFFER7 m_grdLngVtx, m_grdLatVtx; ///< vertex buffers for grid lines
+	MATRIX4 m_WMcsphere;
 
 	oapi::Font *m_cLabelFont;        ///< font for constellation labels
 };

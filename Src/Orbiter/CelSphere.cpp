@@ -4,6 +4,7 @@
 #include "CelSphere.h"
 #include "Scene.h"
 #include "Camera.h"
+#include "CSphereMgr.h"
 #include "Vecmat.h"
 #include "D3dmath.h"
 #include "Log.h"
@@ -17,9 +18,13 @@ OGCelestialSphere::OGCelestialSphere(OrbiterGraphics* gc, Scene* scene)
 	, m_gc(gc)
 	, m_scene(scene)
 {
+	csphere = nullptr;
+	csphere2 = nullptr;
+
 	InitStars();
 	InitConstellationLines();
 	AllocGrids();
+	InitBackgroundManager();
 
 	m_viewW = gc->GetViewW();
 	m_viewH = gc->GetViewH();
@@ -36,6 +41,11 @@ OGCelestialSphere::~OGCelestialSphere()
 	m_cVtx->Release();
 	m_grdLngVtx->Release();
 	m_grdLatVtx->Release();
+
+	if (csphere)
+		delete csphere;
+	if (csphere2)
+		delete csphere2;
 
 	m_gc->clbkReleaseFont(m_cLabelFont);
 }
@@ -168,6 +178,49 @@ void OGCelestialSphere::AllocGrids()
 	m_grdLatVtx->Optimize(m_gc->GetDevice(), 0);
 }
 
+void OGCelestialSphere::InitBackgroundManager()
+{
+	if (csphere) {
+		delete csphere;
+		csphere = nullptr;
+	}
+	if (csphere2) {
+		delete csphere2;
+		csphere2 = nullptr;
+	}
+
+	char* cTexPath = (char*)m_gc->GetConfigParam(CFGPRM_CSPHERETEXTURE);
+	if (!cTexPath[0]) return;
+
+	char cbuf[256];
+	m_gc->Cfg()->TexPath(cbuf, cTexPath);
+
+	DWORD fa = GetFileAttributes(cbuf);
+	if (0 /*fa & FILE_ATTRIBUTE_DIRECTORY*/) {  // This requires more work
+		csphere2 = new CsphereManager(cTexPath, 8, 8);
+
+		Matrix R(2000, 0, 0, 0, 2000, 0, 0, 0, 2000), ecl2gal;
+		double theta = 60.25 * RAD; // 60.18*RAD;
+		double phi = 90.09 * RAD; // 90.02*RAD;
+		double lambda = 173.64 * RAD; // 173.6*RAD;
+		double sint = sin(theta), cost = cos(theta);
+		double sinp = sin(phi), cosp = cos(phi);
+		double sinl = sin(lambda), cosl = cos(lambda);
+		ecl2gal.Set(cosp, 0, sinp, 0, 1, 0, -sinp, 0, cosp);
+		ecl2gal.premul(Matrix(1, 0, 0, 0, cost, sint, 0, -sint, cost));
+		ecl2gal.premul(Matrix(cosl, 0, sinl, 0, 1, 0, -sinl, 0, cosl));
+		R.premul(ecl2gal);
+		m_WMcsphere = _M(R.m11, R.m12, R.m13, 0,
+			R.m21, R.m22, R.m23, 0,
+			R.m31, R.m32, R.m33, 0,
+			0, 0, 0, 1);
+	}
+	else {
+		csphere = new CSphereManager;
+	}
+}
+
+
 // ==============================================================
 
 void OGCelestialSphere::RenderStars(LPDIRECT3DDEVICE7 dev, DWORD nmax, const Vector* bgcol)
@@ -214,6 +267,20 @@ void OGCelestialSphere::RenderGrid(LPDIRECT3DDEVICE7 dev, Vector& col, bool eqli
 		dev->DrawPrimitiveVB(D3DPT_LINESTRIP, m_grdLngVtx, i * (NSEG + 1), NSEG + 1, 0);
 	for (i = 0; i < 12; i++)
 		dev->DrawPrimitiveVB(D3DPT_LINESTRIP, m_grdLatVtx, i * (NSEG + 1), NSEG + 1, 0);
+}
+
+// ==============================================================
+
+void OGCelestialSphere::RenderBkgImage(LPDIRECT3DDEVICE7 dev, int bglvl)
+{
+	if (csphere2) {
+		VPlanet::RenderPrm rprm;
+		memset(&rprm, 0, sizeof(VPlanet::RenderPrm));
+		csphere2->Render(dev, m_WMcsphere, 0, false, rprm);
+	}
+	else if (csphere) {
+		csphere->Render(dev, 8, bglvl);
+	}
 }
 
 // ==============================================================

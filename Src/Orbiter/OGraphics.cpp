@@ -371,9 +371,10 @@ INT_PTR VideoTab::WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 // =======================================================================
 // =======================================================================
 
-OrbiterGraphics::OrbiterGraphics (Orbiter *po): GDIClient (po->GetInstance())
+OrbiterGraphics::OrbiterGraphics (Orbiter *po)
+	: GDIClient (po->GetInstance())
+	, orbiter(po)
 {
-	orbiter                = po;
 	scene                  = NULL;
 	vtab                   = NULL;
 	clipper                = NULL;
@@ -422,6 +423,13 @@ OrbiterGraphics::~OrbiterGraphics ()
 		LOGOUT_WARN("Launchpad item still allocated: m_lpiPlanetRenderOptions");
 		delete m_lpiPlanetRenderOptions;
 	}
+}
+
+// =======================================================================
+
+Config* OrbiterGraphics::Cfg()
+{
+	return orbiter->Cfg();
 }
 
 // =======================================================================

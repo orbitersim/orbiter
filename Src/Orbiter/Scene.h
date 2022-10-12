@@ -13,7 +13,7 @@
 #include "Vobject.h"
 #include "Body.h"
 #include "CelSphere.h"
-#include "cspheremgr2.h"
+//#include "cspheremgr2.h"
 
 #define MAXCONST 88      // max number of constellations
 #define CANVAS_SIZE 256  // size of multi-purpose texture
@@ -27,7 +27,6 @@
 
 class Star;
 class VStar;
-class CSphereManager;
 class PlanetarySystem;
 class Camera;
 class D3D7ParticleStream;
@@ -46,7 +45,6 @@ public:
 	void RegisterDevices (LPDIRECT3DDEVICE7 dv);
 	// To be called before and after a render devices changes
 
-	void Init();
 	void Init3DFonts ();
 
 	int GetObjects (VObject ***list) { *list = vobj; return nobj; }
@@ -172,9 +170,6 @@ private:
 	void DelParticleStream (DWORD idx);
 	// remove a particle stream from the list
 
-	void CreateCSphere(const char *path);
-	// Create the texture manager for the celestial background
-
 	/**
 	 * \brief Return sky background colour based on atmospheric parameters of closest planet
 	 */
@@ -202,13 +197,6 @@ private:
 
 	// Sketchpad resources
 	oapi::Font* labelFont[4];
-
-	//oapi::Pen *label_pen;
-
-	CSphereManager *csphere;
-	CsphereManager *csphere2;
-
-	MATRIX4 m_WMcsphere;
 };
 
 #endif // !__SCENE_H
