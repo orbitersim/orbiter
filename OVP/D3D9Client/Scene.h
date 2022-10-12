@@ -431,12 +431,7 @@ private:
 
 	// GDI resources ====================================================================
 	//
-	static COLORREF labelCol[6];
-	static oapi::Pen *lblPen[6];
-	int   labelSize[1];
-
 	oapi::Font *label_font[4];
-	oapi::Pen  *label_pen;
 
 	std::list<vVessel *> RenderList;
 	std::list<vVessel *> SmapRenderList;

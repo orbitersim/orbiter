@@ -1459,8 +1459,7 @@ void Scene::RenderMainScene()
 					oapiGetObjectName(hObj, name, 256);
 					oapiGetGlobalPos(hObj, &pp);
 
-					pSketch->SetTextColor(labelCol[0]);
-					pSketch->SetPen(lblPen[0]);
+					m_celSphere->EnsureMarkerDrawingContext((oapi::Sketchpad**)&pSketch, 0, m_celSphere->MarkerColor(0), m_celSphere->MarkerPen(0));
 					RenderObjectMarker(pSketch, pp, std::string(name), std::string(), 0, viewH / 80);
 				}
 
@@ -1490,9 +1489,7 @@ void Scene::RenderMainScene()
 								int size = (int)(viewH / 80.0*list[n].size + 0.5);
 								int col = list[n].colour;
 
-								pSketch->SetTextColor(labelCol[col]);
-								pSketch->SetPen(lblPen[col]);
-
+								m_celSphere->EnsureMarkerDrawingContext((oapi::Sketchpad**)&pSketch, 0, m_celSphere->MarkerColor(col), m_celSphere->MarkerPen(col));
 								const std::vector<oapi::GraphicsClient::LABELSPEC>& ls = list[n].marker;
 								VECTOR3 sp;
 								for (int j = 0; j < ls.size(); j++) {
@@ -1512,8 +1509,7 @@ void Scene::RenderMainScene()
 						oapiGetRotationMatrix(hObj, &prot);
 						int size = (int)(viewH / 80.0);
 
-						pSketch->SetTextColor(labelCol[0]);
-						pSketch->SetPen(lblPen[0]);
+						m_celSphere->EnsureMarkerDrawingContext((oapi::Sketchpad**)&pSketch, 0, m_celSphere->MarkerColor(0), m_celSphere->MarkerPen(0));
 
 						for (DWORD i = 0; i < n; i++) {
 
@@ -1573,7 +1569,7 @@ void Scene::RenderMainScene()
 	if ((plnmode & PLN_ENABLE) && (plnmode & PLN_LMARK))
 	{
 		D3D9Pad* pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
-		pSketch->SetPen(label_pen);
+		m_celSphere->EnsureMarkerDrawingContext((oapi::Sketchpad**)&pSketch, 0, 0, m_celSphere->MarkerPen(6));
 
 		int fontidx = -1;
 		for (DWORD i = 0; i < nplanets; ++i)
@@ -1616,9 +1612,7 @@ void Scene::RenderMainScene()
 
 
 	D3D9Pad* pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
-	pSketch->SetTextColor(labelCol[0]);
-	pSketch->SetPen(lblPen[0]);
-
+	m_celSphere->EnsureMarkerDrawingContext((oapi::Sketchpad**)&pSketch, 0, m_celSphere->MarkerColor(0), m_celSphere->MarkerPen(0));
 
 	// Render the vessels inside the shadows
 	//
@@ -2860,18 +2854,15 @@ void Scene::DelParticleStream (DWORD idx)
 void Scene::InitGDIResources ()
 {
 	char dbgfnt[64]; sprintf_s(dbgfnt,64,"*%s",Config->DebugFont);
-	labelSize[0] = 15;
 	pAxisFont  = oapiCreateFont(24, false, "Arial", FONT_NORMAL, 0);
 	pLabelFont = oapiCreateFont(15, false, "Arial", FONT_NORMAL, 0);
 	pDebugFont = oapiCreateFont(Config->DebugFontSize, true, dbgfnt, FONT_NORMAL, 0);
-	for (int i=0;i<6;i++) lblPen[i] = oapiCreatePen(1,1,labelCol[i]);
 
 	const int fsize[4] = { 12, 16, 20, 26 };
 	for (int i = 0; i < 4; ++i) {
 		label_font[i] = gc->clbkCreateFont(fsize[i], true, "Arial", FONT_BOLD);
 	}
 	//@todo: different pens for different fonts?
-	label_pen = gc->clbkCreatePen(1, 0, RGB(255, 255, 255));
 }
 
 // ===========================================================================================
@@ -2881,12 +2872,10 @@ void Scene::ExitGDIResources ()
 	oapiReleaseFont(pAxisFont);
 	oapiReleaseFont(pLabelFont);
 	oapiReleaseFont(pDebugFont);
-	for (int i=0;i<6;i++) oapiReleasePen(lblPen[i]);
 
 	for (int i = 0; i < 4; ++i) {
 		gc->clbkReleaseFont(label_font[i]);
 	}
-	gc->clbkReleasePen(label_pen);
 }
 
 // ===========================================================================================
@@ -3408,6 +3397,3 @@ int distcomp (const void *arg1, const void *arg2)
 	double d2 = ((PList*)arg2)->dist;
 	return (d1 > d2 ? -1 : d1 < d2 ? 1 : 0);
 }
-
-COLORREF Scene::labelCol[6] = {0x00FFFF, 0xFFFF00, 0x4040FF, 0xFF00FF, 0x40FF40, 0xFF8080};
-oapi::Pen * Scene::lblPen[6] = {0,0,0,0,0,0};
