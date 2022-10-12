@@ -69,7 +69,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	gc = _gc;
 	vobjEnv = NULL;
 	vobjIrd = NULL;
-	csphere = NULL;
+	m_celSphere = NULL;
 	Lights = NULL;
 	hSun = NULL;
 	pAxisFont  = NULL;
@@ -105,7 +105,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	SetCameraAperture(float(RAD*50.0), float(viewH)/float(viewW));
 	SetCameraFrustumLimits(2.5f, 5e6f); // initial limits
 
-	csphere = new D3D9CelestialSphere(gc, this);
+	m_celSphere = new D3D9CelestialSphere(gc, this);
 	Lights = new D3D9Light[MAX_SCENE_LIGHTS];
 
 	bLocalLight = *(bool*)gc->GetConfigParam(CFGPRM_LOCALLIGHT);
@@ -270,7 +270,7 @@ Scene::~Scene ()
 	SAFE_DELETE(pBlur);
 	SAFE_DELETE(pLightBlur);
 	SAFE_DELETE(pIrradiance);
-	SAFE_DELETE(csphere);
+	SAFE_DELETE(m_celSphere);
 	SAFE_RELEASE(pOffscreenTarget);
 	SAFE_RELEASE(pEnvDS);
 	SAFE_RELEASE(pIrradDS);
@@ -1226,7 +1226,7 @@ void Scene::RenderMainScene()
 	// Render Celestial Sphere Background Image
 	// -------------------------------------------------------------------------------------------------------
 
-	csphere->RenderBkgImage(pDevice, bglvl);
+	m_celSphere->RenderBkgImage(pDevice, bglvl);
 
 	// -------------------------------------------------------------------------------------------------------
 	// planetarium mode (celestial sphere elements)
@@ -1244,13 +1244,13 @@ void Scene::RenderMainScene()
 		if (plnmode & PLN_EGRID) {
 			D3DXVECTOR4 vColor(0.0f, 0.0f, 0.4f*linebrt, 1.0f);
 			HR(FX->SetVector(eColor, &vColor));
-			csphere->RenderGrid(FX, !(plnmode & PLN_ECL));
+			m_celSphere->RenderGrid(FX, !(plnmode & PLN_ECL));
 
 		}
 		if (plnmode & PLN_ECL)	 {
 			D3DXVECTOR4 vColor(0.0f, 0.0f, 0.8f*linebrt, 1.0f);
 			HR(FX->SetVector(eColor, &vColor));
-			csphere->RenderGreatCircle(FX);
+			m_celSphere->RenderGreatCircle(FX);
 		}
 
 		// render celestial grid ----------------------------------------------------------------------------
@@ -1266,12 +1266,12 @@ void Scene::RenderMainScene()
 			if (plnmode & PLN_CGRID) {
 				D3DXVECTOR4 vColor(0.35f*linebrt, 0.0f, 0.35f*linebrt, 1.0f);
 				HR(FX->SetVector(eColor, &vColor));
-				csphere->RenderGrid(FX, !(plnmode & PLN_EQU));
+				m_celSphere->RenderGrid(FX, !(plnmode & PLN_EQU));
 			}
 			if (plnmode & PLN_EQU)	 {
 				D3DXVECTOR4 vColor(0.7f*linebrt, 0.0f, 0.7f*linebrt, 1.0f);
 				HR(FX->SetVector(eColor, &vColor));
-				csphere->RenderGreatCircle(FX);
+				m_celSphere->RenderGreatCircle(FX);
 			}
 		}
 
@@ -1281,7 +1281,7 @@ void Scene::RenderMainScene()
 			HR(FX->SetMatrix(eWVP, GetProjectionViewMatrix()));
 			D3DXVECTOR4 vColor(0.4f*linebrt, 0.3f*linebrt, 0.2f*linebrt, 1.0f);
 			HR(FX->SetVector(eColor, &vColor));
-			csphere->RenderConstellationLines(FX);
+			m_celSphere->RenderConstellationLines(FX);
 		}
 	}
 
@@ -1291,7 +1291,7 @@ void Scene::RenderMainScene()
 
 	HR(FX->SetTechnique(eStar));
 	HR(FX->SetMatrix(eWVP, GetProjectionViewMatrix()));
-	csphere->RenderStars(FX, (DWORD)-1, &sky_color);
+	m_celSphere->RenderStars(FX, (DWORD)-1, &sky_color);
 
 
 	// -------------------------------------------------------------------------------------------------------
@@ -1310,25 +1310,11 @@ void Scene::RenderMainScene()
 
 			// constellation labels --------------------------------------------------
 			if (plnmode & PLN_CNSTLABEL) {
-				csphere->RenderConstellationLabels(pSketch, plnmode & PLN_CNSTLONG);
+				m_celSphere->RenderConstellationLabels(pSketch, plnmode & PLN_CNSTLONG);
 			}
 			// celestial marker (stars) names ----------------------------------------
 			if (plnmode & PLN_CCMARK) {
-				DWORD n;
-				const std::vector<GraphicsClient::LABELLIST>& list = gc->GetCelestialMarkers();
-
-				for (n = 0; n < list.size(); n++) {
-					if (list[n].active) {
-						int size = (int)(viewH / 80.0*list[n].size + 0.5);
-
-						pSketch->SetTextColor(labelCol[list[n].colour]);
-						pSketch->SetPen(lblPen[list[n].colour]);
-
-						const std::vector<oapi::GraphicsClient::LABELSPEC>& ls = list[n].marker;
-						for (int i = 0; i < ls.size(); i++)
-							csphere->RenderMarker(pSketch, ls[i].pos, ls[i].label[0], ls[i].label[1], list[n].shape, size);
-					}
-				}
+				m_celSphere->RenderCelestialMarkers((oapi::Sketchpad**)&pSketch);
 			}
 			pSketch->EndDrawing(); //SKETCHPAD_LABELS
 		}
@@ -2817,7 +2803,7 @@ void Scene::RenderObjectMarker(oapi::Sketchpad *pSkp, const VECTOR3 &gpos, const
 {
 	VECTOR3 dp (gpos - GetCameraGPos());
 	normalise (dp);
-	csphere->RenderMarker(pSkp, dp, label1, label2, mode, scale);
+	m_celSphere->RenderMarker(pSkp, dp, label1, label2, mode, scale);
 }
 
 // ===========================================================================================
