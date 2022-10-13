@@ -644,7 +644,6 @@ DlgCustomCLabels::DlgCustomCLabels (HINSTANCE hInstance, HWND hParent, void *con
 
 void DlgCustomCLabels::Refresh (HWND hDlg)
 {
-	int n, nlist;
 	char cbuf[256];
 
 	SendDlgItemMessage (hDlg, IDC_CLBL_LIST, LB_RESETCONTENT, 0, 0);
@@ -655,10 +654,10 @@ void DlgCustomCLabels::Refresh (HWND hDlg)
 	_finddata_t fdata;
 	long fh = g_psys->FindFirst (FILETYPE_MARKER, &fdata, cbuf);
 	if (fh >= 0) {
-		n = 0;
+		int n = 0;
 		do {
 			SendDlgItemMessage (hDlg, IDC_CLBL_LIST, LB_ADDSTRING, 0, (LPARAM)trim_string(cbuf));
-			if (n < nlist && list[n].active)
+			if (n < list.size() && list[n].active)
 				SendDlgItemMessage (hDlg, IDC_CLBL_LIST, LB_SETSEL, TRUE, n);
 			n++;
 		} while (!g_psys->FindNext (fh, &fdata, cbuf));
@@ -670,13 +669,11 @@ void DlgCustomCLabels::Refresh (HWND hDlg)
 
 void DlgCustomCLabels::Select (HWND hDlg)
 {
-	int i, sel, nlist;
-
 	std::vector<oapi::GraphicsClient::LABELLIST>& list = g_psys->LabelList();
 	if (!list.size()) return;
 
-	for (i = 0; i < nlist; i++) {
-		sel = SendDlgItemMessage (hDlg, IDC_CLBL_LIST, LB_GETSEL, i, 0);
+	for (int i = 0; i < list.size(); i++) {
+		int sel = SendDlgItemMessage (hDlg, IDC_CLBL_LIST, LB_GETSEL, i, 0);
 		list[i].active = (sel ? true:false);
 	}
 

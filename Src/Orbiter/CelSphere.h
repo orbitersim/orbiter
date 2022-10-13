@@ -19,6 +19,10 @@ public:
 	OGCelestialSphere(OrbiterGraphics* gc, Scene* scene);
 	~OGCelestialSphere();
 
+	void InitCelestialTransform();
+
+	void Render(LPDIRECT3DDEVICE7 dev, double bglvl);
+
 	/**
 	 * \brief Render stars as pixels on the celestial sphere
 	 * \param dev render device
@@ -28,7 +32,7 @@ public:
 	 *   of stars darker than the background is suppressed.
 	 * \note All device parameters are assumed to be set correctly on call.
 	 */
-	void RenderStars(LPDIRECT3DDEVICE7 dev, DWORD nmax = (DWORD)-1, const Vector* bgcol = 0);
+	void RenderStars(LPDIRECT3DDEVICE7 dev, DWORD nmax = (DWORD)-1, double bglvl = 0.0);
 
 	/**
 	 * \brief Render constellation lines on the celestial sphere
@@ -70,7 +74,7 @@ public:
 	 * \param dev render device
 	 * \param bglvl atmospheric background brightness
 	 */
-	void RenderBkgImage(LPDIRECT3DDEVICE7 dev, int bglvl);
+	void RenderBkgImage(LPDIRECT3DDEVICE7 dev, double bglvl);
 
 protected:
 	/**
@@ -118,7 +122,9 @@ private:
 	DWORD m_ncVtx;                   ///< number of constellation line vertices
 	LPDIRECT3DVERTEXBUFFER7 m_cVtx;  ///< vertex buffer for constellation lines
 	LPDIRECT3DVERTEXBUFFER7 m_grdLngVtx, m_grdLatVtx; ///< vertex buffers for grid lines
+	D3DMATRIX m_rotCelestial;        ///< rotation for celestial grid rendering
 	MATRIX4 m_WMcsphere;
+	double m_mjdPrecessionChecked;
 
 	oapi::Font *m_cLabelFont;        ///< font for constellation labels
 };

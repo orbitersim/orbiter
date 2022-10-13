@@ -23,7 +23,7 @@ public:
 	static void CreateDeviceObjects (LPDIRECT3D7 d3d, LPDIRECT3DDEVICE7 dev);
 	static void DestroyDeviceObjects ();
 
-	void Render (LPDIRECT3DDEVICE7 dev, int level, int bglvl);
+	void Render (LPDIRECT3DDEVICE7 dev, int level, double bglvl);
 
 protected:
 	bool LoadPatchData ();

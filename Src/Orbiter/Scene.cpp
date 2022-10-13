@@ -747,117 +747,17 @@ void Scene::Render (D3DRECT* vp_rect)
 				AddLocalLight (lightlist[i].plight, lightlist[i].vobj, i);
 	}
 
-	// render background stars, celestial markers and grids
-	DWORD flagPItem = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagPlanetarium;
-
-	// render celestial sphere (without z-buffer)
-	dev->SetRenderState (D3DRENDERSTATE_ZENABLE, FALSE);
-	dev->SetRenderState(D3DRENDERSTATE_ZVISIBLE, FALSE);
-	dev->SetRenderState (D3DRENDERSTATE_ZWRITEENABLE, FALSE);
-	dev->SetRenderState (D3DRENDERSTATE_LIGHTING, FALSE);
-
 	// stretch the z limits to make sure everything is rendered (z-fighting
 	// is not an issue here because everything is rendered without z-tests)
 	double npl = g_camera->Nearplane();
 	double fpl = g_camera->Farplane();
-	g_camera->SetFrustumLimits (0.1, 1e10);
+	g_camera->SetFrustumLimits (0.1, 1e8);
 
-	// celestial sphere background
-	m_celSphere->RenderBkgImage(dev, atmidx);
+	// render the celestial sphere background
+	m_celSphere->Render(dev, bglvl);
 
-	dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
-	dev->SetTexture(0, 0);
-
-	if (flagPItem & PLN_ENABLE) {
-
-		// use explicit colours
-		dev->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TFACTOR);
-		dev->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
-
-		DWORD dstblend;
-		dev->GetRenderState(D3DRENDERSTATE_DESTBLEND, &dstblend);
-		dev->SetRenderState(D3DRENDERSTATE_DESTBLEND, D3DBLEND_ONE);
-		dev->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
-		double colScale = 1.0 - bglvl; // feature brightness modifier for lit background
-
-		if (flagPItem & PLN_EGRID) {                     // render ecliptic grid
-			m_celSphere->RenderGrid(dev, Vector(0, 0, 0.4) * colScale, (flagPItem & PLN_ECL) == 0);
-		}
-		if (flagPItem & PLN_ECL) {
-			m_celSphere->RenderGreatCircle(dev, Vector(0, 0, 0.8) * colScale);
-		}
-		if (flagPItem & (PLN_CGRID|PLN_EQU)) {                     // render celestial grid
-			Planet* p = g_psys->GetPlanet("Earth");
-			D3DMATRIX* prot;
-			if (p) {
-				static D3DMATRIX rot = { 0,0,0,0,  0,0,0,0,  0,0,0,0,  0,0,0,1 };
-				double eps = p->Obliquity();
-				double lan = p->EqLng();
-				float coso = (float)cos(eps), sino = (float)sin(eps);
-				float cosl = (float)cos(lan), sinl = (float)sin(lan);
-				rot._11 = cosl; rot._13 = sinl;
-				rot._21 = -sino * sinl; rot._22 = coso; rot._23 = sino * cosl;
-				rot._31 = -coso * sinl; rot._32 = -sino; rot._33 = coso * cosl;
-				prot = &rot;
-			}
-			else { // Default values: J2000
-				static double eps = 0.4092797095927;
-				static double coso = cos(eps), sino = sin(eps);
-				static D3DMATRIX rot = { 1.0f,0.0f,0.0f,0.0f,  0.0f,(float)coso,(float)sino,0.0f,  0.0f,-(float)sino,(float)coso,0.0f,  0.0f,0.0f,0.0f,1.0f };
-				prot = &rot;
-			}
-			dev->SetTransform(D3DTRANSFORMSTATE_WORLD, prot);
-			if (flagPItem & PLN_CGRID) {
-				m_celSphere->RenderGrid(dev, Vector(0.3, 0, 0.3) * colScale, false);
-				m_celSphere->RenderGreatCircle(dev, Vector(0.7, 0, 0.7) * colScale);
-			}
-			dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
-		}
-		if (flagPItem & PLN_EQU) {                       // render target equator grid
-			const Body* ref = g_camera->Target();
-			if (ref && ref->Type() == OBJTP_VESSEL) ref = ((Vessel*)ref)->ElRef();
-			if (ref && ref->Type() == OBJTP_PLANET) {
-				D3DMATRIX rot;
-				VMAT_identity(rot);
-				SetInvD3DRotation(rot, ref->GRot());
-				dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &rot);
-				m_celSphere->RenderGreatCircle(dev, Vector(0, 0.6, 0)* colScale);
-				dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
-			}
-		}
-		if (flagPItem & PLN_CONST) {          // render constellation lines
-			m_celSphere->RenderConstellationLines(dev, Vector(0.4, 0.3, 0.2) * colScale);
-		}
-
-		oapi::Sketchpad* pSkp = nullptr;
-
-		if (flagPItem & PLN_CNSTLABEL) {      // render constellation labels
-			m_celSphere->RenderConstellationLabels(&pSkp, (flagPItem & PLN_CNSTLONG) == PLN_CNSTLONG);
-		}
-
-		// render celestial sphere markers
-		if (flagPItem & PLN_CCMARK)
-			m_celSphere->RenderCelestialMarkers(&pSkp);
-
-		if (pSkp)
-			gc->clbkReleaseSketchpad(pSkp);
-
-		// revert to standard colour selection and turn off alpha blending
-		dev->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-		dev->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-		dev->SetRenderState(D3DRENDERSTATE_DESTBLEND, dstblend);
-		dev->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
-	}
-
-	// stars
-	m_celSphere->RenderStars(dev, (DWORD)-1, &bgcol);
-
-	g_camera->SetFrustumLimits(npl, fpl); // reset fustrum limits
-
-	dev->SetRenderState (D3DRENDERSTATE_ZENABLE, TRUE);
-	dev->SetRenderState(D3DRENDERSTATE_ZVISIBLE, TRUE);
-	dev->SetRenderState (D3DRENDERSTATE_ZWRITEENABLE, TRUE);
-	dev->SetRenderState (D3DRENDERSTATE_LIGHTING, TRUE);
+	// reset fustrum limits
+	g_camera->SetFrustumLimits(npl, fpl);
 
 	const int MAXPLANET = 256;
 	int np;
@@ -867,6 +767,8 @@ void Scene::Render (D3DRECT* vp_rect)
 	float dmin, dmax;
 	bool npl_adjust = (npl < 5.0);
 	bool npl_adjusted = false;
+
+	DWORD flagPItem = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagPlanetarium;
 
 	// render planets and stars "distant objects" without zbuffer
 	for (i = np = 0; i < nobj; i++) {

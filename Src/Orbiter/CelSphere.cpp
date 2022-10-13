@@ -28,6 +28,7 @@ OGCelestialSphere::OGCelestialSphere(OrbiterGraphics* gc, Scene* scene)
 
 	m_viewW = gc->GetViewW();
 	m_viewH = gc->GetViewH();
+	m_mjdPrecessionChecked = -1e10;
 	DWORD fontScale = max(m_viewH / 60, 14);
 	m_cLabelFont = gc->clbkCreateFont(fontScale, true, "Arial", FONT_ITALIC);
 }
@@ -48,6 +49,31 @@ OGCelestialSphere::~OGCelestialSphere()
 		delete m_bkgImgMgr2;
 
 	m_gc->clbkReleaseFont(m_cLabelFont);
+}
+
+// ==============================================================
+
+void OGCelestialSphere::InitCelestialTransform()
+{
+	// Set up rotation for celestial grid rendering
+	double eps, lan;
+	OBJHANDLE hEarth = oapiGetGbodyByName("Earth");
+	if (hEarth) {  // use current Earth precession axis
+		eps = oapiGetPlanetObliquity(hEarth);
+		lan = oapiGetPlanetTheta(hEarth);
+	} 
+	else {         // default: use the J2000 ecliptic
+		eps = 0.4092797095927;
+		lan = 0.0;
+	}
+	float coso = (float)cos(eps), sino = (float)sin(eps);
+	float cosl = (float)cos(lan), sinl = (float)sin(lan);
+	m_rotCelestial._11 = cosl;         m_rotCelestial._12 = 0.0f;  m_rotCelestial._13 = sinl;        m_rotCelestial._14 = 0.0f;
+	m_rotCelestial._21 = -sino * sinl; m_rotCelestial._22 = coso;  m_rotCelestial._23 = sino * cosl; m_rotCelestial._24 = 0.0f;
+	m_rotCelestial._31 = -coso * sinl; m_rotCelestial._32 = -sino; m_rotCelestial._33 = coso * cosl; m_rotCelestial._34 = 0.0f;
+	m_rotCelestial._41 = 0.0f;         m_rotCelestial._42 = 0.0f;  m_rotCelestial._43 = 0.0f;        m_rotCelestial._44 = 1.0f;
+
+	m_mjdPrecessionChecked = oapiGetSimMJD();
 }
 
 // ==============================================================
@@ -223,7 +249,111 @@ void OGCelestialSphere::InitBackgroundManager()
 
 // ==============================================================
 
-void OGCelestialSphere::RenderStars(LPDIRECT3DDEVICE7 dev, DWORD nmax, const Vector* bgcol)
+void OGCelestialSphere::Render(LPDIRECT3DDEVICE7 dev, double bglvl)
+{
+	static D3DMATRIX ident = {
+		1,0,0,0,
+		0,1,0,0,
+		0,0,1,0,
+		0,0,0,1
+	};
+
+	// Get celestial sphere render flags
+	DWORD renderFlag = m_gc->Cfg()->CfgVisHelpPrm.flagPlanetarium;
+
+	// Turn off z-buffer and lighting calculations
+	dev->SetRenderState(D3DRENDERSTATE_ZENABLE, FALSE);
+	dev->SetRenderState(D3DRENDERSTATE_ZVISIBLE, FALSE);
+	dev->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
+	dev->SetRenderState(D3DRENDERSTATE_LIGHTING, FALSE);
+
+	// celestial sphere background
+	RenderBkgImage(dev, bglvl);
+
+	dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
+	dev->SetTexture(0, 0);
+
+	if (renderFlag & PLN_ENABLE) {
+
+		// use explicit colours
+		dev->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TFACTOR);
+		dev->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
+
+		// set additive blending with background
+		DWORD dstblend;
+		dev->GetRenderState(D3DRENDERSTATE_DESTBLEND, &dstblend);
+		dev->SetRenderState(D3DRENDERSTATE_DESTBLEND, D3DBLEND_ONE);
+		dev->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+		double colScale = 1.0 - bglvl; // feature brightness modifier for lit background
+
+		// render ecliptic grid
+		if (renderFlag & PLN_EGRID)
+			RenderGrid(dev, Vector(0, 0, 0.4) * colScale, (renderFlag & PLN_ECL) == 0);
+
+		// render ecliptic equator
+		if (renderFlag & PLN_ECL)
+			RenderGreatCircle(dev, Vector(0, 0, 0.8) * colScale);
+
+		// render celestial grid
+		if (renderFlag & PLN_CGRID) {
+			if (fabs(m_mjdPrecessionChecked - oapiGetSimMJD()) > 1e3)
+				InitCelestialTransform();
+			dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &m_rotCelestial);
+			RenderGrid(dev, Vector(0.3, 0, 0.3) * colScale, false);
+			RenderGreatCircle(dev, Vector(0.7, 0, 0.7) * colScale);
+			dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
+		}
+
+		// render equator of target celestial body
+		if (renderFlag & PLN_EQU) {
+			OBJHANDLE hRef = oapiCameraProxyGbody();
+			if (hRef) {
+				MATRIX3 R;
+				oapiGetRotationMatrix(hRef, &R);
+				D3DMATRIX iRot = { R.m11, R.m21, R.m31, 0.0f,   R.m12, R.m22, R.m32, 0.0f,  R.m13, R.m23, R.m33, 0.0f,  0.0f, 0.0f, 0.0f, 1.0f };
+				dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &iRot);
+				RenderGreatCircle(dev, Vector(0, 0.6, 0) * colScale);
+				dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
+			}
+		}
+
+		// render constellation lines
+		if (renderFlag & PLN_CONST)
+			RenderConstellationLines(dev, Vector(0.4, 0.3, 0.2) * colScale);
+
+		oapi::Sketchpad* pSkp = nullptr;
+
+		// render constellation labels
+		if (renderFlag & PLN_CNSTLABEL)
+			RenderConstellationLabels(&pSkp, (renderFlag & PLN_CNSTLONG) == PLN_CNSTLONG);
+
+		// render celestial sphere markers
+		if (renderFlag & PLN_CCMARK)
+			RenderCelestialMarkers(&pSkp);
+
+		if (pSkp)
+			m_gc->clbkReleaseSketchpad(pSkp);
+
+		// revert to standard colour selection and turn off alpha blending
+		dev->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+		dev->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+		dev->SetRenderState(D3DRENDERSTATE_DESTBLEND, dstblend);
+		dev->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
+	}
+
+	// render stars
+	RenderStars(dev, (DWORD)-1, bglvl);
+
+	// turn z-buffer back on
+	dev->SetRenderState(D3DRENDERSTATE_ZENABLE, TRUE);
+	dev->SetRenderState(D3DRENDERSTATE_ZVISIBLE, TRUE);
+	dev->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
+	dev->SetRenderState(D3DRENDERSTATE_LIGHTING, TRUE);
+}
+
+// ==============================================================
+
+void OGCelestialSphere::RenderStars(LPDIRECT3DDEVICE7 dev, DWORD nmax, double bglvl)
 {
 	// render in chunks, because some graphics cards have a limit in the
 	// vertex list size
@@ -232,13 +362,14 @@ void OGCelestialSphere::RenderStars(LPDIRECT3DDEVICE7 dev, DWORD nmax, const Vec
 
 	DWORD i, j, ns = m_nsVtx;
 
-	if (bgcol) { // suppress stars darker than the background
-		int bglvl = min(255, (int)((min(bgcol->x, 1.0) + min(bgcol->y, 1.0) + min(bgcol->z, 1.0)) * 128.0));
-		ns = min((int)ns, m_lvlIdx[bglvl]);
+	if (bglvl) { // suppress stars darker than the background
+		int bgidx = min(255, pow(bglvl * 1.4, 0.75) * 255.0);
+		ns = min((int)ns, m_lvlIdx[bgidx]);
 	}
 
 	for (i = j = 0; i < ns; i += D3DMAXNUMVERTICES, j++)
 		dev->DrawPrimitiveVB(D3DPT_POINTLIST, m_sVtx[j], 0, min(ns - i, D3DMAXNUMVERTICES), 0);
+
 }
 
 // ==============================================================
@@ -271,7 +402,7 @@ void OGCelestialSphere::RenderGrid(LPDIRECT3DDEVICE7 dev, Vector& col, bool eqli
 
 // ==============================================================
 
-void OGCelestialSphere::RenderBkgImage(LPDIRECT3DDEVICE7 dev, int bglvl)
+void OGCelestialSphere::RenderBkgImage(LPDIRECT3DDEVICE7 dev, double bglvl)
 {
 	if (m_bkgImgMgr2) {
 		VPlanet::RenderPrm rprm;

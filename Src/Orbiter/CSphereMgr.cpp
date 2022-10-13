@@ -189,7 +189,7 @@ void CSphereManager::LoadTextures ()
 
 // =======================================================================
 
-void CSphereManager::Render (LPDIRECT3DDEVICE7 dev, int level, int bglvl)
+void CSphereManager::Render (LPDIRECT3DDEVICE7 dev, int level, double bglvl)
 {
 
 	if (disabled) return;
@@ -198,7 +198,7 @@ void CSphereManager::Render (LPDIRECT3DDEVICE7 dev, int level, int bglvl)
 
 	float intens = intensity;
 	if (bglvl) {
-		intens *= (float)exp(-bglvl*0.05);
+		intens *= (float)exp(-bglvl*12.5);
 	}
 
 	if (!intens) return; // sanity check
