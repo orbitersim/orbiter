@@ -62,7 +62,8 @@ Scene::Scene (D3D7Client *_gc, DWORD w, DWORD h)
 	locallight = *(bool*)gc->GetConfigParam (CFGPRM_LOCALLIGHT);
 	if (locallight)
 		lightlist = new LIGHTLIST[maxlight];
-	memset (&bg_rgba, 0, sizeof (D3DCOLOR));
+	atmidx = 0;
+	atmRGBA = 0;
 	InitGDIResources();
 }
 
@@ -307,9 +308,11 @@ void Scene::Render ()
 
 	VECTOR3 bgcol = SkyColour();
 	double bglvl = (bgcol.x + bgcol.y + bgcol.z) / 3.0;
+	atmidx = min(255, (int)(bglvl * 1.5 * 255.0));
+	atmRGBA = D3DRGBA(bgcol.x, bgcol.y, bgcol.z, 1);
 
 	// Clear the viewport
-	dev->Clear (0, NULL, D3DCLEAR_TARGET|zclearflag, bg_rgba, 1.0f, 0L);
+	dev->Clear (0, NULL, D3DCLEAR_TARGET|zclearflag, atmRGBA, 1.0f, 0L);
 
 	if (FAILED (dev->BeginScene ())) return;
 
@@ -375,6 +378,8 @@ void Scene::Render ()
 
 	// render the celestial sphere background
 	m_celSphere->Render(dev, bglvl);
+
+	cam->SetFrustumLimits(npl, fpl);
 
 	// render solar system celestial objects (planets and moons)
 	// we render without z-buffer, so need to distance-sort the objects
@@ -475,7 +480,6 @@ void Scene::Render ()
 	}
 
 	// reset clipping planes and turn z-buffer back on
-	cam->SetFrustumLimits(npl, fpl);
 	dev->SetRenderState(D3DRENDERSTATE_ZENABLE, TRUE);
 	dev->SetRenderState(D3DRENDERSTATE_ZVISIBLE, TRUE);
 	dev->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);

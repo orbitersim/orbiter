@@ -47,8 +47,12 @@ public:
 
 	inline DWORD GetStencilDepth() const { return stencilDepth; }
 
-	inline D3DCOLOR GetBgColour() const { return bg_rgba; }
-	// ambient background colour
+	DWORD BgColourRGBA() const
+	{ return atmRGBA; }
+
+	int BgBrightnessLevel() const
+	{ return atmidx; }
+	// return render brightness level of sky background [0..255]
 
 	inline const DWORD ViewW() const { return viewW; }
 	inline const DWORD ViewH() const { return viewH; }
@@ -120,7 +124,8 @@ private:
 	DWORD                nstream; // number of streams
 
 	D3D7Light *light;          // only one for now
-	D3DCOLOR bg_rgba;          // ambient background colour
+	int atmidx;                // sky background brightness level (0-255)
+	DWORD atmRGBA;             // atmosphere background colour
 	bool locallight;           // enable local light sources
 	bool surfLabelsActive;     // v.2 surface labels activated?
 	DWORD maxlight;            // max number of light sources
