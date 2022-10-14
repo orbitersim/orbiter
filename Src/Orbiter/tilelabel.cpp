@@ -211,7 +211,6 @@ void TileLabel::Render(oapi::Sketchpad *skp, oapi::Font **labelfont, int *fontid
 	char symbol;
 	int x, y, nl, scale;
 	Vector sp, dir;
-	D3DVECTOR homog;
 	WCHAR wlabel[256];
 	bool active;
 	const Planet *pl = tile->mgr->Cbody();

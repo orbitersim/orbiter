@@ -747,6 +747,11 @@ void Scene::Render (D3DRECT* vp_rect)
 				AddLocalLight (lightlist[i].plight, lightlist[i].vobj, i);
 	}
 
+	// turn off z-buffer for rendering celestial sphere
+	dev->SetRenderState(D3DRENDERSTATE_ZENABLE, FALSE);
+	dev->SetRenderState(D3DRENDERSTATE_ZVISIBLE, FALSE);
+	dev->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
+
 	// stretch the z limits to make sure everything is rendered (z-fighting
 	// is not an issue here because everything is rendered without z-tests)
 	double npl = g_camera->Nearplane();
@@ -756,8 +761,11 @@ void Scene::Render (D3DRECT* vp_rect)
 	// render the celestial sphere background
 	m_celSphere->Render(dev, bglvl);
 
-	// reset fustrum limits
+	// reset clipping planes and turn z-buffer back on
 	g_camera->SetFrustumLimits(npl, fpl);
+	dev->SetRenderState(D3DRENDERSTATE_ZENABLE, TRUE);
+	dev->SetRenderState(D3DRENDERSTATE_ZVISIBLE, TRUE);
+	dev->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 
 	const int MAXPLANET = 256;
 	int np;

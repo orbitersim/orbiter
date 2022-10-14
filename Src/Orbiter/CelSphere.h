@@ -19,15 +19,13 @@ public:
 	OGCelestialSphere(OrbiterGraphics* gc, Scene* scene);
 	~OGCelestialSphere();
 
-	void InitCelestialTransform();
-
 	void Render(LPDIRECT3DDEVICE7 dev, double bglvl);
 
 	/**
 	 * \brief Render stars as pixels on the celestial sphere
 	 * \param dev render device
 	 * \param nmax max. number of stars (default is all available stars)
-	 * \param bgcol pointer to background color (default is black)
+	 * \param bglvl background brightness from atmospheric effects, mean of RGB channels (0-1)
 	 * \note If a background colour is passed into this function, the rendering
 	 *   of stars darker than the background is suppressed.
 	 * \note All device parameters are assumed to be set correctly on call.
@@ -98,6 +96,8 @@ protected:
 	 *    on the celestial sphere.
 	 */
 	void InitBackgroundManager();
+
+	void InitCelestialTransform();
 
 	/**
 	 * \brief Convert a direction into viewport coordinates

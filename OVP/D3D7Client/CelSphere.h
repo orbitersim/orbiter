@@ -34,16 +34,18 @@ public:
 	D3D7CelestialSphere (oapi::D3D7Client *gc, Scene *scene);
 	~D3D7CelestialSphere ();
 
+	void Render(LPDIRECT3DDEVICE7 dev, double bglvl);
+
 	/**
 	 * \brief Render stars as pixels on the celestial sphere
 	 * \param dev render device
 	 * \param nmax max. number of stars (default is all available stars)
-	 * \param bgcol pointer to background color (default is black)
+	 * \param bglvl background brightness from atmospheric effects, mean of RGB channels (0-1)
 	 * \note If a background colour is passed into this function, the rendering
 	 *   of stars darker than the background is suppressed.
 	 * \note All device parameters are assumed to be set correctly on call.
 	 */
-	void RenderStars (LPDIRECT3DDEVICE7 dev, DWORD nmax = (DWORD)-1, const VECTOR3* bgcol = 0);
+	void RenderStars (LPDIRECT3DDEVICE7 dev, DWORD nmax = (DWORD)-1, double bglvl = 0.0);
 
 	/**
 	 * \brief Render constellation lines on the celestial sphere
@@ -85,7 +87,7 @@ public:
 	 * \param dev render device
 	 * \param bglvl atmospheric background brightness
 	 */
-	void RenderBkgImage(LPDIRECT3DDEVICE7 dev, int bglvl);
+	void RenderBkgImage(LPDIRECT3DDEVICE7 dev, double bglvl);
 
 protected:
 	/**
@@ -103,6 +105,8 @@ protected:
 	 *    (e.g. celestial or ecliptic)
 	 */
 	void AllocGrids ();
+
+	void InitCelestialTransform();
 
 	/**
 	 * \brief Convert a direction into viewport coordinates
@@ -126,6 +130,8 @@ private:
 	DWORD m_ncVtx;                   ///< number of constellation line vertices
 	LPDIRECT3DVERTEXBUFFER7 m_cVtx;  ///< vertex buffer for constellation lines
 	LPDIRECT3DVERTEXBUFFER7 m_grdLngVtx, m_grdLatVtx; ///< vertex buffers for grid lines
+	D3DMATRIX m_rotCelestial;        ///< rotation for celestial grid rendering
+	double m_mjdPrecessionChecked;
 };
 
 #endif // !__D3D7CELSPHERE_H

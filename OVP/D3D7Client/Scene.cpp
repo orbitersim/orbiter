@@ -306,13 +306,7 @@ void Scene::Render ()
 	Update (); // update camera and visuals
 
 	VECTOR3 bgcol = SkyColour();
-	double skybrt = (bgcol.x+bgcol.y+bgcol.z)/3.0;
-	bg_rgba = D3DRGBA (bgcol.x, bgcol.y, bgcol.z, 1);
-	int bglvl = 0;
-	if (bg_rgba) { // suppress stars darker than the background
-		bglvl = (bg_rgba & 0xff) + ((bg_rgba >> 8) & 0xff) + ((bg_rgba >> 16) & 0xff);
-		bglvl = min (bglvl/2, 255);
-	}
+	double bglvl = (bgcol.x + bgcol.y + bgcol.z) / 3.0;
 
 	// Clear the viewport
 	dev->Clear (0, NULL, D3DCLEAR_TARGET|zclearflag, bg_rgba, 1.0f, 0L);
@@ -368,87 +362,19 @@ void Scene::Render ()
 	dev->SetMaterial (&def_mat);
 	dev->SetTexture (0, 0);
 
-	// planetarium mode flags
-	DWORD plnmode = *(DWORD*)gc->GetConfigParam (CFGPRM_PLANETARIUMFLAG);
-
-	// render celestial sphere (without z-buffer)
-	dev->SetRenderState (D3DRENDERSTATE_ZENABLE, FALSE);
+	// turn off z-buffer for rendering celestial sphere
+	dev->SetRenderState(D3DRENDERSTATE_ZENABLE, FALSE);
 	dev->SetRenderState(D3DRENDERSTATE_ZVISIBLE, FALSE);
-	dev->SetRenderState (D3DRENDERSTATE_ZWRITEENABLE, FALSE);
-	dev->SetRenderState (D3DRENDERSTATE_LIGHTING, FALSE);
+	dev->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
 
 	// stretch the z limits to make sure everything is rendered (z-fighting
 	// is not an issue here because everything is rendered without z-tests)
 	double npl = cam->GetNearlimit();
 	double fpl = cam->GetFarlimit();
-	cam->SetFrustumLimits(0.1, 1e10);
+	cam->SetFrustumLimits(0.1, 1e8);
 
-	// celestial sphere background
-	m_celSphere->RenderBkgImage(dev, bglvl);
-
-	dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
-	dev->SetTexture(0, 0);
-
-	// planetarium mode (celestial sphere elements)
-	if (plnmode & PLN_ENABLE) {
-
-		// use explicit colours
-		dev->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TFACTOR);
-		dev->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
-
-		DWORD dstblend;
-		dev->GetRenderState (D3DRENDERSTATE_DESTBLEND, &dstblend);
-		dev->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_ONE);
-		dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
-		double linebrt = 1.0-skybrt;
-
-		// render ecliptic grid
-		if (plnmode & PLN_EGRID)
-			m_celSphere->RenderGrid (dev, _V(0,0,0.4)*linebrt, !(plnmode & PLN_ECL));
-		if (plnmode & PLN_ECL)
-			m_celSphere->RenderGreatCircle (dev, _V(0,0,0.8)*linebrt);
-
-		// render celestial grid
-		if (plnmode & (PLN_CGRID|PLN_EQU)) {
-			static double obliquity = 0.4092797095927;
-			static double coso = cos(obliquity), sino = sin(obliquity);
-			static D3DMATRIX rot = {1.0f,0.0f,0.0f,0.0f,  0.0f,(float)coso,(float)sino,0.0f,  0.0f,-(float)sino,(float)coso,0.0f,  0.0f,0.0f,0.0f,1.0f};
-			dev->SetTransform (D3DTRANSFORMSTATE_WORLD, &rot);
-			if (plnmode & PLN_CGRID)
-				m_celSphere->RenderGrid (dev, _V(0.35,0,0.35)*linebrt, !(plnmode & PLN_EQU));
-			if (plnmode & PLN_EQU)
-				m_celSphere->RenderGreatCircle (dev, _V(0.7,0,0.7)*linebrt);
-			dev->SetTransform (D3DTRANSFORMSTATE_WORLD, &ident);
-		}
-
-		// render constellation lines
-		if (plnmode & PLN_CONST)
-			m_celSphere->RenderConstellationLines(dev, _V(0.4, 0.3, 0.2) * linebrt);
-
-		oapi::Sketchpad* pSkp = nullptr;
-
-		// render constellation labels
-		if (plnmode & PLN_CNSTLABEL)
-			m_celSphere->RenderConstellationLabels(&pSkp, (plnmode & PLN_CNSTLONG) == PLN_CNSTLONG);
-
-		// render celestial sphere markers
-		if (plnmode & PLN_CCMARK)
-			m_celSphere->RenderCelestialMarkers(&pSkp);
-
-		if (pSkp)
-			gc->clbkReleaseSketchpad(pSkp);
-
-		// revert to standard colour selection and turn off alpha blending
-		dev->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-		dev->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-		dev->SetRenderState(D3DRENDERSTATE_DESTBLEND, dstblend);
-		dev->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
-	}
-
-	m_celSphere->RenderStars (dev, (DWORD)-1, &bgcol);
-
-	// turn on lighting
-	dev->SetRenderState (D3DRENDERSTATE_LIGHTING, TRUE);
+	// render the celestial sphere background
+	m_celSphere->Render(dev, bglvl);
 
 	// render solar system celestial objects (planets and moons)
 	// we render without z-buffer, so need to distance-sort the objects
@@ -465,6 +391,7 @@ void Scene::Render ()
 			np++;
 		}
 	}
+	DWORD plnmode = *(DWORD*)gc->GetConfigParam(CFGPRM_PLANETARIUMFLAG);
 	int distcomp (const void *arg1, const void *arg2);
 	qsort ((void*)plist, np, sizeof(PList), distcomp);
 	for (i = 0; i < np; i++) {
@@ -547,11 +474,11 @@ void Scene::Render ()
 			surfLabelsActive = false;
 	}
 
-	// turn z-buffer back on
-	dev->SetRenderState (D3DRENDERSTATE_ZENABLE, TRUE);
-	dev->SetRenderState(D3DRENDERSTATE_ZVISIBLE, TRUE);
-	dev->SetRenderState (D3DRENDERSTATE_ZWRITEENABLE, TRUE);
+	// reset clipping planes and turn z-buffer back on
 	cam->SetFrustumLimits(npl, fpl);
+	dev->SetRenderState(D3DRENDERSTATE_ZENABLE, TRUE);
+	dev->SetRenderState(D3DRENDERSTATE_ZVISIBLE, TRUE);
+	dev->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 
 	// render the vessel objects
 	//cam->SetFustrumLimits (1, 1e5);

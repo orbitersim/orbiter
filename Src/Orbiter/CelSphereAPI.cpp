@@ -340,6 +340,8 @@ const std::vector<oapi::GraphicsClient::LABELSPEC> oapi::CelestialSphere::Conste
 	return renderRec;
 }
 
+// --------------------------------------------------------------
+
 void oapi::CelestialSphere::RenderMarker(oapi::Sketchpad* pSkp, const VECTOR3& rdir, const std::string& label1, const std::string& label2, int mode, int scale)
 {
 	if (!pSkp)
@@ -402,8 +404,7 @@ void oapi::CelestialSphere::RenderMarker(oapi::Sketchpad* pSkp, const VECTOR3& r
 	}
 }
 
-
-// ==============================================================
+// --------------------------------------------------------------
 
 void oapi::CelestialSphere::EnsureMarkerDrawingContext(oapi::Sketchpad** ppSkp, oapi::Font* font, COLORREF textcol, oapi::Pen* pen)
 {
@@ -418,4 +419,29 @@ void oapi::CelestialSphere::EnsureMarkerDrawingContext(oapi::Sketchpad** ppSkp, 
 		(*ppSkp)->SetTextColor(textcol);
 	if (pen)
 		(*ppSkp)->SetPen(pen);
+}
+
+// --------------------------------------------------------------
+
+MATRIX3 oapi::CelestialSphere::Celestial2Ecliptic() const
+{
+	// Set up rotation for celestial grid rendering
+	double eps, lan;
+	MATRIX3 R;
+	OBJHANDLE hEarth = oapiGetGbodyByName("Earth");
+	if (hEarth) {  // use current Earth precession axis
+		eps = oapiGetPlanetObliquity(hEarth);
+		lan = oapiGetPlanetTheta(hEarth);
+	}
+	else {         // default: use the J2000 ecliptic
+		eps = 0.4092797095927;
+		lan = 0.0;
+	}
+	double coso = cos(eps), sino = sin(eps);
+	double cosl = cos(lan), sinl = sin(lan);
+	R.m11 = cosl;         R.m12 = 0.0f;  R.m13 = sinl;
+	R.m21 = -sino * sinl; R.m22 = coso;  R.m23 = sino * cosl;
+	R.m31 = -coso * sinl; R.m32 = -sino; R.m33 = coso * cosl;
+
+	return R;
 }

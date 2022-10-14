@@ -55,23 +55,12 @@ OGCelestialSphere::~OGCelestialSphere()
 
 void OGCelestialSphere::InitCelestialTransform()
 {
-	// Set up rotation for celestial grid rendering
-	double eps, lan;
-	OBJHANDLE hEarth = oapiGetGbodyByName("Earth");
-	if (hEarth) {  // use current Earth precession axis
-		eps = oapiGetPlanetObliquity(hEarth);
-		lan = oapiGetPlanetTheta(hEarth);
-	} 
-	else {         // default: use the J2000 ecliptic
-		eps = 0.4092797095927;
-		lan = 0.0;
-	}
-	float coso = (float)cos(eps), sino = (float)sin(eps);
-	float cosl = (float)cos(lan), sinl = (float)sin(lan);
-	m_rotCelestial._11 = cosl;         m_rotCelestial._12 = 0.0f;  m_rotCelestial._13 = sinl;        m_rotCelestial._14 = 0.0f;
-	m_rotCelestial._21 = -sino * sinl; m_rotCelestial._22 = coso;  m_rotCelestial._23 = sino * cosl; m_rotCelestial._24 = 0.0f;
-	m_rotCelestial._31 = -coso * sinl; m_rotCelestial._32 = -sino; m_rotCelestial._33 = coso * cosl; m_rotCelestial._34 = 0.0f;
-	m_rotCelestial._41 = 0.0f;         m_rotCelestial._42 = 0.0f;  m_rotCelestial._43 = 0.0f;        m_rotCelestial._44 = 1.0f;
+	MATRIX3 R = Celestial2Ecliptic();
+
+	m_rotCelestial._11 = (float)R.m11; m_rotCelestial._12 = (float)R.m12; m_rotCelestial._13 = (float)R.m13; m_rotCelestial._14 = 0.0f;
+	m_rotCelestial._21 = (float)R.m21; m_rotCelestial._22 = (float)R.m22; m_rotCelestial._23 = (float)R.m23; m_rotCelestial._24 = 0.0f;
+	m_rotCelestial._31 = (float)R.m31; m_rotCelestial._32 = (float)R.m32; m_rotCelestial._33 = (float)R.m33; m_rotCelestial._34 = 0.0f;
+	m_rotCelestial._41 = 0.0f;         m_rotCelestial._42 = 0.0f;         m_rotCelestial._43 = 0.0f;         m_rotCelestial._44 = 1.0f;
 
 	m_mjdPrecessionChecked = oapiGetSimMJD();
 }
@@ -262,9 +251,6 @@ void OGCelestialSphere::Render(LPDIRECT3DDEVICE7 dev, double bglvl)
 	DWORD renderFlag = m_gc->Cfg()->CfgVisHelpPrm.flagPlanetarium;
 
 	// Turn off z-buffer and lighting calculations
-	dev->SetRenderState(D3DRENDERSTATE_ZENABLE, FALSE);
-	dev->SetRenderState(D3DRENDERSTATE_ZVISIBLE, FALSE);
-	dev->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
 	dev->SetRenderState(D3DRENDERSTATE_LIGHTING, FALSE);
 
 	// celestial sphere background
@@ -288,7 +274,7 @@ void OGCelestialSphere::Render(LPDIRECT3DDEVICE7 dev, double bglvl)
 
 		// render ecliptic grid
 		if (renderFlag & PLN_EGRID)
-			RenderGrid(dev, Vector(0, 0, 0.4) * colScale, (renderFlag & PLN_ECL) == 0);
+			RenderGrid(dev, Vector(0, 0, 0.4) * colScale, !(renderFlag & PLN_ECL));
 
 		// render ecliptic equator
 		if (renderFlag & PLN_ECL)
@@ -345,9 +331,6 @@ void OGCelestialSphere::Render(LPDIRECT3DDEVICE7 dev, double bglvl)
 	RenderStars(dev, (DWORD)-1, bglvl);
 
 	// turn z-buffer back on
-	dev->SetRenderState(D3DRENDERSTATE_ZENABLE, TRUE);
-	dev->SetRenderState(D3DRENDERSTATE_ZVISIBLE, TRUE);
-	dev->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 	dev->SetRenderState(D3DRENDERSTATE_LIGHTING, TRUE);
 }
 

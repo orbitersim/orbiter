@@ -137,6 +137,12 @@ namespace oapi {
 		 */
 		virtual bool EclDir2WindowPos(const VECTOR3& dir, int& x, int& y) const = 0;
 
+		/**
+		 * \brief Returns the rotation matrix for mapping from celestial frame at epoch
+		 *    to J2000 ecliptic frame.
+		 */
+		MATRIX3 Celestial2Ecliptic() const;
+
 		GraphicsClient* m_gc;
 
 	private:

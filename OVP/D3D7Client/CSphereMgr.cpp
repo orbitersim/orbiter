@@ -221,14 +221,14 @@ void CSphereManager::LoadTextures ()
 
 // =======================================================================
 
-void CSphereManager::Render (LPDIRECT3DDEVICE7 dev, int level, int bglvl)
+void CSphereManager::Render (LPDIRECT3DDEVICE7 dev, int level, double bglvl)
 {
 	if (disabled) return;
 	ntot = nrad = nrender = 0;
 
 	float intens = intensity;
 	if (bglvl) {
-		intens *= (float)exp(-bglvl*0.05);
+		intens *= (float)exp(-bglvl*12.5);
 	}
 
 	if (!intens) return; // sanity check
@@ -291,6 +291,7 @@ void CSphereManager::Render (LPDIRECT3DDEVICE7 dev, int level, int bglvl)
 		dev->SetTextureStageState (0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
 		dev->SetTextureStageState (0, D3DTSS_ALPHAARG2, D3DTA_CURRENT);
 	}
+	dev->SetTexture(0, 0);
 }
 
 // =======================================================================
