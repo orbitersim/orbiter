@@ -39,6 +39,8 @@ D3D9CelestialSphere::D3D9CelestialSphere(D3D9Client *gc, Scene *scene)
 	LoadConstellationLabels();
 	AllocGrids();
 	m_bkgImgMgr = new CSphereManager(gc, scene);
+
+	m_mjdPrecessionChecked = -1e10;
 }
 
 // ==============================================================
@@ -51,6 +53,20 @@ D3D9CelestialSphere::~D3D9CelestialSphere()
 	m_grdLngVtx->Release();
 	m_grdLatVtx->Release();
 	delete m_bkgImgMgr;
+}
+
+// ==============================================================
+
+void D3D9CelestialSphere::InitCelestialTransform()
+{
+	MATRIX3 R = Celestial2Ecliptic();
+
+	m_rotCelestial._11 = (float)R.m11; m_rotCelestial._12 = (float)R.m12; m_rotCelestial._13 = (float)R.m13; m_rotCelestial._14 = 0.0f;
+	m_rotCelestial._21 = (float)R.m21; m_rotCelestial._22 = (float)R.m22; m_rotCelestial._23 = (float)R.m23; m_rotCelestial._24 = 0.0f;
+	m_rotCelestial._31 = (float)R.m31; m_rotCelestial._32 = (float)R.m32; m_rotCelestial._33 = (float)R.m33; m_rotCelestial._34 = 0.0f;
+	m_rotCelestial._41 = 0.0f;         m_rotCelestial._42 = 0.0f;         m_rotCelestial._43 = 0.0f;         m_rotCelestial._44 = 1.0f;
+
+	m_mjdPrecessionChecked = oapiGetSimMJD();
 }
 
 // ==============================================================
@@ -157,26 +173,109 @@ void D3D9CelestialSphere::AllocGrids ()
 
 // ==============================================================
 
-void D3D9CelestialSphere::RenderStars(ID3DXEffect *FX, DWORD nmax, const VECTOR3 *bgcol)
+void D3D9CelestialSphere::Render(LPDIRECT3DDEVICE9 pDevice, double bglvl)
+{
+	// Get celestial sphere render flags
+	DWORD renderFlag = *(DWORD*)m_gc->GetConfigParam(CFGPRM_PLANETARIUMFLAG);
+
+	// celestial sphere background image
+	RenderBkgImage(pDevice, bglvl);
+
+	if (renderFlag & PLN_ENABLE) {
+
+		double colScale = 1.0 - bglvl; // feature brightness modifier for lit background
+
+		HR(s_FX->SetTechnique(s_eLine));
+		HR(s_FX->SetMatrix(s_eWVP, m_scene->GetProjectionViewMatrix()));
+
+		// render ecliptic grid
+		if (renderFlag & PLN_EGRID) {
+			D3DXVECTOR4 vColor(0.0f, 0.0f, 0.4f * colScale, 1.0f);
+			HR(s_FX->SetVector(s_eColor, &vColor));
+			RenderGrid(s_FX, !(renderFlag & PLN_ECL));
+		}
+
+		// render ecliptic equator
+		if (renderFlag & PLN_ECL) {
+			D3DXVECTOR4 vColor(0.0f, 0.0f, 0.8f * colScale, 1.0f);
+			HR(s_FX->SetVector(s_eColor, &vColor));
+			RenderGreatCircle(s_FX);
+		}
+
+		// render celestial grid ----------------------------------------------------------------------------
+		if (renderFlag & PLN_CGRID) {
+			if (fabs(m_mjdPrecessionChecked - oapiGetSimMJD()) > 1e3)
+				InitCelestialTransform();
+			D3DXMATRIX rot;
+			D3DXMatrixMultiply(&rot, &m_rotCelestial, m_scene->GetProjectionViewMatrix());
+			HR(s_FX->SetMatrix(s_eWVP, &rot));
+			D3DXVECTOR4 vColor1(0.3f * colScale, 0.0f, 0.3f * colScale, 1.0f);
+			HR(s_FX->SetVector(s_eColor, &vColor1));
+			RenderGrid(s_FX, false);
+			D3DXVECTOR4 vColor2(0.7f * colScale, 0.0f, 0.7f * colScale, 1.0f);
+			HR(s_FX->SetVector(s_eColor, &vColor2));
+			RenderGreatCircle(s_FX);
+		}
+
+		// render constellation lines ----------------------------------------------------------------------------
+		//
+		if (renderFlag & PLN_CONST) {
+			HR(s_FX->SetMatrix(s_eWVP, m_scene->GetProjectionViewMatrix()));
+			D3DXVECTOR4 vColor(0.4f * colScale, 0.3f * colScale, 0.2f * colScale, 1.0f);
+			HR(s_FX->SetVector(s_eColor, &vColor));
+			RenderConstellationLines(s_FX);
+		}
+	}
+
+	// render stars
+	HR(s_FX->SetTechnique(s_eStar));
+	HR(s_FX->SetMatrix(s_eWVP, m_scene->GetProjectionViewMatrix()));
+	RenderStars(s_FX, (DWORD)-1, bglvl);
+
+	// render markers and labels
+	if (renderFlag & PLN_ENABLE) {
+
+		// Sketchpad for planetarium mode labels and markers
+		D3D9Pad* pSketch = m_scene->GetPooledSketchpad(0);
+
+		if (pSketch) {
+
+			// constellation labels --------------------------------------------------
+			if (renderFlag & PLN_CNSTLABEL) {
+				RenderConstellationLabels(pSketch, renderFlag & PLN_CNSTLONG);
+			}
+			// celestial marker (stars) names ----------------------------------------
+			if (renderFlag & PLN_CCMARK) {
+				RenderCelestialMarkers((oapi::Sketchpad**)&pSketch);
+			}
+			pSketch->EndDrawing(); //SKETCHPAD_LABELS
+		}
+	}
+
+}
+
+// ==============================================================
+
+void D3D9CelestialSphere::RenderStars(ID3DXEffect *FX, DWORD nmax, double bglvl)
 {
 	_TRACE;
 
 	// render in chunks, because some graphics cards have a limit in the
 	// vertex list size
 	UINT i, j, numPasses = 0;
-	if (nmax > m_nsVtx) nmax = m_nsVtx; // sanity check
+	DWORD ns = m_nsVtx;
 
-	if (bgcol) { // suppress stars darker than the background
-		int bglvl = min (255, (int)((min(bgcol->x,1.0) + min(bgcol->y,1.0) + min(bgcol->z,1.0))*128.0));
-		nmax = min (nmax, (DWORD)m_lvlIdx[bglvl]);
+	if (bglvl) { // suppress stars darker than the background
+		int bgidx = min(255, pow(bglvl * 1.4, 0.75) * 255.0);
+		ns = min((int)ns, m_lvlIdx[bgidx]);
 	}
 
 	HR(m_pDevice->SetVertexDeclaration(pPosColorDecl));
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));
-	for (i = j = 0; i < nmax; i += maxNumVertices, j++) {
+	for (i = j = 0; i < ns; i += maxNumVertices, j++) {
 		HR(m_pDevice->SetStreamSource(0, m_sVtx[j], 0, sizeof(VERTEX_XYZC)));
-		HR(m_pDevice->DrawPrimitive(D3DPT_POINTLIST, 0, min (nmax-i, maxNumVertices)));
+		HR(m_pDevice->DrawPrimitive(D3DPT_POINTLIST, 0, min (ns-i, maxNumVertices)));
 	}
 	HR(FX->EndPass());
 	HR(FX->End());	
@@ -247,6 +346,8 @@ void D3D9CelestialSphere::RenderGrid(ID3DXEffect *FX, bool eqline)
 	HR(FX->End());	
 }
 
+// ==============================================================
+
 void D3D9CelestialSphere::RenderBkgImage(LPDIRECT3DDEVICE9 dev, int bglvl)
 {
 	m_bkgImgMgr->Render(dev, 8, bglvl);
@@ -280,3 +381,18 @@ bool D3D9CelestialSphere::EclDir2WindowPos(const VECTOR3& dir, int& x, int& y) c
 		return false;
 	}
 }
+
+void D3D9CelestialSphere::D3D9TechInit(ID3DXEffect* fx)
+{
+	s_FX = fx;
+	s_eStar = fx->GetTechniqueByName("StarTech");
+	s_eLine = fx->GetTechniqueByName("LineTech");
+	s_eColor = fx->GetParameterByName(0, "gColor");
+	s_eWVP = fx->GetParameterByName(0, "gWVP");
+}
+
+ID3DXEffect* D3D9CelestialSphere::s_FX = 0;
+D3DXHANDLE D3D9CelestialSphere::s_eStar = 0;
+D3DXHANDLE D3D9CelestialSphere::s_eLine = 0;
+D3DXHANDLE D3D9CelestialSphere::s_eColor = 0;
+D3DXHANDLE D3D9CelestialSphere::s_eWVP = 0;

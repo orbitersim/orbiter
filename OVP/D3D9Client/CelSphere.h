@@ -38,16 +38,18 @@ public:
 	 */
 	~D3D9CelestialSphere();
 
+	void Render(LPDIRECT3DDEVICE9 pDevice, double bglvl);
+
 	/**
 	 * \brief Render stars as pixels on the celestial sphere
 	 * \param fx  render effect
 	 * \param nmax  max. number of stars (default is all available stars)
-	 * \param bgcol  pointer to background color (default is black)
+	 * \param bglvl background brightness from atmospheric effects, mean of RGB channels (0-1)
 	 * \note if a background colour is passed into this function, the rendering
 	 *   of stars darker than the background is suppressed.
 	 * \note All device parameters are assumed to be set correctly on call.
 	 */
-	void RenderStars(ID3DXEffect *fx, DWORD nmax = (DWORD)-1, const VECTOR3 *bgcol = 0);
+	void RenderStars(ID3DXEffect *fx, DWORD nmax = (DWORD)-1, double bglvl = 0.0);
 
 	/**
 	 * \brief Render constellation lines on the celestial sphere
@@ -90,6 +92,8 @@ public:
 	 */
 	void RenderBkgImage(LPDIRECT3DDEVICE9 dev, int bglvl);
 
+	static void D3D9TechInit(ID3DXEffect* fx);
+
 protected:
 	/**
 	 * \brief Prepare the star vertex list from the star database.
@@ -106,6 +110,8 @@ protected:
 	 *        (e.g. celestial or ecliptic)
 	 */
 	void AllocGrids ();
+
+	void InitCelestialTransform();
 
 	/**
 	 * \brief Convert a direction into viewport coordinates
@@ -129,6 +135,14 @@ private:
 	DWORD m_ncVtx;                  ///< number of constellation line vertices
 	LPDIRECT3DVERTEXBUFFER9 m_cVtx; ///< constellation line vertex buffer
 	LPDIRECT3DVERTEXBUFFER9 m_grdLngVtx, m_grdLatVtx; ///< vertex buffers for grid lines
+	D3DXMATRIX m_rotCelestial;      ///< rotation for celestial grid rendering
+	double m_mjdPrecessionChecked;
+
+	static ID3DXEffect* s_FX;
+	static D3DXHANDLE s_eStar;
+	static D3DXHANDLE s_eLine;
+	static D3DXHANDLE s_eColor;
+	static D3DXHANDLE s_eWVP;
 };
 
 #endif // !__D3D9CELSPHERE_H

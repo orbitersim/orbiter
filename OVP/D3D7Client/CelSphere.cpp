@@ -210,7 +210,7 @@ void D3D7CelestialSphere::Render(LPDIRECT3DDEVICE7 dev, double bglvl)
 	// Turn off lighting calculations
 	dev->SetRenderState(D3DRENDERSTATE_LIGHTING, FALSE);
 
-	// celestial sphere background
+	// celestial sphere background image
 	RenderBkgImage(dev, bglvl);
 
 	dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);

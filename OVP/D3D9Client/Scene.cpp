@@ -926,6 +926,7 @@ void Scene::UpdateCamVis()
 	// Compute SkyColor -----------------------------------------------
 	//
 	sky_color = SkyColour();
+	bglvl = (sky_color.x + sky_color.y + sky_color.z) / 3.0;
 	bg_rgba = D3DCOLOR_RGBA ((int)(sky_color.x*255), (int)(sky_color.y*255), (int)(sky_color.z*255), 255);
 
 
@@ -1191,21 +1192,11 @@ void Scene::RenderMainScene()
 		if (camMode!=0) znear_for_vessels = 0.1f;
 	}
 
-	// Set Initial Near clip plane distance
-	if (bClearZBuffer) SetCameraFrustumLimits(1e3, 1e8f);
-	else			   SetCameraFrustumLimits(znear_for_vessels, 1e8f);
-
 	// -------------------------------------------------------------------------------------------------------
 	// render celestial sphere background
 	// -------------------------------------------------------------------------------------------------------
 
 	pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
-
-	int bglvl = 0;
-	if (bg_rgba) { // suppress stars darker than the background
-		bglvl = (bg_rgba & 0xff) + ((bg_rgba >> 8) & 0xff) + ((bg_rgba >> 16) & 0xff);
-		bglvl = min (bglvl/2, 255);
-	}
 
 	bool bEnableAtmosphere = false;
 
@@ -1216,112 +1207,18 @@ void Scene::RenderMainScene()
 		PlanetRenderer::InitializeScattering(vPl);
 	}
 
-	DWORD plnmode = *(DWORD*)gc->GetConfigParam(CFGPRM_PLANETARIUMFLAG);
-
-	float npl = GetCameraNearPlane();
-	float fpl = GetCameraFarPlane();
-	SetCameraFrustumLimits(0.1, 1e10);
-
 	// -------------------------------------------------------------------------------------------------------
-	// Render Celestial Sphere Background Image
+	// Render the celestial sphere (background image, stars, planetarium features)
 	// -------------------------------------------------------------------------------------------------------
 
-	m_celSphere->RenderBkgImage(pDevice, bglvl);
+	// Set generic clip plane distances for celestial sphere
+	SetCameraFrustumLimits(0.1, 10);
 
-	// -------------------------------------------------------------------------------------------------------
-	// planetarium mode (celestial sphere elements)
-	// -------------------------------------------------------------------------------------------------------
+	m_celSphere->Render(pDevice, bglvl);
 
-	if (plnmode & PLN_ENABLE) {
-
-		float linebrt = 1.0f - float(sky_color.x+sky_color.y+sky_color.z) / 3.0f;
-
-		HR(FX->SetTechnique(eLine));
-		HR(FX->SetMatrix(eWVP, GetProjectionViewMatrix()));
-
-		// render ecliptic grid ----------------------------------------------------------------------------
-		//
-		if (plnmode & PLN_EGRID) {
-			D3DXVECTOR4 vColor(0.0f, 0.0f, 0.4f*linebrt, 1.0f);
-			HR(FX->SetVector(eColor, &vColor));
-			m_celSphere->RenderGrid(FX, !(plnmode & PLN_ECL));
-
-		}
-		if (plnmode & PLN_ECL)	 {
-			D3DXVECTOR4 vColor(0.0f, 0.0f, 0.8f*linebrt, 1.0f);
-			HR(FX->SetVector(eColor, &vColor));
-			m_celSphere->RenderGreatCircle(FX);
-		}
-
-		// render celestial grid ----------------------------------------------------------------------------
-		//
-		if (plnmode & (PLN_CGRID|PLN_EQU)) {
-			double obliquity = 0.4092797095927;
-			double coso = cos(obliquity), sino = sin(obliquity);
-			D3DXMATRIX rot(1.0f,0.0f,0.0f,0.0f,  0.0f,(float)coso,(float)sino,0.0f,  0.0f,-(float)sino,(float)coso,0.0f,  0.0f,0.0f,0.0f,1.0f);
-
-			D3DXMatrixMultiply(&rot, &rot, GetProjectionViewMatrix());
-			HR(FX->SetMatrix(eWVP, &rot));
-
-			if (plnmode & PLN_CGRID) {
-				D3DXVECTOR4 vColor(0.35f*linebrt, 0.0f, 0.35f*linebrt, 1.0f);
-				HR(FX->SetVector(eColor, &vColor));
-				m_celSphere->RenderGrid(FX, !(plnmode & PLN_EQU));
-			}
-			if (plnmode & PLN_EQU)	 {
-				D3DXVECTOR4 vColor(0.7f*linebrt, 0.0f, 0.7f*linebrt, 1.0f);
-				HR(FX->SetVector(eColor, &vColor));
-				m_celSphere->RenderGreatCircle(FX);
-			}
-		}
-
-		// render constellation lines ----------------------------------------------------------------------------
-		//
-		if (plnmode & PLN_CONST) {
-			HR(FX->SetMatrix(eWVP, GetProjectionViewMatrix()));
-			D3DXVECTOR4 vColor(0.4f*linebrt, 0.3f*linebrt, 0.2f*linebrt, 1.0f);
-			HR(FX->SetVector(eColor, &vColor));
-			m_celSphere->RenderConstellationLines(FX);
-		}
-	}
-
-	// -------------------------------------------------------------------------------------------------------
-	// render stars
-	// -------------------------------------------------------------------------------------------------------
-
-	HR(FX->SetTechnique(eStar));
-	HR(FX->SetMatrix(eWVP, GetProjectionViewMatrix()));
-	m_celSphere->RenderStars(FX, (DWORD)-1, &sky_color);
-
-
-	// -------------------------------------------------------------------------------------------------------
-	// render star markers
-	// -------------------------------------------------------------------------------------------------------
-
-	if (plnmode & PLN_ENABLE) {
-
-		// Sketchpad for planetarium mode labels and markers
-		D3D9Pad* pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
-
-		if (pSketch) {
-
-			pSketch->SetFont(pLabelFont);
-			pSketch->SetTextAlign(Sketchpad::CENTER, Sketchpad::BOTTOM);
-
-			// constellation labels --------------------------------------------------
-			if (plnmode & PLN_CNSTLABEL) {
-				m_celSphere->RenderConstellationLabels(pSketch, plnmode & PLN_CNSTLONG);
-			}
-			// celestial marker (stars) names ----------------------------------------
-			if (plnmode & PLN_CCMARK) {
-				m_celSphere->RenderCelestialMarkers((oapi::Sketchpad**)&pSketch);
-			}
-			pSketch->EndDrawing(); //SKETCHPAD_LABELS
-		}
-	}
-
-	SetCameraFrustumLimits(npl, fpl);
-
+	// Set Initial Near clip plane distance
+	if (bClearZBuffer) SetCameraFrustumLimits(1e3, 1e8f);
+	else			   SetCameraFrustumLimits(znear_for_vessels, 1e8f);
 
 	// ---------------------------------------------------------------------------------------------
 	// Create a render list for shadow mapping
@@ -1431,6 +1328,8 @@ void Scene::RenderMainScene()
 	// ---------------------------------------------------------------------------------------------
 	// Render Planets
 	// ---------------------------------------------------------------------------------------------
+
+	DWORD plnmode = *(DWORD*)gc->GetConfigParam(CFGPRM_PLANETARIUMFLAG);
 
 	for (DWORD i=0;i<nplanets;i++) {
 
@@ -3387,6 +3286,8 @@ void Scene::D3D9TechInit(LPDIRECT3DDEVICE9 pDev, const char *folder)
 	eWVP   = FX->GetParameterByName(0,"gWVP");
 	eTex0  = FX->GetParameterByName(0,"gTex0");
 	eColor = FX->GetParameterByName(0,"gColor");
+
+	D3D9CelestialSphere::D3D9TechInit(FX);
 }
 
 // ===========================================================================================

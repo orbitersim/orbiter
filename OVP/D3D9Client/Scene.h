@@ -70,6 +70,7 @@ class D3D9Pad;
 
 class Scene {
 
+	friend class D3D9CelestialSphere;
 
 	// Visual record ===================================================================
 	//
@@ -445,6 +446,7 @@ private:
 	D3D9Sun	    sunLight;
 
 	VECTOR3		sky_color;
+	double      bglvl;
 
 	float		lmaxdst2;
 	DWORD		nLights;
