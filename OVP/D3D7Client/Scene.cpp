@@ -374,7 +374,7 @@ void Scene::Render ()
 	// is not an issue here because everything is rendered without z-tests)
 	double npl = cam->GetNearlimit();
 	double fpl = cam->GetFarlimit();
-	cam->SetFrustumLimits(0.1, 1e8);
+	cam->SetFrustumLimits(0.1, 10);
 
 	// render the celestial sphere background
 	m_celSphere->Render(dev, bgcol);

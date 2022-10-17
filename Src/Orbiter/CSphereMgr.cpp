@@ -68,8 +68,6 @@ CSphereManager::CSphereManager ()
 	LoadTileData ();
 	LoadTextures ();
 
-	Matrix R(2000,0,0, 0,2000,0, 0,0,2000);
-
 	// rotation from galactic to ecliptic frame
 	double theta = 60.25*RAD; // 60.18*RAD;
 	double phi = 90.09*RAD; // 90.02*RAD;
@@ -80,12 +78,11 @@ CSphereManager::CSphereManager ()
 	ecl2gal.Set (cosp,0,sinp, 0,1,0, -sinp,0,cosp);
 	ecl2gal.premul (Matrix (1,0,0, 0,cost,sint, 0,-sint,cost));
 	ecl2gal.premul (Matrix (cosl,0,sinl, 0,1,0, -sinl,0,cosl));
-	R.premul (ecl2gal);
 
-	trans = _M(R.m11,R.m12,R.m13,0,
-		       R.m21,R.m22,R.m23,0,
-               R.m31,R.m32,R.m33,0,
-			   0,    0,    0,    1);
+	trans = _M(ecl2gal.m11, ecl2gal.m12, ecl2gal.m13,0,
+		       ecl2gal.m21, ecl2gal.m22, ecl2gal.m23,0,
+		       ecl2gal.m31, ecl2gal.m32, ecl2gal.m33,0,
+			   0,           0,           0,          1);
 }
 
 // =======================================================================
@@ -386,8 +383,8 @@ bool CSphereManager::TileInView (int lvl, int ilat)
 	for (v = 0; v < 8; v++) {
 		VECTOR4 vt = mul (mesh.bbvtx[v], RenderParam.transform);
 		hx = vt.x/vt.w, hy = vt.y/vt.w, hz = vt.z/vt.w;
-		if (hz <= 1.0) hx = -hx, hy = -hy;
-		if (hz >  0.0) bz1 = true;
+		if (hz >= 1.0) hx = -hx, hy = -hy;
+		if (hz <  1.0) bz1 = true;
 		if (hx > -1.0) bx1 = true;
 		if (hx <  1.0) bx2 = true;
 		if (hy > -1.0) by1 = true;

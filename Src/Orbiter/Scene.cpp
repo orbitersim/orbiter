@@ -756,7 +756,7 @@ void Scene::Render (D3DRECT* vp_rect)
 	// is not an issue here because everything is rendered without z-tests)
 	double npl = g_camera->Nearplane();
 	double fpl = g_camera->Farplane();
-	g_camera->SetFrustumLimits (0.1, 1e8);
+	g_camera->SetFrustumLimits (0.1, 10);
 
 	// render the celestial sphere background
 	m_celSphere->Render(dev, bgcol);

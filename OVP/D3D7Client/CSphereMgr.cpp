@@ -84,8 +84,6 @@ CSphereManager::CSphereManager (const D3D7Client *gclient, const Scene *scene)
 	LoadTileData ();
 	LoadTextures ();
 
-	MATRIX3 R = {2000,0,0, 0,2000,0, 0,0,2000};
-
 	// rotation from galactic to ecliptic frame
 	double theta = 60.18*RAD;
 	double phi = 90.02*RAD;
@@ -96,18 +94,17 @@ CSphereManager::CSphereManager (const D3D7Client *gclient, const Scene *scene)
 	ecl2gal = _M(cosp,0,sinp, 0,1,0, -sinp,0,cosp);
 	ecl2gal = mul (_M(1,0,0, 0,cost,sint, 0,-sint,cost), ecl2gal);
 	ecl2gal = mul (_M(cosl,0,sinl, 0,1,0, -sinl,0,cosl), ecl2gal);
-	R = mul (ecl2gal, R);
 
 	D3DMAT_Identity (&trans);
-	trans._11 = (D3DVALUE)R.m11;
-	trans._12 = (D3DVALUE)R.m12;
-	trans._13 = (D3DVALUE)R.m13;
-	trans._21 = (D3DVALUE)R.m21;
-	trans._22 = (D3DVALUE)R.m22;
-	trans._23 = (D3DVALUE)R.m23;
-	trans._31 = (D3DVALUE)R.m31;
-	trans._32 = (D3DVALUE)R.m32;
-	trans._33 = (D3DVALUE)R.m33;
+	trans._11 = (D3DVALUE)ecl2gal.m11;
+	trans._12 = (D3DVALUE)ecl2gal.m12;
+	trans._13 = (D3DVALUE)ecl2gal.m13;
+	trans._21 = (D3DVALUE)ecl2gal.m21;
+	trans._22 = (D3DVALUE)ecl2gal.m22;
+	trans._23 = (D3DVALUE)ecl2gal.m23;
+	trans._31 = (D3DVALUE)ecl2gal.m31;
+	trans._32 = (D3DVALUE)ecl2gal.m32;
+	trans._33 = (D3DVALUE)ecl2gal.m33;
 }
 
 // =======================================================================
@@ -394,7 +391,6 @@ void CSphereManager::TileExtents (int hemisp, int ilat, int nlat, int ilng, int 
 
 bool CSphereManager::TileInView (int lvl, int ilat)
 {
-	const double eps = 1e-3;
 	bool bx1, bx2, by1, by2, bz1, bz2, bbvis;
 	int v;
 	D3DVALUE x, y;
@@ -405,7 +401,7 @@ bool CSphereManager::TileInView (int lvl, int ilat)
 	bx1 = bx2 = by1 = by2 = bz1 = bz2 = bbvis = false;
 	for (v = 0; v < 8; v++) {
 		if (vtx[v].z > 0.0)  bz1 = true;
-		if (vtx[v].z <= 1.0+eps) bz2 = true;
+		if (vtx[v].z <= 1.0) bz2 = true;
 		if (vtx[v].z <= 1.0) x =  vtx[v].x, y =  vtx[v].y;
 		else                 x = -vtx[v].x, y = -vtx[v].y;
 		if (x > vpX0)        bx1 = true;
