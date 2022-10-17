@@ -12,6 +12,7 @@
 #define __CELSPHERE_H
 
 #include "GraphicsAPI.h"
+#include <array>
 
 namespace oapi {
 
@@ -93,6 +94,7 @@ namespace oapi {
 		virtual oapi::Font* MarkerFont() const;
 		virtual oapi::Pen* MarkerPen(DWORD idx) const;
 		virtual COLORREF MarkerColor(DWORD idx) const;
+		virtual oapi::FVECTOR4 MarkerColorFloat(DWORD idx) const;
 
 		virtual void EnsureMarkerDrawingContext(oapi::Sketchpad** ppSkp, oapi::Font* font = 0, COLORREF textcol = 0, oapi::Pen* pen = 0);
 
@@ -143,7 +145,17 @@ namespace oapi {
 		 */
 		MATRIX3 Celestial2Ecliptic() const;
 
+		void SetSkyColour(const VECTOR3& skyCol);
+		const VECTOR3& GetSkyColour() const { return m_skyCol; }
+		double GetSkyBrightness() const { return m_skyBrt; }
+
+		FVECTOR4 ColorAdjusted(const FVECTOR4& baseCol) const;
+		DWORD MarkerColorAdjusted(const FVECTOR4& baseCol) const;
+		DWORD TextColorAdjusted(const FVECTOR4& baseCol) const;
+
 		GraphicsClient* m_gc;
+
+		bool m_textBlendAdditive;
 
 	private:
 		/**
@@ -201,11 +213,15 @@ namespace oapi {
 		oapi::Font* m_cLabelFont;        ///< font for constellation labels
 		oapi::Font* m_markerFont;        ///< font for celestial sphere markers
 		oapi::Pen* m_markerPen[7];       ///< pens for celestial sphere markers
+		VECTOR3 m_skyCol;                ///< background sky colour at current render pass (0-1 per channel)
+		double m_skyBrt;                 ///< background brightness level at current render pass (0-1)
 
 	protected:
 		const std::vector<GraphicsClient::ConstLabelRec> LoadConstellationLabelData() const;
 
 		const std::vector<GraphicsClient::LABELSPEC> ConstellationLabelData2RenderData(const std::vector<GraphicsClient::ConstLabelRec>& clabelRec) const;
+
+		std::array<int, 256> ComputeStarBrightnessCutoff(const std::vector<oapi::CelestialSphere::StarRenderRec>& starRenderRec) const;
 	};
 
 }

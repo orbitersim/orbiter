@@ -106,7 +106,7 @@ public:
 
 	inline LPDIRECTDRAWSURFACE7 HazeTex() const { return gtex[1]; }
 	inline LPDIRECTDRAWSURFACE7 ReentryTex() const { return gtex[2]; }
-	inline const Vector &BGcol() const { return bgcol; }
+	inline const VECTOR3& BGcol() const { return bgcol; }
 
 	double MinParticleCameraDist() const;
 	// return the minimum distance between the camera and any particle in the scene
@@ -133,7 +133,7 @@ private:
 	DWORD maxlight;     // max number of light sources
 	bool sunvis;        // sun visible (for glare calculation)
 	int  atmidx;        // sky background brightness level (0-255)
-	Vector bgcol;       // current sky background colour
+	VECTOR3 bgcol;      // current sky background colour
 	mutable double mincamparticledist; // minimum distance between camera and any particle in the scene
 
 	struct LIGHTLIST {
@@ -172,7 +172,7 @@ private:
 	/**
 	 * \brief Return sky background colour based on atmospheric parameters of closest planet
 	 */
-	Vector SkyColour();
+	VECTOR3 SkyColour();
 
 	LPDIRECT3DDEVICE7 dev;      // D3D device
 

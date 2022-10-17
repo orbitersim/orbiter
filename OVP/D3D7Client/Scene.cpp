@@ -377,7 +377,7 @@ void Scene::Render ()
 	cam->SetFrustumLimits(0.1, 1e8);
 
 	// render the celestial sphere background
-	m_celSphere->Render(dev, bglvl);
+	m_celSphere->Render(dev, bgcol);
 
 	cam->SetFrustumLimits(npl, fpl);
 

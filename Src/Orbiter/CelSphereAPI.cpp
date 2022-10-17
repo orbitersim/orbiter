@@ -19,6 +19,10 @@ oapi::CelestialSphere::CelestialSphere(oapi::GraphicsClient* gc)
 	m_markerFont = gc->clbkCreateFont(max(m_viewH / 75, 12), true, "Arial");
 	for (int i = 0; i < 7; i++)
 		m_markerPen[i] = gc->clbkCreatePen(1, 0, MarkerColor(i));
+	m_textBlendAdditive = false;
+
+	m_skyCol = _V(0, 0, 0);
+	m_skyBrt = 0.0;
 }
 
 // --------------------------------------------------------------
@@ -63,7 +67,8 @@ void oapi::CelestialSphere::LoadConstellationLabels()
 
 void oapi::CelestialSphere::RenderConstellationLabels(oapi::Sketchpad** ppSkp, bool fullName)
 {
-	EnsureMarkerDrawingContext(ppSkp, m_cLabelFont, 0xA0A0A0);
+	const FVECTOR4 colBase( 0.7f, 0.6f, 0.5f, 0.0f );
+	EnsureMarkerDrawingContext(ppSkp, m_cLabelFont, TextColorAdjusted(colBase));
 
 	for (auto it = m_cLabel.begin(); it != m_cLabel.end(); it++) {
 		const std::string& label = (*it).label[fullName ? 0 : 1];
@@ -80,13 +85,21 @@ void oapi::CelestialSphere::RenderCelestialMarkers(oapi::Sketchpad** ppSkp)
 	for (auto it = markerLists.begin(); it != markerLists.end(); it++) {
 		if ((*it).active) {
 			int size = (int)(m_viewH / 80.0 * (*it).size + 0.5);
-			int col = (*it).colour;
+			int colidx = (*it).colour;
+			DWORD col = TextColorAdjusted(MarkerColorFloat(colidx));
+			oapi::Pen* markerPen;
+			if (m_textBlendAdditive)
+				markerPen = MarkerPen(colidx);
+			else
+				markerPen = m_gc->clbkCreatePen(1, 0, col);
 			const std::vector<oapi::GraphicsClient::LABELSPEC>& ls = (*it).marker;
-			EnsureMarkerDrawingContext(ppSkp, font, MarkerColor(col), MarkerPen(col));
+			EnsureMarkerDrawingContext(ppSkp, font, col, markerPen);
 			font = nullptr; // need to set it only once
 			for (auto mkr = ls.begin(); mkr != ls.end(); mkr++) {
 				RenderMarker(*ppSkp, (*mkr).pos, (*mkr).label[0], (*mkr).label[1], (*it).shape, size);
 			}
+			if (!m_textBlendAdditive)
+				m_gc->clbkReleasePen(markerPen);
 		}
 	}
 }
@@ -109,8 +122,20 @@ oapi::Pen* oapi::CelestialSphere::MarkerPen(DWORD idx) const
 
 COLORREF oapi::CelestialSphere::MarkerColor(DWORD idx) const
 {
-	COLORREF col[7] = { 0x00FFFF, 0xFFFF00, 0x4040FF, 0xFF00FF, 0x40FF40, 0xFF8080, 0xFFFFFF };
+	static COLORREF col[7] = { 0x00FFFF, 0xFFFF00, 0x4040FF, 0xFF00FF, 0x40FF40, 0xFF8080, 0xFFFFFF };
 	return (idx < 7 ? col[idx] : 0xFFFFFF);
+}
+
+// --------------------------------------------------------------
+
+oapi::FVECTOR4 oapi::CelestialSphere::MarkerColorFloat(DWORD idx) const
+{
+	static oapi::FVECTOR4 col[7] = {
+		FVECTOR4(1.0f, 1.0f, 0.0f, 0.0f), FVECTOR4(0.0f, 1.0f, 1.0f, 0.0f), FVECTOR4(1.0f, 0.25f, 0.25f, 0.0f),
+		FVECTOR4(1.0f, 0.0f, 1.0f, 0.0f), FVECTOR4(0.25f, 1.0f, 0.25f, 0.0f), FVECTOR4(0.0f, 0.5f, 1.0f, 0.0f),
+		FVECTOR4(1.0f, 1.0f, 1.0f, 0.0f)
+	};
+	return (idx < 7 ? col[idx] : col[6]);
 }
 
 // --------------------------------------------------------------
@@ -127,13 +152,13 @@ const std::vector<oapi::CelestialSphere::StarDataRec> oapi::CelestialSphere::Loa
 #pragma pack(pop)
 
 	std::vector<StarDataRec> rec;
-	rec.resize(0x20000); // should be large enough to hold the entire Hipparcos list
 
 	FILE* f = fopen("Star.bin", "rb");
 	if (f) {
 		const int chunksize = 0x1000;
 		StarDataRecPacked* packBuf = new StarDataRecPacked[chunksize + 1]; // "+1": padding for avoiding reading out of bounds on packed data
 		int i, s, n = 0;
+		rec.resize(0x20000); // should be large enough to hold the entire Hipparcos list
 		while (s = fread(packBuf, sizeof(StarDataRecPacked), chunksize, f)) {
 			for (i = 0; i < s && packBuf[i].mag < maxAppMag; i++, n++) {
 				rec[n].lng = (double)packBuf[i].lng;
@@ -143,7 +168,7 @@ const std::vector<oapi::CelestialSphere::StarDataRec> oapi::CelestialSphere::Loa
 			}
 			if (i < s)
 				break;
-			if (rec.size() < n + chunksize)
+			if (rec.size() < n + chunksize) // should not happen, but just in case we are reading a larger dataset
 				rec.resize(n + chunksize);
 		}
 		delete[]packBuf;
@@ -212,7 +237,27 @@ const std::vector<oapi::CelestialSphere::StarRenderRec> oapi::CelestialSphere::S
 		starRenderRec[i].col.y = min(c * rescale * g_scale, 1.0);
 		starRenderRec[i].col.z = min(c * rescale * b_scale, 1.0);
 	}
+
 	return starRenderRec;
+}
+
+// --------------------------------------------------------------
+
+std::array<int, 256> oapi::CelestialSphere::ComputeStarBrightnessCutoff(const std::vector<oapi::CelestialSphere::StarRenderRec>& starRenderRec) const
+{
+	std::array<int, 256> starCutoffIdx;
+	int idx = 0;
+	int plvl = 256;
+
+	int j = starRenderRec.size();
+	for (int i = 0; i < starCutoffIdx.size(); i++) {
+		double brt = ::pow((double)i / (double)starCutoffIdx.size() * 1.4, 0.75) * 2.0;
+		for (; j > 0; j--)
+			if (starRenderRec[j-1].brightness > brt)
+				break;
+		starCutoffIdx[i] = j;
+	}
+	return starCutoffIdx;
 }
 
 // --------------------------------------------------------------
@@ -444,4 +489,34 @@ MATRIX3 oapi::CelestialSphere::Celestial2Ecliptic() const
 	R.m31 = -coso * sinl; R.m32 = -sino; R.m33 = coso * cosl;
 
 	return R;
+}
+
+// --------------------------------------------------------------
+
+void oapi::CelestialSphere::SetSkyColour(const VECTOR3& skyCol)
+{
+	m_skyCol = skyCol;
+	m_skyBrt = (skyCol.x + skyCol.y + skyCol.z) / 3.0;
+}
+
+oapi::FVECTOR4 oapi::CelestialSphere::ColorAdjusted(const FVECTOR4& baseCol) const
+{
+	float colAdjust = 1.0f - (float)m_skyBrt * 0.9f;
+	return baseCol * colAdjust; // fade against a bright background
+}
+
+DWORD oapi::CelestialSphere::MarkerColorAdjusted(const FVECTOR4& baseCol) const
+{
+	return ColorAdjusted(baseCol).dword_argb();
+}
+
+DWORD oapi::CelestialSphere::TextColorAdjusted(const FVECTOR4& baseCol) const
+{
+	FVECTOR4 textCol = ColorAdjusted(baseCol);
+	if (!m_textBlendAdditive) { // explicitly add background colour
+		textCol.r += (float)m_skyCol.x;
+		textCol.g += (float)m_skyCol.y;
+		textCol.b += (float)m_skyCol.z;
+	}
+	return textCol.dword_abgr();
 }

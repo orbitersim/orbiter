@@ -639,7 +639,7 @@ double Scene::MinParticleCameraDist() const
 	return mincamparticledist;
 }
 
-Vector Scene::SkyColour()
+VECTOR3 Scene::SkyColour()
 {
 	Vector col;
 	const Planet* pp = g_camera->ProxyPlanet();
@@ -662,7 +662,7 @@ Vector Scene::SkyColour()
 		for (int i = 0; i < 3; i++)
 			if (col.data[i] > 1.0) col.data[i] = 1.0;
 	}
-	return col;
+	return MakeVECTOR3(col);
 }
 
 void Scene::RenderObjectMarker (oapi::Sketchpad* pSkp, const Vector &gpos, const std::string& label1, const std::string& label2, int mode, int scale)
@@ -759,7 +759,7 @@ void Scene::Render (D3DRECT* vp_rect)
 	g_camera->SetFrustumLimits (0.1, 1e8);
 
 	// render the celestial sphere background
-	m_celSphere->Render(dev, bglvl);
+	m_celSphere->Render(dev, bgcol);
 
 	// reset clipping planes and turn z-buffer back on
 	g_camera->SetFrustumLimits(npl, fpl);

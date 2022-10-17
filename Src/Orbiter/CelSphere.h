@@ -19,18 +19,16 @@ public:
 	OGCelestialSphere(OrbiterGraphics* gc, Scene* scene);
 	~OGCelestialSphere();
 
-	void Render(LPDIRECT3DDEVICE7 dev, double bglvl);
+	void Render(LPDIRECT3DDEVICE7 dev, const VECTOR3 &skyCol);
 
 	/**
 	 * \brief Render stars as pixels on the celestial sphere
 	 * \param dev render device
-	 * \param nmax max. number of stars (default is all available stars)
-	 * \param bglvl background brightness from atmospheric effects, mean of RGB channels (0-1)
 	 * \note If a background colour is passed into this function, the rendering
 	 *   of stars darker than the background is suppressed.
 	 * \note All device parameters are assumed to be set correctly on call.
 	 */
-	void RenderStars(LPDIRECT3DDEVICE7 dev, DWORD nmax = (DWORD)-1, double bglvl = 0.0);
+	void RenderStars(LPDIRECT3DDEVICE7 dev);
 
 	/**
 	 * \brief Render constellation lines on the celestial sphere
@@ -40,7 +38,7 @@ public:
 	 * \note Suggestion: render additively onto background, so that the lines
 	 *   are never darker than the background sky.
 	 */
-	void RenderConstellationLines(LPDIRECT3DDEVICE7 dev, const Vector& col);
+	void RenderConstellationLines(LPDIRECT3DDEVICE7 dev);
 
 	/**
 	 * \brief Render a great circle on the celestial sphere in a given colour.
@@ -51,7 +49,7 @@ public:
 	 *   other orientation, the world matrix must be adjusted accordingly
 	 *   before the call.
 	 */
-	void RenderGreatCircle(LPDIRECT3DDEVICE7 dev, Vector& col);
+	void RenderGreatCircle(LPDIRECT3DDEVICE7 dev, const oapi::FVECTOR4& baseCol);
 
 	/**
 	 * \brief Render grid lines on the celestial sphere in a given colour.
@@ -65,14 +63,13 @@ public:
 	 *   This is useful if the line should be drawn in a different colour
 	 *   with RenderGreatCircle().
 	 */
-	void RenderGrid(LPDIRECT3DDEVICE7 dev, Vector& col, bool eqline = true);
+	void RenderGrid(LPDIRECT3DDEVICE7 dev, const oapi::FVECTOR4& baseCol, bool eqline = true);
 
 	/**
 	 * \brief Render a background image on the celestial sphere.
 	 * \param dev render device
-	 * \param bglvl atmospheric background brightness
 	 */
-	void RenderBkgImage(LPDIRECT3DDEVICE7 dev, double bglvl);
+	void RenderBkgImage(LPDIRECT3DDEVICE7 dev);
 
 protected:
 	/**
@@ -118,7 +115,7 @@ private:
 	DWORD m_viewH;                  ///< render viewport height [pixel]
 	DWORD m_nsVtx;                  ///< total number of vertices over all buffers
 	std::vector<LPDIRECT3DVERTEXBUFFER7> m_sVtx; ///< star vertex buffers
-	int m_lvlIdx[256];               ///< star brightness hash table
+	std::array<int, 256> m_starCutoffIdx;  ///< list of star render cutoff indices
 	DWORD m_ncVtx;                   ///< number of constellation line vertices
 	LPDIRECT3DVERTEXBUFFER7 m_cVtx;  ///< vertex buffer for constellation lines
 	LPDIRECT3DVERTEXBUFFER7 m_grdLngVtx, m_grdLatVtx; ///< vertex buffers for grid lines

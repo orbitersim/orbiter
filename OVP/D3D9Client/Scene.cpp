@@ -1214,7 +1214,7 @@ void Scene::RenderMainScene()
 	// Set generic clip plane distances for celestial sphere
 	SetCameraFrustumLimits(0.1, 10);
 
-	m_celSphere->Render(pDevice, bglvl);
+	m_celSphere->Render(pDevice, sky_color);
 
 	// Set Initial Near clip plane distance
 	if (bClearZBuffer) SetCameraFrustumLimits(1e3, 1e8f);

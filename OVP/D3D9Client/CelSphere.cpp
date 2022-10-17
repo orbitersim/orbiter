@@ -40,6 +40,7 @@ D3D9CelestialSphere::D3D9CelestialSphere(D3D9Client *gc, Scene *scene)
 	AllocGrids();
 	m_bkgImgMgr = new CSphereManager(gc, scene);
 
+	m_textBlendAdditive = true;
 	m_mjdPrecessionChecked = -1e10;
 }
 
@@ -77,8 +78,7 @@ void D3D9CelestialSphere::InitStars ()
 	m_nsVtx = sList.size();
 	if (!m_nsVtx) return;
 
-	DWORD i, j, nv, k, idx = 0;
-	int lvl, plvl = 256;
+	DWORD i, j, nv, idx = 0;
 
 	// convert star database to vertex buffers
 	DWORD nbuf = (m_nsVtx + maxNumVertices - 1) / maxNumVertices; // number of buffers required
@@ -95,18 +95,12 @@ void D3D9CelestialSphere::InitStars ()
 			v.y = (float)rec.pos.y;
 			v.z = (float)rec.pos.z;
 			v.col = D3DXCOLOR(rec.col.x, rec.col.y, rec.col.z, 1);
-
-			// compute brightness cutoff levels for rendering stars through atmosphere
-			lvl = (int)(rec.brightness * 256.0 * 0.5);
-			if (lvl > 255) lvl = 255;
-			for (int k = lvl; k < plvl; k++) m_lvlIdx[k] = idx;
-			plvl = lvl;
 			idx++;
 		}
 		(*it)->Unlock();
 	}
 
-	for (i = 0; i < (DWORD)plvl; i++) m_lvlIdx[i] = idx;
+	m_starCutoffIdx = ComputeStarBrightnessCutoff(sList);
 }
 
 // ==============================================================
@@ -173,31 +167,33 @@ void D3D9CelestialSphere::AllocGrids ()
 
 // ==============================================================
 
-void D3D9CelestialSphere::Render(LPDIRECT3DDEVICE9 pDevice, double bglvl)
+void D3D9CelestialSphere::Render(LPDIRECT3DDEVICE9 pDevice, const VECTOR3& skyCol)
 {
+	SetSkyColour(skyCol);
+
 	// Get celestial sphere render flags
 	DWORD renderFlag = *(DWORD*)m_gc->GetConfigParam(CFGPRM_PLANETARIUMFLAG);
 
 	// celestial sphere background image
-	RenderBkgImage(pDevice, bglvl);
+	RenderBkgImage(pDevice);
 
 	if (renderFlag & PLN_ENABLE) {
-
-		double colScale = 1.0 - bglvl; // feature brightness modifier for lit background
 
 		HR(s_FX->SetTechnique(s_eLine));
 		HR(s_FX->SetMatrix(s_eWVP, m_scene->GetProjectionViewMatrix()));
 
 		// render ecliptic grid
 		if (renderFlag & PLN_EGRID) {
-			D3DXVECTOR4 vColor(0.0f, 0.0f, 0.4f * colScale, 1.0f);
+			FVECTOR4 baseCol(0.0f, 0.0f, 0.4f, 1.0f);
+			D3DXVECTOR4 vColor = ColorAdjusted(baseCol);
 			HR(s_FX->SetVector(s_eColor, &vColor));
 			RenderGrid(s_FX, !(renderFlag & PLN_ECL));
 		}
 
 		// render ecliptic equator
 		if (renderFlag & PLN_ECL) {
-			D3DXVECTOR4 vColor(0.0f, 0.0f, 0.8f * colScale, 1.0f);
+			FVECTOR4 baseCol(0.0f, 0.0f, 0.8f, 1.0f);
+			D3DXVECTOR4 vColor = ColorAdjusted(baseCol);
 			HR(s_FX->SetVector(s_eColor, &vColor));
 			RenderGreatCircle(s_FX);
 		}
@@ -209,10 +205,12 @@ void D3D9CelestialSphere::Render(LPDIRECT3DDEVICE9 pDevice, double bglvl)
 			D3DXMATRIX rot;
 			D3DXMatrixMultiply(&rot, &m_rotCelestial, m_scene->GetProjectionViewMatrix());
 			HR(s_FX->SetMatrix(s_eWVP, &rot));
-			D3DXVECTOR4 vColor1(0.3f * colScale, 0.0f, 0.3f * colScale, 1.0f);
+			FVECTOR4 baseCol1(0.3f, 0.0f, 0.3f, 1.0f);
+			D3DXVECTOR4 vColor1 = ColorAdjusted(baseCol1);
 			HR(s_FX->SetVector(s_eColor, &vColor1));
 			RenderGrid(s_FX, false);
-			D3DXVECTOR4 vColor2(0.7f * colScale, 0.0f, 0.7f * colScale, 1.0f);
+			FVECTOR4 baseCol2(0.7f, 0.0f, 0.7f, 1.0f);
+			D3DXVECTOR4 vColor2 = ColorAdjusted(baseCol2);
 			HR(s_FX->SetVector(s_eColor, &vColor2));
 			RenderGreatCircle(s_FX);
 		}
@@ -221,8 +219,6 @@ void D3D9CelestialSphere::Render(LPDIRECT3DDEVICE9 pDevice, double bglvl)
 		//
 		if (renderFlag & PLN_CONST) {
 			HR(s_FX->SetMatrix(s_eWVP, m_scene->GetProjectionViewMatrix()));
-			D3DXVECTOR4 vColor(0.4f * colScale, 0.3f * colScale, 0.2f * colScale, 1.0f);
-			HR(s_FX->SetVector(s_eColor, &vColor));
 			RenderConstellationLines(s_FX);
 		}
 	}
@@ -230,7 +226,7 @@ void D3D9CelestialSphere::Render(LPDIRECT3DDEVICE9 pDevice, double bglvl)
 	// render stars
 	HR(s_FX->SetTechnique(s_eStar));
 	HR(s_FX->SetMatrix(s_eWVP, m_scene->GetProjectionViewMatrix()));
-	RenderStars(s_FX, (DWORD)-1, bglvl);
+	RenderStars(s_FX);
 
 	// render markers and labels
 	if (renderFlag & PLN_ENABLE) {
@@ -242,7 +238,7 @@ void D3D9CelestialSphere::Render(LPDIRECT3DDEVICE9 pDevice, double bglvl)
 
 			// constellation labels --------------------------------------------------
 			if (renderFlag & PLN_CNSTLABEL) {
-				RenderConstellationLabels(pSketch, renderFlag & PLN_CNSTLONG);
+				RenderConstellationLabels((oapi::Sketchpad**)&pSketch, renderFlag & PLN_CNSTLONG);
 			}
 			// celestial marker (stars) names ----------------------------------------
 			if (renderFlag & PLN_CCMARK) {
@@ -256,19 +252,15 @@ void D3D9CelestialSphere::Render(LPDIRECT3DDEVICE9 pDevice, double bglvl)
 
 // ==============================================================
 
-void D3D9CelestialSphere::RenderStars(ID3DXEffect *FX, DWORD nmax, double bglvl)
+void D3D9CelestialSphere::RenderStars(ID3DXEffect *FX)
 {
 	_TRACE;
 
 	// render in chunks, because some graphics cards have a limit in the
 	// vertex list size
 	UINT i, j, numPasses = 0;
-	DWORD ns = m_nsVtx;
-
-	if (bglvl) { // suppress stars darker than the background
-		int bgidx = min(255, pow(bglvl * 1.4, 0.75) * 255.0);
-		ns = min((int)ns, m_lvlIdx[bgidx]);
-	}
+	int bgidx = min(255, (int)(GetSkyBrightness() * 256.0));
+	int ns = m_starCutoffIdx[bgidx];
 
 	HR(m_pDevice->SetVertexDeclaration(pPosColorDecl));
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
@@ -285,6 +277,10 @@ void D3D9CelestialSphere::RenderStars(ID3DXEffect *FX, DWORD nmax, double bglvl)
 
 void D3D9CelestialSphere::RenderConstellationLines(ID3DXEffect *FX)
 {
+	FVECTOR4 baseCol(0.4f, 0.3f, 0.2f, 1.0f);
+	D3DXVECTOR4 vColor = ColorAdjusted(baseCol);
+	HR(s_FX->SetVector(s_eColor, &vColor));
+
 	_TRACE;
 	UINT numPasses = 0;
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
@@ -294,19 +290,6 @@ void D3D9CelestialSphere::RenderConstellationLines(ID3DXEffect *FX)
 	HR(m_pDevice->DrawPrimitive(D3DPT_LINELIST, 0, m_ncVtx));
 	HR(FX->EndPass());
 	HR(FX->End());	
-}
-
-// ==============================================================
-
-void D3D9CelestialSphere::RenderConstellationLabels(D3D9Pad* pSketch, bool fullName)
-{
-	pSketch->SetTextColor(0xFF8080);
-
-	const std::vector<oapi::GraphicsClient::LABELSPEC>& label = ConstellationLabels();
-	for (auto it = label.begin(); it != label.end(); it++) {
-		const std::string& label = (*it).label[fullName ? 0 : 1];
-		RenderMarker(pSketch, (*it).pos, std::string(), label, -1, 0);
-	}
 }
 
 // ==============================================================
@@ -348,9 +331,9 @@ void D3D9CelestialSphere::RenderGrid(ID3DXEffect *FX, bool eqline)
 
 // ==============================================================
 
-void D3D9CelestialSphere::RenderBkgImage(LPDIRECT3DDEVICE9 dev, int bglvl)
+void D3D9CelestialSphere::RenderBkgImage(LPDIRECT3DDEVICE9 dev)
 {
-	m_bkgImgMgr->Render(dev, 8, bglvl);
+	m_bkgImgMgr->Render(dev, 8, GetSkyBrightness());
 	dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 }
 

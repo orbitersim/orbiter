@@ -38,18 +38,17 @@ public:
 	 */
 	~D3D9CelestialSphere();
 
-	void Render(LPDIRECT3DDEVICE9 pDevice, double bglvl);
+	void Render(LPDIRECT3DDEVICE9 pDevice, const VECTOR3& skyCol);
 
 	/**
 	 * \brief Render stars as pixels on the celestial sphere
 	 * \param fx  render effect
 	 * \param nmax  max. number of stars (default is all available stars)
-	 * \param bglvl background brightness from atmospheric effects, mean of RGB channels (0-1)
 	 * \note if a background colour is passed into this function, the rendering
 	 *   of stars darker than the background is suppressed.
 	 * \note All device parameters are assumed to be set correctly on call.
 	 */
-	void RenderStars(ID3DXEffect *fx, DWORD nmax = (DWORD)-1, double bglvl = 0.0);
+	void RenderStars(ID3DXEffect *fx);
 
 	/**
 	 * \brief Render constellation lines on the celestial sphere
@@ -59,8 +58,6 @@ public:
 	 *   are never darker than the background sky.
 	 */
 	void RenderConstellationLines(ID3DXEffect *fx);
-
-	void RenderConstellationLabels(D3D9Pad* pSketch, bool fullName);
 
 	/**
 	 * \brief Render a great circle on the celestial sphere in a given colour.
@@ -88,9 +85,8 @@ public:
 	/**
 	 * \brief Render a background image on the celestial sphere.
 	 * \param dev render device
-	 * \param bglvl atmospheric background brightness
 	 */
-	void RenderBkgImage(LPDIRECT3DDEVICE9 dev, int bglvl);
+	void RenderBkgImage(LPDIRECT3DDEVICE9 dev);
 
 	static void D3D9TechInit(ID3DXEffect* fx);
 
@@ -131,7 +127,7 @@ private:
 	UINT maxNumVertices;            ///< number of vertices to use for one chunk at star-drawing
 	DWORD m_nsVtx;                  ///< total number of vertices over all buffers
 	std::vector<LPDIRECT3DVERTEXBUFFER9> m_sVtx; ///< star vertex buffers
-	int m_lvlIdx[256];              ///< star brightness hash table
+	std::array<int, 256> m_starCutoffIdx;  ///< list of star render cutoff indices
 	DWORD m_ncVtx;                  ///< number of constellation line vertices
 	LPDIRECT3DVERTEXBUFFER9 m_cVtx; ///< constellation line vertex buffer
 	LPDIRECT3DVERTEXBUFFER9 m_grdLngVtx, m_grdLatVtx; ///< vertex buffers for grid lines
