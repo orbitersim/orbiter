@@ -215,8 +215,29 @@ void D3D9CelestialSphere::Render(LPDIRECT3DDEVICE9 pDevice, const VECTOR3& skyCo
 			RenderGreatCircle(s_FX);
 		}
 
+		// render equator of target celestial body
+		if (renderFlag & PLN_EQU) {
+			OBJHANDLE hRef = oapiCameraProxyGbody();
+			if (hRef) {
+				MATRIX3 R;
+				oapiGetRotationMatrix(hRef, &R);
+				D3DXMATRIX iR = {
+					(float)R.m11, (float)R.m21, (float)R.m31, 0.0f,
+					(float)R.m12, (float)R.m22, (float)R.m32, 0.0f,
+					(float)R.m13, (float)R.m23, (float)R.m33, 0.0f,
+					0.0f,         0.0f,         0.0f,         1.0f
+				};
+				D3DXMATRIX rot;
+				D3DXMatrixMultiply(&rot, &iR, m_scene->GetProjectionViewMatrix());
+				HR(s_FX->SetMatrix(s_eWVP, &rot));
+				FVECTOR4 baseCol(0.0f, 0.6f, 0.0f, 1.0f);
+				D3DXVECTOR4 vColor = ColorAdjusted(baseCol);
+				HR(s_FX->SetVector(s_eColor, &vColor));
+				RenderGreatCircle(s_FX);
+			}
+		}
+
 		// render constellation lines ----------------------------------------------------------------------------
-		//
 		if (renderFlag & PLN_CONST) {
 			HR(s_FX->SetMatrix(s_eWVP, m_scene->GetProjectionViewMatrix()));
 			RenderConstellationLines(s_FX);

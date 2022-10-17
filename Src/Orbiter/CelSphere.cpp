@@ -292,8 +292,13 @@ void OGCelestialSphere::Render(LPDIRECT3DDEVICE7 dev, const VECTOR3& skyCol)
 			if (hRef) {
 				MATRIX3 R;
 				oapiGetRotationMatrix(hRef, &R);
-				D3DMATRIX iRot = { R.m11, R.m21, R.m31, 0.0f,   R.m12, R.m22, R.m32, 0.0f,  R.m13, R.m23, R.m33, 0.0f,  0.0f, 0.0f, 0.0f, 1.0f };
-				dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &iRot);
+				D3DMATRIX iR = {
+					(float)R.m11, (float)R.m21, (float)R.m31, 0.0f,
+					(float)R.m12, (float)R.m22, (float)R.m32, 0.0f,
+					(float)R.m13, (float)R.m23, (float)R.m33, 0.0f,
+					0.0f,         0.0f,         0.0f,         1.0f
+				};
+				dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &iR);
 				oapi::FVECTOR4 baseCol(0.0f, 0.6f, 0.0f, 1.0f);
 				RenderGreatCircle(dev, baseCol);
 				dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
