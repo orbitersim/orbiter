@@ -236,6 +236,7 @@ void TileLabel::Render(oapi::Sketchpad *skp, oapi::Font **labelfont, int *fontid
 			dir = unit(sp);
 			if (cam->Direction2Viewport(dir, x, y)) {
 
+				active = false; // default for label types not listed in the legend
 				symbol = 0; // undefined
 				if (nl = tile->smgr->GClient()->GetSurfaceMarkerLegend(hPlanet, &lspec)) {
 					for (int j = 0; j < nl; j++) {
