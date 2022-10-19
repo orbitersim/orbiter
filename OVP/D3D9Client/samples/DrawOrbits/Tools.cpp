@@ -34,7 +34,7 @@ const char *ValueToText(double real, int digits)
 	char *k2 = { "M" };
 	char *k3 = { "G" };
 	char *k5 = { "m" };
-	char *k6 = { "Âµ" };
+	char *k6 = { "µ" };
 	char *k7 = { "T" };
 
 	n = (int)floor(log10(v)) + 1;
@@ -89,7 +89,7 @@ const char *AngleToText(double deg, int digits)
 	if (f >= 360.0) f = 0.0;
 	if (deg<0) f = -f;
 
-	sprintf_s(ValueToText_Str, 30, "%1.*fÂ°", digits, f);
+	sprintf_s(ValueToText_Str, 30, "%1.*f°", digits, f);
 
 	return ValueToText_Str;
 }
