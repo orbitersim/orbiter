@@ -233,6 +233,15 @@ if(BUILD_ORBITER_DX7)
 		DESTINATION ${ORBITER_INSTALL_SDK_DIR}/lib
 	)
 	
+	if(BUILD_ORBITER_SERVER)
+		add_dependencies(Orbiter
+			Orbiter_server
+		)
+		add_custom_command(TARGET Orbiter
+			PRE_LINK
+			COMMAND del Orbiter.lib Orbiter.exp
+		)
+	endif()
 endif()
 
 # Orbiter executable (graphics server version)
