@@ -230,6 +230,7 @@ void TileLabel::Render(oapi::Sketchpad *skp, oapi::Font **labelfont, int *fontid
 			dir = sp.unit();
 			if (g_camera->Direction2Viewport(dir, x, y)) {
 
+				active = false; // default for label types not listed in the legend
 				symbol = 0; // undefined
 				if (nl = pl->NumLabelLegend()) {
 					const oapi::GraphicsClient::LABELTYPE *lspec = pl->LabelLegend();

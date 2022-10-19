@@ -297,6 +297,7 @@ void TileLabel::Render (D3D9Pad *skp, oapi::Font **labelfont, int *fontidx)
 			dir = unit(sp);
 			if (pScene->CameraDirection2Viewport(dir, x, y)) {
 
+				active = false; // default for label types not listed in the legend
 				symbol = 0; // undefined
 				if (nl = tile->smgr->Client()->GetSurfaceMarkerLegend(hPlanet, &lspec)) {
 					for (int j = 0; j < nl; ++j) {
