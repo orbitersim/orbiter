@@ -81,13 +81,13 @@ jobs:
       run: cmake --install . --prefix  ${{ github.workspace }}/out/install
 
     - name: Pack
-      # if: ${{ github.ref == 'refs/heads/main' }}
+      if: ${{ github.ref == 'refs/heads/main' }}
       working-directory: ${{ github.workspace }}/out/install/Orbiter
       shell: cmd
       run: '7z a "${{ github.workspace }}/out/Orbiter.zip" .'
 
     - name: Upload Build Artifact
-      # if: ${{ github.ref == 'refs/heads/main' }}
+      if: ${{ github.ref == 'refs/heads/main' }}
       uses: actions/upload-artifact@v3.1.0
       with:
         name: Orbiter-${{ matrix.architecture }}
