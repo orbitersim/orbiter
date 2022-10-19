@@ -231,8 +231,15 @@ const std::vector<oapi::CelestialSphere::StarRenderRec> oapi::CelestialSphere::S
 		double b_scale = (rec.specidx < 30 ? 1.0 :
 			(70 - rec.specidx) / 40.0 * (1.0 - 0.6) + 0.6);
 
+		double scale_max = max(r_scale, max(g_scale, b_scale));
+
 		// rescale for overall brightness
 		double rescale = 3.0 / (r_scale + g_scale + b_scale); // rescale to maintain brightness
+
+		rescale = min(rescale, 1.0 / (c * scale_max)); // this version preserves colours but not brigthness
+		//if (c * rescale * scale_max > 1.0) // this version compromises between brightness and colour preservation
+		//	rescale = 0.5 * (rescale + 1.0 / (c * scale_max));
+
 		starRenderRec[i].col.x = min(c * rescale * r_scale, 1.0);
 		starRenderRec[i].col.y = min(c * rescale * g_scale, 1.0);
 		starRenderRec[i].col.z = min(c * rescale * b_scale, 1.0);
