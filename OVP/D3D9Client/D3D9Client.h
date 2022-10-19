@@ -1246,14 +1246,6 @@ protected:
 public:
 
 	/**
-	 * \brief Returns an array of constellation markers
-	 * \param cm_list array of constellation label elements
-	 * \return number of lists in the array
-	 * \sa LABELSPEC
-	 */
-	DWORD GetConstellationMarkers (const LABELSPEC **cm_list) const;
-
-	/**
 	 * \brief Displays a message on the splash screen.
 	 * \param msg Message to be displayed.
 	 * \param line line number (0 or 1)

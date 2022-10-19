@@ -22,7 +22,7 @@ _AN = crossp( _RefN,  _OrbN);
 */
 
 #define J2000		51544.5			//!< Reference Epoch
-#define J2000_Ob    0.40909280422   //!< Obliquity of J2000 (rad) 23Â°26'21.448"
+#define J2000_Ob    0.40909280422   //!< Obliquity of J2000 (rad) 23°26'21.448"
 
 #define _I_ECL	_V(1,  0,  0)	//!< [LH] Reference equinox
 #define _K_ECL	_V(0,  1,  0)	//!< [LH] Reference pole

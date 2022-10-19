@@ -90,8 +90,6 @@ CSphereManager::CSphereManager(D3D9Client *gclient, const Scene *scene) : Planet
 	LoadTileData ();
 	LoadTextures ();
 
-	MATRIX3 R = {2000,0,0, 0,2000,0, 0,0,2000};
-
 	// rotation from galactic to ecliptic frame
 	double theta = 60.28*RAD;
 	double phi = 90.08*RAD;
@@ -102,18 +100,17 @@ CSphereManager::CSphereManager(D3D9Client *gclient, const Scene *scene) : Planet
 	ecl2gal = _M(cosp,0,sinp, 0,1,0, -sinp,0,cosp);
 	ecl2gal = mul (_M(1,0,0, 0,cost,sint, 0,-sint,cost), ecl2gal);
 	ecl2gal = mul (_M(cosl,0,sinl, 0,1,0, -sinl,0,cosl), ecl2gal);
-	R = mul (ecl2gal, R);
 
 	D3DMAT_Identity (&trans);
-	trans._11 = float(R.m11);
-	trans._12 = float(R.m12);
-	trans._13 = float(R.m13);
-	trans._21 = float(R.m21);
-	trans._22 = float(R.m22);
-	trans._23 = float(R.m23);
-	trans._31 = float(R.m31);
-	trans._32 = float(R.m32);
-	trans._33 = float(R.m33);
+	trans._11 = float(ecl2gal.m11);
+	trans._12 = float(ecl2gal.m12);
+	trans._13 = float(ecl2gal.m13);
+	trans._21 = float(ecl2gal.m21);
+	trans._22 = float(ecl2gal.m22);
+	trans._23 = float(ecl2gal.m23);
+	trans._31 = float(ecl2gal.m31);
+	trans._32 = float(ecl2gal.m32);
+	trans._33 = float(ecl2gal.m33);
 
 	LogAlw("CSphere Manager constructed");
 }
@@ -315,13 +312,13 @@ void CSphereManager::LoadTextures ()
 
 // =======================================================================
 
-void CSphereManager::Render (LPDIRECT3DDEVICE9 dev, int level, int bglvl)
+void CSphereManager::Render (LPDIRECT3DDEVICE9 dev, int level, double bglvl)
 {
 	if (disabled) return;
 
 	float intens = intensity;
 
-	if (bglvl) intens *= exp(-float(bglvl)*0.05f);
+	if (bglvl) intens *= exp(-bglvl*12.5);
 	
 	Shader()->SetFloat(sfAlpha, intens);
 
@@ -467,10 +464,9 @@ void CSphereManager::TileExtents (int hemisp, int ilat, int nlat, int ilng, int 
 bool CSphereManager::TileInView (int lvl, int ilat)
 {
 	VBMESH &mesh = PATCH_TPL[lvl][ilat];
-	float rad = mesh.bsRad * 2000.0f;
 	D3DXVECTOR3 vP;
 	D3DXVec3TransformCoord(&vP, &mesh.bsCnt, &mWorld);
-	return gc->GetScene()->IsVisibleInCamera(&vP, rad);
+	return gc->GetScene()->IsVisibleInCamera(&vP, mesh.bsRad);
 }
 
 

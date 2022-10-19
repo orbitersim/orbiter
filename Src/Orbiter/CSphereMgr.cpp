@@ -68,8 +68,6 @@ CSphereManager::CSphereManager ()
 	LoadTileData ();
 	LoadTextures ();
 
-	Matrix R(2000,0,0, 0,2000,0, 0,0,2000);
-
 	// rotation from galactic to ecliptic frame
 	double theta = 60.25*RAD; // 60.18*RAD;
 	double phi = 90.09*RAD; // 90.02*RAD;
@@ -80,12 +78,11 @@ CSphereManager::CSphereManager ()
 	ecl2gal.Set (cosp,0,sinp, 0,1,0, -sinp,0,cosp);
 	ecl2gal.premul (Matrix (1,0,0, 0,cost,sint, 0,-sint,cost));
 	ecl2gal.premul (Matrix (cosl,0,sinl, 0,1,0, -sinl,0,cosl));
-	R.premul (ecl2gal);
 
-	trans = _M(R.m11,R.m12,R.m13,0,
-		       R.m21,R.m22,R.m23,0,
-               R.m31,R.m32,R.m33,0,
-			   0,    0,    0,    1);
+	trans = _M(ecl2gal.m11, ecl2gal.m12, ecl2gal.m13,0,
+		       ecl2gal.m21, ecl2gal.m22, ecl2gal.m23,0,
+		       ecl2gal.m31, ecl2gal.m32, ecl2gal.m33,0,
+			   0,           0,           0,          1);
 }
 
 // =======================================================================
@@ -189,7 +186,7 @@ void CSphereManager::LoadTextures ()
 
 // =======================================================================
 
-void CSphereManager::Render (LPDIRECT3DDEVICE7 dev, int level, int bglvl)
+void CSphereManager::Render (LPDIRECT3DDEVICE7 dev, int level, double bglvl)
 {
 
 	if (disabled) return;
@@ -198,7 +195,7 @@ void CSphereManager::Render (LPDIRECT3DDEVICE7 dev, int level, int bglvl)
 
 	float intens = intensity;
 	if (bglvl) {
-		intens *= (float)exp(-bglvl*0.05);
+		intens *= (float)exp(-bglvl*12.5);
 	}
 
 	if (!intens) return; // sanity check
@@ -230,7 +227,6 @@ void CSphereManager::Render (LPDIRECT3DDEVICE7 dev, int level, int bglvl)
 	rcam.premul (ecl2gal);
 	RenderParam.camdir.Set (rcam.m13, rcam.m23, rcam.m33);
 
-	dev->SetRenderState (D3DRENDERSTATE_LIGHTING, FALSE);
 	dev->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_ONE);
 	dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
 	dev->SetRenderState (D3DRENDERSTATE_CULLMODE, D3DCULL_CW);
@@ -258,18 +254,17 @@ void CSphereManager::Render (LPDIRECT3DDEVICE7 dev, int level, int bglvl)
 	}
 	ReleaseMutex (tilebuf->hQueueMutex);
 
-	dev->SetRenderState (D3DRENDERSTATE_LIGHTING, TRUE);
 	dev->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_INVSRCALPHA);
 	dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
 	dev->SetRenderState (D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
 	dev->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
 
 	if (intens < 1.0f) {
+		dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, 0xFFFFFFFF);
 		dev->SetTextureStageState (0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
 		dev->SetTextureStageState (0, D3DTSS_ALPHAARG2, D3DTA_CURRENT);
 	}
-
-	//sprintf (DBG_MSG, "total: %d, after radius culling: %d, after in-view culling: %d", ntot, nrad, nrender);
+	dev->SetTexture(0, 0);
 }
 
 // =======================================================================
@@ -388,8 +383,8 @@ bool CSphereManager::TileInView (int lvl, int ilat)
 	for (v = 0; v < 8; v++) {
 		VECTOR4 vt = mul (mesh.bbvtx[v], RenderParam.transform);
 		hx = vt.x/vt.w, hy = vt.y/vt.w, hz = vt.z/vt.w;
-		if (hz <= 1.0) hx = -hx, hy = -hy;
-		if (hz >  0.0) bz1 = true;
+		if (hz >= 1.0) hx = -hx, hy = -hy;
+		if (hz <  1.0) bz1 = true;
 		if (hx > -1.0) bx1 = true;
 		if (hx <  1.0) bx2 = true;
 		if (hy > -1.0) by1 = true;

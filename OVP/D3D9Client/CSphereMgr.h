@@ -48,7 +48,7 @@ public:
 	static void CreateDeviceObjects(LPDIRECT3D9 d3d, LPDIRECT3DDEVICE9 dev);
 	static void DestroyDeviceObjects();
 
-	void Render (LPDIRECT3DDEVICE9 dev, int level, int bglvl);
+	void Render (LPDIRECT3DDEVICE9 dev, int level, double bglvl);
 
 protected:
 	bool LoadPatchData ();

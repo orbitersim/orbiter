@@ -96,11 +96,11 @@ bool Tile::InView (const MATRIX4 &transform)
 	bool bx1, bx2, by1, by2, bz1;
 	bx1 = bx2 = by1 = by2 = bz1 = false;
 	int v;
-	double hx, hy;
+	double hx, hy, hz;
 	for (v = 0; v < 8; v++) {
 		VECTOR4 vt = mul (mesh->bbvtx[v], transform);
 		hx = vt.x/vt.w, hy = vt.y/vt.w;
-		if (vt.z >  0.0) bz1 = true;
+		if (vt.z > 0.0) bz1 = true;
 		if (vt.w < 0.0) hx = -hx, hy = -hy;
 		if (hx > -1.0) bx1 = true;
 		if (hx <  1.0) bx2 = true;

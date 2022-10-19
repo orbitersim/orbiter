@@ -84,8 +84,6 @@ CSphereManager::CSphereManager (const D3D7Client *gclient, const Scene *scene)
 	LoadTileData ();
 	LoadTextures ();
 
-	MATRIX3 R = {2000,0,0, 0,2000,0, 0,0,2000};
-
 	// rotation from galactic to ecliptic frame
 	double theta = 60.18*RAD;
 	double phi = 90.02*RAD;
@@ -96,18 +94,17 @@ CSphereManager::CSphereManager (const D3D7Client *gclient, const Scene *scene)
 	ecl2gal = _M(cosp,0,sinp, 0,1,0, -sinp,0,cosp);
 	ecl2gal = mul (_M(1,0,0, 0,cost,sint, 0,-sint,cost), ecl2gal);
 	ecl2gal = mul (_M(cosl,0,sinl, 0,1,0, -sinl,0,cosl), ecl2gal);
-	R = mul (ecl2gal, R);
 
 	D3DMAT_Identity (&trans);
-	trans._11 = (D3DVALUE)R.m11;
-	trans._12 = (D3DVALUE)R.m12;
-	trans._13 = (D3DVALUE)R.m13;
-	trans._21 = (D3DVALUE)R.m21;
-	trans._22 = (D3DVALUE)R.m22;
-	trans._23 = (D3DVALUE)R.m23;
-	trans._31 = (D3DVALUE)R.m31;
-	trans._32 = (D3DVALUE)R.m32;
-	trans._33 = (D3DVALUE)R.m33;
+	trans._11 = (D3DVALUE)ecl2gal.m11;
+	trans._12 = (D3DVALUE)ecl2gal.m12;
+	trans._13 = (D3DVALUE)ecl2gal.m13;
+	trans._21 = (D3DVALUE)ecl2gal.m21;
+	trans._22 = (D3DVALUE)ecl2gal.m22;
+	trans._23 = (D3DVALUE)ecl2gal.m23;
+	trans._31 = (D3DVALUE)ecl2gal.m31;
+	trans._32 = (D3DVALUE)ecl2gal.m32;
+	trans._33 = (D3DVALUE)ecl2gal.m33;
 }
 
 // =======================================================================
@@ -221,14 +218,14 @@ void CSphereManager::LoadTextures ()
 
 // =======================================================================
 
-void CSphereManager::Render (LPDIRECT3DDEVICE7 dev, int level, int bglvl)
+void CSphereManager::Render (LPDIRECT3DDEVICE7 dev, int level, double bglvl)
 {
 	if (disabled) return;
 	ntot = nrad = nrender = 0;
 
 	float intens = intensity;
 	if (bglvl) {
-		intens *= (float)exp(-bglvl*0.05);
+		intens *= (float)exp(-bglvl*12.5);
 	}
 
 	if (!intens) return; // sanity check
@@ -254,7 +251,6 @@ void CSphereManager::Render (LPDIRECT3DDEVICE7 dev, int level, int bglvl)
 	rcam = mul (ecl2gal, rcam);
 	RenderParam.camdir = _V(rcam.m13, rcam.m23, rcam.m33);
 
-	dev->SetRenderState (D3DRENDERSTATE_LIGHTING, FALSE);
 	dev->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_ONE);
 	dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
 	dev->SetRenderState (D3DRENDERSTATE_CULLMODE, D3DCULL_CW);
@@ -282,18 +278,17 @@ void CSphereManager::Render (LPDIRECT3DDEVICE7 dev, int level, int bglvl)
 	}
 	ReleaseMutex (tilebuf->hQueueMutex);
 
-	dev->SetRenderState (D3DRENDERSTATE_LIGHTING, TRUE);
 	dev->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_INVSRCALPHA);
 	dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
 	dev->SetRenderState (D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
 	dev->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
 
 	if (intens < 1.0f) {
+		dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, 0xFFFFFFFF);
 		dev->SetTextureStageState (0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
 		dev->SetTextureStageState (0, D3DTSS_ALPHAARG2, D3DTA_CURRENT);
 	}
-
-	//sprintf (DBG_MSG, "total: %d, after radius culling: %d, after in-view culling: %d", ntot, nrad, nrender);
+	dev->SetTexture(0, 0);
 }
 
 // =======================================================================
@@ -396,7 +391,6 @@ void CSphereManager::TileExtents (int hemisp, int ilat, int nlat, int ilng, int 
 
 bool CSphereManager::TileInView (int lvl, int ilat)
 {
-	const double eps = 1e-3;
 	bool bx1, bx2, by1, by2, bz1, bz2, bbvis;
 	int v;
 	D3DVALUE x, y;
@@ -407,7 +401,7 @@ bool CSphereManager::TileInView (int lvl, int ilat)
 	bx1 = bx2 = by1 = by2 = bz1 = bz2 = bbvis = false;
 	for (v = 0; v < 8; v++) {
 		if (vtx[v].z > 0.0)  bz1 = true;
-		if (vtx[v].z <= 1.0+eps) bz2 = true;
+		if (vtx[v].z <= 1.0) bz2 = true;
 		if (vtx[v].z <= 1.0) x =  vtx[v].x, y =  vtx[v].y;
 		else                 x = -vtx[v].x, y = -vtx[v].y;
 		if (x > vpX0)        bx1 = true;

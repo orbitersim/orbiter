@@ -97,7 +97,7 @@ CFG_VISUALPRM CfgVisualPrm_default = {
 	SURF_MAX_PATCHLEVEL2, // PlanetMaxLevel (max surface resolution level)
 	1.0,		// PlanetPatchRes (resolution level scale parameter)
 	0.5,		// LightBrightness (city light brightness)
-	{1.0, 7.0, 0.1, true},	// StarPrm (bright/faint cutoff magnitude, display brightness of faintest, log mapping)
+	{2.0, 8.0, 0.1, true},	// StarPrm (bright/faint cutoff magnitude, display brightness of faintest, log mapping)
 	"<none>",	// CSphereBgImage (no celestial sphere background image)
 	"",			// CSphereBgPath (path to celestial background images)
 	0.2,		// CSphereBgIntens (intensity of celestial sphere background image)

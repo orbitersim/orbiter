@@ -18,8 +18,8 @@
 
 #define NTEMP 5
 
-static double eEll[NTEMP] = { 0.0f, 0.5f, 0.75f, 0.88f, 0.95f };
-static double eHyp[NTEMP] = { 1.01f, 1.1f, 1.3f, 1.6f, 2.0f };
+static double eEll[NTEMP] { 0.0f, 0.5f, 0.75f, 0.88f, 0.95f };
+static double eHyp[NTEMP] { 1.01f, 1.1f, 1.3f, 1.6f, 2.0f };
 
 
 struct Body {
@@ -148,7 +148,7 @@ void Orbits::clbkSimulationStart(RenderMode rm)
 
 	oapiWriteLog("oapi::Module::clbkSimulationStart");
 	
-	DWORD bcnt = oapiGetGbodyCount();
+	size_t bcnt{ oapiGetGbodyCount() };
 	Ref = new ReferenceClass();
 	pBody = new Body[bcnt+1];
 	memset(pBody, 0, (bcnt+1) * sizeof(Body));
@@ -164,7 +164,7 @@ void Orbits::clbkSimulationStart(RenderMode rm)
 
 		CreateOrbitTemplates();
 
-		for (DWORD i = 0; i < bcnt; i++) {
+		for (size_t i = 0; i < bcnt; i++) {
 			pBody[i].hObj = oapiGetGbodyByIndex(i);
 			if (!pBody[i].hObj) continue;
 			pBody[i].hRef = Ref->GetReference(pBody[i].hObj);

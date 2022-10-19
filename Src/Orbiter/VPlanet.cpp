@@ -302,7 +302,7 @@ void VPlanet::Render (LPDIRECT3DDEVICE7 dev)
 		prm.bFog = hasfog;
 		prm.bTint = hasfog;
 
-		const Vector &bgcol = scene->BGcol();
+		const VECTOR3 &bgcol = scene->BGcol();
 		if (bgcol.x || bgcol.y || bgcol.z)
 			bkgcol = true;
 

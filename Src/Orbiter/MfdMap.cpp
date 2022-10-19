@@ -498,9 +498,9 @@ void Instrument_Map::UpdateDraw_Dispprm (oapi::Sketchpad *skp)
 
 	CustomMkrSet &set = map->GetCustomMarkerSet();
 	for (i = max(0,dispprm_top-ndefault); i < min(set.nset,nlist-ndefault+dispprm_top); i++) {
-		char *name = set.set[i].list->name;
+		std::string& name = set.set[i].list->name;
 		bool active = set.set[i].active;
-		skp->Text (x0, y, name, strlen(name));
+		skp->Text (x0, y, name.c_str(), name.size());
 		skp->Text (x1, y, active ? "ON ":"OFF", 3);
 		y += dy;
 	}

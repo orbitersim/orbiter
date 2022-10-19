@@ -5,9 +5,10 @@
 // Copyright (C) 2006-2016 Martin Schweiger
 // ==============================================================
 
-#ifndef __CELSPHERE_H
-#define __CELSPHERE_H
+#ifndef __D3D9CELSPHERE_H
+#define __D3D9CELSPHERE_H
 
+#include "CelSphereAPI.h"
 #include "D3D9Client.h"
 #include "D3D9Util.h"
 
@@ -23,30 +24,31 @@
  * render the celestial sphere background (stars, constellations, grids,
  * labels, etc.)
  */
-class CelestialSphere {
+class D3D9CelestialSphere : public oapi::CelestialSphere {
 
 public:
 	/**
 	 * \brief Create a new celestial sphere object.
-	 * \param _gc pointer to graphics client
+	 * \param gc pointer to graphics client
 	 */
-	explicit CelestialSphere(oapi::D3D9Client *_gc);
+	explicit D3D9CelestialSphere(oapi::D3D9Client *gc, Scene* scene);
 
 	/**
 	 * \brief Destructor
 	 */
-	~CelestialSphere();
+	~D3D9CelestialSphere();
+
+	void Render(LPDIRECT3DDEVICE9 pDevice, const VECTOR3& skyCol);
 
 	/**
 	 * \brief Render stars as pixels on the celestial sphere
 	 * \param fx  render effect
 	 * \param nmax  max. number of stars (default is all available stars)
-	 * \param bgcol  pointer to background color (default is black)
 	 * \note if a background colour is passed into this function, the rendering
 	 *   of stars darker than the background is suppressed.
 	 * \note All device parameters are assumed to be set correctly on call.
 	 */
-	void RenderStars(ID3DXEffect *fx, DWORD nmax = (DWORD)-1, const VECTOR3 *bgcol = 0);
+	void RenderStars(ID3DXEffect *fx);
 
 	/**
 	 * \brief Render constellation lines on the celestial sphere
@@ -55,7 +57,7 @@ public:
 	 * \note Suggestion: render additively onto background, so that the lines
 	 *   are never darker than the background sky.
 	 */
-	void RenderConstellations(ID3DXEffect *fx);
+	void RenderConstellationLines(ID3DXEffect *fx);
 
 	/**
 	 * \brief Render a great circle on the celestial sphere in a given colour.
@@ -79,23 +81,25 @@ public:
 	 *   with RenderGreatCircle().
 	 */
 	void RenderGrid(ID3DXEffect *fx, bool eqline = true);
-	
+
 	/**
-	 * \brief Number of stars loaded from the data base
-	 * \return Number of stars available
+	 * \brief Render a background image on the celestial sphere.
+	 * \param dev render device
 	 */
-	inline DWORD NStar() const { return nsvtx; }
+	void RenderBkgImage(LPDIRECT3DDEVICE9 dev);
+
+	static void D3D9TechInit(ID3DXEffect* fx);
 
 protected:
 	/**
-	 * \brief Load star coordinates from file
+	 * \brief Prepare the star vertex list from the star database.
 	 */
-	void LoadStars ();
+	void InitStars ();
 
 	/**
 	 * \brief Load constellation line data from file
 	 */
-	void LoadConstellationLines ();
+	void InitConstellationLines ();
 
 	/**
 	 * \brief Allocate vertex list for rendering grid lines
@@ -103,20 +107,38 @@ protected:
 	 */
 	void AllocGrids ();
 
+	void InitCelestialTransform();
+
+	/**
+	 * \brief Convert a direction into viewport coordinates
+	 * \param dir direction in the ecliptic frame provided as a point on the
+	 *    celestial sphere.
+	 * \param x x-position in the viewport window [pixel]
+	 * \param y y-position in the viewport window [pixel]
+	 * \return true if point is visible in the viewport, false otherwise.
+	 */
+	virtual bool EclDir2WindowPos(const VECTOR3& dir, int& x, int& y) const;
+
 private:
-	oapi::D3D9Client *gc; ///< pointer to graphics client
-	float sphere_r;       ///< render radius for celestial sphere
-	DWORD nsbuf;          ///< number of vertex buffers for star positions
-//	DWORD nstar;          ///< total number of stars across all buffers
-	UINT maxNumVertices;  ///< number of vertices to use for one chunk at star-drawing
-	DWORD nsvtx;          ///< total number of vertices over all buffers
-	LPDIRECT3DVERTEXBUFFER9 *svtx; ///< star vertex buffers
-	int lvlid[256];       ///< star brightness hash table
-	DWORD ncline;         ///< number of constellation lines
-	VERTEX_XYZ  *cnstvtx; ///< vertex list of constellation lines
-	LPDIRECT3DVERTEXBUFFER9 grdlng, grdlat; ///< vertex buffers for grid lines
-	D3DXMATRIX mWorld;    ///< world matrix
-	LPDIRECT3DDEVICE9 pDevice; ///< DirectX9 device
+	oapi::D3D9Client *m_gc;         ///< pointer to graphics client
+	CSphereManager* m_bkgImgMgr;    ///< background image manager
+	Scene* m_scene;                 ///< pointer to scene object
+	LPDIRECT3DDEVICE9 m_pDevice;    ///< DirectX9 device
+	UINT maxNumVertices;            ///< number of vertices to use for one chunk at star-drawing
+	DWORD m_nsVtx;                  ///< total number of vertices over all buffers
+	std::vector<LPDIRECT3DVERTEXBUFFER9> m_sVtx; ///< star vertex buffers
+	std::array<int, 256> m_starCutoffIdx;  ///< list of star render cutoff indices
+	DWORD m_ncVtx;                  ///< number of constellation line vertices
+	LPDIRECT3DVERTEXBUFFER9 m_cVtx; ///< constellation line vertex buffer
+	LPDIRECT3DVERTEXBUFFER9 m_grdLngVtx, m_grdLatVtx; ///< vertex buffers for grid lines
+	D3DXMATRIX m_rotCelestial;      ///< rotation for celestial grid rendering
+	double m_mjdPrecessionChecked;
+
+	static ID3DXEffect* s_FX;
+	static D3DXHANDLE s_eStar;
+	static D3DXHANDLE s_eLine;
+	static D3DXHANDLE s_eColor;
+	static D3DXHANDLE s_eWVP;
 };
 
-#endif // !__CELSPHERE_H
+#endif // !__D3D9CELSPHERE_H

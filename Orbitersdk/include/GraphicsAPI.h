@@ -1619,56 +1619,38 @@ protected:
 	// ==================================================================
 	// Functions for the celestial sphere
 public:
-#pragma pack(1)
-	struct StarRec { float lng, lat, mag; };
+	struct ConstLabelRec {
+		std::string fullLabel;
+		std::string abbrLabel;
+		float lngCnt;
+		float latCnt;
+	};
 
-	/**
-	 * \brief Load star data from Orbiter's data base file.
-     *
-	 * Load up to 'n' data records from the default data base (in decreasing
-	 * order of apparent magnitude).
-	 * \param n Requested number of stars
-	 * \param rec Pointer to an array receiving the data.
-	 * \return The actual number of loaded stars
-	 * \note rec must be allocated to size >= n on call.
-	 */
-	DWORD LoadStars (DWORD n, StarRec *rec);
-
-	struct ConstRec { float lng1, lat1, lng2, lat2; };
-
-	/**
-	 * \brief Load constellation line data from Orbiter's data base file.
-	 *
-	 * Load up to 'n' constellation lines from the default constellation
-	 * data base.
-	 * \param n Requested number of lines
-	 * \param rec Pointer to an array receiving the data.
-	 * \return The actual number of lines loaded.
-	 * \note rec must be allocated to size >= n on call.
-	 */
-	DWORD LoadConstellationLines (DWORD n, ConstRec *rec);
-#pragma pack()
+	//struct ConstLabelRenderRec {
+	//	std::string fullLabel;
+	//	std::string abbrLabel;
+	//	VECTOR3 pos;
+	//};
 
 	// ==================================================================
 	/// \name Marker and label-related methods
 	// @{
 	struct LABELSPEC {
 		VECTOR3 pos;
-		char *label[2];
+		std::string label[2];
 	};
 	/**
 	 * \brief Label list description for celestial and surface markers
 	 */
 	struct LABELLIST {
-		char name[64];   ///< list name
-		LABELSPEC *list; ///< marker array
-		int length;      ///< length of the marker array
-		int colour;      ///< marker colour index (0-5)
-		int shape;       ///< marker shape index (0-4)
-		float size;      ///< marker size factor
-		float distfac;   ///< marker distance cutout factor
-		DWORD flag;      ///< reserved
-		bool active;     ///< active list flag
+		std::string name; ///< list name
+		std::vector< LABELSPEC> marker; ///< list of markers
+		int colour;       ///< marker colour index (0-5)
+		int shape;        ///< marker shape index (0-4)
+		float size;       ///< marker size factor
+		float distfac;    ///< marker distance cutout factor
+		DWORD flag;       ///< reserved
+		bool active;      ///< active list flag
 	};
 
 	/**
@@ -1677,7 +1659,7 @@ public:
 	 * \return number of lists in the array
 	 * \sa LABELLIST
 	 */
-	DWORD GetCelestialMarkers (const LABELLIST **cm_list) const;
+	const std::vector<LABELLIST>& GetCelestialMarkers() const;
 
 	/**
 	 * \brief Returns an array of surface marker lists for a planet

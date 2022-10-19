@@ -350,8 +350,8 @@ bool vPlanet::Render (LPDIRECT3DDEVICE7 dev)
 		prm.bFog = prm.bFogEnabled;
 		prm.bTint = prm.bFogEnabled;
 
-		D3DCOLOR skybg = scn->GetBgColour();
-		prm.bAddBkg = ((skybg & 0xFFFFFF) && (hObj != scn->GetCamera()->GetProxyBody()));
+		int skybrt = scn->BgBrightnessLevel();
+		prm.bAddBkg = (skybrt && (hObj != scn->GetCamera()->GetProxyBody()));
 
 		if (ringmgr) {
 			if (cdist < rad*ringmgr->InnerRad()) { // camera inside inner ring edge
@@ -524,7 +524,7 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE7 dev, const RenderPrm &prm, bool &u
 		dev->SetTextureStageState (1, D3DTSS_COLOROP, D3DTOP_ADD);
 		dev->SetTextureStageState (1, D3DTSS_COLORARG1, D3DTA_CURRENT);
 		dev->SetTextureStageState (1, D3DTSS_COLORARG2, D3DTA_TFACTOR);
-		D3DCOLOR bgc = gc->GetScene()->GetBgColour();
+		DWORD bgc = gc->GetScene()->BgColourRGBA();
 		dev->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, bgc);
 	}
 

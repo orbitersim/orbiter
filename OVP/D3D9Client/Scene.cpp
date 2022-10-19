@@ -11,7 +11,7 @@
 #include "VVessel.h"
 #include "VBase.h"
 #include "Particle.h"
-#include "CSphereMgr.h"
+#include "PlanetRenderer.h"
 #include "D3D9Util.h"
 #include "D3D9Config.h"
 #include "D3D9Surface.h"
@@ -69,7 +69,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	gc = _gc;
 	vobjEnv = NULL;
 	vobjIrd = NULL;
-	csphere = NULL;
+	m_celSphere = NULL;
 	Lights = NULL;
 	hSun = NULL;
 	pAxisFont  = NULL;
@@ -105,7 +105,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	SetCameraAperture(float(RAD*50.0), float(viewH)/float(viewW));
 	SetCameraFrustumLimits(2.5f, 5e6f); // initial limits
 
-	csphere = new CelestialSphere(gc);
+	m_celSphere = new D3D9CelestialSphere(gc, this);
 	Lights = new D3D9Light[MAX_SCENE_LIGHTS];
 
 	bLocalLight = *(bool*)gc->GetConfigParam(CFGPRM_LOCALLIGHT);
@@ -123,8 +123,6 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	iVCheck = 0;
 
 	InitGDIResources();
-
-	cspheremgr = new CSphereManager(_gc, this);
 
 	while (true) {
 		float dx = 0;
@@ -272,7 +270,7 @@ Scene::~Scene ()
 	SAFE_DELETE(pBlur);
 	SAFE_DELETE(pLightBlur);
 	SAFE_DELETE(pIrradiance);
-	SAFE_DELETE(csphere);
+	SAFE_DELETE(m_celSphere);
 	SAFE_RELEASE(pOffscreenTarget);
 	SAFE_RELEASE(pEnvDS);
 	SAFE_RELEASE(pIrradDS);
@@ -289,7 +287,6 @@ Scene::~Scene ()
 		delete []Lights;
 		Lights = NULL;
 	}
-	if (cspheremgr) delete cspheremgr;
 
 	// Particle Streams
 	if (nstream) {
@@ -929,6 +926,7 @@ void Scene::UpdateCamVis()
 	// Compute SkyColor -----------------------------------------------
 	//
 	sky_color = SkyColour();
+	bglvl = (sky_color.x + sky_color.y + sky_color.z) / 3.0;
 	bg_rgba = D3DCOLOR_RGBA ((int)(sky_color.x*255), (int)(sky_color.y*255), (int)(sky_color.z*255), 255);
 
 
@@ -1194,21 +1192,11 @@ void Scene::RenderMainScene()
 		if (camMode!=0) znear_for_vessels = 0.1f;
 	}
 
-	// Set Initial Near clip plane distance
-	if (bClearZBuffer) SetCameraFrustumLimits(1e3, 1e8f);
-	else			   SetCameraFrustumLimits(znear_for_vessels, 1e8f);
-
 	// -------------------------------------------------------------------------------------------------------
 	// render celestial sphere background
 	// -------------------------------------------------------------------------------------------------------
 
 	pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
-
-	int bglvl = 0;
-	if (bg_rgba) { // suppress stars darker than the background
-		bglvl = (bg_rgba & 0xff) + ((bg_rgba >> 8) & 0xff) + ((bg_rgba >> 16) & 0xff);
-		bglvl = min (bglvl/2, 255);
-	}
 
 	bool bEnableAtmosphere = false;
 
@@ -1220,136 +1208,17 @@ void Scene::RenderMainScene()
 	}
 
 	// -------------------------------------------------------------------------------------------------------
-	// Render Celestial Sphere Background Image
+	// Render the celestial sphere (background image, stars, planetarium features)
 	// -------------------------------------------------------------------------------------------------------
 
-	cspheremgr->Render(pDevice, 8, bglvl);
+	// Set generic clip plane distances for celestial sphere
+	SetCameraFrustumLimits(0.1, 10);
 
-	pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	m_celSphere->Render(pDevice, sky_color);
 
-	// -------------------------------------------------------------------------------------------------------
-	// planetarium mode (celestial sphere elements)
-	// -------------------------------------------------------------------------------------------------------
-
-	DWORD plnmode = *(DWORD*)gc->GetConfigParam(CFGPRM_PLANETARIUMFLAG);
-
-	if (plnmode & PLN_ENABLE) {
-
-		float linebrt = 1.0f - float(sky_color.x+sky_color.y+sky_color.z) / 3.0f;
-
-		HR(FX->SetTechnique(eLine));
-		HR(FX->SetMatrix(eWVP, GetProjectionViewMatrix()));
-
-		// render ecliptic grid ----------------------------------------------------------------------------
-		//
-		if (plnmode & PLN_EGRID) {
-			D3DXVECTOR4 vColor(0.0f, 0.0f, 0.4f*linebrt, 1.0f);
-			HR(FX->SetVector(eColor, &vColor));
-			csphere->RenderGrid(FX, !(plnmode & PLN_ECL));
-
-		}
-		if (plnmode & PLN_ECL)	 {
-			D3DXVECTOR4 vColor(0.0f, 0.0f, 0.8f*linebrt, 1.0f);
-			HR(FX->SetVector(eColor, &vColor));
-			csphere->RenderGreatCircle(FX);
-		}
-
-		// render celestial grid ----------------------------------------------------------------------------
-		//
-		if (plnmode & (PLN_CGRID|PLN_EQU)) {
-			double obliquity = 0.4092797095927;
-			double coso = cos(obliquity), sino = sin(obliquity);
-			D3DXMATRIX rot(1.0f,0.0f,0.0f,0.0f,  0.0f,(float)coso,(float)sino,0.0f,  0.0f,-(float)sino,(float)coso,0.0f,  0.0f,0.0f,0.0f,1.0f);
-
-			D3DXMatrixMultiply(&rot, &rot, GetProjectionViewMatrix());
-			HR(FX->SetMatrix(eWVP, &rot));
-
-			if (plnmode & PLN_CGRID) {
-				D3DXVECTOR4 vColor(0.35f*linebrt, 0.0f, 0.35f*linebrt, 1.0f);
-				HR(FX->SetVector(eColor, &vColor));
-				csphere->RenderGrid(FX, !(plnmode & PLN_EQU));
-			}
-			if (plnmode & PLN_EQU)	 {
-				D3DXVECTOR4 vColor(0.7f*linebrt, 0.0f, 0.7f*linebrt, 1.0f);
-				HR(FX->SetVector(eColor, &vColor));
-				csphere->RenderGreatCircle(FX);
-			}
-		}
-
-		// render constellation lines ----------------------------------------------------------------------------
-		//
-		if (plnmode & PLN_CONST) {
-			HR(FX->SetMatrix(eWVP, GetProjectionViewMatrix()));
-			D3DXVECTOR4 vColor(0.4f*linebrt, 0.3f*linebrt, 0.2f*linebrt, 1.0f);
-			HR(FX->SetVector(eColor, &vColor));
-			csphere->RenderConstellations(FX);
-		}
-	}
-
-	// -------------------------------------------------------------------------------------------------------
-	// render stars
-	// -------------------------------------------------------------------------------------------------------
-
-	HR(FX->SetTechnique(eStar));
-	HR(FX->SetMatrix(eWVP, GetProjectionViewMatrix()));
-	csphere->RenderStars(FX, (DWORD)-1, &sky_color);
-
-
-	// -------------------------------------------------------------------------------------------------------
-	// Sketchpad for planetarium mode labels and markers
-	// -------------------------------------------------------------------------------------------------------
-
-	D3D9Pad *pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
-
-	if (pSketch) {
-
-		pSketch->SetFont(pLabelFont);
-		pSketch->SetTextAlign(Sketchpad::CENTER, Sketchpad::BOTTOM);
-
-		// -------------------------------------------------------------------------------------------------------
-		// render star markers
-		// -------------------------------------------------------------------------------------------------------
-
-		if (plnmode & PLN_ENABLE) {
-
-			// constellation labels --------------------------------------------------
-			if (plnmode & PLN_CNSTLABEL) {
-				const GraphicsClient::LABELSPEC *ls;
-				DWORD n, nlist;
-				char *label;
-
-				pSketch->SetTextColor(labelCol[5]);
-				pSketch->SetPen(lblPen[5]);
-
-				nlist = gc->GetConstellationMarkers(&ls);
-				for (n = 0; n < nlist; ++n) {
-					label = (plnmode & PLN_CNSTLONG) ? ls[n].label[0] : ls[n].label[1];
-					RenderDirectionMarker(pSketch, ls[n].pos, NULL, label, -1, 0);
-				}
-			}
-			// celestial marker (stars) names ----------------------------------------
-			if (plnmode & PLN_CCMARK) {
-				const GraphicsClient::LABELLIST *list;
-				DWORD n, nlist;
-				nlist = gc->GetCelestialMarkers(&list);
-
-				for (n = 0; n < nlist; n++) {
-					if (list[n].active) {
-						int size = (int)(viewH / 80.0*list[n].size + 0.5);
-
-						pSketch->SetTextColor(labelCol[list[n].colour]);
-						pSketch->SetPen(lblPen[list[n].colour]);
-
-						const GraphicsClient::LABELSPEC *ls = list[n].list;
-						for (int i = 0; i < list[n].length; i++) RenderDirectionMarker(pSketch, ls[i].pos, ls[i].label[0], ls[i].label[1], list[n].shape, size);
-					}
-				}
-			}
-		}
-
-		pSketch->EndDrawing(); //SKETCHPAD_LABELS
-	}
-
+	// Set Initial Near clip plane distance
+	if (bClearZBuffer) SetCameraFrustumLimits(1e3, 1e8f);
+	else			   SetCameraFrustumLimits(znear_for_vessels, 1e8f);
 
 	// ---------------------------------------------------------------------------------------------
 	// Create a render list for shadow mapping
@@ -1460,6 +1329,8 @@ void Scene::RenderMainScene()
 	// Render Planets
 	// ---------------------------------------------------------------------------------------------
 
+	DWORD plnmode = *(DWORD*)gc->GetConfigParam(CFGPRM_PLANETARIUMFLAG);
+
 	for (DWORD i=0;i<nplanets;i++) {
 
 		// double nplane, fplane;
@@ -1487,9 +1358,8 @@ void Scene::RenderMainScene()
 					oapiGetObjectName(hObj, name, 256);
 					oapiGetGlobalPos(hObj, &pp);
 
-					pSketch->SetTextColor(labelCol[0]);
-					pSketch->SetPen(lblPen[0]);
-					RenderObjectMarker(pSketch, pp, name, 0, 0, viewH / 80);
+					m_celSphere->EnsureMarkerDrawingContext((oapi::Sketchpad**)&pSketch, 0, m_celSphere->MarkerColor(0), m_celSphere->MarkerPen(0));
+					RenderObjectMarker(pSketch, pp, std::string(name), std::string(), 0, viewH / 80);
 				}
 
 				if (isActive && (plnmode & PLN_SURFMARK) && (oapiGetObjectType(hObj) == OBJTP_PLANET))
@@ -1518,12 +1388,10 @@ void Scene::RenderMainScene()
 								int size = (int)(viewH / 80.0*list[n].size + 0.5);
 								int col = list[n].colour;
 
-								pSketch->SetTextColor(labelCol[col]);
-								pSketch->SetPen(lblPen[col]);
-
-								const GraphicsClient::LABELSPEC *ls = list[n].list;
+								m_celSphere->EnsureMarkerDrawingContext((oapi::Sketchpad**)&pSketch, 0, m_celSphere->MarkerColor(col), m_celSphere->MarkerPen(col));
+								const std::vector<oapi::GraphicsClient::LABELSPEC>& ls = list[n].marker;
 								VECTOR3 sp;
-								for (int j = 0; j < list[n].length; j++) {
+								for (int j = 0; j < ls.size(); j++) {
 									if (dotp(ls[j].pos, cpos - ls[j].pos) >= 0.0) { // surface point visible?
 										sp = mul(prot, ls[j].pos) + ppos;
 										RenderObjectMarker(pSketch, sp, ls[j].label[0], ls[j].label[1], list[n].shape, size);
@@ -1540,8 +1408,7 @@ void Scene::RenderMainScene()
 						oapiGetRotationMatrix(hObj, &prot);
 						int size = (int)(viewH / 80.0);
 
-						pSketch->SetTextColor(labelCol[0]);
-						pSketch->SetPen(lblPen[0]);
+						m_celSphere->EnsureMarkerDrawingContext((oapi::Sketchpad**)&pSketch, 0, m_celSphere->MarkerColor(0), m_celSphere->MarkerPen(0));
 
 						for (DWORD i = 0; i < n; i++) {
 
@@ -1560,7 +1427,7 @@ void Scene::RenderMainScene()
 							if (dotp(bpos, cpos - bpos) >= 0.0 && apprad > LABEL_DISTLIMIT) { // surface point visible?
 								char name[64]; oapiGetObjectName(hBase, name, 63);
 								VECTOR3 sp = mul(prot, bpos) + ppos;
-								RenderObjectMarker(pSketch, sp, name, NULL, 0, size);
+								RenderObjectMarker(pSketch, sp, std::string(name), std::string(), 0, size);
 							}
 						}
 					}
@@ -1600,8 +1467,8 @@ void Scene::RenderMainScene()
 
 	if ((plnmode & PLN_ENABLE) && (plnmode & PLN_LMARK))
 	{
-		pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
-		pSketch->SetPen(label_pen);
+		D3D9Pad* pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
+		m_celSphere->EnsureMarkerDrawingContext((oapi::Sketchpad**)&pSketch, 0, 0, m_celSphere->MarkerPen(6));
 
 		int fontidx = -1;
 		for (DWORD i = 0; i < nplanets; ++i)
@@ -1643,10 +1510,8 @@ void Scene::RenderMainScene()
 	D3D9Effect::UpdateEffectCamera(Camera.hObj_proxy);
 
 
-	pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
-	pSketch->SetTextColor(labelCol[0]);
-	pSketch->SetPen(lblPen[0]);
-
+	D3D9Pad* pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
+	m_celSphere->EnsureMarkerDrawingContext((oapi::Sketchpad**)&pSketch, 0, m_celSphere->MarkerColor(0), m_celSphere->MarkerPen(0));
 
 	// Render the vessels inside the shadows
 	//
@@ -2082,7 +1947,7 @@ void Scene::RenderVesselMarker(vVessel *vV, D3D9Pad *pSketch)
 {
 	DWORD plnmode = *(DWORD*)gc->GetConfigParam(CFGPRM_PLANETARIUMFLAG);
 	if ((plnmode & (PLN_ENABLE | PLN_VMARK)) == (PLN_ENABLE | PLN_VMARK)) {
-		RenderObjectMarker(pSketch, vV->GlobalPos(), vV->GetName(), 0, 0, viewH / 80);
+		RenderObjectMarker(pSketch, vV->GlobalPos(), std::string(vV->GetName()), std::string(), 0, viewH / 80);
 	}
 }
 
@@ -2825,88 +2690,13 @@ bool Scene::WorldToScreenSpace(const VECTOR3 &wpos, oapi::IVECTOR2 *pt, D3DXMATR
 	return !bClip;
 }
 
-
 // ===========================================================================================
 //
-void Scene::RenderDirectionMarker(oapi::Sketchpad *pSkp, const VECTOR3 &rdir, const char *label1, const char *label2, int mode, int scale)
-{
-	int x, y;
-	D3DXVECTOR3 homog;
-	D3DXVECTOR3 dir((float)-rdir.x, (float)-rdir.y, (float)-rdir.z);
-
-	if (D3DXVec3Dot(&dir, &Camera.z)>0) return;
-
-	D3DXVec3TransformCoord(&homog, &dir, GetProjectionViewMatrix());
-
-	if (homog.x >= -1.0f && homog.x <= 1.0f &&
-		homog.y >= -1.0f && homog.y <= 1.0f) {
-
-		if (_hypot (homog.x, homog.y) < 1e-6) {
-			x = viewW/2;
-			y = viewH/2;
-		}
-		else {
-			x = (int)(viewW*0.5*(1.0f+homog.x));
-			y = (int)(viewH*0.5*(1.0f-homog.y));
-		}
-
-		switch (mode) {
-
-			case 0: // box
-				pSkp->Rectangle(x-scale, y-scale, x+scale+1, y+scale+1);
-				break;
-
-			case 1: // circle
-				pSkp->Ellipse(x-scale, y-scale, x+scale+1, y+scale+1);
-				break;
-
-			case 2: // diamond
-				pSkp->MoveTo(x, y-scale);
-				pSkp->LineTo(x+scale, y); pSkp->LineTo(x, y+scale);
-				pSkp->LineTo(x-scale, y); pSkp->LineTo(x, y-scale);
-				break;
-
-			case 3: { // delta
-				int scl1 = (int)(scale*1.1547);
-				pSkp->MoveTo(x, y-scale);
-				pSkp->LineTo(x+scl1, y+scale); pSkp->LineTo(x-scl1, y+scale); pSkp->LineTo(x, y-scale);
-			} break;
-
-			case 4: { // nabla
-				int scl1 = (int)(scale*1.1547);
-				pSkp->MoveTo(x, y+scale);
-				pSkp->LineTo(x+scl1, y-scale); pSkp->LineTo(x-scl1, y-scale); pSkp->LineTo(x, y+scale);
-			} break;
-
-			case 5: { // cross
-				int scl1 = scale/4;
-				pSkp->MoveTo(x, y-scale); pSkp->LineTo(x, y-scl1);
-				pSkp->MoveTo(x, y+scale); pSkp->LineTo(x, y+scl1);
-				pSkp->MoveTo(x-scale, y); pSkp->LineTo(x-scl1, y);
-				pSkp->MoveTo(x+scale, y); pSkp->LineTo(x+scl1, y);
-			} break;
-
-			case 6: { // X
-				int scl1 = scale/4;
-				pSkp->MoveTo(x-scale, y-scale); pSkp->LineTo(x-scl1, y-scl1);
-				pSkp->MoveTo(x-scale, y+scale); pSkp->LineTo(x-scl1, y+scl1);
-				pSkp->MoveTo(x+scale, y-scale); pSkp->LineTo(x+scl1, y-scl1);
-				pSkp->MoveTo(x+scale, y+scale); pSkp->LineTo(x+scl1, y+scl1);
-			} break;
-		}
-
-		if (label1) pSkp->Text(x, y-scale, label1, lstrlen(label1));
-		if (label2) pSkp->Text(x, y+scale+labelSize[0], label2, lstrlen(label2));
-	}
-}
-
-// ===========================================================================================
-//
-void Scene::RenderObjectMarker(oapi::Sketchpad *pSkp, const VECTOR3 &gpos, const char *label1, const char *label2, int mode, int scale)
+void Scene::RenderObjectMarker(oapi::Sketchpad *pSkp, const VECTOR3 &gpos, const std::string& label1, const std::string& label2, int mode, int scale)
 {
 	VECTOR3 dp (gpos - GetCameraGPos());
 	normalise (dp);
-	RenderDirectionMarker(pSkp, dp, label1, label2, mode, scale);
+	m_celSphere->RenderMarker(pSkp, dp, label1, label2, mode, scale);
 }
 
 // ===========================================================================================
@@ -2963,18 +2753,15 @@ void Scene::DelParticleStream (DWORD idx)
 void Scene::InitGDIResources ()
 {
 	char dbgfnt[64]; sprintf_s(dbgfnt,64,"*%s",Config->DebugFont);
-	labelSize[0] = 15;
 	pAxisFont  = oapiCreateFont(24, false, "Arial", FONT_NORMAL, 0);
 	pLabelFont = oapiCreateFont(15, false, "Arial", FONT_NORMAL, 0);
 	pDebugFont = oapiCreateFont(Config->DebugFontSize, true, dbgfnt, FONT_NORMAL, 0);
-	for (int i=0;i<6;i++) lblPen[i] = oapiCreatePen(1,1,labelCol[i]);
 
 	const int fsize[4] = { 12, 16, 20, 26 };
 	for (int i = 0; i < 4; ++i) {
 		label_font[i] = gc->clbkCreateFont(fsize[i], true, "Arial", FONT_BOLD);
 	}
 	//@todo: different pens for different fonts?
-	label_pen = gc->clbkCreatePen(1, 0, RGB(255, 255, 255));
 }
 
 // ===========================================================================================
@@ -2984,12 +2771,10 @@ void Scene::ExitGDIResources ()
 	oapiReleaseFont(pAxisFont);
 	oapiReleaseFont(pLabelFont);
 	oapiReleaseFont(pDebugFont);
-	for (int i=0;i<6;i++) oapiReleasePen(lblPen[i]);
 
 	for (int i = 0; i < 4; ++i) {
 		gc->clbkReleaseFont(label_font[i]);
 	}
-	gc->clbkReleasePen(label_pen);
 }
 
 // ===========================================================================================
@@ -3501,6 +3286,8 @@ void Scene::D3D9TechInit(LPDIRECT3DDEVICE9 pDev, const char *folder)
 	eWVP   = FX->GetParameterByName(0,"gWVP");
 	eTex0  = FX->GetParameterByName(0,"gTex0");
 	eColor = FX->GetParameterByName(0,"gColor");
+
+	D3D9CelestialSphere::D3D9TechInit(FX);
 }
 
 // ===========================================================================================
@@ -3511,6 +3298,3 @@ int distcomp (const void *arg1, const void *arg2)
 	double d2 = ((PList*)arg2)->dist;
 	return (d1 > d2 ? -1 : d1 < d2 ? 1 : 0);
 }
-
-COLORREF Scene::labelCol[6] = {0x00FFFF, 0xFFFF00, 0x4040FF, 0xFF00FF, 0x40FF40, 0xFF8080};
-oapi::Pen * Scene::lblPen[6] = {0,0,0,0,0,0};

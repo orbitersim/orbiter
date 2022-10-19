@@ -1,38 +1,23 @@
 // Copyright (c) Martin Schweiger
 // Licensed under the MIT License
 
-// ==============================================================
-//   ORBITER VISUALISATION PROJECT (OVP)
-//   D3D7 Client module
-// ==============================================================
-
-// ==============================================================
-// CelSphere.h
-// Class CelestialSphere (interface)
-//
-// This class is responsible for rendering the celestial sphere
-// background (stars, constellations, grids, labels, etc.)
-// ==============================================================
-
-#ifndef __D3D7CELSPHERE_H
-#define __D3D7CELSPHERE_H
+#ifndef __OGCELSPHERE_H
+#define __OGCELSPHERE_H
 
 #include "CelSphereAPI.h"
-#include "D3D7Client.h"
+#include "OGraphics.h"
+#include "cspheremgr2.h"
 #include "D3D7Util.h"
+#include "Vecmat.h"
+
+#define MAXCONST 88      // max number of constellations
 
 class CSphereManager;
 
-/**
- * \brief Rendering methods for the background celestial sphere.
- *
- * Loads star and constellation information from data bases and uses them to
- * celestial sphere background.
- */
-class D3D7CelestialSphere: public oapi::CelestialSphere {
+class OGCelestialSphere : public oapi::CelestialSphere {
 public:
-	D3D7CelestialSphere (oapi::D3D7Client *gc, Scene *scene);
-	~D3D7CelestialSphere ();
+	OGCelestialSphere(OrbiterGraphics* gc, Scene* scene);
+	~OGCelestialSphere();
 
 	void Render(LPDIRECT3DDEVICE7 dev, const VECTOR3 &skyCol);
 
@@ -43,16 +28,17 @@ public:
 	 *   of stars darker than the background is suppressed.
 	 * \note All device parameters are assumed to be set correctly on call.
 	 */
-	void RenderStars (LPDIRECT3DDEVICE7 dev);
+	void RenderStars(LPDIRECT3DDEVICE7 dev);
 
 	/**
 	 * \brief Render constellation lines on the celestial sphere
 	 * \param dev render device
+	 * \param col line colour
 	 * \note All device parameters are assumed to be set correctly on call.
 	 * \note Suggestion: render additively onto background, so that the lines
 	 *   are never darker than the background sky.
 	 */
-	void RenderConstellationLines (LPDIRECT3DDEVICE7 dev);
+	void RenderConstellationLines(LPDIRECT3DDEVICE7 dev);
 
 	/**
 	 * \brief Render a great circle on the celestial sphere in a given colour.
@@ -63,7 +49,7 @@ public:
 	 *   other orientation, the world matrix must be adjusted accordingly
 	 *   before the call.
 	 */
-	void RenderGreatCircle (LPDIRECT3DDEVICE7 dev, const oapi::FVECTOR4& baseCol);
+	void RenderGreatCircle(LPDIRECT3DDEVICE7 dev, const oapi::FVECTOR4& baseCol);
 
 	/**
 	 * \brief Render grid lines on the celestial sphere in a given colour.
@@ -77,7 +63,7 @@ public:
 	 *   This is useful if the line should be drawn in a different colour
 	 *   with RenderGreatCircle().
 	 */
-	void RenderGrid (LPDIRECT3DDEVICE7 dev, const oapi::FVECTOR4& baseCol, bool eqline = true);
+	void RenderGrid(LPDIRECT3DDEVICE7 dev, const oapi::FVECTOR4& baseCol, bool eqline = true);
 
 	/**
 	 * \brief Render a background image on the celestial sphere.
@@ -100,7 +86,13 @@ protected:
 	 * \brief Allocate vertex list for rendering grid lines
 	 *    (e.g. celestial or ecliptic)
 	 */
-	void AllocGrids ();
+	void AllocGrids();
+
+	/**
+	 * \brief Set up the render manager for showing a background image
+	 *    on the celestial sphere.
+	 */
+	void InitBackgroundManager();
 
 	void InitCelestialTransform();
 
@@ -115,19 +107,23 @@ protected:
 	virtual bool EclDir2WindowPos(const VECTOR3& dir, int& x, int& y) const;
 
 private:
-	oapi::D3D7Client *m_gc;          ///< pointer to graphics client
-	CSphereManager* m_bkgImgMgr;     ///< background image manager
-	Scene* m_scene;                  ///< pointer to scene object
-	DWORD m_viewW;                   ///< render viewport width [pixel]
-	DWORD m_viewH;                   ///< render viewport height [pixel]
-	DWORD m_nsVtx;                   ///< total number of vertices over all buffers
+	OrbiterGraphics* m_gc;          ///< pointer to graphics client
+	CSphereManager* m_bkgImgMgr;    ///< background image manager (old version)
+	CsphereManager* m_bkgImgMgr2;   ///< background image manager (new version)
+	Scene* m_scene;                 ///< pointer to scene object
+	DWORD m_viewW;                  ///< render viewport width [pixel]
+	DWORD m_viewH;                  ///< render viewport height [pixel]
+	DWORD m_nsVtx;                  ///< total number of vertices over all buffers
 	std::vector<LPDIRECT3DVERTEXBUFFER7> m_sVtx; ///< star vertex buffers
 	std::array<int, 256> m_starCutoffIdx;  ///< list of star render cutoff indices
 	DWORD m_ncVtx;                   ///< number of constellation line vertices
 	LPDIRECT3DVERTEXBUFFER7 m_cVtx;  ///< vertex buffer for constellation lines
 	LPDIRECT3DVERTEXBUFFER7 m_grdLngVtx, m_grdLatVtx; ///< vertex buffers for grid lines
 	D3DMATRIX m_rotCelestial;        ///< rotation for celestial grid rendering
+	MATRIX4 m_WMcsphere;
 	double m_mjdPrecessionChecked;
+
+	oapi::Font *m_cLabelFont;        ///< font for constellation labels
 };
 
-#endif // !__D3D7CELSPHERE_H
+#endif // !__OGCELSPHERE_H
