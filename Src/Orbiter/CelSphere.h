@@ -119,9 +119,9 @@ protected:
 	 */
 	virtual bool EclDir2WindowPos(const VECTOR3& dir, int& x, int& y) const;
 
-private:
 	int MapLineBuffer(const std::vector<VECTOR3>& lineVtx, LPDIRECT3DVERTEXBUFFER7& buf) const;
 
+private:
 	OrbiterGraphics* m_gc;           ///< pointer to graphics client
 	CSphereManager* m_bkgImgMgr;     ///< background image manager (old version)
 	CsphereManager* m_bkgImgMgr2;    ///< background image manager (new version)

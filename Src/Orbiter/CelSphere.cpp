@@ -147,34 +147,6 @@ int OGCelestialSphere::MapLineBuffer(const std::vector<VECTOR3>& lineVtx, LPDIRE
 void OGCelestialSphere::InitConstellationLines()
 {
 	m_nclVtx = MapLineBuffer(LoadConstellationLines(), m_clVtx);
-
-#ifdef UNDEF
-	// convert to render parameters
-	const std::vector<VECTOR3> clineVtx = LoadConstellationLines();
-	m_nclVtx = clineVtx.size();
-	if (!m_nclVtx) return;
-
-	// create vertex buffer
-	if (m_nclVtx > D3DMAXNUMVERTICES) {
-		oapiWriteLogError("Number of constellation line vertices too large (%d). Truncating to %d.", m_nclVtx, D3DMAXNUMVERTICES);
-		m_nclVtx = D3DMAXNUMVERTICES;
-	}
-	D3DVERTEXBUFFERDESC vbdesc;
-	vbdesc.dwSize = sizeof(D3DVERTEXBUFFERDESC);
-	vbdesc.dwCaps = (m_gc->GetFramework()->IsTLDevice() ? 0 : D3DVBCAPS_SYSTEMMEMORY);
-	vbdesc.dwFVF = D3DFVF_XYZ;
-	vbdesc.dwNumVertices = m_nclVtx;
-	m_gc->GetDirect3D7()->CreateVertexBuffer(&vbdesc, &m_clVtx, 0);
-	VERTEX_XYZ* vbuf;
-	m_clVtx->Lock(DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
-	for (int i = 0; i < m_nclVtx; i++) {
-		vbuf[i].x = (D3DVALUE)clineVtx[i].x;
-		vbuf[i].y = (D3DVALUE)clineVtx[i].y;
-		vbuf[i].z = (D3DVALUE)clineVtx[i].z;
-	}
-	m_clVtx->Unlock();
-	m_clVtx->Optimize(m_gc->GetDevice(), 0);
-#endif
 }
 
 // ==============================================================
