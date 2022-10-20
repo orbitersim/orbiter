@@ -121,6 +121,8 @@ namespace oapi {
 		 */
 		const std::vector<VECTOR3> LoadConstellationLines() const;
 
+		const std::vector<VECTOR3> LoadConstellationBoundaries() const;
+
 		/**
 		 * \brief Load constellation label database from file into \ref m_cLabel array.
 		 */
@@ -188,13 +190,27 @@ namespace oapi {
 		const std::vector<StarRenderRec> StarData2RenderData(const std::vector<StarDataRec>& starDataRec, const StarRenderPrm& prm) const;
 
 		/**
+		 * \brief Load an array of line segment definitions on the celestial sphere from file.
+		 * \param fname file name (relative to Orbiter root dir)
+		 * \return Vector of line endpoint pairs (ecliptic longitude,latitude)
+		 * \note No connectivity is assumed. Each line definition is independent.
+		 */
+		const std::vector<LineDataRec> LoadEclipticLineArray(const std::string& fname) const;
+
+		/**
 		 * \brief Load constellation line data from Orbiter's data base file.
 		 * \return Vector of line segment database records.
 		 */
 		const std::vector<LineDataRec> LoadConstellationLineData() const;
 
 		/**
-		 * \brief Map constellation line data to a list that can be used for rendering.
+		 * \brief Load constellation boundary data from Orbiter's data base file.
+		 * \return Vector of line segment database records.
+		 */
+		const std::vector<LineDataRec> LoadConstellationBoundaryData() const;
+
+		/**
+		 * \brief Map ecliptic line data to a list that can be used for rendering.
 		 * 
 		 * This function maps the star data read by \ref LoadConstellationLineData into
 		 * a form that makes it easier to build a vertex list for rendering onto the
@@ -205,7 +221,7 @@ namespace oapi {
 		 *    \ref LoadConstellationLineData.
 		 * \return List of constellation line end points
 		 */
-		const std::vector<VECTOR3> ConstellationLineData2RenderData(const std::vector<LineDataRec>& lineDataRec) const;
+		const std::vector<VECTOR3> EclipticLineData2RenderData(const std::vector<LineDataRec>& lineDataRec) const;
 
 		std::vector<oapi::GraphicsClient::LABELSPEC> m_cLabel; ///< list of constellation labels
 
