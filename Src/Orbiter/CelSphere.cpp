@@ -131,7 +131,7 @@ int OGCelestialSphere::MapLineBuffer(const std::vector<VECTOR3>& lineVtx, LPDIRE
 	m_gc->GetDirect3D7()->CreateVertexBuffer(&vbdesc, &buf, 0);
 	VERTEX_XYZ* vbuf;
 	buf->Lock(DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
-	for (int i = 0; i < nv; i++) {
+	for (size_t i = 0; i < nv; i++) {
 		vbuf[i].x = (D3DVALUE)lineVtx[i].x;
 		vbuf[i].y = (D3DVALUE)lineVtx[i].y;
 		vbuf[i].z = (D3DVALUE)lineVtx[i].z;

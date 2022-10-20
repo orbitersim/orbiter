@@ -60,6 +60,15 @@ public:
 	void RenderConstellationLines(ID3DXEffect *fx);
 
 	/**
+	 * \brief Render constellation boundaries on the celestial sphere
+	 * \param dev render device
+	 * \note All device parameters are assumed to be set correctly on call.
+	 * \note Suggestion: render additively onto background, so that the lines
+	 *   are never darker than the background sky.
+	 */
+	void RenderConstellationBoundaries(ID3DXEffect* fx);
+
+	/**
 	 * \brief Render a great circle on the celestial sphere in a given colour.
 	 * \param fx  render effect
 	 * \note By default (i.e. for identity world matrix), the circle is
@@ -102,6 +111,11 @@ protected:
 	void InitConstellationLines ();
 
 	/**
+	 * \brief Map constellation boundary database to vertex buffer.
+	 */
+	void InitConstellationBoundaries();
+
+	/**
 	 * \brief Allocate vertex list for rendering grid lines
 	 *        (e.g. celestial or ecliptic)
 	 */
@@ -119,6 +133,8 @@ protected:
 	 */
 	virtual bool EclDir2WindowPos(const VECTOR3& dir, int& x, int& y) const;
 
+	int MapLineBuffer(const std::vector<VECTOR3>& lineVtx, LPDIRECT3DVERTEXBUFFER9& buf) const;
+
 private:
 	oapi::D3D9Client *m_gc;         ///< pointer to graphics client
 	CSphereManager* m_bkgImgMgr;    ///< background image manager
@@ -128,8 +144,10 @@ private:
 	DWORD m_nsVtx;                  ///< total number of vertices over all buffers
 	std::vector<LPDIRECT3DVERTEXBUFFER9> m_sVtx; ///< star vertex buffers
 	std::array<int, 256> m_starCutoffIdx;  ///< list of star render cutoff indices
-	DWORD m_ncVtx;                  ///< number of constellation line vertices
-	LPDIRECT3DVERTEXBUFFER9 m_cVtx; ///< constellation line vertex buffer
+	DWORD m_nclVtx;                  ///< number of constellation line vertices
+	LPDIRECT3DVERTEXBUFFER9 m_clVtx; ///< constellation line vertex buffer
+	DWORD m_ncbVtx;                  ///< number of constellation boundary vertices
+	LPDIRECT3DVERTEXBUFFER9 m_cbVtx; ///< vertex buffer for constellation boundaries
 	LPDIRECT3DVERTEXBUFFER9 m_grdLngVtx, m_grdLatVtx; ///< vertex buffers for grid lines
 	D3DXMATRIX m_rotCelestial;      ///< rotation for celestial grid rendering
 	double m_mjdPrecessionChecked;

@@ -131,7 +131,7 @@ int D3D7CelestialSphere::MapLineBuffer(const std::vector<VECTOR3>& lineVtx, LPDI
 	m_gc->GetDirect3D7()->CreateVertexBuffer(&vbdesc, &buf, 0);
 	VERTEX_XYZ* vbuf;
 	buf->Lock(DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
-	for (int i = 0; i < nv; i++) {
+	for (size_t i = 0; i < nv; i++) {
 		vbuf[i].x = (D3DVALUE)lineVtx[i].x;
 		vbuf[i].y = (D3DVALUE)lineVtx[i].y;
 		vbuf[i].z = (D3DVALUE)lineVtx[i].z;
@@ -336,7 +336,7 @@ void D3D7CelestialSphere::RenderStars (LPDIRECT3DDEVICE7 dev)
 
 void D3D7CelestialSphere::RenderConstellationLines (LPDIRECT3DDEVICE7 dev)
 {
-	FVECTOR4 baseCol(0.5f, 0.3f, 0.2f, 1.0f);
+	const FVECTOR4 baseCol(0.5f, 0.3f, 0.2f, 1.0f);
 	dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, MarkerColorAdjusted(baseCol));
 	dev->DrawPrimitiveVB (D3DPT_LINELIST, m_clVtx, 0, m_nclVtx, 0);
 }
@@ -345,7 +345,7 @@ void D3D7CelestialSphere::RenderConstellationLines (LPDIRECT3DDEVICE7 dev)
 
 void D3D7CelestialSphere::RenderConstellationBoundaries(LPDIRECT3DDEVICE7 dev)
 {
-	oapi::FVECTOR4 baseCol(0.25f, 0.225f, 0.2f, 1.0f);
+	const FVECTOR4 baseCol(0.25f, 0.225f, 0.2f, 1.0f);
 	dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, MarkerColorAdjusted(baseCol));
 	dev->DrawPrimitiveVB(D3DPT_LINELIST, m_cbVtx, 0, m_ncbVtx, 0);
 }
