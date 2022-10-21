@@ -33,12 +33,20 @@ public:
 	/**
 	 * \brief Render constellation lines on the celestial sphere
 	 * \param dev render device
-	 * \param col line colour
 	 * \note All device parameters are assumed to be set correctly on call.
 	 * \note Suggestion: render additively onto background, so that the lines
 	 *   are never darker than the background sky.
 	 */
 	void RenderConstellationLines(LPDIRECT3DDEVICE7 dev);
+
+	/**
+	 * \brief Render constellation boundaries on the celestial sphere
+	 * \param dev render device
+	 * \note All device parameters are assumed to be set correctly on call.
+	 * \note Suggestion: render additively onto background, so that the lines
+	 *   are never darker than the background sky.
+	 */
+	void RenderConstellationBoundaries(LPDIRECT3DDEVICE7 dev);
 
 	/**
 	 * \brief Render a great circle on the celestial sphere in a given colour.
@@ -78,9 +86,14 @@ protected:
 	void InitStars();
 
 	/**
-	 * \brief Load constellation line database from file.
+	 * \brief Map constellation line database to vertex buffer.
 	 */
 	void InitConstellationLines();
+
+	/**
+	 * \brief Map constellation boundary database to vertex buffer.
+	 */
+	void InitConstellationBoundaries();
 
 	/**
 	 * \brief Allocate vertex list for rendering grid lines
@@ -106,18 +119,22 @@ protected:
 	 */
 	virtual bool EclDir2WindowPos(const VECTOR3& dir, int& x, int& y) const;
 
+	int MapLineBuffer(const std::vector<VECTOR3>& lineVtx, LPDIRECT3DVERTEXBUFFER7& buf) const;
+
 private:
-	OrbiterGraphics* m_gc;          ///< pointer to graphics client
-	CSphereManager* m_bkgImgMgr;    ///< background image manager (old version)
-	CsphereManager* m_bkgImgMgr2;   ///< background image manager (new version)
-	Scene* m_scene;                 ///< pointer to scene object
-	DWORD m_viewW;                  ///< render viewport width [pixel]
-	DWORD m_viewH;                  ///< render viewport height [pixel]
-	DWORD m_nsVtx;                  ///< total number of vertices over all buffers
+	OrbiterGraphics* m_gc;           ///< pointer to graphics client
+	CSphereManager* m_bkgImgMgr;     ///< background image manager (old version)
+	CsphereManager* m_bkgImgMgr2;    ///< background image manager (new version)
+	Scene* m_scene;                  ///< pointer to scene object
+	DWORD m_viewW;                   ///< render viewport width [pixel]
+	DWORD m_viewH;                   ///< render viewport height [pixel]
+	DWORD m_nsVtx;                   ///< total number of vertices over all buffers
 	std::vector<LPDIRECT3DVERTEXBUFFER7> m_sVtx; ///< star vertex buffers
 	std::array<int, 256> m_starCutoffIdx;  ///< list of star render cutoff indices
-	DWORD m_ncVtx;                   ///< number of constellation line vertices
-	LPDIRECT3DVERTEXBUFFER7 m_cVtx;  ///< vertex buffer for constellation lines
+	DWORD m_nclVtx;                  ///< number of constellation line vertices
+	LPDIRECT3DVERTEXBUFFER7 m_clVtx; ///< vertex buffer for constellation lines
+	DWORD m_ncbVtx;                  ///< number of constellation boundary vertices
+	LPDIRECT3DVERTEXBUFFER7 m_cbVtx; ///< vertex buffer for constellation boundaries
 	LPDIRECT3DVERTEXBUFFER7 m_grdLngVtx, m_grdLatVtx; ///< vertex buffers for grid lines
 	D3DMATRIX m_rotCelestial;        ///< rotation for celestial grid rendering
 	MATRIX4 m_WMcsphere;

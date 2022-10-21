@@ -36,6 +36,7 @@ D3D9CelestialSphere::D3D9CelestialSphere(D3D9Client *gc, Scene *scene)
 {
 	InitStars();
 	InitConstellationLines();
+	InitConstellationBoundaries();
 	LoadConstellationLabels();
 	AllocGrids();
 	m_bkgImgMgr = new CSphereManager(gc, scene);
@@ -50,7 +51,8 @@ D3D9CelestialSphere::~D3D9CelestialSphere()
 {
 	for (auto it = m_sVtx.begin(); it != m_sVtx.end(); it++)
 		(*it)->Release();
-	m_cVtx->Release();
+	m_clVtx->Release();
+	m_cbVtx->Release();
 	m_grdLngVtx->Release();
 	m_grdLatVtx->Release();
 	delete m_bkgImgMgr;
@@ -105,23 +107,37 @@ void D3D9CelestialSphere::InitStars ()
 
 // ==============================================================
 
-void D3D9CelestialSphere::InitConstellationLines()
+int D3D9CelestialSphere::MapLineBuffer(const std::vector<VECTOR3>& lineVtx, LPDIRECT3DVERTEXBUFFER9& buf) const
 {
-	// convert to render parameters
-	const std::vector<VECTOR3> clineVtx = LoadConstellationLines();
-	m_ncVtx = clineVtx.size();
-	if (!m_ncVtx) return;
+	size_t nv = lineVtx.size();
+	if (!nv) return 0;
 
 	// create vertex buffer
-	m_pDevice->CreateVertexBuffer(sizeof(VERTEX_XYZ)*m_ncVtx, D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &m_cVtx, NULL);
+	m_pDevice->CreateVertexBuffer(sizeof(VERTEX_XYZ) * nv, D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &buf, NULL);
 	VERTEX_XYZ* vbuf;
-	m_cVtx->Lock(0, 0, (LPVOID*)&vbuf, 0);
-	for (int i = 0; i < m_ncVtx; i++) {
-		vbuf[i].x = (float)clineVtx[i].x;
-		vbuf[i].y = (float)clineVtx[i].y;
-		vbuf[i].z = (float)clineVtx[i].z;
+	buf->Lock(0, 0, (LPVOID*)&vbuf, 0);
+	for (size_t i = 0; i < nv; i++) {
+		vbuf[i].x = (float)lineVtx[i].x;
+		vbuf[i].y = (float)lineVtx[i].y;
+		vbuf[i].z = (float)lineVtx[i].z;
 	}
-	m_cVtx->Unlock();
+	buf->Unlock();
+
+	return nv;
+}
+
+// ==============================================================
+
+void D3D9CelestialSphere::InitConstellationLines()
+{
+	m_nclVtx = MapLineBuffer(LoadConstellationLines(), m_clVtx);
+}
+
+// ==============================================================
+
+void D3D9CelestialSphere::InitConstellationBoundaries()
+{
+	m_ncbVtx = MapLineBuffer(LoadConstellationBoundaries(), m_cbVtx);
 }
 
 // ==============================================================
@@ -237,7 +253,13 @@ void D3D9CelestialSphere::Render(LPDIRECT3DDEVICE9 pDevice, const VECTOR3& skyCo
 			}
 		}
 
-		// render constellation lines ----------------------------------------------------------------------------
+		// render constellation boundaries ----------------------------------------
+		if (renderFlag & PLN_CONST) { // for now, hijack the constellation line flag
+			HR(s_FX->SetMatrix(s_eWVP, m_scene->GetProjectionViewMatrix()));
+			RenderConstellationBoundaries(s_FX);
+		}
+
+		// render constellation lines ---------------------------------------------
 		if (renderFlag & PLN_CONST) {
 			HR(s_FX->SetMatrix(s_eWVP, m_scene->GetProjectionViewMatrix()));
 			RenderConstellationLines(s_FX);
@@ -298,7 +320,7 @@ void D3D9CelestialSphere::RenderStars(ID3DXEffect *FX)
 
 void D3D9CelestialSphere::RenderConstellationLines(ID3DXEffect *FX)
 {
-	FVECTOR4 baseCol(0.4f, 0.3f, 0.2f, 1.0f);
+	const FVECTOR4 baseCol(0.5f, 0.3f, 0.2f, 1.0f);
 	D3DXVECTOR4 vColor = ColorAdjusted(baseCol);
 	HR(s_FX->SetVector(s_eColor, &vColor));
 
@@ -306,11 +328,30 @@ void D3D9CelestialSphere::RenderConstellationLines(ID3DXEffect *FX)
 	UINT numPasses = 0;
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));
-	HR(m_pDevice->SetStreamSource(0, m_cVtx, 0, sizeof(VERTEX_XYZ)));
+	HR(m_pDevice->SetStreamSource(0, m_clVtx, 0, sizeof(VERTEX_XYZ)));
 	HR(m_pDevice->SetVertexDeclaration(pPositionDecl));
-	HR(m_pDevice->DrawPrimitive(D3DPT_LINELIST, 0, m_ncVtx));
+	HR(m_pDevice->DrawPrimitive(D3DPT_LINELIST, 0, m_nclVtx));
 	HR(FX->EndPass());
 	HR(FX->End());	
+}
+
+// ==============================================================
+
+void D3D9CelestialSphere::RenderConstellationBoundaries(ID3DXEffect* FX)
+{
+	const FVECTOR4 baseCol(0.25f, 0.22f, 0.2f, 1.0f);
+	D3DXVECTOR4 vColor = ColorAdjusted(baseCol);
+	HR(s_FX->SetVector(s_eColor, &vColor));
+
+	_TRACE;
+	UINT numPasses = 0;
+	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
+	HR(FX->BeginPass(0));
+	HR(m_pDevice->SetStreamSource(0, m_cbVtx, 0, sizeof(VERTEX_XYZ)));
+	HR(m_pDevice->SetVertexDeclaration(pPositionDecl));
+	HR(m_pDevice->DrawPrimitive(D3DPT_LINELIST, 0, m_ncbVtx));
+	HR(FX->EndPass());
+	HR(FX->End());
 }
 
 // ==============================================================

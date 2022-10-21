@@ -24,6 +24,7 @@ OGCelestialSphere::OGCelestialSphere(OrbiterGraphics* gc, Scene* scene)
 
 	InitStars();
 	InitConstellationLines();
+	InitConstellationBoundaries();
 	AllocGrids();
 	InitBackgroundManager();
 
@@ -40,7 +41,8 @@ OGCelestialSphere::~OGCelestialSphere()
 {
 	for (auto it = m_sVtx.begin(); it != m_sVtx.end(); it++)
 		(*it)->Release();
-	m_cVtx->Release();
+	m_clVtx->Release();
+	m_cbVtx->Release();
 	m_grdLngVtx->Release();
 	m_grdLatVtx->Release();
 
@@ -109,33 +111,49 @@ void OGCelestialSphere::InitStars()
 
 // ==============================================================
 
-void OGCelestialSphere::InitConstellationLines()
+int OGCelestialSphere::MapLineBuffer(const std::vector<VECTOR3>& lineVtx, LPDIRECT3DVERTEXBUFFER7& buf) const
 {
-	// convert to render parameters
-	const std::vector<VECTOR3> clineVtx = LoadConstellationLines();
-	m_ncVtx = clineVtx.size();
-	if (!m_ncVtx) return;
+	size_t nv = lineVtx.size();
+	if (!nv) return 0;
+
+	// for now, we don't allow line sets exceeding the maximum buffer size
+	if (nv > D3DMAXNUMVERTICES) {
+		oapiWriteLogError("Celestial sphere: Number of line vertices in dataset too large (%d). Truncating to %d.", nv, D3DMAXNUMVERTICES);
+		nv = D3DMAXNUMVERTICES;
+	}
 
 	// create vertex buffer
-	if (m_ncVtx > D3DMAXNUMVERTICES) {
-		oapiWriteLogError("Number of constellation line vertices too large (%d). Truncating to %d.", m_ncVtx, D3DMAXNUMVERTICES);
-		m_ncVtx = D3DMAXNUMVERTICES;
-	}
 	D3DVERTEXBUFFERDESC vbdesc;
 	vbdesc.dwSize = sizeof(D3DVERTEXBUFFERDESC);
 	vbdesc.dwCaps = (m_gc->GetFramework()->IsTLDevice() ? 0 : D3DVBCAPS_SYSTEMMEMORY);
 	vbdesc.dwFVF = D3DFVF_XYZ;
-	vbdesc.dwNumVertices = m_ncVtx;
-	m_gc->GetDirect3D7()->CreateVertexBuffer(&vbdesc, &m_cVtx, 0);
+	vbdesc.dwNumVertices = nv;
+	m_gc->GetDirect3D7()->CreateVertexBuffer(&vbdesc, &buf, 0);
 	VERTEX_XYZ* vbuf;
-	m_cVtx->Lock(DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
-	for (int i = 0; i < m_ncVtx; i++) {
-		vbuf[i].x = (D3DVALUE)clineVtx[i].x;
-		vbuf[i].y = (D3DVALUE)clineVtx[i].y;
-		vbuf[i].z = (D3DVALUE)clineVtx[i].z;
+	buf->Lock(DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
+	for (size_t i = 0; i < nv; i++) {
+		vbuf[i].x = (D3DVALUE)lineVtx[i].x;
+		vbuf[i].y = (D3DVALUE)lineVtx[i].y;
+		vbuf[i].z = (D3DVALUE)lineVtx[i].z;
 	}
-	m_cVtx->Unlock();
-	m_cVtx->Optimize(m_gc->GetDevice(), 0);
+	buf->Unlock();
+	buf->Optimize(m_gc->GetDevice(), 0);
+
+	return nv;
+}
+
+// ==============================================================
+
+void OGCelestialSphere::InitConstellationLines()
+{
+	m_nclVtx = MapLineBuffer(LoadConstellationLines(), m_clVtx);
+}
+
+// ==============================================================
+
+void OGCelestialSphere::InitConstellationBoundaries()
+{
+	m_ncbVtx = MapLineBuffer(LoadConstellationBoundaries(), m_cbVtx);
 }
 
 // ==============================================================
@@ -305,6 +323,10 @@ void OGCelestialSphere::Render(LPDIRECT3DDEVICE7 dev, const VECTOR3& skyCol)
 			}
 		}
 
+		// render constellation boundaries
+		if (renderFlag & PLN_CONST) // for now, hijack the constellation line flag
+			RenderConstellationBoundaries(dev);
+
 		// render constellation lines
 		if (renderFlag & PLN_CONST)
 			RenderConstellationLines(dev);
@@ -358,9 +380,18 @@ void OGCelestialSphere::RenderStars(LPDIRECT3DDEVICE7 dev)
 
 void OGCelestialSphere::RenderConstellationLines(LPDIRECT3DDEVICE7 dev)
 {
-	oapi::FVECTOR4 baseCol(0.4f, 0.3f, 0.2f, 1.0f);
+	oapi::FVECTOR4 baseCol(0.5f, 0.3f, 0.2f, 1.0f);
 	dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, MarkerColorAdjusted(baseCol));
-	dev->DrawPrimitiveVB(D3DPT_LINELIST, m_cVtx, 0, m_ncVtx, 0);
+	dev->DrawPrimitiveVB(D3DPT_LINELIST, m_clVtx, 0, m_nclVtx, 0);
+}
+
+// ==============================================================
+
+void OGCelestialSphere::RenderConstellationBoundaries(LPDIRECT3DDEVICE7 dev)
+{
+	oapi::FVECTOR4 baseCol(0.25f, 0.225f, 0.2f, 1.0f);
+	dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, MarkerColorAdjusted(baseCol));
+	dev->DrawPrimitiveVB(D3DPT_LINELIST, m_cbVtx, 0, m_ncbVtx, 0);
 }
 
 // ==============================================================
