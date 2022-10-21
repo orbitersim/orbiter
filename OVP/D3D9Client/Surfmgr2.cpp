@@ -307,8 +307,8 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 #ifdef ORBITER2016
 				hdr.scale = 1.0;
 #endif
-				rescale = (do_rescale = (hdr.scale != 1.0)) ? hdr.scale : 1.0;
-				offset = (do_shift = (hdr.offset != 0.0)) ? INT16(hdr.offset) : 0;
+				rescale = (do_rescale = (hdr.scale != tgt_res)) ? hdr.scale/tgt_res : 1.0;
+				offset = (do_shift = (hdr.offset != 0.0)) ? INT16(hdr.offset/tgt_res) : 0;
 
 				switch (hdr.dtype) {
 				case 0: // overwrite the entire tile with a flat offset
