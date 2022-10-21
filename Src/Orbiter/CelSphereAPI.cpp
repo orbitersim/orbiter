@@ -5,15 +5,18 @@
 #define OAPI_IMPLEMENTATION
 
 #include "CelSphereAPI.h"
+#include "Orbiter.h"
+#include "Psys.h"
 #include "Log.h"
+
+extern Orbiter* g_pOrbiter;
+extern PlanetarySystem* g_psys;
 
 // ==============================================================
 
 oapi::CelestialSphere::CelestialSphere(oapi::GraphicsClient* gc)
 	: m_gc(gc)
 {
-	LoadConstellationLabels();
-
 	gc->clbkGetViewportSize(&m_viewW, &m_viewH);
 	m_cLabelFont = gc->clbkCreateFont(max(m_viewH / 50, 14), true, "Arial", FONT_ITALIC);
 	m_markerFont = gc->clbkCreateFont(max(m_viewH / 75, 12), true, "Arial");
@@ -23,6 +26,9 @@ oapi::CelestialSphere::CelestialSphere(oapi::GraphicsClient* gc)
 
 	m_skyCol = _V(0, 0, 0);
 	m_skyBrt = 0.0;
+
+	m_dataDir = std::string(g_pOrbiter->Cfg()->CfgDirPrm.ConfigDir) + std::string("CSphere\\Data\\");
+	LoadConstellationLabels();
 }
 
 // --------------------------------------------------------------
@@ -161,7 +167,8 @@ const std::vector<oapi::CelestialSphere::StarDataRec> oapi::CelestialSphere::Loa
 
 	std::vector<StarDataRec> rec;
 
-	FILE* f = fopen("Star.bin", "rb");
+	std::string fname = m_dataDir + std::string("star.bin");
+	FILE* f = fopen(fname.c_str(), "rb");
 	if (f) {
 		const int chunksize = 0x1000;
 		StarDataRecPacked* packBuf = new StarDataRecPacked[chunksize + 1]; // "+1": padding for avoiding reading out of bounds on packed data
@@ -186,7 +193,7 @@ const std::vector<oapi::CelestialSphere::StarDataRec> oapi::CelestialSphere::Loa
 		LOGOUT("Loaded %d records from star database", n);
 	}
 	else {
-		LOGOUT_WARN("Star data base for celestial sphere (Star.bin) not found. Disabling background stars.");
+		LOGOUT_WARN("Star data base for celestial sphere (%s) not found. Disabling background stars.", fname.c_str());
 	}
 	return rec;
 
@@ -322,14 +329,16 @@ const std::vector<oapi::CelestialSphere::LineDataRec> oapi::CelestialSphere::Loa
 
 const std::vector<oapi::CelestialSphere::LineDataRec> oapi::CelestialSphere::LoadConstellationLineData() const
 {
-	return LoadEclipticLineArray("Constell.bin");
+	std::string fname = m_dataDir + std::string("const_lines.bin");
+	return LoadEclipticLineArray(fname);
 }
 
 // --------------------------------------------------------------
 
 const std::vector<oapi::CelestialSphere::LineDataRec> oapi::CelestialSphere::LoadConstellationBoundaryData() const
 {
-	return LoadEclipticLineArray("Constell3.bin");
+	std::string fname = m_dataDir + std::string("const_bnd.bin");
+	return LoadEclipticLineArray(fname);
 }
 
 // --------------------------------------------------------------
@@ -361,7 +370,8 @@ const std::vector<oapi::GraphicsClient::ConstLabelRec> oapi::CelestialSphere::Lo
 {
 	std::vector<GraphicsClient::ConstLabelRec> rec;
 
-	FILE* f = fopen("Constell2.bin", "rb");
+	std::string fname = m_dataDir + std::string("const_labels.bin");
+	FILE* f = fopen(fname.c_str(), "rb");
 	if (f) {
 		double pos[2];
 		char abbr[4] = "xxx";
@@ -392,7 +402,7 @@ const std::vector<oapi::GraphicsClient::ConstLabelRec> oapi::CelestialSphere::Lo
 		fclose(f);
 	}
 	else {
-		LOGOUT_WARN("Constellation data base for celestial sphere (Constell2.bin) not found. Disabling constellation labels.");
+		LOGOUT_WARN("Constellation data base for celestial sphere (%s) not found. Disabling constellation labels.", fname.c_str());
 	}
 	return rec;
 }

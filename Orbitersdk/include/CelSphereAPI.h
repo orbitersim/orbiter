@@ -231,6 +231,7 @@ namespace oapi {
 		oapi::Pen* m_markerPen[7];       ///< pens for celestial sphere markers
 		VECTOR3 m_skyCol;                ///< background sky colour at current render pass (0-1 per channel)
 		double m_skyBrt;                 ///< background brightness level at current render pass (0-1)
+		std::string m_dataDir;           ///< data directory
 
 	protected:
 		const std::vector<GraphicsClient::ConstLabelRec> LoadConstellationLabelData() const;
