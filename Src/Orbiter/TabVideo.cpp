@@ -240,6 +240,8 @@ void orbiter::DefVideoTab::ScanDir(HWND hTab, const PSTR dir)
 
 void orbiter::DefVideoTab::SelectClientIndex(UINT idx)
 {
+	ShowInterface(hTab, idx > 0);
+
 	char name[256];
 	if (idxClient) { // unload the current client
 		SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_GETLBTEXT, idxClient, (LPARAM)name);
@@ -253,8 +255,6 @@ void orbiter::DefVideoTab::SelectClientIndex(UINT idx)
 	}
 	else
 		SetInfoString(strInfo_Default);
-
-	ShowInterface(hTab, idx > 0);
 }
 
 void orbiter::DefVideoTab::SetInfoString(PSTR str)
