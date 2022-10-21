@@ -144,6 +144,8 @@ void VideoTab::Initialise (D3D7Enum_DeviceInfo *dev)
 	EnableWindow(GetDlgItem(hTab, IDC_VID_ENUM), true);
 	SetWindowText(GetDlgItem(hTab, IDC_VID_STENCIL), "Try stencil buffer");
 	EnableWindow(GetDlgItem(hTab, IDC_VID_STENCIL), true);
+	SetWindowText(GetDlgItem(hTab, IDC_VID_PAGEFLIP), "Hardware pageflip");
+	SetWindowText(GetDlgItem(hTab, IDC_VID_INFO), "Info");
 
 	SendDlgItemMessage (hTab, IDC_VID_DEVICE, CB_RESETCONTENT, 0, 0);
 	for (i = 0; i < ndev; i++) {
