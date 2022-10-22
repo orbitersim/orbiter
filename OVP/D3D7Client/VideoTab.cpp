@@ -235,6 +235,10 @@ void VideoTab::SelectDevice (D3D7Enum_DeviceInfo *dev)
 void VideoTab::SelectDispmode (D3D7Enum_DeviceInfo *dev, BOOL bWindow)
 {
 	DWORD i;
+	if ((SendDlgItemMessage(hTab, IDC_VID_WINDOW, BM_GETCHECK, 0, 0) == BST_CHECKED) != (bWindow != 0)) {
+		SendDlgItemMessage(hTab, IDC_VID_WINDOW, BM_SETCHECK, bWindow ? BST_CHECKED : BST_UNCHECKED, 0);
+		SendDlgItemMessage(hTab, IDC_VID_FULL, BM_SETCHECK, bWindow ? BST_UNCHECKED : BST_CHECKED, 0);
+	}
 	for (i = 0; i < 6; i++)
 		EnableWindow (GetDlgItem (hTab, IDC_VID_STATIC5+i), !bWindow);
 	for (i = 0; i < 9; i++)
