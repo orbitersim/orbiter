@@ -1575,7 +1575,7 @@ bool vPlanet::ParseMicroTextures()
 //
 vPlanet::sOverlay * vPlanet::IntersectOverlay(VECTOR4 q, D3DXVECTOR4 *texcoord) const
 {
-	for each (sOverlay *olay in overlays)
+	for (auto olay : overlays)
 	{
 		if (q.x > olay->lnglat.z) continue;
 		if (q.z < olay->lnglat.x) continue;

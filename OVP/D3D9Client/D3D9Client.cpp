@@ -754,8 +754,7 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 
 	//	Post shutdown signals for gcGUI applications
 	//
-	for each (gcGUIApp* pApp in g_gcGUIAppList)	pApp->clbkShutdown();
-
+	for (auto pApp : g_gcGUIAppList) pApp->clbkShutdown();
 
 	//	Post shutdown signals for user applications
 	//
@@ -2701,7 +2700,7 @@ bool D3D9Client::RegisterGenericProc(__gcGenericProc proc, DWORD id, void *pPara
 
 bool D3D9Client::IsGenericProcEnabled(DWORD id) const
 {
-	for each (auto val in GenericProcs) if (val.id == id) return true;
+	for (auto val : GenericProcs) if (val.id == id) return true;
 	return false;
 }
 

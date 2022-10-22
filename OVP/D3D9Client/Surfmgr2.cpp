@@ -1552,7 +1552,7 @@ void TileManager2<SurfTile>::Pick(D3DXVECTOR3 &vRay, TILEPICK *pPick)
 	QueryTiles(&tiletree[0], tiles);
 	QueryTiles(&tiletree[1], tiles);
 
-	for each (Tile * tile in tiles)	tile->Pick(&(tile->mWorld), &vRay, *pPick);
+	for (auto tile : tiles)	tile->Pick(&(tile->mWorld), &vRay, *pPick);
 }
 
 // -----------------------------------------------------------------------

@@ -1276,7 +1276,7 @@ void Scene::RenderMainScene()
 
 		// What else should be included besides vFocus ?
 
-		for each (vVessel *v in Casters)
+		for (auto v : Casters)
 		{
 			if (v == vFocus) continue;
 			if (v->HasShadow() == false) continue;
@@ -2168,7 +2168,7 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bI
 
 	if (bListExists) {
 
-		for each (vVessel* vV in SmapRenderList)
+		for (auto vV : SmapRenderList)
 		{
 			// Get shadow min-max distances
 			vV->GetMinMaxLightDist(&mnd, &mxd);
@@ -2620,7 +2620,7 @@ void Scene::RenderVesselShadows (OBJHANDLE hPlanet, float depth) const
 	// render vessel shadows
 	VOBJREC *pv;
 	for (pv = vobjFirst; pv; pv = pv->next) {
-		if (!pv->vobj->IsActive() || !pv->vobj->IsVisible()) continue;
+		if (!pv->vobj->IsActive()) continue;
 		if (oapiGetObjectType(pv->vobj->Object()) == OBJTP_VESSEL)
 			((vVessel*)(pv->vobj))->RenderGroundShadow(pDevice, hPlanet, depth);
 	}

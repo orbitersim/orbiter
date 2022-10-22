@@ -29,8 +29,8 @@ int compare_lights(const void * a, const void * b)
 {
 	register float fa = static_cast<const _LightList*>(a)->illuminace;
 	register float fb = static_cast<const _LightList*>(b)->illuminace;
-	if (fa < fb) return  1;
-	if (fa > fb) return -1;
+	if ((fb - fa) >  0.005f) return  1;
+	if ((fb - fa) < -0.005f) return -1;
 	return 0;
 }
 
