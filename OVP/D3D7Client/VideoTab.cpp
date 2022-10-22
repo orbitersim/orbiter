@@ -138,6 +138,14 @@ void VideoTab::Initialise (D3D7Enum_DeviceInfo *dev)
 	DWORD i, ndev, idx;
 	D3D7Enum_GetDevices (&devlist, &ndev);
 
+	// Make sure all controls are reset to default configurations in case another client
+	// modified them
+	SetWindowText(GetDlgItem(hTab, IDC_VID_ENUM), "Always enumerate devices");
+	EnableWindow(GetDlgItem(hTab, IDC_VID_ENUM), true);
+	SetWindowText(GetDlgItem(hTab, IDC_VID_STENCIL), "Try stencil buffer");
+	EnableWindow(GetDlgItem(hTab, IDC_VID_STENCIL), true);
+	SetWindowText(GetDlgItem(hTab, IDC_VID_PAGEFLIP), "Hardware pageflip");
+
 	SendDlgItemMessage (hTab, IDC_VID_DEVICE, CB_RESETCONTENT, 0, 0);
 	for (i = 0; i < ndev; i++) {
 		SendMessage (GetDlgItem (hTab, IDC_VID_DEVICE), CB_ADDSTRING, 0,
@@ -227,6 +235,10 @@ void VideoTab::SelectDevice (D3D7Enum_DeviceInfo *dev)
 void VideoTab::SelectDispmode (D3D7Enum_DeviceInfo *dev, BOOL bWindow)
 {
 	DWORD i;
+	if ((SendDlgItemMessage(hTab, IDC_VID_WINDOW, BM_GETCHECK, 0, 0) == BST_CHECKED) != (bWindow != 0)) {
+		SendDlgItemMessage(hTab, IDC_VID_WINDOW, BM_SETCHECK, bWindow ? BST_CHECKED : BST_UNCHECKED, 0);
+		SendDlgItemMessage(hTab, IDC_VID_FULL, BM_SETCHECK, bWindow ? BST_UNCHECKED : BST_CHECKED, 0);
+	}
 	for (i = 0; i < 6; i++)
 		EnableWindow (GetDlgItem (hTab, IDC_VID_STATIC5+i), !bWindow);
 	for (i = 0; i < 9; i++)
