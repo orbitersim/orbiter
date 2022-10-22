@@ -305,7 +305,7 @@
 #define IDC_PLN_ECLGRID                 1172
 #define IDC_STATIC12                    1172
 #define IDC_STATIC13                    1173
-#define IDC_PLN_ECLIPTIC                1173
+#define IDC_PLN_GALEQ                   1173
 #define IDC_PLN_EQUATOR                 1174
 #define IDC_PLN_CONST                   1175
 #define IDC_PLN_CNSTLABEL               1176
@@ -320,8 +320,7 @@
 #define IDC_PLN_FULL                    1185
 #define IDC_PLN_SHORT                   1186
 #define IDC_PLN_CONSTBND                1187
-#define IDC_PLN_GALEQ                   1188
-#define IDC_PLN_CCLIST                  1189
+#define IDC_PLN_CCLIST                  1188
 #define IDC_IMG                         1189
 #define IDC_CUSTOM1                     1190
 #define IDC_CLBL_LIST                   1191

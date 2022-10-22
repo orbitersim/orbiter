@@ -200,17 +200,13 @@ void D3D9CelestialSphere::Render(LPDIRECT3DDEVICE9 pDevice, const VECTOR3& skyCo
 
 		// render ecliptic grid
 		if (renderFlag & PLN_EGRID) {
-			FVECTOR4 baseCol(0.0f, 0.0f, 0.4f, 1.0f);
-			D3DXVECTOR4 vColor = ColorAdjusted(baseCol);
-			HR(s_FX->SetVector(s_eColor, &vColor));
-			RenderGrid(s_FX, !(renderFlag & PLN_ECL));
-		}
-
-		// render ecliptic equator
-		if (renderFlag & PLN_ECL) {
-			FVECTOR4 baseCol(0.0f, 0.0f, 0.8f, 1.0f);
-			D3DXVECTOR4 vColor = ColorAdjusted(baseCol);
-			HR(s_FX->SetVector(s_eColor, &vColor));
+			FVECTOR4 baseCol1(0.0f, 0.0f, 0.4f, 1.0f);
+			D3DXVECTOR4 vColor1 = ColorAdjusted(baseCol1);
+			HR(s_FX->SetVector(s_eColor, &vColor1));
+			RenderGrid(s_FX, false);
+			FVECTOR4 baseCol2(0.0f, 0.0f, 0.8f, 1.0f);
+			D3DXVECTOR4 vColor2 = ColorAdjusted(baseCol2);
+			HR(s_FX->SetVector(s_eColor, &vColor2));
 			RenderGreatCircle(s_FX);
 		}
 

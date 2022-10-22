@@ -207,8 +207,8 @@ typedef void *HDC;
 #define PLN_ENABLE    0x0001 ///< Enable planetarium mode (master flag)
 #define PLN_CGRID     0x0002 ///< Enable celestial grid
 #define PLN_EGRID     0x0004 ///< Enable ecliptic grid
-#define PLN_ECL       0x0008 ///< Enable line of ecliptic
-#define PLN_EQU       0x0010 ///< Enable celestial equator
+#define PLN_GGRID     0x0008 ///< Enable galactic grid
+#define PLN_EQU       0x0010 ///< Enable target body equator
 #define PLN_CONST     0x0020 ///< Enable constellation patterns
 #define PLN_CNSTLABEL 0x0040 ///< Enable constellation labels
 #define PLN_CMARK     0x0080 ///< Enable celestial body markers

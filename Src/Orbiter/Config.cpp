@@ -122,7 +122,7 @@ CFG_INSTRUMENTPRM CfgInstrumentPrm_default = {
 };
 
 CFG_VISHELPPRM CfgVisHelpPrm_default = {
-	PLN_CGRID | PLN_ECL | PLN_CONST | PLN_CNSTLABEL | PLN_CNSTLONG | PLN_CMARK,	// flagPlanetarium (celestial marker flags)
+	PLN_CGRID | PLN_CONST | PLN_CNSTLABEL | PLN_CNSTLONG | PLN_CMARK,	// flagPlanetarium (celestial marker flags)
 	BF_WEIGHT | BF_THRUST | BF_LIFT | BF_DRAG,	// flagBodyforce (force display flags)
 	1.0f,		// scaleBodyforce (force vector scaling factor)
 	1.0f,		// opacBodyforce (force vector opacity)
@@ -929,7 +929,6 @@ bool Config::PlanetariumItem (int item) const
 	case IDC_PLANETARIUM:   return (CfgVisHelpPrm.flagPlanetarium & PLN_ENABLE)    != 0;
 	case IDC_PLN_CELGRID:   return (CfgVisHelpPrm.flagPlanetarium & PLN_CGRID)     != 0;
 	case IDC_PLN_ECLGRID:   return (CfgVisHelpPrm.flagPlanetarium & PLN_EGRID)     != 0;
-	case IDC_PLN_ECLIPTIC:  return (CfgVisHelpPrm.flagPlanetarium & PLN_ECL)       != 0;
 	case IDC_PLN_EQUATOR:   return (CfgVisHelpPrm.flagPlanetarium & PLN_EQU)       != 0;
 	case IDC_PLN_CONST:     return (CfgVisHelpPrm.flagPlanetarium & PLN_CONST)     != 0;
 	case IDC_PLN_CNSTLABEL: return (CfgVisHelpPrm.flagPlanetarium & PLN_CNSTLABEL) != 0;
@@ -954,7 +953,6 @@ void Config::SetPlanetariumItem (int item, bool activate)
 	case IDC_PLANETARIUM:   flag = PLN_ENABLE;    break;
 	case IDC_PLN_CELGRID:   flag = PLN_CGRID;     break;
 	case IDC_PLN_ECLGRID:   flag = PLN_EGRID;     break;
-	case IDC_PLN_ECLIPTIC:  flag = PLN_ECL;       break;
 	case IDC_PLN_EQUATOR:   flag = PLN_EQU;       break;
 	case IDC_PLN_CONST:     flag = PLN_CONST;     break;
 	case IDC_PLN_CNSTLABEL: flag = PLN_CNSTLABEL; break;

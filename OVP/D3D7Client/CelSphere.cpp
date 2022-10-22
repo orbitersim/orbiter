@@ -239,14 +239,10 @@ void D3D7CelestialSphere::Render(LPDIRECT3DDEVICE7 dev, const VECTOR3 &skyCol)
 
 		// render ecliptic grid
 		if (renderFlag & PLN_EGRID) {
-			FVECTOR4 baseCol(0.0f, 0.0f, 0.4f, 1.0f);
-			RenderGrid(dev, baseCol, !(renderFlag & PLN_ECL));
-		}
-
-		// render ecliptic equator
-		if (renderFlag & PLN_ECL) {
-			FVECTOR4 baseCol(0.0f, 0.0f, 0.8f, 1.0f);
-			RenderGreatCircle(dev, baseCol);
+			FVECTOR4 baseCol1(0.0f, 0.0f, 0.4f, 1.0f);
+			RenderGrid(dev, baseCol1, false);
+			FVECTOR4 baseCol2(0.0f, 0.0f, 0.8f, 1.0f);
+			RenderGreatCircle(dev, baseCol2);
 		}
 
 		// render celestial grid
