@@ -1555,9 +1555,6 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 
 	bool bRefl = true;
 
-	//if (iTech == RENDER_VC) bRefl = false;	// No reflections in VC
-	if (iTech == RENDER_BASEBS) pDev->SetRenderState(D3DRS_ZENABLE, 0);	// Must be here because BeginPass() sets it enabled
-
 	for (DWORD g=0; g<nGrp; g++) {
 
 
@@ -1592,6 +1589,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 			if (CurrentShader != SHADER_NULL) { HR(FX->EndPass()); }
 			HR(FX->BeginPass(Grp[g].Shader));
 			CurrentShader = Grp[g].Shader;
+			if (iTech == RENDER_BASEBS) pDev->SetRenderState(D3DRS_ZENABLE, 0);	// Must be here because BeginPass() sets it enabled
 		}
 
 
