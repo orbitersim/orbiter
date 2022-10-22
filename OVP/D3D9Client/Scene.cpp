@@ -938,7 +938,7 @@ void Scene::UpdateCamVis()
 
 		VOBJREC *pv = NULL;
 		for (pv = vobjFirst; pv; pv = pv->next) {
-			if (!pv->vobj->IsActive() || !pv->vobj->IsVisible() || pv->vobj->GetScene()->nLights < 1) continue;
+			if (!pv->vobj->IsActive() || !pv->vobj->IsVisible()) continue;
 			OBJHANDLE hObj = pv->vobj->Object();
 			if (oapiGetObjectType (hObj) == OBJTP_VESSEL) {
 				VESSEL *vessel = oapiGetVesselInterface (hObj);

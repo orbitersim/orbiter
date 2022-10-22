@@ -1097,10 +1097,12 @@ int D3D9Mesh::SetMaterialEx(DWORD idx, MatProp mid, const FVECTOR4* value)
 			return 0;
 		case MatProp::Metal:
 			Mtrl[idx].Metalness = value->r;
+			Mtrl[idx].ModFlags |= D3D9MATEX_METALNESS;
 			bMtrlModidied = true;
 			return 0;
 		case MatProp::SpecialFX:
 			Mtrl[idx].SpecialFX = *((D3DXVECTOR4*)value);
+			Mtrl[idx].ModFlags |= D3D9MATEX_SPECIALFX;
 			bMtrlModidied = true;
 			return 0;
 		}
