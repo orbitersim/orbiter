@@ -247,6 +247,7 @@ void orbiter::DefVideoTab::SelectClientIndex(UINT idx)
 		SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_GETLBTEXT, idxClient, (LPARAM)name);
 		pCfg->DelModule(name);
 		pLp->App()->UnloadModule(name);
+		pCfg->CfgDevPrm.Device_idx = -1;
 	}
 	if (idx) { // load the new client
 		const char* path = "Modules\\Plugin";
