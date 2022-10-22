@@ -2243,7 +2243,7 @@ void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList, std::set<vVessel*>
 			DWORD nemitter = vessel->LightEmitterCount();
 			for (DWORD j = 0; j < nemitter; j++) {
 				const LightEmitter *em = vessel->GetLightEmitter(j);
-				if (em->GetVisibility() & LightEmitter::VIS_EXTERNAL) AddLocalLight(em, vVes);
+				if ((em->GetVisibility() == LightEmitter::VIS_EXTERNAL) || (em->GetVisibility() == LightEmitter::VIS_ALWAYS)) AddLocalLight(em, vVes);
 			}		
 		}
 
@@ -2254,7 +2254,7 @@ void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList, std::set<vVessel*>
 			DWORD nemitter = vessel->LightEmitterCount();
 			for (DWORD j = 0; j < nemitter; j++) {
 				const LightEmitter *em = vessel->GetLightEmitter(j);
-				if (em->GetVisibility() & LightEmitter::VIS_EXTERNAL) AddLocalLight(em, vVes);
+				if ((em->GetVisibility() == LightEmitter::VIS_EXTERNAL) || (em->GetVisibility() == LightEmitter::VIS_ALWAYS)) AddLocalLight(em, vVes);
 			}
 		}
 	}

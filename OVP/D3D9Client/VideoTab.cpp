@@ -211,8 +211,8 @@ void VideoTab::Initialise()
 		SendDlgItemMessageA(hTab, IDC_VID_BPP, CB_ADDSTRING, 0, (LPARAM)"Window with Taskbar");
 		SendDlgItemMessageA(hTab, IDC_VID_BPP, CB_SETCURSEL, (data->modeidx>>8)&0xFF, 0);
 
-		SetWindowText(GetDlgItem(hTab, 1022), "Resolution");
-		SetWindowText(GetDlgItem(hTab, 1023), "Full Screen Mode");
+		//SetWindowText(GetDlgItem(hTab, IDC_VID_STATIC5), "Resolution");
+		SetWindowText(GetDlgItem(hTab, IDC_VID_STATIC6), "Full Screen Mode");
 
 
 		SendDlgItemMessage(hTab, IDC_VID_MODE, CB_SETCURSEL, data->modeidx&0xFF, 0);
@@ -715,12 +715,11 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessageA(hWnd, IDC_TERRAIN, CB_ADDSTRING, 0, (LPARAM)"Projected");
 
 	// gcGUI -----------------------------------------
-
+	if (Config->gcGUIMode == 1) Config->gcGUIMode = 0;
 	SendDlgItemMessage(hWnd, IDC_GUIMODE, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hWnd, IDC_GUIMODE, CB_ADDSTRING, 0, (LPARAM)"Disabled");
-	SendDlgItemMessageA(hWnd, IDC_GUIMODE, CB_ADDSTRING, 0, (LPARAM)"Default");
+	SendDlgItemMessageA(hWnd, IDC_GUIMODE, CB_ADDSTRING, 0, (LPARAM)"(unused)");
 	SendDlgItemMessageA(hWnd, IDC_GUIMODE, CB_ADDSTRING, 0, (LPARAM)"Windowed");
-	//SendDlgItemMessageA(hWnd, IDC_GUIMODE, CB_ADDSTRING, 0, (LPARAM)"Backup");
 	
 
 	// Write values in controls ----------------
@@ -858,7 +857,9 @@ void VideoTab::SaveSetupState(HWND hWnd)
 	Config->ShadowFilter  = (int)SendDlgItemMessage(hWnd, IDC_SHADOWFILTER, CB_GETCURSEL, 0, 0);
 	Config->TerrainShadowing = (int)SendDlgItemMessage(hWnd, IDC_TERRAIN, CB_GETCURSEL, 0, 0);
 	Config->gcGUIMode = (int)SendDlgItemMessage(hWnd, IDC_GUIMODE, CB_GETCURSEL, 0, 0);
-	
+
+	if (Config->gcGUIMode == 1) Config->gcGUIMode = 0;
+
 	// Check boxes
 	Config->UseNormalMap  = (int)SendDlgItemMessage (hWnd, IDC_NORMALMAPS, BM_GETCHECK, 0, 0);
 	Config->PreLBaseVis   = (int)SendDlgItemMessage (hWnd, IDC_BASEVIS,    BM_GETCHECK, 0, 0);
