@@ -63,9 +63,10 @@
 #define IDD_CUSTOMCLABELS               228
 #define IDB_ICON64                      229
 #define IDD_VISHELPER                   230
-#define IDD_VHELP_BODYFORCE             231
-#define IDD_VHELP_PLANETARIUM           232
-#define IDD_VHELP_COORDINATES           233
+#define IDD_VHELP_PLANETARIUM           231
+#define IDD_VHELP_LABELS                232
+#define IDD_VHELP_BODYFORCE             233
+#define IDD_VHELP_COORDINATES           234
 #define IDB_DEFBUTTON                   235
 #define IDD_MSG_FRECORDER               241
 #define IDD_RECPLAY                     242
@@ -318,6 +319,9 @@
 #define IDC_PLN_CONFIG2                 1184
 #define IDC_PLN_FULL                    1185
 #define IDC_PLN_SHORT                   1186
+#define IDC_PLN_CONSTBND                1187
+#define IDC_PLN_GALEQ                   1188
+#define IDC_PLN_CCLIST                  1189
 #define IDC_IMG                         1189
 #define IDC_CUSTOM1                     1190
 #define IDC_CLBL_LIST                   1191

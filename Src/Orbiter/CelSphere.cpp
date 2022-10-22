@@ -324,7 +324,7 @@ void OGCelestialSphere::Render(LPDIRECT3DDEVICE7 dev, const VECTOR3& skyCol)
 		}
 
 		// render constellation boundaries
-		if (renderFlag & PLN_CONST) // for now, hijack the constellation line flag
+		if (renderFlag & PLN_CNSTBND) // for now, hijack the constellation line flag
 			RenderConstellationBoundaries(dev);
 
 		// render constellation lines

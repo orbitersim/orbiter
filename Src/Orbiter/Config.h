@@ -157,12 +157,14 @@ struct CFG_INSTRUMENTPRM {
 
 struct CFG_VISHELPPRM {
 	DWORD  flagPlanetarium;		// bitflags for items to be displayed in planetarium mode
-		// bit 0: enable planetarium mode
-		// bit 1: celestial grid                  bit  6: celestial body markers
-		// bit 2: ecliptic grid                   bit  7: vessel markers
-		// bit 3: ecliptic                        bit  8: surface base markers
-		// bit 4: equator of current target       bit  9: surface transmitter markers
-		// bit 5: constellation lines             bit 10: custom surface labels
+		// bit 0: enable planetarium mode         bit  8: vessel markers
+		// bit 1: celestial grid                  bit  9: surface base markers
+		// bit 2: ecliptic grid                   bit 10: surface transmitter markers
+		// bit 3: ecliptic                        bit 11: planetary surface labels
+		// bit 4: equator of current target       bit 12: long constellation names
+		// bit 5: constellation patterns          bit 13: constellation boundaries
+	    // bit 6: constellation labels            bit 14: celestial sphere markers
+	    // bit 7: celestial body markers
 	DWORD  flagBodyforce;		// body force vector display
 	float  scaleBodyforce;		// force vector scaling factor
 	float  opacBodyforce;		// force vector opacity factor

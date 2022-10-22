@@ -254,7 +254,7 @@ void D3D9CelestialSphere::Render(LPDIRECT3DDEVICE9 pDevice, const VECTOR3& skyCo
 		}
 
 		// render constellation boundaries ----------------------------------------
-		if (renderFlag & PLN_CONST) { // for now, hijack the constellation line flag
+		if (renderFlag & PLN_CNSTBND) { // for now, hijack the constellation line flag
 			HR(s_FX->SetMatrix(s_eWVP, m_scene->GetProjectionViewMatrix()));
 			RenderConstellationBoundaries(s_FX);
 		}

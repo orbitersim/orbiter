@@ -940,7 +940,8 @@ bool Config::PlanetariumItem (int item) const
 	case IDC_PLN_LMARKER:   return (CfgVisHelpPrm.flagPlanetarium & PLN_LMARK)     != 0;
 	case IDC_PLN_CCMARKER:  return (CfgVisHelpPrm.flagPlanetarium & PLN_CCMARK)    != 0;
 	case IDC_PLN_FULL:      return (CfgVisHelpPrm.flagPlanetarium & PLN_CNSTLONG)  != 0;
-	case IDC_PLN_SHORT:     return (CfgVisHelpPrm.flagPlanetarium & PLN_CNSTSHORT) != 0;
+	case IDC_PLN_CONSTBND:  return (CfgVisHelpPrm.flagPlanetarium & PLN_CNSTBND)   != 0;
+	case IDC_PLN_SHORT:     return (CfgVisHelpPrm.flagPlanetarium & PLN_CNSTLONG)  == 0;
 	default:                return false;
 	}
 }
@@ -964,7 +965,8 @@ void Config::SetPlanetariumItem (int item, bool activate)
 	case IDC_PLN_LMARKER:   flag = PLN_LMARK;     break;
 	case IDC_PLN_CCMARKER:  flag = PLN_CCMARK;    break;
 	case IDC_PLN_FULL:      flag = PLN_CNSTLONG;  break;
-	case IDC_PLN_SHORT:     flag = PLN_CNSTSHORT; break;
+	case IDC_PLN_SHORT:     flag = PLN_CNSTLONG; activate = !activate; break;
+	case IDC_PLN_CONSTBND:  flag = PLN_CNSTBND;   break;
 	}
 	if (activate) CfgVisHelpPrm.flagPlanetarium |=  flag;
 	else          CfgVisHelpPrm.flagPlanetarium &= ~flag;

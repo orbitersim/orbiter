@@ -66,6 +66,20 @@ protected:
 };
 
 // ======================================================================
+// Markers/surface labels tab
+
+class TabLabels : public VhelperTab {
+public:
+	TabLabels(HWND hParentTab);
+	char* HelpContext() const;
+	void Update();
+
+protected:
+	void Refresh(HWND hDlg, bool tick);
+	static INT_PTR CALLBACK DlgProc(HWND, UINT, WPARAM, LPARAM);
+};
+
+// ======================================================================
 // Forces tab
 
 class TabForces: public VhelperTab {

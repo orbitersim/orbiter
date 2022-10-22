@@ -103,6 +103,7 @@ BOOL DlgVishelper::OnInitDialog (HWND hDlg, WPARAM wParam, LPARAM lParam)
 	HWND hTabFrame = hDlg;
 
 	AddTab (hDlg, new TabPlanetarium (hTabFrame), "Planetarium");
+	AddTab(hDlg, new TabLabels(hTabFrame), "Labels");
 	AddTab (hDlg, new TabForces (hTabFrame), "Forces");
 	AddTab (hDlg, new TabAxes (hTabFrame), "Axes");
 
@@ -214,7 +215,7 @@ INT_PTR CALLBACK TabPlanetarium::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, L
 	switch (uMsg) {
 	case WM_INITDIALOG: {
 		pTab->Refresh (hWnd);
-		for (int i = IDC_PLN_CELGRID; i <= IDC_PLN_SHORT; i++)
+		for (int i = IDC_PLN_CELGRID; i <= IDC_PLN_CONSTBND; i++)
 			SendDlgItemMessage (hWnd, i, BM_SETCHECK, g_pOrbiter->Cfg()->PlanetariumItem (i) ? BST_CHECKED:BST_UNCHECKED, 0);
 		} return TRUE;
 	case WM_COMMAND:
@@ -226,6 +227,7 @@ INT_PTR CALLBACK TabPlanetarium::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, L
 		case IDC_PLN_EQUATOR:
 		case IDC_PLN_CONST:
 		case IDC_PLN_CNSTLABEL:
+		case IDC_PLN_CONSTBND:
 		case IDC_PLN_CMARKER:
 		case IDC_PLN_VMARKER:
 		case IDC_PLN_BMARKER:
@@ -257,6 +259,49 @@ INT_PTR CALLBACK TabPlanetarium::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, L
 			g_pOrbiter->DlgMgr()->EnsureEntry<DlgCustomCLabels> ();
 			break;
 		}
+		break;
+	}
+	return FALSE;
+}
+
+
+// ======================================================================
+// ======================================================================
+
+TabLabels::TabLabels(HWND hParentTab) : VhelperTab(hParentTab, IDD_VHELP_LABELS, DlgProc)
+{
+}
+
+// ======================================================================
+
+void TabLabels::Update()
+{
+	Refresh(hTab, true);
+}
+
+// ======================================================================
+
+void TabLabels::Refresh(HWND hDlg, bool tick)
+{
+}
+
+// ======================================================================
+
+char* TabLabels::HelpContext() const
+{
+	static char* context = "/vh_force.htm"; // fix
+	return context;
+}
+
+// ======================================================================
+
+INT_PTR CALLBACK TabLabels::DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	VhelperTab::DlgProcInit(hWnd, uMsg, wParam, lParam);
+	TabLabels* pTab = (TabLabels*)(uMsg == WM_INITDIALOG ? lParam : GetWindowLongPtr(hWnd, DWLP_USER));
+
+	switch (uMsg) {
+	default:
 		break;
 	}
 	return FALSE;

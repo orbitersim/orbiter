@@ -209,7 +209,7 @@ typedef void *HDC;
 #define PLN_EGRID     0x0004 ///< Enable ecliptic grid
 #define PLN_ECL       0x0008 ///< Enable line of ecliptic
 #define PLN_EQU       0x0010 ///< Enable celestial equator
-#define PLN_CONST     0x0020 ///< Enable constellation lines
+#define PLN_CONST     0x0020 ///< Enable constellation patterns
 #define PLN_CNSTLABEL 0x0040 ///< Enable constellation labels
 #define PLN_CMARK     0x0080 ///< Enable celestial body markers
 #define PLN_VMARK     0x0100 ///< Enable vessel markers
@@ -217,7 +217,7 @@ typedef void *HDC;
 #define PLN_RMARK     0x0400 ///< Enable VOR transmitter markers
 #define PLN_LMARK     0x0800 ///< Enable planetary surface labels
 #define PLN_CNSTLONG  0x1000 ///< Enable long constellation names
-#define PLN_CNSTSHORT 0x2000 ///< Enable short constellation names
+#define PLN_CNSTBND   0x2000 ///< Enable constellation boundaries
 #define PLN_CCMARK    0x4000 ///< Enable celestial sphere labels
 #define PLN_SURFMARK (PLN_BMARK | PLN_RMARK | PLN_LMARK)
 /// @}
