@@ -117,7 +117,6 @@ set(common_src
 	ZTreeMgr.cpp
 # Resources
 	Orbiter.rc
-	Orbiter.rc2
 	Orbiter.ico
 # Files built on the fly
 	cryptstring.h
