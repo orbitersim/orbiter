@@ -945,7 +945,8 @@ void Scene::UpdateCamVis()
 				DWORD nemitter = vessel->LightEmitterCount();
 				for (DWORD j = 0; j < nemitter; j++) {
 					const LightEmitter *em = vessel->GetLightEmitter(j);
-					if (em->GetVisibility() & LightEmitter::VIS_EXTERNAL) AddLocalLight(em, pv->vobj);
+					if ((em->GetVisibility() == LightEmitter::VIS_EXTERNAL) || (em->GetVisibility() == LightEmitter::VIS_ALWAYS))
+						AddLocalLight(em, vFocus);
 				}
 			}
 		}
@@ -1693,7 +1694,8 @@ void Scene::RenderMainScene()
 			DWORD nemitter = vessel->LightEmitterCount();
 			for (DWORD j = 0; j < nemitter; j++) {
 				const LightEmitter *em = vessel->GetLightEmitter(j);
-				if (em->GetVisibility() & LightEmitter::VIS_COCKPIT) AddLocalLight(em, vFocus);
+				if ((em->GetVisibility() == LightEmitter::VIS_COCKPIT) || (em->GetVisibility() == LightEmitter::VIS_ALWAYS))
+					AddLocalLight(em, vFocus);
 			}
 		}
 

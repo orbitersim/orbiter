@@ -29,8 +29,8 @@ int compare_lights(const void * a, const void * b)
 {
 	register float fa = static_cast<const _LightList*>(a)->illuminace;
 	register float fb = static_cast<const _LightList*>(b)->illuminace;
-	if ((fb - fa) >  0.005f) return  1;
-	if ((fb - fa) < -0.005f) return -1;
+	if (fa < fb * 0.9995f) return  1;
+	if (fa > fb * 1.0005f) return -1;
 	return 0;
 }
 
@@ -1956,6 +1956,8 @@ void D3D9Mesh::RenderSimplified(const LPD3DXMATRIX pW, LPDIRECT3DCUBETEXTURE9 *p
 
 	for (int i = 0; i < Config->MaxLights(); i++) memcpy(&Locals[i], &null_light, sizeof(LightStruct));
 
+	//D3D9DebugLog("Mesh=[%s], nLights=%d", GetName(), nSceneLights);
+
 	if (pLights && nSceneLights>0) {
 
 		int nMeshLights = 0;
@@ -2246,6 +2248,8 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 	int nSceneLights = gc->GetScene()->GetLightCount();
 
 	for (int i = 0; i < Config->MaxLights(); i++) memcpy(&Locals[i], &null_light, sizeof(LightStruct));
+
+	//D3D9DebugLog("Mesh=[%s], nLights=%d", GetName(), nSceneLights);
 
 	if (pLights && nSceneLights>0) {
 
