@@ -58,7 +58,7 @@ OGCelestialSphere::~OGCelestialSphere()
 
 void OGCelestialSphere::InitCelestialTransform()
 {
-	MATRIX3 R = Celestial2Ecliptic();
+	MATRIX3 R = Ecliptic_CelestialAtEpoch();
 
 	m_rotCelestial._11 = (float)R.m11; m_rotCelestial._12 = (float)R.m12; m_rotCelestial._13 = (float)R.m13; m_rotCelestial._14 = 0.0f;
 	m_rotCelestial._21 = (float)R.m21; m_rotCelestial._22 = (float)R.m22; m_rotCelestial._23 = (float)R.m23; m_rotCelestial._24 = 0.0f;
@@ -279,6 +279,21 @@ void OGCelestialSphere::Render(LPDIRECT3DDEVICE7 dev, const VECTOR3& skyCol)
 		dev->GetRenderState(D3DRENDERSTATE_DESTBLEND, &dstblend);
 		dev->SetRenderState(D3DRENDERSTATE_DESTBLEND, D3DBLEND_ONE);
 		dev->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+
+		// render galactic grid
+		if (renderFlag & PLN_GGRID) {
+			oapi::FVECTOR4 baseCol1(0.3f, 0.0f, 0.0f, 1.0f);
+			static const MATRIX3& R = Ecliptic_Galactic();
+			static D3DMATRIX T = { (float)R.m11, (float)R.m12, (float)R.m13, 0.0f,
+								   (float)R.m21, (float)R.m22, (float)R.m23, 0.0f,
+								   (float)R.m31, (float)R.m32, (float)R.m33, 0.0f,
+								   0.0f,         0.0f,         0.0f,         1.0f };
+			dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &T);
+			RenderGrid(dev, baseCol1, false);
+			oapi::FVECTOR4 baseCol2(0.7f, 0.0f, 0.0f, 1.0f);
+			RenderGreatCircle(dev, baseCol2);
+			dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
+		}
 
 		// render ecliptic grid
 		if (renderFlag & PLN_EGRID) {

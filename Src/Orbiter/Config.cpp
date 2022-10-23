@@ -929,6 +929,7 @@ bool Config::PlanetariumItem (int item) const
 	case IDC_PLANETARIUM:   return (CfgVisHelpPrm.flagPlanetarium & PLN_ENABLE)    != 0;
 	case IDC_PLN_CELGRID:   return (CfgVisHelpPrm.flagPlanetarium & PLN_CGRID)     != 0;
 	case IDC_PLN_ECLGRID:   return (CfgVisHelpPrm.flagPlanetarium & PLN_EGRID)     != 0;
+	case IDC_PLN_GALGRID:   return (CfgVisHelpPrm.flagPlanetarium & PLN_GGRID)     != 0;
 	case IDC_PLN_EQUATOR:   return (CfgVisHelpPrm.flagPlanetarium & PLN_EQU)       != 0;
 	case IDC_PLN_CONST:     return (CfgVisHelpPrm.flagPlanetarium & PLN_CONST)     != 0;
 	case IDC_PLN_CNSTLABEL: return (CfgVisHelpPrm.flagPlanetarium & PLN_CNSTLABEL) != 0;
@@ -953,6 +954,7 @@ void Config::SetPlanetariumItem (int item, bool activate)
 	case IDC_PLANETARIUM:   flag = PLN_ENABLE;    break;
 	case IDC_PLN_CELGRID:   flag = PLN_CGRID;     break;
 	case IDC_PLN_ECLGRID:   flag = PLN_EGRID;     break;
+	case IDC_PLN_GALGRID:   flag = PLN_GGRID;     break;
 	case IDC_PLN_EQUATOR:   flag = PLN_EQU;       break;
 	case IDC_PLN_CONST:     flag = PLN_CONST;     break;
 	case IDC_PLN_CNSTLABEL: flag = PLN_CNSTLABEL; break;

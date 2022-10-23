@@ -223,6 +223,7 @@ INT_PTR CALLBACK TabPlanetarium::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, L
 		case IDC_PLANETARIUM:
 		case IDC_PLN_CELGRID:
 		case IDC_PLN_ECLGRID:
+		case IDC_PLN_GALGRID:
 		case IDC_PLN_EQUATOR:
 		case IDC_PLN_CONST:
 		case IDC_PLN_CNSTLABEL:

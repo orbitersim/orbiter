@@ -507,25 +507,56 @@ void oapi::CelestialSphere::EnsureMarkerDrawingContext(oapi::Sketchpad** ppSkp, 
 
 // --------------------------------------------------------------
 
-MATRIX3 oapi::CelestialSphere::Celestial2Ecliptic() const
+MATRIX3 oapi::CelestialSphere::Ecliptic_CelestialAtEpoch() const
 {
 	// Set up rotation for celestial grid rendering
-	double eps, lan;
 	MATRIX3 R;
 	OBJHANDLE hEarth = oapiGetGbodyByName("Earth");
-	if (hEarth) {  // use current Earth precession axis
-		eps = oapiGetPlanetObliquity(hEarth);
-		lan = oapiGetPlanetTheta(hEarth);
-	}
-	else {         // default: use the J2000 ecliptic
-		eps = 0.4092797095927;
-		lan = 0.0;
-	}
+	if (!hEarth)
+		return Ecliptic_CelestialJ2000(); // best we can do
+
+	// use current Earth precession axis
+	double eps = oapiGetPlanetObliquity(hEarth);
+	double lan = oapiGetPlanetTheta(hEarth);
 	double coso = cos(eps), sino = sin(eps);
 	double cosl = cos(lan), sinl = sin(lan);
-	R.m11 = cosl;         R.m12 = 0.0f;  R.m13 = sinl;
-	R.m21 = -sino * sinl; R.m22 = coso;  R.m23 = sino * cosl;
-	R.m31 = -coso * sinl; R.m32 = -sino; R.m33 = coso * cosl;
+
+	return _M(cosl, 0.0, sinl, -sino * sinl, coso, sino * cosl, -coso * sinl, -sino, coso * cosl);
+}
+
+// --------------------------------------------------------------
+
+const MATRIX3& oapi::CelestialSphere::Ecliptic_CelestialJ2000() const
+{
+	static double eps = 0.4092797095927;
+	static MATRIX3 R = { 1.0, 0.0, 0.0,   0.0, cos(eps), sin(eps),   0.0, -sin(eps), cos(eps) };
+
+	return R;
+}
+
+// --------------------------------------------------------------
+
+const MATRIX3& oapi::CelestialSphere::CelestialJ2000_Galactic() const
+{
+	// These angles are a best fit for:
+	// - galactic North pole at RA = 12h 51.4m,  Dec = +27.13deg
+	// - galactic center at     RA = 17h 45.6m,  Dec = -28.94deg
+	static double lambda = 2.566763;
+	static double phi = 1.795155;
+	static double theta = 1.097337;
+	static MATRIX3 R1 = { cos(lambda), 0.0, sin(lambda),   0, 1, 0,   -sin(lambda), 0, cos(lambda) };
+	static MATRIX3 R2 = { 1, 0, 0,   0, cos(theta), sin(theta),   0, -sin(theta), cos(theta) };
+	static MATRIX3 R3 = { cos(phi), 0, sin(phi),   0, 1, 0,   -sin(phi), 0, cos(phi) };
+	static MATRIX3 R = mul(R1, mul(R2, R3));
+
+	return R;
+}
+
+// --------------------------------------------------------------
+
+const MATRIX3& oapi::CelestialSphere::Ecliptic_Galactic() const
+{
+	static MATRIX3 R = mul(CelestialJ2000_Galactic(), Ecliptic_CelestialJ2000());
 
 	return R;
 }
