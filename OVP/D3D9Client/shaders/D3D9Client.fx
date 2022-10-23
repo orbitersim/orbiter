@@ -132,6 +132,7 @@ uniform extern bool      gEnvMapEnable;		// Enable Environment mapping
 uniform extern bool		 gInSpace;			// True if a mesh is located in space
 uniform extern bool		 gNoColor;			// No color flag
 uniform extern bool		 gBaseBuilding;
+uniform extern bool		 gOITEnable;
 uniform extern int       gSpecMode;
 uniform extern int       gHazeMode;
 uniform extern float     gProxySize;		// Cosine of the angular size of the Proxy Gbody. (one half)
@@ -202,6 +203,11 @@ struct HZVERTEX {
 	float2 tex0     : TEXCOORD0;
 };
 
+struct POSTEX {
+	float3 posL     : POSITION0;
+	float2 tex0     : TEXCOORD0;
+};
+
 struct SHADOW_VERTEX {
 	float4 posL     : POSITION0;
 };
@@ -231,6 +237,13 @@ struct BShadowVS
 	float4 posH    : POSITION0;
 	float2 dstW    : TEXCOORD0;
 	float  alpha   : TEXCOORD1;
+};
+
+struct ShadowTexVS
+{
+	float4 posH    : POSITION0;
+	float2 dstW    : TEXCOORD0;
+	float3 tex0	   : TEXCOORD1;
 };
 
 // ----------------------------------------------------------------------------

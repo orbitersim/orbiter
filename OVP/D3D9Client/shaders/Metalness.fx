@@ -150,6 +150,8 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 	if (gTextured) cDiff = tex2D(WrapS, frg.tex0.xy);
 	else		   cDiff = 1;
 
+	if (gOITEnable) if (cDiff.a < 0.5f) clip(-1);
+
 	// Fetch a normal map
 	//
 	if (gCfg.Norm) nrmT = tex2D(Nrm0S, frg.tex0.xy).rgb;

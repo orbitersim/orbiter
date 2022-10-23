@@ -81,10 +81,12 @@ public:
 	LPDIRECT3DVERTEXBUFFER9 pVB;
 	LPDIRECT3DVERTEXBUFFER9 pGB;
 	LPDIRECT3DINDEXBUFFER9  pIB;
+	LPDIRECT3DVERTEXBUFFER9 pSB;
 
 	NMVERTEX				*pVBSys;
 	D3DXVECTOR4				*pGBSys;
 	WORD					*pIBSys;
+	SMVERTEX				*pSBSys;
 
 	DWORD nVtx;
 	DWORD nIdx;
@@ -288,7 +290,7 @@ private:
 	bool			CopyVertices(GROUPREC *grp, const MESHGROUPEX *mg, D3DXVECTOR3 *reorig = NULL, float *scale = NULL);
 	void			SetGroupRec(DWORD i, const MESHGROUPEX *mg);
 	void			Null(const char *meshName = NULL);
-
+	void			UpdateFlags();
 
 	WORD	DefShader;
 	DWORD	MaxVert;
@@ -298,6 +300,7 @@ private:
 	DWORD nMtrl;                // number of mesh materials
 	DWORD nTex;                 // number of mesh textures
 	DWORD vClass;
+	DWORD Flags;
 	D3D9MatExt *Mtrl;           // list of mesh materials
 	SurfNative **Tex;			// list of mesh textures
 	D3D9Tune *pTune;

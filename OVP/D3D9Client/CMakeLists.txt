@@ -128,7 +128,6 @@ set(APIHeaders
 
 set(ShaderFiles
 	${ShaderDir}/BeaconArray.fx
-	${ShaderDir}/CKBlit.fx
 	${ShaderDir}/Common.hlsl
 	${ShaderDir}/D3D9Client.fx
 	${ShaderDir}/EnvMapBlur.hlsl
