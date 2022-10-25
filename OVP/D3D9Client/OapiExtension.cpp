@@ -13,28 +13,28 @@
 #include <psapi.h>
 
 // ===========================================================================
-// Orbiter [v110830] up to [v111105]
-#define IDC_BODYFORCE_PAGE           231
-#define IDC_BODYFORCE_ENABLE        1194
-#define IDC_BODYFORCE_WEIGHT        1195
-#define IDC_BODYFORCE_THRUST        1196
-#define IDC_BODYFORCE_LIFT          1197
-#define IDC_BODYFORCE_DRAG          1198
-#define IDC_BODYFORCE_TOTAL         1199
-#define IDC_BODYFORCE_TORQUE        1200
-#define IDC_BODYFORCE_SCALE_LIN     1201
-#define IDC_BODYFORCE_SCALE_LOG     1202
-#define IDC_BODYFORCE_SCALE_GAUGE   1204
-#define IDC_BODYFORCE_OPACITY_GAUGE 1205
+// Orbiter [v110830] up to [v111105] up to [v221025]
+#define IDC_BODYFORCE_PAGE           233
+#define IDC_BODYFORCE_ENABLE        1819
+#define IDC_BODYFORCE_WEIGHT        1820
+#define IDC_BODYFORCE_THRUST        1821
+#define IDC_BODYFORCE_LIFT          1822
+#define IDC_BODYFORCE_DRAG          1823
+#define IDC_BODYFORCE_TOTAL         1824
+#define IDC_BODYFORCE_TORQUE        1825
+#define IDC_BODYFORCE_SCALE_LIN     1826
+#define IDC_BODYFORCE_SCALE_LOG     1827
+#define IDC_BODYFORCE_SCALE_GAUGE   1828
+#define IDC_BODYFORCE_OPACITY_GAUGE 1829
 
-#define IDC_SHOW_AXES_PAGE           233
-#define IDC_SHOW_AXES_ENABLE        1206
-#define IDC_SHOW_AXES_VESSEL        1207
-#define IDC_SHOW_AXES_CELBODY       1208
-#define IDC_SHOW_AXES_SURFBASE      1209
-#define IDC_SHOW_AXES_NEGATIVE      1210
-#define IDC_SHOW_AXES_SCALE_GAUGE   1211
-#define IDC_SHOW_AXES_OPACITY_GAUGE 1212
+#define IDC_SHOW_AXES_PAGE           234
+#define IDC_SHOW_AXES_ENABLE        1830
+#define IDC_SHOW_AXES_VESSEL        1831
+#define IDC_SHOW_AXES_CELBODY       1832
+#define IDC_SHOW_AXES_SURFBASE      1833
+#define IDC_SHOW_AXES_NEGATIVE      1834
+#define IDC_SHOW_AXES_SCALE_GAUGE   1835
+#define IDC_SHOW_AXES_OPACITY_GAUGE 1836
 
 // Little binary helper
 #define SETFLAG(bitmap, bit, value) (value ? bitmap |= bit : bitmap &= ~bit)
