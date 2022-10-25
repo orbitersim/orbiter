@@ -1111,8 +1111,8 @@ void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float
 
 	D3DXMatrixMultiply(&mProjWorld, &mProj, &mWorld);
 
-	float scale = float(min(1, (csun - 0.07) / 0.015));
-	if (scale<1) alpha *= scale;
+	float scale = (csun - shadow_elev_limit) * 25.0f;
+	alpha = (1.0f - alpha) * saturate(scale);
 
 	// project all vessel meshes. This should be replaced by a dedicated shadow mesh
 

@@ -276,7 +276,7 @@ float4 ShadowTechPS(ShadowTexVS frg) : COLOR
 		float4 alpha = tex2D(WrapS, frg.tex0.xy);
 		if (alpha.a < 0.5f) clip(-1);
 	}
-	return float4(0.0f, 0.0f, 0.0f, (1.0f-gMix));
+	return float4(0.0f, 0.0f, 0.0f, gMix);
 }
 
 

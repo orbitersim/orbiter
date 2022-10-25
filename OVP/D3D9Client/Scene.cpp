@@ -2604,7 +2604,7 @@ void Scene::VisualizeCubeMap(LPDIRECT3DCUBETEXTURE9 pCube, int mip)
 		dr.bottom = y+h;
 		dr.right = x+h;
 
-		HR(pDevice->StretchRect(pSrf, NULL, pBack, &dr, D3DTEXF_LINEAR));
+		HR(pDevice->StretchRect(pSrf, NULL, pBack, &dr, D3DTEXF_POINT));
 
 		SAFE_RELEASE(pSrf);
 	}
