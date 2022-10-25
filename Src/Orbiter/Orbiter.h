@@ -154,6 +154,7 @@ public:
 	void StopCaptureFrames () { bCapture = false; }
 	bool IsCapturingFrames() const { return bCapture; }
 	void CaptureVideoFrame ();
+	void TogglePlanetariumMode();
 	const char *KeyState() const;
 
 	// dialog box processing

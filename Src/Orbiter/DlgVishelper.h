@@ -20,17 +20,16 @@ public:
 	~DlgVishelper ();
 	void Update ();
 	BOOL OnInitDialog (HWND hDlg, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand (HWND hDlg, WORD id, WORD code, HWND hControl);
+	BOOL OnCommand (HWND hDlg, WORD ctrlId, WORD notification, HWND hCtrl);
 	BOOL OnNotify (HWND hDlg, int idCtrl, LPNMHDR pnmh);
 
 protected:
-	int AddTab (HWND hDlg, VhelperTab *tab, const char *label);
+	void AddTab (HWND hDlg, VhelperTab *tab, const char *label);
 	void SwitchTab (HWND hDlg);
 	void Clear ();
 
 private:
-	int nTab;
-	VhelperTab **pTab;
+	std::vector<VhelperTab*> m_pTab;
 	char *hcontext;
 };
 
@@ -39,16 +38,27 @@ private:
 
 class VhelperTab {
 public:
-	VhelperTab (HWND hParentTab, int dlgId, DLGPROC dlgProc);
+	VhelperTab (HWND hParentTab);
+	virtual ~VhelperTab();
+	HWND Parent() const { return m_hParent; }
+	HWND Tab() const { return m_hTab; }
+	virtual void CreateInterface() = 0;
 	virtual char *HelpContext() const = 0;
 	virtual void Update () {}
 	void Show (bool show);
+	virtual INT_PTR DlgProc(HWND, UINT, WPARAM, LPARAM);
 
 protected:
-	static INT_PTR CALLBACK DlgProcInit (HWND, UINT, WPARAM, LPARAM);
-	HWND hParent;
-	HWND hTab;
-	bool active;
+	void MakeTab(int dlgId);
+	virtual BOOL OnInitDialog(HWND hTab, WPARAM wParam, LPARAM lParam) { return TRUE; }
+	virtual BOOL OnCommand(HWND hTab, WORD ctrlId, WORD notification, HWND hCtrl) { return FALSE; }
+	virtual BOOL OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam) { return FALSE; }
+	virtual BOOL OnMessage(HWND hTab, UINT uMsg, WPARAM wParam, LPARAM lParam) { return FALSE; }
+
+private:
+	static INT_PTR CALLBACK s_DlgProc(HWND, UINT, WPARAM, LPARAM);
+	HWND m_hParent;
+	HWND m_hTab;
 };
 
 // ======================================================================
@@ -57,12 +67,16 @@ protected:
 class TabPlanetarium: public VhelperTab {
 public:
 	TabPlanetarium (HWND hParentTab);
+	void CreateInterface();
 	char *HelpContext () const;
 	void Update ();
 
 protected:
-	void Refresh (HWND hTab);
-	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	BOOL OnInitDialog(HWND hTab, WPARAM wParam, LPARAM lParam);
+	BOOL OnCommand(HWND hTab, WORD ctrlId, WORD notification, HWND hCtrl);
+	BOOL OnMarkerSelectionChanged(HWND hTab);
+	void OnItemClicked(HWND hTab, WORD ctrlId);
+	void RescanMarkerList(HWND hTab);
 };
 
 // ======================================================================
@@ -71,12 +85,17 @@ protected:
 class TabLabels : public VhelperTab {
 public:
 	TabLabels(HWND hParentTab);
+	void CreateInterface();
 	char* HelpContext() const;
 	void Update();
 
 protected:
-	void Refresh(HWND hDlg, bool tick);
-	static INT_PTR CALLBACK DlgProc(HWND, UINT, WPARAM, LPARAM);
+	BOOL OnInitDialog(HWND hTab, WPARAM wParam, LPARAM lParam);
+	BOOL OnCommand(HWND hTab, WORD ctrlId, WORD notification, HWND hCtrl);
+	void OnItemClicked(HWND hTab, WORD ctrlId);
+	void ScanPsysBodies(HWND hTab);
+	void UpdateFeatureList(HWND hTab);
+	void RescanFeatures(HWND hTab);
 };
 
 // ======================================================================
@@ -85,12 +104,15 @@ protected:
 class TabForces: public VhelperTab {
 public:
 	TabForces (HWND hParentTab);
+	void CreateInterface();
 	char *HelpContext () const;
 	void Update ();
 
 protected:
+	BOOL OnInitDialog(HWND hTab, WPARAM wParam, LPARAM lParam);
+	BOOL OnCommand(HWND hTab, WORD ctrlId, WORD notification, HWND hCtrl);
+	BOOL OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam);
 	void Refresh (HWND hDlg, bool tick);
-	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 };
 
 // ======================================================================
@@ -99,41 +121,15 @@ protected:
 class TabAxes: public VhelperTab {
 public:
 	TabAxes (HWND hParentTab);
+	void CreateInterface();
 	char *HelpContext () const;
 	void Update ();
 
 protected:
+	BOOL OnInitDialog(HWND hTab, WPARAM wParam, LPARAM lParam);
+	BOOL OnCommand(HWND hTab, WORD ctrlId, WORD notification, HWND hCtrl);
+	BOOL OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam);
 	void Refresh (HWND hDlg, bool tick);
-	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
-};
-
-// ======================================================================
-// Custom label subdialog
-
-class DlgCustomLabels: public DialogWin {
-public:
-	DlgCustomLabels (HINSTANCE hInstance, HWND hParent, void *context);
-	BOOL OnInitDialog (HWND hDlg, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand (HWND hDlg, WORD id, WORD code, HWND hControl);
-
-protected:
-	void Refresh (HWND hDlg);
-	void Select (HWND hDlg);
-	void SelectAll (HWND hDlg, bool active);
-};
-
-// ======================================================================
-// Custom celestial label subdialog
-
-class DlgCustomCLabels: public DialogWin {
-public:
-	DlgCustomCLabels (HINSTANCE hInstance, HWND hParent, void *context);
-	BOOL OnInitDialog (HWND hDlg, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand (HWND hDlg, WORD id, WORD code, HWND hControl);
-
-protected:
-	void Refresh (HWND hDlg);
-	void Select (HWND hDlg);
 };
 
 #endif // !__DLGVISHELPER_H

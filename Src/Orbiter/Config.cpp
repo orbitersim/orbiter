@@ -923,60 +923,6 @@ const void *Config::GetParam (DWORD paramtype) const
 	}
 }
 
-bool Config::PlanetariumItem (int item) const
-{
-	switch (item) {
-	case IDC_PLANETARIUM:   return (CfgVisHelpPrm.flagPlanetarium & PLN_ENABLE)    != 0;
-	case IDC_PLN_CELGRID:   return (CfgVisHelpPrm.flagPlanetarium & PLN_CGRID)     != 0;
-	case IDC_PLN_ECLGRID:   return (CfgVisHelpPrm.flagPlanetarium & PLN_EGRID)     != 0;
-	case IDC_PLN_GALGRID:   return (CfgVisHelpPrm.flagPlanetarium & PLN_GGRID)     != 0;
-	case IDC_PLN_EQUATOR:   return (CfgVisHelpPrm.flagPlanetarium & PLN_EQU)       != 0;
-	case IDC_PLN_CONST:     return (CfgVisHelpPrm.flagPlanetarium & PLN_CONST)     != 0;
-	case IDC_PLN_CNSTLABEL: return (CfgVisHelpPrm.flagPlanetarium & PLN_CNSTLABEL) != 0;
-	case IDC_PLN_CMARKER:   return (CfgVisHelpPrm.flagPlanetarium & PLN_CMARK)     != 0;
-	case IDC_PLN_VMARKER:   return (CfgVisHelpPrm.flagPlanetarium & PLN_VMARK)     != 0;
-	case IDC_PLN_BMARKER:   return (CfgVisHelpPrm.flagPlanetarium & PLN_BMARK)     != 0;
-	case IDC_PLN_RMARKER:   return (CfgVisHelpPrm.flagPlanetarium & PLN_RMARK)     != 0;
-	case IDC_PLN_LMARKER:   return (CfgVisHelpPrm.flagPlanetarium & PLN_LMARK)     != 0;
-	case IDC_PLN_CCMARKER:  return (CfgVisHelpPrm.flagPlanetarium & PLN_CCMARK)    != 0;
-	case IDC_PLN_FULL:      return (CfgVisHelpPrm.flagPlanetarium & PLN_CNSTLONG)  != 0;
-	case IDC_PLN_CONSTBND:  return (CfgVisHelpPrm.flagPlanetarium & PLN_CNSTBND)   != 0;
-	case IDC_PLN_SHORT:     return (CfgVisHelpPrm.flagPlanetarium & PLN_CNSTLONG)  == 0;
-	default:                return false;
-	}
-}
-
-void Config::SetPlanetariumItem (int item, bool activate)
-{
-	DWORD flag;
-
-	switch (item) {
-	case IDC_PLANETARIUM:   flag = PLN_ENABLE;    break;
-	case IDC_PLN_CELGRID:   flag = PLN_CGRID;     break;
-	case IDC_PLN_ECLGRID:   flag = PLN_EGRID;     break;
-	case IDC_PLN_GALGRID:   flag = PLN_GGRID;     break;
-	case IDC_PLN_EQUATOR:   flag = PLN_EQU;       break;
-	case IDC_PLN_CONST:     flag = PLN_CONST;     break;
-	case IDC_PLN_CNSTLABEL: flag = PLN_CNSTLABEL; break;
-	case IDC_PLN_CMARKER:   flag = PLN_CMARK;     break;
-	case IDC_PLN_VMARKER:   flag = PLN_VMARK;     break;
-	case IDC_PLN_BMARKER:   flag = PLN_BMARK;     break;
-	case IDC_PLN_RMARKER:   flag = PLN_RMARK;     break;
-	case IDC_PLN_LMARKER:   flag = PLN_LMARK;     break;
-	case IDC_PLN_CCMARKER:  flag = PLN_CCMARK;    break;
-	case IDC_PLN_FULL:      flag = PLN_CNSTLONG;  break;
-	case IDC_PLN_SHORT:     flag = PLN_CNSTLONG; activate = !activate; break;
-	case IDC_PLN_CONSTBND:  flag = PLN_CNSTBND;   break;
-	}
-	if (activate) CfgVisHelpPrm.flagPlanetarium |=  flag;
-	else          CfgVisHelpPrm.flagPlanetarium &= ~flag;
-}
-
-void Config::TogglePlanetarium ()
-{
-	SetPlanetariumItem (IDC_PLANETARIUM, !PlanetariumItem (IDC_PLANETARIUM));
-}
-
 BOOL Config::Write (const char *fname) const
 {
 	int i;

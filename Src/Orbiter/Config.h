@@ -414,13 +414,6 @@ public:
 	CFG_WINDOWPOS CfgWindowPos;         // subwindow positions
 	CFG_CMDLINEPRM CfgCmdlinePrm;       // Populated by command line parameters. Overrides interactive settings
 
-	// set/get planetarium mode and individual items
-	bool PlanetariumItem (int item) const;
-	void SetPlanetariumItem (int item, bool activate);
-
-	// toggle planetarium mode on/off
-	void TogglePlanetarium ();
-
 	// module parameters
 	int nactmod;                 // number of active modules
 	char **actmod;               // list of active modules
