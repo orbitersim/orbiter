@@ -1431,40 +1431,6 @@ void Config::DelModule (char *cbuf)
 	nactmod--;
 }
 
-void Config::SetBodyforceItem (int item, bool activate)
-{
-	DWORD flag;
-
-	switch (item) {
-	case IDC_BODYFORCE:  flag = BF_ENABLE;  break;
-	case IDC_WEIGHT:     flag = BF_WEIGHT;  break;
-	case IDC_THRUST:     flag = BF_THRUST;  break;
-	case IDC_LIFT:       flag = BF_LIFT;    break;
-	case IDC_DRAG:       flag = BF_DRAG;    break;
-	case IDC_TOTAL:      flag = BF_TOTAL;   break;
-	case IDC_TORQUE:     flag = BF_TORQUE;  break;
-	case IDC_LINSCALE:   flag = BF_LOGSCALE; activate = false; break;
-	case IDC_LOGSCALE:   flag = BF_LOGSCALE; activate = true;  break;
-	}
-	if (activate) CfgVisHelpPrm.flagBodyforce |=  flag;
-	else          CfgVisHelpPrm.flagBodyforce &= ~flag;
-}
-
-void Config::SetCoordinateAxesItem (int item, bool activate)
-{
-	DWORD flag;
-
-	switch (item) {
-	case IDC_COORDINATES:  flag = CA_ENABLE; break;
-	case IDC_CRD_NEGATIVE: flag = CA_NEG;    break;
-	case IDC_CRD_VESSEL:   flag = CA_VESSEL; break;
-	case IDC_CRD_CBODY:    flag = CA_CBODY;  break;
-	case IDC_CRD_BASE:     flag = CA_BASE;   break;
-	}
-	if (activate) CfgVisHelpPrm.flagCrdAxes |=  flag;
-	else          CfgVisHelpPrm.flagCrdAxes &= ~flag;
-}
-
 bool Config::GetString (istream &is, char *category, char *val)
 {
 	char cbuf[512];

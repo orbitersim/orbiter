@@ -18,7 +18,8 @@ class DlgVishelper: public DialogWin {
 public:
 	DlgVishelper (HINSTANCE hInstance, HWND hParent, void *context);
 	~DlgVishelper ();
-	void Update ();
+	bool UpdateContinuously() const { return false; }
+	void Update();
 	BOOL OnInitDialog (HWND hDlg, WPARAM wParam, LPARAM lParam);
 	BOOL OnCommand (HWND hDlg, WORD ctrlId, WORD notification, HWND hCtrl);
 	BOOL OnNotify (HWND hDlg, int idCtrl, LPNMHDR pnmh);
@@ -44,7 +45,7 @@ public:
 	HWND Tab() const { return m_hTab; }
 	virtual void CreateInterface() = 0;
 	virtual char *HelpContext() const = 0;
-	virtual void Update () {}
+	virtual void UpdateControls(HWND hTab) {}
 	void Show (bool show);
 	virtual INT_PTR DlgProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -69,7 +70,7 @@ public:
 	TabPlanetarium (HWND hParentTab);
 	void CreateInterface();
 	char *HelpContext () const;
-	void Update ();
+	void UpdateControls(HWND hTab);
 
 protected:
 	BOOL OnInitDialog(HWND hTab, WPARAM wParam, LPARAM lParam);
@@ -87,7 +88,7 @@ public:
 	TabLabels(HWND hParentTab);
 	void CreateInterface();
 	char* HelpContext() const;
-	void Update();
+	void UpdateControls(HWND hTab);
 
 protected:
 	BOOL OnInitDialog(HWND hTab, WPARAM wParam, LPARAM lParam);
@@ -106,13 +107,13 @@ public:
 	TabForces (HWND hParentTab);
 	void CreateInterface();
 	char *HelpContext () const;
-	void Update ();
+	void UpdateControls(HWND hTab);
 
 protected:
 	BOOL OnInitDialog(HWND hTab, WPARAM wParam, LPARAM lParam);
 	BOOL OnCommand(HWND hTab, WORD ctrlId, WORD notification, HWND hCtrl);
+	void OnItemClicked(HWND hTab, WORD ctrlId);
 	BOOL OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam);
-	void Refresh (HWND hDlg, bool tick);
 };
 
 // ======================================================================
@@ -123,13 +124,13 @@ public:
 	TabAxes (HWND hParentTab);
 	void CreateInterface();
 	char *HelpContext () const;
-	void Update ();
+	void UpdateControls(HWND hTab);
 
 protected:
 	BOOL OnInitDialog(HWND hTab, WPARAM wParam, LPARAM lParam);
 	BOOL OnCommand(HWND hTab, WORD ctrlId, WORD notification, HWND hCtrl);
+	void OnItemClicked(HWND hTab, WORD ctrlId);
 	BOOL OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam);
-	void Refresh (HWND hDlg, bool tick);
 };
 
 #endif // !__DLGVISHELPER_H

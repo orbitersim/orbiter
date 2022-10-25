@@ -6,10 +6,6 @@
 #include <stdio.h>
 
 GDIRES g_GDI;
-//static struct {
-//	HPEN hPen1, hPen2;
-//	HBRUSH hBrush1;
-//} g_GDI;
 
 static UINT g_timer = 0;
 static HINSTANCE hInstModule = NULL;
@@ -75,61 +71,55 @@ LRESULT FAR PASCAL MsgProc_Gauge (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 		int rmax   = GetWindowLongPtr (hWnd, 8);
 		DWORD flag = GetWindowLongPtr (hWnd, 12);
 		bool horz  = ((flag & 2) == 0);
+		bool enabled = (GetWindowLongPtr(hWnd, GWL_STYLE) & WS_DISABLED) == 0;
 
 		GetClientRect (hWnd, &r);
-		SelectObject (hDC, GetStockObject (BLACK_PEN));
-
+		SelectObject (hDC, g_GDI.hPen1);
+		SelectObject(hDC, GetStockObject(enabled ? WHITE_BRUSH : NULL_BRUSH));
 		if (horz) {
-			bw = r.bottom; gw = r.right - 2*bw;
-			SelectObject (hDC, GetStockObject (WHITE_PEN));
-			MoveToEx (hDC, 0, bw, NULL); LineTo (hDC, 0, 0); LineTo (hDC, bw, 0);
-			MoveToEx (hDC, bw+gw, bw, NULL); LineTo (hDC, bw+gw, 0); LineTo (hDC, r.right, 0);
-			SelectObject (hDC, g_GDI.hPen1);
-			MoveToEx (hDC, bw-1, 0, NULL); LineTo (hDC, bw-1, bw-1); LineTo (hDC, 0, bw-1);
-			MoveToEx (hDC, r.right-1, 0, NULL); LineTo (hDC, r.right-1, bw-1); LineTo (hDC, bw+gw, bw-1);
-			SelectObject (hDC, GetStockObject (BLACK_PEN));
-			MoveToEx (hDC, bw/4, bw/2, NULL); LineTo (hDC, bw/2, bw/4);
-			MoveToEx (hDC, bw/4, bw/2, NULL); LineTo (hDC, bw/2, bw-bw/4);
-			MoveToEx (hDC, r.right-bw/4, bw/2, NULL); LineTo (hDC, r.right-bw/2, bw/4);
-			MoveToEx (hDC, r.right-bw/4, bw/2, NULL); LineTo (hDC, r.right-bw/2, bw-bw/4);
+			bw = r.bottom; dd = bw / 4; gw = r.right - 2 * bw;
+			Rectangle(hDC, 0, 0, bw, bw);
+			Rectangle(hDC, r.right - bw, 0, r.right, bw);
+			MoveToEx(hDC, x0 = dd, y0 = bw / 2, NULL);
+			LineTo(hDC, x0 += dd, y0 -= dd);
+			LineTo(hDC, x0, y0 += 2 * dd);
+			LineTo(hDC, x0 -= dd, y0 -= dd);
+			MoveToEx(hDC, x0 = r.right - dd - 1, y0 = bw / 2, NULL);
+			LineTo(hDC, x0 -= dd, y0 -= dd);
+			LineTo(hDC, x0, y0 += 2 * dd);
+			LineTo(hDC, x0 += dd, y0 -= dd);
 		} else {
-			bw = r.right; gw = r.bottom - 2*bw;
-			SelectObject (hDC, GetStockObject (WHITE_PEN));
-			MoveToEx (hDC, 0, bw, NULL); LineTo (hDC, 0, 0); LineTo (hDC, bw, 0);
-			MoveToEx (hDC, 0, r.bottom, NULL); LineTo (hDC, 0, bw+gw); LineTo (hDC, bw, bw+gw);
-			SelectObject (hDC, g_GDI.hPen1);
-			MoveToEx (hDC, bw-1, 0, NULL); LineTo (hDC, bw-1, bw-1); LineTo (hDC, 0, bw-1);
-			MoveToEx (hDC, bw-1, bw+gw, NULL); LineTo (hDC, bw-1, r.bottom-1); LineTo (hDC, 0, r.bottom-1);
-			SelectObject (hDC, GetStockObject (BLACK_PEN));
-			x0 = bw/2; y0 = (3*bw)/8; dd = bw/4;
-			MoveToEx (hDC, x0, y0, NULL); LineTo (hDC, x0-dd, y0+dd);
-			MoveToEx (hDC, x0, y0, NULL); LineTo (hDC, x0+dd, y0+dd);
-			y0 = r.bottom - y0;
-			MoveToEx (hDC, x0, y0, NULL); LineTo (hDC, x0-dd, y0-dd);
-			MoveToEx (hDC, x0, y0, NULL); LineTo (hDC, x0+dd, y0-dd);
+			bw = r.right; dd = bw / 4;  gw = r.bottom - 2 * bw;
+			Rectangle(hDC, 0, 0, bw, bw);
+			Rectangle(hDC, 0, r.bottom - bw, bw, r.bottom);
+			MoveToEx(hDC, x0 = bw / 2, y0 = dd, NULL);
+			LineTo(hDC, x0 += dd, y0 += dd);
+			LineTo(hDC, x0 -= 2 * dd, y0);
+			LineTo(hDC, x0 += dd, y0 -= dd);
+			MoveToEx(hDC, x0 = bw / 2, y0 = r.bottom - dd - 1, NULL);
+			LineTo(hDC, x0 -= dd, y0 -= dd);
+			LineTo(hDC, x0 += 2 * dd, y0);
+			LineTo(hDC, x0 -= dd, y0 += dd);
 		}
 
-		SelectObject (hDC, GetStockObject (BLACK_PEN));
-		SelectObject (hDC, (flag & 0x40) ? g_GDI.hBrush1 : GetStockObject (BLACK_BRUSH));
+		SelectObject (hDC, GetStockObject (NULL_PEN));
+		SelectObject (hDC, (flag & 0x40) ? g_GDI.hBrush1 : GetStockObject (enabled ? BLACK_BRUSH : GRAY_BRUSH));
 		if (rmax > rmin) {
-			switch (flag & 3) {
-			case 0:
-				Rectangle (hDC, bw, 0, bw+(gw*(pos-rmin))/(rmax-rmin), bw);
+			switch (flag & 3) { // direction flag
+			case 0: // left to right
+				Rectangle (hDC, bw, 0, bw+(gw*(pos-rmin))/(rmax-rmin) + 1, bw + 1);
 				break;
-			case 1:
-				Rectangle (hDC, bw+gw, 0, bw+gw-(gw*(pos-rmin))/(rmax-rmin), bw);
+			case 1: // right to left
+				Rectangle (hDC, bw+gw, 0, bw+gw-(gw*(pos-rmin))/(rmax-rmin) + 1, bw + 1);
 				break;
-			case 2:
-				Rectangle (hDC, 0, bw, bw, bw+(gw*(pos-rmin))/(rmax-rmin));
+			case 2: // top to bottom
+				Rectangle (hDC, 0, bw, bw + 1, bw+(gw*(pos-rmin))/(rmax-rmin) + 1);
 				break;
-			case 3:
-				Rectangle (hDC, 0, bw+gw, bw, bw+gw-(gw*(pos-rmin))/(rmax-rmin));
+			case 3: // bottom to top
+				Rectangle (hDC, 0, bw+gw, bw + 1, bw+gw-(gw*(pos-rmin))/(rmax-rmin) + 1);
 				break;
 			}
 		}
-		SelectObject (hDC, GetStockObject (NULL_BRUSH));
-		if (horz) Rectangle (hDC, bw, 0, gw+bw, bw);
-		else      Rectangle (hDC, 0, bw, bw, gw+bw);
 
 		EndPaint (hWnd, &ps);
 		} return 0;
@@ -197,6 +187,10 @@ LRESULT FAR PASCAL MsgProc_Gauge (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 			SendMessage (GetParent (hWnd), WM_HSCROLL, MAKEWPARAM (SB_THUMBTRACK, GetWindowLongPtr (hWnd, 0)), (LPARAM)hWnd);
 		}
 		} return 0;
+
+	case WM_ENABLE:
+		InvalidateRect(hWnd, 0, TRUE);
+		return TRUE;
 
 	case BM_GETSTATE:
 		return (GetWindowLongPtr (hWnd, 12) >> 4) & 3;
@@ -290,14 +284,16 @@ void oapiSetGaugeRange (HWND hCtrl, int rmin, int rmax, bool redraw)
 
 int oapiSetGaugePos (HWND hCtrl, int pos, bool redraw)
 {
-	int rmin = GetWindowLongPtr (hCtrl, 4);
-	int rmax = GetWindowLongPtr (hCtrl, 8);
-
+	int rmin = GetWindowLongPtr(hCtrl, 4);
+	int rmax = GetWindowLongPtr(hCtrl, 8);
 	if      (pos < rmin) pos = rmin;
 	else if (pos > rmax) pos = rmax;
 
-	SetWindowLongPtr (hCtrl, 0, pos);
-	if (redraw) InvalidateRect (hCtrl, NULL, TRUE);
+	int oldPos = GetWindowLongPtr(hCtrl, 0);
+	if (pos != oldPos) {
+		SetWindowLongPtr(hCtrl, 0, pos);
+		if (redraw) InvalidateRect(hCtrl, NULL, TRUE);
+	}
 
 	return pos;
 }

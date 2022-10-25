@@ -420,12 +420,6 @@ public:
 	void AddModule (char *cbuf); // add a module to the list
 	void DelModule (char *cbuf); // delete module from the list
 
-	void SetBodyforceItem (int item, bool activate);
-	// set body force display options
-
-	void SetCoordinateAxesItem (int item, bool activate);
-	// set coordinate axes display options
-
 	inline void SetAmbientLevel (DWORD lvl)
 	{ AmbientColour = (CfgVisualPrm.AmbientLevel = min (lvl, 0xff)) * 0x01010101; }
 

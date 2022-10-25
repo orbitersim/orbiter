@@ -42,10 +42,10 @@ DlgVishelper::~DlgVishelper ()
 
 // ======================================================================
 
-void DlgVishelper::Update ()
+void DlgVishelper::Update()
 {
 	for (auto it = m_pTab.begin(); it != m_pTab.end(); it++)
-		(*it)->Update();
+		(*it)->UpdateControls((*it)->Tab());
 }
 
 // ======================================================================
@@ -200,27 +200,27 @@ void TabPlanetarium::CreateInterface()
 
 // ======================================================================
 
-void TabPlanetarium::Update()
+void TabPlanetarium::UpdateControls(HWND hTab)
 {
 	DWORD& plnFlag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagPlanetarium;
 	bool enable = plnFlag & PLN_ENABLE;
-	SendDlgItemMessage(Tab(), IDC_VH_PLN, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_PLN, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
 	for (int i = IDC_VH_PLN_CELGRID; i <= IDC_VH_PLN_MKRLIST; i++) 
-		EnableWindow(GetDlgItem(Tab(), i), enable ? TRUE : FALSE);
+		EnableWindow(GetDlgItem(hTab, i), enable ? TRUE : FALSE);
 	if (enable && !(plnFlag & IDC_VH_PLN_CNSTLABEL)) {
 		for (int i = IDC_VH_PLN_CNSTLABEL_FULL; i <= IDC_VH_PLN_CNSTLABEL_SHORT; i++)
-			EnableWindow(GetDlgItem(Tab(), i), FALSE);
+			EnableWindow(GetDlgItem(hTab, i), FALSE);
 	}
-	SendDlgItemMessage(Tab(), IDC_VH_PLN_CELGRID,     BM_SETCHECK, plnFlag & PLN_CGRID     ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(Tab(), IDC_VH_PLN_ECLGRID,     BM_SETCHECK, plnFlag & PLN_EGRID     ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(Tab(), IDC_VH_PLN_GALGRID,     BM_SETCHECK, plnFlag & PLN_GGRID     ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(Tab(), IDC_VH_PLN_EQU,         BM_SETCHECK, plnFlag & PLN_EQU       ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(Tab(), IDC_VH_PLN_CNSTLABEL,   BM_SETCHECK, plnFlag & PLN_CNSTLABEL ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(Tab(), IDC_VH_PLN_CNSTBND,     BM_SETCHECK, plnFlag & PLN_CNSTBND   ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(Tab(), IDC_VH_PLN_CNSTPATTERN, BM_SETCHECK, plnFlag & PLN_CONST     ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(Tab(), IDC_VH_PLN_MARKER,      BM_SETCHECK, plnFlag & PLN_CCMARK    ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(Tab(), IDC_VH_PLN_CNSTLABEL_FULL,  BM_SETCHECK, plnFlag & PLN_CNSTLONG ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(Tab(), IDC_VH_PLN_CNSTLABEL_SHORT, BM_SETCHECK, plnFlag & PLN_CNSTLONG ? BST_UNCHECKED : BST_CHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_PLN_CELGRID,     BM_SETCHECK, plnFlag & PLN_CGRID     ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_PLN_ECLGRID,     BM_SETCHECK, plnFlag & PLN_EGRID     ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_PLN_GALGRID,     BM_SETCHECK, plnFlag & PLN_GGRID     ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_PLN_EQU,         BM_SETCHECK, plnFlag & PLN_EQU       ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_PLN_CNSTLABEL,   BM_SETCHECK, plnFlag & PLN_CNSTLABEL ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_PLN_CNSTBND,     BM_SETCHECK, plnFlag & PLN_CNSTBND   ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_PLN_CNSTPATTERN, BM_SETCHECK, plnFlag & PLN_CONST     ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_PLN_MARKER,      BM_SETCHECK, plnFlag & PLN_CCMARK    ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_PLN_CNSTLABEL_FULL,  BM_SETCHECK, plnFlag & PLN_CNSTLONG ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_PLN_CNSTLABEL_SHORT, BM_SETCHECK, plnFlag & PLN_CNSTLONG ? BST_UNCHECKED : BST_CHECKED, 0);
 }
 
 // ======================================================================
@@ -251,7 +251,7 @@ void TabPlanetarium::RescanMarkerList(HWND hTab)
 
 BOOL TabPlanetarium::OnInitDialog(HWND hTab, WPARAM wParam, LPARAM lParam)
 {
-	Update();
+	UpdateControls(hTab);
 	RescanMarkerList(hTab);
 
 	return TRUE;
@@ -263,6 +263,11 @@ BOOL TabPlanetarium::OnCommand(HWND hTab, WORD ctrlId, WORD notification, HWND h
 {
 	switch (ctrlId) {
 	case IDC_VH_PLN:
+		if (notification == BN_CLICKED) {
+			g_pOrbiter->TogglePlanetariumMode();
+			return TRUE;
+		}
+		break;
 	case IDC_VH_PLN_CELGRID:
 	case IDC_VH_PLN_ECLGRID:
 	case IDC_VH_PLN_GALGRID:
@@ -310,7 +315,7 @@ void TabPlanetarium::OnItemClicked(HWND hTab, WORD ctrlId)
 	if (check) plnFlag |=  flag;
 	else       plnFlag &= ~flag;
 
-	Update();
+	UpdateControls(hTab);
 }
 
 // ======================================================================
@@ -356,18 +361,21 @@ void TabLabels::CreateInterface()
 
 // ======================================================================
 
-void TabLabels::Update()
+void TabLabels::UpdateControls(HWND hTab)
 {
 	DWORD& plnFlag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagPlanetarium;
 	bool enable = plnFlag & PLN_ENABLE;
-	SendDlgItemMessage(Tab(), IDC_VH_PLN, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
-	for (int i = IDC_VH_MKR_VESSEL; i <= IDC_VH_MKR_FEATURELIST; i++)
-		EnableWindow(GetDlgItem(Tab(), i), enable ? TRUE : FALSE);
-	SendDlgItemMessage(Tab(), IDC_VH_MKR_VESSEL,   BM_SETCHECK, plnFlag & PLN_VMARK ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(Tab(), IDC_VH_MKR_CELBODY,  BM_SETCHECK, plnFlag & PLN_CMARK ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(Tab(), IDC_VH_MKR_BASE,     BM_SETCHECK, plnFlag & PLN_BMARK ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(Tab(), IDC_VH_MKR_BEACON,   BM_SETCHECK, plnFlag & PLN_RMARK ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(Tab(), IDC_VH_MKR_FEATURES, BM_SETCHECK, plnFlag & PLN_LMARK ? BST_CHECKED : BST_UNCHECKED, 0);
+	bool isEnabled = SendDlgItemMessage(hTab, IDC_VH_PLN, BM_GETCHECK, 0, 0) == BST_CHECKED;
+	if (enable != isEnabled) {
+		SendDlgItemMessage(hTab, IDC_VH_PLN, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
+		for (int i = IDC_VH_MKR_VESSEL; i <= IDC_VH_MKR_FEATURELIST; i++)
+			EnableWindow(GetDlgItem(hTab, i), enable ? TRUE : FALSE);
+	}
+	SendDlgItemMessage(hTab, IDC_VH_MKR_VESSEL,   BM_SETCHECK, plnFlag & PLN_VMARK ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_MKR_CELBODY,  BM_SETCHECK, plnFlag & PLN_CMARK ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_MKR_BASE,     BM_SETCHECK, plnFlag & PLN_BMARK ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_MKR_BEACON,   BM_SETCHECK, plnFlag & PLN_RMARK ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_MKR_FEATURES, BM_SETCHECK, plnFlag & PLN_LMARK ? BST_CHECKED : BST_UNCHECKED, 0);
 }
 
 // ======================================================================
@@ -382,7 +390,7 @@ char* TabLabels::HelpContext() const
 
 BOOL TabLabels::OnInitDialog(HWND hTab, WPARAM wParam, LPARAM lParam)
 {
-	Update();
+	UpdateControls(hTab);
 	ScanPsysBodies(hTab);
 
 	return TRUE;
@@ -394,6 +402,11 @@ BOOL TabLabels::OnCommand(HWND hTab, WORD ctrlId, WORD notification, HWND hCtrl)
 {
 	switch (ctrlId) {
 	case IDC_VH_PLN:
+		if (notification == BN_CLICKED) {
+			g_pOrbiter->TogglePlanetariumMode();
+			return TRUE;
+		}
+		break;
 	case IDC_VH_MKR_VESSEL:
 	case IDC_VH_MKR_CELBODY:
 	case IDC_VH_MKR_BASE:
@@ -435,10 +448,10 @@ void TabLabels::OnItemClicked(HWND hTab, WORD ctrlId)
 	if (check) plnFlag |=  flag;
 	else       plnFlag &= ~flag;
 
-	if (ctrlId == IDC_VH_PLN || ctrlId == IDC_VH_MKR_FEATURES)
+	if (ctrlId == IDC_VH_MKR_FEATURES)
 		g_psys->ActivatePlanetLabels(plnFlag & PLN_ENABLE && plnFlag & PLN_LMARK);
 
-	Update();
+	UpdateControls(hTab);
 }
 
 // ======================================================================
@@ -560,33 +573,27 @@ void TabForces::CreateInterface()
 
 // ======================================================================
 
-void TabForces::Update ()
+void TabForces::UpdateControls(HWND hTab)
 {
-	Refresh (Tab(), true);
+	DWORD vecFlag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagBodyforce;
+	bool enable = (vecFlag & BF_ENABLE);
+	SendDlgItemMessage(hTab, IDC_VH_VEC, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
+	for (int i = IDC_VH_VEC_WEIGHT; i <= IDC_VH_VEC_OPACITY; i++)
+		EnableWindow(GetDlgItem(hTab, i), enable ? TRUE : FALSE);
+	SendDlgItemMessage(hTab, IDC_VH_VEC_WEIGHT, BM_SETCHECK, vecFlag & BF_WEIGHT   ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_VEC_THRUST, BM_SETCHECK, vecFlag & BF_THRUST   ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_VEC_LIFT,   BM_SETCHECK, vecFlag & BF_LIFT     ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_VEC_DRAG,   BM_SETCHECK, vecFlag & BF_DRAG     ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_VEC_TOTAL,  BM_SETCHECK, vecFlag & BF_TOTAL    ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_VEC_TORQUE, BM_SETCHECK, vecFlag & BF_TORQUE   ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_VEC_LINSCL, BM_SETCHECK, vecFlag & BF_LOGSCALE ? BST_UNCHECKED : BST_CHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_VEC_LOGSCL, BM_SETCHECK, vecFlag & BF_LOGSCALE ? BST_CHECKED : BST_UNCHECKED, 0);
+
+	int scalePos = (int)(25.0 * (1.0 + 0.5 * log(g_pOrbiter->Cfg()->CfgVisHelpPrm.scaleBodyforce) / log(2.0)));
+	oapiSetGaugePos(GetDlgItem(hTab, IDC_VH_VEC_SCALE), scalePos);
+	int opacPos = (int)(g_pOrbiter->Cfg()->CfgVisHelpPrm.opacBodyforce * 50.0);
+	oapiSetGaugePos(GetDlgItem(hTab, IDC_VH_VEC_OPACITY), opacPos);
 }
-
-// ======================================================================
-
-void TabForces::Refresh (HWND hDlg, bool tick)
-{
-	int i;
-	DWORD flag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagBodyforce;
-	bool active = (flag & BF_ENABLE);
-	SendDlgItemMessage (hDlg, IDC_BODYFORCE, BM_SETCHECK, active ? BST_CHECKED:BST_UNCHECKED, 0);
-	if (tick) {
-		SendDlgItemMessage (hDlg, IDC_WEIGHT,   BM_SETCHECK, (flag & BF_WEIGHT)   ? BST_CHECKED:BST_UNCHECKED, 0);
-		SendDlgItemMessage (hDlg, IDC_THRUST,   BM_SETCHECK, (flag & BF_THRUST)   ? BST_CHECKED:BST_UNCHECKED, 0);
-		SendDlgItemMessage (hDlg, IDC_LIFT,     BM_SETCHECK, (flag & BF_LIFT)     ? BST_CHECKED:BST_UNCHECKED, 0);
-		SendDlgItemMessage (hDlg, IDC_DRAG,     BM_SETCHECK, (flag & BF_DRAG)     ? BST_CHECKED:BST_UNCHECKED, 0);
-		SendDlgItemMessage (hDlg, IDC_TOTAL,    BM_SETCHECK, (flag & BF_TOTAL)    ? BST_CHECKED:BST_UNCHECKED, 0);
-		SendDlgItemMessage (hDlg, IDC_TORQUE,   BM_SETCHECK, (flag & BF_TORQUE)   ? BST_CHECKED:BST_UNCHECKED, 0);
-		SendDlgItemMessage (hDlg, IDC_LINSCALE, BM_SETCHECK, (flag & BF_LOGSCALE) ? BST_UNCHECKED:BST_CHECKED, 0);
-		SendDlgItemMessage (hDlg, IDC_LOGSCALE, BM_SETCHECK, (flag & BF_LOGSCALE) ? BST_CHECKED:BST_UNCHECKED, 0);
-	}
-	for (i = IDC_WEIGHT; i <= IDC_LOGSCALE; i++)
-		EnableWindow (GetDlgItem (hDlg, i), active ? TRUE:FALSE);
-}
-
 
 // ======================================================================
 
@@ -601,13 +608,11 @@ char *TabForces::HelpContext () const
 BOOL TabForces::OnInitDialog(HWND hTab, WPARAM wParam, LPARAM lParam)
 {
 	GAUGEPARAM gp = { 0, 50, GAUGEPARAM::LEFT, GAUGEPARAM::BLACK };
-	oapiSetGaugeParams(GetDlgItem(hTab, IDC_SCALE), &gp);
-	int scl = (int)(25.0 * (1.0 + 0.5 * log(g_pOrbiter->Cfg()->CfgVisHelpPrm.scaleBodyforce) / log(2.0)));
-	oapiSetGaugePos(GetDlgItem(hTab, IDC_SCALE), scl);
-	oapiSetGaugeParams(GetDlgItem(hTab, IDC_OPACITY), &gp);
-	scl = (int)(g_pOrbiter->Cfg()->CfgVisHelpPrm.opacBodyforce * 50.0);
-	oapiSetGaugePos(GetDlgItem(hTab, IDC_OPACITY), scl);
-	Refresh(hTab, true);
+	oapiSetGaugeParams(GetDlgItem(hTab, IDC_VH_VEC_SCALE), &gp);
+	oapiSetGaugeParams(GetDlgItem(hTab, IDC_VH_VEC_OPACITY), &gp);
+
+	UpdateControls(hTab);
+
 	return TRUE;
 }
 
@@ -616,19 +621,17 @@ BOOL TabForces::OnInitDialog(HWND hTab, WPARAM wParam, LPARAM lParam)
 BOOL TabForces::OnCommand(HWND hTab, WORD ctrlId, WORD notification, HWND hCtrl)
 {
 	switch (ctrlId) {
-	case IDC_BODYFORCE:
-	case IDC_WEIGHT:
-	case IDC_THRUST:
-	case IDC_LIFT:
-	case IDC_DRAG:
-	case IDC_TOTAL:
-	case IDC_TORQUE:
-	case IDC_LINSCALE:
-	case IDC_LOGSCALE:
+	case IDC_VH_VEC:
+	case IDC_VH_VEC_WEIGHT:
+	case IDC_VH_VEC_THRUST:
+	case IDC_VH_VEC_LIFT:
+	case IDC_VH_VEC_DRAG:
+	case IDC_VH_VEC_TOTAL:
+	case IDC_VH_VEC_TORQUE:
+	case IDC_VH_VEC_LINSCL:
+	case IDC_VH_VEC_LOGSCL:
 		if (notification == BN_CLICKED) {
-			bool check = (SendDlgItemMessage(hTab, ctrlId, BM_GETCHECK, 0, 0) == TRUE);
-			g_pOrbiter->Cfg()->SetBodyforceItem(ctrlId, check);
-			Refresh(hTab, false);
+			OnItemClicked(hTab, ctrlId);
 			return FALSE;
 		}
 		break;
@@ -638,10 +641,35 @@ BOOL TabForces::OnCommand(HWND hTab, WORD ctrlId, WORD notification, HWND hCtrl)
 
 // ======================================================================
 
+void TabForces::OnItemClicked(HWND hTab, WORD ctrlId)
+{
+	bool check = (SendDlgItemMessage(hTab, ctrlId, BM_GETCHECK, 0, 0) == TRUE);
+	DWORD flag;
+	switch (ctrlId) {
+	case IDC_VH_VEC:        flag = BF_ENABLE;  break;
+	case IDC_VH_VEC_WEIGHT: flag = BF_WEIGHT;  break;
+	case IDC_VH_VEC_THRUST: flag = BF_THRUST;  break;
+	case IDC_VH_VEC_LIFT:   flag = BF_LIFT;    break;
+	case IDC_VH_VEC_DRAG:   flag = BF_DRAG;    break;
+	case IDC_VH_VEC_TOTAL:  flag = BF_TOTAL;   break;
+	case IDC_VH_VEC_TORQUE: flag = BF_TORQUE;  break;
+	case IDC_VH_VEC_LINSCL: flag = BF_LOGSCALE; check = false; break;
+	case IDC_VH_VEC_LOGSCL: flag = BF_LOGSCALE; check = true;  break;
+	default:                flag = 0;          break;
+	}
+	DWORD& vecFlag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagBodyforce;
+	if (check) vecFlag |=  flag;
+	else       vecFlag &= ~flag;
+
+	UpdateControls(hTab);
+}
+
+// ======================================================================
+
 BOOL TabForces::OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam)
 {
 	switch (GetDlgCtrlID((HWND)lParam)) {
-	case IDC_SCALE:
+	case IDC_VH_VEC_SCALE:
 		switch (LOWORD(wParam)) {
 		case SB_THUMBTRACK:
 		case SB_LINELEFT:
@@ -650,7 +678,7 @@ BOOL TabForces::OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam)
 			return 0;
 		}
 		break;
-	case IDC_OPACITY:
+	case IDC_VH_VEC_OPACITY:
 		switch (LOWORD(wParam)) {
 		case SB_THUMBTRACK:
 		case SB_LINELEFT:
@@ -680,27 +708,22 @@ void TabAxes::CreateInterface()
 
 // ======================================================================
 
-void TabAxes::Update ()
+void TabAxes::UpdateControls(HWND hTab)
 {
-	Refresh (Tab(), true);
-}
+	DWORD crdFlag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagCrdAxes;
+	bool enable = (crdFlag & CA_ENABLE);
+	SendDlgItemMessage(hTab, IDC_VH_CRD, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
+	for (int i = IDC_VH_CRD_VESSEL; i <= IDC_VH_CRD_OPACITY; i++)
+		EnableWindow(GetDlgItem(hTab, i), enable ? TRUE : FALSE);
+	SendDlgItemMessage(hTab, IDC_VH_CRD_VESSEL,  BM_SETCHECK,  crdFlag & CA_VESSEL ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_CRD_CELBODY, BM_SETCHECK,  crdFlag & CA_CBODY  ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_CRD_BASE, BM_SETCHECK,     crdFlag & CA_BASE   ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_CRD_NEGATIVE, BM_SETCHECK, crdFlag & CA_NEG    ? BST_CHECKED : BST_UNCHECKED, 0);
 
-// ======================================================================
-// Coordinate axes tab: Refresh
-
-void TabAxes::Refresh (HWND hDlg, bool tick)
-{
-	DWORD flag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagCrdAxes;
-	bool active = (flag & CA_ENABLE);
-	SendDlgItemMessage (hDlg, IDC_COORDINATES, BM_SETCHECK, active ? BST_CHECKED:BST_UNCHECKED, 0);
-	if (tick) {
-		SendDlgItemMessage (hDlg, IDC_CRD_VESSEL,   BM_SETCHECK, (flag & CA_VESSEL) ? BST_CHECKED:BST_UNCHECKED, 0);
-		SendDlgItemMessage (hDlg, IDC_CRD_CBODY,    BM_SETCHECK, (flag & CA_CBODY)  ? BST_CHECKED:BST_UNCHECKED, 0);
-		SendDlgItemMessage (hDlg, IDC_CRD_BASE,     BM_SETCHECK, (flag & CA_BASE)   ? BST_CHECKED:BST_UNCHECKED, 0);
-		SendDlgItemMessage (hDlg, IDC_CRD_NEGATIVE, BM_SETCHECK, (flag & CA_NEG)    ? BST_CHECKED:BST_UNCHECKED, 0);
-	}
-	for (int i = IDC_CRD_VESSEL; i <= IDC_CRD_OPAC; i++)
-		EnableWindow (GetDlgItem (hDlg, i), active ? TRUE:FALSE);
+	int scalePos = (int)(25.0 * (1.0 + 0.5 * log(g_pOrbiter->Cfg()->CfgVisHelpPrm.scaleCrdAxes) / log(2.0)));
+	oapiSetGaugePos(GetDlgItem(hTab, IDC_VH_CRD_SCALE), scalePos);
+	int opacPos = (int)(g_pOrbiter->Cfg()->CfgVisHelpPrm.opacCrdAxes * 50.0);
+	oapiSetGaugePos(GetDlgItem(hTab, IDC_VH_CRD_OPACITY), opacPos);
 }
 
 // ======================================================================
@@ -716,13 +739,11 @@ char *TabAxes::HelpContext () const
 BOOL TabAxes::OnInitDialog(HWND hTab, WPARAM wParam, LPARAM lParam)
 {
 	GAUGEPARAM gp = { 0, 50, GAUGEPARAM::LEFT, GAUGEPARAM::BLACK };
-	oapiSetGaugeParams(GetDlgItem(hTab, IDC_CRD_SCALE), &gp);
-	int scl = (int)(25.0 * (1.0 + 0.5 * log(g_pOrbiter->Cfg()->CfgVisHelpPrm.scaleCrdAxes) / log(2.0)));
-	oapiSetGaugePos(GetDlgItem(hTab, IDC_CRD_SCALE), scl);
-	oapiSetGaugeParams(GetDlgItem(hTab, IDC_CRD_OPAC), &gp);
-	scl = (int)(g_pOrbiter->Cfg()->CfgVisHelpPrm.opacCrdAxes * 50.0);
-	oapiSetGaugePos(GetDlgItem(hTab, IDC_CRD_OPAC), scl);
-	Refresh(hTab, true);
+	oapiSetGaugeParams(GetDlgItem(hTab, IDC_VH_CRD_SCALE), &gp);
+	oapiSetGaugeParams(GetDlgItem(hTab, IDC_VH_CRD_OPACITY), &gp);
+
+	UpdateControls(hTab);
+
 	return TRUE;
 }
 
@@ -731,16 +752,14 @@ BOOL TabAxes::OnInitDialog(HWND hTab, WPARAM wParam, LPARAM lParam)
 BOOL TabAxes::OnCommand(HWND hTab, WORD ctrlId, WORD notification, HWND hCtrl)
 {
 	switch (ctrlId) {
-	case IDC_COORDINATES:
-	case IDC_CRD_VESSEL:
-	case IDC_CRD_CBODY:
-	case IDC_CRD_BASE:
-	case IDC_CRD_NEGATIVE:
+	case IDC_VH_CRD:
+	case IDC_VH_CRD_VESSEL:
+	case IDC_VH_CRD_CELBODY:
+	case IDC_VH_CRD_BASE:
+	case IDC_VH_CRD_NEGATIVE:
 		if (notification == BN_CLICKED) {
-			bool check = (SendDlgItemMessage(hTab, ctrlId, BM_GETCHECK, 0, 0) == TRUE);
-			g_pOrbiter->Cfg()->SetCoordinateAxesItem(ctrlId, check);
-			Refresh(hTab, false);
-			return TRUE;
+			OnItemClicked(hTab, ctrlId);
+			return FALSE;
 		}
 		break;
 	}
@@ -749,10 +768,31 @@ BOOL TabAxes::OnCommand(HWND hTab, WORD ctrlId, WORD notification, HWND hCtrl)
 
 // ======================================================================
 
+void TabAxes::OnItemClicked(HWND hTab, WORD ctrlId)
+{
+	bool check = (SendDlgItemMessage(hTab, ctrlId, BM_GETCHECK, 0, 0) == TRUE);
+	DWORD flag;
+	switch (ctrlId) {
+	case IDC_VH_CRD:          flag = CA_ENABLE; break;
+	case IDC_VH_CRD_VESSEL:   flag = CA_VESSEL; break;
+	case IDC_VH_CRD_CELBODY:  flag = CA_CBODY;  break;
+	case IDC_VH_CRD_BASE:     flag = CA_BASE;   break;
+	case IDC_VH_CRD_NEGATIVE: flag = CA_NEG;    break;
+	default:                  flag = 0;         break;
+	}
+	DWORD& crdFlag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagCrdAxes;
+	if (check) crdFlag |=  flag;
+	else       crdFlag &= ~flag;
+
+	UpdateControls(hTab);
+}
+
+// ======================================================================
+
 BOOL TabAxes::OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam)
 {
 	switch (GetDlgCtrlID((HWND)lParam)) {
-	case IDC_CRD_SCALE:
+	case IDC_VH_CRD_SCALE:
 		switch (LOWORD(wParam)) {
 		case SB_THUMBTRACK:
 		case SB_LINELEFT:
@@ -761,7 +801,7 @@ BOOL TabAxes::OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam)
 			return 0;
 		}
 		break;
-	case IDC_CRD_OPAC:
+	case IDC_VH_CRD_OPACITY:
 		switch (LOWORD(wParam)) {
 		case SB_THUMBTRACK:
 		case SB_LINELEFT:
