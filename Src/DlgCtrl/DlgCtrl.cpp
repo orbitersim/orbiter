@@ -5,17 +5,24 @@
 #include "DlgCtrlLocal.h"
 #include <stdio.h>
 
+
 GDIRES g_GDI;
 
 static UINT g_timer = 0;
 static HINSTANCE hInstModule = NULL;
 
-void DragSlider (HWND hWnd, int x, int y);
+static const DWORD LongPtrSize = sizeof(LONG_PTR);
+static const DWORD WINOFS_POS = 0;
+static const DWORD WINOFS_RMIN = LongPtrSize;
+static const DWORD WINOFS_RMAX = LongPtrSize * 2;
+static const DWORD WINOFS_FLAG = LongPtrSize * 3;
+static const DWORD WINBUF_SIZE = LongPtrSize * 4;
+
+void DragSlider(HWND hWnd, int x, int y);
 
 void oapiRegisterCustomControls (HINSTANCE hInst)
 {
 	WNDCLASS wndClass;
-
 	g_GDI.hPen1 = CreatePen (PS_SOLID, 1, 0x404040);
 	g_GDI.hPen2 = CreatePen (PS_SOLID, 1, GetSysColor (COLOR_3DSHADOW));
 	g_GDI.hBrush1 = CreateSolidBrush (0x0000ff);
@@ -25,7 +32,7 @@ void oapiRegisterCustomControls (HINSTANCE hInst)
 	wndClass.style = CS_HREDRAW | CS_VREDRAW;
 	wndClass.lpfnWndProc   = MsgProc_Gauge;
 	wndClass.cbClsExtra    = 0;
-	wndClass.cbWndExtra    = 16;
+	wndClass.cbWndExtra    = WINBUF_SIZE;
 	wndClass.hInstance     = hInst;
 	wndClass.hIcon         = NULL;
 	wndClass.hCursor       = NULL;
@@ -66,10 +73,10 @@ LRESULT FAR PASCAL MsgProc_Gauge (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 		RECT r;
 		DWORD bw, gw, x0, y0, dd;
 		HDC hDC    = BeginPaint (hWnd, &ps);
-		int pos    = GetWindowLongPtr (hWnd, 0);
-		int rmin   = GetWindowLongPtr (hWnd, 4);
-		int rmax   = GetWindowLongPtr (hWnd, 8);
-		DWORD flag = GetWindowLongPtr (hWnd, 12);
+		int pos    = GetWindowLongPtr (hWnd, WINOFS_POS);
+		int rmin   = GetWindowLongPtr (hWnd, WINOFS_RMIN);
+		int rmax   = GetWindowLongPtr (hWnd, WINOFS_RMAX);
+		DWORD flag = GetWindowLongPtr (hWnd, WINOFS_FLAG);
 		bool horz  = ((flag & 2) == 0);
 		bool enabled = (GetWindowLongPtr(hWnd, GWL_STYLE) & WS_DISABLED) == 0;
 
@@ -129,7 +136,7 @@ LRESULT FAR PASCAL MsgProc_Gauge (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 		int y = HIWORD (lParam);
 		RECT r;
 		DWORD bw, gw;
-		DWORD flag = GetWindowLongPtr (hWnd, 12);
+		DWORD flag = GetWindowLongPtr (hWnd, WINOFS_FLAG);
 		bool horz = ((flag & 2) == 0);
 		GetClientRect (hWnd, &r);
 		if (horz) {
@@ -156,13 +163,13 @@ LRESULT FAR PASCAL MsgProc_Gauge (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 			}
 		}
 		hPrevCapt = SetCapture (hWnd);
-		SetWindowLongPtr (hWnd, 12, flag);
+		SetWindowLongPtr (hWnd, WINOFS_FLAG, flag);
 		if ((flag & 12) == 12) {
 			DragSlider (hWnd, x, y);
-			SendMessage (GetParent (hWnd), WM_HSCROLL, MAKEWPARAM (SB_THUMBTRACK, GetWindowLongPtr (hWnd, 0)), LPARAM (hWnd));
+			SendMessage (GetParent (hWnd), WM_HSCROLL, MAKEWPARAM (SB_THUMBTRACK, GetWindowLongPtr (hWnd, WINOFS_POS)), LPARAM (hWnd));
 		} else {
-			int rmin = GetWindowLongPtr (hWnd, 4);
-			int rmax = GetWindowLongPtr (hWnd, 8);
+			int rmin = GetWindowLongPtr (hWnd, WINOFS_RMIN);
+			int rmax = GetWindowLongPtr (hWnd, WINOFS_RMAX);
 			g_timer = SetTimer (hWnd, 1, min(1000,max(1,3000/(rmax-rmin))), NULL);
 			PostMessage (hWnd, WM_TIMER, 1, 0);
 		}
@@ -175,16 +182,16 @@ LRESULT FAR PASCAL MsgProc_Gauge (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 			KillTimer (hWnd, 1);
 			g_timer = 0;
 		}
-		DWORD flag = GetWindowLongPtr (hWnd, 12);
+		DWORD flag = GetWindowLongPtr (hWnd, WINOFS_FLAG);
 		flag &= 0xFFFFFFC3; // clear mouse selection state
-		SetWindowLongPtr (hWnd, 12, flag);
+		SetWindowLongPtr (hWnd, WINOFS_FLAG, flag);
 		} return 0;
 
 	case WM_MOUSEMOVE: {
-		DWORD flag = GetWindowLongPtr (hWnd, 12);
+		DWORD flag = GetWindowLongPtr (hWnd, WINOFS_FLAG);
 		if ((flag & 12) == 12) {
 			DragSlider (hWnd, (short)LOWORD(lParam), (short)HIWORD(lParam));
-			SendMessage (GetParent (hWnd), WM_HSCROLL, MAKEWPARAM (SB_THUMBTRACK, GetWindowLongPtr (hWnd, 0)), (LPARAM)hWnd);
+			SendMessage (GetParent (hWnd), WM_HSCROLL, MAKEWPARAM (SB_THUMBTRACK, GetWindowLongPtr (hWnd, WINOFS_POS)), (LPARAM)hWnd);
 		}
 		} return 0;
 
@@ -193,22 +200,22 @@ LRESULT FAR PASCAL MsgProc_Gauge (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 		return TRUE;
 
 	case BM_GETSTATE:
-		return (GetWindowLongPtr (hWnd, 12) >> 4) & 3;
+		return (GetWindowLongPtr (hWnd, WINOFS_FLAG) >> 4) & 3;
 
 	case WM_TIMER:
-		int pos    = GetWindowLongPtr (hWnd, 0);
-		int rmin   = GetWindowLongPtr (hWnd, 4);
-		int rmax   = GetWindowLongPtr (hWnd, 8);
-		DWORD flag = GetWindowLongPtr (hWnd, 12);
+		int pos    = GetWindowLongPtr (hWnd, WINOFS_POS);
+		int rmin   = GetWindowLongPtr (hWnd, WINOFS_RMIN);
+		int rmax   = GetWindowLongPtr (hWnd, WINOFS_RMAX);
+		DWORD flag = GetWindowLongPtr (hWnd, WINOFS_FLAG);
 
 		switch ((flag >> 4) & 3) {
 		case 1: // decrease
-			if (pos > rmin) SetWindowLongPtr (hWnd, 0, --pos);
+			if (pos > rmin) SetWindowLongPtr (hWnd, WINOFS_POS, --pos);
 			InvalidateRect (hWnd, NULL, TRUE);
 			SendMessage (GetParent (hWnd), WM_HSCROLL, MAKEWPARAM (SB_LINELEFT, pos), (LPARAM)hWnd);
 			break;
 		case 2: // increase
-			if (pos < rmax) SetWindowLongPtr (hWnd, 0, ++pos);
+			if (pos < rmax) SetWindowLongPtr (hWnd, WINOFS_POS, ++pos);
 			InvalidateRect (hWnd, NULL, TRUE);
 			SendMessage (GetParent (hWnd), WM_HSCROLL, MAKEWPARAM (SB_LINERIGHT, pos), (LPARAM)hWnd);
 			break;
@@ -223,7 +230,7 @@ void DragSlider (HWND hWnd, int x, int y)
 	RECT r;
 	DWORD bw, gw;
 	int pos;
-	DWORD flag = GetWindowLongPtr (hWnd, 12);
+	DWORD flag = GetWindowLongPtr (hWnd, WINOFS_FLAG);
 	GetClientRect (hWnd, &r);
 
 	bool horz = ((flag & 2) == 0);
@@ -237,22 +244,22 @@ void DragSlider (HWND hWnd, int x, int y)
 	if (pos < 0) pos = 0; else if (pos >= (int)gw) pos = (int)gw;
 	if (flag & 1) pos = gw-pos;
 
-	int rmin = GetWindowLongPtr (hWnd, 4);
-	int rmax = GetWindowLongPtr (hWnd, 8);
+	int rmin = GetWindowLongPtr (hWnd, WINOFS_RMIN);
+	int rmax = GetWindowLongPtr (hWnd, WINOFS_RMAX);
 	if (rmax > rmin) {
-		SetWindowLongPtr (hWnd, 0, (pos*(rmax-rmin))/gw+rmin);
+		SetWindowLongPtr (hWnd, WINOFS_POS, (pos*(rmax-rmin))/gw+rmin);
 		InvalidateRect (hWnd, NULL, TRUE);
 	}
 }
 
 void oapiSetGaugeParams (HWND hCtrl, GAUGEPARAM *gp, bool redraw)
 {
-	SetWindowLongPtr (hCtrl, 4, gp->rangemin);
-	SetWindowLongPtr (hCtrl, 8, gp->rangemax);
+	SetWindowLongPtr (hCtrl, WINOFS_RMIN, gp->rangemin);
+	SetWindowLongPtr (hCtrl, WINOFS_RMAX, gp->rangemax);
 
-	int pos = (int)GetWindowLongPtr (hCtrl, 0);
-	if      (pos < gp->rangemin) SetWindowLongPtr (hCtrl, 0, gp->rangemin);
-	else if (pos > gp->rangemax) SetWindowLongPtr (hCtrl, 0, gp->rangemax);
+	int pos = (int)GetWindowLongPtr (hCtrl, WINOFS_POS);
+	if      (pos < gp->rangemin) SetWindowLongPtr (hCtrl, WINOFS_POS, gp->rangemin);
+	else if (pos > gp->rangemax) SetWindowLongPtr (hCtrl, WINOFS_POS, gp->rangemax);
 
 	DWORD flag = 0;
 	switch (gp->base) {
@@ -265,33 +272,33 @@ void oapiSetGaugeParams (HWND hCtrl, GAUGEPARAM *gp, bool redraw)
 	case GAUGEPARAM::BLACK:                break;
 	case GAUGEPARAM::RED:    flag |= 0x40; break;
 	}
-	SetWindowLongPtr (hCtrl, 12, flag);
+	SetWindowLongPtr (hCtrl, WINOFS_FLAG, flag);
 
 	if (redraw) InvalidateRect (hCtrl, NULL, TRUE);
 }
 
 void oapiSetGaugeRange (HWND hCtrl, int rmin, int rmax, bool redraw)
 {
-	SetWindowLongPtr (hCtrl, 4, rmin);
-	SetWindowLongPtr (hCtrl, 8, rmax);
+	SetWindowLongPtr (hCtrl, WINOFS_RMIN, rmin);
+	SetWindowLongPtr (hCtrl, WINOFS_RMAX, rmax);
 
-	int pos = (int)GetWindowLongPtr (hCtrl, 0);
-	if      (pos < rmin) SetWindowLongPtr (hCtrl, 0, rmin);
-	else if (pos > rmax) SetWindowLongPtr (hCtrl, 0, rmax);
+	int pos = (int)GetWindowLongPtr (hCtrl, WINOFS_POS);
+	if      (pos < rmin) SetWindowLongPtr (hCtrl, WINOFS_POS, rmin);
+	else if (pos > rmax) SetWindowLongPtr (hCtrl, WINOFS_POS, rmax);
 
 	if (redraw) InvalidateRect (hCtrl, NULL, TRUE);
 }
 
 int oapiSetGaugePos (HWND hCtrl, int pos, bool redraw)
 {
-	int rmin = GetWindowLongPtr(hCtrl, 4);
-	int rmax = GetWindowLongPtr(hCtrl, 8);
+	int rmin = GetWindowLongPtr(hCtrl, WINOFS_RMIN);
+	int rmax = GetWindowLongPtr(hCtrl, WINOFS_RMAX);
 	if      (pos < rmin) pos = rmin;
 	else if (pos > rmax) pos = rmax;
 
-	int oldPos = GetWindowLongPtr(hCtrl, 0);
+	int oldPos = GetWindowLongPtr(hCtrl, WINOFS_POS);
 	if (pos != oldPos) {
-		SetWindowLongPtr(hCtrl, 0, pos);
+		SetWindowLongPtr(hCtrl, WINOFS_POS, pos);
 		if (redraw) InvalidateRect(hCtrl, NULL, TRUE);
 	}
 
@@ -300,14 +307,14 @@ int oapiSetGaugePos (HWND hCtrl, int pos, bool redraw)
 
 int oapiIncGaugePos (HWND hCtrl, int dpos, bool redraw)
 {
-	int rmin = GetWindowLongPtr (hCtrl, 4);
-	int rmax = GetWindowLongPtr (hCtrl, 8);
-	int pos  = GetWindowLongPtr (hCtrl, 0) + dpos;
+	int rmin = GetWindowLongPtr (hCtrl, WINOFS_RMIN);
+	int rmax = GetWindowLongPtr (hCtrl, WINOFS_RMAX);
+	int pos  = GetWindowLongPtr (hCtrl, WINOFS_POS) + dpos;
 
 	if      (pos < rmin) pos = rmin;
 	else if (pos > rmax) pos = rmax;
 
-	SetWindowLongPtr (hCtrl, 0, pos);
+	SetWindowLongPtr (hCtrl, WINOFS_POS, pos);
 	if (redraw) InvalidateRect (hCtrl, NULL, TRUE);
 
 	return pos;
@@ -315,7 +322,7 @@ int oapiIncGaugePos (HWND hCtrl, int dpos, bool redraw)
 
 int oapiGetGaugePos (HWND hCtrl)
 {
-	return GetWindowLongPtr (hCtrl, 0);
+	return GetWindowLongPtr (hCtrl, WINOFS_POS);
 }
 
 // ==================================================================================
