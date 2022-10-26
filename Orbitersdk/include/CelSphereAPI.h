@@ -142,10 +142,24 @@ namespace oapi {
 		virtual bool EclDir2WindowPos(const VECTOR3& dir, int& x, int& y) const = 0;
 
 		/**
-		 * \brief Returns the rotation matrix for mapping from celestial frame at epoch
-		 *    to J2000 ecliptic frame.
+		 * \brief Returns the rotation matrix for mapping from J2000 ecliptic frame
+		 *    to celestial frame at current epoch.
 		 */
-		MATRIX3 Celestial2Ecliptic() const;
+		MATRIX3 Ecliptic_CelestialAtEpoch() const;
+
+		/**
+		 * \brief Returns the rotation matrix for mapping from J2000 ecliptic frame
+		 *    to J2000 celestial frame.
+		 */
+		const MATRIX3& Ecliptic_CelestialJ2000() const;
+
+		/**
+		 * \brief Returns the rotation matrix for mapping from galactic frame
+		 *    to J2000 celestial frame.
+		 */
+		const MATRIX3& CelestialJ2000_Galactic() const;
+
+		const MATRIX3& Ecliptic_Galactic() const;
 
 		void SetSkyColour(const VECTOR3& skyCol);
 		const VECTOR3& GetSkyColour() const { return m_skyCol; }

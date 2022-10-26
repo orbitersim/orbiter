@@ -1526,6 +1526,20 @@ void Orbiter::CaptureVideoFrame ()
 }
 
 //-----------------------------------------------------------------------------
+
+void Orbiter::TogglePlanetariumMode()
+{
+	DWORD& plnFlag = pConfig->CfgVisHelpPrm.flagPlanetarium;
+	plnFlag ^= PLN_ENABLE;
+
+	DlgVishelper* dlg = pDlgMgr->EntryExists<DlgVishelper>(hInst);
+	if (dlg) dlg->Update();
+
+	if (plnFlag & IDC_VH_MKR_FEATURES)
+		g_psys->ActivatePlanetLabels(plnFlag & IDC_VH_PLN);
+}
+
+//-----------------------------------------------------------------------------
 // Name: PlaybackSave()
 // Desc: save the start scenario for a recorded simulation
 //-----------------------------------------------------------------------------
@@ -2408,10 +2422,7 @@ void Orbiter::KbdInputBuffered_System (char *kstate, DIDEVICEOBJECTDATA *dod, DW
 		else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_DlgCapture))           pDlgMgr->EnsureEntry<DlgCapture> ();
 		else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_DlgSelectVessel))      pDlgMgr->EnsureEntry<DlgFocus> ();
 		else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_TogglePlanetarium)) {
-			pConfig->TogglePlanetarium();
-			DlgVishelper *dlg = pDlgMgr->EntryExists<DlgVishelper> (hInst);
-			if (dlg) dlg->Update();
-			g_psys->ActivatePlanetLabels(Cfg()->PlanetariumItem(IDC_PLANETARIUM));
+			TogglePlanetariumMode();
 		} else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_ToggleRecPlay)) {
 			if (bPlayback) EndPlayback();
 			else ToggleRecorder ();

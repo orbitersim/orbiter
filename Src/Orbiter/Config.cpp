@@ -122,7 +122,7 @@ CFG_INSTRUMENTPRM CfgInstrumentPrm_default = {
 };
 
 CFG_VISHELPPRM CfgVisHelpPrm_default = {
-	PLN_CGRID | PLN_ECL | PLN_CONST | PLN_CNSTLABEL | PLN_CNSTLONG | PLN_CMARK,	// flagPlanetarium (celestial marker flags)
+	PLN_CGRID | PLN_CONST | PLN_CNSTLABEL | PLN_CNSTLONG | PLN_CMARK,	// flagPlanetarium (celestial marker flags)
 	BF_WEIGHT | BF_THRUST | BF_LIFT | BF_DRAG,	// flagBodyforce (force display flags)
 	1.0f,		// scaleBodyforce (force vector scaling factor)
 	1.0f,		// opacBodyforce (force vector opacity)
@@ -923,58 +923,6 @@ const void *Config::GetParam (DWORD paramtype) const
 	}
 }
 
-bool Config::PlanetariumItem (int item) const
-{
-	switch (item) {
-	case IDC_PLANETARIUM:   return (CfgVisHelpPrm.flagPlanetarium & PLN_ENABLE)    != 0;
-	case IDC_PLN_CELGRID:   return (CfgVisHelpPrm.flagPlanetarium & PLN_CGRID)     != 0;
-	case IDC_PLN_ECLGRID:   return (CfgVisHelpPrm.flagPlanetarium & PLN_EGRID)     != 0;
-	case IDC_PLN_ECLIPTIC:  return (CfgVisHelpPrm.flagPlanetarium & PLN_ECL)       != 0;
-	case IDC_PLN_EQUATOR:   return (CfgVisHelpPrm.flagPlanetarium & PLN_EQU)       != 0;
-	case IDC_PLN_CONST:     return (CfgVisHelpPrm.flagPlanetarium & PLN_CONST)     != 0;
-	case IDC_PLN_CNSTLABEL: return (CfgVisHelpPrm.flagPlanetarium & PLN_CNSTLABEL) != 0;
-	case IDC_PLN_CMARKER:   return (CfgVisHelpPrm.flagPlanetarium & PLN_CMARK)     != 0;
-	case IDC_PLN_VMARKER:   return (CfgVisHelpPrm.flagPlanetarium & PLN_VMARK)     != 0;
-	case IDC_PLN_BMARKER:   return (CfgVisHelpPrm.flagPlanetarium & PLN_BMARK)     != 0;
-	case IDC_PLN_RMARKER:   return (CfgVisHelpPrm.flagPlanetarium & PLN_RMARK)     != 0;
-	case IDC_PLN_LMARKER:   return (CfgVisHelpPrm.flagPlanetarium & PLN_LMARK)     != 0;
-	case IDC_PLN_CCMARKER:  return (CfgVisHelpPrm.flagPlanetarium & PLN_CCMARK)    != 0;
-	case IDC_PLN_FULL:      return (CfgVisHelpPrm.flagPlanetarium & PLN_CNSTLONG)  != 0;
-	case IDC_PLN_SHORT:     return (CfgVisHelpPrm.flagPlanetarium & PLN_CNSTSHORT) != 0;
-	default:                return false;
-	}
-}
-
-void Config::SetPlanetariumItem (int item, bool activate)
-{
-	DWORD flag;
-
-	switch (item) {
-	case IDC_PLANETARIUM:   flag = PLN_ENABLE;    break;
-	case IDC_PLN_CELGRID:   flag = PLN_CGRID;     break;
-	case IDC_PLN_ECLGRID:   flag = PLN_EGRID;     break;
-	case IDC_PLN_ECLIPTIC:  flag = PLN_ECL;       break;
-	case IDC_PLN_EQUATOR:   flag = PLN_EQU;       break;
-	case IDC_PLN_CONST:     flag = PLN_CONST;     break;
-	case IDC_PLN_CNSTLABEL: flag = PLN_CNSTLABEL; break;
-	case IDC_PLN_CMARKER:   flag = PLN_CMARK;     break;
-	case IDC_PLN_VMARKER:   flag = PLN_VMARK;     break;
-	case IDC_PLN_BMARKER:   flag = PLN_BMARK;     break;
-	case IDC_PLN_RMARKER:   flag = PLN_RMARK;     break;
-	case IDC_PLN_LMARKER:   flag = PLN_LMARK;     break;
-	case IDC_PLN_CCMARKER:  flag = PLN_CCMARK;    break;
-	case IDC_PLN_FULL:      flag = PLN_CNSTLONG;  break;
-	case IDC_PLN_SHORT:     flag = PLN_CNSTSHORT; break;
-	}
-	if (activate) CfgVisHelpPrm.flagPlanetarium |=  flag;
-	else          CfgVisHelpPrm.flagPlanetarium &= ~flag;
-}
-
-void Config::TogglePlanetarium ()
-{
-	SetPlanetariumItem (IDC_PLANETARIUM, !PlanetariumItem (IDC_PLANETARIUM));
-}
-
 BOOL Config::Write (const char *fname) const
 {
 	int i;
@@ -1481,40 +1429,6 @@ void Config::DelModule (char *cbuf)
 	delete []actmod;
 	actmod = tmp;
 	nactmod--;
-}
-
-void Config::SetBodyforceItem (int item, bool activate)
-{
-	DWORD flag;
-
-	switch (item) {
-	case IDC_BODYFORCE:  flag = BF_ENABLE;  break;
-	case IDC_WEIGHT:     flag = BF_WEIGHT;  break;
-	case IDC_THRUST:     flag = BF_THRUST;  break;
-	case IDC_LIFT:       flag = BF_LIFT;    break;
-	case IDC_DRAG:       flag = BF_DRAG;    break;
-	case IDC_TOTAL:      flag = BF_TOTAL;   break;
-	case IDC_TORQUE:     flag = BF_TORQUE;  break;
-	case IDC_LINSCALE:   flag = BF_LOGSCALE; activate = false; break;
-	case IDC_LOGSCALE:   flag = BF_LOGSCALE; activate = true;  break;
-	}
-	if (activate) CfgVisHelpPrm.flagBodyforce |=  flag;
-	else          CfgVisHelpPrm.flagBodyforce &= ~flag;
-}
-
-void Config::SetCoordinateAxesItem (int item, bool activate)
-{
-	DWORD flag;
-
-	switch (item) {
-	case IDC_COORDINATES:  flag = CA_ENABLE; break;
-	case IDC_CRD_NEGATIVE: flag = CA_NEG;    break;
-	case IDC_CRD_VESSEL:   flag = CA_VESSEL; break;
-	case IDC_CRD_CBODY:    flag = CA_CBODY;  break;
-	case IDC_CRD_BASE:     flag = CA_BASE;   break;
-	}
-	if (activate) CfgVisHelpPrm.flagCrdAxes |=  flag;
-	else          CfgVisHelpPrm.flagCrdAxes &= ~flag;
 }
 
 bool Config::GetString (istream &is, char *category, char *val)

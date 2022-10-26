@@ -59,7 +59,7 @@ D3D7CelestialSphere::~D3D7CelestialSphere ()
 
 void D3D7CelestialSphere::InitCelestialTransform()
 {
-	MATRIX3 R = Celestial2Ecliptic();
+	MATRIX3 R = Ecliptic_CelestialAtEpoch();
 
 	m_rotCelestial._11 = (float)R.m11; m_rotCelestial._12 = (float)R.m12; m_rotCelestial._13 = (float)R.m13; m_rotCelestial._14 = 0.0f;
 	m_rotCelestial._21 = (float)R.m21; m_rotCelestial._22 = (float)R.m22; m_rotCelestial._23 = (float)R.m23; m_rotCelestial._24 = 0.0f;
@@ -237,16 +237,27 @@ void D3D7CelestialSphere::Render(LPDIRECT3DDEVICE7 dev, const VECTOR3 &skyCol)
 		dev->SetRenderState(D3DRENDERSTATE_DESTBLEND, D3DBLEND_ONE);
 		dev->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
 
-		// render ecliptic grid
-		if (renderFlag & PLN_EGRID) {
-			FVECTOR4 baseCol(0.0f, 0.0f, 0.4f, 1.0f);
-			RenderGrid(dev, baseCol, !(renderFlag & PLN_ECL));
+		// render galactic grid
+		if (renderFlag & PLN_GGRID) {
+			FVECTOR4 baseCol1(0.3f, 0.0f, 0.0f, 1.0f);
+			static const MATRIX3& R = Ecliptic_Galactic();
+			static D3DMATRIX T = { (float)R.m11, (float)R.m12, (float)R.m13, 0.0f,
+								   (float)R.m21, (float)R.m22, (float)R.m23, 0.0f,
+								   (float)R.m31, (float)R.m32, (float)R.m33, 0.0f,
+								   0.0f,         0.0f,         0.0f,         1.0f };
+			dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &T);
+			RenderGrid(dev, baseCol1, false);
+			FVECTOR4 baseCol2(0.7f, 0.0f, 0.0f, 1.0f);
+			RenderGreatCircle(dev, baseCol2);
+			dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
 		}
 
-		// render ecliptic equator
-		if (renderFlag & PLN_ECL) {
-			FVECTOR4 baseCol(0.0f, 0.0f, 0.8f, 1.0f);
-			RenderGreatCircle(dev, baseCol);
+		// render ecliptic grid
+		if (renderFlag & PLN_EGRID) {
+			FVECTOR4 baseCol1(0.0f, 0.0f, 0.4f, 1.0f);
+			RenderGrid(dev, baseCol1, false);
+			FVECTOR4 baseCol2(0.0f, 0.0f, 0.8f, 1.0f);
+			RenderGreatCircle(dev, baseCol2);
 		}
 
 		// render celestial grid
@@ -281,7 +292,7 @@ void D3D7CelestialSphere::Render(LPDIRECT3DDEVICE7 dev, const VECTOR3 &skyCol)
 		}
 
 		// render constellation boundaries
-		if (renderFlag & PLN_CONST) // for now, hijack the constellation line flag
+		if (renderFlag & PLN_CNSTBND) // for now, hijack the constellation line flag
 			RenderConstellationBoundaries(dev);
 
 		// render constellation lines

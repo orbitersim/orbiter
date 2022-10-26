@@ -62,7 +62,7 @@ D3D9CelestialSphere::~D3D9CelestialSphere()
 
 void D3D9CelestialSphere::InitCelestialTransform()
 {
-	MATRIX3 R = Celestial2Ecliptic();
+	MATRIX3 R = Ecliptic_CelestialAtEpoch();
 
 	m_rotCelestial._11 = (float)R.m11; m_rotCelestial._12 = (float)R.m12; m_rotCelestial._13 = (float)R.m13; m_rotCelestial._14 = 0.0f;
 	m_rotCelestial._21 = (float)R.m21; m_rotCelestial._22 = (float)R.m22; m_rotCelestial._23 = (float)R.m23; m_rotCelestial._24 = 0.0f;
@@ -198,23 +198,39 @@ void D3D9CelestialSphere::Render(LPDIRECT3DDEVICE9 pDevice, const VECTOR3& skyCo
 		HR(s_FX->SetTechnique(s_eLine));
 		HR(s_FX->SetMatrix(s_eWVP, m_scene->GetProjectionViewMatrix()));
 
-		// render ecliptic grid
-		if (renderFlag & PLN_EGRID) {
-			FVECTOR4 baseCol(0.0f, 0.0f, 0.4f, 1.0f);
-			D3DXVECTOR4 vColor = ColorAdjusted(baseCol);
-			HR(s_FX->SetVector(s_eColor, &vColor));
-			RenderGrid(s_FX, !(renderFlag & PLN_ECL));
-		}
-
-		// render ecliptic equator
-		if (renderFlag & PLN_ECL) {
-			FVECTOR4 baseCol(0.0f, 0.0f, 0.8f, 1.0f);
-			D3DXVECTOR4 vColor = ColorAdjusted(baseCol);
-			HR(s_FX->SetVector(s_eColor, &vColor));
+		// render galactic grid
+		if (renderFlag & PLN_GGRID) {
+			static const MATRIX3& R = Ecliptic_Galactic();
+			static D3DXMATRIX T = { (float)R.m11, (float)R.m12, (float)R.m13, 0.0f,
+						 		    (float)R.m21, (float)R.m22, (float)R.m23, 0.0f,
+								    (float)R.m31, (float)R.m32, (float)R.m33, 0.0f,
+								    0.0f,         0.0f,         0.0f,         1.0f };
+			D3DXMATRIX rot;
+			D3DXMatrixMultiply(&rot, &T, m_scene->GetProjectionViewMatrix());
+			HR(s_FX->SetMatrix(s_eWVP, &rot));
+			FVECTOR4 baseCol1(0.3f, 0.0f, 0.0f, 1.0f);
+			D3DXVECTOR4 vColor1 = ColorAdjusted(baseCol1);
+			HR(s_FX->SetVector(s_eColor, &vColor1));
+			RenderGrid(s_FX, false);
+			FVECTOR4 baseCol2(0.7f, 0.0f, 0.0f, 1.0f);
+			D3DXVECTOR4 vColor2 = ColorAdjusted(baseCol2);
+			HR(s_FX->SetVector(s_eColor, &vColor2));
 			RenderGreatCircle(s_FX);
 		}
 
-		// render celestial grid ----------------------------------------------------------------------------
+		// render ecliptic grid
+		if (renderFlag & PLN_EGRID) {
+			FVECTOR4 baseCol1(0.0f, 0.0f, 0.4f, 1.0f);
+			D3DXVECTOR4 vColor1 = ColorAdjusted(baseCol1);
+			HR(s_FX->SetVector(s_eColor, &vColor1));
+			RenderGrid(s_FX, false);
+			FVECTOR4 baseCol2(0.0f, 0.0f, 0.8f, 1.0f);
+			D3DXVECTOR4 vColor2 = ColorAdjusted(baseCol2);
+			HR(s_FX->SetVector(s_eColor, &vColor2));
+			RenderGreatCircle(s_FX);
+		}
+
+		// render celestial grid
 		if (renderFlag & PLN_CGRID) {
 			if (fabs(m_mjdPrecessionChecked - oapiGetSimMJD()) > 1e3)
 				InitCelestialTransform();
@@ -254,7 +270,7 @@ void D3D9CelestialSphere::Render(LPDIRECT3DDEVICE9 pDevice, const VECTOR3& skyCo
 		}
 
 		// render constellation boundaries ----------------------------------------
-		if (renderFlag & PLN_CONST) { // for now, hijack the constellation line flag
+		if (renderFlag & PLN_CNSTBND) { // for now, hijack the constellation line flag
 			HR(s_FX->SetMatrix(s_eWVP, m_scene->GetProjectionViewMatrix()));
 			RenderConstellationBoundaries(s_FX);
 		}

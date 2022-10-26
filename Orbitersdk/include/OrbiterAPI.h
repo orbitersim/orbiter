@@ -7213,6 +7213,17 @@ inline MATRIX3 identity ()
 
 /**
  * \ingroup vec
+ * \brief Return transpose of a matrix
+ */
+inline MATRIX3 transp(const MATRIX3& M)
+{
+	return _M(M.m11, M.m21, M.m31,
+		      M.m12, M.m22, M.m32,
+		      M.m13, M.m23, M.m33);
+}
+
+/**
+ * \ingroup vec
  * \brief Outer product of two vectors
  * \param[in] a First vector operand
  * \param[in] b Second vector operand
