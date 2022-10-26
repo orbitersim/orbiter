@@ -938,7 +938,7 @@ void Scene::UpdateCamVis()
 
 		VOBJREC *pv = NULL;
 		for (pv = vobjFirst; pv; pv = pv->next) {
-			if (!pv->vobj->IsActive() || !pv->vobj->IsVisible()) continue;
+			if (!pv->vobj->IsActive()) continue;
 			OBJHANDLE hObj = pv->vobj->Object();
 			if (oapiGetObjectType (hObj) == OBJTP_VESSEL) {
 				VESSEL *vessel = oapiGetVesselInterface (hObj);
@@ -946,7 +946,7 @@ void Scene::UpdateCamVis()
 				for (DWORD j = 0; j < nemitter; j++) {
 					const LightEmitter *em = vessel->GetLightEmitter(j);
 					if ((em->GetVisibility() == LightEmitter::VIS_EXTERNAL) || (em->GetVisibility() == LightEmitter::VIS_ALWAYS))
-						AddLocalLight(em, vFocus);
+						AddLocalLight(em, pv->vobj);
 				}
 			}
 		}

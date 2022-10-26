@@ -248,7 +248,7 @@ bool vVessel::Update(bool bMainScene)
 {
 	_TRACE;
 
-	if (!active || nmesh < 1) return false;
+	if (!active) return false;
 
 	vObject::Update(bMainScene);
 
