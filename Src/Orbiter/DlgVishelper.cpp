@@ -365,12 +365,9 @@ void TabLabels::UpdateControls(HWND hTab)
 {
 	DWORD& plnFlag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagPlanetarium;
 	bool enable = plnFlag & PLN_ENABLE;
-	bool isEnabled = SendDlgItemMessage(hTab, IDC_VH_PLN, BM_GETCHECK, 0, 0) == BST_CHECKED;
-	if (enable != isEnabled) {
-		SendDlgItemMessage(hTab, IDC_VH_PLN, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
-		for (int i = IDC_VH_MKR_VESSEL; i <= IDC_VH_MKR_FEATURELIST; i++)
-			EnableWindow(GetDlgItem(hTab, i), enable ? TRUE : FALSE);
-	}
+	SendDlgItemMessage(hTab, IDC_VH_PLN, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
+	for (int i = IDC_VH_MKR_VESSEL; i <= IDC_VH_MKR_FEATURELIST; i++)
+		EnableWindow(GetDlgItem(hTab, i), enable ? TRUE : FALSE);
 	SendDlgItemMessage(hTab, IDC_VH_MKR_VESSEL,   BM_SETCHECK, plnFlag & PLN_VMARK ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hTab, IDC_VH_MKR_CELBODY,  BM_SETCHECK, plnFlag & PLN_CMARK ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hTab, IDC_VH_MKR_BASE,     BM_SETCHECK, plnFlag & PLN_BMARK ? BST_CHECKED : BST_UNCHECKED, 0);
