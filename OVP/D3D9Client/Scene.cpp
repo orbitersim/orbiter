@@ -1096,7 +1096,7 @@ void Scene::RenderMainScene()
 
 
 	// -------------------------------------------------------------------------------------------------------
-	// Render Environmental Map For the Focus Vessel
+	// Render Environmental Map For the Vessels
 	// -------------------------------------------------------------------------------------------------------
 
 	if (dwTurn == RENDERTURN_ENVCAM) {
@@ -1123,7 +1123,7 @@ void Scene::RenderMainScene()
 
 
 	// -------------------------------------------------------------------------------------------------------
-	// Render Environmental Map For the Focus Vessel
+	// Render Irradiance Map For Vessels
 	// -------------------------------------------------------------------------------------------------------
 
 	if (dwTurn == RENDERTURN_IRRADIANCE) {
@@ -2262,7 +2262,7 @@ void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList, std::set<vVessel*>
 	D3D9Effect::UpdateEffectCamera(GetCameraProxyBody());
 
 	// Clear the viewport
-	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0L));
+	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0xFF000000, 1.0f, 0L));
 
 	
 	// render planets -------------------------------------------

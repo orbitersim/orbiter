@@ -195,11 +195,22 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	sprintf_s((char*)macro[m].Definition,8,"%1.1f",float(Config->MicroBias)*0.1f);
 	// ------------------------------------------------------------------------------
 	m=5;
-	// ------------------------------------------------------------------------------
 	if (Config->EnvMapMode && bRiples) {
-		macro[m++].Name = "_ENVMAP"; 
+		macro[m].Name = "_ENVMAP"; 
 		bEnvMapEnabled = true;
 	} else bEnvMapEnabled = false;
+	// ------------------------------------------------------------------------------
+	m = 6;
+	macro[m].Name = "LMODE";
+	macro[m].Definition = new char[32];
+	sprintf_s((char*)macro[m].Definition, 32, "%d", Config->LightConfig);
+	// ------------------------------------------------------------------------------
+	m = 7;
+	macro[m].Name = "SHDMAP";
+	macro[m].Definition = new char[32];
+	sprintf_s((char*)macro[m].Definition, 32, "%d", Config->ShadowFilter + 1);
+	// ------------------------------------------------------------------------------
+	m++;
 	// ------------------------------------------------------------------------------
 	if (bShadows) macro[m++].Name = "_CLOUDSHADOWS";
 	// ------------------------------------------------------------------------------
@@ -210,18 +221,15 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	if (Config->bCloudNormals) macro[m++].Name = "_CLOUDNORMALS";
 
 	HR(D3DXCreateEffectFromFileA(pDev, name, macro, 0, 0, 0, &pShader, &errors));
-	
-	delete []macro[0].Definition;
-	delete []macro[1].Definition;
-	delete []macro[2].Definition;
-	delete []macro[3].Definition;
-	delete []macro[4].Definition;
-	macro[0].Definition = NULL;
-	macro[1].Definition = NULL;
-	macro[2].Definition = NULL;
-	macro[3].Definition = NULL;
-	macro[4].Definition = NULL;
 
+	for (auto &i : macro)
+	{
+		if (i.Definition) {
+			delete[]i.Definition;
+			i.Definition = NULL;
+		}
+	}
+	
 	if (errors) {
 		LogErr("Effect Error: %s",(char*)errors->GetBufferPointer());
 		MessageBoxA(0, (char*)errors->GetBufferPointer(), "Surface.fx Error", 0);

@@ -379,39 +379,10 @@ static const float ATMNOISE = 0.02;
 // -------------------------------------------------------------------------------------------------------------
 // Project shadows on surface
 //
-/*
-float ProjectShadows(float2 sp)
-{
-	if (sp.x < 0 || sp.y < 0) return 1.0f;
-	if (sp.x > 1 || sp.y > 1) return 1.0f;
-
-	float2 dx = float2(vSHD[1], 0) * 1.5f;
-	float2 dy = float2(0, vSHD[1]) * 1.5f;
-	float  va = 0;
-	float  pd = 1e-4;
-
-	sp -= dy;
-	if ((tex2D(ShadowS, sp - dx).r) < pd) va++;
-	if ((tex2D(ShadowS, sp).r) < pd) va++;
-	if ((tex2D(ShadowS, sp + dx).r) < pd) va++;
-	sp += dy;
-	if ((tex2D(ShadowS, sp - dx).r) < pd) va++;
-	if ((tex2D(ShadowS, sp).r) < pd) va++;
-	if ((tex2D(ShadowS, sp + dx).r) < pd) va++;
-	sp += dy;
-	if ((tex2D(ShadowS, sp - dx).r) < pd) va++;
-	if ((tex2D(ShadowS, sp).r) < pd) va++;
-	if ((tex2D(ShadowS, sp + dx).r) < pd) va++;
-
-	return va / 9.0f;
-}*/
-
-
-
-// ---------------------------------------------------------------------------------------------------
-//
 float SampleShadows(float2 sp, float pd)
 {
+#if defined(_SHDMAP)
+
 	if (sp.x < 0 || sp.y < 0) return 0.0f;	// If a sample is outside border -> fully lit
 	if (sp.x > 1 || sp.y > 1) return 0.0f;
 
@@ -436,6 +407,9 @@ float SampleShadows(float2 sp, float pd)
 	if ((tex2D(ShadowS, sp + dx).r) > pd) va++;
 
 	return va * 0.1111111f;
+#else
+	return 0.0f;
+#endif
 }
 
 // -------------------------------------------------------------------------------------------------------------
@@ -446,6 +420,11 @@ void LocalLights(
 	in float3 nrmW,
 	in float3 posW)
 {
+
+#if LMODE == 0
+	diff_out = 0;
+	return;
+#else
 
 	if (!bLocals) return;
 
@@ -492,6 +471,7 @@ void LocalLights(
 	diff_out = 0;
 
 	[unroll] for (i = 0; i < 4; i++) diff_out += sLights[i].diffuse.rgb * dif[i];
+#endif
 }
 
 

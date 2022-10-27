@@ -2700,7 +2700,7 @@ bool D3D9Client::RegisterGenericProc(__gcGenericProc proc, DWORD id, void *pPara
 
 bool D3D9Client::IsGenericProcEnabled(DWORD id) const
 {
-	for (auto val : GenericProcs) if (val.id == id) return true;
+	for (const auto &val : GenericProcs) if (val.id == id) return true;
 	return false;
 }
 
