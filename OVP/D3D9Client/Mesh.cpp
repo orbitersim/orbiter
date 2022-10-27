@@ -3,7 +3,7 @@
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2006 - 2016 Martin Schweiger
-//				 2010 - 2016 Jarmo Nikkanen (D3D9Client implementation)
+//				 2010 - 2022 Jarmo Nikkanen (D3D9Client implementation)
 // ==============================================================
 
 #define VISIBILITY_TOL 0.0015f
@@ -29,8 +29,8 @@ int compare_lights(const void * a, const void * b)
 {
 	register float fa = static_cast<const _LightList*>(a)->illuminace;
 	register float fb = static_cast<const _LightList*>(b)->illuminace;
-	if (fa < fb) return  1;
-	if (fa > fb) return -1;
+	if (fa < fb * 0.9995f) return  1;
+	if (fa > fb * 1.0005f) return -1;
 	return 0;
 }
 
@@ -49,10 +49,12 @@ MeshBuffer::MeshBuffer(DWORD _nVtx, DWORD _nFace, const class D3D9Mesh *_pRoot)
 	pVB = NULL;
 	pIB = NULL;
 	pGB = NULL;
+	pSB = NULL;
 
 	pVBSys = new NMVERTEX[nVtx];
 	pIBSys = new WORD[nIdx];
 	pGBSys = new D3DXVECTOR4[nVtx];
+	pSBSys = new SMVERTEX[nVtx];
 
 	pRoot = _pRoot;
 	mapMode = MAPMODE_STATIC;
@@ -68,11 +70,14 @@ MeshBuffer::MeshBuffer(MeshBuffer *pSrc, const class D3D9Mesh *_pRoot)
 	pVB = NULL;
 	pIB = NULL;
 	pGB = NULL;
+	pSB = NULL;
 
 	pVBSys = new NMVERTEX[nVtx];
 	pIBSys = new WORD[nIdx];
 	pGBSys = new D3DXVECTOR4[nVtx];
+	pSBSys = new SMVERTEX[nVtx];
 
+	memcpy(pSBSys, pSrc->pSBSys, sizeof(SMVERTEX) * nVtx);
 	memcpy(pVBSys, pSrc->pVBSys, sizeof(NMVERTEX) * nVtx);
 	memcpy(pGBSys, pSrc->pGBSys, sizeof(D3DXVECTOR4) * nVtx);
 	memcpy(pIBSys, pSrc->pIBSys, sizeof(WORD) * nIdx);
@@ -88,9 +93,11 @@ MeshBuffer::~MeshBuffer()
 	SAFE_DELETEA(pGBSys);
 	SAFE_DELETEA(pIBSys);
 	SAFE_DELETEA(pVBSys);
+	SAFE_DELETEA(pSBSys);
 	SAFE_RELEASE(pIB);
 	SAFE_RELEASE(pVB);
 	SAFE_RELEASE(pGB);
+	SAFE_RELEASE(pSB);
 }
 
 void MeshBuffer::MustRemap(DWORD mode)
@@ -101,6 +108,7 @@ void MeshBuffer::MustRemap(DWORD mode)
 		SAFE_RELEASE(pIB);
 		SAFE_RELEASE(pVB);
 		SAFE_RELEASE(pGB);
+		SAFE_RELEASE(pSB);
 		mapMode = mode;
 	}
 
@@ -119,6 +127,9 @@ void MeshBuffer::Map(LPDIRECT3DDEVICE9 pDev)
 
 	if (mapMode == MAPMODE_DYNAMIC) Usage = D3DUSAGE_DYNAMIC, Lock = D3DLOCK_DISCARD;
 
+	if (!pSB) {
+		HR(pDev->CreateVertexBuffer(nVtx * sizeof(SMVERTEX), Usage, 0, D3DPOOL_DEFAULT, &pSB, NULL));
+	}
 	if (!pVB) {
 		HR(pDev->CreateVertexBuffer(nVtx * sizeof(NMVERTEX), Usage, 0, D3DPOOL_DEFAULT, &pVB, NULL));
 	}
@@ -130,6 +141,10 @@ void MeshBuffer::Map(LPDIRECT3DDEVICE9 pDev)
 	}
 
 	LPVOID pTgt;
+
+	HR(pSB->Lock(0, 0, (LPVOID*)&pTgt, Lock));
+	memcpy(pTgt, pSBSys, nVtx * sizeof(SMVERTEX));
+	HR(pSB->Unlock());
 
 	HR(pVB->Lock(0, 0, (LPVOID*)&pTgt, Lock));
 	memcpy(pTgt, pVBSys, nVtx * sizeof(NMVERTEX));
@@ -694,6 +709,7 @@ void D3D9Mesh::SetGroupRec(DWORD i, const MESHGROUPEX *mg)
 bool D3D9Mesh::CopyVertices(GROUPREC *grp, const MESHGROUPEX *mg, D3DXVECTOR3 *reorig, float *scale)
 {
 	NTVERTEX *pNT = mg->Vtx;
+	SMVERTEX *pShad = pBuf->pSBSys + grp->VertOff;
 	NMVERTEX *pVert = pBuf->pVBSys + grp->VertOff;
 	D3DXVECTOR4 *pGeo = pBuf->pGBSys + grp->VertOff;
 	WORD *pIndex = pBuf->pIBSys + grp->IdexOff;
@@ -732,6 +748,9 @@ bool D3D9Mesh::CopyVertices(GROUPREC *grp, const MESHGROUPEX *mg, D3DXVECTOR3 *r
 		}
 
 		pGeo[i] = D3DXVECTOR4(pVert[i].x, pVert[i].y, pVert[i].z, 0);
+
+		pShad[i].x = pVert[i].x; pShad[i].y = pVert[i].y; pShad[i].z = pVert[i].z;
+		pShad[i].tu = pVert[i].u; pShad[i].tv = pVert[i].v;
 	}
 
 	// Check vertex index errors (This is important)
@@ -784,6 +803,7 @@ int D3D9Mesh::EditGroup(DWORD grp, GROUPEDITSPEC *ges)
 
 		pBuf->MustRemap(MAPMODE_CURRENT);
 
+		SMVERTEX *pShad = pBuf->pSBSys + g->VertOff;
 		D3DXVECTOR4 *pGeo = pBuf->pGBSys + g->VertOff;
 		NMVERTEX *vtx = pBuf->pVBSys + g->VertOff;
 		WORD *idx = pBuf->pIBSys + g->IdexOff;
@@ -813,6 +833,9 @@ int D3D9Mesh::EditGroup(DWORD grp, GROUPEDITSPEC *ges)
 
 					if ((flag & GRPEDIT_VTXCRD)!=0 || (flag & GRPEDIT_VTXCRDADD)!=0) {
 						pGeo[vi] = D3DXVECTOR4(vtx[vi].x, vtx[vi].y, vtx[vi].z, 0);
+
+						pShad[vi].x = vtx[vi].x; pShad[vi].y = vtx[vi].y; pShad[vi].z = vtx[vi].z;
+						pShad[vi].tu = vtx[vi].u; pShad[vi].tv = vtx[vi].v;
 					}
 				}
 			}
@@ -823,6 +846,8 @@ int D3D9Mesh::EditGroup(DWORD grp, GROUPEDITSPEC *ges)
 			else D9ZeroAABB(&g->BBox);
 		}
 	}
+
+	UpdateFlags();
 	return 0;
 }
 
@@ -891,6 +916,17 @@ int D3D9Mesh::GetGroup (DWORD grp, GROUPREQUESTSPEC *grs)
 	grs->MtrlIdx = Grp[grp].MtrlIdx;
 	grs->TexIdx = Grp[grp].TexIdx;
 	return ret;
+}
+
+// ===========================================================================================
+//
+void D3D9Mesh::UpdateFlags()
+{
+	Flags = 0;
+	for (DWORD i = 0; i < nGrp; i++)
+	{
+		if (Grp[i].UsrFlag & 0x20) Flags |= 0x20;
+	}
 }
 
 // ===========================================================================================
@@ -1097,10 +1133,12 @@ int D3D9Mesh::SetMaterialEx(DWORD idx, MatProp mid, const FVECTOR4* value)
 			return 0;
 		case MatProp::Metal:
 			Mtrl[idx].Metalness = value->r;
+			Mtrl[idx].ModFlags |= D3D9MATEX_METALNESS;
 			bMtrlModidied = true;
 			return 0;
 		case MatProp::SpecialFX:
 			Mtrl[idx].SpecialFX = *((D3DXVECTOR4*)value);
+			Mtrl[idx].ModFlags |= D3D9MATEX_SPECIALFX;
 			bMtrlModidied = true;
 			return 0;
 		}
@@ -1324,6 +1362,8 @@ bool D3D9Mesh::IsGroupRendered(DWORD idx) const
 //
 void D3D9Mesh::CheckMeshStatus()
 {
+	UpdateFlags();
+
 	bCanRenderFast = true;
 	bIsReflective = false;
 	D3D9MatExt *mat = NULL;
@@ -1491,6 +1531,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	FX->SetBool(eEnvMapEnable, false);
 	FX->SetBool(eTuneEnabled, false);
 	FX->SetBool(eLightsEnabled, false);
+	FX->SetBool(eOITEnable, false);
 	FX->SetVector(eColor, &D3DXVECTOR4(0, 0, 0, 0));
 
 	if (DebugControls::IsActive()) if (pTune) FX->SetBool(eTuneEnabled, true);
@@ -1553,9 +1594,6 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 
 	bool bRefl = true;
 
-	//if (iTech == RENDER_VC) bRefl = false;	// No reflections in VC
-	if (iTech == RENDER_BASEBS) pDev->SetRenderState(D3DRS_ZENABLE, 0);	// Must be here because BeginPass() sets it enabled
-
 	for (DWORD g=0; g<nGrp; g++) {
 
 
@@ -1590,6 +1628,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 			if (CurrentShader != SHADER_NULL) { HR(FX->EndPass()); }
 			HR(FX->BeginPass(Grp[g].Shader));
 			CurrentShader = Grp[g].Shader;
+			if (iTech == RENDER_BASEBS) pDev->SetRenderState(D3DRS_ZENABLE, 0);	// Must be here because BeginPass() sets it enabled
 		}
 
 
@@ -1775,11 +1814,13 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 		bool bRGH = (Grp[g].PBRStatus & 0xE) == (0x8 + 0x2);
 		bool bNoL = (Grp[g].UsrFlag & 0x04) != 0;
 		bool bNoC = (Grp[g].UsrFlag & 0x10) != 0;
+		bool bOIT = (Grp[g].UsrFlag & 0x20) != 0;
 		bool bENV = false;
 		bool bFRS = false;
 
 		// Setup Mesh drawing options =================================================================================
 		//
+		FX->SetBool(eOITEnable, bOIT);
 		FX->SetBool(eTextured, bTextured);
 		FX->SetBool(eFullyLit, bNoL);
 		FX->SetBool(eNoColor,  bNoC);
@@ -1956,6 +1997,8 @@ void D3D9Mesh::RenderSimplified(const LPD3DXMATRIX pW, LPDIRECT3DCUBETEXTURE9 *p
 
 	for (int i = 0; i < Config->MaxLights(); i++) memcpy(&Locals[i], &null_light, sizeof(LightStruct));
 
+	//D3D9DebugLog("Mesh=[%s], nLights=%d", GetName(), nSceneLights);
+
 	if (pLights && nSceneLights>0) {
 
 		int nMeshLights = 0;
@@ -2104,12 +2147,14 @@ void D3D9Mesh::RenderSimplified(const LPD3DXMATRIX pW, LPDIRECT3DCUBETEXTURE9 *p
 		bool bRGH = (Grp[g].PBRStatus & 0xE) == (0x8 + 0x2);
 		bool bNoL = (Grp[g].UsrFlag & 0x04) != 0;
 		bool bNoC = (Grp[g].UsrFlag & 0x10) != 0;
+		bool bOIT = (Grp[g].UsrFlag & 0x20) != 0;
 		bool bENV = false;
 		bool bFRS = false;
 
 
 		// Setup Mesh drawing options =================================================================================
 		//
+		FX->SetBool(eOITEnable, bOIT);
 		FX->SetBool(eTextured, bTextured);
 		FX->SetBool(eFullyLit, bNoL);
 		FX->SetBool(eNoColor, bNoC);
@@ -2246,6 +2291,8 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 	int nSceneLights = gc->GetScene()->GetLightCount();
 
 	for (int i = 0; i < Config->MaxLights(); i++) memcpy(&Locals[i], &null_light, sizeof(LightStruct));
+
+	//D3D9DebugLog("Mesh=[%s], nLights=%d", GetName(), nSceneLights);
 
 	if (pLights && nSceneLights>0) {
 
@@ -2432,6 +2479,7 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 		FX->SetBool(eTextured, bTextured);
 		FX->SetBool(eFullyLit, (Grp[g].UsrFlag & 0x4) != 0);
 		FX->SetBool(eNoColor, (Grp[g].UsrFlag & 0x10) != 0);
+		FX->SetBool(eOITEnable, (Grp[g].UsrFlag & 0x20) != 0);
 
 		FX->CommitChanges();
 
@@ -2652,29 +2700,40 @@ void D3D9Mesh::RenderShadows(float alpha, const LPD3DXMATRIX pP, const LPD3DXMAT
 {
 	if (!IsOK()) return;
 
+	DWORD Pass = 0;
 	D3DXMATRIX GroupMatrix, mWorldMesh; UINT numPasses = 0;
 
 	if (bGlobalTF) D3DXMatrixMultiply(&mWorldMesh, &mTransform, pW);
 	else mWorldMesh = *pW;
 
-	D3D9Stats.Mesh.Meshes++;
-
-	pDev->SetVertexDeclaration(pVector4Decl);
-	pDev->SetStreamSource(0, pBuf->pGB, 0, sizeof(D3DXVECTOR4));
 	pDev->SetIndices(pBuf->pIB);
 
-	//if (bShadowMap) pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
-
-	if (bShadowMap) FX->SetTechnique(eGeometry);
-	else			FX->SetTechnique(eShadowTech);
+	if (bShadowMap) {
+		if (Flags & 0x20) {
+			pDev->SetVertexDeclaration(pPosTexDecl);
+			pDev->SetStreamSource(0, pBuf->pSB, 0, sizeof(SMVERTEX));
+			Pass = 1;
+		}
+		else {
+			pDev->SetVertexDeclaration(pVector4Decl);
+			pDev->SetStreamSource(0, pBuf->pGB, 0, sizeof(D3DXVECTOR4));
+		}
+		FX->SetTechnique(eGeometry);
+	}
+	else {
+		pDev->SetVertexDeclaration(pPosTexDecl);
+		pDev->SetStreamSource(0, pBuf->pSB, 0, sizeof(SMVERTEX));
+		FX->SetTechnique(eShadowTech);
+	}
 
 	if (elev && bShadowMap==false) FX->SetVector(eInScatter, elev);
 	else FX->SetVector(eInScatter, &D3DXVECTOR4(0,1,0,0));
 
 	FX->SetFloat(eMix, alpha);
 	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
-	FX->BeginPass(0);
 
+	FX->BeginPass(Pass);
+	
 	if (pP) FX->SetValue(eGT, pP, sizeof(D3DXMATRIX));	// Shadow Projection
 
 	bool bInit = true;
@@ -2685,23 +2744,33 @@ void D3D9Mesh::RenderShadows(float alpha, const LPD3DXMATRIX pP, const LPD3DXMAT
 		if (Grp[g].UsrFlag & 0x2) continue;
 		if ((Grp[g].UsrFlag & 0x1) && (bShadowMap == false)) continue;
 
-		//if (Grp[g].IntFlag & 0x2) continue;
+		bool bOIT = (Grp[g].UsrFlag & 0x20) != 0;
+		
+		if (bOIT) {
+			DWORD ti = Grp[g].TexIdx;
+			if (ti) {
+				auto hTex = Tex[ti]->GetTexture();
+				if (hTex) {
+					HR(FX->SetTexture(eTex0, hTex));
+				} else bOIT = false;
+			} else bOIT = false;
+		}
 
+		FX->SetBool(eOITEnable, bOIT);
 
 		if (Grp[g].bTransform) {
 			D3DXMatrixMultiply(&GroupMatrix, &pGrpTF[g], pW);		// Apply Animations to instance matrices
 			FX->SetValue(eW, GroupMatrix, sizeof(D3DXMATRIX));
-			FX->CommitChanges();
 			bInit = true;
 		}
 		else {
 			if (bInit) {
 				FX->SetValue(eW, mWorldMesh, sizeof(D3DXMATRIX));
-				FX->CommitChanges();
 			}
 			bInit = false;
 		}
 
+		FX->CommitChanges();
 
 		if (bShadowMap) {
 
@@ -2738,8 +2807,8 @@ void D3D9Mesh::RenderShadowsEx(float alpha, const LPD3DXMATRIX pP, const LPD3DXM
 
 	D3D9Stats.Mesh.Meshes++;
 
-	pDev->SetVertexDeclaration(pVector4Decl);
-	pDev->SetStreamSource(0, pBuf->pGB, 0, sizeof(D3DXVECTOR4));
+	pDev->SetVertexDeclaration(pPosTexDecl);
+	pDev->SetStreamSource(0, pBuf->pSB, 0, sizeof(SMVERTEX));
 	pDev->SetIndices(pBuf->pIB);
 
 	FX->SetTechnique(eShadowTech);
@@ -2758,7 +2827,23 @@ void D3D9Mesh::RenderShadowsEx(float alpha, const LPD3DXMATRIX pP, const LPD3DXM
 	for (DWORD g = 0; g<nGrp; g++) {
 
 		if (Grp[g].UsrFlag & 0x3) continue;
-		//if (Grp[g].IntFlag & 0x3) continue;
+
+		bool bOIT = (Grp[g].UsrFlag & 0x20) != 0;
+
+		if (bOIT) {
+			DWORD ti = Grp[g].TexIdx;
+			if (ti) {
+				auto hTex = Tex[ti]->GetTexture();
+				if (hTex) {
+					HR(FX->SetTexture(eTex0, hTex));
+				}
+				else bOIT = false;
+			}
+			else bOIT = false;
+		}
+
+		FX->SetBool(eOITEnable, bOIT);
+		FX->CommitChanges();
 
 		pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Grp[g].VertOff, 0, Grp[g].nVert, Grp[g].IdexOff, Grp[g].nFace);
 

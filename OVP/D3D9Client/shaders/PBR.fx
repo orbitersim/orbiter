@@ -75,6 +75,7 @@ float4 PBR_PS(float4 sc : VPOS, PBRData frg) : COLOR
 	if (gTextured) cDiff = tex2D(WrapS, frg.tex0.xy);
 	else		   cDiff = 1;
 
+	if (gOITEnable) if (cDiff.a < 0.5f) clip(-1);
 
 	// Fetch a normal map
 	//
@@ -423,6 +424,8 @@ float4 FAST_PS(float4 sc : VPOS, FASTData frg) : COLOR
 	//
 	if (gTextured) cDiff = tex2D(WrapS, frg.tex0.xy);
 	else		   cDiff = 1;
+
+	if (gOITEnable) if (cDiff.a < 0.5f) clip(-1);
 
 	if (gFullyLit) {
 		if (gNoColor) cDiff.rgb = 1;

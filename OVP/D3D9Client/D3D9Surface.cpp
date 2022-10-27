@@ -100,10 +100,12 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags, bool bPath)
 			return NULL;
 		}
 	}
+	
+	DWORD pass = OAPISURFACE_TEXTURE | OAPISURFACE_SHARED;
 
 	// Load regular texture with additional maps if exists
 	//
-	if (flags == OAPISURFACE_TEXTURE)
+	if ((flags & ~pass) == 0)
 	{
 		D3DXIMAGE_INFO info;
 
@@ -120,11 +122,11 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags, bool bPath)
 
 			if (S_OK == D3DXCreateTextureFromFileExA(g_client->GetDevice(), path, info.Width, info.Height, Mips, 0, info.Format, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex))
 			{
-				LogBlu("TextureLoaded[%s] PLAIN Format=%u (%u,%u)", file, info.Format, info.Width, info.Height);
-
 				pNat = new SurfNative(pTex, flags);
 				pNat->SetName(file);
-				
+
+				LogBlu("TextureLoaded [%s] PLAIN Mips=%u Format=%u (%u,%u) Flags=0x%X, %s", file, pTex->GetLevelCount(), info.Format, info.Width, info.Height, flags, _PTR(pNat));
+
 				pNat->AddMap(MAP_HEAT, NatLoadSpecialTexture(file, "heat"));
 				pNat->AddMap(MAP_NORMAL, NatLoadSpecialTexture(file, "norm"));
 				pNat->AddMap(MAP_SPECULAR, NatLoadSpecialTexture(file, "spec"));
@@ -193,9 +195,9 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags, bool bPath)
 			if (S_OK == D3DXCreateTextureFromFileExA(g_client->GetDevice(), path, info.Width, info.Height, Mips,
 				Usage, Format, Pool, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex))
 			{
-				LogBlu("TextureLoaded[%s] Usage=%u, Format=%u (%u,%u)", file, Usage, Format, info.Width, info.Height);
 				SurfNative* pSrf = new SurfNative(pTex, flags);
 				pSrf->SetName(file);
+				LogBlu("TextureLoaded [%s] Mips=%u, Usage=%u, Format=%u (%u,%u) Flags=0x%X, %s", file, pTex->GetLevelCount(), Usage, Format, info.Width, info.Height, flags, _PTR(pSrf));
 				return SURFHANDLE(pSrf);
 			}
 			return NULL;
@@ -208,9 +210,9 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags, bool bPath)
 			{
 				if (S_OK == D3DXLoadSurfaceFromFile(pSurf, NULL, NULL, path, NULL, D3DX_DEFAULT, 0, NULL))
 				{
-					LogBlu("SurfaceLoaded[%s] RENDERTARGET Format=%u (%u,%u)", file, Format, info.Width, info.Height);
 					SurfNative* pSrf = new SurfNative(pSurf, flags);
 					pSrf->SetName(file);
+					LogBlu("SurfaceLoaded [%s] RENDERTARGET Format=%u (%u,%u) Flags=0x%X %s", file, Format, info.Width, info.Height, flags, _PTR(pSrf));
 					return SURFHANDLE(pSrf);
 				}
 			}

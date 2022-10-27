@@ -938,14 +938,15 @@ void Scene::UpdateCamVis()
 
 		VOBJREC *pv = NULL;
 		for (pv = vobjFirst; pv; pv = pv->next) {
-			if (!pv->vobj->IsActive() || !pv->vobj->IsVisible() || pv->vobj->GetScene()->nLights < 1) continue;
+			if (!pv->vobj->IsActive()) continue;
 			OBJHANDLE hObj = pv->vobj->Object();
 			if (oapiGetObjectType (hObj) == OBJTP_VESSEL) {
 				VESSEL *vessel = oapiGetVesselInterface (hObj);
 				DWORD nemitter = vessel->LightEmitterCount();
 				for (DWORD j = 0; j < nemitter; j++) {
 					const LightEmitter *em = vessel->GetLightEmitter(j);
-					if (em->GetVisibility() & LightEmitter::VIS_EXTERNAL) AddLocalLight(em, pv->vobj);
+					if ((em->GetVisibility() == LightEmitter::VIS_EXTERNAL) || (em->GetVisibility() == LightEmitter::VIS_ALWAYS))
+						AddLocalLight(em, pv->vobj);
 				}
 			}
 		}
@@ -1095,7 +1096,7 @@ void Scene::RenderMainScene()
 
 
 	// -------------------------------------------------------------------------------------------------------
-	// Render Environmental Map For the Focus Vessel
+	// Render Environmental Map For the Vessels
 	// -------------------------------------------------------------------------------------------------------
 
 	if (dwTurn == RENDERTURN_ENVCAM) {
@@ -1122,7 +1123,7 @@ void Scene::RenderMainScene()
 
 
 	// -------------------------------------------------------------------------------------------------------
-	// Render Environmental Map For the Focus Vessel
+	// Render Irradiance Map For Vessels
 	// -------------------------------------------------------------------------------------------------------
 
 	if (dwTurn == RENDERTURN_IRRADIANCE) {
@@ -1276,7 +1277,7 @@ void Scene::RenderMainScene()
 
 		// What else should be included besides vFocus ?
 
-		for each (vVessel *v in Casters)
+		for (auto v : Casters)
 		{
 			if (v == vFocus) continue;
 			if (v->HasShadow() == false) continue;
@@ -1693,7 +1694,8 @@ void Scene::RenderMainScene()
 			DWORD nemitter = vessel->LightEmitterCount();
 			for (DWORD j = 0; j < nemitter; j++) {
 				const LightEmitter *em = vessel->GetLightEmitter(j);
-				if (em->GetVisibility() & LightEmitter::VIS_COCKPIT) AddLocalLight(em, vFocus);
+				if ((em->GetVisibility() == LightEmitter::VIS_COCKPIT) || (em->GetVisibility() == LightEmitter::VIS_ALWAYS))
+					AddLocalLight(em, vFocus);
 			}
 		}
 
@@ -2168,7 +2170,7 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bI
 
 	if (bListExists) {
 
-		for each (vVessel* vV in SmapRenderList)
+		for (auto vV : SmapRenderList)
 		{
 			// Get shadow min-max distances
 			vV->GetMinMaxLightDist(&mnd, &mxd);
@@ -2241,7 +2243,7 @@ void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList, std::set<vVessel*>
 			DWORD nemitter = vessel->LightEmitterCount();
 			for (DWORD j = 0; j < nemitter; j++) {
 				const LightEmitter *em = vessel->GetLightEmitter(j);
-				if (em->GetVisibility() & LightEmitter::VIS_EXTERNAL) AddLocalLight(em, vVes);
+				if ((em->GetVisibility() == LightEmitter::VIS_EXTERNAL) || (em->GetVisibility() == LightEmitter::VIS_ALWAYS)) AddLocalLight(em, vVes);
 			}		
 		}
 
@@ -2252,7 +2254,7 @@ void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList, std::set<vVessel*>
 			DWORD nemitter = vessel->LightEmitterCount();
 			for (DWORD j = 0; j < nemitter; j++) {
 				const LightEmitter *em = vessel->GetLightEmitter(j);
-				if (em->GetVisibility() & LightEmitter::VIS_EXTERNAL) AddLocalLight(em, vVes);
+				if ((em->GetVisibility() == LightEmitter::VIS_EXTERNAL) || (em->GetVisibility() == LightEmitter::VIS_ALWAYS)) AddLocalLight(em, vVes);
 			}
 		}
 	}
@@ -2260,7 +2262,7 @@ void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList, std::set<vVessel*>
 	D3D9Effect::UpdateEffectCamera(GetCameraProxyBody());
 
 	// Clear the viewport
-	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0L));
+	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0xFF000000, 1.0f, 0L));
 
 	
 	// render planets -------------------------------------------
@@ -2602,7 +2604,7 @@ void Scene::VisualizeCubeMap(LPDIRECT3DCUBETEXTURE9 pCube, int mip)
 		dr.bottom = y+h;
 		dr.right = x+h;
 
-		HR(pDevice->StretchRect(pSrf, NULL, pBack, &dr, D3DTEXF_LINEAR));
+		HR(pDevice->StretchRect(pSrf, NULL, pBack, &dr, D3DTEXF_POINT));
 
 		SAFE_RELEASE(pSrf);
 	}
@@ -2620,7 +2622,7 @@ void Scene::RenderVesselShadows (OBJHANDLE hPlanet, float depth) const
 	// render vessel shadows
 	VOBJREC *pv;
 	for (pv = vobjFirst; pv; pv = pv->next) {
-		if (!pv->vobj->IsActive() || !pv->vobj->IsVisible()) continue;
+		if (!pv->vobj->IsActive()) continue;
 		if (oapiGetObjectType(pv->vobj->Object()) == OBJTP_VESSEL)
 			((vVessel*)(pv->vobj))->RenderGroundShadow(pDevice, hPlanet, depth);
 	}

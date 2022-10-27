@@ -138,6 +138,7 @@ public:
 	static D3DXHANDLE   eSwitch;	   ///< BOOL
 	static D3DXHANDLE   eRghnSw;	   ///< BOOL
 	static D3DXHANDLE	eTextured;	   ///< BOOL
+	static D3DXHANDLE	eOITEnable;	   ///< BOOL
 	static D3DXHANDLE	eInvProxySize;
 	static D3DXHANDLE	eMix;          ///< FLOAT Auxiliary factor/multiplier
 	static D3DXHANDLE   eColor;        ///< Auxiliary color input

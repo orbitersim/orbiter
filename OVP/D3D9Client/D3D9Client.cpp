@@ -754,8 +754,7 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 
 	//	Post shutdown signals for gcGUI applications
 	//
-	for each (gcGUIApp* pApp in g_gcGUIAppList)	pApp->clbkShutdown();
-
+	for (auto pApp : g_gcGUIAppList) pApp->clbkShutdown();
 
 	//	Post shutdown signals for user applications
 	//
@@ -2701,7 +2700,7 @@ bool D3D9Client::RegisterGenericProc(__gcGenericProc proc, DWORD id, void *pPara
 
 bool D3D9Client::IsGenericProcEnabled(DWORD id) const
 {
-	for each (auto val in GenericProcs) if (val.id == id) return true;
+	for (const auto &val : GenericProcs) if (val.id == id) return true;
 	return false;
 }
 
@@ -2851,9 +2850,9 @@ void D3D9Client::SplashScreen()
 	if (m>12) m=0;
 
 #ifdef _DEBUG
-	char dataA[]={"D3D9Client Beta R30.7 (Debug Build) [" __DATE__ "]"};
+	char dataA[]={"Using D3D9Client (Debug Build)"};
 #else
-	char dataA[]={"D3D9Client Beta R30.7 [" __DATE__ "]"};
+	char dataA[]={"Using D3D9Client (Release Build)"};
 #endif
 
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %lu 20%lu [%u]", months[m], d, y, oapiGetOrbiterVersion());

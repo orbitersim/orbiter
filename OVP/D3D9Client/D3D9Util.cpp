@@ -1382,6 +1382,8 @@ void D3D9Light::UpdateLight(const LightEmitter *_le, const class vObject *vo)
 	if (le->GetType() == LightEmitter::LT_SPOT) {
 		P = float(((SpotLight*)le)->GetPenumbra());
 		U = float(((SpotLight*)le)->GetUmbra());
+		if (P > 3.05f) P = 3.05f;
+		if (U > 2.96f) U = 2.96f;
 	}
 
 	// -----------------------------------------------------------------------------

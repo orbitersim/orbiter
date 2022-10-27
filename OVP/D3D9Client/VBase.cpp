@@ -485,11 +485,11 @@ void vBase::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, float alpha)
 	oapiGetRotationMatrix(hObj, &mRot);
 	D3DXVECTOR3 lsun = D3DXVEC(tmul(mRot, sd));
 
-	if (lsun.y>0) return;
+	if (lsun.y > -0.07f) return;
 
-	float scale = float( min(1, (-lsun.y-0.07)/0.015) );
-	if (scale<1) scale = alpha * scale;
-	else         scale = alpha;
+	float scale = (-lsun.y - 0.07f) * 25.0f;
+	scale = (1.0f - alpha) * saturate(scale);
+	
 
 	// build shadow projection matrix
 	D3DXMATRIX mProj;

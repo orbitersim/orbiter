@@ -874,12 +874,15 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 	float is = 1.0f / s;
 	float qw = 1.0f / float(Config->ShadowMapSize);
 
+	// Clear setting for a mesh based body
+	//
 	HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, false));
 	HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, false));
 
-
+	// Initialize projected shadows for a mesh based body
+	//
 	if (shd->pShadowMap && (scn->GetRenderPass() == RENDERPASS_MAINSCENE) && (Config->TerrainShadowing == 2)) {
-		if (scn->GetCameraAltitude() < 10e3 || IsMesh()) {
+		if (scn->GetCameraAltitude() < 10e3 && IsMesh()) {
 			HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, &shd->mViewProj));
 			HR(D3D9Effect::FX->SetTexture(D3D9Effect::eShadowMap, shd->pShadowMap));
 			HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, &D3DXVECTOR4(s, is, qw, 0)));
@@ -1575,7 +1578,7 @@ bool vPlanet::ParseMicroTextures()
 //
 vPlanet::sOverlay * vPlanet::IntersectOverlay(VECTOR4 q, D3DXVECTOR4 *texcoord) const
 {
-	for each (sOverlay *olay in overlays)
+	for (auto olay : overlays)
 	{
 		if (q.x > olay->lnglat.z) continue;
 		if (q.z < olay->lnglat.x) continue;

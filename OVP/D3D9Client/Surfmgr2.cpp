@@ -952,31 +952,31 @@ void SurfTile::Render ()
 	D3DXVECTOR3 bs_pos;
 	D3DXVec3TransformCoord(&bs_pos, &mesh->bsCnt, &wmx);
 
-	const Scene::SHADOWMAPPARAM *shd = scene->GetSMapData();
+	if (scene->GetRenderPass() == RENDERPASS_MAINSCENE)
+	{
+		const Scene::SHADOWMAPPARAM* shd = scene->GetSMapData();
 
-	D3DXVECTOR3 bc = bs_pos - shd->pos;
+		D3DXVECTOR3 bc = bs_pos - shd->pos;
 
-	double alt = scene->GetCameraAltitude() - scene->GetTargetElevation();
+		double alt = scene->GetCameraAltitude() - scene->GetTargetElevation();
 
-	if ((alt < 10e3) && (scene->GetCameraProxyVisual() == mgr->GetPlanet())) {
+		if ((alt < 10e3) && (scene->GetCameraProxyVisual() == mgr->GetPlanet())) {
 
-		if (shd->pShadowMap && (Config->ShadowMapMode != 0) && (Config->TerrainShadowing == 2)) {
+			if (shd->pShadowMap && (Config->ShadowMapMode != 0) && (Config->TerrainShadowing == 2)) {
 
-			float x = D3DXVec3Dot(&bc, &(shd->ld));
+				float x = D3DXVec3Dot(&bc, &(shd->ld));
 
-			if (sqrt(D3DXVec3Dot(&bc, &bc) - x*x) < (shd->rad + mesh->bsRad)) {
-				float s = float(shd->size);
-				float sr = 2.0f * shd->rad / s;
-				HR(Shader->SetMatrix(TileManager2Base::smLVP, &shd->mViewProj));
-				HR(Shader->SetVector(TileManager2Base::svSHD, &D3DXVECTOR4(sr, 1.0f / s, 0, 1.0f / shd->depth)));
-				HR(Shader->SetTexture(TileManager2Base::stShadowMap, shd->pShadowMap));
-				HR(Shader->SetBool(TileManager2Base::sbShadows, true));
+				if (sqrt(D3DXVec3Dot(&bc, &bc) - x * x) < (shd->rad + mesh->bsRad)) {
+					float s = float(shd->size);
+					float sr = 2.0f * shd->rad / s;
+					HR(Shader->SetMatrix(TileManager2Base::smLVP, &shd->mViewProj));
+					HR(Shader->SetVector(TileManager2Base::svSHD, &D3DXVECTOR4(sr, 1.0f / s, 0, 1.0f / shd->depth)));
+					HR(Shader->SetTexture(TileManager2Base::stShadowMap, shd->pShadowMap));
+					HR(Shader->SetBool(TileManager2Base::sbShadows, true));
+				}
 			}
 		}
 	}
-
-
-
 
 	// ---------------------------------------------------------------------
 	// Setup local light sources
@@ -1020,15 +1020,6 @@ void SurfTile::Render ()
 			HR(Shader->SetValue(TileManager2Base::ssLight, &Locals, sizeof(Locals)));
 		}
 	}
-
-	/*
-	if (pLights && nSceneLights > 0) {
-
-		// Create a list of N most effective lights ---------------------------------------------
-		for (int i = 0; i < nSceneLights; i++) memcpy(&Locals[i], &pLights[i], sizeof(LightStruct));
-		HR(Shader->SetBool(TileManager2Base::sbLocals, true));
-
-	}*/
 
 	Shader->CommitChanges();
 
@@ -1552,7 +1543,7 @@ void TileManager2<SurfTile>::Pick(D3DXVECTOR3 &vRay, TILEPICK *pPick)
 	QueryTiles(&tiletree[0], tiles);
 	QueryTiles(&tiletree[1], tiles);
 
-	for each (Tile * tile in tiles)	tile->Pick(&(tile->mWorld), &vRay, *pPick);
+	for (auto tile : tiles)	tile->Pick(&(tile->mWorld), &vRay, *pPick);
 }
 
 // -----------------------------------------------------------------------

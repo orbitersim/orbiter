@@ -108,14 +108,15 @@ D3DXHANDLE D3D9Effect::eFullyLit = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eTextured = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eFresnel = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eSwitch = 0;		// BOOL
-D3DXHANDLE D3D9Effect::eRghnSw = 0;
+D3DXHANDLE D3D9Effect::eRghnSw = 0;		// BOOL
 D3DXHANDLE D3D9Effect::eShadowToggle = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eEnvMapEnable = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eInSpace = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eNoColor = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eLightsEnabled = 0;	// BOOL	
 D3DXHANDLE D3D9Effect::eTuneEnabled = 0; // BOOL
-D3DXHANDLE D3D9Effect::eBaseBuilding = 0;
+D3DXHANDLE D3D9Effect::eBaseBuilding = 0; // BOOL
+D3DXHANDLE D3D9Effect::eOITEnable = 0; // BOOL
 // --------------------------------------------------------------
 D3DXHANDLE D3D9Effect::eExposure = 0;
 D3DXHANDLE D3D9Effect::eCameraPos = 0;	
@@ -427,6 +428,8 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eLightsEnabled = FX->GetParameterByName(0,"gLightsEnabled");	
 	eTuneEnabled  = FX->GetParameterByName(0,"gTuneEnabled");
 	eBaseBuilding = FX->GetParameterByName(0,"gBaseBuilding");
+	eOITEnable	  = FX->GetParameterByName(0,"gOITEnable");
+
 	// General parameters -------------------------------------------------- 
 	eSpecularMode = FX->GetParameterByName(0,"gSpecMode");
 	eLights		  = FX->GetParameterByName(0,"gLights");

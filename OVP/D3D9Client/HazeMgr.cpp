@@ -318,7 +318,7 @@ void HazeManager2::RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr)
 			float r2 =  float(sin(x+b)); float h2 = -float(cos(x+b)); 
 			D3DXVECTOR3 vCnt = vTileCenter * D3DXVECTOR3((r1+r2)*0.5f, 1.0f, (r1+r2)*0.5f);	vCnt.y = (h1+h2)*0.5f;
 			D3DXVec3TransformCoord(&vCnt, &vCnt, &mWL);	
-			if (vp->GetScene()->IsVisibleInCamera(&vCnt, float(sin(a*0.5)*1.415))) RenderSkySegment(mWL, hd, x, x+b, j);	
+			if (vp->GetScene()->IsVisibleInCamera(&vCnt, float(sin(a*0.5)*1.5))) RenderSkySegment(mWL, hd, x, x+b, j);	
 			x+=b;
 		}
 	}
