@@ -275,6 +275,25 @@ public:
 	 */
 	bool clbkSaveSurfaceToImage (SURFHANDLE surf, const char *fname, ImageFileFormat fmt, float quality=0.7f);
 
+	/**
+	 * \brief Write surface to file (sub-function of \ref clbkSaveSurfaceToImage)
+	 *
+	 * \param surface size and format description
+	 * \param fname image file path relative to orbiter root directory (excluding file extension)
+	 * \param fmt output file format
+	 * \param quality quality request if the format supports it (0-1)
+	 * \return Should return true on success
+	 */
+	bool SaveSurfaceToFile (const D3DSURFACE_DESC* desc, D3DLOCKED_RECT& pRect,
+	                        const char* fname, ImageFileFormat fmt, float quality);
+
+	/**
+	 * \brief Store device-dependent bitmap to clipboard (sub-function of \ref clbkSaveSurfaceToImage)
+	 *
+	 * \param surface size and format description
+	 * \return Should return true on success
+	 */
+	bool SaveSurfaceToClipboard (const D3DSURFACE_DESC * desc);
 
 	/**
 	 * \brief Texture release request

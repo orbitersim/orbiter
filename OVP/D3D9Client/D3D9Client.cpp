@@ -1916,42 +1916,25 @@ bool D3D9Client::clbkSaveSurfaceToImage(SURFHANDLE surf, const char *fname, Imag
 	if (pSurf==NULL) return false;
 
 	bool bRet = false;
-	ImageData ID;
 	const D3DSURFACE_DESC *desc = SURFACE(surf)->GetDesc();
 	D3DLOCKED_RECT pRect;
 
-	if (desc->Pool!=D3DPOOL_SYSTEMMEM)
+	if (desc->Pool != D3DPOOL_SYSTEMMEM)
 	{
 		HR(pDevice->CreateRenderTarget(desc->Width, desc->Height, D3DFMT_X8R8G8B8, D3DMULTISAMPLE_NONE, 0, false, &pRTG, NULL));
 		HR(pDevice->CreateOffscreenPlainSurface(desc->Width, desc->Height, D3DFMT_X8R8G8B8, D3DPOOL_SYSTEMMEM, &pSystem, NULL));
 		HR(pDevice->StretchRect(pSurf, NULL, pRTG, NULL, D3DTEXF_NONE));
 		HR(pDevice->GetRenderTargetData(pRTG, pSystem));
 
-		if (pSystem->LockRect(&pRect, NULL, 0)==S_OK) {
-
-			ID.bpp = 24;
-			ID.height = desc->Height;
-			ID.width = desc->Width;
-			ID.stride = ((ID.width * ID.bpp + 31) & ~31) >> 3;
-			ID.bufsize = ID.stride * ID.height;
-
-			BYTE *tgt = ID.data = new BYTE[ID.bufsize];
-			BYTE *src = (BYTE *)pRect.pBits;
-
-			for (DWORD k=0;k<desc->Height;k++) {
-				for (DWORD i=0;i<desc->Width;i++) {
-					tgt[0+i*3] = src[0+i*4];
-					tgt[1+i*3] = src[1+i*4];
-					tgt[2+i*3] = src[2+i*4];
-				}
-				tgt += ID.stride;
-				src += pRect.Pitch;
+		if (pSystem->LockRect(&pRect, NULL, 0)==S_OK)
+		{
+			if (fname == NULL) {
+				// copy device-dependent bitmap to clipboard
+				bRet = SaveSurfaceToClipboard(desc);
+			} else {
+				// save as file
+				bRet = SaveSurfaceToFile(desc, pRect, fname, fmt, quality);
 			}
-
-			bRet = WriteImageDataToFile(ID, fname, fmt, quality);
-
-			delete []ID.data;
-			ID.data = NULL;
 			pSystem->UnlockRect();
 		}
 
@@ -1960,35 +1943,74 @@ bool D3D9Client::clbkSaveSurfaceToImage(SURFHANDLE surf, const char *fname, Imag
 		return bRet;
 	}
 
-	if (pSurf->LockRect(&pRect, NULL, D3DLOCK_READONLY)==S_OK) {
-
-		ID.bpp = 24;
-		ID.height = desc->Height;
-		ID.width = desc->Width;
-		ID.stride = ((ID.width * ID.bpp + 31) & ~31) >> 3;
-		ID.bufsize = ID.stride * ID.height;
-
-		BYTE *tgt = ID.data = new BYTE[ID.bufsize];
-		BYTE *src = (BYTE *)pRect.pBits;
-
-		for (DWORD k=0;k<desc->Height;k++) {
-			for (DWORD i=0;i<desc->Width;i++) {
-				tgt[0+i*3] = src[0+i*4];
-				tgt[1+i*3] = src[1+i*4];
-				tgt[2+i*3] = src[2+i*4];
-			}
-			tgt += ID.stride;
-			src += pRect.Pitch;
+	if (pSurf->LockRect(&pRect, NULL, D3DLOCK_READONLY)==S_OK)
+	{
+		if (fname == NULL) {
+			// copy device-dependent bitmap to clipboard
+			bRet = SaveSurfaceToClipboard(desc);
+		} else {
+			// save as file
+			bRet = SaveSurfaceToFile(desc, pRect, fname, fmt, quality);
 		}
-
-		bRet = WriteImageDataToFile(ID, fname, fmt, quality);
-
-		delete []ID.data;
-		ID.data = NULL;
-		pSurf->UnlockRect();
-		return bRet;
+		pSystem->UnlockRect();
 	}
 
+	return bRet;
+}
+
+// ==============================================================
+
+bool oapi::D3D9Client::SaveSurfaceToFile (const D3DSURFACE_DESC* desc, D3DLOCKED_RECT& pRect,
+                                          const char* fname, oapi::ImageFileFormat fmt, float quality)
+{
+	bool bRet = false;
+	ImageData ID;
+
+	ID.bpp = 24;
+	ID.height = desc->Height;
+	ID.width = desc->Width;
+	ID.stride = ((ID.width * ID.bpp + 31) & ~31) >> 3;
+	ID.bufsize = ID.stride * ID.height;
+
+	BYTE* tgt = ID.data = new BYTE[ID.bufsize];
+	BYTE* src = (BYTE*)pRect.pBits;
+
+	for (DWORD k = 0; k<desc->Height; k++) {
+		for (DWORD i = 0; i<desc->Width; i++) {
+			tgt[0 + i * 3] = src[0 + i * 4];
+			tgt[1 + i * 3] = src[1 + i * 4];
+			tgt[2 + i * 3] = src[2 + i * 4];
+		}
+		tgt += ID.stride;
+		src += pRect.Pitch;
+	}
+
+	bRet = WriteImageDataToFile(ID, fname, fmt, quality);
+
+	delete[]ID.data;
+	ID.data = NULL;
+
+	return bRet;
+}
+
+// ==============================================================
+
+bool oapi::D3D9Client::SaveSurfaceToClipboard (const D3DSURFACE_DESC* desc)
+{
+	if (OpenClipboard(hRenderWnd))
+	{
+		HDC hDC = GetDC(hRenderWnd);
+		HDC hdcmem = CreateCompatibleDC(hDC);
+		HBITMAP hBm = CreateCompatibleBitmap(hDC, desc->Width, desc->Height);
+
+		SelectObject(hdcmem, hBm);
+		BitBlt(hdcmem, 0, 0, desc->Width, desc->Height, hDC, 0, 0, SRCCOPY);
+
+		EmptyClipboard();
+		SetClipboardData(CF_BITMAP, hBm);
+		CloseClipboard();
+		return true;
+	}
 	return false;
 }
 
