@@ -918,6 +918,12 @@ const void *Config::GetParam (DWORD paramtype) const
 		return (void*)&CfgInstrumentPrm.PanelMFDHUDSize;
 	case CFGPRM_TILEPATCHRES:
 		return (void*)&CfgPRenderPrm.PatchRes;
+	case CFGPRM_FORCEVECTORFLAG:
+		return (void*)&CfgVisHelpPrm.flagBodyforce;
+	case CFGPRM_FORCEVECTORSCALE:
+		return (void*)&CfgVisHelpPrm.scaleBodyforce;
+	case CFGPRM_FORCEVECTOROPACITY:
+		return (void*)&CfgVisHelpPrm.opacBodyforce;
 	default:
 		return 0;
 	}

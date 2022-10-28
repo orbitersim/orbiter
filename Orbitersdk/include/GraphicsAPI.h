@@ -180,13 +180,35 @@ typedef void *HDC;
  */
 #define CFGPRM_TILEPATCHRES 0x001B
 
-#define CFGPRM_TILELOADFLAGS 0x001C
 /**
  * Bitflags for planetary tile file load behaviour
  * - bit 1: load from individual tiles in directory tree
  * - bit 2: load from compressed archive file
  * \par Parameter type:
  *   DWORD
+ */
+#define CFGPRM_TILELOADFLAGS 0x001C
+
+/**
+ * Bit flags for force vector display options.
+ * \par Parameter type:
+ *   DWORD
+ */
+#define CFGPRM_FORCEVECTORFLAG 0x001D
+
+/**
+ * Force vector display scaling factor
+ * \par Parameter type:
+ *   float
+ */
+#define CFGPRM_FORCEVECTORSCALE 0x001E
+
+/**
+ * Force vector display opacity value
+ * \par Parameter type:
+ *   float
+ */
+#define CFGPRM_FORCEVECTOROPACITY 0x001F
 /// @}
 
 /**
@@ -220,6 +242,18 @@ typedef void *HDC;
 #define PLN_CNSTBND   0x2000 ///< Enable constellation boundaries
 #define PLN_CCMARK    0x4000 ///< Enable celestial sphere labels
 #define PLN_SURFMARK (PLN_BMARK | PLN_RMARK | PLN_LMARK)
+/// @}
+
+/// \defgroup bfflag Bit flags for vessel force vector render options
+/// @{
+#define BF_ENABLE     0x0001 ///< Enable force vectors
+#define BF_LOGSCALE   0x0002 ///< Use logarithmic scale (instead of linear scale)
+#define BF_WEIGHT     0x0004 ///< Show weight vector
+#define BF_THRUST     0x0008 ///< Show thrust vector
+#define BF_LIFT       0x0010 ///< Show lift vector
+#define BF_DRAG       0x0020 ///< Show drag vector
+#define BF_TOTAL      0x0040 ///< Show total force vector
+#define BF_TORQUE     0x0080 ///< Show torque vector
 /// @}
 
 /// \defgroup bltflag Bit flags for blitting operations

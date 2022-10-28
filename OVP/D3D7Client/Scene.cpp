@@ -539,6 +539,14 @@ void Scene::Render ()
 	if (ptex) dev->SetTexture (0, 0);
 	if (!alpha) dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
 
+	// render object vectors
+	if (*(DWORD*)gc->GetConfigParam(CFGPRM_FORCEVECTORFLAG) & BF_ENABLE) {
+		cam->SetFrustumLimits(1.0, 1e30);
+		for (pv = vobjFirst; pv; pv = pv->next)
+			pv->vobj->RenderVectors(dev);
+		cam->SetFrustumLimits(npl, fpl);
+	}
+
 	// render the internal parts of the focus object in a separate render pass
 	if (oapiCameraInternal() && vFocus) {
 		// switch cockpit lights on, external-only lights off

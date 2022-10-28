@@ -18,16 +18,6 @@
 #include <list>
 #include "GraphicsAPI.h"
 
-// body force modes
-#define BF_ENABLE   0x0001
-#define BF_LOGSCALE 0x0002
-#define BF_WEIGHT   0x0004
-#define BF_THRUST   0x0008
-#define BF_LIFT     0x0010
-#define BF_DRAG     0x0020
-#define BF_TOTAL    0x0040
-#define BF_TORQUE   0x0080
-
 // coordinate axes modes
 #define CA_ENABLE   0x0001
 #define CA_NEG      0x0002
