@@ -102,6 +102,16 @@ ImageProcessing::~ImageProcessing()
 
 // ================================================================================================
 //
+void ImageProcessing::Reset()
+{
+	pDepth = NULL;
+	for (int i = 0; i < 4; i++) pRtg[i] = pRtgBak[i] = NULL;
+	for (int i = 0; i < ARRAYSIZE(pTextures); i++) pTextures[i].hTex = NULL;
+}
+
+
+// ================================================================================================
+//
 bool ImageProcessing::CompileShader(const char *Entry)
 {
 	string name(Entry);
@@ -116,6 +126,7 @@ bool ImageProcessing::CompileShader(const char *Entry)
 //
 bool ImageProcessing::Activate(const char *Entry)
 {
+	Reset();
 	SetTemplate();
 	if (!Entry) return Activate(entry);
 	string name(Entry);
@@ -225,7 +236,7 @@ void ImageProcessing::SetMesh(const MESHHANDLE hMesh, const char *tex, gcIPInter
 //
 bool ImageProcessing::Execute(bool bInScene)
 {
-	return Execute(0, 0, 0, bInScene, gcIPInterface::ipitemplate::Rect);
+	return Execute(0, bInScene, gcIPInterface::ipitemplate::Rect);
 }
 
 
@@ -234,7 +245,7 @@ bool ImageProcessing::Execute(bool bInScene)
 bool ImageProcessing::Execute(const char *shader, bool bInScene)
 {
 	Activate(shader);
-	return Execute(0, 0, 0, bInScene, gcIPInterface::ipitemplate::Rect);
+	return Execute(0, bInScene, gcIPInterface::ipitemplate::Rect);
 }
 
 
@@ -242,13 +253,13 @@ bool ImageProcessing::Execute(const char *shader, bool bInScene)
 //
 bool ImageProcessing::ExecuteTemplate(bool bInScene, gcIPInterface::ipitemplate mode)
 {
-	return Execute(0, 0, 0, bInScene, mode);
+	return Execute(0, bInScene, mode);
 }
 
 
 // ================================================================================================
 //
-bool ImageProcessing::Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScene, gcIPInterface::ipitemplate mode, int grp)
+bool ImageProcessing::Execute(DWORD blendop, bool bInScene, gcIPInterface::ipitemplate mode, int grp)
 {
 	if (!IsOK()) return false;
 	if (!SetupViewPort()) return false;
@@ -264,15 +275,21 @@ bool ImageProcessing::Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScen
 
 	HR(pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID));
 	HR(pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
-	HR(pDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, (blendop!=0)));
+	HR(pDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, (blendop > 1)));
 	HR(pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, false));
 	HR(pDevice->SetRenderState(D3DRS_STENCILENABLE, false));
+	HR(pDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, false));
 	HR(pDevice->SetRenderState(D3DRS_COLORWRITEENABLE, 0xF));
-
-	if (blendop) {
-		HR(pDevice->SetRenderState(D3DRS_BLENDOP, blendop));
-		HR(pDevice->SetRenderState(D3DRS_SRCBLEND, src));
-		HR(pDevice->SetRenderState(D3DRS_DESTBLEND, dest));
+	
+	if (blendop > 1) {
+		HR(pDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
+		HR(pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
+		HR(pDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
+	}
+	else {
+		HR(pDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
+		HR(pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE));
+		HR(pDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO));
 	}
 
 	// Define vertices --------------------------------------------------------
@@ -289,9 +306,9 @@ bool ImageProcessing::Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScen
 	// Set render targets -----------------------------------------------------
 	//
 	for (int i=0;i<4;i++) {
-		pDevice->GetRenderTarget(i, &pRtgBak[i]);
-		pDevice->SetRenderTarget(i, pRtg[i]);
+		if (pDevice->GetRenderTarget(i, &pRtgBak[i]) != D3D_OK) pRtgBak[i] = NULL;
 		if (pRtg[i]) {
+			pDevice->SetRenderTarget(i, pRtg[i]);
 			if (i == 1) { HR(pDevice->SetRenderState(D3DRS_COLORWRITEENABLE1, 0xF)); }
 			if (i == 2) { HR(pDevice->SetRenderState(D3DRS_COLORWRITEENABLE2, 0xF)); }
 			if (i == 3) { HR(pDevice->SetRenderState(D3DRS_COLORWRITEENABLE3, 0xF)); }
@@ -304,7 +321,7 @@ bool ImageProcessing::Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScen
 		HR(pDevice->SetRenderState(D3DRS_ZENABLE, true));
 		HR(pDevice->SetRenderState(D3DRS_ZWRITEENABLE, true));
 
-		pDevice->GetDepthStencilSurface(&pDepthBak);
+		if (pDevice->GetDepthStencilSurface(&pDepthBak) != D3D_OK) pDepthBak = NULL;
 		pDevice->SetDepthStencilSurface(pDepth);
 	}
 	else {
@@ -350,6 +367,19 @@ bool ImageProcessing::Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScen
 	if (!bInScene) HR(pDevice->BeginScene());
 
 
+	// Clear the viewport -----------------------------------------------------
+	//
+	if (blendop == 0)
+	{
+		if (pDepth) {
+			HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0xFF000000, 1.0f, 0L));
+		}
+		else {
+			HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET, 0xFF000000, 1.0f, 0L));
+		}
+	}
+
+
 	if (mode == gcIPInterface::ipitemplate::Rect)
 	{
 		HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));
@@ -390,15 +420,18 @@ bool ImageProcessing::Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScen
 
 	// Disconnect render targets ----------------------------------------------
 	//
-	if (pDepth) {
-		pDevice->SetDepthStencilSurface(pDepthBak);
+	if (pDepthBak) {
+		HR(pDevice->SetDepthStencilSurface(pDepthBak));
+		SAFE_RELEASE(pDepthBak);
 	}
 
 	// Disconnect render targets ----------------------------------------------
 	//
 	for (int i=0;i<4;i++) {
-		HR(pDevice->SetRenderTarget(i, pRtgBak[i]));
-		SAFE_RELEASE(pRtgBak[i]);
+		if (pRtgBak[i]) {
+			HR(pDevice->SetRenderTarget(i, pRtgBak[i]));
+			SAFE_RELEASE(pRtgBak[i]);
+		}
 	}
 
 	// Disconnect textures -----------------------------------------------------
@@ -811,9 +844,9 @@ bool gcIPInterface::ExecuteTemplate(bool bInScene, ipitemplate it)
 	return pIPI->ExecuteTemplate(bInScene, it);
 }
 
-bool gcIPInterface::Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScene, ipitemplate mde)
+bool gcIPInterface::Execute(DWORD blendop, bool bInScene, ipitemplate mde)
 {
-	return pIPI->Execute(blendop, src, dest, bInScene, mde);
+	return pIPI->Execute(blendop, bInScene, mde);
 }
 
 int gcIPInterface::FindDefine(const char *key)

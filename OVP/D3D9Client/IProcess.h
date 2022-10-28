@@ -16,23 +16,6 @@
 
 // Address mode WRAP is assumed by default
 // Filter POINT is assumed by default
-/*
-#define IPF_WRAP		0x0000
-#define IPF_WRAP_U		0x0000
-#define IPF_WRAP_V		0x0000
-#define IPF_WRAP_W		0x0000
-#define IPF_CLAMP		0x0007
-#define IPF_CLAMP_U		0x0001
-#define IPF_CLAMP_V		0x0002
-#define IPF_CLAMP_W		0x0004
-#define IPF_MIRROR		0x0038
-#define IPF_MIRROR_U	0x0008
-#define IPF_MIRROR_V	0x0010
-#define IPF_MIRROR_W	0x0020
-#define IPF_POINT		0x0000
-#define IPF_LINEAR		0x0040
-#define IPF_PYRAMIDAL	0x0080
-#define IPF_GAUSSIAN	0x0100*/
 
 
 class ImageProcessing {
@@ -52,6 +35,7 @@ public:
 
 	bool	CompileShader(const char *Entry);
 	bool	Activate(const char *Shader = NULL);
+	void	Reset();
 
 	// ----------------------------------------------------------------------------------
 	// Use the 'Set' functions to assign a value into a shader constants ( e.g. uniform extern float4 myVector; )
@@ -106,7 +90,7 @@ public:
 	bool	Execute(bool bInScene = false);
 	bool	Execute(const char *shader, bool bInScene);
 	bool	ExecuteTemplate(bool bInScene = false, gcIPInterface::ipitemplate tmp = gcIPInterface::ipitemplate::Rect);
-	bool    Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScene = false, gcIPInterface::ipitemplate tmp = gcIPInterface::ipitemplate::Rect, int gpr = -1);
+	bool    Execute(DWORD blendop, bool bInScene = false, gcIPInterface::ipitemplate tmp = gcIPInterface::ipitemplate::Rect, int gpr = -1);
 
 	// ----------------------------------------------------------------------------------
 	int		FindDefine(const char *key);
