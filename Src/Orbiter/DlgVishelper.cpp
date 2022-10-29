@@ -573,18 +573,18 @@ void TabForces::CreateInterface()
 void TabForces::UpdateControls(HWND hTab)
 {
 	DWORD vecFlag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagBodyForce;
-	bool enable = (vecFlag & BF_ENABLE);
+	bool enable = (vecFlag & BFV_ENABLE);
 	SendDlgItemMessage(hTab, IDC_VH_VEC, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
 	for (int i = IDC_VH_VEC_WEIGHT; i <= IDC_VH_VEC_OPACITY; i++)
 		EnableWindow(GetDlgItem(hTab, i), enable ? TRUE : FALSE);
-	SendDlgItemMessage(hTab, IDC_VH_VEC_WEIGHT, BM_SETCHECK, vecFlag & BF_WEIGHT   ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hTab, IDC_VH_VEC_THRUST, BM_SETCHECK, vecFlag & BF_THRUST   ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hTab, IDC_VH_VEC_LIFT,   BM_SETCHECK, vecFlag & BF_LIFT     ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hTab, IDC_VH_VEC_DRAG,   BM_SETCHECK, vecFlag & BF_DRAG     ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hTab, IDC_VH_VEC_TOTAL,  BM_SETCHECK, vecFlag & BF_TOTAL    ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hTab, IDC_VH_VEC_TORQUE, BM_SETCHECK, vecFlag & BF_TORQUE   ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hTab, IDC_VH_VEC_LINSCL, BM_SETCHECK, vecFlag & BF_LOGSCALE ? BST_UNCHECKED : BST_CHECKED, 0);
-	SendDlgItemMessage(hTab, IDC_VH_VEC_LOGSCL, BM_SETCHECK, vecFlag & BF_LOGSCALE ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_VEC_WEIGHT, BM_SETCHECK, vecFlag & BFV_WEIGHT   ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_VEC_THRUST, BM_SETCHECK, vecFlag & BFV_THRUST   ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_VEC_LIFT,   BM_SETCHECK, vecFlag & BFV_LIFT     ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_VEC_DRAG,   BM_SETCHECK, vecFlag & BFV_DRAG     ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_VEC_TOTAL,  BM_SETCHECK, vecFlag & BFV_TOTAL    ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_VEC_TORQUE, BM_SETCHECK, vecFlag & BFV_TORQUE   ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_VEC_LINSCL, BM_SETCHECK, vecFlag & BFV_LOGSCALE ? BST_UNCHECKED : BST_CHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_VEC_LOGSCL, BM_SETCHECK, vecFlag & BFV_LOGSCALE ? BST_CHECKED : BST_UNCHECKED, 0);
 
 	int scalePos = (int)(25.0 * (1.0 + 0.5 * log(g_pOrbiter->Cfg()->CfgVisHelpPrm.scaleBodyForce) / log(2.0)));
 	oapiSetGaugePos(GetDlgItem(hTab, IDC_VH_VEC_SCALE), scalePos);
@@ -643,16 +643,16 @@ void TabForces::OnItemClicked(HWND hTab, WORD ctrlId)
 	bool check = (SendDlgItemMessage(hTab, ctrlId, BM_GETCHECK, 0, 0) == TRUE);
 	DWORD flag;
 	switch (ctrlId) {
-	case IDC_VH_VEC:        flag = BF_ENABLE;  break;
-	case IDC_VH_VEC_WEIGHT: flag = BF_WEIGHT;  break;
-	case IDC_VH_VEC_THRUST: flag = BF_THRUST;  break;
-	case IDC_VH_VEC_LIFT:   flag = BF_LIFT;    break;
-	case IDC_VH_VEC_DRAG:   flag = BF_DRAG;    break;
-	case IDC_VH_VEC_TOTAL:  flag = BF_TOTAL;   break;
-	case IDC_VH_VEC_TORQUE: flag = BF_TORQUE;  break;
-	case IDC_VH_VEC_LINSCL: flag = BF_LOGSCALE; check = false; break;
-	case IDC_VH_VEC_LOGSCL: flag = BF_LOGSCALE; check = true;  break;
-	default:                flag = 0;          break;
+	case IDC_VH_VEC:        flag = BFV_ENABLE;  break;
+	case IDC_VH_VEC_WEIGHT: flag = BFV_WEIGHT;  break;
+	case IDC_VH_VEC_THRUST: flag = BFV_THRUST;  break;
+	case IDC_VH_VEC_LIFT:   flag = BFV_LIFT;    break;
+	case IDC_VH_VEC_DRAG:   flag = BFV_DRAG;    break;
+	case IDC_VH_VEC_TOTAL:  flag = BFV_TOTAL;   break;
+	case IDC_VH_VEC_TORQUE: flag = BFV_TORQUE;  break;
+	case IDC_VH_VEC_LINSCL: flag = BFV_LOGSCALE; check = false; break;
+	case IDC_VH_VEC_LOGSCL: flag = BFV_LOGSCALE; check = true;  break;
+	default:                flag = 0;           break;
 	}
 	DWORD& vecFlag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagBodyForce;
 	if (check) vecFlag |=  flag;
@@ -708,14 +708,14 @@ void TabAxes::CreateInterface()
 void TabAxes::UpdateControls(HWND hTab)
 {
 	DWORD crdFlag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagFrameAxes;
-	bool enable = (crdFlag & FA_ENABLE);
+	bool enable = (crdFlag & FAV_ENABLE);
 	SendDlgItemMessage(hTab, IDC_VH_CRD, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
 	for (int i = IDC_VH_CRD_VESSEL; i <= IDC_VH_CRD_OPACITY; i++)
 		EnableWindow(GetDlgItem(hTab, i), enable ? TRUE : FALSE);
-	SendDlgItemMessage(hTab, IDC_VH_CRD_VESSEL,  BM_SETCHECK,  crdFlag & FA_VESSEL ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hTab, IDC_VH_CRD_CELBODY, BM_SETCHECK,  crdFlag & FA_CBODY  ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hTab, IDC_VH_CRD_BASE, BM_SETCHECK,     crdFlag & FA_BASE   ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hTab, IDC_VH_CRD_NEGATIVE, BM_SETCHECK, crdFlag & FA_NEG    ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_CRD_VESSEL,  BM_SETCHECK,  crdFlag & FAV_VESSEL   ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_CRD_CELBODY, BM_SETCHECK,  crdFlag & FAV_CELBODY  ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_CRD_BASE, BM_SETCHECK,     crdFlag & FAV_BASE     ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_CRD_NEGATIVE, BM_SETCHECK, crdFlag & FAV_NEGATIVE ? BST_CHECKED : BST_UNCHECKED, 0);
 
 	int scalePos = (int)(25.0 * (1.0 + 0.5 * log(g_pOrbiter->Cfg()->CfgVisHelpPrm.scaleFrameAxes) / log(2.0)));
 	oapiSetGaugePos(GetDlgItem(hTab, IDC_VH_CRD_SCALE), scalePos);
@@ -770,12 +770,12 @@ void TabAxes::OnItemClicked(HWND hTab, WORD ctrlId)
 	bool check = (SendDlgItemMessage(hTab, ctrlId, BM_GETCHECK, 0, 0) == TRUE);
 	DWORD flag;
 	switch (ctrlId) {
-	case IDC_VH_CRD:          flag = FA_ENABLE; break;
-	case IDC_VH_CRD_VESSEL:   flag = FA_VESSEL; break;
-	case IDC_VH_CRD_CELBODY:  flag = FA_CBODY;  break;
-	case IDC_VH_CRD_BASE:     flag = FA_BASE;   break;
-	case IDC_VH_CRD_NEGATIVE: flag = FA_NEG;    break;
-	default:                  flag = 0;         break;
+	case IDC_VH_CRD:          flag = FAV_ENABLE;   break;
+	case IDC_VH_CRD_VESSEL:   flag = FAV_VESSEL;   break;
+	case IDC_VH_CRD_CELBODY:  flag = FAV_CELBODY;  break;
+	case IDC_VH_CRD_BASE:     flag = FAV_BASE;     break;
+	case IDC_VH_CRD_NEGATIVE: flag = FAV_NEGATIVE; break;
+	default:                  flag = 0;            break;
 	}
 	DWORD& crdFlag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagFrameAxes;
 	if (check) crdFlag |=  flag;

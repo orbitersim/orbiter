@@ -949,7 +949,7 @@ void Scene::Render (D3DRECT* vp_rect)
 	if (ptex) dev->SetTexture (0, 0);
 
 	// render object vectors
-	if (*(DWORD*)gc->GetConfigParam(CFGPRM_FORCEVECTORFLAG) & BF_ENABLE || *(DWORD*)gc->GetConfigParam(CFGPRM_FRAMEAXISFLAG) & FA_ENABLE) {
+	if (*(DWORD*)gc->GetConfigParam(CFGPRM_FORCEVECTORFLAG) & BFV_ENABLE || *(DWORD*)gc->GetConfigParam(CFGPRM_FRAMEAXISFLAG) & FAV_ENABLE) {
 		g_camera->SetFrustumLimits(1.0, 1e30);
 		RenderVectors();
 		g_camera->SetFrustumLimits(npl, fpl); // reset fustrum limits

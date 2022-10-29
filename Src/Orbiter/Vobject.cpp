@@ -116,11 +116,11 @@ void VObject::UpdateRenderVectors()
 
 	// render object frame axes
 	DWORD flag = *(DWORD*)gc->GetConfigParam(CFGPRM_FRAMEAXISFLAG);
-	if (flag & FA_ENABLE) {
+	if (flag & FAV_ENABLE) {
 		int tp = body->Type();
-		if ((tp == OBJTP_VESSEL && flag & FA_VESSEL) ||
-			(tp == OBJTP_PLANET && flag & FA_CBODY) ||
-			(tp == OBJTP_SURFBASE && flag & FA_BASE)) {
+		if ((tp == OBJTP_VESSEL && flag & FAV_VESSEL) ||
+			(tp == OBJTP_PLANET && flag & FAV_CELBODY) ||
+			(tp == OBJTP_SURFBASE && flag & FAV_BASE)) {
 
 			double scale = body->Size() * *(float*)gc->GetConfigParam(CFGPRM_FRAMEAXISSCALE);
 			double rad = body->Size() * 0.01;
@@ -128,7 +128,7 @@ void VObject::UpdateRenderVectors()
 			AddVector(Vector(scale, 0, 0), Vector(0, 0, 0), rad, std::string("+x"), Vector(1, 1, 1), alpha, D3DRGB(1, 1, 1));
 			AddVector(Vector(0, scale, 0), Vector(0, 0, 0), rad, std::string("+y"), Vector(1, 1, 1), alpha, D3DRGB(1, 1, 1));
 			AddVector(Vector(0, 0, scale), Vector(0, 0, 0), rad, std::string("+z"), Vector(1, 1, 1), alpha, D3DRGB(1, 1, 1));
-			if (flag & FA_NEG) {
+			if (flag & FAV_NEGATIVE) {
 				AddVector(Vector(-scale, 0, 0), Vector(0, 0, 0), rad, std::string("-x"), Vector(1, 1, 1), alpha, D3DRGB(1, 1, 1));
 				AddVector(Vector(0, -scale, 0), Vector(0, 0, 0), rad, std::string("-y"), Vector(1, 1, 1), alpha, D3DRGB(1, 1, 1));
 				AddVector(Vector(0, 0, -scale), Vector(0, 0, 0), rad, std::string("-z"), Vector(1, 1, 1), alpha, D3DRGB(1, 1, 1));

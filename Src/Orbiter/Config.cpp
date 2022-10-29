@@ -123,10 +123,10 @@ CFG_INSTRUMENTPRM CfgInstrumentPrm_default = {
 
 CFG_VISHELPPRM CfgVisHelpPrm_default = {
 	PLN_CGRID | PLN_CONST | PLN_CNSTLABEL | PLN_CNSTLONG | PLN_CMARK,	// flagPlanetarium (celestial marker flags)
-	BF_WEIGHT | BF_THRUST | BF_LIFT | BF_DRAG,	// flagBodyforce (force display flags)
+	BFV_WEIGHT | BFV_THRUST | BFV_LIFT | BFV_DRAG,	// flagBodyforce (force display flags)
 	1.0f,		// scaleBodyforce (force vector scaling factor)
 	1.0f,		// opacBodyforce (force vector opacity)
-	FA_VESSEL,	// flagCrdAxes (frame axis display flags)
+	FAV_VESSEL,	// flagCrdAxes (frame axis display flags)
 	1.0f,		// scaleCrdAxes (axis scaling factor)
 	1.0f		// opacCrdAxes (axis opacity)
 };

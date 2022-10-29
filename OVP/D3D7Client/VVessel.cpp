@@ -129,10 +129,10 @@ void vVessel::UpdateRenderVectors()
 	vObject::UpdateRenderVectors();
 
 	DWORD flag = *(DWORD*)gc->GetConfigParam(CFGPRM_FORCEVECTORFLAG);
-	if (flag & BF_ENABLE) {
+	if (flag & BFV_ENABLE) {
 		VESSEL* vessel = oapiGetVesselInterface(hObj);
 		static double shift = 1e3, lshift = log(shift);
-		bool logscale = ((flag & BF_LOGSCALE) != 0);
+		bool logscale = ((flag & BFV_LOGSCALE) != 0);
 		double len, scale, scale2 = size * 0.02;
 		scale = (logscale ? 1.0 : size / (vessel->GetMass() * 9.81));
 		double m = vessel->GetMass(); // DEBUG
@@ -141,32 +141,32 @@ void vVessel::UpdateRenderVectors()
 		char cbuf[256];
 		VECTOR3 F;
 
-		if ((flag & BF_WEIGHT) && vessel->GetWeightVector(F)) {
+		if ((flag & BFV_WEIGHT) && vessel->GetWeightVector(F)) {
 			sprintf(cbuf, "G = %fN", len = length(F));
 			if (logscale) len = log(len + shift) - lshift; else len *= scale;
 			AddVector(unit(F) * (len * pscale), _V(0, 0, 0), scale2, std::string(cbuf), _V(1, 1, 0), alpha, D3DRGB(1, 1, 0));
 		}
-		if ((flag & BF_THRUST) && vessel->GetThrustVector(F)) {
+		if ((flag & BFV_THRUST) && vessel->GetThrustVector(F)) {
 			sprintf(cbuf, "T = %fN", len = length(F));
 			if (logscale) len = log(len + shift) - lshift; else len *= scale;
 			AddVector(unit(F) * (len * pscale), _V(0, 0, 0), scale2, std::string(cbuf), _V(0, 0, 1), alpha, D3DRGB(0.5, 0.5, 1));
 		}
-		if ((flag & BF_LIFT) && vessel->GetLiftVector(F)) {
+		if ((flag & BFV_LIFT) && vessel->GetLiftVector(F)) {
 			sprintf(cbuf, "L = %fN", len = length(F));
 			if (logscale) len = log(len + shift) - lshift; else len *= scale;
 			AddVector(unit(F) * (len * pscale), _V(0, 0, 0), scale2, std::string(cbuf), _V(0, 1, 0), alpha, D3DRGB(0.5, 1, 0.5));
 		}
-		if ((flag & BF_DRAG) && vessel->GetDragVector(F)) {
+		if ((flag & BFV_DRAG) && vessel->GetDragVector(F)) {
 			sprintf(cbuf, "D = %fN", len = length(F));
 			if (logscale) len = log(len + shift) - lshift; else len *= scale;
 			AddVector(unit(F) * (len * pscale), _V(0, 0, 0), scale2, std::string(cbuf), _V(1, 0, 0), alpha, D3DRGB(1, 0.5, 0.5));
 		}
-		if ((flag & BF_TOTAL) && vessel->GetForceVector(F)) {
+		if ((flag & BFV_TOTAL) && vessel->GetForceVector(F)) {
 			sprintf(cbuf, "F = %fN", len = length(F));
 			if (logscale) len = log(len + shift) - lshift; else len *= scale;
 			AddVector(unit(F) * (len * pscale), _V(0, 0, 0), scale2, std::string(cbuf), _V(1, 1, 1), alpha, D3DRGB(1, 1, 1));
 		}
-		if ((flag & BF_TORQUE) && vessel->GetTorqueVector(F)) {
+		if ((flag & BFV_TORQUE) && vessel->GetTorqueVector(F)) {
 			sprintf(cbuf, "M = %fNm", len = length(F));
 			if (logscale) len = log(len + 1e-5) - log(1e-5); else len *= scale * 1e5;
 			AddVector(unit(F) * (len * pscale), _V(0, 0, 0), scale2 * 0.5, std::string(cbuf), _V(1, 0, 1), alpha, D3DRGB(1, 0, 1));

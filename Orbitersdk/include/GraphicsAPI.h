@@ -191,6 +191,7 @@ typedef void *HDC;
 
 /**
  * Bit flags for force vector display options.
+ * For a description of the available bit flags, see \ref bfvflag
  * \par Parameter type:
  *   DWORD
  */
@@ -212,6 +213,7 @@ typedef void *HDC;
 
 /**
  * Bit flags for frame axis display options.
+ * For a description of the available bit flags, see \ref favflag
  * \par Parameter type:
  *   DWORD
  */
@@ -265,25 +267,25 @@ typedef void *HDC;
 #define PLN_SURFMARK (PLN_BMARK | PLN_RMARK | PLN_LMARK)
 /// @}
 
-/// \defgroup bfflag Bit flags for vessel force vector render options
+/// \defgroup bfvflag Bit flags for vessel force vector render options
 /// @{
-#define BF_ENABLE     0x0001 ///< Enable force vectors
-#define BF_LOGSCALE   0x0002 ///< Use logarithmic scale (instead of linear scale)
-#define BF_WEIGHT     0x0004 ///< Show weight vector
-#define BF_THRUST     0x0008 ///< Show thrust vector
-#define BF_LIFT       0x0010 ///< Show lift vector
-#define BF_DRAG       0x0020 ///< Show drag vector
-#define BF_TOTAL      0x0040 ///< Show total force vector
-#define BF_TORQUE     0x0080 ///< Show torque vector
+#define BFV_ENABLE    0x0001 ///< Enable body force vectors
+#define BFV_LOGSCALE  0x0002 ///< Use logarithmic scale (instead of linear scale)
+#define BFV_WEIGHT    0x0004 ///< Show weight vector
+#define BFV_THRUST    0x0008 ///< Show thrust vector
+#define BFV_LIFT      0x0010 ///< Show lift vector
+#define BFV_DRAG      0x0020 ///< Show drag vector
+#define BFV_TOTAL     0x0040 ///< Show total force vector
+#define BFV_TORQUE    0x0080 ///< Show torque vector
 /// @}
 
-/// \defgroup caflag Bit flags for frame axis render options
+/// \defgroup favflag Bit flags for frame axis vector render options
 /// @{
-#define FA_ENABLE   0x0001 ///< Enable frame axis display
-#define FA_NEG      0x0002 ///< Also show negative axes
-#define FA_VESSEL   0x0004 ///< Show vessel frame axes
-#define FA_CBODY    0x0008 ///< Show celestial body frame axes
-#define FA_BASE     0x0010 ///< Show surface base frame axes
+#define FAV_ENABLE    0x0001 ///< Enable frame axis vector display
+#define FAV_NEGATIVE  0x0002 ///< Also show negative axes
+#define FAV_VESSEL    0x0004 ///< Show vessel frame axes
+#define FAV_CELBODY   0x0008 ///< Show celestial body frame axes
+#define FAV_BASE      0x0010 ///< Show surface base frame axes
 /// @}
 
 /// \defgroup bltflag Bit flags for blitting operations

@@ -1652,10 +1652,10 @@ void Scene::RenderMainScene()
 	// Render vessel axis vectors
 	// -------------------------------------------------------------------------------------------------------
 
-	DWORD bfvmode = *(DWORD*)gc->GetConfigParam(CFGPRM_SHOWBODYFORCEVECTORSFLAG);
-	DWORD scamode = *(DWORD*)gc->GetConfigParam(CFGPRM_SHOWCOORDINATEAXESFLAG);
+	DWORD bfvmode = *(DWORD*)gc->GetConfigParam(CFGPRM_FORCEVECTORFLAG);
+	DWORD scamode = *(DWORD*)gc->GetConfigParam(CFGPRM_FRAMEAXISFLAG);
 
-	if (bfvmode&BFV_ENABLE || scamode&SCA_ENABLE)
+	if (bfvmode & BFV_ENABLE || scamode & FAV_ENABLE)
 	{
 
 		pDevice->Clear(0, NULL, D3DCLEAR_ZBUFFER,  0, 1.0f, 0L); // clear z-buffer

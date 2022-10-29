@@ -540,7 +540,7 @@ void Scene::Render ()
 	if (!alpha) dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
 
 	// render object vectors
-	if (*(DWORD*)gc->GetConfigParam(CFGPRM_FORCEVECTORFLAG) & BF_ENABLE || *(DWORD*)gc->GetConfigParam(CFGPRM_FRAMEAXISFLAG) & FA_ENABLE) {
+	if (*(DWORD*)gc->GetConfigParam(CFGPRM_FORCEVECTORFLAG) & BFV_ENABLE || *(DWORD*)gc->GetConfigParam(CFGPRM_FRAMEAXISFLAG) & FAV_ENABLE) {
 		cam->SetFrustumLimits(1.0, 1e30);
 		RenderVectors();
 		cam->SetFrustumLimits(npl, fpl);
