@@ -1865,7 +1865,7 @@ void Scene::RenderMainScene()
 			VisualizeCubeMap(vFocus->GetIrradEnv(), 0);
 			break;
 		case 7:
-			VisualizeCubeMap(pIrradTemp, 0);
+			VisualizeCubeMap(pIrradTemp, 0); // This "temp" image may flash due to being shared among multiple vessels.
 			break;
 		case 8:
 			if (pShdMap) {
