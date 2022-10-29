@@ -202,3 +202,5 @@
 #define IDC_ATD_TW_DST                          3016
 #define IDC_ATD_TW_HAZE                         3017
 #define IDC_ATD_TW_BRI                          3018
+#define IDC_ATM_COPYLOW                         3019
+#define IDC_ATM_COPYHIGH                        3020

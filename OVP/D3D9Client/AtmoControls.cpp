@@ -478,8 +478,18 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			case IDC_ATM_COPYTO:
 				if (vObj) {
-					if (vObj->GetAtmoParams(1) != param) memcpy(vObj->GetAtmoParams(1), param, sizeof(ScatterParams));
+					if (vObj->GetAtmoParams(1) != param) memcpy(vObj->GetAtmoParams(1), param, sizeof(ScatterParams));			
+				}
+				break;
+
+			case IDC_ATM_COPYLOW:
+				if (vObj) {
 					if (vObj->GetAtmoParams(2) != param) memcpy(vObj->GetAtmoParams(2), param, sizeof(ScatterParams));
+				}
+				break;
+
+			case IDC_ATM_COPYHIGH:
+				if (vObj) {
 					if (vObj->GetAtmoParams(3) != param) memcpy(vObj->GetAtmoParams(3), param, sizeof(ScatterParams));
 				}
 				break;

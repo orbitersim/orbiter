@@ -4,6 +4,7 @@
 
 #include <winres.h>
 #include <commctrl.h>
+#include <richedit.h>
 #include "resource.h"
 
 
@@ -135,9 +136,9 @@ CAPTION "Atmospheric Controls"
 FONT 8, "Ms Shell Dlg"
 {
     GROUPBOX        "Twilight settings", 0, 10, 5, 115, 250, 0, WS_EX_LEFT
-    AUTOCHECKBOX    "Visualize Scatter Tables", IDC_ATM_DISPLAY, 230, 269, 91, 8, 0, WS_EX_LEFT
+    AUTOCHECKBOX    "Visualize Scatter Tables", IDC_ATM_DISPLAY, 361, 268, 91, 8, 0, WS_EX_LEFT
     CONTROL         "", IDC_ATM_AUX4, TRACKBAR_CLASS, WS_TABSTOP | TBS_VERT | TBS_BOTH | TBS_NOTICKS, 602, 30, 15, 200, WS_EX_LEFT
-    PUSHBUTTON      "Copy To All", IDC_ATM_COPYTO, 161, 265, 55, 14, 0, WS_EX_LEFT
+    PUSHBUTTON      "Copy To Srf", IDC_ATM_COPYTO, 161, 265, 55, 14, 0, WS_EX_LEFT
     GROUPBOX        "Wavelength, Scale height settings", IDC_STATIC, 135, 5, 155, 250, 0, WS_EX_LEFT
     CTEXT           "Configuration", IDC_STATIC, 20, 267, 42, 8, SS_CENTER, WS_EX_LEFT
     EDITTEXT        IDC_ATD_TW_DST, 20, 235, 30, 12, ES_CENTER | ES_AUTOHSCROLL | ES_READONLY, WS_EX_LEFT
@@ -204,6 +205,8 @@ FONT 8, "Ms Shell Dlg"
     PUSHBUTTON      "Save Settings", IDC_ATM_SAVE, 660, 265, 60, 14, 0, WS_EX_LEFT
     COMBOBOX        IDC_ATM_MODE, 70, 265, 65, 14, CBS_DROPDOWN | CBS_HASSTRINGS, WS_EX_LEFT
     PUSHBUTTON      "Load Settings", IDC_ATM_LOAD, 595, 265, 60, 14, 0, WS_EX_LEFT
+    PUSHBUTTON      "Copy Low Orbit", IDC_ATM_COPYLOW, 220, 265, 60, 14, 0, WS_EX_LEFT
+    PUSHBUTTON      "Copy High Orbit", IDC_ATM_COPYHIGH, 285, 265, 65, 14, 0, WS_EX_LEFT
 }
 
 
