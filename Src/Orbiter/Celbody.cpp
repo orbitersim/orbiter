@@ -77,7 +77,7 @@ CelestialBody::CelestialBody (char *fname)
 
 		LOGOUT(gravModelFileName);
 		if (readResult == 0) {
-			LOGOUT("IT WORKS");
+			LOGOUT("GRAVITY MODEL LOADED");
 		}
 		else if (readResult == 1) {
 			LOGOUT("GRAVITY MODEL ERROR: COEFFICIENT FILE NOT FOUND");
