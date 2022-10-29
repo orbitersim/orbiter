@@ -15,7 +15,6 @@
 
 #include "D3D9Client.h"
 #include "D3D9Util.h"
-#include "PlanetRenderer.h"
 #include "VPlanet.h"
 #include "Spherepatch.h"
 #include "D3D9Pad.h"
@@ -129,7 +128,7 @@ public:
 	float GetBoundingSphereRad() const;
 	D3DXVECTOR3 GetBoundingSpherePos() const;
 	bool Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir, TILEPICK &result);
-	D3DXVECTOR4 GetTexRangeDX (const TEXCRDRANGE2 *subrange) const;
+	FVECTOR4 GetTexRangeDX (const TEXCRDRANGE2 *subrange) const;
 	inline const TEXCRDRANGE2 *GetTexRange () const { return &texrange; }
 	// Returns the tile's texture coordinate range
 
@@ -277,7 +276,8 @@ namespace eElevMode {
  * Rendering of planetary surfaces using texture tiles at
  * variable resolutions (new version).
  */
-class TileManager2Base : public PlanetRenderer {
+class TileManager2Base
+{
 	friend class Tile;
 
 public:
@@ -324,7 +324,7 @@ public:
 	 * \param vplanet planet instance pointer
 	 * \param _maxres maximum resolution
 	 */
-	TileManager2Base (const vPlanet *vplanet, int _maxres, int _gridres);
+	TileManager2Base (vPlanet *vplanet, int _maxres, int _gridres);
 
 	/**
 	 * \brief Destroys the tile manager object
@@ -348,7 +348,6 @@ public:
 	static bool ShutDown ();
 
 	static LPDIRECT3DDEVICE9 Dev() { return pDev; }
-	static ID3DXEffect * Shader() { return pShader; }
 	static HFONT GetDebugFont() { return hFont; }
 
 	void TileLabel(LPDIRECT3DTEXTURE9 tex, int lvl, int ilat, int ilng);
@@ -384,8 +383,11 @@ public:
 
 	inline class Scene * GetScene() const { return gc->GetScene(); }
 	inline oapi::D3D9Client *GetClient() const { return gc; }
-	inline const vPlanet *GetPlanet() const { return vp; }
+	inline vPlanet *GetPlanet() { return vp; }
+	inline vPlanet* GetPlanet() const { return vp; }
 
+	inline PlanetShader* GetShader() { return pShader; }
+	inline bool IsUsingZBuf() const { return bUseZ; }
 	inline const OBJHANDLE &Cbody() const { return obj; }
 	inline const ConfigPrm &Cprm() const { return cprm; }
 	inline const char *CbodyName() const { return cbody_name; }
@@ -394,11 +396,6 @@ public:
 	inline const int GridRes() const { return gridRes; }
 	inline const double ElevRes() const { return elevRes; } //(Mostly Obsolete) not needed since elevation is float based 
 	inline OBJHANDLE GetHandle() const { return obj; }
-	
-	double GetMinElev() const { return min_elev; }
-	double GetMaxElev() const { return max_elev; }
-	void SetMinMaxElev(double min, double max);
-	void ResetMinMaxElev();
 
 	/// \brief Return the root directory containing the body's texture data (surface, elevation, mask, cloud tiles)
 	inline const std::string& DataRootDir() const { return m_dataRootDir; }
@@ -412,14 +409,13 @@ protected:
 	// loads one of the four subnodes of 'node', given by 'idx'
 
 	double obj_size;                 // planet radius
-	double min_elev;				 // minimum rendered elevation
-	double max_elev;				 // maximum rendered elevation
 	static TileLoader *loader;
-	const vPlanet *vp;				 // the planet visual
+	vPlanet *vp;					 // the planet visual
+	PlanetShader* pShader;
 	std::string m_dataRootDir;       // the root directory (usually ending in the cbody's name) for all tile data (textures, elevations, etc.)
+	bool bUseZ;
 
 private:
-	bool bSet;						 // This is related to GetMin/MaxElevation
 	OBJHANDLE obj;                   // the planet object
 	char cbody_name[256];
 	ELEVHANDLE emgr;                 // elevation data query handle
@@ -431,10 +427,16 @@ private:
 	std::stack<LPDIRECT3DVERTEXBUFFER9> VtxPool[NPOOLS];
 	std::stack<LPDIRECT3DINDEXBUFFER9> IdxPool[NPOOLS];
 
+	static oapi::D3D9Client* gc;
+	static LPDIRECT3DDEVICE9 pDev;
 	static HFONT hFont;
 	static double resolutionBias;
 	static double resolutionScale;
 	static bool bTileLoadThread;     // load tiles on separate thread
+public:
+	static LPDIRECT3DTEXTURE9 hOcean;
+	static LPDIRECT3DTEXTURE9 hCloudMicro;
+	static LPDIRECT3DTEXTURE9 hCloudMicroNorm;
 };
 
 // =======================================================================
@@ -444,7 +446,7 @@ class TileManager2: public TileManager2Base {
 	friend class Tile;
 
 public:
-	TileManager2 (const vPlanet *vplanet, int _maxres, int _gridres);
+	TileManager2 (vPlanet *vplanet, int _maxres, int _gridres);
 	~TileManager2 ();
 
 	void Render (MATRIX4 &dwmat, bool use_zbuf, const vPlanet::RenderPrm &rprm);

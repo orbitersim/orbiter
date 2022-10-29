@@ -219,7 +219,6 @@ void TileManager2Base::RenderNode (QuadTreeNode<TileType> *node)
 	if (tile->state == Tile::ForRender) {
 		int lvl = tile->lvl;
 		if (scene->GetRenderPass() == RENDERPASS_MAINSCENE) tile->MatchEdges ();
-		SetWorldMatrix (tile->mWorld);
 		tile->StepIn ();
 		tile->Render ();
 		tile->FrameId = scene->GetFrameId();		// Keep a record about when this tile is actually rendered.
@@ -261,7 +260,7 @@ void TileManager2Base::RenderNodeLabels(QuadTreeNode<TileType> *node, D3D9Pad *s
 // =======================================================================
 
 template<class TileType>
-TileManager2<TileType>::TileManager2 (const vPlanet *vplanet, int _maxres, int _gridres)
+TileManager2<TileType>::TileManager2 (vPlanet *vplanet, int _maxres, int _gridres)
 	: TileManager2Base (vplanet, _maxres, _gridres),
 	ntreeMgr(0)
 {

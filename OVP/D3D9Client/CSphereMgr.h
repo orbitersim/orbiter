@@ -12,14 +12,13 @@
 
 #define STRICT 1
 #include "TileMgr.h"
-#include "PlanetRenderer.h"
 
 class D3D9Config;
 
 // =======================================================================
 // Class CSphereManager
 
-class CSphereManager : private PlanetRenderer 
+class CSphereManager
 {
 public:
 	/**
@@ -27,7 +26,7 @@ public:
 	 * \param gclient client instance pointer
 	 * \param scene scene to which the visual is added
 	 */
-	CSphereManager (oapi::D3D9Client *gclient, const Scene *scene);
+	CSphereManager (oapi::D3D9Client *gclient, Scene *scene);
 
 	/**
 	 * \brief Destroys the sphere manager object
@@ -74,7 +73,6 @@ protected:
 	// Check if specified tile intersects viewport
 
 	static const D3D9Config *cfg;    // configuration parameters
-	const Scene *scn;
 	static int *patchidx;            // texture offsets for different LOD levels
 	static VBMESH PATCH_TPL_1;
 	static VBMESH PATCH_TPL_2;
@@ -95,6 +93,8 @@ protected:
 	static int *NLAT;
 
 private:
+	Scene* scn;
+	ShaderClass* pShader;
 	char texname[64];
 	float intensity;                 // opacity of background image
 	bool disabled;                   // background image disabled?

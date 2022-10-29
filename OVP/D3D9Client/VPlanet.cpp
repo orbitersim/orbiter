@@ -35,6 +35,7 @@
 #include "AtmoControls.h"
 #include "VectorHelpers.h"
 #include "OapiExtension.h"
+#include "IProcess.h"
 
 using namespace oapi;
 
@@ -47,6 +48,11 @@ static double max_surf_dist = 1e4;
 static bool bMicroTexFileRead = false;
 static std::map<std::string, vPlanet::_MicroCfg> MicroCfgs;
 typedef std::map<std::string, vPlanet::_MicroCfg>::iterator MicroCfgsIterator;
+
+PlanetShader* vPlanet::pRender[8] = {};
+ImageProcessing* vPlanet::pIP;
+LPDIRECT3DDEVICE9 vPlanet::pDev;
+LPDIRECT3DTEXTURE9 vPlanet::pSunTex = NULL;
 
 extern int SURF_MAX_PATCHLEVEL;
 extern D3D9Client* g_client;
@@ -310,6 +316,13 @@ void FilterElevationGraphics(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, flo
 }
 
 
+
+
+
+
+
+// ==============================================================
+
 void vPlanet::GlobalExit()
 {
 	// Face's Cleanup ShapeStore -----------------------
@@ -324,8 +337,93 @@ void vPlanet::GlobalExit()
 	g_ShapeStore.clear();
 	g_ElevationFlatteningShapes.clear();
 	g_ShapesLoaded.clear();
+
+	SAFE_DELETE(pIP);
+
+	for (int i=0;i<8;i++) SAFE_DELETE(pRender[i]);
 }
 
+// ==============================================================
+
+void vPlanet::GlobalInit(oapi::D3D9Client* gc)
+{
+	pDev = gc->GetDevice();
+
+	pIP = new ImageProcessing(pDev, "Modules/D3D9Client/Scatter.hlsl", "SunColor");
+
+	pIP->CompileShader("SkyView");
+	pIP->CompileShader("LandView");
+	pIP->CompileShader("RingView");
+	pIP->CompileShader("RenderSun");
+	pIP->CompileShader("AmbientSky");
+
+	if (!pIP->IsOK()) {
+		oapiWriteLog("InitializeScatteringEx() FAILED");
+		return;
+	}
+
+	D3DXCreateTexture(pDev, 256, 256, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &pSunTex);
+
+	LPDIRECT3DSURFACE9 pTgt;
+
+	pIP->Activate("RenderSun");
+	pSunTex->GetSurfaceLevel(0, &pTgt);
+	pIP->SetOutputNative(0, pTgt);
+	if (!pIP->Execute(false)) LogErr("pIP Execute Failed (RenderSun)");
+	SAFE_RELEASE(pTgt);
+
+
+	bool bRiples = *(bool*)gc->GetConfigParam(CFGPRM_SURFACERIPPLE);
+	bool bShadows = *(bool*)gc->GetConfigParam(CFGPRM_CLOUDSHADOWS);
+	bool bClouds = *(bool*)gc->GetConfigParam(CFGPRM_CLOUDS);
+	bool bNightLights = *(bool*)gc->GetConfigParam(CFGPRM_SURFACELIGHTS);
+	bool bWater = *(bool*)gc->GetConfigParam(CFGPRM_SURFACEREFLECT);
+	bool bLocals = *(bool*)gc->GetConfigParam(CFGPRM_LOCALLIGHT);
+	bool bAtmosphere = *(bool*)gc->GetConfigParam(CFGPRM_ATMHAZE);
+
+	// ---------------------------------------------------
+	// Compile planet shader with different configurations
+	// ---------------------------------------------------
+
+	string flags = "";
+	if (Config->CloudMicro) flags += "_CLOUDMICRO ";
+	if (Config->bCloudNormals) flags += "_CLOUDNORMALS ";
+
+	pRender[PLT_CLOUDS] = new PlanetShader(pDev, "Modules/D3D9Client/NewPlanet.hlsl", "CloudVS", "CloudPS", "Clouds", flags.c_str());
+
+	string blend = "";
+	if (Config->BlendMode == 0) blend = "_SOFT ";
+	if (Config->BlendMode == 1) blend = "_MED ";
+	if (Config->BlendMode == 2) blend = "_HARD ";
+
+	flags = "";
+
+	pRender[PLT_GIANT] = new PlanetShader(pDev, "Modules/D3D9Client/NewPlanet.hlsl", "TerrainVS", "TerrainPS", "Giant", (flags + blend).c_str());
+
+	if (bLocals) flags += "_LOCALLIGHTS ";
+	if (Config->MicroMode) flags += "_MICROTEX ";
+	if (Config->ShadowMapMode) flags += "_SHDMAP ";
+	if (Config->EnableMeshDbg) flags += "_DEVTOOLS ";
+
+	pRender[PLT_MARS] = new PlanetShader(pDev, "Modules/D3D9Client/NewPlanet.hlsl", "TerrainVS", "TerrainPS", "Mars", (flags + blend).c_str());
+
+	flags += "_NO_ATMOSPHERE ";
+
+	pRender[PLT_MOON] = new PlanetShader(pDev, "Modules/D3D9Client/NewPlanet.hlsl", "TerrainVS", "TerrainPS", "Moon", (flags + blend).c_str());
+
+	flags = "";
+	if (bWater) flags += "_WATER ";
+	if (bWater && bRiples) flags += "_RIPPLES ";
+	if (bShadows) flags += "_CLOUDSHD ";
+	if (bNightLights) flags += "_NIGHTLIGHTS ";
+	if (bLocals) flags += "_LOCALLIGHTS ";
+
+	//if (Config->MicroMode) flags += "_MICROTEX ";
+	if (Config->ShadowMapMode) flags += "_SHDMAP ";
+	if (Config->EnableMeshDbg) flags += "_DEVTOOLS ";
+
+	pRender[PLT_EARTH] = new PlanetShader(pDev, "Modules/D3D9Client/NewPlanet.hlsl", "TerrainVS", "TerrainPS", "Earth", (flags + blend).c_str());
+}
 
 
 
@@ -335,16 +433,22 @@ void vPlanet::GlobalExit()
 
 // ==============================================================
 
-vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
+vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene) :
+	vObject (_hObj, scene),
+	pRayDepth(), pSunColor(), pRaySkyView(), pMieSkyView(), pLandViewRay(), pLandViewMie(), pAmbientSky(), pLandViewAmb(), ShaderName("Auto\0")
 {
 	memset(&MicroCfg, 0, sizeof(MicroCfg));
 	vRefPoint = _V(1,0,0);
-	bScatter = false;
+	atm_mode = 0;
+	iConfig = 0;
 	dist_scale = 1.0f;
 	threshold = 1e16;
 	max_centre_dist = 0.9*scene->GetCameraFarPlane();
 	maxdist = max (max_centre_dist, max_surf_dist + size);
 	DWORD elev_mode = *(DWORD*)gc->GetConfigParam(CFGPRM_ELEVATIONMODE);
+
+	minelev = *(double*)oapiGetObjectParam(_hObj, OBJPRM_PLANET_MINELEVATION);
+	maxelev = *(double*)oapiGetObjectParam(_hObj, OBJPRM_PLANET_MAXELEVATION);
 
 	physics_patchres = *(DWORD*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_SURFACEMAXLEVEL);
 	physics_patchres = min (physics_patchres, *(DWORD*)gc->GetConfigParam (CFGPRM_SURFACEMAXLEVEL));
@@ -361,16 +465,15 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 		surfmgr = new SurfaceManager (gc, this);
 		surfmgr2 = NULL;
 	} else {
-		bScatter = LoadAtmoConfig(false);
-		if (bScatter) LoadAtmoConfig(true);
+		LoadAtmoConfig();
 		surfmgr = NULL;
 		int patchlvl = 1 << (4 + Config->MeshRes);
 		surfmgr2 = new TileManager2<SurfTile> (this, max_patchres, patchlvl);
 		prm.horizon_excess = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_HORIZONEXCESS);
 		prm.tilebb_excess = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_TILEBBEXCESS);
 	}
-	prm.horizon_minelev = *(double*)oapiGetObjectParam(_hObj, OBJPRM_PLANET_MINELEVATION);
-	prm.horizon_minrad = min (1.0 + prm.horizon_minelev / size, 1.0 - 1e-4);
+
+	prm.horizon_minrad = min (1.0 + minelev / size, 1.0 - 1e-4);
 
 	prm.bAtm = oapiPlanetHasAtmosphere (_hObj);
 	if (prm.bAtm) {
@@ -392,7 +495,7 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 		if (surfmgr) surfmgr->SetMicrotexture ("waves.dds");
 	}
 
-	shadowalpha = (float)(/*1.0f -*/ *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_SHADOWCOLOUR));
+	shadowalpha = (float)(*(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_SHADOWCOLOUR));
 
 	bVesselShadow = (shadowalpha < 0.98);
 	bObjectShadow = (shadowalpha < 0.98);
@@ -443,9 +546,6 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 
 	patchres = 0;
 
-	//if (*(bool*)gc->GetConfigParam(CFGPRM_ATMFOG)==false) prm.bFogEnabled = false;
-
-
 	nbase = oapiGetBaseCount (_hObj);
 	if (nbase)	vbase = new vBase*[nbase];
 	else		vbase = NULL;
@@ -482,10 +582,13 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	MicroCfg.bEnabled = ParseMicroTextures();
 
 	ParseConfig(oapiGetObjectFileName(hObj));
+
+	UpdateScatter();
 }
 
-// ==============================================================
 
+// ===========================================================================================
+//
 vPlanet::~vPlanet ()
 {
 
@@ -515,6 +618,300 @@ vPlanet::~vPlanet ()
 	if (hazemgr2) delete hazemgr2;
 	if (ringmgr)  delete ringmgr;
 	if (mesh)     delete mesh;
+
+	SAFE_RELEASE(pRayDepth);
+	SAFE_RELEASE(pSunColor);
+	SAFE_RELEASE(pRaySkyView);
+	SAFE_RELEASE(pMieSkyView);
+	SAFE_RELEASE(pLandViewRay);
+	SAFE_RELEASE(pLandViewMie);
+	SAFE_RELEASE(pAmbientSky);
+	SAFE_RELEASE(pLandViewAmb);
+}
+
+
+// ===========================================================================================
+//
+double Gauss7(double alt, double cos_dir, double R0, double R1, double iH0)
+{
+	double R = R0 + alt;
+	double rdt = -R * cos_dir;
+	double Ray = rdt + sqrt(R1 * R1 - (R * R - rdt * rdt));
+
+	static const double n[] = { -0.949107, -0.741531, -0.405845, 0.0, 0.405845,0.741531, 0.949107 };
+	static const double w[] = { 0.129485, 0.279705, 0.381830, 0.417959,  0.381830, 0.279705, 0.129485 };
+
+	double p[7]; double a[7]; double s[7];
+	for (int i = 0; i < 7; i++) p[i] = Ray * (1.0 + n[i]) * 0.5;
+	for (int i = 0; i < 7; i++) a[i] = sqrt(R * R + p[i] * p[i] + 2.0 * R * p[i] * cos_dir) - R0;
+	for (int i = 0; i < 7; i++) s[i] = exp2(-a[i] * iH0);
+
+	double sum = 0.0;
+	for (int i = 0; i < 7; i++) sum += s[i] * w[i];
+	return sum * Ray * 0.5;
+}
+
+
+// ===========================================================================================
+//
+float vPlanet::SunAltitude()
+{
+	float d = dot(cp.toCam, cp.toSun);
+	float q = cp.CamRad * d;
+
+	// Ray's closest approach to planet
+	float alt = sqrt(cp.CamRad2 - q * q) - cp.PlanetRad;
+	if (d < 0) return alt;
+	return cp.AtmoRad - cp.PlanetRad;
+}
+
+
+// ===========================================================================================
+//
+FVECTOR3 vPlanet::SunLightColor(FVECTOR3 geo_pos_ecl)
+{
+	float ray = 0.0f, mie = 0.0f;
+	float r2 = dot(geo_pos_ecl, geo_pos_ecl);
+	float r = sqrt(r2);
+	float a = r - cp.PlanetRad;
+	float d = dot(geo_pos_ecl, cp.toSun) / r;
+	
+	if (a > cp.AtmoRad && d > 0) return FVECTOR3(1, 1, 1); // Ray doesn't intersect atmosphere
+
+	float q = r * d;
+	float alt = sqrt(r2 - q * q) - cp.PlanetRad; // Ray's closest approach to a planet's center
+
+	if (alt < 0.0f && d < 0) return FVECTOR3(0, 0, 0); // Ray is shadowed by a planet
+	if (alt > cp.AtmoRad && a > cp.AtmoRad) return FVECTOR3(1, 1, 1); // Ray doesn't intersect atmosphere
+	
+	if (r > cp.AtmoRad) // Ray passes through atmosphere from space to space
+	{
+		ray = Gauss7(alt, 0.0f, cp.PlanetRad, cp.AtmoRad, cp.iH.x) * 2.0f;
+		mie = Gauss7(alt, 0.0f, cp.PlanetRad, cp.AtmoRad, cp.iH.y) * 2.0f;
+	}
+	else // Sample point 'pos' lies with-in atmosphere
+	{
+		ray = Gauss7(a, d, cp.PlanetRad, cp.AtmoRad, cp.iH.x);
+		mie = Gauss7(a, d, cp.PlanetRad, cp.AtmoRad, cp.iH.y);
+	}
+
+	return exp(-(cp.RayWave * (ray * cp.rmO.x) + cp.MieWave * (mie * cp.rmO.y)));
+}
+
+
+// ===========================================================================================
+//
+void vPlanet::UpdateScatter()
+{
+	if (scn->GetRenderPass() != RENDERPASS_MAINSCENE) return;
+	if (surfmgr2 == NULL) return;
+	if (mesh) return;
+
+	if (HasAtmosphere())
+	{
+		if (!pRayDepth) D3DXCreateTexture(pDev, 1024, 1, 1, D3DUSAGE_RENDERTARGET, D3DFMT_G32R32F, D3DPOOL_DEFAULT, &pRayDepth);
+		if (!pSunColor) D3DXCreateTexture(pDev, 256, 256, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pSunColor);
+		if (!pRaySkyView) D3DXCreateTexture(pDev, 256, 256, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pRaySkyView);
+		if (!pMieSkyView) D3DXCreateTexture(pDev, 256, 256, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pMieSkyView);
+		if (!pLandViewRay) D3DXCreateTexture(pDev, 2048, 128, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pLandViewRay);
+		if (!pLandViewMie) D3DXCreateTexture(pDev, 2048, 128, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pLandViewMie);
+		if (!pLandViewAmb) D3DXCreateTexture(pDev, 2048, 128, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pLandViewAmb);
+		if (!pAmbientSky) D3DXCreateTexture(pDev, 256, 256, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pAmbientSky);
+	}
+
+	FVECTOR3 SunDir = SunDirection();
+	FVECTOR3 cam = -PosFromCamera();
+
+	OBJHANDLE hPlanet = GetObject();
+
+	const ScatterParams* atmo = GetAtmoParams();
+
+	DWORD dAmbient = *(DWORD*)gc->GetConfigParam(CFGPRM_AMBIENTLEVEL);
+	float fAmbient = float(dAmbient) * 0.0039f;
+
+	double pr = GetSize() + minelev;		// Planet Min Radius
+	double cr = CamDist();		// Camera distance from a planet center
+	double ca = cr - pr;		// Camera altitude
+
+	float mdh = 6000.0f;		// Minumum distance to horizon
+	float scr = 4.0e-6;
+	float scm = 1.6e-6;
+
+	float g = float(atmo->mphase);
+	float hrz = sqrt(max(0, cr*cr - pr*pr));
+	float qw = float(pr / cr);
+
+	LPDIRECT3DSURFACE9 pTgt, pTgt2;
+
+	// ---------------------------------------------------------------------
+	// Initialize camera centric tangent frame for normal mapped water
+	//
+	MATRIX3 mRot;
+	oapiGetRotationMatrix(hPlanet, &mRot);
+	VECTOR3 vNrm = mul(mRot, ReferencePoint());
+	VECTOR3 vRot = unit(mul(mRot, _V(0, 1, 0)));
+	VECTOR3 vTan = unit(crossp(vRot, vNrm));
+	VECTOR3 vBiT = unit(crossp(vTan, vNrm));
+
+	memcpy(&cp.mVP, scn->GetProjectionViewMatrix(), sizeof(FMATRIX4));
+
+	cp.vPolarAxis = vRot;
+	cp.vTangent = vTan;		// RefFrame for surface micro-tex and water
+	cp.vBiTangent = vBiT;	// RefFrame for surface micro-tex and water
+	cp.cSun = FVECTOR3(1, 1, 1) * 2.0f;
+	cp.PlanetRad = float(pr);
+	cp.PlanetRad2 = float(pr * pr);
+	cp.MinAlt = 0.0f;		// Min Elevation above sea-level
+	cp.MaxAlt = 9e3f;		// Max Elevation above sea-level
+	cp.iAltRng = 1.0f / (cp.MaxAlt - cp.MinAlt);
+	cp.CamAlt = float(ca);
+	cp.CamRad = float(cr);
+	cp.CamRad2 = float(cr * cr);
+	cp.CamPos = cam;
+	cp.toCam = unit(cam);
+	cp.toSun = unit(SunDir);						// Sun-aligned Atmo Scatter RefFrame
+	cp.ZeroAz = unit(cross(cp.toCam, cp.toSun));	// Sun-aligned Atmo Scatter RefFrame
+	cp.SunAz = unit(cross(cp.toCam, cp.ZeroAz));	// Sun-aligned Atmo Scatter RefFrame
+	cp.Up = unit(cross(cp.ZeroAz, cp.toSun));
+	cp.HrzDst = sqrt(max(mdh, cp.CamRad2 - cp.PlanetRad2));
+	cp.Time = fmod(oapiGetSimTime(), 3600.0f);
+	cp.TrGamma = 1.0f / float(atmo->tgamma);
+	cp.TrExpo = float(atmo->trb);
+	cp.Ambient = fAmbient;
+	cp.SunRadAtHrz = float(SunApparentRad()) * cp.HrzDst;
+
+
+	if (HasAtmosphere() == false) return;
+
+	// Skip the rest if no atmosphere exists
+	// ------------------------------------------------------------------------------------------------------------
+
+	cp.AtmoRad = atmo->visalt + cp.PlanetRad;
+	cp.AtmoRad2 = cp.AtmoRad * cp.AtmoRad;
+	cp.CloudAlt = float(prm.cloudalt);
+	cp.CamSpace = sqrt(saturate(cp.CamAlt / atmo->visalt));
+	cp.MaxDst = sqrt(cp.AtmoRad2 - cp.PlanetRad2) + sqrt(max(0.0f, cp.CamRad2 - cp.PlanetRad2)); // 'Long' way distance to sky-dome
+	cp.iMaxDst = 1.0f / cp.MaxDst;
+	cp.AngMin = -sqrt(max(1.0f, cp.CamRad2 - cp.PlanetRad2)) / cp.CamRad;
+	cp.AngRng = 1.0f - cp.AngMin;
+	cp.iAngRng = 1.0f / cp.AngRng;
+	cp.AngCtr = sqrt(max(0.0f, 1.0f - qw * qw));
+	cp.RayWave = unit(pow(FVECTOR3(atmo->red, atmo->green, atmo->blue), -atmo->rpow));
+	cp.MieWave = unit(pow(FVECTOR3(atmo->red, atmo->green, atmo->blue), -atmo->mpow));
+
+	cp.rmO.x = atmo->ray * scr;
+	cp.rmO.y = atmo->mie * scm;
+	cp.rmI.x = atmo->ray * atmo->rayin * scr;
+	cp.rmI.y = atmo->mie * atmo->miein * scm;
+
+	cp.iH.x = 1.0f / float(atmo->rheight * 1000.0);
+	cp.iH.y = 1.0f / float(atmo->mheight * 1000.0);
+	cp.RayPh = atmo->rphase;
+	cp.Expo = atmo->aux3;
+	cp.HG = FVECTOR4(1.5f * (1.0f - g * g) / (2.0f + g * g), 1.0f + g * g, 2.0f * g, float(atmo->mphaseb));
+
+	cp.Clouds = float(atmo->aux2);
+	cp.TW_Multi = float(atmo->tw_bri);
+	cp.TW_Haze = float(atmo->tw_haze);
+	cp.TW_Dst = float(atmo->tw_dst);
+
+	cp.Glare = float(atmo->hazei);
+	cp.GlareColor = lerp(FVECTOR3(1, 1, 1), -cp.RayWave + 1.0f, exp(-cp.CamAlt * cp.iH.x));
+	cp.GlareColor = lerp(FVECTOR3(0, 0, 0), cp.GlareColor, saturate((SunAltitude() + 500.0f) / 500.0f));
+	
+	sprintf_s(oapiDebugString(), 256, "CamAlt=%f", cp.CamAlt);
+
+	sFlow Flow;
+
+
+	//
+	// ----------------------------------------------------------------------------
+	//
+	pIP->Activate("SunColor");
+	pIP->SetStruct("Const", &cp, sizeof(ConstParams));
+
+	pSunColor->GetSurfaceLevel(0, &pTgt);
+	pIP->SetOutputNative(0, pTgt);
+	if (!pIP->Execute(true)) LogErr("pIP Execute Failed (SunColor)");
+	SAFE_RELEASE(pTgt);
+
+
+	//
+	// ----------------------------------------------------------------------------
+	//
+	if (CameraInAtmosphere()) pIP->Activate("SkyView");
+	else pIP->Activate("RingView");
+
+	Flow.bRay = true;
+	Flow.bAmb = false;
+	pIP->SetStruct("Flo", &Flow, sizeof(sFlow));
+	pIP->SetStruct("Const", &cp, sizeof(ConstParams));
+	pIP->SetTextureNative("tSun", pSunColor, IPF_CLAMP | IPF_LINEAR);
+
+	pRaySkyView->GetSurfaceLevel(0, &pTgt);
+	pIP->SetOutputNative(0, pTgt);
+	if (!pIP->Execute(true)) LogErr("pIP Execute Failed (SkyView)");
+	SAFE_RELEASE(pTgt);
+	
+	Flow.bRay = false;
+	Flow.bAmb = false;
+	pIP->SetStruct("Flo", &Flow, sizeof(sFlow));
+	pIP->SetStruct("Const", &cp, sizeof(ConstParams));
+	pMieSkyView->GetSurfaceLevel(0, &pTgt);
+	pIP->SetOutputNative(0, pTgt);
+	if (!pIP->Execute(true)) LogErr("pIP Execute Failed (SkyView)");
+	SAFE_RELEASE(pTgt);
+
+
+	//
+	// ----------------------------------------------------------------------------
+	//
+	pIP->Activate("AmbientSky");
+	pIP->SetStruct("Const", &cp, sizeof(ConstParams));
+	pIP->SetTextureNative("tSkyRayColor", pRaySkyView, IPF_CLAMP | IPF_LINEAR);
+	pIP->SetTextureNative("tSkyMieColor", pMieSkyView, IPF_CLAMP | IPF_LINEAR);
+	pIP->SetTextureNative("tSunGlare", pSunTex, IPF_CLAMP | IPF_LINEAR);
+
+	pAmbientSky->GetSurfaceLevel(0, &pTgt);
+	pIP->SetOutputNative(0, pTgt);
+	if (!pIP->Execute(true)) LogErr("pIP Execute Failed (AmbientSky)");
+	SAFE_RELEASE(pTgt);
+
+
+	//
+	// ----------------------------------------------------------------------------
+	//
+	pIP->Activate("LandView");
+	Flow.bRay = true;
+	Flow.bAmb = false;
+
+	pIP->SetStruct("Const", &cp, sizeof(ConstParams));
+	pIP->SetStruct("Flo", &Flow, sizeof(sFlow));
+	pIP->SetTextureNative("tSun", pSunColor, IPF_CLAMP | IPF_LINEAR);
+	pLandViewRay->GetSurfaceLevel(0, &pTgt);
+	pIP->SetOutputNative(0, pTgt);
+	if (!pIP->Execute(true)) LogErr("pIP Execute Failed (SkyView)");
+	SAFE_RELEASE(pTgt);
+
+
+	Flow.bRay = false;
+	Flow.bAmb = false;
+	pIP->SetStruct("Const", &cp, sizeof(ConstParams));
+	pIP->SetStruct("Flo", &Flow, sizeof(sFlow));
+	pLandViewMie->GetSurfaceLevel(0, &pTgt);
+	pIP->SetOutputNative(0, pTgt);
+	if (!pIP->Execute(true)) LogErr("pIP Execute Failed (SkyView)");
+	SAFE_RELEASE(pTgt);
+
+
+	Flow.bRay = false;
+	Flow.bAmb = true;
+	pIP->SetStruct("Const", &cp, sizeof(ConstParams));
+	pIP->SetStruct("Flo", &Flow, sizeof(sFlow));
+	pLandViewAmb->GetSurfaceLevel(0, &pTgt);
+	pIP->SetOutputNative(0, pTgt);
+	if (!pIP->Execute(true)) LogErr("pIP Execute Failed (SkyView)");
+	SAFE_RELEASE(pTgt);
 }
 
 
@@ -569,24 +966,8 @@ bool vPlanet::CameraInAtmosphere() const
 double vPlanet::GetHorizonAlt() const
 {
 	if (!prm.bAtm) return 0.0;
-	if (!bScatter) return prm.atm_hzalt;
-	return SPrm.height*11e3;
-}
-
-// ==============================================================
-
-double vPlanet::GetMinElevation() const
-{
-	if (surfmgr2) return surfmgr2->GetMinElev();
-	return 0.0; // return prm.horizon_minelev; ?!?
-}
-
-// ==============================================================
-
-double vPlanet::GetMaxElevation() const
-{
-	if (surfmgr2) return surfmgr2->GetMaxElev();
-	return 0.0;
+	if (!surfmgr2) return prm.atm_hzalt;
+	return SPrm.visalt;
 }
 
 // ==============================================================
@@ -730,9 +1111,6 @@ bool vPlanet::Update (bool bMainScene)
 		prm.cloudrot = posangle(prm.cloudrot);
 		prm.cloudvis = (cdist < cloudrad ? 1:0);
 		if (cdist > cloudrad*(1.0-1.5e-4)) prm.cloudvis |= 2;
-		//prm.bCloudFlatShadows = (cdist >= 1.05*size);
-		//prm.bCloudFlatShadows = (cdist >= (size+GetHorizonAlt()));
-		//prm.bCloudFlatShadows = false;
 
 		if (clouddata) {
 			if (prm.cloudvis & 1) {
@@ -834,8 +1212,8 @@ void vPlanet::CheckResolution()
 				if (hazemgr) { delete hazemgr; hazemgr = NULL; }
 				if (hazemgr2) { delete hazemgr2; hazemgr2 = NULL; }
 			} else {
-				if (tilever>1 && bScatter) {
-					if (!hazemgr2) hazemgr2 = new HazeManager2 (scn->GetClient(), this);
+				if (tilever>1) {
+					if (!hazemgr2) hazemgr2 = new HazeManager2 (this);
 				}
 				else if (!hazemgr) hazemgr = new HazeManager (scn->GetClient(), this);
 			}
@@ -865,35 +1243,33 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 	_TRACE;
 	if (!active) return false;
 
-	D3D9Effect::UpdateEffectCamera(hObj);
-	D3D9Effect::FX->SetFloat(D3D9Effect::eDistScale, 1.0f/float(dist_scale));
-
 	const Scene::SHADOWMAPPARAM *shd = scn->GetSMapData();
 
 	float s = float(shd->size);
 	float is = 1.0f / s;
 	float qw = 1.0f / float(Config->ShadowMapSize);
 
-	// Clear setting for a mesh based body
-	//
-	HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, false));
-	HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, false));
+	// Must update the latest view projection matrix
+	cp.mVP = *scn->GetProjectionViewMatrix();
 
-	// Initialize projected shadows for a mesh based body
-	//
-	if (shd->pShadowMap && (scn->GetRenderPass() == RENDERPASS_MAINSCENE) && (Config->TerrainShadowing == 2)) {
-		if (scn->GetCameraAltitude() < 10e3 && IsMesh()) {
-			HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, &shd->mViewProj));
-			HR(D3D9Effect::FX->SetTexture(D3D9Effect::eShadowMap, shd->pShadowMap));
-			HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, &D3DXVECTOR4(s, is, qw, 0)));
-			HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, true));
+	if (surfmgr) {
+
+		D3D9Effect::UpdateEffectCamera(hObj);
+		D3D9Effect::FX->SetFloat(D3D9Effect::eDistScale, 1.0f / float(dist_scale));
+
+		HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, false));
+		HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, false));
+
+		if (shd->pShadowMap && (scn->GetRenderPass() == RENDERPASS_MAINSCENE) && (Config->TerrainShadowing == 2)) {
+			if (scn->GetCameraAltitude() < 10e3 || IsMesh()) {
+				HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, &shd->mViewProj));
+				HR(D3D9Effect::FX->SetTexture(D3D9Effect::eShadowMap, shd->pShadowMap));
+				HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, &D3DXVECTOR4(s, is, qw, 0)));
+				HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, true));
+			}
 		}
 	}
 
-	if (!mesh) { // Skip for a mesh
-		PlanetRenderer::InitializeScattering(this);
-		PlanetRenderer::SetViewProjectionMatrix(scn->GetProjectionViewMatrix());
-	}
 
 	if (DebugControls::IsActive()) {
 		// DWORD flags  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
@@ -1008,8 +1384,10 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 
 	}
 
-	// Shutdown shadows to prevent from causing problems
-	HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, false));
+	if (surfmgr) {
+		// Shutdown shadows to prevent from causing problems
+		HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, false));
+	}
 
 	return true;
 }
@@ -1053,13 +1431,9 @@ void vPlanet::RenderLabels(LPDIRECT3DDEVICE9 dev, D3D9Pad *skp, oapi::Font **lab
 
 void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 {
-	float fogfactor;
-	D3D9Effect::FX->GetFloat(D3D9Effect::eFogDensity, &fogfactor);
-
+	
 	bool bUseZBuf = true;
-	bool bLog = false;
-	if (scn->GetRenderPass() == RENDERPASS_MAINSCENE && scn->GetCameraProxyVisual() == this) bLog = true;
-	double tot_surf = D3D9GetTime();
+
 	double calt = abs(cdist - size);
 
 	if (surfmgr2) {
@@ -1102,16 +1476,15 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 		//if (string(GetName()) == string("Earth")) sprintf_s(oapiDebugString(), 256, "UseZ=%hhu,  ElevMode=%d", bUseZBuf, surfmgr2->ElevMode);
 		
 		surfmgr2->Render(dmWorld, bUseZBuf, prm);
-
-		if (bLog) D3D9SetTime(D3D9Stats.Timer.Surface, tot_surf);
 	}
 	else {
+		float fogfactor;
+		D3D9Effect::FX->GetFloat(D3D9Effect::eFogDensity, &fogfactor);
 		dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 		if (prm.bFog) D3D9Effect::FX->SetFloat(D3D9Effect::eFogDensity, fogfactor/dist_scale);
 		surfmgr->SetAmbientColor(prm.AmbColor);
 		surfmgr->Render (dev, mWorld, dist_scale, patchres, 0.0, prm.bFog); // surface
 		if (prm.bFog) D3D9Effect::FX->SetFloat(D3D9Effect::eFogDensity, fogfactor);
-		if (bLog) D3D9SetTime(D3D9Stats.Timer.Surface, tot_surf);
 	}
 
 	if (nbase) {
@@ -1130,10 +1503,6 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 
 void vPlanet::RenderCloudLayer (LPDIRECT3DDEVICE9 dev, DWORD cullmode)
 {
-	bool bLog = false;
-	if (scn->GetRenderPass() == RENDERPASS_MAINSCENE && scn->GetCameraProxyVisual() == this) bLog = true;
-	double tot_cloud = D3D9GetTime();
-
 	if (cullmode != D3DCULL_CCW) dev->SetRenderState (D3DRS_CULLMODE, cullmode);
 	if (cloudmgr2) {
 		cloudmgr2->Render(dmWorld, false, prm);
@@ -1141,8 +1510,6 @@ void vPlanet::RenderCloudLayer (LPDIRECT3DDEVICE9 dev, DWORD cullmode)
 	else
 		clouddata->cloudmgr->Render (dev, clouddata->mWorldC, dist_scale, min(patchres,8), clouddata->viewap); // clouds
 	if (cullmode != D3DCULL_CCW) dev->SetRenderState (D3DRS_CULLMODE, D3DCULL_CCW);
-
-	if (bLog) D3D9SetTime(D3D9Stats.Timer.Clouds, tot_cloud);
 }
 
 // ==============================================================
@@ -1150,8 +1517,7 @@ void vPlanet::RenderCloudLayer (LPDIRECT3DDEVICE9 dev, DWORD cullmode)
 void vPlanet::RenderCloudShadows (LPDIRECT3DDEVICE9 dev)
 {
 	if (cloudmgr2) {
-		//if (prm.bCloudFlatShadows)
-		//	cloudmgr2->RenderFlatCloudShadows (dmWorld, prm);
+		// Nothing to do here
 	}
 	else if (clouddata) { // legacy method
 		float fogfactor;
@@ -1228,31 +1594,6 @@ bool vPlanet::ModLighting (DWORD &ambient)
 }
 
 // ==============================================================
-
-D3DXVECTOR3 vPlanet::GetSunLightColor(VECTOR3 vPos, float fAmbient, float fGlobalAmb)
-{
-	double fAlt = length(vPos) - size;
-	if (fAlt>prm.SclHeight*20.0) return D3DXVECTOR3(1,1,1);
-
-	float  rp = -float(SPrm.rpow);
-	float  mp = -float(SPrm.mpow);
-
-	D3DXVECTOR3 lambda4 = D3DXVECTOR3(pow(float(SPrm.red),rp), pow(float(SPrm.green),rp), pow(float(SPrm.blue),rp));
-	D3DXVECTOR3 lambda2 = D3DXVECTOR3(pow(float(SPrm.red),mp), pow(float(SPrm.green),mp), pow(float(SPrm.blue),mp));
-
-	D3DXVec3Normalize(&lambda4, &lambda4);
-	D3DXVec3Normalize(&lambda2, &lambda2);
-
-	D3DXVECTOR3 vOutTotSun = lambda4*float(SPrm.rout) + lambda2*float(SPrm.mie);
-	D3DXVECTOR3 vRayInSct  = lambda4*float(SPrm.rin * SPrm.rout);
-
-	double fDPS = max(0.34, dotp(unit(vPos), sundir));
-	double fDns = exp2(-fAlt * prm.InvSclHeight);
-
-	return exp2(-vOutTotSun * float(fDns * AngleCoEff(fDPS)));
-}
-
-// ==============================================================
 // Get a "semi" fixed surface reference point. Update if camera
 // movement is greater that 2deg
 //
@@ -1279,220 +1620,285 @@ double vPlanet::AngleCoEff(double cd)
 
 void vPlanet::UpdateAtmoConfig()
 {
-	prm.SclHeight	 = float(SPrm.height*1e3);
+	prm.SclHeight = float(SPrm.rheight*1e3);
 	prm.InvSclHeight = 1.0f / float(prm.SclHeight);
-	double outer = size + SPrm.height * 12.0 * 1e3;
-//	double height = size + SPrm.height * 5.0;
-//	double angle = (PI-asin(size/height)) * DEG;
-
-	SolveXScatter(prm.SclHeight, size, outer, prm.ScatterCoEff, 96.0, 8);
-}
-
-
-double GaussLobatto(double alt, double dir, double R0, double R1, double h0)
-{
-	double R = R0 + alt;
-
-	double rdt = -R * cos(dir);
-	double Ray = rdt + sqrt(R1*R1 - (R*R - rdt*rdt));
-
-	double p0 = Ray * 0.0;
-	double p1 = Ray * 0.2765;
-	double p2 = Ray * 0.7235;
-	double p3 = Ray * 1.0;
-
-	double a0 = sqrt(R*R + p0*p0 + 2.0*R*p0*cos(dir)) - R0;
-	double a1 = sqrt(R*R + p1*p1 + 2.0*R*p1*cos(dir)) - R0;
-	double a2 = sqrt(R*R + p2*p2 + 2.0*R*p2*cos(dir)) - R0;
-	double a3 = sqrt(R*R + p3*p3 + 2.0*R*p3*cos(dir)) - R0;
-
-	double s0 = exp2(-a0/h0);
-	double s1 = exp2(-a1/h0);
-	double s2 = exp2(-a2/h0);
-	double s3 = exp2(-a3/h0);
-
-	double sum = (s0*0.167 + s1*0.833 + s2*0.833 + s3*0.167) * Ray * 0.5 * 0.6931471806;
-
-	return sum;
+	double outer = size + SPrm.rheight * 12.0 * 1e3;
+	SolveXScatter(prm.SclHeight, size, outer, prm.ScatterCoEff, 90.0, 8);
+	UpdateScatter();
 }
 
 // ==============================================================
 
-void vPlanet::DumpDebugFile()
+PlanetShader* vPlanet::GetShader(int i)
 {
-	/*
-	int samples = 100;
-	double max_angle = 100.0;
-	double delta = 3.1415*max_angle/float(samples*180);
-	double angle = 0.0;
-	double outer = size + (prm.SclHeight*8.0);
+	if (i == PLT_AUTO)
+	{
+		bool render_shadows = CloudMgr2() != NULL;
+		bool has_atmosphere = HasAtmosphere();
+		bool has_ripples = HasRipples();
 
-	FILE *fp = NULL;
-	fopen_s(&fp, "OpticalDebug.txt", "w");
-	if (fp==NULL) return;
-
-	for (int i=0;i<samples;i++) {
-		double exact	= ExactOpticalDepth(0.0, angle, size, outer, prm.SclHeight) / prm.SclHeight;
-		double gauss	= GaussLobatto(0.0, angle, size, outer, prm.SclHeight) / prm.SclHeight;
-		double accur    = OpticalDepth(0.0, cos(angle)) / double(prm.SclHeight);
-		angle += delta;
-		fprintf(fp,"%d %6.6g %6.6g %6.6g\n", i, exact, accur, gauss);
+		if (has_atmosphere) {
+			if (has_ripples || render_shadows) return pRender[PLT_EARTH];
+			else return pRender[PLT_MARS];
+		}
+		return pRender[PLT_MOON];
 	}
-	fclose(fp);*/
+
+	if (i == PLT_CONFIG)
+	{
+		if (strcmp(ShaderName, "Auto") == 0) return GetShader(PLT_AUTO);
+		if (strcmp(ShaderName, "Earth") == 0) return pRender[PLT_EARTH];
+		if (strcmp(ShaderName, "Mars") == 0) return pRender[PLT_MARS];
+		if (strcmp(ShaderName, "Giant") == 0) return pRender[PLT_GIANT];
+		return pRender[PLT_MOON];
+	}
+
+	return pRender[i];
 }
+
+// ==============================================================
+
+LPDIRECT3DTEXTURE9 vPlanet::GetScatterTable(int i)
+{
+	switch (i)
+	{
+	case SUN_COLOR: return pSunColor;
+	case RAY_COLOR: return pRaySkyView;
+	case MIE_COLOR: return pMieSkyView;
+	case RAY_LAND: return pLandViewRay;
+	case MIE_LAND: return pLandViewMie;
+	case AMB_LAND: return pLandViewAmb;
+	case SUN_GLARE: return pSunTex;
+	case SKY_AMBIENT: return pAmbientSky;
+	default: return NULL;
+	}
+	return NULL;
+}
+
+// ==============================================================
 
 ScatterParams * vPlanet::GetAtmoParams(int mode)
 {
-	if (!prm.bAtm || prm.atm_hzalt==0.0) return &SPrm;	// Return surface setup if a planet doesn't have atmosphere
+	if (!prm.bAtm || prm.atm_hzalt == 0.0) {
+		atm_mode = 1;
+		return &SPrm;	// Return surface setup if a planet doesn't have atmosphere
+	}
 
-	double alt  = saturate((CamDist()-size) / (GetHorizonAlt()*3.0));
+	double lorb = SPrm.orbalt;
+	double horb = SPrm.orbalt * 10.0;
+	double ca = CamDist() - size;
+	double alt = saturate(ca / lorb);
+	double halt = saturate((ca - lorb) / horb);
 
-	alt = sqrt(alt);
+	if (mode == 0) {
+		if (ca < abs(ca - lorb)) mode = 1;
+		else {
+			if (abs(ca - lorb) < abs(ca - horb)) mode = 2;
+			else mode = 3;
+		}
+	}
 
-	if (mode==0 && alt>0.5) mode = 2;
-	if (mode==0 && alt<0.5) mode = 1;
+	atm_mode = mode;
 
-	if (mode==1) return &SPrm;		// Surface configuration
-	if (mode==2) return &OPrm;		// Orbital configuration
+	if (mode == 1) return &SPrm;		// Surface configuration
+	if (mode == 2) return &OPrm;		// Orbital configuration
+	if (mode == 3) return &HPrm;		// High Orbital configuration
 
-	// ----------------------------------------------------
-	CPrm.aux1   = lerp(SPrm.aux1,	OPrm.aux1,		alt);
-	CPrm.aux2   = lerp(SPrm.aux2,	OPrm.aux2,		alt);
-	CPrm.aux3	= lerp(SPrm.aux3,	OPrm.aux3,		alt);
-	CPrm.depth  = lerp(SPrm.depth,	OPrm.depth,		alt);
-	CPrm.expo   = lerp(SPrm.expo,	OPrm.expo,		alt);
-	CPrm.mie    = lerp(SPrm.mie,	OPrm.mie,		alt);
-	CPrm.mphase = lerp(SPrm.mphase, OPrm.mphase,	alt);
-	CPrm.rphase = lerp(SPrm.rphase, OPrm.rphase,	alt);
-	CPrm.mpow	= lerp(SPrm.mpow,	OPrm.mpow,		alt);
-	CPrm.rin	= lerp(SPrm.rin,	OPrm.rin,		alt);
-	CPrm.rout	= lerp(SPrm.rout,	OPrm.rout,		alt);
-	CPrm.rpow	= lerp(SPrm.rpow,	OPrm.rpow,		alt);
-	// ----------------------------------------------------
-	CPrm.red	= lerp(SPrm.red,	OPrm.red,		alt);
-	CPrm.green  = lerp(SPrm.green,	OPrm.green,		alt);
-	CPrm.blue	= lerp(SPrm.blue,	OPrm.blue,		alt);
-	// ----------------------------------------------------
-	CPrm.agamma = lerp(SPrm.agamma,	OPrm.agamma,	alt);
-	CPrm.tgamma = lerp(SPrm.tgamma,	OPrm.tgamma,	alt);
-	CPrm.hazec	= lerp(SPrm.hazec,	OPrm.hazec,		alt);
-	CPrm.hazei	= lerp(SPrm.hazei,	OPrm.hazei,		alt);
-	// ----------------------------------------------------
-	CPrm.height = SPrm.height;
+	if (alt < 0.9999)
+	{
+		// ----------------------------------------------------
+		CPrm.miein = lerp(SPrm.miein, OPrm.miein, alt);
+		CPrm.aux2 = lerp(SPrm.aux2, OPrm.aux2, alt);
+		CPrm.aux3 = lerp(SPrm.aux3, OPrm.aux3, alt);
+		CPrm.mheight = lerp(SPrm.mheight, OPrm.mheight, alt);
+		CPrm.rheight = lerp(SPrm.rheight, OPrm.rheight, alt);
+		CPrm.trb = lerp(SPrm.trb, OPrm.trb, alt);
+		CPrm.mie = lerp(SPrm.mie, OPrm.mie, alt);
+		CPrm.mphase = lerp(SPrm.mphase, OPrm.mphase, alt);
+		CPrm.rphase = lerp(SPrm.rphase, OPrm.rphase, alt);
+		CPrm.mpow = lerp(SPrm.mpow, OPrm.mpow, alt);
+		CPrm.rayin = lerp(SPrm.rayin, OPrm.rayin, alt);
+		CPrm.ray = lerp(SPrm.ray, OPrm.ray, alt);
+		CPrm.rpow = lerp(SPrm.rpow, OPrm.rpow, alt);
+		// ----------------------------------------------------
+		CPrm.tgamma = lerp(SPrm.tgamma, OPrm.tgamma, alt);
+		CPrm.mphaseb = lerp(SPrm.mphaseb, OPrm.mphaseb, alt);
+		CPrm.hazei = lerp(SPrm.hazei, OPrm.hazei, alt);
+		// ----------------------------------------------------
+		CPrm.tw_bri = lerp(SPrm.tw_bri, OPrm.tw_bri, alt);
+		CPrm.tw_haze = lerp(SPrm.tw_haze, OPrm.tw_haze, alt);
+		CPrm.tw_dst = lerp(SPrm.tw_dst, OPrm.tw_dst, alt);
+	}
+	else {
+		alt = 1.0 - halt;
+		// ----------------------------------------------------
+		CPrm.miein = lerp(HPrm.miein, OPrm.miein, alt);
+		CPrm.aux2 = lerp(HPrm.aux2, OPrm.aux2, alt);
+		CPrm.aux3 = lerp(HPrm.aux3, OPrm.aux3, alt);
+		CPrm.mheight = lerp(HPrm.mheight, OPrm.mheight, alt);
+		CPrm.rheight = lerp(HPrm.rheight, OPrm.rheight, alt);
+		CPrm.trb = lerp(HPrm.trb, OPrm.trb, alt);
+		CPrm.mie = lerp(HPrm.mie, OPrm.mie, alt);
+		CPrm.mphase = lerp(HPrm.mphase, OPrm.mphase, alt);
+		CPrm.rphase = lerp(HPrm.rphase, OPrm.rphase, alt);
+		CPrm.mpow = lerp(HPrm.mpow, OPrm.mpow, alt);
+		CPrm.rayin = lerp(HPrm.rayin, OPrm.rayin, alt);
+		CPrm.ray = lerp(HPrm.ray, OPrm.ray, alt);
+		CPrm.rpow = lerp(HPrm.rpow, OPrm.rpow, alt);
+		// ----------------------------------------------------
+		CPrm.tgamma = lerp(HPrm.tgamma, OPrm.tgamma, alt);
+		CPrm.mphaseb = lerp(HPrm.mphaseb, OPrm.mphaseb, alt);
+		CPrm.hazei = lerp(HPrm.hazei, OPrm.hazei, alt);
+		// ----------------------------------------------------
+		CPrm.tw_bri = lerp(HPrm.tw_bri, OPrm.tw_bri, alt);
+		CPrm.tw_haze = lerp(HPrm.tw_haze, OPrm.tw_haze, alt);
+		CPrm.tw_dst = lerp(HPrm.tw_dst, OPrm.tw_dst, alt);
+	}
+
+	CPrm.red = SPrm.red;
+	CPrm.green = SPrm.green;
+	CPrm.blue = SPrm.blue;
+	CPrm.orbalt = SPrm.orbalt;
+	CPrm.visalt = SPrm.visalt;
 
 	return &CPrm;
 }
 
-
-
 // ==============================================================
 
-bool vPlanet::LoadAtmoConfig(bool bOrbit)
+bool vPlanet::LoadAtmoConfig()
 {
 	char name[32];
 	char path[256];
 
 	oapiGetObjectName(hObj, name, 32);
-
-	if (bOrbit) sprintf_s(path,"GC/%s.atmo.cfg",name);
-	else		sprintf_s(path,"GC/%s.atms.cfg",name);
+	sprintf_s(path,"GC/%s.atm.cfg",name);
 
 	FILEHANDLE hFile = oapiOpenFile(path, FILE_IN_ZEROONFAIL, CONFIG);
-
-	if (!hFile) return false;
+	if (!hFile) {
+		LogErr("Rendering Configuration File Is Missing for [%s]", name);
+		return false;
+	}
 
 	LogAlw("Loading Atmospheric Configuration file [%s] Handle=%s", path, _PTR(hFile));
 
-	ScatterParams *prm;
+	if (oapiReadItem_string(hFile, "Shader", ShaderName) == false) strcpy_s(ShaderName, 32, "Auto");
 
-	if (bOrbit) prm = &OPrm;
-	else		prm = &SPrm;
-
-	prm->orbit = bOrbit;
-
-	oapiReadItem_float(hFile, "Red", prm->red);
-	oapiReadItem_float(hFile, "Green", prm->green);
-	oapiReadItem_float(hFile, "Blue", prm->blue);
-	oapiReadItem_float(hFile, "RWaveDep", prm->rpow);
-	oapiReadItem_float(hFile, "MWaveDep", prm->mpow);
-	oapiReadItem_float(hFile, "ScaleHeight", prm->height);
-	oapiReadItem_float(hFile, "DepthClamp", prm->depth);
-	// -----------------------------------------------------------------
-	oapiReadItem_float(hFile, "Exposure", prm->expo);
-	oapiReadItem_float(hFile, "TGamma", prm->tgamma);
-	// -----------------------------------------------------------------
-	oapiReadItem_float(hFile, "OutScatter", prm->rout);
-	oapiReadItem_float(hFile, "InScatter", prm->rin);
-	oapiReadItem_float(hFile, "RayleighPhase", prm->rphase);
-	// -----------------------------------------------------------------
-	oapiReadItem_float(hFile, "MiePower", prm->mie);
-	oapiReadItem_float(hFile, "MiePhase", prm->mphase);
-	// -----------------------------------------------------------------
-	oapiReadItem_float(hFile, "Aux1", prm->aux1);
-	oapiReadItem_float(hFile, "Aux2", prm->aux2);
-	oapiReadItem_float(hFile, "Aux3", prm->aux3);
-	// -----------------------------------------------------------------
-	oapiReadItem_float(hFile, "AGamma", prm->agamma);
-	oapiReadItem_float(hFile, "HazeClr", prm->hazec);
-	oapiReadItem_float(hFile, "HazeIts", prm->hazei);
-
+	LoadStruct(hFile, &SPrm, 0);
+	LoadStruct(hFile, &OPrm, 1);
+	LoadStruct(hFile, &HPrm, 2);
+	
 	oapiCloseFile(hFile, FILE_IN_ZEROONFAIL);
 
 	if (!oapiPlanetHasAtmosphere(hObj)) return false;
 
-	UpdateAtmoConfig();
 	return true;
 
 }
 
 // ==============================================================
 
-void vPlanet::SaveAtmoConfig(bool bOrbit)
+char* vPlanet::Label(const char* x)
+{
+	static char lbl[32];
+	if (iConfig == 0) sprintf_s(lbl, 32, "Srf_%s", x);
+	if (iConfig == 1) sprintf_s(lbl, 32, "Low_%s", x);
+	if (iConfig == 2) sprintf_s(lbl, 32, "Hig_%s", x);
+	return lbl;
+}
+
+// ==============================================================
+
+void vPlanet::SaveStruct(FILEHANDLE hFile, ScatterParams *prm, int iCnf)
+{
+	iConfig = iCnf;
+	oapiWriteItem_float(hFile, Label("RPwr"), prm->rpow);
+	oapiWriteItem_float(hFile, Label("MPwr"), prm->mpow);
+	// -----------------------------------------------------------------
+	oapiWriteItem_float(hFile, Label("Expo"), prm->trb);
+	oapiWriteItem_float(hFile, Label("TGamma"), prm->tgamma);
+	// -----------------------------------------------------------------
+	oapiWriteItem_float(hFile, Label("TWDst"), prm->tw_dst);
+	oapiWriteItem_float(hFile, Label("TWHze"), prm->tw_haze);
+	oapiWriteItem_float(hFile, Label("TWBri"), prm->tw_bri);
+	// -----------------------------------------------------------------
+	oapiWriteItem_float(hFile, Label("RayO"), prm->ray);
+	oapiWriteItem_float(hFile, Label("RayI"), prm->rayin);
+	oapiWriteItem_float(hFile, Label("RayP"), prm->rphase);
+	oapiWriteItem_float(hFile, Label("RayH"), prm->rheight);
+	// -----------------------------------------------------------------
+	oapiWriteItem_float(hFile, Label("MieO"), prm->mie);
+	oapiWriteItem_float(hFile, Label("MieP"), prm->mphase);
+	oapiWriteItem_float(hFile, Label("MieI"), prm->miein);
+	oapiWriteItem_float(hFile, Label("MieH"), prm->mheight);
+	// -----------------------------------------------------------------
+	oapiWriteItem_float(hFile, Label("Aux2"), prm->aux2);
+	oapiWriteItem_float(hFile, Label("Aux3"), prm->aux3);
+	oapiWriteItem_float(hFile, Label("Aux4"), prm->mphaseb);
+	oapiWriteItem_float(hFile, Label("Aux5"), prm->hazei);
+}
+
+// ==============================================================
+
+void vPlanet::LoadStruct(FILEHANDLE hFile, ScatterParams* prm, int iCnf)
+{
+	iConfig = iCnf;
+	oapiReadItem_float(hFile, "OrbitAlt", prm->orbalt);
+	oapiReadItem_float(hFile, "AtmoVisualAlt", prm->visalt);
+	oapiReadItem_float(hFile, "Red", prm->red);
+	oapiReadItem_float(hFile, "Green", prm->green);
+	oapiReadItem_float(hFile, "Blue", prm->blue);
+	oapiReadItem_float(hFile, Label("RPwr"), prm->rpow);
+	oapiReadItem_float(hFile, Label("MPwr"), prm->mpow);
+	// -----------------------------------------------------------------
+	oapiReadItem_float(hFile, Label("Expo"), prm->trb);
+	oapiReadItem_float(hFile, Label("TGamma"), prm->tgamma);
+	// -----------------------------------------------------------------
+	oapiReadItem_float(hFile, Label("TWDst"), prm->tw_dst);
+	oapiReadItem_float(hFile, Label("TWHze"), prm->tw_haze);
+	oapiReadItem_float(hFile, Label("TWBri"), prm->tw_bri);
+	// -----------------------------------------------------------------
+	oapiReadItem_float(hFile, Label("RayO"), prm->ray);
+	oapiReadItem_float(hFile, Label("RayI"), prm->rayin);
+	oapiReadItem_float(hFile, Label("RayP"), prm->rphase);
+	oapiReadItem_float(hFile, Label("RayH"), prm->rheight);
+	// -----------------------------------------------------------------
+	oapiReadItem_float(hFile, Label("MieO"), prm->mie);
+	oapiReadItem_float(hFile, Label("MieP"), prm->mphase);
+	oapiReadItem_float(hFile, Label("MieI"), prm->miein);
+	oapiReadItem_float(hFile, Label("MieH"), prm->mheight);
+	// -----------------------------------------------------------------
+	oapiReadItem_float(hFile, Label("Aux2"), prm->aux2);
+	oapiReadItem_float(hFile, Label("Aux3"), prm->aux3);
+	oapiReadItem_float(hFile, Label("Aux4"), prm->mphaseb);
+	oapiReadItem_float(hFile, Label("Aux5"), prm->hazei);
+}
+
+// ==============================================================
+
+void vPlanet::SaveAtmoConfig()
 {
 	char name[64];
 	char path[256];
 
 	oapiGetObjectName(hObj, name, 64);
-
-	if (bOrbit) sprintf_s(path,"GC/%s.atmo.cfg",name);
-	else		sprintf_s(path,"GC/%s.atms.cfg",name);
-
+	sprintf_s(path,"GC/%s.atm.cfg",name);
+	
 	FILEHANDLE hFile = oapiOpenFile(path, FILE_OUT, CONFIG);
 
-	ScatterParams *prm;
+	oapiWriteItem_string(hFile, ";", "Shader(s) = [Earth, Mars, Moon, Giant, Auto]");
+	oapiWriteItem_string(hFile, "Shader", ShaderName);
+	oapiWriteItem_float(hFile, "OrbitAlt", SPrm.orbalt);
+	oapiWriteItem_float(hFile, "AtmoVisualAlt", SPrm.visalt);
+	oapiWriteItem_float(hFile, "Red", SPrm.red);
+	oapiWriteItem_float(hFile, "Green", SPrm.green);
+	oapiWriteItem_float(hFile, "Blue", SPrm.blue);
 
-	if (bOrbit) prm = &OPrm;
-	else		prm = &SPrm;
-
-	oapiWriteItem_float(hFile, "Red", prm->red);
-	oapiWriteItem_float(hFile, "Green", prm->green);
-	oapiWriteItem_float(hFile, "Blue", prm->blue);
-	oapiWriteItem_float(hFile, "RWaveDep", prm->rpow);
-	oapiWriteItem_float(hFile, "MWaveDep", prm->mpow);
-	oapiWriteItem_float(hFile, "ScaleHeight", prm->height);
-	oapiWriteItem_float(hFile, "DepthClamp", prm->depth);
-	// -----------------------------------------------------------------
-	oapiWriteItem_float(hFile, "Exposure", prm->expo);
-	oapiWriteItem_float(hFile, "TGamma", prm->tgamma);
-	// -----------------------------------------------------------------
-	oapiWriteItem_float(hFile, "OutScatter", prm->rout);
-	oapiWriteItem_float(hFile, "InScatter", prm->rin);
-	oapiWriteItem_float(hFile, "RayleighPhase", prm->rphase);
-	// -----------------------------------------------------------------
-	oapiWriteItem_float(hFile, "MiePower", prm->mie);
-	oapiWriteItem_float(hFile, "MiePhase", prm->mphase);
-	// -----------------------------------------------------------------
-	oapiWriteItem_float(hFile, "Aux1", prm->aux1);
-	oapiWriteItem_float(hFile, "Aux2", prm->aux2);
-	oapiWriteItem_float(hFile, "Aux3", prm->aux3);
-	// -----------------------------------------------------------------
-	oapiWriteItem_float(hFile, "AGamma", prm->agamma);
-	oapiWriteItem_float(hFile, "HazeClr", prm->hazec);
-	oapiWriteItem_float(hFile, "HazeIts", prm->hazei);
+	SaveStruct(hFile, &SPrm, 0);
+	SaveStruct(hFile, &OPrm, 1);
+	SaveStruct(hFile, &HPrm, 2);
 
 	oapiCloseFile(hFile, FILE_OUT);
-
-	DumpDebugFile();
 }
 
 
@@ -1576,7 +1982,7 @@ bool vPlanet::ParseMicroTextures()
 
 // ===========================================================================================
 //
-vPlanet::sOverlay * vPlanet::IntersectOverlay(VECTOR4 q, D3DXVECTOR4 *texcoord) const
+vPlanet::sOverlay * vPlanet::IntersectOverlay(VECTOR4 q, FVECTOR4 *texcoord) const
 {
 	for (auto olay : overlays)
 	{

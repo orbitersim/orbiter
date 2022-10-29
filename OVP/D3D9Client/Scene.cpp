@@ -11,7 +11,7 @@
 #include "VVessel.h"
 #include "VBase.h"
 #include "Particle.h"
-#include "PlanetRenderer.h"
+#include "CSphereMgr.h"
 #include "D3D9Util.h"
 #include "D3D9Config.h"
 #include "D3D9Surface.h"
@@ -1026,10 +1026,20 @@ void Scene::RenderMainScene()
 
 	UpdateCamVis();
 
+
+	// Update Atmospheric Scattering Tables
+	//
+	for (DWORD i = 0; i < nplanets; i++) {
+		if (plist[i].vo->Type() == OBJTP_PLANET) {
+			vPlanet* vp = static_cast<vPlanet*>(plist[i].vo);
+			if (vp->IsActive()) vp->UpdateScatter();
+		}
+	}
+
+
 	// Update Vessel Animations
 	//
 	for (VOBJREC *pv = vobjFirst; pv; pv = pv->next) {
-		if (!pv->vobj->IsActive() || !pv->vobj->IsVisible() || pv->vobj->GetMeshCount() < 1) continue;
 		if (pv->type == OBJTP_VESSEL) {
 			vVessel *vv = (vVessel *)pv->vobj;
 			vv->UpdateAnimations();
@@ -1202,11 +1212,6 @@ void Scene::RenderMainScene()
 	bool bEnableAtmosphere = false;
 
 	vPlanet *vPl = GetCameraProxyVisual();
-
-	if (vPl) {
-		bEnableAtmosphere = vPl->CameraInAtmosphere();
-		PlanetRenderer::InitializeScattering(vPl);
-	}
 
 	// -------------------------------------------------------------------------------------------------------
 	// Render the celestial sphere (background image, stars, planetarium features)
@@ -1891,6 +1896,46 @@ void Scene::RenderMainScene()
 		default:
 			break;
 		}
+	}
+
+
+	if (AtmoControls::Visualize())
+	{
+		vPlanet* vP = GetCameraProxyVisual();
+		pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
+		pSketch->SetBlendState(Sketchpad::COPY);
+		int x = 0, y = ViewH();
+
+		LPDIRECT3DTEXTURE9 pTab = vP->GetScatterTable(RAY_LAND);
+		D3DSURFACE_DESC desc;
+		if (pTab) {
+			pTab->GetLevelDesc(0, &desc);
+			pSketch->StretchRectNative(pTab, NULL, &_R(0, y - desc.Height, ViewW(), y));
+			y -= (desc.Height + 5);
+		}
+		pTab = vP->GetScatterTable(MIE_LAND);
+		if (pTab) {
+			pTab->GetLevelDesc(0, &desc);
+			pSketch->StretchRectNative(pTab, NULL, &_R(0, y - desc.Height, ViewW(), y));
+			y -= (desc.Height + 5);
+		}
+		pTab = vP->GetScatterTable(AMB_LAND);
+		if (pTab) {
+			pTab->GetLevelDesc(0, &desc);
+			pSketch->StretchRectNative(pTab, NULL, &_R(0, y - desc.Height, ViewW(), y));
+			y -= (desc.Height + 5);
+		}
+		for (int i=0;i<9;i++)
+		{
+			if (i == RAY_LAND || i == MIE_LAND || i == AMB_LAND) continue;
+			pTab = vP->GetScatterTable(i);
+			if (!pTab) break;
+			pTab->GetLevelDesc(0, &desc);
+			pSketch->CopyRectNative(pTab, NULL, x, y - desc.Height);
+			x += desc.Width + 5;
+		}
+		pSketch->SetBlendState(Sketchpad::ALPHABLEND);
+		pSketch->EndDrawing();
 	}
 
 

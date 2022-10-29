@@ -49,7 +49,6 @@ bool vStar::Update (bool bMainScene)
 bool vStar::Render(LPDIRECT3DDEVICE9 dev)
 {
 	_TRACE;
-	if (Config->PostProcess == PP_LENSFLARE && cdist < 150e9) return false;
 
 	double dist_scale;
 	float rad_scale = float(size);

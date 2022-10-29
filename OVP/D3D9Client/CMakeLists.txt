@@ -47,7 +47,6 @@ set(SourceFiles
 	MeshMgr.cpp
 	OapiExtension.cpp
 	Particle.cpp
-	PlanetRenderer.cpp
 	RingMgr.cpp
 	RunwayLights.cpp
 	Scene.cpp
@@ -96,7 +95,6 @@ set(IncludeFiles
 	MeshMgr.h
 	OapiExtension.h
 	Particle.h
-	PlanetRenderer.h
 	Qtree.h
 	resource.h
 	RingMgr.h
@@ -137,6 +135,9 @@ set(ShaderFiles
 	${ShaderDir}/IrradianceInteg.hlsl
 	${ShaderDir}/LensFlare.hlsl
 	${ShaderDir}/LightBlur.hlsl
+    ${ShaderDir}/CelSphere.hlsl
+    ${ShaderDir}/NewPlanet.hlsl
+    ${ShaderDir}/Scatter.hlsl
 	${ShaderDir}/Mesh.fx
 	${ShaderDir}/Metalness.fx
 	${ShaderDir}/Particle.fx
@@ -144,7 +145,6 @@ set(ShaderFiles
 	${ShaderDir}/Planet.fx
 	${ShaderDir}/SceneTech.fx
 	${ShaderDir}/Sketchpad.fx
-	${ShaderDir}/Surface.fx
 	${ShaderDir}/Vessel.fx
 )
 

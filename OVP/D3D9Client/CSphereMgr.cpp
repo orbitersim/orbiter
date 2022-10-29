@@ -16,6 +16,15 @@
 
 using namespace oapi;
 
+#pragma pack(push, 4)
+struct CelDataStruct
+{
+	float4x4 mWorld;
+	float4x4 mViewProj;
+	float	 fAlpha;
+} CelData;
+#pragma pack(pop)
+
 // =======================================================================
 // Externals
 
@@ -53,15 +62,17 @@ void ReleaseTex(LPDIRECT3DTEXTURE9 pTex);
 // =======================================================================
 // Class CSphereManager
 
-CSphereManager::CSphereManager(D3D9Client *gclient, const Scene *scene) : PlanetRenderer(), texname(), RenderParam()
+CSphereManager::CSphereManager(D3D9Client *gc, Scene *scene) : texname(), RenderParam()
 {
 	scn = scene;
 
-	gc->OutputLoadStatus("Loading Celestial Sphere...",0);
-	
 	patchidx  = TileManager::patchidx;
 	NLNG = TileManager::NLNG;
 	NLAT = TileManager::NLAT;
+
+	LPDIRECT3DDEVICE9 pDev = gc->GetDevice();
+
+	pShader = new ShaderClass(pDev, "Modules/D3D9Client/CelSphere.hlsl", "CelVS", "CelPS", "CelSphere", "");
 
 	char *c = (char*)gc->GetConfigParam (CFGPRM_CSPHERETEXTURE);
 
@@ -286,8 +297,6 @@ void CSphereManager::LoadTextures ()
 	strcpy (fname, texname);
 	strcat (fname, ".tex");
 
-	gc->OutputLoadStatus(fname,1);
-
 	ntex = patchidx[maxbaselvl];
 	texbuf = new LPDIRECT3DTEXTURE9[ntex];
 	if (ntex = LoadPlanetTextures(fname, texbuf, 0, ntex)) {
@@ -320,8 +329,6 @@ void CSphereManager::Render (LPDIRECT3DDEVICE9 dev, int level, double bglvl)
 
 	if (bglvl) intens *= exp(-bglvl*12.5);
 	
-	Shader()->SetFloat(sfAlpha, intens);
-
 	level = min ((DWORD)level, maxlvl);
 
 	RenderParam.dev = dev;
@@ -347,16 +354,8 @@ void CSphereManager::Render (LPDIRECT3DDEVICE9 dev, int level, double bglvl)
 
 	WaitForSingleObject (tilebuf->hQueueMutex, INFINITE);
 
-	HR(Shader()->SetTechnique(eSkyDomeTech));
-	HR(Shader()->SetMatrix(smViewProj, scn->GetProjectionViewMatrix()));
-	
-	pDev->SetVertexDeclaration(pPatchVertexDecl);
-
-	UINT numPasses = 0;
-	HR(Shader()->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
-
-	Shader()->BeginPass(0);
-	
+	CelData.fAlpha = intens;
+	CelData.mViewProj = *scn->GetProjectionViewMatrix();
 	for (hemisp = idx = 0; hemisp < 2; hemisp++) {
 		if (hemisp) { // flip world transformation to southern hemisphere
 			D3DXMatrixMultiply(&RenderParam.wmat, &TileManager::Rsouth, &RenderParam.wmat);
@@ -370,9 +369,6 @@ void CSphereManager::Render (LPDIRECT3DDEVICE9 dev, int level, double bglvl)
 			}
 		}
 	}
-
-	HR(Shader()->EndPass());
-	HR(Shader()->End());	
 
 	ReleaseMutex (tilebuf->hQueueMutex);
 }
@@ -422,9 +418,14 @@ void CSphereManager::RenderTile (int lvl, int hemisp, int ilat, int nlat, int il
 
 	D3D9Stats.Old.Tiles[lvl]++;
 	
-	Shader()->SetMatrix(smWorld, &mWorld);
-	Shader()->SetTexture(stDiff, tex);	
-	Shader()->CommitChanges();
+	CelData.mWorld = mWorld;
+
+	pShader->SetTexture("tTex", tex, IPF_CLAMP, IPF_LINEAR);
+	pShader->SetPSConstants("Const", &CelData, sizeof(CelData));
+	pShader->SetVSConstants("Const", &CelData, sizeof(CelData));
+	pShader->Setup(pPatchVertexDecl, false, 0);
+
+	LPDIRECT3DDEVICE9 pDev = pShader->GetDevice();;
 
 	pDev->SetStreamSource(0, mesh.pVB, 0, sizeof(VERTEX_2TEX));
 	pDev->SetIndices(mesh.pIB);
@@ -466,7 +467,7 @@ bool CSphereManager::TileInView (int lvl, int ilat)
 	VBMESH &mesh = PATCH_TPL[lvl][ilat];
 	D3DXVECTOR3 vP;
 	D3DXVec3TransformCoord(&vP, &mesh.bsCnt, &mWorld);
-	return gc->GetScene()->IsVisibleInCamera(&vP, mesh.bsRad);
+	return scn->IsVisibleInCamera(&vP, mesh.bsRad);
 }
 
 

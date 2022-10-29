@@ -483,7 +483,7 @@ double ExactOpticalDepth(double alt, double dir, double R, double R1, double h0)
 // prm = Taylor co-efficients
 // ============================================================================
 
-float FastOpticalDepth(float alt, float cd, double h0, D3DXVECTOR4 *prm)
+/*float FastOpticalDepth(float alt, float cd, double h0, D3DXVECTOR4* prm)
 {
 	float cd2 = cd * cd;
 	D3DXVECTOR4 q(1.0f, cd, cd2, cd2*cd);
@@ -496,7 +496,7 @@ float FastOpticalDepthEx(float alt, float cd, float h0, D3DXVECTOR4 *prm)
 	float cd2 = cd * cd;
 	D3DXVECTOR4 q(1.0f, cd, cd2, cd2*cd);
 	return float(h0 * exp2(-alt/h0) * exp2(D3DXVec4Dot(&q, prm)));
-}
+}*/
 
 double FastOpticalDepth(double alt, double cd, double h0, double *coeff, int m)
 {
@@ -512,7 +512,7 @@ double FastOpticalDepth(double alt, double cd, double h0, double *coeff, int m)
 // R1 = Atmosphere Outer Radius [m]
 // h0 = Atmospheric Scale Height [m]
 // ============================================================================
-
+/*
 D3DXVECTOR4 SolveScatterEx(double h0, double R, double R1)
 {
 
@@ -552,7 +552,7 @@ D3DXVECTOR4 SolveScatterEx(double h0, double R, double R1)
 	double r[4];
 	SolveLUSystem(4, (double *)&m, (double *)&q, r, NULL);
 	return D3DXVECTOR4(float(r[0]), float(r[1]), float(r[2]), float(r[3]));
-}
+}*/
 
 
 
@@ -562,7 +562,7 @@ D3DXVECTOR4 SolveScatterEx(double h0, double R, double R1)
 // R1 = Atmosphere Outer Radius [m]
 // h0 = Atmospheric Scale Height [m]
 // ============================================================================
-
+/*
 D3DXVECTOR4 SolveScatter(double h0, double R, double R1)
 {
 
@@ -610,6 +610,7 @@ D3DXVECTOR4 SolveScatter(double h0, double R, double R1)
 	
 	return fct;
 }
+*/
 
 
 bool SolveXScatter(double h0, double R, double R1, double *r, double angle, int m)

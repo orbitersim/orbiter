@@ -95,41 +95,34 @@ void CloudTile::Load ()
 
 void CloudTile::Render ()
 {
-	UINT numPasses = 0;
-
 	LPDIRECT3DDEVICE9 pDev = mgr->Dev();
-	ID3DXEffect *Shader = mgr->Shader();
+	vPlanet* vPlanet = mgr->GetPlanet();
+	ShaderClass* pShader = NULL; // mgr->GetShader();
+	ShaderParams* sp = vPlanet->GetTerrainParams();
+
+	pShader = vPlanet->GetShader(PLT_CLOUDS);
 
 	// ---------------------------------------------------------------------
 	// Feed tile specific data to shaders
 	//
-	// ---------------------------------------------------------------------------------------------------
-	HR(Shader->SetTexture(TileManager2Base::stDiff, tex));
-	HR(Shader->SetVector(TileManager2Base::svCloudOff, &GetTexRangeDX(&texrange)));
-	HR(Shader->SetVector(TileManager2Base::svMicroOff, &GetTexRangeDX(&microrange)));
-	// ---------------------------------------------------------------------------------------------------
+	// ----------------------------------------------------------------------
+	pShader->SetTexture("tCloudCoverage", tex, IPF_ANISOTROPIC | IPF_CLAMP, Config->Anisotrophy);
 
-	Shader->CommitChanges();
-
-	HR(Shader->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
+	sp->vCloudOff = GetTexRangeDX(&texrange);
+	sp->vMicroOff = GetTexRangeDX(&microrange);
+	sp->fAlpha = 1.0f;
+	sp->fBeta = 1.0f;
+	sp->mWorld = mWorld;
 
 	// -------------------------------------------------------------------
 	// render surface mesh
+	pShader->SetPSConstants("Prm", sp, sizeof(ShaderParams));
+	pShader->SetVSConstants("Prm", sp, sizeof(ShaderParams));
+	pShader->Setup(pPatchVertexDecl, false, 1);
 
-
-	// While viewing the Moon/Brighton Beach. Earth's cloudlayer rendering throwed through D3DX9_43.dll: 
-	// Exception thrown at 0x759635D2 (KernelBase.dll) in orbiter.exe: 0x000006BA : The RPC server is unavailable.
-	// Exception thrown at 0x759635D2 (KernelBase.dll) in orbiter.exe: 0xC0000002 : The requested operation is not implemented.
-	// Unhandled exception at 0x759635D2 (KernelBase.dll) in orbiter.exe : 0xC0000002 : The requested operation is not implemented.
-	// What is this, why ?
-
-	HR(Shader->BeginPass(0));
-	pDev->SetVertexDeclaration(pPatchVertexDecl);
 	pDev->SetStreamSource(0, mesh->pVB, 0, sizeof(VERTEX_2TEX));
 	pDev->SetIndices(mesh->pIB);
 	pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mesh->nv, 0, mesh->nf);
-	HR(Shader->EndPass());
-	HR(Shader->End());
 }
 
 
@@ -176,13 +169,19 @@ void TileManager2<CloudTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlan
 	// ---------------------------------------------------------------------
 	// Initialize shading technique and feed planet specific data to shaders
 	//
-	HR(Shader()->SetTechnique(eCloudTech));
-	HR(Shader()->SetMatrix(smViewProj, scene->GetProjectionViewMatrix()));
-	HR(Shader()->SetBool(sbCloudNorm, Config->bCloudNormals != 0));
-	HR(Shader()->SetBool(sbEarth, strcmp(CbodyName(), "Earth") == 0));
-	
-	if (rprm.bCloudBrighten) { HR(Shader()->SetFloat(sfAlpha, 2.0f)); }
-	else					 { HR(Shader()->SetFloat(sfAlpha, 1.0f)); }
+
+	ElevMode = eElevMode::Spherical;
+
+	pShader = vp->GetShader(PLT_CLOUDS);
+
+	pShader->ClearTextures();
+	pShader->SetPSConstants("Const", vp->GetScatterConst(), sizeof(ConstParams));
+	pShader->SetVSConstants("Const", vp->GetScatterConst(), sizeof(ConstParams));
+	pShader->SetTexture("tCloudMicro", hCloudMicro, IPF_ANISOTROPIC | IPF_WRAP, Config->Anisotrophy);
+	pShader->SetTexture("tCloudMicroNorm", hCloudMicroNorm, IPF_ANISOTROPIC | IPF_WRAP, Config->Anisotrophy);
+	pShader->SetTexture("tSun", vp->GetScatterTable(SUN_COLOR), IPF_LINEAR | IPF_CLAMP);
+	pShader->SetTexture("tLndRay", vp->GetScatterTable(RAY_LAND), IPF_LINEAR | IPF_CLAMP);
+	pShader->SetTexture("tLndMie", vp->GetScatterTable(MIE_LAND), IPF_LINEAR | IPF_CLAMP);
 
 	// TODO: render full sphere for levels < 4
 

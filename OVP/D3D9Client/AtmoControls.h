@@ -8,37 +8,40 @@
 #ifndef __ATMOCONTROLS_H
 #define __ATMOCONTROLS_H
 
-#define ATM_SLIDER_COUNT 20
+#define ATM_SLIDER_COUNT 19
 
 
 typedef struct ScatterParams {
-	ScatterParams();			///< Default c'tor
+	ScatterParams();			///< Defaut c'tor
 	union {
 		double data[ATM_SLIDER_COUNT];  // ATTENTION: Order of params must match with slider indexes
 		struct {
-			double red;			///< Red wave length
-			double green;		///< Green wave length
-			double blue;		///< Blue wave length
-			double rpow;		///< Rayleigh power
-			double rin;			///< in-scatter strength
-			double rout;		///< out-scatter strength
-			double rphase;		///< Rayleigh phase
-			double mie;			///< scale factor for mie scattering
-			double mphase;		///< g-constant in HG phase function
-			double height;		///< atmospheric scale height
-			double aux2;		///< auxiliary parameter
-			double depth;		///< Cloud layer intensity
-			double mpow;		///< Mie power
-			double expo;		///< exposure for terrain
-			double aux1;		///< auxiliary parameter
-			double aux3;		///< auxiliary parameter
-			double tgamma;		///< Terrain gamma
-			double hazec;		///< Haze color
-			double hazei;		///< Haze intensity
-			double agamma;		///< Atmosphere gamma	
+			double tw_dst;		///< 0 Red wave length
+			double tw_haze;		///< 1 Green wavw length
+			double tw_bri;		///< 2 Blue wave length
+			double rpow;		///< 3 Rayleigh power
+			double rayin;		///< 4 Rayleigh in-scatter strength
+			double ray;			///< 5 Rayleigh out-scatter strength
+			double rphase;		///< 6 Rayleigh phase
+			double mie;			///< 7 scale factor for mie out-scattering
+			double mphase;		///< 8 g-constant in HG phase function
+			double rheight;		///< 9 atmospheric rayleigh scale height
+			double aux2;		///< 10 auxiliary parameter
+			double mheight;		///< 11 Mie scale height
+			double mpow;		///< 12 Mie power
+			double trb;			///< 13 Terrain brightness
+			double miein;		///< 14 Mie in-scatter strenght
+			double aux3;		///< 15 auxiliary parameter
+			double tgamma;		///< 16 Terrain gamma
+			double mphaseb;		///< 17 MiePhase-B
+			double hazei;		///< 18 Haze intensity
 		};
 	};
-	bool orbit;
+	double orbalt;
+	double visalt;
+	double red;
+	double green;
+	double blue;
 } ScatterParams;
 
 class vPlanet;
@@ -61,44 +64,9 @@ namespace AtmoControls {
 	void		ConfigSlider(int id, double min, double max, int style=0);
 	void		SetSlider(int id, WORD pos);
 	void		UpdateSliders();
+	bool		Visualize();
 
 	INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
-
-
-
-
-/*
-class Scatter {
-
-public:
-				Scatter(ScatterParams *prm, OBJHANDLE hPlanet, DWORD dAmbient);
-				~Scatter();
-
-	double		AngleCoEff(double cos_dir);
-
-	void		ComputeSunLightColorMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DTEXTURE9 *pOutSM, bool bSave=false);
-	void		ComputeInscatterColorMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DTEXTURE9 *pOutSM, bool bSave=false);
-
-private:
-
-	double		fRadius;
-	double		fAtmRad;
-	double		fMaxDepth;
-	double		fHorizonAlt;
-	double		fScaleHeight;
-	double		fInvScaleHeight;
-	double		fCoEff[12];
-	double		fMieA, fMieB, fMieC;
-
-	float		fGlobalAmb, fSunAppRad, fAmbient0;
-
-	D3DXVECTOR3	vLambda4, vLambda1;
-	D3DXVECTOR3	vRayTot, vMieTot, vRaySun, vRayIns, vRaySrf;
-
-	const ATMCONST *atm;
-};*/
-
-
 
 #endif // !__ATMOCONTROLS_H

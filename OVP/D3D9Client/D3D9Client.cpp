@@ -442,7 +442,6 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	TileManager::GlobalInit(this);
 	TileManager2Base::GlobalInit(this);
-	PlanetRenderer::GlobalInit(this);
 	RingManager::GlobalInit(this);
 	HazeManager::GlobalInit(this);
 	HazeManager2::GlobalInit(this);
@@ -451,6 +450,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	vStar::GlobalInit(this);
 	vObject::GlobalInit(this);
 	vVessel::GlobalInit(this);
+	vPlanet::GlobalInit(this);
 	OapiExtension::GlobalInit(*Config);
 
 	OutputLoadStatus("SceneTech.fx",1);
@@ -828,7 +828,6 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 	HazeManager2::GlobalExit();
 	TileManager::GlobalExit();
 	TileManager2Base::GlobalExit();
-	PlanetRenderer::GlobalExit();
 	D3D9ParticleStream::GlobalExit();
 	CSphereManager::GlobalExit();
 	vStar::GlobalExit();
