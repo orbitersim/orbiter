@@ -521,6 +521,20 @@ void VPlanet::RenderCloudShadows (LPDIRECT3DDEVICE7 dev)
 	} 
 }
 
+void VPlanet::RenderVectors(LPDIRECT3DDEVICE7 dev)
+{
+	VObject::RenderVectors(dev);
+	RenderBaseVectors(dev);
+}
+
+void VPlanet::RenderBaseVectors(LPDIRECT3DDEVICE7 dev)
+{
+	for (DWORD i = 0; i < planet->nBase(); i++) {
+		VBase* vbase = (VBase*)planet->GetBase(i)->GetVishandle();
+		if (vbase) vbase->RenderVectors(dev);
+	}
+}
+
 void VPlanet::RenderBaseSurfaceTiles (LPDIRECT3DDEVICE7 dev)
 {
 	for (DWORD i = 0; i < planet->nBase(); i++) {
@@ -763,26 +777,6 @@ int VPlanet::ShadowPlanetOnRing (VERTEX_XYZC *&vtx, DWORD &nvtx)
 		Map (vtx+idx3, xo, -yo, cosp, sinp);
 	}
 	return nvtx;
-}
-
-void VPlanet::SetupRenderVectorList ()
-{
-	DWORD flag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagFrameAxes;
-	if ((flag & FA_ENABLE) && (flag & FA_CBODY)) {
-		double psize = planet->Size();
-		double scale = g_pOrbiter->Cfg()->CfgVisHelpPrm.scaleFrameAxes * psize*1.3;
-		double rad   = 0.02 * psize;
-		float alpha  = g_pOrbiter->Cfg()->CfgVisHelpPrm.opacFrameAxes;
-		Vector cam (tmul (planet->GRot(), g_camera->GPos()-planet->GPos()));
-		AddVec (cam, Vector(scale,0,0), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_PX, D3DRGB(1,1,1));
-		AddVec (cam, Vector(0,scale,0), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_PY, D3DRGB(1,1,1));
-		AddVec (cam, Vector(0,0,scale), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_PZ, D3DRGB(1,1,1));
-		if (flag & FA_NEG) {
-			AddVec (cam, Vector(-scale,0,0), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_NX, D3DRGB(1,1,1));
-			AddVec (cam, Vector(0,-scale,0), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_NY, D3DRGB(1,1,1));
-			AddVec (cam, Vector(0,0,-scale), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_NZ, D3DRGB(1,1,1));
-		}
-	}
 }
 
 bool VPlanet::ModLighting (DWORD &ambient)

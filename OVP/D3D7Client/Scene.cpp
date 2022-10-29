@@ -643,8 +643,6 @@ void Scene::RenderObjectMarker (oapi::Sketchpad* pSkp, const VECTOR3 &gpos, cons
 
 void Scene::RenderVectors()
 {
-	VOBJREC* pv;
-
 	dev->SetRenderState(D3DRENDERSTATE_ZENABLE, FALSE);
 	dev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TFACTOR);
 	dev->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
@@ -661,11 +659,11 @@ void Scene::RenderVectors()
 	dev->GetMaterial(&pmtrl);
 	dev->SetMaterial(&mtrl);
 
-	for (pv = vobjFirst; pv; pv = pv->next) {
+	for (VOBJREC* pv = vobjFirst; pv; pv = pv->next) {
 		pv->vobj->RenderVectors(dev);
 	}
-	dev->SetRenderState(D3DRENDERSTATE_ZENABLE, TRUE);
 
+	dev->SetRenderState(D3DRENDERSTATE_ZENABLE, TRUE);
 	dev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
 	dev->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
 	dev->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_CURRENT);

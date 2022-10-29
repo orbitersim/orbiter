@@ -787,86 +787,61 @@ void VVessel::RenderGroundShadow (LPDIRECT3DDEVICE7 dev, const Planet *planet)
 	}
 }
 
-void VVessel::SetupRenderVectorList ()
+void VVessel::UpdateRenderVectors()
 {
-	Vector cam;
-	bool havecam = false;
+	VObject::UpdateRenderVectors();
 
-	DWORD flag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagBodyForce;
+	DWORD flag = *(DWORD*)gc->GetConfigParam(CFGPRM_FORCEVECTORFLAG);
 	if (flag & BF_ENABLE) {
 		static double shift = 1e3, lshift = log(shift);
 		bool logscale = ((flag & BF_LOGSCALE) != 0);
 		double len, scale, scale2 = vessel->size*0.02;
 		scale = (logscale ? 1.0 : vessel->size / (vessel->Mass() * 9.81));
-		double pscale = g_pOrbiter->Cfg()->CfgVisHelpPrm.scaleBodyForce;
-		float alpha = g_pOrbiter->Cfg()->CfgVisHelpPrm.opacBodyForce;
-		char cbuf[32];
+		double pscale = *(float*)gc->GetConfigParam(CFGPRM_FORCEVECTORSCALE);
+		float alpha = *(float*)gc->GetConfigParam(CFGPRM_FORCEVECTOROPACITY);
+		char cbuf[256];
 		Vector F;
-		cam.Set (tmul (vessel->GRot(), g_camera->GPos()-vessel->GPos()));
-		havecam = true;
 
-		if (flag & BF_TORQUE) {
-			vessel->GetTorqueVector (F);
-			len = F.length();
-			if (len) {
-				if (len >= 1e-2) sprintf (cbuf, "M =%sNm", FloatStr (len, 4));
-				else             sprintf (cbuf, "M = %0.2eNm", len);
-				if (logscale) len = log(len+1e-5) - log(1e-5); else len *= scale;
-				AddVec (cam, F.unit()*(len*pscale), Vector(0,0,0), scale2*0.5, Vector(1,0,1), alpha, cbuf, D3DRGB (1,0,1), (float)(0.5*vessel->size));
-			}
-		}
-		if (flag & BF_WEIGHT) {
-			vessel->GetWeightVector (F);
+		if ((flag & BF_WEIGHT) && vessel->GetWeightVector (F)) {
 			sprintf (cbuf, "G =%sN", FloatStr (len = F.length(), 4));
 			if (logscale) len = log(len+shift) - lshift; else len *= scale;
-			AddVec (cam, F.unit()*(len*pscale), Vector(0,0,0), scale2, Vector (1,1,0), alpha, cbuf, D3DRGB (1,1,0));
+			AddVector (F.unit()*(len*pscale), Vector(0,0,0), scale2, std::string(cbuf), Vector (1,1,0), alpha, D3DRGB (1,1,0));
 		}
 		if ((flag & BF_THRUST) && vessel->GetThrustVector (F)) {
 			sprintf (cbuf, "T =%sN", FloatStr (len = F.length(), 4));
 			if (logscale) len = log(len+shift) - lshift; else len *= scale;
-			AddVec (cam, F.unit()*(len*pscale), Vector(0,0,0), scale2, Vector (0,0,1), alpha, cbuf, D3DRGB (0.5,0.5,1));
+			AddVector (F.unit()*(len*pscale), Vector(0,0,0), scale2, std::string(cbuf), Vector (0,0,1), alpha, D3DRGB (0.5,0.5,1));
 		}
 		if ((flag & BF_LIFT) && vessel->GetLiftVector (F)) {
-			sprintf (cbuf, "L =%sN", FloatStr (len = vessel->Lift, 4));
-			double alen = fabs(len);
-			if (logscale) alen = log(alen+shift) - lshift; else alen *= scale;
-			AddVec (cam, F.unit()*(alen*pscale), Vector(0,0,0), scale2, Vector (0,1,0), alpha, cbuf, D3DRGB (0.5,1,0.5));
+			sprintf (cbuf, "L =%sN", FloatStr (len = F.length(), 4));
+			if (logscale) len = log(len+shift) - lshift; else len *= scale;
+			AddVector (F.unit()*(len*pscale), Vector(0,0,0), scale2, std::string(cbuf), Vector (0,1,0), alpha, D3DRGB (0.5,1,0.5));
 		}
 		if ((flag & BF_DRAG) && vessel->GetDragVector (F)) {
 			sprintf (cbuf, "D =%sN", FloatStr (len = vessel->Drag, 4));
 			if (logscale) len = log(len+shift) - lshift; else len *= scale;
-			AddVec (cam, F.unit()*(len*pscale), Vector(0,0,0), scale2, Vector (1,0,0), alpha, cbuf, D3DRGB (1,0.5,0.5));
+			AddVector (F.unit()*(len*pscale), Vector(0,0,0), scale2, std::string(cbuf), Vector (1,0,0), alpha, D3DRGB (1,0.5,0.5));
 		}
-		if (flag & BF_TOTAL) {
-			vessel->GetForceVector (F);
+		if ((flag & BF_TOTAL) && vessel->GetForceVector (F)) {
 			sprintf (cbuf, "F =%sN", FloatStr (len = F.length(), 4));
 			if (logscale) len = log(len+shift) - lshift; else len *= scale;
-			AddVec (cam, F.unit()*(len*pscale), Vector(0,0,0), scale2, Vector (1,1,1), alpha, cbuf, D3DRGB (1,1,1));
+			AddVector (F.unit()*(len*pscale), Vector(0,0,0), scale2, std::string(cbuf), Vector (1,1,1), alpha, D3DRGB (1,1,1));
 		}
 		if (1) {
 			for (int i = 0; i < vessel->nforcevec; i++) {
 				F = vessel->forcevec[i];
 				sprintf (cbuf, "F =%sN", FloatStr (len = F.length(), 4));
 				len *= 1e-2;
-				//if (logscale) len = log(len+shift) - lshift; else len *= scale;
-				AddVec (cam, F.unit()*(len*pscale), vessel->forcepos[i], scale2, Vector (0,1,1), alpha, cbuf, D3DRGB (1,1,1));
+				if (logscale) len = log(len+shift) - lshift; else len *= scale;
+				AddVector (F.unit()*(len*pscale), vessel->forcepos[i], scale2, std::string(cbuf), Vector (0,1,1), alpha, D3DRGB (1,1,1));
 			}
 		}
-	}
-	flag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagFrameAxes;
-	if ((flag & FA_ENABLE) && (flag & FA_VESSEL)) {
-		double scale = vessel->size * g_pOrbiter->Cfg()->CfgVisHelpPrm.scaleFrameAxes;
-		double rad   = vessel->size*0.02;
-		float alpha  = g_pOrbiter->Cfg()->CfgVisHelpPrm.opacFrameAxes;
-		if (!havecam)
-			cam.Set (tmul (vessel->GRot(), g_camera->GPos()-vessel->GPos()));
-		AddVec (cam, Vector(scale,0,0), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_PX, D3DRGB(1,1,1));
-		AddVec (cam, Vector(0,scale,0), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_PY, D3DRGB(1,1,1));
-		AddVec (cam, Vector(0,0,scale), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_PZ, D3DRGB(1,1,1));
-		if (flag & FA_NEG) {
-			AddVec (cam, Vector(-scale,0,0), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_NX, D3DRGB(1,1,1));
-			AddVec (cam, Vector(0,-scale,0), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_NY, D3DRGB(1,1,1));
-			AddVec (cam, Vector(0,0,-scale), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_NZ, D3DRGB(1,1,1));
+		if ((flag & BF_TORQUE) && vessel->GetTorqueVector(F)) {
+			if (len = F.length()) {
+				sprintf(cbuf, "M =%sNm", FloatStr(len, 4));
+				if (logscale) len = log(len + 1e-5) - log(1e-5); else len *= scale * 1e5;
+				AddVector(F.unit() * (len * pscale), Vector(0, 0, 0), scale2 * 0.5, std::string(cbuf), Vector(1, 0, 1), alpha, D3DRGB(1, 0, 1), (float)(0.5 * vessel->size));
+			}
 		}
 	}
 }

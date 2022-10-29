@@ -229,17 +229,15 @@ void vObject::RenderVectors(LPDIRECT3DDEVICE7 dev)
 	// Render and texture stage states are assumed to be set correctly on call
 
 	if (veclist.size()) {
-		float alpha, palpha = -1.0f;
-		VECTOR3 col, pcol = { -1,-1,-1 };
-		for (auto it = veclist.begin(); it != veclist.end(); it++) {
-			alpha = (*it).alpha;
-			col = (*it).col;
-			if (alpha != palpha || col.x != pcol.x || col.y != pcol.y || col.z != pcol.z) {
-				dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(col.x, col.y, col.z, alpha));
-				palpha = alpha; pcol = col;
+		float palpha = -1.0f;
+		VECTOR3 pcol = { -1,-1,-1 };
+		for (auto&& vec : veclist) {
+			if (vec.alpha != palpha || vec.col.x != pcol.x || vec.col.y != pcol.y || vec.col.z != pcol.z) {
+				dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(vec.col.x, vec.col.y, vec.col.z, vec.alpha));
+				palpha = vec.alpha; pcol = vec.col;
 			}
-			if (DrawVector(dev, (*it).v, (*it).orig, (*it).rad, (*it).col, alpha) && (*it).label.size()) {
-				double scale3 = ((*it).lsize >= 0 ? (*it).lsize : size);
+			if (DrawVector(dev, vec.v, vec.orig, vec.rad) && vec.label.size()) {
+				double scale3 = (vec.lsize >= 0 ? vec.lsize : size);
 				//scene->Render3DLabel(mul(body->GRot(), ve->v + ve->v.unit() * (scale3 * 0.1)) + body->GPos(),
 				//	ve->label, scale3, ve->lcol);
 			}
@@ -247,7 +245,7 @@ void vObject::RenderVectors(LPDIRECT3DDEVICE7 dev)
 	}
 }
 
-bool vObject::DrawVector(LPDIRECT3DDEVICE7 dev, const VECTOR3& end, const VECTOR3& orig, double rad, const VECTOR3& col, float opac)
+bool vObject::DrawVector(LPDIRECT3DDEVICE7 dev, const VECTOR3& end, const VECTOR3& orig, double rad)
 {
 	static const float EPS = 1e-2f;
 	static const int nseg = 8;

@@ -81,10 +81,10 @@ protected:
 	void RenderSphere (LPDIRECT3DDEVICE7 dev, const RenderPrm &prm, bool &using_zbuf);
 	void RenderCloudLayer (LPDIRECT3DDEVICE7 dev, DWORD cullmode, const RenderPrm &prm);
 	void RenderVectors(LPDIRECT3DDEVICE7 dev);
+	void RenderBaseVectors(LPDIRECT3DDEVICE7 dev);
 	void RenderBaseSurfaces (LPDIRECT3DDEVICE7 dev);
 	void RenderBaseStructures (LPDIRECT3DDEVICE7 dev);
 	void RenderBaseShadows (LPDIRECT3DDEVICE7 dev, float depth);
-	void RenderBaseVectors(LPDIRECT3DDEVICE7 dev);
 	void RenderCloudShadows (LPDIRECT3DDEVICE7 dev, const RenderPrm &prm);
 	bool ModLighting (DWORD &ambient);
 

@@ -595,6 +595,15 @@ void vPlanet::RenderVectors(LPDIRECT3DDEVICE7 dev)
 
 // ==============================================================
 
+void vPlanet::RenderBaseVectors(LPDIRECT3DDEVICE7 dev)
+{
+	for (DWORD i = 0; i < nbase; i++)
+		if (vbase[i])
+			vbase[i]->RenderVectors(dev);
+}
+
+// ==============================================================
+
 void vPlanet::RenderCloudShadows (LPDIRECT3DDEVICE7 dev, const RenderPrm &prm)
 {
 	if (cloudmgr2) {
@@ -686,15 +695,6 @@ void vPlanet::RenderBaseShadows (LPDIRECT3DDEVICE7 dev, float depth)
 	dev->SetTextureStageState (0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
 	dev->SetTextureStageState (0, D3DTSS_COLOROP, D3DTOP_MODULATE);
 	dev->SetTextureStageState (0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-}
-
-// ==============================================================
-
-void vPlanet::RenderBaseVectors(LPDIRECT3DDEVICE7 dev)
-{
-	for (DWORD i = 0; i < nbase; i++)
-		if (vbase[i])
-			vbase[i]->RenderVectors(dev);
 }
 
 // ==============================================================

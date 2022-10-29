@@ -169,10 +169,9 @@ void vVessel::UpdateRenderVectors()
 		if ((flag & BF_TORQUE) && vessel->GetTorqueVector(F)) {
 			sprintf(cbuf, "M = %fNm", len = length(F));
 			if (logscale) len = log(len + 1e-5) - log(1e-5); else len *= scale * 1e5;
-			AddVector(unit(F) * (len * pscale), _V(0, 0, 0), scale2, std::string(cbuf), _V(1, 0, 1), alpha, D3DRGB(1, 0, 1));
+			AddVector(unit(F) * (len * pscale), _V(0, 0, 0), scale2 * 0.5, std::string(cbuf), _V(1, 0, 1), alpha, D3DRGB(1, 0, 1));
 		}
 	}
-
 }
 
 void vVessel::LoadMeshes ()

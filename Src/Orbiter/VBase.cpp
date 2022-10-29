@@ -720,25 +720,6 @@ void VBase::RenderGroundShadow (LPDIRECT3DDEVICE7 dev)
 	}
 }
 
-void VBase::SetupRenderVectorList ()
-{
-	DWORD flag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagFrameAxes;
-	if ((flag & FA_ENABLE) && (flag & FA_BASE)) {
-		double scale = base->size * g_pOrbiter->Cfg()->CfgVisHelpPrm.scaleFrameAxes;
-		double rad   = base->size*0.02;
-		float alpha = g_pOrbiter->Cfg()->CfgVisHelpPrm.opacFrameAxes;
-		Vector cam (tmul (base->GRot(), g_camera->GPos()-base->GPos()));
-		AddVec (cam, Vector(scale,0,0), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_PX, D3DRGB(1,1,1));
-		AddVec (cam, Vector(0,scale,0), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_PY, D3DRGB(1,1,1));
-		AddVec (cam, Vector(0,0,scale), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_PZ, D3DRGB(1,1,1));
-		if (flag & FA_NEG) {
-			AddVec (cam, Vector(-scale,0,0), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_NX, D3DRGB(1,1,1));
-			AddVec (cam, Vector(0,-scale,0), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_NY, D3DRGB(1,1,1));
-			AddVec (cam, Vector(0,0,-scale), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_NZ, D3DRGB(1,1,1));
-		}
-	}
-}
-
 bool VBase::ModLighting (LPD3DLIGHT7 light)
 {
 	const CelestialBody *cb = base->RefPlanet();

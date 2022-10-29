@@ -199,8 +199,7 @@ protected:
 
 	void AddVector(const VECTOR3& v, const VECTOR3& orig, double rad, const std::string& label, const VECTOR3& col, float alpha = 1.0f, DWORD lcol = 0, float lsize = -1.0);
 
-	bool DrawVector(LPDIRECT3DDEVICE7 dev, const VECTOR3& end, const VECTOR3& orig, double rad,
-		const VECTOR3& col, float opac);
+	bool DrawVector(LPDIRECT3DDEVICE7 dev, const VECTOR3& end, const VECTOR3& orig, double rad);
 
 	static const oapi::D3D7Client *gc; // graphics client instance pointer
 	static LPDIRECTDRAWSURFACE7 blobtex[3]; // beacon textures
