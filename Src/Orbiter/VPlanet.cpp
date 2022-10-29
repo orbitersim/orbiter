@@ -767,17 +767,17 @@ int VPlanet::ShadowPlanetOnRing (VERTEX_XYZC *&vtx, DWORD &nvtx)
 
 void VPlanet::SetupRenderVectorList ()
 {
-	DWORD flag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagCrdAxes;
-	if ((flag & CA_ENABLE) && (flag & CA_CBODY)) {
+	DWORD flag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagFrameAxes;
+	if ((flag & FA_ENABLE) && (flag & FA_CBODY)) {
 		double psize = planet->Size();
-		double scale = g_pOrbiter->Cfg()->CfgVisHelpPrm.scaleCrdAxes * psize*1.3;
+		double scale = g_pOrbiter->Cfg()->CfgVisHelpPrm.scaleFrameAxes * psize*1.3;
 		double rad   = 0.02 * psize;
-		float alpha  = g_pOrbiter->Cfg()->CfgVisHelpPrm.opacCrdAxes;
+		float alpha  = g_pOrbiter->Cfg()->CfgVisHelpPrm.opacFrameAxes;
 		Vector cam (tmul (planet->GRot(), g_camera->GPos()-planet->GPos()));
 		AddVec (cam, Vector(scale,0,0), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_PX, D3DRGB(1,1,1));
 		AddVec (cam, Vector(0,scale,0), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_PY, D3DRGB(1,1,1));
 		AddVec (cam, Vector(0,0,scale), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_PZ, D3DRGB(1,1,1));
-		if (flag & CA_NEG) {
+		if (flag & FA_NEG) {
 			AddVec (cam, Vector(-scale,0,0), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_NX, D3DRGB(1,1,1));
 			AddVec (cam, Vector(0,-scale,0), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_NY, D3DRGB(1,1,1));
 			AddVec (cam, Vector(0,0,-scale), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_NZ, D3DRGB(1,1,1));

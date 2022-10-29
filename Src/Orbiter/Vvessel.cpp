@@ -792,14 +792,14 @@ void VVessel::SetupRenderVectorList ()
 	Vector cam;
 	bool havecam = false;
 
-	DWORD flag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagBodyforce;
+	DWORD flag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagBodyForce;
 	if (flag & BF_ENABLE) {
 		static double shift = 1e3, lshift = log(shift);
 		bool logscale = ((flag & BF_LOGSCALE) != 0);
 		double len, scale, scale2 = vessel->size*0.02;
 		scale = (logscale ? 1.0 : vessel->size / (vessel->Mass() * 9.81));
-		double pscale = g_pOrbiter->Cfg()->CfgVisHelpPrm.scaleBodyforce;
-		float alpha = g_pOrbiter->Cfg()->CfgVisHelpPrm.opacBodyforce;
+		double pscale = g_pOrbiter->Cfg()->CfgVisHelpPrm.scaleBodyForce;
+		float alpha = g_pOrbiter->Cfg()->CfgVisHelpPrm.opacBodyForce;
 		char cbuf[32];
 		Vector F;
 		cam.Set (tmul (vessel->GRot(), g_camera->GPos()-vessel->GPos()));
@@ -853,17 +853,17 @@ void VVessel::SetupRenderVectorList ()
 			}
 		}
 	}
-	flag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagCrdAxes;
-	if ((flag & CA_ENABLE) && (flag & CA_VESSEL)) {
-		double scale = vessel->size * g_pOrbiter->Cfg()->CfgVisHelpPrm.scaleCrdAxes;
+	flag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagFrameAxes;
+	if ((flag & FA_ENABLE) && (flag & FA_VESSEL)) {
+		double scale = vessel->size * g_pOrbiter->Cfg()->CfgVisHelpPrm.scaleFrameAxes;
 		double rad   = vessel->size*0.02;
-		float alpha  = g_pOrbiter->Cfg()->CfgVisHelpPrm.opacCrdAxes;
+		float alpha  = g_pOrbiter->Cfg()->CfgVisHelpPrm.opacFrameAxes;
 		if (!havecam)
 			cam.Set (tmul (vessel->GRot(), g_camera->GPos()-vessel->GPos()));
 		AddVec (cam, Vector(scale,0,0), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_PX, D3DRGB(1,1,1));
 		AddVec (cam, Vector(0,scale,0), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_PY, D3DRGB(1,1,1));
 		AddVec (cam, Vector(0,0,scale), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_PZ, D3DRGB(1,1,1));
-		if (flag & CA_NEG) {
+		if (flag & FA_NEG) {
 			AddVec (cam, Vector(-scale,0,0), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_NX, D3DRGB(1,1,1));
 			AddVec (cam, Vector(0,-scale,0), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_NY, D3DRGB(1,1,1));
 			AddVec (cam, Vector(0,0,-scale), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_NZ, D3DRGB(1,1,1));

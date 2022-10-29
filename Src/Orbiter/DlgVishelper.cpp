@@ -572,7 +572,7 @@ void TabForces::CreateInterface()
 
 void TabForces::UpdateControls(HWND hTab)
 {
-	DWORD vecFlag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagBodyforce;
+	DWORD vecFlag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagBodyForce;
 	bool enable = (vecFlag & BF_ENABLE);
 	SendDlgItemMessage(hTab, IDC_VH_VEC, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
 	for (int i = IDC_VH_VEC_WEIGHT; i <= IDC_VH_VEC_OPACITY; i++)
@@ -586,9 +586,9 @@ void TabForces::UpdateControls(HWND hTab)
 	SendDlgItemMessage(hTab, IDC_VH_VEC_LINSCL, BM_SETCHECK, vecFlag & BF_LOGSCALE ? BST_UNCHECKED : BST_CHECKED, 0);
 	SendDlgItemMessage(hTab, IDC_VH_VEC_LOGSCL, BM_SETCHECK, vecFlag & BF_LOGSCALE ? BST_CHECKED : BST_UNCHECKED, 0);
 
-	int scalePos = (int)(25.0 * (1.0 + 0.5 * log(g_pOrbiter->Cfg()->CfgVisHelpPrm.scaleBodyforce) / log(2.0)));
+	int scalePos = (int)(25.0 * (1.0 + 0.5 * log(g_pOrbiter->Cfg()->CfgVisHelpPrm.scaleBodyForce) / log(2.0)));
 	oapiSetGaugePos(GetDlgItem(hTab, IDC_VH_VEC_SCALE), scalePos);
-	int opacPos = (int)(g_pOrbiter->Cfg()->CfgVisHelpPrm.opacBodyforce * 50.0);
+	int opacPos = (int)(g_pOrbiter->Cfg()->CfgVisHelpPrm.opacBodyForce * 50.0);
 	oapiSetGaugePos(GetDlgItem(hTab, IDC_VH_VEC_OPACITY), opacPos);
 }
 
@@ -654,7 +654,7 @@ void TabForces::OnItemClicked(HWND hTab, WORD ctrlId)
 	case IDC_VH_VEC_LOGSCL: flag = BF_LOGSCALE; check = true;  break;
 	default:                flag = 0;          break;
 	}
-	DWORD& vecFlag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagBodyforce;
+	DWORD& vecFlag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagBodyForce;
 	if (check) vecFlag |=  flag;
 	else       vecFlag &= ~flag;
 
@@ -671,7 +671,7 @@ BOOL TabForces::OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam)
 		case SB_THUMBTRACK:
 		case SB_LINELEFT:
 		case SB_LINERIGHT:
-			g_pOrbiter->Cfg()->CfgVisHelpPrm.scaleBodyforce = (float)pow(2.0, (HIWORD(wParam) - 25) * 0.08);
+			g_pOrbiter->Cfg()->CfgVisHelpPrm.scaleBodyForce = (float)pow(2.0, (HIWORD(wParam) - 25) * 0.08);
 			return 0;
 		}
 		break;
@@ -680,7 +680,7 @@ BOOL TabForces::OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam)
 		case SB_THUMBTRACK:
 		case SB_LINELEFT:
 		case SB_LINERIGHT:
-			g_pOrbiter->Cfg()->CfgVisHelpPrm.opacBodyforce = (float)(HIWORD(wParam) * 0.02);
+			g_pOrbiter->Cfg()->CfgVisHelpPrm.opacBodyForce = (float)(HIWORD(wParam) * 0.02);
 			return 0;
 		}
 		break;
@@ -707,19 +707,19 @@ void TabAxes::CreateInterface()
 
 void TabAxes::UpdateControls(HWND hTab)
 {
-	DWORD crdFlag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagCrdAxes;
-	bool enable = (crdFlag & CA_ENABLE);
+	DWORD crdFlag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagFrameAxes;
+	bool enable = (crdFlag & FA_ENABLE);
 	SendDlgItemMessage(hTab, IDC_VH_CRD, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
 	for (int i = IDC_VH_CRD_VESSEL; i <= IDC_VH_CRD_OPACITY; i++)
 		EnableWindow(GetDlgItem(hTab, i), enable ? TRUE : FALSE);
-	SendDlgItemMessage(hTab, IDC_VH_CRD_VESSEL,  BM_SETCHECK,  crdFlag & CA_VESSEL ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hTab, IDC_VH_CRD_CELBODY, BM_SETCHECK,  crdFlag & CA_CBODY  ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hTab, IDC_VH_CRD_BASE, BM_SETCHECK,     crdFlag & CA_BASE   ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hTab, IDC_VH_CRD_NEGATIVE, BM_SETCHECK, crdFlag & CA_NEG    ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_CRD_VESSEL,  BM_SETCHECK,  crdFlag & FA_VESSEL ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_CRD_CELBODY, BM_SETCHECK,  crdFlag & FA_CBODY  ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_CRD_BASE, BM_SETCHECK,     crdFlag & FA_BASE   ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_VH_CRD_NEGATIVE, BM_SETCHECK, crdFlag & FA_NEG    ? BST_CHECKED : BST_UNCHECKED, 0);
 
-	int scalePos = (int)(25.0 * (1.0 + 0.5 * log(g_pOrbiter->Cfg()->CfgVisHelpPrm.scaleCrdAxes) / log(2.0)));
+	int scalePos = (int)(25.0 * (1.0 + 0.5 * log(g_pOrbiter->Cfg()->CfgVisHelpPrm.scaleFrameAxes) / log(2.0)));
 	oapiSetGaugePos(GetDlgItem(hTab, IDC_VH_CRD_SCALE), scalePos);
-	int opacPos = (int)(g_pOrbiter->Cfg()->CfgVisHelpPrm.opacCrdAxes * 50.0);
+	int opacPos = (int)(g_pOrbiter->Cfg()->CfgVisHelpPrm.opacFrameAxes * 50.0);
 	oapiSetGaugePos(GetDlgItem(hTab, IDC_VH_CRD_OPACITY), opacPos);
 }
 
@@ -770,14 +770,14 @@ void TabAxes::OnItemClicked(HWND hTab, WORD ctrlId)
 	bool check = (SendDlgItemMessage(hTab, ctrlId, BM_GETCHECK, 0, 0) == TRUE);
 	DWORD flag;
 	switch (ctrlId) {
-	case IDC_VH_CRD:          flag = CA_ENABLE; break;
-	case IDC_VH_CRD_VESSEL:   flag = CA_VESSEL; break;
-	case IDC_VH_CRD_CELBODY:  flag = CA_CBODY;  break;
-	case IDC_VH_CRD_BASE:     flag = CA_BASE;   break;
-	case IDC_VH_CRD_NEGATIVE: flag = CA_NEG;    break;
+	case IDC_VH_CRD:          flag = FA_ENABLE; break;
+	case IDC_VH_CRD_VESSEL:   flag = FA_VESSEL; break;
+	case IDC_VH_CRD_CELBODY:  flag = FA_CBODY;  break;
+	case IDC_VH_CRD_BASE:     flag = FA_BASE;   break;
+	case IDC_VH_CRD_NEGATIVE: flag = FA_NEG;    break;
 	default:                  flag = 0;         break;
 	}
-	DWORD& crdFlag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagCrdAxes;
+	DWORD& crdFlag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagFrameAxes;
 	if (check) crdFlag |=  flag;
 	else       crdFlag &= ~flag;
 
@@ -794,7 +794,7 @@ BOOL TabAxes::OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam)
 		case SB_THUMBTRACK:
 		case SB_LINELEFT:
 		case SB_LINERIGHT:
-			g_pOrbiter->Cfg()->CfgVisHelpPrm.scaleCrdAxes = (float)pow(2.0, (HIWORD(wParam) - 25) * 0.08);
+			g_pOrbiter->Cfg()->CfgVisHelpPrm.scaleFrameAxes = (float)pow(2.0, (HIWORD(wParam) - 25) * 0.08);
 			return 0;
 		}
 		break;
@@ -803,7 +803,7 @@ BOOL TabAxes::OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam)
 		case SB_THUMBTRACK:
 		case SB_LINELEFT:
 		case SB_LINERIGHT:
-			g_pOrbiter->Cfg()->CfgVisHelpPrm.opacCrdAxes = (float)(HIWORD(wParam) * 0.02);
+			g_pOrbiter->Cfg()->CfgVisHelpPrm.opacFrameAxes = (float)(HIWORD(wParam) * 0.02);
 			return 0;
 		}
 		break;

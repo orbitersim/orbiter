@@ -126,7 +126,7 @@ bool vVessel::Update ()
 
 void vVessel::UpdateRenderVectors()
 {
-	veclist.clear();
+	vObject::UpdateRenderVectors();
 
 	DWORD flag = *(DWORD*)gc->GetConfigParam(CFGPRM_FORCEVECTORFLAG);
 	if (flag & BF_ENABLE) {
@@ -172,6 +172,7 @@ void vVessel::UpdateRenderVectors()
 			AddVector(unit(F) * (len * pscale), _V(0, 0, 0), scale2, std::string(cbuf), _V(1, 0, 1), alpha, D3DRGB(1, 0, 1));
 		}
 	}
+
 }
 
 void vVessel::LoadMeshes ()

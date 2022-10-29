@@ -209,6 +209,27 @@ typedef void *HDC;
  *   float
  */
 #define CFGPRM_FORCEVECTOROPACITY 0x001F
+
+/**
+ * Bit flags for frame axis display options.
+ * \par Parameter type:
+ *   DWORD
+ */
+#define CFGPRM_FRAMEAXISFLAG 0x0020
+
+/**
+ * Frame axis display scaling factor
+ * \par Parameter type:
+ *   float
+ */
+#define CFGPRM_FRAMEAXISSCALE 0x0021
+
+/**
+ * Frame axis display opacity value
+ * \par Parameter type:
+ *   float
+ */
+#define CFGPRM_FRAMEAXISOPACITY 0x0022
 /// @}
 
 /**
@@ -254,6 +275,15 @@ typedef void *HDC;
 #define BF_DRAG       0x0020 ///< Show drag vector
 #define BF_TOTAL      0x0040 ///< Show total force vector
 #define BF_TORQUE     0x0080 ///< Show torque vector
+/// @}
+
+/// \defgroup caflag Bit flags for frame axis render options
+/// @{
+#define FA_ENABLE   0x0001 ///< Enable frame axis display
+#define FA_NEG      0x0002 ///< Also show negative axes
+#define FA_VESSEL   0x0004 ///< Show vessel frame axes
+#define FA_CBODY    0x0008 ///< Show celestial body frame axes
+#define FA_BASE     0x0010 ///< Show surface base frame axes
 /// @}
 
 /// \defgroup bltflag Bit flags for blitting operations

@@ -90,7 +90,7 @@ void vObject::Activate (bool isactive)
 
 bool veccomp(const vObject::BodyVectorRec& v1, const vObject::BodyVectorRec& v2)
 {
-	return v1.dist < v2.dist; // sort from furthest to nearest
+	return v1.dist > v2.dist; // sort from furthest to nearest
 }
 
 bool vObject::Update ()
@@ -100,8 +100,8 @@ bool vObject::Update ()
 	MATRIX3 grot;
 	oapiGetRotationMatrix (hObj, &grot);
 	oapiGetGlobalPos (hObj, &cpos);
-	cpos -= *scn->GetCamera()->GetGPos();
-	// object positions are relative to camera
+	cpos -= *scn->GetCamera()->GetGPos(); // global object position relative to camera
+	campos = tmul(grot, -cpos); // camera position in object frame
 
 	cdist = length (cpos);
 	// camera distance
@@ -119,6 +119,33 @@ bool vObject::Update ()
 	std::sort(veclist.begin(), veclist.end(), veccomp);
 
 	return true;
+}
+
+void vObject::UpdateRenderVectors()
+{
+	veclist.clear();
+
+	// render object frame axes
+	DWORD flag = *(DWORD*)gc->GetConfigParam(CFGPRM_FRAMEAXISFLAG);
+	if (flag & FA_ENABLE) {
+		int tp = oapiGetObjectType(hObj);
+		if ((tp == OBJTP_VESSEL && flag & FA_VESSEL) ||
+			(tp == OBJTP_PLANET && flag & FA_CBODY) ||
+			(tp == OBJTP_SURFBASE && flag & FA_BASE)) {
+
+			double scale = size * *(float*)gc->GetConfigParam(CFGPRM_FRAMEAXISSCALE);
+			double rad = size * 0.01;
+			float alpha = *(float*)gc->GetConfigParam(CFGPRM_FRAMEAXISOPACITY);
+			AddVector(_V(scale, 0, 0), _V(0, 0, 0), rad, std::string("x"), _V(1, 1, 1), alpha, D3DRGB(1, 1, 1));
+			AddVector(_V(0, scale, 0), _V(0, 0, 0), rad, std::string("y"), _V(1, 1, 1), alpha, D3DRGB(1, 1, 1));
+			AddVector(_V(0, 0, scale), _V(0, 0, 0), rad, std::string("z"), _V(1, 1, 1), alpha, D3DRGB(1, 1, 1));
+			if (flag & FA_NEG) {
+				AddVector(_V(-scale, 0, 0), _V(0, 0, 0), rad, std::string("-x"), _V(1, 1, 1), alpha, D3DRGB(1, 1, 1));
+				AddVector(_V(0, -scale, 0), _V(0, 0, 0), rad, std::string("-y"), _V(1, 1, 1), alpha, D3DRGB(1, 1, 1));
+				AddVector(_V(0, 0, -scale), _V(0, 0, 0), rad, std::string("-z"), _V(1, 1, 1), alpha, D3DRGB(1, 1, 1));
+			}
+		}
+	}
 }
 
 void vObject::RenderSpot (LPDIRECT3DDEVICE7 dev, const VECTOR3 *ofs, float size, const VECTOR3 &col, bool lighting, int shape)
@@ -180,9 +207,8 @@ void vObject::AddVector(const VECTOR3& v, const VECTOR3& orig, double rad, const
 	double len = length(v);
 	if (len < 2.0 * rad) return; // too short to be rendered
 
-	VECTOR3 cam = -cpos;
 	VECTOR3 vu = v / len;
-	double dist = length(vu - cam);
+	double dist = length(vu - campos); // distance of vector tip from camera
 
 	BodyVectorRec rec;
 	rec.v = v;
@@ -200,25 +226,24 @@ void vObject::AddVector(const VECTOR3& v, const VECTOR3& orig, double rad, const
 
 void vObject::RenderVectors(LPDIRECT3DDEVICE7 dev)
 {
+	// Render and texture stage states are assumed to be set correctly on call
+
 	if (veclist.size()) {
 		float alpha, palpha = -1.0f;
-		dev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TFACTOR);
-		dev->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-		dev->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_POINT);
-		dev->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFN_POINT);
+		VECTOR3 col, pcol = { -1,-1,-1 };
 		for (auto it = veclist.begin(); it != veclist.end(); it++) {
 			alpha = (*it).alpha;
-			if (alpha != palpha)
-				dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(1, 1, 1, alpha));
+			col = (*it).col;
+			if (alpha != palpha || col.x != pcol.x || col.y != pcol.y || col.z != pcol.z) {
+				dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(col.x, col.y, col.z, alpha));
+				palpha = alpha; pcol = col;
+			}
 			if (DrawVector(dev, (*it).v, (*it).orig, (*it).rad, (*it).col, alpha) && (*it).label.size()) {
 				double scale3 = ((*it).lsize >= 0 ? (*it).lsize : size);
 				//scene->Render3DLabel(mul(body->GRot(), ve->v + ve->v.unit() * (scale3 * 0.1)) + body->GPos(),
 				//	ve->label, scale3, ve->lcol);
 			}
 		}
-		dev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-		dev->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
-		dev->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
 	}
 }
 
@@ -229,13 +254,6 @@ bool vObject::DrawVector(LPDIRECT3DDEVICE7 dev, const VECTOR3& end, const VECTOR
 	static const int nVtx = nseg * 5;
 	static const int nIdx0 = nseg * 6 + nseg * 3;
 	static const int nIdx1 = nIdx0 + (nseg - 2) * 3;
-	static D3DMATERIAL7 pmtrl, mtrl = {
-		{0,0,0,1},
-		{0,0,0,1},
-		{0.5,0.5,0.5,1},
-		{0,0,0,1},
-		10.0
-	};
 	int i, nIdx;
 	WORD* Idx;
 	static D3DVERTEX* Vtx0 = 0, * Vtx = 0;
@@ -281,7 +299,6 @@ bool vObject::DrawVector(LPDIRECT3DDEVICE7 dev, const VECTOR3& end, const VECTOR
 	float h = (float)length(end);
 	if (h < EPS) return false;
 	float hb = max(h - 4.0f * w, 0);
-	DWORD bZbuf;
 
 	memcpy(Vtx, Vtx0, nVtx * sizeof(D3DVERTEX));
 
@@ -318,24 +335,8 @@ bool vObject::DrawVector(LPDIRECT3DDEVICE7 dev, const VECTOR3& end, const VECTOR
 	else
 		Idx = Idx0, nIdx = nIdx0;
 
-	mtrl.emissive.r = 0.5f * (mtrl.diffuse.r = (float)col.x);
-	mtrl.emissive.g = 0.5f * (mtrl.diffuse.g = (float)col.y);
-	mtrl.emissive.b = 0.5f * (mtrl.diffuse.b = (float)col.z);
-	if (opac < 1.0f)
-		mtrl.emissive.a = mtrl.diffuse.a = mtrl.ambient.a = mtrl.specular.a = opac;
-	dev->GetMaterial(&pmtrl);
-	dev->SetMaterial(&mtrl);
-	dev->SetTexture(0, 0);
-	dev->SetRenderState(D3DRENDERSTATE_SPECULARENABLE, TRUE);
-	dev->GetRenderState(D3DRENDERSTATE_ZENABLE, &bZbuf);
-	if (bZbuf) dev->SetRenderState(D3DRENDERSTATE_ZENABLE, FALSE);
 	dev->DrawIndexedPrimitive(
 		D3DPT_TRIANGLELIST, D3DFVF_VERTEX, Vtx, nVtx, Idx, nIdx, 0);
-	dev->SetMaterial(&pmtrl);
-	dev->SetRenderState(D3DRENDERSTATE_SPECULARENABLE, FALSE);
 	dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &mWorld);
-	if (bZbuf) dev->SetRenderState(D3DRENDERSTATE_ZENABLE, TRUE);
-	if (opac < 1.0f)
-		mtrl.emissive.a = mtrl.diffuse.a = mtrl.ambient.a = mtrl.specular.a = 1.0f;
 	return true;
 }

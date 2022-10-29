@@ -143,8 +143,12 @@ public:
 	/**
 	 * \brief Set up any vectors (forces, coordinate axes) to be drawn in the
 	 *    next render pass.
+	 * 
+	 * Resets the vector list and adds object frame axes if requested for the
+	 * given object type. Derived classes should extend this to add their own
+	 * vector displays.
 	 */
-	virtual void UpdateRenderVectors() {}
+	virtual void UpdateRenderVectors();
 
 	/**
 	 * \brief Level-of-detail check
@@ -188,7 +192,7 @@ public:
 		float lsize;  ///< length scale
 	};
 
-	void RenderVectors(LPDIRECT3DDEVICE7 dev);
+	virtual void RenderVectors(LPDIRECT3DDEVICE7 dev);
 
 protected:
 	void RenderSpot (LPDIRECT3DDEVICE7 dev, const VECTOR3 *ofs, float size, const VECTOR3 &col, bool lighting, int shape);
@@ -208,7 +212,8 @@ protected:
 	MATRIX4 dmWorld;   // world matrix in double precision
 	double size;       // object radius [m]
 	double cdist;      // current camera distance
-	VECTOR3 cpos;      // camera-relative object position
+	VECTOR3 cpos;      // camera-relative object position in global frame
+	VECTOR3 campos;    // camera position in object frame
 	std::vector<BodyVectorRec> veclist; ///< list of body vectors to be rendered
 };
 
