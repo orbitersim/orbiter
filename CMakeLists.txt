@@ -435,7 +435,7 @@ endfunction()
 
 
 # Installation
-install(DIRECTORY Scenarios Textures Meshes Config Script Flights BinAssets/
+install(DIRECTORY Scenarios Textures Meshes Config GravityModels Script Flights BinAssets/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
 )
 install(FILES ${LUA_DLL_DIR}/lua5.1.dll
