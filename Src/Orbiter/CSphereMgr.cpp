@@ -72,9 +72,9 @@ CSphereManager::CSphereManager ()
 	// note that this mapping does not exactly correspond to the default
 	// galactic->ecliptic mapping, but has been fitted to optimise the match
 	// between visible sky image and Hipparcos star positions.
-	double theta = 60.27 * RAD; // 60.18*RAD;
-	double phi = 90.08*RAD; // 90.02*RAD;
-	double lambda = 173.64*RAD; // 173.6*RAD;
+	double lambda = 173.60 * RAD;
+	double phi = 90.03 * RAD;
+	double theta = 60.19 * RAD;
 	double sint = sin(theta), cost = cos(theta);
 	double sinp = sin(phi), cosp = cos(phi);
 	double sinl = sin(lambda), cosl = cos(lambda);
