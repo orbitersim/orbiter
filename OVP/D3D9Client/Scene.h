@@ -134,6 +134,7 @@ public:
 		OBJHANDLE	hNear;		// closest celestial body
 		vPlanet *	vNear;		// closest celestial body (visual)
 		double		alt_near;
+		double		lng, lat, elev;
 	};
 
 	// Screen space sun visual parameters ==================================================
@@ -338,7 +339,7 @@ public:
 	OBJHANDLE		GetCameraNearBody() const { return Camera.hNear; }
 	vPlanet *		GetCameraNearVisual() const { return Camera.vNear; }
 	double			GetCameraNearAltitude() const { return Camera.alt_near; }
-
+	double			GetCameraElevation() const { return Camera.elev; }
 	void			GetCameraLngLat(double *lng, double *lat) const;
 	bool			WorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, D3DXMATRIX *pVP, float clip = 1.0f);
 

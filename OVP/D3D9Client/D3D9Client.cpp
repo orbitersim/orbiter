@@ -73,6 +73,7 @@ set<SurfNative*> SurfaceCatalog;
 unordered_map<string, SURFHANDLE> SharedTextures;
 unordered_map<string, SURFHANDLE> ClonedTextures;
 unordered_map<MESHHANDLE, class SketchMesh*> MeshMap;
+unordered_map<std::string, LPDIRECT3DTEXTURE9> MicroTextures;
 
 DWORD uCurrentMesh = 0;
 vObject *pCurrentVisual = 0;
@@ -161,6 +162,7 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 
 	DebugControls::Create();
 	AtmoControls::Create();
+	vPlanet::ParseMicroTexturesFile();
 
 	g_hInst = hDLL;
 	g_client = new D3D9Client(hDLL);
@@ -855,7 +857,11 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 
 	LogAlw("============ Checking Object Catalogs ===========");
 
-	
+	// Clear microtextures --------------------------------------------------------------------------------------
+	//
+	for (auto& it : MicroTextures) SAFE_RELEASE(it.second);
+
+
 	// Check surface catalog --------------------------------------------------------------------------------------
 	//
 	if (SharedTextures.size() > 0)

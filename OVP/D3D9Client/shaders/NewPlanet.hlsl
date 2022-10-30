@@ -270,7 +270,7 @@ float4 HorizonRingPS(HazeVS frg) : COLOR
 	float x = dot(uOrt, Const.SunAz) * 0.5 + 0.5;
 	float r = length(Const.CamPos + frg.posW);
 
-	float2 uv = float2(x, (r - Const.PlanetRad) / (Const.AtmoRad - Const.PlanetRad));
+	float2 uv = float2(x, (r - Const.PlanetRad) / Const.AtmoAlt);
 
 	float4 cRay = tex2D(tSkyRayColor, uv).rgba;
 	float3 cMie = tex2D(tSkyMieColor, uv).rgb;
@@ -496,7 +496,7 @@ float4 TerrainPS(TileVS frg) : COLOR
 #if defined(_MICROTEX)
 
 
-	float step1 = smoothstep(15000, 3000, Const.CamAlt);
+	float step1 = smoothstep(15000, 3000, Const.CamElev);
 	step1 *= (step1 * step1);
 	float3 cFnl = max(0, min(2, 1.333f * (cFar + cMed + cLow) - 1));
 

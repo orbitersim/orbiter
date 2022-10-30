@@ -1024,7 +1024,7 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 	memset(&macro, 0, 16*sizeof(D3DXMACRO));
 	bool bDisassemble = false;
 
-	LogAlw("Compiling a Shader [%s] function [%s]...", file, function);
+	LogAlw("Compiling a Shader [%s] function [%s] name [%s]...", file, function, name);
 
 	if (options) {
 		int m = 0;
@@ -1744,7 +1744,7 @@ D3DXCOLOR SketchMesh::GetMaterial(DWORD idx)
 ShaderClass::ShaderClass(LPDIRECT3DDEVICE9 pDev, const char* file, const char* vs, const char* ps, const char *name, const char* options) :
 	pPS(), pVS(), pPSCB(NULL), pVSCB(NULL), pDev(pDev), fn(file), psn(ps), vsn(vs), sn(name)
 {
-	for (int i = 0; i < ARRAYSIZE(pTextures); i++) pTextures[i] = {};
+	for (int i = 0; i < ARRAYSIZE(pTextures); i++) pTextures[i] = {0};
 	pPS = CompilePixelShader(pDev, file, ps, name, options, &pPSCB);
 	pVS = CompileVertexShader(pDev, file, vs, name, options, &pVSCB);
 }

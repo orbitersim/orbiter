@@ -45,7 +45,6 @@ static double farplane = 1e6;
 static double max_surf_dist = 1e4;
 
 // Buffered MicroTex.cfg file read:
-static bool bMicroTexFileRead = false;
 static std::map<std::string, vPlanet::_MicroCfg> MicroCfgs;
 typedef std::map<std::string, vPlanet::_MicroCfg>::iterator MicroCfgsIterator;
 
@@ -59,6 +58,7 @@ int vPlanet::Nc = 0;
 
 extern int SURF_MAX_PATCHLEVEL;
 extern D3D9Client* g_client;
+extern unordered_map<std::string, LPDIRECT3DTEXTURE9> MicroTextures;
 
 // ==============================================================
 // Face's Terrain Flattening section
@@ -352,6 +352,8 @@ void vPlanet::GlobalInit(oapi::D3D9Client* gc)
 {
 	pDev = gc->GetDevice();
 
+	LoadMicroTextures(pDev);
+
 	pIP = new ImageProcessing(pDev, "Modules/D3D9Client/Scatter.hlsl", "SunColor");
 
 	pIP->CompileShader("SkyView");
@@ -392,20 +394,21 @@ void vPlanet::GlobalInit(oapi::D3D9Client* gc)
 	// Compile planet shader with different configurations
 	// ---------------------------------------------------
 
+	string blend = "";
 	string flags = "";
+	pRender[PLT_GIANT] = new PlanetShader(pDev, "Modules/D3D9Client/NewPlanet.hlsl", "TerrainVS", "TerrainPS", "Giant", flags.c_str());
+
 	if (Config->CloudMicro) flags += "_CLOUDMICRO ";
 	if (Config->bCloudNormals) flags += "_CLOUDNORMALS ";
 
 	pRender[PLT_CLOUDS] = new PlanetShader(pDev, "Modules/D3D9Client/NewPlanet.hlsl", "CloudVS", "CloudPS", "Clouds", flags.c_str());
 
-	string blend = "";
+
+
+	flags = "";
 	if (Config->BlendMode == 0) blend = "_SOFT ";
 	if (Config->BlendMode == 1) blend = "_MED ";
 	if (Config->BlendMode == 2) blend = "_HARD ";
-
-	flags = "";
-
-	pRender[PLT_GIANT] = new PlanetShader(pDev, "Modules/D3D9Client/NewPlanet.hlsl", "TerrainVS", "TerrainPS", "Giant", (flags + blend).c_str());
 
 	if (bLocals) flags += "_LOCALLIGHTS ";
 	if (Config->MicroMode) flags += "_MICROTEX ";
@@ -414,18 +417,20 @@ void vPlanet::GlobalInit(oapi::D3D9Client* gc)
 
 	pRender[PLT_MARS] = new PlanetShader(pDev, "Modules/D3D9Client/NewPlanet.hlsl", "TerrainVS", "TerrainPS", "Mars", (flags + blend).c_str());
 
+
 	flags += "_NO_ATMOSPHERE ";
 
 	pRender[PLT_MOON] = new PlanetShader(pDev, "Modules/D3D9Client/NewPlanet.hlsl", "TerrainVS", "TerrainPS", "Moon", (flags + blend).c_str());
 
+
 	flags = "";
+	blend = "";
 	if (bWater) flags += "_WATER ";
 	if (bWater && bRiples) flags += "_RIPPLES ";
 	if (bShadows) flags += "_CLOUDSHD ";
 	if (bNightLights) flags += "_NIGHTLIGHTS ";
 	if (bLocals) flags += "_LOCALLIGHTS ";
 
-	//if (Config->MicroMode) flags += "_MICROTEX ";
 	if (Config->ShadowMapMode) flags += "_SHDMAP ";
 	if (Config->EnableMeshDbg) flags += "_DEVTOOLS ";
 
@@ -609,12 +614,6 @@ vPlanet::~vPlanet ()
 	else if (surfmgr2) delete surfmgr2;
 	if (cloudmgr2) delete cloudmgr2;
 
-	if (MicroCfg.bLoaded) {
-		for (int i = 0; i < ARRAYSIZE(MicroCfg.Level); ++i) {
-			SAFE_RELEASE(MicroCfg.Level[i].pTex);
-		}
-	}
-
 	for (auto x : overlays) for (auto y : x->pSurf) if (y) y->Release();
 
 	if (clouddata) {
@@ -768,10 +767,11 @@ void vPlanet::UpdateScatter()
 	cp.cSun = FVECTOR3(1, 1, 1) * 2.0f;
 	cp.PlanetRad = float(pr);
 	cp.PlanetRad2 = float(pr * pr);
-	cp.MinAlt = 0.0f;		// Min Elevation above sea-level
+	cp.MinAlt = 0.0f;		// Min Elevation 
 	cp.MaxAlt = 9e3f;		// Max Elevation above sea-level
 	cp.iAltRng = 1.0f / (cp.MaxAlt - cp.MinAlt);
 	cp.CamAlt = float(ca);
+	cp.CamElev = float(scn->GetCameraElevation());
 	cp.CamRad = float(cr);
 	cp.CamRad2 = float(cr * cr);
 	cp.CamPos = cam;
@@ -1084,9 +1084,6 @@ bool vPlanet::Update (bool bMainScene)
 	D3DVEC(-sundir, sunLight.Dir);
 
 	if (patchres==0) return true;
-
-	// Check if micro textures needs loading
-	if (MicroCfg.bEnabled && !MicroCfg.bLoaded && scn->GetCameraProxyVisual()==this) LoadMicroTextures();
 
 	int i, j;
 	float rad_scale = float(size);
@@ -1962,7 +1959,6 @@ void vPlanet::ParseMicroTexturesFile()
 		}
 	}
 	fs.close();
-	bMicroTexFileRead = true;
 }
 
 // ===========================================================================================
@@ -1972,16 +1968,10 @@ bool vPlanet::ParseMicroTextures()
 	if (Config->MicroMode==0) return false;	// Micro textures are disabled
 	if (surfmgr2==NULL) return false; // Only supported with tile format 2
 
-	// Parse file (only once!)
-	if (!bMicroTexFileRead) {
-		ParseMicroTexturesFile();
-	}
-
 	// Find 'our' config
 	MicroCfgsIterator it = MicroCfgs.find(GetName());
 	if (it != MicroCfgs.end()) {
 		MicroCfg = it->second;
-		//MicroCfgs.erase(it);	 Keep the table allocated for Orbiter restarts from launchpad
 		return true;
 	}
 	return false;
@@ -2061,37 +2051,35 @@ void vPlanet::SetMicroTexture(LPDIRECT3DTEXTURE9 pSrc, int slot)
 }
 
 // ===========================================================================================
-//
-bool vPlanet::LoadMicroTextures()
+// static
+void vPlanet::LoadMicroTextures(LPDIRECT3DDEVICE9 pDev)
 {
-	LogOapi("Loading Micro Textures for %s", GetName());
-	char file[256];
-	for (int i=0; i<ARRAYSIZE(MicroCfg.Level); ++i) {
-		sprintf_s(file, 256, "Textures/%s", MicroCfg.Level[i].file);
-		if (D3DXCreateTextureFromFileA(GetDevice(), file, &MicroCfg.Level[i].pTex) == S_OK) {
-			D3DSURFACE_DESC desc;
-			if (MicroCfg.Level[i].pTex) {
-				MicroCfg.Level[i].pTex->GetLevelDesc(0, &desc);
-				MicroCfg.Level[i].size = double(desc.Width) / MicroCfg.Level[i].reso;
-				MicroCfg.Level[i].px = double(desc.Width);
-				DWORD mips = MicroCfg.Level[i].pTex->GetLevelCount();
-				LogOapi("Level %u, %s, %.1fpx/m, %.1fm, Mipmap count=%u", i, MicroCfg.Level[i].file, MicroCfg.Level[i].reso, MicroCfg.Level[i].size, mips);
+	for (auto &body : MicroCfgs)
+	{
+		for (auto &x : body.second.Level)
+		{
+			char file_path[MAX_PATH];
+			sprintf_s(file_path, MAX_PATH, "Textures/%s", x.file);
+			
+			// If texture is not loaded, load it
+			if (MicroTextures.find(x.file) == MicroTextures.end()) {
+				if (D3DXCreateTextureFromFileA(pDev, file_path, &x.pTex) == S_OK) {
+					LogAlw("Microtexture [%s] loaded", x.file);
+					MicroTextures[x.file] = x.pTex;
+				}
+				else {
+					LogErr("Failed to read microtexture [%s] for [%s]", file_path, body.first);
+				}
+			}
+
+			x.pTex = MicroTextures[x.file];
+			
+			if (x.pTex) {
+				D3DSURFACE_DESC desc;
+				x.pTex->GetLevelDesc(0, &desc);
+				x.px = double(desc.Width);
+				x.size = double(desc.Width) / x.reso;
 			}
 		}
 	}
-	MicroCfg.bLoaded = true;
-	for (int i=0; i<ARRAYSIZE(MicroCfg.Level); ++i) if (!MicroCfg.Level[i].pTex) {
-		MicroCfg.bEnabled = false;
-		MicroCfg.bLoaded = false;
-		break;
-	}
-	if (MicroCfg.bLoaded) LogOapi("Micro textures Loaded");
-	else {
-		LogOapi("Failed to load micro textures");
-		for (int i = 0; i < ARRAYSIZE(MicroCfg.Level); ++i) {
-			SAFE_RELEASE(MicroCfg.Level[i].pTex);
-		}
-	}
-
-	return MicroCfg.bEnabled;
 }

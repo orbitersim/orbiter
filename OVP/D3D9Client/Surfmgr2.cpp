@@ -1357,7 +1357,9 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 		pShader->SetTexture("tLndAmb", vp->GetScatterTable(AMB_LAND), IPF_LINEAR | IPF_CLAMP);
 		pShader->SetTexture("tSun", vp->GetScatterTable(SUN_COLOR), IPF_LINEAR | IPF_CLAMP);
 		//pShader->SetTexture("tSunGlare", vp->GetScatterTable(SUN_GLARE), IPF_LINEAR | IPF_CLAMP);
-		pShader->SetTexture("tAmbient", vp->GetScatterTable(SKY_AMBIENT), IPF_LINEAR | IPF_CLAMP);
+		if (pShader->bWater) {
+			pShader->SetTexture("tAmbient", vp->GetScatterTable(SKY_AMBIENT), IPF_LINEAR | IPF_CLAMP);
+		}
 	}
 
 	memset(fc, 0, sizeof(FlowControlPS));
@@ -1386,6 +1388,7 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 		pShader->SetTexture("tMicroA", vp->MicroCfg.Level[0].pTex, IPF_WRAP | Filter, micro_aniso);
 		pShader->SetTexture("tMicroB", vp->MicroCfg.Level[1].pTex, IPF_WRAP | Filter, micro_aniso);
 		pShader->SetTexture("tMicroC", vp->MicroCfg.Level[2].pTex, IPF_WRAP | Filter, micro_aniso);
+
 		fc->bMicroNormals = vp->MicroCfg.bNormals;
 	}
 

@@ -1910,19 +1910,19 @@ void Scene::RenderMainScene()
 		D3DSURFACE_DESC desc;
 		if (pTab) {
 			pTab->GetLevelDesc(0, &desc);
-			pSketch->StretchRectNative(pTab, NULL, &_R(0, y - desc.Height, ViewW(), y));
+			pSketch->StretchRectNative(pTab, NULL, &_R(0, y - desc.Height, desc.Width, y));
 			y -= (desc.Height + 5);
 		}
 		pTab = vP->GetScatterTable(MIE_LAND);
 		if (pTab) {
 			pTab->GetLevelDesc(0, &desc);
-			pSketch->StretchRectNative(pTab, NULL, &_R(0, y - desc.Height, ViewW(), y));
+			pSketch->StretchRectNative(pTab, NULL, &_R(0, y - desc.Height, desc.Width, y));
 			y -= (desc.Height + 5);
 		}
 		pTab = vP->GetScatterTable(AMB_LAND);
 		if (pTab) {
 			pTab->GetLevelDesc(0, &desc);
-			pSketch->StretchRectNative(pTab, NULL, &_R(0, y - desc.Height, ViewW(), y));
+			pSketch->StretchRectNative(pTab, NULL, &_R(0, y - desc.Height, desc.Width, y));
 			y -= (desc.Height + 5);
 		}
 		for (int i=0;i<9;i++)
@@ -2835,12 +2835,8 @@ float Scene::GetDepthResolution(float dist) const
 //
 void Scene::GetCameraLngLat(double *lng, double *lat) const
 {
-	double rad;	VECTOR3 rpos; MATRIX3 grot;
-	OBJHANDLE hPlanet = GetCameraProxyBody();
-	oapiGetGlobalPos(hPlanet, &rpos);
-	oapiGetRotationMatrix(hPlanet, &grot);
-	rpos = GetCameraGPos() - rpos;
-	oapiLocalToEqu(hPlanet, tmul(grot, rpos), lng, lat, &rad);
+	if (lng) *lng = Camera.lng;
+	if (lat) *lat = Camera.lat;
 }
 
 // ===========================================================================================
@@ -3113,9 +3109,15 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 	if (Camera.hObj_proxy == NULL || Camera.vProxy == NULL || Camera.vNear == NULL) return;
 
 	// Camera altitude over the proxy
-	VECTOR3 pos;
+	VECTOR3 pos; MATRIX3 grot; double rad;
 	oapiGetGlobalPos(Camera.hObj_proxy, &pos);
+	oapiGetRotationMatrix(Camera.hObj_proxy, &grot);
+
+	oapiLocalToEqu(Camera.hObj_proxy, tmul(grot, Camera.pos - pos), &Camera.lng, &Camera.lat, &rad);
+
 	Camera.alt_proxy = dist(Camera.pos, pos) - oapiGetSize(Camera.hObj_proxy);
+	Camera.vProxy->GetElevation(Camera.lng, Camera.lat, &rad);
+	Camera.elev = Camera.alt_proxy - rad;
 
 	// Camera altitude over the proxy
 	oapiGetGlobalPos(Camera.hNear, &pos);

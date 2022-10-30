@@ -64,6 +64,7 @@ struct AtmoParams
 	float  AngCtr;				// Cos of View cone angle from planet center that's visible from camera location 
 	float  HrzDst;				// Distance to horizon (500 m) minimum if camera below sea level
 	float  CamAlt;				// Camera Altitude
+	float  CamElev;				// Camera Elevation above surface
 	float  CamRad;				// Camera geo-distance
 	float  CamRad2;				// Camera geo-distance squared
 	float  MaxDst;				// Max "ray" distance through atmosphere
@@ -106,6 +107,11 @@ sampler2D tSkyMieColor;
 
 static const float n[] = { 0.0714, 0.21428, 0.35714, 0.5, 0.64285, 0.78571, 0.92857 };
 static const float w[] = { 0.14286, 0.14286, 0.14286, 0.14286,  0.14286, 0.14286, 0.14286 };
+
+static const float4 n0 = float4(0.0714, 0.21428, 0.35714, 0.5 );
+static const float4 w0 = float4(0.14286, 0.14286, 0.14286, 0.14286 );
+static const float4 n1 = float4(0.64285, 0.78571, 0.92857, 0 );
+static const float4 w1 = float4( 0.14286, 0.14286, 0.14286, 0 );
 
 static const float nb[] = { 0.1127, 0.5, 0.8873 };
 static const float wb[] = { 0.5555555, 0.888888, 0.555555 };
@@ -243,16 +249,16 @@ float2 Gauss7(float cos_dir, float r0, float2 ih0)
 	float y = r0 * cos_dir;
 	float z2 = r0 * r0 - y * y;
 	float Ray = sqrt(Const.AtmoRad2 - z2) - y; // Length of the ray
-	
+
 	// Compute altitudes of sample points
-	float a[7];
-	for (i = 0; i < 7; i++) {
-		float p = Ray * n[i] + y;
-		a[i] = sqrt(z2 + p * p) - Const.PlanetRad;
-	}
+	float4 p0 = Ray * n0 + y;
+	float4 a0 = sqrt(z2 + p0 * p0) - Const.PlanetRad;
+	float4 p1 = Ray * n1 + y;
+	float4 a1 = sqrt(z2 + p1 * p1) - Const.PlanetRad;
 
 	float2 sum = 0.0f;
-	for (i = 0; i < 7; i++) sum += exp(-clamp(a[i] * ih0, -20, 20)) * w[i];
+	for (i = 0; i < 4; i++) sum += exp(-clamp(a0[i] * ih0, -20, 20)) * w0[i];
+	for (i = 0; i < 3; i++) sum += exp(-clamp(a1[i] * ih0, -20, 20)) * w1[i];
 	return sum * Ray * 0.5f;
 }
 
@@ -262,15 +268,16 @@ float2 Gauss7(float cos_dir, float r0, float2 ih0)
 float2 Gauss7(float cos_dir, float r0, float dist, float2 ih0)
 {
 	int i;
-	// Compute altitudes of sample points
-	float a[7];
-	for (i = 0; i < 7; i++) {
-		float d = dist * n[i];
-		a[i] = sqrt(r0 * r0 + d * d - 2.0 * r0 * d * cos_dir) - Const.PlanetRad;
-	}
 
+	// Compute altitudes of sample points
+	float4 d0 = dist * n0;
+	float4 a0 = sqrt(r0 * r0 + d0 * d0 - 2.0 * r0 * d0 * cos_dir) - Const.PlanetRad;
+	float4 d1 = dist * n1;
+	float4 a1 = sqrt(r0 * r0 + d1 * d1 - 2.0 * r0 * d1 * cos_dir) - Const.PlanetRad;
+	
 	float2 sum = 0.0f;
-	for (i = 0; i < 7; i++) sum += exp(-clamp(a[i] * ih0, -20, 20)) * w[i];
+	for (i = 0; i < 4; i++) sum += exp(-clamp(a0[i] * ih0, -20, 20)) * w0[i];
+	for (i = 0; i < 3; i++) sum += exp(-clamp(a1[i] * ih0, -20, 20)) * w1[i];
 	return sum * dist * 0.5f;
 }
 

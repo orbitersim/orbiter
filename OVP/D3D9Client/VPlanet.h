@@ -161,6 +161,7 @@ struct ConstParams
 	float  AngCtr;				// Cos of View cone angle from planet center that's visible from camera location 
 	float  HrzDst;				// Distance to horizon (500 m) minimum if camera below sea level
 	float  CamAlt;				// Camera Altitude
+	float  CamElev;				// Camera Elevation above surface
 	float  CamRad;				// Camera geo-distance
 	float  CamRad2;				// Camera geo-distance squared
 	float  MaxDst;				// Max "ray" distance through atmosphere
@@ -325,6 +326,8 @@ public:
 	TileManager2<SurfTile> *SurfMgr2() const { return surfmgr2; }
 	TileManager2<CloudTile> *CloudMgr2() const { return cloudmgr2; }
 
+	static void ParseMicroTexturesFile(); ///< Parse MicroTex.cfg file (once)
+
 protected:
 
 	void RenderSphere (LPDIRECT3DDEVICE9 dev);
@@ -336,8 +339,7 @@ protected:
 	bool ModLighting (DWORD &ambient);
 
 	bool ParseMicroTextures();            ///< Read micro-texture config for this planet
-	bool LoadMicroTextures();
-	static void ParseMicroTexturesFile(); ///< Parse MicroTex.cfg file (once)
+	static void LoadMicroTextures(LPDIRECT3DDEVICE9 pDev);
 
 private:
 
@@ -404,21 +406,21 @@ private:
 		       microalt1;
 	} *clouddata;
 
+	char ShaderName[32];
+public:
+
 	struct _MicroTC {
 		char	file[32];		// Texture file name
 		double	reso;			// Resolution px/m
 		double	size;			// Texture size in meters;
-		double	px;				// pixel count
+		double	px;				// Size in pixels
 		LPDIRECT3DTEXTURE9 pTex;
 	};
 
-	char ShaderName[32];
-public:
 	struct _MicroCfg {
 		_MicroTC Level[3];
 		bool bNormals;			// Normals enabled
-		bool bEnabled;			// Micro textures enables
-		bool bLoaded;			// Micro textures loaded
+		bool bEnabled;			// Micro textures enabled
 	} MicroCfg;
 };
 
