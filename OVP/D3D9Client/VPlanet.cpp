@@ -53,6 +53,9 @@ PlanetShader* vPlanet::pRender[8] = {};
 ImageProcessing* vPlanet::pIP;
 LPDIRECT3DDEVICE9 vPlanet::pDev;
 LPDIRECT3DTEXTURE9 vPlanet::pSunTex = NULL;
+int vPlanet::Qc = 0;
+int vPlanet::Wc = 0;
+int vPlanet::Nc = 0;
 
 extern int SURF_MAX_PATCHLEVEL;
 extern D3D9Client* g_client;
@@ -373,6 +376,10 @@ void vPlanet::GlobalInit(oapi::D3D9Client* gc)
 	SAFE_RELEASE(pTgt);
 
 
+	Wc = pIP->FindDefine("Wc");
+	Nc = pIP->FindDefine("Nc");
+	Qc = pIP->FindDefine("Qc");
+
 	bool bRiples = *(bool*)gc->GetConfigParam(CFGPRM_SURFACERIPPLE);
 	bool bShadows = *(bool*)gc->GetConfigParam(CFGPRM_CLOUDSHADOWS);
 	bool bClouds = *(bool*)gc->GetConfigParam(CFGPRM_CLOUDS);
@@ -435,7 +442,7 @@ void vPlanet::GlobalInit(oapi::D3D9Client* gc)
 
 vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene) :
 	vObject (_hObj, scene),
-	pRayDepth(), pSunColor(), pRaySkyView(), pMieSkyView(), pLandViewRay(), pLandViewMie(), pAmbientSky(), pLandViewAmb(), ShaderName("Auto\0")
+	pSunColor(), pRaySkyView(), pMieSkyView(), pLandViewRay(), pLandViewMie(), pAmbientSky(), pLandViewAmb(), ShaderName("Auto\0")
 {
 	memset(&MicroCfg, 0, sizeof(MicroCfg));
 	vRefPoint = _V(1,0,0);
@@ -619,7 +626,6 @@ vPlanet::~vPlanet ()
 	if (ringmgr)  delete ringmgr;
 	if (mesh)     delete mesh;
 
-	SAFE_RELEASE(pRayDepth);
 	SAFE_RELEASE(pSunColor);
 	SAFE_RELEASE(pRaySkyView);
 	SAFE_RELEASE(pMieSkyView);
@@ -662,7 +668,7 @@ float vPlanet::SunAltitude()
 	// Ray's closest approach to planet
 	float alt = sqrt(cp.CamRad2 - q * q) - cp.PlanetRad;
 	if (d < 0) return alt;
-	return cp.AtmoRad - cp.PlanetRad;
+	return cp.AtmoAlt;
 }
 
 
@@ -709,14 +715,13 @@ void vPlanet::UpdateScatter()
 
 	if (HasAtmosphere())
 	{
-		if (!pRayDepth) D3DXCreateTexture(pDev, 1024, 1, 1, D3DUSAGE_RENDERTARGET, D3DFMT_G32R32F, D3DPOOL_DEFAULT, &pRayDepth);
-		if (!pSunColor) D3DXCreateTexture(pDev, 256, 256, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pSunColor);
-		if (!pRaySkyView) D3DXCreateTexture(pDev, 256, 256, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pRaySkyView);
-		if (!pMieSkyView) D3DXCreateTexture(pDev, 256, 256, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pMieSkyView);
-		if (!pLandViewRay) D3DXCreateTexture(pDev, 2048, 128, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pLandViewRay);
-		if (!pLandViewMie) D3DXCreateTexture(pDev, 2048, 128, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pLandViewMie);
-		if (!pLandViewAmb) D3DXCreateTexture(pDev, 2048, 128, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pLandViewAmb);
-		if (!pAmbientSky) D3DXCreateTexture(pDev, 256, 256, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pAmbientSky);
+		if (!pSunColor) D3DXCreateTexture(pDev, Qc, Qc, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pSunColor);
+		if (!pRaySkyView) D3DXCreateTexture(pDev, Qc, Qc, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pRaySkyView);
+		if (!pMieSkyView) D3DXCreateTexture(pDev, Qc, Qc, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pMieSkyView);
+		if (!pLandViewRay) D3DXCreateTexture(pDev, Wc * Nc, Wc, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pLandViewRay);
+		if (!pLandViewMie) D3DXCreateTexture(pDev, Wc * Nc, Wc, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pLandViewMie);
+		if (!pLandViewAmb) D3DXCreateTexture(pDev, Wc * Nc, Wc, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pLandViewAmb);
+		if (!pAmbientSky) D3DXCreateTexture(pDev, Qc, Qc, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pAmbientSky);
 	}
 
 	FVECTOR3 SunDir = SunDirection();
@@ -755,6 +760,8 @@ void vPlanet::UpdateScatter()
 
 	memcpy(&cp.mVP, scn->GetProjectionViewMatrix(), sizeof(FMATRIX4));
 
+	float visalt = max(atmo->visalt, atmo->rheight * 8.7f);
+
 	cp.vPolarAxis = vRot;
 	cp.vTangent = vTan;		// RefFrame for surface micro-tex and water
 	cp.vBiTangent = vBiT;	// RefFrame for surface micro-tex and water
@@ -786,10 +793,11 @@ void vPlanet::UpdateScatter()
 	// Skip the rest if no atmosphere exists
 	// ------------------------------------------------------------------------------------------------------------
 
-	cp.AtmoRad = atmo->visalt + cp.PlanetRad;
+	cp.AtmoAlt = visalt;
+	cp.AtmoRad = visalt + cp.PlanetRad;
 	cp.AtmoRad2 = cp.AtmoRad * cp.AtmoRad;
 	cp.CloudAlt = float(prm.cloudalt);
-	cp.CamSpace = sqrt(saturate(cp.CamAlt / atmo->visalt));
+	cp.CamSpace = sqrt(saturate(cp.CamAlt / visalt));
 	cp.MaxDst = sqrt(cp.AtmoRad2 - cp.PlanetRad2) + sqrt(max(0.0f, cp.CamRad2 - cp.PlanetRad2)); // 'Long' way distance to sky-dome
 	cp.iMaxDst = 1.0f / cp.MaxDst;
 	cp.AngMin = -sqrt(max(1.0f, cp.CamRad2 - cp.PlanetRad2)) / cp.CamRad;

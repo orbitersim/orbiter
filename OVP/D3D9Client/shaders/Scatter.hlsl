@@ -5,6 +5,11 @@
 // Copyright (C) 2021 Jarmo Nikkanen
 // ============================================================================
 
+#define Nc  16		//Z-dimension count in 3D texture
+#define Wc  88		//3D texture size (pixels)
+#define Qc  180		//2D texture size (pixels)
+
+
 #define NSEG 12
 #define iNSEG 1.0f / NSEG;
 #define MINANGLE -0.3f			// Minumum angle
@@ -46,6 +51,7 @@ struct AtmoParams
 	float  RayPh;				// Phase
 	float  PlanetRad;			// Planet Radius
 	float  PlanetRad2;			// Planet Radius Squared
+	float  AtmoAlt;				// Atmospehere upper altitude limit
 	float  AtmoRad;				// Atmospehere outer radius
 	float  AtmoRad2;			// Atmospehere outer radius squared
 	float  CloudAlt;			// Cloud layer altitude 
@@ -203,19 +209,28 @@ float RayLength(float cos_dir, float r0)
 }
 
 
-float4 smaple3D(sampler2D tSamp, float3 uv, const float rc, const float pix)
+// Compute UV and blend factor for smaple3D routine
+//
+float3 TransformUV(float3 uv, const float rc, const float prc)
 {
-	const float ipix = 1.0f / (pix - 1.0f);
-	const float prc = pix / rc;
+	const float ipix = 1.0f / (rc * prc - 1.0f);
 
 	float z = uv.z * (rc - 1) * 0.999999f;
 	uv = saturate(uv);
 	uv.x *= prc * ipix - ipix;
 	uv.x += prc * floor(z) * ipix;
 
+	return uv;
+}
+
+
+float4 smaple3D(sampler2D tSamp, float3 uv, const float rc, const float pix)
+{
+	const float x = pix / (rc * pix - rc);
+
 	float4 a = tex2D(tSamp, uv.xy).rgba;
-	float4 b = tex2D(tSamp, uv.xy + float2(prc*ipix, 0)).rgba;
-	return lerp(a, b, frac(z));
+	float4 b = tex2D(tSamp, uv.xy + float2(x, 0)).rgba;
+	return lerp(a, b, frac(uv.z));
 }
 
 
@@ -227,7 +242,7 @@ float2 Gauss7(float cos_dir, float r0, float2 ih0)
 	int i;
 	float y = r0 * cos_dir;
 	float z2 = r0 * r0 - y * y;
-	float Ray = sqrt(Const.AtmoRad2 - z2) - y;
+	float Ray = sqrt(Const.AtmoRad2 - z2) - y; // Length of the ray
 	
 	// Compute altitudes of sample points
 	float a[7];
@@ -237,7 +252,7 @@ float2 Gauss7(float cos_dir, float r0, float2 ih0)
 	}
 
 	float2 sum = 0.0f;
-	for (i = 0; i < 7; i++) sum += exp(-clamp(a[i] * ih0, -100, 100)) * w[i];
+	for (i = 0; i < 7; i++) sum += exp(-clamp(a[i] * ih0, -20, 20)) * w[i];
 	return sum * Ray * 0.5f;
 }
 
@@ -255,7 +270,7 @@ float2 Gauss7(float cos_dir, float r0, float dist, float2 ih0)
 	}
 
 	float2 sum = 0.0f;
-	for (i = 0; i < 7; i++) sum += exp(-clamp(a[i] * ih0, -100, 100)) * w[i];
+	for (i = 0; i < 7; i++) sum += exp(-clamp(a[i] * ih0, -20, 20)) * w[i];
 	return sum * dist * 0.5f;
 }
 
@@ -288,7 +303,7 @@ float MiePhase2(float cw, float g)
 //
 float4 SunColor(float x : TEXCOORD0, float y : TEXCOORD1) : COLOR
 {
-	float alt = lerp(Const.MinAlt, Const.AtmoRad, y*y*y);
+	float alt = lerp(Const.MinAlt, Const.AtmoAlt, y*y);
 	float ang = x * ANGRNG + MINANGLE;
 
 	// Compute shadowing caused by a planet
@@ -303,9 +318,9 @@ float4 SunColor(float x : TEXCOORD0, float y : TEXCOORD1) : COLOR
 
 float3 GetSunColor(float dir, float alt)
 {
-	alt = saturate((alt - Const.MinAlt) / Const.AtmoRad);
+	alt = saturate((alt - Const.MinAlt) / Const.AtmoAlt);
 	dir = (dir - MINANGLE) * iANGRNG;
-	alt = pow(abs(alt), 0.3333333f) * sign(alt);
+	alt = sqrt(abs(alt)) * sign(alt);
 	return tex2D(tSun, float2(dir, alt)).rgb;
 }
 
@@ -403,7 +418,7 @@ float4 RingView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 	float x = -1.0f + u * 2.0f;
 	float y = sqrt(1.0f - x * x);
 
-	float r = Const.PlanetRad + v * (Const.AtmoRad - Const.PlanetRad);
+	float r = Const.PlanetRad + v * Const.AtmoAlt;
 	float d = sqrt(Const.CamRad2 + r * r - 2.0f * r * Const.PlanetRad);
 	float t = Const.CamRad * (Const.CamRad2 + d * d - r * r) / (2.0f * Const.CamRad * d);
 	
@@ -496,10 +511,12 @@ LandOut GetLandView(float rad, float3 vNrm)
 	float a = rad - Const.PlanetRad;
 	float z = saturate((a - Const.MinAlt) * Const.iAltRng); // inverse lerp
 
+	float3 uvb = TransformUV(float3(uv, z), Nc, Wc);
+
 	LandOut o;
-	o.ray = smaple3D(tLndRay, float3(uv, z), 16, 2048);
-	o.mie = smaple3D(tLndMie, float3(uv, z), 16, 2048);
-	o.amb = smaple3D(tLndAmb, float3(uv, z), 16, 2048);
+	o.ray = smaple3D(tLndRay, uvb, Nc, Wc);
+	o.mie = smaple3D(tLndMie, uvb, Nc, Wc);
+	o.amb = smaple3D(tLndAmb, uvb, Nc, Wc);
 	return o;
 }
 

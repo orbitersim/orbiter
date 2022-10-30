@@ -148,6 +148,7 @@ struct ConstParams
 	float  RayPh;				// Phase
 	float  PlanetRad;			// Planet Radius
 	float  PlanetRad2;			// Planet Radius Squared
+	float  AtmoAlt;				// Atmospehere upper altitude limit
 	float  AtmoRad;				// Atmospehere outer radius
 	float  AtmoRad2;			// Atmospehere outer radius squared
 	float  CloudAlt;			// Cloud layer altitude 
@@ -340,7 +341,7 @@ protected:
 
 private:
 
-	LPDIRECT3DTEXTURE9 pRayDepth, pSunColor, pRaySkyView, pMieSkyView, pLandViewRay, pLandViewMie, pAmbientSky, pLandViewAmb;
+	LPDIRECT3DTEXTURE9 pSunColor, pRaySkyView, pMieSkyView, pLandViewRay, pLandViewMie, pAmbientSky, pLandViewAmb;
 
 	ConstParams cp;
 	ShaderParams sp;
@@ -351,6 +352,7 @@ private:
 	static PlanetShader* pRender[8];
 	static LPDIRECT3DDEVICE9 pDev;
 	static LPDIRECT3DTEXTURE9 pSunTex;
+	static int Qc, Wc, Nc;
 
 	float dist_scale;         // planet rescaling factor
 	double maxdist,           // ???
