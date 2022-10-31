@@ -141,6 +141,16 @@ public:
 	virtual bool Update ();
 
 	/**
+	 * \brief Set up any vectors (forces, coordinate axes) to be drawn in the
+	 *    next render pass.
+	 * 
+	 * Resets the vector list and adds object frame axes if requested for the
+	 * given object type. Derived classes should extend this to add their own
+	 * vector displays.
+	 */
+	virtual void UpdateRenderVectors();
+
+	/**
 	 * \brief Level-of-detail check
 	 * \default None.
 	 * \note Derived classes can overload this method to select the level of
@@ -167,8 +177,29 @@ public:
 	 */
 	virtual void RenderBeacons (LPDIRECT3DDEVICE7 dev) {}
 
+	/**
+	 * \brief structure for rendering vectors
+	 */
+	struct BodyVectorRec {
+		VECTOR3 v;    ///< vector definition in local object frame
+		VECTOR3 orig; ///< vector origin in local object frame
+		double rad;   ///< vector arrow radius
+		double dist;  ///< camera distance
+		VECTOR3 col;  ///< colour components
+		float alpha;  ///< alpha component
+		std::string label; ///< vector label
+		DWORD lcol;
+		float lsize;  ///< length scale
+	};
+
+	virtual void RenderVectors(LPDIRECT3DDEVICE7 dev);
+
 protected:
 	void RenderSpot (LPDIRECT3DDEVICE7 dev, const VECTOR3 *ofs, float size, const VECTOR3 &col, bool lighting, int shape);
+
+	void AddVector(const VECTOR3& v, const VECTOR3& orig, double rad, const std::string& label, const VECTOR3& col, float alpha = 1.0f, DWORD lcol = 0, float lsize = -1.0);
+
+	bool DrawVector(LPDIRECT3DDEVICE7 dev, const VECTOR3& end, const VECTOR3& orig, double rad);
 
 	static const oapi::D3D7Client *gc; // graphics client instance pointer
 	static LPDIRECTDRAWSURFACE7 blobtex[3]; // beacon textures
@@ -180,7 +211,9 @@ protected:
 	MATRIX4 dmWorld;   // world matrix in double precision
 	double size;       // object radius [m]
 	double cdist;      // current camera distance
-	VECTOR3 cpos;      // camera-relative object position
+	VECTOR3 cpos;      // camera-relative object position in global frame
+	VECTOR3 campos;    // camera position in object frame
+	std::vector<BodyVectorRec> veclist; ///< list of body vectors to be rendered
 };
 
 #endif // !__VOBJECT_H
