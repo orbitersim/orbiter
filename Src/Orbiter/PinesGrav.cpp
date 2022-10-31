@@ -25,7 +25,6 @@
 #include "Vecmat.h"
 #include "PinesGrav.h"
 #include "Orbiter.h"
-#include "log.h"
 
 PinesGravProp::PinesGravProp(CelestialBody* celestialbody)
 {

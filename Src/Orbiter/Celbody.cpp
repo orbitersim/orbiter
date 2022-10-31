@@ -68,28 +68,35 @@ CelestialBody::CelestialBody (char *fname)
 	GetItemReal (ifs, "PrecessionLAN", lan_ref);
 
 	if (GetItemString(ifs, "GravModelPath", cbuf) && GetItemInt(ifs, "GravCoeffCutoff", gravcoeff)) {
-		char logbuff[256] = "GRAV COEFF LOADED : ";
 		char gravModelFileName[512];
-		sprintf(gravModelFileName, cbuf);
+		sprintf(gravModelFileName, "GravityModels\\%s",cbuf);
 		int readResult = 0;
-
-		readResult = pinesgrav.readGravModel(cbuf, gravcoeff);
-
-		LOGOUT(gravModelFileName);
+		LOGOUT("GRAVITY MODEL");
+		readResult = pinesgrav.readGravModel(gravModelFileName, gravcoeff);
 		if (readResult == 0) {
-			LOGOUT("GRAVITY MODEL LOADED");
+			char logbuff[512];
+			sprintf(logbuff, "GRAVITY MODEL: %s LOADED", gravModelFileName);
+			LOGOUT(logbuff);
 		}
 		else if (readResult == 1) {
-			LOGOUT("GRAVITY MODEL ERROR: COEFFICIENT FILE NOT FOUND");
+			char logbuff[512];
+			sprintf(logbuff, "GRAVITY MODEL ERROR: COEFFICIENT FILE %s NOT FOUND", gravModelFileName);
+			LOGOUT(logbuff);
 		}
 		else if (readResult == 2) {
-			LOGOUT("GRAVITY MODEL ERROR: COULD NOT ALLOCATE SPACE FOR GRAVITY MODEL");
+			char logbuff[512];
+			sprintf(logbuff, "GRAVITY MODEL ERROR: COULD NOT ALLOCATE SPACE FOR GRAVITY MODEL %s", gravModelFileName);
+			LOGOUT(logbuff);
 		}
 		else if (readResult == 3) {
-			LOGOUT("GRAVITY MODEL ERROR: BAD COEFFICIENT LINE FORMAT");
+			char logbuff[512];
+			sprintf(logbuff, "GRAVITY MODEL ERROR: BAD COEFFICIENT LINE FORMAT %s", gravModelFileName);
+			LOGOUT(logbuff);
 		}
 		else if (readResult == 4) {
-			LOGOUT("GRAVITY MODEL ERROR: BAD HEADDER LINE FORMAT");
+			char logbuff[512];
+			sprintf(logbuff, "GRAVITY MODEL ERROR: BAD HEADDER LINE FORMAT %s", gravModelFileName);
+			LOGOUT(logbuff);
 		}
 
 		if (readResult == 0) {
