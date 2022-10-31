@@ -860,6 +860,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 	// Clear microtextures --------------------------------------------------------------------------------------
 	//
 	for (auto& it : MicroTextures) SAFE_RELEASE(it.second);
+	MicroTextures.clear();
 
 
 	// Check surface catalog --------------------------------------------------------------------------------------

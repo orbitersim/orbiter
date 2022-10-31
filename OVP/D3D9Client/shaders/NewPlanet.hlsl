@@ -6,15 +6,13 @@
 
 #include "Scatter.hlsl"
 
-struct Light
+struct _Light
 {
-	int		 type;			   /* Type of the light emitter 0=point, 1=spot */
-	float    dst2;			   /* Camera-Light Emitter distance squared */
-	float4   diffuse;          /* diffuse color of light */
-	float3   position;         /* position in world space */
-	float3   direction;        /* direction in world space */
-	float3   attenuation;      /* Attenuation */
-	float4   param;            /* range, falloff, theta, phi */
+	float3   position[4];         /* position in world space */
+	float3   direction[4];        /* direction in world space */
+	float3   diffuse[4];          /* diffuse color of light */
+	float3   attenuation[4];      /* Attenuation */
+	float4   param[4];            /* range, falloff, theta, phi */
 };
 
 #define Range   0
@@ -104,7 +102,8 @@ struct PerObjectParams
 uniform extern PerObjectParams Prm;
 uniform extern FlowControlPS Flow;
 uniform extern FlowControlVS FlowVS;
-uniform extern Light Lights[4];
+uniform extern _Light Lights;			// Note: DX9 doesn't tolerate structure arrays outside FX framework
+uniform extern bool Spotlight[4];
 
 
 sampler tDiff;				// Diffuse texture
@@ -169,15 +168,14 @@ void LocalLights(
 	in float3 nrmW,
 	in float3 posW)
 {
+	diff_out = 0;
 
 	if (!Flow.bLocals) return;
-
-	float3 posWN = normalize(-posW);
-	float3 p[4];
 	int i;
 
 	// Relative positions
-	[unroll] for (i = 0; i < 4; i++) p[i] = posW - Lights[i].position;
+	float3 p[4];
+	[unroll] for (i = 0; i < 4; i++) p[i] = posW - Lights.position[i];
 
 	// Square distances
 	float4 sd;
@@ -192,15 +190,16 @@ void LocalLights(
 
 	// Attennuation factors
 	float4 att;
-	[unroll] for (i = 0; i < 4; i++) att[i] = dot(Lights[i].attenuation.xyz, float3(1.0, dst[i], dst[i] * dst[i]));
+	[unroll] for (i = 0; i < 4; i++) att[i] = dot(Lights.attenuation[i].xyz, float3(1.0, dst[i], dst[i] * dst[i]));
 
 	att = rcp(att);
 
 	// Spotlight factors
-	float4 spt;
+	float4 spt = 1;
+	
 	[unroll] for (i = 0; i < 4; i++) {
-		spt[i] = (dot(p[i], Lights[i].direction) - Lights[i].param[Phi]) * Lights[i].param[Theta];
-		if (Lights[i].type == 0) spt[i] = 1.0f;
+		spt[i] = (dot(p[i], Lights.direction[i]) - Lights.param[i][Phi]) * Lights.param[i][Theta];
+		if (!Spotlight[i]) spt[i] = 1.0f;
 	}
 
 	spt = saturate(spt);
@@ -212,9 +211,7 @@ void LocalLights(
 	dif = saturate(dif);
 	dif *= (att * spt);
 
-	diff_out = 0;
-
-	[unroll] for (i = 0; i < 4; i++) diff_out += Lights[i].diffuse.rgb * dif[i];
+	[unroll] for (i = 0; i < 4; i++) diff_out += Lights.diffuse[i].rgb * dif[i];
 }
 
 
@@ -441,7 +438,7 @@ float4 TerrainPS(TileVS frg) : COLOR
 	float3 vRay = normalize(frg.camW);		// Unit viewing ray
 	float3 vVrt = Const.CamPos - frg.camW;	// Geo-centric pixel position
 	float3 vPlN = normalize(vVrt);			// Planet mean normal
-	float   dst = dot(vRay, frg.camW);
+	float   dst = dot(vRay, frg.camW);		// Pixel to camera distance
 
 	// Render with specular ripples and fresnel water -------------------------
 	//
@@ -496,7 +493,7 @@ float4 TerrainPS(TileVS frg) : COLOR
 #if defined(_MICROTEX)
 
 
-	float step1 = smoothstep(15000, 3000, Const.CamElev);
+	float step1 = smoothstep(15000, 3000, dst);
 	step1 *= (step1 * step1);
 	float3 cFnl = max(0, min(2, 1.333f * (cFar + cMed + cLow) - 1));
 

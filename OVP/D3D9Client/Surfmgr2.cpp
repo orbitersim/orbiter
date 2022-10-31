@@ -26,6 +26,16 @@
 // =======================================================================
 extern void FilterElevationGraphics(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, float *elev);
 
+#pragma pack(push, 4)
+struct LightF
+{
+	float3   position[4];         /* position in world space */
+	float3   direction[4];        /* direction in world space */
+	float3   diffuse[4];          /* diffuse color of light */
+	float3   attenuation[4];      /* Attenuation */
+	float4   param[4];            /* range, falloff, theta, phi */
+};
+#pragma pack(pop)
 
 
 // =======================================================================
@@ -899,6 +909,7 @@ void SurfTile::Render ()
 	fc->bLocals = false;
 	fc->bOverlay = false;
 	fc->bMask = false;
+	fc->bShadows = false;
 	fcv->bElevOvrl = false;
 
 
@@ -1002,39 +1013,64 @@ void SurfTile::Render ()
 	// Setup local light sources
 	//---------------------------------------------------------------------
 
-	const D3D9Light *pLights = scene->GetLights();
-	int nSceneLights = scene->GetLightCount();
 
-	LightStruct Locals[4];
 
-	if (pLights && nSceneLights>0 && pShader->bLocals)
+	LightF Locals;
+	BOOL Spots[4];
+
+	for (int i = 0; i < 4; i++)
 	{
-		int nMeshLights = 0;
+		Locals.attenuation[i] = FVECTOR3(1.0f, 1.0f, 1.0f);
+		Locals.diffuse[i] = FVECTOR3(0.0f, 0.0f, 0.0f);
+		Locals.direction[i] = FVECTOR3(1.0f, 0.0f, 0.0f);
+		Locals.param[i] = FVECTOR4(0.0f, 0.0f, 0.0f, 0.0f);
+		Locals.position[i] = FVECTOR3(0.0f, 0.0f, 0.0f);
+		Spots[i] = false;
+	}
 
-		_LightList LightList[MAX_SCENE_LIGHTS];
+	if (scene->GetRenderPass() == RENDERPASS_MAINSCENE)
+	{
+		const D3D9Light* pLights = scene->GetLights();
+		int nSceneLights = min(scene->GetLightCount(), MAX_SCENE_LIGHTS);
 
-		// Find all local lights effecting this mesh ------------------------------------------
-		//
-		for (int i = 0; i < nSceneLights; i++) {
-			float il = pLights[i].GetIlluminance(bs_pos, mesh->bsRad);
-			if (il > 0.005f) {
-				LightList[nMeshLights].illuminace = il;
-				LightList[nMeshLights++].idx = i;
+		if (pLights && nSceneLights > 0 && pShader->bLocals)
+		{
+			int nMeshLights = 0;
+
+			_LightList LightList[MAX_SCENE_LIGHTS];
+
+			// Find all local lights effecting this mesh ------------------------------------------
+			//
+			for (int i = 0; i < nSceneLights; i++) {
+				float il = pLights[i].GetIlluminance(bs_pos, mesh->bsRad);
+				if (il > 0.005f) {
+					LightList[nMeshLights].illuminace = il;
+					LightList[nMeshLights++].idx = i;
+				}
 			}
-		}
 
-		if (nMeshLights > 0) {
+			if (nMeshLights > 0) {
 
-			// If any, Sort the list based on illuminance -------------------------------------------
-			qsort(LightList, nMeshLights, sizeof(_LightList), compare_lights);
+				// If any, Sort the list based on illuminance -------------------------------------------
+				qsort(LightList, nMeshLights, sizeof(_LightList), compare_lights);
 
-			nMeshLights = min(nMeshLights, 4);
+				nMeshLights = min(nMeshLights, 4);
 
-			// Create a list of N most effective lights ---------------------------------------------
-			for (int i = 0; i < nMeshLights; i++) memcpy(&Locals[i], &pLights[LightList[i].idx], sizeof(LightStruct));
+				// Create a list of N most effective lights ---------------------------------------------
+				for (int i = 0; i < nMeshLights; i++)
+				{
+					auto pL = pLights[LightList[i].idx];
+					Locals.attenuation[i] = pL.Attenuation;
+					Locals.diffuse[i] = FVECTOR4(pL.Diffuse).rgb;
+					Locals.direction[i] = pL.Direction;
+					Locals.param[i] = pL.Param;
+					Locals.position[i] = pL.Position;
+					Spots[i] = (pL.Type == 1);
+				}
 
-			fc->bLocals = true;
-			pShader->SetPSConstants("Lights", Locals, sizeof(Locals));
+				// Enable local lights and feed data to shader
+				fc->bLocals = true;
+			}
 		}
 	}
 
@@ -1045,6 +1081,8 @@ void SurfTile::Render ()
 	//
 	pShader->SetVSConstants("FlowVS", fcv, sizeof(FlowControlVS));
 	pShader->SetVSConstants("Prm", sp, sizeof(ShaderParams));
+	pShader->SetPSConstants("Lights", &Locals, sizeof(Locals));
+	pShader->SetPSConstants("Spotlight", Spots, sizeof(Spots));
 	pShader->SetPSConstants("Flow", fc, sizeof(FlowControlPS));
 	pShader->SetPSConstants("Prm", sp, sizeof(ShaderParams));
 

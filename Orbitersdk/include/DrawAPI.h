@@ -369,6 +369,13 @@ namespace oapi {
 			z = float(v.z);
 			w = float(v.w);
 		}
+		FVECTOR4(const D3DXCOLOR& v)
+		{
+			x = float(v.r);
+			y = float(v.g);
+			z = float(v.b);
+			w = float(v.a);
+		}
 #endif
 
 
