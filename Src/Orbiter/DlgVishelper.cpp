@@ -234,7 +234,7 @@ void TabPlanetarium::RescanMarkerList(HWND hTab)
 
 	char cbuf[256];
 	_finddata_t fdata;
-	long fh = g_psys->FindFirst(FILETYPE_MARKER, &fdata, cbuf);
+	intptr_t fh = g_psys->FindFirst(FILETYPE_MARKER, &fdata, cbuf);
 	if (fh >= 0) {
 		int n = 0;
 		do {
