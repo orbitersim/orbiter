@@ -85,9 +85,9 @@ CSphereManager::CSphereManager (const D3D7Client *gclient, const Scene *scene)
 	LoadTextures ();
 
 	// rotation from galactic to ecliptic frame
-	double theta = 60.18*RAD;
-	double phi = 90.02*RAD;
-	double lambda = 173.6*RAD;
+	double lambda = 173.60 * RAD;
+	double phi = 90.03 * RAD;
+	double theta = 60.19 * RAD;
 	double sint = sin(theta), cost = cos(theta);
 	double sinp = sin(phi), cosp = cos(phi);
 	double sinl = sin(lambda), cosl = cos(lambda);
