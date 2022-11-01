@@ -98,9 +98,9 @@ CFG_VISUALPRM CfgVisualPrm_default = {
 	1.0,		// PlanetPatchRes (resolution level scale parameter)
 	0.5,		// LightBrightness (city light brightness)
 	{2.0, 8.0, 0.1, true},	// StarPrm (bright/faint cutoff magnitude, display brightness of faintest, log mapping)
-	"Starmap 2020 (rescaled)",	// CSphereBgImage (background image label)
-	"csphere\starmap_2020_scl", // CSphereBgPath (path to celestial background images)
-	1,		// CSphereBgIntens (intensity of celestial sphere background image)
+	"Starmap 2020 (Milky Way)",	// CSphereBgImage (background image label)
+	"csphere\\milkyway_2020", // CSphereBgPath (path to celestial background images)
+	0.3,		// CSphereBgIntens (intensity of celestial sphere background image)
 	2			// ElevMode (cubic spline)
 };
 
