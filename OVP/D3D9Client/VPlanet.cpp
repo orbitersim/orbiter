@@ -826,8 +826,6 @@ void vPlanet::UpdateScatter()
 	cp.Glare = float(atmo->hazei);
 	cp.GlareColor = lerp(FVECTOR3(1, 1, 1), -cp.RayWave + 1.0f, exp(-cp.CamAlt * cp.iH.x));
 	cp.GlareColor = lerp(FVECTOR3(0, 0, 0), cp.GlareColor, saturate((SunAltitude() + 500.0f) / 500.0f));
-	
-	sprintf_s(oapiDebugString(), 256, "CamAlt=%f", cp.CamAlt);
 
 	sFlow Flow;
 
@@ -1257,23 +1255,24 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 	// Must update the latest view projection matrix
 	cp.mVP = *scn->GetProjectionViewMatrix();
 
-	if (surfmgr) {
 
-		D3D9Effect::UpdateEffectCamera(hObj);
-		D3D9Effect::FX->SetFloat(D3D9Effect::eDistScale, 1.0f / float(dist_scale));
+	// Setup shadow maps for surface base objects and mesh based body ---------------
+	//
+	D3D9Effect::UpdateEffectCamera(hObj);
+	D3D9Effect::FX->SetFloat(D3D9Effect::eDistScale, 1.0f / float(dist_scale));
 
-		HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, false));
-		HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, false));
+	HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, false));
+	HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, false));
 
-		if (shd->pShadowMap && (scn->GetRenderPass() == RENDERPASS_MAINSCENE) && (Config->TerrainShadowing == 2)) {
-			if (scn->GetCameraAltitude() < 10e3 || IsMesh()) {
-				HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, &shd->mViewProj));
-				HR(D3D9Effect::FX->SetTexture(D3D9Effect::eShadowMap, shd->pShadowMap));
-				HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, &D3DXVECTOR4(s, is, qw, 0)));
-				HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, true));
-			}
+	if (shd->pShadowMap && (scn->GetRenderPass() == RENDERPASS_MAINSCENE) && (Config->TerrainShadowing == 2)) {
+		if (scn->GetCameraAltitude() < 10e3 || IsMesh()) {
+			HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, &shd->mViewProj));
+			HR(D3D9Effect::FX->SetTexture(D3D9Effect::eShadowMap, shd->pShadowMap));
+			HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, &D3DXVECTOR4(s, is, qw, 0)));
+			HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, true));
 		}
 	}
+	
 
 
 	if (DebugControls::IsActive()) {
@@ -1389,10 +1388,8 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 
 	}
 
-	if (surfmgr) {
-		// Shutdown shadows to prevent from causing problems
-		HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, false));
-	}
+	// Shutdown shadows to prevent from causing problems
+	HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, false));
 
 	return true;
 }
