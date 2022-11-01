@@ -46,7 +46,6 @@ CSphereManager::CSphereManager ()
 	char *c = g_pOrbiter->Cfg()->CfgVisualPrm.CSphereBgPath;
 	if (!c[0]) {
 		m_bBkgImg = false;
-		return;
 	} else {
 		strncpy (texname, c, 64);
 		m_bBkgImg = true;
@@ -56,6 +55,8 @@ CSphereManager::CSphereManager ()
 	m_bStarImg = true;
 
 	m_bDisabled = true;
+	if (!m_bBkgImg && !m_bStarImg)
+		return;
 
 	intensity = (float)g_pOrbiter->Cfg()->CfgVisualPrm.CSphereBgIntens;
 
@@ -111,14 +112,9 @@ CSphereManager::~CSphereManager ()
 		m_starbuf.clear();
 	}
 
-	for (i = 0; i < maxidx; i++) {
+	for (i = 0; i < maxidx; i++)
 		if (tiledesc[i].vtx) tiledesc[i].vtx->Release();
-		if (!(++counter % 100))
-			g_pOrbiter->UpdateDeallocationProgress();
-	}
 	delete []tiledesc;	
-
-	g_pOrbiter->UpdateDeallocationProgress();
 }
 
 // =======================================================================
@@ -192,6 +188,7 @@ void CSphereManager::LoadTextures ()
 	}
 
 	if (m_bStarImg) {
+		// pre-load level 1-8 starfield image textures
 		int lvl = maxbaselvl;
 		int ntex = patchidx[lvl];
 		m_starbuf.resize(ntex);
@@ -256,7 +253,7 @@ void CSphereManager::Render(LPDIRECT3DDEVICE7 dev, int level, double bglvl)
 		intens *= (float)exp(-bglvl * 12.5);
 	}
 
-	if (!intens) return; // sanity check
+	if (!intens && !m_bStarImg) return; // sanity check
 
 	level = min(level, maxlvl);
 
@@ -311,7 +308,7 @@ void CSphereManager::Render(LPDIRECT3DDEVICE7 dev, int level, double bglvl)
 		stage++;
 	}
 	if (m_bStarImg) {
-		dev->SetTextureStageState(stage, D3DTSS_COLOROP, D3DTOP_ADD);
+		dev->SetTextureStageState(stage, D3DTSS_COLOROP, stage ? D3DTOP_ADD : D3DTOP_SELECTARG1);
 		dev->SetTextureStageState(stage, D3DTSS_COLORARG1, D3DTA_TEXTURE);
 		dev->SetTextureStageState(stage, D3DTSS_COLORARG2, D3DTA_CURRENT);
 	}
