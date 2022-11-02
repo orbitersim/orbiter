@@ -107,14 +107,16 @@ inline void PinesGravProp::GenerateAssocLegendreMatrix(int maxDegree)
 
 }
 
-int PinesGravProp::readGravModel(char* filename, int cutoff)
+int PinesGravProp::readGravModel(char* filename, int cutoff, int &actualLoadedTerms, int &maxModelTerms)
 {
 	FILE* gravModelFile = nullptr;
 	char gravFileLine[512];
 	bool isEOF = false;
 	CoeffCutoff = cutoff;
 	unsigned int linecount = 0;
-	unsigned int maxLines = (cutoff * cutoff + cutoff) / 2 + cutoff;
+	unsigned int cutoffLines = (cutoff * cutoff + cutoff) / 2 + cutoff;
+	unsigned int maxLines = cutoffLines;
+
 	try {
 		C = new double[(size_t)NM(cutoff + 1, cutoff + 1)];
 		S = new double[(size_t)NM(cutoff + 1, cutoff + 1)];
@@ -149,12 +151,17 @@ int PinesGravProp::readGravModel(char* filename, int cutoff)
 					&normalized,
 					&referenceLat,
 					&referenceLon)) {
-					maxLines = NM(order, degree);
 					return 3; //Bad first line format
+				}
+				maxLines = NM(order, degree);
+
+				if (maxLines < cutoffLines) {
+					cutoffLines = maxLines;
+					CoeffCutoff = (int)std::lround((sqrt(9+8*cutoffLines)-3)/2); //Solution to n for (2^2+n)/n+2 = orderDegree
 				}
 				numCoeff = linecount += 2;
 			}
-			else if (linecount <= maxLines + 1) {
+			else if (linecount <= cutoffLines + 1) {
 
 				unsigned int lineindex = linecount - 1;
 
@@ -166,6 +173,8 @@ int PinesGravProp::readGravModel(char* filename, int cutoff)
 				numCoeff = linecount++;
 			}
 		}
+		actualLoadedTerms = NM(CoeffCutoff, CoeffCutoff);
+		maxModelTerms = NM(order,degree);
 		return 0; //successfully loaded gravity coefficients
 	}
 	else {

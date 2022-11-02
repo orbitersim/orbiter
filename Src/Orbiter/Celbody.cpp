@@ -70,12 +70,13 @@ CelestialBody::CelestialBody (char *fname)
 	if (GetItemString(ifs, "GravModelPath", cbuf) && GetItemInt(ifs, "GravCoeffCutoff", gravcoeff)) {
 		char gravModelFileName[512];
 		sprintf(gravModelFileName, "GravityModels\\%s",cbuf);
+		int maxGravityTerms = 0;
+		int	actualLoadedTerms = 0;
 		int readResult = 0;
-		LOGOUT("GRAVITY MODEL");
-		readResult = pinesgrav.readGravModel(gravModelFileName, gravcoeff);
+		readResult = pinesgrav.readGravModel(gravModelFileName, gravcoeff, actualLoadedTerms, maxGravityTerms);
 		if (readResult == 0) {
 			char logbuff[512];
-			sprintf(logbuff, "GRAVITY MODEL: %s LOADED", gravModelFileName);
+			sprintf(logbuff, "GRAVITY MODEL: %s LOADED, Terms %d/%d", gravModelFileName, actualLoadedTerms, maxGravityTerms);
 			LOGOUT(logbuff);
 		}
 		else if (readResult == 1) {
@@ -90,12 +91,12 @@ CelestialBody::CelestialBody (char *fname)
 		}
 		else if (readResult == 3) {
 			char logbuff[512];
-			sprintf(logbuff, "GRAVITY MODEL ERROR: BAD COEFFICIENT LINE FORMAT %s", gravModelFileName);
+			sprintf(logbuff, "GRAVITY MODEL ERROR: BAD HEADDER LINE FORMAT %s", gravModelFileName);
 			LOGOUT(logbuff);
 		}
 		else if (readResult == 4) {
 			char logbuff[512];
-			sprintf(logbuff, "GRAVITY MODEL ERROR: BAD HEADDER LINE FORMAT %s", gravModelFileName);
+			sprintf(logbuff, "GRAVITY MODEL ERROR: BAD COEFFICIENT LINE FORMAT %s", gravModelFileName);
 			LOGOUT(logbuff);
 		}
 
