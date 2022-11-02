@@ -62,6 +62,11 @@ public:
 	bool Update ();
 
 	/**
+	 * \brief Set up the vessel vectors (forces, frame axes) to render
+	 */
+	void UpdateRenderVectors();
+
+	/**
 	 * \brief Object render call
 	 * \param dev render device
 	 * \return \e true if render operation was performed (object active),
