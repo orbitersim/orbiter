@@ -26,7 +26,7 @@ extern D3D9Client *g_client;
 // Defaut c'tor to init members
 ScatterParams::ScatterParams() :
 	red      ( 0.650 ),  // 0.400 ... 0.700
-	green    ( 0.500 ),  // 0.400 ... 0.700
+	green    ( 0.560 ),  // 0.400 ... 0.700
 	blue     ( 0.480 ),  // 0.400 ... 0.700
 	rpow	 ( 4.0 ),    // -8.0 ... 8.0
 	mpow	 ( 1.0 ),    // -2.0 ... 2.0
@@ -50,7 +50,6 @@ ScatterParams::ScatterParams() :
 	hazei    ( 1.7 ),
 	tw_bri   ( 0.0 ),
 	tw_dst	 ( 0.0 ),
-	tw_haze	 ( 0.0 ),
 	// ----------------------------------------
 	orbalt	 ( 250e3 ),
 	visalt	 ( 70e3 )
@@ -119,7 +118,7 @@ void Create()
 	// ATTENTION: Order of ScatterParams must match with slider indexes
 
 	Slider[0].id = IDC_ATM_TW_DST;
-	Slider[1].id = IDC_ATM_TW_HAZE;
+	Slider[1].id = IDC_ATM_GREEN;
 	Slider[2].id = IDC_ATM_TW_BRI;
 	Slider[3].id = IDC_ATM_RPOW;
 	Slider[4].id = IDC_ATM_IN;
@@ -139,7 +138,7 @@ void Create()
 	Slider[18].id = IDC_ATM_AUX5;
 	
 	Slider[0].dsp = IDC_ATD_TW_DST;
-	Slider[1].dsp = IDC_ATD_TW_HAZE;
+	Slider[1].dsp = IDC_ATD_GREEN;
 	Slider[2].dsp = IDC_ATD_TW_BRI;
 	Slider[3].dsp = IDC_ATD_RPOW;
 	Slider[4].dsp = IDC_ATD_IN;
@@ -213,7 +212,7 @@ void OpenDlgClbk(void *context)
 	
 
 	ConfigSlider(IDC_ATM_TW_DST,    0.01, 0.5);
-	ConfigSlider(IDC_ATM_TW_HAZE,   0.01, 2.0);
+	ConfigSlider(IDC_ATM_GREEN,     0.46, 0.65);
 	ConfigSlider(IDC_ATM_TW_BRI,    0.01, 4.0);
 	ConfigSlider(IDC_ATM_RPOW,     -8.0, 8.0);
 	ConfigSlider(IDC_ATM_MPOW,     -8.0, 8.0);
@@ -237,7 +236,7 @@ void OpenDlgClbk(void *context)
 	ConfigSlider(IDC_ATM_AUX5,		0.001, 1.0, 8);	// Sun Glare Intensity	
 	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_TW_DST,	hDlg, "Light travel behind terminator");
-	CreateToolTip(IDC_ATM_TW_HAZE,	hDlg, "Ambient terrain haze intensity");
+	CreateToolTip(IDC_ATM_GREEN,	hDlg, "Green wave lenght. (Green balance)");
 	CreateToolTip(IDC_ATM_TW_BRI,	hDlg, "Sky brightness during twilight");
 	CreateToolTip(IDC_ATM_RPOW,		hDlg, "Main control for atmospheric rayleigh color composition (4.0 for the Earth)");
 	CreateToolTip(IDC_ATM_MPOW,		hDlg, "Main control for atmospheric mie color composition");

@@ -16,9 +16,9 @@ typedef struct ScatterParams {
 	union {
 		double data[ATM_SLIDER_COUNT];  // ATTENTION: Order of params must match with slider indexes
 		struct {
-			double tw_dst;		///< 0 Red wave length
-			double tw_haze;		///< 1 Green wavw length
-			double tw_bri;		///< 2 Blue wave length
+			double tw_dst;		///< 0 Twilight distance
+			double green;		///< 1 Green wavw length
+			double tw_bri;		///< 2 Twilight brightness
 			double rpow;		///< 3 Rayleigh power
 			double rayin;		///< 4 Rayleigh in-scatter strength
 			double ray;			///< 5 Rayleigh out-scatter strength
@@ -40,7 +40,6 @@ typedef struct ScatterParams {
 	double orbalt;
 	double visalt;
 	double red;
-	double green;
 	double blue;
 } ScatterParams;
 

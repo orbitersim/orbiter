@@ -825,7 +825,6 @@ void vPlanet::UpdateScatter()
 
 	cp.Clouds = float(atmo->aux2);
 	cp.TW_Multi = float(atmo->tw_bri);
-	cp.TW_Haze = float(atmo->tw_haze);
 	cp.TW_Dst = float(atmo->tw_dst);
 
 	cp.Glare = float(atmo->hazei);
@@ -1720,7 +1719,7 @@ ScatterParams * vPlanet::GetAtmoParams(int mode)
 		CPrm.hazei = lerp(SPrm.hazei, OPrm.hazei, alt);
 		// ----------------------------------------------------
 		CPrm.tw_bri = lerp(SPrm.tw_bri, OPrm.tw_bri, alt);
-		CPrm.tw_haze = lerp(SPrm.tw_haze, OPrm.tw_haze, alt);
+		CPrm.green = lerp(SPrm.green, OPrm.green, alt);
 		CPrm.tw_dst = lerp(SPrm.tw_dst, OPrm.tw_dst, alt);
 	}
 	else {
@@ -1745,12 +1744,11 @@ ScatterParams * vPlanet::GetAtmoParams(int mode)
 		CPrm.hazei = lerp(HPrm.hazei, OPrm.hazei, alt);
 		// ----------------------------------------------------
 		CPrm.tw_bri = lerp(HPrm.tw_bri, OPrm.tw_bri, alt);
-		CPrm.tw_haze = lerp(HPrm.tw_haze, OPrm.tw_haze, alt);
+		CPrm.green = lerp(HPrm.green, OPrm.green, alt);
 		CPrm.tw_dst = lerp(HPrm.tw_dst, OPrm.tw_dst, alt);
 	}
 
 	CPrm.red = SPrm.red;
-	CPrm.green = SPrm.green;
 	CPrm.blue = SPrm.blue;
 	CPrm.orbalt = SPrm.orbalt;
 	CPrm.visalt = SPrm.visalt;
@@ -1813,7 +1811,7 @@ void vPlanet::SaveStruct(FILEHANDLE hFile, ScatterParams *prm, int iCnf)
 	oapiWriteItem_float(hFile, Label("TGamma"), prm->tgamma);
 	// -----------------------------------------------------------------
 	oapiWriteItem_float(hFile, Label("TWDst"), prm->tw_dst);
-	oapiWriteItem_float(hFile, Label("TWHze"), prm->tw_haze);
+	oapiWriteItem_float(hFile, Label("Green"), prm->green);
 	oapiWriteItem_float(hFile, Label("TWBri"), prm->tw_bri);
 	// -----------------------------------------------------------------
 	oapiWriteItem_float(hFile, Label("RayO"), prm->ray);
@@ -1840,7 +1838,6 @@ void vPlanet::LoadStruct(FILEHANDLE hFile, ScatterParams* prm, int iCnf)
 	oapiReadItem_float(hFile, "OrbitAlt", prm->orbalt);
 	oapiReadItem_float(hFile, "AtmoVisualAlt", prm->visalt);
 	oapiReadItem_float(hFile, "Red", prm->red);
-	oapiReadItem_float(hFile, "Green", prm->green);
 	oapiReadItem_float(hFile, "Blue", prm->blue);
 	oapiReadItem_float(hFile, Label("RPwr"), prm->rpow);
 	oapiReadItem_float(hFile, Label("MPwr"), prm->mpow);
@@ -1849,7 +1846,7 @@ void vPlanet::LoadStruct(FILEHANDLE hFile, ScatterParams* prm, int iCnf)
 	oapiReadItem_float(hFile, Label("TGamma"), prm->tgamma);
 	// -----------------------------------------------------------------
 	oapiReadItem_float(hFile, Label("TWDst"), prm->tw_dst);
-	oapiReadItem_float(hFile, Label("TWHze"), prm->tw_haze);
+	oapiReadItem_float(hFile, Label("Green"), prm->green);
 	oapiReadItem_float(hFile, Label("TWBri"), prm->tw_bri);
 	// -----------------------------------------------------------------
 	oapiReadItem_float(hFile, Label("RayO"), prm->ray);
@@ -1885,7 +1882,6 @@ void vPlanet::SaveAtmoConfig()
 	oapiWriteItem_float(hFile, "OrbitAlt", SPrm.orbalt);
 	oapiWriteItem_float(hFile, "AtmoVisualAlt", SPrm.visalt);
 	oapiWriteItem_float(hFile, "Red", SPrm.red);
-	oapiWriteItem_float(hFile, "Green", SPrm.green);
 	oapiWriteItem_float(hFile, "Blue", SPrm.blue);
 
 	SaveStruct(hFile, &SPrm, 0);

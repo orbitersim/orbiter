@@ -77,7 +77,6 @@ struct AtmoParams
 	float  Clouds;
 	float  Glare;
 	float  TW_Multi;
-	float  TW_Haze;
 	float  TW_Dst;
 	float  SunRadAtHrz;
 	float  CamSpace;			// Camera in space scale factor 0.0 = surf, 1.0 = space
@@ -573,7 +572,7 @@ float4 LandView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 		float alt = rad - Const.PlanetRad;
 		float3 x = ComputeCameraView(n, vRay, rad, dist - dst);
 
-		if (Flo.bAmb) x *= MultiScatterApprox(n) * Const.TW_Haze * exp(-alt * iH);
+		if (Flo.bAmb) x *= MultiScatterApprox(n) * exp(-alt * iH);
 		else
 		{
 			x *= GetSunColor(dot(n, Const.toSun), alt);

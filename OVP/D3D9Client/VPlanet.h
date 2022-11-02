@@ -198,7 +198,6 @@ struct ConstParams
 	float  Clouds;
 	float  Glare;
 	float  TW_Multi;
-	float  TW_Haze;
 	float  TW_Dst;
 	float  SunRadAtHrz;
 	float  CamSpace;			// Camera in space scale factor 0.0 = surf, 1.0 = space

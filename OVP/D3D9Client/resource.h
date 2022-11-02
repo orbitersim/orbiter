@@ -197,10 +197,12 @@
 #define IDC_ATD_MIEIN                           3011
 #define IDC_ATM_DISPLAY                         3012
 #define IDC_ATM_TW_DST                          3013
-#define IDC_ATM_TW_HAZE                         3014
 #define IDC_ATM_TW_BRI                          3015
 #define IDC_ATD_TW_DST                          3016
-#define IDC_ATD_TW_HAZE                         3017
 #define IDC_ATD_TW_BRI                          3018
 #define IDC_ATM_COPYLOW                         3019
 #define IDC_ATM_COPYHIGH                        3020
+#define IDC_ATD_GREEN                           3021
+#define IDC_ATM_GREEN                           3022
+#define IDC_ATL_2                               3023
+#define IDC_ATL_1                               3024
