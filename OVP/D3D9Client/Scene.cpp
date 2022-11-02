@@ -1351,6 +1351,8 @@ void Scene::RenderMainScene()
 
 		if (pSketch) {
 
+			if (isActive) plist[i].vo->RenderVectors(pDevice, pSketch);
+
 			if (plnmode & PLN_ENABLE) {
 
 				if (plnmode & PLN_CMARK) {
@@ -1654,9 +1656,9 @@ void Scene::RenderMainScene()
 	// -------------------------------------------------------------------------------------------------------
 
 	DWORD bfvmode = *(DWORD*)gc->GetConfigParam(CFGPRM_FORCEVECTORFLAG);
-	DWORD scamode = *(DWORD*)gc->GetConfigParam(CFGPRM_FRAMEAXISFLAG);
+	DWORD favmode = *(DWORD*)gc->GetConfigParam(CFGPRM_FRAMEAXISFLAG);
 
-	if (bfvmode & BFV_ENABLE || scamode & FAV_ENABLE)
+	if (bfvmode & BFV_ENABLE || favmode & FAV_ENABLE)
 	{
 
 		pDevice->Clear(0, NULL, D3DCLEAR_ZBUFFER,  0, 1.0f, 0L); // clear z-buffer
@@ -1670,7 +1672,7 @@ void Scene::RenderMainScene()
 			if (!pv->vobj->IsVisible()) continue;
 			if (oapiCameraInternal() && vFocus==pv->vobj) continue;
 
-			pv->vobj->RenderAxis(pDevice, pSketch);
+			pv->vobj->RenderVectors(pDevice, pSketch);
 		}
 
 		pSketch->EndDrawing();	// SKETCHPAD_LABELS

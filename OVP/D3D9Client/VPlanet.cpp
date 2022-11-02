@@ -1022,6 +1022,21 @@ void vPlanet::RenderBeacons(LPDIRECT3DDEVICE9 dev)
 }
 
 // ==============================================================
+
+void vPlanet::RenderVectors (LPDIRECT3DDEVICE9 dev, D3D9Pad* pSkp)
+{
+	// Call base class' method for planets axes
+	vObject::RenderVectors(dev, pSkp);
+
+	// If this planet is not a proxy body skip the rest
+	if (hObj != oapiCameraProxyGbody()) return;
+
+	for (DWORD i = 0; i < nbase; i++) if (vbase[i]) {
+		vbase[i]->RenderVectors(dev, pSkp);
+	}
+}
+
+// ==============================================================
 /*
 void vPlanet::RenderSurfaceMicroDetails(LPDIRECT3DDEVICE9 dev)
 {
