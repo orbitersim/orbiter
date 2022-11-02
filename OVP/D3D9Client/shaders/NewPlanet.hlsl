@@ -730,3 +730,94 @@ float4 CloudPS(CldVS frg) : COLOR
 	
 	return float4(HDR(color), saturate(cTex.a * Prm.fBeta * Prm.fBeta * (1.0f + mie)));
 }
+
+
+
+
+
+
+
+
+// ============================================================================
+// Gas Giant Renderer
+// ============================================================================
+
+TileVS GiantVS(TILEVERTEX vrt)
+{
+	// Zero output.
+	TileVS outVS = (TileVS)0;
+	float4 vElev = 0;
+	float3 vNrmW;
+	float3 vVrt;
+	float3 vPlN;
+
+	// Apply a world transformation matrix
+	float3 vPosW = mul(float4(vrt.posL, 1.0f), Prm.mWorld).xyz;
+
+	vNrmW = mul(float4(vrt.normalL, 0.0f), Prm.mWorld).xyz;
+	vVrt = Const.CamPos + vPosW;
+	vPlN = normalize(vVrt);
+
+	outVS.posH = mul(float4(vPosW, 1.0f), Const.mVP);
+
+#if defined(_SHDMAP)
+	outVS.shdH = mul(float4(vPosW, 1.0f), Prm.mLVP);
+#endif
+
+	outVS.texUV.xy = vrt.tex0.xy;
+
+	outVS.camW = -vPosW;
+	outVS.nrmW = vNrmW;
+
+	return outVS;
+}
+
+
+// ============================================================================
+//
+float4 GiantPS(TileVS frg) : COLOR
+{
+
+	float2 vUVSrf = frg.texUV.xy * Prm.vTexOff.zw + Prm.vTexOff.xy;
+	
+	// Fetch Main Textures
+	float4 cTex = tex2D(tDiff, vUVSrf);
+	
+	float3 nrmW = normalize(frg.nrmW);		// Per-pixel surface normal vector
+	float3 vRay = normalize(frg.camW);		// Unit viewing ray
+	float3 vVrt = Const.CamPos - frg.camW;	// Geo-centric pixel position
+	float3 vPlN = normalize(vVrt);			// Planet mean normal
+	//float   dst = dot(vRay, frg.camW);	// Pixel to camera distance
+
+	float rad = dot(vVrt, vPlN);
+	float fDRS = dot(vRay, Const.toSun);
+	float fDPS = dot(vPlN, Const.toSun);
+	float fS = sqrt(saturate(fDPS + 0.05f));	// Day-Night scaling term 1.0 at daytime
+	float3 cSun = Const.cSun * sqrt(fDPS);
+
+	// Terrain with gamma correction and attennuation
+	cTex.rgb = pow(saturate(cTex.rgb), Const.TrGamma) * Const.TrExpo;
+
+	float3 color = cTex.rgb * LightFX(cSun + float3(0.9, 0.9, 1.0) * Const.Ambient);
+
+	return float4(HDR(color), 1.0f);
+}
+
+
+// ============================================================================
+// 
+float4 GiantCloudPS(CldVS frg) : COLOR
+{
+	float4 cTex = tex2D(tCloudCoverage, frg.texUV.xy);
+	float3 vPlN = normalize(frg.nrmW);
+	float3 vRay = normalize(frg.posW);
+	float  fDPS = dot(vPlN, Const.toSun);    // Planet mean normal sun angle
+
+	float3 cSun = Const.cSun * sqrt(fDPS);
+
+	cTex.rgb *= LightFX(cSun + float3(0.9, 0.9, 1.0) * Const.Ambient);
+	// Terrain with gamma correction and attennuation
+	cTex.rgb = pow(saturate(cTex.rgb), Const.TrGamma) * Const.TrExpo;
+
+	return float4(HDR(cTex.rgb), saturate(cTex.a));
+}

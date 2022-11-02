@@ -1762,14 +1762,69 @@ ShaderClass::~ShaderClass()
 
 void ShaderClass::ClearTextures()
 {
-	for (int idx = 0; idx < ARRAYSIZE(pTextures); idx++) pTextures[idx].pTex = NULL;
+	for (int idx = 0; idx < ARRAYSIZE(pTextures); idx++)
+	{
+		pTextures[idx].pAssigned = NULL;
+		pTextures[idx].pTex = NULL;
+		pTextures[idx].bSamplerSet = false;
+	}
 }
 
 
-void ShaderClass::Activate()
+/*void ShaderClass::Activate()
 {
 	HR(pDev->SetVertexShader(pVS));
 	HR(pDev->SetPixelShader(pPS));
+}*/
+
+
+void ShaderClass::UpdateTextures()
+{
+	// Set textures and samplers -----------------------------------------------
+	//
+	for (int idx = 0; idx < ARRAYSIZE(pTextures); idx++)
+	{
+		if (pTextures[idx].pTex == NULL) continue;
+
+		// If sampler state is not set, then set it
+		//
+		if (!pTextures[idx].bSamplerSet)
+		{
+			pTextures[idx].bSamplerSet = true;
+			DWORD flags = pTextures[idx].Flags;
+
+			if (flags & IPF_CLAMP_U)		pDev->SetSamplerState(idx, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
+			else if (flags & IPF_MIRROR_U)	pDev->SetSamplerState(idx, D3DSAMP_ADDRESSU, D3DTADDRESS_MIRROR);
+			else							pDev->SetSamplerState(idx, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP);
+
+			if (flags & IPF_CLAMP_V)		pDev->SetSamplerState(idx, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
+			else if (flags & IPF_MIRROR_V)	pDev->SetSamplerState(idx, D3DSAMP_ADDRESSV, D3DTADDRESS_MIRROR);
+			else							pDev->SetSamplerState(idx, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);
+
+			if (flags & IPF_CLAMP_W)		pDev->SetSamplerState(idx, D3DSAMP_ADDRESSW, D3DTADDRESS_CLAMP);
+			else if (flags & IPF_MIRROR_W)	pDev->SetSamplerState(idx, D3DSAMP_ADDRESSW, D3DTADDRESS_MIRROR);
+			else							pDev->SetSamplerState(idx, D3DSAMP_ADDRESSW, D3DTADDRESS_WRAP);
+
+			DWORD filter = D3DTEXF_POINT;
+
+			if (flags & IPF_LINEAR) filter = D3DTEXF_LINEAR;
+			if (flags & IPF_PYRAMIDAL) filter = D3DTEXF_PYRAMIDALQUAD;
+			if (flags & IPF_GAUSSIAN) filter = D3DTEXF_GAUSSIANQUAD;
+			if (flags & IPF_ANISOTROPIC) filter = D3DTEXF_ANISOTROPIC;
+
+			HR(pDev->SetSamplerState(idx, D3DSAMP_SRGBTEXTURE, false));
+			HR(pDev->SetSamplerState(idx, D3DSAMP_MAXANISOTROPY, pTextures[idx].AnisoLvl));
+			HR(pDev->SetSamplerState(idx, D3DSAMP_MAGFILTER, filter));
+			HR(pDev->SetSamplerState(idx, D3DSAMP_MINFILTER, filter));
+			HR(pDev->SetSamplerState(idx, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR));
+		}
+
+		if (pTextures[idx].pTex != pTextures[idx].pAssigned)
+		{
+			pTextures[idx].pAssigned = pTextures[idx].pTex;
+			HR(pDev->SetTexture(idx, pTextures[idx].pTex));
+		}
+	}
 }
 
 
@@ -1823,42 +1878,22 @@ void ShaderClass::Setup(LPDIRECT3DVERTEXDECLARATION9 pDecl, bool bZ, int blend)
 		HR(pDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE));
 		HR(pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
 	}
+}
 
-	// Set textures and samplers -----------------------------------------------
-	//
-	for (int idx = 0; idx < ARRAYSIZE(pTextures); idx++)
-	{
-		if (pTextures[idx].pTex == NULL) continue;
 
-		DWORD flags = pTextures[idx].Flags;
+HANDLE ShaderClass::GetPSHandle(const char* name)
+{
+	D3DXHANDLE hVar = pPSCB->GetConstantByName(NULL, name);
+	//if (!hVar) LogErr("Shader::GetPSHandle() Invalid variable name [%s]. File[%s], Entrypoint[%s], Shader[%s]", name, fn.c_str(), psn.c_str(), sn.c_str());
+	return HANDLE(hVar);
+}
 
-		if (flags & IPF_CLAMP_U)		pDev->SetSamplerState(idx, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
-		else if (flags & IPF_MIRROR_U)	pDev->SetSamplerState(idx, D3DSAMP_ADDRESSU, D3DTADDRESS_MIRROR);
-		else							pDev->SetSamplerState(idx, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP);
 
-		if (flags & IPF_CLAMP_V)		pDev->SetSamplerState(idx, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
-		else if (flags & IPF_MIRROR_V)	pDev->SetSamplerState(idx, D3DSAMP_ADDRESSV, D3DTADDRESS_MIRROR);
-		else							pDev->SetSamplerState(idx, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);
-
-		if (flags & IPF_CLAMP_W)		pDev->SetSamplerState(idx, D3DSAMP_ADDRESSW, D3DTADDRESS_CLAMP);
-		else if (flags & IPF_MIRROR_W)	pDev->SetSamplerState(idx, D3DSAMP_ADDRESSW, D3DTADDRESS_MIRROR);
-		else							pDev->SetSamplerState(idx, D3DSAMP_ADDRESSW, D3DTADDRESS_WRAP);
-
-		DWORD filter = D3DTEXF_POINT;
-
-		if (flags & IPF_LINEAR) filter = D3DTEXF_LINEAR;
-		if (flags & IPF_PYRAMIDAL) filter = D3DTEXF_PYRAMIDALQUAD;
-		if (flags & IPF_GAUSSIAN) filter = D3DTEXF_GAUSSIANQUAD;
-		if (flags & IPF_ANISOTROPIC) filter = D3DTEXF_ANISOTROPIC;
-
-		HR(pDev->SetSamplerState(idx, D3DSAMP_SRGBTEXTURE, false));
-		HR(pDev->SetSamplerState(idx, D3DSAMP_MAXANISOTROPY, pTextures[idx].AnisoLvl));
-		HR(pDev->SetSamplerState(idx, D3DSAMP_MAGFILTER, filter));
-		HR(pDev->SetSamplerState(idx, D3DSAMP_MINFILTER, filter));
-		HR(pDev->SetSamplerState(idx, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR));
-
-		HR(pDev->SetTexture(idx, pTextures[idx].pTex));
-	}
+HANDLE ShaderClass::GetVSHandle(const char* name)
+{
+	D3DXHANDLE hVar = pVSCB->GetConstantByName(NULL, name);
+	//if (!hVar) LogErr("Shader::GetVSHandle() Invalid variable name [%s]. File[%s], Entrypoint[%s], Shader[%s]", name, fn.c_str(), psn.c_str(), sn.c_str());
+	return HANDLE(hVar);
 }
 
 
@@ -1917,4 +1952,50 @@ void ShaderClass::SetVSConstants(const char* name, void* data, UINT bytes)
 }
 	
 
+
+void ShaderClass::SetTexture(HANDLE hVar, LPDIRECT3DTEXTURE9 pTex, UINT flags, UINT aniso)
+{
+	if (!hVar) {
+		LogErr("Shader::SetTexture() Invalid handle. File[%s], Entrypoint[%s], Shader[%s]", fn.c_str(), psn.c_str(), sn.c_str());
+		return;
+	}
+
+	DWORD idx = pPSCB->GetSamplerIndex(D3DXHANDLE(hVar));
+
+	assert(idx < 16);
+
+	if (!pTex) {
+		pTextures[idx].pTex = NULL;
+		return;
+	}
+
+	pTextures[idx].pTex = pTex;
+	pTextures[idx].Flags = flags;
+	pTextures[idx].AnisoLvl = aniso;
+}
+
+
+void ShaderClass::SetPSConstants(HANDLE hVar, void* data, UINT bytes)
+{
+	if (!hVar) {
+		LogErr("Shader::SetVSConstants() Invalid handle. File[%s], Entrypoint[%s], Shader[%s]", fn.c_str(), psn.c_str(), sn.c_str());
+		return;
+	}
+
+	if (pVSCB->SetValue(pDev, D3DXHANDLE(hVar), data, bytes) != S_OK) {
+		LogErr("Shader::SetVSConstants() Failed. File[%s], Entrypoint[%s]", fn.c_str(), vsn.c_str());
+	}
+}
+
+
+void ShaderClass::SetVSConstants(HANDLE hVar, void* data, UINT bytes)
+{
+	if (!hVar) {
+		LogErr("Shader::SetVSConstants() Invalid handle. File[%s], Entrypoint[%s], Shader[%s]", fn.c_str(), psn.c_str(), sn.c_str());
+		return;
+	}
+	if (pVSCB->SetValue(pDev, D3DXHANDLE(hVar), data, bytes) != S_OK) {
+		LogErr("Shader::SetVSConstants() Failed. File[%s], Entrypoint[%s]", fn.c_str(), vsn.c_str());
+	}
+}
 

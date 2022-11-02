@@ -30,13 +30,13 @@ bool FilterElevationPhysics(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, doub
 #define SUN_GLARE 6
 #define SKY_AMBIENT 7
 
-#define PLT_CONFIG -2
-#define PLT_AUTO -1
+#define PLT_CONFIG -1
 #define PLT_EARTH 0
 #define PLT_MARS  1
 #define PLT_MOON  2
 #define PLT_CLOUDS 3
 #define PLT_GIANT 4
+#define PLT_G_CLOUDS 5
 
 
 class PlanetShader : public ShaderClass
@@ -64,6 +64,18 @@ public:
 		if (string(options).find("_RIPPLES") != string::npos) bRipples = true;
 		if (string(options).find("_CLOUDSHD") != string::npos) bCloudShd = true;
 		if (string(options).find("_NIGHTLIGHTS") != string::npos) bNightlights = true;
+
+		tCloud = GetPSHandle("tCloud");
+		tCloud2 = GetPSHandle("tCloud2");
+		tMask = GetPSHandle("tMask");
+		tDiff = GetPSHandle("tDiff");
+		tShadowMap = GetPSHandle("tShadowMap");
+		PrmVS = GetVSHandle("Prm");
+		Prm = GetPSHandle("Prm");
+		FlowVS = GetVSHandle("FlowVS");
+		Flow = GetPSHandle("Flow");
+		Lights = GetPSHandle("Lights");
+		Spotlight = GetPSHandle("Spotlight");
 	};
 
 	~PlanetShader()
@@ -80,6 +92,18 @@ public:
 	bool bRipples;
 	bool bCloudShd;
 	bool bNightlights;
+
+	HANDLE tCloud;
+	HANDLE tCloud2;
+	HANDLE tMask;
+	HANDLE tDiff;
+	HANDLE tShadowMap;
+	HANDLE PrmVS;
+	HANDLE Prm;
+	HANDLE FlowVS;
+	HANDLE Flow;	
+	HANDLE Lights;
+	HANDLE Spotlight;
 };
 
 
@@ -134,8 +158,8 @@ struct ConstParams
 	float3 SunAz;				// Atmo scatter ref.frame (unit vector) (toCam, ZeroAz, SunAz)
 	float3 ZeroAz;				// Atmo scatter ref.frame (unit vector)
 	float3 Up;					// Sun Ref Frame (Unit Vector) (Up, toSun, ZeroAz)
-	float3 vTangent;			// Reference frame for narmal mapping (Unit Vector)
-	float3 vBiTangent;			// Reference frame for narmal mapping (Unit Vector)
+	float3 vTangent;			// Reference frame for normal mapping (Unit Vector)
+	float3 vBiTangent;			// Reference frame for normal mapping (Unit Vector)
 	float3 vPolarAxis;			// North Pole (unit vector)
 	float3 cSun;				// Sun Color and intensity
 	float3 RayWave;				// .rgb Rayleigh Wave lenghts
@@ -263,13 +287,12 @@ public:
 	void			SaveStruct(FILEHANDLE hFile, ScatterParams* prm, int bO);
 	void			LoadStruct(FILEHANDLE hFile, ScatterParams* prm, int bO);
 	char*			Label(const char* x);
-	void			UpdateAtmoConfig();
-	void			DumpDebugFile();
 	bool			HasAtmosphere() const { return prm.bAtm; }
 	bool			HasRipples() const { return bRipple; }
 	LPDIRECT3DTEXTURE9 GetScatterTable(int i);
 	ConstParams*	GetScatterConst() { return &cp; }
-	PlanetShader*	GetShader(int i);
+	PlanetShader*	GetShader(int id = PLT_CONFIG);
+	int				GetShaderID();
 	ShaderParams*	GetTerrainParams() { return &sp; }
 	FlowControlPS*	GetFlowControl() { return &fcp; }
 	FlowControlVS*  GetFlowControlVS() { return &fcv; }

@@ -520,6 +520,10 @@ namespace oapi {
 		{
 			memcpy_s(data, sizeof(FMATRIX4), &m, sizeof(m));
 		}
+		FMATRIX4(const LPD3DXMATRIX m)
+		{
+			memcpy_s(data, sizeof(FMATRIX4), m, sizeof(FMATRIX4));
+		}
 #endif
 
 		void Zero()

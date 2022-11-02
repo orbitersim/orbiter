@@ -84,6 +84,11 @@ class Scene {
 
 public:
 
+	struct FRUSTUM {
+		float znear;
+		float zfar;
+	};
+
 	// Custom camera parameters ========================================================
 	//
 	struct CAMREC {
@@ -353,6 +358,9 @@ public:
 
 	void			PushCamera();	// Push current camera onto a stack
 	void			PopCamera();	// Restore a camera from a stack
+	FMATRIX4		PushCameraFrustumLimits(float nearlimit, float farlimit);
+	FMATRIX4		PopCameraFrustumLimits();
+	
 
 
 	// Visual Management =========================================================================================================
@@ -440,6 +448,7 @@ private:
 	std::list<vVessel *> Casters;
 	std::stack<CAMERA>	CameraStack;
 	std::stack<DWORD>	PassStack;
+	std::stack<FRUSTUM> FrustumStack;
 
 
 	CAMERA		Camera;

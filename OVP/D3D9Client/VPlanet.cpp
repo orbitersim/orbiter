@@ -367,6 +367,8 @@ void vPlanet::GlobalInit(oapi::D3D9Client* gc)
 		return;
 	}
 
+	// Render Sunglare texture -----------------------------
+	//
 	D3DXCreateTexture(pDev, 256, 256, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &pSunTex);
 
 	LPDIRECT3DSURFACE9 pTgt;
@@ -378,6 +380,8 @@ void vPlanet::GlobalInit(oapi::D3D9Client* gc)
 	SAFE_RELEASE(pTgt);
 
 
+	// Get Texture size constants form shader file
+	//
 	Wc = pIP->FindDefine("Wc");
 	Nc = pIP->FindDefine("Nc");
 	Qc = pIP->FindDefine("Qc");
@@ -396,7 +400,8 @@ void vPlanet::GlobalInit(oapi::D3D9Client* gc)
 
 	string blend = "";
 	string flags = "";
-	pRender[PLT_GIANT] = new PlanetShader(pDev, "Modules/D3D9Client/NewPlanet.hlsl", "TerrainVS", "TerrainPS", "Giant", flags.c_str());
+	pRender[PLT_GIANT] = new PlanetShader(pDev, "Modules/D3D9Client/NewPlanet.hlsl", "GiantVS", "GiantPS", "Giant", flags.c_str());
+	pRender[PLT_G_CLOUDS] = new PlanetShader(pDev, "Modules/D3D9Client/NewPlanet.hlsl", "CloudVS", "GiantCloudPS", "GiantCloud", flags.c_str());
 
 	if (Config->CloudMicro) flags += "_CLOUDMICRO ";
 	if (Config->bCloudNormals) flags += "_CLOUDNORMALS ";
@@ -1248,15 +1253,11 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 
 	const Scene::SHADOWMAPPARAM *shd = scn->GetSMapData();
 
-	float s = float(shd->size);
-	float is = 1.0f / s;
-	float qw = 1.0f / float(Config->ShadowMapSize);
-
 	// Must update the latest view projection matrix
 	cp.mVP = *scn->GetProjectionViewMatrix();
 
 
-	// Setup shadow maps for surface base objects and mesh based body ---------------
+	// Setup shadow maps for surface base objects and mesh based bodies ---------------
 	//
 	D3D9Effect::UpdateEffectCamera(hObj);
 	D3D9Effect::FX->SetFloat(D3D9Effect::eDistScale, 1.0f / float(dist_scale));
@@ -1266,6 +1267,9 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 
 	if (shd->pShadowMap && (scn->GetRenderPass() == RENDERPASS_MAINSCENE) && (Config->TerrainShadowing == 2)) {
 		if (scn->GetCameraAltitude() < 10e3 || IsMesh()) {
+			float s = float(shd->size);
+			float is = 1.0f / s;
+			float qw = 1.0f / float(Config->ShadowMapSize);
 			HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, &shd->mViewProj));
 			HR(D3D9Effect::FX->SetTexture(D3D9Effect::eShadowMap, shd->pShadowMap));
 			HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, &D3DXVECTOR4(s, is, qw, 0)));
@@ -1292,7 +1296,6 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 		RenderDot (dev);
 	} else {             // render as sphere
 		DWORD amb = prm.amb0col;
-//		bool ringpostrender = false;
 		float fogfactor;
 
 		D3DCOLOR bg		= scn->GetBgColour();
@@ -1335,7 +1338,6 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 			double fog_0 = fog.dens_0;    // 5e-5;
 			double fog_ref = fog.dens_ref; // 3e-5;
 			double h_max = size*1.5; // At this altitude, fog effect drops to zero
-//			double scl = h_ref*fog_ref;
 
 			if (h < h_ref) {
 				// linear zone
@@ -1620,42 +1622,32 @@ double vPlanet::AngleCoEff(double cd)
 
 // ==============================================================
 
-void vPlanet::UpdateAtmoConfig()
+PlanetShader* vPlanet::GetShader(int id)
 {
-	prm.SclHeight = float(SPrm.rheight*1e3);
-	prm.InvSclHeight = 1.0f / float(prm.SclHeight);
-	double outer = size + SPrm.rheight * 12.0 * 1e3;
-	SolveXScatter(prm.SclHeight, size, outer, prm.ScatterCoEff, 90.0, 8);
-	UpdateScatter();
+	if (id == PLT_CONFIG) return pRender[GetShaderID()];
+	return pRender[id];
 }
 
 // ==============================================================
 
-PlanetShader* vPlanet::GetShader(int i)
+int vPlanet::GetShaderID()
 {
-	if (i == PLT_AUTO)
-	{
-		bool render_shadows = CloudMgr2() != NULL;
+	if (strcmp(ShaderName, "Moon") == 0) return PLT_MOON;
+	if (strcmp(ShaderName, "Earth") == 0) return PLT_EARTH;
+	if (strcmp(ShaderName, "Mars") == 0) return PLT_MARS;
+	if (strcmp(ShaderName, "Giant") == 0) return PLT_GIANT;
+	if (strcmp(ShaderName, "Auto") == 0)
+	{	
 		bool has_atmosphere = HasAtmosphere();
-		bool has_ripples = HasRipples();
-
 		if (has_atmosphere) {
-			if (has_ripples || render_shadows) return pRender[PLT_EARTH];
-			else return pRender[PLT_MARS];
+			bool has_ripples = HasRipples();
+			bool render_shadows = CloudMgr2() != NULL;
+			if (has_ripples || render_shadows) return PLT_EARTH;
+			if (size>6e6) return PLT_GIANT;
+			return PLT_MARS;
 		}
-		return pRender[PLT_MOON];
 	}
-
-	if (i == PLT_CONFIG)
-	{
-		if (strcmp(ShaderName, "Auto") == 0) return GetShader(PLT_AUTO);
-		if (strcmp(ShaderName, "Earth") == 0) return pRender[PLT_EARTH];
-		if (strcmp(ShaderName, "Mars") == 0) return pRender[PLT_MARS];
-		if (strcmp(ShaderName, "Giant") == 0) return pRender[PLT_GIANT];
-		return pRender[PLT_MOON];
-	}
-
-	return pRender[i];
+	return PLT_MOON;
 }
 
 // ==============================================================

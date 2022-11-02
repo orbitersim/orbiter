@@ -2856,6 +2856,25 @@ void Scene::PopCamera()
 
 // ===========================================================================================
 //
+FMATRIX4 Scene::PushCameraFrustumLimits(float nearlimit, float farlimit)
+{
+	FRUSTUM fr = { Camera.nearplane, Camera.farplane };
+	FrustumStack.push(fr);
+	SetCameraFrustumLimits(nearlimit, farlimit);
+	return FMATRIX4(GetProjectionViewMatrix());
+}
+
+// ===========================================================================================
+//
+FMATRIX4 Scene::PopCameraFrustumLimits()
+{
+	SetCameraFrustumLimits(FrustumStack.top().znear, FrustumStack.top().zfar);
+	FrustumStack.pop();
+	return FMATRIX4(GetProjectionViewMatrix());
+}
+
+// ===========================================================================================
+//
 void Scene::BeginPass(DWORD dwPass)
 {
 	PassStack.push(dwPass);

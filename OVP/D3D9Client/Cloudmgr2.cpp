@@ -93,14 +93,16 @@ void CloudTile::Load ()
 
 // -----------------------------------------------------------------------
 
-void CloudTile::Render ()
+void CloudTile::Render()
 {
 	LPDIRECT3DDEVICE9 pDev = mgr->Dev();
 	vPlanet* vPlanet = mgr->GetPlanet();
 	ShaderClass* pShader = NULL; // mgr->GetShader();
 	ShaderParams* sp = vPlanet->GetTerrainParams();
 
-	pShader = vPlanet->GetShader(PLT_CLOUDS);
+	int cfg = vPlanet->GetShaderID();
+	if (cfg == PLT_GIANT) pShader = vPlanet->GetShader(PLT_G_CLOUDS);
+	else pShader = vPlanet->GetShader(PLT_CLOUDS);
 
 	// ---------------------------------------------------------------------
 	// Feed tile specific data to shaders
@@ -116,9 +118,12 @@ void CloudTile::Render ()
 
 	// -------------------------------------------------------------------
 	// render surface mesh
-	pShader->SetPSConstants("Prm", sp, sizeof(ShaderParams));
+	if (cfg != PLT_GIANT) {
+		pShader->SetPSConstants("Prm", sp, sizeof(ShaderParams));
+	}
 	pShader->SetVSConstants("Prm", sp, sizeof(ShaderParams));
-	pShader->Setup(pPatchVertexDecl, false, 1);
+
+	pShader->UpdateTextures();
 
 	pDev->SetStreamSource(0, mesh->pVB, 0, sizeof(VERTEX_2TEX));
 	pDev->SetIndices(mesh->pIB);
@@ -135,9 +140,7 @@ void TileManager2<CloudTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlan
 	// set generic parameters
 	SetRenderPrm (dwmat, rprm.cloudrot, use_zbuf, rprm);
 
-	double np = 0.0, fp = 0.0;
 	int i;
-
 	class Scene *scene = GetClient()->GetScene();
 
 	// adjust scaling parameters (can only be done if no z-buffering is in use)
@@ -155,9 +158,7 @@ void TileManager2<CloudTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlan
 		}
 		zmin = max (2.0, min (zmax*1e-4, zmin));
 
-		np = scene->GetCameraNearPlane();
-		fp = scene->GetCameraFarPlane();
-		scene->SetCameraFrustumLimits (zmin, zmax);
+		vp->GetScatterConst()->mVP = scene->PushCameraFrustumLimits(zmin, zmax);
 	}
 
 	// build a transformation matrix for frustum testing
@@ -173,8 +174,9 @@ void TileManager2<CloudTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlan
 	ElevMode = eElevMode::Spherical;
 
 	pShader = vp->GetShader(PLT_CLOUDS);
-
 	pShader->ClearTextures();
+	pShader->Setup(pPatchVertexDecl, false, 1);
+
 	pShader->SetPSConstants("Const", vp->GetScatterConst(), sizeof(ConstParams));
 	pShader->SetVSConstants("Const", vp->GetScatterConst(), sizeof(ConstParams));
 	pShader->SetTexture("tCloudMicro", hCloudMicro, IPF_ANISOTROPIC | IPF_WRAP, Config->Anisotrophy);
@@ -197,8 +199,8 @@ void TileManager2<CloudTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlan
 	
 	loader->ReleaseMutex ();
 
-	if (np)
-		scene->SetCameraFrustumLimits(np,fp);
+	// Pop previous frustum configuration, must initialize mVP
+	if (!use_zbuf)	vp->GetScatterConst()->mVP = scene->PopCameraFrustumLimits();
 }
 
 // -----------------------------------------------------------------------

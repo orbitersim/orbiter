@@ -6,8 +6,8 @@
 // ============================================================================
 
 #define Nc  16		//Z-dimension count in 3D texture
-#define Wc  88		//3D texture size (pixels)
-#define Qc  180		//2D texture size (pixels)
+#define Wc  64		//3D texture size (pixels)
+#define Qc  128		//2D texture size (pixels)
 
 
 #define NSEG 12

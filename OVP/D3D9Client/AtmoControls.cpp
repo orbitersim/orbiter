@@ -318,7 +318,7 @@ void SetSlider(int id, WORD pos)
 			param->data[i] = v;
 		}
 
-		vObj->UpdateAtmoConfig(); 
+		//vObj->UpdateAtmoConfig(); 
 
 		UpdateSlider(id, false);
 

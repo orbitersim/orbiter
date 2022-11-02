@@ -284,7 +284,8 @@ void HazeManager2::GlobalExit()
 
 void HazeManager2::Render(D3DXMATRIX &wmat, float horizontal_aperture_deg)
 {
-	VECTOR3 cdir = vp->GetScene()->GetCameraGDir();
+	Scene* scn = vp->GetScene();
+	VECTOR3 cdir = scn->GetCameraGDir();
 	double calt = vp->CamDist() - rad;	// Camera altitude	
 	double halt = vp->GetHorizonAlt();
 	double melv = vp->GetMinElevation();
@@ -319,15 +320,19 @@ void HazeManager2::RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr)
 	D3DXVECTOR3 vTileCenter = D3DXVECTOR3(float(sin(15.0*RAD)), 1.0f, float(1.0+cos(15.0*RAD))) * 0.5;
 	D3DXMatrixRotationAxis(&mL, &_D3DXVECTOR3(ur), float(-a*0.5));
 	D3DXMatrixMultiply(&mWL, &mWL, &mL);
-
 	D3DXMatrixRotationAxis(&mL, &_D3DXVECTOR3(ur), float(-a));
 
+	//vp->GetScatterConst()->mVP = vp->GetScene()->PushCameraFrustumLimits(hd * 0.1, hd * 5.0);
+
 	pDome->Setup(pPositionDecl, false, 2);
+	pDome->ClearTextures();
+
 	pDome->SetTexture("tSkyRayColor", vp->GetScatterTable(RAY_COLOR), IPF_LINEAR | IPF_CLAMP);
 	pDome->SetTexture("tSkyMieColor", vp->GetScatterTable(MIE_COLOR), IPF_LINEAR | IPF_CLAMP);
 	pDome->SetTexture("tSunGlare", vp->GetScatterTable(SUN_GLARE), IPF_LINEAR | IPF_CLAMP);
 	pDome->SetPSConstants("Const", vp->GetScatterConst(), sizeof(ConstParams));
 	pDome->SetVSConstants("Const", vp->GetScatterConst(), sizeof(ConstParams));
+	pDome->UpdateTextures();
 
 	pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
@@ -345,6 +350,8 @@ void HazeManager2::RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr)
 	}
 
 	pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+
+	//vp->GetScatterConst()->mVP = vp->GetScene()->PopCameraFrustumLimits();
 }
 
 // -----------------------------------------------------------------------
@@ -389,6 +396,7 @@ void HazeManager2::RenderRing(VECTOR3 cpos, VECTOR3 cdir, double rad, double hra
 	double r2 = r1 + qw * cos(al);
 	double h2 = h1 + qw * sin(al); 
 
+	vp->GetScatterConst()->mVP = vp->GetScene()->PushCameraFrustumLimits(hd * 0.1, hd * 5.0);
 	
 	VECTOR3 ur = unit(cpos);
 	VECTOR3 ux = unit(crossp(cdir, ur));
@@ -398,23 +406,20 @@ void HazeManager2::RenderRing(VECTOR3 cpos, VECTOR3 cdir, double rad, double hra
 	D3DMAT_Identity(&mW);
 	D3DMAT_FromAxisT(&mW, &_D3DXVECTOR3(ux), &_D3DXVECTOR3(ur), &_D3DXVECTOR3(uy));
 
-	class Scene *scene = vp->GetScene();
-	double np = scene->GetCameraNearPlane();
-	double fp = scene->GetCameraFarPlane();
-	scene->SetCameraFrustumLimits(cr*0.02,cr*10.0);
-
 	ShaderParams sprm;
 	memcpy_s(&sprm.mWorld, sizeof(sprm.mWorld), &mW, sizeof(mW));
 	sprm.vTexOff = FVECTOR4(r1, r2, h1, h2);
 	sprm.fAlpha = float(qw);
 
 	pRing->Setup(pPositionDecl, false, 2);
+	pRing->ClearTextures();
 	pRing->SetTexture("tSkyRayColor", vp->GetScatterTable(RAY_COLOR), IPF_LINEAR | IPF_CLAMP);
 	pRing->SetTexture("tSkyMieColor", vp->GetScatterTable(MIE_COLOR), IPF_LINEAR | IPF_CLAMP);
 	pRing->SetTexture("tSunGlare", vp->GetScatterTable(SUN_GLARE), IPF_LINEAR | IPF_CLAMP);
 	pRing->SetPSConstants("Const", vp->GetScatterConst(), sizeof(ConstParams));
 	pRing->SetVSConstants("Const", vp->GetScatterConst(), sizeof(ConstParams));
 	pRing->SetVSConstants("Prm", &sprm, sizeof(ShaderParams));
+	pRing->UpdateTextures();
 
 	UINT nPrims = HORIZON2_NSEG * HORIZON2_NRING * 2 - 2;
 
@@ -423,7 +428,8 @@ void HazeManager2::RenderRing(VECTOR3 cpos, VECTOR3 cdir, double rad, double hra
 	pDev->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, nPrims);
 	pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
-	scene->SetCameraFrustumLimits(np, fp);
+	// Pop previous frustum configuration, must initialize mVP
+	vp->GetScatterConst()->mVP = vp->GetScene()->PopCameraFrustumLimits();
 }
 
 

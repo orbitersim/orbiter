@@ -350,14 +350,20 @@ class ShaderClass
 
 public:
 			ShaderClass(LPDIRECT3DDEVICE9 pDev, const char* file, const char* vs, const char* ps, const char* name, const char* options);
-		   ~ShaderClass();
+		    ~ShaderClass();
 	void	ClearTextures();
-	void	Activate();
+	void    UpdateTextures();
 	void	Setup(LPDIRECT3DVERTEXDECLARATION9 pDecl, bool bZ, int blend);
+	HANDLE	GetPSHandle(const char* name);
+	HANDLE	GetVSHandle(const char* name);
+
 	void	SetTexture(const char* name, LPDIRECT3DTEXTURE9 pTex, UINT Flags = IPF_CLAMP | IPF_ANISOTROPIC, UINT AnisoLvl = 4);
 	void	SetPSConstants(const char* name, void* data, UINT bytes);
 	void	SetVSConstants(const char* name, void* data, UINT bytes);
-	void	SetPSFloatConst(const char* name, void* data, UINT bytes);
+
+	void	SetTexture(HANDLE hVar, LPDIRECT3DTEXTURE9 pTex, UINT Flags = IPF_CLAMP | IPF_ANISOTROPIC, UINT AnisoLvl = 4);
+	void	SetPSConstants(HANDLE hVar, void* data, UINT bytes);
+	void	SetVSConstants(HANDLE hVar, void* data, UINT bytes);
 	LPDIRECT3DDEVICE9 GetDevice() { return pDev; }
 
 private:
@@ -365,8 +371,10 @@ private:
 	struct TexParams
 	{
 		LPDIRECT3DTEXTURE9 pTex;
+		LPDIRECT3DTEXTURE9 pAssigned;
 		UINT Flags;
 		UINT AnisoLvl;
+		bool bSamplerSet;
 	} pTextures[16];
 
 	LPD3DXCONSTANTTABLE pPSCB, pVSCB;

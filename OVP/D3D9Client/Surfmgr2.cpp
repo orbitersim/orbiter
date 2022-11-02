@@ -900,8 +900,8 @@ void SurfTile::Render ()
 			}
 		}
 
-		pShader->SetTexture("tCloud", pCloud);
-		pShader->SetTexture("tCloud2", pCloud2);
+		pShader->SetTexture(pShader->tCloud, pCloud);
+		pShader->SetTexture(pShader->tCloud2, pCloud2);
 	}
 
 	
@@ -953,7 +953,7 @@ void SurfTile::Render ()
 	// Setup Main Texture
 	// ----------------------------------------------------------------------
 
-	pShader->SetTexture("tDiff", tex, IPF_CLAMP | IPF_ANISOTROPIC, Config->Anisotrophy);
+	pShader->SetTexture(pShader->tDiff, tex, IPF_CLAMP | IPF_ANISOTROPIC, Config->Anisotrophy);
 	
 	// ----------------------------------------------------------------------
 	// Night Lights and Water Specular
@@ -962,10 +962,10 @@ void SurfTile::Render ()
 	if (pShader->bNightlights || pShader->bWater)
 	{
 		if ((has_specular || has_lights) && ltex) {
-			pShader->SetTexture("tMask", ltex, IPF_CLAMP | IPF_ANISOTROPIC, Config->Anisotrophy);
+			pShader->SetTexture(pShader->tMask, ltex, IPF_CLAMP | IPF_ANISOTROPIC, Config->Anisotrophy);
 			fc->bMask = true;
 		}
-		else pShader->SetTexture("tMask", NULL, IPF_CLAMP | IPF_ANISOTROPIC, Config->Anisotrophy);
+		else pShader->SetTexture(pShader->tMask, NULL, IPF_CLAMP | IPF_ANISOTROPIC, Config->Anisotrophy);
 	}
 
 	sp->vTexOff = GetTexRangeDX(&texrange);
@@ -1006,70 +1006,73 @@ void SurfTile::Render ()
 			}
 		}
 
-		pShader->SetTexture("tShadowMap", shd->pShadowMap);
+		pShader->SetTexture(pShader->tShadowMap, shd->pShadowMap);
 	}
 
 	// ---------------------------------------------------------------------
 	// Setup local light sources
 	//---------------------------------------------------------------------
 
-
+	int cfg = vPlanet->GetShaderID();
 
 	LightF Locals;
 	BOOL Spots[4];
 
-	for (int i = 0; i < 4; i++)
+	if (cfg != PLT_GIANT)
 	{
-		Locals.attenuation[i] = FVECTOR3(1.0f, 1.0f, 1.0f);
-		Locals.diffuse[i] = FVECTOR3(0.0f, 0.0f, 0.0f);
-		Locals.direction[i] = FVECTOR3(1.0f, 0.0f, 0.0f);
-		Locals.param[i] = FVECTOR4(0.0f, 0.0f, 0.0f, 0.0f);
-		Locals.position[i] = FVECTOR3(0.0f, 0.0f, 0.0f);
-		Spots[i] = false;
-	}
-
-	if (scene->GetRenderPass() == RENDERPASS_MAINSCENE)
-	{
-		const D3D9Light* pLights = scene->GetLights();
-		int nSceneLights = min(scene->GetLightCount(), MAX_SCENE_LIGHTS);
-
-		if (pLights && nSceneLights > 0 && pShader->bLocals)
+		for (int i = 0; i < 4; i++)
 		{
-			int nMeshLights = 0;
+			Locals.attenuation[i] = FVECTOR3(1.0f, 1.0f, 1.0f);
+			Locals.diffuse[i] = FVECTOR3(0.0f, 0.0f, 0.0f);
+			Locals.direction[i] = FVECTOR3(1.0f, 0.0f, 0.0f);
+			Locals.param[i] = FVECTOR4(0.0f, 0.0f, 0.0f, 0.0f);
+			Locals.position[i] = FVECTOR3(0.0f, 0.0f, 0.0f);
+			Spots[i] = false;
+		}
 
-			_LightList LightList[MAX_SCENE_LIGHTS];
+		if (scene->GetRenderPass() == RENDERPASS_MAINSCENE)
+		{
+			const D3D9Light* pLights = scene->GetLights();
+			int nSceneLights = min(scene->GetLightCount(), MAX_SCENE_LIGHTS);
 
-			// Find all local lights effecting this mesh ------------------------------------------
-			//
-			for (int i = 0; i < nSceneLights; i++) {
-				float il = pLights[i].GetIlluminance(bs_pos, mesh->bsRad);
-				if (il > 0.005f) {
-					LightList[nMeshLights].illuminace = il;
-					LightList[nMeshLights++].idx = i;
-				}
-			}
+			if (pLights && nSceneLights > 0 && pShader->bLocals)
+			{
+				int nMeshLights = 0;
 
-			if (nMeshLights > 0) {
+				_LightList LightList[MAX_SCENE_LIGHTS];
 
-				// If any, Sort the list based on illuminance -------------------------------------------
-				qsort(LightList, nMeshLights, sizeof(_LightList), compare_lights);
-
-				nMeshLights = min(nMeshLights, 4);
-
-				// Create a list of N most effective lights ---------------------------------------------
-				for (int i = 0; i < nMeshLights; i++)
-				{
-					auto pL = pLights[LightList[i].idx];
-					Locals.attenuation[i] = pL.Attenuation;
-					Locals.diffuse[i] = FVECTOR4(pL.Diffuse).rgb;
-					Locals.direction[i] = pL.Direction;
-					Locals.param[i] = pL.Param;
-					Locals.position[i] = pL.Position;
-					Spots[i] = (pL.Type == 1);
+				// Find all local lights effecting this mesh ------------------------------------------
+				//
+				for (int i = 0; i < nSceneLights; i++) {
+					float il = pLights[i].GetIlluminance(bs_pos, mesh->bsRad);
+					if (il > 0.005f) {
+						LightList[nMeshLights].illuminace = il;
+						LightList[nMeshLights++].idx = i;
+					}
 				}
 
-				// Enable local lights and feed data to shader
-				fc->bLocals = true;
+				if (nMeshLights > 0) {
+
+					// If any, Sort the list based on illuminance -------------------------------------------
+					qsort(LightList, nMeshLights, sizeof(_LightList), compare_lights);
+
+					nMeshLights = min(nMeshLights, 4);
+
+					// Create a list of N most effective lights ---------------------------------------------
+					for (int i = 0; i < nMeshLights; i++)
+					{
+						auto pL = pLights[LightList[i].idx];
+						Locals.attenuation[i] = pL.Attenuation;
+						Locals.diffuse[i] = FVECTOR4(pL.Diffuse).rgb;
+						Locals.direction[i] = pL.Direction;
+						Locals.param[i] = pL.Param;
+						Locals.position[i] = pL.Position;
+						Spots[i] = (pL.Type == 1);
+					}
+
+					// Enable local lights and feed data to shader
+					fc->bLocals = true;
+				}
 			}
 		}
 	}
@@ -1079,14 +1082,22 @@ void SurfTile::Render ()
 	// -------------------------------------------------------------------
 	// render surface mesh
 	//
-	pShader->SetVSConstants("FlowVS", fcv, sizeof(FlowControlVS));
-	pShader->SetVSConstants("Prm", sp, sizeof(ShaderParams));
-	pShader->SetPSConstants("Lights", &Locals, sizeof(Locals));
-	pShader->SetPSConstants("Spotlight", Spots, sizeof(Spots));
-	pShader->SetPSConstants("Flow", fc, sizeof(FlowControlPS));
-	pShader->SetPSConstants("Prm", sp, sizeof(ShaderParams));
+	pShader->SetVSConstants(pShader->PrmVS, sp, sizeof(ShaderParams));
+	pShader->SetPSConstants(pShader->Prm, sp, sizeof(ShaderParams));
 
-	pShader->Setup(pPatchVertexDecl, bUseZBuf, 0);
+	if (cfg != PLT_GIANT)
+	{
+		pShader->SetVSConstants(pShader->FlowVS, fcv, sizeof(FlowControlVS));
+		pShader->SetPSConstants(pShader->Flow, fc, sizeof(FlowControlPS));
+
+		if (fc->bLocals)
+		{
+			pShader->SetPSConstants(pShader->Lights, &Locals, sizeof(Locals));
+			pShader->SetPSConstants(pShader->Spotlight, Spots, sizeof(Spots));
+		}
+	}
+
+	pShader->UpdateTextures();
 
 	pDev->SetStreamSource(0, mesh->pVB, 0, sizeof(VERTEX_2TEX));
 	pDev->SetIndices(mesh->pIB);
@@ -1346,7 +1357,6 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 	// set generic parameters
 	SetRenderPrm (dwmat, 0, use_zbuf, rprm);
 
-	double np = 0.0, fp = 0.0;
 	int i;
 	class Scene *scene = GetClient()->GetScene();
 
@@ -1357,9 +1367,7 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 		double zmax = (D - R*R/D) * 1.5;
 		double zmin = max (2.0, min (zmax*1e-4, (D-R) * 0.8));
 
-		np = scene->GetCameraNearPlane();
-		fp = scene->GetCameraFarPlane();
-		scene->SetCameraFrustumLimits (zmin, zmax);
+		vp->GetScatterConst()->mVP = scene->PushCameraFrustumLimits(zmin, zmax);
 	}
 
 	// build a transformation matrix for frustum testing
@@ -1376,9 +1384,11 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 
 	// Choose a proper shader for a body
 	//
-	pShader = vp->GetShader(PLT_CONFIG);
+	pShader = vp->GetShader();
+	int cfg = vp->GetShaderID();
 
 	pShader->ClearTextures();
+	pShader->Setup(pPatchVertexDecl, bUseZ, 0);
 
 	ShaderParams* sp = vp->GetTerrainParams();
 	FlowControlPS* fc = vp->GetFlowControl();
@@ -1388,13 +1398,13 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 	pShader->SetVSConstants("Const", cp, sizeof(ConstParams));
 	pShader->SetPSConstants("Const", cp, sizeof(ConstParams));
 
-	if (pShader->bAtmosphere)
+	if (pShader->bAtmosphere && cfg != PLT_GIANT)
 	{
 		pShader->SetTexture("tLndRay", vp->GetScatterTable(RAY_LAND), IPF_LINEAR | IPF_CLAMP);
 		pShader->SetTexture("tLndMie", vp->GetScatterTable(MIE_LAND), IPF_LINEAR | IPF_CLAMP);
 		pShader->SetTexture("tLndAmb", vp->GetScatterTable(AMB_LAND), IPF_LINEAR | IPF_CLAMP);
 		pShader->SetTexture("tSun", vp->GetScatterTable(SUN_COLOR), IPF_LINEAR | IPF_CLAMP);
-		//pShader->SetTexture("tSunGlare", vp->GetScatterTable(SUN_GLARE), IPF_LINEAR | IPF_CLAMP);
+
 		if (pShader->bWater) {
 			pShader->SetTexture("tAmbient", vp->GetScatterTable(SKY_AMBIENT), IPF_LINEAR | IPF_CLAMP);
 		}
@@ -1465,8 +1475,8 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 		}
 	}*/
 
-	if (np)
-		scene->SetCameraFrustumLimits(np,fp);
+	// Pop previous frustum configuration, must initialize mVP
+	if (!use_zbuf)	vp->GetScatterConst()->mVP = scene->PopCameraFrustumLimits();
 }
 
 // -----------------------------------------------------------------------
