@@ -1027,16 +1027,6 @@ void Scene::RenderMainScene()
 	UpdateCamVis();
 
 
-	// Update Atmospheric Scattering Tables
-	//
-	for (DWORD i = 0; i < nplanets; i++) {
-		if (plist[i].vo->Type() == OBJTP_PLANET) {
-			vPlanet* vp = static_cast<vPlanet*>(plist[i].vo);
-			if (vp->IsActive()) vp->UpdateScatter();
-		}
-	}
-
-
 	// Update Vessel Animations
 	//
 	for (VOBJREC *pv = vobjFirst; pv; pv = pv->next) {

@@ -213,7 +213,7 @@ void OpenDlgClbk(void *context)
 
 	ConfigSlider(IDC_ATM_TW_DST,    0.01, 0.5);
 	ConfigSlider(IDC_ATM_GREEN,     0.46, 0.65);
-	ConfigSlider(IDC_ATM_TW_BRI,    0.01, 4.0);
+	ConfigSlider(IDC_ATM_TW_BRI,    0.01, 8.0);
 	ConfigSlider(IDC_ATM_RPOW,     -8.0, 8.0);
 	ConfigSlider(IDC_ATM_MPOW,     -8.0, 8.0);
 	ConfigSlider(IDC_ATM_HEIGHT,    3.0, 400.0, 1|2|4|8);

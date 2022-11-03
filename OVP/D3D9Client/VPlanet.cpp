@@ -772,8 +772,8 @@ void vPlanet::UpdateScatter()
 	cp.cSun = FVECTOR3(1, 1, 1) * 2.0f;
 	cp.PlanetRad = float(pr);
 	cp.PlanetRad2 = float(pr * pr);
-	cp.MinAlt = 0.0f;		// Min Elevation 
-	cp.MaxAlt = 9e3f;		// Max Elevation above sea-level
+	cp.MinAlt = float(minelev);
+	cp.MaxAlt = float(maxelev);		// Max Elevation above sea-level
 	cp.iAltRng = 1.0f / (cp.MaxAlt - cp.MinAlt);
 	cp.CamAlt = float(ca);
 	cp.CamElev = float(scn->GetCameraElevation());
@@ -803,6 +803,7 @@ void vPlanet::UpdateScatter()
 	cp.AtmoRad2 = cp.AtmoRad * cp.AtmoRad;
 	cp.CloudAlt = float(prm.cloudalt);
 	cp.CamSpace = sqrt(saturate(cp.CamAlt / visalt));
+	// Clarify 'long way'
 	cp.MaxDst = sqrt(cp.AtmoRad2 - cp.PlanetRad2) + sqrt(max(0.0f, cp.CamRad2 - cp.PlanetRad2)); // 'Long' way distance to sky-dome
 	cp.iMaxDst = 1.0f / cp.MaxDst;
 	cp.AngMin = -sqrt(max(1.0f, cp.CamRad2 - cp.PlanetRad2)) / cp.CamRad;
@@ -1249,6 +1250,10 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 {
 	_TRACE;
 	if (!active) return false;
+
+
+	// Update Atmospheric Scattering Tables
+	UpdateScatter();
 
 	const Scene::SHADOWMAPPARAM *shd = scn->GetSMapData();
 

@@ -97,18 +97,16 @@ void CloudTile::Render()
 {
 	LPDIRECT3DDEVICE9 pDev = mgr->Dev();
 	vPlanet* vPlanet = mgr->GetPlanet();
-	ShaderClass* pShader = NULL; // mgr->GetShader();
+	PlanetShader* pShader = mgr->GetShader();
 	ShaderParams* sp = vPlanet->GetTerrainParams();
 
 	int cfg = vPlanet->GetShaderID();
-	if (cfg == PLT_GIANT) pShader = vPlanet->GetShader(PLT_G_CLOUDS);
-	else pShader = vPlanet->GetShader(PLT_CLOUDS);
 
 	// ---------------------------------------------------------------------
 	// Feed tile specific data to shaders
 	//
 	// ----------------------------------------------------------------------
-	pShader->SetTexture("tCloudCoverage", tex, IPF_ANISOTROPIC | IPF_CLAMP, Config->Anisotrophy);
+	pShader->SetTexture(pShader->tDiff, tex, IPF_ANISOTROPIC | IPF_CLAMP, Config->Anisotrophy);
 
 	sp->vCloudOff = GetTexRangeDX(&texrange);
 	sp->vMicroOff = GetTexRangeDX(&microrange);
@@ -119,9 +117,9 @@ void CloudTile::Render()
 	// -------------------------------------------------------------------
 	// render surface mesh
 	if (cfg != PLT_GIANT) {
-		pShader->SetPSConstants("Prm", sp, sizeof(ShaderParams));
+		pShader->SetPSConstants(pShader->Prm, sp, sizeof(ShaderParams));
 	}
-	pShader->SetVSConstants("Prm", sp, sizeof(ShaderParams));
+	pShader->SetVSConstants(pShader->PrmVS, sp, sizeof(ShaderParams));
 
 	pShader->UpdateTextures();
 
@@ -173,17 +171,25 @@ void TileManager2<CloudTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlan
 
 	ElevMode = eElevMode::Spherical;
 
-	pShader = vp->GetShader(PLT_CLOUDS);
+	int cfg = vp->GetShaderID();
+
+	// Select cloud layer shader
+	pShader = (cfg == PLT_GIANT ? vp->GetShader(PLT_G_CLOUDS) : vp->GetShader(PLT_CLOUDS));
+	
 	pShader->ClearTextures();
 	pShader->Setup(pPatchVertexDecl, false, 1);
 
 	pShader->SetPSConstants("Const", vp->GetScatterConst(), sizeof(ConstParams));
 	pShader->SetVSConstants("Const", vp->GetScatterConst(), sizeof(ConstParams));
-	pShader->SetTexture("tCloudMicro", hCloudMicro, IPF_ANISOTROPIC | IPF_WRAP, Config->Anisotrophy);
-	pShader->SetTexture("tCloudMicroNorm", hCloudMicroNorm, IPF_ANISOTROPIC | IPF_WRAP, Config->Anisotrophy);
-	pShader->SetTexture("tSun", vp->GetScatterTable(SUN_COLOR), IPF_LINEAR | IPF_CLAMP);
-	pShader->SetTexture("tLndRay", vp->GetScatterTable(RAY_LAND), IPF_LINEAR | IPF_CLAMP);
-	pShader->SetTexture("tLndMie", vp->GetScatterTable(MIE_LAND), IPF_LINEAR | IPF_CLAMP);
+
+	if (cfg != PLT_GIANT)
+	{
+		pShader->SetTexture("tCloudMicro", hCloudMicro, IPF_ANISOTROPIC | IPF_WRAP, Config->Anisotrophy);
+		pShader->SetTexture("tCloudMicroNorm", hCloudMicroNorm, IPF_ANISOTROPIC | IPF_WRAP, Config->Anisotrophy);
+		pShader->SetTexture("tSun", vp->GetScatterTable(SUN_COLOR), IPF_LINEAR | IPF_CLAMP);
+		pShader->SetTexture("tLndRay", vp->GetScatterTable(RAY_LAND), IPF_LINEAR | IPF_CLAMP);
+		pShader->SetTexture("tLndMie", vp->GetScatterTable(MIE_LAND), IPF_LINEAR | IPF_CLAMP);
+	}
 
 	// TODO: render full sphere for levels < 4
 

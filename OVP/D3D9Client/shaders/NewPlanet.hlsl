@@ -108,7 +108,6 @@ uniform extern bool Spotlight[4];
 
 sampler tDiff;				// Diffuse texture
 sampler tMask;				// Nightlights / Specular mask texture
-sampler tCloudCoverage;
 sampler tCloud;				// 1st Cloud shadow texture
 sampler tCloud2;			// 2nd Cloud shadow texture
 sampler tCloudMicro;		
@@ -275,8 +274,6 @@ float4 HorizonRingPS(HazeVS frg) : COLOR
 	float ph = dot(uDir, Const.toSun);
 
 	float3 color = HDR(cRay.rgb * RayPhase(ph) + cMie * MiePhase(ph) + max(MieMin, cMie) * SunGlare(uDir) * Const.GlareColor);
-
-	//float alpha = pow(saturate(dot(color, color)), 1.0f);
 
 	return float4(color, cRay.a);
 }
@@ -581,6 +578,7 @@ float4 TerrainPS(TileVS frg) : COLOR
 	// Night lights ?
 	float fNgt = saturate(-fDPS * 4.0f + 0.05f) * Prm.fBeta; // Night lights intensity and 'on' time
 
+	// Why is this in _NIGHTLIGHTS ??
 	fOrbShd -= (1 - fShd) * Const.CamSpace * 0.5f; // Amplify cloud shadows for orbital views
 
 	cMsk.b = (cMsk.b > 0.15f ? cMsk.b : 0.0f); // Blue dirt filter
@@ -649,7 +647,7 @@ float4 CloudPS(CldVS frg) : COLOR
 
 	//float a = (tex2Dlod(NoiseTexS, float4(vUVTex,0,0)).r - 0.5f) * ATMNOISE;
 
-	float4 cTex = tex2D(tCloudCoverage, vUVTex);
+	float4 cTex = tex2D(tDiff, vUVTex);
 	float3 vPlN = normalize(frg.nrmW);
 	float3 vRay = normalize(frg.posW);
 
@@ -673,12 +671,12 @@ float4 CloudPS(CldVS frg) : COLOR
 	float d = 2.0 / 512.0;
 	float3 nrm = 0;
 
-	float x1 = tex2D(tCloudCoverage, vUVTex + float2(-d, 0)).a;
-	float x2 = tex2D(tCloudCoverage, vUVTex + float2(+d, 0)).a;
+	float x1 = tex2D(tDiff, vUVTex + float2(-d, 0)).a;
+	float x2 = tex2D(tDiff, vUVTex + float2(+d, 0)).a;
 	nrm.x = (x1 * x1 - x2 * x2);
 
-	float y1 = tex2D(tCloudCoverage, vUVTex + float2(0, -d)).a;
-	float y2 = tex2D(tCloudCoverage, vUVTex + float2(0, +d)).a;
+	float y1 = tex2D(tDiff, vUVTex + float2(0, -d)).a;
+	float y2 = tex2D(tDiff, vUVTex + float2(0, +d)).a;
 	nrm.y = (y1 * y1 - y2 * y2);
 
 	// Blend in cloud normals only on moderately thick clouds, allowing the highest cloud tops to be smooth.
@@ -746,32 +744,18 @@ TileVS GiantVS(TILEVERTEX vrt)
 {
 	// Zero output.
 	TileVS outVS = (TileVS)0;
-	float4 vElev = 0;
-	float3 vNrmW;
-	float3 vVrt;
-	float3 vPlN;
-
+	
 	// Apply a world transformation matrix
 	float3 vPosW = mul(float4(vrt.posL, 1.0f), Prm.mWorld).xyz;
-
-	vNrmW = mul(float4(vrt.normalL, 0.0f), Prm.mWorld).xyz;
-	vVrt = Const.CamPos + vPosW;
-	vPlN = normalize(vVrt);
-
+	float3 vNrmW = mul(float4(vrt.normalL, 0.0f), Prm.mWorld).xyz;
+	
 	outVS.posH = mul(float4(vPosW, 1.0f), Const.mVP);
-
-#if defined(_SHDMAP)
-	outVS.shdH = mul(float4(vPosW, 1.0f), Prm.mLVP);
-#endif
-
 	outVS.texUV.xy = vrt.tex0.xy;
-
 	outVS.camW = -vPosW;
 	outVS.nrmW = vNrmW;
 
 	return outVS;
 }
-
 
 // ============================================================================
 //
@@ -787,13 +771,12 @@ float4 GiantPS(TileVS frg) : COLOR
 	float3 vRay = normalize(frg.camW);		// Unit viewing ray
 	float3 vVrt = Const.CamPos - frg.camW;	// Geo-centric pixel position
 	float3 vPlN = normalize(vVrt);			// Planet mean normal
-	//float   dst = dot(vRay, frg.camW);	// Pixel to camera distance
-
-	float rad = dot(vVrt, vPlN);
-	float fDRS = dot(vRay, Const.toSun);
+	//float  dst = dot(vRay, frg.camW);	// Pixel to camera distance
+	//float  rad = dot(vVrt, vPlN);
+	//float fDRS = dot(vRay, Const.toSun);
 	float fDPS = dot(vPlN, Const.toSun);
-	float fS = sqrt(saturate(fDPS + 0.05f));	// Day-Night scaling term 1.0 at daytime
-	float3 cSun = Const.cSun * sqrt(fDPS);
+
+	float3 cSun = Const.cSun * saturate((fDPS + 0.1) * 5.0);
 
 	// Terrain with gamma correction and attennuation
 	cTex.rgb = pow(saturate(cTex.rgb), Const.TrGamma) * Const.TrExpo;
@@ -805,18 +788,19 @@ float4 GiantPS(TileVS frg) : COLOR
 
 
 // ============================================================================
-// 
+// Gas giant cloud layer renderer
+// ============================================================================
+
 float4 GiantCloudPS(CldVS frg) : COLOR
 {
-	float4 cTex = tex2D(tCloudCoverage, frg.texUV.xy);
+	float4 cTex = tex2D(tDiff, frg.texUV.xy);
 	float3 vPlN = normalize(frg.nrmW);
 	float3 vRay = normalize(frg.posW);
 	float  fDPS = dot(vPlN, Const.toSun);    // Planet mean normal sun angle
 
-	float3 cSun = Const.cSun * sqrt(fDPS);
+	float3 cSun = Const.cSun * saturate((fDPS + 0.1) * 5.0);
 
-	cTex.rgb *= LightFX(cSun + float3(0.9, 0.9, 1.0) * Const.Ambient);
-	// Terrain with gamma correction and attennuation
+	cTex.rgb *= LightFX(cSun + float3(1.0, 1.0, 1.0) * Const.Ambient);
 	cTex.rgb = pow(saturate(cTex.rgb), Const.TrGamma) * Const.TrExpo;
 
 	return float4(HDR(cTex.rgb), saturate(cTex.a));
