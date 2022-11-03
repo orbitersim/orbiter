@@ -35,7 +35,7 @@ void ApplyPatchTextureCoordinates (VBMESH &mesh, LPDIRECT3DVERTEXBUFFER7 vtx, co
 static int ntot, nrad, nrender;
 
 DWORD CSphereManager::vpX0, CSphereManager::vpX1, CSphereManager::vpY0, CSphereManager::vpY1;
-double CSphereManager::diagscale;
+double CSphereManager::diagscale = 0.0;
 
 // =======================================================================
 // =======================================================================
@@ -43,16 +43,19 @@ double CSphereManager::diagscale;
 
 CSphereManager::CSphereManager ()
 {
-	char *c = g_pOrbiter->Cfg()->CfgVisualPrm.CSphereBgPath;
-	if (!c[0]) {
-		m_bBkgImg = false;
-	} else {
-		strncpy (texname, c, 64);
-		m_bBkgImg = true;
+	m_bBkgImg = g_pOrbiter->Cfg()->CfgVisualPrm.bUseBgImage;
+	if (m_bBkgImg) {
+		char* c = g_pOrbiter->Cfg()->CfgVisualPrm.CSphereBgPath;
+		if (c[0]) strncpy(texname, c, 128);
+		else      m_bBkgImg = false;
 	}
 
-	strcpy(starfieldname, "csphere\\hiptyc_2020");
-	m_bStarImg = true;
+	m_bStarImg = g_pOrbiter->Cfg()->CfgVisualPrm.bUseStarImage;
+	if (m_bStarImg) {
+		char* c = g_pOrbiter->Cfg()->CfgVisualPrm.StarImagePath;
+		if (c[0]) strncpy(starfieldname, c, 128);
+		else      m_bStarImg = false;
+	}
 
 	m_bDisabled = true;
 	if (!m_bBkgImg && !m_bStarImg)
@@ -65,7 +68,6 @@ CSphereManager::CSphereManager ()
 	int maxidx = patchidx[maxbaselvl];
 	bPreloadTile = (g_pOrbiter->Cfg()->CfgPRenderPrm.PreloadMode > 0);
 	nhitex = nhispec = 0;
-	diagscale = 0.0;
 
 	tiledesc = new TILEDESC[maxidx]; TRACENEW
 	memset (tiledesc, 0, maxidx*sizeof(TILEDESC));
@@ -98,23 +100,25 @@ CSphereManager::CSphereManager ()
 
 CSphereManager::~CSphereManager ()
 {
-	DWORD i, maxidx = patchidx[maxbaselvl];
-	DWORD counter = 0;
+	if (!m_bDisabled) {
+		DWORD i, maxidx = patchidx[maxbaselvl];
+		DWORD counter = 0;
 
-	if (m_bBkgImg) {
-		for (auto&& tex : m_texbuf)
-			tex->Release();
-		m_texbuf.clear();
-	}
-	if (m_bStarImg) {
-		for (auto&& tex : m_starbuf)
-			tex->Release();
-		m_starbuf.clear();
-	}
+		if (m_bBkgImg) {
+			for (auto tex : m_texbuf)
+				tex->Release();
+			m_texbuf.clear();
+		}
+		if (m_bStarImg) {
+			for (auto tex : m_starbuf)
+				tex->Release();
+			m_starbuf.clear();
+		}
 
-	for (i = 0; i < maxidx; i++)
-		if (tiledesc[i].vtx) tiledesc[i].vtx->Release();
-	delete []tiledesc;	
+		for (i = 0; i < maxidx; i++)
+			if (tiledesc[i].vtx) tiledesc[i].vtx->Release();
+		delete[]tiledesc;
+	}
 }
 
 // =======================================================================
@@ -135,6 +139,13 @@ void CSphereManager::CreateDeviceObjects (LPDIRECT3D7 d3d, LPDIRECT3DDEVICE7 dev
 
 void CSphereManager::DestroyDeviceObjects ()
 {
+}
+
+// =======================================================================
+
+void CSphereManager::SetBgBrightness(double val)
+{
+	intensity = (float)val;
 }
 
 // =======================================================================

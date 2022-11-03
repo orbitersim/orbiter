@@ -56,6 +56,28 @@ OGCelestialSphere::~OGCelestialSphere()
 
 // ==============================================================
 
+void OGCelestialSphere::OnOptionChanged(DWORD cat, DWORD item)
+{
+	switch (cat) {
+	case OPTCAT_CELSPHERE:
+		switch (item) {
+		case OPTITEM_CELSPHERE_ACTIVATESTARIMAGE:
+		case OPTITEM_CELSPHERE_ACTIVATEBGIMAGE:
+		case OPTITEM_CELSPHERE_BGIMAGECHANGED:
+			InitBackgroundManager();
+			break;
+		case OPTITEM_CELSPHERE_BGIMAGEBRIGHTNESS:
+			if (m_bkgImgMgr) {
+				double intens = *(double*)m_gc->GetConfigParam(CFGPRM_CSPHEREINTENS);
+				m_bkgImgMgr->SetBgBrightness(intens);
+			}
+		}
+		break;
+	}
+}
+
+// ==============================================================
+
 void OGCelestialSphere::InitCelestialTransform()
 {
 	MATRIX3 R = Ecliptic_CelestialAtEpoch();
@@ -216,14 +238,21 @@ void OGCelestialSphere::InitBackgroundManager()
 		m_bkgImgMgr2 = nullptr;
 	}
 
-	char* cTexPath = (char*)m_gc->GetConfigParam(CFGPRM_CSPHERETEXTURE);
-	if (!cTexPath[0]) return;
+	char* cTexPath = 0;
+	if (*(bool*)m_gc->GetConfigParam(CFGPRM_CSPHEREUSEBGIMAGE))
+		cTexPath = (char*)m_gc->GetConfigParam(CFGPRM_CSPHERETEXTURE);
+	
+	char* cStarPath = 0;
+	if (*(bool*)m_gc->GetConfigParam(CFGPRM_CSPHEREUSESTARIMAGE))
+		cStarPath = (char*)m_gc->GetConfigParam(CFGPRM_CSPHERESTARTEXTURE);
+
+	if (!cTexPath && !cStarPath) return;
 
 	char cbuf[256];
-	m_gc->Cfg()->TexPath(cbuf, cTexPath);
-
 	DWORD fa = GetFileAttributes(cbuf);
 	if (0 /*fa & FILE_ATTRIBUTE_DIRECTORY*/) {  // This requires more work
+		m_gc->Cfg()->TexPath(cbuf, cTexPath);
+
 		m_bkgImgMgr2 = new CsphereManager(cTexPath, 8, 8);
 
 		Matrix R(2000, 0, 0, 0, 2000, 0, 0, 0, 2000), ecl2gal;

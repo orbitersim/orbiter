@@ -144,6 +144,12 @@ const D3DLIGHT7 *Scene::GetLight () const
 	return light->GetLight();
 }
 
+void Scene::OnOptionChanged(int cat, int item)
+{
+	if (cat == OPTCAT_CELSPHERE)
+		m_celSphere->OnOptionChanged(cat, item);
+}
+
 Scene::VOBJREC *Scene::FindVisual (OBJHANDLE hObj)
 {
 	VOBJREC *pv;

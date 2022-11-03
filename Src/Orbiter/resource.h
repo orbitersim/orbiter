@@ -56,6 +56,8 @@
 #define IDB_TREEICON_FOLDER2            207
 #define IDB_TREEICON_SCN1               208
 #define IDB_TREEICON_SCN2               209
+#define IDD_OPTIONS                     210
+#define IDD_OPTIONS_CELSPHERE           211
 #define IDD_DEMOBK                      223
 #define IDD_ORBITERHELP                 224
 #define IDD_HELP                        225
@@ -269,6 +271,13 @@
 #define IDC_VH_CRD_NEGATIVE             1834
 #define IDC_VH_CRD_SCALE                1835
 #define IDC_VH_CRD_OPACITY              1836
+
+// Inline option dialog controls
+#define IDC_OPT_ENABLESTARMAP           1000
+#define IDC_OPT_STARMAPIMAGE            1001
+#define IDC_OPT_ENABLEBKGMAP            1002
+#define IDC_OPT_BKGIMAGE                1003
+#define IDC_OPT_BGBRIGHTNESS            1004
 
 // Unsorted
 #define IDC_SCN_STATIC1                 1087

@@ -23,6 +23,8 @@ public:
 	static void CreateDeviceObjects (LPDIRECT3D7 d3d, LPDIRECT3DDEVICE7 dev);
 	static void DestroyDeviceObjects ();
 
+	void SetBgBrightness(double val);
+
 	void Render (LPDIRECT3DDEVICE7 dev, int level, double bglvl);
 
 protected:
@@ -50,8 +52,8 @@ protected:
 	// Check if specified tile intersects viewport
 
 private:
-	char texname[64];
-	char starfieldname[64];
+	char texname[128];
+	char starfieldname[128];
 	float intensity;                 // opacity of background image
 	bool m_bBkgImg;                  // background image available?
 	bool m_bStarImg;                 // starfield image available?

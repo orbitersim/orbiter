@@ -104,6 +104,8 @@ public:
 	 */
 	void clbkRefreshVideoData ();
 
+	void clbkOptionChanged(DWORD cat, DWORD item);
+
 	/**
 	 * \brief Fullscreen mode flag
 	 * \return true in fullscreen mode, false in windowed mode.

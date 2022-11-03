@@ -35,7 +35,7 @@ void ApplyPatchTextureCoordinates (VBMESH &mesh, LPDIRECT3DVERTEXBUFFER7 vtx, co
 static int ntot, nrad, nrender;
 
 DWORD CSphereManager::vpX0, CSphereManager::vpX1, CSphereManager::vpY0, CSphereManager::vpY1;
-double CSphereManager::diagscale;
+double CSphereManager::diagscale = 0.0;
 int *CSphereManager::patchidx = 0;
 int **CSphereManager::NLNG = 0;
 int *CSphereManager::NLAT = 0;
@@ -58,16 +58,19 @@ CSphereManager::CSphereManager (const D3D7Client *gclient, const Scene *scene)
 	NLNG = TileManager::NLNG;
 	NLAT = TileManager::NLAT;
 
-	char *c = (char*)gc->GetConfigParam (CFGPRM_CSPHERETEXTURE);
-	if (!c[0]) {
-		m_bBkgImg = false;
-	} else {
-		strncpy (texname, c, 64);
-		m_bBkgImg = true;
+	m_bBkgImg = *(bool*)gc->GetConfigParam(CFGPRM_CSPHEREUSEBGIMAGE);
+	if (m_bBkgImg) {
+		char* c = (char*)gc->GetConfigParam(CFGPRM_CSPHERETEXTURE);
+		if (c[0]) strncpy(texname, c, 128);
+		else      m_bBkgImg = false;
 	}
 
-	strcpy(starfieldname, "csphere\\hiptyc_2020");
-	m_bStarImg = true;
+	m_bStarImg = *(bool*)gc->GetConfigParam(CFGPRM_CSPHEREUSESTARIMAGE);
+	if (m_bStarImg) {
+		char* c = (char*)gc->GetConfigParam(CFGPRM_CSPHERESTARTEXTURE);
+		if (c[0]) strncpy(starfieldname, c, 128);
+		else      m_bStarImg = false;
+	}
 
 	m_bDisabled = true;
 	if (!m_bBkgImg && !m_bStarImg)
@@ -117,22 +120,25 @@ CSphereManager::CSphereManager (const D3D7Client *gclient, const Scene *scene)
 
 CSphereManager::~CSphereManager ()
 {
-	DWORD i, maxidx = patchidx[maxbaselvl];
+	if (!m_bDisabled) {
+		DWORD i, maxidx = patchidx[maxbaselvl];
 
-	if (m_bBkgImg) {
-		for (auto&& tex : m_texbuf)
-			tex->Release();
-		m_texbuf.clear();
-	}
-	if (m_bStarImg) {
-		for (auto&& tex : m_starbuf)
-			tex->Release();
-		m_starbuf.clear();
-	}
+		if (m_bBkgImg) {
+			for (auto tex : m_texbuf)
+				if (tex->Release() != DD_OK)
+					oapiWriteLogError("Could not release texture");
+			m_texbuf.clear();
+		}
+		if (m_bStarImg) {
+			for (auto tex : m_starbuf)
+				tex->Release();
+			m_starbuf.clear();
+		}
 
-	for (i = 0; i < maxidx; i++)
-		if (tiledesc[i].vtx) tiledesc[i].vtx->Release();
-	delete []tiledesc;	
+		for (i = 0; i < maxidx; i++)
+			if (tiledesc[i].vtx) tiledesc[i].vtx->Release();
+		delete[]tiledesc;
+	}
 }
 
 // =======================================================================
@@ -152,22 +158,15 @@ void CSphereManager::GlobalInit (oapi::D3D7Client *gclient)
 
 // =======================================================================
 
-void CSphereManager::CreateDeviceObjects (LPDIRECT3D7 d3d, LPDIRECT3DDEVICE7 dev)
+void CSphereManager::DestroyDeviceObjects ()
 {
-	D3DVIEWPORT7 vp;
-	dev->GetViewport (&vp);
-	vpX0 = vp.dwX, vpX1 = vpX0 + vp.dwWidth;
-	vpY0 = vp.dwY, vpY1 = vpY0 + vp.dwHeight;
-	// viewport size for clipping calculations
-
-	diagscale = (double)vp.dwWidth/(double)vp.dwHeight;
-	diagscale = sqrt(1.0 + diagscale*diagscale);
 }
 
 // =======================================================================
 
-void CSphereManager::DestroyDeviceObjects ()
+void CSphereManager::SetBgBrightness(double val)
 {
+	intensity = (float)val;
 }
 
 // =======================================================================
@@ -213,7 +212,7 @@ void CSphereManager::LoadTextures ()
 				--lvl;
 			while (ntex > patchidx[lvl])
 				m_texbuf[--ntex]->Release();
-			if (ntex < m_starbuf.size())
+			if (ntex < m_texbuf.size())
 				m_texbuf.resize(ntex);
 		}
 		else {

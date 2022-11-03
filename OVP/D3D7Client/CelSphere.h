@@ -34,6 +34,8 @@ public:
 	D3D7CelestialSphere (oapi::D3D7Client *gc, Scene *scene);
 	~D3D7CelestialSphere ();
 
+	void OnOptionChanged(DWORD cat, DWORD item);
+
 	void Render(LPDIRECT3DDEVICE7 dev, const VECTOR3 &skyCol);
 
 	/**

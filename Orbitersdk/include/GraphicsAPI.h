@@ -115,6 +115,13 @@ typedef void *HDC;
 #define CFGPRM_OBJECTSPECULAR  0x0011
 
 /**
+ * \Flag for rendering background images from a texture set
+ * \par Parameter type:
+ *    bool
+ */
+#define CFGPRM_CSPHEREUSEBGIMAGE 0x0012
+
+/**
  * File path for celestial sphere background textures
  * \par Parameter type:
  *   *char
@@ -180,14 +187,29 @@ typedef void *HDC;
  */
 #define CFGPRM_TILEPATCHRES 0x001B
 
-#define CFGPRM_TILELOADFLAGS 0x001C
 /**
  * Bitflags for planetary tile file load behaviour
  * - bit 1: load from individual tiles in directory tree
  * - bit 2: load from compressed archive file
  * \par Parameter type:
  *   DWORD
-/// @}
+ */
+#define CFGPRM_TILELOADFLAGS 0x001C
+
+/**
+ * Path to background star texture
+ * \par Parameter type:
+ *   *char
+ */
+#define CFGPRM_CSPHERESTARTEXTURE 0x001D
+
+/**
+ * \Flag for rendering background stars from a texture set
+ * \par Parameter type:
+ *    bool
+ */
+#define CFGPRM_CSPHEREUSESTARIMAGE 0x001E
+  /// @}
 
 /**
  * \defgroup renderprm Render parameter identifiers
@@ -351,6 +373,13 @@ public:
 	 * \default None.
 	 */
 	virtual void clbkRefreshVideoData () {}
+
+	/**
+	 * \brief Called when the user changes an option during a simulation session.
+	 * \param cat option category identifier
+	 * \param item option item identifier
+	 */
+	virtual void clbkOptionChanged(DWORD cat, DWORD item) {}
 
 	/**
 	 * \brief Texture request

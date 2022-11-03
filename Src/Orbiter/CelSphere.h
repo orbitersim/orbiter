@@ -19,6 +19,8 @@ public:
 	OGCelestialSphere(OrbiterGraphics* gc, Scene* scene);
 	~OGCelestialSphere();
 
+	void OnOptionChanged(DWORD cat, DWORD item);
+
 	void Render(LPDIRECT3DDEVICE7 dev, const VECTOR3 &skyCol);
 
 	/**

@@ -1,0 +1,191 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
+// ======================================================================
+// In-session options dialog
+// ======================================================================
+
+/************************************************************************
+ * \file DlgOptions.h
+ * \brief Implementation of the in-session options dialog.
+ */
+
+#ifndef __DLGOPTIONS_H
+#define __DLGOPTIONS_H
+
+#include "DialogWin.h"
+
+class OptionsPage;
+
+/************************************************************************
+ * \brief Options frame dialog.
+ * 
+ * This dialog acts as the frame for the individual options pages.
+ */
+class DlgOptions : public DialogWin {
+public:
+	/**
+	 * \brief Contructor for Options dialog object.
+	 * \param hInstance application instance handle
+	 * \param hParent parent window handle
+	 * \param context pointer to context data
+	 */
+	DlgOptions(HINSTANCE hInstance, HWND hParent, void* context);
+
+	/**
+	 * \brief Destructor for Options dialog object.
+	 */
+	~DlgOptions();
+
+	/**
+	 * \brief Disables per-timestep updates.
+	 */
+	bool UpdateContinuously() const { return false; }
+
+	/**
+	 * \brief Update dialog controls from config settings
+	 */
+	void Update();
+
+	BOOL OnInitDialog(HWND hDlg, WPARAM wParam, LPARAM lParam);
+
+protected:
+	/**
+	 * \brief Adds a new options page.
+	 * \param hDlg dialog handle
+	 * \param pPage pointer to new page
+	 */
+	void AddPage(HWND hDlg, OptionsPage* pPage);
+
+	void SwitchPage(HWND hDlg);
+	void Clear();
+
+private:
+	std::vector<OptionsPage*> m_pPage;
+};
+
+/************************************************************************
+ * \brief Base class for options dialog pages.
+ */
+class OptionsPage {
+public:
+	/**
+	 * \brief OptionsPage constructor.
+	 * \param hParent parent window handle (dialog frame)
+	 */
+	OptionsPage(HWND hParent);
+
+	/**
+	 * \brief OptionsPage destructor.
+	 */
+	virtual ~OptionsPage();
+
+	/**
+	 * \brief Derived classes return the dialog resource id. 
+	 */
+	virtual int ResourceId() const = 0;
+
+	/**
+	 * \brief Returns the parent dialog handle.
+	 * \return Parent dialog handle
+	 */
+	HWND HParent() const { return m_hParent; }
+
+	/**
+	 * \brief Returns the page window handle.
+	 * \return Page window handle
+	 */
+	HWND HPage() const { return m_hPage; }
+
+	/**
+	 * \brief Creates the page window and assigns \ref m_hPage.
+	 */
+	void CreatePage();
+
+	/**
+	 * \brief Show/hide the page.
+	 * \param bShow Show page if true, hide if false
+	 */
+	void Show(bool bShow);
+
+	/**
+	 * \brief Update the dialog controls from config settings.
+	 * \param hPage dialog page handle
+	 */
+	virtual void UpdateControls(HWND hPage) {}
+
+protected:
+	/**
+	 * \brief Default handler for WM_INITDIALOG messages.
+	 * \default Nothing, returns TRUE
+	 */
+	virtual BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam) { return TRUE; }
+
+	/**
+	 * \brief Default handler for WM_COMMAND messages.
+	 * \param hPage dialog window handle
+	 * \param ctrlId resource identifier of the control (LOWORD(wParam))
+	 * \param notification code (HIWORD(wParam))
+	 * \param hCtrl control window handle (lParam)
+	 * \default Nothing, returns FALSE
+	 */
+	virtual BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl) { return FALSE; }
+
+	/**
+	 * \brief Default handler for WM_HSCROLL messages.
+	 * \default Nothing, returns FALSE
+	 * \note This message is called by gauge controls on slider position change.
+	 */
+	virtual BOOL OnHScroll(HWND hPage, WPARAM wParam, LPARAM lParam) { return FALSE; }
+
+	/**
+	 * \brief Default generic message handler.
+	 * \default Nothing, returns FALSE
+	 * \note This method is called for any messages which don't have an associated
+	 *    specific callback function.
+	 */
+	virtual BOOL OnMessage(HWND hPage, UINT uMsg, WPARAM wParam, LPARAM lParam) { return FALSE; }
+
+	/**
+	 * \Brief page message loop.
+	 */
+	virtual INT_PTR DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+private:
+	/**
+	 * \brief Message loop hook for all options page.
+	 * \note This function dereferences the page instance and then calls
+	 *    the specific page's DlgProc method.
+	 */
+	static INT_PTR CALLBACK s_DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+	HWND m_hParent; ///< parent window handle
+	HWND m_hPage;   ///< page window handle (0 before MakePage has been called)
+};
+
+/************************************************************************
+ * \brief Page for celestial sphere rendering options. 
+ */
+class OptionsPage_CelSphere : public OptionsPage {
+public:
+	OptionsPage_CelSphere(HWND hParent);
+	int ResourceId() const;
+	void UpdateControls(HWND hPage);
+
+protected:
+	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
+	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
+	BOOL OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam);
+	void PopulateStarmapList(HWND hPage);
+	void PopulateBgImageList(HWND hPage);
+	void StarmapActivationChanged(HWND hPage);
+	void BackgroundActivationChanged(HWND hPage);
+	void BackgroundImageChanged(HWND hPage);
+	void BackgroundBrightnessChanged(HWND hPage, double level);
+
+private:
+	std::vector<std::pair<std::string, std::string>> m_pathStarmap;
+	std::vector<std::pair<std::string, std::string>> m_pathBgImage;
+};
+
+#endif // !__DLGOPTIONS_H

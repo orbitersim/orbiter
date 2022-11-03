@@ -99,7 +99,15 @@ void orbiter::VisualTab::GetConfig (const Config *cfg)
 	std::ifstream ifs(cfg->ConfigPath ("CSphere\\bkgimage"));
 	if (ifs) {
 		char *c;
+		bool found = false;
 		while (ifs.getline(cbuf, 256)) {
+			if (!found) {
+				if (!strcmp(cbuf, "BEGIN_BACKGROUNDS"))
+					found = true;
+				continue;
+			}
+			if (!strcmp(cbuf, "END_BACKGROUNDS"))
+				break;
 			c = strtok (cbuf, "|");
 			if (c) {
 				SendDlgItemMessage(hTab, IDC_VIS_BGIMAGE, CB_ADDSTRING, 0, (LPARAM)c);

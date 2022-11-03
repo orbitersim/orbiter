@@ -206,6 +206,30 @@ void D3D7CelestialSphere::AllocGrids ()
 
 // ==============================================================
 
+void D3D7CelestialSphere::OnOptionChanged(DWORD cat, DWORD item)
+{
+	switch (cat) {
+	case OPTCAT_CELSPHERE:
+		switch (item) {
+		case OPTITEM_CELSPHERE_ACTIVATESTARIMAGE:
+		case OPTITEM_CELSPHERE_ACTIVATEBGIMAGE:
+		case OPTITEM_CELSPHERE_BGIMAGECHANGED:
+			delete m_bkgImgMgr;
+			m_bkgImgMgr = new CSphereManager(m_gc, m_scene);
+			break;
+		case OPTITEM_CELSPHERE_BGIMAGEBRIGHTNESS:
+			if (m_bkgImgMgr) {
+				double intens = *(double*)m_gc->GetConfigParam(CFGPRM_CSPHEREINTENS);
+				m_bkgImgMgr->SetBgBrightness(intens);
+			}
+			break;
+		}
+		break;
+	}
+}
+
+// ==============================================================
+
 void D3D7CelestialSphere::Render(LPDIRECT3DDEVICE7 dev, const VECTOR3 &skyCol)
 {
 	static D3DMATRIX ident;

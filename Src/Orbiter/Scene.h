@@ -44,6 +44,8 @@ public:
 	void RegisterDevices (LPDIRECT3DDEVICE7 dv);
 	// To be called before and after a render devices changes
 
+	void OnOptionChanged(int cat, int item);
+
 	void Init3DFonts ();
 
 	int GetObjects (VObject ***list) { *list = vobj; return nobj; }

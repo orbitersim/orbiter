@@ -47,6 +47,8 @@ public:
 
 	inline DWORD GetStencilDepth() const { return stencilDepth; }
 
+	void OnOptionChanged(int cat, int item);
+
 	DWORD BgColourRGBA() const
 	{ return atmRGBA; }
 

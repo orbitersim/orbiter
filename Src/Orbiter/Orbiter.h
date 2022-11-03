@@ -367,6 +367,8 @@ public:
 	bool SendKbdImmediate(char kstate[256], bool onRunningOnly = false);
 	// Simulate an immediate key state
 
+	void OnOptionChanged(DWORD cat, DWORD item = 0);
+
 protected:
 	HRESULT UserInput ();
 	void KbdInputImmediate_System    (char *kstate);
