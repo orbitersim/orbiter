@@ -103,6 +103,11 @@ protected:
 	void InitStars();
 
 	/**
+	 * \brief Free the vertex buffers for star pixel rendering
+	 */
+	void ClearStars();
+
+	/**
 	 * \brief Load constellation line database from file.
 	 */
 	void InitConstellationLines();

@@ -88,6 +88,11 @@ protected:
 	void InitStars();
 
 	/**
+	 * \brief Free the vertex buffers for star pixel rendering
+	 */
+	void ClearStars();
+
+	/**
 	 * \brief Map constellation line database to vertex buffer.
 	 */
 	void InitConstellationLines();

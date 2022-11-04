@@ -209,6 +209,13 @@ typedef void *HDC;
  *    bool
  */
 #define CFGPRM_CSPHEREUSESTARIMAGE 0x001E
+
+/**
+ * \Flag for rendering background stars as pixels
+ * \par Parameter type:
+ *    bool
+ */
+#define CFGPRM_CSPHEREUSESTARDOTS 0x001F
   /// @}
 
 /**

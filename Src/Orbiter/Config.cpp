@@ -97,6 +97,7 @@ CFG_VISUALPRM CfgVisualPrm_default = {
 	SURF_MAX_PATCHLEVEL2, // PlanetMaxLevel (max surface resolution level)
 	1.0,		// PlanetPatchRes (resolution level scale parameter)
 	0.5,		// LightBrightness (city light brightness)
+	true,       // bUseStarDots (render background stars as pixels)
 	{2.0, 8.0, 0.1, true},	// StarPrm (bright/faint cutoff magnitude, display brightness of faintest, log mapping)
 	true,       // bUseStarImage (render background star from image)
 	"csphere\\hiptyc_2020",     // StarImagePath (path to star background image)
@@ -644,21 +645,21 @@ bool Config::Load(const char *fname)
 		CfgVisualPrm.PlanetPatchRes = max (0.1, min (10, d));
 	if (GetReal (ifs, "NightlightBrightness", d))
 		CfgVisualPrm.LightBrightness = max (0.0, min (1.0, d));
-	if (GetString (ifs, "StarPrm", cbuf)) {
-		sscanf (cbuf, "%lf%lf%lf%d", &CfgVisualPrm.StarPrm.mag_hi, &CfgVisualPrm.StarPrm.mag_lo, &CfgVisualPrm.StarPrm.brt_min, &i);
-		CfgVisualPrm.StarPrm.map_log = (i != 0);
-	}
 	if (GetInt (ifs, "ElevationMode", i) && i >= 0 && i <= 1)
 		CfgVisualPrm.ElevMode = i;
+	GetBool(ifs, "EnableBackgroundStars", CfgVisualPrm.bUseStarDots);
+	if (GetString(ifs, "StarPrm", cbuf)) {
+		sscanf(cbuf, "%lf%lf%lf%d", &CfgVisualPrm.StarPrm.mag_hi, &CfgVisualPrm.StarPrm.mag_lo, &CfgVisualPrm.StarPrm.brt_min, &i);
+		CfgVisualPrm.StarPrm.map_log = (i != 0);
+	}
 	GetBool(ifs, "EnableBackgroundStarmap", CfgVisualPrm.bUseStarImage);
 	if (GetString(ifs, "CSphereStarPath", cbuf))
 		strncpy(CfgVisualPrm.StarImagePath, cbuf, 128);
 	GetBool(ifs, "EnableBackgroundImage", CfgVisualPrm.bUseBgImage);
-	if (GetString (ifs, "CSphereBgImage", cbuf)) {
+	if (GetString(ifs, "CSphereBgPath", cbuf))
+		strncpy(CfgVisualPrm.CSphereBgPath, cbuf, 128);
+	if (GetString (ifs, "CSphereBgImage", cbuf))
 		strncpy (CfgVisualPrm.CSphereBgImage, cbuf, 64);
-		if (GetString (ifs, "CSphereBgPath", cbuf))
-			strncpy (CfgVisualPrm.CSphereBgPath, cbuf, 128);
-	}
 	GetReal (ifs, "CSphereBgIntensity", CfgVisualPrm.CSphereBgIntens);
 
 	// screen capture parameters
@@ -935,6 +936,8 @@ const void *Config::GetParam (DWORD paramtype) const
 		return (void*)&CfgVisualPrm.StarImagePath;
 	case CFGPRM_CSPHEREUSESTARIMAGE:
 		return (void*)&CfgVisualPrm.bUseStarImage;
+	case CFGPRM_CSPHEREUSESTARDOTS:
+		return (void*)&CfgVisualPrm.bUseStarDots;
 	default:
 		return 0;
 	}
@@ -1042,6 +1045,8 @@ BOOL Config::Write (const char *fname) const
 			ofs << "PlanetPatchRes = " << CfgVisualPrm.PlanetPatchRes << '\n';
 		if (CfgVisualPrm.LightBrightness != CfgVisualPrm_default.LightBrightness || bEchoAll)
 			ofs << "NightlightBrightness = " << CfgVisualPrm.LightBrightness << '\n';
+		if (CfgVisualPrm.bUseStarDots != CfgVisualPrm_default.bUseStarDots || bEchoAll)
+			ofs << "EnableBackgroundStars = " << BoolStr(CfgVisualPrm.bUseStarDots) << '\n';
 		if (memcmp (&CfgVisualPrm.StarPrm, &CfgVisualPrm_default.StarPrm, sizeof(StarRenderPrm)) || bEchoAll)
 			ofs << "StarPrm = " << CfgVisualPrm.StarPrm.mag_hi << ' ' << CfgVisualPrm.StarPrm.mag_lo << ' '
 				<< CfgVisualPrm.StarPrm.brt_min << ' ' << (CfgVisualPrm.StarPrm.map_log ? 1:0) << '\n';

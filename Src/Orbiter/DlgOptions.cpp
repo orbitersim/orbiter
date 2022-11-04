@@ -10,7 +10,7 @@
 #include "DlgOptions.h"
 #include "Orbiter.h"
 #include "DlgCtrl.h"
-#include "Resource.h"
+#include "resource.h"
 #include "Uxtheme.h"
 
 extern Orbiter* g_pOrbiter;
@@ -122,6 +122,8 @@ INT_PTR OptionsPage::DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		return OnCommand(hWnd, LOWORD(wParam), HIWORD(wParam), (HWND)lParam);
 	case WM_HSCROLL:
 		return OnHScroll(hWnd, wParam, lParam);
+	case WM_NOTIFY:
+		return OnNotify(hWnd, (DWORD)wParam, (NMHDR*)lParam);
 	default:
 		return OnMessage(hWnd, uMsg, wParam, lParam);
 	}
@@ -178,6 +180,12 @@ BOOL OptionsPage_CelSphere::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lPara
 BOOL OptionsPage_CelSphere::OnCommand(HWND hPage, WORD id, WORD code, HWND hControl)
 {
 	switch (id) {
+	case IDC_OPT_ENABLESTARPIX:
+		if (code == BN_CLICKED) {
+			StarPixelActivationChanged(hPage);
+			return FALSE;
+		}
+		break;
 	case IDC_OPT_ENABLESTARMAP:
 		if (code == BN_CLICKED) {
 			StarmapActivationChanged(hPage);
@@ -190,11 +198,26 @@ BOOL OptionsPage_CelSphere::OnCommand(HWND hPage, WORD id, WORD code, HWND hCont
 			return FALSE;
 		}
 		break;
+	case IDC_OPT_STARMAPIMAGE:
+		if (code == LBN_SELCHANGE) {
+			StarmapImageChanged(hPage);
+			return false;
+		}
+		break;
 	case IDC_OPT_BKGIMAGE:
 		if (code == LBN_SELCHANGE) {
 			BackgroundImageChanged(hPage);
 			return FALSE;
 		}
+		break;
+	case IDC_OPT_STARMAPLIN:
+	case IDC_OPT_STARMAPEXP:
+		if (code == BN_CLICKED) {
+			g_pOrbiter->Cfg()->CfgVisualPrm.StarPrm.map_log = (id == IDC_OPT_STARMAPEXP);
+			g_pOrbiter->OnOptionChanged(OPTCAT_CELSPHERE, OPTITEM_CELSPHERE_STARDISPLAYPARAM);
+			return FALSE;
+		}
+		break;
 	}
 	return TRUE;
 }
@@ -219,11 +242,39 @@ BOOL OptionsPage_CelSphere::OnHScroll(HWND hPage, WPARAM wParam, LPARAM lParam)
 
 // ----------------------------------------------------------------------
 
+BOOL OptionsPage_CelSphere::OnNotify(HWND hPage, DWORD ctrlId, const NMHDR* pNmHdr)
+{
+	if (pNmHdr->code == UDN_DELTAPOS) {
+		NMUPDOWN* nmud = (NMUPDOWN*)pNmHdr;
+		int delta = -nmud->iDelta;
+		StarRenderPrm& prm = g_pOrbiter->Cfg()->CfgVisualPrm.StarPrm;
+		switch (pNmHdr->idFrom) {
+		case IDC_OPT_STARMAGHISPIN:
+			prm.mag_hi = min(prm.mag_lo, max(-2.0, prm.mag_hi + delta * 0.1));
+			break;
+		case IDC_OPT_STARMAGLOSPIN:
+			prm.mag_lo = min(15.0, max(prm.mag_hi, prm.mag_lo + delta * 0.1));
+			break;
+		case IDC_OPT_STARMINBRTSPIN:
+			prm.brt_min = min(1.0, max(0.0, prm.brt_min + delta * 0.01));
+			break;
+		}
+		UpdateControls(hPage);
+		g_pOrbiter->OnOptionChanged(OPTCAT_CELSPHERE, OPTITEM_CELSPHERE_STARDISPLAYPARAM);
+		return TRUE;
+	}
+	return FALSE;
+}
+
+// ----------------------------------------------------------------------
+
 void OptionsPage_CelSphere::UpdateControls(HWND hPage)
 {
+	char cbuf[256];
+
 	std::string starpath = std::string(g_pOrbiter->Cfg()->CfgVisualPrm.StarImagePath);
-	for (int idx = 0; idx < m_pathStarmap.size(); idx++) {
-		if (!starpath.compare(m_pathStarmap[idx].second))
+	for (int idx = 0; idx < m_pathStarmap.size(); idx++)
+		if (!starpath.compare(m_pathStarmap[idx].second)) {
 			SendDlgItemMessage(hPage, IDC_OPT_STARMAPIMAGE, CB_SETCURSEL, idx, 0);
 			break;
 		}
@@ -238,13 +289,34 @@ void OptionsPage_CelSphere::UpdateControls(HWND hPage)
 	bool checked = g_pOrbiter->Cfg()->CfgVisualPrm.bUseStarImage;
 	SendDlgItemMessage(hPage, IDC_OPT_ENABLESTARMAP, BM_SETCHECK, checked ? BST_CHECKED : BST_UNCHECKED, 0);
 	EnableWindow(GetDlgItem(hPage, IDC_OPT_STARMAPIMAGE), checked ? TRUE : FALSE);
+
 	checked = g_pOrbiter->Cfg()->CfgVisualPrm.bUseBgImage;
 	SendDlgItemMessage(hPage, IDC_OPT_ENABLEBKGMAP, BM_SETCHECK, checked ? BST_CHECKED : BST_UNCHECKED, 0);
-	int pos = (int)(g_pOrbiter->Cfg()->CfgVisualPrm.CSphereBgIntens * 100.0);
-	oapiSetGaugePos(GetDlgItem(hPage, IDC_OPT_BGBRIGHTNESS), pos);
+	int brt = (int)(g_pOrbiter->Cfg()->CfgVisualPrm.CSphereBgIntens * 100.0);
+	oapiSetGaugePos(GetDlgItem(hPage, IDC_OPT_BGBRIGHTNESS), brt);
 	EnableWindow(GetDlgItem(hPage, IDC_OPT_BKGIMAGE), checked ? TRUE : FALSE);
 	EnableWindow(GetDlgItem(hPage, IDC_STATIC1), checked ? TRUE : FALSE);
 	EnableWindow(GetDlgItem(hPage, IDC_OPT_BGBRIGHTNESS), checked ? TRUE : FALSE);
+
+	checked = g_pOrbiter->Cfg()->CfgVisualPrm.bUseStarDots;
+	SendDlgItemMessage(hPage, IDC_OPT_ENABLESTARPIX, BM_SETCHECK, checked ? BST_CHECKED : BST_UNCHECKED, 0);
+	sprintf(cbuf, "%0.1f", g_pOrbiter->Cfg()->CfgVisualPrm.StarPrm.mag_hi);
+	SetWindowText(GetDlgItem(hPage, IDC_OPT_STARMAGHI), cbuf);
+	sprintf(cbuf, "%0.1f", g_pOrbiter->Cfg()->CfgVisualPrm.StarPrm.mag_lo);
+	SetWindowText(GetDlgItem(hPage, IDC_OPT_STARMAGLO), cbuf);
+	sprintf(cbuf, "%0.2f", g_pOrbiter->Cfg()->CfgVisualPrm.StarPrm.brt_min);
+	SetWindowText(GetDlgItem(hPage, IDC_OPT_STARMINBRT), cbuf);
+	SendDlgItemMessage(hPage, IDC_OPT_STARMAPLIN, BM_SETCHECK,
+		g_pOrbiter->Cfg()->CfgVisualPrm.StarPrm.map_log ? BST_UNCHECKED : BST_CHECKED, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_STARMAPEXP, BM_SETCHECK,
+		g_pOrbiter->Cfg()->CfgVisualPrm.StarPrm.map_log ? BST_CHECKED : BST_UNCHECKED, 0);
+	std::vector<int> ctrlStarPix{
+		IDC_STATIC2, IDC_STATIC3, IDC_STATIC4, IDC_STATIC5, IDC_STATIC6,
+		IDC_OPT_STARMAGHISPIN, IDC_OPT_STARMAGLOSPIN, IDC_OPT_STARMINBRTSPIN,
+		IDC_OPT_STARMAGHI, IDC_OPT_STARMAGLO, IDC_OPT_STARMINBRT, IDC_OPT_STARMAPLIN, IDC_OPT_STARMAPEXP
+	};
+	for (auto ctrl : ctrlStarPix)
+		EnableWindow(GetDlgItem(hPage, ctrl), checked ? TRUE : FALSE);
 }
 
 // ----------------------------------------------------------------------
@@ -313,6 +385,20 @@ void OptionsPage_CelSphere::PopulateBgImageList(HWND hPage)
 
 // ----------------------------------------------------------------------
 
+void OptionsPage_CelSphere::StarPixelActivationChanged(HWND hPage)
+{
+	bool activated = SendDlgItemMessage(hPage, IDC_OPT_ENABLESTARPIX, BM_GETCHECK, 0, 0) == BST_CHECKED;
+	bool active = g_pOrbiter->Cfg()->CfgVisualPrm.bUseStarDots;
+
+	if (activated != active) {
+		g_pOrbiter->Cfg()->CfgVisualPrm.bUseStarDots = activated;
+		g_pOrbiter->OnOptionChanged(OPTCAT_CELSPHERE, OPTITEM_CELSPHERE_ACTIVATESTARDOTS);
+	}
+	UpdateControls(hPage);
+}
+
+// ----------------------------------------------------------------------
+
 void OptionsPage_CelSphere::StarmapActivationChanged(HWND hPage)
 {
 	bool activated = SendDlgItemMessage(hPage, IDC_OPT_ENABLESTARMAP, BM_GETCHECK, 0, 0) == BST_CHECKED;
@@ -323,6 +409,16 @@ void OptionsPage_CelSphere::StarmapActivationChanged(HWND hPage)
 		g_pOrbiter->OnOptionChanged(OPTCAT_CELSPHERE, OPTITEM_CELSPHERE_ACTIVATESTARIMAGE);
 	}
 	UpdateControls(hPage);
+}
+
+// ----------------------------------------------------------------------
+
+void OptionsPage_CelSphere::StarmapImageChanged(HWND hPage)
+{
+	int idx = SendDlgItemMessage(hPage, IDC_OPT_STARMAPIMAGE, CB_GETCURSEL, 0, 0);
+	std::string& path = m_pathStarmap[idx].second;
+	strncpy(g_pOrbiter->Cfg()->CfgVisualPrm.StarImagePath, path.c_str(), 128);
+	g_pOrbiter->OnOptionChanged(OPTCAT_CELSPHERE, OPTITEM_CELSPHERE_STARIMAGECHANGED);
 }
 
 // ----------------------------------------------------------------------

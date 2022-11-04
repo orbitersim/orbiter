@@ -139,6 +139,15 @@ protected:
 	virtual BOOL OnHScroll(HWND hPage, WPARAM wParam, LPARAM lParam) { return FALSE; }
 
 	/**
+	 * \brief Default handler for WM_NOTIFY messages.
+	 * \param hPage dialog window handle
+	 * \param ctrlId resource identifier of the control (wParam)
+	 * \param pNmHdr pointer to a NMHDR structure with details of the notification
+	 * \default Nothing, returns FALSE
+	 */
+	virtual BOOL OnNotify(HWND hPage, DWORD ctrlId, const NMHDR* pNmHdr) { return FALSE; }
+
+	/**
 	 * \brief Default generic message handler.
 	 * \default Nothing, returns FALSE
 	 * \note This method is called for any messages which don't have an associated
@@ -176,9 +185,12 @@ protected:
 	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
 	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
 	BOOL OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam);
+	BOOL OnNotify(HWND hPage, DWORD ctrlId, const NMHDR* pNmHdr);
 	void PopulateStarmapList(HWND hPage);
 	void PopulateBgImageList(HWND hPage);
+	void StarPixelActivationChanged(HWND hPage);
 	void StarmapActivationChanged(HWND hPage);
+	void StarmapImageChanged(HWND hPage);
 	void BackgroundActivationChanged(HWND hPage);
 	void BackgroundImageChanged(HWND hPage);
 	void BackgroundBrightnessChanged(HWND hPage, double level);

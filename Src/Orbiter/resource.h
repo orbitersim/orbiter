@@ -273,11 +273,20 @@
 #define IDC_VH_CRD_OPACITY              1836
 
 // Inline option dialog controls
-#define IDC_OPT_ENABLESTARMAP           1000
-#define IDC_OPT_STARMAPIMAGE            1001
-#define IDC_OPT_ENABLEBKGMAP            1002
-#define IDC_OPT_BKGIMAGE                1003
-#define IDC_OPT_BGBRIGHTNESS            1004
+#define IDC_OPT_ENABLESTARPIX           1000
+#define IDC_OPT_STARMAGHI               1001
+#define IDC_OPT_STARMAGHISPIN           1002
+#define IDC_OPT_STARMAGLO               1003
+#define IDC_OPT_STARMAGLOSPIN           1004
+#define IDC_OPT_STARMINBRT              1005
+#define IDC_OPT_STARMINBRTSPIN          1006
+#define IDC_OPT_STARMAPLIN              1007
+#define IDC_OPT_STARMAPEXP              1008
+#define IDC_OPT_ENABLESTARMAP           1009
+#define IDC_OPT_STARMAPIMAGE            1010
+#define IDC_OPT_ENABLEBKGMAP            1011
+#define IDC_OPT_BKGIMAGE                1012
+#define IDC_OPT_BGBRIGHTNESS            1013
 
 // Unsorted
 #define IDC_SCN_STATIC1                 1087

@@ -131,6 +131,7 @@ struct CFG_VISUALPRM {
 	DWORD  PlanetMaxLevel;		// max. planet patch resolution level
 	double PlanetPatchRes;		// resolution scaling for planet patches
 	double LightBrightness;		// brightness of planetary night lights
+	bool   bUseStarDots;        // render stars as pixels?
 	StarRenderPrm StarPrm;		// render parameters for background stars
 	bool   bUseStarImage;       // render stars as a background image?
 	char   StarImagePath[128];  // starlist image path
