@@ -6685,7 +6685,19 @@ OAPIFUNC void oapiTriggerRedrawArea (int panel_id, int vc_id, int area_id);
 //@}  -- End of Orbiter API interface methods --
 
 
+/**
+ * \ingroup defines
+ * \defgroup optcat Option category identifiers
+ */
+//@{
 #define OPTCAT_CELSPHERE                    0x0001
+//@}
+
+/**
+ * \ingroup defines
+ * \defgroup optitem Option item identifiers
+ */
+//@{
 #define OPTITEM_CELSPHERE_ACTIVATESTARDOTS  0x0001
 #define OPTITEM_CELSPHERE_STARDISPLAYPARAM  0x0002
 #define OPTITEM_CELSPHERE_ACTIVATESTARIMAGE 0x0003
@@ -6693,6 +6705,7 @@ OAPIFUNC void oapiTriggerRedrawArea (int panel_id, int vc_id, int area_id);
 #define OPTITEM_CELSPHERE_ACTIVATEBGIMAGE   0x0005
 #define OPTITEM_CELSPHERE_BGIMAGECHANGED    0x0006
 #define OPTITEM_CELSPHERE_BGIMAGEBRIGHTNESS 0x0007
+//@}
 
 // ======================================================================
 /**

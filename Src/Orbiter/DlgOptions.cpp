@@ -136,7 +136,7 @@ INT_PTR CALLBACK OptionsPage::s_DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 	OptionsPage* pPage;
 	switch (uMsg) {
 	case WM_INITDIALOG:
-		EnableThemeDialogTexture(hWnd, ETDT_ENABLETAB);
+		EnableThemeDialogTexture(hWnd, ETDT_ENABLE);
 		SetWindowLongPtr(hWnd, DWLP_USER, lParam);
 		pPage = (OptionsPage*)lParam;
 		break;

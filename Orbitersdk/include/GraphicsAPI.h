@@ -383,8 +383,9 @@ public:
 
 	/**
 	 * \brief Called when the user changes an option during a simulation session.
-	 * \param cat option category identifier
-	 * \param item option item identifier
+	 * \param cat option category identifier, see \ref optcat
+	 * \param item option item identifier, see \ref optitem
+	 * \default None.
 	 */
 	virtual void clbkOptionChanged(DWORD cat, DWORD item) {}
 

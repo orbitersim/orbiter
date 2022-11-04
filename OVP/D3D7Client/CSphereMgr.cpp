@@ -125,8 +125,7 @@ CSphereManager::~CSphereManager ()
 
 		if (m_bBkgImg) {
 			for (auto tex : m_texbuf)
-				if (tex->Release() != DD_OK)
-					oapiWriteLogError("Could not release texture");
+				tex->Release();
 			m_texbuf.clear();
 		}
 		if (m_bStarImg) {
@@ -245,6 +244,7 @@ void CSphereManager::LoadTextures ()
 		starlvl = lvl;
 	}
 
+	// make sure the two texture sets support the same resolution range
 	if (m_bBkgImg && m_bStarImg && texlvl != starlvl) {
 		if (texlvl < starlvl) {
 			for (int i = m_texbuf.size(); i < m_starbuf.size(); i++)

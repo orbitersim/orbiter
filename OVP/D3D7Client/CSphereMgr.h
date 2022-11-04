@@ -31,6 +31,10 @@ public:
 	static void GlobalInit (oapi::D3D7Client *gclient);
 	static void DestroyDeviceObjects ();
 
+	/**
+	 * \brief Set the visual brightness of the background image.
+	 * \param val brightness value (0-1)
+	 */
 	void SetBgBrightness(double val);
 
 	void Render (LPDIRECT3DDEVICE7 dev, int level, double bglvl);
