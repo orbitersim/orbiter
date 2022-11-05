@@ -1363,7 +1363,9 @@ CelSphereVS SpaceTechVS(TILEVERTEX vrt)
 
 float4 SpaceTechPS(CelSphereVS frg) : COLOR
 {
-	float3 vColor = tex2D(DiffTexS, frg.tex0).rgb * fAlpha;
+	float3 vColor = 0;
+	if (bLights) vColor += tex2D(DiffTexS, frg.tex0).rgb * fAlpha;
+	if (bLocals) vColor += tex2D(MaskTexS, frg.tex0).rgb;
 	return float4(vColor, 1.0);
 }
 

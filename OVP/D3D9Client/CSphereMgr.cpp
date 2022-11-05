@@ -394,7 +394,6 @@ void CSphereManager::Render (LPDIRECT3DDEVICE9 dev, int level, double bglvl)
 
 	if (bglvl) intens *= exp(-bglvl*12.5);
 	
-	Shader()->SetFloat(sfAlpha, intens);
 
 	level = min ((DWORD)level, maxlvl);
 
@@ -423,7 +422,10 @@ void CSphereManager::Render (LPDIRECT3DDEVICE9 dev, int level, double bglvl)
 
 	HR(Shader()->SetTechnique(eSkyDomeTech));
 	HR(Shader()->SetMatrix(smViewProj, scn->GetProjectionViewMatrix()));
-	
+	HR(Shader()->SetFloat(sfAlpha, intens));
+	HR(Shader()->SetBool(sbLights, m_bBkgImg));
+	HR(Shader()->SetBool(sbLocals, m_bStarImg));
+
 	pDev->SetVertexDeclaration(pPatchVertexDecl);
 
 	UINT numPasses = 0;
@@ -497,7 +499,8 @@ void CSphereManager::RenderTile (int lvl, int hemisp, int ilat, int nlat, int il
 	D3D9Stats.Old.Tiles[lvl]++;
 	
 	Shader()->SetMatrix(smWorld, &mWorld);
-	Shader()->SetTexture(stDiff, tex);	
+	Shader()->SetTexture(stDiff, tex);
+	Shader()->SetTexture(stMask, ltex);
 	Shader()->CommitChanges();
 
 	pDev->SetStreamSource(0, mesh.pVB, 0, sizeof(VERTEX_2TEX));
