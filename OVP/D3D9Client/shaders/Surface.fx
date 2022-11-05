@@ -1365,7 +1365,7 @@ float4 SpaceTechPS(CelSphereVS frg) : COLOR
 {
 	float3 vColor = 0;
 	if (bLights) vColor += tex2D(DiffTexS, frg.tex0).rgb * fAlpha;
-	if (bLocals) vColor += tex2D(MaskTexS, frg.tex0).rgb;
+	if (bLocals) vColor += tex2D(MaskTexS, frg.tex0).rgb * fNight;
 	return float4(vColor, 1.0);
 }
 

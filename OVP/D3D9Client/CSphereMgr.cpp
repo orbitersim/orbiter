@@ -391,8 +391,9 @@ void CSphereManager::Render (LPDIRECT3DDEVICE9 dev, int level, double bglvl)
 	if (m_bDisabled) return;
 
 	float intens = intensity;
+	float bgscale = (float)exp(-bglvl * 12.5);
 
-	if (bglvl) intens *= exp(-bglvl*12.5);
+	if (bglvl) intens *= bgscale;
 	
 
 	level = min ((DWORD)level, maxlvl);
@@ -423,6 +424,7 @@ void CSphereManager::Render (LPDIRECT3DDEVICE9 dev, int level, double bglvl)
 	HR(Shader()->SetTechnique(eSkyDomeTech));
 	HR(Shader()->SetMatrix(smViewProj, scn->GetProjectionViewMatrix()));
 	HR(Shader()->SetFloat(sfAlpha, intens));
+	HR(Shader()->SetFloat(sfNight, bgscale));
 	HR(Shader()->SetBool(sbLights, m_bBkgImg));
 	HR(Shader()->SetBool(sbLocals, m_bStarImg));
 
