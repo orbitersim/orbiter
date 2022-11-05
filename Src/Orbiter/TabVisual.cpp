@@ -81,44 +81,11 @@ void orbiter::VisualTab::GetConfig (const Config *cfg)
 	sprintf (cbuf, "%0.2f", pCfg->CfgVisualPrm.LightBrightness);
 	SetWindowText (GetDlgItem (hTab, IDC_VIS_LTLEVEL), cbuf);
 	SetWindowText (GetDlgItem (hTab, IDC_VIS_MAXLEVEL), _itoa (pCfg->CfgVisualPrm.PlanetMaxLevel, cbuf, 10));
-	//sprintf (cbuf, "%0.2f", pCfg->CfgVisualPrm.CSphereBgIntens);
-	//SetWindowText (GetDlgItem (hTab, IDC_VIS_BGINTENS), cbuf);
 
 	SendDlgItemMessage (hTab, IDC_VIS_ELEVMODE, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessage (hTab, IDC_VIS_ELEVMODE, CB_ADDSTRING, 0, (LPARAM)"linear interpolation");
 	SendDlgItemMessage (hTab, IDC_VIS_ELEVMODE, CB_ADDSTRING, 0, (LPARAM)"cubic interpolation");
 	SendDlgItemMessage (hTab, IDC_VIS_ELEVMODE, CB_SETCURSEL, pCfg->CfgVisualPrm.ElevMode < 2 ? 0:1, 0);
-
-#ifdef UNDEF
-	EmptyCSphereList();
-
-	SendDlgItemMessage (hTab, IDC_VIS_BGIMAGE, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessage (hTab, IDC_VIS_BGIMAGE, CB_ADDSTRING, 0, (LPARAM)"<none>");
-
-	std::ifstream ifs(cfg->ConfigPath ("CSphere\\bkgimage"));
-	if (ifs) {
-		char *c;
-		bool found = false;
-		while (ifs.getline(cbuf, 256)) {
-			if (!found) {
-				if (!strcmp(cbuf, "BEGIN_BACKGROUNDS"))
-					found = true;
-				continue;
-			}
-			if (!strcmp(cbuf, "END_BACKGROUNDS"))
-				break;
-			c = strtok (cbuf, "|");
-			if (c) {
-				SendDlgItemMessage(hTab, IDC_VIS_BGIMAGE, CB_ADDSTRING, 0, (LPARAM)c);
-				c = strtok (NULL, "\n");
-				AddCSphereList (c);
-			}
-		}
-	}
-	int idx = SendDlgItemMessage (hTab, IDC_VIS_BGIMAGE, CB_FINDSTRINGEXACT, -1, (LPARAM)cfg->CfgVisualPrm.CSphereBgImage);
-	if (idx == CB_ERR) idx = 0;
-	SendDlgItemMessage (hTab, IDC_VIS_BGIMAGE, CB_SETCURSEL, idx, 0);
-#endif
 
 	VisualsChanged ();
 }
@@ -155,15 +122,6 @@ void orbiter::VisualTab::SetConfig (Config *cfg)
 	pCfg->CfgVisualPrm.PlanetMaxLevel = max (1, min (SURF_MAX_PATCHLEVEL2, i));
 	pCfg->CfgVisualPrm.ElevMode = (SendDlgItemMessage (hTab, IDC_VIS_ELEV, BM_GETCHECK, 0, 0) != BST_CHECKED ?
 		0 : SendDlgItemMessage (hTab, IDC_VIS_ELEVMODE, CB_GETCURSEL, 0, 0) + 1);
-	//GetWindowText (GetDlgItem (hTab, IDC_VIS_BGIMAGE), cbuf, 127);
-	//strncpy (pCfg->CfgVisualPrm.CSphereBgImage, cbuf, 64);
-	//i = SendDlgItemMessage (hTab, IDC_VIS_BGIMAGE, CB_GETCURSEL, 0, 0);
-	//if (i) strncpy (pCfg->CfgVisualPrm.CSphereBgPath, csphere_img_path[i-1], 128);
-	//else pCfg->CfgVisualPrm.CSphereBgPath[0] = '\0';
-
-	//GetWindowText (GetDlgItem (hTab, IDC_VIS_BGINTENS), cbuf, 127);
-	//if (!sscanf (cbuf, "%lf", &d)) d = 0.5; else if (d < 0) d = 0.0; else if (d > 1) d = 1.0;
-	//pCfg->CfgVisualPrm.CSphereBgIntens = d;
 }
 
 //-----------------------------------------------------------------------------
