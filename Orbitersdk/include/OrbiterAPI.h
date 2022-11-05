@@ -6685,6 +6685,28 @@ OAPIFUNC void oapiTriggerRedrawArea (int panel_id, int vc_id, int area_id);
 //@}  -- End of Orbiter API interface methods --
 
 
+/**
+ * \ingroup defines
+ * \defgroup optcat Option category identifiers
+ */
+//@{
+#define OPTCAT_CELSPHERE                    0x0001
+//@}
+
+/**
+ * \ingroup defines
+ * \defgroup optitem Option item identifiers
+ */
+//@{
+#define OPTITEM_CELSPHERE_ACTIVATESTARDOTS  0x0001
+#define OPTITEM_CELSPHERE_STARDISPLAYPARAM  0x0002
+#define OPTITEM_CELSPHERE_ACTIVATESTARIMAGE 0x0003
+#define OPTITEM_CELSPHERE_STARIMAGECHANGED  0x0004
+#define OPTITEM_CELSPHERE_ACTIVATEBGIMAGE   0x0005
+#define OPTITEM_CELSPHERE_BGIMAGECHANGED    0x0006
+#define OPTITEM_CELSPHERE_BGIMAGEBRIGHTNESS 0x0007
+//@}
+
 // ======================================================================
 /**
  * \ingroup defines
@@ -6917,7 +6939,8 @@ OAPIFUNC void oapiTriggerRedrawArea (int panel_id, int vc_id, int area_id);
 #define OAPI_LKEY_DlgSelectVessel  100 ///< open vessel selection dialog
 #define OAPI_LKEY_SelectPrevVessel 101 ///< switch focus to previous vessel
 #define OAPI_LKEY_DlgCapture       102 ///< open screen capture dialog
-#define LKEY_COUNT 103                 ///< number of logical key definitions
+#define OAPI_LKEY_DlgOptions       103 ///< open options dialog
+#define LKEY_COUNT 104                 ///< number of logical key definitions
 //@}
 
 // ======================================================================

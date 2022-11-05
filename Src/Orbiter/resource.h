@@ -56,6 +56,8 @@
 #define IDB_TREEICON_FOLDER2            207
 #define IDB_TREEICON_SCN1               208
 #define IDB_TREEICON_SCN2               209
+#define IDD_OPTIONS                     210
+#define IDD_OPTIONS_CELSPHERE           211
 #define IDD_DEMOBK                      223
 #define IDD_ORBITERHELP                 224
 #define IDD_HELP                        225
@@ -162,9 +164,6 @@
 #define IDC_OPT_MFDSIZE                 1061
 #define IDC_OPT_PANELSCALE              1062
 #define IDC_OPT_PANELSPD                1063
-#define IDC_OPT_MAGHI                   1064
-#define IDC_OPT_MAGLO                   1065
-#define IDC_OPT_BRTLO                   1066
 #define IDC_VIS_CLOUD                   1067
 #define IDC_VIS_REFWATER                1068
 #define IDC_VIS_HAZE                    1069
@@ -270,6 +269,22 @@
 #define IDC_VH_CRD_SCALE                1835
 #define IDC_VH_CRD_OPACITY              1836
 
+// Inline option dialog controls
+#define IDC_OPT_ENABLESTARPIX           1000
+#define IDC_OPT_STARMAGHI               1001
+#define IDC_OPT_STARMAGHISPIN           1002
+#define IDC_OPT_STARMAGLO               1003
+#define IDC_OPT_STARMAGLOSPIN           1004
+#define IDC_OPT_STARMINBRT              1005
+#define IDC_OPT_STARMINBRTSPIN          1006
+#define IDC_OPT_STARMAPLIN              1007
+#define IDC_OPT_STARMAPEXP              1008
+#define IDC_OPT_ENABLESTARMAP           1009
+#define IDC_OPT_STARMAPIMAGE            1010
+#define IDC_OPT_ENABLEBKGMAP            1011
+#define IDC_OPT_BKGIMAGE                1012
+#define IDC_OPT_BGBRIGHTNESS            1013
+
 // Unsorted
 #define IDC_SCN_STATIC1                 1087
 #define IDC_SCN_LIST                    1090
@@ -371,11 +386,7 @@
 #define IDC_BLACKBOX                    1268
 #define IDC_OPT_STATIC1                 1270
 #define IDC_OPT_STATIC2                 1271
-#define IDC_OPT_STATIC3                 1272
 #define IDC_OPT_STATIC4                 1273
-#define IDC_OPT_STATIC5                 1274
-#define IDC_OPT_STATIC6                 1275
-#define IDC_OPT_STATIC7                 1276
 #define IDC_OPT_STATIC8                 1277
 #define IDC_OPT_STATIC9                 1278
 #define IDC_OPT_STATIC10                1279
@@ -392,16 +403,9 @@
 #define IDC_PROGRESS1                   1291
 #define IDC_CUSTOM2                     1292
 #define IDC_SCN_SPLIT1                  1292
-#define IDC_OPT_STATIC12                1293
-#define IDC_OPT_STATIC13                1294
 #define IDC_VIS_FOG                     1297
 #define IDC_LIST2                       1298
-#define IDC_VIS_STATIC6                 1305
-#define IDC_VIS_BGIMAGE                 1307
-#define IDC_VIS_STATIC7                 1308
-#define IDC_VIS_STATIC8                 1309
 #define IDC_BGINTENS                    1310
-#define IDC_VIS_BGINTENS                1310
 #define IDC_RICHEDIT21                  1340
 #define IDC_INFOBOX                     1340
 #define IDC_INFOLIST                    1342

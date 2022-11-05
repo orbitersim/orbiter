@@ -48,6 +48,12 @@ public:
 	static void CreateDeviceObjects(LPDIRECT3D9 d3d, LPDIRECT3DDEVICE9 dev);
 	static void DestroyDeviceObjects();
 
+	/**
+	 * \brief Set the visual brightness of the background image.
+	 * \param val brightness value (0-1)
+	 */
+	void SetBgBrightness(double val);
+
 	void Render (LPDIRECT3DDEVICE9 dev, int level, double bglvl);
 
 protected:
@@ -95,16 +101,20 @@ protected:
 	static int *NLAT;
 
 private:
-	char texname[64];
+	char texname[128];
+	char starfieldname[128];
 	float intensity;                 // opacity of background image
-	bool disabled;                   // background image disabled?
+	bool m_bBkgImg;                  ///< background image available?
+	bool m_bStarImg;                 ///< starfield image available?
+	bool m_bDisabled;                ///< background disabled?
 	DWORD maxlvl;                    // max. patch resolution level
 	DWORD maxbaselvl;                // max. resolution level, capped at 8
 	DWORD ntex;                      // total number of loaded textures for levels <= 8
 	DWORD nhitex;                    // number of textures for levels > 8
 	DWORD nhispec;                   // number of specular reflection masks (level > 8)
 	TILEDESC *tiledesc;              // tile descriptors for levels 1-8
-	LPDIRECT3DTEXTURE9 *texbuf;    // texture buffer for surface textures (level <= 8)
+	std::vector<LPDIRECT3DTEXTURE9> m_texbuf; // texture buffer for surface textures (level <= 8)
+	std::vector<LPDIRECT3DTEXTURE9> m_starbuf; // texture buffer for starfield textures (level <= 8)
 	bool bPreloadTile;               // preload high-resolution tile textures
 	MATRIX3 ecl2gal;                 // rotates from ecliptic to galactic frame
 	D3DXMATRIX trans;                 // transformation from ecliptic to galactic frame

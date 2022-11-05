@@ -349,6 +349,14 @@ static D3D9Pad *_pad = NULL;
 #define SKETCHPAD_PLANETARIUM   3  ///< Sketchpad to draw user defined planetarium
 
 // ===========================================================================================
+
+void Scene::OnOptionChanged(int cat, int item)
+{
+	if (cat == OPTCAT_CELSPHERE)
+		m_celSphere->OnOptionChanged(cat, item);
+}
+
+// ===========================================================================================
 // Get pooled Sketchpad instance
 //
 D3D9Pad *Scene::GetPooledSketchpad (int id) // one of SKETCHPAD_xxx

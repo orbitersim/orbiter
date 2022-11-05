@@ -1511,6 +1511,17 @@ void D3D9Client::clbkRefreshVideoData()
 
 // ==============================================================
 
+void D3D9Client::clbkOptionChanged(DWORD cat, DWORD item)
+{
+	switch (cat) {
+	case OPTCAT_CELSPHERE:
+		if (scene) scene->OnOptionChanged(cat, item);
+		return;
+	}
+}
+
+// ==============================================================
+
 bool D3D9Client::clbkUseLaunchpadVideoTab() const
 {
 	_TRACE;

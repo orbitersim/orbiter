@@ -114,8 +114,11 @@ struct CFG_VISUALPRM {
 	DWORD  PlanetMaxLevel;		// max. planet patch resolution level
 	double PlanetPatchRes;		// resolution scaling for planet patches
 	double LightBrightness;		// brightness of planetary night lights
+	bool   bUseStarDots;        // render stars as pixels?
 	StarRenderPrm StarPrm;		// render parameters for background stars
-	char   CSphereBgImage[64];	// background image name
+	bool   bUseStarImage;       // render stars as a background image?
+	char   StarImagePath[128];  // starlist image path
+	bool   bUseBgImage;         // render celestial sphere background image?
 	char   CSphereBgPath[128];	// background image path
 	double CSphereBgIntens;		// intensity of background image
 	int    ElevMode;            // elevation mode: 0=none, 1=linear, 2=cubic spline
@@ -261,6 +264,7 @@ struct CFG_WINDOWPOS {
 	RECT DlgCamera;             // camera dialog position
 	RECT DlgFocus;				// focus dialog position
 	RECT DlgTacc;               // time acceleration dialog position
+	RECT DlgOptions;            // options dialog position
 	RECT DlgVishelper;          // visual helper dialog position
 	int LaunchpadScnListWidth;  // width of Launchpad scenario list
 	int LaunchpadModListWidth;  // width of Launchpad modules list

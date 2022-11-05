@@ -38,6 +38,18 @@ public:
 	 */
 	~D3D9CelestialSphere();
 
+	/**
+	 * \brief Notification of in-simulation user option change.
+	 * \param cat option category, see \ref optcat
+	 * \param item option item, see \ref optitem
+	 */
+	void OnOptionChanged(DWORD cat, DWORD item);
+
+	/**
+	 * \brief Render the celestial sphere background.
+	 * \param pDevice pointer to graphics device
+	 * \param skyCol sky background colour (atmospheric tint)
+	 */
 	void Render(LPDIRECT3DDEVICE9 pDevice, const VECTOR3& skyCol);
 
 	/**
@@ -104,6 +116,11 @@ protected:
 	 * \brief Prepare the star vertex list from the star database.
 	 */
 	void InitStars ();
+
+	/**
+	 * \brief Free the vertex buffers for star pixel rendering
+	 */
+	void ClearStars();
 
 	/**
 	 * \brief Load constellation line data from file

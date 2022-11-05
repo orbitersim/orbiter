@@ -115,6 +115,13 @@ typedef void *HDC;
 #define CFGPRM_OBJECTSPECULAR  0x0011
 
 /**
+ * \Flag for rendering background images from a texture set
+ * \par Parameter type:
+ *    bool
+ */
+#define CFGPRM_CSPHEREUSEBGIMAGE 0x0012
+
+/**
  * File path for celestial sphere background textures
  * \par Parameter type:
  *   *char
@@ -190,26 +197,47 @@ typedef void *HDC;
 #define CFGPRM_TILELOADFLAGS 0x001C
 
 /**
+ * Path to background star texture
+ * \par Parameter type:
+ *   *char
+ */
+#define CFGPRM_CSPHERESTARTEXTURE 0x001D
+
+/**
+ * \Flag for rendering background stars from a texture set
+ * \par Parameter type:
+ *    bool
+ */
+#define CFGPRM_CSPHEREUSESTARIMAGE 0x001E
+
+/**
+ * \Flag for rendering background stars as pixels
+ * \par Parameter type:
+ *    bool
+ */
+#define CFGPRM_CSPHEREUSESTARDOTS 0x001F
+
+/**
  * Bit flags for force vector display options.
  * For a description of the available bit flags, see \ref bfvflag
  * \par Parameter type:
  *   DWORD
  */
-#define CFGPRM_FORCEVECTORFLAG 0x001D
+#define CFGPRM_FORCEVECTORFLAG 0x0020
 
 /**
  * Force vector display scaling factor
  * \par Parameter type:
  *   float
  */
-#define CFGPRM_FORCEVECTORSCALE 0x001E
+#define CFGPRM_FORCEVECTORSCALE 0x0021
 
 /**
  * Force vector display opacity value
  * \par Parameter type:
  *   float
  */
-#define CFGPRM_FORCEVECTOROPACITY 0x001F
+#define CFGPRM_FORCEVECTOROPACITY 0x0022
 
 /**
  * Bit flags for frame axis display options.
@@ -217,21 +245,21 @@ typedef void *HDC;
  * \par Parameter type:
  *   DWORD
  */
-#define CFGPRM_FRAMEAXISFLAG 0x0020
+#define CFGPRM_FRAMEAXISFLAG 0x0023
 
 /**
  * Frame axis display scaling factor
  * \par Parameter type:
  *   float
  */
-#define CFGPRM_FRAMEAXISSCALE 0x0021
+#define CFGPRM_FRAMEAXISSCALE 0x0024
 
 /**
  * Frame axis display opacity value
  * \par Parameter type:
  *   float
  */
-#define CFGPRM_FRAMEAXISOPACITY 0x0022
+#define CFGPRM_FRAMEAXISOPACITY 0x0025
 /// @}
 
 /**
@@ -417,6 +445,14 @@ public:
 	 * \default None.
 	 */
 	virtual void clbkRefreshVideoData () {}
+
+	/**
+	 * \brief Called when the user changes an option during a simulation session.
+	 * \param cat option category identifier, see \ref optcat
+	 * \param item option item identifier, see \ref optitem
+	 * \default None.
+	 */
+	virtual void clbkOptionChanged(DWORD cat, DWORD item) {}
 
 	/**
 	 * \brief Texture request

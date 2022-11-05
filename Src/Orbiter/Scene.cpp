@@ -277,6 +277,12 @@ void Scene::Init3DFonts ()
 	comlabel_w[5] = w - comlabel_ofs[5];               // 'z'
 }
 
+void Scene::OnOptionChanged(int cat, int item)
+{
+	if (cat == OPTCAT_CELSPHERE)
+		m_celSphere->OnOptionChanged(cat, item);
+}
+
 void Scene::UpdateVisual (Body *body, Camera **camlist, int ncam)
 {
 	DWORD i;

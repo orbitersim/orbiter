@@ -199,6 +199,13 @@ public:
 	 */
 	void clbkRefreshVideoData ();
 
+	/**
+     * \brief Called when a config setting is changed by the user during
+     *    a simulation setting, to give the client opportunity to respond to the change.
+     * \param cat option category, see \ref optcat
+     * \param item option item, see \ref optitem
+     */
+	void clbkOptionChanged(DWORD cat, DWORD item);
 
 	/**
 	 * \brief Texture request
