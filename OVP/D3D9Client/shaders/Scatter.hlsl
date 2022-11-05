@@ -6,8 +6,8 @@
 // ============================================================================
 
 #define Nc  16		//Z-dimension count in 3D texture
-#define Wc  64		//3D texture size (pixels)
-#define Qc  128		//2D texture size (pixels)
+#define Wc  48		//3D texture size (pixels)
+#define Qc  96		//2D texture size (pixels)
 
 
 #define NSEG 12
@@ -229,6 +229,8 @@ float3 TransformUV(float3 uv, const float rc, const float prc)
 }
 
 
+// Sample a 3D texture composed from an array of 2D textures
+//
 float4 smaple3D(sampler2D tSamp, float3 uv, const float rc, const float pix)
 {
 	const float x = pix / (rc * pix - rc);
@@ -305,7 +307,7 @@ float MiePhase2(float cw, float g)
 }
 
 
-// 2D lookup-table, for direct sunlight being filtered by atmosphere. (constant), doesn't vary with camera movement.
+// 2D lookup-table, for direct sunlight being filtered by atmosphere
 //
 float4 SunColor(float x : TEXCOORD0, float y : TEXCOORD1) : COLOR
 {
@@ -322,6 +324,8 @@ float4 SunColor(float x : TEXCOORD0, float y : TEXCOORD1) : COLOR
 }
 
 
+// Get a color of sunlight for a given altitude and normal-sun angle
+//
 float3 GetSunColor(float dir, float alt)
 {
 	alt = saturate((alt - Const.MinAlt) / Const.AtmoAlt);
@@ -339,7 +343,9 @@ float SunGlare(float3 vRay)
 	return c;
 }
 
-
+ 
+// Compute attennuation from one point in atmosphere to camera
+//
 float3 ComputeCameraView(float3 vNrm, float3 vRay, float r, float d)
 {
 	float a = dot(vNrm, vRay);
@@ -349,6 +355,8 @@ float3 ComputeCameraView(float3 vNrm, float3 vRay, float r, float d)
 }
 
 
+// Approximate multi-scatter effect to atmospheric color and light travel behind terminator
+//
 float3 MultiScatterApprox(float3 vNrm)
 {
 	float dNS = clamp(dot(vNrm, Const.toSun) + Const.TW_Dst, 0.0f, Const.TW_Dst);
@@ -363,6 +371,8 @@ struct SkyOut
 };
 
 
+// Get a precomputed rayleight and mie color values for a given direction from a camera
+//
 SkyOut GetSkyColor(float3 uDir)
 {
 	float2 uv = DirToUV(uDir);
@@ -370,7 +380,6 @@ SkyOut GetSkyColor(float3 uDir)
 	SkyOut o;
 	o.ray = tex2D(tSkyRayColor, uv).rgba;
 	o.mie = tex2D(tSkyMieColor, uv).rgba;
-
 	return o;
 }
 
@@ -392,6 +401,7 @@ float4 SkyView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 	float iH = Flo.bRay ? Const.iH.r : Const.iH.g;
 
 	float3 ret = 0;
+	float osc = 0;
 
 	for (int i = 0; i < 7; i++)
 	{
@@ -404,13 +414,20 @@ float4 SkyView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 		float3 x = GetSunColor(dRS, alt) * ComputeCameraView(Const.toCam, vRay, Const.CamRad, dst);
 		float f = exp(-alt * iH) * w[i];
 		ret += x * f;
+		osc += f;
 	}
 
+	osc *= rmO * len;
 	ret *= Const.cSun;
-	ret *= rmI * len * 0.5f;
+	ret *= rmI * len;
 	ret *= Flo.bRay ? Const.RayWave : Const.MieWave;
 
-	float alpha = saturate(1.0f - ComputeCameraView(Const.toCam, vRay, Const.CamRad, len).g);
+	if (Flo.bRay)
+	{
+		ret += MultiScatterApprox(vNrm) * exp(-Const.CamAlt * Const.iH.r * 0.5f);
+	}
+
+	float alpha = saturate(1.0f - osc * 0.5f);
 
 	return float4(ret, alpha);
 }
@@ -446,6 +463,7 @@ float4 RingView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 	float iH = Flo.bRay ? Const.iH.r : Const.iH.g;
 
 	float3 ret = 0;
+	float osc = 0;
 
 	for (int i = 0; i < 7; i++)
 	{
@@ -460,42 +478,42 @@ float4 RingView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 
 		float f = exp(-alt * iH) * w[i];
 		ret += x * f;
+		osc += f;
 	}
 
-	ret *= Const.cSun;
-	ret *= rmI * l * 0.5f;
+	osc *= rmO * l;
+	ret *= rmI * l;
 	ret *= Flo.bRay ? Const.RayWave : Const.MieWave;
+	ret *= Const.cSun;
 
-	float alpha = saturate(1.0f - ComputeCameraView(Const.toCam, vRay, Const.CamRad, l).g);
+	float alpha = saturate(1.0f - osc * 0.5f);
 
 	return float4(ret, alpha);
 }
 
 
-
+// Get a precomputed total (combined) sky color for a given direction from a camera
+//
 float3 GetAmbient(float3 vRay)
 {
 	return tex2D(tAmbient, DirToUV(vRay)).rgb;
 }
 
 
-// 2D lookup-table for pre-computed ambient sky color. (pre frame), varies with sun/cam relation
+// 2D lookup-table for pre-computed total (combined) sky color. (pre frame), varies with sun/cam relation
 //
 float4 AmbientSky(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 {
 	// Viewing ray
 	float2 uv = float2(u, v);
-
 	float3 uDir = uvToDir(uv);
-
+	float  ph = dot(uDir, Const.toSun);
+	
 	float3 ray = tex2D(tSkyRayColor, uv).rgb;
 	float3 mie = tex2D(tSkyMieColor, uv).rgb;
 	float3 cMlt = MultiScatterApprox(Const.toCam);
-	float3 cGlr = max(MieMin, mie) * SunGlare(-uDir) * Const.GlareColor;
 
-	float ph = dot(uDir, Const.toSun);
-
-	float3 color = ray * RayPhase(ph) + mie * MiePhase(ph) + cMlt + cGlr;
+	float3 color = ray * RayPhase(ph) + mie * MiePhase(ph) + cMlt;// +cGlr;
 
 	return float4(color, 1.0f);
 }
@@ -506,10 +524,11 @@ struct LandOut
 {
 	float4 ray;
 	float4 mie;
-	float4 amb;
 };
 
 
+// Get a precomputed rayleight and mie haze values for a given altitude and normal
+//
 LandOut GetLandView(float rad, float3 vNrm)
 {
 	float2 uv = NrmToUV(vNrm);
@@ -522,7 +541,6 @@ LandOut GetLandView(float rad, float3 vNrm)
 	LandOut o;
 	o.ray = smaple3D(tLndRay, uvb, Nc, Wc);
 	o.mie = smaple3D(tLndMie, uvb, Nc, Wc);
-	o.amb = smaple3D(tLndAmb, uvb, Nc, Wc);
 	return o;
 }
 
@@ -556,47 +574,32 @@ float4 LandView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 	float3 ret = 0;
 	float osc = 0;
 
-	
-
 	float rmO = Flo.bRay ? Const.rmO.r : Const.rmO.g;
 	float rmI = Flo.bRay ? Const.rmI.r : Const.rmI.g;
 	float iH  = Flo.bRay ? Const.iH.r : Const.iH.g;
 
-	for (int i = 0; i < NSEG; i++)
+	for (int i = 0; i < 7; i++)
 	{
-		//float dst = dist * n[i];
-		float dst = dist * i * iNSEG;
+		float dst = dist * n[i];
 		float3 pos = vVrt + vRay * dst;
 		float3 n = normalize(pos);
 		float rad = dot(n, pos);
 		float alt = rad - Const.PlanetRad;
 		float3 x = ComputeCameraView(n, vRay, rad, dist - dst);
 
-		if (Flo.bAmb) x *= MultiScatterApprox(n) * exp(-alt * iH);
-		else
-		{
-			x *= GetSunColor(dot(n, Const.toSun), alt);
-			x *= PlanetShadowFactor(pos, segh);
-		}
-
-		//float f = exp(-alt * iH) * w[i];
-		float f = exp(-alt * iH) * iNSEG;
-
+		x *= GetSunColor(dot(n, Const.toSun), alt);
+		x *= PlanetShadowFactor(pos, segh);
+		
+		float f = exp(-alt * iH) * w[i];
+		
 		osc += f;
 		ret += x * f;
 	}
 
-	//dist *= 0.5;
 	ret *= Const.cSun;
 	osc *= rmO * dist;
 	ret *= rmI * dist;
 	ret *= Flo.bRay ? Const.RayWave : Const.MieWave;
-
-	if (Flo.bAmb) {
-		ret = HDR(ret);
-		float b = pow(saturate(dot(ret, ret)), 0.2f);
-		return float4(b, b, b, 1);
-	}
 
 	return float4(ret, osc);
 }
@@ -631,56 +634,3 @@ float4 RenderSun(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 
 	return float4(max(I+L,K+L), 0, 0, 1);
 }
-
-
-
-/*
-
-float4 LandView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
-{
-	u *= 16.0f;
-	float a = floor(u) / 16.0f;
-	float alt = lerp(Const.MinAlt, Const.MaxAlt, a);
-	float r = alt + Const.PlanetRad;
-
-	// Geo-centric Vertex location
-	float3 vNrm = uvToNrm(float2(frac(u), v));
-	float3 vVrt = vNrm * r;
-
-	// Viewing ray
-	float3 vCam = Const.CamPos - vVrt;
-	float3 vRay = normalize(vCam); // Towards camera from vertex
-
-	float ang = dot(vNrm, vRay);
-	float dist = min(RayLength(ang, r), dot(vRay, vCam));
-
-	float3 ret = 0;
-	float osc = 0;
-
-	float3 cMlt = (Const.idx == 0) ? 0 : MultiScatterApprox(Const.toCam) * Const.Multi;
-
-	for (int i = 0; i < 7; i++)
-	{
-		float dst = dist * n[i];
-		float3 pos = vVrt + vRay * dst;
-		float3 n = normalize(pos);
-		float dRS = dot(n, Const.toSun);
-		float rad = dot(n, pos);
-		float alt = rad - Const.PlanetRad;
-		float iH = Const.iH[Const.idx];
-		float3 x = (GetSunColor(dRS, alt) + cMlt) * ComputeCameraView(n, vRay, rad, dist-dst);
-
-		float f = exp(-alt * Const.iH[Const.idx]) * w[i];
-		osc += f;
-		ret += x * f;
-	}
-
-	dist *= 0.5;
-	ret *= Const.cSun;
-	osc *= Const.rmO[Const.idx] * dist;
-	ret *= Const.rmI[Const.idx] * dist;
-	ret *= (Const.idx == 0) ? Const.RayWave : Const.MieWave;
-
-	return float4(ret, osc);
-}
-*/

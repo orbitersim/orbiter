@@ -242,20 +242,16 @@ float4 HorizonPS(HazeVS frg) : COLOR
 	float3 uDir = normalize(frg.posW);
 
 	SkyOut sky = GetSkyColor(uDir);
-
-	float3 cMlt = MultiScatterApprox(Const.toCam) * exp(-Const.CamAlt * Const.iH.r * 0.5f);
 	
 	float ph = dot(uDir, Const.toSun);
 
-	float3 color = HDR(sky.ray.rgb * RayPhase(ph) + sky.mie.rgb * MiePhase(ph) + max(MieMin, sky.mie.rgb) * SunGlare(uDir) * Const.GlareColor + cMlt);
+	float3 color = HDR(sky.ray.rgb * RayPhase(ph) + sky.mie.rgb * MiePhase(ph));
 	
-	//float alpha = pow(saturate(dot(color, color)), 1.0f);
-
 	return float4(color, sky.ray.a);
 }
 
 
-// Renders the hoeizon "ring" from space
+// Renders the horizon "ring" from space
 //
 float4 HorizonRingPS(HazeVS frg) : COLOR
 {
@@ -273,7 +269,7 @@ float4 HorizonRingPS(HazeVS frg) : COLOR
 
 	float ph = dot(uDir, Const.toSun);
 
-	float3 color = HDR(cRay.rgb * RayPhase(ph) + cMie * MiePhase(ph) + max(MieMin, cMie) * SunGlare(uDir) * Const.GlareColor);
+	float3 color = HDR(cRay.rgb * RayPhase(ph) + cMie * MiePhase(ph));
 
 	return float4(color, cRay.a);
 }
@@ -430,12 +426,16 @@ float4 TerrainPS(TileVS frg) : COLOR
 
 	float3 cRfl = 0;
 	float3 cSpe = 0;
+	float3 cMlt = 0;
 	float3 nrmW = normalize(frg.nrmW);		// Per-pixel surface normal vector
 	float3 nvrW = nrmW;						// Per-pixel surface normal vector
 	float3 vRay = normalize(frg.camW);		// Unit viewing ray
 	float3 vVrt = Const.CamPos - frg.camW;	// Geo-centric pixel position
 	float3 vPlN = normalize(vVrt);			// Planet mean normal
 	float   dst = dot(vRay, frg.camW);		// Pixel to camera distance
+	float   rad = dot(vVrt, vPlN);
+	float   alt = rad - Const.PlanetRad;
+
 
 	// Render with specular ripples and fresnel water -------------------------
 	//
@@ -565,8 +565,6 @@ float4 TerrainPS(TileVS frg) : COLOR
 	float3 cNgt2 = 0;
 
 	float fOrbShd = 1.0f;
-	float rad = dot(vVrt, vPlN);
-	float alt = rad - Const.PlanetRad;
 	float fDRS = dot(vRay, Const.toSun);
 	float fDPS = dot(vPlN, Const.toSun);
 	float fS = sqrt(saturate(fDPS + 0.05f));	// Day-Night scaling term 1.0 at daytime
@@ -590,8 +588,10 @@ float4 TerrainPS(TileVS frg) : COLOR
 	// Terrain with gamma correction and attennuation
 	cTex.rgb = pow(saturate(cTex.rgb), Const.TrGamma) * Const.TrExpo;
 
+	// Evaluate multiscatter approximation
+	cMlt = MultiScatterApprox(vPlN) * exp(-alt * Const.iH.r * 0.5f);
+
 	LandOut sct = GetLandView(rad, vPlN);
-	float3 cMlt = MultiScatterApprox(vPlN) * exp(-alt * Const.iH.r * 0.5f);
 
 	float3 color = cTex.rgb * LightFX(cSun + cMlt + cDiffLocal + cNgt + float3(0.9, 0.9, 1.0) * Const.Ambient);
 
@@ -603,7 +603,7 @@ float4 TerrainPS(TileVS frg) : COLOR
 
 	// Add Haze
 	color *= exp(-(Const.RayWave * sct.ray.a + Const.MieWave * sct.mie.a));
-	color += (sct.ray.rgb * RayPhase(-fDRS) + sct.mie.rgb * MiePhase(-fDRS)) * fOrbShd + sct.amb.rgb * cMlt;
+	color += (sct.ray.rgb * RayPhase(-fDRS) + sct.mie.rgb * MiePhase(-fDRS)) * fOrbShd; // +sct.amb.rgb * cMlt;
 	color += cNgt2;
 
 	return float4(HDR(color), 1.0f);

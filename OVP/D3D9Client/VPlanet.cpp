@@ -724,7 +724,7 @@ void vPlanet::UpdateScatter()
 		if (!pMieSkyView) D3DXCreateTexture(pDev, Qc, Qc, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pMieSkyView);
 		if (!pLandViewRay) D3DXCreateTexture(pDev, Wc * Nc, Wc, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pLandViewRay);
 		if (!pLandViewMie) D3DXCreateTexture(pDev, Wc * Nc, Wc, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pLandViewMie);
-		if (!pLandViewAmb) D3DXCreateTexture(pDev, Wc * Nc, Wc, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pLandViewAmb);
+		//if (!pLandViewAmb) D3DXCreateTexture(pDev, Wc * Nc, Wc, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pLandViewAmb);
 		if (!pAmbientSky) D3DXCreateTexture(pDev, Qc, Qc, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pAmbientSky);
 	}
 
@@ -914,15 +914,14 @@ void vPlanet::UpdateScatter()
 	if (!pIP->Execute(true)) LogErr("pIP Execute Failed (SkyView)");
 	SAFE_RELEASE(pTgt);
 
-
-	Flow.bRay = false;
+/*	Flow.bRay = false;
 	Flow.bAmb = true;
 	pIP->SetStruct("Const", &cp, sizeof(ConstParams));
 	pIP->SetStruct("Flo", &Flow, sizeof(sFlow));
 	pLandViewAmb->GetSurfaceLevel(0, &pTgt);
 	pIP->SetOutputNative(0, pTgt);
 	if (!pIP->Execute(true)) LogErr("pIP Execute Failed (SkyView)");
-	SAFE_RELEASE(pTgt);
+	SAFE_RELEASE(pTgt);*/
 }
 
 
@@ -1251,35 +1250,8 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 	_TRACE;
 	if (!active) return false;
 
-
-	// Update Atmospheric Scattering Tables
-	UpdateScatter();
-
 	const Scene::SHADOWMAPPARAM *shd = scn->GetSMapData();
 
-	// Must update the latest view projection matrix
-	cp.mVP = *scn->GetProjectionViewMatrix();
-
-
-	// Setup shadow maps for surface base objects and mesh based bodies ---------------
-	//
-	D3D9Effect::UpdateEffectCamera(hObj);
-	D3D9Effect::FX->SetFloat(D3D9Effect::eDistScale, 1.0f / float(dist_scale));
-
-	HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, false));
-	HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, false));
-
-	if (shd->pShadowMap && (scn->GetRenderPass() == RENDERPASS_MAINSCENE) && (Config->TerrainShadowing == 2)) {
-		if (scn->GetCameraAltitude() < 10e3 || IsMesh()) {
-			float s = float(shd->size);
-			float is = 1.0f / s;
-			float qw = 1.0f / float(Config->ShadowMapSize);
-			HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, &shd->mViewProj));
-			HR(D3D9Effect::FX->SetTexture(D3D9Effect::eShadowMap, shd->pShadowMap));
-			HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, &D3DXVECTOR4(s, is, qw, 0)));
-			HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, true));
-		}
-	}
 	
 
 
@@ -1298,7 +1270,36 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 
 	if (renderpix) { // render as 2x2 pixel block
 		RenderDot (dev);
-	} else {             // render as sphere
+	}
+	else // render as sphere ------------------------
+	{   
+
+		// Update Atmospheric Scattering Tables
+		UpdateScatter();
+
+		// Must update the latest view projection matrix
+		cp.mVP = *scn->GetProjectionViewMatrix();
+
+		// Setup shadow maps for surface base objects and mesh based bodies ---------------
+		//
+		D3D9Effect::UpdateEffectCamera(hObj);
+		D3D9Effect::FX->SetFloat(D3D9Effect::eDistScale, 1.0f / float(dist_scale));
+
+		HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, false));
+		HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, false));
+
+		if (shd->pShadowMap && (scn->GetRenderPass() == RENDERPASS_MAINSCENE) && (Config->TerrainShadowing == 2)) {
+			if (scn->GetCameraAltitude() < 10e3 || IsMesh()) {
+				float s = float(shd->size);
+				float is = 1.0f / s;
+				float qw = 1.0f / float(Config->ShadowMapSize);
+				HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, &shd->mViewProj));
+				HR(D3D9Effect::FX->SetTexture(D3D9Effect::eShadowMap, shd->pShadowMap));
+				HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, &D3DXVECTOR4(s, is, qw, 0)));
+				HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, true));
+			}
+		}
+
 		DWORD amb = prm.amb0col;
 		float fogfactor;
 
