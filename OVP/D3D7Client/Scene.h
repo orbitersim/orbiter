@@ -110,6 +110,12 @@ protected:
 	 */
 	void RenderObjectMarker (oapi::Sketchpad* pSkp, const VECTOR3 &gpos, const std::string& label1, const std::string& label2, int mode, int scale);
 
+	/**
+	 * \brief Render vector features for each visual object if requested
+	 *     (frame axes, force vectors, etc.)
+	 */
+	void RenderVectors();
+
 	void AddLocalLight (const LightEmitter *le, const vObject *vo, DWORD idx);
 
 private:

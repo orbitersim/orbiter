@@ -88,7 +88,7 @@ jobs:
 
     - name: Upload Build Artifact
       if: ${{ github.ref == 'refs/heads/main' }}
-      uses: actions/upload-artifact@v3.1.0
+      uses: actions/upload-artifact@v3.1.1
       with:
         name: Orbiter-${{ matrix.architecture }}
         # A file, directory or wildcard pattern that describes what to upload

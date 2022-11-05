@@ -126,10 +126,10 @@ CFG_INSTRUMENTPRM CfgInstrumentPrm_default = {
 
 CFG_VISHELPPRM CfgVisHelpPrm_default = {
 	PLN_CGRID | PLN_CONST | PLN_CNSTLABEL | PLN_CNSTLONG | PLN_CMARK,	// flagPlanetarium (celestial marker flags)
-	BF_WEIGHT | BF_THRUST | BF_LIFT | BF_DRAG,	// flagBodyforce (force display flags)
+	BFV_WEIGHT | BFV_THRUST | BFV_LIFT | BFV_DRAG,	// flagBodyforce (force display flags)
 	1.0f,		// scaleBodyforce (force vector scaling factor)
 	1.0f,		// opacBodyforce (force vector opacity)
-	CA_VESSEL,	// flagCrdAxes (axis display flags)
+	FAV_VESSEL,	// flagCrdAxes (frame axis display flags)
 	1.0f,		// scaleCrdAxes (axis scaling factor)
 	1.0f		// opacCrdAxes (axis opacity)
 };
@@ -680,9 +680,9 @@ bool Config::Load(const char *fname)
 	if (GetInt (ifs, "Planetarium", i))
 		CfgVisHelpPrm.flagPlanetarium = (DWORD)i;
 	if (GetString (ifs, "Bodyforces", cbuf))
-		sscanf (cbuf, "%u%f%f", &CfgVisHelpPrm.flagBodyforce, &CfgVisHelpPrm.scaleBodyforce, &CfgVisHelpPrm.opacBodyforce);
+		sscanf (cbuf, "%u%f%f", &CfgVisHelpPrm.flagBodyForce, &CfgVisHelpPrm.scaleBodyForce, &CfgVisHelpPrm.opacBodyForce);
 	if (GetString (ifs, "CoordinateAxes", cbuf))
-		sscanf (cbuf, "%u%f%f", &CfgVisHelpPrm.flagCrdAxes, &CfgVisHelpPrm.scaleCrdAxes, &CfgVisHelpPrm.opacCrdAxes);
+		sscanf (cbuf, "%u%f%f", &CfgVisHelpPrm.flagFrameAxes, &CfgVisHelpPrm.scaleFrameAxes, &CfgVisHelpPrm.opacFrameAxes);
 
 	// debug options
 	if (GetInt (ifs, "ShutdownMode", i) && i >= 0 && i <= 2)
@@ -929,6 +929,18 @@ const void *Config::GetParam (DWORD paramtype) const
 		return (void*)&CfgInstrumentPrm.PanelMFDHUDSize;
 	case CFGPRM_TILEPATCHRES:
 		return (void*)&CfgPRenderPrm.PatchRes;
+	case CFGPRM_FORCEVECTORFLAG:
+		return (void*)&CfgVisHelpPrm.flagBodyForce;
+	case CFGPRM_FORCEVECTORSCALE:
+		return (void*)&CfgVisHelpPrm.scaleBodyForce;
+	case CFGPRM_FORCEVECTOROPACITY:
+		return (void*)&CfgVisHelpPrm.opacBodyForce;
+	case CFGPRM_FRAMEAXISFLAG:
+		return (void*)&CfgVisHelpPrm.flagFrameAxes;
+	case CFGPRM_FRAMEAXISSCALE:
+		return (void*)&CfgVisHelpPrm.scaleFrameAxes;
+	case CFGPRM_FRAMEAXISOPACITY:
+		return (void*)&CfgVisHelpPrm.opacFrameAxes;
 	case CFGPRM_CSPHERESTARTEXTURE:
 		return (void*)&CfgVisualPrm.StarImagePath;
 	case CFGPRM_CSPHEREUSESTARIMAGE:
@@ -1096,16 +1108,16 @@ BOOL Config::Write (const char *fname) const
 		ofs << "\n; === Visual helper parameters ===\n";
 		if (CfgVisHelpPrm.flagPlanetarium != CfgVisHelpPrm_default.flagPlanetarium || bEchoAll)
 			ofs << "Planetarium = " << CfgVisHelpPrm.flagPlanetarium << '\n';
-		if (CfgVisHelpPrm.flagBodyforce != CfgVisHelpPrm_default.flagBodyforce ||
-			CfgVisHelpPrm.scaleBodyforce != CfgVisHelpPrm_default.scaleBodyforce ||
-			CfgVisHelpPrm.opacBodyforce != CfgVisHelpPrm_default.opacBodyforce || bEchoAll)
-			ofs << "Bodyforces = " << CfgVisHelpPrm.flagBodyforce << ' ' << CfgVisHelpPrm.scaleBodyforce
-				<< ' ' << CfgVisHelpPrm.opacBodyforce << '\n';
-		if (CfgVisHelpPrm.flagCrdAxes != CfgVisHelpPrm_default.flagCrdAxes ||
-			CfgVisHelpPrm.scaleCrdAxes != CfgVisHelpPrm_default.scaleCrdAxes ||
-			CfgVisHelpPrm.opacCrdAxes != CfgVisHelpPrm_default.opacCrdAxes || bEchoAll)
-			ofs << "CoordinateAxes = " << CfgVisHelpPrm.flagCrdAxes << ' ' << CfgVisHelpPrm.scaleCrdAxes
-				<< ' ' << CfgVisHelpPrm.opacCrdAxes << '\n';
+		if (CfgVisHelpPrm.flagBodyForce != CfgVisHelpPrm_default.flagBodyForce ||
+			CfgVisHelpPrm.scaleBodyForce != CfgVisHelpPrm_default.scaleBodyForce ||
+			CfgVisHelpPrm.opacBodyForce != CfgVisHelpPrm_default.opacBodyForce || bEchoAll)
+			ofs << "Bodyforces = " << CfgVisHelpPrm.flagBodyForce << ' ' << CfgVisHelpPrm.scaleBodyForce
+				<< ' ' << CfgVisHelpPrm.opacBodyForce << '\n';
+		if (CfgVisHelpPrm.flagFrameAxes != CfgVisHelpPrm_default.flagFrameAxes ||
+			CfgVisHelpPrm.scaleFrameAxes != CfgVisHelpPrm_default.scaleFrameAxes ||
+			CfgVisHelpPrm.opacFrameAxes != CfgVisHelpPrm_default.opacFrameAxes || bEchoAll)
+			ofs << "CoordinateAxes = " << CfgVisHelpPrm.flagFrameAxes << ' ' << CfgVisHelpPrm.scaleFrameAxes
+				<< ' ' << CfgVisHelpPrm.opacFrameAxes << '\n';
 	}
 
 	if (memcmp (&CfgDebugPrm, &CfgDebugPrm_default, sizeof (CFG_DEBUGPRM)) || bEchoAll) {

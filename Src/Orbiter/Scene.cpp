@@ -563,7 +563,7 @@ void Scene::Timejump (PlanetarySystem *psys, Camera **camlist, DWORD ncam, bool 
 
 static int lvlid[256];
 
-void Scene::Render3DLabel (const Vector &gp, char *label, double scale, DWORD colour)
+void Scene::Render3DLabel (const Vector &gp, const char *label, double scale, DWORD colour)
 {
 	static VERTEX_TL1TEX Vtx[4] = {
 		{0,0,0,0,(D3DCOLOR)D3DRGBA(1,1,1,1),0.001f,0.001f},
@@ -595,7 +595,7 @@ void Scene::Render3DLabel (const Vector &gp, char *label, double scale, DWORD co
 			w  = 0;
 			x0 = 0;
 			v  = 0;
-			for (char *c = label; *c; c++) {
+			for (const char *c = label; *c; c++) {
 				int idx = *c - 32;
 				sr.left  = gfont_ofs[0][idx];
 				sr.right = sr.left + gfont_cw[0][idx];
@@ -954,13 +954,11 @@ void Scene::Render (D3DRECT* vp_rect)
 		pstream[n]->Render (dev, ptex);
 	if (ptex) dev->SetTexture (0, 0);
 
-	// render object vectors - should this be done without z-buffer?
-	bool bRenderVectors = true;
-	if (bRenderVectors) {
-		g_camera->SetFrustumLimits (1.0, 1e30);
-		for (i = 0; i < nobj; i++)
-			vobj[i]->RenderVectors (dev);
-		g_camera->SetFrustumLimits (npl, fpl); // reset fustrum limits
+	// render object vectors
+	if (*(DWORD*)gc->GetConfigParam(CFGPRM_FORCEVECTORFLAG) & BFV_ENABLE || *(DWORD*)gc->GetConfigParam(CFGPRM_FRAMEAXISFLAG) & FAV_ENABLE) {
+		g_camera->SetFrustumLimits(1.0, 1e30);
+		RenderVectors();
+		g_camera->SetFrustumLimits(npl, fpl); // reset fustrum limits
 	}
 
 	// render focus object in cockpit view
@@ -1034,4 +1032,39 @@ void Scene::RenderVesselShadows ()
 
 	SetDefaultMaterial();
 	dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
+}
+
+void Scene::RenderVectors()
+{
+	dev->SetRenderState(D3DRENDERSTATE_ZENABLE, FALSE);
+	dev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TFACTOR);
+	dev->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+
+	dev->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TFACTOR);
+	dev->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+	dev->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+
+	dev->SetRenderState(D3DRENDERSTATE_SPECULARENABLE, TRUE);
+	dev->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_POINT);
+	dev->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFN_POINT);
+	dev->SetTexture(0, 0);
+	D3DMATERIAL7 pmtrl, mtrl = { {1,1,1,1},{1,1,1,1},{1,1,1,1},{0.2,0.2,0.2,1},40 };
+	dev->GetMaterial(&pmtrl);
+	dev->SetMaterial(&mtrl);
+
+	for (int i = 0; i < nobj; i++)
+		vobj[i]->RenderVectors(dev);
+
+	dev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+	dev->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+	dev->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_CURRENT);
+	dev->SetRenderState(D3DRENDERSTATE_SPECULARENABLE, FALSE);
+	dev->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
+	dev->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
+	dev->SetMaterial(&pmtrl);
+
+	for (int i = 0; i < nobj; i++)
+		vobj[i]->RenderVectorLabels(dev);
+
+	dev->SetRenderState(D3DRENDERSTATE_ZENABLE, TRUE);
 }

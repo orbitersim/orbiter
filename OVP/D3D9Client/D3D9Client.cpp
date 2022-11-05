@@ -283,7 +283,7 @@ bool D3D9Client::ChkDev(const char *fnc) const
 //
 const void *D3D9Client::GetConfigParam (DWORD paramtype) const
 {
-	return (paramtype >= CFGPRM_SHOWBODYFORCEVECTORSFLAG)
+	return (paramtype >= CFGPRM_TILELOADTHREAD)
 		 ? (paramtype >= CFGPRM_GETSELECTEDMESH)
 		 ? DebugControls::GetConfigParam(paramtype)
 		 : OapiExtension::GetConfigParam(paramtype)
@@ -1272,9 +1272,6 @@ bool D3D9Client::RenderWithPopupWindows()
 		if (count) GetDevice()->SetDialogBoxMode(true);
 		else       GetDevice()->SetDialogBoxMode(false);
 	}
-
-	// Let the OapiExtension manager know about this..
-	OapiExtension::HandlePopupWindows(hPopupWnd, count);
 
 	FixOutOfScreenPositions(hPopupWnd, count);
 
