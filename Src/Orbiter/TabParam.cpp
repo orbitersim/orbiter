@@ -23,19 +23,15 @@ void orbiter::ParameterTab::Create ()
 	hTab = CreateTab (IDD_PAGE_OPT);
 
 	static int item[] = {
-		IDC_OPT_STATIC1, IDC_OPT_STATIC2, IDC_OPT_STATIC3, IDC_OPT_STATIC4,
-		IDC_OPT_STATIC5, IDC_OPT_STATIC6, IDC_OPT_STATIC7, IDC_OPT_STATIC8,
-		IDC_OPT_STATIC9, IDC_OPT_STATIC10, IDC_OPT_STATIC11, IDC_OPT_STATIC12,
-		IDC_OPT_STATIC13, IDC_OPT_STATIC14, IDC_RADIO1, IDC_RADIO2,
-		IDC_OPT_COMPLEXMODEL, IDC_OPT_DAMAGE, IDC_OPT_LIMFUEL, IDC_OPT_PADFUEL,
-		IDC_OPT_COMPLEXGRAV, IDC_OPT_DISTMASS, IDC_OPT_WIND, IDC_OPT_RPRESSURE,
-		IDC_OPT_MAGHI, IDC_OPT_MAGLO, IDC_OPT_BRTLO,
-		IDC_OPT_FOCUS,
-		IDC_OPT_MFDTRANSP, IDC_OPT_REFRESH, IDC_OPT_MFDSIZE,
-		IDC_OPT_PANELSCALE, IDC_OPT_PANELSPD
+		IDC_OPT_STATIC1, IDC_OPT_STATIC2, IDC_OPT_STATIC4, IDC_OPT_STATIC8,
+		IDC_OPT_STATIC9, IDC_OPT_STATIC10, IDC_OPT_STATIC11, IDC_OPT_STATIC14,
+		IDC_RADIO1, IDC_RADIO2, IDC_OPT_COMPLEXMODEL, IDC_OPT_DAMAGE, IDC_OPT_LIMFUEL,
+		IDC_OPT_PADFUEL, IDC_OPT_COMPLEXGRAV, IDC_OPT_DISTMASS, IDC_OPT_WIND,
+		IDC_OPT_RPRESSURE, IDC_OPT_FOCUS, IDC_OPT_MFDTRANSP, IDC_OPT_REFRESH,
+		IDC_OPT_MFDSIZE, IDC_OPT_PANELSCALE, IDC_OPT_PANELSPD
 	};
 
-	RegisterItemPositions (item, 33);
+	RegisterItemPositions (item, ARRAYSIZE(item));
 }
 
 //-----------------------------------------------------------------------------
@@ -53,12 +49,6 @@ void orbiter::ParameterTab::GetConfig (const Config *cfg)
 	SetWindowText (GetDlgItem (hTab, IDC_OPT_PANELSCALE), cbuf);
 	sprintf (cbuf, "%0.0f", pCfg->CfgLogicPrm.PanelScrollSpeed*0.1);
 	SetWindowText (GetDlgItem (hTab, IDC_OPT_PANELSPD), cbuf);
-	sprintf (cbuf, "%0.1f", pCfg->CfgVisualPrm.StarPrm.mag_hi);
-	SetWindowText (GetDlgItem (hTab, IDC_OPT_MAGHI), cbuf);
-	sprintf (cbuf, "%0.1f", pCfg->CfgVisualPrm.StarPrm.mag_lo);
-	SetWindowText (GetDlgItem (hTab, IDC_OPT_MAGLO), cbuf);
-	sprintf (cbuf, "%0.2f", pCfg->CfgVisualPrm.StarPrm.brt_min);
-	SetWindowText (GetDlgItem (hTab, IDC_OPT_BRTLO), cbuf);
 	SendDlgItemMessage (hTab, IDC_RADIO1, BM_SETCHECK,
 		pCfg->CfgVisualPrm.StarPrm.map_log ? BST_UNCHECKED : BST_CHECKED, 0);
 	SendDlgItemMessage (hTab, IDC_RADIO2, BM_SETCHECK,
@@ -117,18 +107,6 @@ void orbiter::ParameterTab::SetConfig (Config *cfg)
 	GetWindowText (GetDlgItem (hTab, IDC_OPT_PANELSPD), cbuf, 127);
 	if (!sscanf (cbuf, "%lf", &d)) d = 30.0; else if (d < -100.0) d = -100.0; else if (d > 100) d = 100.0;
 	pCfg->CfgLogicPrm.PanelScrollSpeed = d*10.0;
-
-	GetWindowText (GetDlgItem (hTab, IDC_OPT_MAGHI), cbuf, 127);
-	if (!sscanf (cbuf, "%lf", &d)) d = 0.0; pCfg->CfgVisualPrm.StarPrm.mag_hi = d;
-
-	GetWindowText (GetDlgItem (hTab, IDC_OPT_MAGLO), cbuf, 127);
-	if (!sscanf (cbuf, "%lf", &d)) d = 6.5; pCfg->CfgVisualPrm.StarPrm.mag_lo = d;
-
-	GetWindowText (GetDlgItem (hTab, IDC_OPT_BRTLO), cbuf, 127);
-	if (!sscanf (cbuf, "%lf", &d)) d = 0.1;
-	pCfg->CfgVisualPrm.StarPrm.brt_min = max (0.0, min (1.0, d));
-
-	pCfg->CfgVisualPrm.StarPrm.map_log = (SendDlgItemMessage (hTab, IDC_RADIO2, BM_GETCHECK, 0, 0) == BST_CHECKED);
 }
 
 //-----------------------------------------------------------------------------

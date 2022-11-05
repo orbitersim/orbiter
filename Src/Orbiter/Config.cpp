@@ -102,7 +102,6 @@ CFG_VISUALPRM CfgVisualPrm_default = {
 	true,       // bUseStarImage (render background star from image)
 	"csphere\\hiptyc_2020",     // StarImagePath (path to star background image)
 	true,       // bUseBgImage (render celestial sphere background image)
-	"Starmap 2020 (Milky Way)",	// CSphereBgImage (background image label)
 	"csphere\\milkyway_2020",   // CSphereBgPath (path to celestial background images)
 	0.3,		// CSphereBgIntens (intensity of celestial sphere background image)
 	2			// ElevMode (cubic spline)
@@ -658,8 +657,6 @@ bool Config::Load(const char *fname)
 	GetBool(ifs, "EnableBackgroundImage", CfgVisualPrm.bUseBgImage);
 	if (GetString(ifs, "CSphereBgPath", cbuf))
 		strncpy(CfgVisualPrm.CSphereBgPath, cbuf, 128);
-	if (GetString (ifs, "CSphereBgImage", cbuf))
-		strncpy (CfgVisualPrm.CSphereBgImage, cbuf, 64);
 	GetReal (ifs, "CSphereBgIntensity", CfgVisualPrm.CSphereBgIntens);
 
 	// screen capture parameters
@@ -1056,8 +1053,6 @@ BOOL Config::Write (const char *fname) const
 			ofs << "CSphereStarPath = " << CfgVisualPrm.StarImagePath << '\n';
 		if (CfgVisualPrm.bUseBgImage != CfgVisualPrm_default.bUseBgImage || bEchoAll)
 			ofs << "EnableBackgroundImage = " << BoolStr(CfgVisualPrm.bUseBgImage) << '\n';
-		if (strcmp (CfgVisualPrm.CSphereBgImage, CfgVisualPrm_default.CSphereBgImage) || bEchoAll)
-			ofs << "CSphereBgImage = " << CfgVisualPrm.CSphereBgImage << '\n';
 		if (strcmp (CfgVisualPrm.CSphereBgPath, CfgVisualPrm_default.CSphereBgPath) || bEchoAll)
 			ofs << "CSphereBgPath = " << CfgVisualPrm.CSphereBgPath << '\n';
 		if (CfgVisualPrm.CSphereBgIntens != CfgVisualPrm_default.CSphereBgIntens || bEchoAll)

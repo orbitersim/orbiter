@@ -136,7 +136,6 @@ struct CFG_VISUALPRM {
 	bool   bUseStarImage;       // render stars as a background image?
 	char   StarImagePath[128];  // starlist image path
 	bool   bUseBgImage;         // render celestial sphere background image?
-	char   CSphereBgImage[64];	// background image name
 	char   CSphereBgPath[128];	// background image path
 	double CSphereBgIntens;		// intensity of background image
 	int    ElevMode;            // elevation mode: 0=none, 1=linear, 2=cubic spline
