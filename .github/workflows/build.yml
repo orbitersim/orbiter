@@ -125,8 +125,7 @@ jobs:
         ls -R
       working-directory: ./out
     
-    - name: Push pre-release tag and upload packages
-      working-directory: ./out
+    - name: "Push pre-release tag and upload packages"
       uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
@@ -136,3 +135,4 @@ jobs:
         files: |
           Orbiter-x86.zip
           Orbiter-x64.zip
+      working-directory: ./out
