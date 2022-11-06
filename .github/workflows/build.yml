@@ -125,13 +125,14 @@ jobs:
         ls -R
       working-directory: ./out
     
-#    - name: Pre-release
-#      if: ${{ github.ref == 'refs/heads/main' }}
-#      working-directory: ${{ github.workspace }}/out
-#      uses: "marvinpinto/action-automatic-releases@latest"
-#      with:
-#        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-#        automatic_release_tag: "latest-${{ matrix.architecture }}"
-#        prerelease: true
-#        title: "Orbiter-${{ matrix.architecture }} development build"
-#        files: Orbiter.zip
+    - name: Push pre-release tag and upload packages
+      working-directory: ./out
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "latest"
+        prerelease: true
+        title: "Orbiter development build"
+        files: |
+          Orbiter-x86.zip
+          Orbiter-x64.zip
