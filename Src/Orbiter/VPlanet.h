@@ -75,6 +75,9 @@ private:
 	void RenderCloudShadows (LPDIRECT3DDEVICE7 dev);
 	// render cloud shadows on the ground
 
+	void RenderVectors(LPDIRECT3DDEVICE7 dev);
+	void RenderBaseVectors(LPDIRECT3DDEVICE7 dev);
+
 	void RenderBaseSurfaceTiles (LPDIRECT3DDEVICE7 dev);
 	void RenderBaseSurfaceDecals (LPDIRECT3DDEVICE7 dev);
 	void RenderBaseShadows (LPDIRECT3DDEVICE7 dev, float alpha);
@@ -83,8 +86,6 @@ private:
 
 	void RenderRing (LPDIRECT3DDEVICE7 dev, bool addbkg = false);
 	// render ring system around planet
-
-	void SetupRenderVectorList ();
 
 	PatchManager *cloudmanager;
 	HorizonManager *horizonmanager;

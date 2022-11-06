@@ -18,23 +18,6 @@
 #include <list>
 #include "GraphicsAPI.h"
 
-// body force modes
-#define BF_ENABLE   0x0001
-#define BF_LOGSCALE 0x0002
-#define BF_WEIGHT   0x0004
-#define BF_THRUST   0x0008
-#define BF_LIFT     0x0010
-#define BF_DRAG     0x0020
-#define BF_TOTAL    0x0040
-#define BF_TORQUE   0x0080
-
-// coordinate axes modes
-#define CA_ENABLE   0x0001
-#define CA_NEG      0x0002
-#define CA_VESSEL   0x0004
-#define CA_CBODY    0x0008
-#define CA_BASE     0x0010
-
 // dynamic state propagation methods
 #define MAX_PROP_LEVEL  5
 #define MAX_APROP_LEVEL 5
@@ -131,8 +114,11 @@ struct CFG_VISUALPRM {
 	DWORD  PlanetMaxLevel;		// max. planet patch resolution level
 	double PlanetPatchRes;		// resolution scaling for planet patches
 	double LightBrightness;		// brightness of planetary night lights
+	bool   bUseStarDots;        // render stars as pixels?
 	StarRenderPrm StarPrm;		// render parameters for background stars
-	char   CSphereBgImage[64];	// background image name
+	bool   bUseStarImage;       // render stars as a background image?
+	char   StarImagePath[128];  // starlist image path
+	bool   bUseBgImage;         // render celestial sphere background image?
 	char   CSphereBgPath[128];	// background image path
 	double CSphereBgIntens;		// intensity of background image
 	int    ElevMode;            // elevation mode: 0=none, 1=linear, 2=cubic spline
@@ -165,12 +151,12 @@ struct CFG_VISHELPPRM {
 		// bit 5: constellation patterns          bit 13: constellation boundaries
 	    // bit 6: constellation labels            bit 14: celestial sphere markers
 	    // bit 7: celestial body markers
-	DWORD  flagBodyforce;		// body force vector display
-	float  scaleBodyforce;		// force vector scaling factor
-	float  opacBodyforce;		// force vector opacity factor
-	DWORD  flagCrdAxes;			// coordinate axes vector display
-	float  scaleCrdAxes;		// coordinate axes scaling factor
-	float  opacCrdAxes;			// coordinate axes opacity factor
+	DWORD  flagBodyForce;		// body force vector display
+	float  scaleBodyForce;		// force vector scaling factor
+	float  opacBodyForce;		// force vector opacity factor
+	DWORD  flagFrameAxes;		// frame axes vector display
+	float  scaleFrameAxes;		// frame axes scaling factor
+	float  opacFrameAxes;		// frame axes opacity factor
 };
 
 struct CFG_DEBUGPRM {
@@ -278,6 +264,7 @@ struct CFG_WINDOWPOS {
 	RECT DlgCamera;             // camera dialog position
 	RECT DlgFocus;				// focus dialog position
 	RECT DlgTacc;               // time acceleration dialog position
+	RECT DlgOptions;            // options dialog position
 	RECT DlgVishelper;          // visual helper dialog position
 	int LaunchpadScnListWidth;  // width of Launchpad scenario list
 	int LaunchpadModListWidth;  // width of Launchpad modules list

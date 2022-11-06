@@ -824,7 +824,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 
 // ============================================================================================
 //
-void vVessel::RenderAxis(LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp)
+void vVessel::RenderVectors (LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp)
 {
 	const double threshold = 0;//0.25; // threshold for forces to be drawn
 	VECTOR3 vector;
@@ -832,8 +832,8 @@ void vVessel::RenderAxis(LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp)
 	float alpha;
 	double len = 1e-9f; // avoids division by zero if len is not updated
 
-	DWORD bfvmode = *(DWORD*)gc->GetConfigParam(CFGPRM_SHOWBODYFORCEVECTORSFLAG);
-	float sclset  = *(float*)gc->GetConfigParam(CFGPRM_BODYFORCEVECTORSSCALE);
+	DWORD bfvmode = *(DWORD*)gc->GetConfigParam(CFGPRM_FORCEVECTORFLAG);
+	float sclset  = *(float*)gc->GetConfigParam(CFGPRM_FORCEVECTORSCALE);
 	float scale   = float(size) / 50.0f;
 
 	// -------------------------------------
@@ -844,7 +844,7 @@ void vVessel::RenderAxis(LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp)
 		char label[64];
 		bool bLog;
 
-		if (bfvmode & BFV_SCALE_LOG) bLog = true;
+		if (bfvmode & BFV_LOGSCALE) bLog = true;
 		else                         bLog = false;
 
 		if (!bLog) {
@@ -861,7 +861,7 @@ void vVessel::RenderAxis(LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp)
 			lscale = float(size * sclset / 50.0);
 		}
 
-		alpha = *(float*)gc->GetConfigParam(CFGPRM_BODYFORCEVECTORSOPACITY);
+		alpha = *(float*)gc->GetConfigParam(CFGPRM_FORCEVECTOROPACITY);
 
 		if (alpha > 1e-9) // skip all this when opacity is to small (ZEROish)
 		{
@@ -922,41 +922,8 @@ void vVessel::RenderAxis(LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp)
 	}
 
 	// -------------------------------------
-	// Render Axes
-
-	DWORD scamode = *(DWORD*)gc->GetConfigParam(CFGPRM_SHOWCOORDINATEAXESFLAG);
-
-	if (scamode&SCA_ENABLE && scamode&SCA_VESSEL)
-	{
-		float alpha   = *(float*)gc->GetConfigParam(CFGPRM_COORDINATEAXESOPACITY);
-
-		if (alpha > 1e-9) // skip all this when opacity is to small (ZEROish)
-		{
-			float sclset  = *(float*)gc->GetConfigParam(CFGPRM_COORDINATEAXESSCALE);
-			scale *= 0.99f; // 1% "slimmer" to avoid z-fighting with force vector(s)
-			float ascale  = float(size)*sclset*0.5f;
-
-			RenderAxisVector(pSkp, &D3DXCOLOR(1,0,0,alpha), _V(1,0,0), ascale, scale);
-			RenderAxisLabel(pSkp, &D3DXCOLOR(1,0,0,alpha), _V(1,0,0), ascale, scale, "X");
-
-			RenderAxisVector(pSkp, &D3DXCOLOR(0,1,0,alpha), _V(0,1,0), ascale, scale);
-			RenderAxisLabel(pSkp, &D3DXCOLOR(0,1,0,alpha), _V(0,1,0), ascale, scale, "Y");
-
-			RenderAxisVector(pSkp, &D3DXCOLOR(0,0,1,alpha), _V(0,0,1), ascale, scale);
-			RenderAxisLabel(pSkp, &D3DXCOLOR(0,0,1,alpha), _V(0,0,1), ascale, scale, "Z");
-
-			if (scamode&SCA_NEGATIVE) {
-				RenderAxisVector(pSkp, &D3DXCOLOR(1,0,0,alpha*0.5f), _V(-1,0,0), ascale, scale);
-				RenderAxisLabel(pSkp, &D3DXCOLOR(1,0,0,alpha), _V(-1,0,0), ascale, scale, "-X");
-
-				RenderAxisVector(pSkp, &D3DXCOLOR(0,1,0,alpha*0.5f), _V(0,-1,0), ascale, scale);
-				RenderAxisLabel(pSkp, &D3DXCOLOR(0,1,0,alpha), _V(0,-1,0), ascale, scale, "-Y");
-
-				RenderAxisVector(pSkp, &D3DXCOLOR(0,0,1,alpha*0.5f), _V(0,0,-1), ascale, scale);
-				RenderAxisLabel(pSkp, &D3DXCOLOR(0,0,1,alpha), _V(0,0,-1), ascale, scale, "-Z");
-			}
-		}
-	}
+	// Render Coordinate Axes
+	vObject::RenderVectors(dev, pSkp);
 }
 
 

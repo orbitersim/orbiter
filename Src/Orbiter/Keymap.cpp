@@ -216,7 +216,8 @@ struct {
 	{OAPI_KEY_Q       | KMOD_CTRL,                 "Quit"},
 	{OAPI_KEY_F3,                                  "DlgSelectVessel"},
 	{OAPI_KEY_F3      | KMOD_CTRL,                 "SelectPrevVessel"},
-	{OAPI_KEY_SYSRQ   | KMOD_CTRL,                 "DlgCapture"}
+	{OAPI_KEY_SYSRQ   | KMOD_CTRL,                 "DlgCapture"},
+	{OAPI_KEY_F6,                                  "DlgOptions"}
 };
 
 Keymap::Keymap ()

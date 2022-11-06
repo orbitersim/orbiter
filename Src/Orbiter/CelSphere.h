@@ -19,6 +19,8 @@ public:
 	OGCelestialSphere(OrbiterGraphics* gc, Scene* scene);
 	~OGCelestialSphere();
 
+	void OnOptionChanged(DWORD cat, DWORD item);
+
 	void Render(LPDIRECT3DDEVICE7 dev, const VECTOR3 &skyCol);
 
 	/**
@@ -84,6 +86,11 @@ protected:
 	 * \brief Prepare the star vertex list from the star database.
 	 */
 	void InitStars();
+
+	/**
+	 * \brief Free the vertex buffers for star pixel rendering
+	 */
+	void ClearStars();
 
 	/**
 	 * \brief Map constellation line database to vertex buffer.

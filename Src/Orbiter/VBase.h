@@ -31,7 +31,6 @@ public:
 	void RenderShadows (LPDIRECT3DDEVICE7 dev);
 	void RenderStructures (LPDIRECT3DDEVICE7 dev);
 	void RenderGroundShadow (LPDIRECT3DDEVICE7 dev);
-	void SetupRenderVectorList ();
 	const Base *GetBase() const { return base; }
 	Vector SunDir () const { return sundir; }
 

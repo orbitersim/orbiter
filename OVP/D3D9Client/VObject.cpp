@@ -341,6 +341,52 @@ void vObject::RenderDot(LPDIRECT3DDEVICE9 dev)
 
 // ===========================================================================================
 //
+void vObject::RenderVectors (LPDIRECT3DDEVICE9 dev, D3D9Pad* pSkp)
+{
+	DWORD favmode = *(DWORD*)gc->GetConfigParam(CFGPRM_FRAMEAXISFLAG);
+
+	if (favmode & FAV_ENABLE) // General AXIS rendering ON/OFF
+	{
+		if ((objtp == OBJTP_VESSEL && favmode & FAV_VESSEL) ||
+			(objtp == OBJTP_PLANET && favmode & FAV_CELBODY) ||
+			(objtp == OBJTP_SURFBASE && favmode & FAV_BASE))
+		{
+			float alpha = *(float*)gc->GetConfigParam(CFGPRM_FRAMEAXISOPACITY);
+
+			if (alpha > 1e-9) // skip all this when opacity is to small (ZEROish)
+			{
+				float scale = float(size) / 50.0f;
+				float sclset = *(float*)gc->GetConfigParam(CFGPRM_FRAMEAXISSCALE);
+				//scale *= 0.99f; // 1% "slimmer" to avoid z-fighting with force vector(s)
+				float ascale = float(size) * sclset * 0.5f;
+
+				RenderAxisVector(pSkp, &D3DXCOLOR(1, 0, 0, alpha), _V(1, 0, 0), ascale, scale);
+				RenderAxisLabel(pSkp, &D3DXCOLOR(1, 0, 0, alpha), _V(1, 0, 0), ascale, scale, "+X");
+
+				RenderAxisVector(pSkp, &D3DXCOLOR(0, 1, 0, alpha), _V(0, 1, 0), ascale, scale);
+				RenderAxisLabel(pSkp, &D3DXCOLOR(0, 1, 0, alpha), _V(0, 1, 0), ascale, scale, "+Y");
+
+				RenderAxisVector(pSkp, &D3DXCOLOR(0, 0, 1, alpha), _V(0, 0, 1), ascale, scale);
+				RenderAxisLabel(pSkp, &D3DXCOLOR(0, 0, 1, alpha), _V(0, 0, 1), ascale, scale, "+Z");
+
+				if (favmode & FAV_NEGATIVE) {
+					RenderAxisVector(pSkp, &D3DXCOLOR(1, 0, 0, alpha * 0.5f), _V(-1, 0, 0), ascale, scale);
+					RenderAxisLabel(pSkp, &D3DXCOLOR(1, 0, 0, alpha), _V(-1, 0, 0), ascale, scale, "-X");
+
+					RenderAxisVector(pSkp, &D3DXCOLOR(0, 1, 0, alpha * 0.5f), _V(0, -1, 0), ascale, scale);
+					RenderAxisLabel(pSkp, &D3DXCOLOR(0, 1, 0, alpha), _V(0, -1, 0), ascale, scale, "-Y");
+
+					RenderAxisVector(pSkp, &D3DXCOLOR(0, 0, 1, alpha * 0.5f), _V(0, 0, -1), ascale, scale);
+					RenderAxisLabel(pSkp, &D3DXCOLOR(0, 0, 1, alpha), _V(0, 0, -1), ascale, scale, "-Z");
+				}
+			}
+		}
+	}
+}
+
+
+// ===========================================================================================
+//
 void vObject::RenderAxisVector(D3D9Pad *pSkp, LPD3DXCOLOR pColor, VECTOR3 vector, float lscale, float size, bool bLog)
 {
 	D3DXMATRIX W;

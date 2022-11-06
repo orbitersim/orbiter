@@ -144,6 +144,12 @@ const D3DLIGHT7 *Scene::GetLight () const
 	return light->GetLight();
 }
 
+void Scene::OnOptionChanged(int cat, int item)
+{
+	if (cat == OPTCAT_CELSPHERE)
+		m_celSphere->OnOptionChanged(cat, item);
+}
+
 Scene::VOBJREC *Scene::FindVisual (OBJHANDLE hObj)
 {
 	VOBJREC *pv;
@@ -539,6 +545,13 @@ void Scene::Render ()
 	if (ptex) dev->SetTexture (0, 0);
 	if (!alpha) dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
 
+	// render object vectors
+	if (*(DWORD*)gc->GetConfigParam(CFGPRM_FORCEVECTORFLAG) & BFV_ENABLE || *(DWORD*)gc->GetConfigParam(CFGPRM_FRAMEAXISFLAG) & FAV_ENABLE) {
+		cam->SetFrustumLimits(1.0, 1e30);
+		RenderVectors();
+		cam->SetFrustumLimits(npl, fpl);
+	}
+
 	// render the internal parts of the focus object in a separate render pass
 	if (oapiCameraInternal() && vFocus) {
 		// switch cockpit lights on, external-only lights off
@@ -631,6 +644,42 @@ void Scene::RenderObjectMarker (oapi::Sketchpad* pSkp, const VECTOR3 &gpos, cons
 	normalise (dp);
 	m_celSphere->RenderMarker(pSkp, dp, label1, label2, mode, scale);
 }
+
+// ==============================================================
+
+void Scene::RenderVectors()
+{
+	dev->SetRenderState(D3DRENDERSTATE_ZENABLE, FALSE);
+	dev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TFACTOR);
+	dev->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+
+	dev->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TFACTOR);
+	dev->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+	dev->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+
+	dev->SetRenderState(D3DRENDERSTATE_SPECULARENABLE, TRUE);
+	dev->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_POINT);
+	dev->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFN_POINT);
+	dev->SetTexture(0, 0);
+	D3DMATERIAL7 pmtrl, mtrl = { {1,1,1,1},{1,1,1,1},{1,1,1,1},{0.2,0.2,0.2,1},40 };
+	dev->GetMaterial(&pmtrl);
+	dev->SetMaterial(&mtrl);
+
+	for (VOBJREC* pv = vobjFirst; pv; pv = pv->next) {
+		pv->vobj->RenderVectors(dev);
+	}
+
+	dev->SetRenderState(D3DRENDERSTATE_ZENABLE, TRUE);
+	dev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+	dev->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+	dev->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_CURRENT);
+	dev->SetRenderState(D3DRENDERSTATE_SPECULARENABLE, FALSE);
+	dev->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
+	dev->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
+	dev->SetMaterial(&pmtrl);
+}
+
+// ==============================================================
 
 void Scene::NewVessel (OBJHANDLE hVessel)
 {

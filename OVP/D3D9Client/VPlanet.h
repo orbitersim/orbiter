@@ -254,6 +254,7 @@ public:
 	void			RenderZRange (double *nplane, double *fplane);
 	bool			Render(LPDIRECT3DDEVICE9 dev);
 	void			RenderBeacons(LPDIRECT3DDEVICE9 dev);
+	void            RenderVectors (LPDIRECT3DDEVICE9 dev, D3D9Pad* pSkp);
 	bool			CameraInAtmosphere() const;
 	double			CameraAltitude() const { return cdist - size; }
 	double			GetHorizonAlt() const;

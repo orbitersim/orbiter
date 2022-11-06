@@ -69,26 +69,36 @@ void ReleaseTex(LPDIRECT3DTEXTURE9 pTex);
 // =======================================================================
 // Class CSphereManager
 
-CSphereManager::CSphereManager(D3D9Client *gc, Scene *scene) : texname(), RenderParam()
+CSphereManager::CSphereManager(D3D9Client *gc, const Scene *scene) : texname(), RenderParam()
 {
 	scn = scene;
 
+	gc->OutputLoadStatus("Loading Celestial Sphere...",0);
+	
 	patchidx  = TileManager::patchidx;
 	NLNG = TileManager::NLNG;
 	NLAT = TileManager::NLAT;
 
 	LPDIRECT3DDEVICE9 pDev = gc->GetDevice();
-
 	pShader = new ShaderClass(pDev, "Modules/D3D9Client/CelSphere.hlsl", "CelVS", "CelPS", "CelSphere", "");
 
-	char *c = (char*)gc->GetConfigParam (CFGPRM_CSPHERETEXTURE);
-
-	if (!c[0]) {
-		disabled = true;
-	} else {
-		strncpy (texname, c, 64);
-		disabled = false;
+	m_bBkgImg = *(bool*)gc->GetConfigParam(CFGPRM_CSPHEREUSEBGIMAGE);
+	if (m_bBkgImg) {
+		char* c = (char*)gc->GetConfigParam(CFGPRM_CSPHERETEXTURE);
+		if (c[0]) strncpy(texname, c, 128);
+		else      m_bBkgImg = false;
 	}
+
+	m_bStarImg = *(bool*)gc->GetConfigParam(CFGPRM_CSPHEREUSESTARIMAGE);
+	if (m_bStarImg) {
+		char* c = (char*)gc->GetConfigParam(CFGPRM_CSPHERESTARTEXTURE);
+		if (c[0]) strncpy(starfieldname, c, 128);
+		else m_bStarImg = false;
+	}
+
+	m_bDisabled = true;
+	if (!m_bBkgImg && !m_bStarImg)
+		return;
 
 	double tmp;
 	tmp = *(double*)gc->GetConfigParam (CFGPRM_CSPHEREINTENS);
@@ -109,9 +119,9 @@ CSphereManager::CSphereManager(D3D9Client *gc, Scene *scene) : texname(), Render
 	LoadTextures ();
 
 	// rotation from galactic to ecliptic frame
-	double theta = 60.28*RAD;
-	double phi = 90.08*RAD;
-	double lambda = 173.7*RAD;
+	double lambda = 173.60 * RAD;
+	double phi = 90.03 * RAD;
+	double theta = 60.19 * RAD;
 	double sint = sin(theta), cost = cos(theta);
 	double sinp = sin(phi), cosp = cos(phi);
 	double sinl = sin(lambda), cosl = cos(lambda);
@@ -137,17 +147,22 @@ CSphereManager::CSphereManager(D3D9Client *gc, Scene *scene) : texname(), Render
 
 CSphereManager::~CSphereManager ()
 {
-	if (!disabled)
-	{
-		if (ntex) {
-			for (DWORD i = 0; i < ntex; ++i)
-				ReleaseTex(texbuf[i]);
-			delete []texbuf;
-			texbuf = NULL;
+	if (!m_bDisabled) {
+
+		if (m_bBkgImg) {
+			for (auto tex : m_texbuf)
+				ReleaseTex(tex);
+			m_texbuf.clear();
 		}
+		if (m_bStarImg) {
+			for (auto tex : m_starbuf)
+				ReleaseTex(tex);
+			m_starbuf.clear();
+		}
+
+		delete[]tiledesc;
+		tiledesc = NULL;
 	}
-	delete []tiledesc;
-	tiledesc = NULL;
 }
 
 // =======================================================================
@@ -297,26 +312,81 @@ bool CSphereManager::LoadTileData ()
 
 void CSphereManager::LoadTextures ()
 {
-	if (disabled) return;
+	int texlvl = 0, starlvl = 0;
 
-	// pre-load level 1-8 textures
-	char fname[256];
-	strcpy (fname, texname);
-	strcat (fname, ".tex");
-
-	ntex = patchidx[maxbaselvl];
-	texbuf = new LPDIRECT3DTEXTURE9[ntex];
-	if (ntex = LoadPlanetTextures(fname, texbuf, 0, ntex)) {
-		while ((int)ntex < patchidx[maxbaselvl]) maxlvl = --maxbaselvl;
-		while ((int)ntex > patchidx[maxbaselvl]) ReleaseTex(texbuf[--ntex]);
-		// not enough textures loaded for requested resolution level
-		for (int i = 0; i < patchidx[maxbaselvl]; ++i)
-			tiledesc[i].tex = texbuf[i];
-	} else {
-		delete []texbuf;
-		texbuf = 0;
-		// no textures at all!
+	if (m_bBkgImg) {
+		// pre-load level 1-8 background image textures
+		char fname[256];
+		strcpy(fname, texname);
+		strcat(fname, ".tex");
+		gc->OutputLoadStatus(fname, 1);
+		int lvl = maxbaselvl;
+		int ntex = patchidx[lvl];
+		m_texbuf.resize(ntex);
+		if (ntex = LoadPlanetTextures(fname, m_texbuf.data(), 0, ntex)) {
+			while (ntex < patchidx[lvl])
+				--lvl;
+			while (ntex > patchidx[lvl])
+				ReleaseTex(m_texbuf[--ntex]);
+			if (ntex < m_texbuf.size())
+				m_texbuf.resize(ntex);
+		}
+		else {
+			m_texbuf.clear();
+			m_bBkgImg = false;
+		}
+		texlvl = lvl;
 	}
+
+	if (m_bStarImg) {
+		// pre-load level 1-8 starfield image textures
+		char fname[256];
+		strcpy(fname, starfieldname);
+		strcat(fname, ".tex");
+		gc->OutputLoadStatus(fname, 1);
+		int lvl = maxbaselvl;
+		int ntex = patchidx[lvl];
+		m_starbuf.resize(ntex);
+		if (ntex = LoadPlanetTextures(fname, m_starbuf.data(), 0, ntex)) {
+			while (ntex < patchidx[lvl])
+				--lvl;
+			while (ntex > patchidx[lvl])
+				ReleaseTex(m_starbuf[--ntex]);
+			if (ntex < m_starbuf.size())
+				m_starbuf.resize(ntex);
+		}
+		else {
+			m_starbuf.clear();
+			m_bStarImg = false;
+		}
+		starlvl = lvl;
+	}
+
+	// make sure the two texture sets support the same resolution range
+	if (m_bBkgImg && m_bStarImg && texlvl != starlvl) {
+		if (texlvl < starlvl) {
+			for (int i = m_texbuf.size(); i < m_starbuf.size(); i++)
+				ReleaseTex(m_starbuf[i]);
+			m_starbuf.resize(m_texbuf.size());
+			starlvl = texlvl;
+		}
+		else {
+			for (int i = m_starbuf.size(); i < m_texbuf.size(); i++)
+				ReleaseTex(m_texbuf[i]);
+			m_texbuf.resize(m_starbuf.size());
+			texlvl = starlvl;
+		}
+	}
+	maxbaselvl = maxlvl = (m_bBkgImg ? texlvl : m_bStarImg ? starlvl : 0);
+
+	for (int i = 0; i < patchidx[maxbaselvl]; i++) {
+		if (m_bBkgImg)
+			tiledesc[i].tex = m_texbuf[i];
+		if (m_bStarImg)
+			tiledesc[i].ltex = m_starbuf[i];
+	}
+
+	m_bDisabled = !m_bBkgImg && !m_bStarImg;
 
 	//  pre-load highres tile textures
 	if (bPreloadTile && nhitex) {
@@ -328,14 +398,23 @@ void CSphereManager::LoadTextures ()
 
 // =======================================================================
 
+void CSphereManager::SetBgBrightness(double val)
+{
+	intensity = (float)val;
+}
+
+// =======================================================================
+
 void CSphereManager::Render (LPDIRECT3DDEVICE9 dev, int level, double bglvl)
 {
-	if (disabled) return;
+	if (m_bDisabled) return;
 
 	float intens = intensity;
+	float bgscale = (float)exp(-bglvl * 12.5);
 
-	if (bglvl) intens *= exp(-bglvl*12.5);
+	if (bglvl) intens *= bgscale;
 	
+
 	level = min ((DWORD)level, maxlvl);
 
 	RenderParam.dev = dev;
@@ -363,6 +442,11 @@ void CSphereManager::Render (LPDIRECT3DDEVICE9 dev, int level, double bglvl)
 
 	CelData.fAlpha = intens;
 	CelData.mViewProj = *scn->GetProjectionViewMatrix();
+
+	HR(Shader()->SetFloat(sfAlpha, intens));
+	HR(Shader()->SetFloat(sfNight, bgscale));
+	HR(Shader()->SetBool(sbLights, m_bBkgImg));
+	HR(Shader()->SetBool(sbLocals, m_bStarImg))
 	for (hemisp = idx = 0; hemisp < 2; hemisp++) {
 		if (hemisp) { // flip world transformation to southern hemisphere
 			D3DXMatrixMultiply(&RenderParam.wmat, &TileManager::Rsouth, &RenderParam.wmat);
@@ -475,7 +559,7 @@ bool CSphereManager::TileInView (int lvl, int ilat)
 	VBMESH &mesh = PATCH_TPL[lvl][ilat];
 	D3DXVECTOR3 vP;
 	D3DXVec3TransformCoord(&vP, &mesh.bsCnt, &mWorld);
-	return scn->IsVisibleInCamera(&vP, mesh.bsRad);
+	return gc->GetScene()->IsVisibleInCamera(&vP, mesh.bsRad);
 }
 
 
