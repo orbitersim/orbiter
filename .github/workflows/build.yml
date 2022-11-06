@@ -133,6 +133,5 @@ jobs:
         prerelease: true
         title: "Orbiter development build"
         files: |
-          Orbiter-x86.zip
-          Orbiter-x64.zip
-      working-directory: ./out
+          ./out/Orbiter-x86.zip
+          ./out/Orbiter-x64.zip
