@@ -95,14 +95,29 @@ jobs:
         path: ${{ github.workspace }}/out/Orbiter.zip
         retention-days: 60
 
-    - name: Pre-release
-      if: ${{ github.ref == 'refs/heads/main' }}
-      uses: "marvinpinto/action-automatic-releases@latest"
+  pre-release:
+    name: Push pre-release package
+    
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    
+    - uses: actions/download-artifact@v3
       with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag: "latest"
-        prerelease: true
-        title: "Orbiter-${{ matrix.architecture }} development build"
-        files: |
-          ${{ github.workspace }}/out/Orbiter.zip
-          
+        path: ${{ github.workspace }}/out
+        
+    - name: Show downloaded files
+      run ls -R
+      working-directory: ${{ github.workspace }}/out
+    
+#    - name: Pre-release
+#      if: ${{ github.ref == 'refs/heads/main' }}
+#      working-directory: ${{ github.workspace }}/out
+#      uses: "marvinpinto/action-automatic-releases@latest"
+#      with:
+#        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+#        automatic_release_tag: "latest-${{ matrix.architecture }}"
+#        prerelease: true
+#        title: "Orbiter-${{ matrix.architecture }} development build"
+#        files: Orbiter.zip
