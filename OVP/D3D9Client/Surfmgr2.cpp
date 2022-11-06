@@ -1402,7 +1402,6 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 	{
 		pShader->SetTexture("tLndRay", vp->GetScatterTable(RAY_LAND), IPF_LINEAR | IPF_CLAMP);
 		pShader->SetTexture("tLndMie", vp->GetScatterTable(MIE_LAND), IPF_LINEAR | IPF_CLAMP);
-		//pShader->SetTexture("tLndAmb", vp->GetScatterTable(AMB_LAND), IPF_LINEAR | IPF_CLAMP);
 		pShader->SetTexture("tSun", vp->GetScatterTable(SUN_COLOR), IPF_LINEAR | IPF_CLAMP);
 
 		if (pShader->bWater) {
@@ -1441,6 +1440,7 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 	}
 
 	if (has_ripples && pShader->bRipples) {
+		fc->bRipples = true;
 		pShader->SetTexture("tOcean", hOcean, IPF_WRAP | IPF_ANISOTROPIC, 4);
 	}
 

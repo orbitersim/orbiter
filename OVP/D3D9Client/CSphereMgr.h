@@ -100,6 +100,9 @@ protected:
 	static int *NLAT;
 
 private:
+	HANDLE hTexA, hTexB, hVSConst;
+	ShaderClass* pShader;
+	D3D9Client* gc;
 	char texname[128];
 	char starfieldname[128];
 	float intensity;                 // opacity of background image

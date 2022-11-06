@@ -6,8 +6,8 @@
 // ============================================================================
 
 #define Nc  16		//Z-dimension count in 3D texture
-#define Wc  48		//3D texture size (pixels)
-#define Qc  96		//2D texture size (pixels)
+#define Wc  64		//3D texture size (pixels)
+#define Qc  129		//2D texture size (pixels)
 
 
 #define NSEG 12
@@ -418,16 +418,16 @@ float4 SkyView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 	}
 
 	osc *= rmO * len;
-	ret *= Const.cSun;
 	ret *= rmI * len;
 	ret *= Flo.bRay ? Const.RayWave : Const.MieWave;
+	ret *= Const.cSun;
 
 	if (Flo.bRay)
 	{
 		ret += MultiScatterApprox(vNrm) * exp(-Const.CamAlt * Const.iH.r * 0.5f);
 	}
 
-	float alpha = saturate(1.0f - osc * 0.5f);
+	float alpha = saturate(osc * 0.5f);
 
 	return float4(ret, alpha);
 }
@@ -486,7 +486,7 @@ float4 RingView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 	ret *= Flo.bRay ? Const.RayWave : Const.MieWave;
 	ret *= Const.cSun;
 
-	float alpha = saturate(1.0f - osc * 0.5f);
+	float alpha = saturate(osc * 0.5f);
 
 	return float4(ret, alpha);
 }

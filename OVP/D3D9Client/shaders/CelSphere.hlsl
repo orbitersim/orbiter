@@ -4,6 +4,8 @@
 // Copyright (C) 2021 Jarmo Nikkanen
 // ==============================================================
 
+#define BOOL bool
+
 struct CelDataStruct
 {
 	float4x4 mWorld;
@@ -16,8 +18,8 @@ struct CelDataStruct
 // Also bool is 32-bits in HLSL therefore must use BOOL in C++ structure
 struct CelDataFlow
 {
-	bool	 bAlpha;
-	bool	 bBeta;
+	BOOL	 bAlpha;
+	BOOL	 bBeta;
 };
 
 struct TILEVERTEX					// (VERTEX_2TEX) Vertex declaration used for surface tiles and cloud layer

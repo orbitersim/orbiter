@@ -138,6 +138,7 @@ struct FlowControlPS
 	BOOL bMicroNormals;			// Micro texture has normals
 	BOOL bCloudShd;
 	BOOL bMask;
+	BOOL bRipples;
 };
 
 struct FlowControlVS

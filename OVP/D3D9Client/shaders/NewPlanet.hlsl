@@ -40,7 +40,7 @@ struct TileVS
 {
 	float4 posH     : POSITION0;
 	float2 texUV    : TEXCOORD0;  // Texture coordinate
-	float3 camW		: TEXCOORD1;
+	float4 camW		: TEXCOORD1;  // Radius in .w
 	float3 nrmW		: TEXCOORD2;
 #if defined(_SHDMAP)
 	float4 shdH     : TEXCOORD3;
@@ -75,6 +75,7 @@ struct FlowControlPS
 	BOOL bMicroNormals;			// Micro texture has normals
 	BOOL bCloudShd;
 	BOOL bMask;
+	BOOL bRipples;
 };
 
 struct FlowControlVS
@@ -291,11 +292,11 @@ TileVS TerrainVS(TILEVERTEX vrt)
 	TileVS outVS = (TileVS)0;
 	float4 vElev = 0;
 	float3 vNrmW;
-	float3 vVrt;
-	float3 vPlN;
-
+	
 	// Apply a world transformation matrix
 	float3 vPosW = mul(float4(vrt.posL, 1.0f), Prm.mWorld).xyz;
+	float3 vVrt = Const.CamPos + vPosW;
+	float3 vPlN = normalize(vVrt);
 
 	if (FlowVS.bElevOvrl)
 	{
@@ -312,15 +313,10 @@ TileVS TerrainVS(TILEVERTEX vrt)
 		vNrmW = mul(float4(vNrmW, 0.0f), Prm.mWorld).xyz;
 
 		// Reconstruct Elevation
-		vPosW += normalize(Const.CamPos + vPosW) * (vElev.z - vrt.elev) * vElev.w;
-
-		vVrt = Const.CamPos + vPosW;
-		vPlN = normalize(vVrt);
+		vPosW += normalize(Const.CamPos + vPosW) * (vElev.z - vrt.elev) * vElev.w;	
 	}
 	else {
 		vNrmW = mul(float4(vrt.normalL, 0.0f), Prm.mWorld).xyz;
-		vVrt = Const.CamPos + vPosW;
-		vPlN = normalize(vVrt);
 	}
 
 	// Disrecard elevation and make the surface spherical
@@ -336,8 +332,7 @@ TileVS TerrainVS(TILEVERTEX vrt)
 #endif
 
 	outVS.texUV.xy = vrt.tex0.xy;
-
-	outVS.camW = -vPosW;
+	outVS.camW = float4(-vPosW, dot(vVrt, vPlN));
 	outVS.nrmW = vNrmW;
 	
 	return outVS;
@@ -427,14 +422,14 @@ float4 TerrainPS(TileVS frg) : COLOR
 	float3 cRfl = 0;
 	float3 cSpe = 0;
 	float3 cMlt = 0;
-	float3 nrmW = normalize(frg.nrmW);		// Per-pixel surface normal vector
-	float3 nvrW = nrmW;						// Per-pixel surface normal vector
-	float3 vRay = normalize(frg.camW);		// Unit viewing ray
-	float3 vVrt = Const.CamPos - frg.camW;	// Geo-centric pixel position
-	float3 vPlN = normalize(vVrt);			// Planet mean normal
-	float   dst = dot(vRay, frg.camW);		// Pixel to camera distance
-	float   rad = dot(vVrt, vPlN);
-	float   alt = rad - Const.PlanetRad;
+	float3 nrmW = normalize(frg.nrmW);			// Per-pixel surface normal vector
+	float3 nvrW = nrmW;							// Per-pixel surface normal vector
+	float3 vRay = normalize(frg.camW.xyz);		// Unit viewing ray
+	float3 vVrt = Const.CamPos - frg.camW.xyz;	// Geo-centric pixel position
+	float3 vPlN = normalize(vVrt);				// Planet mean normal
+	float   dst = dot(vRay, frg.camW.xyz);		// Pixel to camera distance
+	float   rad = frg.camW.w;					// Pixel geo-distance
+	float   alt = rad - Const.PlanetRad;		// Pixel altitude over mean radius
 
 
 	// Render with specular ripples and fresnel water -------------------------
@@ -476,7 +471,7 @@ float4 TerrainPS(TileVS frg) : COLOR
 		cTex.rgb *= saturate(1.0f - m * f4 * fSrf);
 
 		float eq = (Const.HrzDst * 1.2f - dst) * 0.01 + dot(Const.toSun, Const.toCam) * Const.HrzDst * 0.2f;
-		float qe = 1.0f + abs(dot(frg.camW, Const.ZeroAz));
+		float qe = 1.0f + abs(dot(frg.camW.xyz, Const.ZeroAz));
 		float qq = max(0, (eq - qe)) / (qe + eq);
 
 		cSpe *= lerp(1.0f, min(15.0f, qq * qq * 15.0f) + 0.2f, fSrf * fSrf);
@@ -527,7 +522,7 @@ float4 TerrainPS(TileVS frg) : COLOR
 	float3 cDiffLocal = 0;
 
 #if defined(_LOCALLIGHTS)
-	LocalLights(cDiffLocal, nrmW, -frg.camW);
+	LocalLights(cDiffLocal, nrmW, -frg.camW.xyz);
 #endif
 
 #if defined(_NO_ATMOSPHERE)
@@ -720,7 +715,7 @@ float4 CloudPS(CldVS frg) : COLOR
 
 	LandOut sct = GetLandView(Const.CloudAlt + Const.PlanetRad, vPlN);
 
-	float alf = pow((1.0f - cTex.a) * sqrt(cTex.a), Const.Clouds);
+	float alf = pow(abs((1.0f - cTex.a) * sqrt(cTex.a)), Const.Clouds);
 	float mie = pow(saturate(phase), 60.0f) * alf * 3.0f;
 
 	color *= exp(-(Const.RayWave * sct.ray.a + Const.MieWave * sct.mie.a));
@@ -751,7 +746,7 @@ TileVS GiantVS(TILEVERTEX vrt)
 	
 	outVS.posH = mul(float4(vPosW, 1.0f), Const.mVP);
 	outVS.texUV.xy = vrt.tex0.xy;
-	outVS.camW = -vPosW;
+	outVS.camW = float4(-vPosW, 0);
 	outVS.nrmW = vNrmW;
 
 	return outVS;
@@ -767,10 +762,10 @@ float4 GiantPS(TileVS frg) : COLOR
 	// Fetch Main Textures
 	float4 cTex = tex2D(tDiff, vUVSrf);
 	
-	float3 nrmW = normalize(frg.nrmW);		// Per-pixel surface normal vector
-	float3 vRay = normalize(frg.camW);		// Unit viewing ray
-	float3 vVrt = Const.CamPos - frg.camW;	// Geo-centric pixel position
-	float3 vPlN = normalize(vVrt);			// Planet mean normal
+	float3 nrmW = normalize(frg.nrmW);			// Per-pixel surface normal vector
+	float3 vRay = normalize(frg.camW.xyz);		// Unit viewing ray
+	float3 vVrt = Const.CamPos - frg.camW.xyz;	// Geo-centric pixel position
+	float3 vPlN = normalize(vVrt);				// Planet mean normal
 	//float  dst = dot(vRay, frg.camW);	// Pixel to camera distance
 	//float  rad = dot(vVrt, vPlN);
 	//float fDRS = dot(vRay, Const.toSun);

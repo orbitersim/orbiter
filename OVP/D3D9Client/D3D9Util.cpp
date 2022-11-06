@@ -1771,13 +1771,6 @@ void ShaderClass::ClearTextures()
 }
 
 
-/*void ShaderClass::Activate()
-{
-	HR(pDev->SetVertexShader(pVS));
-	HR(pDev->SetPixelShader(pPS));
-}*/
-
-
 void ShaderClass::UpdateTextures()
 {
 	// Set textures and samplers -----------------------------------------------
@@ -1819,6 +1812,7 @@ void ShaderClass::UpdateTextures()
 			HR(pDev->SetSamplerState(idx, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR));
 		}
 
+		// If texture has changed then assign it
 		if (pTextures[idx].pTex != pTextures[idx].pAssigned)
 		{
 			pTextures[idx].pAssigned = pTextures[idx].pTex;
@@ -1879,6 +1873,12 @@ void ShaderClass::Setup(LPDIRECT3DVERTEXDECLARATION9 pDecl, bool bZ, int blend)
 		HR(pDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE));
 		HR(pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
 	}
+
+	if (blend == 3) {
+		HR(pDev->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_MAX));
+		HR(pDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE));
+		HR(pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
+	}
 }
 
 
@@ -1902,24 +1902,7 @@ HANDLE ShaderClass::GetVSHandle(const char* name)
 void ShaderClass::SetTexture(const char* name, LPDIRECT3DTEXTURE9 pTex, UINT flags, UINT aniso)
 {
 	D3DXHANDLE hVar = pPSCB->GetConstantByName(NULL, name);
-
-	if (!hVar) {
-		LogErr("Shader::SetTexture() Invalid variable name [%s]. File[%s], Entrypoint[%s], Shader[%s]", name, fn.c_str(), psn.c_str(), sn.c_str());
-		return;
-	}
-
-	DWORD idx = pPSCB->GetSamplerIndex(hVar);
-
-	assert(idx < 16);
-
-	if (!pTex) {
-		pTextures[idx].pTex = NULL;
-		return;
-	}
-
-	pTextures[idx].pTex = pTex;
-	pTextures[idx].Flags = flags;
-	pTextures[idx].AnisoLvl = aniso;
+	SetTexture((HANDLE)hVar, pTex, flags, aniso);
 }
 
 
@@ -1969,6 +1952,9 @@ void ShaderClass::SetTexture(HANDLE hVar, LPDIRECT3DTEXTURE9 pTex, UINT flags, U
 		pTextures[idx].pTex = NULL;
 		return;
 	}
+
+	if (pTextures[idx].Flags != flags) pTextures[idx].bSamplerSet = false;
+	if (pTextures[idx].AnisoLvl != aniso) pTextures[idx].bSamplerSet = false;
 
 	pTextures[idx].pTex = pTex;
 	pTextures[idx].Flags = flags;
