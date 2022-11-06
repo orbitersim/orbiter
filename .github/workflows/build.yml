@@ -97,19 +97,24 @@ jobs:
 
   pre-release:
     name: Push pre-release package
+
+    needs: build
     
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v2
-    
-    - uses: actions/download-artifact@v3
+    - name: Create directories
+      run: mkdir out
+      
+    - name: Download artifacts
+      uses: actions/checkout@v2
+      uses: actions/download-artifact@v3
       with:
-        path: ${{ github.workspace }}/out
+        path: ./out
         
     - name: Show downloaded files
       run: ls -R
-      working-directory: ${{ github.workspace }}/out
+      working-directory: ./out
     
 #    - name: Pre-release
 #      if: ${{ github.ref == 'refs/heads/main' }}
