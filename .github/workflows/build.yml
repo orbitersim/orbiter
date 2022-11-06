@@ -105,9 +105,11 @@ jobs:
     steps:
     - name: Create directories
       run: mkdir out
-      
-    - name: Download artifacts
+
+    - name: Checkout  
       uses: actions/checkout@v2
+
+    - name: Download artifacts
       uses: actions/download-artifact@v3
       with:
         path: ./out
