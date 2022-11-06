@@ -108,7 +108,7 @@ jobs:
         path: ${{ github.workspace }}/out
         
     - name: Show downloaded files
-      run ls -R
+      run: ls -R
       working-directory: ${{ github.workspace }}/out
     
 #    - name: Pre-release
