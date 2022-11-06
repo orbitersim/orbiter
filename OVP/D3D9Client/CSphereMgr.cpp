@@ -22,7 +22,14 @@ struct CelDataStruct
 	float4x4 mWorld;
 	float4x4 mViewProj;
 	float	 fAlpha;
+	float	 fBeta;
 } CelData;
+
+struct CelDataFlow
+{
+	BOOL	 bAlpha;
+	BOOL	 bBeta;
+} CelFlow;
 #pragma pack(pop)
 
 // =======================================================================
@@ -421,6 +428,7 @@ void CSphereManager::RenderTile (int lvl, int hemisp, int ilat, int nlat, int il
 	CelData.mWorld = mWorld;
 
 	pShader->SetTexture("tTex", tex, IPF_CLAMP, IPF_LINEAR);
+	//pShader->SetPSConstants("Flow",  &CelFlow, sizeof(CelData));
 	pShader->SetPSConstants("Const", &CelData, sizeof(CelData));
 	pShader->SetVSConstants("Const", &CelData, sizeof(CelData));
 	pShader->Setup(pPatchVertexDecl, false, 0);

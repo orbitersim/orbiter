@@ -881,7 +881,6 @@ void vPlanet::UpdateScatter()
 	pIP->SetStruct("Const", &cp, sizeof(ConstParams));
 	pIP->SetTextureNative("tSkyRayColor", pRaySkyView, IPF_CLAMP | IPF_LINEAR);
 	pIP->SetTextureNative("tSkyMieColor", pMieSkyView, IPF_CLAMP | IPF_LINEAR);
-	pIP->SetTextureNative("tSunGlare", pSunTex, IPF_CLAMP | IPF_LINEAR);
 
 	pAmbientSky->GetSurfaceLevel(0, &pTgt);
 	pIP->SetOutputNative(0, pTgt);

@@ -1855,7 +1855,8 @@ void ShaderClass::Setup(LPDIRECT3DVERTEXDECLARATION9 pDecl, bool bZ, int blend)
 
 	HR(pDev->SetVertexShader(pVS));
 	HR(pDev->SetPixelShader(pPS));
-	HR(pDev->SetVertexDeclaration(pDecl));
+
+	if (pDecl) HR(pDev->SetVertexDeclaration(pDecl));
 
 	HR(pDev->SetRenderState(D3DRS_POINTSPRITEENABLE, false));
 	HR(pDev->SetRenderState(D3DRS_ALPHATESTENABLE, false));
@@ -1978,12 +1979,12 @@ void ShaderClass::SetTexture(HANDLE hVar, LPDIRECT3DTEXTURE9 pTex, UINT flags, U
 void ShaderClass::SetPSConstants(HANDLE hVar, void* data, UINT bytes)
 {
 	if (!hVar) {
-		LogErr("Shader::SetVSConstants() Invalid handle. File[%s], Entrypoint[%s], Shader[%s]", fn.c_str(), psn.c_str(), sn.c_str());
+		LogErr("Shader::SetPSConstants() Invalid handle. File[%s], Entrypoint[%s], Shader[%s]", fn.c_str(), psn.c_str(), sn.c_str());
 		return;
 	}
 
 	if (pVSCB->SetValue(pDev, D3DXHANDLE(hVar), data, bytes) != S_OK) {
-		LogErr("Shader::SetVSConstants() Failed. File[%s], Entrypoint[%s]", fn.c_str(), vsn.c_str());
+		LogErr("Shader::SetPSConstants() Failed. File[%s], Entrypoint[%s]", fn.c_str(), vsn.c_str());
 	}
 }
 

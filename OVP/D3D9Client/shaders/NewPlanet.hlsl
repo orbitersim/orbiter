@@ -64,7 +64,7 @@ struct HazeVS
 };
 
 
-// Note: "bool" is 32-bits in a shaders (max count 8) 
+// Note: "bool" is 32-bits in a shaders (max count 16) 
 //
 struct FlowControlPS
 {

@@ -136,6 +136,7 @@ set(ShaderFiles
 	${ShaderDir}/LensFlare.hlsl
 	${ShaderDir}/LightBlur.hlsl
     ${ShaderDir}/CelSphere.hlsl
+    ${ShaderDir}/NewMesh.hlsl
     ${ShaderDir}/NewPlanet.hlsl
     ${ShaderDir}/Scatter.hlsl
 	${ShaderDir}/Mesh.fx

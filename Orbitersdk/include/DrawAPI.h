@@ -524,6 +524,10 @@ namespace oapi {
 		{
 			memcpy_s(data, sizeof(FMATRIX4), m, sizeof(FMATRIX4));
 		}
+		inline operator LPD3DXMATRIX()
+		{
+			return (LPD3DXMATRIX)this;
+		}
 #endif
 
 		void Zero()

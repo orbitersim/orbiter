@@ -457,6 +457,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	OutputLoadStatus("SceneTech.fx",1);
 	Scene::D3D9TechInit(pDevice, fld);
+	D3D9Mesh::GlobalInit(pDevice);
 
 	// Create scene instance
 	scene = new Scene(this, viewW, viewH);
@@ -835,6 +836,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 	vStar::GlobalExit();
 	vVessel::GlobalExit();
 	vObject::GlobalExit();
+	D3D9Mesh::GlobalExit();
 
 	SAFE_DELETE(defpen);
 	SAFE_DELETE(deffont);

@@ -181,6 +181,11 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	else pGDIOverlay = NULL;
 
 
+	// Create an auxiliary screen space normal and depth buffer (i.e. Shader readable depth buffer)
+	//
+	HR(D3DXCreateTexture(pDevice, viewW, viewH, 1, D3DUSAGE_RENDERTARGET, D3DFMT_G32R32F, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_DEPTH]));
+
+
 	// Initialize post processing effects --------------------------------------------------------------------------------------------------
 	//
 	pLightBlur = NULL;
@@ -1148,19 +1153,52 @@ void Scene::RenderMainScene()
 	}
 
 
+	// ---------------------------------------------------------------------------------------------
+	// Create a render list for shadow mapping
+	// ---------------------------------------------------------------------------------------------
+
+	VOBJREC* pv = NULL;
+	LPDIRECT3DTEXTURE9 pShdMap = NULL;
+
+	RenderList.clear();
+
+	for (pv = vobjFirst; pv; pv = pv->next) {
+		if (!pv->vobj->IsActive()) continue;
+		if (!pv->vobj->IsVisible()) continue;
+		if (pv->type == OBJTP_VESSEL) {
+			vVessel* vV = (vVessel*)pv->vobj;
+			RenderList.push_back(vV);
+			vV->bStencilShadow = true;
+		}
+	}
 
 
 
+	// ---------------------------------------------------------------------------------------------
+	// Start Rendering of Normal and Depth Buffer for SSAO and (point in scene) visibility checks
+	// ---------------------------------------------------------------------------------------------
+
+	UpdateCameraFromOrbiter(RENDERPASS_NORMAL_DEPTH);
+	UpdateCamVis();
+
+	BeginPass(RENDERPASS_NORMAL_DEPTH);
+	gc->PushRenderTarget(psgBuffer[GBUF_DEPTH], gc->GetDepthStencil(), RENDERPASS_NORMAL_DEPTH);
+
+	// Clear buffers
+	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0L));
+
+	// Render vessels
+	for (auto* vVes : RenderList) vVes->Render(pDevice, false);
+
+	gc->PopRenderTargets();
+	PopPass();
 
 
 
+	
 	// -------------------------------------------------------------------------------------------------------
 	// Start Main Scene Rendering
 	// -------------------------------------------------------------------------------------------------------
-
-	UpdateCameraFromOrbiter(RENDERPASS_MAINSCENE);
-
-	UpdateCamVis();
 
 
 	// Push main render target and depth surfaces
@@ -1216,24 +1254,7 @@ void Scene::RenderMainScene()
 	if (bClearZBuffer) SetCameraFrustumLimits(1e3, 1e8f);
 	else			   SetCameraFrustumLimits(znear_for_vessels, 1e8f);
 
-	// ---------------------------------------------------------------------------------------------
-	// Create a render list for shadow mapping
-	// ---------------------------------------------------------------------------------------------
-
-	VOBJREC *pv = NULL;
-	LPDIRECT3DTEXTURE9 pShdMap = NULL;
-
-	RenderList.clear();
-
-	for (pv = vobjFirst; pv; pv = pv->next) {
-		if (!pv->vobj->IsActive()) continue;
-		if (!pv->vobj->IsVisible()) continue;
-		if (pv->type == OBJTP_VESSEL) {
-			vVessel *vV = (vVessel *)pv->vobj;
-			RenderList.push_back(vV);
-			vV->bStencilShadow = true;
-		}
-	}
+	
 
 	// ---------------------------------------------------------------------------------------------
 	// Create a caster list for shadow mapping

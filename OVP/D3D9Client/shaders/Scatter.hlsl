@@ -335,13 +335,13 @@ float3 GetSunColor(float dir, float alt)
 }
 
 
-float SunGlare(float3 vRay)
+/*float SunGlare(float3 vRay)
 {
 	if (dot(vRay, Const.toSun) < 0) return 0.0f;
 	float2 uv = float2(dot(vRay, Const.ZeroAz), dot(vRay, Const.Up)) * GLARE_SIZE + 0.5f;
 	float c = tex2D(tSunGlare, uv).r * Const.Glare * 0.2f;
 	return c;
-}
+}*/
 
  
 // Compute attennuation from one point in atmosphere to camera

@@ -686,6 +686,10 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 	if (scn->GetRenderPass() == RENDERPASS_SHADOWMAP) bCockpit = bVC = false;
 	// Always render exterior view for envmaps
 
+	if (scn->GetRenderPass() == RENDERPASS_NORMAL_DEPTH) bCockpit = bVC = false;
+	// Always render exterior view for envmaps
+
+
 	static VCHUDSPEC hudspec_;
 	const VCHUDSPEC *hudspec = &hudspec_;
 	static bool gotHUDSpec(false);
@@ -773,10 +777,13 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 			}
 		}
 
+		const LPD3DXMATRIX pVP = scn->GetProjectionViewMatrix();
+		const LPD3DXMATRIX pLVP = (const LPD3DXMATRIX)&shd->mViewProj;
 
 		// Render vessel meshes --------------------------------------------------------------------------
 		//
-		if (scn->GetRenderPass() == RENDERPASS_SHADOWMAP) meshlist[i].mesh->RenderShadows(0.0f, NULL, pWT, true);
+		if (scn->GetRenderPass() == RENDERPASS_SHADOWMAP) meshlist[i].mesh->RenderShadowMap(pWT, pLVP, 0);
+		else if (scn->GetRenderPass() == RENDERPASS_NORMAL_DEPTH) meshlist[i].mesh->RenderShadowMap(pWT, pVP, 1);
 		else {
 			if (internalpass) meshlist[i].mesh->Render(pWT, RENDER_VC, NULL, 0);
 			else 			  meshlist[i].mesh->Render(pWT, RENDER_VESSEL, pEnv, nEnv);
@@ -1129,9 +1136,9 @@ void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float
 			vessel->GetMeshOffset(i, of);
 			nrml.w += float(dotp(of, hn));	// Sift a local groung level
 			D3DXMatrixMultiply(&mProjWorldShift, meshlist[i].trans, &mProjWorld);
-			mesh->RenderShadows(alpha, &mWorld, &mProjWorldShift, false, &nrml);
+			mesh->RenderStencilShadows(alpha, &mWorld, &mProjWorldShift, false, &nrml);
 		}
-		else mesh->RenderShadows(alpha, &mWorld, &mProjWorld, false, &nrml);
+		else mesh->RenderStencilShadows(alpha, &mWorld, &mProjWorld, false, &nrml);
 	}
 }
 
