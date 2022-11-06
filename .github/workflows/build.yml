@@ -96,12 +96,14 @@ jobs:
         retention-days: 60
 
   pre-release:
-    name: Push pre-release package
+    name: Publish pre-release
 
     needs: build
     
     runs-on: ubuntu-latest
     
+    if: ${{ github.ref == 'refs/heads/main' }}
+
     steps:
     - name: Create directories
       run: mkdir out
@@ -114,8 +116,13 @@ jobs:
       with:
         path: ./out
         
-    - name: Show downloaded files
-      run: ls -R
+    - name: Re-arrange artifacts
+      run: |
+        mv ./Orbiter-x64/Orbiter.zip ./Orbiter-x64.zip
+        mv ./Orbiter-x86/Orbiter.zip ./Orbiter-x86.zip
+        rmdir Orbiter-x64
+        rmdir Orbiter-x86
+        ls -R
       working-directory: ./out
     
 #    - name: Pre-release
