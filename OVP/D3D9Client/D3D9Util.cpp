@@ -1591,7 +1591,9 @@ SketchMesh::SketchMesh(LPDIRECT3DDEVICE9 _pDev) :
 	pDev(_pDev),
 	Tex(NULL),
 	Grp(NULL),
-	Mtrl(NULL)
+	Mtrl(NULL),
+	pIB(NULL),
+	pVB(NULL)
 {
 }
 

@@ -94,8 +94,6 @@ struct BasicData
 #endif
 };
 
-//uniform extern CelDataStruct Const;
-//uniform extern CelDataFlow Flow;
 
 
 // -----------------------------------------------------------------------------------
@@ -161,12 +159,14 @@ NormalTexVS NormalDepth_VS(MESH_VERTEX vrt)
 
 float4 NormalDepth_PS(NormalTexVS frg) : COLOR
 {
-	if (ps_bools.bOIT) if (tex2D(tDiff, frg.tex0.xy).a < 0.75f) clip(-1);
-	if (dot(frg.nrmW, ps_const.Cam_Z) < 0) clip(-1);
+	if (ps_bools.bOIT) {
+		if (tex2D(tDiff, frg.tex0.xy).a < 0.75f) clip(-1);
+	}
+	//if (dot(frg.nrmW, ps_const.Cam_Z) > 0) clip(-1);
 
 	float D = length(frg.posW);
-	float x = (dot(frg.nrmW, ps_const.Cam_X) + 1.0f) * 0.5f;
-	float y = (dot(frg.nrmW, ps_const.Cam_Y) + 1.0f) * 0.5f;
-	float N = floor(y * 1000.0f) + x;
-	return float4(N, D, 0, 0);
+	float x = dot(frg.nrmW, ps_const.Cam_X);
+	float y = dot(frg.nrmW, ps_const.Cam_Y);
+	float z = sqrt(saturate(1.0 - (x * x + y * y)));
+	return float4(x, y, z, D);
 }

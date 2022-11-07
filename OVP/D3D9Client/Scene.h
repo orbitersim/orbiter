@@ -475,7 +475,7 @@ private:
 
 	SurfNative *pLblSrf;
 
-	class ImageProcessing *pLightBlur, *pBlur, *pGDIOverlay, *pIrradiance;
+	class ImageProcessing *pLightBlur, *pBlur, *pGDIOverlay, *pIrradiance, *pVisDepth;
 
 	class vVessel *vFocus;
 	VOBJREC *vobjEnv, *vobjIrd;
@@ -493,7 +493,7 @@ private:
 	LPDIRECT3DSURFACE9 pOffscreenTarget;
 	LPDIRECT3DTEXTURE9 pTextures[TEX_COUNT];
 
-	LPDIRECT3DSURFACE9 pEnvDS, pIrradDS;
+	LPDIRECT3DSURFACE9 pEnvDS, pIrradDS, pDepthNormalDS;
 	LPDIRECT3DSURFACE9 psShmDS[SHM_LOD_COUNT];
 	LPDIRECT3DSURFACE9 psShmRT[SHM_LOD_COUNT];
 	LPDIRECT3DTEXTURE9 ptShmRT[SHM_LOD_COUNT];

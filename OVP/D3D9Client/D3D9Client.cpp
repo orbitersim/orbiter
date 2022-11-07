@@ -990,8 +990,8 @@ void D3D9Client::PushRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 
 		pDevice->SetViewport(&vp);
 	}
 
-	pDevice->SetRenderTarget(0, pColor);
-	pDevice->SetDepthStencilSurface(pDepthStencil);
+	if (pDepthStencil) if (pDevice->SetDepthStencilSurface(pDepthStencil) != S_OK) assert(false);
+	if (pColor) if (pDevice->SetRenderTarget(0, pColor) != S_OK) assert(false);
 
 	RenderStack.push_front(data);
 	LogDbg("Plum", "PUSH:RenderStack[%lu]={%s, %s} %s", RenderStack.size(), _PTR(data.pColor), _PTR(data.pDepthStencil), labels[data.code]);

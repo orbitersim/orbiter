@@ -783,7 +783,14 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 		// Render vessel meshes --------------------------------------------------------------------------
 		//
 		if (scn->GetRenderPass() == RENDERPASS_SHADOWMAP) meshlist[i].mesh->RenderShadowMap(pWT, pLVP, 0);
-		else if (scn->GetRenderPass() == RENDERPASS_NORMAL_DEPTH) meshlist[i].mesh->RenderShadowMap(pWT, pVP, 1);
+		else if (scn->GetRenderPass() == RENDERPASS_NORMAL_DEPTH)
+		{
+			MeshShader::ps_const.Cam_X = *scn->GetCameraX();
+			MeshShader::ps_const.Cam_Y = *scn->GetCameraY();
+			MeshShader::ps_const.Cam_Z = *scn->GetCameraZ();
+
+			meshlist[i].mesh->RenderShadowMap(pWT, pVP, 1);
+		}
 		else {
 			if (internalpass) meshlist[i].mesh->Render(pWT, RENDER_VC, NULL, 0);
 			else 			  meshlist[i].mesh->Render(pWT, RENDER_VESSEL, pEnv, nEnv);

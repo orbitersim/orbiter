@@ -2766,7 +2766,7 @@ void D3D9Mesh::RenderShadowMap(const LPD3DXMATRIX pW, const LPD3DXMATRIX pVP, in
 		}
 
 		if (Grp[g].bTransform) {
-			D3DXMatrixMultiply(&GroupMatrix, &pGrpTF[g], MeshShader::vs_const.mW);		// Apply Animations to instance matrices
+			D3DXMatrixMultiply(MeshShader::vs_const.mW, &pGrpTF[g], pW);		// Apply Animations to instance matrices
 			bInit = true;
 		}
 		else {
@@ -2835,12 +2835,12 @@ void D3D9Mesh::RenderStencilShadows(float alpha, const LPD3DXMATRIX pP, const LP
 
 		if (Grp[g].bTransform) {
 			D3DXMatrixMultiply(&GroupMatrix, &pGrpTF[g], pW);		// Apply Animations to instance matrices
-			FX->SetValue(eW, GroupMatrix, sizeof(D3DXMATRIX));
+			FX->SetValue(eW, &GroupMatrix, sizeof(D3DXMATRIX));
 			bInit = true;
 		}
 		else {
 			if (bInit) {
-				FX->SetValue(eW, mWorldMesh, sizeof(D3DXMATRIX));
+				FX->SetValue(eW, &mWorldMesh, sizeof(D3DXMATRIX));
 			}
 			bInit = false;
 		}

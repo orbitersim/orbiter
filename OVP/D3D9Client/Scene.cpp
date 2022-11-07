@@ -90,6 +90,8 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	pIrradTemp = NULL;
 	pIrradTemp2 = NULL;
 	pIrradTemp3 = NULL;
+	pDepthNormalDS = NULL;
+	pVisDepth = NULL;
 
 	memset(&psShmDS, 0, sizeof(psShmDS));
 	memset(&ptShmRT, 0, sizeof(ptShmRT));
@@ -183,7 +185,8 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 
 	// Create an auxiliary screen space normal and depth buffer (i.e. Shader readable depth buffer)
 	//
-	HR(D3DXCreateTexture(pDevice, viewW, viewH, 1, D3DUSAGE_RENDERTARGET, D3DFMT_G32R32F, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_DEPTH]));
+	HR(pDevice->CreateDepthStencilSurface(viewW, viewH, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, true, &pDepthNormalDS, NULL));
+	HR(D3DXCreateTexture(pDevice, viewW, viewH, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_DEPTH]));
 
 
 	// Initialize post processing effects --------------------------------------------------------------------------------------------------
@@ -201,6 +204,9 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 
 		char flags[32] = { 0 };
 		if (Config->ShaderDebug) strcpy_s(flags, 32, "DISASM");
+
+		pVisDepth = new ImageProcessing(pDevice, "Modules/D3D9Client/LightBlur.hlsl", "PSDepth", NULL);
+		pVisDepth->CompileShader("PSNormal");
 
 		// Load postprocessing effects
 		if (Config->PostProcess == PP_DEFAULT)
@@ -273,6 +279,7 @@ Scene::~Scene ()
 
 	SAFE_DELETE(pGDIOverlay);
 	SAFE_DELETE(pBlur);
+	SAFE_DELETE(pVisDepth);
 	SAFE_DELETE(pLightBlur);
 	SAFE_DELETE(pIrradiance);
 	SAFE_DELETE(m_celSphere);
@@ -282,6 +289,7 @@ Scene::~Scene ()
 	SAFE_RELEASE(pIrradTemp);
 	SAFE_RELEASE(pIrradTemp2);
 	SAFE_RELEASE(pIrradTemp3);
+	SAFE_RELEASE(pDepthNormalDS);
 
 	for (int i = 0; i < ARRAYSIZE(psShmDS); i++) SAFE_RELEASE(psShmDS[i]);
 	for (int i = 0; i < ARRAYSIZE(ptShmRT); i++) SAFE_RELEASE(ptShmRT[i]);
@@ -1162,11 +1170,14 @@ void Scene::RenderMainScene()
 
 
 	// ---------------------------------------------------------------------------------------------
-	// Create a render list for shadow mapping
+	// Init. camera setup and create a render list
 	// ---------------------------------------------------------------------------------------------
 
 	VOBJREC* pv = NULL;
 	LPDIRECT3DTEXTURE9 pShdMap = NULL;
+
+	UpdateCameraFromOrbiter(RENDERPASS_MAINSCENE);
+	UpdateCamVis();
 
 	RenderList.clear();
 
@@ -1180,18 +1191,30 @@ void Scene::RenderMainScene()
 		}
 	}
 
+	float znear_for_vessels = ComputeNearClipPlane();
 
 
 	// ---------------------------------------------------------------------------------------------
 	// Start Rendering of Normal and Depth Buffer for SSAO and (point in scene) visibility checks
 	// ---------------------------------------------------------------------------------------------
 
-	UpdateCameraFromOrbiter(RENDERPASS_NORMAL_DEPTH);
-	UpdateCamVis();
-
+	SetCameraFrustumLimits(znear_for_vessels, 1e8f);
 	BeginPass(RENDERPASS_NORMAL_DEPTH);
-	gc->PushRenderTarget(psgBuffer[GBUF_DEPTH], gc->GetDepthStencil(), RENDERPASS_NORMAL_DEPTH);
 
+	gc->PushRenderTarget(psgBuffer[GBUF_DEPTH], pDepthNormalDS, RENDERPASS_NORMAL_DEPTH);
+
+	HR(pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID));
+	HR(pDevice->SetRenderState(D3DRS_STENCILENABLE, false));
+	HR(pDevice->SetRenderState(D3DRS_COLORWRITEENABLE, 0xF));
+	HR(pDevice->SetRenderState(D3DRS_ZENABLE, true));
+	HR(pDevice->SetRenderState(D3DRS_ZWRITEENABLE, true));
+	HR(pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, false));
+	HR(pDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, false));
+	HR(pDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
+	HR(pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
+	HR(pDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
+	HR(pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW));
+	
 	// Clear buffers
 	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0L));
 
@@ -1226,7 +1249,6 @@ void Scene::RenderMainScene()
 	}
 
 
-	float znear_for_vessels = ComputeNearClipPlane();
 
 	// Do we use z-clear render mode or not ?
 	bool bClearZBuffer = false;
@@ -1912,6 +1934,26 @@ void Scene::RenderMainScene()
 				pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
 				pSketch->CopyRectNative(ptgBuffer[GBUF_BLUR], NULL, 0, 0);
 				pSketch->EndDrawing();
+			}
+			break;
+		case 11:
+			if (ptgBuffer[GBUF_DEPTH]) {
+				if (pVisDepth->IsOK()) {
+					pVisDepth->Activate("PSDepth");
+					pVisDepth->SetTextureNative("tBack", ptgBuffer[GBUF_DEPTH], IPF_POINT | IPF_CLAMP);
+					pVisDepth->SetOutputNative(0, gc->GetBackBuffer());
+					pVisDepth->Execute(true);
+				}
+			}
+			break;
+		case 12:
+			if (ptgBuffer[GBUF_DEPTH]) {
+				if (pVisDepth->IsOK()) {
+					pVisDepth->Activate("PSNormal");
+					pVisDepth->SetTextureNative("tBack", ptgBuffer[GBUF_DEPTH], IPF_POINT | IPF_CLAMP);
+					pVisDepth->SetOutputNative(0, gc->GetBackBuffer());
+					pVisDepth->Execute(true);
+				}
 			}
 			break;
 		default:
