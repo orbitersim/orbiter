@@ -16,21 +16,6 @@
 
 using namespace oapi;
 
-#pragma pack(push, 4)
-struct CelDataStruct
-{
-	float4x4 mWorld;
-	float4x4 mViewProj;
-	float	 fAlpha;
-	float	 fBeta;
-} CelData;
-
-struct CelDataFlow
-{
-	BOOL	 bAlpha;
-	BOOL	 bBeta;
-} CelFlow;
-#pragma pack(pop)
 
 // =======================================================================
 // Externals
