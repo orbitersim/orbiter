@@ -129,8 +129,8 @@ int PinesGravProp::readGravModel(char* filename, int cutoff, int &actualLoadedTe
 	}
 	numCoeff = 0;
 
-	C[0] = 0;
-	S[0] = 0;
+	C[0] = 0;	//This needs to be 0 unless you want the point-mass gravity as well.
+	S[0] = 0; 
 
 	int file_error = fopen_s(&gravModelFile, filename, "rt");
 
@@ -163,7 +163,7 @@ int PinesGravProp::readGravModel(char* filename, int cutoff, int &actualLoadedTe
 			}
 			else if (linecount <= cutoffLines + 1) {
 
-				unsigned int lineindex = linecount - 1;
+				unsigned int lineindex = linecount - 1; //this is so we start loading coefficients at n=1
 
 				if (!sscanf(gravFileLine, " %*d , %*d , %lf , %lf , %*lf , %*lf \n",
 					&C[lineindex],

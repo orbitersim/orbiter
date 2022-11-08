@@ -691,8 +691,7 @@ Vector SingleGacc_perturbation (const Vector &rpos, const CelestialBody *body)
 		
 		//Rotate position vector into the planet's local frame
 		Matrix rot = body->GRot();
-		Vector lpos = tmul(rot,rpos)/1000.0;
-		
+		Vector lpos = -tmul(rot,rpos)/1000.0;
 
 		//Convert to right-handed
 		double temp_y;
@@ -707,14 +706,18 @@ Vector SingleGacc_perturbation (const Vector &rpos, const CelestialBody *body)
 			CelestialBody* unconstbody = const_cast<CelestialBody*>(body);
 			dg = unconstbody->pinesAccel(lpos, maxDegreeOrder, maxDegreeOrder);
 		}
-		
+
 		//Convert back to Orbiter's lefthandedness
 		temp_y = dg.y;
 		dg.y = dg.z;
 		dg.z = temp_y;
-		
-		dg = mul(rot, dg)*1000.0;
 
+		//rotate back into global frame
+		dg = mul(rot, dg) * 1000.0;
+		
+		//Useful debug string. Make sure you only have one vessel in your scenerio if you us it...
+		//double radial = dg.length() * 100000.0 * dotp(rpos.unit(), dg.unit());
+		//sprintf(DBG_MSG, "<%lf %lf %lf> Magnitude: %lf mGal Radial: %lf Radialness: %lf", dg.x * 100000.0, dg.y * 100000.0, dg.z * 100000.0, dg.length()*100000.0, radial,  dotp(rpos.unit(), dg.unit()));
 		return dg;
 	}
 	else if (body->UseComplexGravity() && body->nJcoeff() > 0) {
