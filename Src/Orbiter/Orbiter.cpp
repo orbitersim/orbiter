@@ -353,6 +353,7 @@ Orbiter::Orbiter ()
 	ncustomcmd      = 0;
 	D3DMathSetup();
 	script          = NULL;
+	memstat = nullptr;
 
 	simheapsize     = 0;
 
@@ -441,19 +442,6 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 
 	script = new ScriptInterface (this); TRACENEW
 
-	{
-		BOOL cleartype, ok;
-		ok = SystemParametersInfo (SPI_GETFONTSMOOTHING, 0, &cleartype, 0);
-		bSysClearType = (ok && cleartype);
-		//if (pConfig->CfgDebugPrm.bForceReenableSmoothFont) bSysClearType = true;
-	}
-	if (pConfig->CfgDebugPrm.bDisableSmoothFont)
-		ActivateRoughType();
-
-	// preload fixed plugin modules
-	LoadFixedModules ();
-	memstat = new MemStat;
-
 	// preload modules from command line requests
 	for (auto it = pConfig->CfgCmdlinePrm.LoadPlugins.begin(); it != pConfig->CfgCmdlinePrm.LoadPlugins.end(); it++)
 		LoadModule("Modules\\Plugin", it->c_str());
@@ -462,7 +450,21 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 	for (int i = 0; i < pConfig->nactmod; i++)
 		LoadModule ("Modules\\Plugin", pConfig->actmod[i]);
 
-    return S_OK;
+	// preload fixed plugin modules
+	LoadFixedModules();
+
+	{
+		BOOL cleartype, ok;
+		ok = SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &cleartype, 0);
+		bSysClearType = (ok && cleartype);
+		//if (pConfig->CfgDebugPrm.bForceReenableSmoothFont) bSysClearType = true;
+	}
+	if (pConfig->CfgDebugPrm.bDisableSmoothFont)
+		ActivateRoughType();
+
+	memstat = new MemStat;
+	
+	return S_OK;
 }
 
 //-----------------------------------------------------------------------------
