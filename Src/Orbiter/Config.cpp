@@ -784,18 +784,9 @@ bool Config::Load(const char *fname)
 
 	// list of active modules
 	if (FindLine (ifs, "ACTIVE_MODULES")) {
-		char cbuf[256], *pc;
-		while (ifs.getline (cbuf, 256) && _strnicmp (cbuf, "END_MODULES", 11)) {
-			pc = trim_string (cbuf);
-			char **tmp = new char*[nactmod+1]; TRACENEW
-			if (nactmod) {
-				memcpy (tmp, actmod, nactmod*sizeof(char*));
-				delete []actmod;
-			}
-			actmod = tmp;
-			actmod[nactmod] = new char[strlen(pc)+1]; TRACENEW
-			strcpy (actmod[nactmod++], pc);
-		}
+		char cbuf[256];
+		while (ifs.getline (cbuf, 256) && _strnicmp (cbuf, "END_MODULES", 11))
+			m_activeModules.push_back(std::string(trim_string(cbuf)));
 	}
 	return true;
 }
@@ -805,14 +796,6 @@ Config::~Config()
 	if (Root) {
 		delete []Root;
 		Root = NULL;
-	}
-	if (nactmod) {
-		for (int i = 0; i < nactmod; i++) {
-			delete []actmod[i];
-			actmod[i] = NULL;
-		}
-		delete []actmod;
-		actmod = NULL;
 	}
 }
 
@@ -834,8 +817,6 @@ void Config::SetDefaults ()
 
 	if (Root) delete []Root;
 	Root = 0;
-
-	nactmod = 0; // no active modules
 
 	bEchoAll = bEchoAll_default;
 	memset (&rLaunchpad, 0, sizeof(RECT));
@@ -1362,11 +1343,11 @@ BOOL Config::Write (const char *fname) const
 			ofs << "LpadExtListWidth = " << CfgWindowPos.LaunchpadExtListWidth << '\n';
 	}
 
-	if (nactmod) {
+	if (m_activeModules.size()) {
 		ofs << "\n; === Active plugin list ===" << endl;
 		ofs << "ACTIVE_MODULES" << endl;
-		for (int i = 0; i < nactmod; i++)
-			ofs << "  " << actmod[i] << endl;
+		for (auto name : m_activeModules)
+			ofs << "  " << name << std::endl;
 		ofs << "END_MODULES" << endl;
 	}
 	ofs << flush;
@@ -1436,36 +1417,22 @@ void Config::PTexPath(char* cbuf, const char* name, const char* ext)
 	else     strcpy(cbuf + ptxlen, name);
 }
 
-void Config::AddModule (char *cbuf)
+bool Config::IsActiveModule(const std::string& name)
 {
-	int i;
-	for (i = 0; i < nactmod; i++)
-		if (!_stricmp (actmod[i], cbuf)) return; // already present
-	char **tmp = new char*[nactmod+1]; TRACENEW
-	if (nactmod) {
-		memcpy (tmp, actmod, nactmod*sizeof(char*));
-		delete []actmod;
-	}
-	actmod = tmp;
-	actmod[nactmod] = new char[strlen(cbuf)+1]; TRACENEW
-	strcpy (actmod[nactmod++], cbuf);
+	return (std::find(m_activeModules.begin(), m_activeModules.end(), name) != m_activeModules.end());
 }
 
-void Config::DelModule (char *cbuf)
+void Config::AddActiveModule (const std::string& name)
 {
-	int i, j, k;
-	char **tmp;
-	for (i = 0; i < nactmod; i++)
-		if (!_stricmp (actmod[i], cbuf)) break;
-	if (i == nactmod) return; // not present
-	if (nactmod > 1) {
-		tmp = new char*[nactmod-1]; TRACENEW
-		for (j = k = 0; j < nactmod; j++)
-			if (j != i) tmp[k++] = actmod[j];
-	} else tmp = 0;
-	delete []actmod;
-	actmod = tmp;
-	nactmod--;
+	if (std::find(m_activeModules.begin(), m_activeModules.end(), name) == m_activeModules.end()) // only add if not already present
+		m_activeModules.push_back(name);
+}
+
+void Config::DelActiveModule (const std::string& name)
+{
+	auto it = std::find(m_activeModules.begin(), m_activeModules.end(), name);
+	if (it != m_activeModules.end()) // erase if present
+		m_activeModules.erase(it);
 }
 
 bool Config::GetString (istream &is, char *category, char *val)

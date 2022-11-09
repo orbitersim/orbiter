@@ -482,7 +482,23 @@ private:
 	oapi::Module *register_module;  // used during module registration
 	friend OAPIFUNC void oapiRegisterModule (oapi::Module* module);
 
-	void LoadFixedModules ();                   // load all startup plugins
+	/**
+	 * \brief Load a list of plugin modules from a specific directory.
+	 * \param path Module directory
+	 * \param names List of module file names
+	 */
+	void LoadModules(const std::string& path, const std::list<std::string>& names);
+
+	/**
+	 * \brief Load all DLLs in a specific directory as plugin modules.
+	 * \param Module directory
+	 */
+	void LoadModules(const std::string& path);
+
+	/**
+	 * \brief Load all plugins located in the Modules/Startup folder
+	 */
+	void LoadStartupModules();
 
 	OPC_Proc FindModuleProc (HINSTANCE hDLL, const char *procname);
 	// returns address of a procedure in a plugin module, or NULL if procedure not found
