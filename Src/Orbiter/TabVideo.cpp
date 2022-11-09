@@ -105,7 +105,7 @@ void orbiter::DefVideoTab::OnGraphicsClientLoaded(oapi::GraphicsClient* gc, cons
 	if (newIdx != idxClient) {
 		SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_SETCURSEL, newIdx, 0);
 		ShowInterface(hTab, newIdx > 0);
-		pCfg->AddModule(fname); // make the graphics client "active" so it is loaded on next app start
+		pCfg->AddActiveModule(fname);
 		idxClient = newIdx;
 	}
 
@@ -245,7 +245,7 @@ void orbiter::DefVideoTab::SelectClientIndex(UINT idx)
 	char name[256];
 	if (idxClient) { // unload the current client
 		SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_GETLBTEXT, idxClient, (LPARAM)name);
-		pCfg->DelModule(name);
+		pCfg->DelActiveModule(name);
 		pLp->App()->UnloadModule(name);
 		pCfg->CfgDevPrm.Device_idx = -1;
 	}

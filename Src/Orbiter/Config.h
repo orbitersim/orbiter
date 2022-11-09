@@ -401,11 +401,27 @@ public:
 	CFG_WINDOWPOS CfgWindowPos;         // subwindow positions
 	CFG_CMDLINEPRM CfgCmdlinePrm;       // Populated by command line parameters. Overrides interactive settings
 
-	// module parameters
-	int nactmod;                 // number of active modules
-	char **actmod;               // list of active modules
-	void AddModule (char *cbuf); // add a module to the list
-	void DelModule (char *cbuf); // delete module from the list
+	/**
+	 * \brief Returns a list of active plugin module names
+	 */
+	const std::list<std::string>& GetActiveModules() const { return m_activeModules; }
+
+	/**
+	 * \brief Checks if a module is in the active list.
+	 * \param name Module name
+	 * \return true if name is in the list, false otherwise
+	 */
+	bool IsActiveModule(const std::string& name);
+
+	/**
+	 * \brief Add a module to the active list.
+	 */
+	void AddActiveModule (const std::string& name);
+
+	/**
+	 * \brief Delete a module from the active list.
+	 */
+	void DelActiveModule (const std::string& name);
 
 	inline void SetAmbientLevel (DWORD lvl)
 	{ AmbientColour = (CfgVisualPrm.AmbientLevel = min (lvl, 0xff)) * 0x01010101; }
@@ -437,6 +453,8 @@ private:
 	char scnpath[256];
 	int cfglen, mshlen, texlen, htxlen, ptxlen, scnlen; // string length
 	bool found_config_file;
+
+	std::list<std::string> m_activeModules; ///< list of active modules
 };
 
 // =============================================================

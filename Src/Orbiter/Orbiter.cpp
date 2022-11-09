@@ -353,6 +353,7 @@ Orbiter::Orbiter ()
 	ncustomcmd      = 0;
 	D3DMathSetup();
 	script          = NULL;
+	memstat = nullptr;
 
 	simheapsize     = 0;
 
@@ -439,30 +440,29 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 
 	Instrument::RegisterBuiltinModes();
 
-	script = new ScriptInterface (this); TRACENEW
+	script = new ScriptInterface(this); TRACENEW
+
+	// preload modules from command line requests
+	LoadModules("Modules\\Plugin", pConfig->CfgCmdlinePrm.LoadPlugins);
+
+	// preload active plugin modules
+	LoadModules("Modules\\Plugin", pConfig->GetActiveModules());
+
+	// preload startup plugin modules
+	LoadStartupModules();
 
 	{
 		BOOL cleartype, ok;
-		ok = SystemParametersInfo (SPI_GETFONTSMOOTHING, 0, &cleartype, 0);
+		ok = SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &cleartype, 0);
 		bSysClearType = (ok && cleartype);
 		//if (pConfig->CfgDebugPrm.bForceReenableSmoothFont) bSysClearType = true;
 	}
 	if (pConfig->CfgDebugPrm.bDisableSmoothFont)
 		ActivateRoughType();
 
-	// preload fixed plugin modules
-	LoadFixedModules ();
 	memstat = new MemStat;
-
-	// preload modules from command line requests
-	for (auto it = pConfig->CfgCmdlinePrm.LoadPlugins.begin(); it != pConfig->CfgCmdlinePrm.LoadPlugins.end(); it++)
-		LoadModule("Modules\\Plugin", it->c_str());
-
-	// preload active plugin modules
-	for (int i = 0; i < pConfig->nactmod; i++)
-		LoadModule ("Modules\\Plugin", pConfig->actmod[i]);
-
-    return S_OK;
+	
+	return S_OK;
 }
 
 //-----------------------------------------------------------------------------
@@ -535,25 +535,6 @@ int Orbiter::GetVersion () const
 	return v;
 }
 
-//-----------------------------------------------------------------------------
-// Name: LoadFixedModules()
-// Desc: Load all plugin modules from the "startup" directory
-//-----------------------------------------------------------------------------
-void Orbiter::LoadFixedModules ()
-{
-	char cbuf[256];
-	char *path = "Modules\\Startup";
-	struct _finddata_t fdata;
-	intptr_t fh = _findfirst ("Modules\\Startup\\*.dll", &fdata);
-	if (fh == -1) return; // no files found
-	do {
-		strcpy (cbuf, fdata.name);
-		cbuf[(strlen(cbuf)-4)] = '\0'; // cut off extension
-		LoadModule (path, cbuf);
-	} while (!_findnext (fh, &fdata));
-	_findclose (fh);
-}
-
 static bool FileExists(const char* path)
 {
 	return access(path, 0) != -1;
@@ -575,6 +556,36 @@ static bool FindDllInPluginFolder(const char *path, const char *name, char* cbuf
 {
 	sprintf(cbufOut, "%s\\%s\\%s.dll", path, name, name);
 	return FileExists(cbufOut);
+}
+
+void Orbiter::LoadModules(const std::string& path, const std::list<std::string>& names)
+{
+	for (auto name : names)
+		LoadModule(path.c_str(), name.c_str());
+}
+
+
+void Orbiter::LoadModules(const std::string& path)
+{
+	struct _finddata_t fdata;
+	intptr_t fh = _findfirst((path + std::string("\\*.dll")).c_str(), &fdata);
+	if (fh == -1) return; // no files found
+	do {
+		if (strlen(fdata.name) > 4) {
+			fdata.name[strlen(fdata.name) - 4] = '\0'; // cut off extension
+			LoadModule(path.c_str(), fdata.name);
+		}
+	} while (!_findnext(fh, &fdata));
+	_findclose(fh);
+}
+
+//-----------------------------------------------------------------------------
+// Name: LoadStartupModules()
+// Desc: Load all plugin modules from the "startup" directory
+//-----------------------------------------------------------------------------
+void Orbiter::LoadStartupModules()
+{
+	LoadModules("Modules\\Startup");
 }
 
 //-----------------------------------------------------------------------------
