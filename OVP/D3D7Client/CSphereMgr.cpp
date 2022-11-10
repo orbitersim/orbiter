@@ -313,34 +313,41 @@ void CSphereManager::Render (LPDIRECT3DDEVICE7 dev, int level, double bglvl)
 	dev->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_ONE);
 	dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
 	dev->SetRenderState (D3DRENDERSTATE_CULLMODE, D3DCULL_CW);
+	dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(intens, intens, intens, bgscale));
 
 	int stage = 0;
 	if (m_bBkgImg) {
-		if (bglvl > 1e-3 && !m_bStarImg)
-			intens *= bgscale; // combine user and background scaling
-		dev->SetTextureStageState(0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP);
+		dev->SetTextureStageState(stage, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP);
+		dev->SetTextureStageState(stage, D3DTSS_COLORARG1, D3DTA_TEXTURE);
 		if (intens < 1 - 1e-3) { // scale background image according to user setting
+			dev->SetTextureStageState(stage, D3DTSS_COLOROP, D3DTOP_MODULATE);
 			dev->SetTextureStageState(stage, D3DTSS_COLORARG2, D3DTA_TFACTOR);
-			dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(intens, intens, intens, 1));
 		}
 		else {
 			dev->SetTextureStageState(stage, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
 		}
+		if (bglvl > 1e-3) {
+			dev->SetTextureStageState(stage, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+			dev->SetTextureStageState(stage, D3DTSS_ALPHAARG1, D3DTA_TFACTOR);
+		}
+		else {
+			dev->SetTextureStageState(stage, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
+		}
 		stage++;
 	}
 	if (m_bStarImg) {
+		dev->SetTextureStageState(stage, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP);
 		dev->SetTextureStageState(stage, D3DTSS_COLOROP, stage ? D3DTOP_ADD : D3DTOP_SELECTARG1);
 		dev->SetTextureStageState(stage, D3DTSS_COLORARG1, D3DTA_TEXTURE);
 		dev->SetTextureStageState(stage, D3DTSS_COLORARG2, D3DTA_CURRENT);
-		dev->SetTextureStageState(stage, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP);
-		stage++;
-		if (bglvl > 1e-3) { // scale down celestial sphere background for bright sky
-			dev->SetTextureStageState(stage, D3DTSS_COLOROP, D3DTOP_MODULATE);
-			dev->SetTextureStageState(stage, D3DTSS_COLORARG1, D3DTA_CURRENT);
-			dev->SetTextureStageState(stage, D3DTSS_COLORARG2, D3DTA_TFACTOR);
-			dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(bgscale, bgscale, bgscale, 1));
-			stage++;
+		if (bglvl > 1e-3) {
+			dev->SetTextureStageState(stage, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+			dev->SetTextureStageState(stage, D3DTSS_ALPHAARG1, D3DTA_TFACTOR);
 		}
+		else {
+			dev->SetTextureStageState(stage, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
+		}
+		stage++;
 	}
 
 	WaitForSingleObject (tilebuf->hQueueMutex, INFINITE);
@@ -374,12 +381,16 @@ void CSphereManager::Render (LPDIRECT3DDEVICE7 dev, int level, double bglvl)
 		dev->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
 	}
 
-	if (stage >= 2) {
-		dev->SetTextureStageState(1, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
-		dev->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
-		dev->SetTexture(1, 0);
-		if (stage >= 3)
-			dev->SetTextureStageState(2, D3DTSS_COLOROP, D3DTOP_DISABLE);
+	if (stage) {
+		dev->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+		dev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+		if (stage >= 2) {
+			dev->SetTextureStageState(1, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
+			dev->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
+			dev->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
+			dev->SetTextureStageState(1, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+			dev->SetTexture(1, 0);
+		}
 	}
 }
 
