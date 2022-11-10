@@ -1,8 +1,8 @@
 % -*-latex-*-
 
 \title{Orbiter Technical Notes: Nonspherical gravitational field perturbations}
-\author{Martin Schweiger}
-\date{September 21, 2005}
+\author{Martin Schweiger \and Matthew Hume}
+\date{October 28, 2022}
 
 \documentclass[a4paper]{article}
 \usepackage{graphicx}
@@ -106,5 +106,36 @@ With $P = 2\pi\sqrt{a^3/\mu_E}$ we get $n = \sqrt{\mu_E/a^3} = 0.0012$\,rad/s. T
 \end{equation}
 or $i_\text{sync} = 96.7$\,deg.
 \section{Extension To Tesseral Harmonics}
+In some cases neglecting the variation in pertibation with longitude is insufficient. Long-term evolution of orbital parameters and the degree to which vessel position and velocity retain a high degree of congruence with real-world observations and with other state vector propagation software, require gravity model that depends on both latitude and longitude.
+This acomplished by replacing the zonal terms previously discussed with tesseral terms. A tesseral gravity model includes non-spherical pertibations that vary continuously with both latitude and longitude. Where zonal terms can be represented as an ordered list of terms, tesseral terms are represented as a lower triangular matrix, $C(n,m)$ and $S(n,m)$ where , $0 \leq n \leq n_\text{max}$ and $0 \leq m \leq n$.
 
+\begin{figure}\centering
+\includegraphics[width=1.0\textwidth]{altitude.eps}
+\caption{Comparison of Orbiter-Pines and GMAT Altitude above Mean Lunar Radius}
+\end{figure}
+
+\begin{figure}\centering
+\includegraphics[width=1.0\textwidth]{position_error.eps}
+\caption{Absolute Positional Error}
+\end{figure}
+
+\begin{figure}\centering
+\includegraphics[width=1.0\textwidth]{radial_error.eps}
+\caption{Radial Component of Position Error}
+\end{figure}
+
+
+\begin{thebibliography}{999}
+
+        \bibitem{pines73}
+        Pines, S.,
+        \emph{Uniform Representation of the Gravitational Potential and its Derivatives.}
+        AIAA Journal Vol. 11, No. 11, Nov. 1973, pp. 1508-1511
+
+        \bibitem{}
+        Eckman, R., Brown, A., Adamo, D.,
+        \emph{Normalization and Implementation of Three Gravitational Acceleration Models.}
+        National Aeronautics and Space Administration, Johnson Space Center, June 1, 2016. https://ntrs.nasa.gov/api/citations/20160011252/downloads/20160011252.pdf
+        
+\end{thebibliography}
 \end{document}
