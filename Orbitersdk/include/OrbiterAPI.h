@@ -3595,6 +3595,12 @@ OAPIFUNC void oapiCameraGlobalPos (VECTOR3 *gpos);
 	*/
 OAPIFUNC void oapiCameraGlobalDir (VECTOR3 *gdir);
 
+   /**
+    * \brief Returns a rotation matrix which performs the transformation
+    *   from the camera rotation into global coordinates.
+    * \param rmat pointer to a matrix receiving the rotation data
+    * \sa oapiCameraGlobalPos, oapiCameraGlobalDir
+    */
 OAPIFUNC void oapiCameraRotationMatrix (MATRIX3 *rmat);
 
 	/**
