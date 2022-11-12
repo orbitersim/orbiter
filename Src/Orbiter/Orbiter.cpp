@@ -416,7 +416,7 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 
 	// Register HTML viewer class
 	RegisterHtmlCtrl (hInstance, UseHtmlInline());
-	SplitterCtrl::RegisterClass (hInstance);
+	CustomCtrl::RegisterClass (hInstance);
 
 	if (pConfig->CfgCmdlinePrm.bFastExit)
 		SetFastExit(true);

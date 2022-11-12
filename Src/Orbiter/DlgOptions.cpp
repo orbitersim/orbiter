@@ -12,6 +12,7 @@
 #include "DlgCtrl.h"
 #include "resource.h"
 #include "Uxtheme.h"
+#include <commctrl.h>
 
 extern Orbiter* g_pOrbiter;
 
@@ -21,6 +22,7 @@ DlgOptions::DlgOptions(HINSTANCE hInstance, HWND hParent, void* context)
 	: DialogWin(hInstance, hParent, IDD_OPTIONS, 0, 0, context)
 {
 	pos = &g_pOrbiter->Cfg()->CfgWindowPos.DlgOptions;
+	m_pageIdx = 0;
 }
 
 // ----------------------------------------------------------------------
@@ -42,30 +44,146 @@ void DlgOptions::Update()
 
 BOOL DlgOptions::OnInitDialog(HWND hDlg, WPARAM wParam, LPARAM lParam)
 {
-	AddPage(hDlg, new OptionsPage_CelSphere(hDlg));
+	m_splitter.SetHwnd(GetDlgItem(hDlg, IDC_OPT_SPLIT), GetDlgItem(hDlg, IDC_OPT_PAGELIST), GetDlgItem(hDlg, IDC_OPT_PAGECONTAINER));
+	m_container.SetHwnd(GetDlgItem(hDlg, IDC_OPT_PAGECONTAINER));
+	m_splitter.SetStaticPane(SplitterCtrl::PANE1, 100);
+	SetSize(hDlg);
 
-	SwitchPage(hDlg);
+	AddPage(hDlg, new OptionsPage_CelSphere(m_container.HWnd()));
+	SwitchPage(hDlg, 0);
+
 	return TRUE;
 }
 
 // ----------------------------------------------------------------------
 
-void DlgOptions::AddPage(HWND hDlg, OptionsPage* pPage)
+BOOL DlgOptions::OnSize(HWND hDlg, WPARAM wParam, int w, int h)
 {
-	pPage->CreatePage();
-	m_pPage.push_back(pPage);
+	SetSize(hDlg);
+	return 0;
 }
 
 // ----------------------------------------------------------------------
 
-void DlgOptions::SwitchPage(HWND hDlg)
+BOOL DlgOptions::OnVScroll(HWND hDlg, WORD request, WORD curpos, HWND hControl)
 {
-	// todo: retrieve requested page from tree control
-	size_t pageidx = 0;
+	HWND hPage = m_pPage[m_pageIdx]->HPage();
 
+	SCROLLINFO scrollinfo;
+	scrollinfo.cbSize = sizeof(SCROLLINFO);
+	GetScrollInfo(hControl, SB_CTL, &scrollinfo);
+	int pos = -1;
+
+	switch (request) {
+	case SB_BOTTOM:
+		pos = m_vScrollRange;
+		break;
+	case SB_TOP:
+		pos = 0;
+		break;
+	case SB_LINEDOWN:
+		pos = min(m_vScrollPos + 10, m_vScrollRange);
+		break;
+	case SB_LINEUP:
+		pos = max(m_vScrollPos - 10, 0);
+		break;
+	case SB_PAGEDOWN:
+		pos = min(m_vScrollPos + m_vScrollPage, m_vScrollRange);
+		break;
+	case SB_PAGEUP:
+		pos = max(m_vScrollPos - m_vScrollPage, 0);
+		break;
+	case SB_THUMBPOSITION:
+	case SB_THUMBTRACK:
+		pos = curpos;
+		break;
+	}
+	if (pos >= 0 && pos != m_vScrollPos) {
+		int dy = -(pos - m_vScrollPos);
+		scrollinfo.nPos = m_vScrollPos = pos;
+		scrollinfo.fMask = SIF_POS;
+		SetScrollInfo(hControl, SB_CTL, &scrollinfo, TRUE);
+		ScrollWindow(hPage, 0, dy, NULL, NULL);
+		UpdateWindow(hPage);
+	}
+	return FALSE;
+}
+
+// ----------------------------------------------------------------------
+
+HTREEITEM DlgOptions::AddPage(HWND hDlg, OptionsPage* pPage, HTREEITEM parent)
+{
+	m_pPage.push_back(pPage);
+	return pPage->CreatePage(hDlg, parent);
+}
+
+// ----------------------------------------------------------------------
+
+void DlgOptions::SetSize(HWND hDlg)
+{
+	RECT r0;
+
+	GetClientRect(GetDlgItem(hDlg, IDCANCEL), &r0);
+	GetClientRect(hDlg, &r0);
+	SetWindowPos(GetDlgItem(hDlg, IDC_OPT_SPLIT), HWND_BOTTOM, 9, 10, r0.right - 25, r0.bottom - 52, SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+	SetWindowPos(GetDlgItem(hDlg, IDC_SCROLLBAR1), NULL, r0.right - 16, 10, 14, r0.bottom - 52, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+	SetWindowPos(GetDlgItem(hDlg, IDCANCEL), NULL, r0.right - 84, r0.bottom - 33, 0, 0, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOSIZE);
+	SetWindowPos(GetDlgItem(hDlg, IDHELP), NULL, r0.right - 165, r0.bottom - 33, 0, 0, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOSIZE);
+
+	InvalidateRect(hDlg, NULL, TRUE);
+	UpdateWindow(hDlg);
+
+	SetPageSize(hDlg);
+}
+
+// ----------------------------------------------------------------------
+
+void DlgOptions::SetPageSize(HWND hDlg)
+{
+	if (m_pageIdx >= m_pPage.size()) return; // sanity check
+
+	RECT r0, r1;
+	GetClientRect(m_container.HWnd(), &r0);
+	GetClientRect(m_pPage[m_pageIdx]->HPage(), &r1);
+	bool bVscroll = r1.bottom > r0.bottom;
+	ShowWindow(GetDlgItem(hDlg, IDC_SCROLLBAR1), bVscroll ? SW_SHOW : SW_HIDE);
+
+	if (bVscroll) {
+		m_vScrollRange = (r1.bottom - r0.bottom);
+		SCROLLINFO scrollinfo;
+		scrollinfo.cbSize = sizeof(SCROLLINFO);
+		scrollinfo.nMin = 0;
+		scrollinfo.nMax = r1.bottom;
+		scrollinfo.nPage = m_vScrollPage = r0.bottom;
+		scrollinfo.nPos = min(m_vScrollPos, m_vScrollRange);
+		scrollinfo.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;
+		SetScrollInfo(GetDlgItem(hDlg, IDC_SCROLLBAR1), SB_CTL, &scrollinfo, TRUE);
+		int dy = m_vScrollPos - scrollinfo.nPos;
+		m_vScrollPos = scrollinfo.nPos;
+		if (dy)
+			ScrollWindow(m_pPage[m_pageIdx]->HPage(), 0, dy, NULL, NULL);
+	}
+	else if (m_vScrollPos) {
+		ScrollWindow(m_pPage[m_pageIdx]->HPage(), 0, m_vScrollPos, NULL, NULL);
+		m_vScrollPos = 0;
+	}
+}
+
+// ----------------------------------------------------------------------
+
+void DlgOptions::SwitchPage(HWND hDlg, size_t page)
+{
+	if (page < 0 || page >= m_pPage.size())
+		return;
+	m_pageIdx = page;
 	for (size_t pg = 0; pg < m_pPage.size(); pg++)
-		if (pg != pageidx) m_pPage[pg]->Show(false);
-	m_pPage[pageidx]->Show(true);
+		if (pg != m_pageIdx) m_pPage[pg]->Show(false);
+	m_pPage[m_pageIdx]->Show(true);
+	m_vScrollPos = 0;
+	m_vScrollRange = 0;
+	m_vScrollPage = 0;
+
+	SetPageSize(hDlg);
 }
 
 // ----------------------------------------------------------------------
@@ -105,10 +223,29 @@ void OptionsPage::Show(bool bShow)
 
 // ----------------------------------------------------------------------
 
-void OptionsPage::CreatePage()
+HTREEITEM OptionsPage::CreatePage(HWND hDlg, HTREEITEM parent)
 {
 	int winId = ResourceId();
 	m_hPage = CreateDialogParam(g_pOrbiter->GetInstance(), MAKEINTRESOURCE(winId), m_hParent, s_DlgProc, (LPARAM)this);
+
+	char cbuf[256];
+	strcpy(cbuf, Name().c_str());
+	TV_INSERTSTRUCT tvis;
+	tvis.item.mask = TVIF_TEXT | TVIF_PARAM;
+	tvis.item.pszText = cbuf;
+	tvis.item.lParam = (LPARAM)this;
+	tvis.hInsertAfter = TVI_LAST;
+	tvis.hParent = parent;
+	HTREEITEM hti = TreeView_InsertItem(GetDlgItem(hDlg, IDC_OPT_PAGELIST), &tvis);
+	m_hItem = hti;
+	return hti;
+}
+
+// ----------------------------------------------------------------------
+
+BOOL OptionsPage::OnInitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam)
+{
+	return TRUE;
 }
 
 // ----------------------------------------------------------------------
@@ -165,6 +302,8 @@ int OptionsPage_CelSphere::ResourceId() const
 
 BOOL OptionsPage_CelSphere::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
 {
+	OptionsPage::OnInitDialog(hPage, wParam, lParam);
+
 	GAUGEPARAM gp = { 0, 100, GAUGEPARAM::LEFT, GAUGEPARAM::BLACK };
 	oapiSetGaugeParams(GetDlgItem(hPage, IDC_OPT_BGBRIGHTNESS), &gp);
 

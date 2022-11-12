@@ -14,6 +14,10 @@
 #define __DLGOPTIONS_H
 
 #include "DialogWin.h"
+#include "CustomControls.h"
+#include <windows.h>
+#include <commctrl.h>
+#include <winuser.h>
 
 class OptionsPage;
 
@@ -49,19 +53,32 @@ public:
 
 	BOOL OnInitDialog(HWND hDlg, WPARAM wParam, LPARAM lParam);
 
+	BOOL OnSize(HWND hDlg, WPARAM wParam, int w, int h);
+
+	BOOL OnVScroll(HWND hDlg, WORD request, WORD curpos, HWND hControl);
+
 protected:
+	void SetSize(HWND hDlg);
+	void SetPageSize(HWND hDlg);
+
 	/**
 	 * \brief Adds a new options page.
 	 * \param hDlg dialog handle
 	 * \param pPage pointer to new page
 	 */
-	void AddPage(HWND hDlg, OptionsPage* pPage);
+	HTREEITEM AddPage(HWND hDlg, OptionsPage* pPage, HTREEITEM parent = 0);
 
-	void SwitchPage(HWND hDlg);
+	void SwitchPage(HWND hDlg, size_t page);
 	void Clear();
 
 private:
+	SplitterCtrl m_splitter;
+	GenericCtrl m_container;
 	std::vector<OptionsPage*> m_pPage;
+	size_t m_pageIdx;
+	int m_vScrollPos;
+	int m_vScrollRange;
+	int m_vScrollPage;
 };
 
 /************************************************************************
@@ -85,6 +102,8 @@ public:
 	 */
 	virtual int ResourceId() const = 0;
 
+	virtual std::string Name() const = 0;
+
 	/**
 	 * \brief Returns the parent dialog handle.
 	 * \return Parent dialog handle
@@ -100,7 +119,7 @@ public:
 	/**
 	 * \brief Creates the page window and assigns \ref m_hPage.
 	 */
-	void CreatePage();
+	HTREEITEM CreatePage(HWND hDlg, HTREEITEM parent = 0);
 
 	/**
 	 * \brief Show/hide the page.
@@ -119,7 +138,7 @@ protected:
 	 * \brief Default handler for WM_INITDIALOG messages.
 	 * \default Nothing, returns TRUE
 	 */
-	virtual BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam) { return TRUE; }
+	virtual BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
 
 	/**
 	 * \brief Default handler for WM_COMMAND messages.
@@ -170,6 +189,7 @@ private:
 
 	HWND m_hParent; ///< parent window handle
 	HWND m_hPage;   ///< page window handle (0 before MakePage has been called)
+	HTREEITEM m_hItem;
 };
 
 /************************************************************************
@@ -179,6 +199,8 @@ class OptionsPage_CelSphere : public OptionsPage {
 public:
 	OptionsPage_CelSphere(HWND hParent);
 	int ResourceId() const;
+	std::string Name() const { return "Celestial sphere"; }
+
 	void UpdateControls(HWND hPage);
 
 protected:

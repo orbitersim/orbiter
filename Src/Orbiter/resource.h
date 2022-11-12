@@ -270,20 +270,23 @@
 #define IDC_VH_CRD_OPACITY              1836
 
 // Inline option dialog controls
-#define IDC_OPT_ENABLESTARPIX           1000
-#define IDC_OPT_STARMAGHI               1001
-#define IDC_OPT_STARMAGHISPIN           1002
-#define IDC_OPT_STARMAGLO               1003
-#define IDC_OPT_STARMAGLOSPIN           1004
-#define IDC_OPT_STARMINBRT              1005
-#define IDC_OPT_STARMINBRTSPIN          1006
-#define IDC_OPT_STARMAPLIN              1007
-#define IDC_OPT_STARMAPEXP              1008
-#define IDC_OPT_ENABLESTARMAP           1009
-#define IDC_OPT_STARMAPIMAGE            1010
-#define IDC_OPT_ENABLEBKGMAP            1011
-#define IDC_OPT_BKGIMAGE                1012
-#define IDC_OPT_BGBRIGHTNESS            1013
+#define IDC_OPT_PAGELIST                1000
+#define IDC_OPT_PAGECONTAINER           1001
+#define IDC_OPT_SPLIT                   1002
+#define IDC_OPT_ENABLESTARPIX           1003
+#define IDC_OPT_STARMAGHI               1004
+#define IDC_OPT_STARMAGHISPIN           1005
+#define IDC_OPT_STARMAGLO               1006
+#define IDC_OPT_STARMAGLOSPIN           1007
+#define IDC_OPT_STARMINBRT              1008
+#define IDC_OPT_STARMINBRTSPIN          1009
+#define IDC_OPT_STARMAPLIN              1010
+#define IDC_OPT_STARMAPEXP              1011
+#define IDC_OPT_ENABLESTARMAP           1012
+#define IDC_OPT_STARMAPIMAGE            1013
+#define IDC_OPT_ENABLEBKGMAP            1014
+#define IDC_OPT_BKGIMAGE                1015
+#define IDC_OPT_BGBRIGHTNESS            1016
 
 // Unsorted
 #define IDC_SCN_STATIC1                 1087
@@ -457,6 +460,9 @@
 #define IDC_STATIC11                    10010
 #define IDC_STATIC12                    10011
 #define IDC_STATIC13                    10012
+
+#define IDC_SCROLLBAR1                  10100
+#define IDC_SCROLLBAR2                  10101
 
 #define IDM_EXIT                        40001
 #define IDM_CHANGEDEVICE                40010
