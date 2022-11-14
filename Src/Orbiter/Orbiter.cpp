@@ -1549,8 +1549,11 @@ void Orbiter::TogglePlanetariumMode()
 	DWORD& plnFlag = pConfig->CfgVisHelpPrm.flagPlanetarium;
 	plnFlag ^= PLN_ENABLE;
 
-	DlgVishelper* dlg = pDlgMgr->EntryExists<DlgVishelper>(hInst);
+	DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInst);
 	if (dlg) dlg->Update();
+
+	//DlgVishelper* dlg = pDlgMgr->EntryExists<DlgVishelper>(hInst);
+	//if (dlg) dlg->Update();
 
 	if (plnFlag & IDC_VH_MKR_FEATURES)
 		g_psys->ActivatePlanetLabels(plnFlag & IDC_VH_PLN);

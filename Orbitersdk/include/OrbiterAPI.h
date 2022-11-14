@@ -6697,6 +6697,7 @@ OAPIFUNC void oapiTriggerRedrawArea (int panel_id, int vc_id, int area_id);
  */
 //@{
 #define OPTCAT_CELSPHERE                    0x0001
+#define OPTCAT_PLANETARIUM                  0x0002
 //@}
 
 /**
@@ -6711,6 +6712,7 @@ OAPIFUNC void oapiTriggerRedrawArea (int panel_id, int vc_id, int area_id);
 #define OPTITEM_CELSPHERE_ACTIVATEBGIMAGE   0x0005
 #define OPTITEM_CELSPHERE_BGIMAGECHANGED    0x0006
 #define OPTITEM_CELSPHERE_BGIMAGEBRIGHTNESS 0x0007
+#define OPTITEM_PLANETARIUM_DISPFLAG        0x0001
 //@}
 
 // ======================================================================

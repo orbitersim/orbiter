@@ -41,6 +41,8 @@ public:
 	 */
 	~DlgOptions();
 
+	const GenericCtrl* PageContainer() const { return &m_container; }
+
 	/**
 	 * \brief Disables per-timestep updates.
 	 */
@@ -57,7 +59,16 @@ public:
 
 	BOOL OnVScroll(HWND hDlg, WORD request, WORD curpos, HWND hControl);
 
+	BOOL OnNotify(HWND hDlg, int idCtrl, LPNMHDR pnmh);
+
+	void SwitchPage(const char* name);
+
 protected:
+	void SwitchPage(HWND hDlg, size_t page);
+	void SwitchPage(HWND hDlg, const OptionsPage* page);
+
+	const OptionsPage* FindPage(const char* name) const;
+
 	void SetSize(HWND hDlg);
 	void SetPageSize(HWND hDlg);
 
@@ -68,8 +79,8 @@ protected:
 	 */
 	HTREEITEM AddPage(HWND hDlg, OptionsPage* pPage, HTREEITEM parent = 0);
 
-	void SwitchPage(HWND hDlg, size_t page);
 	void Clear();
+	void ExpandAll(HWND hDlg);
 
 private:
 	SplitterCtrl m_splitter;
@@ -90,7 +101,7 @@ public:
 	 * \brief OptionsPage constructor.
 	 * \param hParent parent window handle (dialog frame)
 	 */
-	OptionsPage(HWND hParent);
+	OptionsPage(DlgOptions* dlg);
 
 	/**
 	 * \brief OptionsPage destructor.
@@ -102,13 +113,15 @@ public:
 	 */
 	virtual int ResourceId() const = 0;
 
-	virtual std::string Name() const = 0;
+	virtual const char* Name() const = 0;
+
+	DlgOptions* Dlg() { return m_dlg; }
 
 	/**
 	 * \brief Returns the parent dialog handle.
 	 * \return Parent dialog handle
 	 */
-	HWND HParent() const { return m_hParent; }
+	HWND HParent() const;
 
 	/**
 	 * \brief Returns the page window handle.
@@ -187,9 +200,9 @@ private:
 	 */
 	static INT_PTR CALLBACK s_DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-	HWND m_hParent; ///< parent window handle
-	HWND m_hPage;   ///< page window handle (0 before MakePage has been called)
-	HTREEITEM m_hItem;
+	DlgOptions* m_dlg; ///< parent dialog
+	HWND m_hPage;      ///< page window handle (0 before MakePage has been called)
+	HTREEITEM m_hItem; ///< page title in the tree view control
 };
 
 /************************************************************************
@@ -197,9 +210,9 @@ private:
  */
 class OptionsPage_CelSphere : public OptionsPage {
 public:
-	OptionsPage_CelSphere(HWND hParent);
+	OptionsPage_CelSphere(DlgOptions* dlg);
 	int ResourceId() const;
-	std::string Name() const { return "Celestial sphere"; }
+	const char* Name() const;
 
 	void UpdateControls(HWND hPage);
 
@@ -220,6 +233,92 @@ protected:
 private:
 	std::vector<std::pair<std::string, std::string>> m_pathStarmap;
 	std::vector<std::pair<std::string, std::string>> m_pathBgImage;
+};
+
+/************************************************************************
+ * \brief Main page for visual helpers options.
+ */
+class OptionsPage_VisHelper : public OptionsPage {
+public:
+	OptionsPage_VisHelper(DlgOptions* dlg);
+	int ResourceId() const;
+	const char* Name() const;
+	void UpdateControls(HWND hPage);
+
+protected:
+	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
+	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
+};
+
+/************************************************************************
+ * \brief Visual helpers "Planetarium" options page.
+ */
+class OptionsPage_Planetarium : public OptionsPage {
+public:
+	OptionsPage_Planetarium(DlgOptions* dlg);
+	int ResourceId() const;
+	const char* Name() const;
+	void UpdateControls(HWND hPage);
+
+protected:
+	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
+	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
+	void RescanMarkerList(HWND hPage);
+	void OnItemClicked(HWND hPage, WORD ctrlId);
+	BOOL OnMarkerSelectionChanged(HWND hPage);
+};
+
+/************************************************************************
+ * \brief Visual helpers "Labels" options page.
+ */
+class OptionsPage_Labels : public OptionsPage {
+public:
+	OptionsPage_Labels(DlgOptions* dlg);
+	int ResourceId() const;
+	const char* Name() const;
+	void UpdateControls(HWND hPage);
+
+protected:
+	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
+	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
+	void OnItemClicked(HWND hPage, WORD ctrlId);
+	void ScanPsysBodies(HWND hPage);
+	void UpdateFeatureList(HWND hPage);
+	void RescanFeatures(HWND hPage);
+};
+
+/************************************************************************
+ * \brief Visual helpers "Body force vectors" options page.
+ */
+class OptionsPage_Forces : public OptionsPage {
+public:
+	OptionsPage_Forces(DlgOptions* dlg);
+	int ResourceId() const;
+	const char* Name() const;
+	void UpdateControls(HWND hPage);
+
+protected:
+	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
+	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
+	void OnItemClicked(HWND hPage, WORD ctrlId);
+	BOOL OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam);
+};
+
+/************************************************************************
+ * \brief Visual helpers "Object frame axes" options page.
+ */
+class OptionsPage_Axes : public OptionsPage {
+public:
+	OptionsPage_Axes(DlgOptions* dlg);
+	int ResourceId() const;
+	const char* Name() const;
+	void UpdateControls(HWND hPage);
+
+protected:
+	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
+	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
+	void OnItemClicked(HWND hPage, WORD ctrlId);
+	BOOL OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam);
 };
 
 #endif // !__DLGOPTIONS_H
