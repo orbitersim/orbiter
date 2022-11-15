@@ -11,6 +11,7 @@
 #include <array>
 #include "DlgOptions.h"
 #include "Orbiter.h"
+#include "OrbiterAPI.h"
 #include "Psys.h"
 #include "Camera.h"
 #include "DlgCtrl.h"
@@ -21,6 +22,7 @@
 extern Orbiter* g_pOrbiter;
 extern PlanetarySystem* g_psys;
 extern Camera* g_camera;
+extern HELPCONTEXT DefHelpContext;
 
 // ======================================================================
 
@@ -32,6 +34,7 @@ DlgOptions::DlgOptions(HINSTANCE hInstance, HWND hParent, void* context)
 	m_vScrollPage = 0;
 	m_vScrollRange = 0;
 	m_vScrollPos = 0;
+	m_contextHelp = 0;
 }
 
 // ----------------------------------------------------------------------
@@ -70,6 +73,22 @@ BOOL DlgOptions::OnInitDialog(HWND hDlg, WPARAM wParam, LPARAM lParam)
 	ExpandAll(hDlg);
 
 	return TRUE;
+}
+
+// ----------------------------------------------------------------------
+
+BOOL DlgOptions::OnCommand(HWND hDlg, WORD ctrlId, WORD notification, HWND hCtrl)
+{
+	switch (ctrlId) {
+	case IDHELP:
+		if (notification == BN_CLICKED) {
+			if (m_contextHelp)
+			g_pOrbiter->OpenHelp(m_contextHelp);
+			return TRUE;
+		}
+		break;
+	}
+	return DialogWin::OnCommand(hDlg, ctrlId, notification, hCtrl);
 }
 
 // ----------------------------------------------------------------------
@@ -259,6 +278,7 @@ void DlgOptions::SwitchPage(HWND hDlg, size_t page)
 	m_vScrollPos = 0;
 	m_vScrollRange = 0;
 	m_vScrollPage = 0;
+	m_contextHelp = m_pPage[m_pageIdx]->HelpContext();
 
 	SetPageSize(hDlg);
 	InvalidateRect(hDlg, NULL, TRUE);
@@ -428,6 +448,14 @@ const char* OptionsPage_CelSphere::Name() const
 {
 	const char* name = "Celestial sphere";
 	return name;
+}
+
+// ----------------------------------------------------------------------
+
+const HELPCONTEXT* OptionsPage_CelSphere::HelpContext() const
+{
+	static HELPCONTEXT hcontext = g_pOrbiter->DefaultHelpPage("/opt_celsphere.htm");
+	return &hcontext;
 }
 
 // ----------------------------------------------------------------------
@@ -750,6 +778,14 @@ const char* OptionsPage_VisHelper::Name() const
 
 // ----------------------------------------------------------------------
 
+const HELPCONTEXT* OptionsPage_VisHelper::HelpContext() const
+{
+	static HELPCONTEXT hcontext = g_pOrbiter->DefaultHelpPage("/vishelper.htm");
+	return &hcontext;
+}
+
+// ----------------------------------------------------------------------
+
 void OptionsPage_VisHelper::UpdateControls(HWND hPage)
 {
 	DWORD& plnFlag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagPlanetarium;
@@ -840,6 +876,14 @@ const char* OptionsPage_Planetarium::Name() const
 {
 	const char* name = "Planetarium";
 	return name;
+}
+
+// ----------------------------------------------------------------------
+
+const HELPCONTEXT* OptionsPage_Planetarium::HelpContext() const
+{
+	static HELPCONTEXT hcontext = g_pOrbiter->DefaultHelpPage("/vh_planetarium.htm");
+	return &hcontext;
 }
 
 // ----------------------------------------------------------------------
@@ -1009,6 +1053,14 @@ const char* OptionsPage_Labels::Name() const
 {
 	const char* name = "Labels";
 	return name;
+}
+
+// ----------------------------------------------------------------------
+
+const HELPCONTEXT* OptionsPage_Labels::HelpContext() const
+{
+	static HELPCONTEXT hcontext = g_pOrbiter->DefaultHelpPage("/vh_planetarium.htm");
+	return &hcontext;
 }
 
 // ----------------------------------------------------------------------
@@ -1233,6 +1285,14 @@ const char* OptionsPage_Forces::Name() const
 
 // ----------------------------------------------------------------------
 
+const HELPCONTEXT* OptionsPage_Forces::HelpContext() const
+{
+	static HELPCONTEXT hcontext = g_pOrbiter->DefaultHelpPage("/vh_force.htm");
+	return &hcontext;
+}
+
+// ----------------------------------------------------------------------
+
 void OptionsPage_Forces::UpdateControls(HWND hPage)
 {
 	std::array<int, 15> residForces = {
@@ -1370,6 +1430,14 @@ const char* OptionsPage_Axes::Name() const
 {
 	const char* name = "Object axes";
 	return name;
+}
+
+// ----------------------------------------------------------------------
+
+const HELPCONTEXT* OptionsPage_Axes::HelpContext() const
+{
+	static HELPCONTEXT hcontext = g_pOrbiter->DefaultHelpPage("/vh_coord.htm");
+	return &hcontext;
 }
 
 // ----------------------------------------------------------------------

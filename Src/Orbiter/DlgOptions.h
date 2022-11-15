@@ -55,6 +55,8 @@ public:
 
 	BOOL OnInitDialog(HWND hDlg, WPARAM wParam, LPARAM lParam);
 
+	BOOL OnCommand(HWND hDlg, WORD ctrlId, WORD notification, HWND hCtrl);
+
 	BOOL OnSize(HWND hDlg, WPARAM wParam, int w, int h);
 
 	BOOL OnVScroll(HWND hDlg, WORD request, WORD curpos, HWND hControl);
@@ -90,6 +92,7 @@ private:
 	int m_vScrollPos;
 	int m_vScrollRange;
 	int m_vScrollPage;
+	const HELPCONTEXT* m_contextHelp;
 };
 
 /************************************************************************
@@ -113,6 +116,9 @@ public:
 	 */
 	virtual int ResourceId() const = 0;
 
+	/**
+	 * \brief Derived classes return the page title as it appears in the tree list.
+	 */
 	virtual const char* Name() const = 0;
 
 	DlgOptions* Dlg() { return m_dlg; }
@@ -145,6 +151,11 @@ public:
 	 * \param hPage dialog page handle
 	 */
 	virtual void UpdateControls(HWND hPage) {}
+
+	/**
+	 * \brief Returns the name of the option page's help page, if applicable.
+	 */
+	virtual const HELPCONTEXT* HelpContext() const { return 0; }
 
 protected:
 	/**
@@ -213,7 +224,7 @@ public:
 	OptionsPage_CelSphere(DlgOptions* dlg);
 	int ResourceId() const;
 	const char* Name() const;
-
+	const HELPCONTEXT* HelpContext() const;
 	void UpdateControls(HWND hPage);
 
 protected:
@@ -243,6 +254,7 @@ public:
 	OptionsPage_VisHelper(DlgOptions* dlg);
 	int ResourceId() const;
 	const char* Name() const;
+	const HELPCONTEXT* HelpContext() const;
 	void UpdateControls(HWND hPage);
 
 protected:
@@ -258,6 +270,7 @@ public:
 	OptionsPage_Planetarium(DlgOptions* dlg);
 	int ResourceId() const;
 	const char* Name() const;
+	const HELPCONTEXT* HelpContext() const;
 	void UpdateControls(HWND hPage);
 
 protected:
@@ -276,6 +289,7 @@ public:
 	OptionsPage_Labels(DlgOptions* dlg);
 	int ResourceId() const;
 	const char* Name() const;
+	const HELPCONTEXT* HelpContext() const;
 	void UpdateControls(HWND hPage);
 
 protected:
@@ -295,6 +309,7 @@ public:
 	OptionsPage_Forces(DlgOptions* dlg);
 	int ResourceId() const;
 	const char* Name() const;
+	const HELPCONTEXT* HelpContext() const;
 	void UpdateControls(HWND hPage);
 
 protected:
@@ -312,6 +327,7 @@ public:
 	OptionsPage_Axes(DlgOptions* dlg);
 	int ResourceId() const;
 	const char* Name() const;
+	const HELPCONTEXT* HelpContext() const;
 	void UpdateControls(HWND hPage);
 
 protected:

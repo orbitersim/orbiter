@@ -2892,7 +2892,7 @@ HWND Orbiter::OpenDialogEx (HINSTANCE hInstance, int id, DLGPROC pDlg, DWORD fla
 	return (pDlgMgr ? pDlgMgr->OpenDialogEx (hInstance, id, hRenderWnd, pDlg, flag, context) : NULL);
 }
 
-HWND Orbiter::OpenHelp (HELPCONTEXT *hcontext)
+HWND Orbiter::OpenHelp (const HELPCONTEXT *hcontext)
 {
 	if (pDlgMgr) {
 		DlgHelp *pHelp = pDlgMgr->EnsureEntry<DlgHelp> ();
@@ -2905,6 +2905,13 @@ HWND Orbiter::OpenHelp (HELPCONTEXT *hcontext)
 void Orbiter::OpenLaunchpadHelp (HELPCONTEXT *hcontext)
 {
 	::OpenHelp (0, hcontext->helpfile, hcontext->topic);
+}
+
+HELPCONTEXT Orbiter::DefaultHelpPage(const char* topic)
+{
+	static HELPCONTEXT hcontext = DefHelpContext;
+	hcontext.topic = (char*)topic;
+	return hcontext;
 }
 
 void Orbiter::CloseDialog (HWND hDlg)
