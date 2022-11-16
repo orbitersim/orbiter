@@ -2437,7 +2437,7 @@ void Orbiter::KbdInputBuffered_System (char *kstate, DIDEVICEOBJECTDATA *dod, DW
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgMap))               pDlgMgr->EnsureEntry<DlgMap>();
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgRecorder))          pDlgMgr->EnsureEntry<DlgRecorder>();
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_ToggleCamInternal))    SetView(g_focusobj, !g_camera->IsExternal());
-		//else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgVisHelper))         pDlgMgr->EnsureEntry<DlgVishelper>();
+		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgVisHelper))         pDlgMgr->EnsureEntry<DlgOptions>()->SwitchPage("Visual helpers");
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgCapture))           pDlgMgr->EnsureEntry<DlgCapture>();
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgSelectVessel))      pDlgMgr->EnsureEntry<DlgFocus>();
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgOptions))           pDlgMgr->EnsureEntry<DlgOptions>();
