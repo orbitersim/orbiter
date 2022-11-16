@@ -791,6 +791,9 @@ void OptionsPage_VisHelper::UpdateControls(HWND hPage)
 	DWORD& plnFlag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagPlanetarium;
 	bool enable = plnFlag & PLN_ENABLE;
 	SendDlgItemMessage(hPage, IDC_OPT_PLN, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
+	DWORD& mkrFlag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagMarkers;
+	enable = mkrFlag & MKR_ENABLE;
+	SendDlgItemMessage(hPage, IDC_OPT_MKR, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
 	DWORD vecFlag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagBodyForce;
 	enable = (vecFlag & BFV_ENABLE);
 	SendDlgItemMessage(hPage, IDC_OPT_VEC, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -816,6 +819,15 @@ BOOL OptionsPage_VisHelper::OnCommand(HWND hPage, WORD ctrlId, WORD notification
 		if (notification == BN_CLICKED) {
 			g_pOrbiter->TogglePlanetariumMode();
 			return TRUE;
+		}
+		break;
+	case IDC_OPT_MKR:
+		if (notification == BN_CLICKED) {
+			bool check = (SendDlgItemMessage(hPage, IDC_OPT_MKR, BM_GETCHECK, 0, 0) == TRUE);
+			DWORD flag = MKR_ENABLE;
+			DWORD& mkrFlag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagMarkers;
+			if (check) mkrFlag |= flag;
+			else       mkrFlag &= ~flag;
 		}
 		break;
 	case IDC_OPT_VEC:
@@ -1073,21 +1085,21 @@ void OptionsPage_Labels::UpdateControls(HWND hPage)
 		IDC_STATIC1, IDC_STATIC2
 	};
 
-	DWORD& plnFlag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagPlanetarium;
-	bool enable = plnFlag & PLN_ENABLE;
-	SendDlgItemMessage(hPage, IDC_OPT_PLN, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
+	DWORD& mkrFlag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagMarkers;
+	bool enable = mkrFlag & MKR_ENABLE;
+	SendDlgItemMessage(hPage, IDC_OPT_MKR, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
 	for (auto resid : residLabels)
 		EnableWindow(GetDlgItem(hPage, resid), enable ? TRUE : FALSE);
-	if (enable && !(plnFlag & PLN_LMARK)) {
+	if (enable && !(mkrFlag & MKR_LMARK)) {
 		EnableWindow(GetDlgItem(hPage, IDC_OPT_MKR_FEATUREBODY), FALSE);
 		EnableWindow(GetDlgItem(hPage, IDC_OPT_MKR_FEATURELIST), FALSE);
 	}
 
-	SendDlgItemMessage(hPage, IDC_OPT_MKR_VESSEL,   BM_SETCHECK, plnFlag & PLN_VMARK ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_MKR_CELBODY,  BM_SETCHECK, plnFlag & PLN_CMARK ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_MKR_BASE,     BM_SETCHECK, plnFlag & PLN_BMARK ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_MKR_BEACON,   BM_SETCHECK, plnFlag & PLN_RMARK ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATURES, BM_SETCHECK, plnFlag & PLN_LMARK ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_MKR_VESSEL,   BM_SETCHECK, mkrFlag & MKR_VMARK ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_MKR_CELBODY,  BM_SETCHECK, mkrFlag & MKR_CMARK ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_MKR_BASE,     BM_SETCHECK, mkrFlag & MKR_BMARK ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_MKR_BEACON,   BM_SETCHECK, mkrFlag & MKR_RMARK ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATURES, BM_SETCHECK, mkrFlag & MKR_LMARK ? BST_CHECKED : BST_UNCHECKED, 0);
 }
 
 // ----------------------------------------------------------------------
@@ -1105,12 +1117,7 @@ BOOL OptionsPage_Labels::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
 BOOL OptionsPage_Labels::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
 {
 	switch (ctrlId) {
-	case IDC_OPT_PLN:
-		if (notification == BN_CLICKED) {
-			g_pOrbiter->TogglePlanetariumMode();
-			return TRUE;
-		}
-		break;
+	case IDC_OPT_MKR:
 	case IDC_OPT_MKR_VESSEL:
 	case IDC_OPT_MKR_CELBODY:
 	case IDC_OPT_MKR_BASE:
@@ -1140,22 +1147,21 @@ void OptionsPage_Labels::OnItemClicked(HWND hPage, WORD ctrlId)
 	bool check = (SendDlgItemMessage(hPage, ctrlId, BM_GETCHECK, 0, 0) == TRUE);
 	DWORD flag;
 	switch (ctrlId) {
-	case IDC_OPT_PLN:          flag = PLN_ENABLE; break;
-	case IDC_OPT_MKR_VESSEL:   flag = PLN_VMARK;  break;
-	case IDC_OPT_MKR_CELBODY:  flag = PLN_CMARK;  break;
-	case IDC_OPT_MKR_BASE:     flag = PLN_BMARK;  break;
-	case IDC_OPT_MKR_BEACON:   flag = PLN_RMARK;  break;
-	case IDC_OPT_MKR_FEATURES: flag = PLN_LMARK;  break;
+	case IDC_OPT_MKR:          flag = MKR_ENABLE; break;
+	case IDC_OPT_MKR_VESSEL:   flag = MKR_VMARK;  break;
+	case IDC_OPT_MKR_CELBODY:  flag = MKR_CMARK;  break;
+	case IDC_OPT_MKR_BASE:     flag = MKR_BMARK;  break;
+	case IDC_OPT_MKR_BEACON:   flag = MKR_RMARK;  break;
+	case IDC_OPT_MKR_FEATURES: flag = MKR_LMARK;  break;
 	default:                   flag = 0;          break;
 	}
-	DWORD& plnFlag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagPlanetarium;
-	if (check) plnFlag |= flag;
-	else       plnFlag &= ~flag;
+	DWORD& mkrFlag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagMarkers;
+	if (check) mkrFlag |= flag;
+	else       mkrFlag &= ~flag;
 
 	if (ctrlId == IDC_OPT_MKR_FEATURES)
-		g_psys->ActivatePlanetLabels(plnFlag & PLN_ENABLE && plnFlag & PLN_LMARK);
+		g_psys->ActivatePlanetLabels(mkrFlag & MKR_ENABLE && mkrFlag & MKR_LMARK);
 
-	g_pOrbiter->OnOptionChanged(OPTCAT_PLANETARIUM, OPTITEM_PLANETARIUM_DISPFLAG);
 	UpdateControls(hPage);
 }
 

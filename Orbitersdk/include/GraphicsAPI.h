@@ -260,6 +260,14 @@ typedef void *HDC;
  *   float
  */
 #define CFGPRM_FRAMEAXISOPACITY 0x0025
+
+ /**
+  * Bit flags for surface and object marker display options.
+  * For a description of the available bit flags, see \ref mkrflag
+  * \par Parameter type:
+  *   DWORD
+  */
+#define CFGPRM_SURFMARKERFLAG 0x0026
 /// @}
 
 /**
@@ -284,15 +292,20 @@ typedef void *HDC;
 #define PLN_EQU       0x0010 ///< Enable target body equator
 #define PLN_CONST     0x0020 ///< Enable constellation patterns
 #define PLN_CNSTLABEL 0x0040 ///< Enable constellation labels
-#define PLN_CMARK     0x0080 ///< Enable celestial body markers
-#define PLN_VMARK     0x0100 ///< Enable vessel markers
-#define PLN_BMARK     0x0200 ///< Enable surface base markers
-#define PLN_RMARK     0x0400 ///< Enable VOR transmitter markers
-#define PLN_LMARK     0x0800 ///< Enable planetary surface labels
-#define PLN_CNSTLONG  0x1000 ///< Enable long constellation names
-#define PLN_CNSTBND   0x2000 ///< Enable constellation boundaries
-#define PLN_CCMARK    0x4000 ///< Enable celestial sphere labels
-#define PLN_SURFMARK (PLN_BMARK | PLN_RMARK | PLN_LMARK)
+#define PLN_CNSTLONG  0x0080 ///< Enable long constellation names
+#define PLN_CNSTBND   0x0100 ///< Enable constellation boundaries
+#define PLN_CCMARK    0x0200 ///< Enable celestial sphere labels
+/// @}
+
+/// \defgroup mkrflag Bit flags for surface and object markers
+/// @{
+#define MKR_ENABLE    0x0001 ///< Enable surface and object markers
+#define MKR_CMARK     0x0002 ///< Enable solar system body markers
+#define MKR_VMARK     0x0004 ///< Enable vessel markers
+#define MKR_BMARK     0x0008 ///< Enable surface base markers
+#define MKR_RMARK     0x0010 ///< Enable VOR transmitter markers
+#define MKR_LMARK     0x0020 ///< Enable planetary surface labels
+#define MKR_SURFMARK (MKR_BMARK | MKR_RMARK | MKR_LMARK)
 /// @}
 
 /// \defgroup bfvflag Bit flags for vessel force vector render options

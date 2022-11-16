@@ -125,7 +125,8 @@ CFG_INSTRUMENTPRM CfgInstrumentPrm_default = {
 };
 
 CFG_VISHELPPRM CfgVisHelpPrm_default = {
-	PLN_CGRID | PLN_CONST | PLN_CNSTLABEL | PLN_CNSTLONG | PLN_CMARK,	// flagPlanetarium (celestial marker flags)
+	PLN_CGRID | PLN_CONST | PLN_CNSTLABEL | PLN_CNSTLONG,	// flagPlanetarium (celestial sphere display flags)
+	MKR_CMARK,  // flagMarkers (surface and body marker display flags)
 	BFV_WEIGHT | BFV_THRUST | BFV_LIFT | BFV_DRAG,	// flagBodyforce (force display flags)
 	1.0f,		// scaleBodyforce (force vector scaling factor)
 	1.0f,		// opacBodyforce (force vector opacity)
@@ -679,6 +680,8 @@ bool Config::Load(const char *fname)
 	// visual helper parameters
 	if (GetInt (ifs, "Planetarium", i))
 		CfgVisHelpPrm.flagPlanetarium = (DWORD)i;
+	if (GetInt(ifs, "SurfMarkers", i))
+		CfgVisHelpPrm.flagMarkers = (DWORD)i;
 	if (GetString (ifs, "Bodyforces", cbuf))
 		sscanf (cbuf, "%u%f%f", &CfgVisHelpPrm.flagBodyForce, &CfgVisHelpPrm.scaleBodyForce, &CfgVisHelpPrm.opacBodyForce);
 	if (GetString (ifs, "CoordinateAxes", cbuf))
@@ -878,6 +881,8 @@ const void *Config::GetParam (DWORD paramtype) const
 		return (void*)&CfgVisualPrm.bCloudShadows;
 	case CFGPRM_PLANETARIUMFLAG:
 		return (void*)&CfgVisHelpPrm.flagPlanetarium;
+	case CFGPRM_SURFMARKERFLAG:
+		return (void*)&CfgVisHelpPrm.flagMarkers;
 	case CFGPRM_STARRENDERPRM:
 		return (void*)&CfgVisualPrm.StarPrm;
 	case CFGPRM_AMBIENTLEVEL:
@@ -1089,6 +1094,8 @@ BOOL Config::Write (const char *fname) const
 		ofs << "\n; === Visual helper parameters ===\n";
 		if (CfgVisHelpPrm.flagPlanetarium != CfgVisHelpPrm_default.flagPlanetarium || bEchoAll)
 			ofs << "Planetarium = " << CfgVisHelpPrm.flagPlanetarium << '\n';
+		if (CfgVisHelpPrm.flagMarkers != CfgVisHelpPrm_default.flagMarkers || bEchoAll)
+			ofs << "SurfMarkers = " << CfgVisHelpPrm.flagMarkers << '\n';
 		if (CfgVisHelpPrm.flagBodyForce != CfgVisHelpPrm_default.flagBodyForce ||
 			CfgVisHelpPrm.scaleBodyForce != CfgVisHelpPrm_default.scaleBodyForce ||
 			CfgVisHelpPrm.opacBodyForce != CfgVisHelpPrm_default.opacBodyForce || bEchoAll)

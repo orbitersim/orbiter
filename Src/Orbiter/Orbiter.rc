@@ -719,12 +719,13 @@ STYLE DS_SETFONT | DS_CONTROL | WS_CHILD | WS_BORDER
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     LTEXT           "Options for displaying markers and gridlines on the celestial sphere, labels for planetary surface features, as well as coordinate axes and force vectors.",IDC_STATIC1,6,0,208,44
-	CONTROL         "Planetarium mode (F9)",IDC_OPT_PLN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,50,80,10
+	CONTROL         "Planetarium mode (F9)",IDC_OPT_PLN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,50,100,10
 	PUSHBUTTON      "Planetarium options",IDC_OPT_VHELP_PLN,110,48,100,14
+	CONTROL         "Surface and object labels",IDC_OPT_MKR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,70,100,10
 	PUSHBUTTON      "Label options",IDC_OPT_VHELP_MKR,110,68,100,14
-	CONTROL         "Body force vectors",IDC_OPT_VEC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,90,80,10
+	CONTROL         "Body force vectors",IDC_OPT_VEC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,90,100,10
 	PUSHBUTTON      "Body force options",IDC_OPT_VHELP_VEC,110,88,100,14
-	CONTROL         "Object frame axes",IDC_OPT_CRD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,110,80,10
+	CONTROL         "Object frame axes",IDC_OPT_CRD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,110,100,10
 	PUSHBUTTON      "Frame axis options",IDC_OPT_VHELP_CRD,110,108,100,14
 END
 
@@ -753,7 +754,7 @@ IDD_OPTIONS_LABELS DIALOGEX 0, 0, 220, 146
 STYLE DS_SETFONT | DS_CONTROL | WS_CHILD | WS_BORDER
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    CONTROL         "Planetarium mode (F9)",IDC_OPT_PLN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,0,86,10
+    CONTROL         "Surface and object labels",IDC_OPT_MKR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,0,100,10
     GROUPBOX        "Object markers",IDC_STATIC1,6,16,100,62
 	CONTROL         "Vessels",IDC_OPT_MKR_VESSEL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,28,80,10
 	CONTROL         "Celestial bodies",IDC_OPT_MKR_CELBODY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,40,80,10

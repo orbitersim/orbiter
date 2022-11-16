@@ -160,8 +160,8 @@ void SurfTile::Load ()
 		mesh = CreateMesh_quadpatch (res, res, elev, mgr->Cbody()->ElevationResolution(), 0.0, &texrange, shift_origin, &vtxshift, bb_excess);
 	}
 
-	static const DWORD label_enable = PLN_ENABLE|PLN_LMARK;
-	if ((g_pOrbiter->Cfg()->CfgVisHelpPrm.flagPlanetarium & label_enable) == label_enable)
+	static const DWORD label_enable = MKR_ENABLE|MKR_LMARK;
+	if ((g_pOrbiter->Cfg()->CfgVisHelpPrm.flagMarkers & label_enable) == label_enable)
 		CreateLabels();
 }
 
