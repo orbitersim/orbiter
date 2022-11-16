@@ -1552,8 +1552,17 @@ void Orbiter::TogglePlanetariumMode()
 	DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInst);
 	if (dlg) dlg->Update();
 
-	//if (plnFlag & PLN_LMARK)
-	//	g_psys->ActivatePlanetLabels(plnFlag & PLN_ENABLE);
+}
+
+//-----------------------------------------------------------------------------
+
+void Orbiter::ToggleLabelDisplay()
+{
+	DWORD& mkrFlag = pConfig->CfgVisHelpPrm.flagMarkers;
+	mkrFlag ^= MKR_ENABLE;
+
+	DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInst);
+	if (dlg) dlg->Update();
 }
 
 //-----------------------------------------------------------------------------
@@ -2438,9 +2447,9 @@ void Orbiter::KbdInputBuffered_System (char *kstate, DIDEVICEOBJECTDATA *dod, DW
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgCapture))           pDlgMgr->EnsureEntry<DlgCapture>();
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgSelectVessel))      pDlgMgr->EnsureEntry<DlgFocus>();
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgOptions))           pDlgMgr->EnsureEntry<DlgOptions>();
-		else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_TogglePlanetarium)) {
-			TogglePlanetariumMode();
-		} else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_ToggleRecPlay)) {
+		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_TogglePlanetarium))    TogglePlanetariumMode();
+		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_ToggleLabels))         ToggleLabelDisplay();
+		else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_ToggleRecPlay)) {
 			if (bPlayback) EndPlayback();
 			else ToggleRecorder ();
 		} else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_Quit)) {

@@ -719,14 +719,14 @@ STYLE DS_SETFONT | DS_CONTROL | WS_CHILD | WS_BORDER
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     LTEXT           "Options for displaying markers and gridlines on the celestial sphere, labels for planetary surface features, as well as coordinate axes and force vectors.",IDC_STATIC1,6,0,208,44
-	CONTROL         "Planetarium mode (F9)",IDC_OPT_PLN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,50,100,10
-	PUSHBUTTON      "Planetarium options",IDC_OPT_VHELP_PLN,110,48,100,14
-	CONTROL         "Surface and object labels",IDC_OPT_MKR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,70,100,10
-	PUSHBUTTON      "Label options",IDC_OPT_VHELP_MKR,110,68,100,14
-	CONTROL         "Body force vectors",IDC_OPT_VEC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,90,100,10
-	PUSHBUTTON      "Body force options",IDC_OPT_VHELP_VEC,110,88,100,14
-	CONTROL         "Object frame axes",IDC_OPT_CRD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,110,100,10
-	PUSHBUTTON      "Frame axis options",IDC_OPT_VHELP_CRD,110,108,100,14
+	CONTROL         "Planetarium mode (F9)",IDC_OPT_PLN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,50,115,10
+	PUSHBUTTON      "Planetarium options",IDC_OPT_VHELP_PLN,124,48,90,14
+	CONTROL         "Surface/object labels (Alt-F9)",IDC_OPT_MKR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,70,115,10
+	PUSHBUTTON      "Label options",IDC_OPT_VHELP_MKR,124,68,90,14
+	CONTROL         "Body force vectors",IDC_OPT_VEC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,90,115,10
+	PUSHBUTTON      "Body force options",IDC_OPT_VHELP_VEC,124,88,90,14
+	CONTROL         "Object frame axes",IDC_OPT_CRD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,110,115,10
+	PUSHBUTTON      "Frame axis options",IDC_OPT_VHELP_CRD,124,108,90,14
 END
 
 IDD_OPTIONS_PLANETARIUM DIALOGEX 0, 0, 220, 150
