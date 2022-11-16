@@ -681,7 +681,7 @@ bool MenuInfoBar::ProcessMouse (UINT event, DWORD state, DWORD x, DWORD y)
 			g_pOrbiter->DlgMgr()->EnsureEntry<DlgFunction> ();
 			return true;
 		case 6:
-			g_pOrbiter->DlgMgr()->EnsureEntry<DlgVishelper> ();
+			g_pOrbiter->DlgMgr()->EnsureEntry<DlgOptions> ();
 			return true;
 		case 7:
 			g_pOrbiter->DlgMgr()->EnsureEntry<DlgMap> ();

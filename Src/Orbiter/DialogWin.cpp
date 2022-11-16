@@ -128,6 +128,9 @@ INT_PTR CALLBACK DialogWin::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 	case WM_HSCROLL:
 		res = GetDialogWin (hDlg)->OnHScroll (hDlg, LOWORD(wParam), HIWORD(wParam), (HWND)lParam);
 		break;
+	case WM_VSCROLL:
+		res = GetDialogWin (hDlg)->OnVScroll(hDlg, LOWORD(wParam), HIWORD(wParam), (HWND)lParam);
+		break;
 	case WM_NOTIFY:
 		res = GetDialogWin (hDlg)->OnNotify (hDlg, (int)wParam, (LPNMHDR)lParam);
 		break;

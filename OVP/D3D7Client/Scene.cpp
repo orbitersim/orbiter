@@ -402,16 +402,16 @@ void Scene::Render ()
 			np++;
 		}
 	}
-	DWORD plnmode = *(DWORD*)gc->GetConfigParam(CFGPRM_PLANETARIUMFLAG);
+	DWORD mkrmode = *(DWORD*)gc->GetConfigParam(CFGPRM_SURFMARKERFLAG);
 	int distcomp (const void *arg1, const void *arg2);
 	qsort ((void*)plist, np, sizeof(PList), distcomp);
 	for (i = 0; i < np; i++) {
 		OBJHANDLE hObj = plist[i].vo->Object();
 		plist[i].vo->Render (dev);
-		if (plnmode & PLN_ENABLE) {
+		if (mkrmode & MKR_ENABLE) {
 			oapi::Sketchpad* pSkp = nullptr;
 			oapi::Font* font = m_celSphere->MarkerFont();
-			if (plnmode & PLN_CMARK) {
+			if (mkrmode & MKR_CMARK) {
 				VECTOR3 pp;
 				char name[256];
 				oapiGetObjectName(hObj, name, 256);
@@ -420,10 +420,10 @@ void Scene::Render ()
 				font = nullptr;
 				RenderObjectMarker(pSkp, pp, std::string(name), std::string(), 0, viewH / 80);
 			}
-			if ((plnmode & PLN_SURFMARK) && (oapiGetObjectType(hObj) == OBJTP_PLANET)) {
+			if ((mkrmode & MKR_SURFMARK) && (oapiGetObjectType(hObj) == OBJTP_PLANET)) {
 				font = nullptr;
 				int label_format = *(int*)oapiGetObjectParam(hObj, OBJPRM_PLANET_LABELENGINE);
-				if (label_format < 2 && (plnmode & PLN_LMARK)) { // user-defined planetary surface labels
+				if (label_format < 2 && (mkrmode & MKR_LMARK)) { // user-defined planetary surface labels
 					double rad = oapiGetSize(hObj);
 					double apprad = rad / (plist[i].dist * cam->GetTanAp());
 					const GraphicsClient::LABELLIST* list;
@@ -463,7 +463,7 @@ void Scene::Render ()
 	}
 
 	// render new-style surface markers
-	if ((plnmode & PLN_ENABLE) && (plnmode & PLN_LMARK)) {
+	if ((mkrmode & MKR_ENABLE) && (mkrmode & MKR_LMARK)) {
 		oapi::Sketchpad *pSkp = 0;
 		int fontidx = -1;
 		for (i = 0; i < np; i++) {
@@ -503,7 +503,7 @@ void Scene::Render ()
 		}
 	}
 
-	if ((plnmode & (PLN_ENABLE | PLN_VMARK)) == (PLN_ENABLE | PLN_VMARK)) {
+	if ((mkrmode & (MKR_ENABLE | MKR_VMARK)) == (MKR_ENABLE | MKR_VMARK)) {
 		oapi::Sketchpad* pSkp = nullptr;
 		oapi::Font* font = m_celSphere->MarkerFont();
 		oapi::Pen* pen = m_celSphere->MarkerPen(0);

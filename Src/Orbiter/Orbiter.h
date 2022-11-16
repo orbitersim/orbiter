@@ -155,6 +155,7 @@ public:
 	bool IsCapturingFrames() const { return bCapture; }
 	void CaptureVideoFrame ();
 	void TogglePlanetariumMode();
+	void ToggleLabelDisplay();
 	const char *KeyState() const;
 
 	// dialog box processing
@@ -162,8 +163,9 @@ public:
 	HWND OpenDialog (HINSTANCE hInst, int id, DLGPROC pDlg, void *context = 0); // use this version for for calls from external dlls
 	HWND OpenDialogEx (int id, DLGPROC pDlg, DWORD flag = 0, void *context = 0); // extended version
 	HWND OpenDialogEx (HINSTANCE hInst, int id, DLGPROC pDlg, DWORD flag = 0, void *context = 0); // extended version
-	HWND OpenHelp (HELPCONTEXT *hcontext);
+	HWND OpenHelp (const HELPCONTEXT *hcontext);
 	void OpenLaunchpadHelp (HELPCONTEXT *hcontext);
+	HELPCONTEXT DefaultHelpPage(const char* topic);
 	//void OpenDialogAsync (int id, DLGPROC pDlg, void *context = 0);
 	void CloseDialog (HWND hDlg);
 	HWND IsDialog (HINSTANCE hInst, DWORD resId);

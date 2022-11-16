@@ -416,7 +416,7 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 
 	// Register HTML viewer class
 	RegisterHtmlCtrl (hInstance, UseHtmlInline());
-	SplitterCtrl::RegisterClass (hInstance);
+	CustomCtrl::RegisterClass (hInstance);
 
 	if (pConfig->CfgCmdlinePrm.bFastExit)
 		SetFastExit(true);
@@ -1549,11 +1549,20 @@ void Orbiter::TogglePlanetariumMode()
 	DWORD& plnFlag = pConfig->CfgVisHelpPrm.flagPlanetarium;
 	plnFlag ^= PLN_ENABLE;
 
-	DlgVishelper* dlg = pDlgMgr->EntryExists<DlgVishelper>(hInst);
+	DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInst);
 	if (dlg) dlg->Update();
 
-	if (plnFlag & IDC_VH_MKR_FEATURES)
-		g_psys->ActivatePlanetLabels(plnFlag & IDC_VH_PLN);
+}
+
+//-----------------------------------------------------------------------------
+
+void Orbiter::ToggleLabelDisplay()
+{
+	DWORD& mkrFlag = pConfig->CfgVisHelpPrm.flagMarkers;
+	mkrFlag ^= MKR_ENABLE;
+
+	DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInst);
+	if (dlg) dlg->Update();
 }
 
 //-----------------------------------------------------------------------------
@@ -2432,16 +2441,15 @@ void Orbiter::KbdInputBuffered_System (char *kstate, DIDEVICEOBJECTDATA *dod, DW
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgCustomCmd))         pDlgMgr->EnsureEntry<DlgFunction>();
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgInfo))              pDlgMgr->EnsureEntry<DlgInfo>();
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgMap))               pDlgMgr->EnsureEntry<DlgMap>();
-		//else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_DlgNavaid))            OpenDialogEx (IDD_NAVAID, (DLGPROC)Navaid_DlgProc, DLG_CAPTIONCLOSE);
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgRecorder))          pDlgMgr->EnsureEntry<DlgRecorder>();
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_ToggleCamInternal))    SetView(g_focusobj, !g_camera->IsExternal());
-		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgVisHelper))         pDlgMgr->EnsureEntry<DlgVishelper>();
+		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgVisHelper))         pDlgMgr->EnsureEntry<DlgOptions>()->SwitchPage("Visual helpers");
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgCapture))           pDlgMgr->EnsureEntry<DlgCapture>();
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgSelectVessel))      pDlgMgr->EnsureEntry<DlgFocus>();
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgOptions))           pDlgMgr->EnsureEntry<DlgOptions>();
-		else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_TogglePlanetarium)) {
-			TogglePlanetariumMode();
-		} else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_ToggleRecPlay)) {
+		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_TogglePlanetarium))    TogglePlanetariumMode();
+		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_ToggleLabels))         ToggleLabelDisplay();
+		else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_ToggleRecPlay)) {
 			if (bPlayback) EndPlayback();
 			else ToggleRecorder ();
 		} else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_Quit)) {
@@ -2889,7 +2897,7 @@ HWND Orbiter::OpenDialogEx (HINSTANCE hInstance, int id, DLGPROC pDlg, DWORD fla
 	return (pDlgMgr ? pDlgMgr->OpenDialogEx (hInstance, id, hRenderWnd, pDlg, flag, context) : NULL);
 }
 
-HWND Orbiter::OpenHelp (HELPCONTEXT *hcontext)
+HWND Orbiter::OpenHelp (const HELPCONTEXT *hcontext)
 {
 	if (pDlgMgr) {
 		DlgHelp *pHelp = pDlgMgr->EnsureEntry<DlgHelp> ();
@@ -2902,6 +2910,13 @@ HWND Orbiter::OpenHelp (HELPCONTEXT *hcontext)
 void Orbiter::OpenLaunchpadHelp (HELPCONTEXT *hcontext)
 {
 	::OpenHelp (0, hcontext->helpfile, hcontext->topic);
+}
+
+HELPCONTEXT Orbiter::DefaultHelpPage(const char* topic)
+{
+	static HELPCONTEXT hcontext = DefHelpContext;
+	hcontext.topic = (char*)topic;
+	return hcontext;
 }
 
 void Orbiter::CloseDialog (HWND hDlg)

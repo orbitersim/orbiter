@@ -118,9 +118,37 @@
 			<param name="Local" value="customcmd.htm">
 			</OBJECT>
 		<LI> <OBJECT type="text/sitemap">
-			<param name="Name" value="Display">
-			<param name="Local" value="vishelper.htm">
+			<param name="Name" value="Options">
+			<param name="Local" value="options.htm">
 			</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Celestial sphere">
+				<param name="Local" value="opt_celsphere.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Visual helpers">
+				<param name="Local" value="vishelper.htm">
+				</OBJECT>
+			<UL>
+				<LI> <OBJECT type="text/sitemap">
+					<param name="Name" value="Planetarium mode">
+					<param name="Local" value="vh_planetarium.htm">
+					</OBJECT>
+				<LI> <OBJECT type="text/sitemap">
+					<param name="Name" value="Object and surface labels">
+					<param name="Local" value="vh_labels.htm">
+					</OBJECT>
+				<LI> <OBJECT type="text/sitemap">
+					<param name="Name" value="Force vectors">
+					<param name="Local" value="vh_force.htm">
+					</OBJECT>
+				<LI> <OBJECT type="text/sitemap">
+					<param name="Name" value="Coordinate axes">
+					<param name="Local" value="vh_coord.htm">
+					</OBJECT>
+			</UL>
+		</UL>
 		<LI> <OBJECT type="text/sitemap">
 			<param name="Name" value="Map">
 			<param name="Local" value="map.htm">
@@ -166,24 +194,6 @@
 		<LI> <OBJECT type="text/sitemap">
 			<param name="Name" value="Preset views">
 			<param name="Local" value="cam_preset.htm">
-			</OBJECT>
-	</UL>
-	<LI> <OBJECT type="text/sitemap">
-		<param name="Name" value="Visual helpers">
-		<param name="Local" value="vishelper.htm">
-		</OBJECT>
-	<UL>
-		<LI> <OBJECT type="text/sitemap">
-			<param name="Name" value="Planetarium mode">
-			<param name="Local" value="vh_planetarium.htm">
-			</OBJECT>
-		<LI> <OBJECT type="text/sitemap">
-			<param name="Name" value="Force vectors">
-			<param name="Local" value="vh_force.htm">
-			</OBJECT>
-		<LI> <OBJECT type="text/sitemap">
-			<param name="Name" value="Coordinate axes">
-			<param name="Local" value="vh_coord.htm">
 			</OBJECT>
 	</UL>
 	<LI> <OBJECT type="text/sitemap">

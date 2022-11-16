@@ -210,6 +210,7 @@ struct {
 	{OAPI_KEY_F2,                                  "ToggleTrackMode"},
 	{OAPI_KEY_F8,                                  "TogglePanelMode"},
 	{OAPI_KEY_F9,                                  "TogglePlanetarium"},
+	{OAPI_KEY_F9      | KMOD_ALT,                  "ToggleSurfaceLabels"},
 	{OAPI_KEY_C       | KMOD_CTRL,                 "ToggleRecPlay"},
 	{OAPI_KEY_P       | KMOD_CTRL,                 "Pause"},
 	{OAPI_KEY_S       | KMOD_CTRL,                 "Quicksave"},

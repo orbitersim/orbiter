@@ -56,7 +56,6 @@ set(common_src
 	DlgOptions.cpp
 	DlgRecorder.cpp
 	DlgTacc.cpp
-	DlgVishelper.cpp
 	htmlctrl.c
 	Select.cpp
 # Body classes
