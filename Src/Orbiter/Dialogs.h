@@ -11,7 +11,6 @@
 #include "DlgMap.h"
 #include "DlgInfo.h"
 #include "DlgRecorder.h"
-#include "DlgVishelper.h"
 #include "DlgCapture.h"
 #include "DlgOptions.h"
 

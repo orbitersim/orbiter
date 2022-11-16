@@ -1555,8 +1555,8 @@ void Orbiter::TogglePlanetariumMode()
 	//DlgVishelper* dlg = pDlgMgr->EntryExists<DlgVishelper>(hInst);
 	//if (dlg) dlg->Update();
 
-	if (plnFlag & IDC_VH_MKR_FEATURES)
-		g_psys->ActivatePlanetLabels(plnFlag & IDC_VH_PLN);
+	if (plnFlag & PLN_LMARK)
+		g_psys->ActivatePlanetLabels(plnFlag & PLN_ENABLE);
 }
 
 //-----------------------------------------------------------------------------
@@ -2435,10 +2435,9 @@ void Orbiter::KbdInputBuffered_System (char *kstate, DIDEVICEOBJECTDATA *dod, DW
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgCustomCmd))         pDlgMgr->EnsureEntry<DlgFunction>();
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgInfo))              pDlgMgr->EnsureEntry<DlgInfo>();
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgMap))               pDlgMgr->EnsureEntry<DlgMap>();
-		//else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_DlgNavaid))            OpenDialogEx (IDD_NAVAID, (DLGPROC)Navaid_DlgProc, DLG_CAPTIONCLOSE);
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgRecorder))          pDlgMgr->EnsureEntry<DlgRecorder>();
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_ToggleCamInternal))    SetView(g_focusobj, !g_camera->IsExternal());
-		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgVisHelper))         pDlgMgr->EnsureEntry<DlgVishelper>();
+		//else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgVisHelper))         pDlgMgr->EnsureEntry<DlgVishelper>();
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgCapture))           pDlgMgr->EnsureEntry<DlgCapture>();
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgSelectVessel))      pDlgMgr->EnsureEntry<DlgFocus>();
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgOptions))           pDlgMgr->EnsureEntry<DlgOptions>();

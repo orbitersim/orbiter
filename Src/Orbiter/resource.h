@@ -235,45 +235,6 @@
 #define IDC_ABT_GRP_COMPONENT           1713
 #define IDC_ABT_LBOX_COMPONENT          1714
 
-// Visual helpers
-#define IDC_VH_PLN                      1800
-#define IDC_VH_PLN_CELGRID              1801
-#define IDC_VH_PLN_ECLGRID              1802
-#define IDC_VH_PLN_GALGRID              1803
-#define IDC_VH_PLN_EQU                  1804
-#define IDC_VH_PLN_CNSTLABEL            1805
-#define IDC_VH_PLN_CNSTLABEL_FULL       1806
-#define IDC_VH_PLN_CNSTLABEL_SHORT      1807
-#define IDC_VH_PLN_CNSTBND              1808
-#define IDC_VH_PLN_CNSTPATTERN          1809
-#define IDC_VH_PLN_MARKER               1810
-#define IDC_VH_PLN_MKRLIST              1811
-#define IDC_VH_MKR_VESSEL               1812
-#define IDC_VH_MKR_CELBODY              1813
-#define IDC_VH_MKR_BASE                 1814
-#define IDC_VH_MKR_BEACON               1815
-#define IDC_VH_MKR_FEATURES             1816
-#define IDC_VH_MKR_FEATUREBODY          1817
-#define IDC_VH_MKR_FEATURELIST          1818
-#define IDC_VH_VEC                      1819
-#define IDC_VH_VEC_WEIGHT               1820
-#define IDC_VH_VEC_THRUST               1821
-#define IDC_VH_VEC_LIFT                 1822
-#define IDC_VH_VEC_DRAG                 1823
-#define IDC_VH_VEC_TOTAL                1824
-#define IDC_VH_VEC_TORQUE               1825
-#define IDC_VH_VEC_LINSCL               1826
-#define IDC_VH_VEC_LOGSCL               1827
-#define IDC_VH_VEC_SCALE                1828
-#define IDC_VH_VEC_OPACITY              1829
-#define IDC_VH_CRD                      1830
-#define IDC_VH_CRD_VESSEL               1831
-#define IDC_VH_CRD_CELBODY              1832
-#define IDC_VH_CRD_BASE                 1833
-#define IDC_VH_CRD_NEGATIVE             1834
-#define IDC_VH_CRD_SCALE                1835
-#define IDC_VH_CRD_OPACITY              1836
-
 // Inline option dialog controls
 #define IDC_OPT_PAGELIST                1000
 #define IDC_OPT_PAGECONTAINER           1001
