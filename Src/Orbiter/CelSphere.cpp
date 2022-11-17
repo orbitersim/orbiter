@@ -386,9 +386,9 @@ void OGCelestialSphere::Render(LPDIRECT3DDEVICE7 dev, const VECTOR3& skyCol)
 			D3DMATRIX iR;
 			if (LocalHorizonTransform(iR)) {
 				dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &iR);
-				oapi::FVECTOR4 baseCol1(0.3f, 0.3f, 0.0f, 1.0f);
+				oapi::FVECTOR4 baseCol1(0.2f, 0.2f, 0.0f, 1.0f);
 				RenderGrid(dev, baseCol1);
-				oapi::FVECTOR4 baseCol2(0.6f, 0.6f, 0.0f, 1.0f);
+				oapi::FVECTOR4 baseCol2(0.5f, 0.5f, 0.0f, 1.0f);
 				RenderGreatCircle(dev, baseCol2);
 				dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
 			}
@@ -479,7 +479,7 @@ void OGCelestialSphere::RenderConstellationLines(LPDIRECT3DDEVICE7 dev)
 
 void OGCelestialSphere::RenderConstellationBoundaries(LPDIRECT3DDEVICE7 dev)
 {
-	oapi::FVECTOR4 baseCol(0.25f, 0.225f, 0.2f, 1.0f);
+	oapi::FVECTOR4 baseCol(0.25f, 0.2f, 0.15f, 1.0f);
 	dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, MarkerColorAdjusted(baseCol));
 	dev->DrawPrimitiveVB(D3DPT_LINELIST, m_cbVtx, 0, m_ncbVtx, 0);
 }
