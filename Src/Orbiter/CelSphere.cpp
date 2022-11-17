@@ -96,6 +96,23 @@ void OGCelestialSphere::InitCelestialTransform()
 
 // ==============================================================
 
+bool OGCelestialSphere::LocalHorizonTransform(D3DMATRIX& iR)
+{
+	MATRIX3 R;
+	if (LocalHorizon_Ecliptic(R)) {
+		iR = {
+			(float)R.m11, (float)R.m21, (float)R.m31, 0.0f,
+			(float)R.m12, (float)R.m22, (float)R.m32, 0.0f,
+			(float)R.m13, (float)R.m23, (float)R.m33, 0.0f,
+			0.0f,         0.0f,         0.0f,         1.0f
+		};
+		return true;
+	}
+	return false;
+}
+
+// ==============================================================
+
 void OGCelestialSphere::InitStars()
 {
 	ClearStars();
@@ -362,6 +379,19 @@ void OGCelestialSphere::Render(LPDIRECT3DDEVICE7 dev, const VECTOR3& skyCol)
 			oapi::FVECTOR4 baseCol2(0.7f, 0.0f, 0.7f, 1.0f);
 			RenderGreatCircle(dev, baseCol2);
 			dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
+		}
+
+		//  render local horizon grid
+		if (renderFlag & PLN_HGRID) {
+			D3DMATRIX iR;
+			if (LocalHorizonTransform(iR)) {
+				dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &iR);
+				oapi::FVECTOR4 baseCol1(0.3f, 0.3f, 0.0f, 1.0f);
+				RenderGrid(dev, baseCol1);
+				oapi::FVECTOR4 baseCol2(0.6f, 0.6f, 0.0f, 1.0f);
+				RenderGreatCircle(dev, baseCol2);
+				dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
+			}
 		}
 
 		// render equator of target celestial body

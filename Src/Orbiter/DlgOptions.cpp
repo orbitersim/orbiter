@@ -899,8 +899,8 @@ const HELPCONTEXT* OptionsPage_Planetarium::HelpContext() const
 
 void OptionsPage_Planetarium::UpdateControls(HWND hPage)
 {
-	std::array<int, 14> residPlanetarium = {
-		IDC_OPT_PLN_CELGRID, IDC_OPT_PLN_ECLGRID, IDC_OPT_PLN_GALGRID, IDC_OPT_PLN_EQU,
+	std::array<int, 15> residPlanetarium = {
+		IDC_OPT_PLN_CELGRID, IDC_OPT_PLN_ECLGRID, IDC_OPT_PLN_GALGRID, IDC_OPT_PLN_HRZGRID, IDC_OPT_PLN_EQU,
 		IDC_OPT_PLN_CNSTLABEL, IDC_OPT_PLN_CNSTLABEL_FULL, IDC_OPT_PLN_CNSTLABEL_SHORT, IDC_OPT_PLN_CNSTBND,
 		IDC_OPT_PLN_CNSTPATTERN, IDC_OPT_PLN_MARKER, IDC_OPT_PLN_MKRLIST,
 		IDC_STATIC1, IDC_STATIC2, IDC_STATIC3
@@ -921,6 +921,7 @@ void OptionsPage_Planetarium::UpdateControls(HWND hPage)
 	SendDlgItemMessage(hPage, IDC_OPT_PLN_CELGRID, BM_SETCHECK, plnFlag & PLN_CGRID ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hPage, IDC_OPT_PLN_ECLGRID, BM_SETCHECK, plnFlag & PLN_EGRID ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hPage, IDC_OPT_PLN_GALGRID, BM_SETCHECK, plnFlag & PLN_GGRID ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_PLN_HRZGRID, BM_SETCHECK, plnFlag & PLN_HGRID ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hPage, IDC_OPT_PLN_EQU, BM_SETCHECK, plnFlag & PLN_EQU ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hPage, IDC_OPT_PLN_CNSTLABEL, BM_SETCHECK, plnFlag & PLN_CNSTLABEL ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hPage, IDC_OPT_PLN_CNSTBND, BM_SETCHECK, plnFlag & PLN_CNSTBND ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -954,6 +955,7 @@ BOOL OptionsPage_Planetarium::OnCommand(HWND hPage, WORD ctrlId, WORD notificati
 	case IDC_OPT_PLN_CELGRID:
 	case IDC_OPT_PLN_ECLGRID:
 	case IDC_OPT_PLN_GALGRID:
+	case IDC_OPT_PLN_HRZGRID:
 	case IDC_OPT_PLN_EQU:
 	case IDC_OPT_PLN_CNSTLABEL:
 	case IDC_OPT_PLN_CNSTBND:
@@ -985,6 +987,7 @@ void OptionsPage_Planetarium::OnItemClicked(HWND hPage, WORD ctrlId)
 	case IDC_OPT_PLN_CELGRID:         flag = PLN_CGRID;     break;
 	case IDC_OPT_PLN_ECLGRID:         flag = PLN_EGRID;     break;
 	case IDC_OPT_PLN_GALGRID:         flag = PLN_GGRID;     break;
+	case IDC_OPT_PLN_HRZGRID:         flag = PLN_HGRID;     break;
 	case IDC_OPT_PLN_EQU:             flag = PLN_EQU;       break;
 	case IDC_OPT_PLN_CNSTLABEL:       flag = PLN_CNSTLABEL; break;
 	case IDC_OPT_PLN_CNSTBND:         flag = PLN_CNSTBND;   break;

@@ -140,6 +140,8 @@ protected:
 
 	void InitCelestialTransform();
 
+	bool LocalHorizonTransform(D3DXMATRIX& iR);
+
 	/**
 	 * \brief Convert a direction into viewport coordinates
 	 * \param dir direction in the ecliptic frame provided as a point on the
