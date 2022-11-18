@@ -289,12 +289,13 @@ typedef void *HDC;
 #define PLN_CGRID     0x0002 ///< Enable celestial grid
 #define PLN_EGRID     0x0004 ///< Enable ecliptic grid
 #define PLN_GGRID     0x0008 ///< Enable galactic grid
-#define PLN_EQU       0x0010 ///< Enable target body equator
-#define PLN_CONST     0x0020 ///< Enable constellation patterns
-#define PLN_CNSTLABEL 0x0040 ///< Enable constellation labels
-#define PLN_CNSTLONG  0x0080 ///< Enable long constellation names
-#define PLN_CNSTBND   0x0100 ///< Enable constellation boundaries
-#define PLN_CCMARK    0x0200 ///< Enable celestial sphere labels
+#define PLN_HGRID     0x0010 ///< Enable local horizon grid
+#define PLN_EQU       0x0020 ///< Enable target body equator
+#define PLN_CONST     0x0040 ///< Enable constellation patterns
+#define PLN_CNSTLABEL 0x0080 ///< Enable constellation labels
+#define PLN_CNSTLONG  0x0100 ///< Enable long constellation names
+#define PLN_CNSTBND   0x0200 ///< Enable constellation boundaries
+#define PLN_CCMARK    0x0400 ///< Enable celestial sphere labels
 /// @}
 
 /// \defgroup mkrflag Bit flags for surface and object markers

@@ -96,6 +96,23 @@ void OGCelestialSphere::InitCelestialTransform()
 
 // ==============================================================
 
+bool OGCelestialSphere::LocalHorizonTransform(D3DMATRIX& iR)
+{
+	MATRIX3 R;
+	if (LocalHorizon_Ecliptic(R)) {
+		iR = {
+			(float)R.m11, (float)R.m21, (float)R.m31, 0.0f,
+			(float)R.m12, (float)R.m22, (float)R.m32, 0.0f,
+			(float)R.m13, (float)R.m23, (float)R.m33, 0.0f,
+			0.0f,         0.0f,         0.0f,         1.0f
+		};
+		return true;
+	}
+	return false;
+}
+
+// ==============================================================
+
 void OGCelestialSphere::InitStars()
 {
 	ClearStars();
@@ -364,6 +381,19 @@ void OGCelestialSphere::Render(LPDIRECT3DDEVICE7 dev, const VECTOR3& skyCol)
 			dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
 		}
 
+		//  render local horizon grid
+		if (renderFlag & PLN_HGRID) {
+			D3DMATRIX iR;
+			if (LocalHorizonTransform(iR)) {
+				dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &iR);
+				oapi::FVECTOR4 baseCol1(0.2f, 0.2f, 0.0f, 1.0f);
+				RenderGrid(dev, baseCol1);
+				oapi::FVECTOR4 baseCol2(0.5f, 0.5f, 0.0f, 1.0f);
+				RenderGreatCircle(dev, baseCol2);
+				dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
+			}
+		}
+
 		// render equator of target celestial body
 		if (renderFlag & PLN_EQU) {
 			OBJHANDLE hRef = oapiCameraProxyGbody();
@@ -449,7 +479,7 @@ void OGCelestialSphere::RenderConstellationLines(LPDIRECT3DDEVICE7 dev)
 
 void OGCelestialSphere::RenderConstellationBoundaries(LPDIRECT3DDEVICE7 dev)
 {
-	oapi::FVECTOR4 baseCol(0.25f, 0.225f, 0.2f, 1.0f);
+	oapi::FVECTOR4 baseCol(0.25f, 0.2f, 0.15f, 1.0f);
 	dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, MarkerColorAdjusted(baseCol));
 	dev->DrawPrimitiveVB(D3DPT_LINELIST, m_cbVtx, 0, m_ncbVtx, 0);
 }
