@@ -44,6 +44,8 @@ public:
 	void RegisterDevices (LPDIRECT3DDEVICE7 dv);
 	// To be called before and after a render devices changes
 
+	void OnOptionChanged(int cat, int item);
+
 	void Init3DFonts ();
 
 	int GetObjects (VObject ***list) { *list = vobj; return nobj; }
@@ -86,7 +88,7 @@ public:
 	void Render (D3DRECT* vp_rect);
 	// Render the scene in vp using device dev
 
-	void Render3DLabel (const Vector &p, char *label, double scale = 1.0, DWORD colour = D3DRGBA(1,1,1,1));
+	void Render3DLabel (const Vector &p, const char *label, double scale = 1.0, DWORD colour = D3DRGBA(1,1,1,1));
 	// Render text "label" at position p using current world matrix
 
 	void RenderObjectMarker (oapi::Sketchpad* pSkp, const Vector &gpos, const std::string& label1, const std::string& label2 = 0, int mode = 0, int scale = 0);
@@ -110,6 +112,14 @@ public:
 
 	double MinParticleCameraDist() const;
 	// return the minimum distance between the camera and any particle in the scene
+
+protected:
+	/**
+     * \brief Render vector features for each visual object if requested
+     *     (frame axes, force vectors, etc.)
+     */
+	void RenderVectors();
+
 
 private:
 	OrbiterGraphics *gc;      // graphics client instance

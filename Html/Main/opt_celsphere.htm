@@ -1,0 +1,38 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<Title>Visual helpers</Title>
+<LINK REL="stylesheet" HREF="Orbiter.css" TYPE="TEXT/CSS">
+</HEAD>
+<BODY>
+<p class="header"><a class="header" href="intro.htm">Orbiter</a> &gt; <a class="header" href="mainmenu.htm">Main menu</a> &gt; <a class="header" href="options.htm">Options</a> &gt; Celestial sphere</p>
+
+<h1>Celestial sphere</h1>
+
+<p>This page provides configuration options for the display of the celestial sphere background.</p>
+
+<h2>Stars rendered as pixels</h2>
+<p>Orbiter uses the position, apparent magnitude and spectral class information from the Hipparcos star database (ESA Hipparcos mission)
+to render more than 100 000 bright stars as pixels. The settings in this category determine how the apparent magnitude data are mapped to pixel brightness.</p>
+<p><ul>
+<li>A higher value for the <i>Max. app. magnitude</i> setting increases the render intensity for bright stars, but causes the brightness to saturate at that
+apparent magnitude level.</li>
+<li>A higher value for the <i>Min. app. magnitude</i> setting increases the render intensity for dim stars, and increases the number of dim stars rendered.</li>
+<li>A lower value for the <i>Min brightness</i> setting decreases the render intensity for dim stars, but does not decrease the number of stars rendered.</li>
+<li>The <i>magnitude-brightness mapping</i> should be set to <i>exponential</i> for realistic contrast results.</li>
+</ul></p>
+
+<h2>Stars rendered as image</h2>
+<p>Orbiter can display a starmap image created from Hipparcos and Tycho data on the celestial sphere. This allows for an improved contrast range compared to the
+single-pixel rendering.</p>
+<p>For best results over all field-of-view settings, turn on both single-pixel and image rendering.</p>
+
+<h2>Background map</h2>
+<p>In addition to a starfield image, Orbiter can display a further background image on the celestial sphere. Orbiter ships with a selection of background images.
+By default, it displays the Milky Way background generated as a synthetic image with data from the ESA Gaia mission. Alternatively, images from global sky surveys
+at different wavelength bands (from infrared to gamma ray) can be displayed for special effects.</p>
+<p>The intensity of the background image can be adjusted with the slider.</p>
+
+</BODY>
+</HTML>

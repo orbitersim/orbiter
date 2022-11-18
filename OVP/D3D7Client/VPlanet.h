@@ -80,6 +80,8 @@ protected:
 	void RenderDot (LPDIRECT3DDEVICE7 dev);
 	void RenderSphere (LPDIRECT3DDEVICE7 dev, const RenderPrm &prm, bool &using_zbuf);
 	void RenderCloudLayer (LPDIRECT3DDEVICE7 dev, DWORD cullmode, const RenderPrm &prm);
+	void RenderVectors(LPDIRECT3DDEVICE7 dev);
+	void RenderBaseVectors(LPDIRECT3DDEVICE7 dev);
 	void RenderBaseSurfaces (LPDIRECT3DDEVICE7 dev);
 	void RenderBaseStructures (LPDIRECT3DDEVICE7 dev);
 	void RenderBaseShadows (LPDIRECT3DDEVICE7 dev, float depth);
@@ -110,6 +112,7 @@ private:
 	bool bVesselShadow;       // render vessel shadows on surface
 	FogParam fog;             // distance fog render parameters
 	D3D7Mesh *mesh;           // mesh for nonspherical body
+	D3DMATRIX mWorldScaled;   // rescaled world matrix
 
 	struct CloudData {        // cloud render parameters (for legacy interface)
 		CloudManager *cloudmgr; // cloud tile manager

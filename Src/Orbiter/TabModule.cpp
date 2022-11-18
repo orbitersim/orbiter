@@ -175,18 +175,13 @@ void orbiter::ModuleTab::RefreshLists ()
 		rec->locked = false;
 
 		// check if module is set active in config
-		for (idx = pCfg->nactmod-1; idx >= 0; idx--)
-			if (!_stricmp (rec->name, pCfg->actmod[idx])) {
-				rec->active = true;
-				break;
-			}
+		if (pCfg->IsActiveModule(rec->name))
+			rec->active = true;
 
 		// check if module is set active in command line
-		std::string modname(rec->name);
-		auto idx = std::find(pLp->Cfg()->CfgCmdlinePrm.LoadPlugins.begin(), pLp->Cfg()->CfgCmdlinePrm.LoadPlugins.end(), modname);
-		if (idx != pLp->Cfg()->CfgCmdlinePrm.LoadPlugins.end()) {
+		if (std::find(pCfg->CfgCmdlinePrm.LoadPlugins.begin(), pCfg->CfgCmdlinePrm.LoadPlugins.end(), rec->name) != pCfg->CfgCmdlinePrm.LoadPlugins.end()) {
 			rec->active = true;
-			rec->locked = true;
+			rec->locked = true; // modules activated from the command line are not to be unloaded
 		}
 
 		sprintf (cbuf, "Modules\\Plugin\\%s", fdata.name);
@@ -315,11 +310,11 @@ void orbiter::ModuleTab::ActivateFromList ()
 				if (!rec->locked) {
 					rec->active = checked;
 					if (checked) {
-						pCfg->AddModule(rec->name);
+						pCfg->AddActiveModule(rec->name);
 						pLp->App()->LoadModule(path, rec->name);
 					}
 					else {
-						pCfg->DelModule(rec->name);
+						pCfg->DelActiveModule(rec->name);
 						pLp->App()->UnloadModule(rec->name);
 					}
 				}

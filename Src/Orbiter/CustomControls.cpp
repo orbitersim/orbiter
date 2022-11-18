@@ -37,6 +37,41 @@ LRESULT CustomCtrl::WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return DefWindowProc (hWnd, uMsg, wParam, lParam);
 }
 
+// ---------------------------------------------------------------------------
+
+void CustomCtrl::RegisterClass(HINSTANCE hInstance)
+{
+	WNDCLASSEX wc;
+	ZeroMemory(&wc, sizeof(WNDCLASSEX));
+	wc.cbSize = sizeof(WNDCLASSEX);
+	wc.cbWndExtra = 8;
+	wc.hCursor = LoadCursor(hInstance, IDC_ARROW);
+	wc.lpfnWndProc = CustomCtrl::s_WndProc;
+	wc.lpszClassName = "OrbiterDlgCtrl";
+	RegisterClassEx(&wc);
+}
+
+// ---------------------------------------------------------------------------
+
+LRESULT CALLBACK CustomCtrl::s_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	CustomCtrl* pCtrl = (CustomCtrl*)GetWindowLongPtr(hWnd, 0);
+	if (pCtrl) return pCtrl->WndProc(hWnd, uMsg, wParam, lParam);
+	else       return DefWindowProc(hWnd, uMsg, wParam, lParam);
+}
+
+// ===========================================================================
+
+GenericCtrl::GenericCtrl()
+	: CustomCtrl()
+{
+}
+
+GenericCtrl::GenericCtrl(HWND hCtrl)
+	: CustomCtrl(hCtrl)
+{
+}
+
 // ===========================================================================
 
 SplitterCtrl::SplitterCtrl (): CustomCtrl ()
@@ -45,6 +80,7 @@ SplitterCtrl::SplitterCtrl (): CustomCtrl ()
 	splitterW = 6;
 	widthRatio = 0.5;
 	isPushing = false;
+	m_hCursor = LoadCursor(NULL, IDC_SIZEWE);
 }
 
 // ---------------------------------------------------------------------------
@@ -99,20 +135,6 @@ int SplitterCtrl::GetPaneWidth (PaneId which)
 	case PANE_NONE: return totalW;
 	default:        return paneW[which-1];
 	}
-}
-
-// ---------------------------------------------------------------------------
-
-void SplitterCtrl::RegisterClass (HINSTANCE hInstance)
-{
-	WNDCLASSEX wc;
-	ZeroMemory (&wc, sizeof(WNDCLASSEX));
-	wc.cbSize = sizeof(WNDCLASSEX);
-	wc.cbWndExtra = 8;
-	wc.hCursor = LoadCursor (NULL, IDC_SIZEWE);
-	wc.lpfnWndProc = SplitterCtrl::WndProcHook;
-	wc.lpszClassName = "SplitterCtrl";
-	RegisterClassEx (&wc);
 }
 
 // ---------------------------------------------------------------------------
@@ -207,15 +229,9 @@ LRESULT SplitterCtrl::WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		return OnLButtonUp (hWnd, wParam, LOWORD(lParam), HIWORD(lParam));
 	case WM_MOUSEMOVE:
 		return OnMouseMove (hWnd, LOWORD(lParam), HIWORD(lParam));
+	case WM_SETCURSOR:
+		SetCursor(m_hCursor);
+		return TRUE;
 	}
 	return CustomCtrl::WndProc (hWnd, uMsg, wParam, lParam);
-}
-
-// ---------------------------------------------------------------------------
-
-LRESULT CALLBACK SplitterCtrl::WndProcHook (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	SplitterCtrl *pCtrl = (SplitterCtrl*)GetWindowLongPtr (hWnd, 0);
-	if (pCtrl) return pCtrl->WndProc (hWnd, uMsg, wParam, lParam);
-	else       return DefWindowProc (hWnd, uMsg, wParam, lParam);
 }

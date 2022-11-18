@@ -161,6 +161,8 @@ namespace oapi {
 
 		const MATRIX3& Ecliptic_Galactic() const;
 
+		bool LocalHorizon_Ecliptic(MATRIX3& R) const;
+
 		void SetSkyColour(const VECTOR3& skyCol);
 		const VECTOR3& GetSkyColour() const { return m_skyCol; }
 		double GetSkyBrightness() const { return m_skyBrt; }

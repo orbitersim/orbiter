@@ -750,6 +750,17 @@ void D3D7Client::clbkRefreshVideoData ()
 }
 
 // ==============================================================
+
+void D3D7Client::clbkOptionChanged(DWORD cat, DWORD item)
+{
+	switch (cat) {
+	case OPTCAT_CELSPHERE:
+		scene->OnOptionChanged(cat, item);
+		return;
+	}
+}
+
+// ==============================================================
 // Fullscreen mode flag
 
 bool D3D7Client::clbkFullscreenMode () const

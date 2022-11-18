@@ -11,8 +11,8 @@
 #include "DlgMap.h"
 #include "DlgInfo.h"
 #include "DlgRecorder.h"
-#include "DlgVishelper.h"
 #include "DlgCapture.h"
+#include "DlgOptions.h"
 
 //INT_PTR CALLBACK Navaid_DlgProc (HWND, UINT, WPARAM, LPARAM);
 

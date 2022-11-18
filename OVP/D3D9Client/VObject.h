@@ -219,8 +219,12 @@ public:
      */
     virtual void RenderGrapplePoints (LPDIRECT3DDEVICE9 dev) {}
 
-
-	virtual void RenderAxis (LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp) {}
+	/**
+	 * \brief Render the objects coordinate axes
+	 * \param dev render device
+	 * \param pSkp The 2-D drawing context
+	 */
+	virtual void RenderVectors (LPDIRECT3DDEVICE9 dev, D3D9Pad* pSkp);
 
 
 	void RenderDot(LPDIRECT3DDEVICE9 dev);
