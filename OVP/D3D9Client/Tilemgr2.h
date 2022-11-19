@@ -383,6 +383,7 @@ public:
 
 	inline class Scene * GetScene() const { return gc->GetScene(); }
 	inline oapi::D3D9Client *GetClient() const { return gc; }
+	inline oapi::D3D9Client* Client() const { return gc; }
 	inline vPlanet *GetPlanet() { return vp; }
 	inline vPlanet* GetPlanet() const { return vp; }
 
