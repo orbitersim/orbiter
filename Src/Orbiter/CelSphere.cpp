@@ -5,12 +5,15 @@
 #include "Scene.h"
 #include "Camera.h"
 #include "CSphereMgr.h"
+#include "Texture.h"
 #include "Vecmat.h"
 #include "D3dmath.h"
 #include "OrbiterAPI.h"
 #include "Log.h"
 
 #define NSEG 64
+
+extern TextureManager2* g_texmanager2;
 
 // ==============================================================
 
@@ -21,6 +24,11 @@ OGCelestialSphere::OGCelestialSphere(OrbiterGraphics* gc, Scene* scene)
 {
 	m_bkgImgMgr = nullptr;
 	m_bkgImgMgr2 = nullptr;
+	for (auto&& vtx : m_azGridLabelVtx)
+		vtx = nullptr;
+	m_elGridLabelVtx = nullptr;
+	m_GridLabelIdx = nullptr;
+	m_GridLabelTex = 0;
 
 	InitStars();
 	InitConstellationLines();
@@ -33,6 +41,13 @@ OGCelestialSphere::OGCelestialSphere(OrbiterGraphics* gc, Scene* scene)
 	m_mjdPrecessionChecked = -1e10;
 	DWORD fontScale = max(m_viewH / 60, 14);
 	m_cLabelFont = gc->clbkCreateFont(fontScale, true, "Arial", FONT_ITALIC);
+
+	char cpath[256];
+	m_gc->TexturePath("gridlabel.dds", cpath);
+	if (FILE* f = fopen(cpath, "rb")) {
+		g_texmanager2->ReadTexture(f, &m_GridLabelTex);
+		fclose(f);
+	}
 }
 
 // ==============================================================
@@ -44,6 +59,12 @@ OGCelestialSphere::~OGCelestialSphere()
 	m_cbVtx->Release();
 	m_grdLngVtx->Release();
 	m_grdLatVtx->Release();
+
+	for (auto vtx : m_azGridLabelVtx)
+		if (vtx) vtx->Release();
+	if (m_elGridLabelVtx) m_elGridLabelVtx->Release();
+	if (m_GridLabelIdx)
+		delete[]m_GridLabelIdx;
 
 	if (m_bkgImgMgr)
 		delete m_bkgImgMgr;
@@ -264,6 +285,60 @@ void OGCelestialSphere::AllocGrids()
 	m_grdLatVtx->Optimize(m_gc->GetDevice(), 0);
 }
 
+void OGCelestialSphere::AllocGridLabels()
+{
+	struct VERTEX_XYZT {
+		D3DVALUE x, y, z;
+		D3DVALUE tu, tv;
+	};
+
+	const MESHHANDLE hMesh = GridLabelMesh();
+	MESHGROUP* grp = oapiMeshGroup(hMesh, 0);
+	
+	D3DVERTEXBUFFERDESC vbdesc;
+	vbdesc.dwSize = sizeof(D3DVERTEXBUFFERDESC);
+	vbdesc.dwCaps = (m_gc->GetFramework()->IsTLDevice() ? 0 : D3DVBCAPS_SYSTEMMEMORY);
+	vbdesc.dwFVF = D3DFVF_XYZ | D3DFVF_TEX1;
+	vbdesc.dwNumVertices = grp->nVtx;
+
+	// create vertex buffers for longitude labels (azimuth/hour angle/longitude)
+	for (size_t idx = 0; idx < m_azGridLabelVtx.size(); idx++) {
+		LPDIRECT3DVERTEXBUFFER7& vb = m_azGridLabelVtx[idx];
+		m_gc->GetDirect3D7()->CreateVertexBuffer(&vbdesc, &vb, 0);
+		VERTEX_XYZT* vbuf;
+		vb->Lock(DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
+		for (int i = 0; i < grp->nVtx; i++) {
+			vbuf[i].x = (D3DVALUE)grp->Vtx[i].x;
+			vbuf[i].y = (D3DVALUE)grp->Vtx[i].y;
+			vbuf[i].z = (D3DVALUE)grp->Vtx[i].z;
+			vbuf[i].tu = (D3DVALUE)grp->Vtx[i].tu + idx * 0.1015625;
+			vbuf[i].tv = (D3DVALUE)grp->Vtx[i].tv;
+		}
+		vb->Unlock();
+		vb->Optimize(m_gc->GetDevice(), 0);
+	}
+
+	// the index list is used for both azimuth and elevation grid labels
+	m_GridLabelIdx = new WORD[grp->nIdx];
+	memcpy(m_GridLabelIdx, grp->Idx, grp->nIdx * sizeof(WORD));
+
+	// create vertex buffer for latitude labels (just one shared between all grids)
+	grp = oapiMeshGroup(hMesh, 1);
+	vbdesc.dwNumVertices = grp->nVtx;
+	m_gc->GetDirect3D7()->CreateVertexBuffer(&vbdesc, &m_elGridLabelVtx, 0);
+	VERTEX_XYZT* vbuf;
+	m_elGridLabelVtx->Lock(DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
+	for (int i = 0; i < grp->nVtx; i++) {
+		vbuf[i].x = (D3DVALUE)grp->Vtx[i].x;
+		vbuf[i].y = (D3DVALUE)grp->Vtx[i].y;
+		vbuf[i].z = (D3DVALUE)grp->Vtx[i].z;
+		vbuf[i].tu = (D3DVALUE)grp->Vtx[i].tu;
+		vbuf[i].tv = (D3DVALUE)grp->Vtx[i].tv;
+	}
+	m_elGridLabelVtx->Unlock();
+	m_elGridLabelVtx->Optimize(m_gc->GetDevice(), 0);
+}
+
 void OGCelestialSphere::InitBackgroundManager()
 {
 	if (m_bkgImgMgr) {
@@ -358,6 +433,7 @@ void OGCelestialSphere::Render(LPDIRECT3DDEVICE7 dev, const VECTOR3& skyCol)
 			RenderGrid(dev, baseCol1, false);
 			oapi::FVECTOR4 baseCol2(0.7f, 0.0f, 0.0f, 1.0f);
 			RenderGreatCircle(dev, baseCol2);
+			RenderGridLabels(dev, 2, baseCol2);
 			dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
 		}
 
@@ -367,6 +443,7 @@ void OGCelestialSphere::Render(LPDIRECT3DDEVICE7 dev, const VECTOR3& skyCol)
 			RenderGrid(dev, baseCol1, false);
 			oapi::FVECTOR4 baseCol2(0.0f, 0.0f, 0.8f, 1.0f);
 			RenderGreatCircle(dev, baseCol2);
+			RenderGridLabels(dev, 2, baseCol2);
 		}
 
 		// render celestial grid
@@ -378,6 +455,7 @@ void OGCelestialSphere::Render(LPDIRECT3DDEVICE7 dev, const VECTOR3& skyCol)
 			RenderGrid(dev, baseCol1, false);
 			oapi::FVECTOR4 baseCol2(0.7f, 0.0f, 0.7f, 1.0f);
 			RenderGreatCircle(dev, baseCol2);
+			RenderGridLabels(dev, 1, baseCol2);
 			dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
 		}
 
@@ -390,6 +468,7 @@ void OGCelestialSphere::Render(LPDIRECT3DDEVICE7 dev, const VECTOR3& skyCol)
 				RenderGrid(dev, baseCol1);
 				oapi::FVECTOR4 baseCol2(0.5f, 0.5f, 0.0f, 1.0f);
 				RenderGreatCircle(dev, baseCol2);
+				RenderGridLabels(dev, 0, baseCol2);
 				dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
 			}
 		}
@@ -502,6 +581,19 @@ void OGCelestialSphere::RenderGrid(LPDIRECT3DDEVICE7 dev, const oapi::FVECTOR4& 
 		dev->DrawPrimitiveVB(D3DPT_LINESTRIP, m_grdLngVtx, i * (NSEG + 1), NSEG + 1, 0);
 	for (i = 0; i < 12; i++)
 		dev->DrawPrimitiveVB(D3DPT_LINESTRIP, m_grdLatVtx, i * (NSEG + 1), NSEG + 1, 0);
+}
+
+// ==============================================================
+
+void OGCelestialSphere::RenderGridLabels(LPDIRECT3DDEVICE7 dev, int az_idx, const oapi::FVECTOR4& baseCol)
+{
+	if (az_idx >= m_azGridLabelVtx.size()) return;
+	if (!m_azGridLabelVtx[az_idx])
+		AllocGridLabels();
+	dev->SetTexture(0, m_GridLabelTex);
+	dev->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, m_azGridLabelVtx[az_idx], 0, 24 * 4, m_GridLabelIdx, 24 * 6, 0);
+	dev->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, m_elGridLabelVtx, 0, 11 * 4, m_GridLabelIdx, 11 * 6, 0);
+	dev->SetTexture(0, 0);
 }
 
 // ==============================================================

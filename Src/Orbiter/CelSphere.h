@@ -75,6 +75,8 @@ public:
 	 */
 	void RenderGrid(LPDIRECT3DDEVICE7 dev, const oapi::FVECTOR4& baseCol, bool eqline = true);
 
+	void RenderGridLabels(LPDIRECT3DDEVICE7 dev, int az_idx, const oapi::FVECTOR4& baseCol);
+
 	/**
 	 * \brief Render a background image on the celestial sphere.
 	 * \param dev render device
@@ -107,6 +109,8 @@ protected:
 	 *    (e.g. celestial or ecliptic)
 	 */
 	void AllocGrids();
+
+	void AllocGridLabels();
 
 	/**
 	 * \brief Set up the render manager for showing a background image
@@ -145,6 +149,10 @@ private:
 	DWORD m_ncbVtx;                  ///< number of constellation boundary vertices
 	LPDIRECT3DVERTEXBUFFER7 m_cbVtx; ///< vertex buffer for constellation boundaries
 	LPDIRECT3DVERTEXBUFFER7 m_grdLngVtx, m_grdLatVtx; ///< vertex buffers for grid lines
+	LPDIRECTDRAWSURFACE7 m_GridLabelTex; ///< texture for grid labels
+	std::array<LPDIRECT3DVERTEXBUFFER7, 3> m_azGridLabelVtx;  ///< vertex buffers for azimuth grid labels
+	LPDIRECT3DVERTEXBUFFER7 m_elGridLabelVtx; ///< vertex buffer for elevation grid labels
+	WORD* m_GridLabelIdx;            ///< index list for azimuth/elevation grid labels
 	D3DMATRIX m_rotCelestial;        ///< rotation for celestial grid rendering
 	MATRIX4 m_WMcsphere;
 	double m_mjdPrecessionChecked;
