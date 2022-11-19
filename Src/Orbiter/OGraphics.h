@@ -75,6 +75,7 @@ public:
 	void clbkCloseSession (bool fastclose);
 	void clbkDestroyRenderWindow (bool fastclose);
 	void clbkRenderScene ();
+	void clbkOptionChanged(DWORD cat, DWORD item);
 	bool clbkDisplayFrame ();
 	bool clbkFullscreenMode () const;
 	void clbkGetViewportSize (DWORD *width, DWORD *height) const;

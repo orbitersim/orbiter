@@ -34,6 +34,18 @@ public:
 	D3D7CelestialSphere (oapi::D3D7Client *gc, Scene *scene);
 	~D3D7CelestialSphere ();
 
+	/**
+	 * \brief Notification of in-simulation user option change.
+	 * \param cat option category, see \ref optcat
+	 * \param item option item, see \ref optitem
+	 */
+	void OnOptionChanged(DWORD cat, DWORD item);
+
+	/**
+	 * \brief Render the celestial sphere background.
+	 * \param pDevice pointer to graphics device
+	 * \param skyCol sky background colour (atmospheric tint)
+	 */
 	void Render(LPDIRECT3DDEVICE7 dev, const VECTOR3 &skyCol);
 
 	/**
@@ -101,6 +113,11 @@ protected:
 	void InitStars();
 
 	/**
+	 * \brief Free the vertex buffers for star pixel rendering
+	 */
+	void ClearStars();
+
+	/**
 	 * \brief Load constellation line database from file.
 	 */
 	void InitConstellationLines();
@@ -117,6 +134,8 @@ protected:
 	void AllocGrids ();
 
 	void InitCelestialTransform();
+
+	bool LocalHorizonTransform(D3DMATRIX& iR);
 
 	/**
 	 * \brief Convert a direction into viewport coordinates

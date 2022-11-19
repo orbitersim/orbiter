@@ -49,8 +49,7 @@ D3D9CelestialSphere::D3D9CelestialSphere(D3D9Client *gc, Scene *scene)
 
 D3D9CelestialSphere::~D3D9CelestialSphere()
 {
-	for (auto it = m_sVtx.begin(); it != m_sVtx.end(); it++)
-		(*it)->Release();
+	ClearStars();
 	m_clVtx->Release();
 	m_cbVtx->Release();
 	m_grdLngVtx->Release();
@@ -74,35 +73,68 @@ void D3D9CelestialSphere::InitCelestialTransform()
 
 // ==============================================================
 
+bool D3D9CelestialSphere::LocalHorizonTransform(D3DXMATRIX& iR)
+{
+	MATRIX3 R;
+	if (LocalHorizon_Ecliptic(R)) {
+		iR = {
+			(float)R.m11, (float)R.m21, (float)R.m31, 0.0f,
+			(float)R.m12, (float)R.m22, (float)R.m32, 0.0f,
+			(float)R.m13, (float)R.m23, (float)R.m33, 0.0f,
+			0.0f,         0.0f,         0.0f,         1.0f
+		};
+		return true;
+	}
+	return false;
+}
+
+// ==============================================================
+
 void D3D9CelestialSphere::InitStars ()
 {
-	const std::vector<oapi::CelestialSphere::StarRenderRec> sList = LoadStars();
-	m_nsVtx = sList.size();
-	if (!m_nsVtx) return;
+	ClearStars();
 
-	DWORD i, j, nv, idx = 0;
+	if (*(bool*)m_gc->GetConfigParam(CFGPRM_CSPHEREUSESTARDOTS)) {
 
-	// convert star database to vertex buffers
-	DWORD nbuf = (m_nsVtx + maxNumVertices - 1) / maxNumVertices; // number of buffers required
-	m_sVtx.resize(nbuf);
-	for (auto it = m_sVtx.begin(); it != m_sVtx.end(); it++) {
-		nv = min(maxNumVertices, m_nsVtx - idx);
-		m_pDevice->CreateVertexBuffer(UINT(nv*sizeof(VERTEX_XYZC)), D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &*it, NULL);
-		VERTEX_XYZC *vbuf;
-		(*it)->Lock(0, 0, (LPVOID*)&vbuf, 0);
-		for (j = 0; j < nv; j++) {
-			const oapi::CelestialSphere::StarRenderRec& rec = sList[idx];
-			VERTEX_XYZC &v = vbuf[j];
-			v.x = (float)rec.pos.x;
-			v.y = (float)rec.pos.y;
-			v.z = (float)rec.pos.z;
-			v.col = D3DXCOLOR(rec.col.x, rec.col.y, rec.col.z, 1);
-			idx++;
+		const std::vector<oapi::CelestialSphere::StarRenderRec> sList = LoadStars();
+		m_nsVtx = sList.size();
+		if (!m_nsVtx) return;
+
+		DWORD i, j, nv, idx = 0;
+
+		// convert star database to vertex buffers
+		DWORD nbuf = (m_nsVtx + maxNumVertices - 1) / maxNumVertices; // number of buffers required
+		m_sVtx.resize(nbuf);
+		for (auto it = m_sVtx.begin(); it != m_sVtx.end(); it++) {
+			nv = min(maxNumVertices, m_nsVtx - idx);
+			m_pDevice->CreateVertexBuffer(UINT(nv * sizeof(VERTEX_XYZC)), D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &*it, NULL);
+			VERTEX_XYZC* vbuf;
+			(*it)->Lock(0, 0, (LPVOID*)&vbuf, 0);
+			for (j = 0; j < nv; j++) {
+				const oapi::CelestialSphere::StarRenderRec& rec = sList[idx];
+				VERTEX_XYZC& v = vbuf[j];
+				v.x = (float)rec.pos.x;
+				v.y = (float)rec.pos.y;
+				v.z = (float)rec.pos.z;
+				v.col = D3DXCOLOR(rec.col.x, rec.col.y, rec.col.z, 1);
+				idx++;
+			}
+			(*it)->Unlock();
 		}
-		(*it)->Unlock();
-	}
 
-	m_starCutoffIdx = ComputeStarBrightnessCutoff(sList);
+		m_starCutoffIdx = ComputeStarBrightnessCutoff(sList);
+
+	}
+}
+
+// ==============================================================
+
+void D3D9CelestialSphere::ClearStars()
+{
+	for (auto it = m_sVtx.begin(); it != m_sVtx.end(); it++)
+		(*it)->Release();
+	m_sVtx.clear();
+	m_nsVtx = 0;
 }
 
 // ==============================================================
@@ -183,6 +215,35 @@ void D3D9CelestialSphere::AllocGrids ()
 
 // ==============================================================
 
+void D3D9CelestialSphere::OnOptionChanged(DWORD cat, DWORD item)
+{
+	switch (cat) {
+	case OPTCAT_CELSPHERE:
+		switch (item) {
+		case OPTITEM_CELSPHERE_ACTIVATESTARDOTS:
+		case OPTITEM_CELSPHERE_STARDISPLAYPARAM:
+			InitStars();
+			break;
+		case OPTITEM_CELSPHERE_ACTIVATESTARIMAGE:
+		case OPTITEM_CELSPHERE_STARIMAGECHANGED:
+		case OPTITEM_CELSPHERE_ACTIVATEBGIMAGE:
+		case OPTITEM_CELSPHERE_BGIMAGECHANGED:
+			delete m_bkgImgMgr;
+			m_bkgImgMgr = new CSphereManager(m_gc, m_scene);
+			break;
+		case OPTITEM_CELSPHERE_BGIMAGEBRIGHTNESS:
+			if (m_bkgImgMgr) {
+				double intens = *(double*)m_gc->GetConfigParam(CFGPRM_CSPHEREINTENS);
+				m_bkgImgMgr->SetBgBrightness(intens);
+			}
+			break;
+		}
+		break;
+	}
+}
+
+// ==============================================================
+
 void D3D9CelestialSphere::Render(LPDIRECT3DDEVICE9 pDevice, const VECTOR3& skyCol)
 {
 	SetSkyColour(skyCol);
@@ -245,6 +306,23 @@ void D3D9CelestialSphere::Render(LPDIRECT3DDEVICE9 pDevice, const VECTOR3& skyCo
 			D3DXVECTOR4 vColor2 = ColorAdjusted(baseCol2);
 			HR(s_FX->SetVector(s_eColor, &vColor2));
 			RenderGreatCircle(s_FX);
+		}
+
+		//  render local horizon grid
+		if (renderFlag & PLN_HGRID) {
+			D3DXMATRIX iR, rot;
+			if (LocalHorizonTransform(iR)) {
+				D3DXMatrixMultiply(&rot, &iR, m_scene->GetProjectionViewMatrix());
+				HR(s_FX->SetMatrix(s_eWVP, &rot));
+				oapi::FVECTOR4 baseCol1(0.2f, 0.2f, 0.0f, 1.0f);
+				D3DXVECTOR4 vColor1 = ColorAdjusted(baseCol1);
+				HR(s_FX->SetVector(s_eColor, &vColor1));
+				RenderGrid(s_FX, false);
+				oapi::FVECTOR4 baseCol2(0.5f, 0.5f, 0.0f, 1.0f);
+				D3DXVECTOR4 vColor2 = ColorAdjusted(baseCol2);
+				HR(s_FX->SetVector(s_eColor, &vColor2));
+				RenderGreatCircle(s_FX);
+			}
 		}
 
 		// render equator of target celestial body
@@ -315,6 +393,8 @@ void D3D9CelestialSphere::RenderStars(ID3DXEffect *FX)
 {
 	_TRACE;
 
+	if (!m_nsVtx) return; // nothing to do
+
 	// render in chunks, because some graphics cards have a limit in the
 	// vertex list size
 	UINT i, j, numPasses = 0;
@@ -355,7 +435,7 @@ void D3D9CelestialSphere::RenderConstellationLines(ID3DXEffect *FX)
 
 void D3D9CelestialSphere::RenderConstellationBoundaries(ID3DXEffect* FX)
 {
-	const FVECTOR4 baseCol(0.25f, 0.22f, 0.2f, 1.0f);
+	const FVECTOR4 baseCol(0.25f, 0.2f, 0.15f, 1.0f);
 	D3DXVECTOR4 vColor = ColorAdjusted(baseCol);
 	HR(s_FX->SetVector(s_eColor, &vColor));
 

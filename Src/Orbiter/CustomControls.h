@@ -11,11 +11,22 @@ public:
 	CustomCtrl ();
 	CustomCtrl (HWND hCtrl);
 	void SetHwnd (HWND hCtrl);
+	HWND HWnd() const { return hWnd; }
 	virtual LRESULT WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static void RegisterClass(HINSTANCE hInstance);
 
 protected:
 	HWND hWnd;
 	HWND hParent;
+
+private:
+	static LRESULT CALLBACK s_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+};
+
+class GenericCtrl : public CustomCtrl {
+public:
+	GenericCtrl();
+	GenericCtrl(HWND hCtrl);
 };
 
 class SplitterCtrl: public CustomCtrl {
@@ -26,8 +37,6 @@ public:
 	void SetHwnd (HWND hCtrl, HWND hPane1, HWND hPane2);
 	void SetStaticPane (PaneId which, int width=0);
 	int GetPaneWidth (PaneId which);
-	static void RegisterClass (HINSTANCE hInstance);
-
 	LRESULT WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 protected:
@@ -38,7 +47,6 @@ protected:
 	void Refresh ();
 
 private:
-	static LRESULT CALLBACK WndProcHook (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	HWND hPane[2];
 	int paneW[2];
 	int splitterW;
@@ -47,6 +55,7 @@ private:
 	double widthRatio;
 	bool isPushing;
 	short mouseX, mouseY;
+	HCURSOR m_hCursor;
 };
 
 #endif // !__CUSTOMCONTROLS_H

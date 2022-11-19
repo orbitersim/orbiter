@@ -210,13 +210,15 @@ struct {
 	{OAPI_KEY_F2,                                  "ToggleTrackMode"},
 	{OAPI_KEY_F8,                                  "TogglePanelMode"},
 	{OAPI_KEY_F9,                                  "TogglePlanetarium"},
+	{OAPI_KEY_F9      | KMOD_ALT,                  "ToggleSurfaceLabels"},
 	{OAPI_KEY_C       | KMOD_CTRL,                 "ToggleRecPlay"},
 	{OAPI_KEY_P       | KMOD_CTRL,                 "Pause"},
 	{OAPI_KEY_S       | KMOD_CTRL,                 "Quicksave"},
 	{OAPI_KEY_Q       | KMOD_CTRL,                 "Quit"},
 	{OAPI_KEY_F3,                                  "DlgSelectVessel"},
 	{OAPI_KEY_F3      | KMOD_CTRL,                 "SelectPrevVessel"},
-	{OAPI_KEY_SYSRQ   | KMOD_CTRL,                 "DlgCapture"}
+	{OAPI_KEY_SYSRQ   | KMOD_CTRL,                 "DlgCapture"},
+	{OAPI_KEY_F6,                                  "DlgOptions"}
 };
 
 Keymap::Keymap ()

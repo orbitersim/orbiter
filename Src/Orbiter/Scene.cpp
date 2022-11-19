@@ -277,6 +277,12 @@ void Scene::Init3DFonts ()
 	comlabel_w[5] = w - comlabel_ofs[5];               // 'z'
 }
 
+void Scene::OnOptionChanged(int cat, int item)
+{
+	if (cat == OPTCAT_CELSPHERE)
+		m_celSphere->OnOptionChanged(cat, item);
+}
+
 void Scene::UpdateVisual (Body *body, Camera **camlist, int ncam)
 {
 	DWORD i;
@@ -557,7 +563,7 @@ void Scene::Timejump (PlanetarySystem *psys, Camera **camlist, DWORD ncam, bool 
 
 static int lvlid[256];
 
-void Scene::Render3DLabel (const Vector &gp, char *label, double scale, DWORD colour)
+void Scene::Render3DLabel (const Vector &gp, const char *label, double scale, DWORD colour)
 {
 	static VERTEX_TL1TEX Vtx[4] = {
 		{0,0,0,0,(D3DCOLOR)D3DRGBA(1,1,1,1),0.001f,0.001f},
@@ -589,7 +595,7 @@ void Scene::Render3DLabel (const Vector &gp, char *label, double scale, DWORD co
 			w  = 0;
 			x0 = 0;
 			v  = 0;
-			for (char *c = label; *c; c++) {
+			for (const char *c = label; *c; c++) {
 				int idx = *c - 32;
 				sr.left  = gfont_ofs[0][idx];
 				sr.right = sr.left + gfont_cw[0][idx];
@@ -776,7 +782,7 @@ void Scene::Render (D3DRECT* vp_rect)
 	bool npl_adjust = (npl < 5.0);
 	bool npl_adjusted = false;
 
-	DWORD flagPItem = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagPlanetarium;
+	DWORD flagMItem = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagMarkers;
 
 	// render planets and stars "distant objects" without zbuffer
 	for (i = np = 0; i < nobj; i++) {
@@ -797,21 +803,21 @@ void Scene::Render (D3DRECT* vp_rect)
 			npl_adjusted = true;
 		}
 		vo->Render (dev);
-		if (flagPItem & PLN_ENABLE) {
+		if (flagMItem & MKR_ENABLE) {
 			oapi::Sketchpad* pSkp = nullptr;
 			oapi::Font* font = m_celSphere->MarkerFont();
-			if (flagPItem & PLN_CMARK) {
+			if (flagMItem & MKR_CMARK) {
 				m_celSphere->EnsureMarkerDrawingContext(&pSkp, font, m_celSphere->MarkerColor(0), m_celSphere->MarkerPen(0));
 				font = nullptr;
 				RenderObjectMarker(pSkp, vo->GetBody()->GPos(), std::string(vo->GetBody()->Name()), std::string());
 			}
-			if ((flagPItem & PLN_SURFMARK) && (vo->GetBody()->Type() == OBJTP_PLANET)) {
+			if ((flagMItem & MKR_SURFMARK) && (vo->GetBody()->Type() == OBJTP_PLANET)) {
 				m_celSphere->EnsureMarkerDrawingContext(&pSkp, font, m_celSphere->MarkerColor(0), m_celSphere->MarkerPen(0));
 				font = nullptr;
 				Planet* pl = (Planet*)vo->GetBody();
 				double lng, lat, apprad = vo->AppRad() / (0.5 * viewH);
 				Vector sp;
-				if ((flagPItem & PLN_BMARK) && apprad > SURFLABEL_LIMIT) { // mark surface bases
+				if ((flagMItem & MKR_BMARK) && apprad > SURFLABEL_LIMIT) { // mark surface bases
 					for (n = 0; n < pl->nBase(); n++) {
 						Base* base = pl->GetBase(n);
 						base->EquPos(lng, lat);
@@ -820,7 +826,7 @@ void Scene::Render (D3DRECT* vp_rect)
 							RenderObjectMarker(pSkp, sp, std::string(base->Name()), std::string(), 0);
 					}
 				}
-				if ((flagPItem & PLN_RMARK) && apprad > VORLABEL_LIMIT && pl->nNav()) { // mark VOR transmitters
+				if ((flagMItem & MKR_RMARK) && apprad > VORLABEL_LIMIT && pl->nNav()) { // mark VOR transmitters
 					NavManager& navm = pl->NavMgr();
 					Vector cloc(tmul(pl->GRot(), g_camera->GPos() - pl->GPos())); // camera in planet coords
 					char cbuf[64];
@@ -844,7 +850,7 @@ void Scene::Render (D3DRECT* vp_rect)
 						}
 					}
 				}
-				if (pl->LabelFormat() < 2 && (flagPItem & PLN_LMARK)) { // user-defined planetary surface labels
+				if (pl->LabelFormat() < 2 && (flagMItem & MKR_LMARK)) { // user-defined planetary surface labels
 					int nlist;
 					Vector cp, mp;
 					bool bNeedSetup = true;
@@ -883,7 +889,7 @@ void Scene::Render (D3DRECT* vp_rect)
 	}
 
 	// render new-style surface markers
-	if ((flagPItem & PLN_ENABLE) && (flagPItem & PLN_LMARK)) {
+	if ((flagMItem & MKR_ENABLE) && (flagMItem & MKR_LMARK)) {
 		oapi::Sketchpad *pSkp = 0;
 		int fontidx = -1;
 		for (i = 0; i < np; i++) {
@@ -915,7 +921,7 @@ void Scene::Render (D3DRECT* vp_rect)
 		}
 	}
 
-	if ((flagPItem & (PLN_ENABLE | PLN_VMARK)) == (PLN_ENABLE | PLN_VMARK)) {
+	if ((flagMItem & (MKR_ENABLE | MKR_VMARK)) == (MKR_ENABLE | MKR_VMARK)) {
 		oapi::Sketchpad* pSkp = nullptr;
 		oapi::Font* font = m_celSphere->MarkerFont();
 		oapi::Pen* pen = m_celSphere->MarkerPen(0);
@@ -948,13 +954,11 @@ void Scene::Render (D3DRECT* vp_rect)
 		pstream[n]->Render (dev, ptex);
 	if (ptex) dev->SetTexture (0, 0);
 
-	// render object vectors - should this be done without z-buffer?
-	bool bRenderVectors = true;
-	if (bRenderVectors) {
-		g_camera->SetFrustumLimits (1.0, 1e30);
-		for (i = 0; i < nobj; i++)
-			vobj[i]->RenderVectors (dev);
-		g_camera->SetFrustumLimits (npl, fpl); // reset fustrum limits
+	// render object vectors
+	if (*(DWORD*)gc->GetConfigParam(CFGPRM_FORCEVECTORFLAG) & BFV_ENABLE || *(DWORD*)gc->GetConfigParam(CFGPRM_FRAMEAXISFLAG) & FAV_ENABLE) {
+		g_camera->SetFrustumLimits(1.0, 1e30);
+		RenderVectors();
+		g_camera->SetFrustumLimits(npl, fpl); // reset fustrum limits
 	}
 
 	// render focus object in cockpit view
@@ -1028,4 +1032,39 @@ void Scene::RenderVesselShadows ()
 
 	SetDefaultMaterial();
 	dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
+}
+
+void Scene::RenderVectors()
+{
+	dev->SetRenderState(D3DRENDERSTATE_ZENABLE, FALSE);
+	dev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TFACTOR);
+	dev->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+
+	dev->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TFACTOR);
+	dev->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+	dev->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+
+	dev->SetRenderState(D3DRENDERSTATE_SPECULARENABLE, TRUE);
+	dev->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_POINT);
+	dev->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFN_POINT);
+	dev->SetTexture(0, 0);
+	D3DMATERIAL7 pmtrl, mtrl = { {1,1,1,1},{1,1,1,1},{1,1,1,1},{0.2,0.2,0.2,1},40 };
+	dev->GetMaterial(&pmtrl);
+	dev->SetMaterial(&mtrl);
+
+	for (int i = 0; i < nobj; i++)
+		vobj[i]->RenderVectors(dev);
+
+	dev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+	dev->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+	dev->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_CURRENT);
+	dev->SetRenderState(D3DRENDERSTATE_SPECULARENABLE, FALSE);
+	dev->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
+	dev->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
+	dev->SetMaterial(&pmtrl);
+
+	for (int i = 0; i < nobj; i++)
+		vobj[i]->RenderVectorLabels(dev);
+
+	dev->SetRenderState(D3DRENDERSTATE_ZENABLE, TRUE);
 }

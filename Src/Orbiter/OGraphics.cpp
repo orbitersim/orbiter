@@ -616,6 +616,17 @@ bool OrbiterGraphics::clbkInitialise ()
 
 // =======================================================================
 
+void OrbiterGraphics::clbkOptionChanged(DWORD cat, DWORD item)
+{
+	switch (cat) {
+	case OPTCAT_CELSPHERE:
+		scene->OnOptionChanged(cat, item);
+		return;
+	}
+}
+
+// =======================================================================
+
 void OrbiterGraphics::clbkCleanup()
 {
 	orbiter::LaunchpadDialog* launchpad = g_pOrbiter->Launchpad();

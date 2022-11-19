@@ -3595,6 +3595,12 @@ OAPIFUNC void oapiCameraGlobalPos (VECTOR3 *gpos);
 	*/
 OAPIFUNC void oapiCameraGlobalDir (VECTOR3 *gdir);
 
+   /**
+    * \brief Returns a rotation matrix which performs the transformation
+    *   from the camera rotation into global coordinates.
+    * \param rmat pointer to a matrix receiving the rotation data
+    * \sa oapiCameraGlobalPos, oapiCameraGlobalDir
+    */
 OAPIFUNC void oapiCameraRotationMatrix (MATRIX3 *rmat);
 
 	/**
@@ -6685,6 +6691,30 @@ OAPIFUNC void oapiTriggerRedrawArea (int panel_id, int vc_id, int area_id);
 //@}  -- End of Orbiter API interface methods --
 
 
+/**
+ * \ingroup defines
+ * \defgroup optcat Option category identifiers
+ */
+//@{
+#define OPTCAT_CELSPHERE                    0x0001
+#define OPTCAT_PLANETARIUM                  0x0002
+//@}
+
+/**
+ * \ingroup defines
+ * \defgroup optitem Option item identifiers
+ */
+//@{
+#define OPTITEM_CELSPHERE_ACTIVATESTARDOTS  0x0001
+#define OPTITEM_CELSPHERE_STARDISPLAYPARAM  0x0002
+#define OPTITEM_CELSPHERE_ACTIVATESTARIMAGE 0x0003
+#define OPTITEM_CELSPHERE_STARIMAGECHANGED  0x0004
+#define OPTITEM_CELSPHERE_ACTIVATEBGIMAGE   0x0005
+#define OPTITEM_CELSPHERE_BGIMAGECHANGED    0x0006
+#define OPTITEM_CELSPHERE_BGIMAGEBRIGHTNESS 0x0007
+#define OPTITEM_PLANETARIUM_DISPFLAG        0x0001
+//@}
+
 // ======================================================================
 /**
  * \ingroup defines
@@ -6910,14 +6940,16 @@ OAPIFUNC void oapiTriggerRedrawArea (int panel_id, int vc_id, int area_id);
 #define OAPI_LKEY_ToggleTrackMode   93 ///< switch between track camera modes
 #define OAPI_LKEY_TogglePanelMode   94 ///< switch between cockpit modes
 #define OAPI_LKEY_TogglePlanetarium 95 ///< toggle celestial marker display on/off
-#define OAPI_LKEY_ToggleRecPlay     96 ///< toggle flight recorder/playback on/off
-#define OAPI_LKEY_Pause             97 ///< toggle simulation pause on/off
-#define OAPI_LKEY_Quicksave         98 ///< quick-save current simulation state
-#define OAPI_LKEY_Quit              99 ///< quit simulation session
-#define OAPI_LKEY_DlgSelectVessel  100 ///< open vessel selection dialog
-#define OAPI_LKEY_SelectPrevVessel 101 ///< switch focus to previous vessel
-#define OAPI_LKEY_DlgCapture       102 ///< open screen capture dialog
-#define LKEY_COUNT 103                 ///< number of logical key definitions
+#define OAPI_LKEY_ToggleLabels      96 ///< toggle object and surface markers on/off
+#define OAPI_LKEY_ToggleRecPlay     97 ///< toggle flight recorder/playback on/off
+#define OAPI_LKEY_Pause             98 ///< toggle simulation pause on/off
+#define OAPI_LKEY_Quicksave         99 ///< quick-save current simulation state
+#define OAPI_LKEY_Quit             100 ///< quit simulation session
+#define OAPI_LKEY_DlgSelectVessel  101 ///< open vessel selection dialog
+#define OAPI_LKEY_SelectPrevVessel 102 ///< switch focus to previous vessel
+#define OAPI_LKEY_DlgCapture       103 ///< open screen capture dialog
+#define OAPI_LKEY_DlgOptions       104 ///< open options dialog
+#define LKEY_COUNT 105                 ///< number of logical key definitions
 //@}
 
 // ======================================================================

@@ -155,6 +155,7 @@ public:
 	bool IsCapturingFrames() const { return bCapture; }
 	void CaptureVideoFrame ();
 	void TogglePlanetariumMode();
+	void ToggleLabelDisplay();
 	const char *KeyState() const;
 
 	// dialog box processing
@@ -162,8 +163,9 @@ public:
 	HWND OpenDialog (HINSTANCE hInst, int id, DLGPROC pDlg, void *context = 0); // use this version for for calls from external dlls
 	HWND OpenDialogEx (int id, DLGPROC pDlg, DWORD flag = 0, void *context = 0); // extended version
 	HWND OpenDialogEx (HINSTANCE hInst, int id, DLGPROC pDlg, DWORD flag = 0, void *context = 0); // extended version
-	HWND OpenHelp (HELPCONTEXT *hcontext);
+	HWND OpenHelp (const HELPCONTEXT *hcontext);
 	void OpenLaunchpadHelp (HELPCONTEXT *hcontext);
+	HELPCONTEXT DefaultHelpPage(const char* topic);
 	//void OpenDialogAsync (int id, DLGPROC pDlg, void *context = 0);
 	void CloseDialog (HWND hDlg);
 	HWND IsDialog (HINSTANCE hInst, DWORD resId);
@@ -367,6 +369,8 @@ public:
 	bool SendKbdImmediate(char kstate[256], bool onRunningOnly = false);
 	// Simulate an immediate key state
 
+	void OnOptionChanged(DWORD cat, DWORD item = 0);
+
 protected:
 	HRESULT UserInput ();
 	void KbdInputImmediate_System    (char *kstate);
@@ -480,7 +484,23 @@ private:
 	oapi::Module *register_module;  // used during module registration
 	friend OAPIFUNC void oapiRegisterModule (oapi::Module* module);
 
-	void LoadFixedModules ();                   // load all startup plugins
+	/**
+	 * \brief Load a list of plugin modules from a specific directory.
+	 * \param path Module directory
+	 * \param names List of module file names
+	 */
+	void LoadModules(const std::string& path, const std::list<std::string>& names);
+
+	/**
+	 * \brief Load all DLLs in a specific directory as plugin modules.
+	 * \param Module directory
+	 */
+	void LoadModules(const std::string& path);
+
+	/**
+	 * \brief Load all plugins located in the Modules/Startup folder
+	 */
+	void LoadStartupModules();
 
 	OPC_Proc FindModuleProc (HINSTANCE hDLL, const char *procname);
 	// returns address of a procedure in a plugin module, or NULL if procedure not found

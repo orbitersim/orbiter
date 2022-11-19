@@ -563,6 +563,29 @@ const MATRIX3& oapi::CelestialSphere::Ecliptic_Galactic() const
 
 // --------------------------------------------------------------
 
+bool oapi::CelestialSphere::LocalHorizon_Ecliptic(MATRIX3& R) const
+{
+	OBJHANDLE hRef = oapiCameraProxyGbody();
+	if (!hRef) return false;
+
+	MATRIX3 Rbody;
+	VECTOR3 ppos, cpos;
+	oapiGetRotationMatrix(hRef, &Rbody);
+	oapiGetGlobalPos(hRef, &ppos);
+	oapiCameraGlobalPos(&cpos);
+	cpos = tmul(Rbody, unit(cpos - ppos)); // camera direction in local cbody frame
+	double theta = acos(cpos.y);
+	double sint = sin(theta), cost = cos(theta);
+	double phi = atan2(cpos.z, cpos.x);
+	double sinp = sin(phi), cosp = cos(phi);
+	MATRIX3 Rlat = { cost, sint, 0,   -sint, cost, 0,   0, 0, 1 };
+	MATRIX3 Rlng = { cosp, 0, -sinp,   0, 1, 0,   sinp, 0, cosp };
+	R = mul(mul(Rbody, Rlng), Rlat);
+	return true;
+}
+
+// --------------------------------------------------------------
+
 void oapi::CelestialSphere::SetSkyColour(const VECTOR3& skyCol)
 {
 	m_skyCol = skyCol;

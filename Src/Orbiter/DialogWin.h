@@ -55,6 +55,7 @@ public:
 	virtual BOOL OnUser1 (HWND hDlg, WPARAM wParam, LPARAM lParam) { return MSG_DEFAULT; }
 	virtual BOOL OnUserMessage (HWND hDlg, WPARAM wParam, LPARAM lParam) { return MSG_DEFAULT; }
 	virtual BOOL OnHScroll (HWND hDlg, WORD request, WORD curpos, HWND hControl)  { return MSG_DEFAULT; }
+	virtual BOOL OnVScroll(HWND hDlg, WORD request, WORD curpos, HWND hControl) { return MSG_DEFAULT; }
 	virtual BOOL OnNotify (HWND hDlg, int idCtrl, LPNMHDR pnmh) { return MSG_DEFAULT; }
 	virtual BOOL OnApp (HWND hDlg, WPARAM wParam, LPARAM lParam) { return MSG_DEFAULT; }
 	virtual BOOL OnSize (HWND hDlg, WPARAM wParam, int w, int h);
