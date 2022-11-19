@@ -73,6 +73,23 @@ void D3D9CelestialSphere::InitCelestialTransform()
 
 // ==============================================================
 
+bool D3D9CelestialSphere::LocalHorizonTransform(D3DXMATRIX& iR)
+{
+	MATRIX3 R;
+	if (LocalHorizon_Ecliptic(R)) {
+		iR = {
+			(float)R.m11, (float)R.m21, (float)R.m31, 0.0f,
+			(float)R.m12, (float)R.m22, (float)R.m32, 0.0f,
+			(float)R.m13, (float)R.m23, (float)R.m33, 0.0f,
+			0.0f,         0.0f,         0.0f,         1.0f
+		};
+		return true;
+	}
+	return false;
+}
+
+// ==============================================================
+
 void D3D9CelestialSphere::InitStars ()
 {
 	ClearStars();
@@ -291,6 +308,23 @@ void D3D9CelestialSphere::Render(LPDIRECT3DDEVICE9 pDevice, const VECTOR3& skyCo
 			RenderGreatCircle(s_FX);
 		}
 
+		//  render local horizon grid
+		if (renderFlag & PLN_HGRID) {
+			D3DXMATRIX iR, rot;
+			if (LocalHorizonTransform(iR)) {
+				D3DXMatrixMultiply(&rot, &iR, m_scene->GetProjectionViewMatrix());
+				HR(s_FX->SetMatrix(s_eWVP, &rot));
+				oapi::FVECTOR4 baseCol1(0.2f, 0.2f, 0.0f, 1.0f);
+				D3DXVECTOR4 vColor1 = ColorAdjusted(baseCol1);
+				HR(s_FX->SetVector(s_eColor, &vColor1));
+				RenderGrid(s_FX, false);
+				oapi::FVECTOR4 baseCol2(0.5f, 0.5f, 0.0f, 1.0f);
+				D3DXVECTOR4 vColor2 = ColorAdjusted(baseCol2);
+				HR(s_FX->SetVector(s_eColor, &vColor2));
+				RenderGreatCircle(s_FX);
+			}
+		}
+
 		// render equator of target celestial body
 		if (renderFlag & PLN_EQU) {
 			OBJHANDLE hRef = oapiCameraProxyGbody();
@@ -401,7 +435,7 @@ void D3D9CelestialSphere::RenderConstellationLines(ID3DXEffect *FX)
 
 void D3D9CelestialSphere::RenderConstellationBoundaries(ID3DXEffect* FX)
 {
-	const FVECTOR4 baseCol(0.25f, 0.22f, 0.2f, 1.0f);
+	const FVECTOR4 baseCol(0.25f, 0.2f, 0.15f, 1.0f);
 	D3DXVECTOR4 vColor = ColorAdjusted(baseCol);
 	HR(s_FX->SetVector(s_eColor, &vColor));
 

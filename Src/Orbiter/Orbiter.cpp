@@ -353,6 +353,7 @@ Orbiter::Orbiter ()
 	ncustomcmd      = 0;
 	D3DMathSetup();
 	script          = NULL;
+	memstat = nullptr;
 
 	simheapsize     = 0;
 
@@ -415,7 +416,7 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 
 	// Register HTML viewer class
 	RegisterHtmlCtrl (hInstance, UseHtmlInline());
-	SplitterCtrl::RegisterClass (hInstance);
+	CustomCtrl::RegisterClass (hInstance);
 
 	if (pConfig->CfgCmdlinePrm.bFastExit)
 		SetFastExit(true);
@@ -439,30 +440,29 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 
 	Instrument::RegisterBuiltinModes();
 
-	script = new ScriptInterface (this); TRACENEW
+	script = new ScriptInterface(this); TRACENEW
+
+	// preload modules from command line requests
+	LoadModules("Modules\\Plugin", pConfig->CfgCmdlinePrm.LoadPlugins);
+
+	// preload active plugin modules
+	LoadModules("Modules\\Plugin", pConfig->GetActiveModules());
+
+	// preload startup plugin modules
+	LoadStartupModules();
 
 	{
 		BOOL cleartype, ok;
-		ok = SystemParametersInfo (SPI_GETFONTSMOOTHING, 0, &cleartype, 0);
+		ok = SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &cleartype, 0);
 		bSysClearType = (ok && cleartype);
 		//if (pConfig->CfgDebugPrm.bForceReenableSmoothFont) bSysClearType = true;
 	}
 	if (pConfig->CfgDebugPrm.bDisableSmoothFont)
 		ActivateRoughType();
 
-	// preload fixed plugin modules
-	LoadFixedModules ();
 	memstat = new MemStat;
-
-	// preload modules from command line requests
-	for (auto it = pConfig->CfgCmdlinePrm.LoadPlugins.begin(); it != pConfig->CfgCmdlinePrm.LoadPlugins.end(); it++)
-		LoadModule("Modules\\Plugin", it->c_str());
-
-	// preload active plugin modules
-	for (int i = 0; i < pConfig->nactmod; i++)
-		LoadModule ("Modules\\Plugin", pConfig->actmod[i]);
-
-    return S_OK;
+	
+	return S_OK;
 }
 
 //-----------------------------------------------------------------------------
@@ -535,25 +535,6 @@ int Orbiter::GetVersion () const
 	return v;
 }
 
-//-----------------------------------------------------------------------------
-// Name: LoadFixedModules()
-// Desc: Load all plugin modules from the "startup" directory
-//-----------------------------------------------------------------------------
-void Orbiter::LoadFixedModules ()
-{
-	char cbuf[256];
-	char *path = "Modules\\Startup";
-	struct _finddata_t fdata;
-	intptr_t fh = _findfirst ("Modules\\Startup\\*.dll", &fdata);
-	if (fh == -1) return; // no files found
-	do {
-		strcpy (cbuf, fdata.name);
-		cbuf[(strlen(cbuf)-4)] = '\0'; // cut off extension
-		LoadModule (path, cbuf);
-	} while (!_findnext (fh, &fdata));
-	_findclose (fh);
-}
-
 static bool FileExists(const char* path)
 {
 	return access(path, 0) != -1;
@@ -575,6 +556,36 @@ static bool FindDllInPluginFolder(const char *path, const char *name, char* cbuf
 {
 	sprintf(cbufOut, "%s\\%s\\%s.dll", path, name, name);
 	return FileExists(cbufOut);
+}
+
+void Orbiter::LoadModules(const std::string& path, const std::list<std::string>& names)
+{
+	for (auto name : names)
+		LoadModule(path.c_str(), name.c_str());
+}
+
+
+void Orbiter::LoadModules(const std::string& path)
+{
+	struct _finddata_t fdata;
+	intptr_t fh = _findfirst((path + std::string("\\*.dll")).c_str(), &fdata);
+	if (fh == -1) return; // no files found
+	do {
+		if (strlen(fdata.name) > 4) {
+			fdata.name[strlen(fdata.name) - 4] = '\0'; // cut off extension
+			LoadModule(path.c_str(), fdata.name);
+		}
+	} while (!_findnext(fh, &fdata));
+	_findclose(fh);
+}
+
+//-----------------------------------------------------------------------------
+// Name: LoadStartupModules()
+// Desc: Load all plugin modules from the "startup" directory
+//-----------------------------------------------------------------------------
+void Orbiter::LoadStartupModules()
+{
+	LoadModules("Modules\\Startup");
 }
 
 //-----------------------------------------------------------------------------
@@ -1538,11 +1549,20 @@ void Orbiter::TogglePlanetariumMode()
 	DWORD& plnFlag = pConfig->CfgVisHelpPrm.flagPlanetarium;
 	plnFlag ^= PLN_ENABLE;
 
-	DlgVishelper* dlg = pDlgMgr->EntryExists<DlgVishelper>(hInst);
+	DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInst);
 	if (dlg) dlg->Update();
 
-	if (plnFlag & IDC_VH_MKR_FEATURES)
-		g_psys->ActivatePlanetLabels(plnFlag & IDC_VH_PLN);
+}
+
+//-----------------------------------------------------------------------------
+
+void Orbiter::ToggleLabelDisplay()
+{
+	DWORD& mkrFlag = pConfig->CfgVisHelpPrm.flagMarkers;
+	mkrFlag ^= MKR_ENABLE;
+
+	DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInst);
+	if (dlg) dlg->Update();
 }
 
 //-----------------------------------------------------------------------------
@@ -2421,16 +2441,15 @@ void Orbiter::KbdInputBuffered_System (char *kstate, DIDEVICEOBJECTDATA *dod, DW
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgCustomCmd))         pDlgMgr->EnsureEntry<DlgFunction>();
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgInfo))              pDlgMgr->EnsureEntry<DlgInfo>();
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgMap))               pDlgMgr->EnsureEntry<DlgMap>();
-		//else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_DlgNavaid))            OpenDialogEx (IDD_NAVAID, (DLGPROC)Navaid_DlgProc, DLG_CAPTIONCLOSE);
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgRecorder))          pDlgMgr->EnsureEntry<DlgRecorder>();
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_ToggleCamInternal))    SetView(g_focusobj, !g_camera->IsExternal());
-		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgVisHelper))         pDlgMgr->EnsureEntry<DlgVishelper>();
+		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgVisHelper))         pDlgMgr->EnsureEntry<DlgOptions>()->SwitchPage("Visual helpers");
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgCapture))           pDlgMgr->EnsureEntry<DlgCapture>();
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgSelectVessel))      pDlgMgr->EnsureEntry<DlgFocus>();
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgOptions))           pDlgMgr->EnsureEntry<DlgOptions>();
-		else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_TogglePlanetarium)) {
-			TogglePlanetariumMode();
-		} else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_ToggleRecPlay)) {
+		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_TogglePlanetarium))    TogglePlanetariumMode();
+		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_ToggleLabels))         ToggleLabelDisplay();
+		else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_ToggleRecPlay)) {
 			if (bPlayback) EndPlayback();
 			else ToggleRecorder ();
 		} else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_Quit)) {
@@ -2878,7 +2897,7 @@ HWND Orbiter::OpenDialogEx (HINSTANCE hInstance, int id, DLGPROC pDlg, DWORD fla
 	return (pDlgMgr ? pDlgMgr->OpenDialogEx (hInstance, id, hRenderWnd, pDlg, flag, context) : NULL);
 }
 
-HWND Orbiter::OpenHelp (HELPCONTEXT *hcontext)
+HWND Orbiter::OpenHelp (const HELPCONTEXT *hcontext)
 {
 	if (pDlgMgr) {
 		DlgHelp *pHelp = pDlgMgr->EnsureEntry<DlgHelp> ();
@@ -2891,6 +2910,13 @@ HWND Orbiter::OpenHelp (HELPCONTEXT *hcontext)
 void Orbiter::OpenLaunchpadHelp (HELPCONTEXT *hcontext)
 {
 	::OpenHelp (0, hcontext->helpfile, hcontext->topic);
+}
+
+HELPCONTEXT Orbiter::DefaultHelpPage(const char* topic)
+{
+	static HELPCONTEXT hcontext = DefHelpContext;
+	hcontext.topic = (char*)topic;
+	return hcontext;
 }
 
 void Orbiter::CloseDialog (HWND hDlg)

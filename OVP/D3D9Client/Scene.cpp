@@ -1377,6 +1377,7 @@ void Scene::RenderMainScene()
 	// ---------------------------------------------------------------------------------------------
 
 	DWORD plnmode = *(DWORD*)gc->GetConfigParam(CFGPRM_PLANETARIUMFLAG);
+	DWORD mkrmode = *(DWORD*)gc->GetConfigParam(CFGPRM_SURFMARKERFLAG);
 
 	for (DWORD i=0;i<nplanets;i++) {
 
@@ -1399,9 +1400,9 @@ void Scene::RenderMainScene()
 
 			if (isActive) plist[i].vo->RenderVectors(pDevice, pSketch);
 
-			if (plnmode & PLN_ENABLE) {
+			if (mkrmode & MKR_ENABLE) {
 
-				if (plnmode & PLN_CMARK) {
+				if (mkrmode & MKR_CMARK) {
 					VECTOR3 pp;
 					char name[256];
 					oapiGetObjectName(hObj, name, 256);
@@ -1411,10 +1412,10 @@ void Scene::RenderMainScene()
 					RenderObjectMarker(pSketch, pp, std::string(name), std::string(), 0, viewH / 80);
 				}
 
-				if (isActive && (plnmode & PLN_SURFMARK) && (oapiGetObjectType(hObj) == OBJTP_PLANET))
+				if (isActive && (mkrmode & MKR_SURFMARK) && (oapiGetObjectType(hObj) == OBJTP_PLANET))
 				{
 					int label_format = *(int*)oapiGetObjectParam(hObj, OBJPRM_PLANET_LABELENGINE);
-					if (label_format < 2 && (plnmode & PLN_LMARK)) // user-defined planetary surface labels
+					if (label_format < 2 && (mkrmode & MKR_LMARK)) // user-defined planetary surface labels
 					{
 						double rad = oapiGetSize(hObj);
 						double apprad = rad / (plist[i].dist * tan(GetCameraAperture()));
@@ -1450,7 +1451,7 @@ void Scene::RenderMainScene()
 						}
 					}
 
-					if (plnmode & PLN_BMARK) {
+					if (mkrmode & MKR_BMARK) {
 
 						DWORD n = oapiGetBaseCount(hObj);
 						MATRIX3 prot;
@@ -1525,7 +1526,7 @@ void Scene::RenderMainScene()
 	// render new-style surface markers
 	// -------------------------------------------------------------------------------------------------------
 
-	if ((plnmode & PLN_ENABLE) && (plnmode & PLN_LMARK))
+	if ((mkrmode & MKR_ENABLE) && (mkrmode & MKR_LMARK))
 	{
 		D3D9Pad* pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
 		m_celSphere->EnsureMarkerDrawingContext((oapi::Sketchpad**)&pSketch, 0, 0, m_celSphere->MarkerPen(6));
@@ -2066,8 +2067,8 @@ void Scene::RenderMainScene()
 //
 void Scene::RenderVesselMarker(vVessel *vV, D3D9Pad *pSketch)
 {
-	DWORD plnmode = *(DWORD*)gc->GetConfigParam(CFGPRM_PLANETARIUMFLAG);
-	if ((plnmode & (PLN_ENABLE | PLN_VMARK)) == (PLN_ENABLE | PLN_VMARK)) {
+	DWORD mkrmode = *(DWORD*)gc->GetConfigParam(CFGPRM_SURFMARKERFLAG);
+	if ((mkrmode & (MKR_ENABLE | MKR_VMARK)) == (MKR_ENABLE | MKR_VMARK)) {
 		RenderObjectMarker(pSketch, vV->GlobalPos(), std::string(vV->GetName()), std::string(), 0, viewH / 80);
 	}
 }
