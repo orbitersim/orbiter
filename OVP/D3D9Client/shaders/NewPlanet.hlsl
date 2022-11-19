@@ -263,7 +263,7 @@ float4 HorizonRingPS(HazeVS frg) : COLOR
 	float x = dot(uOrt, Const.SunAz) * 0.5 + 0.5;
 	float r = length(Const.CamPos + frg.posW);
 
-	float2 uv = float2(x, (r - Const.PlanetRad) / Const.AtmoAlt);
+	float2 uv = float2(x, sqrt((r - Const.PlanetRad) / Const.AtmoAlt));
 
 	float4 cRay = tex2D(tSkyRayColor, uv).rgba;
 	float3 cMie = tex2D(tSkyMieColor, uv).rgb;
@@ -597,8 +597,8 @@ float4 TerrainPS(TileVS frg) : COLOR
 	color += cSpe * fShd * cSun * fS;
 
 	// Add Haze
-	color *= exp(-(Const.RayWave * sct.ray.a + Const.MieWave * sct.mie.a));
-	color += (sct.ray.rgb * RayPhase(-fDRS) + sct.mie.rgb * MiePhase(-fDRS)) * fOrbShd; // +sct.amb.rgb * cMlt;
+	color *= sct.atn.rgb;
+	color += (sct.ray.rgb * RayPhase(-fDRS) + sct.mie.rgb * MiePhase(-fDRS)) * fOrbShd;
 	color += cNgt2;
 
 	return float4(HDR(color), 1.0f);

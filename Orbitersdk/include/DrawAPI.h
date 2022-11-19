@@ -137,7 +137,7 @@ namespace oapi {
 	* \brief 32-bit floating point 3D vector type.
 	* \note This structure is compatible with the D3DXVECTOR3 type.
 	*/
-	typedef struct FVECTOR3 
+	typedef union FVECTOR3
 	{
 		FVECTOR3()
 		{
@@ -178,6 +178,12 @@ namespace oapi {
 			return *this;
 		}
 
+		inline FVECTOR3& operator*= (FVECTOR3 &f)
+		{
+			x *= f.x; y *= f.y; z *= f.z;
+			return *this;
+		}
+
 		inline FVECTOR3& operator/= (float f)
 		{
 			// return *this *= (1.0f / f); // nicer?
@@ -192,9 +198,21 @@ namespace oapi {
 			return *this;
 		}
 
+		inline FVECTOR3& operator+= (FVECTOR3& f)
+		{
+			x += f.x; y += f.y; z += f.z;
+			return *this;
+		}
+
 		inline FVECTOR3& operator-= (float f)
 		{
 			x -= f; y -= f; z -= f;
+			return *this;
+		}
+
+		inline FVECTOR3& operator-= (FVECTOR3 &f)
+		{
+			x -= f.x; y -= f.y; z -= f.z;
 			return *this;
 		}
 
@@ -240,7 +258,8 @@ namespace oapi {
 			return D3DXVECTOR3(x, y, z);
 		}
 #endif
-		float x, y, z;
+		struct { float x, y, z; };
+		FVECTOR2 xy; 
 	} FVECTOR3;
 
 
@@ -541,6 +560,15 @@ namespace oapi {
 			m11 = m22 = m33 = m44 = 1.0f;
 		}
 
+		void _swap(float& a, float& b) { float c = a; a = b; b = c; }
+
+		void Transpose()
+		{
+			_swap(m12, m21); _swap(m13, m31);
+			_swap(m14, m41); _swap(m23, m32);
+			_swap(m24, m42); _swap(m34, m43);
+		}
+
 		float data[16];
 		struct { FVECTOR4 _x, _y, _z, _p; };
 		struct { float m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44; };
@@ -593,6 +621,12 @@ namespace oapi {
 	}
 
 	inline FVECTOR3 unit(const FVECTOR3& v)
+	{
+		float f = 1.0f / sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+		return FVECTOR3(v.x * f, v.y * f, v.z * f);
+	}
+
+	inline FVECTOR3 normalize(const FVECTOR3& v)
 	{
 		float f = 1.0f / sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
 		return FVECTOR3(v.x * f, v.y * f, v.z * f);
@@ -1533,6 +1567,15 @@ public:
 	*/
 	virtual void SetClipDistance(float _near, float _far) { assert(false); }
 
+	/**
+	* \brief [DX9] Set a world matrix for drawing into a specified 3D location and the drawing will be facing the camera.
+	* \param wpos Camera centric location in ECL frame.
+	* \param scl Drawing scale factor.
+	* \param bFixed If 'true' drawing will retain a constant size recardless of camera distance. (One drawing unit is aprox. one pixel)
+	* \param index Direction of drawing stace x-axis in ecliptic frame. If 'NULL' drawing is orientated with screen (i.e. display) 
+	* \Note Only works in perspective projection
+	*/
+	virtual void SetWorldBillboard(const FVECTOR3& wpos, float scl = 1.0f, bool bFixed = true, const FVECTOR3 *index = NULL) { assert(false); }
 private:
 	SURFHANDLE surf;
 };

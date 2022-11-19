@@ -85,6 +85,8 @@ class Scene {
 
 public:
 
+	FVECTOR3 vPickRay;
+
 	struct FRUSTUM {
 		float znear;
 		float zfar;

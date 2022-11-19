@@ -6,8 +6,8 @@
 // ============================================================================
 
 #define Nc  16		//Z-dimension count in 3D texture
-#define Wc  64		//3D texture size (pixels)
-#define Qc  129		//2D texture size (pixels)
+#define Wc  96		//3D texture size (pixels)
+#define Qc  128		//2D texture size (pixels)
 
 
 #define NSEG 12
@@ -67,8 +67,6 @@ struct AtmoParams
 	float  CamElev;				// Camera Elevation above surface
 	float  CamRad;				// Camera geo-distance
 	float  CamRad2;				// Camera geo-distance squared
-	float  MaxDst;				// Max "ray" distance through atmosphere
-	float  iMaxDst;
 	float  Expo;				// "HDR" exposure factor (atmosphere only)
 	float  Time;				// Simulation time / 180
 	float  TrGamma;				// Terrain "Gamma" correction setting
@@ -79,12 +77,15 @@ struct AtmoParams
 	float  TW_Multi;
 	float  TW_Dst;
 	float  SunRadAtHrz;
+	float  CosAlpha;			// Cosine of camera horizon angle i.e. PlanetRad/CamRad
+	float  SinAlpha;
 	float  CamSpace;			// Camera in space scale factor 0.0 = surf, 1.0 = space
+	float  Cr2;					// Camera radius on shadow plane (dot(cp.toCam, cp.Up) * cp.CamRad)^2
 };
 
 struct sFlow {
 	BOOL bRay;
-	BOOL bAmb;
+	BOOL bCamLit;
 };
 
 uniform extern AtmoParams Const;
@@ -95,25 +96,23 @@ sampler2D tSun;
 sampler2D tCam;
 sampler2D tLndRay;
 sampler2D tLndMie;
-sampler2D tLndAmb;
+sampler2D tLndAtn;
 sampler2D tSunGlare;
 sampler2D tAmbient;
 sampler2D tSkyRayColor;
 sampler2D tSkyMieColor;
 
-//static const float n[] = { 0.0254465, 0.129234, 0.297077, 0.5, 0.702923, 0.870766, 0.974554 };
-//static const float w[] = { 0.129485, 0.279705, 0.381830, 0.417959,  0.381830, 0.279705, 0.129485 };
 
 static const float n[] = { 0.0714, 0.21428, 0.35714, 0.5, 0.64285, 0.78571, 0.92857 };
-static const float w[] = { 0.14286, 0.14286, 0.14286, 0.14286,  0.14286, 0.14286, 0.14286 };
+static const float w[] = { 0.1295, 0.27971, 0.38183, 0.41796, 0.38183, 0.27971, 0.1295 };
 
 static const float4 n0 = float4(0.0714, 0.21428, 0.35714, 0.5 );
-static const float4 w0 = float4(0.14286, 0.14286, 0.14286, 0.14286 );
+static const float4 w0 = float4(0.1295, 0.27971, 0.38183, 0.41796);
 static const float4 n1 = float4(0.64285, 0.78571, 0.92857, 0 );
-static const float4 w1 = float4( 0.14286, 0.14286, 0.14286, 0 );
+static const float4 w1 = float4(0.38183, 0.27971, 0.1295, 0 );
 
-static const float nb[] = { 0.1127, 0.5, 0.8873 };
-static const float wb[] = { 0.5555555, 0.888888, 0.555555 };
+static const float4 n4 = float4( 0.06943, 0.33001, 0.66999, 0.93057 );
+static const float4 w4 = float4( 0.34786, 0.65215, 0.65215, 0.34786 );
 
 
 float2 NrmToUV(float3 vNrm)
@@ -200,14 +199,6 @@ float RayLength(float cos_dir, float r0, float r1)
 }
 
 
-float RayLength(float3 vPos)
-{
-	float y = dot(vPos, Const.toCam);
-	float z2 = dot(vPos, vPos) - y * y;
-	return sqrt(Const.AtmoRad2 - z2) - y;
-}
-
-
 float RayLength(float cos_dir, float r0)
 {
 	return RayLength(cos_dir, r0, Const.AtmoRad);
@@ -283,6 +274,37 @@ float2 Gauss7(float cos_dir, float r0, float dist, float2 ih0)
 }
 
 
+// Optical depth integral from point in atmosphere to infinity.
+//
+float2 Gauss4(float cos_dir, float r0, float2 ih0)
+{
+	float y = r0 * cos_dir;
+	float z2 = r0 * r0 - y * y;
+	float Ray = sqrt(Const.AtmoRad2 - z2) - y; // Length of the ray
+
+	// Compute altitudes of sample points
+	float4 p0 = Ray * n4 + y;
+	float4 a0 = sqrt(z2 + p0 * p0) - Const.PlanetRad;
+
+	float2 sum = 0.0f;
+	for (int i = 0; i < 4; i++) sum += exp(-clamp(a0[i] * ih0, -20, 20)) * w4[i];
+	return sum * Ray * 0.5f;
+}
+
+// Optical depth integral in atmosphere for a given distance
+//
+float2 Gauss4(float cos_dir, float r0, float dist, float2 ih0)
+{
+	// Compute altitudes of sample points
+	float4 d0 = dist * n4;
+	float4 a0 = sqrt(r0 * r0 + d0 * d0 - 2.0 * r0 * d0 * cos_dir) - Const.PlanetRad;
+
+	float2 sum = 0.0f;
+	for (int i = 0; i < 4; i++) sum += exp(-clamp(a0[i] * ih0, -20, 20)) * w4[i];
+	return sum * dist * 0.5f;
+}
+
+
 // Rayleigh phase function
 //
 float RayPhase(float cw)
@@ -307,23 +329,6 @@ float MiePhase2(float cw, float g)
 }
 
 
-// 2D lookup-table, for direct sunlight being filtered by atmosphere
-//
-float4 SunColor(float x : TEXCOORD0, float y : TEXCOORD1) : COLOR
-{
-	float alt = lerp(Const.MinAlt, Const.AtmoAlt, y*y);
-	float ang = x * ANGRNG + MINANGLE;
-
-	// Compute shadowing caused by a planet
-	//float s = (alt + Const.PlanetRad) * sqrt(1.0f - ang * ang) - Const.PlanetRad; // Sun altitude above horizon (meters)
-
-	float2 rm = Gauss7(ang, alt + Const.PlanetRad, Const.iH) * Const.rmO;
-	float3 clr = Const.RayWave * rm.r + Const.MieWave * rm.g;
-
-	return float4(exp(-clr), 1.0f);
-}
-
-
 // Get a color of sunlight for a given altitude and normal-sun angle
 //
 float3 GetSunColor(float dir, float alt)
@@ -335,6 +340,122 @@ float3 GetSunColor(float dir, float alt)
 }
 
 
+// Compute attennuation from one point in atmosphere to camera
+//
+float3 ComputeCameraView(float3 vNrm, float3 vRay, float r, float d)
+{
+	float a = dot(vNrm, vRay);
+	float2 rm = Gauss4(-a, r, d, Const.iH) * Const.rmO;
+	float3 clr = Const.RayWave * rm.r + Const.MieWave * rm.g;
+	return exp(-clr);
+}
+
+bool IsLit(float3 vPos)
+{
+	float u = dot(vPos, Const.Up);
+	float t = dot(vPos, Const.ZeroAz);
+	float z = dot(vPos, Const.toSun);
+	return ((u * u + t * t) > Const.PlanetRad2) || z > 0;
+}
+
+
+struct RayData {
+	float se;	// Distance to 'Shadow entry' point from a camera
+	float sx;	// Shadow exit
+	float ae;	// Atmosphere entry
+	float ax;	// Atmosphere exit
+};
+
+
+// Compute ray passage information
+//
+RayData ComputeRayStats(in float3 vRay)
+{
+	RayData dat = (RayData)0;
+
+	// Projection of viewing ray on 'shadow' axes
+	float u = dot(vRay, Const.Up);
+	float t = dot(vRay, Const.ZeroAz);
+	float z = dot(vRay, Const.toSun);
+
+	// Cosine 'a'
+	float a = u * rsqrt(u * u + t * t);
+
+	float k2 = Const.Cr2 * a * a;
+	float h2 = Const.Cr2 - k2;
+	float w2 = Const.PlanetRad2 - h2;
+	float w  = sqrt(w2);
+	float k  = sqrt(k2) * sign(a);
+
+	dat.se = k - w;
+	dat.sx = dat.se + 2.0f * w;
+
+	// Project distances back to 3D space
+	float q = rsqrt(1.0 - z * z);
+	dat.se *= q;
+	dat.sx *= q;
+	
+	// If the ray doesn't intersect shadow then set both distances to zero
+	if (w2 < 0) dat.se = dat.sx = 0;
+
+	// Compute atmosphere entry and exit points 
+	//
+	a = -dot(Const.toCam, vRay);
+	k2 = Const.CamRad2 * a * a;
+	h2 = Const.CamRad2 - k2;
+	w2 = Const.AtmoRad2 - h2;
+	w = sqrt(w2);
+	k = sqrt(k2) * sign(a);
+
+	dat.ae = (k - w);
+	dat.ax = dat.ae + 2.0f * w;
+
+	// If the ray doesn't intersect atmosphere then set both distances to zero
+	if (w2 < 0) dat.ae = dat.ax = 0;
+
+	return dat;
+}
+
+
+// Integrate viewing ray for incatter color (.rgb) and optical depth (.a)
+//
+float4 IntegrateSegment(float3 vOrig, float3 vRay, float len, float iH)
+{
+	float4 ret = 0;
+	for (int i = 0; i < 4; i++)
+	{
+		float dst = len * n4[i];
+		float3 pos = vOrig + vRay * dst;
+		float3 n = normalize(pos);
+		float rad = dot(n, pos);
+		float alt = rad - Const.PlanetRad;
+		float3 x = GetSunColor(dot(n, Const.toSun), alt) * ComputeCameraView(n, vRay, rad, len - dst);
+		float f = exp(-alt * iH) * w4[i];
+		ret.rgb += x * f;
+		ret.a += f;
+	}
+	return ret;
+}
+
+
+
+// 2D lookup-table, for direct sunlight being filtered by atmosphere
+//
+float4 SunColor(float x : TEXCOORD0, float y : TEXCOORD1) : COLOR
+{
+	float alt = lerp(Const.MinAlt, Const.AtmoAlt, y*y);
+	float ang = x * ANGRNG + MINANGLE;
+
+	float2 rm = Gauss7(ang, alt + Const.PlanetRad, Const.iH) * Const.rmO;
+	float3 clr = Const.RayWave * rm.r + Const.MieWave * rm.g;
+
+	return float4(exp(-clr), 1.0f);
+}
+
+
+
+
+
 /*float SunGlare(float3 vRay)
 {
 	if (dot(vRay, Const.toSun) < 0) return 0.0f;
@@ -344,15 +465,6 @@ float3 GetSunColor(float dir, float alt)
 }*/
 
  
-// Compute attennuation from one point in atmosphere to camera
-//
-float3 ComputeCameraView(float3 vNrm, float3 vRay, float r, float d)
-{
-	float a = dot(vNrm, vRay);
-	float2 rm = Gauss7(-a, r, d, Const.iH) * Const.rmO;
-	float3 clr = Const.RayWave * rm.r + Const.MieWave * rm.g;
-	return exp(-clr);
-}
 
 
 // Approximate multi-scatter effect to atmospheric color and light travel behind terminator
@@ -437,30 +549,37 @@ float4 SkyView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 //
 float4 RingView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 {
+	v *= v;
+	float rmO = Flo.bRay ? Const.rmO.r : Const.rmO.g;
+	float rmI = Flo.bRay ? Const.rmI.r : Const.rmI.g;
+	float iH  = Flo.bRay ? Const.iH.r : Const.iH.g;
 
 	float x = -1.0f + u * 2.0f;
 	float y = sqrt(1.0f - x * x);
+	float e = v * Const.AtmoAlt;
+	float re = Const.PlanetRad + e;
+	float z = re * Const.CosAlpha;
+	float j = re * Const.SinAlpha;
 
-	float r = Const.PlanetRad + v * Const.AtmoAlt;
-	float d = sqrt(Const.CamRad2 + r * r - 2.0f * r * Const.PlanetRad);
-	float t = Const.CamRad * (Const.CamRad2 + d * d - r * r) / (2.0f * Const.CamRad * d);
-	
-	r = sqrt(Const.CamRad2 - t * t);
+	// Sample position and viewing ray
+	float3 vPos = Const.SunAz * x * j + Const.ZeroAz * y * j + Const.toCam * z;
+	float3 vRay = normalize(Const.CamPos - vPos);
 
-	float l = 2.0f * sqrt(Const.AtmoRad2 - r * r); // Ray length through atmosphere
-	float h = sqrt(Const.CamRad2 - r * r);	// Horizon distance at alt of "r"
-	float z = -h / Const.CamRad;	// Cosine of viewing angle
-	float k = sqrt(1.0f - z * z);
-	float q = h - l * 0.5f;			// Distance to atmosphere threshold
+	float c = abs(dot(vPos, vRay));
+	float h2 = re * re - c * c;
+	float f = sqrt(Const.AtmoRad2 - h2); // Length of a half ray
+	float l = 2.0f * f; // Length of ray in atmosphere
+	float q = f - c; // Length of ray behind vPos point
 
-	// Viewing ray
-	float3 vRay = normalize(Const.SunAz * x * k + Const.ZeroAz * y * k + Const.toCam * z);
+	/*
+	PlShdDat shd = PlanetShadow(vPos, vRay);
 
-	float Ph = dot(Const.toSun, Const.toCam);
+	// If source pixel is lit then ignore shadow data. (case dependent, no need to backtrack here)
+	if (shd.p2 > Const.PlanetRad2 || shd.b > 0) shd.dist = 0.0;
 
-	float rmO = Flo.bRay ? Const.rmO.r : Const.rmO.g;
-	float rmI = Flo.bRay ? Const.rmI.r : Const.rmI.g;
-	float iH = Flo.bRay ? Const.iH.r : Const.iH.g;
+	// If shadow extends outside atmosphere.. return zero
+	if (shd.dist > (f + c)) return float4(0, 0, 0, 0);
+	*/
 
 	float3 ret = 0;
 	float osc = 0;
@@ -468,14 +587,12 @@ float4 RingView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 	for (int i = 0; i < 7; i++)
 	{
 		float  dst = l * n[i];
-		float3 pos = Const.CamPos + vRay * (q + dst);
+		float3 pos = vPos + vRay * (dst - q);
 		float3 n = normalize(pos);
 		float  dRS = dot(n, Const.toSun);
 		float  rad = dot(n, pos);
 		float  alt = rad - Const.PlanetRad;
-
 		float3 x = GetSunColor(dRS, alt) * ComputeCameraView(Const.toCam, vRay, Const.CamRad, dst);
-
 		float f = exp(-alt * iH) * w[i];
 		ret += x * f;
 		osc += f;
@@ -524,6 +641,7 @@ struct LandOut
 {
 	float4 ray;
 	float4 mie;
+	float4 atn;
 };
 
 
@@ -541,6 +659,7 @@ LandOut GetLandView(float rad, float3 vNrm)
 	LandOut o;
 	o.ray = smaple3D(tLndRay, uvb, Nc, Wc);
 	o.mie = smaple3D(tLndMie, uvb, Nc, Wc);
+	o.atn = smaple3D(tLndAtn, uvb, Nc, Wc);
 	return o;
 }
 
@@ -549,8 +668,68 @@ LandOut GetLandView(float rad, float3 vNrm)
 //
 float4 LandView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 {
-	u *= 16.0f;
-	float a = floor(u) / 16.0f;
+	u *= Nc;
+	float a = floor(u) / Nc;
+	float alt = lerp(Const.MinAlt, Const.MaxAlt, a);
+	float r = alt + Const.PlanetRad;
+
+	// Geo-centric Vertex location
+	float3 vNrm = uvToNrm(float2(frac(u), v));
+	float3 vVrt = vNrm * r;
+
+	// Viewing ray
+	float3 vCam = Const.CamPos - vVrt;
+	float3 vRay = normalize(vCam); // Towards camera from vertex
+	float cpd = dot(vRay, vCam); // Camera pixel distance
+	float start = 0;
+	float end = 0;
+
+	RayData dat = ComputeRayStats(-vRay);
+
+	bool bLit = IsLit(vVrt);
+
+	if (!Flo.bCamLit && !bLit) return float4(0, 0, 0, 0); // Entire ray in shadow
+
+	if (Flo.bCamLit && bLit) {
+		start = max(0, dat.ae);
+		end = cpd;
+	}
+	else {
+		if (dat.ae > dat.se) return float4(0, 0, 0, 0); // Entire ray in shadow
+		start = max(0, dat.ae);
+		end = min(cpd, dat.se);
+	}
+
+	// Shift origin from camera to pixel
+	end = cpd - end;
+	start = cpd - start;
+
+	// Offset end position from pixel
+	vVrt += vRay * end;
+	float dist = abs(end - start);
+
+	if (!Flo.bRay) dist = min(dist, 10e3);
+
+	float rmI = Flo.bRay ? Const.rmI.r : Const.rmI.g;
+	float iH  = Flo.bRay ? Const.iH.r : Const.iH.g;
+
+	float4 ret = IntegrateSegment(vVrt, vRay, dist, iH);
+
+	ret.rgb *= Const.cSun;
+	ret.rgb *= rmI * dist;
+	ret.rgb *= Flo.bRay ? Const.RayWave : Const.MieWave;
+
+	return float4(ret.rgb, 0.0f);
+}
+
+
+
+// Render 3D Lookup texture for land view attennuation
+//
+float4 LandViewAtten(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
+{
+	u *= Nc;
+	float a = floor(u) / Nc;
 	float alt = lerp(Const.MinAlt, Const.MaxAlt, a);
 	float r = alt + Const.PlanetRad;
 
@@ -565,43 +744,11 @@ float4 LandView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 	float ang = dot(vNrm, vRay);
 	float len = RayLength(ang, r);
 
-	if (!Flo.bRay) len = min(len, 10e3);
-
 	float dist = min(len, dot(vRay, vCam));
-	float dSR = dot(Const.toSun, vRay);
-	float segh = sqrt(1.0 - dSR * dSR) * dist * iNSEG;
 
-	float3 ret = 0;
-	float osc = 0;
+	float3 ret = ComputeCameraView(vNrm, vRay, r, dist);
 
-	float rmO = Flo.bRay ? Const.rmO.r : Const.rmO.g;
-	float rmI = Flo.bRay ? Const.rmI.r : Const.rmI.g;
-	float iH  = Flo.bRay ? Const.iH.r : Const.iH.g;
-
-	for (int i = 0; i < 7; i++)
-	{
-		float dst = dist * n[i];
-		float3 pos = vVrt + vRay * dst;
-		float3 n = normalize(pos);
-		float rad = dot(n, pos);
-		float alt = rad - Const.PlanetRad;
-		float3 x = ComputeCameraView(n, vRay, rad, dist - dst);
-
-		x *= GetSunColor(dot(n, Const.toSun), alt);
-		x *= PlanetShadowFactor(pos, segh);
-		
-		float f = exp(-alt * iH) * w[i];
-		
-		osc += f;
-		ret += x * f;
-	}
-
-	ret *= Const.cSun;
-	osc *= rmO * dist;
-	ret *= rmI * dist;
-	ret *= Flo.bRay ? Const.RayWave : Const.MieWave;
-
-	return float4(ret, osc);
+	return float4(ret, 1.0);
 }
 
 

@@ -1509,6 +1509,17 @@ void Scene::RenderMainScene()
 		pSketch->EndDrawing(); // SKETCHPAD_PLANETARIUM
 	}
 
+	for (DWORD i = 0; i < nplanets; ++i)
+	{
+		OBJHANDLE hObj = plist[i].vo->Object();
+		if (oapiGetObjectType(hObj) != OBJTP_PLANET) continue;
+		D3D9Pad* pSketch = GetPooledSketchpad(SKETCHPAD_PLANETARIUM);
+		pSketch->LoadDefaults();
+		pSketch->SetViewMode(Sketchpad::USER);
+		pSketch->SetViewProj(GetViewMatrix(), GetProjectionMatrix());
+		static_cast<vPlanet*>(plist[i].vo)->TestComputations(pSketch);
+		pSketch->EndDrawing(); // SKETCHPAD_PLANETARIUM
+	}
 
 	// -------------------------------------------------------------------------------------------------------
 	// render new-style surface markers
@@ -1982,7 +1993,7 @@ void Scene::RenderMainScene()
 			pSketch->StretchRectNative(pTab, NULL, &_R(0, y - desc.Height, desc.Width, y));
 			y -= (desc.Height + 5);
 		}
-		pTab = vP->GetScatterTable(AMB_LAND);
+		pTab = vP->GetScatterTable(ATN_LAND);
 		if (pTab) {
 			pTab->GetLevelDesc(0, &desc);
 			pSketch->StretchRectNative(pTab, NULL, &_R(0, y - desc.Height, desc.Width, y));
@@ -1990,7 +2001,7 @@ void Scene::RenderMainScene()
 		}
 		for (int i=0;i<9;i++)
 		{
-			if (i == RAY_LAND || i == MIE_LAND || i == AMB_LAND) continue;
+			if (i == RAY_LAND || i == MIE_LAND || i == ATN_LAND) continue;
 			pTab = vP->GetScatterTable(i);
 			if (!pTab) break;
 			pTab->GetLevelDesc(0, &desc);

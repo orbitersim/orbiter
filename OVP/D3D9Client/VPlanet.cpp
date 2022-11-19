@@ -361,6 +361,7 @@ void vPlanet::GlobalInit(oapi::D3D9Client* gc)
 	pIP->CompileShader("RingView");
 	pIP->CompileShader("RenderSun");
 	pIP->CompileShader("AmbientSky");
+	pIP->CompileShader("LandViewAtten");
 
 	if (!pIP->IsOK()) {
 		oapiWriteLog("InitializeScatteringEx() FAILED");
@@ -452,7 +453,7 @@ void vPlanet::GlobalInit(oapi::D3D9Client* gc)
 
 vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene) :
 	vObject (_hObj, scene),
-	pSunColor(), pRaySkyView(), pMieSkyView(), pLandViewRay(), pLandViewMie(), pAmbientSky(), pLandViewAmb(), ShaderName("Auto\0")
+	pSunColor(), pRaySkyView(), pMieSkyView(), pLandViewRay(), pLandViewMie(), pAmbientSky(), pLandViewAtn(), ShaderName("Auto\0")
 {
 	memset(&MicroCfg, 0, sizeof(MicroCfg));
 	vRefPoint = _V(1,0,0);
@@ -636,7 +637,7 @@ vPlanet::~vPlanet ()
 	SAFE_RELEASE(pLandViewRay);
 	SAFE_RELEASE(pLandViewMie);
 	SAFE_RELEASE(pAmbientSky);
-	SAFE_RELEASE(pLandViewAmb);
+	SAFE_RELEASE(pLandViewAtn);
 }
 
 
@@ -711,6 +712,195 @@ FVECTOR3 vPlanet::SunLightColor(FVECTOR3 geo_pos_ecl)
 
 // ===========================================================================================
 //
+vPlanet::SHDPrm vPlanet::ComputeShadow(FVECTOR3 vRay)
+{
+	// Compute Planet's shadow entry and exit points
+
+
+	// Camera radius in "shadow" frame.
+	double A = dot(TestPrm.Up, TestPrm.toCam * TestPrm.CamRad);
+
+	// Projection of viewing ray on 'shadow' axes
+	double u = dot(vRay, TestPrm.Up);
+	double t = dot(vRay, TestPrm.ZeroAz);
+	double z = dot(vRay, TestPrm.toSun);
+
+	// Cosine 'a'
+	double a = u / sqrt(u * u + t * t);
+
+	double k2 = A * A * a * a;
+	double h2 = A * A - k2;
+	double w2 = cp.PlanetRad2 - h2;
+	double w = sqrt(w2);
+	double k = sqrt(k2) * sign(a);
+	double es = k - w;
+	double xs = es + 2.0f * w;
+
+	// Project distances 'es' and 'xs' back to 3D space
+	double f = 1.0f / sqrt(1.0 - z * z);
+	es *= f;
+	xs *= f;
+
+	// If the ray doesn't intersect shadow then set both distances behind camera
+	if (w2 < 0) es = xs = -1e3;
+
+
+	// Compute atmosphere entry and exit points 
+	//
+	a = -dot(TestPrm.toCam, vRay);
+	k2 = TestPrm.CamRad2 * a * a;
+	h2 = TestPrm.CamRad2 - k2;
+	w2 = cp.AtmoRad2 - h2;
+	w = sqrt(w2);
+	k = sqrt(k2) * sign(a);
+
+	double ea = (k - w);
+	double xa = ea + 2.0f * w;
+
+	// If the ray doesn't intersect atmosphere then set both distances behind camera
+	if (w2 < 0) ea = xa = -1e3;
+
+	vPlanet::SHDPrm sp;
+	sp.se = es;
+	sp.sx = xs;
+	sp.ae = ea;
+	sp.ax = xa;
+	sp.cr = abs(A);
+	return sp;
+}
+
+
+// ===========================================================================================
+//
+void vPlanet::TestComputations(Sketchpad *pSkp)
+{
+	static int status = 0;
+	float size = 0.02f;
+	VECTOR3 cpos, rpos;
+	VESSEL* pV = oapiGetFocusInterface();
+	OBJHANDLE hV = pV->GetHandle();
+	OBJHANDLE hR = pV->GetGravityRef();
+	if (hR != hObj) return;
+
+	oapiGetGlobalPos(hR, &rpos);
+	oapiCameraGlobalPos(&cpos);
+	cpos -= rpos;
+	
+	FVECTOR3 vCam(cpos);
+
+	static FVECTOR3 vRef = 0;
+	static FVECTOR3 vPos = 0;
+	static FVECTOR3 vRay = 0;
+	static float beta = 0.0f;
+
+	if (length(GetScene()->vPickRay) > 0.8f) {
+		vRef = cpos;
+		beta = dot(unit(vRef), GetScene()->vPickRay);
+	}
+
+	TestPrm.toSun = cp.toSun;
+	TestPrm.toCam = unit(vRef);
+	TestPrm.CamRad = length(vRef);
+	TestPrm.CamRad2 = TestPrm.CamRad * TestPrm.CamRad;
+	TestPrm.ZeroAz = unit(cross(TestPrm.toCam, TestPrm.toSun));
+	TestPrm.SunAz = unit(cross(TestPrm.toCam, TestPrm.ZeroAz));
+	TestPrm.Up = unit(cross(TestPrm.ZeroAz, TestPrm.toSun));
+	TestPrm.CosAlpha = min(1.0f, cp.PlanetRad / TestPrm.CamRad);
+	TestPrm.SinAlpha = sqrt(1.0f - TestPrm.CosAlpha * TestPrm.CosAlpha);
+
+
+	// Trace picking ray --------------------------------------------
+	//
+	float Ref2 = dot(vRef, vRef);
+	float Ref = sqrt(Ref2);
+	float ds = Ref * beta;
+	float he2 = Ref2 - ds * ds;
+
+	if (length(GetScene()->vPickRay) > 0.8f)
+	{
+		if (he2 < cp.PlanetRad2 && beta < 0) {	// Surface contact
+			float s = sqrt(cp.PlanetRad2 - he2);
+			vPos = vRef + GetScene()->vPickRay * (-ds - s);
+			status = 1;
+		}
+		else {
+			if (Ref2 > cp.AtmoRad2 && he2 > cp.PlanetRad2) {	// Horizon ring contact
+				float Alpha = acos(TestPrm.CosAlpha);
+				float Beta = acos(-beta);
+				float Gamma = PI - Alpha - Beta;
+				float re = Ref * sin(Beta) / sin(Gamma);
+				float di = sqrt(re * re + Ref2 - 2.0f * re * Ref * TestPrm.CosAlpha);
+				vPos = vRef + GetScene()->vPickRay * di;
+				status = 2;
+			}
+			else {	// Sky Dome contact
+				float ew = sqrt(cp.AtmoRad2 - he2) - ds;
+				vPos = vRef + GetScene()->vPickRay * ew;
+				status = 3;
+			}
+		}
+		GetScene()->vPickRay = 0;
+		vRay = -normalize(vRef - vPos); // From vPos to vRef
+	}
+
+
+	SHDPrm sp = ComputeShadow(vRay);
+
+	// Origin Point
+	pSkp->QuickPen(0xFF00FF00);
+	pSkp->QuickBrush(0xFF00FF00);
+	pSkp->SetWorldBillboard(vRef - vCam, size);
+	pSkp->Ellipse(-200, -200, 200, 200);
+
+	// Test Point 'contact point'
+	pSkp->QuickPen(0xFF0000FF);
+	pSkp->QuickBrush(0xFF0000FF);
+	pSkp->SetWorldBillboard(vPos - vCam, size);
+	pSkp->Ellipse(-150, -150, 150, 150);
+
+	// Planet shadow crossing
+	pSkp->QuickPen(0xFFDD00DD);
+	pSkp->QuickBrush(0xFFDD00DD);
+	pSkp->SetWorldBillboard(vRef - vCam + vRay * sp.se, size);
+	pSkp->Ellipse(-100, -100, 100, 100);
+	pSkp->QuickPen(0xFFFF88FF);
+	pSkp->QuickBrush(0xFFFF88FF);
+	pSkp->SetWorldBillboard(vRef - vCam + vRay * sp.sx, size);
+	pSkp->Ellipse(-100, -100, 100, 100);
+
+	float c = dot(vRef, vRay);
+	float h2 = dot(vRef, vRef) - c * c;
+	float f = sqrt(cp.AtmoRad2 - h2);
+	float af = -(c + f);
+	float as = -(c - f);
+
+	// Atmosphere entry points
+	pSkp->QuickPen(0xFF00AAAA);
+	pSkp->QuickBrush(0xFF00AAAA);
+	pSkp->SetWorldBillboard(vRef - vCam + vRay * af, size);
+	pSkp->Ellipse(-100, -100, 100, 100);
+	pSkp->QuickPen(0xFF00FFFF);
+	pSkp->QuickBrush(0xFF00FFFF);
+	pSkp->SetWorldBillboard(vRef - vCam + vRay * as, size);
+	pSkp->Ellipse(-100, -100, 100, 100);
+
+	double u = dot(vPos, TestPrm.Up);
+	double t = dot(vPos, TestPrm.ZeroAz);
+	if ((u * u + t * t) < cp.PlanetRad2 && dot(vPos, TestPrm.toSun) < 0) D3D9DebugLog("Target in Shadow");
+	if (sp.cr < cp.PlanetRad && dot(vRef, TestPrm.toSun) < 0) D3D9DebugLog("Camera in Shadow");
+
+	if (status == 1) D3D9DebugLog("SURFACE");
+	if (status == 2) D3D9DebugLog("HORIZON");
+	if (status == 3) D3D9DebugLog("SKYDOME");
+
+	D3D9DebugLog("Shadow First=%f, Second=%f", sp.se, sp.sx);
+	D3D9DebugLog("Atmosp First=%f, Second=%f", af, as);
+	D3D9DebugLog("Atmosp First=%f, Second=%f", sp.ae, sp.ax);
+}
+
+
+// ===========================================================================================
+//
 void vPlanet::UpdateScatter()
 {
 	if (scn->GetRenderPass() != RENDERPASS_MAINSCENE) return;
@@ -720,11 +910,11 @@ void vPlanet::UpdateScatter()
 	if (HasAtmosphere())
 	{
 		if (!pSunColor) D3DXCreateTexture(pDev, Qc, Qc, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pSunColor);
-		if (!pRaySkyView) D3DXCreateTexture(pDev, Qc, Qc, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pRaySkyView);
-		if (!pMieSkyView) D3DXCreateTexture(pDev, Qc, Qc, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pMieSkyView);
+		if (!pRaySkyView) D3DXCreateTexture(pDev, Qc * 2, Qc, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pRaySkyView);
+		if (!pMieSkyView) D3DXCreateTexture(pDev, Qc * 2, Qc, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pMieSkyView);
 		if (!pLandViewRay) D3DXCreateTexture(pDev, Wc * Nc, Wc, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pLandViewRay);
 		if (!pLandViewMie) D3DXCreateTexture(pDev, Wc * Nc, Wc, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pLandViewMie);
-		//if (!pLandViewAmb) D3DXCreateTexture(pDev, Wc * Nc, Wc, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pLandViewAmb);
+		if (!pLandViewAtn) D3DXCreateTexture(pDev, Wc * Nc, Wc, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pLandViewAtn);
 		if (!pAmbientSky) D3DXCreateTexture(pDev, Qc, Qc, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pAmbientSky);
 	}
 
@@ -764,7 +954,7 @@ void vPlanet::UpdateScatter()
 
 	memcpy(&cp.mVP, scn->GetProjectionViewMatrix(), sizeof(FMATRIX4));
 
-	float visalt = max(atmo->visalt, atmo->rheight * 8.7f);
+	float visalt = max(atmo->visalt, atmo->rheight * 1000.0f * 10.0f);
 
 	cp.vPolarAxis = vRot;
 	cp.vTangent = vTan;		// RefFrame for surface micro-tex and water
@@ -791,6 +981,10 @@ void vPlanet::UpdateScatter()
 	cp.TrExpo = float(atmo->trb);
 	cp.Ambient = fAmbient;
 	cp.SunRadAtHrz = float(SunApparentRad()) * cp.HrzDst;
+	cp.CosAlpha = min(1.0f, cp.PlanetRad / cp.CamRad);
+	cp.SinAlpha = sqrt(1.0f - cp.CosAlpha * cp.CosAlpha);
+	float A = dot(cp.toCam, cp.Up) * cp.CamRad;
+	cp.Cr2 = A * A;
 
 
 	if (HasAtmosphere() == false) return;
@@ -803,9 +997,6 @@ void vPlanet::UpdateScatter()
 	cp.AtmoRad2 = cp.AtmoRad * cp.AtmoRad;
 	cp.CloudAlt = float(prm.cloudalt);
 	cp.CamSpace = sqrt(saturate(cp.CamAlt / visalt));
-	// Clarify 'long way'
-	cp.MaxDst = sqrt(cp.AtmoRad2 - cp.PlanetRad2) + sqrt(max(0.0f, cp.CamRad2 - cp.PlanetRad2)); // 'Long' way distance to sky-dome
-	cp.iMaxDst = 1.0f / cp.MaxDst;
 	cp.AngMin = -sqrt(max(1.0f, cp.CamRad2 - cp.PlanetRad2)) / cp.CamRad;
 	cp.AngRng = 1.0f - cp.AngMin;
 	cp.iAngRng = 1.0f / cp.AngRng;
@@ -833,6 +1024,7 @@ void vPlanet::UpdateScatter()
 	cp.GlareColor = lerp(FVECTOR3(0, 0, 0), cp.GlareColor, saturate((SunAltitude() + 500.0f) / 500.0f));
 
 	sFlow Flow;
+	Flow.bCamLit = !((cp.Cr2 < cp.PlanetRad2) && (dot(cp.toCam, cp.toSun) < 0));
 
 
 	//
@@ -854,7 +1046,6 @@ void vPlanet::UpdateScatter()
 	else pIP->Activate("RingView");
 
 	Flow.bRay = true;
-	Flow.bAmb = false;
 	pIP->SetStruct("Flo", &Flow, sizeof(sFlow));
 	pIP->SetStruct("Const", &cp, sizeof(ConstParams));
 	pIP->SetTextureNative("tSun", pSunColor, IPF_CLAMP | IPF_LINEAR);
@@ -865,7 +1056,6 @@ void vPlanet::UpdateScatter()
 	SAFE_RELEASE(pTgt);
 	
 	Flow.bRay = false;
-	Flow.bAmb = false;
 	pIP->SetStruct("Flo", &Flow, sizeof(sFlow));
 	pIP->SetStruct("Const", &cp, sizeof(ConstParams));
 	pMieSkyView->GetSurfaceLevel(0, &pTgt);
@@ -891,9 +1081,20 @@ void vPlanet::UpdateScatter()
 	//
 	// ----------------------------------------------------------------------------
 	//
+	pIP->Activate("LandViewAtten");
+	pIP->SetStruct("Const", &cp, sizeof(ConstParams));
+	
+	pLandViewAtn->GetSurfaceLevel(0, &pTgt);
+	pIP->SetOutputNative(0, pTgt);
+	if (!pIP->Execute(true)) LogErr("pIP Execute Failed (AmbientSky)");
+	SAFE_RELEASE(pTgt);
+
+
+	//
+	// ----------------------------------------------------------------------------
+	//
 	pIP->Activate("LandView");
 	Flow.bRay = true;
-	Flow.bAmb = false;
 
 	pIP->SetStruct("Const", &cp, sizeof(ConstParams));
 	pIP->SetStruct("Flo", &Flow, sizeof(sFlow));
@@ -905,7 +1106,6 @@ void vPlanet::UpdateScatter()
 
 
 	Flow.bRay = false;
-	Flow.bAmb = false;
 	pIP->SetStruct("Const", &cp, sizeof(ConstParams));
 	pIP->SetStruct("Flo", &Flow, sizeof(sFlow));
 	pLandViewMie->GetSurfaceLevel(0, &pTgt);
@@ -913,14 +1113,7 @@ void vPlanet::UpdateScatter()
 	if (!pIP->Execute(true)) LogErr("pIP Execute Failed (SkyView)");
 	SAFE_RELEASE(pTgt);
 
-/*	Flow.bRay = false;
-	Flow.bAmb = true;
-	pIP->SetStruct("Const", &cp, sizeof(ConstParams));
-	pIP->SetStruct("Flo", &Flow, sizeof(sFlow));
-	pLandViewAmb->GetSurfaceLevel(0, &pTgt);
-	pIP->SetOutputNative(0, pTgt);
-	if (!pIP->Execute(true)) LogErr("pIP Execute Failed (SkyView)");
-	SAFE_RELEASE(pTgt);*/
+
 }
 
 
@@ -1250,9 +1443,6 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 	if (!active) return false;
 
 	const Scene::SHADOWMAPPARAM *shd = scn->GetSMapData();
-
-	
-
 
 	if (DebugControls::IsActive()) {
 		// DWORD flags  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
@@ -1680,7 +1870,7 @@ LPDIRECT3DTEXTURE9 vPlanet::GetScatterTable(int i)
 	case MIE_COLOR: return pMieSkyView;
 	case RAY_LAND: return pLandViewRay;
 	case MIE_LAND: return pLandViewMie;
-	case AMB_LAND: return pLandViewAmb;
+	case ATN_LAND: return pLandViewAtn;
 	case SUN_GLARE: return pSunTex;
 	case SKY_AMBIENT: return pAmbientSky;
 	default: return NULL;

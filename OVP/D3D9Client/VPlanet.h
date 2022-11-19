@@ -26,7 +26,7 @@ bool FilterElevationPhysics(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, doub
 #define MIE_COLOR 2
 #define RAY_LAND  3
 #define MIE_LAND  4
-#define AMB_LAND  5
+#define ATN_LAND  5
 #define SUN_GLARE 6
 #define SKY_AMBIENT 7
 
@@ -111,7 +111,7 @@ public:
 
 struct sFlow {
 	BOOL bRay;
-	BOOL bAmb;
+	BOOL bCamLit;
 };
 
 struct ShaderParams
@@ -158,7 +158,7 @@ struct ConstParams
 	float3 toSun;				// Geocentric Sun direction (unit vector)
 	float3 SunAz;				// Atmo scatter ref.frame (unit vector) (toCam, ZeroAz, SunAz)
 	float3 ZeroAz;				// Atmo scatter ref.frame (unit vector)
-	float3 Up;					// Sun Ref Frame (Unit Vector) (Up, toSun, ZeroAz)
+	float3 Up;					// Sun/Shadow Ref Frame (Unit Vector) (Up, toSun, ZeroAz)
 	float3 vTangent;			// Reference frame for normal mapping (Unit Vector)
 	float3 vBiTangent;			// Reference frame for normal mapping (Unit Vector)
 	float3 vPolarAxis;			// North Pole (unit vector)
@@ -189,8 +189,6 @@ struct ConstParams
 	float  CamElev;				// Camera Elevation above surface
 	float  CamRad;				// Camera geo-distance
 	float  CamRad2;				// Camera geo-distance squared
-	float  MaxDst;				// Max "ray" distance through atmosphere
-	float  iMaxDst;
 	float  Expo;				// "HDR" exposure factor (atmosphere only)
 	float  Time;				// Simulation time / 180
 	float  TrGamma;				// Terrain "Gamma" correction setting
@@ -201,7 +199,10 @@ struct ConstParams
 	float  TW_Multi;
 	float  TW_Dst;
 	float  SunRadAtHrz;
+	float  CosAlpha;			// Cosine of camera horizon angle i.e. PlanetRad/CamRad
+	float  SinAlpha;
 	float  CamSpace;			// Camera in space scale factor 0.0 = surf, 1.0 = space
+	float  Cr2;					// Camera radius on shadow plane (dot(cp.toCam, cp.Up) * cp.CamRad)^2
 };
 
 #pragma pack(pop)
@@ -233,6 +234,19 @@ class vPlanet: public vObject {
 
 public:
 
+	struct SHDPrm {		
+		float se;	// Shadow entry
+		float sx;	// Shadow exit
+		float ae;	// Atmosphere entry
+		float ax;	// Atmosphere exit	
+		float cr;	// Camera Radius in shadow frame
+	};
+
+	struct TestPrm {
+		FVECTOR3 toCam, toSun, ZeroAz, Up, SunAz;
+		float CosAlpha, SinAlpha, CamRad, CamRad2;
+	} TestPrm;
+
 	struct sOverlay {
 		LPDIRECT3DTEXTURE9 pSurf[4];
 		D3DXVECTOR4 Blend[4];
@@ -248,6 +262,8 @@ public:
 
 	static void		GlobalInit(oapi::D3D9Client* gc);
 	static void		GlobalExit();
+
+	void			TestComputations(Sketchpad *);
 
 	bool			IsMesh() { return mesh != NULL; }
 	bool			Update (bool bMainScene);
@@ -353,7 +369,7 @@ public:
 	static void ParseMicroTexturesFile(); ///< Parse MicroTex.cfg file (once)
 
 protected:
-
+	SHDPrm ComputeShadow(FVECTOR3 vRay);
 	void RenderSphere (LPDIRECT3DDEVICE9 dev);
 	void RenderCloudLayer (LPDIRECT3DDEVICE9 dev, DWORD cullmode);
 	void RenderBaseSurfaces (LPDIRECT3DDEVICE9 dev);
@@ -367,7 +383,7 @@ protected:
 
 private:
 
-	LPDIRECT3DTEXTURE9 pSunColor, pRaySkyView, pMieSkyView, pLandViewRay, pLandViewMie, pAmbientSky, pLandViewAmb;
+	LPDIRECT3DTEXTURE9 pSunColor, pRaySkyView, pMieSkyView, pLandViewRay, pLandViewMie, pAmbientSky, pLandViewAtn;
 
 	ConstParams cp;
 	ShaderParams sp;

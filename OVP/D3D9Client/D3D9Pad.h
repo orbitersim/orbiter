@@ -533,6 +533,7 @@ public:
 	void Clear(DWORD color = 0, bool bColor = true, bool bDepth = true);
 	void SetClipDistance(float _near, float _far);
 	void ColorKeyStretch(const SURFHANDLE hSrc, const LPRECT _s = NULL, const LPRECT t = NULL);
+	void SetWorldBillboard(const FVECTOR3& wpos, float utp = 1.0f, bool bFixed = true, const FVECTOR3* index = NULL);
 	
 
 	// ===============================================================================
