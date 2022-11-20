@@ -79,26 +79,27 @@ D3D7CelestialSphere::~D3D7CelestialSphere ()
 
 void D3D7CelestialSphere::InitCelestialTransform()
 {
-	MATRIX3 R = Ecliptic_CelestialAtEpoch();
+	m_rotCelestial = Ecliptic_CelestialAtEpoch();
 
-	m_rotCelestial._11 = (float)R.m11; m_rotCelestial._12 = (float)R.m12; m_rotCelestial._13 = (float)R.m13; m_rotCelestial._14 = 0.0f;
-	m_rotCelestial._21 = (float)R.m21; m_rotCelestial._22 = (float)R.m22; m_rotCelestial._23 = (float)R.m23; m_rotCelestial._24 = 0.0f;
-	m_rotCelestial._31 = (float)R.m31; m_rotCelestial._32 = (float)R.m32; m_rotCelestial._33 = (float)R.m33; m_rotCelestial._34 = 0.0f;
-	m_rotCelestial._41 = 0.0f;         m_rotCelestial._42 = 0.0f;         m_rotCelestial._43 = 0.0f;         m_rotCelestial._44 = 1.0f;
+	m_transformCelestial._11 = (float)m_rotCelestial.m11; m_transformCelestial._12 = (float)m_rotCelestial.m12; m_transformCelestial._13 = (float)m_rotCelestial.m13; m_transformCelestial._14 = 0.0f;
+	m_transformCelestial._21 = (float)m_rotCelestial.m21; m_transformCelestial._22 = (float)m_rotCelestial.m22; m_transformCelestial._23 = (float)m_rotCelestial.m23; m_transformCelestial._24 = 0.0f;
+	m_transformCelestial._31 = (float)m_rotCelestial.m31; m_transformCelestial._32 = (float)m_rotCelestial.m32; m_transformCelestial._33 = (float)m_rotCelestial.m33; m_transformCelestial._34 = 0.0f;
+	m_transformCelestial._41 = 0.0f;                      m_transformCelestial._42 = 0.0f;                      m_transformCelestial._43 = 0.0f;                      m_transformCelestial._44 = 1.0f;
 
 	m_mjdPrecessionChecked = oapiGetSimMJD();
 }
 
 // ==============================================================
 
-bool D3D7CelestialSphere::LocalHorizonTransform(D3DMATRIX& iR)
+bool D3D7CelestialSphere::LocalHorizonTransform(MATRIX3& R, D3DMATRIX& T)
 {
-	MATRIX3 R;
-	if (LocalHorizon_Ecliptic(R)) {
-		iR = {
-			(float)R.m11, (float)R.m21, (float)R.m31, 0.0f,
-			(float)R.m12, (float)R.m22, (float)R.m32, 0.0f,
-			(float)R.m13, (float)R.m23, (float)R.m33, 0.0f,
+	MATRIX3 rot;
+	if (LocalHorizon_Ecliptic(rot)) {
+		R = transp(rot);
+		T = {
+			(float)R.m11, (float)R.m12, (float)R.m13, 0.0f,
+			(float)R.m21, (float)R.m22, (float)R.m23, 0.0f,
+			(float)R.m31, (float)R.m32, (float)R.m33, 0.0f,
 			0.0f,         0.0f,         0.0f,         1.0f
 		};
 		return true;
@@ -387,42 +388,47 @@ void D3D7CelestialSphere::Render(LPDIRECT3DDEVICE7 dev, const VECTOR3 &skyCol)
 			RenderGrid(dev, baseCol1, false);
 			FVECTOR4 baseCol2(0.7f, 0.0f, 0.0f, 1.0f);
 			RenderGreatCircle(dev, baseCol2);
-			RenderGridLabels(dev, 2, baseCol2);
+			double dphi = ElevationScaleRotation(R);
+			RenderGridLabels(dev, 2, baseCol2, dphi);
 			dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
 		}
 
 		// render ecliptic grid
 		if (renderFlag & PLN_EGRID) {
-			FVECTOR4 baseCol1(0.0f, 0.0f, 0.4f, 1.0f);
+			FVECTOR4 baseCol1(0.0f, 0.2f, 0.3f, 1.0f);
 			RenderGrid(dev, baseCol1, false);
-			FVECTOR4 baseCol2(0.0f, 0.0f, 0.8f, 1.0f);
+			FVECTOR4 baseCol2(0.0f, 0.4f, 0.6f, 1.0f);
 			RenderGreatCircle(dev, baseCol2);
-			RenderGridLabels(dev, 2, baseCol2);
+			double dphi = ElevationScaleRotation(_M(1, 0, 0, 0, 1, 0, 0, 0, 1));
+			RenderGridLabels(dev, 2, baseCol2, dphi);
 		}
 
 		// render celestial grid
 		if (renderFlag & PLN_CGRID) {
 			if (fabs(m_mjdPrecessionChecked - oapiGetSimMJD()) > 1e3)
 				InitCelestialTransform();
-			dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &m_rotCelestial);
+			dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &m_transformCelestial);
 			FVECTOR4 baseCol1(0.3f, 0.0f, 0.3f, 1.0f);
 			RenderGrid(dev, baseCol1, false);
 			FVECTOR4 baseCol2(0.7f, 0.0f, 0.7f, 1.0f);
 			RenderGreatCircle(dev, baseCol2);
-			RenderGridLabels(dev, 1, baseCol2);
+			double dphi = ElevationScaleRotation(m_rotCelestial);
+			RenderGridLabels(dev, 1, baseCol2, dphi);
 			dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
 		}
 
 		//  render local horizon grid
 		if (renderFlag & PLN_HGRID) {
-			D3DMATRIX iR;
-			if (LocalHorizonTransform(iR)) {
-				dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &iR);
+			MATRIX3 R;
+			D3DMATRIX T;
+			if (LocalHorizonTransform(R, T)) {
+				dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &T);
 				oapi::FVECTOR4 baseCol1(0.2f, 0.2f, 0.0f, 1.0f);
 				RenderGrid(dev, baseCol1);
 				oapi::FVECTOR4 baseCol2(0.5f, 0.5f, 0.0f, 1.0f);
 				RenderGreatCircle(dev, baseCol2);
-				RenderGridLabels(dev, 0, baseCol2);
+				double dphi = ElevationScaleRotation(R);
+				RenderGridLabels(dev, 0, baseCol2, dphi);
 				dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
 			}
 		}
@@ -538,15 +544,34 @@ void D3D7CelestialSphere::RenderGrid (LPDIRECT3DDEVICE7 dev, const FVECTOR4& bas
 
 // ==============================================================
 
-void D3D7CelestialSphere::RenderGridLabels(LPDIRECT3DDEVICE7 dev, int az_idx, const oapi::FVECTOR4& baseCol)
+void D3D7CelestialSphere::RenderGridLabels(LPDIRECT3DDEVICE7 dev, int az_idx, const oapi::FVECTOR4& baseCol, double dphi)
 {
 	if (az_idx >= m_azGridLabelVtx.size()) return;
 	if (!m_azGridLabelVtx[az_idx])
 		AllocGridLabels();
 	dev->SetTexture(0, m_GridLabelTex);
 	dev->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, m_azGridLabelVtx[az_idx], 0, 24 * 4, m_GridLabelIdx, 24 * 6, 0);
+
+	D3DMATRIX R;
+	if (dphi) {
+		float cosp = (float)cos(dphi), sinp = (float)sin(dphi);
+		D3DMATRIX R2;
+		dev->GetTransform(D3DTRANSFORMSTATE_WORLD, &R);
+		memcpy(&R2, &R, sizeof(D3DMATRIX));
+		R2._11 = cosp * R._11 + sinp * R._31;
+		R2._12 = cosp * R._12 + sinp * R._32;
+		R2._13 = cosp * R._13 + sinp * R._33;
+		R2._31 = -sinp * R._11 + cosp * R._31;
+		R2._32 = -sinp * R._12 + cosp * R._32;
+		R2._33 = -sinp * R._13 + cosp * R._33;
+		dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &R2);
+	}
+
 	dev->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, m_elGridLabelVtx, 0, 11 * 4, m_GridLabelIdx, 11 * 6, 0);
 	dev->SetTexture(0, 0);
+
+	if (dphi)
+		dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &R);
 }
 
 // ==============================================================

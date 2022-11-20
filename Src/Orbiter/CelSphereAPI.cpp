@@ -597,6 +597,21 @@ void oapi::CelestialSphere::SetSkyColour(const VECTOR3& skyCol)
 	m_skyBrt = (skyCol.x + skyCol.y + skyCol.z) / 3.0;
 }
 
+// --------------------------------------------------------------
+
+double oapi::CelestialSphere::ElevationScaleRotation(const MATRIX3& R) const
+{
+	const double step = 15.0 * RAD;
+	VECTOR3 dir;
+	oapiCameraGlobalDir(&dir);
+	dir = mul(R, dir);
+	double dphi = atan2(dir.z, dir.x);
+	double dphi_discrete = round(dphi / step) * step;
+	return dphi_discrete;
+}
+
+// --------------------------------------------------------------
+
 oapi::FVECTOR4 oapi::CelestialSphere::ColorAdjusted(const FVECTOR4& baseCol) const
 {
 	float colAdjust = 1.0f - (float)m_skyBrt * 0.9f;

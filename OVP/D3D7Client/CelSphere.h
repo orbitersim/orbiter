@@ -100,7 +100,7 @@ public:
 	 */
 	void RenderGrid (LPDIRECT3DDEVICE7 dev, const oapi::FVECTOR4& baseCol, bool eqline = true);
 
-	void RenderGridLabels(LPDIRECT3DDEVICE7 dev, int az_idx, const oapi::FVECTOR4& baseCol);
+	void RenderGridLabels(LPDIRECT3DDEVICE7 dev, int az_idx, const oapi::FVECTOR4& baseCol, double dphi = 0.0);
 
 	/**
 	 * \brief Render a background image on the celestial sphere.
@@ -139,7 +139,7 @@ protected:
 
 	void InitCelestialTransform();
 
-	bool LocalHorizonTransform(D3DMATRIX& iR);
+	bool LocalHorizonTransform(MATRIX3& R, D3DMATRIX& T);
 
 	/**
 	 * \brief Convert a direction into viewport coordinates
@@ -171,7 +171,8 @@ private:
 	std::array<LPDIRECT3DVERTEXBUFFER7, 3> m_azGridLabelVtx;  ///< vertex buffers for azimuth grid labels
 	LPDIRECT3DVERTEXBUFFER7 m_elGridLabelVtx; ///< vertex buffer for elevation grid labels
 	WORD* m_GridLabelIdx;            ///< index list for azimuth/elevation grid labels
-	D3DMATRIX m_rotCelestial;        ///< rotation for celestial grid rendering
+	MATRIX3 m_rotCelestial;          ///< rotation matrix for celestial grid rendering
+	D3DMATRIX m_transformCelestial;  ///< rotation for celestial grid rendering
 	double m_mjdPrecessionChecked;
 };
 

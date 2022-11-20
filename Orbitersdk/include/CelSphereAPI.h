@@ -167,6 +167,8 @@ namespace oapi {
 		const VECTOR3& GetSkyColour() const { return m_skyCol; }
 		double GetSkyBrightness() const { return m_skyBrt; }
 
+		double ElevationScaleRotation(const MATRIX3& R) const;
+
 		FVECTOR4 ColorAdjusted(const FVECTOR4& baseCol) const;
 		DWORD MarkerColorAdjusted(const FVECTOR4& baseCol) const;
 		DWORD TextColorAdjusted(const FVECTOR4& baseCol) const;
