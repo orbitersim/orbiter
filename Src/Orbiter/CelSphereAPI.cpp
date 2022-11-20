@@ -639,6 +639,9 @@ const MESHHANDLE oapi::CelestialSphere::GridLabelMesh()
 	if (!m_meshGridLabel) {
 		Mesh* mesh = new Mesh;
 
+		const double ticksize_h = 0.03;
+		const double ticksize_v = ticksize_h * 0.371;
+
 		// create the azimuth tick labels
 		DWORD navtx = 24 * 4;
 		DWORD naidx = 24 * 6;
@@ -647,22 +650,17 @@ const MESHHANDLE oapi::CelestialSphere::GridLabelMesh()
 		for (int i = 0; i < 24; i++) {
 			int vofs = i * 4;
 			NTVERTEX* v0 = avtx + vofs;
-			double phi = (double)i / 24.0 * Pi2;
+			double phi = (double)i / 24.0 * Pi2 - 0.001;
 			double x0 = cos(phi);
 			double z0 = sin(phi);
-			double dx = z0 * 0.04;
-			double dz = -x0 * 0.04;
-			double dy = 0.0148;
-			v0[0].x = v0[2].x = x0;
-			v0[0].z = v0[2].z = z0;
-			v0[1].x = v0[3].x = x0 + dx;
-			v0[1].z = v0[3].z = z0 + dz;
-			v0[0].y = v0[1].y = 0.0;
-			v0[2].y = v0[3].y = dy;
-			v0[0].tu = v0[2].tu = 0.001;
-			v0[1].tu = v0[3].tu = 0.101;
-			v0[0].tv = v0[1].tv = 0.001 + (i + 1) * 0.0371;
-			v0[2].tv = v0[3].tv = 0.001 + i * 0.0371;
+			double dx = z0 * ticksize_h;
+			double dz = -x0 * ticksize_h;
+			double dy = ticksize_v;
+			v0[1].x = v0[3].x = dx + (v0[0].x = v0[2].x = x0);
+			v0[1].z = v0[3].z = dz + (v0[0].z = v0[2].z = z0);
+			v0[2].y = v0[3].y = dy + (v0[0].y = v0[1].y = 0.001);
+			v0[1].tu = v0[3].tu = 0.1 + (v0[0].tu = v0[2].tu = 0.001);
+			v0[0].tv = v0[1].tv = 0.0371 + (v0[2].tv = v0[3].tv = 0.001 + i * 0.0371);
 			WORD* i0 = aidx + (i * 6);
 			i0[0] = vofs;
 			i0[1] = vofs + 2;
@@ -681,22 +679,17 @@ const MESHHANDLE oapi::CelestialSphere::GridLabelMesh()
 		for (int i = 1; i <= 11; i++) {
 			int vofs = (i - 1) * 4;
 			NTVERTEX* v0 = evtx + vofs;
-			double theta = Pi * (1.0 - i / 12.0);
+			double theta = Pi * (1.0 - i / 12.0) - 0.001;
 			double x0 = sin(theta);
 			double y0 = cos(theta);
-			double dx = -y0 * 0.0148;
-			double dy = x0 * 0.0148;
-			double dz = 0.0382;
-			v0[0].x = v0[1].x = x0;
-			v0[2].x = v0[3].x = x0 + dx;
-			v0[0].y = v0[1].y = y0;
-			v0[2].y = v0[3].y = y0 + dy;
-			v0[0].z = v0[2].z = dz;
-			v0[1].z = v0[3].z = 0.0;
-			v0[0].tu = v0[2].tu = 0.308;
-			v0[1].tu = v0[3].tu = 0.308 + 0.0957;
-			v0[0].tv = v0[1].tv = 0.001 + (i + 1) * 0.0371;
-			v0[2].tv = v0[3].tv = 0.001 + i * 0.0371;
+			double dx = -y0 * ticksize_v;
+			double dy = x0 * ticksize_v;
+			double dz = ticksize_h * 0.957;
+			v0[2].x = v0[3].x = dx + (v0[0].x = v0[1].x = x0);
+			v0[2].y = v0[3].y = dy + (v0[0].y = v0[1].y = y0);
+			v0[0].z = v0[2].z = dz + (v0[1].z = v0[3].z = 0.001);
+			v0[1].tu = v0[3].tu = 0.0957 + (v0[0].tu = v0[2].tu = 0.308);
+			v0[0].tv = v0[1].tv = 0.0371 + (v0[2].tv = v0[3].tv = 0.001 + i * 0.0371);
 			WORD* i0 = eidx + ((i - 1) * 6);
 			i0[0] = vofs;
 			i0[1] = vofs + 2;
