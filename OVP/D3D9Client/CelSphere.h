@@ -103,6 +103,8 @@ public:
 	 */
 	void RenderGrid(ID3DXEffect *fx, bool eqline = true);
 
+	void RenderGridLabels(ID3DXEffect* FX, int az_idx, const oapi::FVECTOR4& baseCol, const MATRIX3& R, double dphi);
+
 	/**
 	 * \brief Render a background image on the celestial sphere.
 	 * \param dev render device
@@ -136,11 +138,13 @@ protected:
 	 * \brief Allocate vertex list for rendering grid lines
 	 *        (e.g. celestial or ecliptic)
 	 */
-	void AllocGrids ();
+	void AllocGrids();
+
+	void AllocGridLabels();
 
 	void InitCelestialTransform();
 
-	bool LocalHorizonTransform(D3DXMATRIX& iR);
+	bool LocalHorizonTransform(MATRIX3& R, D3DXMATRIX& T);
 
 	/**
 	 * \brief Convert a direction into viewport coordinates
@@ -168,7 +172,12 @@ private:
 	DWORD m_ncbVtx;                  ///< number of constellation boundary vertices
 	LPDIRECT3DVERTEXBUFFER9 m_cbVtx; ///< vertex buffer for constellation boundaries
 	LPDIRECT3DVERTEXBUFFER9 m_grdLngVtx, m_grdLatVtx; ///< vertex buffers for grid lines
-	D3DXMATRIX m_rotCelestial;      ///< rotation for celestial grid rendering
+	lpSurfNative m_GridLabelTex;     ///< texture for grid labels
+	std::array<LPDIRECT3DVERTEXBUFFER9, 3> m_azGridLabelVtx;  ///< vertex buffers for azimuth grid labels
+	LPDIRECT3DVERTEXBUFFER9 m_elGridLabelVtx; ///< vertex buffer for elevation grid labels
+	LPDIRECT3DINDEXBUFFER9 m_GridLabelIdx; ///< index list for azimuth/elevation grid labels
+	MATRIX3 m_rotCelestial;          ///< rotation matrix for celestial grid rendering
+	D3DXMATRIX m_transformCelestial; ///< rotation for celestial grid rendering
 	double m_mjdPrecessionChecked;
 
 	static ID3DXEffect* s_FX;

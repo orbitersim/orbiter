@@ -35,7 +35,7 @@ D3D7CelestialSphere::D3D7CelestialSphere (D3D7Client* gc, Scene* scene)
 		vtx = nullptr;
 	m_elGridLabelVtx = nullptr;
 	m_GridLabelIdx = nullptr;
-	m_GridLabelTex = 0;
+	m_GridLabelTex = nullptr;
 
 	InitStars();
 	InitConstellationLines();
@@ -68,9 +68,12 @@ D3D7CelestialSphere::~D3D7CelestialSphere ()
 
 	for (auto vtx : m_azGridLabelVtx)
 		if (vtx) vtx->Release();
-	if (m_elGridLabelVtx) m_elGridLabelVtx->Release();
+	if (m_elGridLabelVtx)
+		m_elGridLabelVtx->Release();
 	if (m_GridLabelIdx)
 		delete[]m_GridLabelIdx;
+	if (m_GridLabelTex)
+		m_GridLabelTex->Release();
 
 	delete m_bkgImgMgr;
 }
@@ -286,7 +289,7 @@ void D3D7CelestialSphere::AllocGridLabels()
 			vbuf[i].x = (D3DVALUE)grp->Vtx[i].x;
 			vbuf[i].y = (D3DVALUE)grp->Vtx[i].y;
 			vbuf[i].z = (D3DVALUE)grp->Vtx[i].z;
-			vbuf[i].tu = (D3DVALUE)grp->Vtx[i].tu + idx * 0.1015625;
+			vbuf[i].tu = (D3DVALUE)(grp->Vtx[i].tu + idx * 0.1015625);
 			vbuf[i].tv = (D3DVALUE)grp->Vtx[i].tv;
 		}
 		vb->Unlock();
@@ -376,6 +379,16 @@ void D3D7CelestialSphere::Render(LPDIRECT3DDEVICE7 dev, const VECTOR3 &skyCol)
 		dev->SetRenderState(D3DRENDERSTATE_DESTBLEND, D3DBLEND_ONE);
 		dev->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
 
+		// render ecliptic grid
+		if (renderFlag & PLN_EGRID) {
+			FVECTOR4 baseCol1(0.0f, 0.2f, 0.3f, 1.0f);
+			RenderGrid(dev, baseCol1, false);
+			FVECTOR4 baseCol2(0.0f, 0.4f, 0.6f, 1.0f);
+			RenderGreatCircle(dev, baseCol2);
+			double dphi = ElevationScaleRotation(_M(1, 0, 0, 0, 1, 0, 0, 0, 1));
+			RenderGridLabels(dev, 2, baseCol2, dphi);
+		}
+
 		// render galactic grid
 		if (renderFlag & PLN_GGRID) {
 			FVECTOR4 baseCol1(0.3f, 0.0f, 0.0f, 1.0f);
@@ -391,16 +404,6 @@ void D3D7CelestialSphere::Render(LPDIRECT3DDEVICE7 dev, const VECTOR3 &skyCol)
 			double dphi = ElevationScaleRotation(R);
 			RenderGridLabels(dev, 2, baseCol2, dphi);
 			dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
-		}
-
-		// render ecliptic grid
-		if (renderFlag & PLN_EGRID) {
-			FVECTOR4 baseCol1(0.0f, 0.2f, 0.3f, 1.0f);
-			RenderGrid(dev, baseCol1, false);
-			FVECTOR4 baseCol2(0.0f, 0.4f, 0.6f, 1.0f);
-			RenderGreatCircle(dev, baseCol2);
-			double dphi = ElevationScaleRotation(_M(1, 0, 0, 0, 1, 0, 0, 0, 1));
-			RenderGridLabels(dev, 2, baseCol2, dphi);
 		}
 
 		// render celestial grid
