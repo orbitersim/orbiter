@@ -183,6 +183,7 @@ private:
 	static ID3DXEffect* s_FX;
 	static D3DXHANDLE s_eStar;
 	static D3DXHANDLE s_eLine;
+	static D3DXHANDLE s_eLabel;
 	static D3DXHANDLE s_eColor;
 	static D3DXHANDLE s_eWVP;
 };

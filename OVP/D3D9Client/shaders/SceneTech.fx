@@ -95,3 +95,43 @@ technique StarTech
 		ZWriteEnable = false;
 	}
 }
+
+
+struct LabelVS
+{
+	float4 posH    : POSITION0;
+	float2 tex0	   : TEXCOORD0;
+	float4 col     : COLOR0;
+};
+
+LabelVS LabelTechVS(float3 posL : POSITION0, float2 tex0 : TEXCOORD0, float4 col : COLOR0)
+{
+	// Zero output.
+	LabelVS outVS = (LabelVS)0;
+	outVS.posH = mul(float4(posL, 1.0f), gWVP);
+	outVS.tex0 = tex0;
+	outVS.col = col;
+	return outVS;
+}
+
+float4 LabelTechPS(LabelVS frg) : COLOR
+{
+	return tex2D(Tex0S, frg.tex0);
+}
+
+
+technique LabelTech
+{
+	pass P0
+	{
+		vertexShader = compile vs_3_0 LabelTechVS();
+		pixelShader = compile ps_3_0 LabelTechPS();
+		ZEnable = false;
+		ZWriteEnable = false;
+		AlphaBlendEnable = true;
+		BlendOp = Add;
+		SrcBlend = SrcAlpha;
+		DestBlend = InvSrcAlpha;
+	}
+}
+

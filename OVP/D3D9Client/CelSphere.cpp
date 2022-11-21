@@ -571,9 +571,10 @@ void D3D9CelestialSphere::RenderGridLabels(ID3DXEffect* FX, int az_idx, const oa
 		AllocGridLabels();
 
 	UINT numPasses = 0;
-	HR(m_pDevice->SetVertexDeclaration(pMeshVertexDecl));
+	HR(m_pDevice->SetVertexDeclaration(pPosTexDecl));
 	HR(m_pDevice->SetStreamSource(0, m_azGridLabelVtx[az_idx], 0, sizeof(VERTEX_XYZ_TEX)));
 	HR(m_pDevice->SetIndices(m_GridLabelIdx));
+	HR(FX->SetTechnique(s_eLabel));
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));
 	HR(m_pDevice->SetTexture(0, m_GridLabelTex->GetTexture()));
@@ -601,6 +602,8 @@ void D3D9CelestialSphere::RenderGridLabels(ID3DXEffect* FX, int az_idx, const oa
 	HR(m_pDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 11 * 4, 0, 11 * 2));
 	HR(FX->EndPass());
 	HR(FX->End());
+
+	HR(FX->SetTechnique(s_eLine)); // Restore default tech
 
 	if (dphi)
 		FX->SetMatrix(s_eWVP, &T0);
@@ -647,6 +650,7 @@ void D3D9CelestialSphere::D3D9TechInit(ID3DXEffect* fx)
 	s_FX = fx;
 	s_eStar = fx->GetTechniqueByName("StarTech");
 	s_eLine = fx->GetTechniqueByName("LineTech");
+	s_eLabel = fx->GetTechniqueByName("LabelTech");
 	s_eColor = fx->GetParameterByName(0, "gColor");
 	s_eWVP = fx->GetParameterByName(0, "gWVP");
 }
@@ -654,5 +658,6 @@ void D3D9CelestialSphere::D3D9TechInit(ID3DXEffect* fx)
 ID3DXEffect* D3D9CelestialSphere::s_FX = 0;
 D3DXHANDLE D3D9CelestialSphere::s_eStar = 0;
 D3DXHANDLE D3D9CelestialSphere::s_eLine = 0;
+D3DXHANDLE D3D9CelestialSphere::s_eLabel = 0;
 D3DXHANDLE D3D9CelestialSphere::s_eColor = 0;
 D3DXHANDLE D3D9CelestialSphere::s_eWVP = 0;
