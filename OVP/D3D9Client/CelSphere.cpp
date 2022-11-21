@@ -599,6 +599,7 @@ void D3D9CelestialSphere::RenderGridLabels(ID3DXEffect* FX, int az_idx, const oa
 	HR(m_pDevice->SetStreamSource(0, m_elGridLabelVtx, 0, sizeof(VERTEX_XYZ_TEX)));
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));
+	HR(m_pDevice->SetTexture(0, m_GridLabelTex->GetTexture()));
 	HR(m_pDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 11 * 4, 0, 11 * 2));
 	HR(FX->EndPass());
 	HR(FX->End());

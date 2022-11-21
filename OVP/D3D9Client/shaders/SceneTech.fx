@@ -114,7 +114,12 @@ LabelVS LabelTechVS(float3 posL : POSITION0, float2 tex0 : TEXCOORD0)
 
 float4 LabelTechPS(LabelVS frg) : COLOR
 {
-	return tex2D(Tex0S, frg.tex0);
+	float4 col;
+	col = tex2D(Tex0S, frg.tex0);
+	col[0] = gColor[0];
+	col[1] = gColor[1];
+	col[2] = gColor[2];
+	return col;
 }
 
 
