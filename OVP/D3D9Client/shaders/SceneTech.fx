@@ -101,16 +101,14 @@ struct LabelVS
 {
 	float4 posH    : POSITION0;
 	float2 tex0	   : TEXCOORD0;
-	float4 col     : COLOR0;
 };
 
-LabelVS LabelTechVS(float3 posL : POSITION0, float2 tex0 : TEXCOORD0, float4 col : COLOR0)
+LabelVS LabelTechVS(float3 posL : POSITION0, float2 tex0 : TEXCOORD0)
 {
 	// Zero output.
 	LabelVS outVS = (LabelVS)0;
 	outVS.posH = mul(float4(posL, 1.0f), gWVP);
 	outVS.tex0 = tex0;
-	outVS.col = col;
 	return outVS;
 }
 
