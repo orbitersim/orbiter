@@ -13,7 +13,7 @@ uniform extern float4x4  gVP;			    // Combined World, View and Projection matri
 uniform extern float4    gColor;		    // Line Color
 uniform extern texture   gTex0;			    // Diffuse texture
 
-sampler Tex0S = sampler_state
+sampler Tex0S : register (s0) = sampler_state
 {
 	Texture = <gTex0>;
 	MinFilter = Anisotropic;
@@ -116,9 +116,7 @@ float4 LabelTechPS(LabelVS frg) : COLOR
 {
 	float4 col;
 	col = tex2D(Tex0S, frg.tex0);
-	col[0] = gColor[0];
-	col[1] = gColor[1];
-	col[2] = gColor[2];
+	col.rgb = gColor.rgb;
 	return col;
 }
 
