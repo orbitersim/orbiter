@@ -488,7 +488,7 @@ BOOL OptionsPage_Instrument::OnCommand(HWND hPage, WORD ctrlId, WORD notificatio
 			double updDt;
 			GetWindowText(GetDlgItem(hPage, IDC_OPT_MFD_INTERVAL), cbuf, 255);
 			if (sscanf(cbuf, "%lf", &updDt)) {
-				g_pOrbiter->Cfg()->CfgLogicPrm.InstrUpdDT = updDt;
+				g_pOrbiter->Cfg()->CfgLogicPrm.InstrUpdDT = max(0.01, updDt);
 				g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_MFDUPDATEINTERVAL);
 			}
 			return FALSE;
@@ -505,10 +505,9 @@ BOOL OptionsPage_Instrument::OnNotify(HWND hPage, DWORD ctrlId, const NMHDR* pNm
 	if (pNmHdr->code == UDN_DELTAPOS) {
 		NMUPDOWN* nmud = (NMUPDOWN*)pNmHdr;
 		int delta = -nmud->iDelta;
-		double& mfdUpdDt = g_pOrbiter->Cfg()->CfgLogicPrm.InstrUpdDT;
 		switch (pNmHdr->idFrom) {
 		case IDC_OPT_MFD_INTERVALSPIN:
-			mfdUpdDt = max(0.01, mfdUpdDt + delta * 0.01);
+			g_pOrbiter->Cfg()->CfgLogicPrm.InstrUpdDT = max(0.01, g_pOrbiter->Cfg()->CfgLogicPrm.InstrUpdDT + delta * 0.01);
 			g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_MFDUPDATEINTERVAL);
 			break;
 		}

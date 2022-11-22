@@ -166,7 +166,6 @@
 #define IDC_OPT_DISTMASS                1057
 #define IDC_OPT_WIND                    1058
 #define IDC_OPT_MFDTRANSP               1059
-#define IDC_OPT_REFRESH                 1060
 #define IDC_OPT_MFDSIZE                 1061
 #define IDC_OPT_PANELSCALE              1062
 #define IDC_OPT_PANELSPD                1063
