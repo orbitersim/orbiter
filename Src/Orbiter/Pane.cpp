@@ -996,12 +996,18 @@ int Pane::BroadcastMFDMessage (int msg, void *data)
 
 void Pane::OptionChanged(DWORD cat, DWORD item)
 {
-	for (size_t i = 0; i < MAXMFD; i++)
-		if (mfd[i].instr)
-			mfd[i].instr->OptionChanged(cat, item);
-	for (size_t i = 0; i < nemfd; i++)
-		if (emfd[i]->Active())
-			emfd[i]->instr->OptionChanged(cat, item);
+	if (cat == OPTCAT_INSTRUMENT) {
+		for (size_t i = 0; i < nemfd; i++)
+			if (emfd[i]->Active())
+				emfd[i]->instr->OptionChanged(cat, item);
+		if (defpanel)
+			defpanel->OptionChanged(cat, item);
+		for (size_t i = 0; i < MAXMFD; i++)
+			if (mfd[i].instr) {
+				RefreshMFD(i);
+				mfd[i].instr->OptionChanged(cat, item);
+			}
+	}
 }
 
 void Pane::RegisterMFD (int id, const MFDSPEC &spec)

@@ -467,6 +467,9 @@ void OptionsPage_Instrument::UpdateControls(HWND hPage)
 	double mfdUpdDt = g_pOrbiter->Cfg()->CfgLogicPrm.InstrUpdDT;
 	sprintf(cbuf, "%0.2f", mfdUpdDt);
 	SetWindowText(GetDlgItem(hPage, IDC_OPT_MFD_INTERVAL), cbuf);
+	int mfdSize = g_pOrbiter->Cfg()->CfgLogicPrm.MFDSize;
+	sprintf(cbuf, "%d", mfdSize);
+	SetWindowText(GetDlgItem(hPage, IDC_OPT_MFD_SIZE), cbuf);
 }
 
 // ----------------------------------------------------------------------
@@ -494,6 +497,18 @@ BOOL OptionsPage_Instrument::OnCommand(HWND hPage, WORD ctrlId, WORD notificatio
 			return FALSE;
 		}
 		break;
+	case IDC_OPT_MFD_SIZE:
+		if (notification == EN_CHANGE) {
+			char cbuf[256];
+			int size;
+			GetWindowText(GetDlgItem(hPage, IDC_OPT_MFD_SIZE), cbuf, 256);
+			if (sscanf(cbuf, "%d", &size)) {
+				g_pOrbiter->Cfg()->CfgLogicPrm.MFDSize = max(1, min(10, size));
+				g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_MFDGENERICSIZE);
+			}
+			return FALSE;
+		}
+		break;
 	}
 	return TRUE;
 }
@@ -509,6 +524,10 @@ BOOL OptionsPage_Instrument::OnNotify(HWND hPage, DWORD ctrlId, const NMHDR* pNm
 		case IDC_OPT_MFD_INTERVALSPIN:
 			g_pOrbiter->Cfg()->CfgLogicPrm.InstrUpdDT = max(0.01, g_pOrbiter->Cfg()->CfgLogicPrm.InstrUpdDT + delta * 0.01);
 			g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_MFDUPDATEINTERVAL);
+			break;
+		case IDC_OPT_MFD_SIZESPIN:
+			g_pOrbiter->Cfg()->CfgLogicPrm.MFDSize = max(1, min(10, g_pOrbiter->Cfg()->CfgLogicPrm.MFDSize + delta));
+			g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_MFDGENERICSIZE);
 			break;
 		}
 		UpdateControls(hPage);

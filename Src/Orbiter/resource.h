@@ -166,7 +166,6 @@
 #define IDC_OPT_DISTMASS                1057
 #define IDC_OPT_WIND                    1058
 #define IDC_OPT_MFDTRANSP               1059
-#define IDC_OPT_MFDSIZE                 1061
 #define IDC_OPT_PANELSCALE              1062
 #define IDC_OPT_PANELSPD                1063
 #define IDC_VIS_CLOUD                   1067
@@ -298,6 +297,8 @@
 #define IDC_OPT_CRD_OPACITY             1059
 #define IDC_OPT_MFD_INTERVAL            1060
 #define IDC_OPT_MFD_INTERVALSPIN        1061
+#define IDC_OPT_MFD_SIZE                1062
+#define IDC_OPT_MFD_SIZESPIN            1063
 
 // Unsorted
 #define IDC_SCN_STATIC1                 1087
