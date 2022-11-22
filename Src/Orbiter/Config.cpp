@@ -73,7 +73,7 @@ CFG_LOGICPRM CfgLogicPrm_default = {
 	true,       // bGlasspitCompact (compact layout for widescreen glass cockpit)
 	6,			// MFDSize (default glass cockpit MFD size [1-10])
 	1,			// MFDMapVersion (new style map MFD mode)
-	1.0,		// InstrUpdDT (MFD update interval [s])
+	0.5,		// InstrUpdDT (MFD update interval [s])
 	1.0,		// PanelScale (old-style 2D instrument panel scale)
 	300.0		// PanelScrollSpeed (scrolling speed for 2D instrument panel [pixel/s])
 };

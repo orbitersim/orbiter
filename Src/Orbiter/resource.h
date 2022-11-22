@@ -63,6 +63,7 @@
 #define IDD_OPTIONS_LABELS              214
 #define IDD_OPTIONS_BODYFORCE           215
 #define IDD_OPTIONS_FRAMEAXES           216
+#define IDD_OPTIONS_INSTRUMENT          217
 #define IDD_DEMOBK                      223
 #define IDD_ORBITERHELP                 224
 #define IDD_HELP                        225
@@ -296,6 +297,8 @@
 #define IDC_OPT_CRD_NEGATIVE            1057
 #define IDC_OPT_CRD_SCALE               1058
 #define IDC_OPT_CRD_OPACITY             1059
+#define IDC_OPT_MFD_INTERVAL            1060
+#define IDC_OPT_MFD_INTERVALSPIN        1061
 
 // Unsorted
 #define IDC_SCN_STATIC1                 1087

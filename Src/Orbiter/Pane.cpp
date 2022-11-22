@@ -994,6 +994,16 @@ int Pane::BroadcastMFDMessage (int msg, void *data)
 	return nproc;
 }
 
+void Pane::OptionChanged(DWORD cat, DWORD item)
+{
+	for (size_t i = 0; i < MAXMFD; i++)
+		if (mfd[i].instr)
+			mfd[i].instr->OptionChanged(cat, item);
+	for (size_t i = 0; i < nemfd; i++)
+		if (emfd[i]->Active())
+			emfd[i]->instr->OptionChanged(cat, item);
+}
+
 void Pane::RegisterMFD (int id, const MFDSPEC &spec)
 {
 	// obsolete

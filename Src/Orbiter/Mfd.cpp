@@ -630,6 +630,17 @@ bool Instrument::ConsumeButton (int bt, int event)
 	return accepted;
 }
 
+void Instrument::OptionChanged(DWORD cat, DWORD item)
+{
+	if (cat == OPTCAT_INSTRUMENT) {
+		switch (item) {
+		case OPTITEM_INSTRUMENT_MFDUPDATEINTERVAL:
+			instrDT = g_pOrbiter->Cfg()->CfgLogicPrm.InstrUpdDT;
+			break;
+		}
+	}
+}
+
 const char *Instrument::ButtonLabel (int bt)
 {
 	static char modelabel[2] = ">";

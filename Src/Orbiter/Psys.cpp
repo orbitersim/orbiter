@@ -178,6 +178,12 @@ Base *PlanetarySystem::GetBase (const char *name, bool ignorecase)
 	return 0;
 }
 
+void PlanetarySystem::OptionChanged(DWORD cat, DWORD item)
+{
+	for (size_t i = 0; i < nvessel; i++)
+		vessel[i]->OptionChanged(cat, item);
+}
+
 bool PlanetarySystem::Read (char *fname)
 {
 	int i;

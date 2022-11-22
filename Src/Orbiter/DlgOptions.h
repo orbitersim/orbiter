@@ -217,6 +217,23 @@ private:
 };
 
 /************************************************************************
+ * \brief Page for instrument and panel options
+ */
+class OptionsPage_Instrument : public OptionsPage {
+public:
+	OptionsPage_Instrument(DlgOptions* dlg);
+	int ResourceId() const;
+	const char* Name() const;
+	const HELPCONTEXT* HelpContext() const;
+	void UpdateControls(HWND hPage);
+
+protected:
+	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
+	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
+	BOOL OnNotify(HWND hPage, DWORD ctrlId, const NMHDR* pNmHdr);
+};
+
+ /************************************************************************
  * \brief Page for celestial sphere rendering options. 
  */
 class OptionsPage_CelSphere : public OptionsPage {

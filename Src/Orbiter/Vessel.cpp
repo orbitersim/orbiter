@@ -801,6 +801,12 @@ void Vessel::ProcessMessage (DWORD msg, void *ptr)
 
 // ==============================================================
 
+void Vessel::OptionChanged(DWORD cat, DWORD item)
+{
+}
+
+// ==============================================================
+
 void Vessel::Destroying (const Vessel *vessel)
 {
 	if (vessel == this) { // it's us!

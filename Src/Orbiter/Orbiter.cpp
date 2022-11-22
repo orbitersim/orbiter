@@ -1187,6 +1187,10 @@ void Orbiter::OnOptionChanged(DWORD cat, DWORD item)
 {
 	if (gclient)
 		gclient->clbkOptionChanged(cat, item);
+	if (g_psys)
+		g_psys->OptionChanged(cat, item);
+	if (g_pane)
+		g_pane->OptionChanged(cat, item);
 }
 
 //-----------------------------------------------------------------------------

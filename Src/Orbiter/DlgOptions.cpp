@@ -62,6 +62,7 @@ BOOL DlgOptions::OnInitDialog(HWND hDlg, WPARAM wParam, LPARAM lParam)
 	SetSize(hDlg);
 
 	HTREEITEM parent;
+	AddPage(hDlg, new OptionsPage_Instrument(this));
 	AddPage(hDlg, new OptionsPage_CelSphere(this));
 	parent = AddPage(hDlg, new OptionsPage_VisHelper(this));
 	AddPage(hDlg, new OptionsPage_Planetarium(this), parent);
@@ -426,6 +427,95 @@ INT_PTR CALLBACK OptionsPage::s_DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 		break;
 	}
 	return (pPage ? pPage->DlgProc(hWnd, uMsg, wParam, lParam) : DefWindowProc(hWnd, uMsg, wParam, lParam));
+}
+
+// ======================================================================
+
+OptionsPage_Instrument::OptionsPage_Instrument(DlgOptions* dlg)
+	: OptionsPage(dlg)
+{
+}
+
+// ----------------------------------------------------------------------
+
+int OptionsPage_Instrument::ResourceId() const
+{
+	return IDD_OPTIONS_INSTRUMENT;
+}
+
+// ----------------------------------------------------------------------
+
+const char* OptionsPage_Instrument::Name() const
+{
+	const char* name = "Instruments & panels";
+	return name;
+}
+
+// ----------------------------------------------------------------------
+
+const HELPCONTEXT* OptionsPage_Instrument::HelpContext() const
+{
+	static HELPCONTEXT hcontext = g_pOrbiter->DefaultHelpPage("/tab_param.htm"); // this needs to be updated
+	return &hcontext;
+}
+
+// ----------------------------------------------------------------------
+
+void OptionsPage_Instrument::UpdateControls(HWND hPage)
+{
+	char cbuf[256];
+	double mfdUpdDt = g_pOrbiter->Cfg()->CfgLogicPrm.InstrUpdDT;
+	sprintf(cbuf, "%0.2f", mfdUpdDt);
+	SetWindowText(GetDlgItem(hPage, IDC_OPT_MFD_INTERVAL), cbuf);
+}
+
+// ----------------------------------------------------------------------
+
+BOOL OptionsPage_Instrument::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
+{
+	OptionsPage::OnInitDialog(hPage, wParam, lParam);
+	return TRUE;
+}
+
+// ----------------------------------------------------------------------
+
+BOOL OptionsPage_Instrument::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
+{
+	switch (ctrlId) {
+	case IDC_OPT_MFD_INTERVAL:
+		if (notification == EN_CHANGE) {
+			char cbuf[256];
+			double updDt;
+			GetWindowText(GetDlgItem(hPage, IDC_OPT_MFD_INTERVAL), cbuf, 255);
+			if (sscanf(cbuf, "%lf", &updDt)) {
+				g_pOrbiter->Cfg()->CfgLogicPrm.InstrUpdDT = updDt;
+				g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_MFDUPDATEINTERVAL);
+			}
+			return FALSE;
+		}
+		break;
+	}
+	return TRUE;
+}
+
+// ----------------------------------------------------------------------
+
+BOOL OptionsPage_Instrument::OnNotify(HWND hPage, DWORD ctrlId, const NMHDR* pNmHdr)
+{
+	if (pNmHdr->code == UDN_DELTAPOS) {
+		NMUPDOWN* nmud = (NMUPDOWN*)pNmHdr;
+		int delta = -nmud->iDelta;
+		double& mfdUpdDt = g_pOrbiter->Cfg()->CfgLogicPrm.InstrUpdDT;
+		switch (pNmHdr->idFrom) {
+		case IDC_OPT_MFD_INTERVALSPIN:
+			mfdUpdDt = max(0.01, mfdUpdDt + delta * 0.01);
+			g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_MFDUPDATEINTERVAL);
+			break;
+		}
+		UpdateControls(hPage);
+		return TRUE;
+	}
+	return FALSE;
 }
 
 // ======================================================================
