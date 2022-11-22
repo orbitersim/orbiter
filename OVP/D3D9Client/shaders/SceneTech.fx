@@ -13,7 +13,7 @@ uniform extern float4x4  gVP;			    // Combined World, View and Projection matri
 uniform extern float4    gColor;		    // Line Color
 uniform extern texture   gTex0;			    // Diffuse texture
 
-sampler Tex0S = sampler_state
+sampler Tex0S : register (s0) = sampler_state
 {
 	Texture = <gTex0>;
 	MinFilter = Anisotropic;
@@ -95,3 +95,44 @@ technique StarTech
 		ZWriteEnable = false;
 	}
 }
+
+
+struct LabelVS
+{
+	float4 posH    : POSITION0;
+	float2 tex0	   : TEXCOORD0;
+};
+
+LabelVS LabelTechVS(float3 posL : POSITION0, float2 tex0 : TEXCOORD0)
+{
+	// Zero output.
+	LabelVS outVS = (LabelVS)0;
+	outVS.posH = mul(float4(posL, 1.0f), gWVP);
+	outVS.tex0 = tex0;
+	return outVS;
+}
+
+float4 LabelTechPS(LabelVS frg) : COLOR
+{
+	float4 col;
+	col = tex2D(Tex0S, frg.tex0);
+	col.rgb = gColor.rgb;
+	return col;
+}
+
+
+technique LabelTech
+{
+	pass P0
+	{
+		vertexShader = compile vs_3_0 LabelTechVS();
+		pixelShader = compile ps_3_0 LabelTechPS();
+		ZEnable = false;
+		ZWriteEnable = false;
+		AlphaBlendEnable = true;
+		BlendOp = Add;
+		SrcBlend = SrcAlpha;
+		DestBlend = InvSrcAlpha;
+	}
+}
+

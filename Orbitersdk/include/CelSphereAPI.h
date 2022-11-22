@@ -167,9 +167,16 @@ namespace oapi {
 		const VECTOR3& GetSkyColour() const { return m_skyCol; }
 		double GetSkyBrightness() const { return m_skyBrt; }
 
+		double ElevationScaleRotation(const MATRIX3& R) const;
+
 		FVECTOR4 ColorAdjusted(const FVECTOR4& baseCol) const;
 		DWORD MarkerColorAdjusted(const FVECTOR4& baseCol) const;
 		DWORD TextColorAdjusted(const FVECTOR4& baseCol) const;
+
+		/**
+		 * \brief Returns the mesh for rendering tick labels for grids.
+		 */
+		const MESHHANDLE GridLabelMesh();
 
 		GraphicsClient* m_gc;
 
@@ -248,6 +255,7 @@ namespace oapi {
 		VECTOR3 m_skyCol;                ///< background sky colour at current render pass (0-1 per channel)
 		double m_skyBrt;                 ///< background brightness level at current render pass (0-1)
 		std::string m_dataDir;           ///< data directory
+		MESHHANDLE m_meshGridLabel;      ///< mesh for grid tick labels
 
 	protected:
 		const std::vector<GraphicsClient::ConstLabelRec> LoadConstellationLabelData() const;

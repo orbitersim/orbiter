@@ -75,6 +75,8 @@ public:
 	 */
 	void RenderGrid(LPDIRECT3DDEVICE7 dev, const oapi::FVECTOR4& baseCol, bool eqline = true);
 
+	void RenderGridLabels(LPDIRECT3DDEVICE7 dev, int az_idx, const oapi::FVECTOR4& baseCol, double dphi = 0.0);
+
 	/**
 	 * \brief Render a background image on the celestial sphere.
 	 * \param dev render device
@@ -108,6 +110,8 @@ protected:
 	 */
 	void AllocGrids();
 
+	void AllocGridLabels();
+
 	/**
 	 * \brief Set up the render manager for showing a background image
 	 *    on the celestial sphere.
@@ -116,7 +120,7 @@ protected:
 
 	void InitCelestialTransform();
 
-	bool LocalHorizonTransform(D3DMATRIX& iR);
+	bool LocalHorizonTransform(MATRIX3& R, D3DMATRIX& T);
 
 	/**
 	 * \brief Convert a direction into viewport coordinates
@@ -145,7 +149,12 @@ private:
 	DWORD m_ncbVtx;                  ///< number of constellation boundary vertices
 	LPDIRECT3DVERTEXBUFFER7 m_cbVtx; ///< vertex buffer for constellation boundaries
 	LPDIRECT3DVERTEXBUFFER7 m_grdLngVtx, m_grdLatVtx; ///< vertex buffers for grid lines
-	D3DMATRIX m_rotCelestial;        ///< rotation for celestial grid rendering
+	LPDIRECTDRAWSURFACE7 m_GridLabelTex; ///< texture for grid labels
+	std::array<LPDIRECT3DVERTEXBUFFER7, 3> m_azGridLabelVtx;  ///< vertex buffers for azimuth grid labels
+	LPDIRECT3DVERTEXBUFFER7 m_elGridLabelVtx; ///< vertex buffer for elevation grid labels
+	WORD* m_GridLabelIdx;            ///< index list for azimuth/elevation grid labels
+	MATRIX3 m_rotCelestial;          ///< rotation matrix for celestial grid rendering
+	D3DMATRIX m_transformCelestial;  ///< transformation matrix for celestial grid rendering
 	MATRIX4 m_WMcsphere;
 	double m_mjdPrecessionChecked;
 
