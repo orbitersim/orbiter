@@ -27,7 +27,7 @@ void orbiter::ParameterTab::Create ()
 		IDC_OPT_STATIC10, IDC_OPT_STATIC11, IDC_OPT_STATIC14,
 		IDC_RADIO1, IDC_RADIO2, IDC_OPT_COMPLEXMODEL, IDC_OPT_DAMAGE, IDC_OPT_LIMFUEL,
 		IDC_OPT_PADFUEL, IDC_OPT_COMPLEXGRAV, IDC_OPT_DISTMASS, IDC_OPT_WIND,
-		IDC_OPT_RPRESSURE, IDC_OPT_FOCUS, IDC_OPT_MFDTRANSP,
+		IDC_OPT_RPRESSURE, IDC_OPT_FOCUS,
 		IDC_OPT_PANELSCALE, IDC_OPT_PANELSPD
 	};
 
@@ -39,8 +39,6 @@ void orbiter::ParameterTab::Create ()
 void orbiter::ParameterTab::GetConfig (const Config *cfg)
 {
 	char cbuf[20];
-	SendDlgItemMessage (hTab, IDC_OPT_MFDTRANSP, BM_SETCHECK,
-		pCfg->CfgLogicPrm.bMfdTransparent ? BST_CHECKED : BST_UNCHECKED, 0);
 	sprintf (cbuf, "%0.2f", pCfg->CfgLogicPrm.PanelScale);
 	SetWindowText (GetDlgItem (hTab, IDC_OPT_PANELSCALE), cbuf);
 	sprintf (cbuf, "%0.0f", pCfg->CfgLogicPrm.PanelScrollSpeed*0.1);
@@ -77,7 +75,6 @@ void orbiter::ParameterTab::SetConfig (Config *cfg)
 	char cbuf[128];
 	double d;
 
-	pCfg->CfgLogicPrm.bMfdTransparent = (SendDlgItemMessage (hTab, IDC_OPT_MFDTRANSP, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	pCfg->CfgUIPrm.bFocusFollowsMouse = (SendDlgItemMessage (hTab, IDC_OPT_FOCUS, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	pCfg->CfgLogicPrm.FlightModelLevel = (SendDlgItemMessage (hTab, IDC_OPT_COMPLEXMODEL, BM_GETCHECK, 0, 0) == BST_CHECKED ? 1:0);
 	pCfg->CfgLogicPrm.DamageSetting = (SendDlgItemMessage (hTab, IDC_OPT_DAMAGE, BM_GETCHECK, 0, 0) == BST_CHECKED ? 1:0);

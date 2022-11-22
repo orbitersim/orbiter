@@ -785,6 +785,9 @@ void DefaultPanel::OptionChanged(DWORD cat, DWORD item)
 			for (int i = 0; i < 2; i++)
 				RepaintMFDButtons(i);
 			break;
+		case OPTITEM_INSTRUMENT_MFDGENERICTRANSP:
+			transpmfd = g_pOrbiter->Cfg()->CfgLogicPrm.bMfdTransparent;
+			break;
 		}
 	}
 }

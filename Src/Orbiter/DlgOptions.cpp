@@ -470,6 +470,8 @@ void OptionsPage_Instrument::UpdateControls(HWND hPage)
 	int mfdSize = g_pOrbiter->Cfg()->CfgLogicPrm.MFDSize;
 	sprintf(cbuf, "%d", mfdSize);
 	SetWindowText(GetDlgItem(hPage, IDC_OPT_MFD_SIZE), cbuf);
+	bool enable = g_pOrbiter->Cfg()->CfgLogicPrm.bMfdTransparent;
+	SendDlgItemMessage(hPage, IDC_OPT_MFD_TRANSP, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
 }
 
 // ----------------------------------------------------------------------
@@ -506,6 +508,14 @@ BOOL OptionsPage_Instrument::OnCommand(HWND hPage, WORD ctrlId, WORD notificatio
 				g_pOrbiter->Cfg()->CfgLogicPrm.MFDSize = max(1, min(10, size));
 				g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_MFDGENERICSIZE);
 			}
+			return FALSE;
+		}
+		break;
+	case IDC_OPT_MFD_TRANSP:
+		if (notification == BN_CLICKED) {
+			bool check = (SendDlgItemMessage(hPage, IDC_OPT_MFD_TRANSP, BM_GETCHECK, 0, 0) == TRUE);
+			g_pOrbiter->Cfg()->CfgLogicPrm.bMfdTransparent = check;
+			g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_MFDGENERICTRANSP);
 			return FALSE;
 		}
 		break;

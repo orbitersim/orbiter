@@ -6716,6 +6716,7 @@ OAPIFUNC void oapiTriggerRedrawArea (int panel_id, int vc_id, int area_id);
 #define OPTITEM_PLANETARIUM_DISPFLAG         0x0001
 #define OPTITEM_INSTRUMENT_MFDUPDATEINTERVAL 0x0001
 #define OPTITEM_INSTRUMENT_MFDGENERICSIZE    0x0002
+#define OPTITEM_INSTRUMENT_MFDGENERICTRANSP  0x0003
 //@}
 
 // ======================================================================
