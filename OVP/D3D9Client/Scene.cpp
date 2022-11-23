@@ -2790,7 +2790,8 @@ bool Scene::WorldToScreenSpace(const VECTOR3 &wpos, oapi::IVECTOR2 *pt, D3DXMATR
 	D3DXVECTOR4 homog;
 	D3DXVECTOR3 pos(float(wpos.x), float(wpos.y), float(wpos.z));
 
-	D3DXVec3Transform(&homog, &pos, pVP);
+	if (pVP) D3DXVec3Transform(&homog, &pos, pVP);
+	else D3DXVec3Transform(&homog, &pos, GetProjectionViewMatrix());
 
 	if (homog.w < 0.0f) return false;
 

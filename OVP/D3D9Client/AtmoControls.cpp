@@ -211,23 +211,23 @@ void OpenDlgClbk(void *context)
 	// 32 = x^4 "linearization"
 	
 
-	ConfigSlider(IDC_ATM_TW_DST,    0.01, 0.5);
+	ConfigSlider(IDC_ATM_TW_DST,    0.05, 0.5);
 	ConfigSlider(IDC_ATM_GREEN,     0.46, 0.65);
 	ConfigSlider(IDC_ATM_TW_BRI,    0.01, 8.0);
 	ConfigSlider(IDC_ATM_RPOW,     -8.0, 8.0);
 	ConfigSlider(IDC_ATM_MPOW,     -8.0, 8.0);
-	ConfigSlider(IDC_ATM_HEIGHT,    3.0, 400.0, 1|2|4|8);
-	ConfigSlider(IDC_ATM_M_HEIGHT,  0.2, 10.0, 1|2|4|8);
+	ConfigSlider(IDC_ATM_HEIGHT,    3.0, 80.0, 1|2|4|8);
+	ConfigSlider(IDC_ATM_M_HEIGHT,  0.5, 10.0, 1|2|4|8);
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_TRB,	   0.5, 4.0);
 	ConfigSlider(IDC_ATM_TRGAMMA,  0.3, 1.5);
 	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_RAY,      0.01, 20.0, 32);
-	ConfigSlider(IDC_ATM_IN,       0.1, 10.0, 8);
+	ConfigSlider(IDC_ATM_RAY,      0.05, 40.0, 32);
+	ConfigSlider(IDC_ATM_IN,       0.002, 5.0, 32);
 	ConfigSlider(IDC_ATM_RPHASE,   -0.75, 0.75);
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_MIE,      0.2, 100.0, 8);
-	ConfigSlider(IDC_ATM_MPHASE,   0.2, 0.9999, 16);
+	ConfigSlider(IDC_ATM_MPHASE,   0.7, 0.9999, 16);
 	ConfigSlider(IDC_ATM_MIEIN,	   0.01, 20.0, 32);
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_AUX2,	   0.2, 2.0);		//Clouds intensity

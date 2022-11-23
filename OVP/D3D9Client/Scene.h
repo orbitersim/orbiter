@@ -351,7 +351,7 @@ public:
 	double			GetCameraNearAltitude() const { return Camera.alt_near; }
 	double			GetCameraElevation() const { return Camera.elev; }
 	void			GetCameraLngLat(double *lng, double *lat) const;
-	bool			WorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, D3DXMATRIX *pVP, float clip = 1.0f);
+	bool			WorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, D3DXMATRIX *pVP = NULL, float clip = 1.0f);
 
 	DWORD			GetFrameId() const { return dwFrameId; }
 

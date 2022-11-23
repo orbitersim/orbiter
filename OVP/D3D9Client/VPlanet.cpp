@@ -709,16 +709,18 @@ FVECTOR3 vPlanet::SunLightColor(FVECTOR3 geo_pos_ecl)
 	return exp(-(cp.RayWave * (ray * cp.rmO.x) + cp.MieWave * (mie * cp.rmO.y)));
 }
 
+const float invalid_val = -1e12;
 
 // ===========================================================================================
 //
 vPlanet::SHDPrm vPlanet::ComputeShadow(FVECTOR3 vRay)
 {
 	// Compute Planet's shadow entry and exit points
-
+	vPlanet::SHDPrm sp;
 
 	// Camera radius in "shadow" frame.
 	double A = dot(TestPrm.Up, TestPrm.toCam * TestPrm.CamRad);
+	sp.cr = abs(A);
 
 	// Projection of viewing ray on 'shadow' axes
 	double u = dot(vRay, TestPrm.Up);
@@ -733,47 +735,74 @@ vPlanet::SHDPrm vPlanet::ComputeShadow(FVECTOR3 vRay)
 	double w2 = cp.PlanetRad2 - h2;
 	double w = sqrt(w2);
 	double k = sqrt(k2) * sign(a);
-	double es = k - w;
-	double xs = es + 2.0f * w;
+	double v2 = 0;
+	double g2 = A * A - cp.PlanetRad2;
+
+	sp.w2 = w2;
+	sp.se = k - w;
+	sp.sx = sp.se + 2.0f * w;
+	sp.hd = g2 > 0 ? sqrt(g2) : -invalid_val;
 
 	// Project distances 'es' and 'xs' back to 3D space
 	double f = 1.0f / sqrt(1.0 - z * z);
-	es *= f;
-	xs *= f;
-
-	// If the ray doesn't intersect shadow then set both distances behind camera
-	if (w2 < 0) es = xs = -1e3;
-
+	sp.se *= f;
+	sp.sx *= f;
+	sp.hd *= f;
 
 	// Compute atmosphere entry and exit points 
 	//
 	a = -dot(TestPrm.toCam, vRay);
 	k2 = TestPrm.CamRad2 * a * a;
 	h2 = TestPrm.CamRad2 - k2;
-	w2 = cp.AtmoRad2 - h2;
-	w = sqrt(w2);
+	v2 = cp.AtmoRad2 - h2;
+	w = sqrt(v2);
 	k = sqrt(k2) * sign(a);
 
-	double ea = (k - w);
-	double xa = ea + 2.0f * w;
+	sp.ae = (k - w);
+	sp.ax = sp.ae + 2.0f * w;
 
-	// If the ray doesn't intersect atmosphere then set both distances behind camera
-	if (w2 < 0) ea = xa = -1e3;
+	// If the ray doesn't intersect atmosphere then set both distances to zero
+	if (v2 < 0) sp.ae = sp.ax = invalid_val;
 
-	vPlanet::SHDPrm sp;
-	sp.se = es;
-	sp.sx = xs;
-	sp.ae = ea;
-	sp.ax = xa;
-	sp.cr = abs(A);
+	// If the ray doesn't intersect shadow then set both distances to atmo exit
+	if (w2 < 0) {
+		sp.se = invalid_val;
+		sp.sx = invalid_val;
+	}
+	else {
+		FVECTOR3 vEn = TestPrm.CamPos + vRay * sp.se;
+		FVECTOR3 vEx = TestPrm.CamPos + vRay * sp.sx;
+		if (dot(vEn, TestPrm.toSun) > 0) sp.se = invalid_val;
+		if (dot(vEx, TestPrm.toSun) > 0) sp.sx = invalid_val;
+		//if (es < 0) es = xa;
+		//if (xs < 0) xs = xa;
+	}
+
 	return sp;
 }
 
+// Smallest positive
+float minp(float a, float b, float c)
+{
+	a = (a >= 0 ? a : 1e30);
+	b = (b >= 0 ? b : 1e30);
+	c = (c >= 0 ? c : 1e30);
+	return min(min(a, b), c);
+}
+
+float minp(float a, float b)
+{
+	a = (a >= 0 ? a : 1e30);
+	b = (b >= 0 ? b : 1e30);
+	return min(a, b);
+}
 
 // ===========================================================================================
 //
 void vPlanet::TestComputations(Sketchpad *pSkp)
 {
+	//return;
+
 	static int status = 0;
 	float size = 0.02f;
 	VECTOR3 cpos, rpos;
@@ -796,17 +825,17 @@ void vPlanet::TestComputations(Sketchpad *pSkp)
 	if (length(GetScene()->vPickRay) > 0.8f) {
 		vRef = cpos;
 		beta = dot(unit(vRef), GetScene()->vPickRay);
+		TestPrm.CamPos = cp.CamPos;
+		TestPrm.toSun = cp.toSun;
+		TestPrm.toCam = unit(vRef);
+		TestPrm.CamRad = length(vRef);
+		TestPrm.CamRad2 = TestPrm.CamRad * TestPrm.CamRad;
+		TestPrm.ZeroAz = unit(cross(TestPrm.toCam, TestPrm.toSun));
+		TestPrm.SunAz = unit(cross(TestPrm.toCam, TestPrm.ZeroAz));
+		TestPrm.Up = unit(cross(TestPrm.ZeroAz, TestPrm.toSun));
+		TestPrm.CosAlpha = min(1.0f, cp.PlanetRad / TestPrm.CamRad);
+		TestPrm.SinAlpha = sqrt(1.0f - TestPrm.CosAlpha * TestPrm.CosAlpha);
 	}
-
-	TestPrm.toSun = cp.toSun;
-	TestPrm.toCam = unit(vRef);
-	TestPrm.CamRad = length(vRef);
-	TestPrm.CamRad2 = TestPrm.CamRad * TestPrm.CamRad;
-	TestPrm.ZeroAz = unit(cross(TestPrm.toCam, TestPrm.toSun));
-	TestPrm.SunAz = unit(cross(TestPrm.toCam, TestPrm.ZeroAz));
-	TestPrm.Up = unit(cross(TestPrm.ZeroAz, TestPrm.toSun));
-	TestPrm.CosAlpha = min(1.0f, cp.PlanetRad / TestPrm.CamRad);
-	TestPrm.SinAlpha = sqrt(1.0f - TestPrm.CosAlpha * TestPrm.CosAlpha);
 
 
 	// Trace picking ray --------------------------------------------
@@ -815,7 +844,7 @@ void vPlanet::TestComputations(Sketchpad *pSkp)
 	float Ref = sqrt(Ref2);
 	float ds = Ref * beta;
 	float he2 = Ref2 - ds * ds;
-
+	
 	if (length(GetScene()->vPickRay) > 0.8f)
 	{
 		if (he2 < cp.PlanetRad2 && beta < 0) {	// Surface contact
@@ -843,6 +872,7 @@ void vPlanet::TestComputations(Sketchpad *pSkp)
 		vRay = -normalize(vRef - vPos); // From vPos to vRef
 	}
 
+	float cd = length(vRef - vPos);
 
 	SHDPrm sp = ComputeShadow(vRay);
 
@@ -855,47 +885,149 @@ void vPlanet::TestComputations(Sketchpad *pSkp)
 	// Test Point 'contact point'
 	pSkp->QuickPen(0xFF0000FF);
 	pSkp->QuickBrush(0xFF0000FF);
-	pSkp->SetWorldBillboard(vPos - vCam, size);
+	pSkp->SetWorldBillboard(vRef - vCam + vRay * cd, size);
 	pSkp->Ellipse(-150, -150, 150, 150);
 
-	// Planet shadow crossing
-	pSkp->QuickPen(0xFFDD00DD);
-	pSkp->QuickBrush(0xFFDD00DD);
-	pSkp->SetWorldBillboard(vRef - vCam + vRay * sp.se, size);
-	pSkp->Ellipse(-100, -100, 100, 100);
-	pSkp->QuickPen(0xFFFF88FF);
-	pSkp->QuickBrush(0xFFFF88FF);
-	pSkp->SetWorldBillboard(vRef - vCam + vRay * sp.sx, size);
-	pSkp->Ellipse(-100, -100, 100, 100);
-
-	float c = dot(vRef, vRay);
-	float h2 = dot(vRef, vRef) - c * c;
-	float f = sqrt(cp.AtmoRad2 - h2);
-	float af = -(c + f);
-	float as = -(c - f);
-
-	// Atmosphere entry points
-	pSkp->QuickPen(0xFF00AAAA);
-	pSkp->QuickBrush(0xFF00AAAA);
-	pSkp->SetWorldBillboard(vRef - vCam + vRay * af, size);
-	pSkp->Ellipse(-100, -100, 100, 100);
-	pSkp->QuickPen(0xFF00FFFF);
-	pSkp->QuickBrush(0xFF00FFFF);
-	pSkp->SetWorldBillboard(vRef - vCam + vRay * as, size);
-	pSkp->Ellipse(-100, -100, 100, 100);
+	// Shadow Crossing
+	if (sp.se != invalid_val) {
+		pSkp->QuickPen(0xFFDD00DD);
+		pSkp->QuickBrush(0xFFDD00DD);
+		pSkp->SetWorldBillboard(vRef - vCam + vRay * sp.se, size);
+		pSkp->Ellipse(-200, -200, 200, 200);
+	}
+	if (sp.sx != invalid_val) {
+		pSkp->QuickPen(0xFFFF88FF);
+		pSkp->QuickBrush(0xFFFF88FF);
+		pSkp->SetWorldBillboard(vRef - vCam + vRay * sp.sx, size);
+		pSkp->Ellipse(-200, -200, 200, 200);
+	}
+	if (sp.ae != invalid_val) {
+		// Atmosphere entry points
+		pSkp->QuickPen(0xFF008080);
+		pSkp->QuickBrush(0xFF008080);
+		pSkp->SetWorldBillboard(vRef - vCam + vRay * sp.ae, size);
+		pSkp->Ellipse(-100, -100, 100, 100);
+	}
+	if (sp.ax != invalid_val) {
+		pSkp->QuickPen(0xFF00F0F0);
+		pSkp->QuickBrush(0xFF00F0F0);
+		pSkp->SetWorldBillboard(vRef - vCam + vRay * sp.ax, size);
+		pSkp->Ellipse(-100, -100, 100, 100);
+	}
+	if (sp.hd != invalid_val) {
+		pSkp->QuickPen(0xFFFFFFFF);
+		pSkp->QuickBrush(0xFFFFFFFF);
+		pSkp->SetWorldBillboard(vRef - vCam + vRay * sp.hd, size);
+		pSkp->Ellipse(-70, -70, 70, 70);
+	}
 
 	double u = dot(vPos, TestPrm.Up);
 	double t = dot(vPos, TestPrm.ZeroAz);
-	if ((u * u + t * t) < cp.PlanetRad2 && dot(vPos, TestPrm.toSun) < 0) D3D9DebugLog("Target in Shadow");
-	if (sp.cr < cp.PlanetRad && dot(vRef, TestPrm.toSun) < 0) D3D9DebugLog("Camera in Shadow");
+	bool bTgt = ((u * u + t * t) < cp.PlanetRad2 && dot(vPos, TestPrm.toSun) < 0);
+	bool bSrc = (sp.cr < cp.PlanetRad&& dot(vRef, TestPrm.toSun) < 0);
+
+	if (bSrc) D3D9DebugLog("Camera in Shadow");
+	if (bTgt) D3D9DebugLog("Target in Shadow");
+	
 
 	if (status == 1) D3D9DebugLog("SURFACE");
 	if (status == 2) D3D9DebugLog("HORIZON");
 	if (status == 3) D3D9DebugLog("SKYDOME");
 
 	D3D9DebugLog("Shadow First=%f, Second=%f", sp.se, sp.sx);
-	D3D9DebugLog("Atmosp First=%f, Second=%f", af, as);
 	D3D9DebugLog("Atmosp First=%f, Second=%f", sp.ae, sp.ax);
+	D3D9DebugLog("Hd=%f", sp.hd);
+
+	D3DXMATRIX mI; D3DXMatrixIdentity(&mI);
+	VECTOR3 V0, V1;
+	IVECTOR2 pt0, pt1;
+	float s0, e0, s1, e1, t0, t1;
+
+	pSkp->SetViewMode(Sketchpad::ORTHO);
+	pSkp->SetWorldTransform();
+
+	bool bSecEnable = false;
+	FVECTOR3 vR = vRef - vCam;
+
+	if (status == 1)
+	{
+		s0 = sp.ae > 0 ? sp.ae : 0;
+		e0 = minp(cd, sp.se);
+	}
+
+	if (status == 2) // Horizon
+	{
+		if (bSrc) {	// Camera in Shadow
+			if (sp.sx > sp.ax) goto skip;
+			s0 = ((sp.sx > sp.ae) && (sp.sx<sp.ax)) ? sp.sx : sp.ae;
+			e0 = sp.ax;
+		}
+		else { // Camera is Lit
+			
+			if (sp.se < 0) t0 = t1 = sp.hd; // No shadow intersection
+			else t0 = sp.se, t1 = sp.sx; // Intersect shadow
+
+			if ((sp.ae < t0) && (t0 < sp.ax)) {
+				s0 = sp.ae;
+				e0 = t0;
+				if ((sp.ae < t1) && (t1 < sp.ax)) {
+					s1 = t1;
+					e1 = sp.ax;
+				}
+			}
+			else {
+				s0 = sp.ae;
+				e0 = sp.ax;
+			}
+		}
+	}
+
+
+	if (status == 3) // SkyDome
+	{
+		if (bSrc) {	// Camera in Shadow
+			s0 = sp.sx;
+			e0 = sp.ax;
+		}
+		else { // Camera is Lit
+			if (sp.se < 0) t0 = t1 = sp.hd; // No shadow intersection
+			else t0 = sp.se, t1 = sp.sx; // Intersect shadow
+
+			if (sp.ax < t1) { // Single segment
+				s0 = 0;
+				e0 = minp(sp.ax, sp.se);
+			}
+			else { // Double segments
+				bSecEnable = true;
+				s1 = 0;
+				e1 = t0;
+				s0 = t1;
+				e0 = sp.ax;
+			}
+		}
+	}
+
+	if (true) {
+		D3D9DebugLog("Primary Integral s0=%f, e0=%f", s0, e0);
+		V0 = (vR + vRay * s0)._V();
+		V1 = V0 + vRay._V() * (e0 - s0);
+		scn->WorldToScreenSpace(V0, &pt0);
+		scn->WorldToScreenSpace(V1, &pt1);
+		pSkp->QuickPen(0xFF90FF90);
+		pSkp->Line(pt0.x, pt0.y, pt1.x, pt1.y);
+	}
+
+	if (e1 > 1.0f) {
+		D3D9DebugLog("Secondary Integral");
+		V0 = (vR + vRay * s1)._V();
+		V1 = V0 + vRay._V() * (e1 - s1);
+		scn->WorldToScreenSpace(V0, &pt0);
+		scn->WorldToScreenSpace(V1, &pt1);
+		pSkp->QuickPen(0xFF9090FF);
+		pSkp->Line(pt0.x, pt0.y, pt1.x, pt1.y);
+	}
+skip:
+	pSkp->SetViewMode(Sketchpad::USER);
 }
 
 
@@ -985,6 +1117,8 @@ void vPlanet::UpdateScatter()
 	cp.SinAlpha = sqrt(1.0f - cp.CosAlpha * cp.CosAlpha);
 	float A = dot(cp.toCam, cp.Up) * cp.CamRad;
 	cp.Cr2 = A * A;
+	float g2 = cp.Cr2 - cp.PlanetRad2;
+	cp.ShdDst = g2 > 0 ? sqrt(g2) : 1e10;
 
 
 	if (HasAtmosphere() == false) return;
@@ -1025,6 +1159,7 @@ void vPlanet::UpdateScatter()
 
 	sFlow Flow;
 	Flow.bCamLit = !((cp.Cr2 < cp.PlanetRad2) && (dot(cp.toCam, cp.toSun) < 0));
+	Flow.bCamInSpace = cp.CamAlt > cp.AtmoAlt;
 
 
 	//

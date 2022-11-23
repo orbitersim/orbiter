@@ -172,6 +172,12 @@ namespace oapi {
 		}
 #endif
 
+		inline VECTOR3 _V()
+		{
+			VECTOR3 v = { x,y,z };
+			return v;
+		}
+
 		inline FVECTOR3& operator*= (float f)
 		{
 			x *= f; y *= f; z *= f;

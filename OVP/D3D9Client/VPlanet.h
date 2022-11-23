@@ -109,9 +109,11 @@ public:
 
 #pragma pack(push, 4)
 
+// Bools for Scatter.hlsl
 struct sFlow {
 	BOOL bRay;
 	BOOL bCamLit;
+	BOOL bCamInSpace;
 };
 
 struct ShaderParams
@@ -129,6 +131,7 @@ struct ShaderParams
 	float	 fBeta;
 };
 
+// Bools for NewPlanet.hlsl
 struct FlowControlPS
 {
 	BOOL bInSpace;				// Camera in space (not in atmosphere)
@@ -203,6 +206,7 @@ struct ConstParams
 	float  SinAlpha;
 	float  CamSpace;			// Camera in space scale factor 0.0 = surf, 1.0 = space
 	float  Cr2;					// Camera radius on shadow plane (dot(cp.toCam, cp.Up) * cp.CamRad)^2
+	float  ShdDst;
 };
 
 #pragma pack(pop)
@@ -240,10 +244,13 @@ public:
 		float ae;	// Atmosphere entry
 		float ax;	// Atmosphere exit	
 		float cr;	// Camera Radius in shadow frame
+		float hd;	// Horizon distance
+		float h2;	// Closest approach sqr-dist
+		float w2;
 	};
 
 	struct TestPrm {
-		FVECTOR3 toCam, toSun, ZeroAz, Up, SunAz;
+		FVECTOR3 toCam, toSun, ZeroAz, Up, SunAz, CamPos;
 		float CosAlpha, SinAlpha, CamRad, CamRad2;
 	} TestPrm;
 

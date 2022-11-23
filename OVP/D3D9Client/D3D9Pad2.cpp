@@ -673,11 +673,12 @@ void D3D9Pad::SetWorldBillboard(const FVECTOR3& wpos, float scale, bool bFixed, 
 #ifdef SKPDBG 
 	Log("SetWorldBillboard()");
 #endif
+	scale *= (mP._11 + mP._22) * 0.5f;
 	Change |= SKPCHG_TRANSFORM;
 	FVECTOR3 up = unit(wpos);
 	FVECTOR3 y  = unit(cross((index ? *index : FVECTOR3(mV._11, mV._21, mV._31)), up));
 	FVECTOR3 x  = cross(up, y);
-	float d = (bFixed ? dot(up, wpos) / -mP._43 : 1.0f) * scale;
+	float d = (bFixed ? dot(up, wpos) / float(tgt_desc.Width) : 1.0f) * scale;
 	FMATRIX4 mWorld;
 	mWorld._x = x * d;
 	mWorld._y = y * d;

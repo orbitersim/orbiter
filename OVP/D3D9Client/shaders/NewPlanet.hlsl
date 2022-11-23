@@ -564,6 +564,7 @@ float4 TerrainPS(TileVS frg) : COLOR
 	float fDPS = dot(vPlN, Const.toSun);
 	float fS = sqrt(saturate(fDPS + 0.05f));	// Day-Night scaling term 1.0 at daytime
 	float3 cSun = GetSunColor(fDPS, alt) * Const.cSun * fShd * fShadow;
+	cSun *= pow(saturate(dot(vPlN, Const.toSun)), 0.5f);
 
 
 #if defined(_NIGHTLIGHTS)
