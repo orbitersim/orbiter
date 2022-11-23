@@ -6,11 +6,11 @@
 // ============================================================================
 
 #define Nc  16		//Z-dimension count in 3D texture
-#define Wc  96		//3D texture size (pixels)
-#define Qc  128		//2D texture size (pixels)
+#define Wc  80		//3D texture size (pixels)
+#define Qc  96		//2D texture size (pixels)
 
 
-#define NSEG 14
+#define NSEG 6
 #define iNSEG 1.0f / NSEG
 #define MINANGLE -0.3f			// Minumum angle
 #define ANGRNG (1.0f - MINANGLE)
@@ -125,23 +125,19 @@ float2 NrmToUV(float3 vNrm)
 
 float3 uvToLoc(float2 uv, float r)
 {
-	uv = (uv * 2.0 - 1.0) * r;
+	uv = (uv * 2.0 - 1.0);
+	float w = uv.x * uv.x + uv.y * uv.y;
+	if (w > 1.0f) uv *= rsqrt(w);
+	uv *= r;
 	float det = 1.0f - uv.x * uv.x - uv.y * uv.y;
 	float cos_ab = det > 0.0f ? sqrt(det) : 0.0f;
-	return float3(uv.x, uv.y, cos_ab);
+	return float3(uv.xy, cos_ab);
 }
 
 
 float3 uvToNrm(float2 uv)
 {
 	float3 q = uvToLoc(uv, Const.AngCtr);
-	return normalize(Const.SunAz * q.y + Const.ZeroAz * q.x + Const.toCam * q.z);
-}
-
-
-float3 uvToRay(float2 uv)
-{
-	float3 q = uvToLoc(uv, 1.0f);
 	return normalize(Const.SunAz * q.y + Const.ZeroAz * q.x + Const.toCam * q.z);
 }
 
@@ -349,7 +345,7 @@ float3 Transmission(float3 vRay, float to, float from)
 float3 ComputeCameraView(float3 vNrm, float3 vRay, float r, float d)
 {
 	float a = dot(vNrm, vRay);
-	float2 rm = Gauss7(-a, r, d, Const.iH) * Const.rmO;
+	float2 rm = Gauss4(-a, r, d, Const.iH) * Const.rmO;
 	float3 clr = Const.RayWave * rm.r + Const.MieWave * rm.g;
 	return exp(-clr);
 }
@@ -406,7 +402,7 @@ RayData ComputeRayStats(in float3 vRay, in uniform const bool bPreProcessData)
 	dat.hd = Const.ShdDst;
 
 	// Project distances back to 3D space
-	float q = rsqrt(1.0 - z * z);
+	float q = rsqrt(max(2.5e-5, 1.0 - z * z));
 	dat.se *= q;
 	dat.sx *= q;
 	dat.hd *= q;
@@ -450,7 +446,7 @@ float3 ComputeCameraView(float3 vPos, float3 vNrm, float3 vRay, float r)
 {
 	float d;
 	float a = dot(vNrm, vRay);
-	if (Flo.bCamInSpace) d = RayLength(a, r);
+	if (Flo.bCamInSpace) d = RayLength(-a, r);
 	else d = dot(vPos - Const.CamPos, vRay);
 	float2 rm = Gauss7(a, r, d, Const.iH) * Const.rmO;
 	float3 clr = Const.RayWave * rm.r + Const.MieWave * rm.g;
@@ -519,13 +515,6 @@ SkyOut GetSkyColor(float3 uDir)
 }
 
 
-// Smallest positive
-float minp(float a, float b)
-{
-	a = (a >= 0 ? a : 1e30);
-	b = (b >= 0 ? b : 1e30);
-	return min(a, b);
-}
 
 float4 SkyView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 {
@@ -538,40 +527,22 @@ float4 SkyView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 
 	RayData sp = ComputeRayStats(vRay, true);
 
-	float s0 = 0, s1 = 0, e0 = 0, e1 = 0, t0 = 0, t1 = 0;
+	// Check mid-point validity
+	float mp = sp.hd > sp.ae && sp.hd < sp.ax ? sp.hd : -1e6;
+	if (sp.w2 < Const.PlanetRad2) mp = -1e6;
+
+	float s0 = max(0, sp.ae);
+	float e0 = sp.se > 0 ? sp.se : mp;
+	float s1 = max(max(mp, sp.sx), s0);
+	float e1 = sp.ax;
+
+	// First segment
 	float4 ret = 0;
-
-	if (!Flo.bCamLit) {
-		// Camera in Shadow
-		s1 = sp.sx;
-		e1 = sp.ax;
-		// Primary segment
-		ret = IntegrateSegmentNS(Const.CamPos + vRay * s1, vRay, e1 - s1, iH);
-	}
-	else {
-
-		// Camera is Lit
-		if (sp.se < 0) t0 = t1 = sp.hd; // No shadow intersection
-		else t0 = sp.se, t1 = sp.sx; // Intersect shadow
-
-		if (sp.ax < t1) {
-			// Single segment
-			s1 = 0;
-			e1 = minp(sp.ax, sp.se);
-		}
-		else {
-			// Dual segments
-			s0 = 0;
-			e0 = t0;
-			s1 = t1;
-			e1 = sp.ax;
-
-			// Secondary segment
-			ret += IntegrateSegmentNS(Const.CamPos + vRay * s0, vRay, e0 - s0, iH);
-		}
-		// Primary segment
+	if (e0 > s0)
+		ret += IntegrateSegmentNS(Const.CamPos + vRay * s0, vRay, e0 - s0, iH);
+	// Second segment
+	if (e1 > s1)
 		ret += IntegrateSegmentNS(Const.CamPos + vRay * s1, vRay, e1 - s1, iH);
-	}
 
 	
 	float3 transmission = Transmission(vRay, sp.ax, 0);
@@ -580,7 +551,7 @@ float4 SkyView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 	ret.rgb *= Flo.bRay ? Const.RayWave : Const.MieWave;
 	ret.rgb *= Const.cSun;
 
-	float alpha = 1.0 - saturate(transmission.g);
+	float alpha = 1.0;// -saturate(transmission.g);
 
 	return float4(ret.rgb, alpha);
 }
@@ -597,7 +568,7 @@ float4 RingView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 	float iH  = Flo.bRay ? Const.iH.r : Const.iH.g;
 
 	float x = -1.0f + u * 2.0f;
-	float y = sqrt(1.0f - x * x);
+	float y = sqrt(max(1e-6, 1.0f - x * x));
 	float e = v * Const.AtmoAlt;
 	float re = Const.PlanetRad + e;
 	float z = re * Const.CosAlpha;
@@ -609,39 +580,25 @@ float4 RingView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 	float cpd = abs(dot(vRay, Const.CamPos - vPos));
 
 	RayData sp = ComputeRayStats(vRay, true);
+	
+	// Check mid-point validity
+	float mp = sp.hd > sp.ae && sp.hd < sp.ax ? sp.hd : -1e6;
 
-	float s0 = 0, s1 = 0;
-	float e0 = 0, e1 = 0;
-	float t0 = 0, t1 = 0;
+	if (sp.w2 < Const.PlanetRad2) mp = -1e6;
 
-	if (!Flo.bCamLit) {	// Camera in Shadow
-		if (sp.sx > sp.ax) return float4(0, 0, 0, 0);
-		s0 = ((sp.sx > sp.ae) && (sp.sx < sp.ax)) ? sp.sx : sp.ae;
-		e0 = sp.ax;
-	}
-	else { // Camera is Lit
-		if (sp.se < 0) t0 = t1 = sp.hd; // No shadow intersection
-		else t0 = sp.se, t1 = sp.sx; // Intersect shadow
-
-		if ((sp.ae < t0) && (t0 < sp.ax)) {
-			s0 = sp.ae;
-			e0 = t0;
-			if ((sp.ae < t1) && (t1 < sp.ax)) {
-				s1 = t1;
-				e1 = sp.ax;
-			}
-		}
-		else {
-			s0 = sp.ae;
-			e0 = sp.ax;
-		}
-	}
-
+	float s0 = max(0, sp.ae);
+	float e0 = sp.se > 0 ? sp.se : mp;
+	float s1 = max(max(mp, sp.sx), s0);
+	float e1 = sp.ax;
+	
+	
 	// First segment
-	float4 ret = IntegrateSegmentNS(vPos - vRay * (cpd - s0), vRay, e0 - s0, iH);
-
+	float4 ret = 0;
+	if (e0 > s0)
+		ret += IntegrateSegmentNS(vPos - vRay * (cpd - s0), vRay, e0 - s0, iH);
 	// Second segment
-	if (s1 > 0.1f) ret += IntegrateSegmentNS(vPos - vRay * (cpd - s1), vRay, e1 - s1, iH);
+	if (e1 > s1)
+		ret += IntegrateSegmentNS(vPos - vRay * (cpd - s1), vRay, e1 - s1, iH);
 
 
 	float3 transmission = Transmission(vRay, sp.ax, max(0, sp.ae));
@@ -655,7 +612,7 @@ float4 RingView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 		ret.rgb += MultiScatterApprox(normalize(vPos)) * exp(-e * Const.iH.r * 0.5f);
 	}*/
 
-	float alpha = 1.0f - saturate(transmission.g);
+	float alpha = 1.0f;// -saturate(transmission.g);
 
 	return float4(ret.rgb, alpha);
 }
@@ -736,12 +693,11 @@ float4 LandView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 	float3 vCam = Const.CamPos - vVrt;
 	float3 vRay = -normalize(vCam); // From camera to vertex
 	float cpd = abs(dot(vRay, vCam)); // Camera pixel distance
-	float s0 = 0, e0 = 0;
-
+	
 	RayData sp = ComputeRayStats(vRay, true);
 
-	s0 = sp.ae > 0 ? sp.ae : 0;
-	e0 = minp(cpd, sp.se);
+	float s0 = sp.ae > 0 ? sp.ae : 0;
+	float e0 = sp.se > 0 ? min(cpd, sp.se) : cpd;
 
 	//if (!Flo.bRay) dist = min(dist, 10e3);
 

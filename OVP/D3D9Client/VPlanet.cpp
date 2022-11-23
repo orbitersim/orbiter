@@ -741,13 +741,15 @@ vPlanet::SHDPrm vPlanet::ComputeShadow(FVECTOR3 vRay)
 	sp.w2 = w2;
 	sp.se = k - w;
 	sp.sx = sp.se + 2.0f * w;
-	sp.hd = g2 > 0 ? sqrt(g2) : -invalid_val;
+	sp.hd = g2 > 0 ? sqrt(g2) : invalid_val;
 
 	// Project distances 'es' and 'xs' back to 3D space
-	double f = 1.0f / sqrt(1.0 - z * z);
+	double f = 1.0f / sqrt(max(2.5e-5, 1.0 - z * z));
 	sp.se *= f;
 	sp.sx *= f;
 	sp.hd *= f;
+
+	D3D9DebugLog("f=%f", f);
 
 	// Compute atmosphere entry and exit points 
 	//
@@ -774,28 +776,11 @@ vPlanet::SHDPrm vPlanet::ComputeShadow(FVECTOR3 vRay)
 		FVECTOR3 vEx = TestPrm.CamPos + vRay * sp.sx;
 		if (dot(vEn, TestPrm.toSun) > 0) sp.se = invalid_val;
 		if (dot(vEx, TestPrm.toSun) > 0) sp.sx = invalid_val;
-		//if (es < 0) es = xa;
-		//if (xs < 0) xs = xa;
 	}
 
 	return sp;
 }
 
-// Smallest positive
-float minp(float a, float b, float c)
-{
-	a = (a >= 0 ? a : 1e30);
-	b = (b >= 0 ? b : 1e30);
-	c = (c >= 0 ? c : 1e30);
-	return min(min(a, b), c);
-}
-
-float minp(float a, float b)
-{
-	a = (a >= 0 ? a : 1e30);
-	b = (b >= 0 ? b : 1e30);
-	return min(a, b);
-}
 
 // ===========================================================================================
 //
@@ -853,7 +838,7 @@ void vPlanet::TestComputations(Sketchpad *pSkp)
 			status = 1;
 		}
 		else {
-			if (Ref2 > cp.AtmoRad2 && he2 > cp.PlanetRad2) {	// Horizon ring contact
+			if (!CameraInAtmosphere()) {	// Horizon ring contact
 				float Alpha = acos(TestPrm.CosAlpha);
 				float Beta = acos(-beta);
 				float Gamma = PI - Alpha - Beta;
@@ -941,74 +926,29 @@ void vPlanet::TestComputations(Sketchpad *pSkp)
 	D3DXMATRIX mI; D3DXMatrixIdentity(&mI);
 	VECTOR3 V0, V1;
 	IVECTOR2 pt0, pt1;
-	float s0, e0, s1, e1, t0, t1;
-
+	
 	pSkp->SetViewMode(Sketchpad::ORTHO);
 	pSkp->SetWorldTransform();
 
 	bool bSecEnable = false;
 	FVECTOR3 vR = vRef - vCam;
 
-	if (status == 1)
-	{
-		s0 = sp.ae > 0 ? sp.ae : 0;
-		e0 = minp(cd, sp.se);
-	}
+	// Check mid-point validity
+	//float mp = sp.hd > sp.ae ? sp.hd : -1e6;
+	float mp = sp.hd > sp.ae && sp.hd < sp.ax ? sp.hd : -1e6;
+	float sf = sp.w2 / cp.PlanetRad2;
 
-	if (status == 2) // Horizon
-	{
-		if (bSrc) {	// Camera in Shadow
-			if (sp.sx > sp.ax) goto skip;
-			s0 = ((sp.sx > sp.ae) && (sp.sx<sp.ax)) ? sp.sx : sp.ae;
-			e0 = sp.ax;
-		}
-		else { // Camera is Lit
-			
-			if (sp.se < 0) t0 = t1 = sp.hd; // No shadow intersection
-			else t0 = sp.se, t1 = sp.sx; // Intersect shadow
+	if (sp.w2 < cp.PlanetRad2) mp = -1e6;
 
-			if ((sp.ae < t0) && (t0 < sp.ax)) {
-				s0 = sp.ae;
-				e0 = t0;
-				if ((sp.ae < t1) && (t1 < sp.ax)) {
-					s1 = t1;
-					e1 = sp.ax;
-				}
-			}
-			else {
-				s0 = sp.ae;
-				e0 = sp.ax;
-			}
-		}
-	}
+	float s0 = max(0, sp.ae);
+	float e0 = sp.se > 0 ? sp.se : mp;
+	float s1 = max(max(mp, sp.sx), s0);
+	float e1 = sp.ax;
 
+	D3D9DebugLog("s0=%f, e0=%f, s1=%f, e1=%f, mp=%f, sf=%f", s0, e0, s1, e1, mp, sf);
 
-	if (status == 3) // SkyDome
-	{
-		if (bSrc) {	// Camera in Shadow
-			s0 = sp.sx;
-			e0 = sp.ax;
-		}
-		else { // Camera is Lit
-			if (sp.se < 0) t0 = t1 = sp.hd; // No shadow intersection
-			else t0 = sp.se, t1 = sp.sx; // Intersect shadow
-
-			if (sp.ax < t1) { // Single segment
-				s0 = 0;
-				e0 = minp(sp.ax, sp.se);
-			}
-			else { // Double segments
-				bSecEnable = true;
-				s1 = 0;
-				e1 = t0;
-				s0 = t1;
-				e0 = sp.ax;
-			}
-		}
-	}
-
-	if (true) {
-		D3D9DebugLog("Primary Integral s0=%f, e0=%f", s0, e0);
+	if (e0 > s0) {
+		D3D9DebugLog("Primary Integral");
 		V0 = (vR + vRay * s0)._V();
 		V1 = V0 + vRay._V() * (e0 - s0);
 		scn->WorldToScreenSpace(V0, &pt0);
@@ -1017,7 +957,7 @@ void vPlanet::TestComputations(Sketchpad *pSkp)
 		pSkp->Line(pt0.x, pt0.y, pt1.x, pt1.y);
 	}
 
-	if (e1 > 1.0f) {
+	if (e1 > s1) {
 		D3D9DebugLog("Secondary Integral");
 		V0 = (vR + vRay * s1)._V();
 		V1 = V0 + vRay._V() * (e1 - s1);
@@ -1026,7 +966,6 @@ void vPlanet::TestComputations(Sketchpad *pSkp)
 		pSkp->QuickPen(0xFF9090FF);
 		pSkp->Line(pt0.x, pt0.y, pt1.x, pt1.y);
 	}
-skip:
 	pSkp->SetViewMode(Sketchpad::USER);
 }
 
@@ -1118,7 +1057,7 @@ void vPlanet::UpdateScatter()
 	float A = dot(cp.toCam, cp.Up) * cp.CamRad;
 	cp.Cr2 = A * A;
 	float g2 = cp.Cr2 - cp.PlanetRad2;
-	cp.ShdDst = g2 > 0 ? sqrt(g2) : 1e10;
+	cp.ShdDst = g2 > 0 ? sqrt(g2) : -1e10;
 
 
 	if (HasAtmosphere() == false) return;
@@ -1159,7 +1098,7 @@ void vPlanet::UpdateScatter()
 
 	sFlow Flow;
 	Flow.bCamLit = !((cp.Cr2 < cp.PlanetRad2) && (dot(cp.toCam, cp.toSun) < 0));
-	Flow.bCamInSpace = cp.CamAlt > cp.AtmoAlt;
+	Flow.bCamInSpace = !CameraInAtmosphere();
 
 
 	//
