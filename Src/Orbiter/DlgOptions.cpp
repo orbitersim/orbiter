@@ -472,6 +472,12 @@ void OptionsPage_Instrument::UpdateControls(HWND hPage)
 	SetWindowText(GetDlgItem(hPage, IDC_OPT_MFD_SIZE), cbuf);
 	bool enable = g_pOrbiter->Cfg()->CfgLogicPrm.bMfdTransparent;
 	SendDlgItemMessage(hPage, IDC_OPT_MFD_TRANSP, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
+	double scrollSpeed = g_pOrbiter->Cfg()->CfgLogicPrm.PanelScrollSpeed;
+	sprintf(cbuf, "%0.0f", scrollSpeed * 0.1);
+	SetWindowText(GetDlgItem(hPage, IDC_OPT_PANEL_SCROLLSPEED), cbuf);
+	double panelSize = g_pOrbiter->Cfg()->CfgLogicPrm.PanelScale;
+	sprintf(cbuf, "%0.2f", panelSize);
+	SetWindowText(GetDlgItem(hPage, IDC_OPT_PANEL_SCALE), cbuf);
 }
 
 // ----------------------------------------------------------------------
@@ -519,6 +525,30 @@ BOOL OptionsPage_Instrument::OnCommand(HWND hPage, WORD ctrlId, WORD notificatio
 			return FALSE;
 		}
 		break;
+	case IDC_OPT_PANEL_SCROLLSPEED:
+		if (notification == EN_CHANGE) {
+			char cbuf[256];
+			double speed;
+			GetWindowText(GetDlgItem(hPage, IDC_OPT_PANEL_SCROLLSPEED), cbuf, 256);
+			if (sscanf(cbuf, "%lf", &speed)) {
+				g_pOrbiter->Cfg()->CfgLogicPrm.PanelScrollSpeed = 10.0 * max(-100.0, min(100.0, speed));
+				g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_PANELSCROLLSPEED);
+			}
+			return FALSE;
+		}
+		break;
+	case IDC_OPT_PANEL_SCALE:
+		if (notification == EN_CHANGE) {
+			char cbuf[256];
+			double scale;
+			GetWindowText(GetDlgItem(hPage, IDC_OPT_PANEL_SCALE), cbuf, 256);
+			if (sscanf(cbuf, "%lf", &scale)) {
+				g_pOrbiter->Cfg()->CfgLogicPrm.PanelScale = max(0.25, min(4.0, scale));
+				g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_PANELSCALE);
+			}
+			return FALSE;
+		}
+		break;
 	}
 	return TRUE;
 }
@@ -538,6 +568,14 @@ BOOL OptionsPage_Instrument::OnNotify(HWND hPage, DWORD ctrlId, const NMHDR* pNm
 		case IDC_OPT_MFD_SIZESPIN:
 			g_pOrbiter->Cfg()->CfgLogicPrm.MFDSize = max(1, min(10, g_pOrbiter->Cfg()->CfgLogicPrm.MFDSize + delta));
 			g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_MFDGENERICSIZE);
+			break;
+		case IDC_OPT_PANEL_SCROLLSPEEDSPIN:
+			g_pOrbiter->Cfg()->CfgLogicPrm.PanelScrollSpeed = 10.0 * max(-100.0, min(100.0, 0.1 * g_pOrbiter->Cfg()->CfgLogicPrm.PanelScrollSpeed + delta));
+			g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_PANELSCROLLSPEED);
+			break;
+		case IDC_OPT_PANEL_SCALESPIN:
+			g_pOrbiter->Cfg()->CfgLogicPrm.PanelScale = max(0.25, min(4.0, g_pOrbiter->Cfg()->CfgLogicPrm.PanelScale + delta * 0.01));
+			g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_PANELSCALE);
 			break;
 		}
 		UpdateControls(hPage);

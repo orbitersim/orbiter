@@ -165,8 +165,6 @@
 #define IDC_OPT_RPRESSURE               1056
 #define IDC_OPT_DISTMASS                1057
 #define IDC_OPT_WIND                    1058
-#define IDC_OPT_PANELSCALE              1062
-#define IDC_OPT_PANELSPD                1063
 #define IDC_VIS_CLOUD                   1067
 #define IDC_VIS_REFWATER                1068
 #define IDC_VIS_HAZE                    1069
@@ -299,6 +297,10 @@
 #define IDC_OPT_MFD_SIZE                1062
 #define IDC_OPT_MFD_SIZESPIN            1063
 #define IDC_OPT_MFD_TRANSP              1064
+#define IDC_OPT_PANEL_SCROLLSPEED       1065
+#define IDC_OPT_PANEL_SCROLLSPEEDSPIN   1066
+#define IDC_OPT_PANEL_SCALE             1067
+#define IDC_OPT_PANEL_SCALESPIN         1068
 
 // Unsorted
 #define IDC_SCN_STATIC1                 1087

@@ -23,12 +23,10 @@ void orbiter::ParameterTab::Create ()
 	hTab = CreateTab (IDD_PAGE_OPT);
 
 	static int item[] = {
-		IDC_OPT_STATIC1, IDC_OPT_STATIC2, IDC_OPT_STATIC4,
-		IDC_OPT_STATIC10, IDC_OPT_STATIC11, IDC_OPT_STATIC14,
+		IDC_OPT_STATIC1, IDC_OPT_STATIC2, IDC_OPT_STATIC14,
 		IDC_RADIO1, IDC_RADIO2, IDC_OPT_COMPLEXMODEL, IDC_OPT_DAMAGE, IDC_OPT_LIMFUEL,
 		IDC_OPT_PADFUEL, IDC_OPT_COMPLEXGRAV, IDC_OPT_DISTMASS, IDC_OPT_WIND,
-		IDC_OPT_RPRESSURE, IDC_OPT_FOCUS,
-		IDC_OPT_PANELSCALE, IDC_OPT_PANELSPD
+		IDC_OPT_RPRESSURE, IDC_OPT_FOCUS
 	};
 
 	RegisterItemPositions (item, ARRAYSIZE(item));
@@ -38,11 +36,6 @@ void orbiter::ParameterTab::Create ()
 
 void orbiter::ParameterTab::GetConfig (const Config *cfg)
 {
-	char cbuf[20];
-	sprintf (cbuf, "%0.2f", pCfg->CfgLogicPrm.PanelScale);
-	SetWindowText (GetDlgItem (hTab, IDC_OPT_PANELSCALE), cbuf);
-	sprintf (cbuf, "%0.0f", pCfg->CfgLogicPrm.PanelScrollSpeed*0.1);
-	SetWindowText (GetDlgItem (hTab, IDC_OPT_PANELSPD), cbuf);
 	SendDlgItemMessage (hTab, IDC_RADIO1, BM_SETCHECK,
 		pCfg->CfgVisualPrm.StarPrm.map_log ? BST_UNCHECKED : BST_CHECKED, 0);
 	SendDlgItemMessage (hTab, IDC_RADIO2, BM_SETCHECK,
@@ -84,14 +77,6 @@ void orbiter::ParameterTab::SetConfig (Config *cfg)
 	pCfg->CfgPhysicsPrm.bNonsphericalGrav = (SendDlgItemMessage (hTab, IDC_OPT_COMPLEXGRAV, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	pCfg->CfgPhysicsPrm.bRadiationPressure = (SendDlgItemMessage (hTab, IDC_OPT_RPRESSURE, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	pCfg->CfgPhysicsPrm.bAtmWind = (SendDlgItemMessage (hTab, IDC_OPT_WIND, BM_GETCHECK, 0, 0) == BST_CHECKED);
-
-	GetWindowText (GetDlgItem (hTab, IDC_OPT_PANELSCALE), cbuf, 127);
-	if (!sscanf (cbuf, "%lf", &d)) d = 1.0; else if (d < 0.25) d = 0.25; else if (d > 4.0) d = 4.0;
-	pCfg->CfgLogicPrm.PanelScale = d;
-
-	GetWindowText (GetDlgItem (hTab, IDC_OPT_PANELSPD), cbuf, 127);
-	if (!sscanf (cbuf, "%lf", &d)) d = 30.0; else if (d < -100.0) d = -100.0; else if (d > 100) d = 100.0;
-	pCfg->CfgLogicPrm.PanelScrollSpeed = d*10.0;
 }
 
 //-----------------------------------------------------------------------------

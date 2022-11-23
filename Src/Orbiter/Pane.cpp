@@ -1007,6 +1007,9 @@ void Pane::OptionChanged(DWORD cat, DWORD item)
 				RefreshMFD(i);
 				mfd[i].instr->OptionChanged(cat, item);
 			}
+		if (item == OPTITEM_INSTRUMENT_PANELSCALE && panelmode == 2) {
+			SetPanelMode(panelmode, true);
+		}
 	}
 }
 
