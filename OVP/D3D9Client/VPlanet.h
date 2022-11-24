@@ -38,51 +38,12 @@ bool FilterElevationPhysics(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, doub
 #define PLT_GIANT 4
 #define PLT_G_CLOUDS 5
 
-
 class PlanetShader : public ShaderClass
 {
 public:
-	PlanetShader(LPDIRECT3DDEVICE9 pDev, const char* file, const char* vs, const char* ps, const char* name, const char* options) :
-		ShaderClass(pDev, file, vs, ps, name, options)
-	{
-		bLocals = false;
-		bMicrotex = false;
-		bShdMap = false;
-		bDevtools = false;
-		bAtmosphere = true;
-		bWater = false;
-		bRipples = false;
-		bCloudShd = false;
-		bNightlights = false;
-
-		if (string(options).find("_LOCALLIGHTS") != string::npos) bLocals = true;
-		if (string(options).find("_MICROTEX") != string::npos) bMicrotex = true;
-		if (string(options).find("_SHDMAP") != string::npos) bShdMap = true;
-		if (string(options).find("_DEVTOOLS") != string::npos) bDevtools = true;
-		if (string(options).find("_NO_ATMOSPHERE") != string::npos) bAtmosphere = false;
-		if (string(options).find("_WATER") != string::npos) bWater = true;
-		if (string(options).find("_RIPPLES") != string::npos) bRipples = true;
-		if (string(options).find("_CLOUDSHD") != string::npos) bCloudShd = true;
-		if (string(options).find("_NIGHTLIGHTS") != string::npos) bNightlights = true;
-
-		tCloud = GetPSHandle("tCloud");
-		tCloud2 = GetPSHandle("tCloud2");
-		tMask = GetPSHandle("tMask");
-		tDiff = GetPSHandle("tDiff");
-		tShadowMap = GetPSHandle("tShadowMap");
-		PrmVS = GetVSHandle("Prm");
-		Prm = GetPSHandle("Prm");
-		FlowVS = GetVSHandle("FlowVS");
-		Flow = GetPSHandle("Flow");
-		Lights = GetPSHandle("Lights");
-		Spotlight = GetPSHandle("Spotlight");
-	};
-
-	~PlanetShader()
-	{
-
-	}
-
+	PlanetShader(LPDIRECT3DDEVICE9 pDev, const char* file, const char* vs, const char* ps, const char* name, const char* options);
+	~PlanetShader();
+	
 	bool bLocals;
 	bool bMicrotex;
 	bool bShdMap;
@@ -101,7 +62,7 @@ public:
 	HANDLE PrmVS;
 	HANDLE Prm;
 	HANDLE FlowVS;
-	HANDLE Flow;	
+	HANDLE Flow;
 	HANDLE Lights;
 	HANDLE Spotlight;
 };
@@ -268,6 +229,7 @@ public:
 	virtual void	UpdateBoundingBox();
 
 	static void		GlobalInit(oapi::D3D9Client* gc);
+	static void		GlobalInitAtmosphere(oapi::D3D9Client* gc);
 	static void		GlobalExit();
 
 	void			TestComputations(Sketchpad *);
@@ -305,7 +267,6 @@ public:
 
 	// Atmospheric ------------------------------------------------------------
 	ScatterParams * GetAtmoParams(int mode=-1);
-	double			AngleCoEff(double cos_dir);
 	bool			LoadAtmoConfig();
 	void			SaveAtmoConfig();
 	void			SaveStruct(FILEHANDLE hFile, ScatterParams* prm, int bO);

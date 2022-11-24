@@ -60,6 +60,7 @@ set(SourceFiles
 	VideoTab.cpp
 	VObject.cpp
 	VPlanet.cpp
+	VPlanetAtmo.cpp
 	VStar.cpp
 	VVessel.cpp
 	WindowMgr.cpp
