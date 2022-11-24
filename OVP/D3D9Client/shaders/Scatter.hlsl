@@ -184,7 +184,7 @@ float RayLength(float cos_dir, float r0, float r1)
 {
 	float y = r0 * cos_dir;
 	float z2 = r0 * r0 - y * y;
-	return sqrt(r1 * r1 - z2) - y;
+	return sqrt(r1 * r1 - z2) + y;
 }
 
 
@@ -342,10 +342,9 @@ float3 Transmission(float3 vRay, float to, float from)
 	return exp(-clr);
 }
 
-float3 ComputeCameraView(float3 vNrm, float3 vRay, float r, float d)
+float3 ComputeCameraView(float a, float r, float d)
 {
-	float a = dot(vNrm, vRay);
-	float2 rm = Gauss4(-a, r, d, Const.iH) * Const.rmO;
+	float2 rm = Gauss4(a, r, d, Const.iH) * Const.rmO;
 	float3 clr = Const.RayWave * rm.r + Const.MieWave * rm.g;
 	return exp(-clr);
 }
@@ -446,7 +445,7 @@ float3 ComputeCameraView(float3 vPos, float3 vNrm, float3 vRay, float r)
 {
 	float d;
 	float a = dot(vNrm, vRay);
-	if (Flo.bCamInSpace) d = RayLength(-a, r);
+	if (Flo.bCamInSpace) d = RayLength(a, r);
 	else d = dot(vPos - Const.CamPos, vRay);
 	float2 rm = Gauss7(a, r, d, Const.iH) * Const.rmO;
 	float3 clr = Const.RayWave * rm.r + Const.MieWave * rm.g;
@@ -729,15 +728,15 @@ float4 LandViewAtten(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 	float3 vVrt = vNrm * r;
 
 	// Viewing ray
-	float3 vCam = Const.CamPos - vVrt;
-	float3 vRay = normalize(vCam); // Towards camera from vertex
+	float3 vCam = vVrt - Const.CamPos;
+	float3 vRay = normalize(vCam); // Towards vertex from camera
 
 	float ang = dot(vNrm, vRay);
 	float len = RayLength(ang, r);
 
 	float dist = min(len, dot(vRay, vCam));
 
-	float3 ret = ComputeCameraView(vNrm, vRay, r, dist);
+	float3 ret = ComputeCameraView(ang, r, dist);
 
 	return float4(ret, 1.0);
 }
