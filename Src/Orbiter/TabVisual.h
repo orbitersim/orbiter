@@ -30,13 +30,6 @@ namespace orbiter {
 	protected:
 		void VisualsChanged();
 		// Something on the visual params tab has changed which requires a reset
-
-		void EmptyCSphereList();
-		void AddCSphereList(const char* c);
-
-	private:
-		char** csphere_img_path;
-		int ncsphere_img;
 	};
 
 }

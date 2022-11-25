@@ -233,6 +233,38 @@ protected:
 	BOOL OnNotify(HWND hPage, DWORD ctrlId, const NMHDR* pNmHdr);
 };
 
+/************************************************************************
+ * \brief Page for vessel options
+ */
+class OptionsPage_Vessel : public OptionsPage {
+public:
+	OptionsPage_Vessel(DlgOptions* dlg);
+	int ResourceId() const;
+	const char* Name() const;
+	const HELPCONTEXT* HelpContext() const;
+	void UpdateControls(HWND hPage);
+
+protected:
+	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
+	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
+};
+
+ /************************************************************************
+ * \brief Page for user interface options
+ */
+class OptionsPage_UI : public OptionsPage {
+public:
+	OptionsPage_UI(DlgOptions* dlg);
+	int ResourceId() const;
+	const char* Name() const;
+	const HELPCONTEXT* HelpContext() const;
+	void UpdateControls(HWND hPage);
+
+protected:
+	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
+	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
+};
+
  /************************************************************************
  * \brief Page for celestial sphere rendering options. 
  */

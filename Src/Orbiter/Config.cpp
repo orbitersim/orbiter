@@ -199,7 +199,7 @@ CFG_JOYSTICKPRM CfgJoystickPrm_default = {
 };
 
 CFG_UIPRM CfgUIPrm_default = {
-	true,		// bFocusFollowsMouse (switch focus on mouse move)
+	1,			// MouseFocusMode (click required for child windows)
 	2,          // MenuMode (auto-hide menu bar)
 	false,      // bMenuLabelOnly (display labels and icons)
 	true,       // bWarpAlways (always display time acceleration != 1)
@@ -707,7 +707,8 @@ bool Config::Load(const char *fname)
 	GetInt (ifs, "HUDColIdx", CfgCameraPrm.HUDCol);
 
 	// user interface parameters
-	GetBool (ifs, "FocusFollowsMouse", CfgUIPrm.bFocusFollowsMouse);
+	if (GetInt(ifs, "MouseFocusMode", i) && i >= 0 && i <= 2)
+		CfgUIPrm.MouseFocusMode = (DWORD)i;
 	if (GetInt (ifs, "MenubarMode", i) && i >= 0 && i <= 2)
 		CfgUIPrm.MenuMode = (DWORD)i;
 	GetBool (ifs, "MenubarLabelOnly", CfgUIPrm.bMenuLabelOnly);
@@ -1252,8 +1253,8 @@ BOOL Config::Write (const char *fname) const
 
 	if (memcmp (&CfgUIPrm, &CfgUIPrm_default, sizeof(CFG_UIPRM)) || bEchoAll) {
 		ofs << "\n; === User interface parameters ===\n";
-		if (CfgUIPrm.bFocusFollowsMouse != CfgUIPrm_default.bFocusFollowsMouse || bEchoAll)
-			ofs << "FocusFollowsMouse = " << BoolStr (CfgUIPrm.bFocusFollowsMouse) << '\n';
+		if (CfgUIPrm.MouseFocusMode != CfgUIPrm_default.MouseFocusMode || bEchoAll)
+			ofs << "MouseFocusMode = " << CfgUIPrm.MouseFocusMode << '\n';
 		if (CfgUIPrm.MenuMode != CfgUIPrm_default.MenuMode || bEchoAll)
 			ofs << "MenubarMode = " << CfgUIPrm.MenuMode << '\n';
 		if (CfgUIPrm.bMenuLabelOnly != CfgUIPrm_default.bMenuLabelOnly || bEchoAll)

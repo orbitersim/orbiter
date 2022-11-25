@@ -15,14 +15,12 @@
 
 orbiter::VisualTab::VisualTab (const LaunchpadDialog *lp): LaunchpadTab (lp)
 {
-	ncsphere_img = 0;
 }
 
 //-----------------------------------------------------------------------------
 
 orbiter::VisualTab::~VisualTab ()
 {
-	EmptyCSphereList();
 }
 
 //-----------------------------------------------------------------------------
@@ -32,6 +30,9 @@ void orbiter::VisualTab::Create ()
 	hTab = CreateTab (IDD_PAGE_VIS);
 
 	static int item[] = {
+		IDC_OPT_STATIC1, IDC_OPT_STATIC2,
+		IDC_RADIO1, IDC_RADIO2, IDC_OPT_COMPLEXMODEL, IDC_OPT_DAMAGE,
+		IDC_OPT_COMPLEXGRAV, IDC_OPT_DISTMASS, IDC_OPT_WIND, IDC_OPT_RPRESSURE,
 		IDC_VIS_STATIC1, IDC_VIS_STATIC2, IDC_VIS_STATIC3, IDC_VIS_STATIC4,
 		IDC_VIS_STATIC5, IDC_VIS_CLOUD, IDC_VIS_CSHADOW, IDC_VIS_HAZE, IDC_VIS_FOG,
 		IDC_VIS_REFWATER, IDC_VIS_RIPPLE, IDC_VIS_LIGHTS, IDC_VIS_LTLEVEL,
@@ -48,6 +49,19 @@ void orbiter::VisualTab::Create ()
 void orbiter::VisualTab::GetConfig (const Config *cfg)
 {
 	char cbuf[256];
+
+	SendDlgItemMessage(hTab, IDC_OPT_COMPLEXMODEL, BM_SETCHECK,
+		pCfg->CfgLogicPrm.FlightModelLevel ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_OPT_DAMAGE, BM_SETCHECK,
+		pCfg->CfgLogicPrm.DamageSetting ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_OPT_DISTMASS, BM_SETCHECK,
+		pCfg->CfgPhysicsPrm.bDistributedMass ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_OPT_COMPLEXGRAV, BM_SETCHECK,
+		pCfg->CfgPhysicsPrm.bNonsphericalGrav ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_OPT_RPRESSURE, BM_SETCHECK,
+		pCfg->CfgPhysicsPrm.bRadiationPressure ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hTab, IDC_OPT_WIND, BM_SETCHECK,
+		pCfg->CfgPhysicsPrm.bAtmWind ? BST_CHECKED : BST_UNCHECKED, 0);
 
 	SendDlgItemMessage (hTab, IDC_VIS_SHADOW, BM_SETCHECK,
 		pCfg->CfgVisualPrm.bShadows ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -97,6 +111,13 @@ void orbiter::VisualTab::SetConfig (Config *cfg)
 	DWORD i;
 	char cbuf[128];
 	double d;
+
+	pCfg->CfgLogicPrm.FlightModelLevel = (SendDlgItemMessage(hTab, IDC_OPT_COMPLEXMODEL, BM_GETCHECK, 0, 0) == BST_CHECKED ? 1 : 0);
+	pCfg->CfgLogicPrm.DamageSetting = (SendDlgItemMessage(hTab, IDC_OPT_DAMAGE, BM_GETCHECK, 0, 0) == BST_CHECKED ? 1 : 0);
+	pCfg->CfgPhysicsPrm.bDistributedMass = (SendDlgItemMessage(hTab, IDC_OPT_DISTMASS, BM_GETCHECK, 0, 0) == BST_CHECKED);
+	pCfg->CfgPhysicsPrm.bNonsphericalGrav = (SendDlgItemMessage(hTab, IDC_OPT_COMPLEXGRAV, BM_GETCHECK, 0, 0) == BST_CHECKED);
+	pCfg->CfgPhysicsPrm.bRadiationPressure = (SendDlgItemMessage(hTab, IDC_OPT_RPRESSURE, BM_GETCHECK, 0, 0) == BST_CHECKED);
+	pCfg->CfgPhysicsPrm.bAtmWind = (SendDlgItemMessage(hTab, IDC_OPT_WIND, BM_GETCHECK, 0, 0) == BST_CHECKED);
 
 	pCfg->CfgVisualPrm.bShadows = (SendDlgItemMessage (hTab, IDC_VIS_SHADOW, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	pCfg->CfgVisualPrm.bVesselShadows = (SendDlgItemMessage (hTab, IDC_VIS_VSHADOW, BM_GETCHECK, 0, 0) == BST_CHECKED);
@@ -160,35 +181,4 @@ void orbiter::VisualTab::VisualsChanged ()
 		SendDlgItemMessage (hTab, IDC_VIS_CLOUD, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	EnableWindow (GetDlgItem (hTab, IDC_VIS_RIPPLE),
 		SendDlgItemMessage (hTab, IDC_VIS_REFWATER, BM_GETCHECK, 0, 0) == BST_CHECKED);
-}
-
-//-----------------------------------------------------------------------------
-
-void orbiter::VisualTab::EmptyCSphereList ()
-{
-	if (ncsphere_img) {
-		for (int i = 0; i < ncsphere_img; i++) {
-			delete []csphere_img_path[i];
-			csphere_img_path[i] = NULL;
-		}
-		delete []csphere_img_path;
-		csphere_img_path = NULL;
-		ncsphere_img = 0;
-	}
-}
-
-//-----------------------------------------------------------------------------
-
-void orbiter::VisualTab::AddCSphereList (const char *c)
-{
-	int len = strlen(c);
-	char **tmp = new char*[ncsphere_img+1];
-	if (ncsphere_img) {
-		memcpy (tmp, csphere_img_path, ncsphere_img*sizeof(char*));
-		delete []csphere_img_path;
-		csphere_img_path = NULL;
-	}
-	csphere_img_path = tmp;
-	csphere_img_path[ncsphere_img] = new char[len+1];
-	strcpy (csphere_img_path[ncsphere_img++], c);
 }

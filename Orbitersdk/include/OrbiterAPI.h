@@ -6699,6 +6699,7 @@ OAPIFUNC void oapiTriggerRedrawArea (int panel_id, int vc_id, int area_id);
 #define OPTCAT_CELSPHERE                     0x0001
 #define OPTCAT_PLANETARIUM                   0x0002
 #define OPTCAT_INSTRUMENT                    0x0003
+#define OPTCAT_VESSEL                        0x0004
 //@}
 
 /**
@@ -6719,6 +6720,8 @@ OAPIFUNC void oapiTriggerRedrawArea (int panel_id, int vc_id, int area_id);
 #define OPTITEM_INSTRUMENT_MFDGENERICTRANSP  0x0003
 #define OPTITEM_INSTRUMENT_PANELSCROLLSPEED  0x0004
 #define OPTITEM_INSTRUMENT_PANELSCALE        0x0005
+#define OPTITEM_VESSEL_LIMITEDFUEL           0x0001
+#define OPTITEM_VESSEL_PADREFUEL             0x0002
 //@}
 
 // ======================================================================

@@ -21,15 +21,14 @@
 #define IDD_MAIN                        171
 #define IDD_PAGE_FIRST                  172
 #define IDD_PAGE_SCN                    172
-#define IDD_PAGE_OPT                    173
-#define IDD_PAGE_VIS                    174
-#define IDD_PAGE_MOD                    175
+#define IDD_PAGE_VIS                    173
+#define IDD_PAGE_MOD                    174
 #ifndef IDD_PAGE_DEV
-#define IDD_PAGE_DEV                    176
+#define IDD_PAGE_DEV                    175
 #endif
-#define IDD_PAGE_JOY                    177
-#define IDD_PAGE_EXT                    178
-#define IDD_PAGE_ABT                    179
+#define IDD_PAGE_JOY                    176
+#define IDD_PAGE_EXT                    177
+#define IDD_PAGE_ABT                    178
 #define IDD_SAVESCN                     181
 #define IDD_CAMERA                      182
 #define IDD_CAM_PG_TARGET               184
@@ -64,6 +63,8 @@
 #define IDD_OPTIONS_BODYFORCE           215
 #define IDD_OPTIONS_FRAMEAXES           216
 #define IDD_OPTIONS_INSTRUMENT          217
+#define IDD_OPTIONS_UI                  218
+#define IDD_OPTIONS_VESSEL              219
 #define IDD_DEMOBK                      223
 #define IDD_ORBITERHELP                 224
 #define IDD_HELP                        225
@@ -159,8 +160,6 @@
 #define IDC_MSG                         1050
 #define IDC_OPT_COMPLEXMODEL            1051
 #define IDC_OPT_DAMAGE                  1052
-#define IDC_OPT_LIMFUEL                 1053
-#define IDC_OPT_PADFUEL                 1054
 #define IDC_OPT_COMPLEXGRAV             1055
 #define IDC_OPT_RPRESSURE               1056
 #define IDC_OPT_DISTMASS                1057
@@ -235,20 +234,20 @@
 #define IDC_OPT_PAGELIST                1000
 #define IDC_OPT_PAGECONTAINER           1001
 #define IDC_OPT_SPLIT                   1002
-#define IDC_OPT_ENABLESTARPIX           1003
-#define IDC_OPT_STARMAGHI               1004
-#define IDC_OPT_STARMAGHISPIN           1005
-#define IDC_OPT_STARMAGLO               1006
-#define IDC_OPT_STARMAGLOSPIN           1007
-#define IDC_OPT_STARMINBRT              1008
-#define IDC_OPT_STARMINBRTSPIN          1009
-#define IDC_OPT_STARMAPLIN              1010
-#define IDC_OPT_STARMAPEXP              1011
-#define IDC_OPT_ENABLESTARMAP           1012
-#define IDC_OPT_STARMAPIMAGE            1013
-#define IDC_OPT_ENABLEBKGMAP            1014
-#define IDC_OPT_BKGIMAGE                1015
-#define IDC_OPT_BGBRIGHTNESS            1016
+#define IDC_OPT_CSP_ENABLESTARPIX       1003
+#define IDC_OPT_CSP_STARMAGHI           1004
+#define IDC_OPT_CSP_STARMAGHISPIN       1005
+#define IDC_OPT_CSP_STARMAGLO           1006
+#define IDC_OPT_CSP_STARMAGLOSPIN       1007
+#define IDC_OPT_CSP_STARMINBRT          1008
+#define IDC_OPT_CSP_STARMINBRTSPIN      1009
+#define IDC_OPT_CSP_STARMAPLIN          1010
+#define IDC_OPT_CSP_STARMAPEXP          1011
+#define IDC_OPT_CSP_ENABLESTARMAP       1012
+#define IDC_OPT_CSP_STARMAPIMAGE        1013
+#define IDC_OPT_CSP_ENABLEBKGMAP        1014
+#define IDC_OPT_CSP_BKGIMAGE            1015
+#define IDC_OPT_CSP_BGBRIGHTNESS        1016
 #define IDC_OPT_VHELP_PLN               1017
 #define IDC_OPT_VHELP_MKR               1018
 #define IDC_OPT_VHELP_VEC               1019
@@ -301,6 +300,9 @@
 #define IDC_OPT_PANEL_SCROLLSPEEDSPIN   1066
 #define IDC_OPT_PANEL_SCALE             1067
 #define IDC_OPT_PANEL_SCALESPIN         1068
+#define IDC_OPT_UI_MOUSEFOCUSMODE       1069
+#define IDC_OPT_VESSEL_FUELLIMIT        1070
+#define IDC_OPT_VESSEL_PADFUEL          1071
 
 // Unsorted
 #define IDC_SCN_STATIC1                 1087
@@ -357,7 +359,6 @@
 #define IDC_MAP                         1162
 #define IDC_MAP_TRACK                   1163
 #define IDC_LIST1                       1165
-#define IDC_OPT_FOCUS                   1166
 #define IDC_IMG                         1189
 #define IDC_CUSTOM1                     1190
 #define IDC_TAB1                        1192
@@ -392,8 +393,7 @@
 #define IDC_SPIN3                       1259
 #define IDC_MNU_SCN                     1259
 #define IDC_SPIN4                       1260
-#define IDC_MNU_PRM                     1260
-#define IDC_MNU_VIS                     1261
+#define IDC_MNU_PRM                     1261
 #define IDC_MNU_MOD                     1262
 #define IDC_MNU_VID                     1263
 #define IDC_MNU_JOY                     1264
@@ -403,13 +403,7 @@
 #define IDC_BLACKBOX                    1268
 #define IDC_OPT_STATIC1                 1270
 #define IDC_OPT_STATIC2                 1271
-#define IDC_OPT_STATIC4                 1273
-#define IDC_OPT_STATIC8                 1277
-#define IDC_OPT_STATIC9                 1278
-#define IDC_OPT_STATIC10                1279
-#define IDC_OPT_STATIC11                1280
 #define IDC_VIS_STATIC1                 1281
-#define IDC_OPT_STATIC14                1281
 #define IDC_VIS_STATIC2                 1282
 #define IDC_VIS_STATIC3                 1283
 #define IDC_VIS_STATIC4                 1284
