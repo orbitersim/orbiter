@@ -94,7 +94,6 @@ bool orbiter::LaunchpadDialog::Create (bool startvideotab)
 	if (!hDlg) {
 		CreateDialog (hInst, MAKEINTRESOURCE(IDD_MAIN), NULL, AppDlgProc);
 		AddTab (new ScenarioTab (this)); TRACENEW
-//		AddTab (new ParameterTab (this)); TRACENEW
 		AddTab (new VisualTab (this)); TRACENEW
 		AddTab (new ModuleTab (this)); TRACENEW
 		AddTab (new DefVideoTab (this)); TRACENEW
@@ -136,10 +135,10 @@ bool orbiter::LaunchpadDialog::Create (bool startvideotab)
 		SetWindowText (GetDlgItem (hDlg, IDC_VERSION), uscram(SIG7));
 		Show();
 		if (startvideotab) {
-			SwitchTabPage (hDlg, 4);
+			SwitchTabPage (hDlg, PG_VID);
 		}
 	} else
-		SwitchTabPage (hDlg, 0);
+		SwitchTabPage (hDlg, PG_SCN);
 
 	return (hDlg != NULL);
 }

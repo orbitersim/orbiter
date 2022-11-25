@@ -2,6 +2,8 @@
 // Microsoft Visual C++ generated include file.
 // Used by Orbiter.rc
 //
+#include "resource_video.h"
+
 #define IDS_STRING1                     1
 #define IDR_RT_MANIFEST1                1
 #define IDS_TABSCENARIO                 2
@@ -19,13 +21,9 @@
 #define IDR_POPUP                       145
 #define IDB_LOGO                        152
 #define IDD_MAIN                        171
-#define IDD_PAGE_FIRST                  172
 #define IDD_PAGE_SCN                    172
 #define IDD_PAGE_VIS                    173
 #define IDD_PAGE_MOD                    174
-#ifndef IDD_PAGE_DEV
-#define IDD_PAGE_DEV                    175
-#endif
 #define IDD_PAGE_JOY                    176
 #define IDD_PAGE_EXT                    177
 #define IDD_PAGE_ABT                    178
@@ -188,27 +186,6 @@
 
 #define IDC_VID_LABEL_MODULE            1600
 #define IDC_VID_COMBO_MODULE            1601
-#define IDC_VID_DEVICE                  1602
-#define IDC_VID_FULL                    1603
-#define IDC_VID_WINDOW                  1604
-#define IDC_VID_STATIC5                 1605
-#define IDC_VID_STATIC6                 1606
-#define IDC_VID_MODE                    1607
-#define IDC_VID_BPP                     1608
-#define IDC_VID_VSYNC                   1609
-#define IDC_VID_PAGEFLIP                1610
-#define IDC_VID_STATIC7                 1611
-#define IDC_VID_STATIC8                 1612
-#define IDC_VID_STATIC9                 1613
-#define IDC_VID_WIDTH                   1614
-#define IDC_VID_HEIGHT                  1615
-#define IDC_VID_ASPECT                  1616
-#define IDC_VID_4X3                     1617
-#define IDC_VID_16X10                   1618
-#define IDC_VID_16X9                    1619
-#define IDC_VID_ENUM                    1620
-#define IDC_VID_INFO                    1621
-#define IDC_VID_STENCIL                 1622
 #define IDC_VID_STATIC1                 1623
 #define IDC_VID_STATIC2                 1624
 #define IDC_VID_STATIC3                 1625
