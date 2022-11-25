@@ -62,12 +62,15 @@ BOOL DlgOptions::OnInitDialog(HWND hDlg, WPARAM wParam, LPARAM lParam)
 	SetSize(hDlg);
 
 	HTREEITEM parent;
+	AddPage(hDlg, new OptionsPage_Instrument(this));
+	AddPage(hDlg, new OptionsPage_Vessel(this));
 	AddPage(hDlg, new OptionsPage_CelSphere(this));
 	parent = AddPage(hDlg, new OptionsPage_VisHelper(this));
 	AddPage(hDlg, new OptionsPage_Planetarium(this), parent);
 	AddPage(hDlg, new OptionsPage_Labels(this), parent);
 	AddPage(hDlg, new OptionsPage_Forces(this), parent);
 	AddPage(hDlg, new OptionsPage_Axes(this), parent);
+	AddPage(hDlg, new OptionsPage_UI(this));
 	SwitchPage(hDlg, (size_t)0);
 
 	ExpandAll(hDlg);
@@ -430,6 +433,302 @@ INT_PTR CALLBACK OptionsPage::s_DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 
 // ======================================================================
 
+OptionsPage_Instrument::OptionsPage_Instrument(DlgOptions* dlg)
+	: OptionsPage(dlg)
+{
+}
+
+// ----------------------------------------------------------------------
+
+int OptionsPage_Instrument::ResourceId() const
+{
+	return IDD_OPTIONS_INSTRUMENT;
+}
+
+// ----------------------------------------------------------------------
+
+const char* OptionsPage_Instrument::Name() const
+{
+	const char* name = "Instruments & panels";
+	return name;
+}
+
+// ----------------------------------------------------------------------
+
+const HELPCONTEXT* OptionsPage_Instrument::HelpContext() const
+{
+	static HELPCONTEXT hcontext = g_pOrbiter->DefaultHelpPage("/tab_param.htm"); // this needs to be updated
+	return &hcontext;
+}
+
+// ----------------------------------------------------------------------
+
+void OptionsPage_Instrument::UpdateControls(HWND hPage)
+{
+	char cbuf[256];
+	double mfdUpdDt = g_pOrbiter->Cfg()->CfgLogicPrm.InstrUpdDT;
+	sprintf(cbuf, "%0.2f", mfdUpdDt);
+	SetWindowText(GetDlgItem(hPage, IDC_OPT_MFD_INTERVAL), cbuf);
+	int mfdSize = g_pOrbiter->Cfg()->CfgLogicPrm.MFDSize;
+	sprintf(cbuf, "%d", mfdSize);
+	SetWindowText(GetDlgItem(hPage, IDC_OPT_MFD_SIZE), cbuf);
+	bool enable = g_pOrbiter->Cfg()->CfgLogicPrm.bMfdTransparent;
+	SendDlgItemMessage(hPage, IDC_OPT_MFD_TRANSP, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
+	double scrollSpeed = g_pOrbiter->Cfg()->CfgLogicPrm.PanelScrollSpeed;
+	sprintf(cbuf, "%0.0f", scrollSpeed * 0.1);
+	SetWindowText(GetDlgItem(hPage, IDC_OPT_PANEL_SCROLLSPEED), cbuf);
+	double panelSize = g_pOrbiter->Cfg()->CfgLogicPrm.PanelScale;
+	sprintf(cbuf, "%0.2f", panelSize);
+	SetWindowText(GetDlgItem(hPage, IDC_OPT_PANEL_SCALE), cbuf);
+}
+
+// ----------------------------------------------------------------------
+
+BOOL OptionsPage_Instrument::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
+{
+	OptionsPage::OnInitDialog(hPage, wParam, lParam);
+	return TRUE;
+}
+
+// ----------------------------------------------------------------------
+
+BOOL OptionsPage_Instrument::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
+{
+	switch (ctrlId) {
+	case IDC_OPT_MFD_INTERVAL:
+		if (notification == EN_CHANGE) {
+			char cbuf[256];
+			double updDt;
+			GetWindowText(GetDlgItem(hPage, IDC_OPT_MFD_INTERVAL), cbuf, 255);
+			if (sscanf(cbuf, "%lf", &updDt)) {
+				g_pOrbiter->Cfg()->CfgLogicPrm.InstrUpdDT = max(0.01, updDt);
+				g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_MFDUPDATEINTERVAL);
+			}
+			return FALSE;
+		}
+		break;
+	case IDC_OPT_MFD_SIZE:
+		if (notification == EN_CHANGE) {
+			char cbuf[256];
+			int size;
+			GetWindowText(GetDlgItem(hPage, IDC_OPT_MFD_SIZE), cbuf, 256);
+			if (sscanf(cbuf, "%d", &size)) {
+				g_pOrbiter->Cfg()->CfgLogicPrm.MFDSize = max(1, min(10, size));
+				g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_MFDGENERICSIZE);
+			}
+			return FALSE;
+		}
+		break;
+	case IDC_OPT_MFD_TRANSP:
+		if (notification == BN_CLICKED) {
+			bool check = (SendDlgItemMessage(hPage, IDC_OPT_MFD_TRANSP, BM_GETCHECK, 0, 0) == TRUE);
+			g_pOrbiter->Cfg()->CfgLogicPrm.bMfdTransparent = check;
+			g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_MFDGENERICTRANSP);
+			return FALSE;
+		}
+		break;
+	case IDC_OPT_PANEL_SCROLLSPEED:
+		if (notification == EN_CHANGE) {
+			char cbuf[256];
+			double speed;
+			GetWindowText(GetDlgItem(hPage, IDC_OPT_PANEL_SCROLLSPEED), cbuf, 256);
+			if (sscanf(cbuf, "%lf", &speed)) {
+				g_pOrbiter->Cfg()->CfgLogicPrm.PanelScrollSpeed = 10.0 * max(-100.0, min(100.0, speed));
+				g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_PANELSCROLLSPEED);
+			}
+			return FALSE;
+		}
+		break;
+	case IDC_OPT_PANEL_SCALE:
+		if (notification == EN_CHANGE) {
+			char cbuf[256];
+			double scale;
+			GetWindowText(GetDlgItem(hPage, IDC_OPT_PANEL_SCALE), cbuf, 256);
+			if (sscanf(cbuf, "%lf", &scale)) {
+				g_pOrbiter->Cfg()->CfgLogicPrm.PanelScale = max(0.25, min(4.0, scale));
+				g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_PANELSCALE);
+			}
+			return FALSE;
+		}
+		break;
+	}
+	return TRUE;
+}
+
+// ----------------------------------------------------------------------
+
+BOOL OptionsPage_Instrument::OnNotify(HWND hPage, DWORD ctrlId, const NMHDR* pNmHdr)
+{
+	if (pNmHdr->code == UDN_DELTAPOS) {
+		NMUPDOWN* nmud = (NMUPDOWN*)pNmHdr;
+		int delta = -nmud->iDelta;
+		switch (pNmHdr->idFrom) {
+		case IDC_OPT_MFD_INTERVALSPIN:
+			g_pOrbiter->Cfg()->CfgLogicPrm.InstrUpdDT = max(0.01, g_pOrbiter->Cfg()->CfgLogicPrm.InstrUpdDT + delta * 0.01);
+			g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_MFDUPDATEINTERVAL);
+			break;
+		case IDC_OPT_MFD_SIZESPIN:
+			g_pOrbiter->Cfg()->CfgLogicPrm.MFDSize = max(1, min(10, g_pOrbiter->Cfg()->CfgLogicPrm.MFDSize + delta));
+			g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_MFDGENERICSIZE);
+			break;
+		case IDC_OPT_PANEL_SCROLLSPEEDSPIN:
+			g_pOrbiter->Cfg()->CfgLogicPrm.PanelScrollSpeed = 10.0 * max(-100.0, min(100.0, 0.1 * g_pOrbiter->Cfg()->CfgLogicPrm.PanelScrollSpeed + delta));
+			g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_PANELSCROLLSPEED);
+			break;
+		case IDC_OPT_PANEL_SCALESPIN:
+			g_pOrbiter->Cfg()->CfgLogicPrm.PanelScale = max(0.25, min(4.0, g_pOrbiter->Cfg()->CfgLogicPrm.PanelScale + delta * 0.01));
+			g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_PANELSCALE);
+			break;
+		}
+		UpdateControls(hPage);
+		return TRUE;
+	}
+	return FALSE;
+}
+
+// ======================================================================
+
+OptionsPage_Vessel::OptionsPage_Vessel(DlgOptions* dlg)
+	: OptionsPage(dlg)
+{
+}
+
+// ----------------------------------------------------------------------
+
+int OptionsPage_Vessel::ResourceId() const
+{
+	return IDD_OPTIONS_VESSEL;
+}
+
+// ----------------------------------------------------------------------
+
+const char* OptionsPage_Vessel::Name() const
+{
+	const char* name = "Vessel settings";
+	return name;
+}
+
+// ----------------------------------------------------------------------
+
+const HELPCONTEXT* OptionsPage_Vessel::HelpContext() const
+{
+	static HELPCONTEXT hcontext = g_pOrbiter->DefaultHelpPage("/tab_param.htm"); // this needs to be updated
+	return &hcontext;
+}
+
+// ----------------------------------------------------------------------
+
+void OptionsPage_Vessel::UpdateControls(HWND hPage)
+{
+	bool enable = g_pOrbiter->Cfg()->CfgLogicPrm.bLimitedFuel;
+	SendDlgItemMessage(hPage, IDC_OPT_VESSEL_FUELLIMIT, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
+	enable = g_pOrbiter->Cfg()->CfgLogicPrm.bPadRefuel;
+	SendDlgItemMessage(hPage, IDC_OPT_VESSEL_PADFUEL, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
+}
+
+// ----------------------------------------------------------------------
+
+BOOL OptionsPage_Vessel::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
+{
+	OptionsPage::OnInitDialog(hPage, wParam, lParam);
+	return TRUE;
+}
+
+// ----------------------------------------------------------------------
+
+BOOL OptionsPage_Vessel::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
+{
+	switch (ctrlId) {
+	case IDC_OPT_VESSEL_FUELLIMIT:
+		if (notification == BN_CLICKED) {
+			bool check = (SendDlgItemMessage(hPage, IDC_OPT_VESSEL_FUELLIMIT, BM_GETCHECK, 0, 0) == TRUE);
+			g_pOrbiter->Cfg()->CfgLogicPrm.bLimitedFuel = check;
+			g_pOrbiter->OnOptionChanged(OPTCAT_VESSEL, OPTITEM_VESSEL_LIMITEDFUEL);
+			return FALSE;
+		}
+		break;
+	case IDC_OPT_VESSEL_PADFUEL:
+		if (notification == BN_CLICKED) {
+			bool check = (SendDlgItemMessage(hPage, IDC_OPT_VESSEL_PADFUEL, BM_GETCHECK, 0, 0) == TRUE);
+			g_pOrbiter->Cfg()->CfgLogicPrm.bPadRefuel = check;
+			g_pOrbiter->OnOptionChanged(OPTCAT_VESSEL, OPTITEM_VESSEL_PADREFUEL);
+			return FALSE;
+		}
+		break;
+	}
+	return TRUE;
+}
+
+// ======================================================================
+
+OptionsPage_UI::OptionsPage_UI(DlgOptions* dlg)
+	: OptionsPage(dlg)
+{
+}
+
+// ----------------------------------------------------------------------
+
+int OptionsPage_UI::ResourceId() const
+{
+	return IDD_OPTIONS_UI;
+}
+
+// ----------------------------------------------------------------------
+
+const char* OptionsPage_UI::Name() const
+{
+	const char* name = "User interface";
+	return name;
+}
+
+// ----------------------------------------------------------------------
+
+const HELPCONTEXT* OptionsPage_UI::HelpContext() const
+{
+	static HELPCONTEXT hcontext = g_pOrbiter->DefaultHelpPage("/tab_param.htm"); // this needs to be updated
+	return &hcontext;
+}
+
+// ----------------------------------------------------------------------
+
+void OptionsPage_UI::UpdateControls(HWND hPage)
+{
+	DWORD mode = g_pOrbiter->Cfg()->CfgUIPrm.MouseFocusMode;
+	SendDlgItemMessage(hPage, IDC_OPT_UI_MOUSEFOCUSMODE, CB_SETCURSEL, mode, 0);
+}
+
+// ----------------------------------------------------------------------
+
+BOOL OptionsPage_UI::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
+{
+	OptionsPage::OnInitDialog(hPage, wParam, lParam);
+
+	SendDlgItemMessage(hPage, IDC_OPT_UI_MOUSEFOCUSMODE, CB_RESETCONTENT, 0, 0);
+	const char *strMouseMode[3] = { "Focus requires click", "Hybrid: Click required only for child windows", "Focus follows mouse" };
+	for (int i = 0; i < 3; i++)
+		SendDlgItemMessage(hPage, IDC_OPT_UI_MOUSEFOCUSMODE, CB_ADDSTRING, 0, (LPARAM)strMouseMode[i]);
+
+	return TRUE;
+}
+
+// ----------------------------------------------------------------------
+
+BOOL OptionsPage_UI::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
+{
+	switch (ctrlId) {
+	case IDC_OPT_UI_MOUSEFOCUSMODE:
+		if (notification == CBN_SELCHANGE) {
+			DWORD mode = (DWORD)SendDlgItemMessage(hPage, IDC_OPT_UI_MOUSEFOCUSMODE, CB_GETCURSEL, 0, 0);
+			g_pOrbiter->Cfg()->CfgUIPrm.MouseFocusMode = mode;
+			return FALSE;
+		}
+		break;
+	}
+	return TRUE;
+}
+
+// ======================================================================
+
 OptionsPage_CelSphere::OptionsPage_CelSphere(DlgOptions* dlg)
 	: OptionsPage(dlg)
 {
@@ -465,7 +764,7 @@ BOOL OptionsPage_CelSphere::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lPara
 	OptionsPage::OnInitDialog(hPage, wParam, lParam);
 
 	GAUGEPARAM gp = { 0, 100, GAUGEPARAM::LEFT, GAUGEPARAM::BLACK };
-	oapiSetGaugeParams(GetDlgItem(hPage, IDC_OPT_BGBRIGHTNESS), &gp);
+	oapiSetGaugeParams(GetDlgItem(hPage, IDC_OPT_CSP_BGBRIGHTNESS), &gp);
 
 	PopulateStarmapList(hPage);
 	PopulateBgImageList(hPage);
@@ -479,40 +778,40 @@ BOOL OptionsPage_CelSphere::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lPara
 BOOL OptionsPage_CelSphere::OnCommand(HWND hPage, WORD id, WORD code, HWND hControl)
 {
 	switch (id) {
-	case IDC_OPT_ENABLESTARPIX:
+	case IDC_OPT_CSP_ENABLESTARPIX:
 		if (code == BN_CLICKED) {
 			StarPixelActivationChanged(hPage);
 			return FALSE;
 		}
 		break;
-	case IDC_OPT_ENABLESTARMAP:
+	case IDC_OPT_CSP_ENABLESTARMAP:
 		if (code == BN_CLICKED) {
 			StarmapActivationChanged(hPage);
 			return FALSE;
 		}
 		break;
-	case IDC_OPT_ENABLEBKGMAP:
+	case IDC_OPT_CSP_ENABLEBKGMAP:
 		if (code == BN_CLICKED) {
 			BackgroundActivationChanged(hPage);
 			return FALSE;
 		}
 		break;
-	case IDC_OPT_STARMAPIMAGE:
+	case IDC_OPT_CSP_STARMAPIMAGE:
 		if (code == LBN_SELCHANGE) {
 			StarmapImageChanged(hPage);
 			return false;
 		}
 		break;
-	case IDC_OPT_BKGIMAGE:
+	case IDC_OPT_CSP_BKGIMAGE:
 		if (code == LBN_SELCHANGE) {
 			BackgroundImageChanged(hPage);
 			return FALSE;
 		}
 		break;
-	case IDC_OPT_STARMAPLIN:
-	case IDC_OPT_STARMAPEXP:
+	case IDC_OPT_CSP_STARMAPLIN:
+	case IDC_OPT_CSP_STARMAPEXP:
 		if (code == BN_CLICKED) {
-			g_pOrbiter->Cfg()->CfgVisualPrm.StarPrm.map_log = (id == IDC_OPT_STARMAPEXP);
+			g_pOrbiter->Cfg()->CfgVisualPrm.StarPrm.map_log = (id == IDC_OPT_CSP_STARMAPEXP);
 			g_pOrbiter->OnOptionChanged(OPTCAT_CELSPHERE, OPTITEM_CELSPHERE_STARDISPLAYPARAM);
 			return FALSE;
 		}
@@ -526,7 +825,7 @@ BOOL OptionsPage_CelSphere::OnCommand(HWND hPage, WORD id, WORD code, HWND hCont
 BOOL OptionsPage_CelSphere::OnHScroll(HWND hPage, WPARAM wParam, LPARAM lParam)
 {
 	switch (GetDlgCtrlID((HWND)lParam)) {
-	case IDC_OPT_BGBRIGHTNESS:
+	case IDC_OPT_CSP_BGBRIGHTNESS:
 		switch (LOWORD(wParam)) {
 		case SB_THUMBTRACK:
 		case SB_LINELEFT:
@@ -548,13 +847,13 @@ BOOL OptionsPage_CelSphere::OnNotify(HWND hPage, DWORD ctrlId, const NMHDR* pNmH
 		int delta = -nmud->iDelta;
 		StarRenderPrm& prm = g_pOrbiter->Cfg()->CfgVisualPrm.StarPrm;
 		switch (pNmHdr->idFrom) {
-		case IDC_OPT_STARMAGHISPIN:
+		case IDC_OPT_CSP_STARMAGHISPIN:
 			prm.mag_hi = min(prm.mag_lo, max(-2.0, prm.mag_hi + delta * 0.1));
 			break;
-		case IDC_OPT_STARMAGLOSPIN:
+		case IDC_OPT_CSP_STARMAGLOSPIN:
 			prm.mag_lo = min(15.0, max(prm.mag_hi, prm.mag_lo + delta * 0.1));
 			break;
-		case IDC_OPT_STARMINBRTSPIN:
+		case IDC_OPT_CSP_STARMINBRTSPIN:
 			prm.brt_min = min(1.0, max(0.0, prm.brt_min + delta * 0.01));
 			break;
 		}
@@ -574,45 +873,45 @@ void OptionsPage_CelSphere::UpdateControls(HWND hPage)
 	std::string starpath = std::string(g_pOrbiter->Cfg()->CfgVisualPrm.StarImagePath);
 	for (int idx = 0; idx < m_pathStarmap.size(); idx++)
 		if (!starpath.compare(m_pathStarmap[idx].second)) {
-			SendDlgItemMessage(hPage, IDC_OPT_STARMAPIMAGE, CB_SETCURSEL, idx, 0);
+			SendDlgItemMessage(hPage, IDC_OPT_CSP_STARMAPIMAGE, CB_SETCURSEL, idx, 0);
 			break;
 		}
 
 	std::string bgpath = std::string(g_pOrbiter->Cfg()->CfgVisualPrm.CSphereBgPath);
 	for (int idx = 0; idx < m_pathBgImage.size(); idx++)
 		if (!bgpath.compare(m_pathBgImage[idx].second)) {
-			SendDlgItemMessage(hPage, IDC_OPT_BKGIMAGE, CB_SETCURSEL, idx, 0);
+			SendDlgItemMessage(hPage, IDC_OPT_CSP_BKGIMAGE, CB_SETCURSEL, idx, 0);
 			break;
 		}
 
 	bool checked = g_pOrbiter->Cfg()->CfgVisualPrm.bUseStarImage;
-	SendDlgItemMessage(hPage, IDC_OPT_ENABLESTARMAP, BM_SETCHECK, checked ? BST_CHECKED : BST_UNCHECKED, 0);
-	EnableWindow(GetDlgItem(hPage, IDC_OPT_STARMAPIMAGE), checked ? TRUE : FALSE);
+	SendDlgItemMessage(hPage, IDC_OPT_CSP_ENABLESTARMAP, BM_SETCHECK, checked ? BST_CHECKED : BST_UNCHECKED, 0);
+	EnableWindow(GetDlgItem(hPage, IDC_OPT_CSP_STARMAPIMAGE), checked ? TRUE : FALSE);
 
 	checked = g_pOrbiter->Cfg()->CfgVisualPrm.bUseBgImage;
-	SendDlgItemMessage(hPage, IDC_OPT_ENABLEBKGMAP, BM_SETCHECK, checked ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_CSP_ENABLEBKGMAP, BM_SETCHECK, checked ? BST_CHECKED : BST_UNCHECKED, 0);
 	int brt = (int)(g_pOrbiter->Cfg()->CfgVisualPrm.CSphereBgIntens * 100.0);
-	oapiSetGaugePos(GetDlgItem(hPage, IDC_OPT_BGBRIGHTNESS), brt);
-	EnableWindow(GetDlgItem(hPage, IDC_OPT_BKGIMAGE), checked ? TRUE : FALSE);
+	oapiSetGaugePos(GetDlgItem(hPage, IDC_OPT_CSP_BGBRIGHTNESS), brt);
+	EnableWindow(GetDlgItem(hPage, IDC_OPT_CSP_BKGIMAGE), checked ? TRUE : FALSE);
 	EnableWindow(GetDlgItem(hPage, IDC_STATIC1), checked ? TRUE : FALSE);
-	EnableWindow(GetDlgItem(hPage, IDC_OPT_BGBRIGHTNESS), checked ? TRUE : FALSE);
+	EnableWindow(GetDlgItem(hPage, IDC_OPT_CSP_BGBRIGHTNESS), checked ? TRUE : FALSE);
 
 	checked = g_pOrbiter->Cfg()->CfgVisualPrm.bUseStarDots;
-	SendDlgItemMessage(hPage, IDC_OPT_ENABLESTARPIX, BM_SETCHECK, checked ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_CSP_ENABLESTARPIX, BM_SETCHECK, checked ? BST_CHECKED : BST_UNCHECKED, 0);
 	sprintf(cbuf, "%0.1f", g_pOrbiter->Cfg()->CfgVisualPrm.StarPrm.mag_hi);
-	SetWindowText(GetDlgItem(hPage, IDC_OPT_STARMAGHI), cbuf);
+	SetWindowText(GetDlgItem(hPage, IDC_OPT_CSP_STARMAGHI), cbuf);
 	sprintf(cbuf, "%0.1f", g_pOrbiter->Cfg()->CfgVisualPrm.StarPrm.mag_lo);
-	SetWindowText(GetDlgItem(hPage, IDC_OPT_STARMAGLO), cbuf);
+	SetWindowText(GetDlgItem(hPage, IDC_OPT_CSP_STARMAGLO), cbuf);
 	sprintf(cbuf, "%0.2f", g_pOrbiter->Cfg()->CfgVisualPrm.StarPrm.brt_min);
-	SetWindowText(GetDlgItem(hPage, IDC_OPT_STARMINBRT), cbuf);
-	SendDlgItemMessage(hPage, IDC_OPT_STARMAPLIN, BM_SETCHECK,
+	SetWindowText(GetDlgItem(hPage, IDC_OPT_CSP_STARMINBRT), cbuf);
+	SendDlgItemMessage(hPage, IDC_OPT_CSP_STARMAPLIN, BM_SETCHECK,
 		g_pOrbiter->Cfg()->CfgVisualPrm.StarPrm.map_log ? BST_UNCHECKED : BST_CHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_STARMAPEXP, BM_SETCHECK,
+	SendDlgItemMessage(hPage, IDC_OPT_CSP_STARMAPEXP, BM_SETCHECK,
 		g_pOrbiter->Cfg()->CfgVisualPrm.StarPrm.map_log ? BST_CHECKED : BST_UNCHECKED, 0);
 	std::vector<int> ctrlStarPix{
 		IDC_STATIC2, IDC_STATIC3, IDC_STATIC4, IDC_STATIC5, IDC_STATIC6,
-		IDC_OPT_STARMAGHISPIN, IDC_OPT_STARMAGLOSPIN, IDC_OPT_STARMINBRTSPIN,
-		IDC_OPT_STARMAGHI, IDC_OPT_STARMAGLO, IDC_OPT_STARMINBRT, IDC_OPT_STARMAPLIN, IDC_OPT_STARMAPEXP
+		IDC_OPT_CSP_STARMAGHISPIN, IDC_OPT_CSP_STARMAGLOSPIN, IDC_OPT_CSP_STARMINBRTSPIN,
+		IDC_OPT_CSP_STARMAGHI, IDC_OPT_CSP_STARMAGLO, IDC_OPT_CSP_STARMINBRT, IDC_OPT_CSP_STARMAPLIN, IDC_OPT_CSP_STARMAPEXP
 	};
 	for (auto ctrl : ctrlStarPix)
 		EnableWindow(GetDlgItem(hPage, ctrl), checked ? TRUE : FALSE);
@@ -622,7 +921,7 @@ void OptionsPage_CelSphere::UpdateControls(HWND hPage)
 
 void OptionsPage_CelSphere::PopulateStarmapList(HWND hPage)
 {
-	SendDlgItemMessage(hPage, IDC_OPT_STARMAPIMAGE, CB_RESETCONTENT, 0, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_CSP_STARMAPIMAGE, CB_RESETCONTENT, 0, 0);
 	m_pathStarmap.clear();
 
 	std::ifstream ifs(g_pOrbiter->Cfg()->ConfigPath("CSphere\\bkgimage"));
@@ -640,7 +939,7 @@ void OptionsPage_CelSphere::PopulateStarmapList(HWND hPage)
 				break;
 			c = strtok(cbuf, "|");
 			if (c) {
-				SendDlgItemMessage(hPage, IDC_OPT_STARMAPIMAGE, CB_ADDSTRING, 0, (LPARAM)c);
+				SendDlgItemMessage(hPage, IDC_OPT_CSP_STARMAPIMAGE, CB_ADDSTRING, 0, (LPARAM)c);
 				std::string label(c);
 				c = strtok(NULL, "\n");
 				std::string path(c);
@@ -654,7 +953,7 @@ void OptionsPage_CelSphere::PopulateStarmapList(HWND hPage)
 
 void OptionsPage_CelSphere::PopulateBgImageList(HWND hPage)
 {
-	SendDlgItemMessage(hPage, IDC_OPT_BKGIMAGE, CB_RESETCONTENT, 0, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_CSP_BKGIMAGE, CB_RESETCONTENT, 0, 0);
 	m_pathBgImage.clear();
 
 	std::ifstream ifs(g_pOrbiter->Cfg()->ConfigPath("CSphere\\bkgimage"));
@@ -672,7 +971,7 @@ void OptionsPage_CelSphere::PopulateBgImageList(HWND hPage)
 				break;
 			c = strtok(cbuf, "|");
 			if (c) {
-				SendDlgItemMessage(hPage, IDC_OPT_BKGIMAGE, CB_ADDSTRING, 0, (LPARAM)c);
+				SendDlgItemMessage(hPage, IDC_OPT_CSP_BKGIMAGE, CB_ADDSTRING, 0, (LPARAM)c);
 				std::string label(c);
 				c = strtok(NULL, "\n");
 				std::string path(c);
@@ -686,7 +985,7 @@ void OptionsPage_CelSphere::PopulateBgImageList(HWND hPage)
 
 void OptionsPage_CelSphere::StarPixelActivationChanged(HWND hPage)
 {
-	bool activated = SendDlgItemMessage(hPage, IDC_OPT_ENABLESTARPIX, BM_GETCHECK, 0, 0) == BST_CHECKED;
+	bool activated = SendDlgItemMessage(hPage, IDC_OPT_CSP_ENABLESTARPIX, BM_GETCHECK, 0, 0) == BST_CHECKED;
 	bool active = g_pOrbiter->Cfg()->CfgVisualPrm.bUseStarDots;
 
 	if (activated != active) {
@@ -700,7 +999,7 @@ void OptionsPage_CelSphere::StarPixelActivationChanged(HWND hPage)
 
 void OptionsPage_CelSphere::StarmapActivationChanged(HWND hPage)
 {
-	bool activated = SendDlgItemMessage(hPage, IDC_OPT_ENABLESTARMAP, BM_GETCHECK, 0, 0) == BST_CHECKED;
+	bool activated = SendDlgItemMessage(hPage, IDC_OPT_CSP_ENABLESTARMAP, BM_GETCHECK, 0, 0) == BST_CHECKED;
 	bool active = g_pOrbiter->Cfg()->CfgVisualPrm.bUseStarImage;
 
 	if (activated != active) {
@@ -714,7 +1013,7 @@ void OptionsPage_CelSphere::StarmapActivationChanged(HWND hPage)
 
 void OptionsPage_CelSphere::StarmapImageChanged(HWND hPage)
 {
-	int idx = SendDlgItemMessage(hPage, IDC_OPT_STARMAPIMAGE, CB_GETCURSEL, 0, 0);
+	int idx = SendDlgItemMessage(hPage, IDC_OPT_CSP_STARMAPIMAGE, CB_GETCURSEL, 0, 0);
 	std::string& path = m_pathStarmap[idx].second;
 	strncpy(g_pOrbiter->Cfg()->CfgVisualPrm.StarImagePath, path.c_str(), 128);
 	g_pOrbiter->OnOptionChanged(OPTCAT_CELSPHERE, OPTITEM_CELSPHERE_STARIMAGECHANGED);
@@ -724,7 +1023,7 @@ void OptionsPage_CelSphere::StarmapImageChanged(HWND hPage)
 
 void OptionsPage_CelSphere::BackgroundActivationChanged(HWND hPage)
 {
-	bool activated = SendDlgItemMessage(hPage, IDC_OPT_ENABLEBKGMAP, BM_GETCHECK, 0, 0) == BST_CHECKED;
+	bool activated = SendDlgItemMessage(hPage, IDC_OPT_CSP_ENABLEBKGMAP, BM_GETCHECK, 0, 0) == BST_CHECKED;
 	bool active = g_pOrbiter->Cfg()->CfgVisualPrm.bUseBgImage;
 
 	if (activated != active) {
@@ -738,7 +1037,7 @@ void OptionsPage_CelSphere::BackgroundActivationChanged(HWND hPage)
 
 void OptionsPage_CelSphere::BackgroundImageChanged(HWND hPage)
 {
-	int idx = SendDlgItemMessage(hPage, IDC_OPT_BKGIMAGE, CB_GETCURSEL, 0, 0);
+	int idx = SendDlgItemMessage(hPage, IDC_OPT_CSP_BKGIMAGE, CB_GETCURSEL, 0, 0);
 	std::string& path = m_pathBgImage[idx].second;
 	strncpy(g_pOrbiter->Cfg()->CfgVisualPrm.CSphereBgPath, path.c_str(), 128);
 	g_pOrbiter->OnOptionChanged(OPTCAT_CELSPHERE, OPTITEM_CELSPHERE_BGIMAGECHANGED);

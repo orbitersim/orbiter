@@ -24,6 +24,7 @@ public:
 	void  UpdateDraw (oapi::Sketchpad *skp);
 	void UpdateBlt ();
 	void SetSize (const Spec &spec);
+	void OptionChanged(DWORD cat, DWORD item);
 
 protected:
 	void InitDeviceObjects ();

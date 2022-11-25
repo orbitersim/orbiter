@@ -982,6 +982,17 @@ void Instrument_Surface::SetSize (const Spec &spec)
 	aoapt[6].x = x0;      aoapt[6].y = y1;
 }
 
+void Instrument_Surface::OptionChanged(DWORD cat, DWORD item)
+{
+	if (cat == OPTCAT_INSTRUMENT) {
+		switch (item) {
+		case OPTITEM_INSTRUMENT_MFDUPDATEINTERVAL:
+			instrDT = min(0.25, g_pOrbiter->Cfg()->CfgLogicPrm.InstrUpdDT);
+			break;
+		}
+	}
+}
+
 bool Instrument_Surface::ReadParams (ifstream &ifs)
 {
 	char cbuf[256], *pc;

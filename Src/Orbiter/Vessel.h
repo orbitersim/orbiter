@@ -272,6 +272,13 @@ public:
 	// Notification that 'vessel' is about to be destroyed. This is sent to all
 	// vessels, including the one being destroyed. Used for cleanup and de-referencing
 
+	/**
+	 * \brief Called when the user interactively changes a simulation option
+	 * \param cat option category (see \ref optcat)
+	 * \param item option item (see \ref optitem)
+	 */
+	void OptionChanged(DWORD cat, DWORD item);
+
 	inline void RequestDestruct()
 	{ kill_pending = true; }
 	// mark vessel for destruction

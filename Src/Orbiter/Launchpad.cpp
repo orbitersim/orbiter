@@ -12,7 +12,6 @@
 #include "Orbiter.h"
 #include "Launchpad.h"
 #include "TabScenario.h"
-#include "TabParam.h"
 #include "TabVisual.h"
 #include "TabModule.h"
 #include "TabVideo.h"
@@ -40,7 +39,7 @@ static UINT timerid = 0;
 const DWORD dlgcol = 0xF0F4F8; // main dialog background colour
 
 static int mnubt[] = {
-	IDC_MNU_SCN, IDC_MNU_PRM, IDC_MNU_VIS, IDC_MNU_MOD,
+	IDC_MNU_SCN, IDC_MNU_PRM, IDC_MNU_MOD,
 	IDC_MNU_VID, IDC_MNU_JOY, IDC_MNU_EXT, IDC_MNU_ABT
 };
 
@@ -95,7 +94,6 @@ bool orbiter::LaunchpadDialog::Create (bool startvideotab)
 	if (!hDlg) {
 		CreateDialog (hInst, MAKEINTRESOURCE(IDD_MAIN), NULL, AppDlgProc);
 		AddTab (new ScenarioTab (this)); TRACENEW
-		AddTab (new ParameterTab (this)); TRACENEW
 		AddTab (new VisualTab (this)); TRACENEW
 		AddTab (new ModuleTab (this)); TRACENEW
 		AddTab (new DefVideoTab (this)); TRACENEW
@@ -137,10 +135,10 @@ bool orbiter::LaunchpadDialog::Create (bool startvideotab)
 		SetWindowText (GetDlgItem (hDlg, IDC_VERSION), uscram(SIG7));
 		Show();
 		if (startvideotab) {
-			SwitchTabPage (hDlg, 4);
+			SwitchTabPage (hDlg, PG_VID);
 		}
 	} else
-		SwitchTabPage (hDlg, 0);
+		SwitchTabPage (hDlg, PG_SCN);
 
 	return (hDlg != NULL);
 }
@@ -323,7 +321,7 @@ void orbiter::LaunchpadDialog::SetDemoMode ()
 	//ShowWindow (GetDlgItem (hDlg, IDC_MAINTAB), FALSE);
 
 	static int hide_mnu[] = {
-		IDC_MNU_PRM, IDC_MNU_VIS, IDC_MNU_MOD,
+		IDC_MNU_PRM, IDC_MNU_MOD,
 		IDC_MNU_VID, IDC_MNU_JOY, IDC_MNU_EXT,
 	};
 	for (int i = 0; i < 6; i++) EnableWindow (GetDlgItem (hDlg, hide_mnu[i]), FALSE);
@@ -389,9 +387,6 @@ INT_PTR orbiter::LaunchpadDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, 
 			return TRUE;
 		case IDC_MNU_PRM:
 			SwitchTabPage (hWnd, PG_OPT);
-			return TRUE;
-		case IDC_MNU_VIS:
-			SwitchTabPage (hWnd, PG_VIS);
 			return TRUE;
 		case IDC_MNU_MOD:
 			SwitchTabPage (hWnd, PG_MOD);
