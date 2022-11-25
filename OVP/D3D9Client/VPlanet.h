@@ -208,6 +208,7 @@ public:
 		float hd;	// Horizon distance
 		float h2;	// Closest approach sqr-dist
 		float w2;
+		float ca;
 	};
 
 	struct TestPrm {
@@ -265,7 +266,8 @@ public:
 	vBase*			GetBaseByIndex(DWORD index) const { return vbase[index]; }
 	vBase*			GetBaseByHandle(OBJHANDLE hBase) const;
 
-	// Atmospheric ------------------------------------------------------------
+
+	// Atmospheric physics ---------------------------------------------------
 	ScatterParams * GetAtmoParams(int mode=-1);
 	bool			LoadAtmoConfig();
 	void			SaveAtmoConfig();
@@ -280,11 +282,24 @@ public:
 	int				GetShaderID();
 	ShaderParams*	GetTerrainParams() { return &sp; }
 	FlowControlPS*	GetFlowControl() { return &fcp; }
-	FlowControlVS*  GetFlowControlVS() { return &fcv; }
+	FlowControlVS*	GetFlowControlVS() { return &fcv; }
 	void			UpdateScatter();
 	int				GetAtmoMode() { return atm_mode; }
-	FVECTOR3		SunLightColor(FVECTOR3 pos);
+	FVECTOR3		SunLightColor(FVECTOR3 pos);			// For a point in anywhere
+	FVECTOR3		SunLightColor(float ang, float alt);	// For a point in atmosphere
 	float			SunAltitude();
+	FVECTOR4		ComputeCameraView(FVECTOR3 vPos);
+	FVECTOR4		ComputeCameraView(float a, float r, float d);
+	FVECTOR4		ComputeCameraView(FVECTOR3 vPos, FVECTOR3 vNrm, FVECTOR3 vRay, float r, float t_factor = 1.0f);
+	FVECTOR2		Gauss7(float cos_dir, float r0, float dist, FVECTOR2 ih0);
+	FVECTOR2		Gauss7(float alt, float cos_dir, float R0, float R1, FVECTOR2 iH0);
+	FVECTOR2		Gauss4(float cos_dir, float r0, float dist, FVECTOR2 ih0);
+	FVECTOR4		IntegrateSegment(FVECTOR3 vOrig, FVECTOR3 vRay, float len, float iH);
+	float			RayLength(float cos_dir, float r0, float r1);
+	float			RayLength(float cos_dir, float r0);
+	float			RayPhase(float cw);
+	float			MiePhase(float cw);
+	ObjAtmParams	GetObjectAtmoParams(VECTOR3 g_pos);
 
 	// v2 Labels interface ----------------------------------------------------
 	void            ActivateLabels(bool activate);

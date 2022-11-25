@@ -21,6 +21,7 @@
 
 using namespace oapi;
 
+const float invalid_val = -1e12;
 
 // ===========================================================================================
 //
@@ -172,23 +173,62 @@ void vPlanet::GlobalInitAtmosphere(oapi::D3D9Client* gc)
 
 // ===========================================================================================
 //
-double Gauss7(double alt, double cos_dir, double R0, double R1, double iH0)
+FVECTOR2 vPlanet::Gauss7(float alt, float cos_dir, float R0, float R1, FVECTOR2 iH0)
 {
-	double R = R0 + alt;
-	double rdt = -R * cos_dir;
-	double Ray = rdt + sqrt(R1 * R1 - (R * R - rdt * rdt));
+	float dist = RayLength(cos_dir, R0 + alt, R1);
+	return Gauss7(cos_dir, R0 + alt, dist, iH0);
+}
 
-	static const double n[] = { -0.949107, -0.741531, -0.405845, 0.0, 0.405845,0.741531, 0.949107 };
-	static const double w[] = { 0.129485, 0.279705, 0.381830, 0.417959,  0.381830, 0.279705, 0.129485 };
 
-	double p[7]; double a[7]; double s[7];
-	for (int i = 0; i < 7; i++) p[i] = Ray * (1.0 + n[i]) * 0.5;
-	for (int i = 0; i < 7; i++) a[i] = sqrt(R * R + p[i] * p[i] + 2.0 * R * p[i] * cos_dir) - R0;
-	for (int i = 0; i < 7; i++) s[i] = exp2(-a[i] * iH0);
+// ===========================================================================================
+//
+FVECTOR2 vPlanet::Gauss7(float cos_dir, float r0, float dist, FVECTOR2 ih0)
+{
+	static const float n[] = { -0.949107, -0.741531, -0.405845, 0.0, 0.405845,0.741531, 0.949107 };
+	static const float w[] = { 0.129485, 0.279705, 0.381830, 0.417959,  0.381830, 0.279705, 0.129485 };
 
-	double sum = 0.0;
-	for (int i = 0; i < 7; i++) sum += s[i] * w[i];
-	return sum * Ray * 0.5;
+	float x = 2.0 * r0 * cos_dir;
+	float r2 = r0 * r0;
+	float a[7];
+
+	// Compute altitudes of sample points
+	for (int i = 0; i < 7; i++) {
+		float d0 = dist * (n[i] + 1.0f) * 0.5f;
+		a[i] = sqrt(r2 + d0 * d0 - d0 * x) - cp.PlanetRad;
+	}
+
+	float ray = 0.0f; float mie = 0.0f;
+	for (int i = 0; i < 7; i++) {
+		ray += exp(-clamp(a[i] * ih0.x, -20.0f, 20.0f)) * w[i];
+		mie += exp(-clamp(a[i] * ih0.y, -20.0f, 20.0f)) * w[i];
+	}
+	return FVECTOR2(ray, mie) * 0.5f * dist;
+}
+
+
+// ===========================================================================================
+//
+FVECTOR2 vPlanet::Gauss4(float cos_dir, float r0, float dist, FVECTOR2 ih0)
+{	
+	static const float n[] = { 0.06943f, 0.33001f, 0.66999f, 0.93057f };
+	static const float w[] = { 0.34786f, 0.65215f, 0.65215f, 0.34786f };
+
+	float x = 2.0 * r0 * cos_dir;
+	float r2 = r0 * r0;
+	float a[4];
+
+	// Compute altitudes of sample points
+	for (int i = 0; i < 4; i++) {
+		float d0 = dist * n[i];
+		a[i] = sqrt(r2 + d0 * d0 - d0 * x) - cp.PlanetRad;
+	}
+
+	float ray = 0.0f; float mie = 0.0f;
+	for (int i = 0; i < 4; i++) {
+		ray += exp(-clamp(a[i] * ih0.x, -20.0f, 20.0f)) * w[i];
+		mie += exp(-clamp(a[i] * ih0.y, -20.0f, 20.0f)) * w[i];
+	}
+	return FVECTOR2(ray, mie) * 0.5f * dist;
 }
 
 
@@ -208,9 +248,121 @@ float vPlanet::SunAltitude()
 
 // ===========================================================================================
 //
+float vPlanet::RayLength(float cos_dir, float r0, float r1)
+{
+	float y = r0 * cos_dir;
+	float z2 = r0 * r0 - y * y;
+	return sqrt(r1 * r1 - z2) + y;
+}
+
+
+// ===========================================================================================
+//
+float vPlanet::RayLength(float cos_dir, float r0)
+{
+	return RayLength(cos_dir, r0, cp.AtmoRad);
+}
+
+
+// ===========================================================================================
+// Rayleigh phase function
+//
+float vPlanet::RayPhase(float cw)
+{
+	return 0.25f * (4.0f + cw * cw) / (1.0f + cp.RayPh * cw);
+}
+
+
+// ===========================================================================================
+// Henyey-Greenstein Phase function
+//
+float vPlanet::MiePhase(float cw)
+{
+	float cw2 = cw * cw;
+	return cp.HG.x * (1.0f + cw2) * pow(abs(cp.HG.y - cp.HG.z * cw2 * cw), -1.5f) + cp.HG.w;
+}
+
+
+// ===========================================================================================
+// Compute optical transparency of atmosphere. color in .rgb and (ray+mie) optical depth in .a
+//
+FVECTOR4 vPlanet::ComputeCameraView(float angle, float rad, float distance)
+{
+	FVECTOR2 od = Gauss4(angle, rad, distance, cp.iH); // Ray/Mie Optical depth
+	FVECTOR2 rm = od * cp.rmO;
+	FVECTOR3 clr = cp.RayWave * rm.x + cp.MieWave * rm.y;
+	return FVECTOR4(exp(-clr), od.x + od.y);
+}
+
+
+// ===========================================================================================
+//
+FVECTOR4 vPlanet::ComputeCameraView(FVECTOR3 vPos, FVECTOR3 vNrm, FVECTOR3 vRay, float r, float t_factor)
+{
+	float d = 0.0f;
+	float a = dot(vNrm, vRay);
+	if (!CameraInAtmosphere()) d = RayLength(a, r);
+	else d = dot(vPos - cp.CamPos, vRay);
+	return ComputeCameraView(a, r, d);
+}
+
+
+// ===========================================================================================
+//
+FVECTOR4 vPlanet::ComputeCameraView(FVECTOR3 vPos)
+{
+	FVECTOR3 vRP = vPos - cp.CamPos;
+	float d = length(vRP);
+	float r = length(vPos);
+	FVECTOR3 vRay = vRP / d;
+	float a = dot(vPos / r, vRay);
+	if (!CameraInAtmosphere()) d = RayLength(a, r); // Recompute distance to atm exit
+	return ComputeCameraView(a, r, d);
+}
+
+
+// ===========================================================================================
+// Amount of light inscattering along the ray
+//
+FVECTOR4 vPlanet::IntegrateSegment(FVECTOR3 vOrig, FVECTOR3 vRay, float len, float iH)
+{
+	static const int NSEG = 4;
+	static const float iNSEG = 1.0f / float(NSEG);
+
+	FVECTOR4 ret = 0.0f;
+	FVECTOR3 vR = vRay * len;
+
+	for (int i = 0; i < NSEG; i++)
+	{
+		FVECTOR3 pos = vOrig + vR * (iNSEG * (float(i) + 0.5f));
+		FVECTOR3 n = normalize(pos);
+		float rad = dot(n, pos);
+		float alt = rad - cp.PlanetRad;
+		FVECTOR3 x = SunLightColor(dot(n, cp.toSun), alt); // +MultiScatterApprox(n);
+		x *= ComputeCameraView(pos, n, vRay, rad).rgb;
+		float f = exp(-alt * iH) * iNSEG;
+		ret.rgb += x * f;
+		ret.a += f;
+	}
+	return ret * len;
+}
+
+// ===========================================================================================
+//
+FVECTOR3 vPlanet::SunLightColor(float angle, float alt)
+{
+	float r = alt + cp.PlanetRad;
+	float d = RayLength(angle, r); // Compute ray length in atmosphere
+	FVECTOR2 rm = Gauss7(angle, r, d, cp.iH) * cp.rmO;
+	FVECTOR3 clr = cp.RayWave * rm.x + cp.MieWave * rm.y;
+	return exp(-clr);
+}
+
+// ===========================================================================================
+//
 FVECTOR3 vPlanet::SunLightColor(FVECTOR3 geo_pos_ecl)
 {
-	float ray = 0.0f, mie = 0.0f;
+	FVECTOR2 rm = 0.0f;
 	float r2 = dot(geo_pos_ecl, geo_pos_ecl);
 	float r = sqrt(r2);
 	float a = r - cp.PlanetRad;
@@ -226,19 +378,53 @@ FVECTOR3 vPlanet::SunLightColor(FVECTOR3 geo_pos_ecl)
 
 	if (r > cp.AtmoRad) // Ray passes through atmosphere from space to space
 	{
-		ray = Gauss7(alt, 0.0f, cp.PlanetRad, cp.AtmoRad, cp.iH.x) * 2.0f;
-		mie = Gauss7(alt, 0.0f, cp.PlanetRad, cp.AtmoRad, cp.iH.y) * 2.0f;
+		rm = Gauss7(alt, 0.0f, cp.PlanetRad, cp.AtmoRad, cp.iH) * 2.0f;
 	}
 	else // Sample point 'pos' lies with-in atmosphere
 	{
-		ray = Gauss7(a, d, cp.PlanetRad, cp.AtmoRad, cp.iH.x);
-		mie = Gauss7(a, d, cp.PlanetRad, cp.AtmoRad, cp.iH.y);
+		rm = Gauss7(a, d, cp.PlanetRad, cp.AtmoRad, cp.iH);
 	}
 
-	return exp(-(cp.RayWave * (ray * cp.rmO.x) + cp.MieWave * (mie * cp.rmO.y)));
+	rm *= cp.rmO;
+	return exp(-(cp.RayWave * rm.x + cp.MieWave * rm.y));
 }
 
-const float invalid_val = -1e12;
+
+// ===========================================================================================
+//
+ObjAtmParams vPlanet::GetObjectAtmoParams(VECTOR3 obj_gpos)
+{
+	ObjAtmParams op;
+	
+	FVECTOR3 vPos = (obj_gpos - gpos);
+	FVECTOR3 vRP = vPos - cp.CamPos;	// Camera relative position
+	float d = length(vRP);				// Distance to camera
+	float r = length(vPos);				// Radius
+	FVECTOR3 vRay = vRP / d;			// Unit viewing ray from cameta to obj_gpos
+	float a = dot(vPos / r, vRay);		// cosine of (Normal/vRay) angle 
+	float s = dot(vRay, cp.toSun);
+
+	if (!CameraInAtmosphere()) d = RayLength(a, r); // Recompute distance to atm exit
+
+	// Incatter Color
+	FVECTOR3 vOrig = vPos - vRay * d;
+	FVECTOR4 rl = IntegrateSegment(vOrig, vRay, d, cp.iH.x);	// Rayleigh incatter
+	FVECTOR4 mi = IntegrateSegment(vOrig, vRay, d, cp.iH.y);	// Mie incatter
+
+	rl.rgb *= cp.RayWave * cp.rmI.x;	// Multiply with wavelength and incatter factors
+	mi.rgb *= cp.MieWave * cp.rmI.y;
+
+	// Color of Sunlight
+	FVECTOR2 rm = Gauss7(a, r, d, cp.iH) * cp.rmO;
+	FVECTOR3 clr = exp(-(cp.RayWave * rm.x + cp.MieWave * rm.y));
+	
+	op.Sun = clr;
+	op.Transmission = ComputeCameraView(a, r, d).rgb;
+	op.Incatter = (rl.rgb * RayPhase(-s) + mi.rgb * MiePhase(-s));
+
+	return op;
+}
+
 
 // ===========================================================================================
 //
@@ -265,21 +451,17 @@ vPlanet::SHDPrm vPlanet::ComputeShadow(FVECTOR3 vRay)
 	double w = sqrt(w2);
 	double k = sqrt(k2) * sign(a);
 	double v2 = 0;
-	double g2 = A * A - cp.PlanetRad2;
+	double m = TestPrm.CamRad2 - cp.PlanetRad2;
 
 	sp.w2 = w2;
 	sp.se = k - w;
 	sp.sx = sp.se + 2.0f * w;
-	sp.hd = g2 > 0 ? sqrt(g2) : invalid_val;
-
+	
 	// Project distances 'es' and 'xs' back to 3D space
 	double f = 1.0f / sqrt(max(2.5e-5, 1.0 - z * z));
 	sp.se *= f;
 	sp.sx *= f;
-	sp.hd *= f;
-
-	D3D9DebugLog("f=%f", f);
-
+	
 	// Compute atmosphere entry and exit points 
 	//
 	a = -dot(TestPrm.toCam, vRay);
@@ -289,8 +471,11 @@ vPlanet::SHDPrm vPlanet::ComputeShadow(FVECTOR3 vRay)
 	w = sqrt(v2);
 	k = sqrt(k2) * sign(a);
 
+	
+	sp.hd = m > 0.0 ? sqrt(m) : 0.0;
 	sp.ae = (k - w);
 	sp.ax = sp.ae + 2.0f * w;
+	sp.ca = TestPrm.CamRad * a;
 
 	// If the ray doesn't intersect atmosphere then set both distances to zero
 	if (v2 < 0) sp.ae = sp.ax = invalid_val;
@@ -383,62 +568,113 @@ void vPlanet::TestComputations(Sketchpad* pSkp)
 			}
 		}
 		GetScene()->vPickRay = 0;
-		vRay = -normalize(vRef - vPos); // From vPos to vRef
+		vRay = normalize(vPos - vRef); // From vRef to vPos
 	}
 
 	float cd = length(vRef - vPos);
 
 	SHDPrm sp = ComputeShadow(vRay);
 
-	// Origin Point
-	pSkp->QuickPen(0xFF00FF00);
-	pSkp->QuickBrush(0xFF00FF00);
-	pSkp->SetWorldBillboard(vRef - vCam, size);
-	pSkp->Ellipse(-200, -200, 200, 200);
+	FVECTOR4 rd = ComputeCameraView(vPos);
 
-	// Test Point 'contact point'
-	pSkp->QuickPen(0xFF0000FF);
-	pSkp->QuickBrush(0xFF0000FF);
-	pSkp->SetWorldBillboard(vRef - vCam + vRay * cd, size);
-	pSkp->Ellipse(-150, -150, 150, 150);
+	D3D9DebugLog("Optical Depth=%f   RGB(%f, %f, %f)", rd.a, rd.r, rd.g, rd.b);
 
-	// Shadow Crossing
-	if (sp.se != invalid_val) {
-		pSkp->QuickPen(0xFFDD00DD);
-		pSkp->QuickBrush(0xFFDD00DD);
-		pSkp->SetWorldBillboard(vRef - vCam + vRay * sp.se, size);
-		pSkp->Ellipse(-200, -200, 200, 200);
-	}
-	if (sp.sx != invalid_val) {
-		pSkp->QuickPen(0xFFFF88FF);
-		pSkp->QuickBrush(0xFFFF88FF);
-		pSkp->SetWorldBillboard(vRef - vCam + vRay * sp.sx, size);
-		pSkp->Ellipse(-200, -200, 200, 200);
-	}
-	if (sp.ae != invalid_val) {
-		// Atmosphere entry points
-		pSkp->QuickPen(0xFF008080);
-		pSkp->QuickBrush(0xFF008080);
-		pSkp->SetWorldBillboard(vRef - vCam + vRay * sp.ae, size);
-		pSkp->Ellipse(-100, -100, 100, 100);
-	}
-	if (sp.ax != invalid_val) {
-		pSkp->QuickPen(0xFF00F0F0);
-		pSkp->QuickBrush(0xFF00F0F0);
-		pSkp->SetWorldBillboard(vRef - vCam + vRay * sp.ax, size);
-		pSkp->Ellipse(-100, -100, 100, 100);
-	}
-	if (sp.hd != invalid_val) {
-		pSkp->QuickPen(0xFFFFFFFF);
-		pSkp->QuickBrush(0xFFFFFFFF);
-		pSkp->SetWorldBillboard(vRef - vCam + vRay * sp.hd, size);
-		pSkp->Ellipse(-70, -70, 70, 70);
-	}
+	float sa = -dot(vRay, cp.toCam);
+	float rl = RayLength(sa, cp.CamRad);
+
+	FVECTOR3 cl = SunLightColor(sa, cp.CamAlt);
+	D3D9DebugLog("Sunlight RGB(%f, %f, %f)", cl.x, cl.y, cl.z);
+	D3D9DebugLog("RayLength = %f, sa = %f", rl, sa);
 
 	double u = dot(vPos, TestPrm.Up);
 	double t = dot(vPos, TestPrm.ZeroAz);
 	bool bTgt = ((u * u + t * t) < cp.PlanetRad2 && dot(vPos, TestPrm.toSun) < 0);
 	bool bSrc = (sp.cr < cp.PlanetRad&& dot(vRef, TestPrm.toSun) < 0);
+
+	float s0 = 0, s1 = 0, e0 = 0, e1 = 0, mp = 0, lf = 0;
+
+	if (status == 1) {
+		s0 = sp.ae > 0 ? sp.ae : 0;
+		e0 = sp.se > 0 ? min(cd, sp.se) : cd;
+	}
+	else {
+		if (bSrc) {		// Camera In Shadow
+
+			s0 = max(sp.sx, sp.ae);
+			lf = max(0, sp.ca) / max(1.0f, abs(sp.hd)); // Lerp Factor
+			mp = lerp((sp.ax + s0) * 0.5f, sp.hd, saturate(lf));
+
+			e0 = mp;
+			s1 = max(sp.sx, mp);
+			e1 = sp.ax;
+		}
+		else { // Camera In Lit
+
+			s0 = max(0, sp.ae);
+			lf = max(0, sp.ca) / max(1.0f, abs(sp.hd)); // Lerp Factor
+			mp = lerp((sp.ax + s0) * 0.5f, sp.hd, saturate(lf));
+
+			if (sp.se > sp.ax || sp.se < 0) sp.se = mp;
+			if (sp.sx > sp.ax || sp.sx < 0) sp.sx = mp;
+
+			e0 = sp.se;
+			s1 = sp.sx;
+			e1 = sp.ax;
+		}
+	}
+
+
+	int sz = 250;
+
+	// Origin Point
+	pSkp->QuickPen(0xFF00FF00);
+	pSkp->QuickBrush(0xFF00FF00);
+	pSkp->SetWorldBillboard(vRef - vCam, size);
+	pSkp->Ellipse(-sz, -sz, sz, sz);
+
+	// Test Point 'contact point'
+	sz = 170;
+	pSkp->QuickPen(0xFF0000FF);
+	pSkp->QuickBrush(0xFF0000FF);
+	pSkp->SetWorldBillboard(vRef - vCam + vRay * cd, size);
+	pSkp->Ellipse(-sz, -sz, sz, sz);
+
+	sz = 250;
+	// Shadow Crossing
+	if (sp.se != invalid_val) {
+		pSkp->QuickPen(0xFFDD00DD);
+		pSkp->QuickBrush(0xFFDD00DD);
+		pSkp->SetWorldBillboard(vRef - vCam + vRay * sp.se, size);
+		pSkp->Ellipse(-sz, -sz, sz, sz);
+	}
+	if (sp.sx != invalid_val) {
+		pSkp->QuickPen(0xFFFF88FF);
+		pSkp->QuickBrush(0xFFFF88FF);
+		pSkp->SetWorldBillboard(vRef - vCam + vRay * sp.sx, size);
+		pSkp->Ellipse(-sz, -sz, sz, sz);
+	}
+	sz = 170;
+	if (sp.ae != invalid_val) {
+		// Atmosphere entry points
+		pSkp->QuickPen(0xFF008080);
+		pSkp->QuickBrush(0xFF008080);
+		pSkp->SetWorldBillboard(vRef - vCam + vRay * sp.ae, size);
+		pSkp->Ellipse(-sz, -sz, sz, sz);
+	}
+	if (sp.ax != invalid_val) {
+		pSkp->QuickPen(0xFF00F0F0);
+		pSkp->QuickBrush(0xFF00F0F0);
+		pSkp->SetWorldBillboard(vRef - vCam + vRay * sp.ax, size);
+		pSkp->Ellipse(-sz, -sz, sz, sz);
+	}
+	sz = 120;
+	if (sp.hd != invalid_val) {
+		pSkp->QuickPen(0xFFFFFFFF);
+		pSkp->QuickBrush(0xFFFFFFFF);
+		pSkp->SetWorldBillboard(vRef - vCam + vRay * mp, size);
+		pSkp->Ellipse(-sz, -sz, sz, sz);
+	}
+
 
 	if (bSrc) D3D9DebugLog("Camera in Shadow");
 	if (bTgt) D3D9DebugLog("Target in Shadow");
@@ -450,7 +686,7 @@ void vPlanet::TestComputations(Sketchpad* pSkp)
 
 	D3D9DebugLog("Shadow First=%f, Second=%f", sp.se, sp.sx);
 	D3D9DebugLog("Atmosp First=%f, Second=%f", sp.ae, sp.ax);
-	D3D9DebugLog("Hd=%f", sp.hd);
+	D3D9DebugLog("Hd=%f, Ca=%f", sp.hd, sp.ca);
 
 	D3DXMATRIX mI; D3DXMatrixIdentity(&mI);
 	VECTOR3 V0, V1;
@@ -459,22 +695,9 @@ void vPlanet::TestComputations(Sketchpad* pSkp)
 	pSkp->SetViewMode(Sketchpad::ORTHO);
 	pSkp->SetWorldTransform();
 
-	bool bSecEnable = false;
 	FVECTOR3 vR = vRef - vCam;
 
-	// Check mid-point validity
-	//float mp = sp.hd > sp.ae ? sp.hd : -1e6;
-	float mp = sp.hd > sp.ae && sp.hd < sp.ax ? sp.hd : -1e6;
-	float sf = sp.w2 / cp.PlanetRad2;
-
-	if (sp.w2 < cp.PlanetRad2) mp = -1e6;
-
-	float s0 = max(0, sp.ae);
-	float e0 = sp.se > 0 ? sp.se : mp;
-	float s1 = max(max(mp, sp.sx), s0);
-	float e1 = sp.ax;
-
-	D3D9DebugLog("s0=%f, e0=%f, s1=%f, e1=%f, mp=%f, sf=%f", s0, e0, s1, e1, mp, sf);
+	D3D9DebugLog("s0=%f, e0=%f, s1=%f, e1=%f, mp=%f, lf=%f", s0, e0, s1, e1, mp, lf);
 
 	if (e0 > s0) {
 		D3D9DebugLog("Primary Integral");
@@ -585,8 +808,8 @@ void vPlanet::UpdateScatter()
 	cp.SinAlpha = sqrt(1.0f - cp.CosAlpha * cp.CosAlpha);
 	float A = dot(cp.toCam, cp.Up) * cp.CamRad;
 	cp.Cr2 = A * A;
-	float g2 = cp.Cr2 - cp.PlanetRad2;
-	cp.ShdDst = g2 > 0 ? sqrt(g2) : -1e10;
+	float g2 = cp.CamRad2 - cp.PlanetRad2;
+	cp.ShdDst = g2 > 0 ? sqrt(g2) : 0.0f;
 
 
 	if (HasAtmosphere() == false) return;

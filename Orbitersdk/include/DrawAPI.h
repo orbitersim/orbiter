@@ -102,6 +102,17 @@ namespace oapi {
 			return FVECTOR2(x * f, y * f);
 		}
 
+		inline FVECTOR2 operator* (FVECTOR2 f) const
+		{
+			return FVECTOR2(x * f.x, y * f.y);
+		}
+
+		inline FVECTOR2& operator*= (FVECTOR2& f)
+		{
+			x *= f.x; y *= f.y;
+			return *this;
+		}
+
 		inline FVECTOR2 operator/ (float f) const
 		{
 			f = 1.0f / f;
