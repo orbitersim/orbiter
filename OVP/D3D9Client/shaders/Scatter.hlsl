@@ -1,7 +1,7 @@
 
 // ============================================================================
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
-// licensed under LGPL v2
+// licensed under MIT
 // Copyright (C) 2022 Jarmo Nikkanen
 // ============================================================================
 
@@ -15,15 +15,8 @@
 #define MINANGLE -0.3f			// Minumum angle
 #define ANGRNG (1.0f - MINANGLE)
 #define iANGRNG (1.0f / ANGRNG)
-#define xANGRNG (2.0f * ANGRNG)
-#define ixANGRNG (1.0f / xANGRNG)
-#define PI 3.14159265
 #define BOOL bool
 
-
-
-#define GLARE_SIZE 4.0f
-#define MieMin  0.01f
 
 // Per-Frame Params
 //
@@ -91,7 +84,6 @@ struct sFlow {
 
 uniform extern AtmoParams Const;
 uniform extern sFlow Flo;
-uniform extern bool bInSpace;
 
 sampler2D tSun;
 sampler2D tCam;
@@ -109,11 +101,13 @@ sampler2D tSkyMieColor;
 static const float n[] = { 0.05, 0.25, 0.5, 0.75, 0.95 };
 static const float w[] = { 0.125, 0.25, 0.25, 0.25, 0.125 };
 
+// Gauss7 points and weights
 static const float4 n0 = float4(0.0714, 0.21428, 0.35714, 0.5 );
 static const float4 w0 = float4(0.1295, 0.27971, 0.38183, 0.41796);
 static const float4 n1 = float4(0.64285, 0.78571, 0.92857, 0 );
 static const float4 w1 = float4(0.38183, 0.27971, 0.1295, 0 );
 
+// Gauss4 points and weights
 static const float4 n4 = float4( 0.06943, 0.33001, 0.66999, 0.93057 );
 static const float4 w4 = float4( 0.34786, 0.65215, 0.65215, 0.34786 );
 
@@ -227,26 +221,7 @@ float4 smaple3D(sampler2D tSamp, float3 uv, const float rc, const float pix)
 
 
 
-// Optical depth integral from point in atmosphere to infinity.
-//
-float2 Gauss7(float cos_dir, float r0, float2 ih0)
-{
-	int i;
-	float y = r0 * cos_dir;
-	float z2 = r0 * r0 - y * y;
-	float Ray = sqrt(Const.AtmoRad2 - z2) - y; // Length of the ray
 
-	// Compute altitudes of sample points
-	float4 p0 = Ray * n0 + y;
-	float4 a0 = sqrt(z2 + p0 * p0) - Const.PlanetRad;
-	float4 p1 = Ray * n1 + y;
-	float4 a1 = sqrt(z2 + p1 * p1) - Const.PlanetRad;
-
-	float2 sum = 0.0f;
-	for (i = 0; i < 4; i++) sum += exp(-clamp(a0[i] * ih0, -20, 20)) * w0[i];
-	for (i = 0; i < 3; i++) sum += exp(-clamp(a1[i] * ih0, -20, 20)) * w1[i];
-	return sum * Ray * 0.5f;
-}
 
 
 // Optical depth integral in atmosphere for a given distance
@@ -256,11 +231,12 @@ float2 Gauss7(float cos_dir, float r0, float dist, float2 ih0)
 	int i;
 	float x = 2.0 * r0 * cos_dir;
 	float r2 = r0 * r0;
+
 	// Compute altitudes of sample points
 	float4 d0 = dist * n0;
-	float4 a0 = sqrt(r2 + d0 * d0 - d0 * x) - Const.PlanetRad;
+	float4 a0 = sqrt(r2 + d0 * (d0 - x)) - Const.PlanetRad;
 	float4 d1 = dist * n1;
-	float4 a1 = sqrt(r2 + d1 * d1 - d1 * x) - Const.PlanetRad;
+	float4 a1 = sqrt(r2 + d1 * (d1 - x)) - Const.PlanetRad;
 	
 	float2 sum = 0.0f;
 	for (i = 0; i < 4; i++) sum += exp(-clamp(a0[i] * ih0, -20, 20)) * w0[i];
@@ -269,34 +245,15 @@ float2 Gauss7(float cos_dir, float r0, float dist, float2 ih0)
 }
 
 
-// Optical depth integral from point in atmosphere to infinity.
-//
-float2 Gauss4(float cos_dir, float r0, float2 ih0)
-{
-	float y = r0 * cos_dir;
-	float z2 = r0 * r0 - y * y;
-	float Ray = sqrt(Const.AtmoRad2 - z2) - y; // Length of the ray
-
-	// Compute altitudes of sample points
-	float4 p0 = Ray * n4 + y;
-	float4 a0 = sqrt(z2 + p0 * p0) - Const.PlanetRad;
-
-	float2 sum = 0.0f;
-	for (int i = 0; i < 4; i++) sum += exp(-clamp(a0[i] * ih0, -20, 20)) * w4[i];
-	return sum * Ray * 0.5f;
-}
-
 // Optical depth integral in atmosphere for a given distance
 //
 float2 Gauss4(float cos_dir, float r0, float dist, float2 ih0)
 {
-	// Compute altitudes of sample points
 	float4 d0 = dist * n4;
 	float4 a0 = sqrt(r0 * r0 + d0 * d0 - 2.0 * r0 * d0 * cos_dir) - Const.PlanetRad;
-
-	float2 sum = 0.0f;
-	for (int i = 0; i < 4; i++) sum += exp(-clamp(a0[i] * ih0, -20, 20)) * w4[i];
-	return sum * dist * 0.5f;
+	float4 ray = exp(-clamp(a0 * ih0.x, -20, 20));
+	float4 mie = exp(-clamp(a0 * ih0.y, -20, 20));
+	return float2(dot(ray, w4), dot(mie, w4)) * dist * 0.5f;
 }
 
 
@@ -329,8 +286,8 @@ float MiePhase2(float cw, float g)
 float3 GetSunColor(float dir, float alt)
 {
 	alt = saturate((alt - Const.MinAlt) / Const.AtmoAlt);
-	dir = (dir - MINANGLE) * iANGRNG;
-	alt = sqrt(abs(alt)) * sign(alt);
+	dir = saturate((dir - MINANGLE) * iANGRNG);
+	alt = sqrt(alt);
 	return tex2D(tSun, float2(dir, alt)).rgb;
 }
 
@@ -466,7 +423,7 @@ IData PostProcessData(RayData sp)
 
 // Compute attennuation from vPos in atmosphere to camera (or atm exit point)
 //
-float3 ComputeCameraView(float3 vPos, float3 vNrm, float3 vRay, float r, float t_factor = 1.0f)
+float3 ComputeCameraView(float3 vPos, float3 vNrm, float3 vRay, float r)
 {
 	float d;
 	float a = dot(vNrm, vRay);
@@ -474,7 +431,7 @@ float3 ComputeCameraView(float3 vPos, float3 vNrm, float3 vRay, float r, float t
 	else d = dot(vPos - Const.CamPos, vRay);
 	float2 rm = Gauss7(a, r, d, Const.iH) * Const.rmO;
 	float3 clr = Const.RayWave * rm.r + Const.MieWave * rm.g;
-	return exp(-clr * t_factor);
+	return exp(-clr);
 }
 
 // Integrate viewing ray for incatter color (.rgb) and optical depth (.a)
@@ -490,7 +447,7 @@ float4 IntegrateSegmentMP(float3 vOrig, float3 vRay, float len, float iH)
 		float3 n = normalize(pos);
 		float rad = dot(n, pos);
 		float alt = rad - Const.PlanetRad;
-		float3 x = GetSunColor(dot(n, Const.toSun), alt); // +MultiScatterApprox(n);
+		float3 x = GetSunColor(dot(n, Const.toSun), alt);
 		x *= ComputeCameraView(pos, n, vRay, rad);
 		float f = exp(-alt * iH) * iNSEG;
 		ret.rgb += x * f;
@@ -511,7 +468,7 @@ float4 IntegrateSegmentNS(float3 vOrig, float3 vRay, float len, float iH)
 		float3 n = normalize(pos);
 		float rad = dot(n, pos);
 		float alt = rad - Const.PlanetRad;
-		float3 x = GetSunColor(dot(n, Const.toSun), alt); // +MultiScatterApprox(n);
+		float3 x = GetSunColor(dot(n, Const.toSun), alt);
 		x *= ComputeCameraView(pos, n, vRay, rad);
 		float f = exp(-alt * iH) * w[i];
 		ret.rgb += x * f;
@@ -528,8 +485,9 @@ float4 SunColor(float x : TEXCOORD0, float y : TEXCOORD1) : COLOR
 {
 	float alt = lerp(Const.MinAlt, Const.AtmoAlt, y*y);
 	float ang = x * ANGRNG + MINANGLE;
-
-	float2 rm = Gauss7(ang, alt + Const.PlanetRad, Const.iH) * Const.rmO;
+	float rad = alt + Const.PlanetRad;
+	float dist = RayLength(-ang, rad);
+	float2 rm = Gauss7(-ang, rad, dist, Const.iH) * Const.rmO;
 	float3 clr = Const.RayWave * rm.r + Const.MieWave * rm.g;
 
 	return float4(exp(-clr), 1.0f);
@@ -579,13 +537,17 @@ float4 SkyView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 	if (id.e1 > id.s1)
 		ret += IntegrateSegmentNS(Const.CamPos + vRay * id.s1, vRay, id.e1 - id.s1, iH);
 
-	//ComputeCameraView(pos, n, vRay, rad);
-	//float3 vExit = Const.CamPos + vRay * sp.ax;
-	//float3 transmission = ComputeCameraView(vExit, normalize(vExit), vRay, Const.CamRad, 1.0f);
 
 	ret.rgb *= rmI;
 	ret.rgb *= Flo.bRay ? Const.RayWave : Const.MieWave;
 	ret.rgb *= Const.cSun;
+
+	if (Flo.bRay)
+	{
+		float3 mlt = MultiScatterApprox(Const.toCam) * exp(-Const.CamAlt * iH);
+		//mlt *= exp(-(Const.RayWave * ret.a * Const.rmO.r));
+		ret.rgb += mlt;
+	}
 
 	float alpha = ilerp(20e3, 150e3, ret.a);
 	alpha = alpha > 0 ? sqrt(alpha) : 0;
@@ -628,17 +590,14 @@ float4 RingView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 	if (id.e1 > id.s1)
 		ret += IntegrateSegmentNS(vPos - vRay * (cpd - id.s1), vRay, id.e1 - id.s1, iH);
 
-	//float3 vExit = vPos - vRay * (cpd - sp.ax);
-	//float3 transmission = ComputeCameraView(vExit, normalize(vExit), vRay, Const.CamRad, 1.0f);
-
 	ret.rgb *= rmI;
 	ret.rgb *= Flo.bRay ? Const.RayWave : Const.MieWave;
 	ret.rgb *= Const.cSun;
 
-	/*if (Flo.bRay)
+	if (Flo.bRay)
 	{
-		ret.rgb += MultiScatterApprox(normalize(vPos)) * exp(-e * Const.iH.r * 0.5f);
-	}*/
+		ret.rgb += MultiScatterApprox(Const.toCam) * exp(-Const.CamAlt * iH);
+	}
 
 	float alpha = ilerp(20e3, 150e3, ret.a);
 	alpha = alpha > 0 ? sqrt(alpha) : 0;
@@ -666,7 +625,7 @@ float4 AmbientSky(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 	
 	float3 ray = tex2D(tSkyRayColor, uv).rgb;
 	float3 mie = tex2D(tSkyMieColor, uv).rgb;
-	float3 cMlt = MultiScatterApprox(Const.toCam);
+	float3 cMlt = 0; // MultiScatterApprox(Const.toCam);
 
 	float3 color = ray * RayPhase(ph) + mie * MiePhase(ph) + cMlt;
 

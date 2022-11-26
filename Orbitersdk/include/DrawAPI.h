@@ -238,6 +238,11 @@ namespace oapi {
 			return FVECTOR3(x * f, y * f, z * f);
 		}
 
+		inline FVECTOR3 operator* (FVECTOR3 &f) const
+		{
+			return FVECTOR3(x * f.x, y * f.y, z * f.z);
+		}
+
 		inline FVECTOR3 operator/ (float f) const
 		{
 			f = 1.0f / f;

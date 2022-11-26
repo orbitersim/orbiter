@@ -288,7 +288,7 @@ float vPlanet::MiePhase(float cw)
 //
 FVECTOR4 vPlanet::ComputeCameraView(float angle, float rad, float distance)
 {
-	FVECTOR2 od = Gauss4(angle, rad, distance, cp.iH); // Ray/Mie Optical depth
+	FVECTOR2 od = Gauss7(angle, rad, distance, cp.iH); // Ray/Mie Optical depth
 	FVECTOR2 rm = od * cp.rmO;
 	FVECTOR3 clr = cp.RayWave * rm.x + cp.MieWave * rm.y;
 	return FVECTOR4(exp(-clr), od.x + od.y);
@@ -302,7 +302,7 @@ FVECTOR4 vPlanet::ComputeCameraView(FVECTOR3 vPos, FVECTOR3 vNrm, FVECTOR3 vRay,
 	float d = 0.0f;
 	float a = dot(vNrm, vRay);
 	if (!CameraInAtmosphere()) d = RayLength(a, r);
-	else d = dot(vPos - cp.CamPos, vRay);
+	else d = abs(dot(vPos - cp.CamPos, vRay));
 	return ComputeCameraView(a, r, d);
 }
 
@@ -324,35 +324,48 @@ FVECTOR4 vPlanet::ComputeCameraView(FVECTOR3 vPos)
 // ===========================================================================================
 // Amount of light inscattering along the ray
 //
-FVECTOR4 vPlanet::IntegrateSegment(FVECTOR3 vOrig, FVECTOR3 vRay, float len, float iH)
+void vPlanet::IntegrateSegment(FVECTOR3 vOrig, float len, FVECTOR4* ral, FVECTOR4* mie)
 {
-	static const int NSEG = 4;
+	static const int NSEG = 6;
 	static const float iNSEG = 1.0f / float(NSEG);
 
-	FVECTOR4 ret = 0.0f;
-	FVECTOR3 vR = vRay * len;
+	if (ral) *ral = 0.0f;
+	if (mie) *mie = 0.0f;
+
+	FVECTOR3 vRay = normalize(cp.CamPos - vOrig); // From vOrig to Cam
 
 	for (int i = 0; i < NSEG; i++)
 	{
-		FVECTOR3 pos = vOrig + vR * (iNSEG * (float(i) + 0.5f));
+		float dst = len * (iNSEG * (float(i) + 0.5f));
+		FVECTOR3 pos = vOrig + vRay * dst;
 		FVECTOR3 n = normalize(pos);
 		float rad = dot(n, pos);
 		float alt = rad - cp.PlanetRad;
-		FVECTOR3 x = SunLightColor(dot(n, cp.toSun), alt); // +MultiScatterApprox(n);
-		x *= ComputeCameraView(pos, n, vRay, rad).rgb;
-		float f = exp(-alt * iH) * iNSEG;
-		ret.rgb += x * f;
-		ret.a += f;
+		float ang = dot(n, vRay);
+
+		FVECTOR3 x = SunLightColor(-dot(n, cp.toSun), alt) * ComputeCameraView(ang, rad, len - dst).rgb;
+
+		if (ral) {
+			float f = exp(-alt * cp.iH.x) * iNSEG;
+			ral->rgb += x * f; ral->a += f;
+		}
+		if (mie) {
+			float f = exp(-alt * cp.iH.y) * iNSEG;
+			mie->rgb += x * f; mie->a += f;
+		}
 	}
-	return ret * len;
+
+	if (ral) ral->rgb *= cp.RayWave * cp.cSun * cp.rmI.x * len;	// Multiply with wavelength and inscatter factors
+	if (mie) mie->rgb *= cp.MieWave * cp.cSun * cp.rmI.y * len;
 }
 
 // ===========================================================================================
+// Sunlight color for pixel in atmosphere
 //
 FVECTOR3 vPlanet::SunLightColor(float angle, float alt)
 {
 	float r = alt + cp.PlanetRad;
-	float d = RayLength(angle, r); // Compute ray length in atmosphere
+	float d = RayLength(angle, r);
 	FVECTOR2 rm = Gauss7(angle, r, d, cp.iH) * cp.rmO;
 	FVECTOR3 clr = cp.RayWave * rm.x + cp.MieWave * rm.y;
 	return exp(-clr);
@@ -407,13 +420,11 @@ ObjAtmParams vPlanet::GetObjectAtmoParams(VECTOR3 obj_gpos)
 	if (!CameraInAtmosphere()) d = RayLength(a, r); // Recompute distance to atm exit
 
 	// Incatter Color
+	FVECTOR4 rl, mi;
 	FVECTOR3 vOrig = vPos - vRay * d;
-	FVECTOR4 rl = IntegrateSegment(vOrig, vRay, d, cp.iH.x);	// Rayleigh incatter
-	FVECTOR4 mi = IntegrateSegment(vOrig, vRay, d, cp.iH.y);	// Mie incatter
+	IntegrateSegment(vOrig, d, &rl, &mi);	// Rayleigh and Mie inscatter
 
-	rl.rgb *= cp.RayWave * cp.rmI.x;	// Multiply with wavelength and incatter factors
-	mi.rgb *= cp.MieWave * cp.rmI.y;
-
+	
 	// Color of Sunlight
 	FVECTOR2 rm = Gauss7(a, r, d, cp.iH) * cp.rmO;
 	FVECTOR3 clr = exp(-(cp.RayWave * rm.x + cp.MieWave * rm.y));
@@ -579,12 +590,21 @@ void vPlanet::TestComputations(Sketchpad* pSkp)
 
 	D3D9DebugLog("Optical Depth=%f   RGB(%f, %f, %f)", rd.a, rd.r, rd.g, rd.b);
 
-	float sa = -dot(vRay, cp.toCam);
-	float rl = RayLength(sa, cp.CamRad);
+	float sl = dot(cp.toSun, TestPrm.toCam);
+	float sa = dot(vRay, TestPrm.toCam);
+	float rl = RayLength(-sa, TestPrm.CamRad);
+	float rf = sqrt(cp.AtmoRad2 - cp.PlanetRad2);
+	float ph = dot(vRay, cp.toSun);
 
-	FVECTOR3 cl = SunLightColor(sa, cp.CamAlt);
+	FVECTOR3 cl = SunLightColor(sl, cp.CamAlt);
+	FVECTOR4 ral, mie;
+	IntegrateSegment(vPos, rl, &ral, &mie);
+	
+	FVECTOR3 is = (ral.rgb + mie.rgb);// *MiePhase(-ph));
+
 	D3D9DebugLog("Sunlight RGB(%f, %f, %f)", cl.x, cl.y, cl.z);
-	D3D9DebugLog("RayLength = %f, sa = %f", rl, sa);
+	D3D9DebugLog("InScatter RGB(%f, %f, %f)", is.x, is.y, is.z);
+	D3D9DebugLog("RayLength = %f vs %f, sa = %f, sl = %f", rl, rf, sa, sl);
 
 	double u = dot(vPos, TestPrm.Up);
 	double t = dot(vPos, TestPrm.ZeroAz);

@@ -199,23 +199,6 @@ class vPlanet: public vObject {
 
 public:
 
-	struct SHDPrm {		
-		float se;	// Shadow entry
-		float sx;	// Shadow exit
-		float ae;	// Atmosphere entry
-		float ax;	// Atmosphere exit	
-		float cr;	// Camera Radius in shadow frame
-		float hd;	// Horizon distance
-		float h2;	// Closest approach sqr-dist
-		float w2;
-		float ca;
-	};
-
-	struct TestPrm {
-		FVECTOR3 toCam, toSun, ZeroAz, Up, SunAz, CamPos;
-		float CosAlpha, SinAlpha, CamRad, CamRad2;
-	} TestPrm;
-
 	struct sOverlay {
 		LPDIRECT3DTEXTURE9 pSurf[4];
 		D3DXVECTOR4 Blend[4];
@@ -294,7 +277,7 @@ public:
 	FVECTOR2		Gauss7(float cos_dir, float r0, float dist, FVECTOR2 ih0);
 	FVECTOR2		Gauss7(float alt, float cos_dir, float R0, float R1, FVECTOR2 iH0);
 	FVECTOR2		Gauss4(float cos_dir, float r0, float dist, FVECTOR2 ih0);
-	FVECTOR4		IntegrateSegment(FVECTOR3 vOrig, FVECTOR3 vRay, float len, float iH);
+	void			IntegrateSegment(FVECTOR3 vOrig, float len, FVECTOR4* rl = NULL, FVECTOR4* mie = NULL);
 	float			RayLength(float cos_dir, float r0, float r1);
 	float			RayLength(float cos_dir, float r0);
 	float			RayPhase(float cw);
@@ -352,7 +335,6 @@ public:
 	static void ParseMicroTexturesFile(); ///< Parse MicroTex.cfg file (once)
 
 protected:
-	SHDPrm ComputeShadow(FVECTOR3 vRay);
 	void RenderSphere (LPDIRECT3DDEVICE9 dev);
 	void RenderCloudLayer (LPDIRECT3DDEVICE9 dev, DWORD cullmode);
 	void RenderBaseSurfaces (LPDIRECT3DDEVICE9 dev);
@@ -445,6 +427,25 @@ public:
 		bool bNormals;			// Normals enabled
 		bool bEnabled;			// Micro textures enabled
 	} MicroCfg;
+
+	struct SHDPrm {
+		float se;	// Shadow entry
+		float sx;	// Shadow exit
+		float ae;	// Atmosphere entry
+		float ax;	// Atmosphere exit	
+		float cr;	// Camera Radius in shadow frame
+		float hd;	// Horizon distance
+		float h2;	// Closest approach sqr-dist
+		float w2;
+		float ca;
+	};
+
+	struct TestPrm {
+		FVECTOR3 toCam, toSun, ZeroAz, Up, SunAz, CamPos;
+		float CosAlpha, SinAlpha, CamRad, CamRad2;
+	} TestPrm;
+
+	SHDPrm ComputeShadow(FVECTOR3 vRay);
 };
 
 #endif // !__VPLANET_H
