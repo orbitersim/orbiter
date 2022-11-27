@@ -12,6 +12,8 @@
 // MSIS atmosphere model implementation
 // ======================================================================
 
+extern "C" void gtd7(struct nrlmsise_input* input, struct nrlmsise_flags* flags, struct nrlmsise_output* output);
+
 class EarthAtmosphere_NRLMSISE00: public ATMOSPHERE {
 public:
 	EarthAtmosphere_NRLMSISE00 (CELBODY2 *body);

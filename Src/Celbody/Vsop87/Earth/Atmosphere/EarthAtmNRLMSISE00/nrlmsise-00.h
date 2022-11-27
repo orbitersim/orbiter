@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------- */
 
 /* This file is part of the NRLMSISE-00  C source code package - release
- * 20020503
+ * 20041227
  *
  * The NRLMSISE-00 model was developed by Mike Picone, Alan Hedin, and
  * Doug Drob. They also wrote a NRLMSISE-00 distribution package in 
@@ -11,7 +11,7 @@
  * http://uap-www.nrl.navy.mil/models_web/msis/msis_home.htm
  *
  * Dominik Brodowski implemented and maintains this C version. You can
- * reach him at devel@brodo.de. See the file "DOCUMENTATION" for details,
+ * reach him at mail@brodo.de. See the file "DOCUMENTATION" for details,
  * and check http://www.brodo.de/english/pub/nrlmsise/index.html for
  * updated releases of this package.
  */
@@ -38,7 +38,7 @@ struct nrlmsise_flags {
  *   switches[i]:
  *    i - explanation
  *   -----------------
- *    0 - output in centimeters instead of meters
+ *    0 - output in meters and kilograms instead of centimeters and grams
  *    1 - F10.7 effect on mean
  *    2 - time independent
  *    3 - symmetrical annual
@@ -86,7 +86,7 @@ struct nrlmsise_input {
 	int year;      /* year, currently ignored */
 	int doy;       /* day of year */
 	double sec;    /* seconds in day (UT) */
-	double alt;    /* altitude in kilometes */
+	double alt;    /* altitude in kilometers */
 	double g_lat;  /* geodetic latitude */
 	double g_long; /* geodetic longitude */
 	double lst;    /* local apparent solar time (hours), see note below */
@@ -170,9 +170,6 @@ struct nrlmsise_output {
 /*   Neutral Atmosphere Empircial Model from the surface to lower
  *   exosphere.
  */
-#ifndef NRLMSISE00_IMPLEMENTATION
-extern "C" {
-#endif
 void gtd7 (struct nrlmsise_input *input, \
            struct nrlmsise_flags *flags, \
            struct nrlmsise_output *output);
@@ -206,9 +203,6 @@ void ghp7 (struct nrlmsise_input *input, \
            struct nrlmsise_output *output, \
            double press);
 
-#ifndef NRLMSISE00_IMPLEMENTATION
-}
-#endif
 
 
 /* ------------------------------------------------------------------- */
@@ -222,7 +216,7 @@ void ghp7 (struct nrlmsise_input *input, \
  *   and thus the loading time is increased.
  */
 #ifdef INLINE
-#define __inline_double inline double
+#define __inline_double static inline double
 #else
 #define __inline_double double
 #endif

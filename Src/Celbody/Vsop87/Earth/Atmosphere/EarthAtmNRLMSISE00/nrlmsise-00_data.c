@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------- */
 
 /* This file is part of the NRLMSISE-00  C source code package - release
- * 20020503
+ * 20041227
  *
  * The NRLMSISE-00 model was developed by Mike Picone, Alan Hedin, and
  * Doug Drob. They also wrote a NRLMSISE-00 distribution package in 
@@ -11,7 +11,7 @@
  * http://uap-www.nrl.navy.mil/models_web/msis/msis_home.htm
  *
  * Dominik Brodowski implemented and maintains this C version. You can
- * reach him at devel@brodo.de. See the file "DOCUMENTATION" for details,
+ * reach him at mail@brodo.de. See the file "DOCUMENTATION" for details,
  * and check http://www.brodo.de/english/pub/nrlmsise/index.html for
  * updated releases of this package.
  */
