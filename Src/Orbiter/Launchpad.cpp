@@ -55,6 +55,7 @@ orbiter::LaunchpadDialog::LaunchpadDialog (Orbiter *app)
 	pCfg    = app->Cfg();
 	g_pDlg  = this; // for nonmember callbacks
 	CTab    = NULL;
+	hTabContainer = NULL;
 	m_bVisible = false;
 
 	hDlgBrush = CreateSolidBrush (dlgcol);
@@ -85,6 +86,7 @@ bool orbiter::LaunchpadDialog::Create (bool startvideotab)
 {
 	if (!hDlg) {
 		CreateDialog (hInst, MAKEINTRESOURCE(IDD_MAIN), NULL, AppDlgProc);
+		hTabContainer = GetDlgItem(hDlg, IDC_MNU_PAGECONTAINER);
 		AddTab (new ScenarioTab (this)); TRACENEW
 		AddTab (new VisualTab (this)); TRACENEW
 		AddTab (new ModuleTab (this)); TRACENEW

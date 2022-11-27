@@ -84,7 +84,7 @@ BOOL orbiter::LaunchpadTab::Size (int w, int h)
 
 HWND orbiter::LaunchpadTab::CreateTab (int resid)
 {
-	HWND hT = CreateDialogParam (AppInstance(), MAKEINTRESOURCE(resid), LaunchpadWnd(), TabProcHook, (LPARAM)this);
+	HWND hT = CreateDialogParam (AppInstance(), MAKEINTRESOURCE(resid), pLp->HTabContainer(), TabProcHook, (LPARAM)this);
 	SetWindowLongPtr (hT, DWLP_USER, (LONG_PTR)this);
 
 	POINT p0, p1;

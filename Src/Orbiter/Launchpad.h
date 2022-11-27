@@ -59,6 +59,7 @@ namespace orbiter {
 		inline Orbiter* App() const { return pApp; }
 		inline Config* Cfg() const { return pCfg; }
 		LaunchpadTab* GetTab(UINT i) const;
+		HWND HTabContainer() const { return hTabContainer; }
 
 		void AddTab(LaunchpadTab* tab);
 		// Inserts a new tab into the list
@@ -100,6 +101,7 @@ namespace orbiter {
 		HWND hDlg;               // dialog window handle
 		std::vector<LaunchpadTab*> TabList;
 		LaunchpadTab* CTab;      // current tab page
+		HWND hTabContainer;      // tab container window handle
 		HWND hWait;              // "wait" page
 		HBRUSH hDlgBrush;
 		HANDLE hShadowImg;
