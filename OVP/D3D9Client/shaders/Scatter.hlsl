@@ -12,8 +12,8 @@
 
 #define NSEG 5
 #define iNSEG 1.0f / NSEG
-#define MINANGLE -0.3f			// Minumum angle
-#define ANGRNG (1.0f - MINANGLE)
+#define MINANGLE -0.25f			// Minumum angle
+#define ANGRNG (0.25f - MINANGLE)
 #define iANGRNG (1.0f / ANGRNG)
 #define BOOL bool
 
@@ -35,7 +35,6 @@ struct AtmoParams
 	float3 cSun;				// Sun Color and intensity
 	float3 RayWave;				// .rgb Rayleigh Wave lenghts
 	float3 MieWave;				// .rgb Mie Wave lenghts
-	float3 GlareColor;
 	float4 HG;					// Henyey-Greenstein Phase function params
 	float2 iH;					// Inverse scale height for ray(.r) and mie(.g) exp(-altitude * iH) 
 	float2 rmO;					// Ray and Mie out-scatter factors
@@ -65,10 +64,8 @@ struct AtmoParams
 	float  TrExpo;				// "HDR" exposure factor (terrain only)
 	float  Ambient;				// Global ambient light level
 	float  Clouds;
-	float  Glare;
 	float  TW_Multi;
 	float  TW_Dst;
-	float  SunRadAtHrz;
 	float  CosAlpha;			// Cosine of camera horizon angle i.e. PlanetRad/CamRad
 	float  SinAlpha;
 	float  CamSpace;			// Camera in space scale factor 0.0 = surf, 1.0 = space
@@ -115,6 +112,12 @@ float ilerp(float a, float b, float x)
 {
 	return saturate((x - a) / (b - a));
 }
+
+float4 expc(float4 x) { return exp(clamp(x, -20, 20)); }
+float3 expc(float3 x) { return exp(clamp(x, -20, 20)); }
+float2 expc(float2 x) { return exp(clamp(x, -20, 20)); }
+float expc(float x) { return exp(clamp(x, -20, 20)); }
+
 
 float2 NrmToUV(float3 vNrm)
 {
@@ -239,8 +242,8 @@ float2 Gauss7(float cos_dir, float r0, float dist, float2 ih0)
 	float4 a1 = sqrt(r2 + d1 * (d1 - x)) - Const.PlanetRad;
 	
 	float2 sum = 0.0f;
-	for (i = 0; i < 4; i++) sum += exp(-clamp(a0[i] * ih0, -20, 20)) * w0[i];
-	for (i = 0; i < 3; i++) sum += exp(-clamp(a1[i] * ih0, -20, 20)) * w1[i];
+	for (i = 0; i < 4; i++) sum += expc(-a0[i] * ih0) * w0[i];
+	for (i = 0; i < 3; i++) sum += expc(-a1[i] * ih0) * w1[i];
 	return sum * dist * 0.5f;
 }
 
@@ -251,8 +254,8 @@ float2 Gauss4(float cos_dir, float r0, float dist, float2 ih0)
 {
 	float4 d0 = dist * n4;
 	float4 a0 = sqrt(r0 * r0 + d0 * d0 - 2.0 * r0 * d0 * cos_dir) - Const.PlanetRad;
-	float4 ray = exp(-clamp(a0 * ih0.x, -20, 20));
-	float4 mie = exp(-clamp(a0 * ih0.y, -20, 20));
+	float4 ray = expc(-a0 * ih0.x);
+	float4 mie = expc(-a0 * ih0.y);
 	return float2(dot(ray, w4), dot(mie, w4)) * dist * 0.5f;
 }
 
@@ -294,7 +297,7 @@ float3 GetSunColor(float dir, float alt)
 
 float3 ComputeCameraView(float a, float r, float d)
 {
-	float2 rm = Gauss4(a, r, d, Const.iH) * Const.rmO;
+	float2 rm = Gauss7(a, r, d, Const.iH) * Const.rmO;
 	float3 clr = Const.RayWave * rm.r + Const.MieWave * rm.g;
 	return exp(-clr);
 }
@@ -307,6 +310,13 @@ float3 MultiScatterApprox(float3 vNrm)
 {
 	float dNS = clamp(dot(vNrm, Const.toSun) + Const.TW_Dst, 0.0f, Const.TW_Dst);
 	return (Const.RayWave + 0.3f) * Const.TW_Multi * dNS;
+}
+
+float3 MultiScatterApproxSky(float3 vNrm, float3 vRay)
+{
+	float3 cMlt = MultiScatterApprox(vNrm) * exp(-Const.CamAlt * Const.iH.r);
+	float3 cAtn = ComputeCameraView(-dot(vNrm, vRay), Const.CamRad, Const.HrzDst);
+	return cMlt * cAtn;
 }
 
 
@@ -411,11 +421,17 @@ IData PostProcessData(RayData sp)
 		float lf = max(0, sp.ca) / max(1.0f, abs(sp.hd)); // Lerp Factor
 		float mp = lerp((sp.ax + d.s0) * 0.5f, sp.hd, saturate(lf));
 
-		if (sp.se > sp.ax || sp.se < 0) sp.se = mp;
-		if (sp.sx > sp.ax || sp.sx < 0) sp.sx = mp;
+		bool bA = (sp.se > sp.ax || sp.se < 0);
+		//bool bB = (sp.sx > sp.ax || sp.sx < 0);
 
-		d.e0 = sp.se;
-		d.s1 = sp.sx;
+		/*if (bB && bA) sp.sx = sp.se = mp;
+		else {
+			if (bA) sp.se = mp;
+			if (bB) sp.sx = sp.ax;
+		}*/
+
+		d.e0 = bA ? mp : sp.se;
+		d.s1 = bA ? mp : sp.sx;
 		d.e1 = sp.ax;
 	}
 	return d;
@@ -542,12 +558,7 @@ float4 SkyView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 	ret.rgb *= Flo.bRay ? Const.RayWave : Const.MieWave;
 	ret.rgb *= Const.cSun;
 
-	if (Flo.bRay)
-	{
-		float3 mlt = MultiScatterApprox(Const.toCam) * exp(-Const.CamAlt * iH);
-		//mlt *= exp(-(Const.RayWave * ret.a * Const.rmO.r));
-		ret.rgb += mlt;
-	}
+	if (Flo.bRay) ret.rgb += MultiScatterApproxSky(Const.toCam, vRay);
 
 	float alpha = ilerp(20e3, 150e3, ret.a);
 	alpha = alpha > 0 ? sqrt(alpha) : 0;
@@ -594,10 +605,7 @@ float4 RingView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 	ret.rgb *= Flo.bRay ? Const.RayWave : Const.MieWave;
 	ret.rgb *= Const.cSun;
 
-	if (Flo.bRay)
-	{
-		ret.rgb += MultiScatterApprox(Const.toCam) * exp(-Const.CamAlt * iH);
-	}
+	if (Flo.bRay) ret.rgb += MultiScatterApproxSky(Const.toCam, vRay);
 
 	float alpha = ilerp(20e3, 150e3, ret.a);
 	alpha = alpha > 0 ? sqrt(alpha) : 0;
@@ -625,9 +633,7 @@ float4 AmbientSky(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 	
 	float3 ray = tex2D(tSkyRayColor, uv).rgb;
 	float3 mie = tex2D(tSkyMieColor, uv).rgb;
-	float3 cMlt = 0; // MultiScatterApprox(Const.toCam);
-
-	float3 color = ray * RayPhase(ph) + mie * MiePhase(ph) + cMlt;
+	float3 color = ray * RayPhase(ph) + mie * MiePhase(ph);
 
 	return float4(color, 1.0f);
 }

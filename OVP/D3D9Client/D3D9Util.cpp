@@ -1887,7 +1887,6 @@ void ShaderClass::Setup(LPDIRECT3DVERTEXDECLARATION9 pDecl, bool bZ, int blend)
 HANDLE ShaderClass::GetPSHandle(const char* name)
 {
 	D3DXHANDLE hVar = pPSCB->GetConstantByName(NULL, name);
-	//if (!hVar) LogErr("Shader::GetPSHandle() Invalid variable name [%s]. File[%s], Entrypoint[%s], Shader[%s]", name, fn.c_str(), psn.c_str(), sn.c_str());
 	return HANDLE(hVar);
 }
 
@@ -1895,7 +1894,6 @@ HANDLE ShaderClass::GetPSHandle(const char* name)
 HANDLE ShaderClass::GetVSHandle(const char* name)
 {
 	D3DXHANDLE hVar = pVSCB->GetConstantByName(NULL, name);
-	//if (!hVar) LogErr("Shader::GetVSHandle() Invalid variable name [%s]. File[%s], Entrypoint[%s], Shader[%s]", name, fn.c_str(), psn.c_str(), sn.c_str());
 	return HANDLE(hVar);
 }
 
@@ -1912,12 +1910,13 @@ void ShaderClass::SetTexture(const char* name, LPDIRECT3DTEXTURE9 pTex, UINT fla
 void ShaderClass::SetPSConstants(const char* name, void* data, UINT bytes)
 {
 	D3DXHANDLE hVar = pPSCB->GetConstantByName(NULL, name);
-
+#ifdef SHDCLSDBG
 	if (!hVar) {
 		LogErr("Shader::SetPSConstants() Invalid variable name [%s]. File[%s], Entrypoint[%s], Shader[%s]", name, fn.c_str(), psn.c_str(), sn.c_str());
-		return;
+		assert(false);
 	}
-
+#endif
+	if (!hVar) return;
 	if (pPSCB->SetValue(pDev, hVar, data, bytes) != S_OK) {
 		LogErr("Shader::SetPSConstants() Failed. Variable[%s], File[%s], Entrypoint[%s]", name, fn.c_str(), psn.c_str());
 	}
@@ -1926,12 +1925,13 @@ void ShaderClass::SetPSConstants(const char* name, void* data, UINT bytes)
 void ShaderClass::SetVSConstants(const char* name, void* data, UINT bytes)
 {
 	D3DXHANDLE hVar = pVSCB->GetConstantByName(NULL, name);
-
+#ifdef SHDCLSDBG
 	if (!hVar) {
 		LogErr("Shader::SetVSConstants() Invalid variable name [%s]. File[%s], Entrypoint[%s], Shader[%s]", name, fn.c_str(), psn.c_str(), sn.c_str());
-		return;
+		assert(false);
 	}
-
+#endif
+	if (!hVar) return;
 	if (pVSCB->SetValue(pDev, hVar, data, bytes) != S_OK) {
 		LogErr("Shader::SetVSConstants() Failed. Variable[%s], File[%s], Entrypoint[%s]", name, fn.c_str(), vsn.c_str());
 	}
@@ -1941,11 +1941,13 @@ void ShaderClass::SetVSConstants(const char* name, void* data, UINT bytes)
 
 void ShaderClass::SetTexture(HANDLE hVar, LPDIRECT3DTEXTURE9 pTex, UINT flags, UINT aniso)
 {
+#ifdef SHDCLSDBG
 	if (!hVar) {
 		LogErr("Shader::SetTexture() Invalid handle. File[%s], Entrypoint[%s], Shader[%s]", fn.c_str(), psn.c_str(), sn.c_str());
-		return;
+		assert(false);
 	}
-
+#endif
+	if (!hVar) return;
 	DWORD idx = pPSCB->GetSamplerIndex(D3DXHANDLE(hVar));
 
 	assert(idx < 16);
@@ -1966,11 +1968,13 @@ void ShaderClass::SetTexture(HANDLE hVar, LPDIRECT3DTEXTURE9 pTex, UINT flags, U
 
 void ShaderClass::SetPSConstants(HANDLE hVar, void* data, UINT bytes)
 {
+#ifdef SHDCLSDBG
 	if (!hVar) {
 		LogErr("Shader::SetPSConstants() Invalid handle. File[%s], Entrypoint[%s], Shader[%s]", fn.c_str(), psn.c_str(), sn.c_str());
-		return;
+		assert(false);
 	}
-
+#endif
+	if (!hVar) return;
 	if (pVSCB->SetValue(pDev, D3DXHANDLE(hVar), data, bytes) != S_OK) {
 		LogErr("Shader::SetPSConstants() Failed. File[%s], Entrypoint[%s]", fn.c_str(), vsn.c_str());
 	}
@@ -1979,10 +1983,13 @@ void ShaderClass::SetPSConstants(HANDLE hVar, void* data, UINT bytes)
 
 void ShaderClass::SetVSConstants(HANDLE hVar, void* data, UINT bytes)
 {
+#ifdef SHDCLSDBG
 	if (!hVar) {
 		LogErr("Shader::SetVSConstants() Invalid handle. File[%s], Entrypoint[%s], Shader[%s]", fn.c_str(), psn.c_str(), sn.c_str());
-		return;
+		assert(false);
 	}
+#endif
+	if (!hVar) return;
 	if (pVSCB->SetValue(pDev, D3DXHANDLE(hVar), data, bytes) != S_OK) {
 		LogErr("Shader::SetVSConstants() Failed. File[%s], Entrypoint[%s]", fn.c_str(), vsn.c_str());
 	}

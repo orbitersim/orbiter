@@ -1395,6 +1395,8 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 	FlowControlVS* fcv = vp->GetFlowControlVS();
 	ConstParams* cp = vp->GetScatterConst();
 
+	fc->bInSpace = !vp->CameraInAtmosphere();
+
 	pShader->SetVSConstants("Const", cp, sizeof(ConstParams));
 	pShader->SetPSConstants("Const", cp, sizeof(ConstParams));
 

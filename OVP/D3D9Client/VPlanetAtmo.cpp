@@ -634,8 +634,16 @@ void vPlanet::TestComputations(Sketchpad* pSkp)
 			lf = max(0, sp.ca) / max(1.0f, abs(sp.hd)); // Lerp Factor
 			mp = lerp((sp.ax + s0) * 0.5f, sp.hd, saturate(lf));
 
-			if (sp.se > sp.ax || sp.se < 0) sp.se = mp;
-			if (sp.sx > sp.ax || sp.sx < 0) sp.sx = mp;
+			bool bA = (sp.se > sp.ax || sp.se < 0);
+			bool bB = (sp.sx > sp.ax || sp.sx < 0);
+
+			if (bA && bA) sp.se = sp.sx = mp;
+			else {
+				if (bA) sp.se = mp;
+				if (bB) sp.sx = sp.ax;
+			}
+			//if (sp.se > sp.ax || sp.se < 0) sp.se = mp;
+			//if (sp.sx > sp.ax || sp.sx < 0) sp.sx = sp.ax;
 
 			e0 = sp.se;
 			s1 = sp.sx;
@@ -707,6 +715,7 @@ void vPlanet::TestComputations(Sketchpad* pSkp)
 	D3D9DebugLog("Shadow First=%f, Second=%f", sp.se, sp.sx);
 	D3D9DebugLog("Atmosp First=%f, Second=%f", sp.ae, sp.ax);
 	D3D9DebugLog("Hd=%f, Ca=%f", sp.hd, sp.ca);
+	D3D9DebugLog("CameraInSpace=%f", cp.CamSpace);
 
 	D3DXMATRIX mI; D3DXMatrixIdentity(&mI);
 	VECTOR3 V0, V1;
@@ -752,7 +761,7 @@ void vPlanet::UpdateScatter()
 
 	if (HasAtmosphere())
 	{
-		if (!pSunColor) D3DXCreateTexture(pDev, Qc, Qc, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pSunColor);
+		if (!pSunColor) D3DXCreateTexture(pDev, 4*Qc, Qc/2, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pSunColor);
 		if (!pRaySkyView) D3DXCreateTexture(pDev, Qc * 2, Qc, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pRaySkyView);
 		if (!pMieSkyView) D3DXCreateTexture(pDev, Qc * 2, Qc, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pMieSkyView);
 		if (!pLandViewRay) D3DXCreateTexture(pDev, Wc * Nc, Wc, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pLandViewRay);
@@ -797,8 +806,6 @@ void vPlanet::UpdateScatter()
 
 	memcpy(&cp.mVP, scn->GetProjectionViewMatrix(), sizeof(FMATRIX4));
 
-	float visalt = max(atmo->visalt, atmo->rheight * 1000.0f * 10.0f);
-
 	cp.vPolarAxis = vRot;
 	cp.vTangent = vTan;		// RefFrame for surface micro-tex and water
 	cp.vBiTangent = vBiT;	// RefFrame for surface micro-tex and water
@@ -823,7 +830,6 @@ void vPlanet::UpdateScatter()
 	cp.TrGamma = 1.0f / float(atmo->tgamma);
 	cp.TrExpo = float(atmo->trb);
 	cp.Ambient = fAmbient;
-	cp.SunRadAtHrz = float(SunApparentRad()) * cp.HrzDst;
 	cp.CosAlpha = min(1.0f, cp.PlanetRad / cp.CamRad);
 	cp.SinAlpha = sqrt(1.0f - cp.CosAlpha * cp.CosAlpha);
 	float A = dot(cp.toCam, cp.Up) * cp.CamRad;
@@ -837,11 +843,11 @@ void vPlanet::UpdateScatter()
 	// Skip the rest if no atmosphere exists
 	// ------------------------------------------------------------------------------------------------------------
 
-	cp.AtmoAlt = visalt;
-	cp.AtmoRad = visalt + cp.PlanetRad;
+	cp.AtmoAlt = atmo->visalt;
+	cp.AtmoRad = atmo->visalt + cp.PlanetRad;
 	cp.AtmoRad2 = cp.AtmoRad * cp.AtmoRad;
 	cp.CloudAlt = float(prm.cloudalt);
-	cp.CamSpace = sqrt(saturate(cp.CamAlt / visalt));
+	cp.CamSpace = sqrt(saturate(cp.CamAlt / atmo->visalt));
 	cp.AngMin = -sqrt(max(1.0f, cp.CamRad2 - cp.PlanetRad2)) / cp.CamRad;
 	cp.AngRng = 1.0f - cp.AngMin;
 	cp.iAngRng = 1.0f / cp.AngRng;
@@ -863,10 +869,6 @@ void vPlanet::UpdateScatter()
 	cp.Clouds = float(atmo->aux2);
 	cp.TW_Multi = float(atmo->tw_bri);
 	cp.TW_Dst = float(atmo->tw_dst);
-
-	cp.Glare = float(atmo->hazei);
-	cp.GlareColor = lerp(FVECTOR3(1, 1, 1), -cp.RayWave + 1.0f, exp(-cp.CamAlt * cp.iH.x));
-	cp.GlareColor = lerp(FVECTOR3(0, 0, 0), cp.GlareColor, saturate((SunAltitude() + 500.0f) / 500.0f));
 
 	sFlow Flow;
 	Flow.bCamLit = !((cp.Cr2 < cp.PlanetRad2) && (dot(cp.toCam, cp.toSun) < 0));
@@ -1092,7 +1094,7 @@ ScatterParams* vPlanet::GetAtmoParams(int mode)
 	CPrm.red = SPrm.red;
 	CPrm.blue = SPrm.blue;
 	CPrm.orbalt = SPrm.orbalt;
-	CPrm.visalt = SPrm.visalt;
+	CPrm.visalt = GetHorizonAlt();
 
 	return &CPrm;
 }

@@ -601,7 +601,7 @@ double vPlanet::GetHorizonAlt() const
 {
 	if (!prm.bAtm) return 0.0;
 	if (!surfmgr2) return prm.atm_hzalt;
-	return SPrm.visalt;
+	return max(SPrm.visalt, SPrm.rheight * 1000.0f * 10.0f);
 }
 
 // ==============================================================

@@ -129,7 +129,6 @@ struct ConstParams
 	float3 cSun;				// Sun Color and intensity
 	float3 RayWave;				// .rgb Rayleigh Wave lenghts
 	float3 MieWave;				// .rgb Mie Wave lenghts
-	float3 GlareColor;
 	float4 HG;					// Henyey-Greenstein Phase function params
 	float2 iH;					// Inverse scale height for ray(.r) and mie(.g) exp(-altitude * iH) 
 	float2 rmO;					// Ray and Mie out-scatter factors
@@ -159,10 +158,8 @@ struct ConstParams
 	float  TrExpo;				// "HDR" exposure factor (terrain only)
 	float  Ambient;				// Global ambient light level
 	float  Clouds;
-	float  Glare;
 	float  TW_Multi;
 	float  TW_Dst;
-	float  SunRadAtHrz;
 	float  CosAlpha;			// Cosine of camera horizon angle i.e. PlanetRad/CamRad
 	float  SinAlpha;
 	float  CamSpace;			// Camera in space scale factor 0.0 = surf, 1.0 = space

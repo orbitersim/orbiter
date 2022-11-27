@@ -438,36 +438,32 @@ float4 TerrainPS(TileVS frg) : COLOR
 	float   dst = dot(vRay, frg.camW.xyz);		// Pixel to camera distance
 	float   rad = frg.camW.w;					// Pixel geo-distance
 	float   alt = rad - Const.PlanetRad;		// Pixel altitude over mean radius
+	float  fSrf = (1.0 - Const.CamSpace);		// Camera colse to surface ?
+	float fMask = (1.0 - cMsk.a);				// Specular Mask
 	float  fSpe = 0;
 
-	// Render with specular ripples and fresnel water -------------------------
-	//
 #if defined(_WATER)
-
-	// Specular Mask
-	float fMask = (1.0 - cMsk.a);
-	// Camera colse to surface ?
-	float fSrf = (1.0 - Const.CamSpace);
-
 #if defined (_RIPPLES)
-	// Apply specular ripples
+	// Compute world space normal for water rendering
 	cNrm.xy = clamp((cNrm.xy - 0.5f) * fSrf * 5.0f, -1, 1);
 	cNrm.z = cos(cNrm.x * cNrm.y * 1.570796);
-	// Compute world space normal
 	nrmW = (Const.vTangent * cNrm.r) + (Const.vBiTangent * cNrm.g) + (vPlN * cNrm.b);
 	nrmW = lerp(nvrW, nrmW, fMask);
 #endif
 #endif
 
-
-	float fDHN = dot(hlvW, nrmW);
 	float fDNS = dot(nrmW, Const.toSun);
 	float fDRS = dot(vRay, Const.toSun);
-	float fDCN = saturate(dot(vRay, nrmW));
-	float fDCH = saturate(dot(vRay, hlvW));
-	float fDCM = saturate(dot(vRay, vPlN));
 
 #if defined(_WATER)
+	float fDHN = dot(hlvW, nrmW);
+
+#if defined(_RIPPLES)
+
+	// Render with specular ripples and fresnel water -------------------------
+	//
+	float fDCH = saturate(dot(vRay, hlvW));
+	float fDCN = saturate(dot(vRay, nrmW));
 
 	float2 f = 1.0 - float2(fDCH, fDCN);
 	float2 fFresnel = f * f * f * f;
@@ -477,7 +473,7 @@ float4 TerrainPS(TileVS frg) : COLOR
 	fSpe /= (4.0f * fDCH * max(fDNS, fDCN) + 1e-3);
 	
 	// Apply fresnel water only if close enough to a surface
-	// 
+	//
 	if (!Flow.bInSpace)
 	{
 		cRfl = GetAmbient(reflect(-vRay, nrmW)) * fFresnel.y * fSrf * fMask;
@@ -485,6 +481,10 @@ float4 TerrainPS(TileVS frg) : COLOR
 		cTex.rgb *= saturate(1.0f - fFresnel.y * fSrf * fMask);
 	}
 
+#else
+	// Fallback to simple specular reflection
+	fSpe = pow(fDHN, 40.0f) * fMask;
+#endif
 #endif
 
 
@@ -600,7 +600,6 @@ float4 TerrainPS(TileVS frg) : COLOR
 
 	// Add Haze
 	color *= sct.atn.rgb;
-	//color += (sct.ray.rgb + sct.mie.rgb);
 	color += (sct.ray.rgb * RayPhase(-fDRS) + sct.mie.rgb * MiePhase(-fDRS)) * fOrbShd;
 	color += cNgt2;
 
@@ -713,16 +712,20 @@ float4 CloudPS(CldVS frg) : COLOR
 #endif
 
 	float phase = dot(Const.toSun, vRay);
-	float3 sc = GetSunColor(dMN, Const.CloudAlt);
-	float3 color = cTex.rgb * sc * Const.cSun * 8.0f;
-
+	float3 cSun = GetSunColor(dMN, Const.CloudAlt) * Const.cSun;
+	
+	// Evaluate multiscatter approximation
+	float3 cMlt = MultiScatterApprox(vPlN) * exp(-Const.CloudAlt * Const.iH.r * 0.5f);
+	
 	LandOut sct = GetLandView(Const.CloudAlt + Const.PlanetRad, vPlN);
+
+	float3 color = cTex.rgb * 6.0f * LightFX(cSun + cMlt);
 
 	float alf = pow(abs((1.0f - cTex.a) * sqrt(cTex.a)), Const.Clouds);
 	float mie = pow(saturate(phase), 60.0f) * alf * 3.0f;
 
-	color *= exp(-(Const.RayWave * sct.ray.a + Const.MieWave * sct.mie.a));
-	color += sct.ray.rgb * RayPhase(phase) + mie * sc;
+	color *= sct.atn.rgb;
+	color += sct.ray.rgb + mie * cSun;
 	
 	return float4(HDR(color), saturate(cTex.a * Prm.fBeta * Prm.fBeta * (1.0f + mie)));
 }
