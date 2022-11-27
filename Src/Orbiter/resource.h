@@ -4,6 +4,8 @@
 //
 #include "resource_video.h"
 
+#define LAUNCHPAD_WIN_WIDTH             400
+
 #define IDS_STRING1                     1
 #define IDR_RT_MANIFEST1                1
 #define IDS_TABSCENARIO                 2

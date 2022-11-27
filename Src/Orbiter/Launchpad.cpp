@@ -285,7 +285,7 @@ BOOL orbiter::LaunchpadDialog::Resize (HWND hWnd, DWORD w, DWORD h, DWORD mode)
 	SetWindowPos (GetDlgItem (hWnd, IDC_SHADOW), NULL,
 		0, 0, w, shadowh,
 		SWP_NOACTIVATE|SWP_NOMOVE|SWP_NOOWNERZORDER|SWP_NOZORDER);
-	w4 = max (10, r_data0.right - r_data0.left + dw);
+	w4 = r_exit0.right - r_data0.left + dw;
 	h4 = max (10, r_data0.bottom - r_data0.top + dh);
 	SetWindowPos (GetDlgItem (hWnd, IDLAUNCH), NULL,
 		xb1, r_launch0.top+dh, wb1, bh,
@@ -445,8 +445,14 @@ INT_PTR orbiter::LaunchpadDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, 
 	case WM_KEYDOWN:
 		if (pCfg->CfgDemoPrm.bDemo) time0 = time(NULL); // reset timer
 		break;
-	case WM_CTLCOLORDLG:
-		return (LRESULT)hDlgBrush;
+//	case WM_CTLCOLORDLG:
+//		return (LRESULT)hDlgBrush;
+	case WM_GETMINMAXINFO: {
+		LPMINMAXINFO lpMMI = (LPMINMAXINFO)lParam;
+		lpMMI->ptMinTrackSize.x = 550;
+		lpMMI->ptMinTrackSize.y = 350;
+		}
+		return 0;
 	case WM_TIMER:
 		if (difftime (time (NULL), time0) > pCfg->CfgDemoPrm.LPIdleTime) { // auto-launch a demo
 			if (SelectDemoScenario ())
