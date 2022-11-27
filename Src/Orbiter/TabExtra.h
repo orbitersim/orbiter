@@ -29,6 +29,8 @@ namespace orbiter {
 
 		bool OpenHelp();
 
+		bool DynamicSize() const { return true; }
+
 		BOOL Size(int w, int h);
 
 		INT_PTR TabProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

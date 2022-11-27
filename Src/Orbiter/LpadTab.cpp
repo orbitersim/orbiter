@@ -82,6 +82,25 @@ BOOL orbiter::LaunchpadTab::Size (int w, int h)
 
 //-----------------------------------------------------------------------------
 
+void orbiter::LaunchpadTab::TabAreaResized(int w, int h)
+{
+	if (hTab) {
+		if (DynamicSize())
+			SetWindowPos(hTab, NULL, 0, 0, w, h,
+				SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+		else {
+			RECT r;
+			GetClientRect(hTab, &r);
+			int x0 = max(0, (w - r.right) / 2);
+			int y0 = max(0, (h - r.bottom) / 2);
+			SetWindowPos(hTab, NULL, x0, y0, 0, 0,
+				SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+
 HWND orbiter::LaunchpadTab::CreateTab (int resid)
 {
 	HWND hT = CreateDialogParam (AppInstance(), MAKEINTRESOURCE(resid), pLp->HTabContainer(), TabProcHook, (LPARAM)this);
@@ -100,6 +119,7 @@ HWND orbiter::LaunchpadTab::CreateTab (int resid)
 
 //-----------------------------------------------------------------------------
 
+#ifdef UNDEF
 void orbiter::LaunchpadTab::RegisterItemPositions (int *_item, int _nitem)
 {
 	if (nitem) {
@@ -120,6 +140,7 @@ void orbiter::LaunchpadTab::RegisterItemPositions (int *_item, int _nitem)
 		}
 	}
 }
+#endif
 
 //-----------------------------------------------------------------------------
 

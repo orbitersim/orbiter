@@ -47,18 +47,6 @@ orbiter::DefVideoTab::~DefVideoTab()
 void orbiter::DefVideoTab::Create ()
 {
 	hTab = CreateTab (IDD_PAGE_DEV);
-
-	static int item[] = {
-		IDC_VID_LABEL_MODULE, IDC_VID_COMBO_MODULE, IDC_VID_MODULE_INFO,
-		IDC_VID_STATIC1, IDC_VID_STATIC2, IDC_VID_STATIC3, IDC_VID_STATIC5,
-		IDC_VID_STATIC6, IDC_VID_STATIC7, IDC_VID_STATIC8, IDC_VID_STATIC9,
-		IDC_VID_DEVICE, IDC_VID_ENUM, IDC_VID_STENCIL,
-		IDC_VID_FULL, IDC_VID_WINDOW, IDC_VID_MODE, IDC_VID_BPP, IDC_VID_VSYNC,
-		IDC_VID_PAGEFLIP, IDC_VID_WIDTH, IDC_VID_HEIGHT, IDC_VID_ASPECT,
-		IDC_VID_4X3, IDC_VID_16X10, IDC_VID_16X9, IDC_VID_INFO
-	};
-
-	RegisterItemPositions (item, ARRAYSIZE(item));
 }
 
 //-----------------------------------------------------------------------------

@@ -7,6 +7,7 @@
 #include <io.h>
 #include <time.h>
 #include <fstream>
+#include "Uxtheme.h"
 #include <commctrl.h>
 #include "Resource.h"
 #include "Orbiter.h"
@@ -275,13 +276,12 @@ BOOL orbiter::LaunchpadDialog::Resize (HWND hWnd, DWORD w, DWORD h, DWORD mode)
 	SetWindowPos (GetDlgItem (hWnd, IDC_VERSION), NULL,
 		r_version0.left, r_version0.top+dh, 0, 0,
 		SWP_NOACTIVATE|SWP_NOOWNERZORDER|SWP_NOZORDER|SWP_NOCOPYBITS|SWP_NOSIZE);
-	SetWindowPos(GetDlgItem(hWnd, IDC_MNU_PAGECONTAINER), NULL,
-		0, 0, r_data0.right - r_data0.left + dw, r_data0.bottom - r_data0.top + dh,
-		SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER /* | SWP_NOREDRAW*/);
+	DWORD tabAreaW = r_data0.right - r_data0.left + dw;
+	DWORD tabAreaH = r_data0.bottom - r_data0.top + dh;
+	SetWindowPos(GetDlgItem(hWnd, IDC_MNU_PAGECONTAINER), NULL, 0, 0, tabAreaW, tabAreaH,
+		SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 	for (auto tab : TabList) {
-		HWND hTab = tab->TabWnd();
-		if (hTab) SetWindowPos (hTab, NULL, 0, 0, w4, h4,
-			SWP_NOACTIVATE|SWP_NOMOVE|SWP_NOOWNERZORDER|SWP_NOZORDER);
+		tab->TabAreaResized(tabAreaW, tabAreaH);
 	}
 	return FALSE;
 }
@@ -328,6 +328,7 @@ INT_PTR orbiter::LaunchpadDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, 
 
 	switch (uMsg) {
 	case WM_INITDIALOG:
+		EnableThemeDialogTexture(hWnd, ETDT_ENABLE);
 		hDlg = hWnd;
 		return FALSE;
 	case WM_CLOSE:
@@ -412,6 +413,14 @@ INT_PTR orbiter::LaunchpadDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, 
 				mDC, 0, 0, 8, 8, SRCCOPY);
 			SelectObject (mDC, hp);
 			DeleteDC (mDC);
+			return TRUE;
+		}
+		else if (wParam == IDC_MNU_PAGECONTAINER) {
+			HDC hDC = lpDrawItem->hDC;
+			HANDLE hpBrush = SelectObject(hDC, GetSysColorBrush(COLOR_3DFACE));
+			HANDLE hpPen = SelectObject(hDC, GetStockObject(NULL_PEN));
+			Rectangle(hDC, 0, 0, lpDrawItem->rcItem.right, lpDrawItem->rcItem.bottom);
+			SelectObject(hDC, hpBrush);
 			return TRUE;
 		}
 		} break;

@@ -45,6 +45,22 @@ namespace orbiter {
 
 		virtual bool OpenHelp() { return false; }
 
+		/**
+		 * \brief Indicates if a tab can resize itself to fit the available area
+		 * \return true if the tab can adjust its size, false if the size is fixed.
+		 * \default Returns false.
+		 */
+		virtual bool DynamicSize() const { return false; }
+
+		/**
+		 * \brief Notification sent to a tab window when the tab area has been resized
+		 * \param w new width of tab area [pixel]
+		 * \param h new height of tab area [pixel]
+		 * \default Resizes the tab to fit the area if \ref DynamicSize returns true,
+		 *    centers the tab in the available area otherwise.
+		 */
+		virtual void TabAreaResized(int w, int h);
+
 		void OpenTabHelp(const char* topic);
 
 		virtual BOOL Size(int w, int h);
@@ -64,7 +80,7 @@ namespace orbiter {
 	protected:
 		HWND CreateTab(int resid);
 
-		void RegisterItemPositions(int* _item, int _nitem);
+		//void RegisterItemPositions(int* _item, int _nitem);
 		// Keep a record of the positions of dialog items
 		// (for auto-recentering)
 

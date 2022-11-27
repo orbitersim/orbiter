@@ -26,6 +26,8 @@ namespace orbiter {
 
 		bool OpenHelp();
 
+		bool DynamicSize() const { return true; }
+
 		BOOL Size(int w, int h);
 
 		int GetSelScenario(char* scn, int len);
