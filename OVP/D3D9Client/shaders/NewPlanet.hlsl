@@ -351,7 +351,7 @@ float GGX_NDF(float dHN, float rgh)
 	float r2 = rgh * rgh;
 	float dHN2 = dHN * dHN;
 	float d = (r2 * dHN2) + (1.0f - dHN2);
-	return r2 / (3.14f * d * d + 0.025f);
+	return r2 / (3.14f * d * d);
 }
 
 
@@ -445,7 +445,7 @@ float4 TerrainPS(TileVS frg) : COLOR
 #if defined(_WATER)
 
 	// Specular Mask
-	float m = (1.0 - cMsk.a);
+	float fMask = (1.0 - cMsk.a);
 	// Camera colse to surface ?
 	float fSrf = (1.0 - Const.CamSpace);
 
@@ -455,7 +455,7 @@ float4 TerrainPS(TileVS frg) : COLOR
 	cNrm.z = cos(cNrm.x * cNrm.y * 1.570796);
 	// Compute world space normal
 	nrmW = (Const.vTangent * cNrm.r) + (Const.vBiTangent * cNrm.g) + (vPlN * cNrm.b);
-	nrmW = lerp(nvrW, nrmW, m);
+	nrmW = lerp(nvrW, nrmW, fMask);
 #endif
 #endif
 
@@ -463,27 +463,26 @@ float4 TerrainPS(TileVS frg) : COLOR
 	float fDHN = dot(hlvW, nrmW);
 	float fDNS = dot(nrmW, Const.toSun);
 	float fDRS = dot(vRay, Const.toSun);
-	float fDCN = dot(vRay, nrmW);
+	float fDCN = saturate(dot(vRay, nrmW));
+	float fDCH = saturate(dot(vRay, hlvW));
 	float fDCM = saturate(dot(vRay, vPlN));
 
 #if defined(_WATER)
 
-	float f = 1.0 - saturate(fDCM);
-	float fFresnel = f * f * f * f * m;
-	float fScl = fDNS > 0 ? pow(abs(fDNS), 0.2f) : 0;
-
+	float2 f = 1.0 - float2(fDCH, fDCN);
+	float2 fFresnel = f * f * f * f;
+	
 	// Compute specular reflection intensity
-	fSpe = GGX_NDF(fDHN, 0.05f + fDNS * 0.1f) * m; // *(1.0f + fFresnel * 25.0f);
-	fSpe /= (4.0f * fDCM * fDCM * fDCM + 1e-3);
-	fSpe *= fScl;
-
+	fSpe = GGX_NDF(fDHN, 0.1f + saturate(fDNS) * 0.2f)  * (0.1f + fFresnel.x * 0.9f) * fMask;
+	fSpe /= (4.0f * fDCH * max(fDNS, fDCN) + 1e-3);
+	
 	// Apply fresnel water only if close enough to a surface
 	// 
 	if (!Flow.bInSpace)
 	{
-		cRfl = GetAmbient(reflect(-vRay, nrmW)) * fFresnel * fSrf;
+		cRfl = GetAmbient(reflect(-vRay, nrmW)) * fFresnel.y * fSrf * fMask;
 		// Attennuate diffuse texture for fresnel refl.
-		cTex.rgb *= saturate(1.0f - fFresnel * fSrf);
+		cTex.rgb *= saturate(1.0f - fFresnel.y * fSrf * fMask);
 	}
 
 #endif
