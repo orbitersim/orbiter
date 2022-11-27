@@ -380,6 +380,7 @@
 #define IDC_MNU_ABT                     1266
 #define IDC_SHADOW                      1267
 #define IDC_BLACKBOX                    1268
+#define IDC_MNU_PAGECONTAINER           1269
 #define IDC_OPT_STATIC1                 1270
 #define IDC_OPT_STATIC2                 1271
 #define IDC_VIS_STATIC1                 1281
