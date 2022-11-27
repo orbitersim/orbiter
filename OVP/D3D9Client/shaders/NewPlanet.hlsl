@@ -583,7 +583,7 @@ float4 TerrainPS(TileVS frg) : COLOR
 	cTex.rgb = pow(saturate(cTex.rgb), Const.TrGamma) * Const.TrExpo;
 
 	// Evaluate multiscatter approximation
-	cMlt = MultiScatterApprox(vPlN)* exp(-alt * Const.iH.r * 0.5f);
+	cMlt = MultiScatterApprox(vPlN) * exp(-alt * Const.iH.r);
 
 	LandOut sct = GetLandView(rad, vPlN);
 
@@ -715,7 +715,7 @@ float4 CloudPS(CldVS frg) : COLOR
 	float3 cSun = GetSunColor(dMN, Const.CloudAlt) * Const.cSun;
 	
 	// Evaluate multiscatter approximation
-	float3 cMlt = MultiScatterApprox(vPlN) * exp(-Const.CloudAlt * Const.iH.r * 0.5f);
+	float3 cMlt = MultiScatterApprox(vPlN) * exp(-Const.CloudAlt * Const.iH.r * 0.7f);
 	
 	LandOut sct = GetLandView(Const.CloudAlt + Const.PlanetRad, vPlN);
 

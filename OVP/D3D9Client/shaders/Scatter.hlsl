@@ -309,15 +309,9 @@ float3 ComputeCameraView(float a, float r, float d)
 float3 MultiScatterApprox(float3 vNrm)
 {
 	float dNS = clamp(dot(vNrm, Const.toSun) + Const.TW_Dst, 0.0f, Const.TW_Dst);
-	return (Const.RayWave + 0.3f) * Const.TW_Multi * dNS;
+	return (Const.RayWave + float3(0.1, 0.1, 0.3)) * Const.TW_Multi * dNS;
 }
 
-float3 MultiScatterApproxSky(float3 vNrm, float3 vRay)
-{
-	float3 cMlt = MultiScatterApprox(vNrm) * exp(-Const.CamAlt * Const.iH.r);
-	float3 cAtn = ComputeCameraView(-dot(vNrm, vRay), Const.CamRad, Const.HrzDst);
-	return cMlt * cAtn;
-}
 
 
 struct RayData {
@@ -558,12 +552,17 @@ float4 SkyView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 	ret.rgb *= Flo.bRay ? Const.RayWave : Const.MieWave;
 	ret.rgb *= Const.cSun;
 
-	if (Flo.bRay) ret.rgb += MultiScatterApproxSky(Const.toCam, vRay);
+	if (Flo.bRay)
+	{
+		float2 vDepth = Gauss7(dot(Const.toCam, -vRay), Const.CamRad, sp.ax, Const.iH);
+		float2 vOut = vDepth * Const.rmO;
+		float3 cMlt = MultiScatterApprox(Const.toCam) * exp(-Const.CamAlt * Const.iH.r);
+		cMlt *= exp(-(Const.RayWave * vOut.r + Const.MieWave * vOut.g));
+		float alpha = ilerp(10e3, 150e3, vDepth.r);
+		return float4(ret.rgb + cMlt, alpha);
+	}
 
-	float alpha = ilerp(20e3, 150e3, ret.a);
-	alpha = alpha > 0 ? sqrt(alpha) : 0;
-
-	return float4(ret.rgb, alpha);
+	return float4(ret.rgb, 1.0f);
 }
 
 
@@ -605,12 +604,20 @@ float4 RingView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 	ret.rgb *= Flo.bRay ? Const.RayWave : Const.MieWave;
 	ret.rgb *= Const.cSun;
 
-	if (Flo.bRay) ret.rgb += MultiScatterApproxSky(Const.toCam, vRay);
+	if (Flo.bRay)
+	{
+		float3 vSrc = vPos - vRay * (cpd - sp.ax);
+		float3 vNrm = normalize(vSrc);
+		float2 vDepth = Gauss4(dot(vNrm, vRay), dot(vSrc, vNrm), sp.ax - sp.ae, Const.iH);
+		float2 vOut = vDepth * Const.rmO;
+		float3 cMlt = MultiScatterApprox(Const.toCam) * exp(-Const.CamAlt * Const.iH.r);
+		cMlt *= exp(-(Const.RayWave * vOut.r + Const.MieWave * vOut.g));
+		float alpha = ilerp(10e3, 150e3, vDepth.r);
+		alpha = alpha > 0 ? sqrt(alpha) : 0;
+		return float4(ret.rgb + cMlt, alpha);
+	}
 
-	float alpha = ilerp(20e3, 150e3, ret.a);
-	alpha = alpha > 0 ? sqrt(alpha) : 0;
-
-	return float4(ret.rgb, alpha);
+	return float4(ret.rgb, 1.0f);
 }
 
 
