@@ -1809,7 +1809,7 @@ bool Vessel::DelAirfoil (DWORD i)
 	AirfoilSpec **tmp;
 	if (nairfoil > 1) {
 		DWORD j, k;
-		tmp = new AirfoilSpec*[nairfoil-1]; TRACENEW
+		tmp = new AirfoilSpec*[nairfoil]; TRACENEW
 		for (j = k = 0; j < nairfoil; j++)
 			if (j != i) tmp[k++] = airfoil[j];
 	} else tmp = 0;
@@ -1891,7 +1891,7 @@ bool Vessel::DelControlSurface (DWORD i)
 	CtrlsurfSpec **tmp;
 	if (nctrlsurf > 1) {
 		DWORD j, k;
-		tmp = new CtrlsurfSpec*[nctrlsurf-1]; TRACENEW
+		tmp = new CtrlsurfSpec*[nctrlsurf]; TRACENEW
 		for (j = k = 0; j < nctrlsurf; j++)
 			if (j != i) tmp[k++] = ctrlsurf[j];
 	} else tmp = 0;
@@ -2481,7 +2481,7 @@ void Vessel::DelPropellantResource (TankSpec *ts)
 		if (tank && tank[i] == ts) {
 			TankSpec **tmp;
 			if (ntank > 1) {
-				tmp = new TankSpec*[ntank-1]; TRACENEW
+				tmp = new TankSpec*[ntank]; TRACENEW
 				for (j = k = 0; j < ntank; j++)
 					if (j != i) tmp[k++] = tank[j];
 			} else tmp = 0;
@@ -2593,7 +2593,7 @@ bool Vessel::DelDock (DWORD i)
 	PortSpec **tmp;
 	if (ndock > 1) {
 		DWORD j, k;
-		tmp = new PortSpec*[ndock-1]; TRACENEW
+		tmp = new PortSpec*[ndock]; TRACENEW
 		for (j = k = 0; j < ndock; j++)
 			if (j != i) tmp[k++] = dock[j];
 	} else tmp = 0;
@@ -5726,7 +5726,7 @@ bool Vessel::DelAnimationComponent (UINT an, ANIMATIONCOMP *comp)
 	if (comp->parent) {
 		ANIMATIONCOMP **ch = 0;
 		if (comp->parent->nchildren > 1) {
-			ch = new ANIMATIONCOMP*[comp->parent->nchildren-1]; TRACENEW
+			ch = new ANIMATIONCOMP*[comp->parent->nchildren]; TRACENEW
 			for (j = k = 0; j < comp->parent->nchildren; j++)
 				if (comp->parent->children[j] != comp) ch[k++] = comp->parent->children[j];
 		}
@@ -5738,7 +5738,7 @@ bool Vessel::DelAnimationComponent (UINT an, ANIMATIONCOMP *comp)
 	// remove from animation list
 	ANIMATIONCOMP **tmp = 0;
 	if (ncomp > 1) {
-		tmp = new ANIMATIONCOMP*[ncomp-1]; TRACENEW
+		tmp = new ANIMATIONCOMP*[ncomp]; TRACENEW
 		for (j = k = 0; j < ncomp; j++)
 			if (j != i) tmp[k++] = A->comp[j];
 	}

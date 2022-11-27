@@ -47,7 +47,7 @@ static double dm04, dm16, dm28, dm32, dm40, dm01, dm14;
 /* MESO7 */
 static double meso_tn1[5];
 static double meso_tn2[4];
-static double meso_tn3[3];
+static double meso_tn3[5];
 static double meso_tgn1[2];
 static double meso_tgn2[2];
 static double meso_tgn3[2];
