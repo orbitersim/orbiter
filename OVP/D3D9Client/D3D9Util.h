@@ -147,6 +147,19 @@ const D3DVERTEXELEMENT9 HazeVertexDecl[] = {
 	D3DDECL_END()
 };
 
+const D3DVERTEXELEMENT9 LocalLightsDecl[] = {
+	{0, 0,  D3DDECLTYPE_FLOAT1, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},	//Primitive Index
+	{0, 4,  D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0},	//Position .xyz and cone .w
+	D3DDECL_END()
+};
+
+typedef struct
+{
+	float index;
+	FVECTOR3 pos;
+	float cone;
+} LocalLightsCompute;
+
 typedef struct {
 	float x;     ///< vertex x position
 	float y;     ///< vertex y position
@@ -204,6 +217,9 @@ public:
 		void	UpdateLight(const LightEmitter *le, const class vObject *vo);
 		void	Reset();
 		const   LightEmitter *GetEmitter() const;
+
+		float	cone;
+		int		GPUId;
 private:
 		float	cosp, tanp, cosu;
 		float	range, range2;
@@ -341,6 +357,7 @@ extern IDirect3DVertexDeclaration9	*pVector4Decl;
 extern IDirect3DVertexDeclaration9	*pPosTexDecl;
 extern IDirect3DVertexDeclaration9	*pPatchVertexDecl;
 extern IDirect3DVertexDeclaration9	*pSketchpadDecl;
+extern IDirect3DVertexDeclaration9  *pLocalLightsDecl;
 
 
 

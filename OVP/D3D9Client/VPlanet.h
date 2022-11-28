@@ -355,7 +355,6 @@ private:
 	static ImageProcessing* pIP;
 	static PlanetShader* pRender[8];
 	static LPDIRECT3DDEVICE9 pDev;
-	static LPDIRECT3DTEXTURE9 pSunTex;
 	static int Qc, Wc, Nc;
 
 	float dist_scale;         // planet rescaling factor

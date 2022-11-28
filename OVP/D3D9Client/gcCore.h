@@ -231,8 +231,7 @@ public:
 	virtual void	SetMesh(const MESHHANDLE hMesh, const char* tex = NULL, ipicull = ipicull::None);
 
 	virtual bool	Execute(bool bInScene = false);
-	virtual bool	ExecuteTemplate(bool bInScene = false, ipitemplate = Rect);
-	virtual bool	Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScene = false, ipitemplate mde = Rect);
+	virtual bool	Execute(DWORD blendop, bool bInScene = false, ipitemplate mde = Rect);
 
 	// ----------------------------------------------------------------------------------
 	virtual int		FindDefine(const char* key);

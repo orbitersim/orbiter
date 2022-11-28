@@ -67,6 +67,12 @@ namespace oapi {
 			y = _y;
 		}
 
+		FVECTOR2(double _x, double _y)
+		{
+			x = float(_x);
+			y = float(_y);
+		}
+
 		FVECTOR2(long _x, long _y)
 		{
 			x = float(_x);
@@ -113,6 +119,24 @@ namespace oapi {
 			return *this;
 		}
 
+		inline FVECTOR2& operator+= (FVECTOR2& f)
+		{
+			x += f.x; y += f.y;
+			return *this;
+		}
+
+		inline FVECTOR2& operator-= (FVECTOR2& f)
+		{
+			x -= f.x; y -= f.y;
+			return *this;
+		}
+
+		inline FVECTOR2& operator/= (FVECTOR2& f)
+		{
+			x /= f.x; y /= f.y;
+			return *this;
+		}
+
 		inline FVECTOR2 operator/ (float f) const
 		{
 			f = 1.0f / f;
@@ -122,6 +146,11 @@ namespace oapi {
 		inline FVECTOR2 operator+ (float f) const
 		{
 			return FVECTOR2(x + f, y + f);
+		}
+
+		inline FVECTOR2 operator+ (FVECTOR2& f) const
+		{
+			return FVECTOR2(x + f.x, y + f.y);
 		}
 
 		inline FVECTOR2 operator- (float f) const

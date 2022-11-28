@@ -22,6 +22,7 @@
 #include "DebugControls.h"
 #include "IProcess.h"
 #include <sstream>
+#include <vector>
 
 #define saturate(x)	max(min(x, 1.0f), 0.0f)
 #define IKernelSize 150
@@ -77,6 +78,9 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	pDebugFont = NULL;
 	pBlur = NULL;
 	pOffscreenTarget = NULL;
+	pLocalCompute = NULL;
+	pRenderGlares = NULL;
+	pCreateGlare = NULL;
 	viewH = h;
 	viewW = w;
 	nLights = 0;
@@ -84,6 +88,8 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	dwFrameId = 0;
 	surfLabelsActive = false;
 
+	pSunTex = NULL;
+	pLightTex = NULL;
 	pEnvDS = NULL;
 	pIrradDS = NULL;
 	pIrradiance = NULL;
@@ -92,6 +98,10 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	pIrradTemp3 = NULL;
 	pDepthNormalDS = NULL;
 	pVisDepth = NULL;
+	pLocalResults = NULL;
+	pLocalResultsSL = NULL;
+
+	for (auto& a : DepthSampleKernel) a = FVECTOR2(0, 0);
 
 	memset(&psShmDS, 0, sizeof(psShmDS));
 	memset(&ptShmRT, 0, sizeof(ptShmRT));
@@ -145,8 +155,61 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 		IKernel[i].z = sqrt(1.0f - saturate(d));
 		IKernel[i].w = sqrt(IKernel[i].z);
 	}
-		
-	
+
+
+	// -----------------------------------
+	// Read Sun glare sampling kernel file
+
+	ifstream fs("Modules/D3D9Client/GKernel.txt");
+	if (fs.good()) {
+		string line; vector<FVECTOR2> data;
+		while (getline(fs, line)) {
+			std::istringstream iss(line);
+			float a, b;	iss >> a >> b; data.push_back(FVECTOR2(a, b));
+		}
+		if (data.size() != ARRAYSIZE(DepthSampleKernel)) LogErr("Modules/D3D9Client/GKernel.txt Size missmatch. Expecting 57 entries");
+		else for (int i = 0; i < ARRAYSIZE(DepthSampleKernel); i++) DepthSampleKernel[i] = data[i];
+		data.clear();
+	} else LogErr("Failed to read: Modules/D3D9Client/GKernel.txt");
+	fs.close();
+
+
+
+	// Initialize a shaders for local lights visibility checks and rendering
+	//
+	if (bLocalLight)
+	{
+		pRenderGlares = new ShaderClass(pDevice, "Modules/D3D9Client/Glare.hlsl", "GlareVS", "GlarePS", "RenderGlares", "");
+		pLocalCompute = new ShaderClass(pDevice, "Modules/D3D9Client/Glare.hlsl", "VisibilityVS", "VisibilityPS", "LocalVisCheck", "");
+		pCreateGlare  = new ImageProcessing(pDevice, "Modules/D3D9Client/Glare.hlsl", "CreateSunGlarePS");
+		pCreateGlare->CompileShader("CreateLocalGlarePS");
+
+		D3DXCreateTexture(pDevice, 32, 1, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, &pLocalResults);
+		D3DXCreateTexture(pDevice, 256, 256, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, &pSunTex);
+		D3DXCreateTexture(pDevice, 256, 256, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, &pLightTex);
+
+		HR(pLocalResults->GetSurfaceLevel(0, &pLocalResultsSL));
+
+		LPDIRECT3DSURFACE9 pTgt;
+
+		pCreateGlare->Activate("CreateSunGlarePS");
+		pSunTex->GetSurfaceLevel(0, &pTgt);
+		pCreateGlare->SetOutputNative(0, pTgt);
+		if (!pCreateGlare->Execute(false)) LogErr("pCreateGlare Execute Failed (CreateSunGlarePS)");
+		SAFE_RELEASE(pTgt);
+
+		pCreateGlare->Activate("CreateLocalGlarePS");
+		pLightTex->GetSurfaceLevel(0, &pTgt);
+		pCreateGlare->SetOutputNative(0, pTgt);
+		if (!pCreateGlare->Execute(false)) LogErr("pCreateGlare Execute Failed (CreateLocalGlarePS)");
+		SAFE_RELEASE(pTgt);
+	}
+
+
+	// Render screen depth and screen space normals
+	//
+	pVisDepth = new ImageProcessing(pDevice, "Modules/D3D9Client/LightBlur.hlsl", "PSDepth", NULL);
+	pVisDepth->CompileShader("PSNormal");
 
 
 	// Initialize envmapping and shadow maps -----------------------------------------------------------------------------------------------
@@ -204,9 +267,6 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 
 		char flags[32] = { 0 };
 		if (Config->ShaderDebug) strcpy_s(flags, 32, "DISASM");
-
-		pVisDepth = new ImageProcessing(pDevice, "Modules/D3D9Client/LightBlur.hlsl", "PSDepth", NULL);
-		pVisDepth->CompileShader("PSNormal");
 
 		// Load postprocessing effects
 		if (Config->PostProcess == PP_DEFAULT)
@@ -283,6 +343,10 @@ Scene::~Scene ()
 	SAFE_DELETE(pLightBlur);
 	SAFE_DELETE(pIrradiance);
 	SAFE_DELETE(m_celSphere);
+	SAFE_DELETE(pLocalCompute);
+	SAFE_DELETE(pRenderGlares);
+	SAFE_DELETE(pCreateGlare);
+
 	SAFE_RELEASE(pOffscreenTarget);
 	SAFE_RELEASE(pEnvDS);
 	SAFE_RELEASE(pIrradDS);
@@ -290,6 +354,10 @@ Scene::~Scene ()
 	SAFE_RELEASE(pIrradTemp2);
 	SAFE_RELEASE(pIrradTemp3);
 	SAFE_RELEASE(pDepthNormalDS);
+	SAFE_RELEASE(pLocalResults);
+	SAFE_RELEASE(pLocalResultsSL);
+	SAFE_RELEASE(pSunTex);
+	SAFE_RELEASE(pLightTex);
 
 	for (int i = 0; i < ARRAYSIZE(psShmDS); i++) SAFE_RELEASE(psShmDS[i]);
 	for (int i = 0; i < ARRAYSIZE(ptShmRT); i++) SAFE_RELEASE(ptShmRT[i]);
@@ -1035,6 +1103,69 @@ void Scene::AddLocalLight(const LightEmitter *le, const vObject *vo)
 	}
 }
 
+// ===========================================================================================
+//
+void Scene::ComputeLocalLightsVisibility()
+{
+	return;
+
+	static LocalLightsCompute Buf[MAX_SCENE_LIGHTS + 1];
+
+	if (!ptgBuffer[GBUF_DEPTH]) return;
+
+
+	// Put the Sun on a top of the list
+	Buf[0].index = 0.0f;
+	Buf[0].pos = FVECTOR3(0, 0, 0);
+	Buf[0].cone = 1.0f;
+
+	int nGlares = 1;
+
+	for (int i = 0; i < nLights; i++)
+	{
+		if (Lights[i].cone > 0.0f) {
+			Buf[nGlares].index = float(nGlares);
+			Buf[nGlares].pos = Lights[i].Position;
+			Buf[nGlares].cone = Lights[i].cone;
+			Lights[i].GPUId = nGlares;
+			nGlares++;
+		}
+	}
+
+	struct {
+		D3DXMATRIX mVP;
+		D3DXMATRIX mSVP;
+		FVECTOR4 vTgt;
+		FVECTOR3 vDir;
+	} ComputeData;
+
+	D3D9DebugLog("nGlares = %d", nGlares);
+	D3DSURFACE_DESC desc;
+	pLocalResultsSL->GetDesc(&desc);
+
+	D3DXMatrixOrthoOffCenterLH(&ComputeData.mVP, 0.0f, (float)desc.Width, (float)desc.Height, 0.0f, 0.0f, 1.0f);
+
+	ComputeData.vTgt = FVECTOR4((float)desc.Width, (float)desc.Height, 1.0f / (float)desc.Width, 1.0f / (float)desc.Height);
+	ComputeData.vDir = Camera.z;
+	ComputeData.mSVP = Camera.mProjView;
+
+	// Must setup render target before calling Setup()
+	gc->PushRenderTarget(pLocalResultsSL, NULL, RENDERPASS_UNKNOWN);
+
+	pLocalCompute->ClearTextures();
+	pLocalCompute->SetPSConstants("cbPS", &ComputeData, sizeof(ComputeData));
+	pLocalCompute->SetPSConstants("cbKernel", DepthSampleKernel, sizeof(DepthSampleKernel));
+	pLocalCompute->SetVSConstants("cbPS", &ComputeData, sizeof(ComputeData));
+	pLocalCompute->SetTexture("tDepth", ptgBuffer[GBUF_DEPTH], IPF_CLAMP | IPF_LINEAR);
+	pLocalCompute->Setup(pLocalLightsDecl, false, 0);
+	pLocalCompute->UpdateTextures();
+
+	// Compute local lights visibility
+	HR(pDevice->DrawPrimitiveUP(D3DPT_POINTLIST, nGlares, &Buf, sizeof(LocalLightsCompute)));
+
+	gc->PopRenderTargets();
+}
+
 
 // ===========================================================================================
 //
@@ -1194,6 +1325,8 @@ void Scene::RenderMainScene()
 	float znear_for_vessels = ComputeNearClipPlane();
 
 
+
+
 	// ---------------------------------------------------------------------------------------------
 	// Start Rendering of Normal and Depth Buffer for SSAO and (point in scene) visibility checks
 	// ---------------------------------------------------------------------------------------------
@@ -1225,8 +1358,13 @@ void Scene::RenderMainScene()
 	PopPass();
 
 
+	// ---------------------------------------------------------------------------------------------
+	// Compute visibility of the Sun and Local light sources. After field depth render ! ! !
+	// ---------------------------------------------------------------------------------------------
 
-	
+	ComputeLocalLightsVisibility();
+
+
 	// -------------------------------------------------------------------------------------------------------
 	// Start Main Scene Rendering
 	// -------------------------------------------------------------------------------------------------------
@@ -1862,6 +2000,68 @@ void Scene::RenderMainScene()
 		}
 	}
 
+
+	// -------------------------------------------------------------------------------------------------------
+	// Render glares for the Sun and local lights
+	// -------------------------------------------------------------------------------------------------------
+	/*
+	if (pRenderGlares)
+	{
+		static SMVERTEX Vertex[4] = { {-1, -1, 0, 0, 0}, {-1, 1, 0, 0, 1}, {1, 1, 0, 1, 1}, {1, -1, 0, 1, 0} };
+		static WORD cIndex[6] = { 0, 2, 1, 0, 3, 2 };
+		D3DSURFACE_DESC desc;
+
+		struct {
+			D3DXMATRIX	mVP;
+			float4		Pos, Color;
+			float		GPUId, Scale;
+		} Const;
+
+		Const.Color = FVECTOR4(1, 1, 1, 1);
+		D3DXMatrixOrthoOffCenterLH(&Const.mVP, 0.0f, (float)viewW, (float)viewH, 0.0f, 0.0f, 1.0f);
+		pLocalResultsSL->GetDesc(&desc);
+
+		pRenderGlares->ClearTextures();
+		pRenderGlares->SetTexture("tVis", pLocalResults, IPF_CLAMP | IPF_POINT); // Set texture containing pre-cumputed visibility factors
+		pRenderGlares->SetTexture("tTex", pSunTex, IPF_CLAMP | IPF_LINEAR);
+		pRenderGlares->Setup(pPosTexDecl, false, 1);
+		pRenderGlares->UpdateTextures();
+
+		// Render Sun glare
+		IVECTOR2 pt; VECTOR3 pos = -unit(Camera.pos) * 1e3;
+		if (WorldToScreenSpace(pos, &pt)) {
+			D3D9DebugLog("SUN POSITION = [%d, %d]", pt.x, pt.y);
+			float size = 100.0f;
+			Const.GPUId = (float(0.0) + 0.5f) / desc.Width;
+			Const.Pos = FVECTOR4(float(pt.x) - size, float(pt.y) - size, size, size);
+			Const.Scale = 1.0f;
+			pRenderGlares->SetVSConstants("Const", &Const, sizeof(Const));
+			pRenderGlares->SetPSConstants("Const", &Const, sizeof(Const));
+			HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));
+		}
+
+		pRenderGlares->SetTexture("tTex", pLightTex, IPF_CLAMP | IPF_LINEAR);
+		pRenderGlares->UpdateTextures();
+
+		// Render glares for local lights
+		for (int i = 0; i < nLights; ++i) {
+			int GPUId = Lights[i].GPUId;
+			if (GPUId >= 0) {
+				if (WorldToScreenSpace(_V(Lights[i].Position), &pt)) {
+					float size = 100.0f;
+					Const.GPUId = (float(GPUId) + 0.5f) / desc.Width;
+					Const.Pos = FVECTOR4(float(pt.x) - size, float(pt.y) - size, size, size);
+					Const.Scale = 1.0f;
+					pRenderGlares->SetVSConstants("Const", &Const, sizeof(Const));
+					pRenderGlares->SetPSConstants("Const", &Const, sizeof(Const));
+					HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));
+				}
+			}
+		}
+	}
+	*/
+
+
 	
 
 	// -------------------------------------------------------------------------------------------------------
@@ -1950,21 +2150,25 @@ void Scene::RenderMainScene()
 			break;
 		case 11:
 			if (ptgBuffer[GBUF_DEPTH]) {
-				if (pVisDepth->IsOK()) {
-					pVisDepth->Activate("PSDepth");
-					pVisDepth->SetTextureNative("tBack", ptgBuffer[GBUF_DEPTH], IPF_POINT | IPF_CLAMP);
-					pVisDepth->SetOutputNative(0, gc->GetBackBuffer());
-					pVisDepth->Execute(true);
+				if (pVisDepth) {
+					if (pVisDepth->IsOK()) {
+						pVisDepth->Activate("PSDepth");
+						pVisDepth->SetTextureNative("tBack", ptgBuffer[GBUF_DEPTH], IPF_POINT | IPF_CLAMP);
+						pVisDepth->SetOutputNative(0, gc->GetBackBuffer());
+						pVisDepth->Execute(true);
+					}
 				}
 			}
 			break;
 		case 12:
 			if (ptgBuffer[GBUF_DEPTH]) {
-				if (pVisDepth->IsOK()) {
-					pVisDepth->Activate("PSNormal");
-					pVisDepth->SetTextureNative("tBack", ptgBuffer[GBUF_DEPTH], IPF_POINT | IPF_CLAMP);
-					pVisDepth->SetOutputNative(0, gc->GetBackBuffer());
-					pVisDepth->Execute(true);
+				if (pVisDepth) {
+					if (pVisDepth->IsOK()) {
+						pVisDepth->Activate("PSNormal");
+						pVisDepth->SetTextureNative("tBack", ptgBuffer[GBUF_DEPTH], IPF_POINT | IPF_CLAMP);
+						pVisDepth->SetOutputNative(0, gc->GetBackBuffer());
+						pVisDepth->Execute(true);
+					}
 				}
 			}
 			break;
@@ -2079,38 +2283,6 @@ void Scene::RenderVesselMarker(vVessel *vV, D3D9Pad *pSketch)
 //
 Scene::SUNVISPARAMS Scene::GetSunScreenVisualState()
 {
-	/*
-	SUNVISPARAMS result = SUNVISPARAMS();
-
-	VECTOR3 cam = GetCameraGPos();
-	VECTOR3 sunGPos;
-	oapiGetGlobalPos(oapiGetGbodyByIndex(0), &sunGPos);
-	sunGPos -= cam;
-	DWORD w, h;
-	oapiGetViewportSize(&w, &h);
-
-	MATRIX4 mVP = _MATRIX4(GetProjectionViewMatrix());
-	VECTOR4 temp = _V(sunGPos.x, sunGPos.y, sunGPos.z, 1.0);
-	VECTOR4 pos = mul(temp, mVP);
-
-	result.brightness = float(saturate(pos.z));
-
-	D3DXVECTOR2 scrPos = D3DXVECTOR2(float(pos.x), float(pos.y));
-	scrPos /= float(pos.w);
-	scrPos *= 0.5f;
-	scrPos.x *= float(w / h);
-
-	result.position = scrPos;
-	result.position.x *= 1.8f;
-
-	short xpos = short((scrPos.x + 0.5f) * w);
-	short ypos = short((1 - (scrPos.y + 0.5f)) * h);
-
-	result.visible = true;
-	result.color = GetSunDiffColor();
-
-	return result;*/
-
 	SUNVISPARAMS result = SUNVISPARAMS();
 
 	VECTOR3 cam = GetCameraGPos();
@@ -2644,7 +2816,7 @@ bool Scene::IntegrateIrradiance(vVessel *vV, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRE
 	pIrradiance->SetBool("bUp", false);
 	pIrradiance->SetTemplate(0.5f, 1.0f, 0.0f, 0.0f);
 
-	if (!pIrradiance->ExecuteTemplate(true)) {
+	if (!pIrradiance->Execute(true)) {
 		LogErr("pIrradiance Execute Failed");
 		return false;
 	}
@@ -2652,7 +2824,7 @@ bool Scene::IntegrateIrradiance(vVessel *vV, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRE
 	pIrradiance->SetBool("bUp", true);
 	pIrradiance->SetTemplate(0.5f, 1.0f, 0.5f, 0.0f);
 
-	if (!pIrradiance->ExecuteTemplate(true)) {
+	if (!pIrradiance->Execute(true)) {
 		LogErr("pIrradiance Execute Failed");
 		return false;
 	}

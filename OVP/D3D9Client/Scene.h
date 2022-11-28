@@ -45,6 +45,7 @@ class D3D9Pad;
 #define TEX_CLUT				1
 #define TEX_COUNT				2
 
+#define RENDERPASS_UNKNOWN		0x0000
 #define RENDERPASS_MAINSCENE	0x0001
 #define RENDERPASS_ENVCAM		0x0002
 #define RENDERPASS_CUSTOMCAM	0x0003
@@ -396,7 +397,7 @@ protected:
 	void RenderObjectMarker(oapi::Sketchpad *pSkp, const VECTOR3 &gpos, const std::string& label1, const std::string& label2, int mode, int scale);
 
 private:
-
+	void		ComputeLocalLightsVisibility();
 	DWORD		GetActiveParticleEffectCount();
 	float		ComputeNearClipPlane();
 	void		VisualizeCubeMap(LPDIRECT3DCUBETEXTURE9 pCube, int mip);
@@ -477,11 +478,18 @@ private:
 
 	SurfNative *pLblSrf;
 
-	class ImageProcessing *pLightBlur, *pBlur, *pGDIOverlay, *pIrradiance, *pVisDepth;
+	class ImageProcessing *pLightBlur, *pBlur, *pGDIOverlay, *pIrradiance, *pVisDepth, *pCreateGlare;
+	class ShaderClass *pLocalCompute, *pRenderGlares;
 
 	class vVessel *vFocus;
 	VOBJREC *vobjEnv, *vobjIrd;
 	double dVisualAppRad;
+
+	FVECTOR2 DepthSampleKernel[57];
+
+	LPDIRECT3DTEXTURE9 pSunTex, pLightTex;
+	LPDIRECT3DTEXTURE9 pLocalResults;
+	LPDIRECT3DSURFACE9 pLocalResultsSL;
 
 	// Blur Sampling Kernel ==============================================================
 	LPDIRECT3DCUBETEXTURE9 pBlrTemp[5];

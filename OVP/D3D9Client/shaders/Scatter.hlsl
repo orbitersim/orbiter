@@ -739,34 +739,3 @@ float4 LandViewAtten(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 
 	return float4(ret, 1.0);
 }
-
-
-
-
-
-// Render Sun Texture "Glare"
-//
-float4 RenderSun(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
-{
-	u = u * 2.0 - 1.0;
-	v = v * 2.0 - 1.0;
-
-	float a = atan2(u, v);
-	float r = sqrt(u * u + v * v);
-
-	float q = 0.5f + 0.5f * pow(sin(3.0f * a), 4.0f);
-	float w = 0.5f + 0.3f * pow(sin(30.0f * a), 2.0f) * pow(sin(41.0f * a), 2.0f);
-
-	//float I = pow(max(0, 2.0f * (1 - r / q)), 12.0f);
-	//float K = pow(max(0, 2.0f * (1 - r / w)), 12.0f);
-
-	float I = pow(max(0, (1 - r / q)), 6.0f) * 8e4;
-	float K = pow(max(0, (1 - r / w)), 6.0f) * 16e4;
-
-	//float I = exp(max(0, 10.0f * (1 - r / q))) - 1.0f;
-	//float K = exp(max(0, 10.0f * (1 - r / w))) - 1.0f;
-
-	float L = exp(max(0, 0.35f - r) * 43.0f);
-
-	return float4(max(I+L,K+L), 0, 0, 1);
-}

@@ -1305,7 +1305,7 @@ D3D9Light::D3D9Light() :
 	cosp(0), tanp(0), cosu(0),
 	range(0), range2(0),
 	intensity(-1.0),
-	le(NULL)
+	le(NULL), cone(1.0f), GPUId(-1)
 {
 
 }
@@ -1322,6 +1322,8 @@ D3D9Light::~D3D9Light()
 void D3D9Light::Reset()
 {
 	intensity = -1.0f;
+	cone = 1.0f;
+	GPUId = -1;
 }
 
 // ============================================================================
@@ -1376,6 +1378,7 @@ void D3D9Light::UpdateLight(const LightEmitter *_le, const class vObject *vo)
 	tanp = 0.0f;
 	cosu = 1.0f;
 	cosp = 1.0f;
+	cone = 1.0f;
 	float P = 0.0f;
 	float U = 0.0f;
 
@@ -1436,6 +1439,8 @@ void D3D9Light::UpdateLight(const LightEmitter *_le, const class vObject *vo)
 	// -----------------------------------------------------------------------------
 	if (Type != 0) {
 		D3DXVec3TransformNormal(&Direction, &D3DXVEC(le->GetDirection()), vo->MWorld());
+		float angle = acos(dot(unit(Position), Direction));
+		cone = ilerp(U * 0.5f, P * 0.5f, angle);
 	}
 }
 

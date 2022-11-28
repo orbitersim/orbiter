@@ -50,7 +50,7 @@ typedef std::map<std::string, vPlanet::_MicroCfg>::iterator MicroCfgsIterator;
 
 ImageProcessing* vPlanet::pIP;
 LPDIRECT3DDEVICE9 vPlanet::pDev;
-LPDIRECT3DTEXTURE9 vPlanet::pSunTex = NULL;
+
 int vPlanet::Qc = 0;
 int vPlanet::Wc = 0;
 int vPlanet::Nc = 0;

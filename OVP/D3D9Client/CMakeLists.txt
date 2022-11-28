@@ -140,6 +140,7 @@ set(ShaderFiles
     ${ShaderDir}/NewMesh.hlsl
     ${ShaderDir}/NewPlanet.hlsl
     ${ShaderDir}/Scatter.hlsl
+    ${ShaderDir}/Glare.hlsl
 	${ShaderDir}/Mesh.fx
 	${ShaderDir}/Metalness.fx
 	${ShaderDir}/Particle.fx

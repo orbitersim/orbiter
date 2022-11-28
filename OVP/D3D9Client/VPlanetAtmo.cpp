@@ -86,7 +86,6 @@ void vPlanet::GlobalInitAtmosphere(oapi::D3D9Client* gc)
 	pIP->CompileShader("SkyView");
 	pIP->CompileShader("LandView");
 	pIP->CompileShader("RingView");
-	pIP->CompileShader("RenderSun");
 	pIP->CompileShader("AmbientSky");
 	pIP->CompileShader("LandViewAtten");
 
@@ -94,18 +93,6 @@ void vPlanet::GlobalInitAtmosphere(oapi::D3D9Client* gc)
 		oapiWriteLog("InitializeScatteringEx() FAILED");
 		return;
 	}
-
-	// Render Sunglare texture -----------------------------
-	//
-	D3DXCreateTexture(pDev, 256, 256, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &pSunTex);
-
-	LPDIRECT3DSURFACE9 pTgt;
-
-	pIP->Activate("RenderSun");
-	pSunTex->GetSurfaceLevel(0, &pTgt);
-	pIP->SetOutputNative(0, pTgt);
-	if (!pIP->Execute(false)) LogErr("pIP Execute Failed (RenderSun)");
-	SAFE_RELEASE(pTgt);
 
 
 	// Get Texture size constants form shader file
@@ -511,7 +498,7 @@ vPlanet::SHDPrm vPlanet::ComputeShadow(FVECTOR3 vRay)
 //
 void vPlanet::TestComputations(Sketchpad* pSkp)
 {
-	//return;
+	return;
 
 	static int status = 0;
 	float size = 0.02f;
@@ -1004,7 +991,6 @@ LPDIRECT3DTEXTURE9 vPlanet::GetScatterTable(int i)
 	case RAY_LAND: return pLandViewRay;
 	case MIE_LAND: return pLandViewMie;
 	case ATN_LAND: return pLandViewAtn;
-	case SUN_GLARE: return pSunTex;
 	case SKY_AMBIENT: return pAmbientSky;
 	default: return NULL;
 	}

@@ -33,6 +33,7 @@ IDirect3DVertexDeclaration9	*pVector4Decl  = NULL;
 IDirect3DVertexDeclaration9	*pPosTexDecl   = NULL;
 IDirect3DVertexDeclaration9	*pPatchVertexDecl = NULL;
 IDirect3DVertexDeclaration9 *pSketchpadDecl = NULL;
+IDirect3DVertexDeclaration9 *pLocalLightsDecl = NULL;
 
 static char *d3dmessage={"Required DirectX version (June 2010 or newer) not found\0"};
 
@@ -125,6 +126,7 @@ HRESULT CD3DFramework9::DestroyObjects ()
 	SAFE_RELEASE(pMeshVertexDecl);
 	SAFE_RELEASE(pPatchVertexDecl);
 	SAFE_RELEASE(pSketchpadDecl);
+	SAFE_RELEASE(pLocalLightsDecl);
 
 	Sleep(200);
 
@@ -432,8 +434,9 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	HR(pDevice->CreateVertexDeclaration(MeshVertexDecl,  &pMeshVertexDecl));
 	HR(pDevice->CreateVertexDeclaration(PatchVertexDecl, &pPatchVertexDecl));
 	HR(pDevice->CreateVertexDeclaration(SketchpadDecl, &pSketchpadDecl));
+	HR(pDevice->CreateVertexDeclaration(LocalLightsDecl, &pLocalLightsDecl));
 
-	// Setup some default fomts
+	// Setup some default fonts
 	//
 	D3DXFONT_DESC fontDesc;
 	fontDesc.Height          = 30;
