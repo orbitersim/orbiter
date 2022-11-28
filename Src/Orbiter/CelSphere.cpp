@@ -45,9 +45,12 @@ OGCelestialSphere::OGCelestialSphere(OrbiterGraphics* gc, Scene* scene)
 	char cpath[256];
 	m_gc->TexturePath("gridlabel.dds", cpath);
 	if (FILE* f = fopen(cpath, "rb")) {
-		g_texmanager2->ReadTexture(f, &m_GridLabelTex);
+		if (FAILED(g_texmanager2->ReadTexture(f, &m_GridLabelTex)))
+			m_GridLabelTex = nullptr;
 		fclose(f);
 	}
+	if (!m_GridLabelTex)
+		LOGOUT_ERR("Failed to load texture %s", cpath);
 }
 
 // ==============================================================
@@ -596,6 +599,7 @@ void OGCelestialSphere::RenderGrid(LPDIRECT3DDEVICE7 dev, const oapi::FVECTOR4& 
 
 void OGCelestialSphere::RenderGridLabels(LPDIRECT3DDEVICE7 dev, int az_idx, const oapi::FVECTOR4& baseCol, double dphi)
 {
+	if (!m_GridLabelTex) return;
 	if (az_idx >= m_azGridLabelVtx.size()) return;
 	if (!m_azGridLabelVtx[az_idx])
 		AllocGridLabels();
