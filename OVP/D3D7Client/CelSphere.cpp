@@ -51,9 +51,12 @@ D3D7CelestialSphere::D3D7CelestialSphere (D3D7Client* gc, Scene* scene)
 	char cpath[256];
 	m_gc->TexturePath("gridlabel.dds", cpath);
 	if (FILE* f = fopen(cpath, "rb")) {
-		m_gc->GetTexMgr()->ReadTexture(f, &m_GridLabelTex, 0);
+		if (FAILED(m_gc->GetTexMgr()->ReadTexture(f, &m_GridLabelTex, 0)))
+			m_GridLabelTex = nullptr;
 		fclose(f);
 	}
+	if (!m_GridLabelTex)
+		oapiWriteLogError("Failed to load texture %s", cpath);
 }
 
 // ==============================================================
@@ -549,6 +552,7 @@ void D3D7CelestialSphere::RenderGrid (LPDIRECT3DDEVICE7 dev, const FVECTOR4& bas
 
 void D3D7CelestialSphere::RenderGridLabels(LPDIRECT3DDEVICE7 dev, int az_idx, const oapi::FVECTOR4& baseCol, double dphi)
 {
+	if (!m_GridLabelTex) return;
 	if (az_idx >= m_azGridLabelVtx.size()) return;
 	if (!m_azGridLabelVtx[az_idx])
 		AllocGridLabels();

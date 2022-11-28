@@ -52,7 +52,10 @@ D3D9CelestialSphere::D3D9CelestialSphere(D3D9Client *gc, Scene *scene)
 	m_textBlendAdditive = true;
 	m_mjdPrecessionChecked = -1e10;
 
-	m_GridLabelTex = SURFACE(m_gc->clbkLoadTexture("gridlabel.dds", 0));
+	SURFHANDLE hSurf = m_gc->clbkLoadTexture("gridlabel.dds", 0);
+	if (hSurf) m_GridLabelTex = SURFACE(hSurf);
+	if (!m_GridLabelTex)
+		oapiWriteLogError("Failed to load texture gridlabel.dds");
 }
 
 // ==============================================================
@@ -73,7 +76,8 @@ D3D9CelestialSphere::~D3D9CelestialSphere()
 		m_GridLabelIdx->Release();
 
 	delete m_bkgImgMgr;
-	DELETE_SURFACE(m_GridLabelTex);
+	if (m_GridLabelTex)
+		DELETE_SURFACE(m_GridLabelTex);
 }
 
 // ==============================================================
@@ -566,6 +570,7 @@ void D3D9CelestialSphere::RenderGrid(ID3DXEffect *FX, bool eqline)
 
 void D3D9CelestialSphere::RenderGridLabels(ID3DXEffect* FX, int az_idx, const oapi::FVECTOR4& baseCol, const MATRIX3& R, double dphi)
 {
+	if (!m_GridLabelTex) return;
 	if (az_idx >= m_azGridLabelVtx.size()) return;
 	if (!m_azGridLabelVtx[az_idx])
 		AllocGridLabels();
