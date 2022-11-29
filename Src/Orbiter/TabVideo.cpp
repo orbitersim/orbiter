@@ -71,7 +71,7 @@ void orbiter::DefVideoTab::ShowInterface(HWND hTab, bool show)
 
 //-----------------------------------------------------------------------------
 
-BOOL orbiter::DefVideoTab::InitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam)
+BOOL orbiter::DefVideoTab::OnInitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
 #ifdef INLINEGRAPHICS
 	ShowInterface(hWnd, true);
@@ -272,7 +272,7 @@ INT_PTR CALLBACK orbiter::DefVideoTab::InfoProc(HWND hWnd, UINT uMsg, WPARAM wPa
 
 //-----------------------------------------------------------------------------
 
-INT_PTR orbiter::DefVideoTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+BOOL orbiter::DefVideoTab::OnMessage (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_COMMAND:

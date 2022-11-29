@@ -229,6 +229,8 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdSh
 	srand(12345);
 	LOGOUT("Timer precision: %g sec", fine_counter_step);
 
+	oapiRegisterCustomControls(hInstance);
+
 	HRESULT hr;
 	// Create application
 	if (FAILED (hr = g_pOrbiter->Create (hInstance))) {
@@ -238,7 +240,6 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdSh
 		return 0;
 	}
 
-	oapiRegisterCustomControls (hInstance);
 	setlocale (LC_CTYPE, "");
 
 	g_pOrbiter->Run ();
@@ -1553,8 +1554,10 @@ void Orbiter::TogglePlanetariumMode()
 	DWORD& plnFlag = pConfig->CfgVisHelpPrm.flagPlanetarium;
 	plnFlag ^= PLN_ENABLE;
 
-	DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInst);
-	if (dlg) dlg->Update();
+	if (pDlgMgr) {
+		DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInst);
+		if (dlg) dlg->Update();
+	}
 
 }
 
@@ -1565,8 +1568,10 @@ void Orbiter::ToggleLabelDisplay()
 	DWORD& mkrFlag = pConfig->CfgVisHelpPrm.flagMarkers;
 	mkrFlag ^= MKR_ENABLE;
 
-	DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInst);
-	if (dlg) dlg->Update();
+	if (pDlgMgr) {
+		DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInst);
+		if (dlg) dlg->Update();
+	}
 }
 
 //-----------------------------------------------------------------------------

@@ -5,6 +5,7 @@
 #define __LAUNCHPAD_H
 
 #include <dinput.h>
+#include <CommCtrl.h>
 #include "OrbiterAPI.h"
 #include "Config.h"
 
@@ -131,7 +132,7 @@ namespace orbiter {
 		INT_PTR WaitProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 		// Dialog message callbacks
 
-		friend INT_PTR CALLBACK ::AppDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		static INT_PTR CALLBACK s_DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 		friend INT_PTR CALLBACK ::WaitPageProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 		friend LONG_PTR FAR PASCAL MsgProc_CopyrightFrame(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 

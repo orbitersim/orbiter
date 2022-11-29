@@ -24,8 +24,9 @@
 #define IDB_LOGO                        152
 #define IDD_MAIN                        171
 #define IDD_PAGE_SCN                    172
-#define IDD_PAGE_VIS                    173
-#define IDD_PAGE_MOD                    174
+#define IDD_PAGE_OPT                    173
+#define IDD_PAGE_VIS                    174
+#define IDD_PAGE_MOD                    175
 #define IDD_PAGE_JOY                    176
 #define IDD_PAGE_EXT                    177
 #define IDD_PAGE_ABT                    178
@@ -372,6 +373,7 @@
 #define IDC_SPIN3                       1259
 #define IDC_MNU_SCN                     1259
 #define IDC_SPIN4                       1260
+#define IDC_MNU_OPT                     1260
 #define IDC_MNU_PRM                     1261
 #define IDC_MNU_MOD                     1262
 #define IDC_MNU_VID                     1263

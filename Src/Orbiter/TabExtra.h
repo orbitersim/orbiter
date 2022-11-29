@@ -31,7 +31,7 @@ namespace orbiter {
 
 		bool DynamicSize() const { return true; }
 
-		BOOL Size(int w, int h);
+		BOOL OnSize(int w, int h);
 
 		INT_PTR TabProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 

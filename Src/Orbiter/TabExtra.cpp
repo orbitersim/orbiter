@@ -104,7 +104,7 @@ bool orbiter::ExtraTab::OpenHelp ()
 
 //-----------------------------------------------------------------------------
 
-BOOL orbiter::ExtraTab::Size (int w, int h)
+BOOL orbiter::ExtraTab::OnSize (int w, int h)
 {
 	int dw = w - (int)(pos0.right-pos0.left);
 	int dh = h - (int)(pos0.bottom-pos0.top);

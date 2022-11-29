@@ -36,6 +36,7 @@ set(common_src
 	TabExtra.cpp
 	TabJoystick.cpp
 	TabModule.cpp
+	TabOptions.cpp
 	TabScenario.cpp
 	TabVideo.cpp
 	TabVisual.cpp
@@ -57,6 +58,7 @@ set(common_src
 	DlgTacc.cpp
 	htmlctrl.c
 	Select.cpp
+	OptionsPages.cpp
 # Body classes
 	Body.cpp
 	BodyIntegrator.cpp

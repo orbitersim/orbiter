@@ -20,7 +20,7 @@ namespace orbiter {
 		~ModuleTab();
 
 		void Create();
-		BOOL InitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam);
+		BOOL OnInitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam);
 
 		void GetConfig(const Config* cfg);
 		void SetConfig(Config* cfg);
@@ -29,7 +29,7 @@ namespace orbiter {
 
 		bool DynamicSize() const { return true; }
 
-		BOOL Size(int w, int h);
+		BOOL OnSize(int w, int h);
 
 		INT_PTR TabProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 

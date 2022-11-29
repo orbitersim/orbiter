@@ -61,7 +61,7 @@ void orbiter::ModuleTab::Create ()
 
 //-----------------------------------------------------------------------------
 
-BOOL orbiter::ModuleTab::InitDialog (HWND hWnd, WPARAM wParam, LPARAM lParam)
+BOOL orbiter::ModuleTab::OnInitDialog (HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
 	SetWindowLongPtr (GetDlgItem (hTab, IDC_MOD_TREE), GWL_STYLE, TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | TVS_NOTOOLTIPS | WS_BORDER | WS_TABSTOP);
 	SetWindowPos (GetDlgItem (hTab, IDC_MOD_TREE), NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER);
@@ -101,7 +101,7 @@ bool orbiter::ModuleTab::OpenHelp ()
 
 //-----------------------------------------------------------------------------
 
-BOOL orbiter::ModuleTab::Size (int w, int h)
+BOOL orbiter::ModuleTab::OnSize (int w, int h)
 {
 	int dw = w - (int)(pos0.right-pos0.left);
 	int dh = h - (int)(pos0.bottom-pos0.top);

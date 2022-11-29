@@ -13,6 +13,7 @@
 #include "Orbiter.h"
 #include "Launchpad.h"
 #include "TabScenario.h"
+#include "TabOptions.h"
 #include "TabVisual.h"
 #include "TabModule.h"
 #include "TabVideo.h"
@@ -86,15 +87,16 @@ orbiter::LaunchpadDialog::~LaunchpadDialog ()
 bool orbiter::LaunchpadDialog::Create (bool startvideotab)
 {
 	if (!hDlg) {
-		CreateDialog (hInst, MAKEINTRESOURCE(IDD_MAIN), NULL, AppDlgProc);
+		CreateDialogParam(hInst, MAKEINTRESOURCE(IDD_MAIN), NULL, s_DlgProc, (LPARAM)this);
 		hTabContainer = GetDlgItem(hDlg, IDC_MNU_PAGECONTAINER);
-		AddTab (new ScenarioTab (this)); TRACENEW
-		AddTab (new VisualTab (this)); TRACENEW
-		AddTab (new ModuleTab (this)); TRACENEW
-		AddTab (new DefVideoTab (this)); TRACENEW
-		AddTab (new JoystickTab (this)); TRACENEW
-		AddTab (pExtra = new ExtraTab (this)); TRACENEW
-		AddTab (new AboutTab (this)); TRACENEW
+		AddTab (new ScenarioTab (this));
+		AddTab(new OptionsTab(this));
+		AddTab (new VisualTab (this));
+		AddTab (new ModuleTab (this));
+		AddTab (new DefVideoTab (this));
+		AddTab (new JoystickTab (this));
+		AddTab (pExtra = new ExtraTab (this));
+		AddTab (new AboutTab (this));
 		InitTabControl (hDlg);
 		InitSize (hDlg);
 		SwitchTabPage (hDlg, 0);
@@ -362,8 +364,11 @@ INT_PTR orbiter::LaunchpadDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, 
 		case IDC_MNU_SCN:
 			SwitchTabPage (hWnd, PG_SCN);
 			return TRUE;
+		case IDC_MNU_OPT:
+			SwitchTabPage(hWnd, PG_OPT);
+			return TRUE;
 		case IDC_MNU_PRM:
-			SwitchTabPage (hWnd, PG_OPT);
+			SwitchTabPage (hWnd, PG_OPT2);
 			return TRUE;
 		case IDC_MNU_MOD:
 			SwitchTabPage (hWnd, PG_MOD);
@@ -480,8 +485,8 @@ void orbiter::LaunchpadDialog::SwitchTabPage (HWND hWnd, int cpg)
 {
 	for (size_t pg = 0; pg < TabList.size(); pg++)
 		if (pg != cpg) TabList[pg]->Hide();
-	CTab = TabList[cpg];
-	CTab->Show();
+	CTab = (cpg >= 0 && cpg < TabList.size() ? TabList[cpg] : nullptr);
+	if (CTab) CTab->Show();
 }
 
 //-----------------------------------------------------------------------------
@@ -489,9 +494,12 @@ void orbiter::LaunchpadDialog::SwitchTabPage (HWND hWnd, int cpg)
 void orbiter::LaunchpadDialog::ShowWaitPage (bool show, long mem_committed)
 {
 	int i;
-	int showtab = (show ? SW_HIDE:SW_SHOW);
 	int item[3] = {IDLAUNCH, 9, IDEXIT};
 
+	if (show) {
+		for (i = 0; i < ARRAYSIZE(item); i++)
+			ShowWindow(GetDlgItem(hDlg, item[i]), SW_HIDE);
+	}
 	if (show) {
 		SetCursor(LoadCursor(NULL, IDC_WAIT));
 		for (auto tab : TabList)
@@ -506,10 +514,9 @@ void orbiter::LaunchpadDialog::ShowWaitPage (bool show, long mem_committed)
 		ShowWindow (hWait, SW_HIDE);
 		SwitchTabPage (hDlg, 0);
 	}
-	for (i = 0; i < 3; i++)
-		ShowWindow (GetDlgItem (hDlg, item[i]), showtab);
-	for (i = 0; i < TabList.size(); i++)
-		ShowWindow (GetDlgItem (hDlg, mnubt[i]), showtab);
+	if (!show)
+		for (i = 0; i < ARRAYSIZE(item); i++)
+			ShowWindow (GetDlgItem (hDlg, item[i]), SW_SHOW);
 
 	RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_ALLCHILDREN);
 }
@@ -597,20 +604,20 @@ void orbiter::LaunchpadDialog::WriteExtraParams ()
 	pExtra->WriteExtraParams ();
 }
 
+//-----------------------------------------------------------------------------
+// Name: s_DlgProc()
+// Desc: Static msg handler which passes messages from the main dialog
+//       to the application class.
+//-----------------------------------------------------------------------------
+INT_PTR CALLBACK orbiter::LaunchpadDialog::s_DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	return g_pDlg->DlgProc(hWnd, uMsg, wParam, lParam);
+}
+
 
 //=============================================================================
 // Nonmember functions
 //=============================================================================
-
-//-----------------------------------------------------------------------------
-// Name: AppDlgProc()
-// Desc: Static msg handler which passes messages from the main dialog
-//       to the application class.
-//-----------------------------------------------------------------------------
-INT_PTR CALLBACK AppDlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	return g_pDlg->DlgProc (hWnd, uMsg, wParam, lParam);
-}
 
 //-----------------------------------------------------------------------------
 // Name: WaitPageProc()
