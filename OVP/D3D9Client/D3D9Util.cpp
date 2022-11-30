@@ -1816,14 +1816,15 @@ void ShaderClass::UpdateTextures()
 			HR(pDev->SetSamplerState(idx, D3DSAMP_MAXANISOTROPY, pTextures[idx].AnisoLvl));
 			HR(pDev->SetSamplerState(idx, D3DSAMP_MAGFILTER, filter));
 			HR(pDev->SetSamplerState(idx, D3DSAMP_MINFILTER, filter));
-			HR(pDev->SetSamplerState(idx, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR));
+			HR(pDev->SetSamplerState(idx, D3DSAMP_MIPFILTER, filter));
 		}
 
 		// If texture has changed then assign it
 		if (pTextures[idx].pTex != pTextures[idx].pAssigned)
 		{
 			pTextures[idx].pAssigned = pTextures[idx].pTex;
-			HR(pDev->SetTexture(idx, pTextures[idx].pTex));
+			int id = idx > 15 ? idx - 16 + D3DVERTEXTEXTURESAMPLER0 : idx;
+			HR(pDev->SetTexture(id, pTextures[idx].pTex));
 		}
 	}
 }
@@ -1911,6 +1912,11 @@ void ShaderClass::SetTexture(const char* name, LPDIRECT3DTEXTURE9 pTex, UINT fla
 }
 
 
+void ShaderClass::SetTextureVS(const char* name, LPDIRECT3DTEXTURE9 pTex, UINT flags, UINT aniso)
+{
+	D3DXHANDLE hVar = pVSCB->GetConstantByName(NULL, name);
+	SetTextureVS((HANDLE)hVar, pTex, flags, aniso);
+}
 
 void ShaderClass::SetPSConstants(const char* name, void* data, UINT bytes)
 {
@@ -1955,8 +1961,6 @@ void ShaderClass::SetTexture(HANDLE hVar, LPDIRECT3DTEXTURE9 pTex, UINT flags, U
 	if (!hVar) return;
 	DWORD idx = pPSCB->GetSamplerIndex(D3DXHANDLE(hVar));
 
-	assert(idx < 16);
-
 	if (!pTex) {
 		pTextures[idx].pTex = NULL;
 		return;
@@ -1967,6 +1971,32 @@ void ShaderClass::SetTexture(HANDLE hVar, LPDIRECT3DTEXTURE9 pTex, UINT flags, U
 
 	pTextures[idx].pTex = pTex;
 	pTextures[idx].Flags = flags;
+	pTextures[idx].AnisoLvl = aniso;
+}
+
+
+void ShaderClass::SetTextureVS(HANDLE hVar, LPDIRECT3DTEXTURE9 pTex, UINT flags, UINT aniso)
+{
+#ifdef SHDCLSDBG
+	if (!hVar) {
+		LogErr("Shader::SetTextureVS() Invalid handle. File[%s], Entrypoint[%s], Shader[%s]", fn.c_str(), psn.c_str(), sn.c_str());
+		assert(false);
+	}
+#endif
+	if (!hVar) return;
+	DWORD idx = pVSCB->GetSamplerIndex(D3DXHANDLE(hVar)) + 16;
+	assert(idx < 20);
+
+	if (!pTex) {
+		pTextures[idx].pTex = NULL;
+		return;
+	}
+
+	if (pTextures[idx].Flags != flags) pTextures[idx].bSamplerSet = false;
+	if (pTextures[idx].AnisoLvl != aniso) pTextures[idx].bSamplerSet = false;
+
+	pTextures[idx].pTex = pTex;
+	pTextures[idx].Flags = flags | IPF_VERTEXTEX;
 	pTextures[idx].AnisoLvl = aniso;
 }
 

@@ -116,7 +116,7 @@ float ilerp(float a, float b, float x)
 float4 expc(float4 x) { return exp(clamp(x, -20, 20)); }
 float3 expc(float3 x) { return exp(clamp(x, -20, 20)); }
 float2 expc(float2 x) { return exp(clamp(x, -20, 20)); }
-float expc(float x) { return exp(clamp(x, -20, 20)); }
+float  expc(float x)  { return exp(clamp(x, -20, 20)); }
 
 
 float2 NrmToUV(float3 vNrm)

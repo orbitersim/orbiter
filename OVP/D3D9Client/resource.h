@@ -206,3 +206,10 @@
 #define IDC_ATM_GREEN                           3022
 #define IDC_ATL_2                               3023
 #define IDC_ATL_1                               3024
+#define IDC_GFX_GLARE                           3025
+#define IDC_GFX_VAL8                            3026
+#define IDC_GFX_GLARE_RESET                     3027
+#define IDC_GFX_RECOMPILE                       3028
+#define IDC_DBG_EXPTEX                          3029
+#define IDC_ESUNGLARE                           3030
+#define IDC_ELIGHTSGLARE                        3031

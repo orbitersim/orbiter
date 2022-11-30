@@ -347,6 +347,20 @@ void vPlanet::IntegrateSegment(FVECTOR3 vOrig, float len, FVECTOR4* ral, FVECTOR
 }
 
 // ===========================================================================================
+//
+FVECTOR3 vPlanet::HDR(FVECTOR3 i)
+{
+	return -exp(-i * cp.Expo) + 1.0f;
+}
+
+// ===========================================================================================
+//
+FVECTOR3 vPlanet::LightFX(FVECTOR3 x)
+{
+	return (x * 2.0f) / (x + 1.0f);
+}
+
+// ===========================================================================================
 // Sunlight color for pixel in atmosphere
 //
 FVECTOR3 vPlanet::SunLightColor(float angle, float alt)
@@ -355,38 +369,68 @@ FVECTOR3 vPlanet::SunLightColor(float angle, float alt)
 	float d = RayLength(angle, r);
 	FVECTOR2 rm = Gauss7(angle, r, d, cp.iH) * cp.rmO;
 	FVECTOR3 clr = cp.RayWave * rm.x + cp.MieWave * rm.y;
-	return exp(-clr);
+	return HDR(LightFX(exp(-clr) * cp.cSun));
 }
 
 // ===========================================================================================
 //
-FVECTOR3 vPlanet::SunLightColor(FVECTOR3 geo_pos_ecl)
+FVECTOR3 vPlanet::SunLightColor(FVECTOR3 pos)
 {
 	FVECTOR2 rm = 0.0f;
-	float r2 = dot(geo_pos_ecl, geo_pos_ecl);
-	float r = sqrt(r2);
+	FVECTOR3 up = unit(pos);
+	float r = dot(up, pos);
 	float a = r - cp.PlanetRad;
-	float d = dot(geo_pos_ecl, cp.toSun) / r;
+	float ca = -dot(up, cp.toSun);
+	float qr = sqrt(1.0f - ca * ca) * r;
 
-	if (a > cp.AtmoRad && d > 0) return FVECTOR3(1, 1, 1); // Ray doesn't intersect atmosphere
+	if (qr > cp.AtmoRad) {
+		D3D9DebugLog("No Intersect 1");
+		return FVECTOR3(1, 1, 1); // Ray doesn't intersect atmosphere
+	}
 
-	float q = r * d;
-	float alt = sqrt(r2 - q * q) - cp.PlanetRad; // Ray's closest approach to a planet's center
+	if (r > cp.AtmoRad && ca > 0) {
+		D3D9DebugLog("No Intersect 2");
+		return FVECTOR3(1, 1, 1); // Ray doesn't intersect atmosphere
+	}
 
-	if (alt < 0.0f && d < 0) return FVECTOR3(0, 0, 0); // Ray is shadowed by a planet
-	if (alt > cp.AtmoRad && a > cp.AtmoRad) return FVECTOR3(1, 1, 1); // Ray doesn't intersect atmosphere
+	OBJHANDLE hSun = oapiGetObjectByIndex(0);
+	VECTOR3 sunpos; oapiGetGlobalPos(hSun, &sunpos);
+	sunpos -= scn->GetCameraGPos();
+
+	float sd = length(sunpos);
+	float hd = ca * r; // Distance to closest approach
+	float sr = oapiGetSize(hSun) * abs(hd) / sd;
+	float pr = cp.PlanetRad - sr;
+
+	if (qr < pr && ca < 0) {
+		D3D9DebugLog("Obscured");
+		return FVECTOR3(0, 0, 0); // Ray is obscured by planet
+	}
+
+	float alt = sqrt(r * r - hd * hd) - cp.PlanetRad; // Ray's closest approach to a planet's center
+	float svb = 1.0f;
 
 	if (r > cp.AtmoRad) // Ray passes through atmosphere from space to space
 	{
+		D3D9DebugLog("Through atmosphere svb=%f, alt=%f, sr=%f", svb, alt, sr);
 		rm = Gauss7(alt, 0.0f, cp.PlanetRad, cp.AtmoRad, cp.iH) * 2.0f;
+		svb = ilerp(-sr, sr, alt); // Sun visibility 0=obscured, 1=fully visible 
 	}
 	else // Sample point 'pos' lies with-in atmosphere
 	{
-		rm = Gauss7(a, d, cp.PlanetRad, cp.AtmoRad, cp.iH);
+		float hd = sqrt(r * r - cp.PlanetRad2);
+		float ha = acos(hd / r);
+		float sa = acos(-dot(cp.toSun, cp.toCam));
+		float sr = asin(oapiGetSize(hSun) / sd);
+
+		rm = Gauss7(a, -ca, cp.PlanetRad, cp.AtmoRad, cp.iH);
+		svb = ilerp(-sr, sr, sa - ha); // Sun visibility 0=obscured, 1=fully visible
+
+		D3D9DebugLog("In atmosphere svb=%f, ha=%f, sa=%f", svb, ha, sa);
 	}
 
 	rm *= cp.rmO;
-	return exp(-(cp.RayWave * rm.x + cp.MieWave * rm.y));
+	return HDR(LightFX(exp(-(cp.RayWave * rm.x + cp.MieWave * rm.y)) * cp.cSun));
 }
 
 
@@ -410,13 +454,12 @@ ObjAtmParams vPlanet::GetObjectAtmoParams(VECTOR3 obj_gpos)
 	FVECTOR4 rl, mi;
 	FVECTOR3 vOrig = vPos - vRay * d;
 	IntegrateSegment(vOrig, d, &rl, &mi);	// Rayleigh and Mie inscatter
-
 	
 	// Color of Sunlight
 	FVECTOR2 rm = Gauss7(a, r, d, cp.iH) * cp.rmO;
-	FVECTOR3 clr = exp(-(cp.RayWave * rm.x + cp.MieWave * rm.y));
+	FVECTOR3 clr = exp(-(cp.RayWave * rm.x + cp.MieWave * rm.y)) * cp.cSun;
 	
-	op.Sun = clr;
+	op.Sun = HDR(LightFX(clr));
 	op.Transmission = ComputeCameraView(a, r, d).rgb;
 	op.Incatter = (rl.rgb * RayPhase(-s) + mi.rgb * MiePhase(-s));
 

@@ -79,6 +79,12 @@ namespace oapi {
 			y = float(_y);
 		}
 
+		FVECTOR2(DWORD _x, DWORD _y)
+		{
+			x = float(_x);
+			y = float(_y);
+		}
+
 		FVECTOR2(int _x, int _y)
 		{
 			x = float(_x);
@@ -278,6 +284,11 @@ namespace oapi {
 			return FVECTOR3(x * f, y * f, z * f);
 		}
 
+		inline FVECTOR3 operator/ (FVECTOR3 &f) const
+		{
+			return FVECTOR3(x / f.x, y / f.y, z / f.z);
+		}
+
 		inline FVECTOR3 operator+ (float f) const
 		{
 			return FVECTOR3(x + f, y + f, z + f);
@@ -310,6 +321,7 @@ namespace oapi {
 		}
 #endif
 		struct { float x, y, z; };
+		struct { float r, g, b; };
 		FVECTOR2 xy; 
 	} FVECTOR3;
 
@@ -351,6 +363,11 @@ namespace oapi {
 		{
 			COLOUR4 clr = { r,g,b,a };
 			return clr;
+		}
+
+		float MaxRGB() const
+		{
+			return max(max(r, g), b);
 		}
 
 		FVECTOR4()

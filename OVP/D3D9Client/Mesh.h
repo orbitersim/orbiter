@@ -61,6 +61,12 @@ const DWORD SPEC_INHERIT = (DWORD)(-2); // "inherit" material/texture flag
 #define MAPMODE_DYNAMIC		3
 
 
+struct ObjAtmParams {
+	FVECTOR3 Sun;			// Color and Intensity of received sunlight 
+	FVECTOR3 Ambient;		// Ambient light level (Base Objects Only, Vessels are using dynamic methods)
+	FVECTOR3 Transmission;	// Visibility through atmosphere (1.0 = fully visible, 0.0 = obscured)
+	FVECTOR3 Incatter;		// Amount of incattered light from haze
+};
 
 
 struct _LightList {
@@ -305,6 +311,7 @@ public:
 	int				EditGroup (DWORD grp, GROUPEDITSPEC *ges);
 
 	void			SetSunLight(const D3D9Sun *pLight);
+	void			SetAtmoParams(ObjAtmParams*);
 
 	D3D9Pick		Pick(const LPD3DXMATRIX pW, const LPD3DXMATRIX pT, const D3DXVECTOR3 *vDir);
 
@@ -338,6 +345,7 @@ private:
 	void			SetGroupRec(DWORD i, const MESHGROUPEX *mg);
 	void			Null(const char *meshName = NULL);
 	void			UpdateFlags();
+	void			ConfigureAtmo();
 
 	WORD	DefShader;
 	DWORD	MaxVert;
@@ -357,6 +365,7 @@ private:
 	const D3D9Sun *sunLight;
 	D3DCOLOR cAmbient;
 	LightStruct null_light;
+	ObjAtmParams AtmoParams;
 
 	_LightList LightList[MAX_SCENE_LIGHTS];
 	LightStruct *Locals;

@@ -1008,6 +1008,13 @@ void D3D9Mesh::SetSunLight(const D3D9Sun *light)
 
 // ===========================================================================================
 //
+void D3D9Mesh::SetAtmoParams(ObjAtmParams* p)
+{
+	memcpy(&AtmoParams, p, sizeof(ObjAtmParams));
+}
+
+// ===========================================================================================
+//
 DWORD D3D9Mesh::GetVertexCount(int grp) const
 {
 	if (grp<0) return MaxVert;
@@ -1420,6 +1427,15 @@ void D3D9Mesh::CheckMeshStatus()
 }
 
 
+// ===========================================================================================
+//
+void D3D9Mesh::ConfigureAtmo()
+{
+	float x = 1.0f - saturate(max(AtmoParams.Sun.r, AtmoParams.Sun.b) * 2.0f);
+	FX->SetFloat(eNight, x);
+	AtmoParams.Sun *= float(Config->GFXSunIntensity);
+	FX->SetValue(eAtmoParams, &AtmoParams, sizeof(ObjAtmParams));
+}
 
 
 // ================================================================================================

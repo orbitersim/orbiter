@@ -85,12 +85,21 @@ bool vStar::Render(LPDIRECT3DDEVICE9 dev)
 		mWorld._43 = float(cpos.z*dist_scale);
 	}
 
+	rad_scale *= 2.0f;
+
 	// scale up sphere radius from 1 to planet radius
 	mWorld._11 *= rad_scale; mWorld._12 *= rad_scale; mWorld._13 *= rad_scale;
 	mWorld._21 *= rad_scale; mWorld._22 *= rad_scale; mWorld._23 *= rad_scale;
 	mWorld._31 *= rad_scale; mWorld._32 *= rad_scale; mWorld._33 *= rad_scale;
 
-	D3D9Effect::RenderBillboard(&mWorld, deftex);
+	if (Config->bGlares)
+	{
+		return true;
+		//vPlanet* vp = scn->GetCameraProxyVisual();
+	}
 
+	D3D9Effect::RenderBillboard(&mWorld, scn->GetSunTexture());
+
+	//D3D9Effect::RenderBillboard(&mWorld, SURFACE(deftex)->GetTexture());
 	return true;
 }

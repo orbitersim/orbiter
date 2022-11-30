@@ -89,7 +89,8 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	surfLabelsActive = false;
 
 	pSunTex = NULL;
-	pLightTex = NULL;
+	pLightGlare = NULL;
+	pSunGlare = NULL;
 	pEnvDS = NULL;
 	pIrradDS = NULL;
 	pIrradiance = NULL;
@@ -100,6 +101,8 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	pVisDepth = NULL;
 	pLocalResults = NULL;
 	pLocalResultsSL = NULL;
+
+	fDisplayScale = float(viewH) / 1080.0f;
 
 	for (auto& a : DepthSampleKernel) a = FVECTOR2(0, 0);
 
@@ -157,7 +160,8 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	}
 
 
-	// -----------------------------------
+
+	// ------------------------------------------------------------------------------
 	// Read Sun glare sampling kernel file
 
 	ifstream fs("Modules/D3D9Client/GKernel.txt");
@@ -165,7 +169,8 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 		string line; vector<FVECTOR2> data;
 		while (getline(fs, line)) {
 			std::istringstream iss(line);
-			float a, b;	iss >> a >> b; data.push_back(FVECTOR2(a, b));
+			char c;	float a, b;	iss >> a >> c >> b;
+			data.push_back(FVECTOR2(a, b));
 		}
 		if (data.size() != ARRAYSIZE(DepthSampleKernel)) LogErr("Modules/D3D9Client/GKernel.txt Size missmatch. Expecting 57 entries");
 		else for (int i = 0; i < ARRAYSIZE(DepthSampleKernel); i++) DepthSampleKernel[i] = data[i];
@@ -173,44 +178,28 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	} else LogErr("Failed to read: Modules/D3D9Client/GKernel.txt");
 	fs.close();
 
+	CreateSunGlare();
 
 
-	// Initialize a shaders for local lights visibility checks and rendering
-	//
-	if (bLocalLight)
+	// ------------------------------------------------------------------------------
+	// Initialize a shaders for local lights visibility checks and rendering 
+
+	if (Config->bGlares || Config->bLocalGlares)
 	{
 		pRenderGlares = new ShaderClass(pDevice, "Modules/D3D9Client/Glare.hlsl", "GlareVS", "GlarePS", "RenderGlares", "");
 		pLocalCompute = new ShaderClass(pDevice, "Modules/D3D9Client/Glare.hlsl", "VisibilityVS", "VisibilityPS", "LocalVisCheck", "");
-		pCreateGlare  = new ImageProcessing(pDevice, "Modules/D3D9Client/Glare.hlsl", "CreateSunGlarePS");
-		pCreateGlare->CompileShader("CreateLocalGlarePS");
-
 		D3DXCreateTexture(pDevice, 32, 1, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, &pLocalResults);
-		D3DXCreateTexture(pDevice, 256, 256, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, &pSunTex);
-		D3DXCreateTexture(pDevice, 256, 256, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, &pLightTex);
-
 		HR(pLocalResults->GetSurfaceLevel(0, &pLocalResultsSL));
-
-		LPDIRECT3DSURFACE9 pTgt;
-
-		pCreateGlare->Activate("CreateSunGlarePS");
-		pSunTex->GetSurfaceLevel(0, &pTgt);
-		pCreateGlare->SetOutputNative(0, pTgt);
-		if (!pCreateGlare->Execute(false)) LogErr("pCreateGlare Execute Failed (CreateSunGlarePS)");
-		SAFE_RELEASE(pTgt);
-
-		pCreateGlare->Activate("CreateLocalGlarePS");
-		pLightTex->GetSurfaceLevel(0, &pTgt);
-		pCreateGlare->SetOutputNative(0, pTgt);
-		if (!pCreateGlare->Execute(false)) LogErr("pCreateGlare Execute Failed (CreateLocalGlarePS)");
-		SAFE_RELEASE(pTgt);
 	}
 
 
 	// Render screen depth and screen space normals
 	//
-	pVisDepth = new ImageProcessing(pDevice, "Modules/D3D9Client/LightBlur.hlsl", "PSDepth", NULL);
-	pVisDepth->CompileShader("PSNormal");
 
+	if (Config->bGlares || Config->bLocalGlares) {
+		pVisDepth = new ImageProcessing(pDevice, "Modules/D3D9Client/LightBlur.hlsl", "PSDepth", NULL);
+		pVisDepth->CompileShader("PSNormal");
+	}
 
 	// Initialize envmapping and shadow maps -----------------------------------------------------------------------------------------------
 	//
@@ -357,7 +346,8 @@ Scene::~Scene ()
 	SAFE_RELEASE(pLocalResults);
 	SAFE_RELEASE(pLocalResultsSL);
 	SAFE_RELEASE(pSunTex);
-	SAFE_RELEASE(pLightTex);
+	SAFE_RELEASE(pLightGlare);
+	SAFE_RELEASE(pSunGlare)
 
 	for (int i = 0; i < ARRAYSIZE(psShmDS); i++) SAFE_RELEASE(psShmDS[i]);
 	for (int i = 0; i < ARRAYSIZE(ptShmRT); i++) SAFE_RELEASE(ptShmRT[i]);
@@ -381,6 +371,49 @@ Scene::~Scene ()
 	ExitGDIResources();
 
 	FreePooledSketchpads();
+}
+
+
+// ===========================================================================================
+//
+void Scene::CreateSunGlare()
+{
+	// ------------------------------------------------------------------------------
+	// Create sun texture and glares
+
+	if (pCreateGlare) SAFE_DELETE(pCreateGlare);
+
+	pCreateGlare = new ImageProcessing(pDevice, "Modules/D3D9Client/Glare.hlsl", "CreateSunGlarePS");
+	pCreateGlare->CompileShader("CreateLocalGlarePS");
+	pCreateGlare->CompileShader("CreateSunTexPS");
+	
+
+	if (!pSunTex) {
+		UINT ts = (viewH >> 4) & 0xFFFC; // "ts" will be 64 for a Full HD display;  
+		HR(D3DXCreateTexture(pDevice, ts*5, ts*5, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pSunTex));
+		HR(D3DXCreateTexture(pDevice, ts*4, ts*4, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_R16F, D3DPOOL_DEFAULT, &pLightGlare));
+		HR(D3DXCreateTexture(pDevice, ts*12, ts*12, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_R16F, D3DPOOL_DEFAULT, &pSunGlare));
+	}
+
+	LPDIRECT3DSURFACE9 pTgt = NULL;
+
+	pCreateGlare->Activate("CreateSunGlarePS");
+	pSunGlare->GetSurfaceLevel(0, &pTgt);
+	pCreateGlare->SetOutputNative(0, pTgt);
+	if (!pCreateGlare->Execute(false)) LogErr("pCreateGlare Execute Failed (CreateSunGlarePS)");
+	SAFE_RELEASE(pTgt);
+
+	pCreateGlare->Activate("CreateLocalGlarePS");
+	pLightGlare->GetSurfaceLevel(0, &pTgt);
+	pCreateGlare->SetOutputNative(0, pTgt);
+	if (!pCreateGlare->Execute(false)) LogErr("pCreateGlare Execute Failed (CreateLocalGlarePS)");
+	SAFE_RELEASE(pTgt);
+
+	pCreateGlare->Activate("CreateSunTexPS");
+	pSunTex->GetSurfaceLevel(0, &pTgt);
+	pCreateGlare->SetOutputNative(0, pTgt);
+	if (!pCreateGlare->Execute(false)) LogErr("pCreateGlare Execute Failed (CreateSunTexPS)");
+	SAFE_RELEASE(pTgt);
 }
 
 
@@ -1107,16 +1140,16 @@ void Scene::AddLocalLight(const LightEmitter *le, const vObject *vo)
 //
 void Scene::ComputeLocalLightsVisibility()
 {
-	return;
-
 	static LocalLightsCompute Buf[MAX_SCENE_LIGHTS + 1];
 
-	if (!ptgBuffer[GBUF_DEPTH]) return;
+	if (!ptgBuffer[GBUF_DEPTH] || !pLocalCompute) return;
 
+	VECTOR3 gsun;
+	oapiGetGlobalPos(oapiGetObjectByIndex(0), &gsun);
 
 	// Put the Sun on a top of the list
 	Buf[0].index = 0.0f;
-	Buf[0].pos = FVECTOR3(0, 0, 0);
+	Buf[0].pos = FVECTOR3(unit(gsun - Camera.pos)) * 10e4;
 	Buf[0].cone = 1.0f;
 
 	int nGlares = 1;
@@ -1135,17 +1168,18 @@ void Scene::ComputeLocalLightsVisibility()
 	struct {
 		D3DXMATRIX mVP;
 		D3DXMATRIX mSVP;
-		FVECTOR4 vTgt;
+		FVECTOR4 vSrc;
 		FVECTOR3 vDir;
 	} ComputeData;
 
-	D3D9DebugLog("nGlares = %d", nGlares);
 	D3DSURFACE_DESC desc;
 	pLocalResultsSL->GetDesc(&desc);
 
 	D3DXMatrixOrthoOffCenterLH(&ComputeData.mVP, 0.0f, (float)desc.Width, (float)desc.Height, 0.0f, 0.0f, 1.0f);
 
-	ComputeData.vTgt = FVECTOR4((float)desc.Width, (float)desc.Height, 1.0f / (float)desc.Width, 1.0f / (float)desc.Height);
+	psgBuffer[GBUF_DEPTH]->GetDesc(&desc);
+
+	ComputeData.vSrc = FVECTOR4((float)desc.Width, (float)desc.Height, 1.0f / (float)desc.Width, 1.0f / (float)desc.Height);
 	ComputeData.vDir = Camera.z;
 	ComputeData.mSVP = Camera.mProjView;
 
@@ -1156,7 +1190,7 @@ void Scene::ComputeLocalLightsVisibility()
 	pLocalCompute->SetPSConstants("cbPS", &ComputeData, sizeof(ComputeData));
 	pLocalCompute->SetPSConstants("cbKernel", DepthSampleKernel, sizeof(DepthSampleKernel));
 	pLocalCompute->SetVSConstants("cbPS", &ComputeData, sizeof(ComputeData));
-	pLocalCompute->SetTexture("tDepth", ptgBuffer[GBUF_DEPTH], IPF_CLAMP | IPF_LINEAR);
+	pLocalCompute->SetTexture("tDepth", ptgBuffer[GBUF_DEPTH], IPF_CLAMP | IPF_POINT);
 	pLocalCompute->Setup(pLocalLightsDecl, false, 0);
 	pLocalCompute->UpdateTextures();
 
@@ -1164,6 +1198,24 @@ void Scene::ComputeLocalLightsVisibility()
 	HR(pDevice->DrawPrimitiveUP(D3DPT_POINTLIST, nGlares, &Buf, sizeof(LocalLightsCompute)));
 
 	gc->PopRenderTargets();
+}
+
+
+// ===========================================================================================
+//
+void Scene::RecallDefaultState()
+{
+	HR(pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID));
+	HR(pDevice->SetRenderState(D3DRS_STENCILENABLE, false));
+	HR(pDevice->SetRenderState(D3DRS_COLORWRITEENABLE, 0xF));
+	HR(pDevice->SetRenderState(D3DRS_ZENABLE, true));
+	HR(pDevice->SetRenderState(D3DRS_ZWRITEENABLE, true));
+	HR(pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, false));
+	HR(pDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, false));
+	HR(pDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
+	HR(pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
+	HR(pDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
+	HR(pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW));
 }
 
 
@@ -1331,28 +1383,21 @@ void Scene::RenderMainScene()
 	// Start Rendering of Normal and Depth Buffer for SSAO and (point in scene) visibility checks
 	// ---------------------------------------------------------------------------------------------
 
-	SetCameraFrustumLimits(znear_for_vessels, 1e8f);
+	SetCameraFrustumLimits(0.1f, 1e6f);
 	BeginPass(RENDERPASS_NORMAL_DEPTH);
 
 	gc->PushRenderTarget(psgBuffer[GBUF_DEPTH], pDepthNormalDS, RENDERPASS_NORMAL_DEPTH);
 
-	HR(pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID));
-	HR(pDevice->SetRenderState(D3DRS_STENCILENABLE, false));
-	HR(pDevice->SetRenderState(D3DRS_COLORWRITEENABLE, 0xF));
-	HR(pDevice->SetRenderState(D3DRS_ZENABLE, true));
-	HR(pDevice->SetRenderState(D3DRS_ZWRITEENABLE, true));
-	HR(pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, false));
-	HR(pDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, false));
-	HR(pDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
-	HR(pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
-	HR(pDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
-	HR(pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW));
+	RecallDefaultState();
 	
 	// Clear buffers
 	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0L));
 
 	// Render vessels
 	for (auto* vVes : RenderList) vVes->Render(pDevice, false);
+
+	// Render Cockpit
+	if (oapiCameraInternal() && vFocus) vFocus->Render(pDevice, true);
 
 	gc->PopRenderTargets();
 	PopPass();
@@ -2004,62 +2049,70 @@ void Scene::RenderMainScene()
 	// -------------------------------------------------------------------------------------------------------
 	// Render glares for the Sun and local lights
 	// -------------------------------------------------------------------------------------------------------
-	/*
+
 	if (pRenderGlares)
 	{
 		static SMVERTEX Vertex[4] = { {-1, -1, 0, 0, 0}, {-1, 1, 0, 0, 1}, {1, 1, 0, 1, 1}, {1, -1, 0, 1, 0} };
 		static WORD cIndex[6] = { 0, 2, 1, 0, 3, 2 };
-		D3DSURFACE_DESC desc;
-
-		struct {
-			D3DXMATRIX	mVP;
-			float4		Pos, Color;
-			float		GPUId, Scale;
-		} Const;
-
+		D3DSURFACE_DESC desc; FVECTOR2 pt;
+		struct { D3DXMATRIX	mVP; float4	Pos, Color;	float GPUId, Intensity; } Const;
+		
 		Const.Color = FVECTOR4(1, 1, 1, 1);
 		D3DXMatrixOrthoOffCenterLH(&Const.mVP, 0.0f, (float)viewW, (float)viewH, 0.0f, 0.0f, 1.0f);
 		pLocalResultsSL->GetDesc(&desc);
 
 		pRenderGlares->ClearTextures();
-		pRenderGlares->SetTexture("tVis", pLocalResults, IPF_CLAMP | IPF_POINT); // Set texture containing pre-cumputed visibility factors
-		pRenderGlares->SetTexture("tTex", pSunTex, IPF_CLAMP | IPF_LINEAR);
 		pRenderGlares->Setup(pPosTexDecl, false, 1);
-		pRenderGlares->UpdateTextures();
+		pRenderGlares->SetTextureVS("tVis", pLocalResults, IPF_CLAMP | IPF_POINT); // Set texture containing pre-cumputed visibility factors
 
-		// Render Sun glare
-		IVECTOR2 pt; VECTOR3 pos = -unit(Camera.pos) * 1e3;
-		if (WorldToScreenSpace(pos, &pt)) {
-			D3D9DebugLog("SUN POSITION = [%d, %d]", pt.x, pt.y);
-			float size = 100.0f;
-			Const.GPUId = (float(0.0) + 0.5f) / desc.Width;
-			Const.Pos = FVECTOR4(float(pt.x) - size, float(pt.y) - size, size, size);
-			Const.Scale = 1.0f;
-			pRenderGlares->SetVSConstants("Const", &Const, sizeof(Const));
-			pRenderGlares->SetPSConstants("Const", &Const, sizeof(Const));
-			HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));
+		if (Config->bGlares)
+		{
+			pRenderGlares->SetTexture("tTex", pSunGlare, IPF_CLAMP | IPF_LINEAR);
+			pRenderGlares->UpdateTextures();
+
+			// Render Sun glare
+			VECTOR3 gsun; oapiGetGlobalPos(oapiGetObjectByIndex(0), &gsun);
+			VECTOR3 pos = unit(gsun - Camera.pos) * 10e4;
+			if (WorldToScreenSpace2(pos, &pt)) {
+				vPlanet *vp = GetCameraProxyVisual();
+				FVECTOR3 crp = vp->PosFromCamera();
+				float cd = length(pt - FVECTOR2(viewW, viewH) * 0.5f) / float(viewW); // Glare distance from a screen center
+				float size = 150.0f * GetDisplayScale();
+				Const.GPUId = 0.5f / float(desc.Width);
+				Const.Pos = FVECTOR4(pt.x, pt.y, size, size);
+				Const.Color = vp ? vp->SunLightColor(crp) : 1.0f;
+
+				D3D9DebugLog("Color = [%f, %f, %f]", Const.Color.r, Const.Color.g, Const.Color.b);
+				Const.Intensity = 2.0f * Config->GFXGlare * max(0.5f, 1.0f - cd) * sqrt(Const.Color.MaxRGB());
+				pRenderGlares->SetVSConstants("Const", &Const, sizeof(Const));
+				pRenderGlares->SetPSConstants("Const", &Const, sizeof(Const));
+				HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));
+			}
 		}
 
-		pRenderGlares->SetTexture("tTex", pLightTex, IPF_CLAMP | IPF_LINEAR);
-		pRenderGlares->UpdateTextures();
+		if (Config->bLocalGlares)
+		{
+			pRenderGlares->SetTexture("tTex", pLightGlare, IPF_CLAMP | IPF_LINEAR);
+			pRenderGlares->UpdateTextures();
 
-		// Render glares for local lights
-		for (int i = 0; i < nLights; ++i) {
-			int GPUId = Lights[i].GPUId;
-			if (GPUId >= 0) {
-				if (WorldToScreenSpace(_V(Lights[i].Position), &pt)) {
-					float size = 100.0f;
-					Const.GPUId = (float(GPUId) + 0.5f) / desc.Width;
-					Const.Pos = FVECTOR4(float(pt.x) - size, float(pt.y) - size, size, size);
-					Const.Scale = 1.0f;
-					pRenderGlares->SetVSConstants("Const", &Const, sizeof(Const));
-					pRenderGlares->SetPSConstants("Const", &Const, sizeof(Const));
-					HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));
+			// Render glares for local lights
+			for (int i = 0; i < nLights; ++i) {
+				int GPUId = Lights[i].GPUId;
+				if (GPUId >= 0) {
+					if (WorldToScreenSpace2(_V(Lights[i].Position), &pt)) {
+						float size = 40.0f;
+						Const.GPUId = (float(GPUId) + 0.5f) / desc.Width;
+						Const.Pos = FVECTOR4(pt.x, pt.y, size, size);
+						Const.Intensity = Lights[i].cone;
+						pRenderGlares->SetVSConstants("Const", &Const, sizeof(Const));
+						pRenderGlares->SetPSConstants("Const", &Const, sizeof(Const));
+						HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));
+					}
 				}
 			}
 		}
 	}
-	*/
+	
 
 
 	
@@ -2170,6 +2223,15 @@ void Scene::RenderMainScene()
 						pVisDepth->Execute(true);
 					}
 				}
+			}
+			break;
+		case 13:
+			if (pLocalResults) {
+				pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
+				pSketch->SetBlendState(Sketchpad::BlendState::FILTER_POINT);
+				pSketch->StretchRectNative(pLocalResults, NULL, &_RECT(0, 0, viewW, 10));
+				pSketch->SetBlendState(Sketchpad::BlendState::FILTER_LINEAR);
+				pSketch->EndDrawing();
 			}
 			break;
 		default:
@@ -2980,6 +3042,37 @@ bool Scene::WorldToScreenSpace(const VECTOR3 &wpos, oapi::IVECTOR2 *pt, D3DXMATR
 	else {
 		pt->x = (long)((float(viewW) * 0.5f * (1.0f + homog.x)) + 0.5f);
 		pt->y = (long)((float(viewH) * 0.5f * (1.0f - homog.y)) + 0.5f);
+	}
+
+	return !bClip;
+}
+
+
+// ===========================================================================================
+//
+bool Scene::WorldToScreenSpace2(const VECTOR3& wpos, oapi::FVECTOR2* pt, D3DXMATRIX* pVP, float clip)
+{
+	D3DXVECTOR4 homog;
+	D3DXVECTOR3 pos(float(wpos.x), float(wpos.y), float(wpos.z));
+
+	if (pVP) D3DXVec3Transform(&homog, &pos, pVP);
+	else D3DXVec3Transform(&homog, &pos, GetProjectionViewMatrix());
+
+	homog.x /= homog.w;
+	homog.y /= homog.w;
+	homog.z /= homog.w;
+
+	bool bClip = false;
+	if (homog.w < 0.0f) bClip = true;
+	if (homog.x < -clip || homog.x > clip || homog.y < -clip || homog.y > clip) bClip = true;
+
+	if (_hypot(homog.x, homog.y) < 1e-6) {
+		pt->x = viewW / 2;
+		pt->y = viewH / 2;
+	}
+	else {
+		pt->x = (float(viewW) * 0.5f * (1.0f + homog.x)) + 0.5f;
+		pt->y = (float(viewH) * 0.5f * (1.0f - homog.y)) + 0.5f;
 	}
 
 	return !bClip;

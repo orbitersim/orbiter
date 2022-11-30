@@ -21,12 +21,6 @@ extern class D3D9Config *Config;
 
 class D3D9Pad;
 
-struct ObjAtmParams {
-	FVECTOR3 Sun;			// Color and Intensity of received sunlight 
-	FVECTOR3 Ambient;		// Ambient light level (Base Objects Only, Vessels are using dynamic methods)
-	FVECTOR3 Transmission;	// Visibility through atmosphere (1.0 = fully visible, 0.0 = obscured)
-	FVECTOR3 Incatter;		// Amount of incattered light from haze
-};
 
 // ==============================================================
 // class vObject (interface)

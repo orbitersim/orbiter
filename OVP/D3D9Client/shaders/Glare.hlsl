@@ -9,15 +9,26 @@
 // GPU based computation of local lights visibility (including the Sun)
 // ====================================================================
 
+float ilerp(float a, float b, float x)
+{
+	return saturate((x - a) / (b - a));
+}
+
+float3 HDRtoLDR(float3 hdr)
+{
+	float3 h2 = hdr * hdr;
+	return hdr * pow(max(0, 1.0f + h2 * h2), -0.25);
+}
+
 sampler2D tDepth;
 
-#define LocalKernelSize 40
+#define LocalKernelSize 57
 static const float iLKS = 1.0f / LocalKernelSize;
 
 uniform extern struct {
 	float4x4 mVP;
 	float4x4 mSVP;
-	float4 vTgt;
+	float4 vSrc;
 	float3 vDir;
 } cbPS;
 
@@ -34,7 +45,7 @@ struct LData
 LData VisibilityVS(float posL : POSITION0, float4 posW : TEXCOORD0)
 {
 	LData outVS = (LData)0;
-	outVS.posH = mul(float4(posL.x - 0.5f, 0.0f, 0.0f, 1.0f), cbPS.mVP); // Render projection
+	outVS.posH = mul(float4(posL.x + 0.5f, 0.0f, 0.0f, 1.0f), cbPS.mVP); // Render projection
 	outVS.smpH = mul(float4(posW.xyz, 1.0f), cbPS.mSVP); // Depth sampling projection 
 	outVS.posW = posW.xyz;
 	outVS.cone = posW.a;
@@ -47,16 +58,22 @@ float4 VisibilityPS(LData frg) : COLOR
 	smpH.xyz /= smpH.w;
 	float2 sp = smpH.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f); // Scale and offset to 0-1 range
 
-	if (sp.x < 0 || sp.y < 0) return 0.0f;		// If a sample is outside border -> obscured
+	if (sp.x < 0 || sp.y < 0) return 0.0f;				// If a sample is outside border -> obscured
 	if (sp.x > 1 || sp.y > 1) return 0.0f;
 
-	float2 vScale = 30.0f * cbPS.vTgt.zw;		// Kernel scale factor (from unit kernel)
-	float fDepth = dot(frg.posW, cbPS.vDir);	// Depth to compare
+	float2 vScale = 40.0f * cbPS.vSrc.zz;				// Kernel scale factor (from unit kernel)
+	float fDepth = dot(frg.posW, cbPS.vDir) - 0.25f;	// Depth to compare
 	float fRet = 0;
 
-	[unroll] for (int i = 0; i < LocalKernelSize; i++) if (tex2D(tDepth, sp + cbKernel[i].xy * vScale).r > fDepth) fRet += iLKS;
+	[unroll] for (int i = 0; i < LocalKernelSize; i++) {
+		float2 s = sp + cbKernel[i].xy * vScale;
+		if (s.x < 0 || s.x > 1) { fRet += iLKS;	continue; }
+		if (s.y < 0 || s.y > 1) { fRet += iLKS;	continue; }
+		float d = tex2D(tDepth, s).a;
+		fRet += d > 0.1f && d < fDepth ? iLKS : 0;
+	}
 
-	return fRet;
+	return 1.0f - fRet;
 }
 
 
@@ -66,16 +83,16 @@ float4 VisibilityPS(LData frg) : COLOR
 // ====================================================================
 
 sampler2D tVis;	// Pre-computed visibility factors
-sampler2D tTex; 
+sampler2D tTex;
 
 uniform extern struct {
 	float4x4	mVP;
 	float4		Pos;
 	float4		Color;
 	float		GPUId;
-	float		Scale;
+	float		Intensity;
 } Const;
-	
+
 
 struct OutputVS
 {
@@ -89,13 +106,13 @@ OutputVS GlareVS(float3 posL : POSITION0, float2 tex0 : TEXCOORD0)
 	// Zero output.
 	OutputVS outVS = (OutputVS)0;
 
-	float v_factor = tex2Dlod(tVis, float4(Const.GPUId, 0, 0, 0)).r;
-
-	posL.xy *= Const.Pos.zw * (0.2f + v_factor * 0.8f) * Const.Scale;
+	float v_factor = tex2Dlod(tVis, float4(Const.GPUId, 0.5f, 0, 0)).r;
+	float s = smoothstep(0.4f, 1.0f, v_factor);
+	posL.xy *= Const.Pos.zw * (0.05f + s * 2.5f) * sqrt(Const.Intensity);
 	posL.xy += Const.Pos.xy;
 
 	outVS.posH = mul(float4(posL.xy - 0.5f, 0.0f, 1.0f), Const.mVP);
-	outVS.uvi = float3(tex0.xy, v_factor);
+	outVS.uvi = float3(tex0.xy, s);
 
 	return outVS;
 }
@@ -104,8 +121,27 @@ OutputVS GlareVS(float3 posL : POSITION0, float2 tex0 : TEXCOORD0)
 float4 GlarePS(OutputVS frg) : COLOR
 {
 	if (frg.uvi.z < 0.02f) discard;
-	return float4(Const.Color.rgb, tex2D(tTex, frg.uvi.xy).r * Const.Scale);
+	float3 c = saturate(Const.Color.rgb); 
+	
+	float t = tex2D(tTex, frg.uvi.xy).r;  // Texture intensity
+	float a = t * frg.uvi.z * sqrt(Const.Intensity);
+	
+	return float4(HDRtoLDR(c * t), saturate(1.0f - exp(-a * 0.5f)));
 }
+
+/*
+float4 GlarePS(OutputVS frg) : COLOR
+{
+	if (frg.uvi.z < 0.02f) discard;
+	float3 c = saturate(Const.Color.rgb / max(Const.Color.r, 0.0001f)); // Normalize color
+	c *= c; // Amplify color cast, HDR equations flatten it
+
+	float t = tex2D(tTex, frg.uvi.xy).r;  // Texture intensity
+	float a = t * frg.uvi.z * sqrt(Const.Intensity);
+
+	return float4(HDRtoLDR(c * t), saturate(1.0f - exp(-a)));
+}
+*/
 
 
 
@@ -116,25 +152,25 @@ float4 GlarePS(OutputVS frg) : COLOR
 //
 float4 CreateSunGlarePS(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 {
-	u = u * 2.0 - 1.0;
-	v = v * 2.0 - 1.0;
+	u = u * 2.0 - 1.0;	v = v * 2.0 - 1.0;
 
 	float a = atan2(u, v);
 	float r = sqrt(u * u + v * v);
 
-	float q = 0.5f + 0.5f * pow(sin(3.0f * a), 4.0f);
-	float w = 0.5f + 0.3f * pow(sin(30.0f * a), 2.0f) * pow(sin(41.0f * a), 2.0f);
+	float q = 0.5f + 0.3f * pow(sin(3.0f * a), 4.0f);
+	float w = 0.5f + 0.2f * pow(sin(30.0f * a), 2.0f) * pow(sin(41.0f * a), 2.0f);
 
 	//float I = pow(max(0, 2.0f * (1 - r / q)), 12.0f);
 	//float K = pow(max(0, 2.0f * (1 - r / w)), 12.0f);
-
-	float I = pow(max(0, (1 - r / q)), 6.0f) * 8e4;
-	float K = pow(max(0, (1 - r / w)), 6.0f) * 16e4;
-
 	//float I = exp(max(0, 10.0f * (1 - r / q))) - 1.0f;
 	//float K = exp(max(0, 10.0f * (1 - r / w))) - 1.0f;
 
-	float L = exp(max(0, 0.35f - r) * 43.0f);
+	float I = pow(max(0, (1 - r / q)), 6.0f) * 2.0f;
+	float K = pow(max(0, (1 - r / w)), 6.0f) * 3.0f;
+	float L = ilerp(0.04, 0.02, r) * 16.0f;
+	float S = ilerp(1.7f, 0.35f, r);
+	L *= L;
+	L += S * S * 0.40f;
 
 	return float4(max(I + L,K + L), 0, 0, 1);
 }
@@ -142,12 +178,35 @@ float4 CreateSunGlarePS(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 
 
 // ======================================================================
+// Render Sun texture
+//
+float4 CreateSunTexPS(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
+{
+	u = u * 2.0 - 1.0;	v = v * 2.0 - 1.0;
+
+	float a = atan2(u, v);
+	float r = sqrt(u * u + v * v);
+
+	float q = 0.5f + 1.0f * pow(sin(3.0f * a), 4.0f);
+	float w = 0.5f + 0.8f * pow(sin(30.0f * a), 2.0f) * pow(sin(41.0f * a), 2.0f);
+
+	float I = pow(max(0, (1 - r / q)), 6.0f) * 2;
+	float K = pow(max(0, (1 - r / w)), 6.0f) * 6;
+
+	float L = ilerp(0.15, 0.10, r) * 4.0f;
+	float T = max(0, max(I + L, K + L));
+
+	T = saturate(1.0f - exp(-T));
+	return float4(1, 1, 1, T);
+}
+
+
+// ======================================================================
 // Render "Glare" for local light sources
 //
 float4 CreateLocalGlarePS(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 {
-	u = u * 2.0 - 1.0;
-	v = v * 2.0 - 1.0;
+	u = u * 2.0 - 1.0;	v = v * 2.0 - 1.0;
 
 	float a = atan2(u, v);
 	float r = sqrt(u * u + v * v);
@@ -155,16 +214,10 @@ float4 CreateLocalGlarePS(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 	float q = 0.5f + 0.5f * pow(sin(3.0f * a), 4.0f);
 	float w = 0.5f + 0.3f * pow(sin(30.0f * a), 2.0f) * pow(sin(41.0f * a), 2.0f);
 
-	//float I = pow(max(0, 2.0f * (1 - r / q)), 12.0f);
-	//float K = pow(max(0, 2.0f * (1 - r / w)), 12.0f);
+	float I = pow(max(0, (1 - r / q)), 6.0f) * 4.0f;
+	float K = pow(max(0, (1 - r / w)), 6.0f) * 8.0f;
 
-	float I = pow(max(0, (1 - r / q)), 6.0f) * 8e4;
-	float K = pow(max(0, (1 - r / w)), 6.0f) * 16e4;
-
-	//float I = exp(max(0, 10.0f * (1 - r / q))) - 1.0f;
-	//float K = exp(max(0, 10.0f * (1 - r / w))) - 1.0f;
-
-	float L = exp(max(0, 0.35f - r) * 43.0f);
+	float L = ilerp(0.15, 0.10, r) * 4.0f;
 
 	return float4(max(I + L,K + L), 0, 0, 1);
 }

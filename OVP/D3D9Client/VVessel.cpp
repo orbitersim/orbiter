@@ -686,7 +686,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 	if (scn->GetRenderPass() == RENDERPASS_SHADOWMAP) bCockpit = bVC = false;
 	// Always render exterior view for envmaps
 
-	if (scn->GetRenderPass() == RENDERPASS_NORMAL_DEPTH) bCockpit = bVC = false;
+	// if (scn->GetRenderPass() == RENDERPASS_NORMAL_DEPTH) bCockpit = bVC = false;
 	// Always render exterior view for envmaps
 
 

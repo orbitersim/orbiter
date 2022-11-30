@@ -189,6 +189,10 @@ public:
 	const D3D9Light *GetLight(int index) const;
 	const D3D9Light *GetLights() const { return Lights; }
 	DWORD GetLightCount() const { return nLights; }
+	D3D9Pad* GetPooledSketchpad(int id);
+	void RecallDefaultState();
+	float GetDisplayScale() const { return fDisplayScale; }
+	void CreateSunGlare();
 
 
 	DWORD GetRenderPass() const;
@@ -248,6 +252,7 @@ public:
 	LPDIRECT3DSURFACE9 GetIrradianceDepthStencil() const { return pIrradDS; }
 	LPDIRECT3DSURFACE9 GetEnvDepthStencil() const { return pEnvDS; }
 	LPDIRECT3DSURFACE9 GetBuffer(int id) const { return psgBuffer[id]; }
+	LPDIRECT3DTEXTURE9 GetSunTexture() const { return pSunTex; }
 
 	/**
 	 * \brief Render any shadows cast by vessels on planet surfaces
@@ -352,7 +357,8 @@ public:
 	double			GetCameraNearAltitude() const { return Camera.alt_near; }
 	double			GetCameraElevation() const { return Camera.elev; }
 	void			GetCameraLngLat(double *lng, double *lat) const;
-	bool			WorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, D3DXMATRIX *pVP = NULL, float clip = 1.0f);
+	bool			WorldToScreenSpace(const VECTOR3& rdir, oapi::IVECTOR2* pt, D3DXMATRIX* pVP = NULL, float clip = 1.0f);
+	bool			WorldToScreenSpace2(const VECTOR3& rdir, oapi::FVECTOR2* pt, D3DXMATRIX* pVP = NULL, float clip = 1.0f);
 
 	DWORD			GetFrameId() const { return dwFrameId; }
 
@@ -420,8 +426,7 @@ private:
 	void InitGDIResources();
 	void ExitGDIResources();
 
-	D3D9Pad *GetPooledSketchpad(int id); ///< Get pooled Sketchpad instance (lazy instantiation)
-	void    FreePooledSketchpads();      ///< Release pooled Sketchpad instances
+	void FreePooledSketchpads();      ///< Release pooled Sketchpad instances
 
 
 
@@ -433,7 +438,6 @@ private:
 	DWORD stencilDepth;        // stencil buffer bit depth
 	D3D9CelestialSphere* m_celSphere; // celestial sphere background
 	DWORD iVCheck;             // index of last object checked for visibility
-	//DWORD dwRenderPass;		   // Currently active render pass
 	bool  bLocalLight;         // enable local light sources
 	bool  surfLabelsActive;    // v.2 surface labels activated?
 
@@ -464,6 +468,7 @@ private:
 	VECTOR3		sky_color;
 	double      bglvl;
 
+	float		fDisplayScale;
 	float		lmaxdst2;
 	DWORD		nLights;
 	DWORD		nplanets;		// Number of distance sorted planets to render
@@ -487,7 +492,7 @@ private:
 
 	FVECTOR2 DepthSampleKernel[57];
 
-	LPDIRECT3DTEXTURE9 pSunTex, pLightTex;
+	LPDIRECT3DTEXTURE9 pSunTex, pLightGlare, pSunGlare;
 	LPDIRECT3DTEXTURE9 pLocalResults;
 	LPDIRECT3DSURFACE9 pLocalResultsSL;
 

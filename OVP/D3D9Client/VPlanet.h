@@ -12,6 +12,7 @@
 #include "VObject.h"
 #include "AtmoControls.h"
 #include "D3D9Util.h"
+#include "Mesh.h"
 #include <list>
 
 class D3D9Mesh;
@@ -280,6 +281,8 @@ public:
 	float			RayPhase(float cw);
 	float			MiePhase(float cw);
 	ObjAtmParams	GetObjectAtmoParams(VECTOR3 g_pos);
+	FVECTOR3		HDR(FVECTOR3 i);
+	FVECTOR3		LightFX(FVECTOR3 x);
 
 	// v2 Labels interface ----------------------------------------------------
 	void            ActivateLabels(bool activate);

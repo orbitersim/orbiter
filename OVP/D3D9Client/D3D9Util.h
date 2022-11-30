@@ -375,10 +375,12 @@ public:
 	HANDLE	GetVSHandle(const char* name);
 
 	void	SetTexture(const char* name, LPDIRECT3DTEXTURE9 pTex, UINT Flags = IPF_CLAMP | IPF_ANISOTROPIC, UINT AnisoLvl = 4);
+	void	SetTextureVS(const char* name, LPDIRECT3DTEXTURE9 pTex, UINT flags = IPF_CLAMP | IPF_POINT, UINT AnisoLvl = 0);
 	void	SetPSConstants(const char* name, void* data, UINT bytes);
 	void	SetVSConstants(const char* name, void* data, UINT bytes);
 
-	void	SetTexture(HANDLE hVar, LPDIRECT3DTEXTURE9 pTex, UINT Flags = IPF_CLAMP | IPF_ANISOTROPIC, UINT AnisoLvl = 4);
+	void	SetTexture(HANDLE hVar, LPDIRECT3DTEXTURE9 pTex, UINT flags = IPF_CLAMP | IPF_POINT, UINT AnisoLvl = 0);
+	void	SetTextureVS(HANDLE hVar, LPDIRECT3DTEXTURE9 pTex, UINT flags, UINT aniso);
 	void	SetPSConstants(HANDLE hVar, void* data, UINT bytes);
 	void	SetVSConstants(HANDLE hVar, void* data, UINT bytes);
 	LPDIRECT3DDEVICE9 GetDevice() { return pDev; }
@@ -392,7 +394,7 @@ private:
 		UINT Flags;
 		UINT AnisoLvl;
 		bool bSamplerSet;
-	} pTextures[16];
+	} pTextures[20];
 
 	LPD3DXCONSTANTTABLE pPSCB, pVSCB;
 	LPDIRECT3DPIXELSHADER9 pPS;

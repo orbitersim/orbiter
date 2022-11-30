@@ -86,6 +86,8 @@ void D3D9Config::Reset ()
 	bAbsAnims			= 0;
 	bCloudNormals		= 1;
 	bFlats				= 0;
+	bGlares				= 1;
+	bLocalGlares		= 0;
 	DebugBreak			= 0;
 	ShaderCacheUse		= 0;
 
@@ -174,6 +176,8 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "AbsoluteAnimations", i))			bAbsAnims = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "NormalmappedClouds", i))			bCloudNormals = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "TerrainFlats", i))					bFlats = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "SunGlare", i))						bGlares = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "LightsGlare", i))					bLocalGlares = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "DebugBreak", i))					DebugBreak = max(0, min(1, i));
 	//if (oapiReadItem_int   (hFile, "ShaderCacheUse", i))				ShaderCacheUse = max(0, min(1, i));
 	if (oapiReadItem_float (hFile, "OrbitalShadowMult", d))			    OrbitalShadowMult = max(0.5, min(10.0, d));
@@ -184,6 +188,7 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_float (hFile, "GFXGamma", d))						GFXGamma = max(0.3, min(2.5, d));
 	if (oapiReadItem_float (hFile, "GFXSunIntensity", d))				GFXSunIntensity = max(0.5, min(2.5, d));
 	if (oapiReadItem_float (hFile, "GFXLocalMax", d))					GFXLocalMax = max(0.001, min(1.0, d));
+	if (oapiReadItem_float (hFile, "GFXGlare", d))						GFXGlare = max(0.1, min(10.0, d));
 
 
 	oapiReadItem_string (hFile, "SolCfg", SolCfg);
@@ -254,6 +259,8 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int   (hFile, "AbsoluteAnimations", bAbsAnims);
 	oapiWriteItem_int   (hFile, "NormalmappedClouds", bCloudNormals);
 	oapiWriteItem_int   (hFile, "TerrainFlats", bFlats);
+	oapiWriteItem_int	(hFile, "SunGlare", bGlares);
+	oapiWriteItem_int	(hFile, "LightsGlare", bLocalGlares);
 	oapiWriteItem_int	(hFile, "DebugBreak", DebugBreak);
 	oapiWriteItem_int	(hFile, "ShaderCacheUse", ShaderCacheUse);
 	oapiWriteItem_float (hFile, "OrbitalShadowMult", OrbitalShadowMult);
@@ -264,6 +271,7 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_float (hFile, "GFXGamma", GFXGamma);
 	oapiWriteItem_float (hFile, "GFXSunIntensity", GFXSunIntensity);
 	oapiWriteItem_float (hFile, "GFXLocalMax", GFXLocalMax);
+	oapiWriteItem_float (hFile, "GFXGlare", GFXGlare);
 
 	oapiWriteItem_string (hFile, "SolCfg", SolCfg);
 	oapiWriteItem_string (hFile, "DebugLineFont", DebugFont);

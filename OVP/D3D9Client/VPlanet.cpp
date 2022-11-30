@@ -943,6 +943,21 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 		if (hazemgr2) {
 			double apr = 180.0 * scn->GetCameraAperture() / (scn->GetCameraAspect() * PI);
 			hazemgr2->Render(mWorld, float(apr));
+			/*
+			if (scn->GetRenderPass() == RENDERPASS_MAINSCENE) {
+				if (CameraInAtmosphere()) {
+					D3D9Pad* pSkp = scn->GetPooledSketchpad(0);
+					if (pSkp) {
+						RECT rtgt = { -150, -150, 150, 150 };
+						float fScale = scn->GetDisplayScale();
+						pSkp->SetViewProj(scn->GetViewMatrix(), scn->GetProjectionMatrix());
+						pSkp->SetWorldBillboard(SunDirection() * 500.0f, fScale, true);
+						pSkp->StretchRectNative(scn->GetSunTexture(), NULL, &rtgt);
+						pSkp->EndDrawing();
+						scn->RecallDefaultState();
+					}
+				}
+			}*/
 		}
 
 		if (prm.bCloud && (prm.cloudvis & 1))

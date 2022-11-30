@@ -91,6 +91,7 @@ static __gcBindCoreMethod pBindCoreMethod = NULL;
 #define IPF_PYRAMIDAL	0x0080
 #define IPF_GAUSSIAN	0x0100
 #define IPF_ANISOTROPIC	0x0200
+#define IPF_VERTEXTEX	0x0400
 
 /// \defgroup dwFlags for gcSetupCustomCamera() API function
 ///@{
