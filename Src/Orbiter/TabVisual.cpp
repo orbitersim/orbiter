@@ -141,7 +141,7 @@ bool orbiter::VisualTab::OpenHelp ()
 
 //-----------------------------------------------------------------------------
 
-INT_PTR orbiter::VisualTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+BOOL orbiter::VisualTab::OnMessage (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_COMMAND:

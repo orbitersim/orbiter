@@ -33,7 +33,9 @@ namespace orbiter {
 
 		BOOL OnSize(int w, int h);
 
-		INT_PTR TabProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		BOOL OnNotify(HWND hDlg, int idCtrl, LPNMHDR pnmh);
+
+		BOOL OnMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	protected:
 		HTREEITEM RegisterExtraParam(LaunchpadItem* item, HTREEITEM parent = 0);

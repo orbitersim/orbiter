@@ -57,7 +57,7 @@ void orbiter::AboutTab::Create ()
 
 //-----------------------------------------------------------------------------
 
-INT_PTR orbiter::AboutTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+BOOL orbiter::AboutTab::OnMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_COMMAND:

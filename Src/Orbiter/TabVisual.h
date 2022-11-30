@@ -25,7 +25,7 @@ namespace orbiter {
 
 		bool OpenHelp();
 
-		INT_PTR TabProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		BOOL OnMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	protected:
 		void VisualsChanged();

@@ -424,7 +424,7 @@ INT_PTR orbiter::LaunchpadDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, 
 			HDC hDC = lpDrawItem->hDC;
 			HANDLE hpBrush = SelectObject(hDC, GetSysColorBrush(COLOR_3DFACE));
 			HANDLE hpPen = SelectObject(hDC, GetStockObject(NULL_PEN));
-			Rectangle(hDC, 0, 0, lpDrawItem->rcItem.right, lpDrawItem->rcItem.bottom);
+			Rectangle(hDC, -1, -1, lpDrawItem->rcItem.right+1, lpDrawItem->rcItem.bottom+1);
 			SelectObject(hDC, hpBrush);
 			return TRUE;
 		}

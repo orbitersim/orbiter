@@ -82,7 +82,7 @@ bool orbiter::JoystickTab::OpenHelp ()
 
 //-----------------------------------------------------------------------------
 
-INT_PTR orbiter::JoystickTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+BOOL orbiter::JoystickTab::OnMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_COMMAND:
