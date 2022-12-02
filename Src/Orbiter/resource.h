@@ -66,6 +66,7 @@
 #define IDD_OPTIONS_INSTRUMENT          217
 #define IDD_OPTIONS_UI                  218
 #define IDD_OPTIONS_VESSEL              219
+#define IDD_OPTIONS_VISUAL              220
 #define IDD_DEMOBK                      223
 #define IDD_ORBITERHELP                 224
 #define IDD_HELP                        225
@@ -165,19 +166,6 @@
 #define IDC_OPT_RPRESSURE               1056
 #define IDC_OPT_DISTMASS                1057
 #define IDC_OPT_WIND                    1058
-#define IDC_VIS_CLOUD                   1067
-#define IDC_VIS_REFWATER                1068
-#define IDC_VIS_HAZE                    1069
-#define IDC_VIS_LIGHTS                  1070
-#define IDC_VIS_LTLEVEL                 1071
-#define IDC_VIS_SHADOW                  1072
-#define IDC_VIS_VSHADOW                 1073
-#define IDC_VIS_SPECULAR                1074
-#define IDC_VIS_AMBIENT                 1075
-#define IDC_VIS_LOCALLIGHT              1076
-#define IDC_VIS_REENTRY                 1077
-#define IDC_VIS_CSHADOW                 1078
-#define IDC_VIS_PARTICLE                1079
 
 #define IDC_MOD_ACTGRP                  1500
 #define IDC_MOD_INFO                    1501
@@ -283,9 +271,26 @@
 #define IDC_OPT_UI_MOUSEFOCUSMODE       1069
 #define IDC_OPT_VESSEL_FUELLIMIT        1070
 #define IDC_OPT_VESSEL_PADFUEL          1071
+#define IDC_OPT_VIS_CLOUD               1072
+#define IDC_OPT_VIS_CSHADOW             1073
+#define IDC_OPT_VIS_HAZE                1074
+#define IDC_OPT_VIS_FOG                 1075
+#define IDC_OPT_VIS_REFWATER            1076
+#define IDC_OPT_VIS_RIPPLE              1077
+#define IDC_OPT_VIS_LIGHTS              1078
+#define IDC_OPT_VIS_LTLEVEL             1079
+#define IDC_OPT_VIS_ELEV                1080
+#define IDC_OPT_VIS_ELEVMODE            1081
+#define IDC_OPT_VIS_MAXLEVEL            1082
+#define IDC_OPT_VIS_VSHADOW             1083
+#define IDC_OPT_VIS_REENTRY             1084
+#define IDC_OPT_VIS_SHADOW              1085
+#define IDC_OPT_VIS_PARTICLE            1086
+#define IDC_OPT_VIS_SPECULAR            1087
+#define IDC_OPT_VIS_LOCALLIGHT          1088
+#define IDC_OPT_VIS_AMBIENT             1089
 
 // Unsorted
-#define IDC_SCN_STATIC1                 1087
 #define IDC_SCN_LIST                    1090
 #define IDC_SCN_DESC                    1092
 #define IDC_SCN_PAUSED                  1093
@@ -342,8 +347,6 @@
 #define IDC_IMG                         1189
 #define IDC_CUSTOM1                     1190
 #define IDC_TAB1                        1192
-#define IDC_VIS_RIPPLE                  1214
-#define IDC_VIS_MAXLEVEL                1215
 #define IDC_LOGO                        1216
 #define IDC_CHECK1                      1224
 #define IDC_CHECK2                      1225
@@ -385,18 +388,12 @@
 #define IDC_MNU_PAGECONTAINER           1269
 #define IDC_OPT_STATIC1                 1270
 #define IDC_OPT_STATIC2                 1271
-#define IDC_VIS_STATIC1                 1281
-#define IDC_VIS_STATIC2                 1282
-#define IDC_VIS_STATIC3                 1283
-#define IDC_VIS_STATIC4                 1284
-#define IDC_VIS_STATIC5                 1285
 #define IDC_DEV_STATIC3                 1288
 #define IDB_CLOSEDOWN2                  1289
 #define IDC_WAITTEXT                    1290
 #define IDC_PROGRESS1                   1291
 #define IDC_CUSTOM2                     1292
 #define IDC_SCN_SPLIT1                  1292
-#define IDC_VIS_FOG                     1297
 #define IDC_LIST2                       1298
 #define IDC_BGINTENS                    1310
 #define IDC_RICHEDIT21                  1340
@@ -432,8 +429,6 @@
 #define IDC_CUSTOM5                     1395
 #define IDC_SCN_HTML                    1395
 #define IDC_EXT_SPLIT1                  1397
-#define IDC_VIS_ELEV                    1399
-#define IDC_VIS_ELEVMODE                1400
 #define IDC_VERSION                     1401
 #define IDC_PAUSEINDICATOR              1402
 

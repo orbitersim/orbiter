@@ -28,7 +28,7 @@ extern HELPCONTEXT DefHelpContext;
 
 DlgOptions::DlgOptions(HINSTANCE hInstance, HWND hParent, void* context)
 	: DialogWin(hInstance, hParent, IDD_OPTIONS, 0, 0, context)
-	, OptionsPageContainer()
+	, OptionsPageContainer(OptionsPageContainer::INLINE, g_pOrbiter->Cfg())
 {
 	pos = &g_pOrbiter->Cfg()->CfgWindowPos.DlgOptions;
 }

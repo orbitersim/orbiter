@@ -6,13 +6,14 @@
 //=============================================================================
 
 #include "TabOptions.h"
+#include "Help.h"
 #include "resource.h"
 
 //=============================================================================
 
 orbiter::OptionsTab::OptionsTab(const LaunchpadDialog* lp)
 	: LaunchpadTab(lp)
-	, OptionsPageContainer()
+	, OptionsPageContainer(OptionsPageContainer::LAUNCHPAD, lp->Cfg())
 {
 }
 
@@ -25,9 +26,25 @@ void orbiter::OptionsTab::Create()
 
 //-----------------------------------------------------------------------------
 
+bool orbiter::OptionsTab::OpenHelp()
+{
+	const HELPCONTEXT* hc = (CurrentPage() ? CurrentPage()->HelpContext() : nullptr);
+	if (hc) ::OpenHelp(LaunchpadWnd(), hc->helpfile, hc->topic);
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+
 void orbiter::OptionsTab::LaunchpadShowing(bool show)
 {
 	if (show) UpdatePages(true);
+}
+
+// ----------------------------------------------------------------------
+
+void orbiter::OptionsTab::SetConfig(Config* cfg)
+{
+	UpdateConfig();
 }
 
 //-----------------------------------------------------------------------------

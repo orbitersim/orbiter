@@ -19,16 +19,29 @@
 #include "OrbiterAPI.h"
 
 class OptionsPage;
+class Config;
 
 /************************************************************************
  * \brief Container class for options pages
  */
 class OptionsPageContainer {
 public:
-	OptionsPageContainer();
+	/**
+	 * \brief Enumerates where the options pages are shown.
+	 */
+	enum Originator {
+		LAUNCHPAD, ///< Show in Launchpad dialog
+		INLINE     ///< Show as inline dialog during a simulation session
+	};
+
+	OptionsPageContainer(Originator orig, Config* cfg);
 	~OptionsPageContainer();
 
 	OptionsPage* CurrentPage();
+
+	Originator Environment() const { return m_orig; }
+
+	Config* Cfg() { return m_cfg; }
 
 	void SetWindowHandles(HWND hDlg, HWND hSplitter, HWND hPane1, HWND hPane2);
 
@@ -38,6 +51,11 @@ public:
 	 * \brief Update dialog controls from config settings
 	 */
 	void UpdatePages(bool resetView);
+
+	/**
+	 * \brief Update config object from dialog controls
+	 */
+	void UpdateConfig();
 
 	void SwitchPage(const char* name);
 
@@ -67,6 +85,8 @@ protected:
 	const HELPCONTEXT* HelpContext() const { return m_contextHelp; }
 
 private:
+	Originator m_orig;
+	Config* m_cfg;
 	SplitterCtrl m_splitter;
 	GenericCtrl m_container;
 	std::vector<OptionsPage*> m_pPage;
@@ -111,6 +131,8 @@ public:
 	 */
 	OptionsPageContainer* Container() { return m_container; }
 
+	Config* Cfg() { return m_container->Cfg(); }
+
 	/**
 	 * \brief Returns the parent dialog handle.
 	 * \return Parent dialog handle
@@ -139,6 +161,13 @@ public:
 	 * \param hPage dialog page handle
 	 */
 	virtual void UpdateControls(HWND hPage) {}
+
+	/**
+	 * \brief Update config object from dialog control states.
+	 *    Only required for pages which don't react directly to controls
+	 *    being modified.
+	 */
+	virtual void UpdateConfig(HWND hPage) {}
 
 	/**
 	 * \brief Returns the name of the option page's help page, if applicable.
@@ -205,6 +234,25 @@ private:
 };
 
 /************************************************************************
+ * \brief Page for visual parameters
+ */
+class OptionsPage_Visual : public OptionsPage {
+public:
+	OptionsPage_Visual(OptionsPageContainer* container);
+	int ResourceId() const;
+	const char* Name() const;
+	const HELPCONTEXT* HelpContext() const;
+	void UpdateControls(HWND hPage);
+	virtual void UpdateConfig(HWND hPage);
+
+protected:
+	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
+	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
+	void VisualsChanged(HWND hPage);
+
+};
+ 
+ /************************************************************************
  * \brief Page for instrument and panel options
  */
 class OptionsPage_Instrument : public OptionsPage {

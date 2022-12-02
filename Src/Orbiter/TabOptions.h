@@ -25,6 +25,10 @@ namespace orbiter {
 
 		void LaunchpadShowing(bool show);
 
+		void SetConfig(Config* cfg);
+
+		bool OpenHelp();
+
 		BOOL OnInitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam);
 		BOOL OnSize(int w, int h);
 		BOOL OnNotify(HWND hDlg, int idCtrl, LPNMHDR pnmh);

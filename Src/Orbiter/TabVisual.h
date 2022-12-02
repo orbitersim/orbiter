@@ -26,10 +26,6 @@ namespace orbiter {
 		bool OpenHelp();
 
 		BOOL OnMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-	protected:
-		void VisualsChanged();
-		// Something on the visual params tab has changed which requires a reset
 	};
 
 }
