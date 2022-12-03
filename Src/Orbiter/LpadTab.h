@@ -11,13 +11,12 @@
 // Property page indices
 #define PG_SCN  0
 #define PG_OPT  1
-#define PG_OPT2 2
-#define PG_MOD  3
-#define PG_VID  4
-#define PG_JOY  5
-#define PG_EXT  6
-#define PG_ABT  7
-#define PG_WAIT 8
+#define PG_MOD  2
+#define PG_VID  3
+#define PG_JOY  4
+#define PG_EXT  5
+#define PG_ABT  6
+#define PG_WAIT 7
 
 namespace orbiter {
 

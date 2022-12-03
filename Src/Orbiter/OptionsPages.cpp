@@ -65,8 +65,10 @@ void OptionsPageContainer::SetWindowHandles(HWND hDlg, HWND hSplitter, HWND hPan
 void OptionsPageContainer::CreatePages()
 {
 	HTREEITEM parent;
-	if (m_orig == LAUNCHPAD)
+	if (m_orig == LAUNCHPAD) {
 		AddPage(new OptionsPage_Visual(this));
+		AddPage(new OptionsPage_Physics(this));
+	}
 	AddPage(new OptionsPage_Instrument(this));
 	AddPage(new OptionsPage_Vessel(this));
 	AddPage(new OptionsPage_CelSphere(this));
@@ -76,7 +78,6 @@ void OptionsPageContainer::CreatePages()
 	AddPage(new OptionsPage_Forces(this), parent);
 	AddPage(new OptionsPage_Axes(this), parent);
 	AddPage(new OptionsPage_UI(this));
-	//SwitchPage((size_t)0);
 	TreeView_SelectItem(m_hPageList, TreeView_GetRoot(m_hPageList));
 }
 
@@ -529,6 +530,68 @@ void OptionsPage_Visual::VisualsChanged(HWND hPage)
 
 // ======================================================================
 
+OptionsPage_Physics::OptionsPage_Physics(OptionsPageContainer* container)
+	: OptionsPage(container)
+{
+}
+
+// ----------------------------------------------------------------------
+
+int OptionsPage_Physics::ResourceId() const
+{
+	return IDD_OPTIONS_PHYSICS;
+}
+
+// ----------------------------------------------------------------------
+
+const char* OptionsPage_Physics::Name() const
+{
+	const char* name = "Physics settings";
+	return name;
+}
+
+// ----------------------------------------------------------------------
+
+const HELPCONTEXT* OptionsPage_Physics::HelpContext() const
+{
+	static HELPCONTEXT hcontext = g_pOrbiter->DefaultHelpPage("/tab_param.htm"); // this needs to be updated
+	return &hcontext;
+}
+
+// ----------------------------------------------------------------------
+
+void OptionsPage_Physics::UpdateControls(HWND hPage)
+{
+	SendDlgItemMessage(hPage, IDC_OPT_COMPLEXGRAV, BM_SETCHECK,
+		Cfg()->CfgPhysicsPrm.bNonsphericalGrav ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_RPRESSURE, BM_SETCHECK,
+		Cfg()->CfgPhysicsPrm.bRadiationPressure ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_DISTMASS, BM_SETCHECK,
+		Cfg()->CfgPhysicsPrm.bDistributedMass ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_WIND, BM_SETCHECK,
+		Cfg()->CfgPhysicsPrm.bAtmWind ? BST_CHECKED : BST_UNCHECKED, 0);
+}
+
+// ----------------------------------------------------------------------
+
+void OptionsPage_Physics::UpdateConfig(HWND hPage)
+{
+	Cfg()->CfgPhysicsPrm.bDistributedMass = (SendDlgItemMessage(hPage, IDC_OPT_DISTMASS, BM_GETCHECK, 0, 0) == BST_CHECKED);
+	Cfg()->CfgPhysicsPrm.bNonsphericalGrav = (SendDlgItemMessage(hPage, IDC_OPT_COMPLEXGRAV, BM_GETCHECK, 0, 0) == BST_CHECKED);
+	Cfg()->CfgPhysicsPrm.bRadiationPressure = (SendDlgItemMessage(hPage, IDC_OPT_RPRESSURE, BM_GETCHECK, 0, 0) == BST_CHECKED);
+	Cfg()->CfgPhysicsPrm.bAtmWind = (SendDlgItemMessage(hPage, IDC_OPT_WIND, BM_GETCHECK, 0, 0) == BST_CHECKED);
+}
+
+// ----------------------------------------------------------------------
+
+BOOL OptionsPage_Physics::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
+{
+	OptionsPage::OnInitDialog(hPage, wParam, lParam);
+	return TRUE;
+}
+
+// ======================================================================
+
 OptionsPage_Instrument::OptionsPage_Instrument(OptionsPageContainer* container)
 	: OptionsPage(container)
 {
@@ -716,10 +779,14 @@ const HELPCONTEXT* OptionsPage_Vessel::HelpContext() const
 
 void OptionsPage_Vessel::UpdateControls(HWND hPage)
 {
-	bool enable = Cfg()->CfgLogicPrm.bLimitedFuel;
-	SendDlgItemMessage(hPage, IDC_OPT_VESSEL_FUELLIMIT, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
-	enable = Cfg()->CfgLogicPrm.bPadRefuel;
-	SendDlgItemMessage(hPage, IDC_OPT_VESSEL_PADFUEL, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_VESSEL_FUELLIMIT, BM_SETCHECK,
+		Cfg()->CfgLogicPrm.bLimitedFuel ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_VESSEL_PADFUEL, BM_SETCHECK,
+		Cfg()->CfgLogicPrm.bPadRefuel ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_VESSEL_COMPLEXMODEL, BM_SETCHECK,
+		Cfg()->CfgLogicPrm.FlightModelLevel ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_VESSEL_DAMAGE, BM_SETCHECK,
+		Cfg()->CfgLogicPrm.DamageSetting ? BST_CHECKED : BST_UNCHECKED, 0);
 }
 
 // ----------------------------------------------------------------------
@@ -727,6 +794,11 @@ void OptionsPage_Vessel::UpdateControls(HWND hPage)
 BOOL OptionsPage_Vessel::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
 {
 	OptionsPage::OnInitDialog(hPage, wParam, lParam);
+	if (Container()->Environment() == OptionsPageContainer::INLINE) {
+		UpdateControls(hPage);
+		EnableWindow(GetDlgItem(hPage, IDC_OPT_VESSEL_COMPLEXMODEL), FALSE);
+		EnableWindow(GetDlgItem(hPage, IDC_OPT_VESSEL_DAMAGE), FALSE);
+	}
 	return TRUE;
 }
 
@@ -748,6 +820,20 @@ BOOL OptionsPage_Vessel::OnCommand(HWND hPage, WORD ctrlId, WORD notification, H
 			bool check = (SendDlgItemMessage(hPage, IDC_OPT_VESSEL_PADFUEL, BM_GETCHECK, 0, 0) == TRUE);
 			Cfg()->CfgLogicPrm.bPadRefuel = check;
 			g_pOrbiter->OnOptionChanged(OPTCAT_VESSEL, OPTITEM_VESSEL_PADREFUEL);
+			return FALSE;
+		}
+		break;
+	case IDC_OPT_VESSEL_COMPLEXMODEL:
+		if (notification == BN_CLICKED) {
+			bool check = (SendDlgItemMessage(hPage, IDC_OPT_VESSEL_COMPLEXMODEL, BM_GETCHECK, 0, 0) == TRUE);
+			Cfg()->CfgLogicPrm.FlightModelLevel = check;
+			return FALSE;
+		}
+		break;
+	case IDC_OPT_VESSEL_DAMAGE:
+		if (notification == BN_CLICKED) {
+			bool check = (SendDlgItemMessage(hPage, IDC_OPT_VESSEL_DAMAGE, BM_GETCHECK, 0, 0) == TRUE);
+			Cfg()->CfgLogicPrm.DamageSetting = check;
 			return FALSE;
 		}
 		break;

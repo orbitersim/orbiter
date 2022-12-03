@@ -243,7 +243,7 @@ public:
 	const char* Name() const;
 	const HELPCONTEXT* HelpContext() const;
 	void UpdateControls(HWND hPage);
-	virtual void UpdateConfig(HWND hPage);
+	void UpdateConfig(HWND hPage);
 
 protected:
 	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
@@ -251,8 +251,24 @@ protected:
 	void VisualsChanged(HWND hPage);
 
 };
- 
- /************************************************************************
+
+/************************************************************************
+* \brief Page for physics engine options
+*/
+class OptionsPage_Physics : public OptionsPage {
+public:
+	OptionsPage_Physics(OptionsPageContainer* container);
+	int ResourceId() const;
+	const char* Name() const;
+	const HELPCONTEXT* HelpContext() const;
+	void UpdateControls(HWND hPage);
+	void UpdateConfig(HWND hPage);
+
+protected:
+	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
+};
+
+/************************************************************************
  * \brief Page for instrument and panel options
  */
 class OptionsPage_Instrument : public OptionsPage {

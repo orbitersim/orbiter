@@ -39,7 +39,6 @@ set(common_src
 	TabOptions.cpp
 	TabScenario.cpp
 	TabVideo.cpp
-	TabVisual.cpp
 # Dialogs
 	CustomControls.cpp
 	Dialogs.cpp
