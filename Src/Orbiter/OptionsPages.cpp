@@ -633,6 +633,9 @@ void OptionsPage_Instrument::UpdateControls(HWND hPage)
 	SetWindowText(GetDlgItem(hPage, IDC_OPT_MFD_SIZE), cbuf);
 	bool enable = Cfg()->CfgLogicPrm.bMfdTransparent;
 	SendDlgItemMessage(hPage, IDC_OPT_MFD_TRANSP, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
+	int vcmfdsize = Cfg()->CfgInstrumentPrm.VCMFDSize;
+	int idx = (vcmfdsize == 1024 ? 2 : vcmfdsize == 512 ? 1 : 0);
+	SendDlgItemMessage(hPage, IDC_OPT_MFD_VCTEXSIZE, CB_SETCURSEL, idx, 0);
 	double scrollSpeed = Cfg()->CfgLogicPrm.PanelScrollSpeed;
 	sprintf(cbuf, "%0.0f", scrollSpeed * 0.1);
 	SetWindowText(GetDlgItem(hPage, IDC_OPT_PANEL_SCROLLSPEED), cbuf);
@@ -646,6 +649,10 @@ void OptionsPage_Instrument::UpdateControls(HWND hPage)
 BOOL OptionsPage_Instrument::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
 {
 	OptionsPage::OnInitDialog(hPage, wParam, lParam);
+	SendDlgItemMessage(hPage, IDC_OPT_MFD_VCTEXSIZE, CB_RESETCONTENT, 0, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_MFD_VCTEXSIZE, CB_ADDSTRING, 0, (LPARAM)"256 x 256");
+	SendDlgItemMessage(hPage, IDC_OPT_MFD_VCTEXSIZE, CB_ADDSTRING, 0, (LPARAM)"512 x 512");
+	SendDlgItemMessage(hPage, IDC_OPT_MFD_VCTEXSIZE, CB_ADDSTRING, 0, (LPARAM)"1024 x 1024");
 	return TRUE;
 }
 
@@ -684,6 +691,14 @@ BOOL OptionsPage_Instrument::OnCommand(HWND hPage, WORD ctrlId, WORD notificatio
 			Cfg()->CfgLogicPrm.bMfdTransparent = check;
 			g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_MFDGENERICTRANSP);
 			return FALSE;
+		}
+		break;
+	case IDC_OPT_MFD_VCTEXSIZE:
+		if (notification == CBN_SELCHANGE) {
+			int vcmfdsize[3] = { 256, 512, 1024 };
+			DWORD idx = (DWORD)SendDlgItemMessage(hPage, IDC_OPT_MFD_VCTEXSIZE, CB_GETCURSEL, 0, 0);
+			Cfg()->CfgInstrumentPrm.VCMFDSize = vcmfdsize[idx];
+			g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_MFDVCSIZE);
 		}
 		break;
 	case IDC_OPT_PANEL_SCROLLSPEED:
