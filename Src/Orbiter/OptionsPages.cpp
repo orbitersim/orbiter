@@ -562,13 +562,13 @@ const HELPCONTEXT* OptionsPage_Physics::HelpContext() const
 
 void OptionsPage_Physics::UpdateControls(HWND hPage)
 {
-	SendDlgItemMessage(hPage, IDC_OPT_COMPLEXGRAV, BM_SETCHECK,
+	SendDlgItemMessage(hPage, IDC_OPT_PHYS_COMPLEXGRAV, BM_SETCHECK,
 		Cfg()->CfgPhysicsPrm.bNonsphericalGrav ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_RPRESSURE, BM_SETCHECK,
+	SendDlgItemMessage(hPage, IDC_OPT_PHYS_RPRESSURE, BM_SETCHECK,
 		Cfg()->CfgPhysicsPrm.bRadiationPressure ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_DISTMASS, BM_SETCHECK,
+	SendDlgItemMessage(hPage, IDC_OPT_PHYS_DISTMASS, BM_SETCHECK,
 		Cfg()->CfgPhysicsPrm.bDistributedMass ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_WIND, BM_SETCHECK,
+	SendDlgItemMessage(hPage, IDC_OPT_PHYS_WIND, BM_SETCHECK,
 		Cfg()->CfgPhysicsPrm.bAtmWind ? BST_CHECKED : BST_UNCHECKED, 0);
 }
 
@@ -576,10 +576,10 @@ void OptionsPage_Physics::UpdateControls(HWND hPage)
 
 void OptionsPage_Physics::UpdateConfig(HWND hPage)
 {
-	Cfg()->CfgPhysicsPrm.bDistributedMass = (SendDlgItemMessage(hPage, IDC_OPT_DISTMASS, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	Cfg()->CfgPhysicsPrm.bNonsphericalGrav = (SendDlgItemMessage(hPage, IDC_OPT_COMPLEXGRAV, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	Cfg()->CfgPhysicsPrm.bRadiationPressure = (SendDlgItemMessage(hPage, IDC_OPT_RPRESSURE, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	Cfg()->CfgPhysicsPrm.bAtmWind = (SendDlgItemMessage(hPage, IDC_OPT_WIND, BM_GETCHECK, 0, 0) == BST_CHECKED);
+	Cfg()->CfgPhysicsPrm.bDistributedMass = (SendDlgItemMessage(hPage, IDC_OPT_PHYS_DISTMASS, BM_GETCHECK, 0, 0) == BST_CHECKED);
+	Cfg()->CfgPhysicsPrm.bNonsphericalGrav = (SendDlgItemMessage(hPage, IDC_OPT_PHYS_COMPLEXGRAV, BM_GETCHECK, 0, 0) == BST_CHECKED);
+	Cfg()->CfgPhysicsPrm.bRadiationPressure = (SendDlgItemMessage(hPage, IDC_OPT_PHYS_RPRESSURE, BM_GETCHECK, 0, 0) == BST_CHECKED);
+	Cfg()->CfgPhysicsPrm.bAtmWind = (SendDlgItemMessage(hPage, IDC_OPT_PHYS_WIND, BM_GETCHECK, 0, 0) == BST_CHECKED);
 }
 
 // ----------------------------------------------------------------------

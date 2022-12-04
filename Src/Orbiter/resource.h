@@ -7,7 +7,6 @@
 #define LAUNCHPAD_WIN_WIDTH             400
 
 #define IDS_STRING1                     1
-#define IDR_RT_MANIFEST1                1
 #define IDS_TABSCENARIO                 2
 #define IDS_TABPARAMS                   3
 #define IDS_TABVISUAL                   4
@@ -17,19 +16,14 @@
 #define IDS_TABEXTRA                    8
 #define IDS_TABABOUT                    9
 #define IDI_MAIN_ICON                   101
-#define IDI_MAIN_ICON_BAK               102
 #define IDR_MAIN_ACCEL                  113
-#define IDR_MENU                        143
-#define IDR_POPUP                       145
-#define IDB_LOGO                        152
 #define IDD_MAIN                        171
 #define IDD_PAGE_SCN                    172
 #define IDD_PAGE_OPT                    173
-#define IDD_PAGE_VIS                    174
-#define IDD_PAGE_MOD                    175
-#define IDD_PAGE_JOY                    176
-#define IDD_PAGE_EXT                    177
-#define IDD_PAGE_ABT                    178
+#define IDD_PAGE_MOD                    174
+#define IDD_PAGE_JOY                    175
+#define IDD_PAGE_EXT                    176
+#define IDD_PAGE_ABT                    177
 #define IDD_SAVESCN                     181
 #define IDD_CAMERA                      182
 #define IDD_CAM_PG_TARGET               184
@@ -39,18 +33,14 @@
 #define IDD_CAM_PG_CONTROL              189
 #define IDD_JUMPVESSEL                  190
 #define IDD_TIMEWARP                    191
-#define IDB_BITMAP1                     192
 #define IDI_ICON1                       193
 #define IDB_BITMAP2                     194
-#define IDD_NET_CREATE                  198
 #define IDD_MSG                         199
 #define IDT_CONTRIB                     200
 #define IDT_DISCLAIMER                  201
 #define IDD_NAVAID                      201
 #define IDT_CREDIT                      202
 #define IDD_MAP                         202
-#define IDD_PAGE_NET2                   203
-#define IDD_PAGE_NET3                   204
 #define IDD_CUSTOMCMD                   205
 #define IDB_TREEICON_FOLDER1            206
 #define IDB_TREEICON_FOLDER2            207
@@ -72,11 +62,6 @@
 #define IDD_ORBITERHELP                 224
 #define IDD_HELP                        225
 #define IDB_ICON64                      229
-#define IDD_VISHELPER                   230
-#define IDD_VHELP_PLANETARIUM           231
-#define IDD_VHELP_LABELS                232
-#define IDD_VHELP_BODYFORCE             233
-#define IDD_VHELP_COORDINATES           234
 #define IDB_DEFBUTTON                   235
 #define IDD_MSG_FRECORDER               241
 #define IDD_RECPLAY                     242
@@ -132,7 +117,6 @@
 #define IDR_IMAGE1                      292
 #define IDI_LARROW                      293
 #define IDI_RARROW                      294
-#define IDD_DIALOG2                     294
 #define IDD_EXTRA_LOGFILE               294
 #define IDI_UARROW                      295
 #define IDI_UARROW1                     296
@@ -161,10 +145,6 @@
 #define IDC_JOY_SAT                     1042
 #define IDC_JOY_INIT                    1043
 #define IDC_MSG                         1050
-#define IDC_OPT_COMPLEXGRAV             1055
-#define IDC_OPT_RPRESSURE               1056
-#define IDC_OPT_DISTMASS                1057
-#define IDC_OPT_WIND                    1058
 
 #define IDC_MOD_ACTGRP                  1500
 #define IDC_MOD_INFO                    1501
@@ -291,16 +271,21 @@
 #define IDC_OPT_VIS_SPECULAR            1090
 #define IDC_OPT_VIS_LOCALLIGHT          1091
 #define IDC_OPT_VIS_AMBIENT             1092
+#define IDC_OPT_PHYS_COMPLEXGRAV        1093
+#define IDC_OPT_PHYS_RPRESSURE          1094
+#define IDC_OPT_PHYS_DISTMASS           1095
+#define IDC_OPT_PHYS_WIND               1096
 
 // Unsorted
 #define IDC_SCN_LIST                    1090
-#define IDC_SCN_DESC                    1092
-#define IDC_SCN_PAUSED                  1093
-#define IDC_SCN_SAVE                    1094
-#define IDC_SAVE_NAME                   1095
-#define IDC_SCN_DELQS                   1096
-#define IDC_SAVE_DESC                   1097
-#define IDC_SCN_INFO                    1098
+#define IDC_SCN_DESC                    1091
+#define IDC_SCN_PAUSED                  1092
+#define IDC_SCN_SAVE                    1093
+#define IDC_SAVE_NAME                   1094
+#define IDC_SCN_DELQS                   1095
+#define IDC_SAVE_DESC                   1096
+#define IDC_SCN_INFO                    1097
+#define IDC_SCN_HTML                    1098
 #define IDC_TREE1                       1113
 #define IDC_EDIT1                       1118
 #define IDC_EDIT2                       1119
@@ -428,7 +413,6 @@
 #define IDC_MAPOPT_SATELLITES           1372
 #define IDC_INFO_MAP                    1373
 #define IDC_CUSTOM5                     1395
-#define IDC_SCN_HTML                    1395
 #define IDC_EXT_SPLIT1                  1397
 #define IDC_VERSION                     1401
 #define IDC_PAUSEINDICATOR              1402
