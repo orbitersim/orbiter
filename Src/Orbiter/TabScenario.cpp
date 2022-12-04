@@ -6,12 +6,12 @@
 //=============================================================================
 
 #include <windows.h>
-#include <commctrl.h>
 #include <io.h>
 #include <direct.h>
 #include "Orbiter.h"
 #include "TabScenario.h"
-#include "Log.h"
+#include "Launchpad.h"
+//#include "Log.h"
 #include "Help.h"
 #include "htmlctrl.h"
 #include "resource.h"
@@ -110,7 +110,7 @@ bool orbiter::ScenarioTab::OpenHelp ()
 
 //-----------------------------------------------------------------------------
 
-BOOL orbiter::ScenarioTab::Size (int w, int h)
+BOOL orbiter::ScenarioTab::OnSize (int w, int h)
 {
 	int dw = w - (int)(pos0.right-pos0.left);
 	int dh = h - (int)(pos0.bottom-pos0.top);
@@ -158,7 +158,25 @@ BOOL orbiter::ScenarioTab::Size (int w, int h)
 
 //-----------------------------------------------------------------------------
 
-INT_PTR orbiter::ScenarioTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+BOOL orbiter::ScenarioTab::OnNotify(HWND hDlg, int idCtrl, LPNMHDR pnmh)
+{
+	if (idCtrl == IDC_SCN_LIST) {
+		NM_TREEVIEW* pnmtv = (NM_TREEVIEW FAR*)pnmh;
+		switch (pnmtv->hdr.code) {
+		case TVN_SELCHANGED:
+			ScenarioChanged();
+			return TRUE;
+		case NM_DBLCLK:
+			PostMessage(LaunchpadWnd(), WM_COMMAND, IDLAUNCH, 0);
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+//-----------------------------------------------------------------------------
+
+BOOL orbiter::ScenarioTab::OnMessage (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	NM_TREEVIEW *pnmtv;
 
@@ -176,23 +194,8 @@ INT_PTR orbiter::ScenarioTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 			return TRUE;
 		}
 		break;
-	case WM_NOTIFY:
-		switch (LOWORD(wParam)) {
-		case IDC_SCN_LIST:
-			pnmtv = (NM_TREEVIEW FAR *)lParam;
-			switch (pnmtv->hdr.code) {
-			case TVN_SELCHANGED:
-				ScenarioChanged ();
-				return TRUE;
-			case NM_DBLCLK:
-				PostMessage (LaunchpadWnd(), WM_COMMAND, IDLAUNCH, 0);
-				return TRUE;
-			}
-			break;
-		}
-		break;
 	}
-	return NULL;
+	return FALSE;
 }
 
 //-----------------------------------------------------------------------------
@@ -646,7 +649,7 @@ INT_PTR CALLBACK orbiter::ScenarioTab::SaveProc (HWND hWnd, UINT uMsg, WPARAM wP
 				MessageBox (hWnd, "Scenario name too long (max 63 characters)", "Save Error", MB_OK|MB_ICONEXCLAMATION);
 				return TRUE;
 			}
-			desc = new char[desc_len+1]; TRACENEW
+			desc = new char[desc_len+1];
 			SendDlgItemMessage (hWnd, IDC_SAVE_NAME, WM_GETTEXT, 64, (LPARAM)name);
 			SendDlgItemMessage (hWnd, IDC_SAVE_DESC, WM_GETTEXT, desc_len+1, (LPARAM)desc);
 			res = pTab->SaveCurScenarioAs (name, desc);

@@ -155,7 +155,7 @@ INT_PTR TabbedDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 static INT_PTR CALLBACK DlgProcHook (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (uMsg == WM_INITDIALOG) {
-		SetWindowLongPtr (hWnd, GWLP_USERDATA, (LONG)lParam);
+		SetWindowLongPtr (hWnd, GWLP_USERDATA, (LONG_PTR)lParam);
 		// store class pointer with window
 		((TabbedDialog*)lParam)->hDlg = hWnd;
 		// store window handle here so it's available in OnInitDialog

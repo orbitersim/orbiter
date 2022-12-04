@@ -7,12 +7,13 @@
 #include <io.h>
 #include <time.h>
 #include <fstream>
+#include "Uxtheme.h"
 #include <commctrl.h>
 #include "Resource.h"
 #include "Orbiter.h"
 #include "Launchpad.h"
 #include "TabScenario.h"
-#include "TabVisual.h"
+#include "TabOptions.h"
 #include "TabModule.h"
 #include "TabVideo.h"
 #include "TabJoystick.h"
@@ -39,7 +40,7 @@ static UINT timerid = 0;
 const DWORD dlgcol = 0xF0F4F8; // main dialog background colour
 
 static int mnubt[] = {
-	IDC_MNU_SCN, IDC_MNU_PRM, IDC_MNU_MOD,
+	IDC_MNU_SCN, IDC_MNU_OPT, IDC_MNU_MOD,
 	IDC_MNU_VID, IDC_MNU_JOY, IDC_MNU_EXT, IDC_MNU_ABT
 };
 
@@ -51,11 +52,11 @@ orbiter::LaunchpadDialog::LaunchpadDialog (Orbiter *app)
 {
 	hDlg    = NULL;
 	hInst   = app->GetInstance();
-	ntab    = 0;
 	pApp    = app;
 	pCfg    = app->Cfg();
 	g_pDlg  = this; // for nonmember callbacks
 	CTab    = NULL;
+	hTabContainer = NULL;
 	m_bVisible = false;
 
 	hDlgBrush = CreateSolidBrush (dlgcol);
@@ -69,17 +70,10 @@ orbiter::LaunchpadDialog::LaunchpadDialog (Orbiter *app)
 //-----------------------------------------------------------------------------
 orbiter::LaunchpadDialog::~LaunchpadDialog ()
 {
-	int i;
+	for (auto tab : TabList)
+		delete tab;
+	TabList.clear();
 
-	if (ntab) {
-		for (i = 0; i < ntab; i++) delete Tab[i];
-		delete []Tab;
-		Tab = NULL;
-		delete []pagidx;
-		pagidx = NULL;
-		delete []tabidx;
-		tabidx = NULL;
-	}
 	DestroyWindow (hWait);
 	DeleteObject (hDlgBrush);
 	DeleteObject (hShadowImg);
@@ -92,19 +86,15 @@ orbiter::LaunchpadDialog::~LaunchpadDialog ()
 bool orbiter::LaunchpadDialog::Create (bool startvideotab)
 {
 	if (!hDlg) {
-		CreateDialog (hInst, MAKEINTRESOURCE(IDD_MAIN), NULL, AppDlgProc);
-		AddTab (new ScenarioTab (this)); TRACENEW
-		AddTab (new VisualTab (this)); TRACENEW
-		AddTab (new ModuleTab (this)); TRACENEW
-		AddTab (new DefVideoTab (this)); TRACENEW
-		AddTab (new JoystickTab (this)); TRACENEW
-		AddTab (pExtra = new ExtraTab (this)); TRACENEW
-		AddTab (new AboutTab (this)); TRACENEW
-		if (ntab) {
-			pagidx  = new int[ntab]; TRACENEW
-			tabidx  = new int[ntab]; TRACENEW
-			for (int i = 0; i < ntab; i++) pagidx[i] = tabidx[i] = i;
-		}
+		CreateDialogParam(hInst, MAKEINTRESOURCE(IDD_MAIN), NULL, s_DlgProc, (LPARAM)this);
+		hTabContainer = GetDlgItem(hDlg, IDC_MNU_PAGECONTAINER);
+		AddTab (new ScenarioTab (this));
+		AddTab(new OptionsTab(this));
+		AddTab (new ModuleTab (this));
+		AddTab (new DefVideoTab (this));
+		AddTab (new JoystickTab (this));
+		AddTab (pExtra = new ExtraTab (this));
+		AddTab (new AboutTab (this));
 		InitTabControl (hDlg);
 		InitSize (hDlg);
 		SwitchTabPage (hDlg, 0);
@@ -149,8 +139,8 @@ void orbiter::LaunchpadDialog::Show()
 {
 	ShowWindow(hDlg, SW_SHOW);
 	m_bVisible = true;
-	for (int i = 0; i < ntab; i++)
-		Tab[i]->LaunchpadShowing(true);
+	for (auto tab : TabList)
+		tab->LaunchpadShowing(true);
 }
 
 //-----------------------------------------------------------------------------
@@ -159,8 +149,8 @@ void orbiter::LaunchpadDialog::Hide()
 {
 	ShowWindow(hDlg, SW_HIDE);
 	m_bVisible = false;
-	for (int i = 0; i < ntab; i++)
-		Tab[i]->LaunchpadShowing(false);
+	for (auto tab : TabList)
+		tab->LaunchpadShowing(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -172,10 +162,7 @@ bool orbiter::LaunchpadDialog::ConsumeMessage(LPMSG pmsg)
 
 orbiter::LaunchpadTab* orbiter::LaunchpadDialog::GetTab(UINT i) const
 {
-	if (i < ntab)
-		return Tab[i];
-	else
-		return nullptr;
+	return (i < TabList.size() ? TabList[i] : nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -184,20 +171,7 @@ orbiter::LaunchpadTab* orbiter::LaunchpadDialog::GetTab(UINT i) const
 //-----------------------------------------------------------------------------
 void orbiter::LaunchpadDialog::AddTab (LaunchpadTab *tab)
 {
-	LaunchpadTab **tmp = new LaunchpadTab*[ntab+1]; TRACENEW
-	if (ntab) {
-		memcpy (tmp, Tab, ntab*sizeof(LaunchpadTab*));
-		delete []Tab;
-	}
-	Tab = tmp;
-	Tab[ntab++] = tab;
-}
-
-//-----------------------------------------------------------------------------
-
-const HWND orbiter::LaunchpadDialog::GetTabWindow (int i) const
-{
-	return (i < ntab ? Tab[i]->TabWnd() : NULL);
+	TabList.push_back(tab);
 }
 
 //-----------------------------------------------------------------------------
@@ -206,9 +180,9 @@ const HWND orbiter::LaunchpadDialog::GetTabWindow (int i) const
 //-----------------------------------------------------------------------------
 void orbiter::LaunchpadDialog::InitTabControl (HWND hWnd)
 {
-	for (int i = 0; i < ntab; i++) {
-		Tab[i]->Create();
-		Tab[i]->GetConfig (pCfg);
+	for (auto tab : TabList) {
+		tab->Create();
+		tab->GetConfig (pCfg);
 	}
 	hWait = CreateDialog (hInst, MAKEINTRESOURCE(IDD_PAGE_WAIT2), hWnd, WaitPageProc);
 }
@@ -235,12 +209,12 @@ void orbiter::LaunchpadDialog::InitSize (HWND hWnd)
 	r_help0   = GetClientPos (hWnd, GetDlgItem (hWnd, 9));
 	r_exit0   = GetClientPos (hWnd, GetDlgItem (hWnd, IDEXIT));
 	r_wait0   = GetClientPos (hWnd, hWait);
-	r_data0   = GetClientPos (hWnd, GetTabWindow(0));
+	r_data0   = GetClientPos (hWnd, GetDlgItem(hWnd, IDC_MNU_PAGECONTAINER));
 	r_version0= GetClientPos (hWnd, GetDlgItem (hWnd, IDC_VERSION));
 
 	r = GetClientPos (hDlg, GetDlgItem (hDlg, IDC_MNU_SCN));
 	int y0 = r.top;
-	r = GetClientPos (hDlg, GetDlgItem (hDlg, IDC_MNU_PRM));
+	r = GetClientPos (hDlg, GetDlgItem (hDlg, IDC_MNU_OPT));
 	dy_bt = r.top - y0;
 
 	GetClientRect (GetDlgItem (hWnd, IDC_LOGO), &rl);
@@ -285,7 +259,7 @@ BOOL orbiter::LaunchpadDialog::Resize (HWND hWnd, DWORD w, DWORD h, DWORD mode)
 	SetWindowPos (GetDlgItem (hWnd, IDC_SHADOW), NULL,
 		0, 0, w, shadowh,
 		SWP_NOACTIVATE|SWP_NOMOVE|SWP_NOOWNERZORDER|SWP_NOZORDER);
-	w4 = max (10, r_data0.right - r_data0.left + dw);
+	w4 = r_exit0.right - r_data0.left + dw;
 	h4 = max (10, r_data0.bottom - r_data0.top + dh);
 	SetWindowPos (GetDlgItem (hWnd, IDLAUNCH), NULL,
 		xb1, r_launch0.top+dh, wb1, bh,
@@ -302,10 +276,12 @@ BOOL orbiter::LaunchpadDialog::Resize (HWND hWnd, DWORD w, DWORD h, DWORD mode)
 	SetWindowPos (GetDlgItem (hWnd, IDC_VERSION), NULL,
 		r_version0.left, r_version0.top+dh, 0, 0,
 		SWP_NOACTIVATE|SWP_NOOWNERZORDER|SWP_NOZORDER|SWP_NOCOPYBITS|SWP_NOSIZE);
-	for (i = 0; i < ntab; i++) {
-		HWND hTab = GetTabWindow(i);
-		if (hTab) SetWindowPos (hTab, NULL, 0, 0, w4, h4,
-			SWP_NOACTIVATE|SWP_NOMOVE|SWP_NOOWNERZORDER|SWP_NOZORDER);
+	DWORD tabAreaW = r_data0.right - r_data0.left + dw;
+	DWORD tabAreaH = r_data0.bottom - r_data0.top + dh;
+	SetWindowPos(GetDlgItem(hWnd, IDC_MNU_PAGECONTAINER), NULL, 0, 0, tabAreaW, tabAreaH,
+		SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+	for (auto tab : TabList) {
+		tab->TabAreaResized(tabAreaW, tabAreaH);
 	}
 	return FALSE;
 }
@@ -321,7 +297,7 @@ void orbiter::LaunchpadDialog::SetDemoMode ()
 	//ShowWindow (GetDlgItem (hDlg, IDC_MAINTAB), FALSE);
 
 	static int hide_mnu[] = {
-		IDC_MNU_PRM, IDC_MNU_MOD,
+		IDC_MNU_OPT, IDC_MNU_MOD,
 		IDC_MNU_VID, IDC_MNU_JOY, IDC_MNU_EXT,
 	};
 	for (int i = 0; i < 6; i++) EnableWindow (GetDlgItem (hDlg, hide_mnu[i]), FALSE);
@@ -334,8 +310,8 @@ void orbiter::LaunchpadDialog::SetDemoMode ()
 //-----------------------------------------------------------------------------
 void orbiter::LaunchpadDialog::UpdateConfig ()
 {
-	for (int i = 0; i < ntab; i++)
-		Tab[i]->SetConfig (pCfg);
+	for (auto tab : TabList)
+		tab->SetConfig (pCfg);
 
 	// get launchpad window geometry (if not minimised)
 	if (!IsIconic(hDlg))
@@ -352,6 +328,7 @@ INT_PTR orbiter::LaunchpadDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, 
 
 	switch (uMsg) {
 	case WM_INITDIALOG:
+		EnableThemeDialogTexture(hWnd, ETDT_ENABLE);
 		hDlg = hWnd;
 		return FALSE;
 	case WM_CLOSE:
@@ -371,7 +348,7 @@ INT_PTR orbiter::LaunchpadDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, 
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) {
 		case IDLAUNCH:
-			if (((ScenarioTab*)Tab[0])->GetSelScenario (cbuf, 256) == 1) {
+			if (((ScenarioTab*)TabList[0])->GetSelScenario (cbuf, 256) == 1) {
 				UpdateConfig ();
 				pApp->Launch (cbuf);
 			}
@@ -385,8 +362,8 @@ INT_PTR orbiter::LaunchpadDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, 
 		case IDC_MNU_SCN:
 			SwitchTabPage (hWnd, PG_SCN);
 			return TRUE;
-		case IDC_MNU_PRM:
-			SwitchTabPage (hWnd, PG_OPT);
+		case IDC_MNU_OPT:
+			SwitchTabPage(hWnd, PG_OPT);
 			return TRUE;
 		case IDC_MNU_MOD:
 			SwitchTabPage (hWnd, PG_MOD);
@@ -438,6 +415,14 @@ INT_PTR orbiter::LaunchpadDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, 
 			DeleteDC (mDC);
 			return TRUE;
 		}
+		else if (wParam == IDC_MNU_PAGECONTAINER) {
+			HDC hDC = lpDrawItem->hDC;
+			HANDLE hpBrush = SelectObject(hDC, GetSysColorBrush(COLOR_3DFACE));
+			HANDLE hpPen = SelectObject(hDC, GetStockObject(NULL_PEN));
+			Rectangle(hDC, -1, -1, lpDrawItem->rcItem.right+1, lpDrawItem->rcItem.bottom+1);
+			SelectObject(hDC, hpBrush);
+			return TRUE;
+		}
 		} break;
 	case WM_MOUSEMOVE:
 		if (pCfg->CfgDemoPrm.bDemo) time0 = time(NULL); // reset timer
@@ -445,8 +430,14 @@ INT_PTR orbiter::LaunchpadDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, 
 	case WM_KEYDOWN:
 		if (pCfg->CfgDemoPrm.bDemo) time0 = time(NULL); // reset timer
 		break;
-	case WM_CTLCOLORDLG:
-		return (LRESULT)hDlgBrush;
+//	case WM_CTLCOLORDLG:
+//		return (LRESULT)hDlgBrush;
+	case WM_GETMINMAXINFO: {
+		LPMINMAXINFO lpMMI = (LPMINMAXINFO)lParam;
+		lpMMI->ptMinTrackSize.x = 550;
+		lpMMI->ptMinTrackSize.y = 350;
+		}
+		return 0;
 	case WM_TIMER:
 		if (difftime (time (NULL), time0) > pCfg->CfgDemoPrm.LPIdleTime) { // auto-launch a demo
 			if (SelectDemoScenario ())
@@ -487,25 +478,27 @@ INT_PTR orbiter::LaunchpadDialog::WaitProc (HWND hWnd, UINT uMsg, WPARAM wParam,
 //-----------------------------------------------------------------------------
 void orbiter::LaunchpadDialog::SwitchTabPage (HWND hWnd, int cpg)
 {
-	int idx = cpg;
-	for (int pg = 0; pg < ntab; pg++)
-		if (pg != cpg) Tab[pg]->Hide();
-	CTab = Tab[cpg];
-	CTab->Show();
+	for (size_t pg = 0; pg < TabList.size(); pg++)
+		if (pg != cpg) TabList[pg]->Hide();
+	CTab = (cpg >= 0 && cpg < TabList.size() ? TabList[cpg] : nullptr);
+	if (CTab) CTab->Show();
 }
 
 //-----------------------------------------------------------------------------
 
 void orbiter::LaunchpadDialog::ShowWaitPage (bool show, long mem_committed)
 {
-	int pg, i;
-	int showtab = (show ? SW_HIDE:SW_SHOW);
+	int i;
 	int item[3] = {IDLAUNCH, 9, IDEXIT};
 
 	if (show) {
+		for (i = 0; i < ARRAYSIZE(item); i++)
+			ShowWindow(GetDlgItem(hDlg, item[i]), SW_HIDE);
+	}
+	if (show) {
 		SetCursor(LoadCursor(NULL, IDC_WAIT));
-		for (pg = 0; pg < ntab; pg++) Tab[pg]->Hide();
-		for (i = 0; i < ntab; i++) Tab[i]->Hide();
+		for (auto tab : TabList)
+			tab->Hide();
 		mem_wait = mem_committed/1000;
 		mem0 = pApp->memstat->HeapUsage();
 		SendDlgItemMessage (hWait, IDC_PROGRESS1, PBM_SETPOS, 0, 0);
@@ -516,11 +509,9 @@ void orbiter::LaunchpadDialog::ShowWaitPage (bool show, long mem_committed)
 		ShowWindow (hWait, SW_HIDE);
 		SwitchTabPage (hDlg, 0);
 	}
-	for (i = 0; i < 3; i++)
-		ShowWindow (GetDlgItem (hDlg, item[i]), showtab);
-	for (i = 0; i < ntab; i++)
-		if (tabidx[i] >= 0)
-			ShowWindow (GetDlgItem (hDlg, mnubt[i]), showtab);
+	if (!show)
+		for (i = 0; i < ARRAYSIZE(item); i++)
+			ShowWindow (GetDlgItem (hDlg, item[i]), SW_SHOW);
 
 	RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_ALLCHILDREN);
 }
@@ -533,62 +524,6 @@ void orbiter::LaunchpadDialog::UpdateWaitProgress ()
 	}
 }
 
-void orbiter::LaunchpadDialog::HidePage (int idx)
-{
-	if (tabidx[idx] < 0) return; // already hidden
-
-	ShowWindow (GetDlgItem (hDlg, mnubt[tabidx[idx]]), SW_HIDE);
-	int i;
-	RECT r;
-
-	tabidx[idx] = -1;
-	for (i = idx+1; i < ntab; i++) {
-		tabidx[i]--;
-		r = GetClientPos (hDlg, GetDlgItem (hDlg, mnubt[i]));
-		r.top -= dy_bt, r.bottom -= dy_bt;
-		SetClientPos (hDlg, GetDlgItem (hDlg, mnubt[i]), r);
-	}
-
-	for (i = 0; i < ntab; i++)
-		if (tabidx[i] >= 0)
-			pagidx[tabidx[i]] = i;
-
-	InvalidateRect (hDlg, NULL, TRUE);
-}
-
-void orbiter::LaunchpadDialog::UnhidePage (int idx, char *tab)
-{
-	int i, j;
-	RECT r;
-
-	for (i = 0; i < ntab; i++) {
-		if (pagidx[i] == idx) return; // page already present
-		if (pagidx[i] > idx) break;
-	}
-	for (j = ntab-2; j >= i; j--)
-		pagidx[j+1] = pagidx[j];
-	pagidx[i] = idx;
-
-	for (i = 0; i < ntab; i++)
-		tabidx[pagidx[i]] = i;
-
-	//TC_ITEM tie;
-	//tie.mask = TCIF_TEXT;
-	//tie.iImage = -1;
-	//tie.pszText = tab;
-
-	for (i = ntab-1; i > idx; i--) {
-		r = GetClientPos (hDlg, GetDlgItem (hDlg, mnubt[i]));
-		r.top += dy_bt, r.bottom += dy_bt;
-		SetClientPos (hDlg, GetDlgItem (hDlg, mnubt[i]), r);
-	}
-	ShowWindow (GetDlgItem (hDlg, mnubt[tabidx[idx]]), SW_SHOW);
-	//TabCtrl_InsertItem (GetDlgItem (hDlg, IDC_MAINTAB), tabidx[idx], &tie);
-	// TO BE DONE!
-
-	//InvalidateRect (hDlg, NULL, TRUE);
-}
-
 //-----------------------------------------------------------------------------
 // Name: GetDemoScenario()
 // Desc: returns the name of an arbitrary scenario in the demo folder
@@ -596,7 +531,7 @@ void orbiter::LaunchpadDialog::UnhidePage (int idx, char *tab)
 int orbiter::LaunchpadDialog::SelectDemoScenario ()
 {
 	char cbuf[256];
-	HWND hTree = GetDlgItem (GetTabWindow(PG_SCN), IDC_SCN_LIST);
+	HWND hTree = GetDlgItem (GetTab(PG_SCN)->TabWnd(), IDC_SCN_LIST);
 	HTREEITEM demo;
 	TV_ITEM tvi;
 	tvi.hItem = TreeView_GetRoot (hTree);
@@ -664,20 +599,20 @@ void orbiter::LaunchpadDialog::WriteExtraParams ()
 	pExtra->WriteExtraParams ();
 }
 
+//-----------------------------------------------------------------------------
+// Name: s_DlgProc()
+// Desc: Static msg handler which passes messages from the main dialog
+//       to the application class.
+//-----------------------------------------------------------------------------
+INT_PTR CALLBACK orbiter::LaunchpadDialog::s_DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	return g_pDlg->DlgProc(hWnd, uMsg, wParam, lParam);
+}
+
 
 //=============================================================================
 // Nonmember functions
 //=============================================================================
-
-//-----------------------------------------------------------------------------
-// Name: AppDlgProc()
-// Desc: Static msg handler which passes messages from the main dialog
-//       to the application class.
-//-----------------------------------------------------------------------------
-INT_PTR CALLBACK AppDlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	return g_pDlg->DlgProc (hWnd, uMsg, wParam, lParam);
-}
 
 //-----------------------------------------------------------------------------
 // Name: WaitPageProc()

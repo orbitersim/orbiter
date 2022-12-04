@@ -85,7 +85,7 @@ bool GraphicsClient::clbkInitialise ()
     RegisterClass (&wndClass);
 
 	if (clbkUseLaunchpadVideoTab() && g_pOrbiter->Launchpad()) {
-		hVid = g_pOrbiter->Launchpad()->GetTabWindow(PG_VID);
+		hVid = g_pOrbiter->Launchpad()->GetTab(PG_VID)->TabWnd();
 		SetWindowLongPtr (hVid, GWLP_USERDATA, (LONG_PTR)this);
 	} else hVid = NULL;
 

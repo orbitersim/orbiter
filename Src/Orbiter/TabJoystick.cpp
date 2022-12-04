@@ -25,14 +25,6 @@ orbiter::JoystickTab::JoystickTab (const LaunchpadDialog *lp): LaunchpadTab (lp)
 void orbiter::JoystickTab::Create ()
 {
 	hTab = CreateTab (IDD_PAGE_JOY);
-
-	static int item[] = {
-		IDC_JOY_STATIC1, IDC_JOY_DEVICE, IDC_JOY_STATIC2, IDC_JOY_STATIC3,
-		IDC_JOY_DEAD, IDC_JOY_STATIC4, IDC_JOY_SAT, IDC_JOY_THROTTLE,
-		IDC_JOY_STATIC5, IDC_JOY_INIT
-	};
-
-	RegisterItemPositions (item, 10);
 }
 
 //-----------------------------------------------------------------------------
@@ -90,7 +82,7 @@ bool orbiter::JoystickTab::OpenHelp ()
 
 //-----------------------------------------------------------------------------
 
-INT_PTR orbiter::JoystickTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+BOOL orbiter::JoystickTab::OnMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_COMMAND:
