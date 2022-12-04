@@ -141,10 +141,11 @@ INT_PTR CALLBACK orbiter::LaunchpadTab::TabProcHook (HWND hWnd, UINT uMsg, WPARA
 	LaunchpadTab* lt = nullptr;
 	if (uMsg == WM_INITDIALOG) {
 		lt = (LaunchpadTab*)lParam;
-		SetWindowLongPtr(hWnd, DWLP_USER, (LONG)lParam);
+		SetWindowLongPtr(hWnd, DWLP_USER, (LONG_PTR)lParam);
 	}
 	else {
 		lt = (LaunchpadTab*)GetWindowLongPtr(hWnd, DWLP_USER);
+		int i = 1;
 	}
 	return (lt ? lt->TabProc(hWnd, uMsg, wParam, lParam) : FALSE);
 }
