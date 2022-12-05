@@ -216,9 +216,19 @@ namespace oapi {
 			y = float(v.y);
 			z = float(v.z);
 		}
+		FVECTOR3(const D3DXCOLOR& v)
+		{
+			x = float(v.r);
+			y = float(v.g);
+			z = float(v.b);
+		}
 #endif
+		float MaxRGB() const
+		{
+			return max(max(r, g), b);
+		}
 
-		inline VECTOR3 _V()
+		inline VECTOR3 _V() const
 		{
 			VECTOR3 v = { x,y,z };
 			return v;
@@ -230,7 +240,7 @@ namespace oapi {
 			return *this;
 		}
 
-		inline FVECTOR3& operator*= (FVECTOR3 &f)
+		inline FVECTOR3& operator*= (const FVECTOR3 &f)
 		{
 			x *= f.x; y *= f.y; z *= f.z;
 			return *this;
@@ -250,7 +260,7 @@ namespace oapi {
 			return *this;
 		}
 
-		inline FVECTOR3& operator+= (FVECTOR3& f)
+		inline FVECTOR3& operator+= (const FVECTOR3& f)
 		{
 			x += f.x; y += f.y; z += f.z;
 			return *this;
@@ -262,7 +272,7 @@ namespace oapi {
 			return *this;
 		}
 
-		inline FVECTOR3& operator-= (FVECTOR3 &f)
+		inline FVECTOR3& operator-= (const FVECTOR3 &f)
 		{
 			x -= f.x; y -= f.y; z -= f.z;
 			return *this;
@@ -273,7 +283,7 @@ namespace oapi {
 			return FVECTOR3(x * f, y * f, z * f);
 		}
 
-		inline FVECTOR3 operator* (FVECTOR3 &f) const
+		inline FVECTOR3 operator* (const FVECTOR3 &f) const
 		{
 			return FVECTOR3(x * f.x, y * f.y, z * f.z);
 		}
@@ -284,7 +294,7 @@ namespace oapi {
 			return FVECTOR3(x * f, y * f, z * f);
 		}
 
-		inline FVECTOR3 operator/ (FVECTOR3 &f) const
+		inline FVECTOR3 operator/ (const FVECTOR3 &f) const
 		{
 			return FVECTOR3(x / f.x, y / f.y, z / f.z);
 		}
@@ -315,9 +325,13 @@ namespace oapi {
 		}
 
 #ifdef D3D9CLIENT_EXPORTS
-		inline operator D3DXVECTOR3()
+		inline operator D3DXVECTOR3() const
 		{
 			return D3DXVECTOR3(x, y, z);
+		}
+		inline operator D3DXCOLOR() const
+		{
+			return D3DXCOLOR(x, y, z, 1);
 		}
 #endif
 		struct { float x, y, z; };
@@ -529,7 +543,7 @@ namespace oapi {
 		}
 
 #ifdef D3D9CLIENT_EXPORTS
-		inline operator D3DXVECTOR4()
+		inline operator D3DXVECTOR4() const
 		{
 			return D3DXVECTOR4(x, y, z, w);
 		}
@@ -652,6 +666,16 @@ namespace oapi {
 		float y = V.x * M.m12 + V.y * M.m22 + V.z * M.m32 + V.w * M.m42;
 		float z = V.x * M.m13 + V.y * M.m23 + V.z * M.m33 + V.w * M.m43;
 		float w = V.x * M.m14 + V.y * M.m24 + V.z * M.m34 + V.w * M.m44;
+		return FVECTOR4(x, y, z, w);
+	}
+
+
+	inline FVECTOR4 tmul(const FVECTOR4& V, const FMATRIX4& M)
+	{
+		float x = V.x * M.m11 + V.y * M.m12 + V.z * M.m13 + V.w * M.m14;
+		float y = V.x * M.m21 + V.y * M.m22 + V.z * M.m23 + V.w * M.m24;
+		float z = V.x * M.m31 + V.y * M.m32 + V.z * M.m33 + V.w * M.m34;
+		float w = V.x * M.m41 + V.y * M.m42 + V.z * M.m43 + V.w * M.m44;
 		return FVECTOR4(x, y, z, w);
 	}
 

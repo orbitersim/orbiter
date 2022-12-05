@@ -161,7 +161,7 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 	if (gCfg.Rghn) fSmth = tex2D(RghnS, frg.tex0.xy).g;
 	else		   fSmth = 1.0f;
 
-	// Fetch Roughness map
+	// Fetch Metalness map
 	//
 	if (gCfg.Metl) fMetal = tex2D(MetlS, frg.tex0.xy).g;
 	else		   fMetal = gMtrl.metalness;
@@ -375,9 +375,16 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 #endif
 
 #if defined(_LIGHTGLOW)
+	cDiff.rgb *= gSun.Transmission;
+	cDiff.rgb += gSun.Inscatter;
 	return cDiff;
 #else
-	float3 h2 = cDiff.rgb*cDiff.rgb;
-	return float4(cDiff.rgb * pow(max(0, 1.0f + h2*h2), -0.25), cDiff.a);
+	float3 h2 = cDiff.rgb * cDiff.rgb;
+	cDiff.rgb *= pow(max(0, 1.0f + h2 * h2), -0.25);
+
+	cDiff.rgb *= gSun.Transmission;
+	cDiff.rgb += gSun.Inscatter;
+
+	return cDiff;
 #endif
 }

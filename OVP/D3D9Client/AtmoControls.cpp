@@ -35,14 +35,14 @@ ScatterParams::ScatterParams() :
 	// ----------------------------------------
 	trb      ( 1.0 ),    // 0.2 ... 3.0
 	// ----------------------------------------
-	rayin    ( 1.0 ),    // 0.0 ... 3.0
+	rayrat   ( 1.0 ),    // 0.0 ... 3.0
 	ray      ( 1.0 ),	 // 0.0 ... 4.0
 	rphase   ( 0.3395 ), // 0.0 ... 3.5
 	// ----------------------------------------
 	mie      ( 0.0869 ), // 0.0 ... 8.0
 	mphase   ( 0.9831 ), // 0.85 ... 0.999
 	// ----------------------------------------
-	miein	 ( 1.0 ),    // 0.0 ... 2.0
+	mierat	 ( 1.0 ),    // 0.0 ... 2.0
 	aux2	 ( 0.0 ),    // 0.0 ... 2.0
 	aux3	 ( 0.0 ),
 	tgamma	 ( 1.0 ),
@@ -211,53 +211,53 @@ void OpenDlgClbk(void *context)
 	// 32 = x^4 "linearization"
 	
 
-	ConfigSlider(IDC_ATM_TW_DST,    0.025, 0.2);
+	ConfigSlider(IDC_ATM_TW_DST,    0.025, 0.3);	// Twilight distance
 	ConfigSlider(IDC_ATM_GREEN,     0.46, 0.65);
-	ConfigSlider(IDC_ATM_TW_BRI,    0.01, 3.0, 8);
+	ConfigSlider(IDC_ATM_TW_BRI,    0.01, 3.0, 8);	// Twilight intensity
 	ConfigSlider(IDC_ATM_RPOW,     -8.0, 8.0);
 	ConfigSlider(IDC_ATM_MPOW,     -8.0, 8.0);
 	ConfigSlider(IDC_ATM_HEIGHT,    3.0, 80.0, 1|2|4|8);
 	ConfigSlider(IDC_ATM_M_HEIGHT,  0.5, 10.0, 1|2|4|8);
 	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_TRB,	   0.5, 8.0);
+	ConfigSlider(IDC_ATM_TRB,	   0.1, 6.0, 8);
 	ConfigSlider(IDC_ATM_TRGAMMA,  0.2, 1.5);
 	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_RAY,      0.05, 40.0, 32);
-	ConfigSlider(IDC_ATM_IN,       0.01, 15.0, 32);
+	ConfigSlider(IDC_ATM_RAY,      0.05, 10.0, 8);
+	ConfigSlider(IDC_ATM_IN,       0.2, 5.0, 32);
 	ConfigSlider(IDC_ATM_RPHASE,   -0.75, 0.75);
 	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_MIE,      0.2, 100.0, 8);
+	ConfigSlider(IDC_ATM_MIE,      0.05, 10.0, 8);
 	ConfigSlider(IDC_ATM_MPHASE,   0.7, 0.99999, 16);
-	ConfigSlider(IDC_ATM_MIEIN,	   0.01, 20.0, 32);
+	ConfigSlider(IDC_ATM_MIEIN,	   0.2, 5.0, 32);
 	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_AUX2,	   0.2, 2.0);		//Clouds intensity
-	ConfigSlider(IDC_ATM_AUX3,	   0.01, 4.0, 8);	//HDR-B
-	ConfigSlider(IDC_ATM_AUX4,		0.02, 6.0);		// Mie Phase-B
-	ConfigSlider(IDC_ATM_AUX5,		0.001, 1.0, 8);	// Sun Glare Intensity	
+	ConfigSlider(IDC_ATM_AUX2,	   0.2, 2.0);		// Clouds intensity
+	ConfigSlider(IDC_ATM_AUX3,	   0.1, 4.0, 8);	// HDR-B
+	ConfigSlider(IDC_ATM_AUX4,		0.02, 8.0);		// Mie Phase-B
+	ConfigSlider(IDC_ATM_AUX5,		0.05, 10.0, 8);	// Unused
 	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_TW_DST,	hDlg, "Light travel behind terminator");
 	CreateToolTip(IDC_ATM_GREEN,	hDlg, "Green wave lenght. (Green balance)");
 	CreateToolTip(IDC_ATM_TW_BRI,	hDlg, "Sky brightness during twilight");
 	CreateToolTip(IDC_ATM_RPOW,		hDlg, "Main control for atmospheric rayleigh color composition (4.0 for the Earth)");
 	CreateToolTip(IDC_ATM_MPOW,		hDlg, "Main control for atmospheric mie color composition");
-	CreateToolTip(IDC_ATM_HEIGHT,	hDlg, "Atmosphere Ray scale height (7km - 10km for the Earth)");
-	CreateToolTip(IDC_ATM_M_HEIGHT,	hDlg, "Atmosphere Mie scale height (0km - 2km for the Earth)");
+	CreateToolTip(IDC_ATM_HEIGHT,	hDlg, "Atmosphere Ray scale height (7km - 9km for the Earth)");
+	CreateToolTip(IDC_ATM_M_HEIGHT,	hDlg, "Atmosphere Mie scale height (0.6km - 2km for the Earth)");
 	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_TRB,		hDlg, "Terrain/Ocean brightness control (default 1.0)");
 	CreateToolTip(IDC_ATM_TRGAMMA,	hDlg, "Terrain/Ocean gamma control value (default 1.0)");
 	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_RAY,		hDlg, "Overall control for rayleigh scattering (i.e. Haze stickness, atmosphere transparency, optical depth");
-	CreateToolTip(IDC_ATM_IN,		hDlg, "Controls in-scatter out-scatter ratio");
+	CreateToolTip(IDC_ATM_IN,		hDlg, "Rayleigh in-scatter out-scatter ratio (1.0 nominal)");
 	CreateToolTip(IDC_ATM_RPHASE,	hDlg, "Controls a directional dependency of in-scattered sunlight (Most visible when camera, planet and the sun are aligned)");
 	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_MIE,		hDlg, "Overall scale factor for mie scattering. (Mie-particle density)");
 	CreateToolTip(IDC_ATM_MPHASE,	hDlg, "Directional strength of Henyey-Greenstein phase function");
-	CreateToolTip(IDC_ATM_MIEIN,	hDlg, "Light scattering from mie-particles");
+	CreateToolTip(IDC_ATM_MIEIN,	hDlg, "Mie in-scatter out-scatter ratio (1.0 nominal)");
 	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_AUX2,		hDlg, "Sun visibility through clouds");
 	CreateToolTip(IDC_ATM_AUX3,		hDlg, "'HDR' Exposure factor");
 	CreateToolTip(IDC_ATM_AUX4,		hDlg, "Omnidirectional mie scattering scale factor");
-	CreateToolTip(IDC_ATM_AUX5,		hDlg, "Sun 'glare' intensity");
+	CreateToolTip(IDC_ATM_AUX5,		hDlg, "Sun intensity");
 	
 	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_ADDSTRING, 0, (LPARAM)"Auto");

@@ -597,6 +597,16 @@ bool vPlanet::CameraInAtmosphere() const
 
 // ==============================================================
 
+float vPlanet::CameraInSpace() const
+{
+	if (!prm.bAtm) return 1.0f;
+	float alt = CamDist() - size;
+	return 1.0f - exp(-alt * cp.iH.x);
+	//return sqrt(saturate(alt / GetHorizonAlt()));
+}
+
+// ==============================================================
+
 double vPlanet::GetHorizonAlt() const
 {
 	if (!prm.bAtm) return 0.0;
@@ -628,6 +638,15 @@ VECTOR3 vPlanet::ToLocal(VECTOR3 &glob) const
 	MATRIX3 grot;
 	oapiGetRotationMatrix(hObj, &grot);
 	return tmul(grot, glob);
+}
+
+// ==============================================================
+
+VECTOR3	vPlanet::CameraPos() const
+{
+	VECTOR3 gp;
+	oapiGetGlobalPos(hObj, &gp);
+	return scn->GetCameraGPos() - gp;
 }
 
 // ==============================================================
@@ -707,7 +726,7 @@ bool vPlanet::Update (bool bMainScene)
 	vObject::Update(bMainScene);
 
 	// Update Sunlight direction -------------------------------------
-	D3DVEC(-sundir, sunLight.Dir);
+	// sunLight.Dir = -sundir;
 
 	if (patchres==0) return true;
 

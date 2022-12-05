@@ -85,8 +85,7 @@ private:
 	D3D9Mesh **structure_as;
 	DWORD nstructure_bs, nstructure_as;
 	bool lights;               // use nighttextures for base objects
-	bool bLocalLight;          // true if lighting is modified
-	//D3D9Light localLight;      // current local lighting parameters
+	//bool bLocalLight;          // true if lighting is modified
 	class vPlanet *vP;
 	VECTOR3 vLocalPos;
 	MATRIX3 mGlobalRot;

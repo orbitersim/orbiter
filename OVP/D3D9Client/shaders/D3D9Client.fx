@@ -39,8 +39,10 @@ struct Mtrl
 struct Sun
 {
 	float3 Dir;
-	float3 Color;	float pad;
-	float3 Ambient; float pad2;
+	float3 Color;			// Color and Intensity of received sunlight 
+	float3 Ambient;			// Ambient light level (Base Objects Only, Vessels are using dynamic methods)
+	float3 Transmission;	// Visibility through atmosphere (1.0 = fully visible, 0.0 = obscured)
+	float3 Inscatter;		// Amount of incattered light from haze
 };
 
 struct Light

@@ -306,10 +306,12 @@ float3 ComputeCameraView(float a, float r, float d)
 
 // Approximate multi-scatter effect to atmospheric color and light travel behind terminator
 //
-float3 MultiScatterApprox(float3 vNrm)
+float4 AmbientApprox(float3 vNrm)
 {
-	float dNS = clamp(dot(vNrm, Const.toSun) + Const.TW_Dst, 0.0f, Const.TW_Dst);
-	return (Const.RayWave + float3(0.1, 0.1, 0.3)) * Const.TW_Multi * dNS;
+	float dNS = -dot(vNrm, Const.toSun);
+	float fA = 1.0f - ilerp(0.0f, Const.TW_Dst, dNS);
+	float3 clr = float3(0.9, 0.9, 1.0) * Const.TW_Multi;
+	return float4(clr, fA);
 }
 
 
@@ -556,10 +558,12 @@ float4 SkyView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 	{
 		float2 vDepth = Gauss7(dot(Const.toCam, -vRay), Const.CamRad, sp.ax, Const.iH);
 		float2 vOut = vDepth * Const.rmO;
-		float3 cMlt = MultiScatterApprox(Const.toCam) * exp(-Const.CamAlt * Const.iH.r);
-		cMlt *= exp(-(Const.RayWave * vOut.r + Const.MieWave * vOut.g));
+		float4 cMlt = AmbientApprox(Const.toCam);
+		cMlt.rgb *= exp(-Const.CamAlt * Const.iH.r);
+		cMlt.rgb *= cMlt.a;
+		cMlt.rgb *= exp(-(Const.RayWave * vOut.r + Const.MieWave * vOut.g));
 		float alpha = ilerp(10e3, 150e3, vDepth.r);
-		return float4(ret.rgb + cMlt, alpha);
+		return float4(ret.rgb + cMlt.rgb, alpha);
 	}
 
 	return float4(ret.rgb, 1.0f);
@@ -610,11 +614,13 @@ float4 RingView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 		float3 vNrm = normalize(vSrc);
 		float2 vDepth = Gauss4(dot(vNrm, vRay), dot(vSrc, vNrm), sp.ax - sp.ae, Const.iH);
 		float2 vOut = vDepth * Const.rmO;
-		float3 cMlt = MultiScatterApprox(Const.toCam) * exp(-Const.CamAlt * Const.iH.r);
-		cMlt *= exp(-(Const.RayWave * vOut.r + Const.MieWave * vOut.g));
+		float4 cMlt = AmbientApprox(Const.toCam);
+		cMlt.rgb *= exp(-Const.CamAlt * Const.iH.r);
+		cMlt.rgb *= cMlt.a;
+		cMlt.rgb *= exp(-(Const.RayWave * vOut.r + Const.MieWave * vOut.g));
 		float alpha = ilerp(10e3, 150e3, vDepth.r);
 		alpha = alpha > 0 ? sqrt(alpha) : 0;
-		return float4(ret.rgb + cMlt, alpha);
+		return float4(ret.rgb + cMlt.rgb, alpha);
 	}
 
 	return float4(ret.rgb, 1.0f);

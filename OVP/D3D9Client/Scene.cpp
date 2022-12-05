@@ -91,6 +91,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	pSunTex = NULL;
 	pLightGlare = NULL;
 	pSunGlare = NULL;
+	pSunGlareAtm = NULL;
 	pEnvDS = NULL;
 	pIrradDS = NULL;
 	pIrradiance = NULL;
@@ -347,7 +348,8 @@ Scene::~Scene ()
 	SAFE_RELEASE(pLocalResultsSL);
 	SAFE_RELEASE(pSunTex);
 	SAFE_RELEASE(pLightGlare);
-	SAFE_RELEASE(pSunGlare)
+	SAFE_RELEASE(pSunGlare);
+	SAFE_RELEASE(pSunGlareAtm);
 
 	for (int i = 0; i < ARRAYSIZE(psShmDS); i++) SAFE_RELEASE(psShmDS[i]);
 	for (int i = 0; i < ARRAYSIZE(ptShmRT); i++) SAFE_RELEASE(ptShmRT[i]);
@@ -385,14 +387,16 @@ void Scene::CreateSunGlare()
 
 	pCreateGlare = new ImageProcessing(pDevice, "Modules/D3D9Client/Glare.hlsl", "CreateSunGlarePS");
 	pCreateGlare->CompileShader("CreateLocalGlarePS");
+	pCreateGlare->CompileShader("CreateSunGlareAtmPS");
 	pCreateGlare->CompileShader("CreateSunTexPS");
 	
 
 	if (!pSunTex) {
 		UINT ts = (viewH >> 4) & 0xFFFC; // "ts" will be 64 for a Full HD display;  
-		HR(D3DXCreateTexture(pDevice, ts*5, ts*5, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pSunTex));
-		HR(D3DXCreateTexture(pDevice, ts*4, ts*4, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_R16F, D3DPOOL_DEFAULT, &pLightGlare));
-		HR(D3DXCreateTexture(pDevice, ts*12, ts*12, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_R16F, D3DPOOL_DEFAULT, &pSunGlare));
+		HR(D3DXCreateTexture(pDevice, ts * 5, ts * 5, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pSunTex));
+		HR(D3DXCreateTexture(pDevice, ts * 4, ts * 4, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_R16F, D3DPOOL_DEFAULT, &pLightGlare));
+		HR(D3DXCreateTexture(pDevice, ts * 12, ts * 12, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_R16F, D3DPOOL_DEFAULT, &pSunGlare));
+		HR(D3DXCreateTexture(pDevice, ts * 12, ts * 12, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_R16F, D3DPOOL_DEFAULT, &pSunGlareAtm));
 	}
 
 	LPDIRECT3DSURFACE9 pTgt = NULL;
@@ -401,6 +405,12 @@ void Scene::CreateSunGlare()
 	pSunGlare->GetSurfaceLevel(0, &pTgt);
 	pCreateGlare->SetOutputNative(0, pTgt);
 	if (!pCreateGlare->Execute(false)) LogErr("pCreateGlare Execute Failed (CreateSunGlarePS)");
+	SAFE_RELEASE(pTgt);
+
+	pCreateGlare->Activate("CreateSunGlareAtmPS");
+	pSunGlareAtm->GetSurfaceLevel(0, &pTgt);
+	pCreateGlare->SetOutputNative(0, pTgt);
+	if (!pCreateGlare->Execute(false)) LogErr("pCreateGlare Execute Failed (CreateSunGlareAtmPS)");
 	SAFE_RELEASE(pTgt);
 
 	pCreateGlare->Activate("CreateLocalGlarePS");
@@ -429,23 +439,17 @@ void Scene::Initialise()
 
 	// Setup sunlight -------------------------------
 	//
-	float pwr = 1.0f;
-
-	sunLight.Color.r = pwr;
-	sunLight.Color.g = pwr;
-	sunLight.Color.b = pwr;
-	sunLight.Color.a = 1.0f;
-	sunLight.Ambient.r = float(ambient)*0.0039f;
-	sunLight.Ambient.g = float(ambient)*0.0039f;
-	sunLight.Ambient.b = float(ambient)*0.0039f;
-	sunLight.Ambient.a = 1.0f;
+	sunLight.Color = 1.0f;
+	sunLight.Ambient = float(ambient)*0.0039f;
+	sunLight.Transmission = 1.0f;
+	sunLight.Incatter = 0.0f;
 
 	// Update Sunlight direction -------------------------------------
 	//
 	VECTOR3 rpos, cpos;
 	oapiGetGlobalPos(hSun, &rpos);
 	oapiCameraGlobalPos(&cpos); rpos-=cpos;
-	D3DVEC(-unit(rpos), sunLight.Dir);
+	sunLight.Dir = -unit(rpos);
 
 	// Do not "pre-create" visuals here. Will cause changed call order for vessel callbacks
 }
@@ -1032,7 +1036,7 @@ void Scene::UpdateCamVis()
 	VECTOR3 rpos;
 	oapiGetGlobalPos(hSun, &rpos);
 	rpos -= Camera.pos;
-	D3DVEC(-unit(rpos), sunLight.Dir);
+	sunLight.Dir = -unit(rpos);
 
 	// Get focus visual -----------------------------------------------
 	//
@@ -2055,7 +2059,7 @@ void Scene::RenderMainScene()
 		static SMVERTEX Vertex[4] = { {-1, -1, 0, 0, 0}, {-1, 1, 0, 0, 1}, {1, 1, 0, 1, 1}, {1, -1, 0, 1, 0} };
 		static WORD cIndex[6] = { 0, 2, 1, 0, 3, 2 };
 		D3DSURFACE_DESC desc; FVECTOR2 pt;
-		struct { D3DXMATRIX	mVP; float4	Pos, Color;	float GPUId, Intensity; } Const;
+		struct { D3DXMATRIX	mVP; float4	Pos, Color;	float GPUId, Alpha, Blend; } Const;
 		
 		Const.Color = FVECTOR4(1, 1, 1, 1);
 		D3DXMatrixOrthoOffCenterLH(&Const.mVP, 0.0f, (float)viewW, (float)viewH, 0.0f, 0.0f, 1.0f);
@@ -2067,23 +2071,31 @@ void Scene::RenderMainScene()
 
 		if (Config->bGlares)
 		{
-			pRenderGlares->SetTexture("tTex", pSunGlare, IPF_CLAMP | IPF_LINEAR);
+			pRenderGlares->SetTexture("tTex0", pSunGlare, IPF_CLAMP | IPF_LINEAR);
+			pRenderGlares->SetTexture("tTex1", pSunGlareAtm, IPF_CLAMP | IPF_LINEAR);
 			pRenderGlares->UpdateTextures();
 
 			// Render Sun glare
 			VECTOR3 gsun; oapiGetGlobalPos(oapiGetObjectByIndex(0), &gsun);
 			VECTOR3 pos = unit(gsun - Camera.pos) * 10e4;
-			if (WorldToScreenSpace2(pos, &pt)) {
+
+			if (WorldToScreenSpace2(pos, &pt))
+			{
 				vPlanet *vp = GetCameraProxyVisual();
-				FVECTOR3 crp = vp->PosFromCamera();
+				FVECTOR3 crp = vp->CameraPos();
+				FVECTOR3 clr = vp ? vp->SunLightColor(crp) : 1.0f;
 				float cd = length(pt - FVECTOR2(viewW, viewH) * 0.5f) / float(viewW); // Glare distance from a screen center
-				float size = 150.0f * GetDisplayScale();
+				float alpha = 2.0f * Config->GFXGlare * max(0.5f, 1.0f - cd) * sqrt(clr.MaxRGB());
+				float size = 300.0f * GetDisplayScale() * sqrt(alpha);
+
 				Const.GPUId = 0.5f / float(desc.Width);
 				Const.Pos = FVECTOR4(pt.x, pt.y, size, size);
-				Const.Color = vp ? vp->SunLightColor(crp) : 1.0f;
+				Const.Color.rgb = clr * 3.0f / (clr.MaxRGB() + 0.001f);
+				Const.Alpha = alpha * saturate(vp->CameraInSpace() + 0.3f);
+				Const.Blend = vp->CameraInSpace();
 
-				D3D9DebugLog("Color = [%f, %f, %f]", Const.Color.r, Const.Color.g, Const.Color.b);
-				Const.Intensity = 2.0f * Config->GFXGlare * max(0.5f, 1.0f - cd) * sqrt(Const.Color.MaxRGB());
+				D3D9DebugLog("Color = [%f, %f, %f], Blend = %f", Const.Color.r, Const.Color.g, Const.Color.b, Const.Blend);
+		
 				pRenderGlares->SetVSConstants("Const", &Const, sizeof(Const));
 				pRenderGlares->SetPSConstants("Const", &Const, sizeof(Const));
 				HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));
@@ -2092,7 +2104,7 @@ void Scene::RenderMainScene()
 
 		if (Config->bLocalGlares)
 		{
-			pRenderGlares->SetTexture("tTex", pLightGlare, IPF_CLAMP | IPF_LINEAR);
+			pRenderGlares->SetTexture("tTex0", pLightGlare, IPF_CLAMP | IPF_LINEAR);
 			pRenderGlares->UpdateTextures();
 
 			// Render glares for local lights
@@ -2103,7 +2115,8 @@ void Scene::RenderMainScene()
 						float size = 40.0f;
 						Const.GPUId = (float(GPUId) + 0.5f) / desc.Width;
 						Const.Pos = FVECTOR4(pt.x, pt.y, size, size);
-						Const.Intensity = Lights[i].cone;
+						Const.Alpha = Lights[i].cone;
+						Const.Color = Lights[i].Diffuse;
 						pRenderGlares->SetVSConstants("Const", &Const, sizeof(Const));
 						pRenderGlares->SetPSConstants("Const", &Const, sizeof(Const));
 						HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));
@@ -2270,7 +2283,7 @@ void Scene::RenderMainScene()
 		{
 			if (i == RAY_LAND || i == MIE_LAND || i == ATN_LAND) continue;
 			pTab = vP->GetScatterTable(i);
-			if (!pTab) break;
+			if (!pTab) continue;
 			pTab->GetLevelDesc(0, &desc);
 			pSketch->CopyRectNative(pTab, NULL, x, y - desc.Height);
 			x += desc.Width + 5;

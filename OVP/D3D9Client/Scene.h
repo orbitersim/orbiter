@@ -492,7 +492,7 @@ private:
 
 	FVECTOR2 DepthSampleKernel[57];
 
-	LPDIRECT3DTEXTURE9 pSunTex, pLightGlare, pSunGlare;
+	LPDIRECT3DTEXTURE9 pSunTex, pLightGlare, pSunGlare, pSunGlareAtm;
 	LPDIRECT3DTEXTURE9 pLocalResults;
 	LPDIRECT3DSURFACE9 pLocalResultsSL;
 

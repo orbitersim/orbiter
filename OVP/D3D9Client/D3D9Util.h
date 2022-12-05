@@ -271,10 +271,14 @@ private:
 	D3DXCOLOR* Mtrl;
 };
 
+#pragma pack(push, 4)
+
 typedef struct {
-	D3DXVECTOR3	Dir;				///< Direction of sunlight
-	D3DXCOLOR Color;				///< Color of sunlight
-	D3DXCOLOR Ambient;				///< Ambient environment color
+	FVECTOR3 Dir;
+	FVECTOR3 Color;			// Color and Intensity of received sunlight 
+	FVECTOR3 Ambient;		// Ambient light level (Base Objects Only, Vessels are using dynamic methods)
+	FVECTOR3 Transmission;	// Visibility through atmosphere (1.0 = fully visible, 0.0 = obscured)
+	FVECTOR3 Incatter;		// Amount of incattered light from haze
 } D3D9Sun;
 
 
@@ -320,6 +324,7 @@ typedef struct {
 	D3DCOLORVALUE	Rghn;		// Tune roughness map
 } D3D9Tune;
 
+#pragma pack(pop)
 
 typedef struct {
 	class D3D9Mesh *pMesh;			///< Mesh handle
@@ -419,6 +424,14 @@ inline double wrap(double a)
 }
 
 void LogMatrix(D3DXMATRIX *pM, const char *name);
+inline void LogSunLight(D3D9Sun& s)
+{
+	LogAlw("Sunlight.Dir   = [%f, %f, %f]", s.Dir.x, s.Dir.y, s.Dir.z);
+	LogAlw("Sunlight.Color = [%f, %f, %f]", s.Color.x, s.Color.y, s.Color.z);
+	LogAlw("Sunlight.Ambie = [%f, %f, %f]", s.Ambient.x, s.Ambient.y, s.Ambient.z);
+	LogAlw("Sunlight.Trans = [%f, %f, %f]", s.Transmission.x, s.Transmission.y, s.Transmission.z);
+	LogAlw("Sunlight.Incat = [%f, %f, %f]", s.Incatter.x, s.Incatter.y, s.Incatter.z);
+}
 
 // -----------------------------------------------------------------------------------
 // Conversion functions
@@ -547,9 +560,6 @@ int fgets2(char *buf, int cmax, FILE *file, DWORD param=0);
 
 float D3DXVec3Angle(D3DXVECTOR3 a, D3DXVECTOR3 b);
 D3DXVECTOR3 Perpendicular(D3DXVECTOR3 *a);
-
-void SurfaceLighting(D3D9Sun *light, OBJHANDLE hP, OBJHANDLE hO, float ao);
-void OrbitalLighting(D3D9Sun *light, const class vPlanet *vP, const VECTOR3 &GO, float ao);
 
 const char *RemovePath(const char *in);
 SketchMesh * GetSketchMesh(const MESHHANDLE hMesh);

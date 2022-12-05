@@ -8,6 +8,7 @@
 
 #include <set>
 #include "VVessel.h"
+#include "VPlanet.h"
 #include "MeshMgr.h"
 #include "AABBUtil.h"
 #include "D3D9Surface.h"
@@ -242,23 +243,18 @@ void vVessel::PreInitObject()
 	else LogErr("Failed to load a custom configuration for %s",vessel->GetClassNameA());
 }
 
+
 // ============================================================================================
 //
 bool vVessel::Update(bool bMainScene)
 {
 	_TRACE;
-
 	if (!active) return false;
-
 	vObject::Update(bMainScene);
 
-	if (fabs(oapiGetSimTime()-tCheckLight)>0.1) {
-		sunLight = *scn->GetSun();
-		ModLighting(&sunLight);
-	}
+	if (fabs(oapiGetSimTime()-tCheckLight)>0.1 || oapiGetPause()) ModLighting();
 
 	bBSRecompute = true;
-
 	return true;
 }
 
@@ -722,10 +718,13 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 		gotHUDSpec = !!gc->GetVCHUDSurface(&hudspec);
 	}
 
-	// Reduce sunlight for virtual cockpit
+
+	// Initialize MeshShader constants
 	//
-	D3D9Sun sunLightVC = sunLight;
-	sunLightVC.Color *= 0.5f;
+	MeshShader::ps_const.Cam_X = *scn->GetCameraX();
+	MeshShader::ps_const.Cam_Y = *scn->GetCameraY();
+	MeshShader::ps_const.Cam_Z = *scn->GetCameraZ();
+
 
 
 	// Render Exterior and Interior (VC) meshes --------------------------------------------
@@ -765,8 +764,12 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 		else pWT = &mWorld;
 
 
-		if (bVC && internalpass) meshlist[i].mesh->SetSunLight(&sunLightVC);
-		else					 meshlist[i].mesh->SetSunLight(&sunLight);
+		if (bVC && internalpass) {
+			D3D9Sun local = sunLight;
+			local.Color *= 0.5f;
+			meshlist[i].mesh->SetSunLight(&local);
+		}
+		else meshlist[i].mesh->SetSunLight(&sunLight);
 
 
 		if (bVC && internalpass) {
@@ -785,10 +788,6 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 		if (scn->GetRenderPass() == RENDERPASS_SHADOWMAP) meshlist[i].mesh->RenderShadowMap(pWT, pLVP, 0);
 		else if (scn->GetRenderPass() == RENDERPASS_NORMAL_DEPTH)
 		{
-			MeshShader::ps_const.Cam_X = *scn->GetCameraX();
-			MeshShader::ps_const.Cam_Y = *scn->GetCameraY();
-			MeshShader::ps_const.Cam_Z = *scn->GetCameraZ();
-
 			meshlist[i].mesh->RenderShadowMap(pWT, pVP, 1);
 		}
 		else {
@@ -1454,36 +1453,20 @@ LPDIRECT3DCUBETEXTURE9 vVessel::GetEnvMap(int idx)
 
 // ============================================================================================
 //
-bool vVessel::ModLighting(D3D9Sun *light)
+bool vVessel::ModLighting()
 {
-	VECTOR3 GV;
+	tCheckLight = oapiGetSimTime();
 
 	// we only test the closest celestial body for shadowing
 	OBJHANDLE hP = vessel->GetSurfaceRef();
-
-	if (hP==NULL) {
-		LogErr("Vessel's surface reference is NULL");
-		return false;
-	}
-
-	vessel->GetGlobalPos(GV);
-
-	tCheckLight = oapiGetSimTime();
-
-	DWORD dAmbient = *(DWORD*)gc->GetConfigParam(CFGPRM_AMBIENTLEVEL);
-	float fAmbient = float(dAmbient)*0.0039f;
-
-	if (DebugControls::IsActive()) {
-		if (*(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS)&DBG_FLAGS_AMBIENT) fAmbient = 0.25f;
-	}
+	if (hP==NULL) {	LogErr("Vessel's surface reference is NULL"); return false;	}
 
 	vPlanet *vP = (vPlanet *)GetScene()->GetVisObject(hP);
-
-	if (vP) OrbitalLighting(light, vP, GV, fAmbient);
-
-	light->Color.r = max(0, min(1, light->Color.r));
-	light->Color.g = max(0, min(1, light->Color.g));
-	light->Color.b = max(0, min(1, light->Color.b));
+	if (vP) {
+		FVECTOR3 rpos = gpos - vP->GlobalPos();
+		sunLight = vP->GetObjectAtmoParams(rpos);
+		sunLight.Color *= (float)Config->GFXSunIntensity;
+	}
 
 	return true;
 }

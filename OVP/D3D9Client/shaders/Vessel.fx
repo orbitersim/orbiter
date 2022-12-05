@@ -13,13 +13,6 @@ inline float cmax(float3 color)
 	return max(max(color.r, color.g), color.b);
 }
 
-uniform extern struct {
-	float3 Sun;				// Color and Intensity of received sunlight 
-	float3 Ambient;			// Ambient light level (Base Objects Only, Vessels are using dynamic methods)
-	float3 Transmission;	// Visibility through atmosphere (1.0 = fully visible, 0.0 = obscured)
-	float3 Incatter;		// Amount of incattered light from haze
-} gAtmo;
-
 // Sun light brightness for diffuse and specular lighting
 #include "LightBlur.hlsl"
 
@@ -255,6 +248,9 @@ float4 AdvancedPS(float4 sc : VPOS, PBRData frg) : COLOR
 	//if (gDebugHL) cTex = cTex*0.5f + gColor;
 	cTex = cTex * (1 - gColor*0.5f) + gColor;
 #endif
+
+	cTex.rgb *= gSun.Transmission;
+	cTex.rgb += gSun.Inscatter;
 
 	return cTex;
 }

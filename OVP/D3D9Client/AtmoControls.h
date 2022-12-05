@@ -20,7 +20,7 @@ typedef struct ScatterParams {
 			double green;		///< 1 Green wavw length
 			double tw_bri;		///< 2 Twilight brightness
 			double rpow;		///< 3 Rayleigh power
-			double rayin;		///< 4 Rayleigh in-scatter strength
+			double rayrat;		///< 4 Rayleigh ratio
 			double ray;			///< 5 Rayleigh out-scatter strength
 			double rphase;		///< 6 Rayleigh phase
 			double mie;			///< 7 scale factor for mie out-scattering
@@ -30,7 +30,7 @@ typedef struct ScatterParams {
 			double mheight;		///< 11 Mie scale height
 			double mpow;		///< 12 Mie power
 			double trb;			///< 13 Terrain brightness
-			double miein;		///< 14 Mie in-scatter strenght
+			double mierat;		///< 14 Mie ratio
 			double aux3;		///< 15 auxiliary parameter
 			double tgamma;		///< 16 Terrain gamma
 			double mphaseb;		///< 17 MiePhase-B
@@ -41,6 +41,7 @@ typedef struct ScatterParams {
 	double visalt;
 	double red;
 	double blue;
+	double suni;
 } ScatterParams;
 
 class vPlanet;

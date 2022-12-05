@@ -231,6 +231,7 @@ public:
 	VECTOR3			GetUnitSurfacePos(double lng, double lat) const;
 	VECTOR3			GetRotationAxis() const { return axis; }
 	VECTOR3			ToLocal(VECTOR3 &glob) const;
+	VECTOR3			CameraPos() const;
 	void			GetLngLat(VECTOR3 &loc, double *lng, double *lat) const;
 	VECTOR3			ReferencePoint();
 	void			SetMicroTexture(LPDIRECT3DTEXTURE9 pSrc, int slot);
@@ -275,14 +276,16 @@ public:
 	FVECTOR2		Gauss7(float cos_dir, float r0, float dist, FVECTOR2 ih0);
 	FVECTOR2		Gauss7(float alt, float cos_dir, float R0, float R1, FVECTOR2 iH0);
 	FVECTOR2		Gauss4(float cos_dir, float r0, float dist, FVECTOR2 ih0);
-	void			IntegrateSegment(FVECTOR3 vOrig, float len, FVECTOR4* rl = NULL, FVECTOR4* mie = NULL);
+	FVECTOR4		AmbientApprox(FVECTOR3 vNrm);
+	void			IntegrateSegment(FVECTOR3 vOrig, FVECTOR3 vRay, float len, FVECTOR4* rl = NULL, FVECTOR4* mie = NULL);
 	float			RayLength(float cos_dir, float r0, float r1);
 	float			RayLength(float cos_dir, float r0);
 	float			RayPhase(float cw);
 	float			MiePhase(float cw);
-	ObjAtmParams	GetObjectAtmoParams(VECTOR3 g_pos);
+	D3D9Sun			GetObjectAtmoParams(FVECTOR3 relpos);
 	FVECTOR3		HDR(FVECTOR3 i);
 	FVECTOR3		LightFX(FVECTOR3 x);
+	float			CameraInSpace() const;
 
 	// v2 Labels interface ----------------------------------------------------
 	void            ActivateLabels(bool activate);

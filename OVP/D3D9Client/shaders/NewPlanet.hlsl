@@ -428,7 +428,6 @@ float4 TerrainPS(TileVS frg) : COLOR
 #endif
 
 	float3 cRfl = 0;
-	float3 cMlt = 0;
 	float3 nrmW = normalize(frg.nrmW);			// Per-pixel surface normal vector
 	float3 nvrW = nrmW;							// Per-pixel surface normal vector
 	float3 vRay = normalize(frg.camW.xyz);		// Unit viewing ray
@@ -469,7 +468,7 @@ float4 TerrainPS(TileVS frg) : COLOR
 	float2 fFresnel = f * f * f * f;
 	
 	// Compute specular reflection intensity
-	fSpe = GGX_NDF(fDHN, 0.1f + saturate(fDNS) * 0.2f)  * (0.1f + fFresnel.x * 0.9f) * fMask;
+	fSpe = GGX_NDF(fDHN, 0.1f + saturate(fDNS) * 0.1f)  * (0.1f + fFresnel.x * 0.9f) * fMask;
 	fSpe /= (4.0f * fDCH * max(fDNS, fDCN) + 1e-3);
 	
 	// Apply fresnel water only if close enough to a surface
@@ -566,7 +565,7 @@ float4 TerrainPS(TileVS frg) : COLOR
 
 	float fDPS = dot(vPlN, Const.toSun);
 	float fS = sqrt(saturate(fDPS + 0.05f));	// Day-Night scaling term 1.0 at daytime
-	float3 cSun = GetSunColor(fDPS, alt) * Const.cSun * fShd * fShadow;
+	float3 cSun = GetSunColor(fDPS, alt) * fShd * fShadow;
 
 #if defined(_NIGHTLIGHTS)
 
@@ -582,28 +581,33 @@ float4 TerrainPS(TileVS frg) : COLOR
 	// Terrain with gamma correction and attennuation
 	cTex.rgb = pow(saturate(cTex.rgb), Const.TrGamma) * Const.TrExpo;
 
-	// Evaluate multiscatter approximation
-	cMlt = MultiScatterApprox(vPlN) * exp(-alt * Const.iH.r);
+	// Evaluate ambient approximation
+	float4 cAmb = AmbientApprox(vPlN);
+
+	cAmb.rgb *= exp(-alt * Const.iH.r);
+	cAmb.rgb *= cAmb.a;
 
 	LandOut sct = GetLandView(rad, vPlN);
 
-	float3 color = cTex.rgb * LightFX(cSun + cMlt + cDiffLocal + cNgt * sct.atn.rgb + float3(0.9, 0.9, 1.0) * Const.Ambient);
+	float fTI = saturate(pow(saturate(0.9f + fDPS), 5.0f));
+
+	cTex.rgb *= (cSun + cAmb.rgb + cDiffLocal + cNgt * sct.atn.rgb + float3(0.9, 0.9, 1.0) * Const.Ambient);
 
 	// Add Reflection
-	color += cRfl * 0.75f;
+	cTex.rgb += cRfl * 0.75f;
 
 	// Add Specular component
-	color += cSun * fSpe * fS;
+	cTex.rgb += cSun * fSpe * fS;
 
 	// Amplify cloud shadows for orbital views
 	float fOrbShd = 1.0f - (1.0f - fShd) * Const.CamSpace * 0.5f;
 
 	// Add Haze
-	color *= sct.atn.rgb;
-	color += (sct.ray.rgb * RayPhase(-fDRS) + sct.mie.rgb * MiePhase(-fDRS)) * fOrbShd;
-	color += cNgt2;
+	cTex.rgb *= sct.atn.rgb;
+	cTex.rgb += (sct.ray.rgb * RayPhase(-fDRS) + sct.mie.rgb * MiePhase(-fDRS)) * fOrbShd;
+	cTex.rgb += cNgt2;
 
-	return float4(HDR(color), 1.0f);
+	return float4(HDR(cTex.rgb), 1.0f);
 #endif
 }
 
@@ -715,11 +719,13 @@ float4 CloudPS(CldVS frg) : COLOR
 	float3 cSun = GetSunColor(dMN, Const.CloudAlt) * Const.cSun;
 	
 	// Evaluate multiscatter approximation
-	float3 cMlt = MultiScatterApprox(vPlN) * exp(-Const.CloudAlt * Const.iH.r * 0.7f);
+	float4 cMlt = AmbientApprox(vPlN);
+	cMlt.rgb *= exp(-Const.CloudAlt * Const.iH.r * 0.7f);
+	cMlt.rgb *= cMlt.a;
 	
 	LandOut sct = GetLandView(Const.CloudAlt + Const.PlanetRad, vPlN);
 
-	float3 color = cTex.rgb * 6.0f * LightFX(cSun + cMlt);
+	float3 color = cTex.rgb * 6.0f * LightFX(cSun + cMlt.rgb);
 
 	float alf = pow(abs((1.0f - cTex.a) * sqrt(cTex.a)), Const.Clouds);
 	float mie = pow(saturate(phase), 60.0f) * alf * 3.0f;

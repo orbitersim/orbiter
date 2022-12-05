@@ -187,7 +187,6 @@ void D3D9Mesh::Null(const char *meshName /* = NULL */)
 	pBuf = NULL;
 	Mtrl = NULL;
 	pGrpTF = NULL;
-	sunLight = NULL;
 	cAmbient = 0;
 	MaxFace  = 0;
 	MaxVert  = 0;
@@ -1003,14 +1002,7 @@ void D3D9Mesh::SetTexMixture(DWORD ntex, float mix)
 //
 void D3D9Mesh::SetSunLight(const D3D9Sun *light)
 {
-	sunLight = light;
-}
-
-// ===========================================================================================
-//
-void D3D9Mesh::SetAtmoParams(ObjAtmParams* p)
-{
-	memcpy(&AtmoParams, p, sizeof(ObjAtmParams));
+	memcpy(&sunLight, light, sizeof(D3D9Sun));
 }
 
 // ===========================================================================================
@@ -1431,10 +1423,10 @@ void D3D9Mesh::CheckMeshStatus()
 //
 void D3D9Mesh::ConfigureAtmo()
 {
-	float x = 1.0f - saturate(max(AtmoParams.Sun.r, AtmoParams.Sun.b) * 2.0f);
+	//LogSunLight(sunLight);
+	float x = 1.0f - saturate(max(sunLight.Color.r, sunLight.Color.b) * 2.0f);
 	FX->SetFloat(eNight, x);
-	AtmoParams.Sun *= float(Config->GFXSunIntensity);
-	FX->SetValue(eAtmoParams, &AtmoParams, sizeof(ObjAtmParams));
+	FX->SetValue(eSun, &sunLight, sizeof(D3D9Sun));
 }
 
 
@@ -1545,14 +1537,6 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 
 	if (flags&DBG_FLAGS_DUALSIDED) pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
-	if (sunLight) {
-		D3D9Sun sun = *sunLight;
-		float x = 1.0f - saturate(max(sun.Color.r, sun.Color.b)*2.0f);
-		FX->SetFloat(eNight, x);
-		sun.Color *= float(Config->GFXSunIntensity);
-		FX->SetValue(eSun, &sun, sizeof(D3D9Sun));
-	}
-
 	FX->SetTechnique(eVesselTech);
 	FX->SetBool(eFresnel, false);
 	FX->SetBool(eEnvMapEnable, false);
@@ -1560,6 +1544,8 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	FX->SetBool(eLightsEnabled, false);
 	FX->SetBool(eOITEnable, false);
 	FX->SetVector(eColor, &D3DXVECTOR4(0, 0, 0, 0));
+
+	ConfigureAtmo();
 
 	if (DebugControls::IsActive()) if (pTune) FX->SetBool(eTuneEnabled, true);
 
@@ -2015,7 +2001,7 @@ void D3D9Mesh::RenderSimplified(const LPD3DXMATRIX pW, LPDIRECT3DCUBETEXTURE9 *p
 	FX->SetVector(eColor, &D3DXVECTOR4(0, 0, 0, 0));
 	FX->SetMatrix(eW, pW);
 
-	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Sun));
+	ConfigureAtmo();
 
 	// Process Local Light Sources ------------------------------------------------------------
 	//
@@ -2303,12 +2289,13 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 
 	if (flags&DBG_FLAGS_DUALSIDED) pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
-	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Sun));
 
 	FX->SetTechnique(eVesselTech);
 	FX->SetBool(eTuneEnabled, false);
 	FX->SetBool(eLightsEnabled, false);
 	FX->SetVector(eColor, &D3DXVECTOR4(0, 0, 0, 0));
+
+	ConfigureAtmo();
 
 	if (DebugControls::IsActive()) if (pTune) FX->SetBool(eTuneEnabled, true);
 
@@ -2620,16 +2607,13 @@ void D3D9Mesh::RenderBaseTile(const LPD3DXMATRIX pW)
 	pDev->SetStreamSource(0, pBuf->pVB, 0, sizeof(NMVERTEX));
 	pDev->SetIndices(pBuf->pIB);
 
-	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Sun));
 
 	FX->SetTechnique(eBaseTile);
 	FX->SetVector(eColor, &D3DXVECTOR4(0, 0, 0, 0));
 	FX->SetMatrix(eGT, gc->GetIdentity());
 	FX->SetMatrix(eW, pW);
-	//FX->SetBool(eUseSpec, false);
-	//FX->SetBool(eUseEmis, false);
-	//FX->SetBool(eUseRefl, false);
 
+	ConfigureAtmo();
 
 	UINT numPasses = 0;
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
@@ -3360,7 +3344,7 @@ void D3D9Mesh::RenderRings(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex)
 	HR(FX->SetTechnique(eRingTech));
 	HR(FX->SetMatrix(eW, pW));
 	HR(FX->SetTexture(eTex0, pTex));
-	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Sun));
+	FX->SetValue(eSun, &sunLight, sizeof(D3D9Sun));
 	HR(FX->SetValue(eMtrl, &defmat, sizeof(D3D9MatExt)-4));
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));
@@ -3384,7 +3368,7 @@ void D3D9Mesh::RenderRings2(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex, floa
 	HR(FX->SetTechnique(eRingTech2));
 	HR(FX->SetMatrix(eW, pW));
 	HR(FX->SetTexture(eTex0, pTex));
-	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Sun));
+	FX->SetValue(eSun, &sunLight, sizeof(D3D9Sun));
 	HR(FX->SetValue(eMtrl, &defmat, sizeof(D3D9MatExt)-4));
 	HR(FX->SetVector(eTexOff, &D3DXVECTOR4(irad, orad, 0, 0)));
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
