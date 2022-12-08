@@ -93,6 +93,11 @@ template <typename T> inline _constexpr_ T ilerp(T a, T b, T x)
 	return saturate((x - a) / (b - a));
 }
 
+template <typename T> inline _constexpr_ T sqr(T a)
+{
+	return a * a;
+}
+
 	
 // VECTOR3 Helpers ==================================================================
 //

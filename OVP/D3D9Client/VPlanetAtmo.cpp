@@ -256,7 +256,7 @@ float vPlanet::RayLength(float cos_dir, float r0)
 //
 float vPlanet::RayPhase(float cw)
 {
-	return 0.25f * (4.0f + cw * cw) / (1.0f + cp.RayPh * cw);
+	return 0.25f * (4.0f + cw * cw);
 }
 
 
@@ -311,7 +311,7 @@ FVECTOR4 vPlanet::ComputeCameraView(FVECTOR3 vPos)
 // ===========================================================================================
 // Amount of light inscattering along the ray
 //
-void vPlanet::IntegrateSegment(FVECTOR3 vOrig, FVECTOR3 vRay, float len, FVECTOR4* ral, FVECTOR4* mie)
+void vPlanet::IntegrateSegment(FVECTOR3 vOrig, FVECTOR3 vRay, float len, FVECTOR4* ral, FVECTOR4* mie, FVECTOR4* tot)
 {
 	static const int NSEG = 6;
 	static const float iNSEG = 1.0f / float(NSEG);
@@ -345,6 +345,10 @@ void vPlanet::IntegrateSegment(FVECTOR3 vOrig, FVECTOR3 vRay, float len, FVECTOR
 	if (mie) mie->rgb *= cp.MieWave * cp.cSun * cp.rmI.y * len;
 	if (ral) ral->a *= len;
 	if (mie) mie->a *= len;
+	if (tot && ral && mie) {
+		float dRS = dot(vRay, cp.toSun);
+		tot->rgb = HDR(ral->rgb * RayPhase(dRS) + mie->rgb * MiePhase(dRS));
+	}
 }
 
 // ===========================================================================================
@@ -379,57 +383,30 @@ FVECTOR3 vPlanet::SunLightColor(FVECTOR3 relpos)
 {
 	FVECTOR2 rm = 0.0f;
 	FVECTOR3 up = unit(relpos);
-	float r = dot(up, relpos);
-	float a = r - cp.PlanetRad;
-	float ca = dot(up, cp.toSun);
-	float qr = sqrt(1.0f - ca * ca) * r;
+	double r = dot(up, relpos);
+	double ca = dot(up, cp.toSun);
+	double om = 1.0 - ca * ca;
+	double qr = sqrt(om) * r;
 
-	if (qr > cp.AtmoRad) {
-		D3D9DebugLog("No Intersect 1  [%s] (r=%f, ca=%f)", name, r, ca);
-		return FVECTOR3(1, 1, 1); // Ray doesn't intersect atmosphere
-	}
-
-	if (r > cp.AtmoRad && ca > 0) {
-		D3D9DebugLog("No Intersect 2");
-		return FVECTOR3(1, 1, 1); // Ray doesn't intersect atmosphere
-	}
+	if (r > cp.AtmoRad && ca > 0) return FVECTOR3(1, 1, 1); // Ray doesn't intersect atmosphere
 
 	OBJHANDLE hSun = oapiGetObjectByIndex(0);
 	VECTOR3 sunpos; oapiGetGlobalPos(hSun, &sunpos);
 	sunpos -= scn->GetCameraGPos();
 
-	float sd = length(sunpos);
-	float hd = ca * r; // Distance to closest approach
-	float sr = oapiGetSize(hSun) * abs(hd) / sd;
-	float pr = cp.PlanetRad - sr;
+	double pr = oapiGetSize(hObj); // cp.PlanetRad;
+	double sd = length(sunpos);
+	double hd = sqrt(r * r - pr * pr); // Distance to closest approach
+	double sr = oapiGetSize(hSun) * abs(hd) / sd;
+	double svb = ca > 0 ? 1.0f : ilerp(pr - sr * 0.5, pr + sr, qr);
 
-	if (qr < pr && ca < 0) {
-		D3D9DebugLog("Obscured [%s] (r=%f, ca=%f)", name, r, ca);
-		return FVECTOR3(0, 0, 0); // Ray is obscured by planet
-	}
+	D3D9DebugLog("svb=%f", svb);
 
-	float alt = sqrt(r * r - hd * hd) - cp.PlanetRad; // Ray's closest approach to a planet's center
-	float svb = 1.0f;
-
-	if (r > cp.AtmoRad) // Ray passes through atmosphere from space to space
-	{
-		D3D9DebugLog("Through atmosphere svb=%f, alt=%f, sr=%f", svb, alt, sr);
-		rm = Gauss7(alt, 0.0f, cp.PlanetRad, cp.AtmoRad, cp.iH) * 2.0f;
-		svb = ilerp(-sr, sr, alt); // Sun visibility 0=obscured, 1=fully visible 
-	}
-	else // Sample point 'pos' lies with-in atmosphere
-	{
-		float hd = sqrt(r * r - cp.PlanetRad2);
-		float ha = acos(hd / r);
-		float sa = acos(-dot(cp.toSun, cp.toCam));
-		float sr = asin(oapiGetSize(hSun) / sd);
-
-		rm = Gauss7(a, -ca, cp.PlanetRad, cp.AtmoRad, cp.iH);
-		svb = ilerp(-sr, sr, sa - ha); // Sun visibility 0=obscured, 1=fully visible
-
-		D3D9DebugLog("In atmosphere [%s] svb=%f, ha=%f, sa=%f", name, svb, ha, sa);
-	}
-
+	if (qr > cp.AtmoRad) return FVECTOR3(1, 1, 1) * svb; // Ray doesn't intersect atmosphere
+	if (svb < 1e-3) return FVECTOR3(0.0f, 0.0f, 0.0f); // Ray is obscured by planet
+	if (r > cp.AtmoRad) rm = Gauss7(qr - pr, 0.0f, cp.PlanetRad, cp.AtmoRad, cp.iH) * 2.0f; // Ray passes through atmosphere from space to space
+	else rm = Gauss7(r - pr, -ca, cp.PlanetRad, cp.AtmoRad, cp.iH); // Sample point 'pos' lies with-in atmosphere
+		
 	rm *= cp.rmO;
 	return exp(-(cp.RayWave * rm.x + cp.MieWave * rm.y)) * svb;
 }
@@ -451,31 +428,50 @@ FVECTOR4 vPlanet::AmbientApprox(FVECTOR3 vNrm)
 D3D9Sun vPlanet::GetObjectAtmoParams(FVECTOR3 vRelPos)
 {
 	D3D9Sun op;
+	op.Transmission = 1.0f;
+	op.Incatter = 0.0f;
+
+	float r = length(vRelPos);
+	float a = cp.AtmoAlt * 0.5f;
+	FVECTOR3 cSun = SunLightColor(vRelPos) * cp.cSun;
+	DWORD ambient = *(DWORD*)gc->GetConfigParam(CFGPRM_AMBIENTLEVEL);
+
+	if ((r - cp.PlanetRad) > a) // In space
+	{
+		op.Dir = -cp.toSun;
+		op.Color = unit(cSun) * Config->GFXSunIntensity;
+		op.Ambient = float(ambient) * 0.0039f;
+
+		D3D9DebugLog("C r=%f, g=%f, b=%f", op.Color.r, op.Color.g, op.Color.b);
+		D3D9DebugLog("A r=%f, g=%f, b=%f", op.Ambient.r, op.Ambient.g, op.Ambient.b);
+		return op;
+	}
+
 	FVECTOR3 vNrm = unit(vRelPos);
 	FVECTOR3 vRP = vRelPos - cp.CamPos;		// Camera relative position
 	float d = length(vRP);					// Distance to camera
-	float r = length(vRelPos);				// Radius
 	FVECTOR3 vRay = vRP / d;				// Unit viewing ray from cameta to obj_gpos
 	float dNR = dot(vNrm, vRay);			// cosine of (Normal/vRay) angle 
 	float dRS = dot(vRay, cp.toSun);
-	float dNS = dot(vNrm, cp.toSun);
-
-	if (!CameraInAtmosphere()) d = RayLength(dNR, r); // Recompute distance to atm exit
-
-	// Incatter Color
-	FVECTOR4 rl, mi;
-	IntegrateSegment(vRelPos, -vRay, d, &rl, &mi);	// Rayleigh and Mie inscatter
-	
+	float dNS = dot(vNrm, cp.toSun);	
 	float alt = r - cp.PlanetRad;
 
 	FVECTOR4 mc = AmbientApprox(vNrm);
-	FVECTOR3 cSun = SunLightColor(vRelPos);
+	mc.a *= CPrm.tw_bld;
 
 	op.Dir = -cp.toSun;
-	op.Color = cSun * 10.0f;
-	op.Transmission = ComputeCameraView(dNR, r, d).rgb;
-	op.Incatter = HDR(rl.rgb * RayPhase(dRS) + mi.rgb * MiePhase(dRS));
-	op.Ambient = mc.rgb * mc.a * exp(-alt * cp.iH.x);
+	op.Color = (cSun.sql() > 1.0f ? unit(cSun) : cSun) * Config->GFXSunIntensity;
+	op.Ambient = unit(mc.rgb + op.Color * 0.4f) * mc.a * exp(-alt * cp.iH.x) * 0.25f + float(ambient) * 0.0039f;
+
+	if (d > 1000.0f) {
+		FVECTOR4 rl, mi; // Incatter Color
+		IntegrateSegment(vRelPos, -vRay, d, &rl, &mi);	// Rayleigh and Mie inscatter
+		op.Transmission = ComputeCameraView(dNR, r, d).rgb;
+		op.Incatter = HDR(rl.rgb * RayPhase(dRS) + mi.rgb * MiePhase(dRS));
+	}
+
+	D3D9DebugLog("C2 r=%f, g=%f, b=%f", op.Color.r, op.Color.g, op.Color.b);
+	D3D9DebugLog("A2 r=%f, g=%f, b=%f", op.Ambient.r, op.Ambient.g, op.Ambient.b);
 
 	return op;
 }
@@ -555,6 +551,7 @@ void vPlanet::UpdateScatter()
 	cp.CamPos = cam;
 	cp.toCam = unit(cam);
 	cp.toSun = sundir;								// Sun-aligned Atmo Scatter RefFrame
+	cp.dCS = dot(cp.toCam, cp.toSun);
 	cp.ZeroAz = unit(cross(cp.toCam, cp.toSun));	// Sun-aligned Atmo Scatter RefFrame
 	cp.SunAz = unit(cross(cp.toCam, cp.ZeroAz));	// Sun-aligned Atmo Scatter RefFrame
 	cp.Up = unit(cross(cp.ZeroAz, cp.toSun));
@@ -597,7 +594,6 @@ void vPlanet::UpdateScatter()
 
 	cp.iH.x = 1.0f / float(atmo->rheight * 1000.0);
 	cp.iH.y = 1.0f / float(atmo->mheight * 1000.0);
-	cp.RayPh = atmo->rphase;
 	cp.Expo = atmo->aux3;
 	cp.HG = FVECTOR4(1.5f * (1.0f - g * g) / (2.0f + g * g), 1.0f + g * g, 2.0f * g, float(atmo->mphaseb));
 
@@ -785,7 +781,7 @@ ScatterParams* vPlanet::GetAtmoParams(int mode)
 		CPrm.trb = lerp(SPrm.trb, OPrm.trb, alt);
 		CPrm.mie = lerp(SPrm.mie, OPrm.mie, alt);
 		CPrm.mphase = lerp(SPrm.mphase, OPrm.mphase, alt);
-		CPrm.rphase = lerp(SPrm.rphase, OPrm.rphase, alt);
+		CPrm.hazei = lerp(SPrm.hazei, OPrm.hazei, alt);
 		CPrm.mpow = lerp(SPrm.mpow, OPrm.mpow, alt);
 		CPrm.rayrat = lerp(SPrm.rayrat, OPrm.rayrat, alt);
 		CPrm.ray = lerp(SPrm.ray, OPrm.ray, alt);
@@ -793,7 +789,7 @@ ScatterParams* vPlanet::GetAtmoParams(int mode)
 		// ----------------------------------------------------
 		CPrm.tgamma = lerp(SPrm.tgamma, OPrm.tgamma, alt);
 		CPrm.mphaseb = lerp(SPrm.mphaseb, OPrm.mphaseb, alt);
-		CPrm.hazei = lerp(SPrm.hazei, OPrm.hazei, alt);
+		CPrm.tw_bld = lerp(SPrm.tw_bld, OPrm.tw_bld, alt);
 		// ----------------------------------------------------
 		CPrm.tw_bri = lerp(SPrm.tw_bri, OPrm.tw_bri, alt);
 		CPrm.green = lerp(SPrm.green, OPrm.green, alt);
@@ -810,7 +806,7 @@ ScatterParams* vPlanet::GetAtmoParams(int mode)
 		CPrm.trb = lerp(HPrm.trb, OPrm.trb, alt);
 		CPrm.mie = lerp(HPrm.mie, OPrm.mie, alt);
 		CPrm.mphase = lerp(HPrm.mphase, OPrm.mphase, alt);
-		CPrm.rphase = lerp(HPrm.rphase, OPrm.rphase, alt);
+		CPrm.hazei = lerp(HPrm.hazei, OPrm.hazei, alt);
 		CPrm.mpow = lerp(HPrm.mpow, OPrm.mpow, alt);
 		CPrm.rayrat = lerp(HPrm.rayrat, OPrm.rayrat, alt);
 		CPrm.ray = lerp(HPrm.ray, OPrm.ray, alt);
@@ -818,7 +814,7 @@ ScatterParams* vPlanet::GetAtmoParams(int mode)
 		// ----------------------------------------------------
 		CPrm.tgamma = lerp(HPrm.tgamma, OPrm.tgamma, alt);
 		CPrm.mphaseb = lerp(HPrm.mphaseb, OPrm.mphaseb, alt);
-		CPrm.hazei = lerp(HPrm.hazei, OPrm.hazei, alt);
+		CPrm.tw_bld = lerp(HPrm.tw_bld, OPrm.tw_bld, alt);
 		// ----------------------------------------------------
 		CPrm.tw_bri = lerp(HPrm.tw_bri, OPrm.tw_bri, alt);
 		CPrm.green = lerp(HPrm.green, OPrm.green, alt);
@@ -830,6 +826,9 @@ ScatterParams* vPlanet::GetAtmoParams(int mode)
 	CPrm.suni = SPrm.suni;
 	CPrm.orbalt = SPrm.orbalt;
 	CPrm.visalt = GetHorizonAlt();
+	CPrm.acolor = SPrm.acolor;
+	CPrm.hcolor = SPrm.hcolor;
+	CPrm.zcolor = SPrm.zcolor;
 
 	return &CPrm;
 }
@@ -894,7 +893,7 @@ void vPlanet::SaveStruct(FILEHANDLE hFile, ScatterParams* prm, int iCnf)
 	// -----------------------------------------------------------------
 	oapiWriteItem_float(hFile, Label("RayO"), prm->ray);
 	oapiWriteItem_float(hFile, Label("RayI"), prm->rayrat);
-	oapiWriteItem_float(hFile, Label("RayP"), prm->rphase);
+	oapiWriteItem_float(hFile, Label("TWBld"), prm->tw_bld);
 	oapiWriteItem_float(hFile, Label("RayH"), prm->rheight);
 	// -----------------------------------------------------------------
 	oapiWriteItem_float(hFile, Label("MieO"), prm->mie);
@@ -912,12 +911,19 @@ void vPlanet::SaveStruct(FILEHANDLE hFile, ScatterParams* prm, int iCnf)
 
 void vPlanet::LoadStruct(FILEHANDLE hFile, ScatterParams* prm, int iCnf)
 {
+	VECTOR3 v3;
 	iConfig = iCnf;
 	oapiReadItem_float(hFile, "OrbitAlt", prm->orbalt);
 	oapiReadItem_float(hFile, "AtmoVisualAlt", prm->visalt);
 	oapiReadItem_float(hFile, "Red", prm->red);
 	oapiReadItem_float(hFile, "Blue", prm->blue);
-	if (!oapiReadItem_float(hFile, "SunI", prm->suni)) prm->suni = 30.0f;
+	oapiReadItem_float(hFile, "SunI", prm->suni);
+	oapiReadItem_vec(hFile, "zcolor", v3); SPrm.zcolor = v3;
+	oapiReadItem_vec(hFile, "hcolor", v3); SPrm.hcolor = v3;
+	oapiReadItem_vec(hFile, "acolor", v3); SPrm.acolor = v3;
+
+	// -----------------------------------------------------------------
+
 	oapiReadItem_float(hFile, Label("RPwr"), prm->rpow);
 	oapiReadItem_float(hFile, Label("MPwr"), prm->mpow);
 	// -----------------------------------------------------------------
@@ -930,7 +936,7 @@ void vPlanet::LoadStruct(FILEHANDLE hFile, ScatterParams* prm, int iCnf)
 	// -----------------------------------------------------------------
 	oapiReadItem_float(hFile, Label("RayO"), prm->ray);
 	oapiReadItem_float(hFile, Label("RayI"), prm->rayrat);
-	oapiReadItem_float(hFile, Label("RayP"), prm->rphase);
+	oapiReadItem_float(hFile, Label("TWBld"), prm->tw_bld);
 	oapiReadItem_float(hFile, Label("RayH"), prm->rheight);
 	// -----------------------------------------------------------------
 	oapiReadItem_float(hFile, Label("MieO"), prm->mie);
@@ -963,6 +969,9 @@ void vPlanet::SaveAtmoConfig()
 	oapiWriteItem_float(hFile, "Red", SPrm.red);
 	oapiWriteItem_float(hFile, "Blue", SPrm.blue);
 	oapiWriteItem_float(hFile, "SunI", SPrm.suni);
+	oapiWriteItem_vec(hFile, "zcolor", SPrm.zcolor._V());
+	oapiWriteItem_vec(hFile, "hcolor", SPrm.hcolor._V());
+	oapiWriteItem_vec(hFile, "acolor", SPrm.acolor._V());
 
 	SaveStruct(hFile, &SPrm, 0);
 	SaveStruct(hFile, &OPrm, 1);

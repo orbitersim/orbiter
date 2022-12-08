@@ -1465,7 +1465,6 @@ bool vVessel::ModLighting()
 	if (vP) {
 		FVECTOR3 rpos = gpos - vP->GlobalPos();
 		sunLight = vP->GetObjectAtmoParams(rpos);
-		sunLight.Color *= (float)Config->GFXSunIntensity;
 	}
 
 	return true;

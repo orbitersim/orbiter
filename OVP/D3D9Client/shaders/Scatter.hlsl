@@ -39,7 +39,6 @@ struct AtmoParams
 	float2 iH;					// Inverse scale height for ray(.r) and mie(.g) exp(-altitude * iH) 
 	float2 rmO;					// Ray and Mie out-scatter factors
 	float2 rmI;					// Ray and Mie in-scatter factors
-	float  RayPh;				// Phase
 	float  PlanetRad;			// Planet Radius
 	float  PlanetRad2;			// Planet Radius Squared
 	float  AtmoAlt;				// Atmospehere upper altitude limit
@@ -71,6 +70,7 @@ struct AtmoParams
 	float  CamSpace;			// Camera in space scale factor 0.0 = surf, 1.0 = space
 	float  Cr2;					// Camera radius on shadow plane (dot(cp.toCam, cp.Up) * cp.CamRad)^2
 	float  ShdDst;
+	float  dCS;
 };
 
 struct sFlow {
@@ -264,7 +264,7 @@ float2 Gauss4(float cos_dir, float r0, float dist, float2 ih0)
 //
 float RayPhase(float cw)
 {
-	return 0.25f * (4.0f + cw * cw) / (1.0f + Const.RayPh * cw);
+	return 0.25f * (4.0f + cw * cw);
 }
 
 
@@ -306,11 +306,11 @@ float3 ComputeCameraView(float a, float r, float d)
 
 // Approximate multi-scatter effect to atmospheric color and light travel behind terminator
 //
-float4 AmbientApprox(float3 vNrm)
+float4 AmbientApprox(float3 vNrm, uniform const bool bR = true)
 {
 	float dNS = -dot(vNrm, Const.toSun);
 	float fA = 1.0f - ilerp(0.0f, Const.TW_Dst, dNS);
-	float3 clr = float3(0.9, 0.9, 1.0) * Const.TW_Multi;
+	float3 clr = (bR ? Const.RayWave : float3(0.9, 0.9, 1.0)) * Const.TW_Multi;
 	return float4(clr, fA);
 }
 

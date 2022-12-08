@@ -134,7 +134,6 @@ struct ConstParams
 	float2 iH;					// Inverse scale height for ray(.r) and mie(.g) exp(-altitude * iH) 
 	float2 rmO;					// Ray and Mie out-scatter factors
 	float2 rmI;					// Ray and Mie in-scatter factors
-	float  RayPh;				// Phase
 	float  PlanetRad;			// Planet Radius
 	float  PlanetRad2;			// Planet Radius Squared
 	float  AtmoAlt;				// Atmospehere upper altitude limit
@@ -166,6 +165,7 @@ struct ConstParams
 	float  CamSpace;			// Camera in space scale factor 0.0 = surf, 1.0 = space
 	float  Cr2;					// Camera radius on shadow plane (dot(cp.toCam, cp.Up) * cp.CamRad)^2
 	float  ShdDst;
+	float  dCS;
 };
 
 #pragma pack(pop)
@@ -277,7 +277,7 @@ public:
 	FVECTOR2		Gauss7(float alt, float cos_dir, float R0, float R1, FVECTOR2 iH0);
 	FVECTOR2		Gauss4(float cos_dir, float r0, float dist, FVECTOR2 ih0);
 	FVECTOR4		AmbientApprox(FVECTOR3 vNrm);
-	void			IntegrateSegment(FVECTOR3 vOrig, FVECTOR3 vRay, float len, FVECTOR4* rl = NULL, FVECTOR4* mie = NULL);
+	void			IntegrateSegment(FVECTOR3 vOrig, FVECTOR3 vRay, float len, FVECTOR4* rl = NULL, FVECTOR4* mie = NULL, FVECTOR4* tot = NULL);
 	float			RayLength(float cos_dir, float r0, float r1);
 	float			RayLength(float cos_dir, float r0);
 	float			RayPhase(float cw);

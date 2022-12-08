@@ -564,7 +564,6 @@ float4 TerrainPS(TileVS frg) : COLOR
 	float3 cNgt2 = 0;
 
 	float fDPS = dot(vPlN, Const.toSun);
-	float fS = sqrt(saturate(fDPS + 0.05f));	// Day-Night scaling term 1.0 at daytime
 	float3 cSun = GetSunColor(fDPS, alt) * fShd * fShadow;
 
 #if defined(_NIGHTLIGHTS)
@@ -582,22 +581,25 @@ float4 TerrainPS(TileVS frg) : COLOR
 	cTex.rgb = pow(saturate(cTex.rgb), Const.TrGamma) * Const.TrExpo;
 
 	// Evaluate ambient approximation
-	float4 cAmb = AmbientApprox(vPlN);
+	float4 cAmb = AmbientApprox(vPlN, false);
 
 	cAmb.rgb *= exp(-alt * Const.iH.r);
 	cAmb.rgb *= cAmb.a;
 
 	LandOut sct = GetLandView(rad, vPlN);
 
-	float fTI = saturate(pow(saturate(0.9f + fDPS), 5.0f));
+	float fL = lerp(saturate(fDNS + 0.1f), fDPS * fDPS, fMask);
+	float3 cL = (cSun * Const.cSun * fL * 2.0f + cAmb.rgb * (0.5 - fMask * 0.25f));
 
-	cTex.rgb *= (cSun + cAmb.rgb + cDiffLocal + cNgt * sct.atn.rgb + float3(0.9, 0.9, 1.0) * Const.Ambient);
+	cL = dot(cL, cL) > 1.0 ? normalize(cL) : cL;
 
+	cTex.rgb *= (cL + cDiffLocal + cNgt * sct.atn.rgb + float3(0.9, 0.9, 1.0) * Const.Ambient);
+	
 	// Add Reflection
 	cTex.rgb += cRfl * 0.75f;
 
 	// Add Specular component
-	cTex.rgb += cSun * fSpe * fS;
+	cTex.rgb += cSun * fSpe * saturate(fDPS);
 
 	// Amplify cloud shadows for orbital views
 	float fOrbShd = 1.0f - (1.0f - fShd) * Const.CamSpace * 0.5f;

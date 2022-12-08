@@ -21,6 +21,7 @@
 
 #include "OrbiterAPI.h"
 #include <assert.h>
+#include <xmmintrin.h>
 
 #ifdef D3D9CLIENT_EXPORTS
 #include "d3dx9.h"
@@ -228,6 +229,16 @@ namespace oapi {
 			return max(max(r, g), b);
 		}
 
+		float MinRGB() const
+		{
+			return min(min(r, g), b);
+		}
+
+		float sql() const
+		{
+			return x * x + y * y + z * z;
+		}
+
 		inline VECTOR3 _V() const
 		{
 			VECTOR3 v = { x,y,z };
@@ -344,8 +355,7 @@ namespace oapi {
 	* \brief 32-bit floating point 4D vector type.
 	* \note This structure is compatible with the D3DXVECTOR4 type.
 	*/
-#pragma pack(push, 1)
-	typedef union FVECTOR4
+	typedef union __declspec(align(16)) FVECTOR4
 	{
 		DWORD dword_abgr() const
 		{
@@ -548,14 +558,13 @@ namespace oapi {
 			return D3DXVECTOR4(x, y, z, w);
 		}
 #endif
-
+		__m128 xm;
 		float data[4];
 		struct { float x, y, z, w; };
 		struct { float r, g, b, a; };
 		FVECTOR3 xyz;     //  , w; };
 		FVECTOR3 rgb;    //   , a; };
 	} FVECTOR4;
-#pragma pack(pop)
 
 
 	typedef union DRECT
@@ -595,7 +604,7 @@ namespace oapi {
 	* \brief Float-valued 4x4 matrix.
 	* \note This structure is compatible with the D3DXMATRIX.
 	*/
-	typedef union FMATRIX4 
+	typedef union __declspec(align(16)) FMATRIX4
 	{
 		FMATRIX4() {
 			m11 = m12 = m13, m14 = m21 = m22 = m23 = m24 = m31 = m32 = m33 = m34 = m41 = m42 = m43 = m44 = 0;
@@ -708,20 +717,20 @@ namespace oapi {
 
 	inline FVECTOR2 unit(const FVECTOR2& v)
 	{
-		float f = 1.0f / sqrt(v.x * v.x + v.y * v.y);
+		float f = 1.0f / ::sqrt(v.x * v.x + v.y * v.y);
 		return FVECTOR2(v.x * f, v.y * f);
 	}
 
 	inline FVECTOR3 unit(const FVECTOR3& v)
 	{
-		float f = 1.0f / sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-		return FVECTOR3(v.x * f, v.y * f, v.z * f);
+		float d = v.x * v.x + v.y * v.y + v.z * v.z;
+		return d > 0 ? FVECTOR3(v.x, v.y, v.z) / ::sqrt(d) : 0.0f;
 	}
 
 	inline FVECTOR3 normalize(const FVECTOR3& v)
 	{
-		float f = 1.0f / sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-		return FVECTOR3(v.x * f, v.y * f, v.z * f);
+		float d = v.x * v.x + v.y * v.y + v.z * v.z;
+		return d > 0 ? FVECTOR3(v.x, v.y, v.z) / ::sqrt(d) : 0.0f;
 	}
 
 	inline float dot(const FVECTOR2& v, const FVECTOR2& w)
@@ -741,12 +750,12 @@ namespace oapi {
 
 	inline float length(const FVECTOR2& v)
 	{
-		return sqrt(v.x * v.x + v.y * v.y);
+		return ::sqrt(v.x * v.x + v.y * v.y);
 	}
 
 	inline float length(const FVECTOR3& v)
 	{
-		return sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+		return ::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
 	}
 
 	inline FVECTOR3 cross(const FVECTOR3& a, const FVECTOR3& b)
@@ -812,6 +821,16 @@ namespace oapi {
 	inline FVECTOR4 exp(const FVECTOR4& x)
 	{
 		return FVECTOR4(::exp(x.x), ::exp(x.y), ::exp(x.z), ::exp(x.w));
+	}
+
+	inline FVECTOR3 sqrt(const FVECTOR3& x)
+	{
+		return FVECTOR3(::sqrt(x.x), ::sqrt(x.y), ::sqrt(x.z));
+	}
+
+	inline FVECTOR4 sqrt(const FVECTOR4& x)
+	{
+		return FVECTOR4(::sqrt(x.x), ::sqrt(x.y), ::sqrt(x.z), ::sqrt(x.w));
 	}
 
 

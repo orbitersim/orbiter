@@ -37,7 +37,7 @@ ScatterParams::ScatterParams() :
 	// ----------------------------------------
 	rayrat   ( 1.0 ),    // 0.0 ... 3.0
 	ray      ( 1.0 ),	 // 0.0 ... 4.0
-	rphase   ( 0.3395 ), // 0.0 ... 3.5
+	tw_bld	 ( 0.0 ),	 // 0.0 ... 3.5
 	// ----------------------------------------
 	mie      ( 0.0869 ), // 0.0 ... 8.0
 	mphase   ( 0.9831 ), // 0.85 ... 0.999
@@ -47,12 +47,15 @@ ScatterParams::ScatterParams() :
 	aux3	 ( 0.0 ),
 	tgamma	 ( 1.0 ),
 	mphaseb  ( 1.0 ),
-	hazei    ( 1.7 ),
+	hazei	 ( 0.0 ),
 	tw_bri   ( 0.0 ),
 	tw_dst	 ( 0.0 ),
 	// ----------------------------------------
 	orbalt	 ( 250e3 ),
-	visalt	 ( 70e3 )
+	visalt	 ( 70e3 ),
+	zcolor	 (1.0f, 1.0f, 0.9f),
+	hcolor	 (1.0f, 0.7f, 0.0f),
+	acolor	 (0.9f, 0.9f, 1.0f)
 {
 }
 
@@ -224,16 +227,16 @@ void OpenDlgClbk(void *context)
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_RAY,      0.05, 10.0, 8);
 	ConfigSlider(IDC_ATM_IN,       0.2, 5.0, 32);
-	ConfigSlider(IDC_ATM_RPHASE,   -0.75, 0.75);
+	ConfigSlider(IDC_ATM_RPHASE,   0.2, 5.0, 8);	// Ambient level for buildings
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_MIE,      0.05, 10.0, 8);
 	ConfigSlider(IDC_ATM_MPHASE,   0.7, 0.99999, 16);
 	ConfigSlider(IDC_ATM_MIEIN,	   0.2, 5.0, 32);
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_AUX2,	   0.2, 2.0);		// Clouds intensity
-	ConfigSlider(IDC_ATM_AUX3,	   0.1, 4.0, 8);	// HDR-B
+	ConfigSlider(IDC_ATM_AUX3,	   0.1, 4.0, 8);	// HDR
 	ConfigSlider(IDC_ATM_AUX4,		0.02, 8.0);		// Mie Phase-B
-	ConfigSlider(IDC_ATM_AUX5,		0.05, 10.0, 8);	// Unused
+	ConfigSlider(IDC_ATM_AUX5,		0.01, 1.0, 8);	// Glare intensity in atmosphere
 	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_TW_DST,	hDlg, "Light travel behind terminator");
 	CreateToolTip(IDC_ATM_GREEN,	hDlg, "Green wave lenght. (Green balance)");

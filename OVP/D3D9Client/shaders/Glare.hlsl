@@ -125,8 +125,8 @@ float4 GlarePS(OutputVS frg) : COLOR
 	float t0 = max(0, tex2D(tTex0, frg.uvi.xy).r - 0.1f);  // Texture intensity
 	float t1 = max(0, tex2D(tTex1, frg.uvi.xy).r - 0.1f);  // Texture intensity
 	float t = lerp(t1, t0, Const.Blend);
-	float a = frg.uvi.z * Const.Alpha;
-	return float4(HDRtoLDR(Const.Color.rgb * sqrt(t + 1.0f)), saturate(1.0f - exp(-a * t)));
+	float a = saturate(1.0f - exp(-frg.uvi.z * Const.Alpha * t));
+	return float4(HDRtoLDR(Const.Color.rgb * sqrt(t + 1.0f)), a);
 }
 
 
@@ -182,12 +182,12 @@ float4 CreateSunGlareAtmPS(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 
 	float a = atan2(u, v);
 	float r = sqrt(u * u + v * v);
-	float q = 0.5f + 0.3f * pow(sin(3.0f * a), 4.0f);
+	float q = 0.5f + 0.8f * pow(sin(3.0f * a), 4.0f);
+	float H = pow(max(0, (1 - r / q)), 2.0f) * 4.0f;	// Low frequency spikes
+	float C = ilerp(0.05, 0.03, r) * 32.0f;			// Core
+	float S = ilerp(0.5, 0.04, r) * 1.0f;			// Skirt
 
-	float L = pow(max(0, (1 - r / q)), 5.0f) * 32.0f;	// Low frequency spikes
-	float C = ilerp(0.05, 0.02, r) * 128.0f;			// Core
-
-	return float4(L + C, 0, 0, 1);
+	return float4(H + C + S, 0, 0, 1);
 }
 
 

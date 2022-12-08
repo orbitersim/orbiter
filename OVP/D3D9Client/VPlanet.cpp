@@ -725,6 +725,9 @@ bool vPlanet::Update (bool bMainScene)
 
 	vObject::Update(bMainScene);
 
+	// Update Atmospheric Scattering Tables
+	UpdateScatter();
+
 	// Update Sunlight direction -------------------------------------
 	// sunLight.Dir = -sundir;
 
@@ -913,9 +916,6 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 	}
 	else // render as sphere ------------------------
 	{   
-
-		// Update Atmospheric Scattering Tables
-		UpdateScatter();
 
 		// Must update the latest view projection matrix
 		cp.mVP = *scn->GetProjectionViewMatrix();

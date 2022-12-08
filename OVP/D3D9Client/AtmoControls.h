@@ -22,7 +22,7 @@ typedef struct ScatterParams {
 			double rpow;		///< 3 Rayleigh power
 			double rayrat;		///< 4 Rayleigh ratio
 			double ray;			///< 5 Rayleigh out-scatter strength
-			double rphase;		///< 6 Rayleigh phase
+			double tw_bld;		///< 6 Building ambient level at twilight
 			double mie;			///< 7 scale factor for mie out-scattering
 			double mphase;		///< 8 g-constant in HG phase function
 			double rheight;		///< 9 atmospheric rayleigh scale height
@@ -34,7 +34,7 @@ typedef struct ScatterParams {
 			double aux3;		///< 15 auxiliary parameter
 			double tgamma;		///< 16 Terrain gamma
 			double mphaseb;		///< 17 MiePhase-B
-			double hazei;		///< 18 Haze intensity
+			double hazei;		///< 18 unused
 		};
 	};
 	double orbalt;
@@ -42,6 +42,9 @@ typedef struct ScatterParams {
 	double red;
 	double blue;
 	double suni;
+	FVECTOR3 zcolor;	// sun-glare color at zenith (camera at sealevel)
+	FVECTOR3 hcolor;	// sun-glare color at horizon (camera at sealevel)
+	FVECTOR3 acolor;	// Abmient color at sealevel
 } ScatterParams;
 
 class vPlanet;

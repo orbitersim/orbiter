@@ -21,10 +21,10 @@
 #include "OapiExtension.h"
 #include "DebugControls.h"
 #include "IProcess.h"
+#include "VectorHelpers.h"
 #include <sstream>
 #include <vector>
 
-#define saturate(x)	max(min(x, 1.0f), 0.0f)
 #define IKernelSize 150
 
 using namespace oapi;
@@ -2066,7 +2066,7 @@ void Scene::RenderMainScene()
 		pLocalResultsSL->GetDesc(&desc);
 
 		pRenderGlares->ClearTextures();
-		pRenderGlares->Setup(pPosTexDecl, false, 1);
+		pRenderGlares->Setup(pPosTexDecl, false, 4);
 		pRenderGlares->SetTextureVS("tVis", pLocalResults, IPF_CLAMP | IPF_POINT); // Set texture containing pre-cumputed visibility factors
 
 		if (Config->bGlares)
@@ -2081,21 +2081,32 @@ void Scene::RenderMainScene()
 
 			if (WorldToScreenSpace2(pos, &pt))
 			{
-				vPlanet *vp = GetCameraProxyVisual();
+				vPlanet* vp = GetCameraProxyVisual();
+				ConstParams* cp = vp->GetScatterConst();
 				FVECTOR3 crp = vp->CameraPos();
-				FVECTOR3 clr = vp ? vp->SunLightColor(crp) : 1.0f;
+				FVECTOR3 clr = vp ? vp->SunLightColor(crp) * cp->cSun : 1.0f;
+				FVECTOR3 zc = vp->GetAtmoParams()->zcolor;
+				FVECTOR3 hc = vp->GetAtmoParams()->hcolor;
+				FVECTOR3 sc = lerp(hc, zc, saturate(cp->dCS));
+
+				float hzi = float(vp->GetAtmoParams()->hazei);
+				float cis = 1.0 - exp(-cp->CamAlt * cp->iH.x); // Camera In Space scaling factor
+
+				FVECTOR3 gclr = lerp(sc, clr, saturate(cis));
+				float glare = lerp(hzi, float(Config->GFXGlare), saturate(cis));
+
 				float cd = length(pt - FVECTOR2(viewW, viewH) * 0.5f) / float(viewW); // Glare distance from a screen center
-				float alpha = 2.0f * Config->GFXGlare * max(0.5f, 1.0f - cd) * sqrt(clr.MaxRGB());
-				float size = 300.0f * GetDisplayScale() * sqrt(alpha);
+				float alpha = 2.0f * glare * max(0.5f, 1.0f - cd) * pow(clr.MaxRGB(), 0.33f);
+				float size = 300.0f * GetDisplayScale() * pow(alpha, 0.33f);
 
 				Const.GPUId = 0.5f / float(desc.Width);
 				Const.Pos = FVECTOR4(pt.x, pt.y, size, size);
-				Const.Color.rgb = clr * 3.0f / (clr.MaxRGB() + 0.001f);
-				Const.Alpha = alpha * saturate(vp->CameraInSpace() + 0.3f);
-				Const.Blend = vp->CameraInSpace();
+				Const.Color.rgb = gclr / (gclr.MaxRGB() + 0.001f);
+				Const.Alpha = alpha;
+				Const.Blend = cis;
 
-				D3D9DebugLog("Color = [%f, %f, %f], Blend = %f", Const.Color.r, Const.Color.g, Const.Color.b, Const.Blend);
-		
+				D3D9DebugLog("cis=%f, alpha=%f, dCS=%f", cis, alpha, saturate(cp->dCS));
+	
 				pRenderGlares->SetVSConstants("Const", &Const, sizeof(Const));
 				pRenderGlares->SetPSConstants("Const", &Const, sizeof(Const));
 				HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));
