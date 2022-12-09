@@ -13,6 +13,7 @@ DInput::DInput (Orbiter *pOrbiter)
 {
 	orbiter = pOrbiter;
 	diframe = NULL;
+	m_hWnd = NULL;
 }
 
 DInput::~DInput ()
@@ -37,9 +38,16 @@ void DInput::Destroy ()
 	}
 }
 
-bool DInput::CreateKbdDevice (HWND hRenderWnd)
+void DInput::SetRenderWindow(HWND hWnd)
 {
-	if (FAILED (diframe->CreateKbdDevice (hRenderWnd))) {
+	if (diframe)
+		diframe->DestroyDevices();
+	m_hWnd = hWnd;
+}
+
+bool DInput::CreateKbdDevice()
+{
+	if (FAILED (diframe->CreateKbdDevice (m_hWnd))) {
 		LOGOUT("ERROR: Could not create keyboard device");
 		return false; // we need the keyboard, so give up
 	}
@@ -47,12 +55,12 @@ bool DInput::CreateKbdDevice (HWND hRenderWnd)
 	return true;
 }
 
-bool DInput::CreateJoyDevice (HWND hRenderWnd)
+bool DInput::CreateJoyDevice ()
 {
 	Config *pcfg = orbiter->Cfg();
 	if (!pcfg->CfgJoystickPrm.Joy_idx) return false; // no joystick requested
 
-	if (FAILED (diframe->CreateJoyDevice (hRenderWnd, pcfg->CfgJoystickPrm.Joy_idx-1))) {
+	if (FAILED (diframe->CreateJoyDevice (m_hWnd, pcfg->CfgJoystickPrm.Joy_idx-1))) {
 		LOGOUT_ERR("Could not create joystick device");
 		return false;
 	}
@@ -67,6 +75,21 @@ bool DInput::CreateJoyDevice (HWND hRenderWnd)
 void DInput::DestroyDevices ()
 {
 	diframe->DestroyDevices();
+}
+
+void DInput::OptionChanged(DWORD cat, DWORD item)
+{
+	if (cat == OPTCAT_JOYSTICK) {
+		switch (item) {
+		case OPTITEM_JOYSTICK_DEVICE:
+			diframe->DestroyJoyDevice();
+			CreateJoyDevice();
+			break;
+		case OPTITEM_JOYSTICK_PARAM:
+			SetJoystickProperties();
+			break;
+		}
+	}
 }
 
 bool DInput::PollJoystick (DIJOYSTATE2 *js)

@@ -67,8 +67,8 @@ void orbiter::JoystickTab::SetConfig (Config *cfg)
 {
 	cfg->CfgJoystickPrm.Joy_idx = SendDlgItemMessage (hTab, IDC_JOY_DEVICE, CB_GETCURSEL, 0, 0);
 	cfg->CfgJoystickPrm.ThrottleAxis = SendDlgItemMessage (hTab, IDC_JOY_THROTTLE, CB_GETCURSEL, 0, 0);
-	cfg->CfgJoystickPrm.Deadzone = 10*SendDlgItemMessage (hTab, IDC_JOY_DEAD, TBM_GETPOS, 0, 0);
-	cfg->CfgJoystickPrm.ThrottleSaturation = 10*SendDlgItemMessage (hTab, IDC_JOY_SAT, TBM_GETPOS, 0, 0);
+//	cfg->CfgJoystickPrm.Deadzone = 10*SendDlgItemMessage (hTab, IDC_JOY_DEAD, TBM_GETPOS, 0, 0);
+//	cfg->CfgJoystickPrm.ThrottleSaturation = 10*SendDlgItemMessage (hTab, IDC_JOY_SAT, TBM_GETPOS, 0, 0);
 	cfg->CfgJoystickPrm.bThrottleIgnore = (SendDlgItemMessage (hTab, IDC_JOY_INIT, BM_GETCHECK, 0, 0) == BST_CHECKED);
 }
 

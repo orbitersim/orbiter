@@ -55,9 +55,10 @@
 #define IDD_OPTIONS_FRAMEAXES           216
 #define IDD_OPTIONS_INSTRUMENT          217
 #define IDD_OPTIONS_UI                  218
-#define IDD_OPTIONS_VESSEL              219
-#define IDD_OPTIONS_VISUAL              220
-#define IDD_OPTIONS_PHYSICS             221
+#define IDD_OPTIONS_JOYSTICK            219
+#define IDD_OPTIONS_VESSEL              220
+#define IDD_OPTIONS_VISUAL              221
+#define IDD_OPTIONS_PHYSICS             222
 #define IDD_DEMOBK                      223
 #define IDD_ORBITERHELP                 224
 #define IDD_HELP                        225

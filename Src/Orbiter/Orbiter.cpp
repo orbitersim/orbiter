@@ -725,17 +725,19 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 		m_pConsole = new orbiter::ConsoleNG(this);
 	}
 
+	pDI->SetRenderWindow(hRenderWnd);
+
 	if (hRenderWnd) {
 		bActive = true;
 
 		// Create keyboard device
-		if (!pDI->CreateKbdDevice (hRenderWnd)) {
+		if (!pDI->CreateKbdDevice ()) {
 			CloseSession ();
 			return 0;
 		}
 
 		// Create joystick device
-		if (pDI->CreateJoyDevice (hRenderWnd)) {
+		if (pDI->CreateJoyDevice ()) {
 			// initialise startup throttle setting
 			plZ4 = 1;
 			if (pDI->joyprop.bThrottle && pCfg->CfgJoystickPrm.bThrottleIgnore) {
@@ -1188,6 +1190,8 @@ void Orbiter::OnOptionChanged(DWORD cat, DWORD item)
 {
 	if (gclient)
 		gclient->clbkOptionChanged(cat, item);
+	if (pDI)
+		pDI->OptionChanged(cat, item);
 	if (g_psys)
 		g_psys->OptionChanged(cat, item);
 	if (g_pane)

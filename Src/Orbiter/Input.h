@@ -20,13 +20,17 @@ public:
 	HRESULT Create (HINSTANCE hInst);
 	void Destroy ();
 
-	bool CreateKbdDevice (HWND hRenderWnd);
-	bool CreateJoyDevice (HWND hRenderWnd);
+	void SetRenderWindow(HWND hWnd);
+
+	bool CreateKbdDevice();
+	bool CreateJoyDevice ();
 	void DestroyDevices ();
 
 	inline CDIFramework7 *GetDIFrame() const { return diframe; }
 	inline const LPDIRECTINPUTDEVICE8 GetKbdDevice() const { return diframe->GetKbdDevice(); }
 	inline const LPDIRECTINPUTDEVICE8 GetJoyDevice() const { return diframe->GetJoyDevice(); }
+
+	void OptionChanged(DWORD cat, DWORD item);
 
 	bool PollJoystick (DIJOYSTATE2 *js);
 
@@ -43,6 +47,7 @@ private:
 	Orbiter *orbiter;
 	CDIFramework7 *diframe;
 	JoyProp joyprop;
+	HWND m_hWnd;
 };
 
 #endif // !__INPUT_H

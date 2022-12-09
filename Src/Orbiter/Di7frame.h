@@ -59,7 +59,8 @@ public:
 	HRESULT CreateMouseDevice (HWND hWnd);
 	HRESULT CreateJoyDevice (HWND hWnd, DWORD idx = 0);
 
-	VOID DestroyDevices();
+	void DestroyJoyDevice();
+	void DestroyDevices();
 
 	// accessor functions
 	inline LPDIRECTINPUTDEVICE8 GetKbdDevice() { return m_pdidKbdDevice; }

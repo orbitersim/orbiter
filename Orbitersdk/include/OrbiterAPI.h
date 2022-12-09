@@ -6700,6 +6700,7 @@ OAPIFUNC void oapiTriggerRedrawArea (int panel_id, int vc_id, int area_id);
 #define OPTCAT_PLANETARIUM                   0x0002
 #define OPTCAT_INSTRUMENT                    0x0003
 #define OPTCAT_VESSEL                        0x0004
+#define OPTCAT_JOYSTICK                      0x0005
 //@}
 
 /**
@@ -6723,6 +6724,8 @@ OAPIFUNC void oapiTriggerRedrawArea (int panel_id, int vc_id, int area_id);
 #define OPTITEM_INSTRUMENT_PANELSCALE        0x0006
 #define OPTITEM_VESSEL_LIMITEDFUEL           0x0001
 #define OPTITEM_VESSEL_PADREFUEL             0x0002
+#define OPTITEM_JOYSTICK_DEVICE              0x0001
+#define OPTITEM_JOYSTICK_PARAM               0x0002
 //@}
 
 // ======================================================================
