@@ -209,6 +209,9 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 
 	if (Config->EnvMapMode) {
 		HR(pDevice->CreateDepthStencilSurface(EnvMapSize, EnvMapSize, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, true, &pEnvDS, NULL));
+	}
+
+	if (Config->bIrradiance) {
 		HR(pDevice->CreateDepthStencilSurface(128, 128, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, true, &pIrradDS, NULL));
 	}
 
@@ -1262,10 +1265,11 @@ void Scene::RenderMainScene()
 	// -------------------------------------------------------------------------------------------------------
 	// Render Custom Camera and Environment Views
 	// -------------------------------------------------------------------------------------------------------
+	bool bIrrad = Config->EnvMapMode && Config->bIrradiance;
 
 	if (Config->CustomCamMode == 0 && dwTurn == RENDERTURN_CUSTOMCAM) dwTurn++;
 	if (Config->EnvMapMode == 0 && dwTurn == RENDERTURN_ENVCAM) dwTurn++;
-	if (Config->EnvMapMode == 0 && dwTurn == RENDERTURN_IRRADIANCE) dwTurn++;
+	if (!bIrrad && dwTurn == RENDERTURN_IRRADIANCE) dwTurn++;
 
 	if (dwTurn>RENDERTURN_LAST) dwTurn = 0;
 
@@ -1336,7 +1340,7 @@ void Scene::RenderMainScene()
 
 	if (dwTurn == RENDERTURN_IRRADIANCE) {
 
-		if (Config->EnvMapMode) {
+		if (Config->EnvMapMode && Config->bIrradiance) {
 			DWORD flags = 0;
 			if (Config->EnvMapMode == 1) flags |= 0x01;
 			if (Config->EnvMapMode == 2) flags |= 0x03;

@@ -344,6 +344,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	if (Config->EnableMeshDbg) macro[m++].Name = "_DEBUG";
 	if (Config->EnvMapMode) macro[m++].Name = "_ENVMAP"; 
 	if (Config->PostProcess == PP_DEFAULT) macro[m++].Name = "_LIGHTGLOW";
+	if (Config->bIrradiance) macro[m++].Name = "_IRRADIANCE";
 	
 	
 	HR(D3DXCreateEffectFromFileA(pDev, name, macro, 0, D3DXSHADER_NO_PRESHADER|D3DXSHADER_PREFER_FLOW_CONTROL, 0, &FX, &errors));

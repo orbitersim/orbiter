@@ -85,11 +85,12 @@ void D3D9Config::Reset ()
 	gcGUIMode			= 0;
 	bAbsAnims			= 0;
 	bCloudNormals		= 1;
-	bFlats				= 0;
+	bFlats				= 1;
 	bGlares				= 1;
 	bLocalGlares		= 0;
 	DebugBreak			= 0;
 	ShaderCacheUse		= 0;
+	bIrradiance			= 1;
 
 	GFXIntensity = 0.5;
 	GFXDistance = 0.8;
@@ -178,6 +179,7 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "TerrainFlats", i))					bFlats = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "SunGlare", i))						bGlares = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "LightsGlare", i))					bLocalGlares = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "Irradiance", i))					bIrradiance = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "DebugBreak", i))					DebugBreak = max(0, min(1, i));
 	//if (oapiReadItem_int   (hFile, "ShaderCacheUse", i))				ShaderCacheUse = max(0, min(1, i));
 	if (oapiReadItem_float (hFile, "OrbitalShadowMult", d))			    OrbitalShadowMult = max(0.5, min(10.0, d));
@@ -261,6 +263,7 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int   (hFile, "TerrainFlats", bFlats);
 	oapiWriteItem_int	(hFile, "SunGlare", bGlares);
 	oapiWriteItem_int	(hFile, "LightsGlare", bLocalGlares);
+	oapiWriteItem_int	(hFile, "Irradiance", bIrradiance);
 	oapiWriteItem_int	(hFile, "DebugBreak", DebugBreak);
 	oapiWriteItem_int	(hFile, "ShaderCacheUse", ShaderCacheUse);
 	oapiWriteItem_float (hFile, "OrbitalShadowMult", OrbitalShadowMult);

@@ -799,6 +799,7 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessage(hWnd, IDC_FLATS, BM_SETCHECK, Config->bFlats == 1, 0);
 	SendDlgItemMessage(hWnd, IDC_ESUNGLARE, BM_SETCHECK, Config->bGlares == 1, 0);
 	SendDlgItemMessage(hWnd, IDC_ELIGHTSGLARE, BM_SETCHECK, Config->bLocalGlares == 1, 0);
+	SendDlgItemMessage(hWnd, IDC_EIRRAD, BM_SETCHECK, Config->bIrradiance == 1, 0);
 
 
 	SendDlgItemMessage(hWnd, IDC_NORMALMAPS, BM_SETCHECK, Config->UseNormalMap==1, 0);
@@ -876,6 +877,7 @@ void VideoTab::SaveSetupState(HWND hWnd)
 	Config->DebugBreak	  = (int)SendDlgItemMessage(hWnd, IDC_BREAK, BM_GETCHECK, 0, 0);
 	Config->bGlares		  = (int)SendDlgItemMessage(hWnd, IDC_ESUNGLARE, BM_GETCHECK, 0, 0);
 	Config->bLocalGlares  = (int)SendDlgItemMessage(hWnd, IDC_ELIGHTSGLARE, BM_GETCHECK, 0, 0);
+	Config->bIrradiance   = (int)SendDlgItemMessage(hWnd, IDC_EIRRAD, BM_GETCHECK, 0, 0);
 
 	// Sliders
 	Config->Convergence   = double(SendDlgItemMessage(hWnd, IDC_CONVERGENCE, TBM_GETPOS, 0, 0)) * 0.01;

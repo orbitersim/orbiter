@@ -306,6 +306,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0
     AUTOCHECKBOX    "Enable debug break", IDC_BREAK, 200, 99, 80, 8, 0, WS_EX_LEFT
     AUTOCHECKBOX    "Enable sun glare", IDC_ESUNGLARE, 370, 255, 69, 8, 0, WS_EX_LEFT
     AUTOCHECKBOX    "Enable local lights glare", IDC_ELIGHTSGLARE, 370, 267, 90, 8, 0, WS_EX_LEFT
+    AUTOCHECKBOX    "Enable dynamic ambient light", IDC_EIRRAD, 370, 280, 107, 8, 0, WS_EX_LEFT
 }
 
 

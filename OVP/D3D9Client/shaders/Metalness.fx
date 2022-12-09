@@ -257,6 +257,7 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 		SampleEnvMap(cEnv, dCN, fRgh, fMetal, rflW, nrmW);
 	}
 
+#if defined(_IRRADIANCE)
 	// ======================================================================
 	// Sample Irradiance Map
 	float3 cAmbient = Paraboloidal_LVLH(IrradS, nrmW).rgb;
@@ -271,6 +272,7 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 	// Compute Earth glow
 	float angl = saturate((-dot(gCameraPos, nrmW) - gProxySize) * gInvProxySize);
 	float3 cAmbient = gAtmColor.rgb * max(0, angl * gGlowConst) + gSun.Ambient;
+#endif
 #endif
 
 

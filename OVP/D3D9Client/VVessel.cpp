@@ -1274,10 +1274,7 @@ bool vVessel::ProbeIrradiance(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 
 	LPDIRECT3DSURFACE9 pIrDS = GetScene()->GetIrradianceDepthStencil();
 
-	if (!pIrDS) {
-		LogErr("IrradianceDepthStencil doesn't exists");
-		return true;
-	}
+	if (!pIrDS) return true; // Feature disabled
 
 
 	// Create a main EnvMap with mipmap chain for blurred maps --------------------------------------------------------------------
