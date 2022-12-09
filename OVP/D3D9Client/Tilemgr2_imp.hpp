@@ -178,7 +178,10 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 	if (!bstepdown) {	
 		// Search elevated tiles from sub-trees
 		// This can severally impact in performance if used incorrectly
-		if ((ElevMode == eElevMode::ForcedElevated) && (tile->IsElevated() == false)) bstepdown = true;	
+		if ((ElevMode == eElevMode::ForcedElevated) && (tile->IsElevated() == false)) {
+			if (ElevModeLvl == 0) ElevModeLvl = lvl + 1;
+			bstepdown = ElevModeLvl >= lvl;
+		}
 	}
 	
 	// Recursion to next level: subdivide into 2x2 patch

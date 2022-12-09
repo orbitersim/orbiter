@@ -1805,12 +1805,6 @@ void ShaderClass::Setup(LPDIRECT3DVERTEXDECLARATION9 pDecl, bool bZ, int blend)
 		HR(pDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
 		HR(pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
 	}
-
-	if (blend == 5) {
-		HR(pDev->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_MAX));
-		HR(pDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA)); // Does not work with MAX op
-		HR(pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
-	}
 }
 
 

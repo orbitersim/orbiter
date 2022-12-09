@@ -545,7 +545,7 @@ float4 TerrainPS(TileVS frg) : COLOR
 
 	fLvl *= (fTrS * fPlS);										// Apply shadows
 
-	float3 color = cTex.rgb * LightFX(Const.cSun * max(fLvl, 0) * fShadow + cDiffLocal);
+	float3 color = cTex.rgb * LightFX(max(fLvl, 0) * fShadow + cDiffLocal);
 
 	return float4(pow(saturate(color), Const.TrGamma), 1.0f);		// Gamma corrention
 #else
@@ -564,7 +564,7 @@ float4 TerrainPS(TileVS frg) : COLOR
 	float3 cNgt2 = 0;
 
 	float fDPS = dot(vPlN, Const.toSun);
-	float3 cSun = GetSunColor(fDPS, alt) * fShd * fShadow;
+	float3 cSun = GetSunColor(fDPS, alt * 0.5f) * fShd * fShadow; // Reduce altitude to smoothen day/night terminator
 
 #if defined(_NIGHTLIGHTS)
 
@@ -718,7 +718,7 @@ float4 CloudPS(CldVS frg) : COLOR
 #endif
 
 	float phase = dot(Const.toSun, vRay);
-	float3 cSun = GetSunColor(dMN, Const.CloudAlt) * Const.cSun;
+	float3 cSun = GetSunColor(dMN, Const.CloudAlt * 0.5f) * Const.cSun; // Reduce altitude to smoothen day/night terminator
 	
 	// Evaluate multiscatter approximation
 	float4 cMlt = AmbientApprox(vPlN);

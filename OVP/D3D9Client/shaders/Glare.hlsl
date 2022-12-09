@@ -182,12 +182,15 @@ float4 CreateSunGlareAtmPS(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 
 	float a = atan2(u, v);
 	float r = sqrt(u * u + v * v);
-	float q = 0.5f + 0.8f * pow(sin(3.0f * a), 4.0f);
-	float H = pow(max(0, (1 - r / q)), 2.0f) * 4.0f;	// Low frequency spikes
-	float C = ilerp(0.05, 0.03, r) * 32.0f;			// Core
-	float S = ilerp(0.5, 0.04, r) * 1.0f;			// Skirt
+	//float q = 0.5f + 0.8f * pow(sin(3.0f * a), 4.0f);
+	//float w = 0.5f + 0.30f * pow(sin(5.0f * a), 2.0f) * pow(sin(7.0f * a), 2.0f);
+	//float L = pow(max(0, (1 - r / q)), 2.0f) * 4.0f;	// Low frequency spikes
+	//float H = pow(max(0, (1 - r / w)), 22.0f) * 148.0f;	// Low frequency spikes
+	float C = ilerp(0.08, 0.04, r) * 16.0f;			// Core
+	float S = ilerp(0.5, 0.04, r) * 2.0f;			// Skirt
 
-	return float4(H + C + S, 0, 0, 1);
+	//return float4(max(H, C) + S, 0, 0, 1);
+	return float4(C + S, 0, 0, 1);
 }
 
 

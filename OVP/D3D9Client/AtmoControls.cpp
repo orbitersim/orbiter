@@ -43,11 +43,11 @@ ScatterParams::ScatterParams() :
 	mphase   ( 0.9831 ), // 0.85 ... 0.999
 	// ----------------------------------------
 	mierat	 ( 1.0 ),    // 0.0 ... 2.0
-	aux2	 ( 0.0 ),    // 0.0 ... 2.0
-	aux3	 ( 0.0 ),
+	aux2	 ( 1.0 ),    // 0.0 ... 2.0
+	aux3	 ( 2.0 ),
 	tgamma	 ( 1.0 ),
 	mphaseb  ( 1.0 ),
-	hazei	 ( 0.0 ),
+	hazei	 ( 1.0 ),
 	tw_bri   ( 0.0 ),
 	tw_dst	 ( 0.0 ),
 	// ----------------------------------------
@@ -230,7 +230,7 @@ void OpenDlgClbk(void *context)
 	ConfigSlider(IDC_ATM_RPHASE,   0.2, 5.0, 8);	// Ambient level for buildings
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_MIE,      0.05, 10.0, 8);
-	ConfigSlider(IDC_ATM_MPHASE,   0.7, 0.99999, 16);
+	ConfigSlider(IDC_ATM_MPHASE,   0.02, 0.999, 8);
 	ConfigSlider(IDC_ATM_MIEIN,	   0.2, 5.0, 32);
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_AUX2,	   0.2, 2.0);		// Clouds intensity
@@ -260,7 +260,7 @@ void OpenDlgClbk(void *context)
 	CreateToolTip(IDC_ATM_AUX2,		hDlg, "Sun visibility through clouds");
 	CreateToolTip(IDC_ATM_AUX3,		hDlg, "'HDR' Exposure factor");
 	CreateToolTip(IDC_ATM_AUX4,		hDlg, "Omnidirectional mie scattering scale factor");
-	CreateToolTip(IDC_ATM_AUX5,		hDlg, "Sun intensity");
+	CreateToolTip(IDC_ATM_AUX5,		hDlg, "Sun glare intensity");
 	
 	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_ADDSTRING, 0, (LPARAM)"Auto");
@@ -437,8 +437,6 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (vObj->GetAtmoMode() == 2) sprintf_s(title, 256, "Atmospheric Controls [%s] [LowOrbit]", vObj->GetName());
 			if (vObj->GetAtmoMode() == 3) sprintf_s(title, 256, "Atmospheric Controls [%s] [HighOrbit]", vObj->GetName());
 		
-			SetWindowText(GetDlgItem(hWnd, IDC_ATM_COPYTO), "Copy to All");
-
 			SetWindowTextA(hDlg, title);
 			UpdateSliders();
 		}

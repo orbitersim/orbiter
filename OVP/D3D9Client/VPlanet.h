@@ -134,6 +134,7 @@ struct ConstParams
 	float2 iH;					// Inverse scale height for ray(.r) and mie(.g) exp(-altitude * iH) 
 	float2 rmO;					// Ray and Mie out-scatter factors
 	float2 rmI;					// Ray and Mie in-scatter factors
+	float3 cAmbient;			// Ambient light color at sealevel
 	float  PlanetRad;			// Planet Radius
 	float  PlanetRad2;			// Planet Radius Squared
 	float  AtmoAlt;				// Atmospehere upper altitude limit
@@ -267,7 +268,7 @@ public:
 	FlowControlVS*	GetFlowControlVS() { return &fcv; }
 	void			UpdateScatter();
 	int				GetAtmoMode() { return atm_mode; }
-	FVECTOR3		SunLightColor(FVECTOR3 pos);			// For a point in anywhere
+	FVECTOR4		SunLightColor(FVECTOR3 pos);			// For a point in anywhere
 	FVECTOR3		SunLightColor(float ang, float alt);	// For a point in atmosphere
 	float			SunAltitude();
 	FVECTOR4		ComputeCameraView(FVECTOR3 vPos);
@@ -285,7 +286,6 @@ public:
 	D3D9Sun			GetObjectAtmoParams(FVECTOR3 relpos);
 	FVECTOR3		HDR(FVECTOR3 i);
 	FVECTOR3		LightFX(FVECTOR3 x);
-	float			CameraInSpace() const;
 
 	// v2 Labels interface ----------------------------------------------------
 	void            ActivateLabels(bool activate);

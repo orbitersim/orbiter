@@ -1072,7 +1072,7 @@ LPDIRECT3DTEXTURE9 TileManager2Base::hCloudMicroNorm = NULL;
 // -----------------------------------------------------------------------
 
 TileManager2Base::TileManager2Base (vPlanet *vplanet, int _maxres, int _gridres)
-: vp(vplanet), gridRes(_gridres), ElevMode(eElevMode::DontCare)
+: vp(vplanet), gridRes(_gridres), ElevMode(eElevMode::DontCare), ElevModeLvl(0)
 {
 	// set persistent parameters
 	prm.maxlvl = max (0, _maxres-4);

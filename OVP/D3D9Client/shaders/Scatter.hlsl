@@ -39,6 +39,7 @@ struct AtmoParams
 	float2 iH;					// Inverse scale height for ray(.r) and mie(.g) exp(-altitude * iH) 
 	float2 rmO;					// Ray and Mie out-scatter factors
 	float2 rmI;					// Ray and Mie in-scatter factors
+	float3 cAmbient;			// Ambient light color at sealevel
 	float  PlanetRad;			// Planet Radius
 	float  PlanetRad2;			// Planet Radius Squared
 	float  AtmoAlt;				// Atmospehere upper altitude limit
@@ -270,17 +271,15 @@ float RayPhase(float cw)
 
 // Henyey-Greenstein Phase function
 //
-float MiePhase(float cw)
+/*float MiePhase(float cw)
 {
 	float cw2 = cw * cw;
 	return Const.HG.x * (1.0f + cw2) * pow(abs(Const.HG.y - Const.HG.z * cw2*cw), -1.5f) + Const.HG.w;
-}
+}*/
 
-
-float MiePhase2(float cw, float g)
+float MiePhase(float cw)
 {
-	float cw2 = cw * cw;
-	return (1.0f - g*g) * (1.0f + cw2) * pow(abs(1.0f + g * g - 2.0f * g * cw), -1.5f);
+	return 8.0f * Const.HG.x / (1.0f - Const.HG.y * cw) + Const.HG.w;
 }
 
 
@@ -310,7 +309,7 @@ float4 AmbientApprox(float3 vNrm, uniform const bool bR = true)
 {
 	float dNS = -dot(vNrm, Const.toSun);
 	float fA = 1.0f - ilerp(0.0f, Const.TW_Dst, dNS);
-	float3 clr = (bR ? Const.RayWave : float3(0.9, 0.9, 1.0)) * Const.TW_Multi;
+	float3 clr = (bR ? Const.RayWave : Const.cAmbient) * Const.TW_Multi;
 	return float4(clr, fA);
 }
 

@@ -597,16 +597,6 @@ bool vPlanet::CameraInAtmosphere() const
 
 // ==============================================================
 
-float vPlanet::CameraInSpace() const
-{
-	if (!prm.bAtm) return 1.0f;
-	float alt = CamDist() - size;
-	return 1.0f - exp(-alt * cp.iH.x);
-	//return sqrt(saturate(alt / GetHorizonAlt()));
-}
-
-// ==============================================================
-
 double vPlanet::GetHorizonAlt() const
 {
 	if (!prm.bAtm) return 0.0;
@@ -728,9 +718,7 @@ bool vPlanet::Update (bool bMainScene)
 	// Update Atmospheric Scattering Tables
 	UpdateScatter();
 
-	// Update Sunlight direction -------------------------------------
-	// sunLight.Dir = -sundir;
-
+	
 	if (patchres==0) return true;
 
 	int i, j;
@@ -962,21 +950,6 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 		if (hazemgr2) {
 			double apr = 180.0 * scn->GetCameraAperture() / (scn->GetCameraAspect() * PI);
 			hazemgr2->Render(mWorld, float(apr));
-			/*
-			if (scn->GetRenderPass() == RENDERPASS_MAINSCENE) {
-				if (CameraInAtmosphere()) {
-					D3D9Pad* pSkp = scn->GetPooledSketchpad(0);
-					if (pSkp) {
-						RECT rtgt = { -150, -150, 150, 150 };
-						float fScale = scn->GetDisplayScale();
-						pSkp->SetViewProj(scn->GetViewMatrix(), scn->GetProjectionMatrix());
-						pSkp->SetWorldBillboard(SunDirection() * 500.0f, fScale, true);
-						pSkp->StretchRectNative(scn->GetSunTexture(), NULL, &rtgt);
-						pSkp->EndDrawing();
-						scn->RecallDefaultState();
-					}
-				}
-			}*/
 		}
 
 		if (prm.bCloud && (prm.cloudvis & 1))
@@ -1079,13 +1052,6 @@ void vPlanet::RenderVectors (LPDIRECT3DDEVICE9 dev, D3D9Pad* pSkp)
 }
 
 // ==============================================================
-/*
-void vPlanet::RenderSurfaceMicroDetails(LPDIRECT3DDEVICE9 dev)
-{
-
-}
-*/
-// ==============================================================
 
 void vPlanet::ActivateLabels(bool activate)
 {
@@ -1122,7 +1088,7 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 		if (scn->GetRenderPass() == RENDERPASS_MAINSCENE) {
 			if (size < 500e3) {
 				// Comet, Asteroid, Small Moon
-				if (cdist >= 100.0*size) {
+				if (cdist >= 1000.0*size) {
 					surfmgr2->ElevMode = eElevMode::Spherical;
 					bUseZBuf = false;
 				}

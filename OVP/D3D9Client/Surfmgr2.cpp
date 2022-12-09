@@ -900,8 +900,8 @@ void SurfTile::Render ()
 			}
 		}
 
-		pShader->SetTexture(pShader->tCloud, pCloud);
-		pShader->SetTexture(pShader->tCloud2, pCloud2);
+		pShader->SetTexture(pShader->tCloud, pCloud, IPF_CLAMP | IPF_ANISOTROPIC, Config->Anisotrophy);
+		pShader->SetTexture(pShader->tCloud2, pCloud2, IPF_CLAMP | IPF_ANISOTROPIC, Config->Anisotrophy);
 	}
 
 	
@@ -1353,6 +1353,7 @@ template<>
 void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlanet::RenderPrm &rprm)
 {
 	bUseZ = use_zbuf;
+	ElevModeLvl = 0;
 
 	// set generic parameters
 	SetRenderPrm (dwmat, 0, use_zbuf, rprm);

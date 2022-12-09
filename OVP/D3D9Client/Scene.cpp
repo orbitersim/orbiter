@@ -1468,10 +1468,10 @@ void Scene::RenderMainScene()
 	m_celSphere->Render(pDevice, sky_color);
 
 	// Set Initial Near clip plane distance
-	if (bClearZBuffer) SetCameraFrustumLimits(1e3, 1e8f);
-	else			   SetCameraFrustumLimits(znear_for_vessels, 1e8f);
+	if (bClearZBuffer) SetCameraFrustumLimits(1e3, 3e8f);
+	else			   SetCameraFrustumLimits(znear_for_vessels, 3e8f);
 
-	
+	pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
 	// ---------------------------------------------------------------------------------------------
 	// Create a caster list for shadow mapping
@@ -1697,7 +1697,7 @@ void Scene::RenderMainScene()
 		pSketch->EndDrawing(); // SKETCHPAD_PLANETARIUM
 	}
 
-	for (DWORD i = 0; i < nplanets; ++i)
+	/*for (DWORD i = 0; i < nplanets; ++i)
 	{
 		OBJHANDLE hObj = plist[i].vo->Object();
 		if (oapiGetObjectType(hObj) != OBJTP_PLANET) continue;
@@ -1707,7 +1707,7 @@ void Scene::RenderMainScene()
 		pSketch->SetViewProj(GetViewMatrix(), GetProjectionMatrix());
 		static_cast<vPlanet*>(plist[i].vo)->TestComputations(pSketch);
 		pSketch->EndDrawing(); // SKETCHPAD_PLANETARIUM
-	}
+	}*/
 
 	// -------------------------------------------------------------------------------------------------------
 	// render new-style surface markers
@@ -1998,7 +1998,6 @@ void Scene::RenderMainScene()
 			pDevice->StretchRect(pOffscreenTarget, NULL, psgBuffer[GBUF_COLOR], NULL, D3DTEXF_POINT);
 
 			pLightBlur->SetFloat("vSB", &sbf, sizeof(D3DXVECTOR2));
-			//pLightBlur->SetFloat("vBB", &scr, sizeof(D3DXVECTOR2));
 			pLightBlur->SetBool("bBlendIn", false);
 			pLightBlur->SetBool("bBlur", false);
 
@@ -2010,7 +2009,6 @@ void Scene::RenderMainScene()
 			// -----------------------------------------------------
 			pLightBlur->SetBool("bSample", true);
 			pLightBlur->SetTextureNative("tBack", ptgBuffer[GBUF_COLOR], IPF_POINT | IPF_CLAMP);
-			//pLightBlur->SetTextureNative("tCLUT", pTextures[TEX_CLUT], IPF_LINEAR | IPF_CLAMP);
 			pLightBlur->SetOutputNative(0, psgBuffer[GBUF_BLUR]);
 
 			if (!pLightBlur->Execute(true)) LogErr("pLightBlur Execute Failed");
@@ -2020,8 +2018,6 @@ void Scene::RenderMainScene()
 			pLightBlur->SetBool("bBlur", true);
 
 			for (int i = 0; i < iGensPerFrame; i++) {
-
-				//pLightBlur->SetInt("PassId", i);
 
 				pLightBlur->SetBool("bDir", false);
 				pLightBlur->SetTextureNative("tBlur", ptgBuffer[GBUF_BLUR], IPF_POINT | IPF_CLAMP);
@@ -2054,92 +2050,8 @@ void Scene::RenderMainScene()
 	// Render glares for the Sun and local lights
 	// -------------------------------------------------------------------------------------------------------
 
-	if (pRenderGlares)
-	{
-		static SMVERTEX Vertex[4] = { {-1, -1, 0, 0, 0}, {-1, 1, 0, 0, 1}, {1, 1, 0, 1, 1}, {1, -1, 0, 1, 0} };
-		static WORD cIndex[6] = { 0, 2, 1, 0, 3, 2 };
-		D3DSURFACE_DESC desc; FVECTOR2 pt;
-		struct { D3DXMATRIX	mVP; float4	Pos, Color;	float GPUId, Alpha, Blend; } Const;
-		
-		Const.Color = FVECTOR4(1, 1, 1, 1);
-		D3DXMatrixOrthoOffCenterLH(&Const.mVP, 0.0f, (float)viewW, (float)viewH, 0.0f, 0.0f, 1.0f);
-		pLocalResultsSL->GetDesc(&desc);
+	RenderGlares();
 
-		pRenderGlares->ClearTextures();
-		pRenderGlares->Setup(pPosTexDecl, false, 4);
-		pRenderGlares->SetTextureVS("tVis", pLocalResults, IPF_CLAMP | IPF_POINT); // Set texture containing pre-cumputed visibility factors
-
-		if (Config->bGlares)
-		{
-			pRenderGlares->SetTexture("tTex0", pSunGlare, IPF_CLAMP | IPF_LINEAR);
-			pRenderGlares->SetTexture("tTex1", pSunGlareAtm, IPF_CLAMP | IPF_LINEAR);
-			pRenderGlares->UpdateTextures();
-
-			// Render Sun glare
-			VECTOR3 gsun; oapiGetGlobalPos(oapiGetObjectByIndex(0), &gsun);
-			VECTOR3 pos = unit(gsun - Camera.pos) * 10e4;
-
-			if (WorldToScreenSpace2(pos, &pt))
-			{
-				vPlanet* vp = GetCameraProxyVisual();
-				ConstParams* cp = vp->GetScatterConst();
-				FVECTOR3 crp = vp->CameraPos();
-				FVECTOR3 clr = vp ? vp->SunLightColor(crp) * cp->cSun : 1.0f;
-				FVECTOR3 zc = vp->GetAtmoParams()->zcolor;
-				FVECTOR3 hc = vp->GetAtmoParams()->hcolor;
-				FVECTOR3 sc = lerp(hc, zc, saturate(cp->dCS));
-
-				float hzi = float(vp->GetAtmoParams()->hazei);
-				float cis = 1.0 - exp(-cp->CamAlt * cp->iH.x); // Camera In Space scaling factor
-
-				FVECTOR3 gclr = lerp(sc, clr, saturate(cis));
-				float glare = lerp(hzi, float(Config->GFXGlare), saturate(cis));
-
-				float cd = length(pt - FVECTOR2(viewW, viewH) * 0.5f) / float(viewW); // Glare distance from a screen center
-				float alpha = 2.0f * glare * max(0.5f, 1.0f - cd) * pow(clr.MaxRGB(), 0.33f);
-				float size = 300.0f * GetDisplayScale() * pow(alpha, 0.33f);
-
-				Const.GPUId = 0.5f / float(desc.Width);
-				Const.Pos = FVECTOR4(pt.x, pt.y, size, size);
-				Const.Color.rgb = gclr / (gclr.MaxRGB() + 0.001f);
-				Const.Alpha = alpha;
-				Const.Blend = cis;
-
-				D3D9DebugLog("cis=%f, alpha=%f, dCS=%f", cis, alpha, saturate(cp->dCS));
-	
-				pRenderGlares->SetVSConstants("Const", &Const, sizeof(Const));
-				pRenderGlares->SetPSConstants("Const", &Const, sizeof(Const));
-				HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));
-			}
-		}
-
-		if (Config->bLocalGlares)
-		{
-			pRenderGlares->SetTexture("tTex0", pLightGlare, IPF_CLAMP | IPF_LINEAR);
-			pRenderGlares->UpdateTextures();
-
-			// Render glares for local lights
-			for (int i = 0; i < nLights; ++i) {
-				int GPUId = Lights[i].GPUId;
-				if (GPUId >= 0) {
-					if (WorldToScreenSpace2(_V(Lights[i].Position), &pt)) {
-						float size = 40.0f;
-						Const.GPUId = (float(GPUId) + 0.5f) / desc.Width;
-						Const.Pos = FVECTOR4(pt.x, pt.y, size, size);
-						Const.Alpha = Lights[i].cone;
-						Const.Color = Lights[i].Diffuse;
-						pRenderGlares->SetVSConstants("Const", &Const, sizeof(Const));
-						pRenderGlares->SetPSConstants("Const", &Const, sizeof(Const));
-						HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));
-					}
-				}
-			}
-		}
-	}
-	
-
-
-	
 
 	// -------------------------------------------------------------------------------------------------------
 	// Render GDI Overlay to backbuffer directly
@@ -3634,6 +3546,100 @@ void Scene::RenderCustomCameraView(CAMREC *cCur)
 
 	PopPass();
 	PopCamera();
+}
+
+
+// ===========================================================================================
+//
+void Scene::RenderGlares()
+{
+	// -------------------------------------------------------------------------------------------------------
+	// Render glares for the Sun and local lights
+	// -------------------------------------------------------------------------------------------------------
+
+	if (pRenderGlares)
+	{
+		static SMVERTEX Vertex[4] = { {-1, -1, 0, 0, 0}, {-1, 1, 0, 0, 1}, {1, 1, 0, 1, 1}, {1, -1, 0, 1, 0} };
+		static WORD cIndex[6] = { 0, 2, 1, 0, 3, 2 };
+		D3DSURFACE_DESC desc; FVECTOR2 pt;
+		struct { D3DXMATRIX	mVP; float4	Pos, Color;	float GPUId, Alpha, Blend; } Const;
+
+		Const.Color = FVECTOR4(1, 1, 1, 1);
+		D3DXMatrixOrthoOffCenterLH(&Const.mVP, 0.0f, (float)viewW, (float)viewH, 0.0f, 0.0f, 1.0f);
+		pLocalResultsSL->GetDesc(&desc);
+
+		pRenderGlares->ClearTextures();
+		pRenderGlares->Setup(pPosTexDecl, false, 1);
+		pRenderGlares->SetTextureVS("tVis", pLocalResults, IPF_CLAMP | IPF_POINT); // Set texture containing pre-cumputed visibility factors
+
+		if (Config->bGlares)
+		{
+			pRenderGlares->SetTexture("tTex0", pSunGlare, IPF_CLAMP | IPF_LINEAR);
+			pRenderGlares->SetTexture("tTex1", pSunGlareAtm, IPF_CLAMP | IPF_LINEAR);
+			pRenderGlares->UpdateTextures();
+
+			// Render Sun glare
+			VECTOR3 gsun; oapiGetGlobalPos(oapiGetObjectByIndex(0), &gsun);
+			VECTOR3 pos = unit(gsun - Camera.pos) * 10e4;
+
+			if (WorldToScreenSpace2(pos, &pt))
+			{
+				vPlanet* vp = GetCameraProxyVisual();
+				ConstParams* cp = vp->GetScatterConst();
+				FVECTOR3 crp = vp->CameraPos();
+				FVECTOR4 clr = vp ? vp->SunLightColor(crp) : 1.0f;
+				FVECTOR3 zc = vp->GetAtmoParams()->zcolor;
+				FVECTOR3 hc = vp->GetAtmoParams()->hcolor;
+				FVECTOR3 sc = lerp(hc, zc, saturate(cp->dCS));
+
+				clr.rgb *= cp->cSun;
+
+				float hzi = float(vp->GetAtmoParams()->hazei) * 0.25f;
+				float cis = 1.0 - exp(-cp->CamAlt * cp->iH.x); // Camera In Space scaling factor
+
+				FVECTOR3 gclr = lerp(sc, clr.rgb, saturate(cis));
+				float glare = lerp(hzi * clr.w, float(Config->GFXGlare) * pow(clr.MaxRGB(), 0.33f), saturate(cis));
+
+				float cd = length(pt - FVECTOR2(viewW, viewH) * 0.5f) / float(viewW); // Glare distance from a screen center
+				float alpha = 2.0f * glare * max(0.5f, 1.0f - cd);
+				float size = 300.0f * GetDisplayScale() * pow(alpha, 0.33f);
+
+				Const.GPUId = 0.5f / float(desc.Width);
+				Const.Pos = FVECTOR4(pt.x, pt.y, size, size);
+				Const.Color.rgb = gclr / (gclr.MaxRGB() + 0.0001f);
+				Const.Alpha = alpha;
+				Const.Blend = cis;
+
+				pRenderGlares->SetVSConstants("Const", &Const, sizeof(Const));
+				pRenderGlares->SetPSConstants("Const", &Const, sizeof(Const));
+				HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));
+			}
+		}
+
+		if (Config->bLocalGlares)
+		{
+			pRenderGlares->SetTexture("tTex0", pLightGlare, IPF_CLAMP | IPF_LINEAR);
+			pRenderGlares->UpdateTextures();
+
+			// Render glares for local lights
+			for (int i = 0; i < nLights; ++i) {
+				int GPUId = Lights[i].GPUId;
+				if (GPUId >= 0) {
+					if (WorldToScreenSpace2(_V(Lights[i].Position), &pt)) {
+						float size = 40.0f;
+						Const.GPUId = (float(GPUId) + 0.5f) / desc.Width;
+						Const.Pos = FVECTOR4(pt.x, pt.y, size, size);
+						Const.Alpha = Lights[i].cone;
+						Const.Color = Lights[i].Diffuse;
+						Const.Blend = 0.0f;
+						pRenderGlares->SetVSConstants("Const", &Const, sizeof(Const));
+						pRenderGlares->SetPSConstants("Const", &Const, sizeof(Const));
+						HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));
+					}
+				}
+			}
+		}
+	}
 }
 
 

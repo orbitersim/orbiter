@@ -402,6 +402,8 @@ protected:
 	 */
 	void RenderObjectMarker(oapi::Sketchpad *pSkp, const VECTOR3 &gpos, const std::string& label1, const std::string& label2, int mode, int scale);
 
+	void RenderGlares();
+
 private:
 	void		ComputeLocalLightsVisibility();
 	DWORD		GetActiveParticleEffectCount();

@@ -317,7 +317,7 @@ public:
 		int Sphe;						///< Number of spherical tiles rendered
 	} elvstat, prevstat;
 
-	int ElevMode;
+	int ElevMode, ElevModeLvl;
 
 	/**
 	 * \brief Constructs a new tile manager object

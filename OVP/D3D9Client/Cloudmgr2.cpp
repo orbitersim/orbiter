@@ -170,6 +170,7 @@ void TileManager2<CloudTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlan
 	//
 
 	ElevMode = eElevMode::Spherical;
+	ElevModeLvl = 0;
 
 	int cfg = vp->GetShaderID();
 

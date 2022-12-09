@@ -94,8 +94,7 @@ bool vStar::Render(LPDIRECT3DDEVICE9 dev)
 
 	if (Config->bGlares)
 	{
-		return true;
-		//vPlanet* vp = scn->GetCameraProxyVisual();
+		if (scn->GetCameraAltitude() > 20e3) return true;
 	}
 
 	D3D9Effect::RenderBillboard(&mWorld, scn->GetSunTexture());

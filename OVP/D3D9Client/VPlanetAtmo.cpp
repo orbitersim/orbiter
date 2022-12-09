@@ -263,10 +263,15 @@ float vPlanet::RayPhase(float cw)
 // ===========================================================================================
 // Henyey-Greenstein Phase function
 //
-float vPlanet::MiePhase(float cw)
+/*float vPlanet::MiePhase(float cw)
 {
 	float cw2 = cw * cw;
 	return cp.HG.x * (1.0f + cw2) * pow(abs(cp.HG.y - cp.HG.z * cw2 * cw), -1.5f) + cp.HG.w;
+}*/
+
+float vPlanet::MiePhase(float cw)
+{
+	return 8.0f * cp.HG.x / (1.0f - cp.HG.y * cw) + cp.HG.w;
 }
 
 
@@ -379,7 +384,7 @@ FVECTOR3 vPlanet::SunLightColor(float angle, float alt)
 
 // ===========================================================================================
 //
-FVECTOR3 vPlanet::SunLightColor(FVECTOR3 relpos)
+FVECTOR4 vPlanet::SunLightColor(FVECTOR3 relpos)
 {
 	FVECTOR2 rm = 0.0f;
 	FVECTOR3 up = unit(relpos);
@@ -398,17 +403,15 @@ FVECTOR3 vPlanet::SunLightColor(FVECTOR3 relpos)
 	double sd = length(sunpos);
 	double hd = sqrt(r * r - pr * pr); // Distance to closest approach
 	double sr = oapiGetSize(hSun) * abs(hd) / sd;
-	double svb = ca > 0 ? 1.0f : ilerp(pr - sr * 0.5, pr + sr, qr);
+	float svb = ca > 0 ? 1.0f : ilerp(pr - sr, pr + sr, qr);
 
-	D3D9DebugLog("svb=%f", svb);
-
-	if (qr > cp.AtmoRad) return FVECTOR3(1, 1, 1) * svb; // Ray doesn't intersect atmosphere
-	if (svb < 1e-3) return FVECTOR3(0.0f, 0.0f, 0.0f); // Ray is obscured by planet
+	if (qr > cp.AtmoRad) return FVECTOR4(svb, svb, svb, svb); // Ray doesn't intersect atmosphere
+	if (svb < 1e-3) return FVECTOR4(0.0f, 0.0f, 0.0f, svb); // Ray is obscured by planet
 	if (r > cp.AtmoRad) rm = Gauss7(qr - pr, 0.0f, cp.PlanetRad, cp.AtmoRad, cp.iH) * 2.0f; // Ray passes through atmosphere from space to space
 	else rm = Gauss7(r - pr, -ca, cp.PlanetRad, cp.AtmoRad, cp.iH); // Sample point 'pos' lies with-in atmosphere
 		
 	rm *= cp.rmO;
-	return exp(-(cp.RayWave * rm.x + cp.MieWave * rm.y)) * svb;
+	return FVECTOR4(exp(-(cp.RayWave * rm.x + cp.MieWave * rm.y)) * svb, svb);
 }
 
 
@@ -433,17 +436,14 @@ D3D9Sun vPlanet::GetObjectAtmoParams(FVECTOR3 vRelPos)
 
 	float r = length(vRelPos);
 	float a = cp.AtmoAlt * 0.5f;
-	FVECTOR3 cSun = SunLightColor(vRelPos) * cp.cSun;
+	FVECTOR3 cSun = SunLightColor(vRelPos).rgb * cp.cSun;
 	DWORD ambient = *(DWORD*)gc->GetConfigParam(CFGPRM_AMBIENTLEVEL);
 
 	if ((r - cp.PlanetRad) > a) // In space
 	{
 		op.Dir = -cp.toSun;
-		op.Color = unit(cSun) * Config->GFXSunIntensity;
+		op.Color = (cSun.MaxRGB() > 1.0f ? cSun / cSun.MaxRGB() : cSun) * Config->GFXSunIntensity;
 		op.Ambient = float(ambient) * 0.0039f;
-
-		D3D9DebugLog("C r=%f, g=%f, b=%f", op.Color.r, op.Color.g, op.Color.b);
-		D3D9DebugLog("A r=%f, g=%f, b=%f", op.Ambient.r, op.Ambient.g, op.Ambient.b);
 		return op;
 	}
 
@@ -460,7 +460,7 @@ D3D9Sun vPlanet::GetObjectAtmoParams(FVECTOR3 vRelPos)
 	mc.a *= CPrm.tw_bld;
 
 	op.Dir = -cp.toSun;
-	op.Color = (cSun.sql() > 1.0f ? unit(cSun) : cSun) * Config->GFXSunIntensity;
+	op.Color = (cSun.MaxRGB() > 1.0f ? cSun / cSun.MaxRGB() : cSun) * Config->GFXSunIntensity;
 	op.Ambient = unit(mc.rgb + op.Color * 0.4f) * mc.a * exp(-alt * cp.iH.x) * 0.25f + float(ambient) * 0.0039f;
 
 	if (d > 1000.0f) {
@@ -469,9 +469,6 @@ D3D9Sun vPlanet::GetObjectAtmoParams(FVECTOR3 vRelPos)
 		op.Transmission = ComputeCameraView(dNR, r, d).rgb;
 		op.Incatter = HDR(rl.rgb * RayPhase(dRS) + mi.rgb * MiePhase(dRS));
 	}
-
-	D3D9DebugLog("C2 r=%f, g=%f, b=%f", op.Color.r, op.Color.g, op.Color.b);
-	D3D9DebugLog("A2 r=%f, g=%f, b=%f", op.Ambient.r, op.Ambient.g, op.Ambient.b);
 
 	return op;
 }
@@ -516,7 +513,8 @@ void vPlanet::UpdateScatter()
 	float scr = 1.6e-6;
 	float scm = 1.0e-6;
 
-	float g = float(atmo->mphase);
+	float ph = atmo->mphase * 200.0f;
+	float g = ph / sqrt(1.0f + ph * ph);
 	float hrz = sqrt(max(0, cr * cr - pr * pr));
 	float qw = float(pr / cr);
 
@@ -562,6 +560,7 @@ void vPlanet::UpdateScatter()
 	cp.Ambient = fAmbient;
 	cp.CosAlpha = min(1.0f, cp.PlanetRad / cp.CamRad);
 	cp.SinAlpha = sqrt(1.0f - cp.CosAlpha * cp.CosAlpha);
+	cp.cAmbient = atmo->acolor;
 	float A = dot(cp.toCam, cp.Up) * cp.CamRad;
 	cp.Cr2 = A * A;
 	float g2 = cp.CamRad2 - cp.PlanetRad2;
@@ -595,7 +594,8 @@ void vPlanet::UpdateScatter()
 	cp.iH.x = 1.0f / float(atmo->rheight * 1000.0);
 	cp.iH.y = 1.0f / float(atmo->mheight * 1000.0);
 	cp.Expo = atmo->aux3;
-	cp.HG = FVECTOR4(1.5f * (1.0f - g * g) / (2.0f + g * g), 1.0f + g * g, 2.0f * g, float(atmo->mphaseb));
+	//cp.HG = FVECTOR4(1.5f * (1.0f - g * g) / (2.0f + g * g), 1.0f + g * g, 2.0f * g, float(atmo->mphaseb));
+	cp.HG = FVECTOR4(pow(1.0f - g * g, 0.75f), g, 0.0f, float(atmo->mphaseb));
 
 	cp.Clouds = float(atmo->aux2);
 	cp.TW_Multi = float(atmo->tw_bri);
@@ -844,10 +844,8 @@ bool vPlanet::LoadAtmoConfig()
 	sprintf_s(path, "GC/%s.atm.cfg", name);
 
 	FILEHANDLE hFile = oapiOpenFile(path, FILE_IN_ZEROONFAIL, CONFIG);
-	if (!hFile) {
-		LogErr("Rendering Configuration File Is Missing for [%s]", name);
-		return false;
-	}
+	if (!hFile) hFile = oapiOpenFile("GC/Moon.atm.cfg", FILE_IN_ZEROONFAIL, CONFIG);
+	if (!hFile) LogErr("Failed to initialize configuration for [%s]", name);
 
 	LogAlw("Loading Atmospheric Configuration file [%s] Handle=%s", path, _PTR(hFile));
 
@@ -918,9 +916,9 @@ void vPlanet::LoadStruct(FILEHANDLE hFile, ScatterParams* prm, int iCnf)
 	oapiReadItem_float(hFile, "Red", prm->red);
 	oapiReadItem_float(hFile, "Blue", prm->blue);
 	oapiReadItem_float(hFile, "SunI", prm->suni);
-	oapiReadItem_vec(hFile, "zcolor", v3); SPrm.zcolor = v3;
-	oapiReadItem_vec(hFile, "hcolor", v3); SPrm.hcolor = v3;
-	oapiReadItem_vec(hFile, "acolor", v3); SPrm.acolor = v3;
+	oapiReadItem_vec(hFile, "zcolor", v3); prm->zcolor = v3;
+	oapiReadItem_vec(hFile, "hcolor", v3); prm->hcolor = v3;
+	oapiReadItem_vec(hFile, "acolor", v3); prm->acolor = v3;
 
 	// -----------------------------------------------------------------
 
@@ -1055,8 +1053,6 @@ vPlanet::SHDPrm vPlanet::ComputeShadow(FVECTOR3 vRay)
 //
 void vPlanet::TestComputations(Sketchpad* pSkp)
 {
-	return;
-
 	static int status = 0;
 	float size = 0.02f;
 	VECTOR3 campos, rpos;
