@@ -393,7 +393,9 @@ FVECTOR4 vPlanet::SunLightColor(FVECTOR3 relpos)
 	double om = 1.0 - ca * ca;
 	double qr = sqrt(om) * r;
 
-	if (r > cp.AtmoRad && ca > 0) return FVECTOR3(1, 1, 1); // Ray doesn't intersect atmosphere
+	D3D9DebugLog("[%s] rad=%f, atmo=%f", name, cp.PlanetRad, cp.AtmoRad);
+
+	if (r > cp.AtmoRad && ca > 0) return FVECTOR4(1, 1, 1, 1); // Ray doesn't intersect atmosphere
 
 	OBJHANDLE hSun = oapiGetObjectByIndex(0);
 	VECTOR3 sunpos; oapiGetGlobalPos(hSun, &sunpos);
@@ -403,10 +405,14 @@ FVECTOR4 vPlanet::SunLightColor(FVECTOR3 relpos)
 	double sd = length(sunpos);
 	double hd = sqrt(r * r - pr * pr); // Distance to closest approach
 	double sr = oapiGetSize(hSun) * abs(hd) / sd;
-	float svb = ca > 0 ? 1.0f : ilerp(pr - sr, pr + sr, qr);
+	double svb = ca > 0 ? 1.0 : ilerp(pr - sr, pr + sr, qr);
+
+	D3D9DebugLog("[%s] svb=%f, qr=%f, ca=%f", name, svb, qr, ca);
+
+	if (!HasAtmosphere()) FVECTOR4(svb, svb, svb, svb);
 
 	if (qr > cp.AtmoRad) return FVECTOR4(svb, svb, svb, svb); // Ray doesn't intersect atmosphere
-	if (svb < 1e-3) return FVECTOR4(0.0f, 0.0f, 0.0f, svb); // Ray is obscured by planet
+	if (svb < 1e-3) return FVECTOR4(0.0, 0.0, 0.0, svb); // Ray is obscured by planet
 	if (r > cp.AtmoRad) rm = Gauss7(qr - pr, 0.0f, cp.PlanetRad, cp.AtmoRad, cp.iH) * 2.0f; // Ray passes through atmosphere from space to space
 	else rm = Gauss7(r - pr, -ca, cp.PlanetRad, cp.AtmoRad, cp.iH); // Sample point 'pos' lies with-in atmosphere
 		
@@ -439,7 +445,7 @@ D3D9Sun vPlanet::GetObjectAtmoParams(FVECTOR3 vRelPos)
 	FVECTOR3 cSun = SunLightColor(vRelPos).rgb * cp.cSun;
 	DWORD ambient = *(DWORD*)gc->GetConfigParam(CFGPRM_AMBIENTLEVEL);
 
-	if ((r - cp.PlanetRad) > a) // In space
+	if (((r - cp.PlanetRad) > a) || !HasAtmosphere()) // In space
 	{
 		op.Dir = -cp.toSun;
 		op.Color = (cSun.MaxRGB() > 1.0f ? cSun / cSun.MaxRGB() : cSun) * Config->GFXSunIntensity;

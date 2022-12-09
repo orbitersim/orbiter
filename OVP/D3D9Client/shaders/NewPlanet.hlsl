@@ -780,12 +780,8 @@ float4 GiantPS(TileVS frg) : COLOR
 	float3 vRay = normalize(frg.camW.xyz);		// Unit viewing ray
 	float3 vVrt = Const.CamPos - frg.camW.xyz;	// Geo-centric pixel position
 	float3 vPlN = normalize(vVrt);				// Planet mean normal
-	//float  dst = dot(vRay, frg.camW);	// Pixel to camera distance
-	//float  rad = dot(vVrt, vPlN);
-	//float fDRS = dot(vRay, Const.toSun);
 	float fDPS = dot(vPlN, Const.toSun);
-
-	float3 cSun = Const.cSun * saturate((fDPS + 0.1) * 5.0);
+	float3 cSun = saturate((fDPS + 0.1) * 5.0);
 
 	// Terrain with gamma correction and attennuation
 	cTex.rgb = pow(saturate(cTex.rgb), Const.TrGamma) * Const.TrExpo;
@@ -807,7 +803,7 @@ float4 GiantCloudPS(CldVS frg) : COLOR
 	float3 vRay = normalize(frg.posW);
 	float  fDPS = dot(vPlN, Const.toSun);    // Planet mean normal sun angle
 
-	float3 cSun = Const.cSun * saturate((fDPS + 0.1) * 5.0);
+	float3 cSun = saturate((fDPS + 0.1) * 5.0);
 
 	cTex.rgb *= LightFX(cSun + float3(1.0, 1.0, 1.0) * Const.Ambient);
 	cTex.rgb = pow(saturate(cTex.rgb), Const.TrGamma) * Const.TrExpo;

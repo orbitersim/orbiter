@@ -610,7 +610,8 @@ SimpleVS BasicVS(NTVERTEX vrt)
 
 float4 SimpleTechPS(SimpleVS frg) : COLOR
 {
-	return tex2D(SimpleS, frg.tex0);
+	float4 c = tex2D(SimpleS, frg.tex0);
+	return float4(c.rgb, c.a * gMix);
 }
 
 float4 PanelTechPS(SimpleVS frg) : COLOR

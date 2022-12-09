@@ -219,8 +219,8 @@ void OpenDlgClbk(void *context)
 	ConfigSlider(IDC_ATM_TW_BRI,    0.01, 3.0, 8);	// Twilight intensity
 	ConfigSlider(IDC_ATM_RPOW,     -8.0, 8.0);
 	ConfigSlider(IDC_ATM_MPOW,     -8.0, 8.0);
-	ConfigSlider(IDC_ATM_HEIGHT,    3.0, 80.0, 1|2|4|8);
-	ConfigSlider(IDC_ATM_M_HEIGHT,  0.5, 10.0, 1|2|4|8);
+	ConfigSlider(IDC_ATM_HEIGHT,    6.0, 200.0, 1|8);
+	ConfigSlider(IDC_ATM_M_HEIGHT,  0.5, 10.0, 1|8);
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_TRB,	   0.1, 6.0, 8);
 	ConfigSlider(IDC_ATM_TRGAMMA,  0.2, 1.5);

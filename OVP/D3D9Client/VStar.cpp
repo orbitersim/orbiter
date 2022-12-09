@@ -92,13 +92,10 @@ bool vStar::Render(LPDIRECT3DDEVICE9 dev)
 	mWorld._21 *= rad_scale; mWorld._22 *= rad_scale; mWorld._23 *= rad_scale;
 	mWorld._31 *= rad_scale; mWorld._32 *= rad_scale; mWorld._33 *= rad_scale;
 
-	if (Config->bGlares)
-	{
-		if (scn->GetCameraAltitude() > 20e3) return true;
-	}
+	float alpha = 1.0f;
+	if (Config->bGlares) alpha = 1.0f - scn->CameraInSpace();
 
-	D3D9Effect::RenderBillboard(&mWorld, scn->GetSunTexture());
-
+	D3D9Effect::RenderBillboard(&mWorld, scn->GetSunTexture(), alpha);
 	//D3D9Effect::RenderBillboard(&mWorld, SURFACE(deftex)->GetTexture());
 	return true;
 }

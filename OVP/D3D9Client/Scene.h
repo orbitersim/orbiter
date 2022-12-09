@@ -328,6 +328,7 @@ public:
 	void			SetCameraAperture(float _ap, float _as);
 	void			SetCameraFrustumLimits(double nearlimit, double farlimit);
 	float			GetDepthResolution(float dist) const;
+	float			CameraInSpace() const;
 
 					// Acquire camera information from the Orbiter and initialize internal camera setup
 	void			UpdateCameraFromOrbiter(DWORD dwPass);

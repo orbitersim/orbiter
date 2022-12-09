@@ -749,13 +749,14 @@ void D3D9Effect::RenderSpot(float alpha, const LPD3DXCOLOR pColor, const LPD3DXM
 // ===========================================================================================
 // Used by Render Star only
 //
-void D3D9Effect::RenderBillboard(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex)
+void D3D9Effect::RenderBillboard(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex, float alpha)
 {
 	UINT numPasses = 0;
 
 	HR(pDev->SetVertexDeclaration(pNTVertexDecl));
 	HR(FX->SetTechnique(eSimple));
 	HR(FX->SetMatrix(eW, pW));
+	HR(FX->SetFloat(eMix, alpha));
 	HR(FX->SetTexture(eTex0, pTex));
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));

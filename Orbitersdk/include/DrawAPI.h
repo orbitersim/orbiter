@@ -434,7 +434,7 @@ namespace oapi {
 			w = float(v.w);
 		}
 
-		FVECTOR4(const VECTOR3& v, float _w = 0.0f)
+		FVECTOR4(const VECTOR3& v, float _w)
 		{
 			x = float(v.x);
 			y = float(v.y);
@@ -442,7 +442,7 @@ namespace oapi {
 			w = _w;
 		}
 
-		FVECTOR4(const FVECTOR3& v, float _w = 0.0f)
+		FVECTOR4(const FVECTOR3& v, float _w)
 		{
 			rgb = v;
 			w = _w;
