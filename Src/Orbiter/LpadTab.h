@@ -13,10 +13,9 @@
 #define PG_OPT  1
 #define PG_MOD  2
 #define PG_VID  3
-#define PG_JOY  4
-#define PG_EXT  5
-#define PG_ABT  6
-#define PG_WAIT 7
+#define PG_EXT  4
+#define PG_ABT  5
+#define PG_WAIT 6
 
 namespace orbiter {
 

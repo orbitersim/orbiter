@@ -53,7 +53,7 @@ BOOL DlgOptions::OnInitDialog(HWND hDlg, WPARAM wParam, LPARAM lParam)
 	SetWindowHandles(hDlg, GetDlgItem(hDlg, IDC_OPT_SPLIT), GetDlgItem(hDlg, IDC_OPT_PAGELIST), GetDlgItem(hDlg, IDC_OPT_PAGECONTAINER));
 	SetSize(hDlg);
 	CreatePages();
-	ExpandAll(hDlg);
+	ExpandAll();
 
 	return TRUE;
 }
@@ -117,20 +117,4 @@ void DlgOptions::SetSize(HWND hDlg)
 	UpdateWindow(hDlg);
 
 	SetPageSize(hDlg);
-}
-
-// ----------------------------------------------------------------------
-
-void DlgOptions::ExpandAll(HWND hDlg)
-{
-	bool expand = true;
-	HWND hTree = GetDlgItem(hDlg, IDC_OPT_PAGELIST);
-	UINT code = (expand ? TVE_EXPAND : TVE_COLLAPSE);
-	TVITEM catitem;
-	catitem.mask = NULL;
-	catitem.hItem = TreeView_GetRoot(hTree);
-	while (TreeView_GetItem(hTree, &catitem)) {
-		TreeView_Expand(hTree, catitem.hItem, code);
-		catitem.hItem = TreeView_GetNextSibling(hTree, catitem.hItem);
-	}
 }

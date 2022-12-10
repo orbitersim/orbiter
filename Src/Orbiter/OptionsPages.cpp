@@ -71,14 +71,31 @@ void OptionsPageContainer::CreatePages()
 	}
 	AddPage(new OptionsPage_Instrument(this));
 	AddPage(new OptionsPage_Vessel(this));
+	parent = AddPage(new OptionsPage_UI(this));
+	AddPage(new OptionsPage_Joystick(this), parent);
 	AddPage(new OptionsPage_CelSphere(this));
 	parent = AddPage(new OptionsPage_VisHelper(this));
 	AddPage(new OptionsPage_Planetarium(this), parent);
 	AddPage(new OptionsPage_Labels(this), parent);
 	AddPage(new OptionsPage_Forces(this), parent);
 	AddPage(new OptionsPage_Axes(this), parent);
-	AddPage(new OptionsPage_UI(this));
 	TreeView_SelectItem(m_hPageList, TreeView_GetRoot(m_hPageList));
+}
+
+// ----------------------------------------------------------------------
+
+void OptionsPageContainer::ExpandAll()
+{
+	bool expand = true;
+	HWND hTree = GetDlgItem(m_hDlg, IDC_OPT_PAGELIST);
+	UINT code = (expand ? TVE_EXPAND : TVE_COLLAPSE);
+	TVITEM catitem;
+	catitem.mask = NULL;
+	catitem.hItem = TreeView_GetRoot(hTree);
+	while (TreeView_GetItem(hTree, &catitem)) {
+		TreeView_Expand(hTree, catitem.hItem, code);
+		catitem.hItem = TreeView_GetNextSibling(hTree, catitem.hItem);
+	}
 }
 
 // ----------------------------------------------------------------------
@@ -922,6 +939,160 @@ BOOL OptionsPage_UI::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND 
 		break;
 	}
 	return TRUE;
+}
+
+// ======================================================================
+
+OptionsPage_Joystick::OptionsPage_Joystick(OptionsPageContainer* container)
+	: OptionsPage(container)
+{
+}
+
+// ----------------------------------------------------------------------
+
+int OptionsPage_Joystick::ResourceId() const
+{
+	return IDD_OPTIONS_JOYSTICK;
+}
+
+// ----------------------------------------------------------------------
+
+const char* OptionsPage_Joystick::Name() const
+{
+	const char* name = "Joystick";
+	return name;
+}
+
+// ----------------------------------------------------------------------
+
+const HELPCONTEXT* OptionsPage_Joystick::HelpContext() const
+{
+	static HELPCONTEXT hcontext = g_pOrbiter->DefaultHelpPage("/tab_joystick.htm");
+	return &hcontext;
+}
+
+// ----------------------------------------------------------------------
+
+void OptionsPage_Joystick::UpdateControls(HWND hPage)
+{
+	char cbuf[256];
+
+	SendDlgItemMessage(hPage, IDC_OPT_JOY_DEVICE, CB_SETCURSEL, (WPARAM)Cfg()->CfgJoystickPrm.Joy_idx, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_JOY_THROTTLE, CB_SETCURSEL, (WPARAM)Cfg()->CfgJoystickPrm.ThrottleAxis, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_JOY_INIT, BM_SETCHECK, Cfg()->CfgJoystickPrm.bThrottleIgnore ? BST_CHECKED : BST_UNCHECKED, 0);
+
+	int sat = Cfg()->CfgJoystickPrm.ThrottleSaturation / 10;
+	oapiSetGaugePos(GetDlgItem(hPage, IDC_OPT_JOY_SAT), sat);
+	sprintf(cbuf, "%d", sat);
+	SetWindowText(GetDlgItem(hPage, IDC_OPT_JOY_STATIC1), cbuf);
+
+	int dz = Cfg()->CfgJoystickPrm.Deadzone / 10;
+	oapiSetGaugePos(GetDlgItem(hPage, IDC_OPT_JOY_DEAD), dz);
+	sprintf(cbuf, "%d", dz);
+	SetWindowText(GetDlgItem(hPage, IDC_OPT_JOY_STATIC2), cbuf);
+
+	int residJoystick[] = {
+		IDC_OPT_JOY_THROTTLE, IDC_OPT_JOY_INIT, IDC_OPT_JOY_SAT, IDC_OPT_JOY_DEAD,
+		IDC_OPT_JOY_STATIC1, IDC_OPT_JOY_STATIC2, IDC_OPT_JOY_STATIC3, IDC_OPT_JOY_STATIC4
+	};
+	bool enable = Cfg()->CfgJoystickPrm.Joy_idx > 0;
+	for (int i = 0; i < ARRAYSIZE(residJoystick); i++) {
+		EnableWindow(GetDlgItem(hPage, residJoystick[i]), enable);
+	}
+}
+
+// ----------------------------------------------------------------------
+
+BOOL OptionsPage_Joystick::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
+{
+	OptionsPage::OnInitDialog(hPage, wParam, lParam);
+
+	DWORD ndev;
+	DIDEVICEINSTANCE* joylist;
+	g_pOrbiter->GetDInput()->GetJoysticks(&joylist, &ndev);
+
+	SendDlgItemMessage(hPage, IDC_OPT_JOY_DEVICE, CB_RESETCONTENT, 0, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_JOY_DEVICE, CB_ADDSTRING, 0, (LPARAM)"<Disabled>");
+	for (int i = 0; i < ndev; i++)
+		SendDlgItemMessage(hPage, IDC_OPT_JOY_DEVICE, CB_ADDSTRING, 0, (LPARAM)(joylist[i].tszProductName));
+
+	const char* thmode[4] = { "<Keyboard only>", "Z-axis", "Slider 0", "Slider 1" };
+	SendDlgItemMessage(hPage, IDC_OPT_JOY_THROTTLE, CB_RESETCONTENT, 0, 0);
+	for (int i = 0; i < ARRAYSIZE(thmode); i++)
+		SendDlgItemMessage(hPage, IDC_OPT_JOY_THROTTLE, CB_ADDSTRING, 0, (LPARAM)thmode[i]);
+
+	GAUGEPARAM gp = { 0, 1000, GAUGEPARAM::LEFT, GAUGEPARAM::BLACK };
+	oapiSetGaugeParams(GetDlgItem(hPage, IDC_OPT_JOY_SAT), &gp);
+	oapiSetGaugeParams(GetDlgItem(hPage, IDC_OPT_JOY_DEAD), &gp);
+
+	return TRUE;
+}
+
+// ----------------------------------------------------------------------
+
+BOOL OptionsPage_Joystick::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
+{
+	switch (ctrlId) {
+	case IDC_OPT_JOY_DEVICE:
+		if (notification == CBN_SELCHANGE) {
+			DWORD idx = (DWORD)SendDlgItemMessage(hPage, IDC_OPT_JOY_DEVICE, CB_GETCURSEL, 0, 0);
+			Cfg()->CfgJoystickPrm.Joy_idx = idx;
+			g_pOrbiter->OnOptionChanged(OPTCAT_JOYSTICK, OPTITEM_JOYSTICK_DEVICE);
+			UpdateControls(hPage);
+			return FALSE;
+		}
+		break;
+	case IDC_OPT_JOY_THROTTLE:
+		if (notification == CBN_SELCHANGE) {
+			DWORD axis = (DWORD)SendDlgItemMessage(hPage, IDC_OPT_JOY_THROTTLE, CB_GETCURSEL, 0, 0);
+			Cfg()->CfgJoystickPrm.ThrottleAxis = axis;
+			g_pOrbiter->OnOptionChanged(OPTCAT_JOYSTICK, OPTITEM_JOYSTICK_PARAM);
+			return FALSE;
+		}
+		break;
+	case IDC_OPT_JOY_INIT:
+		if (notification == BN_CLICKED) {
+			bool check = (SendDlgItemMessage(hPage, IDC_OPT_JOY_INIT, BM_GETCHECK, 0, 0) == BST_CHECKED);
+			Cfg()->CfgJoystickPrm.bThrottleIgnore = check;
+			break;
+		}
+		break;
+	}
+	return TRUE;
+}
+
+// ----------------------------------------------------------------------
+
+BOOL OptionsPage_Joystick::OnHScroll(HWND hPage, WPARAM wParam, LPARAM lParam)
+{
+	int val;
+	switch (GetDlgCtrlID((HWND)lParam)) {
+	case IDC_OPT_JOY_SAT:
+		switch (LOWORD(wParam)) {
+		case SB_THUMBTRACK:
+		case SB_LINELEFT:
+		case SB_LINERIGHT:
+			val = HIWORD(wParam);
+			Cfg()->CfgJoystickPrm.ThrottleSaturation = val * 10;
+			UpdateControls(hPage);
+			g_pOrbiter->OnOptionChanged(OPTCAT_JOYSTICK, OPTITEM_JOYSTICK_PARAM);
+			return 0;
+		}
+		break;
+	case IDC_OPT_JOY_DEAD:
+		switch (LOWORD(wParam)) {
+		case SB_THUMBTRACK:
+		case SB_LINELEFT:
+		case SB_LINERIGHT:
+			val = HIWORD(wParam);
+			Cfg()->CfgJoystickPrm.Deadzone = val * 10;
+			UpdateControls(hPage);
+			g_pOrbiter->OnOptionChanged(OPTCAT_JOYSTICK, OPTITEM_JOYSTICK_PARAM);
+			return 0;
+		}
+		break;
+	}
+	return FALSE;
 }
 
 // ======================================================================

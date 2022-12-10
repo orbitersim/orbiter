@@ -61,8 +61,6 @@ public:
 
 protected:
 	void SetSize(HWND hDlg);
-
-	void ExpandAll(HWND hDlg);
 };
 
 #endif // !__DLGOPTIONS_H

@@ -76,6 +76,8 @@ protected:
 
 	void CreatePages();
 
+	void ExpandAll();
+
 	void SetPageSize(HWND hDlg);
 
 	void Clear();
@@ -315,6 +317,23 @@ public:
 protected:
 	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
 	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
+};
+
+/************************************************************************
+* \brief Page for joystick options
+*/
+class OptionsPage_Joystick : public OptionsPage {
+public:
+	OptionsPage_Joystick(OptionsPageContainer* container);
+	int ResourceId() const;
+	const char* Name() const;
+	const HELPCONTEXT* HelpContext() const;
+	void UpdateControls(HWND hPage);
+
+protected:
+	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
+	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
+	BOOL OnHScroll(HWND hPage, WPARAM wParam, LPARAM lParam);
 };
 
 /************************************************************************

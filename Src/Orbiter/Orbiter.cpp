@@ -725,25 +725,20 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 		m_pConsole = new orbiter::ConsoleNG(this);
 	}
 
+	pDI->SetRenderWindow(hRenderWnd);
+
 	if (hRenderWnd) {
 		bActive = true;
 
 		// Create keyboard device
-		if (!pDI->CreateKbdDevice (hRenderWnd)) {
+		if (!pDI->CreateKbdDevice ()) {
 			CloseSession ();
 			return 0;
 		}
 
 		// Create joystick device
-		if (pDI->CreateJoyDevice (hRenderWnd)) {
-			// initialise startup throttle setting
-			plZ4 = 1;
-			if (pDI->joyprop.bThrottle && pCfg->CfgJoystickPrm.bThrottleIgnore) {
-				DIJOYSTATE2 js;
-				if (pDI->PollJoystick (&js))
-					plZ4 = *(long*)(((BYTE*)&js)+pDI->joyprop.ThrottleOfs) >> 3;
-			}
-		}
+		if (pDI->CreateJoyDevice ())
+			plZ4 = 1; // invalidate
 	}
 
 	// read simulation environment state
@@ -887,6 +882,13 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 	if (m_pConsole)
 		m_pConsole->EchoIntro();
 
+	// suppress throttle update on launch
+	if (pDI->joyprop.bThrottle && pCfg->CfgJoystickPrm.bThrottleIgnore) {
+		DIJOYSTATE2 js;
+		if (pDI->PollJoystick(&js))
+			plZ4 = *(long*)(((BYTE*)&js) + pDI->joyprop.ThrottleOfs) >> 3;
+	}
+
 	return hRenderWnd;
 }
 
@@ -958,6 +960,8 @@ void Orbiter::CloseSession ()
 
 		hRenderWnd = NULL;
 		pDI->DestroyDevices();
+		pDI->SetRenderWindow(NULL);
+
 		m_pLaunchpad->ShowWaitPage (false);
 	} else {
 		if (pDlgMgr)  { delete pDlgMgr; pDlgMgr = 0; }
@@ -1188,6 +1192,8 @@ void Orbiter::OnOptionChanged(DWORD cat, DWORD item)
 {
 	if (gclient)
 		gclient->clbkOptionChanged(cat, item);
+	if (pDI)
+		pDI->OptionChanged(cat, item);
 	if (g_psys)
 		g_psys->OptionChanged(cat, item);
 	if (g_pane)
