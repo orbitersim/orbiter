@@ -76,6 +76,8 @@ protected:
 
 	void CreatePages();
 
+	void ExpandAll();
+
 	void SetPageSize(HWND hDlg);
 
 	void Clear();

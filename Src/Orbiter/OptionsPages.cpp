@@ -71,15 +71,31 @@ void OptionsPageContainer::CreatePages()
 	}
 	AddPage(new OptionsPage_Instrument(this));
 	AddPage(new OptionsPage_Vessel(this));
+	parent = AddPage(new OptionsPage_UI(this));
+	AddPage(new OptionsPage_Joystick(this), parent);
 	AddPage(new OptionsPage_CelSphere(this));
 	parent = AddPage(new OptionsPage_VisHelper(this));
 	AddPage(new OptionsPage_Planetarium(this), parent);
 	AddPage(new OptionsPage_Labels(this), parent);
 	AddPage(new OptionsPage_Forces(this), parent);
 	AddPage(new OptionsPage_Axes(this), parent);
-	parent = AddPage(new OptionsPage_UI(this));
-	AddPage(new OptionsPage_Joystick(this), parent);
 	TreeView_SelectItem(m_hPageList, TreeView_GetRoot(m_hPageList));
+}
+
+// ----------------------------------------------------------------------
+
+void OptionsPageContainer::ExpandAll()
+{
+	bool expand = true;
+	HWND hTree = GetDlgItem(m_hDlg, IDC_OPT_PAGELIST);
+	UINT code = (expand ? TVE_EXPAND : TVE_COLLAPSE);
+	TVITEM catitem;
+	catitem.mask = NULL;
+	catitem.hItem = TreeView_GetRoot(hTree);
+	while (TreeView_GetItem(hTree, &catitem)) {
+		TreeView_Expand(hTree, catitem.hItem, code);
+		catitem.hItem = TreeView_GetNextSibling(hTree, catitem.hItem);
+	}
 }
 
 // ----------------------------------------------------------------------

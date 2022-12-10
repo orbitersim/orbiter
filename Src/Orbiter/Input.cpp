@@ -47,6 +47,8 @@ void DInput::SetRenderWindow(HWND hWnd)
 
 bool DInput::CreateKbdDevice()
 {
+	if (!m_hWnd) return false; // no render window defined
+
 	if (FAILED (diframe->CreateKbdDevice (m_hWnd))) {
 		LOGOUT("ERROR: Could not create keyboard device");
 		return false; // we need the keyboard, so give up
@@ -57,6 +59,8 @@ bool DInput::CreateKbdDevice()
 
 bool DInput::CreateJoyDevice ()
 {
+	if (!m_hWnd) return false; // no render window defined
+
 	Config *pcfg = orbiter->Cfg();
 	if (!pcfg->CfgJoystickPrm.Joy_idx) return false; // no joystick requested
 
@@ -64,11 +68,24 @@ bool DInput::CreateJoyDevice ()
 		LOGOUT_ERR("Could not create joystick device");
 		return false;
 	}
+	
+	HRESULT hr = GetJoyDevice()->Acquire();
+	if (hr == DIERR_OTHERAPPHASPRIO) {
+		Sleep(1000);
+		hr = GetJoyDevice()->Acquire();
+	}
+	switch (hr) {
+	case DIERR_OTHERAPPHASPRIO:
+		hr = DI_OK;
+		break;
+	}
+
 	if (SetJoystickProperties () != DI_OK) {
 		LOGOUT_ERR("Could not set joystick properties");
 		return false;
 	}
-	GetJoyDevice()->Acquire();
+
+
 	return true;
 }
 
@@ -102,14 +119,20 @@ bool DInput::PollJoystick (DIJOYSTATE2 *js)
 	HRESULT hr = dev->Poll();
 	//if (hr == DI_OK || hr == DI_NOEFFECT)     // ignore error flag from poll. appears to occasionally return DIERR_UNPLUGGED
 		hr = dev->GetDeviceState (sizeof(DIJOYSTATE2), js);
-	if (hr == DIERR_INPUTLOST || hr == DIERR_NOTACQUIRED)
-		if (SUCCEEDED (dev->Acquire())) hr = dev->GetDeviceState (sizeof(DIJOYSTATE2), js);
+		if (hr == DIERR_INPUTLOST || hr == DIERR_NOTACQUIRED) {
+			if (SUCCEEDED(dev->Acquire())) {
+				dev->Poll();
+				hr = dev->GetDeviceState(sizeof(DIJOYSTATE2), js);
+			}
+		}
 	return (hr == S_OK);
 }
 
 HRESULT DInput::SetJoystickProperties ()
 {
 	LPDIRECTINPUTDEVICE8 dev = GetJoyDevice();
+	if (!dev) return DI_OK;
+
 	HRESULT hr;
 	DIPROPRANGE diprg;
 	DIPROPDWORD diprw;

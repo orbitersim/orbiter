@@ -34,7 +34,6 @@ set(common_src
 	LpadTab.cpp
 	TabAbout.cpp
 	TabExtra.cpp
-	TabJoystick.cpp
 	TabModule.cpp
 	TabOptions.cpp
 	TabScenario.cpp

@@ -367,9 +367,8 @@
 #define IDC_MNU_OPT                     1260
 #define IDC_MNU_MOD                     1261
 #define IDC_MNU_VID                     1262
-#define IDC_MNU_JOY                     1263
-#define IDC_MNU_EXT                     1264
-#define IDC_MNU_ABT                     1265
+#define IDC_MNU_EXT                     1263
+#define IDC_MNU_ABT                     1264
 #define IDC_SHADOW                      1267
 #define IDC_BLACKBOX                    1268
 #define IDC_MNU_PAGECONTAINER           1269
