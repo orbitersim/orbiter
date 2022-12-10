@@ -977,23 +977,23 @@ void OptionsPage_Joystick::UpdateControls(HWND hPage)
 {
 	char cbuf[256];
 
-	SendDlgItemMessage(hPage, IDC_JOY_DEVICE, CB_SETCURSEL, (WPARAM)Cfg()->CfgJoystickPrm.Joy_idx, 0);
-	SendDlgItemMessage(hPage, IDC_JOY_THROTTLE, CB_SETCURSEL, (WPARAM)Cfg()->CfgJoystickPrm.ThrottleAxis, 0);
-	SendDlgItemMessage(hPage, IDC_JOY_INIT, BM_SETCHECK, Cfg()->CfgJoystickPrm.bThrottleIgnore ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_JOY_DEVICE, CB_SETCURSEL, (WPARAM)Cfg()->CfgJoystickPrm.Joy_idx, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_JOY_THROTTLE, CB_SETCURSEL, (WPARAM)Cfg()->CfgJoystickPrm.ThrottleAxis, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_JOY_INIT, BM_SETCHECK, Cfg()->CfgJoystickPrm.bThrottleIgnore ? BST_CHECKED : BST_UNCHECKED, 0);
 
 	int sat = Cfg()->CfgJoystickPrm.ThrottleSaturation / 10;
-	oapiSetGaugePos(GetDlgItem(hPage, IDC_JOY_SAT), sat);
+	oapiSetGaugePos(GetDlgItem(hPage, IDC_OPT_JOY_SAT), sat);
 	sprintf(cbuf, "%d", sat);
-	SetWindowText(GetDlgItem(hPage, IDC_JOY_STATIC1), cbuf);
+	SetWindowText(GetDlgItem(hPage, IDC_OPT_JOY_STATIC1), cbuf);
 
 	int dz = Cfg()->CfgJoystickPrm.Deadzone / 10;
-	oapiSetGaugePos(GetDlgItem(hPage, IDC_JOY_DEAD), dz);
+	oapiSetGaugePos(GetDlgItem(hPage, IDC_OPT_JOY_DEAD), dz);
 	sprintf(cbuf, "%d", dz);
-	SetWindowText(GetDlgItem(hPage, IDC_JOY_STATIC2), cbuf);
+	SetWindowText(GetDlgItem(hPage, IDC_OPT_JOY_STATIC2), cbuf);
 
 	int residJoystick[] = {
-		IDC_JOY_THROTTLE, IDC_JOY_INIT, IDC_JOY_SAT, IDC_JOY_DEAD,
-		IDC_JOY_STATIC1, IDC_JOY_STATIC2, IDC_JOY_STATIC3, IDC_JOY_STATIC4
+		IDC_OPT_JOY_THROTTLE, IDC_OPT_JOY_INIT, IDC_OPT_JOY_SAT, IDC_OPT_JOY_DEAD,
+		IDC_OPT_JOY_STATIC1, IDC_OPT_JOY_STATIC2, IDC_OPT_JOY_STATIC3, IDC_OPT_JOY_STATIC4
 	};
 	bool enable = Cfg()->CfgJoystickPrm.Joy_idx > 0;
 	for (int i = 0; i < ARRAYSIZE(residJoystick); i++) {
@@ -1011,19 +1011,19 @@ BOOL OptionsPage_Joystick::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam
 	DIDEVICEINSTANCE* joylist;
 	g_pOrbiter->GetDInput()->GetJoysticks(&joylist, &ndev);
 
-	SendDlgItemMessage(hPage, IDC_JOY_DEVICE, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessage(hPage, IDC_JOY_DEVICE, CB_ADDSTRING, 0, (LPARAM)"<Disabled>");
+	SendDlgItemMessage(hPage, IDC_OPT_JOY_DEVICE, CB_RESETCONTENT, 0, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_JOY_DEVICE, CB_ADDSTRING, 0, (LPARAM)"<Disabled>");
 	for (int i = 0; i < ndev; i++)
-		SendDlgItemMessage(hPage, IDC_JOY_DEVICE, CB_ADDSTRING, 0, (LPARAM)(joylist[i].tszProductName));
+		SendDlgItemMessage(hPage, IDC_OPT_JOY_DEVICE, CB_ADDSTRING, 0, (LPARAM)(joylist[i].tszProductName));
 
 	const char* thmode[4] = { "<Keyboard only>", "Z-axis", "Slider 0", "Slider 1" };
-	SendDlgItemMessage(hPage, IDC_JOY_THROTTLE, CB_RESETCONTENT, 0, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_JOY_THROTTLE, CB_RESETCONTENT, 0, 0);
 	for (int i = 0; i < ARRAYSIZE(thmode); i++)
-		SendDlgItemMessage(hPage, IDC_JOY_THROTTLE, CB_ADDSTRING, 0, (LPARAM)thmode[i]);
+		SendDlgItemMessage(hPage, IDC_OPT_JOY_THROTTLE, CB_ADDSTRING, 0, (LPARAM)thmode[i]);
 
 	GAUGEPARAM gp = { 0, 1000, GAUGEPARAM::LEFT, GAUGEPARAM::BLACK };
-	oapiSetGaugeParams(GetDlgItem(hPage, IDC_JOY_SAT), &gp);
-	oapiSetGaugeParams(GetDlgItem(hPage, IDC_JOY_DEAD), &gp);
+	oapiSetGaugeParams(GetDlgItem(hPage, IDC_OPT_JOY_SAT), &gp);
+	oapiSetGaugeParams(GetDlgItem(hPage, IDC_OPT_JOY_DEAD), &gp);
 
 	return TRUE;
 }
@@ -1033,26 +1033,26 @@ BOOL OptionsPage_Joystick::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam
 BOOL OptionsPage_Joystick::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
 {
 	switch (ctrlId) {
-	case IDC_JOY_DEVICE:
+	case IDC_OPT_JOY_DEVICE:
 		if (notification == CBN_SELCHANGE) {
-			DWORD idx = (DWORD)SendDlgItemMessage(hPage, IDC_JOY_DEVICE, CB_GETCURSEL, 0, 0);
+			DWORD idx = (DWORD)SendDlgItemMessage(hPage, IDC_OPT_JOY_DEVICE, CB_GETCURSEL, 0, 0);
 			Cfg()->CfgJoystickPrm.Joy_idx = idx;
 			g_pOrbiter->OnOptionChanged(OPTCAT_JOYSTICK, OPTITEM_JOYSTICK_DEVICE);
 			UpdateControls(hPage);
 			return FALSE;
 		}
 		break;
-	case IDC_JOY_THROTTLE:
+	case IDC_OPT_JOY_THROTTLE:
 		if (notification == CBN_SELCHANGE) {
-			DWORD axis = (DWORD)SendDlgItemMessage(hPage, IDC_JOY_THROTTLE, CB_GETCURSEL, 0, 0);
+			DWORD axis = (DWORD)SendDlgItemMessage(hPage, IDC_OPT_JOY_THROTTLE, CB_GETCURSEL, 0, 0);
 			Cfg()->CfgJoystickPrm.ThrottleAxis = axis;
 			g_pOrbiter->OnOptionChanged(OPTCAT_JOYSTICK, OPTITEM_JOYSTICK_PARAM);
 			return FALSE;
 		}
 		break;
-	case IDC_JOY_INIT:
+	case IDC_OPT_JOY_INIT:
 		if (notification == BN_CLICKED) {
-			bool check = (SendDlgItemMessage(hPage, IDC_JOY_INIT, BM_GETCHECK, 0, 0) == BST_CHECKED);
+			bool check = (SendDlgItemMessage(hPage, IDC_OPT_JOY_INIT, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			Cfg()->CfgJoystickPrm.bThrottleIgnore = check;
 			break;
 		}
@@ -1067,7 +1067,7 @@ BOOL OptionsPage_Joystick::OnHScroll(HWND hPage, WPARAM wParam, LPARAM lParam)
 {
 	int val;
 	switch (GetDlgCtrlID((HWND)lParam)) {
-	case IDC_JOY_SAT:
+	case IDC_OPT_JOY_SAT:
 		switch (LOWORD(wParam)) {
 		case SB_THUMBTRACK:
 		case SB_LINELEFT:
@@ -1079,7 +1079,7 @@ BOOL OptionsPage_Joystick::OnHScroll(HWND hPage, WPARAM wParam, LPARAM lParam)
 			return 0;
 		}
 		break;
-	case IDC_JOY_DEAD:
+	case IDC_OPT_JOY_DEAD:
 		switch (LOWORD(wParam)) {
 		case SB_THUMBTRACK:
 		case SB_LINELEFT:

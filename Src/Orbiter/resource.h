@@ -135,16 +135,6 @@
 #define IDLAUNCH                        1000
 #define IDEXIT                          1001
 #define IDC_MAINTAB                     1002
-#define IDC_JOY_STATIC1                 1034
-#define IDC_JOY_DEVICE                  1035
-#define IDC_JOY_STATIC2                 1036
-#define IDC_JOY_STATIC3                 1037
-#define IDC_JOY_STATIC4                 1038
-#define IDC_JOY_STATIC5                 1039
-#define IDC_JOY_THROTTLE                1040
-#define IDC_JOY_DEAD                    1041
-#define IDC_JOY_SAT                     1042
-#define IDC_JOY_INIT                    1043
 #define IDC_MSG                         1050
 
 #define IDC_MOD_ACTGRP                  1500
@@ -276,6 +266,15 @@
 #define IDC_OPT_PHYS_RPRESSURE          1094
 #define IDC_OPT_PHYS_DISTMASS           1095
 #define IDC_OPT_PHYS_WIND               1096
+#define IDC_OPT_JOY_DEVICE              1097
+#define IDC_OPT_JOY_THROTTLE            1098
+#define IDC_OPT_JOY_INIT                1099
+#define IDC_OPT_JOY_SAT                 1100
+#define IDC_OPT_JOY_DEAD                1101
+#define IDC_OPT_JOY_STATIC1             1102
+#define IDC_OPT_JOY_STATIC2             1103
+#define IDC_OPT_JOY_STATIC3             1104
+#define IDC_OPT_JOY_STATIC4             1105
 
 // Unsorted
 #define IDC_SCN_LIST                    1090
