@@ -104,6 +104,7 @@ private:
 	static ShaderClass* pRing;
 	static ShaderClass* pDome;
 	static LPDIRECT3DDEVICE9 pDev;
+	static LPDIRECT3DTEXTURE9 pNoise;
 	static int xreslvl[6];
 	static int yreslvl[6];
 	static LPDIRECT3DVERTEXBUFFER9 pSkyVB[6];

@@ -393,8 +393,6 @@ FVECTOR4 vPlanet::SunLightColor(FVECTOR3 relpos)
 	double om = 1.0 - ca * ca;
 	double qr = sqrt(om) * r;
 
-	D3D9DebugLog("[%s] rad=%f, atmo=%f", name, cp.PlanetRad, cp.AtmoRad);
-
 	if (r > cp.AtmoRad && ca > 0) return FVECTOR4(1, 1, 1, 1); // Ray doesn't intersect atmosphere
 
 	OBJHANDLE hSun = oapiGetObjectByIndex(0);
@@ -406,8 +404,6 @@ FVECTOR4 vPlanet::SunLightColor(FVECTOR3 relpos)
 	double hd = sqrt(r * r - pr * pr); // Distance to closest approach
 	double sr = oapiGetSize(hSun) * abs(hd) / sd;
 	double svb = ca > 0 ? 1.0 : ilerp(pr - sr, pr + sr, qr);
-
-	D3D9DebugLog("[%s] svb=%f, qr=%f, ca=%f", name, svb, qr, ca);
 
 	if (!HasAtmosphere()) FVECTOR4(svb, svb, svb, svb);
 

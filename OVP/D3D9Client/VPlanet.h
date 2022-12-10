@@ -91,6 +91,7 @@ struct ShaderParams
 	float4   vOverlayCtrl[4];
 	float	 fAlpha;
 	float	 fBeta;
+	float	 fTgtScale;
 };
 
 // Bools for NewPlanet.hlsl

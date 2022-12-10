@@ -53,6 +53,7 @@ Tile::Tile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 	double x = PI * (0.5 - double(ilat+1) * f);
 	width = float(PI * cos(x) * f);
 	height = float(PI * f);
+	tgtscale = 1.0f;
 	Extents(&bnd.minlat, &bnd.maxlat, &bnd.minlng, &bnd.maxlng);
 	D3D9Stats.TilesAllocated++;
 	bMipmaps = false;

@@ -304,9 +304,9 @@ FONT 8, "MS Sans Serif", 0, 0, 0
     LTEXT           "Texture Bias", IDC_STATIC, 201, 153, 40, 8, SS_LEFT, WS_EX_LEFT
     LTEXT           "Mesh resolution", IDC_STATIC, 201, 185, 50, 8, SS_LEFT, WS_EX_LEFT
     AUTOCHECKBOX    "Enable debug break", IDC_BREAK, 200, 99, 80, 8, 0, WS_EX_LEFT
-    AUTOCHECKBOX    "Enable sun glare", IDC_ESUNGLARE, 370, 255, 69, 8, 0, WS_EX_LEFT
-    AUTOCHECKBOX    "Enable local lights glare", IDC_ELIGHTSGLARE, 370, 267, 90, 8, 0, WS_EX_LEFT
-    AUTOCHECKBOX    "Enable dynamic ambient light", IDC_EIRRAD, 370, 280, 107, 8, 0, WS_EX_LEFT
+    AUTOCHECKBOX    "Enable sun glare", IDC_ESUNGLARE, 370, 263, 69, 8, 0, WS_EX_LEFT
+    AUTOCHECKBOX    "Enable local lights glare", IDC_ELIGHTSGLARE, 370, 276, 90, 8, NOT WS_VISIBLE | WS_DISABLED, WS_EX_LEFT
+    AUTOCHECKBOX    "Enable dynamic ambient light", IDC_EIRRAD, 370, 250, 107, 8, 0, WS_EX_LEFT
 }
 
 

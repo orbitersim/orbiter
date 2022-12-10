@@ -971,6 +971,7 @@ void SurfTile::Render ()
 	sp->vTexOff = GetTexRangeDX(&texrange);
 	sp->vMicroOff = GetTexRangeDX(&microrange);
 	sp->mWorld = mWorld;
+	sp->fTgtScale = tgtscale;
 
 	if (has_lights) sp->fBeta = float(mgr->Cprm().lightfac);
 	else sp->fBeta = 0.0f;
@@ -1407,6 +1408,7 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 		pShader->SetTexture("tLndMie", vp->GetScatterTable(MIE_LAND), IPF_LINEAR | IPF_CLAMP);
 		pShader->SetTexture("tLndAtn", vp->GetScatterTable(ATN_LAND), IPF_LINEAR | IPF_CLAMP);
 		pShader->SetTexture("tSun", vp->GetScatterTable(SUN_COLOR), IPF_LINEAR | IPF_CLAMP);
+		pShader->SetTexture("tNoise", GetClient()->GetNoiseTex(), IPF_LINEAR | IPF_WRAP);
 
 		if (pShader->bWater) {
 			pShader->SetTexture("tAmbient", vp->GetScatterTable(SKY_AMBIENT), IPF_LINEAR | IPF_CLAMP);

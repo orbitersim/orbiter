@@ -257,6 +257,7 @@ HazeManager2::~HazeManager2()
 void HazeManager2::GlobalInit(D3D9Client *gclient)
 {
 	pDev = gclient->GetDevice();
+	pNoise = gclient->GetNoiseTex();
 	for (int i=0;i<6;i++) pSkyVB[i]=NULL;
 	CreateRingBuffers();
 	CreateSkydomeBuffers(0);
@@ -329,6 +330,7 @@ void HazeManager2::RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr)
 
 	pDome->SetTexture("tSkyRayColor", vp->GetScatterTable(RAY_COLOR), IPF_LINEAR | IPF_CLAMP);
 	pDome->SetTexture("tSkyMieColor", vp->GetScatterTable(MIE_COLOR), IPF_LINEAR | IPF_CLAMP);
+	pDome->SetTexture("tNoise", pNoise, IPF_POINT | IPF_WRAP);
 	pDome->SetPSConstants("Const", vp->GetScatterConst(), sizeof(ConstParams));
 	pDome->SetVSConstants("Const", vp->GetScatterConst(), sizeof(ConstParams));
 	pDome->UpdateTextures();
@@ -512,6 +514,7 @@ void HazeManager2::CreateSkydomeBuffers(int index)
 ShaderClass* HazeManager2::pDome;
 ShaderClass* HazeManager2::pRing;
 LPDIRECT3DDEVICE9 HazeManager2::pDev;
+LPDIRECT3DTEXTURE9 HazeManager2::pNoise;
 LPDIRECT3DVERTEXBUFFER9 HazeManager2::pSkyVB[6];
 LPDIRECT3DVERTEXBUFFER9 HazeManager2::pRingVB = NULL;
 int HazeManager2::xreslvl[6] = {9,6,5,4,3,2};

@@ -20,6 +20,8 @@ struct _Light
 #define Theta   2
 #define Phi     3
 
+#define ATMNOISE 0.25
+
 // ----------------------------------------------------------------------------
 // Vertex input layouts from Vertex buffers to vertex shader
 // ----------------------------------------------------------------------------
@@ -98,6 +100,7 @@ struct PerObjectParams
 	float4   vOverlayCtrl[4];
 	float	 fAlpha;
 	float	 fBeta;
+	float	 fTgtScale;
 };
 
 uniform extern PerObjectParams Prm;
@@ -123,11 +126,7 @@ sampler	tOverlay;
 sampler	tMskOverlay;
 sampler	tElvOverlay;
 
-static const float4 vW = float4(0.34786, 0.65215, 0.65215, 0.34786);
-static const float4 vP = float4(0.06944, 0.33001, 0.66999, 0.93057);
 
-static const float3 cSky = { 0.7f, 0.9f, 1.2f };
-static const float3 cHazeColor = { 1.0f, 1.0f, 1.05f };
 
 
 // ---------------------------------------------------------------------------------------------------
@@ -240,6 +239,8 @@ HazeVS HorizonVS(float3 posL : POSITION0)
 //
 float4 HorizonPS(HazeVS frg) : COLOR
 {
+	float fNoise = (tex2Dlod(tNoise, float4(frg.texUV, 0, 0)).r - 0.5f) * 0.03;
+
 	float3 uDir = normalize(frg.posW);
 
 	SkyOut sky = GetSkyColor(uDir);
@@ -248,7 +249,7 @@ float4 HorizonPS(HazeVS frg) : COLOR
 
 	float3 color = HDR(sky.ray.rgb * RayPhase(ph) + sky.mie.rgb * MiePhase(ph));
 	
-	return float4(color, sky.ray.a);
+	return float4(color + fNoise, sky.ray.a);
 }
 
 
@@ -577,6 +578,8 @@ float4 TerrainPS(TileVS frg) : COLOR
 	cNgt2 = cMsk.rgb * Const.CamSpace * 4.0f * fNgt; // Nightlights orbital visibility
 #endif
 
+	float fNoise = (tex2Dlod(tNoise, float4(frg.texUV.xy * 4.0f * Prm.fTgtScale, 0, 0)).r - 0.5f) * ATMNOISE;
+
 	// Terrain with gamma correction and attennuation
 	cTex.rgb = pow(saturate(cTex.rgb), Const.TrGamma) * Const.TrExpo;
 
@@ -606,7 +609,7 @@ float4 TerrainPS(TileVS frg) : COLOR
 
 	// Add Haze
 	cTex.rgb *= sct.atn.rgb;
-	cTex.rgb += (sct.ray.rgb * RayPhase(-fDRS) + sct.mie.rgb * MiePhase(-fDRS)) * fOrbShd;
+	cTex.rgb += (sct.ray.rgb * RayPhase(-fDRS) + sct.mie.rgb * MiePhase(-fDRS)) * fOrbShd * (1.0f + fNoise);
 	cTex.rgb += cNgt2;
 
 	return float4(HDR(cTex.rgb), 1.0f);

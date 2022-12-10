@@ -3657,7 +3657,7 @@ void Scene::RenderGlares()
 						Const.Pos = FVECTOR4(pt.x, pt.y, size, size);
 						Const.Alpha = Lights[i].cone;
 						Const.Color = Lights[i].Diffuse;
-						Const.Blend = 0.0f;
+						Const.Blend = 1.0f;
 						pRenderGlares->SetVSConstants("Const", &Const, sizeof(Const));
 						pRenderGlares->SetPSConstants("Const", &Const, sizeof(Const));
 						HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));

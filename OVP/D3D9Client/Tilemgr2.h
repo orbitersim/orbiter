@@ -211,6 +211,7 @@ protected:
 	DWORD FrameId;
 	float width;			   // tile width [rad] (widest section i.e base)
 	float height;			   // tile height [rad]
+	float tgtscale;
 	
 public:
 	D3DXMATRIX mWorld;

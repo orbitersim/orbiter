@@ -167,6 +167,7 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 		double apr = tdist * scene->GetTanAp() * resolutionScale;
 		tgtres = (apr < 1e-6 ? maxlvl : max(0, min(maxlvl, (int)(bias - log(apr)*res_scale))));
 		bstepdown = (lvl < tgtres);
+		tile->tgtscale = pow(2.0f, float(tgtres - lvl));
 	}
 	
 	if (!bstepdown) {
