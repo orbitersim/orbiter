@@ -104,7 +104,7 @@ bool orbiter::ExtraTab::OpenHelp ()
 
 //-----------------------------------------------------------------------------
 
-BOOL orbiter::ExtraTab::Size (int w, int h)
+BOOL orbiter::ExtraTab::OnSize (int w, int h)
 {
 	int dw = w - (int)(pos0.right-pos0.left);
 	int dh = h - (int)(pos0.bottom-pos0.top);
@@ -221,7 +221,34 @@ void orbiter::ExtraTab::WriteExtraParams ()
 
 //-----------------------------------------------------------------------------
 
-INT_PTR orbiter::ExtraTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+BOOL orbiter::ExtraTab::OnNotify(HWND hDlg, int idCtrl, LPNMHDR pnmh)
+{
+	if (idCtrl == IDC_EXT_LIST) {
+		NM_TREEVIEW* pnmtv = (NM_TREEVIEW FAR*)pnmh;
+		switch (pnmtv->hdr.code) {
+		case TVN_SELCHANGED: {
+			LaunchpadItem* func = (LaunchpadItem*)pnmtv->itemNew.lParam;
+			char* desc = func->Description();
+			if (desc) SetWindowText(GetDlgItem(hDlg, IDC_EXT_TEXT), desc);
+			else SetWindowText(GetDlgItem(hDlg, IDC_EXT_TEXT), "");
+			} return TRUE;
+		case NM_DBLCLK: {
+			TVITEM tvi;
+			tvi.hItem = TreeView_GetSelection(GetDlgItem(hDlg, IDC_EXT_LIST));
+			tvi.mask = TVIF_PARAM;
+			if (TreeView_GetItem(GetDlgItem(hDlg, IDC_EXT_LIST), &tvi) && tvi.lParam) {
+				BuiltinLaunchpadItem* func = (BuiltinLaunchpadItem*)tvi.lParam;
+				func->clbkOpen(LaunchpadWnd());
+			}
+			} return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+//-----------------------------------------------------------------------------
+
+BOOL orbiter::ExtraTab::OnMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	NM_TREEVIEW *pnmtv;
 
@@ -237,30 +264,6 @@ INT_PTR orbiter::ExtraTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
 				func->clbkOpen (LaunchpadWnd());
 			}
 			} return TRUE;
-		}
-		break;
-	case WM_NOTIFY:
-		switch (LOWORD(wParam)) {
-		case IDC_EXT_LIST:
-			pnmtv = (NM_TREEVIEW FAR *)lParam;
-			switch (pnmtv->hdr.code) {
-			case TVN_SELCHANGED: {
-				LaunchpadItem *func = (LaunchpadItem*)pnmtv->itemNew.lParam;
-				char *desc = func->Description();
-				if (desc) SetWindowText (GetDlgItem (hTab, IDC_EXT_TEXT), desc);
-				else SetWindowText (GetDlgItem (hTab, IDC_EXT_TEXT), "");
-				} return TRUE;
-			case NM_DBLCLK: {
-				TVITEM tvi;
-				tvi.hItem = TreeView_GetSelection (GetDlgItem (hWnd, IDC_EXT_LIST));
-				tvi.mask = TVIF_PARAM;
-				if (TreeView_GetItem (GetDlgItem (hWnd, IDC_EXT_LIST), &tvi) && tvi.lParam) {
-					BuiltinLaunchpadItem *func = (BuiltinLaunchpadItem*)tvi.lParam;
-					func->clbkOpen (LaunchpadWnd());
-				}
-				} return TRUE;
-			}
-			break;
 		}
 		break;
 	}

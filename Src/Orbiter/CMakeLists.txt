@@ -34,12 +34,10 @@ set(common_src
 	LpadTab.cpp
 	TabAbout.cpp
 	TabExtra.cpp
-	TabJoystick.cpp
 	TabModule.cpp
-	TabParam.cpp
+	TabOptions.cpp
 	TabScenario.cpp
 	TabVideo.cpp
-	TabVisual.cpp
 # Dialogs
 	CustomControls.cpp
 	Dialogs.cpp
@@ -58,6 +56,7 @@ set(common_src
 	DlgTacc.cpp
 	htmlctrl.c
 	Select.cpp
+	OptionsPages.cpp
 # Body classes
 	Body.cpp
 	BodyIntegrator.cpp

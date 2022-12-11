@@ -82,6 +82,13 @@ public:
 	virtual bool KeyImmediate (char *kstate) { return false; }
 	virtual bool KeyBuffered (DWORD key) { return false; }
 
+	/**
+	 * \brief Called when the user interactively changes a simulation option
+	 * \param cat option category (see \ref optcat)
+	 * \param item option item (see \ref optitem)
+	 */
+	virtual void OptionChanged(DWORD cat, DWORD item);
+
 	virtual bool ProcessButton (int bt, int event) { return false; }
 	// used to process buttons in the frame of the MFD (panel mode)
 

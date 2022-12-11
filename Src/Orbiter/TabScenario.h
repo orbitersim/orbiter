@@ -9,6 +9,7 @@
 #ifndef __TABSCENARIO_H
 #define __TABSCENARIO_H
 
+#include <CommCtrl.h>
 #include "LpadTab.h"
 #include "CustomControls.h"
 
@@ -26,7 +27,9 @@ namespace orbiter {
 
 		bool OpenHelp();
 
-		BOOL Size(int w, int h);
+		bool DynamicSize() const { return true; }
+
+		BOOL OnSize(int w, int h);
 
 		int GetSelScenario(char* scn, int len);
 		// returns name of currently selected scenario file
@@ -34,7 +37,9 @@ namespace orbiter {
 
 		void LaunchpadShowing(bool show);
 
-		INT_PTR TabProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		BOOL OnNotify(HWND hDlg, int idCtrl, LPNMHDR pnmh);
+
+		BOOL OnMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	protected:
 		void RefreshList(bool preserveSelection);

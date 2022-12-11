@@ -620,7 +620,8 @@ void OrbiterGraphics::clbkOptionChanged(DWORD cat, DWORD item)
 {
 	switch (cat) {
 	case OPTCAT_CELSPHERE:
-		scene->OnOptionChanged(cat, item);
+		if (scene)
+			scene->OnOptionChanged(cat, item);
 		return;
 	}
 }

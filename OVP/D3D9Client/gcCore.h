@@ -22,7 +22,6 @@ class gcCore2;
 typedef void (__cdecl* __gcBindCoreMethod)(void** ppFnc, const char* name);
 
 static class gcCore2 *pCoreInterface = NULL;
-static __gcBindCoreMethod pBindCoreMethod = NULL;
 
 /**
 * \file gcConst.h
@@ -819,7 +818,7 @@ INTERFACE_BUILDER class gcCore2 : public gcCore
 
 public:
 
-	gcCore2()
+	gcCore2(__gcBindCoreMethod pBindCoreMethod)
 	{
 #define fnc_binder
 	}
@@ -899,10 +898,10 @@ inline gcCore2* gcGetCoreInterface()
 	if (pCoreInterface) return pCoreInterface;
 	HMODULE hModule = GetModuleHandle("D3D9Client.dll");
 	if (hModule) {
-		pBindCoreMethod = (__gcBindCoreMethod)GetProcAddress(hModule, "gcBindCoreMethod");	
-		if (pBindCoreMethod) return (pCoreInterface = new gcCore2());
+		__gcBindCoreMethod pBindCoreMethod = (__gcBindCoreMethod)GetProcAddress(hModule, "gcBindCoreMethod");
+		if (pBindCoreMethod) return (pCoreInterface = new gcCore2(pBindCoreMethod));
 		else oapiWriteLogV("gcGetCoreInterface() FAILED");
-	}
+	} else oapiWriteLogV("gcGetCoreInterface() FAILED. D3D9Client Not Found");
 	return NULL;
 }
 

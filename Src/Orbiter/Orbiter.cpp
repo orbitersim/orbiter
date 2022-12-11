@@ -229,6 +229,8 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdSh
 	srand(12345);
 	LOGOUT("Timer precision: %g sec", fine_counter_step);
 
+	oapiRegisterCustomControls(hInstance);
+
 	HRESULT hr;
 	// Create application
 	if (FAILED (hr = g_pOrbiter->Create (hInstance))) {
@@ -238,7 +240,6 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdSh
 		return 0;
 	}
 
-	oapiRegisterCustomControls (hInstance);
 	setlocale (LC_CTYPE, "");
 
 	g_pOrbiter->Run ();
@@ -724,25 +725,20 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 		m_pConsole = new orbiter::ConsoleNG(this);
 	}
 
+	pDI->SetRenderWindow(hRenderWnd);
+
 	if (hRenderWnd) {
 		bActive = true;
 
 		// Create keyboard device
-		if (!pDI->CreateKbdDevice (hRenderWnd)) {
+		if (!pDI->CreateKbdDevice ()) {
 			CloseSession ();
 			return 0;
 		}
 
 		// Create joystick device
-		if (pDI->CreateJoyDevice (hRenderWnd)) {
-			// initialise startup throttle setting
-			plZ4 = 1;
-			if (pDI->joyprop.bThrottle && pCfg->CfgJoystickPrm.bThrottleIgnore) {
-				DIJOYSTATE2 js;
-				if (pDI->PollJoystick (&js))
-					plZ4 = *(long*)(((BYTE*)&js)+pDI->joyprop.ThrottleOfs) >> 3;
-			}
-		}
+		if (pDI->CreateJoyDevice ())
+			plZ4 = 1; // invalidate
 	}
 
 	// read simulation environment state
@@ -886,6 +882,13 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 	if (m_pConsole)
 		m_pConsole->EchoIntro();
 
+	// suppress throttle update on launch
+	if (pDI->joyprop.bThrottle && pCfg->CfgJoystickPrm.bThrottleIgnore) {
+		DIJOYSTATE2 js;
+		if (pDI->PollJoystick(&js))
+			plZ4 = *(long*)(((BYTE*)&js) + pDI->joyprop.ThrottleOfs) >> 3;
+	}
+
 	return hRenderWnd;
 }
 
@@ -957,6 +960,8 @@ void Orbiter::CloseSession ()
 
 		hRenderWnd = NULL;
 		pDI->DestroyDevices();
+		pDI->SetRenderWindow(NULL);
+
 		m_pLaunchpad->ShowWaitPage (false);
 	} else {
 		if (pDlgMgr)  { delete pDlgMgr; pDlgMgr = 0; }
@@ -1187,6 +1192,12 @@ void Orbiter::OnOptionChanged(DWORD cat, DWORD item)
 {
 	if (gclient)
 		gclient->clbkOptionChanged(cat, item);
+	if (pDI)
+		pDI->OptionChanged(cat, item);
+	if (g_psys)
+		g_psys->OptionChanged(cat, item);
+	if (g_pane)
+		g_pane->OptionChanged(cat, item);
 }
 
 //-----------------------------------------------------------------------------
@@ -1549,8 +1560,10 @@ void Orbiter::TogglePlanetariumMode()
 	DWORD& plnFlag = pConfig->CfgVisHelpPrm.flagPlanetarium;
 	plnFlag ^= PLN_ENABLE;
 
-	DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInst);
-	if (dlg) dlg->Update();
+	if (pDlgMgr) {
+		DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInst);
+		if (dlg) dlg->Update();
+	}
 
 }
 
@@ -1561,8 +1574,10 @@ void Orbiter::ToggleLabelDisplay()
 	DWORD& mkrFlag = pConfig->CfgVisHelpPrm.flagMarkers;
 	mkrFlag ^= MKR_ENABLE;
 
-	DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInst);
-	if (dlg) dlg->Update();
+	if (pDlgMgr) {
+		DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInst);
+		if (dlg) dlg->Update();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -2727,7 +2742,7 @@ LRESULT Orbiter::MsgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		int x = LOWORD(lParam);
 		int y = HIWORD(lParam);
 		MouseEvent(uMsg, wParam, x, y);
-		if (!bKeepFocus && pConfig->CfgUIPrm.bFocusFollowsMouse && GetFocus() != hWnd) {
+		if (!bKeepFocus && pConfig->CfgUIPrm.MouseFocusMode != 0 && GetFocus() != hWnd) {
 			if (GetWindowThreadProcessId(hWnd, NULL) == GetWindowThreadProcessId(GetFocus(), NULL))
 				SetFocus(hWnd);
 		}

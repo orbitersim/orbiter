@@ -11,16 +11,11 @@
 // Property page indices
 #define PG_SCN  0
 #define PG_OPT  1
-#define PG_VIS  2
-#define PG_MOD  3
-#define PG_VID  4
-#define PG_JOY  5
-#define PG_EXT  6
-#define PG_ABT  7
-#define PG_WAIT 8
-#define PG_NET  9
-#define PG_NET2 10
-#define PG_NET3 11
+#define PG_MOD  2
+#define PG_VID  3
+#define PG_EXT  4
+#define PG_ABT  5
+#define PG_WAIT 6
 
 namespace orbiter {
 
@@ -45,14 +40,25 @@ namespace orbiter {
 		virtual void SetConfig(Config* cfg) {}
 		// Write config parameters back
 
-		virtual BOOL InitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam) { return FALSE; }
-
 		virtual bool OpenHelp() { return false; }
 
-		void OpenTabHelp(const char* topic);
+		/**
+		 * \brief Indicates if a tab can resize itself to fit the available area
+		 * \return true if the tab can adjust its size, false if the size is fixed.
+		 * \default Returns false.
+		 */
+		virtual bool DynamicSize() const { return false; }
 
-		virtual BOOL Size(int w, int h);
-		// by default, this re-centers the items if RegisterItemPositions has been called
+		/**
+		 * \brief Notification sent to a tab window when the tab area has been resized
+		 * \param w new width of tab area [pixel]
+		 * \param h new height of tab area [pixel]
+		 * \default Resizes the tab to fit the area if \ref DynamicSize returns true,
+		 *    centers the tab in the available area otherwise.
+		 */
+		virtual void TabAreaResized(int w, int h);
+
+		void OpenTabHelp(const char* topic);
 
 		virtual void Show();
 		virtual void Hide();
@@ -62,15 +68,20 @@ namespace orbiter {
 		inline HWND LaunchpadWnd() const { return pLp->hDlg; }
 		inline HINSTANCE AppInstance() const { return pLp->hInst; }
 
+		virtual BOOL OnInitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam) { return FALSE; }
+
+		virtual BOOL OnSize(int w, int h);
+		// by default, this re-centers the items if RegisterItemPositions has been called
+
+		virtual BOOL OnNotify(HWND hDlg, int idCtrl, LPNMHDR pnmh) { return OnMessage(hDlg, WM_NOTIFY, (WPARAM)idCtrl, (LPARAM)pnmh); }
+
+		virtual BOOL OnMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) { return FALSE; }
+
 		virtual INT_PTR TabProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 		// generic message handler
 
 	protected:
 		HWND CreateTab(int resid);
-
-		void RegisterItemPositions(int* _item, int _nitem);
-		// Keep a record of the positions of dialog items
-		// (for auto-recentering)
 
 		static INT_PTR CALLBACK TabProcHook(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
