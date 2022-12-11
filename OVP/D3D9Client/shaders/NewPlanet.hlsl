@@ -565,7 +565,7 @@ float4 TerrainPS(TileVS frg) : COLOR
 	float3 cNgt2 = 0;
 
 	float fDPS = dot(vPlN, Const.toSun);
-	float3 cSun = GetSunColor(fDPS, alt * 0.5f) * fShd * fShadow; // Reduce altitude to smoothen day/night terminator
+	float3 cSun = GetSunColor(fDPS, alt);
 
 #if defined(_NIGHTLIGHTS)
 
@@ -586,23 +586,26 @@ float4 TerrainPS(TileVS frg) : COLOR
 	// Evaluate ambient approximation
 	float4 cAmb = AmbientApprox(vPlN, false);
 
-	cAmb.rgb *= exp(-alt * Const.iH.r);
-	cAmb.rgb *= cAmb.a;
-
 	LandOut sct = GetLandView(rad, vPlN);
 
-	float fL = lerp(saturate(fDNS + 0.1f), fDPS * fDPS, fMask);
-	float3 cL = (cSun * Const.cSun * fL * 2.0f + cAmb.rgb * (0.5 - fMask * 0.25f));
+	float3 cSF = cSun * Const.cSun;
 
-	cL = dot(cL, cL) > 1.0 ? normalize(cL) : cL;
+	float fMx = max(max(cSF.r, cSF.g), cSF.b);
 
-	cTex.rgb *= (cL + cDiffLocal + cNgt * sct.atn.rgb + float3(0.9, 0.9, 1.0) * Const.Ambient);
-	
+	cSF = fMx > 1.0 ? cSF / fMx : cSF;
+
+	float  fM = 0.5f - fMask * 0.25f;
+	float  fL = lerp(sqrt(saturate(fDNS)), fDPS * fDPS, fMask);
+	float3 cA = normalize(cAmb.rgb + cSF) * cAmb.a * exp(-alt * Const.iH.r) * fM * 0.25;
+	float3 cL = (cSF * fL * fShd * fShadow + cA);
+
+	cTex.rgb *= cL * 2.0f + (cDiffLocal + cNgt + Const.cAmbient * Const.Ambient);
+
 	// Add Reflection
 	cTex.rgb += cRfl * 0.75f;
 
 	// Add Specular component
-	cTex.rgb += cSun * fSpe * saturate(fDPS);
+	cTex.rgb += cSun * fSpe * smoothstep(-0.001f, 0.03f, fDPS);
 
 	// Amplify cloud shadows for orbital views
 	float fOrbShd = 1.0f - (1.0f - fShd) * Const.CamSpace * 0.5f;

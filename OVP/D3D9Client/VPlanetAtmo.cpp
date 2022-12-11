@@ -386,32 +386,42 @@ FVECTOR3 vPlanet::SunLightColor(float angle, float alt)
 //
 FVECTOR4 vPlanet::SunLightColor(FVECTOR3 relpos)
 {
+	static const float lim = 0.01f;
+
 	FVECTOR2 rm = 0.0f;
 	FVECTOR3 up = unit(relpos);
 	double r = dot(up, relpos);
 	double ca = dot(up, cp.toSun);
-	double om = 1.0 - ca * ca;
+	double om = saturate(1.0 - ca * ca);
 	double qr = sqrt(om) * r;
+	
+	bool bAtm = HasAtmosphere();
 
-	if (r > cp.AtmoRad && ca > 0) return FVECTOR4(1, 1, 1, 1); // Ray doesn't intersect atmosphere
+	if (!bAtm) {
+		if (ca > lim) return FVECTOR4(1, 1, 1, 1); // Ray doesn't intersect planet
+	}
+	else {
+		if (qr > cp.AtmoRad) return FVECTOR4(1, 1, 1, 1); // Ray doesn't intersect atmosphere
+		if (r > cp.AtmoRad && ca > lim) return FVECTOR4(1, 1, 1, 1); // Ray doesn't intersect atmosphere
+	}
 
 	OBJHANDLE hSun = oapiGetObjectByIndex(0);
 	VECTOR3 sunpos; oapiGetGlobalPos(hSun, &sunpos);
 	sunpos -= scn->GetCameraGPos();
 
-	double pr = oapiGetSize(hObj); // cp.PlanetRad;
+	double pr = oapiGetSize(hObj);
 	double sd = length(sunpos);
-	double hd = sqrt(r * r - pr * pr); // Distance to closest approach
+	double dp = r * r - pr * pr;
+	double hd = dp > 1e4 ? sqrt(dp) : 1000.0; // Distance to horizon
 	double sr = oapiGetSize(hSun) * abs(hd) / sd;
-	double svb = ca > 0 ? 1.0 : ilerp(pr - sr, pr + sr, qr);
+	double svb = ca > lim ? 1.0 : ilerp(pr - sr, pr + sr, qr); // How much of the sun's "disc" is shadowed by planet
 
-	if (!HasAtmosphere()) FVECTOR4(svb, svb, svb, svb);
+	if (!bAtm) FVECTOR4(svb, svb, svb, svb);
 
-	if (qr > cp.AtmoRad) return FVECTOR4(svb, svb, svb, svb); // Ray doesn't intersect atmosphere
 	if (svb < 1e-3) return FVECTOR4(0.0, 0.0, 0.0, svb); // Ray is obscured by planet
 	if (r > cp.AtmoRad) rm = Gauss7(qr - pr, 0.0f, cp.PlanetRad, cp.AtmoRad, cp.iH) * 2.0f; // Ray passes through atmosphere from space to space
 	else rm = Gauss7(r - pr, -ca, cp.PlanetRad, cp.AtmoRad, cp.iH); // Sample point 'pos' lies with-in atmosphere
-		
+
 	rm *= cp.rmO;
 	return FVECTOR4(exp(-(cp.RayWave * rm.x + cp.MieWave * rm.y)) * svb, svb);
 }
@@ -749,6 +759,8 @@ ScatterParams* vPlanet::GetAtmoParams(int mode)
 {
 	if (!prm.bAtm || prm.atm_hzalt == 0.0) {
 		atm_mode = 1;
+		HPrm.cfg_alt = OPrm.cfg_alt = SPrm.cfg_alt = 0.0;
+		HPrm.cfg_halt = OPrm.cfg_halt = SPrm.cfg_halt = 0.0;
 		return &SPrm;	// Return surface setup if a planet doesn't have atmosphere
 	}
 
@@ -758,6 +770,9 @@ ScatterParams* vPlanet::GetAtmoParams(int mode)
 	double alt = saturate(ca / lorb);
 	double halt = saturate((ca - lorb) / horb);
 
+	CPrm.cfg_alt = HPrm.cfg_alt = OPrm.cfg_alt = SPrm.cfg_alt = alt;
+	CPrm.cfg_halt = HPrm.cfg_halt = OPrm.cfg_halt = SPrm.cfg_halt = halt;
+	
 	if (mode == 0) {
 		if (ca < abs(ca - lorb)) mode = 1;
 		else {

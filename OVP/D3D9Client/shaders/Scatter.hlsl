@@ -12,7 +12,7 @@
 
 #define NSEG 5
 #define iNSEG 1.0f / NSEG
-#define MINANGLE -0.25f			// Minumum angle
+#define MINANGLE -0.33f			// Minumum angle
 #define ANGRNG (0.25f - MINANGLE)
 #define iANGRNG (1.0f / ANGRNG)
 #define BOOL bool
@@ -201,13 +201,12 @@ float RayLength(float cos_dir, float r0)
 //
 float3 TransformUV(float3 uv, const float rc, const float prc)
 {
-	const float ipix = 1.0f / (rc * prc - 1.0f);
+	const float ipix = 1.0f / rc;
 
-	float z = uv.z * (rc - 1);
 	uv = saturate(uv);
-	uv.x *= prc * ipix - ipix;
-	uv.x += prc * floor(z) * ipix;
-
+	uv.z *= (rc - 1);
+	uv.x *= ipix;
+	uv.x += floor(uv.z) * ipix;
 	return uv;
 }
 
@@ -216,7 +215,7 @@ float3 TransformUV(float3 uv, const float rc, const float prc)
 //
 float4 smaple3D(sampler2D tSamp, float3 uv, const float rc, const float pix)
 {
-	const float x = pix / (rc * pix - rc);
+	const float x = 1.0f / rc;
 
 	float4 a = tex2D(tSamp, uv.xy).rgba;
 	float4 b = tex2D(tSamp, uv.xy + float2(x, 0)).rgba;
@@ -287,7 +286,8 @@ float MiePhase(float cw)
 //
 float3 GetSunColor(float dir, float alt)
 {
-	alt = saturate((alt - Const.MinAlt) / Const.AtmoAlt);
+	float maxalt = max(Const.MaxAlt, Const.CloudAlt);
+	alt = ilerp(Const.MinAlt, maxalt, alt);
 	dir = saturate((dir - MINANGLE) * iANGRNG);
 	alt = sqrt(alt);
 	return tex2D(tSun, float2(dir, alt)).rgb;
@@ -494,7 +494,8 @@ float4 IntegrateSegmentNS(float3 vOrig, float3 vRay, float len, float iH)
 //
 float4 SunColor(float x : TEXCOORD0, float y : TEXCOORD1) : COLOR
 {
-	float alt = lerp(Const.MinAlt, Const.AtmoAlt, y*y);
+	float maxalt = max(Const.MaxAlt, Const.CloudAlt);
+	float alt = lerp(Const.MinAlt, maxalt, y*y);
 	float ang = x * ANGRNG + MINANGLE;
 	float rad = alt + Const.PlanetRad;
 	float dist = RayLength(-ang, rad);

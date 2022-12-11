@@ -2711,6 +2711,8 @@ void D3D9Mesh::RenderShadowMap(const LPD3DXMATRIX pW, const LPD3DXMATRIX pVP, in
 {
 	if (!IsOK()) return;
 
+	pBuf->Map(pDev);
+
 	D3DXMATRIX GroupMatrix, mWorldMesh;
 
 	MeshShader* pShader = nullptr;

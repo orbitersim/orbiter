@@ -45,6 +45,8 @@ typedef struct ScatterParams {
 	FVECTOR3 zcolor;	// sun-glare color at zenith (camera at sealevel)
 	FVECTOR3 hcolor;	// sun-glare color at horizon (camera at sealevel)
 	FVECTOR3 acolor;	// Abmient color at sealevel
+	double cfg_alt;
+	double cfg_halt;
 } ScatterParams;
 
 class vPlanet;

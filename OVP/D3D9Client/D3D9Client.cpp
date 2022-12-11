@@ -156,8 +156,16 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 	LogAlw("[Not Compiled With nVidia API]");
 #endif
 
-	g_pConst = new gcConst();
 	Config = new D3D9Config();
+
+	if (Config->ShaderCacheUse) {
+		DWORD fa = GetFileAttributesA("Cache");
+		if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA("Cache", NULL);
+		fa = GetFileAttributesA("Cache/Shaders");
+		if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA("Cache/Shaders", NULL);
+	}
+
+	g_pConst = new gcConst();
 	TileCatalog	= new D3D9Catalog<LPDIRECT3DTEXTURE9>();
 
 	DebugControls::Create();

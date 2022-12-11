@@ -222,20 +222,20 @@ void OpenDlgClbk(void *context)
 	ConfigSlider(IDC_ATM_HEIGHT,    6.0, 200.0, 1|8);
 	ConfigSlider(IDC_ATM_M_HEIGHT,  0.5, 10.0, 1|8);
 	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_TRB,	   0.1, 6.0, 8);
+	ConfigSlider(IDC_ATM_TRB,	   0.1, 8.0, 8);
 	ConfigSlider(IDC_ATM_TRGAMMA,  0.2, 1.5);
 	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_RAY,      0.05, 10.0, 8);
+	ConfigSlider(IDC_ATM_RAY,      0.0, 10.0, 8);
 	ConfigSlider(IDC_ATM_IN,       0.2, 5.0, 32);
 	ConfigSlider(IDC_ATM_RPHASE,   0.2, 5.0, 8);	// Ambient level for buildings
 	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_MIE,      0.05, 10.0, 8);
+	ConfigSlider(IDC_ATM_MIE,      0.01, 10.0, 8);
 	ConfigSlider(IDC_ATM_MPHASE,   0.02, 0.999, 8);
 	ConfigSlider(IDC_ATM_MIEIN,	   0.2, 5.0, 32);
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_AUX2,	   0.2, 2.0);		// Clouds intensity
 	ConfigSlider(IDC_ATM_AUX3,	   0.1, 4.0, 8);	// HDR
-	ConfigSlider(IDC_ATM_AUX4,		0.02, 8.0);		// Mie Phase-B
+	ConfigSlider(IDC_ATM_AUX4,		0.0, 8.0);		// Mie Phase-B
 	ConfigSlider(IDC_ATM_AUX5,		0.01, 1.0, 8);	// Glare intensity in atmosphere
 	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_TW_DST,	hDlg, "Light travel behind terminator");
@@ -433,9 +433,12 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			param = vObj->GetAtmoParams(atmmode);
 
-			if (vObj->GetAtmoMode() == 1) sprintf_s(title, 256, "Atmospheric Controls [%s] [Surface]", vObj->GetName());
-			if (vObj->GetAtmoMode() == 2) sprintf_s(title, 256, "Atmospheric Controls [%s] [LowOrbit]", vObj->GetName());
-			if (vObj->GetAtmoMode() == 3) sprintf_s(title, 256, "Atmospheric Controls [%s] [HighOrbit]", vObj->GetName());
+			double vd = 0.5f;
+			if (atmmode == 0) vd = param->cfg_alt < 0.9999f ? param->cfg_alt : 1.0 - param->cfg_halt;
+
+			if (vObj->GetAtmoMode() == 1) sprintf_s(title, 256, "Atmospheric Controls [%s] [Surface] (%3.1f%%)", vObj->GetName(), (1.0 - vd) * 100.0);
+			if (vObj->GetAtmoMode() == 2) sprintf_s(title, 256, "Atmospheric Controls [%s] [LowOrbit] (%3.1f%%)", vObj->GetName(), vd * 100.0);
+			if (vObj->GetAtmoMode() == 3) sprintf_s(title, 256, "Atmospheric Controls [%s] [HighOrbit] (%3.1f%%)", vObj->GetName(), (1.0 - vd) * 100.0);
 		
 			SetWindowTextA(hDlg, title);
 			UpdateSliders();
