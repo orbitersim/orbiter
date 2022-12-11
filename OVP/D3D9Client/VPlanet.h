@@ -261,7 +261,7 @@ public:
 	bool			HasAtmosphere() const { return prm.bAtm; }
 	bool			HasRipples() const { return bRipple; }
 	LPDIRECT3DTEXTURE9 GetScatterTable(int i);
-	ConstParams*	GetScatterConst() { return &cp; }
+	ConstParams*	GetScatterConst();
 	PlanetShader*	GetShader(int id = PLT_CONFIG);
 	int				GetShaderID();
 	ShaderParams*	GetTerrainParams() { return &sp; }
@@ -269,7 +269,7 @@ public:
 	FlowControlVS*	GetFlowControlVS() { return &fcv; }
 	void			UpdateScatter();
 	int				GetAtmoMode() { return atm_mode; }
-	FVECTOR4		SunLightColor(FVECTOR3 pos);			// For a point in anywhere
+	FVECTOR4		SunLightColor(VECTOR3 pos);				// For a point in anywhere
 	FVECTOR3		SunLightColor(float ang, float alt);	// For a point in atmosphere
 	float			SunAltitude();
 	FVECTOR4		ComputeCameraView(FVECTOR3 vPos);
@@ -284,7 +284,7 @@ public:
 	float			RayLength(float cos_dir, float r0);
 	float			RayPhase(float cw);
 	float			MiePhase(float cw);
-	D3D9Sun			GetObjectAtmoParams(FVECTOR3 relpos);
+	D3D9Sun			GetObjectAtmoParams(VECTOR3 relpos);
 	FVECTOR3		HDR(FVECTOR3 i);
 	FVECTOR3		LightFX(FVECTOR3 x);
 
@@ -325,9 +325,6 @@ public:
 		D3DXVECTOR3 SunDir;
 		float		FogDensity;
 		float		DistScale;
-		float		SclHeight;		///< Atmospheric scale height
-		float		InvSclHeight;	///< Inverse of atmospheric scale height
-		double		ScatterCoEff[8];
 	} prm;
 
 	list<sOverlay *> overlays;

@@ -353,7 +353,7 @@ bool vBase::Update (bool bMainScene)
 	double simt = oapiGetSimTime();
 
 	if (fabs(simt-Tlghtchk)>0.1 || oapiGetPause()) {
-		FVECTOR3 rpos = gpos - vP->GlobalPos();
+		VECTOR3 rpos = gpos - vP->GlobalPos();
 		sunLight = vP->GetObjectAtmoParams(rpos);
 		Tlghtchk = simt;
 	}
@@ -426,7 +426,7 @@ bool vBase::RenderStructures(LPDIRECT3DDEVICE9 dev)
 	for (DWORD i=0; i<nstructure_as; i++) {
 		FVECTOR3 bs = structure_as[i]->GetBoundingSpherePos();
 		FVECTOR3 qw = TransformCoord(bs, mWorld);
-		D3D9Sun sp = vP->GetObjectAtmoParams(qw + vP->CameraPos());
+		D3D9Sun sp = vP->GetObjectAtmoParams(qw._V() + vP->CameraPos());
 		structure_as[i]->SetSunLight(&sp);
 		structure_as[i]->Render(&mWorld, RENDER_BASE);
 		++uCurrentMesh;

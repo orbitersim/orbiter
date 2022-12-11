@@ -1391,6 +1391,7 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 
 	pShader->ClearTextures();
 	pShader->Setup(pPatchVertexDecl, bUseZ, 0);
+	pShader->GetDevice()->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
 	ShaderParams* sp = vp->GetTerrainParams();
 	FlowControlPS* fc = vp->GetFlowControl();

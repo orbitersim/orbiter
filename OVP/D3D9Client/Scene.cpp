@@ -3118,8 +3118,10 @@ float Scene::GetDepthResolution(float dist) const
 float Scene::CameraInSpace() const
 {
 	if (Camera.vProxy) {
-		ConstParams* cp = Camera.vProxy->GetScatterConst();
-		return 1.0f - exp(-cp->CamAlt * cp->iH.x);
+		if (Camera.vProxy->HasAtmosphere()) {
+			ConstParams* cp = Camera.vProxy->GetScatterConst();
+			if (cp)	return 1.0f - exp(-cp->CamAlt * cp->iH.x);
+		}
 	}
 	return 1.0f;
 }
@@ -3596,49 +3598,37 @@ void Scene::RenderGlares()
 
 			// Render Sun glare
 			VECTOR3 gsun; oapiGetGlobalPos(oapiGetObjectByIndex(0), &gsun);
-			VECTOR3 pos = unit(gsun - Camera.pos) * 10e4;
+			double sdst = length(gsun - Camera.pos);
+			VECTOR3 pos = (gsun - Camera.pos) * 10e4 / sdst;
 
 			if (WorldToScreenSpace2(pos, &pt))
 			{
+				float cis = 1.0f, glare = float(Config->GFXGlare) * saturate(8.0 * AU / sdst);
+				FVECTOR4 clr = FVECTOR4(1, 1, 1, 1);
+
 				vPlanet* vp = GetCameraProxyVisual();
-				if (vp)
+			
+				if (vp && vp->IsActive())
 				{
-
-					FVECTOR3 crp = vp->CameraPos();
-					FVECTOR4 clr = vp->SunLightColor(crp);
-					FVECTOR3 zc = vp->GetAtmoParams()->zcolor;
-					FVECTOR3 hc = vp->GetAtmoParams()->hcolor;
-					float cis = 1.0f, glare = 0.0f;
-
-					if (vp->HasAtmosphere()) {
-						//ConstParams* cp = vp->GetScatterConst();
-						//FVECTOR3 sc = lerp(hc, zc, saturate(cp->dCS));
-						//float hzi = float(vp->GetAtmoParams()->hazei) * 0.25f;
-						//cis = 1.0 - exp(-cp->CamAlt * cp->iH.x); // Camera In Space scaling factor
-						//glare = lerp(hzi * clr.w, float(Config->GFXGlare) * pow(clr.MaxRGB(), 0.33f), saturate(cis));
-						//clr = lerp(sc, clr.rgb, saturate(cis)) * cp->cSun;
-
-						cis = CameraInSpace();
-						glare = float(Config->GFXGlare) * pow(clr.MaxRGB(), 0.33f) * cis;
-					}
-					else {
-						glare = float(Config->GFXGlare) * pow(clr.MaxRGB(), 0.33f);
-					}
-
-					float cd = length(pt - FVECTOR2(viewW, viewH) * 0.5f) / float(viewW); // Glare distance from a screen center
-					float alpha = 2.0f * glare * max(0.5f, 1.0f - cd);
-					float size = 300.0f * GetDisplayScale() * pow(alpha, 0.33f);
-
-					Const.GPUId = 0.5f / float(desc.Width);
-					Const.Pos = FVECTOR4(pt.x, pt.y, size, size);
-					Const.Color.rgb = clr.rgb / (clr.MaxRGB() + 0.0001f);
-					Const.Alpha = alpha;
-					Const.Blend = cis;
-
-					pRenderGlares->SetVSConstants("Const", &Const, sizeof(Const));
-					pRenderGlares->SetPSConstants("Const", &Const, sizeof(Const));
-					HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));
+					VECTOR3 crp = vp->CameraPos();
+					clr = vp->SunLightColor(crp);
+					cis = CameraInSpace();
+					glare = float(Config->GFXGlare) * pow(clr.MaxRGB(), 0.33f) * cis;				
 				}
+							
+				float cd = length(pt - FVECTOR2(viewW, viewH) * 0.5f) / float(viewW); // Glare distance from a screen center
+				float alpha = 2.0f * glare * max(0.5f, 1.0f - cd);
+				float size = 300.0f * GetDisplayScale() * pow(alpha, 0.33f);
+
+				Const.GPUId = 0.5f / float(desc.Width);
+				Const.Pos = FVECTOR4(pt.x, pt.y, size, size);
+				Const.Color.rgb = clr.rgb / (clr.MaxRGB() + 0.0001f);
+				Const.Alpha = alpha;
+				Const.Blend = cis;
+
+				pRenderGlares->SetVSConstants("Const", &Const, sizeof(Const));
+				pRenderGlares->SetPSConstants("Const", &Const, sizeof(Const));
+				HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));		
 			}
 		}
 

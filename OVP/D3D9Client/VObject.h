@@ -171,6 +171,7 @@ public:
 	 * \note The returned vector is expressed in the ecliptic frame.
 	 */
 	inline const VECTOR3 &SunDirection() const { return sundir; }
+	inline const double SunDistance() const { return sundst; }
 
 	/**
 	 * \brief Per-frame object parameter updates

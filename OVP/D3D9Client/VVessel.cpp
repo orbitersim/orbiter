@@ -1460,7 +1460,7 @@ bool vVessel::ModLighting()
 
 	vPlanet *vP = (vPlanet *)GetScene()->GetVisObject(hP);
 	if (vP) {
-		FVECTOR3 rpos = gpos - vP->GlobalPos();
+		VECTOR3 rpos = gpos - vP->GlobalPos();
 		sunLight = vP->GetObjectAtmoParams(rpos);
 	}
 

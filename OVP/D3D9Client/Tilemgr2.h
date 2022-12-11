@@ -396,7 +396,7 @@ public:
 	inline const double CbodySize() const { return obj_size; }
 	inline const ELEVHANDLE ElevMgr() const { return emgr; }
 	inline const int GridRes() const { return gridRes; }
-	inline const double ElevRes() const { return elevRes; } //(Mostly Obsolete) not needed since elevation is float based 
+	inline const double ElevRes() const { return elevRes; }
 	inline OBJHANDLE GetHandle() const { return obj; }
 
 	/// \brief Return the root directory containing the body's texture data (surface, elevation, mask, cloud tiles)

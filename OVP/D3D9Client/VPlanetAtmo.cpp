@@ -384,43 +384,45 @@ FVECTOR3 vPlanet::SunLightColor(float angle, float alt)
 
 // ===========================================================================================
 //
-FVECTOR4 vPlanet::SunLightColor(FVECTOR3 relpos)
+FVECTOR4 vPlanet::SunLightColor(VECTOR3 relpos)
 {
-	static const float lim = 0.01f;
+	static const float lim = 0.0f;
 
+	if (!active) {
+		Update(true);
+		UpdateScatter();
+	}
+	
 	FVECTOR2 rm = 0.0f;
-	FVECTOR3 up = unit(relpos);
+	VECTOR3 up = unit(relpos);
 	double r = dot(up, relpos);
-	double ca = dot(up, cp.toSun);
+	double ca = dot(up, SunDirection());
 	double om = saturate(1.0 - ca * ca);
 	double qr = sqrt(om) * r;
-	
-	bool bAtm = HasAtmosphere();
+	double ar = GetHorizonAlt() + size;
 
+	bool bAtm = HasAtmosphere() && (surfmgr2 != NULL);
+	
 	if (!bAtm) {
 		if (ca > lim) return FVECTOR4(1, 1, 1, 1); // Ray doesn't intersect planet
 	}
 	else {
-		if (qr > cp.AtmoRad) return FVECTOR4(1, 1, 1, 1); // Ray doesn't intersect atmosphere
-		if (r > cp.AtmoRad && ca > lim) return FVECTOR4(1, 1, 1, 1); // Ray doesn't intersect atmosphere
+		if (qr > ar) return FVECTOR4(1, 1, 1, 1); // Ray doesn't intersect atmosphere
+		if (r > ar && ca > lim) return FVECTOR4(1, 1, 1, 1); // Ray doesn't intersect atmosphere
 	}
 
 	OBJHANDLE hSun = oapiGetObjectByIndex(0);
-	VECTOR3 sunpos; oapiGetGlobalPos(hSun, &sunpos);
-	sunpos -= scn->GetCameraGPos();
-
-	double pr = oapiGetSize(hObj);
-	double sd = length(sunpos);
-	double dp = r * r - pr * pr;
+	double sd = SunDistance();
+	double dp = r * r - size * size;
 	double hd = dp > 1e4 ? sqrt(dp) : 1000.0; // Distance to horizon
 	double sr = oapiGetSize(hSun) * abs(hd) / sd;
-	double svb = ca > lim ? 1.0 : ilerp(pr - sr, pr + sr, qr); // How much of the sun's "disc" is shadowed by planet
+	double svb = ca > lim ? 1.0 : ilerp(size - sr * 0.33, size + sr, qr); // How much of the sun's "disc" is shadowed by planet
 
-	if (!bAtm) FVECTOR4(svb, svb, svb, svb);
+	if (!bAtm || !surfmgr2) return FVECTOR4(svb, svb, svb, svb);
 
 	if (svb < 1e-3) return FVECTOR4(0.0, 0.0, 0.0, svb); // Ray is obscured by planet
-	if (r > cp.AtmoRad) rm = Gauss7(qr - pr, 0.0f, cp.PlanetRad, cp.AtmoRad, cp.iH) * 2.0f; // Ray passes through atmosphere from space to space
-	else rm = Gauss7(r - pr, -ca, cp.PlanetRad, cp.AtmoRad, cp.iH); // Sample point 'pos' lies with-in atmosphere
+	if (r > cp.AtmoRad) rm = Gauss7(qr - size, 0.0f, cp.PlanetRad, cp.AtmoRad, cp.iH) * 2.0f; // Ray passes through atmosphere from space to space
+	else rm = Gauss7(r - size, -ca, cp.PlanetRad, cp.AtmoRad, cp.iH); // Sample point 'pos' lies with-in atmosphere
 
 	rm *= cp.rmO;
 	return FVECTOR4(exp(-(cp.RayWave * rm.x + cp.MieWave * rm.y)) * svb, svb);
@@ -440,18 +442,23 @@ FVECTOR4 vPlanet::AmbientApprox(FVECTOR3 vNrm)
 
 // ===========================================================================================
 //
-D3D9Sun vPlanet::GetObjectAtmoParams(FVECTOR3 vRelPos)
+D3D9Sun vPlanet::GetObjectAtmoParams(VECTOR3 vRelPos)
 {
+	if (!active) {
+		Update(true);
+		UpdateScatter();
+	}
+
 	D3D9Sun op;
 	op.Transmission = 1.0f;
 	op.Incatter = 0.0f;
 
-	float r = length(vRelPos);
+	double r = length(vRelPos);
 	float a = cp.AtmoAlt * 0.5f;
 	FVECTOR3 cSun = SunLightColor(vRelPos).rgb * cp.cSun;
 	DWORD ambient = *(DWORD*)gc->GetConfigParam(CFGPRM_AMBIENTLEVEL);
 
-	if (((r - cp.PlanetRad) > a) || !HasAtmosphere()) // In space
+	if (((r - size) > a) || !HasAtmosphere() || !surfmgr2) // In space
 	{
 		op.Dir = -cp.toSun;
 		op.Color = (cSun.MaxRGB() > 1.0f ? cSun / cSun.MaxRGB() : cSun) * Config->GFXSunIntensity;
@@ -459,14 +466,14 @@ D3D9Sun vPlanet::GetObjectAtmoParams(FVECTOR3 vRelPos)
 		return op;
 	}
 
-	FVECTOR3 vNrm = unit(vRelPos);
-	FVECTOR3 vRP = vRelPos - cp.CamPos;		// Camera relative position
-	float d = length(vRP);					// Distance to camera
-	FVECTOR3 vRay = vRP / d;				// Unit viewing ray from cameta to obj_gpos
+	VECTOR3 vNrm = unit(vRelPos);
+	VECTOR3 vRP = (vRelPos + cpos);			// Camera relative position
+	double d = length(vRP);					// Distance to camera
+	FVECTOR3 vRay = (vRP / d);				// Unit viewing ray from cameta to obj_gpos
 	float dNR = dot(vNrm, vRay);			// cosine of (Normal/vRay) angle 
 	float dRS = dot(vRay, cp.toSun);
 	float dNS = dot(vNrm, cp.toSun);	
-	float alt = r - cp.PlanetRad;
+	float alt = r - size;
 
 	FVECTOR4 mc = AmbientApprox(vNrm);
 	mc.a *= CPrm.tw_bld;
@@ -577,7 +584,6 @@ void vPlanet::UpdateScatter()
 	cp.Cr2 = A * A;
 	float g2 = cp.CamRad2 - cp.PlanetRad2;
 	cp.ShdDst = g2 > 0 ? sqrt(g2) : 0.0f;
-
 
 	if (HasAtmosphere() == false) return;
 	if (surfmgr2 == NULL) return;
@@ -733,6 +739,15 @@ int vPlanet::GetShaderID()
 		}
 	}
 	return PLT_MOON;
+}
+
+// ==============================================================
+
+ConstParams* vPlanet::GetScatterConst()
+{
+	if (!active) return NULL;
+	if (surfmgr2) return &cp;
+	return NULL;
 }
 
 // ==============================================================

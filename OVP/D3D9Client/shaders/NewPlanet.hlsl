@@ -595,8 +595,8 @@ float4 TerrainPS(TileVS frg) : COLOR
 	cSF = fMx > 1.0 ? cSF / fMx : cSF;
 
 	float  fM = 0.5f - fMask * 0.25f;
-	float  fL = lerp(sqrt(saturate(fDNS)), fDPS * fDPS, fMask);
-	float3 cA = normalize(cAmb.rgb + cSF) * cAmb.a * exp(-alt * Const.iH.r) * fM * 0.25;
+	float  fL = lerp(pow(saturate(fDNS), 0.33f), fDPS * fDPS, fMask);
+	float3 cA = normalize(cAmb.rgb + cSF) * cAmb.a * fM * exp(-alt * Const.iH.r) * Const.rmI.x * 2e5 * (1.0f + cAmb.g);
 	float3 cL = (cSF * fL * fShd * fShadow + cA);
 
 	cTex.rgb *= cL * 2.0f + (cDiffLocal + cNgt + Const.cAmbient * Const.Ambient);

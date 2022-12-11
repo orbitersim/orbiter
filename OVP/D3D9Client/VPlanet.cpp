@@ -634,9 +634,7 @@ VECTOR3 vPlanet::ToLocal(VECTOR3 &glob) const
 
 VECTOR3	vPlanet::CameraPos() const
 {
-	VECTOR3 gp;
-	oapiGetGlobalPos(hObj, &gp);
-	return scn->GetCameraGPos() - gp;
+	return scn->GetCameraGPos() - gpos;
 }
 
 // ==============================================================
