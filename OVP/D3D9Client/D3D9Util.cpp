@@ -35,6 +35,19 @@ DWORD BuildDate()
 	return (year % 100) * 10000 + m * 100 + day;
 }
 
+WORD crc16(const char *data, int length)
+{
+	DWORD crc = 0;
+	for (int i = 0; i < length; ++i) {
+		crc = crc ^ (DWORD(data[i]) << 8);
+		for (int j = 0; j < 8; j++) {
+			if (crc & 0x8000) crc = (crc << 1) ^ 0x1021;
+			else crc = (crc << 1);
+			crc &= 0xFFFF;
+		}
+	}
+	return WORD(crc & 0xFFFF);	
+}
 
 #if _WIN64
 #define PTR_FMT_STRING "0x%llX"
@@ -884,11 +897,14 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 	char *str = NULL;
 	char *tok = NULL;
 
+	WORD crc = 0;
+	if (options) crc = crc16(options, strlen(options));
+
 	string path(file);
 	char filename[MAX_PATH];
 
 	string last = path.substr(path.find_last_of("\\/") + 1);
-	sprintf_s(filename, MAX_PATH, "Cache/Shaders/%s_%s_%s.bin", name, function, last.c_str());
+	sprintf_s(filename, MAX_PATH, "Cache/Shaders/%s_%s_%hX_%s.bin", name, function, crc, last.c_str());
 
 	if (Config->ShaderCacheUse)
 	{
@@ -1019,12 +1035,14 @@ LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *
 	LPDIRECT3DVERTEXSHADER9 pShader = NULL;
 	DWORD flags = 0;
 
+	WORD crc = 0;
+	if (options) crc = crc16(options, strlen(options));
 
 	string path(file);
 	char filename[MAX_PATH];
 
 	string last = path.substr(path.find_last_of("\\/") + 1);
-	sprintf_s(filename, MAX_PATH, "Cache/Shaders/%s_%s_%s.bin", name, function, last.c_str());
+	sprintf_s(filename, MAX_PATH, "Cache/Shaders/%s_%s_%hX_%s.bin", name, function, crc, last.c_str());
 
 	if (Config->ShaderCacheUse)
 	{
