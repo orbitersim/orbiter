@@ -66,7 +66,7 @@ float4 VisibilityPS(LData frg) : COLOR
 	float fRet = 0;
 
 	[unroll] for (int i = 0; i < LocalKernelSize; i++) {
-		float2 s = sp + cbKernel[i].xy * vScale;
+		float2 s = sp + cbKernel[i].xy * vScale * 0.4f;
 		if (s.x < 0 || s.x > 1) { fRet += iLKS;	continue; }
 		if (s.y < 0 || s.y > 1) { fRet += iLKS;	continue; }
 		float d = tex2D(tDepth, s).a;

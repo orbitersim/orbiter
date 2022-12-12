@@ -483,7 +483,7 @@ float4 TerrainPS(TileVS frg) : COLOR
 
 #else
 	// Fallback to simple specular reflection
-	fSpe = pow(fDHN, 40.0f) * fMask;
+	fSpe = pow(saturate(fDHN), 40.0f) * fMask;
 #endif
 #endif
 

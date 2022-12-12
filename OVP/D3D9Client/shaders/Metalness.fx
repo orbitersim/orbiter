@@ -273,6 +273,8 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 	float angl = saturate((-dot(gCameraPos, nrmW) - gProxySize) * gInvProxySize);
 	float3 cAmbient = gAtmColor.rgb * max(0, angl * gGlowConst) + gSun.Ambient;
 #endif
+#else
+	float3 cAmbient = gSun.Ambient;
 #endif
 
 
