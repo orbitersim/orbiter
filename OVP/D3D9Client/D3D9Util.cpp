@@ -925,7 +925,8 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 						{
 							DWORD size = GetFileSize(hCacheRead, NULL);
 							DWORD* buffer = new DWORD[(size >> 2) + 1];
-							if (ReadFile(hCacheRead, buffer, size, NULL, NULL)) {
+							DWORD bytesRead;
+							if (ReadFile(hCacheRead, buffer, size, &bytesRead, NULL)) {
 								HR(pDev->CreatePixelShader(buffer, &pShader));
 								HR(D3DXGetShaderConstantTable(buffer, pConst));
 							}
@@ -990,7 +991,8 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 	{
 		HANDLE hCache = CreateFile(filename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 		if (hCache != INVALID_HANDLE_VALUE) {
-			if (!WriteFile(hCache, pCode->GetBufferPointer(), pCode->GetBufferSize(), NULL, NULL))
+			DWORD bytesWritten;
+			if (!WriteFile(hCache, pCode->GetBufferPointer(), pCode->GetBufferSize(), &bytesWritten, NULL))
 			{
 				LogErr("CreateShaderCache: WriteFile Error: 0x%X", GetLastError());
 			}
@@ -1063,7 +1065,8 @@ LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *
 						{
 							DWORD size = GetFileSize(hCacheRead, NULL);
 							DWORD* buffer = new DWORD[(size >> 2) + 1];
-							if (ReadFile(hCacheRead, buffer, size, NULL, NULL)) {
+							DWORD bytesRead;
+							if (ReadFile(hCacheRead, buffer, size, &bytesRead, NULL)) {
 								HR(pDev->CreateVertexShader(buffer, &pShader));
 								HR(D3DXGetShaderConstantTable(buffer, pConst));
 							}
@@ -1124,7 +1127,8 @@ LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *
 		HANDLE hCache = CreateFile(filename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
 		if (hCache != INVALID_HANDLE_VALUE) {
-			if (!WriteFile(hCache, pCode->GetBufferPointer(), pCode->GetBufferSize(), NULL, NULL))
+			DWORD bytesWritten;
+			if (!WriteFile(hCache, pCode->GetBufferPointer(), pCode->GetBufferSize(), &bytesWritten, NULL))
 			{
 				LogErr("CreateShaderCache: WriteFile Error: 0x%X", GetLastError());
 			}
