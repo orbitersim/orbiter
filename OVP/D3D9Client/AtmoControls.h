@@ -26,7 +26,7 @@ typedef struct ScatterParams {
 			double mie;			///< 7 scale factor for mie out-scattering
 			double mphase;		///< 8 g-constant in HG phase function
 			double rheight;		///< 9 atmospheric rayleigh scale height
-			double aux2;		///< 10 auxiliary parameter
+			double aux2;		///< 10 cloud lighting altitude [km]
 			double mheight;		///< 11 Mie scale height
 			double mpow;		///< 12 Mie power
 			double trb;			///< 13 Terrain brightness
@@ -34,7 +34,7 @@ typedef struct ScatterParams {
 			double aux3;		///< 15 auxiliary parameter
 			double tgamma;		///< 16 Terrain gamma
 			double mphaseb;		///< 17 MiePhase-B
-			double hazei;		///< 18 unused
+			double hazei;		///< 18 cloud intensity
 		};
 	};
 	double orbalt;

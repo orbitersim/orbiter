@@ -71,6 +71,7 @@ struct HazeVS
 struct FlowControlPS
 {
 	BOOL bInSpace;				// Camera in space (not in atmosphere)
+	BOOL bBelowClouds;
 	BOOL bOverlay;				// Overlay on/off	
 	BOOL bShadows;				// Shadow Map on/off
 	BOOL bLocals;				// Local Lights on/off
@@ -657,11 +658,29 @@ float4 CloudPS(CldVS frg) : COLOR
 	//float a = (tex2Dlod(NoiseTexS, float4(vUVTex,0,0)).r - 0.5f) * ATMNOISE;
 
 	float4 cTex = tex2D(tDiff, vUVTex);
-	float3 vPlN = normalize(frg.nrmW);
-	float3 vRay = normalize(frg.posW);
 
-	float dMN = dot(vPlN, Const.toSun);    // Planet mean normal sun angle
+	float  rRef = Const.PlanetRad + Const.smi * 0.5f;	// Reference altitude
+	float3 vRef = Const.toCam * rRef;
+	float3 vRay = normalize(Const.toCam * (Const.CamRad - rRef) + frg.posW); // Viewing ray to the pixel
 
+
+	float  dRC  = dot(vRay, Const.toCam);
+	float  dRS  = dot(vRay, Const.toSun);
+
+	float3 vPxl = Const.CamPos + frg.posW;			// Pixel's geocentric location
+
+	if (Flow.bBelowClouds) {
+		float  fEca2 = 1.0f - dRC * dRC;				// Ray horizon angle^2
+		float  fD = Const.smi * rsqrt(1.0f - Const.ecc * Const.ecc * fEca2); // Distance to ellipse threshold
+		vPxl = vRef + vRay * fD;					// Pretend the pixel being closer and lower
+	}
+
+	float3 vPlN = normalize(vPxl);					// Mean Normal at pixel's locatin
+	
+	float dMN = dot(vPlN, Const.toSun);				// Mean normal sun angle
+	float fPxR = dot(vPxl, vPlN);					// Pixel geo distance
+	float fPxA = fPxR - Const.PlanetRad;			// Pixel altitude
+		
 	// -----------------------------------------------
 	// Cloud layer rendering for Earth
 	// -----------------------------------------------
@@ -676,6 +695,7 @@ float4 CloudPS(CldVS frg) : COLOR
 
 	float4 cMicNorm = tex2D(tCloudMicroNorm, vUVMic);  // Filename "cloud1_norm.dds"
 
+	// Extract normal from transparency (height) data
 	// Filter width
 	float d = 2.0 / 512.0;
 	float3 nrm = 0;
@@ -697,7 +717,7 @@ float4 CloudPS(CldVS frg) : COLOR
 	nrm.z = sqrt(1.0f - saturate(nrm.x * nrm.x + nrm.y * nrm.y));
 
 	// Approximate world space normal from local tangent space
-	nrm = normalize((Const.vTangent * nrm.x) + (Const.vBiTangent * nrm.y) + (frg.nrmW * nrm.z));
+	nrm = normalize((Const.vTangent * nrm.x) + (Const.vBiTangent * nrm.y) + (vPlN * nrm.z));
 
 	float dCS = dot(nrm, Const.toSun); // Cloud normal sun angle
 
@@ -723,25 +743,25 @@ float4 CloudPS(CldVS frg) : COLOR
 	cTex.a = saturate(lerp(g, h, f) * f);
 #endif
 
-	float phase = dot(Const.toSun, vRay);
-	float3 cSun = GetSunColor(dMN, Const.CloudAlt * 0.5f) * Const.cSun; // Reduce altitude to smoothen day/night terminator
-	
-	// Evaluate multiscatter approximation
+
+	// Get ambient information
 	float4 cMlt = AmbientApprox(vPlN);
-	cMlt.rgb *= exp(-Const.CloudAlt * Const.iH.r * 0.7f);
-	cMlt.rgb *= cMlt.a;
-	
-	LandOut sct = GetLandView(Const.CloudAlt + Const.PlanetRad, vPlN);
+	cMlt.rgb *= cMlt.a * 0.2f;
 
-	float3 color = cTex.rgb * 6.0f * LightFX(cSun + cMlt.rgb);
+	// Get sunlight color
+	float3 cSun = GetSunColor(dMN, fPxA);
 
-	float alf = pow(abs((1.0f - cTex.a) * sqrt(cTex.a)), Const.Clouds);
-	float mie = pow(saturate(phase), 60.0f) * alf * 3.0f;
+	if (Flow.bBelowClouds)
+	{
+		cSun *= saturate(dRS + 1.3f);
+		float fPh = pow(saturate(1.0f - dRC), 32.0f) * pow(saturate(dRS), 10.0f); // Boost near horizon and close the sun
+		cSun *= 1.0f + fPh * 8.0f;
+	}
 
-	color *= sct.atn.rgb;
-	color += sct.ray.rgb + mie * cSun;
-	
-	return float4(HDR(color), saturate(cTex.a * Prm.fBeta * Prm.fBeta * (1.0f + mie)));
+	cSun *= Const.cSun * Const.Clouds;
+	cSun += cMlt.rgb;
+
+	return float4(HDR(cSun * cTex.rgb), saturate(cTex.a));
 }
 
 

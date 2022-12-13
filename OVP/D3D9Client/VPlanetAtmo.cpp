@@ -595,7 +595,7 @@ void vPlanet::UpdateScatter()
 	cp.AtmoAlt = atmo->visalt;
 	cp.AtmoRad = atmo->visalt + cp.PlanetRad;
 	cp.AtmoRad2 = cp.AtmoRad * cp.AtmoRad;
-	cp.CloudAlt = float(prm.cloudalt);
+	cp.CloudAlt = prm.bCloud ? float(prm.cloudalt) : 0.0f;
 	cp.CamSpace = sqrt(saturate(cp.CamAlt / atmo->visalt));
 	cp.AngMin = -sqrt(max(1.0f, cp.CamRad2 - cp.PlanetRad2)) / cp.CamRad;
 	cp.AngRng = 1.0f - cp.AngMin;
@@ -615,9 +615,20 @@ void vPlanet::UpdateScatter()
 	//cp.HG = FVECTOR4(1.5f * (1.0f - g * g) / (2.0f + g * g), 1.0f + g * g, 2.0f * g, float(atmo->mphaseb));
 	cp.HG = FVECTOR4(pow(1.0f - g * g, 0.75f), g, 0.0f, float(atmo->mphaseb));
 
-	cp.Clouds = float(atmo->aux2);
+	cp.Clouds = float(atmo->hazei);
 	cp.TW_Multi = float(atmo->tw_bri);
 	cp.TW_Dst = float(atmo->tw_dst);
+
+	if (cp.CamAlt < cp.CloudAlt) {
+		float SMi = atmo->aux2 * 1e3f;
+		float SMa = min(100e3, cp.HrzDst); // Semi-major axis
+		cp.ecc = sqrt((SMa * SMa - SMi * SMi) / (SMa * SMa)); // eccentricity
+		cp.smi = SMi;
+	}
+	else {
+		cp.ecc = 0.0f;
+		cp.smi = cp.HrzDst;
+	}
 
 	sFlow Flow;
 	Flow.bCamLit = !((cp.Cr2 < cp.PlanetRad2) && (dot(cp.toCam, cp.toSun) < 0));

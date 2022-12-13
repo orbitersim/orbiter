@@ -98,13 +98,14 @@ struct ShaderParams
 struct FlowControlPS
 {
 	BOOL bInSpace;				// Camera in space (not in atmosphere)
+	BOOL bBelowClouds;			// Camera is below cloud layer
 	BOOL bOverlay;				// Overlay on/off	
 	BOOL bShadows;				// Shadow Map on/off
 	BOOL bLocals;				// Local Lights on/off
 	BOOL bMicroNormals;			// Micro texture has normals
 	BOOL bCloudShd;
-	BOOL bMask;
-	BOOL bRipples;
+	BOOL bMask;					// Nightlights/water mask texture is peovided
+	BOOL bRipples;				// Water riples texture is peovided
 };
 
 struct FlowControlVS
@@ -168,6 +169,8 @@ struct ConstParams
 	float  Cr2;					// Camera radius on shadow plane (dot(cp.toCam, cp.Up) * cp.CamRad)^2
 	float  ShdDst;
 	float  dCS;
+	float  smi;
+	float  ecc;
 };
 
 #pragma pack(pop)

@@ -1410,7 +1410,7 @@ void vPlanet::LoadMicroTextures(LPDIRECT3DDEVICE9 pDev)
 					MicroTextures[x.file] = x.pTex;
 				}
 				else {
-					LogErr("Failed to read microtexture [%s] for [%s]", file_path, body.first);
+					LogErr("Failed to read microtexture [%s] for [%s]", file_path, body.first.c_str());
 				}
 			}
 

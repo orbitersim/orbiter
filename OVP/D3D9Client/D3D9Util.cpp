@@ -939,7 +939,7 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 			CloseHandle(hCacheRead);
 
 			if (pShader) {
-				LogOapi("Shader Created From Cache: %s", filename);
+				//LogOapi("Shader Created From Cache: %s", filename);
 				return pShader;
 			}
 		}
@@ -1079,7 +1079,7 @@ LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *
 			CloseHandle(hCacheRead);
 
 			if (pShader) {
-				LogOapi("Shader Created From Cache: %s", filename);
+				//LogOapi("Shader Created From Cache: %s", filename);
 				return pShader;
 			}
 		}
@@ -1750,7 +1750,7 @@ void ShaderClass::UpdateTextures()
 			HR(pDev->SetSamplerState(idx, D3DSAMP_MAXANISOTROPY, pTextures[idx].AnisoLvl));
 			HR(pDev->SetSamplerState(idx, D3DSAMP_MAGFILTER, filter));
 			HR(pDev->SetSamplerState(idx, D3DSAMP_MINFILTER, filter));
-			HR(pDev->SetSamplerState(idx, D3DSAMP_MIPFILTER, filter));
+			HR(pDev->SetSamplerState(idx, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR));
 		}
 
 		// If texture has changed then assign it

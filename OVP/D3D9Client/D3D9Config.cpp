@@ -89,7 +89,7 @@ void D3D9Config::Reset ()
 	bGlares				= 1;
 	bLocalGlares		= 0;
 	DebugBreak			= 0;
-	ShaderCacheUse		= 1;
+	ShaderCacheUse		= 0;
 	bIrradiance			= 1;
 
 	GFXIntensity = 0.5;

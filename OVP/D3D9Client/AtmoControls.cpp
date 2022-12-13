@@ -233,10 +233,10 @@ void OpenDlgClbk(void *context)
 	ConfigSlider(IDC_ATM_MPHASE,   0.02, 0.999, 8);
 	ConfigSlider(IDC_ATM_MIEIN,	   0.2, 5.0, 32);
 	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_AUX2,	   0.2, 2.0);		// Clouds intensity
+	ConfigSlider(IDC_ATM_AUX2,	   0.2, 10.0, 1);	// Clouds altitude (km)
 	ConfigSlider(IDC_ATM_AUX3,	   0.1, 4.0, 8);	// HDR
 	ConfigSlider(IDC_ATM_AUX4,		0.0, 8.0);		// Mie Phase-B
-	ConfigSlider(IDC_ATM_AUX5,		0.01, 1.0, 8);	// Glare intensity in atmosphere
+	ConfigSlider(IDC_ATM_AUX5,		0.1, 5.0, 8);	// Clouds intensity
 	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_TW_DST,	hDlg, "Light travel behind terminator");
 	CreateToolTip(IDC_ATM_GREEN,	hDlg, "Green wave lenght. (Green balance)");
@@ -257,10 +257,10 @@ void OpenDlgClbk(void *context)
 	CreateToolTip(IDC_ATM_MPHASE,	hDlg, "Directional strength of Henyey-Greenstein phase function");
 	CreateToolTip(IDC_ATM_MIEIN,	hDlg, "Mie in-scatter out-scatter ratio (1.0 nominal)");
 	// -------------------------------------------------------
-	CreateToolTip(IDC_ATM_AUX2,		hDlg, "Sun visibility through clouds");
+	CreateToolTip(IDC_ATM_AUX2,		hDlg, "Cloud lighting altitude");
 	CreateToolTip(IDC_ATM_AUX3,		hDlg, "'HDR' Exposure factor");
 	CreateToolTip(IDC_ATM_AUX4,		hDlg, "Omnidirectional mie scattering scale factor");
-	CreateToolTip(IDC_ATM_AUX5,		hDlg, "Sun glare intensity");
+	CreateToolTip(IDC_ATM_AUX5,		hDlg, "Clouds intensity");
 	
 	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_ADDSTRING, 0, (LPARAM)"Auto");

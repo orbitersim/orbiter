@@ -72,6 +72,8 @@ struct AtmoParams
 	float  Cr2;					// Camera radius on shadow plane (dot(cp.toCam, cp.Up) * cp.CamRad)^2
 	float  ShdDst;
 	float  dCS;
+	float  smi;
+	float  ecc;
 };
 
 struct sFlow {
