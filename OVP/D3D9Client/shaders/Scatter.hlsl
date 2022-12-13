@@ -5,8 +5,8 @@
 // Copyright (C) 2022 Jarmo Nikkanen
 // ============================================================================
 
-#define Nc  16		//Z-dimension count in 3D texture
-#define Wc  80		//3D texture size (pixels)
+#define Nc  8		//Z-dimension count in 3D texture
+#define Wc  128		//3D texture size (pixels)
 #define Qc  96		//2D texture size (pixels)
 
 
@@ -95,11 +95,15 @@ sampler2D tAmbient;
 sampler2D tSkyRayColor;
 sampler2D tSkyMieColor;
 
-#define P(x) (x / (NSEG - 1))
-#define W(x) (x * 0.5f / NSEG)
-
-static const float n[] = { 0.05, 0.25, 0.5, 0.75, 0.95 };
+#if NSEG == 5
+static const float n[] = { 0.050, 0.25, 0.50, 0.75, 0.950 };
 static const float w[] = { 0.125, 0.25, 0.25, 0.25, 0.125 };
+#endif
+
+#if NSEG == 7
+static const float n[] = { 0.05, 0.167, 0.333, 0.500, 0.667, 0.833, 0.95 };
+static const float w[] = { 0.08, 0.167, 0.167, 0.167, 0.167, 0.167, 0.08 };
+#endif
 
 // Gauss7 points and weights
 static const float4 n0 = float4(0.0714, 0.21428, 0.35714, 0.5 );

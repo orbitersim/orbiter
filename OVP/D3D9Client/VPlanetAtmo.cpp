@@ -1201,35 +1201,34 @@ void vPlanet::TestComputations(Sketchpad* pSkp)
 		e0 = sp.se > 0 ? min(cd, sp.se) : cd;
 	}
 	else {
-		if (bSrc) {		// Camera In Shadow
 
+		if (bSrc) {	// Camera in Shadow
 			s0 = max(sp.sx, sp.ae);
-			lf = max(0, sp.ca) / max(1.0f, abs(sp.hd)); // Lerp Factor
-			mp = lerp((sp.ax + s0) * 0.5f, sp.hd, saturate(lf));
+
+			float lf = max(0, sp.ca) / max(1.0f, abs(sp.hd)); // Lerp Factor
+			float mp = lerp((sp.ax + s0) * 0.5f, sp.hd, saturate(lf));
 
 			e0 = mp;
 			s1 = max(sp.sx, mp);
 			e1 = sp.ax;
 		}
-		else { // Camera In Lit
-
+		else { // Camera is Lit
 			s0 = max(0, sp.ae);
-			lf = max(0, sp.ca) / max(1.0f, abs(sp.hd)); // Lerp Factor
-			mp = lerp((sp.ax + s0) * 0.5f, sp.hd, saturate(lf));
+
+			float lf = max(0, sp.ca) / max(1.0f, abs(sp.hd)); // Lerp Factor
+			float mp = lerp((sp.ax + s0) * 0.5f, sp.hd, saturate(lf));
 
 			bool bA = (sp.se > sp.ax || sp.se < 0);
-			bool bB = (sp.sx > sp.ax || sp.sx < 0);
+			//bool bB = (sp.sx > sp.ax || sp.sx < 0);
 
-			if (bA && bA) sp.se = sp.sx = mp;
+			/*if (bB && bA) sp.sx = sp.se = mp;
 			else {
 				if (bA) sp.se = mp;
 				if (bB) sp.sx = sp.ax;
-			}
-			//if (sp.se > sp.ax || sp.se < 0) sp.se = mp;
-			//if (sp.sx > sp.ax || sp.sx < 0) sp.sx = sp.ax;
+			}*/
 
-			e0 = sp.se;
-			s1 = sp.sx;
+			e0 = bA ? mp : sp.se;
+			s1 = bA ? mp : sp.sx;
 			e1 = sp.ax;
 		}
 	}
