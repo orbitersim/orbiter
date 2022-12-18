@@ -330,6 +330,7 @@ void HazeManager2::RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr)
 
 	pDome->SetTexture("tSkyRayColor", vp->GetScatterTable(RAY_COLOR), IPF_LINEAR | IPF_CLAMP);
 	pDome->SetTexture("tSkyMieColor", vp->GetScatterTable(MIE_COLOR), IPF_LINEAR | IPF_CLAMP);
+	pDome->SetTexture("tGlare", vp->GetScene()->GetSunGlareAtm(), IPF_LINEAR | IPF_CLAMP);
 	pDome->SetTexture("tNoise", pNoise, IPF_POINT | IPF_WRAP);
 	pDome->SetPSConstants("Const", vp->GetScatterConst(), sizeof(ConstParams));
 	pDome->SetVSConstants("Const", vp->GetScatterConst(), sizeof(ConstParams));

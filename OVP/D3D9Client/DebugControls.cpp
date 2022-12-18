@@ -2318,7 +2318,7 @@ INT_PTR CALLBACK WndProcGFX(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case IDC_GFX_GLARE_RESET:
-			Config->GFXGlare = 0.5;
+			Config->GFXGlare = 0.3;
 			SetGFXSliders();
 			break;
 

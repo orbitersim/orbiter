@@ -214,3 +214,4 @@
 #define IDC_ESUNGLARE                           3030
 #define IDC_ELIGHTSGLARE                        3031
 #define IDC_EIRRAD                              3032
+#define IDC_EARTHVISCFG                         3033

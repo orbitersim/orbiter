@@ -21,6 +21,7 @@ struct _Light
 #define Phi     3
 
 #define ATMNOISE 0.25
+#define GLARE_SIZE 3
 
 // ----------------------------------------------------------------------------
 // Vertex input layouts from Vertex buffers to vertex shader
@@ -122,6 +123,7 @@ sampler	tOcean;				// Ocean Normal Map Texture
 sampler	tMicroA;
 sampler	tMicroB;
 sampler	tMicroC;
+sampler tGlare;
 sampler	tShadowMap;
 sampler	tOverlay;
 sampler	tMskOverlay;
@@ -248,8 +250,11 @@ float4 HorizonPS(HazeVS frg) : COLOR
 	
 	float ph = dot(uDir, Const.toSun);
 
-	float3 color = HDR(sky.ray.rgb * RayPhase(ph) + sky.mie.rgb * MiePhase(ph));
+	float2  guv = float2(dot(uDir, Const.ZeroAz), dot(uDir, Const.Up)) * GLARE_SIZE + 0.5f;
+	float  cGlr = tex2D(tGlare, guv).r * saturate(ph) * Const.SunVis;
 	
+	float3 color = HDR(sky.ray.rgb * RayPhase(ph) + (sky.mie.rgb + 0.0008f) * MiePhase(ph) * (0.75f + cGlr * Const.cGlare));
+
 	return float4(color + fNoise, sky.ray.a);
 }
 
@@ -455,6 +460,7 @@ float4 TerrainPS(TileVS frg) : COLOR
 
 	float fDNS = dot(nrmW, Const.toSun);
 	float fDRS = dot(vRay, Const.toSun);
+	float fDCN = saturate(dot(vRay, nrmW));
 
 #if defined(_WATER)
 	float fDHN = dot(hlvW, nrmW);
@@ -464,7 +470,7 @@ float4 TerrainPS(TileVS frg) : COLOR
 	// Render with specular ripples and fresnel water -------------------------
 	//
 	float fDCH = saturate(dot(vRay, hlvW));
-	float fDCN = saturate(dot(vRay, nrmW));
+	
 
 	float2 f = 1.0 - float2(fDCH, fDCN);
 	float2 fFresnel = f * f * f * f;
@@ -566,7 +572,6 @@ float4 TerrainPS(TileVS frg) : COLOR
 	float3 cNgt2 = 0;
 
 	float fDPS = dot(vPlN, Const.toSun);
-	float3 cSun = GetSunColor(fDPS, alt);
 
 #if defined(_NIGHTLIGHTS)
 
@@ -586,21 +591,34 @@ float4 TerrainPS(TileVS frg) : COLOR
 
 	// Evaluate ambient approximation
 	float4 cAmb = AmbientApprox(vPlN, false);
-
+	
 	LandOut sct = GetLandView(rad, vPlN);
 
+	// Get the color of sunlight and set maximum intensity to 1.0
+	float3 cSun = GetSunColor(fDPS, alt);
 	float3 cSF = cSun * Const.cSun;
-
 	float fMx = max(max(cSF.r, cSF.g), cSF.b);
-
 	cSF = fMx > 1.0 ? cSF / fMx : cSF;
 
-	float  fM = 0.5f - fMask * 0.25f;
-	float  fL = lerp(pow(saturate(fDNS), 0.5f), fDPS * fDPS, fMask);
-	float3 cA = normalize(cAmb.rgb + cSF) * cAmb.a * fM * exp(-alt * Const.iH.r) * Const.rmI.x * 2e5 * (1.0f + cAmb.g);
-	float3 cL = (cSF * fL * fShd * fShadow + cA);
+	float  fX = 1.0f - pow(1.0f - saturate(fDNS), 2.0f);
 
-	cTex.rgb *= cL * 2.0f + (cDiffLocal + cNgt + Const.cAmbient * Const.Ambient);
+	// Diffuse "lambertian" shading term 
+	float  fD = lerp(fX, fDPS * fDPS, fMask);
+
+	// Water masking
+	float  fM = 0.5f - fMask * 0.25f;
+
+	// Ambient light for terrain
+	//					  Color					   Distance				  Altitude factor		   Particle Density		
+	float3 cA = normalize(cAmb.rgb + cSF * 4.0f) * cAmb.a * cAmb.g * fM * exp(-alt * Const.iH.r) * Const.rmI.r * 6e5 * Const.TW_Terrain;
+
+	fShd = saturate(fShd + (1.0f - fX));
+
+	// Bake light and shadow terms
+	float3 cL = cSF * fD * fShadow * fShd;
+
+	// Lit the texture with various things
+	cTex.rgb *= cL * 2.0f + cA + (cDiffLocal + cNgt + Const.cAmbient * Const.Ambient);
 
 	// Add Reflection
 	cTex.rgb += cRfl * 0.75f;
@@ -611,7 +629,7 @@ float4 TerrainPS(TileVS frg) : COLOR
 	// Amplify cloud shadows for orbital views
 	float fOrbShd = 1.0f - (1.0f - fShd) * Const.CamSpace * 0.5f;
 
-	// Add Haze
+	// Add Haze and night lights
 	cTex.rgb *= sct.atn.rgb;
 	cTex.rgb += (sct.ray.rgb * RayPhase(-fDRS) + sct.mie.rgb * MiePhase(-fDRS)) * fOrbShd * (1.0f + fNoise);
 	cTex.rgb += cNgt2;
@@ -655,32 +673,39 @@ float4 CloudPS(CldVS frg) : COLOR
 	float2 vUVMic = frg.texUV.xy * Prm.vMicroOff.zw + Prm.vMicroOff.xy;
 	float2 vUVTex = frg.texUV.xy;
 
-	//float a = (tex2Dlod(NoiseTexS, float4(vUVTex,0,0)).r - 0.5f) * ATMNOISE;
-
 	float4 cTex = tex2D(tDiff, vUVTex);
-
-	float  rRef = Const.PlanetRad + Const.smi * 0.5f;	// Reference altitude
-	float3 vRef = Const.toCam * rRef;
-	float3 vRay = normalize(Const.toCam * (Const.CamRad - rRef) + frg.posW); // Viewing ray to the pixel
-
-
-	float  dRC  = dot(vRay, Const.toCam);
-	float  dRS  = dot(vRay, Const.toSun);
-
-	float3 vPxl = Const.CamPos + frg.posW;			// Pixel's geocentric location
+	float3 vRay;
+	float3 vPxl;
+	float  dRC;
+	float  fNrm = 1.0f;
 
 	if (Flow.bBelowClouds) {
-		float  fEca2 = 1.0f - dRC * dRC;				// Ray horizon angle^2
+		float  rRef = Const.PlanetRad + Const.smi * 0.5f;	// Reference altitude
+		float3 vRef = Const.toCam * rRef;
+		vRay = normalize(Const.toCam * (Const.CamRad - rRef) + frg.posW); // Viewing ray to the pixel
+		dRC = dot(vRay, Const.toCam);
+		float  fEca2 = 1.0f - dRC * dRC;			// Ray horizon angle^2
 		float  fD = Const.smi * rsqrt(1.0f - Const.ecc * Const.ecc * fEca2); // Distance to ellipse threshold
 		vPxl = vRef + vRay * fD;					// Pretend the pixel being closer and lower
 	}
+	else {
+		vRay = normalize(frg.posW);					// Viewing ray to the pixel
+		dRC = dot(vRay, Const.toCam);
+		vPxl = Const.CamPos + frg.posW;				// Pixel's geocentric location
+	}
 
 	float3 vPlN = normalize(vPxl);					// Mean Normal at pixel's locatin
-	
-	float dMN = dot(vPlN, Const.toSun);				// Mean normal sun angle
+	float3 nrm = vPlN;
+
+	float dRS = dot(vRay, Const.toSun);
+	float dMNus = dot(vPlN, Const.toSun);
+	float dMN = saturate(dMNus);					// Mean normal sun angle
 	float fPxR = dot(vPxl, vPlN);					// Pixel geo distance
 	float fPxA = fPxR - Const.PlanetRad;			// Pixel altitude
-		
+
+	if (!Flow.bBelowClouds) fPxA = Const.CloudAlt;
+
+
 	// -----------------------------------------------
 	// Cloud layer rendering for Earth
 	// -----------------------------------------------
@@ -698,7 +723,6 @@ float4 CloudPS(CldVS frg) : COLOR
 	// Extract normal from transparency (height) data
 	// Filter width
 	float d = 2.0 / 512.0;
-	float3 nrm = 0;
 
 	float x1 = tex2D(tDiff, vUVTex + float2(-d, 0)).a;
 	float x2 = tex2D(tDiff, vUVTex + float2(+d, 0)).a;
@@ -732,7 +756,7 @@ float4 CloudPS(CldVS frg) : COLOR
 	// Effect of normal/sun angle to color
 	// Add some brightness (borrowing red channel from sunset attenuation)
 	// Adding it to the sun illumination factor, taking care to keep from saturating
-	cTex.rgb *= dCS + ((1.0f - dCS) * 0.2f);
+	fNrm = dCS +((1.0f - dCS) * 0.2f);
 #endif
 #endif
 
@@ -744,24 +768,49 @@ float4 CloudPS(CldVS frg) : COLOR
 #endif
 
 
-	// Get ambient information
-	float4 cMlt = AmbientApprox(vPlN);
-	cMlt.rgb *= cMlt.a * 0.2f;
-
-	// Get sunlight color
-	float3 cSun = GetSunColor(dMN, fPxA);
-
 	if (Flow.bBelowClouds)
 	{
+		// Get sunlight color
+		float3 cSun = GetSunColor(dMNus, fPxA);
+
+		// Get ambient information
+		float4 cMlt = AmbientApprox(vPlN);
+
 		cSun *= saturate(dRS + 1.3f);
 		float fPh = pow(saturate(1.0f - dRC), 32.0f) * pow(saturate(dRS), 10.0f); // Boost near horizon and close the sun
 		cSun *= 1.0f + fPh * 8.0f;
+
+		cSun *= Const.cSun * fNrm;
+		cSun *= Const.Clouds;
+		cSun += cMlt.rgb * cMlt.a * 0.2f;
+
+		LandOut sct = GetLandView(fPxA + Const.PlanetRad, vPlN);
+
+		cTex.rgb *= cSun;
+		cTex.rgb *= sct.atn.rgb;
+		cTex.rgb += sct.ray.rgb * 2.0f;
+
+		return float4(HDR(cTex.rgb), saturate(cTex.a));
 	}
+	else {
 
-	cSun *= Const.cSun * Const.Clouds;
-	cSun += cMlt.rgb;
+		// Get sunlight color
+		float3 cSun = GetSunColor(dMN, fPxA);
+	
+		// Get ambient information
+		float4 cAmb = AmbientApprox(dMNus);
+		float3 cMSC = Const.RayWave * Const.RayWave * Const.Clouds; // Multiscatter color
 
-	return float4(HDR(cSun * cTex.rgb), saturate(cTex.a));
+		cSun = sqrt(cMSC * cMSC + cSun * cSun * fNrm) * cAmb.a;
+		
+		LandOut sct = GetLandView(fPxA + Const.PlanetRad, vPlN);
+
+		cTex.rgb *= cSun;
+		cTex.rgb *= sct.atn.rgb;
+		cTex.rgb += sct.ray.rgb;
+
+		return float4(sqr(HDR(cTex.rgb * 4.0f)), cTex.a * cAmb.a * cAmb.a);
+	}	
 }
 
 

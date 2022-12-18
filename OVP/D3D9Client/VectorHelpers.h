@@ -98,6 +98,11 @@ template <typename T> inline _constexpr_ T sqr(T a)
 	return a * a;
 }
 
+template <typename T> inline _constexpr_ T hermite(T a)
+{
+	return a * a * (T(3) - T(2)*a);
+}
+
 	
 // VECTOR3 Helpers ==================================================================
 //

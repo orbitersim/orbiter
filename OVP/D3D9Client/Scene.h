@@ -253,6 +253,7 @@ public:
 	LPDIRECT3DSURFACE9 GetEnvDepthStencil() const { return pEnvDS; }
 	LPDIRECT3DSURFACE9 GetBuffer(int id) const { return psgBuffer[id]; }
 	LPDIRECT3DTEXTURE9 GetSunTexture() const { return pSunTex; }
+	LPDIRECT3DTEXTURE9 GetSunGlareAtm() const { return pSunGlareAtm; }
 
 	/**
 	 * \brief Render any shadows cast by vessels on planet surfaces

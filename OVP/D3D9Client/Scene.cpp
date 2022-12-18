@@ -1025,7 +1025,6 @@ float Scene::ComputeNearClipPlane()
 
 void Scene::UpdateCamVis()
 {
-	dwFrameId++;				// Advance to a next frame
 
 	// Update camera parameters --------------------------------------
 	// and call vObject::Update() for all visuals
@@ -1231,6 +1230,8 @@ void Scene::RecallDefaultState()
 void Scene::RenderMainScene()
 {
 	_TRACE;
+
+	dwFrameId++; // Advance to a next frame
 
 	double scene_time = D3D9GetTime();
 	D3D9SetTime(D3D9Stats.Timer.CamVis, scene_time);
@@ -3593,7 +3594,7 @@ void Scene::RenderGlares()
 		if (Config->bGlares)
 		{
 			pRenderGlares->SetTexture("tTex0", pSunGlare, IPF_CLAMP | IPF_LINEAR);
-			pRenderGlares->SetTexture("tTex1", pSunGlareAtm, IPF_CLAMP | IPF_LINEAR);
+			//pRenderGlares->SetTexture("tTex1", pSunGlareAtm, IPF_CLAMP | IPF_LINEAR);
 			pRenderGlares->UpdateTextures();
 
 			// Render Sun glare
@@ -3624,7 +3625,7 @@ void Scene::RenderGlares()
 				Const.Pos = FVECTOR4(pt.x, pt.y, size, size);
 				Const.Color.rgb = clr.rgb / (clr.MaxRGB() + 0.0001f);
 				Const.Alpha = alpha;
-				Const.Blend = cis;
+				Const.Blend = sqrt(cis);
 
 				pRenderGlares->SetVSConstants("Const", &Const, sizeof(Const));
 				pRenderGlares->SetPSConstants("Const", &Const, sizeof(Const));

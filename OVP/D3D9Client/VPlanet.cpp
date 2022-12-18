@@ -366,6 +366,7 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene) :
 	iConfig = 0;
 	dist_scale = 1.0f;
 	threshold = 1e16;
+	dwSctFrame = 0;
 	max_centre_dist = 0.9*scene->GetCameraFarPlane();
 	maxdist = max (max_centre_dist, max_surf_dist + size);
 	DWORD elev_mode = *(DWORD*)gc->GetConfigParam(CFGPRM_ELEVATIONMODE);
@@ -601,7 +602,7 @@ double vPlanet::GetHorizonAlt() const
 {
 	if (!prm.bAtm) return 0.0;
 	if (!surfmgr2) return prm.atm_hzalt;
-	return max(SPrm.visalt, SPrm.rheight * 1000.0f * 5.0f);
+	return max(SPrm.visalt, SPrm.rheight * 9000.0f);
 }
 
 // ==============================================================

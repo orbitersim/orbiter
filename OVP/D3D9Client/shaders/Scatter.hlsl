@@ -16,6 +16,7 @@
 #define ANGRNG (0.25f - MINANGLE)
 #define iANGRNG (1.0f / ANGRNG)
 #define BOOL bool
+#define LastLine (0.999999f - 1.0f / Qc)
 
 
 // Per-Frame Params
@@ -40,6 +41,7 @@ struct AtmoParams
 	float2 rmO;					// Ray and Mie out-scatter factors
 	float2 rmI;					// Ray and Mie in-scatter factors
 	float3 cAmbient;			// Ambient light color at sealevel
+	float3 cGlare;				// Sun glare color
 	float  PlanetRad;			// Planet Radius
 	float  PlanetRad2;			// Planet Radius Squared
 	float  AtmoAlt;				// Atmospehere upper altitude limit
@@ -64,13 +66,14 @@ struct AtmoParams
 	float  TrExpo;				// "HDR" exposure factor (terrain only)
 	float  Ambient;				// Global ambient light level
 	float  Clouds;
-	float  TW_Multi;
+	float  TW_Terrain;
 	float  TW_Dst;
 	float  CosAlpha;			// Cosine of camera horizon angle i.e. PlanetRad/CamRad
 	float  SinAlpha;
 	float  CamSpace;			// Camera in space scale factor 0.0 = surf, 1.0 = space
 	float  Cr2;					// Camera radius on shadow plane (dot(cp.toCam, cp.Up) * cp.CamRad)^2
 	float  ShdDst;
+	float  SunVis;
 	float  dCS;
 	float  smi;
 	float  ecc;
@@ -118,6 +121,11 @@ static const float4 w4 = float4( 0.34786, 0.65215, 0.65215, 0.34786 );
 float ilerp(float a, float b, float x)
 {
 	return saturate((x - a) / (b - a));
+}
+
+float3 sqr(float3 x)
+{
+	return x * x;
 }
 
 float4 expc(float4 x) { return exp(clamp(x, -20, 20)); }
@@ -311,12 +319,17 @@ float3 ComputeCameraView(float a, float r, float d)
 
 // Approximate multi-scatter effect to atmospheric color and light travel behind terminator
 //
+float4 AmbientApprox(float dNS, uniform const bool bR = true)
+{
+	float fA = 1.0f - smoothstep(0.0f, Const.TW_Dst, -dNS);
+	float3 clr = (bR ? Const.RayWave : Const.cAmbient);
+	return float4(clr, fA);
+}
+
 float4 AmbientApprox(float3 vNrm, uniform const bool bR = true)
 {
-	float dNS = -dot(vNrm, Const.toSun);
-	float fA = 1.0f - ilerp(0.0f, Const.TW_Dst, dNS);
-	float3 clr = (bR ? Const.RayWave : Const.cAmbient) * Const.TW_Multi;
-	return float4(clr, fA);
+	float dNS = dot(vNrm, Const.toSun);
+	return AmbientApprox(dNS, bR);
 }
 
 
@@ -512,7 +525,6 @@ float4 SunColor(float x : TEXCOORD0, float y : TEXCOORD1) : COLOR
 }
 
 
-
 struct SkyOut
 {
 	float4 ray;
@@ -581,6 +593,8 @@ float4 SkyView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 //
 float4 RingView(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 {
+	if (v >= LastLine) return float4(0, 0, 0, 0);
+
 	v *= v;
 	float rmO = Flo.bRay ? Const.rmO.r : Const.rmO.g;
 	float rmI = Flo.bRay ? Const.rmI.r : Const.rmI.g;

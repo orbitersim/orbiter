@@ -103,7 +103,7 @@ struct FlowControlPS
 	BOOL bShadows;				// Shadow Map on/off
 	BOOL bLocals;				// Local Lights on/off
 	BOOL bMicroNormals;			// Micro texture has normals
-	BOOL bCloudShd;
+	BOOL bCloudShd;				// Cloud shadow textures valid and enabled
 	BOOL bMask;					// Nightlights/water mask texture is peovided
 	BOOL bRipples;				// Water riples texture is peovided
 };
@@ -133,16 +133,17 @@ struct ConstParams
 	float3 RayWave;				// .rgb Rayleigh Wave lenghts
 	float3 MieWave;				// .rgb Mie Wave lenghts
 	float4 HG;					// Henyey-Greenstein Phase function params
-	float2 iH;					// Inverse scale height for ray(.r) and mie(.g) exp(-altitude * iH) 
+	float2 iH;					// Inverse scale height for ray(.r) and mie(.g) e.g. exp(-altitude * iH) 
 	float2 rmO;					// Ray and Mie out-scatter factors
 	float2 rmI;					// Ray and Mie in-scatter factors
 	float3 cAmbient;			// Ambient light color at sealevel
+	float3 cGlare;				// Sun glare color
 	float  PlanetRad;			// Planet Radius
 	float  PlanetRad2;			// Planet Radius Squared
 	float  AtmoAlt;				// Atmospehere upper altitude limit
 	float  AtmoRad;				// Atmospehere outer radius
 	float  AtmoRad2;			// Atmospehere outer radius squared
-	float  CloudAlt;			// Cloud layer altitude 
+	float  CloudAlt;			// Cloud layer altitude for color and light calculations (not for phisical rendering) 
 	float  MinAlt;				// Minimum terrain altitude
 	float  MaxAlt;				// Maximum terrain altitude
 	float  iAltRng;				// 1.0 / (MaxAlt - MinAlt);
@@ -160,14 +161,15 @@ struct ConstParams
 	float  TrGamma;				// Terrain "Gamma" correction setting
 	float  TrExpo;				// "HDR" exposure factor (terrain only)
 	float  Ambient;				// Global ambient light level
-	float  Clouds;
-	float  TW_Multi;
-	float  TW_Dst;
+	float  Clouds;				// Cloud layer intensity (if below), and Blue light inscatter scale factor (if camera Above clouds)
+	float  TW_Terrain;			// Twilight intensity
+	float  TW_Dst;				// Twilight distance behind terminator
 	float  CosAlpha;			// Cosine of camera horizon angle i.e. PlanetRad/CamRad
-	float  SinAlpha;
+	float  SinAlpha;			// Sine of ^^
 	float  CamSpace;			// Camera in space scale factor 0.0 = surf, 1.0 = space
 	float  Cr2;					// Camera radius on shadow plane (dot(cp.toCam, cp.Up) * cp.CamRad)^2
 	float  ShdDst;
+	float  SunVis;
 	float  dCS;
 	float  smi;
 	float  ecc;
@@ -281,7 +283,7 @@ public:
 	FVECTOR2		Gauss7(float cos_dir, float r0, float dist, FVECTOR2 ih0);
 	FVECTOR2		Gauss7(float alt, float cos_dir, float R0, float R1, FVECTOR2 iH0);
 	FVECTOR2		Gauss4(float cos_dir, float r0, float dist, FVECTOR2 ih0);
-	FVECTOR4		AmbientApprox(FVECTOR3 vNrm);
+	FVECTOR4		AmbientApprox(FVECTOR3 vNrm, bool bRayleigh);
 	void			IntegrateSegment(FVECTOR3 vOrig, FVECTOR3 vRay, float len, FVECTOR4* rl = NULL, FVECTOR4* mie = NULL, FVECTOR4* tot = NULL);
 	float			RayLength(float cos_dir, float r0, float r1);
 	float			RayLength(float cos_dir, float r0);
@@ -290,6 +292,7 @@ public:
 	D3D9Sun			GetObjectAtmoParams(VECTOR3 relpos);
 	FVECTOR3		HDR(FVECTOR3 i);
 	FVECTOR3		LightFX(FVECTOR3 x);
+	float			SunOcclusionByPlanet();
 
 	// v2 Labels interface ----------------------------------------------------
 	void            ActivateLabels(bool activate);
@@ -400,6 +403,7 @@ private:
 	ScatterParams OPrm;		  // Parameters for atmospheric configuration dialog
 	ScatterParams HPrm;		  // Parameters for atmospheric configuration dialog
 	ScatterParams CPrm;		  // Parameters for atmospheric configuration dialog
+	DWORD dwSctFrame;
 
 	struct CloudData {        // cloud render parameters (for legacy interface)
 		CloudManager *cloudmgr; // cloud tile manager
@@ -415,6 +419,7 @@ private:
 	} *clouddata;
 
 	char ShaderName[32];
+	char AtmoConfigName[32];
 public:
 
 	struct _MicroTC {

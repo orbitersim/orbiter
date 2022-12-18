@@ -208,13 +208,12 @@ void OpenDlgClbk(void *context)
 	// Style flags
 	// 1 = unit in [km] 
 	// 2 = same for orbital and surface setup
-	// 4 = call vPlanet::UpdateAtmoConfig() on change
 	// 8 = x^2 "linearization"
 	// 16 = x^0.5 "linearization"
 	// 32 = x^4 "linearization"
 	
 
-	ConfigSlider(IDC_ATM_TW_DST,    0.025, 0.3);	// Twilight distance
+	ConfigSlider(IDC_ATM_TW_DST,    0.0, 0.2);	// Twilight distance
 	ConfigSlider(IDC_ATM_GREEN,     0.46, 0.65);
 	ConfigSlider(IDC_ATM_TW_BRI,    0.01, 3.0, 8);	// Twilight intensity
 	ConfigSlider(IDC_ATM_RPOW,     -8.0, 8.0);
@@ -227,7 +226,7 @@ void OpenDlgClbk(void *context)
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_RAY,      0.0, 10.0, 8);
 	ConfigSlider(IDC_ATM_IN,       0.2, 5.0, 32);
-	ConfigSlider(IDC_ATM_RPHASE,   0.2, 5.0, 8);	// Ambient level for buildings
+	ConfigSlider(IDC_ATM_RPHASE,   0.01, 1.0, 8);	// Ambient level for buildings
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_MIE,      0.01, 10.0, 8);
 	ConfigSlider(IDC_ATM_MPHASE,   0.02, 0.999, 8);
@@ -236,11 +235,11 @@ void OpenDlgClbk(void *context)
 	ConfigSlider(IDC_ATM_AUX2,	   0.2, 10.0, 1);	// Clouds altitude (km)
 	ConfigSlider(IDC_ATM_AUX3,	   0.1, 4.0, 8);	// HDR
 	ConfigSlider(IDC_ATM_AUX4,		0.0, 8.0);		// Mie Phase-B
-	ConfigSlider(IDC_ATM_AUX5,		0.1, 5.0, 8);	// Clouds intensity
+	ConfigSlider(IDC_ATM_AUX5,		0.0, 5.0, 8);	// Clouds intensity
 	// -------------------------------------------------------
-	CreateToolTip(IDC_ATM_TW_DST,	hDlg, "Light travel behind terminator");
+	CreateToolTip(IDC_ATM_TW_DST,	hDlg, "Light travel distance behind terminator");
 	CreateToolTip(IDC_ATM_GREEN,	hDlg, "Green wave lenght. (Green balance)");
-	CreateToolTip(IDC_ATM_TW_BRI,	hDlg, "Sky brightness during twilight");
+	CreateToolTip(IDC_ATM_TW_BRI,	hDlg, "Terrain brightness during twilight");
 	CreateToolTip(IDC_ATM_RPOW,		hDlg, "Main control for atmospheric rayleigh color composition (4.0 for the Earth)");
 	CreateToolTip(IDC_ATM_MPOW,		hDlg, "Main control for atmospheric mie color composition");
 	CreateToolTip(IDC_ATM_HEIGHT,	hDlg, "Atmosphere Ray scale height (7km - 9km for the Earth)");
@@ -251,16 +250,16 @@ void OpenDlgClbk(void *context)
 	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_RAY,		hDlg, "Overall control for rayleigh scattering (i.e. Haze stickness, atmosphere transparency, optical depth");
 	CreateToolTip(IDC_ATM_IN,		hDlg, "Rayleigh in-scatter out-scatter ratio (1.0 nominal)");
-	CreateToolTip(IDC_ATM_RPHASE,	hDlg, "Controls a directional dependency of in-scattered sunlight (Most visible when camera, planet and the sun are aligned)");
+	CreateToolTip(IDC_ATM_RPHASE,	hDlg, "Ambient light level for buildings");
 	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_MIE,		hDlg, "Overall scale factor for mie scattering. (Mie-particle density)");
 	CreateToolTip(IDC_ATM_MPHASE,	hDlg, "Directional strength of Henyey-Greenstein phase function");
 	CreateToolTip(IDC_ATM_MIEIN,	hDlg, "Mie in-scatter out-scatter ratio (1.0 nominal)");
 	// -------------------------------------------------------
-	CreateToolTip(IDC_ATM_AUX2,		hDlg, "Cloud lighting altitude");
+	CreateToolTip(IDC_ATM_AUX2,		hDlg, "Altitude for cloud lighting calculations");
 	CreateToolTip(IDC_ATM_AUX3,		hDlg, "'HDR' Exposure factor");
 	CreateToolTip(IDC_ATM_AUX4,		hDlg, "Omnidirectional mie scattering scale factor");
-	CreateToolTip(IDC_ATM_AUX5,		hDlg, "Clouds intensity");
+	CreateToolTip(IDC_ATM_AUX5,		hDlg, "[Dual purpose] Clouds intensity [on surface]. Multiscatter light level [on orbit]");
 	
 	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_ADDSTRING, 0, (LPARAM)"Auto");
@@ -428,17 +427,20 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_TIMER:
 	{
 		if (vObj) {	
-			char title[256];
+			char title[256]; string file = "??";
 			sprintf_s(title, 256, "Atmospheric Controls [%s]", vObj->GetName());
+
+			auto cfg = Config->AtmoCfg.find(vObj->GetName());
+			if (cfg != Config->AtmoCfg.end()) file = cfg->second;
 
 			param = vObj->GetAtmoParams(atmmode);
 
 			double vd = 0.5f;
 			if (atmmode == 0) vd = param->cfg_alt < 0.9999f ? param->cfg_alt : 1.0 - param->cfg_halt;
 
-			if (vObj->GetAtmoMode() == 1) sprintf_s(title, 256, "Atmospheric Controls [%s] [Surface] (%3.1f%%)", vObj->GetName(), (1.0 - vd) * 100.0);
-			if (vObj->GetAtmoMode() == 2) sprintf_s(title, 256, "Atmospheric Controls [%s] [LowOrbit] (%3.1f%%)", vObj->GetName(), vd * 100.0);
-			if (vObj->GetAtmoMode() == 3) sprintf_s(title, 256, "Atmospheric Controls [%s] [HighOrbit] (%3.1f%%)", vObj->GetName(), (1.0 - vd) * 100.0);
+			if (vObj->GetAtmoMode() == 1) sprintf_s(title, 256, "Atmospheric Controls [%s][%s] [Surface] (%3.1f%%)", file.c_str(), vObj->GetName(), (1.0 - vd) * 100.0);
+			if (vObj->GetAtmoMode() == 2) sprintf_s(title, 256, "Atmospheric Controls [%s][%s] [LowOrbit] (%3.1f%%)", file.c_str(), vObj->GetName(), vd * 100.0);
+			if (vObj->GetAtmoMode() == 3) sprintf_s(title, 256, "Atmospheric Controls [%s][%s] [HighOrbit] (%3.1f%%)", file.c_str(), vObj->GetName(), (1.0 - vd) * 100.0);
 		
 			SetWindowTextA(hDlg, title);
 			UpdateSliders();

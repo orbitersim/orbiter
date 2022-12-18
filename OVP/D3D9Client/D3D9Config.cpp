@@ -39,7 +39,7 @@ void D3D9Config::Reset ()
 	SceneAntialias		= 4;
 	DebugLvl			= 1;
 	VCNearPlane			= 0.1;
-	LightConfig			= 0;
+	LightConfig			= 2;
 	NearClipPlane		= 0;
 	NVPerfHUD			= 0;
 	PreLBaseVis			= 0;
@@ -55,7 +55,7 @@ void D3D9Config::Reset ()
 	BumpAmp				= 1.0;
 	PlanetGlow			= 1.0;
 	EnvMapSize			= 256;
-	EnvMapMode			= 0;
+	EnvMapMode			= 1;
 	EnvMapFaces			= 1;
 	EnableGlass			= 1;
 	EnableMeshDbg		= 1;
@@ -78,7 +78,7 @@ void D3D9Config::Reset ()
 	ShaderDebug			= 0;
 	PresentLocation		= 1;
 	PlanetTileLoadFlags	= 0x3;
-	TerrainShadowing	= 1;
+	TerrainShadowing	= 2;
 	LabelDisplayFlags	= LABEL_DISPLAY_RECORD | LABEL_DISPLAY_REPLAY;
 	CloudMicro			= 1;
 	GDIOverlay			= 0;
@@ -91,19 +91,22 @@ void D3D9Config::Reset ()
 	DebugBreak			= 0;
 	ShaderCacheUse		= 0;
 	bIrradiance			= 1;
-
+	
 	GFXIntensity = 0.5;
 	GFXDistance = 0.8;
 	GFXThreshold = 1.1;
 	GFXGamma = 1.0;
 	GFXSunIntensity = 1.2;
 	GFXLocalMax = 0.5;
+	GFXGlare = 0.3;
 
 	DisableDriverManagement = 0;
 	DisableVisualHelperReadout = 0;
 
-	SolCfg				= new char[64];   strcpy_s(SolCfg,64,"Sol");
-	DebugFont			= new char[64];   strcpy_s(DebugFont,64,"Fixed");
+	AtmoCfg["Earth"] = "Earth.atm.cfg";
+
+	SolCfg = new char[64];   strcpy_s(SolCfg,64,"Sol");
+	DebugFont = new char[64];   strcpy_s(DebugFont,64,"Fixed");
 }
 
 int D3D9Config::MaxLights()
@@ -196,6 +199,9 @@ bool D3D9Config::ReadParams ()
 	oapiReadItem_string (hFile, "SolCfg", SolCfg);
 	oapiReadItem_string (hFile, "DebugLineFont", DebugFont);
 
+	char Temp[256];
+	if (oapiReadItem_string(hFile, "EarthAtmoCfg", Temp)) AtmoCfg["Earth"] = Temp;
+
 	oapiCloseFile (hFile, FILE_IN_ZEROONFAIL);
 
 	return true;
@@ -278,6 +284,8 @@ void D3D9Config::WriteParams ()
 
 	oapiWriteItem_string (hFile, "SolCfg", SolCfg);
 	oapiWriteItem_string (hFile, "DebugLineFont", DebugFont);
+
+	oapiWriteItem_string(hFile, "EarthAtmoCfg", (char *)AtmoCfg["Earth"].c_str());
 
 	oapiCloseFile (hFile, FILE_OUT);
 }

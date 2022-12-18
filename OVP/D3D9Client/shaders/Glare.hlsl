@@ -52,6 +52,8 @@ LData VisibilityVS(float posL : POSITION0, float4 posW : TEXCOORD0)
 	return outVS;
 }
 
+// Check sun/light "glare" visibility
+//
 float4 VisibilityPS(LData frg) : COLOR
 {
 	float4 smpH = frg.smpH;
@@ -123,7 +125,7 @@ OutputVS GlareVS(float3 posL : POSITION0, float2 tex0 : TEXCOORD0)
 float4 GlarePS(OutputVS frg) : COLOR
 {
 	float t0 = max(0, tex2D(tTex0, frg.uvi.xy).r - 0.1f);  // Texture intensity
-	float t1 = max(0, tex2D(tTex1, frg.uvi.xy).r - 0.1f);  // Texture intensity
+	float t1 = 0.0f; // max(0, tex2D(tTex1, frg.uvi.xy).r - 0.1f);  // Texture intensity
 	float t = lerp(t1, t0, Const.Blend);
 	float a = saturate(1.0f - exp(-frg.uvi.z * Const.Alpha * t));
 	return float4(HDRtoLDR(Const.Color.rgb * sqrt(t + 1.0f)), a);
@@ -182,15 +184,17 @@ float4 CreateSunGlareAtmPS(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 
 	float a = atan2(u, v);
 	float r = sqrt(u * u + v * v);
-	//float q = 0.5f + 0.8f * pow(sin(3.0f * a), 4.0f);
-	//float w = 0.5f + 0.30f * pow(sin(5.0f * a), 2.0f) * pow(sin(7.0f * a), 2.0f);
-	//float L = pow(max(0, (1 - r / q)), 2.0f) * 4.0f;	// Low frequency spikes
-	//float H = pow(max(0, (1 - r / w)), 22.0f) * 148.0f;	// Low frequency spikes
-	float C = ilerp(0.08, 0.04, r) * 16.0f;			// Core
-	float S = ilerp(0.5, 0.04, r) * 2.0f;			// Skirt
 
-	//return float4(max(H, C) + S, 0, 0, 1);
-	return float4(C + S, 0, 0, 1);
+	float q = 0.5f + 1.0f * pow(sin(3.0f * a), 4.0f);
+	float w = 0.5f + 0.8f * pow(sin(30.0f * a), 2.0f) * pow(sin(41.0f * a), 2.0f);
+
+	float I = pow(max(0, (1 - r / q)), 6.0f) * 4;
+	float K = pow(max(0, (1 - r / w)), 6.0f) * 8;
+
+	float L = ilerp(0.05, 0.01, r) * 16.0f;
+	float T = max(0, max(I + L, K + L)) * 2.0f;
+
+	return float4(T, 0, 0, 1);
 }
 
 
@@ -219,7 +223,7 @@ float4 CreateLocalGlarePS(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 
 
 // ======================================================================
-// Render regular Sun texture
+// Render regular Sun texture [ NOT IN USE ]
 //
 float4 CreateSunTexPS(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 {
@@ -231,10 +235,10 @@ float4 CreateSunTexPS(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 	float q = 0.5f + 1.0f * pow(sin(3.0f * a), 4.0f);
 	float w = 0.5f + 0.8f * pow(sin(30.0f * a), 2.0f) * pow(sin(41.0f * a), 2.0f);
 
-	float I = pow(max(0, (1 - r / q)), 6.0f) * 2;
-	float K = pow(max(0, (1 - r / w)), 6.0f) * 6;
+	float I = pow(max(0, (1 - r / q)), 6.0f) * 1;
+	float K = pow(max(0, (1 - r / w)), 6.0f) * 3;
 
-	float L = ilerp(0.15, 0.10, r) * 4.0f;
+	float L = ilerp(0.08, 0.03, r) * 8.0f;
 	float T = max(0, max(I + L, K + L));
 
 	T = saturate(1.0f - exp(-T));
