@@ -620,12 +620,12 @@ void vPlanet::UpdateScatter()
 
 	// Skip the rest if no atmosphere exists
 	// ------------------------------------------------------------------------------------------------------------
-
-	cp.AtmoAlt = atmo->visalt;
-	cp.AtmoRad = atmo->visalt + cp.PlanetRad;
+	float visalt = atmo->visalt;
+	cp.AtmoAlt = visalt;
+	cp.AtmoRad = visalt + cp.PlanetRad;
 	cp.AtmoRad2 = cp.AtmoRad * cp.AtmoRad;
 	cp.CloudAlt = prm.bCloud ? float(atmo->aux2 * 1e3f) : 0.0f;
-	cp.CamSpace = sqrt(saturate(cp.CamAlt / atmo->visalt));
+	cp.CamSpace = sqrt(saturate(cp.CamAlt / visalt));
 	cp.AngMin = -sqrt(max(1.0f, cp.CamRad2 - cp.PlanetRad2)) / cp.CamRad;
 	cp.AngRng = 1.0f - cp.AngMin;
 	cp.iAngRng = 1.0f / cp.AngRng;
@@ -932,7 +932,7 @@ bool vPlanet::LoadAtmoConfig()
 	}
 	
 	FILEHANDLE hFile = oapiOpenFile(path, FILE_IN_ZEROONFAIL, CONFIG);
-	if (!hFile) hFile = oapiOpenFile("GC/Moon.atm.cfg", FILE_IN_ZEROONFAIL, CONFIG);
+	if (!hFile) hFile = oapiOpenFile("GC/Mercury.atm.cfg", FILE_IN_ZEROONFAIL, CONFIG);
 	if (!hFile) LogErr("Failed to initialize configuration for [%s]", name);
 
 	LogAlw("Loading Atmospheric Configuration file [%s] Handle=%s", path, _PTR(hFile));
@@ -1245,6 +1245,7 @@ void vPlanet::TestComputations(Sketchpad* pSkp)
 	D3D9DebugLog("Sunlight RGB(%f, %f, %f)", cl.x, cl.y, cl.z);
 	D3D9DebugLog("InScatter RGB(%f, %f, %f)", is.x, is.y, is.z);
 	D3D9DebugLog("RayLength = %f vs %f, sa = %f, sl = %f", rl, rf, sa, sl);
+	D3D9DebugLog("AtmoAlt = %f(km)", cp.AtmoAlt/1000.0f);
 
 	double u = dot(vPos, TestPrm.Up);
 	double t = dot(vPos, TestPrm.ZeroAz);
@@ -1275,17 +1276,10 @@ void vPlanet::TestComputations(Sketchpad* pSkp)
 			float lf = max(0, sp.ca) / max(1.0f, abs(sp.hd)); // Lerp Factor
 			float mp = lerp((sp.ax + s0) * 0.5f, sp.hd, saturate(lf));
 
-			bool bA = (sp.se > sp.ax || sp.se < 0);
-			//bool bB = (sp.sx > sp.ax || sp.sx < 0);
-
-			/*if (bB && bA) sp.sx = sp.se = mp;
-			else {
-				if (bA) sp.se = mp;
-				if (bB) sp.sx = sp.ax;
-			}*/
+			bool bA = (sp.se > sp.ax || sp.se < 0);			
 
 			e0 = bA ? mp : sp.se;
-			s1 = bA ? mp : sp.sx;
+			s1 = bA ? mp : max(sp.sx, sp.ae);
 			e1 = sp.ax;
 		}
 	}

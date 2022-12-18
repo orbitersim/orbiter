@@ -436,16 +436,9 @@ IData PostProcessData(RayData sp)
 		float mp = lerp((sp.ax + d.s0) * 0.5f, sp.hd, saturate(lf));
 
 		bool bA = (sp.se > sp.ax || sp.se < 0);
-		//bool bB = (sp.sx > sp.ax || sp.sx < 0);
-
-		/*if (bB && bA) sp.sx = sp.se = mp;
-		else {
-			if (bA) sp.se = mp;
-			if (bB) sp.sx = sp.ax;
-		}*/
-
+		
 		d.e0 = bA ? mp : sp.se;
-		d.s1 = bA ? mp : sp.sx;
+		d.s1 = bA ? mp : max(sp.sx, sp.ae);
 		d.e1 = sp.ax;
 	}
 	return d;

@@ -65,7 +65,7 @@ void D3D9Config::Reset ()
 	FrameRate			= 200.0;
 	EnableLimiter		= 0;
 	CustomCamMode		= 1;
-	TileMipmaps			= 0;
+	TileMipmaps			= 1;
 	TextureMips			= 1;
 	LODBias				= 0.0;
 	MeshRes				= 1;
