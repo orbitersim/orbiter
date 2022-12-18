@@ -161,8 +161,10 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 	if (Config->ShaderCacheUse) {
 		DWORD fa = GetFileAttributesA("Cache");
 		if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA("Cache", NULL);
-		fa = GetFileAttributesA("Cache/Shaders");
-		if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA("Cache/Shaders", NULL);
+		fa = GetFileAttributesA("Cache/D3D9Client");
+		if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA("Cache/D3D9Client", NULL);
+		fa = GetFileAttributesA("Cache/D3D9Client/Shaders");
+		if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA("Cache/D3D9Client/Shaders", NULL);
 	}
 
 	g_pConst = new gcConst();

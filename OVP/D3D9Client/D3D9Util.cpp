@@ -904,7 +904,7 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 	char filename[MAX_PATH];
 
 	string last = path.substr(path.find_last_of("\\/") + 1);
-	sprintf_s(filename, MAX_PATH, "Cache/Shaders/%s_%s_%hX_%s.bin", name, function, crc, last.c_str());
+	sprintf_s(filename, MAX_PATH, "Cache/D3D9Client/Shaders/%s_%s_%hX_%s.bin", name, function, crc, last.c_str());
 
 	if (Config->ShaderCacheUse)
 	{
@@ -1044,7 +1044,7 @@ LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *
 	char filename[MAX_PATH];
 
 	string last = path.substr(path.find_last_of("\\/") + 1);
-	sprintf_s(filename, MAX_PATH, "Cache/Shaders/%s_%s_%hX_%s.bin", name, function, crc, last.c_str());
+	sprintf_s(filename, MAX_PATH, "Cache/D3D9Client/Shaders/%s_%s_%hX_%s.bin", name, function, crc, last.c_str());
 
 	if (Config->ShaderCacheUse)
 	{
