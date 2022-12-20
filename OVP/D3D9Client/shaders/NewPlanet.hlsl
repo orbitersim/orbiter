@@ -669,10 +669,7 @@ CldVS CloudVS(TILEVERTEX vrt)
 // 
 float4 CloudPS(CldVS frg) : COLOR
 {
-
-	float2 vUVMic = frg.texUV.xy * Prm.vMicroOff.zw + Prm.vMicroOff.xy;
 	float2 vUVTex = frg.texUV.xy;
-
 	float4 cTex = tex2D(tDiff, vUVTex);
 	float3 vRay;
 	float3 vPxl;
@@ -711,6 +708,7 @@ float4 CloudPS(CldVS frg) : COLOR
 	// -----------------------------------------------
 
 #if defined(_CLOUDMICRO)
+	float2 vUVMic = frg.texUV.xy * Prm.vMicroOff.zw + Prm.vMicroOff.xy;
 	float4 cMic = tex2D(tCloudMicro, vUVMic);
 #endif
 

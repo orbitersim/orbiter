@@ -375,6 +375,7 @@ public:
 		    ~ShaderClass();
 	void	ClearTextures();
 	void    UpdateTextures();
+	void	DetachTextures();
 	void	Setup(LPDIRECT3DVERTEXDECLARATION9 pDecl, bool bZ, int blend);
 	HANDLE	GetPSHandle(const char* name);
 	HANDLE	GetVSHandle(const char* name);

@@ -517,6 +517,8 @@ private:
 	LPDIRECT3DSURFACE9 psShmRT[SHM_LOD_COUNT];
 	LPDIRECT3DTEXTURE9 ptShmRT[SHM_LOD_COUNT];
 
+	LocalLightsCompute LLCBuf[MAX_SCENE_LIGHTS + 1];
+
 	// Rendering Technique related parameters ============================================
 	//
 	static ID3DXEffect	*FX;

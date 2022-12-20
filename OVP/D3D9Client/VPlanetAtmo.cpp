@@ -81,7 +81,8 @@ void vPlanet::GlobalInitAtmosphere(oapi::D3D9Client* gc)
 {
 	pDev = gc->GetDevice();
 
-	pIP = new ImageProcessing(pDev, "Modules/D3D9Client/Scatter.hlsl", "SunColor");
+	if (Config->bAtmoQuality) pIP = new ImageProcessing(pDev, "Modules/D3D9Client/Scatter.hlsl", "SunColor");
+	else pIP = new ImageProcessing(pDev, "Modules/D3D9Client/Scatter.hlsl", "SunColor", "_PERFORMANCE");
 
 	pIP->CompileShader("SkyView");
 	pIP->CompileShader("LandView");
@@ -94,12 +95,18 @@ void vPlanet::GlobalInitAtmosphere(oapi::D3D9Client* gc)
 		return;
 	}
 
-
 	// Get Texture size constants form shader file
 	//
-	Wc = pIP->FindDefine("Wc");
-	Nc = pIP->FindDefine("Nc");
-	Qc = pIP->FindDefine("Qc");
+	//Wc = pIP->FindDefine("Wc");
+	//Nc = pIP->FindDefine("Nc");
+	//Qc = pIP->FindDefine("Qc");
+
+	if (Config->bAtmoQuality) {
+		Nc = 8;	Wc = 128; Qc = 96;
+	}
+	else {
+		Nc = 6;	Wc = 72; Qc = 64;
+	}
 
 	bool bRiples = *(bool*)gc->GetConfigParam(CFGPRM_SURFACERIPPLE);
 	bool bShadows = *(bool*)gc->GetConfigParam(CFGPRM_CLOUDSHADOWS);
@@ -115,6 +122,8 @@ void vPlanet::GlobalInitAtmosphere(oapi::D3D9Client* gc)
 
 	string blend = "";
 	string flags = "";
+	if (!Config->bAtmoQuality) flags += "_PERFORMANCE ";
+
 	pRender[PLT_GIANT] = new PlanetShader(pDev, "Modules/D3D9Client/NewPlanet.hlsl", "GiantVS", "GiantPS", "Giant", flags.c_str());
 	pRender[PLT_G_CLOUDS] = new PlanetShader(pDev, "Modules/D3D9Client/NewPlanet.hlsl", "CloudVS", "GiantCloudPS", "GiantCloud", flags.c_str());
 
@@ -134,6 +143,7 @@ void vPlanet::GlobalInitAtmosphere(oapi::D3D9Client* gc)
 	if (Config->MicroMode) flags += "_MICROTEX ";
 	if (Config->ShadowMapMode) flags += "_SHDMAP ";
 	if (Config->EnableMeshDbg) flags += "_DEVTOOLS ";
+	if (!Config->bAtmoQuality) flags += "_PERFORMANCE ";
 
 	pRender[PLT_MARS] = new PlanetShader(pDev, "Modules/D3D9Client/NewPlanet.hlsl", "TerrainVS", "TerrainPS", "Mars", (flags + blend).c_str());
 
@@ -153,6 +163,7 @@ void vPlanet::GlobalInitAtmosphere(oapi::D3D9Client* gc)
 
 	if (Config->ShadowMapMode) flags += "_SHDMAP ";
 	if (Config->EnableMeshDbg) flags += "_DEVTOOLS ";
+	if (!Config->bAtmoQuality) flags += "_PERFORMANCE ";
 
 	pRender[PLT_EARTH] = new PlanetShader(pDev, "Modules/D3D9Client/NewPlanet.hlsl", "TerrainVS", "TerrainPS", "Earth", (flags + blend).c_str());
 }

@@ -215,3 +215,5 @@
 #define IDC_ELIGHTSGLARE                        3031
 #define IDC_EIRRAD                              3032
 #define IDC_EARTHVISCFG                         3033
+#define IDC_ESCACHE                             3034
+#define IDC_EAQUALITY                           3035

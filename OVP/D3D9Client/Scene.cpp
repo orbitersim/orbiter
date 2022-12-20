@@ -241,8 +241,10 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 
 	// Create an auxiliary screen space normal and depth buffer (i.e. Shader readable depth buffer)
 	//
-	HR(pDevice->CreateDepthStencilSurface(viewW, viewH, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, true, &pDepthNormalDS, NULL));
-	HR(D3DXCreateTexture(pDevice, viewW, viewH, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_DEPTH]));
+	if (Config->bGlares || Config->bLocalGlares) {
+		HR(pDevice->CreateDepthStencilSurface(viewW, viewH, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, true, &pDepthNormalDS, NULL));
+		HR(D3DXCreateTexture(pDevice, viewW, viewH, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_DEPTH]));
+	}
 
 
 	// Initialize post processing effects --------------------------------------------------------------------------------------------------
@@ -1146,26 +1148,29 @@ void Scene::AddLocalLight(const LightEmitter *le, const vObject *vo)
 //
 void Scene::ComputeLocalLightsVisibility()
 {
-	static LocalLightsCompute Buf[MAX_SCENE_LIGHTS + 1];
 
-	if (!ptgBuffer[GBUF_DEPTH] || !pLocalCompute) return;
+	if (!ptgBuffer[GBUF_DEPTH] || !pLocalCompute) {
+		Config->bGlares = false;
+		Config->bLocalGlares = false;
+		return;
+	}
 
 	VECTOR3 gsun;
 	oapiGetGlobalPos(oapiGetObjectByIndex(0), &gsun);
 
 	// Put the Sun on a top of the list
-	Buf[0].index = 0.0f;
-	Buf[0].pos = FVECTOR3(unit(gsun - Camera.pos)) * 10e4;
-	Buf[0].cone = 1.0f;
+	LLCBuf[0].index = 0.0f;
+	LLCBuf[0].pos = FVECTOR3(unit(gsun - Camera.pos)) * 10e4;
+	LLCBuf[0].cone = 1.0f;
 
 	int nGlares = 1;
 
 	for (int i = 0; i < nLights; i++)
 	{
 		if (Lights[i].cone > 0.0f) {
-			Buf[nGlares].index = float(nGlares);
-			Buf[nGlares].pos = Lights[i].Position;
-			Buf[nGlares].cone = Lights[i].cone;
+			LLCBuf[nGlares].index = float(nGlares);
+			LLCBuf[nGlares].pos = Lights[i].Position;
+			LLCBuf[nGlares].cone = Lights[i].cone;
 			Lights[i].GPUId = nGlares;
 			nGlares++;
 		}
@@ -1201,8 +1206,9 @@ void Scene::ComputeLocalLightsVisibility()
 	pLocalCompute->UpdateTextures();
 
 	// Compute local lights visibility
-	HR(pDevice->DrawPrimitiveUP(D3DPT_POINTLIST, nGlares, &Buf, sizeof(LocalLightsCompute)));
+	HR(pDevice->DrawPrimitiveUP(D3DPT_POINTLIST, nGlares, &LLCBuf, sizeof(LocalLightsCompute)));
 
+	pLocalCompute->DetachTextures();
 	gc->PopRenderTargets();
 }
 
@@ -1392,25 +1398,27 @@ void Scene::RenderMainScene()
 	// Start Rendering of Normal and Depth Buffer for SSAO and (point in scene) visibility checks
 	// ---------------------------------------------------------------------------------------------
 
-	SetCameraFrustumLimits(0.1f, 1e6f);
-	BeginPass(RENDERPASS_NORMAL_DEPTH);
+	if (psgBuffer[GBUF_DEPTH] && pDepthNormalDS)
+	{
+		SetCameraFrustumLimits(0.1f, 1e6f);
+		BeginPass(RENDERPASS_NORMAL_DEPTH);
 
-	gc->PushRenderTarget(psgBuffer[GBUF_DEPTH], pDepthNormalDS, RENDERPASS_NORMAL_DEPTH);
+		gc->PushRenderTarget(psgBuffer[GBUF_DEPTH], pDepthNormalDS, RENDERPASS_NORMAL_DEPTH);
 
-	RecallDefaultState();
-	
-	// Clear buffers
-	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0L));
+		RecallDefaultState();
 
-	// Render vessels
-	for (auto* vVes : RenderList) vVes->Render(pDevice, false);
+		// Clear buffers
+		HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0L));
 
-	// Render Cockpit
-	if (oapiCameraInternal() && vFocus) vFocus->Render(pDevice, true);
+		// Render vessels
+		for (auto* vVes : RenderList) vVes->Render(pDevice, false);
 
-	gc->PopRenderTargets();
-	PopPass();
+		// Render Cockpit
+		if (oapiCameraInternal() && vFocus) vFocus->Render(pDevice, true);
 
+		gc->PopRenderTargets();
+		PopPass();
+	}
 
 	// ---------------------------------------------------------------------------------------------
 	// Compute visibility of the Sun and Local light sources. After field depth render ! ! !
@@ -2093,7 +2101,11 @@ void Scene::RenderMainScene()
 
 	if (pSketch) {
 		gc->MakeRenderProcCall(pSketch, RENDERPROC_HUD_1ST, NULL, NULL);
-		gc->Render2DOverlay();
+		pSketch->EndDrawing(); // SKETCHPAD_2D_OVERLAY
+	}
+	gc->Render2DOverlay();
+	pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
+	if (pSketch) {
 		gc->MakeRenderProcCall(pSketch, RENDERPROC_HUD_2ND, NULL, NULL);
 		pSketch->EndDrawing(); // SKETCHPAD_2D_OVERLAY
 	}
@@ -3576,7 +3588,7 @@ void Scene::RenderGlares()
 	// Render glares for the Sun and local lights
 	// -------------------------------------------------------------------------------------------------------
 
-	if (pRenderGlares)
+	if (pRenderGlares && pLocalResultsSL)
 	{
 		static SMVERTEX Vertex[4] = { {-1, -1, 0, 0, 0}, {-1, 1, 0, 0, 1}, {1, 1, 0, 1, 1}, {1, -1, 0, 1, 0} };
 		static WORD cIndex[6] = { 0, 2, 1, 0, 3, 2 };
@@ -3591,7 +3603,7 @@ void Scene::RenderGlares()
 		pRenderGlares->Setup(pPosTexDecl, false, 1);
 		pRenderGlares->SetTextureVS("tVis", pLocalResults, IPF_CLAMP | IPF_POINT); // Set texture containing pre-cumputed visibility factors
 
-		if (Config->bGlares)
+		if (Config->bGlares && pSunGlare)
 		{
 			pRenderGlares->SetTexture("tTex0", pSunGlare, IPF_CLAMP | IPF_LINEAR);
 			//pRenderGlares->SetTexture("tTex1", pSunGlareAtm, IPF_CLAMP | IPF_LINEAR);
@@ -3633,7 +3645,7 @@ void Scene::RenderGlares()
 			}
 		}
 
-		if (Config->bLocalGlares)
+		if (Config->bLocalGlares && pLightGlare)
 		{
 			pRenderGlares->SetTexture("tTex0", pLightGlare, IPF_CLAMP | IPF_LINEAR);
 			pRenderGlares->UpdateTextures();
@@ -3656,6 +3668,7 @@ void Scene::RenderGlares()
 				}
 			}
 		}
+		pRenderGlares->DetachTextures();
 	}
 }
 

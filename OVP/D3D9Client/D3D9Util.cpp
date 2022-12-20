@@ -1711,6 +1711,17 @@ void ShaderClass::ClearTextures()
 	}
 }
 
+void ShaderClass::DetachTextures()
+{
+	ClearTextures();
+	for (int i = 0; i < 16; i++) HR(pDev->SetTexture(i, NULL));
+
+	HR(pDev->SetTexture(D3DVERTEXTEXTURESAMPLER0, NULL));
+	HR(pDev->SetTexture(D3DVERTEXTEXTURESAMPLER1, NULL));
+	HR(pDev->SetTexture(D3DVERTEXTEXTURESAMPLER2, NULL));
+	HR(pDev->SetTexture(D3DVERTEXTEXTURESAMPLER3, NULL));
+}
+
 
 void ShaderClass::UpdateTextures()
 {
@@ -1718,6 +1729,8 @@ void ShaderClass::UpdateTextures()
 	//
 	for (int idx = 0; idx < ARRAYSIZE(pTextures); idx++)
 	{
+		int sid = idx > 15 ? idx - 16 + D3DVERTEXTEXTURESAMPLER0 : idx;
+
 		if (pTextures[idx].pTex == NULL) continue;
 
 		// If sampler state is not set, then set it
@@ -1727,17 +1740,17 @@ void ShaderClass::UpdateTextures()
 			pTextures[idx].bSamplerSet = true;
 			DWORD flags = pTextures[idx].Flags;
 
-			if (flags & IPF_CLAMP_U)		pDev->SetSamplerState(idx, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
-			else if (flags & IPF_MIRROR_U)	pDev->SetSamplerState(idx, D3DSAMP_ADDRESSU, D3DTADDRESS_MIRROR);
-			else							pDev->SetSamplerState(idx, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP);
+			if (flags & IPF_CLAMP_U)		pDev->SetSamplerState(sid, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
+			else if (flags & IPF_MIRROR_U)	pDev->SetSamplerState(sid, D3DSAMP_ADDRESSU, D3DTADDRESS_MIRROR);
+			else							pDev->SetSamplerState(sid, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP);
 
-			if (flags & IPF_CLAMP_V)		pDev->SetSamplerState(idx, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
-			else if (flags & IPF_MIRROR_V)	pDev->SetSamplerState(idx, D3DSAMP_ADDRESSV, D3DTADDRESS_MIRROR);
-			else							pDev->SetSamplerState(idx, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);
+			if (flags & IPF_CLAMP_V)		pDev->SetSamplerState(sid, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
+			else if (flags & IPF_MIRROR_V)	pDev->SetSamplerState(sid, D3DSAMP_ADDRESSV, D3DTADDRESS_MIRROR);
+			else							pDev->SetSamplerState(sid, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);
 
-			if (flags & IPF_CLAMP_W)		pDev->SetSamplerState(idx, D3DSAMP_ADDRESSW, D3DTADDRESS_CLAMP);
-			else if (flags & IPF_MIRROR_W)	pDev->SetSamplerState(idx, D3DSAMP_ADDRESSW, D3DTADDRESS_MIRROR);
-			else							pDev->SetSamplerState(idx, D3DSAMP_ADDRESSW, D3DTADDRESS_WRAP);
+			if (flags & IPF_CLAMP_W)		pDev->SetSamplerState(sid, D3DSAMP_ADDRESSW, D3DTADDRESS_CLAMP);
+			else if (flags & IPF_MIRROR_W)	pDev->SetSamplerState(sid, D3DSAMP_ADDRESSW, D3DTADDRESS_MIRROR);
+			else							pDev->SetSamplerState(sid, D3DSAMP_ADDRESSW, D3DTADDRESS_WRAP);
 
 			DWORD filter = D3DTEXF_POINT;
 
@@ -1746,19 +1759,19 @@ void ShaderClass::UpdateTextures()
 			if (flags & IPF_GAUSSIAN) filter = D3DTEXF_GAUSSIANQUAD;
 			if (flags & IPF_ANISOTROPIC) filter = D3DTEXF_ANISOTROPIC;
 
-			HR(pDev->SetSamplerState(idx, D3DSAMP_SRGBTEXTURE, false));
-			HR(pDev->SetSamplerState(idx, D3DSAMP_MAXANISOTROPY, pTextures[idx].AnisoLvl));
-			HR(pDev->SetSamplerState(idx, D3DSAMP_MAGFILTER, filter));
-			HR(pDev->SetSamplerState(idx, D3DSAMP_MINFILTER, filter));
-			HR(pDev->SetSamplerState(idx, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR));
+			HR(pDev->SetSamplerState(sid, D3DSAMP_SRGBTEXTURE, false));
+			HR(pDev->SetSamplerState(sid, D3DSAMP_MAXANISOTROPY, pTextures[idx].AnisoLvl));
+			HR(pDev->SetSamplerState(sid, D3DSAMP_MAGFILTER, filter));
+			HR(pDev->SetSamplerState(sid, D3DSAMP_MINFILTER, filter));
+			if (idx <= 15) { HR(pDev->SetSamplerState(sid, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR)); }
+			else { HR(pDev->SetSamplerState(sid, D3DSAMP_MIPFILTER, D3DTEXF_POINT)); }
 		}
 
 		// If texture has changed then assign it
 		if (pTextures[idx].pTex != pTextures[idx].pAssigned)
 		{
 			pTextures[idx].pAssigned = pTextures[idx].pTex;
-			int id = idx > 15 ? idx - 16 + D3DVERTEXTEXTURESAMPLER0 : idx;
-			HR(pDev->SetTexture(id, pTextures[idx].pTex));
+			HR(pDev->SetTexture(sid, pTextures[idx].pTex));
 		}
 	}
 }

@@ -5,9 +5,15 @@
 // Copyright (C) 2022 Jarmo Nikkanen
 // ============================================================================
 
+#if defined(_PERFORMANCE) // DO NOT CHANGE THESE, MUST MATCH WITH C++ CODE
+#define Nc  6		//Z-dimension count in 3D texture
+#define Wc  72		//3D texture size (pixels)
+#define Qc  64		//2D texture size (pixels)
+#else
 #define Nc  8		//Z-dimension count in 3D texture
 #define Wc  128		//3D texture size (pixels)
 #define Qc  96		//2D texture size (pixels)
+#endif
 
 
 #define NSEG 5

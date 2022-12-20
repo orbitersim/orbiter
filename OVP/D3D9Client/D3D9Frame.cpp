@@ -303,18 +303,6 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 
 	// Do Some Additional Hardware Checks ===================================================================
 	
-	
-	// Check vertex texture support
-	//
-	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_QUERY_VERTEXTEXTURE, D3DRTYPE_CUBETEXTURE, D3DFMT_A32B32G32R32F)==S_OK) {
-		bVertexTexture = true;
-		LogOapi("Vertex Texture.......... : Yes");
-	}
-	else {
-		bVertexTexture = false;
-		LogOapi("Vertex Texture.......... : No");
-	}
-
 	if (caps.PrimitiveMiscCaps & D3DPMISCCAPS_SEPARATEALPHABLEND) {
 		LogOapi("Separate AlphaBlend..... : Yes");
 	}
@@ -338,6 +326,23 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 				  
 	if (bFloat16BB) LogOapi("D3DFMT_A16B16G16R16F.... : Yes");
 	else		    LogOapi("D3DFMT_A16B16G16R16F.... : No");
+
+	HRESULT VT16BB = pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_QUERY_VERTEXTEXTURE, D3DRTYPE_TEXTURE, D3DFMT_A16B16G16R16F);
+	HRESULT VT32BB = pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_QUERY_VERTEXTEXTURE, D3DRTYPE_TEXTURE, D3DFMT_A32B32G32R32F);
+	HRESULT VT16BC = pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_QUERY_VERTEXTEXTURE, D3DRTYPE_TEXTURE, D3DFMT_R16F);
+	HRESULT VT32BC = pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_QUERY_VERTEXTEXTURE, D3DRTYPE_TEXTURE, D3DFMT_R32F);
+
+	if (VT16BB == S_OK) LogOapi("Vertex_A16B16G16R16F.... : Yes");
+	else 				LogOapi("Vertex_A16B16G16R16F.... : No");
+	if (VT32BB == S_OK) LogOapi("Vertex_A32B32G32R32F.... : Yes");
+	else 				LogOapi("Vertex_A32B32G32R32F.... : No");
+	if (VT16BC == S_OK) LogOapi("Vertex_R16F............. : Yes");
+	else 				LogOapi("Vertex_R16F............. : No");
+	if (VT32BC == S_OK) LogOapi("Vertex_R32F............. : Yes");
+	else 				LogOapi("Vertex_R32F............. : No");
+
+	if (VT16BB != S_OK || VT32BB != S_OK || VT16BC != S_OK || VT32BC != S_OK) bFail = true;
+	
 
 	bool bFloat32BB = true;
 	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_A32B32G32R32F)!=S_OK) bFloat32BB = false;

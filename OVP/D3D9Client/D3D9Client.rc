@@ -235,14 +235,14 @@ FONT 8, "MS Sans Serif", 0, 0, 0
     COMBOBOX        IDC_AF, 85, 125, 35, 15, WS_TABSTOP | CBS_DROPDOWNLIST | CBS_HASSTRINGS, WS_EX_LEFT
     EDITTEXT        IDC_PLANETGLOW, 85, 142, 35, 14, ES_AUTOHSCROLL, WS_EX_LEFT
     AUTOCHECKBOX    "Pre-load base visuals at startup", IDC_BASEVIS, 20, 240, 114, 8, 0, WS_EX_LEFT
-    AUTOCHECKBOX    "Enable cloud micro-textures", IDC_CLOUDMICRO, 20, 300, 103, 8, 0, WS_EX_LEFT
-    AUTOCHECKBOX    "Enable cloud normal maps", IDC_CLOUDNORM, 20, 314, 99, 8, 0, WS_EX_LEFT
-    AUTOCHECKBOX    "Enable GDI Overlay", IDC_GDIOVERLAY, 20, 328, 79, 8, 0, WS_EX_LEFT
-    AUTOCHECKBOX    "Enable absolute animation handling", IDC_ABSANIM, 20, 343, 127, 8, 0, WS_EX_LEFT
-    AUTOCHECKBOX    "Enable terrain flattening", IDC_FLATS, 370, 275, 90, 8, 0, WS_EX_LEFT
-    AUTOCHECKBOX    "Enable advanced texture maps", IDC_NORMALMAPS, 20, 255, 114, 8, 0, WS_EX_LEFT
-    AUTOCHECKBOX    "Enable improved glass shading", IDC_GLASSSHADE, 20, 270, 113, 8, 0, WS_EX_LEFT
-    AUTOCHECKBOX    "Disable near clip plane compatibility mode", IDC_NEARPLANE, 20, 285, 147, 8, 0, WS_EX_LEFT
+    AUTOCHECKBOX    "Enable cloud micro-textures", IDC_CLOUDMICRO, 20, 292, 103, 8, 0, WS_EX_LEFT
+    AUTOCHECKBOX    "Enable cloud normal maps", IDC_CLOUDNORM, 20, 305, 99, 8, 0, WS_EX_LEFT
+    AUTOCHECKBOX    "Enable GDI Overlay", IDC_GDIOVERLAY, 20, 318, 79, 8, 0, WS_EX_LEFT
+    AUTOCHECKBOX    "Enable absolute animation handling", IDC_ABSANIM, 20, 331, 127, 8, 0, WS_EX_LEFT
+    AUTOCHECKBOX    "Enable terrain flattening", IDC_FLATS, 370, 286, 90, 8, 0, WS_EX_LEFT
+    AUTOCHECKBOX    "Enable advanced texture maps", IDC_NORMALMAPS, 20, 252, 114, 8, 0, WS_EX_LEFT
+    AUTOCHECKBOX    "Enable improved glass shading", IDC_GLASSSHADE, 20, 265, 113, 8, 0, WS_EX_LEFT
+    AUTOCHECKBOX    "Disable near clip plane compatibility mode", IDC_NEARPLANE, 20, 279, 147, 8, 0, WS_EX_LEFT
     CONTROL         "", IDC_LODBIAS, TRACKBAR_CLASS, WS_TABSTOP | TBS_AUTOTICKS | TBS_TOP, 256, 147, 95, 20, WS_EX_LEFT
     CONTROL         "", IDC_MESHRES, TRACKBAR_CLASS, WS_TABSTOP | TBS_AUTOTICKS | TBS_TOP, 258, 182, 70, 20, WS_EX_LEFT
     CONTROL         "", IDC_MICROBIAS, TRACKBAR_CLASS, WS_TABSTOP | TBS_AUTOTICKS | TBS_TOP, 435, 222, 95, 20, WS_EX_LEFT
@@ -304,11 +304,13 @@ FONT 8, "MS Sans Serif", 0, 0, 0
     LTEXT           "Texture Bias", IDC_STATIC, 201, 153, 40, 8, SS_LEFT, WS_EX_LEFT
     LTEXT           "Mesh resolution", IDC_STATIC, 201, 185, 50, 8, SS_LEFT, WS_EX_LEFT
     AUTOCHECKBOX    "Enable debug break", IDC_BREAK, 200, 99, 80, 8, 0, WS_EX_LEFT
-    AUTOCHECKBOX    "Enable sun glare", IDC_ESUNGLARE, 370, 263, 69, 8, 0, WS_EX_LEFT
-    AUTOCHECKBOX    "Enable local lights glare", IDC_ELIGHTSGLARE, 370, 289, 90, 8, NOT WS_VISIBLE | WS_DISABLED, WS_EX_LEFT
-    AUTOCHECKBOX    "Enable dynamic ambient light", IDC_EIRRAD, 370, 250, 107, 8, 0, WS_EX_LEFT
+    AUTOCHECKBOX    "Enable sun glare", IDC_ESUNGLARE, 370, 274, 69, 8, 0, WS_EX_LEFT
+    AUTOCHECKBOX    "Enable local lights glare", IDC_ELIGHTSGLARE, 370, 299, 90, 8, NOT WS_VISIBLE | WS_DISABLED, WS_EX_LEFT
+    AUTOCHECKBOX    "Enable dynamic ambient light", IDC_EIRRAD, 370, 262, 107, 8, 0, WS_EX_LEFT
     COMBOBOX        IDC_EARTHVISCFG, 85, 212, 90, 15, WS_TABSTOP | CBS_DROPDOWNLIST | CBS_HASSTRINGS, WS_EX_LEFT
     LTEXT           "Earth visual config", IDC_STATIC, 17, 215, 59, 9, SS_LEFT, WS_EX_LEFT
+    AUTOCHECKBOX    "Enable shader cache for faster startup", IDC_ESCACHE, 370, 250, 136, 8, 0, WS_EX_LEFT
+    AUTOCHECKBOX    "Enable increased atmosphere quality", IDC_EAQUALITY, 20, 344, 131, 8, 0, WS_EX_LEFT
 }
 
 

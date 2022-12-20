@@ -117,7 +117,8 @@ void CloudTile::Render()
 	// -------------------------------------------------------------------
 	// render surface mesh
 	if (cfg != PLT_GIANT) {
-		pShader->SetPSConstants(pShader->Prm, sp, sizeof(ShaderParams));
+		if (Config->CloudMicro)
+			pShader->SetPSConstants(pShader->Prm, sp, sizeof(ShaderParams));
 	}
 	pShader->SetVSConstants(pShader->PrmVS, sp, sizeof(ShaderParams));
 
@@ -189,8 +190,11 @@ void TileManager2<CloudTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlan
 
 	if (cfg != PLT_GIANT)
 	{
-		pShader->SetTexture("tCloudMicro", hCloudMicro, IPF_ANISOTROPIC | IPF_WRAP, Config->Anisotrophy);
-		pShader->SetTexture("tCloudMicroNorm", hCloudMicroNorm, IPF_ANISOTROPIC | IPF_WRAP, Config->Anisotrophy);
+		if (Config->CloudMicro) {
+			pShader->SetTexture("tCloudMicro", hCloudMicro, IPF_ANISOTROPIC | IPF_WRAP, Config->Anisotrophy);
+			if (Config->bCloudNormals)
+				pShader->SetTexture("tCloudMicroNorm", hCloudMicroNorm, IPF_ANISOTROPIC | IPF_WRAP, Config->Anisotrophy);
+		}
 		pShader->SetTexture("tSun", vp->GetScatterTable(SUN_COLOR), IPF_LINEAR | IPF_CLAMP);
 		pShader->SetTexture("tLndRay", vp->GetScatterTable(RAY_LAND), IPF_LINEAR | IPF_CLAMP);
 		pShader->SetTexture("tLndAtn", vp->GetScatterTable(ATN_LAND), IPF_LINEAR | IPF_CLAMP);
