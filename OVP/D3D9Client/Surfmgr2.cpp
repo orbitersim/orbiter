@@ -906,6 +906,7 @@ void SurfTile::Render ()
 
 	
 	fc->bCloudShd = has_shadows;
+	fc->bMicroTex = has_microtex;
 	fc->bLocals = false;
 	fc->bOverlay = false;
 	fc->bMask = false;

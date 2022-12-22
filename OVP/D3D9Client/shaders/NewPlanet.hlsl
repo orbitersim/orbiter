@@ -80,6 +80,7 @@ struct FlowControlPS
 	BOOL bCloudShd;
 	BOOL bMask;
 	BOOL bRipples;
+	BOOL bMicroTex;
 };
 
 struct FlowControlVS
@@ -499,38 +500,40 @@ float4 TerrainPS(TileVS frg) : COLOR
 	//
 #if defined(_MICROTEX)
 
-
-	float step1 = smoothstep(15000, 3000, dst);
-	step1 *= (step1 * step1);
-	float3 cFnl = max(0, min(2, 1.333f * (cFar + cMed + cLow) - 1));
-
-	// Create normals
-	if (Flow.bMicroNormals)
+	if (Flow.bMicroTex)
 	{
-		cFnl = cFnl.bbb;
+		float step1 = smoothstep(15000, 3000, dst);
+		step1 *= (step1 * step1);
+		float3 cFnl = max(0, min(2, 1.333f * (cFar + cMed + cLow) - 1));
+
+		// Create normals
+		if (Flow.bMicroNormals)
+		{
+			cFnl = cFnl.bbb;
 
 #if defined(_SOFT)
-		float2 cMix = (cFar.rg + cMed.rg + cLow.rg) * 0.6666f;			// SOFT BLEND
+			float2 cMix = (cFar.rg + cMed.rg + cLow.rg) * 0.6666f;			// SOFT BLEND
 #endif
 #if defined(_MED)
-		float2 cMix = (cFar.rg + 0.5f) * (cMed.rg + 0.5f) * (cLow.rg + 0.5f);	// MEDIUM BLEND
+			float2 cMix = (cFar.rg + 0.5f) * (cMed.rg + 0.5f) * (cLow.rg + 0.5f);	// MEDIUM BLEND
 #endif
 #if defined(_HARD)
-		float2 cMix = cFar.rg * cMed.rg * cLow.rg * 8.0f;				// HARD BLEND
+			float2 cMix = cFar.rg * cMed.rg * cLow.rg * 8.0f;				// HARD BLEND
 #endif
 
-		float3 cNrm = float3((cMix - 1.0f) * 2.0f, 0) * step1;
-		cNrm.z = cos(cNrm.x * cNrm.y * 1.57);
+			float3 cNrm = float3((cMix - 1.0f) * 2.0f, 0) * step1;
+			cNrm.z = cos(cNrm.x * cNrm.y * 1.57);
 
-		// Approximate world space normal
-		nrmW = normalize((Const.vTangent * cNrm.x) + (Const.vBiTangent * cNrm.y) + (nvrW * cNrm.z));
+			// Approximate world space normal
+			nrmW = normalize((Const.vTangent * cNrm.x) + (Const.vBiTangent * cNrm.y) + (nvrW * cNrm.z));
 
-		// Bend the normal towards sun a bit
-		nrmW = normalize(nrmW + Const.toSun * 0.06f);
+			// Bend the normal towards sun a bit
+			nrmW = normalize(nrmW + Const.toSun * 0.06f);
+		}
+
+		// Apply luminance
+		cTex.rgb *= lerp(1.0f, cFnl, step1);
 	}
-
-	// Apply luminance
-	cTex.rgb *= lerp(1.0f, cFnl, step1);
 #endif
 
 

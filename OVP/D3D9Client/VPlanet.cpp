@@ -1315,7 +1315,9 @@ bool vPlanet::ParseMicroTextures()
 	MicroCfgsIterator it = MicroCfgs.find(GetName());
 	if (it != MicroCfgs.end()) {
 		MicroCfg = it->second;
-		return true;
+		int cnt = 0; // Check that all three textures exists
+		for (auto& x : MicroCfg.Level) if (x.pTex) cnt++;
+		return (cnt == 3);
 	}
 	return false;
 }
@@ -1412,6 +1414,7 @@ void vPlanet::LoadMicroTextures(LPDIRECT3DDEVICE9 pDev)
 				}
 				else {
 					LogErr("Failed to read microtexture [%s] for [%s]", file_path, body.first.c_str());
+					MicroTextures[x.file] = NULL;
 				}
 			}
 

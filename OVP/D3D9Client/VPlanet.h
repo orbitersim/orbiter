@@ -106,6 +106,7 @@ struct FlowControlPS
 	BOOL bCloudShd;				// Cloud shadow textures valid and enabled
 	BOOL bMask;					// Nightlights/water mask texture is peovided
 	BOOL bRipples;				// Water riples texture is peovided
+	BOOL bMicroTex;				// Micro textures exists and enabled
 };
 
 struct FlowControlVS
