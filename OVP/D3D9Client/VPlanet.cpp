@@ -1399,6 +1399,8 @@ void vPlanet::SetMicroTexture(LPDIRECT3DTEXTURE9 pSrc, int slot)
 // static
 void vPlanet::LoadMicroTextures(LPDIRECT3DDEVICE9 pDev)
 {
+	if (Config->MicroMode == 0) return;
+
 	for (auto &body : MicroCfgs)
 	{
 		for (auto &x : body.second.Level)
