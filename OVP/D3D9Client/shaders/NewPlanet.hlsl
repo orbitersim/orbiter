@@ -21,7 +21,7 @@ struct _Light
 #define Phi     3
 
 #define ATMNOISE 0.25
-#define GLARE_SIZE 3
+#define GLARE_SIZE 5	// Larger value -> smaller
 
 // ----------------------------------------------------------------------------
 // Vertex input layouts from Vertex buffers to vertex shader
@@ -436,8 +436,7 @@ float4 TerrainPS(TileVS frg) : COLOR
 #endif
 
 	float3 cRfl = 0;
-	float3 nrmW = normalize(frg.nrmW);			// Per-pixel surface normal vector
-	float3 nvrW = nrmW;							// Per-pixel surface normal vector
+	float3 nvrW = normalize(frg.nrmW);			// Per-pixel surface normal vector
 	float3 vRay = normalize(frg.camW.xyz);		// Unit viewing ray
 	float3 vVrt = Const.CamPos - frg.camW.xyz;	// Geo-centric pixel position
 	float3 vPlN = normalize(vVrt);				// Planet mean normal
@@ -448,53 +447,52 @@ float4 TerrainPS(TileVS frg) : COLOR
 	float  fSrf = (1.0 - Const.CamSpace);		// Camera colse to surface ?
 	float fMask = (1.0 - cMsk.a);				// Specular Mask
 	float  fSpe = 0;
+	float fAmpf = 1.0f;
+	float fDRS = dot(vRay, Const.toSun);
+
+
 
 #if defined(_WATER)
-#if defined (_RIPPLES)
+#if defined(_RIPPLES)
+
 	// Compute world space normal for water rendering
+	//
 	cNrm.xy = clamp((cNrm.xy - 0.5f) * fSrf * 5.0f, -1, 1);
 	cNrm.z = cos(cNrm.x * cNrm.y * 1.570796);
-	nrmW = (Const.vTangent * cNrm.r) + (Const.vBiTangent * cNrm.g) + (vPlN * cNrm.b);
-	nrmW = lerp(nvrW, nrmW, fMask);
-#endif
-#endif
-
-	float fDNS = dot(nrmW, Const.toSun);
-	float fDRS = dot(vRay, Const.toSun);
-	float fDCN = saturate(dot(vRay, nrmW));
-
-#if defined(_WATER)
-	float fDHN = dot(hlvW, nrmW);
-
-#if defined(_RIPPLES)
+	float3 wnrmW = (Const.vTangent * cNrm.r) + (Const.vBiTangent * cNrm.g) + (vPlN * cNrm.b);
+	wnrmW = lerp(nvrW, wnrmW, fMask);
+	float fDWS = dot(wnrmW, Const.toSun); // Water normal dot sun
 
 	// Render with specular ripples and fresnel water -------------------------
 	//
 	float fDCH = saturate(dot(vRay, hlvW));
-	
+	float fDCN = saturate(dot(vRay, wnrmW));
+	float fDHN = dot(hlvW, wnrmW);
 
 	float2 f = 1.0 - float2(fDCH, fDCN);
 	float2 fFresnel = f * f * f * f;
 	
 	// Compute specular reflection intensity
-	fSpe = GGX_NDF(fDHN, 0.1f + saturate(fDNS) * 0.1f)  * (0.1f + fFresnel.x * 0.9f) * fMask;
-	fSpe /= (4.0f * fDCH * max(fDNS, fDCN) + 1e-3);
+	fSpe = GGX_NDF(fDHN, 0.1f + saturate(fDWS) * 0.1f)  * (0.1f + fFresnel.x * 0.9f) * fMask;
+	fSpe /= (4.0f * fDCH * max(fDWS, fDCN) + 1e-3);
 	
 	// Apply fresnel water only if close enough to a surface
 	//
 	if (!Flow.bInSpace)
 	{
-		cRfl = GetAmbient(reflect(-vRay, nrmW)) * fFresnel.y * fSrf * fMask;
+		cRfl = GetAmbient(reflect(-vRay, wnrmW)) * fFresnel.y * fSrf * fMask;
 		// Attennuate diffuse texture for fresnel refl.
 		cTex.rgb *= saturate(1.0f - fFresnel.y * fSrf * fMask);
 	}
 
 #else
 	// Fallback to simple specular reflection
+	float fDHN = dot(hlvW, nvrW);
 	fSpe = pow(saturate(fDHN), 60.0f) * fMask * 5.0f;
 #endif
 #endif
 
+	float3 nrmW = nvrW; // Micro normal defaults to vertex normal
 
 	// Render with surface microtextures --------------------------------------
 	//
@@ -516,9 +514,11 @@ float4 TerrainPS(TileVS frg) : COLOR
 #endif
 #if defined(_MED)
 			float2 cMix = (cFar.rg + 0.5f) * (cMed.rg + 0.5f) * (cLow.rg + 0.5f);	// MEDIUM BLEND
+			fAmpf = 2.0f;
 #endif
 #if defined(_HARD)
 			float2 cMix = cFar.rg * cMed.rg * cLow.rg * 8.0f;				// HARD BLEND
+			fAmpf = 4.0f;
 #endif
 
 			float3 cNrm = float3((cMix - 1.0f) * 2.0f, 0) * step1;
@@ -547,17 +547,21 @@ float4 TerrainPS(TileVS frg) : COLOR
 	//
 	// Do we have an atmosphere or not ?
 	//
+	float fDPS = dot(vPlN, Const.toSun);
 	float fTrS = saturate(dot(nvrW, Const.toSun) * 10.0f);		// Shadowing by terrain
-	float fPlS = saturate(dot(vPlN, Const.toSun) * 10.0f);		// Shadowing by planet
-
-	float fX = pow(saturate(fDNS), 0.33f);						// Lambertian
+	float fPlS = saturate(fDPS * 10.0f);						// Shadowing by planet
+	
+	float fX = pow(saturate(fDPS), 0.33f);						// Lambertian
 	float fZ = pow(abs(fDRS), 5.0f) * 0.5f;						// Shadow compensation
 	float fLvl = fX * (fZ + 1.0f) * Const.TrExpo;				// Bake all together
 
 	fLvl *= (fTrS * fPlS);										// Apply shadows
 
-	float3 color = cTex.rgb * LightFX(max(fLvl, 0) * fShadow + cDiffLocal);
+#if defined(_MICROTEX)
+	fLvl += dot(nrmW - nvrW, Const.toSun) * fX * fAmpf;
+#endif
 
+	float3 color = cTex.rgb * LightFX(max(fLvl, 0) * fShadow + cDiffLocal);
 	return float4(pow(saturate(color), Const.TrGamma), 1.0f);		// Gamma corrention
 #else
 
@@ -573,8 +577,8 @@ float4 TerrainPS(TileVS frg) : COLOR
 
 	float3 cNgt = 0;
 	float3 cNgt2 = 0;
-
-	float fDPS = dot(vPlN, Const.toSun);
+	float fDPS = dot(vPlN, Const.toSun); // Mean normal dot sun
+	float fDNS = dot(nvrW, Const.toSun); // Vertex normal dot sun
 
 #if defined(_NIGHTLIGHTS)
 
@@ -605,8 +609,14 @@ float4 TerrainPS(TileVS frg) : COLOR
 
 	float  fX = 1.0f - pow(1.0f - saturate(fDNS), 2.0f);
 
-	// Diffuse "lambertian" shading term 
-	float  fD = lerp(fX, fDPS * fDPS, fMask);
+#if defined(_MICROTEX)
+	float  fG = dot(nrmW - nvrW, Const.toSun) * fX * fAmpf;
+#else
+	float  fG = 0.0f;
+#endif
+
+	// Diffuse "lambertian" shading term
+	float  fD = lerp(fX, fDPS * fDPS, fMask) + fG;
 
 	// Water masking
 	float  fM = 0.5f - fMask * 0.25f;
@@ -621,7 +631,7 @@ float4 TerrainPS(TileVS frg) : COLOR
 	float3 cL = cSF * fD * fShadow * fShd;
 
 	// Lit the texture with various things
-	cTex.rgb *= cL * 2.0f + cA + (cDiffLocal + cNgt + Const.cAmbient * Const.Ambient);
+	cTex.rgb *= cL * 2.0f + (cA + cDiffLocal + cNgt + Const.cAmbient * Const.Ambient) * saturate(1.0f + fG);
 
 	// Add Reflection
 	cTex.rgb += cRfl * 0.75f;

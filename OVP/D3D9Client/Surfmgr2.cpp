@@ -911,6 +911,7 @@ void SurfTile::Render ()
 	fc->bOverlay = false;
 	fc->bMask = false;
 	fc->bShadows = false;
+	fc->bInSpace = !vPlanet->CameraInAtmosphere();
 	fcv->bElevOvrl = false;
 
 
@@ -1399,7 +1400,8 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 	FlowControlVS* fcv = vp->GetFlowControlVS();
 	ConstParams* cp = vp->GetScatterConst();
 
-	fc->bInSpace = !vp->CameraInAtmosphere();
+	memset(fc, 0, sizeof(FlowControlPS));
+	memset(fcv, 0, sizeof(FlowControlVS));
 
 	pShader->SetVSConstants("Const", cp, sizeof(ConstParams));
 	pShader->SetPSConstants("Const", cp, sizeof(ConstParams));
@@ -1416,9 +1418,6 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 			pShader->SetTexture("tAmbient", vp->GetScatterTable(SKY_AMBIENT), IPF_LINEAR | IPF_CLAMP);
 		}
 	}
-
-	memset(fc, 0, sizeof(FlowControlPS));
-	memset(fcv, 0, sizeof(FlowControlVS));
 
 	if (ElevMode == eElevMode::Spherical) {
 		// Force spherical rendering at shader level
