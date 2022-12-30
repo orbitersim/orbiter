@@ -186,6 +186,10 @@ int _matherr(struct _exception *except )
 
 INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdShow)
 {
+#ifdef _CRTDBG_MAP_ALLOC
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
+
 #ifndef INLINEGRAPHICS
 	// Verify working directory
 	char dir[1024];
