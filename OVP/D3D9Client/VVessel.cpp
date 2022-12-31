@@ -1027,7 +1027,7 @@ void vVessel::RenderGrapplePoints (LPDIRECT3DDEVICE9 dev)
 //
 void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float alpha)
 {
-	if (!bStencilShadow) return;
+	if (!bStencilShadow && scn->GetRenderPass() == RENDERPASS_MAINSCENE) return;
 	if (Config->TerrainShadowing == 0) return;
 
 	static const double eps = 1e-2;

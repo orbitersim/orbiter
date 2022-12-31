@@ -219,6 +219,7 @@ public:
 	bool			ParseConfig(const char *fname);
 	virtual bool	GetMinMaxDistance(float *zmin, float *zmax, float *dmin);
 	virtual void	UpdateBoundingBox();
+	virtual void	ReOrigin(VECTOR3 global_pos);
 
 	static void		GlobalInit(oapi::D3D9Client* gc);
 	static void		GlobalInitAtmosphere(oapi::D3D9Client* gc);

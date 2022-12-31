@@ -1323,7 +1323,7 @@ void Scene::RenderMainScene()
 		if (Config->EnvMapMode) {
 			DWORD flags = 0;
 			if (Config->EnvMapMode == 1) flags |= 0x01;
-			if (Config->EnvMapMode == 2) flags |= 0x03;
+			if (Config->EnvMapMode == 2) flags |= (0x03 | 0x20);
 
 			if (vobjEnv == NULL) vobjEnv = vobjFirst;
 
@@ -1431,6 +1431,7 @@ void Scene::RenderMainScene()
 	// Start Main Scene Rendering
 	// -------------------------------------------------------------------------------------------------------
 
+	RenderFlags = 0xFFFFFFFF; // Not used for main scene, set to 0xFFFFFFFF 
 
 	// Push main render target and depth surfaces
 	//
@@ -2538,6 +2539,7 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bI
 void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList, std::set<vVessel*> &LightsList, DWORD flags)
 {
 	_TRACE;
+	RenderFlags = flags;
 
 	// Process Local Light Sources -------------------------------------
 	// And toggle external lights on
@@ -2579,7 +2581,7 @@ void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList, std::set<vVessel*>
 	if (flags & 0x01) {
 		for (DWORD i = 0; i<nplanets; i++) {
 			bool isActive = plist[i].vo->IsActive();
-			if (isActive) plist[i].vo->Render(pDevice);  // TODO: Should pass the flags to surface base level
+			if (isActive) plist[i].vo->Render(pDevice);
 			else		  plist[i].vo->RenderDot(pDevice);
 		}
 	}
@@ -2617,6 +2619,8 @@ void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList, std::set<vVessel*>
 	if (flags & 0x10) {
 		for (DWORD n = 0; n < nstream; n++) pstream[n]->Render(pDevice);
 	}
+
+	// Flags 0x20 = BaseStructures
 }
 
 

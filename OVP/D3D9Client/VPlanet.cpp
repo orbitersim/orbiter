@@ -707,6 +707,14 @@ void vPlanet::UpdateBoundingBox()
 
 // ==============================================================
 
+void vPlanet::ReOrigin(VECTOR3 global_pos)
+{
+	vObject::ReOrigin(global_pos);
+	if (vbase) for (int i = 0; i < nbase; i++) if (vbase[i]) vbase[i]->ReOrigin(global_pos);
+}
+
+// ==============================================================
+
 bool vPlanet::Update (bool bMainScene)
 {
 	_TRACE;
@@ -1179,9 +1187,11 @@ void vPlanet::RenderBaseSurfaces(LPDIRECT3DDEVICE9 dev)
 	// If this planet is not a proxy body skip the rest
 	if (hObj != oapiCameraProxyGbody()) return;
 
-	for (DWORD i=0;i<nbase;i++) if (vbase[i]) {
-		vbase[i]->RenderSurface(dev);
-		vbase[i]->RenderRunwayLights(dev);
+	if (scn->GetRenderFlags() & 0x20) {
+		for (DWORD i = 0; i < nbase; i++) if (vbase[i]) {
+			vbase[i]->RenderSurface(dev);
+			vbase[i]->RenderRunwayLights(dev);
+		}
 	}
 }
 
@@ -1192,10 +1202,12 @@ void vPlanet::RenderBaseShadows(LPDIRECT3DDEVICE9 dev, float depth)
 	// If this planet is not a proxy body skip the rest
 	if (hObj != oapiCameraProxyGbody()) return;
 
-	if (bObjectShadow) {
-		for (DWORD i=0;i<nbase;i++) if (vbase[i]) vbase[i]->RenderGroundShadow(dev, depth);
-		// reset device parameters
-		dev->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+	if (scn->GetRenderFlags() & 0x20) {
+		if (bObjectShadow) {
+			for (DWORD i = 0; i < nbase; i++) if (vbase[i]) vbase[i]->RenderGroundShadow(dev, depth);
+			// reset device parameters
+			dev->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+		}
 	}
 }
 
@@ -1206,8 +1218,10 @@ void vPlanet::RenderBaseStructures (LPDIRECT3DDEVICE9 dev)
 	// If this planet is not a proxy body skip the rest
 	if (hObj != oapiCameraProxyGbody()) return;
 
-	for (DWORD i=0;i<nbase;i++) if (vbase[i]) vbase[i]->RenderStructures(dev);
-	for (DWORD i=0;i<nbase;i++) if (vbase[i]) vbase[i]->RenderBeacons(dev);
+	if (scn->GetRenderFlags() & 0x20) {
+		for (DWORD i = 0; i < nbase; i++) if (vbase[i]) vbase[i]->RenderStructures(dev);
+		for (DWORD i = 0; i < nbase; i++) if (vbase[i]) vbase[i]->RenderBeacons(dev);
+	}
 }
 
 // ==============================================================

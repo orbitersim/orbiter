@@ -196,6 +196,7 @@ public:
 
 
 	DWORD GetRenderPass() const;
+	DWORD GetRenderFlags() const { return RenderFlags; }
 	void BeginPass(DWORD dwPass);
 	void PopPass();
 
@@ -479,6 +480,7 @@ private:
 	DWORD		dwTurn;
 	DWORD		dwFrameId;
 	DWORD		camIndex;
+	DWORD		RenderFlags;
 	bool		bRendering;
 
 	oapi::Font *pAxisFont;
