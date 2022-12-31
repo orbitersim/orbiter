@@ -1350,7 +1350,7 @@ void Scene::RenderMainScene()
 		if (Config->EnvMapMode && Config->bIrradiance) {
 			DWORD flags = 0;
 			if (Config->EnvMapMode == 1) flags |= 0x01;
-			if (Config->EnvMapMode == 2) flags |= 0x03;
+			if (Config->EnvMapMode == 2) flags |= (0x03 | 0x20);
 
 			if (vobjIrd == NULL) vobjIrd = vobjFirst;
 
@@ -3617,7 +3617,6 @@ void Scene::RenderGlares()
 		if (Config->bGlares && pSunGlare)
 		{
 			pRenderGlares->SetTexture("tTex0", pSunGlare, IPF_CLAMP | IPF_LINEAR);
-			//pRenderGlares->SetTexture("tTex1", pSunGlareAtm, IPF_CLAMP | IPF_LINEAR);
 			pRenderGlares->UpdateTextures();
 
 			// Render Sun glare
@@ -3635,19 +3634,19 @@ void Scene::RenderGlares()
 				if (vp && vp->IsActive())
 				{
 					VECTOR3 crp = vp->CameraPos();
-					clr = vp->SunLightColor(crp);
+					clr = vp->SunLightColor(crp, 2.0);
 					cis = CameraInSpace();
-					glare = float(Config->GFXGlare) * pow(clr.MaxRGB(), 0.33f) * cis;				
+					glare *= pow(clr.MaxRGB(), 0.33f) * cis;				
 				}
 							
 				float cd = length(pt - FVECTOR2(viewW, viewH) * 0.5f) / float(viewW); // Glare distance from a screen center
 				float alpha = 2.0f * glare * max(0.5f, 1.0f - cd);
-				float size = 300.0f * GetDisplayScale() * pow(alpha, 0.33f);
+				float size = 300.0f * GetDisplayScale() * pow(alpha, 0.25f);
 
 				Const.GPUId = 0.5f / float(desc.Width);
 				Const.Pos = FVECTOR4(pt.x, pt.y, size, size);
 				Const.Color.rgb = clr.rgb / (clr.MaxRGB() + 0.0001f);
-				Const.Alpha = alpha;
+				Const.Alpha = alpha * 2.0f;
 				Const.Blend = sqrt(cis);
 
 				pRenderGlares->SetVSConstants("Const", &Const, sizeof(Const));

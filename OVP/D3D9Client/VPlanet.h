@@ -278,7 +278,7 @@ public:
 	FlowControlVS*	GetFlowControlVS() { return &fcv; }
 	void			UpdateScatter();
 	int				GetAtmoMode() { return atm_mode; }
-	FVECTOR4		SunLightColor(VECTOR3 pos);				// For a point in anywhere
+	FVECTOR4		SunLightColor(VECTOR3 pos, double rf = 1.0);	// For a point in anywhere
 	FVECTOR3		SunLightColor(float ang, float alt);	// For a point in atmosphere
 	float			SunAltitude();
 	FVECTOR4		ComputeCameraView(FVECTOR3 vPos);

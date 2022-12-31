@@ -125,10 +125,10 @@ OutputVS GlareVS(float3 posL : POSITION0, float2 tex0 : TEXCOORD0)
 float4 GlarePS(OutputVS frg) : COLOR
 {
 	float t0 = max(0, tex2D(tTex0, frg.uvi.xy).r - 0.1f);  // Texture intensity
-	float t1 = 0.0f; // max(0, tex2D(tTex1, frg.uvi.xy).r - 0.1f);  // Texture intensity
-	float t = lerp(t1, t0, Const.Blend);
-	float a = saturate(1.0f - exp(-frg.uvi.z * Const.Alpha * t));
-	return float4(HDRtoLDR(Const.Color.rgb * sqrt(t + 1.0f)), a);
+	//float t1 = max(0, tex2D(tTex1, frg.uvi.xy).r - 0.1f);  // Texture intensity
+	//float t = lerp(t1, t0, Const.Blend);
+	float a = saturate(1.0f - exp(-frg.uvi.z * Const.Alpha * t0));
+	return float4(HDRtoLDR(Const.Color.rgb * sqrt(t0 + 1.0f)), a);
 }
 
 
@@ -164,7 +164,7 @@ float4 CreateSunGlarePS(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 
 	float L = pow(max(0, (1 - r / q)), 6.0f) * 3.0f;	// Low frequency spikes
 	float H = pow(max(0, (1 - r / w)), 6.0f) * 5.0f;	// High frequency spikes
-	float C = ilerp(0.03, 0.01, r) * 16.0f;				// Core
+	float C = ilerp(0.03, 0.01, r) * 7.0f;				// Core
 	float S = ilerp(1.7f, 0.35f, r);					// Skirt
 
 	C *= C;

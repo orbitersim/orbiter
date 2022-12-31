@@ -414,7 +414,7 @@ float vPlanet::SunOcclusionByPlanet()
 
 // ===========================================================================================
 //
-FVECTOR4 vPlanet::SunLightColor(VECTOR3 relpos)
+FVECTOR4 vPlanet::SunLightColor(VECTOR3 relpos, double rf)
 {
 	static const float lim = 0.0f;
 
@@ -454,7 +454,7 @@ FVECTOR4 vPlanet::SunLightColor(VECTOR3 relpos)
 	if (r > ar) rm = Gauss7(qr - size, 0.0f, cp.PlanetRad, cp.AtmoRad, cp.iH) * 2.0f; // Ray passes through atmosphere from space to space
 	else rm = Gauss7(r - size, -ca, cp.PlanetRad, cp.AtmoRad, cp.iH); // Sample point 'pos' lies with-in atmosphere
 
-	rm *= cp.rmO;
+	rm *= cp.rmO * rf;
 	return FVECTOR4(exp(-(cp.RayWave * rm.x + cp.MieWave * rm.y)) * svb, svb);
 }
 
