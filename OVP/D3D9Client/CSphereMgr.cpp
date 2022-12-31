@@ -16,6 +16,7 @@
 
 using namespace oapi;
 
+
 // =======================================================================
 // Externals
 
@@ -53,7 +54,7 @@ void ReleaseTex(LPDIRECT3DTEXTURE9 pTex);
 // =======================================================================
 // Class CSphereManager
 
-CSphereManager::CSphereManager(D3D9Client *gclient, const Scene *scene) : PlanetRenderer(), texname(), RenderParam()
+CSphereManager::CSphereManager(D3D9Client *gc, const Scene *scene) : gc(gc), texname(), RenderParam()
 {
 	scn = scene;
 
@@ -62,6 +63,13 @@ CSphereManager::CSphereManager(D3D9Client *gclient, const Scene *scene) : Planet
 	patchidx  = TileManager::patchidx;
 	NLNG = TileManager::NLNG;
 	NLAT = TileManager::NLAT;
+
+	pShader = new ShaderClass(gc->GetDevice(), "Modules/D3D9Client/CelSphere.hlsl", "CelVS", "CelPS", "CelSphere", "");
+
+	// Get Handles for faster access
+	hTexA = pShader->GetPSHandle("tTexA");
+	hTexB = pShader->GetPSHandle("tTexB");
+	hVSConst = pShader->GetVSHandle("Const");
 
 	m_bBkgImg = *(bool*)gc->GetConfigParam(CFGPRM_CSPHEREUSEBGIMAGE);
 	if (m_bBkgImg) {
@@ -421,20 +429,17 @@ void CSphereManager::Render (LPDIRECT3DDEVICE9 dev, int level, double bglvl)
 
 	WaitForSingleObject (tilebuf->hQueueMutex, INFINITE);
 
-	HR(Shader()->SetTechnique(eSkyDomeTech));
-	HR(Shader()->SetMatrix(smViewProj, scn->GetProjectionViewMatrix()));
-	HR(Shader()->SetFloat(sfAlpha, intens));
-	HR(Shader()->SetFloat(sfNight, bgscale));
-	HR(Shader()->SetBool(sbLights, m_bBkgImg));
-	HR(Shader()->SetBool(sbLocals, m_bStarImg));
+	CelFlow.bAlpha = m_bBkgImg;
+	CelFlow.bBeta = m_bStarImg;
+	CelData.fAlpha = intens;
+	CelData.fBeta = bgscale;
+	CelData.mViewProj = *scn->GetProjectionViewMatrix();
 
-	pDev->SetVertexDeclaration(pPatchVertexDecl);
+	pShader->Setup(pPatchVertexDecl, false, 0);
+	pShader->ClearTextures();
+	pShader->SetPSConstants("Flow", &CelFlow, sizeof(CelFlow));
+	pShader->SetPSConstants("Const", &CelData, sizeof(CelData));
 
-	UINT numPasses = 0;
-	HR(Shader()->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
-
-	Shader()->BeginPass(0);
-	
 	for (hemisp = idx = 0; hemisp < 2; hemisp++) {
 		if (hemisp) { // flip world transformation to southern hemisphere
 			D3DXMatrixMultiply(&RenderParam.wmat, &TileManager::Rsouth, &RenderParam.wmat);
@@ -448,9 +453,6 @@ void CSphereManager::Render (LPDIRECT3DDEVICE9 dev, int level, double bglvl)
 			}
 		}
 	}
-
-	HR(Shader()->EndPass());
-	HR(Shader()->End());	
 
 	ReleaseMutex (tilebuf->hQueueMutex);
 }
@@ -500,11 +502,14 @@ void CSphereManager::RenderTile (int lvl, int hemisp, int ilat, int nlat, int il
 
 	D3D9Stats.Old.Tiles[lvl]++;
 	
-	Shader()->SetMatrix(smWorld, &mWorld);
-	Shader()->SetTexture(stDiff, tex);
-	Shader()->SetTexture(stMask, ltex);
-	Shader()->CommitChanges();
+	CelData.mWorld = mWorld;
 
+	pShader->SetTexture(hTexA, tex, IPF_CLAMP | IPF_ANISOTROPIC);
+	pShader->SetTexture(hTexB, ltex, IPF_CLAMP | IPF_ANISOTROPIC);
+	pShader->SetVSConstants(hVSConst, &CelData, sizeof(CelData));
+	pShader->UpdateTextures();
+
+	LPDIRECT3DDEVICE9 pDev = pShader->GetDevice();
 	pDev->SetStreamSource(0, mesh.pVB, 0, sizeof(VERTEX_2TEX));
 	pDev->SetIndices(mesh.pIB);
 	pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mesh.nv, 0, mesh.nf);

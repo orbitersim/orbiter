@@ -249,6 +249,9 @@ float4 AdvancedPS(float4 sc : VPOS, PBRData frg) : COLOR
 	cTex = cTex * (1 - gColor*0.5f) + gColor;
 #endif
 
+	cTex.rgb *= gSun.Transmission;
+	cTex.rgb += gSun.Inscatter;
+
 	return cTex;
 }
 

@@ -90,6 +90,7 @@ static class gcCore2 *pCoreInterface = NULL;
 #define IPF_PYRAMIDAL	0x0080
 #define IPF_GAUSSIAN	0x0100
 #define IPF_ANISOTROPIC	0x0200
+#define IPF_VERTEXTEX	0x0400
 
 /// \defgroup dwFlags for gcSetupCustomCamera() API function
 ///@{
@@ -230,8 +231,7 @@ public:
 	virtual void	SetMesh(const MESHHANDLE hMesh, const char* tex = NULL, ipicull = ipicull::None);
 
 	virtual bool	Execute(bool bInScene = false);
-	virtual bool	ExecuteTemplate(bool bInScene = false, ipitemplate = Rect);
-	virtual bool	Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScene = false, ipitemplate mde = Rect);
+	virtual bool	Execute(DWORD blendop, bool bInScene = false, ipitemplate mde = Rect);
 
 	// ----------------------------------------------------------------------------------
 	virtual int		FindDefine(const char* key);

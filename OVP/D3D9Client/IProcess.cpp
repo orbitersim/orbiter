@@ -225,30 +225,22 @@ void ImageProcessing::SetMesh(const MESHHANDLE hMesh, const char *tex, gcIPInter
 //
 bool ImageProcessing::Execute(bool bInScene)
 {
-	return Execute(0, 0, 0, bInScene, gcIPInterface::ipitemplate::Rect);
+	return Execute(0, bInScene, gcIPInterface::ipitemplate::Rect);
 }
 
 
 // ================================================================================================
 //
-bool ImageProcessing::Execute(const char *shader, bool bInScene)
+bool ImageProcessing::Execute(const char *shader, bool bInScene, DWORD blendop)
 {
 	Activate(shader);
-	return Execute(0, 0, 0, bInScene, gcIPInterface::ipitemplate::Rect);
+	return Execute(blendop, bInScene, gcIPInterface::ipitemplate::Rect);
 }
 
 
 // ================================================================================================
 //
-bool ImageProcessing::ExecuteTemplate(bool bInScene, gcIPInterface::ipitemplate mode)
-{
-	return Execute(0, 0, 0, bInScene, mode);
-}
-
-
-// ================================================================================================
-//
-bool ImageProcessing::Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScene, gcIPInterface::ipitemplate mode, int grp)
+bool ImageProcessing::Execute(DWORD blendop, bool bInScene, gcIPInterface::ipitemplate mode, int grp)
 {
 	if (!IsOK()) return false;
 	if (!SetupViewPort()) return false;
@@ -269,10 +261,10 @@ bool ImageProcessing::Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScen
 	HR(pDevice->SetRenderState(D3DRS_STENCILENABLE, false));
 	HR(pDevice->SetRenderState(D3DRS_COLORWRITEENABLE, 0xF));
 
-	if (blendop) {
-		HR(pDevice->SetRenderState(D3DRS_BLENDOP, blendop));
-		HR(pDevice->SetRenderState(D3DRS_SRCBLEND, src));
-		HR(pDevice->SetRenderState(D3DRS_DESTBLEND, dest));
+	if (blendop == 1) {
+		HR(pDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
+		HR(pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
+		HR(pDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
 	}
 
 	// Define vertices --------------------------------------------------------
@@ -806,14 +798,9 @@ bool gcIPInterface::Execute(bool bInScene)
 	return pIPI->Execute(bInScene);
 }
 
-bool gcIPInterface::ExecuteTemplate(bool bInScene, ipitemplate it)
+bool gcIPInterface::Execute(DWORD blendop, bool bInScene, ipitemplate mde)
 {
-	return pIPI->ExecuteTemplate(bInScene, it);
-}
-
-bool gcIPInterface::Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScene, ipitemplate mde)
-{
-	return pIPI->Execute(blendop, src, dest, bInScene, mde);
+	return pIPI->Execute(blendop, bInScene, mde);
 }
 
 int gcIPInterface::FindDefine(const char *key)

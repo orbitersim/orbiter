@@ -81,6 +81,27 @@ template <typename T> inline _constexpr_ T saturate (T val)
 		 : val;
 }
 
+template <typename T> inline _constexpr_ T clamp(T x, T a, T b)
+{
+	return x > b ? b
+		 : x < a ? a
+		 : x;
+}
+
+template <typename T> inline _constexpr_ T ilerp(T a, T b, T x)
+{
+	return saturate((x - a) / (b - a));
+}
+
+template <typename T> inline _constexpr_ T sqr(T a)
+{
+	return a * a;
+}
+
+template <typename T> inline _constexpr_ T hermite(T a)
+{
+	return a * a * (T(3) - T(2)*a);
+}
 
 	
 // VECTOR3 Helpers ==================================================================

@@ -143,3 +143,39 @@ float4 PSMain(float x : TEXCOORD0, float y : TEXCOORD1) : COLOR
 
 	return 0;
 }
+
+
+// --------------------------------------------------------------
+// Scale -2 to 3
+//
+float4 HeightToColor(float a)
+{
+	if (a < -2)		return float4(0, 0, 0, 1);
+	if (a >  3)		return float4(0, 0, 0, 1);
+	if (a < -1)		return saturate(float4(0, 0, 2 + a, 1.0));
+	else if (a < 0)	return saturate(float4(0, 1 + a, 1, 1.0));
+	else if (a < 1)	return saturate(float4(a, 1, 1 - a, 1.0));
+	else if (a < 2)	return saturate(float4(1, 2 - a, 0, 1.0));
+	return saturate(float4(1, a - 2, a - 2, 1.0));
+}
+
+
+// Visualize screen depth
+//
+float4 PSDepth(float x : TEXCOORD0, float y : TEXCOORD1) : COLOR
+{
+	float z = tex2D(tBack, float2(x,y)).a;
+	if (z <= 0) return float4(0, 0, 0, 1);
+	float q = 3 - log(1.0f + sqrt(max(0, z - 5.0)));
+	return float4(HeightToColor(q).rgb, 1);
+}
+
+// Visualize screen space normals
+//
+float4 PSNormal(float tx : TEXCOORD0, float ty : TEXCOORD1) : COLOR
+{
+	float3 q = tex2D(tBack, float2(tx,ty)).xyz;
+	float2 xy = (q.xy + 1.0f) * 0.5f;
+	return float4(xy, abs(q.z), 1.0f);
+}
+

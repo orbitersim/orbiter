@@ -360,6 +360,9 @@ float4 PBR_PS(float4 sc : VPOS, PBRData frg) : COLOR
 	cDiff = cDiff * (1 - gColor*0.5f) + gColor;
 #endif
 
+	cDiff.rgb *= gSun.Transmission;
+	cDiff.rgb += gSun.Inscatter;
+
 	return cDiff;
 }
 
@@ -498,6 +501,9 @@ float4 FAST_PS(float4 sc : VPOS, FASTData frg) : COLOR
 #endif
 
 	cDiff.a *= gMtrlAlpha;
+
+	cDiff.rgb *= gSun.Transmission;
+	cDiff.rgb += gSun.Inscatter;
 
 	return cDiff;
 }
