@@ -107,6 +107,7 @@ struct FlowControlPS
 	BOOL bMask;					// Nightlights/water mask texture is peovided
 	BOOL bRipples;				// Water riples texture is peovided
 	BOOL bMicroTex;				// Micro textures exists and enabled
+	BOOL bPlanetShadow;			// Use spherical approximation for shadow
 };
 
 struct FlowControlVS
@@ -174,6 +175,7 @@ struct ConstParams
 	float  dCS;
 	float  smi;
 	float  ecc;
+	float  trLS;
 };
 
 #pragma pack(pop)
@@ -294,6 +296,7 @@ public:
 	FVECTOR3		HDR(FVECTOR3 i);
 	FVECTOR3		LightFX(FVECTOR3 x);
 	float			SunOcclusionByPlanet();
+	bool			SphericalShadow();
 
 	// v2 Labels interface ----------------------------------------------------
 	void            ActivateLabels(bool activate);

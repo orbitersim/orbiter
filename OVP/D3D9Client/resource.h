@@ -217,3 +217,5 @@
 #define IDC_EARTHVISCFG                         3033
 #define IDC_ESCACHE                             3034
 #define IDC_EAQUALITY                           3035
+#define IDC_ATM_TRLIGHTSHAD                     3036
+#define IDC_ATD_TRLIGHTSHAD                     3037

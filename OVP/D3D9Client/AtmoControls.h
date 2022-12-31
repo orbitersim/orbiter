@@ -8,7 +8,7 @@
 #ifndef __ATMOCONTROLS_H
 #define __ATMOCONTROLS_H
 
-#define ATM_SLIDER_COUNT 19
+#define ATM_SLIDER_COUNT 20
 
 
 typedef struct ScatterParams {
@@ -35,6 +35,7 @@ typedef struct ScatterParams {
 			double tgamma;		///< 16 Terrain gamma
 			double mphaseb;		///< 17 MiePhase-B
 			double hazei;		///< 18 cloud intensity
+			double tr3D;		///< 19 Terrain light and shadow boost
 		};
 	};
 	double orbalt;

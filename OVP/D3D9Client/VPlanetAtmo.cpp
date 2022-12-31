@@ -531,6 +531,16 @@ D3D9Sun vPlanet::GetObjectAtmoParams(VECTOR3 vRelPos)
 
 // ===========================================================================================
 //
+bool vPlanet::SphericalShadow()
+{
+	if (abs(cp.MinAlt) < 1.0f && abs(cp.MaxAlt) < 1.0f) return false; // Spherical body or no data available
+	if (((cp.MaxAlt - cp.MinAlt) / cp.PlanetRad) < 0.05f) return true;
+	return false;
+}
+
+
+// ===========================================================================================
+//
 void vPlanet::UpdateScatter()
 {
 	if (scn->GetFrameId() == dwSctFrame) return;
@@ -624,6 +634,7 @@ void vPlanet::UpdateScatter()
 	float g2 = cp.CamRad2 - cp.PlanetRad2;
 	cp.ShdDst = g2 > 0 ? sqrt(g2) : 0.0f;
 	cp.SunVis = SunOcclusionByPlanet();
+	cp.trLS = float(atmo->tr3D);
 
 	if (HasAtmosphere() == false) return;
 	if (surfmgr2 == NULL) return;
@@ -861,7 +872,7 @@ ScatterParams* vPlanet::GetAtmoParams(int mode)
 	{
 		// ----------------------------------------------------
 		CPrm.mierat = lerp(SPrm.mierat, OPrm.mierat, alt);
-		//CPrm.aux2 = lerp(SPrm.aux2, OPrm.aux2, alt);
+		CPrm.tr3D = lerp(SPrm.tr3D, OPrm.tr3D, alt);
 		CPrm.aux3 = lerp(SPrm.aux3, OPrm.aux3, alt);
 		CPrm.mheight = lerp(SPrm.mheight, OPrm.mheight, alt);
 		CPrm.rheight = lerp(SPrm.rheight, OPrm.rheight, alt);
@@ -886,7 +897,7 @@ ScatterParams* vPlanet::GetAtmoParams(int mode)
 		alt = 1.0 - halt;
 		// ----------------------------------------------------
 		CPrm.mierat = lerp(HPrm.mierat, OPrm.mierat, alt);
-		//CPrm.aux2 = lerp(HPrm.aux2, OPrm.aux2, alt);
+		CPrm.tr3D = lerp(HPrm.tr3D, OPrm.tr3D, alt);
 		CPrm.aux3 = lerp(HPrm.aux3, OPrm.aux3, alt);
 		CPrm.mheight = lerp(HPrm.mheight, OPrm.mheight, alt);
 		CPrm.rheight = lerp(HPrm.rheight, OPrm.rheight, alt);
@@ -984,6 +995,7 @@ void vPlanet::SaveStruct(FILEHANDLE hFile, ScatterParams* prm, int iCnf)
 	// -----------------------------------------------------------------
 	oapiWriteItem_float(hFile, Label("Expo"), prm->trb);
 	oapiWriteItem_float(hFile, Label("TGamma"), prm->tgamma);
+	oapiWriteItem_float(hFile, Label("Tr3D"), prm->tr3D);
 	// -----------------------------------------------------------------
 	oapiWriteItem_float(hFile, Label("TWDst"), prm->tw_dst);
 	oapiWriteItem_float(hFile, Label("Green"), prm->green);
@@ -1028,6 +1040,7 @@ void vPlanet::LoadStruct(FILEHANDLE hFile, ScatterParams* prm, int iCnf)
 	// -----------------------------------------------------------------
 	oapiReadItem_float(hFile, Label("Expo"), prm->trb);
 	oapiReadItem_float(hFile, Label("TGamma"), prm->tgamma);
+	if (!oapiReadItem_float(hFile, Label("Tr3D"), prm->tr3D)) prm->tr3D = 1.0;
 	// -----------------------------------------------------------------
 	oapiReadItem_float(hFile, Label("TWDst"), prm->tw_dst);
 	oapiReadItem_float(hFile, Label("Green"), prm->green);

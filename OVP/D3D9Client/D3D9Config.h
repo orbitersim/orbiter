@@ -96,6 +96,7 @@ public:
 	int bLocalGlares;
 	int bIrradiance;
 	int bAtmoQuality;
+	int NoPlanetAA;					///< Disable planet surface anti-aliasing to prevent white pixels at horizon 
 	char *DebugFont;				///< Font face for debug lines (default="Fixed")
 	char *SolCfg;					///< Solar system to use (default="Sol")
 	double GFXIntensity;			///< Post Processing | Light glow intensity (0.0...1.0, default=0.5)

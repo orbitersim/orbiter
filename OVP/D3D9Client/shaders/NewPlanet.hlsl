@@ -72,15 +72,16 @@ struct HazeVS
 struct FlowControlPS
 {
 	BOOL bInSpace;				// Camera in space (not in atmosphere)
-	BOOL bBelowClouds;
+	BOOL bBelowClouds;			// Camera is below cloud layer
 	BOOL bOverlay;				// Overlay on/off	
 	BOOL bShadows;				// Shadow Map on/off
 	BOOL bLocals;				// Local Lights on/off
 	BOOL bMicroNormals;			// Micro texture has normals
-	BOOL bCloudShd;
-	BOOL bMask;
-	BOOL bRipples;
-	BOOL bMicroTex;
+	BOOL bCloudShd;				// Cloud shadow textures valid and enabled
+	BOOL bMask;					// Nightlights/water mask texture is peovided
+	BOOL bRipples;				// Water riples texture is peovided
+	BOOL bMicroTex;				// Micro textures exists and enabled
+	BOOL bPlanetShadow;			// Use spherical approximation for shadow
 };
 
 struct FlowControlVS
@@ -381,7 +382,7 @@ float4 TerrainPS(TileVS frg) : COLOR
 
 	// Fetch Main Textures
 	float4 cTex = tex2D(tDiff, vUVSrf);
-	float4 cMsk = 0;
+	float4 cMsk = float4(0, 0, 0, 1);
 	if (Flow.bMask) cMsk = tex2D(tMask, vUVSrf);
 
 #if defined(_DEVTOOLS)
@@ -449,7 +450,7 @@ float4 TerrainPS(TileVS frg) : COLOR
 	float  fSpe = 0;
 	float fAmpf = 1.0f;
 	float fDRS = dot(vRay, Const.toSun);
-
+	float fDPS = dot(vPlN, Const.toSun);		// Mean normal dot sun
 
 
 #if defined(_WATER)
@@ -544,25 +545,32 @@ float4 TerrainPS(TileVS frg) : COLOR
 #endif
 
 #if defined(_NO_ATMOSPHERE)
-	//
-	// Do we have an atmosphere or not ?
-	//
-	float fDPS = dot(vPlN, Const.toSun);
-	float fTrS = saturate(dot(nvrW, Const.toSun) * 10.0f);		// Shadowing by terrain
-	float fPlS = saturate(fDPS * 10.0f);						// Shadowing by planet
-	
-	float fX = pow(saturate(fDPS), 0.33f);						// Lambertian
-	float fZ = pow(abs(fDRS), 5.0f) * 0.5f;						// Shadow compensation
-	float fLvl = fX * (fZ + 1.0f) * Const.TrExpo;				// Bake all together
 
-	fLvl *= (fTrS * fPlS);										// Apply shadows
+	float fDNS = saturate(dot(nvrW, Const.toSun));
+	float fDCN = saturate(dot(nvrW, Const.toCam));
+	float fLvl = 2.0f * fDNS / (fDNS + fDCN + 0.5f);
+	float fSHD = 1.0f;
+
+	// Shadowing by planet
+	if (Flow.bPlanetShadow) {
+		float palt = sqrt(saturate(1.0f - fDPS * fDPS)) * rad - Const.PlanetRad;
+		fSHD = fDPS > 0 ? 1.0f : ilerp(Const.MinAlt, Const.MaxAlt, palt);
+	}
+
+	// Amplify light and shadows
+	fLvl += dot(nvrW - vPlN, Const.toSun) * fLvl * Const.trLS;
+
+	// Add opposition surge
+	fLvl += pow(saturate(fDRS), 4.0f) * 0.3f * fDNS;
 
 #if defined(_MICROTEX)
-	fLvl += dot(nrmW - nvrW, Const.toSun) * fX * fAmpf;
+	fLvl += dot(nrmW - nvrW, Const.toSun) * ilerp(0.0, 0.03, fLvl) * fAmpf;
 #endif
 
+	fLvl *= fSHD;	// Apply planet shadow
+
 	float3 color = cTex.rgb * LightFX(max(fLvl, 0) * fShadow + cDiffLocal);
-	return float4(pow(saturate(color), Const.TrGamma), 1.0f);		// Gamma corrention
+	return float4(pow(saturate(color * Const.TrExpo), Const.TrGamma), 1.0f);		// Gamma corrention
 #else
 
 	float fShd = 1.0f;
@@ -577,7 +585,6 @@ float4 TerrainPS(TileVS frg) : COLOR
 
 	float3 cNgt = 0;
 	float3 cNgt2 = 0;
-	float fDPS = dot(vPlN, Const.toSun); // Mean normal dot sun
 	float fDNS = dot(nvrW, Const.toSun); // Vertex normal dot sun
 
 #if defined(_NIGHTLIGHTS)
@@ -607,16 +614,20 @@ float4 TerrainPS(TileVS frg) : COLOR
 	float fMx = max(max(cSF.r, cSF.g), cSF.b);
 	cSF = fMx > 1.0 ? cSF / fMx : cSF;
 
-	float  fX = 1.0f - pow(1.0f - saturate(fDNS), 2.0f);
+	float  fL = Const.trLS * 0.3f;
+	float  fZ = clamp(dot(nvrW - vPlN, Const.toSun) * Const.trLS, -fL, fL);
+	float  fX = 1.0f - pow(1.0f - saturate(fDPS), 2.0f);
+
+	fZ = fZ > 0 ? fZ * 2.0f : fZ;
 
 #if defined(_MICROTEX)
-	float  fG = dot(nrmW - nvrW, Const.toSun) * fX * fAmpf;
+	float  fG = dot(nrmW - nvrW, Const.toSun) * fAmpf;
 #else
 	float  fG = 0.0f;
 #endif
 
 	// Diffuse "lambertian" shading term
-	float  fD = lerp(fX, fDPS * fDPS, fMask) + fG;
+	float  fD = lerp(fX + (fG + fZ) * fX, fDPS * fDPS, fMask);
 
 	// Water masking
 	float  fM = 0.5f - fMask * 0.25f;
@@ -631,7 +642,9 @@ float4 TerrainPS(TileVS frg) : COLOR
 	float3 cL = cSF * fD * fShadow * fShd;
 
 	// Lit the texture with various things
-	cTex.rgb *= cL * 2.0f + (cA + cDiffLocal + cNgt + Const.cAmbient * Const.Ambient) * saturate(1.0f + fG);
+	cTex.rgb *= cL * 2.0f + (cA + cDiffLocal + Const.cAmbient * Const.Ambient) * saturate(1.0f + fG + fZ) + cNgt;
+
+	cTex.rgb = max(float3(0, 0, 0), cTex.rgb);
 
 	// Add Reflection
 	cTex.rgb += cRfl * 0.75f;

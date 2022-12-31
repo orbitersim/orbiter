@@ -92,6 +92,7 @@ void D3D9Config::Reset ()
 	ShaderCacheUse		= 0;
 	bIrradiance			= 1;
 	bAtmoQuality		= 1;
+	NoPlanetAA			= 0;
 	
 	GFXIntensity = 0.5;
 	GFXDistance = 0.8;
@@ -187,6 +188,7 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "AtmoQuality", i))					bAtmoQuality = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "DebugBreak", i))					DebugBreak = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "ShaderCacheUse", i))				ShaderCacheUse = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "NoPlanetAA", i))					NoPlanetAA = max(0, min(1, i));
 	if (oapiReadItem_float (hFile, "OrbitalShadowMult", d))			    OrbitalShadowMult = max(0.5, min(10.0, d));
 
 	if (oapiReadItem_float (hFile, "GFXIntensity", d))					GFXIntensity = max(0.0, min(1.0, d));
@@ -275,8 +277,9 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int	(hFile, "AtmoQuality", bAtmoQuality);
 	oapiWriteItem_int	(hFile, "DebugBreak", DebugBreak);
 	oapiWriteItem_int	(hFile, "ShaderCacheUse", ShaderCacheUse);
-	oapiWriteItem_float (hFile, "OrbitalShadowMult", OrbitalShadowMult);
+	oapiWriteItem_int	(hFile, "NoPlanetAA", NoPlanetAA);
 
+	oapiWriteItem_float (hFile, "OrbitalShadowMult", OrbitalShadowMult);
 	oapiWriteItem_float (hFile, "GFXIntensity", GFXIntensity);
 	oapiWriteItem_float (hFile, "GFXDistance", GFXDistance);
 	oapiWriteItem_float (hFile, "GFXThreshold", GFXThreshold);

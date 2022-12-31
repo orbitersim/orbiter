@@ -912,6 +912,7 @@ void SurfTile::Render ()
 	fc->bMask = false;
 	fc->bShadows = false;
 	fc->bInSpace = !vPlanet->CameraInAtmosphere();
+	fc->bPlanetShadow = vPlanet->SphericalShadow();
 	fcv->bElevOvrl = false;
 
 
@@ -1451,6 +1452,8 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 		pShader->SetTexture("tOcean", hOcean, IPF_WRAP | IPF_ANISOTROPIC, 4);
 	}
 
+	if (Config->NoPlanetAA) pShader->GetDevice()->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, 0);
+
 	// ------------------------------------------------------------------
 	// TODO: render full sphere for levels < 4
 
@@ -1468,6 +1471,7 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 
 	loader->ReleaseMutex();
 
+	if (Config->NoPlanetAA) pShader->GetDevice()->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, 1);
 
 	// Backup the stats and clear counters
 	if (scene->GetRenderPass() == RENDERPASS_MAINSCENE) prevstat = elvstat;

@@ -3412,9 +3412,10 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 
 	Camera.upos = D3DXVEC(unit(Camera.pos));
 
-	// find a logical reference gody
+	// find a logical reference body
 	Camera.hObj_proxy = oapiCameraProxyGbody();
-	
+	Camera.hNear = NULL;
+
 	// find the planet closest to the current camera position
 	double closest = 1e32;
 	int n = oapiGetGbodyCount();
@@ -3426,6 +3427,12 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 			closest = l;
 			Camera.hNear = hB;
 		}	
+	}
+
+	if (Camera.hNear) {
+		// If the near body is not visible enough, switch to proxy.
+		double apr = oapiGetSize(Camera.hNear) / closest;
+		if (apr < 4e-3) Camera.hNear = Camera.hObj_proxy;
 	}
 
 	// find the visual
@@ -3619,7 +3626,7 @@ void Scene::RenderGlares()
 				float cis = 1.0f, glare = float(Config->GFXGlare) * saturate(8.0 * AU / sdst);
 				FVECTOR4 clr = FVECTOR4(1, 1, 1, 1);
 
-				vPlanet* vp = GetCameraProxyVisual();
+				vPlanet* vp = GetCameraNearVisual();
 			
 				if (vp && vp->IsActive())
 				{

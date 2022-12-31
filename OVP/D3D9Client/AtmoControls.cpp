@@ -34,6 +34,7 @@ ScatterParams::ScatterParams() :
 	mheight  ( 1.0 ),    // 0.0 ... 1.5
 	// ----------------------------------------
 	trb      ( 1.0 ),    // 0.2 ... 3.0
+	tr3D	 ( 1.0 ),
 	// ----------------------------------------
 	rayrat   ( 1.0 ),    // 0.0 ... 3.0
 	ray      ( 1.0 ),	 // 0.0 ... 4.0
@@ -139,6 +140,7 @@ void Create()
 	Slider[16].id = IDC_ATM_TRGAMMA;
 	Slider[17].id = IDC_ATM_AUX4;
 	Slider[18].id = IDC_ATM_AUX5;
+	Slider[19].id = IDC_ATM_TRLIGHTSHAD;
 	
 	Slider[0].dsp = IDC_ATD_TW_DST;
 	Slider[1].dsp = IDC_ATD_GREEN;
@@ -159,6 +161,7 @@ void Create()
 	Slider[16].dsp = IDC_ATD_TRGAMMA;
 	Slider[17].dsp = IDC_ATD_AUX4;
 	Slider[18].dsp = IDC_ATD_AUX5;
+	Slider[19].dsp = IDC_ATD_TRLIGHTSHAD;
 }
 
 // ==============================================================
@@ -195,10 +198,7 @@ void OpenDlgClbk(void *context)
 
 	Scene *scene = g_client->GetScene();
 	
-	if (scene) {
-		OBJHANDLE hBody = scene->GetCameraProxyBody();
-		if (hBody) vObj = static_cast<vPlanet *>(scene->GetVisObject(hBody));
-	}
+	if (scene) vObj = scene->GetCameraNearVisual();
 
 	if (vObj) param = vObj->GetAtmoParams(atmmode);
 	else      param = &defs;
@@ -223,6 +223,7 @@ void OpenDlgClbk(void *context)
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_TRB,	   0.1, 8.0, 8);
 	ConfigSlider(IDC_ATM_TRGAMMA,  0.2, 1.5);
+	ConfigSlider(IDC_ATM_TRLIGHTSHAD, 0.0, 5.0, 32);
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_RAY,      0.0, 10.0, 8);
 	ConfigSlider(IDC_ATM_IN,       0.2, 5.0, 32);
@@ -247,6 +248,7 @@ void OpenDlgClbk(void *context)
 	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_TRB,		hDlg, "Terrain/Ocean brightness control (default 1.0)");
 	CreateToolTip(IDC_ATM_TRGAMMA,	hDlg, "Terrain/Ocean gamma control value (default 1.0)");
+	CreateToolTip(IDC_ATM_TRLIGHTSHAD, hDlg, "Terrain light and shadow boost");
 	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_RAY,		hDlg, "Overall control for rayleigh scattering (i.e. Haze stickness, atmosphere transparency, optical depth");
 	CreateToolTip(IDC_ATM_IN,		hDlg, "Rayleigh in-scatter out-scatter ratio (1.0 nominal)");
@@ -417,9 +419,7 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 	case WM_INITDIALOG:
 	{
-		vObject *vPl = NULL;
-		OBJHANDLE hProxy = g_client->GetScene()->GetCameraProxyBody();
-		if (hProxy) vPl = g_client->GetScene()->GetVisObject(hProxy);
+		vObject *vPl = g_client->GetScene()->GetCameraNearVisual();
 		SetVisual(vPl);
 		return true;
 	}

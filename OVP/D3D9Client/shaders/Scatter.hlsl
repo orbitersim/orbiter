@@ -35,15 +35,15 @@ struct AtmoParams
 	float3 toSun;				// Geocentric Sun direction (unit vector)
 	float3 SunAz;				// Atmo scatter ref.frame (unit vector) (toCam, ZeroAz, SunAz)
 	float3 ZeroAz;				// Atmo scatter ref.frame (unit vector)
-	float3 Up;					// Sun Ref Frame (Unit Vector) (Up, toSun, ZeroAz)
-	float3 vTangent;			// Reference frame for narmal mapping (Unit Vector)
-	float3 vBiTangent;			// Reference frame for narmal mapping (Unit Vector)
+	float3 Up;					// Sun/Shadow Ref Frame (Unit Vector) (Up, toSun, ZeroAz)
+	float3 vTangent;			// Reference frame for normal mapping (Unit Vector)
+	float3 vBiTangent;			// Reference frame for normal mapping (Unit Vector)
 	float3 vPolarAxis;			// North Pole (unit vector)
 	float3 cSun;				// Sun Color and intensity
 	float3 RayWave;				// .rgb Rayleigh Wave lenghts
 	float3 MieWave;				// .rgb Mie Wave lenghts
 	float4 HG;					// Henyey-Greenstein Phase function params
-	float2 iH;					// Inverse scale height for ray(.r) and mie(.g) exp(-altitude * iH) 
+	float2 iH;					// Inverse scale height for ray(.r) and mie(.g) e.g. exp(-altitude * iH) 
 	float2 rmO;					// Ray and Mie out-scatter factors
 	float2 rmI;					// Ray and Mie in-scatter factors
 	float3 cAmbient;			// Ambient light color at sealevel
@@ -53,7 +53,7 @@ struct AtmoParams
 	float  AtmoAlt;				// Atmospehere upper altitude limit
 	float  AtmoRad;				// Atmospehere outer radius
 	float  AtmoRad2;			// Atmospehere outer radius squared
-	float  CloudAlt;			// Cloud layer altitude 
+	float  CloudAlt;			// Cloud layer altitude for color and light calculations (not for phisical rendering) 
 	float  MinAlt;				// Minimum terrain altitude
 	float  MaxAlt;				// Maximum terrain altitude
 	float  iAltRng;				// 1.0 / (MaxAlt - MinAlt);
@@ -71,11 +71,11 @@ struct AtmoParams
 	float  TrGamma;				// Terrain "Gamma" correction setting
 	float  TrExpo;				// "HDR" exposure factor (terrain only)
 	float  Ambient;				// Global ambient light level
-	float  Clouds;
-	float  TW_Terrain;
-	float  TW_Dst;
+	float  Clouds;				// Cloud layer intensity (if below), and Blue light inscatter scale factor (if camera Above clouds)
+	float  TW_Terrain;			// Twilight intensity
+	float  TW_Dst;				// Twilight distance behind terminator
 	float  CosAlpha;			// Cosine of camera horizon angle i.e. PlanetRad/CamRad
-	float  SinAlpha;
+	float  SinAlpha;			// Sine of ^^
 	float  CamSpace;			// Camera in space scale factor 0.0 = surf, 1.0 = space
 	float  Cr2;					// Camera radius on shadow plane (dot(cp.toCam, cp.Up) * cp.CamRad)^2
 	float  ShdDst;
@@ -83,6 +83,7 @@ struct AtmoParams
 	float  dCS;
 	float  smi;
 	float  ecc;
+	float  trLS;
 };
 
 struct sFlow {
