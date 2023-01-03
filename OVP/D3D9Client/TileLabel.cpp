@@ -264,11 +264,9 @@ void TileLabel::Render (D3D9Pad *skp, oapi::Font **labelfont, int *fontidx)
 	const int symscale[4] = {5, 6, 8, 10};
 	DWORD i;
 	COLORREF col, pcol = 0;
-	char symbol;
 	int x, y, nl, scale, len, partLen;
 	const oapi::GraphicsClient::LABELTYPE *lspec;
 	VECTOR3 sp, dir;
-	bool active;
 	const OBJHANDLE &hPlanet = tile->mgr->Cbody();
 	Scene *pScene = tile->mgr->GetClient()->GetScene();
 
@@ -297,7 +295,8 @@ void TileLabel::Render (D3D9Pad *skp, oapi::Font **labelfont, int *fontidx)
 			dir = unit(sp);
 			if (pScene->CameraDirection2Viewport(dir, x, y)) {
 
-				symbol = 0; // undefined
+				bool active = false; // default for label types not listed in the legend
+				char symbol = 0;    // undefined
 				if (nl = tile->smgr->GetClient()->GetSurfaceMarkerLegend(hPlanet, &lspec)) {
 					for (int j = 0; j < nl; ++j) {
 						if (renderlabel[i]->labeltype == lspec[j].labelId) {
