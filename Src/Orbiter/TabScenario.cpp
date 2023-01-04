@@ -8,6 +8,7 @@
 #include <windows.h>
 #include <io.h>
 #include <direct.h>
+#include <string>
 #include "Orbiter.h"
 #include "TabScenario.h"
 #include "Launchpad.h"
@@ -598,7 +599,7 @@ void orbiter::ScenarioTab::SaveCurScenario ()
 int orbiter::ScenarioTab::SaveCurScenarioAs (const char *name, char *desc, bool replace)
 {
 	extern TCHAR* CurrentScenario;
-	char cbuf[256];
+	string cbuf;
 	bool skip = false;
 	const char *path = pLp->App()->ScnPath (name);
 	if (!replace) { // check if exists
@@ -615,10 +616,11 @@ int orbiter::ScenarioTab::SaveCurScenarioAs (const char *name, char *desc, bool 
 	ofs << "BEGIN_DESC" << endl;
 	ofs << desc << endl;
 	ofs << "END_DESC" << endl;
-	while (ifs.getline (cbuf, 256)) {
-		if (!_strnicmp (cbuf, "BEGIN_DESC", 10))
+	while (std::getline( ifs, cbuf ))
+	{
+		if (cbuf == "BEGIN_DESC")
 			skip = true;
-		else if (!_strnicmp (cbuf, "END_DESC", 8))
+		else if (cbuf == "END_DESC")
 			skip = false;
 		else if (!skip)
 			ofs << cbuf << endl;
