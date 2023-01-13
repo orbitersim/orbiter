@@ -472,3 +472,7 @@ void VirtualCockpit::Write (ostream &ofs) const
 	ofs << "BEGIN_VC" << endl;
 	ofs << "END_VC" << endl;
 }
+
+void VirtualCockpit::OptionChanged(DWORD cat, DWORD item)
+{
+}

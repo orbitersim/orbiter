@@ -49,7 +49,8 @@ bool vStar::Update (bool bMainScene)
 bool vStar::Render(LPDIRECT3DDEVICE9 dev)
 {
 	_TRACE;
-	if (Config->PostProcess == PP_LENSFLARE && cdist < 150e9) return false;
+
+	if (Config->bGlares) return true;
 
 	double dist_scale;
 	float rad_scale = float(size);
@@ -91,7 +92,7 @@ bool vStar::Render(LPDIRECT3DDEVICE9 dev)
 	mWorld._21 *= rad_scale; mWorld._22 *= rad_scale; mWorld._23 *= rad_scale;
 	mWorld._31 *= rad_scale; mWorld._32 *= rad_scale; mWorld._33 *= rad_scale;
 
-	D3D9Effect::RenderBillboard(&mWorld, deftex);
-
+	//D3D9Effect::RenderBillboard(&mWorld, scn->GetSunTexture(), 1.0f);
+	D3D9Effect::RenderBillboard(&mWorld, SURFACE(deftex)->GetTexture(), 1.0f);
 	return true;
 }

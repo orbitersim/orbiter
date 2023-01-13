@@ -70,6 +70,13 @@ public:
 	static bool Read (std::ifstream &ifs);
 	void Write (std::ostream &ofs) const;
 
+	/**
+     * \brief Called when the user interactively changes a simulation option
+     * \param cat option category (see \ref optcat)
+     * \param item option item (see \ref optitem)
+     */
+	virtual void OptionChanged(DWORD cat, DWORD item);
+
 private:
 	inline int AreaIndex (int aid) const
 	{ 

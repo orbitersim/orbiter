@@ -7,6 +7,8 @@
 
 #ifndef __D3D9CONFIG_H
 #define __D3D9CONFIG_H
+#include <map>
+#include <string>
 
 extern class D3D9Config *Config;
 
@@ -90,6 +92,11 @@ public:
 	int bAbsAnims;					///< Absolute animations
 	int bCloudNormals;				///< Felix24's Cloud normals implementation test
 	int bFlats;						///< Face's terrain flattening
+	int bGlares;
+	int bLocalGlares;
+	int bIrradiance;
+	int bAtmoQuality;
+	int NoPlanetAA;					///< Disable planet surface anti-aliasing to prevent white pixels at horizon 
 	char *DebugFont;				///< Font face for debug lines (default="Fixed")
 	char *SolCfg;					///< Solar system to use (default="Sol")
 	double GFXIntensity;			///< Post Processing | Light glow intensity (0.0...1.0, default=0.5)
@@ -98,6 +105,9 @@ public:
 	double GFXGamma;				///< Post Processing | Gamma (0.3...2.5, default=1.0)
 	double GFXSunIntensity;			///< Light Configuration| Sunlight Intensity (0.5...2.5, default=1.2)
 	double GFXLocalMax;				///< Light Configuration| Local Lights Max (0.001...1.0, default=0.5)
+	double GFXGlare;				///< Sun glare intensity| (0.001...1.0, default=0.5)
+
+	std::map<std::string, std::string> AtmoCfg;
 
 private:
 

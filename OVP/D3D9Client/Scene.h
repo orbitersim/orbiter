@@ -45,6 +45,7 @@ class D3D9Pad;
 #define TEX_CLUT				1
 #define TEX_COUNT				2
 
+#define RENDERPASS_UNKNOWN		0x0000
 #define RENDERPASS_MAINSCENE	0x0001
 #define RENDERPASS_ENVCAM		0x0002
 #define RENDERPASS_CUSTOMCAM	0x0003
@@ -52,6 +53,7 @@ class D3D9Pad;
 #define RENDERPASS_PICKSCENE	0x0005
 #define RENDERPASS_SKETCHPAD	0x0006
 #define RENDERPASS_MAINOVERLAY	0x0007
+#define RENDERPASS_NORMAL_DEPTH	0x0008
 
 #define RESTORE ((LPDIRECT3DSURFACE9)(-1))
 #define CURRENT ((LPDIRECT3DSURFACE9)(-2))
@@ -83,6 +85,13 @@ class Scene {
 
 
 public:
+
+	FVECTOR3 vPickRay;
+
+	struct FRUSTUM {
+		float znear;
+		float zfar;
+	};
 
 	// Custom camera parameters ========================================================
 	//
@@ -134,6 +143,7 @@ public:
 		OBJHANDLE	hNear;		// closest celestial body
 		vPlanet *	vNear;		// closest celestial body (visual)
 		double		alt_near;
+		double		lng, lat, elev;
 	};
 
 	// Screen space sun visual parameters ==================================================
@@ -179,9 +189,14 @@ public:
 	const D3D9Light *GetLight(int index) const;
 	const D3D9Light *GetLights() const { return Lights; }
 	DWORD GetLightCount() const { return nLights; }
+	D3D9Pad* GetPooledSketchpad(int id);
+	void RecallDefaultState();
+	float GetDisplayScale() const { return fDisplayScale; }
+	void CreateSunGlare();
 
 
 	DWORD GetRenderPass() const;
+	DWORD GetRenderFlags() const { return RenderFlags; }
 	void BeginPass(DWORD dwPass);
 	void PopPass();
 
@@ -238,6 +253,8 @@ public:
 	LPDIRECT3DSURFACE9 GetIrradianceDepthStencil() const { return pIrradDS; }
 	LPDIRECT3DSURFACE9 GetEnvDepthStencil() const { return pEnvDS; }
 	LPDIRECT3DSURFACE9 GetBuffer(int id) const { return psgBuffer[id]; }
+	LPDIRECT3DTEXTURE9 GetSunTexture() const { return pSunTex; }
+	LPDIRECT3DTEXTURE9 GetSunGlareAtm() const { return pSunGlareAtm; }
 
 	/**
 	 * \brief Render any shadows cast by vessels on planet surfaces
@@ -313,6 +330,7 @@ public:
 	void			SetCameraAperture(float _ap, float _as);
 	void			SetCameraFrustumLimits(double nearlimit, double farlimit);
 	float			GetDepthResolution(float dist) const;
+	float			CameraInSpace() const;
 
 					// Acquire camera information from the Orbiter and initialize internal camera setup
 	void			UpdateCameraFromOrbiter(DWORD dwPass);
@@ -340,9 +358,10 @@ public:
 	OBJHANDLE		GetCameraNearBody() const { return Camera.hNear; }
 	vPlanet *		GetCameraNearVisual() const { return Camera.vNear; }
 	double			GetCameraNearAltitude() const { return Camera.alt_near; }
-
+	double			GetCameraElevation() const { return Camera.elev; }
 	void			GetCameraLngLat(double *lng, double *lat) const;
-	bool			WorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, D3DXMATRIX *pVP, float clip = 1.0f);
+	bool			WorldToScreenSpace(const VECTOR3& rdir, oapi::IVECTOR2* pt, D3DXMATRIX* pVP = NULL, float clip = 1.0f);
+	bool			WorldToScreenSpace2(const VECTOR3& rdir, oapi::FVECTOR2* pt, D3DXMATRIX* pVP = NULL, float clip = 1.0f);
 
 	DWORD			GetFrameId() const { return dwFrameId; }
 
@@ -354,6 +373,9 @@ public:
 
 	void			PushCamera();	// Push current camera onto a stack
 	void			PopCamera();	// Restore a camera from a stack
+	FMATRIX4		PushCameraFrustumLimits(float nearlimit, float farlimit);
+	FMATRIX4		PopCameraFrustumLimits();
+	
 
 
 	// Visual Management =========================================================================================================
@@ -383,8 +405,10 @@ protected:
 	 */
 	void RenderObjectMarker(oapi::Sketchpad *pSkp, const VECTOR3 &gpos, const std::string& label1, const std::string& label2, int mode, int scale);
 
-private:
+	void RenderGlares();
 
+private:
+	void		ComputeLocalLightsVisibility();
 	DWORD		GetActiveParticleEffectCount();
 	float		ComputeNearClipPlane();
 	void		VisualizeCubeMap(LPDIRECT3DCUBETEXTURE9 pCube, int mip);
@@ -407,8 +431,7 @@ private:
 	void InitGDIResources();
 	void ExitGDIResources();
 
-	D3D9Pad *GetPooledSketchpad(int id); ///< Get pooled Sketchpad instance (lazy instantiation)
-	void    FreePooledSketchpads();      ///< Release pooled Sketchpad instances
+	void FreePooledSketchpads();      ///< Release pooled Sketchpad instances
 
 
 
@@ -420,7 +443,6 @@ private:
 	DWORD stencilDepth;        // stencil buffer bit depth
 	D3D9CelestialSphere* m_celSphere; // celestial sphere background
 	DWORD iVCheck;             // index of last object checked for visibility
-	//DWORD dwRenderPass;		   // Currently active render pass
 	bool  bLocalLight;         // enable local light sources
 	bool  surfLabelsActive;    // v.2 surface labels activated?
 
@@ -441,6 +463,7 @@ private:
 	std::list<vVessel *> Casters;
 	std::stack<CAMERA>	CameraStack;
 	std::stack<DWORD>	PassStack;
+	std::stack<FRUSTUM> FrustumStack;
 
 
 	CAMERA		Camera;
@@ -450,12 +473,14 @@ private:
 	VECTOR3		sky_color;
 	double      bglvl;
 
+	float		fDisplayScale;
 	float		lmaxdst2;
 	DWORD		nLights;
 	DWORD		nplanets;		// Number of distance sorted planets to render
 	DWORD		dwTurn;
 	DWORD		dwFrameId;
 	DWORD		camIndex;
+	DWORD		RenderFlags;
 	bool		bRendering;
 
 	oapi::Font *pAxisFont;
@@ -464,11 +489,18 @@ private:
 
 	SurfNative *pLblSrf;
 
-	class ImageProcessing *pLightBlur, *pBlur, *pGDIOverlay, *pIrradiance;
+	class ImageProcessing *pLightBlur, *pBlur, *pGDIOverlay, *pIrradiance, *pVisDepth, *pCreateGlare;
+	class ShaderClass *pLocalCompute, *pRenderGlares;
 
 	class vVessel *vFocus;
 	VOBJREC *vobjEnv, *vobjIrd;
 	double dVisualAppRad;
+
+	FVECTOR2 DepthSampleKernel[57];
+
+	LPDIRECT3DTEXTURE9 pSunTex, pLightGlare, pSunGlare, pSunGlareAtm;
+	LPDIRECT3DTEXTURE9 pLocalResults;
+	LPDIRECT3DSURFACE9 pLocalResultsSL;
 
 	// Blur Sampling Kernel ==============================================================
 	LPDIRECT3DCUBETEXTURE9 pBlrTemp[5];
@@ -482,10 +514,12 @@ private:
 	LPDIRECT3DSURFACE9 pOffscreenTarget;
 	LPDIRECT3DTEXTURE9 pTextures[TEX_COUNT];
 
-	LPDIRECT3DSURFACE9 pEnvDS, pIrradDS;
+	LPDIRECT3DSURFACE9 pEnvDS, pIrradDS, pDepthNormalDS;
 	LPDIRECT3DSURFACE9 psShmDS[SHM_LOD_COUNT];
 	LPDIRECT3DSURFACE9 psShmRT[SHM_LOD_COUNT];
 	LPDIRECT3DTEXTURE9 ptShmRT[SHM_LOD_COUNT];
+
+	LocalLightsCompute LLCBuf[MAX_SCENE_LIGHTS + 1];
 
 	// Rendering Technique related parameters ============================================
 	//

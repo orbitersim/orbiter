@@ -352,13 +352,9 @@ bool vBase::Update (bool bMainScene)
 
 	double simt = oapiGetSimTime();
 
-	if (fabs(simt-Tlghtchk)>0.1) {
-		sunLight = *scn->GetSun();
-
-		DWORD dAmbient = *(DWORD*)gc->GetConfigParam(CFGPRM_AMBIENTLEVEL);
-		float fAmbient = float(dAmbient)*0.0039f;
-
-		SurfaceLighting(&sunLight, oapiGetBasePlanet(hObj), hObj, fAmbient);	
+	if (fabs(simt-Tlghtchk)>0.1 || oapiGetPause()) {
+		VECTOR3 rpos = gpos - vP->GlobalPos();
+		sunLight = vP->GetObjectAtmoParams(rpos);
 		Tlghtchk = simt;
 	}
 
@@ -428,7 +424,10 @@ bool vBase::RenderStructures(LPDIRECT3DDEVICE9 dev)
 
 	// render generic objects above shadows
 	for (DWORD i=0; i<nstructure_as; i++) {
-		structure_as[i]->SetSunLight(&sunLight);
+		FVECTOR3 bs = structure_as[i]->GetBoundingSpherePos();
+		FVECTOR3 qw = TransformCoord(bs, mWorld);
+		D3D9Sun sp = vP->GetObjectAtmoParams(qw._V() + vP->CameraPos());
+		structure_as[i]->SetSunLight(&sp);
 		structure_as[i]->Render(&mWorld, RENDER_BASE);
 		++uCurrentMesh;
 	}

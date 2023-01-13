@@ -61,7 +61,7 @@ void orbiter::ModuleTab::Create ()
 
 //-----------------------------------------------------------------------------
 
-BOOL orbiter::ModuleTab::InitDialog (HWND hWnd, WPARAM wParam, LPARAM lParam)
+BOOL orbiter::ModuleTab::OnInitDialog (HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
 	SetWindowLongPtr (GetDlgItem (hTab, IDC_MOD_TREE), GWL_STYLE, TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | TVS_NOTOOLTIPS | WS_BORDER | WS_TABSTOP);
 	SetWindowPos (GetDlgItem (hTab, IDC_MOD_TREE), NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER);
@@ -101,7 +101,7 @@ bool orbiter::ModuleTab::OpenHelp ()
 
 //-----------------------------------------------------------------------------
 
-BOOL orbiter::ModuleTab::Size (int w, int h)
+BOOL orbiter::ModuleTab::OnSize (int w, int h)
 {
 	int dw = w - (int)(pos0.right-pos0.left);
 	int dh = h - (int)(pos0.bottom-pos0.top);
@@ -350,7 +350,40 @@ void orbiter::ModuleTab::DeactivateAll ()
 
 //-----------------------------------------------------------------------------
 
-INT_PTR orbiter::ModuleTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+BOOL orbiter::ModuleTab::OnNotify(HWND hDlg, int idCtrl, LPNMHDR pnmh)
+{
+	if (idCtrl == IDC_MOD_TREE) {
+		NM_TREEVIEW* pnmtv = (NM_TREEVIEW FAR*)pnmh;
+		switch (pnmtv->hdr.code) {
+		case TVN_SELCHANGED: {
+			TVITEM item = pnmtv->itemNew;
+			MODULEREC* rec = (MODULEREC*)item.lParam;
+			if (rec && rec->info)
+				SetWindowText(GetDlgItem(hDlg, IDC_MOD_INFO), rec->info);
+			else
+				SetWindowText(GetDlgItem(hDlg, IDC_MOD_INFO), "");
+		} return TRUE;
+		case NM_CUSTOMDRAW:
+			// this is a terrible hack to set the initial activation ticks,
+			// because for an unknown reason, setting the check state of the
+			// tree items during creation gets undone halfway through the
+			// initialisation process
+			if (counter >= 0 && counter < 4) {
+				if (counter == 2) PostMessage(hDlg, WM_USER, 0, 0);
+				counter++;
+			}
+			else if (counter == 4) {
+				ActivateFromList();
+			}
+			return 0;
+		}
+	}
+	return FALSE;
+}
+
+//-----------------------------------------------------------------------------
+
+BOOL orbiter::ModuleTab::OnMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	const int MAXSEL = 100;
 	int i;
@@ -368,37 +401,6 @@ INT_PTR orbiter::ModuleTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 		case IDC_MOD_BUTTON2:
 			ExpandCollapseAll (false);
 			return TRUE;
-		}
-		break;
-	case WM_NOTIFY:
-		switch (LOWORD(wParam)) {
-		case IDC_MOD_TREE:
-
-			pnmtv = (NM_TREEVIEW FAR *)lParam;
-			switch (pnmtv->hdr.code) {
-			case TVN_SELCHANGED: {
-				TVITEM item = pnmtv->itemNew;
-				MODULEREC *rec = (MODULEREC*)item.lParam;
-				if (rec && rec->info) {
-					SetWindowText (GetDlgItem (hWnd, IDC_MOD_INFO), rec->info);
-				} else {
-					SetWindowText (GetDlgItem (hWnd, IDC_MOD_INFO), "");
-				}
-				} return TRUE;
-			case NM_CUSTOMDRAW:
-				// this is a terrible hack to set the initial activation ticks,
-				// because for an unknown reason, setting the check state of the
-				// tree items during creation gets undone halfway through the
-				// initialisation process
-				if (counter >= 0 && counter < 4) {
-					if (counter == 2) PostMessage (hWnd, WM_USER, 0, 0);
-					counter++;
-				} else if (counter == 4) {
-					ActivateFromList();
-				}
-				return 0;
-			}
-			break;
 		}
 		break;
 	case WM_USER:

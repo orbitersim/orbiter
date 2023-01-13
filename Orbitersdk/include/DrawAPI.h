@@ -21,6 +21,7 @@
 
 #include "OrbiterAPI.h"
 #include <assert.h>
+#include <xmmintrin.h>
 
 #ifdef D3D9CLIENT_EXPORTS
 #include "d3dx9.h"
@@ -67,7 +68,19 @@ namespace oapi {
 			y = _y;
 		}
 
+		FVECTOR2(double _x, double _y)
+		{
+			x = float(_x);
+			y = float(_y);
+		}
+
 		FVECTOR2(long _x, long _y)
+		{
+			x = float(_x);
+			y = float(_y);
+		}
+
+		FVECTOR2(DWORD _x, DWORD _y)
 		{
 			x = float(_x);
 			y = float(_y);
@@ -102,6 +115,35 @@ namespace oapi {
 			return FVECTOR2(x * f, y * f);
 		}
 
+		inline FVECTOR2 operator* (FVECTOR2 f) const
+		{
+			return FVECTOR2(x * f.x, y * f.y);
+		}
+
+		inline FVECTOR2& operator*= (FVECTOR2& f)
+		{
+			x *= f.x; y *= f.y;
+			return *this;
+		}
+
+		inline FVECTOR2& operator+= (FVECTOR2& f)
+		{
+			x += f.x; y += f.y;
+			return *this;
+		}
+
+		inline FVECTOR2& operator-= (FVECTOR2& f)
+		{
+			x -= f.x; y -= f.y;
+			return *this;
+		}
+
+		inline FVECTOR2& operator/= (FVECTOR2& f)
+		{
+			x /= f.x; y /= f.y;
+			return *this;
+		}
+
 		inline FVECTOR2 operator/ (float f) const
 		{
 			f = 1.0f / f;
@@ -111,6 +153,11 @@ namespace oapi {
 		inline FVECTOR2 operator+ (float f) const
 		{
 			return FVECTOR2(x + f, y + f);
+		}
+
+		inline FVECTOR2 operator+ (FVECTOR2& f) const
+		{
+			return FVECTOR2(x + f.x, y + f.y);
 		}
 
 		inline FVECTOR2 operator- (float f) const
@@ -137,7 +184,7 @@ namespace oapi {
 	* \brief 32-bit floating point 3D vector type.
 	* \note This structure is compatible with the D3DXVECTOR3 type.
 	*/
-	typedef struct FVECTOR3 
+	typedef union FVECTOR3
 	{
 		FVECTOR3()
 		{
@@ -170,11 +217,43 @@ namespace oapi {
 			y = float(v.y);
 			z = float(v.z);
 		}
+		FVECTOR3(const D3DXCOLOR& v)
+		{
+			x = float(v.r);
+			y = float(v.g);
+			z = float(v.b);
+		}
 #endif
+		float MaxRGB() const
+		{
+			return max(max(r, g), b);
+		}
+
+		float MinRGB() const
+		{
+			return min(min(r, g), b);
+		}
+
+		float sql() const
+		{
+			return x * x + y * y + z * z;
+		}
+
+		inline VECTOR3 _V() const
+		{
+			VECTOR3 v = { x,y,z };
+			return v;
+		}
 
 		inline FVECTOR3& operator*= (float f)
 		{
 			x *= f; y *= f; z *= f;
+			return *this;
+		}
+
+		inline FVECTOR3& operator*= (const FVECTOR3 &f)
+		{
+			x *= f.x; y *= f.y; z *= f.z;
 			return *this;
 		}
 
@@ -192,9 +271,21 @@ namespace oapi {
 			return *this;
 		}
 
+		inline FVECTOR3& operator+= (const FVECTOR3& f)
+		{
+			x += f.x; y += f.y; z += f.z;
+			return *this;
+		}
+
 		inline FVECTOR3& operator-= (float f)
 		{
 			x -= f; y -= f; z -= f;
+			return *this;
+		}
+
+		inline FVECTOR3& operator-= (const FVECTOR3 &f)
+		{
+			x -= f.x; y -= f.y; z -= f.z;
 			return *this;
 		}
 
@@ -203,10 +294,20 @@ namespace oapi {
 			return FVECTOR3(x * f, y * f, z * f);
 		}
 
+		inline FVECTOR3 operator* (const FVECTOR3 &f) const
+		{
+			return FVECTOR3(x * f.x, y * f.y, z * f.z);
+		}
+
 		inline FVECTOR3 operator/ (float f) const
 		{
 			f = 1.0f / f;
 			return FVECTOR3(x * f, y * f, z * f);
+		}
+
+		inline FVECTOR3 operator/ (const FVECTOR3 &f) const
+		{
+			return FVECTOR3(x / f.x, y / f.y, z / f.z);
 		}
 
 		inline FVECTOR3 operator+ (float f) const
@@ -235,12 +336,18 @@ namespace oapi {
 		}
 
 #ifdef D3D9CLIENT_EXPORTS
-		inline operator D3DXVECTOR3()
+		inline operator D3DXVECTOR3() const
 		{
 			return D3DXVECTOR3(x, y, z);
 		}
+		inline operator D3DXCOLOR() const
+		{
+			return D3DXCOLOR(x, y, z, 1);
+		}
 #endif
-		float x, y, z;
+		struct { float x, y, z; };
+		struct { float r, g, b; };
+		FVECTOR2 xy; 
 	} FVECTOR3;
 
 
@@ -248,8 +355,7 @@ namespace oapi {
 	* \brief 32-bit floating point 4D vector type.
 	* \note This structure is compatible with the D3DXVECTOR4 type.
 	*/
-#pragma pack(push, 1)
-	typedef union FVECTOR4
+	typedef union __declspec(align(16)) FVECTOR4
 	{
 		DWORD dword_abgr() const
 		{
@@ -281,6 +387,11 @@ namespace oapi {
 		{
 			COLOUR4 clr = { r,g,b,a };
 			return clr;
+		}
+
+		float MaxRGB() const
+		{
+			return max(max(r, g), b);
 		}
 
 		FVECTOR4()
@@ -323,7 +434,7 @@ namespace oapi {
 			w = float(v.w);
 		}
 
-		FVECTOR4(const VECTOR3& v, float _w = 0.0f)
+		FVECTOR4(const VECTOR3& v, float _w)
 		{
 			x = float(v.x);
 			y = float(v.y);
@@ -331,7 +442,7 @@ namespace oapi {
 			w = _w;
 		}
 
-		FVECTOR4(const FVECTOR3& v, float _w = 0.0f)
+		FVECTOR4(const FVECTOR3& v, float _w)
 		{
 			rgb = v;
 			w = _w;
@@ -368,6 +479,13 @@ namespace oapi {
 			y = float(v.y);
 			z = float(v.z);
 			w = float(v.w);
+		}
+		FVECTOR4(const D3DXCOLOR& v)
+		{
+			x = float(v.r);
+			y = float(v.g);
+			z = float(v.b);
+			w = float(v.a);
 		}
 #endif
 
@@ -435,19 +553,18 @@ namespace oapi {
 		}
 
 #ifdef D3D9CLIENT_EXPORTS
-		inline operator D3DXVECTOR4()
+		inline operator D3DXVECTOR4() const
 		{
 			return D3DXVECTOR4(x, y, z, w);
 		}
 #endif
-
+		__m128 xm;
 		float data[4];
 		struct { float x, y, z, w; };
 		struct { float r, g, b, a; };
 		FVECTOR3 xyz;     //  , w; };
 		FVECTOR3 rgb;    //   , a; };
 	} FVECTOR4;
-#pragma pack(pop)
 
 
 	typedef union DRECT
@@ -487,7 +604,7 @@ namespace oapi {
 	* \brief Float-valued 4x4 matrix.
 	* \note This structure is compatible with the D3DXMATRIX.
 	*/
-	typedef union FMATRIX4 
+	typedef union __declspec(align(16)) FMATRIX4
 	{
 		FMATRIX4() {
 			m11 = m12 = m13, m14 = m21 = m22 = m23 = m24 = m31 = m32 = m33 = m34 = m41 = m42 = m43 = m44 = 0;
@@ -513,6 +630,14 @@ namespace oapi {
 		{
 			memcpy_s(data, sizeof(FMATRIX4), &m, sizeof(m));
 		}
+		FMATRIX4(const LPD3DXMATRIX m)
+		{
+			memcpy_s(data, sizeof(FMATRIX4), m, sizeof(FMATRIX4));
+		}
+		inline operator LPD3DXMATRIX()
+		{
+			return (LPD3DXMATRIX)this;
+		}
 #endif
 
 		void Zero()
@@ -524,6 +649,15 @@ namespace oapi {
 		{
 			for (int i = 0; i < 16; i++) data[i] = 0.0;
 			m11 = m22 = m33 = m44 = 1.0f;
+		}
+
+		void _swap(float& a, float& b) { float c = a; a = b; b = c; }
+
+		void Transpose()
+		{
+			_swap(m12, m21); _swap(m13, m31);
+			_swap(m14, m41); _swap(m23, m32);
+			_swap(m24, m42); _swap(m34, m43);
 		}
 
 		float data[16];
@@ -541,6 +675,16 @@ namespace oapi {
 		float y = V.x * M.m12 + V.y * M.m22 + V.z * M.m32 + V.w * M.m42;
 		float z = V.x * M.m13 + V.y * M.m23 + V.z * M.m33 + V.w * M.m43;
 		float w = V.x * M.m14 + V.y * M.m24 + V.z * M.m34 + V.w * M.m44;
+		return FVECTOR4(x, y, z, w);
+	}
+
+
+	inline FVECTOR4 tmul(const FVECTOR4& V, const FMATRIX4& M)
+	{
+		float x = V.x * M.m11 + V.y * M.m12 + V.z * M.m13 + V.w * M.m14;
+		float y = V.x * M.m21 + V.y * M.m22 + V.z * M.m23 + V.w * M.m24;
+		float z = V.x * M.m31 + V.y * M.m32 + V.z * M.m33 + V.w * M.m34;
+		float w = V.x * M.m41 + V.y * M.m42 + V.z * M.m43 + V.w * M.m44;
 		return FVECTOR4(x, y, z, w);
 	}
 
@@ -573,14 +717,20 @@ namespace oapi {
 
 	inline FVECTOR2 unit(const FVECTOR2& v)
 	{
-		float f = 1.0f / sqrt(v.x * v.x + v.y * v.y);
+		float f = 1.0f / ::sqrt(v.x * v.x + v.y * v.y);
 		return FVECTOR2(v.x * f, v.y * f);
 	}
 
 	inline FVECTOR3 unit(const FVECTOR3& v)
 	{
-		float f = 1.0f / sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-		return FVECTOR3(v.x * f, v.y * f, v.z * f);
+		float d = v.x * v.x + v.y * v.y + v.z * v.z;
+		return d > 0 ? FVECTOR3(v.x, v.y, v.z) / ::sqrt(d) : 0.0f;
+	}
+
+	inline FVECTOR3 normalize(const FVECTOR3& v)
+	{
+		float d = v.x * v.x + v.y * v.y + v.z * v.z;
+		return d > 0 ? FVECTOR3(v.x, v.y, v.z) / ::sqrt(d) : 0.0f;
 	}
 
 	inline float dot(const FVECTOR2& v, const FVECTOR2& w)
@@ -600,12 +750,12 @@ namespace oapi {
 
 	inline float length(const FVECTOR2& v)
 	{
-		return sqrt(v.x * v.x + v.y * v.y);
+		return ::sqrt(v.x * v.x + v.y * v.y);
 	}
 
 	inline float length(const FVECTOR3& v)
 	{
-		return sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+		return ::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
 	}
 
 	inline FVECTOR3 cross(const FVECTOR3& a, const FVECTOR3& b)
@@ -671,6 +821,16 @@ namespace oapi {
 	inline FVECTOR4 exp(const FVECTOR4& x)
 	{
 		return FVECTOR4(::exp(x.x), ::exp(x.y), ::exp(x.z), ::exp(x.w));
+	}
+
+	inline FVECTOR3 sqrt(const FVECTOR3& x)
+	{
+		return FVECTOR3(::sqrt(x.x), ::sqrt(x.y), ::sqrt(x.z));
+	}
+
+	inline FVECTOR4 sqrt(const FVECTOR4& x)
+	{
+		return FVECTOR4(::sqrt(x.x), ::sqrt(x.y), ::sqrt(x.z), ::sqrt(x.w));
 	}
 
 
@@ -1518,6 +1678,15 @@ public:
 	*/
 	virtual void SetClipDistance(float _near, float _far) { assert(false); }
 
+	/**
+	* \brief [DX9] Set a world matrix for drawing into a specified 3D location and the drawing will be facing the camera.
+	* \param wpos Camera centric location in ECL frame.
+	* \param scl Drawing scale factor.
+	* \param bFixed If 'true' drawing will retain a constant size recardless of camera distance. (One drawing unit is aprox. one pixel)
+	* \param index Direction of drawing stace x-axis in ecliptic frame. If 'NULL' drawing is orientated with screen (i.e. display) 
+	* \Note Only works in perspective projection
+	*/
+	virtual void SetWorldBillboard(const FVECTOR3& wpos, float scl = 1.0f, bool bFixed = true, const FVECTOR3 *index = NULL) { assert(false); }
 private:
 	SURFHANDLE surf;
 };

@@ -80,6 +80,13 @@ public:
 	// search through the bases of all planets
 	// NOTE: THIS SHOULD NOT BE NECESSARY!
 
+	/**
+	 * \brief Called when the user interactively changes a simulation option
+	 * \param cat option category (see \ref optcat)
+	 * \param item option item (see \ref optitem)
+	 */
+	void OptionChanged(DWORD cat, DWORD item);
+
 	bool Read (char *fname);
 	// Read specs from config file
 

@@ -53,20 +53,11 @@ void orbiter::AboutTab::Create ()
 #endif
 	strcpy(cbuf, "XRSound module Copyright (c) Doug Beachy");
 	SendDlgItemMessage(hTab, IDC_ABT_LBOX_COMPONENT, LB_ADDSTRING, 0, (LPARAM)cbuf);
-
-	static int item[] = {
-		IDC_ABT_GRP_ORBITER, IDC_ABT_GRP_WEB, IDC_ABT_ICON_DG, IDC_ABT_TXT_NAME,
-		IDC_ABT_TXT_WEB, IDC_ABT_TXT_WEBADDR, IDC_ABT_TXT_CPR, IDC_ABT_TXT_LICENSE,
-		IDC_ABT_GRP_COMPONENT, IDC_ABT_WEB, IDC_ABT_DISCLAIM, IDC_ABT_CREDIT,
-		IDC_ABT_TXT_BUILDDATE, IDC_ABT_LBOX_COMPONENT
-	};
-
-	RegisterItemPositions (item, 14);
 }
 
 //-----------------------------------------------------------------------------
 
-INT_PTR orbiter::AboutTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+BOOL orbiter::AboutTab::OnMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_COMMAND:

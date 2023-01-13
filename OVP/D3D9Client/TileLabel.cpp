@@ -168,7 +168,7 @@ bool TileLabel::Read ()
 
 	if (tile->smgr->DoLoadIndividualFiles(4)) { // try loading from individual tile file
 		sprintf_s(path, MAX_PATH, "%s\\Label\\%02d\\%06d\\%06d.lab", tile->mgr->CbodyName(), lvl+4, ilat, ilng);
-		tile->mgr->Client()->TexturePath(path, texpath);
+		tile->mgr->GetClient()->TexturePath(path, texpath);
 
 		std::ifstream ifs(texpath);
 		while (ifs >> typestr >> lat >> lng >> altstr >> std::ws) {
@@ -270,7 +270,7 @@ void TileLabel::Render (D3D9Pad *skp, oapi::Font **labelfont, int *fontidx)
 	VECTOR3 sp, dir;
 	bool active;
 	const OBJHANDLE &hPlanet = tile->mgr->Cbody();
-	Scene *pScene = tile->mgr->Client()->GetScene();
+	Scene *pScene = tile->mgr->GetClient()->GetScene();
 
     if (pScene->GetCameraProxyBody() != hPlanet) { return; } // do not render other body's labels
 
@@ -297,9 +297,8 @@ void TileLabel::Render (D3D9Pad *skp, oapi::Font **labelfont, int *fontidx)
 			dir = unit(sp);
 			if (pScene->CameraDirection2Viewport(dir, x, y)) {
 
-				active = false; // default for label types not listed in the legend
 				symbol = 0; // undefined
-				if (nl = tile->smgr->Client()->GetSurfaceMarkerLegend(hPlanet, &lspec)) {
+				if (nl = tile->smgr->GetClient()->GetSurfaceMarkerLegend(hPlanet, &lspec)) {
 					for (int j = 0; j < nl; ++j) {
 						if (renderlabel[i]->labeltype == lspec[j].labelId) {
 							symbol = lspec[j].markerId;

@@ -224,7 +224,7 @@ struct CFG_JOYSTICKPRM {
 };
 
 struct CFG_UIPRM {              // user interface options
-	bool   bFocusFollowsMouse;	// focus mode for dialog boxes (mouse move or mouse click)
+	DWORD  MouseFocusMode;	    // 0: focus requires click; 1: focus requires click for child windows only; 2: focus follow mouse
 	DWORD  MenuMode;            // 0=show, 1=hide, 2=auto-hide
 	bool   bMenuLabelOnly;      // display only menu labels?
 	bool   bWarpAlways;         // always display time acceleration != 1

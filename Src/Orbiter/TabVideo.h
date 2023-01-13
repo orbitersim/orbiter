@@ -20,7 +20,7 @@ namespace orbiter {
 
 		void Create();
 
-		BOOL InitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam);
+		BOOL OnInitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam);
 
 		void OnGraphicsClientLoaded(oapi::GraphicsClient* gc, const PSTR moduleName);
 
@@ -28,7 +28,7 @@ namespace orbiter {
 
 		bool OpenHelp();
 
-		INT_PTR TabProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		BOOL OnMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	protected:
 		void ShowInterface(HWND hTab, bool show);
