@@ -57,7 +57,7 @@ target_link_libraries(DeltaGlider
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
 	${ORBITER_DLGCTRL_LIB}
-	${LUA_LIB}
+	lua::lib
 )
 
 # scan mesh files for labels and output to header file

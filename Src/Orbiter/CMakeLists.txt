@@ -155,7 +155,6 @@ set(Orbiter_includes
 	${CMAKE_SOURCE_DIR}/Orbitersdk/include
 	${CMAKE_SOURCE_DIR}/OVP
 	${CMAKE_CURRENT_BINARY_DIR}
-	${ZLIB_INCLUDE_DIR}
 	${HTMLHELP_INCLUDE_DIR}
 	${DX7SDK_INCLUDE_DIR}
 )
@@ -165,7 +164,7 @@ set(Orbiter_common_libs
 	comctl32.lib
 	UxTheme.lib
 	${HTML_HELP_LIBRARY}
-	${ZLIB_LIB}
+	zlib
 	${HTMLHELP_LIB}
 	$<TARGET_FILE:Orbitersdk>
 	$<TARGET_FILE:DlgCtrl>

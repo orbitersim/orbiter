@@ -86,19 +86,6 @@ set(GDICLIENT_LIB $<TARGET_LINKER_FILE:GDIClient>)
 
 set(EXTERN_DIR "${CMAKE_SOURCE_DIR}/Extern")
 
-set(ZLIB_VER "1.2.11")
-set(ZLIB_DIR "${EXTERN_DIR}/zlib/zlib-${ZLIB_VER}-${ARCH}")
-set(ZLIB_INCLUDE_DIR "${ZLIB_DIR}/include")
-set(ZLIB_LIB_DIR "${ZLIB_DIR}/lib")
-set(ZLIB_LIB "${ZLIB_LIB_DIR}/zlibstatic.lib")
-
-set(Lua_VER "5.1")
-set(LUA_DIR "${EXTERN_DIR}/Lua/Lua-${Lua_VER}-${ARCH}")
-set(LUA_INCLUDE_DIR "${LUA_DIR}/include")
-set(LUA_LIB_DIR "${LUA_DIR}/lib")
-set(LUA_DLL_DIR "${LUA_DIR}/dll")
-set(LUA_LIB "${LUA_DLL_DIR}/lua${Lua_VER}.lib")
-
 set(DX7SDK_PATH "${EXTERN_DIR}/mssdk_dx7")
 set(DX7SDK_INCLUDE_DIR "${DX7SDK_PATH}/include")
 set(DX7SDK_LIB_DIR "${DX7SDK_PATH}/lib")
@@ -109,8 +96,7 @@ set(HTMLHELP_LIB_DIR ${HTMLHELP_DIR}/lib-${ARCH})
 set(HTMLHELP_LIB ${HTMLHELP_LIB_DIR}/Htmlhelp.lib)
 
 set(ORBITER_TOOL_MESHC "$<TARGET_FILE:meshc>")
-set(LUA_EXE ${LUA_DIR}/bin/lua.exe)
-set(ldoc ${LUA_EXE} ${LUA_DIR}/packages/LDoc/ldoc.lua)
+set(ldoc $<TARGET_FILE:lua::exe> ${LUA_DIR}/packages/LDoc/ldoc.lua)
 
 find_package(OpenGL QUIET)
 find_package(HTMLHelp)
@@ -141,8 +127,6 @@ add_custom_target(CopyData ALL
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Config/ ${CMAKE_BINARY_DIR}/Config
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Flights/ ${CMAKE_BINARY_DIR}/Flights
 	COMMAND ${CMAKE_COMMAND} -E make_directory ${ORBITER_BINARY_SDK_DIR}/lib/Lua
-	COMMAND ${CMAKE_COMMAND} -E copy ${LUA_DLL_DIR}/lua5.1.lib ${ORBITER_BINARY_SDK_DIR}/lib/Lua/
-	COMMAND ${CMAKE_COMMAND} -E copy ${LUA_DLL_DIR}/lua5.1.dll ${CMAKE_BINARY_DIR}
 )
 set_target_properties(CopyData
 	PROPERTIES
@@ -410,12 +394,11 @@ endfunction()
 install(DIRECTORY Scenarios Textures Meshes Config Script Flights BinAssets/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
 )
-install(FILES ${LUA_DLL_DIR}/lua5.1.dll
-	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
+install(FILES $<TARGET_FILE:lua::lib> DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
 )
-install(FILES ${LUA_DLL_DIR}/lua5.1.lib
-	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/lib/Lua
-)
+#install(FILES ${LUA_DLL_DIR}/lua5.1.lib
+#	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/lib/Lua
+#)
 
 set(CMAKE_MODULE_PATH
 	${ORBITER_BINARY_ROOT_DIR}
@@ -430,6 +413,7 @@ INSTALL(FILES ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}
 )
 
 # Sub-projects
+add_subdirectory(Extern)
 add_subdirectory(Src)
 add_subdirectory(Utils)
 add_subdirectory(Orbitersdk)
