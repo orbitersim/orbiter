@@ -394,8 +394,6 @@ endfunction()
 install(DIRECTORY Scenarios Textures Meshes Config Script Flights BinAssets/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
 )
-install(FILES $<TARGET_FILE:lua::lib> DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
-)
 #install(FILES ${LUA_DLL_DIR}/lua5.1.lib
 #	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/lib/Lua
 #)
