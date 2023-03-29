@@ -329,19 +329,24 @@ void Scene::UpdateVisual (Body *body, Camera **camlist, int ncam)
 void Scene::UpdateVisuals (PlanetarySystem *psys, Camera **camlist, int ncam, bool force)
 {
 	int i, i0, i1;
-	bool vis;
 
-	if (force)
-		i0 = 0, i1 = psys->nObj();
-	else {
-		if (cobj >= psys->nObj()) cobj = 0;
-		i0 = cobj++, i1 = i0+1;
+	if (force) {
+		i0 = 0;
+		i1 = psys->nObj();
 	}
+	else {
+		if (cobj >= psys->nObj())
+			cobj = 0;
+		i0 = cobj++;
+		i1 = i0 + 1;
+	}
+
 	// check visibility from any camera
 	for (i = i0; i < i1; i++) {
 		Body *body = psys->GetObj(i);
-		if (vis = (body->Type() == OBJTP_STAR)) { // we assume stars are always visible
-			if (!body->GetVishandle()) AddVisStar (body);
+		if (body->Type() == OBJTP_STAR) { // we assume stars are always visible
+			if (!body->GetVishandle())
+				AddVisStar (body);
 			continue;
 		}
 		UpdateVisual (body, camlist, ncam);
@@ -442,7 +447,7 @@ void Scene::AddStarlight (Star *star)
 	memcpy (tmp, starlight, nstarlight*sizeof(STARLIGHT));
 	if (nstarlight) delete []starlight;
 	starlight = tmp;
-	starlight[nstarlight].col = star->GetLightColor();
+	starlight[nstarlight].col = VObject::ColorToD3D(star->GetLightColor());
 	starlight[nstarlight].gpos = &star->GPos();
 	dev->LightEnable (nstarlight++, TRUE);
 }

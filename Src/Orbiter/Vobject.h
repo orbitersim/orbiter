@@ -30,6 +30,8 @@ public:
 	static void CreateDeviceObjects (OrbiterGraphics *gclient);
 	static void DestroyDeviceObjects ();
 
+	static D3DCOLORVALUE ColorToD3D(Vector4 col) { return { (float)col.x, (float)col.y, (float)col.z, (float)col.w }; };
+
 	virtual unsigned long GetCaps () const
 	{ return 0; }
 

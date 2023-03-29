@@ -3533,7 +3533,8 @@ void SolarPlant::Activate ()
 	if (g_pOrbiter->Cfg()->CfgVisualPrm.bShadows) {
 		ShVtx = new VERTEX_XYZ[nShVtx = npanel*4]; TRACENEW
 		ShIdx = new WORD[nShIdx = npanel*6]; TRACENEW
-		D3DCOLOR shcol = base->ShadowColor();
+		Vector4 shadowCol = base->ShadowColor();
+		D3DCOLOR shcol = D3DRGBA(shadowCol.x, shadowCol.y, shadowCol.z, shadowCol.w);
 		for (n = 0; n < nShVtx; n++) {
 			ShVtx[n].y = 0.0f;
 			//ShVtx[n].col = shcol;
