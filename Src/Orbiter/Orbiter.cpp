@@ -106,12 +106,12 @@ DWORD           g_qsaveid        = 0;
 DWORD           g_customcmdid    = 0;
 
 // 2D info output flags
-BOOL		    g_bOutputTime    = TRUE;
-BOOL		    g_bOutputFPS     = TRUE;
-BOOL            g_bOutputDim     = TRUE;
-bool		    g_bForceUpdate   = true;
-bool            g_bShowGrapple   = false;
-bool            g_bStateUpdate   = false;
+BOOL g_bOutputTime  = TRUE;
+BOOL g_bOutputFPS   = TRUE;
+BOOL g_bOutputDim   = TRUE;
+bool g_bForceUpdate = true;
+bool g_bShowGrapple = false;
+bool g_bStateUpdate = false;
 
 // Timing parameters
 DWORD  launch_tick;      // counts the first 3 frames
@@ -341,7 +341,6 @@ Orbiter::Orbiter ()
 	bEnableLighting = TRUE;
 	bUseStencil     = false;
 	bKeepFocus      = false;
-	bRealtime       = TRUE;
 	bEnableAtt      = TRUE;
 	bRecord         = false;
 	bPlayback       = false;
@@ -1355,7 +1354,7 @@ bool Orbiter::KillVessels ()
 				m_pConsole->Echo(cbuf);
 			}
 			// kill the vessel
-			g_psys->DelVessel (vessel, 0);
+			g_psys->DelVessel (vessel);
 		}
 	}
 	return true;
@@ -1451,7 +1450,6 @@ void Orbiter::ApplyWarpFactor ()
 		it->pModule->clbkTimeAccChanged(nwarp, td.Warp());
 
 	if (g_pane) g_pane->SetWarp (nwarp);
-	bRealtime = (fabs (nwarp-1.0) < 1e-6);
 }
 
 //-----------------------------------------------------------------------------
@@ -2018,7 +2016,7 @@ bool Orbiter::Timejump (double _mjd, int pmode)
 {
 	tjump.mode = pmode;
 	tjump.dt = td.JumpTo (_mjd);
-	g_psys->Timejump ();
+	g_psys->Timejump(tjump);
 	g_camera->Update ();
 	if (g_pane) g_pane->Timejump ();
 
@@ -2942,106 +2940,6 @@ void Orbiter::CloseDialog (HWND hDlg)
 HWND Orbiter::IsDialog (HINSTANCE hInstance, DWORD resId)
 {
 	return (pDlgMgr ? pDlgMgr->IsEntry (hInstance, resId) : NULL);
-}
-
-//=============================================================================
-// Implementation of class TimeData
-//=============================================================================
-
-TimeData::TimeData ()
-{
-	Reset();
-}
-
-void TimeData::Reset (double mjd_ref)
-{
-	TWarp = TWarpTarget = 1.0;
-	TWarpDelay = 0.0;
-	SysT0 = SysT1 = SysDT = 0.0;
-	SimT0 = SimT1 = SimDT = SimDT0 = 0.0;
-	SimT1_ofs = SimT1_inc = 0.0;
-	MJD_ref = MJD0 = MJD1 = mjd_ref;
-	fps = syst_acc = 0.0;
-	framecount = frame_tick = sys_tick = 0;
-	bWarpChanged = false;
-
-	fixed_step = 0.0;
-	bFixedStep = false;
-}
-
-void TimeData::SetFixedStep(double step)
-{
-	fixed_step = step;
-	bFixedStep = (fixed_step > 0.0);
-}
-
-void TimeData::BeginStep (double deltat, bool running)
-{
-	bWarpChanged = false;
-	SysT1 = SysT0 + (SysDT = deltat);
-	iSysDT = 1.0/SysDT; // note that delta_ms==0 is trapped earlier
-
-	framecount++;
-	frame_tick++;
-	syst_acc += SysDT;
-	if ((size_t)SysT1 != sys_tick) {
-		fps = frame_tick/syst_acc;
-		frame_tick = 0;
-		syst_acc = 0.0;
-		sys_tick = (size_t)SysT1;
-	}
-
-	if (running) { // only advance simulation time if simulation is not paused
-
-		if (TWarp != TWarpTarget) {
-			if (TWarpDelay == 0.0)
-				TWarp = TWarpTarget;
-			else if (TWarpTarget > TWarp)
-				TWarp = min (TWarpTarget, TWarp * pow (10, SysDT/TWarpDelay));
-			else
-				TWarp = max (TWarpTarget, TWarp * pow (10, -SysDT/TWarpDelay));
-			bWarpChanged = true;
-		}
-
-		SimDT = (bFixedStep ? fixed_step : SysDT) * TWarp;
-		iSimDT = 1.0/SimDT;
-		if ((SimT1_inc += SimDT) > 1e6) {
-			SimT1_ofs += 1e6;
-			SimT1_inc -= 1e6;
-		}
-		SimT1 = SimT1_ofs + SimT1_inc;
-		MJD1 = MJD_ref + Day (SimT1);
-	}
-}
-
-void TimeData::EndStep (bool running)
-{
-	SysT0 = SysT1;
-
-	if (running) {
-		SimT0 = SimT1;
-		SimDT0 = SimDT;
-		iSimDT0 = iSimDT;
-		MJD0 = MJD1;
-	}
-}
-
-double TimeData::JumpTo (double mjd)
-{
-	double dt = (mjd-MJD0)*86400.0;
-	MJD0 = MJD1 = mjd;
-	SimT0 = SimT1 = SimT1_ofs = (mjd-MJD_ref)*86400.0;
-	SimT1_inc = 0.0;
-	return dt;
-}
-
-void TimeData::SetWarp (double warp, double delay) {
-	TWarpTarget = warp;
-	TWarpDelay  = delay;
-	if (delay == 0.0) {
-		TWarp = warp;
-		bWarpChanged = true;
-	}
 }
 
 //=============================================================================

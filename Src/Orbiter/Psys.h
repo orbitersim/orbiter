@@ -6,14 +6,14 @@
 #ifndef __PSYS_H
 #define __PSYS_H
 
-#include "Body.h"
+#include "Base.h"
 #include "Star.h"
 #include "Planet.h"
-#include "Base.h"
-#include "GraphicsAPI.h"
-#include <iostream>
 
-#define FILETYPE_MARKER 1
+class Vessel;
+class SuperVessel;
+struct TimeJumpData;
+
 
 class Vessel;
 class SuperVessel;
@@ -102,7 +102,7 @@ public:
 	// add a new vessel to the system
 	// return value is the vessel's id
 
-	bool DelVessel (Vessel *_vessel, Body *_alt_cam_tgt);
+	bool DelVessel (Vessel *_vessel);
 	// remove vessel from the system. This will fail for the focus object
 	// if _vessel was camera target, then camera will switch to _alt_cam_tgt
 	// (or Sun, if no target provided)
@@ -124,7 +124,7 @@ public:
 
 	void FinaliseUpdate ();
 
-	void Timejump ();
+	void Timejump (const TimeJumpData& jump);
 	// Discontinuous step
 
 	void ScanGFieldSources (const Vector *gpos, const Body *exclude, GFieldData *gfd) const;

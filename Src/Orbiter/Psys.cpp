@@ -53,7 +53,7 @@ void PlanetarySystem::Clear ()
 		delete []name;
 		name = 0;
 	}
-	while (nvessel) DelVessel (vessel[0], 0);
+	while (nvessel) DelVessel (vessel[0]);
 	if (nbody) {
 		for (k = 0; k < nbody; k++) delete body[k]; // delete actual objects
 		delete []body; // delete list
@@ -419,7 +419,6 @@ int PlanetarySystem::AddStar (Star *_star)
 	star[nstar] = _star;
 	AddGrav (_star); // register in list of massive objects
 	AddBody (_star); // register in general list
-	_star->SetPsys (this); // somewhat ugly
 	return nstar++;
 }
 
@@ -481,7 +480,7 @@ int PlanetarySystem::AddVessel (Vessel *_vessel)
 	return nvessel++;
 }
 
-bool PlanetarySystem::DelVessel (Vessel *_vessel, Body *_alt_cam_tgt)
+bool PlanetarySystem::DelVessel (Vessel *_vessel)
 {
 	//if (!g_pOrbiter->RequestDelete (_vessel, _alt_cam_tgt)) return false;
 	DWORD i, j, k;
@@ -909,7 +908,7 @@ void PlanetarySystem::FinaliseUpdate ()
 	for (i = 0; i < nvessel; i++) vessel[i]->PostUpdate ();
 }
 
-void PlanetarySystem::Timejump ()
+void PlanetarySystem::Timejump (const TimeJumpData& jump)
 {
 	DWORD i;
 	for (i = 0; i < nbody; i++) body[i]->BeginStateUpdate ();
@@ -919,7 +918,7 @@ void PlanetarySystem::Timejump ()
 	for (i = 0; i < nbody; i++) body[i]->EndStateUpdate ();
 
 	for (i = 0; i < nvessel; i++)
-		vessel[i]->Timejump(g_pOrbiter->tjump.dt, g_pOrbiter->tjump.mode);
+		vessel[i]->Timejump(jump.dt, jump.mode);
 }
 
 void PlanetarySystem::InitDeviceObjects ()

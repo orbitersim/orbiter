@@ -13,6 +13,7 @@
 #include "Config.h"
 #include "Log.h"
 #include "Spherepatch.h"
+#include "Astro.h"
 #include <fstream>
 
 #include <stdio.h>
