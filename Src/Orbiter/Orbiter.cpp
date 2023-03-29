@@ -275,7 +275,14 @@ bool Orbiter::InitializeWorld (char *name)
 	g_camera = new Camera (g_nearplane, g_farplane); TRACENEW
 	g_camera->ResizeViewport (viewW, viewH);
 	if (g_psys) delete g_psys;
-	g_psys = new PlanetarySystem (name); TRACENEW
+
+	auto outputCallback = [](const char* msg, int line, void* callbackContext) 
+	{ 
+		Orbiter* _this = static_cast<Orbiter*>(callbackContext);
+		_this->OutputLoadStatus(msg, line); 
+	};
+
+	g_psys = new PlanetarySystem(name, pConfig, outputCallback, this); TRACENEW
 	if (!g_psys->nObj()) {  // sanity check
 		DestroyWorld();
 		return false;
@@ -1152,7 +1159,7 @@ void Orbiter::UpdateServerWnd (HWND hWnd)
 	SetWindowText (GetDlgItem (hWnd, IDC_STATIC5), cbuf);
 	sprintf (cbuf, "%f", td.FPS());
 	SetWindowText (GetDlgItem (hWnd, IDC_STATIC6), cbuf);
-	sprintf (cbuf, "%d", g_psys->nVessel());
+	sprintf (cbuf, "%zd", g_psys->nVessel());
 	SetWindowText (GetDlgItem (hWnd, IDC_STATIC7), cbuf);
 }
 
