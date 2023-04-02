@@ -16,29 +16,38 @@ typedef struct ScatterParams {
 	union {
 		double data[ATM_SLIDER_COUNT];  // ATTENTION: Order of params must match with slider indexes
 		struct {
-			double red;			///< Red wave length
-			double green;		///< Green wavw length
-			double blue;		///< Blue wave length
-			double rpow;		///< Rayleigh power
-			double rin;			///< in-scatter strength
-			double rout;		///< out-scatter strenght
-			double rphase;		///< Rayleigh phase
-			double mie;			///< scale factor for mie scattering
-			double mphase;		///< g-constant in HG phase function
-			double height;		///< atmospheric scale height
-			double aux2;		///< auxiliary parameter
-			double depth;		///< Cloud layer intensity
-			double mpow;		///< Mie power
-			double expo;		///< exposure for terrain
-			double aux1;		///< auxiliary parameter
-			double aux3;		///< auxiliary parameter
-			double tgamma;		///< Terrain gamma
-			double hazec;		///< Haze color
-			double hazei;		///< Haze intensity
-			double agamma;		///< Atmosphere gamma	
+			double tw_dst;		///< 0 Twilight distance
+			double green;		///< 1 Green wavw length
+			double tw_bri;		///< 2 Twilight brightness
+			double rpow;		///< 3 Rayleigh power
+			double rayrat;		///< 4 Rayleigh ratio
+			double ray;			///< 5 Rayleigh out-scatter strength
+			double tw_bld;		///< 6 Building ambient level at twilight
+			double mie;			///< 7 scale factor for mie out-scattering
+			double mphase;		///< 8 g-constant in HG phase function
+			double rheight;		///< 9 atmospheric rayleigh scale height
+			double aux2;		///< 10 cloud lighting altitude [km]
+			double mheight;		///< 11 Mie scale height
+			double mpow;		///< 12 Mie power
+			double trb;			///< 13 Terrain brightness
+			double mierat;		///< 14 Mie ratio
+			double aux3;		///< 15 auxiliary parameter
+			double tgamma;		///< 16 Terrain gamma
+			double mphaseb;		///< 17 MiePhase-B
+			double hazei;		///< 18 cloud intensity
+			double tr3D;		///< 19 Terrain light and shadow boost
 		};
 	};
-	bool orbit;
+	double orbalt;
+	double visalt;
+	double red;
+	double blue;
+	double suni;
+	FVECTOR3 zcolor;	// sun-glare color at zenith (camera at sealevel)
+	FVECTOR3 hcolor;	// sun-glare color at horizon (camera at sealevel)
+	FVECTOR3 acolor;	// Abmient color at sealevel
+	double cfg_alt;
+	double cfg_halt;
 } ScatterParams;
 
 class vPlanet;
@@ -61,44 +70,9 @@ namespace AtmoControls {
 	void		ConfigSlider(int id, double min, double max, int style=0);
 	void		SetSlider(int id, WORD pos);
 	void		UpdateSliders();
+	bool		Visualize();
 
 	INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
-
-
-
-
-/*
-class Scatter {
-
-public:
-				Scatter(ScatterParams *prm, OBJHANDLE hPlanet, DWORD dAmbient);
-				~Scatter();
-
-	double		AngleCoEff(double cos_dir);
-
-	void		ComputeSunLightColorMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DTEXTURE9 *pOutSM, bool bSave=false);
-	void		ComputeInscatterColorMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DTEXTURE9 *pOutSM, bool bSave=false);
-
-private:
-
-	double		fRadius;
-	double		fAtmRad;
-	double		fMaxDepth;
-	double		fHorizonAlt;
-	double		fScaleHeight;
-	double		fInvScaleHeight;
-	double		fCoEff[12];
-	double		fMieA, fMieB, fMieC;
-
-	float		fGlobalAmb, fSunAppRad, fAmbient0;
-
-	D3DXVECTOR3	vLambda4, vLambda1;
-	D3DXVECTOR3	vRayTot, vMieTot, vRaySun, vRayIns, vRaySrf;
-
-	const ATMCONST *atm;
-};*/
-
-
 
 #endif // !__ATMOCONTROLS_H

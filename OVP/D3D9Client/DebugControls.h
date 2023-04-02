@@ -37,7 +37,7 @@
 ///   DWORD
 #define CFGPRM_GETCAMERAMODE			0x2005
 
-/// Value of camara speed setting
+/// Value of camera speed setting
 /// \par Parameter type:
 ///   double
 #define CFGPRM_GETCAMERASPEED			0x2006

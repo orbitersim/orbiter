@@ -18,8 +18,8 @@
 
 #define NTEMP 5
 
-static double eEll[NTEMP] = { 0.0f, 0.5f, 0.75f, 0.88f, 0.95f };
-static double eHyp[NTEMP] = { 1.01f, 1.1f, 1.3f, 1.6f, 2.0f };
+static double eEll[NTEMP] { 0.0f, 0.5f, 0.75f, 0.88f, 0.95f };
+static double eHyp[NTEMP] { 1.01f, 1.1f, 1.3f, 1.6f, 2.0f };
 
 
 struct Body {
@@ -148,7 +148,7 @@ void Orbits::clbkSimulationStart(RenderMode rm)
 
 	oapiWriteLog("oapi::Module::clbkSimulationStart");
 	
-	DWORD bcnt = oapiGetGbodyCount();
+	size_t bcnt{ oapiGetGbodyCount() };
 	Ref = new ReferenceClass();
 	pBody = new Body[bcnt+1];
 	memset(pBody, 0, (bcnt+1) * sizeof(Body));
@@ -164,7 +164,7 @@ void Orbits::clbkSimulationStart(RenderMode rm)
 
 		CreateOrbitTemplates();
 
-		for (DWORD i = 0; i < bcnt; i++) {
+		for (size_t i = 0; i < bcnt; i++) {
 			pBody[i].hObj = oapiGetGbodyByIndex(i);
 			if (!pBody[i].hObj) continue;
 			pBody[i].hRef = Ref->GetReference(pBody[i].hObj);
@@ -353,7 +353,7 @@ void Orbits::SetClipper(Sketchpad *pSkp2, OBJHANDLE hObj, DWORD idx)
 //
 FVECTOR3 Orbits::WorldDirection(VECTOR3 d)
 {
-	FVECTOR4 sc = mul(FVECTOR4(d), *pVP);
+	FVECTOR4 sc = mul(FVECTOR4(d, 1.0f), *pVP);
 	float f = abs(1.0f / sc.w);
 	sc.x *= f;
 	sc.y *= -f;
@@ -435,9 +435,9 @@ void Orbits::DrawOrbit(Sketchpad *pSkp2, COrbit *pOrb, OBJHANDLE hRef, oapi::FVE
 	VECTOR3 _F = _P * (pOrb->SMa() * pOrb->Ecc()); // Offset the template to actual planet position
 
 	FMATRIX4 mat;
-	mat._y = FVECTOR4(_Q * (pOrb->SMi() / smi) );
-	mat._x = FVECTOR4(_P * (pOrb->SMa()) );
-	mat._z = FVECTOR4(_W);
+	mat._y = FVECTOR4(_Q * (pOrb->SMi() / smi), 0.0f);
+	mat._x = FVECTOR4(_P * (pOrb->SMa()), 0.0f);
+	mat._z = FVECTOR4(_W, 0.0f);
 	mat._p = FVECTOR4(Clip[0].Pos - _F, 1.0f);
 
 
@@ -456,9 +456,9 @@ void Orbits::DrawOrbit(Sketchpad *pSkp2, COrbit *pOrb, OBJHANDLE hRef, oapi::FVE
 
 	// Update matrix for generic drawing in 3D ----------------------
 	//
-	mat._y = FVECTOR4(_Q);
-	mat._x = FVECTOR4(_P);
-	mat._z = FVECTOR4(_W);
+	mat._y = FVECTOR4(_Q, 0.0f);
+	mat._x = FVECTOR4(_P, 0.0f);
+	mat._z = FVECTOR4(_W, 0.0f);
 	mat._p = FVECTOR4(Clip[0].Pos, 1.0f);
 
 	pSkp2->SetWorldTransform(&mat);

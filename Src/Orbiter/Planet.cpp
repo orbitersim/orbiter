@@ -448,18 +448,6 @@ Planet::~Planet ()
 		observer = NULL;
 	}
 	if (labellist) {
-		for (i = 0; i < nlabellist; i++) {
-			if (labellist[i].list) {
-				for (j = 0; j < labellist[i].length; j++)
-					for (k = 0; k < 2; k++)
-						if (labellist[i].list[j].label[k]) {
-							delete []labellist[i].list[j].label[k];
-							labellist[i].list[j].label[k] = NULL;
-						}
-				delete []labellist[i].list;
-				labellist[i].list = NULL;
-			}
-		}
 		delete []labellist;
 		labellist = NULL;
 		nlabellist = 0;
@@ -598,14 +586,14 @@ void Planet::ScanLabelLists (ifstream &cfg)
 			if (scanheader) {
 				if (nlabellist == nlabellistbuf) { // increase buffer
 					oapi::GraphicsClient::LABELLIST *tmp = new oapi::GraphicsClient::LABELLIST[nlabellistbuf += 8];
-					memcpy (tmp, labellist, nlabellist*sizeof(oapi::GraphicsClient::LABELLIST));
+					for (int i = 0; i < nlabellist; i++)
+						tmp[i] = labellist[i];
 					if (nlabellist) delete []labellist;
 					labellist = tmp;
 				}
 				ll = labellist+nlabellist;
-				strncpy (ll->name, fname, 64);
-				ll->list    = NULL;
-				ll->length  = 0;
+				ll->name = fname;
+				ll->marker.clear();
 				ll->colour  = 1;
 				ll->shape   = 0;
 				ll->size    = 1.0f;
@@ -643,42 +631,25 @@ void Planet::ScanLabelLists (ifstream &cfg)
 			}
 
 			// read label list for active labels, if not already present
-			if (ll->active && !ll->list) {
-				ll->length = 0;
+			if (ll->active && !ll->marker.size()) {
 				int nlistbuf = 0;
 				double lng, lat;
 				int nl;
-				char *pc, *pc2;
+				char *pc;
 				Vector pos;
 				FindLine (ulf, "BEGIN_DATA");
 				for (nl = 0;; nl++) {
 					if (!ulf.getline (cbuf, 256)) break;
 					pc = strtok (cbuf, ":");
 					if (!pc || sscanf (pc, "%lf%lf", &lng, &lat) != 2) continue;
-					if (ll->length == nlistbuf) {
-						oapi::GraphicsClient::LABELSPEC *tmp = new oapi::GraphicsClient::LABELSPEC[nlistbuf += 64];
-						if (ll->length) {
-							memcpy (tmp, ll->list, ll->length*sizeof(oapi::GraphicsClient::LABELSPEC));
-							delete []ll->list;
-						}
-						ll->list = tmp;
-					}
 					EquatorialToLocal (RAD*lng, RAD*lat, size, pos);
-					ll->list[ll->length].pos = _V(pos.x, pos.y, pos.z);
-					//ll->list[ll->length].pos.x = Rad (lng);
-					//ll->list[ll->length].pos.y = Rad (lat);
+					oapi::GraphicsClient::LABELSPEC ls;
+					ls.pos = _V(pos.x, pos.y, pos.z);
 					for (i = 0; i < 2; i++) {
-						ll->list[ll->length].label[i] = 0;
-						if (pc = strtok (NULL, ":")) {
-							pc2 = trim_string (pc);
-							int len = strlen(pc2);
-							if (len) {
-								ll->list[ll->length].label[i] = new char[len+1]; TRACENEW
-								strcpy (ll->list[ll->length].label[i], pc2);
-							}
-						}
+						if (pc = strtok (NULL, ":"))
+							ls.label[i] = trim_string(pc);
 					}
-					ll->length++;
+					ll->marker.push_back(ls);
 				}
 			}
 			nlabellist++;

@@ -7,10 +7,14 @@
 
 #ifndef __VIDEOTAB_H
 #define __VIDEOTAB_H
+#include <vector>
+#include <map>
 
 // ==============================================================
 
 class VideoTab {
+
+	struct _AtmoCfg { string cfg, file; };
 public:
 	VideoTab(oapi::D3D9Client *gc, HINSTANCE _hInst, HINSTANCE _hOrbiterInst, HWND hVideoTab);
 	~VideoTab();
@@ -46,6 +50,9 @@ private:
 	void CreateSymbolicLinks();
 	void InitSetupDialog(HWND hWnd);
 	void SaveSetupState(HWND hWnd);
+	void ScanAtmoCfgs();
+	bool GetConfigName(const char* file, string& cfg, string& planet);
+	void LoadAtmoCfg();
 	
 	oapi::D3D9Client *gclient;
 	HINSTANCE hOrbiterInst; // orbiter instance handle
@@ -54,6 +61,7 @@ private:
 	int aspect_idx;
 	DWORD SelectedAdapterIdx;
 	bool bHasMultiSample;
+	std::map<string, std::vector<_AtmoCfg>> AtmoCfgs;
 };
 
 //};

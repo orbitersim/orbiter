@@ -75,6 +75,7 @@ public:
 	void clbkCloseSession (bool fastclose);
 	void clbkDestroyRenderWindow (bool fastclose);
 	void clbkRenderScene ();
+	void clbkOptionChanged(DWORD cat, DWORD item);
 	bool clbkDisplayFrame ();
 	bool clbkFullscreenMode () const;
 	void clbkGetViewportSize (DWORD *width, DWORD *height) const;
@@ -105,6 +106,7 @@ public:
 	void clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3 *T, bool additive = false);
 	void clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3 *T, float alpha, bool additive = false);
 
+	Config* Cfg();
 	inline Scene *GetScene() { return scene; }
 	inline DWORD GetViewW() const { return viewW; }
 	inline DWORD GetViewH() const { return viewH; }
@@ -136,6 +138,7 @@ public:
 	bool clbkParticleStreamExists (const oapi::ParticleStream *ps);
 
 	// texture functions
+	SURFHANDLE clbkLoadSurface(const char* fname, DWORD attrib, bool bPath = false);
 	SURFHANDLE clbkLoadTexture (const char *fname, DWORD flags = 0);
 	void clbkReleaseTexture (SURFHANDLE hTex);
 	bool clbkSetMeshTexture (DEVMESHHANDLE hMesh, DWORD texidx, SURFHANDLE tex);

@@ -105,6 +105,14 @@ public:
 	void clbkRefreshVideoData ();
 
 	/**
+	 * \brief Called when a config setting is changed by the user during
+	 *    a simulation setting, to give the client opportunity to respond to the change.
+	 * \param cat option category, see \ref optcat
+	 * \param item option item, see \ref optitem
+	 */
+	void clbkOptionChanged(DWORD cat, DWORD item);
+
+	/**
 	 * \brief Fullscreen mode flag
 	 * \return true in fullscreen mode, false in windowed mode.
 	 */
@@ -286,6 +294,12 @@ public:
 
 	/// Returns a pointer to the scene object
 	inline       Scene*               GetScene() const        { return scene; }
+
+	/// Returns the width of the render viewport [pixel]
+	inline DWORD GetViewW() const { return viewW; }
+
+	/// Returns the height of the render viewport [pixel]
+	inline DWORD GetViewH() const { return viewH; }
 
 	/// Returns a pointer to the texture manager
 	inline       TextureManager*      GetTexMgr() const       { return texmgr; }

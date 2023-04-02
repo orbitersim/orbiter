@@ -994,6 +994,29 @@ int Pane::BroadcastMFDMessage (int msg, void *data)
 	return nproc;
 }
 
+void Pane::OptionChanged(DWORD cat, DWORD item)
+{
+	if (cat == OPTCAT_INSTRUMENT) {
+		if (item == OPTITEM_INSTRUMENT_MFDVCSIZE)
+			mfd_vc_size = g_pOrbiter->Cfg()->CfgInstrumentPrm.VCMFDSize;
+		for (size_t i = 0; i < nemfd; i++)
+			if (emfd[i]->Active())
+				emfd[i]->instr->OptionChanged(cat, item);
+		if (defpanel)
+			defpanel->OptionChanged(cat, item);
+		if (vcockpit)
+			vcockpit->OptionChanged(cat, item);
+		for (size_t i = 0; i < MAXMFD; i++)
+			if (mfd[i].instr) {
+				RefreshMFD(i);
+				mfd[i].instr->OptionChanged(cat, item);
+			}
+		if (item == OPTITEM_INSTRUMENT_PANELSCALE && panelmode == 2) {
+			SetPanelMode(panelmode, true);
+		}
+	}
+}
+
 void Pane::RegisterMFD (int id, const MFDSPEC &spec)
 {
 	// obsolete

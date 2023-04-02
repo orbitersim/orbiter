@@ -22,15 +22,14 @@ class gcCore2;
 typedef void (__cdecl* __gcBindCoreMethod)(void** ppFnc, const char* name);
 
 static class gcCore2 *pCoreInterface = NULL;
-static __gcBindCoreMethod pBindCoreMethod = NULL;
 
 /**
 * \file gcConst.h
-* \brief Structures and definations
+* \brief Structures and definitions
 */
 
 
-/// \defgroup PixelFormats Common pixelformats for surfaces [ Orbiter 2021+ only ]
+/// \defgroup PixelFormats Common pixel formats for surfaces [ Orbiter 2021+ only ]
 ///@{
 #define OAPISURFACE_PF_MASK				0xFF0000	///< PixelFormat Mask
 #define OAPISURFACE_PF_XRGB				0x010000	///< 32bit RGB no-alpha
@@ -91,6 +90,7 @@ static __gcBindCoreMethod pBindCoreMethod = NULL;
 #define IPF_PYRAMIDAL	0x0080
 #define IPF_GAUSSIAN	0x0100
 #define IPF_ANISOTROPIC	0x0200
+#define IPF_VERTEXTEX	0x0400
 
 /// \defgroup dwFlags for gcSetupCustomCamera() API function
 ///@{
@@ -110,7 +110,7 @@ static __gcBindCoreMethod pBindCoreMethod = NULL;
 ///@}
 
 
-/// \brief Handle to a surface manager's glogal overlay
+/// \brief Handle to a surface manager's global overlay
 typedef void * HOVERLAY;
 /// \brief Handle to a planet/surface manager
 typedef void * HPLANETMGR;
@@ -231,8 +231,7 @@ public:
 	virtual void	SetMesh(const MESHHANDLE hMesh, const char* tex = NULL, ipicull = ipicull::None);
 
 	virtual bool	Execute(bool bInScene = false);
-	virtual bool	ExecuteTemplate(bool bInScene = false, ipitemplate = Rect);
-	virtual bool	Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScene = false, ipitemplate mde = Rect);
+	virtual bool	Execute(DWORD blendop, bool bInScene = false, ipitemplate mde = Rect);
 
 	// ----------------------------------------------------------------------------------
 	virtual int		FindDefine(const char* key);
@@ -294,7 +293,7 @@ public:
 	} Lock;
 
 	typedef struct {
-		double			lng, lat;		///< Longitude and Latigude of the point being clicked
+		double			lng, lat;		///< Longitude and Latitude of the point being clicked
 		double			elev;			///< Elevation of the point being clicked above mean radius
 		double			dist;			///< Distance from a camera to a click point
 		DRECT			Bounds;			///< Tile bounds (i.e. min/max * lng/lat)
@@ -429,15 +428,15 @@ public:
 	* \brief Create a new custom camera that can be used to render views into a surfaces and textures
 	* \param hCam camera handle to modify an existing camera or, NULL
 	* \param hVessel handle to a vessel where the camera is attached to.
-	* \param vPos camara position in vessel's local coordinate system
-	* \param vDir camara direction in vessel's local coordinate system. [Unit Vector]
-	* \param vUp camara up vector. Must be perpendicular to vDir. [Unit Vector]
+	* \param vPos camera position in vessel's local coordinate system
+	* \param vDir camera direction in vessel's local coordinate system. [Unit Vector]
+	* \param vUp camera up vector. Must be perpendicular to vDir. [Unit Vector]
 	* \param dFow camera field of view in radians
-	* \param hSurf rendering surface. Must be created atleast with OAPISURFACE_RENDER3D | OAPISURFACE_RENDERTARGET. Multiple cameras can share the same surface.
+	* \param hSurf rendering surface. Must be created at least with OAPISURFACE_RENDER3D | OAPISURFACE_RENDERTARGET. Multiple cameras can share the same surface.
 	* \param dwFlags Flags to controls what is drawn and what is not.
-	* \return Camera handle, or NULL if an error occured or if the custom camera interface is disabled.
+	* \return Camera handle, or NULL if an error occurred or if the custom camera interface is disabled.
 	* \note Camera count is unlimited.
-	* \note Only a cameras attached to currently active vessel are operational and recodring.
+	* \note Only a cameras attached to currently active vessel are operational and recording.
 	* \note Having multiple cameras active at the same time doesn't impact in a frame rate, however, camera refresh rates are reduced.
 	*/
 	gc_interface CAMERAHANDLE SetupCustomCamera(CAMERAHANDLE hCam, OBJHANDLE hVessel, VECTOR3& vPos, VECTOR3& vDir, VECTOR3& vUp, double dFov, SURFHANDLE hSurf, DWORD dwFlags = 0xFF);
@@ -482,8 +481,8 @@ public:
 	* \note During update number of points must be equal or smaller than during initial creation of poly object.
 	* \note Flags:
 	* \note PF_TRIANGLES Each independent triangle is composed from three vertex points. ("npt" must be multiple of 3)
-	* \note PF_FAN Triangle fan. The first vertex is in a centre of the fan/circle and other lie at the edge. ("npt" must be "number of triangles" + 2)
-	* \note PF_STRIP Is build from quads. Where each quad requires two vertics. ("npt" must be "number of quads" * 2 + 2)
+	* \note PF_FAN Triangle fan. The first vertex is in the center of the fan/circle and other lie at the edge. ("npt" must be "number of triangles" + 2)
+	* \note PF_STRIP Is build from quads. Where each quad requires two vertices. ("npt" must be "number of quads" * 2 + 2)
 	*/
 	gc_interface HPOLY CreateTriangles(HPOLY hPoly, const clrVtx* pt, int npt, DWORD flags);
 
@@ -522,7 +521,7 @@ public:
 	* \param proc function to be called when render event occur
 	* \param id render event id
 	* \param pParam a pointer to user data (to a class for an example)
-	* \return false if an error occured, true otherwise.
+	* \return false if an error occurred, true otherwise.
 	*/
 	gc_interface bool RegisterRenderProc(__gcRenderProc proc, DWORD id, void* pParam);
 
@@ -531,7 +530,7 @@ public:
 	* \param height Font height
 	* \param face Name of the font
 	* \param width Width of the font (0 for default aspect ration)
-	* \param weight Font thikness (400 for default weight)
+	* \param weight Font thickness (400 for default weight)
 	* \param style A combination of \see gcFont flags (0 for default)
 	* \param spacing A spacing between charters in a string (0.0f for default)
 	* \return A pointer to a created or pre-existing font or NULL in a case of an error.
@@ -553,7 +552,7 @@ public:
 	* \param idx Material index
 	* \param prop material property identifier (\ref MeshMaterialFlags)
 	* \param value a pointer to COLOUR4 structure containing/receiving the data, or \e NULL to reset a default value or to unspecify a property.
-	* \param bSet \e true to set material value, \e false to get a meterial value
+	* \param bSet \e true to set material value, \e false to get a material value
 	* \return -4 = Invalid handle \n -3 = Unknown property flag \n -2 = Property not specified cannot get it \n -1 = Index out of range \n 0 = Success
 	*/
 	gc_interface int GetMeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, MatProp prop, FVECTOR4 *value);
@@ -657,14 +656,14 @@ public:
 	* \brief Get a handle to a specific mipmap sub-level
 	* \param hSrf Handle to a RenderTarget Texture containing mipmaps.
 	* \param level Level of the mipmap to acquire. (level >= 1) (0 = "hSrf" it self with surface interface)
-	* \return Surface handle to a render-target or NULL in a case of a failure. Must be released with after nolonger accessed.
+	* \return Surface handle to a render-target or NULL in a case of a failure. Must be released with after no longer accessed.
 	*/
 	gc_interface SURFHANDLE	GetMipSublevel(SURFHANDLE hSrf, int level);
 
 	/**
 	* \brief Realtime Mipmap auto-generation from the top/main level.
 	* \param hSurface handle to a surface
-	* \return false if an error occured, true otherwise.
+	* \return false if an error occurred, true otherwise.
 	* \note Surface must be created with (OAPISURFACE_TEXTURE | OAPISURFACE_RENDERTARGET | OAPISURFACE_MIPMAPS)
 	* \note Exact attribute requirements/conflicts are unknown.
 	*/
@@ -697,7 +696,7 @@ public:
 	* \param proc function to be called when event occur
 	* \param id requested callback event id
 	* \param pParam a pointer to user data (to a class for an example)
-	* \return false if an error occured, true otherwise.
+	* \return false if an error occurred, true otherwise.
 	*/
 	gc_interface bool RegisterGenericProc(__gcGenericProc proc, DWORD id, void *pParam);
 
@@ -728,7 +727,7 @@ public:
 	gc_interface void ReleaseLock(SURFHANDLE hSrf);
 
 	/**
-	* \brief Conver a floating point color to DWORD color value
+	* \brief Convert a floating point color to DWORD color value
 	* \param c A pointer to a color
 	* \return DWORD color in 0xAABBGGRR
 	* \note Alpha will range from 1 to 255. Zero is never returned because of backwards compatibility issues 0-alpha is mapped to 255
@@ -739,7 +738,7 @@ public:
 	}
 
 	/**
-	* \brief Conver a floating point color to DWORD color value
+	* \brief Convert a floating point color to DWORD color value
 	* \param c A pointer to a color
 	* \return DWORD color in 0xAABBGGRR
 	* \note Alpha will range from 1 to 255. Zero is never returned because of backwards compatibility issues 0-alpha is mapped to 255
@@ -750,7 +749,7 @@ public:
 	}
 
 	/**
-	* \brief Conver a DWORD color to floating point COLOUR4 value
+	* \brief Convert a DWORD color to floating point COLOUR4 value
 	* \param dwABGR A color in 0xAABBGGRR
 	* \return COLOUR4
 	* \note Alpha will range from 1 to 255. Zero is never used because of backwards compatibility issues 0-alpha is mapped to 255
@@ -781,7 +780,7 @@ public:
 	* \param pos Objects position relative to a camera in ecliptic frame
 	* \param x X-axis, direction [unit vector]
 	* \param z Z-axis, direction [unit vector]
-	* \param scale a sacle factor (default 1.0)
+	* \param scale a scale factor (default 1.0)
 	*/
 	inline void WorldMatrix(FMATRIX4* mat, const VECTOR3& pos, const VECTOR3& x, const VECTOR3& z, double scale = 1.0)
 	{
@@ -819,7 +818,7 @@ INTERFACE_BUILDER class gcCore2 : public gcCore
 
 public:
 
-	gcCore2()
+	gcCore2(__gcBindCoreMethod pBindCoreMethod)
 	{
 #define fnc_binder
 	}
@@ -899,10 +898,10 @@ inline gcCore2* gcGetCoreInterface()
 	if (pCoreInterface) return pCoreInterface;
 	HMODULE hModule = GetModuleHandle("D3D9Client.dll");
 	if (hModule) {
-		pBindCoreMethod = (__gcBindCoreMethod)GetProcAddress(hModule, "gcBindCoreMethod");	
-		if (pBindCoreMethod) return (pCoreInterface = new gcCore2());
+		__gcBindCoreMethod pBindCoreMethod = (__gcBindCoreMethod)GetProcAddress(hModule, "gcBindCoreMethod");
+		if (pBindCoreMethod) return (pCoreInterface = new gcCore2(pBindCoreMethod));
 		else oapiWriteLogV("gcGetCoreInterface() FAILED");
-	}
+	} else oapiWriteLogV("gcGetCoreInterface() FAILED. D3D9Client Not Found");
 	return NULL;
 }
 

@@ -38,23 +38,30 @@ const DWORD SPEC_INHERIT = (DWORD)(-2); // "inherit" material/texture flag
 #define ENVMAP_MAIN			0
 
 
-
-#define SHADER_NULL			0xFFFF
-#define SHADER_PBR			0
-#define SHADER_ADV			1
-#define SHADER_LEGACY		2			// Shader most compatible with DX7 Inline
-#define SHADER_XR2HUD		3			// XR2 HUD shader
-#define SHADER_METALNESS	4
+// Mesh Shaders
+#define SHADER_NULL				0xFFFF
+#define SHADER_PBR				0
+#define SHADER_ADV				1
+#define SHADER_LEGACY			2			// Shader most compatible with DX7 Inline
+#define SHADER_XR2HUD			3			// XR2 HUD shader
+#define SHADER_METALNESS		4
+#define SHADER_SHADOWMAP		10
+#define SHADER_SHADOWMAP_OIT	11
+#define SHADER_NORMAL_DEPTH		12
 
 #define VCLASS_AMSO			1
 #define VCLASS_XR2			2
 #define VCLASS_ULTRA		3
 #define VCLASS_SSU_CENTAUR	4
 
+// Mesh memory mapping mode
 #define MAPMODE_UNKNOWN		0
 #define MAPMODE_CURRENT		1
 #define MAPMODE_STATIC		2
 #define MAPMODE_DYNAMIC		3
+
+
+
 
 
 struct _LightList {
@@ -63,6 +70,43 @@ struct _LightList {
 };
 
 
+class MeshShader : public ShaderClass
+{
+public:
+
+	static struct VSConst {
+		float4x4 mVP;	// View Projection Matrix
+		float4x4 mW;	// World Matrix
+	} vs_const;
+
+	static struct PSConst {
+		float3 Cam_X;
+		float3 Cam_Y;
+		float3 Cam_Z;
+	} ps_const;
+
+	static struct PSBools {
+		BOOL bOIT;		// Enable order independent transparency
+	} ps_bools;
+
+
+	MeshShader(LPDIRECT3DDEVICE9 pDev, const char *file, const char *vs, const char *ps, const char *opt = NULL) :
+		ShaderClass(pDev, "Modules/D3D9Client/NewMesh.hlsl", vs, ps, "MeshShader", opt)
+	{
+		memset(hPST, 0, sizeof(hPST));
+		hVSC  = GetVSHandle("vs_const");
+		hPSC  = GetPSHandle("ps_const");
+		hPSB  = GetPSHandle("ps_bools");
+		hPST[0] = GetPSHandle("tDiff");
+	}
+
+	~MeshShader()
+	{
+
+	}
+
+	HANDLE hPSB, hVSC, hPSC, hPST[16];
+};
 
 
 
@@ -81,10 +125,12 @@ public:
 	LPDIRECT3DVERTEXBUFFER9 pVB;
 	LPDIRECT3DVERTEXBUFFER9 pGB;
 	LPDIRECT3DINDEXBUFFER9  pIB;
+	LPDIRECT3DVERTEXBUFFER9 pSB;
 
 	NMVERTEX				*pVBSys;
 	D3DXVECTOR4				*pGBSys;
 	WORD					*pIBSys;
+	SMVERTEX				*pSBSys;
 
 	DWORD nVtx;
 	DWORD nIdx;
@@ -245,7 +291,8 @@ public:
 	void			RenderBoundingBox(const LPD3DXMATRIX pW);
 	void			Render(const LPD3DXMATRIX pW, int iTech=RENDER_VESSEL, LPDIRECT3DCUBETEXTURE9 *pEnv=NULL, int nEnv=0);
 	void			RenderFast(const LPD3DXMATRIX pW, int iTech);
-	void			RenderShadows(float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, bool bShadowMap = false, const D3DXVECTOR4 *elev = NULL);
+	void			RenderShadowMap(const LPD3DXMATRIX pW, const LPD3DXMATRIX pVP, int flags);
+	void			RenderStencilShadows(float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, bool bShadowMap = false, const D3DXVECTOR4 *elev = NULL);
 	void			RenderShadowsEx(float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, const D3DXVECTOR4 *light, const D3DXVECTOR4 *param);
 	void			RenderRings(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex);
 	void			RenderRings2(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex, float irad, float orad);
@@ -280,6 +327,9 @@ public:
 	 */
 	inline void		EnableMatAlpha (bool enable) { bModulateMatAlpha = enable; }
 
+	static void		GlobalInit(LPDIRECT3DDEVICE9 pDev);
+	static void		GlobalExit();
+
 private:
 
 
@@ -288,7 +338,8 @@ private:
 	bool			CopyVertices(GROUPREC *grp, const MESHGROUPEX *mg, D3DXVECTOR3 *reorig = NULL, float *scale = NULL);
 	void			SetGroupRec(DWORD i, const MESHGROUPEX *mg);
 	void			Null(const char *meshName = NULL);
-
+	void			UpdateFlags();
+	void			ConfigureAtmo();
 
 	WORD	DefShader;
 	DWORD	MaxVert;
@@ -298,13 +349,14 @@ private:
 	DWORD nMtrl;                // number of mesh materials
 	DWORD nTex;                 // number of mesh textures
 	DWORD vClass;
+	DWORD Flags;
 	D3D9MatExt *Mtrl;           // list of mesh materials
 	SurfNative **Tex;			// list of mesh textures
 	D3D9Tune *pTune;
 	D3DXMATRIX mTransform;
 	D3DXMATRIX mTransformInv;
 	D3DXMATRIX *pGrpTF;
-	const D3D9Sun *sunLight;
+	D3D9Sun sunLight;
 	D3DCOLOR cAmbient;
 	LightStruct null_light;
 
@@ -317,7 +369,7 @@ private:
 
 	char name[128];
 
-
+	static MeshShader* s_pShader[16];
 };
 
 #endif // !__MESH_H

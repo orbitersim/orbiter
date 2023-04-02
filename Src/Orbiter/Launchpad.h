@@ -5,6 +5,7 @@
 #define __LAUNCHPAD_H
 
 #include <dinput.h>
+#include <CommCtrl.h>
 #include "OrbiterAPI.h"
 #include "Config.h"
 
@@ -54,12 +55,12 @@ namespace orbiter {
 		// Consume message msg, if intended for the dialog,
 		// otherwise return false
 
-		const HWND GetTabWindow(int i) const;
 		const HWND GetWaitWindow() const { return hWait; }
 
 		inline Orbiter* App() const { return pApp; }
 		inline Config* Cfg() const { return pCfg; }
 		LaunchpadTab* GetTab(UINT i) const;
+		HWND HTabContainer() const { return hTabContainer; }
 
 		void AddTab(LaunchpadTab* tab);
 		// Inserts a new tab into the list
@@ -99,23 +100,20 @@ namespace orbiter {
 	private:
 		HINSTANCE hInst;         // instance handle
 		HWND hDlg;               // dialog window handle
-		LaunchpadTab** Tab;      // list of tab objects
+		std::vector<LaunchpadTab*> TabList;
 		LaunchpadTab* CTab;      // current tab page
+		HWND hTabContainer;      // tab container window handle
 		HWND hWait;              // "wait" page
 		HBRUSH hDlgBrush;
 		HANDLE hShadowImg;
 		Orbiter* pApp;           // application pointer
 		Config* pCfg;           // config pointer
-		//DPSessionInfo DPSIHead;  // pointer to list of multiplayer sessions
 
 		void SetDemoMode();
 		// Set launchpad controls to demo mode
 
 		int SelectDemoScenario();
 		// Select an arbitrary scenario from the demo folder
-
-		void HidePage(int idx);
-		void UnhidePage(int idx, char* tab);
 
 		void InitSize(HWND hWnd);
 		BOOL Resize(HWND hWnd, DWORD w, DWORD h, DWORD mode);
@@ -134,13 +132,9 @@ namespace orbiter {
 		INT_PTR WaitProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 		// Dialog message callbacks
 
-		friend INT_PTR CALLBACK ::AppDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		static INT_PTR CALLBACK s_DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 		friend INT_PTR CALLBACK ::WaitPageProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 		friend LONG_PTR FAR PASCAL MsgProc_CopyrightFrame(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-		int ntab;              // number of tab pages
-		int* pagidx;           // map from tab to page index
-		int* tabidx;           // map from page to tab index
 
 		RECT client0;          // initial client window size
 		RECT copyr0;           // initial copyright box size

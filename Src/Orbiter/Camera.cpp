@@ -415,8 +415,8 @@ void Camera::Attach (Body *_target, int mode)
 bool Camera::Direction2Viewport(const Vector &dir, int &x, int &y)
 {
 	D3DVECTOR homog;
-	D3DMath_VectorMatrixMultiply (homog, D3DMath_Vector(-dir.x, -dir.y, -dir.z), *D3D_ProjViewMatrix());
-	if (homog.x >= -1.0f && homog.y <= 1.0f && homog.z >= 0.0) {
+	D3DMath_VectorMatrixMultiply (homog, D3DMath_Vector(dir.x, dir.y, dir.z), *D3D_ProjViewMatrix());
+	if (homog.x >= -1.0f && homog.y <= 1.0f && homog.z <= 1.0f) {
 		if (_hypot(homog.x, homog.y) < 1e-6) {
 			x = (int)w05, y = (int)h05;
 		} else {

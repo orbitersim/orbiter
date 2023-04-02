@@ -73,6 +73,7 @@ set<SurfNative*> SurfaceCatalog;
 unordered_map<string, SURFHANDLE> SharedTextures;
 unordered_map<string, SURFHANDLE> ClonedTextures;
 unordered_map<MESHHANDLE, class SketchMesh*> MeshMap;
+unordered_map<std::string, LPDIRECT3DTEXTURE9> MicroTextures;
 
 DWORD uCurrentMesh = 0;
 vObject *pCurrentVisual = 0;
@@ -84,10 +85,6 @@ _D3D9Stats D3D9Stats;
 
 bool bFreeze = false;
 bool bFreezeEnable = false;
-
-// Module local constellation marker storage
-static GraphicsClient::LABELSPEC *g_cm_list = NULL;
-static DWORD g_cm_list_count = 0;
 
 // Debuging Brush-, Pen- and Font-accounting
 std::set<Font *> g_fonts;
@@ -159,12 +156,23 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 	LogAlw("[Not Compiled With nVidia API]");
 #endif
 
-	g_pConst = new gcConst();
 	Config = new D3D9Config();
+
+	if (Config->ShaderCacheUse) {
+		DWORD fa = GetFileAttributesA("Cache");
+		if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA("Cache", NULL);
+		fa = GetFileAttributesA("Cache/D3D9Client");
+		if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA("Cache/D3D9Client", NULL);
+		fa = GetFileAttributesA("Cache/D3D9Client/Shaders");
+		if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA("Cache/D3D9Client/Shaders", NULL);
+	}
+
+	g_pConst = new gcConst();
 	TileCatalog	= new D3D9Catalog<LPDIRECT3DTEXTURE9>();
 
 	DebugControls::Create();
 	AtmoControls::Create();
+	vPlanet::ParseMicroTexturesFile();
 
 	g_hInst = hDLL;
 	g_client = new D3D9Client(hDLL);
@@ -269,15 +277,6 @@ D3D9Client::~D3D9Client()
 {
 	LogAlw("D3D9Client destructor called");
 	SAFE_DELETE(vtab);
-
-	// Free constellation names memory (if allocted)
-	if (g_cm_list) {
-		for (DWORD n = 0; n < g_cm_list_count; ++n) {
-			delete[] g_cm_list[n].label[0];
-			delete[] g_cm_list[n].label[1];
-		}
-		delete[] g_cm_list;
-	}
 }
 
 
@@ -296,7 +295,7 @@ bool D3D9Client::ChkDev(const char *fnc) const
 //
 const void *D3D9Client::GetConfigParam (DWORD paramtype) const
 {
-	return (paramtype >= CFGPRM_SHOWBODYFORCEVECTORSFLAG)
+	return (paramtype >= CFGPRM_TILELOADTHREAD)
 		 ? (paramtype >= CFGPRM_GETSELECTEDMESH)
 		 ? DebugControls::GetConfigParam(paramtype)
 		 : OapiExtension::GetConfigParam(paramtype)
@@ -455,7 +454,6 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	TileManager::GlobalInit(this);
 	TileManager2Base::GlobalInit(this);
-	PlanetRenderer::GlobalInit(this);
 	RingManager::GlobalInit(this);
 	HazeManager::GlobalInit(this);
 	HazeManager2::GlobalInit(this);
@@ -464,10 +462,12 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	vStar::GlobalInit(this);
 	vObject::GlobalInit(this);
 	vVessel::GlobalInit(this);
+	vPlanet::GlobalInit(this);
 	OapiExtension::GlobalInit(*Config);
 
 	OutputLoadStatus("SceneTech.fx",1);
 	Scene::D3D9TechInit(pDevice, fld);
+	D3D9Mesh::GlobalInit(pDevice);
 
 	// Create scene instance
 	scene = new Scene(this, viewW, viewH);
@@ -767,8 +767,7 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 
 	//	Post shutdown signals for gcGUI applications
 	//
-	for each (gcGUIApp* pApp in g_gcGUIAppList)	pApp->clbkShutdown();
-
+	for (auto pApp : g_gcGUIAppList) pApp->clbkShutdown();
 
 	//	Post shutdown signals for user applications
 	//
@@ -842,12 +841,12 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 	HazeManager2::GlobalExit();
 	TileManager::GlobalExit();
 	TileManager2Base::GlobalExit();
-	PlanetRenderer::GlobalExit();
 	D3D9ParticleStream::GlobalExit();
 	CSphereManager::GlobalExit();
 	vStar::GlobalExit();
 	vVessel::GlobalExit();
 	vObject::GlobalExit();
+	D3D9Mesh::GlobalExit();
 
 	SAFE_DELETE(defpen);
 	SAFE_DELETE(deffont);
@@ -870,7 +869,12 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 
 	LogAlw("============ Checking Object Catalogs ===========");
 
-	
+	// Clear microtextures --------------------------------------------------------------------------------------
+	//
+	for (auto& it : MicroTextures) SAFE_RELEASE(it.second);
+	MicroTextures.clear();
+
+
 	// Check surface catalog --------------------------------------------------------------------------------------
 	//
 	if (SharedTextures.size() > 0)
@@ -996,8 +1000,8 @@ void D3D9Client::PushRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 
 		pDevice->SetViewport(&vp);
 	}
 
-	pDevice->SetRenderTarget(0, pColor);
-	pDevice->SetDepthStencilSurface(pDepthStencil);
+	if (pDepthStencil) if (pDevice->SetDepthStencilSurface(pDepthStencil) != S_OK) assert(false);
+	if (pColor) if (pDevice->SetRenderTarget(0, pColor) != S_OK) assert(false);
 
 	RenderStack.push_front(data);
 	LogDbg("Plum", "PUSH:RenderStack[%lu]={%s, %s} %s", RenderStack.size(), _PTR(data.pColor), _PTR(data.pDepthStencil), labels[data.code]);
@@ -1287,9 +1291,6 @@ bool D3D9Client::RenderWithPopupWindows()
 		else       GetDevice()->SetDialogBoxMode(false);
 	}
 
-	// Let the OapiExtension manager know about this..
-	OapiExtension::HandlePopupWindows(hPopupWnd, count);
-
 	FixOutOfScreenPositions(hPopupWnd, count);
 
 	if (!bFullscreen) {
@@ -1528,6 +1529,17 @@ void D3D9Client::clbkRefreshVideoData()
 
 // ==============================================================
 
+void D3D9Client::clbkOptionChanged(DWORD cat, DWORD item)
+{
+	switch (cat) {
+	case OPTCAT_CELSPHERE:
+		if (scene) scene->OnOptionChanged(cat, item);
+		return;
+	}
+}
+
+// ==============================================================
+
 bool D3D9Client::clbkUseLaunchpadVideoTab() const
 {
 	_TRACE;
@@ -1669,6 +1681,8 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			bTrackMouse = true;
 			xpos = GET_X_LPARAM(lParam);
 			ypos = GET_Y_LPARAM(lParam);
+
+			GetScene()->vPickRay = GetScene()->GetPickingRay(xpos, ypos);
 
 			TRACKMOUSEEVENT te; te.cbSize = sizeof(TRACKMOUSEEVENT); te.dwFlags = TME_LEAVE; te.hwndTrack = hRenderWnd;
 			TrackMouseEvent(&te);
@@ -1930,42 +1944,25 @@ bool D3D9Client::clbkSaveSurfaceToImage(SURFHANDLE surf, const char *fname, Imag
 	if (pSurf==NULL) return false;
 
 	bool bRet = false;
-	ImageData ID;
 	const D3DSURFACE_DESC *desc = SURFACE(surf)->GetDesc();
 	D3DLOCKED_RECT pRect;
 
-	if (desc->Pool!=D3DPOOL_SYSTEMMEM)
+	if (desc->Pool != D3DPOOL_SYSTEMMEM)
 	{
 		HR(pDevice->CreateRenderTarget(desc->Width, desc->Height, D3DFMT_X8R8G8B8, D3DMULTISAMPLE_NONE, 0, false, &pRTG, NULL));
 		HR(pDevice->CreateOffscreenPlainSurface(desc->Width, desc->Height, D3DFMT_X8R8G8B8, D3DPOOL_SYSTEMMEM, &pSystem, NULL));
 		HR(pDevice->StretchRect(pSurf, NULL, pRTG, NULL, D3DTEXF_NONE));
 		HR(pDevice->GetRenderTargetData(pRTG, pSystem));
 
-		if (pSystem->LockRect(&pRect, NULL, 0)==S_OK) {
-
-			ID.bpp = 24;
-			ID.height = desc->Height;
-			ID.width = desc->Width;
-			ID.stride = ((ID.width * ID.bpp + 31) & ~31) >> 3;
-			ID.bufsize = ID.stride * ID.height;
-
-			BYTE *tgt = ID.data = new BYTE[ID.bufsize];
-			BYTE *src = (BYTE *)pRect.pBits;
-
-			for (DWORD k=0;k<desc->Height;k++) {
-				for (DWORD i=0;i<desc->Width;i++) {
-					tgt[0+i*3] = src[0+i*4];
-					tgt[1+i*3] = src[1+i*4];
-					tgt[2+i*3] = src[2+i*4];
-				}
-				tgt += ID.stride;
-				src += pRect.Pitch;
+		if (pSystem->LockRect(&pRect, NULL, 0)==S_OK)
+		{
+			if (fname == NULL) {
+				// copy device-dependent bitmap to clipboard
+				bRet = SaveSurfaceToClipboard(desc);
+			} else {
+				// save as file
+				bRet = SaveSurfaceToFile(desc, pRect, fname, fmt, quality);
 			}
-
-			bRet = WriteImageDataToFile(ID, fname, fmt, quality);
-
-			delete []ID.data;
-			ID.data = NULL;
 			pSystem->UnlockRect();
 		}
 
@@ -1974,35 +1971,74 @@ bool D3D9Client::clbkSaveSurfaceToImage(SURFHANDLE surf, const char *fname, Imag
 		return bRet;
 	}
 
-	if (pSurf->LockRect(&pRect, NULL, D3DLOCK_READONLY)==S_OK) {
-
-		ID.bpp = 24;
-		ID.height = desc->Height;
-		ID.width = desc->Width;
-		ID.stride = ((ID.width * ID.bpp + 31) & ~31) >> 3;
-		ID.bufsize = ID.stride * ID.height;
-
-		BYTE *tgt = ID.data = new BYTE[ID.bufsize];
-		BYTE *src = (BYTE *)pRect.pBits;
-
-		for (DWORD k=0;k<desc->Height;k++) {
-			for (DWORD i=0;i<desc->Width;i++) {
-				tgt[0+i*3] = src[0+i*4];
-				tgt[1+i*3] = src[1+i*4];
-				tgt[2+i*3] = src[2+i*4];
-			}
-			tgt += ID.stride;
-			src += pRect.Pitch;
+	if (pSurf->LockRect(&pRect, NULL, D3DLOCK_READONLY)==S_OK)
+	{
+		if (fname == NULL) {
+			// copy device-dependent bitmap to clipboard
+			bRet = SaveSurfaceToClipboard(desc);
+		} else {
+			// save as file
+			bRet = SaveSurfaceToFile(desc, pRect, fname, fmt, quality);
 		}
-
-		bRet = WriteImageDataToFile(ID, fname, fmt, quality);
-
-		delete []ID.data;
-		ID.data = NULL;
-		pSurf->UnlockRect();
-		return bRet;
+		pSystem->UnlockRect();
 	}
 
+	return bRet;
+}
+
+// ==============================================================
+
+bool oapi::D3D9Client::SaveSurfaceToFile (const D3DSURFACE_DESC* desc, D3DLOCKED_RECT& pRect,
+                                          const char* fname, oapi::ImageFileFormat fmt, float quality)
+{
+	bool bRet = false;
+	ImageData ID;
+
+	ID.bpp = 24;
+	ID.height = desc->Height;
+	ID.width = desc->Width;
+	ID.stride = ((ID.width * ID.bpp + 31) & ~31) >> 3;
+	ID.bufsize = ID.stride * ID.height;
+
+	BYTE* tgt = ID.data = new BYTE[ID.bufsize];
+	BYTE* src = (BYTE*)pRect.pBits;
+
+	for (DWORD k = 0; k<desc->Height; k++) {
+		for (DWORD i = 0; i<desc->Width; i++) {
+			tgt[0 + i * 3] = src[0 + i * 4];
+			tgt[1 + i * 3] = src[1 + i * 4];
+			tgt[2 + i * 3] = src[2 + i * 4];
+		}
+		tgt += ID.stride;
+		src += pRect.Pitch;
+	}
+
+	bRet = WriteImageDataToFile(ID, fname, fmt, quality);
+
+	delete[]ID.data;
+	ID.data = NULL;
+
+	return bRet;
+}
+
+// ==============================================================
+
+bool oapi::D3D9Client::SaveSurfaceToClipboard (const D3DSURFACE_DESC* desc)
+{
+	if (OpenClipboard(hRenderWnd))
+	{
+		HDC hDC = GetDC(hRenderWnd);
+		HDC hdcmem = CreateCompatibleDC(hDC);
+		HBITMAP hBm = CreateCompatibleBitmap(hDC, desc->Width, desc->Height);
+
+		SelectObject(hdcmem, hBm);
+		BitBlt(hdcmem, 0, 0, desc->Width, desc->Height, hDC, 0, 0, SRCCOPY);
+
+		EmptyClipboard();
+		SetClipboardData(CF_BITMAP, hBm);
+		CloseClipboard();
+		return true;
+	}
 	return false;
 }
 
@@ -2554,74 +2590,6 @@ void D3D9Client::BltError(SURFHANDLE src, SURFHANDLE tgt, const LPRECT s, const 
 #pragma endregion
 
 // =======================================================================
-// Constellation name functions
-// =======================================================================
-
-DWORD D3D9Client::GetConstellationMarkers(const LABELSPEC **cm_list) const
-{
-	if ( !g_cm_list ) {
-		#pragma pack(1)
-		// File entry struct
-		typedef struct {
-			double lng;    ///< longitude
-			double lat;    ///< latitude
-			char   abr[3]; ///< abbreviation (short name)
-			long   len;    ///< length of 'fullname'
-		} ConstellEntry;
-		#pragma pack()
-
-		FILE* file = NULL;
-		const size_t e_size = sizeof(ConstellEntry);
-		const float sphere_r = 1e6f; // the actual render distance for the celestial sphere
-		                             // is irrelevant, since it is rendered without z-buffer,
-		                             // but it must be within the frustum limits - check this
-		                             // in case the near and far planes are dynamically changed!
-
-		if ( 0 != fopen_s(&file, ".\\Constell2.bin", "rb") || file == NULL ) {
-			LogErr("Could not open 'Constell2.bin'");
-			return 0;
-		}
-
-		ConstellEntry f_entry;
-		LABELSPEC *p_out;
-
-		// Get number of labels from file
-		while ( !feof(file) && (1 == fread(&f_entry, e_size, 1 , file)) ) {
-			++g_cm_list_count;
-			fseek(file, f_entry.len, SEEK_CUR);
-		}
-
-		rewind(file);
-
-		g_cm_list = new LABELSPEC[g_cm_list_count]();
-
-		for (p_out = g_cm_list; !feof(file); ++p_out) {
-			if ( 1 == fread(&f_entry, e_size, 1 , file)) {
-				p_out->label[0] = new char[f_entry.len+1]();
-				p_out->label[1] = new char[4]();
-				// position
-				double xz = sphere_r * cos(f_entry.lat);
-				p_out->pos.x = xz * cos(f_entry.lng);
-				p_out->pos.z = xz * sin(f_entry.lng);
-				p_out->pos.y = sphere_r * sin(f_entry.lat);
-				// fullname
-				fread(p_out->label[0], sizeof(char), f_entry.len, file);
-				// shortname
-				p_out->label[1][0] = f_entry.abr[0];
-				p_out->label[1][1] = f_entry.abr[1];
-				p_out->label[1][2] = f_entry.abr[2];
-			}
-		}
-
-		fclose(file);
-	}
-
-	*cm_list = g_cm_list;
-
-	return g_cm_list_count;
-}
-
-// =======================================================================
 // GDI functions
 // =======================================================================
 
@@ -2782,7 +2750,7 @@ bool D3D9Client::RegisterGenericProc(__gcGenericProc proc, DWORD id, void *pPara
 
 bool D3D9Client::IsGenericProcEnabled(DWORD id) const
 {
-	for each (auto val in GenericProcs) if (val.id == id) return true;
+	for (const auto &val : GenericProcs) if (val.id == id) return true;
 	return false;
 }
 
@@ -2932,9 +2900,9 @@ void D3D9Client::SplashScreen()
 	if (m>12) m=0;
 
 #ifdef _DEBUG
-	char dataA[]={"D3D9Client Beta R30.7 (Debug Build) [" __DATE__ "]"};
+	char dataA[]={"Using D3D9Client (Debug Build)"};
 #else
-	char dataA[]={"D3D9Client Beta R30.7 [" __DATE__ "]"};
+	char dataA[]={"Using D3D9Client (Release Build)"};
 #endif
 
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %lu 20%lu [%u]", months[m], d, y, oapiGetOrbiterVersion());

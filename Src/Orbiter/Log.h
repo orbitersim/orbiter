@@ -95,9 +95,13 @@ void LogOut_Location(const char* func, const char* file, int line);
 #define dVERIFY(test,msg,...) { \
 	ASSERT(!FAILED(test), true, msg, ##__VA_ARGS__); \
 }
+#define dCHECK(test,msg,...) { \
+	ASSERT(test, true, msg, ##__VA_ARGS__); \
+}
 #else
 #define dASSERT(test,msg,...) (test)
 #define dVERIFY(test,msg,...) (test)
+#define dCHECK(test,msg,...)
 #endif
 
 #define CHECKCWD(cwd,name) { char c[512]; _getcwd(c,512); if(strcmp(c,cwd)) { _chdir(cwd); sprintf (c,"CWD modified by module %s - Fixing.",name); LOGOUT_WARN(c); } }

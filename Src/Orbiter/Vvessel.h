@@ -40,6 +40,7 @@ public:
 	inline bool ExtRenderPass () const { return bExtRenderPass; }
 	void CheckResolution (double iar);
 	void Update (bool moving, bool force);
+	void UpdateRenderVectors();
 	void Timejump (bool moving);
 	void Render (LPDIRECT3DDEVICE7 dev);
 	void Render (LPDIRECT3DDEVICE7 dev, bool internalpass);
@@ -47,7 +48,6 @@ public:
 	void RenderExhaust (LPDIRECT3DDEVICE7 dev, LPDIRECTDRAWSURFACE7 defaulttex);
 	void RenderGroundShadow (LPDIRECT3DDEVICE7 dev, const Planet *planet);
 	void RenderAttachmentMarkers (LPDIRECT3DDEVICE7 dev, bool pa);
-	void SetupRenderVectorList ();
 	bool MeshgroupTransform (const MESHGROUP_TRANSFORM &mt) const;
 	bool MeshgroupTransform (const MESHGROUP_TRANSFORM &mt, Mesh *mesh, UINT grp) const;
 	bool MeshTransform (const MESHGROUP_TRANSFORM &mt, Mesh *mesh) const;

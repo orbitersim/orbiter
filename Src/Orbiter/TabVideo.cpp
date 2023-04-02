@@ -47,18 +47,6 @@ orbiter::DefVideoTab::~DefVideoTab()
 void orbiter::DefVideoTab::Create ()
 {
 	hTab = CreateTab (IDD_PAGE_DEV);
-
-	static int item[] = {
-		IDC_VID_LABEL_MODULE, IDC_VID_COMBO_MODULE, IDC_VID_MODULE_INFO,
-		IDC_VID_STATIC1, IDC_VID_STATIC2, IDC_VID_STATIC3, IDC_VID_STATIC5,
-		IDC_VID_STATIC6, IDC_VID_STATIC7, IDC_VID_STATIC8, IDC_VID_STATIC9,
-		IDC_VID_DEVICE, IDC_VID_ENUM, IDC_VID_STENCIL,
-		IDC_VID_FULL, IDC_VID_WINDOW, IDC_VID_MODE, IDC_VID_BPP, IDC_VID_VSYNC,
-		IDC_VID_PAGEFLIP, IDC_VID_WIDTH, IDC_VID_HEIGHT, IDC_VID_ASPECT,
-		IDC_VID_4X3, IDC_VID_16X10, IDC_VID_16X9, IDC_VID_INFO
-	};
-
-	RegisterItemPositions (item, ARRAYSIZE(item));
 }
 
 //-----------------------------------------------------------------------------
@@ -83,7 +71,7 @@ void orbiter::DefVideoTab::ShowInterface(HWND hTab, bool show)
 
 //-----------------------------------------------------------------------------
 
-BOOL orbiter::DefVideoTab::InitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam)
+BOOL orbiter::DefVideoTab::OnInitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
 #ifdef INLINEGRAPHICS
 	ShowInterface(hWnd, true);
@@ -101,11 +89,12 @@ void orbiter::DefVideoTab::OnGraphicsClientLoaded(oapi::GraphicsClient* gc, cons
 	char fname[256];
 	_splitpath(moduleName, NULL, NULL, fname, NULL);
 
-	int oldIdx = SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_GETCURSEL, 0, 0);
 	int newIdx = SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_FINDSTRING, -1, (LPARAM)fname);
-	if (newIdx != oldIdx) {
+	if (newIdx != idxClient) {
 		SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_SETCURSEL, newIdx, 0);
-		SelectClientIndex(newIdx);
+		ShowInterface(hTab, newIdx > 0);
+		pCfg->AddActiveModule(fname);
+		idxClient = newIdx;
 	}
 
 	HMODULE hMod = LoadLibraryEx(moduleName, 0, LOAD_LIBRARY_AS_DATAFILE);
@@ -239,22 +228,22 @@ void orbiter::DefVideoTab::ScanDir(HWND hTab, const PSTR dir)
 
 void orbiter::DefVideoTab::SelectClientIndex(UINT idx)
 {
+	ShowInterface(hTab, idx > 0);
+
 	char name[256];
-	if (idxClient) {
+	if (idxClient) { // unload the current client
 		SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_GETLBTEXT, idxClient, (LPARAM)name);
-		pCfg->DelModule(name);
+		pCfg->DelActiveModule(name);
 		pLp->App()->UnloadModule(name);
+		pCfg->CfgDevPrm.Device_idx = -1;
 	}
-	if (idxClient = idx) {
+	if (idx) { // load the new client
 		const char* path = "Modules\\Plugin";
-		SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_GETLBTEXT, idxClient, (LPARAM)name);
-		pCfg->AddModule(name);
+		SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_GETLBTEXT, idx, (LPARAM)name);
 		pLp->App()->LoadModule(path, name);
 	}
 	else
 		SetInfoString(strInfo_Default);
-
-	ShowInterface(hTab, idx > 0);
 }
 
 void orbiter::DefVideoTab::SetInfoString(PSTR str)
@@ -283,7 +272,7 @@ INT_PTR CALLBACK orbiter::DefVideoTab::InfoProc(HWND hWnd, UINT uMsg, WPARAM wPa
 
 //-----------------------------------------------------------------------------
 
-INT_PTR orbiter::DefVideoTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+BOOL orbiter::DefVideoTab::OnMessage (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_COMMAND:

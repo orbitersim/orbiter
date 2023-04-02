@@ -34,12 +34,10 @@ set(common_src
 	LpadTab.cpp
 	TabAbout.cpp
 	TabExtra.cpp
-	TabJoystick.cpp
 	TabModule.cpp
-	TabParam.cpp
+	TabOptions.cpp
 	TabScenario.cpp
 	TabVideo.cpp
-	TabVisual.cpp
 # Dialogs
 	CustomControls.cpp
 	Dialogs.cpp
@@ -53,11 +51,12 @@ set(common_src
 	DlgMap.cpp
 	DlgMenuCfg.cpp
 	DlgMgr.cpp
+	DlgOptions.cpp
 	DlgRecorder.cpp
 	DlgTacc.cpp
-	DlgVishelper.cpp
 	htmlctrl.c
 	Select.cpp
+	OptionsPages.cpp
 # Body classes
 	Body.cpp
 	BodyIntegrator.cpp
@@ -98,6 +97,7 @@ set(common_src
 	MfdUser.cpp
 # API implementations
 	CamAPI.cpp
+	CelSphereAPI.cpp
 	DrawAPI.cpp
 	GraphicsAPI.cpp
 	MFDAPI.cpp
@@ -116,7 +116,6 @@ set(common_src
 	ZTreeMgr.cpp
 # Resources
 	Orbiter.rc
-	Orbiter.rc2
 	Orbiter.ico
 # Files built on the fly
 	cryptstring.h
@@ -127,6 +126,7 @@ set(common_src
 # Sources for DX7 built-in graphics version only
 set(graphics_src
 # DX7 inline graphics
+	CelSphere.cpp
 	cloudmgr2.cpp
 	CSphereMgr.cpp
 	cspheremgr2.cpp
@@ -231,6 +231,15 @@ if(BUILD_ORBITER_DX7)
 		DESTINATION ${ORBITER_INSTALL_SDK_DIR}/lib
 	)
 	
+	if(BUILD_ORBITER_SERVER)
+		add_dependencies(Orbiter
+			Orbiter_server
+		)
+		add_custom_command(TARGET Orbiter
+			PRE_LINK
+			COMMAND del Orbiter.lib Orbiter.exp
+		)
+	endif()
 endif()
 
 # Orbiter executable (graphics server version)

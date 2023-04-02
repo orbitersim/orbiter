@@ -244,40 +244,45 @@ technique AxisTech
 // Mesh Shadow Technique
 // ============================================================================
 
-BShadowVS ShadowMeshTechVS(SHADOW_VERTEX vrt)
+ShadowTexVS ShadowMeshTechVS(POSTEX vrt)
 {
 	// Zero output.
-	BShadowVS outVS = (BShadowVS)0;
+	ShadowTexVS outVS = (ShadowTexVS)0;
 	float3 posW = mul(float4(vrt.posL.xyz, 1.0f), gW).xyz;
-	outVS.alpha = dot(vrt.posL.xyz, gInScatter.xyz) + gInScatter.w;
-	//outVS.alpha = vrt.posL.y + gInScatter.w;
+	float alpha = dot(vrt.posL.xyz, gInScatter.xyz) + gInScatter.w;
 	outVS.posH  = mul(float4(posW, 1.0f), gVP);
+	outVS.tex0  = float3(vrt.tex0.xy, alpha);
 	outVS.dstW  = outVS.posH.zw;
 	return outVS;
 }
 
-BShadowVS ShadowMeshTechExVS(SHADOW_VERTEX vrt)
+ShadowTexVS ShadowMeshTechExVS(POSTEX vrt)
 {
 	// Zero output.
-	BShadowVS outVS = (BShadowVS)0;
-	outVS.alpha = dot(vrt.posL.xyz, gColor.xyz) + gColor.w;
-	//float d = dot(vrt.posL.xyz,vrt.posL.xyz);
+	ShadowTexVS outVS = (ShadowTexVS)0;
+	float alpha = dot(vrt.posL.xyz, gColor.xyz) + gColor.w;
 	float3 posX = mul(float4(vrt.posL.xyz, 1.0f), gGrpT).xyz;
 	float3 posW = mul(float4(posX, 1.0f), gW).xyz;
-	//float3 posW = mul(float4(posX-gColor.xyz*(gTexOff.x*d+gTexOff.y*d*d), 1.0f), gW).xyz;
 	outVS.posH  = mul(float4(posW, 1.0f), gVP);
+	outVS.tex0  = float3(vrt.tex0.xy, alpha);
 	outVS.dstW  = outVS.posH.zw;
 	return outVS;
 }
 
-float4 ShadowTechPS(BShadowVS frg) : COLOR
+float4 ShadowTechPS(ShadowTexVS frg) : COLOR
 {
-	if (frg.alpha < 0) clip(-1);
-	return float4(0.0f, 0.0f, 0.0f, (1.0f-gMix));
+	if (frg.tex0.b < 0) clip(-1);
+	if (gOITEnable) {
+		float4 alpha = tex2D(WrapS, frg.tex0.xy);
+		if (alpha.a < 0.5f) clip(-1);
+	}
+	return float4(0.0f, 0.0f, 0.0f, gMix);
 }
 
-// -----------------------------------------------------------------------------------
 
+// -----------------------------------------------------------------------------------
+// Shadow Map rendering with plain geometry (without texture) 
+//
 BShadowVS ShadowMapVS(SHADOW_VERTEX vrt)
 {
 	// Zero output.
@@ -293,6 +298,30 @@ float4 ShadowMapPS(BShadowVS frg) : COLOR
 	return 1 - (frg.dstW.x / frg.dstW.y);
 }
 
+
+// -----------------------------------------------------------------------------------
+// Shadow Map rendering with texture alpha included
+//
+ShadowTexVS ShadowMapOIT_VS(POSTEX vrt)
+{
+	// Zero output.
+	ShadowTexVS outVS = (ShadowTexVS)0;
+	float3 posW = mul(float4(vrt.posL.xyz, 1.0f), gW).xyz;
+	outVS.posH = mul(float4(posW, 1.0f), gLVP);
+	outVS.tex0 = float3(vrt.tex0.xy, 0);
+	outVS.dstW = outVS.posH.zw;
+	return outVS;
+}
+
+float4 ShadowMapOIT_PS(ShadowTexVS frg) : COLOR
+{
+	if (gOITEnable) {
+		float alpha = tex2D(WrapS, frg.tex0.xy).a;
+		if (alpha < 0.5f) return 1.0f;
+	}
+	return 1 - (frg.dstW.x / frg.dstW.y);
+}
+
 // -----------------------------------------------------------------------------------
 
 technique GeometryTech
@@ -301,6 +330,17 @@ technique GeometryTech
 	{
 		vertexShader = compile vs_3_0 ShadowMapVS();
 		pixelShader = compile ps_3_0 ShadowMapPS();
+
+		AlphaBlendEnable = false;
+		ZEnable = true;
+		ZWriteEnable = true;
+		StencilEnable = false;
+	}
+
+	pass P1
+	{
+		vertexShader = compile vs_3_0 ShadowMapOIT_VS();
+		pixelShader = compile ps_3_0 ShadowMapOIT_PS();
 
 		AlphaBlendEnable = false;
 		ZEnable = true;

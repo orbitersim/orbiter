@@ -199,6 +199,13 @@ public:
 	 */
 	void clbkRefreshVideoData ();
 
+	/**
+     * \brief Called when a config setting is changed by the user during
+     *    a simulation setting, to give the client opportunity to respond to the change.
+     * \param cat option category, see \ref optcat
+     * \param item option item, see \ref optitem
+     */
+	void clbkOptionChanged(DWORD cat, DWORD item);
 
 	/**
 	 * \brief Texture request
@@ -275,6 +282,25 @@ public:
 	 */
 	bool clbkSaveSurfaceToImage (SURFHANDLE surf, const char *fname, ImageFileFormat fmt, float quality=0.7f);
 
+	/**
+	 * \brief Write surface to file (sub-function of \ref clbkSaveSurfaceToImage)
+	 *
+	 * \param surface size and format description
+	 * \param fname image file path relative to orbiter root directory (excluding file extension)
+	 * \param fmt output file format
+	 * \param quality quality request if the format supports it (0-1)
+	 * \return Should return true on success
+	 */
+	bool SaveSurfaceToFile (const D3DSURFACE_DESC* desc, D3DLOCKED_RECT& pRect,
+	                        const char* fname, ImageFileFormat fmt, float quality);
+
+	/**
+	 * \brief Store device-dependent bitmap to clipboard (sub-function of \ref clbkSaveSurfaceToImage)
+	 *
+	 * \param surface size and format description
+	 * \return Should return true on success
+	 */
+	bool SaveSurfaceToClipboard (const D3DSURFACE_DESC * desc);
 
 	/**
 	 * \brief Texture release request
@@ -1244,14 +1270,6 @@ protected:
 	//void Output2DOverlay ();
 
 public:
-
-	/**
-	 * \brief Returns an array of constellation markers
-	 * \param cm_list array of constellation label elements
-	 * \return number of lists in the array
-	 * \sa LABELSPEC
-	 */
-	DWORD GetConstellationMarkers (const LABELSPEC **cm_list) const;
 
 	/**
 	 * \brief Displays a message on the splash screen.

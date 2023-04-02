@@ -2745,6 +2745,14 @@ public:
 	 *   significant angular momentum.
 	 * \note If a vessel does not define a complete set of attitude thruster
 	 *   groups, certain navmode sequences (e.g. KILLROT) may fail.
+	 * \note In addition to the pre-defined set of default thruster groups, multiple
+	 *   user-defined groups can be created like this:
+	 *   \code{.cpp}
+	 *     THGROUP_TYPE MyThrusterGroup1 = THGROUP_USER;
+	 *     THGROUP_TYPE MyThrusterGroup2 = (THGROUP_TYPE)(THGROUP_USER+1);
+	 *     CreateThrusterGroup(th1, nth1, MyThrusterGroup1);
+	 *     CreateThrusterGroup(th2, nth2, MyThrusterGroup2);
+	 *   \endcode
 	 * \sa DelThrusterGroup, CreateThruster, thrusterparam
 	 */
 	THGROUP_HANDLE CreateThrusterGroup (THRUSTER_HANDLE *th, int nth, THGROUP_TYPE thgt) const;
@@ -2781,7 +2789,7 @@ public:
 	bool DelThrusterGroup (THGROUP_TYPE thgt, bool delth = false) const;
 
 	/**
-	 * \brief Returns the handle of a default thruster group.
+	 * \brief Returns the handle of a thruster group (default or user-defined).
 	 * \param thgt thruster group type (see \ref thrusterparam)
 	 * \return thruster group handle (or NULL if no group is defined for the
 	 *   specified type).
@@ -2842,8 +2850,8 @@ public:
 	THRUSTER_HANDLE GetGroupThruster (THGROUP_HANDLE thg, DWORD idx) const;
 
 	/**
-	 * \brief Returns a handle for a thruster that belongs to a standard thruster
-	 *   group.
+	 * \brief Returns a handle for a thruster that belongs to a thruster
+	 *   group (default or user-defined).
 	 * \param thgt thruster group enumeration type (see \ref thrusterparam)
 	 * \param idx thruster index (0 <= idx < GetGroupThrusterCount())
 	 * \return Thruster handle

@@ -82,7 +82,7 @@ public:
 	void	SetVSStruct(const char *var, const void *val, int bytes);
 
 	// ----------------------------------------------------------------------------------
-	// SetTexture can be used to assign a taxture and a sampler state flags to a sampler
+	// SetTexture can be used to assign a texture and a sampler state flags to a sampler
 	// In a shader code sampler is defined as (e.g. sampler mySamp; ) where "mySamp" is
 	// the variable passed to SetTexture function. It's then used in a shader code like
 	// tex2D(mySamp, float2(x,y))
@@ -104,9 +104,8 @@ public:
 	void	SetMesh(const MESHHANDLE hMesh, const char *tex = NULL, gcIPInterface::ipicull = gcIPInterface::ipicull::None);
 
 	bool	Execute(bool bInScene = false);
-	bool	Execute(const char *shader, bool bInScene);
-	bool	ExecuteTemplate(bool bInScene = false, gcIPInterface::ipitemplate tmp = gcIPInterface::ipitemplate::Rect);
-	bool    Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScene = false, gcIPInterface::ipitemplate tmp = gcIPInterface::ipitemplate::Rect, int gpr = -1);
+	bool	Execute(const char *shader, bool bInScene, DWORD blendop);
+	bool    Execute(DWORD blendop, bool bInScene = false, gcIPInterface::ipitemplate tmp = gcIPInterface::ipitemplate::Rect, int gpr = -1);
 
 	// ----------------------------------------------------------------------------------
 	int		FindDefine(const char *key);

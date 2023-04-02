@@ -47,8 +47,14 @@ public:
 
 	inline DWORD GetStencilDepth() const { return stencilDepth; }
 
-	inline D3DCOLOR GetBgColour() const { return bg_rgba; }
-	// ambient background colour
+	void OnOptionChanged(int cat, int item);
+
+	DWORD BgColourRGBA() const
+	{ return atmRGBA; }
+
+	int BgBrightnessLevel() const
+	{ return atmidx; }
+	// return render brightness level of sky background [0..255]
 
 	inline const DWORD ViewW() const { return viewW; }
 	inline const DWORD ViewH() const { return viewH; }
@@ -94,33 +100,21 @@ public:
 
 protected:
 	/**
-	 * \brief Return a render window device context for drawing markers.
-	 * \param mode marker mode
-	 * \return Drawing device context
-	 */
-	HDC GetLabelDC (int mode);
-
-	/**
-	 * \brief Render a single marker for a given direction
-	 * \param hDC device context
-	 * \param rdir normalised direction from camera in global (ecliptic) frame
-	 * \param label1 label above marker
-	 * \param label2 label below marker
-	 * \param mode marker shape
-	 * \param scale marker size
-	 */
-	void RenderDirectionMarker (HDC hDC, const VECTOR3 &rdir, const char *label1, const char *label2, int mode, int scale);
-
-	/**
 	 * \brief Render a single marker at a given global position
-	 * \param hDC device context
+	 * \param pSkp Sketchpad drawing context
 	 * \param gpos global position (ecliptic frame)
 	 * \param label1 label above marker
 	 * \param label2 label below marker
 	 * \param mode marker shape
 	 * \param scale marker size
 	 */
-	void RenderObjectMarker (HDC hDC, const VECTOR3 &gpos, const char *label1, const char *label2, int mode, int scale);
+	void RenderObjectMarker (oapi::Sketchpad* pSkp, const VECTOR3 &gpos, const std::string& label1, const std::string& label2, int mode, int scale);
+
+	/**
+	 * \brief Render vector features for each visual object if requested
+	 *     (frame axes, force vectors, etc.)
+	 */
+	void RenderVectors();
 
 	void AddLocalLight (const LightEmitter *le, const vObject *vo, DWORD idx);
 
@@ -130,7 +124,7 @@ private:
 	DWORD viewW, viewH;        // render viewport size
 	DWORD stencilDepth;        // stencil buffer bit depth
 	Camera *cam;               // camera object
-	CelestialSphere *csphere;  // celestial sphere background
+	D3D7CelestialSphere *m_celSphere; // celestial sphere background
 	DWORD iVCheck;             // index of last object checked for visibility
 	DWORD zclearflag;          // z and stencil buffer clear flag
 
@@ -138,7 +132,8 @@ private:
 	DWORD                nstream; // number of streams
 
 	D3D7Light *light;          // only one for now
-	D3DCOLOR bg_rgba;          // ambient background colour
+	int atmidx;                // sky background brightness level (0-255)
+	DWORD atmRGBA;             // atmosphere background colour
 	bool locallight;           // enable local light sources
 	bool surfLabelsActive;     // v.2 surface labels activated?
 	DWORD maxlight;            // max number of light sources
@@ -168,17 +163,10 @@ private:
 	// Sky background colour based on atmospheric parameters of closest planet
 
 	// GDI resources
-	static COLORREF labelCol[6];
-	HPEN hLabelPen[6];
-	HFONT hLabelFont[1];
-	int labelSize[1];
-	oapi::Font *label_font[4];
-	oapi::Pen *label_pen;
+	oapi::Font* labelFont[4];
 
 	void InitGDIResources();
 	void ExitGDIResources();
-
-	CSphereManager *cspheremgr;
 };
 
 #endif // !__SCENE_H

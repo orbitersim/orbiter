@@ -15,6 +15,10 @@
 // ==============================================================
 
 #include "CelSphere.h"
+#include "CSphereMgr.h"
+#include "Scene.h"
+#include "Camera.h"
+#include "Texture.h"
 
 #define NSEG 64 // number of segments in celestial grid lines
 
@@ -22,178 +26,214 @@ using namespace oapi;
 
 // ==============================================================
 
-CelestialSphere::CelestialSphere (D3D7Client *_gc)
+D3D7CelestialSphere::D3D7CelestialSphere (D3D7Client* gc, Scene* scene)
+	: oapi::CelestialSphere(gc)
+	, m_gc(gc)
+	, m_scene(scene)
 {
-	gc = _gc;
-	sphere_r = 1e3f; // the actual render distance for the celestial sphere
-	                 // is irrelevant, since it is rendered without z-buffer,
-	                 // but it must be within the fustrum limits - check this
-	                 // in case the near and far planes are dynamically changed!
-	LoadStars ();
-	LoadConstellationLines ();
-	AllocGrids ();
+	for (auto&& vtx : m_azGridLabelVtx)
+		vtx = nullptr;
+	m_elGridLabelVtx = nullptr;
+	m_GridLabelIdx = nullptr;
+	m_GridLabelTex = nullptr;
+
+	InitStars();
+	InitConstellationLines();
+	InitConstellationBoundaries();
+	AllocGrids();
+	m_bkgImgMgr = new CSphereManager(gc, scene);
+
+	m_mjdPrecessionChecked = -1e10;
+
+	m_viewW = gc->GetViewW();
+	m_viewH = gc->GetViewH();
+
+	char cpath[256];
+	m_gc->TexturePath("gridlabel.dds", cpath);
+	if (FILE* f = fopen(cpath, "rb")) {
+		if (FAILED(m_gc->GetTexMgr()->ReadTexture(f, &m_GridLabelTex, 0)))
+			m_GridLabelTex = nullptr;
+		fclose(f);
+	}
+	if (!m_GridLabelTex)
+		oapiWriteLogError("Failed to load texture %s", cpath);
 }
 
 // ==============================================================
 
-CelestialSphere::~CelestialSphere ()
+D3D7CelestialSphere::~D3D7CelestialSphere ()
 {
-	DWORD i;
+	ClearStars();
+	m_clVtx->Release();
+	m_cbVtx->Release();
+	m_grdLngVtx->Release();
+	m_grdLatVtx->Release();
 
-	if (nsbuf) {
-		for (i = 0; i < nsbuf; i++)	svtx[i]->Release();
-		delete []svtx;
-	}
-	if (ncline) delete []cnstvtx;
-	grdlng->Release();
-	grdlat->Release();
+	for (auto vtx : m_azGridLabelVtx)
+		if (vtx) vtx->Release();
+	if (m_elGridLabelVtx)
+		m_elGridLabelVtx->Release();
+	if (m_GridLabelIdx)
+		delete[]m_GridLabelIdx;
+	if (m_GridLabelTex)
+		m_GridLabelTex->Release();
+
+	delete m_bkgImgMgr;
 }
 
 // ==============================================================
 
-void CelestialSphere::LoadStars ()
+void D3D7CelestialSphere::InitCelestialTransform()
 {
-	StarRenderPrm *prm = (StarRenderPrm*)gc->GetConfigParam (CFGPRM_STARRENDERPRM);
+	m_rotCelestial = Ecliptic_CelestialAtEpoch();
 
-	double a, b, xz;
+	m_transformCelestial._11 = (float)m_rotCelestial.m11; m_transformCelestial._12 = (float)m_rotCelestial.m12; m_transformCelestial._13 = (float)m_rotCelestial.m13; m_transformCelestial._14 = 0.0f;
+	m_transformCelestial._21 = (float)m_rotCelestial.m21; m_transformCelestial._22 = (float)m_rotCelestial.m22; m_transformCelestial._23 = (float)m_rotCelestial.m23; m_transformCelestial._24 = 0.0f;
+	m_transformCelestial._31 = (float)m_rotCelestial.m31; m_transformCelestial._32 = (float)m_rotCelestial.m32; m_transformCelestial._33 = (float)m_rotCelestial.m33; m_transformCelestial._34 = 0.0f;
+	m_transformCelestial._41 = 0.0f;                      m_transformCelestial._42 = 0.0f;                      m_transformCelestial._43 = 0.0f;                      m_transformCelestial._44 = 1.0f;
 
-	if (prm->mag_lo > prm->mag_hi) {
-		if (prm->map_log) {
-			// scaling factors for logarithmic brightness mapping
-			a = -log(prm->brt_min)/(prm->mag_lo-prm->mag_hi);
-		} else {
-			// scaling factors for linear brightness mapping
-			a = (1.0-prm->brt_min)/(prm->mag_hi-prm->mag_lo);
-			b = prm->brt_min - prm->mag_lo*a;
-		}
-	} else {
-		oapiWriteLog("WARNING: Inconsistent magnitude limits for background star brightness. Disabling background stars.");
+	m_mjdPrecessionChecked = oapiGetSimMJD();
+}
+
+// ==============================================================
+
+bool D3D7CelestialSphere::LocalHorizonTransform(MATRIX3& R, D3DMATRIX& T)
+{
+	MATRIX3 rot;
+	if (LocalHorizon_Ecliptic(rot)) {
+		R = transp(rot);
+		T = {
+			(float)R.m11, (float)R.m12, (float)R.m13, 0.0f,
+			(float)R.m21, (float)R.m22, (float)R.m23, 0.0f,
+			(float)R.m31, (float)R.m32, (float)R.m33, 0.0f,
+			0.0f,         0.0f,         0.0f,         1.0f
+		};
+		return true;
 	}
+	return false;
+}
 
-	float c;
-	int lvl, plvl = 256;
-	DWORD i, j, k, nv, idx = 0;
-	DWORD buflen = D3DMAXNUMVERTICES;
-	DWORD bufsize = 16;
-	nsbuf = nsvtx = 0;
-	svtx = new LPDIRECT3DVERTEXBUFFER7[bufsize];
+// ==============================================================
 
-	D3DVERTEXBUFFERDESC vbdesc;
-	gc->SetDefault (vbdesc);
-	vbdesc.dwFVF = D3DFVF_XYZ | D3DFVF_DIFFUSE;
+void D3D7CelestialSphere::InitStars()
+{
+	ClearStars();
 
-	if (prm->mag_lo <= prm->mag_hi) return;
+	if (*(bool*)m_gc->GetConfigParam(CFGPRM_CSPHEREUSESTARDOTS)) {
 
-	// Read binary data from file
-	FILE *f = fopen ("Star.bin", "rb");
-	if (!f) return;
+		const std::vector<oapi::CelestialSphere::StarRenderRec> sList = LoadStars();
+		m_nsVtx = sList.size();
+		if (!m_nsVtx) return;
 
-	struct StarRec {
-		float lng, lat, mag;
-	} *data = new StarRec[buflen];
+		const DWORD buflen = D3DMAXNUMVERTICES;
+		DWORD i, j, nv, idx = 0;
 
-	while (nv = fread (data, sizeof(StarRec), buflen, f)) {
-		// limit number of stars to predefined magnitude - SHOULD BE BINARY SEARCH
-		for (i = 0; i < nv; i++)
-			if (data[i].mag > prm->mag_lo) { nv = i; break; }
-		if (nv) {
-			if (nsbuf >= bufsize) { // grow vertex buffer list
-				LPDIRECT3DVERTEXBUFFER7 *tmp = new LPDIRECT3DVERTEXBUFFER7[bufsize+16];
-				memcpy (tmp, svtx, bufsize*sizeof(LPDIRECT3DVERTEXBUFFER7*));
-				delete []svtx;
-				svtx = tmp;
-				bufsize += 16;
-			}
+		D3DVERTEXBUFFERDESC vbdesc;
+		m_gc->SetDefault(vbdesc);
+		vbdesc.dwFVF = D3DFVF_XYZ | D3DFVF_DIFFUSE;
+
+		// convert star database to vertex buffers
+		DWORD nbuf = (m_nsVtx + buflen - 1) / buflen; // number of buffers required
+		m_sVtx.resize(nbuf);
+		for (auto it = m_sVtx.begin(); it != m_sVtx.end(); it++) {
+			nv = min(buflen, m_nsVtx - idx);
 			vbdesc.dwNumVertices = nv;
-			gc->GetDirect3D7()->CreateVertexBuffer (&vbdesc, svtx+nsbuf, 0);
-			VERTEX_XYZC *vbuf;
-			svtx[nsbuf]->Lock (DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
+			m_gc->GetDirect3D7()->CreateVertexBuffer(&vbdesc, &*it, 0);
+			VERTEX_XYZC* vbuf;
+			(*it)->Lock(DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
 			for (j = 0; j < nv; j++) {
-				StarRec &rec = data[j];
-				VERTEX_XYZC &v = vbuf[j];
-				xz = (double)sphere_r * cos (rec.lat);
-				v.x = (float)(xz * cos (rec.lng));
-				v.z = (float)(xz * sin (rec.lng));
-				v.y = (float)(sphere_r * sin (rec.lat));
-
-				if (prm->map_log)
-					c = (float)min (1.0, max (prm->brt_min, exp(-(rec.mag-prm->mag_hi)*a)));
-				else
-					c = (float)min (1.0, max (prm->brt_min, a*rec.mag+b));
-
-				v.col = D3DRGBA (c,c,c,1);
-				lvl = (int)(c*256.0*0.5);
-				if (lvl > 255) lvl = 255;
-				for (k = lvl; k < (DWORD)plvl; k++) lvlid[k] = idx;
-				plvl = lvl;
+				const oapi::CelestialSphere::StarRenderRec& rec = sList[idx];
+				VERTEX_XYZC& v = vbuf[j];
+				v.x = (D3DVALUE)rec.pos.x;
+				v.y = (D3DVALUE)rec.pos.y;
+				v.z = (D3DVALUE)rec.pos.z;
+				v.col = D3DRGBA(rec.col.x, rec.col.y, rec.col.z, 1);
 				idx++;
 			}
-			svtx[nsbuf]->Unlock();
-			svtx[nsbuf]->Optimize (gc->GetDevice(), 0);
-			nsvtx += nv;
-			nsbuf++;
+			(*it)->Unlock();
+			(*it)->Optimize(m_gc->GetDevice(), 0);
 		}
-		if (nv < buflen) break;
+
+		m_starCutoffIdx = ComputeStarBrightnessCutoff(sList);
+
 	}
-	fclose (f);
-
-	if (bufsize > nsbuf) { // shrink buffer list to size
-		LPDIRECT3DVERTEXBUFFER7 *tmp = new LPDIRECT3DVERTEXBUFFER7[nsbuf];
-		memcpy (tmp, svtx, nsbuf*sizeof(LPDIRECT3DVERTEXBUFFER7*));
-		delete []svtx;
-		svtx = tmp;
-	}
-
-	for (i = 0; i < (DWORD)plvl; i++) lvlid[i] = idx;
-
-	delete []data;
 }
 
 // ==============================================================
 
-void CelestialSphere::LoadConstellationLines ()
+void D3D7CelestialSphere::ClearStars()
 {
-	const DWORD maxline = 1000; // plenty for default data base, but check with custom data bases!
-
-	GraphicsClient::ConstRec *cline = new GraphicsClient::ConstRec[maxline];
-	ncline = gc->LoadConstellationLines (maxline, cline);
-	if (ncline) {
-		cnstvtx = new VERTEX_XYZ[ncline*2]; // two end points per line
-		DWORD n;
-		double xz;
-		for (n = 0; n < ncline; n++) {
-			GraphicsClient::ConstRec *rec = cline+n;
-			xz = sphere_r * cos (rec->lat1);
-			cnstvtx[n*2].x = (float)(xz * cos(rec->lng1));
-			cnstvtx[n*2].z = (float)(xz * sin(rec->lng1));
-			cnstvtx[n*2].y = (float)(sphere_r * sin(rec->lat1));
-			xz = sphere_r * cos (rec->lat2);
-			cnstvtx[n*2+1].x = (float)(xz * cos(rec->lng2));
-			cnstvtx[n*2+1].z = (float)(xz * sin(rec->lng2));
-			cnstvtx[n*2+1].y = (float)(sphere_r * sin(rec->lat2));
-		}
-	}
-	delete []cline;
+	for (auto it = m_sVtx.begin(); it != m_sVtx.end(); it++)
+		(*it)->Release();
+	m_sVtx.clear();
+	m_nsVtx = 0;
 }
 
 // ==============================================================
 
-void CelestialSphere::AllocGrids ()
+int D3D7CelestialSphere::MapLineBuffer(const std::vector<VECTOR3>& lineVtx, LPDIRECT3DVERTEXBUFFER7& buf) const
+{
+	size_t nv = lineVtx.size();
+	if (!nv) return 0;
+
+	// for now, we don't allow line sets exceeding the maximum buffer size
+	if (nv > D3DMAXNUMVERTICES) {
+		oapiWriteLogError("Celestial sphere: Number of line vertices in dataset too large (%d). Truncating to %d.", nv, D3DMAXNUMVERTICES);
+		nv = D3DMAXNUMVERTICES;
+	}
+
+	// create vertex buffer
+	D3DVERTEXBUFFERDESC vbdesc;
+	vbdesc.dwSize = sizeof(D3DVERTEXBUFFERDESC);
+	vbdesc.dwCaps = (m_gc->GetFramework()->IsTLDevice() ? 0 : D3DVBCAPS_SYSTEMMEMORY);
+	vbdesc.dwFVF = D3DFVF_XYZ;
+	vbdesc.dwNumVertices = nv;
+	m_gc->GetDirect3D7()->CreateVertexBuffer(&vbdesc, &buf, 0);
+	VERTEX_XYZ* vbuf;
+	buf->Lock(DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
+	for (size_t i = 0; i < nv; i++) {
+		vbuf[i].x = (D3DVALUE)lineVtx[i].x;
+		vbuf[i].y = (D3DVALUE)lineVtx[i].y;
+		vbuf[i].z = (D3DVALUE)lineVtx[i].z;
+	}
+	buf->Unlock();
+	buf->Optimize(m_gc->GetDevice(), 0);
+
+	return nv;
+}
+
+// ==============================================================
+
+void D3D7CelestialSphere::InitConstellationLines()
+{
+	m_nclVtx = MapLineBuffer(LoadConstellationLines(), m_clVtx);
+}
+
+// ==============================================================
+
+void D3D7CelestialSphere::InitConstellationBoundaries()
+{
+	m_ncbVtx = MapLineBuffer(LoadConstellationBoundaries(), m_cbVtx);
+}
+
+// ==============================================================
+
+void D3D7CelestialSphere::AllocGrids ()
 {
 	int i, j, idx;
 	double lng, lat, xz, y;
 
 	D3DVERTEXBUFFERDESC vbdesc;
-	gc->SetDefault (vbdesc);
+	m_gc->SetDefault (vbdesc);
 	vbdesc.dwFVF  = D3DFVF_XYZ;
 	vbdesc.dwNumVertices = (NSEG+1) * 11;
-	gc->GetDirect3D7()->CreateVertexBuffer (&vbdesc, &grdlng, 0);
+	m_gc->GetDirect3D7()->CreateVertexBuffer (&vbdesc, &m_grdLngVtx, 0);
 	VERTEX_XYZ *vbuf;
-	grdlng->Lock (DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
+	m_grdLngVtx->Lock (DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
 	for (j = idx = 0; j <= 10; j++) {
 		lat = (j-5)*15*RAD;
-		xz = sphere_r * cos(lat);
-		y  = sphere_r * sin(lat);
+		xz = cos(lat);
+		y  = sin(lat);
 		for (i = 0; i <= NSEG; i++) {
 			lng = 2.0*PI * (double)i/(double)NSEG;
 			vbuf[idx].x = (float)(xz * cos(lng));
@@ -202,72 +242,375 @@ void CelestialSphere::AllocGrids ()
 			idx++;
 		}
 	}
-	grdlng->Unlock();
-	grdlng->Optimize (gc->GetDevice(), 0);
+	m_grdLngVtx->Unlock();
+	m_grdLngVtx->Optimize (m_gc->GetDevice(), 0);
 
 	vbdesc.dwNumVertices = (NSEG+1) * 12;
-	gc->GetDirect3D7()->CreateVertexBuffer (&vbdesc, &grdlat, 0);
-	grdlat->Lock (DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
+	m_gc->GetDirect3D7()->CreateVertexBuffer (&vbdesc, &m_grdLatVtx, 0);
+	m_grdLatVtx->Lock (DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
 	for (j = idx = 0; j < 12; j++) {
 		lng = j*15*RAD;
 		for (i = 0; i <= NSEG; i++) {
 			lat = 2.0*PI * (double)i/(double)NSEG;
-			xz = sphere_r * cos(lat);
-			y  = sphere_r * sin(lat);
+			xz = cos(lat);
+			y  = sin(lat);
 			vbuf[idx].x = (float)(xz * cos(lng));
 			vbuf[idx].z = (float)(xz * sin(lng));
 			vbuf[idx].y = (float)y;
 			idx++;
 		}
 	}
-	grdlat->Unlock();
-	grdlat->Optimize (gc->GetDevice(), 0);
+	m_grdLatVtx->Unlock();
+	m_grdLatVtx->Optimize (m_gc->GetDevice(), 0);
 }
 
 // ==============================================================
 
-void CelestialSphere::RenderStars (LPDIRECT3DDEVICE7 dev, DWORD nmax, const VECTOR3 *bgcol)
+void D3D7CelestialSphere::AllocGridLabels()
+{
+	struct VERTEX_XYZT {
+		D3DVALUE x, y, z;
+		D3DVALUE tu, tv;
+	};
+
+	const MESHHANDLE hMesh = GridLabelMesh();
+	MESHGROUP* grp = oapiMeshGroup(hMesh, 0);
+
+	D3DVERTEXBUFFERDESC vbdesc;
+	vbdesc.dwSize = sizeof(D3DVERTEXBUFFERDESC);
+	vbdesc.dwCaps = (m_gc->GetFramework()->IsTLDevice() ? 0 : D3DVBCAPS_SYSTEMMEMORY);
+	vbdesc.dwFVF = D3DFVF_XYZ | D3DFVF_TEX1;
+	vbdesc.dwNumVertices = grp->nVtx;
+
+	// create vertex buffers for longitude labels (azimuth/hour angle/longitude)
+	for (size_t idx = 0; idx < m_azGridLabelVtx.size(); idx++) {
+		LPDIRECT3DVERTEXBUFFER7& vb = m_azGridLabelVtx[idx];
+		m_gc->GetDirect3D7()->CreateVertexBuffer(&vbdesc, &vb, 0);
+		VERTEX_XYZT* vbuf;
+		vb->Lock(DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
+		for (int i = 0; i < grp->nVtx; i++) {
+			vbuf[i].x = (D3DVALUE)grp->Vtx[i].x;
+			vbuf[i].y = (D3DVALUE)grp->Vtx[i].y;
+			vbuf[i].z = (D3DVALUE)grp->Vtx[i].z;
+			vbuf[i].tu = (D3DVALUE)(grp->Vtx[i].tu + idx * 0.1015625);
+			vbuf[i].tv = (D3DVALUE)grp->Vtx[i].tv;
+		}
+		vb->Unlock();
+		vb->Optimize(m_gc->GetDevice(), 0);
+	}
+
+	// the index list is used for both azimuth and elevation grid labels
+	m_GridLabelIdx = new WORD[grp->nIdx];
+	memcpy(m_GridLabelIdx, grp->Idx, grp->nIdx * sizeof(WORD));
+
+	// create vertex buffer for latitude labels (just one shared between all grids)
+	grp = oapiMeshGroup(hMesh, 1);
+	vbdesc.dwNumVertices = grp->nVtx;
+	m_gc->GetDirect3D7()->CreateVertexBuffer(&vbdesc, &m_elGridLabelVtx, 0);
+	VERTEX_XYZT* vbuf;
+	m_elGridLabelVtx->Lock(DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vbuf, NULL);
+	for (int i = 0; i < grp->nVtx; i++) {
+		vbuf[i].x = (D3DVALUE)grp->Vtx[i].x;
+		vbuf[i].y = (D3DVALUE)grp->Vtx[i].y;
+		vbuf[i].z = (D3DVALUE)grp->Vtx[i].z;
+		vbuf[i].tu = (D3DVALUE)grp->Vtx[i].tu;
+		vbuf[i].tv = (D3DVALUE)grp->Vtx[i].tv;
+	}
+	m_elGridLabelVtx->Unlock();
+	m_elGridLabelVtx->Optimize(m_gc->GetDevice(), 0);
+}
+
+// ==============================================================
+
+void D3D7CelestialSphere::OnOptionChanged(DWORD cat, DWORD item)
+{
+	switch (cat) {
+	case OPTCAT_CELSPHERE:
+		switch (item) {
+		case OPTITEM_CELSPHERE_ACTIVATESTARDOTS:
+		case OPTITEM_CELSPHERE_STARDISPLAYPARAM:
+			InitStars();
+			break;
+		case OPTITEM_CELSPHERE_ACTIVATESTARIMAGE:
+		case OPTITEM_CELSPHERE_STARIMAGECHANGED:
+		case OPTITEM_CELSPHERE_ACTIVATEBGIMAGE:
+		case OPTITEM_CELSPHERE_BGIMAGECHANGED:
+			delete m_bkgImgMgr;
+			m_bkgImgMgr = new CSphereManager(m_gc, m_scene);
+			break;
+		case OPTITEM_CELSPHERE_BGIMAGEBRIGHTNESS:
+			if (m_bkgImgMgr) {
+				double intens = *(double*)m_gc->GetConfigParam(CFGPRM_CSPHEREINTENS);
+				m_bkgImgMgr->SetBgBrightness(intens);
+			}
+			break;
+		}
+		break;
+	}
+}
+
+// ==============================================================
+
+void D3D7CelestialSphere::Render(LPDIRECT3DDEVICE7 dev, const VECTOR3 &skyCol)
+{
+	static D3DMATRIX ident;
+	D3DMAT_Identity(&ident);
+
+	SetSkyColour(skyCol);
+
+	// Get celestial sphere render flags
+	DWORD renderFlag = *(DWORD*)m_gc->GetConfigParam(CFGPRM_PLANETARIUMFLAG);
+
+	// Turn off lighting calculations
+	dev->SetRenderState(D3DRENDERSTATE_LIGHTING, FALSE);
+
+	// celestial sphere background image
+	RenderBkgImage(dev);
+
+	dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
+	dev->SetTexture(0, 0);
+
+	if (renderFlag & PLN_ENABLE) {
+
+		// use explicit colours
+		dev->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TFACTOR);
+		dev->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
+
+		// set additive blending with background
+		DWORD dstblend;
+		dev->GetRenderState(D3DRENDERSTATE_DESTBLEND, &dstblend);
+		dev->SetRenderState(D3DRENDERSTATE_DESTBLEND, D3DBLEND_ONE);
+		dev->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+
+		// render ecliptic grid
+		if (renderFlag & PLN_EGRID) {
+			FVECTOR4 baseCol1(0.0f, 0.2f, 0.3f, 1.0f);
+			RenderGrid(dev, baseCol1, false);
+			FVECTOR4 baseCol2(0.0f, 0.4f, 0.6f, 1.0f);
+			RenderGreatCircle(dev, baseCol2);
+			double dphi = ElevationScaleRotation(_M(1, 0, 0, 0, 1, 0, 0, 0, 1));
+			RenderGridLabels(dev, 2, baseCol2, dphi);
+		}
+
+		// render galactic grid
+		if (renderFlag & PLN_GGRID) {
+			FVECTOR4 baseCol1(0.3f, 0.0f, 0.0f, 1.0f);
+			static const MATRIX3& R = Ecliptic_Galactic();
+			static D3DMATRIX T = { (float)R.m11, (float)R.m12, (float)R.m13, 0.0f,
+								   (float)R.m21, (float)R.m22, (float)R.m23, 0.0f,
+								   (float)R.m31, (float)R.m32, (float)R.m33, 0.0f,
+								   0.0f,         0.0f,         0.0f,         1.0f };
+			dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &T);
+			RenderGrid(dev, baseCol1, false);
+			FVECTOR4 baseCol2(0.7f, 0.0f, 0.0f, 1.0f);
+			RenderGreatCircle(dev, baseCol2);
+			double dphi = ElevationScaleRotation(R);
+			RenderGridLabels(dev, 2, baseCol2, dphi);
+			dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
+		}
+
+		// render celestial grid
+		if (renderFlag & PLN_CGRID) {
+			if (fabs(m_mjdPrecessionChecked - oapiGetSimMJD()) > 1e3)
+				InitCelestialTransform();
+			dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &m_transformCelestial);
+			FVECTOR4 baseCol1(0.3f, 0.0f, 0.3f, 1.0f);
+			RenderGrid(dev, baseCol1, false);
+			FVECTOR4 baseCol2(0.7f, 0.0f, 0.7f, 1.0f);
+			RenderGreatCircle(dev, baseCol2);
+			double dphi = ElevationScaleRotation(m_rotCelestial);
+			RenderGridLabels(dev, 1, baseCol2, dphi);
+			dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
+		}
+
+		//  render local horizon grid
+		if (renderFlag & PLN_HGRID) {
+			MATRIX3 R;
+			D3DMATRIX T;
+			if (LocalHorizonTransform(R, T)) {
+				dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &T);
+				oapi::FVECTOR4 baseCol1(0.2f, 0.2f, 0.0f, 1.0f);
+				RenderGrid(dev, baseCol1);
+				oapi::FVECTOR4 baseCol2(0.5f, 0.5f, 0.0f, 1.0f);
+				RenderGreatCircle(dev, baseCol2);
+				double dphi = ElevationScaleRotation(R);
+				RenderGridLabels(dev, 0, baseCol2, dphi);
+				dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
+			}
+		}
+
+		// render equator of target celestial body
+		if (renderFlag & PLN_EQU) {
+			OBJHANDLE hRef = oapiCameraProxyGbody();
+			if (hRef) {
+				MATRIX3 R;
+				oapiGetRotationMatrix(hRef, &R);
+				D3DMATRIX iR = {
+					(float)R.m11, (float)R.m21, (float)R.m31, 0.0f,
+					(float)R.m12, (float)R.m22, (float)R.m32, 0.0f,
+					(float)R.m13, (float)R.m23, (float)R.m33, 0.0f,
+					0.0f,         0.0f,         0.0f,         1.0f
+				};
+				dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &iR);
+				FVECTOR4 baseCol(0.0f, 0.6f, 0.0f, 1.0f);
+				RenderGreatCircle(dev, baseCol);
+				dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &ident);
+			}
+		}
+
+		// render constellation boundaries
+		if (renderFlag & PLN_CNSTBND) // for now, hijack the constellation line flag
+			RenderConstellationBoundaries(dev);
+
+		// render constellation lines
+		if (renderFlag & PLN_CONST)
+			RenderConstellationLines(dev);
+
+		oapi::Sketchpad* pSkp = nullptr;
+
+		// render constellation labels
+		if (renderFlag & PLN_CNSTLABEL)
+			RenderConstellationLabels(&pSkp, (renderFlag & PLN_CNSTLONG) == PLN_CNSTLONG);
+
+		// render celestial sphere markers
+		if (renderFlag & PLN_CCMARK)
+			RenderCelestialMarkers(&pSkp);
+
+		if (pSkp)
+			m_gc->clbkReleaseSketchpad(pSkp);
+
+		// revert to standard colour selection and turn off alpha blending
+		dev->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+		dev->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+		dev->SetRenderState(D3DRENDERSTATE_DESTBLEND, dstblend);
+		dev->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
+	}
+
+	// render stars
+	RenderStars(dev);
+
+	// turn z-buffer back on
+	dev->SetRenderState(D3DRENDERSTATE_LIGHTING, TRUE);
+}
+
+// ==============================================================
+
+void D3D7CelestialSphere::RenderStars (LPDIRECT3DDEVICE7 dev)
 {
 	// render in chunks, because some graphics cards have a limit in the
 	// vertex list size
 
-	if (!nsvtx) return; // nothing to do
+	if (!m_nsVtx) return; // nothing to do
 
-	DWORD i, j, ns = nsvtx;
-
-	if (bgcol) { // suppress stars darker than the background
-		int bglvl = min (255, (int)((min(bgcol->x,1.0) + min(bgcol->y,1.0) + min(bgcol->z,1.0))*128.0));
-		ns = min ((int)ns, lvlid[bglvl]);
-	}
+	DWORD i, j;
+	int bgidx = min(255, (int)(GetSkyBrightness() * 256.0));
+	int ns = m_starCutoffIdx[bgidx];
 
 	for (i = j = 0; i < ns; i += D3DMAXNUMVERTICES, j++)
-		dev->DrawPrimitiveVB (D3DPT_POINTLIST, svtx[j], 0, min (ns-i, D3DMAXNUMVERTICES), 0);
+		dev->DrawPrimitiveVB (D3DPT_POINTLIST, m_sVtx[j], 0, min (ns-i, D3DMAXNUMVERTICES), 0);
 }
 
 // ==============================================================
 
-void CelestialSphere::RenderConstellations (LPDIRECT3DDEVICE7 dev, VECTOR3 &col)
+void D3D7CelestialSphere::RenderConstellationLines (LPDIRECT3DDEVICE7 dev)
 {
-	dev->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(col.x,col.y,col.z,1));
-	dev->DrawPrimitive (D3DPT_LINELIST, D3DFVF_XYZ, cnstvtx, ncline*2, 0);
+	const FVECTOR4 baseCol(0.5f, 0.3f, 0.2f, 1.0f);
+	dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, MarkerColorAdjusted(baseCol));
+	dev->DrawPrimitiveVB (D3DPT_LINELIST, m_clVtx, 0, m_nclVtx, 0);
 }
 
 // ==============================================================
 
-void CelestialSphere::RenderGreatCircle (LPDIRECT3DDEVICE7 dev, VECTOR3 &col)
+void D3D7CelestialSphere::RenderConstellationBoundaries(LPDIRECT3DDEVICE7 dev)
 {
-	dev->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(col.x,col.y,col.z,1));
-	dev->DrawPrimitiveVB (D3DPT_LINESTRIP, grdlng, 5*(NSEG+1), NSEG+1, 0);
+	const FVECTOR4 baseCol(0.25f, 0.2f, 0.15f, 1.0f);
+	dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, MarkerColorAdjusted(baseCol));
+	dev->DrawPrimitiveVB(D3DPT_LINELIST, m_cbVtx, 0, m_ncbVtx, 0);
 }
 
 // ==============================================================
 
-void CelestialSphere::RenderGrid (LPDIRECT3DDEVICE7 dev, VECTOR3 &col, bool eqline)
+void D3D7CelestialSphere::RenderGreatCircle (LPDIRECT3DDEVICE7 dev, const FVECTOR4& baseCol)
+{
+	dev->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, MarkerColorAdjusted(baseCol));
+	dev->DrawPrimitiveVB (D3DPT_LINESTRIP, m_grdLngVtx, 5*(NSEG+1), NSEG+1, 0);
+}
+
+// ==============================================================
+
+void D3D7CelestialSphere::RenderGrid (LPDIRECT3DDEVICE7 dev, const FVECTOR4& baseCol, bool eqline)
 {
 	int i;
-	dev->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(col.x,col.y,col.z,1));
+	dev->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, MarkerColorAdjusted(baseCol));
 	for (i = 0; i <= 10; i++) if (eqline || i != 5)
-		dev->DrawPrimitiveVB (D3DPT_LINESTRIP, grdlng, i*(NSEG+1), NSEG+1, 0);
+		dev->DrawPrimitiveVB (D3DPT_LINESTRIP, m_grdLngVtx, i*(NSEG+1), NSEG+1, 0);
 	for (i = 0; i < 12; i++)
-		dev->DrawPrimitiveVB (D3DPT_LINESTRIP, grdlat, i*(NSEG+1), NSEG+1, 0);
+		dev->DrawPrimitiveVB (D3DPT_LINESTRIP, m_grdLatVtx, i*(NSEG+1), NSEG+1, 0);
+}
+
+// ==============================================================
+
+void D3D7CelestialSphere::RenderGridLabels(LPDIRECT3DDEVICE7 dev, int az_idx, const oapi::FVECTOR4& baseCol, double dphi)
+{
+	if (!m_GridLabelTex) return;
+	if (az_idx >= m_azGridLabelVtx.size()) return;
+	if (!m_azGridLabelVtx[az_idx])
+		AllocGridLabels();
+	dev->SetTexture(0, m_GridLabelTex);
+	dev->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, m_azGridLabelVtx[az_idx], 0, 24 * 4, m_GridLabelIdx, 24 * 6, 0);
+
+	D3DMATRIX R;
+	if (dphi) {
+		float cosp = (float)cos(dphi), sinp = (float)sin(dphi);
+		D3DMATRIX R2;
+		dev->GetTransform(D3DTRANSFORMSTATE_WORLD, &R);
+		memcpy(&R2, &R, sizeof(D3DMATRIX));
+		R2._11 = cosp * R._11 + sinp * R._31;
+		R2._12 = cosp * R._12 + sinp * R._32;
+		R2._13 = cosp * R._13 + sinp * R._33;
+		R2._31 = -sinp * R._11 + cosp * R._31;
+		R2._32 = -sinp * R._12 + cosp * R._32;
+		R2._33 = -sinp * R._13 + cosp * R._33;
+		dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &R2);
+	}
+
+	dev->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, m_elGridLabelVtx, 0, 11 * 4, m_GridLabelIdx, 11 * 6, 0);
+	dev->SetTexture(0, 0);
+
+	if (dphi)
+		dev->SetTransform(D3DTRANSFORMSTATE_WORLD, &R);
+}
+
+// ==============================================================
+
+void D3D7CelestialSphere::RenderBkgImage(LPDIRECT3DDEVICE7 dev)
+{
+	m_bkgImgMgr->Render(dev, 8, GetSkyBrightness());
+}
+
+// ==============================================================
+
+bool D3D7CelestialSphere::EclDir2WindowPos(const VECTOR3& dir, int& x, int& y) const
+{
+	D3DVECTOR homog;
+	D3DVECTOR fdir = { (float)dir.x, (float)dir.y, (float)dir.z };
+
+	D3DMAT_VectorMatrixMultiply(&homog, &fdir, m_scene->GetCamera()->GetProjectionViewMatrix());
+	if (homog.x >= -1.0f && homog.x <= 1.0f &&
+		homog.y >= -1.0f && homog.y <= 1.0f &&
+		homog.z < 1.0f) {
+
+		if (hypot(homog.x, homog.y) < 1e-6) {
+			x = m_viewW / 2;
+			y = m_viewH / 2;
+		}
+		else {
+			x = (int)(m_viewW * 0.5 * (1.0 + homog.x));
+			y = (int)(m_viewH * 0.5 * (1.0 - homog.y));
+		}
+		return true;
+	}
+	else {
+		return false;
+	}
 }

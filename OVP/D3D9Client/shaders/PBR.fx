@@ -75,6 +75,7 @@ float4 PBR_PS(float4 sc : VPOS, PBRData frg) : COLOR
 	if (gTextured) cDiff = tex2D(WrapS, frg.tex0.xy);
 	else		   cDiff = 1;
 
+	if (gOITEnable) if (cDiff.a < 0.5f) clip(-1);
 
 	// Fetch a normal map
 	//
@@ -359,6 +360,9 @@ float4 PBR_PS(float4 sc : VPOS, PBRData frg) : COLOR
 	cDiff = cDiff * (1 - gColor*0.5f) + gColor;
 #endif
 
+	cDiff.rgb *= gSun.Transmission;
+	cDiff.rgb += gSun.Inscatter;
+
 	return cDiff;
 }
 
@@ -423,6 +427,8 @@ float4 FAST_PS(float4 sc : VPOS, FASTData frg) : COLOR
 	//
 	if (gTextured) cDiff = tex2D(WrapS, frg.tex0.xy);
 	else		   cDiff = 1;
+
+	if (gOITEnable) if (cDiff.a < 0.5f) clip(-1);
 
 	if (gFullyLit) {
 		if (gNoColor) cDiff.rgb = 1;
@@ -495,6 +501,9 @@ float4 FAST_PS(float4 sc : VPOS, FASTData frg) : COLOR
 #endif
 
 	cDiff.a *= gMtrlAlpha;
+
+	cDiff.rgb *= gSun.Transmission;
+	cDiff.rgb += gSun.Inscatter;
 
 	return cDiff;
 }

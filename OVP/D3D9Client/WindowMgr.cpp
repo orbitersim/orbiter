@@ -607,6 +607,8 @@ WindowManager::WindowManager(HWND hAppMainWindow, HINSTANCE _hInst, bool bWindow
 		OpenTestClbk(this);
 	}*/
 
+	SetFocus(hAppMainWindow);
+
 	// Must be last one
 	g_pWM = this;
 }

@@ -425,7 +425,7 @@ MenuInfoBar::MenuInfoBar (const Pane *_pane)
 	menuSrc = gc->clbkLoadSurface("main_menu.dds", OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE);
 	menuTgt = gc->clbkLoadSurface("main_menu_tgt.dds", OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE);
 #endif
-	dASSERT(menuSrc && menuTgt, "MenuInfoBar: main_menu.dds or main_menu_tgt.dds could not be loaded from Textures directory.");
+	dCHECK(menuSrc && menuTgt, "MenuInfoBar: main_menu.dds or main_menu_tgt.dds could not be loaded from Textures directory.")
 	gc->clbkBlt (menuTgt, 0, tgtTexH-menuH, menuSrc, 0, 23+menuH, menuW, menuH);
 	int yofs = (menumode == 0 ? -menuH+scrollrange:-menuH);
 	int yofs_info = (infomode == 0 ? 0:-menuH);
@@ -681,7 +681,7 @@ bool MenuInfoBar::ProcessMouse (UINT event, DWORD state, DWORD x, DWORD y)
 			g_pOrbiter->DlgMgr()->EnsureEntry<DlgFunction> ();
 			return true;
 		case 6:
-			g_pOrbiter->DlgMgr()->EnsureEntry<DlgVishelper> ();
+			g_pOrbiter->DlgMgr()->EnsureEntry<DlgOptions> ();
 			return true;
 		case 7:
 			g_pOrbiter->DlgMgr()->EnsureEntry<DlgMap> ();

@@ -73,7 +73,7 @@ CFG_LOGICPRM CfgLogicPrm_default = {
 	true,       // bGlasspitCompact (compact layout for widescreen glass cockpit)
 	6,			// MFDSize (default glass cockpit MFD size [1-10])
 	1,			// MFDMapVersion (new style map MFD mode)
-	1.0,		// InstrUpdDT (MFD update interval [s])
+	0.5,		// InstrUpdDT (MFD update interval [s])
 	1.0,		// PanelScale (old-style 2D instrument panel scale)
 	300.0		// PanelScrollSpeed (scrolling speed for 2D instrument panel [pixel/s])
 };
@@ -97,10 +97,13 @@ CFG_VISUALPRM CfgVisualPrm_default = {
 	SURF_MAX_PATCHLEVEL2, // PlanetMaxLevel (max surface resolution level)
 	1.0,		// PlanetPatchRes (resolution level scale parameter)
 	0.5,		// LightBrightness (city light brightness)
-	{1.0, 7.0, 0.1, true},	// StarPrm (bright/faint cutoff magnitude, display brightness of faintest, log mapping)
-	"<none>",	// CSphereBgImage (no celestial sphere background image)
-	"",			// CSphereBgPath (path to celestial background images)
-	0.2,		// CSphereBgIntens (intensity of celestial sphere background image)
+	true,       // bUseStarDots (render background stars as pixels)
+	{2.0, 8.0, 0.1, true},	// StarPrm (bright/faint cutoff magnitude, display brightness of faintest, log mapping)
+	true,       // bUseStarImage (render background star from image)
+	"csphere\\hiptyc_2020",     // StarImagePath (path to star background image)
+	true,       // bUseBgImage (render celestial sphere background image)
+	"csphere\\milkyway_2020",   // CSphereBgPath (path to celestial background images)
+	0.3,		// CSphereBgIntens (intensity of celestial sphere background image)
 	2			// ElevMode (cubic spline)
 };
 
@@ -118,15 +121,16 @@ CFG_INSTRUMENTPRM CfgInstrumentPrm_default = {
 	2,          // bMfdPow2 (auto from driver caps)
 	384,        // MfdHiresThreshold (switch to 512x512 at this size if pow2 is active)
 	512,		// PanelMFDHUDSize
-	256         // VCMfdSize
+	512         // VCMfdSize
 };
 
 CFG_VISHELPPRM CfgVisHelpPrm_default = {
-	PLN_CGRID | PLN_ECL | PLN_CONST | PLN_CNSTLABEL | PLN_CNSTLONG | PLN_CMARK,	// flagPlanetarium (celestial marker flags)
-	BF_WEIGHT | BF_THRUST | BF_LIFT | BF_DRAG,	// flagBodyforce (force display flags)
+	PLN_CGRID | PLN_CONST | PLN_CNSTLABEL | PLN_CNSTLONG,	// flagPlanetarium (celestial sphere display flags)
+	MKR_CMARK,  // flagMarkers (surface and body marker display flags)
+	BFV_WEIGHT | BFV_THRUST | BFV_LIFT | BFV_DRAG,	// flagBodyforce (force display flags)
 	1.0f,		// scaleBodyforce (force vector scaling factor)
 	1.0f,		// opacBodyforce (force vector opacity)
-	CA_VESSEL,	// flagCrdAxes (axis display flags)
+	FAV_VESSEL,	// flagCrdAxes (frame axis display flags)
 	1.0f,		// scaleCrdAxes (axis scaling factor)
 	1.0f		// opacCrdAxes (axis opacity)
 };
@@ -195,7 +199,7 @@ CFG_JOYSTICKPRM CfgJoystickPrm_default = {
 };
 
 CFG_UIPRM CfgUIPrm_default = {
-	true,		// bFocusFollowsMouse (switch focus on mouse move)
+	1,			// MouseFocusMode (click required for child windows)
 	2,          // MenuMode (auto-hide menu bar)
 	false,      // bMenuLabelOnly (display labels and icons)
 	true,       // bWarpAlways (always display time acceleration != 1)
@@ -248,6 +252,7 @@ CFG_WINDOWPOS CfgWindowPos_default = {
 	{0,0,0,0},  // camera dialog
 	{0,0,0,0},  // focus dialog
 	{0,0,0,0},  // time acceleration dialog
+	{0,0,0,0},  // options dialog
 	{0,0,0,0},  // visual helper dialog
 	0,          // launchpad scenario list width
 	0,          // launchpad modules list width
@@ -640,17 +645,19 @@ bool Config::Load(const char *fname)
 		CfgVisualPrm.PlanetPatchRes = max (0.1, min (10, d));
 	if (GetReal (ifs, "NightlightBrightness", d))
 		CfgVisualPrm.LightBrightness = max (0.0, min (1.0, d));
-	if (GetString (ifs, "StarPrm", cbuf)) {
-		sscanf (cbuf, "%lf%lf%lf%d", &CfgVisualPrm.StarPrm.mag_hi, &CfgVisualPrm.StarPrm.mag_lo, &CfgVisualPrm.StarPrm.brt_min, &i);
-		CfgVisualPrm.StarPrm.map_log = (i != 0);
-	}
 	if (GetInt (ifs, "ElevationMode", i) && i >= 0 && i <= 1)
 		CfgVisualPrm.ElevMode = i;
-	if (GetString (ifs, "CSphereBgImage", cbuf)) {
-		strncpy (CfgVisualPrm.CSphereBgImage, cbuf, 64);
-		if (GetString (ifs, "CSphereBgPath", cbuf))
-			strncpy (CfgVisualPrm.CSphereBgPath, cbuf, 128);
+	GetBool(ifs, "EnableBackgroundStars", CfgVisualPrm.bUseStarDots);
+	if (GetString(ifs, "StarPrm", cbuf)) {
+		sscanf(cbuf, "%lf%lf%lf%d", &CfgVisualPrm.StarPrm.mag_hi, &CfgVisualPrm.StarPrm.mag_lo, &CfgVisualPrm.StarPrm.brt_min, &i);
+		CfgVisualPrm.StarPrm.map_log = (i != 0);
 	}
+	GetBool(ifs, "EnableBackgroundStarmap", CfgVisualPrm.bUseStarImage);
+	if (GetString(ifs, "CSphereStarPath", cbuf))
+		strncpy(CfgVisualPrm.StarImagePath, cbuf, 128);
+	GetBool(ifs, "EnableBackgroundImage", CfgVisualPrm.bUseBgImage);
+	if (GetString(ifs, "CSphereBgPath", cbuf))
+		strncpy(CfgVisualPrm.CSphereBgPath, cbuf, 128);
 	GetReal (ifs, "CSphereBgIntensity", CfgVisualPrm.CSphereBgIntens);
 
 	// screen capture parameters
@@ -673,10 +680,12 @@ bool Config::Load(const char *fname)
 	// visual helper parameters
 	if (GetInt (ifs, "Planetarium", i))
 		CfgVisHelpPrm.flagPlanetarium = (DWORD)i;
+	if (GetInt(ifs, "SurfMarkers", i))
+		CfgVisHelpPrm.flagMarkers = (DWORD)i;
 	if (GetString (ifs, "Bodyforces", cbuf))
-		sscanf (cbuf, "%u%f%f", &CfgVisHelpPrm.flagBodyforce, &CfgVisHelpPrm.scaleBodyforce, &CfgVisHelpPrm.opacBodyforce);
+		sscanf (cbuf, "%u%f%f", &CfgVisHelpPrm.flagBodyForce, &CfgVisHelpPrm.scaleBodyForce, &CfgVisHelpPrm.opacBodyForce);
 	if (GetString (ifs, "CoordinateAxes", cbuf))
-		sscanf (cbuf, "%u%f%f", &CfgVisHelpPrm.flagCrdAxes, &CfgVisHelpPrm.scaleCrdAxes, &CfgVisHelpPrm.opacCrdAxes);
+		sscanf (cbuf, "%u%f%f", &CfgVisHelpPrm.flagFrameAxes, &CfgVisHelpPrm.scaleFrameAxes, &CfgVisHelpPrm.opacFrameAxes);
 
 	// debug options
 	if (GetInt (ifs, "ShutdownMode", i) && i >= 0 && i <= 2)
@@ -698,7 +707,8 @@ bool Config::Load(const char *fname)
 	GetInt (ifs, "HUDColIdx", CfgCameraPrm.HUDCol);
 
 	// user interface parameters
-	GetBool (ifs, "FocusFollowsMouse", CfgUIPrm.bFocusFollowsMouse);
+	if (GetInt(ifs, "MouseFocusMode", i) && i >= 0 && i <= 2)
+		CfgUIPrm.MouseFocusMode = (DWORD)i;
 	if (GetInt (ifs, "MenubarMode", i) && i >= 0 && i <= 2)
 		CfgUIPrm.MenuMode = (DWORD)i;
 	GetBool (ifs, "MenubarLabelOnly", CfgUIPrm.bMenuLabelOnly);
@@ -766,6 +776,9 @@ bool Config::Load(const char *fname)
 	if (GetString (ifs, "DlgTaccPos", cbuf))
 		sscanf (cbuf, "%d%d%d%d", &CfgWindowPos.DlgTacc.left, &CfgWindowPos.DlgTacc.top,
 			&CfgWindowPos.DlgTacc.right, &CfgWindowPos.DlgTacc.bottom);
+	if (GetString(ifs, "DlgOptionsPos", cbuf))
+		sscanf(cbuf, "%d%d%d%d", &CfgWindowPos.DlgOptions.left, &CfgWindowPos.DlgOptions.top,
+			&CfgWindowPos.DlgOptions.right, &CfgWindowPos.DlgOptions.bottom);
 	if (GetString (ifs, "DlgVhelperPos", cbuf))
 		sscanf (cbuf, "%d%d%d%d", &CfgWindowPos.DlgVishelper.left, &CfgWindowPos.DlgVishelper.top,
 			&CfgWindowPos.DlgVishelper.right, &CfgWindowPos.DlgVishelper.bottom);
@@ -775,18 +788,9 @@ bool Config::Load(const char *fname)
 
 	// list of active modules
 	if (FindLine (ifs, "ACTIVE_MODULES")) {
-		char cbuf[256], *pc;
-		while (ifs.getline (cbuf, 256) && _strnicmp (cbuf, "END_MODULES", 11)) {
-			pc = trim_string (cbuf);
-			char **tmp = new char*[nactmod+1]; TRACENEW
-			if (nactmod) {
-				memcpy (tmp, actmod, nactmod*sizeof(char*));
-				delete []actmod;
-			}
-			actmod = tmp;
-			actmod[nactmod] = new char[strlen(pc)+1]; TRACENEW
-			strcpy (actmod[nactmod++], pc);
-		}
+		char cbuf[256];
+		while (ifs.getline (cbuf, 256) && _strnicmp (cbuf, "END_MODULES", 11))
+			m_activeModules.push_back(std::string(trim_string(cbuf)));
 	}
 	return true;
 }
@@ -796,14 +800,6 @@ Config::~Config()
 	if (Root) {
 		delete []Root;
 		Root = NULL;
-	}
-	if (nactmod) {
-		for (int i = 0; i < nactmod; i++) {
-			delete []actmod[i];
-			actmod[i] = NULL;
-		}
-		delete []actmod;
-		actmod = NULL;
 	}
 }
 
@@ -825,8 +821,6 @@ void Config::SetDefaults ()
 
 	if (Root) delete []Root;
 	Root = 0;
-
-	nactmod = 0; // no active modules
 
 	bEchoAll = bEchoAll_default;
 	memset (&rLaunchpad, 0, sizeof(RECT));
@@ -888,6 +882,8 @@ const void *Config::GetParam (DWORD paramtype) const
 		return (void*)&CfgVisualPrm.bCloudShadows;
 	case CFGPRM_PLANETARIUMFLAG:
 		return (void*)&CfgVisHelpPrm.flagPlanetarium;
+	case CFGPRM_SURFMARKERFLAG:
+		return (void*)&CfgVisHelpPrm.flagMarkers;
 	case CFGPRM_STARRENDERPRM:
 		return (void*)&CfgVisualPrm.StarPrm;
 	case CFGPRM_AMBIENTLEVEL:
@@ -898,6 +894,8 @@ const void *Config::GetParam (DWORD paramtype) const
 		return (void*)&CfgVisualPrm.bShadows;
 	case CFGPRM_OBJECTSPECULAR:
 		return (void*)&CfgVisualPrm.bSpecular;
+	case CFGPRM_CSPHEREUSEBGIMAGE:
+		return (void*)&CfgVisualPrm.bUseBgImage;
 	case CFGPRM_CSPHERETEXTURE:
 		return (void*)CfgVisualPrm.CSphereBgPath;
 	case CFGPRM_CSPHEREINTENS:
@@ -918,61 +916,27 @@ const void *Config::GetParam (DWORD paramtype) const
 		return (void*)&CfgInstrumentPrm.PanelMFDHUDSize;
 	case CFGPRM_TILEPATCHRES:
 		return (void*)&CfgPRenderPrm.PatchRes;
+	case CFGPRM_FORCEVECTORFLAG:
+		return (void*)&CfgVisHelpPrm.flagBodyForce;
+	case CFGPRM_FORCEVECTORSCALE:
+		return (void*)&CfgVisHelpPrm.scaleBodyForce;
+	case CFGPRM_FORCEVECTOROPACITY:
+		return (void*)&CfgVisHelpPrm.opacBodyForce;
+	case CFGPRM_FRAMEAXISFLAG:
+		return (void*)&CfgVisHelpPrm.flagFrameAxes;
+	case CFGPRM_FRAMEAXISSCALE:
+		return (void*)&CfgVisHelpPrm.scaleFrameAxes;
+	case CFGPRM_FRAMEAXISOPACITY:
+		return (void*)&CfgVisHelpPrm.opacFrameAxes;
+	case CFGPRM_CSPHERESTARTEXTURE:
+		return (void*)&CfgVisualPrm.StarImagePath;
+	case CFGPRM_CSPHEREUSESTARIMAGE:
+		return (void*)&CfgVisualPrm.bUseStarImage;
+	case CFGPRM_CSPHEREUSESTARDOTS:
+		return (void*)&CfgVisualPrm.bUseStarDots;
 	default:
 		return 0;
 	}
-}
-
-bool Config::PlanetariumItem (int item) const
-{
-	switch (item) {
-	case IDC_PLANETARIUM:   return (CfgVisHelpPrm.flagPlanetarium & PLN_ENABLE)    != 0;
-	case IDC_PLN_CELGRID:   return (CfgVisHelpPrm.flagPlanetarium & PLN_CGRID)     != 0;
-	case IDC_PLN_ECLGRID:   return (CfgVisHelpPrm.flagPlanetarium & PLN_EGRID)     != 0;
-	case IDC_PLN_ECLIPTIC:  return (CfgVisHelpPrm.flagPlanetarium & PLN_ECL)       != 0;
-	case IDC_PLN_EQUATOR:   return (CfgVisHelpPrm.flagPlanetarium & PLN_EQU)       != 0;
-	case IDC_PLN_CONST:     return (CfgVisHelpPrm.flagPlanetarium & PLN_CONST)     != 0;
-	case IDC_PLN_CNSTLABEL: return (CfgVisHelpPrm.flagPlanetarium & PLN_CNSTLABEL) != 0;
-	case IDC_PLN_CMARKER:   return (CfgVisHelpPrm.flagPlanetarium & PLN_CMARK)     != 0;
-	case IDC_PLN_VMARKER:   return (CfgVisHelpPrm.flagPlanetarium & PLN_VMARK)     != 0;
-	case IDC_PLN_BMARKER:   return (CfgVisHelpPrm.flagPlanetarium & PLN_BMARK)     != 0;
-	case IDC_PLN_RMARKER:   return (CfgVisHelpPrm.flagPlanetarium & PLN_RMARK)     != 0;
-	case IDC_PLN_LMARKER:   return (CfgVisHelpPrm.flagPlanetarium & PLN_LMARK)     != 0;
-	case IDC_PLN_CCMARKER:  return (CfgVisHelpPrm.flagPlanetarium & PLN_CCMARK)    != 0;
-	case IDC_PLN_FULL:      return (CfgVisHelpPrm.flagPlanetarium & PLN_CNSTLONG)  != 0;
-	case IDC_PLN_SHORT:     return (CfgVisHelpPrm.flagPlanetarium & PLN_CNSTSHORT) != 0;
-	default:                return false;
-	}
-}
-
-void Config::SetPlanetariumItem (int item, bool activate)
-{
-	DWORD flag;
-
-	switch (item) {
-	case IDC_PLANETARIUM:   flag = PLN_ENABLE;    break;
-	case IDC_PLN_CELGRID:   flag = PLN_CGRID;     break;
-	case IDC_PLN_ECLGRID:   flag = PLN_EGRID;     break;
-	case IDC_PLN_ECLIPTIC:  flag = PLN_ECL;       break;
-	case IDC_PLN_EQUATOR:   flag = PLN_EQU;       break;
-	case IDC_PLN_CONST:     flag = PLN_CONST;     break;
-	case IDC_PLN_CNSTLABEL: flag = PLN_CNSTLABEL; break;
-	case IDC_PLN_CMARKER:   flag = PLN_CMARK;     break;
-	case IDC_PLN_VMARKER:   flag = PLN_VMARK;     break;
-	case IDC_PLN_BMARKER:   flag = PLN_BMARK;     break;
-	case IDC_PLN_RMARKER:   flag = PLN_RMARK;     break;
-	case IDC_PLN_LMARKER:   flag = PLN_LMARK;     break;
-	case IDC_PLN_CCMARKER:  flag = PLN_CCMARK;    break;
-	case IDC_PLN_FULL:      flag = PLN_CNSTLONG;  break;
-	case IDC_PLN_SHORT:     flag = PLN_CNSTSHORT; break;
-	}
-	if (activate) CfgVisHelpPrm.flagPlanetarium |=  flag;
-	else          CfgVisHelpPrm.flagPlanetarium &= ~flag;
-}
-
-void Config::TogglePlanetarium ()
-{
-	SetPlanetariumItem (IDC_PLANETARIUM, !PlanetariumItem (IDC_PLANETARIUM));
 }
 
 BOOL Config::Write (const char *fname) const
@@ -1077,11 +1041,17 @@ BOOL Config::Write (const char *fname) const
 			ofs << "PlanetPatchRes = " << CfgVisualPrm.PlanetPatchRes << '\n';
 		if (CfgVisualPrm.LightBrightness != CfgVisualPrm_default.LightBrightness || bEchoAll)
 			ofs << "NightlightBrightness = " << CfgVisualPrm.LightBrightness << '\n';
+		if (CfgVisualPrm.bUseStarDots != CfgVisualPrm_default.bUseStarDots || bEchoAll)
+			ofs << "EnableBackgroundStars = " << BoolStr(CfgVisualPrm.bUseStarDots) << '\n';
 		if (memcmp (&CfgVisualPrm.StarPrm, &CfgVisualPrm_default.StarPrm, sizeof(StarRenderPrm)) || bEchoAll)
 			ofs << "StarPrm = " << CfgVisualPrm.StarPrm.mag_hi << ' ' << CfgVisualPrm.StarPrm.mag_lo << ' '
 				<< CfgVisualPrm.StarPrm.brt_min << ' ' << (CfgVisualPrm.StarPrm.map_log ? 1:0) << '\n';
-		if (strcmp (CfgVisualPrm.CSphereBgImage, CfgVisualPrm_default.CSphereBgImage) || bEchoAll)
-			ofs << "CSphereBgImage = " << CfgVisualPrm.CSphereBgImage << '\n';
+		if (CfgVisualPrm.bUseStarImage != CfgVisualPrm_default.bUseStarImage || bEchoAll)
+			ofs << "EnableBackgroundStarmap = " << BoolStr(CfgVisualPrm.bUseStarImage) << '\n';
+		if (strcmp(CfgVisualPrm.StarImagePath, CfgVisualPrm_default.StarImagePath) || bEchoAll)
+			ofs << "CSphereStarPath = " << CfgVisualPrm.StarImagePath << '\n';
+		if (CfgVisualPrm.bUseBgImage != CfgVisualPrm_default.bUseBgImage || bEchoAll)
+			ofs << "EnableBackgroundImage = " << BoolStr(CfgVisualPrm.bUseBgImage) << '\n';
 		if (strcmp (CfgVisualPrm.CSphereBgPath, CfgVisualPrm_default.CSphereBgPath) || bEchoAll)
 			ofs << "CSphereBgPath = " << CfgVisualPrm.CSphereBgPath << '\n';
 		if (CfgVisualPrm.CSphereBgIntens != CfgVisualPrm_default.CSphereBgIntens || bEchoAll)
@@ -1125,16 +1095,18 @@ BOOL Config::Write (const char *fname) const
 		ofs << "\n; === Visual helper parameters ===\n";
 		if (CfgVisHelpPrm.flagPlanetarium != CfgVisHelpPrm_default.flagPlanetarium || bEchoAll)
 			ofs << "Planetarium = " << CfgVisHelpPrm.flagPlanetarium << '\n';
-		if (CfgVisHelpPrm.flagBodyforce != CfgVisHelpPrm_default.flagBodyforce ||
-			CfgVisHelpPrm.scaleBodyforce != CfgVisHelpPrm_default.scaleBodyforce ||
-			CfgVisHelpPrm.opacBodyforce != CfgVisHelpPrm_default.opacBodyforce || bEchoAll)
-			ofs << "Bodyforces = " << CfgVisHelpPrm.flagBodyforce << ' ' << CfgVisHelpPrm.scaleBodyforce
-				<< ' ' << CfgVisHelpPrm.opacBodyforce << '\n';
-		if (CfgVisHelpPrm.flagCrdAxes != CfgVisHelpPrm_default.flagCrdAxes ||
-			CfgVisHelpPrm.scaleCrdAxes != CfgVisHelpPrm_default.scaleCrdAxes ||
-			CfgVisHelpPrm.opacCrdAxes != CfgVisHelpPrm_default.opacCrdAxes || bEchoAll)
-			ofs << "CoordinateAxes = " << CfgVisHelpPrm.flagCrdAxes << ' ' << CfgVisHelpPrm.scaleCrdAxes
-				<< ' ' << CfgVisHelpPrm.opacCrdAxes << '\n';
+		if (CfgVisHelpPrm.flagMarkers != CfgVisHelpPrm_default.flagMarkers || bEchoAll)
+			ofs << "SurfMarkers = " << CfgVisHelpPrm.flagMarkers << '\n';
+		if (CfgVisHelpPrm.flagBodyForce != CfgVisHelpPrm_default.flagBodyForce ||
+			CfgVisHelpPrm.scaleBodyForce != CfgVisHelpPrm_default.scaleBodyForce ||
+			CfgVisHelpPrm.opacBodyForce != CfgVisHelpPrm_default.opacBodyForce || bEchoAll)
+			ofs << "Bodyforces = " << CfgVisHelpPrm.flagBodyForce << ' ' << CfgVisHelpPrm.scaleBodyForce
+				<< ' ' << CfgVisHelpPrm.opacBodyForce << '\n';
+		if (CfgVisHelpPrm.flagFrameAxes != CfgVisHelpPrm_default.flagFrameAxes ||
+			CfgVisHelpPrm.scaleFrameAxes != CfgVisHelpPrm_default.scaleFrameAxes ||
+			CfgVisHelpPrm.opacFrameAxes != CfgVisHelpPrm_default.opacFrameAxes || bEchoAll)
+			ofs << "CoordinateAxes = " << CfgVisHelpPrm.flagFrameAxes << ' ' << CfgVisHelpPrm.scaleFrameAxes
+				<< ' ' << CfgVisHelpPrm.opacFrameAxes << '\n';
 	}
 
 	if (memcmp (&CfgDebugPrm, &CfgDebugPrm_default, sizeof (CFG_DEBUGPRM)) || bEchoAll) {
@@ -1281,8 +1253,8 @@ BOOL Config::Write (const char *fname) const
 
 	if (memcmp (&CfgUIPrm, &CfgUIPrm_default, sizeof(CFG_UIPRM)) || bEchoAll) {
 		ofs << "\n; === User interface parameters ===\n";
-		if (CfgUIPrm.bFocusFollowsMouse != CfgUIPrm_default.bFocusFollowsMouse || bEchoAll)
-			ofs << "FocusFollowsMouse = " << BoolStr (CfgUIPrm.bFocusFollowsMouse) << '\n';
+		if (CfgUIPrm.MouseFocusMode != CfgUIPrm_default.MouseFocusMode || bEchoAll)
+			ofs << "MouseFocusMode = " << CfgUIPrm.MouseFocusMode << '\n';
 		if (CfgUIPrm.MenuMode != CfgUIPrm_default.MenuMode || bEchoAll)
 			ofs << "MenubarMode = " << CfgUIPrm.MenuMode << '\n';
 		if (CfgUIPrm.bMenuLabelOnly != CfgUIPrm_default.bMenuLabelOnly || bEchoAll)
@@ -1367,6 +1339,8 @@ BOOL Config::Write (const char *fname) const
 			ofs << "DlgFocusPos = " << CfgWindowPos.DlgFocus << '\n';
 		if (CfgWindowPos.DlgTacc != CfgWindowPos_default.DlgTacc || bEchoAll)
 			ofs << "DlgTaccPos = " << CfgWindowPos.DlgTacc << '\n';
+		if (CfgWindowPos.DlgOptions != CfgWindowPos_default.DlgOptions || bEchoAll)
+			ofs << "DlgOptionsPos = " << CfgWindowPos.DlgOptions << '\n';
 		if (CfgWindowPos.DlgVishelper != CfgWindowPos_default.DlgVishelper || bEchoAll)
 			ofs << "DlgVhelperPos = " << CfgWindowPos.DlgVishelper << '\n';
 		if (CfgWindowPos.LaunchpadScnListWidth != CfgWindowPos_default.LaunchpadScnListWidth || bEchoAll)
@@ -1377,11 +1351,11 @@ BOOL Config::Write (const char *fname) const
 			ofs << "LpadExtListWidth = " << CfgWindowPos.LaunchpadExtListWidth << '\n';
 	}
 
-	if (nactmod) {
+	if (m_activeModules.size()) {
 		ofs << "\n; === Active plugin list ===" << endl;
 		ofs << "ACTIVE_MODULES" << endl;
-		for (int i = 0; i < nactmod; i++)
-			ofs << "  " << actmod[i] << endl;
+		for (auto name : m_activeModules)
+			ofs << "  " << name << std::endl;
 		ofs << "END_MODULES" << endl;
 	}
 	ofs << flush;
@@ -1451,70 +1425,22 @@ void Config::PTexPath(char* cbuf, const char* name, const char* ext)
 	else     strcpy(cbuf + ptxlen, name);
 }
 
-void Config::AddModule (char *cbuf)
+bool Config::IsActiveModule(const std::string& name)
 {
-	int i;
-	for (i = 0; i < nactmod; i++)
-		if (!_stricmp (actmod[i], cbuf)) return; // already present
-	char **tmp = new char*[nactmod+1]; TRACENEW
-	if (nactmod) {
-		memcpy (tmp, actmod, nactmod*sizeof(char*));
-		delete []actmod;
-	}
-	actmod = tmp;
-	actmod[nactmod] = new char[strlen(cbuf)+1]; TRACENEW
-	strcpy (actmod[nactmod++], cbuf);
+	return (std::find(m_activeModules.begin(), m_activeModules.end(), name) != m_activeModules.end());
 }
 
-void Config::DelModule (char *cbuf)
+void Config::AddActiveModule (const std::string& name)
 {
-	int i, j, k;
-	char **tmp;
-	for (i = 0; i < nactmod; i++)
-		if (!_stricmp (actmod[i], cbuf)) break;
-	if (i == nactmod) return; // not present
-	if (nactmod > 1) {
-		tmp = new char*[nactmod-1]; TRACENEW
-		for (j = k = 0; j < nactmod; j++)
-			if (j != i) tmp[k++] = actmod[j];
-	} else tmp = 0;
-	delete []actmod;
-	actmod = tmp;
-	nactmod--;
+	if (std::find(m_activeModules.begin(), m_activeModules.end(), name) == m_activeModules.end()) // only add if not already present
+		m_activeModules.push_back(name);
 }
 
-void Config::SetBodyforceItem (int item, bool activate)
+void Config::DelActiveModule (const std::string& name)
 {
-	DWORD flag;
-
-	switch (item) {
-	case IDC_BODYFORCE:  flag = BF_ENABLE;  break;
-	case IDC_WEIGHT:     flag = BF_WEIGHT;  break;
-	case IDC_THRUST:     flag = BF_THRUST;  break;
-	case IDC_LIFT:       flag = BF_LIFT;    break;
-	case IDC_DRAG:       flag = BF_DRAG;    break;
-	case IDC_TOTAL:      flag = BF_TOTAL;   break;
-	case IDC_TORQUE:     flag = BF_TORQUE;  break;
-	case IDC_LINSCALE:   flag = BF_LOGSCALE; activate = false; break;
-	case IDC_LOGSCALE:   flag = BF_LOGSCALE; activate = true;  break;
-	}
-	if (activate) CfgVisHelpPrm.flagBodyforce |=  flag;
-	else          CfgVisHelpPrm.flagBodyforce &= ~flag;
-}
-
-void Config::SetCoordinateAxesItem (int item, bool activate)
-{
-	DWORD flag;
-
-	switch (item) {
-	case IDC_COORDINATES:  flag = CA_ENABLE; break;
-	case IDC_CRD_NEGATIVE: flag = CA_NEG;    break;
-	case IDC_CRD_VESSEL:   flag = CA_VESSEL; break;
-	case IDC_CRD_CBODY:    flag = CA_CBODY;  break;
-	case IDC_CRD_BASE:     flag = CA_BASE;   break;
-	}
-	if (activate) CfgVisHelpPrm.flagCrdAxes |=  flag;
-	else          CfgVisHelpPrm.flagCrdAxes &= ~flag;
+	auto it = std::find(m_activeModules.begin(), m_activeModules.end(), name);
+	if (it != m_activeModules.end()) // erase if present
+		m_activeModules.erase(it);
 }
 
 bool Config::GetString (istream &is, char *category, char *val)

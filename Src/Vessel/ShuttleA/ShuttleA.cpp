@@ -311,7 +311,6 @@ void ShuttleA::DefineAnimations ()
 	AddAnimationComponent(anim_gear_switch,0.0f,1.0f,&MGEAR_switch);
 
 	//CARGO ARM switch
-
 	static UINT CARGO_switch=54;
 	static MGROUP_ROTATE MCARGO_switch (1, &CARGO_switch,1, _V(-0.212890075f,2.616076201f,15.97764079f),
 														_V(0.0f,0.061554834f,-0.998103703f),1.570796327f/2.0f);
@@ -696,18 +695,18 @@ void ShuttleA::ComputePayloadMass()
 // --------------------------------------------------------------
 void ShuttleA::RedrawPanel_MFDButton (SURFHANDLE surf, int mfd, int side)
 {
-	HDC hDC = oapiGetDC (surf);
-	SelectObject (hDC, g_Param.hFont[0]);
-	SetTextColor (hDC, RGB(0, 200, 0));
-	SetTextAlign (hDC, TA_CENTER);
-	SetBkMode (hDC, TRANSPARENT);
+	oapi::Sketchpad* pSkp = oapiGetSketchpad(surf);
+	pSkp->SetFont(g_Param.pFont[0]);
+	pSkp->SetTextColor(RGB(0, 200, 0));
+	pSkp->SetTextAlign(oapi::Sketchpad::CENTER);
+	pSkp->SetBackgroundMode(oapi::Sketchpad::BK_TRANSPARENT);
 	const char *label;
 	for (int bt = 0; bt < 6; bt++) {
 		if (label = oapiMFDButtonLabel (mfd, bt+side*6))
-			TextOut (hDC, 13, 3+38*bt, label, strlen(label));
+			pSkp->Text (13, 3+38*bt, label, strlen(label));
 		else break;
 	}
-	oapiReleaseDC (surf, hDC);
+	oapiReleaseSketchpad(pSkp);
 }
 
 // --------------------------------------------------------------
@@ -785,9 +784,11 @@ bool ShuttleA::RedrawPanel_Podlevel (SURFHANDLE surf)
 // --------------------------------------------------------------
 bool ShuttleA::RedrawPanel_EngineIndicator (SURFHANDLE surf)
 {
+	// obsolete but still used by VC
+
 	const double rad = 25.0;
 	const int cntx[2] = {29, 95};
-	const int txtx[2] = {16, 83};
+	const int txtx[2] = {17, 83};
 	const int cnty[3] = {29, 96, 163};
 	const int txty0a =  34, txty0b =  46;
 	const int txty1a = 101, txty1b = 113;
@@ -798,48 +799,45 @@ bool ShuttleA::RedrawPanel_EngineIndicator (SURFHANDLE surf)
 	char cbuf[16];
 	double m = GetMass();
 
-	HDC hDC = oapiGetDC (surf);
-	SelectObject (hDC, g_Param.hFont[0]);
-	SelectObject (hDC, g_Param.hPen[0]);
-	SetTextColor (hDC, RGB(120,220,120));
-	SetTextAlign (hDC, TA_RIGHT);
-	SetBkMode (hDC, TRANSPARENT);
+	oapi::Sketchpad* pSkp = oapiGetSketchpad(surf);
+	pSkp->SetFont(g_Param.pFont[0]);
+	pSkp->SetPen(g_Param.pPen[0]);
+	pSkp->SetTextColor(RGB(120, 220, 120));
+	pSkp->SetTextAlign(oapi::Sketchpad::RIGHT);
+	pSkp->SetBackgroundMode(oapi::Sketchpad::BK_TRANSPARENT);
 
 	for (i = 0; i < 2; i++) {
 		level = GetThrusterLevel (th_main[i]);
 		th    = level*GetThrusterMax (th_main[i]);
 		angle = level * (1.5*PI);
 		dx = rad*cos(angle), dy = rad*sin(angle);
-		MoveToEx (hDC, cntx[i], cnty[0], NULL);
-		LineTo (hDC, cntx[i]-(int)dx, cnty[0]-(int)dy);
+		pSkp->Line(cntx[i], cnty[0], cntx[i] - (int)dx, cnty[0] - (int)dy);
 		sprintf (cbuf, "%0.0f", th*1e-3);
-		TextOut (hDC, txtx[i], txty0a, cbuf, strlen(cbuf));
+		pSkp->Text(txtx[i], txty0a, cbuf, strlen(cbuf));
 		sprintf (cbuf, "%0.1f", th/m);
-		TextOut (hDC, txtx[i], txty0b, cbuf, strlen (cbuf));
+		pSkp->Text(txtx[i], txty0b, cbuf, strlen(cbuf));
 
 		level = GetThrusterLevel (th_hover[i]);
 		th    = level*GetThrusterMax (th_hover[i]);
 		angle = level * (1.5*PI);
 		dx = rad*cos(angle), dy = rad*sin(angle);
-		MoveToEx (hDC, cntx[i], cnty[1], NULL);
-		LineTo (hDC, cntx[i]-(int)dx, cnty[1]-(int)dy);
+		pSkp->Line(cntx[i], cnty[1], cntx[i] - (int)dx, cnty[1] - (int)dy);
 		sprintf (cbuf, "%0.0f", th*1e-3);
-		TextOut (hDC, txtx[i], txty1a, cbuf, strlen(cbuf));
+		pSkp->Text(txtx[i], txty1a, cbuf, strlen(cbuf));
 		sprintf (cbuf, "%0.1f", th/m);
-		TextOut (hDC, txtx[i], txty1b, cbuf, strlen (cbuf));
+		pSkp->Text(txtx[i], txty1b, cbuf, strlen(cbuf));
 
 		level = GetThrusterLevel (th_pod[i]);
 		th    = level*GetThrusterMax (th_pod[i]);
 		angle = level * (1.5*PI);
 		dx = rad*cos(angle), dy = rad*sin(angle);
-		MoveToEx (hDC, cntx[i], cnty[2], NULL);
-		LineTo (hDC, cntx[i]-(int)dx, cnty[2]-(int)dy);
+		pSkp->Line(cntx[i], cnty[2], cntx[i] - (int)dx, cnty[2] - (int)dy);
 		sprintf (cbuf, "%0.0f", th*1e-3);
-		TextOut (hDC, txtx[i], txty2a, cbuf, strlen(cbuf));
+		pSkp->Text(txtx[i], txty2a, cbuf, strlen(cbuf));
 		sprintf (cbuf, "%0.1f", th/m);
-		TextOut (hDC, txtx[i], txty2b, cbuf, strlen (cbuf));
+		pSkp->Text(txtx[i], txty2b, cbuf, strlen(cbuf));
 	}
-	oapiReleaseDC (surf, hDC);
+	oapiReleaseSketchpad(pSkp);
 
 	return true;
 }
@@ -849,6 +847,8 @@ bool ShuttleA::RedrawPanel_EngineIndicator (SURFHANDLE surf)
 // --------------------------------------------------------------
 bool ShuttleA::RedrawPanel_PodangleIndicator (SURFHANDLE surf)
 {
+	// obsolete but still used by VC
+
 	const int cntx[2] = {36,110}, cnty = 14;
 	const int txtx[2] = {45,119}, txty =  0;
 	const double rad = 24.0, radi = 29.0, radw = 36.0;
@@ -859,41 +859,40 @@ bool ShuttleA::RedrawPanel_PodangleIndicator (SURFHANDLE surf)
 	double angle, angle1, angle2;
 	char cbuf[16];
 
-	HDC hDC = oapiGetDC (surf);
-	SelectObject (hDC, g_Param.hFont[0]);
-	SetBkMode (hDC, TRANSPARENT);
+	oapi::Sketchpad* pSkp = oapiGetSketchpad(surf);
+	pSkp->SetFont(g_Param.pFont[0]);
+	pSkp->SetBackgroundMode(oapi::Sketchpad::BK_TRANSPARENT);
 
 	for (i = 0; i < 2; i++) {
 		// draw preset indicator
-		SelectObject (hDC, g_Param.hPen[1]);
+		pSkp->SetPen(g_Param.pPen[1]);
 		angle = pod_angle_request[i];
 		angle1 = angle-da;
 		angle2 = angle+da;
 		x = cntx[i]-(int)(radi*cos(angle)), y = cnty+(int)(radi*sin(angle));
-		MoveToEx (hDC, x, y, NULL);
-		LineTo (hDC, cntx[i]-(int)(radw*cos(angle1)), cnty+(int)(radw*sin(angle1)));
-		LineTo (hDC, cntx[i]-(int)(radw*cos(angle2)), cnty+(int)(radw*sin(angle2)));
-		LineTo (hDC, x, y);
+		pSkp->MoveTo(x, y);
+		pSkp->LineTo(cntx[i] - (int)(radw * cos(angle1)), cnty + (int)(radw * sin(angle1)));
+		pSkp->LineTo(cntx[i] - (int)(radw * cos(angle2)), cnty + (int)(radw * sin(angle2)));
+		pSkp->LineTo(x, y);
 		ia = (int)(DEG*angle+0.5);
 		if      (ia < 90) sprintf (cbuf, "%02dR", ia);
 		else if (ia > 90) sprintf (cbuf, "%02dF", 180-ia);
 		else              sprintf (cbuf, "90");
-		SetTextColor (hDC, RGB(220,220,120));
-		TextOut (hDC, txtx[i]-27, txty, cbuf, strlen(cbuf));
+		pSkp->SetTextColor(RGB(220, 220, 120));
+		pSkp->Text(txtx[i] - 27, txty, cbuf, strlen(cbuf));
 
 		// draw pod status indicator
-		SelectObject (hDC, g_Param.hPen[0]);
+		pSkp->SetPen(g_Param.pPen[0]);
 		angle = pod_angle[i];
-		MoveToEx (hDC, cntx[i], cnty, NULL);
-		LineTo (hDC, cntx[i]-(int)(rad*cos(angle)), cnty+(int)(rad*sin(angle)));
+		pSkp->Line(cntx[i], cnty, cntx[i] - (int)(rad * cos(angle)), cnty + (int)(rad * sin(angle)));
 		ia = (int)(DEG*angle+0.5);
 		if      (ia < 90) sprintf (cbuf, "%02dR", ia);
 		else if (ia > 90) sprintf (cbuf, "%02dF", 180-ia);
 		else              sprintf (cbuf, "90");
-		SetTextColor (hDC, RGB(120,220,120));
-		TextOut (hDC, txtx[i], txty, cbuf, strlen(cbuf));
+		pSkp->SetTextColor(RGB(120, 220, 120));
+		pSkp->Text(txtx[i], txty, cbuf, strlen(cbuf));
 	}
-	oapiReleaseDC (surf, hDC);
+	oapiReleaseSketchpad(pSkp);
 	return true;
 }
 
@@ -2469,20 +2468,13 @@ DLLCLBK void InitModule (HINSTANCE hModule)
 	g_Param.hDLL = hModule;
 	oapiRegisterCustomControls (hModule);
 
-	// allocate GDI resources
+	// allocate Sketchpad resources
 	g_Param.pFont[0] = oapiCreateFont(-10, false, "Arial");
 	g_Param.pPen[0] = oapiCreatePen(1, 3, RGB(120, 220, 120));
 	g_Param.pPen[1] = oapiCreatePen(1, 1, RGB(220, 220, 120));
 	g_Param.pPen[2] = oapiCreatePen(1, 1, RGB(0, 0, 0));
-	g_Param.pBrush[0] = oapiCreateBrush(0x008000);
-	g_Param.pBrush[1] = oapiCreateBrush(0x000000);
-
-	g_Param.hFont[0] = CreateFont (-10, 0, 0, 0, 400, 0, 0, 0, 0, 0, 0, 0, 0, "Arial");
-	g_Param.hPen[0] = CreatePen (PS_SOLID, 3, RGB (120,220,120));
-	g_Param.hPen[1] = CreatePen (PS_SOLID, 1, RGB (220,220,120));
-	g_Param.hPen[2] = CreatePen (PS_SOLID, 1, RGB (0,0,0));
-	g_Param.hBrush[0] = CreateSolidBrush (RGB(0,128,0));
-	g_Param.hBrush[1] = CreateSolidBrush (RGB(0,0,0));
+	g_Param.pBrush[0] = oapiCreateBrush(RGB(0, 96, 0));
+	g_Param.pBrush[1] = oapiCreateBrush(RGB(0, 0, 0));
 
 	// load 2D panel texture
 	ShuttleA::panel2dtex = oapiLoadTexture ("ShuttleA\\panel2d.dds");
@@ -2496,12 +2488,12 @@ DLLCLBK void InitModule (HINSTANCE hModule)
 DLLCLBK void ExitModule (HINSTANCE hModule)
 {
 	int i;
-	// deallocate GDI resources
-	for (i = 0; i < 1; i++) DeleteObject (g_Param.hFont[i]);
-	for (i = 0; i < 3; i++) DeleteObject (g_Param.hPen[i]);
-	for (i = 0; i < 2; i++) DeleteObject (g_Param.hBrush[i]);
+	// deallocate Sketchpad resources
+	for (i = 0; i < 1; i++) oapiReleaseFont(g_Param.pFont[i]);
+	for (i = 0; i < 3; i++) oapiReleasePen(g_Param.pPen[i]);
+	for (i = 0; i < 2; i++) oapiReleaseBrush(g_Param.pBrush[i]);
 
-	// deallocated 2D panel texture
+	// deallocate 2D panel surfaces
 	oapiDestroySurface (ShuttleA::panel2dtex);
 	oapiDestroySurface (ShuttleA::paneleltex);
 	oapiDestroySurface (ShuttleA::aditex);

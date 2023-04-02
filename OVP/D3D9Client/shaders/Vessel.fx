@@ -65,16 +65,15 @@ float4 AdvancedPS(float4 sc : VPOS, PBRData frg) : COLOR
 	float3 cDiffLocal;
 	float3 cSpecLocal;
 
+	if (gTextured) cTex = tex2D(WrapS, frg.tex0.xy);
+	else		   cTex = 1;
+
+	if (gOITEnable) if (cTex.a < 0.5f) clip(-1);
 
 	if (gCfg.Norm) nrmT  = tex2D(Nrm0S, frg.tex0.xy).rgb;
 
 	if (gCfg.Spec) cSpec = tex2D(SpecS, frg.tex0.xy);
 	else		   cSpec = gMtrl.specular;
-
-
-	if (gTextured) cTex = tex2D(WrapS, frg.tex0.xy);
-	else		   cTex = 1;
-
 
 	if (gCfg.Refl) cRefl = tex2D(ReflS, frg.tex0.xy).rgb;
 	else		   cRefl = gMtrl.reflect.rgb;
@@ -249,6 +248,9 @@ float4 AdvancedPS(float4 sc : VPOS, PBRData frg) : COLOR
 	//if (gDebugHL) cTex = cTex*0.5f + gColor;
 	cTex = cTex * (1 - gColor*0.5f) + gColor;
 #endif
+
+	cTex.rgb *= gSun.Transmission;
+	cTex.rgb += gSun.Inscatter;
 
 	return cTex;
 }

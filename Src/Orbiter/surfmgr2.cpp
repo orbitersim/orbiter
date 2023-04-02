@@ -160,8 +160,8 @@ void SurfTile::Load ()
 		mesh = CreateMesh_quadpatch (res, res, elev, mgr->Cbody()->ElevationResolution(), 0.0, &texrange, shift_origin, &vtxshift, bb_excess);
 	}
 
-	static const DWORD label_enable = PLN_ENABLE|PLN_LMARK;
-	if ((g_pOrbiter->Cfg()->CfgVisHelpPrm.flagPlanetarium & label_enable) == label_enable)
+	static const DWORD label_enable = MKR_ENABLE|MKR_LMARK;
+	if ((g_pOrbiter->Cfg()->CfgVisHelpPrm.flagMarkers & label_enable) == label_enable)
 		CreateLabels();
 }
 
@@ -936,7 +936,7 @@ void TileManager2<SurfTile>::Render (LPDIRECT3DDEVICE7 dev, MATRIX4 &dwmat, VPla
 		dev->SetTextureStageState (1, D3DTSS_COLOROP, D3DTOP_ADD);
 		dev->SetTextureStageState (1, D3DTSS_COLORARG1, D3DTA_CURRENT);
 		dev->SetTextureStageState (1, D3DTSS_COLORARG2, D3DTA_TFACTOR);
-		Vector bgc = g_pOrbiter->GetInlineGraphicsClient()->GetScene()->BGcol();
+		VECTOR3 bgc = g_pOrbiter->GetInlineGraphicsClient()->GetScene()->BGcol();
 		dev->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(bgc.x, bgc.y, bgc.z, 1));
 		prm.tint = false; // the two effects are not currently compatible
 	}

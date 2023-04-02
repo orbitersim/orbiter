@@ -33,9 +33,8 @@ PlanetarySystem::PlanetarySystem (char *fname)
 	nvessel = 0;
 	nsupervessel = 0;
 	//nuserlabel   = 0;
-	labellist    = 0;
-	nlabellist   = 0;
-	labelpath = 0;
+	//labellist    = 0;
+	//nlabellist   = 0;
 	Read (fname);
 }
 
@@ -53,24 +52,6 @@ void PlanetarySystem::Clear ()
 	if (name) {
 		delete []name;
 		name = 0;
-	}
-	if (labelpath) {
-		delete []labelpath;
-		labelpath = 0;
-	}
-	if (labellist) {
-		for (i = 0; i < nlabellist; i++) {
-			if (labellist[i].list) {
-				for (j = 0; j < labellist[i].length; j++)
-					for (k = 0; k < 2; k++)
-						if (labellist[i].list[j].label[k]) delete []labellist[i].list[j].label[k];
-				delete []labellist[i].list;
-				labellist[i].list = NULL;
-			}
-		}
-		delete []labellist;
-		labellist = NULL;
-		nlabellist = 0;
 	}
 	while (nvessel) DelVessel (vessel[0], 0);
 	if (nbody) {
@@ -197,6 +178,12 @@ Base *PlanetarySystem::GetBase (const char *name, bool ignorecase)
 	return 0;
 }
 
+void PlanetarySystem::OptionChanged(DWORD cat, DWORD item)
+{
+	for (size_t i = 0; i < nvessel; i++)
+		vessel[i]->OptionChanged(cat, item);
+}
+
 bool PlanetarySystem::Read (char *fname)
 {
 	int i;
@@ -233,19 +220,16 @@ bool PlanetarySystem::Read (char *fname)
 	for (j = 0; j < nstar; j++) star[j]->RelTrueAndBaryState();
 	for (j = 0; j < nstar; j++) star[j]->AbsTrueState();
 
-	// read celestial markers
-	if (labelpath) {
-		delete []labelpath;
-		labelpath = 0;
-	}
-	labellist = 0;
-	nlabellist = 0;
 	if (GetItemString (ifs, "MarkerPath", cbuf)) {
-		if (cbuf[strlen(cbuf)-1] != '\\') strcat (cbuf, "\\");
-		labelpath = new char[strlen(cbuf)+1]; TRACENEW
-		strcpy (labelpath, cbuf);
+		m_labelPath = cbuf;
+		if (m_labelPath.back() != '\\')
+			m_labelPath.push_back('\\');
 	}
-	ScanLabelLists (ifs);
+	else {
+		m_labelPath = std::string(g_pOrbiter->Cfg()->CfgDirPrm.ConfigDir) + std::string(name) + std::string("\\Marker\\");
+	}
+	m_labelList.clear();
+	ScanLabelLists(ifs, true);
 
 	return true;
 }
@@ -257,19 +241,13 @@ void PlanetarySystem::OutputLoadStatus (const char *bname)
 	g_pOrbiter->OutputLoadStatus (cbuf, 0);
 }
 
-intptr_t PlanetarySystem::FindFirst (int type, _finddata_t *fdata, char *path, char *fname)
+intptr_t PlanetarySystem::FindFirst (int type, _finddata_t *fdata, char *fname)
 {
 	intptr_t fh;
 	char cbuf[256];
 
-	switch (type) {
-	case FILETYPE_MARKER:
-		if (labelpath) strcpy (path, labelpath);
-		else           sprintf (path, "%s%s\\Marker\\", g_pOrbiter->Cfg()->CfgDirPrm.ConfigDir, name);
-		break;
-	}
-	sprintf (cbuf, "%s*.mkr", path);
-	if ((fh = _findfirst (cbuf, fdata)) != -1) {
+	std::string searchPath = m_labelPath + "*.mkr";
+	if ((fh = _findfirst (searchPath.c_str(), fdata)) != -1) {
 		strncpy (fname, fdata->name, strlen(fdata->name)-4);
 		fname[strlen(fdata->name)-4] = '\0';
 	}
@@ -286,98 +264,83 @@ intptr_t PlanetarySystem::FindNext (intptr_t fh, _finddata_t *fdata, char *fname
 	return fn;
 }
 
-void PlanetarySystem::ScanLabelLists (ifstream &cfg)
+void PlanetarySystem::ScanLabelLists (ifstream &cfg, bool bScanHeaders)
 {
 	int i;
 	char cbuf[256], fname[256], lbpath[256];
 	int nlabellistbuf = 0;
-	nlabellist = 0;
 
 	_finddata_t fdata;
-	intptr_t fh = FindFirst (FILETYPE_MARKER, &fdata, lbpath, fname);
+	intptr_t fh = FindFirst (FILETYPE_MARKER, &fdata, fname);
 	if (fh >= 0) {
 
 		oapi::GraphicsClient::LABELLIST *ll;
-		bool scanheader = (labellist == 0); // only need to parse the headers for the initial scan
-		
+		int idx = 0;
+
 		do {
 			// open marker file
-			sprintf (cbuf, "%s%s.mkr", lbpath, fname);
+			sprintf (cbuf, "%s%s.mkr", m_labelPath.c_str(), fname);
 			ifstream ulf (cbuf);
 
 			// read label header
-			if (scanheader) {
-				if (nlabellist == nlabellistbuf) { // increase buffer
-					oapi::GraphicsClient::LABELLIST *tmp = new oapi::GraphicsClient::LABELLIST[nlabellistbuf += 8]; TRACENEW
-					memcpy (tmp, labellist, nlabellist*sizeof(oapi::GraphicsClient::LABELLIST));
-					if (nlabellist) delete []labellist;
-					labellist = tmp;
-				}
-				ll = labellist+nlabellist;
-				ll->list    = NULL;
-				ll->length  = 0;
-				ll->colour  = 1;
-				ll->shape   = 0;
-				ll->size    = 1.0f;
-				ll->distfac = 1.0f;
-				ll->active  = false;
-				ll->flag    = 0;
+			if (bScanHeaders) {
+				oapi::GraphicsClient::LABELLIST list;
+				//list.marker.clear();
+				list.colour  = 1;
+				list.shape   = 0;
+				list.size    = 1.0f;
+				list.distfac = 1.0f;
+				list.active  = false;
+				list.flag    = 0;
 				if (FindLine (ulf, "BEGIN_HEADER")) {
 					char item[256], value[256];
 					for (;;) {
 						if (!ulf.getline (cbuf, 256) || !_strnicmp (cbuf, "END_HEADER", 10)) break;
 						sscanf (cbuf, "%s %s", item, value);
 						if (!_stricmp (item, "InitialState")) {
-							if (!_stricmp (value, "on")) ll->active = true;
+							if (!_stricmp (value, "on")) list.active = true;
 						} else if (!_stricmp (item, "ColourIdx")) {
 							int col;
 							sscanf (value, "%d", &col);
-							ll->colour = max (0, min (5, col));
+							list.colour = max (0, min (5, col));
 						} else if (!_stricmp (item, "ShapeIdx")) {
 							int shape;
 							sscanf (value, "%d", &shape);
-							ll->shape = max (0, min (6, shape));
+							list.shape = max (0, min (6, shape));
 						} else if (!_stricmp (item, "Size")) {
 							float size;
 							sscanf (value, "%f", &size);
-							ll->size = max (0.1f, min (2.0f, size));
+							list.size = max (0.1f, min (2.0f, size));
 						} else if (!_stricmp (item, "DistanceFactor")) {
 							float distfac;
 							sscanf (value, "%f", &distfac);
-							ll->distfac = max (1e-5f, min (1e3f, distfac));
+							list.distfac = max (1e-5f, min (1e3f, distfac));
 						} else if (!_stricmp (item, "Frame")) {
 							if (_stricmp (value, "Ecliptic"))
-								ll->flag = 1; // flag for celestial position data
+								list.flag = 1; // flag for celestial position data
 						}
 					}
 				}
+				m_labelList.push_back(list);
+				ll = &m_labelList.back();
 			} else {
-				ll = labellist+nlabellist;
+				ll = &m_labelList[idx++];
 			}
 
 			// check if positions are in celestial or ecliptic frame
 			bool celestialpos = ((ll->flag & 1) != 0);
 
 			// read label list for active labels, if not already present
-			if (ll->active && !ll->list) {
-				ll->length = 0;
+			if (ll->active && !ll->marker.size()) {
 				int nlistbuf = 0;
 				double lng, lat;
 				int nl;
-				char *pc, *pc2;
+				char *pc;
 				FindLine (ulf, "BEGIN_DATA");
 				for (nl = 0;; nl++) {
 					if (!ulf.getline (cbuf, 256)) break;
 					pc = strtok (cbuf, ":");
 					if (!pc || sscanf (pc, "%lf%lf", &lng, &lat) != 2) continue;
-					if (ll->length == nlistbuf) {
-						oapi::GraphicsClient::LABELSPEC *tmp = new oapi::GraphicsClient::LABELSPEC[nlistbuf += 64]; TRACENEW
-						if (ll->length) {
-							memcpy (tmp, ll->list, ll->length*sizeof(oapi::GraphicsClient::LABELSPEC));
-							delete []ll->list;
-						}
-						ll->list = tmp;
-					}
 					lng = Rad(lng);
 					lat = Rad(lat);
 					if (celestialpos) {
@@ -386,25 +349,19 @@ void PlanetarySystem::ScanLabelLists (ifstream &cfg)
 						double ra = lng, dc = lat;
 						Equ2Ecl (coseps, sineps, ra, dc, lng, lat);
 					}
+					oapi::GraphicsClient::LABELSPEC ls;
 					double xz = cos(lat);
-					ll->list[ll->length].pos.y = sin(lat);
-					ll->list[ll->length].pos.x = xz * cos(lng);
-					ll->list[ll->length].pos.z = xz * sin(lng);
+					ls.pos.y = sin(lat);
+					ls.pos.x = xz * cos(lng);
+					ls.pos.z = xz * sin(lng);
 					for (i = 0; i < 2; i++) {
-						ll->list[ll->length].label[i] = 0;
 						if (pc = strtok (NULL, ":")) {
-							pc2 = trim_string (pc);
-							int len = strlen(pc2);
-							if (len) {
-								ll->list[ll->length].label[i] = new char[len+1]; TRACENEW
-								strcpy (ll->list[ll->length].label[i], pc2);
-							}
+							ls.label[i] = trim_string(pc);
 						}
 					}
-					ll->length++;
+					ll->marker.push_back(ls);
 				}
 			}
-			nlabellist++;
 
 		} while (!FindNext (fh, &fdata, fname));
 		_findclose (fh);

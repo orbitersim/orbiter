@@ -238,8 +238,7 @@ SURFHANDLE HazeManager::horizon = 0;
 // Planetary atmospheric haze rendering with scattering technique
 // ============================================================================
 
-HazeManager2::HazeManager2(const D3D9Client *gclient, const vPlanet *vplanet) 
-: PlanetRenderer()
+HazeManager2::HazeManager2(vPlanet *vplanet) 
 {
 	vp = vplanet;
 	obj = vp->Object();
@@ -248,8 +247,17 @@ HazeManager2::HazeManager2(const D3D9Client *gclient, const vPlanet *vplanet)
 
 // -----------------------------------------------------------------------
 
+HazeManager2::~HazeManager2()
+{
+	
+}
+
+// -----------------------------------------------------------------------
+
 void HazeManager2::GlobalInit(D3D9Client *gclient)
 {
+	pDev = gclient->GetDevice();
+	pNoise = gclient->GetNoiseTex();
 	for (int i=0;i<6;i++) pSkyVB[i]=NULL;
 	CreateRingBuffers();
 	CreateSkydomeBuffers(0);
@@ -258,6 +266,9 @@ void HazeManager2::GlobalInit(D3D9Client *gclient)
 	CreateSkydomeBuffers(3);
 	CreateSkydomeBuffers(4);
 	CreateSkydomeBuffers(5);
+
+	pDome = new ShaderClass(pDev, "Modules/D3D9Client/NewPlanet.hlsl", "HorizonVS", "HorizonPS", "Dome", NULL);
+	pRing = new ShaderClass(pDev, "Modules/D3D9Client/NewPlanet.hlsl", "HorizonVS", "HorizonRingPS", "Ring", NULL);
 }
 
 // -----------------------------------------------------------------------
@@ -266,16 +277,19 @@ void HazeManager2::GlobalExit()
 {
 	for (int i=0;i<6;i++) { SAFE_RELEASE(pSkyVB[i]); }
 	SAFE_RELEASE(pRingVB);
+	SAFE_DELETE(pDome);
+	SAFE_DELETE(pRing);
 }
 
 // -----------------------------------------------------------------------
 
 void HazeManager2::Render(D3DXMATRIX &wmat, float horizontal_aperture_deg)
 {
-	VECTOR3 cdir = vp->GetScene()->GetCameraGDir();
+	Scene* scn = vp->GetScene();
+	VECTOR3 cdir = scn->GetCameraGDir();
 	double calt = vp->CamDist() - rad;	// Camera altitude	
 	double halt = vp->GetHorizonAlt();
-	double melv = vp->prm.horizon_minelev; // vp->GetMinElevation();
+	double melv = vp->GetMinElevation();
 
 	melv -= 1000.0;
 
@@ -307,8 +321,22 @@ void HazeManager2::RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr)
 	D3DXVECTOR3 vTileCenter = D3DXVECTOR3(float(sin(15.0*RAD)), 1.0f, float(1.0+cos(15.0*RAD))) * 0.5;
 	D3DXMatrixRotationAxis(&mL, &_D3DXVECTOR3(ur), float(-a*0.5));
 	D3DXMatrixMultiply(&mWL, &mWL, &mL);
-
 	D3DXMatrixRotationAxis(&mL, &_D3DXVECTOR3(ur), float(-a));
+
+	//vp->GetScatterConst()->mVP = vp->GetScene()->PushCameraFrustumLimits(hd * 0.1, hd * 5.0);
+
+	pDome->Setup(pPositionDecl, false, 2);
+	pDome->ClearTextures();
+
+	pDome->SetTexture("tSkyRayColor", vp->GetScatterTable(RAY_COLOR), IPF_LINEAR | IPF_CLAMP);
+	pDome->SetTexture("tSkyMieColor", vp->GetScatterTable(MIE_COLOR), IPF_LINEAR | IPF_CLAMP);
+	pDome->SetTexture("tGlare", vp->GetScene()->GetSunGlareAtm(), IPF_LINEAR | IPF_CLAMP);
+	pDome->SetTexture("tNoise", pNoise, IPF_POINT | IPF_WRAP);
+	pDome->SetPSConstants("Const", vp->GetScatterConst(), sizeof(ConstParams));
+	pDome->SetVSConstants("Const", vp->GetScatterConst(), sizeof(ConstParams));
+	pDome->UpdateTextures();
+
+	pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
 	for (int i=0;i<24;i++) {
 		double x = al;
@@ -318,11 +346,14 @@ void HazeManager2::RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr)
 			float r2 =  float(sin(x+b)); float h2 = -float(cos(x+b)); 
 			D3DXVECTOR3 vCnt = vTileCenter * D3DXVECTOR3((r1+r2)*0.5f, 1.0f, (r1+r2)*0.5f);	vCnt.y = (h1+h2)*0.5f;
 			D3DXVec3TransformCoord(&vCnt, &vCnt, &mWL);	
-			if (vp->GetScene()->IsVisibleInCamera(&vCnt, float(sin(a*0.5)*1.415))) RenderSkySegment(mWL, hd, x, x+b, j);	
+			if (vp->GetScene()->IsVisibleInCamera(&vCnt, float(sin(a*0.5)*1.5))) RenderSkySegment(mWL, hd, x, x+b, j);	
 			x+=b;
 		}
 	}
-	HR(Shader()->SetVector(svTexOff, &D3DXVECTOR4(1, 0, 1, 0)));
+
+	pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+
+	//vp->GetScatterConst()->mVP = vp->GetScene()->PopCameraFrustumLimits();
 }
 
 // -----------------------------------------------------------------------
@@ -334,24 +365,18 @@ void HazeManager2::RenderSkySegment(D3DXMATRIX &wmat, double rad, double dmin, d
 	float r2 =  float(rad * sin(dmax));
 	float h2 = -float(rad * cos(dmax)); 
 
-	HR(Shader()->SetTechnique(eHorizonTech));
-	HR(Shader()->SetMatrix(smWorld, &wmat));
-	HR(Shader()->SetVector(svTexOff, &D3DXVECTOR4(r1, r2, h1, h2)));
+	ShaderParams sprm;
+	memcpy_s(&sprm.mWorld, sizeof(sprm.mWorld), &wmat, sizeof(wmat));
+	sprm.vTexOff = FVECTOR4(r1, r2, h1, h2);
 	
-	int xres = (Config->LODBias<-0.5 ? xlreslvl[index] : xreslvl[index]);
-	int yres = (Config->LODBias<-0.5 ? ylreslvl[index] : yreslvl[index]);
+	int xres = xreslvl[index];
+	int yres = yreslvl[index];
 
 	UINT prims = xres * yres * 2 - 2;
-	UINT numPasses = 0;
-	HR(Shader()->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
-	HR(Shader()->BeginPass(0));
-	Dev()->SetVertexDeclaration(pPositionDecl);
-	Dev()->SetStreamSource(0, pSkyVB[index], 0, sizeof(D3DXVECTOR3));
-	Dev()->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-	Dev()->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, prims);	
-	Dev()->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-	HR(Shader()->EndPass());
-	HR(Shader()->End());	
+
+	pDome->SetVSConstants("Prm", &sprm, sizeof(ShaderParams));
+	pDev->SetStreamSource(0, pSkyVB[index], 0, sizeof(D3DXVECTOR3));
+	pDev->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, prims);	
 }
 
 
@@ -373,6 +398,7 @@ void HazeManager2::RenderRing(VECTOR3 cpos, VECTOR3 cdir, double rad, double hra
 	double r2 = r1 + qw * cos(al);
 	double h2 = h1 + qw * sin(al); 
 
+	vp->GetScatterConst()->mVP = vp->GetScene()->PushCameraFrustumLimits(hd * 0.1, hd * 5.0);
 	
 	VECTOR3 ur = unit(cpos);
 	VECTOR3 ux = unit(crossp(cdir, ur));
@@ -382,33 +408,29 @@ void HazeManager2::RenderRing(VECTOR3 cpos, VECTOR3 cdir, double rad, double hra
 	D3DMAT_Identity(&mW);
 	D3DMAT_FromAxisT(&mW, &_D3DXVECTOR3(ux), &_D3DXVECTOR3(ur), &_D3DXVECTOR3(uy));
 
-	class Scene *scene = Client()->GetScene();
-	double np = scene->GetCameraNearPlane();
-	double fp = scene->GetCameraFarPlane();
-	scene->SetCameraFrustumLimits(cr*0.02,cr*10.0);
-	
-	HR(Shader()->SetTechnique(eRingTech));
-	HR(Shader()->SetMatrix(smWorld, &mW));
-	HR(Shader()->SetMatrix(smViewProj, scene->GetProjectionViewMatrix()));
-	HR(Shader()->SetVector(svTexOff, &D3DXVECTOR4(float(r1), float(r2), float(h1), float(h2))));
-	HR(Shader()->SetFloat(sfAlpha, float(qw)));
-	
-	UINT numPasses = 0;
+	ShaderParams sprm;
+	memcpy_s(&sprm.mWorld, sizeof(sprm.mWorld), &mW, sizeof(mW));
+	sprm.vTexOff = FVECTOR4(r1, r2, h1, h2);
+	sprm.fAlpha = float(qw);
+
+	pRing->Setup(pPositionDecl, false, 2);
+	pRing->ClearTextures();
+	pRing->SetTexture("tSkyRayColor", vp->GetScatterTable(RAY_COLOR), IPF_LINEAR | IPF_CLAMP);
+	pRing->SetTexture("tSkyMieColor", vp->GetScatterTable(MIE_COLOR), IPF_LINEAR | IPF_CLAMP);
+	pRing->SetPSConstants("Const", vp->GetScatterConst(), sizeof(ConstParams));
+	pRing->SetVSConstants("Const", vp->GetScatterConst(), sizeof(ConstParams));
+	pRing->SetVSConstants("Prm", &sprm, sizeof(ShaderParams));
+	pRing->UpdateTextures();
+
 	UINT nPrims = HORIZON2_NSEG * HORIZON2_NRING * 2 - 2;
 
-	HR(Shader()->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
-	HR(Shader()->BeginPass(0));
-	
-	Dev()->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-	Dev()->SetVertexDeclaration(pPositionDecl);
-	Dev()->SetStreamSource(0, pRingVB, 0, sizeof(D3DXVECTOR3));
-	Dev()->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, nPrims);
-	Dev()->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+	pDev->SetStreamSource(0, pRingVB, 0, sizeof(D3DXVECTOR3));
+	pDev->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, nPrims);
+	pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
-	HR(Shader()->EndPass());
-	HR(Shader()->End());	
-
-	scene->SetCameraFrustumLimits(np, fp);
+	// Pop previous frustum configuration, must initialize mVP
+	vp->GetScatterConst()->mVP = vp->GetScene()->PopCameraFrustumLimits();
 }
 
 
@@ -440,7 +462,7 @@ void HazeManager2::CreateRingBuffers()
 		y+=d;
 	}
 
-	HR(Dev()->CreateVertexBuffer(v*sizeof(D3DXVECTOR3), 0, 0, D3DPOOL_DEFAULT, &pRingVB, NULL));
+	HR(pDev->CreateVertexBuffer(v*sizeof(D3DXVECTOR3), 0, 0, D3DPOOL_DEFAULT, &pRingVB, NULL));
 
 	if (pRingVB->Lock(0, 0, (void **)&pBuf,0)==S_OK) {
 		memcpy(pBuf, pVrt, v*sizeof(D3DXVECTOR3));
@@ -456,8 +478,8 @@ void HazeManager2::CreateSkydomeBuffers(int index)
 {
 	int k = 0;
 
-	int xseg = (Config->LODBias<-0.5 ? xlreslvl[index] : xreslvl[index]);
-	int yseg = (Config->LODBias<-0.5 ? ylreslvl[index] : yreslvl[index]);
+	int xseg = xreslvl[index];
+	int yseg = yreslvl[index];
 
 	D3DXVECTOR3 *pVrt = new D3DXVECTOR3[xseg*yseg*2+2];
 	D3DXVECTOR3 *pBuf = NULL;
@@ -477,7 +499,7 @@ void HazeManager2::CreateSkydomeBuffers(int index)
 		ds = -ds; dc = -dc;	sa += ds; ca -= dc;	b += db;
 	}
 
-	HR(Dev()->CreateVertexBuffer(k*sizeof(D3DXVECTOR3), 0, 0, D3DPOOL_DEFAULT, &pSkyVB[index], NULL));
+	HR(pDev->CreateVertexBuffer(k*sizeof(D3DXVECTOR3), 0, 0, D3DPOOL_DEFAULT, &pSkyVB[index], NULL));
 
 	if (pSkyVB[index]->Lock(0, 0, (void **)&pBuf,0)==S_OK) {
 		memcpy(pBuf, pVrt, k*sizeof(D3DXVECTOR3));
@@ -490,10 +512,12 @@ void HazeManager2::CreateSkydomeBuffers(int index)
 
 // -----------------------------------------------------------------------
 
+ShaderClass* HazeManager2::pDome;
+ShaderClass* HazeManager2::pRing;
+LPDIRECT3DDEVICE9 HazeManager2::pDev;
+LPDIRECT3DTEXTURE9 HazeManager2::pNoise;
 LPDIRECT3DVERTEXBUFFER9 HazeManager2::pSkyVB[6];
 LPDIRECT3DVERTEXBUFFER9 HazeManager2::pRingVB = NULL;
-int HazeManager2::xreslvl[6] = {28,18,14,10,8,6};
-int HazeManager2::yreslvl[6] = {48,28,18,18,16,14};
-int HazeManager2::xlreslvl[6] = {18,12,10,6,6,4};
-int HazeManager2::ylreslvl[6] = {22,16,12,12,10,8};
+int HazeManager2::xreslvl[6] = {9,6,5,4,3,2};
+int HazeManager2::yreslvl[6] = {11,8,6,5,5,4};
 

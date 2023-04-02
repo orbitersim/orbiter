@@ -126,7 +126,7 @@ public:
 	void RenderReentry (LPDIRECT3DDEVICE9 dev);
 	void RenderGrapplePoints (LPDIRECT3DDEVICE9 dev);
 	void RenderGroundShadow (LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float depth);
-	void RenderAxis (LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp);
+	void RenderVectors (LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp);
 	bool RenderENVMap (LPDIRECT3DDEVICE9 pDev, DWORD cnt=2, DWORD flags=0xFF);
 	bool ProbeIrradiance(LPDIRECT3DDEVICE9 pDev, DWORD cnt = 2, DWORD flags = 0xFF);
 
@@ -182,7 +182,7 @@ protected:
 	 * \return \e true if lighting modifications should be applied, \e false
 	 *   if global lighting conditions apply.
 	 */
-	bool ModLighting (D3D9Sun *light);
+	bool ModLighting();
 
 	void Animate (UINT an, UINT mshidx);
 	void AnimateComponent (ANIMATIONCOMP *comp, const D3DXMATRIX &T);

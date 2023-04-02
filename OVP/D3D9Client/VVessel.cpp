@@ -8,6 +8,7 @@
 
 #include <set>
 #include "VVessel.h"
+#include "VPlanet.h"
 #include "MeshMgr.h"
 #include "AABBUtil.h"
 #include "D3D9Surface.h"
@@ -242,23 +243,18 @@ void vVessel::PreInitObject()
 	else LogErr("Failed to load a custom configuration for %s",vessel->GetClassNameA());
 }
 
+
 // ============================================================================================
 //
 bool vVessel::Update(bool bMainScene)
 {
 	_TRACE;
-
-	if (!active || nmesh < 1) return false;
-
+	if (!active) return false;
 	vObject::Update(bMainScene);
 
-	if (fabs(oapiGetSimTime()-tCheckLight)>0.1) {
-		sunLight = *scn->GetSun();
-		ModLighting(&sunLight);
-	}
+	if (fabs(oapiGetSimTime()-tCheckLight)>0.1 || oapiGetPause()) ModLighting();
 
 	bBSRecompute = true;
-
 	return true;
 }
 
@@ -686,6 +682,10 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 	if (scn->GetRenderPass() == RENDERPASS_SHADOWMAP) bCockpit = bVC = false;
 	// Always render exterior view for envmaps
 
+	// if (scn->GetRenderPass() == RENDERPASS_NORMAL_DEPTH) bCockpit = bVC = false;
+	// Always render exterior view for envmaps
+
+
 	static VCHUDSPEC hudspec_;
 	const VCHUDSPEC *hudspec = &hudspec_;
 	static bool gotHUDSpec(false);
@@ -718,10 +718,13 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 		gotHUDSpec = !!gc->GetVCHUDSurface(&hudspec);
 	}
 
-	// Reduce sunlight for virtual cockpit
+
+	// Initialize MeshShader constants
 	//
-	D3D9Sun sunLightVC = sunLight;
-	sunLightVC.Color *= 0.5f;
+	MeshShader::ps_const.Cam_X = *scn->GetCameraX();
+	MeshShader::ps_const.Cam_Y = *scn->GetCameraY();
+	MeshShader::ps_const.Cam_Z = *scn->GetCameraZ();
+
 
 
 	// Render Exterior and Interior (VC) meshes --------------------------------------------
@@ -761,8 +764,12 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 		else pWT = &mWorld;
 
 
-		if (bVC && internalpass) meshlist[i].mesh->SetSunLight(&sunLightVC);
-		else					 meshlist[i].mesh->SetSunLight(&sunLight);
+		if (bVC && internalpass) {
+			D3D9Sun local = sunLight;
+			local.Color *= 0.5f;
+			meshlist[i].mesh->SetSunLight(&local);
+		}
+		else meshlist[i].mesh->SetSunLight(&sunLight);
 
 
 		if (bVC && internalpass) {
@@ -773,10 +780,16 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 			}
 		}
 
+		const LPD3DXMATRIX pVP = scn->GetProjectionViewMatrix();
+		const LPD3DXMATRIX pLVP = (const LPD3DXMATRIX)&shd->mViewProj;
 
 		// Render vessel meshes --------------------------------------------------------------------------
 		//
-		if (scn->GetRenderPass() == RENDERPASS_SHADOWMAP) meshlist[i].mesh->RenderShadows(0.0f, NULL, pWT, true);
+		if (scn->GetRenderPass() == RENDERPASS_SHADOWMAP) meshlist[i].mesh->RenderShadowMap(pWT, pLVP, 0);
+		else if (scn->GetRenderPass() == RENDERPASS_NORMAL_DEPTH)
+		{
+			meshlist[i].mesh->RenderShadowMap(pWT, pVP, 1);
+		}
 		else {
 			if (internalpass) meshlist[i].mesh->Render(pWT, RENDER_VC, NULL, 0);
 			else 			  meshlist[i].mesh->Render(pWT, RENDER_VESSEL, pEnv, nEnv);
@@ -817,7 +830,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 
 // ============================================================================================
 //
-void vVessel::RenderAxis(LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp)
+void vVessel::RenderVectors (LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp)
 {
 	const double threshold = 0;//0.25; // threshold for forces to be drawn
 	VECTOR3 vector;
@@ -825,8 +838,8 @@ void vVessel::RenderAxis(LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp)
 	float alpha;
 	double len = 1e-9f; // avoids division by zero if len is not updated
 
-	DWORD bfvmode = *(DWORD*)gc->GetConfigParam(CFGPRM_SHOWBODYFORCEVECTORSFLAG);
-	float sclset  = *(float*)gc->GetConfigParam(CFGPRM_BODYFORCEVECTORSSCALE);
+	DWORD bfvmode = *(DWORD*)gc->GetConfigParam(CFGPRM_FORCEVECTORFLAG);
+	float sclset  = *(float*)gc->GetConfigParam(CFGPRM_FORCEVECTORSCALE);
 	float scale   = float(size) / 50.0f;
 
 	// -------------------------------------
@@ -837,7 +850,7 @@ void vVessel::RenderAxis(LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp)
 		char label[64];
 		bool bLog;
 
-		if (bfvmode & BFV_SCALE_LOG) bLog = true;
+		if (bfvmode & BFV_LOGSCALE) bLog = true;
 		else                         bLog = false;
 
 		if (!bLog) {
@@ -854,7 +867,7 @@ void vVessel::RenderAxis(LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp)
 			lscale = float(size * sclset / 50.0);
 		}
 
-		alpha = *(float*)gc->GetConfigParam(CFGPRM_BODYFORCEVECTORSOPACITY);
+		alpha = *(float*)gc->GetConfigParam(CFGPRM_FORCEVECTOROPACITY);
 
 		if (alpha > 1e-9) // skip all this when opacity is to small (ZEROish)
 		{
@@ -915,41 +928,8 @@ void vVessel::RenderAxis(LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp)
 	}
 
 	// -------------------------------------
-	// Render Axes
-
-	DWORD scamode = *(DWORD*)gc->GetConfigParam(CFGPRM_SHOWCOORDINATEAXESFLAG);
-
-	if (scamode&SCA_ENABLE && scamode&SCA_VESSEL)
-	{
-		float alpha   = *(float*)gc->GetConfigParam(CFGPRM_COORDINATEAXESOPACITY);
-
-		if (alpha > 1e-9) // skip all this when opacity is to small (ZEROish)
-		{
-			float sclset  = *(float*)gc->GetConfigParam(CFGPRM_COORDINATEAXESSCALE);
-			scale *= 0.99f; // 1% "slimmer" to avoid z-fighting with force vector(s)
-			float ascale  = float(size)*sclset*0.5f;
-
-			RenderAxisVector(pSkp, &D3DXCOLOR(1,0,0,alpha), _V(1,0,0), ascale, scale);
-			RenderAxisLabel(pSkp, &D3DXCOLOR(1,0,0,alpha), _V(1,0,0), ascale, scale, "X");
-
-			RenderAxisVector(pSkp, &D3DXCOLOR(0,1,0,alpha), _V(0,1,0), ascale, scale);
-			RenderAxisLabel(pSkp, &D3DXCOLOR(0,1,0,alpha), _V(0,1,0), ascale, scale, "Y");
-
-			RenderAxisVector(pSkp, &D3DXCOLOR(0,0,1,alpha), _V(0,0,1), ascale, scale);
-			RenderAxisLabel(pSkp, &D3DXCOLOR(0,0,1,alpha), _V(0,0,1), ascale, scale, "Z");
-
-			if (scamode&SCA_NEGATIVE) {
-				RenderAxisVector(pSkp, &D3DXCOLOR(1,0,0,alpha*0.5f), _V(-1,0,0), ascale, scale);
-				RenderAxisLabel(pSkp, &D3DXCOLOR(1,0,0,alpha), _V(-1,0,0), ascale, scale, "-X");
-
-				RenderAxisVector(pSkp, &D3DXCOLOR(0,1,0,alpha*0.5f), _V(0,-1,0), ascale, scale);
-				RenderAxisLabel(pSkp, &D3DXCOLOR(0,1,0,alpha), _V(0,-1,0), ascale, scale, "-Y");
-
-				RenderAxisVector(pSkp, &D3DXCOLOR(0,0,1,alpha*0.5f), _V(0,0,-1), ascale, scale);
-				RenderAxisLabel(pSkp, &D3DXCOLOR(0,0,1,alpha), _V(0,0,-1), ascale, scale, "-Z");
-			}
-		}
-	}
+	// Render Coordinate Axes
+	vObject::RenderVectors(dev, pSkp);
 }
 
 
@@ -1047,7 +1027,7 @@ void vVessel::RenderGrapplePoints (LPDIRECT3DDEVICE9 dev)
 //
 void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float alpha)
 {
-	if (!bStencilShadow) return;
+	if (!bStencilShadow && scn->GetRenderPass() == RENDERPASS_MAINSCENE) return;
 	if (Config->TerrainShadowing == 0) return;
 
 	static const double eps = 1e-2;
@@ -1111,8 +1091,8 @@ void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float
 
 	D3DXMatrixMultiply(&mProjWorld, &mProj, &mWorld);
 
-	float scale = float(min(1, (csun - 0.07) / 0.015));
-	if (scale<1) alpha *= scale;
+	float scale = (csun - shadow_elev_limit) * 25.0f;
+	alpha = (1.0f - alpha) * saturate(scale);
 
 	// project all vessel meshes. This should be replaced by a dedicated shadow mesh
 
@@ -1129,9 +1109,9 @@ void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float
 			vessel->GetMeshOffset(i, of);
 			nrml.w += float(dotp(of, hn));	// Sift a local groung level
 			D3DXMatrixMultiply(&mProjWorldShift, meshlist[i].trans, &mProjWorld);
-			mesh->RenderShadows(alpha, &mWorld, &mProjWorldShift, false, &nrml);
+			mesh->RenderStencilShadows(alpha, &mWorld, &mProjWorldShift, false, &nrml);
 		}
-		else mesh->RenderShadows(alpha, &mWorld, &mProjWorld, false, &nrml);
+		else mesh->RenderStencilShadows(alpha, &mWorld, &mProjWorld, false, &nrml);
 	}
 }
 
@@ -1294,10 +1274,7 @@ bool vVessel::ProbeIrradiance(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 
 	LPDIRECT3DSURFACE9 pIrDS = GetScene()->GetIrradianceDepthStencil();
 
-	if (!pIrDS) {
-		LogErr("IrradianceDepthStencil doesn't exists");
-		return true;
-	}
+	if (!pIrDS) return true; // Feature disabled
 
 
 	// Create a main EnvMap with mipmap chain for blurred maps --------------------------------------------------------------------
@@ -1473,36 +1450,19 @@ LPDIRECT3DCUBETEXTURE9 vVessel::GetEnvMap(int idx)
 
 // ============================================================================================
 //
-bool vVessel::ModLighting(D3D9Sun *light)
+bool vVessel::ModLighting()
 {
-	VECTOR3 GV;
+	tCheckLight = oapiGetSimTime();
 
 	// we only test the closest celestial body for shadowing
 	OBJHANDLE hP = vessel->GetSurfaceRef();
-
-	if (hP==NULL) {
-		LogErr("Vessel's surface reference is NULL");
-		return false;
-	}
-
-	vessel->GetGlobalPos(GV);
-
-	tCheckLight = oapiGetSimTime();
-
-	DWORD dAmbient = *(DWORD*)gc->GetConfigParam(CFGPRM_AMBIENTLEVEL);
-	float fAmbient = float(dAmbient)*0.0039f;
-
-	if (DebugControls::IsActive()) {
-		if (*(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS)&DBG_FLAGS_AMBIENT) fAmbient = 0.25f;
-	}
+	if (hP==NULL) {	LogErr("Vessel's surface reference is NULL"); return false;	}
 
 	vPlanet *vP = (vPlanet *)GetScene()->GetVisObject(hP);
-
-	if (vP) OrbitalLighting(light, vP, GV, fAmbient);
-
-	light->Color.r = max(0, min(1, light->Color.r));
-	light->Color.g = max(0, min(1, light->Color.g));
-	light->Color.b = max(0, min(1, light->Color.b));
+	if (vP) {
+		VECTOR3 rpos = gpos - vP->GlobalPos();
+		sunLight = vP->GetObjectAtmoParams(rpos);
+	}
 
 	return true;
 }

@@ -147,6 +147,19 @@ const D3DVERTEXELEMENT9 HazeVertexDecl[] = {
 	D3DDECL_END()
 };
 
+const D3DVERTEXELEMENT9 LocalLightsDecl[] = {
+	{0, 0,  D3DDECLTYPE_FLOAT1, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},	//Primitive Index
+	{0, 4,  D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0},	//Position .xyz and cone .w
+	D3DDECL_END()
+};
+
+typedef struct
+{
+	float index;
+	FVECTOR3 pos;
+	float cone;
+} LocalLightsCompute;
+
 typedef struct {
 	float x;     ///< vertex x position
 	float y;     ///< vertex y position
@@ -204,6 +217,9 @@ public:
 		void	UpdateLight(const LightEmitter *le, const class vObject *vo);
 		void	Reset();
 		const   LightEmitter *GetEmitter() const;
+
+		float	cone;
+		int		GPUId;
 private:
 		float	cosp, tanp, cosu;
 		float	range, range2;
@@ -255,10 +271,14 @@ private:
 	D3DXCOLOR* Mtrl;
 };
 
+#pragma pack(push, 4)
+
 typedef struct {
-	D3DXVECTOR3	Dir;				///< Direction of sunlight
-	D3DXCOLOR Color;				///< Color of sunlight
-	D3DXCOLOR Ambient;				///< Ambient environment color
+	FVECTOR3 Dir;
+	FVECTOR3 Color;			// Color and Intensity of received sunlight 
+	FVECTOR3 Ambient;		// Ambient light level (Base Objects Only, Vessels are using dynamic methods)
+	FVECTOR3 Transmission;	// Visibility through atmosphere (1.0 = fully visible, 0.0 = obscured)
+	FVECTOR3 Incatter;		// Amount of incattered light from haze
 } D3D9Sun;
 
 
@@ -304,6 +324,7 @@ typedef struct {
 	D3DCOLORVALUE	Rghn;		// Tune roughness map
 } D3D9Tune;
 
+#pragma pack(pop)
 
 typedef struct {
 	class D3D9Mesh *pMesh;			///< Mesh handle
@@ -313,7 +334,7 @@ typedef struct {
 	D3DXVECTOR3		normal;			///< Normal vector in local vessel coordinates
 	D3DXVECTOR3		pos;			///< Position in local vessel coordinates
 	int				idx;			///< Index that was picked
-	float			u, v;			///< Barycentric coords
+	float			u, v;			///< Barycentric coordinates
 } D3D9Pick;
 
 typedef struct {
@@ -341,6 +362,7 @@ extern IDirect3DVertexDeclaration9	*pVector4Decl;
 extern IDirect3DVertexDeclaration9	*pPosTexDecl;
 extern IDirect3DVertexDeclaration9	*pPatchVertexDecl;
 extern IDirect3DVertexDeclaration9	*pSketchpadDecl;
+extern IDirect3DVertexDeclaration9  *pLocalLightsDecl;
 
 
 
@@ -350,13 +372,23 @@ class ShaderClass
 
 public:
 			ShaderClass(LPDIRECT3DDEVICE9 pDev, const char* file, const char* vs, const char* ps, const char* name, const char* options);
-		   ~ShaderClass();
+		    ~ShaderClass();
 	void	ClearTextures();
-	void	Activate();
+	void    UpdateTextures();
+	void	DetachTextures();
 	void	Setup(LPDIRECT3DVERTEXDECLARATION9 pDecl, bool bZ, int blend);
+	HANDLE	GetPSHandle(const char* name);
+	HANDLE	GetVSHandle(const char* name);
+
 	void	SetTexture(const char* name, LPDIRECT3DTEXTURE9 pTex, UINT Flags = IPF_CLAMP | IPF_ANISOTROPIC, UINT AnisoLvl = 4);
+	void	SetTextureVS(const char* name, LPDIRECT3DTEXTURE9 pTex, UINT flags = IPF_CLAMP | IPF_POINT, UINT AnisoLvl = 0);
 	void	SetPSConstants(const char* name, void* data, UINT bytes);
 	void	SetVSConstants(const char* name, void* data, UINT bytes);
+
+	void	SetTexture(HANDLE hVar, LPDIRECT3DTEXTURE9 pTex, UINT flags = IPF_CLAMP | IPF_POINT, UINT AnisoLvl = 0);
+	void	SetTextureVS(HANDLE hVar, LPDIRECT3DTEXTURE9 pTex, UINT flags, UINT aniso);
+	void	SetPSConstants(HANDLE hVar, void* data, UINT bytes);
+	void	SetVSConstants(HANDLE hVar, void* data, UINT bytes);
 	LPDIRECT3DDEVICE9 GetDevice() { return pDev; }
 
 private:
@@ -364,9 +396,11 @@ private:
 	struct TexParams
 	{
 		LPDIRECT3DTEXTURE9 pTex;
+		LPDIRECT3DTEXTURE9 pAssigned;
 		UINT Flags;
 		UINT AnisoLvl;
-	} pTextures[16];
+		bool bSamplerSet;
+	} pTextures[20];
 
 	LPD3DXCONSTANTTABLE pPSCB, pVSCB;
 	LPDIRECT3DPIXELSHADER9 pPS;
@@ -391,6 +425,14 @@ inline double wrap(double a)
 }
 
 void LogMatrix(D3DXMATRIX *pM, const char *name);
+inline void LogSunLight(D3D9Sun& s)
+{
+	LogAlw("Sunlight.Dir   = [%f, %f, %f]", s.Dir.x, s.Dir.y, s.Dir.z);
+	LogAlw("Sunlight.Color = [%f, %f, %f]", s.Color.x, s.Color.y, s.Color.z);
+	LogAlw("Sunlight.Ambie = [%f, %f, %f]", s.Ambient.x, s.Ambient.y, s.Ambient.z);
+	LogAlw("Sunlight.Trans = [%f, %f, %f]", s.Transmission.x, s.Transmission.y, s.Transmission.z);
+	LogAlw("Sunlight.Incat = [%f, %f, %f]", s.Incatter.x, s.Incatter.y, s.Incatter.z);
+}
 
 // -----------------------------------------------------------------------------------
 // Conversion functions
@@ -520,9 +562,6 @@ int fgets2(char *buf, int cmax, FILE *file, DWORD param=0);
 float D3DXVec3Angle(D3DXVECTOR3 a, D3DXVECTOR3 b);
 D3DXVECTOR3 Perpendicular(D3DXVECTOR3 *a);
 
-void SurfaceLighting(D3D9Sun *light, OBJHANDLE hP, OBJHANDLE hO, float ao);
-void OrbitalLighting(D3D9Sun *light, const class vPlanet *vP, const VECTOR3 &GO, float ao);
-
 const char *RemovePath(const char *in);
 SketchMesh * GetSketchMesh(const MESHHANDLE hMesh);
 
@@ -615,7 +654,7 @@ double toDoubleOrNaN (const std::string &str);
 // case insensitive compare
 bool startsWith (const std::string &haystack, const std::string &needle);
 
-// case insensitive conatins
+// case insensitive contains
 bool contains (const std::string &haystack, const std::string &needle);
 
 // case insensitive find
@@ -627,7 +666,7 @@ size_t rfind_ci (const std::string &haystack, const std::string &needle);
 // parse assignments like "foo=bar", "foo = bar" or even "foo= bar ; with comment"
 std::pair<std::string, std::string> &splitAssignment (const std::string &line, const char delim = '=');
 
-// replace all occurances of 's' in 'subj' by 't'
+// replace all occurrences of 's' in 'subj' by 't'
 std::string::size_type replace_all (std::string &subj, const std::string &s, const std::string &t);
 
 // -----------------------------------------------------------------------------------

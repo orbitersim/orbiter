@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <queue>
 #include <string>
+#include "DrawAPI.h"
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h> // DWORD, LPCSTR
 #undef WIN32_LEAN_AND_MEAN
@@ -31,7 +32,7 @@ typedef struct {
 	double peak;
 } D3D9Time;
 
-extern int uEnableLog;  // This value is controlling log opeation ( Config->DebugLvl )
+extern int uEnableLog;  // This value is controlling log operation ( Config->DebugLvl )
 extern int iEnableLog;
 extern int EnableLogStack[16];
 extern std::queue<std::string> D3D9DebugQueue;
@@ -45,6 +46,7 @@ extern std::queue<std::string> D3D9DebugQueue;
 
 void   RuntimeError(const char* File, const char* Fnc, UINT Line);
 void   D3D9DebugLog(const char *format, ...);
+void   D3D9DebugLogVec(const char* lbl, oapi::FVECTOR4 &v);
 void   D3D9InitLog(char *file);
 void   D3D9CloseLog();
 void   LogTrace(const char *format, ...);

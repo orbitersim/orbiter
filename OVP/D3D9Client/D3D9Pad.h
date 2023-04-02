@@ -106,7 +106,7 @@ struct SkpVtx {
 
 	float x, y, l;			// vertex x, y, length
 	float nx, ny;			// next point
-	float px, py;			// perivous point
+	float px, py;			// previous point
 	DWORD clr, fnc;
 };
 
@@ -533,6 +533,7 @@ public:
 	void Clear(DWORD color = 0, bool bColor = true, bool bDepth = true);
 	void SetClipDistance(float _near, float _far);
 	void ColorKeyStretch(const SURFHANDLE hSrc, const LPRECT _s = NULL, const LPRECT t = NULL);
+	void SetWorldBillboard(const FVECTOR3& wpos, float utp = 1.0f, bool bFixed = true, const FVECTOR3* index = NULL);
 	
 
 	// ===============================================================================
@@ -651,7 +652,7 @@ private:
 
 
 	// -------------------------------------------------------------------------
-	bool  _isSaveBuffer;   ///< Flag indicasting that the 'save buffer' can be used
+	bool  _isSaveBuffer;   ///< Flag indicating that the 'save buffer' can be used
 	char* _saveBuffer;     ///< 'Save' string buffer  (null-terminated @ len)
 	int   _saveBufferSize; ///< Current size of the 'save' string buffer
 

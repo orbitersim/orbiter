@@ -351,11 +351,11 @@ void VBase::RenderSurfaceTiles (LPDIRECT3DDEVICE7 dev)
 	// D3DTSS_ADDRESS(0) == D3DTADDRESS_WRAP
 	DWORD val;
 	dev->GetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, &val);
-	dASSERT(val == TRUE, "LPDIRECT3DDEVICE7::GetRenderState: expected return TRUE");
+	dCHECK(val == TRUE, "LPDIRECT3DDEVICE7::GetRenderState: expected return TRUE")
 	dev->GetRenderState(D3DRENDERSTATE_ZENABLE, &val);
-	dASSERT(val == FALSE, "LPDIRECT3DDEVICE7::GetRenderState: expected return FALSE");
+	dCHECK(val == FALSE, "LPDIRECT3DDEVICE7::GetRenderState: expected return FALSE")
 	dev->GetTextureStageState (0, D3DTSS_ADDRESS, &val);
-	dASSERT(val == D3DTADDRESS_WRAP, "LPDIRECT3DDEVICE7::GetTextureStageState: expected return D3DTADDRESS_WRAP");
+	dCHECK(val == D3DTADDRESS_WRAP, "LPDIRECT3DDEVICE7::GetTextureStageState: expected return D3DTADDRESS_WRAP")
 #endif
 
 	if (nsurftile) {
@@ -440,9 +440,9 @@ void VBase::RenderShadows (LPDIRECT3DDEVICE7 dev)
 	// ALPHABLENDENABLE=TRUE
 	DWORD val;
 	dev->GetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, &val);
-	dASSERT(val == TRUE, "LPDIRECT3DDEVICE7::GetRenderState: expected return TRUE");
+	dCHECK(val == TRUE, "LPDIRECT3DDEVICE7::GetRenderState: expected return TRUE");
 	dev->GetRenderState(D3DRENDERSTATE_ZENABLE, &val);
-	dASSERT(val == FALSE, "LPDIRECT3DDEVICE7::GetRenderState: expected return FALSE");
+	dCHECK(val == FALSE, "LPDIRECT3DDEVICE7::GetRenderState: expected return FALSE");
 #endif
 
 	// we render base objects only if the apparent size of the object scale
@@ -717,25 +717,6 @@ void VBase::RenderGroundShadow (LPDIRECT3DDEVICE7 dev)
 
 		dev->DrawIndexedPrimitiveVB (D3DPT_TRIANGLELIST, shmesh[i].vbuf, 0, shmesh[i].nvtx, shmesh[i].idx, shmesh[i].nidx, 0);
 		g_vtxcount += shmesh[i].nvtx;
-	}
-}
-
-void VBase::SetupRenderVectorList ()
-{
-	DWORD flag = g_pOrbiter->Cfg()->CfgVisHelpPrm.flagCrdAxes;
-	if ((flag & CA_ENABLE) && (flag & CA_BASE)) {
-		double scale = base->size * g_pOrbiter->Cfg()->CfgVisHelpPrm.scaleCrdAxes;
-		double rad   = base->size*0.02;
-		float alpha = g_pOrbiter->Cfg()->CfgVisHelpPrm.opacCrdAxes;
-		Vector cam (tmul (base->GRot(), g_camera->GPos()-base->GPos()));
-		AddVec (cam, Vector(scale,0,0), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_PX, D3DRGB(1,1,1));
-		AddVec (cam, Vector(0,scale,0), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_PY, D3DRGB(1,1,1));
-		AddVec (cam, Vector(0,0,scale), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_PZ, D3DRGB(1,1,1));
-		if (flag & CA_NEG) {
-			AddVec (cam, Vector(-scale,0,0), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_NX, D3DRGB(1,1,1));
-			AddVec (cam, Vector(0,-scale,0), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_NY, D3DRGB(1,1,1));
-			AddVec (cam, Vector(0,0,-scale), Vector(0,0,0), rad, Vector(0.5,0.5,0.5), alpha, LABEL_NZ, D3DRGB(1,1,1));
-		}
 	}
 }
 

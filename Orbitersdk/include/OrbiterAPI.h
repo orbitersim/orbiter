@@ -1595,7 +1595,8 @@ enum THGROUP_TYPE {
 	THGROUP_ATT_DOWN,        ///< translation: move down
 	THGROUP_ATT_FORWARD,     ///< translation: move forward
 	THGROUP_ATT_BACK,        ///< translation: move back
-	THGROUP_USER = 0x40      ///< user-defined group
+	THGROUP_USER = 0x40,     ///< user-defined group
+	THGROUP_USER_LAST = 0xFF ///< range limit for user-defined groups
 };
 //@}
 
@@ -3594,6 +3595,12 @@ OAPIFUNC void oapiCameraGlobalPos (VECTOR3 *gpos);
 	*/
 OAPIFUNC void oapiCameraGlobalDir (VECTOR3 *gdir);
 
+   /**
+    * \brief Returns a rotation matrix which performs the transformation
+    *   from the camera rotation into global coordinates.
+    * \param rmat pointer to a matrix receiving the rotation data
+    * \sa oapiCameraGlobalPos, oapiCameraGlobalDir
+    */
 OAPIFUNC void oapiCameraRotationMatrix (MATRIX3 *rmat);
 
 	/**
@@ -6684,6 +6691,43 @@ OAPIFUNC void oapiTriggerRedrawArea (int panel_id, int vc_id, int area_id);
 //@}  -- End of Orbiter API interface methods --
 
 
+/**
+ * \ingroup defines
+ * \defgroup optcat Option category identifiers
+ */
+//@{
+#define OPTCAT_CELSPHERE                     0x0001
+#define OPTCAT_PLANETARIUM                   0x0002
+#define OPTCAT_INSTRUMENT                    0x0003
+#define OPTCAT_VESSEL                        0x0004
+#define OPTCAT_JOYSTICK                      0x0005
+//@}
+
+/**
+ * \ingroup defines
+ * \defgroup optitem Option item identifiers
+ */
+//@{
+#define OPTITEM_CELSPHERE_ACTIVATESTARDOTS   0x0001
+#define OPTITEM_CELSPHERE_STARDISPLAYPARAM   0x0002
+#define OPTITEM_CELSPHERE_ACTIVATESTARIMAGE  0x0003
+#define OPTITEM_CELSPHERE_STARIMAGECHANGED   0x0004
+#define OPTITEM_CELSPHERE_ACTIVATEBGIMAGE    0x0005
+#define OPTITEM_CELSPHERE_BGIMAGECHANGED     0x0006
+#define OPTITEM_CELSPHERE_BGIMAGEBRIGHTNESS  0x0007
+#define OPTITEM_PLANETARIUM_DISPFLAG         0x0001
+#define OPTITEM_INSTRUMENT_MFDUPDATEINTERVAL 0x0001
+#define OPTITEM_INSTRUMENT_MFDGENERICSIZE    0x0002
+#define OPTITEM_INSTRUMENT_MFDGENERICTRANSP  0x0003
+#define OPTITEM_INSTRUMENT_MFDVCSIZE         0x0004
+#define OPTITEM_INSTRUMENT_PANELSCROLLSPEED  0x0005
+#define OPTITEM_INSTRUMENT_PANELSCALE        0x0006
+#define OPTITEM_VESSEL_LIMITEDFUEL           0x0001
+#define OPTITEM_VESSEL_PADREFUEL             0x0002
+#define OPTITEM_JOYSTICK_DEVICE              0x0001
+#define OPTITEM_JOYSTICK_PARAM               0x0002
+//@}
+
 // ======================================================================
 /**
  * \ingroup defines
@@ -6909,14 +6953,16 @@ OAPIFUNC void oapiTriggerRedrawArea (int panel_id, int vc_id, int area_id);
 #define OAPI_LKEY_ToggleTrackMode   93 ///< switch between track camera modes
 #define OAPI_LKEY_TogglePanelMode   94 ///< switch between cockpit modes
 #define OAPI_LKEY_TogglePlanetarium 95 ///< toggle celestial marker display on/off
-#define OAPI_LKEY_ToggleRecPlay     96 ///< toggle flight recorder/playback on/off
-#define OAPI_LKEY_Pause             97 ///< toggle simulation pause on/off
-#define OAPI_LKEY_Quicksave         98 ///< quick-save current simulation state
-#define OAPI_LKEY_Quit              99 ///< quit simulation session
-#define OAPI_LKEY_DlgSelectVessel  100 ///< open vessel selection dialog
-#define OAPI_LKEY_SelectPrevVessel 101 ///< switch focus to previous vessel
-#define OAPI_LKEY_DlgCapture       102 ///< open screen capture dialog
-#define LKEY_COUNT 103                 ///< number of logical key definitions
+#define OAPI_LKEY_ToggleLabels      96 ///< toggle object and surface markers on/off
+#define OAPI_LKEY_ToggleRecPlay     97 ///< toggle flight recorder/playback on/off
+#define OAPI_LKEY_Pause             98 ///< toggle simulation pause on/off
+#define OAPI_LKEY_Quicksave         99 ///< quick-save current simulation state
+#define OAPI_LKEY_Quit             100 ///< quit simulation session
+#define OAPI_LKEY_DlgSelectVessel  101 ///< open vessel selection dialog
+#define OAPI_LKEY_SelectPrevVessel 102 ///< switch focus to previous vessel
+#define OAPI_LKEY_DlgCapture       103 ///< open screen capture dialog
+#define OAPI_LKEY_DlgOptions       104 ///< open options dialog
+#define LKEY_COUNT 105                 ///< number of logical key definitions
 //@}
 
 // ======================================================================
@@ -7208,6 +7254,17 @@ inline MATRIX3 identity ()
 {
 	static MATRIX3 mat = {1,0,0, 0,1,0, 0,0,1};
 	return mat;
+}
+
+/**
+ * \ingroup vec
+ * \brief Return transpose of a matrix
+ */
+inline MATRIX3 transp(const MATRIX3& M)
+{
+	return _M(M.m11, M.m21, M.m31,
+		      M.m12, M.m22, M.m32,
+		      M.m13, M.m23, M.m33);
 }
 
 /**

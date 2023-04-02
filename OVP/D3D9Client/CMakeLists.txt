@@ -47,7 +47,6 @@ set(SourceFiles
 	MeshMgr.cpp
 	OapiExtension.cpp
 	Particle.cpp
-	PlanetRenderer.cpp
 	RingMgr.cpp
 	RunwayLights.cpp
 	Scene.cpp
@@ -61,6 +60,7 @@ set(SourceFiles
 	VideoTab.cpp
 	VObject.cpp
 	VPlanet.cpp
+	VPlanetAtmo.cpp
 	VStar.cpp
 	VVessel.cpp
 	WindowMgr.cpp
@@ -96,7 +96,6 @@ set(IncludeFiles
 	MeshMgr.h
 	OapiExtension.h
 	Particle.h
-	PlanetRenderer.h
 	Qtree.h
 	resource.h
 	RingMgr.h
@@ -128,7 +127,6 @@ set(APIHeaders
 
 set(ShaderFiles
 	${ShaderDir}/BeaconArray.fx
-	${ShaderDir}/CKBlit.fx
 	${ShaderDir}/Common.hlsl
 	${ShaderDir}/D3D9Client.fx
 	${ShaderDir}/EnvMapBlur.hlsl
@@ -138,6 +136,11 @@ set(ShaderFiles
 	${ShaderDir}/IrradianceInteg.hlsl
 	${ShaderDir}/LensFlare.hlsl
 	${ShaderDir}/LightBlur.hlsl
+    ${ShaderDir}/CelSphere.hlsl
+    ${ShaderDir}/NewMesh.hlsl
+    ${ShaderDir}/NewPlanet.hlsl
+    ${ShaderDir}/Scatter.hlsl
+    ${ShaderDir}/Glare.hlsl
 	${ShaderDir}/Mesh.fx
 	${ShaderDir}/Metalness.fx
 	${ShaderDir}/Particle.fx
@@ -145,7 +148,6 @@ set(ShaderFiles
 	${ShaderDir}/Planet.fx
 	${ShaderDir}/SceneTech.fx
 	${ShaderDir}/Sketchpad.fx
-	${ShaderDir}/Surface.fx
 	${ShaderDir}/Vessel.fx
 )
 

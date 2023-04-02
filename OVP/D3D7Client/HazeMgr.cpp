@@ -81,11 +81,17 @@ void HazeManager::Render (LPDIRECT3DDEVICE7 dev, D3DMATRIX &wmat, bool dual)
 	alpha = min(alpha,1.0);
 
 	VECTOR3 cpos = {0,cdist,0};
-	double id = 1.0 / max (cdist, 1.002);  // inverse camera distance; 1.001: hack to avoid horizon to creep too close
+	double hr = hralt;
+	const double cdist_min = 1.002;
+	if (cdist < cdist_min) {
+		double scale = (cdist_min - 1.0) / max(cdist - 1.0, (cdist_min - 1.0) * 0.2);
+		hr = hralt * scale; // rescale height to compensate for distance limit
+	}
+	double id = 1.0 / max (cdist, cdist_min);  // inverse camera distance; 1.001: hack to avoid horizon to creep too close
 	double visrad = acos (id);             // aperture of visibility sector
 	double sinv = sin(visrad);
-	h1 = (float)id, h2 = h1 + (float)(hralt*id);
-	r1 = (float)sinv, r2 = (1.0f+hralt)*r1;
+	h1 = (float)id, h2 = h1 + (float)hr;
+	r1 = (float)sinv, r2 = (1.0f+hr)*r1;
 	
 	if (!dual) { // pull lower horizon edge below surface to avoid problems with elevations < 0
 		h1 *= vp->prm.horizon_minrad;

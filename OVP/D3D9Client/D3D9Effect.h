@@ -21,7 +21,7 @@ struct TexFlow {
 	BOOL Emis;		// Enable Emission Maps
 	BOOL Spec;		// Enable Specular Maps
 	BOOL Refl;		// Enable Reflection Maps
-	BOOL Transl;	// Enble translucent effect
+	BOOL Transl;	// Enable translucent effect
 	BOOL Transm;	// Enable transmissive effect
 	BOOL Rghn;		// Enable roughness map
 	BOOL Norm;		// Enable normal map
@@ -59,7 +59,7 @@ public:
 	static void RenderTileBoundingBox(const LPD3DXMATRIX pW, VECTOR4 *pVtx, const LPD3DXVECTOR4 color);
 	static void RenderBoundingBox(const LPD3DXMATRIX pW, const LPD3DXMATRIX pGT, const D3DXVECTOR4 *bmin, const D3DXVECTOR4 *bmax, const LPD3DXVECTOR4 color);
 	static void RenderBoundingSphere(const LPD3DXMATRIX pW, const LPD3DXMATRIX pGT, const D3DXVECTOR4 *bs, const LPD3DXVECTOR4 color);
-	static void RenderBillboard(const LPD3DXMATRIX pW, SURFHANDLE pTex);
+	static void RenderBillboard(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex, float alpha = 1.0f);
 	static void RenderExhaust(const LPD3DXMATRIX pW, VECTOR3 &cdir, EXHAUSTSPEC *es, SURFHANDLE def);
 	static void RenderSpot(float intens, const LPD3DXCOLOR color, const LPD3DXMATRIX pW, SURFHANDLE pTex);
 	static void Render2DPanel(const MESHGROUP *mg, const SURFHANDLE pTex, const LPD3DXMATRIX pW, float alpha, float scale, bool additive);
@@ -122,8 +122,9 @@ public:
 	static D3DXHANDLE	eSun;        ///< Sun
 	static D3DXHANDLE	eLights;     ///< Additional light sources
 	static D3DXHANDLE	eKernel;
+	static D3DXHANDLE	eAtmoParams;
 
-	// Auxilliary params ----------------------------------------------
+	// Auxiliary params ----------------------------------------------
 	static D3DXHANDLE   eModAlpha;     ///< BOOL multiply material alpha with texture alpha
 	static D3DXHANDLE	eFullyLit;     ///< BOOL
 	static D3DXHANDLE	eFlow;		   ///< BOOL
@@ -138,6 +139,7 @@ public:
 	static D3DXHANDLE   eSwitch;	   ///< BOOL
 	static D3DXHANDLE   eRghnSw;	   ///< BOOL
 	static D3DXHANDLE	eTextured;	   ///< BOOL
+	static D3DXHANDLE	eOITEnable;	   ///< BOOL
 	static D3DXHANDLE	eInvProxySize;
 	static D3DXHANDLE	eMix;          ///< FLOAT Auxiliary factor/multiplier
 	static D3DXHANDLE   eColor;        ///< Auxiliary color input

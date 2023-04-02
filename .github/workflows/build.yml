@@ -26,7 +26,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       
     - name: Setup Problem Matcher
       uses: ammaraskar/msvc-problem-matcher@master
@@ -42,14 +42,14 @@ jobs:
         mkdir out\install
     
     - name: Cache irrKlang package
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ${{ github.workspace }}/out/build/Extern/irrKlang/${{ matrix.architecture }}
         key: irrKlang-${{ matrix.architecture }}
         
     - name: Cache DirectX SDK
       id:   cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: "${{ github.workspace }}\\DXSDK"
         key:  dxsdk_jun10
@@ -85,9 +85,50 @@ jobs:
 
     - name: Upload Build Artifact
       if: ${{ github.ref == 'refs/heads/main' }}
-      uses: actions/upload-artifact@v2.2.4
+      uses: actions/upload-artifact@v3.1.1
       with:
         name: Orbiter-${{ matrix.architecture }}
         # A file, directory or wildcard pattern that describes what to upload
         path: ${{ github.workspace }}/out/Orbiter.zip
         retention-days: 60
+
+  pre-release:
+    name: Publish pre-release
+
+    needs: build
+    
+    runs-on: ubuntu-latest
+    
+    if: ${{ github.ref == 'refs/heads/main' }}
+
+    steps:
+    - name: Create directories
+      run: mkdir out
+
+    - name: Checkout  
+      uses: actions/checkout@v2
+
+    - name: Download artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: ./out
+        
+    - name: Re-arrange artifacts
+      run: |
+        mv ./Orbiter-x64/Orbiter.zip ./Orbiter-x64.zip
+        mv ./Orbiter-x86/Orbiter.zip ./Orbiter-x86.zip
+        rmdir Orbiter-x64
+        rmdir Orbiter-x86
+        ls -R
+      working-directory: ./out
+    
+    - name: "Push pre-release tag and upload packages"
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "latest"
+        prerelease: true
+        title: "Orbiter development build"
+        files: |
+          ./out/Orbiter-x86.zip
+          ./out/Orbiter-x64.zip

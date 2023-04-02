@@ -85,7 +85,7 @@ bool GraphicsClient::clbkInitialise ()
     RegisterClass (&wndClass);
 
 	if (clbkUseLaunchpadVideoTab() && g_pOrbiter->Launchpad()) {
-		hVid = g_pOrbiter->Launchpad()->GetTabWindow(4);
+		hVid = g_pOrbiter->Launchpad()->GetTab(PG_VID)->TabWnd();
 		SetWindowLongPtr (hVid, GWLP_USERDATA, (LONG_PTR)this);
 	} else hVid = NULL;
 
@@ -728,34 +728,9 @@ INT_PTR GraphicsClient::LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wPar
 // ==================================================================
 // Functions for the celestial sphere
 
-DWORD GraphicsClient::LoadStars (DWORD n, StarRec *rec)
+const std::vector<GraphicsClient::LABELLIST>& GraphicsClient::GetCelestialMarkers() const
 {
-	// read binary data from file
-	FILE *f = fopen ("Star.bin", "rb");
-	if (!f) return 0; // error reading data base
-	n = fread (rec, sizeof(StarRec), n, f);
-	fclose (f);
-	return n;
-}
-
-// ==================================================================
-
-DWORD GraphicsClient::LoadConstellationLines (DWORD n, ConstRec *rec)
-{
-	FILE *f = fopen ("Constell.bin", "rb");
-	if (!f) return 0;
-	n = fread (rec, sizeof(ConstRec), n, f);
-	fclose (f);
-	return n;
-}
-
-// ==================================================================
-
-DWORD GraphicsClient::GetCelestialMarkers (const LABELLIST **cm_list) const
-{
-	int nlist;
-	*cm_list = g_psys->LabelList (&nlist);
-	return (DWORD)nlist;
+	return g_psys->LabelList();
 }
 
 // ==================================================================

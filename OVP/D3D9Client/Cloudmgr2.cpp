@@ -93,43 +93,40 @@ void CloudTile::Load ()
 
 // -----------------------------------------------------------------------
 
-void CloudTile::Render ()
+void CloudTile::Render()
 {
-	UINT numPasses = 0;
-
 	LPDIRECT3DDEVICE9 pDev = mgr->Dev();
-	ID3DXEffect *Shader = mgr->Shader();
+	vPlanet* vPlanet = mgr->GetPlanet();
+	PlanetShader* pShader = mgr->GetShader();
+	ShaderParams* sp = vPlanet->GetTerrainParams();
+
+	int cfg = vPlanet->GetShaderID();
 
 	// ---------------------------------------------------------------------
 	// Feed tile specific data to shaders
 	//
-	// ---------------------------------------------------------------------------------------------------
-	HR(Shader->SetTexture(TileManager2Base::stDiff, tex));
-	HR(Shader->SetVector(TileManager2Base::svCloudOff, &GetTexRangeDX(&texrange)));
-	HR(Shader->SetVector(TileManager2Base::svMicroOff, &GetTexRangeDX(&microrange)));
-	// ---------------------------------------------------------------------------------------------------
+	// ----------------------------------------------------------------------
+	pShader->SetTexture(pShader->tDiff, tex, IPF_ANISOTROPIC | IPF_CLAMP, Config->Anisotrophy);
 
-	Shader->CommitChanges();
-
-	HR(Shader->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
+	sp->vCloudOff = GetTexRangeDX(&texrange);
+	sp->vMicroOff = GetTexRangeDX(&microrange);
+	sp->fAlpha = 1.0f;
+	sp->fBeta = 1.0f;
+	sp->mWorld = mWorld;
 
 	// -------------------------------------------------------------------
 	// render surface mesh
+	if (cfg != PLT_GIANT) {
+		if (Config->CloudMicro)
+			pShader->SetPSConstants(pShader->Prm, sp, sizeof(ShaderParams));
+	}
+	pShader->SetVSConstants(pShader->PrmVS, sp, sizeof(ShaderParams));
 
+	pShader->UpdateTextures();
 
-	// While viewing the Moon/Brighton Beach. Earth's cloudlayer rendering throwed through D3DX9_43.dll: 
-	// Exception thrown at 0x759635D2 (KernelBase.dll) in orbiter.exe: 0x000006BA : The RPC server is unavailable.
-	// Exception thrown at 0x759635D2 (KernelBase.dll) in orbiter.exe: 0xC0000002 : The requested operation is not implemented.
-	// Unhandled exception at 0x759635D2 (KernelBase.dll) in orbiter.exe : 0xC0000002 : The requested operation is not implemented.
-	// What is this, why ?
-
-	HR(Shader->BeginPass(0));
-	pDev->SetVertexDeclaration(pPatchVertexDecl);
 	pDev->SetStreamSource(0, mesh->pVB, 0, sizeof(VERTEX_2TEX));
 	pDev->SetIndices(mesh->pIB);
 	pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mesh->nv, 0, mesh->nf);
-	HR(Shader->EndPass());
-	HR(Shader->End());
 }
 
 
@@ -142,9 +139,7 @@ void TileManager2<CloudTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlan
 	// set generic parameters
 	SetRenderPrm (dwmat, rprm.cloudrot, use_zbuf, rprm);
 
-	double np = 0.0, fp = 0.0;
 	int i;
-
 	class Scene *scene = GetClient()->GetScene();
 
 	// adjust scaling parameters (can only be done if no z-buffering is in use)
@@ -162,9 +157,7 @@ void TileManager2<CloudTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlan
 		}
 		zmin = max (2.0, min (zmax*1e-4, zmin));
 
-		np = scene->GetCameraNearPlane();
-		fp = scene->GetCameraFarPlane();
-		scene->SetCameraFrustumLimits (zmin, zmax);
+		vp->GetScatterConst()->mVP = scene->PushCameraFrustumLimits(zmin, zmax);
 	}
 
 	// build a transformation matrix for frustum testing
@@ -176,13 +169,38 @@ void TileManager2<CloudTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlan
 	// ---------------------------------------------------------------------
 	// Initialize shading technique and feed planet specific data to shaders
 	//
-	HR(Shader()->SetTechnique(eCloudTech));
-	HR(Shader()->SetMatrix(smViewProj, scene->GetProjectionViewMatrix()));
-	HR(Shader()->SetBool(sbCloudNorm, Config->bCloudNormals != 0));
-	HR(Shader()->SetBool(sbEarth, strcmp(CbodyName(), "Earth") == 0));
+
+	ElevMode = eElevMode::Spherical;
+	ElevModeLvl = 0;
+
+	FlowControlPS fc = { 0 };
+	fc.bBelowClouds = vp->CameraAltitude() < rprm.cloudalt;
+
+	int cfg = vp->GetShaderID();
+
+	// Select cloud layer shader
+	pShader = (cfg == PLT_GIANT ? vp->GetShader(PLT_G_CLOUDS) : vp->GetShader(PLT_CLOUDS));
 	
-	if (rprm.bCloudBrighten) { HR(Shader()->SetFloat(sfAlpha, 2.0f)); }
-	else					 { HR(Shader()->SetFloat(sfAlpha, 1.0f)); }
+	pShader->ClearTextures();
+	pShader->Setup(pPatchVertexDecl, false, 1);
+
+	pShader->SetPSConstants("Const", vp->GetScatterConst(), sizeof(ConstParams));
+	pShader->SetVSConstants("Const", vp->GetScatterConst(), sizeof(ConstParams));
+	pShader->SetPSConstants("Flow", &fc, sizeof(FlowControlPS));
+
+	if (cfg != PLT_GIANT)
+	{
+		if (Config->CloudMicro) {
+			pShader->SetTexture("tCloudMicro", hCloudMicro, IPF_ANISOTROPIC | IPF_WRAP, Config->Anisotrophy);
+			if (Config->bCloudNormals)
+				pShader->SetTexture("tCloudMicroNorm", hCloudMicroNorm, IPF_ANISOTROPIC | IPF_WRAP, Config->Anisotrophy);
+		}
+		pShader->SetTexture("tSun", vp->GetScatterTable(SUN_COLOR), IPF_LINEAR | IPF_CLAMP);
+		pShader->SetTexture("tLndRay", vp->GetScatterTable(RAY_LAND), IPF_LINEAR | IPF_CLAMP);
+		pShader->SetTexture("tLndAtn", vp->GetScatterTable(ATN_LAND), IPF_LINEAR | IPF_CLAMP);
+		//pShader->SetTexture("tSkyRayColor", vp->GetScatterTable(RAY_COLOR), IPF_LINEAR | IPF_CLAMP);
+		//pShader->SetTexture("tSkyMieColor", vp->GetScatterTable(MIE_COLOR), IPF_LINEAR | IPF_CLAMP);
+	}
 
 	// TODO: render full sphere for levels < 4
 
@@ -198,8 +216,8 @@ void TileManager2<CloudTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlan
 	
 	loader->ReleaseMutex ();
 
-	if (np)
-		scene->SetCameraFrustumLimits(np,fp);
+	// Pop previous frustum configuration, must initialize mVP
+	if (!use_zbuf)	vp->GetScatterConst()->mVP = scene->PopCameraFrustumLimits();
 }
 
 // -----------------------------------------------------------------------

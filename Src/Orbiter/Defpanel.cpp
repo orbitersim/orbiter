@@ -70,7 +70,6 @@ DefaultPanel::DefaultPanel (Pane *_pane, int cidx): pane(_pane)
 	compact_layout = g_pOrbiter->Cfg()->CfgLogicPrm.bGlasspitCompact;
 	colidx = cidx;
 
-	fuel = engmain = enghovr = -2; // invalidate
 	elevtrim = 100;
 
 	SetGeometry ();
@@ -90,8 +89,6 @@ DefaultPanel::DefaultPanel (Pane *_pane, int cidx): pane(_pane)
 	rcsmode = -1;
 	rcsdispmode = 1;
 	
-	memset (engstat_str, 0, 4*8*sizeof(char));
-
 	mfdFont = NULL;
 	mfdPen = NULL;
 
@@ -106,6 +103,8 @@ DefaultPanel::~DefaultPanel ()
 void DefaultPanel::SetGeometry ()
 {
 	int i, j, k, m, n, vofs;
+
+	ResetGeometry();
 
 	// viewport dimensions
 	viewW = pane->Width(), viewH = pane->Height();
@@ -358,7 +357,17 @@ void DefaultPanel::SetGeometry ()
 			Idx[i*6+j] = i*4+idx[j];
 
 	enggrp = mesh.AddGroup (Vtx, nVtx, Idx, nIdx, 0, 0);
+}
 
+void DefaultPanel::ResetGeometry()
+{
+	mesh.Clear();
+	fuel = engmain = enghovr = -2; // invalidate
+	rcsmode = -1; // invalidate
+	elevtrim = 100;
+	for (size_t i = 0; i < nnv0; i++)
+		nvbstate[i] = false;
+	memset(engstat_str, 0, 4 * 8 * sizeof(char));
 }
 
 void DefaultPanel::InitDeviceObjects ()
@@ -765,6 +774,22 @@ Instrument::Spec DefaultPanel::GetMFDSpec () const
 	spec.bt_dy = spec.h/7;
 	spec.flag = 0;
 	return spec;
+}
+
+void DefaultPanel::OptionChanged(DWORD cat, DWORD item)
+{
+	if (cat == OPTCAT_INSTRUMENT) {
+		switch (item) {
+		case OPTITEM_INSTRUMENT_MFDGENERICSIZE:
+			SetGeometry();
+			for (int i = 0; i < 2; i++)
+				RepaintMFDButtons(i);
+			break;
+		case OPTITEM_INSTRUMENT_MFDGENERICTRANSP:
+			transpmfd = g_pOrbiter->Cfg()->CfgLogicPrm.bMfdTransparent;
+			break;
+		}
+	}
 }
 
 // =======================================================================

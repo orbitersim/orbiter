@@ -371,9 +371,10 @@ INT_PTR VideoTab::WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 // =======================================================================
 // =======================================================================
 
-OrbiterGraphics::OrbiterGraphics (Orbiter *po): GDIClient (po->GetInstance())
+OrbiterGraphics::OrbiterGraphics (Orbiter *po)
+	: GDIClient (po->GetInstance())
+	, orbiter(po)
 {
-	orbiter                = po;
 	scene                  = NULL;
 	vtab                   = NULL;
 	clipper                = NULL;
@@ -422,6 +423,13 @@ OrbiterGraphics::~OrbiterGraphics ()
 		LOGOUT_WARN("Launchpad item still allocated: m_lpiPlanetRenderOptions");
 		delete m_lpiPlanetRenderOptions;
 	}
+}
+
+// =======================================================================
+
+Config* OrbiterGraphics::Cfg()
+{
+	return orbiter->Cfg();
 }
 
 // =======================================================================
@@ -604,6 +612,18 @@ bool OrbiterGraphics::clbkInitialise ()
 	launchpad->RegisterExtraParam (m_lpiPlanetRenderOptions = new Extra_PlanetRenderOptions(tExtra), ht);
 
 	return true;
+}
+
+// =======================================================================
+
+void OrbiterGraphics::clbkOptionChanged(DWORD cat, DWORD item)
+{
+	switch (cat) {
+	case OPTCAT_CELSPHERE:
+		if (scene)
+			scene->OnOptionChanged(cat, item);
+		return;
+	}
 }
 
 // =======================================================================
@@ -1455,6 +1475,16 @@ bool OrbiterGraphics::clbkParticleStreamExists (const oapi::ParticleStream *ps)
 // =======================================================================
 // Texture functions
 // =======================================================================
+
+SURFHANDLE OrbiterGraphics::clbkLoadSurface(const char* fname, DWORD attrib, bool bPath)
+{
+	DWORD flags = 0;
+	if (attrib & OAPISURFACE_SYSMEM)     flags |= 0x1;
+	if (attrib & OAPISURFACE_UNCOMPRESS) flags |= 0x2;
+	if (attrib & OAPISURFACE_NOMIPMAPS)  flags |= 0x4;
+	if (attrib & OAPISURFACE_SHARED)     flags |= 0x8;
+	return clbkLoadTexture(fname, flags);
+}
 
 SURFHANDLE OrbiterGraphics::clbkLoadTexture (const char *fname, DWORD flags)
 {

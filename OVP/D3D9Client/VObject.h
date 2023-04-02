@@ -21,6 +21,7 @@ extern class D3D9Config *Config;
 
 class D3D9Pad;
 
+
 // ==============================================================
 // class vObject (interface)
 // ==============================================================
@@ -34,7 +35,7 @@ class D3D9Pad;
  * A "vObject" is the visual representation of an Orbiter object (vessel,
  * planet/moon/sun, surface base). vObjects usually have one or more meshes
  * associated with them that define their visual appearance, but they can be
- * arbitrarily complex (e.g. planets with clould layers, atmospheric haze,
+ * arbitrarily complex (e.g. planets with cloud layers, atmospheric haze,
  * etc.)
  * Visual objects don't persist like their "logical" counterparts, but are
  * created and deleted as they pass in and out of the visual range of a
@@ -165,11 +166,12 @@ public:
 	inline const VECTOR3 &GlobalPos() const { return gpos; }
 
 	/**
-	 * \brief Returns a unit vertor pointing towards the sun
-	 * \return A unit vertor pointing towards the sun [<b>m</b>]
+	 * \brief Returns a unit vector pointing towards the sun
+	 * \return A unit vector pointing towards the sun [<b>m</b>]
 	 * \note The returned vector is expressed in the ecliptic frame.
 	 */
 	inline const VECTOR3 &SunDirection() const { return sundir; }
+	inline const double SunDistance() const { return sundst; }
 
 	/**
 	 * \brief Per-frame object parameter updates
@@ -219,8 +221,12 @@ public:
      */
     virtual void RenderGrapplePoints (LPDIRECT3DDEVICE9 dev) {}
 
-
-	virtual void RenderAxis (LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp) {}
+	/**
+	 * \brief Render the objects coordinate axes
+	 * \param dev render device
+	 * \param pSkp The 2-D drawing context
+	 */
+	virtual void RenderVectors (LPDIRECT3DDEVICE9 dev, D3D9Pad* pSkp);
 
 
 	void RenderDot(LPDIRECT3DDEVICE9 dev);

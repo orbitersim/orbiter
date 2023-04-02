@@ -39,6 +39,9 @@ public:
 	virtual void Update (bool moving, bool force);
 	// Update visual to current simulation time
 
+	virtual void UpdateRenderVectors();
+	// render any auxiliary vectors
+
 	virtual void Timejump (bool moving) { Update (moving, true); }
 	// Discontinuous update
 
@@ -54,18 +57,11 @@ public:
 	virtual void Render (LPDIRECT3DDEVICE7 dev) = 0;
 	// Object renders itself in the 3d device
 
-	void RenderVectors (LPDIRECT3DDEVICE7 dev);
-	virtual void SetupRenderVectorList();
-	// render any auxiliary vectors
-
 	virtual void RenderExhaust (LPDIRECT3DDEVICE7, LPDIRECTDRAWSURFACE7) {}
 	// all classes which define VOCAPS_HASENGINES should implement this
 
 	virtual void RenderBeacons (LPDIRECT3DDEVICE7) {}
 	// allows objects to render light beacons or similar
-
-	bool DrawVector (LPDIRECT3DDEVICE7 dev, const Vector &end, const Vector &orig, double rad = 1.0,
-		const Vector &col = Vector(1,1,1), float opac = 1.0f);
 
 	inline double CDist () const { return cdist; }
 	inline const Vector &CPos () const { return cpos; }
@@ -76,6 +72,21 @@ public:
 
 	virtual void clbkEvent (DWORD msg, DWORD_PTR content) {}
 	// Notification of visual event (e.g. mesh addition/deletion)
+
+	struct BodyVectorRec {
+		Vector v;
+		Vector orig;
+		double rad;
+		double dist;
+		Vector col;
+		float alpha;
+		std::string label;
+		DWORD lcol;
+		float lsize;
+	};
+
+	virtual void RenderVectors(LPDIRECT3DDEVICE7 dev);
+	virtual void RenderVectorLabels(LPDIRECT3DDEVICE7 dev);
 
 protected:
 	static OrbiterGraphics *gc;
@@ -94,14 +105,20 @@ protected:
 	void RenderAsSpot (LPDIRECT3DDEVICE7 dev, D3DCOLORVALUE *illumination = 0);
 	// Render distant object as circular blob with a billboard texture
 
+	void AddVector(const Vector& v, const Vector& orig, double rad, const std::string& label, const Vector& col, float alpha = 1.0f, DWORD lcol = 0, float lsize = -1.0);
+
+	bool DrawVector(LPDIRECT3DDEVICE7 dev, const Vector& end, const Vector& orig, double rad = 1.0);
+
 	const Body *body;    // reference to logical object
 	static Scene *scene; // reference to scene
 	D3DMATRIX mWorld;    // world transform matrix
 	MATRIX4 dmWorld;     // world transformation matrix in double precision
 
-	Vector cpos;         // object position relative to camera
+	Vector cpos;         // object position relative to camera in global frame
+	Vector campos;       // camera position in object frame
 	double cdist;        // current distance from camera
 	double iapprad;      // inverse of apparent radius
+	std::vector<BodyVectorRec> veclist; // list of body vectors to be rendered
 
 private:
 	double apprad_factor; // auxiliary variable for apprad calculation
@@ -112,20 +129,6 @@ private:
 // =======================================================================
 // nonmember definitions
 
-struct vecentry {  // structure for rendering vectors
-	Vector v;
-	Vector orig;
-	double rad;
-	double dist;
-	Vector col;
-	float alpha;
-	char label[32];
-	DWORD lcol;
-	float lsize;
-	vecentry *next;
-};
-
-void AddVec (const Vector &cam, const Vector &v, const Vector &orig, double rad, const Vector &col, float alpha = 1.0, char *label = 0, DWORD lcol = 0, float lsize = -1.0);
 // add a vector to the render list
 // cam: camera position in local object frame
 // v: vector, rad: line radius, col: colour, alpha: opacity, label: label, lcol: label colour (0=same as vector), lsize: label size (-1=default)

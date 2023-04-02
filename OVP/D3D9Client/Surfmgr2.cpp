@@ -26,6 +26,16 @@
 // =======================================================================
 extern void FilterElevationGraphics(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, float *elev);
 
+#pragma pack(push, 4)
+struct LightF
+{
+	float3   position[4];         /* position in world space */
+	float3   direction[4];        /* direction in world space */
+	float3   diffuse[4];          /* diffuse color of light */
+	float3   attenuation[4];      /* Attenuation */
+	float4   param[4];            /* range, falloff, theta, phi */
+};
+#pragma pack(pop)
 
 
 // =======================================================================
@@ -182,9 +192,9 @@ void SurfTile::Load ()
 		mesh = CreateMesh_quadpatch (res, res, elev, 1.0, 0.0, &texrange, shift_origin, &vtxshift, mgr->GetPlanet()->prm.tilebb_excess);
 	}
 
-	static const DWORD label_enable = PLN_ENABLE | PLN_LMARK;
-	DWORD plnmode = *(DWORD*)smgr->Client()->GetConfigParam(CFGPRM_PLANETARIUMFLAG);
-	if ((plnmode & label_enable) == label_enable) {
+	static const DWORD label_enable = MKR_ENABLE | MKR_LMARK;
+	DWORD mkrmode = *(DWORD*)smgr->Client()->GetConfigParam(CFGPRM_SURFMARKERFLAG);
+	if ((mkrmode & label_enable) == label_enable) {
 		CreateLabels();
 	}
 }
@@ -307,8 +317,8 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 #ifdef ORBITER2016
 				hdr.scale = 1.0;
 #endif
-				rescale = (do_rescale = (hdr.scale != 1.0)) ? hdr.scale : 1.0;
-				offset = (do_shift = (hdr.offset != 0.0)) ? INT16(hdr.offset) : 0;
+				rescale = (do_rescale = (hdr.scale != tgt_res)) ? hdr.scale/tgt_res : 1.0;
+				offset = (do_shift = (hdr.offset != 0.0)) ? INT16(hdr.offset/tgt_res) : 0;
 
 				switch (hdr.dtype) {
 				case 0: // overwrite the entire tile with a flat offset
@@ -719,14 +729,14 @@ double SurfTile::GetCameraDistance()
 
 // -----------------------------------------------------------------------
 
-D3DXVECTOR4 SurfTile::MicroTexRange(SurfTile *pT, int ml) const
+FVECTOR4 SurfTile::MicroTexRange(SurfTile *pT, int ml) const
 {
 	float rs = 1.0f / float( 1 << (lvl-pT->Level()) );	// Range subdivision
 	float xo = pT->MicroRep[ml].x * texrange.tumin;
 	float yo = pT->MicroRep[ml].y * texrange.tvmin;
 	xo -= floor(xo); // Micro texture offset for current tile
 	yo -= floor(yo); // Micro texture offset for current tile
-	return D3DXVECTOR4(xo, yo, pT->MicroRep[ml].x * rs, pT->MicroRep[ml].y * rs);
+	return FVECTOR4(xo, yo, pT->MicroRep[ml].x * rs, pT->MicroRep[ml].y * rs);
 }
 
 // -----------------------------------------------------------------------
@@ -736,7 +746,6 @@ D3DXVECTOR4 SurfTile::MicroTexRange(SurfTile *pT, int ml) const
 void SurfTile::StepIn ()
 {
 	LPDIRECT3DDEVICE9 pDev = mgr->Dev();
-	ID3DXEffect *Shader = mgr->Shader();
 	const vPlanet *vPlanet = mgr->GetPlanet();
 
 	if (vPlanet != mgr->GetScene()->GetCameraProxyVisual()) return;
@@ -757,20 +766,13 @@ void SurfTile::StepIn ()
 
 void SurfTile::Render ()
 {
-	bool render_lights = mgr->Cprm().bLights;
-	bool render_shadows = mgr->GetPlanet()->CloudMgr2()!=NULL; // && !mgr->prm.rprm->bCloudFlatShadows);
-
+	
 	if (!mesh) return; // DEBUG : TEMPORARY
 
-	UINT numPasses = 0;
-
 	LPDIRECT3DDEVICE9 pDev = mgr->Dev();
-	ID3DXEffect *Shader = mgr->Shader();
-	const vPlanet *vPlanet = mgr->GetPlanet();
+	vPlanet *vPlanet = mgr->GetPlanet();
 	const Scene *scene = mgr->GetScene();
 	const D3D9Client *pClient = mgr->GetClient();
-
-	if (scene->GetRenderPass() == RENDERPASS_MAINSCENE) mgr->SetMinMaxElev(ehdr.emin, ehdr.emax);
 
 	static const double rad0 = sqrt(2.0)*PI05;
 	double sdist, rad;
@@ -780,41 +782,63 @@ void SurfTile::Render ()
 	bool has_microtex = false;
 	bool has_atmosphere = vPlanet->HasAtmosphere();
 	bool has_ripples = vPlanet->HasRipples();
-
-
-	if (ltex || render_shadows) {
-		sdist = acos (dotp (mgr->prm.sdir, cnt));
-		rad = rad0/(double)(2<<lvl); // tile radius
-		has_specular = (ltex && sdist < (1.75 + rad));
-		has_shadows = (render_shadows && sdist < (PI05+rad));
-		has_lights = (render_lights && ltex && sdist > 1.35);
-	}
+	bool bUseZBuf = mgr->IsUsingZBuf();
 
 	if (vPlanet->CameraAltitude()>20e3) has_ripples = false;
 
 	double ca = 1.0 + saturate(vPlanet->CameraAltitude() / 150e3) * Config->OrbitalShadowMult;
 
-	HR(Shader->SetVector(TileManager2Base::svCloudOff, &D3DXVECTOR4(0, 0, 1, 1)));
+	PlanetShader* pShader = mgr->GetShader();
+	ShaderParams* sp = vPlanet->GetTerrainParams();
+	FlowControlPS* fc = vPlanet->GetFlowControl();
+	FlowControlVS* fcv = vPlanet->GetFlowControlVS();
 
+	bool render_lights = pShader->bNightlights;
+	bool render_shadows = (mgr->GetPlanet()->CloudMgr2() != NULL) && mgr->GetClient()->GetConfigParam(CFGPRM_CLOUDSHADOWS) && pShader->bCloudShd;
 
-	// Assign micro texture range information to shaders -------------------------
-	//
+	if (ltex) {
+		sdist = acos(dotp(mgr->prm.sdir, cnt));
+		rad = rad0 / (double)(2 << lvl); // tile radius
+		has_specular = (ltex != NULL) && sdist < (1.75 + rad);
+		has_lights = (render_lights && ltex && sdist > 1.35);
+		has_shadows = (render_shadows && sdist < (PI05 + rad));
+	}
+	
+	has_specular &= pShader->bWater;
+	has_ripples &= pShader->bRipples & has_specular;
+	has_lights &= pShader->bNightlights;
+	has_atmosphere &= pShader->bAtmosphere;
+
+	sp->vCloudOff = FVECTOR4(0, 0, 1, 1);
+
+	D3DXVECTOR3 bs_pos;
+	D3DXVec3TransformCoord(&bs_pos, &mesh->bsCnt, &mWorld);
+
+	// ----------------------------------------------------------------------
+	// Assign micro texture range information to shaders 
+	// ----------------------------------------------------------------------
+
 	SurfTile *pT = getTextureOwner();
 
-	if (pT && vPlanet->MicroCfg.bEnabled) {
-		HR(Shader->SetVector(TileManager2Base::svMicroScale0, &MicroTexRange(pT, 0)));
-		HR(Shader->SetVector(TileManager2Base::svMicroScale1, &MicroTexRange(pT, 1)));
-		HR(Shader->SetVector(TileManager2Base::svMicroScale2, &MicroTexRange(pT, 2)));
+	if (pT && vPlanet->MicroCfg.bEnabled && pShader->bMicrotex)
+	{
+		sp->vMSc[0] = MicroTexRange(pT, 0);
+		sp->vMSc[1] = MicroTexRange(pT, 1);
+		sp->vMSc[2] = MicroTexRange(pT, 2);
 		has_microtex = true;
 	}
 
 
 
-	// Setup cloud shadows -------------------------------------------------------
-	//
-	if (has_shadows) {
+	// ----------------------------------------------------------------------
+	// Setup cloud shadows 
+	// ----------------------------------------------------------------------
 
-		has_shadows = false;
+	has_shadows = false;
+
+	if (render_shadows)
+	{
+		LPDIRECT3DTEXTURE9 pCloud = NULL, pCloud2 = NULL;
 
 		const TileManager2<CloudTile> *cmgr = vPlanet->CloudMgr2();
 		int maxlvl = min(lvl,9);
@@ -838,9 +862,10 @@ void SurfTile::Render ()
 				double v1 = v0 + (bnd.maxlat - bnd.minlat) * icsize;
 
 				// Feed uv-offset and uv-range to the shaders
-				HR(Shader->SetVector(TileManager2Base::svCloudOff, &D3DXVECTOR4(float(u0), float(v0), float(u1-u0), float(v1-v0))));
-				HR(Shader->SetFloat(TileManager2Base::sfAlpha, float(ca)));
-				HR(Shader->SetTexture(TileManager2Base::stCloud, ctile->Tex()));
+				sp->vCloudOff = FVECTOR4(float(u0), float(v0), float(u1-u0), float(v1-v0));
+				sp->fAlpha = float(ca);
+				pCloud = ctile->Tex();
+			
 
 				// Texture uv range extends to another tile
 				if (u1 > 1.0) {
@@ -855,7 +880,7 @@ void SurfTile::Render ()
 					if (ctile2) {
 						if (ctile2->Level() == ctile->Level()) {
 							// Rendering with dual texture
-							HR(Shader->SetTexture(TileManager2Base::stCloud2, ctile2->Tex()));
+							pCloud2 = ctile2->Tex();
 							has_shadows = true;
 							break;
 						}
@@ -874,69 +899,85 @@ void SurfTile::Render ()
 				}
 			}
 		}
+
+		pShader->SetTexture(pShader->tCloud, pCloud, IPF_CLAMP | IPF_ANISOTROPIC, Config->Anisotrophy);
+		pShader->SetTexture(pShader->tCloud2, pCloud2, IPF_CLAMP | IPF_ANISOTROPIC, Config->Anisotrophy);
 	}
 
+	
+	fc->bCloudShd = has_shadows;
+	fc->bMicroTex = has_microtex;
+	fc->bLocals = false;
+	fc->bOverlay = false;
+	fc->bMask = false;
+	fc->bShadows = false;
+	fc->bInSpace = !vPlanet->CameraInAtmosphere();
+	fc->bPlanetShadow = vPlanet->SphericalShadow();
+	fcv->bElevOvrl = false;
 
-	// ---------------------------------------------------------------------------------------------------
-	// Render with overlay image
-	//
-	D3DXVECTOR4 texcoord;
+
+	// ----------------------------------------------------------------------
+	// DevTools: Render with overlay image
+	// ----------------------------------------------------------------------
+
+	FVECTOR4 texcoord;
 	const vPlanet::sOverlay *oLay = vPlanet->IntersectOverlay(bnd.vec, &texcoord);
 
-	if (oLay)
+	if (pShader->bDevtools)
 	{
-		bool bOlayEnable = false; for (auto x : oLay->pSurf) if (x) bOlayEnable = true;
-
-		if (bOlayEnable)
+		if (oLay)
 		{
-			// Global large-scale overlay
-			HR(Shader->SetTexture(TileManager2Base::stOverlay, oLay->pSurf[0]));
-			HR(Shader->SetTexture(TileManager2Base::stMskOverlay, oLay->pSurf[1]));
-			HR(Shader->SetTexture(TileManager2Base::stElvOverlay, oLay->pSurf[2]));
-			HR(Shader->SetVectorArray(TileManager2Base::svOverlayCtrl, oLay->Blend, 4));
-			HR(Shader->SetVector(TileManager2Base::svOverlayOff, &texcoord));
+			bool bOlayEnable = false; for (auto x : oLay->pSurf) if (x) bOlayEnable = true;
 
-			if (oLay->pSurf[0] || oLay->pSurf[1]) {
-				HR(Shader->SetBool(TileManager2Base::sbOverlay, true));
-			}
-			if (oLay->pSurf[2]) {
-				HR(Shader->SetBool(TileManager2Base::sbElevOvrl, true));
+			if (bOlayEnable)
+			{
+				// Global large-scale overlay
+				pShader->SetTexture("tOverlay", oLay->pSurf[0]);
+				pShader->SetTexture("tMskOverlay", oLay->pSurf[1]);
+				pShader->SetTexture("tElvOverlay", oLay->pSurf[2]);
+
+				memcpy(&sp->vOverlayCtrl, &oLay->Blend, sizeof(FVECTOR4) * 4);
+				sp->vOverlayOff = texcoord;
+
+				if (oLay->pSurf[0] || oLay->pSurf[1]) fc->bOverlay = true;
+				if (oLay->pSurf[2]) fcv->bElevOvrl = true;
 			}
 		}
-		else {
-			// No Overlay
-			HR(Shader->SetTexture(TileManager2Base::stOverlay, NULL));
-			HR(Shader->SetTexture(TileManager2Base::stMskOverlay, NULL));
-			HR(Shader->SetTexture(TileManager2Base::stElvOverlay, NULL));
-			HR(Shader->SetBool(TileManager2Base::sbOverlay, false));
-			HR(Shader->SetBool(TileManager2Base::sbElevOvrl, false));
+		else if (overlay) {
+			// Local tile specific overlay
+			pShader->SetTexture("tOverlay", overlay);
+			sp->vOverlayOff = GetTexRangeDX(&overlayrange);
+			fc->bOverlay = true;
 		}
-	} else if (overlay) {
-		// Local tile specific overlay
-		HR(Shader->SetTexture(TileManager2Base::stOverlay, overlay));
-		HR(Shader->SetVector(TileManager2Base::svOverlayOff, &GetTexRangeDX(&overlayrange)));
-		HR(Shader->SetBool(TileManager2Base::sbOverlay, true));
-	} else {
-		// No Overlay
-		HR(Shader->SetTexture(TileManager2Base::stOverlay, NULL));
-		HR(Shader->SetBool(TileManager2Base::sbOverlay, false));
 	}
 
 
-	// ---------------------------------------------------------------------------------------------------
-	// Feed tile specific data to shaders
-	//
-	// ---------------------------------------------------------------------------------------------------
-	HR(Shader->SetTexture(TileManager2Base::stDiff, tex));
-	HR(Shader->SetTexture(TileManager2Base::stMask, ltex));
-	HR(Shader->SetVector(TileManager2Base::svTexOff, &GetTexRangeDX(&texrange)));
-	HR(Shader->SetVector(TileManager2Base::svMicroOff, &GetTexRangeDX(&microrange)));
-	// ---------------------------------------------------------------------------------------------------
-	HR(Shader->SetBool(TileManager2Base::sbCloudSh, has_shadows));
-	HR(Shader->SetBool(TileManager2Base::sbLights, has_lights));
-	// ---------------------------------------------------------------------------------------------------
-	if (has_lights) { HR(Shader->SetFloat(TileManager2Base::sfNight, float(mgr->Cprm().lightfac))); }
-	else {			  HR(Shader->SetFloat(TileManager2Base::sfNight, 0.0f));	}
+	// ----------------------------------------------------------------------
+	// Setup Main Texture
+	// ----------------------------------------------------------------------
+
+	pShader->SetTexture(pShader->tDiff, tex, IPF_CLAMP | IPF_ANISOTROPIC, Config->Anisotrophy);
+	
+	// ----------------------------------------------------------------------
+	// Night Lights and Water Specular
+	// ----------------------------------------------------------------------
+	
+	if (pShader->bNightlights || pShader->bWater)
+	{
+		if ((has_specular || has_lights) && ltex) {
+			pShader->SetTexture(pShader->tMask, ltex, IPF_CLAMP | IPF_ANISOTROPIC, Config->Anisotrophy);
+			fc->bMask = true;
+		}
+		else pShader->SetTexture(pShader->tMask, NULL, IPF_CLAMP | IPF_ANISOTROPIC, Config->Anisotrophy);
+	}
+
+	sp->vTexOff = GetTexRangeDX(&texrange);
+	sp->vMicroOff = GetTexRangeDX(&microrange);
+	sp->mWorld = mWorld;
+	sp->fTgtScale = tgtscale;
+
+	if (has_lights) sp->fBeta = float(mgr->Cprm().lightfac);
+	else sp->fBeta = 0.0f;
 
 
 
@@ -945,134 +986,136 @@ void SurfTile::Render ()
 	// Setup shadow maps
 	// ---------------------------------------------------------------------
 
-	D3DXMATRIX wmx;
-	HR(Shader->GetMatrix(TileManager2Base::smWorld, &wmx));
-	HR(Shader->SetBool(TileManager2Base::sbShadows, false));
+	if (pShader->bShdMap)
+	{
+		const Scene::SHADOWMAPPARAM* shd = scene->GetSMapData();
 
-	D3DXVECTOR3 bs_pos;
-	D3DXVec3TransformCoord(&bs_pos, &mesh->bsCnt, &wmx);
+		D3DXVECTOR3 bc = bs_pos - shd->pos;
 
-	const Scene::SHADOWMAPPARAM *shd = scene->GetSMapData();
+		double alt = scene->GetCameraAltitude() - scene->GetTargetElevation();
 
-	D3DXVECTOR3 bc = bs_pos - shd->pos;
+		if ((alt < 10e3) && (scene->GetCameraProxyVisual() == mgr->GetPlanet())) {
 
-	double alt = scene->GetCameraAltitude() - scene->GetTargetElevation();
+			if (shd->pShadowMap && (Config->ShadowMapMode != 0) && (Config->TerrainShadowing == 2)) {
 
-	if ((alt < 10e3) && (scene->GetCameraProxyVisual() == mgr->GetPlanet())) {
+				float x = D3DXVec3Dot(&bc, &(shd->ld));
 
-		if (shd->pShadowMap && (Config->ShadowMapMode != 0) && (Config->TerrainShadowing == 2)) {
-
-			float x = D3DXVec3Dot(&bc, &(shd->ld));
-
-			if (sqrt(D3DXVec3Dot(&bc, &bc) - x*x) < (shd->rad + mesh->bsRad)) {
-				float s = float(shd->size);
-				float sr = 2.0f * shd->rad / s;
-				HR(Shader->SetMatrix(TileManager2Base::smLVP, &shd->mViewProj));
-				HR(Shader->SetVector(TileManager2Base::svSHD, &D3DXVECTOR4(sr, 1.0f / s, 0, 1.0f / shd->depth)));
-				HR(Shader->SetTexture(TileManager2Base::stShadowMap, shd->pShadowMap));
-				HR(Shader->SetBool(TileManager2Base::sbShadows, true));
+				if (sqrt(D3DXVec3Dot(&bc, &bc) - x * x) < (shd->rad + mesh->bsRad)) {
+					float s = float(shd->size);
+					float sr = 2.0f * shd->rad / s;
+					sp->mLVP = shd->mViewProj;
+					sp->vSHD = FVECTOR4(sr, 1.0f / s, 0.0f, 1.0f / shd->depth);
+					fc->bShadows = true;
+				}
 			}
 		}
+
+		pShader->SetTexture(pShader->tShadowMap, shd->pShadowMap);
 	}
-
-
-
 
 	// ---------------------------------------------------------------------
 	// Setup local light sources
 	//---------------------------------------------------------------------
 
-	const D3D9Light *pLights = scene->GetLights();
-	int nSceneLights = scene->GetLightCount();
+	int cfg = vPlanet->GetShaderID();
 
-	LightStruct Locals[4];
+	LightF Locals;
+	BOOL Spots[4];
 
-	HR(Shader->SetBool(TileManager2Base::sbLocals, false));
+	if (cfg != PLT_GIANT)
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			Locals.attenuation[i] = FVECTOR3(1.0f, 1.0f, 1.0f);
+			Locals.diffuse[i] = FVECTOR3(0.0f, 0.0f, 0.0f);
+			Locals.direction[i] = FVECTOR3(1.0f, 0.0f, 0.0f);
+			Locals.param[i] = FVECTOR4(0.0f, 0.0f, 0.0f, 0.0f);
+			Locals.position[i] = FVECTOR3(0.0f, 0.0f, 0.0f);
+			Spots[i] = false;
+		}
 
+		if (scene->GetRenderPass() == RENDERPASS_MAINSCENE)
+		{
+			const D3D9Light* pLights = scene->GetLights();
+			int nSceneLights = min(scene->GetLightCount(), MAX_SCENE_LIGHTS);
 
-	if (pLights && nSceneLights>0) {
+			if (pLights && nSceneLights > 0 && pShader->bLocals)
+			{
+				int nMeshLights = 0;
 
-		int nMeshLights = 0;
+				_LightList LightList[MAX_SCENE_LIGHTS];
 
-		_LightList LightList[MAX_SCENE_LIGHTS];
+				// Find all local lights effecting this mesh ------------------------------------------
+				//
+				for (int i = 0; i < nSceneLights; i++) {
+					float il = pLights[i].GetIlluminance(bs_pos, mesh->bsRad);
+					if (il > 0.005f) {
+						LightList[nMeshLights].illuminace = il;
+						LightList[nMeshLights++].idx = i;
+					}
+				}
 
-		// Find all local lights effecting this mesh ------------------------------------------
-		//
-		for (int i = 0; i < nSceneLights; i++) {
-			float il = pLights[i].GetIlluminance(bs_pos, mesh->bsRad);
-			if (il > 0.005f) {
-				LightList[nMeshLights].illuminace = il;
-				LightList[nMeshLights++].idx = i;
+				if (nMeshLights > 0) {
+
+					// If any, Sort the list based on illuminance -------------------------------------------
+					qsort(LightList, nMeshLights, sizeof(_LightList), compare_lights);
+
+					nMeshLights = min(nMeshLights, 4);
+
+					// Create a list of N most effective lights ---------------------------------------------
+					for (int i = 0; i < nMeshLights; i++)
+					{
+						auto pL = pLights[LightList[i].idx];
+						Locals.attenuation[i] = pL.Attenuation;
+						Locals.diffuse[i] = FVECTOR4(pL.Diffuse).rgb;
+						Locals.direction[i] = pL.Direction;
+						Locals.param[i] = pL.Param;
+						Locals.position[i] = pL.Position;
+						Spots[i] = (pL.Type == 1);
+					}
+
+					// Enable local lights and feed data to shader
+					fc->bLocals = true;
+				}
 			}
 		}
-
-		if (nMeshLights > 0) {
-
-			// If any, Sort the list based on illuminance -------------------------------------------
-			qsort(LightList, nMeshLights, sizeof(_LightList), compare_lights);
-
-			nMeshLights = min(nMeshLights, 4);
-
-			// Create a list of N most effective lights ---------------------------------------------
-			for (int i = 0; i < nMeshLights; i++) memcpy(&Locals[i], &pLights[LightList[i].idx], sizeof(LightStruct));
-
-			HR(Shader->SetBool(TileManager2Base::sbLocals, true));
-			HR(Shader->SetValue(TileManager2Base::ssLight, &Locals, sizeof(Locals)));
-		}
 	}
 
-	/*
-	if (pLights && nSceneLights > 0) {
-
-		// Create a list of N most effective lights ---------------------------------------------
-		for (int i = 0; i < nSceneLights; i++) memcpy(&Locals[i], &pLights[i], sizeof(LightStruct));
-		HR(Shader->SetBool(TileManager2Base::sbLocals, true));
-
-	}*/
-
-	Shader->CommitChanges();
-
-	// -------------------------------------------------------------------
-	// Find suitable technique
-
-	int iTech = 0;
-
-	if (has_atmosphere) {
-		if (has_shadows) {
-			if (has_ripples) iTech = 0;		// Earth
-			else			 iTech = 1;		// Earth, no ripples
-		}
-		else {
-			if (has_microtex) iTech = 2;	// Mars
-			else			  iTech = 3;	// Mars, no micro
-		}
-	}
-	else {
-		if (has_microtex) iTech = 4;	// Luna
-		else			  iTech = 5;	// Luna, no micro
-	}
 
 
 	// -------------------------------------------------------------------
 	// render surface mesh
 	//
-	HR(Shader->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
-	HR(Shader->BeginPass(iTech));
-	pDev->SetVertexDeclaration(pPatchVertexDecl);
+	pShader->SetVSConstants(pShader->PrmVS, sp, sizeof(ShaderParams));
+	pShader->SetPSConstants(pShader->Prm, sp, sizeof(ShaderParams));
+
+	if (cfg != PLT_GIANT)
+	{
+		pShader->SetVSConstants(pShader->FlowVS, fcv, sizeof(FlowControlVS));
+		pShader->SetPSConstants(pShader->Flow, fc, sizeof(FlowControlPS));
+
+		if (fc->bLocals)
+		{
+			pShader->SetPSConstants(pShader->Lights, &Locals, sizeof(Locals));
+			pShader->SetPSConstants(pShader->Spotlight, Spots, sizeof(Spots));
+		}
+	}
+
+	pShader->UpdateTextures();
+
 	pDev->SetStreamSource(0, mesh->pVB, 0, sizeof(VERTEX_2TEX));
 	pDev->SetIndices(mesh->pIB);
 	pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mesh->nv, 0, mesh->nf);
-	HR(Shader->EndPass());
-	HR(Shader->End());
-
+	
 	// Render tile bounding box
 	//
+	/*
 	if (DebugControls::IsActive()) {
 		DWORD flags  = *(DWORD*)mgr->GetClient()->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 		if (flags&DBG_FLAGS_TILEBOXES) {
 			D3D9Effect::RenderTileBoundingBox(&mWorld, mesh->Box, &D3DXVECTOR4(1,0,0,1));
 		}
-	}
+	}*/
 }
 
 // -----------------------------------------------------------------------
@@ -1313,10 +1356,12 @@ void SurfTile::RenderLabels(D3D9Pad *skp, oapi::Font **labelfont, int *fontidx)
 template<>
 void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlanet::RenderPrm &rprm)
 {
+	bUseZ = use_zbuf;
+	ElevModeLvl = 0;
+
 	// set generic parameters
 	SetRenderPrm (dwmat, 0, use_zbuf, rprm);
 
-	double np = 0.0, fp = 0.0;
 	int i;
 	class Scene *scene = GetClient()->GetScene();
 
@@ -1326,72 +1371,88 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 		double D = prm.cdist*R;
 		double zmax = (D - R*R/D) * 1.5;
 		double zmin = max (2.0, min (zmax*1e-4, (D-R) * 0.8));
-	//double zscale = 1.0;
 
-		np = scene->GetCameraNearPlane();
-		fp = scene->GetCameraFarPlane();
-		scene->SetCameraFrustumLimits (zmin, zmax);
+		vp->GetScatterConst()->mVP = scene->PushCameraFrustumLimits(zmin, zmax);
 	}
 
 	// build a transformation matrix for frustum testing
 	MATRIX4 Mproj = _MATRIX4(scene->GetProjectionMatrix());
 	Mproj.m33 = 1.0; Mproj.m43 = -1.0;  // adjust near plane to 1, far plane to infinity
 	MATRIX4 Mview = _MATRIX4(scene->GetViewMatrix());
-	prm.dviewproj = mul(Mview,Mproj);
+	prm.dviewproj = mul(Mview, Mproj);
 
 	// ---------------------------------------------------------------------
 
 	static float spec_base = 0.7f; // 0.95f;
 
-	// ---------------------------------------------------------------------
-	// Initialize shading technique and feed planet specific data to shaders
-	//
-	Shader()->SetTechnique(eTileTech);
+	bool has_ripples = vp->HasRipples();
 
-	HR(Shader()->SetBool(sbSpherical, false));
+	// Choose a proper shader for a body
+	//
+	pShader = vp->GetShader();
+	int cfg = vp->GetShaderID();
+
+	pShader->ClearTextures();
+	pShader->Setup(pPatchVertexDecl, bUseZ, 0);
+	pShader->GetDevice()->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+
+	ShaderParams* sp = vp->GetTerrainParams();
+	FlowControlPS* fc = vp->GetFlowControl();
+	FlowControlVS* fcv = vp->GetFlowControlVS();
+	ConstParams* cp = vp->GetScatterConst();
+
+	memset(fc, 0, sizeof(FlowControlPS));
+	memset(fcv, 0, sizeof(FlowControlVS));
+
+	pShader->SetVSConstants("Const", cp, sizeof(ConstParams));
+	pShader->SetPSConstants("Const", cp, sizeof(ConstParams));
+
+	if (pShader->bAtmosphere && cfg != PLT_GIANT)
+	{
+		pShader->SetTexture("tLndRay", vp->GetScatterTable(RAY_LAND), IPF_LINEAR | IPF_CLAMP);
+		pShader->SetTexture("tLndMie", vp->GetScatterTable(MIE_LAND), IPF_LINEAR | IPF_CLAMP);
+		pShader->SetTexture("tLndAtn", vp->GetScatterTable(ATN_LAND), IPF_LINEAR | IPF_CLAMP);
+		pShader->SetTexture("tSun", vp->GetScatterTable(SUN_COLOR), IPF_LINEAR | IPF_CLAMP);
+		pShader->SetTexture("tNoise", GetClient()->GetNoiseTex(), IPF_LINEAR | IPF_WRAP);
+
+		if (pShader->bWater) {
+			pShader->SetTexture("tAmbient", vp->GetScatterTable(SKY_AMBIENT), IPF_LINEAR | IPF_CLAMP);
+		}
+	}
 
 	if (ElevMode == eElevMode::Spherical) {
 		// Force spherical rendering at shader level
-		HR(Shader()->SetBool(sbSpherical, true));
+		fcv->bSpherical = true;
 	}	
 
-	if (use_zbuf) {
-		pDev->SetRenderState(D3DRS_ZENABLE, 1);
-		pDev->SetRenderState(D3DRS_ZWRITEENABLE, 1);
-	}
-	else {
-		pDev->SetRenderState(D3DRS_ZENABLE, 0);
-		pDev->SetRenderState(D3DRS_ZWRITEENABLE, 0);
-		HR(Shader()->SetBool(sbSpherical, true));
-	}
-
-	HR(Shader()->SetMatrix(smViewProj, scene->GetProjectionViewMatrix()));
-	HR(Shader()->SetVector(svWater, &D3DXVECTOR4(spec_base*1.2f, spec_base*1.0f, spec_base*0.8f, 50.0f)));
-	HR(Shader()->SetBool(sbEnvEnable, false));
+	if (!use_zbuf) fcv->bSpherical = true;
 
 	// -------------------------------------------------------------------
 	vVessel *vFocus = scene->GetFocusVisual();
 	vPlanet *vProxy = scene->GetCameraProxyVisual();
 
-	// Setup Environment map ---------------------------------------------
-	//
-	if (vFocus && bEnvMapEnabled) {
-		LPDIRECT3DCUBETEXTURE9 pEnv = vFocus->GetEnvMap(0);
-		if (pEnv) {
-			HR(Shader()->SetTexture(stEnvMap, pEnv));
-			HR(Shader()->SetBool(sbEnvEnable, true));
-		}
-	}
 
 	// Setup micro textures ---------------------------------------------
 	//
-	if (vp->MicroCfg.bEnabled) {
-		HR(Shader()->SetTexture(stMicroA, vp->MicroCfg.Level[0].pTex));
-		HR(Shader()->SetTexture(stMicroB, vp->MicroCfg.Level[1].pTex));
-		HR(Shader()->SetTexture(stMicroC, vp->MicroCfg.Level[2].pTex));
-		HR(Shader()->SetBool(sbMicroNormals, vp->MicroCfg.bNormals));
+	if (vp->MicroCfg.bEnabled && pShader->bMicrotex)
+	{
+		UINT Filter = IPF_ANISOTROPIC;
+		if (Config->MicroFilter == 0) Filter = IPF_POINT;
+		if (Config->MicroFilter == 1) Filter = IPF_LINEAR;
+		UINT micro_aniso = (1 << (max(1, Config->MicroFilter) - 1));
+		pShader->SetTexture("tMicroA", vp->MicroCfg.Level[0].pTex, IPF_WRAP | Filter, micro_aniso);
+		pShader->SetTexture("tMicroB", vp->MicroCfg.Level[1].pTex, IPF_WRAP | Filter, micro_aniso);
+		pShader->SetTexture("tMicroC", vp->MicroCfg.Level[2].pTex, IPF_WRAP | Filter, micro_aniso);
+
+		fc->bMicroNormals = vp->MicroCfg.bNormals;
 	}
 
+	if (has_ripples && pShader->bRipples) {
+		fc->bRipples = true;
+		pShader->SetTexture("tOcean", hOcean, IPF_WRAP | IPF_ANISOTROPIC, 4);
+	}
+
+	if (Config->NoPlanetAA) pShader->GetDevice()->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, 0);
 
 	// ------------------------------------------------------------------
 	// TODO: render full sphere for levels < 4
@@ -1404,14 +1465,13 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 
 	vp->tile_cache = NULL;
 
-	if (scene->GetRenderPass() == RENDERPASS_MAINSCENE) ResetMinMaxElev();
-
 	// render the tree
 	for (i = 0; i < 2; i++)
 		RenderNode (tiletree+i);
 
 	loader->ReleaseMutex();
 
+	if (Config->NoPlanetAA) pShader->GetDevice()->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, 1);
 
 	// Backup the stats and clear counters
 	if (scene->GetRenderPass() == RENDERPASS_MAINSCENE) prevstat = elvstat;
@@ -1426,8 +1486,8 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 		}
 	}*/
 
-	if (np)
-		scene->SetCameraFrustumLimits(np,fp);
+	// Pop previous frustum configuration, must initialize mVP
+	if (!use_zbuf)	vp->GetScatterConst()->mVP = scene->PopCameraFrustumLimits();
 }
 
 // -----------------------------------------------------------------------
@@ -1552,7 +1612,7 @@ void TileManager2<SurfTile>::Pick(D3DXVECTOR3 &vRay, TILEPICK *pPick)
 	QueryTiles(&tiletree[0], tiles);
 	QueryTiles(&tiletree[1], tiles);
 
-	for each (Tile * tile in tiles)	tile->Pick(&(tile->mWorld), &vRay, *pPick);
+	for (auto tile : tiles)	tile->Pick(&(tile->mWorld), &vRay, *pPick);
 }
 
 // -----------------------------------------------------------------------

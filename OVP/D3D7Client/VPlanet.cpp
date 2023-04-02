@@ -193,17 +193,19 @@ bool vPlanet::Update ()
 	//	rescale = true;
 	//	dist_scale = (FLOAT)(farplane/(cdist+render_rad));
 	//}
+	mWorldScaled = mWorld;
+
 	if (rescale) {
 		rad_scale *= dist_scale;
-		mWorld._41 *= dist_scale;
-		mWorld._42 *= dist_scale;
-		mWorld._43 *= dist_scale;
+		mWorldScaled._41 *= dist_scale;
+		mWorldScaled._42 *= dist_scale;
+		mWorldScaled._43 *= dist_scale;
 	}
 
 	// scale up from template sphere radius 1
-	mWorld._11 *= rad_scale; mWorld._12 *= rad_scale; mWorld._13 *= rad_scale;
-	mWorld._21 *= rad_scale; mWorld._22 *= rad_scale; mWorld._23 *= rad_scale;
-	mWorld._31 *= rad_scale; mWorld._32 *= rad_scale; mWorld._33 *= rad_scale;
+	mWorldScaled._11 *= rad_scale; mWorldScaled._12 *= rad_scale; mWorldScaled._13 *= rad_scale;
+	mWorldScaled._21 *= rad_scale; mWorldScaled._22 *= rad_scale; mWorldScaled._23 *= rad_scale;
+	mWorldScaled._31 *= rad_scale; mWorldScaled._32 *= rad_scale; mWorldScaled._33 *= rad_scale;
 
 	// cloud layer world matrix
 	if (prm.bCloud) {
@@ -224,7 +226,7 @@ bool vPlanet::Update ()
 			float cloudscale = (float)(cloudrad/size);
 
 			// world matrix for cloud shadows on the surface
-			memcpy (&clouddata->mWorldC0, &mWorld, sizeof (D3DMATRIX));
+			memcpy (&clouddata->mWorldC0, &mWorldScaled, sizeof (D3DMATRIX));
 			if (prm.cloudrot) {
 				static D3DMATRIX crot (1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1);
 				crot._11 =   crot._33 = (float)cos(prm.cloudrot);
@@ -350,12 +352,12 @@ bool vPlanet::Render (LPDIRECT3DDEVICE7 dev)
 		prm.bFog = prm.bFogEnabled;
 		prm.bTint = prm.bFogEnabled;
 
-		D3DCOLOR skybg = scn->GetBgColour();
-		prm.bAddBkg = ((skybg & 0xFFFFFF) && (hObj != scn->GetCamera()->GetProxyBody()));
+		int skybrt = scn->BgBrightnessLevel();
+		prm.bAddBkg = (skybrt && (hObj != scn->GetCamera()->GetProxyBody()));
 
 		if (ringmgr) {
 			if (cdist < rad*ringmgr->InnerRad()) { // camera inside inner ring edge
-				ringmgr->Render (dev, mWorld);
+				ringmgr->Render (dev, mWorldScaled);
 			} else {
 				// if the planet has a ring system we update the z-buffer
 				// but don't do z-checking for the planet surface
@@ -369,7 +371,7 @@ bool vPlanet::Render (LPDIRECT3DDEVICE7 dev)
 		}
 		if (prm.bCloud && (prm.cloudvis & 1))
 			RenderCloudLayer (dev, D3DCULL_CW, prm);      // render clouds from below
-		if (hazemgr) hazemgr->Render (dev, mWorld);       // horizon ring
+		if (hazemgr) hazemgr->Render (dev, mWorldScaled);       // horizon ring
 
 		if (prm.bAtm) {
 			if (ModLighting (amb))
@@ -433,7 +435,7 @@ bool vPlanet::Render (LPDIRECT3DDEVICE7 dev)
 		}
 
 		if (mesh) {
-			dev->SetTransform (D3DTRANSFORMSTATE_WORLD, &mWorld);
+			dev->SetTransform (D3DTRANSFORMSTATE_WORLD, &mWorldScaled);
 			mesh->Render (dev);
 		} else {
 			bool using_zbuf;
@@ -460,11 +462,11 @@ bool vPlanet::Render (LPDIRECT3DDEVICE7 dev)
 		}
 		if (prm.bCloud && (prm.cloudvis & 2))
 			RenderCloudLayer (dev, D3DCULL_CCW, prm);	  // render clouds from above
-		if (hazemgr) hazemgr->Render (dev, mWorld, true); // haze across planet disc
+		if (hazemgr) hazemgr->Render (dev, mWorldScaled, true); // haze across planet disc
 		if (ringpostrender) {
 			// turn z-buffer on for ring system
 			dev->SetRenderState (D3DRENDERSTATE_ZENABLE, TRUE);
-			ringmgr->Render (dev, mWorld);
+			ringmgr->Render (dev, mWorldScaled);
 			dev->SetRenderState (D3DRENDERSTATE_ZENABLE, FALSE);
 			dev->SetRenderState (D3DRENDERSTATE_ZWRITEENABLE, FALSE);
 		}
@@ -524,7 +526,7 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE7 dev, const RenderPrm &prm, bool &u
 		dev->SetTextureStageState (1, D3DTSS_COLOROP, D3DTOP_ADD);
 		dev->SetTextureStageState (1, D3DTSS_COLORARG1, D3DTA_CURRENT);
 		dev->SetTextureStageState (1, D3DTSS_COLORARG2, D3DTA_TFACTOR);
-		D3DCOLOR bgc = gc->GetScene()->GetBgColour();
+		DWORD bgc = gc->GetScene()->BgColourRGBA();
 		dev->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, bgc);
 	}
 
@@ -540,7 +542,7 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE7 dev, const RenderPrm &prm, bool &u
 			using_zbuf = true;
 		}
 	} else {
-		surfmgr->Render (dev, mWorld, dist_scale, patchres, 0.0, prm.bFog); // surface
+		surfmgr->Render (dev, mWorldScaled, dist_scale, patchres, 0.0, prm.bFog); // surface
 	}
 
 	if (prm.bAddBkg) {
@@ -583,6 +585,21 @@ void vPlanet::RenderCloudLayer (LPDIRECT3DDEVICE7 dev, DWORD cullmode, const Ren
 		clouddata->cloudmgr->Render (dev, clouddata->mWorldC, dist_scale, min(patchres,8), clouddata->viewap); // clouds
 	dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
 	if (cullmode != D3DCULL_CCW) dev->SetRenderState (D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
+}
+
+void vPlanet::RenderVectors(LPDIRECT3DDEVICE7 dev)
+{
+	vObject::RenderVectors(dev);
+	RenderBaseVectors(dev);
+}
+
+// ==============================================================
+
+void vPlanet::RenderBaseVectors(LPDIRECT3DDEVICE7 dev)
+{
+	for (DWORD i = 0; i < nbase; i++)
+		if (vbase[i])
+			vbase[i]->RenderVectors(dev);
 }
 
 // ==============================================================

@@ -1091,9 +1091,9 @@ void VectorMap::DrawCustomMarkerSet (int idx)
 				SetPixel (hDCmem, x, y, colCustomMkr[idx]);
 			} else {
 				Ellipse (hDCmem, x-2, y-2, x+3, y+3);
-				if (drawlabel && (label = set->list->list[i].label[0])) {
+				if (drawlabel && set->list->marker[i].label[0].size()) {
 					WCHAR wlabel[256];
-					MultiByteToWideChar(CP_UTF8, 0, label, -1, wlabel, 256);
+					MultiByteToWideChar(CP_UTF8, 0, set->list->marker[i].label[0].c_str(), -1, wlabel, 256);
 					TextOutW (hDCmem, x+3, y, wlabel, wcslen(wlabel));
 				}
 			}
@@ -1512,11 +1512,11 @@ void CustomMkrSpec::Connect (oapi::GraphicsClient::LABELLIST *ll)
 void CustomMkrSpec::Convert ()
 {
 	if (nvtx) return;
-	if (!list || !list->list) return;
-	nvtx = list->length;
+	if (!list || !list->marker.size()) return;
+	nvtx = list->marker.size();
 	vtx = new VPoint[nvtx];
 	for (int i = 0; i < nvtx; i++) {
-		VECTOR3 &p = list->list[i].pos;
+		VECTOR3 &p = list->marker[i].pos;
 		vtx[i].lng = atan2 (p.z, p.x);
 		vtx[i].lat = asin  (p.y / length(p));
 	}

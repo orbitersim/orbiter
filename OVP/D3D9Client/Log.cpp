@@ -137,6 +137,14 @@ void D3D9DebugLog(const char *format, ...)
 
 //-------------------------------------------------------------------------------------------
 //
+void D3D9DebugLogVec(const char* lbl, oapi::FVECTOR4 &v)
+{
+	sprintf_s(ErrBuf, ERRBUF, "%s = [%f, %f, %f, %f]", lbl, v.x, v.y, v.z, v.w);
+	D3D9DebugQueue.push(std::string(ErrBuf));
+}
+
+//-------------------------------------------------------------------------------------------
+//
 void D3D9InitLog(char *file)
 {
 	QueryPerformanceFrequency((LARGE_INTEGER*)&qpcFrq);

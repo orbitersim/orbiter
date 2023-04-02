@@ -35,7 +35,7 @@ void ApplyPatchTextureCoordinates (VBMESH &mesh, LPDIRECT3DVERTEXBUFFER7 vtx, co
 static int ntot, nrad, nrender;
 
 DWORD CSphereManager::vpX0, CSphereManager::vpX1, CSphereManager::vpY0, CSphereManager::vpY1;
-double CSphereManager::diagscale;
+double CSphereManager::diagscale = 0.0;
 int *CSphereManager::patchidx = 0;
 int **CSphereManager::NLNG = 0;
 int *CSphereManager::NLAT = 0;
@@ -58,14 +58,23 @@ CSphereManager::CSphereManager (const D3D7Client *gclient, const Scene *scene)
 	NLNG = TileManager::NLNG;
 	NLAT = TileManager::NLAT;
 
-	char *c = (char*)gc->GetConfigParam (CFGPRM_CSPHERETEXTURE);
-	if (!c[0]) {
-		disabled = true;
-		return;
-	} else {
-		strncpy (texname, c, 64);
-		disabled = false;
+	m_bBkgImg = *(bool*)gc->GetConfigParam(CFGPRM_CSPHEREUSEBGIMAGE);
+	if (m_bBkgImg) {
+		char* c = (char*)gc->GetConfigParam(CFGPRM_CSPHERETEXTURE);
+		if (c[0]) strncpy(texname, c, 128);
+		else      m_bBkgImg = false;
 	}
+
+	m_bStarImg = *(bool*)gc->GetConfigParam(CFGPRM_CSPHEREUSESTARIMAGE);
+	if (m_bStarImg) {
+		char* c = (char*)gc->GetConfigParam(CFGPRM_CSPHERESTARTEXTURE);
+		if (c[0]) strncpy(starfieldname, c, 128);
+		else      m_bStarImg = false;
+	}
+
+	m_bDisabled = true;
+	if (!m_bBkgImg && !m_bStarImg)
+		return;
 
 	double tmp;
 	tmp = *(double*)gc->GetConfigParam (CFGPRM_CSPHEREINTENS);
@@ -84,50 +93,51 @@ CSphereManager::CSphereManager (const D3D7Client *gclient, const Scene *scene)
 	LoadTileData ();
 	LoadTextures ();
 
-	MATRIX3 R = {2000,0,0, 0,2000,0, 0,0,2000};
-
 	// rotation from galactic to ecliptic frame
-	double theta = 60.18*RAD;
-	double phi = 90.02*RAD;
-	double lambda = 173.6*RAD;
+	double lambda = 173.60 * RAD;
+	double phi = 90.03 * RAD;
+	double theta = 60.19 * RAD;
 	double sint = sin(theta), cost = cos(theta);
 	double sinp = sin(phi), cosp = cos(phi);
 	double sinl = sin(lambda), cosl = cos(lambda);
 	ecl2gal = _M(cosp,0,sinp, 0,1,0, -sinp,0,cosp);
 	ecl2gal = mul (_M(1,0,0, 0,cost,sint, 0,-sint,cost), ecl2gal);
 	ecl2gal = mul (_M(cosl,0,sinl, 0,1,0, -sinl,0,cosl), ecl2gal);
-	R = mul (ecl2gal, R);
 
 	D3DMAT_Identity (&trans);
-	trans._11 = (D3DVALUE)R.m11;
-	trans._12 = (D3DVALUE)R.m12;
-	trans._13 = (D3DVALUE)R.m13;
-	trans._21 = (D3DVALUE)R.m21;
-	trans._22 = (D3DVALUE)R.m22;
-	trans._23 = (D3DVALUE)R.m23;
-	trans._31 = (D3DVALUE)R.m31;
-	trans._32 = (D3DVALUE)R.m32;
-	trans._33 = (D3DVALUE)R.m33;
+	trans._11 = (D3DVALUE)ecl2gal.m11;
+	trans._12 = (D3DVALUE)ecl2gal.m12;
+	trans._13 = (D3DVALUE)ecl2gal.m13;
+	trans._21 = (D3DVALUE)ecl2gal.m21;
+	trans._22 = (D3DVALUE)ecl2gal.m22;
+	trans._23 = (D3DVALUE)ecl2gal.m23;
+	trans._31 = (D3DVALUE)ecl2gal.m31;
+	trans._32 = (D3DVALUE)ecl2gal.m32;
+	trans._33 = (D3DVALUE)ecl2gal.m33;
 }
 
 // =======================================================================
 
 CSphereManager::~CSphereManager ()
 {
-	if (disabled) return;
+	if (!m_bDisabled) {
+		DWORD i, maxidx = patchidx[maxbaselvl];
 
-	DWORD i, maxidx = patchidx[maxbaselvl];
+		if (m_bBkgImg) {
+			for (auto tex : m_texbuf)
+				tex->Release();
+			m_texbuf.clear();
+		}
+		if (m_bStarImg) {
+			for (auto tex : m_starbuf)
+				tex->Release();
+			m_starbuf.clear();
+		}
 
-	if (ntex) {
-		for (i = 0; i < ntex; i++)
-			texbuf[i]->Release();
-		delete []texbuf;
+		for (i = 0; i < maxidx; i++)
+			if (tiledesc[i].vtx) tiledesc[i].vtx->Release();
+		delete[]tiledesc;
 	}
-
-	for (i = 0; i < maxidx; i++) {
-		if (tiledesc[i].vtx) tiledesc[i].vtx->Release();
-	}
-	delete []tiledesc;	
 }
 
 // =======================================================================
@@ -147,22 +157,15 @@ void CSphereManager::GlobalInit (oapi::D3D7Client *gclient)
 
 // =======================================================================
 
-void CSphereManager::CreateDeviceObjects (LPDIRECT3D7 d3d, LPDIRECT3DDEVICE7 dev)
+void CSphereManager::DestroyDeviceObjects ()
 {
-	D3DVIEWPORT7 vp;
-	dev->GetViewport (&vp);
-	vpX0 = vp.dwX, vpX1 = vpX0 + vp.dwWidth;
-	vpY0 = vp.dwY, vpY1 = vpY0 + vp.dwHeight;
-	// viewport size for clipping calculations
-
-	diagscale = (double)vp.dwWidth/(double)vp.dwHeight;
-	diagscale = sqrt(1.0 + diagscale*diagscale);
 }
 
 // =======================================================================
 
-void CSphereManager::DestroyDeviceObjects ()
+void CSphereManager::SetBgBrightness(double val)
 {
+	intensity = (float)val;
 }
 
 // =======================================================================
@@ -193,24 +196,79 @@ bool CSphereManager::LoadTileData ()
 void CSphereManager::LoadTextures ()
 {
 	int i;
+	int texlvl = 0, starlvl = 0;
 
-	// pre-load level 1-8 textures
-	char fname[256];
-	strcpy (fname, texname);
-	strcat (fname, ".tex");
-	ntex = patchidx[maxbaselvl];
-	texbuf = new LPDIRECTDRAWSURFACE7[ntex];
-	if (ntex = gc->GetTexMgr()->LoadTextures (fname, texbuf, 0, ntex)) {
-		while ((int)ntex < patchidx[maxbaselvl]) maxlvl = --maxbaselvl;
-		while ((int)ntex > patchidx[maxbaselvl]) texbuf[--ntex]->Release();
-		// not enough textures loaded for requested resolution level
-		for (i = 0; i < patchidx[maxbaselvl]; i++)
-			tiledesc[i].tex = texbuf[i];
-	} else {
-		delete []texbuf;
-		texbuf = 0;
-		// no textures at all!
+	if (m_bBkgImg) {
+		// pre-load level 1-8 background image textures
+		char fname[256];
+		strcpy(fname, texname);
+		strcat(fname, ".tex");
+		int lvl = maxbaselvl;
+		int ntex = patchidx[lvl];
+		m_texbuf.resize(ntex);
+		if (ntex = gc->GetTexMgr()->LoadTextures(fname, m_texbuf.data(), 0, ntex)) {
+			while (ntex < patchidx[lvl])
+				--lvl;
+			while (ntex > patchidx[lvl])
+				m_texbuf[--ntex]->Release();
+			if (ntex < m_texbuf.size())
+				m_texbuf.resize(ntex);
+		}
+		else {
+			m_texbuf.clear();
+			m_bBkgImg = false;
+		}
+		texlvl = lvl;
 	}
+
+	if (m_bStarImg) {
+		// pre-load level 1-8 starfield image textures
+		char fname[256];
+		strcpy(fname, starfieldname);
+		strcat(fname, ".tex");
+		int lvl = maxbaselvl;
+		int ntex = patchidx[lvl];
+		m_starbuf.resize(ntex);
+		if (ntex = gc->GetTexMgr()->LoadTextures(fname, m_starbuf.data(), 0, ntex)) {
+			while (ntex < patchidx[lvl])
+				--lvl;
+			while (ntex > patchidx[lvl])
+				m_starbuf[--ntex]->Release();
+			if (ntex < m_starbuf.size())
+				m_starbuf.resize(ntex);
+		}
+		else {
+			m_starbuf.clear();
+			m_bStarImg = false;
+		}
+		starlvl = lvl;
+	}
+
+	// make sure the two texture sets support the same resolution range
+	if (m_bBkgImg && m_bStarImg && texlvl != starlvl) {
+		if (texlvl < starlvl) {
+			for (int i = m_texbuf.size(); i < m_starbuf.size(); i++)
+				m_starbuf[i]->Release();
+			m_starbuf.resize(m_texbuf.size());
+			starlvl = texlvl;
+		}
+		else {
+			for (int i = m_starbuf.size(); i < m_texbuf.size(); i++)
+				m_texbuf[i]->Release();
+			m_texbuf.resize(m_starbuf.size());
+			texlvl = starlvl;
+		}
+	}
+	maxbaselvl = maxlvl = (m_bBkgImg ? texlvl : m_bStarImg ? starlvl : 0);
+
+	for (int i = 0; i < patchidx[maxbaselvl]; i++) {
+		if (m_bBkgImg)
+			tiledesc[i].tex = m_texbuf[i];
+		if (m_bStarImg)
+			tiledesc[i].ltex = m_starbuf[i];
+	}
+
+	m_bDisabled = !m_bBkgImg && !m_bStarImg;
 
 	//  pre-load highres tile textures
 	if (bPreloadTile && nhitex) {
@@ -221,17 +279,15 @@ void CSphereManager::LoadTextures ()
 
 // =======================================================================
 
-void CSphereManager::Render (LPDIRECT3DDEVICE7 dev, int level, int bglvl)
+void CSphereManager::Render (LPDIRECT3DDEVICE7 dev, int level, double bglvl)
 {
-	if (disabled) return;
+	if (m_bDisabled) return;
 	ntot = nrad = nrender = 0;
 
 	float intens = intensity;
-	if (bglvl) {
-		intens *= (float)exp(-bglvl*0.05);
-	}
+	float bgscale = (float)exp(-bglvl * 12.5);
 
-	if (!intens) return; // sanity check
+	if (bgscale < 1e-3 || (intens < 1e-3 && !m_bStarImg)) return; // sanity check
 
 	level = min (level, (int)maxlvl);
 
@@ -254,16 +310,44 @@ void CSphereManager::Render (LPDIRECT3DDEVICE7 dev, int level, int bglvl)
 	rcam = mul (ecl2gal, rcam);
 	RenderParam.camdir = _V(rcam.m13, rcam.m23, rcam.m33);
 
-	dev->SetRenderState (D3DRENDERSTATE_LIGHTING, FALSE);
 	dev->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_ONE);
 	dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
 	dev->SetRenderState (D3DRENDERSTATE_CULLMODE, D3DCULL_CW);
-	dev->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP);
+	dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(intens, intens, intens, bgscale));
 
-	if (intens < 1.0f) {
-		dev->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(0,0,0,intens));
-		dev->SetTextureStageState (0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-		dev->SetTextureStageState (0, D3DTSS_ALPHAARG2, D3DTA_TFACTOR);
+	int stage = 0;
+	if (m_bBkgImg) {
+		dev->SetTextureStageState(stage, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP);
+		dev->SetTextureStageState(stage, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+		if (intens < 1 - 1e-3) { // scale background image according to user setting
+			dev->SetTextureStageState(stage, D3DTSS_COLOROP, D3DTOP_MODULATE);
+			dev->SetTextureStageState(stage, D3DTSS_COLORARG2, D3DTA_TFACTOR);
+		}
+		else {
+			dev->SetTextureStageState(stage, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
+		}
+		if (bglvl > 1e-3) {
+			dev->SetTextureStageState(stage, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+			dev->SetTextureStageState(stage, D3DTSS_ALPHAARG1, D3DTA_TFACTOR);
+		}
+		else {
+			dev->SetTextureStageState(stage, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
+		}
+		stage++;
+	}
+	if (m_bStarImg) {
+		dev->SetTextureStageState(stage, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP);
+		dev->SetTextureStageState(stage, D3DTSS_COLOROP, stage ? D3DTOP_ADD : D3DTOP_SELECTARG1);
+		dev->SetTextureStageState(stage, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+		dev->SetTextureStageState(stage, D3DTSS_COLORARG2, D3DTA_CURRENT);
+		if (bglvl > 1e-3) {
+			dev->SetTextureStageState(stage, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+			dev->SetTextureStageState(stage, D3DTSS_ALPHAARG1, D3DTA_TFACTOR);
+		}
+		else {
+			dev->SetTextureStageState(stage, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
+		}
+		stage++;
 	}
 
 	WaitForSingleObject (tilebuf->hQueueMutex, INFINITE);
@@ -282,18 +366,32 @@ void CSphereManager::Render (LPDIRECT3DDEVICE7 dev, int level, int bglvl)
 	}
 	ReleaseMutex (tilebuf->hQueueMutex);
 
-	dev->SetRenderState (D3DRENDERSTATE_LIGHTING, TRUE);
-	dev->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_INVSRCALPHA);
-	dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
-	dev->SetRenderState (D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
-	dev->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
+	// Restore default render and texture states
+	dev->SetRenderState(D3DRENDERSTATE_DESTBLEND, D3DBLEND_INVSRCALPHA);
+	dev->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
+	dev->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
+	dev->SetTextureStageState(0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
+	dev->SetTexture(0, 0);
 
 	if (intens < 1.0f) {
-		dev->SetTextureStageState (0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-		dev->SetTextureStageState (0, D3DTSS_ALPHAARG2, D3DTA_CURRENT);
+		dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, 0xFFFFFFFF);
+		dev->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+	}
+	else {
+		dev->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
 	}
 
-	//sprintf (DBG_MSG, "total: %d, after radius culling: %d, after in-view culling: %d", ntot, nrad, nrender);
+	if (stage) {
+		dev->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+		dev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+		if (stage >= 2) {
+			dev->SetTextureStageState(1, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
+			dev->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
+			dev->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
+			dev->SetTextureStageState(1, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+			dev->SetTexture(1, 0);
+		}
+	}
 }
 
 // =======================================================================
@@ -360,7 +458,12 @@ void CSphereManager::RenderTile (int lvl, int hemisp, int ilat, int nlat, int il
 		vb = tile->vtx; // use buffer with transformed texture coords
 	}
 
-	RenderParam.dev->SetTexture (0, tex);
+	int stage = 0;
+	if (m_bBkgImg)
+		RenderParam.dev->SetTexture(stage++, tex);
+	if (m_bStarImg)
+		RenderParam.dev->SetTexture(stage++, ltex);
+
 	RenderParam.dev->DrawIndexedPrimitiveVB (D3DPT_TRIANGLELIST, vb, 0,
 		mesh.nv, mesh.idx, mesh.ni, 0);
 }
@@ -396,7 +499,6 @@ void CSphereManager::TileExtents (int hemisp, int ilat, int nlat, int ilng, int 
 
 bool CSphereManager::TileInView (int lvl, int ilat)
 {
-	const double eps = 1e-3;
 	bool bx1, bx2, by1, by2, bz1, bz2, bbvis;
 	int v;
 	D3DVALUE x, y;
@@ -407,7 +509,7 @@ bool CSphereManager::TileInView (int lvl, int ilat)
 	bx1 = bx2 = by1 = by2 = bz1 = bz2 = bbvis = false;
 	for (v = 0; v < 8; v++) {
 		if (vtx[v].z > 0.0)  bz1 = true;
-		if (vtx[v].z <= 1.0+eps) bz2 = true;
+		if (vtx[v].z <= 1.0) bz2 = true;
 		if (vtx[v].z <= 1.0) x =  vtx[v].x, y =  vtx[v].y;
 		else                 x = -vtx[v].x, y = -vtx[v].y;
 		if (x > vpX0)        bx1 = true;

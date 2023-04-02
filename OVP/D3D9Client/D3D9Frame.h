@@ -15,7 +15,7 @@
 //       ChangeDevice() function can be called. If the display window is moved
 //       the changes need to be reported with the Move() function.
 //
-//       After rendering a frame, the ShowFrame() function filps or blits the
+//       After rendering a frame, the ShowFrame() function flips or blits the
 //       backbuffer contents to the primary. If surfaces are lost, they can be
 //       restored with the RestoreSurfaces() function. Finally, if normal
 //       Windows output is needed, the FlipToGDISurface() provides a GDI

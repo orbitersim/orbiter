@@ -23,7 +23,9 @@ public:
 	static void CreateDeviceObjects (LPDIRECT3D7 d3d, LPDIRECT3DDEVICE7 dev);
 	static void DestroyDeviceObjects ();
 
-	void Render (LPDIRECT3DDEVICE7 dev, int level, int bglvl);
+	void SetBgBrightness(double val);
+
+	void Render (LPDIRECT3DDEVICE7 dev, int level, double bglvl);
 
 protected:
 	bool LoadPatchData ();
@@ -50,16 +52,19 @@ protected:
 	// Check if specified tile intersects viewport
 
 private:
-	char texname[64];
+	char texname[128];
+	char starfieldname[128];
 	float intensity;                 // opacity of background image
-	bool disabled;                   // background image disabled?
+	bool m_bBkgImg;                  // background image available?
+	bool m_bStarImg;                 // starfield image available?
+	bool m_bDisabled;                // background disabled?
 	DWORD maxlvl;                    // max. patch resolution level
 	DWORD maxbaselvl;                // max. resolution level, capped at 8
-	DWORD ntex;                      // total number of loaded textures for levels <= 8
 	DWORD nhitex;                    // number of textures for levels > 8
 	DWORD nhispec;                   // number of specular reflection masks (level > 8)
 	TILEDESC *tiledesc;              // tile descriptors for levels 1-8
-	LPDIRECTDRAWSURFACE7 *texbuf;    // texture buffer for surface textures (level <= 8)
+	std::vector<LPDIRECTDRAWSURFACE7> m_texbuf;  // texture buffer for celestial sphere background textures (level <= 8)
+	std::vector<LPDIRECTDRAWSURFACE7> m_starbuf; // texture buffer for starfield textures (level <= 8)
 	bool bPreloadTile;               // preload high-resolution tile textures
 	Matrix ecl2gal;                  // rotates from ecliptic to galactic frame
 	MATRIX4 trans;                   // transformation from ecliptic to galactic frame

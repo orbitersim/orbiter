@@ -386,8 +386,6 @@ bool ToolKit::Initialize()
 	pSkp->SetBlendState();
 	oapiReleaseSketchpad(pSkp);
 
-	pCore->SaveSurface("Grad.dds", hGradient);
-
 	// Create GUI Sections --------------------------------------------------------------------------
 	//
 	hRootNode = RegisterApplication("Terrain ToolKit V1.1", NULL, gcGUI::DS_LEFT);

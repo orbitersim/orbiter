@@ -18,40 +18,6 @@ class D3D9Config;
 /// Used by OapiExtension::GetConfigParam()
 /// @{
 
-
-/// Bit flag for "body force vectors display mode" elements.
-/// For a description of the available bit flags, see \ref bfvflag
-/// \par Parameter type:
-///   DWORD
-#define CFGPRM_SHOWBODYFORCEVECTORSFLAG  0x1000
-
-/// Length factor for body force vectors display (0-1)
-/// \par Parameter type:
-///   float
-#define CFGPRM_BODYFORCEVECTORSSCALE  0x1001
-
-/// Opacity of body force vectors (0-1)
-/// \par Parameter type:
-///   float
-#define CFGPRM_BODYFORCEVECTORSOPACITY  0x1002
-
-/// Bit flag for "coordinate axes display mode" elements.
-/// For a description of the available bit flags, see \ref scaflag
-/// \par Parameter type:
-///   DWORD
-#define CFGPRM_SHOWCOORDINATEAXESFLAG  0x1003
-
-/// Length factor for coordinate axes display (0-1)
-/// \par Parameter type:
-///   float
-#define CFGPRM_COORDINATEAXESSCALE  0x1004
-
-/// Opacity of coordinate axes (0-1)
-/// \par Parameter type:
-///   float
-#define CFGPRM_COORDINATEAXESOPACITY  0x1005
-
-
 /// Load tiles in separate thread?
 /// \par Parameter type:
 ///   bool
@@ -63,48 +29,6 @@ class D3D9Config;
 #define CFGPRM_ELEVATIONINTERPOLATION 0x1007
 
 /// @}
-
-
-/// \defgroup bfvflag Bit flags for body force vector display mode elements
-/// @{
-#define BFV_ENABLE    0x0001 ///< Enable body force vectors display mode (master flag)
-#define BFV_SCALE_LOG 0x0002 ///< Flag indicating logarithmic (1) or linear (0) scale is used for displaying vector lengths
-#define BFV_WEIGHT    0x0004 ///< Enable weight force vector display
-#define BFV_THRUST    0x0008 ///< Enable thrust force vector display
-#define BFV_LIFT      0x0010 ///< Enable lift force vector display
-#define BFV_DRAG      0x0020 ///< Enable drag force vector display
-#define BFV_TOTAL     0x0040 ///< Enable total force vector display
-#define BFV_TORQUE    0x0080 ///< Enable torque force vector display
-
-/// @}
-
-
-/// \defgroup scaflag Bit flags for coordinate axes vector display mode elements
-/// @{
-#define SCA_ENABLE   0x0001 ///< Enable coordinate axes display mode (master flag)
-#define SCA_NEGATIVE 0x0002 ///< Enable display of negative axes
-#define SCA_VESSEL   0x0004 ///< Enable vessel coordinate axes
-#define SCA_CELBODY  0x0008 ///< Enable celestial body coordinate axes
-#define SCA_SURFBASE 0x0010 ///< Enable surface base coordinate axes
-
-/// @}
-
-
-/**
- * \brief Storage structure to keep hooking information.
- *
- * This struct basically keeps track of whether a hook is installed or not and
- * stores the original handles for later recovery.
- */
-typedef struct {
-	int     cid;              ///< ControlID (IDC_xxx)
-	DWORD   hookFlag;         ///< Bit flag for the hookMap
-	WNDPROC lpWrapWndFunc;    ///< Wrapped WindowProc
-	WNDPROC lpOrigWndFunc;    ///< Original WindowProc
-	HWND    hWnd;             ///< Window (e.g. CheckBox) handle
-	HWND    hWndScaleGauge;   ///< Scale gauge handle
-	HWND    hWndOpacityGauge; ///< Opacity gauge handle
-} HOOKINFO, *LPHOOKINFO;
 
 
 /**
@@ -128,20 +52,6 @@ public:
 	 *   D3D9Config::DisableVisualHelperReadout value.
 	 */
 	static void GlobalInit(const D3D9Config &Config);
-
-	/**
-	 * \brief Handles the read-out of values from an opened 'visual helpers'
-	 * dialog.
-	 *
-	 * This function handles the attachment of delegate functions to the popup
-	 * windows. It has to be called whenever popup widows appears/disappears
-	 * \param hPopupWnd The list returned by the \ref
-	 *   oapi::GraphicsClient::GetPopupList method, containing the handles of
-	 *   popup windows that are to be rendered.
-	 * \param count Number of entries in the list (return value of \ref
-	 *   oapi::GraphicsClient::GetPopupList.
-	 */
-	static void HandlePopupWindows (const HWND *hPopupWnd, DWORD count);
 
 	/**
 	 * \brief Same functionality than 'official' GetConfigParam, but for
@@ -240,15 +150,7 @@ private:
 
 	// Planet rendering parameters
 	static DWORD elevationMode;
-	static bool tileLoadThread; ///< Whether to load planet tiles inseparate thread [true|false]
-	// Body forces
-	static DWORD showBodyForceVectorsFlags;
-	static float bodyForceScale;   // [0.25..4.0]
-	static float bodyForceOpacity; // [0...1]
-	// Coordinate axes
-	static DWORD showCoordinateAxesFlags;
-	static float coordinateAxesScale;   // [0.25...4.0]
-	static float coordinateAxesOpacity; // [0...1]
+	static bool tileLoadThread; ///< Whether to load planet tiles in separate thread [true|false]
 	// OrbiterSound 4.0 helper
 	static bool isOrbiter2010;          ///< Whether we run Orbiter  2010 (and derivatives)
 	static bool orbiterSound40;
@@ -264,23 +166,9 @@ private:
 	static bool runsSpacecraftDll;      ///< Whether the current Scenario uses Spacecraft.dll
 	static void LogD3D9Modules(void);   ///< Logs loaded D3D9 DLLs and their versions
 
-	// Hooking
-	static DWORD    hookMap;     // Flags indicating 'already delegated' widgets
-	static HOOKINFO hookInfos[]; // Table of information of wrapped methods and items
-
 	static bool configParameterRead;      ///< Indication that Orbiter_NG.cfg has been read
 	static bool GetConfigParameter(void); ///< Tries to read parameter from Orbiter_NG.cfg
 	static std::string ScanCommandLine(void); ///< Tries to read a Startup Scenario given by "-s" command line parameter
-
-	static bool AllHooksAttached(void) {return hookMap == 0x7FFF;}
-	static const LPHOOKINFO GetHookInfo(DWORD cid);
-	static const LPHOOKINFO GetHookInfo(HWND hwnd);
-	static const void RemoveHook(LPHOOKINFO lpHookInfo);
-
-	static const bool IsOurDialog(HWND hwnd);
-	static BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam);
-	static LRESULT CALLBACK CheckBoxWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static LRESULT CALLBACK GaugeWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 
 #endif // !__OAPIEXTENSION_H

@@ -39,7 +39,7 @@ void D3D9Config::Reset ()
 	SceneAntialias		= 4;
 	DebugLvl			= 1;
 	VCNearPlane			= 0.1;
-	LightConfig			= 0;
+	LightConfig			= 2;
 	NearClipPlane		= 0;
 	NVPerfHUD			= 0;
 	PreLBaseVis			= 0;
@@ -55,7 +55,7 @@ void D3D9Config::Reset ()
 	BumpAmp				= 1.0;
 	PlanetGlow			= 1.0;
 	EnvMapSize			= 256;
-	EnvMapMode			= 0;
+	EnvMapMode			= 1;
 	EnvMapFaces			= 1;
 	EnableGlass			= 1;
 	EnableMeshDbg		= 1;
@@ -65,7 +65,7 @@ void D3D9Config::Reset ()
 	FrameRate			= 200.0;
 	EnableLimiter		= 0;
 	CustomCamMode		= 1;
-	TileMipmaps			= 0;
+	TileMipmaps			= 1;
 	TextureMips			= 1;
 	LODBias				= 0.0;
 	MeshRes				= 1;
@@ -78,29 +78,37 @@ void D3D9Config::Reset ()
 	ShaderDebug			= 0;
 	PresentLocation		= 1;
 	PlanetTileLoadFlags	= 0x3;
-	TerrainShadowing	= 1;
+	TerrainShadowing	= 2;
 	LabelDisplayFlags	= LABEL_DISPLAY_RECORD | LABEL_DISPLAY_REPLAY;
 	CloudMicro			= 1;
 	GDIOverlay			= 0;
 	gcGUIMode			= 0;
 	bAbsAnims			= 0;
 	bCloudNormals		= 1;
-	bFlats				= 0;
+	bFlats				= 1;
+	bGlares				= 1;
+	bLocalGlares		= 0;
 	DebugBreak			= 0;
-	ShaderCacheUse		= 1;
-
+	ShaderCacheUse		= 0;
+	bIrradiance			= 1;
+	bAtmoQuality		= 1;
+	NoPlanetAA			= 0;
+	
 	GFXIntensity = 0.5;
 	GFXDistance = 0.8;
 	GFXThreshold = 1.1;
 	GFXGamma = 1.0;
 	GFXSunIntensity = 1.2;
 	GFXLocalMax = 0.5;
+	GFXGlare = 0.3;
 
 	DisableDriverManagement = 0;
 	DisableVisualHelperReadout = 0;
 
-	SolCfg				= new char[64];   strcpy_s(SolCfg,64,"Sol");
-	DebugFont			= new char[64];   strcpy_s(DebugFont,64,"Fixed");
+	AtmoCfg["Earth"] = "Earth.atm.cfg";
+
+	SolCfg = new char[64];   strcpy_s(SolCfg,64,"Sol");
+	DebugFont = new char[64];   strcpy_s(DebugFont,64,"Fixed");
 }
 
 int D3D9Config::MaxLights()
@@ -174,8 +182,13 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "AbsoluteAnimations", i))			bAbsAnims = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "NormalmappedClouds", i))			bCloudNormals = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "TerrainFlats", i))					bFlats = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "SunGlare", i))						bGlares = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "LightsGlare", i))					bLocalGlares = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "Irradiance", i))					bIrradiance = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "AtmoQuality", i))					bAtmoQuality = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "DebugBreak", i))					DebugBreak = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "ShaderCacheUse", i))				ShaderCacheUse = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "NoPlanetAA", i))					NoPlanetAA = max(0, min(1, i));
 	if (oapiReadItem_float (hFile, "OrbitalShadowMult", d))			    OrbitalShadowMult = max(0.5, min(10.0, d));
 
 	if (oapiReadItem_float (hFile, "GFXIntensity", d))					GFXIntensity = max(0.0, min(1.0, d));
@@ -184,10 +197,14 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_float (hFile, "GFXGamma", d))						GFXGamma = max(0.3, min(2.5, d));
 	if (oapiReadItem_float (hFile, "GFXSunIntensity", d))				GFXSunIntensity = max(0.5, min(2.5, d));
 	if (oapiReadItem_float (hFile, "GFXLocalMax", d))					GFXLocalMax = max(0.001, min(1.0, d));
+	if (oapiReadItem_float (hFile, "GFXGlare", d))						GFXGlare = max(0.1, min(10.0, d));
 
 
 	oapiReadItem_string (hFile, "SolCfg", SolCfg);
 	oapiReadItem_string (hFile, "DebugLineFont", DebugFont);
+
+	char Temp[256];
+	if (oapiReadItem_string(hFile, "EarthAtmoCfg", Temp)) AtmoCfg["Earth"] = Temp;
 
 	oapiCloseFile (hFile, FILE_IN_ZEROONFAIL);
 
@@ -254,19 +271,27 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int   (hFile, "AbsoluteAnimations", bAbsAnims);
 	oapiWriteItem_int   (hFile, "NormalmappedClouds", bCloudNormals);
 	oapiWriteItem_int   (hFile, "TerrainFlats", bFlats);
+	oapiWriteItem_int	(hFile, "SunGlare", bGlares);
+	oapiWriteItem_int	(hFile, "LightsGlare", bLocalGlares);
+	oapiWriteItem_int	(hFile, "Irradiance", bIrradiance);
+	oapiWriteItem_int	(hFile, "AtmoQuality", bAtmoQuality);
 	oapiWriteItem_int	(hFile, "DebugBreak", DebugBreak);
 	oapiWriteItem_int	(hFile, "ShaderCacheUse", ShaderCacheUse);
-	oapiWriteItem_float (hFile, "OrbitalShadowMult", OrbitalShadowMult);
+	oapiWriteItem_int	(hFile, "NoPlanetAA", NoPlanetAA);
 
+	oapiWriteItem_float (hFile, "OrbitalShadowMult", OrbitalShadowMult);
 	oapiWriteItem_float (hFile, "GFXIntensity", GFXIntensity);
 	oapiWriteItem_float (hFile, "GFXDistance", GFXDistance);
 	oapiWriteItem_float (hFile, "GFXThreshold", GFXThreshold);
 	oapiWriteItem_float (hFile, "GFXGamma", GFXGamma);
 	oapiWriteItem_float (hFile, "GFXSunIntensity", GFXSunIntensity);
 	oapiWriteItem_float (hFile, "GFXLocalMax", GFXLocalMax);
+	oapiWriteItem_float (hFile, "GFXGlare", GFXGlare);
 
 	oapiWriteItem_string (hFile, "SolCfg", SolCfg);
 	oapiWriteItem_string (hFile, "DebugLineFont", DebugFont);
+
+	oapiWriteItem_string(hFile, "EarthAtmoCfg", (char *)AtmoCfg["Earth"].c_str());
 
 	oapiCloseFile (hFile, FILE_OUT);
 }

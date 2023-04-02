@@ -127,7 +127,7 @@ public:
 	} PickMeshStruct;
 
 	typedef struct {
-		double			lng, lat;		///< Longitude and Latigude of the point being clicked
+		double			lng, lat;		///< Longitude and Latitude of the point being clicked
 		double			elev;			///< Elevation of the point being clicked above mean radius
 		double			dist;			///< Distance from a camera to a click point
 		DRECT			Bounds;			///< Tile bounds (i.e. min/max * lng/lat)
@@ -198,7 +198,7 @@ public:
 	/**
 	* \brief Delete/Release a custom camera.
 	* \param hCam camera handle to delete.
-	* \return zero or an error code if the camara didn't work properly.
+	* \return zero or an error code if the camera didn't work properly.
 	* \note Always delete all cameras bound to a render surface before releasing the rendering surface it-self.
 	*/
 	virtual int			DeleteCustomCamera(CAMERAHANDLE hCam);
@@ -219,11 +219,11 @@ public:
 	* \param vDir camara direction in vessel's local coordinate system. [Unit Vector]
 	* \param vUp camara up vector. Must be perpendicular to vDir. [Unit Vector]
 	* \param dFow camera field of view in radians
-	* \param hSurf rendering surface. Must be created atleast with OAPISURFACE_RENDER3D | OAPISURFACE_RENDERTARGET. Multiple cameras can share the same surface.
+	* \param hSurf rendering surface. Must be created at least with OAPISURFACE_RENDER3D | OAPISURFACE_RENDERTARGET. Multiple cameras can share the same surface.
 	* \param dwFlags Flags to controls what is drawn and what is not.
-	* \return Camera handle, or NULL if an error occured or if the custom camera interface is disabled.
+	* \return Camera handle, or NULL if an error occurred or if the custom camera interface is disabled.
 	* \note Camera count is unlimited.
-	* \note Only a cameras attached to currently active vessel are operational and recodring.
+	* \note Only a cameras attached to currently active vessel are operational and recording.
 	* \note Having multiple cameras active at the same time doesn't impact in a frame rate, however, camera refresh rates are reduced.
 	*/
 	virtual CAMERAHANDLE SetupCustomCamera(CAMERAHANDLE hCam, OBJHANDLE hVessel, VECTOR3& vPos, VECTOR3& vDir, VECTOR3& vUp, double dFov, SURFHANDLE hSurf, DWORD dwFlags = 0xFF);
@@ -296,7 +296,7 @@ public:
 	* \note Flags:
 	* \note PF_TRIANGLES Each independent triangle is composed from three vertex points. ("npt" must be multiple of 3)
 	* \note PF_FAN Triangle fan. The first vertex is in a centre of the fan/circle and other lie at the edge. ("npt" must be "number of triangles" + 2)
-	* \note PF_STRIP Is build from quads. Where each quad requires two vertics. ("npt" must be "number of quads" * 2 + 2)
+	* \note PF_STRIP Is build from quads. Where each quad requires two vertices. ("npt" must be "number of quads" * 2 + 2)
 	*/
 	virtual HPOLY		CreateTriangles(HPOLY hPoly, const gcCore::clrVtx *pt, int npt, DWORD flags);
 
@@ -332,7 +332,7 @@ public:
 	* \param proc function to be called when render event occur
 	* \param id render event id
 	* \param pParam a pointer to user data (to a class for an example)
-	* \return false if an error occured, true otherwise.
+	* \return false if an error occurred, true otherwise.
 	*/
 	virtual bool		RegisterRenderProc(__gcRenderProc proc, DWORD id, void* pParam);
 
@@ -341,7 +341,7 @@ public:
 	* \param height Font height
 	* \param face Name of the font
 	* \param width Width of the font (0 for default aspect ration)
-	* \param weight Font thikness (400 for default weight)
+	* \param weight Font thickness (400 for default weight)
 	* \param style A combination of \see gcFont flags (0 for default)
 	* \param spacing A spacing between charters in a string (0.0f for default)
 	* \return A pointer to a created or pre-existing font or NULL in a case of an error.
@@ -363,7 +363,7 @@ public:
 	* \param idx Material index
 	* \param prop material property identifier (\ref MeshMaterialFlags)
 	* \param value a pointer to COLOUR4 structure containing/receiving the data, or \e NULL to reset a default value or to unspecify a property.
-	* \param bSet \e true to set material value, \e false to get a meterial value
+	* \param bSet \e true to set material value, \e false to get a material value
 	* \return -4 = Invalid handle \n -3 = Unknown property flag \n -2 = Property not specified cannot get it \n -1 = Index out of range \n 0 = Success
 	*/
 	virtual int				MeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, int prop, FVECTOR4 *value, bool bSet);
@@ -407,7 +407,7 @@ public:
 	virtual void			GetSystemSpecs(SystemSpecs* sp, int size);
 
 	/**
-	* \brief Conver a floating point color to DWORD color value
+	* \brief Convert a floating point color to DWORD color value
 	* \param c A pointer to a color
 	* \return DWORD color in 0xAABBGGRR
 	* \note Alpha will range from 1 to 255. Zero is never returned because of backwards compatibility issues 0-alpha is mapped to 255
@@ -415,7 +415,7 @@ public:
 	virtual DWORD			Color(const COLOUR4 *c);
 
 	/**
-	* \brief Conver a floating point color to DWORD color value
+	* \brief Convert a floating point color to DWORD color value
 	* \param c A pointer to a color
 	* \return DWORD color in 0xAABBGGRR
 	* \note Alpha will range from 1 to 255. Zero is never returned because of backwards compatibility issues 0-alpha is mapped to 255
@@ -423,7 +423,7 @@ public:
 	virtual DWORD			Color(const oapi::FVECTOR4 *c);
 
 	/**
-	* \brief Conver a DWORD color to floating point COLOUR4 value
+	* \brief Convert a DWORD color to floating point COLOUR4 value
 	* \param dwABGR A color in 0xAABBGGRR
 	* \return COLOUR4
 	* \note Alpha will range from 1 to 255. Zero is never used because of backwards compatibility issues 0-alpha is mapped to 255
@@ -472,7 +472,7 @@ public:
 	* \param proc function to be called when event occur
 	* \param id requested callback event id
 	* \param pParam a pointer to user data (to a class for an example)
-	* \return false if an error occured, true otherwise.
+	* \return false if an error occurred, true otherwise.
 	*/
 	virtual bool			RegisterGenericProc(__gcGenericProc proc, DWORD id, void* pParam);
 		//@}
@@ -572,7 +572,7 @@ public:
 	* \brief Get a handle to a specific mipmap sub-level
 	* \param hSrf Handle to a texture containing mipmaps
 	* \param level Level of the mipmap to acquire. (level >= 1) (0 = "hSrf" it self with surface interface)
-	* \return Surface handle or NULL in a case of a failure. Must be released with ReleaseSurface() after nolonger accessed.
+	* \return Surface handle or NULL in a case of a failure. Must be released with ReleaseSurface() after no longer accessed.
 	*/
 	virtual HSURFNATIVE		obsolete_GetMipSublevel(HSURFNATIVE hSrf, int level) { return NULL; }
 	virtual void			obsolete_ReleaseSurface(HSURFNATIVE hSrf) { }
@@ -589,14 +589,14 @@ public:
 	/**
 	* \brief Realtime Mipmap auto-generation from the top/main level.
 	* \param hSurface handle to a surface
-	* \return false if an error occured, true otherwise.
+	* \return false if an error occurred, true otherwise.
 	* \note Surface must be created with (OAPISURFACE_TEXTURE | OAPISURFACE_RENDERTARGET | OAPISURFACE_MIPMAPS)
 	* \note Exact attribute requirements/conflicts are unknown.
 	*/
 	virtual bool			obsolete_GenerateMipMaps(HSURFNATIVE hSurface) { return false; }
 
 	/**
-	* \brief On the fly texture compression into a DXT format. Input remains uncanged.
+	* \brief On the fly texture compression into a DXT format. Input remains unchanged.
 	* \param hSurface handle to a surface to compress
 	* \param flags combination of OAPISURFACE_PF_DXT1, OAPISURFACE_PF_DXT3, OAPISURFACE_PF_DXT5, OAPISURFACE_MIPMAPS, OAPISURFACE_SYSMEM
 	* \return Handle to a compressed texture, user must release this.
@@ -655,7 +655,7 @@ public:
 	* \param pos Objects position relative to a camera in ecliptic frame
 	* \param x X-axis, major axis [unit vector]
 	* \param z Z-axis, minor axis [unit vector]
-	* \param scale a sacle factor (default 1.0)
+	* \param scale a scale factor (default 1.0)
 	*/
 	inline void WorldMatrix(FMATRIX4 *mat, const VECTOR3 &pos, const VECTOR3 &x, const VECTOR3 &z, double scale = 1.0)
 	{

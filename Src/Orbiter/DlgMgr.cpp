@@ -284,19 +284,9 @@ bool DialogManager::SetTitleButtonState (HWND hDlg, DWORD msg, DWORD state)
 
 void DialogManager::UpdateDialogs ()
 {
-//	extern void Info_Update (HWND);
-//	extern void Map_Update (HWND);
-
 	for (DIALOGENTRY *tmp = firstEntry; tmp; tmp = tmp->next) {
-		tmp->dlg->Update();
-//		switch (tmp->id) {
-//		case IDD_INFO:
-//			Info_Update (tmp->hDlg);
-//			break;
-//		case IDD_MAP:
-//			Map_Update (tmp->hDlg);
-//			break;
-//		}
+		if (tmp->dlg->UpdateContinuously())
+			tmp->dlg->Update();
 	}
 }
 
@@ -315,7 +305,7 @@ INT_PTR OrbiterDefDialogProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 	switch (uMsg) {
 	case WM_SETCURSOR:
 		// implements "focus follows mouse" behaviour
-		if (!g_pOrbiter->StickyFocus() && g_pOrbiter->Cfg()->CfgUIPrm.bFocusFollowsMouse && GetFocus() != hDlg &&
+		if (!g_pOrbiter->StickyFocus() && g_pOrbiter->Cfg()->CfgUIPrm.MouseFocusMode == 2 && GetFocus() != hDlg &&
 			!IsChild (hDlg, GetFocus()) && GetParent (hDlg) == g_pOrbiter->GetRenderWnd()) {
 				SetFocus (hDlg);
 				return FALSE;

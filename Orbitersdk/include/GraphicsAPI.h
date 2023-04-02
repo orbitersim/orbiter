@@ -115,6 +115,13 @@ typedef void *HDC;
 #define CFGPRM_OBJECTSPECULAR  0x0011
 
 /**
+ * \Flag for rendering background images from a texture set
+ * \par Parameter type:
+ *    bool
+ */
+#define CFGPRM_CSPHEREUSEBGIMAGE 0x0012
+
+/**
  * File path for celestial sphere background textures
  * \par Parameter type:
  *   *char
@@ -180,13 +187,87 @@ typedef void *HDC;
  */
 #define CFGPRM_TILEPATCHRES 0x001B
 
-#define CFGPRM_TILELOADFLAGS 0x001C
 /**
  * Bitflags for planetary tile file load behaviour
  * - bit 1: load from individual tiles in directory tree
  * - bit 2: load from compressed archive file
  * \par Parameter type:
  *   DWORD
+ */
+#define CFGPRM_TILELOADFLAGS 0x001C
+
+/**
+ * Path to background star texture
+ * \par Parameter type:
+ *   *char
+ */
+#define CFGPRM_CSPHERESTARTEXTURE 0x001D
+
+/**
+ * \Flag for rendering background stars from a texture set
+ * \par Parameter type:
+ *    bool
+ */
+#define CFGPRM_CSPHEREUSESTARIMAGE 0x001E
+
+/**
+ * \Flag for rendering background stars as pixels
+ * \par Parameter type:
+ *    bool
+ */
+#define CFGPRM_CSPHEREUSESTARDOTS 0x001F
+
+/**
+ * Bit flags for force vector display options.
+ * For a description of the available bit flags, see \ref bfvflag
+ * \par Parameter type:
+ *   DWORD
+ */
+#define CFGPRM_FORCEVECTORFLAG 0x0020
+
+/**
+ * Force vector display scaling factor
+ * \par Parameter type:
+ *   float
+ */
+#define CFGPRM_FORCEVECTORSCALE 0x0021
+
+/**
+ * Force vector display opacity value
+ * \par Parameter type:
+ *   float
+ */
+#define CFGPRM_FORCEVECTOROPACITY 0x0022
+
+/**
+ * Bit flags for frame axis display options.
+ * For a description of the available bit flags, see \ref favflag
+ * \par Parameter type:
+ *   DWORD
+ */
+#define CFGPRM_FRAMEAXISFLAG 0x0023
+
+/**
+ * Frame axis display scaling factor
+ * \par Parameter type:
+ *   float
+ */
+#define CFGPRM_FRAMEAXISSCALE 0x0024
+
+/**
+ * Frame axis display opacity value
+ * \par Parameter type:
+ *   float
+ */
+#define CFGPRM_FRAMEAXISOPACITY 0x0025
+
+ /**
+  * Bit flags for surface and object marker display options.
+  * For a description of the available bit flags, see \ref mkrflag
+  * \par Parameter type:
+  *   DWORD
+  */
+#define CFGPRM_SURFMARKERFLAG 0x0026
 /// @}
 
 /**
@@ -207,19 +288,46 @@ typedef void *HDC;
 #define PLN_ENABLE    0x0001 ///< Enable planetarium mode (master flag)
 #define PLN_CGRID     0x0002 ///< Enable celestial grid
 #define PLN_EGRID     0x0004 ///< Enable ecliptic grid
-#define PLN_ECL       0x0008 ///< Enable line of ecliptic
-#define PLN_EQU       0x0010 ///< Enable celestial equator
-#define PLN_CONST     0x0020 ///< Enable constellation lines
-#define PLN_CNSTLABEL 0x0040 ///< Enable constellation labels
-#define PLN_CMARK     0x0080 ///< Enable celestial body markers
-#define PLN_VMARK     0x0100 ///< Enable vessel markers
-#define PLN_BMARK     0x0200 ///< Enable surface base markers
-#define PLN_RMARK     0x0400 ///< Enable VOR transmitter markers
-#define PLN_LMARK     0x0800 ///< Enable planetary surface labels
-#define PLN_CNSTLONG  0x1000 ///< Enable long constellation names
-#define PLN_CNSTSHORT 0x2000 ///< Enable short constellation names
-#define PLN_CCMARK    0x4000 ///< Enable celestial sphere labels
-#define PLN_SURFMARK (PLN_BMARK | PLN_RMARK | PLN_LMARK)
+#define PLN_GGRID     0x0008 ///< Enable galactic grid
+#define PLN_HGRID     0x0010 ///< Enable local horizon grid
+#define PLN_EQU       0x0020 ///< Enable target body equator
+#define PLN_CONST     0x0040 ///< Enable constellation patterns
+#define PLN_CNSTLABEL 0x0080 ///< Enable constellation labels
+#define PLN_CNSTLONG  0x0100 ///< Enable long constellation names
+#define PLN_CNSTBND   0x0200 ///< Enable constellation boundaries
+#define PLN_CCMARK    0x0400 ///< Enable celestial sphere labels
+/// @}
+
+/// \defgroup mkrflag Bit flags for surface and object markers
+/// @{
+#define MKR_ENABLE    0x0001 ///< Enable surface and object markers
+#define MKR_CMARK     0x0002 ///< Enable solar system body markers
+#define MKR_VMARK     0x0004 ///< Enable vessel markers
+#define MKR_BMARK     0x0008 ///< Enable surface base markers
+#define MKR_RMARK     0x0010 ///< Enable VOR transmitter markers
+#define MKR_LMARK     0x0020 ///< Enable planetary surface labels
+#define MKR_SURFMARK (MKR_BMARK | MKR_RMARK | MKR_LMARK)
+/// @}
+
+/// \defgroup bfvflag Bit flags for vessel force vector render options
+/// @{
+#define BFV_ENABLE    0x0001 ///< Enable body force vectors
+#define BFV_LOGSCALE  0x0002 ///< Use logarithmic scale (instead of linear scale)
+#define BFV_WEIGHT    0x0004 ///< Show weight vector
+#define BFV_THRUST    0x0008 ///< Show thrust vector
+#define BFV_LIFT      0x0010 ///< Show lift vector
+#define BFV_DRAG      0x0020 ///< Show drag vector
+#define BFV_TOTAL     0x0040 ///< Show total force vector
+#define BFV_TORQUE    0x0080 ///< Show torque vector
+/// @}
+
+/// \defgroup favflag Bit flags for frame axis vector render options
+/// @{
+#define FAV_ENABLE    0x0001 ///< Enable frame axis vector display
+#define FAV_NEGATIVE  0x0002 ///< Also show negative axes
+#define FAV_VESSEL    0x0004 ///< Show vessel frame axes
+#define FAV_CELBODY   0x0008 ///< Show celestial body frame axes
+#define FAV_BASE      0x0010 ///< Show surface base frame axes
 /// @}
 
 /// \defgroup bltflag Bit flags for blitting operations
@@ -351,6 +459,14 @@ public:
 	 * \default None.
 	 */
 	virtual void clbkRefreshVideoData () {}
+
+	/**
+	 * \brief Called when the user changes an option during a simulation session.
+	 * \param cat option category identifier, see \ref optcat
+	 * \param item option item identifier, see \ref optitem
+	 * \default None.
+	 */
+	virtual void clbkOptionChanged(DWORD cat, DWORD item) {}
 
 	/**
 	 * \brief Texture request
@@ -1619,56 +1735,38 @@ protected:
 	// ==================================================================
 	// Functions for the celestial sphere
 public:
-#pragma pack(1)
-	struct StarRec { float lng, lat, mag; };
+	struct ConstLabelRec {
+		std::string fullLabel;
+		std::string abbrLabel;
+		float lngCnt;
+		float latCnt;
+	};
 
-	/**
-	 * \brief Load star data from Orbiter's data base file.
-     *
-	 * Load up to 'n' data records from the default data base (in decreasing
-	 * order of apparent magnitude).
-	 * \param n Requested number of stars
-	 * \param rec Pointer to an array receiving the data.
-	 * \return The actual number of loaded stars
-	 * \note rec must be allocated to size >= n on call.
-	 */
-	DWORD LoadStars (DWORD n, StarRec *rec);
-
-	struct ConstRec { float lng1, lat1, lng2, lat2; };
-
-	/**
-	 * \brief Load constellation line data from Orbiter's data base file.
-	 *
-	 * Load up to 'n' constellation lines from the default constellation
-	 * data base.
-	 * \param n Requested number of lines
-	 * \param rec Pointer to an array receiving the data.
-	 * \return The actual number of lines loaded.
-	 * \note rec must be allocated to size >= n on call.
-	 */
-	DWORD LoadConstellationLines (DWORD n, ConstRec *rec);
-#pragma pack()
+	//struct ConstLabelRenderRec {
+	//	std::string fullLabel;
+	//	std::string abbrLabel;
+	//	VECTOR3 pos;
+	//};
 
 	// ==================================================================
 	/// \name Marker and label-related methods
 	// @{
 	struct LABELSPEC {
 		VECTOR3 pos;
-		char *label[2];
+		std::string label[2];
 	};
 	/**
 	 * \brief Label list description for celestial and surface markers
 	 */
 	struct LABELLIST {
-		char name[64];   ///< list name
-		LABELSPEC *list; ///< marker array
-		int length;      ///< length of the marker array
-		int colour;      ///< marker colour index (0-5)
-		int shape;       ///< marker shape index (0-4)
-		float size;      ///< marker size factor
-		float distfac;   ///< marker distance cutout factor
-		DWORD flag;      ///< reserved
-		bool active;     ///< active list flag
+		std::string name; ///< list name
+		std::vector< LABELSPEC> marker; ///< list of markers
+		int colour;       ///< marker colour index (0-5)
+		int shape;        ///< marker shape index (0-4)
+		float size;       ///< marker size factor
+		float distfac;    ///< marker distance cutout factor
+		DWORD flag;       ///< reserved
+		bool active;      ///< active list flag
 	};
 
 	/**
@@ -1677,7 +1775,7 @@ public:
 	 * \return number of lists in the array
 	 * \sa LABELLIST
 	 */
-	DWORD GetCelestialMarkers (const LABELLIST **cm_list) const;
+	const std::vector<LABELLIST>& GetCelestialMarkers() const;
 
 	/**
 	 * \brief Returns an array of surface marker lists for a planet

@@ -1097,7 +1097,7 @@ void DeltaGlider::clbkSetClassCaps (FILEHANDLE cfg)
 
 	// **************** vessel-specific insignia ****************
 
-	insignia_tex = oapiCreateTextureSurface (256, 256);
+	insignia_tex = oapiCreateSurfaceEx (256, 256, OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE | OAPISURFACE_MIPMAPS);
 	SURFHANDLE hTex = oapiGetTextureHandle (exmesh_tpl, 5);
 	if (hTex) oapiBlt (insignia_tex, hTex, 0, 0, 0, 0, 256, 256);
 }
