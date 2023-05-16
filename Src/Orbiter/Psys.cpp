@@ -40,8 +40,8 @@ void PlanetarySystem::Clear ()
 
 	//Vessel destructor broadcasts messages to every other vessel in 'vessels'.
 	//We remove it from the collection as soon as we deleted it to prevent the next Vessel to broadcast to the free'd one.
-	for (size_t i = vessels.size() - 1; i != static_cast<size_t>(-1); --i) { //Special reverse loop to prevent unsigned underflow
-		DelBody(vessels[i]);
+	while (vessels.size()) {
+		DelBody(vessels.back());
 		vessels.pop_back();
 	}
 
