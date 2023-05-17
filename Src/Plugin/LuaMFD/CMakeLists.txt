@@ -16,7 +16,7 @@ target_include_directories(LuaMFD
 target_link_libraries(LuaMFD
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
-	${LUA_LIB}
+	lua::lib
 	${LUAINTERPRETER_LIB}
 )
 

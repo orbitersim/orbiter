@@ -17,7 +17,7 @@ target_include_directories(LuaInterpreter
 target_link_libraries(LuaInterpreter
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
-	${LUA_LIB}
+	lua::lib
 )
 
 add_dependencies(LuaInterpreter

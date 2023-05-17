@@ -6,7 +6,7 @@
 #include <windows.h>
 #include <direct.h>
 #include <Shlwapi.h>
-#include "zlib.h"
+#include <zlib.h>
 
 #define TREE_DEFLATE 1
 

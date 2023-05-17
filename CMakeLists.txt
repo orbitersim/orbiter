@@ -39,11 +39,7 @@ else()
 endif()
 
 if (NOT ${CMAKE_GENERATOR} STREQUAL "Ninja")
-	message(STATUS "USING: MultiCore VS Solution")
-	set(CompileFlags "/MP")
-else()
-	message(STATUS "USING: Ninja Configuration")
-	set(CompileFlags "")
+	add_compile_options(/MP)
 endif()
 
 # Define directories and file paths for some common binaries
@@ -90,19 +86,6 @@ set(GDICLIENT_LIB $<TARGET_LINKER_FILE:GDIClient>)
 
 set(EXTERN_DIR "${CMAKE_SOURCE_DIR}/Extern")
 
-set(ZLIB_VER "1.2.11")
-set(ZLIB_DIR "${EXTERN_DIR}/zlib/zlib-${ZLIB_VER}-${ARCH}")
-set(ZLIB_INCLUDE_DIR "${ZLIB_DIR}/include")
-set(ZLIB_LIB_DIR "${ZLIB_DIR}/lib")
-set(ZLIB_LIB "${ZLIB_LIB_DIR}/zlibstatic.lib")
-
-set(Lua_VER "5.1")
-set(LUA_DIR "${EXTERN_DIR}/Lua/Lua-${Lua_VER}-${ARCH}")
-set(LUA_INCLUDE_DIR "${LUA_DIR}/include")
-set(LUA_LIB_DIR "${LUA_DIR}/lib")
-set(LUA_DLL_DIR "${LUA_DIR}/dll")
-set(LUA_LIB "${LUA_DLL_DIR}/lua${Lua_VER}.lib")
-
 set(DX7SDK_PATH "${EXTERN_DIR}/mssdk_dx7")
 set(DX7SDK_INCLUDE_DIR "${DX7SDK_PATH}/include")
 set(DX7SDK_LIB_DIR "${DX7SDK_PATH}/lib")
@@ -113,8 +96,7 @@ set(HTMLHELP_LIB_DIR ${HTMLHELP_DIR}/lib-${ARCH})
 set(HTMLHELP_LIB ${HTMLHELP_LIB_DIR}/Htmlhelp.lib)
 
 set(ORBITER_TOOL_MESHC "$<TARGET_FILE:meshc>")
-set(LUA_EXE ${LUA_DIR}/bin/lua.exe)
-set(ldoc ${LUA_EXE} ${LUA_DIR}/packages/LDoc/ldoc.lua)
+set(ldoc $<TARGET_FILE:lua::exe> ${LUA_DIR}/packages/LDoc/ldoc.lua)
 
 find_package(OpenGL QUIET)
 find_package(HTMLHelp)
@@ -131,8 +113,8 @@ set(Qt5_x64_DIR
 )
 
 if(MSVC)
-  set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} /we4311")
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:\"LIBCMTD\"")
+  add_compile_options(/we4311)
+  add_link_options("/NODEFAULTLIB:\"LIBCMTD\"")
 endif()
 
 # Copy data and binary assets from source to binary tree to provide a working Orbiter environment
@@ -145,8 +127,6 @@ add_custom_target(CopyData ALL
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Config/ ${CMAKE_BINARY_DIR}/Config
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Flights/ ${CMAKE_BINARY_DIR}/Flights
 	COMMAND ${CMAKE_COMMAND} -E make_directory ${ORBITER_BINARY_SDK_DIR}/lib/Lua
-	COMMAND ${CMAKE_COMMAND} -E copy ${LUA_DLL_DIR}/lua5.1.lib ${ORBITER_BINARY_SDK_DIR}/lib/Lua/
-	COMMAND ${CMAKE_COMMAND} -E copy ${LUA_DLL_DIR}/lua5.1.dll ${CMAKE_BINARY_DIR}
 )
 set_target_properties(CopyData
 	PROPERTIES
@@ -281,7 +261,7 @@ option(ORBITER_MAKE_SDK_SAMPLES
 	OFF
 )
 
-option(ORBITER_ENABLE_ASAN
+option(ORBITER_SANITIZER
 	"Build binaries with Address Sanitizer"
 	OFF
 )
@@ -296,8 +276,7 @@ if(ORBITER_BUILD_XRSOUND)
 endif()
 
 if(ORBITER_BUILD_D3D9CLIENT)
-	find_package(DXSDK
-	)
+	find_package(DXSDK REQUIRED)
 	set(DXSDK_DIR
 		${DXSDK_DIR}
 		CACHE
@@ -305,8 +284,7 @@ if(ORBITER_BUILD_D3D9CLIENT)
 		"Installation directory of DirectX SDK (June 2010)"
 	)
 	if(${DXSDK_DIR} STREQUAL "DXSDK_DIR-NOTFOUND")
-		message(WARNING "DirectX SDK not found. The D3D9 graphics client will not be built.")
-		set(ORBITER_BUILD_D3D9CLIENT OFF)
+		message(FATAL_ERROR "DirectX SDK not found. The D3D9 graphics client will not be built.")
 	endif()
 endif()
 
@@ -339,30 +317,9 @@ if (ORBITER_MAKE_DOC)
 endif()
 
 # Enable Address SANitizer
-if (ORBITER_ENABLE_ASAN AND MSVC)
-    set(asan_binary_dir "$ENV{VCToolsInstallDir}bin\\Host${ARCH}\\${ARCH}")
-    if (NOT EXISTS "${asan_binary_dir}")
-		message( FATAL_ERROR "ASAN: Visual Studio tools directory ${asan_binary_dir} not valid, check VCToolsInstallDir environment variable" )
-    endif()
-    
-	if (BUILD64)
-		set(asan_arch_id "x86_64")
-	else()
-		set(asan_arch_id "i386")
-	endif()
-	set(asan_dll "clang_rt.asan_dynamic-${asan_arch_id}.dll")
-	set(asan_dbg_dll "clang_rt.asan_dbg_dynamic-${asan_arch_id}.dll")
-	
-	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} /fsanitize=address /EHsc")
-	add_custom_command(
-		COMMENT "Copying ASAN Clang runtime from ${asan_binary_dir}"
-		OUTPUT ${asan_dll}
- 		OUTPUT ${asan_dbg_dll}
-		COMMAND ${CMAKE_COMMAND} -E copy ${asan_binary_dir}\\${asan_dll} ${ORBITER_BINARY_ROOT_DIR}
-		COMMAND ${CMAKE_COMMAND} -E copy ${asan_binary_dir}\\${asan_dbg_dll} ${ORBITER_BINARY_ROOT_DIR}
-	)
-    add_custom_target(AsanBinaries DEPENDS ${asan_dll})
-    message("Address Sanitizer Enabled")
+include(cmake/sanitizer.cmake)
+if (ORBITER_SANITIZER AND MSVC)
+	enable_sanitizer(${ORBITER_SANITIZER})
 endif()
 
 # For a given argument string template (odt_to_pdf_arglist) and source file name (infile)
@@ -437,12 +394,9 @@ endfunction()
 install(DIRECTORY Scenarios Textures Meshes Config Script Flights BinAssets/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
 )
-install(FILES ${LUA_DLL_DIR}/lua5.1.dll
-	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
-)
-install(FILES ${LUA_DLL_DIR}/lua5.1.lib
-	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/lib/Lua
-)
+#install(FILES ${LUA_DLL_DIR}/lua5.1.lib
+#	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/lib/Lua
+#)
 
 set(CMAKE_MODULE_PATH
 	${ORBITER_BINARY_ROOT_DIR}
@@ -457,6 +411,7 @@ INSTALL(FILES ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}
 )
 
 # Sub-projects
+add_subdirectory(Extern)
 add_subdirectory(Src)
 add_subdirectory(Utils)
 add_subdirectory(Orbitersdk)
@@ -516,8 +471,4 @@ cpack_add_component(RuntimeLibraries
 if (ORBITER_MAKE_TESTS)
       enable_testing()
       add_subdirectory(Tests)
-endif()
-
-if (ORBITER_ENABLE_ASAN AND MSVC)
-	add_dependencies(Orbiter_server AsanBinaries)
 endif()

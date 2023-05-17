@@ -23,7 +23,7 @@ function(add_test_file test_name)
 	target_link_libraries(${test_name}
 		${ORBITER_LIB}
 		${ORBITER_SDK_LIB}
-		${LUA_LIB}
+		lua::lib
 		${LUAINTERPRETER_LIB}
 		Catch2::Catch2WithMain
 	)

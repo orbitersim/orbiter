@@ -15,7 +15,7 @@ target_include_directories(ScriptMFD
 target_link_libraries(ScriptMFD
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
-	${LUA_LIB}
+	lua::lib
 	${LUAINTERPRETER_LIB}
 )
 
