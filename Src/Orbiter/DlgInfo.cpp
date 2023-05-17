@@ -781,8 +781,8 @@ void DlgInfo::UpdateItems_celbody ()
 
 	cblist.des->GetItem (0)->SetValue (cbody->Name());
 	cblist.des->GetItem (1)->SetValue (cbody->ElRef() ? cbody->ElRef()->Name() : na);
-	const char *psys_name = g_psys->Name();
-	cblist.des->GetItem (2)->SetValue (psys_name ? psys_name : na);
+	const std::string& psys_name = g_psys->Name();
+	cblist.des->GetItem (2)->SetValue (psys_name.empty() ? na : psys_name.c_str());
 
 	sprintf (cbuf, "%s kg", SciStr (cbody->Mass(), 4));
 	cblist.prm->GetItem (0)->SetValue (cbuf);

@@ -29,6 +29,7 @@ set(common_src
 	Vecmat.cpp
 	VectorMap.cpp
     ConsoleManager.cpp
+	TimeData.cpp
 # Launchpad
 	Launchpad.cpp
 	LpadTab.cpp

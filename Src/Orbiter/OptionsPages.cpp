@@ -1685,7 +1685,7 @@ BOOL OptionsPage_Planetarium::OnMarkerSelectionChanged(HWND hPage)
 			int sel = SendDlgItemMessage(hPage, IDC_OPT_PLN_MKRLIST, LB_GETSEL, i, 0);
 			list[i].active = (sel ? true : false);
 		}
-		std::ifstream fcfg(Cfg()->ConfigPath(g_psys->Name()));
+		std::ifstream fcfg(Cfg()->ConfigPath(g_psys->Name().c_str()));
 		g_psys->ScanLabelLists(fcfg);
 	}
 	return 0;

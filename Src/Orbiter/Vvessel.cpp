@@ -1017,7 +1017,7 @@ bool VVessel::ModLighting (LPD3DLIGHT7 light)
 	}
 
 	if (lightmod) {
-		D3DCOLORVALUE starcol = sun->GetLightColor();
+		D3DCOLORVALUE starcol = VObject::ColorToD3D(sun->GetLightColor());
 		light->dcvDiffuse.r = light->dcvSpecular.r = starcol.r * (float)lcol.x;
 		light->dcvDiffuse.g = light->dcvSpecular.g = starcol.g * (float)lcol.y;
 		light->dcvDiffuse.b = light->dcvSpecular.b = starcol.b * (float)lcol.z;

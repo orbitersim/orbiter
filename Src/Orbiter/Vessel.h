@@ -21,13 +21,10 @@
 #ifndef __VESSEL_H
 #define __VESSEL_H
 
-#include "Vesselbase.h"
-#include "Vesselbase.h"
-#include "elevmgr.h"
 #include <array>
 #include <fstream>
-#include "Orbitersdk.h"
-#include "GraphicsAPI.h"
+
+#include "Vesselbase.h"
 #include "Log.h"
 
 class Elements;

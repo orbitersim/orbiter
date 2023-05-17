@@ -6,29 +6,27 @@
 #ifndef __PSYS_H
 #define __PSYS_H
 
-#include "Body.h"
+#include "Base.h"
 #include "Star.h"
 #include "Planet.h"
-#include "Base.h"
-#include "GraphicsAPI.h"
-#include <iostream>
-
-#define FILETYPE_MARKER 1
 
 class Vessel;
 class SuperVessel;
+struct TimeJumpData;
+
 
 class PlanetarySystem {
 	friend class Body;
 	friend class SuperVessel;
 
 public:
-	PlanetarySystem (char *fname);
+	typedef void (*OutputLoadStatusCallback)(const char* msg, int line, void* callbackContext);
+	PlanetarySystem (char *fname, const Config* config, OutputLoadStatusCallback outputLoadStatus, void* callbackContext);
 	// create a planetary system from a config file
 
 	~PlanetarySystem ();
 
-	const char *Name() const { return name; }
+	const std::string& Name() const { return m_Name; }
 
 	void Clear ();
 	// Remove all objects from the system
@@ -41,28 +39,28 @@ public:
 	void Write (std::ostream &os);
 	// Write list of current vessel states to scenario stream
 
-	DWORD nObj() const { return nbody; }
+	size_t nObj() const { return bodies.size(); }
 	Body *GetObj (const char *name, bool ignorecase = false);
-	Body *GetObj (int i) const { return body[i]; }
+	Body *GetObj (int i) const { return bodies[i]; }
 	// Return pointer to object "name" (gravbody, station,
 	// etc.) or 0 if not present
 
-	DWORD nGrav() const { return ngrav; }
+	size_t nGrav() const { return celestials.size(); }
 	CelestialBody *GetGravObj (const char *name, bool ignorecase = false) const;
-	inline CelestialBody *GetGravObj (int i) const { return grav[i]; }
+	inline CelestialBody *GetGravObj (int i) const { return celestials[i]; }
 	// Return pointer to 'massive' object by name or index, or 0 if not present
 
-	int nPlanet() const { return nplanet; }
+	size_t nPlanet() const { return planets.size(); }
 	Planet *GetPlanet (const char *name, bool ignorecase = false);
-	Planet *GetPlanet (int i) const { return planet[i]; }
+	Planet *GetPlanet (int i) const { return planets[i]; }
 	// Return pointer to planet-type object (planet or moon)
 
-	DWORD nStar() const { return nstar; }
-	Star *GetStar (int i) const { return star[i]; }
+	size_t nStar() const { return stars.size(); }
+	Star *GetStar (int i) const { return stars[i]; }
 
-	inline DWORD nVessel() const { return nvessel; }
+	inline size_t nVessel() const { return vessels.size(); }
 	Vessel *GetVessel (const char *name, bool ignorecase = false) const;
-	inline Vessel *GetVessel (DWORD i) const { return vessel[i]; }
+	inline Vessel *GetVessel (DWORD i) const { return vessels[i]; }
 	// Return pointer to vessel by name or index, or 0 if not present
 
 	bool isObject (const Body *obj) const;
@@ -87,22 +85,22 @@ public:
 	 */
 	void OptionChanged(DWORD cat, DWORD item);
 
-	bool Read (char *fname);
+	bool Read (char *fname, const Config* config, OutputLoadStatusCallback outputLoadStatus, void* callbackContext);
 	// Read specs from config file
 
-	int AddStar (Star *_star);
+	size_t AddStar (Star *_star);
 	// add a new star to the system
 	// return value is the star's id
 
-	int AddPlanet (Planet *_planet, CelestialBody *cbody);
+	size_t AddPlanet (Planet *_planet, CelestialBody *cbody);
 	// add a new planet or moon to the system with cbody as the central body
 	// return value is the planet's id or -1 if error
 
-	int AddVessel (Vessel *_vessel);
+	size_t AddVessel (Vessel *_vessel);
 	// add a new vessel to the system
 	// return value is the vessel's id
 
-	bool DelVessel (Vessel *_vessel, Body *_alt_cam_tgt);
+	bool DelVessel (Vessel *_vessel);
 	// remove vessel from the system. This will fail for the focus object
 	// if _vessel was camera target, then camera will switch to _alt_cam_tgt
 	// (or Sun, if no target provided)
@@ -124,7 +122,7 @@ public:
 
 	void FinaliseUpdate ();
 
-	void Timejump ();
+	void Timejump (const TimeJumpData& jump);
 	// Discontinuous step
 
 	void ScanGFieldSources (const Vector *gpos, const Body *exclude, GFieldData *gfd) const;
@@ -205,36 +203,28 @@ public:
 	intptr_t FindNext (intptr_t fh, _finddata_t *fdata, char *fname);
 
 private:
-	char *name; // system's name
+	std::string m_Name; // system's name
 
-	DWORD nbody;     // number of bodies in the general object list
-	Body **body;   // list of bodies
+	std::vector<Body*  > bodies;
+	std::vector<Star*  > stars;
+	std::vector<Planet*> planets;
 
-	DWORD nstar;     // number of stars in the system
-	Star **star;   // list of stars
-
-	int nplanet; // number of planets in the system
-	Planet **planet; // list of planets
-
-	DWORD ngrav;
-	CelestialBody **grav;
+	std::vector<CelestialBody*> celestials;
 	// List of "massive" objects (those producing a
 	// gravitational field: stars, planets, moons)
+
+	std::vector<Vessel*> vessels;
+	// List of spacecraft
+
+	std::vector<SuperVessel*> supervessels;
+	// List of spacecraft groups (composite vessels)
 
 	std::vector< oapi::GraphicsClient::LABELLIST> m_labelList; ///< list of celestial markers
 	//oapi::GraphicsClient::LABELLIST *labellist;
 	//int nlabellist;
 	std::string m_labelPath; ///< directory containing celestial marker lists for this planetary system
 
-	DWORD nvessel;
-	Vessel **vessel;
-	// List of spacecraft
-
-	DWORD nsupervessel;
-	SuperVessel **supervessel;
-	// List of spacecraft groups (composite vessels)
-
-	void OutputLoadStatus (const char *bname);
+	void OutputLoadStatus(const char* bname, OutputLoadStatusCallback outputLoadStatus, void* callbackContext);
 
 	void AddBody (Body *_body);
 	// Add "body" to the system's general list of objects
