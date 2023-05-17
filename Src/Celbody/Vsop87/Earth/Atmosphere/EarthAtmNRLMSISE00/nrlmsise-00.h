@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------- */
 
 /* This file is part of the NRLMSISE-00  C source code package - release
- * 20020503
+ * 20020503 (with fixes from 20041227)
  *
  * The NRLMSISE-00 model was developed by Mike Picone, Alan Hedin, and
  * Doug Drob. They also wrote a NRLMSISE-00 distribution package in 
@@ -86,7 +86,7 @@ struct nrlmsise_input {
 	int year;      /* year, currently ignored */
 	int doy;       /* day of year */
 	double sec;    /* seconds in day (UT) */
-	double alt;    /* altitude in kilometes */
+	double alt;    /* altitude in kilometers */
 	double g_lat;  /* geodetic latitude */
 	double g_long; /* geodetic longitude */
 	double lst;    /* local apparent solar time (hours), see note below */
@@ -222,7 +222,7 @@ void ghp7 (struct nrlmsise_input *input, \
  *   and thus the loading time is increased.
  */
 #ifdef INLINE
-#define __inline_double inline double
+#define __inline_double static inline double
 #else
 #define __inline_double double
 #endif
