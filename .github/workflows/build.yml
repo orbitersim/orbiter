@@ -109,7 +109,7 @@ jobs:
       run: mkdir out
 
     - name: Checkout  
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Download artifacts
       uses: actions/download-artifact@v3
