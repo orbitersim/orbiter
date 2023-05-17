@@ -14,6 +14,7 @@
 #include "Celbody.h"
 #include "Log.h"
 #include "Orbitersdk.h"
+#include "PinesGrav.h"
 
 using namespace std;
 
@@ -28,17 +29,20 @@ void InterpretEphemeris (double *data, int flg, Vector *pos, Vector *vel, Vector
 // class CelestialBody
 
 CelestialBody::CelestialBody (double _mass, double _size)
-: RigidBody (_mass, _size, Vector (1,1,1))
+: RigidBody (_mass, _size, Vector (1,1,1)), pinesgrav(NULL)
 {
 	DefaultParam();
 	el = new Elements; TRACENEW
 	ClearModule();
+	usePinesGravity = false;
 }
 
 CelestialBody::CelestialBody (char *fname)
-: RigidBody (fname)
+: RigidBody (fname), pinesgrav(this)
 {
 	char cbuf[256];
+	int gravcoeff = 0;
+	usePinesGravity = false;
 
 	DefaultParam ();
 	ClearModule ();
@@ -62,6 +66,44 @@ CelestialBody::CelestialBody (char *fname)
 	// precession parameters
 	GetItemReal (ifs, "PrecessionObliquity", eps_ref);
 	GetItemReal (ifs, "PrecessionLAN", lan_ref);
+
+	if (GetItemString(ifs, "GravModelPath", cbuf) && GetItemInt(ifs, "GravCoeffCutoff", gravcoeff)) {
+		char gravModelFileName[512];
+		sprintf(gravModelFileName, "GravityModels\\%s",cbuf);
+		int maxGravityTerms = 0;
+		int	actualLoadedTerms = 0;
+		int readResult = 0;
+		readResult = pinesgrav.readGravModel(gravModelFileName, gravcoeff, actualLoadedTerms, maxGravityTerms);
+		if (readResult == 0) {
+			char logbuff[512];
+			sprintf(logbuff, "GRAVITY MODEL: %s LOADED, Terms %d/%d", gravModelFileName, actualLoadedTerms, maxGravityTerms);
+			LOGOUT(logbuff);
+		}
+		else if (readResult == 1) {
+			char logbuff[512];
+			sprintf(logbuff, "GRAVITY MODEL ERROR: COEFFICIENT FILE %s NOT FOUND", gravModelFileName);
+			LOGOUT(logbuff);
+		}
+		else if (readResult == 2) {
+			char logbuff[512];
+			sprintf(logbuff, "GRAVITY MODEL ERROR: COULD NOT ALLOCATE SPACE FOR GRAVITY MODEL %s", gravModelFileName);
+			LOGOUT(logbuff);
+		}
+		else if (readResult == 3) {
+			char logbuff[512];
+			sprintf(logbuff, "GRAVITY MODEL ERROR: BAD HEADDER LINE FORMAT %s", gravModelFileName);
+			LOGOUT(logbuff);
+		}
+		else if (readResult == 4) {
+			char logbuff[512];
+			sprintf(logbuff, "GRAVITY MODEL ERROR: BAD COEFFICIENT LINE FORMAT %s", gravModelFileName);
+			LOGOUT(logbuff);
+		}
+
+		if (readResult == 0) {
+			usePinesGravity = true;
+		}
+	}
 
 	if (GetItemString (ifs, "JCoeff", cbuf)) {
 		char *str;

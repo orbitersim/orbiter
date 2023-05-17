@@ -1,0 +1,5 @@
+Mercury		jgmess_160a_sha.tab
+Venus		mod_shgj120p.a01
+Moon		jgl165p1.sha
+Mars		jgmro_120f_sha.tab
+Vesta		JGDWN_VES20H_SHA.TAB

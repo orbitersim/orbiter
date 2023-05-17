@@ -61,6 +61,7 @@ set(common_src
 # Body classes
 	Body.cpp
 	BodyIntegrator.cpp
+	PinesGrav.cpp
 	Celbody.cpp
 	Planet.cpp
 	Rigidbody.cpp
@@ -246,7 +247,7 @@ if(BUILD_ORBITER_SERVER)
 
 	add_executable(Orbiter_server
 		${common_src}
-	)
+	 )
 
 	set_target_properties(Orbiter_server
 		PROPERTIES

@@ -611,7 +611,40 @@ Vector SingleGacc_perturbation (const Vector &rpos, const CelestialBody *body)
 
 	Vector dg;
 
-	if (body->UseComplexGravity() && body->nJcoeff() > 0) {
+	if (body->UseComplexGravity() && body->usePines()) {
+		
+		//Rotate position vector into the planet's local frame
+		Matrix rot = body->GRot();
+		Vector lpos = -tmul(rot,rpos)/1000.0;
+
+		//Convert to right-handed
+		double temp_y;
+		temp_y = lpos.y;
+		lpos.y = lpos.z; 
+		lpos.z = temp_y;
+
+		unsigned int maxDegreeOrder = body->GetPinesCutoff();
+		//get aceleration vector from spherical harmonics
+		{
+			//Limit scope of the const cast. the internal state of body.PinesGravProp does need to change when this finction is called.
+			CelestialBody* unconstbody = const_cast<CelestialBody*>(body);
+			dg = unconstbody->pinesAccel(lpos, maxDegreeOrder, maxDegreeOrder);
+		}
+
+		//Convert back to Orbiter's lefthandedness
+		temp_y = dg.y;
+		dg.y = dg.z;
+		dg.z = temp_y;
+
+		//rotate back into global frame
+		dg = mul(rot, dg) * 1000.0;
+		
+		//Useful debug string. Make sure you only have one vessel in your scenerio if you us it...
+		//double radial = dg.length() * 100000.0 * dotp(rpos.unit(), dg.unit());
+		//sprintf(DBG_MSG, "<%lf %lf %lf> Magnitude: %lf mGal Radial: %lf Radialness: %lf", dg.x * 100000.0, dg.y * 100000.0, dg.z * 100000.0, dg.length()*100000.0, radial,  dotp(rpos.unit(), dg.unit()));
+		return dg;
+	}
+	else if (body->UseComplexGravity() && body->nJcoeff() > 0) {
 
 		const double eps = 1e-10; // perturbation limit
 		double d  = rpos.length();
