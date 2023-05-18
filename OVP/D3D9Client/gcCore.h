@@ -22,7 +22,6 @@ class gcCore2;
 typedef void (__cdecl* __gcBindCoreMethod)(void** ppFnc, const char* name);
 
 static class gcCore2 *pCoreInterface = NULL;
-static __gcBindCoreMethod pBindCoreMethod = NULL;
 
 /**
 * \file gcConst.h
@@ -91,6 +90,7 @@ static __gcBindCoreMethod pBindCoreMethod = NULL;
 #define IPF_PYRAMIDAL	0x0080
 #define IPF_GAUSSIAN	0x0100
 #define IPF_ANISOTROPIC	0x0200
+#define IPF_VERTEXTEX	0x0400
 
 /// \defgroup dwFlags for gcSetupCustomCamera() API function
 ///@{
@@ -231,8 +231,7 @@ public:
 	virtual void	SetMesh(const MESHHANDLE hMesh, const char* tex = NULL, ipicull = ipicull::None);
 
 	virtual bool	Execute(bool bInScene = false);
-	virtual bool	ExecuteTemplate(bool bInScene = false, ipitemplate = Rect);
-	virtual bool	Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScene = false, ipitemplate mde = Rect);
+	virtual bool	Execute(DWORD blendop, bool bInScene = false, ipitemplate mde = Rect);
 
 	// ----------------------------------------------------------------------------------
 	virtual int		FindDefine(const char* key);
@@ -819,7 +818,7 @@ INTERFACE_BUILDER class gcCore2 : public gcCore
 
 public:
 
-	gcCore2()
+	gcCore2(__gcBindCoreMethod pBindCoreMethod)
 	{
 #define fnc_binder
 	}
@@ -899,10 +898,10 @@ inline gcCore2* gcGetCoreInterface()
 	if (pCoreInterface) return pCoreInterface;
 	HMODULE hModule = GetModuleHandle("D3D9Client.dll");
 	if (hModule) {
-		pBindCoreMethod = (__gcBindCoreMethod)GetProcAddress(hModule, "gcBindCoreMethod");	
-		if (pBindCoreMethod) return (pCoreInterface = new gcCore2());
+		__gcBindCoreMethod pBindCoreMethod = (__gcBindCoreMethod)GetProcAddress(hModule, "gcBindCoreMethod");
+		if (pBindCoreMethod) return (pCoreInterface = new gcCore2(pBindCoreMethod));
 		else oapiWriteLogV("gcGetCoreInterface() FAILED");
-	}
+	} else oapiWriteLogV("gcGetCoreInterface() FAILED. D3D9Client Not Found");
 	return NULL;
 }
 

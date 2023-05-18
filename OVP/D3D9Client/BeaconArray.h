@@ -65,7 +65,7 @@ public:
 	 */
 	void Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, float time=0.5f);
 
-	void Update(DWORD nCount, vPlanet *vP);
+	void Update(DWORD nCount, class vPlanet *vP);
 
 private:
 

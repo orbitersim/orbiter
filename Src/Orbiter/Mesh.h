@@ -108,8 +108,9 @@ public:
 		DWORD mtrl_idx = SPEC_INHERIT, DWORD tex_idx = SPEC_INHERIT,
 		WORD zbias = 0, DWORD flag = 0, bool deepcopy = false);
 	// Add new group to the mesh and return its group index
-	// The lists are handled by the mesh and should not be released by
-	// the calling program
+	// The vtx and idx lists must have been dynamically allocated. They
+	// are shallow-copied, and the mesh takes ownership.
+	// The calling program must not delete them.
 
 	bool AddGroupBlock (DWORD grp, const NTVERTEX *vtx, DWORD nvtx, const WORD *idx, DWORD nidx);
 	// Add geometry (vertices and indices) to an existing group.

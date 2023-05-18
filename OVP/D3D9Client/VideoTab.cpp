@@ -19,6 +19,7 @@
 #include "Junction.h"
 #include "OapiExtension.h"
 #include <vector>
+#include <sstream>
 #include <richedit.h>
 
 using namespace oapi;
@@ -172,6 +173,9 @@ void VideoTab::Initialise()
 	SendDlgItemMessage(hTab, IDC_VID_DEVICE, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hTab, IDC_VID_MODE, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessage(hTab, IDC_VID_BPP, CB_RESETCONTENT, 0, 0);
+
+
+	ScanAtmoCfgs();
 
 	// Create the Direct3D9 ---------------------------------------------
 	//
@@ -570,6 +574,7 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	
 	LogAlw("InitSetupDialog() Enum Device AA capability = %u",aamax);
 
+
 	// AA -----------------------------------------
 
 	SendDlgItemMessage(hWnd, IDC_AA, CB_RESETCONTENT, 0, 0);
@@ -720,7 +725,18 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessageA(hWnd, IDC_GUIMODE, CB_ADDSTRING, 0, (LPARAM)"Disabled");
 	SendDlgItemMessageA(hWnd, IDC_GUIMODE, CB_ADDSTRING, 0, (LPARAM)"(unused)");
 	SendDlgItemMessageA(hWnd, IDC_GUIMODE, CB_ADDSTRING, 0, (LPARAM)"Windowed");
-	
+
+	// Earth AtmoConfig -------------------------------
+	SendDlgItemMessage(hWnd, IDC_EARTHVISCFG, CB_RESETCONTENT, 0, 0);
+	for (auto x : AtmoCfgs["Earth"]) SendDlgItemMessageA(hWnd, IDC_EARTHVISCFG, CB_ADDSTRING, 0, (LPARAM)x.cfg.c_str());
+	for (int i = 0; i < AtmoCfgs["Earth"].size(); i++) {
+		if (Config->AtmoCfg["Earth"] == AtmoCfgs["Earth"][i].file) {
+			SendDlgItemMessage(hWnd, IDC_EARTHVISCFG, CB_SETCURSEL, i, 0);
+			break;
+		}
+	}
+		
+
 
 	// Write values in controls ----------------
 
@@ -797,6 +813,11 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessage(hWnd, IDC_ABSANIM, BM_SETCHECK, Config->bAbsAnims == 1, 0);
 	SendDlgItemMessage(hWnd, IDC_CLOUDNORM, BM_SETCHECK, Config->bCloudNormals == 1, 0);
 	SendDlgItemMessage(hWnd, IDC_FLATS, BM_SETCHECK, Config->bFlats == 1, 0);
+	SendDlgItemMessage(hWnd, IDC_ESUNGLARE, BM_SETCHECK, Config->bGlares == 1, 0);
+	SendDlgItemMessage(hWnd, IDC_ELIGHTSGLARE, BM_SETCHECK, Config->bLocalGlares == 1, 0);
+	SendDlgItemMessage(hWnd, IDC_EIRRAD, BM_SETCHECK, Config->bIrradiance == 1, 0);
+	SendDlgItemMessage(hWnd, IDC_ESCACHE, BM_SETCHECK, Config->ShaderCacheUse == 1, 0);
+	SendDlgItemMessage(hWnd, IDC_EAQUALITY, BM_SETCHECK, Config->bAtmoQuality == 1, 0);
 
 
 	SendDlgItemMessage(hWnd, IDC_NORMALMAPS, BM_SETCHECK, Config->UseNormalMap==1, 0);
@@ -867,11 +888,16 @@ void VideoTab::SaveSetupState(HWND hWnd)
 	Config->EnableGlass   = (int)SendDlgItemMessage (hWnd, IDC_GLASSSHADE,  BM_GETCHECK, 0, 0);
 	Config->EnableMeshDbg = (int)SendDlgItemMessage (hWnd, IDC_MESH_DEBUGGER,  BM_GETCHECK, 0, 0);
 	Config->CloudMicro    = (int)SendDlgItemMessage (hWnd, IDC_CLOUDMICRO, BM_GETCHECK, 0, 0);
-	Config->GDIOverlay	  = (int)(hWnd, IDC_GDIOVERLAY, BM_GETCHECK, 0, 0);
+	Config->GDIOverlay	  = (int)SendDlgItemMessage (hWnd, IDC_GDIOVERLAY, BM_GETCHECK, 0, 0);
 	Config->bAbsAnims	  = (int)SendDlgItemMessage (hWnd, IDC_ABSANIM, BM_GETCHECK, 0, 0);
 	Config->bCloudNormals = (int)SendDlgItemMessage(hWnd, IDC_CLOUDNORM, BM_GETCHECK, 0, 0);
 	Config->bFlats		  = (int)SendDlgItemMessage(hWnd, IDC_FLATS, BM_GETCHECK, 0, 0);
 	Config->DebugBreak	  = (int)SendDlgItemMessage(hWnd, IDC_BREAK, BM_GETCHECK, 0, 0);
+	Config->bGlares		  = (int)SendDlgItemMessage(hWnd, IDC_ESUNGLARE, BM_GETCHECK, 0, 0);
+	Config->bLocalGlares  = (int)SendDlgItemMessage(hWnd, IDC_ELIGHTSGLARE, BM_GETCHECK, 0, 0);
+	Config->bIrradiance   = (int)SendDlgItemMessage(hWnd, IDC_EIRRAD, BM_GETCHECK, 0, 0);
+	Config->ShaderCacheUse= (int)SendDlgItemMessage(hWnd, IDC_ESCACHE, BM_GETCHECK, 0, 0);
+	Config->bAtmoQuality  = (int)SendDlgItemMessage(hWnd, IDC_EAQUALITY, BM_GETCHECK, 0, 0);
 
 	// Sliders
 	Config->Convergence   = double(SendDlgItemMessage(hWnd, IDC_CONVERGENCE, TBM_GETPOS, 0, 0)) * 0.01;
@@ -907,6 +933,10 @@ void VideoTab::SaveSetupState(HWND hWnd)
 		case 2: Config->SceneAntialias = 4; break;
 		case 3: Config->SceneAntialias = 8; break;
 	}
+
+	int EASel = (int)SendDlgItemMessage(hWnd, IDC_EARTHVISCFG, CB_GETCURSEL, 0, 0);
+	if (!AtmoCfgs["Earth"][EASel].file.empty()) Config->AtmoCfg["Earth"] = AtmoCfgs["Earth"][EASel].file;
+	else Config->AtmoCfg["Earth"] = "Earth.atm.cfg";
 }
 
 
@@ -1047,7 +1077,49 @@ void VideoTab::InitCreditsDialog(HWND hWnd)
 	credits = NULL;
 
 	CloseHandle(hFile);
+}
 
+bool VideoTab::GetConfigName(const char* file, string& cfg, string& planet)
+{
+	string filename = "GC\\" + string(file);
+	FILEHANDLE hFile = oapiOpenFile(filename.c_str(), FILE_IN_ZEROONFAIL, CONFIG);
+	if (hFile) {
+		char ConfigName[32] = {}; char PlanetName[32] = {};
+		bool bA = oapiReadItem_string(hFile, "ConfigName", ConfigName);
+		bool bB = oapiReadItem_string(hFile, "Planet", PlanetName);
+		oapiCloseFile(hFile, FILE_IN_ZEROONFAIL);
+		cfg = string(ConfigName);
+		planet = string(PlanetName);
+		return bA && bB;
+	}
+	return false;
+}
+
+void VideoTab::ScanAtmoCfgs()
+{
+	_AtmoCfg cfg = { "Default", "Earth.atm.cfg"};
+	AtmoCfgs["Earth"].push_back(cfg);
+
+	WIN32_FIND_DATA FileInformation;
+	string name = string(OapiExtension::GetConfigDir()) + "GC\\*_atm.cfg";
+	HANDLE hFile = FindFirstFileA(name.c_str(), &FileInformation);
+
+	if (hFile != INVALID_HANDLE_VALUE) {
+		do {
+			if (FileInformation.cFileName[0] != '.') {
+				if (!(FileInformation.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {		
+					string cfgname, planet;
+					if (GetConfigName(FileInformation.cFileName, cfgname, planet)) {
+						_AtmoCfg cfg = { cfgname, FileInformation.cFileName };
+						AtmoCfgs[planet].push_back(cfg);
+					}
+					else oapiWriteLogV("File Not Found [%s]", FileInformation.cFileName);
+				}
+			}
+		}
+		while (FindNextFileA(hFile, &FileInformation) == TRUE);
+		FindClose(hFile);
+	}
 }
 
 

@@ -668,6 +668,29 @@ void D3D9Pad::SetWorldTransform(const FMATRIX4 *pWT)
 
 // ===============================================================================================
 //
+void D3D9Pad::SetWorldBillboard(const FVECTOR3& wpos, float scale, bool bFixed, const FVECTOR3* index)
+{
+#ifdef SKPDBG 
+	Log("SetWorldBillboard()");
+#endif
+	scale *= (mP._11 + mP._22) * 0.5f;
+	Change |= SKPCHG_TRANSFORM;
+	FVECTOR3 up = unit(wpos);
+	FVECTOR3 y  = unit(cross((index ? *index : FVECTOR3(mV._11, mV._21, mV._31)), up));
+	FVECTOR3 x  = cross(up, y);
+	float d = (bFixed ? dot(up, wpos) / float(tgt_desc.Width) : 1.0f) * scale;
+	FMATRIX4 mWorld;
+	mWorld._x.xyz = x * d;
+	mWorld._y.xyz = y * d;
+	mWorld._z.xyz = up * d;
+	mWorld._p.xyz = wpos;
+	mWorld.m44 = 1.0f;
+	memcpy(&mW, &mWorld, sizeof(FMATRIX4));
+}
+
+
+// ===============================================================================================
+//
 void D3D9Pad::SetGlobalLineScale(float width, float pat)
 {
 #ifdef SKPDBG 

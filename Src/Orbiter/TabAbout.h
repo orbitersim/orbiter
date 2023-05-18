@@ -20,7 +20,7 @@ namespace orbiter {
 		void Create();
 		bool OpenHelp();
 
-		INT_PTR TabProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		BOOL OnMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	private:
 		static INT_PTR CALLBACK AboutProc(HWND, UINT, WPARAM, LPARAM);

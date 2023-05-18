@@ -801,6 +801,19 @@ void Vessel::ProcessMessage (DWORD msg, void *ptr)
 
 // ==============================================================
 
+void Vessel::OptionChanged(DWORD cat, DWORD item)
+{
+	if (cat == OPTCAT_VESSEL) {
+		switch (item) {
+		case OPTITEM_VESSEL_LIMITEDFUEL:
+			burnfuel = g_pOrbiter->Cfg()->CfgLogicPrm.bLimitedFuel;
+			break;
+		}
+	}
+}
+
+// ==============================================================
+
 void Vessel::Destroying (const Vessel *vessel)
 {
 	if (vessel == this) { // it's us!

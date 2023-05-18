@@ -190,11 +190,20 @@ HRESULT CDIFramework7::CreateJoyDevice (HWND hWnd, DWORD idx)
 		&c_dfDIJoystick2, DISCL_EXCLUSIVE | DISCL_FOREGROUND);
 }
 
+void CDIFramework7::DestroyJoyDevice()
+{
+	if (m_pdidJoyDevice) {
+		m_pdidJoyDevice->Unacquire();
+		m_pdidJoyDevice->Release();
+		m_pdidJoyDevice = NULL;
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Name: DestroyDevices()
 // Desc: Releases the DirectInput devices
 //-----------------------------------------------------------------------------
-VOID CDIFramework7::DestroyDevices()
+void CDIFramework7::DestroyDevices()
 {
 	if (m_pdidKbdDevice) {
 		m_pdidKbdDevice->Unacquire ();
@@ -206,10 +215,6 @@ VOID CDIFramework7::DestroyDevices()
 		m_pdidMouseDevice->Release ();
 		m_pdidMouseDevice = NULL;
 	}
-	if (m_pdidJoyDevice) {
-		m_pdidJoyDevice->Unacquire ();
-		m_pdidJoyDevice->Release ();
-		m_pdidJoyDevice = NULL;
-	}
+	DestroyJoyDevice();
 }
 

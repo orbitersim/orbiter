@@ -18,11 +18,10 @@
 
 #include "D3D9Client.h"
 #include "D3D9Effect.h"
-#include "PlanetRenderer.h"
 
-#define HORIZON_NSEG 128	// number of mesh segments
-#define HORIZON2_NSEG 400	// Horizon ring segments
-#define HORIZON2_NRING 50	// Horizon ring ring count
+#define HORIZON_NSEG 32		// number of mesh segments
+#define HORIZON2_NSEG 200	// Horizon ring segments
+#define HORIZON2_NRING 5	// Horizon ring ring count
 
 class vPlanet;
 
@@ -78,10 +77,11 @@ private:
 // HazeManager2 is used with TileManager2
 // ==============================================================
 
-class HazeManager2 : public PlanetRenderer 
+class HazeManager2
 {
 public:
-	HazeManager2 (const oapi::D3D9Client *gclient, const vPlanet *vplanet);
+	HazeManager2 (vPlanet *vplanet);
+	~HazeManager2();
 
 
 	static	void GlobalInit (oapi::D3D9Client *gclient);
@@ -98,13 +98,15 @@ private:
 	void	RenderSkySegment(D3DXMATRIX &wmat, double rad, double dmin, double dmax, int index);
 
 	OBJHANDLE obj;
-	const vPlanet *vp;
+	vPlanet *vp;
 	double rad;
 
+	static ShaderClass* pRing;
+	static ShaderClass* pDome;
+	static LPDIRECT3DDEVICE9 pDev;
+	static LPDIRECT3DTEXTURE9 pNoise;
 	static int xreslvl[6];
 	static int yreslvl[6];
-	static int xlreslvl[6];
-	static int ylreslvl[6];
 	static LPDIRECT3DVERTEXBUFFER9 pSkyVB[6];
 	static LPDIRECT3DVERTEXBUFFER9 pRingVB;
 };

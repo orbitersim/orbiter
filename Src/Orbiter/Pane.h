@@ -195,6 +195,13 @@ public:
 	int BroadcastMFDMessage (int msg, void *data);
 	// calls the ProcessMessage method for all MFDs
 
+	/**
+	 * \brief Called when the user interactively changes a simulation option
+	 * \param cat option category (see \ref optcat)
+	 * \param item option item (see \ref optitem)
+	 */
+	void OptionChanged(DWORD cat, DWORD item);
+
 	void RegisterMFD (int id, const MFDSPEC &spec);
 	void RegisterMFD (int id, const EXTMFDSPEC *spec);
 	void UnregisterMFD (int id);

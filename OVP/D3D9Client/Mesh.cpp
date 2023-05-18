@@ -25,6 +25,12 @@
 using namespace oapi;
 
 
+MeshShader* D3D9Mesh::s_pShader[16] = {};
+MeshShader::VSConst MeshShader::vs_const = {};
+MeshShader::PSConst MeshShader::ps_const = {};
+MeshShader::PSBools MeshShader::ps_bools = {};
+
+
 int compare_lights(const void * a, const void * b)
 {
 	register float fa = static_cast<const _LightList*>(a)->illuminace;
@@ -181,7 +187,6 @@ void D3D9Mesh::Null(const char *meshName /* = NULL */)
 	pBuf = NULL;
 	Mtrl = NULL;
 	pGrpTF = NULL;
-	sunLight = NULL;
 	cAmbient = 0;
 	MaxFace  = 0;
 	MaxVert  = 0;
@@ -217,7 +222,7 @@ D3D9Mesh::D3D9Mesh(const char *fname) : D3D9Effect()
 	}
 
 	MeshCatalog.insert(this);
-	pBuf->Map(pDev);
+	if (pBuf) pBuf->Map(pDev);
 }
 
 // ===========================================================================================
@@ -228,7 +233,7 @@ D3D9Mesh::D3D9Mesh(MESHHANDLE hMesh, bool asTemplate, D3DXVECTOR3 *reorig, float
 	LoadMeshFromHandle(hMesh, reorig, scale);
 	bIsTemplate = asTemplate;
 	MeshCatalog.insert(this);
-	pBuf->Map(pDev);
+	if (pBuf) pBuf->Map(pDev);
 }
 
 
@@ -708,6 +713,7 @@ void D3D9Mesh::SetGroupRec(DWORD i, const MESHGROUPEX *mg)
 //
 bool D3D9Mesh::CopyVertices(GROUPREC *grp, const MESHGROUPEX *mg, D3DXVECTOR3 *reorig, float *scale)
 {
+	if (!pBuf) return false;
 	NTVERTEX *pNT = mg->Vtx;
 	SMVERTEX *pShad = pBuf->pSBSys + grp->VertOff;
 	NMVERTEX *pVert = pBuf->pVBSys + grp->VertOff;
@@ -780,6 +786,7 @@ int D3D9Mesh::EditGroup(DWORD grp, GROUPEDITSPEC *ges)
 	_TRACE;
 	if (!IsOK()) return 1;
 	if (grp >= nGrp) return 1;
+	if (!pBuf) return 1;
 
 	bBSRecompute = true;
 
@@ -864,6 +871,8 @@ NTVERTEX Convert(NMVERTEX &v)
 
 int D3D9Mesh::GetGroup (DWORD grp, GROUPREQUESTSPEC *grs)
 {
+	if (!pBuf) return 1;
+
 	static NTVERTEX zero = {0,0,0, 0,0,0, 0,0};
 	if (grp >= nGrp) return 1;
 	DWORD nv = Grp[grp].nVert;
@@ -993,7 +1002,7 @@ void D3D9Mesh::SetTexMixture(DWORD ntex, float mix)
 //
 void D3D9Mesh::SetSunLight(const D3D9Sun *light)
 {
-	sunLight = light;
+	memcpy(&sunLight, light, sizeof(D3D9Sun));
 }
 
 // ===========================================================================================
@@ -1321,6 +1330,7 @@ void D3D9Mesh::RenderGroup(const GROUPREC *grp)
 	_TRACE;
 	if (!IsOK()) return;
 	if (!grp) return;
+
 	pBuf->Map(pDev);
 
 	pDev->SetVertexDeclaration(pMeshVertexDecl);
@@ -1409,6 +1419,15 @@ void D3D9Mesh::CheckMeshStatus()
 }
 
 
+// ===========================================================================================
+//
+void D3D9Mesh::ConfigureAtmo()
+{
+	//LogSunLight(sunLight);
+	float x = 1.0f - saturate(max(sunLight.Color.r, sunLight.Color.b) * 2.0f);
+	FX->SetFloat(eNight, x);
+	FX->SetValue(eSun, &sunLight, sizeof(D3D9Sun));
+}
 
 
 // ================================================================================================
@@ -1518,14 +1537,6 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 
 	if (flags&DBG_FLAGS_DUALSIDED) pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
-	if (sunLight) {
-		D3D9Sun sun = *sunLight;
-		float x = 1.0f - saturate(max(sun.Color.r, sun.Color.b)*2.0f);
-		FX->SetFloat(eNight, x);
-		sun.Color *= float(Config->GFXSunIntensity);
-		FX->SetValue(eSun, &sun, sizeof(D3D9Sun));
-	}
-
 	FX->SetTechnique(eVesselTech);
 	FX->SetBool(eFresnel, false);
 	FX->SetBool(eEnvMapEnable, false);
@@ -1533,6 +1544,8 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	FX->SetBool(eLightsEnabled, false);
 	FX->SetBool(eOITEnable, false);
 	FX->SetVector(eColor, &D3DXVECTOR4(0, 0, 0, 0));
+
+	ConfigureAtmo();
 
 	if (DebugControls::IsActive()) if (pTune) FX->SetBool(eTuneEnabled, true);
 
@@ -1988,7 +2001,7 @@ void D3D9Mesh::RenderSimplified(const LPD3DXMATRIX pW, LPDIRECT3DCUBETEXTURE9 *p
 	FX->SetVector(eColor, &D3DXVECTOR4(0, 0, 0, 0));
 	FX->SetMatrix(eW, pW);
 
-	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Sun));
+	ConfigureAtmo();
 
 	// Process Local Light Sources ------------------------------------------------------------
 	//
@@ -2276,12 +2289,13 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 
 	if (flags&DBG_FLAGS_DUALSIDED) pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
-	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Sun));
 
 	FX->SetTechnique(eVesselTech);
 	FX->SetBool(eTuneEnabled, false);
 	FX->SetBool(eLightsEnabled, false);
 	FX->SetVector(eColor, &D3DXVECTOR4(0, 0, 0, 0));
+
+	ConfigureAtmo();
 
 	if (DebugControls::IsActive()) if (pTune) FX->SetBool(eTuneEnabled, true);
 
@@ -2593,16 +2607,13 @@ void D3D9Mesh::RenderBaseTile(const LPD3DXMATRIX pW)
 	pDev->SetStreamSource(0, pBuf->pVB, 0, sizeof(NMVERTEX));
 	pDev->SetIndices(pBuf->pIB);
 
-	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Sun));
 
 	FX->SetTechnique(eBaseTile);
 	FX->SetVector(eColor, &D3DXVECTOR4(0, 0, 0, 0));
 	FX->SetMatrix(eGT, gc->GetIdentity());
 	FX->SetMatrix(eW, pW);
-	//FX->SetBool(eUseSpec, false);
-	//FX->SetBool(eUseEmis, false);
-	//FX->SetBool(eUseRefl, false);
 
+	ConfigureAtmo();
 
 	UINT numPasses = 0;
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
@@ -2696,7 +2707,88 @@ void D3D9Mesh::RenderBaseTile(const LPD3DXMATRIX pW)
 
 // ================================================================================================
 //
-void D3D9Mesh::RenderShadows(float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, bool bShadowMap, const D3DXVECTOR4 *elev)
+void D3D9Mesh::RenderShadowMap(const LPD3DXMATRIX pW, const LPD3DXMATRIX pVP, int opt)
+{
+	if (!IsOK()) return;
+
+	pBuf->Map(pDev);
+
+	D3DXMATRIX GroupMatrix, mWorldMesh;
+
+	MeshShader* pShader = nullptr;
+	
+	MeshShader::vs_const.mVP = *pVP;
+
+	D3DXMatrixIdentity(MeshShader::vs_const.mW);
+	
+	if (bGlobalTF) D3DXMatrixMultiply(&mWorldMesh, &mTransform, pW);
+	else mWorldMesh = *pW;
+
+	if (opt == 1) {
+		// Screenspace Depth and Normal buffer rendering
+		pDev->SetStreamSource(0, pBuf->pVB, 0, sizeof(NMVERTEX));
+		pShader = s_pShader[SHADER_NORMAL_DEPTH];
+		pShader->Setup(pMeshVertexDecl, true, 0);
+	}
+	else {
+		if (Flags & 0x20) {
+			// Regular shadowmap with OIT support
+			pDev->SetStreamSource(0, pBuf->pSB, 0, sizeof(SMVERTEX));
+			pShader = s_pShader[SHADER_SHADOWMAP_OIT];
+			pShader->Setup(pPosTexDecl, true, 0);
+		}
+		else {
+			// Regular shadowmap for self shadowing
+			pDev->SetStreamSource(0, pBuf->pGB, 0, sizeof(D3DXVECTOR4));
+			pShader = s_pShader[SHADER_SHADOWMAP];
+			pShader->Setup(pVector4Decl, true, 0);
+		}
+	}
+	pDev->SetIndices(pBuf->pIB);
+	pShader->ClearTextures();
+
+	bool bInit = true;
+	bool bCurrentState = false;
+
+	for (DWORD g = 0; g < nGrp; g++)
+	{
+		if (Grp[g].UsrFlag & 0x2) continue;
+		if (Grp[g].UsrFlag & 0x1) continue;
+		
+		MeshShader::ps_bools.bOIT = (Grp[g].UsrFlag & 0x20) != 0;
+
+		if (MeshShader::ps_bools.bOIT) {
+			DWORD ti = Grp[g].TexIdx;
+			if (ti) {
+				auto hTex = Tex[ti]->GetTexture();
+				if (hTex) pShader->SetTexture(pShader->hPST[0], hTex, IPF_WRAP | IPF_POINT);
+				else MeshShader::ps_bools.bOIT = false;
+			}
+			else MeshShader::ps_bools.bOIT = false;
+		}
+
+		if (Grp[g].bTransform) {
+			D3DXMatrixMultiply(MeshShader::vs_const.mW, &pGrpTF[g], pW);		// Apply Animations to instance matrices
+			bInit = true;
+		}
+		else {
+			if (bInit) MeshShader::vs_const.mW = mWorldMesh;
+			bInit = false;
+		}
+
+		if (pShader->hVSC) pShader->SetVSConstants(pShader->hVSC, &MeshShader::vs_const, sizeof(MeshShader::vs_const));
+		if (pShader->hPSC) pShader->SetPSConstants(pShader->hPSC, &MeshShader::ps_const, sizeof(MeshShader::ps_const));
+		if (pShader->hPSB) pShader->SetPSConstants(pShader->hPSB, &MeshShader::ps_bools, sizeof(MeshShader::ps_bools));
+		pShader->UpdateTextures();
+
+		pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Grp[g].VertOff, 0, Grp[g].nVert, Grp[g].IdexOff, Grp[g].nFace);
+	}
+}
+
+
+// ================================================================================================
+//
+void D3D9Mesh::RenderStencilShadows(float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, bool bShadowMap, const D3DXVECTOR4 *elev)
 {
 	if (!IsOK()) return;
 
@@ -2707,26 +2799,11 @@ void D3D9Mesh::RenderShadows(float alpha, const LPD3DXMATRIX pP, const LPD3DXMAT
 	else mWorldMesh = *pW;
 
 	pDev->SetIndices(pBuf->pIB);
-
-	if (bShadowMap) {
-		if (Flags & 0x20) {
-			pDev->SetVertexDeclaration(pPosTexDecl);
-			pDev->SetStreamSource(0, pBuf->pSB, 0, sizeof(SMVERTEX));
-			Pass = 1;
-		}
-		else {
-			pDev->SetVertexDeclaration(pVector4Decl);
-			pDev->SetStreamSource(0, pBuf->pGB, 0, sizeof(D3DXVECTOR4));
-		}
-		FX->SetTechnique(eGeometry);
-	}
-	else {
-		pDev->SetVertexDeclaration(pPosTexDecl);
-		pDev->SetStreamSource(0, pBuf->pSB, 0, sizeof(SMVERTEX));
-		FX->SetTechnique(eShadowTech);
-	}
-
-	if (elev && bShadowMap==false) FX->SetVector(eInScatter, elev);
+	pDev->SetVertexDeclaration(pPosTexDecl);
+	pDev->SetStreamSource(0, pBuf->pSB, 0, sizeof(SMVERTEX));
+	FX->SetTechnique(eShadowTech);
+	
+	if (elev) FX->SetVector(eInScatter, elev);
 	else FX->SetVector(eInScatter, &D3DXVECTOR4(0,1,0,0));
 
 	FX->SetFloat(eMix, alpha);
@@ -2760,42 +2837,22 @@ void D3D9Mesh::RenderShadows(float alpha, const LPD3DXMATRIX pP, const LPD3DXMAT
 
 		if (Grp[g].bTransform) {
 			D3DXMatrixMultiply(&GroupMatrix, &pGrpTF[g], pW);		// Apply Animations to instance matrices
-			FX->SetValue(eW, GroupMatrix, sizeof(D3DXMATRIX));
+			FX->SetValue(eW, &GroupMatrix, sizeof(D3DXMATRIX));
 			bInit = true;
 		}
 		else {
 			if (bInit) {
-				FX->SetValue(eW, mWorldMesh, sizeof(D3DXMATRIX));
+				FX->SetValue(eW, &mWorldMesh, sizeof(D3DXMATRIX));
 			}
 			bInit = false;
 		}
 
 		FX->CommitChanges();
-
-		if (bShadowMap) {
-
-			bool bDisable = (Grp[g].UsrFlag & 0x1) != 0;
-
-			if (bDisable != bCurrentState) {
-				if (bDisable) pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0);
-				else		  pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0xF);
-				bCurrentState = bDisable;
-			}
-		}
-
 		pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Grp[g].VertOff, 0, Grp[g].nVert, Grp[g].IdexOff, Grp[g].nFace);
-
-		D3D9Stats.Mesh.Vertices += Grp[g].nVert;
-		D3D9Stats.Mesh.MeshGrps++;
 	}
 
 	FX->EndPass();
 	FX->End();
-
-	if (bShadowMap) {
-		pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0xF);
-		pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-	}
 }
 
 
@@ -2833,7 +2890,7 @@ void D3D9Mesh::RenderShadowsEx(float alpha, const LPD3DXMATRIX pP, const LPD3DXM
 		if (bOIT) {
 			DWORD ti = Grp[g].TexIdx;
 			if (ti) {
-				auto hTex = Tex[ti]->GetTexture();
+				auto hTex = (Tex[ti] ? Tex[ti]->GetTexture() : NULL);
 				if (hTex) {
 					HR(FX->SetTexture(eTex0, hTex));
 				}
@@ -3289,7 +3346,7 @@ void D3D9Mesh::RenderRings(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex)
 	HR(FX->SetTechnique(eRingTech));
 	HR(FX->SetMatrix(eW, pW));
 	HR(FX->SetTexture(eTex0, pTex));
-	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Sun));
+	FX->SetValue(eSun, &sunLight, sizeof(D3D9Sun));
 	HR(FX->SetValue(eMtrl, &defmat, sizeof(D3D9MatExt)-4));
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));
@@ -3313,7 +3370,7 @@ void D3D9Mesh::RenderRings2(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex, floa
 	HR(FX->SetTechnique(eRingTech2));
 	HR(FX->SetMatrix(eW, pW));
 	HR(FX->SetTexture(eTex0, pTex));
-	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Sun));
+	FX->SetValue(eSun, &sunLight, sizeof(D3D9Sun));
 	HR(FX->SetValue(eMtrl, &defmat, sizeof(D3D9MatExt)-4));
 	HR(FX->SetVector(eTexOff, &D3DXVECTOR4(irad, orad, 0, 0)));
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
@@ -3321,4 +3378,24 @@ void D3D9Mesh::RenderRings2(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex, floa
 	RenderGroup(0);
 	HR(FX->EndPass());
 	HR(FX->End());
+}
+
+
+// ===========================================================================================
+//
+void D3D9Mesh::GlobalInit(LPDIRECT3DDEVICE9 pDev)
+{
+	memset(s_pShader, 0, sizeof(s_pShader));
+
+	s_pShader[SHADER_SHADOWMAP] = new MeshShader(pDev, "Modules/D3D9Client/NewMesh.hlsl", "ShdMapVS", "ShdMapPS");
+	s_pShader[SHADER_SHADOWMAP_OIT] = new MeshShader(pDev, "Modules/D3D9Client/NewMesh.hlsl", "ShdMapOIT_VS", "ShdMapOIT_PS");
+	s_pShader[SHADER_NORMAL_DEPTH] = new MeshShader(pDev, "Modules/D3D9Client/NewMesh.hlsl", "NormalDepth_VS", "NormalDepth_PS");
+}
+
+
+// ===========================================================================================
+//
+void D3D9Mesh::GlobalExit()
+{
+	for (auto x : s_pShader) if (x) delete x;
 }

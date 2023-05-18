@@ -353,7 +353,7 @@ void Orbits::SetClipper(Sketchpad *pSkp2, OBJHANDLE hObj, DWORD idx)
 //
 FVECTOR3 Orbits::WorldDirection(VECTOR3 d)
 {
-	FVECTOR4 sc = mul(FVECTOR4(d), *pVP);
+	FVECTOR4 sc = mul(FVECTOR4(d, 1.0f), *pVP);
 	float f = abs(1.0f / sc.w);
 	sc.x *= f;
 	sc.y *= -f;
@@ -435,9 +435,9 @@ void Orbits::DrawOrbit(Sketchpad *pSkp2, COrbit *pOrb, OBJHANDLE hRef, oapi::FVE
 	VECTOR3 _F = _P * (pOrb->SMa() * pOrb->Ecc()); // Offset the template to actual planet position
 
 	FMATRIX4 mat;
-	mat._y = FVECTOR4(_Q * (pOrb->SMi() / smi) );
-	mat._x = FVECTOR4(_P * (pOrb->SMa()) );
-	mat._z = FVECTOR4(_W);
+	mat._y = FVECTOR4(_Q * (pOrb->SMi() / smi), 0.0f);
+	mat._x = FVECTOR4(_P * (pOrb->SMa()), 0.0f);
+	mat._z = FVECTOR4(_W, 0.0f);
 	mat._p = FVECTOR4(Clip[0].Pos - _F, 1.0f);
 
 
@@ -456,9 +456,9 @@ void Orbits::DrawOrbit(Sketchpad *pSkp2, COrbit *pOrb, OBJHANDLE hRef, oapi::FVE
 
 	// Update matrix for generic drawing in 3D ----------------------
 	//
-	mat._y = FVECTOR4(_Q);
-	mat._x = FVECTOR4(_P);
-	mat._z = FVECTOR4(_W);
+	mat._y = FVECTOR4(_Q, 0.0f);
+	mat._x = FVECTOR4(_P, 0.0f);
+	mat._z = FVECTOR4(_W, 0.0f);
 	mat._p = FVECTOR4(Clip[0].Pos, 1.0f);
 
 	pSkp2->SetWorldTransform(&mat);

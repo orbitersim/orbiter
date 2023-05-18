@@ -9,6 +9,7 @@
 #include <windows.h>
 #include <commctrl.h>
 #include "LpadTab.h"
+#include "Launchpad.h"
 #include "Log.h"
 #include "Help.h"
 #include "resource.h"
@@ -65,27 +66,28 @@ void orbiter::LaunchpadTab::OpenTabHelp(const char* topic)
 
 //-----------------------------------------------------------------------------
 
-BOOL orbiter::LaunchpadTab::Size (int w, int h)
+void orbiter::LaunchpadTab::TabAreaResized(int w, int h)
 {
-	if (nitem) {
-		int dx = max (0, (w - (int)(pos0.right-pos0.left))/2);
-		int dy = max (0, (h - (int)(pos0.bottom-pos0.top))/2);
-		for (int i = 0; i < nitem; i++) {
-			SetWindowPos (GetDlgItem (hTab, item[i]), NULL,
-				itempos[i].x+dx, itempos[i].y+dy, 0, 0,
-				SWP_NOACTIVATE|SWP_NOSIZE|SWP_NOOWNERZORDER|SWP_NOZORDER|SWP_NOCOPYBITS);
+	if (hTab) {
+		if (DynamicSize())
+			SetWindowPos(hTab, NULL, 0, 0, w, h,
+				SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+		else {
+			RECT r;
+			GetClientRect(hTab, &r);
+			int x0 = max(0, (w - r.right) / 2);
+			int y0 = max(0, (h - r.bottom) / 2);
+			SetWindowPos(hTab, NULL, x0, y0, 0, 0,
+				SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 		}
-		return FALSE;
 	}
-	return TRUE;
 }
 
 //-----------------------------------------------------------------------------
 
 HWND orbiter::LaunchpadTab::CreateTab (int resid)
 {
-	HWND hT = CreateDialogParam (AppInstance(), MAKEINTRESOURCE(resid), LaunchpadWnd(), TabProcHook, (LPARAM)this);
-	SetWindowLongPtr (hT, DWLP_USER, (LONG_PTR)this);
+	HWND hT = CreateDialogParam (AppInstance(), MAKEINTRESOURCE(resid), pLp->HTabContainer(), TabProcHook, (LPARAM)this);
 
 	POINT p0, p1;
 	GetClientRect (hT, &pos0);
@@ -100,31 +102,35 @@ HWND orbiter::LaunchpadTab::CreateTab (int resid)
 
 //-----------------------------------------------------------------------------
 
-void orbiter::LaunchpadTab::RegisterItemPositions (int *_item, int _nitem)
+BOOL orbiter::LaunchpadTab::OnSize(int w, int h)
 {
 	if (nitem) {
-		delete []item;
-		item = NULL;
-		delete []itempos; // clear existing list
-		itempos = NULL;
-	}
-	if (nitem = _nitem) {
-		item = new int[nitem]; TRACENEW
-		itempos = new POINT[nitem]; TRACENEW
-		memcpy (item, _item, nitem*sizeof(int));
-		RECT r;
+		int dx = max(0, (w - (int)(pos0.right - pos0.left)) / 2);
+		int dy = max(0, (h - (int)(pos0.bottom - pos0.top)) / 2);
 		for (int i = 0; i < nitem; i++) {
-			r = GetClientPos (hTab, GetDlgItem (hTab, item[i]));
-			itempos[i].x = r.left;
-			itempos[i].y = r.top;
+			SetWindowPos(GetDlgItem(hTab, item[i]), NULL,
+				itempos[i].x + dx, itempos[i].y + dy, 0, 0,
+				SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOCOPYBITS);
 		}
+		return FALSE;
 	}
+	return TRUE;
 }
 
 //-----------------------------------------------------------------------------
 
 INT_PTR orbiter::LaunchpadTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	switch (uMsg) {
+	case WM_INITDIALOG:
+		return OnInitDialog(hWnd, wParam, lParam);
+	case WM_SIZE:
+		return OnSize(LOWORD(lParam), HIWORD(lParam));
+	case WM_NOTIFY:
+		return OnNotify(hWnd, (int)wParam, (LPNMHDR)lParam);
+	default:
+		return OnMessage(hWnd, uMsg, wParam, lParam);
+	}
 	return FALSE;
 }
 
@@ -132,16 +138,14 @@ INT_PTR orbiter::LaunchpadTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 
 INT_PTR CALLBACK orbiter::LaunchpadTab::TabProcHook (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	LaunchpadTab *lt = (LaunchpadTab*)GetWindowLongPtr (hWnd, DWLP_USER);
-	switch (uMsg) {
-	case WM_INITDIALOG:
+	LaunchpadTab* lt = nullptr;
+	if (uMsg == WM_INITDIALOG) {
 		lt = (LaunchpadTab*)lParam;
-		return lt->InitDialog (hWnd, wParam, lParam);
-	case WM_SIZE:
-		return lt->Size (LOWORD(lParam), HIWORD(lParam));
-	default:
-		if (lt) return lt->TabProc (hWnd, uMsg, wParam, lParam);
-		break;
+		SetWindowLongPtr(hWnd, DWLP_USER, (LONG_PTR)lParam);
 	}
-	return FALSE;
+	else {
+		lt = (LaunchpadTab*)GetWindowLongPtr(hWnd, DWLP_USER);
+		int i = 1;
+	}
+	return (lt ? lt->TabProc(hWnd, uMsg, wParam, lParam) : FALSE);
 }

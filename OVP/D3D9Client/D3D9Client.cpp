@@ -73,6 +73,7 @@ set<SurfNative*> SurfaceCatalog;
 unordered_map<string, SURFHANDLE> SharedTextures;
 unordered_map<string, SURFHANDLE> ClonedTextures;
 unordered_map<MESHHANDLE, class SketchMesh*> MeshMap;
+unordered_map<std::string, LPDIRECT3DTEXTURE9> MicroTextures;
 
 DWORD uCurrentMesh = 0;
 vObject *pCurrentVisual = 0;
@@ -155,12 +156,23 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 	LogAlw("[Not Compiled With nVidia API]");
 #endif
 
-	g_pConst = new gcConst();
 	Config = new D3D9Config();
+
+	if (Config->ShaderCacheUse) {
+		DWORD fa = GetFileAttributesA("Cache");
+		if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA("Cache", NULL);
+		fa = GetFileAttributesA("Cache/D3D9Client");
+		if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA("Cache/D3D9Client", NULL);
+		fa = GetFileAttributesA("Cache/D3D9Client/Shaders");
+		if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA("Cache/D3D9Client/Shaders", NULL);
+	}
+
+	g_pConst = new gcConst();
 	TileCatalog	= new D3D9Catalog<LPDIRECT3DTEXTURE9>();
 
 	DebugControls::Create();
 	AtmoControls::Create();
+	vPlanet::ParseMicroTexturesFile();
 
 	g_hInst = hDLL;
 	g_client = new D3D9Client(hDLL);
@@ -442,7 +454,6 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	TileManager::GlobalInit(this);
 	TileManager2Base::GlobalInit(this);
-	PlanetRenderer::GlobalInit(this);
 	RingManager::GlobalInit(this);
 	HazeManager::GlobalInit(this);
 	HazeManager2::GlobalInit(this);
@@ -451,10 +462,12 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	vStar::GlobalInit(this);
 	vObject::GlobalInit(this);
 	vVessel::GlobalInit(this);
+	vPlanet::GlobalInit(this);
 	OapiExtension::GlobalInit(*Config);
 
 	OutputLoadStatus("SceneTech.fx",1);
 	Scene::D3D9TechInit(pDevice, fld);
+	D3D9Mesh::GlobalInit(pDevice);
 
 	// Create scene instance
 	scene = new Scene(this, viewW, viewH);
@@ -828,12 +841,12 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 	HazeManager2::GlobalExit();
 	TileManager::GlobalExit();
 	TileManager2Base::GlobalExit();
-	PlanetRenderer::GlobalExit();
 	D3D9ParticleStream::GlobalExit();
 	CSphereManager::GlobalExit();
 	vStar::GlobalExit();
 	vVessel::GlobalExit();
 	vObject::GlobalExit();
+	D3D9Mesh::GlobalExit();
 
 	SAFE_DELETE(defpen);
 	SAFE_DELETE(deffont);
@@ -856,7 +869,12 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 
 	LogAlw("============ Checking Object Catalogs ===========");
 
-	
+	// Clear microtextures --------------------------------------------------------------------------------------
+	//
+	for (auto& it : MicroTextures) SAFE_RELEASE(it.second);
+	MicroTextures.clear();
+
+
 	// Check surface catalog --------------------------------------------------------------------------------------
 	//
 	if (SharedTextures.size() > 0)
@@ -982,8 +1000,8 @@ void D3D9Client::PushRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 
 		pDevice->SetViewport(&vp);
 	}
 
-	pDevice->SetRenderTarget(0, pColor);
-	pDevice->SetDepthStencilSurface(pDepthStencil);
+	if (pDepthStencil) if (pDevice->SetDepthStencilSurface(pDepthStencil) != S_OK) assert(false);
+	if (pColor) if (pDevice->SetRenderTarget(0, pColor) != S_OK) assert(false);
 
 	RenderStack.push_front(data);
 	LogDbg("Plum", "PUSH:RenderStack[%lu]={%s, %s} %s", RenderStack.size(), _PTR(data.pColor), _PTR(data.pDepthStencil), labels[data.code]);
@@ -1663,6 +1681,8 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			bTrackMouse = true;
 			xpos = GET_X_LPARAM(lParam);
 			ypos = GET_Y_LPARAM(lParam);
+
+			GetScene()->vPickRay = GetScene()->GetPickingRay(xpos, ypos);
 
 			TRACKMOUSEEVENT te; te.cbSize = sizeof(TRACKMOUSEEVENT); te.dwFlags = TME_LEAVE; te.hwndTrack = hRenderWnd;
 			TrackMouseEvent(&te);

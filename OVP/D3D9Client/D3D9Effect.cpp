@@ -100,6 +100,7 @@ D3DXHANDLE D3D9Effect::eAtmColor = 0;
 D3DXHANDLE D3D9Effect::eProxySize = 0;
 D3DXHANDLE D3D9Effect::eMtrlAlpha = 0;
 D3DXHANDLE D3D9Effect::eKernel = 0;
+D3DXHANDLE D3D9Effect::eAtmoParams = 0;
 
 // Shader Flow Controls
 D3DXHANDLE D3D9Effect::eFlow = 0;
@@ -343,6 +344,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	if (Config->EnableMeshDbg) macro[m++].Name = "_DEBUG";
 	if (Config->EnvMapMode) macro[m++].Name = "_ENVMAP"; 
 	if (Config->PostProcess == PP_DEFAULT) macro[m++].Name = "_LIGHTGLOW";
+	if (Config->bIrradiance && Config->EnvMapMode) macro[m++].Name = "_IRRADIANCE";
 	
 	
 	HR(D3DXCreateEffectFromFileA(pDev, name, macro, 0, D3DXSHADER_NO_PRESHADER|D3DXSHADER_PREFER_FLOW_CONTROL, 0, &FX, &errors));
@@ -448,6 +450,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eGlowConst    = FX->GetParameterByName(0,"gGlowConst");
 	eSHD		  = FX->GetParameterByName(0,"gSHD");
 	eKernel		  = FX->GetParameterByName(0,"kernel");
+	eAtmoParams	  = FX->GetParameterByName(0,"gAtmo");
 	// ----------------------------------------------------------------------
 	eVP			  = FX->GetParameterByName(0,"gVP");
 	eW			  = FX->GetParameterByName(0,"gW");
@@ -650,6 +653,7 @@ void D3D9Effect::InitLegacyAtmosphere(OBJHANDLE hPlanet, float GlobalAmbient)
 void D3D9Effect::Render2DPanel(const MESHGROUP *mg, const SURFHANDLE pTex, const LPD3DXMATRIX pW, float alpha, float scale, bool additive)
 {
 	UINT numPasses = 0;
+	if (!pTex || !mg || !pW) return;
 
 	if (SURFACE(pTex)->IsPowerOfTwo() || (!gc->IsLimited())) FX->SetTechnique(ePanelTech);		// ANISOTROPIC filter 
 	else FX->SetTechnique(ePanelTechB);	// POINT filter (for non-pow2 conditional)
@@ -747,14 +751,15 @@ void D3D9Effect::RenderSpot(float alpha, const LPD3DXCOLOR pColor, const LPD3DXM
 // ===========================================================================================
 // Used by Render Star only
 //
-void D3D9Effect::RenderBillboard(const LPD3DXMATRIX pW, SURFHANDLE pTex)
+void D3D9Effect::RenderBillboard(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex, float alpha)
 {
 	UINT numPasses = 0;
 
 	HR(pDev->SetVertexDeclaration(pNTVertexDecl));
 	HR(FX->SetTechnique(eSimple));
 	HR(FX->SetMatrix(eW, pW));
-	HR(FX->SetTexture(eTex0, SURFACE(pTex)->GetTexture()));
+	HR(FX->SetFloat(eMix, alpha));
+	HR(FX->SetTexture(eTex0, pTex));
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));
 	HR(pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, billboard_idx, D3DFMT_INDEX16, billboard_vtx, sizeof(NTVERTEX)));

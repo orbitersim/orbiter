@@ -12,16 +12,32 @@
 
 #define STRICT 1
 #include "TileMgr.h"
-#include "PlanetRenderer.h"
 
 class D3D9Config;
 
 // =======================================================================
 // Class CSphereManager
 
-class CSphereManager : private PlanetRenderer 
+class CSphereManager
 {
 public:
+
+#pragma pack(push, 4)
+	struct CelDataStruct
+	{
+		float4x4 mWorld;
+		float4x4 mViewProj;
+		float	 fAlpha;
+		float	 fBeta;
+	} CelData;
+
+	struct CelDataFlow
+	{
+		BOOL	 bAlpha;
+		BOOL	 bBeta;
+	} CelFlow;
+#pragma pack(pop)
+
 	/**
 	 * \brief Constructs a new sphere manager object
 	 * \param gclient client instance pointer
@@ -101,6 +117,9 @@ protected:
 	static int *NLAT;
 
 private:
+	HANDLE hTexA, hTexB, hVSConst;
+	ShaderClass* pShader;
+	D3D9Client* gc;
 	char texname[128];
 	char starfieldname[128];
 	float intensity;                 // opacity of background image

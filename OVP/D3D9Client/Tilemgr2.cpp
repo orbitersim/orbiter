@@ -53,6 +53,7 @@ Tile::Tile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 	double x = PI * (0.5 - double(ilat+1) * f);
 	width = float(PI * cos(x) * f);
 	height = float(PI * f);
+	tgtscale = 1.0f;
 	Extents(&bnd.minlat, &bnd.maxlat, &bnd.minlng, &bnd.maxlng);
 	D3D9Stats.TilesAllocated++;
 	bMipmaps = false;
@@ -234,9 +235,9 @@ bool Tile::GetParentMicroTexRange(TEXCRDRANGE2 *subrange)
 
 // -----------------------------------------------------------------------
 
-D3DXVECTOR4 Tile::GetTexRangeDX (const TEXCRDRANGE2 *subrange) const
+FVECTOR4 Tile::GetTexRangeDX (const TEXCRDRANGE2 *subrange) const
 {
-	return D3DXVECTOR4(subrange->tumin, subrange->tvmin, subrange->tumax - subrange->tumin, subrange->tvmax - subrange->tvmin);
+	return FVECTOR4(subrange->tumin, subrange->tvmin, subrange->tumax - subrange->tumin, subrange->tvmax - subrange->tvmin);
 }
 
 // -----------------------------------------------------------------------
@@ -1058,16 +1059,21 @@ TileManager2Base::ConfigPrm TileManager2Base::cprm = {
 	false,              // bCloudShadow
 	0.5                 // lightfac
 };
+oapi::D3D9Client* TileManager2Base::gc = NULL;
+LPDIRECT3DDEVICE9 TileManager2Base::pDev = NULL;
 TileLoader *TileManager2Base::loader = NULL;
 double TileManager2Base::resolutionBias = 4.0;
 double TileManager2Base::resolutionScale = 1.0;
 bool TileManager2Base::bTileLoadThread = true;
 HFONT TileManager2Base::hFont = NULL;
+LPDIRECT3DTEXTURE9 TileManager2Base::hOcean = NULL;
+LPDIRECT3DTEXTURE9 TileManager2Base::hCloudMicro = NULL;
+LPDIRECT3DTEXTURE9 TileManager2Base::hCloudMicroNorm = NULL;
 
 // -----------------------------------------------------------------------
 
-TileManager2Base::TileManager2Base (const vPlanet *vplanet, int _maxres, int _gridres)
-: vp(vplanet), gridRes(_gridres), ElevMode(eElevMode::DontCare)
+TileManager2Base::TileManager2Base (vPlanet *vplanet, int _maxres, int _gridres)
+: vp(vplanet), gridRes(_gridres), ElevMode(eElevMode::DontCare), ElevModeLvl(0)
 {
 	// set persistent parameters
 	prm.maxlvl = max (0, _maxres-4);
@@ -1077,7 +1083,6 @@ TileManager2Base::TileManager2Base (const vPlanet *vplanet, int _maxres, int _gr
 	emgr = oapiElevationManager(obj);
 	elevRes = *(double*)oapiGetObjectParam (obj, OBJPRM_PLANET_ELEVRESOLUTION);
 	for (int i=0;i<NPOOLS;i++) VtxPoolSize[i]=IdxPoolSize[i]=0;
-	ResetMinMaxElev();
 	LogClr("Teal", "Planet ElevRes %s = %g", vplanet->GetName(), elevRes);
 
 	char path[1024];
@@ -1135,6 +1140,12 @@ void TileManager2Base::GlobalInit (class oapi::D3D9Client *gclient)
 	loader = new TileLoader (gc);
 
 	hFont  = CreateFont(42, 0, 0, 0, 600, false, false, 0, 0, 0, 2, CLEARTYPE_QUALITY, 49, "Arial");
+
+	char name[MAX_PATH];
+
+	if (gc->TexturePath("D3D9Ocean.dds", name)) D3DXCreateTextureFromFileA(pDev, name, &hOcean);
+	if (gc->TexturePath("cloud1.dds", name)) D3DXCreateTextureFromFileA(pDev, name, &hCloudMicro);
+	if (gc->TexturePath("cloud1_norm.dds", name)) D3DXCreateTextureFromFileA(pDev, name, &hCloudMicroNorm);
 }
 
 // -----------------------------------------------------------------------
@@ -1185,29 +1196,6 @@ void TileManager2Base::SetRenderPrm (MATRIX4 &dwmat, double prerot, bool use_zbu
 	// Add 5km threshold to allow slight camera movement with out causing surface tiles to unload
 	prm.viewap = acos (1.0/(max ((cdist+5e3) / obj_size, 1.0+minalt)));
 	prm.scale = 1.0;
-}
-
-// -----------------------------------------------------------------------
-
-void TileManager2Base::ResetMinMaxElev()
-{
-	min_elev = 0.0;
-	max_elev = 0.0;
-	bSet = true;
-}
-
-// -----------------------------------------------------------------------
-
-void TileManager2Base::SetMinMaxElev(double mi, double ma)
-{
-	if (bSet) {
-		min_elev = mi;
-		max_elev = ma;
-		bSet = false;
-		return;
-	}
-	min_elev = min(min_elev, mi);
-	max_elev = max(max_elev, ma);
 }
 
 // -----------------------------------------------------------------------

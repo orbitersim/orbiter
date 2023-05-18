@@ -21,6 +21,7 @@ extern class D3D9Config *Config;
 
 class D3D9Pad;
 
+
 // ==============================================================
 // class vObject (interface)
 // ==============================================================
@@ -170,6 +171,7 @@ public:
 	 * \note The returned vector is expressed in the ecliptic frame.
 	 */
 	inline const VECTOR3 &SunDirection() const { return sundir; }
+	inline const double SunDistance() const { return sundst; }
 
 	/**
 	 * \brief Per-frame object parameter updates
