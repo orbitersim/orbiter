@@ -82,11 +82,11 @@ inline void PinesGravProp::GenerateAssocLegendreMatrix(int maxDegree)
 			A[NM(m, m)] = sqrt(1. + (1. / (2. * (double)m))) * A[NM(m - 1, m - 1)]; // diagonal terms
 		}
 
-		if (m != (maxDegree + 1)) {
+		if (m != (maxDegree + 2)) {
 			A[NM(m + 1, m)] = sqrt(2. * (double)m + 3.) * u * A[NM(m, m)]; // off-diagonal terms
 		}
 
-		if (m < maxDegree) {
+		if (m < maxDegree + 1) {
 			for (int n = m + 2; n <= (maxDegree + 2); n++) {
 				double ALPHA_NUM = (2. * (double)n + 1.) * (2. * (double)n - 1.);
 				double ALPHA_DEN = ((double)n - (double)m) * ((double)n + (double)m);
