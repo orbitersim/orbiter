@@ -79,7 +79,7 @@ void PlaybackEvent::TimeStr (char *str)
 	sprintf (str, "%0.2f", t0);
 }
 
-void PlaybackEvent::WriteEvent (ofstream &ofs, char *eventtype, char *event)
+void PlaybackEvent::WriteEvent (ofstream &ofs, const char *eventtype, const char *event)
 {
 	ofs << t0 << ' ' << eventtype;
 	if (event) ofs << ' ' << event;
@@ -137,7 +137,7 @@ INT_PTR PlaybackEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 // =========================================================
 
-GenericEvent::GenericEvent (PlaybackEditor *_editor, double _t0, char *_tag, char *_content): PlaybackEvent (_editor, _t0)
+GenericEvent::GenericEvent (PlaybackEditor *_editor, double _t0, const char *_tag, const char *_content): PlaybackEvent (_editor, _t0)
 {
 	content = tag = 0;
 	SetTag (_tag);
@@ -156,7 +156,7 @@ GenericEvent::~GenericEvent ()
 	}
 }
 
-void GenericEvent::SetTag (char *_tag)
+void GenericEvent::SetTag (const char *_tag)
 {
 	if (tag) {
 		delete []tag;
@@ -168,7 +168,7 @@ void GenericEvent::SetTag (char *_tag)
 	} else tag = 0;
 }
 
-void GenericEvent::SetContent (char *_content)
+void GenericEvent::SetContent (const char *_content)
 {
 	if (content) {
 		delete []content;
@@ -459,7 +459,7 @@ INT_PTR CALLBACK CameraEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPA
 
 // =========================================================
 
-NoteEvent::NoteEvent (PlaybackEditor *_editor, double _t0, char *_note): PlaybackEvent (_editor, _t0)
+NoteEvent::NoteEvent (PlaybackEditor *_editor, double _t0, const char *_note): PlaybackEvent (_editor, _t0)
 {
 	note = NULL;
 	SetNote (_note);
@@ -473,7 +473,7 @@ NoteEvent::~NoteEvent ()
 	}
 }
 
-void NoteEvent::SetNote (char *_note)
+void NoteEvent::SetNote (const char *_note)
 {
 	if (note) {
 		delete []note;
@@ -849,7 +849,7 @@ INT_PTR PlaybackEditor::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		switch (LOWORD (wParam)) {
 		case IDHELP: {
 			extern HELPCONTEXT DefHelpContext;
-			DefHelpContext.topic = "/playbackedit.htm";
+			DefHelpContext.topic = (char*)"/playbackedit.htm";
 			orbiter->OpenHelp (&DefHelpContext);
 			} return TRUE;
 		case IDCANCEL:
@@ -885,7 +885,7 @@ INT_PTR PlaybackEditor::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 void PlaybackEditor::CreateInsertEventList (HWND hDlg)
 {
 	const int nevent = 7;
-	static char *events[nevent] = {
+	static const char *events[nevent] = {
 		"NOTE (annotation text)",
 		"NOTEPOS (bounding box)",
 		"NOTECOL (text colour)",

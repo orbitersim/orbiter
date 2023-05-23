@@ -20,7 +20,7 @@ public:
 	virtual void TagStr (char *str) = 0;
 	virtual void DescStr (char *str) { str[0] = '\0'; }
 	virtual void Write (std::ofstream &ofs) = 0;
-	void WriteEvent (std::ofstream &ofs, char *eventtype, char *event);
+	void WriteEvent (std::ofstream &ofs, const char *eventtype, const char *event);
 	virtual void EditEvent (PlaybackEditor *editor);
 	virtual void CommitEdit ();
 	virtual INT_PTR MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -34,10 +34,10 @@ protected:
 
 class GenericEvent: public PlaybackEvent {
 public:
-	GenericEvent (PlaybackEditor *_editor, double _t0, char *_tag, char *_content);
+	GenericEvent (PlaybackEditor *_editor, double _t0, const char *_tag, const char *_content);
 	~GenericEvent ();
-	void SetTag (char *_tag);
-	void SetContent (char *_content);
+	void SetTag (const char *_tag);
+	void SetContent (const char *_content);
 	void TagStr (char *str);
 	void DescStr (char *str);
 	void Write (std::ofstream &ofs);
@@ -100,9 +100,9 @@ private:
 
 class NoteEvent: public PlaybackEvent {
 public:
-	NoteEvent (PlaybackEditor *_editor, double _t0, char *_note);
+	NoteEvent (PlaybackEditor *_editor, double _t0, const char *_note);
 	~NoteEvent ();
-	void SetNote (char *_note);
+	void SetNote (const char *_note);
 	void TagStr (char *str);
 	void DescStr (char *str);
 	void Write (std::ofstream &ofs);
