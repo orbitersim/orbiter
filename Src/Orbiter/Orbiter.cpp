@@ -76,15 +76,15 @@ const int MAX_TEXTURE_BUFSIZE = 8000000;
 // Texture manager buffer size. Should be determined from
 // memory size (System or Video?)
 
-TCHAR* g_strAppTitle = "OpenOrbiter";
+const TCHAR* g_strAppTitle = "OpenOrbiter";
 
 #ifdef INLINEGRAPHICS
-TCHAR* MasterConfigFile = "Orbiter.cfg";
+const TCHAR* MasterConfigFile = "Orbiter.cfg";
 #else
-TCHAR* MasterConfigFile = "Orbiter_NG.cfg";
+const TCHAR* MasterConfigFile = "Orbiter_NG.cfg";
 #endif // INLINEGRAPHICS
 
-TCHAR* CurrentScenario = "(Current state)";
+const TCHAR* CurrentScenario = "(Current state)";
 char ScenarioName[256] = "\0";
 // some global string resources
 
@@ -97,7 +97,6 @@ Orbiter*        g_pOrbiter       = NULL;  // application
 BOOL            g_bFrameMoving   = TRUE;
 extern BOOL     g_bAppUseZBuffer;
 extern BOOL     g_bAppUseBackBuffer;
-extern TCHAR*   g_strAppTitle;
 double          g_nearplane      = 5.0;
 double          g_farplane       = 5e6;
 const double    MinWarpLimit     = 0.1;  // make variable
@@ -146,10 +145,10 @@ char DBG_MSG[256] = "";
 
 // Default help context (for main help system)
 HELPCONTEXT DefHelpContext = {
-	"html/orbiter.chm",
+	(char*)"html/orbiter.chm",
 	0,
-	"html/orbiter.chm::/orbiter.hhc",
-	"html/orbiter.chm::/orbiter.hhk"
+	(char*)"html/orbiter.chm::/orbiter.hhc",
+	(char*)"html/orbiter.chm::/orbiter.hhk"
 };
 
 // =======================================================================
@@ -535,7 +534,7 @@ int Orbiter::GetVersion () const
 {
 	static int v = 0;
 	if (!v) {
-		static char *mstr[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+		static const char *mstr[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 		char ms[32];
 		int day, month, year;
 		sscanf (__DATE__, "%s%d%d", ms, &day, &year);
@@ -923,7 +922,7 @@ void Orbiter::CloseSession ()
 
 	if      (bRecord)   ToggleRecorder();
 	else if (bPlayback) EndPlayback();
-	char* desc = pConfig->CfgDebugPrm.bSaveExitScreen ? "CurrentState_img" : "CurrentState";
+	const char* desc = pConfig->CfgDebugPrm.bSaveExitScreen ? "CurrentState_img" : "CurrentState";
 	SaveScenario (CurrentScenario, desc, 2);
 	if (hScnInterp) {
 		script->DelInterpreter (hScnInterp);
@@ -992,9 +991,9 @@ void Orbiter::CloseSession ()
 		} else {
 			LOGOUT("**** Respawning Orbiter process\r\n");
 #ifdef INLINEGRAPHICS
-			char *name = "orbiter.exe";
+			const char *name = "orbiter.exe";
 #else
-			char *name = "modules\\server\\orbiter.exe";
+			const char *name = "modules\\server\\orbiter.exe";
 #endif
 #ifdef INLINEGRAPHICS
 			CloseHandle (hMutex);        // delete mutex so that we don't block the child
