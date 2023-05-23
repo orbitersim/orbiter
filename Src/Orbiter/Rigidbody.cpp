@@ -38,6 +38,13 @@ RigidBody::PROPMODE RigidBody::PropMode[MAX_PROP_LEVEL] = {&RigidBody::RK2_LinAn
 
 const double gfielddata_updt_interval = 60.0;
 
+inline Vector Call_EulerInv_full (RigidBody *body, const Vector &tau, const Vector &omega)
+{ return body->EulerInv_full (tau, omega); }
+inline Vector Call_EulerInv_simple (RigidBody *body, const Vector &tau, const Vector &omega)
+{ return body->EulerInv_simple (tau, omega); }
+inline Vector Call_EulerInv_zero (RigidBody *body, const Vector &tau, const Vector &omega)
+{ return body->EulerInv_zero (tau, omega); }
+
 // =======================================================================
 // class RigidBody
 
@@ -516,11 +523,11 @@ void RigidBody::SetDynamicUpdate (bool dynamic)
 }
 
 const char *RigidBody::PropagatorStr (DWORD idx, bool verbose) {
-	static char *ShortPropModeStr[NPROP_METHOD] = {
+	static const char *ShortPropModeStr[NPROP_METHOD] = {
 		"RK2", "RK4", "RK5", "RK6", "RK7", "RK8",
 		"SY2", "SY4", "SY6", "SY8"
 	};
-	static char *LongPropModeStr[NPROP_METHOD] = {
+	static const char *LongPropModeStr[NPROP_METHOD] = {
 		"Runge-Kutta, 2nd order (RK2)", "Runge-Kutta, 4th order (RK4)", "Runge-Kutta, 5th order (RK5)", "Runge-Kutta, 6th order (RK6)",
 		"Runge-Kutta, 7th order (RK7)", "Runge-Kutta, 8th order (RK8)",
 		"Symplectic, 2nd order (SY2)", "Symplectic, 4th order (SY4)", "Symplectic, 6th order (SY6)", "Symplectic, 8th order (SY8)"
