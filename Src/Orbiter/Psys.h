@@ -14,6 +14,8 @@ class Vessel;
 class SuperVessel;
 struct TimeJumpData;
 
+Vector SingleGacc (const Vector &rpos, const CelestialBody *body);
+Vector SingleGacc_perturbation (const Vector &rpos, const CelestialBody *body);
 
 class PlanetarySystem {
 	friend class Body;
@@ -187,9 +189,6 @@ public:
 
 	void BroadcastVessel (DWORD msg, void *data);
 	// Broadcast a message to all vessels
-
-	friend Vector SingleGacc (const Vector &rpos, const CelestialBody *body);
-	friend Vector SingleGacc_perturbation (const Vector &rpos, const CelestialBody *body);
 
 	const std::vector<oapi::GraphicsClient::LABELLIST> &LabelList() const
 	{ return m_labelList; }
