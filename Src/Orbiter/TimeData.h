@@ -13,11 +13,11 @@ public:
 	// Reset all sim and sys times to 0. Set time warp to 1
 	// Disable fixed step mode
 
-	void TimeData::SetFixedStep(double step);
+	void SetFixedStep(double step);
 	// set a fixed time interval for each time step [s]
 	// step=0 disables the fixed step modus
 
-	double TimeData::FixedStep() const { return (bFixedStep ? fixed_step : 0.0); }
+	double FixedStep() const { return (bFixedStep ? fixed_step : 0.0); }
 
 	void BeginStep (double deltat, bool running);
 	// advance time by deltat (seconds)
