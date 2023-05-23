@@ -29,10 +29,10 @@ public:
 	void SetDefault ();
 	// set orbiter-default key mapping
 
-	bool Read (char *fname);
+	bool Read (const char *fname);
 	// parse keymap table from file
 
-	void Write (char *fname);
+	void Write (const char *fname);
 	// write keymap table to file
 
 	bool IsLogicalKey (char *kstate, int lfunc) const;

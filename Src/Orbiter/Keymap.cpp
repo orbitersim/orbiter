@@ -11,7 +11,7 @@ using namespace std;
 
 struct {
 	BYTE id;
-	char *name;
+	const char *name;
 } keyname[NKEY] = {
 	{OAPI_KEY_ESCAPE,     "ESC"},         // 0x01: Escape
 	{OAPI_KEY_1,          "1"},           // 0x02: 1
@@ -232,7 +232,7 @@ void Keymap::SetDefault ()
 		func[i] = lkeyspec[i].defkey;
 }
 
-void Keymap::Write (char *fname)
+void Keymap::Write (const char *fname)
 {
 	char cbuf[256];
 	ofstream ofs (fname);
@@ -240,7 +240,7 @@ void Keymap::Write (char *fname)
 		ofs << lkeyspec[i].itemstr << " = " << PrintStr (cbuf, func[i]) << endl;
 }
 
-bool Keymap::Read (char *fname)
+bool Keymap::Read (const char *fname)
 {
 	char cbuf[256];
 	ifstream ifs (fname, ios::in);
