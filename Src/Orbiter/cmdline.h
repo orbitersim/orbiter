@@ -25,7 +25,7 @@ public:
 protected:
 	struct Key {
 		UINT id;
-		PSTR longName;
+		PCSTR longName;
 		char shortName;
 		bool hasArgument;
 	};
