@@ -12,7 +12,7 @@
 typedef void (*LogOutFunc)(const char* msg);
 
 // The following routines are for message output into a log file
-void InitLog (char *logfile, bool append);   // Set log file name and clear if exists
+void InitLog (const char *logfile, bool append);   // Set log file name and clear if exists
 void SetLogVerbosity (bool verbose);
 void SetLogOutFunc(LogOutFunc func); // clone log output to a function
 void LogOut (const char *msg, ...);   // Write a message to the log file
