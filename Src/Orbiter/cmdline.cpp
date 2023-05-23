@@ -68,7 +68,7 @@ bool CommandLine::ParseNextOption(PSTR& cmdLine, bool& groupKey, Option& option)
 	else {
 		isLongKey = false;
 	}
-	char* termKeyChar = (isLongKey ? " \t=" : " \t"); // '=' as key-value separator only allowed for long keys
+	const char* termKeyChar = (isLongKey ? " \t=" : " \t"); // '=' as key-value separator only allowed for long keys
 	std::set<char> termK(termKeyChar, termKeyChar + strlen(termKeyChar) + 1); // include '\0' in set
 	PSTR endKey = cmdLine;
 	while (termK.find(*endKey) == termK.end())
@@ -102,7 +102,7 @@ bool CommandLine::ParseNextOption(PSTR& cmdLine, bool& groupKey, Option& option)
 		return false;     // for long keys, '=' is mandatory before values
 	if (isQuotedVal = (*cmdLine == '\"'))
 		cmdLine++; // skip starting quotes
-	char* termValChar = (isQuotedParam || isQuotedVal ? "\"" : " \t"); // for quoted values, only accept quotes as terminator
+	const char* termValChar = (isQuotedParam || isQuotedVal ? "\"" : " \t"); // for quoted values, only accept quotes as terminator
 	std::set<char> termV(termValChar, termValChar + strlen(termValChar) + 1); // include '\0' in set
 	PSTR endVal = cmdLine;
 	while (termV.find(*endVal) == termV.end())
