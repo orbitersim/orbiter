@@ -36,7 +36,7 @@ orbiter::ConsoleNG::ConsoleNG(Orbiter* pOrbiter)
     , m_hStatWnd(NULL)
     , m_hThread(NULL)
 {
-    static const PSTR title = "Orbiter Server Console";
+    static PCSTR title = "Orbiter Server Console";
     static SIZE_T stackSize = 4096;
 
     s_console = this;
