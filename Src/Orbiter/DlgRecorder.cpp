@@ -33,7 +33,7 @@ void DlgRecorder::SetupDialog (HWND hDlg)
 	static int RecItem[4] = {IDC_REC_GRPRECORD, IDC_REC_SCNLABEL, IDC_REC_SCENARIO, IDC_REC_ROLLDOWN};
 	static int RecItem2[3] = {IDC_REC_SCNLABEL, IDC_REC_SCENARIO, IDC_REC_SYSSAMPLE};
 	static int PlayItem[6] = {IDC_REC_GRPREPLAY, IDC_REC_SHOWNOTES, IDC_REC_PLAYRECSPEED, IDC_REC_USECAM, IDC_REC_USEFOCUS, IDC_REC_EDITOR};
-	static char *statestr[3] = {"Status:\nNormal", "Status:\nRecording", "Status:\nPlaying"};
+	static const char *statestr[3] = {"Status:\nNormal", "Status:\nRecording", "Status:\nPlaying"};
 
 	int i, status = g_pOrbiter->RecorderStatus();
 
@@ -190,7 +190,7 @@ BOOL DlgRecorder::OnCommand (HWND hDlg, WORD id, WORD code, HWND hControl)
 		break;
 	case IDC_REC_HELP1:
 	case IDC_REC_HELP2:
-		DefHelpContext.topic = "/recorder.htm";
+		DefHelpContext.topic = (char*)"/recorder.htm";
 		g_pOrbiter->OpenHelp (&DefHelpContext);
 		return TRUE;
 	case IDCANCEL:
