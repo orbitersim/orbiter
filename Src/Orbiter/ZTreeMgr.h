@@ -35,8 +35,8 @@ class TreeFileHeader {
 
 public:
 	TreeFileHeader();
-	size_t TreeFileHeader::fwrite(FILE *f);
-	bool TreeFileHeader::fread(FILE *f);
+	size_t fwrite(FILE *f);
+	bool fread(FILE *f);
 
 private:
 	BYTE magic[4];      // file ID and version
