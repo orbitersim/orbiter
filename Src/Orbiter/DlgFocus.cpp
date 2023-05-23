@@ -51,12 +51,12 @@ BOOL DlgFocus::OnInitDialog (HWND hWnd, WPARAM wParam, LPARAM lParam)
 	EnableThemeDialogTexture (hWnd, ETDT_ENABLETAB);
 
 	const int ntab = 4;
-	char *label[ntab] = {"All", "Nearby", "Location", "Class"};
+	const char *label[ntab] = {"All", "Nearby", "Location", "Class"};
 	TC_ITEM tie;
 	tie.mask = TCIF_TEXT;
 	tie.iImage = -1;
 	for (int i = 0; i < ntab; i++) {
-		tie.pszText = label[i];
+		tie.pszText = (char*)label[i];
 		SendDlgItemMessage (hWnd, IDC_TAB1, TCM_INSERTITEM, i, (LPARAM)&tie);
 	}
 	ctab = g_pOrbiter->Cfg()->CfgUIPrm.SelVesselTab;
@@ -148,7 +148,7 @@ BOOL DlgFocus::OnCommand (HWND hDlg, WORD id, WORD code, HWND hControl)
 		SelectPreviousVessel (hDlg);
 		return TRUE;
 	case IDHELP:
-		DefHelpContext.topic = "/selvessel.htm";
+		DefHelpContext.topic = (char*)"/selvessel.htm";
 		g_pOrbiter->OpenHelp (&DefHelpContext);
 		return TRUE;
 	case IDOK:
