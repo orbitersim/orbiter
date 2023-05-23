@@ -17,9 +17,9 @@
 using namespace std;
 
 #ifdef INLINEGRAPHICS
-static PSTR strInfo_Default = "The built-in DX7 graphics engine.";
+static PCSTR strInfo_Default = "The built-in DX7 graphics engine.";
 #else
-static PSTR strInfo_Default = "No graphics engine has been selected. Orbiter will run in console mode.";
+static PCSTR strInfo_Default = "No graphics engine has been selected. Orbiter will run in console mode.";
 #endif
 
 //-----------------------------------------------------------------------------
@@ -156,10 +156,10 @@ void orbiter::DefVideoTab::EnumerateClients(HWND hTab)
 {
 	SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_RESETCONTENT, 0, 0);
 #ifdef INLINEGRAPHICS
-	const PSTR strGraphics = "Built-in graphics engine";
+	PCSTR strGraphics = "Built-in graphics engine";
 	SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_ADDSTRING, 0, (LPARAM)strGraphics);
 #else
-	const PSTR strConsole = "Console mode (no engine loaded)";
+	PCSTR strConsole = "Console mode (no engine loaded)";
 	SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_ADDSTRING, 0, (LPARAM)strConsole);
 	ScanDir(hTab, "Modules\\Plugin");
 #endif
@@ -186,7 +186,7 @@ static std::string GetNameWithoutFileExtension(const char* filepath)
 
 //-----------------------------------------------------------------------------
 //! Find Graphics engine DLLs in dir
-void orbiter::DefVideoTab::ScanDir(HWND hTab, const PSTR dir)
+void orbiter::DefVideoTab::ScanDir(HWND hTab, PCSTR dir)
 {
 	char pattern[256], filepath[256];
 	sprintf(pattern, "%s\\*", dir);
@@ -246,7 +246,7 @@ void orbiter::DefVideoTab::SelectClientIndex(UINT idx)
 		SetInfoString(strInfo_Default);
 }
 
-void orbiter::DefVideoTab::SetInfoString(PSTR str)
+void orbiter::DefVideoTab::SetInfoString(PCSTR str)
 {
 	if (strInfo)
 		delete []strInfo;
