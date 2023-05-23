@@ -693,7 +693,7 @@ HWND GraphicsClient::InitRenderWnd (HWND hWnd)
 	// store class instance with window for access in the message handler
 
 	char title[256], cbuf[128];
-	extern TCHAR *g_strAppTitle;
+	extern const TCHAR *g_strAppTitle;
 	strcpy (title, g_strAppTitle);
 	GetWindowText (hWnd, cbuf, 128);
 	if (cbuf[0]) {

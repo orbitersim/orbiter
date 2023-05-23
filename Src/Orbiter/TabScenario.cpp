@@ -19,7 +19,7 @@
 
 using namespace std;
 
-extern TCHAR* CurrentScenario;
+extern const TCHAR* CurrentScenario;
 const char *htmlstyle = "<style type=""text/css"">body{font-family:Arial;font-size:12px} p{margin-top:0;margin-bottom:0.5em} h1{font-size:150%;font-weight:normal;margin-bottom:0.5em;color:#000080;background-color:#E6E6FF;padding:0.1em}</style>";
 
 //-----------------------------------------------------------------------------
@@ -582,7 +582,6 @@ int orbiter::ScenarioTab::GetSelScenario (char *scn, int len)
 
 void orbiter::ScenarioTab::SaveCurScenario ()
 {
-	extern TCHAR* CurrentScenario;
 	ifstream ifs (pLp->App()->ScnPath (CurrentScenario), ios::in);
 	if (ifs) {
 		DialogBoxParam (AppInstance(), MAKEINTRESOURCE(IDD_SAVESCN), LaunchpadWnd(), SaveProc, (LPARAM)this);
@@ -598,7 +597,6 @@ void orbiter::ScenarioTab::SaveCurScenario ()
 //-----------------------------------------------------------------------------
 int orbiter::ScenarioTab::SaveCurScenarioAs (const char *name, char *desc, bool replace)
 {
-	extern TCHAR* CurrentScenario;
 	string cbuf;
 	bool skip = false;
 	const char *path = pLp->App()->ScnPath (name);
