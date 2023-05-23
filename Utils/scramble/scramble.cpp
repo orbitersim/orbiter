@@ -19,7 +19,7 @@ char versionstr[64];
 
 void Setup ()
 {
-	char *monstr[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+	const char *monstr[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 	char cbuf[256];
 	int mon, day, year;
 
