@@ -23,7 +23,7 @@ static DWORD t0 = 0;
 
 static LogOutFunc logOut = 0;
 
-void InitLog (char *logfile, bool append)
+void InitLog (const char *logfile, bool append)
 {
 	strcpy (logname, logfile);
 	ofstream ofs (logname, append ? ios::app : ios::out);
