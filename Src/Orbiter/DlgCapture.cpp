@@ -115,7 +115,7 @@ BOOL DlgCapture::OnCommand (HWND hDlg, WORD id, WORD code, HWND hControl)
 		OnInitDialog (hDlg, 0, 0);
 		return TRUE;
 	case IDHELP: {
-		char *topic = "/capture.htm";
+		char *topic = (char*)"/capture.htm";
 		DefHelpContext.topic = topic;
 		g_pOrbiter->OpenHelp (&DefHelpContext);
 		} return TRUE;
