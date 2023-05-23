@@ -561,7 +561,7 @@ int orbiter::LaunchpadDialog::SelectDemoScenario ()
 // "Extra Parameters" page
 // ****************************************************************************
 
-static char *desc_fixedstep = "Force Orbiter to advance the simulation by a fixed time interval in each frame.";
+static const char *desc_fixedstep = "Force Orbiter to advance the simulation by a fixed time interval in each frame.";
 
 void OpenDynamics (HINSTANCE, HWND);
 
