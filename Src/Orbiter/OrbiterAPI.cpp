@@ -2560,7 +2560,7 @@ DLLEXPORT void InitLib (HINSTANCE hModule)
 
 		char *(*mdate)() = (char*(*)())GetProcAddress (hModule, "ModuleDate");
 		if (mdate) {
-			int Date2Int (char *date);
+			int Date2Int (const char *date);
 			sprintf (cbuf+strlen(cbuf), " [Build %06d", Date2Int(mdate()));
 		} else {
 			strcat (cbuf, " [Build ******");
@@ -2590,9 +2590,9 @@ DLLEXPORT void ExitLib (HINSTANCE hModule)
 	if (DLLExit) (*DLLExit)(hModule);
 }
 
-DLLEXPORT int Date2Int (char *date)
+DLLEXPORT int Date2Int (const char *date)
 {
-	static char *mstr[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+	static const char *mstr[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 	char ms[32];
 	int day, month, year, v;
 	sscanf (date, "%s%d%d", ms, &day, &year);
