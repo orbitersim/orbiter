@@ -318,13 +318,12 @@ INT_PTR CALLBACK BuiltinLaunchpadItem::DlgProc (HWND hWnd, UINT uMsg, WPARAM wPa
 
 char *ExtraPropagation::Name ()
 {
-	return "Time propagation";
+	return (char*)"Time propagation";
 }
 
 char *ExtraPropagation::Description ()
 {
-	static char *desc = "Select and configure the time propagation methods Orbiter uses to update vessel positions and velocities from one time frame to the next.";
-	return desc;
+	return (char*)"Select and configure the time propagation methods Orbiter uses to update vessel positions and velocities from one time frame to the next.";
 }
 
 //-----------------------------------------------------------------------------
@@ -338,13 +337,12 @@ int ExtraDynamics::PropId[NPROP_METHOD] = {
 
 char *ExtraDynamics::Name ()
 {
-	return "Dynamic state propagators";
+	return (char*)"Dynamic state propagators";
 }
 
 char *ExtraDynamics::Description ()
 {
-	static char *desc = "Select the numerical integration methods used for dynamic state updates.\r\n\r\nState propagators affect the accuracy and stability of spacecraft orbits and trajectory calculations.";
-	return desc;
+	return (char*)"Select the numerical integration methods used for dynamic state updates.\r\n\r\nState propagators affect the accuracy and stability of spacecraft orbits and trajectory calculations.";
 }
 
 bool ExtraDynamics::clbkOpen (HWND hParent)
@@ -764,13 +762,12 @@ INT_PTR CALLBACK ExtraAngDynamics::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam,
 
 char *ExtraStabilisation::Name ()
 {
-	return "Orbit stabilisation";
+	return (char*)"Orbit stabilisation";
 }
 
 char *ExtraStabilisation::Description ()
 {
-	static char *desc = "Select the parameters that determine the conditions when Orbiter switches between dynamic and stabilised state updates.";
-	return desc;
+	return (char*)"Select the parameters that determine the conditions when Orbiter switches between dynamic and stabilised state updates.";
 }
 
 bool ExtraStabilisation::clbkOpen (HWND hParent)
@@ -898,13 +895,12 @@ INT_PTR CALLBACK ExtraStabilisation::DlgProc (HWND hWnd, UINT uMsg, WPARAM wPara
 
 char *ExtraInstruments::Name ()
 {
-	return "Instruments and panels";
+	return (char*)"Instruments and panels";
 }
 
 char *ExtraInstruments::Description ()
 {
-	static char *desc = "Select general configuration parameters for spacecraft instruments, MFD displays and instrument panels.";
-	return desc;
+	return (char*)"Select general configuration parameters for spacecraft instruments, MFD displays and instrument panels.";
 }
 
 //-----------------------------------------------------------------------------
@@ -913,13 +909,12 @@ char *ExtraInstruments::Description ()
 
 char *ExtraMfdConfig::Name()
 {
-	return "MFD parameter configuration";
+	return (char*)"MFD parameter configuration";
 }
 
 char *ExtraMfdConfig::Description ()
 {
-	static char *desc = "Select display parameters for multifunctional displays (MFD).";
-	return desc;
+	return (char*)"Select display parameters for multifunctional displays (MFD).";
 }
 
 bool ExtraMfdConfig::clbkOpen (HWND hParent)
@@ -1027,13 +1022,12 @@ INT_PTR CALLBACK ExtraMfdConfig::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, L
 
 char *ExtraVesselConfig::Name ()
 {
-	return "Vessel configuration";
+	return (char*)"Vessel configuration";
 }
 
 char *ExtraVesselConfig::Description ()
 {
-	static char *desc = "Configure spacecraft parameters";
-	return desc;
+	return (char*)"Configure spacecraft parameters";
 }
 
 //=============================================================================
@@ -1042,13 +1036,12 @@ char *ExtraVesselConfig::Description ()
 
 char *ExtraPlanetConfig::Name ()
 {
-	return "Celestial body configuration";
+	return (char*)"Celestial body configuration";
 }
 
 char *ExtraPlanetConfig::Description ()
 {
-	static char *desc = "Configure options for celestial objects";
-	return desc;
+	return (char*)"Configure options for celestial objects";
 }
 
 //=============================================================================
@@ -1057,13 +1050,12 @@ char *ExtraPlanetConfig::Description ()
 
 char *ExtraDebug::Name ()
 {
-	return "Debugging options";
+	return (char*)"Debugging options";
 }
 
 char *ExtraDebug::Description ()
 {
-	static char *desc = "Various options that are useful for debugging and special tasks. Not generally used for standard simulation sessions.";
-	return desc;
+	return (char*)"Various options that are useful for debugging and special tasks. Not generally used for standard simulation sessions.";
 }
 
 //-----------------------------------------------------------------------------
@@ -1072,13 +1064,12 @@ char *ExtraDebug::Description ()
 
 char *ExtraShutdown::Name ()
 {
-	return "Orbiter shutdown options";
+	return (char*)"Orbiter shutdown options";
 }
 
 char *ExtraShutdown::Description ()
 {
-	static char *desc = "Set the behaviour of Orbiter after closing the simulation window: return to Launchpad, respawn or terminate.";
-	return desc;
+	return (char*)"Set the behaviour of Orbiter after closing the simulation window: return to Launchpad, respawn or terminate.";
 }
 
 bool ExtraShutdown::clbkOpen (HWND hParent)
@@ -1150,13 +1141,12 @@ INT_PTR CALLBACK ExtraShutdown::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LP
 
 char *ExtraFixedStep::Name ()
 {
-	return "Fixed time steps";
+	return (char*)"Fixed time steps";
 }
 
 char *ExtraFixedStep::Description ()
 {
-	static char *desc = "This option assigns a fixed simulation time interval to each frame. Useful for debugging, and when numerical accuracy and stability of the dynamic propagators are important (for example, to generate trajectory data or when recording high-fidelity playbacks).\r\n\r\nWarning: Selecting this option leads to nonlinear time flow and a simulation that is no longer real-time.";
-	return desc;
+	return (char*)"This option assigns a fixed simulation time interval to each frame. Useful for debugging, and when numerical accuracy and stability of the dynamic propagators are important (for example, to generate trajectory data or when recording high-fidelity playbacks).\r\n\r\nWarning: Selecting this option leads to nonlinear time flow and a simulation that is no longer real-time.";
 }
 
 bool ExtraFixedStep::clbkOpen (HWND hParent)
@@ -1265,13 +1255,12 @@ INT_PTR CALLBACK ExtraFixedStep::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, L
 
 char *ExtraRenderingOptions::Name ()
 {
-	return "Rendering options";
+	return (char*)"Rendering options";
 }
 
 char *ExtraRenderingOptions::Description ()
 {
-	static char *desc = "Some rendering options that can be used for debugging problems.";
-	return desc;
+	return (char*)"Some rendering options that can be used for debugging problems.";
 }
 
 bool ExtraRenderingOptions::clbkOpen (HWND hParent)
@@ -1335,13 +1324,12 @@ INT_PTR CALLBACK ExtraRenderingOptions::DlgProc (HWND hWnd, UINT uMsg, WPARAM wP
 
 char *ExtraTimerSettings::Name ()
 {
-	return "Timer settings";
+	return (char*)"Timer settings";
 }
 
 char *ExtraTimerSettings::Description ()
 {
-	static char *desc = "This option allows the selection of the timer used by Orbiter to calculate time step intervals. Useful for testing and working around buggy hardware timers.";
-	return desc;
+	return (char*)"This option allows the selection of the timer used by Orbiter to calculate time step intervals. Useful for testing and working around buggy hardware timers.";
 }
 
 bool ExtraTimerSettings::clbkOpen (HWND hParent)
@@ -1415,13 +1403,12 @@ INT_PTR CALLBACK ExtraTimerSettings::DlgProc (HWND hWnd, UINT uMsg, WPARAM wPara
 
 char *ExtraPerformanceSettings::Name ()
 {
-	return "Performance options";
+	return (char*)"Performance options";
 }
 
 char *ExtraPerformanceSettings::Description ()
 {
-	static char *desc = "This option can be used to modify Windows environment parameters that can improve the simulator performance.";
-	return desc;
+	return (char*)"This option can be used to modify Windows environment parameters that can improve the simulator performance.";
 }
 
 bool ExtraPerformanceSettings::clbkOpen (HWND hParent)
@@ -1496,13 +1483,12 @@ INT_PTR CALLBACK ExtraPerformanceSettings::DlgProc (HWND hWnd, UINT uMsg, WPARAM
 
 char *ExtraLaunchpadOptions::Name ()
 {
-	return "Launchpad options";
+	return (char*)"Launchpad options";
 }
 
 char *ExtraLaunchpadOptions::Description ()
 {
-	static char *desc = "Configure the behaviour of the Orbiter Launchpad dialog.";
-	return desc;
+	return (char*)"Configure the behaviour of the Orbiter Launchpad dialog.";
 }
 
 bool ExtraLaunchpadOptions::clbkOpen (HWND hParent)
@@ -1578,13 +1564,12 @@ INT_PTR CALLBACK ExtraLaunchpadOptions::DlgProc (HWND hWnd, UINT uMsg, WPARAM wP
 
 char *ExtraLogfileOptions::Name ()
 {
-	return "Logfile options";
+	return (char*)"Logfile options";
 }
 
 char *ExtraLogfileOptions::Description ()
 {
-	static char *desc = "Configure options for log file output.";
-	return desc;
+	return (char*)"Configure options for log file output.";
 }
 
 bool ExtraLogfileOptions::clbkOpen (HWND hParent)
