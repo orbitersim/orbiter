@@ -516,7 +516,7 @@ MATRIX3 oapi::CelestialSphere::Ecliptic_CelestialAtEpoch() const
 {
 	// Set up rotation for celestial grid rendering
 	MATRIX3 R;
-	OBJHANDLE hEarth = oapiGetGbodyByName("Earth");
+	OBJHANDLE hEarth = oapiGetGbodyByName((char*)"Earth");
 	if (!hEarth)
 		return Ecliptic_CelestialJ2000(); // best we can do
 
