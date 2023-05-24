@@ -176,7 +176,7 @@ void Select::Activate ()
 	SetFocus (g_pOrbiter->GetRenderWnd());
 }
 
-void Select::Open (char *_title, Callbk submenu_cbk, Callbk enter_cbk,
+void Select::Open (const char *_title, Callbk submenu_cbk, Callbk enter_cbk,
 				   void *_userdata, int _cntx, int _cnty)
 {
 	if (surf) Clear (true); // this line was commented. why?
@@ -312,10 +312,10 @@ void Select::AppendSeparator ()
 	listh += 3;
 }
 
-void Select::SetTitle (char *_title)
+void Select::SetTitle (const char *_title)
 {
-	if (strlen (_title) >= select_strlen) _title[select_strlen-1] = '\0';
-	strcpy (title, _title);
+	strncpy(title, _title, select_strlen);
+	title[select_strlen - 1] = '\0';
 }
 
 void Select::Push ()
