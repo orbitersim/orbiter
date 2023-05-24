@@ -179,7 +179,7 @@ void Instrument_Surface::InitDeviceObjects ()
 HELPCONTEXT *Instrument_Surface::HelpTopic () const
 {
 	extern HELPCONTEXT DefHelpContext;
-	DefHelpContext.topic = "/mfd_surf.htm";
+	DefHelpContext.topic = (char*)"/mfd_surf.htm";
 	return &DefHelpContext;
 }
 
