@@ -356,7 +356,7 @@ void LogOut_Warning(const char* func, const char* file, int line, const char* ms
 	va_end(ap);
 }
 
-void LogOut_Obsolete(char* func, char* msg)
+void LogOut_Obsolete(const char* func, const char* msg)
 {
 	LogOut_Obsolete_Start();
 	LogOut("Obsolete API function used: %s", func);
