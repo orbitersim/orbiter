@@ -77,7 +77,7 @@ Instrument_OPlaneAlign::~Instrument_OPlaneAlign ()
 HELPCONTEXT *Instrument_OPlaneAlign::HelpTopic () const
 {
 	extern HELPCONTEXT DefHelpContext;
-	DefHelpContext.topic = "/mfd_align.htm";
+	DefHelpContext.topic = (char*)"/mfd_align.htm";
 	return &DefHelpContext;
 }
 
