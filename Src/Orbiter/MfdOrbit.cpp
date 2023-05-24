@@ -88,7 +88,7 @@ Instrument_Orbit::~Instrument_Orbit ()
 HELPCONTEXT *Instrument_Orbit::HelpTopic () const
 {
 	extern HELPCONTEXT DefHelpContext;
-	DefHelpContext.topic = "/mfd_orbit.htm";
+	DefHelpContext.topic = (char*)"/mfd_orbit.htm";
 	return &DefHelpContext;
 }
 
@@ -261,7 +261,7 @@ void Instrument_Orbit::DisplayOrbit (oapi::Sketchpad *skp, int which, oapi::IVEC
 
 void Instrument_Orbit::UpdateDraw (oapi::Sketchpad *skp)
 {
-	static char *projstr[3] = {"Ecliptic", "Ship", "Target"};
+	static const char *projstr[3] = {"Ecliptic", "Ship", "Target"};
 	Matrix rot1, rot2, irot;
 
 	bool bValidShpEl = (elref != 0);
