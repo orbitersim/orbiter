@@ -177,7 +177,7 @@ protected:
 	inline void SetDeviceInfo (D3D7Enum_DeviceInfo *di) { m_pDeviceInfo = di; }
 	inline D3D7Enum_DeviceInfo *GetDeviceInfo () { return m_pDeviceInfo; }
 	bool SelectDevice (D3D7Enum_DeviceInfo **dev, DeviceData *dd);
-	HRESULT ReEnumerate (TCHAR* fname, DeviceData *dd);
+	HRESULT ReEnumerate (const TCHAR* fname, DeviceData *dd);
 	HRESULT Init3DEnvironment ();
 	HRESULT Change3DEnvironment ();
 	void Exit3DEnvironment ();
