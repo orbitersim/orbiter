@@ -47,7 +47,7 @@ void VObject::CreateDeviceObjects (OrbiterGraphics *gclient)
 	FILE *file;
 	gc = gclient;
 	for (int i = 0; i < 3; i++) {
-		static char *fname[3] = {"Ball","Ball2","Ball3"};
+		static const char *fname[3] = {"Ball","Ball2","Ball3"};
 		file = fopen (g_pOrbiter->TexPath (fname[i]), "rb");
 		if (file) {
 			g_texmanager2->ReadTexture(file, blobtex + i);
