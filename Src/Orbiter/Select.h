@@ -183,7 +183,7 @@ public:
 	void SetEnterCallback (Callbk cbk) { cbk_enter = cbk; }
 	// set callback function for accepting input
 
-	void Open (char *_title = 0, char *_buf = 0, int _vislen = 20,
+	void Open (const char *_title = 0, char *_buf = 0, int _vislen = 20,
 		Callbk cbk = 0, void *_userdata = 0, int cntx = -1, int cnty = -1);
 	// activates the input box with the specified parameters
 	// combines SetTitle, InitBuffer, SetEnterCallback and Activate
