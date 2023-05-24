@@ -653,7 +653,7 @@ void InputBox::Activate (int cntx, int cnty)
 	RefreshSurface ();
 }
 
-void InputBox::Open (char *_title, char *_buf, int _vislen,
+void InputBox::Open (const char *_title, char *_buf, int _vislen,
 					 Callbk cbk, void *_userdata, int cntx, int cnty)
 {
 	OpenEx (_title, _buf, _vislen, cbk, 0, _userdata, 0, cntx, cnty);
