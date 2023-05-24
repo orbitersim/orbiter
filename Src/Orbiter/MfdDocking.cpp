@@ -73,7 +73,7 @@ Instrument_Docking::~Instrument_Docking ()
 HELPCONTEXT *Instrument_Docking::HelpTopic () const
 {
 	extern HELPCONTEXT DefHelpContext;
-	DefHelpContext.topic = "/mfd_dock.htm";
+	DefHelpContext.topic = (char*)"/mfd_dock.htm";
 	return &DefHelpContext;
 }
 
