@@ -41,7 +41,7 @@ Instrument_Comms::~Instrument_Comms ()
 HELPCONTEXT *Instrument_Comms::HelpTopic () const
 {
 	extern HELPCONTEXT DefHelpContext;
-	DefHelpContext.topic = "/mfd_com.htm";
+	DefHelpContext.topic = (char*)"/mfd_com.htm";
 	return &DefHelpContext;
 }
 
