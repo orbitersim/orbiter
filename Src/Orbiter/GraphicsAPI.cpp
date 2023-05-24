@@ -26,7 +26,7 @@ extern Pane *g_pane;
 
 using namespace oapi;
 
-char *strWndClass = "Orbiter Render Window";
+const char *strWndClass = "Orbiter Render Window";
 
 OAPIFUNC LRESULT CALLBACK WndProc (HWND, UINT, WPARAM, LPARAM);
 // Render window callback (calls RenderWndProc)
@@ -557,7 +557,7 @@ bool GraphicsClient::WriteImageDataToFile (const ImageData &data,
 
 	// customize output
 	PROPBAG2 option = { 0 };
-	option.pstrName = L"ImageQuality";
+	option.pstrName = (wchar_t*)L"ImageQuality";
 	VARIANT varValue;
 	VariantInit (&varValue);
 	varValue.vt = VT_R4;

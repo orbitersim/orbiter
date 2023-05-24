@@ -715,7 +715,7 @@ bool OrbiterGraphics::clbkDisplayFrame ()
 
 HWND OrbiterGraphics::clbkCreateRenderWindow ()
 {
-	extern char *strWndClass;
+	extern const char *strWndClass;
 	VIDEODATA *vd = GetVideoData();
 	HWND hWnd;
 
