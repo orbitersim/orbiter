@@ -479,7 +479,7 @@ HRESULT OrbiterGraphics::ConfirmDevice (DDCAPS*, D3DDEVICEDESC7*)
 
 // =======================================================================
 
-HRESULT OrbiterGraphics::ReEnumerate (TCHAR* fname, DeviceData *dd)
+HRESULT OrbiterGraphics::ReEnumerate (const TCHAR* fname, DeviceData *dd)
 {
 	HRESULT hr;
 	D3D7Enum_FreeResources ();
@@ -559,7 +559,7 @@ bool OrbiterGraphics::clbkInitialise ()
 {
 	if (!GraphicsClient::clbkInitialise()) return false;
 
-	static char *DevName = "Device.dat";
+	static const char *DevName = "Device.dat";
 	Config *pcfg = orbiter->Cfg();
 	bool force = pcfg->CfgDevPrm.bForceEnum;
 
