@@ -10,7 +10,7 @@ extern Orbiter *g_pOrbiter;
 extern Vessel *g_focusobj;
 extern char DBG_MSG[256];
 
-static char *btmlbl[3] = {"PWR","SEL","MNU"};
+static const char *btmlbl[3] = {"PWR","SEL","MNU"};
 int nnv0 = 7; // number of nav modes available
 
 // texture dimensions
