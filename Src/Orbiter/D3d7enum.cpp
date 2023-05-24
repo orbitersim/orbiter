@@ -273,7 +273,7 @@ static BOOL WINAPI DriverEnumCallback (GUID* pGUID, TCHAR* strDesc, TCHAR* strNa
 // Name: D3D7Enum_ReadDeviceList()
 // Read device information from file
 // ------------------------------------------------------------------------------------
-int D3D7Enum_ReadDeviceList (CHAR *fname)
+int D3D7Enum_ReadDeviceList (const CHAR *fname)
 {
 	int i;
 	FILE *ifs = fopen (fname, "rb");
@@ -296,7 +296,7 @@ int D3D7Enum_ReadDeviceList (CHAR *fname)
 // Name: D3D7Enum_WriteDeviceList()
 // Write the device information stored in the device list to a file (binary format)
 // ------------------------------------------------------------------------------------
-VOID D3D7Enum_WriteDeviceList (CHAR *fname)
+VOID D3D7Enum_WriteDeviceList (const CHAR *fname)
 {
 	FILE *ofs = fopen (fname, "wb");
 	DWORD i, n = g_dwNumDevices;
