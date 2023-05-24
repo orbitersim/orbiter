@@ -100,7 +100,7 @@ Instrument *Instrument::Create (int type, Pane *_pane,
 Instrument *Instrument::Create (ifstream &ifs, Pane *_pane,
 	INT_PTR _id, const Spec &spec, Vessel *_vessel)
 {
-	static char *mfdstr[MAXMFD] = {"Left","Right","3","4","5","6","7","8","9","10","11","12"};
+	static const char *mfdstr[MAXMFD] = {"Left","Right","3","4","5","6","7","8","9","10","11","12"};
 	Instrument *instr = 0;
 	char header[64], cbuf[256], *pc;
 	strcpy (header, "BEGIN_MFD ");
@@ -199,28 +199,28 @@ void Instrument::GlobalExit (oapi::GraphicsClient *gc)
 void Instrument::RegisterBuiltinModes ()
 {
 	static MFDMODESPECEX def_mode[BUILTIN_MFD_MODES] = {
-		{"Orbit",        DIK_O, 0, 0},
-		{"Surface",      DIK_S, 0, 0},
-		{"Map",          DIK_M, 0, 0},
-		{"HSI",          DIK_H, 0, 0},
-		{"VOR/VTOL",     DIK_L, 0, 0},
-		{"Docking",      DIK_D, 0, 0},
-		{"Align Planes", DIK_A, 0, 0},
-		{"Sync Orbit",   DIK_Y, 0, 0},
-		{"Transfer",     DIK_X, 0, 0},
-		{"COM/NAV",      DIK_C, 0, 0}
+		{(char*)"Orbit",        DIK_O, 0, 0},
+		{(char*)"Surface",      DIK_S, 0, 0},
+		{(char*)"Map",          DIK_M, 0, 0},
+		{(char*)"HSI",          DIK_H, 0, 0},
+		{(char*)"VOR/VTOL",     DIK_L, 0, 0},
+		{(char*)"Docking",      DIK_D, 0, 0},
+		{(char*)"Align Planes", DIK_A, 0, 0},
+		{(char*)"Sync Orbit",   DIK_Y, 0, 0},
+		{(char*)"Transfer",     DIK_X, 0, 0},
+		{(char*)"COM/NAV",      DIK_C, 0, 0}
 	};
 	static MFDMODESPEC def_oldmode[BUILTIN_MFD_MODES] = { // obsolete
-		{"Orbit",        DIK_O, 0},
-		{"Surface",      DIK_S, 0},
-		{"Map",          DIK_M, 0},
-		{"HSI",          DIK_H, 0},
-		{"VOR/VTOL",     DIK_L, 0},
-		{"Docking",      DIK_D, 0},
-		{"Align Planes", DIK_A, 0},
-		{"Sync Orbit",   DIK_Y, 0},
-		{"Transfer",     DIK_X, 0},
-		{"COM/NAV",      DIK_C, 0}
+		{(char*)"Orbit",        DIK_O, 0},
+		{(char*)"Surface",      DIK_S, 0},
+		{(char*)"Map",          DIK_M, 0},
+		{(char*)"HSI",          DIK_H, 0},
+		{(char*)"VOR/VTOL",     DIK_L, 0},
+		{(char*)"Docking",      DIK_D, 0},
+		{(char*)"Align Planes", DIK_A, 0},
+		{(char*)"Sync Orbit",   DIK_Y, 0},
+		{(char*)"Transfer",     DIK_X, 0},
+		{(char*)"COM/NAV",      DIK_C, 0}
 	};
 
 	static int def_id[BUILTIN_MFD_MODES] = {
@@ -1005,7 +1005,7 @@ void Instrument::DrawMenu ()
 	if (tex) gc->clbkBlt (tex, 0, 0, surf);
 }
 
-void Instrument::OpenSelect_CelBody (char *title, Select::Callbk enter_cbk, DWORD flag)
+void Instrument::OpenSelect_CelBody (const char *title, Select::Callbk enter_cbk, DWORD flag)
 {
 	SelCelBodyFlag = flag;
 	g_select->Open (title, ClbkSelect_CelBody, enter_cbk, (void*)this);
@@ -1042,7 +1042,7 @@ bool Instrument::ClbkSelect_CelBody (Select *menu, int item, char *str, void *da
 	return false;
 }
 
-void Instrument::OpenSelect_Tgt (char *title, Select::Callbk enter_cbk, const CelestialBody *ref, DWORD flag)
+void Instrument::OpenSelect_Tgt (const char *title, Select::Callbk enter_cbk, const CelestialBody *ref, DWORD flag)
 {
 	seltgtprm.ref  = ref;
 	seltgtprm.flag = flag;
