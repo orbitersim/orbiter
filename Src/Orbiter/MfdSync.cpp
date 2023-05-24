@@ -17,7 +17,7 @@ extern InputBox *g_input;
 // =======================================================================
 // class Instrument_OSync
 
-static char *modestr[7] = {
+static const char *modestr[7] = {
 	"Intersect 1",
 	"Intersect 2",
 	"Sh periapsis",
@@ -59,7 +59,7 @@ Instrument_OSync::~Instrument_OSync ()
 HELPCONTEXT *Instrument_OSync::HelpTopic () const
 {
 	extern HELPCONTEXT DefHelpContext;
-	DefHelpContext.topic = "/mfd_sync.htm";
+	DefHelpContext.topic = (char*)"/mfd_sync.htm";
 	return &DefHelpContext;
 }
 
