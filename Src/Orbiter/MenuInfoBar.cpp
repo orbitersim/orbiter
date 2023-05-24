@@ -691,7 +691,7 @@ bool MenuInfoBar::ProcessMouse (UINT event, DWORD state, DWORD x, DWORD y)
 			return true;
 		case 9:
 			extern HELPCONTEXT DefHelpContext;
-			DefHelpContext.topic = "/mainmenu.htm";
+			DefHelpContext.topic = (char*)"/mainmenu.htm";
 			g_pOrbiter->OpenHelp (&DefHelpContext);
 			return true;
 		case 10:
