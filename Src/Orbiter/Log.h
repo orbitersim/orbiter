@@ -23,7 +23,7 @@ void LogOut_Error (const char *func, const char *file, int line, const char *msg
 void LogOut_ErrorVA(const char *func, const char *file, int line, const char *msg, va_list ap);
 void LogOut_Warning(const char* func, const char* file, int line, const char* msg, ...);  // Write general warning to log file
 void LogOut_WarningVA(const char* func, const char* file, int line, const char* msg, va_list ap);
-void LogOut_Obsolete(char* func, char* msg = 0);      // Write obsolete-function warning to log file
+void LogOut_Obsolete(const char* func, const char* msg = 0);      // Write obsolete-function warning to log file
 void LogOut_LastError (const char *func, const char *file, int line);             // Write formatted string from GetLastError
 void LogOut_DDErr (HRESULT hr, const char *func, const char *file, int line);     // Write DirectDraw error to log file
 void LogOut_DIErr (HRESULT hr, const char *func, const char *file, int line);     // Write DirectInput error to log file
