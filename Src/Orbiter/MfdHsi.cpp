@@ -63,7 +63,7 @@ Instrument_HSI::~Instrument_HSI ()
 HELPCONTEXT *Instrument_HSI::HelpTopic () const
 {
 	extern HELPCONTEXT DefHelpContext;
-	DefHelpContext.topic = "/mfd_hsi.htm";
+	DefHelpContext.topic = (char*)"/mfd_hsi.htm";
 	return &DefHelpContext;
 }
 
@@ -82,7 +82,7 @@ void Instrument_HSI::UpdateDraw (oapi::Sketchpad *skp)
 	};
 	static const INT narrowseg = 3, arrowseg[3] = {7,4,4};
 
-	static char *label[12] = {"N", "3", "6", "E", "12", "15", "S", "21", "24", "W", "30", "33"};
+	static const char *label[12] = {"N", "3", "6", "E", "12", "15", "S", "21", "24", "W", "30", "33"};
 	static int llen[12] = {1,1,1,1,2,2,1,2,2,1,2,2};
 	
 	// gyro direction
