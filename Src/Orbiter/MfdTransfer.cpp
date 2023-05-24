@@ -86,7 +86,7 @@ Instrument_Transfer::~Instrument_Transfer ()
 HELPCONTEXT *Instrument_Transfer::HelpTopic () const
 {
 	extern HELPCONTEXT DefHelpContext;
-	DefHelpContext.topic = "/mfd_transfer.htm";
+	DefHelpContext.topic = (char*)"/mfd_transfer.htm";
 	return &DefHelpContext;
 }
 
