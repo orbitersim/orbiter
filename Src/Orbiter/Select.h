@@ -66,7 +66,7 @@ public:
 	int Level() const { return level; }
 	int Append (const char *_str, BYTE flag = 0);
 	void AppendSeparator ();
-	void SetTitle (char *_title);
+	void SetTitle (const char *_title);
 	const char *Title () const { return title; }
 	int ConsumeKey (UINT uMsg, WPARAM wParam, WORD mod = 0);
 	enum { key_ignore, key_consume, key_ok, key_cancel };
@@ -74,7 +74,7 @@ public:
 	void SetSubmenuCallback (Callbk cbk) { cbk_submenu = cbk; }
 	void SetEnterCallback (Callbk cbk) { cbk_enter = cbk; }
 	
-	void Open (char *_title = 0, Callbk submenu_cbk = 0, Callbk enter_cbk = 0,
+	void Open (const char *_title = 0, Callbk submenu_cbk = 0, Callbk enter_cbk = 0,
 		void *_userdata = 0, int cntx = -1, int cnty = -1);
 	// activates the menu with the specified parameters (menu items must have
 	// been added with Append before)
