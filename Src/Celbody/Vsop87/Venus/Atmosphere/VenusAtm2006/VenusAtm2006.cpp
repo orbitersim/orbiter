@@ -21,8 +21,7 @@ bool VenusAtmosphere_2006::clbkConstants (ATMCONST *atmc) const
 
 const char *VenusAtmosphere_2006::clbkName () const
 {
-	static char *name = "2006 Edition model";
-	return name;
+	return "2006 Edition model";
 }
 
 bool VenusAtmosphere_2006::clbkParams (const PRM_IN *prm_in, PRM_OUT *prm)
@@ -92,12 +91,10 @@ DLLCLBK void DeleteAtmosphere (ATMOSPHERE *atm)
 
 DLLCLBK char *ModelName ()
 {
-	static char *name = "Orbiter 2006 Venus atmosphere model";
-	return name;
+	return (char*)"Orbiter 2006 Venus atmosphere model";
 }
 
 DLLCLBK char *ModelDesc ()
 {
-	static char *desc = "A simple static Venus atmosphere model. This is the model used in Orbiter 2006.";
-	return desc;
+	return (char*)"A simple static Venus atmosphere model. This is the model used in Orbiter 2006.";
 }
