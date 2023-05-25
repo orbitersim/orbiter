@@ -21,8 +21,7 @@ bool EarthAtmosphere_2006::clbkConstants (ATMCONST *atmc) const
 
 const char *EarthAtmosphere_2006::clbkName () const
 {
-	static char *name = "2006 Edition model";
-	return name;
+	return "2006 Edition model";
 }
 
 bool EarthAtmosphere_2006::clbkParams (const PRM_IN *prm_in, PRM_OUT *prm)
@@ -117,12 +116,10 @@ DLLCLBK void DeleteAtmosphere (ATMOSPHERE *atm)
 
 DLLCLBK char *ModelName ()
 {
-	static char *name = "Orbiter 2006 Legacy Model";
-	return name;
+	return (char*)"Orbiter 2006 Legacy Model";
 }
 
 DLLCLBK char *ModelDesc ()
 {
-	static char *desc = "A simple static atmosphere model. This model was used in Orbiter 2006. It underestimates atmospheric density and pressure above ~120km and terminates at 200km, which simplifies orbit-keeping for LEO objects.";
-	return desc;
+	return (char*)"A simple static atmosphere model. This model was used in Orbiter 2006. It underestimates atmospheric density and pressure above ~120km and terminates at 200km, which simplifies orbit-keeping for LEO objects.";
 }
