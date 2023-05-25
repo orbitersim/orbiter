@@ -28,7 +28,7 @@ protected:
 	void SetSeries (char series);
 	// Set VSOP series ('A' to 'E')
 
-	bool ReadData (char *name);
+	bool ReadData (const char *name);
 	// Read perturbation terms up to required accuracy from data file
 
 	void Init ();
