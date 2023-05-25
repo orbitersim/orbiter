@@ -709,7 +709,7 @@ void unkod (int *kode, int *kod, int *kmin)
 
 /* = = = = = = = = = = = = = = = = = = = = = = = = = = = */
 /* = = = = = = = = = = = = = = = = = = = = = = = = = = = */
-int cd2com (char *fname)
+int cd2com (const char *fname)
 {
 /* ********************************************** */
 /* read the 'card' file (output as punch file from kodlod or the */

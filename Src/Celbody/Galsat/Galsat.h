@@ -44,7 +44,7 @@ DLLEXPORT void JupiterBaryFastEphemeris (double simt, double *ret, Sample *sp);
 // Lieske driver functions
 // ===========================================================
 
-int cd2com (char *fname);   // read data from file
+int cd2com (const char *fname);   // read data from file
 void chkgal (void);         // set up data
 void galsat (double *r, double *rorb, double tjd, int ksat, int kflag);
 							// calculate ephemerides
