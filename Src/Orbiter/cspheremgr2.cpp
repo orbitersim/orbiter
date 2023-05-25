@@ -167,7 +167,7 @@ TileManager2<CsphereTile>::TileManager2(const char *name, int _maxres, int _grid
 }
 
 template<>
-MATRIX4 CsphereManager::WorldMatrix(int ilng, int nlng, int ilat, int nlat)
+inline MATRIX4 CsphereManager::WorldMatrix(int ilng, int nlng, int ilat, int nlat)
 {
 
 	double lat, lng = Pi2 * (double)ilng / (double)nlng + Pi; // add pi so texture wraps at +-180°
