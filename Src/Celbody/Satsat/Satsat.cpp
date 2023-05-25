@@ -16,7 +16,7 @@ using namespace std;
 static void SatEphem (int ksat, double mjd, double *ret);
 static void SampleEphem (int ksat, double simt, double *ret);
 
-static char *satname[NSAT] = {
+static const char *satname[NSAT] = {
 	"Mimas", "Enceladus", "Tethys", "Dione", "Rhea", "Titan", "Hyperion", "Iapetus"
 };
 
