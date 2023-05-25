@@ -21,8 +21,7 @@ bool MarsAtmosphere_2006::clbkConstants (ATMCONST *atmc) const
 
 const char *MarsAtmosphere_2006::clbkName () const
 {
-	static char *name = "2006 Edition model";
-	return name;
+	return "2006 Edition model";
 }
 
 bool MarsAtmosphere_2006::clbkParams (const PRM_IN *prm_in, PRM_OUT *prm)
@@ -101,12 +100,10 @@ DLLCLBK void DeleteAtmosphere (ATMOSPHERE *atm)
 
 DLLCLBK char *ModelName ()
 {
-	static char *name = "Orbiter 2006 Mars atmosphere model";
-	return name;
+	return (char*)"Orbiter 2006 Mars atmosphere model";
 }
 
 DLLCLBK char *ModelDesc ()
 {
-	static char *desc = "A simple static Mars atmosphere model. This is the model used in Orbiter 2006.";
-	return desc;
+	return (char*)"A simple static Mars atmosphere model. This is the model used in Orbiter 2006.";
 }
