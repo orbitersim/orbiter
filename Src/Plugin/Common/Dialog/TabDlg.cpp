@@ -14,6 +14,9 @@
 #include "Uxtheme.h"
 #include "OrbiterAPI.h"
 
+INT_PTR CALLBACK DlgProcHook (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK TabProcHook (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
 // ==============================================================
 // class TabbedDialog: Dialog containing a single tab control
 // ==============================================================
