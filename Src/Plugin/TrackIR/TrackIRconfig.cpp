@@ -11,8 +11,7 @@ TrackIRconfig *TrackIRconfig::tirc = 0;
 
 char *TrackIRconfig::Description()
 {
-	static char *desc = "Configure and test the NaturalPoint® TrackIR(tm) Optical Headtracker.";
-	return desc;
+	return (char*)"Configure and test the NaturalPoint® TrackIR(tm) Optical Headtracker.";
 }
 
 bool TrackIRconfig::clbkOpen (HWND hLaunchpad)
@@ -26,19 +25,19 @@ int TrackIRconfig::clbkWriteConfig ()
 {
 	char cbuf[256];
 	FILEHANDLE hFile = oapiOpenFile (cfgfile, FILE_OUT, ROOT);
-	oapiWriteItem_int (hFile, "CMODE", trackir->GetCameraMode());
+	oapiWriteItem_int (hFile, (char*)"CMODE", trackir->GetCameraMode());
 	sprintf (cbuf, "%d %f", trackir->vcmode.trackrotation, trackir->vcmode.rotationrange);
-	oapiWriteItem_string (hFile, "VCROT", cbuf);
+	oapiWriteItem_string (hFile, (char*)"VCROT", cbuf);
 	sprintf (cbuf, "%d %f", trackir->vcmode.trackposition, trackir->vcmode.positionrange);
-	oapiWriteItem_string (hFile, "VCPOS", cbuf);
+	oapiWriteItem_string (hFile, (char*)"VCPOS", cbuf);
 	sprintf (cbuf, "%d %f", trackir->vcmode.freezeonmouse, trackir->vcmode.freeze_t);
-	oapiWriteItem_string (hFile, "FREEZE", cbuf);
+	oapiWriteItem_string (hFile, (char*)"FREEZE", cbuf);
 	sprintf (cbuf, "%d %d", trackir->trkmode.trackrotation, trackir->trkmode.rotationdata);
-	oapiWriteItem_string (hFile, "TRKROT", cbuf);
+	oapiWriteItem_string (hFile, (char*)"TRKROT", cbuf);
 	sprintf (cbuf, "%d", trackir->trkmode.trackzoom);
-	oapiWriteItem_string (hFile, "TRKZOOM", cbuf);
+	oapiWriteItem_string (hFile, (char*)"TRKZOOM", cbuf);
 	sprintf (cbuf, "%0.2f %0.2f", trackir->trkmode.deadzone, trackir->trkmode.speed);
-	oapiWriteItem_string (hFile, "TRKPRM", cbuf);
+	oapiWriteItem_string (hFile, (char*)"TRKPRM", cbuf);
 	oapiCloseFile (hFile, FILE_OUT);
 	return 0;
 }
