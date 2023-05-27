@@ -44,10 +44,10 @@
 GDIParams g_Param;
 
 static HELPCONTEXT g_hc = {
-	"html/vessels/deltaglider.chm",
+	(char*)"html/vessels/deltaglider.chm",
 	0,
-	"html/vessels/deltaglider.chm::/deltaglider.hhc",
-	"html/vessels/deltaglider.chm::/deltaglider.hhk"
+	(char*)"html/vessels/deltaglider.chm::/deltaglider.hhc",
+	(char*)"html/vessels/deltaglider.chm::/deltaglider.hhk"
 };
 
 static const DWORD ntdvtx_geardown = 13;
@@ -308,7 +308,7 @@ void DeltaGlider::PaintMarkings (SURFHANDLE tex)
 {
 	oapi::Sketchpad *skp = oapiGetSketchpad (tex);
 	if (skp) {
-		oapi::Font *font1 = oapiCreateFont(38, true, "Sans", FONT_BOLD);
+		oapi::Font *font1 = oapiCreateFont(38, true, (char*)"Sans", FONT_BOLD);
 		skp->SetFont (font1);
 		skp->SetTextColor (0xD0D0D0);
 		skp->SetTextAlign (oapi::Sketchpad::CENTER);
@@ -318,7 +318,7 @@ void DeltaGlider::PaintMarkings (SURFHANDLE tex)
 		skp->Text (193, 10, cbuf, len);
 		skp->Text (193, 74, cbuf, len);
 		oapiReleaseFont(font1);
-		oapi::Font *font2 = oapiCreateFont(36, true, "Sans", FONT_BOLD);
+		oapi::Font *font2 = oapiCreateFont(36, true, (char*)"Sans", FONT_BOLD);
 		skp->SetFont(font2);
 		skp->SetTextColor (0x808080);
 		skp->SetTextAlign (oapi::Sketchpad::RIGHT);
@@ -402,7 +402,7 @@ bool DeltaGlider::clbkDrawHUD (int mode, const HUDPAINTSPEC *hps, oapi::Sketchpa
 				skp->Line (cx-d,cy-d,cx+d,cy+d);
 				skp->Line (cx-d,cy+d,cx+d,cy-d);
 			}
-			char *str = "NOSECONE";
+			const char *str = "NOSECONE";
 			int w = skp->GetTextWidth (str);
 			skp->Text (cx-w/2, cy-d, str, 8);
 		}
@@ -875,7 +875,7 @@ void DeltaGlider::clbkSetClassCaps (FILEHANDLE cfg)
 
 	bool b;
 	int i;
-	if (oapiReadItem_bool (cfg, "SCRAMJET", b) && b) // set up scramjet configuration
+	if (oapiReadItem_bool (cfg, (char*)"SCRAMJET", b) && b) // set up scramjet configuration
 		AddSubsystem (ssys_scram = new ScramSubsystem (this));
 
 	ComponentVessel::SetEmptyMass (ssys_scram ? EMPTY_MASS_SC : EMPTY_MASS);
@@ -923,7 +923,7 @@ void DeltaGlider::clbkSetClassCaps (FILEHANDLE cfg)
 	double ispscale = (modelidx ? 0.8 : 1.0);
 	// Reduction of thrust efficiency at normal pressure
 
-	contrail_tex = oapiRegisterParticleTexture ("Contrail1a");
+	contrail_tex = oapiRegisterParticleTexture ((char*)"Contrail1a");
 
 	PARTICLESTREAMSPEC contrail = {
 		0, 8.0, 4, 150, 0.25, 3.0, 4, 2.0, PARTICLESTREAMSPEC::DIFFUSE,
@@ -1159,23 +1159,23 @@ void DeltaGlider::clbkSaveState (FILEHANDLE scn)
 			snprintf (cbuf, sizeof(cbuf) - 1, "%d", i+1);
 			for (++i; i < 4; i++)
 				if (psngr[i]) sprintf (cbuf+strlen(cbuf), " %d", i+1);
-			oapiWriteScenario_string (scn, "PSNGR", cbuf);
+			oapiWriteScenario_string (scn, (char*)"PSNGR", cbuf);
 			break;
 		}
 	if (skinpath[0])
-		oapiWriteScenario_string (scn, "SKIN", skinpath);
+		oapiWriteScenario_string (scn, (char*)"SKIN", skinpath);
 	if (panelcol) {
-		oapiWriteScenario_int (scn, "PANELCOL", panelcol);
+		oapiWriteScenario_int (scn, (char*)"PANELCOL", panelcol);
 	}
 	for (i = 0; i < 8; i++)
 		if (beacon[i].active) {
 			snprintf (cbuf, sizeof(cbuf) - 1, "%d %d %d %d", beacon[0].active, beacon[3].active, beacon[5].active, beacon[7].active);
-			oapiWriteScenario_string (scn, "LIGHTS", cbuf);
+			oapiWriteScenario_string (scn, (char*)"LIGHTS", cbuf);
 			break;
 		}
 
 	if (tankconfig)
-		oapiWriteScenario_int (scn, "TANKCONFIG", tankconfig);
+		oapiWriteScenario_int (scn, (char*)"TANKCONFIG", tankconfig);
 }
 
 // --------------------------------------------------------------
@@ -1676,7 +1676,7 @@ INT_PTR CALLBACK EdPg1Proc (HWND hTab, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_COMMAND:
 		switch (LOWORD (wParam)) {
 		case IDHELP:
-			g_hc.topic = "/SE_Anim.htm";
+			g_hc.topic = (char*)"/SE_Anim.htm";
 			oapiOpenHelp (&g_hc);
 			return TRUE;
 		case IDC_GEAR_UP:

@@ -274,7 +274,7 @@ void AAP::WriteScenario (FILEHANDLE scn)
 		sprintf (cbuf, "%s%d:%g", i ? " ":"", active[i], tgt[i]);
 		strcat (line, cbuf);
 	}
-	oapiWriteScenario_string (scn, "AAP", line);
+	oapiWriteScenario_string (scn, (char*)"AAP", line);
 }
 
 void AAP::SetState (const char *str)

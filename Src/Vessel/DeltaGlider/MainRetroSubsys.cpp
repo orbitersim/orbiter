@@ -422,12 +422,12 @@ void GimbalControl::clbkSaveState (FILEHANDLE scn)
 {
 	if (mode) {
 		if (mode == 1) { // auto
-			oapiWriteScenario_int (scn, "MGIMBALMODE", mode);
+			oapiWriteScenario_int (scn, (char*)"MGIMBALMODE", mode);
 		} else { // manual
 			char cbuf[256];
 			sprintf (cbuf, "%d %0.3lf %0.3lf %0.3lf %0.3lf",
 				mode, mpgimbal_cmd[0], mpgimbal_cmd[1], mygimbal_cmd[0], mygimbal_cmd[1]);
-			oapiWriteScenario_string (scn, "MGIMBALMODE", cbuf);
+			oapiWriteScenario_string (scn, (char*)"MGIMBALMODE", cbuf);
 		}
 	}
 }

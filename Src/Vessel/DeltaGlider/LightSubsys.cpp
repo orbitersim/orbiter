@@ -109,7 +109,7 @@ void InstrumentLight::clbkSaveState (FILEHANDLE scn)
 	if (light_on || light_col || brightness != 0.5) {
 		char cbuf[256];
 		sprintf (cbuf, "%d %d %0.2lf", (int)light_on, light_col, brightness);
-		oapiWriteScenario_string (scn, "INSTRLIGHT", cbuf);
+		oapiWriteScenario_string (scn, (char*)"INSTRLIGHT", cbuf);
 	}
 }
 
@@ -265,7 +265,7 @@ void CockpitLight::clbkSaveState (FILEHANDLE scn)
 	if (light_mode || brightness != 0.7) {
 		char cbuf[256];
 		sprintf (cbuf, "%d %0.2lf", light_mode, brightness);
-		oapiWriteScenario_string (scn, "FLOODLIGHT", cbuf);
+		oapiWriteScenario_string (scn, (char*)"FLOODLIGHT", cbuf);
 	}
 }
 
@@ -398,7 +398,7 @@ void LandDockLight::SetLight (int mode, bool force)
 void LandDockLight::clbkSaveState (FILEHANDLE scn)
 {
 	if (light_mode)
-		oapiWriteScenario_int (scn, "LANDDOCKLIGHT", light_mode);
+		oapiWriteScenario_int (scn, (char*)"LANDDOCKLIGHT", light_mode);
 }
 
 // --------------------------------------------------------------
@@ -526,7 +526,7 @@ void StrobeLight::SetLight (bool on)
 void StrobeLight::clbkSaveState (FILEHANDLE scn)
 {
 	if (light_on)
-		oapiWriteScenario_int (scn, "STROBELIGHT", (int)light_on);
+		oapiWriteScenario_int (scn, (char*)"STROBELIGHT", (int)light_on);
 }
 
 // --------------------------------------------------------------
@@ -655,7 +655,7 @@ void NavLight::SetLight (bool on)
 void NavLight::clbkSaveState (FILEHANDLE scn)
 {
 	if (light_on)
-		oapiWriteScenario_int (scn, "NAVLIGHT", (int)light_on);
+		oapiWriteScenario_int (scn, (char*)"NAVLIGHT", (int)light_on);
 }
 
 // --------------------------------------------------------------
