@@ -35,10 +35,10 @@ static double lengthscale[4] = {1.0, 1e-3, 1.0/AU, 1.0};
 static double anglescale[2] = {DEG, 1.0};
 
 static HELPCONTEXT g_hc = {
-	"html/plugin/ScnEditor.chm",
+	(char*)"html/plugin/ScnEditor.chm",
 	0,
-	"html/plugin/ScnEditor.chm::/ScnEditor.hhc",
-	"html/plugin/ScnEditor.chm::/ScnEditor.hhk"
+	(char*)"html/plugin/ScnEditor.chm::/ScnEditor.hhc",
+	(char*)"html/plugin/ScnEditor.chm::/ScnEditor.hhk"
 };
 
 // ==============================================================
@@ -58,8 +58,8 @@ ScnEditor::ScnEditor (HINSTANCE hDLL)
 	treeicon_idx[3] = ImageList_Add (imglist, LoadBitmap (hInst, MAKEINTRESOURCE (IDB_TREEICON_FILE2)), 0);
 
 	dwCmd = oapiRegisterCustomCmd (
-		"Scenario Editor",
-		"Create, delete and configure spacecraft",
+		(char*)"Scenario Editor",
+		(char*)"Create, delete and configure spacecraft",
 		::OpenDialog, this);
 }
 
@@ -272,7 +272,7 @@ bool ScnEditor::CreateVessel (char *name, char *classname)
 	VESSELSTATUS2 vs;
 	memset (&vs, 0, sizeof(vs));
 	vs.version = 2;
-	vs.rbody = oapiGetGbodyByName ("Earth");
+	vs.rbody = oapiGetGbodyByName ((char*)"Earth");
 	if (!vs.rbody) vs.rbody = oapiGetGbodyByIndex (0);
 	double rad = 1.1 * oapiGetSize (vs.rbody);
 	double vel = sqrt (GGRAV * oapiGetMass (vs.rbody) / rad);
@@ -430,16 +430,16 @@ void ScnEditorTab::Hide ()
 
 char *ScnEditorTab::HelpTopic ()
 {
-	return "/ScnEditor.htm";
+	return (char*)"/ScnEditor.htm";
 }
 
 void ScnEditorTab::OpenHelp ()
 {
 	static HELPCONTEXT hc = {
-		"html/plugin/ScnEditor.chm",
+		(char*)"html/plugin/ScnEditor.chm",
 		0,
-		"html/plugin/ScnEditor.chm::/ScnEditor.hhc",
-		"html/plugin/ScnEditor.chm::/ScnEditor.hhk"
+		(char*)"html/plugin/ScnEditor.chm::/ScnEditor.hhc",
+		(char*)"html/plugin/ScnEditor.chm::/ScnEditor.hhk"
 	};
 	hc.topic = HelpTopic();
 	oapiOpenHelp (&hc);
@@ -525,7 +525,7 @@ void EditorTab_Vessel::ScanVesselList ()
 
 char *EditorTab_Vessel::HelpTopic ()
 {
-	return "/ScnEditor.htm";
+	return (char*)"/ScnEditor.htm";
 }
 
 INT_PTR EditorTab_Vessel::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -661,7 +661,7 @@ void EditorTab_New::InitTab ()
 
 char *EditorTab_New::HelpTopic ()
 {
-	return "/NewVessel.htm";
+	return (char*)"/NewVessel.htm";
 }
 
 INT_PTR EditorTab_New::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -768,7 +768,7 @@ void EditorTab_New::ScanConfigDir (const char *ppath, HTREEITEM hti)
 			FILEHANDLE hFile = oapiOpenFile (path, FILE_IN);
 			if (hFile) {
 				bool b;
-				skip = (oapiReadItem_bool (hFile, "EditorCreate", b) && !b);
+				skip = (oapiReadItem_bool (hFile, (char*)"EditorCreate", b) && !b);
 				oapiCloseFile (hFile, FILE_IN);
 			}
 			if (skip) continue;
@@ -847,7 +847,7 @@ bool EditorTab_New::UpdateVesselBmp ()
 		sprintf (pathname, "Vessels\\%s.cfg", classname);
 		FILEHANDLE hFile = oapiOpenFile (pathname, FILE_IN, CONFIG);
 		if (!hFile) return false;
-		if (oapiReadItem_string (hFile, "ImageBmp", imagename)) {
+		if (oapiReadItem_string (hFile, (char*)"ImageBmp", imagename)) {
 			hVesselBmp = (HBITMAP)LoadImage (ed->InstHandle(), imagename, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 		}
 		oapiCloseFile (hFile, FILE_IN);
@@ -902,7 +902,7 @@ EditorTab_Save::EditorTab_Save (ScnEditor *editor) : ScnEditorTab (editor)
 
 char *EditorTab_Save::HelpTopic ()
 {
-	return "/SaveScenario.htm";
+	return (char*)"/SaveScenario.htm";
 }
 
 INT_PTR EditorTab_Save::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -947,7 +947,7 @@ void EditorTab_Date::InitTab ()
 
 char *EditorTab_Date::HelpTopic ()
 {
-	return "/Date.htm";
+	return (char*)"/Date.htm";
 }
 
 void EditorTab_Date::Apply ()
@@ -1324,7 +1324,7 @@ void EditorTab_Edit::InitTab ()
 
 char *EditorTab_Edit::HelpTopic ()
 {
-	return "/EditVessel.htm";
+	return (char*)"/EditVessel.htm";
 }
 
 BOOL EditorTab_Edit::AddFuncButton (EditorFuncSpec *efs)
@@ -1473,7 +1473,7 @@ void EditorTab_Elements::InitTab ()
 
 char *EditorTab_Elements::HelpTopic ()
 {
-	return "/Elements.htm";
+	return (char*)"/Elements.htm";
 }
 
 void EditorTab_Elements::Apply ()
@@ -1783,7 +1783,7 @@ void EditorTab_Statevec::ScanVesselList ()
 
 char *EditorTab_Statevec::HelpTopic ()
 {
-	return "/Statevec.htm";
+	return (char*)"/Statevec.htm";
 }
 
 void EditorTab_Statevec::DlgLabels ()
@@ -2088,7 +2088,7 @@ void EditorTab_Landed::ScanVesselList ()
 
 char *EditorTab_Landed::HelpTopic ()
 {
-	return "/Location.htm";
+	return (char*)"/Location.htm";
 }
 
 INT_PTR EditorTab_Landed::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -2233,7 +2233,8 @@ void EditorTab_Landed::Refresh (OBJHANDLE hV)
 		oapiGetRelativePos (ed->hVessel, hRef, &pos);
 		oapiGetRotationMatrix (hRef, &rot);
 		pos = tmul (rot, pos);
-		Crt2Pol (pos, _V(0,0,0));
+		VECTOR3 vel = _V(0,0,0);
+		Crt2Pol (pos, vel);
 		sprintf (lngstr, "%lf", pos.data[1] * DEG);
 		sprintf (latstr, "%lf", pos.data[2] * DEG);
 	}
@@ -2329,7 +2330,7 @@ void EditorTab_Orientation::InitTab ()
 
 char *EditorTab_Orientation::HelpTopic ()
 {
-	return "/Orientation.htm";
+	return (char*)"/Orientation.htm";
 }
 
 INT_PTR EditorTab_Orientation::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -2484,7 +2485,7 @@ void EditorTab_AngularVel::InitTab ()
 
 char *EditorTab_AngularVel::HelpTopic ()
 {
-	return "/AngularVel.htm";
+	return (char*)"/AngularVel.htm";
 }
 
 INT_PTR EditorTab_AngularVel::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -2611,7 +2612,7 @@ void EditorTab_Propellant::InitTab ()
 
 char *EditorTab_Propellant::HelpTopic ()
 {
-	return "/Propellant.htm";
+	return (char*)"/Propellant.htm";
 }
 
 INT_PTR EditorTab_Propellant::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -2809,7 +2810,7 @@ void EditorTab_Docking::InitTab ()
 
 char *EditorTab_Docking::HelpTopic ()
 {
-	return "/Docking.htm";
+	return (char*)"/Docking.htm";
 }
 
 INT_PTR EditorTab_Docking::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
