@@ -160,8 +160,8 @@ oapi::Framerate::Framerate(HINSTANCE hDLL)
 	Graph::InitGDI();
 
 	// Register the custom command for the plugin
-	static char* desc = "Simulation frame rate / time step monitor";
-	m_dwCmd = oapiRegisterCustomCmd("Performance Meter", desc, hookOpenDlg, NULL);
+	static char* desc = (char*)"Simulation frame rate / time step monitor";
+	m_dwCmd = oapiRegisterCustomCmd((char*)"Performance Meter", desc, hookOpenDlg, NULL);
 
 	m_sysT = 0.0;
 	m_simT = 0.0;
