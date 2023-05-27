@@ -1116,7 +1116,7 @@ void ShuttleA::clbkSetClassCaps (FILEHANDLE cfg)
 	EnableTransponder (true);
 
 	adi_layout = 0;
-	if (oapiReadItem_int (cfg, "ADI_DEFAULT_LAYOUT", adi_layout))
+	if (oapiReadItem_int (cfg, (char*)"ADI_DEFAULT_LAYOUT", adi_layout))
 		adi_layout = max (0, min (1, adi_layout));
 
 	// ******************** NAV radios **************************
@@ -1373,31 +1373,31 @@ void ShuttleA::clbkSaveState (FILEHANDLE scn)
 
 	// custom parameters
 	sprintf (cbuf, "%0.4f %0.4f", pod_angle[0], pod_angle[1]);
-	oapiWriteScenario_string (scn, "PODANGLE", cbuf);
+	oapiWriteScenario_string (scn, (char*)"PODANGLE", cbuf);
 
 	sprintf (cbuf, "%d %0.4f", dock_status, dock_proc);
-	oapiWriteScenario_string (scn, "DOCKSTATE", cbuf);
+	oapiWriteScenario_string (scn, (char*)"DOCKSTATE", cbuf);
 
 	if (lock_status[0] != DOOR_CLOSED) {
 		sprintf (cbuf, "%d %0.4f", lock_status[0], lock_proc[0]);
-		oapiWriteScenario_string (scn, "AIRLOCK", cbuf);
+		oapiWriteScenario_string (scn, (char*)"AIRLOCK", cbuf);
 	}
 
 	if (lock_status[1] != DOOR_CLOSED) {
 		sprintf (cbuf, "%d %0.4f", lock_status[1], lock_proc[1]);
-		oapiWriteScenario_string (scn, "IAIRLOCK", cbuf);
+		oapiWriteScenario_string (scn, (char*)"IAIRLOCK", cbuf);
 	}
 
 	sprintf (cbuf, "%d %0.4f", gear_status, gear_proc);
-	oapiWriteScenario_string (scn, "GEAR", cbuf);
+	oapiWriteScenario_string (scn, (char*)"GEAR", cbuf);
 
 	sprintf (cbuf, "%0.1f %d", payload_mass,cargo_arm_status);
-	oapiWriteScenario_string (scn, "PAYLOAD MASS", cbuf);
+	oapiWriteScenario_string (scn, (char*)"PAYLOAD MASS", cbuf);
 
 	sprintf (cbuf, "%d %d %d", attref->GetMode(), attref->GetTgtmode(), attref->GetNavid());
-	oapiWriteScenario_string (scn, "ATTREF", cbuf);
+	oapiWriteScenario_string (scn, (char*)"ATTREF", cbuf);
 
-	oapiWriteScenario_int (scn, "ADI_LAYOUT", adi_layout);
+	oapiWriteScenario_int (scn, (char*)"ADI_LAYOUT", adi_layout);
 }
 
 // --------------------------------------------------------------
@@ -2436,7 +2436,7 @@ void ShuttleA::PaintMarkings (SURFHANDLE tex)
 	oapi::Sketchpad *skp = oapiGetSketchpad (main_tex);
 	if (skp)
 	{
-		oapi::Font *font1 = oapiCreateFont(22, true, "Impact", FONT_BOLD);
+		oapi::Font *font1 = oapiCreateFont(22, true, (char*)"Impact", FONT_BOLD);
 		skp->SetFont (font1);
 		skp->SetTextColor (0xD0D0D0);
 		skp->SetTextAlign (oapi::Sketchpad::CENTER);
@@ -2469,7 +2469,7 @@ DLLCLBK void InitModule (HINSTANCE hModule)
 	oapiRegisterCustomControls (hModule);
 
 	// allocate Sketchpad resources
-	g_Param.pFont[0] = oapiCreateFont(-10, false, "Arial");
+	g_Param.pFont[0] = oapiCreateFont(-10, false, (char*)"Arial");
 	g_Param.pPen[0] = oapiCreatePen(1, 3, RGB(120, 220, 120));
 	g_Param.pPen[1] = oapiCreatePen(1, 1, RGB(220, 220, 120));
 	g_Param.pPen[2] = oapiCreatePen(1, 1, RGB(0, 0, 0));
