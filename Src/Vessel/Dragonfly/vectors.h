@@ -16,7 +16,8 @@ class vector3
   //constructors
       vector3(double _x,double _y,double _z) {set(_x,_y,_z);}
 	  vector3()	{set(0.0,0.0,0.0);}
-	  vector3(vector3 &v) {set(v.x,v.y,v.z);}
+	  vector3(const vector3 &v) {set(v.x,v.y,v.z);}
+
   //operators
 	//vector to vector
   vector3 operator+ (vector3);
@@ -45,9 +46,9 @@ class vector3
   vector3 normalize();
   void selfnormalize();
   double length();
-  double mod();
+  double mod() const;
   double distance(vector3 &v);
-  double angle(vector3 &v); 
+  double angle(const vector3 &v);
   vector3 inplane(vector3 &v1,vector3 &v2); //return the projection of this onto plane v1,v2
 
 };

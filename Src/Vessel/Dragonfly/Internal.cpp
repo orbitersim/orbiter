@@ -133,8 +133,8 @@ static TEXT_LIST TL0[67]={{35,60,"OPEN"},{35,120,"CLOSE"},{35,140,"OPEN"},//3
 {595,600,"FAN"}//67
 };
 
-  static char names[7][12]={"FC1","FC2","BAT","DC1","DC2","AC1"};
-  static char cy_names[7][12]={"TK1","TK2","TK3"};
+  static const char names[7][12]={"FC1","FC2","BAT","DC1","DC2","AC1"};
+  static const char cy_names[7][12]={"TK1","TK2","TK3"};
 EGauge *eg1,*eg2;
 HGauge *hg1,*hg2,*hg3;
 Rotary *rot1;
@@ -735,17 +735,17 @@ void ShipInternal::Save(FILEHANDLE scn)
 {	
 	char cbuf[50];
 	strcpy(cbuf,"v1.0.0B");
-   	oapiWriteScenario_string (scn, "INTERNAL:", cbuf);
+	oapiWriteScenario_string (scn, (char*)"INTERNAL:", cbuf);
 	cbuf[0]=0;
-		oapiWriteScenario_string (scn, "  HYDRAULICS:", cbuf);
+		oapiWriteScenario_string (scn, (char*)"  HYDRAULICS:", cbuf);
 	H_systems.Save(scn);
-		oapiWriteScenario_string (scn, "  ELECTRICAL:", cbuf);
+		oapiWriteScenario_string (scn, (char*)"  ELECTRICAL:", cbuf);
 	E_systems.Save(scn);
-	 	oapiWriteScenario_string (scn, "  PANEL     :", cbuf);
+		oapiWriteScenario_string (scn, (char*)"  PANEL     :", cbuf);
 	PanelList[0].Save(scn);
 		PanelList[1].Save(scn);
 			PanelList[2].Save(scn);
 				PanelList[3].Save(scn);
 				  PanelList[4].Save(scn);
-	oapiWriteScenario_string (scn, " END INTERNAL", cbuf);
+	oapiWriteScenario_string (scn, (char*)" END INTERNAL", cbuf);
 };

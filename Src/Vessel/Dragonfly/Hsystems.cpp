@@ -120,7 +120,7 @@ if (open)
 void Valve::Save(FILEHANDLE scn)
 {char cbuf[50];
 	sprintf (cbuf, "%i %0.4f", open,pz);
-	oapiWriteScenario_string (scn, "    VALVE ", cbuf);
+	oapiWriteScenario_string (scn, (char*)"    VALVE ", cbuf);
 };
 void Valve::Load(FILEHANDLE scn)
 { 
@@ -328,7 +328,7 @@ void Manifold::Save(FILEHANDLE scn)
 {
     char cbuf[50];
 	sprintf (cbuf, "%i %i %i %i %i %i", X[0].open,X[1].open,X[2].open,OV[0].open,OV[1].open,OV[2].open);
-	oapiWriteScenario_string (scn, "    MANIFOLD ", cbuf);
+	oapiWriteScenario_string (scn, (char*)"    MANIFOLD ", cbuf);
 }
 //-------------------------------------- TANK ----------------------------------
 Tank::Tank()
@@ -400,7 +400,7 @@ void Tank::PutMass(double i_mass, double i_temp) //add this much subst, at this 
 void Tank::Save(FILEHANDLE scn)
 {   char cbuf[50];
 	sprintf (cbuf, "%i %0.4f %0.0f %0.2f", open,pz,mass,Temp);
-	oapiWriteScenario_string (scn, "    TANK ", cbuf);
+	oapiWriteScenario_string (scn, (char*)"    TANK ", cbuf);
 };
 void Tank::Load(FILEHANDLE scn)
 { 
