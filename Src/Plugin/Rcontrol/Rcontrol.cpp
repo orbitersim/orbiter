@@ -135,8 +135,8 @@ oapi::RControl::RControl(HINSTANCE hDLL)
 	, m_hDlg(NULL)
 {
 	// Register the custom command for the plugin
-	m_dwCmd = oapiRegisterCustomCmd("Remote Vessel Control",
-		"Operate the engines of any spacecraft from a dialog box.",
+	m_dwCmd = oapiRegisterCustomCmd((char*)"Remote Vessel Control",
+		(char*)"Operate the engines of any spacecraft from a dialog box.",
 		hookOpenDlg, NULL);
 
 	// Register custom dialog controls
