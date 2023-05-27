@@ -10,7 +10,7 @@ static const char *cfgfile = "TrackIR.cfg";
 class TrackIRconfig: public LaunchpadItem {
 public:
 	TrackIRconfig (TrackIR *_trackir): LaunchpadItem(), trackir(_trackir) {}
-	char *Name() { return "TrackIR Configuration"; }
+	char *Name() { return (char*)"TrackIR Configuration"; }
 	char *Description();
 	bool clbkOpen (HWND hLaunchpad);
 	int  clbkWriteConfig ();
