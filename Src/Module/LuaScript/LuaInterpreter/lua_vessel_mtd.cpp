@@ -62,7 +62,7 @@ TOUCHDOWNVTX Interpreter::lua_totouchdownvtx (lua_State *L, int idx)
 int Interpreter::lua_istouchdownvtx (lua_State *L, int idx)
 {
 	if (!lua_istable(L, idx)) return 0;
-	static char *fieldname[5] = { "pos", "stiffness", "damping", "mu", "mu_lng" };
+	static const char *fieldname[5] = { "pos", "stiffness", "damping", "mu", "mu_lng" };
 	int i, ii, n;
 	bool fail;
 
@@ -642,7 +642,7 @@ General properties
 
 int Interpreter::v_version (lua_State *L)
 {
-	static char *funcname = "version";
+	static const char *funcname = "version";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushinteger(L, v->Version());
@@ -657,7 +657,7 @@ Returns a handle to the vessel object.
 */
 int Interpreter::v_get_handle (lua_State *L)
 {
-	static char *funcname = "get_handle";
+	static const char *funcname = "get_handle";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	const OBJHANDLE hV = v->GetHandle();
@@ -684,7 +684,7 @@ or
 */
 int Interpreter::v_get_name (lua_State *L)
 {
-	static char *funcname = "get_name";
+	static const char *funcname = "get_name";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushstring (L, v->GetName());
@@ -702,7 +702,7 @@ The class name identifies the vessel type.
 */
 int Interpreter::v_get_classname (lua_State *L)
 {
-	static char *funcname = "get_classname";
+	static const char *funcname = "get_classname";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushstring (L, v->GetClassName());
@@ -730,7 +730,7 @@ and higher thrust ratings in the simplified model, less severe damage limits, et
 */
 int Interpreter::v_get_flightmodel (lua_State *L)
 {
-	static char *funcname = "get_flightmodel";
+	static const char *funcname = "get_flightmodel";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetFlightModel());
@@ -760,7 +760,7 @@ failures.
 */
 int Interpreter::v_get_damagemodel (lua_State *L)
 {
-	static char *funcname = "get_damagemodel";
+	static const char *funcname = "get_damagemodel";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetDamageModel());
@@ -790,7 +790,7 @@ not be useful.
 */
 int Interpreter::v_get_enablefocus (lua_State *L)
 {
-	static char *funcname = "get_enablefocus";
+	static const char *funcname = "get_enablefocus";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushboolean (L, v->GetEnableFocus());
@@ -820,7 +820,7 @@ not be useful.
 */
 int Interpreter::v_set_enablefocus (lua_State *L)
 {
-	static char *funcname = "set_enablefocus";
+	static const char *funcname = "set_enablefocus";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	bool enable = luamtd_toboolean_safe(L, 2, funcname);
@@ -839,7 +839,7 @@ Provides an approximate measure of the vessel size.
 */
 int Interpreter::v_get_size (lua_State *L)
 {
-	static char *funcname = "get_size";
+	static const char *funcname = "get_size";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetSize());
@@ -866,7 +866,7 @@ for vessels entirely configured by Lua script (see ScriptVessel).
 */
 int Interpreter::v_set_size (lua_State *L)
 {
-	static char *funcname = "set_size";
+	static const char *funcname = "set_size";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_Number size = luamtd_tonumber_safe(L, 2, funcname);
@@ -883,7 +883,7 @@ Returns the vessel's empty (dry) mass, excluding propellant mass.
 */
 int Interpreter::v_get_emptymass (lua_State *L)
 {
-	static char *funcname = "get_emptymass";
+	static const char *funcname = "get_emptymass";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetEmptyMass());
@@ -906,7 +906,7 @@ separation, but not for fuel consumption, which is done directly by Orbiter.
 */
 int Interpreter::v_set_emptymass (lua_State *L)
 {
-	static char *funcname = "set_emptymass";
+	static const char *funcname = "set_emptymass";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_Number emass = luamtd_tonumber_safe(L, 2, funcname);
@@ -940,7 +940,7 @@ For more details, see Doc\Technotes\composite.pdf.
 */
 int Interpreter::v_get_pmi (lua_State *L)
 {
-	static char *funcname = "get_pmi";
+	static const char *funcname = "get_pmi";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 pmi;
@@ -963,7 +963,7 @@ For more details, see Doc\Technotes\composite.pdf.
 */
 int Interpreter::v_set_pmi (lua_State *L)
 {
-	static char *funcname = "set_pmi";
+	static const char *funcname = "set_pmi";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 pmi = luamtd_tovector_safe(L, 2, funcname);
@@ -980,7 +980,7 @@ Returns the vessel's cross sections projected in the direction of the vessel's p
 */
 int Interpreter::v_get_crosssections (lua_State *L)
 {
-	static char *funcname = "get_crosssections";
+	static const char *funcname = "get_crosssections";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 cs;
@@ -1000,7 +1000,7 @@ z-axis into the xy plane, respectively [<b>m</b>&sup2;]
 */
 int Interpreter::v_set_crosssections (lua_State *L)
 {
-	static char *funcname = "set_crosssections";
+	static const char *funcname = "set_crosssections";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 cs = luamtd_tovector_safe(L, 2, funcname);
@@ -1027,7 +1027,7 @@ function always returns 0.
 */
 int Interpreter::v_get_gravitygradientdamping (lua_State *L)
 {
-	static char *funcname = "get_gravitygradientdamping";
+	static const char *funcname = "get_gravitygradientdamping";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double ggd = v->GetGravityGradientDamping();
@@ -1048,7 +1048,7 @@ function returns false and has no other effect.
 */
 int Interpreter::v_set_gravitygradientdamping (lua_State *L)
 {
-	static char *funcname = "set_gravitygradientdamping";
+	static const char *funcname = "set_gravitygradientdamping";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double ggd = luamtd_tonumber_safe(L, 2, funcname);
@@ -1065,7 +1065,7 @@ Returns the number of touchdown points defining the impact hull of the vessel.
 */
 int Interpreter::v_get_touchdownpointcount (lua_State *L)
 {
-	static char *funcname = "get_touchdownpointcount";
+	static const char *funcname = "get_touchdownpointcount";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushinteger(L, v->GetTouchdownPointCount());
@@ -1086,7 +1086,7 @@ points when touched down on a planetary surface (e.g. landing gear).
 */
 int Interpreter::v_get_touchdownpoints (lua_State *L)
 {
-	static char *funcname = "get_touchdownpoints";
+	static const char *funcname = "get_touchdownpoints";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 
@@ -1137,7 +1137,7 @@ by small amounts over time (proportional to simulation time steps).
 */
 int Interpreter::v_set_touchdownpoints (lua_State *L)
 {
-	static char *funcname = "set_touchdownpoints";
+	static const char *funcname = "set_touchdownpoints";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 
@@ -1217,7 +1217,7 @@ spotlimit = 1e-3.
 */
 int Interpreter::v_set_visibilitylimit (lua_State *L)
 {
-	static char *funcname = "set_visibilitylimit";
+	static const char *funcname = "set_visibilitylimit";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double vislimit, spotlimit = -1.0;
@@ -1260,7 +1260,7 @@ representation [m].
 				*/
 int Interpreter::v_get_clipradius (lua_State *L)
 {
-	static char *funcname = "get_clipradius";
+	static const char *funcname = "get_clipradius";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 
@@ -1289,7 +1289,7 @@ for each component.
 */
 int Interpreter::v_set_albedoRGB (lua_State *L)
 {
-	static char *funcname = "set_albedoRGB";
+	static const char *funcname = "set_albedoRGB";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 albedo = luamtd_tovector_safe(L, 2, funcname);
@@ -1334,7 +1334,7 @@ representation [m].
 */
 int Interpreter::v_set_clipradius (lua_State *L)
 {
-	static char *funcname = "set_clipradius";
+	static const char *funcname = "set_clipradius";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double rad = luamtd_tonumber_safe(L ,2, funcname);
@@ -1376,7 +1376,7 @@ The longitudinal and lateral directions are defined by the
 */
 int Interpreter::v_set_surfacefrictioncoeff (lua_State *L)
 {
-	static char *funcname = "set_surfacefrictioncoeff";
+	static const char *funcname = "set_surfacefrictioncoeff";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double mu_lng = luamtd_tonumber_safe(L, 2, funcname);
@@ -1401,7 +1401,7 @@ By definition, the vessel's centre of gravity coincides with the
 */
 int Interpreter::v_get_COG_elev (lua_State *L)
 {
-	static char *funcname = "get_COG_elev";
+	static const char *funcname = "get_COG_elev";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber(L, v->GetCOG_elev());
@@ -1422,7 +1422,7 @@ Returns the vessel's current total mass.
 */
 int Interpreter::v_get_mass (lua_State *L)
 {
-	static char *funcname = "get_mass";
+	static const char *funcname = "get_mass";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetMass());
@@ -1442,7 +1442,7 @@ ecliptic frame at epoch J2000.0.
 */
 int Interpreter::v_get_globalpos (lua_State *L)
 {
-	static char *funcname = "get_globalpos";
+	static const char *funcname = "get_globalpos";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 pos;
@@ -1463,7 +1463,7 @@ ecliptic frame at epoch J2000.0.
 */
 int Interpreter::v_get_globalvel (lua_State *L)
 {
-	static char *funcname = "get_globalvel";
+	static const char *funcname = "get_globalvel";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 vel;
@@ -1487,7 +1487,7 @@ Results are returned in the ecliptic frame (ecliptic and equinox of J2000.0).
 */
 int Interpreter::v_get_relativepos (lua_State *L)
 {
-	static char *funcname = "get_relativepos";
+	static const char *funcname = "get_relativepos";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	OBJHANDLE hRef = (OBJHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -1512,7 +1512,7 @@ Results are returned in the ecliptic frame (ecliptic and equinox of J2000.0).
 */
 int Interpreter::v_get_relativevel (lua_State *L)
 {
-	static char *funcname = "get_relativevel";
+	static const char *funcname = "get_relativevel";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	OBJHANDLE hRef = (OBJHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -1548,7 +1548,7 @@ origin at the solar system's barycentre.
 */
 int Interpreter::v_get_rotationmatrix (lua_State *L)
 {
-	static char *funcname = "get_rotationmatrix";
+	static const char *funcname = "get_rotationmatrix";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	MATRIX3 rot;
@@ -1564,7 +1564,7 @@ To be documented
 */
 int Interpreter::v_get_status (lua_State *L)
 {
-	static char *funcname = "get_status";
+	static const char *funcname = "get_status";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 
@@ -1606,7 +1606,7 @@ To be documented
 */
 int Interpreter::v_defset_status (lua_State *L)
 {
-	static char *funcname = "defset_status";
+	static const char *funcname = "defset_status";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 
@@ -1808,7 +1808,7 @@ as a vector.
 */
 int Interpreter::v_get_angvel (lua_State *L)
 {
-	static char *funcname = "get_angvel";
+	static const char *funcname = "get_angvel";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 av;
@@ -1826,7 +1826,7 @@ Sets the vessel's angular velocity components around its principal axes.
 */
 int Interpreter::v_set_angvel (lua_State *L)
 {
-	static char *funcname = "set_angvel";
+	static const char *funcname = "set_angvel";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 av = luamtd_tovector_safe(L, 2, funcname);
@@ -1847,7 +1847,7 @@ Otherwise it returns nil.
 */
 int Interpreter::v_is_landed (lua_State *L)
 {
-	static char *funcname = "is_landed";
+	static const char *funcname = "is_landed";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	DWORD status = v->GetFlightStatus();
@@ -1870,7 +1870,7 @@ reference points is in contact with a planet surface).
 */
 int Interpreter::v_get_groundcontact (lua_State *L)
 {
-	static char *funcname = "get_groundcontact";
+	static const char *funcname = "get_groundcontact";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushboolean (L, v->GroundContact() ? 1:0);
@@ -1891,7 +1891,7 @@ The returned vector contains the angular accelerations
 */
 int Interpreter::v_get_angularacc (lua_State *L)
 {
-	static char *funcname = "get_angularacc";
+	static const char *funcname = "get_angularacc";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 aacc;
@@ -1912,7 +1912,7 @@ The returned vector is the vector sum of all forces (gravity,
 */
 int Interpreter::v_get_linearmoment (lua_State *L)
 {
-	static char *funcname = "get_linearmoment";
+	static const char *funcname = "get_linearmoment";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 F;
@@ -1936,7 +1936,7 @@ Given all force components <b>F</b><sub>i</sub> acting on the vessel at
 */
 int Interpreter::v_get_angularmoment (lua_State *L)
 {
-	static char *funcname = "get_angularmoment";
+	static const char *funcname = "get_angularmoment";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 amom;
@@ -1971,7 +1971,7 @@ The components of the returned vector arot = \f$ (\alpha, \beta, \gamma) \f$
 */
 int Interpreter::v_get_globalorientation (lua_State *L)
 {
-	static char *funcname = "get_globalorientation";
+	static const char *funcname = "get_globalorientation";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 arot;
@@ -1998,7 +1998,7 @@ Given the rotation matrix <b>R</b> which transforms from the
 */
 int Interpreter::v_set_globalorientation (lua_State *L)
 {
-	static char *funcname = "set_globalorientation";
+	static const char *funcname = "set_globalorientation";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 arot = luamtd_tovector_safe(L, 2, funcname);
@@ -2027,7 +2027,7 @@ Stabilised mode reduces the effect of deteriorating orbits due
 */
 int Interpreter::v_is_orbitstabilised (lua_State *L)
 {
-	static char *funcname = "is_orbitstabilised";
+	static const char *funcname = "is_orbitstabilised";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushboolean(L, v->OrbitStabilised());
@@ -2056,7 +2056,7 @@ If the user has enabled orbit stabilisation in the Launchpad,
 */
 int Interpreter::v_is_nonsphericalgravityenabled (lua_State *L)
 {
-	static char *funcname = "is_nonsphericalgravityenabled";
+	static const char *funcname = "is_nonsphericalgravityenabled";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushboolean(L, v->NonsphericalGravityEnabled());
@@ -2074,7 +2074,7 @@ Toggles a navigation mode on/off.
 */
 int Interpreter::v_toggle_navmode (lua_State *L)
 {
-	static char *funcname = "toggle_navmode";
+	static const char *funcname = "toggle_navmode";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	int mode = luamtd_tointeger_safe(L, 2, funcname);
@@ -2098,7 +2098,7 @@ If the function returns false, the values pointed to by alt and
 */
 int Interpreter::v_get_hoverholdaltitude (lua_State *L)
 {
-	static char *funcname = "get_hoverholdaltitude";
+	static const char *funcname = "get_hoverholdaltitude";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double alt = 0;
@@ -2133,7 +2133,7 @@ To deactivate the hover hold alt program, use
 */
 int Interpreter::v_set_hoverholdaltitude (lua_State *L)
 {
-	static char *funcname = "set_hoverholdaltitude";
+	static const char *funcname = "set_hoverholdaltitude";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double alt = luamtd_tonumber_safe(L, 2, funcname);
@@ -2158,7 +2158,7 @@ vessel's current position.
 */
 int Interpreter::v_get_gravityref (lua_State *L)
 {
-	static char *funcname = "get_gravityref";
+	static const char *funcname = "get_gravityref";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushlightuserdata (L, v->GetGravityRef());
@@ -2177,7 +2177,7 @@ The returned mean longitude parameter (L) refers to the the current epoch.
 */
 int Interpreter::v_get_elements (lua_State *L)
 {
-	static char *funcname = "get_elements";
+	static const char *funcname = "get_elements";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	ELEMENTS el;
@@ -2210,7 +2210,7 @@ The returned mean longitude parameter (L) refers to the the current epoch.
 */
 int Interpreter::v_get_elementsex (lua_State *L)
 {
-	static char *funcname = "get_elementsex";
+	static const char *funcname = "get_elementsex";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	ELEMENTS el;
@@ -2288,7 +2288,7 @@ Example:
 */
 int Interpreter::v_set_elements (lua_State *L)
 {
-	static char *funcname = "set_elements";
+	static const char *funcname = "set_elements";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 
@@ -2338,7 +2338,7 @@ vessel's frame of reference.
 */
 int Interpreter::v_get_progradedir (lua_State *L)
 {
-	static char *funcname = "get_progradedir";
+	static const char *funcname = "get_progradedir";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	OBJHANDLE hRef = v->GetGravityRef();
@@ -2366,7 +2366,7 @@ The semi-minor axis is the smallest semi-diameter of the
 */
 int Interpreter::v_get_smi (lua_State *L)
 {
-	static char *funcname = "get_smi";
+	static const char *funcname = "get_smi";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double smi;
@@ -2395,7 +2395,7 @@ The argument of periapsis is the angle between periapsis and the
 */
 int Interpreter::v_get_argper (lua_State *L)
 {
-	static char *funcname = "get_argper";
+	static const char *funcname = "get_argper";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double arg;
@@ -2424,7 +2424,7 @@ The periapsis distance is the smallest radius of the orbit (see
 */
 int Interpreter::v_get_pedist (lua_State *L)
 {
-	static char *funcname = "get_pedist";
+	static const char *funcname = "get_pedist";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double pedist;
@@ -2453,7 +2453,7 @@ The apoapsis distance is the largest radius of the orbit (see
 */
 int Interpreter::v_get_apdist (lua_State *L)
 {
-	static char *funcname = "get_apdist";
+	static const char *funcname = "get_apdist";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double apdist;
@@ -2486,7 +2486,7 @@ closest to the current vessel position.
 */
 int Interpreter::v_get_surfaceref (lua_State *L)
 {
-	static char *funcname = "get_surfaceref";
+	static const char *funcname = "get_surfaceref";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushlightuserdata (L, v->GetSurfaceRef());
@@ -2515,7 +2515,7 @@ closest to the current vessel position.
 */
 int Interpreter::v_get_altitude (lua_State *L)
 {
-	static char *funcname = "get_altitude";
+	static const char *funcname = "get_altitude";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	AltitudeMode mode = ALTMODE_MEANRAD;
@@ -2541,7 +2541,7 @@ vessel's positive z-axis and the normal to the local horizon.
 */
 int Interpreter::v_get_pitch (lua_State *L)
 {
-	static char *funcname = "get_pitch";
+	static const char *funcname = "get_pitch";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetPitch());
@@ -2562,7 +2562,7 @@ into the x-y plane.
 */
 int Interpreter::v_get_bank (lua_State *L)
 {
-	static char *funcname = "get_bank";
+	static const char *funcname = "get_bank";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetBank());
@@ -2583,7 +2583,7 @@ the local horizon "north" direction.
 */
 int Interpreter::v_get_yaw (lua_State *L)
 {
-	static char *funcname = "get_yaw";
+	static const char *funcname = "get_yaw";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetYaw());
@@ -2600,7 +2600,7 @@ latitude above the reference radius.
 */
 int Interpreter::v_get_surfaceelevation (lua_State *L)
 {
-	static char *funcname = "get_surfaceelevation";
+	static const char *funcname = "get_surfaceelevation";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber(L, v->GetSurfaceElevation());
@@ -2616,7 +2616,7 @@ current position.
 */
 int Interpreter::v_get_surfacenormal (lua_State *L)
 {
-	static char *funcname = "get_surfacenormal";
+	static const char *funcname = "get_surfacenormal";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushvector(L, v->GetSurfaceNormal());
@@ -2638,7 +2638,7 @@ currently moving through, or nil if the vessel is not inside an atmosphere.
 */
 int Interpreter::v_get_atmref (lua_State *L)
 {
-	static char *funcname = "get_atmref";
+	static const char *funcname = "get_atmref";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	OBJHANDLE hA = v->GetAtmRef();
@@ -2659,7 +2659,7 @@ as defined by the planets' AtmAltLimit parameters.
 */
 int Interpreter::v_get_atmtemperature (lua_State *L)
 {
-	static char *funcname = "get_atmtemperature";
+	static const char *funcname = "get_atmtemperature";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double temp = v->GetAtmTemperature();
@@ -2679,7 +2679,7 @@ as defined by the planets' AtmAltLimit parameters.
 */
 int Interpreter::v_get_atmdensity (lua_State *L)
 {
-	static char *funcname = "get_atmdensity";
+	static const char *funcname = "get_atmdensity";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double rho = v->GetAtmDensity();
@@ -2699,7 +2699,7 @@ as defined by the planets' AtmAltLimit parameters.
 */
 int Interpreter::v_get_atmpressure (lua_State *L)
 {
-	static char *funcname = "get_atmpressure";
+	static const char *funcname = "get_atmpressure";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double p = v->GetAtmPressure();
@@ -2724,7 +2724,7 @@ airflow vector V.
 */
 int Interpreter::v_get_dynpressure (lua_State *L)
 {
-	static char *funcname = "get_dynpressure";
+	static const char *funcname = "get_dynpressure";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetDynPressure());
@@ -2745,7 +2745,7 @@ over speed of sound.
 */
 int Interpreter::v_get_machnumber (lua_State *L)
 {
-	static char *funcname = "get_machnumber";
+	static const char *funcname = "get_machnumber";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetMachNumber());
@@ -2764,7 +2764,7 @@ vessel location fixed in the reference planet's frame of reference.
 */
 int Interpreter::v_get_groundspeed (lua_State *L)
 {
-	static char *funcname = "get_groundspeed";
+	static const char *funcname = "get_groundspeed";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetGroundspeed ());
@@ -2789,7 +2789,7 @@ Valid entries for frame are:
 */
 int Interpreter::v_get_groundspeedvector (lua_State *L)
 {
-	static char *funcname = "get_groundspeedvector";
+	static const char *funcname = "get_groundspeedvector";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	REFFRAME frame = (REFFRAME)lua_tointeger_safe(L, 2, funcname);
@@ -2812,7 +2812,7 @@ from ground speed, since an atmospheric drag effect is assumed.
 */
 int Interpreter::v_get_airspeed (lua_State *L)
 {
-	static char *funcname = "get_airspeed";
+	static const char *funcname = "get_airspeed";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetAirspeed ());
@@ -2837,7 +2837,7 @@ Valid entries for frame are:
 */
 int Interpreter::v_get_airspeedvector (lua_State *L)
 {
-	static char *funcname = "get_airspeedvector";
+	static const char *funcname = "get_airspeedvector";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	REFFRAME frame = (REFFRAME)luamtd_tointeger_safe(L, 2, funcname);
@@ -2850,7 +2850,7 @@ int Interpreter::v_get_airspeedvector (lua_State *L)
 // intentionally not documented
 int Interpreter::v_get_shipairspeedvector (lua_State *L)
 {
-	static char *funcname = "get_shipairspeedvector";
+	static const char *funcname = "get_shipairspeedvector";
 	warn_obsolete(L, funcname);
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
@@ -2863,7 +2863,7 @@ int Interpreter::v_get_shipairspeedvector (lua_State *L)
 // intentionally not documented
 int Interpreter::v_get_horizonairspeedvector (lua_State *L)
 {
-	static char *funcname = "get_horizonairspeedvector";
+	static const char *funcname = "get_horizonairspeedvector";
 	warn_obsolete(L, funcname);
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
@@ -2886,7 +2886,7 @@ coordinate system.
 */
 int Interpreter::v_get_aoa (lua_State *L)
 {
-	static char *funcname = "get_aoa";
+	static const char *funcname = "get_aoa";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetAOA());
@@ -2906,7 +2906,7 @@ and the vessel's longitudinal axis.
 */
 int Interpreter::v_get_slipangle (lua_State *L)
 {
-	static char *funcname = "get_slipangle";
+	static const char *funcname = "get_slipangle";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetSlipAngle());
@@ -3003,7 +3003,7 @@ not support lift forces.
 */
 int Interpreter::v_create_airfoil (lua_State *L)
 {
-	static char *funcname = "create_airfoil";
+	static const char *funcname = "create_airfoil";
 	AssertMtdMinPrmCount(L, 7, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	AIRFOIL_ORIENTATION ao = (AIRFOIL_ORIENTATION)(int)(luamtd_tointeger_safe(L, 2, funcname));
@@ -3022,7 +3022,7 @@ int Interpreter::v_create_airfoil (lua_State *L)
 
 int Interpreter::v_edit_airfoil (lua_State *L)
 {
-	static char *funcname = "edit_airfoil";
+	static const char *funcname = "edit_airfoil";
 	AssertMtdMinPrmCount(L, 7, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 
@@ -3059,7 +3059,7 @@ the obsolete legacy atmospheric flight model.
 */
 int Interpreter::v_del_airfoil (lua_State *L)
 {
-	static char *funcname = "del_airfoil";
+	static const char *funcname = "del_airfoil";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	AIRFOILHANDLE ha = (AIRFOILHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -3115,7 +3115,7 @@ with neutral surface position at state 0.5.
 */
 int Interpreter::v_create_controlsurface (lua_State *L)
 {
-	static char *funcname = "create_controlsurface";
+	static const char *funcname = "create_controlsurface";
 	AssertMtdMinPrmCount(L, 5, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	AIRCTRL_TYPE type = (AIRCTRL_TYPE)luamtd_tointeger_safe(L, 2, funcname);
@@ -3163,7 +3163,7 @@ surfaces.
 */
 int Interpreter::v_get_adcmode (lua_State *L)
 {
-	static char *funcname = "get_adcmode";
+	static const char *funcname = "get_adcmode";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	int mode = v->GetADCtrlMode();
@@ -3189,7 +3189,7 @@ all control surfaces.
 */
 int Interpreter::v_set_adcmode (lua_State *L)
 {
-	static char *funcname = "set_adcmode";
+	static const char *funcname = "set_adcmode";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	ASSERT_MTDNUMBER(L,2);
@@ -3212,7 +3212,7 @@ call to @{set_adclevel}.
 */
 int Interpreter::v_get_adclevel (lua_State *L)
 {
-	static char *funcname = "get_adclevel";
+	static const char *funcname = "get_adclevel";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	AIRCTRL_TYPE surfid = (AIRCTRL_TYPE)luamtd_tointeger_safe(L, 2, funcname);
@@ -3240,7 +3240,7 @@ clamped to the range [-1...+1]
 */
 int Interpreter::v_set_adclevel (lua_State *L)
 {
-	static char *funcname = "set_adclevel";
+	static const char *funcname = "set_adclevel";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	AIRCTRL_TYPE surfid = (AIRCTRL_TYPE)luamtd_tointeger_safe(L, 2, funcname);
@@ -3274,7 +3274,7 @@ and vertical direction are assumed symmetric.
 */
 int Interpreter::v_get_cw (lua_State *L)
 {
-	static char *funcname = "get_cw";
+	static const char *funcname = "get_cw";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 cw;
@@ -3308,7 +3308,7 @@ be assigned via vector operations, but the 'zn' field must be added manually.
 */
 int Interpreter::v_set_cw (lua_State *L)
 {
-	static char *funcname = "set_cw";
+	static const char *funcname = "set_cw";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 cw = luamtd_tovector_safe(L, 2, funcname);
@@ -3333,7 +3333,7 @@ The aspect ratio is used in the calculation of induced drag.
 */
 int Interpreter::v_get_wingaspect (lua_State *L)
 {
-	static char *funcname = "get_wingaspect";
+	static const char *funcname = "get_wingaspect";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double aspect = v->GetWingAspect ();
@@ -3356,7 +3356,7 @@ The aspect ratio is used in the calculation of induced drag.
 */
 int Interpreter::v_set_wingaspect (lua_State *L)
 {
-	static char *funcname = "set_wingaspect";
+	static const char *funcname = "set_wingaspect";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double aspect = luamtd_tonumber_safe(L, 2, funcname);
@@ -3383,7 +3383,7 @@ rectangular wings.
 */
 int Interpreter::v_get_wingeffectiveness (lua_State *L)
 {
-	static char *funcname = "get_wingeffectiveness";
+	static const char *funcname = "get_wingeffectiveness";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double eff = v->GetWingEffectiveness ();
@@ -3410,7 +3410,7 @@ rectangular wings. If set_wingeffectiveness is not called, the default value is 
 */
 int Interpreter::v_set_wingeffectiveness (lua_State *L)
 {
-	static char *funcname = "set_wingeffectiveness";
+	static const char *funcname = "set_wingeffectiveness";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double eff = luamtd_tonumber_safe(L, 2, funcname);
@@ -3436,7 +3436,7 @@ the vessel's cross section projected along the vertical (y) axis.
 */
 int Interpreter::v_get_rotdrag (lua_State *L)
 {
-	static char *funcname = "get_rotdrag";
+	static const char *funcname = "get_rotdrag";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 rd;
@@ -3463,7 +3463,7 @@ the vessel's cross section projected along the vertical (y) axis.
 */
 int Interpreter::v_set_rotdrag (lua_State *L)
 {
-	static char *funcname = "set_rotdrag";
+	static const char *funcname = "set_rotdrag";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 rd = luamtd_tovector_safe(L, 2, funcname);
@@ -3488,7 +3488,7 @@ been defined.
 */
 int Interpreter::v_get_pitchmomentscale (lua_State *L)
 {
-	static char *funcname = "get_pitchmomentscale";
+	static const char *funcname = "get_pitchmomentscale";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double pms = v->GetPitchMomentScale ();
@@ -3515,7 +3515,7 @@ The default value is 0.
 */
 int Interpreter::v_set_pitchmomentscale (lua_State *L)
 {
-	static char *funcname = "set_pitchmomentscale";
+	static const char *funcname = "set_pitchmomentscale";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double pms = luamtd_tonumber_safe(L, 2, funcname);
@@ -3539,7 +3539,7 @@ been defined.
 */
 int Interpreter::v_get_yawmomentscale (lua_State *L)
 {
-	static char *funcname = "get_yawmomentscale";
+	static const char *funcname = "get_yawmomentscale";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double yms = v->GetYawMomentScale ();
@@ -3565,7 +3565,7 @@ The default value is 0.
 */
 int Interpreter::v_set_yawmomentscale (lua_State *L)
 {
-	static char *funcname = "set_yawmomentscale";
+	static const char *funcname = "set_yawmomentscale";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double yms = luamtd_tonumber_safe(L, 2, funcname);
@@ -3586,7 +3586,7 @@ It is only used with the old atmospheric flight model (if no airfoils have been 
 */
 int Interpreter::v_get_trimscale (lua_State *L)
 {
-	static char *funcname = "get_trimscale";
+	static const char *funcname = "get_trimscale";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double ts = v->GetTrimScale ();
@@ -3609,7 +3609,7 @@ If ts is set to zero (default) the vessel does not have a pitch trim control.
 */
 int Interpreter::v_set_trimscale (lua_State *L)
 {
-	static char *funcname = "set_trimscale";
+	static const char *funcname = "set_trimscale";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double ts = luamtd_tonumber_safe(L, 2, funcname);
@@ -3634,7 +3634,7 @@ Return value is the sum of lift components from all airfoils.
 */
 int Interpreter::v_get_lift (lua_State *L)
 {
-	static char *funcname = "get_lift";
+	static const char *funcname = "get_lift";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetLift());
@@ -3652,7 +3652,7 @@ Return value is the sum of drag components from all airfoils.
 */
 int Interpreter::v_get_drag (lua_State *L)
 {
-	static char *funcname = "get_drag";
+	static const char *funcname = "get_drag";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetDrag());
@@ -3675,7 +3675,7 @@ is returned.
 */
 int Interpreter::v_get_weightvector (lua_State *L)
 {
-	static char *funcname = "get_weightvector";
+	static const char *funcname = "get_weightvector";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 G;
@@ -3701,7 +3701,7 @@ about the angular moment (torque) induced.
 */
 int Interpreter::v_get_thrustvector (lua_State *L)
 {
-	static char *funcname = "get_thrustvector";
+	static const char *funcname = "get_thrustvector";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 T;
@@ -3724,7 +3724,7 @@ drag vector) and has zero x-component.
 */
 int Interpreter::v_get_liftvector (lua_State *L)
 {
-	static char *funcname = "get_liftvector";
+	static const char *funcname = "get_liftvector";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 Lf;
@@ -3751,7 +3751,7 @@ The drag vector is parallel to the relative wind (direction of
 */
 int Interpreter::v_get_dragvector (lua_State *L)
 {
-	static char *funcname = "get_dragvector";
+	static const char *funcname = "get_dragvector";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 D;
@@ -3779,7 +3779,7 @@ This may not be equal to the sum of weight, thrust, lift and
 */
 int Interpreter::v_get_forcevector (lua_State *L)
 {
-	static char *funcname = "get_forcevector";
+	static const char *funcname = "get_forcevector";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 F;
@@ -3805,7 +3805,7 @@ On return, M contains the total torque vector acting on the
 */
 int Interpreter::v_get_torquevector (lua_State *L)
 {
-	static char *funcname = "get_torquevector";
+	static const char *funcname = "get_torquevector";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 M;
@@ -3836,7 +3836,7 @@ The force is applied only for the next time step. add_force will
 */
 int Interpreter::v_add_force (lua_State *L)
 {
-	static char *funcname = "add_force";
+	static const char *funcname = "add_force";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 F = luamtd_tovector_safe(L, 2, funcname),
@@ -3878,7 +3878,7 @@ If mass < 0 or not specified, then mass = maxmass is substituted.
 */
 int Interpreter::v_create_propellantresource (lua_State *L)
 {
-	static char *funcname = "create_propellantresource";
+	static const char *funcname = "create_propellantresource";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double maxmass = 1.0;
@@ -3907,7 +3907,7 @@ to a new fuel resource.
 */
 int Interpreter::v_del_propellantresource (lua_State *L)
 {
-	static char *funcname = "del_propellantresource";
+	static const char *funcname = "del_propellantresource";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	PROPELLANT_HANDLE hPrp = (PROPELLANT_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -3926,7 +3926,7 @@ are linked to new resources.
 */
 int Interpreter::v_clear_propellantresources (lua_State *L)
 {
-	static char *funcname = "clear_propellantresources";
+	static const char *funcname = "clear_propellantresources";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	v->ClearPropellantResources();
@@ -3942,7 +3942,7 @@ Returns the current number of vessel propellant resources.
 */
 int Interpreter::v_get_propellantcount (lua_State *L)
 {
-	static char *funcname = "get_propellantcount";
+	static const char *funcname = "get_propellantcount";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	DWORD n = v->GetPropellantCount();
@@ -3966,7 +3966,7 @@ handle remains valid until the corresponding resource is deleted.
 */
 int Interpreter::v_get_propellanthandle (lua_State *L)
 {
-	static char *funcname = "get_propellanthandle";
+	static const char *funcname = "get_propellanthandle";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	int idx = luamtd_tointeger_safe(L, 2, funcname);
@@ -3986,7 +3986,7 @@ Returns the maximum capacity of a propellant resource.
 */
 int Interpreter::v_get_propellantmaxmass (lua_State *L)
 {
-	static char *funcname = "get_propellantmaxmass";
+	static const char *funcname = "get_propellantmaxmass";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	PROPELLANT_HANDLE hp = (PROPELLANT_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -4008,7 +4008,7 @@ mass is reduced to the maximum capacity.
 */
 int Interpreter::v_set_propellantmaxmass (lua_State *L)
 {
-	static char *funcname = "set_propellantmaxmass";
+	static const char *funcname = "set_propellantmaxmass";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	PROPELLANT_HANDLE hp = (PROPELLANT_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -4029,7 +4029,7 @@ Returns the current mass of a propellant resource.
 */
 int Interpreter::v_get_propellantmass (lua_State *L)
 {
-	static char *funcname = "get_propellantmass";
+	static const char *funcname = "get_propellantmass";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	PROPELLANT_HANDLE hProp = (PROPELLANT_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -4054,7 +4054,7 @@ internally by the Orbiter core).
 */
 int Interpreter::v_set_propellantmass (lua_State *L)
 {
-	static char *funcname = "set_propellantmass";
+	static const char *funcname = "set_propellantmass";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	PROPELLANT_HANDLE hp = (PROPELLANT_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -4073,7 +4073,7 @@ Returns the vessel's current total propellant mass.
 */
 int Interpreter::v_get_totalpropellantmass (lua_State *L)
 {
-	static char *funcname = "get_totalpropellantmass";
+	static const char *funcname = "get_totalpropellantmass";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetTotalPropellantMass());
@@ -4094,7 +4094,7 @@ R [kg/s], thrust F [N], efficiency e and fuel-specific impulse Isp [m/s].
 */
 int Interpreter::v_get_propellantefficiency (lua_State *L)
 {
-	static char *funcname = "get_propellantefficiency";
+	static const char *funcname = "get_propellantefficiency";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	PROPELLANT_HANDLE hp = (PROPELLANT_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -4116,7 +4116,7 @@ R [kg/s], thrust F [N], efficiency e and fuel-specific impulse Isp [m/s].
 */
 int Interpreter::v_set_propellantefficiency (lua_State *L)
 {
-	static char *funcname = "set_propellantefficiency";
+	static const char *funcname = "set_propellantefficiency";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	PROPELLANT_HANDLE hp = (PROPELLANT_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -4139,7 +4139,7 @@ R [kg/s], thrust F [N], efficiency e and fuel-specific impulse Isp [m/s].
 */
 int Interpreter::v_get_propellantflowrate (lua_State *L)
 {
-	static char *funcname = "get_propellantflowrate";
+	static const char *funcname = "get_propellantflowrate";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	PROPELLANT_HANDLE hp = (PROPELLANT_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -4157,7 +4157,7 @@ Returns the current total mass flow rate, summed over all propellant resources.
 */
 int Interpreter::v_get_totalpropellantflowrate (lua_State *L)
 {
-	static char *funcname = "get_totalpropellantflowrate";
+	static const char *funcname = "get_totalpropellantflowrate";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double rate = v->GetTotalPropellantFlowrate ();
@@ -4212,7 +4212,7 @@ Example:
 */
 int Interpreter::v_create_thruster (lua_State *L)
 {
-	static char *funcname = "create_thruster";
+	static const char *funcname = "create_thruster";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	AssertMtdPrmType(L, 2, PRMTP_TABLE, funcname);
@@ -4261,7 +4261,7 @@ All exhaust render definitions which refer to the deleted thruster are removed.
 */
 int Interpreter::v_del_thruster (lua_State *L)
 {
-	static char *funcname = "del_thruster";
+	static const char *funcname = "del_thruster";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	THRUSTER_HANDLE ht = (THRUSTER_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -4283,7 +4283,7 @@ It also removes all previously defined exhaust render definitions.
 */
 int Interpreter::v_clear_thrusters (lua_State *L)
 {
-	static char *funcname = "clear_thrusters";
+	static const char *funcname = "clear_thrusters";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	v->ClearThrusterDefinitions();
@@ -4299,7 +4299,7 @@ Returns the number of thrusters currently defined.
 */
 int Interpreter::v_get_thrustercount (lua_State *L)
 {
-	static char *funcname = "get_thrustercount";
+	static const char *funcname = "get_thrustercount";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	DWORD count = v->GetThrusterCount();
@@ -4324,7 +4324,7 @@ remains valid until the corresponding thruster is deleted.
 */
 int Interpreter::v_get_thrusterhandle (lua_State *L)
 {
-	static char *funcname = "get_thrusterhandle";
+	static const char *funcname = "get_thrusterhandle";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	int idx = luamtd_tointeger_safe(L, 2, funcname);
@@ -4344,7 +4344,7 @@ Returns a handle for the propellant resource feeding the thruster.
 */
 int Interpreter::v_get_thrusterresource (lua_State *L)
 {
-	static char *funcname = "get_thrusterresource";
+	static const char *funcname = "get_thrusterresource";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	THRUSTER_HANDLE ht = (THRUSTER_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -4369,7 +4369,7 @@ To disconnect the thruster from its current tank, use _hProp_ = _nil_.
 */
 int Interpreter::v_set_thrusterresource (lua_State *L)
 {
-	static char *funcname = "set_thrusterresource";
+	static const char *funcname = "set_thrusterresource";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	THRUSTER_HANDLE ht = (THRUSTER_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -4392,7 +4392,7 @@ frame of reference.
 */
 int Interpreter::v_get_thrusterpos (lua_State *L)
 {
-	static char *funcname = "get_thrusterpos";
+	static const char *funcname = "get_thrusterpos";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	THRUSTER_HANDLE ht = (THRUSTER_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -4423,7 +4423,7 @@ thruster, but it affects the induced torque.
 */
 int Interpreter::v_set_thrusterpos (lua_State *L)
 {
-	static char *funcname = "set_thrusterpos";
+	static const char *funcname = "set_thrusterpos";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	THRUSTER_HANDLE ht = (THRUSTER_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -4442,7 +4442,7 @@ Returns the force direction of a thruster.
 */
 int Interpreter::v_get_thrusterdir (lua_State *L)
 {
-	static char *funcname = "get_thrusterdir";
+	static const char *funcname = "get_thrusterdir";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	THRUSTER_HANDLE ht = (THRUSTER_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -4465,7 +4465,7 @@ thruster gimbal mechanism)
 */
 int Interpreter::v_set_thrusterdir (lua_State *L)
 {
-	static char *funcname = "set_thrusterdir";
+	static const char *funcname = "set_thrusterdir";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	THRUSTER_HANDLE ht = (THRUSTER_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -4487,7 +4487,7 @@ presence of ambient atmospheric pressure), use @{get_thrustermax}.
 */
 int Interpreter::v_get_thrustermax0 (lua_State *L)
 {
-	static char *funcname = "get_thrustermax0";
+	static const char *funcname = "get_thrustermax0";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	THRUSTER_HANDLE ht = (THRUSTER_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -4509,7 +4509,7 @@ than the vacuum thrust if a pressure-dependent Isp value has been defined.
 */
 int Interpreter::v_set_thrustermax0 (lua_State *L)
 {
-	static char *funcname = "set_thrustermax0";
+	static const char *funcname = "set_thrustermax0";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	THRUSTER_HANDLE ht = (THRUSTER_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -4535,7 +4535,7 @@ current vessel position.
 */
 int Interpreter::v_get_thrustermax (lua_State *L)
 {
-	static char *funcname = "get_thrustermax";
+	static const char *funcname = "get_thrustermax";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	THRUSTER_HANDLE ht = (THRUSTER_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -4561,7 +4561,7 @@ Equivalent to @{get_thrusterisp} (hThruster,0).
 */
 int Interpreter::v_get_thrusterisp0 (lua_State *L)
 {
-	static char *funcname = "get_thrusterisp0";
+	static const char *funcname = "get_thrusterisp0";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	THRUSTER_HANDLE ht = (THRUSTER_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -4587,7 +4587,7 @@ vessel position.
 */
 int Interpreter::v_get_thrusterisp (lua_State *L)
 {
-	static char *funcname = "get_thrusterisp";
+	static const char *funcname = "get_thrusterisp";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	THRUSTER_HANDLE ht = (THRUSTER_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -4630,7 +4630,7 @@ The Isp rating at arbitrary pressure p is then computed as
 */
 int Interpreter::v_set_thrusterisp (lua_State *L)
 {
-	static char *funcname = "set_thrusterisp";
+	static const char *funcname = "set_thrusterisp";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	THRUSTER_HANDLE ht = (THRUSTER_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -4661,7 +4661,7 @@ level with the max. thrust rating returned by @{get_thrustermax}.
 */
 int Interpreter::v_get_thrusterlevel (lua_State *L)
 {
-	static char *funcname = "get_thrusterlevel";
+	static const char *funcname = "get_thrusterlevel";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	THRUSTER_HANDLE ht = (THRUSTER_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -4684,7 +4684,7 @@ joystick throttle control for main thrusters), which may override this function.
 */
 int Interpreter::v_set_thrusterlevel (lua_State *L)
 {
-	static char *funcname = "set_thrusterlevel";
+	static const char *funcname = "set_thrusterlevel";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	THRUSTER_HANDLE ht = (THRUSTER_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -4707,7 +4707,7 @@ range [0..1].
 */
 int Interpreter::v_inc_thrusterlevel (lua_State *L)
 {
-	static char *funcname = "inc_thrusterlevel";
+	static const char *funcname = "inc_thrusterlevel";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	THRUSTER_HANDLE ht = (THRUSTER_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -4733,7 +4733,7 @@ This method overrides the thruster's permanent thrust level
 */
 int Interpreter::v_set_thrusterlevel_singlestep (lua_State *L)
 {
-	static char *funcname = "set_thrusterlevel_singlestep";
+	static const char *funcname = "set_thrusterlevel_singlestep";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	THRUSTER_HANDLE th = (THRUSTER_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -4759,7 +4759,7 @@ setting.
 */
 int Interpreter::v_inc_thrusterlevel_singlestep (lua_State *L)
 {
-	static char *funcname = "inc_thrusterlevel_singlestep";
+	static const char *funcname = "inc_thrusterlevel_singlestep";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	THRUSTER_HANDLE ht = (THRUSTER_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -4794,7 +4794,7 @@ Example:
 */
 int Interpreter::v_create_thrustergroup (lua_State *L)
 {
-	static char *funcname = "create_thrustergroup";
+	static const char *funcname = "create_thrustergroup";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	AssertMtdPrmType(L, 2, PRMTP_TABLE, funcname);
@@ -4854,7 +4854,7 @@ However, thruster groups created with THGROUP.USER can only be deleted by handle
 */
 int Interpreter::v_del_thrustergroup (lua_State *L)
 {
-	static char *funcname = "del_thrustergroup";
+	static const char *funcname = "del_thrustergroup";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	AssertMtdPrmType(L, 2, PRMTP_NUMBER | PRMTP_LIGHTUSERDATA, funcname);
@@ -4880,7 +4880,7 @@ If the requested thruster group is not defined by the vessel, this method return
 */
 int Interpreter::v_get_thrustergrouphandle (lua_State *L)
 {
-	static char *funcname = "get_thrustergrouphandle";
+	static const char *funcname = "get_thrustergrouphandle";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	int i = luamtd_tointeger_safe(L, 2, funcname);
@@ -4905,7 +4905,7 @@ groups, use @{get_thrustergrouphandle} instead.
 */
 int Interpreter::v_get_thrustergrouphandlebyindex (lua_State *L)
 {
-	static char *funcname = "get_thrustergrouphandlebyindex";
+	static const char *funcname = "get_thrustergrouphandlebyindex";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	int idx = luamtd_tointeger_safe(L, 2, funcname);
@@ -4932,7 +4932,7 @@ number of thrusters.
 */
 int Interpreter::v_get_groupthrustercount (lua_State *L)
 {
-	static char *funcname = "get_groupthrustercount";
+	static const char *funcname = "get_groupthrustercount";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	int count;
@@ -4962,7 +4962,7 @@ _nil_.
 */
 int Interpreter::v_get_groupthruster (lua_State *L)
 {
-	static char *funcname = "get_groupthruster";
+	static const char *funcname = "get_groupthruster";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	int idx = (int)luamtd_tointeger_safe(L, 3, funcname);
@@ -4997,7 +4997,7 @@ thrust rating and the same thrust direction.
 */
 int Interpreter::v_get_thrustergrouplevel (lua_State *L)
 {
-	static char *funcname = "get_thrustergrouplevel";
+	static const char *funcname = "get_thrustergrouplevel";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double level;
@@ -5023,7 +5023,7 @@ Sets the thrust level for all thrusters in a group.
 */
 int Interpreter::v_set_thrustergrouplevel (lua_State *L)
 {
-	static char *funcname = "set_thrustergrouplevel";
+	static const char *funcname = "set_thrustergrouplevel";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double level = luamtd_tonumber_safe(L, 3, funcname);
@@ -5051,7 +5051,7 @@ The resulting thrust levels are automatically truncated to the range
 */
 int Interpreter::v_inc_thrustergrouplevel (lua_State *L)
 {
-	static char *funcname = "inc_thrustergrouplevel";
+	static const char *funcname = "inc_thrustergrouplevel";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double dlevel = luamtd_tonumber_safe(L, 3, funcname);
@@ -5081,7 +5081,7 @@ level needs to be modulated continuously (e.g. attitude control, etc.).
 */
 int Interpreter::v_inc_thrustergrouplevel_singlestep (lua_State *L)
 {
-	static char *funcname = "inc_thrustergrouplevel_singlestep";
+	static const char *funcname = "inc_thrustergrouplevel_singlestep";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double dlevel = luamtd_tonumber_safe(L, 3, funcname);
@@ -5125,7 +5125,7 @@ Not all vessel classes may define a complete RCS.
 */
 int Interpreter::v_get_rcsmode (lua_State *L)
 {
-	static char *funcname = "get_rcsmode";
+	static const char *funcname = "get_rcsmode";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	int mode = v->GetAttitudeMode();
@@ -5149,7 +5149,7 @@ Set mode=RCSMODE.OFF to disable the RCS.
 */
 int Interpreter::v_set_rcsmode (lua_State *L)
 {
-	static char *funcname = "set_rcsmode";
+	static const char *funcname = "set_rcsmode";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	int mode = luamtd_tointeger_safe(L, 2, funcname);
@@ -5170,7 +5170,7 @@ During playback, this method does nothing and returns the current RCS mode.
 */
 int Interpreter::v_toggle_RCSmode (lua_State *L)
 {
-	static char *funcname = "toggle_RCSmode";
+	static const char *funcname = "toggle_RCSmode";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushinteger(L, v->ToggleAttitudeMode());
@@ -5187,7 +5187,7 @@ Returns the activation state of an automated orbital navigation mode.
 */
 int Interpreter::v_get_navmode (lua_State *L)
 {
-	static char *funcname = "get_navmode";
+	static const char *funcname = "get_navmode";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	int mode = luamtd_tointeger_safe(L, 2, funcname);
@@ -5213,7 +5213,7 @@ second conflicting navmode is activated.
 */
 int Interpreter::v_set_navmode (lua_State *L)
 {
-	static char *funcname = "set_navmode";
+	static const char *funcname = "set_navmode";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	int mode = (int)luamtd_tointeger_safe(L, 2, funcname);
@@ -5254,7 +5254,7 @@ anti-parallel, and their longitudinal alignment vectors (_rot_) are parallel.
 */
 int Interpreter::v_create_dock (lua_State *L)
 {
-	static char *funcname = "create_dock";
+	static const char *funcname = "create_dock";
 	AssertMtdMinPrmCount(L, 4, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 pos = luamtd_tovector_safe(L, 2, funcname);
@@ -5279,7 +5279,7 @@ used.
 */
 int Interpreter::v_del_dock (lua_State *L)
 {
-	static char *funcname = "del_dock";
+	static const char *funcname = "del_dock";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	DOCKHANDLE hDock = (DOCKHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -5297,7 +5297,7 @@ Any docked objects will be undocked before deleting the docking ports.
 */
 int Interpreter::v_clear_dockdefinitions (lua_State *L)
 {
-	static char *funcname = "clear_dockdefinitions";
+	static const char *funcname = "clear_dockdefinitions";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	v->ClearDockDefinitions();
@@ -5324,7 +5324,7 @@ The _dir_ and _rot_ direction vectors should be normalised to length 1.
 */
 int Interpreter::v_set_dockparams (lua_State *L)
 {
-	static char *funcname = "set_dockparams";
+	static const char *funcname = "set_dockparams";
 	AssertMtdMinPrmCount(L, 4, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	DOCKHANDLE hDock = 0;
@@ -5356,7 +5356,7 @@ Returns the paramters of a docking port.
 */
 int Interpreter::v_get_dockparams (lua_State *L)
 {
-	static char *funcname = "get_dockparams";
+	static const char *funcname = "get_dockparams";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	DOCKHANDLE hDock = (DOCKHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -5377,7 +5377,7 @@ Returns the number of docking ports available on the vessel.
 */
 int Interpreter::v_get_dockcount (lua_State *L)
 {
-	static char *funcname = "get_dockcount";
+	static const char *funcname = "get_dockcount";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushinteger (L, v->DockCount());
@@ -5394,7 +5394,7 @@ Returns a handle for a vessel docking port.
 */
 int Interpreter::v_get_dockhandle (lua_State *L)
 {
-	static char *funcname = "get_dockhandle";
+	static const char *funcname = "get_dockhandle";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	int idx = luamtd_tointeger_safe(L, 2, funcname);
@@ -5416,7 +5416,7 @@ Otherwise the function returns nil.
 */
 int Interpreter::v_get_dockstatus (lua_State *L)
 {
-	static char *funcname = "get_dockstatus";
+	static const char *funcname = "get_dockstatus";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	DOCKHANDLE hDock = (DOCKHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -5439,7 +5439,7 @@ This method has the same functionality as
 */
 int Interpreter::v_dockingstatus (lua_State *L)
 {
-	static char *funcname = "dockingstatus";
+	static const char *funcname = "dockingstatus";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	UINT port = luamtd_tointeger_safe(L, 2, funcname);
@@ -5458,7 +5458,7 @@ simultaneously from all docking ports.
 */
 int Interpreter::v_undock (lua_State *L)
 {
-	static char *funcname = "undock";
+	static const char *funcname = "undock";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	UINT idx = (UINT)luamtd_tointeger_safe(L, 2, funcname);
@@ -5504,7 +5504,7 @@ vessel:get_attachmentparams, vessel:get_attachmenthandle, vessel:attach_child, v
 */
 int Interpreter::v_create_attachment (lua_State *L)
 {
-	static char *funcname = "create_attachment";
+	static const char *funcname = "create_attachment";
 	AssertMtdMinPrmCount(L, 6, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	bool toparent = luamtd_toboolean_safe(L, 2, funcname);
@@ -5536,7 +5536,7 @@ After this function returns successfully, the attachment handle is no longer val
 */
 int Interpreter::v_del_attachment (lua_State *L)
 {
-	static char *funcname = "del_attachment";
+	static const char *funcname = "del_attachment";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	ATTACHMENTHANDLE hAttachment = (ATTACHMENTHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -5556,7 +5556,7 @@ After this function returns, all previously defined attachment handles will no l
 */
 int Interpreter::v_clear_attachments (lua_State *L)
 {
-	static char *funcname = "clear_attachments";
+	static const char *funcname = "clear_attachments";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	v->ClearAttachments();
@@ -5581,7 +5581,7 @@ orthogonal.
 */
 int Interpreter::v_set_attachmentparams (lua_State *L)
 {
-	static char *funcname = "set_attachmentparams";
+	static const char *funcname = "set_attachmentparams";
 	AssertMtdMinPrmCount(L, 5, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	ATTACHMENTHANDLE hAttachment = (ATTACHMENTHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -5604,7 +5604,7 @@ Retrieves the parameters of an attachment point.
 */
 int Interpreter::v_get_attachmentparams (lua_State *L)
 {
-	static char *funcname = "get_attachmentparams";
+	static const char *funcname = "get_attachmentparams";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	ATTACHMENTHANDLE hAttachment = (ATTACHMENTHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -5626,7 +5626,7 @@ Retrieves attachment identifier string.
 */
 int Interpreter::v_get_attachmentid (lua_State *L)
 {
-	static char *funcname = "get_attachmentid";
+	static const char *funcname = "get_attachmentid";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	ATTACHMENTHANDLE hAttachment = (ATTACHMENTHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -5648,7 +5648,7 @@ attached.
 */
 int Interpreter::v_get_attachmentstatus (lua_State *L)
 {
-	static char *funcname = "get_attachmentstatus";
+	static const char *funcname = "get_attachmentstatus";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	ATTACHMENTHANDLE hAttachment = (ATTACHMENTHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -5669,7 +5669,7 @@ Otherwise, return the number of attachment points to children.
 */
 int Interpreter::v_get_attachmentcount (lua_State *L)
 {
-	static char *funcname = "get_attachmentcount";
+	static const char *funcname = "get_attachmentcount";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	bool toparent = luamtd_toboolean_safe(L, 2, funcname);
@@ -5693,7 +5693,7 @@ attachments. The returned index should therefore be used only within the current
 */
 int Interpreter::v_get_attachmentindex (lua_State *L)
 {
-	static char *funcname = "get_attachmentindex";
+	static const char *funcname = "get_attachmentindex";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	ATTACHMENTHANDLE hAttachment = (ATTACHMENTHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -5713,7 +5713,7 @@ Otherwise, return a handle for an attachment point to a child.
 */
 int Interpreter::v_get_attachmenthandle (lua_State *L)
 {
-	static char *funcname = "get_attachmenthandle";
+	static const char *funcname = "get_attachmenthandle";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	bool toparent = luamtd_toboolean_safe(L, 2, funcname);
@@ -5747,7 +5747,7 @@ refuse to connect. In that case, the function returns _false_.
 */
 int Interpreter::v_attach_child (lua_State *L)
 {
-	static char *funcname = "attach_child";
+	static const char *funcname = "attach_child";
 	AssertMtdMinPrmCount(L, 4, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	OBJHANDLE hChild = (OBJHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -5769,7 +5769,7 @@ Breaks an existing attachment to a child.
 */
 int Interpreter::v_detach_child (lua_State *L)
 {
-	static char *funcname = "detach_child";
+	static const char *funcname = "detach_child";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	ATTACHMENTHANDLE hAttachment = (ATTACHMENTHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -5804,7 +5804,7 @@ a different frequency.
 */
 int Interpreter::v_enable_transponder (lua_State *L)
 {
-	static char *funcname = "enable_transponder";
+	static const char *funcname = "enable_transponder";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	int enable = luamtd_toboolean_safe(L, 2, funcname);
@@ -5832,7 +5832,7 @@ as current frequency.
 */
 int Interpreter::v_get_transponder (lua_State *L)
 {
-	static char *funcname = "get_transponder";
+	static const char *funcname = "get_transponder";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	NAVHANDLE hTrans = v->GetTransponder();
@@ -5857,7 +5857,7 @@ f = (108.0 + 0.05 ch) MHz.
 */
 int Interpreter::v_set_transponderchannel (lua_State *L)
 {
-	static char *funcname = "set_transponderchannel";
+	static const char *funcname = "set_transponderchannel";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	DWORD ch = (DWORD)luamtd_tointeger_safe(L, 2, funcname);
@@ -5880,7 +5880,7 @@ initially set to 0 (transmitter frequency 108.00 MHz). Use
 */
 int Interpreter::v_enable_ids (lua_State *L)
 {
-	static char *funcname = "enable_ids";
+	static const char *funcname = "enable_ids";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	DOCKHANDLE hDock = (DOCKHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -5909,7 +5909,7 @@ about the transmitter, such as sender frequency.
 */
 int Interpreter::v_get_ids (lua_State *L)
 {
-	static char *funcname = "get_ids";
+	static const char *funcname = "get_ids";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	DOCKHANDLE hDock = (DOCKHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -5938,7 +5938,7 @@ of @{del_dock} or @{clear_dockdefinitions}.
 */
 int Interpreter::v_set_idschannel (lua_State *L)
 {
-	static char *funcname = "set_idschannel";
+	static const char *funcname = "set_idschannel";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	DOCKHANDLE hDock = (DOCKHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -5965,7 +5965,7 @@ Default is 2 NAV receivers.
 */
 int Interpreter::v_init_navradios (lua_State *L)
 {
-	static char *funcname = "init_navradios";
+	static const char *funcname = "init_navradios";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	DWORD nnav = (DWORD)luamtd_tointeger_safe(L, 2, funcname);
@@ -5983,7 +5983,7 @@ Returns the number of NAV receivers.
 */
 int Interpreter::v_get_navcount (lua_State *L)
 {
-	static char *funcname = "get_navcount";
+	static const char *funcname = "get_navcount";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetNavCount());
@@ -6003,7 +6003,7 @@ corresponding to channels 0 to 639.
 */
 int Interpreter::v_set_navchannel (lua_State *L)
 {
-	static char *funcname = "set_navchannel";
+	static const char *funcname = "set_navchannel";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	DWORD n = (DWORD)lua_tointeger_safe(L, 2, funcname);
@@ -6025,7 +6025,7 @@ If the receiver index _navIdx_ is out of range, this function returns 0.
 */
 int Interpreter::v_get_navchannel (lua_State *L)
 {
-	static char *funcname = "get_navchannel";
+	static const char *funcname = "get_navchannel";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	DWORD n = (DWORD)lua_tointeger_safe(L, 2, funcname);
@@ -6053,7 +6053,7 @@ receiver.
 */
 int Interpreter::v_get_navsource (lua_State *L)
 {
-	static char *funcname = "get_navsource";
+	static const char *funcname = "get_navsource";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	DWORD n = (DWORD)lua_tointeger_safe(L, 2, funcname);
@@ -6079,7 +6079,7 @@ Returns the activation state of the nose-wheel steering system.
 */
 int Interpreter::v_set_nosewheelsteering (lua_State *L)
 {
-	static char *funcname = "set_nosewheelsteering";
+	static const char *funcname = "set_nosewheelsteering";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	bool activate = luamtd_toboolean_safe(L, 2, funcname)!=0;
@@ -6097,7 +6097,7 @@ Returns the activation state of the nose-wheel steering system.
 */
 int Interpreter::v_get_nosewheelsteering (lua_State *L)
 {
-	static char *funcname = "get_nosewheelsteering";
+	static const char *funcname = "get_nosewheelsteering";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushboolean(L, v->GetNosewheelSteering());
@@ -6114,7 +6114,7 @@ system.
 */
 int Interpreter::v_set_maxwheelbrakeforce (lua_State *L)
 {
-	static char *funcname = "set_maxwheelbrakeforce";
+	static const char *funcname = "set_maxwheelbrakeforce";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double f = luamtd_tonumber_safe(L, 2, funcname);
@@ -6134,7 +6134,7 @@ Apply the wheel brake.
 */
 int Interpreter::v_set_wheelbrakelevel (lua_State *L)
 {
-	static char *funcname = "set_wheelbrakelevel";
+	static const char *funcname = "set_wheelbrakelevel";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double level = luamtd_tonumber_safe(L, 2, funcname);
@@ -6154,7 +6154,7 @@ Returns the current wheel brake level.
 */
 int Interpreter::v_get_wheelbrakelevel (lua_State *L)
 {
-	static char *funcname = "get_wheelbrakelevel";
+	static const char *funcname = "get_wheelbrakelevel";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	int which = luamtd_tointeger_safe(L, 2, funcname);
@@ -6210,7 +6210,7 @@ Example:
 */
 int Interpreter::v_add_pointlight (lua_State *L)
 {
-	static char *funcname = "add_pointlight";
+	static const char *funcname = "add_pointlight";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 pos = luamtd_tovector_safe(L, 2, funcname);
@@ -6297,7 +6297,7 @@ Example:
 */
 int Interpreter::v_add_spotlight (lua_State *L)
 {
-	static char *funcname = "add_spotlight";
+	static const char *funcname = "add_spotlight";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 pos = luamtd_tovector_safe(L, 2, funcname);
@@ -6353,7 +6353,7 @@ Returns a pointer to a light source object identified by index.
 */
 int Interpreter::v_get_lightemitter (lua_State *L)
 {
-	static char *funcname = "get_lightemitter";
+	static const char *funcname = "get_lightemitter";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	DWORD idx = (DWORD)luamtd_tointeger_safe(L, 2, funcname);
@@ -6372,7 +6372,7 @@ Returns the number of light sources defined for the vessel.
 */
 int Interpreter::v_get_lightemittercount (lua_State *L)
 {
-	static char *funcname = "get_lightemittercount";
+	static const char *funcname = "get_lightemittercount";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	DWORD n = v->LightEmitterCount();
@@ -6393,7 +6393,7 @@ be referenced.
 */
 int Interpreter::v_del_lightemitter (lua_State *L)
 {
-	static char *funcname = "del_lightemitter";
+	static const char *funcname = "del_lightemitter";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	LightEmitter *le = lua_tolightemitter(L, 2);
@@ -6410,7 +6410,7 @@ Removes all light sources defined for the vessel.
 */
 int Interpreter::v_clear_lightemitters (lua_State *L)
 {
-	static char *funcname = "clear_lightemitters";
+	static const char *funcname = "clear_lightemitters";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	v->ClearLightEmitters();
@@ -6456,7 +6456,7 @@ within visual range of the observer camera).
 */
 int Interpreter::v_add_mesh (lua_State *L)
 {
-	static char *funcname = "add_mesh";
+	static const char *funcname = "add_mesh";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	UINT midx;
@@ -6507,7 +6507,7 @@ The return value is always equal to _idx_.
 */
 int Interpreter::v_insert_mesh (lua_State *L)
 {
-	static char *funcname = "insert_mesh";
+	static const char *funcname = "insert_mesh";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	UINT midx, idx = (UINT)lua_tointeger_safe(L, 3, funcname);
@@ -6553,7 +6553,7 @@ retaining the animations of deleted meshes can lead to undefined behaviour.
 */
 int Interpreter::v_del_mesh (lua_State *L)
 {
-	static char *funcname = "del_mesh";
+	static const char *funcname = "del_mesh";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	ASSERT_MTDNUMBER(L,2);
@@ -6582,7 +6582,7 @@ the behaviour of the animations becomes undefined.
 */
 int Interpreter::v_clear_meshes (lua_State *L)
 {
-	static char *funcname = "clear_meshes";
+	static const char *funcname = "clear_meshes";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	bool retain_anim = false;
@@ -6602,7 +6602,7 @@ Returns the number of meshes defined for the vessel.
 */
 int Interpreter::v_get_meshcount (lua_State *L)
 {
-	static char *funcname = "get_meshcount";
+	static const char *funcname = "get_meshcount";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	UINT count = v->GetMeshCount();
@@ -6630,7 +6630,7 @@ Example:
 */
 int Interpreter::v_shift_mesh (lua_State *L)
 {
-	static char *funcname = "shift_mesh";
+	static const char *funcname = "shift_mesh";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	ASSERT_MTDNUMBER(L,2);
@@ -6653,7 +6653,7 @@ This function is useful when resetting a vessel's centre of gravity, in combinat
 */
 int Interpreter::v_shift_meshes (lua_State *L)
 {
-	static char *funcname = "shift_meshes";
+	static const char *funcname = "shift_meshes";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 ofs = luamtd_tovector_safe(L, 2, funcname);
@@ -6671,7 +6671,7 @@ Returns the mesh offset in the vessel frame.
 */
 int Interpreter::v_get_meshoffset (lua_State *L)
 {
-	static char *funcname = "get_meshoffset";
+	static const char *funcname = "get_meshoffset";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	UINT idx = (UINT)luamtd_tointeger_safe(L, 2, funcname);
@@ -6707,7 +6707,7 @@ mesh file, set initialState to 1.
 */
 int Interpreter::v_create_animation (lua_State *L)
 {
-	static char *funcname = "create_animation";
+	static const char *funcname = "create_animation";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double istate = luamtd_tonumber_safe(L, 2, funcname);
@@ -6734,7 +6734,7 @@ default state.
 */
 int Interpreter::v_del_animation (lua_State *L)
 {
-	static char *funcname = "del_animation";
+	static const char *funcname = "del_animation";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	UINT anim = (UINT)luamtd_tointeger_safe(L, 2, funcname);
@@ -6759,7 +6759,7 @@ SetAnimation in such a way as to provide a smooth movement of the animated parts
 */
 int Interpreter::v_set_animation (lua_State *L)
 {
-	static char *funcname = "set_animation";
+	static const char *funcname = "set_animation";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	UINT anim = (UINT)luamtd_tointeger_safe(L, 2, funcname);
@@ -6771,7 +6771,7 @@ int Interpreter::v_set_animation (lua_State *L)
 
 int Interpreter::v_get_animation (lua_State *L)
 {
-	static char *funcname = "get_animation";
+	static const char *funcname = "get_animation";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	UINT anim = luamtd_tointeger_safe(L, 2, funcname);
@@ -6807,7 +6807,7 @@ handle returned by the add_animationcomponent call for the parent.
 */
 int Interpreter::v_add_animationcomponent (lua_State *L)
 {
-	static char *funcname = "add_animationcomponent";
+	static const char *funcname = "add_animationcomponent";
 	AssertMtdMinPrmCount(L, 5, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	UINT anim = (UINT)luamtd_tointeger_safe(L, 2, funcname);
@@ -6841,7 +6841,7 @@ In the current implementation, the component must not have children
 */
 int Interpreter::v_del_animationcomponent (lua_State *L)
 {
-	static char *funcname = "del_animationcomponent";
+	static const char *funcname = "del_animationcomponent";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	UINT anim = luamtd_tointeger_safe(L, 2, funcname);
@@ -6881,7 +6881,7 @@ The @{register_animation} mechanism leaves the actual implementation of
 */
 int Interpreter::v_register_animation (lua_State *L)
 {
-	static char *funcname = "register_animation";
+	static const char *funcname = "register_animation";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	v->RegisterAnimation();
@@ -6903,7 +6903,7 @@ The call to UnregisterAnimation should not be placed in the body of
 */
 int Interpreter::v_unregister_animation (lua_State *L)
 {
-	static char *funcname = "unregister_animation";
+	static const char *funcname = "unregister_animation";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	v->UnregisterAnimation();
@@ -6947,7 +6947,7 @@ The shift of meshes (and any other reference positions defined in
 */
 int Interpreter::v_shift_centreofmass (lua_State *L)
 {
-	static char *funcname = "shift_centreofmass";
+	static const char *funcname = "shift_centreofmass";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 shift = luamtd_tovector_safe(L, 2, funcname);
@@ -6984,7 +6984,7 @@ This function should be called after a vessel has undergone a
 */
 int Interpreter::v_shiftCG (lua_State *L)
 {
-	static char *funcname = "shiftCG";
+	static const char *funcname = "shiftCG";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 shift = luamtd_tovector_safe(L, 2, funcname);
@@ -7007,7 +7007,7 @@ If the vessel is not part of a superstructure, cg returns (0,0,0).
 */
 int Interpreter::v_get_superstructureCG (lua_State *L)
 {
-	static char *funcname = "get_superstructureCG";
+	static const char *funcname = "get_superstructureCG";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 cg;
@@ -7038,7 +7038,7 @@ The user is responsible for providing a valid rotation matrix.
 */
 int Interpreter::v_set_rotationmatrix (lua_State *L)
 {
-	static char *funcname = "set_rotationmatrix";
+	static const char *funcname = "set_rotationmatrix";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	MATRIX3 R = luamtd_tomatrix_safe(L, 2, funcname);
@@ -7064,7 +7064,7 @@ Should be used to transform \e directions. To transform
 */
 int Interpreter::v_globalrot (lua_State *L)
 {
-	static char *funcname = "globalrot";
+	static const char *funcname = "globalrot";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 rloc = luamtd_tovector_safe(L, 2, funcname);
@@ -7090,7 +7090,7 @@ The local horizon frame is defined as follows:
 */
 int Interpreter::v_horizonrot (lua_State *L)
 {
-	static char *funcname = "horizonrot";
+	static const char *funcname = "horizonrot";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 rloc = luamtd_tovector_safe(L, 2, funcname);
@@ -7114,7 +7114,7 @@ This function performs the inverse operation of \ref
 */
 int Interpreter::v_horizoninvrot (lua_State *L)
 {
-	static char *funcname = "horizoninvrot";
+	static const char *funcname = "horizoninvrot";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 rhorizon = luamtd_tovector_safe(L, 2, funcname);
@@ -7144,7 +7144,7 @@ The transform has the form
 */
 int Interpreter::v_local2global (lua_State *L)
 {
-	static char *funcname = "local2global";
+	static const char *funcname = "local2global";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 local = luamtd_tovector_safe(L, 2, funcname);
@@ -7174,7 +7174,7 @@ The transformation has the form
 */
 int Interpreter::v_global2local (lua_State *L)
 {
-	static char *funcname = "global2local";
+	static const char *funcname = "global2local";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 global = luamtd_tovector_safe(L, 2, funcname);
@@ -7212,7 +7212,7 @@ The transformation has the form
 */
 int Interpreter::v_local2rel (lua_State *L)
 {
-	static char *funcname = "local2rel";
+	static const char *funcname = "local2rel";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 local = luamtd_tovector_safe(L, 2, funcname);
@@ -7271,7 +7271,7 @@ This version uses a user-defined position and direction for the exhaust.
 */
 int Interpreter::v_add_exhaust (lua_State *L)
 {
-	static char *funcname = "add_exhaust";
+	static const char *funcname = "add_exhaust";
 	AssertMtdMinPrmCount(L, 4, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	THRUSTER_HANDLE ht = (THRUSTER_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -7317,7 +7317,7 @@ Removes an exhaust render definition.
 */
 int Interpreter::v_del_exhaust (lua_State *L)
 {
-	static char *funcname = "del_exhaust";
+	static const char *funcname = "del_exhaust";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	UINT idx = (UINT)luamtd_tointeger_safe(L, 2, funcname);
@@ -7335,7 +7335,7 @@ Returns the number of exhaust render definitions for the vessel.
 */
 int Interpreter::v_get_exhaustcount (lua_State *L)
 {
-	static char *funcname = "get_exhaustcount";
+	static const char *funcname = "get_exhaustcount";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	DWORD count = v->GetExhaustCount();
@@ -7372,7 +7372,7 @@ function will return nil. The module must be able to cope with this case.
 */
 int Interpreter::v_add_exhauststream (lua_State *L)
 {
-	static char *funcname = "add_exhauststream";
+	static const char *funcname = "add_exhauststream";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	THRUSTER_HANDLE ht = (THRUSTER_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
@@ -7473,7 +7473,7 @@ Returns the current camera position for internal (cockpit) view.
 */
 int Interpreter::v_get_cameraoffset (lua_State *L)
 {
-	static char *funcname = "get_cameraoffset";
+	static const char *funcname = "get_cameraoffset";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 ofs;
@@ -7494,7 +7494,7 @@ The default offset is (0,0,0).
 */
 int Interpreter::v_set_cameraoffset (lua_State *L)
 {
-	static char *funcname = "set_cameraoffset";
+	static const char *funcname = "set_cameraoffset";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 ofs = luamtd_tovector_safe(L, 2, funcname);
@@ -7548,7 +7548,7 @@ In Orbiter, the user can return to the default direction by pressing the
 */
 int Interpreter::v_set_cameradefaultdirection (lua_State *L)
 {
-	static char *funcname = "set_cameradefaultdirection";
+	static const char *funcname = "set_cameradefaultdirection";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 cd = luamtd_tovector_safe(L, 2, funcname);
@@ -7576,7 +7576,7 @@ The returned direction vector is normalised to length 1.
 */
 int Interpreter::v_get_cameradefaultdirection (lua_State *L)
 {
-	static char *funcname = "get_cameradefaultdirection";
+	static const char *funcname = "get_cameradefaultdirection";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 cd;
@@ -7606,7 +7606,7 @@ To reset the catchment angle globally for all cockpit views of the vessel,
 */
 int Interpreter::v_set_cameracatchangle (lua_State *L)
 {
-	static char *funcname = "set_cameracatchangle";
+	static const char *funcname = "set_cameracatchangle";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double cangle = luamtd_tonumber_safe(L, 2, funcname);
@@ -7638,7 +7638,7 @@ The default values are 0.8Pi for left and right ranges, and 0.4Pi for up and dow
 */
 int Interpreter::v_set_camerarotationrange (lua_State *L)
 {
-	static char *funcname = "set_camerarotationrange";
+	static const char *funcname = "set_camerarotationrange";
 	AssertMtdMinPrmCount(L, 5, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	double left  = luamtd_tonumber_safe(L, 2, funcname);
@@ -7686,7 +7686,7 @@ In addition to the linear movement, the camera also turns left when leaning left
 */
 int Interpreter::v_set_camerashiftrange (lua_State *L)
 {
-	static char *funcname = "set_camerashiftrange";
+	static const char *funcname = "set_camerashiftrange";
 	AssertMtdMinPrmCount(L, 4, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 fpos = luamtd_tovector_safe(L, 2, funcname);
@@ -7721,7 +7721,7 @@ It is more versatile, because in addition to the linear camera movement vectors,
 */
 int Interpreter::v_set_cameramovement (lua_State *L)
 {
-	static char *funcname = "set_cameramovement";
+	static const char *funcname = "set_cameramovement";
 	AssertMtdMinPrmCount(L, 10, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	VECTOR3 fpos, lpos, rpos;
@@ -7762,7 +7762,7 @@ The redraw notification is ignored if the requested panel is not currently
 */
 int Interpreter::v_trigger_panelredrawarea (lua_State *L)
 {
-	static char *funcname = "trigger_panelredrawarea";
+	static const char *funcname = "trigger_panelredrawarea";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	int panel_id = luamtd_tointeger_safe(L, 2, funcname);
@@ -7793,7 +7793,7 @@ If the calling vessel doesn't have input focus (and therefore doesn't own the
 */
 int Interpreter::v_trigger_redrawarea (lua_State *L)
 {
-	static char *funcname = "trigger_redrawarea";
+	static const char *funcname = "trigger_redrawarea";
 	AssertMtdMinPrmCount(L, 4, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	int panel_id = luamtd_tointeger_safe(L, 2, funcname);
@@ -7825,7 +7825,7 @@ The return value is 1 if the vessel could process the key message, or 0 otherwis
 */
 int Interpreter::v_send_bufferedkey (lua_State *L)
 {
-	static char *funcname = "send_bufferedkey";
+	static const char *funcname = "send_bufferedkey";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	int key = luamtd_tointeger_safe (L, 2, funcname);
