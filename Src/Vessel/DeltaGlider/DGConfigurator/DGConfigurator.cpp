@@ -11,8 +11,8 @@
 class VesselConfig;
 class DGConfig;
 
-static char *hires_enabled = "Textures2\\DG";
-static char *hires_disabled = "Textures2\\~DG";
+static const char *hires_enabled = "Textures2\\DG";
+static const char *hires_disabled = "Textures2\\~DG";
 
 struct {
 	HINSTANCE hInst;
@@ -22,7 +22,7 @@ struct {
 class DGConfig: public LaunchpadItem {
 public:
 	DGConfig(): LaunchpadItem() {}
-	char *Name() { return "DG Configuration"; }
+	char *Name() { return (char*)"DG Configuration"; }
 	char *Description();
 	bool clbkOpen (HWND hLaunchpad);
 	bool HiresEnabled() const;
@@ -34,8 +34,7 @@ public:
 
 char *DGConfig::Description()
 {
-	static char *desc = "Global configuration for the default Delta-glider.";
-	return desc;
+	return (char*)"Global configuration for the default Delta-glider.";
 }
 
 bool DGConfig::clbkOpen (HWND hLaunchpad)

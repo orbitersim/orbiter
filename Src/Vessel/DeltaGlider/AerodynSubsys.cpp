@@ -477,7 +477,7 @@ ElevatorTrim::ElevatorTrim (AerodynCtrlSubsystem *_subsys)
 void ElevatorTrim::clbkSaveState (FILEHANDLE scn)
 {
 	double trim = DG()->GetControlSurfaceLevel (AIRCTRL_ELEVATORTRIM);
-	if (trim) oapiWriteScenario_float (scn, "TRIM", trim);	
+	if (trim) oapiWriteScenario_float (scn, (char*)"TRIM", trim);
 }
 
 // --------------------------------------------------------------

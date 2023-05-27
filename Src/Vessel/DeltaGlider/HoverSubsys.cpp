@@ -233,11 +233,11 @@ void HoverAttitudeComponent::clbkSaveState (FILEHANDLE scn)
 {
 	if (mode) {
 		if (mode == 1) { // auto
-			oapiWriteScenario_int (scn, "HOVERMODE", mode);
+			oapiWriteScenario_int (scn, (char*)"HOVERMODE", mode);
 		} else { // manual
 			char cbuf[256];
 			sprintf (cbuf, "%d %0.3lf %0.3lf", mode, phover_cmd, rhover_cmd);
-			oapiWriteScenario_string (scn, "HOVERMODE", cbuf);
+			oapiWriteScenario_string (scn, (char*)"HOVERMODE", cbuf);
 		}
 	}
 }
@@ -450,7 +450,7 @@ void HoverHoldComponent::clbkSaveState (FILEHANDLE scn)
 {
 	char cbuf[256];
 	sprintf (cbuf, "%d %d %0.4le %0.4le", (int)active, (int)hovermode, holdalt, holdvspd);
-	oapiWriteScenario_string (scn, "HOVERHOLD", cbuf);
+	oapiWriteScenario_string (scn, (char*)"HOVERHOLD", cbuf);
 }
 
 // --------------------------------------------------------------
