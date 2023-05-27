@@ -191,8 +191,8 @@ oapi::FlightData::FlightData(HINSTANCE hDLL)
 	Graph::InitGDI();
 
 	// Register the custom command for the plugin
-	static char* desc = "Open a window to track flight parameters of a spacecraft.";
-	m_dwCmd = oapiRegisterCustomCmd("Flight Data Monitor", desc, hookOpenDlg, NULL);
+	static char* desc = (char*)"Open a window to track flight parameters of a spacecraft.";
+	m_dwCmd = oapiRegisterCustomCmd((char*)"Flight Data Monitor", desc, hookOpenDlg, NULL);
 
 	m_pVessel = nullptr;
 	m_sysT = 0.0;
