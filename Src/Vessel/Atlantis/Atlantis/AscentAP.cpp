@@ -503,10 +503,10 @@ void AscentAP::SaveState (FILEHANDLE scn)
 	char cbuf[256];
 	sprintf (cbuf, "%0.3f %0.3f %0.3f %0.3f",
 		met, met_meco, met_oms_start, met_oms_end);
-	oapiWriteScenario_string (scn, "MET", cbuf);
+	oapiWriteScenario_string (scn, (char*)"MET", cbuf);
 	sprintf (cbuf, "%d %d %d %0.0f %0.4f %0.5f %0.5f",
 		(int)active, (int)met_active, (int)do_oms2, tgt_alt, launch_azimuth, launch_lng, launch_lat);
-	oapiWriteScenario_string (scn, "ASCENTAP", cbuf);
+	oapiWriteScenario_string (scn, (char*)"ASCENTAP", cbuf);
 }
 
 // --------------------------------------------------------------
@@ -714,18 +714,18 @@ void AscentApMfd::DrawGimbal (oapi::Sketchpad *skp, int cx, int cy, double pitch
 char *AscentApMfd::ButtonLabel (int bt)
 {
 	if (!bt)
-		return (ap->Active() ? "DA" : ap->GetVessel()->status == 0 ? "L" : "EA");
+		return (char*)(ap->Active() ? "DA" : ap->GetVessel()->status == 0 ? "L" : "EA");
 
 	if (bt <= 2) {
-		static char *label[2] = {"PG-", "PG+"};
-		return label[bt-1];
+		static const char *label[2] = {"PG-", "PG+"};
+		return (char*)label[bt-1];
 	}
 
 	switch (cpg) {
 		case 0: {
 			if (ap->Active() || ap->GetVessel()->status) return 0;
-			static char *label[5] = {"AZ-", "AZ+", "AL-", "AL+", "OM2"};
-			return (bt < 8 ? label[bt-3] : 0);
+			static const char *label[5] = {"AZ-", "AZ+", "AL-", "AL+", "OM2"};
+			return (char*)(bt < 8 ? label[bt-3] : 0);
 		}
 	}
 

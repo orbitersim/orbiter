@@ -11,12 +11,12 @@
 class VesselConfig;
 class AtlantisConfig;
 
-static char *tex_hires_enabled = "Textures2\\Atlantis";
-static char *tex_hires_disabled = "Textures2\\~Atlantis";
+static const char *tex_hires_enabled = "Textures2\\Atlantis";
+static const char *tex_hires_disabled = "Textures2\\~Atlantis";
 
-static char *vcmsh_fname = "Meshes\\Atlantis\\AtlantisVC.msh";
-static char *msh_hires_bkup = "Meshes\\Atlantis\\~AtlantisVC_hi.msh";
-static char *msh_lores_bkup = "Meshes\\Atlantis\\~AtlantisVC_lo.msh";
+static const char *vcmsh_fname = "Meshes\\Atlantis\\AtlantisVC.msh";
+static const char *msh_hires_bkup = "Meshes\\Atlantis\\~AtlantisVC_hi.msh";
+static const char *msh_lores_bkup = "Meshes\\Atlantis\\~AtlantisVC_lo.msh";
 
 struct {
 	HINSTANCE hInst;
@@ -26,7 +26,7 @@ struct {
 class AtlantisConfig: public LaunchpadItem {
 public:
 	AtlantisConfig(): LaunchpadItem() {}
-	char *Name() { return "Atlantis Configuration"; }
+	char *Name() { return (char*)"Atlantis Configuration"; }
 	char *Description();
 	bool clbkOpen (HWND hLaunchpad);
 	bool TexHiresEnabled() const;
@@ -40,8 +40,7 @@ public:
 
 char *AtlantisConfig::Description()
 {
-	static char *desc = "Global configuration for the default Space Shuttle Atlantis.";
-	return desc;
+	return (char*)"Global configuration for the default Space Shuttle Atlantis.";
 }
 
 bool AtlantisConfig::clbkOpen (HWND hLaunchpad)

@@ -9,7 +9,7 @@
 
 extern GDIParams g_Param;
 extern HELPCONTEXT g_hc;
-extern char *ActionString[5];
+extern const char *ActionString[5];
 
 INT_PTR CALLBACK PlOp_DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 static Atlantis *sts_dlg;
@@ -260,13 +260,13 @@ bool PayloadBayOp::ParseScenarioLine (char *line)
 void PayloadBayOp::SaveState (FILEHANDLE scn)
 {
 	if (!BayDoorStatus.Closed())
-		WriteScenario_state (scn, "CARGODOOR", BayDoorStatus);
+		WriteScenario_state (scn, (char*)"CARGODOOR", BayDoorStatus);
 	if (!RadiatorStatus.Closed())
-		WriteScenario_state (scn, "RADIATOR", RadiatorStatus);
+		WriteScenario_state (scn, (char*)"RADIATOR", RadiatorStatus);
 	if (!RadLatchStatus.Closed())
-		WriteScenario_state (scn, "RADLATCH", RadLatchStatus);
+		WriteScenario_state (scn, (char*)"RADLATCH", RadLatchStatus);
 	if (!KuAntennaStatus.Closed())
-		WriteScenario_state (scn, "KUBAND", KuAntennaStatus);
+		WriteScenario_state (scn, (char*)"KUBAND", KuAntennaStatus);
 }
 
 // ==============================================================
@@ -529,7 +529,7 @@ void PayloadBayOp::UpdateDialog (HWND hWnd)
 	}
 	oapiSetSwitchState (GetDlgItem (hWnd, IDC_PLBD), BayDoorOp == BDO_OPEN ? 0 : BayDoorOp == BDO_CLOSE ? 1 : 2, true);
 
-	static char *PLBDstr[5] = {"===","CL","OP","\\\\\\\\\\","\\\\\\\\\\"};
+	static const char *PLBDstr[5] = {"===","CL","OP","\\\\\\\\\\","\\\\\\\\\\"};
 	SetWindowText (GetDlgItem (hWnd, IDC_PLBD_TLKBK), PLBDstr[BayDoorStatus.action]);
 
 	for (i = 0; i < 2; i++) {
@@ -539,7 +539,7 @@ void PayloadBayOp::UpdateDialog (HWND hWnd)
 	}
 
 	for (i = 0; i < 2; i++) {
-		static char *RDCTstr[5] = {"===","STO","DPL","\\\\\\\\\\","\\\\\\\\\\"};
+		static const char *RDCTstr[5] = {"===","STO","DPL","\\\\\\\\\\","\\\\\\\\\\"};
 		int rad_ctrl[2] = {IDC_RADA, IDC_RADB};
 		int rad_tlkbk[2] = {IDC_RADS_TLKBK, IDC_RADP_TLKBK};
 		oapiSetSwitchState (GetDlgItem (hWnd, rad_ctrl[i]), RadiatorCtrl[i] == RC_DEPLOY ? 0 : RadiatorCtrl[i] == RC_OFF ? 2 : 1, true);
@@ -547,7 +547,7 @@ void PayloadBayOp::UpdateDialog (HWND hWnd)
 	}
 
 	for (i = 0; i < 2; i++) {
-		static char *LTCTstr[5] = {"===","LAT","REL","\\\\\\\\\\","\\\\\\\\\\"};
+		static const char *LTCTstr[5] = {"===","LAT","REL","\\\\\\\\\\","\\\\\\\\\\"};
 		int lat_ctrl[2] = {IDC_LATCHA, IDC_LATCHB};
 		int lat_tlkbk[2] = {IDC_LATCHS_TLKBK, IDC_LATCHP_TLKBK};
 		oapiSetSwitchState (GetDlgItem (hWnd, lat_ctrl[i]), RadLatchCtrl[i] == LC_RELEASE ? 0 : RadLatchCtrl[i] == LC_OFF ? 2 : 1, true);
@@ -556,7 +556,7 @@ void PayloadBayOp::UpdateDialog (HWND hWnd)
 
 	oapiSetSwitchState (GetDlgItem (hWnd, IDC_KU), KuCtrl == KU_DEPLOY ? 0 : KuCtrl == KU_STOW ? 1 : 2, true);
 	oapiSetSwitchState (GetDlgItem (hWnd, IDC_KU_DIRECT), KuDirectCtrl == KU_DIRECT_ON ? 0 : 1, true);
-	static char *KUstr[5] = {"===","STO","DPL","\\\\\\\\\\","\\\\\\\\\\"};
+	static const char *KUstr[5] = {"===","STO","DPL","\\\\\\\\\\","\\\\\\\\\\"};
 	SetWindowText (GetDlgItem (hWnd, IDC_KU_TLKBK), KUstr[KuAntennaStatus.action]);
 }
 
@@ -580,7 +580,7 @@ INT_PTR PayloadBayOp::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) {
 		case IDHELP:
-			g_hc.topic = "/BayOp.htm";
+			g_hc.topic = (char*)"/BayOp.htm";
 			oapiOpenHelp (&g_hc);
 			return TRUE;
 		case IDCANCEL:
