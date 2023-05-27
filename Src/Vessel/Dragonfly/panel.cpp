@@ -43,7 +43,7 @@ SURFHANDLE hADIBorder;
 SURFHANDLE hFront_Panel_SRF[7];
 bool Panel_Resources_Loaded;
 
-int LoadOGLBitmap(char *filename)
+int LoadOGLBitmap(const char *filename)
 {
    unsigned char *l_texture;
    int l_index, l_index2=0;
@@ -251,7 +251,7 @@ void Panel::Save(FILEHANDLE scn)
  		    runner=runner->next;
 			//every 5 switches save
 			if (index==5) {sprintf (cbuf, "%i %i %i %i %i ",int_sv[0],int_sv[1],int_sv[2],int_sv[3],int_sv[4]);
-	                       oapiWriteScenario_string (scn, "    SW ", cbuf);
+	                       oapiWriteScenario_string (scn, (char*)"    SW ", cbuf);
 						   index=0;
 						}
 	};
@@ -260,11 +260,11 @@ void Panel::Save(FILEHANDLE scn)
 		{
 		int_sv[index]=99;
 		sprintf (cbuf, "%i %i %i %i %i ",int_sv[0],int_sv[1],int_sv[2],int_sv[3],int_sv[4]);
-	    oapiWriteScenario_string (scn, "    SW ", cbuf);
+	    oapiWriteScenario_string (scn, (char*)"    SW ", cbuf);
 		index=0;
 		};
   cbuf[0]=0;
-  oapiWriteScenario_string (scn, "  SW END ", cbuf);
+  oapiWriteScenario_string (scn, (char*)"  SW END ", cbuf);
   //save the rotary
   runner=instruments;
   index=0;
@@ -274,7 +274,7 @@ void Panel::Save(FILEHANDLE scn)
  		    runner=runner->next;
 			//every 5 switches save
 			if (index==5) {sprintf (cbuf, "%i %i %i %i %i ",int_sv[0],int_sv[1],int_sv[2],int_sv[3],int_sv[4]);
-	                       oapiWriteScenario_string (scn, "    ROT ", cbuf);
+	                       oapiWriteScenario_string (scn, (char*)"    ROT ", cbuf);
 						   index=0;
 						}
 	};
@@ -283,11 +283,11 @@ void Panel::Save(FILEHANDLE scn)
 		{
 		int_sv[index]=99;
 		sprintf (cbuf, "%i %i %i %i %i ",int_sv[0],int_sv[1],int_sv[2],int_sv[3],int_sv[4]);
-	    oapiWriteScenario_string (scn, "    ROT ", cbuf);
+	    oapiWriteScenario_string (scn, (char*)"    ROT ", cbuf);
 		index=0;
 		};
   cbuf[0]=0;
-  oapiWriteScenario_string (scn, "  ROT END ", cbuf);
+  oapiWriteScenario_string (scn, (char*)"  ROT END ", cbuf);
   runner=instruments;
   //index=0;
   while (runner)
@@ -297,12 +297,12 @@ void Panel::Save(FILEHANDLE scn)
 			sprintf(cbuf,"%0.4f %0.4f %0.4f %i %i %0.4f %0.4f %0.4f",adi_p->now.x,adi_p->now.y,adi_p->now.z,
 															    adi_p->orbital_ecliptic,adi_p->function_mode,
 																adi_p->reference.x,adi_p->reference.y,adi_p->reference.z);
-			oapiWriteScenario_string (scn, "    ADI ", cbuf);
+			oapiWriteScenario_string (scn, (char*)"    ADI ", cbuf);
 			};//end of if
     runner=runner->next;
   };//end of while
   cbuf[0]=0;
-  oapiWriteScenario_string (scn, "  PAN END ", cbuf);
+  oapiWriteScenario_string (scn, (char*)"  PAN END ", cbuf);
 }
 void Panel::Load(FILEHANDLE scn)
 { instrument_list *runner=instruments;

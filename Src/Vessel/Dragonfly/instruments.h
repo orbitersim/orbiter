@@ -83,7 +83,7 @@ class EGauge:public instrument
     int MaxV,MinV;						// min & max values on the scale
     float scale;							// scale between displayed values and actual pointer value (usually 10,100,1000);
 	float *SRC;
-    EGauge(int x, int y, float* i_SRC,char i_unit[5],int i_min,int i_max, float i_scale,Panel* i_parent);
+    EGauge(int x, int y, float* i_SRC,const char i_unit[5],int i_min,int i_max, float i_scale,Panel* i_parent);
 	virtual ~EGauge(){ oapiDestroySurface(temps);};
 	void RegisterMe(int index);
 	void PaintMe();
@@ -102,7 +102,7 @@ class HGauge:public instrument
     float    scale;				// scale between displayed values and actual source value (usually 10,100 or1000)
 	int    NrFig,NrLin;			// nubmer of markers & numbers ( gradations) on the gauge
     int lastdraw1,lastdraw2;    // where did we last draw this ?
-	HGauge(int x,int y, int i_w,int i_h,float* i_SRC1,float* i_SRC2,char i_unit[15],int i_min,int i_max, float i_scale,int i_fig,int i_lin,Panel *parent);
+	HGauge(int x,int y, int i_w,int i_h,float* i_SRC1,float* i_SRC2,const char i_unit[15],int i_min,int i_max, float i_scale,int i_fig,int i_lin,Panel *parent);
 	virtual ~HGauge(){ oapiDestroySurface(temps);};
 	void RegisterMe(int index);
 	void PaintMe();
@@ -133,7 +133,7 @@ class Rotary:public instrument
     int     set;				// position of rotary (0 being the leftmost)
     int     poznr;				// total number of positions 
     POINT   draw[6];			// data used to store the handle draw
-    Rotary(int x,int y,char i_name[15],char i_names[7][12], int i_set, int i_poz,Panel* parent);
+    Rotary(int x,int y,const char i_name[15],const char i_names[7][12], int i_set, int i_poz,Panel* parent);
 	void RegisterMe(int index);
 	void PaintMe();
 	void LBD(int x,int y);
@@ -188,7 +188,7 @@ class CW:public instrument
    char text[20];
    int alarm;	//are we activated?
    SURFHANDLE temps;
-   CW(int x,int y,char *i_text,Panel *i_parent);
+   CW(int x,int y,const char *i_text,Panel *i_parent);
    virtual ~CW();
    void RegisterMe(int index);
    void PaintMe();

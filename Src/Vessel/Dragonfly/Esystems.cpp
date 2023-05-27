@@ -86,7 +86,7 @@ void Socket::Load(FILEHANDLE scn)
 void Socket::Save(FILEHANDLE scn)
 {   char cbuf[50];
 	sprintf (cbuf, "%i",curent);
-	oapiWriteScenario_string (scn, "    SOCKET ", cbuf);
+	oapiWriteScenario_string (scn, (char*)"    SOCKET ", cbuf);
 }
 
 //----------------------------------- FUEL CELL --------------------------------------
@@ -267,7 +267,7 @@ void FCell::Load(FILEHANDLE scn)
 void FCell::Save(FILEHANDLE scn)
 {   char cbuf[50];
 	sprintf (cbuf, "%i %0.4f ",status, clogg);
-	oapiWriteScenario_string (scn, "    FCELL ", cbuf);
+	oapiWriteScenario_string (scn, (char*)"    FCELL ", cbuf);
 }
 //-------------------------------------- BATTERY ---------------------------------
 Battery::Battery(e_object *i_src, double i_power)
@@ -319,7 +319,7 @@ void Battery::Load(FILEHANDLE scn)
 void Battery::Save(FILEHANDLE scn)
 {   char cbuf[50];
 	sprintf (cbuf, "%0.0f %0.4f %i",loading, power,c_breaker);
-	oapiWriteScenario_string (scn, "    BATTERY ", cbuf);
+	oapiWriteScenario_string (scn, (char*)"    BATTERY ", cbuf);
 }
 
 
@@ -392,7 +392,7 @@ void DCbus::Load(FILEHANDLE scn)
 void DCbus::Save(FILEHANDLE scn)
 {   char cbuf[50];
 	sprintf (cbuf, "%0.4f ",branch_amps);
-	oapiWriteScenario_string (scn, "    DC ", cbuf);
+	oapiWriteScenario_string (scn, (char*)"    DC ", cbuf);
 }
 
 //------------------------ AC BUS -------------------------------------------------
@@ -466,7 +466,7 @@ void ACbus::Load(FILEHANDLE scn)
 void ACbus::Save(FILEHANDLE scn)
 {   char cbuf[50];
 	sprintf (cbuf, "%0.4f ",branch_amps);
-	oapiWriteScenario_string (scn, "    AC ", cbuf);
+	oapiWriteScenario_string (scn, (char*)"    AC ", cbuf);
 }
 
 Heater::Heater(therm_obj *i_term,float *iw_SRC, float i_max,float i_min,float i_power,float amps,e_object *i_SRC)
@@ -509,7 +509,7 @@ void Heater::Load(FILEHANDLE scn)
 void Heater::Save(FILEHANDLE scn)
 {   char cbuf[20];
 	sprintf (cbuf, "%i ",on);
-	oapiWriteScenario_string (scn, "    HT ", cbuf);
+	oapiWriteScenario_string (scn, (char*)"    HT ", cbuf);
 }
  			
 Fan::Fan(Valve *ih_SRC,Tank *i_TRG,float i_max,float i_amps,e_object *i_SRC)
@@ -544,7 +544,7 @@ void Fan::Load(FILEHANDLE scn)
 void Fan::Save(FILEHANDLE scn)
 {   char cbuf[20];
 	sprintf (cbuf, "%i ",on);
-	oapiWriteScenario_string (scn, "    FAN ", cbuf);
+	oapiWriteScenario_string (scn, (char*)"    FAN ", cbuf);
 }
 
 Boiler::Boiler(int i_open,int ct,float i_maxf, Valve *i_src,float temps,float i_boil, e_object *ie_SRC):Valve(i_open,ct,i_maxf,i_src)

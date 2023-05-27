@@ -256,7 +256,7 @@ else {
 };
 
 //------------------------------------ EGAUGE ------------------------------------------ 
- EGauge::EGauge(int x, int y, float *i_SRC,char i_unit[5],int i_min,int i_max, float i_scale,Panel* i_parent):instrument(x,y,i_parent)
+ EGauge::EGauge(int x, int y, float *i_SRC,const char i_unit[5],int i_min,int i_max, float i_scale,Panel* i_parent):instrument(x,y,i_parent)
  {MinV=i_max;MaxV=i_min;scale=i_scale;SRC=i_SRC;
   strcpy(unit,i_unit);
   temps=oapiCreateSurface(40,40);
@@ -347,7 +347,7 @@ Polygon(hDC,S,3);// then the pointer
 oapiReleaseDC(parent->surf,hDC);
  };
 //----------------------------------- HGAUGE ------------------------------------------
-HGauge::HGauge(int x,int y, int i_w,int i_h,float* i_SRC1,float* i_SRC2,char i_unit[15],int i_min,int i_max, float i_scale,int i_fig,int i_lin,Panel *parent):instrument(x,y,parent)
+HGauge::HGauge(int x,int y, int i_w,int i_h,float* i_SRC1,float* i_SRC2,const char i_unit[15],int i_min,int i_max, float i_scale,int i_fig,int i_lin,Panel *parent):instrument(x,y,parent)
 { Hght=i_h;Wdth=i_w;SRC1=i_SRC1;SRC2=i_SRC2;
   MaxV=i_max;MinV=i_min;scale=i_scale;NrFig=i_fig;NrLin=i_lin;
   strcpy(unit,i_unit);
@@ -426,7 +426,7 @@ oapiBlt(parent->surf,temps,85-22,0,10,0,9,190);
       };
 //---------------------------- ROTARY --------------------------------------------
 
-Rotary::Rotary(int x,int y,char i_name[15],char i_names[7][12], int i_set, int i_poz,Panel* parent):instrument(x,y,parent)
+Rotary::Rotary(int x,int y,const char i_name[15],const char i_names[7][12], int i_set, int i_poz,Panel* parent):instrument(x,y,parent)
 {
 	 strcpy(screentext,i_name); 
 	 for (int i=0;i<7;i++)  strcpy(names[i],i_names[i]);
@@ -576,7 +576,7 @@ bool bounds::test()
  return false;
 };
 
-CW::CW(int x,int y,char *i_text,Panel *i_parent):instrument(x,y,i_parent)
+CW::CW(int x,int y,const char *i_text,Panel *i_parent):instrument(x,y,i_parent)
 {b_list.next=NULL;last=&b_list;
  strcpy(text,i_text);alarm=1;
  temps=oapiCreateSurface(100,31);

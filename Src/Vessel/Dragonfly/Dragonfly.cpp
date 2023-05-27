@@ -241,15 +241,15 @@ void Dragonfly::SaveState (FILEHANDLE scn)
 
 	// custom parameters
 	sprintf (cbuf, "%f %f %i %i %i", UP_pos ,UY_pos,UP_handle, UY_handle,UAnt_handle);
-	oapiWriteScenario_string (scn, "UPPERANT", cbuf);
+	oapiWriteScenario_string (scn, (char*)"UPPERANT", cbuf);
 	sprintf (cbuf, "%f %f %i %i %i", LP_pos ,LY_pos,LP_handle, LY_handle,LAnt_handle);
-	oapiWriteScenario_string (scn, "LOWERANT", cbuf);
+	oapiWriteScenario_string (scn, (char*)"LOWERANT", cbuf);
     sprintf(cbuf,"%f %i",dock_latched,latch_handle);
-    oapiWriteScenario_string (scn, "HATCH", cbuf);
+    oapiWriteScenario_string (scn, (char*)"HATCH", cbuf);
 	//char *name;
 	if (Dock_target_object) {
 		 oapiGetObjectName(Dock_target_object,cbuf,256);
-		 oapiWriteScenario_string (scn, "ANTTRG", cbuf);
+		 oapiWriteScenario_string (scn, (char*)"ANTTRG", cbuf);
 	}
 }
 void Dragonfly::DockEvent (int dock, OBJHANDLE connected)
