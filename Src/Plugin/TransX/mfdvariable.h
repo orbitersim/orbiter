@@ -48,10 +48,10 @@ public:
 	void initialise(class MFDvarhandler *vars,int viewmode1,int viewmode2);
 	virtual ~MFDvariable();
 	void setshow(bool value);
-	bool showgeneric(oapi::Sketchpad *sketchpad,int width,int line, char *inbuff);
+	bool showgeneric(oapi::Sketchpad *sketchpad, int width, int line, const char *inbuff);
 	virtual void showadjustment(oapi::Sketchpad *sketchpad, int width, int line) const {}; //Show the adjustment mode
 	void gethelpstrings(char *help1, char *help2) const;//Returns help strings
-	void sethelpstrings(char *help1, char *help2);//Sets help strings
+	void sethelpstrings(const char *help1, const char *help2);//Sets help strings
 	void getname(char *buffer) const;
 	virtual void getsaveline(char *buffer) const = 0 ;//Creates second line of save - overloaded
 	virtual bool loadvalue(char *buffer);//Set value according to string

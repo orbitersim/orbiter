@@ -142,7 +142,7 @@ void shipptrs::restoreallships(FILEHANDLE scn)
 
 void shipptrs::savecurrent(FILEHANDLE scn)
 {
-	oapiWriteScenario_string(scn,"Ship ",shipname);
+	oapiWriteScenario_string(scn,(char*)"Ship ",shipname);
 	state->savecurrent(scn);
 }
 
