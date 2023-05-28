@@ -118,8 +118,8 @@ OAPI_MSGTYPE TransxMFD::MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lpara
 char *TransxMFD::ButtonLabel (int bt)
 // Routine to pass button label back to Orbiter. Called by Orbiter
 {
-	char *label[] = {"HLP","FWD","BCK", "VW","VAR","-VR", "ADJ", "-AJ","++", "--","EXE","ENT"};
-	return (bt < sizeof(label) / sizeof(char*) ? label[bt] : 0);
+	const char *label[] = {"HLP","FWD","BCK", "VW","VAR","-VR", "ADJ", "-AJ","++", "--","EXE","ENT"};
+	return (char*)(bt < sizeof(label) / sizeof(char*) ? label[bt] : 0);
 }
 
 int TransxMFD::ButtonMenu (const MFDBUTTONMENU **menu) const

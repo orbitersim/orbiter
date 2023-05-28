@@ -36,14 +36,14 @@ liststring::liststring(bool manageme) : listelement(manageme)
 	ZeroMemory(buffer, MAX_STRING_LENGTH);
 }
 
-void MFDsemiintdiscrete::init(MFDvarhandler *vars,int viewmode1,int viewmode2,char *vname,int tvalue)
+void MFDsemiintdiscrete::init(MFDvarhandler *vars, int viewmode1, int viewmode2, const char *vname, int tvalue)
 {
 	value=tvalue;
 	initialise(vars,viewmode1,viewmode2);
 	strcpy(name,vname);
 }
 
-void MFDvarmoon::init(MFDvarhandler *vars,int viewmode1,int viewmode2,char *vname,OBJHANDLE tcentralbody)
+void MFDvarmoon::init(MFDvarhandler *vars, int viewmode1, int viewmode2, const char *vname, OBJHANDLE tcentralbody)
 {
 	adjMode = Planet;
 	initialise(vars,viewmode1,viewmode2);
@@ -146,7 +146,7 @@ void MFDvarmoon::dec_variable()
 		}
 	}
 	else
-		oapiOpenInputBox("Select Ship",SelectVariableBody,0,20, (void*)this);
+		oapiOpenInputBox((char*)"Select Ship",SelectVariableBody,0,20, (void*)this);
 }
 
 void MFDvarmoon::initvalidate()
@@ -157,9 +157,9 @@ void MFDvarmoon::initvalidate()
 
 void MFDvarmoon::enter_variable() {
 	if (adjMode == Planet) {
-		oapiOpenInputBox("Select Planet (STUB) Only ships",SelectVariableBody,0,20, (void*)this);
+		oapiOpenInputBox((char*)"Select Planet (STUB) Only ships",SelectVariableBody,0,20, (void*)this);
 	} else {
-		oapiOpenInputBox("Select Ship",SelectVariableBody,0,20, (void*)this);
+		oapiOpenInputBox((char*)"Select Ship",SelectVariableBody,0,20, (void*)this);
 	}
 }
 
@@ -194,7 +194,7 @@ void MFDvarmoon::inc_variable()
 		}
 	}
 	else
-		oapiOpenInputBox("Select Ship",SelectVariableBody,0,20, (void*)this);
+		oapiOpenInputBox((char*)"Select Ship",SelectVariableBody,0,20, (void*)this);
 }
 
 void MFDvarmoon::ch_adjmode()
@@ -333,7 +333,7 @@ MFDvarfloat::MFDvarfloat()
 	continuous = true;
 }
 
-void MFDvarfloat::init(MFDvarhandler *vars,int viewmode1,int viewmode2,char *vname, double vvalue, double vmin, double vmax, double vincrement, double vlogborder)
+void MFDvarfloat::init(MFDvarhandler *vars, int viewmode1, int viewmode2, const char *vname, double vvalue, double vmin, double vmax, double vincrement, double vlogborder)
 {
 	initialise(vars,viewmode1,viewmode2);
 	strcpy(name,vname);
@@ -372,7 +372,7 @@ OBJHANDLE MFDvarshiplist::gethandle() const
 }
 
 void MFDvarshiplist::enter_variable() {
-	oapiOpenInputBox("Select Ship",SelectVariableBody,0,20, (void*)this);
+	oapiOpenInputBox((char*)"Select Ship",SelectVariableBody,0,20, (void*)this);
 }
 
 void MFDvarshiplist::inc_variable()
@@ -483,7 +483,7 @@ void MFDvarfloat::showadjustment(oapi::Sketchpad *sketchpad, int width, int line
 void MFDvarfloat::enter_variable() {
     char tbuffer[128];
 	sprintf_s(tbuffer,"%.12g",value);
-	oapiOpenInputBox("Enter number. 'x' to reset, 'number+/number-' to inc/decrement",SelectVariableFloat,tbuffer,20, (void*)this);
+	oapiOpenInputBox((char*)"Enter number. 'x' to reset, 'number+/number-' to inc/decrement",SelectVariableFloat,tbuffer,20, (void*)this);
 }
 
 bool MFDvarfloat::floatvalidate(char * str, double * dfinal, double valcurrent, double valdefault) {
@@ -655,13 +655,13 @@ void MFDvarMJD::dec_variable()
     CalcAdjustedValue(false);
 }
 
-void MFDvarshiplist::init(MFDvarhandler *vars,int viewmode1,int viewmode2,char *vname)
+void MFDvarshiplist::init(MFDvarhandler *vars, int viewmode1, int viewmode2, const char *vname)
 {
 	initialise(vars,viewmode1,viewmode2);
 	strcpy(name,vname);//brings in variable name
 }
 
-void MFDvardiscrete::init(MFDvarhandler *vars,int viewmode1,int viewmode2,char *vname, int vvalue, int vlimit, char *st1, char *st2, char *st3, char *st4, char *st5)
+void MFDvardiscrete::init(MFDvarhandler *vars, int viewmode1, int viewmode2, const char *vname, int vvalue, int vlimit, const char *st1, const char *st2, const char *st3, const char *st4, const char *st5)
 {
 	initialise(vars,viewmode1,viewmode2);
 	strcpy(name,vname);
@@ -711,7 +711,7 @@ void MFDvardiscrete::inc_variable()
 		value=0;
 }
 
-void MFDvarangle::init(MFDvarhandler *vars,char *vname, bool vloop)
+void MFDvarangle::init(MFDvarhandler *vars, const char *vname, bool vloop)
 {
 	initialise(vars,3,3); //FIXME
 	strcpy(name,vname);
@@ -733,7 +733,7 @@ bool MFDvarangle::show(oapi::Sketchpad *sketchpad, int width, int line)
 void MFDvarangle::enter_variable() {
 	char tbuffer[128];
 	sprintf_s(tbuffer,"%.12g", (value/PI)*180 );
-	oapiOpenInputBox("Enter cookie, but no bufu. 'x' to reset, 'num+/num-' to inc/decrement",SelectVariableAngle,tbuffer,20, (void*)this);
+	oapiOpenInputBox((char*)"Enter cookie, but no bufu. 'x' to reset, 'num+/num-' to inc/decrement",SelectVariableAngle,tbuffer,20, (void*)this);
 }
 
 bool MFDvarangle::SetVariableAngle(char *str) { // FIXME: silly code duplication

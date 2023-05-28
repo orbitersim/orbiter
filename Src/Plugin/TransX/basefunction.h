@@ -66,7 +66,7 @@ protected:
 public:
 	class basefunction *getpreviousfunc(){return previousfunc;};
 	class basefunction *getnextfunc(){return nextfunc;};
-	void basefunction::onplaceindeletebuffer();//Do not call unless you know what it's for.
+	void onplaceindeletebuffer();//Do not call unless you know what it's for.
 	void calculate(VECTOR3 *targetvel);
 	int calcnewview(int oldview,bool firststage);
 	bool soistatus();
@@ -96,7 +96,7 @@ public:
     double GetTimeIntercept();
 	double GetHohmannDVExtend(double r1, double r2, double mass);
     double GetHohmannDV(); // Calculate Hohmann transfer dv
-	VECTOR3 basefunction::GetPlaneAxis(const OBJHANDLE hObj, const OBJHANDLE hRef);
+	VECTOR3 GetPlaneAxis(const OBJHANDLE hObj, const OBJHANDLE hRef);
     VECTOR3 GetLineOfNodes();
 };
 

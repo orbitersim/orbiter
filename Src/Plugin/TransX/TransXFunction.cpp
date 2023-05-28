@@ -57,7 +57,7 @@ TransXFunction::~TransXFunction()
 void TransXFunction::saveself(FILEHANDLE scn)
 {
 	//Write terminator
-	oapiWriteScenario_string(scn,"Finish","TransXFunction");
+	oapiWriteScenario_string(scn,(char*)"Finish",(char*)"TransXFunction");
 } //Should never be used - overloaded by further functions
 
 void TransXFunction::restoreself(FILEHANDLE scn)
@@ -120,14 +120,14 @@ void TransXFunction::savedouble(FILEHANDLE scn, double savenumber)
 {
 	char buffer[80]="";
 	sprintf(buffer," %.12g",savenumber);
-	oapiWriteScenario_string(scn,"Double",buffer);
+	oapiWriteScenario_string(scn,(char*)"Double",buffer);
 }
 
 void TransXFunction::savevector(FILEHANDLE scn, VECTOR3 &vector)
 {
 	char buffer[100]="";
 	sprintf(buffer," %.12g %.12g %.12g",vector.x,vector.y,vector.z);
-	oapiWriteScenario_string(scn,"Vector",buffer);
+	oapiWriteScenario_string(scn,(char*)"Vector",buffer);
 }
 
 
@@ -216,7 +216,7 @@ void TransXFunction::savehandle(FILEHANDLE scn, OBJHANDLE handle)
 		oapiGetObjectName(handle,namebuffer,30);
 	else
 		strcpy(namebuffer,"NULL");
-	oapiWriteScenario_string(scn,"Handle",namebuffer);
+	oapiWriteScenario_string(scn,(char*)"Handle",namebuffer);
 	return;
 }
 
@@ -228,7 +228,7 @@ void TransXFunction::saveorbit(FILEHANDLE scn, const OrbitElements &saveorbit)
 		strcpy(validvalue,"True");
 	else
 		strcpy(validvalue,"False");
-	oapiWriteScenario_string(scn,"Orbit",validvalue);
+	oapiWriteScenario_string(scn,(char*)"Orbit",validvalue);
 	if (!saveorbit.isvalid()) return;
 	VECTOR3 tpos,tvel;
 	saveorbit.getcurrentvectors(&tpos,&tvel);
@@ -370,7 +370,7 @@ oapi::Brush* TransXFunction::SelectBrush(oapi::Sketchpad *sketchpad, int value)
 		return sketchpad->SetBrush(NULL);
 }
 
-void TransXFunction::sethelp(char *help1,char *help2,char *help3,char *help4,char *help5)
+void TransXFunction::sethelp(const char *help1, const char *help2, const char *help3, const char *help4, const char *help5)
 {
 	strcpy(helpstring1,help1);
 	strcpy(helpstring2,help2);
