@@ -42,7 +42,7 @@ public:
 
 protected:
 	D3D7Mesh *CreateRing (double irad, double orad, int nsect);
-	DWORD RingManager::LoadTextures ();
+	DWORD LoadTextures ();
 
 private:
 	static const oapi::D3D7Client *gc;

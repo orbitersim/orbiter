@@ -71,7 +71,7 @@ void vObject::GlobalInit (const D3D7Client *gclient)
 	gc = gclient;
 
 	for (int i = 0; i < 3; i++) {
-		static char *fname[3] = {"Ball.dds","Ball2.dds","Ball3.dds"};
+		static const char *fname[3] = {"Ball.dds","Ball2.dds","Ball3.dds"};
 		gc->GetTexMgr()->LoadTexture (fname[i], blobtex+i, 0);
 	}
 }
