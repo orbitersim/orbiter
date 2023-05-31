@@ -61,7 +61,7 @@ using namespace std;
 static const int patchidx[9] = {0, 1, 2, 3, 5, 13, 37, 137, 501};
 // index to the first texture of a given surface patch level
 
-static char *TileID = "PLTS0101";
+static const char *TileID = "PLTS0101";
 
 typedef union {
 	BYTE data[3];
@@ -135,7 +135,7 @@ bool CreateSubPatch (double baselat0, double baselat1, double baselng0, double b
 void CreateCloudMap ();
 void MergeTextures ();
 void MergeTrees (MERGEDATA &md, DWORD idx1, DWORD idx2, DWORD idxm, bool baselvl);
-void SortTextures (char *rootname);
+void SortTextures (const char *rootname);
 void CopyTexturesAtLevel (TILEFILESPEC *td, DWORD baseidx, DWORD lvl, DWORD tgtlvl, DWORD &texidx, DWORD &maskidx,
 	FILE *srctexf, FILE *srcmaskf, FILE *tgttexf, FILE *tgtmaskf);
 
@@ -197,7 +197,7 @@ void ErodeLights (RGB *limg, Alpha *aimg, LONG imgw, LONG imgh);
 // Erase emissive pixels from water edges to avoid visual artefacts
 
 void DeleteTargets (RGB **tgt, Alpha **atgt = 0, RGB **ltgt = 0);
-void FatalError (char *msg);
+void FatalError (const char *msg);
 void InitProgress (int ntot, int len);
 void SetProgress (int p);
 void IncProgress ();
@@ -206,9 +206,9 @@ void IncProgress ();
 const double eps = 1e-10;
 const char *dxtex = ".\\dxtex.exe";
 char g_cwd[256];
-char g_fname[256] = "\0";
-char g_aname[256] = "\0";
-char g_lname[256] = "\0";
+char fname[256] = "\0";
+char aname[256] = "\0";
+char lname[256] = "\0";
 bool have_alpha = false;
 bool binary_alpha = true;
 bool selective_alpha = false;
@@ -234,10 +234,10 @@ int main (int argc, char *argv[])
 		if (argv[i][0] != '-') FatalError ("Command line parsing error");
 		switch (argv[i][1]) {
 		case 'i':
-			strcpy (g_fname, argv[++i]);
+			strcpy (fname, argv[++i]);
 			break;
 		case 'a':
-			strcpy (g_aname, argv[++i]);
+			strcpy (aname, argv[++i]);
 			have_alpha = true;
 			break;
 		case 'l':
@@ -296,9 +296,6 @@ void CreateGlobalSurface ()
 	int i, k, which, lmax;
 	int minres = g_minres, maxres = g_maxres;
 	char c;
-	char *fname = g_fname;
-	char *aname = g_aname;
-	char *lname = g_lname;
 	LONG mapw, maph;
 	WORD bpp;
 	DWORD patchflag;
@@ -814,9 +811,6 @@ void CreateLocalArea ()
 	RGB *limg = 0, *lpatch = 0;
 	Alpha *aimg = 0, *atgt, *apatch = 0;
 	char c;
-	char *fname = g_fname;
-	char *aname = g_aname;
-	char *lname = g_lname;
 	char *cbuf = g_cwd+strlen(g_cwd);
 	FILE *texf = 0, *mtexf = 0;
 	bool mixed = false, skipwater = false, nlights = false, needmask = false, mipmap = false, global;
@@ -1287,7 +1281,7 @@ bool CreateSubPatch (double baselat0, double baselat1, double baselng0, double b
 	return bIsTile;
 }
 
-void SortTextures (char *rootname)
+void SortTextures (const char *rootname)
 {
 	char cbuf[256], rtname[256];
 	char idstr[9] = "        ";
@@ -1379,7 +1373,7 @@ void CopyTexturesAtLevel (TILEFILESPEC *td, DWORD baseidx, DWORD lvl, DWORD tgtl
 
 void MergeTextures ()
 {
-	char *fname1 = g_fname, fname2[256], cbuf[256], errstr[256] = "File not found: ";
+	char fname2[256], cbuf[256], errstr[256] = "File not found: ";
 	char idstr[9] = "        ";
 	FILE *binf1, *binf2, *texf1, *texf2, *texfm, *maskf1, *maskf2, *maskfm = NULL;
 	DWORD i, ntd1, ntd2, ntdm;
@@ -1398,7 +1392,7 @@ void MergeTextures ()
 	cout << "  <basename1>_tile.tex       (surface texture file)\n";
 	cout << "  <basename1>_tile_lmask.tex (land-water mask file; optional)\n\n";
 	cout << ">> Base name 1: ";
-	cin >> fname1;
+	cin >> fname;
 
 	cout << "\n\nEnter the base name for the second set of texture files. This is the\n";
 	cout << "set that will be merged into the first set.\n";
@@ -1409,17 +1403,17 @@ void MergeTextures ()
 	cout << ">> Base name 2: ";
 	cin >> fname2;
 
-	strcpy (cbuf, fname1); strcat (cbuf, "_tile.bin");
+	strcpy (cbuf, fname); strcat (cbuf, "_tile.bin");
 	if (!(binf1 = fopen (cbuf, "rb"))) {
 		strcat (errstr, cbuf);
 		FatalError (errstr);
 	}
-	strcpy (cbuf, fname1); strcat (cbuf, "_tile.tex");
+	strcpy (cbuf, fname); strcat (cbuf, "_tile.tex");
 	if (!(texf1 = fopen (cbuf, "rb"))) {
 		strcat (errstr, cbuf);
 		FatalError (errstr);
 	}
-	strcpy (cbuf, fname1); strcat (cbuf, "_tile_lmask.tex");
+	strcpy (cbuf, fname); strcat (cbuf, "_tile_lmask.tex");
 	maskf1 = fopen (cbuf, "rb");
 	strcpy (cbuf, fname2); strcat (cbuf, "_tile.bin");
 	if (!(binf2 = fopen (cbuf, "rb"))) {
@@ -1450,7 +1444,7 @@ void MergeTextures ()
 	ntdm = 364;
 
 	cout << "\n-------------------------------------------------\n\n";
-	cout << "Tile set 1 (" << fname1 << ") contains " << ntd1 << " tile descriptors\n";
+	cout << "Tile set 1 (" << fname  << ") contains " << ntd1 << " tile descriptors\n";
 	cout << "Tile set 2 (" << fname2 << ") contains " << ntd2 << " tile descriptors\n";
 	cout << endl << "Merging  \t";
 	InitProgress (364, 40);
@@ -1563,8 +1557,6 @@ void CreateCloudMap ()
 	int i, k, lmax, which;
 	bool transp;
 	char c;
-	char *fname = g_fname;
-	char *aname = g_aname;
 	char *cbuf = g_cwd+strlen(g_cwd);
 	DWORD patchflag;
 	WORD bpp;
@@ -2732,7 +2724,7 @@ void DeleteTargets (RGB **tgt, Alpha **atgt, RGB **ltgt)
 	if (ltgt && *ltgt) delete []*ltgt, *ltgt = 0;
 }
 
-void FatalError (char *msg)
+void FatalError (const char *msg)
 {
 	cerr << endl << "pltex ERROR: " << msg << endl;
 	cerr << "Press a key to terminate." << endl;
