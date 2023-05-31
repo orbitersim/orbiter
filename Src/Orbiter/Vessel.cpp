@@ -5555,8 +5555,10 @@ bool Vessel::VCRedrawEvent (int id, int event, SURFHANDLE surf) const
 
 bool Vessel::VCMouseEvent (int id, int event, Vector &p) const
 {
-	if (modIntf.v && modIntf.v->Version() >= 1)
-		return ((VESSEL2*)modIntf.v)->clbkVCMouseEvent (id, event, _V(p.x,p.y,p.z));
+	if (modIntf.v && modIntf.v->Version() >= 1) {
+		VECTOR3 v = _V(p.x,p.y,p.z);
+		return ((VESSEL2*)modIntf.v)->clbkVCMouseEvent (id, event, v);
+	}
 	else
 		return false;
 }
