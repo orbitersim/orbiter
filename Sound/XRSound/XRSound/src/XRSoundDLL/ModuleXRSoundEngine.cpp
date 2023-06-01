@@ -84,7 +84,7 @@ bool ModuleXRSoundEngine::SetDefaultSoundGroupFolder(const XRSound::DefaultSound
 // Default sound groups are not supported for modules
 const char *ModuleXRSoundEngine::GetDefaultSoundGroupFolder(const XRSound::DefaultSoundID groupSoundID) const
 {
-    return false;
+    return nullptr;
 }
 
 // Update the playback state & volume of a single sound based.  Unlike vessel-played sounds, all module sounds play as "global"
