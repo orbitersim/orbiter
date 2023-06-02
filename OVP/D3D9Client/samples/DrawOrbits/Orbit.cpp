@@ -414,14 +414,14 @@ void COrbit::CreateFromStateVectors(const VECTOR3 &_pos, const VECTOR3 &_vel, do
 	double v2 = sqrlen(_vel);
 	double r2 = sqrlen(_pos);
 	double  r = sqrt(r2);
-	double or = 1.0 / r;
+	double Or = 1.0 / r;
 	double om = 1.0 / mu;
 
 	// Eccentricity VECTOR3
-	_P = ((_pos * (v2 - mu* or )) - (_vel * dotp(_pos, _vel))) * om;
+	_P = ((_pos * (v2 - mu* Or )) - (_vel * dotp(_pos, _vel))) * om;
 	_H = crossp_LH(_pos, _vel);
 	_Q = unit(crossp_LH(_H, _P));
-	_R = _pos* or ;
+	_R = _pos* Or ;
 
 	// Eccentricity
 	ecc = length(_P);

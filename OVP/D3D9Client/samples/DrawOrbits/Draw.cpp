@@ -146,7 +146,7 @@ void Orbits::clbkSimulationStart(RenderMode rm)
 {
 	upidx = 0;
 
-	oapiWriteLog("oapi::Module::clbkSimulationStart");
+	oapiWriteLog((char*)"oapi::Module::clbkSimulationStart");
 	
 	size_t bcnt{ oapiGetGbodyCount() };
 	Ref = new ReferenceClass();
@@ -158,7 +158,7 @@ void Orbits::clbkSimulationStart(RenderMode rm)
 	if (pCore)
 	{
 		hTex = oapiLoadTexture("samples/DrawOrbits/Orbits.dds");
-		hFnt = oapiCreateFontEx(15, "Arial");
+		hFnt = oapiCreateFontEx(15, (char*)"Arial");
 
 		pCore->RegisterRenderProc(RenderOrbitClbk, RENDERPROC_PLANETARIUM, this);
 
@@ -176,7 +176,7 @@ void Orbits::clbkSimulationStart(RenderMode rm)
 			}
 		}
 	}
-	else oapiWriteLog("Error: No pCore");
+	else oapiWriteLog((char*)"Error: No pCore");
 }
 
 
@@ -184,7 +184,7 @@ void Orbits::clbkSimulationStart(RenderMode rm)
 //
 void Orbits::clbkSimulationEnd()
 {
-	oapiWriteLog("oapi::Module::clbkSimulationEnd");
+	oapiWriteLog((char*)"oapi::Module::clbkSimulationEnd");
 
 	if (pCore) 
 	{
