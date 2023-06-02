@@ -48,8 +48,8 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 	// To allow the user to open our new dialog box, we create
 	// an entry in the "Custom Functions" list which is accessed
 	// in Orbiter via Ctrl-F4.
-	g_dwCmd = oapiRegisterCustomCmd ("DX9 External MFD",
-		"Opens a multifunctional display in an external window",
+	g_dwCmd = oapiRegisterCustomCmd ((char*)"DX9 External MFD",
+		(char*)"Opens a multifunctional display in an external window",
 		OpenDlgClbk, NULL);
 
 	// Load the bitmap for the "pin" title button
