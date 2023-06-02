@@ -315,7 +315,7 @@ bool Tile::Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir, TILEPICK &result
 	VERTEX_2TEX *vtx = mesh->vtx;
 
 	D3DXMatrixInverse(&mWI, &det, pW);
-	D3DXVec3TransformCoord(&pos, &D3DXVECTOR3(0, 0, 0), &mWI);
+	D3DXVec3TransformCoord(&pos, ptr(D3DXVECTOR3(0, 0, 0)), &mWI);
 	D3DXVec3TransformNormal(&dir, vDir, &mWI);
 
 	int idx = -1;
@@ -332,7 +332,7 @@ bool Tile::Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir, TILEPICK &result
 
 		float u, v, dst;
 
-		D3DXVec3Cross(&cp, &(_c - _b), &(_a - _b));
+		D3DXVec3Cross(&cp, ptr(_c - _b), ptr(_a - _b));
 
 		if (D3DXVec3Dot(&cp, &dir)<0) {
 			if (D3DXIntersectTri(&_c, &_b, &_a, &pos, &dir, &u, &v, &dst)) {
@@ -364,7 +364,7 @@ bool Tile::Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir, TILEPICK &result
 		_b = D3DXVECTOR3(vtx[b].x, vtx[b].y, vtx[b].z);
 		_c = D3DXVECTOR3(vtx[c].x, vtx[c].y, vtx[c].z);
 
-		D3DXVec3Cross(&cp, &(_c - _b), &(_a - _b));
+		D3DXVec3Cross(&cp, ptr(_c - _b), ptr(_a - _b));
 		D3DXVec3TransformNormal(&cp, &cp, pW);
 		D3DXVec3Normalize(&result._n, &cp);
 
