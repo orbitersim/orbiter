@@ -3315,7 +3315,7 @@ D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const LPD3DXMATRIX pT, const D3DX
 
 // This is a special rendering routine used to render 3D arrow --------------------------------
 //
-void D3D9Mesh::RenderAxisVector(LPD3DXMATRIX pW, const LPD3DXCOLOR pColor, float len)
+void D3D9Mesh::RenderAxisVector(LPD3DXMATRIX pW, const D3DXCOLOR *pColor, float len)
 {
 	UINT numPasses = 0;
 	HR(FX->SetTechnique(eAxisTech));
