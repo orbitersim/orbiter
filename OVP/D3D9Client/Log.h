@@ -47,7 +47,7 @@ extern std::queue<std::string> D3D9DebugQueue;
 void   RuntimeError(const char* File, const char* Fnc, UINT Line);
 void   D3D9DebugLog(const char *format, ...);
 void   D3D9DebugLogVec(const char* lbl, oapi::FVECTOR4 &v);
-void   D3D9InitLog(char *file);
+void   D3D9InitLog(const char *file);
 void   D3D9CloseLog();
 void   LogTrace(const char *format, ...);
 void   LogErr(const char *format, ...);
