@@ -8,6 +8,7 @@
 
 #include "TileLabel.h"
 #include <limits>
+#include <memory>
 #include <sstream>
 
 TileLabel *TileLabel::Create (const SurfTile *stile)
@@ -66,7 +67,7 @@ TileLabel::~TileLabel ()
 // ---------------------------------------------------------------------------
 
 static int _wbufferSize = 0;
-static std::auto_ptr<WCHAR> _wbuffer; // this should get destroyed @ shutdown
+static std::unique_ptr<WCHAR> _wbuffer; // this should get destroyed @ shutdown
 
 static LPWSTR GetWBuffer (const std::string &name, int *_len, int _stopLen = -1)
 {
