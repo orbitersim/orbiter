@@ -185,7 +185,7 @@ public:
 
 	void OnOptionChanged(int cat, int item);
 
-	const D3D9Sun *Scene::GetSun() const { return &sunLight; }
+	const D3D9Sun *GetSun() const { return &sunLight; }
 	const D3D9Light *GetLight(int index) const;
 	const D3D9Light *GetLights() const { return Lights; }
 	DWORD GetLightCount() const { return nLights; }
