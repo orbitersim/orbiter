@@ -947,7 +947,7 @@ void D3D9PolyLine::Update(const FVECTOR2 *_pt, int _npt, bool bConnect)
 		vI+=2;
 		// --------------------------------------
 		pp = pt[i];
-		length += D3DXVec2Length(&(np - pp));
+		length += D3DXVec2Length(ptr(np - pp));
 	}
 
 	if (bLoop) {

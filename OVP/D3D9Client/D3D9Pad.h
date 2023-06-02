@@ -130,7 +130,7 @@ inline void SkpVtxFC(SkpVtx& v, float _x, float _y, DWORD c)
 }
 
 // Fill Rect, Ellipse, Polygon [only]
-inline void SkpVtxIC(SkpVtx &v, int _x, int _y, SkpColor &c)
+inline void SkpVtxIC(SkpVtx &v, int _x, int _y, const SkpColor &c)
 {
 	v.x = float(_x) - 0.5f;
 	v.y = float(_y) - 0.5f;
@@ -580,7 +580,7 @@ private:
 	void Reset();
 	bool Flush(HPOLY hPoly = NULL);
 	void AddRectIdx(WORD aV);
-	void FillRect(int l, int t, int r, int b, SkpColor &c);
+	void FillRect(int l, int t, int r, int b, const SkpColor &c);
 	void TexChange(SURFHANDLE hNew);
 	bool TexChangeNative(LPDIRECT3DTEXTURE9 hNew);
 	const LPRECT CheckRectNative(LPDIRECT3DTEXTURE9 hSrc, const LPRECT s);
