@@ -1085,8 +1085,8 @@ bool VideoTab::GetConfigName(const char* file, string& cfg, string& planet)
 	FILEHANDLE hFile = oapiOpenFile(filename.c_str(), FILE_IN_ZEROONFAIL, CONFIG);
 	if (hFile) {
 		char ConfigName[32] = {}; char PlanetName[32] = {};
-		bool bA = oapiReadItem_string(hFile, "ConfigName", ConfigName);
-		bool bB = oapiReadItem_string(hFile, "Planet", PlanetName);
+		bool bA = oapiReadItem_string(hFile, (char*)"ConfigName", ConfigName);
+		bool bB = oapiReadItem_string(hFile, (char*)"Planet", PlanetName);
 		oapiCloseFile(hFile, FILE_IN_ZEROONFAIL);
 		cfg = string(ConfigName);
 		planet = string(PlanetName);
