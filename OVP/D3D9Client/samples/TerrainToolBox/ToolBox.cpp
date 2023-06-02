@@ -28,6 +28,10 @@ using namespace std;
 ToolKit *g_pTK = NULL;
 gcCore2* g_pCore = NULL;
 
+// helper function to get address of a temporary
+// NB: use with caution
+template<typename T>
+const T* ptr(const T& x) { return &x; }
 
 
 // =================================================================================================
@@ -109,7 +113,7 @@ BOOL ToolKit::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case IDC_BLUE:
 		case IDC_ALPHAEDG:
 		{
-			if (!UpdateOverlays()) oapiWriteLog("UpdateOverlays() Failed");
+			if (!UpdateOverlays()) oapiWriteLog((char*)"UpdateOverlays() Failed");
 			break;
 		}
 
@@ -130,7 +134,7 @@ BOOL ToolKit::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (CreateOverlays())
 			{
 				AutoSelectCorners();
-				if (!UpdateOverlays()) oapiWriteLog("UpdateOverlays() Failed in IDC_STARTIMPORT");
+				if (!UpdateOverlays()) oapiWriteLog((char*)"UpdateOverlays() Failed in IDC_STARTIMPORT");
 			}
 			break;
 		}
@@ -192,7 +196,7 @@ BOOL ToolKit::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case IDC_CORNERS:
 		{
 			AutoSelectCorners();
-			if (!UpdateOverlays()) oapiWriteLog("UpdateOverlays() Failed in IDC_CORNERS");
+			if (!UpdateOverlays()) oapiWriteLog((char*)"UpdateOverlays() Failed in IDC_CORNERS");
 			break;
 		}
 
@@ -247,7 +251,7 @@ ToolKit::ToolKit(HINSTANCE hInst) : gcGUIApp(), Module(hInst)
 	bGo = false;
 
 	// Can do very little here since graphics servises are not yet running 
-	dwCmd = oapiRegisterCustomCmd("TerrainToolBox", "ToolBox for terrain and base editing", OpenToolsClbk, this);
+	dwCmd = oapiRegisterCustomCmd((char*)"TerrainToolBox", (char*)"ToolBox for terrain and base editing", OpenToolsClbk, this);
 	gcPropertyTreeInitialize(hInst);
 
 	mIdent.Ident();
@@ -371,7 +375,7 @@ bool ToolKit::Initialize()
 	dmSphere = pCore->LoadDevMeshGlobal("D3D9Sphere");
 
 	if (!dmSphere) {
-		oapiWriteLog("TerrainToolKit: Failed to load a file [D3D9Sphere.msh]");
+		oapiWriteLog((char*)"TerrainToolKit: Failed to load a file [D3D9Sphere.msh]");
 		return false;
 	}
 
@@ -864,7 +868,7 @@ bool ToolKit::UpdateOverlay(int olay)
 		{
 			if (bSurf && pLr) {
 				pSkp->SetColorMatrix(&mColor);	// Setup a color matrix for corrections
-				pSkp->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, &FVECTOR4(adj.y, adj.y, adj.y, 1.0f)); // Setup gamma correction
+				pSkp->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, ptr(FVECTOR4(adj.y, adj.y, adj.y, 1.0f))); // Setup gamma correction
 				pSkp->SetBlendState(Sketchpad::BlendState::ALPHABLEND);
 				pSkp->CopyTetragon(pLr->hSource, NULL, pt);
 			}
@@ -879,7 +883,7 @@ bool ToolKit::UpdateOverlay(int olay)
 			if (bNight && pLr) 
 			{
 				pSkp->SetColorMatrix(&mColor);	// Setup a color matrix for corrections
-				pSkp->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, &FVECTOR4(adj.y, adj.y, adj.y, 1.0f)); // Setup gamma correction
+				pSkp->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, ptr(FVECTOR4(adj.y, adj.y, adj.y, 1.0f))); // Setup gamma correction
 
 				int mode = pLr->GetWaterMode();
 
@@ -1172,7 +1176,7 @@ bool ToolKit::clbkProcessMouse(UINT event, DWORD state, DWORD x, DWORD y)
 		points[down_corner].lng = pg.lng;
 		points[down_corner].lat = pg.lat;
 		points[down_corner].elev = pg.elev;
-		if (!UpdateOverlays()) oapiWriteLog("UpdateOverlays() Failed in clbkProcessMouse()");
+		if (!UpdateOverlays()) oapiWriteLog((char*)"UpdateOverlays() Failed in clbkProcessMouse()");
 		else for (auto x : pLr) if (x) x->ComputeLevel(points);
 	}
 
