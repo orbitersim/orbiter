@@ -187,7 +187,7 @@ bool ImageProcessing::SetupViewPort()
 
 	HR(pDevice->SetViewport(&iVP));
 	HR(pVSConst->SetMatrix(pDevice, hVP, &mVP));
-	HR(pVSConst->SetVector(pDevice, hSiz, &D3DXVECTOR4(float(desc.Width), float(desc.Height), 1.0f/float(desc.Width), 1.0f/float(desc.Height))));
+	HR(pVSConst->SetVector(pDevice, hSiz, ptr(D3DXVECTOR4(float(desc.Width), float(desc.Height), 1.0f/float(desc.Width), 1.0f/float(desc.Height)))));
 	HR(pVSConst->SetVector(pDevice, hPos, &vTemplate));
 	return true;
 }
