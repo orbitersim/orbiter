@@ -1301,7 +1301,7 @@ void D3D9Light::UpdateLight(const LightEmitter *_le, const class vObject *vo)
 
 	// -----------------------------------------------------------------------------
 
-	D3DXVec3TransformCoord(&Position, &D3DXVEC(le->GetPosition()), vo->MWorld());
+	D3DXVec3TransformCoord(&Position, ptr(D3DXVEC(le->GetPosition())), vo->MWorld());
 	Dst2 = D3DXVec3Dot(&Position, &Position);
 
 	// -----------------------------------------------------------------------------
@@ -1374,7 +1374,7 @@ void D3D9Light::UpdateLight(const LightEmitter *_le, const class vObject *vo)
 
 	// -----------------------------------------------------------------------------
 	if (Type != 0) {
-		D3DXVec3TransformNormal(&Direction, &D3DXVEC(le->GetDirection()), vo->MWorld());
+		D3DXVec3TransformNormal(&Direction, ptr(D3DXVEC(le->GetDirection())), vo->MWorld());
 		float angle = acos(dot(unit(Position), Direction));
 		cone = ilerp(U * 0.5f, P * 0.5f, angle);
 	}

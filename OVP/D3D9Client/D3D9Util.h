@@ -69,6 +69,11 @@ const char *_PTR(const void *p);
 
 #define SURFACE(x) ((class SurfNative *)x)
 
+// helper function to get address of a temporary
+// NB: use with caution
+template<typename T>
+const T* ptr(const T& x) { return &x; }
+
 // ------------------------------------------------------------------------------------
 // Vertex Declaration equal to NTVERTEX
 // ------------------------------------------------------------------------------------
@@ -500,9 +505,9 @@ inline MATRIX4 _MATRIX4(const LPD3DXMATRIX M)
 inline void TransformVertex(NMVERTEX *pVrt, LPD3DXMATRIX pW)
 {
 	D3DXVECTOR3 p,n,t;
-	D3DXVec3TransformCoord(&p, &D3DXVECTOR3(pVrt->x, pVrt->y, pVrt->z), pW);
-	D3DXVec3TransformNormal(&n, &D3DXVECTOR3(pVrt->nx, pVrt->ny, pVrt->nz), pW);
-	D3DXVec3TransformNormal(&t, &D3DXVECTOR3(pVrt->tx, pVrt->ty, pVrt->tz), pW);
+	D3DXVec3TransformCoord(&p, ptr(D3DXVECTOR3(pVrt->x, pVrt->y, pVrt->z)), pW);
+	D3DXVec3TransformNormal(&n, ptr(D3DXVECTOR3(pVrt->nx, pVrt->ny, pVrt->nz)), pW);
+	D3DXVec3TransformNormal(&t, ptr(D3DXVECTOR3(pVrt->tx, pVrt->ty, pVrt->tz)), pW);
 	pVrt->x  = p.x;	pVrt->y  = p.y; pVrt->z  = p.z;
 	pVrt->nx = n.x; pVrt->ny = n.y; pVrt->nz = n.z;
 	pVrt->tx = t.x; pVrt->ty = t.y; pVrt->tz = t.z;
