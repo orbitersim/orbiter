@@ -176,12 +176,12 @@ void CloudManager::RenderTile (int lvl, int hemisp, int ilat, int nlat, int ilng
 	VBMESH &mesh = PATCH_TPL[lvl][ilat]; // patch template
 
 	if (range.tumin == 0 && range.tumax == 1) {
-		HR(FX->SetVector(eTexOff, &D3DXVECTOR4(1.0f, 0.0f, 1.0f, 0.0f)));
+		HR(FX->SetVector(eTexOff, ptr(D3DXVECTOR4(1.0f, 0.0f, 1.0f, 0.0f))));
 	}
 	else {
 		float tuscale = range.tumax-range.tumin, tuofs = range.tumin;
 		float tvscale = range.tvmax-range.tvmin, tvofs = range.tvmin;
-		HR(FX->SetVector(eTexOff, &D3DXVECTOR4(tuscale,tuofs,tvscale,tvofs)));
+		HR(FX->SetVector(eTexOff, ptr(D3DXVECTOR4(tuscale,tuofs,tvscale,tvofs))));
 	}
 	HR(FX->SetMatrix(eW, &mWorld));
 	HR(FX->SetTexture(eTex0, tex));	  // Diffuse Texture
