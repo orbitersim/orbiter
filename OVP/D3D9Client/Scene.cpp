@@ -3685,7 +3685,7 @@ void Scene::RenderGlares()
 
 // ===========================================================================================
 //
-bool Scene::IsVisibleInCamera(D3DXVECTOR3 *pCnt, float radius)
+bool Scene::IsVisibleInCamera(const D3DXVECTOR3 *pCnt, float radius)
 {
 	float z = Camera.z.x*pCnt->x + Camera.z.y*pCnt->y + Camera.z.z*pCnt->z;
 	if (z<(-radius)) return false;
