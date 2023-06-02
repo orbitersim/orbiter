@@ -342,7 +342,7 @@ public:
 	bool			CameraPan(VECTOR3 pan, double speed);
 
 					// Check if a sphere located in pCnt (relative to cam) with a specified radius is visible in a camera
-	bool			IsVisibleInCamera(D3DXVECTOR3 *pCnt, float radius);
+	bool			IsVisibleInCamera(const D3DXVECTOR3 *pCnt, float radius);
 	bool			IsProxyMesh();
 	bool            CameraDirection2Viewport(const VECTOR3 &dir, int &x, int &y);
 	double			GetTanAp() const { return tan(Camera.aperture); }
