@@ -930,7 +930,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 				float qw = 1.0f / float(Config->ShadowMapSize);
 				HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, &shd->mViewProj));
 				HR(D3D9Effect::FX->SetTexture(D3D9Effect::eShadowMap, shd->pShadowMap));
-				HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, &D3DXVECTOR4(s, is, qw, 0)));
+				HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, ptr(D3DXVECTOR4(s, is, qw, 0))));
 				HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, true));
 			}
 		}
