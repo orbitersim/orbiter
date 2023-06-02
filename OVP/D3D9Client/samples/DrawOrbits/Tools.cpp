@@ -29,13 +29,13 @@ const char *ValueToText(double real, int digits)
 	double v = fabs(real);
 	int n;
 
-	char *c = { "" };
-	char *k = { "k" };
-	char *k2 = { "M" };
-	char *k3 = { "G" };
-	char *k5 = { "m" };
-	char *k6 = { "µ" };
-	char *k7 = { "T" };
+	const char *c = { "" };
+	const char *k = { "k" };
+	const char *k2 = { "M" };
+	const char *k3 = { "G" };
+	const char *k5 = { "m" };
+	const char *k6 = { "µ" };
+	const char *k7 = { "T" };
 
 	n = (int)floor(log10(v)) + 1;
 
