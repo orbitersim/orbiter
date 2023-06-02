@@ -652,7 +652,7 @@ void D3D9Pad::SetupDevice(Topo tNew)
 		if ((w & 1) == 0) offset = 0.5f;
 		HR(FX->SetValue(ePen, &pencolor.fclr, sizeof(D3DXCOLOR)));
 		HR(FX->SetBool(eDashEn, IsDashed()));
-		HR(FX->SetValue(eWidth, &D3DXVECTOR3(GetPenWidth(), pattern*0.13f, offset), sizeof(D3DXVECTOR3)));
+		HR(FX->SetValue(eWidth, ptr(D3DXVECTOR3(GetPenWidth(), pattern*0.13f, offset)), sizeof(D3DXVECTOR3)));
 	}
 
 
@@ -686,7 +686,7 @@ void D3D9Pad::SetupDevice(Topo tNew)
 		if (ClipData[0].bEnable || ClipData[1].bEnable) {
 			HR(FX->SetValue(ePos, &ClipData[0].uDir, sizeof(D3DXVECTOR3)));
 			HR(FX->SetValue(ePos2, &ClipData[1].uDir, sizeof(D3DXVECTOR3)));
-			HR(FX->SetValue(eCov, &D3DXVECTOR4(ClipData[0].ca, ClipData[0].dst, ClipData[1].ca, ClipData[1].dst), sizeof(D3DXVECTOR4)));
+			HR(FX->SetValue(eCov, ptr(D3DXVECTOR4(ClipData[0].ca, ClipData[0].dst, ClipData[1].ca, ClipData[1].dst)), sizeof(D3DXVECTOR4)));
 		}
 	}
 
@@ -719,7 +719,7 @@ void D3D9Pad::SetupDevice(Topo tNew)
 			}
 		}
 
-		HR(FX->SetVector(eSize, &D3DXVECTOR4(tw, th, 1.0f, 1.0f)));
+		HR(FX->SetVector(eSize, ptr(D3DXVECTOR4(tw, th, 1.0f, 1.0f))));
 		HR(FX->SetBool(eTexEn, (hTexture != NULL)));
 		HR(FX->SetBool(eFntEn, (hFontTex != NULL)));
 	}
@@ -1172,7 +1172,7 @@ void D3D9Pad::Line (int x0, int y0, int x1, int y1)
 
 // ===============================================================================================
 //
-void D3D9Pad::FillRect(int l, int t, int r, int b, SkpColor &c)
+void D3D9Pad::FillRect(int l, int t, int r, int b, const SkpColor &c)
 {
 	if (r == l) return;
 	if (b == t) return;
@@ -1653,7 +1653,7 @@ void D3D9Pad::AppendLineVertexList(const Type *pt, int _npt, bool bLoop)
 
 			pp = _DXV2(pt[i]);
 
-			if (IsDashed()) length += D3DXVec2Length(&(np - pp));
+			if (IsDashed()) length += D3DXVec2Length(ptr(np - pp));
 		}
 
 		// Last segment ---------------------------------------------------------
@@ -1804,9 +1804,9 @@ using namespace oapi;
 
 D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, FontStyle style, int orientation, DWORD flags) : Font(height, prop, face, style, orientation)
 {
-	char *def_fixedface = "Courier New";
-	char *def_sansface = "Arial";
-	char *def_serifface = "Times New Roman";
+	const char *def_fixedface = "Courier New";
+	const char *def_sansface = "Arial";
+	const char *def_serifface = "Times New Roman";
 
 	if (face[0]!='*') {
 		if (!_stricmp (face, "fixed")) face = def_fixedface;
