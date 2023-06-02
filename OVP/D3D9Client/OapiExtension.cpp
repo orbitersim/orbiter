@@ -197,29 +197,29 @@ bool OapiExtension::GetConfigParameter(void)
 			}
 		}
 
-		if (oapiReadItem_string(f, "ElevationMode", string)) {
+		if (oapiReadItem_string(f, (char*)"ElevationMode", string)) {
 			if (1 == sscanf_s(string, "%lu", &flags)) {
 				elevationMode = flags;
 			}
 		}
 
 		// Get planet rendering parameters
-		oapiReadItem_bool(f, "TileLoadThread", tileLoadThread);
+		oapiReadItem_bool(f, (char*)"TileLoadThread", tileLoadThread);
 
 		// Get directory config
-		if (oapiReadItem_string(f, "ConfigDir", string)) {
+		if (oapiReadItem_string(f, (char*)"ConfigDir", string)) {
 			configDir = string;
 		}
-		if (oapiReadItem_string(f, "MeshDir", string)) {
+		if (oapiReadItem_string(f, (char*)"MeshDir", string)) {
 			meshDir = string;
 		}
-		if (oapiReadItem_string(f, "TextureDir", string)) {
+		if (oapiReadItem_string(f, (char*)"TextureDir", string)) {
 			textureDir = string;
 		}
-		if (oapiReadItem_string(f, "HightexDir", string)) {
+		if (oapiReadItem_string(f, (char*)"HightexDir", string)) {
 			hightexDir = string;
 		}
-		if (oapiReadItem_string(f, "ScenarioDir", string)) {
+		if (oapiReadItem_string(f, (char*)"ScenarioDir", string)) {
 			scenarioDir = string;
 		}
 
@@ -234,16 +234,16 @@ bool OapiExtension::GetConfigParameter(void)
 				oapiWriteLogV("%-11s: %s%s", name, buff, result);
 			}
 		};
-		oapiWriteLog("---------------------------------------------------------------");
+		oapiWriteLog((char*)"---------------------------------------------------------------");
 		logPath("BaseDir"    , ".\\");
 		logPath("ConfigDir"  , configDir);
 		logPath("MeshDir"    , meshDir);
 		logPath("TextureDir" , textureDir);
 		logPath("HightexDir" , hightexDir);
 		logPath("ScenarioDir", scenarioDir);
-		oapiWriteLog("---------------------------------------------------------------");
+		oapiWriteLog((char*)"---------------------------------------------------------------");
 		LogD3D9Modules();
-		oapiWriteLog("---------------------------------------------------------------");
+		oapiWriteLog((char*)"---------------------------------------------------------------");
 
 	}
 
@@ -286,7 +286,8 @@ std::string OapiExtension::ScanCommandLine (void)
 	size_t pos = rfind_ci(commandLine, "-s");
 	if (pos != std::string::npos)
 	{
-		std::string scenarioName = trim( commandLine.substr(pos+2, std::string::npos) );
+		std::string scenarioName = commandLine.substr(pos+2, std::string::npos);
+		trim(scenarioName);
 
 		// Remove (optional) quotes
 		std::replace(scenarioName.begin(), scenarioName.end(), '"', ' ');
