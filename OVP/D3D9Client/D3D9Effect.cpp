@@ -497,9 +497,9 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	//
 	FX->SetInt(eHazeMode, 0);
 	FX->SetBool(eInSpace, false);
-	FX->SetVector(eAttennuate, &D3DXVECTOR4(1,1,1,1)); 
-	FX->SetVector(eInScatter,  &D3DXVECTOR4(0,0,0,0));
-	FX->SetVector(eColor, &D3DXVECTOR4(0, 0, 0, 0));
+	FX->SetVector(eAttennuate, ptr(D3DXVECTOR4(1,1,1,1))); 
+	FX->SetVector(eInScatter,  ptr(D3DXVECTOR4(0,0,0,0)));
+	FX->SetVector(eColor, ptr(D3DXVECTOR4(0, 0, 0, 0)));
 
 	//if (Config->ShadowFilter>=3) FX->SetValue(eKernel, &shadow_kernel2, sizeof(shadow_kernel2));
 	FX->SetValue(eKernel, &shadow_kernel, sizeof(shadow_kernel));
@@ -599,10 +599,10 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 	if (rl>1e-3) atm_color *= pow(rl, 1.5f);
 	else atm_color = D3DXVECTOR4(0,0,0,1);
 
-	FX->SetValue(eEast, &D3DXVEC(east), sizeof(D3DXVECTOR3));
-	FX->SetValue(eNorth, &D3DXVEC(north), sizeof(D3DXVECTOR3));
-	FX->SetValue(eCameraPos, &D3DXVEC(cam), sizeof(D3DXVECTOR3));
-	FX->SetVector(eRadius, &D3DXVECTOR4((float)rad, radlimit, (float)len, (float)(len-rad)));
+	FX->SetValue(eEast, ptr(D3DXVEC(east)), sizeof(D3DXVECTOR3));
+	FX->SetValue(eNorth, ptr(D3DXVEC(north)), sizeof(D3DXVECTOR3));
+	FX->SetValue(eCameraPos, ptr(D3DXVEC(cam)), sizeof(D3DXVECTOR3));
+	FX->SetVector(eRadius, ptr(D3DXVECTOR4((float)rad, radlimit, (float)len, (float)(len-rad))));
 	FX->SetFloat(ePointScale, 0.5f*float(height)/tan(ap));
 	FX->SetFloat(eProxySize, cos(proxy_size));
 	FX->SetFloat(eInvProxySize, 1.0f/(1.0f-cos(proxy_size)));
@@ -615,7 +615,7 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 void D3D9Effect::EnablePlanetGlow(bool bEnabled)
 {
 	if (bEnabled) FX->SetVector(eAtmColor, &atm_color);
-	else FX->SetVector(eAtmColor, &D3DXVECTOR4(0,0,0,0));
+	else FX->SetVector(eAtmColor, ptr(D3DXVECTOR4(0,0,0,0)));
 }
 
 
@@ -907,7 +907,7 @@ void D3D9Effect::RenderLines(const D3DXVECTOR3 *pVtx, const WORD *pIdx, int nVtx
 	UINT numPasses = 0;
 	pDev->SetVertexDeclaration(pPositionDecl);
 	FX->SetMatrix(eW, pW);
-	FX->SetVector(eColor, (const D3DXVECTOR4 *)&D3DXCOLOR(color));
+	FX->SetVector(eColor, (const D3DXVECTOR4 *)ptr(D3DXCOLOR(color)));
 	FX->SetTechnique(eTBBTech);
 	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
 	FX->BeginPass(0);
@@ -924,7 +924,7 @@ void D3D9Effect::RenderBoundingSphere(const LPD3DXMATRIX pW, const LPD3DXMATRIX 
 	D3DXVECTOR3 vCam;
 	D3DXVECTOR3 vPos;
 	
-	D3DXVec3TransformCoord(&vPos, &D3DXVECTOR3(bs->x, bs->y, bs->z), pW);
+	D3DXVec3TransformCoord(&vPos, ptr(D3DXVECTOR3(bs->x, bs->y, bs->z)), pW);
 
 	D3DXVec3Normalize(&vCam, &vPos);
 	D3DMAT_CreateX_Billboard(&vCam, &vPos, bs->w, &mW);
