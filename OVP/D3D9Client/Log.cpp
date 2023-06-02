@@ -145,7 +145,7 @@ void D3D9DebugLogVec(const char* lbl, oapi::FVECTOR4 &v)
 
 //-------------------------------------------------------------------------------------------
 //
-void D3D9InitLog(char *file)
+void D3D9InitLog(const char *file)
 {
 	QueryPerformanceFrequency((LARGE_INTEGER*)&qpcFrq);
 	QueryPerformanceCounter((LARGE_INTEGER*)&qpcStart);
