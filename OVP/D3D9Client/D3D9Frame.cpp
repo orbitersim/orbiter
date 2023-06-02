@@ -35,7 +35,7 @@ IDirect3DVertexDeclaration9	*pPatchVertexDecl = NULL;
 IDirect3DVertexDeclaration9 *pSketchpadDecl = NULL;
 IDirect3DVertexDeclaration9 *pLocalLightsDecl = NULL;
 
-static char *d3dmessage={"Required DirectX version (June 2010 or newer) not found\0"};
+static const char *d3dmessage={"Required DirectX version (June 2010 or newer) not found\0"};
 
 //-----------------------------------------------------------------------------
 // Name: CD3DFramework9()
@@ -399,11 +399,11 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	//
 	if ((caps.Caps2&D3DCAPS2_CANAUTOGENMIPMAP)==0) {
 		LogWrn("[No Hardware MipMap auto generation]");
-		oapiWriteLog("D3D9: WARNING: [No Hardware MipMap auto generation]");
+		oapiWriteLog((char*)"D3D9: WARNING: [No Hardware MipMap auto generation]");
 	}
 
 	if (bFail) {
-		oapiWriteLog("D3D9: FAIL: !! Graphics card doesn't meet the minimum requirements to run !!");
+		oapiWriteLog((char*)"D3D9: FAIL: !! Graphics card doesn't meet the minimum requirements to run !!");
 		MessageBoxA(NULL, "Graphics card doesn't meet the minimum requirements to run D3D9Client.", "D3D9Client Error",MB_OK);
 		return -1;
 	}
