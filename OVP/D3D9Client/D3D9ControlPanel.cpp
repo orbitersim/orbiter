@@ -90,8 +90,8 @@ void D3D9Client::DrawTimeBar(double t, double s, double f, DWORD color, const ch
 
 void D3D9Client::RenderControlPanel()
 {
-	static char *OnOff[]={"Off","On"};
-	static char *SkpU[]={"Auto","GDI"};
+	static const char *OnOff[]={"Off","On"};
+	static const char *SkpU[]={"Auto","GDI"};
 
 //	static double sim_time  = 0.0;
 
@@ -108,8 +108,8 @@ void D3D9Client::RenderControlPanel()
 	oapi::Pen * pen    = oapiCreatePen(1, 10, 0xFFFF00);
 	oapi::Pen * nullp  = oapiCreatePen(0, 1,  0xFFFFFF);
 	oapi::Brush *brush = oapiCreateBrush(0xA0000000);
-	oapi::Font *largef = oapiCreateFont(38,false,"Arial", FONT_BOLD);
-	oapi::Font *smallf = oapiCreateFont(22,false,"Fixed");
+	oapi::Font *largef = oapiCreateFont(38,false,(char*)"Arial", FONT_BOLD);
+	oapi::Font *smallf = oapiCreateFont(22,false,(char*)"Fixed");
 
 	pItemsSkp->SetPen(nullp);
 
