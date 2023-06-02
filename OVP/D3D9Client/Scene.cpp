@@ -2185,7 +2185,7 @@ void Scene::RenderMainScene()
 			if (pLocalResults) {
 				pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
 				pSketch->SetBlendState(Sketchpad::BlendState::FILTER_POINT);
-				pSketch->StretchRectNative(pLocalResults, NULL, &_RECT(0, 0, viewW, 10));
+				pSketch->StretchRectNative(pLocalResults, NULL, ptr(_RECT(0, 0, viewW, 10)));
 				pSketch->SetBlendState(Sketchpad::BlendState::FILTER_LINEAR);
 				pSketch->EndDrawing();
 			}
@@ -2207,19 +2207,19 @@ void Scene::RenderMainScene()
 		D3DSURFACE_DESC desc;
 		if (pTab) {
 			pTab->GetLevelDesc(0, &desc);
-			pSketch->StretchRectNative(pTab, NULL, &_R(0, y - desc.Height, desc.Width, y));
+			pSketch->StretchRectNative(pTab, NULL, ptr(_R(0, y - desc.Height, desc.Width, y)));
 			y -= (desc.Height + 5);
 		}
 		pTab = vP->GetScatterTable(MIE_LAND);
 		if (pTab) {
 			pTab->GetLevelDesc(0, &desc);
-			pSketch->StretchRectNative(pTab, NULL, &_R(0, y - desc.Height, desc.Width, y));
+			pSketch->StretchRectNative(pTab, NULL, ptr(_R(0, y - desc.Height, desc.Width, y)));
 			y -= (desc.Height + 5);
 		}
 		pTab = vP->GetScatterTable(ATN_LAND);
 		if (pTab) {
 			pTab->GetLevelDesc(0, &desc);
-			pSketch->StretchRectNative(pTab, NULL, &_R(0, y - desc.Height, desc.Width, y));
+			pSketch->StretchRectNative(pTab, NULL, ptr(_R(0, y - desc.Height, desc.Width, y)));
 			y -= (desc.Height + 5);
 		}
 		for (int i=0;i<9;i++)
@@ -2335,7 +2335,7 @@ Scene::SUNVISPARAMS Scene::GetSunScreenVisualState()
 		DWORD matIndex = pick.pMesh->GetMeshGroupMaterialIdx(pick.group);
 		D3D9MatExt material;
 		pick.pMesh->GetMaterial(&material, matIndex);
-		D3DXCOLOR surfCol = material.Diffuse;
+		D3DXCOLOR surfCol(material.Diffuse.x, material.Diffuse.y, material.Diffuse.z, material.Diffuse.w);
 
 		result.visible = (surfCol.a != 1.0f);
 		if (result.visible)
@@ -2500,7 +2500,7 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bI
 
 	D3DXVECTOR3 lp = pos + ld * smap.dist;
 
-	D3DXMatrixLookAtRH(&smap.mView, &lp, &pos, &D3DXVECTOR3(0, 1, 0));
+	D3DXMatrixLookAtRH(&smap.mView, &lp, &pos, ptr(D3DXVECTOR3(0, 1, 0)));
 	D3DXMatrixMultiply(&smap.mViewProj, &smap.mView, &smap.mProj);
 
 	float lod = log2f(float(Config->ShadowMapSize) / (rsmax*1.5f));
@@ -2795,7 +2795,7 @@ bool Scene::IntegrateIrradiance(vVessel *vV, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRE
 	// Pre-Integrate Irradiance Cube
 	//
 	pIrradiance->Activate("PSPreInteg");
-	pIrradiance->SetFloat("fD", &D3DXVECTOR2(1.0f / float(desc.Width), 1.0f / float(desc.Height)), sizeof(D3DXVECTOR2));
+	pIrradiance->SetFloat("fD", ptr(D3DXVECTOR2(1.0f / float(desc.Width), 1.0f / float(desc.Height))), sizeof(D3DXVECTOR2));
 
 	for (DWORD i = 0; i < 6; i++)
 	{
@@ -2854,7 +2854,7 @@ bool Scene::IntegrateIrradiance(vVessel *vV, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRE
 	// Post Blur
 	//
 	pIrradiance->Activate("PSPostBlur");
-	pIrradiance->SetFloat("fD", &D3DXVECTOR2(1.0f / float(desc_out.Width), 1.0f / float(desc_out.Height)), sizeof(D3DXVECTOR2));
+	pIrradiance->SetFloat("fD", ptr(D3DXVECTOR2(1.0f / float(desc_out.Width), 1.0f / float(desc_out.Height))), sizeof(D3DXVECTOR2));
 	pIrradiance->SetOutputNative(0, pOuts);
 	pIrradiance->SetTextureNative("tSrc", pIrradTemp3, IPF_POINT | IPF_WRAP);
 
@@ -2964,7 +2964,7 @@ void Scene::RenderMesh(DEVMESHHANDLE hMesh, const oapi::FMATRIX4 *pWorld)
 
 	if (shd->pShadowMap) {
 		HR(D3D9Effect::FX->SetTexture(D3D9Effect::eShadowMap, shd->pShadowMap));
-		HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, &D3DXVECTOR4(sr, 1.0f / s, float(oapiRand()), 1.0f / shd->depth)));
+		HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, ptr(D3DXVECTOR4(sr, 1.0f / s, float(oapiRand()), 1.0f / shd->depth))));
 		HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, true));
 	}
 	else {
@@ -3265,7 +3265,7 @@ D3D9Pick Scene::PickScene(short xpos, short ypos)
 D3D9Pick Scene::PickMesh(DEVMESHHANDLE hMesh, const LPD3DXMATRIX pW, short xpos, short ypos)
 {
 	D3D9Mesh *pMesh = (D3D9Mesh *)hMesh;
-	return pMesh->Pick(pW, NULL, &GetPickingRay(xpos, ypos));
+	return pMesh->Pick(pW, NULL, ptr(GetPickingRay(xpos, ypos)));
 }
 
 // ===========================================================================================
