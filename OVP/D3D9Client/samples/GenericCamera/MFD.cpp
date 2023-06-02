@@ -16,6 +16,11 @@
 
 #define ENABLE_OVERLAY false
 
+// helper function to get address of a temporary
+// NB: use with caution
+template<typename T>
+const T* ptr(const T& x) { return &x; }
+
 // ============================================================================================================
 // Global variables
 
@@ -60,9 +65,8 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 
 	ShellMFD::InitModule(hDLL);
 
-	static char *name = "Generic Camera";   // MFD mode name
 	MFDMODESPECEX spec;
-	spec.name = name;
+	spec.name = (char*)"Generic Camera";  // MFD mode name;
 	spec.key = OAPI_KEY_C;                // MFD mode selection key
 	spec.context = NULL;
 	spec.msgproc = ShellMFD::MsgProc;  // MFD mode callback function
@@ -301,8 +305,8 @@ void CameraMFD::PreviousAttachment()
 char *CameraMFD::ButtonLabel (int bt)
 {
 	// The labels for the two buttons used by our MFD mode
-	static char *label[] = {"NA", "PA", "ND", "PD", "FWD", "BWD", "VES", "NV", "ZM+", "ZM-", "PAR", "CRS"};
-	return (bt < ARRAYSIZE(label) ? label[bt] : 0);
+	static const char *label[] = {"NA", "PA", "ND", "PD", "FWD", "BWD", "VES", "NV", "ZM+", "ZM-", "PAR", "CRS"};
+	return (char*)(bt < ARRAYSIZE(label) ? label[bt] : 0);
 }
 
 
@@ -357,9 +361,9 @@ bool CameraMFD::Update(oapi::Sketchpad *pSkp)
 		if (nDock != 0 || nAtch != 0) {
 
 			if (bNightVis) {
-				pSkp->SetBrightness(&FVECTOR4(0.0, 4.0, 0.0, 1.0));
-				pSkp->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, &FVECTOR4(0.5f, 0.5f, 0.5f, 1.0f));
-				pSkp->SetRenderParam(Sketchpad::RenderParam::PRM_NOISE, &FVECTOR4(0.0f, 0.3f, 0.0f, 0.0f));
+				pSkp->SetBrightness(ptr(FVECTOR4(0.0, 4.0, 0.0, 1.0)));
+				pSkp->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, ptr(FVECTOR4(0.5f, 0.5f, 0.5f, 1.0f)));
+				pSkp->SetRenderParam(Sketchpad::RenderParam::PRM_NOISE, ptr(FVECTOR4(0.0f, 0.3f, 0.0f, 0.0f)));
 			}
 
 
@@ -403,20 +407,20 @@ bool CameraMFD::Update(oapi::Sketchpad *pSkp)
 		}
 	}
 	else {
-		static char *msg = { "No Graphics API" };
+		static const char *msg = { "No Graphics API" };
 		pSkp->Text(W / 2, H / 2, msg, lstrlen(msg));
 		return true;
 	}
 	
 
 	if (!hCamera) {
-		static char *msg = { "Custom Cameras Disabled" };
+		static const char *msg = { "Custom Cameras Disabled" };
 		pSkp->Text(W / 2, H / 2, msg, lstrlen(msg));
 		return true;
 	}
 
 	if (nDock == 0 && nAtch == 0) {
-		static char *msg = { "No Dock/Attachment points" };
+		static const char *msg = { "No Dock/Attachment points" };
 		pSkp->Text(W / 2, H / 2, msg, lstrlen(msg));
 		return true;
 	}
@@ -510,7 +514,7 @@ bool CameraMFD::ConsumeKeyBuffered(DWORD key)
 
 
 	case OAPI_KEY_7:	// Select Vessel
-		oapiOpenInputBox("Keyboard Input:", DataInput, 0, 32, (void*)this);
+		oapiOpenInputBox((char*)"Keyboard Input:", DataInput, 0, 32, (void*)this);
 		return true;
 
 
@@ -594,7 +598,7 @@ void CameraMFD::DrawOverlay(oapi::Sketchpad *pSkp, void *pParam)
 void CameraMFD::WriteStatus(FILEHANDLE scn) const
 {
 	if (pMask) {
-		oapiWriteScenario_string(scn, "ATCH_MASK", pMask);
+		oapiWriteScenario_string(scn, (char*)"ATCH_MASK", pMask);
 	}
 }
 
