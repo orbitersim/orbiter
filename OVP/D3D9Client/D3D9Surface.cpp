@@ -29,12 +29,12 @@ void NatCheckFlags(DWORD &flags)
 	if (flags & OAPISURFACE_RENDERTARGET) {
 		if (flags & OAPISURFACE_GDI)
 		{
-			oapiWriteLog("OAPISURFACE_GDI is incomaptible with OAPISURFACE_RENDERTARGET and OAPISURFACE_SKETCHPAD");
+			oapiWriteLog((char*)"OAPISURFACE_GDI is incomaptible with OAPISURFACE_RENDERTARGET and OAPISURFACE_SKETCHPAD");
 			HALT();
 		}
 		if (flags & OAPISURFACE_SYSMEM)
 		{
-			oapiWriteLog("OAPISURFACE_SYSMEM is incomaptible with OAPISURFACE_RENDERTARGET and OAPISURFACE_SKETCHPAD");
+			oapiWriteLog((char*)"OAPISURFACE_SYSMEM is incomaptible with OAPISURFACE_RENDERTARGET and OAPISURFACE_SKETCHPAD");
 			HALT();
 		}
 	}
@@ -42,12 +42,12 @@ void NatCheckFlags(DWORD &flags)
 	if (flags & OAPISURFACE_MIPMAPS) {
 		if ((flags & OAPISURFACE_TEXTURE) == 0)
 		{
-			oapiWriteLog("OAPISURFACE_MIPMAPS can be only assigned to a OAPISURFACE_TEXTURE");
+			oapiWriteLog((char*)"OAPISURFACE_MIPMAPS can be only assigned to a OAPISURFACE_TEXTURE");
 			HALT();
 		}
 		if (flags & OAPISURFACE_SYSMEM)
 		{
-			oapiWriteLog("OAPISURFACE_MIPMAPS is incomaptible with OAPISURFACE_SYSMEM");
+			oapiWriteLog((char*)"OAPISURFACE_MIPMAPS is incomaptible with OAPISURFACE_SYSMEM");
 			HALT();
 		}
 	}
@@ -242,7 +242,7 @@ bool NatSaveSurface(const char* file, LPDIRECT3DRESOURCE9 pResource)
 	{
 		LPDIRECT3DSURFACE9 pSurf = static_cast<LPDIRECT3DSURFACE9>(pResource);
 		if (D3DXSaveSurfaceToFileA(file, fmt, pSurf, NULL, NULL) == S_OK) return true;
-		oapiWriteLog("NatSaveSurface(SURF):");
+		oapiWriteLog((char*)"NatSaveSurface(SURF):");
 		NatDumpResource(pResource);
 		return false;
 	}
@@ -256,7 +256,7 @@ bool NatSaveSurface(const char* file, LPDIRECT3DRESOURCE9 pResource)
 
 		if (desc.Pool == D3DPOOL_SYSTEMMEM || desc.Usage & D3DUSAGE_DYNAMIC) {
 			if (D3DXSaveTextureToFileA(file, fmt, pTex, NULL) == S_OK) return true;
-			oapiWriteLog("NatSaveSurface(TEX):");
+			oapiWriteLog((char*)"NatSaveSurface(TEX):");
 			NatDumpResource(pResource);
 			return false;
 		}
@@ -283,7 +283,7 @@ bool NatSaveSurface(const char* file, LPDIRECT3DRESOURCE9 pResource)
 		if (D3DXSaveTextureToFileA(file, fmt, pTex, NULL) == S_OK) return true;
 	}
 
-	oapiWriteLog("NatSaveSurface():");
+	oapiWriteLog((char*)"NatSaveSurface():");
 	NatDumpResource(pResource);
 	return false;
 }
