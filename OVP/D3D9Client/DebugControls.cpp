@@ -171,13 +171,13 @@ void Create()
 	cpr = cpg = cpb = cpa = 0.0f;
 
 	if (Config->EnableMeshDbg) {
-		dwCmd = oapiRegisterCustomCmd("D3D9 Debug Controls", "This dialog allows to control various debug and development features", OpenDlgClbk, NULL);
+		dwCmd = oapiRegisterCustomCmd((char*)"D3D9 Debug Controls", (char*)"This dialog allows to control various debug and development features", OpenDlgClbk, NULL);
 	}
 	else {
 		dwCmd = 0;
 	}
 
-	dwGFX = oapiRegisterCustomCmd("D3D9 Graphics Controls", "This dialog allows to control various graphics options", OpenGFXDlgClbk, NULL);
+	dwGFX = oapiRegisterCustomCmd((char*)"D3D9 Graphics Controls", (char*)"This dialog allows to control various graphics options", OpenGFXDlgClbk, NULL);
 
 	resbias = 4.0 + Config->LODBias;
   
@@ -480,22 +480,22 @@ void OpenDlgClbk(void *context)
 
 	UpdateFlags();
 
-	CreateToolTip(IDC_DBG_TARGET, hDlg, "Select a target where the resulting image is assigned");
-	CreateToolTip(IDC_DBG_SEAMS, hDlg, "Enable seams reduction at each mipmap level");
-	CreateToolTip(IDC_DBG_FADE, hDlg, "Enable mipmap post processing. Contrast and detail is reduced from each mipmap to prevent 'stripes' (See:Fa,Fb)");
-	CreateToolTip(IDC_DBG_NORM, hDlg, "Center color channels at 0.5f to prevent lightening/darkening the results");
-	CreateToolTip(IDC_DBG_VARA, hDlg, "Attennuates high contrast components. Leaves low contrast parts unchanged [1.0 to 1.6]");
-	CreateToolTip(IDC_DBG_VARB, hDlg, "Attennuates everything equally. Typical range [0.00 to 0.03]");
-	CreateToolTip(IDC_DBG_VARC, hDlg, "Apply noise to main level and all mipmaps before attennuation (Fa,Fb)");
-	CreateToolTip(IDC_DBG_MORE, hDlg, "Click to show/hide more options");
-	CreateToolTip(IDC_DBG_EXTEND, hDlg, "Extend Diffuse/Roughess material range beyond 1.0f to allow texture fine tuning.");
-	CreateToolTip(IDC_DBG_LINK, hDlg, "Adjust all color channels at the same time");
-	CreateToolTip(IDC_DBG_DEFINED, hDlg, "Use the material property for rendering and save it");
+	CreateToolTip(IDC_DBG_TARGET, hDlg, (char*)"Select a target where the resulting image is assigned");
+	CreateToolTip(IDC_DBG_SEAMS, hDlg, (char*)"Enable seams reduction at each mipmap level");
+	CreateToolTip(IDC_DBG_FADE, hDlg, (char*)"Enable mipmap post processing. Contrast and detail is reduced from each mipmap to prevent 'stripes' (See:Fa,Fb)");
+	CreateToolTip(IDC_DBG_NORM, hDlg, (char*)"Center color channels at 0.5f to prevent lightening/darkening the results");
+	CreateToolTip(IDC_DBG_VARA, hDlg, (char*)"Attennuates high contrast components. Leaves low contrast parts unchanged [1.0 to 1.6]");
+	CreateToolTip(IDC_DBG_VARB, hDlg, (char*)"Attennuates everything equally. Typical range [0.00 to 0.03]");
+	CreateToolTip(IDC_DBG_VARC, hDlg, (char*)"Apply noise to main level and all mipmaps before attennuation (Fa,Fb)");
+	CreateToolTip(IDC_DBG_MORE, hDlg, (char*)"Click to show/hide more options");
+	CreateToolTip(IDC_DBG_EXTEND, hDlg, (char*)"Extend Diffuse/Roughess material range beyond 1.0f to allow texture fine tuning.");
+	CreateToolTip(IDC_DBG_LINK, hDlg, (char*)"Adjust all color channels at the same time");
+	CreateToolTip(IDC_DBG_DEFINED, hDlg, (char*)"Use the material property for rendering and save it");
 
-	hTipRed = CreateToolTip(IDC_DBG_RED, hDlg, "Red");
-	hTipGrn = CreateToolTip(IDC_DBG_GREEN, hDlg, "Green");
-	hTipBlu = CreateToolTip(IDC_DBG_BLUE, hDlg, "Blue");
-	hTipAlp = CreateToolTip(IDC_DBG_ALPHA, hDlg, "Alpha");
+	hTipRed = CreateToolTip(IDC_DBG_RED, hDlg, (char*)"Red");
+	hTipGrn = CreateToolTip(IDC_DBG_GREEN, hDlg, (char*)"Green");
+	hTipBlu = CreateToolTip(IDC_DBG_BLUE, hDlg, (char*)"Blue");
+	hTipAlp = CreateToolTip(IDC_DBG_ALPHA, hDlg, (char*)"Alpha");
 
 	// Diffuse
 	Params[0].var[0] = DefVar(0, 1, 2, SQRT, "Red");
@@ -1400,7 +1400,7 @@ struct PCParam {
 
 // =============================================================================================
 //
-D3DXCOLOR ProcessColor(D3DXVECTOR4 &C, PCParam *prm, int x, int y)
+D3DXCOLOR ProcessColor(D3DXVECTOR4 C, PCParam *prm, int x, int y)
 {
 	float fMip = float(prm->Mip);
 	float a = prm->a;
@@ -2141,14 +2141,14 @@ void OpenGFXDlgClbk(void *context)
 	SendMessage(GetDlgItem(hGfxDlg, IDC_GFX_LOCALMAX_RESET), BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hImg);
 	SendMessage(GetDlgItem(hGfxDlg, IDC_GFX_GLARE_RESET), BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hImg);
 
-	CreateToolTip(IDC_GFX_INTENSITY_RESET,   hGfxDlg, "Reset to default");
-	CreateToolTip(IDC_GFX_DISTANCE_RESET,    hGfxDlg, "Reset to default");
-	CreateToolTip(IDC_GFX_THRESHOLD_RESET,	 hGfxDlg, "Reset to default");
-	CreateToolTip(IDC_GFX_GAMMA_RESET,       hGfxDlg, "Reset to default");
-	CreateToolTip(IDC_GFX_SUNLIGHT_RESET,	 hGfxDlg, "Reset to default");
-	CreateToolTip(IDC_GFX_IRRADIANCE_RESET,	 hGfxDlg, "Reset to default");
-	CreateToolTip(IDC_GFX_LOCALMAX_RESET,	 hGfxDlg, "Reset to default");
-	CreateToolTip(IDC_GFX_GLARE_RESET,		 hGfxDlg, "Reset to default");
+	CreateToolTip(IDC_GFX_INTENSITY_RESET,   hGfxDlg, (char*)"Reset to default");
+	CreateToolTip(IDC_GFX_DISTANCE_RESET,    hGfxDlg, (char*)"Reset to default");
+	CreateToolTip(IDC_GFX_THRESHOLD_RESET,	 hGfxDlg, (char*)"Reset to default");
+	CreateToolTip(IDC_GFX_GAMMA_RESET,       hGfxDlg, (char*)"Reset to default");
+	CreateToolTip(IDC_GFX_SUNLIGHT_RESET,	 hGfxDlg, (char*)"Reset to default");
+	CreateToolTip(IDC_GFX_IRRADIANCE_RESET,	 hGfxDlg, (char*)"Reset to default");
+	CreateToolTip(IDC_GFX_LOCALMAX_RESET,	 hGfxDlg, (char*)"Reset to default");
+	CreateToolTip(IDC_GFX_GLARE_RESET,		 hGfxDlg, (char*)"Reset to default");
 
 	SetGFXSliders();
 }
