@@ -39,7 +39,7 @@ private:
 	bool InitNumTrajectory (const Elements *el);
 	bool SelectTarget (char *str);
 	bool SelectRef (char *str);
-	bool SelectSrc (char *str);
+	bool SelectSrc (const char *str);
 	bool SetNstep (int np);
 	static bool ClbkEnter_Tgt (Select*, int, char*, void*);
 	static bool ClbkEnter_Ref (Select *menu, int item, char *str, void *data);

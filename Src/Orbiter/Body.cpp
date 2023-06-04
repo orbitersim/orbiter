@@ -14,6 +14,7 @@
 #include "Element.h"
 #include "Log.h"
 #include <stdio.h>
+#include <string>
 
 using namespace std;
 using namespace oapi;
@@ -32,31 +33,32 @@ extern char DBG_MSG[256];
 
 Body::Body ()
 {
-	Setup ();
-	SetName ();
+	extern bool g_bStateUpdate;
+	s0 = sv;
+	s1 = (g_bStateUpdate ? sv + 1 : sv);
+	updcount = irand(100); // spread update times
+	s0->R = IMatrix();       // align body with its parent's orientation
 }
 
 Body::Body (double _mass, double _size)
+	: Body()
 {
-	Setup ();
-	SetName ();
 	mass = _mass;
 	size = _size;
 }
 
 Body::Body(char* fname)
+	: Body()
 {
 	char *cpath = g_pOrbiter->ConfigPath (fname);
 
 	//g_pOrbiter->OutputLoadStatus (fname, 0);
 	g_pOrbiter->OutputLoadStatus (cpath, 1);
 
-	Setup ();
 	ifstream ifs (cpath);
 	if (!ifs) return;
 	
-	filename = new char[lstrlen(cpath) + 1];
-	strcpy(filename, cpath);
+	filename = cpath;
 
 	char cbuf[256], *_name = 0;
 	if (GetItemString (ifs, "Name", cbuf)) _name = cbuf;
@@ -74,45 +76,11 @@ Body::Body(char* fname)
 	rvel_base.Set (s0->vel); rvel_add.Set (0,0,0);
 }
 
-Body::~Body ()
-{
-	if (name) {
-		delete []name;
-		name = NULL;
-	}
-	if (filename) {
-		delete []filename;
-		filename = NULL;
-	}
-}
-
-void Body::Setup ()
-{
-	extern bool g_bStateUpdate;
-	s0          = sv;
-	s1          = (g_bStateUpdate ? sv+1 : sv);
-	cbody       = 0;
-	hVis        = NULL;
-	name        = 0;
-	mass        = 0.0;
-	size        = 0.0;
-	filename	= NULL;
-	albedo.Set (1,1,1);
-	vislimit    = spotlimit = 1e-3;       // default visibility limit
-	updcount = irand (100); // spread update times
-	s0->R = IMatrix();       // align body with its parent's orientation
-}
-
 void Body::SetName (char *_name)
 {
 	static int noname = 0;
-	char cbuf[16];
-	if (!_name) {
-		sprintf (cbuf, "obj%d", ++noname);
-		_name = cbuf;
-	}
-	name = new char[strlen(_name)+1]; TRACENEW
-	strcpy (name, _name);
+	if (!_name) name = "obj" + std::to_string(++noname);
+	else name = _name;
 }
 
 void Body::SetSize (double newsize)
@@ -123,49 +91,48 @@ void Body::SetSize (double newsize)
 
 void Body::RPlace (const Vector &rpos, const Vector &rvel)
 {
-	StateVectors *s = (s1 ? s1 : s0); // should RPlace be allowed outside update phase?
-	s->pos = rpos_base = rpos;
+	// should RPlace be allowed outside update phase?
+	s1->pos = rpos_base = rpos;
 	rpos_add.Set (0,0,0);
-	s->vel = rvel_base = rvel;
+	s1->vel = rvel_base = rvel;
 	rvel_add.Set (0,0,0);
 }
 
 void Body::SetRPos (const Vector &p)
 {
-	dCHECK(s1, "Update state not available")
+	dCHECK(s1 != s0, "Update state not available")
 	rpos_base = s1->pos = p;
 	rpos_add.Set (0,0,0);
 }
 
 void Body::AddRPos (const Vector &dp) {
 	rpos_base += dp;
-	if (s1) s1->pos = rpos_base + rpos_add;
-	else    s0->pos = rpos_base + rpos_add;
+	s1->pos = rpos_base + rpos_add;
 }
 
 void Body::FlushRPos ()
 {
-	rpos_base = (s1 ? s1->pos:s0->pos);
+	rpos_base = s1->pos;
 	rpos_add.Set(0,0,0);
 }
 
 void Body::SetRVel (const Vector &v)
 {
-	dCHECK(s1, "Update state not available")
+	dCHECK(s1 != s0, "Update state not available")
 	rvel_base = s1->vel = v;
 	rvel_add.Set (0,0,0);
 }
 
 void Body::AddRVel (const Vector &dv)
 {
-	dCHECK(s1, "Update state not available")
+	dCHECK(s1 != s0, "Update state not available")
 	rvel_base += dv;
 	s1->vel = rvel_base + rvel_add;
 }
 
 void Body::FlushRVel ()
 {
-	rvel_base = (s1 ? s1->vel:s0->vel);
+	rvel_base = s1->vel;
 	rvel_add.Set(0,0,0);
 }
 
@@ -185,16 +152,6 @@ bool Body::SurfpointVisible (double lng, double lat, const Vector &gcam) const
 	return (dotp (sp-GPos(), gcam-sp) >= 0.0);
 }
 
-void Body::RegisterVisual (VISHANDLE vis)
-{
-	hVis = vis;
-}
-
-void Body::UnregisterVisual ()
-{
-	hVis = NULL;
-}
-
 void Body::BroadcastVisMsg (DWORD msg, DWORD_PTR content)
 {
 	oapi::GraphicsClient *gc;
@@ -203,30 +160,14 @@ void Body::BroadcastVisMsg (DWORD msg, DWORD_PTR content)
 	}
 }
 
-void Body::Update (bool force)
-{
-}
-
 void Body::BeginStateUpdate ()
 {
 	// enable the update state
-	if (s0 == sv) s1 = sv+1;
-	else          s1 = sv;
+	s1 = (s0 == sv ? sv + 1 : sv);
 }
 
 void Body::EndStateUpdate ()
 {
-	FlipState ();
-	s1 = NULL;
 	// disable the update state, to avoid it being addressed outside the update phase
-}
-
-void Body::FlipState ()
-{
-	if (s0 == sv) s0 = sv+1, s1 = sv;
-	else          s0 = sv, s1 = sv+1;
-}
-
-void Body::DestroyDeviceObjects ()
-{
+	s1 = s0 = (s0 == sv ? sv + 1 : sv);
 }

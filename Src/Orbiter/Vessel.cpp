@@ -80,8 +80,7 @@ static Vector DefAttExhaustDir[12] = {
 Vessel::Vessel (const PlanetarySystem *psys, const char *_name, const char *_classname, const VESSELSTATUS &status)
 : VesselBase()
 {
-	name = new char[strlen(_name)+1]; TRACENEW
-	strcpy (name, _name);
+	name = _name;
 
 	if (!_classname) _classname = _name;
 	classname = new char[strlen(_classname)+1]; TRACENEW
@@ -115,8 +114,7 @@ Vessel::Vessel (const PlanetarySystem *psys, const char *_name, const char *_cla
 Vessel::Vessel (const PlanetarySystem *psys, const char *_name, const char *_classname, const void *status)
 : VesselBase()
 {
-	name = new char[strlen(_name)+1]; TRACENEW
-	strcpy (name, _name);
+	name = _name;
 
 	if (!_classname) _classname = _name;
 	classname = new char[strlen(_classname)+1]; TRACENEW
@@ -158,8 +156,7 @@ Vessel::Vessel (const PlanetarySystem *psys, const char *_name, const char *_cla
 	sprintf (cbuf, "%s (%s)", _classname ? _classname : _name, _name);
 	g_pOrbiter->OutputLoadStatus (cbuf, 0);
 
-	name = new char[strlen(_name)+1]; TRACENEW
-	strcpy (name, _name);
+	name = _name;
 
 	if (!_classname) _classname = _name;
 	classname = new char[strlen(_classname)+1]; TRACENEW
@@ -237,7 +234,7 @@ bool Vessel::OpenConfigFile (ifstream &cfgfile) const
 {
 	char cbuf[256];
 	strcpy (cbuf, "Vessels\\");
-	strcat (cbuf, classname ? classname : name);
+	strcat (cbuf, classname ? classname : name.c_str());
 	// first search in $CONFIGDIR\Vessels
 	cfgfile.open (g_pOrbiter->ConfigPath (cbuf));
 	if (cfgfile.good()) return true;
@@ -755,7 +752,7 @@ void Vessel::PostCreation ()
 			BYTE *bt = (BYTE*)&tmp;
 			for (j = 0; j < g_psys->nVessel(); j++) {
 				Vessel *v = g_psys->GetVessel(j);
-				char *name = v->Name();
+				const char *name = v->Name();
 				tmp = 0;
 				for (k = 0; name[k]; k++) bt[k%4] += name[k];
 				if (tmp == dock[i]->mate) {
@@ -6126,7 +6123,7 @@ const OBJHANDLE VESSEL::GetHandle () const
 
 char *VESSEL::GetName () const
 {
-	return vessel->Name();
+	return (char*)vessel->Name();
 }
 
 char *VESSEL::GetClassName () const

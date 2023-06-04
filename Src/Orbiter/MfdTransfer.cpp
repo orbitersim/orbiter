@@ -593,7 +593,7 @@ bool Instrument_Transfer::SelectRef (char *str)
 	return true;
 }
 
-bool Instrument_Transfer::SelectSrc (char *str)
+bool Instrument_Transfer::SelectSrc (const char *str)
 {
 	RigidBody *obj;
 	if (!_stricmp (str, "x")) {

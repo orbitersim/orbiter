@@ -175,7 +175,7 @@ bool Vessel::ParseScenarioLine2 (char *line, void *status)
 			Base *base = ((Planet*)vs->rbody)->GetBase (trim_string(cbuf));
 			if (!base) {
 				char cerr[1024];
-				sprintf (cerr, "Scenario parse error for vessel %s: base '%s' not found on body '%s'.", name, trim_string(cbuf), ((Planet*)vs->rbody)->Name());
+				sprintf (cerr, "Scenario parse error for vessel %s: base '%s' not found on body '%s'.", name.c_str(), trim_string(cbuf), ((Planet*)vs->rbody)->Name());
 				LOGOUT_ERR(cerr);
 				g_pOrbiter->TerminateOnError();
 			}
@@ -388,7 +388,7 @@ DWORD Vessel::PackDefaultState (char **data, DWORD flag)
 	const char *cname = (fstatus == FLIGHTSTATUS_FREEFLIGHT ? cbody->Name() : proxyplanet->Name());
 	size += strlen(cname)+1;
 	if (flag & SD_NAME) {
-		size += strlen(name)+1;
+		size += name.size() + 1;
 		size += (classname ? strlen(classname)+1 : 1);
 	}
 	*data = new char[size];
@@ -411,7 +411,7 @@ DWORD Vessel::PackDefaultState (char **data, DWORD flag)
 	}
 	strcpy (sd->buf, cname);
 	if (flag & SD_NAME)
-		sprintf (sd->buf + strlen(sd->buf), "\n%s\n%s", name, classname ? classname:"");
+		sprintf (sd->buf + strlen(sd->buf), "\n%s\n%s", name.c_str(), classname ? classname : "");
 	return size;
 }
 
