@@ -20,7 +20,7 @@
 #define ORBITER_MODULE
 
 extern "C" {
-#include "Lua\lua.h"
+#include "Lua/lua.h"
 }
 #include "orbitersdk.h"
 

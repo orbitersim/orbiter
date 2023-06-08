@@ -5,9 +5,9 @@
 #define __QUADCOPTERLUA_H
 
 extern "C" {
-#include "lua\lua.h"
-#include "lua\lualib.h"
-#include "lua\lauxlib.h"
+#include "Lua/lua.h"
+#include "Lua/lualib.h"
+#include "Lua/lauxlib.h"
 }
 class Quadcopter;
 
