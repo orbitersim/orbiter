@@ -4,7 +4,6 @@ project(lua)
 file(GLOB LUA_FILES "Lua/*.c" "Lua/*.h")
 
 add_library(lua SHARED ${LUA_FILES})
-add_library(lua::lib ALIAS lua)
 target_compile_definitions(lua PUBLIC LUA_BUILD_AS_DLL)
 
 # for tests and running Orbiter from inside the build dir

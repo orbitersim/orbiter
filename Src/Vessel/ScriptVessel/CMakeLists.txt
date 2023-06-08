@@ -17,7 +17,7 @@ target_include_directories(ScriptVessel
 target_link_libraries(ScriptVessel
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
-	lua::lib
+	lua
 )
 
 add_dependencies(ScriptVessel
