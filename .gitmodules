@@ -1,0 +1,3 @@
+[submodule "Extern/Lua"]
+	path = Extern/Lua
+	url = https://github.com/lua/lua.git
