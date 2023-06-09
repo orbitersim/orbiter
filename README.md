@@ -26,11 +26,11 @@ D3D9Client graphics engine is licensed under LGPL, see [LGPL](./OVP/D3D9Client/L
 
 Get the Orbiter source repository from github
 ```bash
-git clone git@github.com:orbitersim/orbiter.git
+git clone --recursive git@github.com:orbitersim/orbiter.git
 ```
 or
 ```bash
-git clone https://github.com/orbitersim/orbiter.git
+git clone --recursive https://github.com/orbitersim/orbiter.git
 ```
 
 To configure and generate the makefiles, you need a recent
