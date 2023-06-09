@@ -4,3 +4,6 @@
 [submodule "Extern/zlib"]
 	path = Extern/zlib
 	url = https://github.com/madler/zlib.git
+[submodule "Extern/Catch2"]
+	path = Extern/Catch2
+	url = https://github.com/catchorg/Catch2.git

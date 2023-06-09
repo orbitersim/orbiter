@@ -33,3 +33,10 @@ set_target_properties(zlib PROPERTIES
 )
 
 install(TARGETS zlib RUNTIME DESTINATION ${ORBITER_INSTALL_ROOT_DIR})
+
+##########################################
+project(Catch2)
+
+if(ORBITER_MAKE_TESTS)
+    add_subdirectory(Catch2)
+endif()
