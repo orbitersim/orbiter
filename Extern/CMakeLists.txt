@@ -1,5 +1,7 @@
+project(Extern)
+
 ##########################################
-project(lua)
+## Lua
 
 file(GLOB LUA_FILES "Lua/*.c" "Lua/*.h")
 
@@ -17,7 +19,7 @@ install(TARGETS lua RUNTIME DESTINATION ${ORBITER_INSTALL_ROOT_DIR})
 install(TARGETS lua DESTINATION ${ORBITER_INSTALL_SDK_DIR}/lib/Lua)
 
 ##########################################
-project(zlib)
+## zlib
 
 set(SKIP_INSTALL_ALL ON)
 add_subdirectory(zlib)
@@ -35,7 +37,7 @@ set_target_properties(zlib PROPERTIES
 install(TARGETS zlib RUNTIME DESTINATION ${ORBITER_INSTALL_ROOT_DIR})
 
 ##########################################
-project(Catch2)
+## Catch2
 
 if(ORBITER_MAKE_TESTS)
     add_subdirectory(Catch2)
