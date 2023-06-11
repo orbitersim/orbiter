@@ -35,8 +35,10 @@ if(ORBITER_BUILD_XRSOUND)
 	else()
 		# because of a bug in the 32bit version of irrKlang (it has hidden "__MACOSX" dir),
 		# CMake does not strip the top-level directory
-		set(IRRKLANG_BIN_DIR ${IRRKLANG_DIR}/irrKlang-1.6.0/bin/win32-visualStudio)
-		set(IRRKLANG_LIB_DIR ${IRRKLANG_DIR}/irrKlang-1.6.0/lib/Win32-visualStudio)
+		string(APPEND IRRKLANG_DIR /irrKlang-1.6.0)
+
+		set(IRRKLANG_BIN_DIR ${IRRKLANG_DIR}/bin/win32-visualStudio)
+		set(IRRKLANG_LIB_DIR ${IRRKLANG_DIR}/lib/Win32-visualStudio)
 	endif()
 	set(IRRKLANG_LIB ${IRRKLANG_LIB_DIR}/irrKlang.lib)
 
