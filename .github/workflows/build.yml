@@ -46,7 +46,7 @@ jobs:
     - name: Cache irrKlang package
       uses: actions/cache@v3
       with:
-        path: ${{ github.workspace }}/out/build/Extern/irrKlang/${{ matrix.architecture }}
+        path: ${{ github.workspace }}/Extern/irrKlang/${{ matrix.architecture }}
         key: irrKlang-${{ matrix.architecture }}
         
     - name: Cache DirectX SDK
@@ -67,7 +67,7 @@ jobs:
          dir /S /B DXSDK
 
     - name: Configure
-      run: cmake . --preset windows-${{ matrix.architecture }}-release -DORBITER_MAKE_DOC=OFF -DIRRKLANG_DIR:STRING="irrKlang_DOWNLOAD" -DDXSDK_DIR:PATH="${{ github.workspace }}\\DXSDK"
+      run: cmake . --preset windows-${{ matrix.architecture }}-release -DORBITER_MAKE_DOC=OFF -DDXSDK_DIR:PATH="${{ github.workspace }}\\DXSDK"
 
     - name: Build
       run: cmake --build --preset windows-${{ matrix.architecture }}-release --jobs 2
