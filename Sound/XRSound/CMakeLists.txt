@@ -1,39 +1,46 @@
-if (NOT EXISTS ${IRRKLANG_DIR})
-	string(COMPARE EQUAL ${IRRKLANG_DIR} "irrKlang_DOWNLOAD" IRRKLANG_DOWNLOAD)
-	if (IRRKLANG_DOWNLOAD)
-		# Try downloading the irrKlang library on the fly
-		set(IRRKLANG_DOWNLOAD_DIR ${ORBITER_BINARY_ROOT_DIR}/Extern/irrKlang/${ARCH}/)
-		if (BUILD64)
-			set(IRRKLANG_URL "https://www.ambiera.at/downloads/irrKlang-64bit-1.6.0.zip")
-			set(IRRKLANG_DIR ${IRRKLANG_DOWNLOAD_DIR}/irrKlang-64bit-1.6.0)
+if(ORBITER_BUILD_XRSOUND)
+
+	## irrKlang
+	if(NOT IRRKLANG_DIR)
+		set(IRRKLANG_DIR ${EXTERN_DIR}/irrKlang/${ARCH})
+
+		if(NOT EXISTS ${IRRKLANG_DIR})
+			if(BUILD64)
+				set(IRRKLANG_URL https://www.ambiera.at/downloads/irrKlang-64bit-1.6.0.zip)
+			else()
+				set(IRRKLANG_URL https://www.ambiera.at/downloads/irrKlang-32bit-1.6.0.zip)
+			endif()
+
+			include(FetchContent)
+			FetchContent_Declare(irrKlang
+				URL ${IRRKLANG_URL}
+				SOURCE_DIR ${IRRKLANG_DIR}
+				DOWNLOAD_EXTRACT_TIMESTAMP ON
+			)
+
+			message("Downloading irrKlang from ${IRRKLANG_URL} ...")
+			FetchContent_MakeAvailable(irrKlang)
+
 		else()
-			set(IRRKLANG_URL "https://www.ambiera.at/downloads/irrKlang-32bit-1.6.0.zip")
-			set(IRRKLANG_DIR ${IRRKLANG_DOWNLOAD_DIR}/irrKlang-1.6.0)
+			message("Found existing irrKlang at ${IRRKLANG_DIR}")
 		endif()
-		if (EXISTS ${IRRKLANG_DIR})
-			message(STATUS "Found a previously downloaded irrKlang package.")
-		else()
-			message(STATUS "Downloading irrKlang ...")
-			file(MAKE_DIRECTORY ${IRRKLANG_DOWNLOAD_DIR})
-			file(DOWNLOAD ${IRRKLANG_URL} ${IRRKLANG_DOWNLOAD_DIR}/irrKlang.zip)
-			file(ARCHIVE_EXTRACT INPUT ${IRRKLANG_DOWNLOAD_DIR}/irrKlang.zip
-				DESTINATION ${IRRKLANG_DOWNLOAD_DIR})
-		endif()
+
+	elseif(NOT EXISTS ${IRRKLANG_DIR})
+		message(FATAL_ERROR "IRRKLANG_DIR does not exist")
 	endif()
-endif()
 
-# The irrKlang library location
-if (BUILD64)
-	set(IRRKLANG_LIB_DIR "${IRRKLANG_DIR}/lib/Winx64-visualStudio")
-	set(IRRKLANG_BIN_DIR "${IRRKLANG_DIR}/bin/Winx64-visualStudio")
-else()
-	set(IRRKLANG_LIB_DIR "${IRRKLANG_DIR}/lib/Win32-visualStudio")
-	set(IRRKLANG_BIN_DIR "${IRRKLANG_DIR}/bin/Win32-visualStudio")
-endif()
-set(IRRKLANG_LIB "${IRRKLANG_LIB_DIR}/irrKlang.lib")
+	if(BUILD64)
+		set(IRRKLANG_BIN_DIR ${IRRKLANG_DIR}/bin/winx64-visualStudio)
+		set(IRRKLANG_LIB_DIR ${IRRKLANG_DIR}/lib/Winx64-visualStudio)
+	else()
+		# because of a bug in the 32bit version of irrKlang (it has hidden "__MACOSX" dir),
+		# CMake does not strip the top-level directory
+		set(IRRKLANG_BIN_DIR ${IRRKLANG_DIR}/irrKlang-1.6.0/bin/win32-visualStudio)
+		set(IRRKLANG_LIB_DIR ${IRRKLANG_DIR}/irrKlang-1.6.0/lib/Win32-visualStudio)
+	endif()
+	set(IRRKLANG_LIB ${IRRKLANG_LIB_DIR}/irrKlang.lib)
 
-if(EXISTS ${IRRKLANG_LIB})
-
+	## XRSound
 	set(ASSET_DIR ${CMAKE_CURRENT_SOURCE_DIR}/XRSound/assets)
 	set(SOLUTION_DIR ${CMAKE_CURRENT_SOURCE_DIR}/XRSound/src)
 	set(IRRKLANG_DLL_DIR ${IRRKLANG_DIR})
@@ -71,9 +78,5 @@ if(EXISTS ${IRRKLANG_LIB})
 	)
 
 	add_subdirectory(XRSound)
-
-else()
-
-	message(WARNING "irrKlang libraries not found: not building XRSound module.")
 
 endif()
