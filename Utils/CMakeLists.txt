@@ -1,6 +1,8 @@
 # Copyright (c) Martin Schweiger
 # Licensed under the MIT License
 
+include(ExternalProject)
+
 add_subdirectory(Date)
 add_subdirectory(fchecksum)
 add_subdirectory(meshc)
