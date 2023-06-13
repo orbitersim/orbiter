@@ -22,7 +22,6 @@
 #include "CSphereMgr.h"
 #include "Log.h"
 #include "Util.h"
-#include "cryptstring.h"
 #include "resource.h"
 #include "resource_video.h"
 

@@ -15,7 +15,6 @@
 #include "DlgMgr.h"
 #include "Log.h"
 #include "Util.h"
-#include "cryptstring.h"
 #include "resource.h"
 #include <wincodec.h>
 #include <io.h>
@@ -354,25 +353,6 @@ void GraphicsClient::ShowDefaultSplash ()
 
 	oapi::Sketchpad *skp = clbkGetSketchpad (NULL);
 	skp->SetBackgroundMode (oapi::Sketchpad::BK_TRANSPARENT);
-	char cbuf[512];
-	strcpy (cbuf, uscram(SIG1A)); strcat(cbuf, " | ");
-	strcat (cbuf, uscram(SIG4));  strcat(cbuf, " | ");
-	strcat (cbuf, uscram(SIG2));
-	//strcpy (cbuf, uscram(SIG4));
-#ifdef UNDEF
-	for (i = 0; i < 2; i++) {
-		skp->SetTextColor (i ? texcol : 0);
-		skp->SetTextAlign (oapi::Sketchpad::RIGHT, oapi::Sketchpad::BOTTOM);
-		sprintf (cbuf, "%s  |  ", uscram(NAME1)); skp->Text(rw/2-i*2, rh-20-i, cbuf, strlen(cbuf));
-		sprintf (cbuf, "%s  |  ", uscram(SIG1A)); skp->Text(rw/2-i*2, rh-5-i,  cbuf, strlen(cbuf));
-		skp->SetTextAlign (oapi::Sketchpad::LEFT, oapi::Sketchpad::BOTTOM);
-		strcpy (cbuf, uscram(SIG4));              skp->Text(rw/2-i*2, rh-20-i, cbuf, strlen(cbuf));
-		sprintf (cbuf, "http://%s", uscram(SIG2)); skp->Text(rw/2-i*2, rh-5-i,  cbuf, strlen(cbuf));
-		//skp->Text (rw-10-2*i, rh-50-i, uscram(SIG1A), 28);
-		//skp->Text (rw-10-2*i, rh-35-i, uscram(SIG2), 24);
-		//skp->Text (rw-10-2*i, rh-20-i, cbuf, strlen(cbuf));
-	}
-#endif
 	DWORD fontsize = 16; //max(rw/120,10);
 	DWORD x0 = 10;//rw-fontsize*25;
 	DWORD y0 = rh-fontsize; //tgty + (DWORD)(rw*0.078);
@@ -381,8 +361,6 @@ void GraphicsClient::ShowDefaultSplash ()
 	skp->SetFont (splashFont);
 	skp->SetTextColor (texcol);
 	skp->SetTextAlign (oapi::Sketchpad::LEFT, oapi::Sketchpad::TOP);
-	//strcpy (cbuf, uscram(NAME1)); skp->Text(x0, y0, cbuf, strlen(cbuf));
-	strcpy (cbuf, uscram(SIG7));  skp->Text(x0, y0/*+fontsize*/, cbuf, strlen(cbuf));
 
 	//DeleteObject(hbm);
 	clbkReleaseSketchpad (skp);

@@ -119,9 +119,6 @@ set(common_src
 # Resources
 	Orbiter.rc
 	Orbiter.ico
-# Files built on the fly
-	cryptstring.h
-	Disclaimer.txt
 )
 
 # Sources for DX7 built-in graphics version only
@@ -182,7 +179,6 @@ set(Orbiter_server_libs
 )
 
 set(Orbiter_depends
-	scramble
 	Orbitersdk
 	DlgCtrl
 )
@@ -302,14 +298,6 @@ add_custom_command(TARGET ${OrbiterTgt}
 	COMMAND ${CMAKE_COMMAND} -E copy ${ORBITER_LIB} ${ORBITER_BINARY_SDK_DIR}/lib/ 
 )
 
-add_custom_command(
-	OUTPUT cryptstring.h
-	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cryptstring.h.in
-	COMMAND $<TARGET_FILE:scramble> ${CMAKE_CURRENT_SOURCE_DIR}/cryptstring.h.in cryptstring.h
-)
-
-add_custom_command(
-	OUTPUT Disclaimer.txt
-	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Disclaimer.txt.in
-	COMMAND $<TARGET_FILE:scramble> ${CMAKE_CURRENT_SOURCE_DIR}/Disclaimer.txt.in Disclaimer.txt
-)
+string(TIMESTAMP DATE "%d %b %Y")
+string(TIMESTAMP VERSION "%y%m%d")
+configure_file(about.hpp.in about.hpp @ONLY)

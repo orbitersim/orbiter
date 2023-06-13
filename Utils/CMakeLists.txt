@@ -7,7 +7,6 @@ add_subdirectory(Date)
 add_subdirectory(meshc)
 add_subdirectory(Pltex)
 add_subdirectory(Shipedit)
-add_subdirectory(scramble)
 add_subdirectory(texpack)
 #add_subdirectory(tileedit/qt)
 

@@ -13,7 +13,7 @@
 #include "Util.h"
 #include "Help.h"
 #include "resource.h"
-#include "cryptstring.h"
+#include "about.hpp"
 
 //-----------------------------------------------------------------------------
 // AboutTab class
@@ -36,23 +36,18 @@ void orbiter::AboutTab::Create ()
 {
 	hTab = CreateTab (IDD_PAGE_ABT);
 
-	char cbuf[256];
-	SetWindowText (GetDlgItem (hTab, IDC_ABT_TXT_NAME), uscram(NAME1));
-	SetWindowText (GetDlgItem (hTab, IDC_ABT_TXT_BUILDDATE), uscram(SIG4));
-	strcpy (cbuf, uscram(SIG1B));
-	SetWindowText (GetDlgItem (hTab, IDC_ABT_TXT_CPR), cbuf);
-	strcpy (cbuf, uscram(SIG2));
-	strcat (cbuf, "\r\n");
-	strcat (cbuf, uscram(SIG5));
-	strcat (cbuf, "\r\n");
-	strcat (cbuf, uscram(SIG6));
-	SetWindowText (GetDlgItem (hTab, IDC_ABT_TXT_WEBADDR), cbuf);
+	SetWindowText (GetDlgItem (hTab, IDC_ABT_TXT_NAME), NAME1);
+	SetWindowText (GetDlgItem (hTab, IDC_ABT_TXT_BUILDDATE), SIG4);
+	SetWindowText (GetDlgItem (hTab, IDC_ABT_TXT_CPR), SIG1B);
+	SetWindowText (GetDlgItem (hTab, IDC_ABT_TXT_WEBADDR), SIG2 "\n" SIG5 "\n" SIG6);
 #ifndef INLINEGRAPHICS
-	strcpy(cbuf, "D3D9Client module by Jarmo Nikkanen and Peter Schneider");
-	SendDlgItemMessage(hTab, IDC_ABT_LBOX_COMPONENT, LB_ADDSTRING, 0, (LPARAM)cbuf);
+	SendDlgItemMessage(hTab, IDC_ABT_LBOX_COMPONENT, LB_ADDSTRING, 0,
+		(LPARAM)"D3D9Client module by Jarmo Nikkanen and Peter Schneider"
+	);
 #endif
-	strcpy(cbuf, "XRSound module Copyright (c) Doug Beachy");
-	SendDlgItemMessage(hTab, IDC_ABT_LBOX_COMPONENT, LB_ADDSTRING, 0, (LPARAM)cbuf);
+	SendDlgItemMessage(hTab, IDC_ABT_LBOX_COMPONENT, LB_ADDSTRING, 0,
+		(LPARAM)"XRSound module Copyright (c) Doug Beachy"
+	);
 }
 
 //-----------------------------------------------------------------------------
@@ -86,9 +81,9 @@ INT_PTR CALLBACK orbiter::AboutTab::AboutProc (HWND hWnd, UINT uMsg, WPARAM wPar
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
-		SetWindowText (GetDlgItem (hWnd, IDC_MSG),
-			uscram((char*)LockResource (LoadResource (NULL,
-			FindResource (NULL, MAKEINTRESOURCE(lParam), "TEXT")))));
+		SetWindowText(GetDlgItem(hWnd, IDC_MSG),
+			(char*)LockResource(LoadResource(NULL, FindResource(NULL, MAKEINTRESOURCE(lParam), "TEXT")))
+		);
 		return TRUE;
 	case WM_COMMAND:
 		if (IDOK == LOWORD(wParam) || IDCANCEL == LOWORD(wParam))
