@@ -122,7 +122,6 @@ set(common_src
 # Files built on the fly
 	cryptstring.h
 	Disclaimer.txt
-	splash_cs.dat
 )
 
 # Sources for DX7 built-in graphics version only
@@ -184,7 +183,6 @@ set(Orbiter_server_libs
 
 set(Orbiter_depends
 	scramble
-	fchecksum
 	Orbitersdk
 	DlgCtrl
 )
@@ -314,10 +312,4 @@ add_custom_command(
 	OUTPUT Disclaimer.txt
 	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Disclaimer.txt.in
 	COMMAND $<TARGET_FILE:scramble> ${CMAKE_CURRENT_SOURCE_DIR}/Disclaimer.txt.in Disclaimer.txt
-)
-
-add_custom_command(
-	OUTPUT splash_cs.dat
-	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Bitmaps/Splash.jpg
-	COMMAND $<TARGET_FILE:fchecksum> ${CMAKE_CURRENT_SOURCE_DIR}/Bitmaps/Splash.jpg splash_cs.dat
 )

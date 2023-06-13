@@ -4,7 +4,6 @@
 include(ExternalProject)
 
 add_subdirectory(Date)
-add_subdirectory(fchecksum)
 add_subdirectory(meshc)
 add_subdirectory(Pltex)
 add_subdirectory(Shipedit)
