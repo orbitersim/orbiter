@@ -721,9 +721,9 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 
 	// Initialize MeshShader constants
 	//
-	MeshShader::ps_const.Cam_X = *scn->GetCameraX();
-	MeshShader::ps_const.Cam_Y = *scn->GetCameraY();
-	MeshShader::ps_const.Cam_Z = *scn->GetCameraZ();
+	MeshShader::ps_const.Cam_X = to_FVECTOR3(*scn->GetCameraX());
+	MeshShader::ps_const.Cam_Y = to_FVECTOR3(*scn->GetCameraY());
+	MeshShader::ps_const.Cam_Z = to_FVECTOR3(*scn->GetCameraZ());
 
 
 

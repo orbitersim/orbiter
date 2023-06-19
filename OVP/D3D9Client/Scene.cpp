@@ -1169,7 +1169,7 @@ void Scene::ComputeLocalLightsVisibility()
 	{
 		if (Lights[i].cone > 0.0f) {
 			LLCBuf[nGlares].index = float(nGlares);
-			LLCBuf[nGlares].pos = Lights[i].Position;
+			LLCBuf[nGlares].pos = to_FVECTOR3(Lights[i].Position);
 			LLCBuf[nGlares].cone = Lights[i].cone;
 			Lights[i].GPUId = nGlares;
 			nGlares++;
@@ -1191,7 +1191,7 @@ void Scene::ComputeLocalLightsVisibility()
 	psgBuffer[GBUF_DEPTH]->GetDesc(&desc);
 
 	ComputeData.vSrc = FVECTOR4((float)desc.Width, (float)desc.Height, 1.0f / (float)desc.Width, 1.0f / (float)desc.Height);
-	ComputeData.vDir = Camera.z;
+	ComputeData.vDir = to_FVECTOR3(Camera.z);
 	ComputeData.mSVP = Camera.mProjView;
 
 	// Must setup render target before calling Setup()
@@ -1514,7 +1514,7 @@ void Scene::RenderMainScene()
 		SmapRenderList.clear();
 		SmapRenderList.push_back(vFocus);
 
-		D3DXVECTOR3 ld = sunLight.Dir;
+		auto ld = to_D3DXVECTOR3(sunLight.Dir);
 		D3DXVECTOR3 pos = vFocus->GetBoundingSpherePosDX();
 		float rad = vFocus->GetBoundingSphereRadius();
 		float frad = rad;
@@ -1779,7 +1779,7 @@ void Scene::RenderMainScene()
 	//
 	if (Config->ShadowMapMode >= 1) {
 
-		D3DXVECTOR3 ld = sunLight.Dir;
+		auto ld = to_D3DXVECTOR3(sunLight.Dir);
 		D3DXVECTOR3 pos = vFocus->GetBoundingSpherePosDX();
 		float rad = vFocus->GetBoundingSphereRadius();
 
@@ -1825,7 +1825,7 @@ void Scene::RenderMainScene()
 
 		while (!Intersect.empty()) {
 
-			D3DXVECTOR3 ld = sunLight.Dir;
+			auto ld = to_D3DXVECTOR3(sunLight.Dir);
 			D3DXVECTOR3 pos = Intersect.front()->GetBoundingSpherePosDX();
 			float rad = Intersect.front()->GetBoundingSphereRadius();
 
@@ -2377,7 +2377,7 @@ D3DXCOLOR Scene::GetSunDiffColor()
 
 	float pwr = 1.0f;
 
-	if (hP == hS) return GetSun()->Color;
+	if (hP == hS) return to_D3DXCOLOR(GetSun()->Color);
 
 	double r = length(P);
 	double pres = 1000.0;
@@ -3173,7 +3173,7 @@ FMATRIX4 Scene::PushCameraFrustumLimits(float nearlimit, float farlimit)
 	FRUSTUM fr = { Camera.nearplane, Camera.farplane };
 	FrustumStack.push(fr);
 	SetCameraFrustumLimits(nearlimit, farlimit);
-	return FMATRIX4(GetProjectionViewMatrix());
+	return to_FMATRIX4(*GetProjectionViewMatrix());
 }
 
 // ===========================================================================================
@@ -3182,7 +3182,7 @@ FMATRIX4 Scene::PopCameraFrustumLimits()
 {
 	SetCameraFrustumLimits(FrustumStack.top().znear, FrustumStack.top().zfar);
 	FrustumStack.pop();
-	return FMATRIX4(GetProjectionViewMatrix());
+	return to_FMATRIX4(*GetProjectionViewMatrix());
 }
 
 // ===========================================================================================
@@ -3669,7 +3669,7 @@ void Scene::RenderGlares()
 						Const.GPUId = (float(GPUId) + 0.5f) / desc.Width;
 						Const.Pos = FVECTOR4(pt.x, pt.y, size, size);
 						Const.Alpha = Lights[i].cone;
-						Const.Color = Lights[i].Diffuse;
+						Const.Color = to_FVECTOR4(Lights[i].Diffuse);
 						Const.Blend = 1.0f;
 						pRenderGlares->SetVSConstants("Const", &Const, sizeof(Const));
 						pRenderGlares->SetPSConstants("Const", &Const, sizeof(Const));

@@ -973,7 +973,7 @@ void SurfTile::Render ()
 
 	sp->vTexOff = GetTexRangeDX(&texrange);
 	sp->vMicroOff = GetTexRangeDX(&microrange);
-	sp->mWorld = mWorld;
+	sp->mWorld = to_FMATRIX4(mWorld);
 	sp->fTgtScale = tgtscale;
 
 	if (has_lights) sp->fBeta = float(mgr->Cprm().lightfac);
@@ -1003,7 +1003,7 @@ void SurfTile::Render ()
 				if (sqrt(D3DXVec3Dot(&bc, &bc) - x * x) < (shd->rad + mesh->bsRad)) {
 					float s = float(shd->size);
 					float sr = 2.0f * shd->rad / s;
-					sp->mLVP = shd->mViewProj;
+					sp->mLVP = to_FMATRIX4(shd->mViewProj);
 					sp->vSHD = FVECTOR4(sr, 1.0f / s, 0.0f, 1.0f / shd->depth);
 					fc->bShadows = true;
 				}
@@ -1066,11 +1066,11 @@ void SurfTile::Render ()
 					for (int i = 0; i < nMeshLights; i++)
 					{
 						auto pL = pLights[LightList[i].idx];
-						Locals.attenuation[i] = pL.Attenuation;
+						Locals.attenuation[i] = to_FVECTOR3(pL.Attenuation);
 						Locals.diffuse[i] = FVECTOR4(pL.Diffuse).rgb;
-						Locals.direction[i] = pL.Direction;
-						Locals.param[i] = pL.Param;
-						Locals.position[i] = pL.Position;
+						Locals.direction[i] = to_FVECTOR3(pL.Direction);
+						Locals.param[i] = to_FVECTOR4(pL.Param);
+						Locals.position[i] = to_FVECTOR3(pL.Position);
 						Spots[i] = (pL.Type == 1);
 					}
 

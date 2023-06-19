@@ -434,7 +434,7 @@ void CSphereManager::Render (LPDIRECT3DDEVICE9 dev, int level, double bglvl)
 	CelFlow.bBeta = m_bStarImg;
 	CelData.fAlpha = intens;
 	CelData.fBeta = bgscale;
-	CelData.mViewProj = *scn->GetProjectionViewMatrix();
+	CelData.mViewProj = to_FMATRIX4(*scn->GetProjectionViewMatrix());
 
 	pShader->Setup(pPatchVertexDecl, false, 0);
 	pShader->ClearTextures();
@@ -502,8 +502,8 @@ void CSphereManager::RenderTile (int lvl, int hemisp, int ilat, int nlat, int il
 	VBMESH &mesh = PATCH_TPL[lvl][ilat]; // patch template
 
 	D3D9Stats.Old.Tiles[lvl]++;
-	
-	CelData.mWorld = mWorld;
+
+	CelData.mWorld = to_FMATRIX4(mWorld);
 
 	pShader->SetTexture(hTexA, tex, IPF_CLAMP | IPF_ANISOTROPIC);
 	pShader->SetTexture(hTexB, ltex, IPF_CLAMP | IPF_ANISOTROPIC);

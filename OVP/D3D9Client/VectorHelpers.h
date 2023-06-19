@@ -308,17 +308,17 @@ inline D3DXVECTOR3 lerp(const D3DXVECTOR3 &v, const D3DXVECTOR3 &w, float x)
 // D3DXVECTOR4 Helpers ==================================================================
 //
 //
-inline D3DXVECTOR4 abs(D3DXVECTOR4 &a)
+inline D3DXVECTOR4 abs(const D3DXVECTOR4 &a)
 {
 	return D3DXVECTOR4(abs(a.x), abs(a.y), abs(a.z), abs(a.w));
 }
 
-inline D3DXVECTOR4 sign(D3DXVECTOR4 &a)
+inline D3DXVECTOR4 sign(const D3DXVECTOR4 &a)
 {
 	return D3DXVECTOR4(sign(a.x), sign(a.y), sign(a.z), sign(a.w));
 }
 
-inline D3DXVECTOR4 pow(float x, D3DXVECTOR4 &y)
+inline D3DXVECTOR4 pow(float x, const D3DXVECTOR4 &y)
 {
 	return D3DXVECTOR4(pow(x, y.x), pow(x, y.y), pow(x, y.z), pow(x, y.w));
 }

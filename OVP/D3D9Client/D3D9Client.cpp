@@ -1683,7 +1683,7 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			xpos = GET_X_LPARAM(lParam);
 			ypos = GET_Y_LPARAM(lParam);
 
-			GetScene()->vPickRay = GetScene()->GetPickingRay(xpos, ypos);
+			GetScene()->vPickRay = to_FVECTOR3( GetScene()->GetPickingRay(xpos, ypos) );
 
 			TRACKMOUSEEVENT te; te.cbSize = sizeof(TRACKMOUSEEVENT); te.dwFlags = TME_LEAVE; te.hwndTrack = hRenderWnd;
 			TrackMouseEvent(&te);
