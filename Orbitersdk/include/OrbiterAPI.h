@@ -6957,261 +6957,6 @@ OAPIFUNC void oapiTriggerRedrawArea (int panel_id, int vc_id, int area_id);
 
 /**
  * \ingroup vec
- * \brief Vector composition
- *
- * Returns a vector composed of the three provided arguments
- * \param x x-component
- * \param y y-component
- * \param z z-component
- * \return vector defined as (x,y,z)
- */
-inline VECTOR3 _V(double x, double y, double z)
-{
-	VECTOR3 vec = {x,y,z}; return vec;
-}
-
-/**
- * \ingroup vec
- * \brief Vector copy
- *
- * Copies the element values from the source to the target vector.
- * \param[out] a target vector
- * \param[in] b source vector
- */
-inline void veccpy (VECTOR3 &a, const VECTOR3 &b)
-{
-	a.x = b.x;
-	a.y = b.y;
-	a.z = b.z;
-}
-
-/**
- * \ingroup vec
- * \brief Vector addition
- * \param a first vector operand
- * \param b second vector operand
- * \return Result of a+b.
- */
-inline VECTOR3 operator+ (const VECTOR3 &a, const VECTOR3 &b)
-{
-	VECTOR3 c;
-	c.x = a.x+b.x;
-	c.y = a.y+b.y;
-	c.z = a.z+b.z;
-	return c;
-}
-
-/**
- * \ingroup vec
- * \brief Vector subtraction
- * \param a first vector operand
- * \param b second vector operand
- * \return Result of a-b.
- */
-inline VECTOR3 operator- (const VECTOR3 &a, const VECTOR3 &b)
-{
-	VECTOR3 c;
-	c.x = a.x-b.x;
-	c.y = a.y-b.y;
-	c.z = a.z-b.z;
-	return c;
-}
-
-/**
- * \ingroup vec
- * \brief Multiplication of vector with scalar
- * \param a vector operand
- * \param f scalar operand
- * \return Result of element-wise a*f.
- */
-inline VECTOR3 operator* (const VECTOR3 &a, const double f)
-{
-	VECTOR3 c;
-	c.x = a.x*f;
-	c.y = a.y*f;
-	c.z = a.z*f;
-	return c;
-}
-
-/**
- * \ingroup vec
- * \brief Division of vector by a scalar
- * \param a vector operand
- * \param f scalar operand
- * \return Result of element-wise a/f.
- */
-inline VECTOR3 operator/ (const VECTOR3 &a, const double f)
-{
-	VECTOR3 c;
-	c.x = a.x/f;
-	c.y = a.y/f;
-	c.z = a.z/f;
-	return c;
-}
-
-/**
- * \ingroup vec
- * \brief Vector addition-assignment a += b
- * \param[in,out] a Left-hand vector operand
- * \param[in] b Right-hand vector operand
- * \return Replaces a with a+b and returns the result.
- */
-inline VECTOR3 &operator+= (VECTOR3 &a, const VECTOR3 &b)
-{
-	a.x += b.x;
-	a.y += b.y;
-	a.z += b.z;
-	return a;
-}
-
-/**
- * \ingroup vec
- * \brief Vector subtraction-assignment a -= b
- * \param[in,out] a Left-hand vector operand
- * \param[in] b Right-hand vector operand
- * \return Replaces a with a-b and returns the result.
- */
-inline VECTOR3 &operator-= (VECTOR3 &a, const VECTOR3 &b)
-{
-	a.x -= b.x;
-	a.y -= b.y;
-	a.z -= b.z;
-	return a;
-}
-
-/**
- * \ingroup vec
- * \brief Vector-scalar multiplication-assignment a *= f
- * \param[in,out] a Left-hand vector operand
- * \param[in] f Right hand scalar operand
- * \return Replaces a with element-wise a*f and returns the result.
- */
-inline VECTOR3 &operator*= (VECTOR3 &a, const double f)
-{
-	a.x *= f;
-	a.y *= f;
-	a.z *= f;
-	return a;
-}
-
-/**
- * \ingroup vec
- * \brief Vector-scalar division-assignment a /= f
- * \param[in,out] a Left-hand vector operand
- * \param[in] f Right-hand scalar operand
- * \return Replaces a with element-wise a/f and returns the result.
- */
-inline VECTOR3 &operator/= (VECTOR3 &a, const double f)
-{
-	a.x /= f;
-	a.y /= f;
-	a.z /= f;
-	return a;
-}
-
-/**
- * \ingroup vec
- * \brief Vector unary minus -a
- * \param[in] a Vector operand
- * \return Negative vector (-a.x, -a.y, -a.z)
- */
-inline VECTOR3 operator- (const VECTOR3 &a)
-{
-	VECTOR3 c;
-	c.x = -a.x;
-	c.y = -a.y;
-	c.z = -a.z;
-	return c;
-}
-
-/**
- * \ingroup vec
- * \brief Scalar (inner, dot) product of two vectors
- * \param[in] a First vector operand
- * \param[in] b Second vector operand
- * \return Scalar product <b>ab</b>
- */
-inline double dotp (const VECTOR3 &a, const VECTOR3 &b)
-{
-	return a.x*b.x + a.y*b.y + a.z*b.z;
-}
-
-/**
- * \ingroup vec
- * \brief Vector (cross) product of two vectors
- * \param[in] a First vector operand
- * \param[in] b Second vector operand
- * \return Vector product <b>a</b>x<b>b</b>
- */
-inline VECTOR3 crossp (const VECTOR3 &a, const VECTOR3 &b)
-{
-	return _V(a.y*b.z - b.y*a.z, a.z*b.x - b.z*a.x, a.x*b.y - b.x*a.y);
-}
-
-/**
- * \ingroup vec
- * \brief Length (L2-norm) of a vector
- * \param a Vector operand
- * \return Vector norm |<b>a</b>|<sub>2</sub>
- */
-inline double length (const VECTOR3 &a)
-{
-	return sqrt (a.x*a.x + a.y*a.y + a.z*a.z);
-}
-
-/**
- * \ingroup vec
- * \brief Length squared of a vector
- * \param a Vector operand
- * \return Vector norm |<b>a</b>|<sub>2</sub><sup>2</sup>
- */
-inline double length2 (const VECTOR3 &a)
-{
-	return (a.x*a.x + a.y*a.y + a.z*a.z);
-}
-
-/**
- * \ingroup vec
- * \brief Distance between two points
- * \param[in] a First point
- * \param[in] b Second point
- * \return Distance between a and b
- */
-inline double dist (const VECTOR3 &a, const VECTOR3 &b)
-{
-	return length (a-b);
-}
-
-/**
- * \ingroup vec
- * \brief Normalise a vector
- *
- * Resizes the argument vector to length 1.
- * \param[in,out] a Vector argument
- * \note The length of a must be greater than 0.
- */
-inline void normalise (VECTOR3 &a)
-{
-	a /= length(a);
-}
-
-/**
- * \ingroup vec
- * \brief Returns normalised vector
- *
- * Returns a vector of length 1 with the same direction
- * as the argument vector.
- * \param[in] a Vector argument
- * \return Normalised vector.
- * \note The length of a must be greater than 0.
- */
-inline VECTOR3 unit (const VECTOR3 &a)
-{
-	return a / length(a);
-}
-
-/**
- * \ingroup vec
  * \brief Matrix composition
  *
  * Returns a matrix composed of the provided elements.
@@ -7363,12 +7108,13 @@ inline MATRIX3 &operator/= (MATRIX3 &A, double s)
  * \param[in] b vector operand
  * \return Result of <b>Ab</b>
  */
-inline VECTOR3 mul (const MATRIX3 &A, const VECTOR3 &b)
+inline auto mul(const MATRIX3 &A, const VECTOR3 &b)
 {
-	return _V (
+	return VECTOR3{
 		A.m11*b.x + A.m12*b.y + A.m13*b.z,
 		A.m21*b.x + A.m22*b.y + A.m23*b.z,
-		A.m31*b.x + A.m32*b.y + A.m33*b.z);
+		A.m31*b.x + A.m32*b.y + A.m33*b.z
+    };
 }
 
 /**
@@ -7378,12 +7124,13 @@ inline VECTOR3 mul (const MATRIX3 &A, const VECTOR3 &b)
  * \param[in] b vector operand
  * \return Result of <b>A</b><sup>T</sup><b>b</b>
  */
-inline VECTOR3 tmul (const MATRIX3 &A, const VECTOR3 &b)
+inline auto tmul(const MATRIX3 &A, const VECTOR3 &b)
 {
-	return _V (
+	return VECTOR3{
 		A.m11*b.x + A.m21*b.y + A.m31*b.z,
 		A.m12*b.x + A.m22*b.y + A.m32*b.z,
-		A.m13*b.x + A.m23*b.y + A.m33*b.z);
+		A.m13*b.x + A.m23*b.y + A.m33*b.z
+    };
 }
 
 /**
