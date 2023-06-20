@@ -10,7 +10,7 @@
 
 #include <cmath>
 #include <cstdint> // std::size_t
-#include <iosfwd> // std::ostream
+#include <iosfwd>  // std::ostream
 #include <type_traits>
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -26,6 +26,21 @@ template<typename> struct is_vector3 : std::false_type { };
 template<typename> struct is_vector4 : std::false_type { };
 
 ////////////////////////////////////////////////////////////////////////////////
+/**
+ * @brief 3-dimensional vector of type double
+ */
+union VECTOR3
+{
+	double data[3];
+	struct { double x, y, z; };
+
+	constexpr auto const& operator[](std::size_t i) const { return data[i]; }
+	constexpr auto& operator[](std::size_t i) { return data[i]; }
+};
+
+/**
+ * @brief 4-dimensional vector of type double
+ */
 union VECTOR4
 {
 	struct { double x, y, z, w; };
@@ -34,6 +49,7 @@ union VECTOR4
 	constexpr auto& operator[](std::size_t i) { double* d[] = {&x, &y, &z, &w}; return *d[i]; }
 };
 
+template<> struct is_vector3<VECTOR3> : std::true_type { };
 template<> struct is_vector4<VECTOR4> : std::true_type { };
 
 ////////////////////////////////////////////////////////////////////////////////

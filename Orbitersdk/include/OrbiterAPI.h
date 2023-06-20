@@ -234,14 +234,6 @@ enum PathRoot {
 // ===========================================================================
 //@{
 /**
- * \brief 3-element vector
- */
-typedef union {
-	double data[3];               ///< array data interface
-	struct { double x, y, z; };   ///< named data interface
-} VECTOR3;
-
-/**
  * \brief 3x3-element matrix
  */
 typedef union {
