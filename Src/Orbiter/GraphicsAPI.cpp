@@ -727,8 +727,8 @@ ParticleStream::ParticleStream (GraphicsClient *_gc, PARTICLESTREAMSPEC *pss)
 	gc = _gc;
 	level = NULL;
 	hRef = NULL;
-	lpos = _V(0,0,0);  pos = &lpos;
-	ldir = _V(0,0,0);  dir = &ldir;
+	lpos = {0,0,0};  pos = &lpos;
+	ldir = {0,0,0};  dir = &ldir;
 }
 
 ParticleStream::~ParticleStream ()
@@ -815,7 +815,7 @@ void ScreenAnnotation::Reset ()
 {
 	ClearText();
 	SetPosition (0.1, 0.1, 0.5, 0.6);
-	SetColour (_V(1.0,0.7,0.2));
+	SetColour ({1.0,0.7,0.2});
 	SetSize (1.0);
 }
 

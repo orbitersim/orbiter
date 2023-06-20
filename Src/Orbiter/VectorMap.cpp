@@ -1518,7 +1518,7 @@ void CustomMkrSpec::Convert ()
 	for (int i = 0; i < nvtx; i++) {
 		VECTOR3 &p = list->marker[i].pos;
 		vtx[i].lng = atan2 (p.z, p.x);
-		vtx[i].lat = asin  (p.y / length(p));
+		vtx[i].lat = std::asin(p.y / len(p));
 	}
 }
 

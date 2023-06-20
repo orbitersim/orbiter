@@ -494,8 +494,8 @@ void SetExhaustVertices (const VECTOR3 &edir, const VECTOR3 &cdir, const VECTOR3
 {
 	// need to rotate the billboard so it faces the observer
 	const float flarescale = 7.0;
-	VECTOR3 sdir = unit (crossp (cdir, edir));
-	VECTOR3 tdir = unit (crossp (cdir, sdir));
+	VECTOR3 sdir = unit(cross(cdir, edir));
+	VECTOR3 tdir = unit(cross(cdir, sdir));
 	D3DVALUE rx = (D3DVALUE)ref.x, ry = (D3DVALUE)ref.y, rz = (D3DVALUE)ref.z;
 	if (lofs) rx += (D3DVALUE)(edir.x*lofs), ry += (D3DVALUE)(edir.y*lofs), rz += (D3DVALUE)(edir.z*lofs);
 	D3DVALUE sx = (D3DVALUE)(sdir.x*wscale);
@@ -529,8 +529,8 @@ void SetReentryVertices (const VECTOR3 &edir, const VECTOR3 &cdir, const VECTOR3
 	const float flarescale = 1.0;
 	const float lscale1 = (float)(lscale*llen * (1.0 + 0.1*rand()/(double)RAND_MAX));
 	const float lscale2 = (float)(lscale * 0.125);
-	VECTOR3 sdir = unit (crossp (cdir, edir));
-	VECTOR3 tdir = unit (crossp (cdir, sdir));
+	VECTOR3 sdir = unit(cross(cdir, edir));
+	VECTOR3 tdir = unit(cross(cdir, sdir));
 	D3DVALUE rx = (D3DVALUE)ref.x, ry = (D3DVALUE)ref.y, rz = (D3DVALUE)ref.z;
 	D3DVALUE sx = (D3DVALUE)(sdir.x*wscale);
 	D3DVALUE sy = (D3DVALUE)(sdir.y*wscale);

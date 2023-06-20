@@ -376,9 +376,9 @@ void Vessel::DefaultGenericCaps ()
 	mu                 = 0.5;  // default isotropic/lateral friction coefficient
 	mu_lng             = 0.1;  // default longitudinal friction coefficient
 	TOUCHDOWNVTX tdvtx[3];
-	tdvtx[0].pos = _V( 0,-2,10);
-	tdvtx[1].pos = _V(-3,-2,-5);
-	tdvtx[2].pos = _V( 3,-2,-5);
+	tdvtx[0].pos = { 0,-2,10};
+	tdvtx[1].pos = {-3,-2,-5};
+	tdvtx[2].pos = { 3,-2,-5};
 	for (i = 0; i < 3; i++) {
 		tdvtx[i].stiffness = 1e6;
 		tdvtx[i].damping   = 1e5;
@@ -1523,7 +1523,7 @@ ThrustGroupSpec *Vessel::CreateThrusterGroup (ThrustSpec **ts, DWORD nts, THGROU
 	if (thgt >= THGROUP_ATT_PITCHUP && thgt <= THGROUP_ATT_BANKRIGHT) {
 		Vector M;
 		for (i = 0; i < nts; i++)
-			M += MakeVector(crossp (ts[i]->dir * ts[i]->maxth0, ts[i]->ref));
+			M += MakeVector(cross(ts[i]->dir * ts[i]->maxth0, ts[i]->ref));
 		max_angular_moment[thgt-THGROUP_ATT_PITCHUP] = M.length();
 	}
 
@@ -2162,7 +2162,7 @@ UINT Vessel::AddExhaust (EXHAUSTSPEC *spec)
 		es->flags &= ~EXHAUST_CONSTANTPOS;
 	} else if (!es->lpos || (es->flags & EXHAUST_CONSTANTPOS)) {
 		es->lpos = new VECTOR3;
-		*es->lpos = (spec->lpos ? *spec->lpos : _V(0,0,0));
+		*es->lpos = (spec->lpos ? *spec->lpos : VECTOR3{0,0,0});
 		es->flags |= EXHAUST_CONSTANTPOS;
 	}
 
@@ -2171,7 +2171,7 @@ UINT Vessel::AddExhaust (EXHAUSTSPEC *spec)
 		es->flags &= ~EXHAUST_CONSTANTDIR;
 	} else if (!es->ldir || (es->flags & EXHAUST_CONSTANTDIR)) {
 		es->ldir = new VECTOR3;
-		*es->ldir = (spec->ldir ? *spec->ldir : _V(0,0,1));
+		*es->ldir = (spec->ldir ? *spec->ldir : VECTOR3{0,0,1});
 		es->flags |= EXHAUST_CONSTANTDIR;
 	}
 
@@ -3713,8 +3713,8 @@ double Vessel::MaxAngularMoment (int axis) const
 	supervessel->GetCG (this, vcg);
 	const ThrustGroupSpec *tgs = &m_thrusterGroupDef[THGROUP_ATT_PITCHUP+axis];
 	for (auto it = tgs->ts.begin(); it != tgs->ts.end(); it++)
-		M += crossp ((*it)->dir * (*it)->maxth0, (*it)->ref-MakeVECTOR3(vcg));
-	return length (M);
+		M += cross((*it)->dir * (*it)->maxth0, (*it)->ref-MakeVECTOR3(vcg));
+	return len(M);
 }
 
 // =======================================================================
@@ -5554,7 +5554,7 @@ bool Vessel::VCRedrawEvent (int id, int event, SURFHANDLE surf) const
 bool Vessel::VCMouseEvent (int id, int event, Vector &p) const
 {
 	if (modIntf.v && modIntf.v->Version() >= 1) {
-		VECTOR3 v = _V(p.x,p.y,p.z);
+		VECTOR3 v{p.x,p.y,p.z};
 		return ((VESSEL2*)modIntf.v)->clbkVCMouseEvent (id, event, v);
 	}
 	else
@@ -5919,8 +5919,8 @@ bool Vessel::Read (ifstream &scn)
 	//vs.xpdr    = 0;
 	//vs.nfuel = vs.nthruster = vs.ndockinfo = 0;
 	//vs.surf_lng = vs.surf_lat = vs.surf_hdg = 0.0;
-	//veccpy (vs.vrot, _V(0,0,0));
-	//veccpy (vs.arot, _V(0,0,0));
+	//veccpy (vs.vrot, {0,0,0});
+	//veccpy (vs.arot, {0,0,0});
 
 	void *vsptr = (void*)&vs;
 	if (modIntf.v->Version() >= 1) {
@@ -6655,7 +6655,7 @@ double VESSEL::GetSurfaceElevation () const
 VECTOR3 VESSEL::GetSurfaceNormal () const
 {
 	const SurfParam *sp = vessel->GetSurfParam();
-	return sp ? _V(sp->surfnml.x, sp->surfnml.y, sp->surfnml.z): _V(0,0,0);
+	return sp ? VECTOR3{sp->surfnml.x, sp->surfnml.y, sp->surfnml.z}: VECTOR3{0,0,0};
 }
 
 double VESSEL::GetLift (void) const
@@ -7755,14 +7755,14 @@ void VESSEL::HorizonRot (const VECTOR3 &rloc, VECTOR3 &rhorizon) const
 {
 	if (!vessel->proxyplanet) return;
 	Vector h (mul (vessel->sp.L2H, tmul (vessel->proxyplanet->GRot(), mul (vessel->GRot(), MakeVector(rloc)))));
-	rhorizon = _V(h.x, h.y, h.z);
+	rhorizon = {h.x, h.y, h.z};
 }
 
 void VESSEL::HorizonInvRot (const VECTOR3 &rhorizon, VECTOR3 &rloc) const
 {
 	if (!vessel->proxyplanet) return;
 	Vector r (tmul (vessel->GRot(), mul (vessel->proxyplanet->GRot(), tmul (vessel->sp.L2H, MakeVector (rhorizon)))));
-	rloc = _V(r.x, r.y, r.z);
+	rloc = {r.x, r.y, r.z};
 }
 
 void VESSEL::Local2Global (const VECTOR3 &local, VECTOR3 &global) const
@@ -7861,7 +7861,7 @@ SUPERVESSELHANDLE VESSEL::GetSupervessel () const
 
 VECTOR3 VESSEL::GetSupervesselCG () const
 {
-	VECTOR3 cg = _V(0,0,0);
+	VECTOR3 cg{0,0,0};
 	if (vessel->supervessel) {
 		Vector vcg;
 		if (vessel->supervessel->GetCG (vessel, vcg))
@@ -8711,7 +8711,7 @@ int VESSEL2::clbkConsumeBufferedKey (DWORD key, bool down, char *keystate)
 
 bool VESSEL2::clbkLoadGenericCockpit ()
 {
-	SetCameraDefaultDirection (_V(0,0,1));
+	SetCameraDefaultDirection ({0,0,1});
 	return true;
 }
 
@@ -8818,7 +8818,7 @@ void VESSEL3::clbkGetRadiationForce (const VECTOR3 &mflux, VECTOR3 &F, VECTOR3 &
 	double albedo = 1.5;    // simplistic albedo (mixture of absorption, reflection)
 
 	F = mflux * (cs*albedo);
-	pos = _V(0,0,0);        // don't induce torque
+	pos = {0,0,0};        // don't induce torque
 }
 
 

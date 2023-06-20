@@ -646,7 +646,7 @@ void Planet::ScanLabelLists (ifstream &cfg)
 					if (!pc || sscanf (pc, "%lf%lf", &lng, &lat) != 2) continue;
 					EquatorialToLocal (RAD*lng, RAD*lat, size, pos);
 					oapi::GraphicsClient::LABELSPEC ls;
-					ls.pos = _V(pos.x, pos.y, pos.z);
+					ls.pos = {pos.x, pos.y, pos.z};
 					for (i = 0; i < 2; i++) {
 						if (pc = strtok (NULL, ":"))
 							ls.label[i] = trim_string(pc);
