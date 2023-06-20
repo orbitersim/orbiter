@@ -99,12 +99,12 @@ OBJHANDLE ReferenceClass::FindGravityReference(OBJHANDLE body)
 
 				// Compute Eccentricity
                 double myy = mass * GC;
-				double v = length(vel);
-				double r = length(pos);
-				double e = length( (  (pos * ((v*v)-(myy/r)))  -  (vel * dotp(pos,vel))  ) * (1/myy) );
+				double v = len(vel);
+				double r = len(pos);
+				double e = len(((pos * ((v * v) - (myy / r))) - (vel * dot(pos, vel))) * (1 / myy));
 			
                 if (e<1) {
-					distance=length(pos);				
+					distance = len(pos);
 					force=(GC*mass)/(distance*distance);				
 					if (force>gf) gf=force, gr_ref=obj, gr_dist=distance;
 				}
@@ -151,7 +151,7 @@ void ReferenceClass::CreateDatabase()
 			if (References[j].grf_handle==ref && References[j].handle!=ref) { // Anything orbiting this object
 
 				oapiGetRelativePos(References[j].handle,ref,&pos); // Compute it's distance
-				distance = length(pos) * 1.5;
+				distance = len(pos) * 1.5;
 
 				if (References[i].dist<distance) References[i].dist=distance;
 
@@ -219,7 +219,7 @@ OBJHANDLE ReferenceClass::Get2ndReferenceForShip()
 		for (i=0;i<c;i++) {
 			OBJHANDLE bod=list[i];
 			oapiGetRelativePos(ref, bod, &pos);
-			double l=length(pos);
+			double l = len(pos);
 			double m=oapiGetMass(bod);
 
 			double a=GC*m/(l*l);
@@ -262,7 +262,7 @@ OBJHANDLE ReferenceClass::GetReference(OBJHANDLE x)
 		if (References[i].dist>0 && References[i].handle!=StarHandle) { // does this ReferenceClass have an distance setting
 			nref=References[i].handle;
 			oapiGetRelativePos(x,nref,&distance);
-			if (length(distance)<References[i].dist) return(nref);
+			if (len(distance) < References[i].dist) return(nref);
 		}
 	}
 		

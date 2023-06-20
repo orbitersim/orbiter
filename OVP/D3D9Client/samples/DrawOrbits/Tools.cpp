@@ -169,7 +169,7 @@ double GetThrusterGroupISP(VESSEL *theVessel, THGROUP_TYPE thgt)
 //
 VECTOR3 GetThrusterGroupDir_LH(VESSEL *ship, THGROUP_TYPE engine)
 {
-	VECTOR3 d, dir = _V(0, 0, 0);
+	VECTOR3 d, dir = {0, 0, 0};
 	double tot = 0.0;
 	int i, c = ship->GetGroupThrusterCount(engine);
 
@@ -187,7 +187,7 @@ VECTOR3 GetThrusterGroupDir_LH(VESSEL *ship, THGROUP_TYPE engine)
 //
 VECTOR3 GetThrusterGroupThrustVector_LH(VESSEL *ship, THGROUP_TYPE engine)
 {
-	VECTOR3 d, dir = _V(0, 0, 0);
+	VECTOR3 d, dir = {0, 0, 0};
 	int i, c = ship->GetGroupThrusterCount(engine);
 
 	for (i = 0; i<c; i++) {
@@ -353,8 +353,8 @@ double dVByBurnTime(double time, double mass, double thr, double rate)
 //
 void VesselEulerAngles(VECTOR3 &_Dir, double *alpha, double *beta)
 {
-	*alpha = atan2(dotp(_Dir, _V(0, 1, 0)), dotp(_Dir, _V(0, 0, 1)));
-	*beta = asin(dotp(unit(_Dir), _V(-1, 0, 0)));
+	*alpha = std::atan2(dot(_Dir, {0, 1, 0}), dot(_Dir, {0, 0, 1}));
+	*beta = std::asin(dot(unit(_Dir), {-1, 0, 0}));
 }
 
 
@@ -552,7 +552,7 @@ VECTOR3 RotationAxis(OBJHANDLE hRef)
 {
 	MATRIX3 Mat;
 	oapiGetPlanetObliquityMatrix(hRef, &Mat);
-	return mul(Mat, _V(0, 1, 0));
+	return mul(Mat, VECTOR3{0, 1, 0});
 }
 
 // ================================================================================================
@@ -568,7 +568,7 @@ VECTOR3 MeridianAxis(OBJHANDLE hRef, double mjd)
 
 	Mat = mul(Mat, _M(cos(w), 0, -sin(w), 0, 1, 0, sin(w), 0, cos(w)));
 
-	return mul(Mat, _V(1, 0, 0));	// Meridian Axis
+	return mul(Mat, VECTOR3{1, 0, 0});	// Meridian Axis
 }
 
 // ================================================================================================
@@ -577,7 +577,7 @@ VECTOR3 SunTransit(OBJHANDLE hRef)
 {
 	MATRIX3 Mat;
 	oapiGetPlanetObliquityMatrix(hRef, &Mat);
-	return mul(Mat, _V(1, 0, 0));			// Meridian Axis
+	return mul(Mat, VECTOR3{1, 0, 0});			// Meridian Axis
 }
 
 // ================================================================================================
@@ -629,7 +629,7 @@ VECTOR3 GetSurfaceLocation(OBJHANDLE hPlanet, double mjd, double lng, double lat
 //
 VECTOR3 ConvertSurfaceLocation(OBJHANDLE hPlanet, double mjd, VECTOR3 _init, double imjd)
 {
-	double rad = length(_init);
+	double rad = len(_init);
 
 	VECTOR3 _Meridian = MeridianAxis(hPlanet, imjd);
 	VECTOR3 _RotAxis = RotationAxis(hPlanet);
@@ -670,8 +670,8 @@ double CalculateSOI(OBJHANDLE obj, OBJHANDLE ref)
 	oapiGetRelativePos(obj, ref, &_r);
 	oapiGetRelativeVel(obj, ref, &_v);
 
-	double r = length(_r);
-	double v = length(_v);
+	double r = len(_r);
+	double v = len(_v);
 	double mu = (mr + mp)*GC;
 	double a = -mu*r / (v*v*r - 2.0*mu);
 	return a * pow(mp / mr, 2.0 / 5.0);
