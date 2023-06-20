@@ -564,7 +564,7 @@ HoverManualComponent::HoverManualComponent (HoverSubsystem *_subsys)
 	// Hover throttle VC animation
 	static UINT HoverThrottleGrp[2] = {GRP_THROTTLE_HOVER_1_VC,GRP_THROTTLE_HOVER_2_VC};
 	static MGROUP_ROTATE HoverThrottle (1, HoverThrottleGrp, 2,
-		_V(-0.41,0.85,6.9226), _V(1,0,0), (float)(50*RAD));
+		{-0.41,0.85,6.9226}, {1,0,0}, (float)(50*RAD));
 	anim_hoverthrottle = DG()->CreateAnimation (0);
 	DG()->AddAnimationComponent (anim_hoverthrottle, 0, 1, &HoverThrottle);
 
@@ -591,7 +591,7 @@ bool HoverManualComponent::clbkLoadVC (int vcid)
 
 	// Hover throttle
 	oapiVCRegisterArea (ELID_THROTTLE, PANEL_REDRAW_ALWAYS, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_LBPRESSED);
-	oapiVCSetAreaClickmode_Quadrilateral (ELID_THROTTLE, _V(-0.44,0.87,6.81), _V(-0.35,0.87,6.81), _V(-0.44,0.95,6.91), _V(-0.35,0.95,6.91));
+	oapiVCSetAreaClickmode_Quadrilateral (ELID_THROTTLE, {-0.44,0.87,6.81}, {-0.35,0.87,6.81}, {-0.44,0.95,6.91}, {-0.35,0.95,6.91});
 
 	return true;
 }

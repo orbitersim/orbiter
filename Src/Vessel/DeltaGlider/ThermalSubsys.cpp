@@ -233,14 +233,14 @@ double ThermalSubsystem::SolarRadiation(VECTOR3 *sdir)
 	VECTOR3 Ppos, Vpos;
 	double vdist, pdist, prad, srad;
 	DG()->GetGlobalPos(Vpos);
-	vdist = length(Vpos); // distance from sun
+	vdist = len(Vpos); // distance from sun
 	OBJHANDLE hObj = DG()->GetSurfaceRef();
 	while (hObj && oapiGetObjectType(hObj) == OBJTP_PLANET) {
 		prad = oapiGetSize(hObj);
 		oapiGetGlobalPos(hObj, &Ppos);
-		pdist = length(Ppos);
+		pdist = len(Ppos);
 		if (vdist > pdist) {
-			double d = length(crossp(Ppos, Ppos-Vpos))/vdist;
+			double d = len(cross(Ppos, Ppos - Vpos)) / vdist;
 			if (d < prad) return 0.0;
 		}
 		hObj = oapiGetGbodyParent(hObj);
@@ -267,7 +267,7 @@ double ThermalSubsystem::PlanetRadiation(VECTOR3 *pdir)
 	double prad = oapiGetSize(hObj);
 	oapiGetGlobalPos(hObj, &Ppos);
 	DG()->GetGlobalPos(Vpos);
-	double pdist = length(Ppos-Vpos);
+	double pdist = len(Ppos-Vpos);
 	if (pdir) *pdir = (Ppos-Vpos)/pdist;
 	double alt_ratio = prad/pdist;
 	const double Hplanet = 237.0; // W/m^2; only true for Earth
@@ -293,8 +293,8 @@ void ThermalSubsystem::AddAlbedoReflection (double rPower, const VECTOR3 &dir, d
 	OBJHANDLE hObj = DG()->GetSurfaceRef();
 	oapiGetGlobalPos(hObj, &Ppos);
 	DG()->GetGlobalPos(Vpos);
-	double cosphi = dotp(unit(Vpos-Ppos), unit(-Ppos));
-	double irelalt = oapiGetSize(hObj)/length(Vpos-Ppos);
+	double cosphi = dot(unit(Vpos - Ppos), unit(-Ppos));
+	double irelalt = oapiGetSize(hObj) / len(Vpos - Ppos);
 	rPower *= albedo * irelalt*irelalt * cosphi;
 	AddIrradiance (rPower, dir, compartmentQ);
 }
@@ -353,8 +353,8 @@ void ThermalSubsystem::AddRadiatorIrradiance (double rPower, const VECTOR3 &dir,
 	// panel 1
 	pprog = min(1.0, rstate/0.33);
 	alpha = (pprog*175.0-100.0)*RAD;
-	paneldir = _V(0, sin(alpha), -cos(alpha));
-	cosa = dotp(dir, paneldir); // irradiance cosine
+	paneldir = {0, sin(alpha), -cos(alpha)};
+	cosa = dot(dir, paneldir); // irradiance cosine
 	if (cosa > 0.0) {
 		if (pprog < 0.5) cosa *= pprog*2.0;
 		cs = cosa * A_radiatorpanel2;
@@ -365,8 +365,8 @@ void ThermalSubsystem::AddRadiatorIrradiance (double rPower, const VECTOR3 &dir,
 	// panel 2
 	pprog = max (0.0, min(1.0, (rstate-0.5)*4.0));
 	alpha = pprog*145.0*RAD;
-	paneldir = _V(-sin(alpha), -cos(alpha), 0);
-	cosa = dotp(dir, paneldir);
+	paneldir = {-sin(alpha), -cos(alpha), 0};
+	cosa = dot(dir, paneldir);
 	if (cosa > 0.0) {
 		if (pprog < 0.5) cosa *= pprog*2.0;
 		cs = cosa * A_radiatorpanel1;
@@ -377,8 +377,8 @@ void ThermalSubsystem::AddRadiatorIrradiance (double rPower, const VECTOR3 &dir,
 	// panel 3
 	pprog = max (0.0, min(1.0, (rstate-0.75)*4.0));
 	alpha = pprog*145.0*RAD;
-	paneldir = _V(sin(alpha), -cos(alpha), 0);
-	cosa = dotp(dir, paneldir);
+	paneldir = {sin(alpha), -cos(alpha), 0};
+	cosa = dot(dir, paneldir);
 	if (cosa > 0.0) {
 		if (pprog < 0.5) cosa *= pprog*2.0;
 		cs = cosa * A_radiatorpanel1;
@@ -1009,34 +1009,34 @@ RadiatorControl::RadiatorControl (ThermalSubsystem *_subsys)
 	// Radiator animation
 	static UINT RaddoorGrp[3] = {GRP_Raddoor1,GRP_Raddoor2,GRP_Radiator4};
 	static MGROUP_ROTATE Raddoor (0, RaddoorGrp, 3,
-		_V(0,1.481,-3.986), _V(1,0,0), (float)(175*RAD));
+		{0,1.481,-3.986}, {1,0,0}, (float)(175*RAD));
 	static UINT FRadiatorGrp[1] = {GRP_Radiator4};
 	static MGROUP_ROTATE FRadiator (0, FRadiatorGrp, 1,
-		_V(0,1.91,-2.965), _V(1,0,0), (float)(185*RAD));
+		{0,1.91,-2.965}, {1,0,0}, (float)(185*RAD));
 	static UINT RadiatorGrp[7] = {GRP_Radiator1,GRP_Radiator1a,GRP_Radiator1b,
 		GRP_Radiator2,GRP_Radiator2a,GRP_Radiator2b,GRP_Radiator3};
 	static MGROUP_TRANSLATE Radiator (0, RadiatorGrp, 7,
-		_V(0,0.584,-0.157));
+		{0,0.584,-0.157});
 	static UINT LRadiatorGrp[3] = {GRP_Radiator1,GRP_Radiator1a,GRP_Radiator1b};
 	static MGROUP_ROTATE LRadiator (0, LRadiatorGrp, 3,
-		_V(-0.88,1.94,-4.211), _V(0,0.260,0.966), (float)(145*RAD));
+		{-0.88,1.94,-4.211}, {0,0.260,0.966}, (float)(145*RAD));
 	static UINT RRadiatorGrp[3] = {GRP_Radiator2,GRP_Radiator2a,GRP_Radiator2b};
 	static MGROUP_ROTATE RRadiator (0, RRadiatorGrp, 3,
-		_V(0.93,1.91,-4.211), _V(0,0.260,0.966), (float)(-145*RAD));
+		{0.93,1.91,-4.211}, {0,0.260,0.966}, (float)(-145*RAD));
 	static VECTOR3 axis1 = {cos(145*RAD),sin(145*RAD)*cos(0.26292),sin(145*RAD)*sin(-0.26292)};
 	static UINT LaRadiatorGrp[1] = {GRP_Radiator1a};
 	static MGROUP_ROTATE LaRadiator (0, LaRadiatorGrp, 1,
-		_V(-0.91, 1.86, -5.055), axis1, (float)(180*RAD));
+		{-0.91, 1.86, -5.055}, axis1, (float)(180*RAD));
 	static UINT LbRadiatorGrp[1] = {GRP_Radiator1b};
 	static MGROUP_ROTATE LbRadiator (0, LbRadiatorGrp, 1,
-		_V(-0.91, 2.075, -4.315), axis1, (float)(-180*RAD));
+		{-0.91, 2.075, -4.315}, axis1, (float)(-180*RAD));
 	static VECTOR3 axis2 = {cos(-145*RAD),sin(-145*RAD)*cos(0.26292),sin(-145*RAD)*sin(-0.26292)};
 	static UINT RaRadiatorGrp[1] = {GRP_Radiator2a};
 	static MGROUP_ROTATE RaRadiator (0, RaRadiatorGrp, 1,
-		_V(0.91, 1.675, -5.01), axis2, (float)(180*RAD));
+		{0.91, 1.675, -5.01}, axis2, (float)(180*RAD));
 	static UINT RbRadiatorGrp[1] = {GRP_Radiator2b};
 	static MGROUP_ROTATE RbRadiator (0, RbRadiatorGrp, 1,
-		_V(0.91, 1.89, -4.27), axis2, (float)(-180*RAD));
+		{0.91, 1.89, -4.27}, axis2, (float)(-180*RAD));
 	anim_radiator = DG()->CreateAnimation (0);
 	DG()->AddAnimationComponent (anim_radiator, 0, 0.25, &Raddoor);
 	DG()->AddAnimationComponent (anim_radiator, 0.28, 0.53, &FRadiator);

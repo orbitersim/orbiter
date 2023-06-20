@@ -43,9 +43,9 @@ HUDControl::HUDControl (DeltaGlider *vessel)
 	static UINT HudGrp1[2] = {GRP_HUD_FRAME_VC, GRP_HUD_PANE_VC};
 	static UINT HudGrp2[3] = {GRP_HUD_FRAME_VC, GRP_HUD_PANE_VC, GRP_HUD_RAIL_VC};
 	static MGROUP_ROTATE HudTransform1 (1, HudGrp1, 2,
-		_V(0,1.5836,7.1280), _V(1,0,0), (float)(-62*RAD));
+		{0,1.5836,7.1280}, {1,0,0}, (float)(-62*RAD));
 	static MGROUP_ROTATE HudTransform2 (1, HudGrp2, 3,
-		_V(0,0.99,6.53), _V(1,0,0), (float)(-26*RAD));
+		{0,0.99,6.53}, {1,0,0}, (float)(-26*RAD));
 	anim_vc_hud = DG()->CreateAnimation (0);
 	DG()->AddAnimationComponent (anim_vc_hud, 0, 0.4, &HudTransform1);
 	DG()->AddAnimationComponent (anim_vc_hud, 0.4, 1, &HudTransform2);
