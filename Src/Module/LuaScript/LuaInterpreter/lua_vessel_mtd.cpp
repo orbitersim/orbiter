@@ -2347,7 +2347,7 @@ int Interpreter::v_get_progradedir (lua_State *L)
 	v->GetRelativeVel (hRef, vel);
 	v->GetRotationMatrix (rot);
 	vel = tmul (rot, vel);  // rotate into vessel frame
-	normalise (vel);
+	vel = unit(vel);
 	lua_pushvector (L, vel);
 	return 1;
 }
