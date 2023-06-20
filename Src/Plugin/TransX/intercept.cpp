@@ -138,7 +138,7 @@ void Intercept::improveinterceptstraightline(const OrbitElements &craft, const O
 	//Now use dotp to estimate remaining course correction
 	VECTOR3 relcraftpos=icraftpos-itargetpos;
 	VECTOR3 relcraftvel=icraftvel-itargetvel;
-	double timecorrection=-dotp(relcraftpos,relcraftvel)/dotp(relcraftvel,relcraftvel);
+	double timecorrection = -dot(relcraftpos, relcraftvel) / dot(relcraftvel, relcraftvel);
 	if (timecorrection*lasttimecorrection<0 && fabs(timecorrection/orbittime)>0.0001)
 	{//Oscillatory
 		gain=gain*0.5;
@@ -158,7 +158,7 @@ void Intercept::improveinterceptstraightline(const OrbitElements &craft, const O
 
 	icepttimeoffset=crafttimeest+timecorrection*gain;
 	itimeintercept=icepttimeoffset+target.gettimestamp();
-	if (length(relcraftpos)*3>length(icraftpos))//Allows method to switch back if solution is no longer good
+	if (len(relcraftpos) * 3 > len(icraftpos)) //Allows method to switch back if solution is no longer good
 	{
 		iceptmethod=1;
 	}
@@ -178,7 +178,7 @@ void Intercept::updateintercept(const OrbitElements &craft, const OrbitElements 
 {
 	if (!craft.isvalid() || !target.isvalid()) return;//Ensure no void updates!
 	double timeoffset=craft.gettimestamp()-target.gettimestamp();
-	iplanecept=crossp(craft.getplanevector(),target.getplanevector());
+	iplanecept = cross(craft.getplanevector(), target.getplanevector());
 	if (iceptmethod==2)
 	{
 		improveinterceptstraightline(craft,target);
@@ -268,7 +268,7 @@ void Intercept::updateintercept(const OrbitElements &craft, const OrbitElements 
 	if (abetter)
 	{
 		//a is better
-		iceptradius=(length(betaposa)+iceptradius)/2;// Takes average of new and old as this converges better
+		iceptradius = (len(betaposa) + iceptradius) / 2;// Takes average of new and old as this converges better
 		itimeintercept=timea;
 		if (length2my(betaposa-alphaposa)*9<length2my(alphaposa))
 		{
@@ -283,7 +283,7 @@ void Intercept::updateintercept(const OrbitElements &craft, const OrbitElements 
 	else
 	{
 		//b is better
-		iceptradius=(length(betaposb)+iceptradius)/2;
+		iceptradius = (len(betaposb) + iceptradius) / 2;
 		itimeintercept=timeb;
 		if (length2my(betaposb-alphaposb)*9<length2my(alphaposb))
 		{

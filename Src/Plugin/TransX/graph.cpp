@@ -114,8 +114,8 @@ void Graph::setprojection(const VECTOR3 &projection)
 	{
 		VECTOR3 temp={0,-1,0}; // Ecliptic vector
 		zaxis=unit(projection);
-		VECTOR3 cross=unit(crossp(temp, zaxis)); // Vector of LAN x+z only
-		VECTOR3 xcross=crossp(cross, zaxis); //90 around - max out of plane
+		VECTOR3 cross = unit(::cross(temp, zaxis)); // Vector of LAN x+z only
+		VECTOR3 xcross = ::cross(cross, zaxis); // 90 around - max out of plane
 		xaxis=cross*cross.x+xcross*cross.z; // Back around the orbit
 		yaxis=xcross*cross.x-cross*cross.z;
 	}
@@ -136,14 +136,14 @@ void Graph::drawtwovector(oapi::Sketchpad *sketchpad, const VECTOR3 &line1, cons
 	xpos=int(xoffset);
 	ypos=int(yoffset);
 	sketchpad->MoveTo(xpos, ypos);
-	xpos=int(dotp(xaxis, line1)*scale+xoffset);
-	ypos=int(dotp(yaxis, line1)*scale+yoffset);
+	xpos = int(dot(xaxis, line1) * scale + xoffset);
+	ypos = int(dot(yaxis, line1) * scale + yoffset);
 	sketchpad->LineTo(xpos, ypos);
 	xpos=int(xoffset);
 	ypos=int(yoffset);
 	sketchpad->MoveTo(xpos, ypos);
-	xpos=int(dotp(xaxis, line2)*scale+xoffset);
-	ypos=int(dotp(yaxis, line2)*scale+yoffset);
+	xpos = int(dot(xaxis, line2) * scale + xoffset);
+	ypos = int(dot(yaxis, line2) * scale + yoffset);
 	sketchpad->LineTo(xpos, ypos);
 }
 
@@ -156,8 +156,8 @@ void Graph::drawvector(oapi::Sketchpad *sketchpad,const VECTOR3 &line1)
 	xpos=int(xoffset);
 	ypos=int(yoffset);
 	sketchpad->MoveTo(xpos, ypos);
-	xpos=int(dotp(xaxis, line1)*scale+xoffset);
-	ypos=int(dotp(yaxis, line1)*scale+yoffset);
+	xpos = int(dot(xaxis, line1) * scale + xoffset);
+	ypos = int(dot(yaxis, line1) * scale + yoffset);
 	sketchpad->LineTo(xpos, ypos);
 }
 
@@ -169,8 +169,8 @@ void Graph::drawvectorline(oapi::Sketchpad *sketchpad, const VECTOR3 &line)
 	const double yoffset=(iystart+iyend)*0.5;
 	int xpos, ypos;
 	VECTOR3 temp=unit(line)*(windowsize/2);
-	double xline=dotp(xaxis, temp);
-	double yline=dotp(yaxis, temp);
+	double xline = dot(xaxis, temp);
+	double yline = dot(yaxis, temp);
 	xpos=int(xoffset-xline);
 	ypos=int(yoffset-yline);
 	sketchpad->MoveTo(xpos, ypos);
@@ -285,7 +285,7 @@ double Graph::vectorpointdisplay(oapi::Sketchpad *sketchpad, const VECTOR3 &targ
 	sketchpad->LineTo(xpos + crossSize, ypos + crossSize);
 	sketchpad->MoveTo(xpos - crossSize, ypos + crossSize);
 	sketchpad->LineTo(xpos + crossSize, ypos - crossSize);
-	return length(trtarget);
+	return len(trtarget);
 }
 
 void Graph::drawmarker(oapi::Sketchpad *sketchpad, const VECTOR3 & location, Shape shape)
@@ -294,8 +294,8 @@ void Graph::drawmarker(oapi::Sketchpad *sketchpad, const VECTOR3 & location, Sha
 	int y = (iystart + iyend) / 2;
 
 	const int radius = 3;
-	double xpos = dotp(xaxis, location) * scale;
-	double ypos = dotp(yaxis, location) * scale;
+	double xpos = dot(xaxis, location) * scale;
+	double ypos = dot(yaxis, location) * scale;
 	int left	= (int)(x + xpos - radius + 0.5);	// add 0.5 to round off rather than floor
 	int right	= (int)(x + xpos + radius + 0.5);
 	int top		= (int)(y + ypos - radius + 0.5);

@@ -215,7 +215,7 @@ double length2my(const VECTOR3 &v)
 
 double cosangle(const VECTOR3 &veca,const VECTOR3 &vecb)
 {
-	return dotp(veca,vecb)/sqrt(length2my(veca)*length2my(vecb));
+	return dot(veca, vecb) / sqrt(length2my(veca) * length2my(vecb));
 }
 
 void getinvrotmatrix(VECTOR3 arot, MATRIX3 *invrotmatrix)//arot not really a vector - see arot defn from vessel struct
