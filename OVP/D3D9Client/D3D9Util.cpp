@@ -231,7 +231,7 @@ void SurfaceLighting(D3D9Sun *light, OBJHANDLE hP, OBJHANDLE hO, float ao)
 
 	float s  = float(length(S));				// sun's distance
 	float rs = float(oapiGetSize(hS)) / s;
-	float h  = float(dotp(S,P)) / s;			// sun elevation
+	float h  = float(dot(S, P)) / s;			// sun elevation
 	float d  = 0.173f;							// sun elevation for dispersion
 	float ae = 0.242f;							// sun elevation for ambient
 	float aq = 0.342f;

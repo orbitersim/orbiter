@@ -727,13 +727,13 @@ VECTOR3 Scene::SkyColour ()
 		if (cdist < atmp->radlimit) {
 			ATMPARAM prm;
 			oapiGetPlanetAtmParams (hProxy, cdist, &prm);
-			normalise (rp);
-			double coss = dotp (pc, rp) / -cdist;
+			rp = unit(rp);
+			double coss = dot(pc, rp) / -cdist;
 			double intens = min (1.0,(1.0839*coss+0.4581)) * sqrt (prm.rho/atmp->rho0);
 			// => intensity=0 at sun zenith distance 115?
 			//    intensity=1 at sun zenith distance 60?
 			if (intens > 0.0)
-				col += _V(atmp->color0.x*intens, atmp->color0.y*intens, atmp->color0.z*intens);
+				col += {atmp->color0.x*intens, atmp->color0.y*intens, atmp->color0.z*intens};
 		}
 		for (int i=0;i<3;i++) if (col.data[i] > 1.0) col.data[i] = 1.0;
 	}
@@ -878,10 +878,10 @@ void Scene::GetLVLH(vVessel *vV, D3DXVECTOR3 *up, D3DXVECTOR3 *nr, D3DXVECTOR3 *
 	OBJHANDLE hRef = hV->GetGravityRef();
 	oapiGetRotationMatrix(hRef, &grot);
 	hV->GetRelativePos(hRef, rpos);
-	VECTOR3 axis = mul(grot, _V(0, 1, 0));
-	normalise(rpos);
+	VECTOR3 axis = mul(grot, VECTOR3{0, 1, 0});
+	rpos = unit(rpos);
 	*up = D3DXVEC(rpos);
-	*fw = D3DXVEC(unit(crossp(axis, rpos)));
+	*fw = D3DXVEC(unit(cross(axis, rpos)));
 	D3DXVec3Cross(nr, up, fw);
 	D3DXVec3Normalize(nr, nr);
 }
@@ -905,7 +905,7 @@ float Scene::ComputeNearClipPlane()
 		VECTOR3 pos;
 		oapiGetGlobalPos(hObj,&pos);
 		double g = atan(Camera.apsq);
-		double t = dotp(unit(Camera.pos-pos), unit(Camera.dir));
+		double t = dot(unit(Camera.pos-pos), unit(Camera.dir));
 		if (t<-1.0) t=1.0; if (t>1.0) t=1.0f;
 		double a = PI - acos(t);
 		double R = oapiGetSize(hObj) + hVes->GetSurfaceElevation();
@@ -1643,7 +1643,7 @@ void Scene::RenderMainScene()
 								const std::vector<oapi::GraphicsClient::LABELSPEC>& ls = list[n].marker;
 								VECTOR3 sp;
 								for (int j = 0; j < ls.size(); j++) {
-									if (dotp(ls[j].pos, cpos - ls[j].pos) >= 0.0) { // surface point visible?
+									if (dot(ls[j].pos, cpos - ls[j].pos) >= 0.0) { // surface point visible?
 										sp = mul(prot, ls[j].pos) + ppos;
 										RenderObjectMarker(pSketch, sp, ls[j].label[0], ls[j].label[1], list[n].shape, size);
 									}
@@ -1675,7 +1675,7 @@ void Scene::RenderMainScene()
 
 							double apprad = 8000e3 / (length(cpos - bpos) * tan(GetCameraAperture()));
 
-							if (dotp(bpos, cpos - bpos) >= 0.0 && apprad > LABEL_DISTLIMIT) { // surface point visible?
+							if (dot(bpos, cpos - bpos) >= 0.0 && apprad > LABEL_DISTLIMIT) { // surface point visible?
 								char name[64]; oapiGetObjectName(hBase, name, 63);
 								VECTOR3 sp = mul(prot, bpos) + ppos;
 								RenderObjectMarker(pSketch, sp, std::string(name), std::string(), 0, size);
@@ -2394,7 +2394,7 @@ D3DXCOLOR Scene::GetSunDiffColor()
 	float k = float(sqrt(r*r - size*size));		// Horizon distance
 	float alt = float(r - size);
 	float rs = float(oapiGetSize(hS) / s);
-	float ac = float(-dotp(S, P) / (r*s));					// sun elevation
+	float ac = float(-dot(S, P) / (r * s));					// sun elevation
 
 															// Avoid some fault conditions
 	if (alt<0) alt = 0, k = 1e3, size = r;
@@ -3040,8 +3040,7 @@ bool Scene::WorldToScreenSpace2(const VECTOR3& wpos, oapi::FVECTOR2* pt, D3DXMAT
 //
 void Scene::RenderObjectMarker(oapi::Sketchpad *pSkp, const VECTOR3 &gpos, const std::string& label1, const std::string& label2, int mode, int scale)
 {
-	VECTOR3 dp (gpos - GetCameraGPos());
-	normalise (dp);
+	VECTOR3 dp = unit(gpos - GetCameraGPos());
 	m_celSphere->RenderMarker(pSkp, dp, label1, label2, mode, scale);
 }
 
@@ -3375,7 +3374,7 @@ void Scene::UpdateCameraFromOrbiter(DWORD dwPass)
 	else {
 		// Camera target doesn't exist. (Should not happen)
 		oapiCameraGlobalPos(&Camera.pos);
-		Camera.relpos = _V(0,0,0);
+		Camera.relpos = {0,0,0};
 	}
 
 	oapiCameraGlobalDir(&Camera.dir);

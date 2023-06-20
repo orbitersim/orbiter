@@ -1790,7 +1790,7 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 				if (d>1) d=1;
 				double speed = *(double *)GetConfigParam(CFGPRM_GETCAMERASPEED);
 				speed *= (DebugControls::GetVisualSize()/100.0);
-				if (scene->CameraPan(_V(0,0,double(d))*2.0, speed)) return 0;
+				if (scene->CameraPan(VECTOR3{0, 0, double(d)} * 2.0, speed)) return 0;
 			}
 
 			PickTerrain(uMsg, xpos, ypos);
@@ -1810,7 +1810,7 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 				if (bTrackMouse) {
 					double speed = *(double *)GetConfigParam(CFGPRM_GETCAMERASPEED);
 					speed *= (DebugControls::GetVisualSize() / 100.0);
-					if (scene->CameraPan(_V(-x, y, 0)*0.05, speed)) return 0;
+					if (scene->CameraPan(VECTOR3{-x, y, 0} * 0.05, speed)) return 0;
 				}
 			}
 

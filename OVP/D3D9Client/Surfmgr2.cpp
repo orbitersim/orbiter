@@ -797,7 +797,7 @@ void SurfTile::Render ()
 	bool render_shadows = (mgr->GetPlanet()->CloudMgr2() != NULL) && mgr->GetClient()->GetConfigParam(CFGPRM_CLOUDSHADOWS) && pShader->bCloudShd;
 
 	if (ltex) {
-		sdist = acos(dotp(mgr->prm.sdir, cnt));
+		sdist = std::acos(dot(mgr->prm.sdir, cnt));
 		rad = rad0 / (double)(2 << lvl); // tile radius
 		has_specular = (ltex != NULL) && sdist < (1.75 + rad);
 		has_lights = (render_lights && ltex && sdist > 1.35);

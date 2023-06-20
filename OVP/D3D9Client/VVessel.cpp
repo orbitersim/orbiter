@@ -333,7 +333,7 @@ void vVessel::InsertMesh(UINT idx)
 {
 	_TRACE;
 
-	VECTOR3 ofs=_V(0,0,0);
+	VECTOR3 ofs{0, 0, 0};
 
 	UINT i;
 	LPD3DXMATRIX pT = NULL;
@@ -399,7 +399,7 @@ void vVessel::InsertMesh(UINT idx)
 //
 void vVessel::ResetMesh(UINT idx)
 {
-	VECTOR3 ofs = _V(0, 0, 0);
+	VECTOR3 ofs{0, 0, 0};
 
 	if ((idx < nmesh) && meshlist[idx].mesh) {
 
@@ -1043,14 +1043,14 @@ void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float
 	alt = d - R;                       // altitude above surface
 	if (alt*eps > vessel->GetSize()) return; // too high to cast a shadow
 
-	normalise(sd);                  // shadow projection direction
+	sd = unit(sd);                  // shadow projection direction
 
 									// calculate the intersection of the vessel's shadow with the planet surface
-	double fac1 = dotp(sd, pvr);
+	double fac1 = dot(sd, pvr);
 	if (fac1 > 0.0) return;          // shadow doesn't intersect planet surface
 	double csun = -fac1 / d;           // sun elevation above horizon
 	if (csun < shadow_elev_limit) return;   // sun too low to cast shadow
-	double arg = fac1*fac1 - (dotp(pvr, pvr) - R*R);
+	double arg = fac1 * fac1 - (dot(pvr, pvr) - R * R);
 	if (arg <= 0.0) return;                 // shadow doesn't intersect with planet surface
 	double a = -fac1 - sqrt(arg);
 
@@ -1064,7 +1064,7 @@ void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float
 	// perform projections
 	//double nr0 = dotp(hn, shp);
 	float nr0 = float(-alt);
-	double nd = dotp(hn, sdv);
+	double nd = dot(hn, sdv);
 	VECTOR3 sdvs = sdv / nd;
 
 	D3DXVECTOR4 nrml = D3DXVECTOR4(float(hn.x), float(hn.y), float(hn.z), float(alt));
@@ -1107,7 +1107,7 @@ void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float
 		if (meshlist[i].trans) {
 			VECTOR3 of;	
 			vessel->GetMeshOffset(i, of);
-			nrml.w += float(dotp(of, hn));	// Sift a local groung level
+			nrml.w += float(dot(of, hn));	// Sift a local groung level
 			D3DXMatrixMultiply(&mProjWorldShift, meshlist[i].trans, &mProjWorld);
 			mesh->RenderStencilShadows(alpha, &mWorld, &mProjWorldShift, false, &nrml);
 		}
@@ -1217,7 +1217,7 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 	// -----------------------------------------------------------------------------------------------
 	//
 	VECTOR3 gpos;
-	vessel->Local2Global(_V(eCam->lPos.x, eCam->lPos.y, eCam->lPos.z), gpos);
+	vessel->Local2Global({eCam->lPos.x, eCam->lPos.y, eCam->lPos.z}, gpos);
 
 	// Prepare camera and scene for env map rendering
 	scn->PushCamera();
@@ -1333,7 +1333,7 @@ bool vVessel::ProbeIrradiance(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 	// -----------------------------------------------------------------------------------------------
 	//
 	VECTOR3 gpos;
-	vessel->Local2Global(_V(0,0,0), gpos);
+	vessel->Local2Global({0,0,0}, gpos);
 
 	// Prepare camera and scene for env map rendering
 	scn->PushCamera();
@@ -1419,8 +1419,8 @@ void vVessel::RenderLightCone(LPD3DXMATRIX pWT)
 		D3DXVECTOR3 Circle[65];
 		WORD CIdx[130];
 
-		VECTOR3 _X = crossp(_D, _V(0.4, 0.2, -0.6));
-		VECTOR3 _Y = crossp(_D, _X);
+		VECTOR3 _X = cross(_D, {0.4, 0.2, -0.6});
+		VECTOR3 _Y = cross(_D, _X);
 
 		D3DXVECTOR3 _x = D3DXVEC(_X);
 		D3DXVECTOR3 _y = D3DXVEC(_Y);
@@ -1711,9 +1711,9 @@ void vVessel::RenderReentry(LPDIRECT3DDEVICE9 dev)
 	VECTOR3 d;
 	vessel->GetShipAirspeedVector(d);
 	vessel->GlobalRot(d, d);
-	normalise(d);
+	d = unit(d);
 
-	float x = float(dotp(d, unit(cpos)));
+	float x = float(dot(d, unit(cpos)));
 	if (x<0) x=-x;	x=pow(x,0.3f);
 
 	float alpha_B = (x*0.40f + 0.60f) * ints;

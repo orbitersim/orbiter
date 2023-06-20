@@ -467,9 +467,9 @@ inline RECT _RECT(DWORD l, DWORD t, DWORD r, DWORD b)
 	return rect;
 }
 
-inline VECTOR3 _V(D3DXVECTOR3 &i)
+inline auto _V(D3DXVECTOR3 &i)
 {
-	return _V(double(i.x), double(i.y), double(i.z));
+	return VECTOR3{double(i.x), double(i.y), double(i.z)};
 }
 
 inline oapi::FVECTOR3 _FV(D3DXVECTOR3 &i)
@@ -477,9 +477,9 @@ inline oapi::FVECTOR3 _FV(D3DXVECTOR3 &i)
 	return oapi::FVECTOR3(i.x, i.y, i.z);
 }
 
-inline VECTOR3 _V(D3DXVECTOR4 &i)
+inline auto _V(D3DXVECTOR4 &i)
 {
-	return _V(double(i.x), double(i.y), double(i.z));
+	return VECTOR3{double(i.x), double(i.y), double(i.z)};
 }
 
 inline void D3DXCOLORSWAP(D3DXCOLOR *x)
@@ -563,9 +563,9 @@ inline D3DXCOLOR _D3DXCOLOR(const VECTOR3 &v, float a = 1.0f)
 	return D3DXCOLOR(float(v.x), float(v.y), float(v.z), a);
 }
 
-inline VECTOR3 _VD3DX(const D3DXVECTOR3 &v)
+inline auto _VD3DX(const D3DXVECTOR3 &v)
 {
-	return _V(double(v.x), double(v.y), double(v.z));
+	return VECTOR3{double(v.x), double(v.y), double(v.z)};
 }
 
 inline VECTOR4 _VD4DX(const D3DXVECTOR4 &v)

@@ -482,9 +482,8 @@ void TileManager::Render(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, double scale, 
 	D3DMAT_Copy (&RenderParam.wmat, &wmat);
 	D3DMAT_Copy (&RenderParam.wmat_tmp, &wmat);
 	D3DMAT_MatrixInvert (&imat, &wmat);
-	RenderParam.cdir = _V(imat._41, imat._42, imat._43); // camera position in local coordinates (units of planet radii)
-	RenderParam.cpos = vp->PosFromCamera() * scale;
-	normalise (RenderParam.cdir);                        // camera direction
+	RenderParam.cdir = unit(VECTOR3{imat._41, imat._42, imat._43}); // camera direction
+	RenderParam.cpos = vp->PosFromCamera() * scale; // camera position in local coordinates (units of planet radii)
 	RenderParam.bfog = bfog;
 
 	oapiGetRotationMatrix (obj, &RenderParam.grot);
@@ -495,12 +494,11 @@ void TileManager::Render(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, double scale, 
 	RenderParam.objsize = oapiGetSize (obj);
 	RenderParam.cdist = vp->CamDist() / vp->GetSize(); // camera distance in units of planet radius
 	RenderParam.viewap = (viewap ? viewap : acos (1.0/max (1.0, RenderParam.cdist)));
-	RenderParam.sdir = tmul (RenderParam.grot, -gpos);
+	RenderParam.sdir = unit(tmul(RenderParam.grot, -gpos)); // sun direction in planet frame
 	RenderParam.horzdist = sqrt(RenderParam.cdist*RenderParam.cdist-1.0) * RenderParam.objsize;
-	normalise (RenderParam.sdir); // sun direction in planet frame
 
 	// limit resolution for fast camera movements
-	double limitstep, cstep = acos (dotp (RenderParam.cdir, pcdir));
+	double limitstep, cstep = std::acos(dot(RenderParam.cdir, pcdir));
 	int maxlevel = SURF_MAX_PATCHLEVEL;
 	static double limitstep0 = 5.12 * pow(2.0, -(double)SURF_MAX_PATCHLEVEL);
 	for (limitstep = limitstep0; cstep > limitstep && maxlevel > 5; limitstep *= 2.0)
@@ -567,7 +565,7 @@ void TileManager::ProcessTile (int lvl, int hemisp, int ilat, int nlat, int ilng
 	static const double rad0 = sqrt(2.0)*PI05*0.5;
 	VECTOR3 cnt = TileCentre (hemisp, ilat, nlat, ilng, nlng);
 	double rad = rad0/(double)nlat;
-	double x = dotp (RenderParam.cdir, cnt);
+	double x = dot(RenderParam.cdir, cnt);
 	double adist = acos(x) - rad;
 
 	if (adist >= RenderParam.viewap) {
@@ -670,7 +668,7 @@ void TileManager::ProcessTile (int lvl, int hemisp, int ilat, int nlat, int ilng
 
 		// actually render the tile at this level ---------------------------------------
 		//
-		double sdist = acos (dotp (RenderParam.sdir, cnt));
+		double sdist = std::acos(dot(RenderParam.sdir, cnt));
 
 		if (bCoarseTex) {
 			//if (sdist > PI05+rad && bkp_flag & 2) bkp_flag &= 0xFD;
@@ -690,8 +688,8 @@ VECTOR3 TileManager::TileCentre (int hemisp, int ilat, int nlat, int ilng, int n
 {
 	double cntlat = PI*0.5 * ((double)ilat+0.5)/(double)nlat,      slat = sin(cntlat), clat = cos(cntlat);
 	double cntlng = PI*2.0 * ((double)ilng+0.5)/(double)nlng + PI, slng = sin(cntlng), clng = cos(cntlng);
-	if (hemisp) return _V(clat*clng, -slat, -clat*slng);
-	else        return _V(clat*clng,  slat,  clat*slng);
+	if (hemisp) return {clat*clng, -slat, -clat*slng};
+	else        return {clat*clng,  slat,  clat*slng};
 }
 
 // =======================================================================
@@ -761,7 +759,7 @@ bool TileManager::SpecularColour (D3DCOLORVALUE *col)
 		return false;
 	} else {
 		double fac = 0.7; // needs thought ...
-		double cosa = dotp (RenderParam.cdir, RenderParam.sdir);
+		double cosa = dot(RenderParam.cdir, RenderParam.sdir);
 		double alpha = 0.5*acos(cosa); // sun reflection angle
 		double scale = sin(alpha)*fac;
 		col->r = (float)max(0.0, spec_base - scale*atmc->color0.x);
