@@ -242,14 +242,6 @@ typedef union {
 } VECTOR3;
 
 /**
- * \brief 4-element vector
- */
-typedef union {
-	double data[4];                ///< array data interface
-	struct { double x, y, z, w; }; ///< named data interface
-} VECTOR4;
-
-/**
  * \brief 3x3-element matrix
  */
 typedef union {

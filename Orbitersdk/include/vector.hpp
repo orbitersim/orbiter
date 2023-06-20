@@ -9,6 +9,7 @@
 #define VECTOR_HPP
 
 #include <cmath>
+#include <cstdint> // std::size_t
 #include <iosfwd> // std::ostream
 #include <type_traits>
 
@@ -23,6 +24,17 @@
 template<typename> struct is_vector2 : std::false_type { };
 template<typename> struct is_vector3 : std::false_type { };
 template<typename> struct is_vector4 : std::false_type { };
+
+////////////////////////////////////////////////////////////////////////////////
+union VECTOR4
+{
+	struct { double x, y, z, w; };
+
+	constexpr auto const& operator[](std::size_t i) const { const double* d[] = {&x, &y, &z, &w}; return *d[i]; }
+	constexpr auto& operator[](std::size_t i) { double* d[] = {&x, &y, &z, &w}; return *d[i]; }
+};
+
+template<> struct is_vector4<VECTOR4> : std::true_type { };
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
