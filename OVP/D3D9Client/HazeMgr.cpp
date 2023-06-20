@@ -13,13 +13,12 @@
 // Implemented as transparent overlay on planetary disc
 // ============================================================================
 
-#include "HazeMgr.h"
-#include "VPlanet.h"
+#include "D3D9Config.h"
+#include "D3D9Effect.h"
 #include "D3D9Surface.h"
 #include "D3D9Util.h"
-#include "VectorHelpers.h"
-#include "D3D9Effect.h"
-#include "D3D9Config.h"
+#include "HazeMgr.h"
+#include "VPlanet.h"
 
 using namespace oapi;
 
@@ -313,15 +312,15 @@ void HazeManager2::RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr)
 
 	D3DXMATRIX mWL, mL;
 	D3DMAT_Identity(&mWL);
-	D3DMAT_FromAxisT(&mWL, ptr(_D3DXVECTOR3(ux)), ptr(_D3DXVECTOR3(ur)), ptr(_D3DXVECTOR3(uy)));
+	D3DMAT_FromAxisT(&mWL, ptr(to_D3DXVECTOR3(ux)), ptr(to_D3DXVECTOR3(ur)), ptr(to_D3DXVECTOR3(uy)));
 
 	double a = 15.0*RAD;
 	double b = (PI-asin(rad/cr))/6.0;
 	
-	D3DXVECTOR3 vTileCenter = D3DXVECTOR3(float(sin(15.0*RAD)), 1.0f, float(1.0+cos(15.0*RAD))) * 0.5;
-	D3DXMatrixRotationAxis(&mL, ptr(_D3DXVECTOR3(ur)), float(-a*0.5));
+	auto vTileCenter = D3DXVECTOR3(float(std::sin(15.0 * RAD)), 1, float(1 + std::cos(15.0 * RAD))) * 0.5f;
+	D3DXMatrixRotationAxis(&mL, ptr(to_D3DXVECTOR3(ur)), float(-a*0.5));
 	D3DXMatrixMultiply(&mWL, &mWL, &mL);
-	D3DXMatrixRotationAxis(&mL, ptr(_D3DXVECTOR3(ur)), float(-a));
+	D3DXMatrixRotationAxis(&mL, ptr(to_D3DXVECTOR3(ur)), float(-a));
 
 	//vp->GetScatterConst()->mVP = vp->GetScene()->PushCameraFrustumLimits(hd * 0.1, hd * 5.0);
 
@@ -406,7 +405,7 @@ void HazeManager2::RenderRing(VECTOR3 cpos, VECTOR3 cdir, double rad, double hra
 
 	D3DXMATRIX mW;
 	D3DMAT_Identity(&mW);
-	D3DMAT_FromAxisT(&mW, ptr(_D3DXVECTOR3(ux)), ptr(_D3DXVECTOR3(ur)), ptr(_D3DXVECTOR3(uy)));
+	D3DMAT_FromAxisT(&mW, ptr(to_D3DXVECTOR3(ux)), ptr(to_D3DXVECTOR3(ur)), ptr(to_D3DXVECTOR3(uy)));
 
 	ShaderParams sprm;
 	memcpy_s(&sprm.mWorld, sizeof(sprm.mWorld), &mW, sizeof(mW));

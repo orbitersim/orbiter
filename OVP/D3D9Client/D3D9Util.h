@@ -8,18 +8,36 @@
 #ifndef __D3DUTIL_H
 #define __D3DUTIL_H
 
-#include "OrbiterAPI.h"
-#include "Log.h"
 #include "DrawAPI.h"
+#include "gcCore.h"
+#include "Log.h"
+#include "OrbiterAPI.h"
+
 #include <d3d9.h>
 #include <d3dx9.h>
 #include <string>
-#include "gcCore.h"
 
 #define float2 FVECTOR2
 #define float3 FVECTOR3
 #define float4 FVECTOR4
 #define float4x4 FMATRIX4 
+
+template <typename T>
+constexpr auto sign(const T& x) { return x < T{0} ? T{-1} : T{1}; }
+
+template <typename T>
+constexpr auto ilerp(const T& a, const T& b, const T& x)
+{
+    auto v = (x - a) / (b - a);
+    return v > T{1} ? T{1} : v < T{0} ? T{0} : v;
+}
+
+template <typename T>
+constexpr auto hermite(const T& x) { return x * x * (T{3} - T{2} * x); }
+
+// enable vector operators for D3DXVECTOR3 and D3DXVECTOR4
+template<> struct is_vector3<D3DXVECTOR3> : std::true_type { };
+template<> struct is_vector4<D3DXVECTOR4> : std::true_type { };
 
 #ifdef _DEBUG
 #ifndef _TRACE
@@ -565,6 +583,11 @@ inline auto to_FVECTOR4(const D3DXVECTOR4 &v) { return FVECTOR4{v.x, v.y, v.z, v
 
 inline auto to_D3DXVECTOR3(const FVECTOR3 &v) { return D3DXVECTOR3{v.x, v.y, v.z}; }
 inline auto to_D3DXVECTOR4(const FVECTOR4 &v) { return D3DXVECTOR4{v.x, v.y, v.z, v.w}; }
+
+inline auto to_D3DXVECTOR3(const VECTOR3 &v)
+{
+    return D3DXVECTOR3{static_cast<float>(v.x), static_cast<float>(v.y), static_cast<float>(v.z)};
+}
 
 inline auto to_FMATRIX4(const D3DXMATRIX &m)
 {

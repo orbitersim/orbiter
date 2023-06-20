@@ -10,6 +10,9 @@
 
 #define ATM_SLIDER_COUNT 20
 
+#include "DrawAPI.h"
+
+using oapi::FVECTOR3;
 
 typedef struct ScatterParams {
 	ScatterParams();			///< Defaut c'tor

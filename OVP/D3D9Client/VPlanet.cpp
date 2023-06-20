@@ -17,25 +17,25 @@
 
 #define D3D_OVERLOADS
 
+#include "AtmoControls.h"
+#include "CloudMgr.h"
+#include "cloudmgr2.h"
+#include "D3D9Client.h"
+#include "D3D9Config.h"
+#include "D3D9Util.h"
+#include "DebugControls.h"
+#include "HazeMgr.h"
+#include "IProcess.h"
+#include "OapiExtension.h"
+#include "RingMgr.h"
+#include "SurfMgr.h"
+#include "surfmgr2.h"
+#include "VBase.h"
+#include "VPlanet.h"
+
 #include <map>
 #include <sstream>
 #include <unordered_map>
-
-#include "D3D9Client.h"
-#include "D3D9Config.h"
-#include "VPlanet.h"
-#include "VBase.h"
-#include "SurfMgr.h"
-#include "surfmgr2.h"
-#include "cloudmgr2.h"
-#include "CloudMgr.h"
-#include "HazeMgr.h"
-#include "RingMgr.h"
-#include "DebugControls.h"
-#include "AtmoControls.h"
-#include "VectorHelpers.h"
-#include "OapiExtension.h"
-#include "IProcess.h"
 
 using namespace oapi;
 
@@ -947,7 +947,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 		prm.AmbColor	= D3DXCOLOR(0,0,0,0);
 		prm.FogColor	= D3DXCOLOR(0,0,0,0);
 		prm.TintColor	= D3DXCOLOR(0,0,0,0);
-		prm.SunDir		= _D3DXVECTOR3(SunDirection());
+		prm.SunDir		= to_D3DXVECTOR3(SunDirection());
 
 		if (ringmgr) {
 			ringmgr->Render(dev, mWorld, false);

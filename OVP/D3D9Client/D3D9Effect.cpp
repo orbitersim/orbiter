@@ -5,13 +5,13 @@
 // Copyright (C) 2011 - 2016 Jarmo Nikkanen
 // ===========================================================================================
 
-#include "D3D9Effect.h"
-#include "Log.h"
-#include "Scene.h"
-#include "D3D9Surface.h"
 #include "D3D9Config.h"
+#include "D3D9Effect.h"
+#include "D3D9Surface.h"
+#include "D3D9Util.h"
+#include "Log.h"
 #include "Mesh.h"
-#include "VectorHelpers.h"
+#include "Scene.h"
 
 D3D9Client  * D3D9Effect::gc = 0;
 ID3DXEffect * D3D9Effect::FX = 0;

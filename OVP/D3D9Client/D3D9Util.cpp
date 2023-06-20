@@ -9,15 +9,15 @@
 
 #define STRICT
 
-#include "D3D9util.h"
 #include "AABBUtil.h"
 #include "D3D9Client.h"
-#include "VectorHelpers.h"
 #include "D3D9Config.h"
-#include "VPlanet.h"
+#include "D3D9Util.h"
 #include "Mesh.h"
-#include <functional>
+#include "VPlanet.h"
+
 #include <cctype>
+#include <functional>
 #include <unordered_map>
 
 extern D3D9Client* g_client;

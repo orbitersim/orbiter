@@ -8,14 +8,14 @@
 
 #define VISIBILITY_TOL 0.0015f
 
-#include "Mesh.h"
-#include "Log.h"
-#include "Scene.h"
-#include "D3D9Surface.h"
 #include "D3D9Catalog.h"
 #include "D3D9Config.h"
+#include "D3D9Surface.h"
+#include "D3D9Util.h"
 #include "DebugControls.h"
-#include "VectorHelpers.h"
+#include "Log.h"
+#include "Mesh.h"
+#include "Scene.h"
 
 #pragma warning(push)
 #pragma warning(disable : 4838)

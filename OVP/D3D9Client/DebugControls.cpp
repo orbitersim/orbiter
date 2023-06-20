@@ -6,17 +6,17 @@
 
 
 #include "D3D9Client.h"
-#include "resource.h"
 #include "D3D9Config.h"
 #include "D3D9Surface.h"
 #include "DebugControls.h"
-#include "Commctrl.h"
-#include "vObject.h"
-#include "vVessel.h"
-#include "vPlanet.h"
-#include "Mesh.h"
 #include "MaterialMgr.h"
-#include "VectorHelpers.h"
+#include "Mesh.h"
+#include "resource.h"
+#include "VObject.h"
+#include "VPlanet.h"
+#include "VVessel.h"
+
+#include <commctrl.h>
 #include <stdio.h>
 
 enum scale { LIN, SQRT, SQR };

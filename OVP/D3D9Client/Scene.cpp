@@ -6,22 +6,22 @@
 //				 2012 - 2016 Jarmo Nikkanen
 // ==============================================================
 
-#include "Scene.h"
-#include "VPlanet.h"
-#include "VVessel.h"
-#include "VBase.h"
-#include "Particle.h"
+#include "AABBUtil.h"
 #include "CSphereMgr.h"
-#include "D3D9Util.h"
+#include "D3D9Catalog.h"
 #include "D3D9Config.h"
 #include "D3D9Surface.h"
 #include "D3D9TextMgr.h"
-#include "D3D9Catalog.h"
-#include "AABBUtil.h"
-#include "OapiExtension.h"
+#include "D3D9Util.h"
 #include "DebugControls.h"
 #include "IProcess.h"
-#include "VectorHelpers.h"
+#include "OapiExtension.h"
+#include "Particle.h"
+#include "Scene.h"
+#include "VBase.h"
+#include "VPlanet.h"
+#include "VVessel.h"
+
 #include <sstream>
 #include <vector>
 

@@ -8,16 +8,16 @@
 
 #define D3D_OVERLOADS
 
+#include "AtmoControls.h"
+#include "D3D9Client.h"
+#include "D3D9Config.h"
+#include "D3D9Util.h"
+#include "IProcess.h"
+#include "VPlanet.h"
+
 #include <map>
 #include <sstream>
 #include <unordered_map>
-
-#include "D3D9Client.h"
-#include "D3D9Config.h"
-#include "VPlanet.h"
-#include "AtmoControls.h"
-#include "VectorHelpers.h"
-#include "IProcess.h"
 
 using namespace oapi;
 
