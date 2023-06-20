@@ -36,7 +36,7 @@ HazeManager::HazeManager (const D3D7Client *gclient, const vPlanet *vplanet)
 		dens0 = (float)(min (1.0, atmc->horizonalt/64e3 *
 			*(double*)oapiGetObjectParam (obj, OBJPRM_PLANET_HAZEDENSITY)));
 	} else {
-		basecol = _V(1,1,1);
+		basecol = {1,1,1};
 		hralt = 0.01f;
 		dens0 = 1.0f;
 	}
@@ -113,7 +113,7 @@ void HazeManager::Render (LPDIRECT3DDEVICE7 dev, D3DMATRIX &wmat, bool dual)
 	float dens = (float)max (1.0, 1.4 - 0.3/hralt*(cdist-1.0)); // saturate haze colour at low altitudes
 	if (dual) dens *= (float)(0.5 + 0.5/cdist);                 // scale down intensity at large distances
 
-	normalise (rpos);
+	rpos = unit(rpos);
 	cost = (float)rpos.y, sint = (float)sqrt (1.0-cost*cost);
 	phi = atan2 (rpos.z, rpos.x), cosp = (float)cos(phi), sinp = (float)sin(phi);
 	D3DMATRIX rmat = {cost*cosp, -sint, cost*sinp, 0,
@@ -131,8 +131,8 @@ void HazeManager::Render (LPDIRECT3DDEVICE7 dev, D3DMATRIX &wmat, bool dual)
 	oapiGetGlobalPos (obj, &gpos);
 	psun = tmul (grot, -gpos); // sun in planet coords
 	psun = mul (rrmat, psun);  // sun in camera-relative horizon coords
-	VECTOR3 cs = psun-cpos; normalise(cs); // camera->sun
-	normalise (psun);
+	VECTOR3 cs = unit(psun - cpos); // camera->sun
+	psun = unit(psun);
 	float psunx = (float)psun.x, psuny = (float)psun.y, psunz = (float)psun.z;
 
 	colofs = (dual ? 0.4 : 0.3);
@@ -146,10 +146,10 @@ void HazeManager::Render (LPDIRECT3DDEVICE7 dev, D3DMATRIX &wmat, bool dual)
 	dev->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP);
 
 	for (i = j = 0; i < HORIZON_NSEG; i++) {
-		VECTOR3 hp = {Vtx[j].x = r1*CosP[i], Vtx[j].y = h1, Vtx[j].z = r1*SinP[i]};
-		csun = dotp (hp, psun);
-		VECTOR3 cp = hp-cpos; normalise(cp);
-		double colsh = 0.5*(dotp (cp,cs) + 1.0);
+		VECTOR3 hp{Vtx[j].x = r1*CosP[i], Vtx[j].y = h1, Vtx[j].z = r1*SinP[i]};
+		csun = dot(hp, psun);
+		VECTOR3 cp = unit(hp - cpos);
+		double colsh = 0.5 * (dot(cp, cs) + 1.0);
 
 		// compose a colourful sunset
 		double maxred   = colofs-0.18*colsh,  minred   = maxred-0.4;
