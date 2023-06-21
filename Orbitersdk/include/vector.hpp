@@ -9,6 +9,7 @@
 #define VECTOR_HPP
 
 #include <cmath>
+#include <iosfwd> // std::ostream
 #include <type_traits>
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -130,6 +131,13 @@ template<typename V, if_vector4(V)> constexpr auto  operator==(const V& l, const
 template<typename V, if_vector2(V)> constexpr auto  operator!=(const V& l, const V& r) { return l.r != r.x || l.y != r.y; }
 template<typename V, if_vector3(V)> constexpr auto  operator!=(const V& l, const V& r) { return l.r != r.x || l.y != r.y || l.z != r.z; }
 template<typename V, if_vector4(V)> constexpr auto  operator!=(const V& l, const V& r) { return l.r != r.x || l.y != r.y || l.z != r.z || l.w != r.w; }
+
+/**
+ * @brief stream insertion operators
+ */
+template<typename V, if_vector2(V)> inline auto& operator<<(std::ostream& os, const V& v) { os << v.x << ',' << v.y; return os; }
+template<typename V, if_vector3(V)> inline auto& operator<<(std::ostream& os, const V& v) { os << v.x << ',' << v.y << ',' << v.z; return os; }
+template<typename V, if_vector4(V)> inline auto& operator<<(std::ostream& os, const V& v) { os << v.x << ',' << v.y << ',' << v.z << ',' << v.w; return os; }
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
