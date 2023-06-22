@@ -46,8 +46,6 @@ inline double posangle (double angle)
 	return (a >= 0.0 ? a : a+Pi2);
 }
 
-char *trim_string (char *cbuf);
-
 // =======================================================================
 // class Vector
 
