@@ -18,13 +18,13 @@ const double Pi2   = 2.0*Pi;
 const double Pi05  = 0.5*Pi;
 const double Pi15  = 1.5*Pi;
 const double Pi025 = 0.25*Pi;
-const double RAD   = Pi/180.0;
-const double DEG   = 180.0/Pi;
+const double _RAD_ = Pi/180.0;
+const double _DEG_ = 180.0/Pi;
 
 #pragma optimize ("", on)
 
-inline double Rad (double deg) { return RAD*deg; }
-inline double Deg (double rad) { return DEG*rad; }
+inline double Rad (double deg) { return _RAD_ * deg; }
+inline double Deg (double rad) { return _DEG_ * rad; }
 
 // =======================================================================
 // Auxiliary functions
