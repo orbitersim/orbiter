@@ -184,6 +184,21 @@ template<typename V, if_vector(V)> constexpr auto norm(const V& v) { return std:
 template<typename V, if_vector(V)> constexpr auto len (const V& v) { return norm(v); }
 
 /**
+ * @brief raise to the power
+ */
+template<typename V, if_vector2(V)> constexpr auto pow(const V& l, const V& r) { return V{std::pow(l.x, r.x), std::pow(l.y, r.y)}; }
+template<typename V, if_vector3(V)> constexpr auto pow(const V& l, const V& r) { return V{std::pow(l.x, r.x), std::pow(l.y, r.y), std::pow(l.z, r.z)}; }
+template<typename V, if_vector4(V)> constexpr auto pow(const V& l, const V& r) { return V{std::pow(l.x, r.x), std::pow(l.y, r.y), std::pow(l.z, r.z), std::pow(l.w, r.w)}; }
+
+template<typename V, if_vector2(V)> constexpr auto pow(const V& v, auto e) { return V{std::pow(v.x, e), std::pow(v.y, e)}; }
+template<typename V, if_vector3(V)> constexpr auto pow(const V& v, auto e) { return V{std::pow(v.x, e), std::pow(v.y, e), std::pow(v.z, e)}; }
+template<typename V, if_vector4(V)> constexpr auto pow(const V& v, auto e) { return V{std::pow(v.x, e), std::pow(v.y, e), std::pow(v.z, e), std::pow(v.w, e)}; }
+
+template<typename V, if_vector2(V)> constexpr auto pow(auto b, const V& v) { return V{std::pow(b, v.x), std::pow(b, v.y)}; }
+template<typename V, if_vector3(V)> constexpr auto pow(auto b, const V& v) { return V{std::pow(b, v.x), std::pow(b, v.y), std::pow(b, v.z)}; }
+template<typename V, if_vector4(V)> constexpr auto pow(auto b, const V& v) { return V{std::pow(b, v.x), std::pow(b, v.y), std::pow(b, v.z), std::pow(b, v.w)}; }
+
+/**
  * @brief normalized unit vector
  */
 template<typename V, if_vector(V)> constexpr auto unit(const V& v) { return v / len(v); }
