@@ -162,7 +162,7 @@ constexpr auto cross(const V& l, const V& r)
 }
 
 /**
- * @brief distance between two points, squared and not
+ * @brief distance between two points (squared and not)
  */
 template<typename V, if_vector(V)> constexpr auto dist_2(const V& l, const V& r) { return len_2(l - r); }
 template<typename V, if_vector(V)> constexpr auto dist(const V& l, const V& r) { return std::sqrt(dist_2(l, r)); }
@@ -173,6 +173,18 @@ template<typename V, if_vector(V)> constexpr auto dist(const V& l, const V& r) {
 template<typename V, if_vector2(V)> constexpr auto dot(const V& l, const V& r) { return l.x * r.x + l.y * r.y; }
 template<typename V, if_vector3(V)> constexpr auto dot(const V& l, const V& r) { return l.x * r.x + l.y * r.y + l.z * r.z; }
 template<typename V, if_vector4(V)> constexpr auto dot(const V& l, const V& r) { return l.x * r.x + l.y * r.y + l.z * r.z + l.w * r.w; }
+
+/**
+ * @brief e raised to the power
+ */
+template<typename V, if_vector2(V)> constexpr auto exp(const V& v) { return V{std::exp(v.x), std::exp(v.y)}; }
+template<typename V, if_vector3(V)> constexpr auto exp(const V& v) { return V{std::exp(v.x), std::exp(v.y), std::exp(v.z)}; }
+template<typename V, if_vector4(V)> constexpr auto exp(const V& v) { return V{std::exp(v.x), std::exp(v.y), std::exp(v.z), std::exp(v.w)}; }
+
+/**
+ * @brief linear interpolation
+ */
+template<typename V, if_vector(V)> constexpr auto lerp(const V& a, const V& b, auto t) { return a + t * (b - a); }
 
 /**
  * @brief vector norm/length (squared and not)
@@ -197,6 +209,13 @@ template<typename V, if_vector4(V)> constexpr auto pow(const V& v, auto e) { ret
 template<typename V, if_vector2(V)> constexpr auto pow(auto b, const V& v) { return V{std::pow(b, v.x), std::pow(b, v.y)}; }
 template<typename V, if_vector3(V)> constexpr auto pow(auto b, const V& v) { return V{std::pow(b, v.x), std::pow(b, v.y), std::pow(b, v.z)}; }
 template<typename V, if_vector4(V)> constexpr auto pow(auto b, const V& v) { return V{std::pow(b, v.x), std::pow(b, v.y), std::pow(b, v.z), std::pow(b, v.w)}; }
+
+/**
+ * @brief square root
+ */
+template<typename V, if_vector2(V)> constexpr auto sqrt(const V& v) { return V{std::sqrt(v.x), std::sqrt(v.y)}; }
+template<typename V, if_vector3(V)> constexpr auto sqrt(const V& v) { return V{std::sqrt(v.x), std::sqrt(v.y), std::sqrt(v.z)}; }
+template<typename V, if_vector4(V)> constexpr auto sqrt(const V& v) { return V{std::sqrt(v.x), std::sqrt(v.y), std::sqrt(v.z), std::sqrt(v.w)}; }
 
 /**
  * @brief normalized unit vector
