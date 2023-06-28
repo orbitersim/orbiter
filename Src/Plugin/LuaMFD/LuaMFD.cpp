@@ -6,6 +6,8 @@
 #include "orbitersdk.h"
 #include "LuaMFD.h"
 
+using std::min;
+
 // ==============================================================
 // Global variables
 
@@ -178,7 +180,7 @@ void ScriptMFD::Update (HDC hDC)
 			col = ls->col;
 			SetTextColor (hDC, col);
 		}
-		TextOut (hDC, xofs, yofs, ls->buf, min(strlen(ls->buf),nchar));
+		TextOut (hDC, xofs, yofs, ls->buf, min(strlen(ls->buf),(size_t)nchar));
 		yofs += fh;
 	}
 	SelectObject (hDC, oFont);

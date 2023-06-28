@@ -11,6 +11,9 @@
 #include "Log.h"
 #include "GraphicsAPI.h"
 
+using std::min;
+using std::max;
+
 // =======================================================================
 // Externs
 

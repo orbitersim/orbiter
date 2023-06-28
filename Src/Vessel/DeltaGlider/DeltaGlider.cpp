@@ -37,6 +37,9 @@
 #include <math.h>
 #include <time.h>
 
+using std::min;
+using std::max;
+
 // ==============================================================
 // Global parameters
 // ==============================================================
@@ -314,7 +317,7 @@ void DeltaGlider::PaintMarkings (SURFHANDLE tex)
 		skp->SetTextAlign (oapi::Sketchpad::CENTER);
 		char cbuf[32];
 		strncpy (cbuf, GetName(), 10);
-		int len = min(strlen(GetName()), 10);
+		int len = min(strlen(GetName()), (size_t)10);
 		skp->Text (193, 10, cbuf, len);
 		skp->Text (193, 74, cbuf, len);
 		oapiReleaseFont(font1);

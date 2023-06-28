@@ -1703,7 +1703,7 @@ void vVessel::RenderReentry(LPDIRECT3DDEVICE9 dev)
 
 	float lim  = 100000000.0;
 	float www  = float(p*v*v*v);
-	float ints = max(0,(www-lim)) / (5.0f*lim);
+	float ints = max(0.0f,(www-lim)) / (5.0f*lim);
 
 	if (ints>1.0f) ints = 1.0f;
 	if (ints<0.01f) return;

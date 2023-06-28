@@ -2648,7 +2648,7 @@ bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc
 
 	D3DSURFACE_DESC desc;
 	pEnvDS->GetDesc(&desc);
-	DWORD width = min(512, desc.Width);
+	DWORD width = min((UINT)512, desc.Width);
 
 
 	if (!pBlrTemp[0]) {

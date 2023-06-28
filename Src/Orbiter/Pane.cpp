@@ -512,7 +512,7 @@ void Pane::IncHUDIntens ()
 
 void Pane::DecHUDIntens ()
 {
-	SetHUDColour (-1, max (0, hudIntens - td.SysDT*0.3));
+	SetHUDColour (-1, max (0.0, hudIntens - td.SysDT*0.3));
 }
 
 void Pane::RenderCustomHUD (MESHHANDLE hMesh, SURFHANDLE *hTex)

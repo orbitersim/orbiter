@@ -145,12 +145,12 @@ inline VECTOR3 rcp(const VECTOR3 &v)
 
 inline VECTOR3 vmax(const VECTOR3 &v, const VECTOR3 &w)
 {
-	return _V(max(v.x, w.x), max(v.y, w.y), max(v.z, w.z));
+	return _V(std::max(v.x, w.x), std::max(v.y, w.y), std::max(v.z, w.z));
 }
 
 inline VECTOR3 vmin(const VECTOR3 &v, const VECTOR3 &w)
 {
-	return _V(min(v.x, w.x), min(v.y, w.y), min(v.z, w.z));
+	return _V(std::min(v.x, w.x), std::min(v.y, w.y), std::min(v.z, w.z));
 }
 
 
@@ -233,12 +233,12 @@ inline VECTOR4 rcp(const VECTOR4 &v)
 
 inline VECTOR4 vmax(const VECTOR4 &v, const VECTOR4 &w)
 {
-	return _V(max(v.x, w.x), max(v.y, w.y), max(v.z, w.z), max(v.w, w.w));
+	return _V(std::max(v.x, w.x), std::max(v.y, w.y), std::max(v.z, w.z), std::max(v.w, w.w));
 }
 
 inline VECTOR4 vmin(const VECTOR4 &v, const VECTOR4 &w)
 {
-	return _V(min(v.x, w.x), min(v.y, w.y), min(v.z, w.z), min(v.w, w.w));
+	return _V(std::min(v.x, w.x), std::min(v.y, w.y), std::min(v.z, w.z), std::min(v.w, w.w));
 }
 
 
@@ -290,12 +290,12 @@ inline D3DXVECTOR3 rcp(const D3DXVECTOR3 &v)
 
 inline D3DXVECTOR3 vmax(const D3DXVECTOR3 &v, const D3DXVECTOR3 &w)
 {
-	return D3DXVECTOR3(max(v.x, w.x), max(v.y, w.y), max(v.z, w.z));
+	return D3DXVECTOR3(std::max(v.x, w.x), std::max(v.y, w.y), std::max(v.z, w.z));
 }
 
 inline D3DXVECTOR3 vmin(const D3DXVECTOR3 &v, const D3DXVECTOR3 &w)
 {
-	return D3DXVECTOR3(min(v.x, w.x), min(v.y, w.y), min(v.z, w.z));
+	return D3DXVECTOR3(std::min(v.x, w.x), std::min(v.y, w.y), std::min(v.z, w.z));
 }
 
 inline D3DXVECTOR3 lerp(const D3DXVECTOR3 &v, const D3DXVECTOR3 &w, float x)

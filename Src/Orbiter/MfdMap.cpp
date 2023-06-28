@@ -178,7 +178,7 @@ bool Instrument_Map::KeyBuffered (DWORD key)
 bool Instrument_Map::KeyImmediate (char *kstate)
 {
 	double t = td.SysT0;
-	double dt = max(t-scroll_t0, 0);
+	double dt = max(t-scroll_t0, 0.0);
 	double mag = min(dt*0.5, 8.0);
 	double step = (t-scroll_tp) * mag / zoom;
 
@@ -496,7 +496,7 @@ void Instrument_Map::UpdateDraw_Dispprm (oapi::Sketchpad *skp)
 	}
 
 	CustomMkrSet &set = map->GetCustomMarkerSet();
-	for (i = max(0,dispprm_top-ndefault); i < min(set.nset,nlist-ndefault+dispprm_top); i++) {
+	for (i = max(0,dispprm_top-ndefault); i < min((int)set.nset,nlist-ndefault+dispprm_top); i++) {
 		std::string& name = set.set[i].list->name;
 		bool active = set.set[i].active;
 		skp->Text (x0, y, name.c_str(), name.size());

@@ -13,6 +13,8 @@
 #include "TabModule.h"
 #include "resource.h"
 
+using std::max;
+
 extern char DBG_MSG[256];
 static int counter = -1;
 

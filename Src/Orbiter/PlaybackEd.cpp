@@ -247,7 +247,7 @@ void TaccEvent::SetTacc (double _tacc)
 
 void TaccEvent::SetDelay (double _delay)
 {
-	delay = max (0, _delay);
+	delay = max (0.0, _delay);
 }
 
 void TaccEvent::TagStr (char *str)

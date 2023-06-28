@@ -626,8 +626,8 @@ void SurfTile::ComputeElevationData(const float *elev) const
 	for (j = 0; j <= res; j++) {
 		for (i = 0; i <= res; i++) {
 			ehdr.emean += elev[i];
-			ehdr.emax = max(ehdr.emax, elev[i]);
-			ehdr.emin = min(ehdr.emin, elev[i]);
+			ehdr.emax = max(ehdr.emax, (double)elev[i]);
+			ehdr.emin = min(ehdr.emin, (double)elev[i]);
 		}
 		elev += TILE_ELEVSTRIDE;
 	}

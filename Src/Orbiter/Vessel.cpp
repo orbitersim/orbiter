@@ -3498,7 +3498,7 @@ void Vessel::InitOrbiting (const Vector &relr, const Vector &relv, const Vector 
 		double lng, lat, alt0;
 		cbody->LocalToEquatorial (tmul(cbody->GRot(), cpos), lng, lat, rad);
 		alt0 = rad-cbody->Size();
-		int reslvl = (int)(32.0-log(max(alt0,100))*LOG2);
+		int reslvl = (int)(32.0-log(max(alt0,100.0))*LOG2);
 		elev = emgr->Elevation (lat, lng, reslvl, &etile);
 	} else {
 		rad = cpos.length();
@@ -4220,7 +4220,7 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 
 	ElevationManager* emgr = (cbody->Type() == OBJTP_PLANET ? ((Planet*)cbody)->ElevMgr() : 0);
 	int reslvl = 1;
-	if (emgr) reslvl = (int)(32.0-log(max(alt,100))*LOG2);
+	if (emgr) reslvl = (int)(32.0-log(max(alt,100.0))*LOG2);
 
 	Vector shift = tmul(ps.R, s->pos - ps.pos);
 	for (i = 0; i < ntouchdown_vtx; i++) {

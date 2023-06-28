@@ -5,6 +5,9 @@
 #include "CustomControls.h"
 #include "Util.h"
 
+using std::min;
+using std::max;
+
 // ===========================================================================
 
 CustomCtrl::CustomCtrl ()
@@ -104,7 +107,7 @@ void SplitterCtrl::SetHwnd (HWND hCtrl, HWND hPane1, HWND hPane2)
 	GetClientRect (hCtrl, &r);
 	totalW = r.right;
 	GetClientRect (hPane1, &r);
-	paneW[0] = min (r.right, totalW-splitterW-4);
+	paneW[0] = min ((int)r.right, totalW-splitterW-4);
 	paneW[1] = totalW-splitterW-paneW[0];
 	widthRatio = (double)paneW[0]/(double)(totalW-splitterW);
 	Refresh();

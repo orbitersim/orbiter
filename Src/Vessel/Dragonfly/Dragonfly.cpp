@@ -16,6 +16,10 @@
 #include <math.h>
 #include "internal.h"
 //#include "glstuff.cpp"
+
+using std::min;
+using std::max;
+
 HINSTANCE hDLL; 
 double Lsim;
 

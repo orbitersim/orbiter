@@ -11,6 +11,8 @@
 #include "Util.h"
 #include "Log.h"
 
+using std::max;
+
 extern Orbiter *g_pOrbiter;
 extern char DBG_MSG[256];
 COLORREF titlecol   = RGB(255,255,255);
@@ -147,7 +149,7 @@ void Select::Activate ()
 				colh = itemh;
 				submenu = false;
 			} else {
-				col[ncol].w = max (col[ncol].w, textW);
+				col[ncol].w = max (col[ncol].w, (int)textW);
 				colh += itemh;
 			}
 			col[ncol].nitem++;
@@ -489,7 +491,7 @@ void SelectionList::AllocSurface ()
 				colh = itemh;
 				submenu = false;
 			} else {
-				col[ncol].w = max (col[ncol].w, textw);
+				col[ncol].w = max ((DWORD)col[ncol].w, textw);
 				colh += itemh;
 			}
 			col[ncol].nitem++;

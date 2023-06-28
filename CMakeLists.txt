@@ -114,7 +114,7 @@ set(Qt5_x64_DIR
 )
 
 if(MSVC)
-  add_compile_options(/we4311)
+  add_compile_options(/we4311 /DNOMINMAX)
   add_link_options("/NODEFAULTLIB:\"LIBCMTD\"")
 endif()
 

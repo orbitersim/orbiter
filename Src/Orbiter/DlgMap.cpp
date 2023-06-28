@@ -18,6 +18,9 @@
 #include "Pane.h"
 #include "Util.h"
 
+using std::min;
+using std::max;
+
 extern Orbiter *g_pOrbiter;
 extern TimeData td;
 extern Vessel *g_focusobj;

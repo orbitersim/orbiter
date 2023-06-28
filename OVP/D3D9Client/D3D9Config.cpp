@@ -9,7 +9,10 @@
 #include "D3D9Config.h"
 #include "Orbitersdk.h"
 
-static const char *cfgfile = "D3D9Client.cfg";
+using std::min;
+using std::max;
+
+static const char* cfgfile = "D3D9Client.cfg";
 
 class D3D9Config *Config;				// configuration manager
 

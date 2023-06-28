@@ -983,7 +983,7 @@ void CreateLocalArea ()
 		maxlvl++;
 		scl *= 0.5;
 	}
-	maxlvl = min (MAXLEVEL, maxlvl); // max. currently supported level
+	maxlvl = min ((int)MAXLEVEL, maxlvl); // max. currently supported level
 	if (maxlvl < 9) FatalError ("Bitmap resolution insufficient for level 9");
 	if (maxlvl > 9) {
 		cout << endl << "The bitmaps support resolutions up to level " << maxlvl << ".\n";
@@ -2189,11 +2189,11 @@ void ErodeLights (RGB *limg, Alpha *aimg, LONG imgw, LONG imgh)
 	static RGB zero = {0,0,0};
 	LONG i, j, ii, jj, imin, imax, jmin, jmax;
 	for (i = 0; i < imgh; i++) {
-		imin = max (0, i-1);
+		imin = max ((LONG)0, i-1);
 		imax = min (imgh-1, i+1);
 		for (j = 0; j < imgw; j++) {
 			if (aimg[i*imgw+j] >= 128) { // water pixel
-				jmin = max (0, j-1);
+				jmin = max ((LONG)0, j-1);
 				jmax = min (imgw-1, j+1);
 				for (ii = imin; ii <= imax; ii++)
 					for (jj = jmin; jj <= jmax; jj++)
@@ -2314,7 +2314,7 @@ WORD CatMaskDDS (FILE *texf, RGB *img, Alpha *aimg, LONG imgw, LONG imgh)
 	FILE *bmpf;
 	BITMAPFILEHEADER bmfh;
 	BITMAPINFOHEADER bmih;
-	int i, res, ddssize, fh;
+	int res, ddssize, fh;
 	bool bopaque = false, btransparent = false;
 	bool brgb = false, balpha = false;
 	int nlight, nopaque, ntransparent;
@@ -2325,7 +2325,7 @@ WORD CatMaskDDS (FILE *texf, RGB *img, Alpha *aimg, LONG imgw, LONG imgh)
 
 	if (img)  { // city-light texture provided
 		// count light pixels
-		for (i = nlight = 0; i < imgw*imgh; i++) {
+		for (LONG i = nlight = 0; i < imgw*imgh; i++) {
 			if ((int)img[i].r + (int)img[i].g + (int)img[i].b > 32*3)
 				nlight++;
 			//else
@@ -2347,7 +2347,7 @@ WORD CatMaskDDS (FILE *texf, RGB *img, Alpha *aimg, LONG imgw, LONG imgh)
 
 	if (aimg) { // land-water mask provided
 		// make alpha binary black/white, and count opaque/transparent pixels 
-		for (i = nopaque = ntransparent = 0; i < imgw*imgh; i++) {
+		for (LONG i = nopaque = ntransparent = 0; i < imgw*imgh; i++) {
 			aimg[i] = 255 - aimg[i];   // invert
 			if (aimg[i] < 128) aimg[i] =   0, ntransparent++;
 			else               aimg[i] = 255, nopaque++;
@@ -2356,14 +2356,14 @@ WORD CatMaskDDS (FILE *texf, RGB *img, Alpha *aimg, LONG imgw, LONG imgh)
 			btransparent = true;
 			flag |= 2; // water present
 		} else if (ntransparent) {              // suppress transparent pixels
-			for (i = 0; i < imgw*imgh; i++) aimg[i] = 255;
+			for (LONG i = 0; i < imgw*imgh; i++) aimg[i] = 255;
 			g_nsuppressed++;
 		}
 		if (nopaque > imgw*imgh * g_tol) {      // # opaque pixels above threshold?
 			flag |= 1; // land present
 			bopaque = true;
 		} else if (nopaque) {                   // suppress opaque pixels
-			for (i = 0; i < imgw*imgh; i++) aimg[i] = 0;
+			for (LONG i = 0; i < imgw*imgh; i++) aimg[i] = 0;
 			g_nsuppressed++;
 		}
 		balpha = btransparent && bopaque;
@@ -2377,12 +2377,12 @@ WORD CatMaskDDS (FILE *texf, RGB *img, Alpha *aimg, LONG imgw, LONG imgh)
 	// remove lights from any water pixels including a 1-pixel border along
 	// coastlines to avoid edge artefacts
 	if (brgb && balpha) {
-		int imin, imax, ii, jmin, jmax, j, jj;
-		for (i = 0; i < imgh; i++) {
-			imin = max (0, i-1);
+		LONG imin, imax, ii, jmin, jmax, j, jj;
+		for (LONG i = 0; i < imgh; i++) {
+			imin = max ((LONG)0, i-1);
 			imax = min (imgh-1, i+1);
 			for (j = 0; j < imgw; j++) {
-				jmin = max (0, j-1);
+				jmin = max ((LONG)0, j-1);
 				jmax = min (imgw-1, j+1);
 				if (aimg[i*imgw+j] == 0) // water pixel
 					for (ii = imin; ii <= imax; ii++)
@@ -2406,7 +2406,7 @@ WORD CatMaskDDS (FILE *texf, RGB *img, Alpha *aimg, LONG imgw, LONG imgh)
 		if (!bmpf) FatalError ("Could not open temporary alpha file.");
 		fwrite (&bmfh, sizeof(BITMAPFILEHEADER), 1, bmpf);
 		fwrite (&bmih, sizeof(BITMAPINFOHEADER), 1, bmpf);
-		for (i = 0; i < imgw*imgh; i++) {
+		for (LONG i = 0; i < imgw*imgh; i++) {
 			RGB rgb;
 			rgb.r = rgb.g = rgb.b = aimg[i];
 			fwrite (&rgb, 3, 1, bmpf);
@@ -2800,7 +2800,7 @@ DWORD CopyDDS (FILE *ftgt, FILE *fsrc, DWORD idx, bool idx_is_ofs)
 				mipsize[j] = s;
 				mipbuf[j] = new BYTE[s];
 				s >>= 2;
-				s = max (s, 8); // Minimum texture size. This appears to be
+				s = max (s, (DWORD)8); // Minimum texture size. This appears to be
 					            // correct for DXT1, but may differ for other formats!
 			}
 		}
@@ -2808,7 +2808,7 @@ DWORD CopyDDS (FILE *ftgt, FILE *fsrc, DWORD idx, bool idx_is_ofs)
 		if (ddsd.dwFlags & DDSD_MIPMAPCOUNT) {
 			for (j = 1, s = size; j < ddsd.dwMipMapCount; j++) {
 				s >>= 2;
-				s = max (s, 8);
+				s = max (s, (DWORD)8);
 				fread (mipbuf[j], s, 1, fsrc);
 			}
 		}
@@ -2820,7 +2820,7 @@ DWORD CopyDDS (FILE *ftgt, FILE *fsrc, DWORD idx, bool idx_is_ofs)
 	if (ddsd.dwFlags & DDSD_MIPMAPCOUNT) {
 		for (j = 1, s = size; j < ddsd.dwMipMapCount; j++) {
 			s >>= 2;
-			s = max (s, 8);
+			s = max (s, (DWORD)8);
 			fwrite (mipbuf[j], s, 1, ftgt);             tsize += s;
 		}
 	}

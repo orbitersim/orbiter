@@ -13,6 +13,7 @@
 #include "Shell.h"
 #include "DrawAPI.h"
 
+using std::min;
 
 #define ENABLE_OVERLAY false
 

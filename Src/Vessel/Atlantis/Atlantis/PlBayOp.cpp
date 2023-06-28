@@ -7,6 +7,9 @@
 #include "DlgCtrl.h"
 #include <stdio.h>
 
+using std::min;
+using std::max;
+
 extern GDIParams g_Param;
 extern HELPCONTEXT g_hc;
 extern const char *ActionString[5];

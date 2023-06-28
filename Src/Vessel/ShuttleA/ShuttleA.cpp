@@ -35,6 +35,9 @@
 #include <math.h>
 #include <stdio.h>
 
+using std::min;
+using std::max;
+
 #define LOADBMP(id) (LoadBitmap (g_Param.hDLL, MAKEINTRESOURCE (id)))
 
 // ==============================================================
@@ -2442,7 +2445,7 @@ void ShuttleA::PaintMarkings (SURFHANDLE tex)
 		skp->SetTextAlign (oapi::Sketchpad::CENTER);
 		char cbuf[32];
 		strncpy (cbuf, GetName(), 10);
-		int len = min(strlen(GetName()), 10);
+		int len = min(strlen(GetName()), (size_t)10);
 		skp->Text (66, 37, cbuf, len);
 		skp->Text (209, 25, cbuf, len);
 		oapiReleaseFont(font1);

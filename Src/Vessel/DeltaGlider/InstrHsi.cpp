@@ -16,6 +16,8 @@
 #include "meshres_p0.h"
 #include "dg_vc_anim.h"
 
+using std::min;
+
 // ==============================================================
 
 InstrHSI::InstrHSI (VESSEL3 *v): PanelElement (v)

@@ -17,6 +17,9 @@
 #include "Uxtheme.h"
 #include "DlgCtrl.h"
 
+using std::min;
+using std::max;
+
 extern Orbiter *g_pOrbiter;
 extern PlanetarySystem *g_psys;
 extern Camera *g_camera;

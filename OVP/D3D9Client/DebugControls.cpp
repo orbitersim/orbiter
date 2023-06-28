@@ -22,6 +22,8 @@
 enum scale { LIN, SQRT, SQR };
 
 using namespace oapi;
+using std::min;
+using std::max;
 
 extern HINSTANCE g_hInst;
 extern D3D9Client *g_client;
@@ -1387,8 +1389,8 @@ void SetColorValue(const char *lbl)
 //
 float reduce(float v, float q)
 {
-	if (v>0) return max(0, v-q);
-	else     return min(0, v+q);
+	if (v>0) return max(0.0f, v-q);
+	else     return min(0.0f, v+q);
 }
 
 struct PCParam {

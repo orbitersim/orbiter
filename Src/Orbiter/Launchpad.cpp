@@ -106,8 +106,8 @@ bool orbiter::LaunchpadDialog::Create (bool startvideotab)
 			RECT dr, lr = pCfg->rLaunchpad;
 			int x = lr.left, y = lr.top, w = lr.right-lr.left, h = lr.bottom-lr.top;
 			GetWindowRect (GetDesktopWindow(), &dr);
-			x = min (max (x, dr.left), dr.right-w);
-			y = min (max (y, dr.top), dr.bottom-h);
+			x = min (max ((LONG)x, dr.left), dr.right-w);
+			y = min (max ((LONG)y, dr.top), dr.bottom-h);
 			SetWindowPos (hDlg, 0, x, y, w, h, 0);
 		}
 		SetWindowText (GetDlgItem (hDlg, IDC_BLACKBOX), SIG4 "  \n" SIG2 "  \n" SIG1AA "  \n" SIG1AB "  ");
@@ -249,7 +249,7 @@ BOOL orbiter::LaunchpadDialog::Resize (HWND hWnd, DWORD w, DWORD h, DWORD mode)
 		0, 0, w, shadowh,
 		SWP_NOACTIVATE|SWP_NOMOVE|SWP_NOOWNERZORDER|SWP_NOZORDER);
 	w4 = r_exit0.right - r_data0.left + dw;
-	h4 = max (10, r_data0.bottom - r_data0.top + dh);
+	h4 = max ((LONG)10, r_data0.bottom - r_data0.top + dh);
 	SetWindowPos (GetDlgItem (hWnd, IDLAUNCH), NULL,
 		xb1, r_launch0.top+dh, wb1, bh,
 		SWP_NOACTIVATE|SWP_NOOWNERZORDER|SWP_NOZORDER|SWP_NOCOPYBITS);
@@ -260,7 +260,7 @@ BOOL orbiter::LaunchpadDialog::Resize (HWND hWnd, DWORD w, DWORD h, DWORD mode)
 		xb3, r_exit0.top+dh, wb3, bh,
 		SWP_NOACTIVATE|SWP_NOOWNERZORDER|SWP_NOZORDER|SWP_NOCOPYBITS);
 	SetWindowPos (hWait, NULL,
-		(w-(r_wait0.right-r_wait0.left))/2, max (r_wait0.top, r_wait0.top+(h-r_wait0.bottom)/2), 0, 0,
+		(w-(r_wait0.right-r_wait0.left))/2, max (r_wait0.top, r_wait0.top+((LONG)h-r_wait0.bottom)/2), 0, 0,
 		SWP_NOACTIVATE|SWP_NOSIZE|SWP_NOOWNERZORDER|SWP_NOZORDER);
 	SetWindowPos (GetDlgItem (hWnd, IDC_VERSION), NULL,
 		r_version0.left, r_version0.top+dh, 0, 0,

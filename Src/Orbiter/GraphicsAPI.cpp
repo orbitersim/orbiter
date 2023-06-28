@@ -19,6 +19,8 @@
 #include <wincodec.h>
 #include <io.h>
 
+using std::min;
+
 extern Orbiter *g_pOrbiter;
 extern PlanetarySystem *g_psys;
 extern Pane *g_pane;

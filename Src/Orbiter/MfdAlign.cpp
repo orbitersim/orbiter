@@ -153,7 +153,7 @@ void Instrument_OPlaneAlign::UpdateDraw (oapi::Sketchpad *skp)
 	DisplayTitle (skp, "Align plane");
 	const char *modestr[3] = { "Orbit  ", "Ballist", "Surface" };
 	if (elref) {
-		skp->Text (cw*17, 1, elref->Name(), min (16, strlen(elref->Name())));
+		skp->Text (cw*17, 1, elref->Name(), min ((size_t)16, strlen(elref->Name())));
 		strcpy (cbuf, tgt ? tgt->Name() : customel ? "[Custom]" : "[None]");
 		skp->Text (cw*17, 1+ch, cbuf, strlen (cbuf));
 		skp->Text(cw * 5, 1 + ch, modestr[mode], 7);

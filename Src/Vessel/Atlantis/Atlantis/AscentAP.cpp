@@ -16,6 +16,9 @@
 #include "resource.h"
 #include "Common\Dialog\Graph.h"
 
+using std::min;
+using std::max;
+
 extern GDIParams g_Param;
 
 // ==============================================================
@@ -902,7 +905,7 @@ void AscentApMfd::InitDecAzimuth ()
 {
 	set_mode = MODE_AZIMUTH_DEC;
 	ref_t = oapiGetSysTime();
-	ref_val = max(ap->GetLaunchAzimuth()-RAD*0.1, 0);
+	ref_val = max(ap->GetLaunchAzimuth()-RAD*0.1, 0.0);
 	ap->SetLaunchAzimuth(ref_val);
 	InvalidateDisplay();
 }
@@ -929,7 +932,7 @@ void AscentApMfd::DecAzimuth()
 		da -= min(dt-3.0,3.0)*RAD*2.0;
 	if (dt > 6.0)
 		da -= (dt-6.0)*RAD*20.0;
-	double az = max(ref_val + da, 0);
+	double az = max(ref_val + da, 0.0);
 	ap->SetLaunchAzimuth (az);
 	InvalidateDisplay();
 }
@@ -956,7 +959,7 @@ void AscentApMfd::InitDecAltitude ()
 {
 	set_mode = MODE_AZIMUTH_DEC;
 	ref_t = oapiGetSysTime();
-	ref_val = max(ap->GetOrbitAltitude()-100, 0);
+	ref_val = max(ap->GetOrbitAltitude()-100, 0.0);
 	ap->SetOrbitAltitude(ref_val);
 	InvalidateDisplay();
 }
@@ -983,7 +986,7 @@ void AscentApMfd::DecAltitude()
 		da -= min(dt-3.0,3.0)*1e3*2.0;
 	if (dt > 6.0)
 		da -= (dt-6.0)*1e3*20.0;
-	double alt = max(ref_val + da, 0);
+	double alt = max(ref_val + da, 0.0);
 	ap->SetOrbitAltitude (alt);
 	InvalidateDisplay();
 }
