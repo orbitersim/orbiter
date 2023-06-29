@@ -226,12 +226,12 @@ namespace oapi {
 #endif
 		float MaxRGB() const
 		{
-			return std::max({ r, g, b });
+			return std::max( r, std::max(g, b));
 		}
 
 		float MinRGB() const
 		{
-			return std::min({ r, g, b });
+			return std::min( r, std::min(g, b));
 		}
 
 		float sql() const
@@ -391,7 +391,7 @@ namespace oapi {
 
 		float MaxRGB() const
 		{
-			return std::max({ r, g, b });
+			return std::max( r, std::max(g, b));
 		}
 
 		FVECTOR4()
