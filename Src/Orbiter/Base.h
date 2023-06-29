@@ -130,7 +130,7 @@ public:
 	// base local coordinates.
 	// This version returns a stored value that is updated in regular intervals
 
-	inline Vector4 ShadowColor () const { return Vector4(0.0, 0.0, 0.0, 0.7); }
+	inline VECTOR4 ShadowColor () const { return VECTOR4{0.0, 0.0, 0.0, 0.7}; }
 	// colour and transparency of shadows. Make this planet-specific
 
 	DWORD GetTileList (const SurftileSpec **_tile) const;

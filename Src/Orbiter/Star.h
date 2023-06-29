@@ -32,7 +32,7 @@ public:
 
 	Vector Pos2Barycentre (Vector &pos);
 
-	Vector4 GetLightColor();
+	auto GetLightColor() { return VECTOR4{1, 1, 1, 1}; }
 
 #ifdef INLINEGRAPHICS
 	void InitDeviceObjects ();

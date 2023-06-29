@@ -333,14 +333,14 @@ bool VirtualCockpit::SetClickZone_Quadrilateral (int i,
 		area[i]->p[3].x, area[i]->p[3].y, area[i]->p[3].z, 1
 	);
 	Matrix4 P2(P1);
-	Vector4 cc, dd, r;
-	Vector4 u(0,1,0,1), v(0,0,1,1);
+	VECTOR4 cc{ }, dd{ };
+	VECTOR4 u{0, 1, 0, 1}, v{0, 0, 1, 1};
 	qrdcmp (P1, cc, dd);
 	qrsolv (P1, cc, dd, u);
-	for (j = 0; j < 4; j++) area[i]->u[j] = (float)u(j);
+	for (j = 0; j < 4; j++) area[i]->u[j] = (float)u[j];
 	qrdcmp (P2, cc, dd);
 	qrsolv (P2, cc, dd, v);
-	for (j = 0; j < 4; j++) area[i]->v[j] = (float)v(j);
+	for (j = 0; j < 4; j++) area[i]->v[j] = (float)v[j];
 
 	area[i]->cmode = Area::CMODE_QUAD;
 	return true;
