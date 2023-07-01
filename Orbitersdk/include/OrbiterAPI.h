@@ -30,7 +30,7 @@
 #include <vector>
 
 extern "C" {
-#include "lua\lua.h"
+#include "Lua/lua.h"
 }
 
 // Assumes MS VC++ compiler. Modify these statements for other compilers

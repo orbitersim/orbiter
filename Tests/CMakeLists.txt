@@ -1,13 +1,3 @@
-Include(FetchContent)
-
-FetchContent_Declare(
-  Catch2
-  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-  GIT_TAG        v3.0.0-preview3
-)
-
-FetchContent_MakeAvailable(Catch2)
-
 # Utility function
 function(add_test_file test_name)
 	add_executable(${test_name} "${test_name}.cpp")
@@ -23,7 +13,7 @@ function(add_test_file test_name)
 	target_link_libraries(${test_name}
 		${ORBITER_LIB}
 		${ORBITER_SDK_LIB}
-		lua::lib
+		lua
 		${LUAINTERPRETER_LIB}
 		Catch2::Catch2WithMain
 	)
