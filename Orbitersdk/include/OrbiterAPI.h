@@ -1340,8 +1340,8 @@ typedef struct {
  *   (translation, rotation or scaling).
  * \sa VESSEL::MeshgroupTransform
  */
-typedef struct {
-	union {
+struct MESHGROUP_TRANSFORM {
+	union data {
 		struct {
 			VECTOR3 ref;   ///< rotation reference point
 			VECTOR3 axis;  ///< rotation axis direction
@@ -1353,11 +1353,20 @@ typedef struct {
 		struct {
 			VECTOR3 scale; ///< scaling factor
 		} scaleparam;
+		data() { }
 	} P;
 	int nmesh;             ///< mesh index (>= 0)
 	int ngrp;              ///< group index (>= 0, or < 0 to indicate entire mesh)
-	enum { TRANSLATE, ROTATE, SCALE } transform; ///< transformation flag
-} MESHGROUP_TRANSFORM;
+	enum trans_t { TRANSLATE, ROTATE, SCALE } transform; ///< transformation flag
+
+	MESHGROUP_TRANSFORM() { }
+	MESHGROUP_TRANSFORM(double sx, double sy, double sz, int nmesh, int ngrp, trans_t trans) :
+		nmesh{nmesh}, ngrp{ngrp}, transform{trans}
+	{ P.transparam = {{sx, sy, sz}}; }
+	MESHGROUP_TRANSFORM(double rx, double ry, double rz, double ax, double ay, double az, float angle, int nmesh, int ngrp, trans_t trans) :
+		nmesh{nmesh}, ngrp{ngrp}, transform{trans}
+	{ P.rotparam = {{rx, ry, rz}, {ax, ay, az}, angle}; }
+};
 #pragma pack(pop)
 
 // Animation component (obsolete)

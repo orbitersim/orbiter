@@ -59,67 +59,81 @@ void Dragonfly::RegisterAnimations()
 	static UINT L_Antena[2]= {61,106};
 	static ANIMCOMP latch1 = { // outer airlock
 		Latch1, 1, 0.0, 0.6,
-		0.25,0,3.06,
-		0,1,0,
-		(float)(45.0/180.0*acos(-1.0)),
-		0,
-		0,
-		MESHGROUP_TRANSFORM::ROTATE
+		MESHGROUP_TRANSFORM{
+			0.25,0,3.06,
+			0,1,0,
+			(float)(45.0/180.0*acos(-1.0)),
+			0,
+			0,
+			MESHGROUP_TRANSFORM::ROTATE
+		}
 	};
 	static ANIMCOMP latch2 = { // outer airlock
 		Latch2, 1, 0.0, 0.6,
-		-0.25,0,3.06,
-		0,1,0,
-		(float)(-45.0/180.0*acos(-1.0)),
-		0,
-		0,
-		MESHGROUP_TRANSFORM::ROTATE
+		MESHGROUP_TRANSFORM{
+			-0.25,0,3.06,
+			0,1,0,
+			(float)(-45.0/180.0*acos(-1.0)),
+			0,
+			0,
+			MESHGROUP_TRANSFORM::ROTATE
+		}
 	};
 	static ANIMCOMP latch3 = { // outer airlock
 		Latch3, 1, 0.5, 1.0,
-		0,0,0.5,
-		0,
-		0,
-		MESHGROUP_TRANSFORM::TRANSLATE
+		MESHGROUP_TRANSFORM{
+			0,0,0.5,
+			0,
+			0,
+			MESHGROUP_TRANSFORM::TRANSLATE
+		}
 	};
 	static ANIMCOMP U_yaw_ant = { // outer airlock
 	    U_Antena, 2, 0.0, 1.0,
-		0,0,0,
-		0,1,0,
-		(float)(300.0/180.0*acos(-1.0)),
-		0,
-		0,
-		MESHGROUP_TRANSFORM::ROTATE
+		MESHGROUP_TRANSFORM{
+			0,0,0,
+			0,1,0,
+			(float)(300.0/180.0*acos(-1.0)),
+			0,
+			0,
+			MESHGROUP_TRANSFORM::ROTATE
+		}
 	};
 	static ANIMCOMP U_pitch_ant = { // outer airlock
 	    U_Antena, 2, 0.0, 1.0,
-		0,3.18,0,
-		1,0,0,
-		(float)(-75.0/180.0*acos(-1.0)),
-		0,
-		0,
-		MESHGROUP_TRANSFORM::ROTATE
+		MESHGROUP_TRANSFORM{
+			0,3.18,0,
+			1,0,0,
+			(float)(-75.0/180.0*acos(-1.0)),
+			0,
+			0,
+			MESHGROUP_TRANSFORM::ROTATE
+		}
 	};
 		Upper_ant_pitch=U_pitch_ant;
 	
 	
 	static ANIMCOMP L_yaw_ant = { // outer airlock
 	    L_Antena, 2, 0.0, 1.0,
-		0,0,0,
-		0,1,0,
-		(float)(300.0/180.0*acos(-1.0)),
-		0,
-		0,
-		MESHGROUP_TRANSFORM::ROTATE
+		MESHGROUP_TRANSFORM{
+			0,0,0,
+			0,1,0,
+			(float)(300.0/180.0*acos(-1.0)),
+			0,
+			0,
+			MESHGROUP_TRANSFORM::ROTATE
+		}
 	};
 	static ANIMCOMP L_pitch_ant = { // outer airlock
 	    L_Antena, 2, 0.0, 1.0,
-		0,-3.18,0,
-		1,0,0,
-		(float)(75.0/180.0*acos(-1.0)),
-		0,
-		0,
-		MESHGROUP_TRANSFORM::ROTATE
+		MESHGROUP_TRANSFORM{
+			0,-3.18,0,
+			1,0,0,
+			(float)(75.0/180.0*acos(-1.0)),
+			0,
+			0,
+			MESHGROUP_TRANSFORM::ROTATE
+		}
 	};
 	Lower_ant_pitch=L_pitch_ant;
 
