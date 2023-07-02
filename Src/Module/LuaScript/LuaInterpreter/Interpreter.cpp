@@ -61,17 +61,11 @@ Interpreter::Interpreter ()
 	// store interpreter context in the registry
 	lua_pushlightuserdata (L, this);
 	lua_setfield (L, LUA_REGISTRYINDEX, "interp");
-
-	hExecMutex = CreateMutex (NULL, TRUE, NULL);
-	hWaitMutex = CreateMutex (NULL, FALSE, NULL);
 }
 
 Interpreter::~Interpreter ()
 {
 	lua_close (L);
-
-	if (hExecMutex) CloseHandle (hExecMutex);
-	if (hWaitMutex) CloseHandle (hWaitMutex);
 }
 
 void Interpreter::Initialise ()
@@ -555,19 +549,26 @@ void Interpreter::lua_pushsketchpad (lua_State *L, oapi::Sketchpad *skp)
 #endif
 }
 
-void Interpreter::WaitExec (DWORD timeout)
+void Interpreter::StepInterpreter ()
 {
-	// Called by orbiter thread or interpreter thread to wait its turn
-	// Orbiter waits for the script for 1 second to return
-	WaitForSingleObject (hWaitMutex, timeout); // wait for synchronisation mutex
-	WaitForSingleObject (hExecMutex, timeout); // wait for execution mutex
-	ReleaseMutex (hWaitMutex);              // release synchronisation mutex
+	// notify the interpreter
+	m_InterpRun = true;
+	m_InterpCV.notify_one();
+
+	// wait for it
+	std::unique_lock<std::mutex> lk(m_InterpMtx);
+	m_InterpCV.wait(lk, [&] {return !m_InterpRun.load(); });
 }
 
-void Interpreter::EndExec ()
+void Interpreter::WaitForStep ()
 {
-	// called by orbiter thread or interpreter thread to hand over control
-	ReleaseMutex (hExecMutex);
+	std::unique_lock<std::mutex> lk(m_InterpMtx);
+	m_InterpCV.wait(lk, [&] {return m_InterpRun.load(); });
+}
+void Interpreter::StepDone()
+{
+	m_InterpRun = false;
+	m_InterpCV.notify_one();
 }
 
 void Interpreter::frameskip (lua_State *L)
@@ -576,17 +577,10 @@ void Interpreter::frameskip (lua_State *L)
 		lua_pushboolean(L, 1);
 		lua_setfield (L, LUA_GLOBALSINDEX, "wait_exit");
 	} else {
-		EndExec();
-		WaitExec();
+		StepDone();
+		// yield to the orbiter thread
+		WaitForStep();
 	}
-}
-
-int Interpreter::ProcessChunk (const char *chunk, int n)
-{
-	WaitExec();
-	int res = RunChunk (chunk, n);
-	EndExec();
-	return res;
 }
 
 int Interpreter::RunChunk (const char *chunk, int n)

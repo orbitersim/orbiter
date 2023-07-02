@@ -12,6 +12,7 @@ extern "C" {
 
 #include "OrbiterAPI.h"
 #include "VesselAPI.h" // for TOUCHDOWNVTX
+#include <mutex>
 
 #define PRMTP_NIL           0x01
 #define PRMTP_NUMBER        0x02
@@ -119,21 +120,26 @@ public:
 	void PostStep (double simt, double simdt, double mjd);
 
 	/**
-	 * \brief Wait for thread execution.
-	 * \note This is called by either the orbiter thread or the interpreter
-	 *   thread when they are waiting to regain execution control.
+	 * \brief Handover execution to the interpreter thread.
+	 * \note This is called by the orbiter thread to signal the interpreter
+	 *   thread to run. The orbiter thread blocks until the interpreter has
+	 *   done its work.
 	 */
-	virtual void WaitExec (DWORD timeout = INFINITE);
+	void StepInterpreter();
+
+	/**
+	 * \brief Wait for thread execution.
+	 * \note This is called by the interpreter thread when it's
+	 *   waiting to regain execution control.
+	 */
+	void WaitForStep ();
 
 	/**
 	 * \brief Release thread execution.
-	 * \param timeout time [ms] to wait for the mutex. Default is infinite
-	 *   (wait does not time out).
-	 * \note This is called by either the orbiter thread or the interpreter
-	 *   thread after finishing a cycle to hand control over to the other
-	 *   thread.
+	 * \note This is called by the interpreter thread after
+	 *   finishing a cycle to hand control over to the orbiter thread.
 	 */
-	virtual void EndExec ();
+	void StepDone ();
 
 	/**
 	 * \brief Define functions for interfacing with Orbiter API
@@ -152,8 +158,6 @@ public:
 	 * \brief Run the interpreter initialisation script
 	 */
 	virtual void LoadStartupScript ();
-
-	virtual int ProcessChunk (const char *chunk, int n);
 
 	/**
 	 * \brief Executes a command or script.
@@ -812,8 +816,9 @@ protected:
 	friend int OpenHelp (void *context);
 
 private:
-	HANDLE hExecMutex; // flow control synchronisation
-	HANDLE hWaitMutex;
+	std::mutex m_InterpMtx;
+	std::condition_variable m_InterpCV;
+	std::atomic<bool> m_InterpRun;
 
 	bool bExecLocal;   // flag for locally created mutexes
 	bool bWaitLocal;
