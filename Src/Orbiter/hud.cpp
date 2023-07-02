@@ -1128,7 +1128,7 @@ void HUD::DrawTiltedRibbon (oapi::Sketchpad *skp, double phi, double alpha)
 	int    dtx = (int)(0.5*s*sina);
 	int    dty = (int)(0.5*s*cosa);
 	int x0, y0, iphin;
-	char cbuf[4];
+	char cbuf[16];
 	
 	skp->SetTextAlign (oapi::Sketchpad::CENTER);
 	double d1;
@@ -1147,7 +1147,7 @@ void HUD::DrawTiltedRibbon (oapi::Sketchpad *skp, double phi, double alpha)
 			skp->Line (x0-dtx, y0+dty, x0+dtx, y0-dty);
 		} else {
 			skp->Line (x0-dsx, y0+dsy, x0+dsx, y0-dsy);
-			_itoa (iphin, cbuf, 10);
+			sprintf(cbuf, "%d", iphin);
 			skp->Text (x0+dsx*2, y0-dsy*2-fH/2, cbuf, strlen(cbuf));
 		}
 	}
@@ -1161,7 +1161,7 @@ void HUD::DrawTiltedRibbon (oapi::Sketchpad *skp, double phi, double alpha)
 			skp->Line (x0-dtx, y0+dty, x0+dtx, y0-dty);
 		} else {
 			skp->Line (x0-dsx, y0+dsy, x0+dsx, y0-dsy);
-			_itoa (iphin, cbuf, 10);
+			sprintf(cbuf, "%d", iphin);
 			skp->Text (x0+dsx*2, y0-dsy*2-fH/2, cbuf, strlen(cbuf));
 		}
 	}

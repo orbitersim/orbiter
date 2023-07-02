@@ -54,8 +54,10 @@ BOOL DlgCapture::OnInitDialog (HWND hDlg, WPARAM wParam, LPARAM lParam)
 	EnableWindow (GetDlgItem (hDlg, IDC_COMBO2), prm.ImageFormat == 2 ? TRUE:FALSE);
 
 	SendDlgItemMessage (hDlg, IDC_COMBO2, CB_RESETCONTENT, 0, 0);
-	for (i = 1; i <= 10; i++)
-	SendDlgItemMessage (hDlg, IDC_COMBO2, CB_INSERTSTRING, -1, (LPARAM)itoa(i, cbuf, 10));
+	for (i = 1; i <= 10; i++) {
+		sprintf(cbuf, "%d", i);
+		SendDlgItemMessage(hDlg, IDC_COMBO2, CB_INSERTSTRING, -1, (LPARAM)cbuf);
+	}
 	SendDlgItemMessage (hDlg, IDC_COMBO2, CB_SETCURSEL, prm.ImageQuality-1, 0);
 
 	return TRUE;

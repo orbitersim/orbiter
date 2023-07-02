@@ -221,7 +221,7 @@ void Instrument_Landing::UpdateDraw (oapi::Sketchpad *skp)
 	for (i = 0; i <= 4; i++) {
 		dy = (barh*i)/4;
 		skp->Line (dx, bar0-dy, dx+barw+2, bar0-dy);
-		_itoa (i-1, cbuf, 10);
+		sprintf(cbuf, "%d", i-1);
 		skp->Text (dx+barw+3, bar0-dy-ch/2, cbuf, strlen(cbuf));
 	}
 

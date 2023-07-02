@@ -316,7 +316,8 @@ void Vessel::FRecorder_SaveEvent (const char *event_type, const char *event)
 void Vessel::FRecorder_SaveEventInt (const char *event_type, int event)
 {
 	static char cbuf[24];
-	FRecorder_SaveEvent (event_type, _itoa (event, cbuf, 10));
+	sprintf(cbuf, "%d", event);
+	FRecorder_SaveEvent (event_type, cbuf);
 }
 
 void Vessel::FRecorder_SaveEventFloat (const char *event_type, double event)
