@@ -7,7 +7,6 @@
 #include <fstream>
 #include <dx7\ddraw.h>
 #include <dx7\dplay.h>
-#include <dinput.h>
 #include "Log.h"
 #include "Orbiter.h"
 

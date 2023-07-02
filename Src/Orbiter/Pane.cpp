@@ -140,7 +140,7 @@ void Pane::DelVessel (const Vessel *vessel)
 
 bool Pane::MFDConsumeKeyBuffered (int id, DWORD key)
 {
-	if (key == DIK_ESCAPE) {
+	if (key == OAPI_KEY_ESCAPE) {
 		ToggleMFD_on (id);
 		return true;
 	} else if (mfd[id].instr) {

@@ -4,7 +4,6 @@
 #include "MfdComms.h"
 #include "Nav.h"
 #include <stdio.h>
-#include <dinput.h>
 #include "Orbiter.h"
 
 using namespace std;
@@ -111,35 +110,35 @@ void Instrument_Comms::UpdateDraw (oapi::Sketchpad *skp)
 bool Instrument_Comms::KeyBuffered (DWORD key)
 {
 	switch (key) {
-	case DIK_COMMA: // select radio (up)
+	case OAPI_KEY_COMMA: // select radio (up)
 		scanning = 0;
 		if (sel) { sel--; Refresh(); }
 		return true;
-	case DIK_PERIOD:
+	case OAPI_KEY_PERIOD:
 		scanning = 0;
 		if (sel < nsel-1) { sel++; Refresh(); }
 		return true;
-	case DIK_MINUS:
+	case OAPI_KEY_MINUS:
 		scanning = 0;
 		SwitchFreq (sel, -20, false);
 		Refresh();
 		return true;
-	case DIK_EQUALS:
+	case OAPI_KEY_EQUALS:
 		scanning = 0;
 		SwitchFreq (sel, 20, false);
 		Refresh();
 		return true;
-	case DIK_LBRACKET:
+	case OAPI_KEY_LBRACKET:
 		scanning = 0;
 		SwitchFreq (sel, -1, true);
 		Refresh();
 		return true;
-	case DIK_RBRACKET:
+	case OAPI_KEY_RBRACKET:
 		scanning = 0;
 		SwitchFreq (sel, 1, true);
 		Refresh();
 		return true;
-	case DIK_Z:
+	case OAPI_KEY_Z:
 		if (sel < vessel->nnav) {
 			SwitchFreq (sel, -1, false);
 			scanning = -1;
@@ -147,7 +146,7 @@ bool Instrument_Comms::KeyBuffered (DWORD key)
 			Refresh();
 		}
 		return true;
-	case DIK_X:
+	case OAPI_KEY_X:
 		if (sel < vessel->nnav) {
 			SwitchFreq (sel, 1, false);
 			scanning = 1;
@@ -175,8 +174,8 @@ void Instrument_Comms::SwitchFreq (DWORD line, int step, bool minor)
 
 bool Instrument_Comms::ProcessButton (int bt, int event)
 {
-	static const DWORD btkey[8] = {DIK_COMMA, DIK_PERIOD, DIK_LBRACKET, DIK_MINUS,
-		DIK_RBRACKET, DIK_EQUALS, DIK_Z, DIK_X
+	static const DWORD btkey[8] = { OAPI_KEY_COMMA, OAPI_KEY_PERIOD, OAPI_KEY_LBRACKET, OAPI_KEY_MINUS,
+		OAPI_KEY_RBRACKET, OAPI_KEY_EQUALS, OAPI_KEY_Z, OAPI_KEY_X
 	};
 	if (event & PANEL_MOUSE_LBDOWN) {
 		if (bt < 8) return KeyBuffered (btkey[bt]);

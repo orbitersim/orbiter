@@ -8,7 +8,6 @@
 #include "Planet.h"
 #include "Config.h"
 #include <stdio.h>
-#include <dinput.h>
 
 using namespace std;
 
@@ -294,11 +293,11 @@ void Instrument_HSI::SetSize (const Spec &spec)
 bool Instrument_HSI::KeyBuffered (DWORD key)
 {
 	switch (key) {
-	case DIK_F:
+	case OAPI_KEY_F:
 		focus = 1-focus;
 		Refresh();
 		return true;
-	case DIK_N:
+	case OAPI_KEY_N:
 		if (vessel->nnav) hsi[focus].nv = (hsi[focus].nv+1) % vessel->nnav;
 		Refresh();
 		return true;
@@ -308,15 +307,15 @@ bool Instrument_HSI::KeyBuffered (DWORD key)
 
 bool Instrument_HSI::KeyImmediate (char *kstate)
 {
-	if (KEYDOWN (kstate, DIK_LBRACKET)) {
-		if (BufKey (DIK_LBRACKET, 0.05)) {
+	if (KEYDOWN (kstate, OAPI_KEY_LBRACKET)) {
+		if (BufKey (OAPI_KEY_LBRACKET, 0.05)) {
 			hsi[focus].obs = posangle (hsi[focus].obs-RAD);
 			Refresh();
 		}
 		return true;
 	}
-	if (KEYDOWN (kstate, DIK_RBRACKET)) {
-		if (BufKey (DIK_RBRACKET, 0.05)) {
+	if (KEYDOWN (kstate, OAPI_KEY_RBRACKET)) {
+		if (BufKey (OAPI_KEY_RBRACKET, 0.05)) {
 			hsi[focus].obs = posangle (hsi[focus].obs+RAD);
 			Refresh();
 		}
@@ -327,7 +326,7 @@ bool Instrument_HSI::KeyImmediate (char *kstate)
 
 bool Instrument_HSI::ProcessButton (int bt, int event)
 {
-	static const DWORD btkey[4] = { DIK_F, DIK_N, DIK_LBRACKET, DIK_RBRACKET };
+	static const DWORD btkey[4] = { OAPI_KEY_F, OAPI_KEY_N, OAPI_KEY_LBRACKET, OAPI_KEY_RBRACKET };
 	if (event & PANEL_MOUSE_LBDOWN) {
 		if (bt < 2) return KeyBuffered (btkey[bt]);
 	} else if (event & PANEL_MOUSE_LBPRESSED) {
