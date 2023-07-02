@@ -921,7 +921,7 @@ void SurfTile::Render ()
 	// ----------------------------------------------------------------------
 
 	FVECTOR4 texcoord;
-	const vPlanet::sOverlay *oLay = vPlanet->IntersectOverlay(bnd.vec, &texcoord);
+	const vPlanet::sOverlay *oLay = vPlanet->IntersectOverlay(to_VECTOR4(bnd), &texcoord);
 
 	if (pShader->bDevtools)
 	{

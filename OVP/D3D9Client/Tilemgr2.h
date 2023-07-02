@@ -71,15 +71,14 @@ typedef struct {
 	float tvmin, tvmax;
 } TEXCRDRANGE2;
 
-typedef union {
-	VECTOR4 vec;
-	struct {
-		double minlng;				///< Left    -
-		double maxlat;				///< Top     +
-		double maxlng;				///< Right   +
-		double minlat;				///< Bottom  -
-	};
-} TILEBOUNDS;
+struct TILEBOUNDS {
+	double minlng;				///< Left    -
+	double maxlat;				///< Top     +
+	double maxlng;				///< Right   +
+	double minlat;				///< Bottom  -
+};
+
+inline auto to_VECTOR4(const TILEBOUNDS& b) { return VECTOR4{b.minlng, b.maxlat, b.maxlng, b.minlat}; }
 
 bool FileExists(const char* path);
 
