@@ -2994,7 +2994,7 @@ bool Scene::WorldToScreenSpace(const VECTOR3 &wpos, oapi::IVECTOR2 *pt, D3DXMATR
 	bool bClip = false;
 	if (homog.x < -clip || homog.x > clip || homog.y < -clip || homog.y > clip) bClip = true;
 
-	if (_hypot(homog.x, homog.y) < 1e-6) {
+	if (std::hypot(homog.x, homog.y) < 1e-6) {
 		pt->x = viewW / 2;
 		pt->y = viewH / 2;
 	}
@@ -3024,7 +3024,7 @@ bool Scene::WorldToScreenSpace2(const VECTOR3& wpos, oapi::FVECTOR2* pt, D3DXMAT
 	if (homog.w < 0.0f) bClip = true;
 	if (homog.x < -clip || homog.x > clip || homog.y < -clip || homog.y > clip) bClip = true;
 
-	if (_hypot(homog.x, homog.y) < 1e-6) {
+	if (std::hypot(homog.x, homog.y) < 1e-6) {
 		pt->x = viewW / 2;
 		pt->y = viewH / 2;
 	}
@@ -3707,7 +3707,7 @@ bool Scene::CameraDirection2Viewport(const VECTOR3 &dir, int &x, int &y)
 	D3DXVECTOR3 idir = D3DXVECTOR3( -float(dir.x), -float(dir.y), -float(dir.z) );
 	D3DMAT_VectorMatrixMultiply(&homog, &idir, &Camera.mProjView);
 	if (homog.x >= -1.0f && homog.y <= 1.0f && homog.z >= 0.0) {
-		if (_hypot(homog.x, homog.y) < 1e-6) {
+		if (std::hypot(homog.x, homog.y) < 1e-6) {
 			x = viewW / 2, y = viewH / 2;
 		} else {
 			x = (int)(viewW*0.5f*(1.0f + homog.x));

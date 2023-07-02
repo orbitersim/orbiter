@@ -2063,7 +2063,7 @@ void Runway::Activate ()
 	D3DVALUE x, z, step;
 	D3DVALUE dx = end2.x - end1.x;
 	D3DVALUE dz = end2.z - end1.z;
-	D3DVALUE len = D3DVAL(_hypot (dx, dz));
+	D3DVALUE len = D3DVAL(std::hypot (dx, dz));
 	D3DVALUE dwx = (width/len) * dz;
 	D3DVALUE dwz = (width/len) * dx;
 	D3DVALUE s0, x0, z0, ddx, ddz;

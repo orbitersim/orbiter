@@ -183,7 +183,7 @@ void VObject::RenderAsPixel (LPDIRECT3DDEVICE7 dev)
 		RECT r;
 		int x, y;
 		DWORD viewW = g_pOrbiter->ViewW(), viewH = g_pOrbiter->ViewH();
-		if (_hypot (homog.x, homog.y) < 1e-6) {
+		if (std::hypot (homog.x, homog.y) < 1e-6) {
 			x = viewW/2, y = viewH/2;
 		} else {
 			x = (int)(viewW*0.5*(1.0f+homog.x));
@@ -268,7 +268,7 @@ void VObject::RenderSpot (LPDIRECT3DDEVICE7 dev, const Vector *ofs, float size, 
 	}
 
 	Vector bdir(pos/dist);
-	double hz = _hypot (bdir.x, bdir.z);
+	double hz = std::hypot (bdir.x, bdir.z);
 	double phi = atan2 (bdir.z, bdir.x);
 	float sphi = (float)sin(phi), cphi = (float)cos(phi);
 	DWORD alphamode;

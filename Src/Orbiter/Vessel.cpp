@@ -1254,7 +1254,7 @@ bool Vessel::GetLiftVector (Vector &L) const
 		L.Set (0, 0, 0);
 		return false;
 	} else {
-		double v0 = _hypot (sp.airvel_ship.y, sp.airvel_ship.z);
+		double v0 = std::hypot (sp.airvel_ship.y, sp.airvel_ship.z);
 		double scale = (v0 ? Lift/v0 : 0.0);
 		L.Set (0, sp.airvel_ship.z*scale, -sp.airvel_ship.y*scale);
 		return true;
@@ -4134,7 +4134,7 @@ void Vessel::UpdateAerodynamicForces_OLD ()
 	if (LiftCoeff && (Cl = LiftCoeff (aoa))) {
 		Lift = Cl * sp.dynp * cs.y;    // lift magnitude
 		Vector L (0, sp.airvel_ship.z, -sp.airvel_ship.y); // lift direction
-		double lnorm = _hypot (sp.airvel_ship.z, sp.airvel_ship.y);
+		double lnorm = std::hypot (sp.airvel_ship.z, sp.airvel_ship.y);
 		if (lnorm) {
 			L *= Lift / lnorm;
 			Flin_add += L;

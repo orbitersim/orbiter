@@ -417,7 +417,7 @@ bool Camera::Direction2Viewport(const Vector &dir, int &x, int &y)
 	D3DVECTOR homog;
 	D3DMath_VectorMatrixMultiply (homog, D3DMath_Vector(dir.x, dir.y, dir.z), *D3D_ProjViewMatrix());
 	if (homog.x >= -1.0f && homog.y <= 1.0f && homog.z <= 1.0f) {
-		if (_hypot(homog.x, homog.y) < 1e-6) {
+		if (std::hypot(homog.x, homog.y) < 1e-6) {
 			x = (int)w05, y = (int)h05;
 		} else {
 			x = (int)(w05*(1.0f+homog.x));
@@ -1254,7 +1254,7 @@ void Camera::Update ()
 		Vector cp(planet_proxy->GPos()-gpos);
 		double alt = cp.length()-planet_proxy->Size();
 		double az = acos (dotp (gd, cp.unit()));
-		double a = atan (tan_ap*_hypot(w05,h05)/h05);
+		double a = atan (tan_ap*std::hypot(w05,h05)/h05);
 		double tht = az-a;
 		if (tht < Pi05)
 			np = min (np, alt*cos(a)/cos(tht));

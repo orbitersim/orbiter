@@ -1622,7 +1622,7 @@ double Groundtrack::VtxDst (const VPointGT &vp1, const VPointGT &vp2)
 	double dlat = fabs(vp1.lat - vp2.lat);
 	double dlng = fabs(vp1.lng - vp2.lng);
 	if (dlng > Pi) dlng = Pi2-dlng;
-	return _hypot (dlng, dlat);
+	return std::hypot (dlng, dlat);
 }
 
 void Groundtrack::Update ()

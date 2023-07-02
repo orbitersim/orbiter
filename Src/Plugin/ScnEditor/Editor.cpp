@@ -1942,7 +1942,7 @@ void EditorTab_Statevec::Refresh (OBJHANDLE hV)
 		if (crd) {
 			vel.data[1] -= 360.0/T;
 		} else { // map back to cartesian
-			double r   = _hypot (pos.x, pos.z);
+			double r   = std::hypot (pos.x, pos.z);
 			double phi = atan2 (pos.z, pos.x);
 			double v   = 2.0*PI*r/T;
 			vel.x     += v*sin(phi);
@@ -1989,7 +1989,7 @@ void EditorTab_Statevec::Apply ()
 			if (crd) {
 				vel.data[1] += 360.0/T;
 			} else { // map back to cartesian
-				double r   = _hypot (pos.x, pos.z);
+				double r   = std::hypot (pos.x, pos.z);
 				double phi = atan2 (pos.z, pos.x);
 				double v   = 2.0*PI*r/T;
 				vel.x     -= v*sin(phi);

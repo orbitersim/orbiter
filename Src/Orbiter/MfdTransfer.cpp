@@ -163,7 +163,7 @@ void Instrument_Transfer::UpdateDraw (oapi::Sketchpad *skp)
 	if (src != vessel) {
 		int x, y;
 		Vector dp (mul (irot, vessel->GPos() - src->GPos()));
-		double r = _hypot (dp.x, dp.z);
+		double r = std::hypot (dp.x, dp.z);
 		x = (int)(IW*0.1/r*dp.x);
 		y = (int)(IW*0.1/r*dp.z);
 		MapScreen (ICNTX, ICNTY, scale, mul (irot, shpel->RVec()), &p0);

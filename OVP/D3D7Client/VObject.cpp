@@ -160,7 +160,7 @@ void vObject::RenderSpot (LPDIRECT3DDEVICE7 dev, const VECTOR3 *ofs, float size,
 	double dist = length (pos);
 	VECTOR3 bdir (pos/dist);
 	const VECTOR3 &camp = *scn->GetCamera()->GetGPos();
-	double hz = _hypot (bdir.x, bdir.z);
+	double hz = std::hypot (bdir.x, bdir.z);
 	double phi = atan2 (bdir.z, bdir.x);
 	float sphi = (float)sin(phi), cphi = (float)cos(phi);
 
