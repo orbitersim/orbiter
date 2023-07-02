@@ -12,6 +12,7 @@
 #include "Orbiter.h"
 #include "Resource.h"
 #include "Resource2.h"
+#include <string>
 
 extern Orbiter *g_pOrbiter;
 extern HELPCONTEXT DefHelpContext;
@@ -55,8 +56,7 @@ BOOL DlgCapture::OnInitDialog (HWND hDlg, WPARAM wParam, LPARAM lParam)
 
 	SendDlgItemMessage (hDlg, IDC_COMBO2, CB_RESETCONTENT, 0, 0);
 	for (i = 1; i <= 10; i++) {
-		sprintf(cbuf, "%d", i);
-		SendDlgItemMessage(hDlg, IDC_COMBO2, CB_INSERTSTRING, -1, (LPARAM)cbuf);
+		SendDlgItemMessage(hDlg, IDC_COMBO2, CB_INSERTSTRING, -1, (LPARAM)std::to_string(i).data());
 	}
 	SendDlgItemMessage (hDlg, IDC_COMBO2, CB_SETCURSEL, prm.ImageQuality-1, 0);
 
