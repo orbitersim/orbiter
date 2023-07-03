@@ -99,6 +99,8 @@ template<> struct is_vector2<FVECTOR2> : std::true_type { };
 #define if_vector4(V) std::enable_if_t<is_vector4<V>::value>* = nullptr
 #define if_vector( V) std::enable_if_t<is_vector2<V>::value || is_vector3<V>::value || is_vector4<V>::value>* = nullptr
 
+template<typename V> using dtype = decltype (V::x);
+
 /**
  * @brief vector operators
  */
@@ -106,33 +108,33 @@ template<typename V, if_vector2(V)> constexpr auto& operator+=(V& l, const V& r)
 template<typename V, if_vector3(V)> constexpr auto& operator+=(V& l, const V& r) { l.x += r.x; l.y += r.y; l.z += r.z; return l; }
 template<typename V, if_vector4(V)> constexpr auto& operator+=(V& l, const V& r) { l.x += r.x; l.y += r.y; l.z += r.z; l.w += r.w; return l; }
 
-template<typename V, if_vector2(V)> constexpr auto& operator+=(V& v, auto q) { v.x += q; v.y += q; return v; }
-template<typename V, if_vector3(V)> constexpr auto& operator+=(V& v, auto q) { v.x += q; v.y += q; v.z += q; return v; }
-template<typename V, if_vector4(V)> constexpr auto& operator+=(V& v, auto q) { v.x += q; v.y += q; v.z += q; v.w += q; return v; }
+template<typename V, if_vector2(V)> constexpr auto& operator+=(V& v, dtype<V> q) { v.x += q; v.y += q; return v; }
+template<typename V, if_vector3(V)> constexpr auto& operator+=(V& v, dtype<V> q) { v.x += q; v.y += q; v.z += q; return v; }
+template<typename V, if_vector4(V)> constexpr auto& operator+=(V& v, dtype<V> q) { v.x += q; v.y += q; v.z += q; v.w += q; return v; }
 
 template<typename V, if_vector2(V)> constexpr auto& operator-=(V& l, const V& r) { l.x -= r.x; l.y -= r.y; return l; }
 template<typename V, if_vector3(V)> constexpr auto& operator-=(V& l, const V& r) { l.x -= r.x; l.y -= r.y; l.z -= r.z; return l; }
 template<typename V, if_vector4(V)> constexpr auto& operator-=(V& l, const V& r) { l.x -= r.x; l.y -= r.y; l.z -= r.z; l.w -= r.w; return l; }
 
-template<typename V, if_vector2(V)> constexpr auto& operator-=(V& v, auto q) { v.x -= q; v.y -= q; return v; }
-template<typename V, if_vector3(V)> constexpr auto& operator-=(V& v, auto q) { v.x -= q; v.y -= q; v.z -= q; return v; }
-template<typename V, if_vector4(V)> constexpr auto& operator-=(V& v, auto q) { v.x -= q; v.y -= q; v.z -= q; v.w -= q; return v; }
+template<typename V, if_vector2(V)> constexpr auto& operator-=(V& v, dtype<V> q) { v.x -= q; v.y -= q; return v; }
+template<typename V, if_vector3(V)> constexpr auto& operator-=(V& v, dtype<V> q) { v.x -= q; v.y -= q; v.z -= q; return v; }
+template<typename V, if_vector4(V)> constexpr auto& operator-=(V& v, dtype<V> q) { v.x -= q; v.y -= q; v.z -= q; v.w -= q; return v; }
 
 template<typename V, if_vector2(V)> constexpr auto& operator*=(V& l, const V& r) { l.x *= r.x; l.y *= r.y; return l; }
 template<typename V, if_vector3(V)> constexpr auto& operator*=(V& l, const V& r) { l.x *= r.x; l.y *= r.y; l.z *= r.z; return l; }
 template<typename V, if_vector4(V)> constexpr auto& operator*=(V& l, const V& r) { l.x *= r.x; l.y *= r.y; l.z *= r.z; l.w *= r.w; return l; }
 
-template<typename V, if_vector2(V)> constexpr auto& operator*=(V& v, auto q) { v.x *= q; v.y *= q; return v; }
-template<typename V, if_vector3(V)> constexpr auto& operator*=(V& v, auto q) { v.x *= q; v.y *= q; v.z *= q; return v; }
-template<typename V, if_vector4(V)> constexpr auto& operator*=(V& v, auto q) { v.x *= q; v.y *= q; v.z *= q; v.w *= q; return v; }
+template<typename V, if_vector2(V)> constexpr auto& operator*=(V& v, dtype<V> q) { v.x *= q; v.y *= q; return v; }
+template<typename V, if_vector3(V)> constexpr auto& operator*=(V& v, dtype<V> q) { v.x *= q; v.y *= q; v.z *= q; return v; }
+template<typename V, if_vector4(V)> constexpr auto& operator*=(V& v, dtype<V> q) { v.x *= q; v.y *= q; v.z *= q; v.w *= q; return v; }
 
 template<typename V, if_vector2(V)> constexpr auto& operator/=(V& l, const V& r) { l.x /= r.x; l.y /= r.y; return l; }
 template<typename V, if_vector3(V)> constexpr auto& operator/=(V& l, const V& r) { l.x /= r.x; l.y /= r.y; l.z /= r.z; return l; }
 template<typename V, if_vector4(V)> constexpr auto& operator/=(V& l, const V& r) { l.x /= r.x; l.y /= r.y; l.z /= r.z; l.w /= r.w; return l; }
 
-template<typename V, if_vector2(V)> constexpr auto& operator/=(V& v, auto q) { v.x /= q; v.y /= q; return v; }
-template<typename V, if_vector3(V)> constexpr auto& operator/=(V& v, auto q) { v.x /= q; v.y /= q; v.z /= q; return v; }
-template<typename V, if_vector4(V)> constexpr auto& operator/=(V& v, auto q) { v.x /= q; v.y /= q; v.z /= q; v.w /= q; return v; }
+template<typename V, if_vector2(V)> constexpr auto& operator/=(V& v, dtype<V> q) { v.x /= q; v.y /= q; return v; }
+template<typename V, if_vector3(V)> constexpr auto& operator/=(V& v, dtype<V> q) { v.x /= q; v.y /= q; v.z /= q; return v; }
+template<typename V, if_vector4(V)> constexpr auto& operator/=(V& v, dtype<V> q) { v.x /= q; v.y /= q; v.z /= q; v.w /= q; return v; }
 
 template<typename V, if_vector2(V)> constexpr auto  operator+ (const V& v) { return V{+v.x, +v.y}; } // unary +
 template<typename V, if_vector3(V)> constexpr auto  operator+ (const V& v) { return V{+v.x, +v.y, +v.z}; } // unary +
@@ -146,49 +148,49 @@ template<typename V, if_vector2(V)> constexpr auto  operator+ (const V& l, const
 template<typename V, if_vector3(V)> constexpr auto  operator+ (const V& l, const V& r) { return V{l.x + r.x, l.y + r.y, l.z + r.z}; }
 template<typename V, if_vector4(V)> constexpr auto  operator+ (const V& l, const V& r) { return V{l.x + r.x, l.y + r.y, l.z + r.z, l.w + r.w}; }
 
-template<typename V, if_vector2(V)> constexpr auto  operator+ (const V& v, auto q) { return V{v.x + q, v.y + q}; }
-template<typename V, if_vector3(V)> constexpr auto  operator+ (const V& v, auto q) { return V{v.x + q, v.y + q, v.z + q}; }
-template<typename V, if_vector4(V)> constexpr auto  operator+ (const V& v, auto q) { return V{v.x + q, v.y + q, v.z + q, v.w + q}; }
+template<typename V, if_vector2(V)> constexpr auto  operator+ (const V& v, dtype<V> q) { return V{v.x + q, v.y + q}; }
+template<typename V, if_vector3(V)> constexpr auto  operator+ (const V& v, dtype<V> q) { return V{v.x + q, v.y + q, v.z + q}; }
+template<typename V, if_vector4(V)> constexpr auto  operator+ (const V& v, dtype<V> q) { return V{v.x + q, v.y + q, v.z + q, v.w + q}; }
 
-template<typename V, if_vector2(V)> constexpr auto  operator+ (auto q, const V& v) { return V{q + v.x, q + v.y}; }
-template<typename V, if_vector3(V)> constexpr auto  operator+ (auto q, const V& v) { return V{q + v.x, q + v.y, q + v.z}; }
-template<typename V, if_vector4(V)> constexpr auto  operator+ (auto q, const V& v) { return V{q + v.x, q + v.y, q + v.z, q + v.w}; }
+template<typename V, if_vector2(V)> constexpr auto  operator+ (dtype<V> q, const V& v) { return V{q + v.x, q + v.y}; }
+template<typename V, if_vector3(V)> constexpr auto  operator+ (dtype<V> q, const V& v) { return V{q + v.x, q + v.y, q + v.z}; }
+template<typename V, if_vector4(V)> constexpr auto  operator+ (dtype<V> q, const V& v) { return V{q + v.x, q + v.y, q + v.z, q + v.w}; }
 
 template<typename V, if_vector2(V)> constexpr auto  operator- (const V& l, const V& r) { return V{l.x - r.x, l.y - r.y}; }
 template<typename V, if_vector3(V)> constexpr auto  operator- (const V& l, const V& r) { return V{l.x - r.x, l.y - r.y, l.z - r.z}; }
 template<typename V, if_vector4(V)> constexpr auto  operator- (const V& l, const V& r) { return V{l.x - r.x, l.y - r.y, l.z - r.z, l.w - r.w}; }
 
-template<typename V, if_vector2(V)> constexpr auto  operator- (const V& v, auto q) { return V{v.x - q, v.y - q}; }
-template<typename V, if_vector3(V)> constexpr auto  operator- (const V& v, auto q) { return V{v.x - q, v.y - q, v.z - q}; }
-template<typename V, if_vector4(V)> constexpr auto  operator- (const V& v, auto q) { return V{v.x - q, v.y - q, v.z - q, v.w - q}; }
+template<typename V, if_vector2(V)> constexpr auto  operator- (const V& v, dtype<V> q) { return V{v.x - q, v.y - q}; }
+template<typename V, if_vector3(V)> constexpr auto  operator- (const V& v, dtype<V> q) { return V{v.x - q, v.y - q, v.z - q}; }
+template<typename V, if_vector4(V)> constexpr auto  operator- (const V& v, dtype<V> q) { return V{v.x - q, v.y - q, v.z - q, v.w - q}; }
 
-template<typename V, if_vector2(V)> constexpr auto  operator- (auto q, const V& v) { return V{q - v.x, q - v.y}; }
-template<typename V, if_vector3(V)> constexpr auto  operator- (auto q, const V& v) { return V{q - v.x, q - v.y, q - v.z}; }
-template<typename V, if_vector4(V)> constexpr auto  operator- (auto q, const V& v) { return V{q - v.x, q - v.y, q - v.z, q - v.w}; }
+template<typename V, if_vector2(V)> constexpr auto  operator- (dtype<V> q, const V& v) { return V{q - v.x, q - v.y}; }
+template<typename V, if_vector3(V)> constexpr auto  operator- (dtype<V> q, const V& v) { return V{q - v.x, q - v.y, q - v.z}; }
+template<typename V, if_vector4(V)> constexpr auto  operator- (dtype<V> q, const V& v) { return V{q - v.x, q - v.y, q - v.z, q - v.w}; }
 
 template<typename V, if_vector2(V)> constexpr auto  operator* (const V& l, const V& r) { return V{l.x * r.x, l.y * r.y}; }
 template<typename V, if_vector3(V)> constexpr auto  operator* (const V& l, const V& r) { return V{l.x * r.x, l.y * r.y, l.z * r.z}; }
 template<typename V, if_vector4(V)> constexpr auto  operator* (const V& l, const V& r) { return V{l.x * r.x, l.y * r.y, l.z * r.z, l.w * r.w}; }
 
-template<typename V, if_vector2(V)> constexpr auto  operator* (const V& v, auto q) { return V{v.x * q, v.y * q}; }
-template<typename V, if_vector3(V)> constexpr auto  operator* (const V& v, auto q) { return V{v.x * q, v.y * q, v.z * q}; }
-template<typename V, if_vector4(V)> constexpr auto  operator* (const V& v, auto q) { return V{v.x * q, v.y * q, v.z * q, v.w * q}; }
+template<typename V, if_vector2(V)> constexpr auto  operator* (const V& v, dtype<V> q) { return V{v.x * q, v.y * q}; }
+template<typename V, if_vector3(V)> constexpr auto  operator* (const V& v, dtype<V> q) { return V{v.x * q, v.y * q, v.z * q}; }
+template<typename V, if_vector4(V)> constexpr auto  operator* (const V& v, dtype<V> q) { return V{v.x * q, v.y * q, v.z * q, v.w * q}; }
 
-template<typename V, if_vector2(V)> constexpr auto  operator* (auto q, const V& v) { return V{q * v.x, q * v.y}; }
-template<typename V, if_vector3(V)> constexpr auto  operator* (auto q, const V& v) { return V{q * v.x, q * v.y, q * v.z}; }
-template<typename V, if_vector4(V)> constexpr auto  operator* (auto q, const V& v) { return V{q * v.x, q * v.y, q * v.z, q * v.w}; }
+template<typename V, if_vector2(V)> constexpr auto  operator* (dtype<V> q, const V& v) { return V{q * v.x, q * v.y}; }
+template<typename V, if_vector3(V)> constexpr auto  operator* (dtype<V> q, const V& v) { return V{q * v.x, q * v.y, q * v.z}; }
+template<typename V, if_vector4(V)> constexpr auto  operator* (dtype<V> q, const V& v) { return V{q * v.x, q * v.y, q * v.z, q * v.w}; }
 
 template<typename V, if_vector2(V)> constexpr auto  operator/ (const V& l, const V& r) { return V{l.x / r.x, l.y / r.y}; }
 template<typename V, if_vector3(V)> constexpr auto  operator/ (const V& l, const V& r) { return V{l.x / r.x, l.y / r.y, l.z / r.z}; }
 template<typename V, if_vector4(V)> constexpr auto  operator/ (const V& l, const V& r) { return V{l.x / r.x, l.y / r.y, l.z / r.z, l.w / r.w}; }
 
-template<typename V, if_vector2(V)> constexpr auto  operator/ (const V& v, auto q) { return V{v.x / q, v.y / q}; }
-template<typename V, if_vector3(V)> constexpr auto  operator/ (const V& v, auto q) { return V{v.x / q, v.y / q, v.z / q}; }
-template<typename V, if_vector4(V)> constexpr auto  operator/ (const V& v, auto q) { return V{v.x / q, v.y / q, v.z / q, v.w / q}; }
+template<typename V, if_vector2(V)> constexpr auto  operator/ (const V& v, dtype<V> q) { return V{v.x / q, v.y / q}; }
+template<typename V, if_vector3(V)> constexpr auto  operator/ (const V& v, dtype<V> q) { return V{v.x / q, v.y / q, v.z / q}; }
+template<typename V, if_vector4(V)> constexpr auto  operator/ (const V& v, dtype<V> q) { return V{v.x / q, v.y / q, v.z / q, v.w / q}; }
 
-template<typename V, if_vector2(V)> constexpr auto  operator/ (auto q, const V& v) { return V{q / v.x, q / v.y}; }
-template<typename V, if_vector3(V)> constexpr auto  operator/ (auto q, const V& v) { return V{q / v.x, q / v.y, q / v.z}; }
-template<typename V, if_vector4(V)> constexpr auto  operator/ (auto q, const V& v) { return V{q / v.x, q / v.y, q / v.z, q / v.w}; }
+template<typename V, if_vector2(V)> constexpr auto  operator/ (dtype<V> q, const V& v) { return V{q / v.x, q / v.y}; }
+template<typename V, if_vector3(V)> constexpr auto  operator/ (dtype<V> q, const V& v) { return V{q / v.x, q / v.y, q / v.z}; }
+template<typename V, if_vector4(V)> constexpr auto  operator/ (dtype<V> q, const V& v) { return V{q / v.x, q / v.y, q / v.z, q / v.w}; }
 
 template<typename V, if_vector2(V)> constexpr auto  operator==(const V& l, const V& r) { return l.x == r.x && l.y == r.y; }
 template<typename V, if_vector3(V)> constexpr auto  operator==(const V& l, const V& r) { return l.x == r.x && l.y == r.y && l.z == r.z; }
@@ -250,7 +252,7 @@ template<typename V, if_vector4(V)> constexpr auto exp(const V& v) { return V{st
 /**
  * @brief linear interpolation
  */
-template<typename V, if_vector(V)> constexpr auto lerp(const V& a, const V& b, auto t) { return a + t * (b - a); }
+template<typename V, if_vector(V)> constexpr auto lerp(const V& a, const V& b, dtype<V> t) { return a + t * (b - a); }
 
 /**
  * @brief vector norm/length (squared and not)
@@ -268,13 +270,13 @@ template<typename V, if_vector2(V)> constexpr auto pow(const V& l, const V& r) {
 template<typename V, if_vector3(V)> constexpr auto pow(const V& l, const V& r) { return V{std::pow(l.x, r.x), std::pow(l.y, r.y), std::pow(l.z, r.z)}; }
 template<typename V, if_vector4(V)> constexpr auto pow(const V& l, const V& r) { return V{std::pow(l.x, r.x), std::pow(l.y, r.y), std::pow(l.z, r.z), std::pow(l.w, r.w)}; }
 
-template<typename V, if_vector2(V)> constexpr auto pow(const V& v, auto e) { return V{std::pow(v.x, e), std::pow(v.y, e)}; }
-template<typename V, if_vector3(V)> constexpr auto pow(const V& v, auto e) { return V{std::pow(v.x, e), std::pow(v.y, e), std::pow(v.z, e)}; }
-template<typename V, if_vector4(V)> constexpr auto pow(const V& v, auto e) { return V{std::pow(v.x, e), std::pow(v.y, e), std::pow(v.z, e), std::pow(v.w, e)}; }
+template<typename V, if_vector2(V)> constexpr auto pow(const V& v, dtype<V> e) { return V{std::pow(v.x, e), std::pow(v.y, e)}; }
+template<typename V, if_vector3(V)> constexpr auto pow(const V& v, dtype<V> e) { return V{std::pow(v.x, e), std::pow(v.y, e), std::pow(v.z, e)}; }
+template<typename V, if_vector4(V)> constexpr auto pow(const V& v, dtype<V> e) { return V{std::pow(v.x, e), std::pow(v.y, e), std::pow(v.z, e), std::pow(v.w, e)}; }
 
-template<typename V, if_vector2(V)> constexpr auto pow(auto b, const V& v) { return V{std::pow(b, v.x), std::pow(b, v.y)}; }
-template<typename V, if_vector3(V)> constexpr auto pow(auto b, const V& v) { return V{std::pow(b, v.x), std::pow(b, v.y), std::pow(b, v.z)}; }
-template<typename V, if_vector4(V)> constexpr auto pow(auto b, const V& v) { return V{std::pow(b, v.x), std::pow(b, v.y), std::pow(b, v.z), std::pow(b, v.w)}; }
+template<typename V, if_vector2(V)> constexpr auto pow(dtype<V> b, const V& v) { return V{std::pow(b, v.x), std::pow(b, v.y)}; }
+template<typename V, if_vector3(V)> constexpr auto pow(dtype<V> b, const V& v) { return V{std::pow(b, v.x), std::pow(b, v.y), std::pow(b, v.z)}; }
+template<typename V, if_vector4(V)> constexpr auto pow(dtype<V> b, const V& v) { return V{std::pow(b, v.x), std::pow(b, v.y), std::pow(b, v.z), std::pow(b, v.w)}; }
 
 /**
  * @brief square root
