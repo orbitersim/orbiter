@@ -2279,9 +2279,6 @@ void RunwayLights::VertexArray (DWORD count, const VECTOR3 &cpos, const VECTOR3 
 
 void RunwayLights::Update ()
 {
-	VECTOR3 pos, ofs;
-	POSTEXVERTEX *Vtx;
-
 	// transform camera position and direction into local base coords
 	VECTOR3 cpos = tmul(base->GRot(), g_camera->GPos() - base->GPos());
 	VECTOR3 cdir = tmul(base->GRot(), g_camera->Direction());
@@ -2310,6 +2307,9 @@ void RunwayLights::Update ()
 	// skip runway lights during daytime
 
 	// generate billboard vertices for all light components
+
+	VECTOR3 pos, ofs;
+	POSTEXVERTEX *Vtx;
 
 	if (dyndata->night) {
 		Vtx = dyndata->Vtx_white_night;
@@ -3413,11 +3413,11 @@ void SolarPlant::Render (LPDIRECT3DDEVICE7 dev, bool)
 	int i, j;
 
 	// check for flashing panels
-	VECTOR3 pc, cdir = tmul(base->GRot(), g_camera->GPos() - base->GPos());
+	VECTOR3 cdir = tmul(base->GRot(), g_camera->GPos() - base->GPos());
 	bool anyflash = false;
 	double alpha;
 	for (i = 0; i < npanel; i++) {
-		pc = unit(cdir - VECTOR3{ppos[i].x, ppos[i].y, ppos[i].z});
+		VECTOR3 pc = unit(cdir - VECTOR3{ppos[i].x, ppos[i].y, ppos[i].z});
 		alpha = dot(pc, nml);
 		if (alpha > 0.999) {
 			anyflash = flash[i] = true;
