@@ -329,7 +329,7 @@ bool VirtualCockpit::SetClickZone_Quadrilateral (int i,
 		area[i]->p[3].x, area[i]->p[3].y, area[i]->p[3].z, 1
 	);
 	Matrix4 P2(P1);
-	VECTOR4 cc{ }, dd{ };
+	VECTOR4 cc, dd;
 	VECTOR4 u{0, 1, 0, 1}, v{0, 0, 1, 1};
 	qrdcmp (P1, cc, dd);
 	qrsolv (P1, cc, dd, u);
@@ -363,9 +363,9 @@ bool VirtualCockpit::ProcessMouse (UINT event, DWORD state, int x, int y)
 		idx_mfocus = -1;
 
 		// convert mouse position into vessel-local ray
-		VECTOR3 gdir, ldir;
+		VECTOR3 gdir;
 		g_camera->ViewportToGlobalDir (x, y, gdir);
-		ldir = tmul (g_focusobj->GRot(), gdir);
+		VECTOR3 ldir = tmul(g_focusobj->GRot(), gdir);
 
 		// vessel-local camera position
 		VECTOR3 cpos = tmul(g_focusobj->GRot(), *g_camera->GPosPtr() - g_focusobj->GPos());
@@ -429,9 +429,9 @@ void VirtualCockpit::GetMouseState (int &idx, int &state, VECTOR3 &xs) const
 			ScreenToClient (cwnd, &pt);
 
 		// calculate ray intersection with current focus area
-		VECTOR3 gdir, ldir;
+		VECTOR3 gdir;
 		g_camera->ViewportToGlobalDir (pt.x, pt.y, gdir);
-		ldir = tmul (g_focusobj->GRot(), gdir);
+		VECTOR3 ldir = tmul(g_focusobj->GRot(), gdir);
 
 		// vessel-local camera position
 		VECTOR3 cpos = tmul(g_focusobj->GRot(), *g_camera->GPosPtr() - g_focusobj->GPos());
