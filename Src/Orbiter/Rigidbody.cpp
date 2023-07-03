@@ -425,10 +425,8 @@ VECTOR3 RigidBody::GetTorque () const
 {
 	if (!cbody || bIgnoreGravTorque) return {0, 0, 0}; // sanity check
 
-	VECTOR3 R0;
-
 	// map cbody into vessel frame
-	R0 = tmul (s0->R, cbody->s0->pos - s0->pos);
+	VECTOR3 R0 = tmul(s0->R, cbody->s0->pos - s0->pos);
 	double r0 = len(R0);
 	VECTOR3 Re = R0 / r0;
 	double mag = 3.0 * Ggrav * cbody->Mass() / pow(r0,3.0);
