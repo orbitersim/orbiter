@@ -64,6 +64,33 @@ template<> struct is_vector3<VECTOR3> : std::true_type { };
 template<> struct is_vector4<VECTOR4> : std::true_type { };
 
 ////////////////////////////////////////////////////////////////////////////////
+// TODO: move below types to global namespace
+namespace oapi {
+
+/**
+ * @brief 2-dimensional vector of type float
+ */
+union FVECTOR2
+{
+	struct { float x, y; };
+
+	constexpr FVECTOR2() : x{0}, y{0} { }
+	constexpr FVECTOR2(float x, float y) : x{x}, y{y} { }
+
+	constexpr FVECTOR2(const FVECTOR2&) = default;
+	constexpr FVECTOR2& operator=(const FVECTOR2&) = default;
+
+	constexpr auto const& operator[](std::size_t i) const { const float* d[] = {&x, &y}; return *d[i]; }
+	constexpr auto& operator[](std::size_t i) { float* d[] = {&x, &y}; return *d[i]; }
+};
+
+}
+
+using oapi::FVECTOR2;
+
+template<> struct is_vector2<FVECTOR2> : std::true_type { };
+
+////////////////////////////////////////////////////////////////////////////////
 /**
  * @brief helper macros for vector type traits
  */

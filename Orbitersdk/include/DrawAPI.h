@@ -40,141 +40,6 @@ namespace oapi {
 		};
 	};
 
-
-	/**
-		* \brief 32-bit floating point 2D vector type.
-		* \note This structure is compatible with the D3DXVECTOR2 type.
-		*/
-	typedef struct FVECTOR2 
-	{
-		FVECTOR2()
-		{
-			x = y = 0.0f;
-		}
-
-		FVECTOR2(float q)
-		{
-			x = y = q;
-		}
-
-		FVECTOR2(float _x, float _y)
-		{
-			x = _x;
-			y = _y;
-		}
-
-		FVECTOR2(double _x, double _y)
-		{
-			x = float(_x);
-			y = float(_y);
-		}
-
-		FVECTOR2(long _x, long _y)
-		{
-			x = float(_x);
-			y = float(_y);
-		}
-
-		FVECTOR2(DWORD _x, DWORD _y)
-		{
-			x = float(_x);
-			y = float(_y);
-		}
-
-		FVECTOR2(int _x, int _y)
-		{
-			x = float(_x);
-			y = float(_y);
-		}
-
-		FVECTOR2(const POINT& p)
-		{
-			x = float(p.x);
-			y = float(p.y);
-		}
-
-		FVECTOR2(const POINT* p)
-		{
-			x = float(p->x);
-			y = float(p->y);
-		}
-
-		FVECTOR2(const IVECTOR2& p)
-		{
-			x = float(p.x);
-			y = float(p.y);
-		}
-
-		inline FVECTOR2 operator* (float f) const
-		{
-			return FVECTOR2(x * f, y * f);
-		}
-
-		inline FVECTOR2 operator* (FVECTOR2 f) const
-		{
-			return FVECTOR2(x * f.x, y * f.y);
-		}
-
-		inline FVECTOR2& operator*= (FVECTOR2& f)
-		{
-			x *= f.x; y *= f.y;
-			return *this;
-		}
-
-		inline FVECTOR2& operator+= (FVECTOR2& f)
-		{
-			x += f.x; y += f.y;
-			return *this;
-		}
-
-		inline FVECTOR2& operator-= (FVECTOR2& f)
-		{
-			x -= f.x; y -= f.y;
-			return *this;
-		}
-
-		inline FVECTOR2& operator/= (FVECTOR2& f)
-		{
-			x /= f.x; y /= f.y;
-			return *this;
-		}
-
-		inline FVECTOR2 operator/ (float f) const
-		{
-			f = 1.0f / f;
-			return FVECTOR2(x * f, y * f);
-		}
-
-		inline FVECTOR2 operator+ (float f) const
-		{
-			return FVECTOR2(x + f, y + f);
-		}
-
-		inline FVECTOR2 operator+ (FVECTOR2& f) const
-		{
-			return FVECTOR2(x + f.x, y + f.y);
-		}
-
-		inline FVECTOR2 operator- (float f) const
-		{
-			return FVECTOR2(x - f, y - f);
-		}
-
-		inline FVECTOR2 operator+ (const FVECTOR2& f) const
-		{
-			return FVECTOR2(x + f.x, y + f.y);
-		}
-
-		inline FVECTOR2 operator- (const FVECTOR2& f) const
-		{
-			return FVECTOR2(x - f.x, y - f.y);
-		}
-
-		float x, y;
-	} FVECTOR2;
-
-
-
 	/**
 	* \brief 32-bit floating point 3D vector type.
 	* \note This structure is compatible with the D3DXVECTOR3 type.
@@ -645,13 +510,6 @@ namespace oapi {
 		return FVECTOR3(x, y, z);
 	}
 
-
-	inline FVECTOR2 unit(const FVECTOR2& v)
-	{
-		float f = 1.0f / ::sqrt(v.x * v.x + v.y * v.y);
-		return FVECTOR2(v.x * f, v.y * f);
-	}
-
 	inline FVECTOR3 unit(const FVECTOR3& v)
 	{
 		float d = v.x * v.x + v.y * v.y + v.z * v.z;
@@ -664,11 +522,6 @@ namespace oapi {
 		return d > 0 ? FVECTOR3(v.x, v.y, v.z) / ::sqrt(d) : 0.0f;
 	}
 
-	inline float dot(const FVECTOR2& v, const FVECTOR2& w)
-	{
-		return v.x * w.x + v.y * w.y;
-	}
-
 	inline float dot(const FVECTOR3& v, const FVECTOR3& w)
 	{
 		return v.x * w.x + v.y * w.y + v.z * w.z;
@@ -677,11 +530,6 @@ namespace oapi {
 	inline float dot(const FVECTOR4& v, const FVECTOR4& w)
 	{
 		return v.x * w.x + v.y * w.y + v.z * w.z + v.w * w.w;
-	}
-
-	inline float length(const FVECTOR2& v)
-	{
-		return ::sqrt(v.x * v.x + v.y * v.y);
 	}
 
 	inline float length(const FVECTOR3& v)
@@ -702,11 +550,6 @@ namespace oapi {
 	inline FVECTOR4 saturate(const FVECTOR4& v)
 	{
 		return FVECTOR4(::saturate(v.x), ::saturate(v.y), ::saturate(v.z), ::saturate(v.w));
-	}
-
-	inline FVECTOR2 lerp(const FVECTOR2& a, const FVECTOR2& b, float x)
-	{
-		return a + (b - a) * x;
 	}
 
 	inline FVECTOR3 lerp(const FVECTOR3& a, const FVECTOR3& b, float x)

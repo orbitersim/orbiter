@@ -423,7 +423,6 @@ FVECTOR4 vPlanet::SunLightColor(VECTOR3 relpos, double rf)
 		UpdateScatter();
 	}
 	
-	FVECTOR2 rm = 0.0f;
 	VECTOR3 up = unit(relpos);
 	double r = dot(up, relpos);
 	double ca = dot(up, SunDirection());
@@ -450,11 +449,12 @@ FVECTOR4 vPlanet::SunLightColor(VECTOR3 relpos, double rf)
 
 	if (!bAtm || !surfmgr2) return FVECTOR4(svb, svb, svb, svb);
 
+	FVECTOR2 rm;
 	if (svb < 1e-3) return FVECTOR4(0.0, 0.0, 0.0, svb); // Ray is obscured by planet
 	if (r > ar) rm = Gauss7(qr - size, 0.0f, cp.PlanetRad, cp.AtmoRad, cp.iH) * 2.0f; // Ray passes through atmosphere from space to space
 	else rm = Gauss7(r - size, -ca, cp.PlanetRad, cp.AtmoRad, cp.iH); // Sample point 'pos' lies with-in atmosphere
 
-	rm = rm * (cp.rmO * rf);
+	rm = rm * (cp.rmO * float(rf));
 	return FVECTOR4(exp(-(cp.RayWave * rm.x + cp.MieWave * rm.y)) * svb, svb);
 }
 

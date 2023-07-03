@@ -3637,8 +3637,8 @@ void Scene::RenderGlares()
 					cis = CameraInSpace();
 					glare *= pow(clr.MaxRGB(), 0.33f) * cis;				
 				}
-							
-				float cd = length(pt - FVECTOR2(viewW, viewH) * 0.5f) / float(viewW); // Glare distance from a screen center
+
+				float cd = len(pt - FVECTOR2(viewW, viewH) * 0.5f) / float(viewW); // Glare distance from a screen center
 				float alpha = 2.0f * glare * max(0.5f, 1.0f - cd);
 				float size = 300.0f * GetDisplayScale() * pow(alpha, 0.25f);
 
