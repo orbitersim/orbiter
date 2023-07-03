@@ -552,8 +552,7 @@ void Instrument_MapOld::CalcOrbitProj (const Elements *el, const Planet *planet,
                       el->sint, 0,  el->cost));
 	R.tpremul (planet->GRot());
 
-	VECTOR3 rg, rl;
-
+	VECTOR3 rl;
 	for (i = 0; i < npt05; i++) {
 		rl = mul(R, VECTOR3{cosp[i], 0, sinp[i]});
 		x = rl.x, y = rl.y, z = rl.z;
