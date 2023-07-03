@@ -214,7 +214,7 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 			if (elev) eradius += (double)elev[(i+1)*TILE_ELEVSTRIDE + j+1]*elev_scale;
 			nml = {clat * clng, slat, clat * slng};
 			pos = nml * eradius;
-			tpos = mul (R, pos-pref);
+			tpos = mul(R, pos - pref);
 			if (!n) {
 				tpmin = tpos;
 				tpmax = tpos;
@@ -424,7 +424,7 @@ VBMESH *Tile::CreateMesh_tripatch (int grd, INT16 *elev, bool shift_origin, VECT
 	auto ez = cross(ey, ex);
 	Matrix R(ex.x, ex.y, ex.z,  ey.x, ey.y, ey.z,  ez.x, ez.y, ez.z);
 	VECTOR3 pref{radius * clat0 * 0.5 * (clng1 + clng0), radius * slat0, radius * clat0 * 0.5 * (slng1 + slng0)}; // origin
-	VECTOR3 tpmin, tpmax; 
+	VECTOR3 tpmin, tpmax;
 
 	// patch translation vector
 	if (shift_origin) {
@@ -450,7 +450,7 @@ VBMESH *Tile::CreateMesh_tripatch (int grd, INT16 *elev, bool shift_origin, VECT
 			eradius = radius; // TODO: elevation
 			nml = {clat * clng, slat, clat * slng};
 			pos = nml * eradius;
-			tpos = mul (R, pos-pref);
+			tpos = mul(R, pos - pref);
 			if (!n) {
 				tpmin = tpos;
 				tpmax = tpos;
@@ -681,7 +681,7 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, INT16 *elev, double globelev)
 				if (!ilng) lng -= Pi;
 				slng = sin(lng), clng = cos(lng);
 				en = (grd+1-y)*TILE_ELEVSTRIDE + x+1;
-				auto nml = unit(VECTOR3{2.0 * dydz,
+				nml = unit(VECTOR3{2.0 * dydz,
                     dz * (elev[en - TILE_ELEVSTRIDE] - elev[en + TILE_ELEVSTRIDE]),
                     dy * (elev[en - 1] - elev[en + 1])
                 });
