@@ -504,7 +504,6 @@ void PatchManager::SetupPatchBand (int ilat, D3DMATRIX *trans, VECTOR3 *pcnt, do
 {
 	double lng1, lng2, slng1, clng1, slng2, clng2;
 	double lat1, lat2, slat1, clat1, slat2, clat2;
-	VECTOR3 crnr[4];
 	int i, ncorner, c, nofs = 0, sofs, nl = nlng[ilat];
 	for (i = nlat-1; i > ilat; i--) nofs += nlng[i];
 	sofs = nofs + npatch/2;
@@ -528,10 +527,12 @@ void PatchManager::SetupPatchBand (int ilat, D3DMATRIX *trans, VECTOR3 *pcnt, do
 		D3DMath_MatrixMultiply (trans[sofs+i], south, trans[nofs+i]);
 
 		// set up visibility stuff
-		crnr[0] = {clat1 * clng1, slat1, clat1 * slng1};
-		crnr[1] = {clat1 * clng2, slat1, clat1 * slng2};
-		crnr[2] = {clat2 * clng1, slat2, clat2 * slng1};
-		crnr[3] = {clat2 * clng2, slat2, clat2 * slng2};
+		VECTOR3 crnr[4] = {
+		    {clat1 * clng1, slat1, clat1 * slng1},
+		    {clat1 * clng2, slat1, clat1 * slng2},
+		    {clat2 * clng1, slat2, clat2 * slng1},
+		    {clat2 * clng2, slat2, clat2 * slng2},
+		};
 		ncorner = (ilat == nlat-1 ? 3 : 4);
 		pcnt[nofs+i] = {0, 0, 0};
 		for (c = 0; c < ncorner; c++) pcnt[nofs+i] += crnr[c] / (double)ncorner;
@@ -539,8 +540,8 @@ void PatchManager::SetupPatchBand (int ilat, D3DMATRIX *trans, VECTOR3 *pcnt, do
 			double cangle = std::acos(dot(pcnt[nofs + i], crnr[c]));
 			if (cangle > prad[nofs+i]) prad[nofs+i] = cangle;
 		}
-		pcnt[sofs+i] = {pcnt[nofs + i].x, -pcnt[nofs + i].y, -pcnt[nofs + i].z};
-		prad[sofs+i] = prad[nofs+i];
+		pcnt[sofs + i] = {pcnt[nofs + i].x, -pcnt[nofs + i].y, -pcnt[nofs + i].z};
+		prad[sofs + i] = prad[nofs + i];
 	}
 }
 
@@ -902,7 +903,7 @@ void CreateSpherePatch (LPDIRECT3D7 d3d, LPDIRECT3DDEVICE7 dev, VBMESH &mesh, in
 	auto ez = cross(ey, ex);
 	Matrix R(ex.x, ex.y, ex.z,  ey.x, ey.y, ey.z,  ez.x, ez.y, ez.z);
 	VECTOR3 pref{0.5 * (clat0 * clng1 + clat0 * clng0), slat0, 0.5 * (clat0 * slng1 + clat0 * slng0)}; // origin
-	VECTOR3 tpmin, tpmax; 
+	VECTOR3 tpmin, tpmax;
 
 	float dx, dy;
 	if (shift_origin) {
@@ -1112,7 +1113,6 @@ void HorizonManager::Render (LPDIRECT3DDEVICE7 dev, D3DMATRIX &wmat, bool dual)
 {
 	D3DMATRIX imat, transm;
 
-	VECTOR3 psun;
 	int i, j;
 	double phi, csun, alpha, colofs;
 	float cosp, sinp, cost, sint, h1, h2, r1, r2, intr, intg, intb;
@@ -1168,7 +1168,7 @@ void HorizonManager::Render (LPDIRECT3DDEVICE7 dev, D3DMATRIX &wmat, bool dual)
 	Matrix rrmat (cost*cosp, -sint, cost*sinp,
 		          sint*cosp,  cost, sint*sinp,
 				  -sinp,      0,    cosp     );
-	psun = tmul(planet->GRot(), -planet->GPos()); // sun in planet coords
+	VECTOR3 psun = tmul(planet->GRot(), -planet->GPos()); // sun in planet coords
 	psun = mul(rrmat, psun); // sun in camera-relative horizon coords
 	VECTOR3 cs = unit(psun - cpos); // camera->sun
 	psun = unit(psun);
