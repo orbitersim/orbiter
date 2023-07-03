@@ -3754,7 +3754,6 @@ void Vessel::UpdateBodyForces ()
 void Vessel::UpdateThrustForces ()
 {
 	UINT j;
-	VECTOR3 F;
 
 	// Navigation computer sequences
 	if (navmode) {
@@ -3907,7 +3906,7 @@ void Vessel::UpdateThrustForces ()
 					if (ts->mass < 0.0) ts->mass = 0.0;
 				}
 				th *= ThrusterAtmScale (thruster, sp.atmp);  // atmospheric thrust scaling
-				F = thruster->dir * th;
+				VECTOR3 F = thruster->dir * th;
 				Thrust += F;
 				Amom_add += cross(F, thruster->ref);
 				m_bThrustEngaged = true;
@@ -3969,7 +3968,7 @@ void Vessel::UpdateRadiationForces ()
 		// simplistic implementation
 		double cs = size*size;
 		double albedo = 1.5;
-		F = mflux * (cs*albedo);
+		F = mflux * (cs * albedo);
 	}
 	Flin_add += F;
 	if (r.x || r.y || r.z)
@@ -6491,10 +6490,10 @@ bool VESSEL::GetGroundspeedVector (REFFRAME frame, VECTOR3 &v) const
 	if (sp) {
 		switch (frame) {
 		case FRAME_GLOBAL:
-			v.x = sp->groundvel_glob.x, v.y = sp->groundvel_glob.y, v.z = sp->groundvel_glob.z;
+			v = sp->groundvel_glob;
 			return true;
 		case FRAME_LOCAL:
-			v.x = sp->groundvel_ship.x, v.y = sp->groundvel_ship.y, v.z = sp->groundvel_ship.z;
+			v = sp->groundvel_ship;
 			return true;
 		case FRAME_REFLOCAL:
 			v = tmul(sp->ref->GRot(), sp->groundvel_glob);
@@ -6522,10 +6521,10 @@ bool VESSEL::GetAirspeedVector (REFFRAME frame, VECTOR3 &v) const
 	if (sp) {
 		switch (frame) {
 		case FRAME_GLOBAL:
-			v.x = sp->airvel_glob.x, v.y = sp->airvel_glob.y, v.z = sp->airvel_glob.z;
+			v = sp->airvel_glob;
 			return true;
 		case FRAME_LOCAL:
-			v.x = sp->airvel_ship.x, v.y = sp->airvel_ship.y, v.z = sp->airvel_ship.z;
+			v = sp->airvel_ship;
 			return true;
 		case FRAME_REFLOCAL:
 			v = tmul(sp->ref->GRot(), sp->airvel_glob);
@@ -6545,10 +6544,10 @@ bool VESSEL::GetShipAirspeedVector (VECTOR3 &v) const
 	LOGOUT_OBSOLETE;
 	const SurfParam *sp = vessel->GetSurfParam();
 	if (sp) {
-		v.x = sp->airvel_ship.x, v.y = sp->airvel_ship.y, v.z = sp->airvel_ship.z;
+		v = sp->airvel_ship;
 		return true;
 	} else {
-		v.x = v.y = v.z = 0.0;
+		v = {0, 0, 0};
 		return false;
 	}
 }
@@ -7649,7 +7648,7 @@ void VESSEL::ShiftCG (const VECTOR3 &shift)
 	vessel->ShiftAttachments(nshift);
 	vessel->ShiftDocks(nshift);
 	vessel->ShiftLightEmitters(nshift);
-	vessel->campos = vessel->campos + nshift;
+	vessel->campos = vessel->campos - shift;
 	// only shift the vc of this vessel
 	if ((g_pane) && (g_focusobj == vessel)) g_pane->ShiftVC(nshift);
 	ShiftCentreOfMass(shift);
