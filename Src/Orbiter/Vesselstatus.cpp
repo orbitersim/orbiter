@@ -80,14 +80,11 @@ bool Vessel::ParseScenarioLine (char *line, VESSELSTATUS &vs)
 		sscanf (line+4, "%lf%lf%lf", &vs.rvel.x, &vs.rvel.y, &vs.rvel.z);
 	} else if (!_strnicmp (line, "ELEMENTS", 8)) {
 		double a, e, i, theta, omegab, L, elmjd;
-		VECTOR3 rpos, rvel;
 		sscanf (line+8, "%lf%lf%lf%lf%lf%lf%lf",  &a, &e, &i, &theta, &omegab, &L, &elmjd);
 		if (vs.rbody) {
 			el->Set (a, e, i*RAD, theta*RAD, omegab*RAD, L*RAD, elmjd);
 			el->Setup (mass, ((Body*)vs.rbody)->Mass(), td.MJD_ref);
-			el->Update (rpos, rvel);
-			vs.rpos.x = rpos.x, vs.rpos.y = rpos.y, vs.rpos.z = rpos.z;
-			vs.rvel.x = rvel.x, vs.rvel.y = rvel.y, vs.rvel.z = rvel.z;
+			el->Update (vs.rpos, vs.rvel);
 			el_valid = true;
 		}
 	} else if (!_strnicmp (line, "AROT", 4)) {
@@ -324,14 +321,11 @@ bool Vessel::ParseScenarioLine2 (char *line, void *status)
 		sscanf (line+3, "%lf", &vs->vrot.x);
 	} else if (!_strnicmp (line, "ELEMENTS", 8)) {
 		double a, e, i, theta, omegab, L, elmjd;
-		VECTOR3 rpos, rvel;
 		sscanf (line+8, "%lf%lf%lf%lf%lf%lf%lf",  &a, &e, &i, &theta, &omegab, &L, &elmjd);
 		if (vs->rbody) {
 			el->Set (a, e, i*RAD, theta*RAD, omegab*RAD, L*RAD, elmjd);
 			el->Setup (mass, ((Body*)vs->rbody)->Mass(), td.MJD_ref);
-			el->Update (rpos, rvel);
-			vs->rpos.x = rpos.x, vs->rpos.y = rpos.y, vs->rpos.z = rpos.z;
-			vs->rvel.x = rvel.x, vs->rvel.y = rvel.y, vs->rvel.z = rvel.z;
+			el->Update (vs->rpos, vs->rvel);
 			el_valid = true;
 		}
 	} else if (!_strnicmp (line, "IDS", 3)) {
@@ -447,9 +441,6 @@ void Vessel::ApplyPackedState (const char *data)
 
 void Vessel::SetState (const VESSELSTATUS &status)
 {
-	double lng, lat, dir;
-	VECTOR3 rpos, rvel, orient, vrot;
-
 	cbody = (CelestialBody*)status.rbody;
 	if (!cbody) cbody = g_psys->GetStar(0); // use first sun if no reference is set
 	if (!cbody) return;                     // big trouble!
@@ -471,6 +462,9 @@ void Vessel::SetState (const VESSELSTATUS &status)
 		}
 		SetThrusterGroupLevel (THGROUP_HOVER, status.eng_hovr);
 	}
+
+	double lng, lat, dir;
+	VECTOR3 rpos, rvel, orient, vrot;
 
 	switch (status.status) {
 	case 0: // freeflight
