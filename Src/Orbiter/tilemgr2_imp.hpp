@@ -85,7 +85,7 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 	}
 
 	// check if patch is visible from camera position
-	Vector &cnt = tile->cnt;                     // tile centre in unit planet frame
+	VECTOR3 &cnt = tile->cnt;                     // tile centre in unit planet frame
 	static const double rad0 = sqrt(2.0)*Pi05;
 	double rad = rad0/(double)nlat;
 	double alpha = std::acos(dot(prm.cdir, cnt)); // angle between tile centre and camera from planet centre

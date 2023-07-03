@@ -30,7 +30,7 @@ public:
 	void Update (bool force = false);
 	// Perform time step
 
-	Vector Pos2Barycentre (Vector &pos);
+	VECTOR3 Pos2Barycentre (VECTOR3 &pos);
 
 	auto GetLightColor() { return VECTOR4{1, 1, 1, 1}; }
 

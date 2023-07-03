@@ -175,7 +175,7 @@ void BaseObject::MapToAltitude (NTVERTEX *vtx, int nvtx)
 	double lng, lat;
 	double elev0 = base->Elevation();
 	for (int i = 0; i < nvtx; i++) {
-		base->Rel_EquPos (Vector (vtx[i].x, vtx[i].y, vtx[i].z), lng, lat);
+		base->Rel_EquPos({vtx[i].x, vtx[i].y, vtx[i].z}, lng, lat);
 		vtx[i].y += (float)base->RefPlanet()->Elevation (lng, lat) - elev;
 	}
 }
@@ -369,7 +369,7 @@ bool MeshObject::LoadMesh (char *fname)
 	return true;
 }
 
-void MeshObject::UpdateShadow (Vector &fromsun, double azim)
+void MeshObject::UpdateShadow (VECTOR3 &fromsun, double azim)
 {
 	ax = (float)fromsun.x;
 	az = (float)fromsun.z;
@@ -2174,7 +2174,7 @@ int RunwayLights::Read (istream &is)
 
 void RunwayLights::Setup ()
 {
-	relpos = Vector((end1.x+end2.x)*0.5, (end1.y+end2.y)*0.5, (end1.z+end2.z)*0.5);
+	relpos = {(end1.x + end2.x) * 0.5, (end1.y + end2.y) * 0.5, (end1.z + end2.z) * 0.5};
 	BaseObject::Setup();
 	NTVERTEX vtx[2];
 	vtx[0].x = end1.x, vtx[0].y = end1.y, vtx[0].z = end1.z;
@@ -2225,13 +2225,13 @@ void RunwayLights::Render (LPDIRECT3DDEVICE7 dev, bool day)
 #endif // INLINEGRAPHICS
 }
 
-void RunwayLights::VertexArray (DWORD count, const Vector &cpos, const Vector &pos, const Vector &ofs, double size, POSTEXVERTEX *&Vtx)
+void RunwayLights::VertexArray (DWORD count, const VECTOR3 &cpos, const VECTOR3 &pos, const VECTOR3 &ofs, double size, POSTEXVERTEX *&Vtx)
 {
 	size *= 0.15; // for distance resizing (see below bsize)
 
 	DWORD i;
 	double bsize, ap = g_camera->Aperture();
-	Vector p(pos), bdir, v1, v2;
+	VECTOR3 p = pos, bdir, v1, v2;
 
 	for (i = 0; i < count; i++) {
 
@@ -2279,12 +2279,12 @@ void RunwayLights::VertexArray (DWORD count, const Vector &cpos, const Vector &p
 
 void RunwayLights::Update ()
 {
-	Vector pos, ofs;
+	VECTOR3 pos, ofs;
 	POSTEXVERTEX *Vtx;
 
 	// transform camera position and direction into local base coords
-	Vector cpos (tmul (base->GRot(), g_camera->GPos()-base->GPos()));
-	Vector cdir (tmul (base->GRot(), g_camera->Direction()));
+	VECTOR3 cpos = tmul(base->GRot(), g_camera->GPos() - base->GPos());
+	VECTOR3 cdir = tmul(base->GRot(), g_camera->Direction());
 
 	bool look12 = (dot(cdir, dyndata->ref2-dyndata->ref1) >= 0);
 	// camera looks in direction from ref1 to ref2
@@ -2413,7 +2413,7 @@ void RunwayLights::Activate ()
 
 	dyndata->ref1 = {end1.x, end1.y, end2.z};
 	dyndata->ref2 = {end2.x, end2.y, end2.z};
-	Vector dr(end2.x-end1.x, end2.y-end1.y, end2.z-end1.z);
+	VECTOR3 dr{end2.x - end1.x, end2.y - end1.y, end2.z - end1.z};
 	dyndata->ofs1 = dr / (nbc - 1);
 	dr = unit(dr);
 	dyndata->dir = dr;
@@ -2543,22 +2543,22 @@ void BeaconArray::Update ()
 	const double resize_fac = 0.1;
 
 	DWORD i;
-	Vector p, v1, v2;
+	VECTOR3 p, v1, v2;
 	double bsize = size;
 
 	// transform camera into local base coords
-	Vector cdir (tmul (base->GRot(), g_camera->GPos()-base->GPos()));
+	VECTOR3 cdir = tmul(base->GRot(), g_camera->GPos() - base->GPos());
 
 	for (i = 0; i < count; i++) {
-		Vector bdir (Pos[i]-cdir); // vector from camera to beacon i
+		VECTOR3 bdir = Pos[i] - cdir; // vector from camera to beacon i
 		bsize = size * sqrt(len(bdir) + 1.0) * resize_fac; // distance scaling of beacon size
 
 		if (bdir.y == 0.0 && bdir.z == 0.0) {
 			v1 = {0, 1, 0};
 			v2 = {0, 0, 1};
 		} else {
-			v1 = unit(Vector{bdir.z, 0, -bdir.x});
-			v2 = unit(Vector{-bdir.x * bdir.y, bdir.z * bdir.z + bdir.x * bdir.x, -bdir.y * bdir.z});
+			v1 = unit(VECTOR3{bdir.z, 0, -bdir.x});
+			v2 = unit(VECTOR3{-bdir.x * bdir.y, bdir.z * bdir.z + bdir.x * bdir.x, -bdir.y * bdir.z});
 		}
 
 		p = Pos[i] - (v1 + v2) * bsize;
@@ -2589,7 +2589,7 @@ void BeaconArray::Activate ()
 
 	Vtx = new POSTEXVERTEX[nVtx = count*4]; TRACENEW
 	Idx = new WORD[nIdx = count*6]; TRACENEW
-	Pos = new Vector[count]; TRACENEW
+	Pos = new VECTOR3[count]; TRACENEW
 
 	double ici, ic = 1.0/(count-1);
 	for (i = 0; i < count; i++) {
@@ -2666,9 +2666,9 @@ void Train::Init (const D3DVECTOR &_end1, const D3DVECTOR &_end2)
 void Train::Setup ()
 {
 	double lng, lat;
-	base->Rel_EquPos (Vector(end1.x, end1.y, end1.z), lng, lat);
+	base->Rel_EquPos({end1.x, end1.y, end1.z}, lng, lat);
 	end1.y += base->RefPlanet()->Elevation (lng, lat)-base->Elevation();
-	base->Rel_EquPos (Vector(end2.x, end2.y, end2.z), lng, lat);
+	base->Rel_EquPos({end2.x, end2.y, end2.z}, lng, lat);
 	end2.y += base->RefPlanet()->Elevation (lng, lat)-base->Elevation();
 }
 
@@ -2952,7 +2952,7 @@ void Train1::Update ()
 			_shvtx[i].x += dx, _shvtx[i].z += dz;
 }
 
-void Train1::UpdateShadow (Vector &fromsun, double az)
+void Train1::UpdateShadow (VECTOR3 &fromsun, double az)
 {
 	static DWORD i, j, nCH, ii[12] = {2,3,4,5,6,7,10,11,12,13,14,15};
 	static VECTOR2D proj[12];
@@ -3279,7 +3279,7 @@ void Train2::Update ()
 	}
 }
 
-void Train2::UpdateShadow (Vector &fromsun, double az)
+void Train2::UpdateShadow (VECTOR3 &fromsun, double az)
 {
 	static DWORD i, j, nCH, ii[12] = {2,3,4,5,6,7,10,11,12,13,14,15};
 	static VECTOR2D proj[12];
@@ -3413,11 +3413,11 @@ void SolarPlant::Render (LPDIRECT3DDEVICE7 dev, bool)
 	int i, j;
 
 	// check for flashing panels
-	Vector pc, cdir (tmul (base->GRot(), g_camera->GPos()-base->GPos()));
+	VECTOR3 pc, cdir = tmul(base->GRot(), g_camera->GPos() - base->GPos());
 	bool anyflash = false;
 	double alpha;
 	for (i = 0; i < npanel; i++) {
-		pc = unit(cdir - Vector{ppos[i].x, ppos[i].y, ppos[i].z});
+		pc = unit(cdir - VECTOR3{ppos[i].x, ppos[i].y, ppos[i].z});
 		alpha = dot(pc, nml);
 		if (alpha > 0.999) {
 			anyflash = flash[i] = true;
@@ -3617,7 +3617,7 @@ void SolarPlant::Update ()
 	updT = td.SimT1 + 60.0;
 }
 
-void SolarPlant::UpdateShadow (Vector &fromsun, double az)
+void SolarPlant::UpdateShadow (VECTOR3 &fromsun, double az)
 {
 	if (!g_pOrbiter->Cfg()->CfgVisualPrm.bShadows) return;
 	if (have_shadows = (nml.y > 0.2)) {

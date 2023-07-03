@@ -158,7 +158,7 @@ void RigidBody::RK2_LinAng (double h, int nsub, int isub)
 {
 	double h05 = h*0.5;
 
-	Vector acc1, tau;
+	VECTOR3 acc1, tau;
 	StateVectors s;
 	s.pos = s1->pos + s1->vel * h05;
 	s.vel = s1->vel + acc * h05;
@@ -182,7 +182,7 @@ void RigidBody::RK4_LinAng (double h, int nsub, int isub)
 	double h05 = h*0.5;
 	double hi6 = h/6.0;
 
-	Vector tau, acc1, aacc1, acc2, aacc2, acc3, aacc3;
+	VECTOR3 tau, acc1, aacc1, acc2, aacc2, acc3, aacc3;
 	StateVectors sa, sb, sc;
 	sa.pos = s1->pos + s1->vel * h05;
 	sa.vel = s1->vel + acc * h05;
@@ -221,17 +221,18 @@ void RigidBody::RKdrv_LinAng (double h, int nsub, int isub, int n, const double 
 	int i, j;
 	double bh;
 	static int nbuf = 8;
+	// TODO: re-write without raw pointers
 	static StateVectors *s = new StateVectors[nbuf]; TRACENEW
-	static Vector *a       = new Vector[nbuf]; TRACENEW  // linear acceleration
-	static Vector *d       = new Vector[nbuf]; TRACENEW  // angular acceleration
-	Vector tau;
+	static VECTOR3 *a = new VECTOR3[nbuf]; TRACENEW  // linear acceleration
+	static VECTOR3 *d = new VECTOR3[nbuf]; TRACENEW  // angular acceleration
+	VECTOR3 tau;
 	if (n > nbuf) { // grow buffers
 		delete []s;
 		delete []a;
 		delete []d;
 		s = new StateVectors[n]; TRACENEW
-		a = new Vector[n]; TRACENEW
-		d = new Vector[n]; TRACENEW
+		a = new VECTOR3[n]; TRACENEW
+		d = new VECTOR3[n]; TRACENEW
 		nbuf = n;
 	}
 
@@ -302,7 +303,7 @@ void RigidBody::SY2_LinAng (double h, int nsub, int isub)
 {
 	double h05 = h*0.5;
 	StateVectors s;
-	Vector tau;
+	VECTOR3 tau;
 	rpos_add += (rvel_base+rvel_add)*h05;
 	s1->Q.Rotate (s1->omega*h05);
 	s.Set (s1->vel, rpos_base+rpos_add, s1->omega, s1->Q);
@@ -330,7 +331,7 @@ void RigidBody::SY4_LinAng (double h, int nsub, int isub)
 	static const double d4[3] = {x1, x0, x1};
 	static const double c4[4] = {x1/2, (x0+x1)/2, (x0+x1)/2, x1/2};
 	StateVectors s;
-	Vector tau;
+	VECTOR3 tau;
 
 	for (i = 0; i < 4; i++) {
 		double step = h * c4[i];
@@ -364,7 +365,7 @@ void RigidBody::SY6_LinAng (double h, int nsub, int isub)
 	static const double c6[8] = { w3/2, (w3+w2)/2, (w2+w1)/2, (w1+w0)/2,
                          (w1+w0)/2, (w2+w1)/2, (w3+w2)/2, w3/2 };
 	StateVectors s;
-	Vector tau;
+	VECTOR3 tau;
 
 	for (i = 0; i < 8; i++) {
 		double step = h * c6[i];
@@ -407,7 +408,7 @@ void RigidBody::SY8_LinAng (double h, int nsub, int isub)
                          (W1+W0)/2, (W2+W1)/2, (W3+W2)/2, (W4+W3)/2,
                          (W5+W4)/2, (W6+W5)/2, (W7+W6)/2,  W7/2 };
 	StateVectors s;
-	Vector tau;
+	VECTOR3 tau;
 
 	for (i = 0; i < 16; i++) {
 		double step = h * c8[i];
@@ -565,7 +566,7 @@ void RigidBody::Encke ()
 	const int neq = 6;
 	int i, j, k, kk;
 	double f[6][13], x[6], xwrk[6], temp, t0, ti, tf, twrk, dt, tfrac;
-	Vector d[13], omega[13], tau; // angular state parameters
+	VECTOR3 d[13], omega[13], tau; // angular state parameters
 	StateVectors s;
 
 	ti = t0 = td.SimT0;

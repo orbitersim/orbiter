@@ -240,14 +240,14 @@ double Elements::EccAnomaly (double ma) const
 	return E;
 }
 
-bool Elements::AscendingNode (Vector &asc) const
+bool Elements::AscendingNode (VECTOR3 &asc) const
 {
 	double d = Rdist (priv_omega);
 	asc = priv_N * d;
 	return (d >= 0.0);
 }
 
-bool Elements::DescendingNode (Vector &desc) const
+bool Elements::DescendingNode (VECTOR3 &desc) const
 {
 	double d = Rdist (priv_omega+Pi);
 	desc = priv_N * -d;
@@ -269,7 +269,7 @@ void Elements::RelPos (double &r, double &ta, double t) const
 	r = priv_p / (1.0 + e * cos(ta));
 }
 
-void Elements::Pol2Crt (double r, double ta, Vector &pos) const
+void Elements::Pol2Crt (double r, double ta, VECTOR3 &pos) const
 {
 	double sinto = sin (ta + priv_omega);
 	double costo = cos (ta + priv_omega);
@@ -278,7 +278,7 @@ void Elements::Pol2Crt (double r, double ta, Vector &pos) const
 	pos.y = r * sinto * sini;
 }
 
-void Elements::PosVel (Vector &pos, Vector &vel, double t) const
+void Elements::PosVel (VECTOR3 &pos, VECTOR3 &vel, double t) const
 {
 	double r, ta;
 
@@ -297,16 +297,16 @@ void Elements::PosVel (Vector &pos, Vector &vel, double t) const
 	vel.y = rv * sinto * sini;
 }
 
-Vector Elements::Pos (double t) const
+VECTOR3 Elements::Pos (double t) const
 {
 	double r, ta;
-	Vector pos;
+	VECTOR3 pos;
 	RelPos (r, ta, t);
 	Pol2Crt (r, ta, pos);
 	return pos;
 }
 
-void Elements::PosVel_TA (Vector &pos, Vector &vel, double ta) const
+void Elements::PosVel_TA (VECTOR3 &pos, VECTOR3 &vel, double ta) const
 {
 	double r = Rdist (ta);
 	Pol2Crt (r, ta, pos);
@@ -330,7 +330,7 @@ double Elements::Spd_TA(double ta) const
 	return hypot(vx, vz);
 }
 
-void Elements::Update (Vector &pos, Vector &vel)
+void Elements::Update (VECTOR3 &pos, VECTOR3 &vel)
 {
 	double sinto, costo, vx, vz, thetav;
 
@@ -373,7 +373,7 @@ void Elements::Update (Vector &pos, Vector &vel)
 	vel = priv_V;
 }
 
-void Elements::Calculate (const Vector &R, const Vector &V, double simt)
+void Elements::Calculate (const VECTOR3 &R, const VECTOR3 &V, double simt)
 {
 	bool closed_orbit;
 
@@ -526,7 +526,7 @@ void Elements::Calculate (const Vector &R, const Vector &V, double simt)
 #endif
 }
 
-void Elements::PlaneCoeffs (const Vector &R, const Vector &V, double &a, double &b, double &c)
+void Elements::PlaneCoeffs (const VECTOR3 &R, const VECTOR3 &V, double &a, double &b, double &c)
 {
 	// warning: may need unit vectors for R and V
 	// for numerical stability

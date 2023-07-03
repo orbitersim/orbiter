@@ -298,7 +298,7 @@ void VBase::Update (bool moving, bool force)
 	if (sundir.y != csun) {
 		csun = sundir.y;                 // cosine of sun over horizon
 		if (have_shadows = (enable_shadows && csun > 0.07)) {
-			Vector shdir = sundir/(-csun);
+			VECTOR3 shdir = sundir / -csun;
 			double az = atan2 (shdir.z, shdir.x);
 			for (DWORD i = 0; i < base->nobj; i++)
 				base->obj[i]->UpdateShadow (shdir, az);
@@ -477,9 +477,9 @@ void VBase::RenderShadows (LPDIRECT3DDEVICE7 dev)
 		if (nshmesh) {
 			double d, nr0;
 			const Planet *planet = base->RefPlanet();
-			Vector pp = planet->GPos();              // planet global pos
-			Vector sd = base->GPos();                // base global pos
-			Vector pvr = sd-pp;                      // planet-relative base position
+			VECTOR3 pp = planet->GPos();             // planet global pos
+			VECTOR3 sd = base->GPos();               // base global pos
+			VECTOR3 pvr = sd - pp;                   // planet-relative base position
 			d = len(pvr);                            // planet radius at base location
 			sd = unit(sd);                           // shadow projection direction
 
@@ -488,13 +488,13 @@ void VBase::RenderShadows (LPDIRECT3DDEVICE7 dev)
 			//	return;
 
 			Matrix vR = base->GRot();
-			Vector sdv = tmul (vR, sd);              // projection direction in base frame
-			Vector hnp = unit(pvr);
-			Vector hn = tmul (vR, hnp);              // horizon normal in vessel frame
+			VECTOR3 sdv = tmul(vR, sd);              // projection direction in base frame
+			VECTOR3 hnp = unit(pvr);
+			VECTOR3 hn  = tmul(vR, hnp);              // horizon normal in vessel frame
 
 			// perform projections
 			double nd = dot(hn, sdv);
-			Vector sdvs = sdv / nd;
+			VECTOR3 sdvs = sdv / nd;
 			if (!sdvs.y) return; // required for plane offset correction
 
 			DWORD i;
@@ -649,9 +649,9 @@ void VBase::RenderGroundShadow (LPDIRECT3DDEVICE7 dev)
 	static const double shadow_elev_limit = 0.07;
 	double d, csun, nr0;
 	const Planet *planet = base->RefPlanet();
-	Vector pp = planet->GPos();              // planet global pos
-	Vector sd = base->GPos();                // base global pos
-	Vector pvr = sd-pp;                      // planet-relative base position
+	VECTOR3 pp = planet->GPos();             // planet global pos
+	VECTOR3 sd = base->GPos();               // base global pos
+	VECTOR3 pvr = sd - pp;                   // planet-relative base position
 	d = len(pvr);                            // planet radius at base location
 	sd = unit(sd);                           // shadow projection direction
 
@@ -663,13 +663,13 @@ void VBase::RenderGroundShadow (LPDIRECT3DDEVICE7 dev)
 		return;
 
 	Matrix vR = base->GRot();
-	Vector sdv = tmul (vR, sd);              // projection direction in base frame
-	Vector hnp = unit(pvr);
-	Vector hn = tmul (vR, hnp);              // horizon normal in vessel frame
+	VECTOR3 sdv = tmul(vR, sd);              // projection direction in base frame
+	VECTOR3 hnp = unit(pvr);
+	VECTOR3 hn = tmul(vR, hnp);              // horizon normal in vessel frame
 
 	// perform projections
 	double nd = dot(hn, sdv);
-	Vector sdvs = sdv / nd;
+	VECTOR3 sdvs = sdv / nd;
 	if (!sdvs.y) return; // required for plane offset correction
 
 	DWORD i;
@@ -727,17 +727,17 @@ bool VBase::ModLighting (LPD3DLIGHT7 light)
 {
 	const CelestialBody *cb = base->RefPlanet();
 	Star *sun = g_psys->GetStar(0); // should really loop over all suns
-	Vector S(sun->GPos() - base->GPos());
+	VECTOR3 S = sun->GPos() - base->GPos();
 	double s = len(S);
 	double as = asin (sun->Size()/s);                     // apparent size of sun disc [rad]
-	Vector lcol (1,1,1);
+	VECTOR3 lcol{1, 1, 1};
 	double amb = 0;
 	bool lightmod = false;
 	int j;
 
 	// calculate shadowing by planet
 
-	Vector P(cb->GPos() - base->GPos());
+	VECTOR3 P = cb->GPos() - base->GPos();
 	double p = len(P);
 	double phi = std::acos(dot(S, P) / (s * p));  // angular distance between sun and planet
 	static const double ap = PI05;                // apparent size of planet disc [rad]
@@ -752,7 +752,7 @@ bool VBase::ModLighting (LPD3DLIGHT7 light)
 
 		if (as+ap1 >= phi) {                      // overlap
 			double dap = ap1-ap;
-			Vector plight(1,1,1);
+			VECTOR3 plight{1, 1, 1};
 			if (phi < ap-as) {                // totality (sun below horizon)
 				plight = {0, 0, 0};
 			} else {

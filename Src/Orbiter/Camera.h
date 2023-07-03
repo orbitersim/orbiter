@@ -79,23 +79,21 @@ public:
 	{ return (!external_view && cphi == 0 && ctheta == 0); }
 	// Return true if we are in cockpit mode and the camera points in the default direction
 
-	inline const Vector *GPosPtr () const { return &gpos; }
-	inline const VECTOR3 *GPOSPtr () const { return &GPOS; }
+	inline const VECTOR3 *GPosPtr () const { return &gpos; }
 	// reference to global camera position
 
-	inline const Vector *GSPosPtr () const { return &gspos; }
+	inline const VECTOR3 *GSPosPtr () const { return &gspos; }
 	// reference to target-relative camera position in global orientation
 
-	inline Vector CockpitPos () const { return *rofs + rpos + eyeofs; }
+	inline VECTOR3 CockpitPos () const { return *rofs + rpos + eyeofs; }
 	// camera position inside cockpit, including eye-rotation offset
 	// only for internal modes
 
-	inline Vector Direction() const
-	{ return Vector (grot.m13, grot.m23, grot.m33); }
+	inline VECTOR3 Direction() const { return VECTOR3{grot.m13, grot.m23, grot.m33}; }
 	// Return direction (in global coords) in which the camera is looking
 	// (last column of GRot)
 
-	bool Direction2Viewport(const Vector &dir, int &x, int &y);
+	bool Direction2Viewport(const VECTOR3 &dir, int &x, int &y);
 
 	double Distance() const;
 	double Phi() const;
@@ -134,11 +132,11 @@ public:
 	// change the view direction in free CAMERA_GROUNDOBSERVER mode, but
 	// may be extended to perform actions in other modes
 
-	void MoveTo (const Vector &p);
+	void MoveTo (const VECTOR3 &p);
 	// Slew camera position to p. Only used in cockpit view
 	// (coordinates are in local vessel coordinates)
 
-	void MoveToDirect (const Vector &p);
+	void MoveToDirect (const VECTOR3 &p);
 	// Set camera position to p (no transition). Only used in cockpit view
 	// (coordinates are in local vessel coordinates)
 
@@ -150,7 +148,7 @@ public:
 	// Change the distance to the object by factor "fact"
 	// (External views only)
 
-	void SetDefaultCockpitDir (const Vector &dir, double tilt = 0.0);
+	void SetDefaultCockpitDir (const VECTOR3 &dir, double tilt = 0.0);
 	// set the default camera direction for cockpit modes
 	// 'dir' must be normalised to 1
 
@@ -168,7 +166,7 @@ public:
 	void SetCatchAngle (double cangle);
 	// Set the angle [rad] over which the camera auto-centers to its default direction
 
-	void Drag (const Vector &gshift);
+	void Drag (const VECTOR3 &gshift);
 	// Displace camera by 'gshift' (global coords) from its
 	// 'natural' position. The camera will automatically 
 	// gradually move back (external camera mode only)
@@ -181,7 +179,7 @@ public:
 	// Rotate camera direction in free CAMERA_GROUNDOBSERVER mode
 	// dphi and dtht are incremental tilts in local horizon coordinates
 
-	inline const Vector &GPos() const { return gpos; }
+	inline const VECTOR3 &GPos() const { return gpos; }
 	inline const Matrix &GRot() const { return grot; }
 
 	double GroundAltitude() const { return go.alt; }
@@ -274,7 +272,7 @@ public:
 	D3DMATRIX *D3D_ProjViewMatrix ();
 	// Return product ProjectionMatrix * ViewMatrix
 
-	void ViewportToGlobalDir (double sx, double sy, Vector &gdir) const;
+	void ViewportToGlobalDir (double sx, double sy, VECTOR3 &gdir) const;
 	// converts viewport coordinates (pixels) into a direction vector
 	// in the global frame
 
@@ -320,21 +318,20 @@ private:
 	POINT pm;              // last cursor position
 	double mmoveT;         // time of last mouse move
 
-	Vector gpos;           // current camera pos in global coords
-	VECTOR3 GPOS;          // gpos in VECTOR3 format
-	Vector gspos;          // current camera pos relative to target, in global orientation
+	VECTOR3 gpos;          // current camera pos in global coords
+	VECTOR3 gspos;         // current camera pos relative to target, in global orientation
 	Matrix grot;           // current camera rotation in global coords
-	Vector *rofs;          // cockpit position offset
-	Vector  rpos;          // current camera pos in target system
+	VECTOR3 *rofs;         // cockpit position offset
+	VECTOR3 rpos;          // current camera pos in target system
 	Matrix  rrot0;         // camera rotation of default cockpit direction
 	Matrix  rrot;          // current camera rotation in target system (rel to default direction in cockpit modes)
 	bool isStdDir;         // true if default cockpit camera direction is +z
-	Vector  eyeofs0, eyeofs;// offset between eyes and head rotation point (standard and rotated coords)
-	Vector  tref;          // camera target point offset from target origin (in target coords)
+	VECTOR3 eyeofs0, eyeofs;// offset between eyes and head rotation point (standard and rotated coords)
+	VECTOR3 tref;          // camera target point offset from target origin (in target coords)
 	double tref_t0, tref_d0, tref_r0, tref_r1; // auxiliary variables for camera dragging
 	bool has_tref, rshift; // use tref?
 
-	Vector  gdir;          // camera direction in global coords (for 'absolute direction' modes)
+	VECTOR3 gdir;          // camera direction in global coords (for 'absolute direction' modes)
 	Body   *target;        // Reference body. Relative coordinates (RPos) refer to this.
 	const Body *dirref;    // body used as direction reference for CAMERA_TARGETTOOBJECT and
 						   // CAMERA_TARGETFROMOBJECT external modes
@@ -358,7 +355,7 @@ private:
 	// cockpit camera parameters
 	struct {
 		Body *target;      // target vessel
-		Vector rpos;       // camera position offset
+		VECTOR3 rpos;      // camera position offset
 		double cphi,ctheta;// camera azimuth and polar angles
 	} cockpitprm;
 	double cphi, ctheta;   // current azimuth and polar angles of cockpit camera direction
@@ -368,7 +365,7 @@ private:
 
 	bool rot_smooth;       // flag for smooth rotation (acceleration/deceleration)
 	bool movehead;         // move head in cockpit mode
-	Vector tgtp;           // cockpit camera target position (to implement 'leaning')
+	VECTOR3 tgtp;          // cockpit camera target position (to implement 'leaning')
 
 	struct GroundObserver {// ground observer camera parameters
 		double lng, lat;       // position

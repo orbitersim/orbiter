@@ -114,8 +114,7 @@ Base::Base (char *fname, Planet *_planet, double _lng, double _lat)
 				LpadSpec *tmp = new LpadSpec[npad+1]; TRACENEW
 				if (npad) memcpy (tmp, lspec, npad*sizeof(LpadSpec)), delete []lspec;
 				lspec = tmp;
-				const Vector &pos = ((Lpad*)bo)->GetPos();
-				lspec[npad].relpos = {pos.x, pos.y, pos.z};
+				lspec[npad].relpos = ((Lpad*)bo)->GetPos();
 				lspec[npad].status = 0;
 				lspec[npad].vessel = 0;
 				if (float freq = ((Lpad*)bo)->GetILSfreq()) {
@@ -129,8 +128,8 @@ Base::Base (char *fname, Planet *_planet, double _lng, double _lat)
 				RwySpec *tmp = new RwySpec[nrwy+1]; TRACENEW
 				if (nrwy) memcpy (tmp, rwy, nrwy*sizeof(RwySpec)), delete []rwy;
 				rwy = tmp;
-				Vector p1 (Vector (prwy->end1.x, prwy->end1.y, prwy->end1.z));
-				Vector p2 (Vector (prwy->end2.x, prwy->end2.y, prwy->end2.z));
+				VECTOR3 p1{prwy->end1.x, prwy->end1.y, prwy->end1.z};
+				VECTOR3 p2{prwy->end2.x, prwy->end2.y, prwy->end2.z};
 				Rel_EquPos (p1, rwy[nrwy].lng1, rwy[nrwy].lat1);
 				Rel_EquPos (p2, rwy[nrwy].lng2, rwy[nrwy].lat2);
 				Orthodome (rwy[nrwy].lng1, rwy[nrwy].lat1, rwy[nrwy].lng2, rwy[nrwy].lat2, rwy[nrwy].length, rwy[nrwy].appr1);
@@ -596,7 +595,7 @@ void Base::Update (bool force)
 	}
 }
 
-void Base::Rel_EquPos (const Vector &relpos, double &_lng, double &_lat) const
+void Base::Rel_EquPos (const VECTOR3 &relpos, double &_lng, double &_lat) const
 {
 	_lng = lng + relpos.z/(cbody->Size()*cos(lat));
 	_lat = lat - relpos.x/cbody->Size();

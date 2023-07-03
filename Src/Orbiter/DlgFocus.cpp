@@ -334,11 +334,10 @@ void DlgFocus::RescanTree_Nearby (HWND hDlg)
 	char cbuf[256]; cbuf[255] = '\0';
 	HTREEITEM hti, hti_focus = NULL;
 	SendDlgItemMessage (hDlg, IDC_TREE1, TVM_DELETEITEM, 0, 0);
-	const Vector &campos = g_camera->GPos();
 	for (DWORD i = 0; i < g_psys->nVessel(); i++) {
 		Vessel *vessel = g_psys->GetVessel(i);
 		if (vessel->GetEnableFocus()) {
-			double dst = dist(campos, vessel->GPos());
+			double dst = dist(g_camera->GPos(), vessel->GPos());
 			if (dst <= range) {
 				hti = AddVesselToTree (hDlg, NULL, vessel);
 				if (hti) hti_focus = hti;

@@ -66,11 +66,8 @@ void Star::Update (bool force)
 	// of the global coordinate system
 }
 
-Vector Star::Pos2Barycentre (Vector &pos)
-{
-	// by definition, the barycentre of stars (root objects) is the origin
-	return Vector();
-}
+// by definition, the barycentre of stars (root objects) is the origin
+VECTOR3 Star::Pos2Barycentre (VECTOR3 &pos) { return VECTOR3{ }; }
 
 #ifdef INLINEGRAPHICS
 void Star::InitDeviceObjects ()

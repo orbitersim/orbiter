@@ -1194,7 +1194,7 @@ void UpdateEllipse (int cntx, int cnty, double scale,
 {
 	int i;
 	int idx1 = ELN-1, idx2 = 2*ELNQ, idx3 = idx2-1;
-	Vector tmp, v[ELN];
+	VECTOR3 tmp, v[ELN];
 	double phi, sphi, cphi, r, x, y;
 	double fac = Pi05/(double)ELNQ;
 	double e2 = el->e * el->e;
@@ -1230,7 +1230,7 @@ void UpdateHyperbola (int cntx, int cnty, int IW, int IH, double scale,
 
 	int i;
 	int idx = ELNH-1;
-	Vector asc, desc, v[ELN-1];
+	VECTOR3 asc, desc, v[ELN-1];
 	double phi, cphi, sphi, r, x, y, len = 1;
 	double p = el->PeDist()*(1.0+el->e); // parameter of polar equation
 	double radmax = 1.5*cntx/scale;

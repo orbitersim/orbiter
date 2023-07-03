@@ -496,7 +496,7 @@ void PlanetarySystem::UndockVessel (SuperVessel *sv, Vessel *_vessel, int port, 
 	}
 }
 
-void PlanetarySystem::ScanGFieldSources (const Vector *gpos, const Body *exclude, GFieldData *gfd) const
+void PlanetarySystem::ScanGFieldSources (const VECTOR3 *gpos, const Body *exclude, GFieldData *gfd) const
 {
 	const double min_contrib = 1e-6; // min. rel. g-field contribution threshold
 	DWORD i, j, idx;
@@ -529,20 +529,20 @@ void PlanetarySystem::ScanGFieldSources (const Vector *gpos, const Body *exclude
 	gfd->testidx = 0;
 }
 
-void PlanetarySystem::UpdateGFieldSources (const Vector *gpos, const Body *exclude, GFieldData *gfd) const
+void PlanetarySystem::UpdateGFieldSources (const VECTOR3 *gpos, const Body *exclude, GFieldData *gfd) const
 {
 	extern const DWORD MAXGFIELDLIST;
 	const double min_contrib = 1e-6; // min. g-field contribution threshold
 	DWORD i, idx, imin;
 	double a, atot = 0.0, amin = 1e100;
-	Vector acc;
+	VECTOR3 acc;
 	bool testnext = true;
 
 	// First, check we can drop the weakest member of the current list
 	for (i = 0; i < gfd->ngrav; i++) {
 		idx = gfd->gravidx[i];
 		if (celestials[idx] != exclude) {
-			Vector acci = SingleGacc (celestials[idx]->GPos() - *gpos, celestials[idx]);
+			VECTOR3 acci = SingleGacc(celestials[idx]->GPos() - *gpos, celestials[idx]);
 			acc += acci;
 			a = len(acci);
 			atot += a;
@@ -558,7 +558,7 @@ void PlanetarySystem::UpdateGFieldSources (const Vector *gpos, const Body *exclu
 
 	// Test next candidate for inclusion in the list
 	if (testnext && exclude != celestials[idx = gfd->testidx]) {
-		Vector acci = SingleGacc (celestials[idx]->GPos() - *gpos, celestials[idx]);
+		VECTOR3 acci = SingleGacc(celestials[idx]->GPos() - *gpos, celestials[idx]);
 		a = len(acci);
 		if (a > min_contrib*atot) {
 			if (gfd->ngrav < MAXGFIELDLIST) gfd->gravidx[gfd->ngrav++] = idx;
@@ -568,9 +568,9 @@ void PlanetarySystem::UpdateGFieldSources (const Vector *gpos, const Body *exclu
 	if (++gfd->testidx == celestials.size()) gfd->testidx = 0;
 }
 
-Vector PlanetarySystem::GaccAt (double t, const Vector &gpos, const Body *exclude) const
+VECTOR3 PlanetarySystem::GaccAt (double t, const VECTOR3 &gpos, const Body *exclude) const
 {
-	Vector r, acc, pos, closepos;
+	VECTOR3 r, acc, pos, closepos;
 	CelestialBody *closep = 0;
 	const CelestialBody *sec;
 	DWORD i;
@@ -603,19 +603,19 @@ Vector PlanetarySystem::GaccAt (double t, const Vector &gpos, const Body *exclud
 	return acc;
 }
 
-Vector SingleGacc_perturbation (const Vector &rpos, const CelestialBody *body)
+VECTOR3 SingleGacc_perturbation (const VECTOR3 &rpos, const CelestialBody *body)
 {
 	// Calculate perturbation of gravitational acceleration due to nonspherical
 	// shape of the body.
 	// rpos: relative position of 'bodies' wrt. r (global frame)
 
-	Vector dg;
+	VECTOR3 dg;
 
 	if (body->UseComplexGravity() && body->usePines()) {
 		
 		//Rotate position vector into the planet's local frame
 		Matrix rot = body->GRot();
-		Vector lpos = -tmul(rot,rpos)/1000.0;
+		VECTOR3 lpos = -tmul(rot, rpos) / 1000;
 
 		//Convert to right-handed
 		double temp_y;
@@ -655,8 +655,8 @@ Vector SingleGacc_perturbation (const Vector &rpos, const CelestialBody *body)
 		// J2 perturbation term
 		double Jn_Rrn = body->Jcoeff(0) * Rrn;  // relative influence of J2 term
 		if (fabs (Jn_Rrn) > eps) {
-			Vector er = unit(rpos);  // radial unit vector
-			Vector loc (tmul (body->GRot(), er));
+			VECTOR3 er = unit(rpos);  // radial unit vector
+			VECTOR3 loc = tmul(body->GRot(), er);
 			double lat = asin(-loc.y), slat = sin(lat), clat = cos(lat); // latitude
 			gacc_r += 1.5 * Jn_Rrn * (1.0 - 3.0*slat*slat);
 			gacc_p += 3.0 * Jn_Rrn * clat*slat;
@@ -683,7 +683,7 @@ Vector SingleGacc_perturbation (const Vector &rpos, const CelestialBody *body)
 			double GM = Ggrav * body->Mass();
 			double T0 = GM / (d*d);
 
-			Vector ep, ea = cross(er, body->RotAxis()); // azimuth vector
+			VECTOR3 ep, ea = cross(er, body->RotAxis()); // azimuth vector
 			double lea = len(ea);
 			if (lea > eps) ep = cross(er, ea / lea);  // polar unit vector
 			else ep = {0, 0, 0};
@@ -693,7 +693,7 @@ Vector SingleGacc_perturbation (const Vector &rpos, const CelestialBody *body)
 	return dg;
 }
 
-Vector SingleGacc (const Vector &rpos, const CelestialBody *body)
+VECTOR3 SingleGacc (const VECTOR3 &rpos, const CelestialBody *body)
 {
 	// Calculate gravitational acceleration at a position r from a single source
 	// rpos: relative position of 'body' wrt. r (global coords)
@@ -702,9 +702,9 @@ Vector SingleGacc (const Vector &rpos, const CelestialBody *body)
 	return rpos * (Ggrav * body->Mass() / (d*d*d)) + SingleGacc_perturbation (rpos, body);
 }
 
-Vector PlanetarySystem::Gacc (const Vector &gpos, const Body *exclude, const GFieldData *gfd) const
+VECTOR3 PlanetarySystem::Gacc (const VECTOR3 &gpos, const Body *exclude, const GFieldData *gfd) const
 {
-	Vector acc;
+	VECTOR3 acc;
 	DWORD i, j;
 
 	if (gfd) {
@@ -722,9 +722,9 @@ Vector PlanetarySystem::Gacc (const Vector &gpos, const Body *exclude, const GFi
 	return acc;
 }
 
-Vector PlanetarySystem::Gacc_intermediate (const Vector &gpos, double n, const Body *exclude, GFieldData *gfd) const
+VECTOR3 PlanetarySystem::Gacc_intermediate (const VECTOR3 &gpos, double n, const Body *exclude, GFieldData *gfd) const
 {
-	Vector acc;
+	VECTOR3 acc;
 	DWORD i, j;
 	
 	if (gfd) { // use body's source list
@@ -742,11 +742,11 @@ Vector PlanetarySystem::Gacc_intermediate (const Vector &gpos, double n, const B
 	return acc;
 }
 
-Vector PlanetarySystem::Gacc_intermediate_pert (const CelestialBody *cbody, const Vector &relpos, double n, const Body *exclude, GFieldData *gfd) const
+VECTOR3 PlanetarySystem::Gacc_intermediate_pert (const CelestialBody *cbody, const VECTOR3 &relpos, double n, const Body *exclude, GFieldData *gfd) const
 {
-	Vector acc;
+	VECTOR3 acc;
 	DWORD i, j;
-	Vector gpos = relpos + cbody->InterpolatePosition (n);
+	VECTOR3 gpos = relpos + cbody->InterpolatePosition(n);
 
 	if (gfd) { // use body's source list
 		for (j = 0; j < gfd->ngrav; j++) {
@@ -769,12 +769,12 @@ Vector PlanetarySystem::Gacc_intermediate_pert (const CelestialBody *cbody, cons
 	return acc;
 }
 
-Vector PlanetarySystem::GaccRel (const Vector &rpos, const CelestialBody *cbody, double n, const Body *exclude, GFieldData *gfd) const
+VECTOR3 PlanetarySystem::GaccRel (const VECTOR3 &rpos, const CelestialBody *cbody, double n, const Body *exclude, GFieldData *gfd) const
 {
-	Vector acc;
+	VECTOR3 acc;
 	DWORD i, j;
 
-	Vector gpos (rpos + cbody->InterpolatePosition (n));
+	VECTOR3 gpos = rpos + cbody->InterpolatePosition(n);
 
 	if (gfd) { // use bodies's source list
 		for (j = 0; j < gfd->ngrav; j++) {
@@ -791,12 +791,12 @@ Vector PlanetarySystem::GaccRel (const Vector &rpos, const CelestialBody *cbody,
 	return acc;
 }
 
-Vector PlanetarySystem::GaccPn_perturbation (const Vector &gpos, double n, const CelestialBody *cbody) const
+VECTOR3 PlanetarySystem::GaccPn_perturbation (const VECTOR3 &gpos, double n, const CelestialBody *cbody) const
 {
 	return SingleGacc_perturbation (cbody->InterpolatePosition (n) - gpos, cbody);
 }
 
-CelestialBody *PlanetarySystem::GetDominantGravitySource (const Vector &gpos, double &gfrac)
+CelestialBody *PlanetarySystem::GetDominantGravitySource (const VECTOR3 &gpos, double &gfrac)
 {
 	// assumes spherical gravity sources
 	DWORD i;
@@ -804,7 +804,7 @@ CelestialBody *PlanetarySystem::GetDominantGravitySource (const Vector &gpos, do
 	CelestialBody *body = 0;
 
 	for (i = 0; i < celestials.size(); i++) {
-		Vector r(celestials[i]->GPos() - gpos);
+		VECTOR3 r = celestials[i]->GPos() - gpos;
 		gtot += (g = celestials[i]->Mass() / len_2(r));
 		if (g > gmax) {
 			gmax = g;
@@ -815,14 +815,14 @@ CelestialBody *PlanetarySystem::GetDominantGravitySource (const Vector &gpos, do
 	return body;
 }
 
-double PlanetarySystem::GetGravityContribution (const Body *body, const Vector &gpos, bool *dominant)
+double PlanetarySystem::GetGravityContribution (const Body *body, const VECTOR3 &gpos, bool *dominant)
 {
 	// assumes spherical gravity sources
 	DWORD i;
 	double g, gtot = 0.0, gbody = 0.0, gmax = 0.0;
 
 	for (i = 0; i < celestials.size(); i++) {
-		Vector r(celestials[i]->GPos() - gpos);
+		VECTOR3 r = celestials[i]->GPos() - gpos;
 		gtot += (g = celestials[i]->Mass() / len_2(r));
 		if (celestials[i] == body) gbody = g;
 		if (g > gmax) gmax = g;
@@ -831,7 +831,7 @@ double PlanetarySystem::GetGravityContribution (const Body *body, const Vector &
 	return (gtot ? gbody/gtot : 0.0);
 }
 
-Vector PlanetarySystem::GetMomentumFlux (const Vector &gpos) const
+VECTOR3 PlanetarySystem::GetMomentumFlux (const VECTOR3 &gpos) const
 {
 	const double L = 3.846e26;      // sun luminosity [W] - SHOULD BE CONFIGURABLE!
 	const double F = L/(4.0*PI*C0); // radiation force at unit distance

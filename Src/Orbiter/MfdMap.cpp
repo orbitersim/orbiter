@@ -383,7 +383,7 @@ void Instrument_Map::UpdateDraw_Map (oapi::Sketchpad *skp)
 			g_focusobj->Name(), fabs(lng)*DEG, lng>=0.0 ? 'E':'W', fabs(lat)*DEG,
 			lat>=0.0 ? 'N':'S', DistStr(rad-refplanet->Size()));
 		if (sp) {
-			Vector hvel (tmul (sp->ref->GRot(), sp->groundvel_glob));
+			VECTOR3 hvel = tmul(sp->ref->GRot(), sp->groundvel_glob);
 			hvel = mul(sp->L2H, hvel);
 			double crs = atan2 (hvel.x, hvel.z);
 			sprintf (cbuf+strlen(cbuf)-1, ", Crs %05.1fº]", Deg(posangle(crs)));

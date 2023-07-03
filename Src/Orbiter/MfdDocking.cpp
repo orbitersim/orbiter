@@ -311,7 +311,7 @@ void Instrument_Docking::UpdateDraw (oapi::Sketchpad *skp)
 
 	if (!tgt) return;
 
-	Vector dpos;
+	VECTOR3 dpos;
 	double dstold = dst;
 
 	if (!ps) { // no dock information
@@ -326,16 +326,16 @@ void Instrument_Docking::UpdateDraw (oapi::Sketchpad *skp)
 		dpos = tmul(vessel->GRot(), mul(tgt->GRot(), ps->ref) + tgt->GPos() - vessel->GPos());
 		dst = dist(dpos, vessel->dock[refdock]->ref);
 		// dock position in ship approach frame:
-		Vector adposold(adpos); // store for velocity calculation
+		VECTOR3 adposold = adpos; // store for velocity calculation
 		adpos = mul(dockframe, dpos);
 		// dock approach direction in ship coords:
-		Vector ddir(tmul(vessel->GRot(), mul(tgt->GRot(), -ps->dir)));
+		VECTOR3 ddir = tmul(vessel->GRot(), mul(tgt->GRot(), -ps->dir));
 		// dock "up" direction in ship coords:
-		Vector drot(tmul(vessel->GRot(), mul(tgt->GRot(), ps->rot)));
+		VECTOR3 drot = tmul(vessel->GRot(), mul(tgt->GRot(), ps->rot));
 		// dock approach direction in ship approach frame:
-		Vector addir (mul (dockframe, ddir));
+		VECTOR3 addir = mul(dockframe, ddir);
 		// dock "up" direction in ship approach frame:
-		Vector adrot(mul(dockframe, drot));
+		VECTOR3 adrot = mul(dockframe, drot);
 
 		// Euler angles (yaw, pitch, bank) of vessel with respect to correct docking attitude
 		double yaw   = -atan2(addir.x, addir.z);
@@ -343,10 +343,10 @@ void Instrument_Docking::UpdateDraw (oapi::Sketchpad *skp)
 		double bank  = -atan2(adrot.x, adrot.y);
 
 		// dock reference point in ship approach frame
-		Vector adockref (mul (dockframe, vessel->dock[refdock]->ref));
+		VECTOR3 adockref = mul(dockframe, vessel->dock[refdock]->ref);
 		// intersection of approach vector with ship's approach xy plane
 		double s = (adockref.z - adpos.z) / addir.z;
-		Vector Z (adpos - adockref + addir*s);
+		VECTOR3 Z = adpos - adockref + addir * s;
 
 		double z = std::hypot(Z.x, Z.y);
 		double lz = (log10(z)+1.0+scale) * 0.25;

@@ -122,7 +122,7 @@ SuperVessel::SuperVessel (Vessel *vessel1, Vessel *vessel2, int port1, int port2
 	// add up angular momentae
 	if (mixmoments) {
 		// calculate linear and angular velocity from conservation of linear/angular momentum
-		Vector am;
+		VECTOR3 am;
 		for (i = 0; i < 2; i++) {
 			// individual spin of each vessel
 			am += mul (vlist[i].rrot, vlist[i].vessel->AngularMomentum()) * vlist[i].vessel->mass;
@@ -226,8 +226,8 @@ void SuperVessel::Detach (Vessel *vessel, DWORD port, double vsep)
 	// give it a separation push
 	double vs = vsep * vessel->mass / mass; // structure velocity
 	double vv = vsep - vs;                  // vessel velocity
-	Vector sepdir (mul (vessel->GRot(), vessel->dock[port]->dir));
-	Vector rotvel;
+	VECTOR3 sepdir = mul(vessel->GRot(), vessel->dock[port]->dir);
+	VECTOR3 rotvel;
 
 	if (atomic1) {
 		// velocity component from rotation: v = omega x r
@@ -306,10 +306,10 @@ bool SuperVessel::Activate (bool force)
 
 // =======================================================================
 
-void SuperVessel::RPlace (const Vector &_rpos, const Vector &_rvel, const Vessel *ref)
+void SuperVessel::RPlace (const VECTOR3 &_rpos, const VECTOR3 &_rvel, const Vessel *ref)
 {
 	DWORD i;
-	Vector dp = _rpos-s0->pos;
+	VECTOR3 dp = _rpos - s0->pos;
 	if (ref)
 		for (i = 0; i < nv; i++)
 			if (vlist[i].vessel == ref) {
@@ -332,7 +332,7 @@ void SuperVessel::RPlace (const Vector &_rpos, const Vector &_rvel, const Vessel
 
 // =======================================================================
 
-void SuperVessel::SetGlobalOrientation (const Vector &arot, const Vessel *ref)
+void SuperVessel::SetGlobalOrientation (const VECTOR3 &arot, const Vessel *ref)
 {
 	DWORD i;
 	double sinx = sin(arot.x), cosx = cos(arot.x);
@@ -389,7 +389,7 @@ void SuperVessel::SetRotationMatrix (const Matrix &R, const Vessel *ref)
 
 // =======================================================================
 
-void SuperVessel::SetAngVel (const Vector &omega, const Vessel *ref)
+void SuperVessel::SetAngVel (const VECTOR3 &omega, const Vessel *ref)
 {
 	DWORD i;
 	s0->omega = omega;
@@ -409,12 +409,11 @@ void SuperVessel::SetAngVel (const Vector &omega, const Vessel *ref)
 
 // ==============================================================
 
-void SuperVessel::GetIntermediateMoments (Vector &acc, Vector &tau,
+void SuperVessel::GetIntermediateMoments (VECTOR3 &acc, VECTOR3 &tau,
 	const StateVectors &state, double tfrac, double dt)
 {
 	// TODO: Move this up to VesselBase
-	Vector F(Flin);
-	Vector M(Amom);
+	VECTOR3 F = Flin, M = Amom;
 	AddSurfaceForces (&F, &M, &state, tfrac, dt); // add ground contact forces and moments
 	RigidBody::GetIntermediateMoments (acc, tau, state, tfrac, dt);  // get gravitational component
 	acc += mul (state.Q, F/mass);
@@ -481,12 +480,12 @@ bool SuperVessel::Add (Vessel *vessel1, int port1, Vessel *vessel2, int port2, b
 
 	// calculate orientation of new vessel relative to superstructure
 	// 1. calc position of 2nd vessel relative to 1st
-	Vector as(vessel2->dock[port2]->dir);
-	Vector bs(vessel2->dock[port2]->rot);
-	Vector cs = cross(as, bs);
-	Vector at(-vessel1->dock[port1]->dir);
-	Vector bt(vessel1->dock[port1]->rot);
-	Vector ct = cross(at, bt);
+	VECTOR3 as = vessel2->dock[port2]->dir;
+	VECTOR3 bs = vessel2->dock[port2]->rot;
+	VECTOR3 cs = cross(as, bs);
+	VECTOR3 at = -vessel1->dock[port1]->dir;
+	VECTOR3 bt = vessel1->dock[port1]->rot;
+	VECTOR3 ct = cross(at, bt);
 	double den         =  cs.x * (as.y*bs.z - as.z*bs.y) +
 		                  cs.y * (as.z*bs.x - as.x*bs.z) +
 				          cs.z * (as.x*bs.y - as.y*bs.x);
@@ -540,7 +539,7 @@ bool SuperVessel::Add (Vessel *vessel1, int port1, Vessel *vessel2, int port2, b
 
 	// calculate angular velocity from conservation of angular momentum
 	if (mixmoments) {
-		Vector am;
+		VECTOR3 am;
 		for (DWORD i = 0; i < nv; i++) {
 			// individual spin of each vessel
 			am += mul (vlist[i].rrot, vlist[i].vessel->AngularMomentum()) * vlist[i].vessel->mass;
@@ -581,12 +580,12 @@ bool SuperVessel::Merge (Vessel *vessel1, int port1, Vessel *vessel2, int port2)
 
 	// define the rotation matrix from vessel2 to vessel1
 	Matrix R;
-	Vector as(vessel2->dock[port2]->dir);
-	Vector bs(vessel2->dock[port2]->rot);
-	Vector cs = cross(as, bs);
-	Vector at(-vessel1->dock[port1]->dir);
-	Vector bt(vessel1->dock[port1]->rot);
-	Vector ct = cross(at, bt);
+	VECTOR3 as = vessel2->dock[port2]->dir;
+	VECTOR3 bs = vessel2->dock[port2]->rot;
+	VECTOR3 cs = cross(as, bs);
+	VECTOR3 at = -vessel1->dock[port1]->dir;
+	VECTOR3 bt = vessel1->dock[port1]->rot;
+	VECTOR3 ct = cross(at, bt);
 	double den = cs.x * (as.y*bs.z - as.z*bs.y) +
 		     cs.y * (as.z*bs.x - as.x*bs.z) +
 		     cs.z * (as.x*bs.y - as.y*bs.x);
@@ -644,13 +643,13 @@ bool SuperVessel::Merge (Vessel *vessel1, int port1, Vessel *vessel2, int port2)
 	return true;
 }
 
-bool SuperVessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, double tfrac, double dt) const
+bool SuperVessel::AddSurfaceForces (VECTOR3 *F, VECTOR3 *M, const StateVectors *s, double tfrac, double dt) const
 {
 	bool impact = false;
 	DWORD comp;
 	StateVectors scomp;
 	for (comp = 0; comp < nv; comp++) {
-		Vector Fcomp, Mcomp;
+		VECTOR3 Fcomp, Mcomp;
 		ComponentStateVectors (s, &scomp, comp);
 		if (vlist[comp].vessel->AddSurfaceForces (&Fcomp, &Mcomp, &scomp, tfrac, dt)) {
 			AddComponentForceAndMoment (F, M, &Fcomp, &Mcomp, comp);
@@ -688,8 +687,8 @@ void SuperVessel::Update (bool force)
 		Amom = {0, 0, 0};
 		for (i = 0; i < nv; i++) {
 			Vessel *v = vlist[i].vessel;
-			Vector vAmom (mul (vlist[i].rrot, v->Amom_add));
-			Vector vFlin (mul (vlist[i].rrot, v->Flin_add));
+			VECTOR3 vAmom = mul(vlist[i].rrot, v->Amom_add);
+			VECTOR3 vFlin = mul(vlist[i].rrot, v->Flin_add);
 			Amom += vAmom + cross(vFlin, vlist[i].rpos - cg);
 			Flin += vFlin;
 		}
@@ -781,7 +780,7 @@ void SuperVessel::InitLanded (Planet *planet, double lng, double lat, double dir
 	double slng = sin(lng), clng = cos(lng);
 	double slat = sin(lat), clat = cos(lat);
 	Matrix L2H (-slng,0,clng, clat*clng,slat,clat*slng, -slat*clng,clat,-slat*slng);
-	Vector nml (tmul (*hrot, tmul (L2H, Vector(0,1,0))));
+	VECTOR3 nml = tmul(*hrot, tmul(L2H, VECTOR3{0, 1, 0}));
 	sp.SetLanded (lng, lat, cgelev, dir, nml, planet);
 
 	double vground = Pi2 * /*sp.rad*/planet->Size() * sp.clat / planet->RotT();
@@ -841,15 +840,15 @@ void SuperVessel::SetStateFromComponent (const StateVectors *scomp, int comp) co
 	s0->pos = scomp->pos - mul(s0->R, vlist[comp].rpos-cg);
 }
 
-void SuperVessel::AddComponentForceAndMoment (Vector *F, Vector *M,
-	const Vector *Fcomp, const Vector *Mcomp, int comp) const
+void SuperVessel::AddComponentForceAndMoment (VECTOR3 *F, VECTOR3 *M,
+	const VECTOR3 *Fcomp, const VECTOR3 *Mcomp, int comp) const
 {
-	Vector Ftrans (mul (vlist[comp].rrot, *Fcomp));
+	VECTOR3 Ftrans = mul(vlist[comp].rrot, *Fcomp);
 	*F += Ftrans;
-	*M += mul(vlist[comp].rrot, *Mcomp) + cross(Ftrans, vlist[comp].rpos - cg);
+	*M += mul(vlist[comp].rrot, *Mcomp) + cross(Ftrans, vlist[comp].rpos-cg);
 }
 
-void SuperVessel::NotifyShiftVesselOrigin (Vessel *vessel, const Vector &dr)
+void SuperVessel::NotifyShiftVesselOrigin (Vessel *vessel, const VECTOR3 &dr)
 {
 	for (DWORD i = 0; i < nv; i++) {
 		if (vlist[i].vessel == vessel) {
@@ -859,7 +858,7 @@ void SuperVessel::NotifyShiftVesselOrigin (Vessel *vessel, const Vector &dr)
 	}
 }
 
-bool SuperVessel::GetCG (const Vessel *vessel, Vector &vcg)
+bool SuperVessel::GetCG (const Vessel *vessel, VECTOR3 &vcg)
 {
 	for (DWORD i = 0; i < nv; i++) {
 		if (vlist[i].vessel == vessel) {
@@ -870,12 +869,12 @@ bool SuperVessel::GetCG (const Vessel *vessel, Vector &vcg)
 	return false;
 }
 
-bool SuperVessel::GetPMI (const Vessel *vessel, Vector &vpmi)
+bool SuperVessel::GetPMI (const Vessel *vessel, VECTOR3 &vpmi)
 {
 	for (DWORD i = 0; i < nv; i++) {
 		if (vlist[i].vessel == vessel) {
 			vpmi = {0, 0, 0};
-			Vector r0[6], rt;
+			VECTOR3 r0[6], rt;
 			double rtx2, rty2, rtz2;
 			r0[1].x = -(r0[0].x = 0.5 * sqrt (fabs (-pmi.x + pmi.y + pmi.z)));
 			r0[3].y = -(r0[2].y = 0.5 * sqrt (fabs ( pmi.x - pmi.y + pmi.z)));
@@ -903,7 +902,7 @@ void SuperVessel::ResetSize ()
 {
 	size = 0.0;
 	for (DWORD i = 0; i < nv; i++) {
-		Vector p (vlist[i].rpos - cg);
+		VECTOR3 p = vlist[i].rpos - cg;
 		double r = len(p) + vlist[i].vessel->Size();
 		if (r > size) size = r;
 	}
@@ -912,7 +911,7 @@ void SuperVessel::ResetSize ()
 void SuperVessel::ResetMassAndCG ()
 {
 	// centre of gravity and total mass
-	Vector cg_new;
+	VECTOR3 cg_new;
 	mass = 0.0;
 	for (DWORD i = 0; i < nv; i++) {
 		mass += vlist[i].vessel->mass;
@@ -921,7 +920,7 @@ void SuperVessel::ResetMassAndCG ()
 	cg_new /= mass;
 
 	// shift CG
-	Vector dp = mul (s0->R, cg_new-cg);
+	VECTOR3 dp = mul(s0->R, cg_new-cg);
 	s0->pos += dp;
 	rpos_add += dp;
 	cpos += dp;
@@ -934,7 +933,7 @@ void SuperVessel::CalcPMI ()
 	// values. For details see Doc/Technotes/composite.pdf.
 
 	DWORD i, j;
-	Vector r0[6], rt;
+	VECTOR3 r0[6], rt;
 	double rtx2, rty2, rtz2, vmass;
 	double vpmix, vpmiy, vpmiz;
 
@@ -942,7 +941,7 @@ void SuperVessel::CalcPMI ()
 
 	for (i = 0; i < nv; i++) {
 		Vessel *v = vlist[i].vessel;
-		Vector &vpmi = v->pmi;
+		VECTOR3 &vpmi = v->pmi;
 		vmass = v->mass/6.0;
 		r0[1].x = -(r0[0].x = sqrt (1.5 * fabs (-vpmi.x + vpmi.y + vpmi.z)));
 		r0[3].y = -(r0[2].y = sqrt (1.5 * fabs ( vpmi.x - vpmi.y + vpmi.z)));

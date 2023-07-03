@@ -262,7 +262,7 @@ void VectorMap::Update ()
 		//if (focuscenter) SetCenter (drawdata.focuslng, drawdata.focuslat);
 	}
 	if (drawdata.sun_disp = true) {
-		cbody->GlobalToEquatorial (Vector(0,0,0), lng, lat, rad);
+		cbody->GlobalToEquatorial({0, 0, 0}, lng, lat, rad);
 		drawdata.sunlng = lng;
 		drawdata.sunlat = lat;
 	}
@@ -1284,7 +1284,7 @@ void VectorMap::CalcOrbitProj (const Elements *el, const CelestialBody *body, VP
                       el->sint, 0,  el->cost));
 	R.tpremul (body->GRot());
 
-	Vector r, rt;
+	VECTOR3 r, rt;
 
 	for (i = 0; i < NVTX_CIRCLE; i++) {
 		r.x = cosp[i];
@@ -1306,7 +1306,7 @@ VPoint *VectorMap::GreatCircle (double lng, double lat)
 	Matrix R(clat,slat,0,  -slat,clat,0,  0,0,1);
 	Matrix R2(clng,0,-slng,  0,1,0,  slng,0,clng);
 	R.premul(R2);
-	Vector pt, ptt;
+	VECTOR3 pt, ptt;
 	static VPoint vp[nvtx];
 
 	for (i = 0; i < nvtx; i++) {
@@ -1332,7 +1332,7 @@ VPoint *VectorMap::SmallCircle (double lng, double lat, double dst)
 	Matrix R(clat,slat,0,  -slat,clat,0,  0,0,1);
 	Matrix R2(clng,0,-slng,  0,1,0,  slng,0,clng);
 	R.premul(R2);
-	Vector pt, ptt;
+	VECTOR3 pt, ptt;
 	static VPoint vp[nvtx];
 
 	for (i = 0; i < nvtx; i++) {
@@ -1604,7 +1604,7 @@ void Groundtrack::Reset (const CelestialBody *body, const Elements *_el)
 void Groundtrack::CalcPoint (VPointGT &p, double *angvel)
 {
 	double r, ta, lng, lat, rad;
-	Vector pos, loc;
+	VECTOR3 pos, loc;
 	el->RelPos (r, ta, p.t);
 	el->Pol2Crt (r, ta, pos);
 	loc = tmul(cbody->GRot(), pos);

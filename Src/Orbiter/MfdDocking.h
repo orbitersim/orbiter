@@ -49,7 +49,7 @@ private:
 	int Legacy_port;               // target docking port (legacy method)
 	char title[50];
 	int circx, circy, circr, bar0, barh, barw, bar0x, bar1x;
-	Vector adpos;                  // previous station location in ship approach frame
+	VECTOR3 adpos;                 // previous station location in ship approach frame
 	double dst;                    // previous station distance
 	Matrix dockframe;              // rotation matrix ship local -> ship approach frame
 	oapi::Brush *brush[4];

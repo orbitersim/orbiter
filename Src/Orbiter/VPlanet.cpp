@@ -641,8 +641,8 @@ void VPlanet::RenderRing (LPDIRECT3DDEVICE7 dev, bool addbkg)
 {
 	DWORD amb = g_pOrbiter->Cfg()->AmbientColour;
 	DWORD bpp = g_pOrbiter->ViewBPP();
-	Vector ppos (tmul (planet->GRot(), -cpos)); // camera pos in planet coords
-	Vector spos (tmul (planet->GRot(), -planet->GPos()));                 // sun pos in planet coords
+	VECTOR3 ppos = tmul(planet->GRot(), -cpos); // camera pos in planet coords
+	VECTOR3 spos = tmul(planet->GRot(), -planet->GPos());                 // sun pos in planet coords
 	bool islit = (ppos.y*spos.y >= 0.0); // we are facing the lit side of the rings
 	static D3DMATRIX imat, *ringmat;
 	if (ppos.y >= 0) { // camera above equator
@@ -703,7 +703,7 @@ int VPlanet::ShadowPlanetOnRing (VERTEX_XYZC *&vtx, DWORD &nvtx)
 	double r1 = planet->ringmax; // outer rim radius
 
 	// sun in planet local coords
-	Vector spos (tmul (planet->R_ecl, -planet->GPos()));
+	VECTOR3 spos = tmul(planet->R_ecl, -planet->GPos());
 	bool flip = (spos.y < 0.0); // is underside of rings lit?
 
 	// semi-minor axis of shadow ellipse (= planet radius)

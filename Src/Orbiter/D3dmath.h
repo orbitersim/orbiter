@@ -73,7 +73,7 @@ inline void SetInvD3DRotation (D3DMATRIX &a, const Matrix &r)
 // SetD3DTranslation()
 // Assemble a logical translation vector into a D3D transformation matrix
 
-inline void SetD3DTranslation (D3DMATRIX &a, const Vector &t)
+inline void SetD3DTranslation (D3DMATRIX &a, const VECTOR3 &t)
 {
 	a._41 = (FLOAT)t.x;
 	a._42 = (FLOAT)t.y;

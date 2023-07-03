@@ -23,13 +23,13 @@ extern TimeData td;
 extern char DBG_MSG[256];
 
 void Pol2Crt (double *pol, double *crt, bool dopos, bool dovel);
-void InterpretEphemeris (double *data, int flg, Vector *pos, Vector *vel, Vector *bpos, Vector *bvel);
+void InterpretEphemeris (double *data, int flg, VECTOR3 *pos, VECTOR3 *vel, VECTOR3 *bpos, VECTOR3 *bvel);
 
 // =======================================================================
 // class CelestialBody
 
-CelestialBody::CelestialBody (double _mass, double _size)
-: RigidBody (_mass, _size, Vector (1,1,1)), pinesgrav(NULL)
+CelestialBody::CelestialBody(double _mass, double _size) :
+    RigidBody{_mass, _size, {1, 1, 1}}, pinesgrav{NULL}
 {
 	DefaultParam();
 	el = new Elements; TRACENEW
@@ -272,11 +272,11 @@ const Elements *CelestialBody::Els () const
 	return el;
 }
 
-Vector CelestialBody::Barycentre2Pos (const Vector &bary) const
+VECTOR3 CelestialBody::Barycentre2Pos (const VECTOR3 &bary) const
 {
 	if (!nsecondary) return bary;
 	else {
-		Vector b2;
+		VECTOR3 b2;
 		double m, mtot = mass;
 		for (DWORD i = 0; i < nsecondary; i++) {
 			mtot += (m = secondary[i]->Mass());
@@ -286,10 +286,10 @@ Vector CelestialBody::Barycentre2Pos (const Vector &bary) const
 	}
 }
 
-Vector CelestialBody::Pos2Barycentre (const Vector &pos) const
+VECTOR3 CelestialBody::Pos2Barycentre (const VECTOR3 &pos) const
 {
 	double m, mtot = mass;
-	Vector b(pos*mass);
+	VECTOR3 b = pos * mass;
 	for (DWORD i = 0; i < nsecondary; i++) {
 		mtot += (m = secondary[i]->Mass());
 		b += secondary[i]->GPos() * m;
@@ -328,24 +328,24 @@ int CelestialBody::RelTrueAndBaryState()
 				}
 				if (flg & EPHEM_POLAR)
 					Pol2Crt (s, s, true, havevel);
-				cpos = bpos = Vector (s[0], s[1], s[2]);
+				cpos = bpos = {s[0], s[1], s[2]};
 				havetrue = havebary = true;
 				if (havevel)
-					cvel = bvel = Vector (s[3], s[4], s[5]);
+					cvel = bvel = {s[3], s[4], s[5]};
 			} else {
 				if (flg & EPHEM_TRUEPOS) {
 					havetrue = true;
 					havevel = ((flg & EPHEM_TRUEVEL) != 0);
 					if (flg & EPHEM_POLAR) Pol2Crt (state, state, true, havevel);
-					cpos = Vector (state[0], state[1], state[2]);
-					if (havevel) cvel = Vector (state[3], state[4], state[5]);
+					cpos = {state[0], state[1], state[2]};
+					if (havevel) cvel = {state[3], state[4], state[5]};
 				}
 				if (flg & EPHEM_BARYPOS) {
 					havebary = true;
 					havevel = ((flg & EPHEM_BARYVEL) != 0);
 					if (flg & EPHEM_POLAR) Pol2Crt (state+6, state+6, true, havevel);
-					bpos = Vector (state[6], state[7], state[8]);
-					if (havevel) bvel = Vector (state[9], state[10], state[11]);
+					bpos = {state[6], state[7], state[8]};
+					if (havevel) bvel = {state[9], state[10], state[11]};
 				}
 			}
 			el_valid = false;
@@ -504,7 +504,7 @@ void CelestialBody::UpdatePrecession ()
 	// R_ref component of R_ref*R_rel (tilt of precession reference)
 	if (eps_ref) R_ref_rel.premul (R_ref);
 
-	R_axis = mul (R_ref_rel, Vector(0,1,0));   // direction of rotation axis
+	R_axis = mul(R_ref_rel, VECTOR3{0, 1, 0}); // direction of rotation axis
 	eps_ecl = acos (R_axis.y);                 // axis obliquity
 	lan_ecl = atan2 (-R_axis.x, R_axis.z);     // axis LAN
 	double sinL = sin(lan_ecl), cosL = cos(lan_ecl);
@@ -596,13 +596,13 @@ int CelestialBody::ExternState (double *res)
 	return flg;
 }
 
-bool CelestialBody::PositionAtTime (double t, Vector *p) const
+bool CelestialBody::PositionAtTime (double t, VECTOR3 *p) const
 {
 	if (bDynamicPosVel) return false;
 	// can't calc at arbitrary times if using dynamic updates
 
 	double res[12];
-	static Vector bp;
+	static VECTOR3 bp;
 
 	int flg = ExternEphemeris (td.MJD_ref+Day(t), EPHEM_TRUEPOS, res);
 	if (flg) {
@@ -620,13 +620,13 @@ bool CelestialBody::PositionAtTime (double t, Vector *p) const
 	return true;
 }
 
-bool CelestialBody::PosVelAtTime (double t, Vector *p, Vector *v) const
+bool CelestialBody::PosVelAtTime (double t, VECTOR3 *p, VECTOR3 *v) const
 {
 	if (bDynamicPosVel) return false;
 	// can't calc at arbitrary times if using dynamic updates
 
 	double res[12];
-	static Vector bp, bv;
+	static VECTOR3 bp, bv;
 
 	int flg = ExternEphemeris (td.MJD_ref+Day(t), EPHEM_TRUEPOS | EPHEM_TRUEVEL, res);
 	if (flg) {
@@ -639,14 +639,14 @@ bool CelestialBody::PosVelAtTime (double t, Vector *p, Vector *v) const
 	return true;
 }
 
-Vector CelestialBody::InterpolatePosition (double n) const
+VECTOR3 CelestialBody::InterpolatePosition (double n) const
 {
 	// Interpolate global position of body by iterative bisection
 
 	if      (n == 0)   return s0->pos;
 	else if (n == 1.0) return s1->pos;
 
-	Vector refp0, refp1, refpm;
+	VECTOR3 refp0, refp1, refpm;
 	const CelestialBody *ref = ElRef();
 	if (ref) {
 		// otherwise assume that reference position is origin
@@ -657,15 +657,15 @@ Vector CelestialBody::InterpolatePosition (double n) const
 	}
 
 	const double eps = 1e-2;
-	Vector rp0 (s0->pos-refp0);        // rel. position at current step
-	Vector rp1 (s1->pos-refp1);        // rel. position at next step
+	VECTOR3 rp0 = s0->pos - refp0;     // rel. position at current step
+	VECTOR3 rp1 = s1->pos - refp1;     // rel. position at next step
 	double rd0 = len(rp0);             // radius at current step
 	double rd1 = len(rp1);             // radius at next step
 	double n0 = 0.0;                   // lower bound of search bracket
 	double n1 = 1.0;                   // upper bound of search bracket
 	double nm = 0.5, d = 0.5;          // current trial point
 	double rdm = (rd0+rd1)*0.5;        // trial radius
-	Vector rpm = unit(rp0 + rp1) * rdm; // trial position
+	VECTOR3 rpm = unit(rp0 + rp1) * rdm; // trial position
 	while (fabs (nm-n) > eps && d > eps) { // interval too large - continue
 		d *= 0.5;                         // new interval width
 		if (nm < n) {                     // cut away lower half of interval
@@ -792,7 +792,7 @@ void Pol2Crt (double *pol, double *crt, bool dopos, bool dovel)
 	}
 }
 
-void InterpretEphemeris (double *data, int flg, Vector *pos, Vector *vel, Vector *bpos, Vector *bvel)
+void InterpretEphemeris (double *data, int flg, VECTOR3 *pos, VECTOR3 *vel, VECTOR3 *bpos, VECTOR3 *bvel)
 {
 	static double crt[6], *p;
 

@@ -24,8 +24,8 @@ extern char DBG_MSG[256];
 
 const double MAXALT_HUD = 1e15; // make user-selectable
 
-void BoxCoord (const Vector &dockpos, const Vector &dockdir,
-			   const Vector &refdir, double dist, Vector *crd);
+void BoxCoord (const VECTOR3 &dockpos, const VECTOR3 &dockdir,
+			   const VECTOR3 &refdir, double dist, VECTOR3 *crd);
 
 // =======================================================================
 // class HUD
@@ -99,7 +99,7 @@ void HUD::Draw (oapi::Sketchpad *skp)
 		bCNTvis = (spec.CX >= 0 && spec.CX < spec.W && spec.CY >= 0 && spec.CY < spec.H);
 	} else {
 		D3DVECTOR homog;
-		bCNTvis = pane->GlobalToHomog (mul (g_focusobj->GRot(), Vector(0,0,1)), homog);
+		bCNTvis = pane->GlobalToHomog(mul(g_focusobj->GRot(), VECTOR3{0, 0, 1}), homog);
 		if (bCNTforward = (homog.z > 0.0)) {
 			spec.CX = (int)(HRES05*(1.0f+homog.x));
 			spec.CY = (int)(VRES05*(1.0f-homog.y));
@@ -161,7 +161,7 @@ void HUD::Render ()
 		bCNTvis = (spec.CX >= 0 && spec.CX < spec.W && spec.CY >= 0 && spec.CY < spec.H);
 	} else {
 		D3DVECTOR homog;
-		bCNTvis = pane->GlobalToHomog (mul (g_focusobj->GRot(), Vector(0,0,1)), homog);
+		bCNTvis = pane->GlobalToHomog(mul(g_focusobj->GRot(), VECTOR3{0, 0, 1}), homog);
 		if (bCNTforward = (homog.z > 0.0)) {
 			spec.CX = (int)(HRES05*(1.0f+homog.x));
 			spec.CY = (int)(VRES05*(1.0f-homog.y));
@@ -186,8 +186,7 @@ void HUD::Resize (bool isVC)
 		HRES05 = VRES05 = (spec.W/2);
 		ladder_width = (HRES05*60)/128;
 		ladder_range = 250;
-		const VECTOR3 &cnt = pane->GetVC()->GetHUDParams()->hudcnt;
-		VCcnt = {cnt.x, cnt.y, cnt.z};
+		VCcnt = pane->GetVC()->GetHUDParams()->hudcnt;
 		VCscale = spec.H / pane->GetVC()->GetHUDParams()->size;
 		spec.Markersize = 6+(10*HRES05)/128;
 		boxx = fW*3;
@@ -375,7 +374,7 @@ void HUD::AddMesh_CenterMarker (int &ivtx, int &iidx)
 	ivtx += nvtx;
 }
 
-bool HUD::AddMesh_Marker (int &ivtx, int &iidx, const Vector &dir, int markerid, double *xcnt, double *ycnt)
+bool HUD::AddMesh_Marker (int &ivtx, int &iidx, const VECTOR3 &dir, int markerid, double *xcnt, double *ycnt)
 {
 	double x, y;
 
@@ -408,7 +407,7 @@ bool HUD::AddMesh_Marker (int &ivtx, int &iidx, const Vector &dir, int markerid,
 	}
 }
 
-void HUD::AddMesh_DirectionMarker (int &ivtx, int &iidx, const Vector &dir, bool prograde, double *xcnt, double *ycnt)
+void HUD::AddMesh_DirectionMarker (int &ivtx, int &iidx, const VECTOR3 &dir, bool prograde, double *xcnt, double *ycnt)
 {
 	int i;
 	//double scal = VRES05*0.00075; // HRES05*0.0012;
@@ -416,7 +415,7 @@ void HUD::AddMesh_DirectionMarker (int &ivtx, int &iidx, const Vector &dir, bool
 	double dy = spec.Markersize*0.83;//scal*39;
 	double rad = dy*4.0;
 
-	Vector d;
+	VECTOR3 d;
 	if (bVC) d = tmul(g_focusobj->GRot(), dir);
 	else     d = tmul(g_camera->GRot(), dir);
 	double len = std::hypot (d.x, d.y);
@@ -940,10 +939,10 @@ void HUD::AddMesh_DockApproachGates (int &ivtx, int &iidx, const Body *tgt, cons
 	int i, j;
 	double x[16], y[16], dx1, dy1, dx2, dy2, rx, ry;
 	double linew = renderprm.scal*3;
-	Vector dpos (mul (tgt->GRot(), ps->ref) + tgt->GPos() - g_camera->GPos());
-	Vector ddir (mul (tgt->GRot(), -ps->dir));
-	Vector ydir (mul (tgt->GRot(), ps->rot));
-	Vector p[4];
+	VECTOR3 dpos = mul(tgt->GRot(), ps->ref) + tgt->GPos() - g_camera->GPos();
+	VECTOR3 ddir = mul(tgt->GRot(), -ps->dir);
+	VECTOR3 ydir = mul(tgt->GRot(), ps->rot);
+	VECTOR3 p[4];
 	double dist = 50;
 	float dx = -(float)(ddir.x*dist);
 	float dy = -(float)(ddir.y*dist);
@@ -1168,12 +1167,12 @@ void HUD::DrawTiltedRibbon (oapi::Sketchpad *skp, double phi, double alpha)
 	skp->SetTextAlign (oapi::Sketchpad::LEFT);
 }
 
-bool HUD::GlobalToHUD (const Vector &dir, int &x, int &y) const
+bool HUD::GlobalToHUD (const VECTOR3 &dir, int &x, int &y) const
 {
 	bool vis;
 
 	if (bVC) {
-		Vector ldir = tmul (g_focusobj->GRot(), dir);
+		VECTOR3 ldir = tmul(g_focusobj->GRot(), dir);
 		if (ldir.z <= 0.0) vis = false;
 		else {
 			double fac = HUDofs.z/ldir.z;
@@ -1187,12 +1186,12 @@ bool HUD::GlobalToHUD (const Vector &dir, int &x, int &y) const
 	return vis;
 }
 
-bool HUD::GlobalToHUD (const Vector &dir, double &x, double &y) const
+bool HUD::GlobalToHUD (const VECTOR3 &dir, double &x, double &y) const
 {
 	bool vis;
 
 	if (bVC) {
-		Vector ldir = tmul (g_focusobj->GRot(), dir);
+		VECTOR3 ldir = tmul(g_focusobj->GRot(), dir);
 		if (ldir.z <= 0.0) vis = false;
 		else {
 			double fac = HUDofs.z/ldir.z;
@@ -1206,7 +1205,7 @@ bool HUD::GlobalToHUD (const Vector &dir, double &x, double &y) const
 	return vis;
 }
 
-bool HUD::GlobalDrawMarker (oapi::Sketchpad *skp, const Vector &dir, int style) const
+bool HUD::GlobalDrawMarker (oapi::Sketchpad *skp, const VECTOR3 &dir, int style) const
 {
 	int x, y;
 	if (GlobalToHUD (dir, x, y)) {
@@ -1225,10 +1224,10 @@ bool HUD::GlobalDrawMarker (oapi::Sketchpad *skp, const Vector &dir, int style) 
 	return false;
 }
 
-oapi::IVECTOR2 *HUD::OffscreenDirMarker (const Vector &dir) const
+oapi::IVECTOR2 *HUD::OffscreenDirMarker (const VECTOR3 &dir) const
 {
 	static oapi::IVECTOR2 pt[4];
-	Vector d;
+	VECTOR3 d;
 	if (bVC) {
 		d = tmul(g_focusobj->GRot(), dir);
 	} else {
@@ -1323,9 +1322,9 @@ void HUD_Orbit::Display (oapi::Sketchpad *skp)
 	sprintf (cbuf, "[%s]", cntobj->Name());
 	skp->Text (10+6*fW, 0, cbuf, strlen (cbuf));
 
-	Vector V = self->GVel() - cntobj->GVel();
-	Vector Vunit = unit(V);
-	Vector Vrel = unit(tmul(self->GRot(), V));
+	VECTOR3 V = self->GVel() - cntobj->GVel();
+	VECTOR3 Vunit = unit(V);
+	VECTOR3 Vrel = unit(tmul(self->GRot(), V));
 	if (!GlobalDrawMarker (skp, Vunit, 6) &&
 		!GlobalDrawMarker (skp, -Vunit, 4)) {
 		oapi::IVECTOR2 *pt = OffscreenDirMarker (Vunit);
@@ -1333,7 +1332,7 @@ void HUD_Orbit::Display (oapi::Sketchpad *skp)
 		skp->Text (pt[3].x-fW, pt[3].y-spec.Markersize-fH-2, "PG", 2);
 	}
 
-	Vector P = self->GPos() - cntobj->GPos();
+	VECTOR3 P = self->GPos() - cntobj->GPos();
 
 	// radius indicator
 	dx = fW*7;
@@ -1387,7 +1386,7 @@ void HUD_Orbit::Display (oapi::Sketchpad *skp)
 	skp->SetTextAlign(oapi::Sketchpad::LEFT);
 	skp->SetFont(font);
 
-	Vector Prel = unit(tmul(self->GRot(), P));
+	VECTOR3 Prel = unit(tmul(self->GRot(), P));
 	//if (Prel.z < 0.0) Prel = -Prel;
 	fac = VRES05 / (Prel.z * g_camera->TanAperture());
 	px = HRES05 + (int)(Prel.x * fac);
@@ -1419,12 +1418,12 @@ void HUD_Orbit::Display (oapi::Sketchpad *skp)
 	}
 
 	// Orbital plane azimuth angle ribbon
-	Vector Z0 (-c*a, -c*b, a*a+b*b); // projection of vessel forward direction into orbital plane
+	VECTOR3 Z0{-c * a, -c * b, a * a + b * b}; // projection of vessel forward direction into orbital plane
 	if (Z0.x || Z0.y || Z0.z) {
 		Z0 = unit(Z0);
 		double cosa = dot(Vrel, Z0);
 		double phi = acos(cosa);
-		Vector VV (Vrel.y*c - Vrel.z*b, Vrel.z*a - Vrel.x*c, Vrel.x*b - Vrel.y*a); // Vector perpendicular to V in orbital plane
+		VECTOR3 VV{Vrel.y * c - Vrel.z * b, Vrel.z * a - Vrel.x * c, Vrel.x * b - Vrel.y * a}; // Vector perpendicular to V in orbital plane
 		if (dot(Z0, VV) > 0.0) phi = Pi2 - phi;
 		DrawTiltedRibbon (skp, phi, alpha);
 	}
@@ -1451,8 +1450,8 @@ void HUD_Orbit::UpdateMesh (int &ivtx, int &iidx)
 	}
 	AddMesh_Billboard (ivtx, iidx, spec.CX-renderprm.scal*refwidth*0.7, renderprm.scal*10, renderprm.scal*refwidth*1.4, renderprm.scal*19.6, 0, 242, refwidth, 14);
 
-	Vector V = self->GVel() - cntobj->GVel();
-	Vector Vunit = unit(V);
+	VECTOR3 V = self->GVel() - cntobj->GVel();
+	VECTOR3 Vunit = unit(V);
 	if (!AddMesh_Marker (ivtx, iidx, Vunit, 1) &&
 		!AddMesh_Marker (ivtx, iidx, -Vunit, 0)) {
 			AddMesh_DirectionMarker (ivtx, iidx, Vunit, true);
@@ -1460,9 +1459,9 @@ void HUD_Orbit::UpdateMesh (int &ivtx, int &iidx)
 
 	if (g_camera->IsCockpitForward()) {
 		static double step = tan (RAD*10.0);
-		Vector Vrel = unit(tmul(self->GRot(), V));
-		Vector P = self->GPos() - cntobj->GPos();
-		Vector Prel = unit(tmul(self->GRot(), P));
+		VECTOR3 Vrel = unit(tmul(self->GRot(), V));
+		VECTOR3 P = self->GPos() - cntobj->GPos();
+		VECTOR3 Prel = unit(tmul(self->GRot(), P));
 
 		// Radius readout
 		char cbuf[64];
@@ -1493,12 +1492,12 @@ void HUD_Orbit::UpdateMesh (int &ivtx, int &iidx)
 		}
 
 		// Orbital plane azimuth angle ribbon
-		Vector Z0 (-c*a, -c*b, a*a+b*b); // projection of vessel forward direction into orbital plane
+		VECTOR3 Z0{-c * a, -c * b, a * a + b * b}; // projection of vessel forward direction into orbital plane
 		if (Z0.x || Z0.y || Z0.z) {
 			Z0 = unit(Z0);
 			double cosa = dot(Vrel, Z0);
 			double phi = acos(cosa);
-			Vector VV (Vrel.y*c - Vrel.z*b, Vrel.z*a - Vrel.x*c, Vrel.x*b - Vrel.y*a); // Vector perpendicular to V in orbital plane
+			VECTOR3 VV{Vrel.y * c - Vrel.z * b, Vrel.z * a - Vrel.x * c, Vrel.x * b - Vrel.y * a}; // Vector perpendicular to V in orbital plane
 			if (dot(Z0, VV) > 0.0) phi = Pi2 - phi;
 			AddMesh_AzimuthTape (ivtx, iidx, phi, alpha);
 		}
@@ -1867,7 +1866,7 @@ void HUD_Docking::Display (oapi::Sketchpad *skp)
 	skp->Text (10+5*fW, 0, cbuf, strlen (cbuf));
 
 	// rel velocity marker
-	Vector vrel = self->GVel() - tgt->GVel();
+	VECTOR3 vrel = self->GVel() - tgt->GVel();
 	double len = ::len(vrel); vrel /= len;
 	sprintf (cbuf, "V[%s]", tgt->Name());
 
@@ -1891,7 +1890,7 @@ void HUD_Docking::Display (oapi::Sketchpad *skp)
 	skp->Text (x-(slen*fW)/2, y+spec.Markersize, cbuf+1, slen);
 
 	// target marker
-	Vector prel = tgt->GPos() - self->GPos();
+	VECTOR3 prel = tgt->GPos() - self->GPos();
 	len = ::len(prel); prel /= len;
 	if (GlobalToHUD (prel, x, y)) {
 		skp->Rectangle (x-spec.Markersize, y-spec.Markersize, x+spec.Markersize+1, y+spec.Markersize+1);
@@ -1909,10 +1908,10 @@ void HUD_Docking::Display (oapi::Sketchpad *skp)
 	// approach path indicator
 	if (ps) {
 		int i, j, x, y;
-		Vector dpos (mul (tgt->GRot(), ps->ref) + tgt->GPos() - g_camera->GPos());
-		Vector ddir (mul (tgt->GRot(), -ps->dir));
-		Vector ydir (mul (tgt->GRot(), ps->rot));
-		Vector p[4], pp[2];
+		VECTOR3 dpos = mul(tgt->GRot(), ps->ref) + tgt->GPos() - g_camera->GPos();
+		VECTOR3 ddir = mul(tgt->GRot(), -ps->dir);
+		VECTOR3 ydir = mul(tgt->GRot(), ps->rot);
+		VECTOR3 p[4], pp[2];
 		oapi::IVECTOR2 pt[4];
 		double dist = 50.0;
 		float dx = -(float)(ddir.x*dist);
@@ -2007,9 +2006,9 @@ void HUD_Docking::UpdateMesh (int &ivtx, int &iidx)
 
 	// rel velocity marker
 	double xcnt, ycnt;
-	Vector vrel = self->GVel() - tgt->GVel();
+	VECTOR3 vrel = self->GVel() - tgt->GVel();
 	double len = ::len(vrel);
-	Vector Vunit = vrel/len;
+	VECTOR3 Vunit = vrel / len;
 
 	sprintf (cbuf, "-V[%s]%s", tgt->Name(), DistStr(len));
 	char *pc = cbuf+1;
@@ -2028,7 +2027,7 @@ void HUD_Docking::UpdateMesh (int &ivtx, int &iidx)
 	AddMesh_Billboard (ivtx, iidx, xcnt-0.7*renderprm.scal*vstr1width, ycnt-renderprm.scal*60, 1.4*renderprm.scal*vstr1width, renderprm.scal*19.6, 0, 216, vstr1width, 13);
 
 	// target marker
-	Vector prel = tgt->GPos() - self->GPos();
+	VECTOR3 prel = tgt->GPos() - self->GPos();
 	len = ::len(prel); prel /= len;
 	if (!AddMesh_Marker (ivtx, iidx, prel, 2, &xcnt, &ycnt))
 		AddMesh_DirectionMarker (ivtx, iidx, prel, false, &xcnt, &ycnt);
@@ -2140,12 +2139,12 @@ void HUD_Docking::ReadParams (ifstream &ifs)
 	}
 }
 
-void BoxCoord (const Vector &dockpos, const Vector &dockdir,
-			   const Vector &refdir, double dist, Vector *crd)
+void BoxCoord (const VECTOR3 &dockpos, const VECTOR3 &dockdir,
+			   const VECTOR3 &refdir, double dist, VECTOR3 *crd)
 {
 	const double size1 = 7.0, size2 = 5.0;
-	Vector xdir = cross(dockdir, refdir);
-	Vector s (dockpos - dockdir*dist);
+	VECTOR3 xdir = cross(dockdir, refdir);
+	VECTOR3 s = dockpos - dockdir * dist;
 	for (int i = 0; i < 4; i++)
 		crd[i] = s + refdir * (i <= 1 ? size2 : -size2) + xdir * (i == 0 || i == 3 ? size1 : -size1);
 }

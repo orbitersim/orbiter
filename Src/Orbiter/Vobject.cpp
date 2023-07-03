@@ -127,13 +127,13 @@ void VObject::UpdateRenderVectors()
 			double scale = body->Size() * *(float*)gc->GetConfigParam(CFGPRM_FRAMEAXISSCALE);
 			double rad = body->Size() * 0.01;
 			float alpha = *(float*)gc->GetConfigParam(CFGPRM_FRAMEAXISOPACITY);
-			AddVector(Vector(scale, 0, 0), Vector(0, 0, 0), rad, std::string("+x"), Vector(1, 1, 1), alpha, D3DRGB(1, 1, 1));
-			AddVector(Vector(0, scale, 0), Vector(0, 0, 0), rad, std::string("+y"), Vector(1, 1, 1), alpha, D3DRGB(1, 1, 1));
-			AddVector(Vector(0, 0, scale), Vector(0, 0, 0), rad, std::string("+z"), Vector(1, 1, 1), alpha, D3DRGB(1, 1, 1));
+			AddVector({scale, 0, 0}, {0, 0, 0}, rad, std::string("+x"), {1, 1, 1}, alpha, D3DRGB(1, 1, 1));
+			AddVector({0, scale, 0}, {0, 0, 0}, rad, std::string("+y"), {1, 1, 1}, alpha, D3DRGB(1, 1, 1));
+			AddVector({0, 0, scale}, {0, 0, 0}, rad, std::string("+z"), {1, 1, 1}, alpha, D3DRGB(1, 1, 1));
 			if (flag & FAV_NEGATIVE) {
-				AddVector(Vector(-scale, 0, 0), Vector(0, 0, 0), rad, std::string("-x"), Vector(1, 1, 1), alpha, D3DRGB(1, 1, 1));
-				AddVector(Vector(0, -scale, 0), Vector(0, 0, 0), rad, std::string("-y"), Vector(1, 1, 1), alpha, D3DRGB(1, 1, 1));
-				AddVector(Vector(0, 0, -scale), Vector(0, 0, 0), rad, std::string("-z"), Vector(1, 1, 1), alpha, D3DRGB(1, 1, 1));
+				AddVector({-scale, 0, 0}, {0, 0, 0}, rad, std::string("-x"), {1, 1, 1}, alpha, D3DRGB(1, 1, 1));
+				AddVector({0, -scale, 0}, {0, 0, 0}, rad, std::string("-y"), {1, 1, 1}, alpha, D3DRGB(1, 1, 1));
+				AddVector({0, 0, -scale}, {0, 0, 0}, rad, std::string("-z"), {1, 1, 1}, alpha, D3DRGB(1, 1, 1));
 			}
 		}
 	}
@@ -156,10 +156,9 @@ void VObject::RenderAsDisc (LPDIRECT3DDEVICE7 dev)
 	illum *= pow(sundist, -0.4);
 
 	// scale with albedo components
-	const Vector &albedo = body->Albedo();
-	double abr = albedo.x*illum;
-	double abg = albedo.y*illum;
-	double abb = albedo.z*illum;
+	double abr = body->Albedo().x * illum;
+	double abg = body->Albedo().y * illum;
+	double abb = body->Albedo().z * illum;
 	double abmax = max (abr, max (abg, abb));
 	if (abmax > 1.0) {
 		rad *= sqrt(abmax);
@@ -168,7 +167,7 @@ void VObject::RenderAsDisc (LPDIRECT3DDEVICE7 dev)
 		abb *= 1.0/abmax;
 	}
 
-	RenderSpot (dev, 0, (float)rad, Vector(abr,abg,abb), false, 0);
+	RenderSpot (dev, 0, (float)rad, {abr, abg, abb}, false, 0);
 }
 
 void VObject::RenderAsPixel (LPDIRECT3DDEVICE7 dev)
@@ -205,10 +204,9 @@ void VObject::RenderAsPixel (LPDIRECT3DDEVICE7 dev)
 		double cosa = dot(unit(body->GPos()), unit(body->GPos() - g_camera->GPos()));
 		intens *= 0.5 * ((1.0-ambient)*cosa + 1.0+ambient);
 
-		const Vector &albedo = body->Albedo();
-		double abr = albedo.x;
-		double abg = albedo.y;
-		double abb = albedo.z;
+		double abr = body->Albedo().x;
+		double abg = body->Albedo().y;
+		double abb = body->Albedo().z;
 		double abmax = max (abr, max (abg, abb));
 		intens *= abmax;
 		abr *= 256.0/abmax;
@@ -254,11 +252,11 @@ void VObject::RenderAsPixel (LPDIRECT3DDEVICE7 dev)
 	}
 }
 
-void VObject::RenderSpot (LPDIRECT3DDEVICE7 dev, const Vector *ofs, float size, const Vector &col, bool lighting, int shape)
+void VObject::RenderSpot (LPDIRECT3DDEVICE7 dev, const VECTOR3 *ofs, float size, const VECTOR3 &col, bool lighting, int shape)
 {
 	static D3DMATRIX W = {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,1};
 
-	Vector pos (cpos);
+	auto pos = cpos;
 	if (ofs) pos += mul (body->GRot(), *ofs);
 	double dist = len(pos);
 
@@ -269,7 +267,7 @@ void VObject::RenderSpot (LPDIRECT3DDEVICE7 dev, const Vector *ofs, float size, 
 		dist = maxdist;
 	}
 
-	Vector bdir(pos/dist);
+	VECTOR3 bdir = pos / dist;
 	double hz = std::hypot (bdir.x, bdir.z);
 	double phi = atan2 (bdir.z, bdir.x);
 	float sphi = (float)sin(phi), cphi = (float)cos(phi);
@@ -325,16 +323,16 @@ void VObject::RenderAsSpot (LPDIRECT3DDEVICE7 dev, D3DCOLORVALUE *illumination)
 	// scale blob size so that apparent size reduces linearly from d0 to d1
 	if (size < 0.0) return; // sanity check
 	dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
-	RenderSpot (dev, 0, size, illumination ? body->Albedo()*Vector(illumination->r,illumination->g,illumination->b) : body->Albedo(), true);
+	RenderSpot(dev, 0, size, illumination ? body->Albedo() * VECTOR3{illumination->r, illumination->g, illumination->b} : body->Albedo(), true);
 	dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
 }
 
-void VObject::AddVector (const Vector &v, const Vector &orig, double rad, const std::string& label, const Vector &col, float alpha, DWORD lcol, float lsize)
+void VObject::AddVector (const VECTOR3 &v, const VECTOR3 &orig, double rad, const std::string& label, const VECTOR3 &col, float alpha, DWORD lcol, float lsize)
 {
 	double len = ::len(v);
 	if (len < 2.0*rad) return; // too short to be rendered
 
-	Vector vu = v / len;
+	VECTOR3 vu = v / len;
 	double dist = ::len(vu - campos);
 
 	BodyVectorRec rec;
@@ -355,7 +353,7 @@ void VObject::RenderVectors (LPDIRECT3DDEVICE7 dev)
 {
 	if (veclist.size()) {
 		float palpha = -1.0f;
-		Vector pcol(-1, -1, -1);
+		VECTOR3 pcol{-1, -1, -1};
 		for (auto&& vec : veclist) {
 			if (vec.alpha != palpha || vec.col.x != pcol.x || vec.col.y != pcol.y || vec.col.z != pcol.z) {
 				dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(vec.col.x, vec.col.y, vec.col.z, vec.alpha));
@@ -379,7 +377,7 @@ void VObject::RenderVectorLabels(LPDIRECT3DDEVICE7 dev)
 	}
 }
 
-bool VObject::DrawVector (LPDIRECT3DDEVICE7 dev, const Vector &end, const Vector &orig, double rad)
+bool VObject::DrawVector (LPDIRECT3DDEVICE7 dev, const VECTOR3 &end, const VECTOR3 &orig, double rad)
 {
 	static const float EPS = 1e-2f;
 	static const int nseg = 8;
@@ -442,7 +440,7 @@ bool VObject::DrawVector (LPDIRECT3DDEVICE7 dev, const Vector &end, const Vector
 	}
 
 	// rotate vector
-	Vector d(end/h);
+	VECTOR3 d = end / h;
 	double tht = acos(d.y), phi = atan2(d.z, d.x);
 	float cost = (float)cos(tht), sint = (float)sin(tht);
 	float cosp = (float)cos(phi), sinp = (float)sin(phi);
@@ -458,7 +456,7 @@ bool VObject::DrawVector (LPDIRECT3DDEVICE7 dev, const Vector &end, const Vector
 	D3DMath_MatrixMultiply (W, mWorld, R);
 	dev->SetTransform (D3DTRANSFORMSTATE_WORLD, &W);
 
-	Vector cp (tmul (body->GRot(), -cpos));
+	VECTOR3 cp = tmul(body->GRot(), -cpos);
 	if (dot(d, unit(end - cp)) > 0)
 		Idx = Idx1, nIdx = nIdx1;
 	else

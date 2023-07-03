@@ -552,10 +552,10 @@ void Instrument_MapOld::CalcOrbitProj (const Elements *el, const Planet *planet,
                       el->sint, 0,  el->cost));
 	R.tpremul (planet->GRot());
 
-	Vector rg, rl;
+	VECTOR3 rg, rl;
 
 	for (i = 0; i < npt05; i++) {
-		rl = mul(R, Vector{cosp[i], 0, sinp[i]});
+		rl = mul(R, VECTOR3{cosp[i], 0, sinp[i]});
 		x = rl.x, y = rl.y, z = rl.z;
 		lng = atan2 (z,x) + Pi;  // maps start at -Pi (180°W)
 		lat = atan(y/std::hypot(x,z));
@@ -585,7 +585,7 @@ bool Instrument_MapOld::CalcIntersect (const Elements *el, const Planet *planet,
 	double lng, lat, r, ta = acos(arg);
 	double f1 = (double)mapw/Pi2;
 	int yofs = maph/2;
-	Vector pos;
+	VECTOR3 pos;
 	el->Pol2Crt (rad, ta, pos);
 	planet->GlobalToEquatorial (pos+planet->GPos(), lng, lat, r);
 	is1->x = (int)((lng+Pi)*f1);

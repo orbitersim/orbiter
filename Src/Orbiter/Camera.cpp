@@ -39,7 +39,7 @@ extern Pane *g_pane;
 extern Vessel *g_focusobj;
 extern char DBG_MSG[256];
 
-static Vector nullvec;
+static VECTOR3 nullvec;
 static bool brot = false;
 const double dragT = 3.0;
 static const double vmax = 2.0;  // max rotation velocity (rad/s)
@@ -58,7 +58,7 @@ Camera::Camera (double _nearplane, double _farplane)
 	ephi = etheta = 0.0;
 	dphi = dtht = 0.0;
 	eyeofs0 = {0, 0.1, 0.08};
-	SetDefaultCockpitDir (Vector (0,0,1));
+	SetDefaultCockpitDir({0, 0, 1});
 	SetCockpitDir (0,0);
 	SetCatchAngle (RAD*5.0);
 	memset (&cockpitprm, 0, sizeof(cockpitprm));
@@ -385,10 +385,9 @@ void Camera::Attach (Body *_target, int mode)
 		SetRelPos (rdist, ephi, etheta);
 		gspos = mul(target->GRot(), rpos);
 		gpos = gspos + target->GPos();
-		GPOS = MakeVECTOR3 (gpos);
 		grot.Set (target->GRot());
 		if (extmode == CAMERA_ABSDIRECTION)
-			gdir = mul (target->GRot(), mul (rrot, Vector (0,0,1)));
+			gdir = mul(target->GRot(), mul(rrot, VECTOR3{0, 0, 1}));
 		if ((extmode == CAMERA_TARGETTOOBJECT || extmode == CAMERA_TARGETFROMOBJECT)
 			&& dirref == target) extmode = CAMERA_TARGETRELATIVE; // sanity check
 	} else {
@@ -404,7 +403,6 @@ void Camera::Attach (Body *_target, int mode)
 		grot = target->GRot() * rrot;
 		gspos = mul(target->GRot(), *rofs);
 		gpos = gspos + target->GPos();
-		GPOS = MakeVECTOR3 (gpos);
 	}
 	tref = {0, 0, 0};
 	vphi = vtht = dphi = dtht = 0.0;
@@ -412,7 +410,7 @@ void Camera::Attach (Body *_target, int mode)
 	SendDlgMessage (3, 0);
 }
 
-bool Camera::Direction2Viewport(const Vector &dir, int &x, int &y)
+bool Camera::Direction2Viewport(const VECTOR3 &dir, int &x, int &y)
 {
 	D3DVECTOR homog;
 	D3DMath_VectorMatrixMultiply (homog, D3DMath_Vector(dir.x, dir.y, dir.z), *D3D_ProjViewMatrix());
@@ -458,7 +456,7 @@ void Camera::AddPhi (double dphi)
 		} else {
 			SetRelPos (rdist, ephi+dphi*0.5, etheta);
 			if (extmode == CAMERA_ABSDIRECTION)
-				gdir = mul (target->GRot(), mul (rrot, Vector (0,0,1)));
+				gdir = mul(target->GRot(), mul(rrot, VECTOR3{0, 0, 1}));
 		}
 	}
 }
@@ -471,7 +469,7 @@ void Camera::AddTheta (double dtheta)
 		} else {
 			SetRelPos (rdist, ephi, etheta+dtheta*0.5);
 			if (extmode == CAMERA_ABSDIRECTION)
-				gdir = mul (target->GRot(), mul (rrot, Vector (0,0,1)));
+				gdir = mul(target->GRot(), mul(rrot, VECTOR3{0, 0, 1}));
 		}
 	}
 }
@@ -488,7 +486,7 @@ void Camera::Rotate (double _dphi, double _dtht, bool smooth)
 	rot_smooth = smooth;
 }
 
-void Camera::MoveTo (const Vector &p)
+void Camera::MoveTo (const VECTOR3 &p)
 {
 	if (ExtCtrlMode & CAMDATA_POS) return; // inhibit transition moves if camera is externally controlled
 	if (external_view) {
@@ -498,7 +496,7 @@ void Camera::MoveTo (const Vector &p)
 	}
 }
 
-void Camera::MoveToDirect (const Vector &p)
+void Camera::MoveToDirect (const VECTOR3 &p)
 {
 	if (external_view) {
 	} else {
@@ -547,7 +545,7 @@ void Camera::ChangeDist (double fact)
 	}
 }
 
-void Camera::Drag (const Vector &gshift)
+void Camera::Drag (const VECTOR3 &gshift)
 {
 	if (external_view) {
 		tref     = has_tref ? tref + gshift : gshift;
@@ -586,13 +584,13 @@ void Camera::SetFrustumLimits (double _nearplane, double _farplane)
 	UpdateProjectionMatrix ();
 }
 
-void Camera::ViewportToGlobalDir (double sx, double sy, Vector &gdir) const
+void Camera::ViewportToGlobalDir (double sx, double sy, VECTOR3 &gdir) const
 {
-	Vector s((sx-w05+0.5)*tan_ap/h05, (h05-sy-0.5)*tan_ap/h05, 1.0);
+	VECTOR3 s{(sx - w05 + 0.5) * tan_ap / h05, (h05 - sy - 0.5) * tan_ap / h05, 1.0};
 	gdir = mul(grot, unit(s));
 }
 
-void Camera::SetDefaultCockpitDir (const Vector &dir, double tilt)
+void Camera::SetDefaultCockpitDir (const VECTOR3 &dir, double tilt)
 {
 	isStdDir = (dir.x == 0 && dir.y == 0 && dir.z > 0 && tilt == 0.0);
 	Matrix rrot0_old(rrot0);
@@ -635,7 +633,7 @@ void Camera::SetCockpitDir (double ph, double th)
 			      0.0,    costh,        sinth,
 				  sinph, -cosph*sinth,  cosph*costh);
 	}
-	eyeofs = mul (rrot, Vector (0,0.1,0.08)) - eyeofs0;
+	eyeofs = mul(rrot, VECTOR3{0, 0.1, 0.08}) - eyeofs0;
 	if (!isStdDir) eyeofs = mul (rrot0, eyeofs);
 }
 
@@ -707,7 +705,7 @@ void Camera::SetTrackMode (ExtCamMode mode, const Body *ref)
 		Attach (target, 1);
 
 	if (extmode == CAMERA_GLOBALFRAME) {
-		Vector rdir{-unit(tmul(target->GRot(), rpos))};
+		VECTOR3 rdir = -unit(tmul(target->GRot(), rpos));
 		SetRelPos (rdist, atan2 (-rdir.x, rdir.z), asin (rdir.y));
 	}
 
@@ -802,7 +800,7 @@ void Camera::SetGroundObserver_TargetLock (bool lock)
 
 		if (go.tgtlock && external_view && extmode == CAMERA_GROUNDOBSERVER) {
 			gdir = unit(target->GPos() - gpos);
-			Vector hdir = tmul (go.R, tmul (dirref->GRot(), gdir));
+			VECTOR3 hdir = tmul(go.R, tmul(dirref->GRot(), gdir));
 			go.tht = asin (hdir.y);
 			go.phi = atan2 (-hdir.x, hdir.z);
 			OutputGroundObserverParams();
@@ -829,8 +827,8 @@ void Camera::GroundObserverShift (double dx, double dz, double dh)
 	if (!external_view || extmode != CAMERA_GROUNDOBSERVER) return;
 	double r;
 	
-	Vector dsz (grot.m13, grot.m23, grot.m33); // dz: go forward/backward w.r.t. camera view direction
-	Vector dsx (grot.m11, grot.m21, grot.m31); // dx: go sideways w.r.t. camera view direction
+	VECTOR3 dsz{grot.m13, grot.m23, grot.m33}; // dz: go forward/backward w.r.t. camera view direction
+	VECTOR3 dsx{grot.m11, grot.m21, grot.m31}; // dx: go sideways w.r.t. camera view direction
 	dirref->GlobalToEquatorial (gpos + dsz*dz + dsx*dx, go.lng, go.lat, r);
 	double new_alt = max (1.0, go.alt+dh);
 	go.alt0 += new_alt-go.alt;
@@ -980,10 +978,10 @@ DWORD Camera::UpdateExternalControl (ExternalCameraControl *ecc)
 					double x = min (posrange, max (-posrange, data.x));
 					double y = min (posrange, max (-posrange, data.y));
 					double z = min (posrange, max (-posrange, data.z));
-					Vector p(x,y,z);
-					Vector pr(mul (isStdDir ? rrot : rrot0*rrot, p));
+					VECTOR3 p{x, y, z};
+					VECTOR3 pr = mul(isStdDir ? rrot : rrot0 * rrot, p);
 					if (dragpos) {
-						Vector D0(pr-rpos);
+						VECTOR3 D0 = pr - rpos;
 						double d0 = len(D0);
 						double d = td.SysDT*1.0;
 						if (d > d0) dragpos = false;
@@ -1062,7 +1060,6 @@ void Camera::Update ()
 		case CAMERA_TARGETRELATIVE:
 			gspos = mul(target->GRot(), rpos);
 			gpos = gspos + target->GPos();
-			GPOS = MakeVECTOR3 (gpos);
 			grot = target->GRot() * rrot;
 			break;
 		case CAMERA_TARGETTOOBJECT:
@@ -1072,7 +1069,7 @@ void Camera::Update ()
 			allow_invert = false;
 			// fall through
 		case CAMERA_ABSDIRECTION: {
-			Vector rdir (tmul (target->GRot(), gdir));
+			VECTOR3 rdir = tmul(target->GRot(), gdir);
 			double th = asin (rdir.y);
 			double ph = atan2 (-rdir.x, rdir.z);
 			double dph = fabs(ph-ephi);
@@ -1081,13 +1078,11 @@ void Camera::Update ()
 			SetRelPos (rdist, ph, th);
 			gspos = gdir * (-rdist * target->Size());
 			gpos = gspos + target->GPos();
-			GPOS = MakeVECTOR3 (gpos);
 			grot = target->GRot() * rrot;
 			} break;
 		case CAMERA_GLOBALFRAME:
 			gspos = rpos;
 			gpos = gspos + target->GPos();
-			GPOS = MakeVECTOR3 (gpos);
 			grot = rrot;
 			break;
 		case CAMERA_GROUNDOBSERVER: {
@@ -1101,11 +1096,10 @@ void Camera::Update ()
 				rad = dirref->Size() + elev + go.alt;
 			}
 			dirref->EquatorialToGlobal (go.lng, go.lat, rad, gpos);
-			GPOS = MakeVECTOR3 (gpos);
 			gspos = gpos - target->GPos();
 			if (go.tgtlock) {
 				gdir = unit(target->GPos() - gpos);
-				Vector hdir = tmul (go.R, tmul (dirref->GRot(), gdir));
+				VECTOR3 hdir = tmul(go.R, tmul(dirref->GRot(), gdir));
 				if (fabs (hdir.y) < 0.999999) {
 					go.tht = asin (hdir.y);
 					go.phi = atan2 (-hdir.x, hdir.z);
@@ -1135,7 +1129,6 @@ void Camera::Update ()
 				if (tlen) {
 					tref *= (tref_d0 * scale) / len(tref);
 					gpos += tref; gspos += tref;
-					GPOS = MakeVECTOR3 (gpos);
 				}
 				if (rshift) {
 					rpos *= ((tref_r0 - tref_r1) * scale + tref_r1) / len(rpos);
@@ -1224,7 +1217,7 @@ void Camera::Update ()
 		if (movehead) {
 			static double v = 0;
 			const double a = 1.5, vmax = 2.0;
-			Vector dr = tgtp - rpos;
+			VECTOR3 dr = tgtp - rpos;
 			double d, dst = len(dr);
 			if (dst > 1e-4) {
 				if (v < vmax) v = min (vmax, v + dt*a);
@@ -1241,7 +1234,6 @@ void Camera::Update ()
 		grot = target->GRot() * (isStdDir ? rrot : rrot0 * rrot);
 		gspos = mul(target->GRot(), *rofs + rpos + eyeofs);
 		gpos = gspos + target->GPos();
-		GPOS = MakeVECTOR3 (gpos);
 	}
 
 	// dynamic nearplane calculation
@@ -1250,8 +1242,8 @@ void Camera::Update ()
 	double np = dist_proxy;  // near-plane no further than closest object
 	if (planet_proxy && alt_proxy < 0.1*planet_proxy->Size()) {
 		// make sure the near-plane doesn't cut into the planet surface
-		Vector gd(grot.m13,grot.m23,grot.m33);
-		Vector cp(planet_proxy->GPos()-gpos);
+		VECTOR3 gd{grot.m13, grot.m23, grot.m33};
+		VECTOR3 cp = planet_proxy->GPos() - gpos;
 		double alt = len(cp) - planet_proxy->Size();
 		double az = std::acos(dot(gd, unit(cp)));
 		double a = atan (tan_ap*std::hypot(w05,h05)/h05);

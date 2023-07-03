@@ -71,28 +71,6 @@ inline double acosh (double x)
 }
 
 // =======================================================================
-// class Vector
-
-struct Vector
-{
-	constexpr Vector() : x{0}, y{0}, z{0} { }
-	constexpr Vector(double x, double y, double z) : x{x}, y{y}, z{z} { }
-
-	constexpr Vector(const Vector&) = default;
-	constexpr Vector& operator=(const Vector&) = default;
-
-	constexpr auto  operator[](size_t i) const { return data[i]; }
-	constexpr auto& operator[](size_t i) { return data[i]; }
-
-	union {
-		double data[3];
-		struct { double x, y, z; };
-	};
-};
-
-template<> struct is_vector3<Vector> : std::true_type { };
-
-// =======================================================================
 // class Matrix
 
 class Matrix {
@@ -113,7 +91,7 @@ public:
 
 	void Set (const Quaternion &q);
 
-	void Set (const Vector &rot);
+	void Set (const VECTOR3 &rot);
 	// Set from axis rotation vector
 
 	inline double &operator() (int i, int j)
@@ -140,8 +118,8 @@ public:
 
 	void orthogonalise (int axis);
 
-	friend void qrdcmp (Matrix &a, Vector &c, Vector &d, int *sing = 0);
-	friend void qrsolv (const Matrix &a, const Vector &c, const Vector &d, Vector &b);
+	friend void qrdcmp (Matrix &a, VECTOR3 &c, VECTOR3 &d, int *sing = 0);
+	friend void qrsolv (const Matrix &a, const VECTOR3 &c, const VECTOR3 &d, VECTOR3 &b);
 
 	union {
 		double data[9];
@@ -151,8 +129,8 @@ public:
 
 Matrix IMatrix();		 // returns identity matrix
 
-Vector mul (const Matrix &A, const Vector &b);  // returns A * b
-Vector tmul (const Matrix &A, const Vector &b); // returns A^T * b
+VECTOR3 mul (const Matrix &A, const VECTOR3 &b);  // returns A * b
+VECTOR3 tmul (const Matrix &A, const VECTOR3 &b); // returns A^T * b
 Matrix inv (const Matrix &A);  // inverse of A
 Matrix transp (const Matrix &A); // transpose of A
 
@@ -218,7 +196,7 @@ public:
 	inline Quaternion (double vx, double vy, double vz, double s) { Set (vx, vy, vz, s); }
 	// Constructor from scalar parameters
 
-	inline Quaternion (const Vector &v, double s) { Set (v, s); }
+	inline Quaternion (const VECTOR3 &v, double s) { Set (v, s); }
 	// Constructor from vector+scalar parameters
 
 	inline Quaternion (const Matrix &R) { Set (R); }
@@ -233,7 +211,7 @@ public:
 	inline void Set (double vx, double vy, double vz, double s)
 	{ qvx = vx, qvy = vy, qvz = vz, qs = s; }
 
-	inline void Set (const Vector &v, double s)
+	inline void Set (const VECTOR3 &v, double s)
 	{ qvx = v.x, qvy = v.y, qvz = v.z, qs = s; }
 	// set the quaternion from a vector and scalar component
 
@@ -249,16 +227,16 @@ public:
 	inline void normalise ()
 	{ double len = norm(); qs /= len; qvx /= len; qvy /= len; qvz /= len; }
 
-	void Rotate (const Vector &omega);
+	void Rotate (const VECTOR3 &omega);
 	// rotate the quaternion by rotation angles omega
 
-	Quaternion Rot (const Vector &omega) const;
+	Quaternion Rot (const VECTOR3 &omega) const;
 	// returns the quaternion rotated by angles omega
 
-	friend Vector mul (const Quaternion &q, const Vector &b);
+	friend VECTOR3 mul (const Quaternion &q, const VECTOR3 &b);
 	// Returns vector p rotated by quaternion
 
-	friend Vector tmul (const Quaternion &q, const Vector &p);
+	friend VECTOR3 tmul (const Quaternion &q, const VECTOR3 &p);
 	// Returns vector p rotated by inverse quaternion
 
 	Quaternion &operator+= (const Quaternion &Q);
@@ -293,22 +271,22 @@ class StateVectors {
 public:
 	void Set (const StateVectors &s);
 
-	void Set (const Vector &v, const Vector &p, const Vector &av, const Quaternion &ap);
+	void Set (const VECTOR3 &v, const VECTOR3 &p, const VECTOR3 &av, const Quaternion &ap);
 	// Set state vectors to linear velocity v, position p, angular velocity av and
 	// orientation ap.
 
 	void SetRot (const Matrix &r);     // set rotation state from a rotation matrix
 	void SetRot (const Quaternion &q); // set rotation state from a quaternion
 
-	void Advance (double dt, const Vector &a, const Vector &v, const Vector &aa, const Vector &av);
+	void Advance (double dt, const VECTOR3 &a, const VECTOR3 &v, const VECTOR3 &aa, const VECTOR3 &av);
 	// Advance the state vectors by dt, given linear acceleration a, linear velocity v,
 	// angular acceleration aa and angular velocity av.
 
-	Vector pos;      // position in associated frame
-	Vector vel;      // linear velocity in associated frame
+	VECTOR3 pos;     // position in associated frame
+	VECTOR3 vel;     // linear velocity in associated frame
 	Matrix R;        // rotation matrix in associated frame
 	Quaternion Q;    // orientation in associated frame
-	Vector omega;    // angular velocity components in associated frame
+	VECTOR3 omega;   // angular velocity components in associated frame
 };
 
 // =======================================================================
@@ -316,31 +294,30 @@ public:
 
 // Calculate the coefficients of a plane, ax+by+cz+d = 0, from 3 points spanning the plane
 // (Note that this assumes a left-handed coordinate system)
-void PlaneCoeffs (const Vector &p1, const Vector &p2, const Vector &p3,
+void PlaneCoeffs (const VECTOR3 &p1, const VECTOR3 &p2, const VECTOR3 &p3,
 	double &a, double &b, double &c, double &d);
 
 // Distance of point 'a' from a line defined by a point 'p' and direction vector 'd'
-inline double PointLineDist (const Vector &a, const Vector &p, const Vector &d)
+inline double PointLineDist (const VECTOR3 &a, const VECTOR3 &p, const VECTOR3 &d)
 {
 	return len(cross(unit(d), a - p));
-	//return dotp(d,a-p)/d.length();
 }
 
 // Distance of point 'p' from a plane defined by coefficients a,b,c,d (ax+by+cz+d=0)
 // This is a signed distance, so return value < 0 is possible
-double PointPlaneDist(const Vector& p, double a, double b, double c, double d);
+double PointPlaneDist(const VECTOR3& p, double a, double b, double c, double d);
 
 // Calculate intersection r of a line (given by point p and direction s) with a plane
 // given by coefficients ax+by+cz+d = 0. If return value=false then no intersection exists
-bool LinePlaneIntersect (double a, double b, double c, double d, const Vector &p, const Vector &s, Vector &r);
+bool LinePlaneIntersect (double a, double b, double c, double d, const VECTOR3 &p, const VECTOR3 &s, VECTOR3 &r);
 
 // Return the normal to the plane defined by coefficients a,b,c,d
-inline Vector PlaneNormal(double a, double b, double c, double d) { return unit(Vector{a, b, c}); }
+inline auto PlaneNormal(double a, double b, double c, double d) { return unit(VECTOR3{a, b, c}); }
 
 // Convert a cartesian reference frame given by orthonormal vectors X, Y, Z (expressed in the global frame) into
 // a rotation matrix, such that a point p in the global frame is transformed to p' in the XYZ frame by p' = Rp.
 // Note: X,Y,Z must be orthonormal (orthogonal, normalised) vectors (not tested)
-void VectorBasisToMatrix(const Vector &X, const Vector &Y, const Vector &Z, Matrix &R);
+void VectorBasisToMatrix(const VECTOR3 &X, const VECTOR3 &Y, const VECTOR3 &Z, Matrix &R);
 
 // Convert a cartesian reference frame given by orthonormal vectors Y, Z (expressed in the global frame) into
 // a rotation matrix, such that a point p in the global frame is transformed to p' in the YZ frame by p' = Rp.
@@ -348,6 +325,6 @@ void VectorBasisToMatrix(const Vector &X, const Vector &Y, const Vector &Z, Matr
 // Note: Y,Z must be orthonormal (orthogonal, normalised) vectors (not tested)
 // This function is useful for rotations involving docking ports which are defined by an approach direction (Z)
 // and an up direction (Y) that defines the longitudinal rotation reference.
-void DirRotToMatrix(const Vector &Z, const Vector &Y, Matrix &R);
+void DirRotToMatrix(const VECTOR3 &Z, const VECTOR3 &Y, Matrix &R);
 
 #endif // !__VECMAT_H

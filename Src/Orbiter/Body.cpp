@@ -89,7 +89,7 @@ void Body::SetSize (double newsize)
 	g_pOrbiter->NotifyObjectSize (this);
 }
 
-void Body::RPlace (const Vector &rpos, const Vector &rvel)
+void Body::RPlace (const VECTOR3 &rpos, const VECTOR3 &rvel)
 {
 	// should RPlace be allowed outside update phase?
 	s1->pos = rpos_base = rpos;
@@ -98,14 +98,14 @@ void Body::RPlace (const Vector &rpos, const Vector &rvel)
 	rvel_add = {0, 0, 0};
 }
 
-void Body::SetRPos (const Vector &p)
+void Body::SetRPos (const VECTOR3 &p)
 {
 	dCHECK(s1 != s0, "Update state not available")
 	rpos_base = s1->pos = p;
 	rpos_add = {0, 0, 0};
 }
 
-void Body::AddRPos (const Vector &dp) {
+void Body::AddRPos (const VECTOR3 &dp) {
 	rpos_base += dp;
 	s1->pos = rpos_base + rpos_add;
 }
@@ -116,14 +116,14 @@ void Body::FlushRPos ()
 	rpos_add = {0, 0, 0};
 }
 
-void Body::SetRVel (const Vector &v)
+void Body::SetRVel (const VECTOR3 &v)
 {
 	dCHECK(s1 != s0, "Update state not available")
 	rvel_base = s1->vel = v;
 	rvel_add = {0, 0, 0};
 }
 
-void Body::AddRVel (const Vector &dv)
+void Body::AddRVel (const VECTOR3 &dv)
 {
 	dCHECK(s1 != s0, "Update state not available")
 	rvel_base += dv;
@@ -136,7 +136,7 @@ void Body::FlushRVel ()
 	rvel_add = {0, 0, 0};
 }
 
-void Body::LocalToEquatorial (const Vector &loc, double &lng, double &lat, double &rad) const
+void Body::LocalToEquatorial (const VECTOR3 &loc, double &lng, double &lat, double &rad) const
 {
 	rad = len(loc);
 	//loc *= 1.0/rad;
@@ -145,9 +145,9 @@ void Body::LocalToEquatorial (const Vector &loc, double &lng, double &lat, doubl
 	//lat = atan  (loc.y / hypot (loc.x, loc.z));
 }
 
-bool Body::SurfpointVisible (double lng, double lat, const Vector &gcam) const
+bool Body::SurfpointVisible (double lng, double lat, const VECTOR3 &gcam) const
 {
-	Vector sp;
+	VECTOR3 sp;
 	EquatorialToGlobal (lng, lat, size, sp);
 	return (dot(sp - GPos(), gcam - sp) >= 0.0);
 }

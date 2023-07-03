@@ -53,7 +53,7 @@ static PARTICLESTREAMSPEC DefaultParticleStreamSpec = {
 
 D3D7ParticleStream::D3D7ParticleStream (oapi::GraphicsClient *_gc, PARTICLESTREAMSPEC *pss): ParticleStream (_gc, pss)
 {
-	cam_ref = g_camera->GPOSPtr();
+	cam_ref = g_camera->GPosPtr();
 	src_ref = 0;
 	src_ofs = {0,0,0};
 	interval = 0.1;

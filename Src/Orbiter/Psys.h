@@ -14,8 +14,8 @@ class Vessel;
 class SuperVessel;
 struct TimeJumpData;
 
-Vector SingleGacc (const Vector &rpos, const CelestialBody *body);
-Vector SingleGacc_perturbation (const Vector &rpos, const CelestialBody *body);
+VECTOR3 SingleGacc (const VECTOR3 &rpos, const CelestialBody *body);
+VECTOR3 SingleGacc_perturbation (const VECTOR3 &rpos, const CelestialBody *body);
 
 class PlanetarySystem {
 	friend class Body;
@@ -127,17 +127,17 @@ public:
 	void Timejump (const TimeJumpData& jump);
 	// Discontinuous step
 
-	void ScanGFieldSources (const Vector *gpos, const Body *exclude, GFieldData *gfd) const;
+	void ScanGFieldSources (const VECTOR3 *gpos, const Body *exclude, GFieldData *gfd) const;
 	// Build a list of significant gravity sources at point 'gpos',
 	// excluding body 'exclude', and return results in 'gfd'.
 
-	void UpdateGFieldSources (const Vector *gpos, const Body *exclude, GFieldData *gfd) const;
+	void UpdateGFieldSources (const VECTOR3 *gpos, const Body *exclude, GFieldData *gfd) const;
 	// Update the existing list
 
-	Vector GaccAt (double t, const Vector &gpos, const Body *exclude = 0) const;
+	VECTOR3 GaccAt (double t, const VECTOR3 &gpos, const Body *exclude = 0) const;
 	// gravity field at gpos for time t
 
-	Vector Gacc (const Vector &gpos, const Body *exclude = 0, const GFieldData *gfd = 0) const;
+	VECTOR3 Gacc (const VECTOR3 &gpos, const Body *exclude = 0, const GFieldData *gfd = 0) const;
 	// Acceleration vector due to gravitational forces at global position gpos for current time t0.
 	// If exclude != 0 then this object is omitted (to avoid objects interrogating themselves)
 	// If gfd != 0 then only g-sources from this list are computed
@@ -149,32 +149,32 @@ public:
 	// if gfd != 0 then only objects from this source list are computed (plus an additional
 	// one tested for inclusion in the list)
 
-	Vector Gacc_intermediate (const Vector &gpos, double n, const Body *exclude = 0, GFieldData *gfd = 0) const;
+	VECTOR3 Gacc_intermediate (const VECTOR3 &gpos, double n, const Body *exclude = 0, GFieldData *gfd = 0) const;
 	// Acceleration vector due to gravitational forces at global position gpos at intermediate
 	// time t = t0+n*dt, where 0 <= n <= 1 is a fractional time step, n = (t-t0)/dt, and dt = t1-t0.
 	// Uses linear interpolation of celestial body positions.
 	// If gfd != 0 then only g-sources from this list are computed
 
-	Vector Gacc_intermediate_pert (const CelestialBody *cbody, const Vector &gpos, double n, const Body *exclude, GFieldData *gfd) const;
+	VECTOR3 Gacc_intermediate_pert (const CelestialBody *cbody, const VECTOR3 &gpos, double n, const Body *exclude, GFieldData *gfd) const;
 
-	Vector GaccPn_perturbation (const Vector &gpos, double n, const CelestialBody *cbody) const;
+	VECTOR3 GaccPn_perturbation (const VECTOR3 &gpos, double n, const CelestialBody *cbody) const;
 	// returns the nonspherical perturbation of the gravity field from 'body' at global
 	// position 'gpos' at fractional time n during current time step (0<=n<=1).
 
-	Vector GaccRel (const Vector &rpos, const CelestialBody *cbody, double n, const Body *exclude, GFieldData *gfd) const;
+	VECTOR3 GaccRel (const VECTOR3 &rpos, const CelestialBody *cbody, double n, const Body *exclude, GFieldData *gfd) const;
 	// this version calculates the gravitational acceleration vector at fractional time n during
 	// current time step for position 'rpos' relative to 'cbody'
 
-	CelestialBody *GetDominantGravitySource (const Vector &gpos, double &gfrac);
+	CelestialBody *GetDominantGravitySource (const VECTOR3 &gpos, double &gfrac);
 	// return the dominant object contributing to the gravity field
 	// at position pos. gfrac is the fractional contribution of the
 	// dominant body to the total field
 
-	double GetGravityContribution (const Body *body, const Vector &gpos, bool *dominant = 0);
+	double GetGravityContribution (const Body *body, const VECTOR3 &gpos, bool *dominant = 0);
 	// returns the fractional contribution of "body" to the gravity field at gpos.
 	// if defined, dominant returns true if the body is the major contributor
 
-	Vector GetMomentumFlux (const Vector &gpos) const;
+	VECTOR3 GetMomentumFlux (const VECTOR3 &gpos) const;
 	// returns the momentum flux [N/m^2] due to solar radiation at position gpos.
 	// - assumes single radiation source at origin
 	// - source luminosity is fixed to L=3.846e26 W (sun)

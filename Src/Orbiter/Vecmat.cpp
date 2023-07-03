@@ -60,7 +60,7 @@ void Matrix::Set (const Quaternion &q)
 	m33 = 1.0-qxx2-qyy2;
 }
 
-void Matrix::Set (const Vector &rot)
+void Matrix::Set (const VECTOR3 &rot)
 {
 	// set rotation matrix from axis rotation vector
 	double sinx = sin(rot.x), cosx = cos(rot.x);
@@ -169,20 +169,22 @@ Matrix IMatrix()
 	return Matrix (1.0,0.0,0.0,  0.0,1.0,0.0,  0.0,0.0,1.0);
 }
 
-Vector mul (const Matrix &A, const Vector &b)
+VECTOR3 mul(const Matrix &A, const VECTOR3 &b)
 {
-	return Vector (
+	return VECTOR3{
 		A.m11*b.x + A.m12*b.y + A.m13*b.z,
 		A.m21*b.x + A.m22*b.y + A.m23*b.z,
-		A.m31*b.x + A.m32*b.y + A.m33*b.z);
+		A.m31*b.x + A.m32*b.y + A.m33*b.z
+    };
 }
 
-Vector tmul (const Matrix &A, const Vector &b)
+VECTOR3 tmul(const Matrix &A, const VECTOR3 &b)
 {
-	return Vector (
+	return VECTOR3{
 		A.m11*b.x + A.m21*b.y + A.m31*b.z,
 		A.m12*b.x + A.m22*b.y + A.m32*b.z,
-		A.m13*b.x + A.m23*b.y + A.m33*b.z);
+		A.m13*b.x + A.m23*b.y + A.m33*b.z
+    };
 }
 
 Matrix inv (const Matrix &A)
@@ -211,23 +213,23 @@ Matrix transp (const Matrix &A)
 
 void Matrix::orthogonalise (int axis)
 {
-	Vector b1, b2, b3;
+	VECTOR3 b1, b2, b3;
 	switch (axis) {
 	case 0:
-		b1 = unit(Vector{m11, m12, m13});
-		b2 = unit(Vector{m21, m22, m23});
+		b1 = unit(VECTOR3{m11, m12, m13});
+		b2 = unit(VECTOR3{m21, m22, m23});
 		b3 = cross(b1, b2);
 		m31 = b3.x, m32 = b3.y, m33 = b3.z;
 		break;
 	case 1:
-		b1 = unit(Vector{m11, m12, m13});
-		b3 = unit(Vector{m31, m32, m33});
+		b1 = unit(VECTOR3{m11, m12, m13});
+		b3 = unit(VECTOR3{m31, m32, m33});
 		b2 = cross(b3, b1);
 		m21 = b2.x, m22 = b2.y, m23 = b2.z;
 		break;
 	case 2:
-		b2 = unit(Vector{m21, m22, m23});
-		b3 = unit(Vector{m31, m32, m33});
+		b2 = unit(VECTOR3{m21, m22, m23});
+		b3 = unit(VECTOR3{m31, m32, m33});
 		b1 = cross(b2, b3);
 		m11 = b1.x, m12 = b1.y, m13 = b1.z;
 		break;
@@ -359,7 +361,7 @@ void QRSolve (const Matrix4 &A, const VECTOR4 &c,
     RSolve (A, d, x);
 }
 
-void qrdcmp (Matrix &a, Vector &c, Vector &d, int *sing)
+void qrdcmp (Matrix &a, VECTOR3 &c, VECTOR3 &d, int *sing)
 {
 	int i, j, k;
 	double scale, sigma, sum, tau;
@@ -394,7 +396,7 @@ void qrdcmp (Matrix &a, Vector &c, Vector &d, int *sing)
 	if (sing && d[2] == 0.0) *sing = 1;
 }
 
-void qrsolv (const Matrix &a, const Vector &c, const Vector &d, Vector &b)
+void qrsolv (const Matrix &a, const VECTOR3 &c, const VECTOR3 &d, VECTOR3 &b)
 {
 	int i, j;
 	double sum, tau;
@@ -463,7 +465,7 @@ double dotp (const Quaternion &q1, const Quaternion &q2)
 	return q1.qs*q2.qs + q1.qvx*q2.qvx + q1.qvy*q2.qvy + q1.qvz*q2.qvz;
 }
 
-void Quaternion::Rotate (const Vector &omega)
+void Quaternion::Rotate (const VECTOR3 &omega)
 {
 	double dvx = 0.5*( qs *omega.x - qvy*omega.z + qvz*omega.y);
 	double dvy = 0.5*( qs *omega.y - qvz*omega.x + qvx*omega.z);
@@ -488,7 +490,7 @@ void Quaternion::Rotate (const Vector &omega)
 	}
 }
 
-Quaternion Quaternion::Rot (const Vector &omega) const
+Quaternion Quaternion::Rot (const VECTOR3 &omega) const
 {
 	return Quaternion (qvx + 0.5*( qs *omega.x - qvy*omega.z + qvz*omega.y),
 		               qvy + 0.5*( qs *omega.y - qvz*omega.x + qvx*omega.z),
@@ -580,7 +582,7 @@ Quaternion Quaternion::operator* (const Quaternion &Q) const
 	);
 }
 
-Vector mul (const Quaternion &q, const Vector &p)
+VECTOR3 mul(const Quaternion &q, const VECTOR3 &p)
 {
 	// note that the implementations of mul and tmul are switched w.r.t. a right-handed system
 	double vx = q.qs*p.x - q.qvy*p.z + q.qvz*p.y;
@@ -589,12 +591,14 @@ Vector mul (const Quaternion &q, const Vector &p)
 	double qvx2 = -2.0*q.qvx;
 	double qvy2 = -2.0*q.qvy;
 	double qvz2 = -2.0*q.qvz;
-	return Vector (p.x + qvy2*vz - qvz2*vy,
-		           p.y + qvz2*vx - qvx2*vz,
-				   p.z + qvx2*vy - qvy2*vx);
+	return VECTOR3{
+		p.x + qvy2 * vz - qvz2 * vy,
+		p.y + qvz2 * vx - qvx2 * vz,
+		p.z + qvx2 * vy - qvy2 * vx
+    };
 }
 
-Vector tmul (const Quaternion &q, const Vector &p)
+VECTOR3 tmul(const Quaternion &q, const VECTOR3 &p)
 {
 	// note that the implementations of mul and tmul are switched w.r.t. a right-handed system
 	double vx = q.qs*p.x + q.qvy*p.z - q.qvz*p.y;
@@ -603,9 +607,11 @@ Vector tmul (const Quaternion &q, const Vector &p)
 	double qvx2 = 2.0*q.qvx;
 	double qvy2 = 2.0*q.qvy;
 	double qvz2 = 2.0*q.qvz;
-	return Vector (p.x + qvy2*vz - qvz2*vy,
-		           p.y + qvz2*vx - qvx2*vz,
-				   p.z + qvx2*vy - qvy2*vx);
+	return VECTOR3{
+		p.x + qvy2 * vz - qvz2 * vy,
+		p.y + qvz2 * vx - qvx2 * vz,
+		p.z + qvx2 * vy - qvy2 * vx
+    };
 }
 
 void Quaternion::interp (const Quaternion &A, const Quaternion &B, double u)
@@ -669,7 +675,7 @@ void StateVectors::Set(const StateVectors &s)
 	R.Set (s.R);
 }
 
-void StateVectors::Set (const Vector &v, const Vector &p, const Vector &av, const Quaternion &ap)
+void StateVectors::Set(const VECTOR3 &v, const VECTOR3 &p, const VECTOR3 &av, const Quaternion &ap)
 {
 	vel = v;
 	pos = p;
@@ -690,7 +696,7 @@ void StateVectors::SetRot (const Quaternion &q)
 	R.Set (q);
 }
 
-void StateVectors::Advance (double dt, const Vector &a, const Vector &v, const Vector &aa, const Vector &av)
+void StateVectors::Advance (double dt, const VECTOR3 &a, const VECTOR3 &v, const VECTOR3 &aa, const VECTOR3 &av)
 {
 	vel   += a*dt;
 	pos   += v*dt;
@@ -702,7 +708,7 @@ void StateVectors::Advance (double dt, const Vector &a, const Vector &v, const V
 // =======================================================================
 // Geometric utility functions
 
-void PlaneCoeffs (const Vector &p1, const Vector &p2, const Vector &p3,
+void PlaneCoeffs (const VECTOR3 &p1, const VECTOR3 &p2, const VECTOR3 &p3,
 	double &a, double &b, double &c, double &d)
 {
 	a = p1.y*(p2.z-p3.z) - p2.y*(p1.z-p3.z) + p3.y*(p1.z-p2.z);
@@ -711,14 +717,14 @@ void PlaneCoeffs (const Vector &p1, const Vector &p2, const Vector &p3,
 	d = -p1.x*a - p1.y*b - p1.z*c;
 }
 
-double PointPlaneDist(const Vector& p, double a, double b, double c, double d)
+double PointPlaneDist(const VECTOR3& p, double a, double b, double c, double d)
 {
 	double D = -sqrt(a * a + b * b + c * c);
 	// for a valid plane definition, this should never be 0, so we don't check for division by zero here
 	return (a * p.x + b * p.y + c * p.z + d) / D;
 }
 
-bool LinePlaneIntersect (double a, double b, double c, double d, const Vector &p, const Vector &s, Vector &r)
+bool LinePlaneIntersect (double a, double b, double c, double d, const VECTOR3 &p, const VECTOR3 &s, VECTOR3 &r)
 {
 	double D = a*s.x + b*s.y + c*s.z;
 	if (!D) return false;
@@ -728,17 +734,17 @@ bool LinePlaneIntersect (double a, double b, double c, double d, const Vector &p
 	return true;
 }
 
-void VectorBasisToMatrix(const Vector &X, const Vector &Y, const Vector &Z, Matrix &R)
+void VectorBasisToMatrix(const VECTOR3 &X, const VECTOR3 &Y, const VECTOR3 &Z, Matrix &R)
 {
 	R.Set(X.x, X.y, X.z,
 		  Y.x, Y.y, Y.z,
 		  Z.x, Z.y, Z.z);
 }
 
-void DirRotToMatrix(const Vector &Z, const Vector &Y, Matrix &R)
+void DirRotToMatrix(const VECTOR3 &Z, const VECTOR3 &Y, Matrix &R)
 {
 	// Compute the third orthogonal direction vector from Z and Y
-	Vector X = cross(Y, Z); // left-handed
+	VECTOR3 X = cross(Y, Z); // left-handed
 
 	VectorBasisToMatrix(X, Y, Z, R);
 }

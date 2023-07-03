@@ -57,27 +57,27 @@ int Nav::IdString (char *str, int len) const
 	return 0;
 }
 
-double Nav::Dist (const Vector &gpos) const
+double Nav::Dist (const VECTOR3 &gpos) const
 {
-	Vector gp;
+	VECTOR3 gp;
 	GPos (gp);
 	return dist(gp, gpos);
 }
 
-double Nav::FieldStrength (const Vector &gpos) const
+double Nav::FieldStrength (const VECTOR3 &gpos) const
 {
 	// field strength in arbitrary units
-	Vector gp;
+	VECTOR3 gp;
 	GPos (gp);
 	double dist2 = max(dist_2(gp, gpos), 1.0);
 	return (range*range)/dist2;
 }
 
-bool Nav::InRange (const Vector &gpos) const
+bool Nav::InRange (const VECTOR3 &gpos) const
 {
 	// Note "InRange" corresponds to FieldStrength > 1
 
-	Vector gp;
+	VECTOR3 gp;
 	GPos (gp);
 	return dist_2(gp, gpos) < range * range;
 }
@@ -128,7 +128,7 @@ int Nav_VOR::IdString (char *str, int len) const
 	return _snprintf (str, len, "VOR %s", GetId());
 }
 
-void Nav_VOR::GPos (Vector &gp) const
+void Nav_VOR::GPos (VECTOR3 &gp) const
 {
 	gp = mul(planet->GRot(), lpos) + planet->GPos();
 	//planet->EquatorialToGlobal (lng, lat, planet->Size(), gp);
@@ -210,7 +210,7 @@ int Nav_IDS::IdString (char *str, int len) const
 		return _snprintf (str, len, "IDS %s", vessel->Name());
 }
 
-void Nav_IDS::GPos (Vector &gp) const
+void Nav_IDS::GPos (VECTOR3 &gp) const
 {
 	gp = vessel->GetDockGPos(ps);
 }

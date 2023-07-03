@@ -584,7 +584,7 @@ void Pane::Update (double simt, double syst)
 			panel->RedrawAllAreas (PANEL_REDRAW_ALWAYS);
 		} else if (vcockpit) {
 			int idx, aid, mstate;
-			Vector vx;
+			VECTOR3 vx;
 			vcockpit->GetMouseState (idx, mstate, vx);
 			if (mstate) {
 				aid = vcockpit->area[idx]->id;
@@ -817,7 +817,7 @@ void Pane::SetSketchpadDefault (oapi::Sketchpad *skp)
 	skp->SetFont (hudfont[0]);
 }
 
-bool Pane::GlobalToScreen (const Vector &glob, int &x, int &y) const
+bool Pane::GlobalToScreen (const VECTOR3 &glob, int &x, int &y) const
 {
 	D3DVECTOR homog;
 	bool vis = GlobalToHomog (glob, homog);
@@ -828,7 +828,7 @@ bool Pane::GlobalToScreen (const Vector &glob, int &x, int &y) const
 	return vis;
 }
 
-bool Pane::GlobalToScreen (const Vector &glob, double &x, double &y) const
+bool Pane::GlobalToScreen (const VECTOR3 &glob, double &x, double &y) const
 {
 	D3DVECTOR homog;
 	bool vis = GlobalToHomog (glob, homog);
@@ -839,7 +839,7 @@ bool Pane::GlobalToScreen (const Vector &glob, double &x, double &y) const
 	return vis;
 }
 
-bool Pane::GlobalToHomog (const Vector &glob, D3DVECTOR &homog) const
+bool Pane::GlobalToHomog (const VECTOR3 &glob, D3DVECTOR &homog) const
 {
 	//D3DVECTOR gpos = {-(D3DVALUE)glob.x, -(D3DVALUE)glob.y, -(D3DVALUE)glob.z};
 	D3DVECTOR gpos = {(D3DVALUE)glob.x, (D3DVALUE)glob.y, (D3DVALUE)glob.z};
@@ -849,7 +849,7 @@ bool Pane::GlobalToHomog (const Vector &glob, D3DVECTOR &homog) const
 		/* homog.z >=  0.0 && */ homog.z <= g_camera->HomogZlimit());
 }
 
-void Pane::ScreenToGlobal (int x, int y, Vector &glob) const
+void Pane::ScreenToGlobal (int x, int y, VECTOR3 &glob) const
 {
 	D3DVECTOR homog, gpos;
 	homog.x = (float)(x*2.0/W-1.0);
@@ -859,7 +859,7 @@ void Pane::ScreenToGlobal (int x, int y, Vector &glob) const
 	D3DMath_MatrixInvert (IP, *g_camera->D3D_ProjViewMatrix());
 	D3DMath_VectorMatrixMultiply (gpos, homog, IP);
 	//D3DMath_VectorTMatrixMultiply (gpos, homog, *g_camera->D3D_ProjViewMatrix());
-	glob = unit(Vector{-gpos.x, -gpos.y, -gpos.z});
+	glob = unit(VECTOR3{-gpos.x, -gpos.y, -gpos.z});
 }
 
 bool Pane::OpenMFD (INT_PTR id, int type, ifstream *ifs)
@@ -1134,7 +1134,7 @@ void Pane::RegisterVCHUD (const VCHUDSPEC *spec)
 	}
 }
 
-void Pane::ShiftVC (const Vector &shift)
+void Pane::ShiftVC (const VECTOR3 &shift)
 {
 	if (vcockpit) {
 		vcockpit->Shift (shift);
@@ -1158,7 +1158,7 @@ void Pane::RegisterVCArea (int id, const RECT &tgtrect, int draw_mode, int mouse
 	if (vcockpit) vcockpit->DefineArea (id, tgtrect, draw_mode, mouse_mode, bkmode, tgt);
 }
 
-void Pane::SetVCAreaClickmode_Spherical (int aid, const Vector &cnt, double rad)
+void Pane::SetVCAreaClickmode_Spherical (int aid, const VECTOR3 &cnt, double rad)
 {
 	if (vcockpit) {
 		int id = vcockpit->AreaIndex (aid);
@@ -1166,7 +1166,7 @@ void Pane::SetVCAreaClickmode_Spherical (int aid, const Vector &cnt, double rad)
 	}
 }
 
-void Pane::SetVCAreaClickmode_Quadrilateral (int aid, const Vector &p1, const Vector &p2, const Vector &p3, const Vector &p4)
+void Pane::SetVCAreaClickmode_Quadrilateral (int aid, const VECTOR3 &p1, const VECTOR3 &p2, const VECTOR3 &p3, const VECTOR3 &p4)
 {
 	if (vcockpit) {
 		int id = vcockpit->AreaIndex (aid);

@@ -45,7 +45,7 @@ extern char DBG_MSG[256];
 int patchidx[9] = {0, 1, 2, 3, 5, 13, 37, 137, 501};
 // index to the first texture of a given surface patch level
 
-void InterpretEphemeris (double *data, int format, Vector *pos, Vector *vel);
+void InterpretEphemeris (double *data, int format, VECTOR3 *pos, VECTOR3 *vel);
 
 
 const double OAPI_RAND_MAX = 65536.0;
@@ -274,20 +274,14 @@ Planet::Planet (char *fname)
 		hazerange = max (0.0, min (0.9, hazerange));
 		if (!GetItemReal (ifs, "AtmHazeShift", hazeshift)) hazeshift = 0.0;
 		if (!GetItemReal (ifs, "AtmHazeDensity", hazedens)) hazedens = 1.0;
-		Vector col0;
-		if (GetItemVector (ifs, "AtmColor0", col0)) {
-			atm.color0.x = col0.x; atm.color0.y = col0.y; atm.color0.z = col0.z;
-		}
-		if (!GetItemVector (ifs, "AtmHazeColor", hazecol))
-			hazecol = {atm.color0.x, atm.color0.y, atm.color0.z};
+		GetItemVector(ifs, "AtmColor0", atm.color0);
+		if (!GetItemVector(ifs, "AtmHazeColor", hazecol)) hazecol = atm.color0;
 
 		if (GetItemString (ifs, "AtmFogParam", cbuf)) {
 			i = sscanf (cbuf, "%lf%lf%lf", &fog.dens_0, &fog.dens_ref, &fog.alt_ref);
-			if (GetItemVector (ifs, "AtmFogColor", col0)) fog.col = MakeVECTOR3 (col0);
-			else fog.col = atm.color0;
+			if (!GetItemVector(ifs, "AtmFogColor", fog.col)) fog.col = atm.color0;
 		}
-		if (!GetItemVector (ifs, "AtmTintColor", tintcol))
-			tintcol = {fog.col.x * 0.2, fog.col.y * 0.2, fog.col.z * 0.2};
+		if (!GetItemVector(ifs, "AtmTintColor", tintcol)) tintcol = fog.col * 0.2;
 	}
 
 	GetItemReal (ifs, "HorizonExcess", horizon_excess);
@@ -638,7 +632,7 @@ void Planet::ScanLabelLists (ifstream &cfg)
 				double lng, lat;
 				int nl;
 				char *pc;
-				Vector pos;
+				VECTOR3 pos;
 				FindLine (ulf, "BEGIN_DATA");
 				for (nl = 0;; nl++) {
 					if (!ulf.getline (cbuf, 256)) break;
@@ -883,7 +877,7 @@ void Planet::ElToEcliptic (const Elements *el_equ, Elements *el_ecl) const
 	// this should be done by direct transform rather
 	// than going via pos/vel
 
-	Vector pos, vel;
+	VECTOR3 pos, vel;
 	el_equ->PosVel (pos, vel, 0.0);
 	el_ecl->Calculate (mul (GRot(), pos), mul (GRot(), vel), 0.0);
 }
@@ -1018,25 +1012,25 @@ double Planet::Elevation (double lng, double lat) const
 	return (emgr ? emgr->Elevation(lat,lng) : 0.0);
 }
 
-Vector Planet::GroundVelocity (double lng, double lat, double alt, int frame)
+VECTOR3 Planet::GroundVelocity (double lng, double lat, double alt, int frame)
 {
-	if (frame < 2 || frame > 3) return Vector(0,0,0); // sanity check
+	if (frame < 2 || frame > 3) return VECTOR3{0, 0, 0}; // sanity check
 
 	double vground = Pi2 * (size+alt) * cos(lat) / RotT();
-	Vector v(-vground*sin(lng), 0.0, vground*cos(lng));
+	VECTOR3 v{-vground * std::sin(lng), 0.0, vground * std::cos(lng)};
 	if (frame == 2) return v;
 	else            return mul (s0->R, v) + s0->vel;
 }
 
-Vector Planet::WindVelocity (double lng, double lat, double alt, int frame, WindPrm *prm, double *windspeed)
+VECTOR3 Planet::WindVelocity (double lng, double lat, double alt, int frame, WindPrm *prm, double *windspeed)
 {
-	Vector wv(0,0,0);
+	VECTOR3 wv{0, 0, 0};
 
 	if (bEnableWind && HasAtmosphere()) {
 		
 		int k, dim;
 		DWORD r, rnd;
-		Vector wv0[4];
+		VECTOR3 wv0[4];
 
 		// cubic interpolation
 		double alt_km = alt*1e-3;
@@ -1106,7 +1100,7 @@ Vector Planet::WindVelocity (double lng, double lat, double alt, int frame, Wind
 	if (frame == 0) return wv;  // surface-local frame
 
 	double slng = sin(lng), clng = cos(lng), slat = sin(lat), clat = cos(lat);
-	Vector wv_loc (tmul (Matrix (-slng,0,clng, clat*clng,slat,clat*slng, -slat*clng,clat,-slat*slng), wv));
+	VECTOR3 wv_loc = tmul(Matrix(-slng, 0, clng, clat * clng, slat, clat * slng, -slat * clng, clat, -slat * slng), wv);
 
 	switch (frame) {
 	case 1: // planet-local

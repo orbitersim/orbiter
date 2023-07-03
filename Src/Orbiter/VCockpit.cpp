@@ -53,7 +53,7 @@ void VirtualCockpit::SetConnections (int left, int right, int top, int bottom)
 	connect[3] = bottom;
 }
 
-void VirtualCockpit::Shift (const Vector &shift)
+void VirtualCockpit::Shift (const VECTOR3 &shift)
 {
 	ShiftHUDPos (shift);
 	ShiftAreas (shift);
@@ -218,7 +218,7 @@ void VirtualCockpit::ReleaseAreas ()
 	narea = nareabuf = 0;
 }
 
-void VirtualCockpit::ShiftAreas (const Vector &shift)
+void VirtualCockpit::ShiftAreas (const VECTOR3 &shift)
 {
 	for (int i = 0; i < narea; i++) {
 		switch (area[i]->cmode) {
@@ -252,13 +252,9 @@ void VirtualCockpit::DestroyHUDSurface ()
 	}
 }
 
-void VirtualCockpit::ShiftHUDPos (const Vector &shift)
+void VirtualCockpit::ShiftHUDPos (const VECTOR3 &shift)
 {
-	if (hud.surf) {
-		hud.spec.hudcnt.x += (float)shift.x;
-		hud.spec.hudcnt.y += (float)shift.y;
-		hud.spec.hudcnt.z += (float)shift.z;
-	}
+	if (hud.surf) hud.spec.hudcnt += shift;
 }
 
 void VirtualCockpit::ClearHUD ()
@@ -290,7 +286,7 @@ void VirtualCockpit::SetHUDCol (COLORREF col, double intens)
 #endif
 }
 
-bool VirtualCockpit::SetClickZone_Spherical (int i, const Vector &cnt, double rad)
+bool VirtualCockpit::SetClickZone_Spherical (int i, const VECTOR3 &cnt, double rad)
 {
 	area[i]->cnt = cnt;
 	area[i]->rad = rad;
@@ -299,7 +295,7 @@ bool VirtualCockpit::SetClickZone_Spherical (int i, const Vector &cnt, double ra
 }
 
 bool VirtualCockpit::SetClickZone_Quadrilateral (int i,
-	const Vector &p1, const Vector &p2, const Vector &p3, const Vector &p4)
+	const VECTOR3 &p1, const VECTOR3 &p2, const VECTOR3 &p3, const VECTOR3 &p4)
 {
 	const double EPS = 1e-8;
 	int j;
@@ -320,7 +316,7 @@ bool VirtualCockpit::SetClickZone_Quadrilateral (int i,
 
 	double pdst = fabs(PointPlaneDist(p4, a, b, c, d));
 	if (pdst < EPS) { // the 4 points are coplanar, so we need to avoid singularity
-		Vector nml(PlaneNormal(a, b, c, d));
+		VECTOR3 nml = PlaneNormal(a, b, c, d);
 		area[i]->p[3] = p4 + nml * EPS;
 	}
 
@@ -367,12 +363,12 @@ bool VirtualCockpit::ProcessMouse (UINT event, DWORD state, int x, int y)
 		idx_mfocus = -1;
 
 		// convert mouse position into vessel-local ray
-		Vector gdir, ldir;
+		VECTOR3 gdir, ldir;
 		g_camera->ViewportToGlobalDir (x, y, gdir);
 		ldir = tmul (g_focusobj->GRot(), gdir);
 
 		// vessel-local camera position
-		Vector cpos (tmul (g_focusobj->GRot(), *g_camera->GPosPtr() - g_focusobj->GPos()));
+		VECTOR3 cpos = tmul(g_focusobj->GRot(), *g_camera->GPosPtr() - g_focusobj->GPos());
 
 		int i, imatch;
 		double minreldist, mx = 0, my = 0;
@@ -392,7 +388,7 @@ bool VirtualCockpit::ProcessMouse (UINT event, DWORD state, int x, int y)
 				}
 				} break;
 			case Area::CMODE_QUAD: {
-				Vector r;
+				VECTOR3 r;
 				if (LinePlaneIntersect (area[i]->a, area[i]->b, area[i]->c, area[i]->d, cpos, ldir, r)) {
 					if (dot(ldir, r-cpos) > 0.0) { // otherwise target is behind camera
 						mx = area[i]->u[0]*r.x + area[i]->u[1]*r.y + area[i]->u[2]*r.z + area[i]->u[3];
@@ -424,7 +420,7 @@ bool VirtualCockpit::ProcessMouse (UINT event, DWORD state, int x, int y)
 	}
 }
 
-void VirtualCockpit::GetMouseState (int &idx, int &state, Vector &xs) const
+void VirtualCockpit::GetMouseState (int &idx, int &state, VECTOR3 &xs) const
 {
 	if (mstate & PANEL_MOUSE_PRESSED) {
 		POINT pt;
@@ -433,12 +429,12 @@ void VirtualCockpit::GetMouseState (int &idx, int &state, Vector &xs) const
 			ScreenToClient (cwnd, &pt);
 
 		// calculate ray intersection with current focus area
-		Vector gdir, ldir;
+		VECTOR3 gdir, ldir;
 		g_camera->ViewportToGlobalDir (pt.x, pt.y, gdir);
 		ldir = tmul (g_focusobj->GRot(), gdir);
 
 		// vessel-local camera position
-		Vector cpos (tmul (g_focusobj->GRot(), *g_camera->GPosPtr() - g_focusobj->GPos()));
+		VECTOR3 cpos = tmul(g_focusobj->GRot(), *g_camera->GPosPtr() - g_focusobj->GPos());
 
 		switch (area[idx_mfocus]->cmode) {
 		case Area::CMODE_SPHERICAL: {
@@ -448,7 +444,7 @@ void VirtualCockpit::GetMouseState (int &idx, int &state, Vector &xs) const
 			mouse_r.y = mouse_r.z = 0.0;
 			} break;
 		case Area::CMODE_QUAD: {
-			Vector r;
+			VECTOR3 r;
 			LinePlaneIntersect (area[idx_mfocus]->a, area[idx_mfocus]->b, area[idx_mfocus]->c, area[idx_mfocus]->d, cpos, ldir, r);
 			mouse_r.x = area[idx_mfocus]->u[0]*r.x + area[idx_mfocus]->u[1]*r.y + area[idx_mfocus]->u[2]*r.z + area[idx_mfocus]->u[3];
 			mouse_r.y = area[idx_mfocus]->v[0]*r.x + area[idx_mfocus]->v[1]*r.y + area[idx_mfocus]->v[2]*r.z + area[idx_mfocus]->v[3];

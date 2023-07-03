@@ -316,7 +316,7 @@ void CShipeditApp::InitMesh ()
 		pp[i].c = pp[i].x1*(pp[i].y2-pp[i].y3) - pp[i].y1*(pp[i].x2-pp[i].x3) + (pp[i].x2*pp[i].y3 - pp[i].x3*pp[i].y2);
 		pp[i].d = -(pp[i].x1*(pp[i].y2*pp[i].z3-pp[i].y3*pp[i].z2) - pp[i].y1*(pp[i].x2*pp[i].z3-pp[i].x3*pp[i].z2) + pp[i].z1*(pp[i].x2*pp[i].y3-pp[i].x3*pp[i].y2));
 
-		Vector dr, a;
+		VECTOR3 dr, a;
 		dr = {pp[i].x1 - pp[i].x2, pp[i].y1 - pp[i].y2, pp[i].z1 - pp[i].z2};
 		a  = {pp[i].x3 - pp[i].x2, pp[i].y3 - pp[i].y2, pp[i].z3 - pp[i].z2};
 		pp[i].d1 = (float)(dot(dr, a) / len(a));
@@ -343,7 +343,7 @@ void CShipeditApp::InitMesh ()
 void CShipeditApp::ProcessPackage ()
 {
 	int i, j, n;
-	Vector cg_tmp;
+	VECTOR3 cg_tmp;
 	Matrix J_tmp;
 
 	for (i = n = 0; i < 1000; i++) {
@@ -490,7 +490,7 @@ bool CShipeditApp::scan_gridline (VOXGRID &g, int x, int y, int z, int dir_idx, 
 	return isinter;
 }		
 
-void CShipeditApp::analyse_grid (VOXGRID &g, double &vol, Vector &com, Vector &cs, Matrix &pmi)
+void CShipeditApp::analyse_grid (VOXGRID &g, double &vol, VECTOR3 &com, VECTOR3 &cs, Matrix &pmi)
 {
 	int i, j, k, idx, ninside = 0;
 	double x, y, z;
@@ -814,7 +814,7 @@ void GridintDlg::OnGridintStart()
 //#endif
 
 	double vol;
-	Vector com, cs;
+	VECTOR3 com, cs;
 	Matrix pmi;
 	app->analyse_grid (g, vol, com, cs, pmi);
 	sprintf (cbuf, "%0.2f", vol);

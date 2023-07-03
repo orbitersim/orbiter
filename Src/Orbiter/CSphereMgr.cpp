@@ -395,7 +395,7 @@ void CSphereManager::ProcessTile (int lvl, int hemisp, int ilat, int nlat, int i
 	ntot++;
 
 	static const double rad0 = sqrt(2.0)*Pi05;
-	Vector cnt = TileCentre (hemisp, ilat, nlat, ilng, nlng);
+	VECTOR3 cnt = TileCentre (hemisp, ilat, nlat, ilng, nlng);
 	double rad = rad0/(double)nlat;
 	double alpha = std::acos(dot(RenderParam.camdir, cnt));
 	double adist = alpha - rad;
@@ -471,12 +471,12 @@ void CSphereManager::RenderTile (int lvl, int hemisp, int ilat, int nlat, int il
 // returns the direction of the tile centre from the planet centre in local
 // planet coordinates
 
-Vector CSphereManager::TileCentre (int hemisp, int ilat, int nlat, int ilng, int nlng)
+VECTOR3 CSphereManager::TileCentre (int hemisp, int ilat, int nlat, int ilng, int nlng)
 {
 	double cntlat = Pi05 * ((double)ilat+0.5)/(double)nlat,      slat = sin(cntlat), clat = cos(cntlat);
 	double cntlng = Pi2  * ((double)ilng+0.5)/(double)nlng + Pi, slng = sin(cntlng), clng = cos(cntlng);
-	if (hemisp) return Vector (clat*clng, -slat, -clat*slng);
-	else        return Vector (clat*clng,  slat,  clat*slng);
+	return hemisp ? VECTOR3{clat * clng, -slat, -clat * slng}
+				  : VECTOR3{clat * clng,  slat,  clat * slng};
 }
 
 // =======================================================================

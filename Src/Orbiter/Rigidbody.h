@@ -35,15 +35,15 @@ typedef struct {         // used for dynamic grav updates
 typedef struct {  // data for angular integrators
 	int nsub;        // subdivisions of current time step (1=full step)
 	double t1, dt;   // subdivision end time, time interval
-	Vector p0, p1;   // orbital positions at start, end of subdivision step
-	Vector (*AngAcc)(RigidBody *body, const Vector &tau, const Vector &omega);
+	VECTOR3 p0, p1;  // orbital positions at start, end of subdivision step
+	VECTOR3 (*AngAcc)(RigidBody *body, const VECTOR3 &tau, const VECTOR3 &omega);
 	                 // full/simplified Euler's equations of angular motion
 }  AngIntData;
 
 typedef struct {  // data for linear perturbation integrators
 	double t1, dt;     // subdivision end time, time interval
-	Vector dv;         // applied non-gravitational delta v
-	Vector p0;         // orbital position at start of sobdivision step
+	VECTOR3 dv;        // applied non-gravitational delta v
+	VECTOR3 p0;        // orbital position at start of sobdivision step
 	bool nonspherical; // include nonspherical perturbations
 } PertIntData;
 
@@ -58,7 +58,7 @@ typedef void (RigidBody::*LinAngPropagator)(double, int, int);
 class RigidBody: public Body {
 public:
 	RigidBody ();
-	RigidBody (double _mass, double _size, const Vector &_pmi);
+	RigidBody (double _mass, double _size, const VECTOR3 &_pmi);
 	RigidBody (char *fname);
 
 	virtual ~RigidBody();
@@ -66,7 +66,7 @@ public:
 	static void GlobalSetup ();
 	// 1-time setup routines at beginning of simulation session
 
-	inline const Vector &PMI () const { return pmi; }
+	inline const VECTOR3 &PMI() const { return pmi; }
 	// principal moments of inertia
 
 	//virtual void BeginStateUpdate ();
@@ -90,14 +90,14 @@ public:
 	// for current step. Note that nstep > PropSubMax is valid, but should only be
 	// used for immediate collision treatment
 
-	virtual void GetIntermediateMoments (Vector &acc, Vector &tau,
+	virtual void GetIntermediateMoments(VECTOR3 &acc, VECTOR3 &tau,
 		const StateVectors &state, double tfrac, double dt);
 	// Returns acceleration acc and torque tau, at time SimT0+tfrac*SimDT
 	// and step size dt, given intermediate state in global frame
 	// Note: state.vel is not used by this method
 
-	virtual void GetIntermediateMoments_pert (Vector &acc,
-		Vector &tau, const StateVectors &state_rel, double tfrac, double dt,
+	virtual void GetIntermediateMoments_pert(VECTOR3 &acc,
+		VECTOR3 &tau, const StateVectors &state_rel, double tfrac, double dt,
 		const CelestialBody *cbody);
 	// As GetIntermediateMoments, but excludes the pointmass gravitational
 	// acceleration of cbody. This is used by the Encke stabilised
@@ -108,39 +108,39 @@ public:
 
 	virtual bool ValidateStateUpdate (StateVectors *s) { return true; }
 
-	virtual Vector GetPertAcc (const PertIntData &data, const Vector &pos, double tfrac);
+	virtual VECTOR3 GetPertAcc(const PertIntData &data, const VECTOR3 &pos, double tfrac);
 	// returns the gravity perturbation (on top of the spherical gravity field
 	// from cbody) at relative position pos, at fractional time tfrac within
 	// the current time step
 
-	virtual Vector GetTorque () const;
+	virtual VECTOR3 GetTorque() const;
 	// Returns mass-normalised torque vector for state s0. This only consists of
 	// gravity gradient torque, and only if enabled.
 
-	inline const Vector &AngularVelocity () const { return s0->omega; }
+	inline const VECTOR3 &AngularVelocity() const { return s0->omega; }
 	// angular velocity - should be moved to Body class!
 
-	virtual void SetAngVel (const Vector &omega);
+	virtual void SetAngVel(const VECTOR3 &omega);
 	// set angular velocity to 'omega'
 
-	inline Vector AngularMomentum () const
-	{ return Vector(pmi.x*s0->omega.x, pmi.y*s0->omega.y, pmi.z*s0->omega.z); }
+	inline VECTOR3 AngularMomentum() const
+	{ return VECTOR3{pmi.x * s0->omega.x, pmi.y * s0->omega.y, pmi.z * s0->omega.z}; }
 	// returns the vessel's current angular momentum (in local vessel coordinates)
 
-	Vector Euler_full (const Vector &omegadot, const Vector &omega) const;
+	VECTOR3 Euler_full(const VECTOR3 &omegadot, const VECTOR3 &omega) const;
 	// returns torque tau, given angular acceleration omegadot and angular velocity
 	// omega.
 
-	Vector EulerInv_full (const Vector &tau, const Vector &omega) const;
+	VECTOR3 EulerInv_full(const VECTOR3 &tau, const VECTOR3 &omega) const;
 	// Solves Euler's equation:
 	// returns angular acceleration, given torque tau and angular velocity
 	// omega.
 
-	Vector EulerInv_simple (const Vector &tau, const Vector &omega) const;
+	VECTOR3 EulerInv_simple(const VECTOR3 &tau, const VECTOR3 &omega) const;
 	// Simplified angular acceleration calculation ignoring cross-axis
 	// coupling terms
 
-	Vector EulerInv_zero (const Vector &tau, const Vector &omega) const;
+	VECTOR3 EulerInv_zero(const VECTOR3 &tau, const VECTOR3 &omega) const;
 	// Trivial angular acceleration calculation: ignores cross-axis
 	// coupling terms and torque, and always returns zero
 
@@ -186,7 +186,7 @@ protected:
 	void UpdateGFieldSources (const PlanetarySystem *psys);
 	// Update an existing list of gravity sources
 
-	Vector InterpolatePos (const Vector &p0, const Vector &p1, double t1, double dt, double tfrac) const;
+	VECTOR3 InterpolatePos(const VECTOR3 &p0, const VECTOR3 &p1, double t1, double dt, double tfrac) const;
 	// interpolates orbital position between start point p1 and end point p2, given
 	// end time t1 and interval dt, at fractional position tfrac [0..1]
 
@@ -219,12 +219,12 @@ protected:
 	mutable Elements *el;       // osculating elements for orbiting bodies
 	mutable bool el_valid;      // flag for element update
 
-	Vector cpos, cvel; // state vectors w.r.t. reference body
-	Vector pcpos;      // refbody-relative position at previous step
-	Vector pmi;        // principal moments of inertia tensor
-	Vector arot;       // current angular acceleration
-	Vector acc_pert;   // current acceleration excluding gravity from primary point mass (for Encke state integration, only valid during stabilised updates)
-	Vector torque;     // current torque of CG
+	VECTOR3 cpos, cvel;// state vectors w.r.t. reference body
+	VECTOR3 pcpos;     // refbody-relative position at previous step
+	VECTOR3 pmi;       // principal moments of inertia tensor
+	VECTOR3 arot;      // current angular acceleration
+	VECTOR3 acc_pert;  // current acceleration excluding gravity from primary point mass (for Encke state integration, only valid during stabilised updates)
+	VECTOR3 torque;    // current torque of CG
 	double tidaldamp;  // damping factor for tidal torque
 	double ostep;      // time step in terms of fractional orbit (approx.)
 	AngIntData aidata; // data for angular integration

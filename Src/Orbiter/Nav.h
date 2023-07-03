@@ -37,10 +37,10 @@ public:
 	inline const char *GetId() const { return id; }
 	virtual void GetData (NAVDATA *data) const;
 	virtual int IdString (char *str, int len) const;
-	virtual void GPos (Vector &gp) const = 0;
-	double Dist (const Vector &gpos) const;
-	double FieldStrength (const Vector &gpos) const;
-	bool InRange (const Vector &gpos) const;
+	virtual void GPos (VECTOR3 &gp) const = 0;
+	double Dist (const VECTOR3 &gpos) const;
+	double FieldStrength (const VECTOR3 &gpos) const;
+	bool InRange (const VECTOR3 &gpos) const;
 
 protected:
 	DWORD step;
@@ -63,14 +63,14 @@ public:
 	virtual int IdString (char *str, int len) const;
 	inline const Planet *GetPlanet() const { return planet; }
 	inline void GetEquPos (double &_lng, double &_lat) const { _lng = lng, _lat = lat; }
-	inline void LPos (Vector &lp) const { lp = lpos; }
-	void GPos (Vector &gp) const;
+	inline void LPos (VECTOR3 &lp) const { lp = lpos; }
+	void GPos (VECTOR3 &gp) const;
 	void GetData (NAVDATA *data) const;
 
 protected:
 	const Planet *planet;
 	double lng, lat;
-	Vector lpos;
+	VECTOR3 lpos;
 };
 
 // =======================================================================
@@ -118,7 +118,7 @@ public:
 	Nav_IDS (const Vessel *_vessel, const PortSpec *_ps, float _freq, float _range = 2e4);
 	inline DWORD Type () const { return TRANSMITTER_IDS; }
 	int IdString (char *str, int len) const;
-	void GPos (Vector &gp) const;
+	void GPos (VECTOR3 &gp) const;
 	inline const Vessel *GetVessel () const { return vessel; }
 	inline const PortSpec *GetPortSpec () const { return ps; }
 	void GetData (NAVDATA *data) const;
@@ -137,7 +137,7 @@ public:
 	Nav_XPDR (const Vessel *_vessel, float _freq, float _range = 1e6);
 	inline DWORD Type () const { return TRANSMITTER_XPDR; }
 	int IdString (char *str, int len) const;
-	inline void GPos(Vector &gp) const { gp = vessel->GPos(); }
+	inline void GPos(VECTOR3 &gp) const { gp = vessel->GPos(); }
 	inline const Vessel *GetVessel () const { return vessel; }
 	void GetData (NAVDATA *data) const;
 

@@ -33,7 +33,7 @@ extern char DBG_MSG[256];
 // =======================================================================
 // Local prototypes
 
-static int Exist (Vector *node, int nnode, Vector p);
+static int Exist (VECTOR3 *node, int nnode, VECTOR3 p);
 static void CreateRing (Mesh &mesh, float irad, float orad, int nsect);
 
 LPDIRECT3DVERTEXBUFFER7 bbtarget;  // target buffer for bounding box transformation
@@ -210,7 +210,7 @@ void VBMESH::MapVertices (LPDIRECT3D7 d3d, LPDIRECT3DDEVICE7 dev, DWORD MemFlag)
 
 PatchManager::PatchManager (const char *_name, char _res_id, int _npatch,
 	int _nlat, int *_nlng, VBMESH *_patch, D3DMATRIX *_trans,
-	Vector *_patchcnt, double *_patchrad,
+	VECTOR3 *_patchcnt, double *_patchrad,
 	LPDIRECTDRAWSURFACE7 *_tex, LPDIRECTDRAWSURFACE7 *_ntex)
 : res_id(_res_id), npatch(_npatch), nlat(_nlat), nlng(_nlng),
   vbpatch(_patch), trans(_trans), patchcnt(_patchcnt), patchrad(_patchrad),
@@ -232,8 +232,8 @@ bool PatchManager::SetReflectionColour (D3DCOLORVALUE *col)
 		const ATMCONST* ap = planet->AtmParams();
 		if (ap) {
 			double fac = 0.7; // adjust!
-			Vector S = -planet->GPos();
-			Vector C = g_camera->GPos() + S;
+			VECTOR3 S = -planet->GPos();
+			VECTOR3 C = g_camera->GPos() + S;
 			double cosa = dot(S, C) / (len(S) * len(C));
 			double alpha = 0.5*acos(cosa); // sun reflection angle
 			
@@ -254,8 +254,8 @@ void PatchManager::Render (LPDIRECT3DDEVICE7 dev, D3DMATRIX &wmat, double visrad
 	D3DMATRIX wtrans, imat;
 
 	D3DMath_MatrixInvert (imat, wmat);
-	Vector rpos(imat._41, imat._42, imat._43);   // camera in local coords
-	double id = 1.0 / max(len(rpos), 1.0);  // inverse camera distance
+	VECTOR3 rpos{imat._41, imat._42, imat._43};   // camera in local coords
+	double id = 1.0 / max (len(rpos), 1.0);  // inverse camera distance
 	if (!visrad) visrad = acos (id);             // aperture of visibility sector
 	rpos *= id;                                  // surface point below camera
 	bool hasmicro = false;
@@ -417,7 +417,7 @@ void PatchManager::RenderNightlights (LPDIRECT3DDEVICE7 dev, D3DMATRIX &wmat, do
 	dVERIFY (dev->GetMaterial (&pmat), "LPDIRECT3DDEVICE7::GetMaterial failed");
 	dVERIFY (dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, TRUE), "LPDIRECT3DDEVICE7::SetRenderState failed");
 	int i, j, hemisphere, idx;
-	Vector sundir;
+	VECTOR3 sundir;
 	double dcos;
 	float scale;
 	bool dorender, modmat = true;
@@ -500,11 +500,11 @@ void PatchManager::RenderSimple (LPDIRECT3DDEVICE7 dev, D3DMATRIX &wmat, double 
 		dev->SetTextureStageState (1, D3DTSS_COLOROP, D3DTOP_DISABLE);
 }
 
-void PatchManager::SetupPatchBand (int ilat, D3DMATRIX *trans, Vector *pcnt, double *prad)
+void PatchManager::SetupPatchBand (int ilat, D3DMATRIX *trans, VECTOR3 *pcnt, double *prad)
 {
 	double lng1, lng2, slng1, clng1, slng2, clng2;
 	double lat1, lat2, slat1, clat1, slat2, clat2;
-	Vector crnr[4];
+	VECTOR3 crnr[4];
 	int i, ncorner, c, nofs = 0, sofs, nl = nlng[ilat];
 	for (i = nlat-1; i > ilat; i--) nofs += nlng[i];
 	sofs = nofs + npatch/2;
@@ -544,7 +544,7 @@ void PatchManager::SetupPatchBand (int ilat, D3DMATRIX *trans, Vector *pcnt, dou
 	}
 }
 
-void PatchManager::SetupPatchBands (D3DMATRIX *trans, Vector *pcnt, double *prad)
+void PatchManager::SetupPatchBands (D3DMATRIX *trans, VECTOR3 *pcnt, double *prad)
 {
 	for (int i = 0; i < nlat; i++)
 		SetupPatchBand (i, trans, pcnt, prad);
@@ -670,7 +670,7 @@ void PatchManager4::Render (LPDIRECT3DDEVICE7 dev, D3DMATRIX &wmat, double visra
 
 bool      PatchManager5::needsetup = true;
 D3DMATRIX PatchManager5::TRANS[8];
-Vector    PatchManager5::PATCHCNT[8];
+VECTOR3   PatchManager5::PATCHCNT[8];
 double    PatchManager5::PATCHRAD[8];
 
 PatchManager5::PatchManager5 (char *_name, LPDIRECTDRAWSURFACE7 *_tex, LPDIRECTDRAWSURFACE7 *_ntex)
@@ -687,7 +687,7 @@ PatchManager5::PatchManager5 (char *_name, LPDIRECTDRAWSURFACE7 *_tex, LPDIRECTD
 
 bool      PatchManager6::needsetup = true;
 D3DMATRIX PatchManager6::TRANS[24];
-Vector    PatchManager6::PATCHCNT[24];
+VECTOR3   PatchManager6::PATCHCNT[24];
 double    PatchManager6::PATCHRAD[24];
 
 PatchManager6::PatchManager6 (char *_name, LPDIRECTDRAWSURFACE7 *_tex, LPDIRECTDRAWSURFACE7 *_ntex)
@@ -704,7 +704,7 @@ PatchManager6::PatchManager6 (char *_name, LPDIRECTDRAWSURFACE7 *_tex, LPDIRECTD
 
 bool      PatchManager7::needsetup = true;
 D3DMATRIX PatchManager7::TRANS[100];
-Vector    PatchManager7::PATCHCNT[100];
+VECTOR3   PatchManager7::PATCHCNT[100];
 double    PatchManager7::PATCHRAD[100];
 
 PatchManager7::PatchManager7 (char *_name, LPDIRECTDRAWSURFACE7 *_tex, LPDIRECTDRAWSURFACE7 *_ntex)
@@ -721,7 +721,7 @@ PatchManager7::PatchManager7 (char *_name, LPDIRECTDRAWSURFACE7 *_tex, LPDIRECTD
 
 bool      PatchManager8::needsetup = true;
 D3DMATRIX PatchManager8::TRANS[364];
-Vector    PatchManager8::PATCHCNT[364];
+VECTOR3   PatchManager8::PATCHCNT[364];
 double    PatchManager8::PATCHRAD[364];
 
 PatchManager8::PatchManager8 (char *_name, LPDIRECTDRAWSURFACE7 *_tex, LPDIRECTDRAWSURFACE7 *_ntex,
@@ -855,7 +855,7 @@ void CreateSphere (LPDIRECT3D7 d3d, LPDIRECT3DDEVICE7 dev, VBMESH &mesh, DWORD n
 // =======================================================================
 // check existence of a node
 
-static int Exist (Vector *node, int nnode, Vector p)
+static int Exist (VECTOR3 *node, int nnode, VECTOR3 p)
 {
 	const double eps = 1e-6;
 	for (int i = 0; i < nnode; i++) {
@@ -875,7 +875,7 @@ void CreateSpherePatch (LPDIRECT3D7 d3d, LPDIRECT3DDEVICE7 dev, VBMESH &mesh, in
 	double minlat, maxlat, lat, minlng, maxlng, lng;
 	double slat, clat, slng, clng;
 	WORD tmp;
-	Vector pos, tpos;
+	VECTOR3 pos, tpos;
 
 	minlat = Pi05 * (double)ilat/(double)nlat;
 	maxlat = Pi05 * (double)(ilat+1)/(double)nlat;
@@ -897,12 +897,12 @@ void CreateSpherePatch (LPDIRECT3D7 d3d, LPDIRECT3DDEVICE7 dev, VBMESH &mesh, in
 	double clng0 = cos(minlng), slng0 = sin(minlng);
 	double clat1 = cos(maxlat), slat1 = sin(maxlat);
 	double clng1 = cos(maxlng), slng1 = sin(maxlng);
-	Vector ex = unit(Vector{clat0 * clng1 - clat0 * clng0, 0, clat0 * slng1 - clat0 * slng0});
-	Vector ey = unit(Vector{0.5 * (clng0 + clng1) * (clat1 - clat0), slat1 - slat0, 0.5 * (slng0 + slng1) * (clat1 - clat0)});
-	Vector ez = cross(ey, ex);
+	auto ex = unit(VECTOR3{clat0 * clng1 - clat0 * clng0, 0, clat0 * slng1 - clat0 * slng0});
+	auto ey = unit(VECTOR3{0.5 * (clng0 + clng1) * (clat1 - clat0), slat1 - slat0, 0.5 * (slng0 + slng1) * (clat1 - clat0)});
+	auto ez = cross(ey, ex);
 	Matrix R(ex.x, ex.y, ex.z,  ey.x, ey.y, ey.z,  ez.x, ez.y, ez.z);
-	Vector pref (0.5*(clat0*clng1 + clat0*clng0), slat0, 0.5*(clat0*slng1 + clat0*slng0)); // origin
-	Vector tpmin, tpmax; 
+	VECTOR3 pref{0.5 * (clat0 * clng1 + clat0 * clng0), slat0, 0.5 * (clat0 * slng1 + clat0 * slng0)}; // origin
+	VECTOR3 tpmin, tpmax; 
 
 	float dx, dy;
 	if (shift_origin) {
@@ -1006,21 +1006,21 @@ void CreateSpherePatch (LPDIRECT3D7 d3d, LPDIRECT3DDEVICE7 dev, VBMESH &mesh, in
 	mesh.bb->Lock (DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&V, NULL);
 
 	// transform bounding box back to patch coordinates
-	pos = tmul (R, Vector(tpmin.x, tpmin.y, tpmin.z)) + pref;
+	pos = tmul(R, VECTOR3{tpmin.x, tpmin.y, tpmin.z}) + pref;
 	V[0].x = D3DVAL(pos.x); V[0].y = D3DVAL(pos.y); V[0].z = D3DVAL(pos.z);
-	pos = tmul (R, Vector(tpmax.x, tpmin.y, tpmin.z)) + pref;
+	pos = tmul(R, VECTOR3{tpmax.x, tpmin.y, tpmin.z}) + pref;
 	V[1].x = D3DVAL(pos.x); V[1].y = D3DVAL(pos.y); V[1].z = D3DVAL(pos.z);
-	pos = tmul (R, Vector(tpmin.x, tpmax.y, tpmin.z)) + pref;
+	pos = tmul(R, VECTOR3{tpmin.x, tpmax.y, tpmin.z}) + pref;
 	V[2].x = D3DVAL(pos.x); V[2].y = D3DVAL(pos.y); V[2].z = D3DVAL(pos.z);
-	pos = tmul (R, Vector(tpmax.x, tpmax.y, tpmin.z)) + pref;
+	pos = tmul(R, VECTOR3{tpmax.x, tpmax.y, tpmin.z}) + pref;
 	V[3].x = D3DVAL(pos.x); V[3].y = D3DVAL(pos.y); V[3].z = D3DVAL(pos.z);
-	pos = tmul (R, Vector(tpmin.x, tpmin.y, tpmax.z)) + pref;
+	pos = tmul(R, VECTOR3{tpmin.x, tpmin.y, tpmax.z}) + pref;
 	V[4].x = D3DVAL(pos.x); V[4].y = D3DVAL(pos.y); V[4].z = D3DVAL(pos.z);
-	pos = tmul (R, Vector(tpmax.x, tpmin.y, tpmax.z)) + pref;
+	pos = tmul(R, VECTOR3{tpmax.x, tpmin.y, tpmax.z}) + pref;
 	V[5].x = D3DVAL(pos.x); V[5].y = D3DVAL(pos.y); V[5].z = D3DVAL(pos.z);
-	pos = tmul (R, Vector(tpmin.x, tpmax.y, tpmax.z)) + pref;
+	pos = tmul(R, VECTOR3{tpmin.x, tpmax.y, tpmax.z}) + pref;
 	V[6].x = D3DVAL(pos.x); V[6].y = D3DVAL(pos.y); V[6].z = D3DVAL(pos.z);
-	pos = tmul (R, Vector(tpmax.x, tpmax.y, tpmax.z)) + pref;
+	pos = tmul(R, VECTOR3{tpmax.x, tpmax.y, tpmax.z}) + pref;
 	V[7].x = D3DVAL(pos.x); V[7].y = D3DVAL(pos.y); V[7].z = D3DVAL(pos.z);
 
 	mesh.bb->Unlock ();
@@ -1029,14 +1029,14 @@ void CreateSpherePatch (LPDIRECT3D7 d3d, LPDIRECT3DDEVICE7 dev, VBMESH &mesh, in
 
 	// set bounding box in main memory
 	mesh.bbvtx = new VECTOR4[8];
-	mesh.bbvtx[0] = MakeVECTOR4 (tmul (R, Vector(tpmin.x, tpmin.y, tpmin.z)) + pref);
-	mesh.bbvtx[1] = MakeVECTOR4 (tmul (R, Vector(tpmax.x, tpmin.y, tpmin.z)) + pref);
-	mesh.bbvtx[2] = MakeVECTOR4 (tmul (R, Vector(tpmin.x, tpmax.y, tpmin.z)) + pref);
-	mesh.bbvtx[3] = MakeVECTOR4 (tmul (R, Vector(tpmax.x, tpmax.y, tpmin.z)) + pref);
-	mesh.bbvtx[4] = MakeVECTOR4 (tmul (R, Vector(tpmin.x, tpmin.y, tpmax.z)) + pref);
-	mesh.bbvtx[5] = MakeVECTOR4 (tmul (R, Vector(tpmax.x, tpmin.y, tpmax.z)) + pref);
-	mesh.bbvtx[6] = MakeVECTOR4 (tmul (R, Vector(tpmin.x, tpmax.y, tpmax.z)) + pref);
-	mesh.bbvtx[7] = MakeVECTOR4 (tmul (R, Vector(tpmax.x, tpmax.y, tpmax.z)) + pref);
+	mesh.bbvtx[0] = MakeVECTOR4(tmul(R, VECTOR3{tpmin.x, tpmin.y, tpmin.z}) + pref);
+	mesh.bbvtx[1] = MakeVECTOR4(tmul(R, VECTOR3{tpmax.x, tpmin.y, tpmin.z}) + pref);
+	mesh.bbvtx[2] = MakeVECTOR4(tmul(R, VECTOR3{tpmin.x, tpmax.y, tpmin.z}) + pref);
+	mesh.bbvtx[3] = MakeVECTOR4(tmul(R, VECTOR3{tpmax.x, tpmax.y, tpmin.z}) + pref);
+	mesh.bbvtx[4] = MakeVECTOR4(tmul(R, VECTOR3{tpmin.x, tpmin.y, tpmax.z}) + pref);
+	mesh.bbvtx[5] = MakeVECTOR4(tmul(R, VECTOR3{tpmax.x, tpmin.y, tpmax.z}) + pref);
+	mesh.bbvtx[6] = MakeVECTOR4(tmul(R, VECTOR3{tpmin.x, tpmax.y, tpmax.z}) + pref);
+	mesh.bbvtx[7] = MakeVECTOR4(tmul(R, VECTOR3{tpmax.x, tpmax.y, tpmax.z}) + pref);
 }
 
 void DestroyVBMesh (VBMESH &mesh)
@@ -1112,13 +1112,13 @@ void HorizonManager::Render (LPDIRECT3DDEVICE7 dev, D3DMATRIX &wmat, bool dual)
 {
 	D3DMATRIX imat, transm;
 
-	Vector psun;
+	VECTOR3 psun;
 	int i, j;
 	double phi, csun, alpha, colofs;
 	float cosp, sinp, cost, sint, h1, h2, r1, r2, intr, intg, intb;
 
 	D3DMath_MatrixInvert (imat, wmat);
-	Vector rpos (imat._41, imat._42, imat._43);   // camera in local coords (planet radius = 1)
+	VECTOR3 rpos{imat._41, imat._42, imat._43};   // camera in local coords (planet radius = 1)
 	double cdist = len(rpos);
 
 	alpha = dens0 * min (1.0, (cdist-1.0)*200.0);
@@ -1126,7 +1126,7 @@ void HorizonManager::Render (LPDIRECT3DDEVICE7 dev, D3DMATRIX &wmat, bool dual)
 	if (alpha <= 0.0) return;  // nothing to do
 	alpha = min(alpha,1.0);
 
-	Vector cpos (0,cdist,0);
+	VECTOR3 cpos{0, cdist, 0};
 	double hr = hralt;
 	const double cdist_min = 1.002;
 	if (cdist < cdist_min) {
@@ -1170,7 +1170,7 @@ void HorizonManager::Render (LPDIRECT3DDEVICE7 dev, D3DMATRIX &wmat, bool dual)
 				  -sinp,      0,    cosp     );
 	psun = tmul(planet->GRot(), -planet->GPos()); // sun in planet coords
 	psun = mul(rrmat, psun); // sun in camera-relative horizon coords
-	Vector cs = unit(psun - cpos); // camera->sun
+	VECTOR3 cs = unit(psun - cpos); // camera->sun
 	psun = unit(psun);
 	float psunx = (float)psun.x, psuny = (float)psun.y, psunz = (float)psun.z;
 
@@ -1185,9 +1185,9 @@ void HorizonManager::Render (LPDIRECT3DDEVICE7 dev, D3DMATRIX &wmat, bool dual)
 	dev->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP);
 
 	for (i = j = 0; i < HORIZON_NSEG; i++) {
-		Vector hp (Vtx[j].x = r1*CosP[i], Vtx[j].y = h1, Vtx[j].z = r1*SinP[i]);
+		VECTOR3 hp{Vtx[j].x = r1*CosP[i], Vtx[j].y = h1, Vtx[j].z = r1*SinP[i]};
 		csun = dot(hp, psun);
-		Vector cp = unit(hp - cpos);
+		VECTOR3 cp = unit(hp - cpos);
 		double colsh = 0.5 * (dot(cp, cs) + 1.0);
 
 		// compose a colourful sunset

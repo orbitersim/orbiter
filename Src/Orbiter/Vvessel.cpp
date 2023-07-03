@@ -594,8 +594,8 @@ void VVessel::RenderBeacons (LPDIRECT3DDEVICE7 dev)
 					continue;
 				double size = bs->size;
 				if (cdist > 50.0) size *= pow (cdist/50.0, bs->falloff);
-				Vector pos (MakeVector (*bs->pos));
-				Vector col (MakeVector (*bs->col));
+				auto pos = *bs->pos;
+				auto col = *bs->col;
 				if (need_setup) {
 					dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
 					dev->SetRenderState (D3DRENDERSTATE_ZWRITEENABLE, FALSE);
@@ -630,7 +630,7 @@ void VVessel::RenderExhaust (LPDIRECT3DDEVICE7 dev, LPDIRECTDRAWSURFACE7 default
 			dev->SetRenderState (D3DRENDERSTATE_ZWRITEENABLE, FALSE);
 			dev->SetMaterial (&engmat);
 			dev->SetTransform (D3DTRANSFORMSTATE_WORLD, &mWorld);
-			cdir = MakeVECTOR3 (tmul (body->GRot(), cpos));
+			cdir = tmul(body->GRot(), cpos);
 #ifdef EXHAUST_SCALEALPHA
 			dev->SetTextureStageState (0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
 			dev->SetTextureStageState (0, D3DTSS_ALPHAARG2, D3DTA_TFACTOR);
@@ -678,7 +678,7 @@ void VVessel::RenderExhaust (LPDIRECT3DDEVICE7 dev, LPDIRECTDRAWSURFACE7 default
 				dev->SetRenderState (D3DRENDERSTATE_ZWRITEENABLE, FALSE);
 				//dev->SetMaterial (&engmat);
 				dev->SetTransform (D3DTRANSFORMSTATE_WORLD, &mWorld);
-				cdir = MakeVECTOR3 (tmul (body->GRot(), cpos));
+				cdir = tmul(body->GRot(), cpos);
 				need_setup = false;
 			}
 
@@ -690,8 +690,8 @@ void VVessel::RenderExhaust (LPDIRECT3DDEVICE7 dev, LPDIRECTDRAWSURFACE7 default
 			mat.emissive.g = (float)(0.7+0.3*opac);
 			mat.emissive.b = (float)(0.5+0.5*opac);
 			dev->SetMaterial (&mat);
-			VECTOR3 dir = unit (MakeVECTOR3 (vessel->sp.airvel_ship));
-			VECTOR3 ref = dir*(0.2*vessel->size);
+			VECTOR3 dir = unit(vessel->sp.airvel_ship);
+			VECTOR3 ref = dir * (0.2 * vessel->size);
 			SetReentryVertices (-dir, cdir, ref, vessel->reentry.lscale*vessel->size,
 				vessel->reentry.wscale*(0.15+max(opac,0.5))*vessel->size, opac, ReentryVtx);
 
@@ -720,10 +720,10 @@ void VVessel::RenderGroundShadow (LPDIRECT3DDEVICE7 dev, const Planet *planet)
 	double depth = planet->ShadowDepth();
 	if (!depth) return;
 
-	Vector pp (planet->GPos());   // planet position
-	Vector pv (vessel->GPos());   // vessel position
-	Vector pvr (pv-pp);           // rel. vessel position
-	Vector sd = unit(pv);        // shadow projection direction
+	VECTOR3 pp  = planet->GPos(); // planet position
+	VECTOR3 pv  = vessel->GPos(); // vessel position
+	VECTOR3 pvr = pv - pp;        // rel. vessel position
+	VECTOR3 sd  = unit(pv);       // shadow projection direction
 	double R = planet->Size();    // planet radius
 	R += sp->elev;  // Note: this only works at low vessel altitudes (shadow close to vessel position)
 
@@ -736,15 +736,15 @@ void VVessel::RenderGroundShadow (LPDIRECT3DDEVICE7 dev, const Planet *planet)
 	if (arg <= 0.0) return;       // shadow doesn't intersect with planet surface
 	double a = -fac1 - sqrt(arg);
 
-	Vector sdv (tmul (vessel->GRot(), sd)); // projection direction in vessel frame
-	Vector shp (sdv*a);                     // projection point
+	VECTOR3 sdv = tmul(vessel->GRot(), sd); // projection direction in vessel frame
+	VECTOR3 shp = sdv * a;                     // projection point
 	//Vector hn (tmul (vessel->GRot(), (sd*a + pvr).unit())); // horizon normal in vessel frame
-	Vector hn (tmul (vessel->GRot(), mul (planet->GRot(), tmul (sp->L2H, sp->surfnml))));
+	VECTOR3 hn = tmul(vessel->GRot(), mul(planet->GRot(), tmul(sp->L2H, sp->surfnml)));
 
 	// perform projections
 	double nr0 = dot(hn, shp);
 	double nd  = dot(hn, sdv);
-	Vector sdvs (sdv / nd);
+	VECTOR3 sdvs = sdv / nd;
 
 	VERTEX_XYZ *pvtx; // shadow vertex buffer
 	double ndr, vx, vy, vz;
@@ -803,7 +803,7 @@ void VVessel::UpdateRenderVectors()
 		double pscale = *(float*)gc->GetConfigParam(CFGPRM_FORCEVECTORSCALE);
 		float alpha = *(float*)gc->GetConfigParam(CFGPRM_FORCEVECTOROPACITY);
 		char cbuf[256];
-		Vector F;
+		VECTOR3 F;
 
 		if ((flag & BFV_WEIGHT) && vessel->GetWeightVector (F)) {
 			sprintf(cbuf, "G =%sN", FloatStr(len = ::len(F), 4));
@@ -859,7 +859,7 @@ void VVessel::RenderAttachmentMarkers (LPDIRECT3DDEVICE7 dev, bool pa)
 	AttachmentSpec **attach;
 	DWORD i, j, nattach;
 	D3DMATERIAL7 *mat;
-	Vector v;
+	VECTOR3 v;
 
 	if (pa) {
 		nattach = vessel->npattach;
@@ -903,10 +903,10 @@ bool VVessel::ModLighting (LPD3DLIGHT7 light)
 	const CelestialBody *cb = vessel->ProxyPlanet();
 	if (!cb) return false;
 	Star *sun = g_psys->GetStar(0); // should really loop over all suns
-	Vector S(sun->GPos() - vessel->GPos());
+	VECTOR3 S = sun->GPos() - vessel->GPos();
 	double s = len(S);
 	double as = asin (sun->Size()/s);                     // apparent size of sun disc [rad]
-	Vector lcol (1,1,1);
+	VECTOR3 lcol{1, 1, 1};
 	double amb = 0;
 	double dt = 1.0;
 	bool lightmod = false;
@@ -915,7 +915,7 @@ bool VVessel::ModLighting (LPD3DLIGHT7 light)
 	// calculate shadowing by planet
 
 	for (i = 0;; i++) {
-		Vector P(cb->GPos() - vessel->GPos());
+		VECTOR3 P = cb->GPos() - vessel->GPos();
 		double p = len(P);
 		if (p < s) {                                      // shadow only if planet closer than sun
 			double phi = std::acos(dot(S, P) / (s * p));  // angular distance between sun and planet
@@ -937,7 +937,7 @@ bool VVessel::ModLighting (LPD3DLIGHT7 light)
 
 				if (as+ap1 >= phi && ap/as > 0.1) {       // overlap and significant planet size
 					double dap = ap1-ap;
-					Vector plight(1,1,1);
+					VECTOR3 plight{1, 1, 1};
 					if (as < ap) {                        // planet disc larger than sun disc
 						if (phi < ap-as) {                // totality (sun below horizon)
 							plight = {0, 0, 0};

@@ -1370,7 +1370,7 @@ bool Orbiter::KillVessels ()
 	return true;
 }
 
-void Orbiter::NotifyObjectJump (const Body *obj, const Vector &shift)
+void Orbiter::NotifyObjectJump (const Body *obj, const VECTOR3 &shift)
 {
 	if (obj == g_camera->Target()) g_camera->Drag (-shift);
 	if (g_camera->Target()) g_camera->Update ();
@@ -1389,7 +1389,7 @@ void Orbiter::NotifyObjectJump (const Body *obj, const Vector &shift)
 
 void Orbiter::NotifyObjectSize (const Body *obj)
 {
-	if (obj == g_camera->Target()) g_camera->Drag (Vector(0,0,0));
+	if (obj == g_camera->Target()) g_camera->Drag({0, 0, 0});
 }
 
 //-----------------------------------------------------------------------------

@@ -260,7 +260,7 @@ bool ElevationManager::LoadElevationTile_mod (int lvl, int ilat, int ilng, doubl
 	return false;
 }
 
-double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vector<ElevationTile> *tilecache, Vector *normal, int *reslvl) const
+double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vector<ElevationTile> *tilecache, VECTOR3 *normal, int *reslvl) const
 {
 	double e = 0.0;
 	if (reslvl) *reslvl = 0;
@@ -349,11 +349,11 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 					double nx01 = eptr[1]-eptr[0];
 					double nx02 = eptr[elev_stride+1]-eptr[elev_stride];
 					double nx = w_lat*nx02 + (1.0-w_lat)*nx01;
-					Vector vnx(dx,nx,0);
+					VECTOR3 vnx{dx, nx, 0};
 					double nz01 = eptr[elev_stride]-eptr[0];
 					double nz02 = eptr[elev_stride+1]-eptr[1];
 					double nz = w_lng*nz02 + (1.0-w_lng)*nz01;
-					Vector vnz(0,nz,dz);
+					VECTOR3 vnz{0, nz, dz};
 					*normal = unit(cross(vnz, vnx));
 				}
 			} else { // cubic spline interpolation

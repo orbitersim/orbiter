@@ -213,14 +213,14 @@ void TileLabel::Render(oapi::Sketchpad *skp, oapi::Font **labelfont, int *fontid
 	COLORREF col, pcol = 0;
 	char symbol;
 	int x, y, nl, scale;
-	Vector sp, dir;
+	VECTOR3 sp, dir;
 	WCHAR wlabel[256];
 	bool active;
 	const Planet *pl = tile->mgr->Cbody();
-	Vector campos = tmul(pl->GRot(), g_camera->GPos() - pl->GPos()); // camera pos in planet frame
+	VECTOR3 campos = tmul(pl->GRot(), g_camera->GPos() - pl->GPos()); // camera pos in planet frame
 
 	for (i = 0; i < nrenderlabel; i++) {
-		Vector camlabelpos = campos-renderlabel[i]->pos;
+		VECTOR3 camlabelpos = campos - renderlabel[i]->pos;
 		if (dot(renderlabel[i]->pos, camlabelpos) >= 0.0) {
 			double fontscale = 1e4 / len(camlabelpos) * (13 - min(tile->lvl, 12) * 1);
 			int idx = max(0, min(3, (int)fontscale));

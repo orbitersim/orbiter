@@ -136,8 +136,8 @@ void Instrument_OPlaneAlign::UpdateDraw (oapi::Sketchpad *skp)
 
 	// update my elements
 	double refrad = elref->Size();
-	Vector sp = vessel->GPos() - elref->GPos();
-	Vector sv = vessel->GVel() - elref->GVel();
+	VECTOR3 sp = vessel->GPos() - elref->GPos();
+	VECTOR3 sv = vessel->GVel() - elref->GVel();
 	shpel->Calculate(sp, sv, td.SimT1);
 	bool subsurf_node = (shpel->PeDist() < refrad);
 
@@ -177,7 +177,7 @@ void Instrument_OPlaneAlign::UpdateDraw (oapi::Sketchpad *skp)
 	}
 
 	// update target elements
-	Vector tp, tv;
+	VECTOR3 tp, tv;
 	if (tgt) {
 		tp = tgt->GPos() - elref->GPos();
 		tv = tgt->GVel() - elref->GVel();
@@ -200,15 +200,15 @@ void Instrument_OPlaneAlign::UpdateDraw (oapi::Sketchpad *skp)
 	double svmag = len(sv);
 	sp = unit(sp); sv = unit(sv);
 	// normals of the two orbital planes
-	Vector nm1 = unit(shpel->HVec());
-	Vector nm2 = unit(tgtel->HVec());
+	VECTOR3 nm1 = unit(shpel->HVec());
+	VECTOR3 nm2 = unit(tgtel->HVec());
 
 	double reli = angle(nm1, nm2);    // relative inclination
 	double didt = (reli - preli) / dT; // inclination rate
 	preli = reli;                      // remember for next step
 
 	// angle between ship and ascending node
-	Vector nd = unit(cross(nm1, nm2));
+	VECTOR3 nd = unit(cross(nm1, nm2));
 	double cosp = dot(nd, sp);
 	double Aan = acos(cosp);
 	if (dot(nm1, cross(nd, sp)) < 0) Aan = Pi2 - Aan; // ascending node is behind us
@@ -370,7 +370,7 @@ void Instrument_OPlaneAlign::UpdateDraw (oapi::Sketchpad *skp)
 	CY = (55*IH) / 100;
 	int xa, ya, xd, yd;
 	Matrix irot(IRotMatrix(shpel->cost, shpel->sint, shpel->cosi, shpel->sini));
-	Vector P = mul(irot, sp);
+	VECTOR3 P = mul(irot, sp);
 	x = (int)(RD*P.x);
 	y = (int)(RD*P.z);
 	if (mode == ORBIT) {
@@ -419,12 +419,12 @@ void Instrument_OPlaneAlign::UpdateDraw (oapi::Sketchpad *skp)
 bool Instrument_OPlaneAlign::GetTimingsFromSurface(double &Tan, double &Aan, double &Tdn, double &Adn, double &VSurf)
 {
 	// target plane normal
-	Vector nm2 = unit(tgtel->HVec());
+	VECTOR3 nm2 = unit(tgtel->HVec());
 	nm2 = tmul(elref->GRot(), nm2); // rotate into frame of reference planet
 	double nx = nm2.x, ny = nm2.y, nz = nm2.z;
 
 	// ship position in reference body frame
-	Vector p = elref->GlobalToLocal(vessel->GPos());
+	VECTOR3 p = elref->GlobalToLocal(vessel->GPos());
 	double y0 = p.y;
 	double r0 = hypot(p.x, p.z);
 	double phi0 = atan2(p.x, p.z);
