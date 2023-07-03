@@ -316,9 +316,8 @@ void CShipeditApp::InitMesh ()
 		pp[i].c = pp[i].x1*(pp[i].y2-pp[i].y3) - pp[i].y1*(pp[i].x2-pp[i].x3) + (pp[i].x2*pp[i].y3 - pp[i].x3*pp[i].y2);
 		pp[i].d = -(pp[i].x1*(pp[i].y2*pp[i].z3-pp[i].y3*pp[i].z2) - pp[i].y1*(pp[i].x2*pp[i].z3-pp[i].x3*pp[i].z2) + pp[i].z1*(pp[i].x2*pp[i].y3-pp[i].x3*pp[i].y2));
 
-		VECTOR3 dr, a;
-		dr = {pp[i].x1 - pp[i].x2, pp[i].y1 - pp[i].y2, pp[i].z1 - pp[i].z2};
-		a  = {pp[i].x3 - pp[i].x2, pp[i].y3 - pp[i].y2, pp[i].z3 - pp[i].z2};
+		VECTOR3 dr{pp[i].x1 - pp[i].x2, pp[i].y1 - pp[i].y2, pp[i].z1 - pp[i].z2};
+		VECTOR3 a {pp[i].x3 - pp[i].x2, pp[i].y3 - pp[i].y2, pp[i].z3 - pp[i].z2};
 		pp[i].d1 = (float)(dot(dr, a) / len(a));
 		dr = {pp[i].x2 - pp[i].x3, pp[i].y2 - pp[i].y3, pp[i].z2 - pp[i].z3};
 		a  = {pp[i].x1 - pp[i].x3, pp[i].y1 - pp[i].y3, pp[i].z1 - pp[i].z3};
@@ -329,8 +328,7 @@ void CShipeditApp::InitMesh ()
 	}
 
 	vol = 0.0;
-	cg = cg_base = cg_add = {0, 0, 0};
-	cs = {0, 0, 0};
+	cg = cg_base = cg_add = cs = {0, 0, 0};
 	J.Set(0,0,0,0,0,0,0,0,0); J_base.Set(J); J_add.Set(J);
 	nop = 0, nvol = 0;
 	for (i = 0; i < 3; i++) ncs[i] = 0;
