@@ -415,9 +415,8 @@ void HUD::AddMesh_DirectionMarker (int &ivtx, int &iidx, const VECTOR3 &dir, boo
 	double dy = spec.Markersize*0.83;//scal*39;
 	double rad = dy*4.0;
 
-	VECTOR3 d;
-	if (bVC) d = tmul(g_focusobj->GRot(), dir);
-	else     d = tmul(g_camera->GRot(), dir);
+	VECTOR3 d = bVC ? tmul(g_focusobj->GRot(), dir)
+					: tmul(g_camera->GRot(), dir);
 	double len = std::hypot (d.x, d.y);
 	if (!len) return;
 	double cosa = d.y/len, sina = -d.x/len;
@@ -1227,12 +1226,8 @@ bool HUD::GlobalDrawMarker (oapi::Sketchpad *skp, const VECTOR3 &dir, int style)
 oapi::IVECTOR2 *HUD::OffscreenDirMarker (const VECTOR3 &dir) const
 {
 	static oapi::IVECTOR2 pt[4];
-	VECTOR3 d;
-	if (bVC) {
-		d = tmul(g_focusobj->GRot(), dir);
-	} else {
-		d = tmul(g_camera->GRot(), dir);
-	}
+	VECTOR3 d = bVC ? tmul(g_focusobj->GRot(), dir)
+					: tmul(g_camera->GRot(), dir);
 	double len = std::hypot (d.y, d.x);
 	double scale = spec.Markersize * 0.6;
 	double dx = d.x/len*scale;
