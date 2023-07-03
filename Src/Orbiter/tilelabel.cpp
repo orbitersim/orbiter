@@ -213,7 +213,6 @@ void TileLabel::Render(oapi::Sketchpad *skp, oapi::Font **labelfont, int *fontid
 	COLORREF col, pcol = 0;
 	char symbol;
 	int x, y, nl, scale;
-	VECTOR3 sp, dir;
 	WCHAR wlabel[256];
 	bool active;
 	const Planet *pl = tile->mgr->Cbody();
@@ -229,8 +228,7 @@ void TileLabel::Render(oapi::Sketchpad *skp, oapi::Font **labelfont, int *fontid
 				*fontidx = idx;
 			}
 			scale = symscale[idx];
-			sp = mul(pl->GRot(), renderlabel[i]->pos) + pl->GPos() - g_camera->GPos();
-			dir = unit(sp);
+			VECTOR3 dir = unit(mul(pl->GRot(), renderlabel[i]->pos) + pl->GPos() - g_camera->GPos());
 			if (g_camera->Direction2Viewport(dir, x, y)) {
 
 				active = false; // default for label types not listed in the legend
