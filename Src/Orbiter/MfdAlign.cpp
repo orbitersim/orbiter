@@ -177,10 +177,9 @@ void Instrument_OPlaneAlign::UpdateDraw (oapi::Sketchpad *skp)
 	}
 
 	// update target elements
-	VECTOR3 tp, tv;
 	if (tgt) {
-		tp = tgt->GPos() - elref->GPos();
-		tv = tgt->GVel() - elref->GVel();
+		VECTOR3 tp = tgt->GPos() - elref->GPos();
+		VECTOR3 tv = tgt->GVel() - elref->GVel();
 		tgtel->Calculate(tp, tv, td.SimT1);
 	}
 
