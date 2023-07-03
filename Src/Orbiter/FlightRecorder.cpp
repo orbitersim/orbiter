@@ -498,30 +498,22 @@ void Vessel::FRecorder_Play ()
 		if (frec[cfrec].frm == 1) { // map from equatorial frame
 			// propagate from current rotation state to rotation state at last sample
 			double dlng = Pi2*dt/frec[cfrec].ref->RotT(), sind = sin(dlng), cosd = cos(dlng);
-			s.x =  P0.x*cosd + P0.z*sind;
-			s.z = -P0.x*sind + P0.z*cosd;
-			s.y =  P0.y;
+			s = {P0.x * cosd + P0.z * sind, P0.y, -P0.x * sind + P0.z * cosd};
 			P0 = mul(frec[cfrec].ref->s1->R, s);
 
 			// Needs to be fixed!
 			frec[cfrec].ref->LocalToEquatorial (s, lng, lat, rad);
 			vref = Pi2/frec[cfrec].ref->RotT() * rad * cos(lat);
-			s.x =  V0.x*cosd + V0.z*sind;
-			s.z = -V0.x*sind + V0.z*cosd;
-			s.y =  V0.y;
+			s = {V0.x * cosd + V0.z * sind, V0.y, -V0.x * sind + V0.z * cosd};
 			V0 = mul(frec[cfrec].ref->s1->R, s + VECTOR3{-vref * std::sin(lng), 0, vref * std::cos(lng)});
 		}
 		if (frec[cfrec+1].frm == 1) { // map from equatorial frame
 			double dlng = Pi2*(dt-dT)/frec[cfrec+1].ref->RotT(), sind = sin(dlng), cosd = cos(dlng);
-			s.x =  P1.x*cosd + P1.z*sind;
-			s.z = -P1.x*sind + P1.z*cosd;
-			s.y =  P1.y;
+			s = {P1.x * cosd + P1.z * sind, P1.y, -P1.x * sind + P1.z * cosd};
 			P1 = mul(frec[cfrec + 1].ref->s1->R, s);
 			frec[cfrec+1].ref->LocalToEquatorial (s, lng, lat, rad);
 			vref = Pi2/frec[cfrec+1].ref->RotT() * rad * cos(lat);
-			s.x =  V1.x*cosd + V1.z*sind;
-			s.z = -V1.x*sind + V1.z*cosd;
-			s.y =  V1.y;
+			s = {V1.x * cosd + V1.z * sind, V1.y, -V1.x * sind + V1.z * cosd};
 			V1 = mul(frec[cfrec].ref->s1->R, s + VECTOR3{-vref * std::sin(lng), 0, vref * std::cos(lng)});
 		}
 
