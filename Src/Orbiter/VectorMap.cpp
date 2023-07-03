@@ -1604,10 +1604,10 @@ void Groundtrack::Reset (const CelestialBody *body, const Elements *_el)
 void Groundtrack::CalcPoint (VPointGT &p, double *angvel)
 {
 	double r, ta, lng, lat, rad;
-	VECTOR3 pos, loc;
+	VECTOR3 pos;
 	el->RelPos (r, ta, p.t);
 	el->Pol2Crt (r, ta, pos);
-	loc = tmul(cbody->GRot(), pos);
+	VECTOR3 loc = tmul(cbody->GRot(), pos);
 	cbody->LocalToEquatorial (loc, lng, lat, rad);
 	p.lng = normangle(lng - Pi2*(p.t-td.SimT0)/cbody->RotT());
 	p.lat = lat;
