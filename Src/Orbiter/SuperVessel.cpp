@@ -875,13 +875,12 @@ bool SuperVessel::GetPMI (const Vessel *vessel, VECTOR3 &vpmi)
 		if (vlist[i].vessel == vessel) {
 			vpmi = {0, 0, 0};
 			VECTOR3 r0[6], rt;
-			double rtx2, rty2, rtz2;
 			r0[1].x = -(r0[0].x = 0.5 * sqrt (fabs (-pmi.x + pmi.y + pmi.z)));
 			r0[3].y = -(r0[2].y = 0.5 * sqrt (fabs ( pmi.x - pmi.y + pmi.z)));
 			r0[5].z = -(r0[4].z = 0.5 * sqrt (fabs ( pmi.x + pmi.y - pmi.z)));
 			for (DWORD j = 0; j < 6; j++) {
 				rt = tmul(vlist[i].rrot, r0[j] + cg - vlist[i].rpos);
-				rtx2 = rt.x*rt.x, rty2 = rt.y*rt.y, rtz2 = rt.z*rt.z;
+				double rtx2 = rt.x * rt.x, rty2 = rt.y * rt.y, rtz2 = rt.z * rt.z;
 				vpmi.x += rty2 + rtz2;
 				vpmi.y += rtx2 + rtz2;
 				vpmi.z += rtx2 + rty2;
@@ -934,23 +933,21 @@ void SuperVessel::CalcPMI ()
 
 	DWORD i, j;
 	VECTOR3 r0[6], rt;
-	double rtx2, rty2, rtz2, vmass;
-	double vpmix, vpmiy, vpmiz;
 
 	pmi = {0, 0, 0};
 
 	for (i = 0; i < nv; i++) {
 		Vessel *v = vlist[i].vessel;
 		VECTOR3 &vpmi = v->pmi;
-		vmass = v->mass/6.0;
+		double vmass = v->mass / 6.0;
 		r0[1].x = -(r0[0].x = sqrt (1.5 * fabs (-vpmi.x + vpmi.y + vpmi.z)));
 		r0[3].y = -(r0[2].y = sqrt (1.5 * fabs ( vpmi.x - vpmi.y + vpmi.z)));
 		r0[5].z = -(r0[4].z = sqrt (1.5 * fabs ( vpmi.x + vpmi.y - vpmi.z)));
 
-		vpmix = vpmiy = vpmiz = 0.0;
+		double vpmix = 0, vpmiy = 0, vpmiz = 0;
 		for (j = 0; j < 6; j++) {
 			rt = mul(vlist[i].rrot, r0[j]) + vlist[i].rpos - cg;
-			rtx2 = rt.x*rt.x, rty2 = rt.y*rt.y, rtz2 = rt.z*rt.z;
+			double rtx2 = rt.x * rt.x, rty2 = rt.y * rt.y, rtz2 = rt.z * rt.z;
 			vpmix += rty2 + rtz2;
 			vpmiy += rtx2 + rtz2;
 			vpmiz += rtx2 + rty2;
