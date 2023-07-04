@@ -628,7 +628,7 @@ gcCore::PickGround gcCore2::GetTileData(HPLANETMGR vPl, double lng, double lat, 
 	pg.emin = float(pTile->GetMinElev());
 
 	pg.msg = 0;
-	pg.dist = length(pos);
+	pg.dist = len(pos);
 	pg.level = pTile->Level();
 	pg.hTile = HTILE(pTile);
 	pg.pos = FVECTOR3(pos);

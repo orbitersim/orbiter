@@ -76,7 +76,7 @@ void HazeManager::Render (LPDIRECT3DDEVICE7 dev, D3DMATRIX &wmat, bool dual)
 
 	D3DMAT_MatrixInvert (&imat, &wmat);
 	VECTOR3 rpos = {imat._41, imat._42, imat._43};   // camera in local coords (planet radius = 1)
-	double cdist = length (rpos);
+	double cdist = len(rpos);
 
 	alpha = dens0 * min (1.0, (cdist-1.0)*200.0);
 	if (!dual) alpha = 1.0-alpha;

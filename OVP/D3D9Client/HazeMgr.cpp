@@ -83,7 +83,7 @@ void HazeManager::Render(LPDIRECT3DDEVICE9 pDev, D3DXMATRIX &wmat, bool dual)
 
 	D3DMAT_MatrixInvert (&imat, &wmat);
 	VECTOR3 rpos = {imat._41, imat._42, imat._43};   // camera in local coords (planet radius = 1)
-	double cdist = length (rpos);
+	double cdist = len(rpos);
 
 	alpha = dens0 * min (1.0, (cdist-1.0)*200.0);
 	if (!dual) alpha = 1.0-alpha;
@@ -302,7 +302,7 @@ void HazeManager2::RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr)
 {
 	cpos = -cpos;
 
-	double cr = length(cpos); if (cr<(rad+100.0)) cr=rad+100.0;
+	double cr = len(cpos); if (cr < (rad + 100.0)) cr = rad + 100.0;
 	double hd = sqrt(cr*cr - rad*rad) * 10.0;
 	double al = asin(rad/cr);
 
@@ -384,7 +384,7 @@ void HazeManager2::RenderSkySegment(D3DXMATRIX &wmat, double rad, double dmin, d
 void HazeManager2::RenderRing(VECTOR3 cpos, VECTOR3 cdir, double rad, double hralt)
 {
 	cpos = -cpos;
-	double cr = length(cpos);
+	double cr = len(cpos);
 	double hd = sqrt(cr*cr - rad*rad);
 	double al = asin(rad/cr);
 	double mx = hralt * 4.0;

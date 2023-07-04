@@ -90,7 +90,7 @@ void vVessel::clbkEvent (DWORD event, DWORD_PTR context)
 		if (idx < nmesh) {
 			VECTOR3 ofs;
 			vessel->GetMeshOffset (idx, ofs);
-			if (length(ofs)) {
+			if (len(ofs)) {
 				if (!meshlist[idx].trans)
 					meshlist[idx].trans = new D3DMATRIX;
 				D3DMAT_Identity (meshlist[idx].trans);
@@ -145,32 +145,32 @@ void vVessel::UpdateRenderVectors()
 		VECTOR3 F;
 
 		if ((flag & BFV_WEIGHT) && vessel->GetWeightVector(F)) {
-			sprintf(cbuf, "G = %fN", len = length(F));
+			sprintf(cbuf, "G = %fN", len = ::len(F));
 			if (logscale) len = log(len + shift) - lshift; else len *= scale;
 			AddVector(unit(F) * (len * pscale), {0, 0, 0}, scale2, std::string(cbuf), {1, 1, 0}, alpha, D3DRGB(1, 1, 0));
 		}
 		if ((flag & BFV_THRUST) && vessel->GetThrustVector(F)) {
-			sprintf(cbuf, "T = %fN", len = length(F));
+			sprintf(cbuf, "T = %fN", len = ::len(F));
 			if (logscale) len = log(len + shift) - lshift; else len *= scale;
 			AddVector(unit(F) * (len * pscale), {0, 0, 0}, scale2, std::string(cbuf), {0, 0, 1}, alpha, D3DRGB(0.5, 0.5, 1));
 		}
 		if ((flag & BFV_LIFT) && vessel->GetLiftVector(F)) {
-			sprintf(cbuf, "L = %fN", len = length(F));
+			sprintf(cbuf, "L = %fN", len = ::len(F));
 			if (logscale) len = log(len + shift) - lshift; else len *= scale;
 			AddVector(unit(F) * (len * pscale), {0, 0, 0}, scale2, std::string(cbuf), {0, 1, 0}, alpha, D3DRGB(0.5, 1, 0.5));
 		}
 		if ((flag & BFV_DRAG) && vessel->GetDragVector(F)) {
-			sprintf(cbuf, "D = %fN", len = length(F));
+			sprintf(cbuf, "D = %fN", len = ::len(F));
 			if (logscale) len = log(len + shift) - lshift; else len *= scale;
 			AddVector(unit(F) * (len * pscale), {0, 0, 0}, scale2, std::string(cbuf), {1, 0, 0}, alpha, D3DRGB(1, 0.5, 0.5));
 		}
 		if ((flag & BFV_TOTAL) && vessel->GetForceVector(F)) {
-			sprintf(cbuf, "F = %fN", len = length(F));
+			sprintf(cbuf, "F = %fN", len = ::len(F));
 			if (logscale) len = log(len + shift) - lshift; else len *= scale;
 			AddVector(unit(F) * (len * pscale), {0, 0, 0}, scale2, std::string(cbuf), {1, 1, 1}, alpha, D3DRGB(1, 1, 1));
 		}
 		if ((flag & BFV_TORQUE) && vessel->GetTorqueVector(F)) {
-			sprintf(cbuf, "M = %fNm", len = length(F));
+			sprintf(cbuf, "M = %fNm", len = ::len(F));
 			if (logscale) len = log(len + 1e-5) - log(1e-5); else len *= scale * 1e5;
 			AddVector(unit(F) * (len * pscale), {0, 0, 0}, scale2 * 0.5, std::string(cbuf), {1, 0, 1}, alpha, D3DRGB(1, 0, 1));
 		}
@@ -202,7 +202,7 @@ void vVessel::LoadMeshes ()
 		if (meshlist[idx].mesh) {
 			meshlist[idx].vismode = vessel->GetMeshVisibilityMode (idx);
 			vessel->GetMeshOffset (idx, ofs);
-			if (length(ofs)) {
+			if (len(ofs)) {
 				meshlist[idx].trans = new D3DMATRIX;
 				D3DMAT_Identity (meshlist[idx].trans);
 				D3DMAT_SetTranslation (meshlist[idx].trans, &ofs);
@@ -253,7 +253,7 @@ void vVessel::InsertMesh (UINT idx)
 	if (meshlist[idx].mesh) {
 		meshlist[idx].vismode = vessel->GetMeshVisibilityMode (idx);
 		vessel->GetMeshOffset (idx, ofs);
-		if (length(ofs)) {
+		if (len(ofs)) {
 			meshlist[idx].trans = new D3DMATRIX;
 			D3DMAT_Identity (meshlist[idx].trans);
 			D3DMAT_SetTranslation (meshlist[idx].trans, &ofs);
@@ -529,7 +529,7 @@ void vVessel::RenderGroundShadow (LPDIRECT3DDEVICE7 dev, OBJHANDLE hPlanet)
 	oapiGetGlobalPos (hPlanet, &pp); // planet global pos
 	vessel->GetGlobalPos (sd);       // vessel global pos
 	pvr = sd-pp;                     // planet-relative vessel position
-	d = length(pvr);                 // vessel-planet distance
+	d = len(pvr);                    // vessel-planet distance
 	R = oapiGetSize (hPlanet);       // planet mean radius
 	R += vessel->GetSurfaceElevation();  // Note: this only works at low vessel altitudes (shadow close to vessel position)
 	alt = d-R;                       // altitude above surface
@@ -668,7 +668,7 @@ bool vVessel::ModLighting (LPD3DLIGHT7 light)
 	vessel->GetGlobalPos(GV);
 	oapiGetGlobalPos (hS, &GS);
 	S = GS-GV; // sun's position from vessel
-	double s = length(S);
+	double s = len(S);
 	double as = asin(oapiGetSize(hS)/s);
 	VECTOR3 lcol = {1,1,1};
 	double amb = 0;
@@ -681,7 +681,7 @@ bool vVessel::ModLighting (LPD3DLIGHT7 light)
 	for (i = 0;; i++) {
 		oapiGetGlobalPos (hP, &GP);
 		P = GP-GV;
-		double p = length(P);
+		double p = len(P);
 		if (p < s) {                                      // shadow only if planet closer than sun
 			double psize = oapiGetSize(hP);
 			double phi = std::acos(dot(S, P) / (s * p));       // angular distance between sun and planet

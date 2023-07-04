@@ -547,7 +547,7 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 	oapiGetGlobalPos(hPlanet, &pla);
 	oapiGetGlobalPos(hSun, &sun);
 
-	double len  = length(cam - pla);
+	double len  = ::len(cam - pla);
 	double rad  = oapiGetSize(hPlanet);
 	
 	sun = unit(sun - cam);	// Vector pointing to sun from camera
@@ -629,7 +629,7 @@ void D3D9Effect::InitLegacyAtmosphere(OBJHANDLE hPlanet, float GlobalAmbient)
 	oapiGetGlobalPos (hS, &GS);				// sun position
 	oapiGetGlobalPos (hPlanet, &GP);		// planet position
 			
-	float rs = (float)(oapiGetSize(hS) / length(GS-GP));
+	auto rs = float(oapiGetSize(hS) / len(GS - GP));
 	
 	const ATMCONST *atm = (oapiGetObjectType(hPlanet)==OBJTP_PLANET ? oapiGetPlanetAtmConstants (hPlanet) : NULL);
 

@@ -339,7 +339,7 @@ void vPlanet::IntegrateSegment(FVECTOR3 vOrig, FVECTOR3 vRay, float len, FVECTOR
 	{
 		float dst = len * (iNSEG * (float(i) + 0.5f));
 		FVECTOR3 pos = vOrig + vRay * dst;
-		FVECTOR3 n = normalize(pos);
+		FVECTOR3 n = unit(pos);
 		float rad = dot(n, pos);
 		float alt = rad - cp.PlanetRad;
 		float ang = dot(n, vRay);
@@ -483,7 +483,7 @@ D3D9Sun vPlanet::GetObjectAtmoParams(VECTOR3 vRelPos)
 	op.Transmission = 1.0f;
 	op.Incatter = 0.0f;
 
-	double r = length(vRelPos);
+	double r = len(vRelPos);
 	float a = cp.AtmoAlt * 0.5f;
 	FVECTOR3 cSun = SunLightColor(vRelPos).rgb * cp.cSun;
 	DWORD ambient = *(DWORD*)gc->GetConfigParam(CFGPRM_AMBIENTLEVEL);
@@ -498,7 +498,7 @@ D3D9Sun vPlanet::GetObjectAtmoParams(VECTOR3 vRelPos)
 
 	VECTOR3 vNrm = unit(vRelPos);
 	VECTOR3 vRP = (vRelPos + cpos);			// Camera relative position
-	double d = length(vRP);					// Distance to camera
+	double d = len(vRP);					// Distance to camera
 	FVECTOR3 vRay = (vRP / d);				// Unit viewing ray from cameta to obj_gpos
 	float dNR = dot(vNrm, vRay);			// cosine of (Normal/vRay) angle 
 	float dRS = dot(vRay, cp.toSun);
@@ -1243,7 +1243,7 @@ void vPlanet::TestComputations(Sketchpad* pSkp)
 			}
 		}
 		GetScene()->vPickRay = 0;
-		vRay = normalize(vPos - vRef); // From vRef to vPos
+		vRay = unit(vPos - vRef); // From vRef to vPos
 	}
 
 	float cd = length(vRef - vPos);

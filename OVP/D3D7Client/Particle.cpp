@@ -552,7 +552,7 @@ void ExhaustStream::Update ()
 			oapiGetGlobalPos (hPlanet, &pp);
 			rad = oapiGetSize (hPlanet);
 			VECTOR3 dv = pp-plast->pos; // gravitational dv
-			double d = length (dv);
+			double d = len(dv);
 			dv *= GGRAV * oapiGetMass(hPlanet)/(d*d*d) * dt;
 
 			ATMPARAM prm;
@@ -580,11 +580,11 @@ void ExhaustStream::Update ()
 				p->size += alpha * dt;
 
 				VECTOR3 s (p->pos - pp);
-				if (length(s) < r) {
-					VECTOR3 dp = s * (r/length(s)-1.0);
+				if (len(s) < r) {
+					VECTOR3 dp = s * (r / len(s) - 1);
 					p->pos += dp;
 
-					static double dv_scale = length(vv)*0.2;
+					double dv_scale = len(vv) * 0.2;
 					VECTOR3 dv = {((double)rand()/(double)RAND_MAX-0.5)*dv_scale,
 								  ((double)rand()/(double)RAND_MAX-0.5)*dv_scale,
 								  ((double)rand()/(double)RAND_MAX-0.5)*dv_scale};
@@ -592,7 +592,7 @@ void ExhaustStream::Update ()
 
 					s = unit(s);
 					VECTOR3 vv2 = dv - s * dot(s, dv);
-					if (length(vv2)) vv2 *= 0.5*length(vv)/length(vv2);
+					if (len(vv2)) vv2 *= 0.5 * len(vv) / len(vv2);
 					vv2 += s*(((double)rand()/(double)RAND_MAX)*dv_scale);
 					p->vel = vv2*1.0/*2.0*/+av;
 					double r = (double)rand()/(double)RAND_MAX;

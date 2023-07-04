@@ -723,7 +723,7 @@ VECTOR3 Scene::SkyColour ()
 		rc = GetCameraGPos();
 		oapiGetGlobalPos (hProxy, &rp);
 		pc = rc-rp;
-		double cdist = length (pc);
+		double cdist = len(pc);
 		if (cdist < atmp->radlimit) {
 			ATMPARAM prm;
 			oapiGetPlanetAtmParams (hProxy, cdist, &prm);
@@ -909,7 +909,7 @@ float Scene::ComputeNearClipPlane()
 		if (t<-1.0) t=1.0; if (t>1.0) t=1.0f;
 		double a = PI - acos(t);
 		double R = oapiGetSize(hObj) + hVes->GetSurfaceElevation();
-		double r = length(Camera.pos-pos);
+		double r = len(Camera.pos - pos);
 		double h = r - R;
 		if (h<10e3) {
 			double d = a - g; if (d<0) d=0;
@@ -1673,7 +1673,7 @@ void Scene::RenderMainScene()
 							cpos = tmul(prot, cp - ppos); // camera in local planet coords
 							bpos = tmul(prot, bpos - ppos);
 
-							double apprad = 8000e3 / (length(cpos - bpos) * tan(GetCameraAperture()));
+							double apprad = 8000e3 / (len(cpos - bpos) * std::tan(GetCameraAperture()));
 
 							if (dot(bpos, cpos - bpos) >= 0.0 && apprad > LABEL_DISTLIMIT) { // surface point visible?
 								char name[64]; oapiGetObjectName(hBase, name, 63);
@@ -2373,13 +2373,13 @@ D3DXCOLOR Scene::GetSunDiffColor()
 	VECTOR3 S = GS - GO;						// sun's position from object
 	VECTOR3 P = GO - GP;
 
-	double s = length(S);
+	double s = len(S);
 
 	float pwr = 1.0f;
 
 	if (hP == hS) return to_D3DXCOLOR(GetSun()->Color);
 
-	double r = length(P);
+	double r = len(P);
 	double pres = 1000.0;
 	double size = oapiGetSize(hP) + vP->GetMinElevation();
 	double grav = oapiGetMass(hP) * 6.67259e-11 / (size*size);
@@ -3425,7 +3425,7 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 	for (int i = 0; i < n; i++) {
 		VECTOR3 gp; OBJHANDLE hB = oapiGetGbodyByIndex(i);
 		oapiGetGlobalPos(hB, &gp);
-		double l = length(gp - Camera.pos);
+		double l = len(gp - Camera.pos);
 		if (l < closest) {
 			closest = l;
 			Camera.hNear = hB;
@@ -3620,7 +3620,7 @@ void Scene::RenderGlares()
 
 			// Render Sun glare
 			VECTOR3 gsun; oapiGetGlobalPos(oapiGetObjectByIndex(0), &gsun);
-			double sdst = length(gsun - Camera.pos);
+			double sdst = len(gsun - Camera.pos);
 			VECTOR3 pos = (gsun - Camera.pos) * 10e4 / sdst;
 
 			if (WorldToScreenSpace2(pos, &pt))

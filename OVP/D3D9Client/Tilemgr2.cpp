@@ -1186,7 +1186,7 @@ void TileManager2Base::SetRenderPrm (MATRIX4 &dwmat, double prerot, bool use_zbu
 	prm.dwmat_tmp = prm.dwmat;
 	prm.cpos = obj_pos-cam_pos;
 	prm.cdir = tmul (prm.grot, -prm.cpos); // camera's direction in planet frame
-	double cdist = length(prm.cdir);
+	double cdist = len(prm.cdir);
 	prm.cdist = cdist / obj_size;          // camera's distance in units of planet radius
 	prm.cdir = unit(prm.cdir);
 	prm.sdir = unit(tmul(prm.grot, -obj_pos));  // sun's direction in planet frame

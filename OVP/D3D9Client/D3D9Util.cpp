@@ -229,7 +229,7 @@ void SurfaceLighting(D3D9Sun *light, OBJHANDLE hP, OBJHANDLE hO, float ao)
 	VECTOR3 S = GS-GO;							// sun's position from base
 	VECTOR3 P = unit(GO-GP);
 
-	float s  = float(length(S));				// sun's distance
+	float s  = float(len(S));					// sun's distance
 	float rs = float(oapiGetSize(hS)) / s;
 	float h  = float(dot(S, P)) / s;			// sun elevation
 	float d  = 0.173f;							// sun elevation for dispersion

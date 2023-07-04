@@ -209,7 +209,7 @@ double vBase::GetElevation() const
 {
 	VECTOR3 bp;
 	oapiGetRelativePos(hObj, hPlanet, &bp);
-	return length(bp) - oapiGetSize(hPlanet);
+	return len(bp) - oapiGetSize(hPlanet);
 }
 
 

@@ -724,7 +724,7 @@ double SurfTile::GetCameraDistance()
 {
 	VECTOR3 cnt = Centre() * (mgr->CbodySize() + GetMeanElev());
 	cnt = mgr->prm.cpos + mul(mgr->prm.grot, cnt);
-	return length(cnt);
+	return len(cnt);
 }
 
 // -----------------------------------------------------------------------

@@ -288,7 +288,7 @@ VECTOR3 Scene::SkyColour ()
 		oapiCameraGlobalPos (&rc);
 		oapiGetGlobalPos (hProxy, &rp);
 		pc = rc-rp;
-		double cdist = length (pc);
+		double cdist = len(pc);
 		if (cdist < atmp->radlimit) {
 			ATMPARAM prm;
 			oapiGetPlanetAtmParams (hProxy, cdist, &prm);

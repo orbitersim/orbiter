@@ -424,7 +424,7 @@ void COrbit::CreateFromStateVectors(const VECTOR3 &_pos, const VECTOR3 &_vel, do
 	_R = _pos* Or ;
 
 	// Eccentricity
-	ecc = length(_P);
+	ecc = len(_P);
 
 	if (ecc < 1e-7) {
 		ecc = 0.0;
@@ -514,7 +514,7 @@ void COrbit::EscapeOrbit(const VECTOR3 &_Pos, const VECTOR3 &_Esc, double Mu, do
 	sma = -mu / Es2;
 	epoch = MJD;
 
-	double rad = length(_Pos);
+	double rad = len(_Pos);
 	double ang = PI2 - angle(_Pos, _Esc);
 
 	if (Dir<0.0) { ang = PI2 - ang; _H = -_H; }
@@ -560,8 +560,8 @@ void COrbit::ApproachOrbit(const VECTOR3 &_Pos, const VECTOR3 &_Pe, double Mu, d
 	epoch = MJD;
 
 	mu = Mu;
-	ped = length(_Pe);
-	rad = length(_Pos);
+	ped = len(_Pe);
+	rad = len(_Pos);
 	_P = unit(_Pe);
 	_H = crossp_LH(_Pos, _P);
 	tra = angle(_Pos, _P); if (Dir<0.0) { tra = PI2 - tra; _H = -_H; }
@@ -583,6 +583,6 @@ void COrbit::ApproachOrbit(const VECTOR3 &_Pos, const VECTOR3 &_Pe, double Mu, d
 //
 void COrbit::CreateCircular(const VECTOR3 &_Pos, const VECTOR3 &_N, double Mu, double MJD)
 {
-	VECTOR3 _Vel = unit(crossp_LH(_N, _Pos)) * sqrt(Mu / length(_Pos));
+	VECTOR3 _Vel = unit(crossp_LH(_N, _Pos)) * sqrt(Mu / len(_Pos));
 	CreateFromStateVectors(_Pos, _Vel, Mu, MJD);
 }

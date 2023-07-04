@@ -164,7 +164,7 @@ void vVessel::clbkEvent(DWORD evnt, DWORD_PTR _context)
 			if (idx < nmesh) {
 				VECTOR3 ofs;
 				vessel->GetMeshOffset (idx, ofs);
-				if (length(ofs)) {
+				if (len(ofs)) {
 					if (meshlist[idx].trans==NULL) meshlist[idx].trans = new D3DXMATRIX;
 					D3DMAT_Identity(meshlist[idx].trans);
 					D3DMAT_SetTranslation(meshlist[idx].trans, &ofs);
@@ -309,7 +309,7 @@ void vVessel::LoadMeshes()
 			meshlist[idx].vismode = vessel->GetMeshVisibilityMode(idx);
 			vessel->GetMeshOffset(idx, ofs);
 			LogAlw("Mesh(%s) Offset = (%g, %g, %g)", _PTR(hMesh), ofs.x, ofs.y, ofs.z);
-			if (length(ofs)) {
+			if (len(ofs)) {
 				meshlist[idx].trans = new D3DXMATRIX;
 				D3DMAT_Identity(meshlist[idx].trans);
 				D3DMAT_SetTranslation(meshlist[idx].trans, &ofs);
@@ -380,7 +380,7 @@ void vVessel::InsertMesh(UINT idx)
 		pMatMgr->ApplyConfiguration(meshlist[idx].mesh);
 		meshlist[idx].vismode = vessel->GetMeshVisibilityMode (idx);
 		vessel->GetMeshOffset (idx, ofs);
-		if (length(ofs)) {
+		if (len(ofs)) {
 			meshlist[idx].trans = new D3DXMATRIX;
 			D3DMAT_Identity (meshlist[idx].trans);
 			D3DMAT_SetTranslation (meshlist[idx].trans, &ofs);
@@ -423,7 +423,7 @@ void vVessel::ResetMesh(UINT idx)
 		meshlist[idx].vismode = vessel->GetMeshVisibilityMode(idx);
 		vessel->GetMeshOffset(idx, ofs);
 
-		if (length(ofs)) {
+		if (len(ofs)) {
 			if (!meshlist[idx].trans) meshlist[idx].trans = new D3DXMATRIX;
 			D3DMAT_Identity(meshlist[idx].trans);
 			D3DMAT_SetTranslation(meshlist[idx].trans, &ofs);
@@ -854,12 +854,12 @@ void vVessel::RenderVectors (LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp)
 		else                         bLog = false;
 
 		if (!bLog) {
-			if (bfvmode & BFV_DRAG) { vessel->GetDragVector(vector); if (length(vector)>len) len = length(vector); }
-			if (bfvmode & BFV_WEIGHT) {	vessel->GetWeightVector(vector); if (length(vector)>len) len = length(vector); }
-			if (bfvmode & BFV_THRUST) {	vessel->GetThrustVector(vector); if (length(vector)>len) len = length(vector); }
-			if (bfvmode & BFV_LIFT) { vessel->GetLiftVector(vector); if (length(vector)>len) len = length(vector); }
-			if (bfvmode & BFV_TOTAL) { vessel->GetForceVector(vector); if (length(vector)>len) len = length(vector); }
-			if (bfvmode & BFV_TORQUE) {	vessel->GetTorqueVector(vector); if (length(vector)>len) len = length(vector); }
+			if (bfvmode & BFV_DRAG  ) { vessel->GetDragVector  (vector); if (::len(vector) > len) len = ::len(vector); }
+			if (bfvmode & BFV_WEIGHT) { vessel->GetWeightVector(vector); if (::len(vector) > len) len = ::len(vector); }
+			if (bfvmode & BFV_THRUST) { vessel->GetThrustVector(vector); if (::len(vector) > len) len = ::len(vector); }
+			if (bfvmode & BFV_LIFT  ) { vessel->GetLiftVector  (vector); if (::len(vector) > len) len = ::len(vector); }
+			if (bfvmode & BFV_TOTAL ) { vessel->GetForceVector (vector); if (::len(vector) > len) len = ::len(vector); }
+			if (bfvmode & BFV_TORQUE) { vessel->GetTorqueVector(vector); if (::len(vector) > len) len = ::len(vector); }
 
 			lscale = float(size * sclset / len);
 		}
@@ -873,54 +873,54 @@ void vVessel::RenderVectors (LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp)
 		{
 			if (bfvmode & BFV_DRAG) {
 				vessel->GetDragVector(vector);
-				if (length(vector) > threshold) {
+				if (::len(vector) > threshold) {
 					RenderAxisVector(pSkp, ptr(D3DXCOLOR(1,0,0,alpha)), vector, lscale, scale, bLog);
-					sprintf_s(label, 64, "D = %sN", value_string(length(vector)));
+					sprintf_s(label, 64, "D = %sN", value_string(::len(vector)));
 					RenderAxisLabel(pSkp, ptr(D3DXCOLOR(1,0,0,alpha)), vector, lscale, scale, label, bLog);
 				}
 			}
 
 			if (bfvmode & BFV_WEIGHT) {
 				vessel->GetWeightVector(vector);
-				if (length(vector) > threshold) {
+				if (::len(vector) > threshold) {
 					RenderAxisVector(pSkp, ptr(D3DXCOLOR(1,1,0,alpha)), vector, lscale, scale, bLog);
-					sprintf_s(label, 64, "G = %sN", value_string(length(vector)));
+					sprintf_s(label, 64, "G = %sN", value_string(::len(vector)));
 					RenderAxisLabel(pSkp, ptr(D3DXCOLOR(1,1,0,alpha)), vector, lscale, scale, label, bLog);
 				}
 			}
 
 			if (bfvmode & BFV_THRUST) {
 				vessel->GetThrustVector(vector);
-				if (length(vector) > threshold) {
+				if (::len(vector) > threshold) {
 					RenderAxisVector(pSkp, ptr(D3DXCOLOR(0,0,1,alpha)), vector, lscale, scale, bLog);
-					sprintf_s(label, 64, "T = %sN", value_string(length(vector)));
+					sprintf_s(label, 64, "T = %sN", value_string(::len(vector)));
 					RenderAxisLabel(pSkp, ptr(D3DXCOLOR(0,0,1,alpha)), vector, lscale, scale, label, bLog);
 				}
 			}
 
 			if (bfvmode & BFV_LIFT) {
 				vessel->GetLiftVector(vector);
-				if (length(vector) > threshold) {
+				if (::len(vector) > threshold) {
 					RenderAxisVector(pSkp, ptr(D3DXCOLOR(0,1,0,alpha)), vector, lscale, scale, bLog);
-					sprintf_s(label, 64, "L = %sN", value_string(length(vector)));
+					sprintf_s(label, 64, "L = %sN", value_string(::len(vector)));
 					RenderAxisLabel(pSkp, ptr(D3DXCOLOR(0,1,0,alpha)), vector, lscale, scale, label, bLog);
 				}
 			}
 
 			if (bfvmode & BFV_TOTAL) {
 				vessel->GetForceVector(vector);
-				if (length(vector) > threshold) {
+				if (::len(vector) > threshold) {
 					RenderAxisVector(pSkp, ptr(D3DXCOLOR(1,1,1,alpha)), vector, lscale, scale, bLog);
-					sprintf_s(label, 64, "F = %sN", value_string(length(vector)));
+					sprintf_s(label, 64, "F = %sN", value_string(::len(vector)));
 					RenderAxisLabel(pSkp, ptr(D3DXCOLOR(1,1,1,alpha)), vector, lscale, scale, label, bLog);
 				}
 			}
 
 			if (bfvmode & BFV_TORQUE) {
 				vessel->GetTorqueVector(vector);
-				if (length(vector) > threshold) {
+				if (::len(vector) > threshold) {
 					RenderAxisVector(pSkp, ptr(D3DXCOLOR(1,0,1,alpha)), vector, lscale, scale, bLog);
-					sprintf_s(label, 64, "M = %sNm", value_string(length(vector)));
+					sprintf_s(label, 64, "M = %sNm", value_string(::len(vector)));
 					RenderAxisLabel(pSkp, ptr(D3DXCOLOR(1,0,1,alpha)), vector, lscale, scale, label, bLog);
 				}
 			}
@@ -1037,7 +1037,7 @@ void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float
 	oapiGetGlobalPos(hPlanet, &pp); // planet global pos
 	vessel->GetGlobalPos(sd);       // vessel global pos
 	pvr = sd - pp;                     // planet-relative vessel position
-	d = length(pvr);                 // vessel-planet distance
+	d = len(pvr);                   // vessel-planet distance
 	R = oapiGetSize(hPlanet);       // planet mean radius
 	R += vessel->GetSurfaceElevation();
 	alt = d - R;                       // altitude above surface

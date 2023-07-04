@@ -170,7 +170,7 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end, double disp
 	 _start += _td_disp;
 	_direction = _end - _start;
 
-	double len = length(_direction); // Length of the runway
+	double len = ::len(_direction); // Length of the runway
 	double spacing = apr_length/10.0;
 
 	// Number of lights
@@ -260,7 +260,7 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end, double disp
 		// VECTOR3 _distanceCalc = _current - _start;
 		// double distanceFront = length(_distanceCalc);
 		VECTOR3 _distanceCalc = _current - _end;
-		double distanceBack = length(_distanceCalc);
+		double distanceBack = ::len(_distanceCalc);
 
 		beaconsEntry1[i+0] = edgeLight;
 		beaconsEntry1[i+1] = edgeLight;
@@ -389,7 +389,7 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end, double disp
 		// white line ---------------------------------------------------------
 
 		VECTOR3 _pos = _current - _shift;
-		count = (int)(length(_shift)/2.0)*2 + 3;
+		count = (::len(_shift) / 2) * 2 + 3;
 		_space = (_shift*2)/count;
 
 		for(k=0; k<count+1; k++, i++)
@@ -428,7 +428,7 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end, double disp
 
 		// white line ---------------------------------------------------------
 
-		count = (int)(length(_shift)/4.0);
+		count = ::len(_shift) / 4;
 		_space = _shift/(count*2);
 
 		VECTOR3 _pos = _current + _space * 4;
@@ -628,7 +628,7 @@ BeaconArray *RunwayLights::BuildVASI(VECTOR3 _start, VECTOR3 _end, DWORD idx)
 
 	for (int k=0;k<i;k++) {
 		beaconsEntry1[k].dir = {-beaconsEntry1[k].dir.x, beaconsEntry1[k].dir.y, -beaconsEntry1[k].dir.z};
-		double dst = length(beaconsEntry1[k].pos);
+		double dst = len(beaconsEntry1[k].pos);
 		double dif = sqrt(dst*dst + size*size) - size;
 		beaconsEntry1[k].pos.y -= (dif-0.2);
 	}
@@ -956,7 +956,7 @@ void TaxiLights::Init()
 	// Helping vectors
 	VECTOR3 direction = end2 - end1; // Vector of the runway
 	VECTOR3 dir = unit(direction); // Normalized direction
-	double len = length(direction); // Length of the runway
+	double len = ::len(direction); // Length of the runway
 
 	BeaconArrayEntry* beaconsEntry1 = new BeaconArrayEntry[count];
 	BeaconArrayEntry taxiLight;
