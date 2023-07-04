@@ -657,7 +657,7 @@ VECTOR3 Scene::SkyColour()
 	VECTOR3 col;
 	const Planet* pp = g_camera->ProxyPlanet();
 	if (pp && pp->HasAtmosphere()) {
-		const ATMCONST* atmp = pp->AtmParams();
+		auto atmp = pp->AtmParams();
 		VECTOR3 pc = g_camera->GPos() - pp->GPos();
 		double cdist = len(pc);
 		if (cdist < atmp->radlimit) {
@@ -686,7 +686,6 @@ void Scene::Render (D3DRECT* vp_rect)
 {
 	int i, j, k;
 	DWORD n;
-	VECTOR3 col;
 	HRESULT res;
 	g_vtxcount = g_tilecount = 0;
 
