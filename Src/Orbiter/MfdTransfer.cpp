@@ -250,7 +250,7 @@ void Instrument_Transfer::UpdateDraw (oapi::Sketchpad *skp)
 			// target postition at intersect time
 			tanm = tgtel->TrueAnomaly (tgtel->MeanAnomaly (td.SimT1+dt0));
 			tlng = tanm + tgtel->omegab;
-			v = mul(rot2, VECTOR3{std::cos(tanm), 0.0, std::sin(tanm)});
+			v = mul(rot2, VECTOR3{std::cos(tanm), 0, std::sin(tanm)});
 			skp->SetPen (draw[1][1].dashpen);
 			skp->Line (ICNTX, ICNTY, ICNTX+(int)(v.x*pixrad), ICNTY-(int)(v.z*pixrad));
 		} else {
@@ -377,21 +377,20 @@ double Instrument_Transfer::CalcElements (const Elements *el1, Elements *el2, do
 
 bool Instrument_Transfer::CalcStep ()
 {
-	VECTOR3 refpos, a0, a1, a2, v1, v2;
-	double tstep, tstep_i2, tstep_i6, tb, tc;
-
-	a0 = g_psys->GaccAt (step_t, step_gpos, src);
-	tstep = step_scale / len(a0);
-	tstep_i2 = tstep*0.5;
-	tstep_i6 = tstep/6.0;
-	tb = step_t + tstep_i2;
-	tc = step_t + tstep;
-	v1 = step_gvel + a0*tstep_i2;
-	a1 = g_psys->GaccAt (tb, step_gpos + step_gvel*tstep_i2, src);
-	v2 = step_gvel + a1*tstep_i2;
-	a2 = g_psys->GaccAt (tb, step_gpos + v1*tstep_i2, src);
+	VECTOR3 a0 = g_psys->GaccAt(step_t, step_gpos, src);
+	double tstep = step_scale / len(a0);
+	double tstep_i2 = tstep * 0.5;
+	double tstep_i6 = tstep / 6.0;
+	double tb = step_t + tstep_i2;
+	double tc = step_t + tstep;
+	VECTOR3 v1 = step_gvel + a0 * tstep_i2;
+	VECTOR3 a1 = g_psys->GaccAt(tb, step_gpos + step_gvel * tstep_i2, src);
+	VECTOR3 v2 = step_gvel + a1 * tstep_i2;
+	VECTOR3 a2 = g_psys->GaccAt(tb, step_gpos + v1 * tstep_i2, src);
 	step_gpos += (step_gvel + (v1+v2)*2.0 + step_gvel + a2*tstep)*tstep_i6;
 	step_gvel += (a0 + (a1+a2)*2.0 + g_psys->GaccAt (tc, step_gpos+v2*tstep, src))*tstep_i6;
+
+	VECTOR3 refpos;
 	if (elref->Type() == OBJTP_PLANET)
 		((Planet*)elref)->PositionAtTime (tc, &refpos);
 	path[step_curr] = step_gpos-refpos;
@@ -401,11 +400,12 @@ bool Instrument_Transfer::CalcStep ()
 
 bool Instrument_Transfer::InitNumTrajectory (const Elements *el)
 {
-	VECTOR3 refpos, refvel, pos, vel;
 	step_t = step_0 = td.SimT0;
+	VECTOR3 refpos, refvel;
 	if (elref->Type() == OBJTP_PLANET) 
 		if (!((Planet*)elref)->PosVelAtTime (td.SimT0, &refpos, &refvel))
 			return false;
+	VECTOR3 pos, vel;
 	el->PosVel (pos, vel, td.SimT0);
 	path[0] = pos;
 	step_gpos = pos+refpos;
@@ -628,7 +628,7 @@ bool Instrument_Transfer::SetNstep (int np)
 	if (np == nstep) return true; // nothing to do
 	// TODO: re-write without using raw pointers
 	VECTOR3 *path_tmp = new VECTOR3[np]; TRACENEW
-	memcpy (path_tmp, path, min (np, nstep)*sizeof(VECTOR3));
+	memcpy(path_tmp, path, min(np, nstep) * sizeof(VECTOR3));
 	delete []path;
 	path = path_tmp;
 	if (enable_num && np > nstep)
