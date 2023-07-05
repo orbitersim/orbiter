@@ -45,6 +45,12 @@ union VECTOR4
 {
 	struct { double x, y, z, w; };
 
+	constexpr VECTOR4() : x{0}, y{0}, z{0}, w{0} { }
+	constexpr VECTOR4(double x, double y, double z, double w) : x{x}, y{y}, z{z}, w{w} { }
+
+	constexpr VECTOR4(const VECTOR4&) = default;
+	constexpr VECTOR4& operator=(const VECTOR4&) = default;
+
 	constexpr auto const& operator[](std::size_t i) const { const double* d[] = {&x, &y, &z, &w}; return *d[i]; }
 	constexpr auto& operator[](std::size_t i) { double* d[] = {&x, &y, &z, &w}; return *d[i]; }
 };
