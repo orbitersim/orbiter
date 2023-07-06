@@ -4694,7 +4694,7 @@ void Vessel::Update (bool force)
 					if (tilt < 5.0*RAD) {
 						double maxv = tilt*tilt*50 + 0.1*RAD;
 						for (i = 0; i < 3; i++)
-							s1->omega.data[i] = min (maxv, max (-maxv, s1->omega.data[i]));
+							s1->omega[i] = min(maxv, max(-maxv, s1->omega[i]));
 					}
 
 					// update global rotation matrix

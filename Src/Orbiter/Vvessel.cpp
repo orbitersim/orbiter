@@ -969,7 +969,7 @@ bool VVessel::ModLighting (LPD3DLIGHT7 light)
 							dt = 0.1;
 						}
 					}
-					for	(j = 0; j < 3; j++) lcol.data[j] = min (lcol.data[j], plight.data[j]);
+					for (j = 0; j < 3; j++) lcol[j] = min(lcol[j], plight[j]);
 					lightmod = true;
 				}
 
@@ -1008,7 +1008,7 @@ bool VVessel::ModLighting (LPD3DLIGHT7 light)
 							dt = 0.1;
 						}
 					}
-					for (j = 0; j < 3; j++) lcol.data[j] = min (lcol.data[j], lfrac);
+					for (j = 0; j < 3; j++) lcol[j] = min(lcol[j], lfrac);
 					lightmod = true;
 				}
 

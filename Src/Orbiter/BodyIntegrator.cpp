@@ -590,14 +590,14 @@ void RigidBody::Encke ()
 
 		tfrac = (ti-t0)/(tf-t0);
 		for (i = 0; i < 3; i++) {
-			s.pos.data[i] = cpos.data[i]+x[i];
-			s.vel.data[i] = cvel.data[i]+x[i+3];
+			s.pos[i] = cpos[i] + x[i];
+			s.vel[i] = cvel[i] + x[i + 3];
 		}
 		GetIntermediateMoments_pert (acc_pert, tau, s, tfrac, dt, cbody);
 
 		for (i = 0; i < 3; i++) {
 			f[i][0] = x[i+3];
-			f[i+3][0] = acc_pert.data[i];
+			f[i + 3][0] = acc_pert[i];
 		}
 
 		// angular state
@@ -621,13 +621,13 @@ void RigidBody::Encke ()
 			tfrac = (ti-t0)/(tf-t0);
 			el->PosVel (cpos, cvel, ti);
 			for (i = 0; i < 3; i++) {
-				s.pos.data[i] = cpos.data[i]+x[i];
-				s.vel.data[i] = cvel.data[i]+x[i+3];
+				s.pos[i] = cpos[i] + x[i];
+				s.vel[i] = cvel[i] + x[i + 3];
 			}
 			GetIntermediateMoments_pert (acc_pert, tau, s, tfrac, dt, cbody);
 			for (i = 0; i < 3; i++) {
 				f[i][k] = x[i+3];
-				f[i+3][k] = acc_pert.data[i];
+				f[i + 3][k] = acc_pert[i];
 			}
 			d[k] = EulerInv_simple(tau, omega[k]);
 		}
@@ -656,8 +656,8 @@ void RigidBody::Encke ()
 
 		el->PosVel (cpos, cvel, ti);
 		for (i = 0; i < 3; i++) {
-			cpos.data[i] += x[i];
-			cvel.data[i] += x[i+3];
+			cpos[i] += x[i];
+			cvel[i] += x[i + 3];
 		}
 		// rectify elements
 		el->Calculate (cpos, cvel, ti);

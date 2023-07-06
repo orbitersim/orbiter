@@ -735,7 +735,7 @@ VECTOR3 Scene::SkyColour ()
 			if (intens > 0.0)
 				col += {atmp->color0.x*intens, atmp->color0.y*intens, atmp->color0.z*intens};
 		}
-		for (int i=0;i<3;i++) if (col.data[i] > 1.0) col.data[i] = 1.0;
+		for (int i = 0; i < 3; i++) if (col[i] > 1) col[i] = 1;
 	}
 	return col;
 }

@@ -31,7 +31,6 @@ template<typename> struct is_vector4 : std::false_type { };
  */
 union VECTOR3
 {
-	double data[3];
 	struct { double x, y, z; };
 
 	constexpr VECTOR3() : x{0}, y{0}, z{0} { }
@@ -40,8 +39,8 @@ union VECTOR3
 	constexpr VECTOR3(const VECTOR3&) = default;
 	constexpr VECTOR3& operator=(const VECTOR3&) = default;
 
-	constexpr auto const& operator[](std::size_t i) const { return data[i]; }
-	constexpr auto& operator[](std::size_t i) { return data[i]; }
+	constexpr auto const& operator[](std::size_t i) const { const double* d[] = {&x, &y, &z}; return *d[i]; }
+	constexpr auto& operator[](std::size_t i) { double* d[] = {&x, &y, &z}; return *d[i]; }
 };
 
 /**

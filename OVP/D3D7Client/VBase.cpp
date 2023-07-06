@@ -423,7 +423,7 @@ bool vBase::ModLighting (LPD3DLIGHT7 light, double &nextcheck)
 					plight.z = f*b0;
 				}
 			}
-			for	(j = 0; j < 3; j++) lcol.data[j] = min (lcol.data[j], plight.data[j]);
+			for (j = 0; j < 3; j++) lcol[j] = min(lcol[j], plight[j]);
 			lightmod = true;
 		}
 
@@ -442,7 +442,7 @@ bool vBase::ModLighting (LPD3DLIGHT7 light, double &nextcheck)
 
 		if (phi < as+ap) {       // overlap
 			double lfrac = (phi <= ap-as ? 0.0 : (phi+as-ap)/(2.0*as));
-			for (j = 0; j < 3; j++) lcol.data[j] = min (lcol.data[j], lfrac);
+			for (j = 0; j < 3; j++) lcol[j] = min(lcol[j], lfrac);
 			lightmod = true;
 		}
 

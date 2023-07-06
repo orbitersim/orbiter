@@ -1327,7 +1327,7 @@ int Interpreter::vec_set (lua_State *L)
 	VECTOR3 v;
 	for (i = 0; i < 3; i++) {
 		ASSERT_SYNTAX(lua_isnumber(L,i+1), "expected three numeric arguments");
-		v.data[i] = lua_tonumber(L,i+1);
+		v[i] = lua_tonumber(L, i + 1);
 	}
 	lua_pushvector(L,v);
 	return 1;
@@ -1400,18 +1400,18 @@ int Interpreter::vec_mul (lua_State *L)
 		v1 = lua_tovector(L,1);
 		if (lua_isvector(L,2)) {
 			v2 = lua_tovector(L,2);
-			for (i = 0; i < 3; i++) res.data[i] = v1.data[i]*v2.data[i];
+			for (i = 0; i < 3; i++) res[i] = v1[i] * v2[i];
 		} else {
 			ASSERT_SYNTAX (lua_isnumber(L,2), "Argument 2: expected vector or number");
 			f2 = lua_tonumber(L,2);
-			for (i = 0; i < 3; i++) res.data[i] = v1.data[i]*f2;
+			for (i = 0; i < 3; i++) res[i] = v1[i] * f2;
 		}
 	} else {
 		ASSERT_SYNTAX (lua_isnumber(L,1), "Argument 1: expected vector or number");
 		f1 = lua_tonumber(L,1);
 		if (lua_isvector(L,2)) {
 			v2 = lua_tovector(L,2);
-			for (i = 0; i < 3; i++) res.data[i] = f1*v2.data[i];
+			for (i = 0; i < 3; i++) res[i] = f1 * v2[i];
 		} else {
 			ASSERT_SYNTAX (lua_isnumber(L,2), "Argument 2: expected vector or number");
 			f2 = lua_tonumber(L,2);
@@ -1432,18 +1432,18 @@ int Interpreter::vec_div (lua_State *L)
 		v1 = lua_tovector(L,1);
 		if (lua_isvector(L,2)) {
 			v2 = lua_tovector(L,2);
-			for (i = 0; i < 3; i++) res.data[i] = v1.data[i]/v2.data[i];
+			for (i = 0; i < 3; i++) res[i] = v1[i] / v2[i];
 		} else {
 			ASSERT_SYNTAX (lua_isnumber(L,2), "Argument 2: expected vector or number");
 			f2 = lua_tonumber(L,2);
-			for (i = 0; i < 3; i++) res.data[i] = v1.data[i]/f2;
+			for (i = 0; i < 3; i++) res[i] = v1[i] / f2;
 		}
 	} else {
 		ASSERT_SYNTAX (lua_isnumber(L,1), "Argument 1: expected vector or number");
 		f1 = lua_tonumber(L,1);
 		if (lua_isvector(L,2)) {
 			v2 = lua_tovector(L,2);
-			for (i = 0; i < 3; i++) res.data[i] = f1/v2.data[i];
+			for (i = 0; i < 3; i++) res[i] = f1 / v2[i];
 		} else {
 			ASSERT_SYNTAX (lua_isnumber(L,2), "Argument 2: expected vector or number");
 			f2 = lua_tonumber(L,2);

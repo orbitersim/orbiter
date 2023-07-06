@@ -343,33 +343,25 @@ void Crt2Pol (VECTOR3 &pos, VECTOR3 &vel)
 	double drdt   = (vel.x*pos.x + vel.y*pos.y + vel.z*pos.z) / r;
 	double dlngdt = (vel.z*pos.x - pos.z*vel.x) / (pos.x*pos.x + pos.z*pos.z);
 	double dlatdt = (vel.y*r - pos.y*drdt) / (r*sqrt(r*r - pos.y*pos.y));
-	pos.data[0] = r;
-	pos.data[1] = lng;
-	pos.data[2] = lat;
-	vel.data[0] = drdt;
-	vel.data[1] = dlngdt;
-	vel.data[2] = dlatdt;
+	pos = {r, lng, lat};
+	vel = {drdt, dlngdt, dlatdt};
 }
 
 void Pol2Crt (VECTOR3 &pos, VECTOR3 &vel)
 {
-	double r   = pos.data[0];
-	double lng = pos.data[1], clng = cos(lng), slng = sin(lng);
-	double lat = pos.data[2], clat = cos(lat), slat = sin(lat);
+	double r   = pos[0];
+	double lng = pos[1], clng = std::cos(lng), slng = std::sin(lng);
+	double lat = pos[2], clat = std::cos(lat), slat = std::sin(lat);
 	// position in cartesian coordinates
 	double x   = r * cos(lat) * cos(lng);
 	double z   = r * cos(lat) * sin(lng);
 	double y   = r * sin(lat);
 	// derivatives in cartesian coordinates
-	double dxdt = vel.data[0]*clat*clng - vel.data[1]*r*clat*slng - vel.data[2]*r*slat*clng;
-	double dzdt = vel.data[0]*clat*slng + vel.data[1]*r*clat*clng - vel.data[2]*r*slat*slng;
-	double dydt = vel.data[0]*slat + vel.data[2]*r*clat;
-	pos.data[0] = x;
-	pos.data[1] = y;
-	pos.data[2] = z;
-	vel.data[0] = dxdt;
-	vel.data[1] = dydt;
-	vel.data[2] = dzdt;
+	double dxdt = vel[0] * clat * clng - vel[1] * r * clat * slng - vel[2] * r * slat * clng;
+	double dzdt = vel[0] * clat * slng + vel[1] * r * clat * clng - vel[2] * r * slat * slng;
+	double dydt = vel[0] * slat + vel[2] * r * clat;
+	pos = {x, y, z};
+	vel = {dxdt, dydt, dzdt};
 }
 
 INT_PTR CALLBACK EditorProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -1935,15 +1927,15 @@ void EditorTab_Statevec::Refresh (OBJHANDLE hV)
 	// map cartesian -> polar coordinates
 	if (crd) {
 		Crt2Pol (pos, vel);
-		pos.data[1] *= DEG; pos.data[2] *= DEG;
-		vel.data[1] *= DEG; vel.data[2] *= DEG;
+		pos[1] *= DEG; pos[2] *= DEG;
+		vel[1] *= DEG; vel[2] *= DEG;
 	}
 	// in the rotating reference frame we need to subtract the angular
 	// velocity of the planet
 	if (frm == 2) {
 		double T = oapiGetPlanetPeriod (hRef);
 		if (crd) {
-			vel.data[1] -= 360.0/T;
+			vel[1] -= 360 / T;
 		} else { // map back to cartesian
 			double r   = std::hypot (pos.x, pos.z);
 			double phi = atan2 (pos.z, pos.x);
@@ -1990,7 +1982,7 @@ void EditorTab_Statevec::Apply ()
 		if (frm == 2) {
 			double T = oapiGetPlanetPeriod (hRef);
 			if (crd) {
-				vel.data[1] += 360.0/T;
+				vel[1] += 360 / T;
 			} else { // map back to cartesian
 				double r   = std::hypot (pos.x, pos.z);
 				double phi = atan2 (pos.z, pos.x);
@@ -2001,8 +1993,8 @@ void EditorTab_Statevec::Apply ()
 		}
 		// map polar -> cartesian coordinates
 		if (crd) {
-			pos.data[1] *= RAD, pos.data[2] *= RAD;
-			vel.data[1] *= RAD, vel.data[2] *= RAD;
+			pos[1] *= RAD, pos[2] *= RAD;
+			vel[1] *= RAD, vel[2] *= RAD;
 			Pol2Crt (pos, vel);
 		}
 		// map from celestial/equatorial frame of reference
@@ -2238,8 +2230,8 @@ void EditorTab_Landed::Refresh (OBJHANDLE hV)
 		pos = tmul (rot, pos);
 		VECTOR3 vel{0, 0, 0};
 		Crt2Pol (pos, vel);
-		sprintf (lngstr, "%lf", pos.data[1] * DEG);
-		sprintf (latstr, "%lf", pos.data[2] * DEG);
+		sprintf(lngstr, "%lf", pos[1] * DEG);
+		sprintf(latstr, "%lf", pos[2] * DEG);
 	}
 	SetWindowText (GetDlgItem (hTab, IDC_EDIT1), lngstr);
 	SetWindowText (GetDlgItem (hTab, IDC_EDIT2), latstr);
@@ -2411,7 +2403,7 @@ void EditorTab_Orientation::Refresh ()
 	VECTOR3 arot;
 	vessel->GetGlobalOrientation (arot);
 	for (i = 0; i < 3; i++) {
-		sprintf (cbuf, "%lf", arot.data[i] * DEG);
+		sprintf(cbuf, "%lf", arot[i] * DEG);
 		SetWindowText (GetDlgItem (hTab, IDC_EDIT1+i), cbuf);
 	}
 }
@@ -2424,8 +2416,8 @@ void EditorTab_Orientation::Apply ()
 	VECTOR3 arot;
 	for (i = 0; i < 3; i++) {
 		GetWindowText (GetDlgItem (hTab, IDC_EDIT1+i), cbuf, 256);
-		sscanf (cbuf, "%lf", &arot.data[i]);
-		arot.data[i] *= RAD;
+		sscanf(cbuf, "%lf", &arot[i]);
+		arot[i] *= RAD;
 	}
 	vessel->SetGlobalOrientation (arot);
 }
@@ -2438,8 +2430,8 @@ void EditorTab_Orientation::ApplyAngularVel ()
 	VECTOR3 avel;
 	for (i = 0; i < 3; i++) {
 		GetWindowText (GetDlgItem (hTab, IDC_EDIT4+i), cbuf, 256);
-		sscanf (cbuf, "%lf", &avel.data[i]);
-		avel.data[i] *= RAD;
+		sscanf(cbuf, "%lf", &avel[i]);
+		avel[i] *= RAD;
 	}
 	vessel->SetAngularVel (avel);
 }
@@ -2558,7 +2550,7 @@ void EditorTab_AngularVel::Refresh ()
 	VECTOR3 avel;
 	vessel->GetAngularVel (avel);
 	for (int i = 0; i < 3; i++) {
-		sprintf (cbuf, "%lf", avel.data[i] * DEG);
+		sprintf(cbuf, "%lf", avel[i] * DEG);
 		SetWindowText (GetDlgItem (hTab, IDC_EDIT1+i), cbuf);
 	}
 }
@@ -2570,8 +2562,8 @@ void EditorTab_AngularVel::Apply ()
 	VECTOR3 avel;
 	for (int i = 0; i < 3; i++) {
 		GetWindowText (GetDlgItem (hTab, IDC_EDIT1+i), cbuf, 256);
-		sscanf (cbuf, "%lf", &avel.data[i]);
-		avel.data[i] *= RAD;
+		sscanf(cbuf, "%lf", &avel[i]);
+		avel[i] *= RAD;
 	}
 	vessel->SetAngularVel (avel);
 }
@@ -2581,7 +2573,7 @@ void EditorTab_AngularVel::Killrot ()
 	VESSEL *vessel = oapiGetVesselInterface (ed->hVessel);
 	VECTOR3 avel;
 	for (int i = 0; i < 3; i++) {
-		avel.data[i] = 0.0;
+		avel[i] = 0;
 		SetWindowText (GetDlgItem (hTab, IDC_EDIT1+i), "0");
 	}
 	vessel->SetAngularVel (avel);

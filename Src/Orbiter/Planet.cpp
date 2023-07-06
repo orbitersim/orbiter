@@ -1047,15 +1047,15 @@ VECTOR3 Planet::WindVelocity (double lng, double lat, double alt, int frame, Win
 			oapi_srand(g_rseed[(r+k)%100]);
 			for (dim = 0; dim < 3; dim+=2) {
 				rnd = oapi_rand();
-				wv0[k].data[dim] = ((double)rnd/OAPI_RAND_MAX-0.5)*50;
+				wv0[k][dim] = ((double)rnd / OAPI_RAND_MAX - 0.5) * 50;
 				//pert = ((double)(g_rseed[((DWORD)(t*100)+dim+k+r)%100]>>16)/OAPI_RAND_MAX-0.5)*20;
 				//wv0[k].data[dim] += pert;
 			}
 		}
 		for (dim = 0; dim < 3; dim+=2) {
-			mk0 = 0.5 * (wv0[2].data[dim] - wv0[0].data[dim]);
-			mk1 = 0.5 * (wv0[3].data[dim] - wv0[1].data[dim]);
-			wv.data[dim] = h00*wv0[1].data[dim] + h10*mk0 + h01*wv0[2].data[dim] + h11*mk1;
+			mk0 = 0.5 * (wv0[2][dim] - wv0[0][dim]);
+			mk1 = 0.5 * (wv0[3][dim] - wv0[1][dim]);
+			wv[dim] = h00 * wv0[1][dim] + h10 * mk0 + h01 * wv0[2][dim] + h11 * mk1;
 		}
 
 		// short-term temporal perturbations
@@ -1068,9 +1068,9 @@ VECTOR3 Planet::WindVelocity (double lng, double lat, double alt, int frame, Win
 			for (dim = 0; dim < 3; dim += 2) {
 				double p = ((double)rand()/(double)RAND_MAX - 0.5)*pert_amplitude; // make this a normal distribution
 				if (corr)
-					p = corr * prm->pert_v.data[dim] + (1.0-corr) * p;
-				prm->pert_v.data[dim] = p;
-				wv.data[dim] += p;
+					p = corr * prm->pert_v[dim] + (1 - corr) * p;
+				prm->pert_v[dim] = p;
+				wv[dim] += p;
 			}
 			prm->pert_t = tp;
 		}

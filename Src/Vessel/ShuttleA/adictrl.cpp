@@ -433,7 +433,7 @@ bool ADICtrl::ProcessSwitches (int event, int mx, int my)
 			}
 			double step = (btstate[btactive] == 1 ? 1.0*RAD : -1.0*RAD);
 			VECTOR3 ofs = (settgt ? sh->GetAttref()->GetTgtOffset() : sh->GetAttref()->GetEulerOffset());
-			ofs.data[btactive] += step;
+			ofs[btactive] += step;
 			if (settgt) sh->GetAttref()->SetTgtOffset (ofs);
 			else        sh->GetAttref()->SetEulerOffset (ofs);
 			return true;

@@ -72,7 +72,7 @@ void AttitudeReference::SetNavid (int newnavid)
 void AttitudeReference::SetEulerOffset (const VECTOR3 &ofs)
 {
 	for (int i = 0; i < 3; i++)
-		euler_offs.data[i] = posangle (ofs.data[i]);
+		euler_offs[i] = posangle(ofs[i]);
 	valid_euler = false;
 }
 
@@ -81,7 +81,7 @@ void AttitudeReference::SetEulerOffset (const VECTOR3 &ofs)
 void AttitudeReference::SetTgtOffset (const VECTOR3 &ofs)
 {
 	for (int i = 0; i < 3; i++)
-		tgt_offs.data[i] = posangle (ofs.data[i]);
+		tgt_offs[i] = posangle(ofs[i]);
 }
 
 // ==============================================================
@@ -195,7 +195,7 @@ const VECTOR3 &AttitudeReference::GetEulerAngles () const
 		}
 		euler += euler_offs;
 		for (int i = 0; i < 3; i++)
-			euler.data[i] = posangle (euler.data[i]);
+			euler[i] = posangle(euler[i]);
 
 		valid_euler = true;
 	}

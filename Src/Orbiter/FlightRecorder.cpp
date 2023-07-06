@@ -526,12 +526,12 @@ void Vessel::FRecorder_Play ()
 		}
 
 		for (i = 0; i < 3; i++) {
-			r0 = P0.data[i]; r1 = P1.data[i];
-			v0 = V0.data[i]; v1 = V1.data[i];
+			r0 = P0[i]; r1 = P1[i];
+			v0 = V0[i]; v1 = V1[i];
 			a0 = 2.0*(3.0*(r1-r0) - dT*(2.0*v0+v1)) / (dT*dT);
 			b  = 6.0*(2.0*(r0-r1) + dT*(v0+v1)) / (dT*dT*dT);
-			sv->vel.data[i] = v0 + a0*dt + 0.5*b*dt*dt;
-			sv->pos.data[i] = r0 + v0*dt + 0.5*a0*dt*dt + b*dt*dt*dt/6.0;
+			sv->vel[i] = v0 + a0 * dt + 0.5 * b * dt * dt;
+			sv->pos[i] = r0 + v0 * dt + 0.5 * a0 * dt * dt + b * dt * dt * dt / 6;
 		}
 
 		sv->pos += frec[cfrec].ref->s1->pos;
