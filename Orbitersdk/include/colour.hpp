@@ -11,6 +11,7 @@
 #include "math.hpp"
 #include "vector.hpp"
 
+#include <algorithm>
 #include <cstdint> // std::uint32_t
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -38,6 +39,15 @@ constexpr auto from_abgr32(std::uint32_t c)
 	auto a = static_cast<float>(0xff & (c >> 24)) / 255;
 	return COLOUR4{r, g, b, a};
 }
+
+/**
+ * @brief get largest of the r, g and b values
+ */
+constexpr auto max_rgb(const COLOUR3& c) { return (std::max)({c.r, c.g, c.b}); }
+constexpr auto max_rgb(const COLOUR4& c) { return (std::max)({c.r, c.g, c.b}); }
+
+template<typename V, if_vector3(V)> constexpr auto max_rgb(const V& v) { return (std::max)({v.x, v.y, v.z}); }
+template<typename V, if_vector4(V)> constexpr auto max_rgb(const V& v) { return (std::max)({v.x, v.y, v.z}); }
 
 /**
  * @brief convert to 32-bit uint in abgr format
