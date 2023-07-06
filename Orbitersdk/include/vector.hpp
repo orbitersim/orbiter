@@ -34,6 +34,12 @@ union VECTOR3
 	double data[3];
 	struct { double x, y, z; };
 
+	constexpr VECTOR3() : x{0}, y{0}, z{0} { }
+	constexpr VECTOR3(double x, double y, double z) : x{x}, y{y}, z{z} { }
+
+	constexpr VECTOR3(const VECTOR3&) = default;
+	constexpr VECTOR3& operator=(const VECTOR3&) = default;
+
 	constexpr auto const& operator[](std::size_t i) const { return data[i]; }
 	constexpr auto& operator[](std::size_t i) { return data[i]; }
 };
