@@ -21,7 +21,7 @@
 #include "Config.h"
 #include "Log.h"
 #include "Util.h"
-#include "cryptstring.h"
+#include "about.hpp"
 #include "Help.h"
 #include "Memstat.h"
 
@@ -110,17 +110,8 @@ bool orbiter::LaunchpadDialog::Create (bool startvideotab)
 			y = min (max (y, dr.top), dr.bottom-h);
 			SetWindowPos (hDlg, 0, x, y, w, h, 0);
 		}
-		char cbuf[256];
-		strcpy(cbuf, uscram(SIG4));
-		strcat(cbuf, "  \r\n");
-		strcat (cbuf, uscram(SIG2));
-		strcat (cbuf, "  \r\n");
-		strcat (cbuf, uscram(SIG1AA));
-		strcat (cbuf, "  \r\n");
-		strcat (cbuf, uscram(SIG1AB));
-		strcat (cbuf, "  ");
-		SetWindowText (GetDlgItem (hDlg, IDC_BLACKBOX), cbuf);
-		SetWindowText (GetDlgItem (hDlg, IDC_VERSION), uscram(SIG7));
+		SetWindowText (GetDlgItem (hDlg, IDC_BLACKBOX), SIG4 "  \n" SIG2 "  \n" SIG1AA "  \n" SIG1AB "  ");
+		SetWindowText (GetDlgItem (hDlg, IDC_VERSION), SIG7);
 		Show();
 		if (startvideotab) {
 			SwitchTabPage (hDlg, PG_VID);

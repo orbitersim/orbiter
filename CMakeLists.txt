@@ -6,9 +6,6 @@ cmake_minimum_required(VERSION 3.19)
 # Set the project name
 project (Orbiter VERSION 21.7.24)
 
-# Allow building targets as external projects
-include(ExternalProject)
-
 # Some functions to simplify debugging CMake scripts
 include(CMakePrintHelpers)
 
