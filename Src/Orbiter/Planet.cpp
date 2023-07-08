@@ -465,6 +465,8 @@ Planet::~Planet ()
 		labelLegend = NULL;
 	}
 	g_pOrbiter->UpdateDeallocationProgress();
+
+	delete emgr;
 }
 
 intptr_t Planet::FindFirst (int type, _finddata_t *fdata, char *path, char *fname)

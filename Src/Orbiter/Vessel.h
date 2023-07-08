@@ -1424,6 +1424,7 @@ protected:
 		int version;
 		VESSEL_Init ovcInit;
 		VESSEL_Exit ovcExit;
+		bool coreCreated;
 	} modIntf;
 
 	TOUCHDOWN_VTX *HullvtxFirst ();

@@ -152,6 +152,7 @@ CSphereManager::~CSphereManager ()
 		delete[]tiledesc;
 		tiledesc = NULL;
 	}
+	delete pShader;
 }
 
 // =======================================================================

@@ -31,6 +31,7 @@ class Mesh;
 class BaseObject {
 public:
 	BaseObject (const Base *_base);
+	virtual ~BaseObject() = default;
 
 	virtual int Read (std::istream &is);
 	// read object description from stream and return error flag (0=ok)

@@ -323,6 +323,7 @@ const std::vector<oapi::CelestialSphere::LineDataRec> oapi::CelestialSphere::Loa
 		fclose(f);
 		rec.resize(n);
 		rec.shrink_to_fit();
+		delete[]packBuf;
 	}
 	else {
 		LOGOUT_WARN("Line data file %s for celestial sphere drawing not found.", fname.c_str());

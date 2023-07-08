@@ -197,6 +197,7 @@ Vessel::~Vessel ()
 	FRecorder_Clear();
 	ClearDockDefinitions ();
 	if (modIntf.ovcExit) modIntf.ovcExit(modIntf.v);
+	if (modIntf.coreCreated) delete modIntf.v;
 	if (classname) {
 		delete []classname;
 		classname = NULL;
@@ -213,6 +214,7 @@ Vessel::~Vessel ()
 	ClearAnimations (false);
 	ClearTouchdownPoints();
 	ClearReentryStreams();
+	ClearLightEmitters();
 	UnregisterMFDModes();
 
 	if (xpdr) {
@@ -227,6 +229,10 @@ Vessel::~Vessel ()
 		delete []onlinehelp;
 		onlinehelp = NULL;
 	}
+
+	delete[]forcevec;
+	delete[]forcepos;
+
 	ClearModule();
 	g_pOrbiter->UpdateDeallocationProgress();
 }
@@ -5826,6 +5832,7 @@ bool Vessel::LoadModule (ifstream &classf)
 	hMod = 0;
 	ClearModule();
 	modIntf.v = 0;
+	modIntf.coreCreated = false;
 	flightmodel = g_pOrbiter->Cfg()->CfgLogicPrm.FlightModelLevel;
 	if (found = GetItemString (classf, "Module", cbuf)) {
 		found = RegisterModule (cbuf);
@@ -5840,6 +5847,7 @@ bool Vessel::LoadModule (ifstream &classf)
 	}
 	if (!modIntf.v) { // Problem: module didn't create a VESSEL instance!
 		modIntf.v = new VESSEL ((OBJHANDLE)this, flightmodel); TRACENEW
+		modIntf.coreCreated = true;
 	}
 	return found;
 }
