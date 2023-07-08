@@ -255,6 +255,36 @@ template<typename V, if_vector4(V)> constexpr auto exp(const V& v) { return V{st
 template<typename V, if_vector(V)> constexpr auto lerp(const V& a, const V& b, dtype<V> t) { return a + t * (b - a); }
 
 /**
+ * @brief type conversions
+ */
+template<typename U, typename V, if_vector2(U), if_vector2(V)>
+constexpr auto morph_to(const V& v) { return U{static_cast<dtype<U>>(v.x), static_cast<dtype<U>>(v.y)}; }
+
+template<typename U, typename V, if_vector3(U), if_vector3(V)>
+constexpr auto morph_to(const V& v) { return U{static_cast<dtype<U>>(v.x), static_cast<dtype<U>>(v.y), static_cast<dtype<U>>(v.z)}; }
+
+template<typename U, typename V, if_vector4(U), if_vector4(V)>
+constexpr auto morph_to(const V& v) { return U{static_cast<dtype<U>>(v.x), static_cast<dtype<U>>(v.y), static_cast<dtype<U>>(v.z), static_cast<dtype<U>>(v.w)}; }
+
+/**
+ * @brief reduction
+ */
+template<typename U, typename V, if_vector2(U), if_vector3(V)>
+constexpr auto morph_to(const V& v) { return U{static_cast<dtype<U>>(v.x), static_cast<dtype<U>>(v.y)}; }
+
+template<typename U, typename V, if_vector3(U), if_vector4(V)>
+constexpr auto morph_to(const V& v) { return U{static_cast<dtype<U>>(v.x), static_cast<dtype<U>>(v.y), static_cast<dtype<U>>(v.z)}; }
+
+/**
+ * @brief expansion
+ */
+template<typename U, typename V, if_vector3(U), if_vector2(V)>
+constexpr auto morph_to(const V& v, dtype<U> z = 0) { return U{static_cast<dtype<U>>(v.x), static_cast<dtype<U>>(v.y), z}; }
+
+template<typename U, typename V, if_vector4(U), if_vector3(V)>
+constexpr auto morph_to(const V& v, dtype<U> w = 0) { return U{static_cast<dtype<U>>(v.x), static_cast<dtype<U>>(v.y), static_cast<dtype<U>>(v.z), w}; }
+
+/**
  * @brief vector norm/length (squared and not)
  */
 template<typename V, if_vector(V)> constexpr auto norm_2(const V& v) { return dot(v, v); }
