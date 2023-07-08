@@ -545,7 +545,7 @@ void AFCtrlModeDefaultSoundPreStep::clbkPreStep(const double simt, const double 
     // - bit 0: elevator enabled/disabled 
     // - bit 1: rudder enabled / disabled
     // - bit 2: ailerons enabled / disabled
-    const int afCtrlMode = min(pVessel->GetADCtrlMode(), 2);  // 0 = OFF, 1 = PITCH (elevators), 2 = ON (more than just pitch)
+    const int afCtrlMode = min(pVessel->GetADCtrlMode(), (DWORD)2);  // 0 = OFF, 1 = PITCH (elevators), 2 = ON (more than just pitch)
 
     if (m_previousAFCtrlMode < 0)
     {
