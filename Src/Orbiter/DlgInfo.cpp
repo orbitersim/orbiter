@@ -1057,7 +1057,7 @@ BOOL DlgInfo::OnCommand (HWND hDlg, WORD id, WORD code, HWND hControl)
 {
 	switch (id) {
 	case IDHELP:
-		DefHelpContext.topic = "/objinfo.htm";
+		DefHelpContext.topic = (char*)"/objinfo.htm";
 		g_pOrbiter->OpenHelp (&DefHelpContext);
 		return TRUE;
 	case IDC_INFO_MAP:

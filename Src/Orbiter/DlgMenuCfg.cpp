@@ -85,7 +85,7 @@ BOOL DlgMenuCfg::OnCommand (HWND hDlg, WORD id, WORD code, HWND hControl)
 {
 	switch (id) {
 	case IDHELP:
-		DefHelpContext.topic = "/menucfg.htm";
+		DefHelpContext.topic = (char*)"/menucfg.htm";
 		g_pOrbiter->OpenHelp (&DefHelpContext);
 		return TRUE;
 	case IDC_MNUCFG_SHOWMENU:

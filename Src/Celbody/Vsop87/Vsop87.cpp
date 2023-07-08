@@ -45,8 +45,8 @@ bool VSOPOBJ::bEphemeris () const
 void VSOPOBJ::clbkInit (FILEHANDLE cfg)
 {
 	CELBODY2::clbkInit (cfg);
-	oapiReadItem_float (cfg, "ErrorLimit", prec); // read custom precision from config file
-	oapiReadItem_float (cfg, "SamplingInterval", interval);
+	oapiReadItem_float (cfg, (char*)"ErrorLimit", prec); // read custom precision from config file
+	oapiReadItem_float (cfg, (char*)"SamplingInterval", interval);
 }
 
 void VSOPOBJ::SetSeries (char series)
@@ -57,7 +57,7 @@ void VSOPOBJ::SetSeries (char series)
 	if (sid == 'E')               fmtflag |= EPHEM_PARENTBARY;
 }
 
-bool VSOPOBJ::ReadData (char *name)
+bool VSOPOBJ::ReadData (const char *name)
 {
 	int nterm, cooidx, alpha, i, iused, nused = 0, ntot = 0;
 	double a, b, c, tfac, err;

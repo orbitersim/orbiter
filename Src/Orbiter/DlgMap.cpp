@@ -717,7 +717,7 @@ BOOL DlgMap::OnCommand (HWND hDlg, WORD id, WORD code, HWND hControl)
 
 	switch (id) {
 	case IDHELP:
-		DefHelpContext.topic = "/map.htm";
+		DefHelpContext.topic = (char*)"/map.htm";
 		g_pOrbiter->OpenHelp (&DefHelpContext);
 		return TRUE;
 	case IDC_MAP_OPTIONS:

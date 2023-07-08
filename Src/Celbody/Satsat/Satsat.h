@@ -47,6 +47,6 @@ DLLEXPORT void SaturnFastEphemeris (double simt, double *ret);
 
 int posired (double dj, int is, double *xyz, double *vxyz);
 int nterm (int is);
-void ReadData (char *fname, int res);
+void ReadData (const char *fname, int res);
 
 #endif // !__SATSAT_H

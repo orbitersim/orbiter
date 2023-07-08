@@ -1087,7 +1087,7 @@ public:
 	// set/unset/toggle a particular navigation mode
 	// and check status of a navigation mode
 
-	void Vessel::SetHoverHoldAltitude (double alt, bool terrainalt);
+	void SetHoverHoldAltitude (double alt, bool terrainalt);
 
 	// ========================================================================
 	// beacon light management

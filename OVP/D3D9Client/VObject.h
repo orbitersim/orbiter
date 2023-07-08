@@ -240,8 +240,8 @@ public:
 protected:
 
 	void RenderSpot(LPDIRECT3DDEVICE9 dev, const VECTOR3 *ofs, float size, const VECTOR3 &col, bool lighting, int shape);
-	void RenderAxisVector(D3D9Pad *pSkp, LPD3DXCOLOR pColor, VECTOR3 vector, float lscale, float size, bool bLog=false);
-	void RenderAxisLabel(D3D9Pad *pSkp, LPD3DXCOLOR clr, VECTOR3 vector, float lscale, float size, const char *label, bool bLog=false);
+	void RenderAxisVector(D3D9Pad *pSkp, const D3DXCOLOR *pColor, VECTOR3 vector, float lscale, float size, bool bLog=false);
+	void RenderAxisLabel(D3D9Pad *pSkp, const D3DXCOLOR *clr, VECTOR3 vector, float lscale, float size, const char *label, bool bLog=false);
 
 
 	static oapi::D3D9Client *gc;			// graphics client instance pointer

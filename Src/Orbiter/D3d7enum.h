@@ -91,12 +91,12 @@ D3D7Enum_DeviceInfo *D3D7Enum_GetDevice (DWORD idx);
 // Desc: Read device information from file
 //       Return value is number of devices (0=error)
 // ------------------------------------------------------------------------------------
-int D3D7Enum_ReadDeviceList (CHAR *fname);
+int D3D7Enum_ReadDeviceList (const CHAR *fname);
 
 // ------------------------------------------------------------------------------------
 // Name: D3D7Enum_WriteDeviceList()
 // Desc: Write the device information stored in the device list to a file (binary)
 // ------------------------------------------------------------------------------------
-VOID D3D7Enum_WriteDeviceList (CHAR *fname);
+VOID D3D7Enum_WriteDeviceList (const CHAR *fname);
 
 #endif // !D3D7ENUM_H

@@ -57,9 +57,9 @@ HUDControl::HUDControl (DeltaGlider *vessel)
 void HUDControl::clbkSaveState(FILEHANDLE scn)
 {
 	if (last_mode != HUD_NONE)
-		oapiWriteScenario_int(scn, "HUDMode", last_mode);
+		oapiWriteScenario_int(scn, (char*)"HUDMode", last_mode);
 	if (hud_brightness < 1.0)
-		oapiWriteScenario_float(scn, "HUDBrightness", hud_brightness);
+		oapiWriteScenario_float(scn, (char*)"HUDBrightness", hud_brightness);
 }
 
 // --------------------------------------------------------------

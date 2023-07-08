@@ -35,13 +35,13 @@ namespace orbiter {
 
 		void EnumerateClients(HWND hTab);
 
-		void ScanDir(HWND hTab, const PSTR dir);
+		void ScanDir(HWND hTab, PCSTR dir);
 		// scan directory dir (relative to Orbiter root) for graphics clients
 		// and enter them in the combo box
 
 		void SelectClientIndex(UINT idx);
 
-		void SetInfoString(PSTR str);
+		void SetInfoString(PCSTR str);
 
 		static INT_PTR CALLBACK InfoProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 

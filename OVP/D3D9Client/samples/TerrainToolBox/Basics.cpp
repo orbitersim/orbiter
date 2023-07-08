@@ -158,7 +158,7 @@ void ToolKit::RenderTileBounds(QTree *tn, DWORD color)
 void ToolKit::RenderSelection(sSelection *sel, int mode, DWORD color)
 {
 	if (mode == 0) {
-		for each (selentry se in sel->area) RenderTileBounds(se.pNode, color);
+		for (selentry se : sel->area) RenderTileBounds(se.pNode, color);
 		return;
 	}
 
@@ -167,7 +167,7 @@ void ToolKit::RenderSelection(sSelection *sel, int mode, DWORD color)
 
 	if (mode == 1) {
 
-		for each (selentry se in sel->area) {
+		for (selentry se : sel->area) {
 			gcCore::PickGround pg = pCore->GetTileData(hMgr, se.pNode->clng, se.pNode->clat, se.pNode->level);
 			emin = min(emin, pg.emin);
 			emax = max(emax, pg.emax);
@@ -278,7 +278,7 @@ SURFHANDLE ToolKit::GetBaseElevation(int elev_fmt)
 	if (elev_fmt == 0) pInt = new INT16[Width * Height];
 	if (elev_fmt == 1) pFloat = new float[Width * Height];
 
-	for each (selentry se in selection.area)
+	for (selentry se : selection.area)
 	{
 		int pos = se.x * 256 + se.y * 256 * Width;
 		INT16 *pElev = se.pNode->GetElevation();

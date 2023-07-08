@@ -95,7 +95,7 @@ Instrument_Map::~Instrument_Map ()
 HELPCONTEXT *Instrument_Map::HelpTopic () const
 {
 	extern HELPCONTEXT DefHelpContext;
-	DefHelpContext.topic = "/mfd_map.htm";
+	DefHelpContext.topic = (char*)"/mfd_map.htm";
 	return &DefHelpContext;
 }
 

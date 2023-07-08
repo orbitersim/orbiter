@@ -1312,8 +1312,8 @@ void D3D9Mesh::SetupFog(const LPD3DXMATRIX pW)
 {
 	_TRACE;
 	if (!IsOK()) return;
-	FX->SetVector(eAttennuate, &D3DXVECTOR4(1,1,1,1));
-	FX->SetVector(eInScatter,  &D3DXVECTOR4(0,0,0,0));
+	FX->SetVector(eAttennuate, ptr(D3DXVECTOR4(1,1,1,1)));
+	FX->SetVector(eInScatter,  ptr(D3DXVECTOR4(0,0,0,0)));
 }
 
 // ===========================================================================================
@@ -1543,7 +1543,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	FX->SetBool(eTuneEnabled, false);
 	FX->SetBool(eLightsEnabled, false);
 	FX->SetBool(eOITEnable, false);
-	FX->SetVector(eColor, &D3DXVECTOR4(0, 0, 0, 0));
+	FX->SetVector(eColor, ptr(D3DXVECTOR4(0, 0, 0, 0)));
 
 	ConfigureAtmo();
 
@@ -1562,7 +1562,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	if (pLights && nSceneLights>0) {
 
 		D3DXVECTOR3 pos;
-		D3DXVec3TransformCoord(&pos, &D3DXVECTOR3f4(BBox.bs), pW);
+		D3DXVec3TransformCoord(&pos, ptr(D3DXVECTOR3f4(BBox.bs)), pW);
 
 		// Find all local lights effecting this mesh ------------------------------------------
 		//
@@ -1654,16 +1654,16 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 
 				if (displ==3 && g!=selgrp) continue;
 
-				FX->SetVector(eColor, &D3DXVECTOR4(0, 0, 0, 0));
+				FX->SetVector(eColor, ptr(D3DXVECTOR4(0, 0, 0, 0)));
 
 				if (flags&DBG_FLAGS_HLMESH) {
 					if (uCurrentMesh==selmsh) {
-						FX->SetVector(eColor, &D3DXVECTOR4(0.0f, 0.0f, 0.5f, 0.5f));
+						FX->SetVector(eColor, ptr(D3DXVECTOR4(0.0f, 0.0f, 0.5f, 0.5f)));
 					}
 				}
 				if (flags&DBG_FLAGS_HLGROUP) {
 					if (g==selgrp && uCurrentMesh==selmsh) {
-						FX->SetVector(eColor, &D3DXVECTOR4(0.0f, 0.5f, 0.0f, 0.5f));
+						FX->SetVector(eColor, ptr(D3DXVECTOR4(0.0f, 0.5f, 0.0f, 0.5f)));
 					}
 				}
 			}
@@ -1952,7 +1952,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	HR(FX->End());
 
 	if (flags&(DBG_FLAGS_BOXES|DBG_FLAGS_SPHERES)) RenderBoundingBox(pW);
-	FX->SetVector(eColor, &D3DXVECTOR4(0, 0, 0, 0));
+	FX->SetVector(eColor, ptr(D3DXVECTOR4(0, 0, 0, 0)));
 	if (flags&DBG_FLAGS_DUALSIDED) pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 }
 
@@ -1998,7 +1998,7 @@ void D3D9Mesh::RenderSimplified(const LPD3DXMATRIX pW, LPDIRECT3DCUBETEXTURE9 *p
 	FX->SetBool(eEnvMapEnable, false);
 	FX->SetBool(eTuneEnabled, false);
 	FX->SetBool(eLightsEnabled, false);
-	FX->SetVector(eColor, &D3DXVECTOR4(0, 0, 0, 0));
+	FX->SetVector(eColor, ptr(D3DXVECTOR4(0, 0, 0, 0)));
 	FX->SetMatrix(eW, pW);
 
 	ConfigureAtmo();
@@ -2016,7 +2016,7 @@ void D3D9Mesh::RenderSimplified(const LPD3DXMATRIX pW, LPDIRECT3DCUBETEXTURE9 *p
 
 		int nMeshLights = 0;
 		D3DXVECTOR3 pos;
-		D3DXVec3TransformCoord(&pos, &D3DXVECTOR3f4(BBox.bs), pW);
+		D3DXVec3TransformCoord(&pos, ptr(D3DXVECTOR3f4(BBox.bs)), pW);
 
 		// Find all local lights effecting this mesh ------------------------------------------
 		//
@@ -2293,7 +2293,7 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 	FX->SetTechnique(eVesselTech);
 	FX->SetBool(eTuneEnabled, false);
 	FX->SetBool(eLightsEnabled, false);
-	FX->SetVector(eColor, &D3DXVECTOR4(0, 0, 0, 0));
+	FX->SetVector(eColor, ptr(D3DXVECTOR4(0, 0, 0, 0)));
 
 	ConfigureAtmo();
 
@@ -2312,7 +2312,7 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 
 		int nMeshLights = 0;
 		D3DXVECTOR3 pos;
-		D3DXVec3TransformCoord(&pos, &D3DXVECTOR3f4(BBox.bs), pW);
+		D3DXVec3TransformCoord(&pos, ptr(D3DXVECTOR3f4(BBox.bs)), pW);
 
 		// Find all local lights effecting this mesh ------------------------------------------
 		//
@@ -2365,16 +2365,16 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 
 				if (displ == 3 && g != selgrp) continue;
 
-				FX->SetVector(eColor, &D3DXVECTOR4(0, 0, 0, 0));
+				FX->SetVector(eColor, ptr(D3DXVECTOR4(0, 0, 0, 0)));
 
 				if (flags&DBG_FLAGS_HLMESH) {
 					if (uCurrentMesh == selmsh) {
-						FX->SetVector(eColor, &D3DXVECTOR4(0.0f, 0.0f, 0.5f, 0.5f));
+						FX->SetVector(eColor, ptr(D3DXVECTOR4(0.0f, 0.0f, 0.5f, 0.5f)));
 					}
 				}
 				if (flags&DBG_FLAGS_HLGROUP) {
 					if (g == selgrp && uCurrentMesh == selmsh) {
-						FX->SetVector(eColor, &D3DXVECTOR4(0.0f, 0.5f, 0.0f, 0.5f));
+						FX->SetVector(eColor, ptr(D3DXVECTOR4(0.0f, 0.5f, 0.0f, 0.5f)));
 					}
 				}
 			}
@@ -2530,7 +2530,7 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 	HR(FX->End());
 
 	if (flags&(DBG_FLAGS_BOXES | DBG_FLAGS_SPHERES)) RenderBoundingBox(pW);
-	FX->SetVector(eColor, &D3DXVECTOR4(0, 0, 0, 0));
+	FX->SetVector(eColor, ptr(D3DXVECTOR4(0, 0, 0, 0)));
 	if (flags&DBG_FLAGS_DUALSIDED) pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 }
 
@@ -2609,7 +2609,7 @@ void D3D9Mesh::RenderBaseTile(const LPD3DXMATRIX pW)
 
 
 	FX->SetTechnique(eBaseTile);
-	FX->SetVector(eColor, &D3DXVECTOR4(0, 0, 0, 0));
+	FX->SetVector(eColor, ptr(D3DXVECTOR4(0, 0, 0, 0)));
 	FX->SetMatrix(eGT, gc->GetIdentity());
 	FX->SetMatrix(eW, pW);
 
@@ -2804,7 +2804,7 @@ void D3D9Mesh::RenderStencilShadows(float alpha, const LPD3DXMATRIX pP, const LP
 	FX->SetTechnique(eShadowTech);
 	
 	if (elev) FX->SetVector(eInScatter, elev);
-	else FX->SetVector(eInScatter, &D3DXVECTOR4(0,1,0,0));
+	else FX->SetVector(eInScatter, ptr(D3DXVECTOR4(0,1,0,0)));
 
 	FX->SetFloat(eMix, alpha);
 	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
@@ -2873,7 +2873,7 @@ void D3D9Mesh::RenderShadowsEx(float alpha, const LPD3DXMATRIX pP, const LPD3DXM
 	FX->SetMatrix(eGT, pP);
 	FX->SetFloat(eMix, alpha);
 	if (light) FX->SetVector(eColor, light);
-	else FX->SetVector(eColor, &D3DXVECTOR4(0,1,0,0));
+	else FX->SetVector(eColor, ptr(D3DXVECTOR4(0,1,0,0)));
 	FX->SetVector(eTexOff, param);
 
 
@@ -2966,7 +2966,7 @@ void D3D9Mesh::RenderBoundingBox(const LPD3DXMATRIX pW)
 
 		// ----------------------------------------------------------------
 		FX->SetMatrix(eW, pW);
-		FX->SetVector(eColor, &D3DXVECTOR4(0, 1, 0, 0.5f));
+		FX->SetVector(eColor, ptr(D3DXVECTOR4(0, 1, 0, 0.5f)));
 		FX->SetTechnique(eBBTech);
 		// ----------------------------------------------------------------
 
@@ -3007,11 +3007,11 @@ void D3D9Mesh::RenderBoundingBox(const LPD3DXMATRIX pW)
 		for (DWORD g=0; g<nGrp; g++) {
 			if (flags&DBG_FLAGS_SELGRPONLY && g!=selgrp) continue;
 			if (Grp[g].UsrFlag & 0x2) continue;
-			D3D9Effect::RenderBoundingSphere(pW, NULL, &Grp[g].BBox.bs, &D3DXVECTOR4(0,1,0,0.75f));
+			D3D9Effect::RenderBoundingSphere(pW, NULL, &Grp[g].BBox.bs, ptr(D3DXVECTOR4(0,1,0,0.75f)));
 		}
 	}
-	if (flags&DBG_FLAGS_BOXES) D3D9Effect::RenderBoundingBox(pW, &mTransform, &BBox.min, &BBox.max, &D3DXVECTOR4(0,0,1,0.75f));
-	if (flags&DBG_FLAGS_SPHERES) D3D9Effect::RenderBoundingSphere(pW, &mTransform, &BBox.bs, &D3DXVECTOR4(0,0,1,0.75f));
+	if (flags&DBG_FLAGS_BOXES) D3D9Effect::RenderBoundingBox(pW, &mTransform, &BBox.min, &BBox.max, ptr(D3DXVECTOR4(0,0,1,0.75f)));
+	if (flags&DBG_FLAGS_SPHERES) D3D9Effect::RenderBoundingSphere(pW, &mTransform, &BBox.bs, ptr(D3DXVECTOR4(0,0,1,0.75f)));
 }
 
 
@@ -3153,7 +3153,7 @@ void D3D9Mesh::UpdateBoundingBox()
 //
 D9BBox * D3D9Mesh::GetAABB()
 {
-	if (!IsOK()) return false;
+	if (!IsOK()) return nullptr;
 	UpdateBoundingBox();
 	return &BBox;
 }
@@ -3230,7 +3230,7 @@ D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const LPD3DXMATRIX pT, const D3DX
 
 		D3DXVECTOR3 pos, dir;
 
-		D3DXVec3TransformCoord(&pos, &D3DXVECTOR3(0, 0, 0), &mWI);
+		D3DXVec3TransformCoord(&pos, ptr(D3DXVECTOR3(0, 0, 0)), &mWI);
 		D3DXVec3TransformNormal(&dir, vDir, &mWI);
 
 		for (DWORD i=0;i<Grp[g].nFace;i++) {
@@ -3245,7 +3245,7 @@ D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const LPD3DXMATRIX pT, const D3DX
 
 			float u, v, dst;
 
-			D3DXVec3Cross(&cp, &(_c - _b), &(_a - _b));
+			D3DXVec3Cross(&cp, ptr(_c - _b), ptr(_a - _b));
 
 			if (D3DXVec3Dot(&cp, &dir)<0) {
 				if (D3DXIntersectTri(&_c, &_b, &_a, &pos, &dir, &u, &v, &dst)) {
@@ -3294,7 +3294,7 @@ D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const LPD3DXMATRIX pT, const D3DX
 		float u = result.u;
 		float v = result.v;
 
-		D3DXVec3Cross(&cp, &(_c - _b), &(_a - _b));
+		D3DXVec3Cross(&cp, ptr(_c - _b), ptr(_a - _b));
 
 		D3DXVec3TransformNormal(&cp, &cp, &mW);
 		D3DXVec3Normalize(&result.normal, &cp);
@@ -3315,7 +3315,7 @@ D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const LPD3DXMATRIX pT, const D3DX
 
 // This is a special rendering routine used to render 3D arrow --------------------------------
 //
-void D3D9Mesh::RenderAxisVector(LPD3DXMATRIX pW, const LPD3DXCOLOR pColor, float len)
+void D3D9Mesh::RenderAxisVector(LPD3DXMATRIX pW, const D3DXCOLOR *pColor, float len)
 {
 	UINT numPasses = 0;
 	HR(FX->SetTechnique(eAxisTech));
@@ -3372,7 +3372,7 @@ void D3D9Mesh::RenderRings2(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex, floa
 	HR(FX->SetTexture(eTex0, pTex));
 	FX->SetValue(eSun, &sunLight, sizeof(D3D9Sun));
 	HR(FX->SetValue(eMtrl, &defmat, sizeof(D3D9MatExt)-4));
-	HR(FX->SetVector(eTexOff, &D3DXVECTOR4(irad, orad, 0, 0)));
+	HR(FX->SetVector(eTexOff, ptr(D3DXVECTOR4(irad, orad, 0, 0))));
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));
 	RenderGroup(0);

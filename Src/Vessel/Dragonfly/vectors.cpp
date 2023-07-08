@@ -124,7 +124,7 @@ void vector3::selfnormalize()
 double vector3::length()
 { return sqrtf(x*x+y*y+z*z);
 }
-double vector3::mod()
+double vector3::mod() const
 { return sqrtf(x*x+y*y+z*z);
 }
 
@@ -132,7 +132,7 @@ double vector3::distance(vector3 &v)
 {return (*this-v).length();
 }
 
-double vector3::angle(vector3 &v)
+double vector3::angle(const vector3 &v)
 { return (double) acos((*this % v)/((*this).mod()*v.mod())); //acos( (p1%p2) / ([p1]*[p2]) )
 }
 

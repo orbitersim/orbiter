@@ -178,7 +178,7 @@ int calclon (double dj, const SeriesData *sd, double *dlo)
 // ==========================================================
 // Read perturbation terms
 
-void ReadData (char *fname, int res)
+void ReadData (const char *fname, int res)
 {
     SeriesData *sd = sdata;
 

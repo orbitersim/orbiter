@@ -130,7 +130,7 @@ Scene::Scene (OrbiterGraphics *og)
 	strcpy (cbuf, g_pOrbiter->Cfg()->CfgDirPrm.TextureDir);
 	strcat (cbuf, "\\exhaust.dds");
 
-	static char *gtex_name[4] = {"Exhaust", "Horizon", "Reentry", "Contrail1"};
+	static const char *gtex_name[4] = {"Exhaust", "Horizon", "Reentry", "Contrail1"};
 	for (i = 0; i < 4; i++) {
 		gtex[i] = 0;
 		if (file = g_pOrbiter->OpenTextureFile (gtex_name[i], ".dds")) {
@@ -257,10 +257,10 @@ void Scene::Init3DFonts ()
 	gfont[0]->SetColorKey (DDCKEY_SRCBLT, &ck);
 
 	// common labels
-	static char *label = "-x-y-z";
+	static const char *label = "-x-y-z";
 	RECT sr = {0,0,0,0};
 	w = i = 0;
-	for (char *c = label; *c; c++, i++) {
+	for (const char *c = label; *c; c++, i++) {
 		int idx = *c - 32;
 		sr.left = gfont_ofs[0][idx];
 		sr.right = sr.left + gfont_cw[0][idx];

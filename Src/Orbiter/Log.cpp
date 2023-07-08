@@ -22,7 +22,7 @@ static DWORD t0 = 0;
 
 static LogOutFunc logOut = 0;
 
-void InitLog (char *logfile, bool append)
+void InitLog (const char *logfile, bool append)
 {
 	strcpy (logname, logfile);
 	ofstream ofs (logname, append ? ios::app : ios::out);
@@ -355,7 +355,7 @@ void LogOut_Warning(const char* func, const char* file, int line, const char* ms
 	va_end(ap);
 }
 
-void LogOut_Obsolete(char* func, char* msg)
+void LogOut_Obsolete(const char* func, const char* msg)
 {
 	LogOut_Obsolete_Start();
 	LogOut("Obsolete API function used: %s", func);

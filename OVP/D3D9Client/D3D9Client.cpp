@@ -708,26 +708,26 @@ void D3D9Client::SketchPadTest()
 	pSkp->QuickPen(0xA0000000, 3.0f);
 	pSkp->PushWorldTransform();
 
-	pSkp->SetWorldScaleTransform2D(&FVECTOR2(100.0f, 100.0f), &pos0);
+	pSkp->SetWorldScaleTransform2D(ptr(FVECTOR2(100.0f, 100.0f)), &pos0);
 	pSkp->DrawPoly(hColors);
 	pSkp->DrawPoly(hOutline);
 
-	pSkp->SetWorldScaleTransform2D(&FVECTOR2(100.0f, 100.0f), &pos1);
+	pSkp->SetWorldScaleTransform2D(ptr(FVECTOR2(100.0f, 100.0f)), &pos1);
 	pSkp->DrawPoly(hOutline2);
 
-	pSkp->SetWorldScaleTransform2D(&FVECTOR2(100.0f, 100.0f), &pos2);
+	pSkp->SetWorldScaleTransform2D(ptr(FVECTOR2(100.0f, 100.0f)), &pos2);
 	pSkp->DrawPoly(hStrip);
 
-	pSkp->SetWorldScaleTransform2D(&FVECTOR2(100.0f, 100.0f), &pos3);
+	pSkp->SetWorldScaleTransform2D(ptr(FVECTOR2(100.0f, 100.0f)), &pos3);
 	pSkp->DrawPoly(hStrip2);
 
-	pSkp->SetWorldScaleTransform2D(&FVECTOR2(100.0f, 100.0f), &pos4);
+	pSkp->SetWorldScaleTransform2D(ptr(FVECTOR2(100.0f, 100.0f)), &pos4);
 	pSkp->QuickPen(0xFF000000, 25.0f);
 	pSkp->DrawPoly(hOutline);
 
 	hSrc = clbkLoadSurface("generic/noisep.dds", OAPISURFACE_TEXTURE);
 
-	pSkp->SetWorldScaleTransform2D(&FVECTOR2(1.0f, 1.0f), &pos5);
+	pSkp->SetWorldScaleTransform2D(ptr(FVECTOR2(1.0f, 1.0f)), &pos5);
 
 	FVECTOR2 pt[4];
 	pt[0] = FVECTOR2(-100.0f, -100.0f);
@@ -823,7 +823,7 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 {
 	_TRACE;
-	oapiWriteLog("D3D9: [Destroy Render Window Called]");
+	oapiWriteLog((char*)"D3D9: [Destroy Render Window Called]");
 	LogAlw("============= clbkDestroyRenderWindow ===========");
 
 #ifdef _NVAPI_H
@@ -986,7 +986,7 @@ void D3D9Client::PushSketchpad(SURFHANDLE surf, D3D9Pad *pSkp) const
 
 void D3D9Client::PushRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 pDepthStencil, int code) const
 {
-	static char *labels[] = { "NULL", "MAIN", "ENV", "CUSTOMCAM", "SHADOWMAP", "PICK", "SKETCHPAD", "OVERLAY" };
+	static const char *labels[] = { "NULL", "MAIN", "ENV", "CUSTOMCAM", "SHADOWMAP", "PICK", "SKETCHPAD", "OVERLAY" };
 
 	RenderTgtData data;
 	data.pColor = pColor;
@@ -1025,7 +1025,7 @@ void D3D9Client::AlterRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9
 
 void D3D9Client::PopRenderTargets() const
 {
-	static char *labels[] = { "NULL", "MAIN", "ENV", "CUSTOMCAM", "SHADOWMAP", "PICK", "SKETCHPAD", "OVERLAY" };
+	static const char *labels[] = { "NULL", "MAIN", "ENV", "CUSTOMCAM", "SHADOWMAP", "PICK", "SKETCHPAD", "OVERLAY" };
 
 	assert(RenderStack.empty() == false);
 
@@ -2324,7 +2324,7 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
                                SURFHANDLE src, DWORD srcx, DWORD srcy, DWORD srcw, DWORD srch, DWORD flag) const
 {
 	
-	if (src==NULL) { oapiWriteLog("ERROR: oapiBlt() Source surface is NULL"); return false; }
+	if (src==NULL) { oapiWriteLog((char*)"ERROR: oapiBlt() Source surface is NULL"); return false; }
 
 	if (tgt==NULL) tgt = pFramework->GetBackBufferHandle();
 
@@ -2893,7 +2893,7 @@ void D3D9Client::SplashScreen()
 	SetTextColor(hDC, 0xE0A0A0);
 	SetBkMode(hDC,TRANSPARENT);
 
-	char *months[]={"???","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","???"};
+	const char *months[]={"???","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","???"};
 
 	DWORD d = oapiGetOrbiterVersion();
 	DWORD y = d/10000; d-=y*10000;

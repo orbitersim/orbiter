@@ -652,7 +652,7 @@ void RunwayLights::SetPAPIColors(BeaconArray *pPAPI, LPD3DXMATRIX world, int i)
 		DWORD white  = 0xFFFFEECC; 
 
 		D3DXVECTOR3 vPos, vUp, vFront;
-		D3DXVec3TransformNormal(&vUp, &D3DXVECTOR3(0,1,0), world);
+		D3DXVec3TransformNormal(&vUp, ptr(D3DXVECTOR3(0,1,0)), world);
 		D3DXVECTOR3 vRef1 = pVrt[0].pos;
 		D3DXVec3Normalize(&vFront, D3DXVec3TransformCoord(&vPos, &vRef1, world));
 	
@@ -705,9 +705,9 @@ void RunwayLights::Render(LPDIRECT3DDEVICE9 dev, LPD3DXMATRIX world, bool night)
 	VECTOR3 camDir = scene->GetCameraGDir();
 	D3DXVECTOR3 dirGlo;
 	
-	D3DXVec3TransformNormal(&dirGlo, &D3DXVEC(dir), world);
+	D3DXVec3TransformNormal(&dirGlo, ptr(D3DXVEC(dir)), world);
 	
-	if (D3DXVec3Dot(&D3DXVEC(camDir), &dirGlo) > 0)
+	if (D3DXVec3Dot(ptr(D3DXVEC(camDir)), &dirGlo) > 0)
 	{
 		if (night && beacons1) beacons1->Render(dev, world, currentTime);
 		

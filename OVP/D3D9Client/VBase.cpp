@@ -44,7 +44,7 @@ void CheckMeshStats(MESHHANDLE hMesh, MeshStats *stats)
 	int nGrp = oapiMeshGroupCount(hMesh);
 	if (nGrp == 0) return;
 
-	XMVECTOR mi = XMLoadFloat3(&XMFLOAT3(1e12f, 1e12f, 1e12f));
+	XMVECTOR mi = XMLoadFloat3(ptr(XMFLOAT3(1e12f, 1e12f, 1e12f)));
 	XMVECTOR mx = -mi;
 
 	for (int i = 0; i < nGrp; i++) {
@@ -65,7 +65,7 @@ void CheckMeshStats(MESHHANDLE hMesh, MeshStats *stats)
 	stats->height = stats->max.y - stats->min.y;
 	stats->length = stats->max.z - stats->min.z;
 	stats->pos = (stats->max + stats->min) * 0.5f;
-	stats->rad = D3DXVec3Length(&(stats->max + stats->min)) * 0.5f;
+	stats->rad = D3DXVec3Length(ptr(stats->max + stats->min)) * 0.5f;
 }
 
 
@@ -460,7 +460,7 @@ void vBase::RenderRunwayLights(LPDIRECT3DDEVICE9 dev)
 		if (flags&DBG_FLAGS_SELVISONLY && this!=DebugControls::GetVisual()) return; // Used for debugging
 		if (flags&DBG_FLAGS_BOXES) {
 			D3DXMATRIX id;
-			D3D9Effect::RenderBoundingBox(&mWorld, D3DXMatrixIdentity(&id), &BBox.min, &BBox.max, &D3DXVECTOR4(1,0,1,0.75f));
+			D3D9Effect::RenderBoundingBox(&mWorld, D3DXMatrixIdentity(&id), &BBox.min, &BBox.max, ptr(D3DXVECTOR4(1,0,1,0.75f)));
 		}
 	}
 }

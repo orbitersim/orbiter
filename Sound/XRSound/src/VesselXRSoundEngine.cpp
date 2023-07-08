@@ -174,7 +174,7 @@ bool VesselXRSoundEngine::SetDefaultSoundGroupFolder(const XRSound::DefaultSound
 const char *VesselXRSoundEngine::GetDefaultSoundGroupFolder(const XRSound::DefaultSoundID defaultSoundID) const
 {
     if (!IsKlangEngineInitialized())
-        return false;
+        return nullptr;
 
     const char *pSoundFolder = nullptr;
 

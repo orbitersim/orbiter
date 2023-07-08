@@ -4,7 +4,12 @@
 #ifndef __TILEMGR2_IMP_HPP
 #define __TILEMGR2_IMP_HPP
 
+#include "Camera.h"
+#include "Orbiter.h"
 #include "tilemgr2.h"
+
+extern Camera* g_camera;
+extern Orbiter* g_pOrbiter;
 
 // Implementation of template class TileManager2
 

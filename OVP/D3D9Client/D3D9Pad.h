@@ -130,7 +130,7 @@ inline void SkpVtxFC(SkpVtx& v, float _x, float _y, DWORD c)
 }
 
 // Fill Rect, Ellipse, Polygon [only]
-inline void SkpVtxIC(SkpVtx &v, int _x, int _y, SkpColor &c)
+inline void SkpVtxIC(SkpVtx &v, int _x, int _y, const SkpColor &c)
 {
 	v.x = float(_x) - 0.5f;
 	v.y = float(_y) - 0.5f;
@@ -488,8 +488,8 @@ public:
 	void SetWorldTransform(const FMATRIX4 *pWT = NULL);
 	void SetWorldTransform2D(float scale=1.0f, float rot=0.0f, const IVECTOR2 *c=NULL, const IVECTOR2 *t=NULL);
 	int  DrawMeshGroup(const MESHHANDLE hMesh, DWORD grp, Sketchpad::MeshFlags flags, const SURFHANDLE hTex = NULL);
-	void CopyRect(const SURFHANDLE hSrc, const LPRECT src, int tx, int ty);
-	void StretchRect(const SURFHANDLE hSrc, const LPRECT src, const LPRECT tgt);
+	void CopyRect(const SURFHANDLE hSrc, const RECT *src, int tx, int ty);
+	void StretchRect(const SURFHANDLE hSrc, const RECT *src, const RECT *tgt);
 	void RotateRect(const SURFHANDLE hSrc, const LPRECT src, int cx, int cy, float angle, float sw = 1.0f, float sh = 1.0f);
 	void ColorKey(const SURFHANDLE hSrc, const LPRECT src, int tx, int ty);
 	void TextEx(float x, float y, const char *str, float scale = 100.0f, float angle = 0.0f);
@@ -561,7 +561,7 @@ public:
 	void LoadDefaults();
 
 	void CopyRectNative(LPDIRECT3DTEXTURE9 pSrc, const LPRECT s, int tx, int ty);
-	void StretchRectNative(LPDIRECT3DTEXTURE9 pSrc, const LPRECT s, const LPRECT t);
+	void StretchRectNative(LPDIRECT3DTEXTURE9 pSrc, const RECT *s, const RECT *t);
 	
 
 private:
@@ -580,13 +580,13 @@ private:
 	void Reset();
 	bool Flush(HPOLY hPoly = NULL);
 	void AddRectIdx(WORD aV);
-	void FillRect(int l, int t, int r, int b, SkpColor &c);
+	void FillRect(int l, int t, int r, int b, const SkpColor &c);
 	void TexChange(SURFHANDLE hNew);
 	bool TexChangeNative(LPDIRECT3DTEXTURE9 hNew);
-	const LPRECT CheckRectNative(LPDIRECT3DTEXTURE9 hSrc, const LPRECT s);
+	const RECT *CheckRectNative(LPDIRECT3DTEXTURE9 hSrc, const RECT *s);
 	void SetFontTextureNative(LPDIRECT3DTEXTURE9 hNew);
 	void SetupDevice(Topo tNew);
-	LPRECT CheckRect(SURFHANDLE hSrc, const LPRECT s);
+	const RECT *CheckRect(SURFHANDLE hSrc, const RECT *s);
 	void IsLineTopologyAllowed();
 	DWORD ColorComp(DWORD c) const;
 	SkpColor ColorComp(const SkpColor &c) const;

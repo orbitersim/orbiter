@@ -296,7 +296,7 @@ public:
 	void			RenderShadowsEx(float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, const D3DXVECTOR4 *light, const D3DXVECTOR4 *param);
 	void			RenderRings(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex);
 	void			RenderRings2(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex, float irad, float orad);
-	void			RenderAxisVector(LPD3DXMATRIX pW, const LPD3DXCOLOR pColor, float len);
+	void			RenderAxisVector(LPD3DXMATRIX pW, const D3DXCOLOR *pColor, float len);
 	void			RenderSimplified(const LPD3DXMATRIX pW, LPDIRECT3DCUBETEXTURE9 *pEnv = NULL, int nEnv = 0, bool bSP = false);
 	void			CheckMeshStatus();
 	void			ResetTransformations();

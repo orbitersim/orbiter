@@ -203,7 +203,7 @@ void ThermalSubsystem::clbkSaveState (FILEHANDLE scn)
 	char cbuf[1024];
 	sprintf (cbuf, "%0.2lf %0.2lf %0.2lf %0.2lf %0.2lf %0.2lf %0.2lf %0.2lf %0.2lf %0.2lf %0.2lf %0.2lf %0.2lf",
 		cprm[0].T, cprm[1].T, cprm[2].T, cprm[3].T, cprm[4].T, cprm[5].T, cprm[6].T, cprm[7].T, cprm[8].T, cprm[9].T, cprm[10].T, cprm[11].T, cprm[12].T);
-	oapiWriteScenario_string (scn, "COMPARTMENT_TEMP", cbuf);
+	oapiWriteScenario_string (scn, (char*)"COMPARTMENT_TEMP", cbuf);
 	DGSubsystem::clbkSaveState (scn);
 }
 
@@ -720,7 +720,7 @@ void CoolantLoop::clbkSaveState (FILEHANDLE scn)
 {
 	char cbuf[1024];
 	sprintf (cbuf, "%d %0.3lf %0.3lf", bPumpActive ? 1:0, pumprate, Tref_tgt);
-	oapiWriteScenario_string (scn, "COOLANT_STATE", cbuf);
+	oapiWriteScenario_string (scn, (char*)"COOLANT_STATE", cbuf);
 	DGSubsystem::clbkSaveState (scn);
 }
 

@@ -135,7 +135,7 @@ public:
 	void SelectReference ();
 
 protected:
-	char *ModeIDString() const { return "ORBIT"; }
+	char *ModeIDString() const { return (char*)"ORBIT"; }
 	void Display (oapi::Sketchpad *skp);
 	void UpdateMesh (int &ivtx, int &iidx);
 	void WriteParams (std::ostream &ofs) const;
@@ -165,7 +165,7 @@ public:
 	void SwitchColour (int idx);
 
 protected:
-	char *ModeIDString() const { return "SRFCE"; }
+	char *ModeIDString() const { return (char*)"SRFCE"; }
 	void Display (oapi::Sketchpad *skp);
 	void UpdateMesh (int &ivtx, int &iidx);
 	void WriteParams (std::ostream &ofs) const;
@@ -196,7 +196,7 @@ public:
 	void ProcessMessage (int msg, void *data);
 
 protected:
-	char *ModeIDString() const { return "DOCK"; }
+	char *ModeIDString() const { return (char*)"DOCK"; }
 	void Display (oapi::Sketchpad *skp);
 	void UpdateMesh (int &ivtx, int &iidx);
 	void WriteParams (std::ostream &ofs) const;

@@ -236,8 +236,7 @@ TabControl::TabControl (HWND hParentTab): CameraTab (hParentTab, IDD_CAM_PG_CONT
 
 char *TabControl::HelpContext () const
 {
-	static char *context = "/cam_control.htm";
-	return context;
+	return (char*)"/cam_control.htm";
 }
 
 // ======================================================================
@@ -468,8 +467,7 @@ TabTarget::TabTarget (HWND hParentTab): CameraTab (hParentTab, IDD_CAM_PG_TARGET
 
 char *TabTarget::HelpContext () const
 {
-	static char *context = "/cam_target.htm";
-	return context;
+	return (char*)"/cam_target.htm";
 }
 
 // ======================================================================
@@ -634,8 +632,7 @@ TabView::TabView (HWND hParentTab): CameraTab (hParentTab, IDD_CAM_PG_VIEW, DlgP
 
 char *TabView::HelpContext () const
 {
-	static char *context = "/cam_track.htm";
-	return context;
+	return (char*)"/cam_track.htm";
 }
 
 // ======================================================================
@@ -732,8 +729,7 @@ void TabGround::Show (bool show)
 
 char *TabGround::HelpContext () const
 {
-	static char *context = "/cam_ground.htm";
-	return context;
+	return (char*)"/cam_ground.htm";
 }
 
 // ======================================================================
@@ -1048,8 +1044,7 @@ TabFov::TabFov (HWND hParentTab): CameraTab (hParentTab, IDD_CAM_PG_FOV, DlgProc
 
 char *TabFov::HelpContext () const
 {
-	static char *context = "/cam_fov.htm";
-	return context;
+	return (char*)"/cam_fov.htm";
 }
 
 // ======================================================================
@@ -1137,8 +1132,7 @@ TabPreset::TabPreset (HWND hParentTab): CameraTab (hParentTab, IDD_CAM_PG_PRESET
 
 char *TabPreset::HelpContext () const
 {
-	static char *context = "/cam_preset.htm";
-	return context;
+	return (char*)"/cam_preset.htm";
 }
 
 // ======================================================================
@@ -1162,7 +1156,7 @@ INT_PTR CALLBACK TabPreset::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 	case WM_COMMAND:
 		switch (LOWORD (wParam)) {
 		case IDHELP:
-			DefHelpContext.topic = "/cam_preset.htm";
+			DefHelpContext.topic = (char*)"/cam_preset.htm";
 			g_pOrbiter->OpenHelp (&DefHelpContext);
 			return TRUE;
 		case IDC_CAM_PRE_NEW:

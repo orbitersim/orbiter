@@ -896,7 +896,7 @@ void CELBODY2::clbkInit (FILEHANDLE cfg)
 		oapiGetObjectName (hBody, name, 256);
 		strcat (name, "\\Atmosphere.cfg");
 		FILEHANDLE hFile = oapiOpenFile (name, FILE_IN, CONFIG);
-		if (oapiReadItem_string (hFile, "MODULE_ATM", fname) || oapiReadItem_string (cfg, "MODULE_ATM", fname)) {
+		if (oapiReadItem_string (hFile, (char*)"MODULE_ATM", fname) || oapiReadItem_string (cfg, (char*)"MODULE_ATM", fname)) {
 			if (_stricmp (fname, "[None]"))
 				LoadAtmosphereModule (fname);
 		}

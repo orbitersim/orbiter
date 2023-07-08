@@ -38,7 +38,7 @@ struct VINTERP { // list of vessel-based interpreters
 } **vinterp;
 int nvinterp = 0;
 
-static char *cfgfile = "Config\\MFD\\ScriptMFD.cfg";
+static const char *cfgfile = "Config\\MFD\\ScriptMFD.cfg";
 
 // clears the global list of vessel-based interpreters
 static void ClearVinterpList()
@@ -66,9 +66,9 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 	ifstream ifs (cfgfile);
 	while (ifs.getline (cbuf, 256)) {
 		FILEHANDLE hFile = oapiOpenFile (cbuf, FILE_IN, CONFIG);
-		if (oapiReadItem_string (hFile, "Name", name) &&
-			oapiReadItem_string (hFile, "Script", script) &&
-			oapiReadItem_string (hFile, "Key", key)) {
+		if (oapiReadItem_string (hFile, (char*)"Name", name) &&
+			oapiReadItem_string (hFile, (char*)"Script", script) &&
+			oapiReadItem_string (hFile, (char*)"Key", key)) {
 				SCRIPTMFDMODESPEC *tmp = new SCRIPTMFDMODESPEC[nmode+1];
 				if (nmode) {
 					memcpy (tmp, modespec, nmode*sizeof(SCRIPTMFDMODESPEC));
@@ -85,7 +85,7 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 				else
 					sscanf (key, "%d", &modespec[nmode].key);
 				modespec[nmode].persist = 0;
-				if (oapiReadItem_string (hFile, "Persist", persist))
+				if (oapiReadItem_string (hFile, (char*)"Persist", persist))
 					if (!_stricmp(persist, "vessel"))
 						modespec[nmode].persist = 1;
 				nmode++;

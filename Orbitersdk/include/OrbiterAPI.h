@@ -7521,7 +7521,7 @@ inline VECTOR3 POINTERTOREF (VECTOR3 *p)
 #ifdef ORBITER_MODULE
 void dummy();
 void calldummy () { dummy(); }
-DLLCLBK char *ModuleDate () { return __DATE__; }
+DLLCLBK char *ModuleDate () { return (char*)__DATE__; }
 #endif
 
 #endif // !__ORBITERAPI_H

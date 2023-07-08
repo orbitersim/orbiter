@@ -87,7 +87,7 @@ void D3D9Pad::AddRectIdx(WORD aV)
 
 // ===============================================================================================
 //
-LPRECT D3D9Pad::CheckRect(SURFHANDLE hSrc, const LPRECT s)
+const RECT *D3D9Pad::CheckRect(SURFHANDLE hSrc, const RECT *s)
 {
 	if (s) return s;
 	src.left = 0;
@@ -100,7 +100,7 @@ LPRECT D3D9Pad::CheckRect(SURFHANDLE hSrc, const LPRECT s)
 
 // ===============================================================================================
 //
-void D3D9Pad::CopyRect(const SURFHANDLE hSrc, const LPRECT _s, int tx, int ty)
+void D3D9Pad::CopyRect(const SURFHANDLE hSrc, const RECT *_s, int tx, int ty)
 {
 #ifdef SKPDBG 
 	Log("CopyRect(0x%X)", DWORD(hSrc));
@@ -110,7 +110,7 @@ void D3D9Pad::CopyRect(const SURFHANDLE hSrc, const LPRECT _s, int tx, int ty)
 
 	if (Topology(TRIANGLE)) {
 
-		LPRECT s = CheckRect(hSrc, _s);
+		const RECT *s = CheckRect(hSrc, _s);
 
 		int h = abs(s->bottom - s->top);
 		int w = abs(s->right - s->left);
@@ -134,7 +134,7 @@ void D3D9Pad::CopyRect(const SURFHANDLE hSrc, const LPRECT _s, int tx, int ty)
 
 // ===============================================================================================
 //
-void D3D9Pad::StretchRect(const SURFHANDLE hSrc, const LPRECT _s, const LPRECT _t)
+void D3D9Pad::StretchRect(const SURFHANDLE hSrc, const RECT *_s, const RECT *_t)
 {
 #ifdef SKPDBG 
 	Log("StretchRect(0x%X)", DWORD(hSrc));
@@ -144,8 +144,8 @@ void D3D9Pad::StretchRect(const SURFHANDLE hSrc, const LPRECT _s, const LPRECT _
 
 	if (Topology(TRIANGLE)) {
 
-		LPRECT s = CheckRect(hSrc, _s);
-		LPRECT t = _t ? _t : &tgt;
+		const RECT *s = CheckRect(hSrc, _s);
+		const RECT *t = _t ? _t : &tgt;
 
 		AddRectIdx(vI);
 
@@ -176,7 +176,7 @@ void D3D9Pad::RotateRect(const SURFHANDLE hSrc, const LPRECT _s, int tcx, int tc
 
 	if (Topology(TRIANGLE)) {
 
-		LPRECT s = CheckRect(hSrc, _s);
+		const RECT *s = CheckRect(hSrc, _s);
 
 		float w = float(s->right - s->left) * sw;
 		float h = float(s->bottom - s->top) * sh;
@@ -225,7 +225,7 @@ void D3D9Pad::ColorKey(const SURFHANDLE hSrc, const LPRECT _s, int tx, int ty)
 
 	if (Topology(TRIANGLE)) {
 
-		LPRECT s = CheckRect(hSrc, _s);
+		const RECT *s = CheckRect(hSrc, _s);
 
 		int h = abs(s->bottom - s->top);
 		int w = abs(s->right - s->left);
@@ -263,8 +263,8 @@ void D3D9Pad::ColorKeyStretch(const SURFHANDLE hSrc, const LPRECT _s, const LPRE
 
 	if (Topology(TRIANGLE)) {
 
-		LPRECT s = CheckRect(hSrc, _s);
-		LPRECT t = _t ? _t : &tgt;
+		const RECT *s = CheckRect(hSrc, _s);
+		const RECT *t = _t ? _t : &tgt;
 
 		AddRectIdx(vI);
 
@@ -297,7 +297,7 @@ void D3D9Pad::CopyRectNative(const LPDIRECT3DTEXTURE9 pSrc, const LPRECT _s, int
 
 	if (Topology(TRIANGLE)) {
 
-		LPRECT s = CheckRectNative(pSrc, _s);
+		const RECT *s = CheckRectNative(pSrc, _s);
 
 		int h = abs(s->bottom - s->top);
 		int w = abs(s->right - s->left);
@@ -321,7 +321,7 @@ void D3D9Pad::CopyRectNative(const LPDIRECT3DTEXTURE9 pSrc, const LPRECT _s, int
 
 // ===============================================================================================
 //
-void D3D9Pad::StretchRectNative(const LPDIRECT3DTEXTURE9 pSrc, const LPRECT _s, const LPRECT t)
+void D3D9Pad::StretchRectNative(const LPDIRECT3DTEXTURE9 pSrc, const RECT *_s, const RECT *t)
 {
 #ifdef SKPDBG 
 	Log("StretchRectNative(0x%X)", DWORD(pSrc));
@@ -331,7 +331,7 @@ void D3D9Pad::StretchRectNative(const LPDIRECT3DTEXTURE9 pSrc, const LPRECT _s, 
 
 	if (Topology(TRIANGLE)) {
 
-		LPRECT s = CheckRectNative(pSrc, _s);
+		const RECT *s = CheckRectNative(pSrc, _s);
 
 		AddRectIdx(vI);
 
@@ -368,7 +368,7 @@ void D3D9Pad::CopyTetragon(const SURFHANDLE hSrc, const LPRECT _s, const FVECTOR
 
 	if (Topology(TRIANGLE))
 	{
-		LPRECT s = CheckRect(hSrc, _s);
+		const RECT *s = CheckRect(hSrc, _s);
 
 		sp[0] = FVECTOR2(s->left, s->top);
 		sp[1] = FVECTOR2(s->left, s->bottom);
@@ -817,7 +817,7 @@ int D3D9Pad::DrawMeshGroup(const MESHHANDLE hMesh, DWORD grp, Sketchpad::MeshFla
 
 // ===============================================================================================
 //
-const LPRECT D3D9Pad::CheckRectNative(LPDIRECT3DTEXTURE9 hSrc, const LPRECT s)
+const RECT *D3D9Pad::CheckRectNative(LPDIRECT3DTEXTURE9 hSrc, const RECT *s)
 {
 	if (s) return s;
 	D3DSURFACE_DESC desc;
@@ -947,7 +947,7 @@ void D3D9PolyLine::Update(const FVECTOR2 *_pt, int _npt, bool bConnect)
 		vI+=2;
 		// --------------------------------------
 		pp = pt[i];
-		length += D3DXVec2Length(&(np - pp));
+		length += D3DXVec2Length(ptr(np - pp));
 	}
 
 	if (bLoop) {

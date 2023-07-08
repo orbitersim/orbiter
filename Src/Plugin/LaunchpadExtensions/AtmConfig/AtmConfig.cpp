@@ -13,7 +13,7 @@ using namespace std;
 class AtmConfig;
 
 const char *CelbodyDir = "Modules\\Celbody";
-char *ModuleItem = "MODULE_ATM";
+const char *ModuleItem = "MODULE_ATM";
 
 struct {
 	HINSTANCE hInst;
@@ -24,7 +24,7 @@ class AtmConfig: public LaunchpadItem {
 public:
 	AtmConfig();
 	~AtmConfig();
-	char *Name() { return "Atmosphere Configuration"; }
+	char *Name() { return (char*)"Atmosphere Configuration"; }
 	char *Description();
 	void Read (const char *celbody);
 	void Write(const char *celbody);
@@ -87,8 +87,7 @@ void AtmConfig::ClearModules ()
 
 char *AtmConfig::Description()
 {
-	static char *desc = "Configure atmospheric parameters for celestial bodies.";
-	return desc;
+	return (char*)"Configure atmospheric parameters for celestial bodies.";
 }
 
 void AtmConfig::Read (const char *celbody)
@@ -98,7 +97,7 @@ void AtmConfig::Read (const char *celbody)
 	FILEHANDLE hFile = oapiOpenFile (cfgname, FILE_IN, CONFIG);
 	if (hFile) {
 		char name[256];
-		oapiReadItem_string (hFile, ModuleItem, name);
+		oapiReadItem_string (hFile, (char*)ModuleItem, name);
 		for (module_curr = module_first; module_curr; module_curr = module_curr->next)
 			if (!_stricmp (module_curr->module_name, name)) break;
 		oapiCloseFile (hFile, FILE_IN);
@@ -112,9 +111,9 @@ void AtmConfig::Write (const char *celbody)
 	FILEHANDLE hFile = oapiOpenFile (cfgname, FILE_OUT, CONFIG);
 	if (hFile) {
 		if (module_curr && module_curr->module_name[0])
-			oapiWriteItem_string (hFile, ModuleItem, module_curr->module_name);
+			oapiWriteItem_string (hFile, (char*)ModuleItem, module_curr->module_name);
 		else
-			oapiWriteItem_string (hFile, ModuleItem, "[None]");
+			oapiWriteItem_string (hFile, (char*)ModuleItem, (char*)"[None]");
 		oapiCloseFile (hFile, FILE_OUT);
 	}
 }
@@ -204,8 +203,8 @@ void AtmConfig::Apply (HWND hWnd)
 void AtmConfig::OpenHelp (HWND hWnd)
 {
 	HELPCONTEXT hc = {
-		"html/Orbiter.chm",
-		"extra_atmconfig",
+		(char*)"html/Orbiter.chm",
+		(char*)"extra_atmconfig",
 		0, 0
 	};
 	oapiOpenLaunchpadHelp (&hc);

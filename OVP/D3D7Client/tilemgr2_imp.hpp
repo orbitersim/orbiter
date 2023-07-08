@@ -15,6 +15,7 @@
 #ifndef __TILEMGR2_IMP_HPP
 #define __TILEMGR2_IMP_HPP
 
+#include "Camera.h"
 #include "tilemgr2.h"
 
 // -----------------------------------------------------------------------

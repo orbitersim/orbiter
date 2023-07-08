@@ -18,8 +18,7 @@ EarthAtmosphere_NRLMSISE00::EarthAtmosphere_NRLMSISE00 (CELBODY2 *body): ATMOSPH
 
 const char *EarthAtmosphere_NRLMSISE00::clbkName () const
 {
-	static char *name = "NRLMSISE00";
-	return name;
+	return "NRLMSISE00";
 }
 
 bool EarthAtmosphere_NRLMSISE00::clbkConstants (ATMCONST *atmc) const
@@ -123,12 +122,10 @@ DLLCLBK void DeleteAtmosphere (ATMOSPHERE *atm)
 
 DLLCLBK char *ModelName ()
 {
-	static char *name = "NRLMSIS-00 atmosphere model";
-	return name;
+	return (char*)"NRLMSIS-00 atmosphere model";
 }
 
 DLLCLBK char *ModelDesc ()
 {
-	static char *desc = "An empirical atmosphere model developed by Mike Picone, Alan Hedin, and Doug Drob based on the MSISE90 model. The MSISE90 model describes the neutral temperature and densities in Earth's atmosphere from ground to thermospheric heights.\r\n\r\nSee Doc\\Technotes\\earth_atm.pdf for details.";
-	return desc;
+	return (char*)"An empirical atmosphere model developed by Mike Picone, Alan Hedin, and Doug Drob based on the MSISE90 model. The MSISE90 model describes the neutral temperature and densities in Earth's atmosphere from ground to thermospheric heights.\r\n\r\nSee Doc\\Technotes\\earth_atm.pdf for details.";
 }

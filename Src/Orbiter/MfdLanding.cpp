@@ -53,7 +53,7 @@ Instrument_Landing::~Instrument_Landing ()
 HELPCONTEXT *Instrument_Landing::HelpTopic () const
 {
 	extern HELPCONTEXT DefHelpContext;
-	DefHelpContext.topic = "/mfd_vtol.htm";
+	DefHelpContext.topic = (char*)"/mfd_vtol.htm";
 	return &DefHelpContext;
 }
 

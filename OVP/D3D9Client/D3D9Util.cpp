@@ -450,16 +450,16 @@ int fgets2(char *buf, int cmax, FILE *file, DWORD param)  //bool bEquality, bool
 // trim from start
 std::string &ltrim (std::string &s)
 {
-	s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
-	//s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](auto c) { return !std::isspace(c); }));
+	//s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+	s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](auto c) { return !std::isspace(c); }));
 	return s;
 }
 
 // trim from end
 std::string &rtrim (std::string &s)
 {
-	s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
-	//s.erase(std::find_if(s.rbegin(), s.rend(), [](auto c) { return !std::isspace(c); }).base(), s.end());
+	//s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+	s.erase(std::find_if(s.rbegin(), s.rend(), [](auto c) { return !std::isspace(c); }).base(), s.end());
 	return s;
 }
 
@@ -544,8 +544,10 @@ std::pair<std::string, std::string> &splitAssignment (const std::string &line, c
 									// ...convert to 'comment part length' if comment found
 	cmtPos -= cmtPos != std::string::npos ? delPos + 1 : 0;
 
-	ret.first = trim(line.substr(0, delPos));
-	ret.second = trim(line.substr(delPos + 1, cmtPos));
+	ret.first = line.substr(0, delPos);
+	trim(ret.first);
+	ret.second = line.substr(delPos + 1, cmtPos);
+	trim(ret.second);
 
 	return ret;
 }
@@ -1299,7 +1301,7 @@ void D3D9Light::UpdateLight(const LightEmitter *_le, const class vObject *vo)
 
 	// -----------------------------------------------------------------------------
 
-	D3DXVec3TransformCoord(&Position, &D3DXVEC(le->GetPosition()), vo->MWorld());
+	D3DXVec3TransformCoord(&Position, ptr(D3DXVEC(le->GetPosition())), vo->MWorld());
 	Dst2 = D3DXVec3Dot(&Position, &Position);
 
 	// -----------------------------------------------------------------------------
@@ -1372,7 +1374,7 @@ void D3D9Light::UpdateLight(const LightEmitter *_le, const class vObject *vo)
 
 	// -----------------------------------------------------------------------------
 	if (Type != 0) {
-		D3DXVec3TransformNormal(&Direction, &D3DXVEC(le->GetDirection()), vo->MWorld());
+		D3DXVec3TransformNormal(&Direction, ptr(D3DXVEC(le->GetDirection())), vo->MWorld());
 		float angle = acos(dot(unit(Position), Direction));
 		cone = ilerp(U * 0.5f, P * 0.5f, angle);
 	}

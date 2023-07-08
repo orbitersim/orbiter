@@ -50,7 +50,7 @@ Moon::Moon (OBJHANDLE hObj): CELBODY2 (hObj)
 
 void Moon::clbkInit (FILEHANDLE cfg)
 {
-	oapiReadItem_float (cfg, "ErrorLimit", prec);
+	oapiReadItem_float (cfg, (char*)"ErrorLimit", prec);
 	ELP82_read (prec);
 	CELBODY2::clbkInit (cfg);
 

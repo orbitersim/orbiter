@@ -277,13 +277,6 @@ private:
 	int PropLevel;         // current propagator stage
 	int PropSubMax;        // upper limit for number of subsamples
 	int nPropSubsteps;     // current number of subsamples
-
-	friend Vector Call_EulerInv_full (RigidBody *body, const Vector &tau, const Vector &omega)
-	{ return body->EulerInv_full (tau, omega); }
-	friend Vector Call_EulerInv_simple (RigidBody *body, const Vector &tau, const Vector &omega)
-	{ return body->EulerInv_simple (tau, omega); }
-	friend Vector Call_EulerInv_zero (RigidBody *body, const Vector &tau, const Vector &omega)
-	{ return body->EulerInv_zero (tau, omega); }
 };
 
 #endif // !__RIGIDBODY_H

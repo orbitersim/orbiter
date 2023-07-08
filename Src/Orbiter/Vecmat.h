@@ -215,13 +215,6 @@ public:
 
 	void orthogonalise (int axis);
 
-	friend Matrix IMatrix();		 // returns identity matrix
-
-	friend Vector mul (const Matrix &A, const Vector &b);  // returns A * b
-	friend Vector tmul (const Matrix &A, const Vector &b); // returns A^T * b
-	friend Matrix inv (const Matrix &A);  // inverse of A
-	friend Matrix transp (const Matrix &A); // transpose of A
-
 	friend void qrdcmp (Matrix &a, Vector &c, Vector &d, int *sing = 0);
 	friend void qrsolv (const Matrix &a, const Vector &c, const Vector &d, Vector &b);
 
@@ -230,6 +223,13 @@ public:
 		struct { double m11, m12, m13, m21, m22, m23, m31, m32, m33; };
 	};
 };
+
+Matrix IMatrix();		 // returns identity matrix
+
+Vector mul (const Matrix &A, const Vector &b);  // returns A * b
+Vector tmul (const Matrix &A, const Vector &b); // returns A^T * b
+Matrix inv (const Matrix &A);  // inverse of A
+Matrix transp (const Matrix &A); // transpose of A
 
 // =======================================================================
 // class Vector4:  4-element vector

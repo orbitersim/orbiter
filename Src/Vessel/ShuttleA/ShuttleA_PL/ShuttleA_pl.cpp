@@ -177,10 +177,10 @@ void ShuttleA_PL::clbkSaveState (FILEHANDLE scn)
 	// custom parameters
 	
 	sprintf (cbuf, "%d", Parachute_mode);
-	oapiWriteScenario_string (scn, "PARACHUTE", cbuf);
+	oapiWriteScenario_string (scn, (char*)"PARACHUTE", cbuf);
 
 	sprintf (cbuf, "%0.1f", timer);
-	oapiWriteScenario_string (scn, "TIMER", cbuf);
+	oapiWriteScenario_string (scn, (char*)"TIMER", cbuf);
 }
 
 // --------------------------------------------------------------

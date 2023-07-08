@@ -18,13 +18,13 @@ list<gcPropertyTree *> g_gcPropertyTrees;
 //
 LRESULT CALLBACK gcPropertyTreeProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	for each (gcPropertyTree * ptr in g_gcPropertyTrees)
+	for (gcPropertyTree * ptr : g_gcPropertyTrees)
 		if (ptr->GetHWND() == hWnd) return ptr->WndProc(hWnd, uMsg, wParam, lParam);
 
 	HWND hParent = GetParent(hWnd);
 
 	if (hParent)
-		for each (gcPropertyTree * ptr in g_gcPropertyTrees) 
+		for (gcPropertyTree * ptr : g_gcPropertyTrees) 
 			if (ptr->GetHWND() == hParent) return ptr->WndProc(hWnd, uMsg, wParam, lParam);
 	
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
@@ -78,10 +78,10 @@ gcPropertyTree::gcPropertyTree(gcGUIApp *_pApp, HWND _hWnd, WORD _idc, DLGPROC p
 	hIcons = pCore->LoadBitmapFromFile("D3D9\\Icons18.png");
 
 	if (!hIcons) {
-		oapiWriteLog("gcPropertyTree: FAILED to load Textures/D3D9/Icons18.png");
+		oapiWriteLog((char*)"gcPropertyTree: FAILED to load Textures/D3D9/Icons18.png");
 	}
 	if (!pCore) {
-		oapiWriteLog("gcPropertyTree: No core interface !!");
+		oapiWriteLog((char*)"gcPropertyTree: No core interface !!");
 	}
 
 	DWORD style = GetWindowLong(hWnd, GWL_STYLE);
@@ -123,7 +123,7 @@ gcPropertyTree::~gcPropertyTree()
 {
 	g_gcPropertyTrees.remove(this);
 
-	for each (HPROP hp in Data)
+	for (HPROP hp : Data)
 	{
 		if (hp->hCtrl) DestroyWindow(hp->hCtrl);
 		if (hp->pSlider) delete hp->pSlider;
@@ -177,7 +177,7 @@ void gcPropertyTree::CopyToClipboard()
 //
 void gcPropertyTree::CloseTree(HPROP hPar)
 {
-	for each (HPROP hp in Data)
+	for (HPROP hp : Data)
 	{
 		if (hp->parent == hPar) {
 			if (hp->bChildren) CloseTree(hp);
@@ -198,7 +198,7 @@ LRESULT gcPropertyTree::WndProc(HWND hCtrl, UINT uMsg, WPARAM wParam, LPARAM lPa
 	// Post Slider Messages to Main DlgProc
 	//
 	if (uMsg == WM_HSCROLL || uMsg == WM_COMMAND) {
-		for each (HPROP hp in Data)	{
+		for (HPROP hp : Data)	{
 			if (hp->style != Style::SLIDER) continue;
 			if (hp->hCtrl != HWND(lParam)) continue;
 			if (hp->pSlider) {
@@ -231,7 +231,7 @@ LRESULT gcPropertyTree::WndProc(HWND hCtrl, UINT uMsg, WPARAM wParam, LPARAM lPa
 	// Post Edit and ComboBox Messages to Main DlgProc
 	//
 	if (uMsg == WM_COMMAND) {
-		for each (HPROP hp in Data)	{
+		for (HPROP hp : Data)	{
 			if (hp->style == Style::TEXTBOX || hp->style == Style::COMBOBOX) {
 				if (hp->hCtrl == HWND(lParam) && hp->hCtrl != NULL)	{
 					if (pCallback) pCallback(hDlg, WM_COMMAND, MAKELONG(hp->idc, HIWORD(wParam)), LPARAM(hp));
@@ -264,7 +264,7 @@ LRESULT gcPropertyTree::WndProc(HWND hCtrl, UINT uMsg, WPARAM wParam, LPARAM lPa
 	case WM_LBUTTONDOWN:
 	{
 		POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
-		for each (HPROP hp in Data) {
+		for (HPROP hp : Data) {
 			if (PtInRect(&hp->rect, pt) && hp->bVisible) {
 				pDown = hp;
 				if (hp->bChildren == false && hp->hCtrl == NULL) {
@@ -392,7 +392,7 @@ void gcPropertyTree::Paint(HDC _hDC)
 	
 	wlbl = 0;
 
-	for each (HPROP hp in Data)
+	for (HPROP hp : Data)
 	{
 		hp->bVisible = false;
 
@@ -418,7 +418,7 @@ void gcPropertyTree::Paint(HDC _hDC)
 		oapiWriteLogV("gcPropertyTree: BitBlt Failed Error=%u", GetLastError());
 	}
 
-	for each (HPROP hp in Data)	if (hp->bVisible) if (hp->hCtrl) InvalidateRect(hp->hCtrl, NULL, false);
+	for (HPROP hp : Data)	if (hp->bVisible) if (hp->hCtrl) InvalidateRect(hp->hCtrl, NULL, false);
 	
 	SelectClipRgn(_hDC, NULL);
 	DeleteObject(hRgn);
@@ -447,7 +447,7 @@ int gcPropertyTree::PaintSection(HDC _hDC, HPROP hPar, int ident, int wlbl, int 
 	BITMAP ic;
 	GetObject(hIcons, sizeof(BITMAP), &ic);
 
-	for each (HPROP hp in Data)
+	for (HPROP hp : Data)
 	{
 		if (hp->bOn == false) continue;
 		if (hp->parent != hPar) continue;
@@ -550,7 +550,7 @@ int gcPropertyTree::PaintSection(HDC _hDC, HPROP hPar, int ident, int wlbl, int 
 int gcPropertyTree::GetSubsentionLength(HPROP hPar)
 {
 	int q = 0;
-	for each (HPROP hp in Data)
+	for (HPROP hp : Data)
 	{
 		if (hp->bOn) {
 			if (hp->parent == hPar) {
@@ -723,7 +723,7 @@ HPROP gcPropertyTree::GetEntry(int idx)
 HPROP gcPropertyTree::GetEntry(HWND hCtrl)
 {
 	if (hCtrl == NULL) return NULL;
-	for each (HPROP hp in Data) if (hp->hCtrl == hCtrl) return hp;
+	for (HPROP hp : Data) if (hp->hCtrl == hCtrl) return hp;
 	return NULL;
 }
 
