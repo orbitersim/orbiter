@@ -456,7 +456,8 @@ void OptionsPage_Visual::UpdateControls(HWND hPage)
 	SendDlgItemMessage(hPage, IDC_OPT_VIS_ELEV, BM_SETCHECK,
 		Cfg()->CfgVisualPrm.ElevMode ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hPage, IDC_OPT_VIS_ELEVMODE, CB_SETCURSEL, Cfg()->CfgVisualPrm.ElevMode < 2 ? 0 : 1, 0);
-	SetWindowText(GetDlgItem(hPage, IDC_OPT_VIS_MAXLEVEL), _itoa(Cfg()->CfgVisualPrm.PlanetMaxLevel, cbuf, 10));
+	sprintf(cbuf, "%d", Cfg()->CfgVisualPrm.PlanetMaxLevel);
+	SetWindowText(GetDlgItem(hPage, IDC_OPT_VIS_MAXLEVEL), cbuf);
 	SendDlgItemMessage(hPage, IDC_OPT_VIS_VSHADOW, BM_SETCHECK,
 		Cfg()->CfgVisualPrm.bVesselShadows ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hPage, IDC_OPT_VIS_REENTRY, BM_SETCHECK,
@@ -469,7 +470,8 @@ void OptionsPage_Visual::UpdateControls(HWND hPage)
 		Cfg()->CfgVisualPrm.bSpecular ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hPage, IDC_OPT_VIS_LOCALLIGHT, BM_SETCHECK,
 		Cfg()->CfgVisualPrm.bLocalLight ? BST_CHECKED : BST_UNCHECKED, 0);
-	SetWindowText(GetDlgItem(hPage, IDC_OPT_VIS_AMBIENT), _itoa(Cfg()->CfgVisualPrm.AmbientLevel, cbuf, 10));
+	sprintf(cbuf, "%d", Cfg()->CfgVisualPrm.AmbientLevel);
+	SetWindowText(GetDlgItem(hPage, IDC_OPT_VIS_AMBIENT), cbuf);
 
 	VisualsChanged(hPage);
 }

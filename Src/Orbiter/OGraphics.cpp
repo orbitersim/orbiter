@@ -59,8 +59,10 @@ void VideoTab::Init ()
 	}
 	SendDlgItemMessage (hVid, IDC_VID_DEVICE, CB_SELECTSTRING, -1, (LPARAM)dev->strDesc);
 	w = cfg->CfgDevPrm.WinW, h = cfg->CfgDevPrm.WinH;
-	SetWindowText (GetDlgItem (hVid, IDC_VID_WIDTH),  _itoa (w, cbuf, 10));
-	SetWindowText (GetDlgItem (hVid, IDC_VID_HEIGHT), _itoa (h, cbuf, 10));
+	sprintf(cbuf, "%d", w);
+	SetWindowText (GetDlgItem (hVid, IDC_VID_WIDTH),  cbuf);
+	sprintf(cbuf, "%d", h);
+	SetWindowText (GetDlgItem (hVid, IDC_VID_HEIGHT), cbuf);
 	if (w == (4*h)/3 || h == (3*w)/4)
 		aspect_idx = 1;
 	else if (w == (16*h)/10 || h == (10*w)/16)
@@ -150,8 +152,9 @@ void VideoTab::ModeChanged (D3D7Enum_DeviceInfo *dev, DWORD idx)
 	// if a bpp change was required, notify the bpp control
 	if (bpp != usebpp) {
 		char cbuf[20];
+		sprintf(cbuf, "%d", usebpp);
 		SendDlgItemMessage (hVid, IDC_VID_BPP, CB_SELECTSTRING, -1,
-			(LPARAM)_itoa (usebpp, cbuf, 10));
+			(LPARAM)cbuf);
 	}
 }
 
@@ -181,8 +184,9 @@ void VideoTab::BPPChanged (D3D7Enum_DeviceInfo *dev, DWORD idx)
 	// at this bit depth (shouldn't happen)
 	bpp = dev->pddsdModes[dev->dwCurrentMode].ddpfPixelFormat.dwRGBBitCount;
 	char cbuf[20];
+	sprintf(cbuf, "%d", bpp);
 	SendDlgItemMessage (hVid, IDC_VID_BPP, CB_SELECTSTRING, -1,
-		(LPARAM)_itoa (bpp, cbuf, 10));
+		(LPARAM)cbuf);
 
 	// If we get here, then we've screwed up big time
 	// and leave quietly
@@ -245,7 +249,8 @@ void VideoTab::WidthChanged ()
 		if (res != 1) h = 0;
 		if (w != (wfac*h)/hfac) {
 			h = (hfac*w)/wfac;
-			SetWindowText (GetDlgItem (hVid, IDC_VID_HEIGHT), _itoa (h, cbuf, 10));
+			sprintf(cbuf, "%d", h);
+			SetWindowText (GetDlgItem (hVid, IDC_VID_HEIGHT), cbuf);
 		}
 	}
 }
@@ -265,7 +270,8 @@ void VideoTab::HeightChanged ()
 		if (res != 1) w = 0;
 		if (h != (hfac*w)/wfac) {
 			w = (wfac*h)/hfac;
-			SetWindowText (GetDlgItem (hVid, IDC_VID_WIDTH), _itoa (w, cbuf, 10));
+			sprintf(cbuf, "%d", w);
+			SetWindowText (GetDlgItem (hVid, IDC_VID_WIDTH), cbuf);
 		}
 	}
 }
@@ -536,13 +542,15 @@ void OrbiterGraphics::clbkRefreshVideoData ()
 	res = sscanf (cbuf, "%d", &vd->winw);
 	if (res != 1 || vd->winw < 400) {
 		vd->winw = 400;
-		SetWindowText (GetDlgItem (hVT, IDC_VID_WIDTH), _itoa(vd->winw, cbuf, 10));
+		sprintf(cbuf, "%d", vd->winw);
+		SetWindowText (GetDlgItem (hVT, IDC_VID_WIDTH), cbuf);
 	}
 	GetWindowText (GetDlgItem (hVT, IDC_VID_HEIGHT), cbuf, 127); 
 	res = sscanf (cbuf, "%d", &vd->winh);
 	if (res != 1 || vd->winh < 300) {
 		vd->winh = 300;
-		SetWindowText (GetDlgItem (hVT, IDC_VID_HEIGHT), _itoa(vd->winh, cbuf, 10));
+		sprintf(cbuf, "%d", vd->winh);
+		SetWindowText (GetDlgItem (hVT, IDC_VID_HEIGHT), cbuf);
 	}
 }
 

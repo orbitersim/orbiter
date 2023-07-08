@@ -41,6 +41,7 @@
 #include <iomanip>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
 
 #ifdef INLINEGRAPHICS
 #include "VVessel.h"
@@ -2706,15 +2707,9 @@ bool Vessel::Undock (UINT did, const Vessel *exclude, double vsep)
 		}
 	}
 	if (bFRrecord && undocked) { // record undock event
-		char cbuf[256] = "\0";
-		int len = 0;
-		for (n = n0; n < n1; n++) {
-			if (len >= 255) break;
-			if (n > n0) cbuf[len++] = ' ';
-			_itoa (n, cbuf+len, 10);
-			len += (n < 10 ? 1 : n < 100 ? 2 : 3);
-		}
-		FRecorder_SaveEvent ("UNDOCK", cbuf);
+		std::string buf;
+		for (n = n0; n < n1; ++n) buf += ' ' + std::to_string(n);
+		FRecorder_SaveEvent("UNDOCK", buf.substr(1).data());
 	}
 	return undocked;
 }
@@ -2733,7 +2728,7 @@ bool Vessel::ClbkSelect_Undock (Select *menu, int item, char *str, void *data)
 	DWORD i;
 	char cbuf[16] = "Dock ";
 	for (i = 0; i < us->vessel->ndock; i++) {
-		_itoa (i+1, cbuf+5, 10);
+		sprintf(cbuf + 5, "%d", i + 1);
 		menu->Append (cbuf, us->vessel->dock[i]->mate ? 0 : ITEM_NOHILIGHT);
 	}
 	return true;

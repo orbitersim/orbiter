@@ -162,7 +162,7 @@ bool orbiter::ConsoleNG::ParseCmd()
 			return true;
 		}
 		else if (!_strnicmp(pc, "count", 5)) {
-			_itoa(g_psys->nVessel(), cbuf, 10);
+			sprintf(cbuf, "%zu", g_psys->nVessel());
 			Echo(cbuf);
 		}
 		else if (!_strnicmp(pc, "focus", 5)) {
