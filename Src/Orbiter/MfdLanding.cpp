@@ -171,7 +171,7 @@ void Instrument_Landing::UpdateDraw (oapi::Sketchpad *skp)
 	}
 	Vector hvel (tmul (sp->ref->GRot(), sp->groundvel_glob));
 	hvel.Set (mul (sp->L2H, hvel));
-	hspd = _hypot (hvel.x, hvel.z);
+	hspd = std::hypot (hvel.x, hvel.z);
 	vdir = atan2 (hvel.x, hvel.z) - sp->dir;
 	if      (vdir <= -Pi) vdir += Pi2;
 	else if (vdir >=  Pi) vdir -= Pi2;

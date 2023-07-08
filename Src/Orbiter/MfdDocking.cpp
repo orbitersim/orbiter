@@ -348,7 +348,7 @@ void Instrument_Docking::UpdateDraw (oapi::Sketchpad *skp)
 		double s = (adockref.z - adpos.z) / addir.z;
 		Vector Z (adpos - adockref + addir*s);
 
-		double z = _hypot (Z.x, Z.y);
+		double z = std::hypot(Z.x, Z.y);
 		double lz = (log10(z)+1.0+scale) * 0.25;
 		if (lz < 0.0) {
 			x = y = 0;
@@ -395,7 +395,7 @@ void Instrument_Docking::UpdateDraw (oapi::Sketchpad *skp)
 		// Ship's relative velocity projected into ship's approach xy plane
 		double dvx = (adposold.x-adpos.x)/dt;
 		double dvy = (adposold.y-adpos.y)/dt;
-		r = _hypot(dvx, dvy);
+		r = std::hypot(dvx, dvy);
 
 		sprintf(cbuf, "hV %s", DistStr(fabs(dvx), 5));
 		x0 = cw / 2;

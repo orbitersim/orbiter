@@ -70,7 +70,7 @@ void VStar::Update (bool moving, bool force)
 	VObject::Update (moving, force);
 
 	Vector bdir (cpos.unit());
-	double hz = _hypot (bdir.x, bdir.z);
+	double hz = std::hypot (bdir.x, bdir.z);
 	double phi = atan2 (bdir.z, bdir.x);
 	FLOAT sphi = (FLOAT)sin(phi), cphi = (FLOAT)cos(phi);
 	FLOAT tx = (FLOAT)cpos.x, ty = (FLOAT)cpos.y, tz = (FLOAT)cpos.z;

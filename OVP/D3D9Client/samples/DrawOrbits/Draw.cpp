@@ -374,7 +374,7 @@ bool Orbits::WorldToScreenSpace(const VECTOR3& wpos, oapi::IVECTOR2* pt, const F
 	bool bVis = true;
 	if (homog.x < -clip || homog.x > clip || homog.y < -clip || homog.y > clip) bVis = false;
 
-	if (_hypot(homog.x, homog.y) < 1e-6) {
+	if (std::hypot(homog.x, homog.y) < 1e-6) {
 		pt->x = s.cx / 2;
 		pt->y = s.cy / 2;
 	}

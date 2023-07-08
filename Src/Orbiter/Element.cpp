@@ -424,7 +424,7 @@ void Elements::Calculate (const Vector &R, const Vector &V, double simt)
 
 	// longitude of ascending node
 	if (i > I_NOINC_LIMIT) {
-		double tmp = 1.0/_hypot (priv_H.z, priv_H.x);
+		double tmp = 1.0/std::hypot(priv_H.z, priv_H.x);
 		priv_N.Set (-priv_H.z*tmp, 0.0, priv_H.x*tmp); // unit vector
 		theta = acos (priv_N.x);
 		if (priv_N.z < 0.0) theta = Pi2-theta;

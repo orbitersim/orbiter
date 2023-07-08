@@ -636,7 +636,7 @@ bool D3D9CelestialSphere::EclDir2WindowPos(const VECTOR3& dir, int& x, int& y) c
 		homog.y >= -1.0f && homog.y <= 1.0f &&
 		homog.z < 1.0f) {
 
-		if (_hypot(homog.x, homog.y) < 1e-6) {
+		if (std::hypot(homog.x, homog.y) < 1e-6) {
 			x = m_scene->ViewW() / 2;
 			y = m_scene->ViewH() / 2;
 		}
