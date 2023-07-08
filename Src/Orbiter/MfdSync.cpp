@@ -7,7 +7,6 @@
 #include "Psys.h"
 #include "Select.h"
 #include <stdio.h>
-#include <dinput.h>
 
 using namespace std;
 
@@ -251,16 +250,16 @@ void Instrument_OSync::UpdateDraw (oapi::Sketchpad *skp)
 
 bool Instrument_OSync::KeyImmediate (char *kstate)
 {
-	if (KEYDOWN (kstate, DIK_COMMA)) { // rotate ref axis
-		if (BufKey (DIK_COMMA, 0.1) && mode == MODE_MANUAL) {
+	if (KEYDOWN (kstate, OAPI_KEY_COMMA)) { // rotate ref axis
+		if (BufKey (OAPI_KEY_COMMA, 0.1) && mode == MODE_MANUAL) {
 			man_rlng = posangle (man_rlng-RAD);
 			man_sinr = sin(man_rlng), man_cosr = cos(man_rlng);
 			Refresh();
 		}
 		return true;
 	}
-	if (KEYDOWN (kstate, DIK_PERIOD)) { // rotate ref axis
-		if (BufKey (DIK_PERIOD, 0.1) && mode == MODE_MANUAL) {
+	if (KEYDOWN (kstate, OAPI_KEY_PERIOD)) { // rotate ref axis
+		if (BufKey (OAPI_KEY_PERIOD, 0.1) && mode == MODE_MANUAL) {
 			man_rlng = posangle (man_rlng+RAD);
 			man_sinr = sin(man_rlng), man_cosr = cos(man_rlng);
 			Refresh();
@@ -273,14 +272,14 @@ bool Instrument_OSync::KeyImmediate (char *kstate)
 bool Instrument_OSync::KeyBuffered (DWORD key)
 {
 	switch (key) {
-	case DIK_M:  // switch mode
+	case OAPI_KEY_M:  // switch mode
 		mode = (Mode)(((int)mode+1)%7);
 		Refresh();
 		return true;
-	case DIK_N:  // number of transit times
+	case OAPI_KEY_N:  // number of transit times
 		g_input->Open ("Transit list length:", 0, 20, Instrument_OSync::CallbackNorbit, (void*)this);
 		return true;
-	case DIK_T:  // select target
+	case OAPI_KEY_T:  // select target
 		OpenSelect_Tgt ("Sync MFD: Target", ClbkEnter_Tgt, vessel->ElRef(), 2);
 		return true;
 	}
@@ -289,7 +288,7 @@ bool Instrument_OSync::KeyBuffered (DWORD key)
 
 bool Instrument_OSync::ProcessButton (int bt, int event)
 {
-	static const DWORD btkey[5] = { DIK_T, DIK_M, DIK_N, DIK_COMMA, DIK_PERIOD };
+	static const DWORD btkey[5] = { OAPI_KEY_T, OAPI_KEY_M, OAPI_KEY_N, OAPI_KEY_COMMA, OAPI_KEY_PERIOD };
 	if (event & PANEL_MOUSE_LBDOWN) {
 		if (bt < 3) return KeyBuffered (btkey[bt]);
 	} else if (event & PANEL_MOUSE_LBPRESSED) {

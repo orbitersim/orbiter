@@ -3669,7 +3669,7 @@ int Vessel::ConsumeBufferedKey (DWORD key, bool down, char *kstate)
 	if (KEYMOD_CONTROL (kstate)) {  // CTRL-Key combinations
 
 		switch (key) {
-		case DIK_C:        // landing/takeoff clearance request
+		case OAPI_KEY_C:        // landing/takeoff clearance request
 			IssueClearanceRequest ();
 			return 1;
 		}
@@ -3678,7 +3678,7 @@ int Vessel::ConsumeBufferedKey (DWORD key, bool down, char *kstate)
 	} else if (KEYMOD_ALT (kstate)) {   // ALT-Key combinations
 
 		switch (key) {
-		case DIK_DIVIDE:   // connect/disconnect user input to aerodynamic control surfaces
+		case OAPI_KEY_DIVIDE:   // connect/disconnect user input to aerodynamic control surfaces
 			ToggleADCtrlMode ();
 			return 1;
 		}

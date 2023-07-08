@@ -7,7 +7,6 @@
 #include "Config.h"
 #include "Celbody.h"
 #include <stdio.h>
-#include <dinput.h>
 
 using namespace std;
 
@@ -61,7 +60,7 @@ HELPCONTEXT *Instrument_Landing::HelpTopic () const
 bool Instrument_Landing::KeyBuffered (DWORD key)
 {
 	switch (key) {
-	case DIK_N: // NAV receiver select
+	case OAPI_KEY_N: // NAV receiver select
 		if (vessel->nnav) nv = (nv+1) % vessel->nnav;
 		Refresh();
 		return true;
@@ -71,7 +70,7 @@ bool Instrument_Landing::KeyBuffered (DWORD key)
 
 bool Instrument_Landing::ProcessButton (int bt, int event)
 {
-	static const DWORD btkey[1] = { DIK_N };
+	static const DWORD btkey[1] = { OAPI_KEY_N };
 	if (event & PANEL_MOUSE_LBDOWN) {
 		if (bt < 1) return KeyBuffered (btkey[bt]);
 	}

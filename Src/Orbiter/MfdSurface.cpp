@@ -1,7 +1,6 @@
 // Copyright (c) Martin Schweiger
 // Licensed under the MIT License
 
-#include <dinput.h>
 #include "MfdSurface.h"
 #include "Orbiter.h"
 #include "Pane.h"
@@ -187,22 +186,22 @@ HELPCONTEXT *Instrument_Surface::HelpTopic () const
 bool Instrument_Surface::KeyBuffered (DWORD key)
 {
 	switch (key) {
-	case DIK_G: // ground-relative speed (GRS)
+	case OAPI_KEY_G: // ground-relative speed (GRS)
 		spdmode = 1;
 		Refresh();
 		return true;
-	case DIK_H: // copy data to HUD
+	case OAPI_KEY_H: // copy data to HUD
 		CopyToHUD ();
 		return true;
-	case DIK_I: // indicated airspeed (IAS)
+	case OAPI_KEY_I: // indicated airspeed (IAS)
 		spdmode = 3;
 		Refresh();
 		return true;
-	case DIK_O: // orbital speed (OS)
+	case OAPI_KEY_O: // orbital speed (OS)
 		spdmode = 4;
 		Refresh();
 		return true;
-	case DIK_T: // true airspeed (TAS)
+	case OAPI_KEY_T: // true airspeed (TAS)
 		spdmode = 2;
 		Refresh();
 		return true;
@@ -212,7 +211,7 @@ bool Instrument_Surface::KeyBuffered (DWORD key)
 
 bool Instrument_Surface::ProcessButton (int bt, int event)
 {
-	static const DWORD btkey[5] = { DIK_I, DIK_T, DIK_G, DIK_O, DIK_H };
+	static const DWORD btkey[5] = { OAPI_KEY_I, OAPI_KEY_T, OAPI_KEY_G, OAPI_KEY_O, OAPI_KEY_H };
 	if (event & PANEL_MOUSE_LBDOWN) {
 		if (bt < 5) return KeyBuffered (btkey[bt]);
 	}

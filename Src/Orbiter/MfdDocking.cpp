@@ -592,14 +592,14 @@ void Instrument_Docking::DrawArrow(int x0, int y0, int dir, oapi::Sketchpad *skp
 bool Instrument_Docking::KeyBuffered (DWORD key)
 {
 	switch (key) {
-	case DIK_D:  // docking port
+	case OAPI_KEY_D:  // docking port
 		SetReference (vessel, (refdock+1)%ndock);
 		Refresh();
 		return true;
-	case DIK_H:  // copy reference to HUD
+	case OAPI_KEY_H:  // copy reference to HUD
 		CopyToHUD ();
 		return true;
-	case DIK_N:  // NAV receiver select
+	case OAPI_KEY_N:  // NAV receiver select
 		if (smode == NAV) {
 			if (vessel->nnav) nv = (nv+1) % vessel->nnav;
 		} else {
@@ -607,15 +607,15 @@ bool Instrument_Docking::KeyBuffered (DWORD key)
 		}
 		Refresh();
 		return true;
-	case DIK_V: // visual mode
+	case OAPI_KEY_V: // visual mode
 		smode = VIS;
 		Refresh();
 		return true;
-	case DIK_S: // scale resolution
+	case OAPI_KEY_S: // scale resolution
 		scale = 1 - scale;
 		Refresh();
 		return true;
-	case DIK_T:  // select target - OBSOLETE
+	case OAPI_KEY_T:  // select target - OBSOLETE
 		g_select->Open ("Docking MFD: Target", ClbkSelection_Target, ClbkEnter_Target, (void*)this);
 		return true;
 	}
@@ -624,7 +624,7 @@ bool Instrument_Docking::KeyBuffered (DWORD key)
 
 bool Instrument_Docking::ProcessButton (int bt, int event)
 {
-	static const DWORD btkey[6] = { DIK_D, DIK_N, DIK_V, DIK_T, DIK_S, DIK_H };
+	static const DWORD btkey[6] = { OAPI_KEY_D, OAPI_KEY_N, OAPI_KEY_V, OAPI_KEY_T, OAPI_KEY_S, OAPI_KEY_H };
 	if (event & PANEL_MOUSE_LBDOWN) {
 		if (ndock > 1) {
 			if (bt < 6) return KeyBuffered (btkey[bt]);

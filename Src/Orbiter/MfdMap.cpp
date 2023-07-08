@@ -7,7 +7,6 @@
 #include "Celbody.h"
 #include "Planet.h"
 #include "Base.h"
-#include <dinput.h>
 
 using namespace std;
 
@@ -120,49 +119,49 @@ bool Instrument_Map::KeyBuffered (DWORD key)
 	switch (disp_mode) {
 	case 0: // default display
 		switch (key) {
-		case DIK_R:  // select reference
+		case OAPI_KEY_R:  // select reference
 			OpenSelect_CelBody ("Map MFD: Reference", ClbkEnter_Map, 1);
 			return true;
-		case DIK_T:  // select target
+		case OAPI_KEY_T:  // select target
 			g_select->Open ("Map MFD: Target", ClbkSubmn_Target, ClbkEnter_Target, (void*)this);
 			return true;
-		case DIK_D:  // switch to display parameters page
+		case OAPI_KEY_D:  // switch to display parameters page
 			disp_mode = 1;
 			disp_sel = 0;
 			btnpage = 0;
 			RepaintButtons();
 			Refresh();
 			return true;
-		case DIK_K:
+		case OAPI_KEY_K:
 			ToggleTrack();
 			RepaintButtons();
 			return true;
-		case DIK_X:  ZoomOut(); return true;
-		case DIK_Z:  ZoomIn();  return true;
-		case DIK_LBRACKET:
-		case DIK_RBRACKET:
-		case DIK_MINUS:
-		case DIK_EQUALS:
+		case OAPI_KEY_X:  ZoomOut(); return true;
+		case OAPI_KEY_Z:  ZoomIn();  return true;
+		case OAPI_KEY_LBRACKET:
+		case OAPI_KEY_RBRACKET:
+		case OAPI_KEY_MINUS:
+		case OAPI_KEY_EQUALS:
 			scroll_t0 = scroll_tp = td.SysT0;
 			break;
 		}
 		break;
 	case 1: // display parameters
 		switch (key) {
-		case DIK_O:
+		case OAPI_KEY_O:
 			disp_mode = 0;
 			RepaintButtons();
 			Refresh();
 			return true;
-		case DIK_MINUS:
+		case OAPI_KEY_MINUS:
 			if (--disp_sel < 0) disp_sel = ndispprm-1;
 			Refresh();
 			return true;
-		case DIK_EQUALS:
+		case OAPI_KEY_EQUALS:
 			disp_sel = (disp_sel+1)%ndispprm;
 			Refresh();
 			return true;
-		case DIK_M:
+		case OAPI_KEY_M:
 			if (ToggleDispParam (disp_sel)) {
 				map->SetDisplayFlags (dispflag);
 				Refresh();
@@ -183,32 +182,32 @@ bool Instrument_Map::KeyImmediate (char *kstate)
 	double mag = min(dt*0.5, 8.0);
 	double step = (t-scroll_tp) * mag / zoom;
 
-	if (KEYDOWN (kstate, DIK_LBRACKET)) { // scroll left
-		if (!track && BufKey (DIK_LBRACKET, 0.05)) {
+	if (KEYDOWN (kstate, OAPI_KEY_LBRACKET)) { // scroll left
+		if (!track && BufKey (OAPI_KEY_LBRACKET, 0.05)) {
 			map->SetCenter (map->CntLng()-step, map->CntLat());
 			scroll_tp = t;
 			Refresh();
 		}
 		return true;
 	}
-	if (KEYDOWN (kstate, DIK_RBRACKET)) { // scroll right
-		if (!track && BufKey (DIK_RBRACKET, 0.05)) {
+	if (KEYDOWN (kstate, OAPI_KEY_RBRACKET)) { // scroll right
+		if (!track && BufKey (OAPI_KEY_RBRACKET, 0.05)) {
 			map->SetCenter (map->CntLng()+step, map->CntLat());
 			scroll_tp = t;
 			Refresh();
 		}
 		return true;
 	}
-	if (KEYDOWN (kstate, DIK_MINUS)) { // scroll down
-		if (!track && BufKey (DIK_MINUS, 0.05)) {
+	if (KEYDOWN (kstate, OAPI_KEY_MINUS)) { // scroll down
+		if (!track && BufKey (OAPI_KEY_MINUS, 0.05)) {
 			map->SetCenter (map->CntLng(), min (Pi, map->CntLat()+step));
 			scroll_tp = t;
 			Refresh();
 		}
 		return true;
 	}
-	if (KEYDOWN (kstate, DIK_EQUALS)) { // scroll up
-		if (!track && BufKey (DIK_EQUALS, 0.05)) {
+	if (KEYDOWN (kstate, OAPI_KEY_EQUALS)) { // scroll up
+		if (!track && BufKey (OAPI_KEY_EQUALS, 0.05)) {
 			map->SetCenter (map->CntLng(), max (-Pi, map->CntLat()-step));
 			scroll_tp = t;
 			Refresh();
@@ -224,7 +223,7 @@ bool Instrument_Map::ProcessButton (int bt, int event)
 {
 	switch (disp_mode) {
 	case 0: {
-		static const DWORD btkey[10] = { DIK_R, DIK_T, DIK_X, DIK_Z, DIK_K, DIK_D, DIK_MINUS, DIK_EQUALS, DIK_LBRACKET, DIK_RBRACKET };
+		static const DWORD btkey[10] = { OAPI_KEY_R, OAPI_KEY_T, OAPI_KEY_X, OAPI_KEY_Z, OAPI_KEY_K, OAPI_KEY_D, OAPI_KEY_MINUS, OAPI_KEY_EQUALS, OAPI_KEY_LBRACKET, OAPI_KEY_RBRACKET };
 		if (event & PANEL_MOUSE_LBDOWN) {
 			if (bt < (track ? 6:10)) return KeyBuffered (btkey[bt]);
 		}
@@ -233,7 +232,7 @@ bool Instrument_Map::ProcessButton (int bt, int event)
 		}
 		} break;
 	case 1: {
-		static const DWORD btkey[4] = { DIK_MINUS, DIK_EQUALS, DIK_M, DIK_O };
+		static const DWORD btkey[4] = { OAPI_KEY_MINUS, OAPI_KEY_EQUALS, OAPI_KEY_M, OAPI_KEY_O };
 		if (event & PANEL_MOUSE_LBDOWN) {
 			if (bt < 4) return KeyBuffered (btkey[bt]);
 		}

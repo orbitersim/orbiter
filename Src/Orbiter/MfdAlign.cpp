@@ -7,7 +7,6 @@
 #include "Psys.h"
 #include "Log.h"
 #include "Select.h"
-#include <dinput.h>
 #include <iomanip>
 
 using namespace std;
@@ -487,19 +486,19 @@ bool Instrument_OPlaneAlign::GetTimingsFromSurface(double &Tan, double &Aan, dou
 bool Instrument_OPlaneAlign::KeyBuffered (DWORD key)
 {
 	switch (key) {
-	case DIK_A:  // auto reference
+	case OAPI_KEY_A:  // auto reference
 		SelectAutoRef ();
 		return true;
-	case DIK_E:  // custom elements
+	case OAPI_KEY_E:  // custom elements
 		g_input->Open ("Ecliptic inclination and longitude of asc. node [deg.]:", 0, 30, Instrument_OPlaneAlign::CallbackElements, (void*)this);
 		return true;
-	case DIK_R:  // select reference
+	case OAPI_KEY_R:  // select reference
 		OpenSelect_CelBody ("Align MFD: Reference", ClbkEnter_Ref);
 		return true;
-	case DIK_T:  // select target
+	case OAPI_KEY_T:  // select target
 		OpenSelect_Tgt ("Align MFD: Target", ClbkEnter_Tgt, elref, 0);
 		return true;
-	case DIK_M:  // mode selection
+	case OAPI_KEY_M:  // mode selection
 		CycleModes();
 		return true;
 	}
@@ -508,7 +507,7 @@ bool Instrument_OPlaneAlign::KeyBuffered (DWORD key)
 
 bool Instrument_OPlaneAlign::ProcessButton (int bt, int event)
 {
-	static const DWORD btkey[5] = { DIK_R, DIK_A, DIK_T, DIK_E, DIK_M };
+	static const DWORD btkey[5] = { OAPI_KEY_R, OAPI_KEY_A, OAPI_KEY_T, OAPI_KEY_E, OAPI_KEY_M };
 	if (event & PANEL_MOUSE_LBDOWN) {
 		if (bt < 5) return KeyBuffered (btkey[bt]);
 	}

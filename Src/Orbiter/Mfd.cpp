@@ -3,7 +3,6 @@
 
 #define OAPI_IMPLEMENTATION
 
-#include <dinput.h>
 #include "Pane.h"
 #include "Orbiter.h"
 #include "Config.h"
@@ -199,28 +198,28 @@ void Instrument::GlobalExit (oapi::GraphicsClient *gc)
 void Instrument::RegisterBuiltinModes ()
 {
 	static MFDMODESPECEX def_mode[BUILTIN_MFD_MODES] = {
-		{"Orbit",        DIK_O, 0, 0},
-		{"Surface",      DIK_S, 0, 0},
-		{"Map",          DIK_M, 0, 0},
-		{"HSI",          DIK_H, 0, 0},
-		{"VOR/VTOL",     DIK_L, 0, 0},
-		{"Docking",      DIK_D, 0, 0},
-		{"Align Planes", DIK_A, 0, 0},
-		{"Sync Orbit",   DIK_Y, 0, 0},
-		{"Transfer",     DIK_X, 0, 0},
-		{"COM/NAV",      DIK_C, 0, 0}
+		{"Orbit",        OAPI_KEY_O, 0, 0},
+		{"Surface",      OAPI_KEY_S, 0, 0},
+		{"Map",          OAPI_KEY_M, 0, 0},
+		{"HSI",          OAPI_KEY_H, 0, 0},
+		{"VOR/VTOL",     OAPI_KEY_L, 0, 0},
+		{"Docking",      OAPI_KEY_D, 0, 0},
+		{"Align Planes", OAPI_KEY_A, 0, 0},
+		{"Sync Orbit",   OAPI_KEY_Y, 0, 0},
+		{"Transfer",     OAPI_KEY_X, 0, 0},
+		{"COM/NAV",      OAPI_KEY_C, 0, 0}
 	};
 	static MFDMODESPEC def_oldmode[BUILTIN_MFD_MODES] = { // obsolete
-		{"Orbit",        DIK_O, 0},
-		{"Surface",      DIK_S, 0},
-		{"Map",          DIK_M, 0},
-		{"HSI",          DIK_H, 0},
-		{"VOR/VTOL",     DIK_L, 0},
-		{"Docking",      DIK_D, 0},
-		{"Align Planes", DIK_A, 0},
-		{"Sync Orbit",   DIK_Y, 0},
-		{"Transfer",     DIK_X, 0},
-		{"COM/NAV",      DIK_C, 0}
+		{"Orbit",        OAPI_KEY_O, 0},
+		{"Surface",      OAPI_KEY_S, 0},
+		{"Map",          OAPI_KEY_M, 0},
+		{"HSI",          OAPI_KEY_H, 0},
+		{"VOR/VTOL",     OAPI_KEY_L, 0},
+		{"Docking",      OAPI_KEY_D, 0},
+		{"Align Planes", OAPI_KEY_A, 0},
+		{"Sync Orbit",   OAPI_KEY_Y, 0},
+		{"Transfer",     OAPI_KEY_X, 0},
+		{"COM/NAV",      OAPI_KEY_C, 0}
 	};
 
 	static int def_id[BUILTIN_MFD_MODES] = {
@@ -535,7 +534,7 @@ bool Instrument::ConsumeKeyBuffered (DWORD key)
 {
 	// part 1: global keys
 	switch (key) {
-	case DIK_F1:     // MFD mode selection
+	case OAPI_KEY_F1:     // MFD mode selection
 		if ((++modepage)*(nbtl+nbtr) < (int)(nGlobalModes+nVesselModes-nDisabledModes)) {
 			showmenu = false;
 			DisplayModes (modepage);
@@ -544,8 +543,8 @@ bool Instrument::ConsumeKeyBuffered (DWORD key)
 		}
 		pane->RepaintMFDButtons (id, this);
 		return true;
-	case DIK_F2: {   // next button page
-		if (modepage >= 0) return ConsumeKeyBuffered (DIK_F1); // page through mode pages
+	case OAPI_KEY_F2: {   // next button page
+		if (modepage >= 0) return ConsumeKeyBuffered (OAPI_KEY_F1); // page through mode pages
 		int nfunc = BtnMenu(0);
 		if (nfunc > 0 && nfunc > nbt) {
 			int npage = (nfunc+nbt-1)/nbt;
@@ -554,7 +553,7 @@ bool Instrument::ConsumeKeyBuffered (DWORD key)
 			if (showmenu) DrawMenu ();
 		}
 		} return true;
-	case DIK_GRAVE: // MFD menu
+	case OAPI_KEY_GRAVE: // MFD menu
 		if (!showmenu) {
 			showmenu = true;
 			if (modepage >= 0) {
@@ -564,7 +563,7 @@ bool Instrument::ConsumeKeyBuffered (DWORD key)
 		} else if (!pageonmenu) {
 			showmenu = false;
 		} else {
-			ConsumeKeyBuffered (DIK_F2);
+			ConsumeKeyBuffered(OAPI_KEY_F2);
 			if (!btnpage) showmenu = false;
 		}
 		if (showmenu) DrawMenu(); // draw the button menu

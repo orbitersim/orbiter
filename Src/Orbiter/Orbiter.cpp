@@ -2517,7 +2517,7 @@ void Orbiter::KbdInputBuffered_OnRunning (char *kstate, DIDEVICEOBJECTDATA *dod,
 			continue;
 		if (!bdown) // only process key down events
 			continue;
-		if (key == DIK_LSHIFT || key == DIK_RSHIFT) continue;    // we don't process modifier keys
+		if (key == OAPI_KEY_LSHIFT || key == OAPI_KEY_RSHIFT) continue;    // we don't process modifier keys
 
 		// simulation speed control
 		if      (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_IncSimSpeed)) IncWarpFactor ();
@@ -2526,7 +2526,7 @@ void Orbiter::KbdInputBuffered_OnRunning (char *kstate, DIDEVICEOBJECTDATA *dod,
 		if (KEYMOD_CONTROL (kstate)) {    // CTRL-Key combinations
 
 			//switch (key) {
-			//case DIK_F3:    // switch focus to previous vessel
+			//case OAPI_KEY_F3:    // switch focus to previous vessel
 			//	if (g_pfocusobj) SetFocusObject (g_pfocusobj);
 			//	break;
 			//}
