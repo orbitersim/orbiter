@@ -845,6 +845,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 	CSphereManager::GlobalExit();
 	vStar::GlobalExit();
 	vVessel::GlobalExit();
+	vPlanet::GlobalExit();
 	vObject::GlobalExit();
 	D3D9Mesh::GlobalExit();
 
