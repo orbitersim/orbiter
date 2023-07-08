@@ -10,6 +10,8 @@
 #include "Log.h"
 #include "OGraphics.h"
 #include <math.h>
+#include <algorithm>
+using std::max;
 
 static TEXCRDRANGE2 fullrange = {0,1,0,1};
 

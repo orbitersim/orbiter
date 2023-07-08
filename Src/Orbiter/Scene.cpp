@@ -22,6 +22,8 @@
 #include "Log.h"
 #include "D3dmath.h"
 #include "resource.h"
+#include <algorithm>
+using std::min;
 
 #define NSEG 64
 

@@ -15,8 +15,10 @@
 #include "Spherepatch.h"
 #include "Astro.h"
 #include <fstream>
-
+#include <algorithm>
 #include <stdio.h>
+using std::min;
+using std::max;
 
 extern Orbiter *g_pOrbiter;
 extern PlanetarySystem *g_psys;
@@ -300,7 +302,7 @@ void VBase::Update (bool moving, bool force)
 			double az = atan2 (shdir.z, shdir.x);
 			for (DWORD i = 0; i < base->nobj; i++)
 				base->obj[i]->UpdateShadow (shdir, az);
-			shadowstrength = (float)min (1, (csun-0.07)/0.015);
+			shadowstrength = (float)min (1.0, (csun-0.07)/0.015);
 		}
 		bool night = csun < lightson;
 		if (lights != night) {
@@ -697,7 +699,7 @@ void VBase::RenderGroundShadow (LPDIRECT3DDEVICE7 dev)
 	DWORD tfactor;
 	bool resetalpha = false;
 	if (gc->GetStencilDepth() > 0) {
-		double scale = min (1, (csun-0.07)/0.015);
+		double scale = min (1.0, (csun-0.07)/0.015);
 		if (scale < 1) {
 			dev->GetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, &tfactor);
 			float modalpha = (float)(scale*RGBA_GETALPHA(tfactor)/256.0);
@@ -780,7 +782,7 @@ bool VBase::ModLighting (LPD3DLIGHT7 light)
 			double amb0 = min (0.7, log (atm->rho0+1.0)*0.4);
 			amb = amb0 * min (1.0, (sunelev+14.0*RAD)/(20.0*RAD));
 			if (!lightmod) lightmod = (amb > 0.05);
-			amb = max (0, amb-0.05);
+			amb = max (0.0, amb-0.05);
 			// reduce direct light component to avoid overexposure
 			lcol *= 1.0-amb*0.5;
 		}

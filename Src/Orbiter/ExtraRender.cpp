@@ -11,6 +11,8 @@
 #include "ExtraRender.h"
 #include "Help.h"
 #include "resource.h"
+#include <algorithm>
+using std::min;
 
 //=============================================================================
 

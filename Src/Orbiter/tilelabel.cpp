@@ -7,6 +7,9 @@
 #include "D3dmath.h"
 #include <limits>
 #include <sstream>
+#include <algorithm>
+using std::min;
+using std::max;
 
 extern Orbiter *g_pOrbiter;
 extern Camera *g_camera;

@@ -18,7 +18,10 @@
 #include "VPlanet.h"
 #include "Texture.h"
 #include "D3D7Config.h"
+#include <algorithm>
 
+using std::min;
+using std::max;
 using namespace oapi;
 
 // Max supported patch resolution level

@@ -13,6 +13,9 @@
 
 #include "D3D7Config.h"
 #include "orbitersdk.h"
+#include <algorithm>
+using std::min;
+using std::max;
 
 static const char *cfgfile = "D3D7Client.cfg";
 

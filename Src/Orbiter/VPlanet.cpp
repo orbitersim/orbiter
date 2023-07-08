@@ -26,6 +26,9 @@
 #include <stdio.h>
 #include <fstream>
 #include <iomanip>
+#include <algorithm>
+using std::min;
+using std::max;
 
 extern Orbiter *g_pOrbiter;
 extern PlanetarySystem *g_psys;
@@ -53,7 +56,7 @@ VPlanet::VPlanet (const Planet *_planet): VObject (_planet)
 	dist_scale     = 1.0;
 	tCheckRes      = -1.0;
 	tCheckRingSh   = -1.0;
-	max_patchres   = min (SURF_MAX_PATCHLEVEL2, planet->max_patch_level);
+	max_patchres   = min (SURF_MAX_PATCHLEVEL2, (int)planet->max_patch_level);
 	prm.bAtm = planet->HasAtmosphere();
 	if (prm.bAtm) {
 		prm.atm_href = log(planet->atm.rho0)*2e4 + 2e4;
@@ -180,7 +183,7 @@ void VPlanet::Update (bool moving, bool force)
 				double alt = cdist-planet->size;
 				double lvl = (planet->cloud_micro_alt1-alt)/(planet->cloud_micro_alt1-planet->cloud_micro_alt0);
 				cloudmanager->SetMicroStructure (lvl > 0.0 ? MICROSTRUCT_CLOUD : 0);
-				cloudmanager->SetMicroLevel (max (0, min (1, lvl)));
+				cloudmanager->SetMicroLevel (max (0.0, min (1.0, lvl)));
 			}
 		}
 	}
@@ -798,12 +801,12 @@ bool VPlanet::ModLighting (DWORD &ambient)
 	double amb0 = min (0.7, log (planet->atm.rho0+1.0)*0.35);     // effect magnitude scale (planet-atmosphere dependent)
 	double amb = amb0 * min (1.0, (sunelev+14.0*RAD)/(20.0*RAD)); // effect magnitude (dependent on sun elevation)
 	if (amb < 0.05) return false;
-	amb = max (0, amb-0.05);
+	amb = max (0.0, amb-0.05);
 
 	DWORD addamb = (DWORD)(amb*rscale*256);
 	DWORD baseamb = g_pOrbiter->Cfg()->AmbientColour;
 	ambient = 0;
 	for (int i = 0; i < 4; i++)
-		ambient |= min (255, ((baseamb >> (i*8)) & 0xff) + addamb) << (i*8);
+		ambient |= min ((DWORD)255, ((baseamb >> (i*8)) & 0xff) + addamb) << (i*8);
 	return true;
 }

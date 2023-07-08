@@ -18,6 +18,8 @@
 #include "Astro.h"
 #include <stdio.h>
 #include <algorithm>
+using std::min;
+using std::max;
 
 using namespace oapi;
 
@@ -428,7 +430,7 @@ bool VObject::DrawVector (LPDIRECT3DDEVICE7 dev, const Vector &end, const Vector
 	float w = (float)rad;
 	float h = (float)end.length();
 	if (h < EPS) return false;
-	float hb = max (h-4.0f*w, 0);
+	float hb = max (h-4.0f*w, 0.0f);
 
 	memcpy (Vtx, Vtx0, nVtx*sizeof(D3DVERTEX));
 

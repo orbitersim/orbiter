@@ -19,6 +19,10 @@
 #include "VBase.h"
 #include "TileMgr.h"
 #include "D3D7Client.h"
+#include <algorithm>
+
+using std::min;
+using std::max;
 
 vBase::vBase (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 {
@@ -342,7 +346,7 @@ void vBase::RenderGroundShadow (LPDIRECT3DDEVICE7 dev)
 	DWORD tfactor;
 	bool resetalpha = false;
 	if (gc->UseStencilBuffer()) {
-		double scale = min (1, (csun-0.07)/0.015);
+		double scale = min (1.0, (csun-0.07)/0.015);
 		if (scale < 1) {
 			dev->GetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, &tfactor);
 			float modalpha = (float)(scale*RGBA_GETALPHA(tfactor)/256.0);
@@ -429,7 +433,7 @@ bool vBase::ModLighting (LPD3DLIGHT7 light, double &nextcheck)
 			double amb0 = min (0.7, log (atm->rho0+1.0)*0.4);
 			amb = amb0 * min (1.0, (sunelev+14.0*RAD)/(20.0*RAD));
 			if (!lightmod) lightmod = (amb > 0.05);
-			amb = max (0, amb-0.05);
+			amb = max (0.0, amb-0.05);
 			// reduce direct light component to avoid overexposure
 			lcol *= 1.0-amb*0.5;
 		}

@@ -12,6 +12,9 @@
 #include "OGraphics.h"
 #include "Util.h"
 #include "Log.h"
+#include <algorithm>
+using std::min;
+using std::max;
 
 // -----------------------------------------------------------------------
 

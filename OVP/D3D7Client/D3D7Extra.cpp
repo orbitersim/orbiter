@@ -17,6 +17,9 @@
 #include "D3D7Extra.h"
 #include "D3D7Config.h"
 #include "resource.h"
+#include <algorithm>
+
+using std::min;
 
 char *D3D7ClientCfg::Name ()
 {

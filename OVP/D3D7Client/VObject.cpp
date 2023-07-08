@@ -32,6 +32,8 @@
 #include "D3D7Util.h"
 #include <algorithm>
 
+using std::min;
+using std::max;
 using namespace oapi;
 
 // Initialisation of static members
@@ -296,7 +298,7 @@ bool vObject::DrawVector(LPDIRECT3DDEVICE7 dev, const VECTOR3& end, const VECTOR
 	float w = (float)rad;
 	float h = (float)length(end);
 	if (h < EPS) return false;
-	float hb = max(h - 4.0f * w, 0);
+	float hb = max(h - 4.0f * w, 0.0f);
 
 	memcpy(Vtx, Vtx0, nVtx * sizeof(D3DVERTEX));
 

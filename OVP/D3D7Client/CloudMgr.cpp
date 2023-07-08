@@ -17,6 +17,8 @@
 #include "CloudMgr.h"
 #include "VPlanet.h"
 #include "Texture.h"
+#include <algorithm>
+using std::min;
 
 using namespace oapi;
 
