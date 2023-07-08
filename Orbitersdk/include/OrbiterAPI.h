@@ -24,6 +24,7 @@
     #endif
 #endif
 
+#include "colour.hpp"
 #include "math.hpp"
 #include "vector.hpp"
 
@@ -246,17 +247,6 @@ typedef union {      // 4x4 matrix
 	struct { double m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44; };
 } MATRIX4;
 //@}
-
-/** 
- * \ingroup structures
- * \brief colour definition
- */
-typedef struct {
-	float r;    ///< read colour component [0..1]
-	float g;    ///< green colour component [0..1]
-	float b;    ///< blue colour component [0..1]
-	float a;    ///< alpha (opacity) component (0..1)
-} COLOUR4;
 
 /**
  * \ingroup structures
