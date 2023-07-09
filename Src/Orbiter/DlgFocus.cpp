@@ -382,7 +382,7 @@ void DlgFocus::RescanTree_Location (HWND hDlg)
 				hti_ref = (HTREEITEM)SendDlgItemMessage (hDlg, IDC_TREE1, TVM_GETNEXTITEM, TVGN_NEXT, (LPARAM)hti_ref);
 			}
 			if (!hti_ref) {
-				tvis.item.pszText = ref->Name();
+				tvis.item.pszText = (char*)ref->Name();
 				hti_ref = (HTREEITEM)SendDlgItemMessage (hDlg, IDC_TREE1, TVM_INSERTITEM, 0, (LPARAM)&tvis);
 			}
 			hti = AddVesselToTree (hDlg, hti_ref, vessel);
@@ -477,7 +477,7 @@ HTREEITEM DlgFocus::AddVesselToTree (HWND hDlg, HTREEITEM hti, Vessel *vessel, b
 	tvis.hParent = hti;
 	tvis.hInsertAfter = TVI_SORT;
 	tvis.item.mask = TVIF_TEXT | TVIF_CHILDREN;
-	tvis.item.pszText = vessel->Name();
+	tvis.item.pszText = (char*)vessel->Name();
 	tvis.item.cChildren = 0;
 	if (!unroll) {
 		for (i = 0; ; i++) {

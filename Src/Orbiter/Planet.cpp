@@ -374,7 +374,7 @@ Planet::Planet (char *fname)
 			}
 		}
 	} else { // by default, scan folder 'Config/<pname>/Base'
-		sprintf (cbuf, "%s\\Base", name);
+		sprintf (cbuf, "%s/Base", name.c_str());
 		ScanBases (cbuf);
 	}
 
@@ -477,7 +477,7 @@ intptr_t Planet::FindFirst (int type, _finddata_t *fdata, char *path, char *fnam
 	switch (type) {
 	case FILETYPE_MARKER:
 		if (labelpath) strcpy (path, labelpath);
-		else           sprintf (path, "%s%s\\Marker\\", g_pOrbiter->Cfg()->CfgDirPrm.ConfigDir, name);
+		else           sprintf (path, "%s%s/Marker/", g_pOrbiter->Cfg()->CfgDirPrm.ConfigDir, name.c_str());
 		break;
 	}
 	sprintf (cbuf, "%s*.mkr", path);
@@ -665,7 +665,7 @@ void Planet::ScanLabelLegend()
 {
 	char path[256];
 	if (labelpath) strncpy (path, labelpath, 256);
-	else           sprintf (path, "%s%s\\", g_pOrbiter->Cfg()->CfgDirPrm.ConfigDir, name);
+	else           sprintf (path, "%s%s/", g_pOrbiter->Cfg()->CfgDirPrm.ConfigDir, name.c_str());
 	strcat (path, "Label.cfg");
 	std::ifstream ifs(path);
 	while (ifs.good()) {
@@ -814,7 +814,7 @@ void Planet::InitDeviceObjects ()
 	if (bHasCloudlayer && cmgr_version == 1) { // create cloud texture array for old cloud implementation
 		ncloudtex = patchidx[max_cloud_level] - patchidx[min_cloud_level-1];
 		cloudtex = new LPDIRECTDRAWSURFACE7[ncloudtex]; TRACENEW
-		if (ncloudtex = g_texmanager2->OpenTextures (name, "_cloud.tex", cloudtex, ncloudtex)) {
+		if (ncloudtex = g_texmanager2->OpenTextures (name.c_str(), "_cloud.tex", cloudtex, ncloudtex)) {
 			while (ncloudtex < patchidx[max_cloud_level] - patchidx[min_cloud_level-1]) max_cloud_level--;
 			while (ncloudtex > patchidx[max_cloud_level] - patchidx[min_cloud_level-1]) cloudtex[--ncloudtex]->Release();
 		}
@@ -829,9 +829,8 @@ void Planet::InitDeviceObjects ()
 	}
 
 	if (bHasRings) { // load ring textures
-		char cbuf[256];
-		strcpy (cbuf, name); strcat (cbuf, "_ring");
-		if (file = fopen (g_pOrbiter->TexPath (cbuf, ".tex"), "rb")) {
+		string tex_name = name + "_ring";
+		if (file = fopen (g_pOrbiter->TexPath (tex_name.c_str(), ".tex"), "rb")) {
 			ringtex = new LPDIRECTDRAWSURFACE7[3]; TRACENEW
 			nringtex = g_texmanager2->ReadTextures (file, ringtex, 3);
 			fclose (file);

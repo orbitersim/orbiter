@@ -115,7 +115,7 @@ public:
 	// undock a vessel (or sub-structure) port from its super-structure
 	// vsep is the separation velocity (>= 0)
 
-	void ScanMoons (std::istream &is, CelestialBody *cbody, char *id);
+	void ScanMoons (std::istream &is, CelestialBody *cbody, const char *id);
 	// Add moons recursively to the child list of "cbody",
 	// using descriptions in "is" for description string "id"
 

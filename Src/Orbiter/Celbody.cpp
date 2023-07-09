@@ -731,21 +731,19 @@ void CelestialBody::RegisterModule (char *dllname)
 		module = init_proc ((OBJHANDLE)this);
 
 	} else {         // check for old-style interface
-		
-		char funcname[256], *funcp;
-		strcpy (funcname, name); funcp = funcname + strlen(name);
+		string funcname;
 
-		strcpy (funcp, "_SetPrecision");
-		modIntf.oplanetSetPrecision = (OPLANET_SetPrecision)GetProcAddress (hMod, funcname);
+		funcname = name + "_SetPrecision";
+		modIntf.oplanetSetPrecision = (OPLANET_SetPrecision)GetProcAddress (hMod, funcname.c_str());
 
-		strcpy (funcp, "_Ephemeris");
-		modIntf.oplanetEphemeris = (OPLANET_Ephemeris)GetProcAddress (hMod, funcname);
+		funcname = name + "_Ephemeris";
+		modIntf.oplanetEphemeris = (OPLANET_Ephemeris)GetProcAddress (hMod, funcname.c_str());
 
-		strcpy (funcp, "_FastEphemeris");
-		modIntf.oplanetFastEphemeris = (OPLANET_FastEphemeris)GetProcAddress (hMod, funcname);
+		funcname = name + "_FastEphemeris";
+		modIntf.oplanetFastEphemeris = (OPLANET_FastEphemeris)GetProcAddress (hMod, funcname.c_str());
 
-		strcpy (funcp, "_AtmPrm");
-		modIntf.oplanetAtmPrm = (OPLANET_AtmPrm)GetProcAddress (hMod, funcname);
+		funcname = name + "_AtmPrm";
+		modIntf.oplanetAtmPrm = (OPLANET_AtmPrm)GetProcAddress (hMod, funcname.c_str());
 	}
 }
 

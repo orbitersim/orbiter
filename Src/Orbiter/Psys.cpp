@@ -395,7 +395,7 @@ size_t PlanetarySystem::AddPlanet (Planet *_planet, CelestialBody *cbody)
 	return planets.size();
 }
 
-void PlanetarySystem::ScanMoons (istream &is, CelestialBody *cbody, char *id)
+void PlanetarySystem::ScanMoons (istream &is, CelestialBody *cbody, const char *id)
 {
 	char cbuf[256], name[256];
 	for (int i = 0;; i++) {
