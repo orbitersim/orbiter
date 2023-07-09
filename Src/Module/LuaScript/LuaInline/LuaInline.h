@@ -40,7 +40,7 @@ public:
 		bool termInterp;      // interpreter kill flag
 		bool singleCmd;       // terminate after single command
 		char *cmd;            // interpreter command
-		static unsigned int InterpreterThreadProc (void *context);
+		static unsigned int InterpreterThreadProc (Environment *env);
 	};
 
 	InterpreterList (HINSTANCE hDLL);

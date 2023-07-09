@@ -58,9 +58,8 @@ Interpreter *InterpreterList::Environment::CreateInterpreter ()
 	return interp;
 }
 
-unsigned int WINAPI InterpreterList::Environment::InterpreterThreadProc (LPVOID context)
+unsigned int InterpreterList::Environment::InterpreterThreadProc (InterpreterList::Environment *env)
 {
-	InterpreterList::Environment *env = (InterpreterList::Environment*)context;
 	Interpreter *interp = env->interp;
 
 	// interpreter loop
