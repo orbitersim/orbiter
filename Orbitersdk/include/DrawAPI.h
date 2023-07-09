@@ -694,23 +694,14 @@ namespace oapi {
 		return FVECTOR3(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
 	}
 
-	inline float saturate(float x)
-	{
-		//sadly std::clamp produces garbage assembly on both gcc and MSVC
-		//this version makes MSVC produce good code
-		x = (x < 0.0f) ? 0.0f : x;
-		x = (x > 1.0f) ? 1.0f : x;
-		return x;
-	}
-
 	inline FVECTOR3 saturate(const FVECTOR3& v)
 	{
-		return FVECTOR3(saturate(v.x), saturate(v.y), saturate(v.z));
+		return FVECTOR3(::saturate(v.x), ::saturate(v.y), ::saturate(v.z));
 	}
 
 	inline FVECTOR4 saturate(const FVECTOR4& v)
 	{
-		return FVECTOR4(saturate(v.x), saturate(v.y), saturate(v.z), saturate(v.w));
+		return FVECTOR4(::saturate(v.x), ::saturate(v.y), ::saturate(v.z), ::saturate(v.w));
 	}
 
 	inline FVECTOR2 lerp(const FVECTOR2& a, const FVECTOR2& b, float x)

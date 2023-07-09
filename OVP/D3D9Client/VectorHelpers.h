@@ -74,13 +74,6 @@ template <typename T> inline _constexpr_ T lerp (T a, T b, T x)
 //	return fma(t, v1, fma(-t, v0, v0));
 //}
 
-template <typename T> inline _constexpr_ T saturate (T val)
-{
-	return (val > T(1)) ? T(1)
-		 : (val < T(0)) ? T(0)
-		 : val;
-}
-
 template <typename T> inline _constexpr_ T clamp(T x, T a, T b)
 {
 	return x > b ? b

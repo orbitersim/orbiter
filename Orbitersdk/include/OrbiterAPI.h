@@ -24,6 +24,7 @@
     #endif
 #endif
 
+#include "math.hpp"
 #include "vector.hpp"
 
 #include <cmath>
