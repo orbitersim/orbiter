@@ -20,6 +20,8 @@
 #include "resource.h"
 #include "resource2.h"
 
+using std::max;
+
 extern Orbiter *g_pOrbiter;
 
 //-----------------------------------------------------------------------------

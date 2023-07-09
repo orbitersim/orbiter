@@ -16,6 +16,9 @@
 #include "Camera.h"
 #include "Log.h"
 #include "OGraphics.h"
+#include <algorithm>
+using std::min;
+using std::max;
 
 // =======================================================================
 // Externals
@@ -67,8 +70,8 @@ TileManager::TileManager (const Planet *_cbody)
 {
 	cbody = _cbody;
 	maxlvl = min (g_pOrbiter->Cfg()->CfgVisualPrm.PlanetMaxLevel, cbody->max_patch_level);
-	maxlvl = min (maxlvl, SURF_MAX_PATCHLEVEL);
-	maxbaselvl = min (8, maxlvl);
+	maxlvl = min (maxlvl, (DWORD)SURF_MAX_PATCHLEVEL);
+	maxbaselvl = min ((DWORD)8, maxlvl);
 	int maxidx = patchidx[maxbaselvl];
 	pcdir.Set (1,0,0);
 	bRipple = (g_pOrbiter->Cfg()->CfgVisualPrm.bSpecularRipple && cbody->bWaterMicrotex);
@@ -484,7 +487,7 @@ void TileManager::Stop ()
 
 void TileManager::Render (LPDIRECT3DDEVICE7 dev, D3DMATRIX &wmat, double scale, VPlanet *vbody, int level, bool addambient, bool addfog)
 {
-	level = min (level, maxlvl);
+	level = min (level, (int)maxlvl);
 	memset(nrender,0,15*sizeof(int)); // temporary
 	
 	RenderParam.dev  = dev;

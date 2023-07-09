@@ -16,6 +16,8 @@
 #include "meshres_p0.h"
 #include "meshres_vc.h"
 
+using std::max;
+
 // ==============================================================
 
 // constants for texture coordinates

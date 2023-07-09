@@ -22,6 +22,7 @@
 #include "D3D9Pad.h"
 #include "AABBUtil.h"
 
+using std::min;
 
 #define NSEG 64 // number of segments in celestial grid lines
 
@@ -130,7 +131,7 @@ void D3D9CelestialSphere::InitStars ()
 		DWORD nbuf = (m_nsVtx + maxNumVertices - 1) / maxNumVertices; // number of buffers required
 		m_sVtx.resize(nbuf);
 		for (auto it = m_sVtx.begin(); it != m_sVtx.end(); it++) {
-			nv = min(maxNumVertices, m_nsVtx - idx);
+			nv = min((DWORD)maxNumVertices, m_nsVtx - idx);
 			m_pDevice->CreateVertexBuffer(UINT(nv * sizeof(VERTEX_XYZC)), D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &*it, NULL);
 			VERTEX_XYZC* vbuf;
 			(*it)->Lock(0, 0, (LPVOID*)&vbuf, 0);

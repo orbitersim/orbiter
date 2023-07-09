@@ -7,6 +7,9 @@
 #include "resource.h"
 #include <stdio.h> // temporary
 
+using std::min;
+using std::max;
+
 #define IDSTICK 999
 
 // ==============================================================

@@ -9,6 +9,8 @@
 #include <process.h>
 #include <set>
 
+using std::min;
+using std::max;
 using namespace oapi;
 
 // ==============================================================
@@ -450,7 +452,7 @@ bool LuaConsole::ScanHistory (int step)
 			ninp = caret = 0;
 		} else {
 			strncpy (inp, line[ln].buf, 1024);
-			ninp = caret = min (strlen (line[ln].buf), 1024);
+			ninp = caret = min (strlen (line[ln].buf), (size_t)1024);
 		}
 	} else if (step > 0) {
 		inp[0] = '\0';

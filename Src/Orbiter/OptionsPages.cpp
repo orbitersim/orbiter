@@ -16,6 +16,9 @@
 #include "resource.h"
 #include "Uxtheme.h"
 
+using std::min;
+using std::max;
+
 extern Orbiter* g_pOrbiter;
 extern PlanetarySystem* g_psys;
 extern Camera* g_camera;
@@ -498,7 +501,7 @@ void OptionsPage_Visual::UpdateConfig(HWND hPage)
 		0 : SendDlgItemMessage(hPage, IDC_OPT_VIS_ELEVMODE, CB_GETCURSEL, 0, 0) + 1);
 	GetWindowText(GetDlgItem(hPage, IDC_OPT_VIS_MAXLEVEL), cbuf, 127);
 	if (!sscanf(cbuf, "%lu", &i)) i = SURF_MAX_PATCHLEVEL2;
-	Cfg()->CfgVisualPrm.PlanetMaxLevel = max(1, min(SURF_MAX_PATCHLEVEL2, i));
+	Cfg()->CfgVisualPrm.PlanetMaxLevel = max((DWORD)1, min((DWORD)SURF_MAX_PATCHLEVEL2, i));
 	Cfg()->CfgVisualPrm.bVesselShadows = (SendDlgItemMessage(hPage, IDC_OPT_VIS_VSHADOW, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	Cfg()->CfgVisualPrm.bReentryFlames = (SendDlgItemMessage(hPage, IDC_OPT_VIS_REENTRY, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	Cfg()->CfgVisualPrm.bShadows = (SendDlgItemMessage(hPage, IDC_OPT_VIS_SHADOW, BM_GETCHECK, 0, 0) == BST_CHECKED);

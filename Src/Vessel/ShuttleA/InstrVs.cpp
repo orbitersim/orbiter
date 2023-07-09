@@ -13,6 +13,8 @@
 #include "InstrVs.h"
 #include "ShuttleA.h"
 
+using std::min;
+
 const int label_srcx = 103;
 const int wheel_srcx = 111;
 const float vtape_xcnt = 694.0f, vtape_ycnt = 76.0f;
@@ -547,7 +549,7 @@ bool InstrVAcc::Redraw2D (SURFHANDLE surf)
 	if (t > pt) {
 		const double yscale = 6.2455;
 		double vacc = (vspd-pvspd)/(t-pt);
-		yofs = -(float)((vacc >= 0.0 ? sqrt(min(40,vacc)) : -sqrt(min(40,-vacc))) * yscale);
+		yofs = -(float)((vacc >= 0.0 ? sqrt(min(40.0,vacc)) : -sqrt(min(40.0,-vacc))) * yscale);
 		static const float y0[3] = {vtape_ycnt, vtape_ycnt-6, vtape_ycnt+6};
 		for (i = 0; i < 3; i++)
 			grp->Vtx[vtxofs+i].y = y0[i] + yofs;

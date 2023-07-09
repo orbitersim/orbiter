@@ -19,6 +19,9 @@
 #include "meshres_vc.h"
 #include "dg_vc_anim.h"
 
+using std::min;
+using std::max;
+
 static const double sigma = 5.670e-8;   // Boltzmann constant
 
 // heat capacity coefficients [J kg^-1 K^-1]

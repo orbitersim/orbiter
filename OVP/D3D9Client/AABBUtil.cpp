@@ -26,6 +26,8 @@
 #include <xnamath.h>
 #pragma warning(pop)
 
+using std::min;
+
 // =================================================================================================================================
 //
 bool SolveLUSystem(int n, double *A, double *b, double *x, double *det)

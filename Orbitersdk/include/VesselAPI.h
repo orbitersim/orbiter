@@ -6377,9 +6377,9 @@ public:
 	bool Move (double dp) {
 		if (!Moving()) return false;
 		if (Closing()) {
-			if ((pos = max (0.0, pos-dp)) == 0.0) action = CLOSED;
+			if ((pos = std::max (0.0, pos-dp)) == 0.0) action = CLOSED;
 		} else {
-			if ((pos = min (1.0, pos+dp)) == 1.0) action = OPEN;
+			if ((pos = std::min (1.0, pos+dp)) == 1.0) action = OPEN;
 		}
 		return true;
 	}

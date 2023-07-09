@@ -425,7 +425,7 @@ public:
 	void DelActiveModule (const std::string& name);
 
 	inline void SetAmbientLevel (DWORD lvl)
-	{ AmbientColour = (CfgVisualPrm.AmbientLevel = min (lvl, 0xff)) * 0x01010101; }
+	{ AmbientColour = (CfgVisualPrm.AmbientLevel = std::min (lvl, (DWORD)0xff)) * 0x01010101; }
 
 	const void *GetParam (DWORD paramtype) const;
 	// return a specific parameter setting (paramtype defined in GraphicsAPI.h)

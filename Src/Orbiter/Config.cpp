@@ -554,7 +554,7 @@ bool Config::Load(const char *fname)
 	if (GetReal (ifs, "PlanetResolutionBias", d))
 		CfgPRenderPrm.ResolutionBias = max (-2.0, min (2.0, d));
 	if (GetInt (ifs, "TileLoadFlags", i))
-		CfgPRenderPrm.TileLoadFlags = max (min((DWORD)i, 3), 1);
+		CfgPRenderPrm.TileLoadFlags = max (min(i, 3), 1);
 
 	// map dialog parameters
 	if (GetInt (ifs, "MapDlgFlag", i))
@@ -642,7 +642,7 @@ bool Config::Load(const char *fname)
 	if (GetInt (ifs, "PlanetMaxPatchLevel", i))
 		CfgVisualPrm.PlanetMaxLevel = max (1, min (SURF_MAX_PATCHLEVEL2, i));
 	if (GetReal (ifs, "PlanetPatchRes", d))
-		CfgVisualPrm.PlanetPatchRes = max (0.1, min (10, d));
+		CfgVisualPrm.PlanetPatchRes = max (0.1, min (10.0, d));
 	if (GetReal (ifs, "NightlightBrightness", d))
 		CfgVisualPrm.LightBrightness = max (0.0, min (1.0, d));
 	if (GetInt (ifs, "ElevationMode", i) && i >= 0 && i <= 1)

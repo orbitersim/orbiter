@@ -19,6 +19,9 @@
 #include <stdio.h>
 #include <io.h>
 
+using std::min;
+using std::max;
+
 extern ScnEditor *g_editor;
 extern HBITMAP g_hPause;
 
@@ -871,7 +874,7 @@ void EditorTab_New::DrawVesselBmp ()
 		GetClientRect (hImgWnd, &r);
 	    GetObject(hVesselBmp, sizeof(bm), &bm);
 		dx = bm.bmWidth, dy = bm.bmHeight;
-		h = min (imghmax, (r.right*dy)/dx);
+		h = min (imghmax, (int)(r.right*dy)/dx);
 		SetWindowPos (hImgWnd, NULL, 0, 0, r.right, h, SWP_NOMOVE|SWP_NOZORDER);
 		StretchBlt (hDC, 0, 0, r.right, h, hBmpDC, 0, 0, dx, dy, SRCCOPY);
 		DeleteDC (hBmpDC);
@@ -2185,7 +2188,7 @@ INT_PTR EditorTab_Landed::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 				GetWindowText (GetDlgItem (hDlg, IDC_EDIT2), cbuf, 256);
 				sscanf (cbuf, "%lf", &val);
 				val -= nmud->iDelta * (id == IDC_SPIN2 ? 0.00001 : 0.001);
-				val = min (90, max (-90, val));
+				val = min (90.0, max (-90.0, val));
 				sprintf (cbuf, "%lf", val);
 				SetWindowText (GetDlgItem (hDlg, IDC_EDIT2), cbuf);
 				Apply ();
@@ -2372,7 +2375,7 @@ INT_PTR EditorTab_Orientation::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPA
 				GetWindowText (GetDlgItem (hDlg, IDC_EDIT2), cbuf, 256);
 				sscanf (cbuf, "%lf", &val);
 				val -= nmud->iDelta * (id == IDC_SPIN2 ? 0.001 : 0.1);
-				val = min (90, max (-90, val));
+				val = min (90.0, max (-90.0, val));
 				sprintf (cbuf, "%lf", val);
 				SetWindowText (GetDlgItem (hDlg, IDC_EDIT2), cbuf);
 				Apply ();
@@ -2660,7 +2663,7 @@ INT_PTR EditorTab_Propellant::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
 				i = sscanf (cbuf, "%d", &n);
 				if (!i || !n || n > ntank) n = 1;
 				n += (nmud->iDelta < 0 ? 1 : -1);
-				n = max (1, min (ntank, n));
+				n = max ((DWORD)1, min (ntank, n));
 				sprintf (cbuf, "%d", n);
 				SetWindowText (GetDlgItem (hDlg, IDC_EDIT1), cbuf);
 				Refresh ();
@@ -2736,7 +2739,7 @@ void EditorTab_Propellant::Apply ()
 	if (lastedit == IDC_EDIT2) {
 		GetWindowText (GetDlgItem (hTab, IDC_EDIT2), cbuf, 256);
 		sscanf (cbuf, "%lf", &level);
-		level = max (0, min (1, level));
+		level = max (0.0, min (1.0, level));
 	} else {
 		VESSEL *vessel = oapiGetVesselInterface (ed->hVessel);
 		GetWindowText (GetDlgItem (hTab, IDC_EDIT1), cbuf, 256);
@@ -2746,7 +2749,7 @@ void EditorTab_Propellant::Apply ()
 		double m, m0 = vessel->GetPropellantMaxMass (hP);
 		GetWindowText (GetDlgItem (hTab, IDC_EDIT3), cbuf, 256);
 		sscanf (cbuf, "%lf", &m);
-		level = max (0, min (1, m/m0));
+		level = max (0.0, min (1.0, m/m0));
 	}
 	SetLevel (level);
 }
@@ -2982,7 +2985,7 @@ void EditorTab_Docking::Refresh ()
 	GetWindowText (GetDlgItem (hTab, IDC_EDIT1), cbuf, 256);
 	if (!sscanf (cbuf, "%d", &n)) n = 0;
 	if (n < 1 || n > ndock) {
-		n = max (1, min (ndock, n));
+		n = max ((DWORD)1, min (ndock, n));
 		sprintf (cbuf, "%d", n);
 		SetWindowText (GetDlgItem (hTab, IDC_EDIT1), cbuf);
 	}
@@ -3020,7 +3023,7 @@ void EditorTab_Docking::SetTargetDock (DWORD dock)
 	if (hTarget) {
 		VESSEL *v = oapiGetVesselInterface (hTarget);
 		DWORD ndock = v->DockCount();
-		if (ndock) n = max (1, min (ndock, dock));
+		if (ndock) n = max ((DWORD)1, min (ndock, dock));
 	}
 	if (n) sprintf (cbuf, "%d", n);
 	else   cbuf[0] = '\0';

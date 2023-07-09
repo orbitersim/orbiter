@@ -6,6 +6,9 @@
 #include "Planet.h"
 #include "Orbiter.h"
 
+using std::min;
+using std::max;
+
 static int elev_grid = 256;
 static int elev_stride = elev_grid+3;
 static int MAXLVL_LIMIT = 11;
@@ -39,7 +42,7 @@ ElevationManager::ElevationManager (const CelestialBody *_cbody)
 	maxlvl = MAXLVL_LIMIT;
 	elev_res = 1.0;
 	if (cbody->Type() == OBJTP_PLANET) {
-		maxlvl = min (maxlvl, ((Planet*)cbody)->MaxPatchLevel()-7);
+		maxlvl = min ((DWORD)maxlvl, ((Planet*)cbody)->MaxPatchLevel()-7);
 		// -7: -4 for level offset of quadtree root, -3 for great-grandfather elevation access mode
 		elev_res = ((Planet*)cbody)->ElevationResolution();
 	}

@@ -16,6 +16,8 @@
 #include "Camera.h"
 #include "Log.h"
 #include "OGraphics.h"
+#include <algorithm>
+using std::min;
 
 // =======================================================================
 // Externals
@@ -64,7 +66,7 @@ CSphereManager::CSphereManager ()
 	intensity = (float)g_pOrbiter->Cfg()->CfgVisualPrm.CSphereBgIntens;
 
 	maxlvl = 8; // g_pOrbiter->Cfg()->CSphereMaxLevel;
-	maxbaselvl = min (8, maxlvl);
+	maxbaselvl = min ((DWORD)8, maxlvl);
 	int maxidx = patchidx[maxbaselvl];
 	bPreloadTile = (g_pOrbiter->Cfg()->CfgPRenderPrm.PreloadMode > 0);
 	nhitex = nhispec = 0;
@@ -264,7 +266,7 @@ void CSphereManager::Render(LPDIRECT3DDEVICE7 dev, int level, double bglvl)
 
 	if (bgscale < 1e-3 || (intens < 1e-3 && !m_bStarImg)) return; // sanity check
 
-	level = min(level, maxlvl);
+	level = min(level, (int)maxlvl);
 
 	RenderParam.dev = dev;
 	RenderParam.tgtlvl = level;

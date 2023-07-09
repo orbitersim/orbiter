@@ -632,9 +632,9 @@ void ToolKit::clbkRender()
 		selw = abs(alng - blng) + 1;
 		selh = abs(alat - blat) + 1;
 
-		int max = sp.MaxTexSize / 512;
-		if (selw > max) selw = max;
-		if (selh > max) selh = max;
+		int maxts = sp.MaxTexSize / 512;
+		if (selw > maxts) selw = maxts;
+		if (selh > maxts) selh = maxts;
 
 		double width = pFirst->Width();
 		double height = pFirst->Height();

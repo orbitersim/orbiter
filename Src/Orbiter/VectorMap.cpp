@@ -1117,7 +1117,7 @@ void VectorMap::DrawMarker (double lng, double lat, const char *name, int which)
 	LineTo (hDCmem, x, y+11);
 	SelectObject (hDCmem, ppen);
 	SetTextColor (hDCmem, Instrument::draw[which][0].col);
-	TextOut (hDCmem, x+3, which==2 ? y:y-labelsize-3, name, min(64,strlen(name)));
+	TextOut (hDCmem, x+3, which==2 ? y:y-labelsize-3, name, min((size_t)64,strlen(name)));
 }
 
 // =======================================================================

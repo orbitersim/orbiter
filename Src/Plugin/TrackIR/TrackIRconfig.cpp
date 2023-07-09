@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include <commctrl.h>
 
+using std::min;
+using std::max;
+
 extern GPARAMS gParams;
 
 TrackIRconfig *TrackIRconfig::tirc = 0;
@@ -116,9 +119,9 @@ void TrackIRconfig::Apply (HWND hDlg)
 	trackir->trkmode.rotationdata = (SendDlgItemMessage (hTab[2], IDC_RADIO1, BM_GETCHECK, 0, 0) == BST_CHECKED ?
 		ExternalCameraControl::TrackMode::BYROTATION : ExternalCameraControl::TrackMode::BYPOSITION);
 	GetWindowText (GetDlgItem (hTab[2], IDC_EDIT1), cbuf, 256);
-	if (sscanf (cbuf, "%lf", &t)) trackir->trkmode.deadzone = max (0, min (100, t))*0.01;
+	if (sscanf (cbuf, "%lf", &t)) trackir->trkmode.deadzone = max (0.0, min (100.0, t))*0.01;
 	GetWindowText (GetDlgItem (hTab[2], IDC_EDIT2), cbuf, 256);
-	if (sscanf (cbuf, "%lf", &t)) trackir->trkmode.speed = max(1, min (100, t))*0.05;
+	if (sscanf (cbuf, "%lf", &t)) trackir->trkmode.speed = max(1.0, min (100.0, t))*0.05;
 }
 
 INT_PTR CALLBACK TrackIRconfig::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)

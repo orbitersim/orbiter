@@ -17,6 +17,9 @@
 #include "resource.h"
 #include <stdio.h> // temporary
 
+using std::min;
+using std::max;
+
 // ==============================================================
 // prototype definitions
 

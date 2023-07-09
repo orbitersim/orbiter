@@ -14,6 +14,8 @@
 #include "Help.h"
 #include "resource.h"
 
+using std::max;
+
 //-----------------------------------------------------------------------------
 // LaunchpadTab base class
 
@@ -75,8 +77,8 @@ void orbiter::LaunchpadTab::TabAreaResized(int w, int h)
 		else {
 			RECT r;
 			GetClientRect(hTab, &r);
-			int x0 = max(0, (w - r.right) / 2);
-			int y0 = max(0, (h - r.bottom) / 2);
+			int x0 = max((LONG)0, (w - r.right) / 2);
+			int y0 = max((LONG)0, (h - r.bottom) / 2);
 			SetWindowPos(hTab, NULL, x0, y0, 0, 0,
 				SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 		}

@@ -14,6 +14,8 @@
 #define D3D_OVERLOADS
 #include "RingMgr.h"
 #include "Texture.h"
+#include <algorithm>
+using std::min;
 
 using namespace oapi;
 

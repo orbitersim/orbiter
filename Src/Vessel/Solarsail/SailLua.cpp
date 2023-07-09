@@ -9,6 +9,9 @@ extern "C" {
 #include "Lua/lauxlib.h"
 }
 
+using std::min;
+using std::max;
+
 // ==========================================================================
 // API function prototypes
 

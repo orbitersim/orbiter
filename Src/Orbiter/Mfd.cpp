@@ -103,7 +103,7 @@ Instrument *Instrument::Create (ifstream &ifs, Pane *_pane,
 	Instrument *instr = 0;
 	char header[64], cbuf[256], *pc;
 	strcpy (header, "BEGIN_MFD ");
-	strcat (header, mfdstr[min(MAXMFD-1,_id)]);
+	strcat (header, mfdstr[min((ptrdiff_t)(MAXMFD-1),(ptrdiff_t)_id)]);
 
 	if (!FindLine (ifs, header)) return 0;
 	for (;instr == 0;) {

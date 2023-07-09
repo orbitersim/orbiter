@@ -737,7 +737,7 @@ double Camera::GroundElevation (const Planet *ref, double lng, double lat, doubl
 	double elev = 0.0;
 	ElevationManager *emgr = ref->ElevMgr();
 	if (emgr) {
-		int reslvl = (int)(32.0-log(max(go.alt,100))*LOG2);
+		int reslvl = (int)(32.0-log(max(go.alt,100.0))*LOG2);
 		elev = emgr->Elevation (lat, lng, reslvl, &etile);
 	}
 	return elev;
@@ -832,7 +832,7 @@ void Camera::GroundObserverShift (double dx, double dz, double dh)
 	Vector dsz (grot.m13, grot.m23, grot.m33); // dz: go forward/backward w.r.t. camera view direction
 	Vector dsx (grot.m11, grot.m21, grot.m31); // dx: go sideways w.r.t. camera view direction
 	dirref->GlobalToEquatorial (gpos + dsz*dz + dsx*dx, go.lng, go.lat, r);
-	double new_alt = max (1, go.alt+dh);
+	double new_alt = max (1.0, go.alt+dh);
 	go.alt0 += new_alt-go.alt;
 	go.alt = new_alt;
 	double clng = cos(go.lng), slng = sin(go.lng);

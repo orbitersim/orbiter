@@ -271,7 +271,7 @@ Planet::Planet (char *fname)
 		if (!GetItemReal (ifs, "AtmGamma", atm.gamma) && !atm.gamma)
 			atm.gamma = 1.4;  // default to air
 		if (!GetItemReal (ifs, "AtmHazeExtent", hazerange)) hazerange = 0.1;
-		hazerange = max (0, min (0.9, hazerange));
+		hazerange = max (0.0, min (0.9, hazerange));
 		if (!GetItemReal (ifs, "AtmHazeShift", hazeshift)) hazeshift = 0.0;
 		if (!GetItemReal (ifs, "AtmHazeDensity", hazedens)) hazedens = 1.0;
 		Vector col0;
@@ -317,14 +317,14 @@ Planet::Planet (char *fname)
 		max_patch_level = (DWORD)i;
 	else
 		max_patch_level = 8;
-	max_patch_level = min (max_patch_level, SURF_MAX_PATCHLEVEL2);
+	max_patch_level = min (max_patch_level, (DWORD)SURF_MAX_PATCHLEVEL2);
 	max_patch_level = min (max_patch_level, g_pOrbiter->Cfg()->CfgVisualPrm.PlanetMaxLevel);
 
 	bHasCloudlayer = g_pOrbiter->Cfg()->CfgVisualPrm.bClouds &&
 		GetItemInt (ifs, "MinCloudResolution", min_cloud_level) && min_cloud_level >= 1;
 	if (bHasCloudlayer) {
 		if (!GetItemInt (ifs, "MaxCloudResolution", max_cloud_level))
-			max_cloud_level = min (8, max_patch_level);
+			max_cloud_level = min (8, (int)max_patch_level);
 		if (!GetItemBool (ifs, "BrightenClouds", bBrightClouds))
 			bBrightClouds = false;
 		if (GetItemString (ifs, "CloudMicrotextureAlt", cbuf) &&

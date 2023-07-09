@@ -94,7 +94,7 @@ CSphereManager::CSphereManager(D3D9Client *gc, const Scene *scene) : gc(gc), tex
 	intensity = (float)tmp;
 
 	maxlvl = 8; // g_pOrbiter->Cfg()->CSphereMaxLevel;
-	maxbaselvl = min (8, maxlvl);
+	maxbaselvl = min ((DWORD)8, maxlvl);
 	int maxidx = patchidx[maxbaselvl];
 	bPreloadTile = (Config->PlanetPreloadMode != 0);
 	nhitex = nhispec = 0;

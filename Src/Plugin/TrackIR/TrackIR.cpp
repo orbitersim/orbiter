@@ -8,6 +8,9 @@
 #include "NPClient.h"
 #include "NPClientWraps.h"
 
+using std::min;
+using std::max;
+
 // ==============================================================
 // Global parameters
 

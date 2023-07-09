@@ -17,6 +17,7 @@
 
 #include "Camera.h"
 #include "tilemgr2.h"
+#include <algorithm>
 
 // -----------------------------------------------------------------------
 
@@ -129,7 +130,7 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 			tdist = sqrt(a*a + h*h);
 		}
 		double apr = tdist * camera->GetTanAp() * resolutionScale;
-		int tgtres = (apr < 1e-6 ? prm.maxlvl : max (0, min (prm.maxlvl, (int)(bias - log(apr)*res_scale))));
+		int tgtres = (apr < 1e-6 ? prm.maxlvl : std::max (0, std::min (prm.maxlvl, (int)(bias - log(apr)*res_scale))));
 		bstepdown = (lvl < tgtres);
 	}
 

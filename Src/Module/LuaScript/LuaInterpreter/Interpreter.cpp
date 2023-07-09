@@ -9,6 +9,9 @@
 #include "DrawAPI.h"
 #include <list>
 
+using std::min;
+using std::max;
+
 /***
 Module oapi: General Orbiter API interface functions
 @module oapi

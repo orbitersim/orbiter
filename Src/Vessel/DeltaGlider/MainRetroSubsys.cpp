@@ -16,6 +16,9 @@
 #include "meshres_vc.h"
 #include "dg_vc_anim.h"
 
+using std::min;
+using std::max;
+
 // constants for texture coordinates
 static const float texw = (float)PANEL2D_TEXW; // texture width
 static const float texh = (float)PANEL2D_TEXH; // texture height

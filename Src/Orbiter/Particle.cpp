@@ -15,6 +15,9 @@
 #include "Astro.h"
 #include "Util.h"
 #include <stdio.h>
+#include <algorithm>
+using std::min;
+using std::max;
 
 extern Orbiter *g_pOrbiter;
 extern Camera *g_camera;
@@ -150,7 +153,7 @@ double D3D7ParticleStream::Level2Alpha (double level) const
 	case PARTICLESTREAMSPEC::LVL_SQRT:
 		return sqrt (level);
 	case PARTICLESTREAMSPEC::LVL_PLIN:
-		return max (0, min (1, (level-lmin)/(lmax-lmin)));
+		return max (0.0, min (.01, (level-lmin)/(lmax-lmin)));
 	case PARTICLESTREAMSPEC::LVL_PSQRT:
 		return (level <= lmin ? 0 : level >= lmax ? 1 : sqrt ((level-lmin)/(lmax-lmin)));
 	}
@@ -163,9 +166,9 @@ double D3D7ParticleStream::Atm2Alpha (double prm) const
 	case PARTICLESTREAMSPEC::ATM_FLAT:
 		return amin;
 	case PARTICLESTREAMSPEC::ATM_PLIN:
-		return max (0, min (1, (prm-amin)*afac));
+		return max (0.0, min (1.0, (prm-amin)*afac));
 	case PARTICLESTREAMSPEC::ATM_PLOG:
-		return max (0, min (1, log(prm/amin)*afac));
+		return max (0.0, min (1.0, log(prm/amin)*afac));
 	}
 	return 0; // should not happen
 }

@@ -515,7 +515,7 @@ double VesselXRSoundEngine::GetGearAdjustedAltitude()
         }
     }
 
-    return max(altitude, 0);
+    return max(altitude, 0.0);
 }
 
 // Returns animation (door) state of this vessel's landing gear (0..1), or -1 if none is defined or data is unavailable

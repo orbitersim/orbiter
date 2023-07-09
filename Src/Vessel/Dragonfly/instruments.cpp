@@ -11,6 +11,8 @@
 #include "orbitersdk.h"
 #include "dragonfly.h"
 
+using std::min;
+
 
 
 instrument::instrument(int x, int y,Panel* i_parent)

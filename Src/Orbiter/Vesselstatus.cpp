@@ -22,6 +22,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+using std::min;
+
 extern Orbiter *g_pOrbiter;
 extern TimeData td;
 extern PlanetarySystem *g_psys;

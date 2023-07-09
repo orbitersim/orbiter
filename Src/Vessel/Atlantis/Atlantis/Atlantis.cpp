@@ -25,6 +25,9 @@
 #include <stdio.h>
 #include <fstream>
 
+using std::min;
+using std::max;
+
 #ifdef _DEBUG
     // D. Beachy: for BoundsChecker debugging
     extern int GrowStack();
@@ -1001,7 +1004,7 @@ void Atlantis::AutoGimbal (const VECTOR3 &tgt_rate)
 	maxdg = dt*0.3; // max gimbal speed [rad/s]
 	dgimbal = a_pitch*(avel.x-tgt_rate.x) + b_pitch*aacc.x;
 	dgimbal = max(-maxdg, min(maxdg, dgimbal));
-	gimbal_pos.x = min (0, max (pitch_gimbal_max, gimbal_pos.x+dgimbal));
+	gimbal_pos.x = min (0.0, max (pitch_gimbal_max, gimbal_pos.x+dgimbal));
 
 	// Yaw gimbal settings
 	dgimbal = a_yaw*(avel.y-tgt_rate.y) + b_yaw*aacc.y;
@@ -1376,7 +1379,7 @@ void Atlantis::clbkLoadStateEx (FILEHANDLE scn, void *vs)
 	if (status == 0) {
 		VESSELSTATUS2 *vs2 = (VESSELSTATUS2*)vs;
 		if (vs2->status & 1) { // idle flag
-			launchelev = max (0, vs2->vrot.x - 18.962);
+			launchelev = max (0.0, vs2->vrot.x - 18.962);
 			if (vs2->arot.x > 4.0) {   // rotation matrix not defined - need to construct manually
 				double slng = sin (vs2->surf_lng), clng = cos (vs2->surf_lng);
 				double slat = sin (vs2->surf_lat), clat = cos (vs2->surf_lat);
@@ -1388,7 +1391,7 @@ void Atlantis::clbkLoadStateEx (FILEHANDLE scn, void *vs)
 		} else {
 			double rad = length(vs2->rpos);
 			double alt = rad - oapiGetSize(vs2->rbody);
-			launchelev = max (0, alt - 18.962);
+			launchelev = max (0.0, alt - 18.962);
 		}
 	}
 

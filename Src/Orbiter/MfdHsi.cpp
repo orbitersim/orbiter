@@ -178,12 +178,12 @@ void Instrument_HSI::UpdateDraw (oapi::Sketchpad *skp)
 		if (bglideslope) {
 			const double glslope = 4.0;
 			double dslope = slope*DEG-glslope;
-			dy1 = (int)(max(-2, min(2, dslope))*0.3*R0);
+			dy1 = (int)(max(-2.0, min(2.0, dslope))*0.3*R0);
 			skp->Rectangle (-R0/2, dy1-U4, R0/2, dy1+U4);
 		}
 
 		// draw obs arrows
-		dy1 = (int)(max(-10, min (10, DEG*crsdev))*0.06*R0)+U4;
+		dy1 = (int)(max(-10.0, min (10.0, DEG*crsdev))*0.06*R0)+U4;
 		dy2 = dy1-2*U4;
 		parrow[11].y = parrow[12].y = dy2;
 		parrow[13].y = parrow[14].y = dy1;

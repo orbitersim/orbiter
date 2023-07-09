@@ -12,6 +12,9 @@
 #include "ShuttleA.h"
 #include "auxpodctrl.h"
 
+using std::min;
+using std::max;
+
 #define STRICT 1
 
 static const float texw = (float)PANEL2D_TEXW;
@@ -273,7 +276,7 @@ bool AuxPodCtrl::ProcessMouse2D (int event, int mx, int my)
 		double dangle = dt*POD_ROTREQUEST_SPEED;
 		double pod_angle_ref = (ctrl & 1 ? pod_angle_cmd[0] : pod_angle_cmd[1]);
 		if (mode == 1) pod_angle_ref = min (pod_angle_ref+dangle, PI);
-		else           pod_angle_ref = max (pod_angle_ref-dangle, 0);
+		else           pod_angle_ref = max (pod_angle_ref-dangle, 0.0);
 		for (i = 0; i < 2; i++)
 			if ((ctrl >> i) & 1)
 				pod_angle_cmd[i] = pod_angle_ref;

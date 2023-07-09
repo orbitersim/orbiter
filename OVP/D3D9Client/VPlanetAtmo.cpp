@@ -583,7 +583,7 @@ void vPlanet::UpdateScatter()
 
 	float ph = atmo->mphase * 200.0f;
 	float g = ph / sqrt(1.0f + ph * ph);
-	float hrz = sqrt(max(0, cr * cr - pr * pr));
+	float hrz = sqrt(max(0.0, cr * cr - pr * pr));
 	float qw = float(pr / cr);
 
 	LPDIRECT3DSURFACE9 pTgt, pTgt2;
@@ -673,7 +673,7 @@ void vPlanet::UpdateScatter()
 
 	if (cp.CamAlt < prm.cloudalt) {
 		float SMi = cp.CloudAlt;
-		float SMa = min(100e3, cp.HrzDst); // Semi-major axis
+		float SMa = min(100e3f, cp.HrzDst); // Semi-major axis
 		cp.ecc = sqrt((SMa * SMa - SMi * SMi) / (SMa * SMa)); // eccentricity
 		cp.smi = SMi;
 	}
@@ -1287,7 +1287,7 @@ void vPlanet::TestComputations(Sketchpad* pSkp)
 		if (bSrc) {	// Camera in Shadow
 			s0 = max(sp.sx, sp.ae);
 
-			float lf = max(0, sp.ca) / max(1.0f, abs(sp.hd)); // Lerp Factor
+			float lf = max(0.0f, sp.ca) / max(1.0f, abs(sp.hd)); // Lerp Factor
 			float mp = lerp((sp.ax + s0) * 0.5f, sp.hd, saturate(lf));
 
 			e0 = mp;
@@ -1295,9 +1295,9 @@ void vPlanet::TestComputations(Sketchpad* pSkp)
 			e1 = sp.ax;
 		}
 		else { // Camera is Lit
-			s0 = max(0, sp.ae);
+			s0 = max(0.0f, sp.ae);
 
-			float lf = max(0, sp.ca) / max(1.0f, abs(sp.hd)); // Lerp Factor
+			float lf = max(0.0f, sp.ca) / max(1.0f, abs(sp.hd)); // Lerp Factor
 			float mp = lerp((sp.ax + s0) * 0.5f, sp.hd, saturate(lf));
 
 			bool bA = (sp.se > sp.ax || sp.se < 0);			

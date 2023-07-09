@@ -17,6 +17,9 @@
 #include "meshres_vc.h"
 #include "dg_vc_anim.h"
 
+using std::min;
+using std::max;
+
 // ==============================================================
 // Light control subsystem
 // ==============================================================

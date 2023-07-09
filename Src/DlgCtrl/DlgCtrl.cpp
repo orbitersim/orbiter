@@ -4,7 +4,10 @@
 #include "DlgCtrl.h"
 #include "DlgCtrlLocal.h"
 #include <stdio.h>
+#include <algorithm>
 
+using std::min;
+using std::max;
 
 GDIRES g_GDI;
 
@@ -170,7 +173,7 @@ LRESULT FAR PASCAL MsgProc_Gauge (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 		} else {
 			int rmin = GetWindowLongPtr (hWnd, WINOFS_RMIN);
 			int rmax = GetWindowLongPtr (hWnd, WINOFS_RMAX);
-			g_timer = SetTimer (hWnd, 1, min(1000,max(1,3000/(rmax-rmin))), NULL);
+			g_timer = SetTimer (hWnd, 1, min(1000, max(1,3000/(rmax-rmin))), NULL);
 			PostMessage (hWnd, WM_TIMER, 1, 0);
 		}
 		} return 0;
