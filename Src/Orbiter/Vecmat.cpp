@@ -247,21 +247,21 @@ void Matrix::orthogonalise (int axis)
 	Vector b1, b2, b3;
 	switch (axis) {
 	case 0:
-		b1.Set (m11, m12, m13);  b1.unify();
-		b2.Set (m21, m22, m23);  b2.unify();
-		b3 = crossp(b1,b2);
+		b1 = unit(Vector{m11, m12, m13});
+		b2 = unit(Vector{m21, m22, m23});
+		b3 = cross(b1, b2);
 		m31 = b3.x, m32 = b3.y, m33 = b3.z;
 		break;
 	case 1:
-		b1.Set (m11, m12, m13);  b1.unify();
-		b3.Set (m31, m32, m33);  b3.unify();
-		b2 = crossp (b3,b1);
+		b1 = unit(Vector{m11, m12, m13});
+		b3 = unit(Vector{m31, m32, m33});
+		b2 = cross(b3, b1);
 		m21 = b2.x, m22 = b2.y, m23 = b2.z;
 		break;
 	case 2:
-		b2.Set (m21, m22, m23);  b2.unify();
-		b3.Set (m31, m32, m33);  b3.unify();
-		b1 = crossp (b2,b3);
+		b2 = unit(Vector{m21, m22, m23});
+		b3 = unit(Vector{m31, m32, m33});
+		b1 = cross(b2, b3);
 		m11 = b1.x, m12 = b1.y, m13 = b1.z;
 		break;
 	}
@@ -404,7 +404,7 @@ void qrdcmp (Matrix &a, Vector &c, Vector &d, int *sing)
 			scale = std::max (scale, fabs(a(i,k)));
 		if (scale == 0.0) {
 			if (sing) *sing = 1;
-			c(k) = d(k) = 0.0;
+			c[k] = d[k] = 0.0;
 		} else {
 			for (i = k; i < 3; i++)
 				a(i,k) /= scale;
@@ -412,19 +412,19 @@ void qrdcmp (Matrix &a, Vector &c, Vector &d, int *sing)
 				sum += a(i,k)*a(i,k);
 			sigma = (a(k,k) < 0 ? -sqrt(sum) : sqrt(sum));
 			a(k,k) += sigma;
-			c(k) = sigma*a(k,k);
-			d(k) = -scale*sigma;
+			c[k] = sigma * a(k, k);
+			d[k] = -scale * sigma;
 			for (j = k+1; j < 3; j++) {
 				for (sum = 0.0,i = k; i < 3; i++)
 					sum += a(i,k)*a(i,j);
-				tau = sum/c(k);
+				tau = sum / c[k];
 				for (i = k; i < 3; i++)
 					a(i,j) -= tau*a(i,k);
 			}
 		}
 	}
-	d(2) = a(2,2);
-	if (sing && d(2) == 0.0) *sing = 1;
+	d[2] = a(2, 2);
+	if (sing && d[2] == 0.0) *sing = 1;
 }
 
 void qrsolv (const Matrix &a, const Vector &c, const Vector &d, Vector &b)
@@ -433,17 +433,17 @@ void qrsolv (const Matrix &a, const Vector &c, const Vector &d, Vector &b)
 	double sum, tau;
 	for (j = 0; j < 2; j++) {
 		for (sum = 0.0, i = j; i < 3; i++)
-			sum += a(i,j)*b(i);
-		tau = sum/c(j);
+			sum += a(i, j) * b[i];
+		tau = sum / c[j];
 		for (i = j; i < 3; i++)
-			b(i) -= tau*a(i,j);
+			b[i] -= tau * a(i, j);
 	}
 
-	b(2) /= d(2);
+	b[2] /= d[2];
 	for (i = 1; i >= 0; i--) {
 		for (sum = 0.0, j = i+1; j < 3; j++)
-			sum += a(i,j)*b(j);
-		b(i) = (b(i)-sum)/d(i);
+			sum += a(i, j) * b[j];
+		b[i] = (b[i] - sum) / d[i];
 	}
 }
 
@@ -693,20 +693,20 @@ double angle (const Quaternion &A, const Quaternion &B)
 // =======================================================================
 // StateVectors
 
-void StateVectors::Set (const StateVectors &s)
+void StateVectors::Set(const StateVectors &s)
 {
-	vel.Set (s.vel);
-	pos.Set (s.pos);
-	omega.Set (s.omega);
+	vel = s.vel;
+	pos = s.pos;
+	omega = s.omega;
 	Q.Set (s.Q);
 	R.Set (s.R);
 }
 
 void StateVectors::Set (const Vector &v, const Vector &p, const Vector &av, const Quaternion &ap)
 {
-	vel.Set (v);
-	pos.Set (p);
-	omega.Set (av);
+	vel = v;
+	pos = p;
+	omega = av;
 	Q.Set (ap);
 	R.Set (ap);
 }
@@ -771,7 +771,7 @@ void VectorBasisToMatrix(const Vector &X, const Vector &Y, const Vector &Z, Matr
 void DirRotToMatrix(const Vector &Z, const Vector &Y, Matrix &R)
 {
 	// Compute the third orthogonal direction vector from Z and Y
-	Vector X(crossp(Y, Z)); // left-handed
+	Vector X = cross(Y, Z); // left-handed
 
 	VectorBasisToMatrix(X, Y, Z, R);
 }

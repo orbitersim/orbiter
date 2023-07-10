@@ -90,10 +90,10 @@ public:
 	inline void Set (const Vector &vec)
 	{ x = vec.x, y = vec.y, z = vec.z; }
 
-	inline double &operator() (int i)
+	inline double &operator[] (int i)
 	{ return data[i]; }
 
-	inline double operator() (int i) const
+	inline double operator[] (int i) const
 	{ return data[i]; }
 
 	inline Vector &operator= (const Vector &vec)
@@ -168,6 +168,8 @@ public:
 		struct { double x, y, z; };
 	};
 };
+
+template<> struct is_vector3<Vector> : std::true_type { };
 
 // =======================================================================
 // class Matrix
@@ -399,7 +401,7 @@ void PlaneCoeffs (const Vector &p1, const Vector &p2, const Vector &p3,
 // Distance of point 'a' from a line defined by a point 'p' and direction vector 'd'
 inline double PointLineDist (const Vector &a, const Vector &p, const Vector &d)
 {
-	return crossp (d.unit(), a-p).length();
+	return len(cross(unit(d), a - p));
 	//return dotp(d,a-p)/d.length();
 }
 
@@ -412,7 +414,7 @@ double PointPlaneDist(const Vector& p, double a, double b, double c, double d);
 bool LinePlaneIntersect (double a, double b, double c, double d, const Vector &p, const Vector &s, Vector &r);
 
 // Return the normal to the plane defined by coefficients a,b,c,d
-inline Vector PlaneNormal(double a, double b, double c, double d) { return Vector(a, b, c).unit(); }
+inline Vector PlaneNormal(double a, double b, double c, double d) { return unit(Vector{a, b, c}); }
 
 // Convert a cartesian reference frame given by orthonormal vectors X, Y, Z (expressed in the global frame) into
 // a rotation matrix, such that a point p in the global frame is transformed to p' in the XYZ frame by p' = Rp.
