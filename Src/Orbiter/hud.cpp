@@ -87,7 +87,7 @@ void HUD::Draw (oapi::Sketchpad *skp)
 	if (g_camera->IsExternal()) return; // nothing to do
 
 	if (bVC) {
-		HUDofs.Set ((VCcnt - g_camera->CockpitPos()) * VCscale);
+		HUDofs = (VCcnt - g_camera->CockpitPos()) * VCscale;
 		spec.Scale = HUDofs.z * onedeg;
 	} else {
 		spec.Scale = g_camera->Scale() * onedeg;
@@ -187,7 +187,7 @@ void HUD::Resize (bool isVC)
 		ladder_width = (HRES05*60)/128;
 		ladder_range = 250;
 		const VECTOR3 &cnt = pane->GetVC()->GetHUDParams()->hudcnt;
-		VCcnt.Set (cnt.x, cnt.y, cnt.z);
+		VCcnt = {cnt.x, cnt.y, cnt.z};
 		VCscale = spec.H / pane->GetVC()->GetHUDParams()->size;
 		spec.Markersize = 6+(10*HRES05)/128;
 		boxx = fW*3;
@@ -197,7 +197,7 @@ void HUD::Resize (bool isVC)
 		VRES05 = (spec.H = pane->H)/2;
 		ladder_width = 0.12*spec.W;
 		ladder_range = 0.43*spec.H;
-		HUDofs.Set (0, 0, g_camera->Scale());
+		HUDofs = {0, 0, g_camera->Scale()};
 		spec.Markersize = max(20,spec.H/25); // spec.W/40;
 		boxx = spec.Markersize*10; //HRES05 >> 1;
 		h = spec.H/50;
@@ -417,8 +417,8 @@ void HUD::AddMesh_DirectionMarker (int &ivtx, int &iidx, const Vector &dir, bool
 	double rad = dy*4.0;
 
 	Vector d;
-	if (bVC) d.Set (tmul (g_focusobj->GRot(), dir));
-	else     d.Set (tmul (g_camera->GRot(), dir));
+	if (bVC) d = tmul(g_focusobj->GRot(), dir);
+	else     d = tmul(g_camera->GRot(), dir);
 	double len = std::hypot (d.x, d.y);
 	if (!len) return;
 	double cosa = d.y/len, sina = -d.x/len;
@@ -992,7 +992,7 @@ void HUD::AddMesh_DockApproachGates (int &ivtx, int &iidx, const Body *tgt, cons
 			y[12]= y[0]+ry; y[13]= y[1]+ry;
 			x[14]= x[13]+dx1;x[15]= x[12]+dx1;
 			y[14]= y[13]+dy1;y[15]= y[12]+dy1;
-			if (dotp(dpos.unit(), ddir) >= 0.0) {
+			if (dot(unit(dpos), ddir) >= 0.0) {
 				for (j = 0; j < 30; j++)
 					gs->Idx[iidx++] = ivtx + boxidx1[j];
 			} else {
@@ -1230,9 +1230,9 @@ oapi::IVECTOR2 *HUD::OffscreenDirMarker (const Vector &dir) const
 	static oapi::IVECTOR2 pt[4];
 	Vector d;
 	if (bVC) {
-		d.Set (tmul (g_focusobj->GRot(), dir));
+		d = tmul(g_focusobj->GRot(), dir);
 	} else {
-		d.Set (tmul (g_camera->GRot(), dir));
+		d = tmul(g_camera->GRot(), dir);
 	}
 	double len = std::hypot (d.y, d.x);
 	double scale = spec.Markersize * 0.6;
@@ -1324,8 +1324,8 @@ void HUD_Orbit::Display (oapi::Sketchpad *skp)
 	skp->Text (10+6*fW, 0, cbuf, strlen (cbuf));
 
 	Vector V = self->GVel() - cntobj->GVel();
-	Vector Vunit = V.unit();
-	Vector Vrel = tmul (self->GRot(), V).unit();
+	Vector Vunit = unit(V);
+	Vector Vrel = unit(tmul(self->GRot(), V));
 	if (!GlobalDrawMarker (skp, Vunit, 6) &&
 		!GlobalDrawMarker (skp, -Vunit, 4)) {
 		oapi::IVECTOR2 *pt = OffscreenDirMarker (Vunit);
@@ -1342,7 +1342,7 @@ void HUD_Orbit::Display (oapi::Sketchpad *skp)
 	y = fH*3;
 	char spd_mag = 0; // speed magnitude character
 	char rad_mag = 0; // radius magnitude character
-	if ((v=P.length()) < MAXALT_HUD) {
+	if ((v = ::len(P)) < MAXALT_HUD) {
 		strcpy (cbuf, FloatStr (v));
 		len = strlen(cbuf + 1);
 		if (cbuf[len] >= 'M') {
@@ -1358,7 +1358,7 @@ void HUD_Orbit::Display (oapi::Sketchpad *skp)
 	skp->Rectangle (xbr, y, xbr+dx, y+2+fH);
 
 	// orbital velocity indicator
-	if ((v = V.length()) >= 0.0) {
+	if ((v = ::len(V)) >= 0.0) {
 		if (v < MAXALT_HUD) {
 			strcpy (cbuf, FloatStr (v));
 			len = strlen(cbuf + 1);
@@ -1387,7 +1387,7 @@ void HUD_Orbit::Display (oapi::Sketchpad *skp)
 	skp->SetTextAlign(oapi::Sketchpad::LEFT);
 	skp->SetFont(font);
 
-	Vector Prel = tmul (self->GRot(), P).unit();
+	Vector Prel = unit(tmul(self->GRot(), P));
 	//if (Prel.z < 0.0) Prel = -Prel;
 	fac = VRES05 / (Prel.z * g_camera->TanAperture());
 	px = HRES05 + (int)(Prel.x * fac);
@@ -1421,11 +1421,11 @@ void HUD_Orbit::Display (oapi::Sketchpad *skp)
 	// Orbital plane azimuth angle ribbon
 	Vector Z0 (-c*a, -c*b, a*a+b*b); // projection of vessel forward direction into orbital plane
 	if (Z0.x || Z0.y || Z0.z) {
-		Z0.unify();
-		double cosa = dotp (Vrel, Z0);
+		Z0 = unit(Z0);
+		double cosa = dot(Vrel, Z0);
 		double phi = acos(cosa);
 		Vector VV (Vrel.y*c - Vrel.z*b, Vrel.z*a - Vrel.x*c, Vrel.x*b - Vrel.y*a); // Vector perpendicular to V in orbital plane
-		if (dotp (Z0, VV) > 0.0) phi = Pi2-phi;
+		if (dot(Z0, VV) > 0.0) phi = Pi2 - phi;
 		DrawTiltedRibbon (skp, phi, alpha);
 	}
 }
@@ -1452,7 +1452,7 @@ void HUD_Orbit::UpdateMesh (int &ivtx, int &iidx)
 	AddMesh_Billboard (ivtx, iidx, spec.CX-renderprm.scal*refwidth*0.7, renderprm.scal*10, renderprm.scal*refwidth*1.4, renderprm.scal*19.6, 0, 242, refwidth, 14);
 
 	Vector V = self->GVel() - cntobj->GVel();
-	Vector Vunit = V.unit();
+	Vector Vunit = unit(V);
 	if (!AddMesh_Marker (ivtx, iidx, Vunit, 1) &&
 		!AddMesh_Marker (ivtx, iidx, -Vunit, 0)) {
 			AddMesh_DirectionMarker (ivtx, iidx, Vunit, true);
@@ -1460,17 +1460,17 @@ void HUD_Orbit::UpdateMesh (int &ivtx, int &iidx)
 
 	if (g_camera->IsCockpitForward()) {
 		static double step = tan (RAD*10.0);
-		Vector Vrel = tmul (self->GRot(), V).unit();
+		Vector Vrel = unit(tmul(self->GRot(), V));
 		Vector P = self->GPos() - cntobj->GPos();
-		Vector Prel = tmul (self->GRot(), P).unit();
+		Vector Prel = unit(tmul(self->GRot(), P));
 
 		// Radius readout
 		char cbuf[64];
-		strcpy (cbuf, (v=P.length()) < MAXALT_HUD ? FloatStr (v) : " ----");
+		strcpy(cbuf, (v = len(P)) < MAXALT_HUD ? FloatStr (v) : " ----");
 		AddMesh_Readout (ivtx, iidx, 1, cbuf+1, 2);
 
 		// Orbital velocity readout
-		strcpy (cbuf, (v=V.length()) < MAXALT_HUD ? FloatStr (v) : " ----");
+		strcpy(cbuf, (v = len(V)) < MAXALT_HUD ? FloatStr (v) : " ----");
 		AddMesh_Readout (ivtx, iidx, 0, cbuf+1, 4);
 
 		a = Prel.z*Vrel.y - Prel.y*Vrel.z;
@@ -1495,11 +1495,11 @@ void HUD_Orbit::UpdateMesh (int &ivtx, int &iidx)
 		// Orbital plane azimuth angle ribbon
 		Vector Z0 (-c*a, -c*b, a*a+b*b); // projection of vessel forward direction into orbital plane
 		if (Z0.x || Z0.y || Z0.z) {
-			Z0.unify();
-			double cosa = dotp (Vrel, Z0);
+			Z0 = unit(Z0);
+			double cosa = dot(Vrel, Z0);
 			double phi = acos(cosa);
 			Vector VV (Vrel.y*c - Vrel.z*b, Vrel.z*a - Vrel.x*c, Vrel.x*b - Vrel.y*a); // Vector perpendicular to V in orbital plane
-			if (dotp (Z0, VV) > 0.0) phi = Pi2-phi;
+			if (dot(Z0, VV) > 0.0) phi = Pi2 - phi;
 			AddMesh_AzimuthTape (ivtx, iidx, phi, alpha);
 		}
 	}
@@ -1587,7 +1587,7 @@ void HUD_Surface::Display (oapi::Sketchpad *skp)
 
 	// velocity marker
 	if (sp->groundspd > 1.0)
-		GlobalDrawMarker (skp, sp->groundvel_glob.unit(), 6);
+		GlobalDrawMarker(skp, unit(sp->groundvel_glob), 6);
 
 	// altitude indicator
 	dx = fW*7;
@@ -1721,7 +1721,7 @@ void HUD_Surface::UpdateMesh (int &ivtx, int &iidx)
 
 	// velocity marker
 	if (sp->groundspd > 1.0)
-		AddMesh_Marker (ivtx, iidx, sp->groundvel_glob.unit(), 1);
+		AddMesh_Marker(ivtx, iidx, unit(sp->groundvel_glob), 1);
 
 	if (g_camera->IsCockpitForward()) {
 		// Altitude readout
@@ -1868,7 +1868,7 @@ void HUD_Docking::Display (oapi::Sketchpad *skp)
 
 	// rel velocity marker
 	Vector vrel = self->GVel() - tgt->GVel();
-	double len = vrel.length(); vrel /= len;
+	double len = ::len(vrel); vrel /= len;
 	sprintf (cbuf, "V[%s]", tgt->Name());
 
 	if (GlobalToHUD (vrel, x, y)) {
@@ -1892,7 +1892,7 @@ void HUD_Docking::Display (oapi::Sketchpad *skp)
 
 	// target marker
 	Vector prel = tgt->GPos() - self->GPos();
-	len = prel.length(); prel /= len;
+	len = ::len(prel); prel /= len;
 	if (GlobalToHUD (prel, x, y)) {
 		skp->Rectangle (x-spec.Markersize, y-spec.Markersize, x+spec.Markersize+1, y+spec.Markersize+1);
 	} else {
@@ -2008,7 +2008,7 @@ void HUD_Docking::UpdateMesh (int &ivtx, int &iidx)
 	// rel velocity marker
 	double xcnt, ycnt;
 	Vector vrel = self->GVel() - tgt->GVel();
-	double len = vrel.length();
+	double len = ::len(vrel);
 	Vector Vunit = vrel/len;
 
 	sprintf (cbuf, "-V[%s]%s", tgt->Name(), DistStr(len));
@@ -2029,7 +2029,7 @@ void HUD_Docking::UpdateMesh (int &ivtx, int &iidx)
 
 	// target marker
 	Vector prel = tgt->GPos() - self->GPos();
-	len = prel.length(); prel /= len;
+	len = ::len(prel); prel /= len;
 	if (!AddMesh_Marker (ivtx, iidx, prel, 2, &xcnt, &ycnt))
 		AddMesh_DirectionMarker (ivtx, iidx, prel, false, &xcnt, &ycnt);
 	sprintf (cbuf, "D[%s]%s", tgt->Name(), DistStr(len));
@@ -2144,7 +2144,7 @@ void BoxCoord (const Vector &dockpos, const Vector &dockdir,
 			   const Vector &refdir, double dist, Vector *crd)
 {
 	const double size1 = 7.0, size2 = 5.0;
-	Vector xdir (crossp (dockdir, refdir));
+	Vector xdir = cross(dockdir, refdir);
 	Vector s (dockpos - dockdir*dist);
 	for (int i = 0; i < 4; i++)
 		crd[i] = s + refdir * (i <= 1 ? size2 : -size2) + xdir * (i == 0 || i == 3 ? size1 : -size1);
