@@ -360,7 +360,7 @@ public:
 
 	double GetLift () const { return Lift; }
 	double GetDrag () const { return Drag; }
-	double GetWeight () const { Vector G; GetWeightVector(G); return G.length(); }
+	double GetWeight () const { Vector G; GetWeightVector(G); return len(G); }
 
 	bool GetWeightVector (Vector &G) const;
 	// Returns gravitational force vector (weight) (in local vessel frame).
@@ -1302,7 +1302,7 @@ protected:
 	inline void AddForce (const Vector &F, const Vector &r)
 	{
 		Flin_add += F;
-		Amom_add += crossp (F, r);
+		Amom_add += cross(F, r);
 	}
 	// given a force vector F and attack point r, this updates the linear and angular force
 	// vectors Flin and Amom for the rigid-body model
