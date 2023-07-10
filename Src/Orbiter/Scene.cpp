@@ -292,7 +292,7 @@ void Scene::UpdateVisual (Body *body, Camera **camlist, int ncam)
 
 	for (i = 0; !vis && i < ncam; i++) {
 		Camera *cam = camlist[i];
-		double dist = body->GPos().dist (cam->GPos());
+		double dist = ::dist(body->GPos(), cam->GPos());
 		double apps = body->Size()/(dist*cam->TanAperture());
 		vis = (apps > body->VisLimit());
 #ifdef UNDEF
@@ -581,7 +581,7 @@ void Scene::Render3DLabel (const Vector &gp, const char *label, double scale, DW
 	static WORD Idx[6] = {0,1,2,3,2,1};
 
 	Vector lp = gp-g_camera->GPos();
-	double dist = lp.length();
+	double dist = len(lp);
 	int ix, iy, w;
 	RECT sr = {0,0,0,28};
 	if (g_pane->GlobalToScreen (lp/dist, ix, iy)) {
@@ -659,13 +659,12 @@ VECTOR3 Scene::SkyColour()
 	if (pp && pp->HasAtmosphere()) {
 		const ATMCONST* atmp = pp->AtmParams();
 		Vector pc(g_camera->GPos() - pp->GPos());
-		double cdist = pc.length();
+		double cdist = len(pc);
 		if (cdist < atmp->radlimit) {
 			ATMPARAM prm;
 			pp->GetAtmParam(cdist - pp->Size(), 0, 0, &prm);
-			Vector ps(-pp->GPos());
-			ps.unify();
-			double coss = (pc & ps) / cdist;
+			Vector ps = unit(-pp->GPos());
+			double coss = dot(pc, ps) / cdist;
 			double intens = min(1.0, (1.0839 * coss + 0.4581)) * sqrt(prm.rho / atmp->rho0);
 			// => intensity=0 at sun zenith distance 115°
 			//    intensity=1 at sun zenith distance 60°
@@ -680,7 +679,7 @@ VECTOR3 Scene::SkyColour()
 
 void Scene::RenderObjectMarker (oapi::Sketchpad* pSkp, const Vector &gpos, const std::string& label1, const std::string& label2, int mode, int scale)
 {
-	m_celSphere->RenderMarker(pSkp, MakeVECTOR3((gpos - g_camera->GPos()).unit()), label1, label2, mode, scale);
+	m_celSphere->RenderMarker(pSkp, MakeVECTOR3(unit(gpos - g_camera->GPos())), label1, label2, mode, scale);
 }
 
 void Scene::Render (D3DRECT* vp_rect)
@@ -708,8 +707,7 @@ void Scene::Render (D3DRECT* vp_rect)
 	// set lighting
 	for (i = 0; i < nstarlight; i++) {
 		star_lght->dcvDiffuse = starlight[i].col;
-		Vector dir = g_camera->GPos() - *starlight[i].gpos;
-		dir.unify();
+		Vector dir = unit(g_camera->GPos() - *starlight[i].gpos);
 		star_lght->dvDirection.x = (D3DVALUE)dir.x;
 		star_lght->dvDirection.y = (D3DVALUE)dir.y;
 		star_lght->dvDirection.z = (D3DVALUE)dir.z;
@@ -829,7 +827,7 @@ void Scene::Render (D3DRECT* vp_rect)
 						Base* base = pl->GetBase(n);
 						base->EquPos(lng, lat);
 						pl->EquatorialToGlobal(lng, lat, pl->Size(), sp);
-						if (dotp(sp - pl->GPos(), g_camera->GPos() - sp) >= 0.0) // surface point visible?
+						if (dot(sp - pl->GPos(), g_camera->GPos() - sp) >= 0.0) // surface point visible?
 							RenderObjectMarker(pSkp, sp, std::string(base->Name()), std::string(), 0);
 					}
 				}
@@ -850,7 +848,7 @@ void Scene::Render (D3DRECT* vp_rect)
 							break;
 						}
 						if (found) {
-							if (sp.dist2(cloc) < 2.5e11 && dotp(sp, cloc - sp) >= 0.0) { // surface point visible?
+							if (dist_2(sp, cloc) < 2.5e11 && dot(sp, cloc - sp) >= 0.0) { // surface point visible?
 								sprintf(cbuf, "%0.2f", nav->GetFreq());
 								RenderObjectMarker(pSkp, mul(pl->GRot(), sp) + pl->GPos(), std::string(cbuf), std::string(), 0);
 							}
@@ -877,7 +875,7 @@ void Scene::Render (D3DRECT* vp_rect)
 								const std::vector< oapi::GraphicsClient::LABELSPEC>& uls = list[k].marker;
 								for (j = 0; j < uls.size(); j++) {
 									mp = MakeVector(uls[j].pos);
-									if (dotp(mp, cp - mp) >= 0.0) { // surface point visible?
+									if (dot(mp, cp - mp) >= 0.0) { // surface point visible?
 										sp = mul(pl->GRot(), mp) + pl->GPos();
 										RenderObjectMarker(pSkp, sp, uls[j].label[0], uls[j].label[1], shape, size);
 									}
