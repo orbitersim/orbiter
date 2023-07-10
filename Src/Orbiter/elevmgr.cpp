@@ -354,7 +354,7 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 					double nz02 = eptr[elev_stride+1]-eptr[1];
 					double nz = w_lng*nz02 + (1.0-w_lng)*nz01;
 					Vector vnz(0,nz,dz);
-					*normal = crossp(vnz,vnx).unit();
+					*normal = unit(cross(vnz, vnx));
 				}
 			} else { // cubic spline interpolation
 				double a_m1, a_0, a_p1, a_p2, b_m1, b_0, b_p1, b_p2;
@@ -413,7 +413,7 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 					normal->x = -dex;
 					normal->z = -dez;
 					normal->y = 0.5*(dx+dz);
-					normal->unify();
+					*normal = unit(*normal);
 				}
 			}
 			t->last_access = td.SysT0;
