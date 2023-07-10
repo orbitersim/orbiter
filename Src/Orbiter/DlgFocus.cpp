@@ -338,7 +338,7 @@ void DlgFocus::RescanTree_Nearby (HWND hDlg)
 	for (DWORD i = 0; i < g_psys->nVessel(); i++) {
 		Vessel *vessel = g_psys->GetVessel(i);
 		if (vessel->GetEnableFocus()) {
-			double dst = campos.dist (vessel->GPos());
+			double dst = dist(campos, vessel->GPos());
 			if (dst <= range) {
 				hti = AddVesselToTree (hDlg, NULL, vessel);
 				if (hti) hti_focus = hti;
