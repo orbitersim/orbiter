@@ -291,7 +291,7 @@ void CSphereManager::Render(LPDIRECT3DDEVICE7 dev, int level, double bglvl)
 
 	Matrix rcam = g_camera->GRot();
 	rcam.premul(ecl2gal);
-	RenderParam.camdir.Set(rcam.m13, rcam.m23, rcam.m33);
+	RenderParam.camdir = {rcam.m13, rcam.m23, rcam.m33};
 
 #ifdef _DEBUG
 	// check expected render and texture stages on entry
@@ -397,7 +397,7 @@ void CSphereManager::ProcessTile (int lvl, int hemisp, int ilat, int nlat, int i
 	static const double rad0 = sqrt(2.0)*Pi05;
 	Vector cnt = TileCentre (hemisp, ilat, nlat, ilng, nlng);
 	double rad = rad0/(double)nlat;
-	double alpha = acos (dotp (RenderParam.camdir, cnt));
+	double alpha = std::acos(dot(RenderParam.camdir, cnt));
 	double adist = alpha - rad;
 	if (adist > RenderParam.viewap) return;
 
