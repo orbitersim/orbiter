@@ -555,7 +555,7 @@ void Instrument_MapOld::CalcOrbitProj (const Elements *el, const Planet *planet,
 	Vector rg, rl;
 
 	for (i = 0; i < npt05; i++) {
-		rl.Set (mul (R, Vector(cosp[i],0,sinp[i])));
+		rl = mul(R, Vector{cosp[i], 0, sinp[i]});
 		x = rl.x, y = rl.y, z = rl.z;
 		lng = atan2 (z,x) + Pi;  // maps start at -Pi (180°W)
 		lat = atan(y/std::hypot(x,z));
