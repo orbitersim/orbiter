@@ -13,39 +13,6 @@ int irand (int range)
 }
 
 // =======================================================================
-// class Vector
-
-double Vector::dist2 (const Vector &vec) const
-{
-	double dx = x-vec.x;
-	double dy = y-vec.y;
-	double dz = z-vec.z;
-	return dx*dx + dy*dy + dz*dz;
-}
-
-Vector Vector::unit () const
-{
-	double ilen = 1.0/length();
-	return Vector (x*ilen, y*ilen, z*ilen);
-}
-
-void Vector::unify ()
-{
-	double ilen = 1.0/length();
-	x *= ilen, y *= ilen, z *= ilen;
-}
-
-double xangle (const Vector &a, const Vector &b)
-{
-	double cosa = dotp (a.unit(), b.unit());
-	if (cosa < 1.0) { // also need to check for > -1
-		double angle = acos(cosa);
-		if (cosa >= 0.0) return angle;
-		else             return Pi2 - angle;
-	} else return 0.0;
-}
-
-// =======================================================================
 // class Matrix
 
 Matrix::Matrix ()

@@ -73,95 +73,16 @@ inline double acosh (double x)
 // =======================================================================
 // class Vector
 
-class Vector {
-public:
-	inline Vector ()
-	{ x = y = z = 0.0; }
+struct Vector
+{
+	constexpr Vector() : x{0}, y{0}, z{0} { }
+	constexpr Vector(double x, double y, double z) : x{x}, y{y}, z{z} { }
 
-	inline Vector (double _x, double _y, double _z)
-	{ x = _x, y = _y, z = _z; }
+	constexpr Vector(const Vector&) = default;
+	constexpr Vector& operator=(const Vector&) = default;
 
-	inline Vector (const Vector &vec)
-	{ x = vec.x, y = vec.y, z = vec.z; }
-
-	inline void Set (double _x, double _y, double _z)
-	{ x = _x, y = _y, z = _z; }
-
-	inline void Set (const Vector &vec)
-	{ x = vec.x, y = vec.y, z = vec.z; }
-
-	inline double &operator[] (int i)
-	{ return data[i]; }
-
-	inline double operator[] (int i) const
-	{ return data[i]; }
-
-	inline Vector &operator= (const Vector &vec)
-	{ x = vec.x, y = vec.y, z = vec.z; return *this; }
-
-	inline Vector operator+ (const Vector &vec) const
-	{ return Vector (x+vec.x, y+vec.y, z+vec.z); }
-
-	inline Vector operator- (const Vector &vec) const
-	{ return Vector (x-vec.x, y-vec.y, z-vec.z); }
-
-	inline Vector operator- () const // unary minus
-	{ return Vector (-x, -y, -z); }
-
-	inline Vector operator* (double f) const
-	{ return Vector (x*f, y*f, z*f); }
-
-	inline Vector operator* (const Vector &vec) const
-	{ return Vector (x*vec.x, y*vec.y, z*vec.z); }
-
-	inline Vector operator/ (double f) const
-	{ return Vector (x/f, y/f, z/f); }
-
-	inline Vector operator/ (const Vector &vec) const
-	{ return Vector (x/vec.x, y/vec.y, z/vec.z); }
-
-	inline double operator& (const Vector &vec) const // scalar product
-	{ return x*vec.x + y*vec.y + z*vec.z; }
-
-	inline Vector &operator+= (const Vector &vec)
-	{ x += vec.x, y += vec.y, z += vec.z; return *this; }
-
-	inline Vector &operator-= (const Vector &vec)
-	{ x -= vec.x, y -= vec.y, z -= vec.z; return *this; }
-
-	inline Vector &operator*= (const double f)
-	{ x *= f, y *= f, z *= f; return *this; }
-
-	inline Vector &operator/= (const double f)
-	{ x /= f, y /= f, z /= f; return *this; }
-
-	friend Vector crossp (const Vector &a, const Vector &b) // cross product
-	{ return Vector (a.y*b.z - b.y*a.z, a.z*b.x - b.z*a.x, a.x*b.y - b.x*a.y); }
-
-	friend double dotp (const Vector &a, const Vector &b) // scalar product
-	{ return a.x*b.x + a.y*b.y + a.z*b.z; }
-
-	inline double length2 () const   // square of vector length
-	{ return x*x + y*y + z*z; }
-
-	inline double length () const    // vector length
-	{ return sqrt (length2()); }
-
-	double dist2 (const Vector &vec) const; // square of distance between two points
-
-	inline double dist (const Vector &vec) const   // distance between two points
-	{ return sqrt (dist2 (vec)); }
-
-	Vector unit () const;  // return unit vector in direction of *this
-
-	void unify ();         // set length of *this to unity
-
-	friend double xangle (const Vector &a, const Vector &b);
-	// angle between two straight lines through the origin, defined
-	// by directions of a and b
-
-	friend std::ostream &operator<< (std::ostream &os, const Vector &v)
-	{ os << v.x << ' ' << v.y << ' ' << v.z; return os; }
+	constexpr auto  operator[](size_t i) const { return data[i]; }
+	constexpr auto& operator[](size_t i) { return data[i]; }
 
 	union {
 		double data[3];
