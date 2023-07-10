@@ -160,10 +160,10 @@ void RigidBody::RK2_LinAng (double h, int nsub, int isub)
 
 	Vector acc1, tau;
 	StateVectors s;
-	s.pos.Set (s1->pos+s1->vel*h05);
-	s.vel.Set (s1->vel+acc*h05);
+	s.pos = s1->pos + s1->vel * h05;
+	s.vel = s1->vel + acc * h05;
 	s.SetRot (s1->Q.Rot(s1->omega*h05));
-	s.omega.Set (s1->omega+arot*h05);
+	s.omega = s1->omega + arot * h05;
 	GetIntermediateMoments (acc1, tau, s, (isub+0.5)/nsub, h);
 
 	rpos_add += s.vel*h;
@@ -184,26 +184,26 @@ void RigidBody::RK4_LinAng (double h, int nsub, int isub)
 
 	Vector tau, acc1, aacc1, acc2, aacc2, acc3, aacc3;
 	StateVectors sa, sb, sc;
-	sa.pos.Set (s1->pos+s1->vel*h05);
-	sa.vel.Set (s1->vel+acc*h05);
+	sa.pos = s1->pos + s1->vel * h05;
+	sa.vel = s1->vel + acc * h05;
 	sa.SetRot (s1->Q.Rot(s1->omega*h05));
-	sa.omega.Set (s1->omega+arot*h05);
+	sa.omega = s1->omega + arot * h05;
 	GetIntermediateMoments (acc1, tau, sa, (isub+0.5)/nsub, h);
-	aacc1.Set (EulerInv_full (tau, sa.omega));
+	aacc1 = EulerInv_full(tau, sa.omega);
 
-	sb.pos.Set (s1->pos+sa.vel*h05);
-	sb.vel.Set (s1->vel+acc1*h05);
+	sb.pos = s1->pos + sa.vel * h05;
+	sb.vel = s1->vel + acc1 * h05;
 	sb.SetRot (s1->Q.Rot(sa.omega*h05));
-	sb.omega.Set (s1->omega+aacc1*h05);
+	sb.omega = s1->omega + aacc1 * h05;
 	GetIntermediateMoments (acc2, tau, sb, (isub+0.5)/nsub, h);
-	aacc2.Set (EulerInv_full (tau, sb.omega));
+	aacc2 = EulerInv_full(tau, sb.omega);
 
-	sc.pos.Set (s1->pos+sb.vel*h);
-	sc.vel.Set (s1->vel+acc2*h);
+	sc.pos = s1->pos + sb.vel * h;
+	sc.vel = s1->vel + acc2 * h;
 	sc.SetRot (s1->Q.Rot(sb.omega*h));
-	sc.omega.Set (s1->omega+aacc2*h);
+	sc.omega = s1->omega + aacc2 * h;
 	GetIntermediateMoments (acc3, tau, sc, (isub+1.0)/nsub, h);
-	aacc3.Set (EulerInv_full (tau, sc.omega));
+	aacc3 = EulerInv_full(tau, sc.omega);
 
 	rvel_add += (acc +(acc1+acc2)*2.0+acc3)*hi6;
 	rpos_add += (s1->vel+(sa.vel+sb.vel)*2.0+sc.vel)*hi6;
@@ -236,15 +236,15 @@ void RigidBody::RKdrv_LinAng (double h, int nsub, int isub, int n, const double 
 	}
 
 	s[0].Set (s1->vel, s1->pos, s1->omega, s1->Q);
-	a[0].Set (acc);
-	d[0].Set (arot);
+	a[0] = acc;
+	d[0] = arot;
 
 	for (i = 1; i < n; i++) {
 		s[i].Set (s1->vel, s1->pos, s1->omega, s1->Q);
 		for (j = 0; j < i; j++)
 			s[i].Advance (beta[j]*h, a[j], s[j].vel, d[j], s[j].omega);
 		GetIntermediateMoments (a[i],tau,s[i],(isub+alpha[i-1])/nsub, h);
-		d[i].Set (EulerInv_full (tau, s[i].omega));
+		d[i] = EulerInv_full(tau, s[i].omega);
 		beta += n-1;
 	}
 	for (i = 0; i < n; i++) {
@@ -307,7 +307,7 @@ void RigidBody::SY2_LinAng (double h, int nsub, int isub)
 	s1->Q.Rotate (s1->omega*h05);
 	s.Set (s1->vel, rpos_base+rpos_add, s1->omega, s1->Q);
 	GetIntermediateMoments (acc, tau, s, (isub+0.5)/nsub, h);
-	arot.Set (EulerInv_full (tau, s.omega));
+	arot = EulerInv_full(tau, s.omega);
 	rvel_add += acc*h;
 	s1->omega += arot*h;
 	rpos_add += (rvel_base+rvel_add)*h05;
@@ -340,7 +340,7 @@ void RigidBody::SY4_LinAng (double h, int nsub, int isub)
 		if (i != 3) {
 			s.Set (rvel_base+rvel_add, rpos_base+rpos_add, s1->omega, s1->Q);
 			GetIntermediateMoments (acc, tau, s, (isub+sec)/nsub, h);
-			arot.Set (EulerInv_full (tau, s.omega));
+			arot = EulerInv_full(tau, s.omega);
 			rvel_add += acc * (h*d4[i]);
 			s1->omega += arot * (h*d4[i]);
 		}
@@ -374,7 +374,7 @@ void RigidBody::SY6_LinAng (double h, int nsub, int isub)
 		if (i != 7) {
 			s.Set (rvel_base+rvel_add, rpos_base+rpos_add, s1->omega, s1->Q);
 			GetIntermediateMoments (acc, tau, s, (isub+sec)/nsub, h);
-			arot.Set (EulerInv_full (tau, s.omega));
+			arot = EulerInv_full(tau, s.omega);
 			rvel_add += acc * (h*d6[i]);
 			s1->omega += arot * (h*d6[i]);
 		}
@@ -417,7 +417,7 @@ void RigidBody::SY8_LinAng (double h, int nsub, int isub)
 		if (i != 15) {
 			s.Set (rvel_base+rvel_add, rpos_base+rpos_add, s1->omega, s1->Q);
 			GetIntermediateMoments (acc, tau, s, (isub+sec)/nsub, h);
-			arot.Set (EulerInv_full (tau, s.omega));
+			arot = EulerInv_full(tau, s.omega);
 			rvel_add += acc * (h*d8[i]);
 			s1->omega += arot * (h*d8[i]);
 		}
@@ -600,8 +600,8 @@ void RigidBody::Encke ()
 		}
 
 		// angular state
-		omega[0].Set (s1->omega);
-		d[0].Set (arot);
+		omega[0] = s1->omega;
+		d[0] = arot;
 
 		for (k = 1; k < 13; k++) {
 			kk = k-1;
@@ -612,7 +612,7 @@ void RigidBody::Encke ()
 				}
 				x[i] = xwrk[i] + dt*temp;
 			}
-			omega[k].Set (s1->omega);
+			omega[k] = s1->omega;
 			for (j = 0; j < kk; j++) {
 				omega[k] += d[j]*(beta[k][j]*dt);
 			}
@@ -628,7 +628,7 @@ void RigidBody::Encke ()
 				f[i][k] = x[i+3];
 				f[i+3][k] = acc_pert.data[i];
 			}
-			d[k].Set (EulerInv_simple (tau, omega[k]));
+			d[k] = EulerInv_simple(tau, omega[k]);
 		}
 
 		for (i = 0; i < neq; i++) {
