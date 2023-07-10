@@ -184,7 +184,7 @@ int PinesGravProp::readGravModel(char* filename, int cutoff, int &actualLoadedTe
 
 Vector PinesGravProp::GetPinesGrav(const Vector rpos, const int maxDegree, const int maxOrder)
 {
-	r = rpos.length();
+	r = len(rpos);
 	s = rpos.x / r;
 	t = rpos.y / r;
 	u = rpos.z / r;
