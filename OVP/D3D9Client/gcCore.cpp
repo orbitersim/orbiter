@@ -631,7 +631,7 @@ gcCore::PickGround gcCore2::GetTileData(HPLANETMGR vPl, double lng, double lat, 
 	pg.dist = len(pos);
 	pg.level = pTile->Level();
 	pg.hTile = HTILE(pTile);
-	pg.pos = FVECTOR3(pos);
+	pg.pos = morph_to<FVECTOR3>(pos);
 
 	return pg;
 }

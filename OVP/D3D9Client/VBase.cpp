@@ -426,7 +426,7 @@ bool vBase::RenderStructures(LPDIRECT3DDEVICE9 dev)
 	for (DWORD i=0; i<nstructure_as; i++) {
 		auto bs = to_FVECTOR3(structure_as[i]->GetBoundingSpherePos());
 		auto qw = TransformCoord(bs, to_FMATRIX4(mWorld));
-		D3D9Sun sp = vP->GetObjectAtmoParams(qw._V() + vP->CameraPos());
+		D3D9Sun sp = vP->GetObjectAtmoParams(morph_to<VECTOR3>(qw) + vP->CameraPos());
 		structure_as[i]->SetSunLight(&sp);
 		structure_as[i]->Render(&mWorld, RENDER_BASE);
 		++uCurrentMesh;

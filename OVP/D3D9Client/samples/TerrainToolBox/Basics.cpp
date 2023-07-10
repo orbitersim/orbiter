@@ -111,8 +111,8 @@ void ToolKit::RenderTileBounds(gcCore::PickGround &pg, DWORD color)
 	double s = size - cos(h*0.5) * size;
 
 	FVECTOR3 box[8];
-	for (int i = 0; i < 4; i++) box[i] = FVECTOR3(V[i] * (size + pg.emax + s) - cpos);
-	for (int i = 0; i < 4; i++) box[i + 4] = FVECTOR3(V[i] * (size + pg.emin) - cpos);
+	for (int i = 0; i < 4; i++) box[i] = morph_to<FVECTOR3>(V[i] * (size + pg.emax + s) - cpos);
+	for (int i = 0; i < 4; i++) box[i + 4] = morph_to<FVECTOR3>(V[i] * (size + pg.emin) - cpos);
 
 	DrawBox(box, color);
 }
@@ -145,8 +145,8 @@ void ToolKit::RenderTileBounds(QTree *tn, DWORD color)
 		double s = size - cos(h*0.5) * size;
 		
 		FVECTOR3 box[8];
-		for (int i = 0; i < 4; i++) box[i] = FVECTOR3(V[i] * (size + pg.emax + s) - cpos);
-		for (int i = 0; i < 4; i++) box[i + 4] = FVECTOR3(V[i] * (size + pg.emin) - cpos);
+		for (int i = 0; i < 4; i++) box[i] = morph_to<FVECTOR3>(V[i] * (size + pg.emax + s) - cpos);
+		for (int i = 0; i < 4; i++) box[i + 4] = morph_to<FVECTOR3>(V[i] * (size + pg.emin) - cpos);
 
 		DrawBox(box, color);
 	}
@@ -191,8 +191,8 @@ void ToolKit::RenderSelection(sSelection *sel, int mode, DWORD color)
 		double s = size - cos(max(w, h)*0.5) * size;
 
 		FVECTOR3 box[8];
-		for (int i = 0; i < 4; i++) box[i] = FVECTOR3(V[i] * (size + emax + s) - cpos);
-		for (int i = 0; i < 4; i++) box[i + 4] = FVECTOR3(V[i] * (size + emin) - cpos);
+		for (int i = 0; i < 4; i++) box[i] = morph_to<FVECTOR3>(V[i] * (size + emax + s) - cpos);
+		for (int i = 0; i < 4; i++) box[i + 4] = morph_to<FVECTOR3>(V[i] * (size + emin) - cpos);
 
 		DrawBox(box, color);
 	}
@@ -256,8 +256,8 @@ void ToolKit::RenderSelection(list<QTree*> sel, int mode, DWORD color)
 		double s = size - cos(max(w, h) * 0.5) * size;
 
 		FVECTOR3 box[8];
-		for (int i = 0; i < 4; i++) box[i] = FVECTOR3(V[i] * (size + emax + s) - cpos);
-		for (int i = 0; i < 4; i++) box[i + 4] = FVECTOR3(V[i] * (size + emin) - cpos);
+		for (int i = 0; i < 4; i++) box[i] = morph_to<FVECTOR3>(V[i] * (size + emax + s) - cpos);
+		for (int i = 0; i < 4; i++) box[i + 4] = morph_to<FVECTOR3>(V[i] * (size + emin) - cpos);
 
 		DrawBox(box, color);
 	}

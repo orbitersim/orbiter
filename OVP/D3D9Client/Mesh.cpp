@@ -1424,7 +1424,7 @@ void D3D9Mesh::CheckMeshStatus()
 void D3D9Mesh::ConfigureAtmo()
 {
 	//LogSunLight(sunLight);
-	float x = 1.0f - saturate(max(sunLight.Color.r, sunLight.Color.b) * 2.0f);
+	float x = 1 - saturate(std::max(sunLight.Color.x, sunLight.Color.z) * 2);
 	FX->SetFloat(eNight, x);
 	FX->SetValue(eSun, &sunLight, sizeof(D3D9Sun));
 }

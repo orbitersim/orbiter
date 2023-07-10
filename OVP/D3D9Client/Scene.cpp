@@ -444,17 +444,18 @@ void Scene::Initialise()
 
 	// Setup sunlight -------------------------------
 	//
-	sunLight.Color = 1.0f;
-	sunLight.Ambient = float(ambient)*0.0039f;
-	sunLight.Transmission = 1.0f;
-	sunLight.Incatter = 0.0f;
+	sunLight.Color = {1, 1, 1};
+	auto al = float(ambient * 0.0039);
+	sunLight.Ambient = {al, al, al};
+	sunLight.Transmission = {1, 1, 1};
+	sunLight.Incatter = {0, 0, 0};
 
 	// Update Sunlight direction -------------------------------------
 	//
 	VECTOR3 rpos, cpos;
 	oapiGetGlobalPos(hSun, &rpos);
 	oapiCameraGlobalPos(&cpos); rpos-=cpos;
-	sunLight.Dir = -unit(rpos);
+	sunLight.Dir = morph_to<FVECTOR3>(-unit(rpos));
 
 	// Do not "pre-create" visuals here. Will cause changed call order for vessel callbacks
 }
@@ -1040,7 +1041,7 @@ void Scene::UpdateCamVis()
 	VECTOR3 rpos;
 	oapiGetGlobalPos(hSun, &rpos);
 	rpos -= Camera.pos;
-	sunLight.Dir = -unit(rpos);
+	sunLight.Dir = morph_to<FVECTOR3>(-unit(rpos));
 
 	// Get focus visual -----------------------------------------------
 	//
@@ -1160,7 +1161,7 @@ void Scene::ComputeLocalLightsVisibility()
 
 	// Put the Sun on a top of the list
 	LLCBuf[0].index = 0.0f;
-	LLCBuf[0].pos = FVECTOR3(unit(gsun - Camera.pos)) * 10e4;
+	LLCBuf[0].pos = morph_to<FVECTOR3>(unit(gsun - Camera.pos)) * 10e4;
 	LLCBuf[0].cone = 1.0f;
 
 	int nGlares = 1;
