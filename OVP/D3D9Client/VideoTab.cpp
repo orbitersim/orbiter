@@ -222,10 +222,8 @@ void VideoTab::Initialise()
 		SendDlgItemMessage(hTab, IDC_VID_MODE, CB_SETCURSEL, data->modeidx&0xFF, 0);
 		SendDlgItemMessage(hTab, IDC_VID_VSYNC, BM_SETCHECK, data->novsync ? BST_CHECKED : BST_UNCHECKED, 0);
 		
-		if (_itoa_s(data->winw, cbuf, 32, 10)) return;
-		SetWindowText(GetDlgItem(hTab, IDC_VID_WIDTH), cbuf);
-		if (_itoa_s(data->winh, cbuf, 32, 10)) return;
-		SetWindowText(GetDlgItem(hTab, IDC_VID_HEIGHT), cbuf);
+		SetWindowText(GetDlgItem(hTab, IDC_VID_WIDTH), std::to_string(data->winw).c_str());
+		SetWindowText(GetDlgItem(hTab, IDC_VID_HEIGHT), std::to_string(data->winh).c_str());
 
 		aspect_idx = 0;
 		
@@ -363,8 +361,7 @@ void VideoTab::SelectWidth ()
 		GetWindowText(GetDlgItem(hTab, IDC_VID_HEIGHT), cbuf, 32); h = atoi(cbuf);
 		if (w != (wfac*h)/hfac) {
 			h = (hfac*w)/wfac;
-			if (_itoa_s (h, cbuf, 32, 10)) return;
-			SetWindowText (GetDlgItem (hTab, IDC_VID_HEIGHT), cbuf);
+			SetWindowText (GetDlgItem (hTab, IDC_VID_HEIGHT), std::to_string(h).c_str());
 		}
 	}
 }
@@ -381,8 +378,7 @@ void VideoTab::SelectHeight ()
 		GetWindowText(GetDlgItem(hTab, IDC_VID_HEIGHT), cbuf, 32); h = atoi(cbuf);
 		if (h != (hfac*w)/wfac) {
 			w = (wfac*h)/hfac;
-			if (_itoa_s (w, cbuf, 32, 10)) return;
-			SetWindowText (GetDlgItem (hTab, IDC_VID_WIDTH), cbuf);
+			SetWindowText (GetDlgItem (hTab, IDC_VID_WIDTH), std::to_string(w).c_str());
 		}
 	}
 }

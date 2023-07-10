@@ -1147,7 +1147,7 @@ bool Instrument::FindScnHeader (ifstream &ifs) const
 	switch (id) {
 	case 0: strcpy (header+10, "Left"); break;
 	case 1: strcpy (header+10, "Right"); break;
-	default: sprintf (header+10, "%lld", id + 1); break;
+	default: sprintf (header+10, "%lld", (int64_t)id + 1); break;
 	}
 	return FindLine (ifs, header);
 }
