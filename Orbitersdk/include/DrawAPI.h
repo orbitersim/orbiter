@@ -186,6 +186,8 @@ namespace oapi {
 		FVECTOR2 xy; 
 	} FVECTOR3;
 
+	template<> struct is_vector3<FVECTOR3> : std::true_type { };
+
 
 	/**
 	* \brief 32-bit floating point 4D vector type.
