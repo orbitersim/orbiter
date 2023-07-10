@@ -75,11 +75,11 @@ public:
 	// Convert global position glob into body's local coordinate system
 
 	inline void GlobalToLocal (const Vector &glob, Vector &loc) const
-	{ loc.Set (tmul (s0->R, glob - s0->pos)); }
+	{ loc = tmul(s0->R, glob - s0->pos); }
 	// same with different interface
 
 	inline void LocalToGlobal (const Vector &loc, Vector &glob) const
-	{ glob.Set (mul (s0->R, loc) + s0->pos); }
+	{ glob = mul(s0->R, loc) + s0->pos; }
 
 	void LocalToEquatorial (const Vector &loc, double &lng, double &lat, double &rad) const;
 	inline void GlobalToEquatorial (const Vector &glob, double &lng, double &lat, double &rad) const
@@ -88,7 +88,7 @@ public:
 	// the body (longitude, latitude and radial distance
 
 	inline void EquatorialToLocal (double slng, double clng, double slat, double clat, double rad, Vector &loc) const
-	{ double xz = rad*clat; loc.Set (xz*clng, rad*slat, xz*slng); }
+	{ double xz = rad * clat; loc = {xz * clng, rad * slat, xz * slng}; }
 	inline void EquatorialToLocal (double lng, double lat, double rad, Vector &loc) const
 	{ EquatorialToLocal (sin(lng), cos(lng), sin(lat), cos(lat), rad, loc); }
 	inline void EquatorialToGlobal (double lng, double lat, double rad, Vector &glob) const
@@ -153,12 +153,12 @@ public:
 	{ return tmul (s1->R, glob - s1->pos); }
 	// Convert global position glob into body's local coordinate system
 
-	inline void GlobalToLocal_t1 (const Vector &glob, Vector &loc) const
-	{ loc.Set (tmul (s1->R, glob - s1->pos)); }
+	inline void GlobalToLocal_t1(const Vector &glob, Vector &loc) const
+	{ loc = tmul(s1->R, glob - s1->pos); }
 	// same with different interface
 
 	inline void LocalToGlobal_t1 (const Vector &loc, Vector &glob) const
-	{ glob.Set (mul (s1->R, loc) + s1->pos); }
+	{ glob = mul(s1->R, loc) + s1->pos; }
 
 	inline const Vector &Acceleration() const { return acc; };
 

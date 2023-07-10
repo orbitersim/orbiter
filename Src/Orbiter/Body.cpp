@@ -67,13 +67,13 @@ Body::Body(char* fname)
 	if (!GetItemReal (ifs, "Mass", mass)) mass = 1.0; // desperate default
 	if (!GetItemReal (ifs, "Size", size)) size = 1.0; // desperate default
 
-	if (!GetItemVector (ifs, "AlbedoRGB", albedo)) albedo.Set (1,1,1);
+	if (!GetItemVector (ifs, "AlbedoRGB", albedo)) albedo = {1, 1, 1};
 
 	GetItemVector (ifs, "InitPos", s0->pos);
 	GetItemVector (ifs, "InitVel", s0->vel);
 
-	rpos_base.Set (s0->pos); rpos_add.Set (0,0,0);
-	rvel_base.Set (s0->vel); rvel_add.Set (0,0,0);
+	rpos_base = s0->pos; rpos_add = {0, 0, 0};
+	rvel_base = s0->vel; rvel_add = {0, 0, 0};
 }
 
 void Body::SetName (char *_name)
@@ -93,16 +93,16 @@ void Body::RPlace (const Vector &rpos, const Vector &rvel)
 {
 	// should RPlace be allowed outside update phase?
 	s1->pos = rpos_base = rpos;
-	rpos_add.Set (0,0,0);
+	rpos_add = {0, 0, 0};
 	s1->vel = rvel_base = rvel;
-	rvel_add.Set (0,0,0);
+	rvel_add = {0, 0, 0};
 }
 
 void Body::SetRPos (const Vector &p)
 {
 	dCHECK(s1 != s0, "Update state not available")
 	rpos_base = s1->pos = p;
-	rpos_add.Set (0,0,0);
+	rpos_add = {0, 0, 0};
 }
 
 void Body::AddRPos (const Vector &dp) {
@@ -113,14 +113,14 @@ void Body::AddRPos (const Vector &dp) {
 void Body::FlushRPos ()
 {
 	rpos_base = s1->pos;
-	rpos_add.Set(0,0,0);
+	rpos_add = {0, 0, 0};
 }
 
 void Body::SetRVel (const Vector &v)
 {
 	dCHECK(s1 != s0, "Update state not available")
 	rvel_base = s1->vel = v;
-	rvel_add.Set (0,0,0);
+	rvel_add = {0, 0, 0};
 }
 
 void Body::AddRVel (const Vector &dv)
@@ -133,12 +133,12 @@ void Body::AddRVel (const Vector &dv)
 void Body::FlushRVel ()
 {
 	rvel_base = s1->vel;
-	rvel_add.Set(0,0,0);
+	rvel_add = {0, 0, 0};
 }
 
 void Body::LocalToEquatorial (const Vector &loc, double &lng, double &lat, double &rad) const
 {
-	rad = loc.length();
+	rad = len(loc);
 	//loc *= 1.0/rad;
 	lng = atan2 (loc.z, loc.x);
 	lat = asin  (loc.y / rad);
@@ -149,7 +149,7 @@ bool Body::SurfpointVisible (double lng, double lat, const Vector &gcam) const
 {
 	Vector sp;
 	EquatorialToGlobal (lng, lat, size, sp);
-	return (dotp (sp-GPos(), gcam-sp) >= 0.0);
+	return (dot(sp - GPos(), gcam - sp) >= 0.0);
 }
 
 void Body::BroadcastVisMsg (DWORD msg, DWORD_PTR content)
