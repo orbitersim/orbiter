@@ -69,7 +69,7 @@ void VStar::Update (bool moving, bool force)
 
 	VObject::Update (moving, force);
 
-	Vector bdir (cpos.unit());
+	Vector bdir = unit(cpos);
 	double hz = std::hypot (bdir.x, bdir.z);
 	double phi = atan2 (bdir.z, bdir.x);
 	FLOAT sphi = (FLOAT)sin(phi), cphi = (FLOAT)cos(phi);
@@ -118,7 +118,7 @@ void VStar::BlindColour (const Camera *cam, Vector &col)
 		appsize += 0.02;
 		if (appsize > 0.3) appsize = 0.3;
 		double val = /* scl* */ appsize*3.0;  // 0.9 max
-		col.Set (val,val,val);         // grey
+		col = {val, val, val};         // grey
 	//}
 }
 
