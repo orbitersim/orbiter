@@ -122,8 +122,8 @@ void Instrument_Transfer::UpdateDraw (oapi::Sketchpad *skp)
 
 	// sanity checks
 	if (elref) {
-		sp.Set (src->GPos()-elref->GPos());	// ship in planet coords
-		sv.Set (src->GVel()-elref->GVel());
+		sp = src->GPos() - elref->GPos();	// ship in planet coords
+		sv = src->GVel() - elref->GVel();
 		shpel->Calculate (sp, sv, td.SimT1);
 		bValid = true;
 	} else bValid = false;
@@ -249,7 +249,7 @@ void Instrument_Transfer::UpdateDraw (oapi::Sketchpad *skp)
 			// target postition at intersect time
 			tanm = tgtel->TrueAnomaly (tgtel->MeanAnomaly (td.SimT1+dt0));
 			tlng = tanm + tgtel->omegab;
-			v.Set (mul (rot2, Vector (cos(tanm), 0.0, sin(tanm))));
+			v = mul(rot2, Vector{std::cos(tanm), 0.0, std::sin(tanm)});
 			skp->SetPen (draw[1][1].dashpen);
 			skp->Line (ICNTX, ICNTY, ICNTX+(int)(v.x*pixrad), ICNTY-(int)(v.z*pixrad));
 		} else {
@@ -325,12 +325,10 @@ void Instrument_Transfer::UpdateDraw (oapi::Sketchpad *skp)
 
 	if (bTarget) {
 		// normals of the two orbital planes
-		Vector nm1 = crossp (sv, sp);
-		Vector nm2 = crossp (tgt->GVel()-elref->GVel(), tgt->GPos()-elref->GPos());
-		nm1.unify();
-		nm2.unify();
+		Vector nm1 = unit(cross(sv, sp));
+		Vector nm2 = unit(cross(tgt->GVel()-elref->GVel(), tgt->GPos()-elref->GPos()));
 		// relative inclination between ship's and target's orbital planes
-		double reli = xangle (nm1, nm2);
+		double reli = angle(nm1, nm2);
 
 		// relative inclination ship orbit <-> target orbit
 		skp->SetTextColor (draw[reli < RAD*1.0 ? 0:1][1].col);
@@ -363,12 +361,12 @@ double Instrument_Transfer::CalcElements (const Elements *el1, Elements *el2, do
 	// add thrust
 	double dv;
 	if (a) { // rescale deltav so as to maintain a
-		double ip2 = 2.0/P.length();
+		double ip2 = 2.0 / len(P);
 		dv = sqrt (el1->Mu() * (ip2 - 1.0/a)) - sqrt (el1->Mu() * (ip2 - 1.0/el1->a));
-		V *= 1.0 + dv/V.length();
+		V *= 1.0 + dv / len(V);
 	} else { // rescale a so as to maintain deltav
 		dv = deltav;
-		V *= 1.0 + dv/V.length();
+		V *= 1.0 + dv / len(V);
 	}
 
 	// calculate new elements
@@ -382,7 +380,7 @@ bool Instrument_Transfer::CalcStep ()
 	double tstep, tstep_i2, tstep_i6, tb, tc;
 
 	a0 = g_psys->GaccAt (step_t, step_gpos, src);
-	tstep = step_scale/a0.length();
+	tstep = step_scale / len(a0);
 	tstep_i2 = tstep*0.5;
 	tstep_i6 = tstep/6.0;
 	tb = step_t + tstep_i2;
