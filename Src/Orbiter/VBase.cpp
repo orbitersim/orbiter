@@ -480,20 +480,20 @@ void VBase::RenderShadows (LPDIRECT3DDEVICE7 dev)
 			Vector pp = planet->GPos();              // planet global pos
 			Vector sd = base->GPos();                // base global pos
 			Vector pvr = sd-pp;                      // planet-relative base position
-			d = pvr.length();                        // planet radius at base location
-			sd.unify();                              // shadow projection direction
+			d = len(pvr);                            // planet radius at base location
+			sd = unit(sd);                           // shadow projection direction
 
-			//double fac1 = dotp (sd, pvr);
+			//double fac1 = dot(sd, pvr);
 			//if (fac1 > 0.0)                          // base is on planet night-side
 			//	return;
 
 			Matrix vR = base->GRot();
 			Vector sdv = tmul (vR, sd);              // projection direction in base frame
-			Vector hnp = pvr.unit();
+			Vector hnp = unit(pvr);
 			Vector hn = tmul (vR, hnp);              // horizon normal in vessel frame
 
 			// perform projections
-			double nd = dotp (hn, sdv);
+			double nd = dot(hn, sdv);
 			Vector sdvs = sdv / nd;
 			if (!sdvs.y) return; // required for plane offset correction
 
@@ -652,10 +652,10 @@ void VBase::RenderGroundShadow (LPDIRECT3DDEVICE7 dev)
 	Vector pp = planet->GPos();              // planet global pos
 	Vector sd = base->GPos();                // base global pos
 	Vector pvr = sd-pp;                      // planet-relative base position
-	d = pvr.length();                        // planet radius at base location
-	sd.unify();                              // shadow projection direction
+	d = len(pvr);                            // planet radius at base location
+	sd = unit(sd);                           // shadow projection direction
 
-	double fac1 = dotp (sd, pvr);
+	double fac1 = dot(sd, pvr);
 	if (fac1 > 0.0)                          // base is on planet night-side
 		return;
 	csun = -fac1/d;                          // sun elevation above horizon
@@ -664,11 +664,11 @@ void VBase::RenderGroundShadow (LPDIRECT3DDEVICE7 dev)
 
 	Matrix vR = base->GRot();
 	Vector sdv = tmul (vR, sd);              // projection direction in base frame
-	Vector hnp = pvr.unit();
+	Vector hnp = unit(pvr);
 	Vector hn = tmul (vR, hnp);              // horizon normal in vessel frame
 
 	// perform projections
-	double nd = dotp (hn, sdv);
+	double nd = dot(hn, sdv);
 	Vector sdvs = sdv / nd;
 	if (!sdvs.y) return; // required for plane offset correction
 
@@ -728,7 +728,7 @@ bool VBase::ModLighting (LPD3DLIGHT7 light)
 	const CelestialBody *cb = base->RefPlanet();
 	Star *sun = g_psys->GetStar(0); // should really loop over all suns
 	Vector S(sun->GPos() - base->GPos());
-	double s = S.length();
+	double s = len(S);
 	double as = asin (sun->Size()/s);                     // apparent size of sun disc [rad]
 	Vector lcol (1,1,1);
 	double amb = 0;
@@ -738,8 +738,8 @@ bool VBase::ModLighting (LPD3DLIGHT7 light)
 	// calculate shadowing by planet
 
 	Vector P(cb->GPos() - base->GPos());
-	double p = P.length();
-	double phi = acos (dotp(S,P)/(s*p));          // angular distance between sun and planet
+	double p = len(P);
+	double phi = std::acos(dot(S, P) / (s * p));  // angular distance between sun and planet
 	static const double ap = PI05;                // apparent size of planet disc [rad]
 
 	if (cb->Type() == OBJTP_PLANET && ((Planet*)cb)->HasAtmosphere()) { // case 1: planet has atmosphere
@@ -754,7 +754,7 @@ bool VBase::ModLighting (LPD3DLIGHT7 light)
 			double dap = ap1-ap;
 			Vector plight(1,1,1);
 			if (phi < ap-as) {                // totality (sun below horizon)
-				plight.Set(0,0,0);
+				plight = {0, 0, 0};
 			} else {
 				double dispersion = max (0.02, min (0.9, log (atm->rho0+1.0)));
 				double r0 = 1.0-0.40*dispersion;
