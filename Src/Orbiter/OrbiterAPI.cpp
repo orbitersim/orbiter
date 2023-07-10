@@ -695,7 +695,7 @@ DLLEXPORT bool oapiGetGroundspeedVector (OBJHANDLE hVessel, REFFRAME frame, VECT
 			} return true;
 		case FRAME_HORIZON: {
 			Vector hvel (tmul (sp->ref->GRot(), sp->groundvel_glob));
-			hvel.Set (mul (sp->L2H, hvel));
+			hvel = mul(sp->L2H, hvel);
 			vel->x = hvel.x, vel->y = hvel.y, vel->z = hvel.z;
 			} return true;
 		default:
@@ -738,7 +738,7 @@ DLLEXPORT bool oapiGetAirspeedVector (OBJHANDLE hVessel, REFFRAME frame, VECTOR3
 			} return true;
 		case FRAME_HORIZON: {
 			Vector hvel (tmul (sp->ref->GRot(), sp->airvel_glob));
-			hvel.Set (mul (sp->L2H, hvel));
+			hvel = mul(sp->L2H, hvel);
 			vel->x = hvel.x, vel->y = hvel.y, vel->z = hvel.z;
 			} return true;
 		default:
@@ -757,7 +757,7 @@ DLLEXPORT BOOL oapiGetAirspeedVector (OBJHANDLE hVessel, VECTOR3 *speedvec)
 	const SurfParam *sp = ((Vessel*)hVessel)->GetSurfParam();
 	if (sp) {
 		Vector hvel (tmul (sp->ref->GRot(), sp->airvel_glob));
-		hvel.Set (mul (sp->L2H, hvel));
+		hvel = mul(sp->L2H, hvel);
 		speedvec->x = hvel.x, speedvec->y = hvel.y, speedvec->z = hvel.z;
 		return TRUE;
 	} else {
@@ -795,7 +795,7 @@ DLLEXPORT BOOL oapiGetFocusAirspeedVector (VECTOR3 *speedvec)
 	const SurfParam *sp = g_focusobj->GetSurfParam();
 	if (sp) {
 		Vector hvel (tmul (sp->ref->GRot(), sp->airvel_glob));
-		hvel.Set (mul (sp->L2H, hvel));
+		hvel = mul(sp->L2H, hvel);
 		speedvec->x = hvel.x, speedvec->y = hvel.y, speedvec->z = hvel.z;
 		return TRUE;
 	} else {
