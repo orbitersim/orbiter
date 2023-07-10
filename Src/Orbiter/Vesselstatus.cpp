@@ -474,11 +474,11 @@ void Vessel::SetState (const VESSELSTATUS &status)
 
 	switch (status.status) {
 	case 0: // freeflight
-		rpos.Set (status.rpos.x, status.rpos.y, status.rpos.z);
-		rvel.Set (status.rvel.x, status.rvel.y, status.rvel.z);
-		orient.Set (status.arot.x, status.arot.y, status.arot.z);
-		vrot.Set (status.vrot.x, status.vrot.y, status.vrot.z);
-		if (rpos.length() < cbody->Size()) { // sanity check
+		rpos   = {status.rpos.x, status.rpos.y, status.rpos.z};
+		rvel   = {status.rvel.x, status.rvel.y, status.rvel.z};
+		orient = {status.arot.x, status.arot.y, status.arot.z};
+		vrot   = {status.vrot.x, status.vrot.y, status.vrot.z};
+		if (len(rpos) < cbody->Size()) { // sanity check
 			rpos.x = rpos.y = 0.0;
 			rpos.z = 1.1*cbody->Size(); // desparate default
 		}
