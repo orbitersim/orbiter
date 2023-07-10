@@ -137,7 +137,7 @@ void Vessel::FRecorder_Save (bool force)
 				vref = Pi2/ref->RotT() * rad*cos(lat);
 				vel = tmul (ref->GRot(), vel) - Vector(-vref*sin(lng),0,vref*cos(lng));
 			}
-			double cddir = dotp (vel.unit(), frec_last.rvel.unit());
+			double cddir = dot(unit(vel), unit(frec_last.rvel));
 
 			bool nextstep = (fstatus == FLIGHTSTATUS_FREEFLIGHT &&
 				(g_pOrbiter->Cfg()->CfgRecPlayPrm.bSysInterval ? td.SysT1 - frec_last_syst : td.SimT1 - frec_last.simt) > max_step);
@@ -161,7 +161,7 @@ void Vessel::FRecorder_Save (bool force)
 				ofstream ofs (FRfname, ios::app);
 				ofs << setprecision(10)  << (frec_last.simt-Tofs) << ' ';
 				if (frec_last.crd == 1) { // store in polar coords
-					double r = frec_last.rpos.length();
+					double r = len(frec_last.rpos);
 					double phi = atan2 (frec_last.rpos.z, frec_last.rpos.x);
 					double tht = asin (frec_last.rpos.y/r);
 					ofs << setprecision(12) << r << ' ' << phi << ' ' << tht << ' ';
@@ -415,8 +415,8 @@ bool Vessel::FRecorder_Read (const char *scname)
 			frec[nfrec].simt = simt;
 			frec[nfrec].frm  = frm;
 			frec[nfrec].ref  = ref;
-			frec[nfrec].rpos.Set (x, y, z);
-			frec[nfrec].rvel.Set (vx, vy, vz);
+			frec[nfrec].rpos = { x,  y,  z};
+			frec[nfrec].rvel = {vx, vy, vz};
 			nfrec++;
 		}
 	}
@@ -501,7 +501,7 @@ void Vessel::FRecorder_Play ()
 			s.x =  P0.x*cosd + P0.z*sind;
 			s.z = -P0.x*sind + P0.z*cosd;
 			s.y =  P0.y;
-			P0.Set (mul (frec[cfrec].ref->s1->R, s));
+			P0 = mul(frec[cfrec].ref->s1->R, s);
 
 			// Needs to be fixed!
 			frec[cfrec].ref->LocalToEquatorial (s, lng, lat, rad);
@@ -509,20 +509,20 @@ void Vessel::FRecorder_Play ()
 			s.x =  V0.x*cosd + V0.z*sind;
 			s.z = -V0.x*sind + V0.z*cosd;
 			s.y =  V0.y;
-			V0.Set (mul (frec[cfrec].ref->s1->R, s + Vector (-vref*sin(lng),0,vref*cos(lng))));
+			V0 = mul(frec[cfrec].ref->s1->R, s + Vector{-vref * std::sin(lng), 0, vref * std::cos(lng)});
 		}
 		if (frec[cfrec+1].frm == 1) { // map from equatorial frame
 			double dlng = Pi2*(dt-dT)/frec[cfrec+1].ref->RotT(), sind = sin(dlng), cosd = cos(dlng);
 			s.x =  P1.x*cosd + P1.z*sind;
 			s.z = -P1.x*sind + P1.z*cosd;
 			s.y =  P1.y;
-			P1.Set (mul (frec[cfrec+1].ref->s1->R, s));
+			P1 = mul(frec[cfrec + 1].ref->s1->R, s);
 			frec[cfrec+1].ref->LocalToEquatorial (s, lng, lat, rad);
 			vref = Pi2/frec[cfrec+1].ref->RotT() * rad * cos(lat);
 			s.x =  V1.x*cosd + V1.z*sind;
 			s.z = -V1.x*sind + V1.z*cosd;
 			s.y =  V1.y;
-			V1.Set (mul (frec[cfrec].ref->s1->R, s + Vector (-vref*sin(lng),0,vref*cos(lng))));
+			V1 = mul(frec[cfrec].ref->s1->R, s + Vector{-vref * std::sin(lng), 0, vref * std::cos(lng)});
 		}
 
 		for (i = 0; i < 3; i++) {
@@ -749,11 +749,11 @@ void Vessel::FRecorder_EndPlayback ()
 {
 	if (bFRplayback) {
 		bFRplayback = false;
-		Amom_add.Set(0,0,0);
-		rvel_base.Set (s0->vel);
-		rvel_add.Set(0,0,0);
-		rpos_base.Set (s0->pos);
-		rpos_add.Set(0,0,0);
+		Amom_add = {0, 0, 0};
+		rvel_base = s0->vel;
+		rvel_add = {0, 0, 0};
+		rpos_base = s0->pos;
+		rpos_add = {0, 0, 0};
 		s0->Q.Set (s0->R);
 		if (supervessel && supervessel->GetVessel(0) == this)
 			supervessel->FRecorder_EndPlayback();
