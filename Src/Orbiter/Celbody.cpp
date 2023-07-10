@@ -232,8 +232,8 @@ void CelestialBody::Attach (CelestialBody *_parent)
 		} else if (bInitFromElements) {
 			el->PosVel (s0->pos, s0->vel, td.SimT0);
 			if (elframe == ELFRAME_PARENTEQU) {         // convert to ecliptic frame
-				s0->pos.Set (mul (cbody->R_ecl, s0->pos));  // rotate radius vector by planet's obliquity
-				s0->vel.Set (mul (cbody->R_ecl, s0->vel));  // rotate velocity vector by planet's obliquity
+				s0->pos = mul(cbody->R_ecl, s0->pos);   // rotate radius vector by planet's obliquity
+				s0->vel = mul(cbody->R_ecl, s0->vel);   // rotate velocity vector by planet's obliquity
 				el->Calculate (s0->pos, s0->vel, td.SimT0); // update elements with modified state vectors
 			}
 			bpos = s0->pos;
@@ -367,7 +367,7 @@ int CelestialBody::RelTrueAndBaryState()
 		bvelofs = bvel - cvel;
 	} else {
 		// calculate the barycentre offset manually from child positions
-		bposofs.Set(0,0,0); bvelofs.Set(0,0,0); // system barycentre
+		bposofs = bvelofs = {0, 0, 0}; // system barycentre
 		double bmass = mass;
 		for (i = 0; i < nsecondary; i++) {
 			bposofs += secondary[i]->bpos * secondary[i]->Mass();
@@ -485,7 +485,7 @@ void CelestialBody::Update (bool force)
 		bvel = s1->vel;
 	}
 
-	acc = cpos * (-cvel.length2()/cpos.length2());
+	acc = cpos * (-len_2(cvel)) / len_2(cpos);
 	//if (cbody) acc += cbody->acc;
 }
 
@@ -650,8 +650,8 @@ Vector CelestialBody::InterpolatePosition (double n) const
 	const CelestialBody *ref = ElRef();
 	if (ref) {
 		// otherwise assume that reference position is origin
-		refp0.Set (ref->s0->pos);
-		refp1.Set (ref->s1->pos);
+		refp0 = ref->s0->pos;
+		refp1 = ref->s1->pos;
 		refpm = ref->InterpolatePosition (n);
 		// recursively get reference position at fractional step n
 	}
@@ -659,13 +659,13 @@ Vector CelestialBody::InterpolatePosition (double n) const
 	const double eps = 1e-2;
 	Vector rp0 (s0->pos-refp0);        // rel. position at current step
 	Vector rp1 (s1->pos-refp1);        // rel. position at next step
-	double rd0 = rp0.length();         // radius at current step
-	double rd1 = rp1.length();         // radius at next step
+	double rd0 = len(rp0);             // radius at current step
+	double rd1 = len(rp1);             // radius at next step
 	double n0 = 0.0;                   // lower bound of search bracket
 	double n1 = 1.0;                   // upper bound of search bracket
 	double nm = 0.5, d = 0.5;          // current trial point
 	double rdm = (rd0+rd1)*0.5;        // trial radius
-	Vector rpm = (rp0+rp1).unit()*rdm; // trial position
+	Vector rpm = unit(rp0 + rp1) * rdm; // trial position
 	while (fabs (nm-n) > eps && d > eps) { // interval too large - continue
 		d *= 0.5;                         // new interval width
 		if (nm < n) {                     // cut away lower half of interval
@@ -680,12 +680,12 @@ Vector CelestialBody::InterpolatePosition (double n) const
 			nm -= d;
 		}
 		rdm = (rd0+rd1)*0.5;              // new trial radius
-		rpm = (rp0+rp1).unit()*rdm;       // new trial position
+		rpm = unit(rp0 + rp1) * rdm;      // new trial position
 	}
 	if (fabs (nm-n) > 1e-10) {        // linear interpolation of remaining step
 		double scale = (n-n0)/(n1-n0);
 		rdm = rd0 + (rd1-rd0)*scale;
-		rpm = (rp0 + (rp1-rp0)*scale).unit() * rdm;
+		rpm = unit(rp0 + (rp1 - rp0) * scale) * rdm;
 	}
 	return rpm + refpm;
 }
@@ -706,7 +706,7 @@ StateVectors CelestialBody::InterpolateState (double n) const
 	sv.vel = s0->vel*(1.0-n) + s1->vel*n; // may need a better interpolation
 	GetRotation (td.SimT0 + td.SimDT*n, sv.R);
 	sv.Q.Set (sv.R);
-	sv.omega.Set (s0->omega*(1.0-n) + s1->omega*n); // is this ok?
+	sv.omega = s0->omega * (1.0 - n) + s1->omega * n; // is this ok?
 	return sv;
 }
 
