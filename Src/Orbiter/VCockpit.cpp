@@ -292,7 +292,7 @@ void VirtualCockpit::SetHUDCol (COLORREF col, double intens)
 
 bool VirtualCockpit::SetClickZone_Spherical (int i, const Vector &cnt, double rad)
 {
-	area[i]->cnt.Set (cnt);
+	area[i]->cnt = cnt;
 	area[i]->rad = rad;
 	area[i]->cmode = Area::CMODE_SPHERICAL;
 	return true;
@@ -305,10 +305,10 @@ bool VirtualCockpit::SetClickZone_Quadrilateral (int i,
 	int j;
 
 	// save corner points
-	area[i]->p[0].Set (p1);
-	area[i]->p[1].Set (p2);
-	area[i]->p[2].Set (p3);
-	area[i]->p[3].Set (p4);
+	area[i]->p[0] = p1;
+	area[i]->p[1] = p2;
+	area[i]->p[2] = p3;
+	area[i]->p[3] = p4;
 
 	// global coefficients of equation of the plane: ax+by+cz+d = 0
 	double a, b, c, d;
@@ -321,7 +321,7 @@ bool VirtualCockpit::SetClickZone_Quadrilateral (int i,
 	double pdst = fabs(PointPlaneDist(p4, a, b, c, d));
 	if (pdst < EPS) { // the 4 points are coplanar, so we need to avoid singularity
 		Vector nml(PlaneNormal(a, b, c, d));
-		area[i]->p[3].Set(p4 + nml * EPS);
+		area[i]->p[3] = p4 + nml * EPS;
 	}
 
 	// calculate coefficients for mapping global quadrilateral to local square (0,1)x(0,1)
@@ -380,7 +380,7 @@ bool VirtualCockpit::ProcessMouse (UINT event, DWORD state, int x, int y)
 
 			switch (area[i]->cmode) {
 			case Area::CMODE_SPHERICAL: {
-				if (dotp(ldir, area[i]->cnt-cpos) > 0.0) { // otherwise target is behind camera
+				if (dot(ldir, area[i]->cnt-cpos) > 0.0) { // otherwise target is behind camera
 					double d = PointLineDist (area[i]->cnt, cpos, ldir);
 					if (d < area[i]->rad) {
 						if (d/area[i]->rad < minreldist) {
@@ -394,7 +394,7 @@ bool VirtualCockpit::ProcessMouse (UINT event, DWORD state, int x, int y)
 			case Area::CMODE_QUAD: {
 				Vector r;
 				if (LinePlaneIntersect (area[i]->a, area[i]->b, area[i]->c, area[i]->d, cpos, ldir, r)) {
-					if (dotp(ldir, r-cpos) > 0.0) { // otherwise target is behind camera
+					if (dot(ldir, r-cpos) > 0.0) { // otherwise target is behind camera
 						mx = area[i]->u[0]*r.x + area[i]->u[1]*r.y + area[i]->u[2]*r.z + area[i]->u[3];
 						my = area[i]->v[0]*r.x + area[i]->v[1]*r.y + area[i]->v[2]*r.z + area[i]->v[3];
 						if (mx >= 0 && mx <= 1 && my >= 0 && my <= 1) {
