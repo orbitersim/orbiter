@@ -197,22 +197,21 @@ void Instrument_OPlaneAlign::UpdateDraw (oapi::Sketchpad *skp)
 	}
 
 	// ship in planet coords
-	double svmag = sv.length();
-	sp.unify(), sv.unify();
+	double svmag = len(sv);
+	sp = unit(sp); sv = unit(sv);
 	// normals of the two orbital planes
-	Vector nm1 = shpel->HVec().unit();
-	Vector nm2 = tgtel->HVec().unit();
+	Vector nm1 = unit(shpel->HVec());
+	Vector nm2 = unit(tgtel->HVec());
 
-	double reli = xangle(nm1, nm2);    // relative inclination
+	double reli = angle(nm1, nm2);    // relative inclination
 	double didt = (reli - preli) / dT; // inclination rate
 	preli = reli;                      // remember for next step
 
 	// angle between ship and ascending node
-	Vector nd = crossp(nm1, nm2);
-	nd.unify();
-	double cosp = dotp(nd, sp);
+	Vector nd = unit(cross(nm1, nm2));
+	double cosp = dot(nd, sp);
 	double Aan = acos(cosp);
-	if (dotp(nm1, crossp(nd, sp)) < 0) Aan = Pi2 - Aan; // ascending node is behind us
+	if (dot(nm1, cross(nd, sp)) < 0) Aan = Pi2 - Aan; // ascending node is behind us
 	double Adn = posangle(Aan + Pi);
 	double Aan_signed = (Aan < Pi ? Aan : Pi2 - Aan);
 
@@ -420,7 +419,7 @@ void Instrument_OPlaneAlign::UpdateDraw (oapi::Sketchpad *skp)
 bool Instrument_OPlaneAlign::GetTimingsFromSurface(double &Tan, double &Aan, double &Tdn, double &Adn, double &VSurf)
 {
 	// target plane normal
-	Vector nm2 = tgtel->HVec().unit();
+	Vector nm2 = unit(tgtel->HVec());
 	nm2 = tmul(elref->GRot(), nm2); // rotate into frame of reference planet
 	double nx = nm2.x, ny = nm2.y, nz = nm2.z;
 
