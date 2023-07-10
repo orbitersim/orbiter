@@ -397,7 +397,7 @@ bool GetItemVector (istream &is, const char *label, Vector &val)
 	double x, y, z;
 	if (!GetItemString (is, label, g_cbuf)) return false;
 	if (sscanf (g_cbuf, "%lf%lf%lf", &x, &y, &z) != 3) return false;
-	val.Set (x,y,z);
+	val = {x, y, z};
 	return true;
 }
 
@@ -1500,7 +1500,7 @@ bool Config::GetVector (istream &is, const char *category, Vector &val)
 	double x, y, z;
 	if (!GetString (is, category, g_cbuf)) return false;
 	if (sscanf (g_cbuf, "%lf%lf%lf", &x, &y, &z) < 3) return false;
-	val.Set (x, y, z);
+	val = {x, y, z};
 	return true;
 }
 
