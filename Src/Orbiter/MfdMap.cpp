@@ -384,7 +384,7 @@ void Instrument_Map::UpdateDraw_Map (oapi::Sketchpad *skp)
 			lat>=0.0 ? 'N':'S', DistStr(rad-refplanet->Size()));
 		if (sp) {
 			Vector hvel (tmul (sp->ref->GRot(), sp->groundvel_glob));
-			hvel.Set (mul (sp->L2H, hvel));
+			hvel = mul(sp->L2H, hvel);
 			double crs = atan2 (hvel.x, hvel.z);
 			sprintf (cbuf+strlen(cbuf)-1, ", Crs %05.1fº]", Deg(posangle(crs)));
 		}
