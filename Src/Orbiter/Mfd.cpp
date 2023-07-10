@@ -1264,11 +1264,11 @@ void UpdateHyperbola (int cntx, int cnty, int IW, int IH, double scale,
 	pt[ELN+1].y = pt[idx].y;
 	pt[ELN+2].x = -1;                      // apoapsis - mark invalid
 	if (ascok = el->AscendingNode (asc)) {               // ascending node
-		if ((len = asc.length()) > radmax) asc *= (radmax/len);
+		if ((len = ::len(asc)) > radmax) asc *= (radmax / len);
 		MapScreen (cntx, cnty, scale, mul (irot, asc), pt+(ELN+3));
 	}
 	if (descok = el->DescendingNode (desc)) {              // descending node
-		if ((len = desc.length()) > radmax) desc *= (radmax/len);
+		if ((len = ::len(desc)) > radmax) desc *= (radmax / len);
 		MapScreen (cntx, cnty, scale, mul (irot, desc), pt+(ELN+4));
 	}
 	if (!ascok) {
