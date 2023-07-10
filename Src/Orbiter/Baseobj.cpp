@@ -2235,21 +2235,21 @@ void RunwayLights::VertexArray (DWORD count, const Vector &cpos, const Vector &p
 
 	for (i = 0; i < count; i++) {
 
-		bdir.Set (p-cpos);
+		bdir = p - cpos;
 		// beacon position rel to camera
 
-		bsize = size * sqrt((bdir.length()+1.0)*ap);
+		bsize = size * sqrt((len(bdir) + 1.0) * ap);
 		// this resizes the beacons so they appear larger at greater distance
 		// may need more thought
 
 		if (!bdir.y || !bdir.z) {
-			v1.Set (0,bsize,0);
-			v2.Set (0,0,bsize);
+			v1 = {0, bsize, 0};
+			v2 = {0, 0, bsize};
 		} else {
-			v1.Set (bdir.z,0,-bdir.x);
-			v2.Set (-bdir.x*bdir.y, bdir.z*bdir.z+bdir.x*bdir.x, -bdir.y*bdir.z);
-			v1 *= bsize/v1.length();
-			v2 *= bsize/v2.length();
+			v1 = {bdir.z, 0, -bdir.x};
+			v2 = {-bdir.x * bdir.y, bdir.z * bdir.z + bdir.x * bdir.x, -bdir.y * bdir.z};
+			v1 *= bsize / len(v1);
+			v2 *= bsize / len(v2);
 		}
 		// v1 and v2 are two orthogonal vectors perpendicular to the vector from
 		// camera to beacon. Required to set up the billboard vertices
@@ -2286,7 +2286,7 @@ void RunwayLights::Update ()
 	Vector cpos (tmul (base->GRot(), g_camera->GPos()-base->GPos()));
 	Vector cdir (tmul (base->GRot(), g_camera->Direction()));
 
-	bool look12 = (dotp (cdir, dyndata->ref2-dyndata->ref1) >= 0);
+	bool look12 = (dot(cdir, dyndata->ref2-dyndata->ref1) >= 0);
 	// camera looks in direction from ref1 to ref2
 
 	if (papi) { // light configuration for PAPI indicator
@@ -2411,18 +2411,18 @@ void RunwayLights::Activate ()
 	nbp  = (papi ? 8:0);                                 // number of precision approach lights
 	nbt  = dyndata->nb_tot = nbwn + nbwd + nbr + nbp;    // total number of lights
 
-	dyndata->ref1.Set (end1.x, end1.y, end1.z);
-	dyndata->ref2.Set (end2.x, end2.y, end2.z);
+	dyndata->ref1 = {end1.x, end1.y, end2.z};
+	dyndata->ref2 = {end2.x, end2.y, end2.z};
 	Vector dr(end2.x-end1.x, end2.y-end1.y, end2.z-end1.z);
-	dyndata->ofs1.Set (dr/(nbc-1));
-	dr.unify();
-	dyndata->dir.Set (dr);
-	dyndata->ofs3.Set (dr.z*width, 0, -dr.x*width);
-	dyndata->nml.Set (dyndata->ofs3.unit());
+	dyndata->ofs1 = dr / (nbc - 1);
+	dr = unit(dr);
+	dyndata->dir = dr;
+	dyndata->ofs3 = {dr.z * width, 0, -dr.x * width};
+	dyndata->nml = unit(dyndata->ofs3);
 	if (vasi) {
-		dyndata->ofs5.Set (dr*vasi->ofs + dyndata->ofs3*2.0);
+		dyndata->ofs5 = dr * vasi->ofs + dyndata->ofs3 * 2.0;
 		//dyndata->ofs5.y += 2.0;
-		dyndata->ofs4.Set (dyndata->ofs5 - dr*vasi->lightsep);
+		dyndata->ofs4 = dyndata->ofs5 - dr * vasi->lightsep;
 		dyndata->vasi_ry = 2.0;
 		dyndata->vasi_wy = dyndata->vasi_ry + vasi->lightsep * tan(vasi->apprangle);
 		//dyndata->ofs4.y += vasi->lightsep * tan(vasi->apprangle);
@@ -2551,33 +2551,32 @@ void BeaconArray::Update ()
 
 	for (i = 0; i < count; i++) {
 		Vector bdir (Pos[i]-cdir); // vector from camera to beacon i
-		bsize = size * sqrt(bdir.length()+1.0)*resize_fac; // distance scaling of beacon size
+		bsize = size * sqrt(len(bdir) + 1.0) * resize_fac; // distance scaling of beacon size
 
 		if (bdir.y == 0.0 && bdir.z == 0.0) {
-			v1.Set (0,1,0);
-			v2.Set (0,0,1);
+			v1 = {0, 1, 0};
+			v2 = {0, 0, 1};
 		} else {
-			v1.Set (bdir.z,0,-bdir.x);
-			v2.Set (-bdir.x*bdir.y, bdir.z*bdir.z+bdir.x*bdir.x, -bdir.y*bdir.z);
-			v1.unify(); v2.unify();
+			v1 = unit(Vector{bdir.z, 0, -bdir.x});
+			v2 = unit(Vector{-bdir.x * bdir.y, bdir.z * bdir.z + bdir.x * bdir.x, -bdir.y * bdir.z});
 		}
 
-		p.Set(Pos[i] - (v1+v2)*bsize);
+		p = Pos[i] - (v1 + v2) * bsize;
 		Vtx[i*4].x = (float)p.x;
 		Vtx[i*4].y = (float)p.y;
 		Vtx[i*4].z = (float)p.z;
 
-		p.Set(Pos[i] + (v1-v2)*bsize);
+		p = Pos[i] + (v1 - v2) * bsize;
 		Vtx[i*4+1].x = (float)p.x;
 		Vtx[i*4+1].y = (float)p.y;
 		Vtx[i*4+1].z = (float)p.z;
 
-		p.Set(Pos[i] + (v1+v2)*bsize);
+		p = Pos[i] + (v1 + v2) * bsize;
 		Vtx[i*4+2].x = (float)p.x;
 		Vtx[i*4+2].y = (float)p.y;
 		Vtx[i*4+2].z = (float)p.z;
 
-		p.Set(Pos[i] - (v1-v2)*bsize);
+		p = Pos[i] - (v1 - v2) * bsize;
 		Vtx[i*4+3].x = (float)p.x;
 		Vtx[i*4+3].y = (float)p.y;
 		Vtx[i*4+3].z = (float)p.z;
@@ -2595,9 +2594,11 @@ void BeaconArray::Activate ()
 	double ici, ic = 1.0/(count-1);
 	for (i = 0; i < count; i++) {
 		ici = ic*i;
-		Pos[i].Set ((end2.x-end1.x)*ici + end1.x,
-			        (end2.y-end1.y)*ici + end1.y,
-					(end2.z-end1.z)*ici + end1.z);
+		Pos[i] = {
+            (end2.x - end1.x) * ici + end1.x,
+            (end2.y - end1.y) * ici + end1.y,
+            (end2.z - end1.z) * ici + end1.z
+        };
 	}
 
 	for (i = 0; i < count; i++) {
@@ -3416,9 +3417,8 @@ void SolarPlant::Render (LPDIRECT3DDEVICE7 dev, bool)
 	bool anyflash = false;
 	double alpha;
 	for (i = 0; i < npanel; i++) {
-		pc.Set (cdir.x - ppos[i].x, cdir.y - ppos[i].y, cdir.z - ppos[i].z);
-		pc.unify();
-		alpha = dotp (pc, nml);
+		pc = unit(cdir - Vector{ppos[i].x, ppos[i].y, ppos[i].z});
+		alpha = dot(pc, nml);
 		if (alpha > 0.999) {
 			anyflash = flash[i] = true;
 			for (j = i*4; j < (i+1)*4; j++) Vtx[j].tu += 0.25;
@@ -3580,7 +3580,7 @@ void SolarPlant::Update ()
 	nml = *base->SunDirectionBuffered();
 	if (nml.y < 0.0) {
 		nml.y = 0.0;
-		nml.unify();
+		nml = unit(nml);
 	}
 
 	int i, vtx_ofs = npanel*4;
