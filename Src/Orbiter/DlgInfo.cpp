@@ -852,7 +852,7 @@ void DlgInfo::UpdateItems_celbody ()
 		Planet *earth = g_psys->GetPlanet ("Earth");
 		if (earth && earth != cbody) {
 			Vector p (cbody->GPos() - earth->GPos());
-			double r   = p.length();
+			double r   = len(p);
 			double lng = atan2 (p.z, p.x);
 			double lat = p.y/r;
 			double ra, dc, rah, ram, ras, dcd, dcm, dcs;
@@ -876,7 +876,7 @@ void DlgInfo::UpdateItems_celbody ()
 	if (cblist.ecl) {
 		if (el) {
 			Vector p (cbody->GPos() - cbody->ElRef()->GPos());
-			double r   = p.length();
+			double r   = len(p);
 			double lng = atan2 (p.z, p.x);
 			double lat = p.y/r;
 			sprintf (cbuf, "%0.3f°", DEG*posangle(lng));
