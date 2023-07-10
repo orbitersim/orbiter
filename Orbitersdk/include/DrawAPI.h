@@ -41,155 +41,6 @@ namespace oapi {
 	};
 
 	/**
-	* \brief 32-bit floating point 3D vector type.
-	* \note This structure is compatible with the D3DXVECTOR3 type.
-	*/
-	typedef union FVECTOR3
-	{
-		FVECTOR3()
-		{
-			x = y = z = 0.0f;
-		}
-
-		FVECTOR3(float q)
-		{
-			x = y = z = q;
-		}
-
-		FVECTOR3(float _x, float _y, float _z)
-		{
-			x = _x;
-			y = _y;
-			z = _z;
-		}
-
-		FVECTOR3(const VECTOR3& v)
-		{
-			x = float(v.x);
-			y = float(v.y);
-			z = float(v.z);
-		}
-
-		float MaxRGB() const
-		{
-			return (std::max)(r, (std::max)(g, b));
-		}
-
-		float MinRGB() const
-		{
-			return (std::min)(r, (std::min)(g, b));
-		}
-
-		float sql() const
-		{
-			return x * x + y * y + z * z;
-		}
-
-		inline VECTOR3 _V() const
-		{
-			VECTOR3 v = { x,y,z };
-			return v;
-		}
-
-		inline FVECTOR3& operator*= (float f)
-		{
-			x *= f; y *= f; z *= f;
-			return *this;
-		}
-
-		inline FVECTOR3& operator*= (const FVECTOR3 &f)
-		{
-			x *= f.x; y *= f.y; z *= f.z;
-			return *this;
-		}
-
-		inline FVECTOR3& operator/= (float f)
-		{
-			// return *this *= (1.0f / f); // nicer?
-			f = 1.0f / f;
-			x *= f; y *= f; z *= f;
-			return *this;
-		}
-
-		inline FVECTOR3& operator+= (float f)
-		{
-			x += f; y += f; z += f;
-			return *this;
-		}
-
-		inline FVECTOR3& operator+= (const FVECTOR3& f)
-		{
-			x += f.x; y += f.y; z += f.z;
-			return *this;
-		}
-
-		inline FVECTOR3& operator-= (float f)
-		{
-			x -= f; y -= f; z -= f;
-			return *this;
-		}
-
-		inline FVECTOR3& operator-= (const FVECTOR3 &f)
-		{
-			x -= f.x; y -= f.y; z -= f.z;
-			return *this;
-		}
-
-		inline FVECTOR3 operator* (float f) const
-		{
-			return FVECTOR3(x * f, y * f, z * f);
-		}
-
-		inline FVECTOR3 operator* (const FVECTOR3 &f) const
-		{
-			return FVECTOR3(x * f.x, y * f.y, z * f.z);
-		}
-
-		inline FVECTOR3 operator/ (float f) const
-		{
-			f = 1.0f / f;
-			return FVECTOR3(x * f, y * f, z * f);
-		}
-
-		inline FVECTOR3 operator/ (const FVECTOR3 &f) const
-		{
-			return FVECTOR3(x / f.x, y / f.y, z / f.z);
-		}
-
-		inline FVECTOR3 operator+ (float f) const
-		{
-			return FVECTOR3(x + f, y + f, z + f);
-		}
-
-		inline FVECTOR3 operator- (float f) const
-		{
-			return FVECTOR3(x - f, y - f, z - f);
-		}
-
-		inline FVECTOR3 operator+ (const FVECTOR3& f) const
-		{
-			return FVECTOR3(x + f.x, y + f.y, z + f.z);
-		}
-
-		inline FVECTOR3 operator- (const FVECTOR3& f) const
-		{
-			return FVECTOR3(x - f.x, y - f.y, z - f.z);
-		}
-
-		inline FVECTOR3 operator-() const
-		{
-			return FVECTOR3(-x, -y, -z);
-		}
-
-		struct { float x, y, z; };
-		struct { float r, g, b; };
-		FVECTOR2 xy; 
-	} FVECTOR3;
-
-	template<> struct is_vector3<FVECTOR3> : std::true_type { };
-
-
-	/**
 	* \brief 32-bit floating point 4D vector type.
 	* \note This structure is compatible with the D3DXVECTOR4 type.
 	*/
@@ -512,41 +363,9 @@ namespace oapi {
 		return FVECTOR3(x, y, z);
 	}
 
-	inline FVECTOR3 unit(const FVECTOR3& v)
-	{
-		float d = v.x * v.x + v.y * v.y + v.z * v.z;
-		return d > 0 ? FVECTOR3(v.x, v.y, v.z) / ::sqrt(d) : 0.0f;
-	}
-
-	inline FVECTOR3 normalize(const FVECTOR3& v)
-	{
-		float d = v.x * v.x + v.y * v.y + v.z * v.z;
-		return d > 0 ? FVECTOR3(v.x, v.y, v.z) / ::sqrt(d) : 0.0f;
-	}
-
-	inline float dot(const FVECTOR3& v, const FVECTOR3& w)
-	{
-		return v.x * w.x + v.y * w.y + v.z * w.z;
-	}
-
 	inline float dot(const FVECTOR4& v, const FVECTOR4& w)
 	{
 		return v.x * w.x + v.y * w.y + v.z * w.z + v.w * w.w;
-	}
-
-	inline float length(const FVECTOR3& v)
-	{
-		return ::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-	}
-
-	inline FVECTOR3 cross(const FVECTOR3& a, const FVECTOR3& b)
-	{
-		return FVECTOR3(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
-	}
-
-	inline FVECTOR3 saturate(const FVECTOR3& v)
-	{
-		return FVECTOR3(::saturate(v.x), ::saturate(v.y), ::saturate(v.z));
 	}
 
 	inline FVECTOR4 saturate(const FVECTOR4& v)
@@ -554,19 +373,9 @@ namespace oapi {
 		return FVECTOR4(::saturate(v.x), ::saturate(v.y), ::saturate(v.z), ::saturate(v.w));
 	}
 
-	inline FVECTOR3 lerp(const FVECTOR3& a, const FVECTOR3& b, float x)
-	{
-		return a + (b - a) * x;
-	}
-
 	inline FVECTOR4 lerp(const FVECTOR4& a, const FVECTOR4& b, float x)
 	{
 		return a + (b - a) * x;
-	}
-
-	inline FVECTOR3 pow(const FVECTOR3& x, float y)
-	{
-		return FVECTOR3(::pow(x.x, y), ::pow(x.y, y), ::pow(x.z, y));
 	}
 
 	inline FVECTOR4 pow(const FVECTOR4& x, float y)
@@ -574,29 +383,14 @@ namespace oapi {
 		return FVECTOR4(::pow(x.x, y), ::pow(x.y, y), ::pow(x.z, y), ::pow(x.w, y));
 	}
 
-	inline FVECTOR3 pow(const FVECTOR3& x, const FVECTOR3 &y)
-	{
-		return FVECTOR3(::pow(x.x, y.x), ::pow(x.y, y.y), ::pow(x.z, y.z));
-	}
-
 	inline FVECTOR4 pow(const FVECTOR4& x, const FVECTOR4 &y)
 	{
 		return FVECTOR4(::pow(x.x, y.x), ::pow(x.y, y.y), ::pow(x.z, y.z), ::pow(x.w, y.w));
 	}
 
-	inline FVECTOR3 exp(const FVECTOR3& x)
-	{
-		return FVECTOR3(::exp(x.x), ::exp(x.y), ::exp(x.z));
-	}
-
 	inline FVECTOR4 exp(const FVECTOR4& x)
 	{
 		return FVECTOR4(::exp(x.x), ::exp(x.y), ::exp(x.z), ::exp(x.w));
-	}
-
-	inline FVECTOR3 sqrt(const FVECTOR3& x)
-	{
-		return FVECTOR3(::sqrt(x.x), ::sqrt(x.y), ::sqrt(x.z));
 	}
 
 	inline FVECTOR4 sqrt(const FVECTOR4& x)

@@ -84,11 +84,30 @@ union FVECTOR2
 	constexpr auto& operator[](std::size_t i) { float* d[] = {&x, &y}; return *d[i]; }
 };
 
+/**
+ * @brief 3-dimensional vector of type float
+ */
+union FVECTOR3
+{
+	struct { float x, y, z; };
+
+	constexpr FVECTOR3() : x{0}, y{0}, z{0} { }
+	constexpr FVECTOR3(float x, float y, float z) : x{x}, y{y}, z{z} { }
+
+	constexpr FVECTOR3(const FVECTOR3&) = default;
+	constexpr FVECTOR3& operator=(const FVECTOR3&) = default;
+
+	constexpr auto const& operator[](std::size_t i) const { const float* d[] = {&x, &y, &z}; return *d[i]; }
+	constexpr auto& operator[](std::size_t i) { float* d[] = {&x, &y, &z}; return *d[i]; }
+};
+
 }
 
 using oapi::FVECTOR2;
+using oapi::FVECTOR3;
 
 template<> struct is_vector2<FVECTOR2> : std::true_type { };
+template<> struct is_vector3<FVECTOR3> : std::true_type { };
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
