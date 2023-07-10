@@ -279,7 +279,7 @@ Planet::Planet (char *fname)
 			atm.color0.x = col0.x; atm.color0.y = col0.y; atm.color0.z = col0.z;
 		}
 		if (!GetItemVector (ifs, "AtmHazeColor", hazecol))
-			hazecol.Set (atm.color0.x, atm.color0.y, atm.color0.z);
+			hazecol = {atm.color0.x, atm.color0.y, atm.color0.z};
 
 		if (GetItemString (ifs, "AtmFogParam", cbuf)) {
 			i = sscanf (cbuf, "%lf%lf%lf", &fog.dens_0, &fog.dens_ref, &fog.alt_ref);
@@ -287,7 +287,7 @@ Planet::Planet (char *fname)
 			else fog.col = atm.color0;
 		}
 		if (!GetItemVector (ifs, "AtmTintColor", tintcol))
-			tintcol.Set (fog.col.x*0.2, fog.col.y*0.2, fog.col.z*0.2);
+			tintcol = {fog.col.x * 0.2, fog.col.y * 0.2, fog.col.z * 0.2};
 	}
 
 	GetItemReal (ifs, "HorizonExcess", horizon_excess);
@@ -1102,7 +1102,7 @@ Vector Planet::WindVelocity (double lng, double lat, double alt, int frame, Wind
 
 	}
 
-	if (windspeed) *windspeed = wv.length();
+	if (windspeed) *windspeed = len(wv);
 	if (frame == 0) return wv;  // surface-local frame
 
 	double slng = sin(lng), clng = cos(lng), slat = sin(lat), clat = cos(lat);
