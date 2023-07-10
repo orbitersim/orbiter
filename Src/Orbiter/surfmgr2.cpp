@@ -487,7 +487,7 @@ void SurfTile::Render ()
 	bool has_shadows = false;
 	bool has_lights = false;
 	if (ltex || render_shadows) {
-		sdist = acos (dotp (smgr->prm.sdir, cnt));
+		sdist = std::acos(dot(smgr->prm.sdir, cnt));
 		rad = rad0/(double)(2<<lvl); // tile radius
 		has_specular = (ltex && sdist < Pi05+rad);
 		has_shadows = (render_shadows && sdist < Pi05+rad);
