@@ -1183,11 +1183,10 @@ void Atlantis::UpdateMesh ()
 
 	// update MFD brightness
 	if (vis) {
-		oapi::FVECTOR4 mat;
 		DEVMESHHANDLE hMesh = GetDevMesh (vis, mesh_vc);
 		for (int i = 0; i < 10; i++) {
-			mat.rgb = (float)mfdbright[i];
-			mat.a = 1.0f;
+			float mb = mfdbright[i];
+			oapi::FVECTOR4 mat{mb, mb, mb, 1.0f};
 			oapiSetMaterialEx (hMesh, 10+i, MatProp::Light, &mat);
 		}
 	}
