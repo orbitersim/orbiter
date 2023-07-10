@@ -173,12 +173,10 @@ void Instrument_OSync::UpdateDraw (oapi::Sketchpad *skp)
 	Vector sp = vessel->GPos()-ref->GPos();
 	Vector sv = vessel->GVel()-ref->GVel();
 	// normals of the two orbital planes
-	Vector nm1 = crossp (sv, sp);
-	Vector nm2 = crossp (tgt->GVel()-ref->GVel(), tgt->GPos()-ref->GPos());
-	nm1.unify();
-	nm2.unify();
+	Vector nm1 = unit(cross(sv, sp));
+	Vector nm2 = unit(cross(tgt->GVel()-ref->GVel(), tgt->GPos()-ref->GPos()));
 	// relative inclination between ship's and target's orbital planes
-	double reli = xangle (nm1, nm2);
+	double reli = angle(nm1, nm2);
 
 	// calculate ship time to reference point
 	double myta = myel->TrueAnm();
@@ -208,11 +206,11 @@ void Instrument_OSync::UpdateDraw (oapi::Sketchpad *skp)
 	skp->Text (x, y, cbuf, strlen(cbuf)); y += ch;
 	// target distance
 	Vector rp = tgt->GPos()-vessel->GPos();
-	sprintf (cbuf, "Dist%s", DistStr (rp.length()));
+	sprintf(cbuf, "Dist%s", DistStr(len(rp)));
 	skp->Text (x, y, cbuf, strlen(cbuf)); y += ch;
 	// target velocity
 	Vector rv = tgt->GVel()-vessel->GVel();
-	sprintf (cbuf, "RVel%s", DistStr (rv.length()));
+	sprintf(cbuf, "RVel%s", DistStr (len(rv)));
 	skp->Text (x, y, cbuf, strlen(cbuf)); y += ch;
 
 	// find best match
