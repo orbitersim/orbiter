@@ -317,17 +317,17 @@ void Instrument_Docking::UpdateDraw (oapi::Sketchpad *skp)
 	if (!ps) { // no dock information
 
 		// target object in ship coords
-		dpos.Set (tmul (vessel->GRot(), tgt->GPos() - vessel->GPos()));
-		dst = dpos.length();
+		dpos = tmul(vessel->GRot(), tgt->GPos() - vessel->GPos());
+		dst = ::len(dpos);
 
 	} else {
 
 		// dock position in ship coords
-		dpos.Set (tmul (vessel->GRot(), mul (tgt->GRot(), ps->ref) + tgt->GPos() - vessel->GPos()));
-		dst = dpos.dist (vessel->dock[refdock]->ref);
+		dpos = tmul(vessel->GRot(), mul(tgt->GRot(), ps->ref) + tgt->GPos() - vessel->GPos());
+		dst = dist(dpos, vessel->dock[refdock]->ref);
 		// dock position in ship approach frame:
 		Vector adposold(adpos); // store for velocity calculation
-		adpos.Set (mul (dockframe, dpos));
+		adpos = mul(dockframe, dpos);
 		// dock approach direction in ship coords:
 		Vector ddir(tmul(vessel->GRot(), mul(tgt->GRot(), -ps->dir)));
 		// dock "up" direction in ship coords:
