@@ -1325,7 +1325,7 @@ bool Orbiter::KillVessels ()
 						v = g_psys->GetVessel(j);
 						if (v->KillPending()) continue;
 						if (v != vessel && v->GetEnableFocus()) {
-							d = vessel->GPos().dist (v->GPos());
+							d = dist(vessel->GPos(), v->GPos());
 							if (d < dmin) dmin = d, tgt = v;
 						}
 					}
