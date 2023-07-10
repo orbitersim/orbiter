@@ -859,8 +859,7 @@ void Pane::ScreenToGlobal (int x, int y, Vector &glob) const
 	D3DMath_MatrixInvert (IP, *g_camera->D3D_ProjViewMatrix());
 	D3DMath_VectorMatrixMultiply (gpos, homog, IP);
 	//D3DMath_VectorTMatrixMultiply (gpos, homog, *g_camera->D3D_ProjViewMatrix());
-	glob.Set (-gpos.x, -gpos.y, -gpos.z);
-	glob.unify();
+	glob = unit(Vector{-gpos.x, -gpos.y, -gpos.z});
 }
 
 bool Pane::OpenMFD (INT_PTR id, int type, ifstream *ifs)
