@@ -1289,7 +1289,7 @@ void VectorMap::CalcOrbitProj (const Elements *el, const CelestialBody *body, VP
 	for (i = 0; i < NVTX_CIRCLE; i++) {
 		r.x = cosp[i];
 		r.z = sinp[i];
-		rt.Set (mul (R, r));
+		rt = mul(R, r);
 		p[i].lng = atan2 (rt.z, rt.x);
 		p[i].lat = Pi05-acos(rt.y);
 	}
@@ -1607,7 +1607,7 @@ void Groundtrack::CalcPoint (VPointGT &p, double *angvel)
 	Vector pos, loc;
 	el->RelPos (r, ta, p.t);
 	el->Pol2Crt (r, ta, pos);
-	loc.Set (tmul (cbody->GRot(), pos));
+	loc = tmul(cbody->GRot(), pos);
 	cbody->LocalToEquatorial (loc, lng, lat, rad);
 	p.lng = normangle(lng - Pi2*(p.t-td.SimT0)/cbody->RotT());
 	p.lat = lat;
