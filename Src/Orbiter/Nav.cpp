@@ -61,7 +61,7 @@ double Nav::Dist (const Vector &gpos) const
 {
 	Vector gp;
 	GPos (gp);
-	return gp.dist (gpos);
+	return dist(gp, gpos);
 }
 
 double Nav::FieldStrength (const Vector &gpos) const
@@ -69,7 +69,7 @@ double Nav::FieldStrength (const Vector &gpos) const
 	// field strength in arbitrary units
 	Vector gp;
 	GPos (gp);
-	double dist2 = max(gp.dist2(gpos), 1.0);
+	double dist2 = max(dist_2(gp, gpos), 1.0);
 	return (range*range)/dist2;
 }
 
@@ -79,7 +79,7 @@ bool Nav::InRange (const Vector &gpos) const
 
 	Vector gp;
 	GPos (gp);
-	return gp.dist2 (gpos) < range*range;
+	return dist_2(gp, gpos) < range * range;
 }
 
 void Nav::GetData (NAVDATA *data) const
@@ -130,7 +130,7 @@ int Nav_VOR::IdString (char *str, int len) const
 
 void Nav_VOR::GPos (Vector &gp) const
 {
-	gp.Set (mul (planet->GRot(), lpos) + planet->GPos());
+	gp = mul(planet->GRot(), lpos) + planet->GPos();
 	//planet->EquatorialToGlobal (lng, lat, planet->Size(), gp);
 }
 
@@ -212,7 +212,7 @@ int Nav_IDS::IdString (char *str, int len) const
 
 void Nav_IDS::GPos (Vector &gp) const
 {
-	gp.Set (vessel->GetDockGPos (ps));
+	gp = vessel->GetDockGPos(ps);
 }
 
 void Nav_IDS::GetData (NAVDATA *data) const

@@ -137,7 +137,7 @@ public:
 	Nav_XPDR (const Vessel *_vessel, float _freq, float _range = 1e6);
 	inline DWORD Type () const { return TRANSMITTER_XPDR; }
 	int IdString (char *str, int len) const;
-	inline void GPos (Vector &gp) const { gp.Set (vessel->GPos()); }
+	inline void GPos(Vector &gp) const { gp = vessel->GPos(); }
 	inline const Vessel *GetVessel () const { return vessel; }
 	void GetData (NAVDATA *data) const;
 
