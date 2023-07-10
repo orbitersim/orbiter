@@ -49,7 +49,7 @@ Base::Base (char *fname, Planet *_planet, double _lng, double _lat)
 	char cbuf[256];
 	int texid = 0, bias = 0;
 	//visual = 0;
-	sundir.Set(0,-1,0);
+	sundir = {0, -1, 0};
 	sundir_updt = 0.0;
 
 	InitDeviceObjects ();
@@ -115,7 +115,7 @@ Base::Base (char *fname, Planet *_planet, double _lng, double _lat)
 				if (npad) memcpy (tmp, lspec, npad*sizeof(LpadSpec)), delete []lspec;
 				lspec = tmp;
 				const Vector &pos = ((Lpad*)bo)->GetPos();
-				lspec[npad].relpos.Set (pos.x, pos.y, pos.z);
+				lspec[npad].relpos = {pos.x, pos.y, pos.z};
 				lspec[npad].status = 0;
 				lspec[npad].vessel = 0;
 				if (float freq = ((Lpad*)bo)->GetILSfreq()) {
@@ -422,13 +422,13 @@ void Base::Attach (Planet *_parent)
 	rad = cbody->Size(); // dist from planet centre
 	elev = 0.0;
 	cbody->EquatorialToLocal (slng, clng, slat, clat, rad, rpos);
-	s0->vel.Set (0,0,0);                         // base is fixed to ground
+	s0->vel = {0,0,0};                        // base is fixed to ground
 	rrot.Set ( clng*slat, clng*clat, -slng,   // rotate from local
 		      -clat,      slat,       0,      // base to local
 			   slng*slat, slng*clat,  clng);  // planet coords
 
 	double v = Pi2*rad*clat / cbody->RotT(); // surface velocity
-	rotvel.Set (-v*slng, 0.0, v*clng);        // velocity vector in non-rotating planet coords
+	rotvel = {-v * slng, 0.0, v * clng};      // velocity vector in non-rotating planet coords
 }
 
 DWORD Base::GetTileList (const SurftileSpec **_tile) const
@@ -585,8 +585,8 @@ void Base::Update (bool force)
 	// WARNING: this should work the other way round: combine the
 	// two quaternions and extract grot
 
-	s1->pos.Set (mul (cbody->s1->R, rpos) + cbody->s1->pos);
-	s1->vel.Set (mul (cbody->s1->R, rotvel) + cbody->s1->vel);
+	s1->pos = mul(cbody->s1->R, rpos) + cbody->s1->pos;
+	s1->vel = mul(cbody->s1->R, rotvel) + cbody->s1->vel;
 
 	// periodically update some secondary parameters
 	if (td.SimT1 > sundir_updt || force) {
@@ -777,5 +777,5 @@ int Base::ReportTouchdown (VesselBase *vessel, double vlng, double vlat)
 
 double Base::CosSunAlt () const
 {
-	return (s0->R.m12*s0->pos.x + s0->R.m22*s0->pos.y + s0->R.m32*s0->pos.z) / (-s0->pos.length());
+	return (s0->R.m12 * s0->pos.x + s0->R.m22 * s0->pos.y + s0->R.m32 * s0->pos.z) / -len(s0->pos);
 }
