@@ -32,7 +32,7 @@ void SurfParam::Set (const StateVectors &s, const StateVectors &s_ref, const Cel
 	slat = sin(lat), clat = cos(lat);
 	alt0 = alt = rad - ref->Size();
 	elev = 0.0;
-	surfnml.Set(0,1,0);
+	surfnml = {0, 1, 0};
 	if (etilecache && alt < alt_max) {
 		if (ref->Type() == OBJTP_PLANET) {
 			ElevationManager *emgr = ((Planet*)ref)->ElevMgr();
@@ -44,8 +44,7 @@ void SurfParam::Set (const StateVectors &s, const StateVectors &s_ref, const Cel
 		}
 	}
 
-	Vector Snm (tmul (s.R, Prel));
-	Snm.unify(); // planet surface normal below ship in ship's local coords
+	Vector Snm = unit(tmul(s.R, Prel)); // planet surface normal below ship in ship's local coords
 	pitch = asin (Snm.z);
 	if (fabs (Snm.x) > eps || fabs (Snm.y) > eps)
 		bank = atan2 (Snm.x, Snm.y);
@@ -55,21 +54,21 @@ void SurfParam::Set (const StateVectors &s, const StateVectors &s_ref, const Cel
 	// ground speed
 	Vector vrel = s.vel - s_ref.vel;
 	double vref = Pi2/ref->RotT() * rad * clat; // speed of a point at vessel position fixed in planet frame
-	groundvel_glob.Set (vrel - mul (s_ref.R, Vector(-vref*slng,0.0,vref*clng)));  // ground velocity in global frame
-	groundvel_ship.Set (tmul (s.R, groundvel_glob));  // ground velocity in ship frame
-	groundspd = groundvel_glob.length();
+	groundvel_glob = vrel - mul(s_ref.R, Vector{-vref * slng, 0.0, vref * clng});  // ground velocity in global frame
+	groundvel_ship = tmul(s.R, groundvel_glob);  // ground velocity in ship frame
+	groundspd = len(groundvel_glob);
 
 	// vertical velocity
-	vspd = dotp(vrel, Prel.unit());
+	vspd = dot(vrel, unit(Prel));
 
 	// airspeed
 	Vector windvel_glob(0,0,0);
 	if (planet)
-		windvel_glob.Set (mul (s_ref.R, planet->WindVelocity (lng, lat, alt, 1, windprm)));
+		windvel_glob = mul(s_ref.R, planet->WindVelocity(lng, lat, alt, 1, windprm));
 
-	airvel_glob.Set (groundvel_glob - windvel_glob);
-	airvel_ship.Set (tmul (s.R, airvel_glob));
-	airspd = airvel_glob.length();
+	airvel_glob = groundvel_glob - windvel_glob;
+	airvel_ship = tmul(s.R, airvel_glob);
+	airspd = len(airvel_glob);
 
 	// rotation from planet local coords to local horizon
 	L2H.Set (-slng, 0, clng,
@@ -149,10 +148,10 @@ void SurfParam::SetLanded (double _lng, double _lat, double _alt, double _dir, c
 	else
 		bank = 0.0;
 	dir = _dir;
-	airvel_glob.Set (0,0,0);
-	airvel_ship.Set (0,0,0);
-	groundvel_glob.Set (0,0,0);
-	groundvel_ship.Set (0,0,0);
+	airvel_glob = {0, 0, 0};
+	airvel_ship = {0, 0, 0};
+	groundvel_glob = {0, 0, 0};
+	groundvel_ship = {0, 0, 0};
 	airspd = groundspd = 0.0;
 
 	if (is_in_atm = (planet && planet->HasAtmosphere() && rad < planet->AtmRadLimit())) {
@@ -203,7 +202,7 @@ void VesselBase::SetDefaultState ()
 	// distribute update times
 
 	windp.pert_t = 0;
-	windp.pert_v.Set(0,0,0);
+	windp.pert_v = {0, 0, 0};
 }
 
 // =======================================================================
@@ -213,9 +212,9 @@ bool VesselBase::Activate (bool force)
 	if (fstatus == FLIGHTSTATUS_LANDED || force) {
 		fstatus = FLIGHTSTATUS_FREEFLIGHT;
 		rpos_base = s0->pos;
-		rpos_add.Set (0,0,0);
+		rpos_add = {0, 0, 0};
 		rvel_base = s0->vel;
-		rvel_add.Set (0,0,0);
+		rvel_add = {0, 0, 0};
 		return true;
 	} else
 		return false;
@@ -258,7 +257,7 @@ void VesselBase::CheckLanded ()
 			Vector prel (tmul(proxybody->s0->R, s0->pos - proxybody->s0->pos)); // vessel position in planet local coords
 			double dt = td.SimT0 - LandingTest.testt;
 			if (dt < 0.1) return;
-			double dst2 = prel.dist2 (LandingTest.surfpos);
+			double dst2 = dist_2(prel, LandingTest.surfpos);
 			double dangle = angle (s0->Q, LandingTest.surfrot);
 			LandingTest.surfpos = prel;
 			LandingTest.surfrot.Set (s0->Q);
@@ -287,7 +286,7 @@ void VesselBase::CheckLanded ()
 		if (bSurfaceContact && !ThrustEngaged()) {
 			LandingTest.testing = true;
 			LandingTest.testt = td.SimT0;
-			LandingTest.surfpos.Set (tmul(proxybody->s0->R, s0->pos - proxybody->s0->pos));
+			LandingTest.surfpos = tmul(proxybody->s0->R, s0->pos - proxybody->s0->pos);
 			LandingTest.surfrot.Set (s0->Q); // should really subtract proxybody rotation here
 		}
 	}
@@ -332,7 +331,7 @@ void VesselBase::UpdateProxies ()
 	// Check for closest celestial body and planet
 	for (i = 0, proxydist2 = proxypdist2 = 1e100; i < ng; i++) {
 		grav = g_psys->GetGravObj(i);
-		dist2 = s0->pos.dist2 (grav->s0->pos) - grav->Size(); // distance squared from body surface
+		dist2 = dist_2(s0->pos, grav->s0->pos) - grav->Size(); // distance squared from body surface
 		if (dist2 < proxydist2) {
 			proxydist2 = dist2;
 			proxybody = grav;
@@ -349,7 +348,7 @@ void VesselBase::UpdateProxies ()
 	if (proxyplanet) {
 		for (i = 0, proxydist2 = 1e100; i < proxyplanet->nBase(); i++) {
 			Base *base = (Base*)proxyplanet->GetBase(i);
-			if ((dist2 = s0->pos.dist2 (base->s0->pos)) < proxydist2) {
+			if ((dist2 = dist_2(s0->pos, base->s0->pos)) < proxydist2) {
 				proxydist2 = dist2;
 				proxybase = base;
 			}
@@ -410,8 +409,8 @@ bool VesselBase::ValidateStateUpdate (StateVectors *s)
 		} else if (!collision_speed_checked) {
 			collision_speed_checked = true;
 			double vsmax = -0.1 * MaxSubStep()/td.SimDT; // allow max 0.1m / substep surface penetration
-			Vector hn (tmul(GRot(), GPos()-proxybody->GPos()).unit());
-			double vs = dotp (sp.groundvel_ship, hn);
+			Vector hn = unit(tmul(GRot(), GPos()-proxybody->GPos()));
+			double vs = dot(sp.groundvel_ship, hn);
 			if (vs < vsmax) {
 				Vector gv(sp.groundvel_ship * (vsmax/vs)); // rescaled surface-relative velocity
 				gv = mul (GRot(), gv);                    // map to global
