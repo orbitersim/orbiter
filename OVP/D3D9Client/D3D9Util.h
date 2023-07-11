@@ -72,7 +72,7 @@ const char *_PTR(const void *p);
 // helper function to get address of a temporary
 // NB: use with caution
 template<typename T>
-const T* ptr(const T& x) { return &x; }
+T* ptr(T&& x) { return &x; }
 
 // ------------------------------------------------------------------------------------
 // Vertex Declaration equal to NTVERTEX

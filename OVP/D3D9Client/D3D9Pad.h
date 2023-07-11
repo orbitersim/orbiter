@@ -488,8 +488,8 @@ public:
 	void SetWorldTransform(const FMATRIX4 *pWT = NULL);
 	void SetWorldTransform2D(float scale=1.0f, float rot=0.0f, const IVECTOR2 *c=NULL, const IVECTOR2 *t=NULL);
 	int  DrawMeshGroup(const MESHHANDLE hMesh, DWORD grp, Sketchpad::MeshFlags flags, const SURFHANDLE hTex = NULL);
-	void CopyRect(const SURFHANDLE hSrc, const RECT *src, int tx, int ty);
-	void StretchRect(const SURFHANDLE hSrc, const RECT *src, const RECT *tgt);
+	void CopyRect(const SURFHANDLE hSrc, const LPRECT src, int tx, int ty);
+	void StretchRect(const SURFHANDLE hSrc, const LPRECT src, const LPRECT tgt);
 	void RotateRect(const SURFHANDLE hSrc, const LPRECT src, int cx, int cy, float angle, float sw = 1.0f, float sh = 1.0f);
 	void ColorKey(const SURFHANDLE hSrc, const LPRECT src, int tx, int ty);
 	void TextEx(float x, float y, const char *str, float scale = 100.0f, float angle = 0.0f);
@@ -583,10 +583,10 @@ private:
 	void FillRect(int l, int t, int r, int b, const SkpColor &c);
 	void TexChange(SURFHANDLE hNew);
 	bool TexChangeNative(LPDIRECT3DTEXTURE9 hNew);
-	const RECT *CheckRectNative(LPDIRECT3DTEXTURE9 hSrc, const RECT *s);
+	RECT GetFullRectNative(LPDIRECT3DTEXTURE9 hSrc);
 	void SetFontTextureNative(LPDIRECT3DTEXTURE9 hNew);
 	void SetupDevice(Topo tNew);
-	const RECT *CheckRect(SURFHANDLE hSrc, const RECT *s);
+	RECT GetFullRect(SURFHANDLE hSrc);
 	void IsLineTopologyAllowed();
 	DWORD ColorComp(DWORD c) const;
 	SkpColor ColorComp(const SkpColor &c) const;
@@ -630,7 +630,6 @@ private:
 	float linescale, pattern;
 	float zfar;
 	int cx, cy;
-	RECT src;
 	RECT tgt;
 
 	D3DSURFACE_DESC	   tgt_desc;
