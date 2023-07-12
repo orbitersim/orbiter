@@ -87,20 +87,15 @@ void D3D9Pad::AddRectIdx(WORD aV)
 
 // ===============================================================================================
 //
-const RECT *D3D9Pad::CheckRect(SURFHANDLE hSrc, const RECT *s)
+RECT D3D9Pad::GetFullRect(SURFHANDLE hSrc)
 {
-	if (s) return s;
-	src.left = 0;
-	src.top = 0;
-	src.right = SURFACE(hSrc)->GetWidth();
-	src.bottom = SURFACE(hSrc)->GetHeight();
-	return &src;
+	return {0, 0, static_cast<long>(SURFACE(hSrc)->GetWidth()), static_cast<long>(SURFACE(hSrc)->GetHeight())};
 }
 
 
 // ===============================================================================================
 //
-void D3D9Pad::CopyRect(const SURFHANDLE hSrc, const RECT *_s, int tx, int ty)
+void D3D9Pad::CopyRect(const SURFHANDLE hSrc, const LPRECT _s, int tx, int ty)
 {
 #ifdef SKPDBG 
 	Log("CopyRect(0x%X)", DWORD(hSrc));
@@ -110,17 +105,17 @@ void D3D9Pad::CopyRect(const SURFHANDLE hSrc, const RECT *_s, int tx, int ty)
 
 	if (Topology(TRIANGLE)) {
 
-		const RECT *s = CheckRect(hSrc, _s);
+		auto s = _s ? *_s : GetFullRect(hSrc);
 
-		int h = abs(s->bottom - s->top);
-		int w = abs(s->right - s->left);
+		int h = std::abs(s.bottom - s.top);
+		int w = std::abs(s.right - s.left);
 
 		AddRectIdx(vI);
 
-		SkpVtxII(Vtx[vI++], tx, ty, s->left, s->top);
-		SkpVtxII(Vtx[vI++], tx, ty + h, s->left, s->bottom);
-		SkpVtxII(Vtx[vI++], tx + w, ty + h, s->right, s->bottom);
-		SkpVtxII(Vtx[vI++], tx + w, ty, s->right, s->top);
+		SkpVtxII(Vtx[vI++], tx    , ty    , s.left , s.top   );
+		SkpVtxII(Vtx[vI++], tx    , ty + h, s.left , s.bottom);
+		SkpVtxII(Vtx[vI++], tx + w, ty + h, s.right, s.bottom);
+		SkpVtxII(Vtx[vI++], tx + w, ty    , s.right, s.top   );
 
 		DWORD x = SKPSW_TEXTURE | SKPSW_CENTER;
 
@@ -134,7 +129,7 @@ void D3D9Pad::CopyRect(const SURFHANDLE hSrc, const RECT *_s, int tx, int ty)
 
 // ===============================================================================================
 //
-void D3D9Pad::StretchRect(const SURFHANDLE hSrc, const RECT *_s, const RECT *_t)
+void D3D9Pad::StretchRect(const SURFHANDLE hSrc, const LPRECT _s, const LPRECT _t)
 {
 #ifdef SKPDBG 
 	Log("StretchRect(0x%X)", DWORD(hSrc));
@@ -144,15 +139,15 @@ void D3D9Pad::StretchRect(const SURFHANDLE hSrc, const RECT *_s, const RECT *_t)
 
 	if (Topology(TRIANGLE)) {
 
-		const RECT *s = CheckRect(hSrc, _s);
-		const RECT *t = _t ? _t : &tgt;
+		auto s = _s ? *_s : GetFullRect(hSrc);
+		auto t = _t ? *_t : tgt;
 
 		AddRectIdx(vI);
 
-		SkpVtxII(Vtx[vI++], t->left, t->top, s->left, s->top);
-		SkpVtxII(Vtx[vI++], t->left, t->bottom, s->left, s->bottom);
-		SkpVtxII(Vtx[vI++], t->right, t->bottom, s->right, s->bottom);
-		SkpVtxII(Vtx[vI++], t->right, t->top, s->right, s->top);
+		SkpVtxII(Vtx[vI++], t.left , t.top   , s.left , s.top   );
+		SkpVtxII(Vtx[vI++], t.left , t.bottom, s.left , s.bottom);
+		SkpVtxII(Vtx[vI++], t.right, t.bottom, s.right, s.bottom);
+		SkpVtxII(Vtx[vI++], t.right, t.top   , s.right, s.top   );
 
 		DWORD x = SKPSW_TEXTURE | SKPSW_CENTER;
 
@@ -176,10 +171,10 @@ void D3D9Pad::RotateRect(const SURFHANDLE hSrc, const LPRECT _s, int tcx, int tc
 
 	if (Topology(TRIANGLE)) {
 
-		const RECT *s = CheckRect(hSrc, _s);
+		auto s = _s ? *_s : GetFullRect(hSrc);
 
-		float w = float(s->right - s->left) * sw;
-		float h = float(s->bottom - s->top) * sh;
+		float w = float(s.right - s.left) * sw;
+		float h = float(s.bottom - s.top) * sh;
 
 		float san = sin(angle) * 0.5f;
 		float can = cos(angle) * 0.5f;
@@ -198,10 +193,10 @@ void D3D9Pad::RotateRect(const SURFHANDLE hSrc, const LPRECT _s, int tcx, int tc
 
 		AddRectIdx(vI);
 
-		SkpVtxFI(Vtx[vI++], ax, ay, s->left, s->top);
-		SkpVtxFI(Vtx[vI++], bx, by, s->left, s->bottom);
-		SkpVtxFI(Vtx[vI++], cx, cy, s->right, s->bottom);
-		SkpVtxFI(Vtx[vI++], dx, dy, s->right, s->top);
+		SkpVtxFI(Vtx[vI++], ax, ay, s.left , s.top   );
+		SkpVtxFI(Vtx[vI++], bx, by, s.left , s.bottom);
+		SkpVtxFI(Vtx[vI++], cx, cy, s.right, s.bottom);
+		SkpVtxFI(Vtx[vI++], dx, dy, s.right, s.top   );
 
 		DWORD x = SKPSW_TEXTURE | SKPSW_CENTER;
 
@@ -225,17 +220,17 @@ void D3D9Pad::ColorKey(const SURFHANDLE hSrc, const LPRECT _s, int tx, int ty)
 
 	if (Topology(TRIANGLE)) {
 
-		const RECT *s = CheckRect(hSrc, _s);
+		auto s = _s ? *_s : GetFullRect(hSrc);
 
-		int h = abs(s->bottom - s->top);
-		int w = abs(s->right - s->left);
+		int h = std::abs(s.bottom - s.top);
+		int w = std::abs(s.right - s.left);
 
 		AddRectIdx(vI);
 
-		SkpVtxII(Vtx[vI++], tx, ty, s->left, s->top);
-		SkpVtxII(Vtx[vI++], tx, ty + h, s->left, s->bottom);
-		SkpVtxII(Vtx[vI++], tx + w, ty + h, s->right, s->bottom);
-		SkpVtxII(Vtx[vI++], tx + w, ty, s->right, s->top);
+		SkpVtxII(Vtx[vI++], tx    , ty    , s.left , s.top   );
+		SkpVtxII(Vtx[vI++], tx    , ty + h, s.left , s.bottom);
+		SkpVtxII(Vtx[vI++], tx + w, ty + h, s.right, s.bottom);
+		SkpVtxII(Vtx[vI++], tx + w, ty    , s.right, s.top   );
 
 		DWORD f = SKPSW_TEXTURE | SKPSW_COLORKEY | SKPSW_CENTER;
 
@@ -263,15 +258,15 @@ void D3D9Pad::ColorKeyStretch(const SURFHANDLE hSrc, const LPRECT _s, const LPRE
 
 	if (Topology(TRIANGLE)) {
 
-		const RECT *s = CheckRect(hSrc, _s);
-		const RECT *t = _t ? _t : &tgt;
+		auto s = _s ? *_s : GetFullRect(hSrc);
+		auto t = _t ? *_t : tgt;
 
 		AddRectIdx(vI);
 
-		SkpVtxII(Vtx[vI++], t->left, t->top, s->left, s->top);
-		SkpVtxII(Vtx[vI++], t->left, t->bottom, s->left, s->bottom);
-		SkpVtxII(Vtx[vI++], t->right, t->bottom, s->right, s->bottom);
-		SkpVtxII(Vtx[vI++], t->right, t->top, s->right, s->top);
+		SkpVtxII(Vtx[vI++], t.left , t.top   , s.left , s.top   );
+		SkpVtxII(Vtx[vI++], t.left , t.bottom, s.left , s.bottom);
+		SkpVtxII(Vtx[vI++], t.right, t.bottom, s.right, s.bottom);
+		SkpVtxII(Vtx[vI++], t.right, t.top   , s.right, s.top   );
 
 		DWORD x = SKPSW_TEXTURE | SKPSW_COLORKEY | SKPSW_CENTER;
 
@@ -297,17 +292,17 @@ void D3D9Pad::CopyRectNative(const LPDIRECT3DTEXTURE9 pSrc, const LPRECT _s, int
 
 	if (Topology(TRIANGLE)) {
 
-		const RECT *s = CheckRectNative(pSrc, _s);
+		auto s = _s ? *_s : GetFullRectNative(pSrc);
 
-		int h = abs(s->bottom - s->top);
-		int w = abs(s->right - s->left);
+		int h = std::abs(s.bottom - s.top);
+		int w = std::abs(s.right - s.left);
 
 		AddRectIdx(vI);
 
-		SkpVtxII(Vtx[vI++], tx, ty, s->left, s->top);
-		SkpVtxII(Vtx[vI++], tx, ty + h, s->left, s->bottom - 1);
-		SkpVtxII(Vtx[vI++], tx + w, ty + h, s->right - 1, s->bottom - 1);
-		SkpVtxII(Vtx[vI++], tx + w, ty, s->right - 1, s->top);
+		SkpVtxII(Vtx[vI++], tx    , ty    , s.left     , s.top       );
+		SkpVtxII(Vtx[vI++], tx    , ty + h, s.left     , s.bottom - 1);
+		SkpVtxII(Vtx[vI++], tx + w, ty + h, s.right - 1, s.bottom - 1);
+		SkpVtxII(Vtx[vI++], tx + w, ty    , s.right - 1, s.top       );
 
 		DWORD x = SKPSW_TEXTURE | SKPSW_CENTER;
 
@@ -321,7 +316,7 @@ void D3D9Pad::CopyRectNative(const LPDIRECT3DTEXTURE9 pSrc, const LPRECT _s, int
 
 // ===============================================================================================
 //
-void D3D9Pad::StretchRectNative(const LPDIRECT3DTEXTURE9 pSrc, const RECT *_s, const RECT *t)
+void D3D9Pad::StretchRectNative(const LPDIRECT3DTEXTURE9 pSrc, const RECT *_s, const RECT *_t)
 {
 #ifdef SKPDBG 
 	Log("StretchRectNative(0x%X)", DWORD(pSrc));
@@ -331,14 +326,15 @@ void D3D9Pad::StretchRectNative(const LPDIRECT3DTEXTURE9 pSrc, const RECT *_s, c
 
 	if (Topology(TRIANGLE)) {
 
-		const RECT *s = CheckRectNative(pSrc, _s);
+		auto s = _s ? *_s : GetFullRectNative(pSrc);
+		auto t = *_t;
 
 		AddRectIdx(vI);
 
-		SkpVtxII(Vtx[vI++], t->left, t->top, s->left, s->top);
-		SkpVtxII(Vtx[vI++], t->left, t->bottom, s->left, s->bottom - 1);
-		SkpVtxII(Vtx[vI++], t->right, t->bottom, s->right - 1, s->bottom - 1);
-		SkpVtxII(Vtx[vI++], t->right, t->top, s->right - 1, s->top);
+		SkpVtxII(Vtx[vI++], t.left , t.top   , s.left     , s.top       );
+		SkpVtxII(Vtx[vI++], t.left , t.bottom, s.left     , s.bottom - 1);
+		SkpVtxII(Vtx[vI++], t.right, t.bottom, s.right - 1, s.bottom - 1);
+		SkpVtxII(Vtx[vI++], t.right, t.top   , s.right - 1, s.top       );
 
 		DWORD x = SKPSW_TEXTURE | SKPSW_CENTER;
 
@@ -368,12 +364,12 @@ void D3D9Pad::CopyTetragon(const SURFHANDLE hSrc, const LPRECT _s, const FVECTOR
 
 	if (Topology(TRIANGLE))
 	{
-		const RECT *s = CheckRect(hSrc, _s);
+		auto s = _s ? *_s : GetFullRect(hSrc);
 
-		sp[0] = FVECTOR2(s->left, s->top);
-		sp[1] = FVECTOR2(s->left, s->bottom);
-		sp[2] = FVECTOR2(s->right, s->bottom);
-		sp[3] = FVECTOR2(s->right, s->top);
+		sp[0] = FVECTOR2{s.left , s.top   };
+		sp[1] = FVECTOR2{s.left , s.bottom};
+		sp[2] = FVECTOR2{s.right, s.bottom};
+		sp[3] = FVECTOR2{s.right, s.top   };
 
 		// Create indices
 		for (int j = 0; j < (n-1); j++)
@@ -817,16 +813,11 @@ int D3D9Pad::DrawMeshGroup(const MESHHANDLE hMesh, DWORD grp, Sketchpad::MeshFla
 
 // ===============================================================================================
 //
-const RECT *D3D9Pad::CheckRectNative(LPDIRECT3DTEXTURE9 hSrc, const RECT *s)
+RECT D3D9Pad::GetFullRectNative(LPDIRECT3DTEXTURE9 hSrc)
 {
-	if (s) return s;
 	D3DSURFACE_DESC desc;
 	hSrc->GetLevelDesc(0, &desc);
-	src.left = 0;
-	src.top = 0;
-	src.right = desc.Width;
-	src.bottom = desc.Height;
-	return &src;
+	return {0, 0, static_cast<long>(desc.Width), static_cast<long>(desc.Height)};
 }
 
 
