@@ -41,7 +41,6 @@ InterpreterList::Environment::~Environment()
 		if (hThread.joinable()) {
 			termInterp = true;
 			interp->Terminate();
-			interp->StepInterpreter(); // give the thread opportunity to close
 			hThread.join();
 		}
 		delete interp;
@@ -109,6 +108,9 @@ void InterpreterList::clbkPostStep (double simt, double simdt, double mjd)
 	for (i = 0; i < nlist; i++) { // let the interpreter do some work
 		if (list[i]->interp->IsBusy() || list[i]->cmd || list[i]->interp->nJobs()) {
 			list[i]->interp->StepInterpreter();
+			if (list[i]->interp->exitCode) {
+				exit(*list[i]->interp->exitCode);
+			}
 		}
 	}
 }

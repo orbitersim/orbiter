@@ -12,7 +12,8 @@ extern "C" {
 
 #include "OrbiterAPI.h"
 #include "VesselAPI.h" // for TOUCHDOWNVTX
-#include <mutex>
+#include <semaphore>
+#include <optional>
 
 #define PRMTP_NIL           0x01
 #define PRMTP_NUMBER        0x02
@@ -209,6 +210,8 @@ public:
 	static void lua_pushsketchpad (lua_State *L, oapi::Sketchpad *skp);
 
 	void term_setverbosity (int level) { term_verbose = level; }
+
+	std::optional<int> exitCode;
 
 protected:
 	lua_State *L;         // Lua main context
@@ -816,12 +819,8 @@ protected:
 	friend int OpenHelp (void *context);
 
 private:
-	std::mutex m_InterpMtx;
-	std::condition_variable m_InterpCV;
-	std::atomic<bool> m_InterpRun;
-
-	bool bExecLocal;   // flag for locally created mutexes
-	bool bWaitLocal;
+	std::binary_semaphore sem_exec;
+	std::binary_semaphore sem_wait;
 
 	int status;              // interpreter status
 	bool is_busy;            // interpreter busy (running a script)
