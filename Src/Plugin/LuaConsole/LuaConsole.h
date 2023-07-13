@@ -43,7 +43,7 @@ protected:
 private:
 	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 	static LRESULT WINAPI TermProcHook (HWND, UINT, WPARAM, LPARAM);
-	static unsigned int InterpreterThreadProc (void *context);
+	static unsigned int InterpreterThreadProc (LuaConsole* console);
 	static void OpenDlgClbk (void *context); // called when user requests console window
 	Interpreter *CreateInterpreter ();
 	void AddLine (const char *str, int mode=1); // add line to buffer

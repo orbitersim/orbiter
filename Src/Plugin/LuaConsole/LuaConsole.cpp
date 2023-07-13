@@ -628,10 +628,9 @@ Interpreter *LuaConsole::CreateInterpreter ()
 	return interp;
 }
 // Interpreter thread function
-unsigned int LuaConsole::InterpreterThreadProc (void *context)
+unsigned int LuaConsole::InterpreterThreadProc (LuaConsole* console)
 {
 	int res;
-	LuaConsole *console = (LuaConsole*)context;
 	ConsoleInterpreter *interp = (ConsoleInterpreter*)console->interp;
 
 	// interpreter loop
