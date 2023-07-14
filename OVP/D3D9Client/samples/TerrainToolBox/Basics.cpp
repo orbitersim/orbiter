@@ -71,10 +71,10 @@ FMATRIX4 ToolKit::CreateWorldMatrix(OBJHANDLE hPlanet, double lng, double lat, d
 	y *= scale;
 	z *= scale;
 
-	m._x = FVECTOR4(x, 0.0f);
-	m._y = FVECTOR4(y, 0.0f);
-	m._z = FVECTOR4(z, 0.0f);
-	m._p = FVECTOR4(p, 1.0f);
+	m._x = morph_to<FVECTOR4>(x, 0);
+	m._y = morph_to<FVECTOR4>(y, 0);
+	m._z = morph_to<FVECTOR4>(z, 0);
+	m._p = morph_to<FVECTOR4>(p, 1);
 
 	return m;
 }
