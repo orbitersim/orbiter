@@ -51,32 +51,19 @@ inline bool PointInside(int x, int y, LPRECT r)
 }
 // ===============================================================================================
 //
-inline DWORD _Colour(const FVECTOR4 *c)
+inline auto _Colour(const FVECTOR4 *vc)
 {
-	DWORD r = DWORD(c->r * 255.0f + 0.5f);
-	DWORD g = DWORD(c->g * 255.0f + 0.5f);
-	DWORD b = DWORD(c->b * 255.0f + 0.5f);
-
-	if (r > 0xFF) r = 0xFF;
-	if (g > 0xFF) g = 0xFF;
-	if (b > 0xFF) b = 0xFF;
-	
-	return (b << 16) | (g << 8) | r;
+	auto c = to_COLOUR4(*vc);
+	c.a = 0;
+	return to_abgr32(c);
 }
 // ===============================================================================================
 //
-inline FVECTOR4 _Colour(DWORD dwABGR)
+inline auto _Colour(std::uint32_t dwABGR)
 {
-	DWORD r = (dwABGR & 0xFF); dwABGR >>= 8;
-	DWORD g = (dwABGR & 0xFF); dwABGR >>= 8;
-	DWORD b = (dwABGR & 0xFF); dwABGR >>= 8;
-	FVECTOR4 c;
-	float q = 3.92156862e-3f;
-	c.r = float(r) * q;
-	c.g = float(g) * q;
-	c.b = float(b) * q;
-	c.a = 1.0f;
-	return c;
+	auto c = from_abgr32(dwABGR);
+	c.a = 1;
+	return FVECTOR4{c.r, c.g, c.b, c.a};
 }
 // ===============================================================================================
 //
@@ -208,7 +195,7 @@ Node::Node(SideBar *pSB, const char *label, HWND hDlg, DWORD color, Node *pP) :
 		for (int x = 0; x < bm.bmWidth; x++) {		
 			COLORREF cr = GetPixel(hSrc, x, y);
 			FVECTOR4 c = _Colour(cr);
-			FVECTOR4 out = (clr * c.b) + (white * c.g);
+			FVECTOR4 out = (clr * c.z) + (white * c.y);
 			SetPixel(hTgt, x, y, _Colour(&out));	
 		}
 	}
@@ -271,7 +258,7 @@ void Node::ReColorize(DWORD color)
 		for (int x = 0; x < bm.bmWidth; x++) {
 			COLORREF cr = GetPixel(hSrc, x, y);
 			FVECTOR4 c = _Colour(cr);
-			FVECTOR4 out = (clr * c.b) + (white * c.g);
+			FVECTOR4 out = (clr * c.z) + (white * c.y);
 			SetPixel(hTgt, x, y, _Colour(&out));
 		}
 	}

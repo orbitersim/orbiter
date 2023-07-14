@@ -294,7 +294,7 @@ FVECTOR4 vPlanet::ComputeCameraView(float angle, float rad, float distance)
 	FVECTOR2 od = Gauss7(angle, rad, distance, cp.iH); // Ray/Mie Optical depth
 	FVECTOR2 rm = od * cp.rmO;
 	FVECTOR3 clr = cp.RayWave * rm.x + cp.MieWave * rm.y;
-	return FVECTOR4(exp(-clr), od.x + od.y);
+	return morph_to<FVECTOR4>(exp(-clr), od.x + od.y);
 }
 
 
@@ -332,8 +332,8 @@ void vPlanet::IntegrateSegment(FVECTOR3 vOrig, FVECTOR3 vRay, float len, FVECTOR
 	static const int NSEG = 6;
 	static const float iNSEG = 1.0f / float(NSEG);
 
-	if (ral) *ral = 0.0f;
-	if (mie) *mie = 0.0f;
+	if (ral) *ral = {0, 0, 0, 0};
+	if (mie) *mie = {0, 0, 0, 0};
 
 	for (int i = 0; i < NSEG; i++)
 	{
@@ -344,26 +344,25 @@ void vPlanet::IntegrateSegment(FVECTOR3 vOrig, FVECTOR3 vRay, float len, FVECTOR
 		float alt = rad - cp.PlanetRad;
 		float ang = dot(n, vRay);
 
-		FVECTOR3 x = SunLightColor(-dot(n, cp.toSun), alt) * ComputeCameraView(-ang, rad, len - dst).rgb;
+		FVECTOR3 x = SunLightColor(-dot(n, cp.toSun), alt) * morph_to<FVECTOR3>(ComputeCameraView(-ang, rad, len - dst));
 
 		if (ral) {
 			float f = exp(-alt * cp.iH.x) * iNSEG;
-			ral->rgb += x * f; ral->a += f;
+			*ral += morph_to<FVECTOR4>(x * f, f);
 		}
 		if (mie) {
 			float f = exp(-alt * cp.iH.y) * iNSEG;
-			mie->rgb += x * f; mie->a += f;
+			*mie += morph_to<FVECTOR4>(x * f, f);
 		}
 	}
 
 
-	if (ral) ral->rgb *= cp.RayWave * cp.cSun * cp.rmI.x * len;	// Multiply with wavelength and inscatter factors
-	if (mie) mie->rgb *= cp.MieWave * cp.cSun * cp.rmI.y * len;
-	if (ral) ral->a *= len;
-	if (mie) mie->a *= len;
+	if (ral) *ral *= morph_to<FVECTOR4>(cp.RayWave * cp.cSun * cp.rmI.x * len, len); // Multiply with wavelength and inscatter factors
+	if (mie) *mie *= morph_to<FVECTOR4>(cp.MieWave * cp.cSun * cp.rmI.y * len, len);
 	if (tot && ral && mie) {
 		float dRS = dot(vRay, cp.toSun);
-		tot->rgb = HDR(ral->rgb * RayPhase(dRS) + mie->rgb * MiePhase(dRS));
+		auto tv = HDR(morph_to<FVECTOR3>((*ral) * RayPhase(dRS) + (*mie) * MiePhase(dRS)));
+		*tot = morph_to<FVECTOR4>(tv, tot->w);
 	}
 }
 
@@ -455,7 +454,7 @@ FVECTOR4 vPlanet::SunLightColor(VECTOR3 relpos, double rf)
 	else rm = Gauss7(r - size, -ca, cp.PlanetRad, cp.AtmoRad, cp.iH); // Sample point 'pos' lies with-in atmosphere
 
 	rm = rm * (cp.rmO * float(rf));
-	return FVECTOR4(exp(-(cp.RayWave * rm.x + cp.MieWave * rm.y)) * svb, svb);
+	return morph_to<FVECTOR4>(exp(-(cp.RayWave * rm.x + cp.MieWave * rm.y)) * svb, svb);
 }
 
 
@@ -466,7 +465,7 @@ FVECTOR4 vPlanet::AmbientApprox(FVECTOR3 vNrm, bool bR)
 	float dNS = -dot(vNrm, cp.toSun);
 	float fA = 1.0f - hermite(ilerp(0.0f, cp.TW_Dst, dNS));
 	FVECTOR3 clr = (bR ? cp.RayWave : cp.cAmbient);
-	return FVECTOR4(clr, fA);
+	return morph_to<FVECTOR4>(clr, fA);
 }
 
 
@@ -485,7 +484,7 @@ D3D9Sun vPlanet::GetObjectAtmoParams(VECTOR3 vRelPos)
 
 	double r = len(vRelPos);
 	float a = cp.AtmoAlt * 0.5f;
-	FVECTOR3 cSun = SunLightColor(vRelPos).rgb * cp.cSun;
+	FVECTOR3 cSun = morph_to<FVECTOR3>(SunLightColor(vRelPos)) * cp.cSun;
 	if (auto mx = max_rgb(cSun); mx > 1) cSun /= mx;
 	DWORD ambient = *(DWORD*)gc->GetConfigParam(CFGPRM_AMBIENTLEVEL);
 
@@ -508,7 +507,8 @@ D3D9Sun vPlanet::GetObjectAtmoParams(VECTOR3 vRelPos)
 	float alt = r - size;
 
 	FVECTOR4 mc = AmbientApprox(vNrm, false);
-	mc.a *= CPrm.tw_bld;
+	auto c = to_COLOUR4(mc);
+	c.a *= CPrm.tw_bld;
 
 
 	FVECTOR3 cSunAmb = SunLightColor(-dNS, alt) * cp.cSun;
@@ -516,15 +516,15 @@ D3D9Sun vPlanet::GetObjectAtmoParams(VECTOR3 vRelPos)
 
 	op.Dir = -cp.toSun;
 	op.Color = cSun * Config->GFXSunIntensity;
-	op.Ambient = unit(mc.rgb + cSunAmb * 2.0f) * mc.a * mc.g;
+	op.Ambient = unit(morph_to<FVECTOR3>(mc) + cSunAmb * 2) * c.a * c.g;
 	op.Ambient *= exp(-alt * cp.iH.x) * cp.rmI.x * 6e5;
 	op.Ambient += float(ambient) * 0.0039f;
 
 	if (d > 1000.0f) {
 		FVECTOR4 rl, mi; // Incatter Color
 		IntegrateSegment(morph_to<FVECTOR3>(vRelPos), -vRay, d, &rl, &mi); // Rayleigh and Mie inscatter
-		op.Transmission = ComputeCameraView(dNR, r, d).rgb;
-		op.Incatter = HDR(rl.rgb * RayPhase(dRS) + mi.rgb * MiePhase(dRS));
+		op.Transmission = morph_to<FVECTOR3>(ComputeCameraView(dNR, r, d));
+		op.Incatter = HDR(morph_to<FVECTOR3>(rl * RayPhase(dRS) + mi * MiePhase(dRS)));
 	}
 
 	return op;
@@ -1252,7 +1252,7 @@ void vPlanet::TestComputations(Sketchpad* pSkp)
 
 	SHDPrm sp = ComputeShadow(vRay);
 
-	FVECTOR4 rd = ComputeCameraView(vPos);
+	auto rd = to_COLOUR4(ComputeCameraView(vPos));
 
 	D3D9DebugLog("Optical Depth=%f   RGB(%f, %f, %f)", rd.a, rd.r, rd.g, rd.b);
 
@@ -1266,7 +1266,7 @@ void vPlanet::TestComputations(Sketchpad* pSkp)
 	FVECTOR4 ral, mie;
 	IntegrateSegment(vPos, vRay, rl, &ral, &mie);
 
-	FVECTOR3 is = (ral.rgb + mie.rgb);// *MiePhase(-ph));
+	auto is = morph_to<FVECTOR3>(ral + mie);// *MiePhase(-ph));
 
 	D3D9DebugLog("Sunlight RGB(%f, %f, %f)", cl.x, cl.y, cl.z);
 	D3D9DebugLog("InScatter RGB(%f, %f, %f)", is.x, is.y, is.z);

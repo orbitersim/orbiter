@@ -674,14 +674,14 @@ void D3D9Pad::SetWorldBillboard(const FVECTOR3& wpos, float scale, bool bFixed, 
 	FVECTOR3 up = unit(wpos);
 	FVECTOR3 y  = unit(cross((index ? *index : FVECTOR3(mV._11, mV._21, mV._31)), up));
 	FVECTOR3 x  = cross(up, y);
-	float d = (bFixed ? dot(up, wpos) / float(tgt_desc.Width) : 1.0f) * scale;
-	FMATRIX4 mWorld;
-	mWorld._x.xyz = x * d;
-	mWorld._y.xyz = y * d;
-	mWorld._z.xyz = up * d;
-	mWorld._p.xyz = wpos;
-	mWorld.m44 = 1.0f;
-	memcpy(&mW, &mWorld, sizeof(FMATRIX4));
+	float d = (bFixed ? dot(up, wpos) / float(tgt_desc.Width) : 1) * scale;
+	x *= d; y *= d; up *= d;
+	mW = {
+		   x.x,    x.y,    x.z, 0,
+		   y.x,    y.y,    y.z, 0,
+		  up.x,   up.y,   up.z, 0,
+		wpos.x, wpos.y, wpos.z, 1,
+	};
 }
 
 

@@ -1379,7 +1379,7 @@ vPlanet::sOverlay * vPlanet::AddOverlaySurface(VECTOR4 lnglat, gcCore::OlayType 
 	if (pOld) {
 		pOld->pSurf[int(type)] = pSrf;
 		pOld->lnglat = lnglat;
-		if (pB) pOld->Blend[int(type)] = D3DXVECTOR4(pB->r, pB->g, pB->b, pB->a);
+		if (pB) pOld->Blend[int(type)] = morph_to<D3DXVECTOR4>(*pB);
 		else pOld->Blend[int(type)] = D3DXVECTOR4(1, 1, 1, 1);
 		return pOld;
 	}
@@ -1388,7 +1388,7 @@ vPlanet::sOverlay * vPlanet::AddOverlaySurface(VECTOR4 lnglat, gcCore::OlayType 
 	memset(&oLay->pSurf, 0, sizeof(oLay->pSurf));
 	oLay->pSurf[int(type)] = pSrf;
 	oLay->lnglat = lnglat;
-	if (pB) oLay->Blend[int(type)] = D3DXVECTOR4(pB->r, pB->g, pB->b, pB->a);
+	if (pB) oLay->Blend[int(type)] = morph_to<D3DXVECTOR4>(*pB);
 	else oLay->Blend[int(type)] = D3DXVECTOR4(1, 1, 1, 1);
 	overlays.push_back(oLay);
 	return oLay;

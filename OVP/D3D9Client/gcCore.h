@@ -734,7 +734,7 @@ public:
 	*/
 	inline DWORD Color(const COLOUR4* c)
 	{
-		return FVECTOR4(*c).dword_abgr();
+		return to_abgr32(*c);
 	}
 
 	/**
@@ -745,7 +745,7 @@ public:
 	*/
 	inline DWORD Color(const oapi::FVECTOR4* c)
 	{
-		return c->dword_abgr();
+		return to_abgr32(to_COLOUR4(*c));
 	}
 
 	/**
@@ -756,7 +756,7 @@ public:
 	*/
 	inline COLOUR4 Colour4(DWORD dwABGR)
 	{
-		return FVECTOR4(dwABGR).Colour4();
+		return from_abgr32(dwABGR);
 	}
 
 	/**

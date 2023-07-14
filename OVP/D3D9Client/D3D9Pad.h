@@ -87,8 +87,9 @@ struct SkpColor {
 	}
 
 	explicit SkpColor(const FVECTOR4 &c) {
-		dclr = c.dword_argb();
-		fclr.r = c.r; fclr.g = c.g;	fclr.b = c.b; fclr.a = c.a;
+		auto cl = to_COLOUR4(c);
+		dclr = to_argb32(cl);
+		fclr = {cl.r, cl.g, cl.b, cl.a};
 		D3DXCOLORSWAP(&fclr);
 	}
 

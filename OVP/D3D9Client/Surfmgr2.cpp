@@ -1067,7 +1067,7 @@ void SurfTile::Render ()
 					{
 						auto pL = pLights[LightList[i].idx];
 						Locals.attenuation[i] = to_FVECTOR3(pL.Attenuation);
-						Locals.diffuse[i] = FVECTOR4(pL.Diffuse).rgb;
+						Locals.diffuse[i] = {pL.Diffuse.r, pL.Diffuse.g, pL.Diffuse.b};
 						Locals.direction[i] = to_FVECTOR3(pL.Direction);
 						Locals.param[i] = to_FVECTOR4(pL.Param);
 						Locals.position[i] = to_FVECTOR3(pL.Position);

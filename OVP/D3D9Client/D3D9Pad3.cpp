@@ -62,11 +62,13 @@ void D3D9Pad::SetBrightness(const FVECTOR4 *pBrightness)
 #endif
 	if (pBrightness == NULL) SetColorMatrix(NULL);
 	else {
-		memset(&ColorMatrix, 0, sizeof(FMATRIX4));
-		ColorMatrix.m11 = pBrightness->r;
-		ColorMatrix.m22 = pBrightness->g;
-		ColorMatrix.m33 = pBrightness->b;
-		ColorMatrix.m44 = pBrightness->a;
+		auto br = to_COLOUR4(*pBrightness);
+		ColorMatrix = {
+			br.r, 0, 0, 0,
+			0, br.g, 0, 0,
+			0, 0, br.b, 0,
+            0, 0, 0, br.a,
+		};
 		SetEnable(SKP3E_CMATR);
 	}
 }
@@ -96,12 +98,11 @@ void D3D9Pad::SetRenderParam(RenderParam param, const FVECTOR4 *d)
 		case Sketchpad::RenderParam::PRM_GAMMA: Gamma = FVECTOR4(1, 1, 1, 1); ClearEnable(SKP3E_GAMMA); break;
 		case Sketchpad::RenderParam::PRM_NOISE: Noise = FVECTOR4(0, 0, 0, 0); ClearEnable(SKP3E_NOISE); break;
 		}
-		return;
-	}
-
-	switch (param) {
-	case Sketchpad::RenderParam::PRM_GAMMA: Gamma = FVECTOR4(d->r, d->g, d->b, d->a); SetEnable(SKP3E_GAMMA);  break;
-	case Sketchpad::RenderParam::PRM_NOISE: Noise = *d; SetEnable(SKP3E_NOISE);  break;
+	} else {
+		switch (param) {
+		case Sketchpad::RenderParam::PRM_GAMMA: Gamma = *d; SetEnable(SKP3E_GAMMA);  break;
+		case Sketchpad::RenderParam::PRM_NOISE: Noise = *d; SetEnable(SKP3E_NOISE);  break;
+		}
 	}
 }
 
