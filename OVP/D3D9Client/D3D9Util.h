@@ -17,8 +17,6 @@
 #include <d3dx9.h>
 #include <string>
 
-#define float4x4 FMATRIX4 
-
 template <typename T>
 constexpr auto sign(const T& x) { return x < T{0} ? T{-1} : T{1}; }
 

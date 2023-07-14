@@ -25,8 +25,8 @@ public:
 #pragma pack(push, 4)
 	struct CelDataStruct
 	{
-		float4x4 mWorld;
-		float4x4 mViewProj;
+		FMATRIX4 mWorld;
+		FMATRIX4 mViewProj;
 		float	 fAlpha;
 		float	 fBeta;
 	} CelData;

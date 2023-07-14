@@ -80,8 +80,8 @@ struct sFlow {
 
 struct ShaderParams
 {
-	float4x4 mWorld;			// World Matrix
-	float4x4 mLVP;				// Light-View-Projection
+	FMATRIX4 mWorld;			// World Matrix
+	FMATRIX4 mLVP;				// Light-View-Projection
 	FVECTOR4 vSHD;				// Shadow Map Parameters
 	FVECTOR4 vMSc[3];			// Micro Texture offset-scale
 	FVECTOR4 vTexOff;			// Texture offset-scale
@@ -121,7 +121,7 @@ struct FlowControlVS
 
 struct ConstParams
 {
-	float4x4 mVP;				// View Projection Matrix
+	FMATRIX4 mVP;				// View Projection Matrix
 	FVECTOR3 CamPos;			// Geocentric Camera position
 	FVECTOR3 toCam;				// Geocentric Camera direction (unit vector)
 	FVECTOR3 toSun;				// Geocentric Sun direction (unit vector)
