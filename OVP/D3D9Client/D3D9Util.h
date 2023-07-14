@@ -17,7 +17,6 @@
 #include <d3dx9.h>
 #include <string>
 
-#define float2 FVECTOR2
 #define float3 FVECTOR3
 #define float4 FVECTOR4
 #define float4x4 FMATRIX4 

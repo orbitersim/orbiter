@@ -135,9 +135,9 @@ struct ConstParams
 	float3 RayWave;				// .rgb Rayleigh Wave lenghts
 	float3 MieWave;				// .rgb Mie Wave lenghts
 	float4 HG;					// Henyey-Greenstein Phase function params
-	float2 iH;					// Inverse scale height for ray(.r) and mie(.g) e.g. exp(-altitude * iH) 
-	float2 rmO;					// Ray and Mie out-scatter factors
-	float2 rmI;					// Ray and Mie in-scatter factors
+	FVECTOR2 iH;				// Inverse scale height for ray(.r) and mie(.g) e.g. exp(-altitude * iH) 
+	FVECTOR2 rmO;				// Ray and Mie out-scatter factors
+	FVECTOR2 rmI;				// Ray and Mie in-scatter factors
 	float3 cAmbient;			// Ambient light color at sealevel
 	float3 cGlare;				// Sun glare color
 	float  PlanetRad;			// Planet Radius
