@@ -101,13 +101,32 @@ union FVECTOR3
 	constexpr auto& operator[](std::size_t i) { float* d[] = {&x, &y, &z}; return *d[i]; }
 };
 
+/**
+ * @brief 4-dimensional vector of type float
+ */
+union FVECTOR4
+{
+	struct { float x, y, z, w; };
+
+	constexpr FVECTOR4() : x{0}, y{0}, z{0}, w{0} { }
+	constexpr FVECTOR4(float x, float y, float z, float w) : x{x}, y{y}, z{z}, w{w} { }
+
+	constexpr FVECTOR4(const FVECTOR4&) = default;
+	constexpr FVECTOR4& operator=(const FVECTOR4&) = default;
+
+	constexpr auto const& operator[](std::size_t i) const { const float* d[] = {&x, &y, &z, &w}; return *d[i]; }
+	constexpr auto& operator[](std::size_t i) { float* d[] = {&x, &y, &z, &w}; return *d[i]; }
+};
+
 }
 
 using oapi::FVECTOR2;
 using oapi::FVECTOR3;
+using oapi::FVECTOR4;
 
 template<> struct is_vector2<FVECTOR2> : std::true_type { };
 template<> struct is_vector3<FVECTOR3> : std::true_type { };
+template<> struct is_vector4<FVECTOR4> : std::true_type { };
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
