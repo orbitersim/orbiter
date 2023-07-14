@@ -230,6 +230,7 @@ namespace oapi {
 		FVECTOR3 rgb;    //   , a; };
 	} FVECTOR4;
 
+	template<> struct is_vector4<FVECTOR4> : std::true_type { };
 
 	typedef union DRECT
 	{
