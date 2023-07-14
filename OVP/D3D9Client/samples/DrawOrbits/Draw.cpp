@@ -353,23 +353,21 @@ void Orbits::SetClipper(Sketchpad *pSkp2, OBJHANDLE hObj, DWORD idx)
 //
 FVECTOR3 Orbits::WorldDirection(VECTOR3 d)
 {
-	FVECTOR4 sc = mul(FVECTOR4(d, 1.0f), *pVP);
-	float f = abs(1.0f / sc.w);
-	sc.x *= f;
-	sc.y *= -f;
-	sc.z *= f;
-	return unit(sc.xyz);
+	auto sc = mul(morph_to<FVECTOR4>(d, 1), *pVP);
+	float f = std::abs(1.0f / sc.w);
+	sc *= {f, -f, f, 1.0f};
+	return unit(morph_to<FVECTOR3>(sc));
 }
 
 
 bool Orbits::WorldToScreenSpace(const VECTOR3& wpos, oapi::IVECTOR2* pt, const FMATRIX4* pVP, const SIZE& s, float clip)
 {
 
-	FVECTOR4 homog = mul(FVECTOR4(wpos, 1.0f), *pVP);
+	auto homog = mul(morph_to<FVECTOR4>(wpos, 1), *pVP);
 
 	if (homog.w < 0.0f) return false;
 
-	homog.xyz /= homog.w;
+	homog /= {homog.w, homog.w, homog.w, 1.0f};
 	
 	bool bVis = true;
 	if (homog.x < -clip || homog.x > clip || homog.y < -clip || homog.y > clip) bVis = false;
@@ -423,8 +421,8 @@ void Orbits::DrawOrbit(Sketchpad *pSkp2, COrbit *pOrb, OBJHANDLE hRef, oapi::FVE
 
 	// Set pen colors
 	//
-	DWORD black = FVECTOR4(0.0f, 0.0f, 0.0f, color.a).dword_abgr();
-	DWORD draw = color.dword_abgr();
+	DWORD black = to_abgr32(COLOUR4{0, 0, 0, color.w});
+	DWORD draw = to_abgr32(to_COLOUR4(color));
 
 
 	// Build Matrix to render from a pre-computed orbit templates
@@ -435,10 +433,10 @@ void Orbits::DrawOrbit(Sketchpad *pSkp2, COrbit *pOrb, OBJHANDLE hRef, oapi::FVE
 	VECTOR3 _F = _P * (pOrb->SMa() * pOrb->Ecc()); // Offset the template to actual planet position
 
 	FMATRIX4 mat;
-	mat._y = FVECTOR4(_Q * (pOrb->SMi() / smi), 0.0f);
-	mat._x = FVECTOR4(_P * (pOrb->SMa()), 0.0f);
-	mat._z = FVECTOR4(_W, 0.0f);
-	mat._p = FVECTOR4(Clip[0].Pos - _F, 1.0f);
+	mat._y = morph_to<FVECTOR4>(_Q * (pOrb->SMi() / smi), 0);
+	mat._x = morph_to<FVECTOR4>(_P * (pOrb->SMa()), 0);
+	mat._z = morph_to<FVECTOR4>(_W, 0);
+	mat._p = morph_to<FVECTOR4>(Clip[0].Pos - _F, 1);
 
 
 	SIZE screen;
@@ -456,10 +454,10 @@ void Orbits::DrawOrbit(Sketchpad *pSkp2, COrbit *pOrb, OBJHANDLE hRef, oapi::FVE
 
 	// Update matrix for generic drawing in 3D ----------------------
 	//
-	mat._y = FVECTOR4(_Q, 0.0f);
-	mat._x = FVECTOR4(_P, 0.0f);
-	mat._z = FVECTOR4(_W, 0.0f);
-	mat._p = FVECTOR4(Clip[0].Pos, 1.0f);
+	mat._y = morph_to<FVECTOR4>(_Q, 0);
+	mat._x = morph_to<FVECTOR4>(_P, 0);
+	mat._z = morph_to<FVECTOR4>(_W, 0);
+	mat._p = morph_to<FVECTOR4>(Clip[0].Pos, 1);
 
 	pSkp2->SetWorldTransform(&mat);
 
