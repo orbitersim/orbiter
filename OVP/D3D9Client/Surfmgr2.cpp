@@ -33,7 +33,7 @@ struct LightF
 	FVECTOR3   direction[4];      /* direction in world space */
 	FVECTOR3   diffuse[4];        /* diffuse color of light */
 	FVECTOR3   attenuation[4];    /* Attenuation */
-	float4   param[4];            /* range, falloff, theta, phi */
+	FVECTOR4   param[4];          /* range, falloff, theta, phi */
 };
 #pragma pack(pop)
 

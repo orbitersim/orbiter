@@ -82,13 +82,13 @@ struct ShaderParams
 {
 	float4x4 mWorld;			// World Matrix
 	float4x4 mLVP;				// Light-View-Projection
-	float4   vSHD;				// Shadow Map Parameters
-	float4   vMSc[3];			// Micro Texture offset-scale
-	float4	 vTexOff;			// Texture offset-scale
-	float4   vCloudOff;			// Cloud texture offset-scale
-	float4   vMicroOff;			// Micro texture offset-scale
-	float4   vOverlayOff;       // Overlay texture offset-scale
-	float4   vOverlayCtrl[4];
+	FVECTOR4 vSHD;				// Shadow Map Parameters
+	FVECTOR4 vMSc[3];			// Micro Texture offset-scale
+	FVECTOR4 vTexOff;			// Texture offset-scale
+	FVECTOR4 vCloudOff;			// Cloud texture offset-scale
+	FVECTOR4 vMicroOff;			// Micro texture offset-scale
+	FVECTOR4 vOverlayOff;       // Overlay texture offset-scale
+	FVECTOR4 vOverlayCtrl[4];
 	float	 fAlpha;
 	float	 fBeta;
 	float	 fTgtScale;
@@ -134,7 +134,7 @@ struct ConstParams
 	FVECTOR3 cSun;				// Sun Color and intensity
 	FVECTOR3 RayWave;			// .rgb Rayleigh Wave lenghts
 	FVECTOR3 MieWave;			// .rgb Mie Wave lenghts
-	float4 HG;					// Henyey-Greenstein Phase function params
+	FVECTOR4 HG;				// Henyey-Greenstein Phase function params
 	FVECTOR2 iH;				// Inverse scale height for ray(.r) and mie(.g) e.g. exp(-altitude * iH) 
 	FVECTOR2 rmO;				// Ray and Mie out-scatter factors
 	FVECTOR2 rmI;				// Ray and Mie in-scatter factors

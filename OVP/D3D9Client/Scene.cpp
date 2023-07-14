@@ -3604,7 +3604,11 @@ void Scene::RenderGlares()
 		static SMVERTEX Vertex[4] = { {-1, -1, 0, 0, 0}, {-1, 1, 0, 0, 1}, {1, 1, 0, 1, 1}, {1, -1, 0, 1, 0} };
 		static WORD cIndex[6] = { 0, 2, 1, 0, 3, 2 };
 		D3DSURFACE_DESC desc; FVECTOR2 pt;
-		struct { D3DXMATRIX	mVP; float4	Pos, Color;	float GPUId, Alpha, Blend; } Const;
+		struct {
+			D3DXMATRIX mVP;
+			FVECTOR4 Pos, Color;
+			float GPUId, Alpha, Blend;
+		} Const;
 
 		Const.Color = FVECTOR4(1, 1, 1, 1);
 		D3DXMatrixOrthoOffCenterLH(&Const.mVP, 0.0f, (float)viewW, (float)viewH, 0.0f, 0.0f, 1.0f);

@@ -466,7 +466,7 @@ FVECTOR4 vPlanet::AmbientApprox(FVECTOR3 vNrm, bool bR)
 	float dNS = -dot(vNrm, cp.toSun);
 	float fA = 1.0f - hermite(ilerp(0.0f, cp.TW_Dst, dNS));
 	FVECTOR3 clr = (bR ? cp.RayWave : cp.cAmbient);
-	return float4(clr, fA);
+	return FVECTOR4(clr, fA);
 }
 
 
