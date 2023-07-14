@@ -122,24 +122,24 @@ struct FlowControlVS
 struct ConstParams
 {
 	float4x4 mVP;				// View Projection Matrix
-	float3 CamPos;				// Geocentric Camera position
-	float3 toCam;				// Geocentric Camera direction (unit vector)
-	float3 toSun;				// Geocentric Sun direction (unit vector)
-	float3 SunAz;				// Atmo scatter ref.frame (unit vector) (toCam, ZeroAz, SunAz)
-	float3 ZeroAz;				// Atmo scatter ref.frame (unit vector)
-	float3 Up;					// Sun/Shadow Ref Frame (Unit Vector) (Up, toSun, ZeroAz)
-	float3 vTangent;			// Reference frame for normal mapping (Unit Vector)
-	float3 vBiTangent;			// Reference frame for normal mapping (Unit Vector)
-	float3 vPolarAxis;			// North Pole (unit vector)
-	float3 cSun;				// Sun Color and intensity
-	float3 RayWave;				// .rgb Rayleigh Wave lenghts
-	float3 MieWave;				// .rgb Mie Wave lenghts
+	FVECTOR3 CamPos;			// Geocentric Camera position
+	FVECTOR3 toCam;				// Geocentric Camera direction (unit vector)
+	FVECTOR3 toSun;				// Geocentric Sun direction (unit vector)
+	FVECTOR3 SunAz;				// Atmo scatter ref.frame (unit vector) (toCam, ZeroAz, SunAz)
+	FVECTOR3 ZeroAz;			// Atmo scatter ref.frame (unit vector)
+	FVECTOR3 Up;				// Sun/Shadow Ref Frame (Unit Vector) (Up, toSun, ZeroAz)
+	FVECTOR3 vTangent;			// Reference frame for normal mapping (Unit Vector)
+	FVECTOR3 vBiTangent;		// Reference frame for normal mapping (Unit Vector)
+	FVECTOR3 vPolarAxis;		// North Pole (unit vector)
+	FVECTOR3 cSun;				// Sun Color and intensity
+	FVECTOR3 RayWave;			// .rgb Rayleigh Wave lenghts
+	FVECTOR3 MieWave;			// .rgb Mie Wave lenghts
 	float4 HG;					// Henyey-Greenstein Phase function params
 	FVECTOR2 iH;				// Inverse scale height for ray(.r) and mie(.g) e.g. exp(-altitude * iH) 
 	FVECTOR2 rmO;				// Ray and Mie out-scatter factors
 	FVECTOR2 rmI;				// Ray and Mie in-scatter factors
-	float3 cAmbient;			// Ambient light color at sealevel
-	float3 cGlare;				// Sun glare color
+	FVECTOR3 cAmbient;			// Ambient light color at sealevel
+	FVECTOR3 cGlare;			// Sun glare color
 	float  PlanetRad;			// Planet Radius
 	float  PlanetRad2;			// Planet Radius Squared
 	float  AtmoAlt;				// Atmospehere upper altitude limit

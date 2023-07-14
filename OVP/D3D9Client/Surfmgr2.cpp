@@ -29,10 +29,10 @@ extern void FilterElevationGraphics(OBJHANDLE hPlanet, int lvl, int ilat, int il
 #pragma pack(push, 4)
 struct LightF
 {
-	float3   position[4];         /* position in world space */
-	float3   direction[4];        /* direction in world space */
-	float3   diffuse[4];          /* diffuse color of light */
-	float3   attenuation[4];      /* Attenuation */
+	FVECTOR3   position[4];       /* position in world space */
+	FVECTOR3   direction[4];      /* direction in world space */
+	FVECTOR3   diffuse[4];        /* diffuse color of light */
+	FVECTOR3   attenuation[4];    /* Attenuation */
 	float4   param[4];            /* range, falloff, theta, phi */
 };
 #pragma pack(pop)

@@ -80,9 +80,9 @@ public:
 	} vs_const;
 
 	static struct PSConst {
-		float3 Cam_X;
-		float3 Cam_Y;
-		float3 Cam_Z;
+		FVECTOR3 Cam_X;
+		FVECTOR3 Cam_Y;
+		FVECTOR3 Cam_Z;
 	} ps_const;
 
 	static struct PSBools {
