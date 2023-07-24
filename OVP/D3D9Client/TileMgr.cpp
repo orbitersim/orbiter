@@ -251,8 +251,8 @@ bool TileManager::LoadTileData ()
 
 int compare_idx (const void *el1, const void *el2)
 {
-	register const IDXLIST *idx1 = static_cast<const IDXLIST*>(el1);
-	register const IDXLIST *idx2 = static_cast<const IDXLIST*>(el2);
+	const IDXLIST *idx1 = static_cast<const IDXLIST*>(el1);
+	const IDXLIST *idx2 = static_cast<const IDXLIST*>(el2);
 	return (idx1->ofs < idx2->ofs ? -1 : idx1->ofs > idx2->ofs ? 1 : 0);
 }
 

@@ -1156,9 +1156,9 @@ LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *
 const char *RemovePath(const char *in)
 {
 	int len = lstrlen(in);
-	const char *ptr = in;
-	for (int i=0;i<len;i++) if (in[i]=='\\' || in[i]=='/') ptr = &in[i+1];
-	return ptr;
+	const char *cptr = in;
+	for (int i=0;i<len;i++) if (in[i]=='\\' || in[i]=='/') cptr = &in[i+1];
+	return cptr;
 }
 
 // ============================================================================

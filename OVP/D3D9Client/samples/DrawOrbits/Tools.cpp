@@ -34,7 +34,7 @@ const char *ValueToText(double real, int digits)
 	const char *k2 = { "M" };
 	const char *k3 = { "G" };
 	const char *k5 = { "m" };
-	const char *k6 = { "µ" };
+	const char *k6 = { "Âµ" };
 	const char *k7 = { "T" };
 
 	n = (int)floor(log10(v)) + 1;
@@ -89,7 +89,7 @@ const char *AngleToText(double deg, int digits)
 	if (f >= 360.0) f = 0.0;
 	if (deg<0) f = -f;
 
-	sprintf_s(ValueToText_Str, 30, "%1.*f°", digits, f);
+	sprintf_s(ValueToText_Str, 30, "%1.*fÂ°", digits, f);
 
 	return ValueToText_Str;
 }
@@ -364,7 +364,7 @@ double mna2eca(double mna, double ecc)
 {
 
 	// iterative calculation of eccentric anomaly from mean anomaly
-	register double eca, m, x;
+	double eca, m, x;
 	int i;
 
 	if (ecc<1.0) {

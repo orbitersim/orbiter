@@ -1,6 +1,8 @@
 // Copyright (c) Martin Schweiger
 // Licensed under the MIT License
 
+#define OAPI_IMPLEMENTATION
+
 #include "CelSphere.h"
 #include "Scene.h"
 #include "Camera.h"
