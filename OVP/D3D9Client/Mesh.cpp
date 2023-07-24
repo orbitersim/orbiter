@@ -33,8 +33,8 @@ MeshShader::PSBools MeshShader::ps_bools = {};
 
 int compare_lights(const void * a, const void * b)
 {
-	register float fa = static_cast<const _LightList*>(a)->illuminace;
-	register float fb = static_cast<const _LightList*>(b)->illuminace;
+	float fa = static_cast<const _LightList*>(a)->illuminace;
+	float fb = static_cast<const _LightList*>(b)->illuminace;
 	if (fa < fb * 0.9995f) return  1;
 	if (fa > fb * 1.0005f) return -1;
 	return 0;

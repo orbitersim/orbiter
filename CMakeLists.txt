@@ -6,9 +6,12 @@ cmake_minimum_required(VERSION 3.19)
 # Set the project name
 project (Orbiter VERSION 21.7.24)
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED OFF)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+#Add /permissive if using C++20 or higher
+#add_compile_options(/permissive)
 
 # Some functions to simplify debugging CMake scripts
 include(CMakePrintHelpers)

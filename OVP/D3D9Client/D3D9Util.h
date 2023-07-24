@@ -71,8 +71,13 @@ const char *_PTR(const void *p);
 
 // helper function to get address of a temporary
 // NB: use with caution
-template<typename T>
-T* ptr(T&& x) { return &x; }
+
+
+// Required only with c++20 without /permissive flag
+// template<typename T>
+// T* ptr(T&& x) { return &x; }
+
+#define ptr &	// use for faster code
 
 // ------------------------------------------------------------------------------------
 // Vertex Declaration equal to NTVERTEX
