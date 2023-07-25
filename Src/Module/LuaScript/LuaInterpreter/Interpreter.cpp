@@ -9,6 +9,9 @@
 #include "DrawAPI.h"
 #include <list>
 
+using std::min;
+using std::max;
+
 /***
 Module oapi: General Orbiter API interface functions
 @module oapi
@@ -16,6 +19,7 @@ Module oapi: General Orbiter API interface functions
 
 std::list<NOTEHANDLE *> g_notehandles;
 
+int OpenHelp (void *context);
 
 // ============================================================================
 // nonmember functions
@@ -412,7 +416,7 @@ MATRIX3 Interpreter::lua_tomatrix (lua_State *L, int idx)
 int Interpreter::lua_ismatrix (lua_State *L, int idx)
 {
 	if (!lua_istable (L, idx)) return 0;
-	static char *fieldname[9] = {"m11","m12","m13","m21","m22","m23","m31","m32","m33"};
+	static const char *fieldname[9] = {"m11","m12","m13","m21","m22","m23","m31","m32","m33"};
 	int i, ii, n;
 	bool fail;
 
@@ -1087,7 +1091,7 @@ void Interpreter::warn_obsolete(lua_State *L, const char *funcname)
 
 int Interpreter::AssertPrmtp(lua_State *L, const char *fname, int idx, int prm, int tp)
 {
-	char *tpname = "";
+	char *tpname = (char*)"";
 	char cbuf[1024];
 	int res = 1;
 
@@ -1099,31 +1103,31 @@ int Interpreter::AssertPrmtp(lua_State *L, const char *fname, int idx, int prm, 
 
 	switch (tp) {
 	case PRMTP_NUMBER:
-		tpname = "number";
+		tpname = (char*)"number";
 		res = lua_isnumber(L,idx);
 		break;
 	case PRMTP_VECTOR:
-		tpname = "vector";
+		tpname = (char*)"vector";
 		res = lua_isvector(L,idx);
 		break;
 	case PRMTP_STRING:
-		tpname = "string";
+		tpname = (char*)"string";
 		res = lua_isstring(L,idx);
 		break;
 	case PRMTP_LIGHTUSERDATA:
-		tpname = "handle";
+		tpname = (char*)"handle";
 		res = lua_islightuserdata(L,idx);
 		break;
 	case PRMTP_TABLE:
-		tpname = "table";
+		tpname = (char*)"table";
 		res = lua_istable(L,idx);
 		break;
 	case PRMTP_BOOLEAN:
-		tpname = "boolean";
+		tpname = (char*)"boolean";
 		res = lua_isboolean(L, idx);
 		break;
 	case PRMTP_MATRIX:
-		tpname = "matrix";
+		tpname = (char*)"matrix";
 		res = lua_ismatrix(L, idx);
 		break;
 	}
@@ -1244,7 +1248,7 @@ int Interpreter::help (lua_State *L)
 	if (!narg) {
 		if (!interp->is_term) return 0; // no terminal help without terminal - sorry
 		static const int nline = 10;
-		static char *stdhelp[nline] = {
+		static const char *stdhelp[nline] = {
 			"Orbiter script interpreter",
 			"Based on Lua script language (" LUA_RELEASE ")",
 			"  " LUA_COPYRIGHT,

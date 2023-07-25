@@ -11,6 +11,7 @@
 
 #include "RigidBody.h"
 #include "OrbiterAPI.h"
+#include "PinesGrav.h"
 
 // Module interface methods - OBSOLETE
 typedef void   (*OPLANET_SetPrecision)(double prec);
@@ -120,6 +121,15 @@ public:
 	// shape description for nonspherical gravity calculation. Note that the
 	// first coefficient Jcoeff(0) is J2
 
+	// returns true if the body uses Pines Algorithm to calculate gravitational acceleration from spherical harmonics
+	inline bool usePines() const { return usePinesGravity; }
+	inline Vector pinesAccel(const Vector rposmax, const int maxDegree, const int maxOrder){
+		return pinesgrav.GetPinesGrav(rposmax, maxDegree, maxOrder);
+	}
+	inline unsigned int GetPinesCutoff() const {
+		return pinesgrav.GetCoeffCutoff(); 
+	}
+
 protected:
 	//Matrix R_ref_rel;     // rotation matrix for tilting the axis of rotation (including precession)
 	Matrix R_ecl;         // precession matrix
@@ -210,6 +220,9 @@ private:
 
 	double *jcoeff;          // coefficients Jn of the harmonic expansion of planet ellipsoid shape, starting with J2 (jcoeff[0]=J2, jcoeff[1]=J3, etc.)
 	DWORD njcoeff;           // number of coefficients in the jcoeff list
+
+	PinesGravProp pinesgrav; // coefficients and methods for calculating non-spherical gravity vectors using Pines Algorithm
+	bool usePinesGravity;    // use Pines Algorithm if true, if false use the older jcoeff method
 
 	Vector bpos, bvel;       // object's barycentre state (the barycentre of the set of bodies including *this and its children) with respect to the true position of the parent of *this
 	Vector bposofs, bvelofs; // body barycentre state - true state

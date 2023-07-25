@@ -16,6 +16,8 @@
 #include "meshres_vc.h"
 #include "dg_vc_anim.h"
 
+using std::min;
+
 // ==============================================================
 
 InstrAOA::InstrAOA (VESSEL3 *v): PanelElement (v)

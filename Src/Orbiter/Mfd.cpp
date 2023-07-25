@@ -3,7 +3,6 @@
 
 #define OAPI_IMPLEMENTATION
 
-#include <dinput.h>
 #include "Pane.h"
 #include "Orbiter.h"
 #include "Config.h"
@@ -100,11 +99,11 @@ Instrument *Instrument::Create (int type, Pane *_pane,
 Instrument *Instrument::Create (ifstream &ifs, Pane *_pane,
 	INT_PTR _id, const Spec &spec, Vessel *_vessel)
 {
-	static char *mfdstr[MAXMFD] = {"Left","Right","3","4","5","6","7","8","9","10","11","12"};
+	static const char *mfdstr[MAXMFD] = {"Left","Right","3","4","5","6","7","8","9","10","11","12"};
 	Instrument *instr = 0;
 	char header[64], cbuf[256], *pc;
 	strcpy (header, "BEGIN_MFD ");
-	strcat (header, mfdstr[min(MAXMFD-1,_id)]);
+	strcat (header, mfdstr[min((ptrdiff_t)(MAXMFD-1),(ptrdiff_t)_id)]);
 
 	if (!FindLine (ifs, header)) return 0;
 	for (;instr == 0;) {
@@ -199,28 +198,28 @@ void Instrument::GlobalExit (oapi::GraphicsClient *gc)
 void Instrument::RegisterBuiltinModes ()
 {
 	static MFDMODESPECEX def_mode[BUILTIN_MFD_MODES] = {
-		{"Orbit",        DIK_O, 0, 0},
-		{"Surface",      DIK_S, 0, 0},
-		{"Map",          DIK_M, 0, 0},
-		{"HSI",          DIK_H, 0, 0},
-		{"VOR/VTOL",     DIK_L, 0, 0},
-		{"Docking",      DIK_D, 0, 0},
-		{"Align Planes", DIK_A, 0, 0},
-		{"Sync Orbit",   DIK_Y, 0, 0},
-		{"Transfer",     DIK_X, 0, 0},
-		{"COM/NAV",      DIK_C, 0, 0}
+		{(char*)"Orbit",        OAPI_KEY_O, 0, 0},
+		{(char*)"Surface",      OAPI_KEY_S, 0, 0},
+		{(char*)"Map",          OAPI_KEY_M, 0, 0},
+		{(char*)"HSI",          OAPI_KEY_H, 0, 0},
+		{(char*)"VOR/VTOL",     OAPI_KEY_L, 0, 0},
+		{(char*)"Docking",      OAPI_KEY_D, 0, 0},
+		{(char*)"Align Planes", OAPI_KEY_A, 0, 0},
+		{(char*)"Sync Orbit",   OAPI_KEY_Y, 0, 0},
+		{(char*)"Transfer",     OAPI_KEY_X, 0, 0},
+		{(char*)"COM/NAV",      OAPI_KEY_C, 0, 0}
 	};
 	static MFDMODESPEC def_oldmode[BUILTIN_MFD_MODES] = { // obsolete
-		{"Orbit",        DIK_O, 0},
-		{"Surface",      DIK_S, 0},
-		{"Map",          DIK_M, 0},
-		{"HSI",          DIK_H, 0},
-		{"VOR/VTOL",     DIK_L, 0},
-		{"Docking",      DIK_D, 0},
-		{"Align Planes", DIK_A, 0},
-		{"Sync Orbit",   DIK_Y, 0},
-		{"Transfer",     DIK_X, 0},
-		{"COM/NAV",      DIK_C, 0}
+		{(char*)"Orbit",        OAPI_KEY_O, 0},
+		{(char*)"Surface",      OAPI_KEY_S, 0},
+		{(char*)"Map",          OAPI_KEY_M, 0},
+		{(char*)"HSI",          OAPI_KEY_H, 0},
+		{(char*)"VOR/VTOL",     OAPI_KEY_L, 0},
+		{(char*)"Docking",      OAPI_KEY_D, 0},
+		{(char*)"Align Planes", OAPI_KEY_A, 0},
+		{(char*)"Sync Orbit",   OAPI_KEY_Y, 0},
+		{(char*)"Transfer",     OAPI_KEY_X, 0},
+		{(char*)"COM/NAV",      OAPI_KEY_C, 0}
 	};
 
 	static int def_id[BUILTIN_MFD_MODES] = {
@@ -535,7 +534,7 @@ bool Instrument::ConsumeKeyBuffered (DWORD key)
 {
 	// part 1: global keys
 	switch (key) {
-	case DIK_F1:     // MFD mode selection
+	case OAPI_KEY_F1:     // MFD mode selection
 		if ((++modepage)*(nbtl+nbtr) < (int)(nGlobalModes+nVesselModes-nDisabledModes)) {
 			showmenu = false;
 			DisplayModes (modepage);
@@ -544,8 +543,8 @@ bool Instrument::ConsumeKeyBuffered (DWORD key)
 		}
 		pane->RepaintMFDButtons (id, this);
 		return true;
-	case DIK_F2: {   // next button page
-		if (modepage >= 0) return ConsumeKeyBuffered (DIK_F1); // page through mode pages
+	case OAPI_KEY_F2: {   // next button page
+		if (modepage >= 0) return ConsumeKeyBuffered (OAPI_KEY_F1); // page through mode pages
 		int nfunc = BtnMenu(0);
 		if (nfunc > 0 && nfunc > nbt) {
 			int npage = (nfunc+nbt-1)/nbt;
@@ -554,7 +553,7 @@ bool Instrument::ConsumeKeyBuffered (DWORD key)
 			if (showmenu) DrawMenu ();
 		}
 		} return true;
-	case DIK_GRAVE: // MFD menu
+	case OAPI_KEY_GRAVE: // MFD menu
 		if (!showmenu) {
 			showmenu = true;
 			if (modepage >= 0) {
@@ -564,7 +563,7 @@ bool Instrument::ConsumeKeyBuffered (DWORD key)
 		} else if (!pageonmenu) {
 			showmenu = false;
 		} else {
-			ConsumeKeyBuffered (DIK_F2);
+			ConsumeKeyBuffered(OAPI_KEY_F2);
 			if (!btnpage) showmenu = false;
 		}
 		if (showmenu) DrawMenu(); // draw the button menu
@@ -1005,7 +1004,7 @@ void Instrument::DrawMenu ()
 	if (tex) gc->clbkBlt (tex, 0, 0, surf);
 }
 
-void Instrument::OpenSelect_CelBody (char *title, Select::Callbk enter_cbk, DWORD flag)
+void Instrument::OpenSelect_CelBody (const char *title, Select::Callbk enter_cbk, DWORD flag)
 {
 	SelCelBodyFlag = flag;
 	g_select->Open (title, ClbkSelect_CelBody, enter_cbk, (void*)this);
@@ -1042,7 +1041,7 @@ bool Instrument::ClbkSelect_CelBody (Select *menu, int item, char *str, void *da
 	return false;
 }
 
-void Instrument::OpenSelect_Tgt (char *title, Select::Callbk enter_cbk, const CelestialBody *ref, DWORD flag)
+void Instrument::OpenSelect_Tgt (const char *title, Select::Callbk enter_cbk, const CelestialBody *ref, DWORD flag)
 {
 	seltgtprm.ref  = ref;
 	seltgtprm.flag = flag;
@@ -1148,7 +1147,7 @@ bool Instrument::FindScnHeader (ifstream &ifs) const
 	switch (id) {
 	case 0: strcpy (header+10, "Left"); break;
 	case 1: strcpy (header+10, "Right"); break;
-	default: _itoa (id+1, header+10, 10); break;
+	default: sprintf (header+10, "%lld", (int64_t)id + 1); break;
 	}
 	return FindLine (ifs, header);
 }

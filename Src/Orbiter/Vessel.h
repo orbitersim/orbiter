@@ -21,13 +21,10 @@
 #ifndef __VESSEL_H
 #define __VESSEL_H
 
-#include "Vesselbase.h"
-#include "Vesselbase.h"
-#include "elevmgr.h"
 #include <array>
 #include <fstream>
-#include "Orbitersdk.h"
-#include "GraphicsAPI.h"
+
+#include "Vesselbase.h"
 #include "Log.h"
 
 class Elements;
@@ -431,7 +428,7 @@ public:
 			double dlevel = level - ts->level_permanent;
 			ts->level_permanent = level;
 			if (ts->tank && ts->tank->mass)
-				ts->level = max(0.0, min(1.0, ts->level+dlevel));
+				ts->level = std::max(0.0, std::min(1.0, ts->level+dlevel));
 		}
 	}
 	// set the permanent level for a thruster (0-1)
@@ -441,7 +438,7 @@ public:
 		if (!bFRplayback) {
 			ts->level_permanent += dlevel;
 			if (ts->tank && ts->tank->mass)
-				ts->level = max(0.0, min(1.0, ts->level+dlevel));
+				ts->level = std::max(0.0, std::min(1.0, ts->level+dlevel));
 		}
 	}
 
@@ -450,7 +447,7 @@ public:
 		double dlevel = level - ts->level_permanent;
 		ts->level_permanent = level;
 		if (ts->tank && ts->tank->mass)
-			ts->level = max(0.0, min(1.0, ts->level+dlevel));
+			ts->level = std::max(0.0, std::min(1.0, ts->level+dlevel));
 
 	}
 	// set permanent thruster level during playback
@@ -786,11 +783,11 @@ public:
 	{ return (def_tank ? def_tank : ntank ? tank[0] : 0); }
 
 	inline void SetPropellantMaxMass (TankSpec *ts, double m)
-	{ ts->mass = ts->pmass = min (ts->maxmass = m, ts->mass); UpdateMass(); }
+	{ ts->mass = ts->pmass = std::min (ts->maxmass = m, ts->mass); UpdateMass(); }
 	// Reset the maximum capacity [kg] of a propellant resource
 
 	inline void SetPropellantMass (TankSpec *ts, double m)
-	{ ts->mass = ts->pmass = min (m, ts->maxmass); ResetMass(); }
+	{ ts->mass = ts->pmass = std::min (m, ts->maxmass); ResetMass(); }
 	// Set fuel mass [kg] of a propellant resource
 
 	inline double GetPropellantLevel (const TankSpec *ts) const
@@ -1090,7 +1087,7 @@ public:
 	// set/unset/toggle a particular navigation mode
 	// and check status of a navigation mode
 
-	void Vessel::SetHoverHoldAltitude (double alt, bool terrainalt);
+	void SetHoverHoldAltitude (double alt, bool terrainalt);
 
 	// ========================================================================
 	// beacon light management
@@ -1324,7 +1321,7 @@ protected:
 	inline double ThrusterAtmScale (const ThrustSpec *ts, double p) const
 	{
 		if (!ts->pfac) return 1.0;
-		return max (0.0, 1.0 - p*ts->pfac);    // old linear model
+		return std::max (0.0, 1.0 - p*ts->pfac);    // old linear model
 		//return exp (p*ts->pfac);               // new exponential model
 	}
 	// Returns a thrust scaling factor for thruster th in ambient pressure p
@@ -1427,6 +1424,7 @@ protected:
 		int version;
 		VESSEL_Init ovcInit;
 		VESSEL_Exit ovcExit;
+		bool coreCreated;
 	} modIntf;
 
 	TOUCHDOWN_VTX *HullvtxFirst ();
@@ -1442,7 +1440,7 @@ private:
 	inline void FlushThrusterLevel (ThrustSpec *ts)
 	{
 		if (ts->tank && ts->tank->mass)
-			ts->level = max (0.0, min (1.0, ts->level_permanent + ts->level_override));
+			ts->level = std::max (0.0, std::min (1.0, ts->level_permanent + ts->level_override));
 	}
 	// set thruster level as sum of permanent and override setting
 

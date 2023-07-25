@@ -65,7 +65,7 @@ BOOL DlgFunction::OnCommand (HWND hDlg, WORD id, WORD code, HWND hControl)
 {
 	switch (id) {
 	case IDHELP:
-		DefHelpContext.topic = "/customcmd.htm";
+		DefHelpContext.topic = (char*)"/customcmd.htm";
 		g_pOrbiter->OpenHelp (&DefHelpContext);
 		return TRUE;
 	case IDOK:

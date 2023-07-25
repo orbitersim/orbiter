@@ -6,11 +6,14 @@
 #include "Util.h"
 #include "Vessel.h"
 
+using std::min;
+using std::max;
+
 extern Orbiter *g_pOrbiter;
 extern Vessel *g_focusobj;
 extern char DBG_MSG[256];
 
-static char *btmlbl[3] = {"PWR","SEL","MNU"};
+static const char *btmlbl[3] = {"PWR","SEL","MNU"};
 int nnv0 = 7; // number of nav modes available
 
 // texture dimensions
@@ -508,18 +511,18 @@ void DefaultPanel::Render ()
 	vofs += 4;
 	if (upd_fuel) {
 		cb = FmtNum (ts ? fuel*ts->maxmass : 0.0);
-		NumOut (cb, engstat_str[0], min(strlen(cb),5), grp->Vtx+vofs);
+		NumOut (cb, engstat_str[0], min(strlen(cb),(size_t)5), grp->Vtx+vofs);
 	}
 	// Update main engine readout
 	vofs += 4*5;
 	th = (engmain >= 0.0 ? engmain*g_focusobj->GetThrusterGroupMaxth(THGROUP_MAIN) :
 		-engmain*g_focusobj->GetThrusterGroupMaxth(THGROUP_RETRO));
 	cb = FmtNum (th);
-	NumOut (cb, engstat_str[1], min(strlen(cb),5), grp->Vtx+vofs);
+	NumOut (cb, engstat_str[1], min(strlen(cb),(size_t)5), grp->Vtx+vofs);
 	// Update hover engine readout
 	vofs += 4*5;
 	cb = FmtNum (enghovr*g_focusobj->GetThrusterGroupMaxth(THGROUP_HOVER));
-	NumOut (cb, engstat_str[2], min(strlen(cb),5), grp->Vtx+vofs);
+	NumOut (cb, engstat_str[2], min(strlen(cb),(size_t)5), grp->Vtx+vofs);
 	// Update trim indicator and readout
 	vofs += 4*5;
 	if (g_focusobj->bElevTrim) {
@@ -529,7 +532,7 @@ void DefaultPanel::Render ()
 				grp->Vtx[vofs+j].y = dy + (95.0f + 5.0f*(j/2) - (float)trim*14.5f)*scale;
 			char cbuf[16];
 			sprintf (cbuf, "%3.1f", fabs(trim));
-			NumOut (cbuf, engstat_str[3], min(strlen(cbuf),3), grp->Vtx+vofs+4);
+			NumOut (cbuf, engstat_str[3], min(strlen(cbuf),(size_t)3), grp->Vtx+vofs+4);
 			float ofs = (fabs(trim) < 0.01 ? 0.0f : trim < 0 ? 15.0f : 31.0f);
 			for (j = 0; j < 4; j++)
 				grp->Vtx[vofs+16+j].tu = (314.0f+ofs+14.0f*(j%2))/texw;

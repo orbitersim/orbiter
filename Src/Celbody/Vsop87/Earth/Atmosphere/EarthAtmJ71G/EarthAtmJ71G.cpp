@@ -36,8 +36,7 @@ EarthAtmosphere_J71G::EarthAtmosphere_J71G (CELBODY2 *body): ATMOSPHERE (body)
 
 const char *EarthAtmosphere_J71G::clbkName () const
 {
-	static char *name = "J71G";
-	return name;
+	return "J71G";
 }
 
 // ===========================================================================
@@ -833,12 +832,10 @@ DLLCLBK void DeleteAtmosphere (ATMOSPHERE *atm)
 
 DLLCLBK char *ModelName ()
 {
-	static char *name = "Jacchia71-Gill Atmospheric Model";
-	return name;
+	return (char*)"Jacchia71-Gill Atmospheric Model";
 }
 
 DLLCLBK char *ModelDesc ()
 {
-	static char *desc = "An implementation of the Jacchia71-Gill (J71C) atmospheric model. This uses a static US Standard Atmosphere model up to 90km, and a diffusion-equilibrium solution from 90 to 2500km altitude.\r\n\r\nSee Doc\\Technotes\\earth_atm.pdf for details.";
-	return desc;
+	return (char*)"An implementation of the Jacchia71-Gill (J71C) atmospheric model. This uses a static US Standard Atmosphere model up to 90km, and a diffusion-equilibrium solution from 90 to 2500km altitude.\r\n\r\nSee Doc\\Technotes\\earth_atm.pdf for details.";
 }

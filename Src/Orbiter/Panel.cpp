@@ -92,12 +92,12 @@ void Panel::Move (LONG dx, LONG dy)
 		if (X0 > 0) X0 = 0;
 		if (tgtW+X0 < pane->W) X0 = pane->W-tgtW;
 		tgtRect.left   = 0;
-		tgtRect.right  = min (tgtRect.left+tgtW, pane->W);
+		tgtRect.right  = min (tgtRect.left+tgtW, (LONG)pane->W);
 		srcRect.left   = -X0;
 		srcRect.right  = srcRect.left + (tgtRect.right-tgtRect.left);
 		if (scaled) {
-			srcRect.left   = max((int)(srcRect.left  *iscale), 0);
-			srcRect.right  = min((int)(srcRect.right * iscale), srcW);
+			srcRect.left   = max((LONG)(srcRect.left  *iscale), (LONG)0);
+			srcRect.right  = min((LONG)(srcRect.right * iscale), srcW);
 		}
 	}
 	if (dy) {
@@ -113,12 +113,12 @@ void Panel::Move (LONG dx, LONG dy)
 		else                                 visible = true;
 
 		tgtRect.top    = (Y0 >= 0 ? Y0 : 0);
-		tgtRect.bottom = min (Y0+tgtH, pane->H);
+		tgtRect.bottom = min (Y0+tgtH, (LONG)pane->H);
 		srcRect.top    = tgtRect.top-Y0;
 		srcRect.bottom = min (tgtH, srcRect.top  + (tgtRect.bottom-tgtRect.top));
 		if (scaled) {
-			srcRect.top    = max((int)(srcRect.top   *iscale), 0);
-			srcRect.bottom = min((int)(srcRect.bottom* iscale), srcH);
+			srcRect.top    = max((LONG)(srcRect.top   *iscale), (LONG)0);
+			srcRect.bottom = min((LONG)(srcRect.bottom* iscale), srcH);
 		}
 	}
 	MFDMoved();
@@ -193,8 +193,8 @@ void Panel::DefineBackground (HBITMAP hBmp, DWORD flag, DWORD _ck)
 
 	tgtRect.left   = (X0 >= 0 ? X0 : 0);
 	tgtRect.top    = (Y0 >= 0 ? Y0 : 0);
-	tgtRect.right  = min (tgtRect.left+tgtW, pane->W);
-	tgtRect.bottom = min (tgtRect.top+tgtH, pane->H);
+	tgtRect.right  = min (tgtRect.left+tgtW, (LONG)pane->W);
+	tgtRect.bottom = min (tgtRect.top+tgtH, (LONG)pane->H);
 
 	srcRect.left   = tgtRect.left-X0;
     srcRect.top    = tgtRect.top-Y0;
@@ -202,10 +202,10 @@ void Panel::DefineBackground (HBITMAP hBmp, DWORD flag, DWORD _ck)
 	srcRect.bottom = srcRect.top  + (tgtRect.bottom-tgtRect.top);
 
 	if (scaled) {
-		srcRect.left   = max((int)(srcRect.left  *iscale), 0);
-		srcRect.top    = max((int)(srcRect.top   *iscale), 0);
-		srcRect.right  = min((int)(srcRect.right * iscale), srcW);
-		srcRect.bottom = min((int)(srcRect.bottom* iscale), srcH);
+		srcRect.left   = max((LONG)(srcRect.left  *iscale), (LONG)0);
+		srcRect.top    = max((LONG)(srcRect.top   *iscale), (LONG)0);
+		srcRect.right  = min((LONG)(srcRect.right * iscale), srcW);
+		srcRect.bottom = min((LONG)(srcRect.bottom* iscale), srcH);
 	}
 
 	// define color key for blitting

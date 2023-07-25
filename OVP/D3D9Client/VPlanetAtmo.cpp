@@ -91,7 +91,7 @@ void vPlanet::GlobalInitAtmosphere(oapi::D3D9Client* gc)
 	pIP->CompileShader("LandViewAtten");
 
 	if (!pIP->IsOK()) {
-		oapiWriteLog("InitializeScatteringEx() FAILED");
+		oapiWriteLog((char*)"InitializeScatteringEx() FAILED");
 		return;
 	}
 
@@ -197,8 +197,8 @@ FVECTOR2 vPlanet::Gauss7(float cos_dir, float r0, float dist, FVECTOR2 ih0)
 
 	float ray = 0.0f; float mie = 0.0f;
 	for (int i = 0; i < 7; i++) {
-		ray += exp(-clamp(a[i] * ih0.x, -20.0f, 20.0f)) * w[i];
-		mie += exp(-clamp(a[i] * ih0.y, -20.0f, 20.0f)) * w[i];
+		ray += exp(-::clamp(a[i] * ih0.x, -20.0f, 20.0f)) * w[i];
+		mie += exp(-::clamp(a[i] * ih0.y, -20.0f, 20.0f)) * w[i];
 	}
 	return FVECTOR2(ray, mie) * 0.5f * dist;
 }
@@ -223,8 +223,8 @@ FVECTOR2 vPlanet::Gauss4(float cos_dir, float r0, float dist, FVECTOR2 ih0)
 
 	float ray = 0.0f; float mie = 0.0f;
 	for (int i = 0; i < 4; i++) {
-		ray += exp(-clamp(a[i] * ih0.x, -20.0f, 20.0f)) * w[i];
-		mie += exp(-clamp(a[i] * ih0.y, -20.0f, 20.0f)) * w[i];
+		ray += exp(-::clamp(a[i] * ih0.x, -20.0f, 20.0f)) * w[i];
+		mie += exp(-::clamp(a[i] * ih0.y, -20.0f, 20.0f)) * w[i];
 	}
 	return FVECTOR2(ray, mie) * 0.5f * dist;
 }
@@ -454,7 +454,7 @@ FVECTOR4 vPlanet::SunLightColor(VECTOR3 relpos, double rf)
 	if (r > ar) rm = Gauss7(qr - size, 0.0f, cp.PlanetRad, cp.AtmoRad, cp.iH) * 2.0f; // Ray passes through atmosphere from space to space
 	else rm = Gauss7(r - size, -ca, cp.PlanetRad, cp.AtmoRad, cp.iH); // Sample point 'pos' lies with-in atmosphere
 
-	rm *= cp.rmO * rf;
+	rm = rm * (cp.rmO * rf);
 	return FVECTOR4(exp(-(cp.RayWave * rm.x + cp.MieWave * rm.y)) * svb, svb);
 }
 
@@ -583,7 +583,7 @@ void vPlanet::UpdateScatter()
 
 	float ph = atmo->mphase * 200.0f;
 	float g = ph / sqrt(1.0f + ph * ph);
-	float hrz = sqrt(max(0, cr * cr - pr * pr));
+	float hrz = sqrt(max(0.0, cr * cr - pr * pr));
 	float qw = float(pr / cr);
 
 	LPDIRECT3DSURFACE9 pTgt, pTgt2;
@@ -673,7 +673,7 @@ void vPlanet::UpdateScatter()
 
 	if (cp.CamAlt < prm.cloudalt) {
 		float SMi = cp.CloudAlt;
-		float SMa = min(100e3, cp.HrzDst); // Semi-major axis
+		float SMa = min(100e3f, cp.HrzDst); // Semi-major axis
 		cp.ecc = sqrt((SMa * SMa - SMi * SMi) / (SMa * SMa)); // eccentricity
 		cp.smi = SMi;
 	}
@@ -959,8 +959,8 @@ bool vPlanet::LoadAtmoConfig()
 
 	LogAlw("Loading Atmospheric Configuration file [%s] Handle=%s", path, _PTR(hFile));
 
-	if (oapiReadItem_string(hFile, "Shader", ShaderName) == false) strcpy_s(ShaderName, 32, "Auto");
-	if (oapiReadItem_string(hFile, "ConfigName", AtmoConfigName) == false) strcpy_s(AtmoConfigName, 32, "Custom");
+	if (oapiReadItem_string(hFile, (char*)"Shader", ShaderName) == false) strcpy_s(ShaderName, 32, "Auto");
+	if (oapiReadItem_string(hFile, (char*)"ConfigName", AtmoConfigName) == false) strcpy_s(AtmoConfigName, 32, "Custom");
 
 	LoadStruct(hFile, &SPrm, 0);
 	LoadStruct(hFile, &OPrm, 1);
@@ -1023,14 +1023,14 @@ void vPlanet::LoadStruct(FILEHANDLE hFile, ScatterParams* prm, int iCnf)
 {
 	VECTOR3 v3;
 	iConfig = iCnf;
-	oapiReadItem_float(hFile, "OrbitAlt", prm->orbalt);
-	oapiReadItem_float(hFile, "AtmoVisualAlt", prm->visalt);
-	oapiReadItem_float(hFile, "Red", prm->red);
-	oapiReadItem_float(hFile, "Blue", prm->blue);
-	oapiReadItem_float(hFile, "SunI", prm->suni);
-	oapiReadItem_vec(hFile, "zcolor", v3); prm->zcolor = v3;
-	oapiReadItem_vec(hFile, "hcolor", v3); prm->hcolor = v3;
-	oapiReadItem_vec(hFile, "acolor", v3); prm->acolor = v3;
+	oapiReadItem_float(hFile, (char*)"OrbitAlt", prm->orbalt);
+	oapiReadItem_float(hFile, (char*)"AtmoVisualAlt", prm->visalt);
+	oapiReadItem_float(hFile, (char*)"Red", prm->red);
+	oapiReadItem_float(hFile, (char*)"Blue", prm->blue);
+	oapiReadItem_float(hFile, (char*)"SunI", prm->suni);
+	oapiReadItem_vec(hFile, (char*)"zcolor", v3); prm->zcolor = v3;
+	oapiReadItem_vec(hFile, (char*)"hcolor", v3); prm->hcolor = v3;
+	oapiReadItem_vec(hFile, (char*)"acolor", v3); prm->acolor = v3;
 
 
 	// -----------------------------------------------------------------
@@ -1082,18 +1082,18 @@ void vPlanet::SaveAtmoConfig()
 
 	FILEHANDLE hFile = oapiOpenFile(path, FILE_OUT, CONFIG);
 
-	oapiWriteItem_string(hFile, ";", "Shader(s) = [Earth, Mars, Moon, Giant, Auto]");
-	oapiWriteItem_string(hFile, "Shader", ShaderName);
-	oapiWriteItem_string(hFile, "Planet", name);
-	oapiWriteItem_string(hFile, "ConfigName", AtmoConfigName);
-	oapiWriteItem_float(hFile, "OrbitAlt", SPrm.orbalt);
-	oapiWriteItem_float(hFile, "AtmoVisualAlt", SPrm.visalt);
-	oapiWriteItem_float(hFile, "Red", SPrm.red);
-	oapiWriteItem_float(hFile, "Blue", SPrm.blue);
-	oapiWriteItem_float(hFile, "SunI", SPrm.suni);
-	oapiWriteItem_vec(hFile, "zcolor", SPrm.zcolor._V());
-	oapiWriteItem_vec(hFile, "hcolor", SPrm.hcolor._V());
-	oapiWriteItem_vec(hFile, "acolor", SPrm.acolor._V());
+	oapiWriteItem_string(hFile, (char*)";", (char*)"Shader(s) = [Earth, Mars, Moon, Giant, Auto]");
+	oapiWriteItem_string(hFile, (char*)"Shader", ShaderName);
+	oapiWriteItem_string(hFile, (char*)"Planet", name);
+	oapiWriteItem_string(hFile, (char*)"ConfigName", AtmoConfigName);
+	oapiWriteItem_float(hFile, (char*)"OrbitAlt", SPrm.orbalt);
+	oapiWriteItem_float(hFile, (char*)"AtmoVisualAlt", SPrm.visalt);
+	oapiWriteItem_float(hFile, (char*)"Red", SPrm.red);
+	oapiWriteItem_float(hFile, (char*)"Blue", SPrm.blue);
+	oapiWriteItem_float(hFile, (char*)"SunI", SPrm.suni);
+	oapiWriteItem_vec(hFile, (char*)"zcolor", SPrm.zcolor._V());
+	oapiWriteItem_vec(hFile, (char*)"hcolor", SPrm.hcolor._V());
+	oapiWriteItem_vec(hFile, (char*)"acolor", SPrm.acolor._V());
 
 	SaveStruct(hFile, &SPrm, 0);
 	SaveStruct(hFile, &OPrm, 1);
@@ -1287,7 +1287,7 @@ void vPlanet::TestComputations(Sketchpad* pSkp)
 		if (bSrc) {	// Camera in Shadow
 			s0 = max(sp.sx, sp.ae);
 
-			float lf = max(0, sp.ca) / max(1.0f, abs(sp.hd)); // Lerp Factor
+			float lf = max(0.0f, sp.ca) / max(1.0f, abs(sp.hd)); // Lerp Factor
 			float mp = lerp((sp.ax + s0) * 0.5f, sp.hd, saturate(lf));
 
 			e0 = mp;
@@ -1295,9 +1295,9 @@ void vPlanet::TestComputations(Sketchpad* pSkp)
 			e1 = sp.ax;
 		}
 		else { // Camera is Lit
-			s0 = max(0, sp.ae);
+			s0 = max(0.0f, sp.ae);
 
-			float lf = max(0, sp.ca) / max(1.0f, abs(sp.hd)); // Lerp Factor
+			float lf = max(0.0f, sp.ca) / max(1.0f, abs(sp.hd)); // Lerp Factor
 			float mp = lerp((sp.ax + s0) * 0.5f, sp.hd, saturate(lf));
 
 			bool bA = (sp.se > sp.ax || sp.se < 0);			

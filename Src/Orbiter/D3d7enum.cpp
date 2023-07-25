@@ -114,10 +114,9 @@ static HRESULT WINAPI DeviceEnumCallback (TCHAR* strDesc, TCHAR* strName,
         for (i=0; i < 20; i++) {  // 20-loop-limit is for a sanity check in case of a bug
             strcpy(tempBuf, cbuf);  // working copy
             if (dupeIDCount > 1) {
-                char idStr[4];
                 // this is the newest device name
-                strcat(cbuf, " #");
-                strcat(cbuf, _itoa(dupeIDCount, idStr, 10));
+                snprintf(cbuf, sizeof(cbuf), "%s #%d", tempBuf, dupeIDCount);
+                cbuf[sizeof(cbuf)] = '\0';
             }
             // check whether we have a duplicate of this name
             UINT j;  // we need this outside the for loop
@@ -273,7 +272,7 @@ static BOOL WINAPI DriverEnumCallback (GUID* pGUID, TCHAR* strDesc, TCHAR* strNa
 // Name: D3D7Enum_ReadDeviceList()
 // Read device information from file
 // ------------------------------------------------------------------------------------
-int D3D7Enum_ReadDeviceList (CHAR *fname)
+int D3D7Enum_ReadDeviceList (const CHAR *fname)
 {
 	int i;
 	FILE *ifs = fopen (fname, "rb");
@@ -296,7 +295,7 @@ int D3D7Enum_ReadDeviceList (CHAR *fname)
 // Name: D3D7Enum_WriteDeviceList()
 // Write the device information stored in the device list to a file (binary format)
 // ------------------------------------------------------------------------------------
-VOID D3D7Enum_WriteDeviceList (CHAR *fname)
+VOID D3D7Enum_WriteDeviceList (const CHAR *fname)
 {
 	FILE *ofs = fopen (fname, "wb");
 	DWORD i, n = g_dwNumDevices;

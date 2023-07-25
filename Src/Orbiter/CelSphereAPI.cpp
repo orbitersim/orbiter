@@ -10,6 +10,9 @@
 #include "Mesh.h"
 #include "Log.h"
 
+using std::min;
+using std::max;
+
 extern Orbiter* g_pOrbiter;
 extern PlanetarySystem* g_psys;
 
@@ -19,8 +22,8 @@ oapi::CelestialSphere::CelestialSphere(oapi::GraphicsClient* gc)
 	: m_gc(gc)
 {
 	gc->clbkGetViewportSize(&m_viewW, &m_viewH);
-	m_cLabelFont = gc->clbkCreateFont(max(m_viewH / 50, 14), true, "Arial", FONT_ITALIC);
-	m_markerFont = gc->clbkCreateFont(max(m_viewH / 75, 12), true, "Arial");
+	m_cLabelFont = gc->clbkCreateFont(max((int)m_viewH / 50, 14), true, "Arial", FONT_ITALIC);
+	m_markerFont = gc->clbkCreateFont(max((int)m_viewH / 75, 12), true, "Arial");
 	for (int i = 0; i < 7; i++)
 		m_markerPen[i] = gc->clbkCreatePen(1, 0, MarkerColor(i));
 	m_textBlendAdditive = false;
@@ -323,6 +326,7 @@ const std::vector<oapi::CelestialSphere::LineDataRec> oapi::CelestialSphere::Loa
 		fclose(f);
 		rec.resize(n);
 		rec.shrink_to_fit();
+		delete[]packBuf;
 	}
 	else {
 		LOGOUT_WARN("Line data file %s for celestial sphere drawing not found.", fname.c_str());
@@ -516,7 +520,7 @@ MATRIX3 oapi::CelestialSphere::Ecliptic_CelestialAtEpoch() const
 {
 	// Set up rotation for celestial grid rendering
 	MATRIX3 R;
-	OBJHANDLE hEarth = oapiGetGbodyByName("Earth");
+	OBJHANDLE hEarth = oapiGetGbodyByName((char*)"Earth");
 	if (!hEarth)
 		return Ecliptic_CelestialJ2000(); // best we can do
 

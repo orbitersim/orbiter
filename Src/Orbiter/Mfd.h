@@ -269,14 +269,14 @@ protected:
 	virtual bool ReadParams (std::ifstream &ifs) = 0;
 	virtual void WriteParams (std::ostream &ofs) const = 0;
 
-	void OpenSelect_CelBody (char *title, Select::Callbk enter_cbk, DWORD flag = 0);
+	void OpenSelect_CelBody (const char *title, Select::Callbk enter_cbk, DWORD flag = 0);
 	static bool ClbkSelect_CelBody (Select *menu, int item, char *str, void *data);
 	// Open a selection box for a celestial object.
 	// The callback function is called if a selection is made.
 	// The following bit flags are supported:
 	//   1: do not include Star objects
 
-	void OpenSelect_Tgt (char *title, Select::Callbk enter_cbk, const CelestialBody *ref = 0, DWORD flag = 0);
+	void OpenSelect_Tgt (const char *title, Select::Callbk enter_cbk, const CelestialBody *ref = 0, DWORD flag = 0);
 	// Open a selection box for a target object
 	// Supported bitflags:
 	//   1: don't display 'By name' option

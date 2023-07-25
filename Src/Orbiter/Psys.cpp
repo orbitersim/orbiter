@@ -7,10 +7,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <io.h>
-#include "Orbiter.h"
+#include <algorithm>
+
 #include "Config.h"
 #include "Psys.h"
-#include "Astro.h"
+#include "TimeData.h"
 #include "Element.h"
 #include "Vessel.h"
 #include "SuperVessel.h"
@@ -18,24 +19,13 @@
 
 using namespace std;
 
-extern Orbiter *g_pOrbiter;
 extern TimeData td;
 extern bool g_bForceUpdate;
 extern char DBG_MSG[256];
 
-PlanetarySystem::PlanetarySystem (char *fname)
+PlanetarySystem::PlanetarySystem (char *fname, const Config* config, OutputLoadStatusCallback outputLoadStatus, void* callbackContext)
 {
-	name = 0;
-	nbody = 0;
-	nstar = 0;
-	nplanet = 0;
-	ngrav = 0;
-	nvessel = 0;
-	nsupervessel = 0;
-	//nuserlabel   = 0;
-	//labellist    = 0;
-	//nlabellist   = 0;
-	Read (fname);
+	Read (fname, config, outputLoadStatus, callbackContext);
 }
 
 PlanetarySystem::~PlanetarySystem ()
@@ -45,42 +35,34 @@ PlanetarySystem::~PlanetarySystem ()
 
 void PlanetarySystem::Clear ()
 {
-	int i, j;
-	DWORD k;
-
 	DestroyDeviceObjects ();
-	if (name) {
-		delete []name;
-		name = 0;
+	m_Name.clear();
+
+	//Vessel destructor broadcasts messages to every other vessel in 'vessels'.
+	//We remove it from the collection as soon as we deleted it to prevent the next Vessel to broadcast to the free'd one.
+	while (vessels.size()) {
+		DelBody(vessels.back());
+		vessels.pop_back();
 	}
-	while (nvessel) DelVessel (vessel[0], 0);
-	if (nbody) {
-		for (k = 0; k < nbody; k++) delete body[k]; // delete actual objects
-		delete []body; // delete list
-		body = NULL;
-		nbody = 0;
+
+	//Every element in vessels, stars, planets and celestials is also present in bodies.
+	//By deallocating all bodies we can then just clear all the other collections.
+	//NOTE: vessels are a special case! See comment above.
+	for (size_t i = 0; i < bodies.size(); ++i)
+		delete bodies[i];
+
+	bodies    .clear();
+	stars     .clear();
+	planets   .clear();
+	celestials.clear();
+
+	g_bForceUpdate = true;
+
+	//Supervessels are not stored in 'bodies' so we have to take care of them manually
+	for (size_t i = 0; i < supervessels.size(); ++i) {
+		delete supervessels[i];
 	}
-	if (nstar) {
-		delete []star;
-		star = NULL;
-		nstar = 0;
-	}
-	if (nplanet) {
-		delete []planet;
-		planet = NULL;
-		nplanet = 0;
-	}
-	if (ngrav) {
-		delete []grav;
-		grav = NULL;
-		ngrav = 0;
-	}
-	if (nsupervessel) {
-		for (DWORD k = 0; k < nsupervessel; k++) delete supervessel[k];
-		delete []supervessel;
-		supervessel = NULL;
-		nsupervessel = 0;
-	}
+	supervessels.clear();
 }
 
 void PlanetarySystem::InitState (const char *fname)
@@ -103,59 +85,58 @@ void PlanetarySystem::InitState (const char *fname)
 
 void PlanetarySystem::PostCreation ()
 {
-	DWORD i;
-	for (i = 0; i < nvessel; i++) vessel[i]->PostCreation();
-	for (i = 0; i < nvessel; i++) vessel[i]->InitSupervessel();
-	for (i = 0; i < nvessel; i++) vessel[i]->ModulePostCreation();
+	for (size_t i = 0; i < vessels.size(); ++i) vessels[i]->PostCreation();
+	for (size_t i = 0; i < vessels.size(); ++i) vessels[i]->InitSupervessel();
+	for (size_t i = 0; i < vessels.size(); ++i) vessels[i]->ModulePostCreation();
 }
 
 void PlanetarySystem::Write (ostream &os)
 {
 	os << "BEGIN_SHIPS" << endl;
-	for (DWORD i = 0; i < nvessel; i++)
-		vessel[i]->Write (os);
+	for (size_t i = 0; i < vessels.size(); ++i)
+		vessels[i]->Write (os);
 	os << "END_SHIPS" << endl;
 }
 
 Body *PlanetarySystem::GetObj (const char *name, bool ignorecase)
 {
-	for (DWORD i = 0; i < nbody; i++)
-		if (!StrComp (body[i]->Name(), name, ignorecase)) return body[i];
+	for (DWORD i = 0; i < bodies.size(); i++)
+		if (!StrComp (bodies[i]->Name(), name, ignorecase)) return bodies[i];
 	return 0;
 }
 
 CelestialBody *PlanetarySystem::GetGravObj (const char *name, bool ignorecase) const
 {
-	for (DWORD i = 0; i < ngrav; i++)
-		if (!StrComp (grav[i]->Name(), name, ignorecase)) return grav[i];
+	for (DWORD i = 0; i < celestials.size(); i++)
+		if (!StrComp (celestials[i]->Name(), name, ignorecase)) return celestials[i];
 	return 0;
 }
 
 Planet *PlanetarySystem::GetPlanet (const char *name, bool ignorecase)
 {
-	for (int i = 0; i < nplanet; i++)
-		if (!StrComp (planet[i]->Name(), name, ignorecase)) return planet[i];
+	for (size_t i = 0; i < planets.size(); i++)
+		if (!StrComp (planets[i]->Name(), name, ignorecase)) return planets[i];
 	return 0;
 }
 
 Vessel *PlanetarySystem::GetVessel (const char *name, bool ignorecase) const
 {
-	for (DWORD i = 0; i < nvessel; i++)
-		if (!StrComp (vessel[i]->Name(), name, ignorecase)) return vessel[i];
+	for (DWORD i = 0; i < vessels.size(); i++)
+		if (!StrComp (vessels[i]->Name(), name, ignorecase)) return vessels[i];
 	return 0;
 }
 
 bool PlanetarySystem::isObject (const Body *obj) const
 {
-	for (DWORD i = 0; i < nbody; i++)
-		if (body[i] == obj) return true;
+	for (DWORD i = 0; i < bodies.size(); i++)
+		if (bodies[i] == obj) return true;
 	return false;
 }
 
 bool PlanetarySystem::isVessel (const Vessel *v) const
 {
-	for (DWORD i = 0; i < nvessel; i++)
-		if (vessel[i] == v) return true;
+	for (DWORD i = 0; i < vessels.size(); i++)
+		if (vessels[i] == v) return true;
 	return false;
 }
 
@@ -169,9 +150,9 @@ Base *PlanetarySystem::GetBase (const Planet *planet, const char *name, bool ign
 
 Base *PlanetarySystem::GetBase (const char *name, bool ignorecase)
 {
-	for (DWORD i = 0; i < ngrav; i++) {
-		if (grav[i]->Type() != OBJTP_PLANET) continue;
-		Planet *planet = (Planet*)grav[i];
+	for (DWORD i = 0; i < celestials.size(); i++) {
+		if (celestials[i]->Type() != OBJTP_PLANET) continue;
+		Planet *planet = (Planet*)celestials[i];
 		Base *base = GetBase (planet, name, ignorecase);
 		if (base) return base;
 	}
@@ -180,30 +161,28 @@ Base *PlanetarySystem::GetBase (const char *name, bool ignorecase)
 
 void PlanetarySystem::OptionChanged(DWORD cat, DWORD item)
 {
-	for (size_t i = 0; i < nvessel; i++)
-		vessel[i]->OptionChanged(cat, item);
+	for (size_t i = 0; i < vessels.size(); i++)
+		vessels[i]->OptionChanged(cat, item);
 }
 
-bool PlanetarySystem::Read (char *fname)
+bool PlanetarySystem::Read (char *fname, const Config* config, OutputLoadStatusCallback outputLoadStatus, void* callbackContext)
 {
 	int i;
 	DWORD j;
 	char cbuf[256], label[128];
-	Planet *body;
 	
-	ifstream ifs (g_pOrbiter->ConfigPath (fname));
+	ifstream ifs (config->ConfigPath(fname));
 	if (!ifs) return false;
 	Clear();
 	if (GetItemString (ifs, "Name", cbuf)) {
-		name = new char[strlen(cbuf)+1]; TRACENEW
-		strcpy (name, cbuf);
+		m_Name = cbuf;
 	}
 
 	// read stars
 	for (;;) {
-		sprintf (label, "Star%d", nstar+1);
+		sprintf (label, "Star%zd", stars.size() + 1);
 		if (!GetItemString (ifs, label, cbuf)) break;
-		OutputLoadStatus (cbuf);
+		OutputLoadStatus (cbuf, outputLoadStatus, callbackContext);
 		AddStar (new Star (cbuf)); TRACENEW
 	}
 
@@ -211,14 +190,14 @@ bool PlanetarySystem::Read (char *fname)
 	for (i = 0;; i++) {
 		sprintf (label, "Planet%d", i+1);
 		if (!GetItemString (ifs, label, cbuf)) break;
-		OutputLoadStatus (cbuf);
-		body = new Planet (cbuf); TRACENEW
-		AddPlanet (body, star[0]);
-		ScanMoons (ifs, body, body->Name());
+		OutputLoadStatus (cbuf, outputLoadStatus, callbackContext);
+		Planet *planet = new Planet (cbuf); TRACENEW
+		AddPlanet (planet, stars[0]);
+		ScanMoons (ifs, planet, planet->Name());
 	}
 
-	for (j = 0; j < nstar; j++) star[j]->RelTrueAndBaryState();
-	for (j = 0; j < nstar; j++) star[j]->AbsTrueState();
+	for (j = 0; j < stars.size(); j++) stars[j]->RelTrueAndBaryState();
+	for (j = 0; j < stars.size(); j++) stars[j]->AbsTrueState();
 
 	if (GetItemString (ifs, "MarkerPath", cbuf)) {
 		m_labelPath = cbuf;
@@ -226,7 +205,7 @@ bool PlanetarySystem::Read (char *fname)
 			m_labelPath.push_back('\\');
 	}
 	else {
-		m_labelPath = std::string(g_pOrbiter->Cfg()->CfgDirPrm.ConfigDir) + std::string(name) + std::string("\\Marker\\");
+		m_labelPath = std::string(config->CfgDirPrm.ConfigDir) + m_Name + std::string("\\Marker\\");
 	}
 	m_labelList.clear();
 	ScanLabelLists(ifs, true);
@@ -234,11 +213,11 @@ bool PlanetarySystem::Read (char *fname)
 	return true;
 }
 
-void PlanetarySystem::OutputLoadStatus (const char *bname)
+void PlanetarySystem::OutputLoadStatus (const char *bname, OutputLoadStatusCallback outputLoadStatus, void* callbackContext)
 {
 	char cbuf[256];
-	sprintf (cbuf, "%s: %s", name, bname);
-	g_pOrbiter->OutputLoadStatus (cbuf, 0);
+	sprintf (cbuf, "%s: %s", m_Name.c_str(), bname);
+	outputLoadStatus(cbuf, 0, callbackContext);
 }
 
 intptr_t PlanetarySystem::FindFirst (int type, _finddata_t *fdata, char *fname)
@@ -267,8 +246,7 @@ intptr_t PlanetarySystem::FindNext (intptr_t fh, _finddata_t *fdata, char *fname
 void PlanetarySystem::ScanLabelLists (ifstream &cfg, bool bScanHeaders)
 {
 	int i;
-	char cbuf[256], fname[256], lbpath[256];
-	int nlabellistbuf = 0;
+	char cbuf[256], fname[256];
 
 	_finddata_t fdata;
 	intptr_t fh = FindFirst (FILETYPE_MARKER, &fdata, fname);
@@ -332,7 +310,6 @@ void PlanetarySystem::ScanLabelLists (ifstream &cfg, bool bScanHeaders)
 
 			// read label list for active labels, if not already present
 			if (ll->active && !ll->marker.size()) {
-				int nlistbuf = 0;
 				double lng, lat;
 				int nl;
 				char *pc;
@@ -370,76 +347,55 @@ void PlanetarySystem::ScanLabelLists (ifstream &cfg, bool bScanHeaders)
 
 void PlanetarySystem::ActivatePlanetLabels(bool activate)
 {
-	for (int i = 0; i < nplanet; i++)
-		planet[i]->ActivateLabels(activate);
+	for (size_t i = 0; i < planets.size(); i++)
+		planets[i]->ActivateLabels(activate);
 }
 
 void PlanetarySystem::AddBody (Body *_body)
 {
-	Body **tmp = new Body*[nbody+1]; TRACENEW
-	if (nbody) {
-		memcpy (tmp, body, nbody*sizeof(Body*));
-		delete []body;
-	}
-	body = tmp;
-	body[nbody++] = _body;
+	bodies.emplace_back(_body);
 }
 
 bool PlanetarySystem::DelBody (Body *_body)
 {
-	DWORD i, j, k;
-	for (i = 0; i < nbody; i++)
-		if (body[i] == _body) break;
-	if (i == nbody) return false; // body not found in list
+	size_t i;
+	for (i = 0; i < bodies.size(); i++)
+		if (bodies[i] == _body)
+			break;
 
-	//if (body[i]->s0) body[i]->s0 = NULL; // s0 is used in vessel destructor due to undocking of
-	//if (body[i]->s1) body[i]->s1 = NULL; // vessels before deletion.
+	if (i == bodies.size())
+		return false; // bodies not found in list
+
+	//if (bodies[i]->s0) bodies[i]->s0 = NULL; // s0 is used in vessels destructor due to undocking of
+	//if (bodies[i]->s1) bodies[i]->s1 = NULL; // vessels before deletion.
 	
-	delete []body[i]; // delete actual body/vessel
-	Body** tmp;
-	if (nbody > 1) {
-		tmp = new Body*[nbody-1]; TRACENEW
-		for (j = k = 0; j < nbody; j++)
-			if (j != i) tmp[k++] = body[j];
-	} else tmp = 0;
-	delete []body;
-	body = tmp;
-	nbody--;
+	delete bodies[i]; // delete actual bodies/vessels
+
+	std::iter_swap(bodies.begin() + i, bodies.end() - 1);
+	bodies.pop_back();
+
 	return true;
 }
 
-int PlanetarySystem::AddStar (Star *_star)
+size_t PlanetarySystem::AddStar (Star *_star)
 {
-	Star **tmp = new Star*[nstar+1]; TRACENEW
-	if (nstar) {
-		memcpy (tmp, star, nstar*sizeof(Star*));
-		delete []star;
-	}
-	star = tmp;
-	star[nstar] = _star;
+	stars.emplace_back(_star);
 	AddGrav (_star); // register in list of massive objects
 	AddBody (_star); // register in general list
-	_star->SetPsys (this); // somewhat ugly
-	return nstar++;
+	return stars.size();
 }
 
-int PlanetarySystem::AddPlanet (Planet *_planet, CelestialBody *cbody)
+size_t PlanetarySystem::AddPlanet (Planet *_planet, CelestialBody *cbody)
 {
-	Planet **tmp = new Planet*[nplanet+1]; TRACENEW
-	if (nplanet) {
-		memcpy (tmp, planet, nplanet*sizeof(Planet*));
-		delete []planet;
-	}
-	planet = tmp;
-	planet[nplanet] = _planet;
+	planets.emplace_back(_planet);
 	AddGrav (_planet); // register in list of massive objects
 	AddBody (_planet); // register in general list
 	_planet->SetPsys (this);
 	_planet->Attach (cbody);
-	return nplanet++;
+	return planets.size();
 }
 
-void PlanetarySystem::ScanMoons (istream &is, CelestialBody *cbody, char *id)
+void PlanetarySystem::ScanMoons (istream &is, CelestialBody *cbody, const char *id)
 {
 	char cbuf[256], name[256];
 	for (int i = 0;; i++) {
@@ -451,87 +407,65 @@ void PlanetarySystem::ScanMoons (istream &is, CelestialBody *cbody, char *id)
 	}
 }
 
-void PlanetarySystem::AddGrav (CelestialBody *body)
+void PlanetarySystem::AddGrav (CelestialBody *newBody)
 {
-	DWORD i, j;
-
-	CelestialBody **tmp = new CelestialBody*[ngrav+1]; TRACENEW
-	for (i = j = 0; i < ngrav;) {
-		if (i == j && body->Mass() > grav[i]->Mass())
-			tmp[j++] = body;
-		tmp[j++] = grav[i++];
-	}
-	if (j == ngrav) tmp[j] = body;
-	if (ngrav) delete []grav;
-	grav = tmp;
-	ngrav++;
+	//(alektron) The old method sorted by mass directly while inserting into the newly allocated list.
+	//While the sorting was technically more efficient this way (since most of the list was already sorted anyways),
+	//it doesn't really matter much since this function is not called very often.
+	//And this is just so much more readable.
+	celestials.emplace_back(newBody);
+	std::sort(celestials.begin(), celestials.end(), [](CelestialBody* a, CelestialBody* b) { return a->Mass() > b->Mass(); });
 }
 
-int PlanetarySystem::AddVessel (Vessel *_vessel)
+size_t PlanetarySystem::AddVessel (Vessel *_vessel)
 {
-	Vessel **tmp = new Vessel*[nvessel+1]; TRACENEW
-	if (nvessel) {
-		memcpy (tmp, vessel, nvessel*sizeof(Vessel*));
-		delete []vessel;
-	}
-	vessel = tmp;
-	vessel[nvessel] = _vessel;
+	vessels.emplace_back(_vessel);
 	AddBody (_vessel); // register in general list
 	g_bForceUpdate = true;
-	return nvessel++;
+	return vessels.size();
 }
 
-bool PlanetarySystem::DelVessel (Vessel *_vessel, Body *_alt_cam_tgt)
+bool PlanetarySystem::DelVessel (Vessel *_vessel)
 {
-	//if (!g_pOrbiter->RequestDelete (_vessel, _alt_cam_tgt)) return false;
-	DWORD i, j, k;
-	for (i = 0; i < nvessel; i++)
-		if (vessel[i] == _vessel) break;
-	if (i == nvessel) return false; // vessel not found in list
-	DelBody (_vessel);
-	Vessel **tmp;
-	if (nvessel > 1) {
-		tmp = new Vessel*[nvessel-1]; TRACENEW
-		for (j = k = 0; j < nvessel; j++)
-			if (j != i) tmp[k++] = vessel[j];
-	} else tmp = 0;
-	delete []vessel;
-	vessel = tmp;
-	nvessel--;
+	size_t i;
+	for (i = 0; i < vessels.size(); i++) {
+		if (vessels[i] == _vessel)
+			break;
+	}
+
+	if (i == vessels.size())
+		return false; // vessels not found in list
+
+	DelBody (_vessel); //DelBody takes care of freeing the vessel
+	std::iter_swap(vessels.begin() + i, vessels.end() - 1);
+	vessels.pop_back();
+
 	g_bForceUpdate = true;
 	return true;
 }
 
 void PlanetarySystem::AddSuperVessel (SuperVessel *sv)
 {
-	SuperVessel **tmp = new SuperVessel*[nsupervessel+1]; TRACENEW
-	if (nsupervessel) {
-		memcpy (tmp, supervessel, nsupervessel*sizeof(SuperVessel*));
-		delete []supervessel;
-	}
-	supervessel = tmp;
-	supervessel[nsupervessel++] = sv;
+	supervessels.emplace_back(sv);
 }
 
 bool PlanetarySystem::DelSuperVessel (SuperVessel *sv)
 {
-	DWORD i, j, k;
-
-	for (i = 0; i < nsupervessel; i++) {
-		if (supervessel[i] == sv) {
-			delete sv;
-			SuperVessel **tmp;
-			if (nsupervessel > 1) {
-				tmp = new SuperVessel*[nsupervessel-1]; TRACENEW
-				for (j = k = 0; j < nsupervessel; j++)
-					if (j != i) tmp[k++] = supervessel[j];
-			} else tmp = 0;
-			delete []supervessel;
-			supervessel = tmp;
-			nsupervessel--;
-			return true;
-		}
+	size_t i;
+	for (i = 0; i < supervessels.size(); i++) {
+		if (supervessels[i] == sv)
+			break;
 	}
+
+	if (i == supervessels.size())
+		return false; // vessels not found in list
+
+	delete supervessels[i];
+
+	//Note that supervesslels unlike other bodies are NOT also present in the 'bodies'
+	std::iter_swap(supervessels.begin() + i, supervessels.end() - 1);
+	supervessels.pop_back();
+
 	return false;
 }
 
@@ -558,23 +492,7 @@ void PlanetarySystem::UndockVessel (SuperVessel *sv, Vessel *_vessel, int port, 
 {
 	sv->Detach (_vessel, port, vsep);
 	if (!sv->nVessel()) {
-		// remove supervessel from list
-		DWORD i, j, k;
-		for (i = 0; i < nsupervessel; i++) {
-			if (supervessel[i] == sv) {
-				SuperVessel **tmp;
-				if (nsupervessel > 1) {
-					tmp = new SuperVessel*[nsupervessel-1]; TRACENEW
-					for (j = k = 0; j < nsupervessel; j++)
-						if (j != i) tmp[k++] = supervessel[j];
-				} else tmp = 0;
-				delete []supervessel;
-				supervessel = tmp;
-				nsupervessel--;
-				delete sv;
-				break;
-			}
-		}
+		DelSuperVessel(sv);
 	}
 }
 
@@ -584,12 +502,12 @@ void PlanetarySystem::ScanGFieldSources (const Vector *gpos, const Body *exclude
 	DWORD i, j, idx;
 	double a, atot = 0.0;
 	gfd->ngrav = 0; // reset gravitation source list
-	for (i = 0; i < ngrav; i++)
-		if (grav[i] != exclude)
-			atot += grav[i]->Mass() / gpos->dist2 (grav[i]->GPos());
-	for (i = 0; i < ngrav; i++) {
-		if (grav[i] != exclude) {
-			a = grav[i]->Mass() / gpos->dist2 (grav[i]->GPos());
+	for (i = 0; i < celestials.size(); i++)
+		if (celestials[i] != exclude)
+			atot += celestials[i]->Mass() / gpos->dist2 (celestials[i]->GPos());
+	for (i = 0; i < celestials.size(); i++) {
+		if (celestials[i] != exclude) {
+			a = celestials[i]->Mass() / gpos->dist2 (celestials[i]->GPos());
 			if (a > min_contrib*atot) {
 				if (gfd->ngrav < MAXGFIELDLIST)
 					gfd->gravidx[gfd->ngrav++] = i;
@@ -600,7 +518,7 @@ void PlanetarySystem::ScanGFieldSources (const Vector *gpos, const Body *exclude
 					// called very often
 					for (j = 0; j < MAXGFIELDLIST; j++) {
 						idx = gfd->gravidx[j];
-						a2 = grav[idx]->Mass() / gpos->dist2 (grav[idx]->GPos());
+						a2 = celestials[idx]->Mass() / gpos->dist2 (celestials[idx]->GPos());
 						if (a2 < amin) amin = a2, jmin = j;
 					}
 					if (amin < a) gfd->gravidx[jmin] = i; // replace
@@ -623,8 +541,8 @@ void PlanetarySystem::UpdateGFieldSources (const Vector *gpos, const Body *exclu
 	// First, check we can drop the weakest member of the current list
 	for (i = 0; i < gfd->ngrav; i++) {
 		idx = gfd->gravidx[i];
-		if (grav[idx] != exclude) {
-			Vector acci = SingleGacc (grav[idx]->GPos() - *gpos, grav[idx]);
+		if (celestials[idx] != exclude) {
+			Vector acci = SingleGacc (celestials[idx]->GPos() - *gpos, celestials[idx]);
 			acc += acci;
 			a = acci.length();
 			atot += a;
@@ -639,15 +557,15 @@ void PlanetarySystem::UpdateGFieldSources (const Vector *gpos, const Body *exclu
 	}
 
 	// Test next candidate for inclusion in the list
-	if (testnext && exclude != grav[idx = gfd->testidx]) {
-		Vector acci = SingleGacc (grav[idx]->GPos() - *gpos, grav[idx]);
+	if (testnext && exclude != celestials[idx = gfd->testidx]) {
+		Vector acci = SingleGacc (celestials[idx]->GPos() - *gpos, celestials[idx]);
 		a = acci.length();
 		if (a > min_contrib*atot) {
 			if (gfd->ngrav < MAXGFIELDLIST) gfd->gravidx[gfd->ngrav++] = idx;
 			else if (a > amin) gfd->gravidx[imin] = idx;
 		}
 	}
-	if (++gfd->testidx == ngrav) gfd->testidx = 0;
+	if (++gfd->testidx == celestials.size()) gfd->testidx = 0;
 }
 
 Vector PlanetarySystem::GaccAt (double t, const Vector &gpos, const Body *exclude) const
@@ -659,17 +577,17 @@ Vector PlanetarySystem::GaccAt (double t, const Vector &gpos, const Body *exclud
 	double d, dmin = 1e100;
 
 	// pass 1: sun and primary planets
-	for (i = 0; i < ngrav; i++) {
-		if (exclude == grav[i]) continue;
-		if (grav[i]->Primary() &&
-			grav[i]->Primary()->Type() == OBJTP_PLANET) continue;
-		if (grav[i]->Type() == OBJTP_PLANET) {
-			if (!grav[i]->PositionAtTime (t, &pos)) continue;
+	for (i = 0; i < celestials.size(); i++) {
+		if (exclude == celestials[i]) continue;
+		if (celestials[i]->Primary() &&
+			celestials[i]->Primary()->Type() == OBJTP_PLANET) continue;
+		if (celestials[i]->Type() == OBJTP_PLANET) {
+			if (!celestials[i]->PositionAtTime (t, &pos)) continue;
 		} else pos.Set(0,0,0); // sun assumed in origin
 		r.Set(pos - gpos);
 		d = r.length();
-		acc += r * (Ggrav * grav[i]->Mass() / (d*d*d));
-		if (d < dmin) dmin = d, closep = grav[i], closepos.Set(pos);
+		acc += r * (Ggrav * celestials[i]->Mass() / (d*d*d));
+		if (d < dmin) dmin = d, closep = celestials[i], closepos.Set(pos);
 	}
 	// pass 2: moons of closest planet
 	if (closep && closep->Type() == OBJTP_PLANET) {
@@ -689,11 +607,44 @@ Vector SingleGacc_perturbation (const Vector &rpos, const CelestialBody *body)
 {
 	// Calculate perturbation of gravitational acceleration due to nonspherical
 	// shape of the body.
-	// rpos: relative position of 'body' wrt. r (global frame)
+	// rpos: relative position of 'bodies' wrt. r (global frame)
 
 	Vector dg;
 
-	if (body->UseComplexGravity() && body->nJcoeff() > 0) {
+	if (body->UseComplexGravity() && body->usePines()) {
+		
+		//Rotate position vector into the planet's local frame
+		Matrix rot = body->GRot();
+		Vector lpos = -tmul(rot,rpos)/1000.0;
+
+		//Convert to right-handed
+		double temp_y;
+		temp_y = lpos.y;
+		lpos.y = lpos.z; 
+		lpos.z = temp_y;
+
+		unsigned int maxDegreeOrder = body->GetPinesCutoff();
+		//get aceleration vector from spherical harmonics
+		{
+			//Limit scope of the const cast. the internal state of body.PinesGravProp does need to change when this finction is called.
+			CelestialBody* unconstbody = const_cast<CelestialBody*>(body);
+			dg = unconstbody->pinesAccel(lpos, maxDegreeOrder, maxDegreeOrder);
+		}
+
+		//Convert back to Orbiter's lefthandedness
+		temp_y = dg.y;
+		dg.y = dg.z;
+		dg.z = temp_y;
+
+		//rotate back into global frame
+		dg = mul(rot, dg) * 1000.0;
+		
+		//Useful debug string. Make sure you only have one vessel in your scenerio if you us it...
+		//double radial = dg.length() * 100000.0 * dotp(rpos.unit(), dg.unit());
+		//sprintf(DBG_MSG, "<%lf %lf %lf> Magnitude: %lf mGal Radial: %lf Radialness: %lf", dg.x * 100000.0, dg.y * 100000.0, dg.z * 100000.0, dg.length()*100000.0, radial,  dotp(rpos.unit(), dg.unit()));
+		return dg;
+	}
+	else if (body->UseComplexGravity() && body->nJcoeff() > 0) {
 
 		const double eps = 1e-10; // perturbation limit
 		double d  = rpos.length();
@@ -759,13 +710,13 @@ Vector PlanetarySystem::Gacc (const Vector &gpos, const Body *exclude, const GFi
 	if (gfd) {
 		for (j = 0; j < gfd->ngrav; j++) {
 			i = gfd->gravidx[j];
-			if (exclude == grav[i]) continue;
-			acc += SingleGacc (grav[i]->s0->pos - gpos, grav[i]);
+			if (exclude == celestials[i]) continue;
+			acc += SingleGacc (celestials[i]->s0->pos - gpos, celestials[i]);
 		}
 	} else {
-		for (i = 0; i < ngrav; i++) {
-			if (exclude == grav[i]) continue;
-			acc += SingleGacc (grav[i]->s0->pos - gpos, grav[i]);
+		for (i = 0; i < celestials.size(); i++) {
+			if (exclude == celestials[i]) continue;
+			acc += SingleGacc (celestials[i]->s0->pos - gpos, celestials[i]);
 		}
 	}
 	return acc;
@@ -775,17 +726,17 @@ Vector PlanetarySystem::Gacc_intermediate (const Vector &gpos, double n, const B
 {
 	Vector acc;
 	DWORD i, j;
-
+	
 	if (gfd) { // use body's source list
 		for (j = 0; j < gfd->ngrav; j++) {
 			i = gfd->gravidx[j];
-			if (exclude == grav[i]) continue;
-			acc += SingleGacc (grav[i]->InterpolatePosition (n) - gpos, grav[i]);
+			if (exclude == celestials[i]) continue;
+			acc += SingleGacc (celestials[i]->InterpolatePosition (n) - gpos, celestials[i]);
 		}
 	} else { // use full gbody list
-		for (i = 0; i < ngrav; i++) {
-			if (exclude == grav[i]) continue;
-			acc += SingleGacc (grav[i]->InterpolatePosition (n) - gpos, grav[i]);
+		for (i = 0; i < celestials.size(); i++) {
+			if (exclude == celestials[i]) continue;
+			acc += SingleGacc (celestials[i]->InterpolatePosition (n) - gpos, celestials[i]);
 		}
 	}
 	return acc;
@@ -800,19 +751,19 @@ Vector PlanetarySystem::Gacc_intermediate_pert (const CelestialBody *cbody, cons
 	if (gfd) { // use body's source list
 		for (j = 0; j < gfd->ngrav; j++) {
 			i = gfd->gravidx[j];
-			if (exclude == grav[i]) continue;
-			if (cbody == grav[i])
-				acc += SingleGacc_perturbation (-relpos, grav[i]);
+			if (exclude == celestials[i]) continue;
+			if (cbody == celestials[i])
+				acc += SingleGacc_perturbation (-relpos, celestials[i]);
 			else
-				acc += SingleGacc (grav[i]->InterpolatePosition (n) - gpos, grav[i]);
+				acc += SingleGacc (celestials[i]->InterpolatePosition (n) - gpos, celestials[i]);
 		}
 	} else { // use full gbody list
-		for (i = 0; i < ngrav; i++) {
-			if (exclude == grav[i]) continue;
-			if (cbody == grav[i])
-				acc += SingleGacc_perturbation (-relpos, grav[i]);
+		for (i = 0; i < celestials.size(); i++) {
+			if (exclude == celestials[i]) continue;
+			if (cbody == celestials[i])
+				acc += SingleGacc_perturbation (-relpos, celestials[i]);
 			else
-				acc += SingleGacc (grav[i]->InterpolatePosition (n) - gpos, grav[i]);
+				acc += SingleGacc (celestials[i]->InterpolatePosition (n) - gpos, celestials[i]);
 		}
 	}
 	return acc;
@@ -825,16 +776,16 @@ Vector PlanetarySystem::GaccRel (const Vector &rpos, const CelestialBody *cbody,
 
 	Vector gpos (rpos + cbody->InterpolatePosition (n));
 
-	if (gfd) { // use body's source list
+	if (gfd) { // use bodies's source list
 		for (j = 0; j < gfd->ngrav; j++) {
 			i = gfd->gravidx[j];
-			if (exclude == grav[i]) continue;
-			acc += SingleGacc (grav[i]->InterpolatePosition (n) - gpos, grav[i]);
+			if (exclude == celestials[i]) continue;
+			acc += SingleGacc (celestials[i]->InterpolatePosition (n) - gpos, celestials[i]);
 		}
 	} else { // use full gbody list
-		for (i = 0; i < ngrav; i++) {
-			if (exclude == grav[i]) continue;
-			acc += SingleGacc (grav[i]->InterpolatePosition (n) - gpos, grav[i]);
+		for (i = 0; i < celestials.size(); i++) {
+			if (exclude == celestials[i]) continue;
+			acc += SingleGacc (celestials[i]->InterpolatePosition (n) - gpos, celestials[i]);
 		}
 	}
 	return acc;
@@ -852,12 +803,12 @@ CelestialBody *PlanetarySystem::GetDominantGravitySource (const Vector &gpos, do
 	double g, gtot = 0.0, gmax = 0.0;
 	CelestialBody *body = 0;
 
-	for (i = 0; i < ngrav; i++) {
-		Vector r(grav[i]->GPos() - gpos);
-		gtot += (g = grav[i]->Mass() / r.length2());
+	for (i = 0; i < celestials.size(); i++) {
+		Vector r(celestials[i]->GPos() - gpos);
+		gtot += (g = celestials[i]->Mass() / r.length2());
 		if (g > gmax) {
 			gmax = g;
-			body = grav[i];
+			body = celestials[i];
 		}
 	}
 	gfrac = (body ? gmax/gtot : 0.0);
@@ -870,10 +821,10 @@ double PlanetarySystem::GetGravityContribution (const Body *body, const Vector &
 	DWORD i;
 	double g, gtot = 0.0, gbody = 0.0, gmax = 0.0;
 
-	for (i = 0; i < ngrav; i++) {
-		Vector r(grav[i]->GPos() - gpos);
-		gtot += (g = grav[i]->Mass() / r.length2());
-		if (grav[i] == body) gbody = g;
+	for (i = 0; i < celestials.size(); i++) {
+		Vector r(celestials[i]->GPos() - gpos);
+		gtot += (g = celestials[i]->Mass() / r.length2());
+		if (celestials[i] == body) gbody = g;
 		if (g > gmax) gmax = g;
 	}
 	if (dominant) *dominant = (gmax == gbody);
@@ -892,50 +843,50 @@ Vector PlanetarySystem::GetMomentumFlux (const Vector &gpos) const
 void PlanetarySystem::Update (bool force)
 {
 	DWORD i;
-	for (i = 0; i < nbody; i++) body[i]->BeginStateUpdate ();
-	for (i = 0; i < nstar; i++) star[i]->RelTrueAndBaryState();
-	for (i = 0; i < nstar; i++) star[i]->AbsTrueState();
-	for (i = 0; i < ngrav; i++) grav[i]->Update (force);
-	for (i = 0; i < nvessel; i++) vessel[i]->UpdateBodyForces ();
-	for (i = 0; i < nsupervessel; i++) supervessel[i]->Update (force);
-	for (i = 0; i < nvessel; i++) vessel[i]->Update (force);
+	for (i = 0; i < bodies      .size(); i++) bodies      [i]->BeginStateUpdate ();
+	for (i = 0; i < stars       .size(); i++) stars       [i]->RelTrueAndBaryState();
+	for (i = 0; i < stars       .size(); i++) stars       [i]->AbsTrueState();
+	for (i = 0; i < celestials  .size(); i++) celestials  [i]->Update (force);
+	for (i = 0; i < vessels     .size(); i++) vessels     [i]->UpdateBodyForces ();
+	for (i = 0; i < supervessels.size(); i++) supervessels[i]->Update (force);
+	for (i = 0; i < vessels     .size(); i++) vessels     [i]->Update (force);
 }
 
 void PlanetarySystem::FinaliseUpdate ()
 {
 	DWORD i;
-	for (i = 0; i < nbody; i++) body[i]->EndStateUpdate ();
-	for (i = 0; i < nsupervessel; i++) supervessel[i]->PostUpdate ();
-	for (i = 0; i < nvessel; i++) vessel[i]->PostUpdate ();
+	for (i = 0; i < bodies.size(); i++) bodies[i]->EndStateUpdate ();
+	for (i = 0; i < supervessels.size(); i++) supervessels[i]->PostUpdate ();
+	for (i = 0; i < vessels.size(); i++) vessels[i]->PostUpdate ();
 }
 
-void PlanetarySystem::Timejump ()
+void PlanetarySystem::Timejump (const TimeJumpData& jump)
 {
 	DWORD i;
-	for (i = 0; i < nbody; i++) body[i]->BeginStateUpdate ();
-	for (i = 0; i < nstar; i++) star[i]->RelTrueAndBaryState();
-	for (i = 0; i < nstar; i++) star[i]->AbsTrueState();
-	for (i = 0; i < ngrav; i++) grav[i]->Update (true);
-	for (i = 0; i < nbody; i++) body[i]->EndStateUpdate ();
+	for (i = 0; i < bodies.size(); i++) bodies[i]->BeginStateUpdate ();
+	for (i = 0; i < stars.size(); i++) stars[i]->RelTrueAndBaryState();
+	for (i = 0; i < stars.size(); i++) stars[i]->AbsTrueState();
+	for (i = 0; i < celestials.size(); i++) celestials[i]->Update (true);
+	for (i = 0; i < bodies.size(); i++) bodies[i]->EndStateUpdate ();
 
-	for (i = 0; i < nvessel; i++)
-		vessel[i]->Timejump(g_pOrbiter->tjump.dt, g_pOrbiter->tjump.mode);
+	for (i = 0; i < vessels.size(); i++)
+		vessels[i]->Timejump(jump.dt, jump.mode);
 }
 
 void PlanetarySystem::InitDeviceObjects ()
 {
-	for (DWORD i = 0; i < nbody; i++)
-		body[i]->InitDeviceObjects();
+	for (DWORD i = 0; i < bodies.size(); i++)
+		bodies[i]->InitDeviceObjects();
 }
 
 void PlanetarySystem::DestroyDeviceObjects ()
 {
-	for (DWORD i = 0; i < nbody; i++)
-		body[i]->DestroyDeviceObjects();
+	for (DWORD i = 0; i < bodies.size(); i++)
+		bodies[i]->DestroyDeviceObjects();
 }
 
 void PlanetarySystem::BroadcastVessel (DWORD msg, void *data)
 {
-	for (DWORD i = 0; i < nvessel; i++)
-		vessel[i]->ProcessMessage (msg, data);
+	for (DWORD i = 0; i < vessels.size(); i++)
+		vessels[i]->ProcessMessage (msg, data);
 }

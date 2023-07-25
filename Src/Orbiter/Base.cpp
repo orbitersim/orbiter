@@ -183,7 +183,13 @@ Base::~Base ()
 {
 	if (npad) {	delete []lspec; lspec = NULL; }
 	if (nrwy) { delete []rwy; rwy = NULL; }
-	if (nobj) { delete []obj; obj = NULL; }
+	if (nobj) { 
+		for (int i = 0; i < nobj; i++) {
+			delete obj[i];
+		}
+		delete []obj;
+		obj = NULL;
+	}
 	if (nvor) { delete []vor; vor = NULL; }
 	//if (genmsh_os) delete genmsh_os;
 	//if (genmsh_us) delete genmsh_us;

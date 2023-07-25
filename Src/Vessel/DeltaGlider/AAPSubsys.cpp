@@ -23,6 +23,9 @@
 #include "InstrHsi.h"
 #include "meshres_p0.h"
 
+using std::min;
+using std::max;
+
 static const float texw = (float)PANEL2D_TEXW; // texture width
 static const float texh = (float)PANEL2D_TEXH; // texture height
 static const int xofs = 742;
@@ -194,8 +197,8 @@ bool AAP::ProcessMouse2D (int event, int mx, int my)
 				mag = (dt < 1 ? 2 : dt < 2 ? 1 : 0);
 				if (t-tp > 0.5-mag*0.2) {
 					tp = t;
-					step = max(1,min(1e4,pow(10,floor(log10 (max(tgt[active_block],1)))-mag)));
-					tgt[active_block] = max(0,floor(tgt[active_block]/step)*step + scanmode*step);
+					step = max(1.0, min(1e4,pow(10,floor(log10 (max(tgt[active_block],1.0)))-mag)));
+					tgt[active_block] = max(0.0,floor(tgt[active_block]/step)*step + scanmode*step);
 					if (active[active_block]) SetValue (active_block, tgt[active_block]);
 					return true;
 				}
@@ -274,7 +277,7 @@ void AAP::WriteScenario (FILEHANDLE scn)
 		sprintf (cbuf, "%s%d:%g", i ? " ":"", active[i], tgt[i]);
 		strcat (line, cbuf);
 	}
-	oapiWriteScenario_string (scn, "AAP", line);
+	oapiWriteScenario_string (scn, (char*)"AAP", line);
 }
 
 void AAP::SetState (const char *str)

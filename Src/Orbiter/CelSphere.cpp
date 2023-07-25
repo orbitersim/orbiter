@@ -1,6 +1,8 @@
 // Copyright (c) Martin Schweiger
 // Licensed under the MIT License
 
+#define OAPI_IMPLEMENTATION
+
 #include "CelSphere.h"
 #include "Scene.h"
 #include "Camera.h"
@@ -10,6 +12,9 @@
 #include "D3dmath.h"
 #include "OrbiterAPI.h"
 #include "Log.h"
+#include <algorithm>
+using std::min;
+using std::max;
 
 #define NSEG 64
 
@@ -39,7 +44,7 @@ OGCelestialSphere::OGCelestialSphere(OrbiterGraphics* gc, Scene* scene)
 	m_viewW = gc->GetViewW();
 	m_viewH = gc->GetViewH();
 	m_mjdPrecessionChecked = -1e10;
-	DWORD fontScale = max(m_viewH / 60, 14);
+	DWORD fontScale = max(m_viewH / 60, (DWORD)14);
 	m_cLabelFont = gc->clbkCreateFont(fontScale, true, "Arial", FONT_ITALIC);
 
 	char cpath[256];
@@ -553,7 +558,7 @@ void OGCelestialSphere::RenderStars(LPDIRECT3DDEVICE7 dev)
 	int ns = m_starCutoffIdx[bgidx];
 
 	for (i = j = 0; i < ns; i += D3DMAXNUMVERTICES, j++)
-		dev->DrawPrimitiveVB(D3DPT_POINTLIST, m_sVtx[j], 0, min(ns - i, D3DMAXNUMVERTICES), 0);
+		dev->DrawPrimitiveVB(D3DPT_POINTLIST, m_sVtx[j], 0, min(ns - i, (DWORD)D3DMAXNUMVERTICES), 0);
 
 }
 

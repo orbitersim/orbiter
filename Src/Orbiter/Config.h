@@ -425,26 +425,26 @@ public:
 	void DelActiveModule (const std::string& name);
 
 	inline void SetAmbientLevel (DWORD lvl)
-	{ AmbientColour = (CfgVisualPrm.AmbientLevel = min (lvl, 0xff)) * 0x01010101; }
+	{ AmbientColour = (CfgVisualPrm.AmbientLevel = std::min (lvl, (DWORD)0xff)) * 0x01010101; }
 
 	const void *GetParam (DWORD paramtype) const;
 	// return a specific parameter setting (paramtype defined in GraphicsAPI.h)
 
 	// Read items from master config
-	bool GetString (char *category, char *val);
-	bool GetReal (char *category, double &val);
-	bool GetInt (char *category, int &val);
-	bool GetSize (char* category, size_t& val);
-	bool GetBool (char *category, bool &val);
-	bool GetVector (char *category, Vector &val);
+	bool GetString (const char *category, char *val);
+	bool GetReal (const char *category, double &val);
+	bool GetInt (const char *category, int &val);
+	bool GetSize (const char* category, size_t& val);
+	bool GetBool (const char *category, bool &val);
+	bool GetVector (const char *category, Vector &val);
 
 private:
-	bool GetString (std::istream &is, char *category, char *val);
-	bool GetReal (std::istream &is, char *category, double &val);
-	bool GetInt (std::istream &is, char *category, int &val);
-	bool GetSize (std::istream& is, char* category, size_t& val);
-	bool GetBool (std::istream &is, char *category, bool &val);
-	bool GetVector (std::istream &is, char *category, Vector &val);
+	bool GetString (std::istream &is, const char *category, char *val);
+	bool GetReal (std::istream &is, const char *category, double &val);
+	bool GetInt (std::istream &is, const char *category, int &val);
+	bool GetSize (std::istream& is, const char* category, size_t& val);
+	bool GetBool (std::istream &is, const char *category, bool &val);
+	bool GetVector (std::istream &is, const char *category, Vector &val);
 
 	mutable char cfgpath[256];  // buffer for creating full path names
 	char mshpath[256];

@@ -18,6 +18,9 @@
 #include "meshres_vc.h"
 #include "dg_vc_anim.h"
 
+using std::min;
+using std::max;
+
 // ==============================================================
 // Aerodynamic control subsystem
 // ==============================================================
@@ -101,7 +104,7 @@ bool AerodynSelector::IncMode ()
 
 bool AerodynSelector::DecMode ()
 {
-	DWORD mode = min (DG()->GetADCtrlMode(),2);
+	DWORD mode = min (DG()->GetADCtrlMode(),(DWORD)2);
 	if (mode) {
 		DG()->SetADCtrlMode (mode-1);
 		return true;
@@ -172,7 +175,7 @@ bool AerodynSelectorDial::Redraw2D (SURFHANDLE surf)
 	static const float tx_dy = 43.0f;              // texture block height
 	static float tu[4] = {tx_x0/texw,(tx_x0+tx_dx)/texw,tx_x0/texw,(tx_x0+tx_dx)/texw};
 
-	float dtu = (float)(min(vessel->GetADCtrlMode(),2)*40.0)/texw;
+	float dtu = (float)(min(vessel->GetADCtrlMode(),(DWORD)2)*40.0)/texw;
 	for (int i = 0; i < 4; i++)
 		grp->Vtx[vtxofs+i].tu = tu[i]+dtu;
 	return false;
@@ -477,7 +480,7 @@ ElevatorTrim::ElevatorTrim (AerodynCtrlSubsystem *_subsys)
 void ElevatorTrim::clbkSaveState (FILEHANDLE scn)
 {
 	double trim = DG()->GetControlSurfaceLevel (AIRCTRL_ELEVATORTRIM);
-	if (trim) oapiWriteScenario_float (scn, "TRIM", trim);	
+	if (trim) oapiWriteScenario_float (scn, (char*)"TRIM", trim);
 }
 
 // --------------------------------------------------------------

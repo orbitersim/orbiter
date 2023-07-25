@@ -29,7 +29,10 @@
 #include "CloudMgr.h"
 #include "HazeMgr.h"
 #include "RingMgr.h"
+#include <algorithm>
 
+using std::min;
+using std::max;
 using namespace oapi;
 
 // ==============================================================
@@ -49,7 +52,7 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	max_centre_dist = 0.9*scene->GetCamera()->GetFarlimit();
 	maxdist = max (max_centre_dist, max_surf_dist + rad);
 	max_patchres = *(DWORD*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_SURFACEMAXLEVEL);
-	max_patchres = min (max_patchres, *(DWORD*)gc->GetConfigParam (CFGPRM_SURFACEMAXLEVEL));
+	max_patchres = min (max_patchres, (int)*(DWORD*)gc->GetConfigParam (CFGPRM_SURFACEMAXLEVEL));
 	int tilever = *(int*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_TILEENGINE);
 	if (tilever < 2) {
 		surfmgr = new SurfaceManager (gc, this);
@@ -109,7 +112,7 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 			}
 		} else { // v2 cloud engine
 			int maxlvl = *(int*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_CLOUDMAXLEVEL);
-			maxlvl = min (maxlvl, *(DWORD*)gc->GetConfigParam (CFGPRM_SURFACEMAXLEVEL));
+			maxlvl = min (maxlvl, (int)*(DWORD*)gc->GetConfigParam (CFGPRM_SURFACEMAXLEVEL));
 			cloudmgr2 = new TileManager2<CloudTile> (this, maxlvl, 32);
 		}
 	} else {
@@ -244,7 +247,7 @@ bool vPlanet::Update ()
 			// set microtexture intensity
 			double alt = cdist-rad;
 			double lvl = (clouddata->microalt1-alt)/(clouddata->microalt1-clouddata->microalt0);
-			clouddata->cloudmgr->SetMicrolevel (max (0, min (1, lvl)));
+			clouddata->cloudmgr->SetMicrolevel (max (0.0, min (1.0, lvl)));
 		}
 	}
 
@@ -744,12 +747,12 @@ bool vPlanet::ModLighting (DWORD &ambient)
 	double rscale = (size-cdist)/prm.atm_href + 1.0;    // effect altitude scale (1 on ground, 0 at reference alt)
 	double amb = prm.atm_amb0 * min (1.0, (sunelev+14.0*RAD)/(20.0*RAD)); // effect magnitude (dependent on sun elevation)
 	if (amb < 0.05) return false;
-	amb = max (0, amb-0.05);
+	amb = max (0.0, amb-0.05);
 
 	DWORD addamb = (DWORD)(amb*rscale*256.0);
 	DWORD newamb = *(DWORD*)gc->GetConfigParam (CFGPRM_AMBIENTLEVEL) + addamb;
 	ambient = 0;
 	for (int i = 0; i < 4; i++)
-		ambient |= min (255, newamb) << (i<<3);
+		ambient |= min ((DWORD)255, newamb) << (i<<3);
 	return true;
 }

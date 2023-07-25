@@ -24,6 +24,8 @@
 #include "VVessel.h"
 #include "VBase.h"
 #include "Particle.h"
+#include <algorithm>
+using std::min;
 
 using namespace oapi;
 

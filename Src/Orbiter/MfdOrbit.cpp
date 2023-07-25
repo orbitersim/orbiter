@@ -1,7 +1,6 @@
 // Copyright (c) Martin Schweiger
 // Licensed under the MIT License
 
-#include <dinput.h>
 #include "MfdOrbit.h"
 #include "Pane.h"
 #include "Celbody.h"
@@ -88,43 +87,43 @@ Instrument_Orbit::~Instrument_Orbit ()
 HELPCONTEXT *Instrument_Orbit::HelpTopic () const
 {
 	extern HELPCONTEXT DefHelpContext;
-	DefHelpContext.topic = "/mfd_orbit.htm";
+	DefHelpContext.topic = (char*)"/mfd_orbit.htm";
 	return &DefHelpContext;
 }
 
 bool Instrument_Orbit::KeyBuffered (DWORD key)
 {
 	switch (key) {
-	case DIK_A:  // auto reference
+	case OAPI_KEY_A:  // auto reference
 		SelectAutoRef ();
 		return true;
-	case DIK_D:  // toggle distance display mode
+	case OAPI_KEY_D:  // toggle distance display mode
 		dstmode = (dstmode == DIST_RAD ? DIST_ALT : DIST_RAD);
 		Refresh();
 		return true;
-	case DIK_F:  // reference frame
+	case OAPI_KEY_F:  // reference frame
 		frmmode = (frmmode == FRM_ECL ? FRM_EQU : FRM_ECL);
 		Refresh();
 		return true;
-	case DIK_H:  // copy reference to HUD
+	case OAPI_KEY_H:  // copy reference to HUD
 		CopyToHUD ();
 		return true;
-	case DIK_M:  // display mode
+	case OAPI_KEY_M:  // display mode
 		dispmode = (DisplayMode)((((int)dispmode)+1) % 3);
 		Refresh();
 		return true;
-	case DIK_N:  // deselect target
+	case OAPI_KEY_N:  // deselect target
 		UnselectTarget ();
 		return true;
-	case DIK_P:  // projection plane
+	case OAPI_KEY_P:  // projection plane
 		projmode = (ProjectionMode)((((int)projmode)+1) % 3);
 		if (projmode == PRJ_TGT && !tgt) projmode = PRJ_FRM;
 		Refresh();
 		return true;
-	case DIK_R:  // select reference
+	case OAPI_KEY_R:  // select reference
 		OpenSelect_CelBody ("Orbit MFD: Reference", ClbkEnter_Ref);
 		return true;
-	case DIK_T:  // select target
+	case OAPI_KEY_T:  // select target
 		OpenSelect_Tgt ("Orbit MFD: Target", ClbkEnter_Tgt, elref, 0);
 		return true;
 	}
@@ -133,7 +132,7 @@ bool Instrument_Orbit::KeyBuffered (DWORD key)
 
 bool Instrument_Orbit::ProcessButton (int bt, int event)
 {
-	static const DWORD btkey[9] = { DIK_R, DIK_A, DIK_T, DIK_N, DIK_M, DIK_F, DIK_P, DIK_D, DIK_H };
+	static const DWORD btkey[9] = { OAPI_KEY_R, OAPI_KEY_A, OAPI_KEY_T, OAPI_KEY_N, OAPI_KEY_M, OAPI_KEY_F, OAPI_KEY_P, OAPI_KEY_D, OAPI_KEY_H };
 	if (event & PANEL_MOUSE_LBDOWN) {
 		if (bt < 9) return KeyBuffered (btkey[bt]);
 	}
@@ -261,7 +260,7 @@ void Instrument_Orbit::DisplayOrbit (oapi::Sketchpad *skp, int which, oapi::IVEC
 
 void Instrument_Orbit::UpdateDraw (oapi::Sketchpad *skp)
 {
-	static char *projstr[3] = {"Ecliptic", "Ship", "Target"};
+	static const char *projstr[3] = {"Ecliptic", "Ship", "Target"};
 	Matrix rot1, rot2, irot;
 
 	bool bValidShpEl = (elref != 0);

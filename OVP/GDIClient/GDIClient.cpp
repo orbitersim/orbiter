@@ -356,9 +356,9 @@ void GDIPad::PolyPolyline (const IVECTOR2 *pt, const int *npt, const int nline)
 
 GDIFont::GDIFont (int height, bool prop, const char *face, FontStyle style, int orientation): oapi::Font (height, prop, face, style, orientation)
 {
-	char *def_fixedface = "Courier New";
-	char *def_sansface = "Arial";
-	char *def_serifface = "Times New Roman";
+	const char *def_fixedface = "Courier New";
+	const char *def_sansface = "Arial";
+	const char *def_serifface = "Times New Roman";
 
 	if (!_stricmp (face, "fixed")) {
 		face = def_fixedface;

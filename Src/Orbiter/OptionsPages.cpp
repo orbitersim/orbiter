@@ -16,6 +16,9 @@
 #include "resource.h"
 #include "Uxtheme.h"
 
+using std::min;
+using std::max;
+
 extern Orbiter* g_pOrbiter;
 extern PlanetarySystem* g_psys;
 extern Camera* g_camera;
@@ -456,7 +459,8 @@ void OptionsPage_Visual::UpdateControls(HWND hPage)
 	SendDlgItemMessage(hPage, IDC_OPT_VIS_ELEV, BM_SETCHECK,
 		Cfg()->CfgVisualPrm.ElevMode ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hPage, IDC_OPT_VIS_ELEVMODE, CB_SETCURSEL, Cfg()->CfgVisualPrm.ElevMode < 2 ? 0 : 1, 0);
-	SetWindowText(GetDlgItem(hPage, IDC_OPT_VIS_MAXLEVEL), _itoa(Cfg()->CfgVisualPrm.PlanetMaxLevel, cbuf, 10));
+	sprintf(cbuf, "%d", Cfg()->CfgVisualPrm.PlanetMaxLevel);
+	SetWindowText(GetDlgItem(hPage, IDC_OPT_VIS_MAXLEVEL), cbuf);
 	SendDlgItemMessage(hPage, IDC_OPT_VIS_VSHADOW, BM_SETCHECK,
 		Cfg()->CfgVisualPrm.bVesselShadows ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hPage, IDC_OPT_VIS_REENTRY, BM_SETCHECK,
@@ -469,7 +473,8 @@ void OptionsPage_Visual::UpdateControls(HWND hPage)
 		Cfg()->CfgVisualPrm.bSpecular ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hPage, IDC_OPT_VIS_LOCALLIGHT, BM_SETCHECK,
 		Cfg()->CfgVisualPrm.bLocalLight ? BST_CHECKED : BST_UNCHECKED, 0);
-	SetWindowText(GetDlgItem(hPage, IDC_OPT_VIS_AMBIENT), _itoa(Cfg()->CfgVisualPrm.AmbientLevel, cbuf, 10));
+	sprintf(cbuf, "%d", Cfg()->CfgVisualPrm.AmbientLevel);
+	SetWindowText(GetDlgItem(hPage, IDC_OPT_VIS_AMBIENT), cbuf);
 
 	VisualsChanged(hPage);
 }
@@ -496,7 +501,7 @@ void OptionsPage_Visual::UpdateConfig(HWND hPage)
 		0 : SendDlgItemMessage(hPage, IDC_OPT_VIS_ELEVMODE, CB_GETCURSEL, 0, 0) + 1);
 	GetWindowText(GetDlgItem(hPage, IDC_OPT_VIS_MAXLEVEL), cbuf, 127);
 	if (!sscanf(cbuf, "%lu", &i)) i = SURF_MAX_PATCHLEVEL2;
-	Cfg()->CfgVisualPrm.PlanetMaxLevel = max(1, min(SURF_MAX_PATCHLEVEL2, i));
+	Cfg()->CfgVisualPrm.PlanetMaxLevel = max((DWORD)1, min((DWORD)SURF_MAX_PATCHLEVEL2, i));
 	Cfg()->CfgVisualPrm.bVesselShadows = (SendDlgItemMessage(hPage, IDC_OPT_VIS_VSHADOW, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	Cfg()->CfgVisualPrm.bReentryFlames = (SendDlgItemMessage(hPage, IDC_OPT_VIS_REENTRY, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	Cfg()->CfgVisualPrm.bShadows = (SendDlgItemMessage(hPage, IDC_OPT_VIS_SHADOW, BM_GETCHECK, 0, 0) == BST_CHECKED);
@@ -1685,7 +1690,7 @@ BOOL OptionsPage_Planetarium::OnMarkerSelectionChanged(HWND hPage)
 			int sel = SendDlgItemMessage(hPage, IDC_OPT_PLN_MKRLIST, LB_GETSEL, i, 0);
 			list[i].active = (sel ? true : false);
 		}
-		std::ifstream fcfg(Cfg()->ConfigPath(g_psys->Name()));
+		std::ifstream fcfg(Cfg()->ConfigPath(g_psys->Name().c_str()));
 		g_psys->ScanLabelLists(fcfg);
 	}
 	return 0;

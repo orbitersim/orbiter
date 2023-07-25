@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include "D3D7Enum.h"
 #include "D3D7Util.h"
+#include <string>
 
 char D3Ddevicename[256];
 char g_buf[256];
@@ -122,10 +123,9 @@ static HRESULT WINAPI DeviceEnumCallback (TCHAR* strDesc, TCHAR* strName,
         for (int i=0; i < 20; i++) {  // 20-loop-limit is for a sanity check in case of a bug
             strcpy(tempBuf, cbuf);  // working copy
             if (dupeIDCount > 1) {
-                char idStr[4];
                 // this is the newest device name
                 strcat(cbuf, " #");
-                strcat(cbuf, _itoa(dupeIDCount, idStr, 10));
+                strcat(cbuf, std::to_string(dupeIDCount).c_str());
             }
             // check whether we have a duplicate of this name
             UINT j;  // we need this outside the for loop

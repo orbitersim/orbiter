@@ -14,6 +14,7 @@
 #include "Celbody.h"
 #include "Log.h"
 #include "Orbitersdk.h"
+#include "PinesGrav.h"
 
 using namespace std;
 
@@ -28,17 +29,20 @@ void InterpretEphemeris (double *data, int flg, Vector *pos, Vector *vel, Vector
 // class CelestialBody
 
 CelestialBody::CelestialBody (double _mass, double _size)
-: RigidBody (_mass, _size, Vector (1,1,1))
+: RigidBody (_mass, _size, Vector (1,1,1)), pinesgrav(NULL)
 {
 	DefaultParam();
 	el = new Elements; TRACENEW
 	ClearModule();
+	usePinesGravity = false;
 }
 
 CelestialBody::CelestialBody (char *fname)
-: RigidBody (fname)
+: RigidBody (fname), pinesgrav(this)
 {
 	char cbuf[256];
+	int gravcoeff = 0;
+	usePinesGravity = false;
 
 	DefaultParam ();
 	ClearModule ();
@@ -62,6 +66,44 @@ CelestialBody::CelestialBody (char *fname)
 	// precession parameters
 	GetItemReal (ifs, "PrecessionObliquity", eps_ref);
 	GetItemReal (ifs, "PrecessionLAN", lan_ref);
+
+	if (GetItemString(ifs, "GravModelPath", cbuf) && GetItemInt(ifs, "GravCoeffCutoff", gravcoeff)) {
+		char gravModelFileName[512];
+		sprintf(gravModelFileName, "GravityModels\\%s",cbuf);
+		int maxGravityTerms = 0;
+		int	actualLoadedTerms = 0;
+		int readResult = 0;
+		readResult = pinesgrav.readGravModel(gravModelFileName, gravcoeff, actualLoadedTerms, maxGravityTerms);
+		if (readResult == 0) {
+			char logbuff[512];
+			sprintf(logbuff, "GRAVITY MODEL: %s LOADED, Terms %d/%d", gravModelFileName, actualLoadedTerms, maxGravityTerms);
+			LOGOUT(logbuff);
+		}
+		else if (readResult == 1) {
+			char logbuff[512];
+			sprintf(logbuff, "GRAVITY MODEL ERROR: COEFFICIENT FILE %s NOT FOUND", gravModelFileName);
+			LOGOUT(logbuff);
+		}
+		else if (readResult == 2) {
+			char logbuff[512];
+			sprintf(logbuff, "GRAVITY MODEL ERROR: COULD NOT ALLOCATE SPACE FOR GRAVITY MODEL %s", gravModelFileName);
+			LOGOUT(logbuff);
+		}
+		else if (readResult == 3) {
+			char logbuff[512];
+			sprintf(logbuff, "GRAVITY MODEL ERROR: BAD HEADDER LINE FORMAT %s", gravModelFileName);
+			LOGOUT(logbuff);
+		}
+		else if (readResult == 4) {
+			char logbuff[512];
+			sprintf(logbuff, "GRAVITY MODEL ERROR: BAD COEFFICIENT LINE FORMAT %s", gravModelFileName);
+			LOGOUT(logbuff);
+		}
+
+		if (readResult == 0) {
+			usePinesGravity = true;
+		}
+	}
 
 	if (GetItemString (ifs, "JCoeff", cbuf)) {
 		char *str;
@@ -689,21 +731,19 @@ void CelestialBody::RegisterModule (char *dllname)
 		module = init_proc ((OBJHANDLE)this);
 
 	} else {         // check for old-style interface
-		
-		char funcname[256], *funcp;
-		strcpy (funcname, name); funcp = funcname + strlen(name);
+		string funcname;
 
-		strcpy (funcp, "_SetPrecision");
-		modIntf.oplanetSetPrecision = (OPLANET_SetPrecision)GetProcAddress (hMod, funcname);
+		funcname = name + "_SetPrecision";
+		modIntf.oplanetSetPrecision = (OPLANET_SetPrecision)GetProcAddress (hMod, funcname.c_str());
 
-		strcpy (funcp, "_Ephemeris");
-		modIntf.oplanetEphemeris = (OPLANET_Ephemeris)GetProcAddress (hMod, funcname);
+		funcname = name + "_Ephemeris";
+		modIntf.oplanetEphemeris = (OPLANET_Ephemeris)GetProcAddress (hMod, funcname.c_str());
 
-		strcpy (funcp, "_FastEphemeris");
-		modIntf.oplanetFastEphemeris = (OPLANET_FastEphemeris)GetProcAddress (hMod, funcname);
+		funcname = name + "_FastEphemeris";
+		modIntf.oplanetFastEphemeris = (OPLANET_FastEphemeris)GetProcAddress (hMod, funcname.c_str());
 
-		strcpy (funcp, "_AtmPrm");
-		modIntf.oplanetAtmPrm = (OPLANET_AtmPrm)GetProcAddress (hMod, funcname);
+		funcname = name + "_AtmPrm";
+		modIntf.oplanetAtmPrm = (OPLANET_AtmPrm)GetProcAddress (hMod, funcname.c_str());
 	}
 }
 
@@ -854,7 +894,7 @@ void CELBODY2::clbkInit (FILEHANDLE cfg)
 		oapiGetObjectName (hBody, name, 256);
 		strcat (name, "\\Atmosphere.cfg");
 		FILEHANDLE hFile = oapiOpenFile (name, FILE_IN, CONFIG);
-		if (oapiReadItem_string (hFile, "MODULE_ATM", fname) || oapiReadItem_string (cfg, "MODULE_ATM", fname)) {
+		if (oapiReadItem_string (hFile, (char*)"MODULE_ATM", fname) || oapiReadItem_string (cfg, (char*)"MODULE_ATM", fname)) {
 			if (_stricmp (fname, "[None]"))
 				LoadAtmosphereModule (fname);
 		}

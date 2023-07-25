@@ -9,6 +9,8 @@
 #include <process.h>
 #include <set>
 
+using std::min;
+using std::max;
 using namespace oapi;
 
 // ==============================================================
@@ -33,8 +35,8 @@ LuaConsole::LuaConsole (HINSTANCE hDLL): Module (hDLL)
 	SetParams (); // may not be necessary here
 
 	// Register a custom command for opening the console window
-	dwCmd = oapiRegisterCustomCmd ("Lua console window",
-		"Open a Lua script interpreter window.",
+	dwCmd = oapiRegisterCustomCmd ((char*)"Lua console window",
+		(char*)"Open a Lua script interpreter window.",
 		OpenDlgClbk, this);
 
 	// terminal history buffer
@@ -118,7 +120,7 @@ void LuaConsole::clbkSimulationEnd ()
 			interp->Terminate();
 			interp->EndExec(); // give the thread opportunity to close
 			if (WaitForSingleObject (hThread, 1000) != 0) {
-				oapiWriteLog ("LuaConsole: timeout while waiting for interpreter thread");
+				oapiWriteLog ((char*)"LuaConsole: timeout while waiting for interpreter thread");
 				TerminateThread (hThread, 0);
 			}
 			CloseHandle (hThread);
@@ -450,7 +452,7 @@ bool LuaConsole::ScanHistory (int step)
 			ninp = caret = 0;
 		} else {
 			strncpy (inp, line[ln].buf, 1024);
-			ninp = caret = min (strlen (line[ln].buf), 1024);
+			ninp = caret = min (strlen (line[ln].buf), (size_t)1024);
 		}
 	} else if (step > 0) {
 		inp[0] = '\0';

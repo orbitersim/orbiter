@@ -13,6 +13,9 @@
 #include "meshres_p0.h"
 #include "meshres_vc.h"
 
+using std::min;
+using std::max;
+
 // --------------------------------------------------------------
 // constructor
 

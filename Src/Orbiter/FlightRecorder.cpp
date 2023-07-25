@@ -20,6 +20,7 @@
 #include <io.h>
 #include <direct.h>
 #include <errno.h>
+#include <string>
 
 using namespace std;
 
@@ -96,7 +97,7 @@ void Vessel::FRecorder_Activate (bool active, const char *fname, bool append)
 		if (!append) FRecorder_Reset();
 		bFRrecord = true;
 		char cbuf[256];
-		sprintf (cbuf, "Flights\\%s\\%s.pos", fname, name);
+		sprintf (cbuf, "Flights/%s/%s.pos", fname, name.c_str());
 		if (FRfname) delete []FRfname;
 		FRfname = new char[strlen(cbuf)+1]; TRACENEW
 		strcpy (FRfname, cbuf);
@@ -315,8 +316,7 @@ void Vessel::FRecorder_SaveEvent (const char *event_type, const char *event)
 
 void Vessel::FRecorder_SaveEventInt (const char *event_type, int event)
 {
-	static char cbuf[24];
-	FRecorder_SaveEvent (event_type, _itoa (event, cbuf, 10));
+	FRecorder_SaveEvent(event_type, std::to_string(event).data());
 }
 
 void Vessel::FRecorder_SaveEventFloat (const char *event_type, double event)
@@ -362,7 +362,7 @@ bool Vessel::FRecorder_Read (const char *scname)
 
 	for (i = strlen(scname)-1; i > 0; i--)
 		if (scname[i-1] == '\\') break;
-	sprintf (fname, "Flights\\%s\\%s.pos", scname+i, name);
+	sprintf (fname, "Flights/%s/%s.pos", scname+i, name.c_str());
 
 	ifstream ifs (fname);
 	if (!ifs) {

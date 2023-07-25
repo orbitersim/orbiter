@@ -133,11 +133,11 @@ void Panel2D::SetActiveScale (double scale, bool force)
 		x0 = 0.5 * ((double)viewW - tgtW);
 	else {
 		x0 = refx - sr*(refx-x0);
-		x0 = max (min(0,x0), viewW-tgtW);
+		x0 = max (min(0.0,x0), viewW-tgtW);
 	}
 	y0 = refy - sr*(refy-y0);
 	if      (shiftflag & PANEL_ATTACH_BOTTOM) y0 = max (y0, viewH-tgtH);
-	else if (shiftflag & PANEL_ATTACH_TOP)    y0 = min (y0, 0);
+	else if (shiftflag & PANEL_ATTACH_TOP)    y0 = min (y0, 0.0);
 
 	if (panelscale == 1.0) { // pixel alignment 
 		x0 = floor(x0+0.5);
@@ -202,7 +202,7 @@ void Panel2D::Move (double dx, double dy)
 
 	if (dx && tgtW > viewW) { // horizontal panning only if panel wider than viewport
 		x0 += dx;
-		x0 = max (min (x0, 0), viewW-tgtW);
+		x0 = max (min (x0, 0.0), viewW-tgtW);
 		moved = true;
 	}
 	if (dy) {

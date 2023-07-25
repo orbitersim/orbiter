@@ -19,6 +19,9 @@
 #include "resource.h"
 #include <cstdio>
 
+using std::min;
+using std::max;
+
 // ==============================================================
 // Global variables
 // ==============================================================
@@ -60,8 +63,8 @@ INT_PTR CALLBACK MsgProc (HWND, UINT, WPARAM, LPARAM);
 DLLCLBK void InitModule (HINSTANCE hModule)
 {
 	g_hInst = hModule;
-	g_dwCmd = oapiRegisterCustomCmd ("Mesh debugger",
-		"Mark individual mesh groups in a vessel mesh",
+	g_dwCmd = oapiRegisterCustomCmd ((char*)"Mesh debugger",
+		(char*)"Mark individual mesh groups in a vessel mesh",
 		OpenDlgClbk, NULL);
 }
 

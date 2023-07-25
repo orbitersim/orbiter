@@ -47,7 +47,7 @@ InterpreterList::Environment::~Environment()
 			interp->EndExec(); // give the thread opportunity to close
 
 			if (WaitForSingleObject (hThread, 1000) != 0) {
-				oapiWriteLog("LuaInline: timeout while waiting for interpreter thread");
+				oapiWriteLog((char*)"LuaInline: timeout while waiting for interpreter thread");
 				TerminateThread (hThread, 0);
 			}
 			CloseHandle (hThread);

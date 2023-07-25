@@ -2188,7 +2188,7 @@ void Scene::RenderMainScene()
 			if (pLocalResults) {
 				pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
 				pSketch->SetBlendState(Sketchpad::BlendState::FILTER_POINT);
-				pSketch->StretchRectNative(pLocalResults, NULL, &_RECT(0, 0, viewW, 10));
+				pSketch->StretchRectNative(pLocalResults, NULL, ptr(_RECT(0, 0, viewW, 10)));
 				pSketch->SetBlendState(Sketchpad::BlendState::FILTER_LINEAR);
 				pSketch->EndDrawing();
 			}
@@ -2210,19 +2210,19 @@ void Scene::RenderMainScene()
 		D3DSURFACE_DESC desc;
 		if (pTab) {
 			pTab->GetLevelDesc(0, &desc);
-			pSketch->StretchRectNative(pTab, NULL, &_R(0, y - desc.Height, desc.Width, y));
+			pSketch->StretchRectNative(pTab, NULL, ptr(_R(0, y - desc.Height, desc.Width, y)));
 			y -= (desc.Height + 5);
 		}
 		pTab = vP->GetScatterTable(MIE_LAND);
 		if (pTab) {
 			pTab->GetLevelDesc(0, &desc);
-			pSketch->StretchRectNative(pTab, NULL, &_R(0, y - desc.Height, desc.Width, y));
+			pSketch->StretchRectNative(pTab, NULL, ptr(_R(0, y - desc.Height, desc.Width, y)));
 			y -= (desc.Height + 5);
 		}
 		pTab = vP->GetScatterTable(ATN_LAND);
 		if (pTab) {
 			pTab->GetLevelDesc(0, &desc);
-			pSketch->StretchRectNative(pTab, NULL, &_R(0, y - desc.Height, desc.Width, y));
+			pSketch->StretchRectNative(pTab, NULL, ptr(_R(0, y - desc.Height, desc.Width, y)));
 			y -= (desc.Height + 5);
 		}
 		for (int i=0;i<9;i++)
@@ -2338,7 +2338,7 @@ Scene::SUNVISPARAMS Scene::GetSunScreenVisualState()
 		DWORD matIndex = pick.pMesh->GetMeshGroupMaterialIdx(pick.group);
 		D3D9MatExt material;
 		pick.pMesh->GetMaterial(&material, matIndex);
-		D3DXCOLOR surfCol = material.Diffuse;
+		D3DXCOLOR surfCol(material.Diffuse.x, material.Diffuse.y, material.Diffuse.z, material.Diffuse.w);
 
 		result.visible = (surfCol.a != 1.0f);
 		if (result.visible)
@@ -2503,7 +2503,7 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bI
 
 	D3DXVECTOR3 lp = pos + ld * smap.dist;
 
-	D3DXMatrixLookAtRH(&smap.mView, &lp, &pos, &D3DXVECTOR3(0, 1, 0));
+	D3DXMatrixLookAtRH(&smap.mView, &lp, &pos, ptr(D3DXVECTOR3(0, 1, 0)));
 	D3DXMatrixMultiply(&smap.mViewProj, &smap.mView, &smap.mProj);
 
 	float lod = log2f(float(Config->ShadowMapSize) / (rsmax*1.5f));
@@ -2651,7 +2651,7 @@ bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc
 
 	D3DSURFACE_DESC desc;
 	pEnvDS->GetDesc(&desc);
-	DWORD width = min(512, desc.Width);
+	DWORD width = min((UINT)512, desc.Width);
 
 
 	if (!pBlrTemp[0]) {
@@ -2798,7 +2798,7 @@ bool Scene::IntegrateIrradiance(vVessel *vV, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRE
 	// Pre-Integrate Irradiance Cube
 	//
 	pIrradiance->Activate("PSPreInteg");
-	pIrradiance->SetFloat("fD", &D3DXVECTOR2(1.0f / float(desc.Width), 1.0f / float(desc.Height)), sizeof(D3DXVECTOR2));
+	pIrradiance->SetFloat("fD", ptr(D3DXVECTOR2(1.0f / float(desc.Width), 1.0f / float(desc.Height))), sizeof(D3DXVECTOR2));
 
 	for (DWORD i = 0; i < 6; i++)
 	{
@@ -2857,7 +2857,7 @@ bool Scene::IntegrateIrradiance(vVessel *vV, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRE
 	// Post Blur
 	//
 	pIrradiance->Activate("PSPostBlur");
-	pIrradiance->SetFloat("fD", &D3DXVECTOR2(1.0f / float(desc_out.Width), 1.0f / float(desc_out.Height)), sizeof(D3DXVECTOR2));
+	pIrradiance->SetFloat("fD", ptr(D3DXVECTOR2(1.0f / float(desc_out.Width), 1.0f / float(desc_out.Height))), sizeof(D3DXVECTOR2));
 	pIrradiance->SetOutputNative(0, pOuts);
 	pIrradiance->SetTextureNative("tSrc", pIrradTemp3, IPF_POINT | IPF_WRAP);
 
@@ -2967,7 +2967,7 @@ void Scene::RenderMesh(DEVMESHHANDLE hMesh, const oapi::FMATRIX4 *pWorld)
 
 	if (shd->pShadowMap) {
 		HR(D3D9Effect::FX->SetTexture(D3D9Effect::eShadowMap, shd->pShadowMap));
-		HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, &D3DXVECTOR4(sr, 1.0f / s, float(oapiRand()), 1.0f / shd->depth)));
+		HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, ptr(D3DXVECTOR4(sr, 1.0f / s, float(oapiRand()), 1.0f / shd->depth))));
 		HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, true));
 	}
 	else {
@@ -2997,7 +2997,7 @@ bool Scene::WorldToScreenSpace(const VECTOR3 &wpos, oapi::IVECTOR2 *pt, D3DXMATR
 	bool bClip = false;
 	if (homog.x < -clip || homog.x > clip || homog.y < -clip || homog.y > clip) bClip = true;
 
-	if (_hypot(homog.x, homog.y) < 1e-6) {
+	if (std::hypot(homog.x, homog.y) < 1e-6) {
 		pt->x = viewW / 2;
 		pt->y = viewH / 2;
 	}
@@ -3027,7 +3027,7 @@ bool Scene::WorldToScreenSpace2(const VECTOR3& wpos, oapi::FVECTOR2* pt, D3DXMAT
 	if (homog.w < 0.0f) bClip = true;
 	if (homog.x < -clip || homog.x > clip || homog.y < -clip || homog.y > clip) bClip = true;
 
-	if (_hypot(homog.x, homog.y) < 1e-6) {
+	if (std::hypot(homog.x, homog.y) < 1e-6) {
 		pt->x = viewW / 2;
 		pt->y = viewH / 2;
 	}
@@ -3268,7 +3268,7 @@ D3D9Pick Scene::PickScene(short xpos, short ypos)
 D3D9Pick Scene::PickMesh(DEVMESHHANDLE hMesh, const LPD3DXMATRIX pW, short xpos, short ypos)
 {
 	D3D9Mesh *pMesh = (D3D9Mesh *)hMesh;
-	return pMesh->Pick(pW, NULL, &GetPickingRay(xpos, ypos));
+	return pMesh->Pick(pW, NULL, ptr(GetPickingRay(xpos, ypos)));
 }
 
 // ===========================================================================================
@@ -3688,7 +3688,7 @@ void Scene::RenderGlares()
 
 // ===========================================================================================
 //
-bool Scene::IsVisibleInCamera(D3DXVECTOR3 *pCnt, float radius)
+bool Scene::IsVisibleInCamera(const D3DXVECTOR3 *pCnt, float radius)
 {
 	float z = Camera.z.x*pCnt->x + Camera.z.y*pCnt->y + Camera.z.z*pCnt->z;
 	if (z<(-radius)) return false;
@@ -3710,7 +3710,7 @@ bool Scene::CameraDirection2Viewport(const VECTOR3 &dir, int &x, int &y)
 	D3DXVECTOR3 idir = D3DXVECTOR3( -float(dir.x), -float(dir.y), -float(dir.z) );
 	D3DMAT_VectorMatrixMultiply(&homog, &idir, &Camera.mProjView);
 	if (homog.x >= -1.0f && homog.y <= 1.0f && homog.z >= 0.0) {
-		if (_hypot(homog.x, homog.y) < 1e-6) {
+		if (std::hypot(homog.x, homog.y) < 1e-6) {
 			x = viewW / 2, y = viewH / 2;
 		} else {
 			x = (int)(viewW*0.5f*(1.0f + homog.x));

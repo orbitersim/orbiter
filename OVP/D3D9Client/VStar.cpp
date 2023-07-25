@@ -57,7 +57,7 @@ bool vStar::Render(LPDIRECT3DDEVICE9 dev)
 	float size_hack; // make star look bigger at distance
 
 	VECTOR3 bdir (unit(cpos));
-	double hz = _hypot (bdir.x, bdir.z);
+	double hz = std::hypot (bdir.x, bdir.z);
 	// double phi = atan2 (bdir.z, bdir.x);
 	// FLOAT sphi = (FLOAT)sin(phi), cphi = (FLOAT)cos(phi);
 	// FLOAT tx = (FLOAT)cpos.x, ty = (FLOAT)cpos.y, tz = (FLOAT)cpos.z;

@@ -590,7 +590,7 @@ bool vVessel::IsInsideShadows()
 {
 	D3DXVECTOR3 bc;
 	const Scene::SHADOWMAPPARAM *shd = scn->GetSMapData();
-	D3DXVec3TransformCoord(&bc, &D3DXVECTOR3f4(BBox.bs), &mWorld);
+	D3DXVec3TransformCoord(&bc, ptr(D3DXVECTOR3f4(BBox.bs)), &mWorld);
 	bc = bc - shd->pos;
 	float x = D3DXVec3Dot(&bc, &(shd->ld));
 
@@ -606,7 +606,7 @@ bool vVessel::IntersectShadowVolume()
 {
 	D3DXVECTOR3 bc;
 	const Scene::SHADOWMAPPARAM *shd = scn->GetSMapData();
-	D3DXVec3TransformCoord(&bc, &D3DXVECTOR3f4(BBox.bs), &mWorld);
+	D3DXVec3TransformCoord(&bc, ptr(D3DXVECTOR3f4(BBox.bs)), &mWorld);
 	bc = bc - shd->pos;
 	float x = D3DXVec3Dot(&bc, &(shd->ld));
 	if (sqrt(D3DXVec3Dot(&bc, &bc) - x*x) > (shd->rad + BBox.bs.w)) return false;
@@ -620,7 +620,7 @@ bool vVessel::IntersectShadowTarget()
 {
 	D3DXVECTOR3 bc;
 	const Scene::SHADOWMAPPARAM *shd = scn->GetSMapData();
-	D3DXVec3TransformCoord(&bc, &D3DXVECTOR3f4(BBox.bs), &mWorld);
+	D3DXVec3TransformCoord(&bc, ptr(D3DXVECTOR3f4(BBox.bs)), &mWorld);
 	bc = bc - shd->pos;
 	if (D3DXVec3Length(&bc) < (shd->rad + BBox.bs.w)) return true;
 	return false;
@@ -633,7 +633,7 @@ void vVessel::GetMinMaxLightDist(float *mind, float *maxd)
 {
 	D3DXVECTOR3 bc;
 	const Scene::SHADOWMAPPARAM *shd = scn->GetSMapData();
-	D3DXVec3TransformCoord(&bc, &D3DXVECTOR3f4(BBox.bs), &mWorld);
+	D3DXVec3TransformCoord(&bc, ptr(D3DXVECTOR3f4(BBox.bs)), &mWorld);
 	bc -= shd->pos;
 	float x = D3DXVec3Dot(&bc, &(shd->ld));
 	*mind = min(*mind, x - shd->rad);
@@ -740,7 +740,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 
 	if (shd->pShadowMap && (scn->GetRenderPass() == RENDERPASS_MAINSCENE)) {
 		HR(D3D9Effect::FX->SetTexture(D3D9Effect::eShadowMap, shd->pShadowMap));
-		HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, &D3DXVECTOR4(sr, 1.0f / s, float(oapiRand()), 1.0f / shd->depth)));
+		HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, ptr(D3DXVECTOR4(sr, 1.0f / s, float(oapiRand()), 1.0f / shd->depth))));
 		HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, true));
 	}
 	else {
@@ -853,7 +853,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 			if (flags&DBG_FLAGS_SELVISONLY && this != DebugControls::GetVisual()) return true;
 			if (flags&DBG_FLAGS_BOXES && !internalpass) {
 				D3DXMATRIX id;
-				D3D9Effect::RenderBoundingBox(&mWorld, D3DXMatrixIdentity(&id), &BBox.min, &BBox.max, &D3DXVECTOR4(1, 0, 0, 0.75f));
+				D3D9Effect::RenderBoundingBox(&mWorld, D3DXMatrixIdentity(&id), &BBox.min, &BBox.max, ptr(D3DXVECTOR4(1, 0, 0, 0.75f)));
 			}
 
 			RenderLightCone(&mWorld);
@@ -912,54 +912,54 @@ void vVessel::RenderVectors (LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp)
 			if (bfvmode & BFV_DRAG) {
 				vessel->GetDragVector(vector);
 				if (length(vector) > threshold) {
-					RenderAxisVector(pSkp, &D3DXCOLOR(1,0,0,alpha), vector, lscale, scale, bLog);
+					RenderAxisVector(pSkp, ptr(D3DXCOLOR(1,0,0,alpha)), vector, lscale, scale, bLog);
 					sprintf_s(label, 64, "D = %sN", value_string(length(vector)));
-					RenderAxisLabel(pSkp, &D3DXCOLOR(1,0,0,alpha), vector, lscale, scale, label, bLog);
+					RenderAxisLabel(pSkp, ptr(D3DXCOLOR(1,0,0,alpha)), vector, lscale, scale, label, bLog);
 				}
 			}
 
 			if (bfvmode & BFV_WEIGHT) {
 				vessel->GetWeightVector(vector);
 				if (length(vector) > threshold) {
-					RenderAxisVector(pSkp, &D3DXCOLOR(1,1,0,alpha), vector, lscale, scale, bLog);
+					RenderAxisVector(pSkp, ptr(D3DXCOLOR(1,1,0,alpha)), vector, lscale, scale, bLog);
 					sprintf_s(label, 64, "G = %sN", value_string(length(vector)));
-					RenderAxisLabel(pSkp, &D3DXCOLOR(1,1,0,alpha), vector, lscale, scale, label, bLog);
+					RenderAxisLabel(pSkp, ptr(D3DXCOLOR(1,1,0,alpha)), vector, lscale, scale, label, bLog);
 				}
 			}
 
 			if (bfvmode & BFV_THRUST) {
 				vessel->GetThrustVector(vector);
 				if (length(vector) > threshold) {
-					RenderAxisVector(pSkp, &D3DXCOLOR(0,0,1,alpha), vector, lscale, scale, bLog);
+					RenderAxisVector(pSkp, ptr(D3DXCOLOR(0,0,1,alpha)), vector, lscale, scale, bLog);
 					sprintf_s(label, 64, "T = %sN", value_string(length(vector)));
-					RenderAxisLabel(pSkp, &D3DXCOLOR(0,0,1,alpha), vector, lscale, scale, label, bLog);
+					RenderAxisLabel(pSkp, ptr(D3DXCOLOR(0,0,1,alpha)), vector, lscale, scale, label, bLog);
 				}
 			}
 
 			if (bfvmode & BFV_LIFT) {
 				vessel->GetLiftVector(vector);
 				if (length(vector) > threshold) {
-					RenderAxisVector(pSkp, &D3DXCOLOR(0,1,0,alpha), vector, lscale, scale, bLog);
+					RenderAxisVector(pSkp, ptr(D3DXCOLOR(0,1,0,alpha)), vector, lscale, scale, bLog);
 					sprintf_s(label, 64, "L = %sN", value_string(length(vector)));
-					RenderAxisLabel(pSkp, &D3DXCOLOR(0,1,0,alpha), vector, lscale, scale, label, bLog);
+					RenderAxisLabel(pSkp, ptr(D3DXCOLOR(0,1,0,alpha)), vector, lscale, scale, label, bLog);
 				}
 			}
 
 			if (bfvmode & BFV_TOTAL) {
 				vessel->GetForceVector(vector);
 				if (length(vector) > threshold) {
-					RenderAxisVector(pSkp, &D3DXCOLOR(1,1,1,alpha), vector, lscale, scale, bLog);
+					RenderAxisVector(pSkp, ptr(D3DXCOLOR(1,1,1,alpha)), vector, lscale, scale, bLog);
 					sprintf_s(label, 64, "F = %sN", value_string(length(vector)));
-					RenderAxisLabel(pSkp, &D3DXCOLOR(1,1,1,alpha), vector, lscale, scale, label, bLog);
+					RenderAxisLabel(pSkp, ptr(D3DXCOLOR(1,1,1,alpha)), vector, lscale, scale, label, bLog);
 				}
 			}
 
 			if (bfvmode & BFV_TORQUE) {
 				vessel->GetTorqueVector(vector);
 				if (length(vector) > threshold) {
-					RenderAxisVector(pSkp, &D3DXCOLOR(1,0,1,alpha), vector, lscale, scale, bLog);
+					RenderAxisVector(pSkp, ptr(D3DXCOLOR(1,0,1,alpha)), vector, lscale, scale, bLog);
 					sprintf_s(label, 64, "M = %sNm", value_string(length(vector)));
-					RenderAxisLabel(pSkp, &D3DXCOLOR(1,0,1,alpha), vector, lscale, scale, label, bLog);
+					RenderAxisLabel(pSkp, ptr(D3DXCOLOR(1,0,1,alpha)), vector, lscale, scale, label, bLog);
 				}
 			}
 		}
@@ -1048,7 +1048,7 @@ void vVessel::RenderGrapplePoints (LPDIRECT3DDEVICE9 dev)
 	{
 		hAtt = vessel->GetAttachmentHandle(true, i);
 		vessel->GetAttachmentParams(hAtt, pos, dir, rot);
-		D3D9Effect::RenderArrow(hVessel, &pos, &dir, &rot, size, &D3DXCOLOR(1,0,0,alpha));
+		D3D9Effect::RenderArrow(hVessel, &pos, &dir, &rot, size, ptr(D3DXCOLOR(1,0,0,alpha)));
 	}
 
 	// attachment points to children
@@ -1056,7 +1056,7 @@ void vVessel::RenderGrapplePoints (LPDIRECT3DDEVICE9 dev)
 	{
 		hAtt = vessel->GetAttachmentHandle(false, i);
 		vessel->GetAttachmentParams(hAtt, pos, dir, rot);
-		D3D9Effect::RenderArrow(hVessel, &pos, &dir, &rot, size, &D3DXCOLOR(0,0.5,1,alpha));
+		D3D9Effect::RenderArrow(hVessel, &pos, &dir, &rot, size, ptr(D3DXCOLOR(0,0.5,1,alpha)));
 	}
 }
 
@@ -1741,7 +1741,7 @@ void vVessel::RenderReentry(LPDIRECT3DDEVICE9 dev)
 
 	float lim  = 100000000.0;
 	float www  = float(p*v*v*v);
-	float ints = max(0,(www-lim)) / (5.0f*lim);
+	float ints = max(0.0f,(www-lim)) / (5.0f*lim);
 
 	if (ints>1.0f) ints = 1.0f;
 	if (ints<0.01f) return;
@@ -1922,8 +1922,8 @@ int vVessel::GetMatrixTransform(gcCore::MatrixId func, DWORD mi, DWORD gi, FMATR
 	if (pMesh == NULL) return -2;
 	if (gi >= pMesh->GetGroupCount()) return -3;
 
-	if (func == gcCore::MatrixId::MESH)	memcpy_s(pMat, sizeof(FMATRIX4), &(pMesh->GetTransform(-1, false)), sizeof(D3DXMATRIX));
-	if (func == gcCore::MatrixId::GROUP) memcpy_s(pMat, sizeof(FMATRIX4), &(pMesh->GetTransform(gi, false)), sizeof(D3DXMATRIX));
+	if (func == gcCore::MatrixId::MESH)	memcpy_s(pMat, sizeof(FMATRIX4), ptr(pMesh->GetTransform(-1, false)), sizeof(D3DXMATRIX));
+	if (func == gcCore::MatrixId::GROUP) memcpy_s(pMat, sizeof(FMATRIX4), ptr(pMesh->GetTransform(gi, false)), sizeof(D3DXMATRIX));
 
 	if (func == gcCore::MatrixId::OFFSET) {
 		if (meshlist[mi].trans) memcpy_s(pMat, sizeof(FMATRIX4), meshlist[mi].trans, sizeof(D3DXMATRIX));

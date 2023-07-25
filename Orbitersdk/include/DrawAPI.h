@@ -226,12 +226,12 @@ namespace oapi {
 #endif
 		float MaxRGB() const
 		{
-			return max(max(r, g), b);
+			return (std::max)(r, (std::max)(g, b));
 		}
 
 		float MinRGB() const
 		{
-			return min(min(r, g), b);
+			return (std::min)(r, (std::min)(g, b));
 		}
 
 		float sql() const
@@ -359,10 +359,10 @@ namespace oapi {
 	{
 		DWORD dword_abgr() const
 		{
-			DWORD dr = DWORD(max(0, r) * 255.0f + 0.5f);
-			DWORD dg = DWORD(max(0, g) * 255.0f + 0.5f);
-			DWORD db = DWORD(max(0, b) * 255.0f + 0.5f);
-			DWORD da = DWORD(max(0, a) * 255.0f + 0.5f);
+			DWORD dr = DWORD((std::max)(0.0f, r) * 255.0f + 0.5f);
+			DWORD dg = DWORD((std::max)(0.0f, g) * 255.0f + 0.5f);
+			DWORD db = DWORD((std::max)(0.0f, b) * 255.0f + 0.5f);
+			DWORD da = DWORD((std::max)(0.0f, a) * 255.0f + 0.5f);
 			if (dr > 0xFF) dr = 0xFF;
 			if (dg > 0xFF) dg = 0xFF;
 			if (db > 0xFF) db = 0xFF;
@@ -372,10 +372,10 @@ namespace oapi {
 
 		DWORD dword_argb() const
 		{
-			DWORD dr = DWORD(max(0, r) * 255.0f + 0.5f);
-			DWORD dg = DWORD(max(0, g) * 255.0f + 0.5f);
-			DWORD db = DWORD(max(0, b) * 255.0f + 0.5f);
-			DWORD da = DWORD(max(0, a) * 255.0f + 0.5f);
+			DWORD dr = DWORD((std::max)(0.0f, r) * 255.0f + 0.5f);
+			DWORD dg = DWORD((std::max)(0.0f, g) * 255.0f + 0.5f);
+			DWORD db = DWORD((std::max)(0.0f, b) * 255.0f + 0.5f);
+			DWORD da = DWORD((std::max)(0.0f, a) * 255.0f + 0.5f);
 			if (dr > 0xFF) dr = 0xFF;
 			if (dg > 0xFF) dg = 0xFF;
 			if (db > 0xFF) db = 0xFF;
@@ -391,7 +391,7 @@ namespace oapi {
 
 		float MaxRGB() const
 		{
-			return max(max(r, g), b);
+			return (std::max)(r, (std::max)(g, b));
 		}
 
 		FVECTOR4()
@@ -765,7 +765,11 @@ namespace oapi {
 
 	inline float saturate(float x)
 	{
-		return min(1, max(0, x));
+		//sadly std::clamp produces garbage assembly on both gcc and MSVC
+		//this version makes MSVC produce good code
+		x = (x < 0.0f) ? 0.0f : x;
+		x = (x > 1.0f) ? 1.0f : x;
+		return x;
 	}
 
 	inline FVECTOR3 saturate(const FVECTOR3& v)

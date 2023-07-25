@@ -18,6 +18,10 @@
 #include "tilelabel.h"
 #include "Texture.h"
 #include "Camera.h"
+#include <algorithm>
+
+using std::min;
+using std::max;
 
 // =======================================================================
 

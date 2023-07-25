@@ -417,7 +417,7 @@ bool Camera::Direction2Viewport(const Vector &dir, int &x, int &y)
 	D3DVECTOR homog;
 	D3DMath_VectorMatrixMultiply (homog, D3DMath_Vector(dir.x, dir.y, dir.z), *D3D_ProjViewMatrix());
 	if (homog.x >= -1.0f && homog.y <= 1.0f && homog.z <= 1.0f) {
-		if (_hypot(homog.x, homog.y) < 1e-6) {
+		if (std::hypot(homog.x, homog.y) < 1e-6) {
 			x = (int)w05, y = (int)h05;
 		} else {
 			x = (int)(w05*(1.0f+homog.x));
@@ -737,7 +737,7 @@ double Camera::GroundElevation (const Planet *ref, double lng, double lat, doubl
 	double elev = 0.0;
 	ElevationManager *emgr = ref->ElevMgr();
 	if (emgr) {
-		int reslvl = (int)(32.0-log(max(go.alt,100))*LOG2);
+		int reslvl = (int)(32.0-log(max(go.alt,100.0))*LOG2);
 		elev = emgr->Elevation (lat, lng, reslvl, &etile);
 	}
 	return elev;
@@ -832,7 +832,7 @@ void Camera::GroundObserverShift (double dx, double dz, double dh)
 	Vector dsz (grot.m13, grot.m23, grot.m33); // dz: go forward/backward w.r.t. camera view direction
 	Vector dsx (grot.m11, grot.m21, grot.m31); // dx: go sideways w.r.t. camera view direction
 	dirref->GlobalToEquatorial (gpos + dsz*dz + dsx*dx, go.lng, go.lat, r);
-	double new_alt = max (1, go.alt+dh);
+	double new_alt = max (1.0, go.alt+dh);
 	go.alt0 += new_alt-go.alt;
 	go.alt = new_alt;
 	double clng = cos(go.lng), slng = sin(go.lng);
@@ -1254,7 +1254,7 @@ void Camera::Update ()
 		Vector cp(planet_proxy->GPos()-gpos);
 		double alt = cp.length()-planet_proxy->Size();
 		double az = acos (dotp (gd, cp.unit()));
-		double a = atan (tan_ap*_hypot(w05,h05)/h05);
+		double a = atan (tan_ap*std::hypot(w05,h05)/h05);
 		double tht = az-a;
 		if (tht < Pi05)
 			np = min (np, alt*cos(a)/cos(tht));
@@ -1698,7 +1698,7 @@ void CameraMode_Track::Init (char *str)
 
 void CameraMode_Track::Store (char *str)
 {
-	static char *tmstr[6] = {"CURRENT","RELATIVE", "ABSDIR", "GLOBAL", "TARGETTOREF", "TARGETFROMREF"};
+	static const char *tmstr[6] = {"CURRENT","RELATIVE", "ABSDIR", "GLOBAL", "TARGETTOREF", "TARGETFROMREF"};
 	sprintf (str, "Track:%s%:%0.2f:%s %0.3f %0.3f %0.3f", 
 		target ? ((Body*)target)->Name() : "-", fov,
 		tmstr[tmode], reldist, phi, theta);

@@ -16,6 +16,9 @@
 #include "Texture.h"
 #include "Camera.h"
 #include "D3D7Config.h"
+#include <algorithm>
+
+using std::max;
 
 // =======================================================================
 // Externals

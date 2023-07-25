@@ -19,6 +19,7 @@
 #include "resource.h"
 #include "resource_video.h"
 #include <stdio.h>
+#include <string>
 
 using namespace oapi;
 
@@ -134,7 +135,6 @@ void VideoTab::Initialise (D3D7Enum_DeviceInfo *dev)
 	GraphicsClient::VIDEODATA *data = gclient->GetVideoData();
 	
 	D3D7Enum_DeviceInfo *devlist;
-	char cbuf[20];
 	DWORD i, ndev, idx;
 	D3D7Enum_GetDevices (&devlist, &ndev);
 
@@ -161,8 +161,8 @@ void VideoTab::Initialise (D3D7Enum_DeviceInfo *dev)
 	SendDlgItemMessage (hTab, IDC_VID_VSYNC, BM_SETCHECK, data->novsync ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage (hTab, IDC_VID_PAGEFLIP, BM_SETCHECK, data->pageflip ? BST_UNCHECKED : BST_CHECKED, 0);
 
-	SetWindowText (GetDlgItem (hTab, IDC_VID_WIDTH), _itoa (data->winw, cbuf, 10));
-	SetWindowText (GetDlgItem (hTab, IDC_VID_HEIGHT), _itoa (data->winh, cbuf, 10));
+	SetWindowText (GetDlgItem (hTab, IDC_VID_WIDTH), std::to_string(data->winw).c_str());
+	SetWindowText (GetDlgItem (hTab, IDC_VID_HEIGHT), std::to_string(data->winh).c_str());
 
 	if (data->winw == (4*data->winh)/3 || data->winh == (3*data->winw)/4)
 		aspect_idx = 1;
@@ -279,9 +279,8 @@ void VideoTab::SelectMode (D3D7Enum_DeviceInfo *dev, DWORD idx)
 	dev->ddsdFullscreenMode = dev->pddsdModes[dev->dwCurrentMode];
 	// if a bpp change was required, notify the bpp control
 	if (bpp != usebpp) {
-		char cbuf[20];
 		SendDlgItemMessage (hTab, IDC_VID_BPP, CB_SELECTSTRING, -1,
-			(LPARAM)_itoa (usebpp, cbuf, 10));
+			(LPARAM)std::to_string(usebpp).c_str());
 	}
 }
 
@@ -311,9 +310,8 @@ void VideoTab::SelectBPP (D3D7Enum_DeviceInfo *dev, DWORD idx)
 	// If we get here, the selected screen resolution isn't supported
 	// at this bit depth (shouldn't happen)
 	bpp = dev->pddsdModes[dev->dwCurrentMode].ddpfPixelFormat.dwRGBBitCount;
-	char cbuf[20];
 	SendDlgItemMessage (hTab, IDC_VID_BPP, CB_SELECTSTRING, -1,
-		(LPARAM)_itoa (bpp, cbuf, 10));
+		(LPARAM)std::to_string(bpp).c_str());
 
 	// If we get here, then we've screwed up big time
 	// and leave quietly
@@ -342,7 +340,7 @@ void VideoTab::SelectWidth ()
 		GetWindowText (GetDlgItem (hTab, IDC_VID_HEIGHT), cbuf, 127); h = atoi(cbuf);
 		if (w != (wfac*h)/hfac) {
 			h = (hfac*w)/wfac;
-			SetWindowText (GetDlgItem (hTab, IDC_VID_HEIGHT), itoa (h, cbuf, 10));
+			SetWindowText (GetDlgItem (hTab, IDC_VID_HEIGHT), std::to_string(h).c_str());
 		}
 	}
 }
@@ -359,7 +357,7 @@ void VideoTab::SelectHeight ()
 		GetWindowText (GetDlgItem (hTab, IDC_VID_HEIGHT), cbuf, 127); h = atoi(cbuf);
 		if (h != (hfac*w)/wfac) {
 			w = (wfac*h)/hfac;
-			SetWindowText (GetDlgItem (hTab, IDC_VID_WIDTH), itoa (w, cbuf, 10));
+			SetWindowText (GetDlgItem (hTab, IDC_VID_WIDTH), std::to_string(w).c_str());
 		}
 	}
 }

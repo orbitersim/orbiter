@@ -13,8 +13,11 @@
 
 #include "D3D7Config.h"
 #include "orbitersdk.h"
+#include <algorithm>
+using std::min;
+using std::max;
 
-static char *cfgfile = "D3D7Client.cfg";
+static const char *cfgfile = "D3D7Client.cfg";
 
 // ==============================================================
 // default values
@@ -56,17 +59,17 @@ bool D3D7Config::ReadParams ()
 
 	FILEHANDLE hFile = oapiOpenFile (cfgfile, FILE_IN, ROOT);
 	if (!hFile) return false;
-	if (oapiReadItem_int (hFile, "PlanetPreloadMode", i))
+	if (oapiReadItem_int (hFile, (char*)"PlanetPreloadMode", i))
 		PlanetPreloadMode = max (0, min (1, i));
-	if (oapiReadItem_int (hFile, "PlanetTexLoadFreq", i))
+	if (oapiReadItem_int (hFile, (char*)"PlanetTexLoadFreq", i))
 		PlanetLoadFrequency = max (1, min (1000, i));
-	if (oapiReadItem_int (hFile, "PlanetMipmapMode", i))
+	if (oapiReadItem_int (hFile, (char*)"PlanetMipmapMode", i))
 		PlanetMipmapMode = max (0, min (2, i));
-	if (oapiReadItem_int (hFile, "PlanetAnisoMode", i))
+	if (oapiReadItem_int (hFile, (char*)"PlanetAnisoMode", i))
 		PlanetAnisoMode = max (1, min (16, i));
-	if (oapiReadItem_int (hFile, "PlanetTileLoadFlags", i))
+	if (oapiReadItem_int (hFile, (char*)"PlanetTileLoadFlags", i))
 		PlanetTileLoadFlags = max(1, min (3, i));
-	if (oapiReadItem_float (hFile, "PlanetMipmapBias", d))
+	if (oapiReadItem_float (hFile, (char*)"PlanetMipmapBias", d))
 		PlanetMipmapBias = max (-1.0, min (1.0, d));
 	oapiCloseFile (hFile, FILE_IN);
 	return true;
@@ -75,11 +78,11 @@ bool D3D7Config::ReadParams ()
 void D3D7Config::WriteParams ()
 {
 	FILEHANDLE hFile = oapiOpenFile (cfgfile, FILE_OUT, ROOT);
-	oapiWriteItem_int (hFile, "PlanetPreloadMode", PlanetPreloadMode);
-	oapiWriteItem_int (hFile, "PlanetTexLoadFreq", PlanetLoadFrequency);
-	oapiWriteItem_int (hFile, "PlanetAnisoMode", PlanetAnisoMode);
-	oapiWriteItem_int (hFile, "PlanetMipmapMode", PlanetMipmapMode);
-	oapiWriteItem_int (hFile, "PlanetTileLoadFlags", PlanetTileLoadFlags);
-	oapiWriteItem_float (hFile, "PlanetMipmapBias", PlanetMipmapBias);
+	oapiWriteItem_int (hFile, (char*)"PlanetPreloadMode", PlanetPreloadMode);
+	oapiWriteItem_int (hFile, (char*)"PlanetTexLoadFreq", PlanetLoadFrequency);
+	oapiWriteItem_int (hFile, (char*)"PlanetAnisoMode", PlanetAnisoMode);
+	oapiWriteItem_int (hFile, (char*)"PlanetMipmapMode", PlanetMipmapMode);
+	oapiWriteItem_int (hFile, (char*)"PlanetTileLoadFlags", PlanetTileLoadFlags);
+	oapiWriteItem_float (hFile, (char*)"PlanetMipmapBias", PlanetMipmapBias);
 	oapiCloseFile (hFile, FILE_OUT);
 }

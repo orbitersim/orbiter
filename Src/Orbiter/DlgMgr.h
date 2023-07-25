@@ -7,10 +7,12 @@
 #define STRICT 1
 #include <windows.h>
 #include <dx7\ddraw.h>
-#include "DialogWin.h"
 
-class Orbiter;
+#include "DialogWin.h"
+#include "Orbiter.h"
+
 class oapi::GraphicsClient;
+extern Orbiter *g_pOrbiter;
 
 struct DIALOGENTRY {
 	DialogWin *dlg;

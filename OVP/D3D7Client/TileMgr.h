@@ -59,6 +59,8 @@ typedef struct {
 class D3D7Config;
 class vPlanet;
 
+void ApplyPatchTextureCoordinates (VBMESH &mesh, LPDIRECT3DVERTEXBUFFER7 vtx, const TEXCRDRANGE &range);
+
 class TileManager {
 	friend class TileBuffer;
 	friend class CSphereManager;
@@ -192,8 +194,6 @@ protected:
 		double objsize;              // planet radius
 		bool bfog;                   // distance fog flag
 	} RenderParam;
-
-	friend void ApplyPatchTextureCoordinates (VBMESH &mesh, LPDIRECT3DVERTEXBUFFER7 vtx, const TEXCRDRANGE &range);
 };
 
 

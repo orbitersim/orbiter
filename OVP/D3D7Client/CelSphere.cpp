@@ -19,6 +19,8 @@
 #include "Scene.h"
 #include "Camera.h"
 #include "Texture.h"
+#include <algorithm>
+using std::min;
 
 #define NSEG 64 // number of segments in celestial grid lines
 
@@ -507,7 +509,7 @@ void D3D7CelestialSphere::RenderStars (LPDIRECT3DDEVICE7 dev)
 	int ns = m_starCutoffIdx[bgidx];
 
 	for (i = j = 0; i < ns; i += D3DMAXNUMVERTICES, j++)
-		dev->DrawPrimitiveVB (D3DPT_POINTLIST, m_sVtx[j], 0, min (ns-i, D3DMAXNUMVERTICES), 0);
+		dev->DrawPrimitiveVB (D3DPT_POINTLIST, m_sVtx[j], 0, min (ns-i, (DWORD)D3DMAXNUMVERTICES), 0);
 }
 
 // ==============================================================

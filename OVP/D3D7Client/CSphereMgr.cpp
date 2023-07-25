@@ -18,7 +18,8 @@
 #include "Camera.h"
 #include "Texture.h"
 #include "D3D7Config.h"
-
+#include <algorithm>
+using std::min;
 using namespace oapi;
 
 // =======================================================================
@@ -81,7 +82,7 @@ CSphereManager::CSphereManager (const D3D7Client *gclient, const Scene *scene)
 	intensity = (float)tmp;
 
 	maxlvl = 8; // g_pOrbiter->Cfg()->CSphereMaxLevel;
-	maxbaselvl = min (8, maxlvl);
+	maxbaselvl = min ((DWORD)8, maxlvl);
 	int maxidx = patchidx[maxbaselvl];
 	bPreloadTile = (cfg->PlanetPreloadMode != 0);
 	nhitex = nhispec = 0;

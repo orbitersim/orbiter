@@ -39,7 +39,7 @@ int oapiGetModuleVersion ()
 	static int v = 0;
 	if (!v) {
 		OAPIFUNC int Date2Int (char *date);
-		v = Date2Int (__DATE__);
+		v = Date2Int ((char*)__DATE__);
 	}
 	return v;
 }

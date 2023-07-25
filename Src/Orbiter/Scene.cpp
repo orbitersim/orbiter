@@ -22,6 +22,8 @@
 #include "Log.h"
 #include "D3dmath.h"
 #include "resource.h"
+#include <algorithm>
+using std::min;
 
 #define NSEG 64
 
@@ -130,7 +132,7 @@ Scene::Scene (OrbiterGraphics *og)
 	strcpy (cbuf, g_pOrbiter->Cfg()->CfgDirPrm.TextureDir);
 	strcat (cbuf, "\\exhaust.dds");
 
-	static char *gtex_name[4] = {"Exhaust", "Horizon", "Reentry", "Contrail1"};
+	static const char *gtex_name[4] = {"Exhaust", "Horizon", "Reentry", "Contrail1"};
 	for (i = 0; i < 4; i++) {
 		gtex[i] = 0;
 		if (file = g_pOrbiter->OpenTextureFile (gtex_name[i], ".dds")) {
@@ -257,10 +259,10 @@ void Scene::Init3DFonts ()
 	gfont[0]->SetColorKey (DDCKEY_SRCBLT, &ck);
 
 	// common labels
-	static char *label = "-x-y-z";
+	static const char *label = "-x-y-z";
 	RECT sr = {0,0,0,0};
 	w = i = 0;
-	for (char *c = label; *c; c++, i++) {
+	for (const char *c = label; *c; c++, i++) {
 		int idx = *c - 32;
 		sr.left = gfont_ofs[0][idx];
 		sr.right = sr.left + gfont_cw[0][idx];
@@ -329,19 +331,24 @@ void Scene::UpdateVisual (Body *body, Camera **camlist, int ncam)
 void Scene::UpdateVisuals (PlanetarySystem *psys, Camera **camlist, int ncam, bool force)
 {
 	int i, i0, i1;
-	bool vis;
 
-	if (force)
-		i0 = 0, i1 = psys->nObj();
-	else {
-		if (cobj >= psys->nObj()) cobj = 0;
-		i0 = cobj++, i1 = i0+1;
+	if (force) {
+		i0 = 0;
+		i1 = psys->nObj();
 	}
+	else {
+		if (cobj >= psys->nObj())
+			cobj = 0;
+		i0 = cobj++;
+		i1 = i0 + 1;
+	}
+
 	// check visibility from any camera
 	for (i = i0; i < i1; i++) {
 		Body *body = psys->GetObj(i);
-		if (vis = (body->Type() == OBJTP_STAR)) { // we assume stars are always visible
-			if (!body->GetVishandle()) AddVisStar (body);
+		if (body->Type() == OBJTP_STAR) { // we assume stars are always visible
+			if (!body->GetVishandle())
+				AddVisStar (body);
 			continue;
 		}
 		UpdateVisual (body, camlist, ncam);
@@ -442,7 +449,7 @@ void Scene::AddStarlight (Star *star)
 	memcpy (tmp, starlight, nstarlight*sizeof(STARLIGHT));
 	if (nstarlight) delete []starlight;
 	starlight = tmp;
-	starlight[nstarlight].col = star->GetLightColor();
+	starlight[nstarlight].col = VObject::ColorToD3D(star->GetLightColor());
 	starlight[nstarlight].gpos = &star->GPos();
 	dev->LightEnable (nstarlight++, TRUE);
 }

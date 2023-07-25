@@ -9,6 +9,9 @@
 #include "OGraphics.h"
 #include "Texture.h"
 #include "Log.h"
+#include <algorithm>
+using std::min;
+using std::max;
 
 // Subsystem for loading, managing and displaying planetary cloud layers
 

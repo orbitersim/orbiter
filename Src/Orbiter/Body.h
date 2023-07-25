@@ -26,12 +26,12 @@ public:
 	Body (char *fname);
 	// create a body from a config file
 
-	virtual ~Body ();
+	virtual ~Body () {}
 
 	virtual int Type() const { return OBJTP_GENERIC; }
 
-	inline char *Name() const { return name; }
-	inline const char* FileName() const { return filename; }
+	inline const char *Name() const { return name.c_str(); }
+	inline const char* FileName() const { return filename.c_str(); }
 
 	virtual const void *GetParam (DWORD paramtype) const { return 0; }
 
@@ -101,7 +101,7 @@ public:
 	virtual void RPlace (const Vector &rpos, const Vector &rvel);
 	// Set object position and velocity in parent coords
 
-	virtual void Update (bool force = false);
+	virtual void Update (bool force = false) {}
 	// Update object to current simulation time.
 	// Called between the body's module clbkPreStep and clbkPostStep API calls
 
@@ -126,15 +126,15 @@ public:
 	// This allows objects to initialise any D3DDevice objects
 	// that persist beyond the lifetime of the visual
 
-	virtual void DestroyDeviceObjects ();
+	virtual void DestroyDeviceObjects () {}
 	// Clean up device objects before the D3DDevice is destroyed
 	// Default action: Calls DestroyDeviceObjects() for all children
 
-	virtual void RegisterVisual (VISHANDLE vis);
+	virtual void RegisterVisual(VISHANDLE vis) { hVis = vis; }
 	// Called by a graphics client to notify the body of visual
 	// creation.
 
-	virtual void UnregisterVisual ();
+	virtual void UnregisterVisual() { hVis = nullptr; }
 	// Called by a graphics client to notify the body of visual
 	// destruction.
 
@@ -143,8 +143,8 @@ public:
 
 	inline const VISHANDLE *GetVishandlePtr() const { return &hVis; }
 
-	StateVectors *s0 = NULL;    // body state at time t0
-	StateVectors *s1 = NULL;    // new body state at time t0+dt during update phase
+	StateVectors* s0 { nullptr };    // body state at time t0
+	StateVectors* s1 { nullptr };    // new body state at time t0+dt during update phase
 
 	// Operations on updated state vectors (only accessible during update phase
 	// AFTER the object has been updated)
@@ -163,38 +163,27 @@ public:
 	inline const Vector &Acceleration() const { return acc; };
 
 protected:
-	double mass;         // current body mass [kg]
-	double size;         // (mean) body radius [m]
-	Vector albedo;       // object albedo (RGB, 0-1)
-	double vislimit;     // total visibility limit (in units of viewport vertical)
-	double spotlimit;    // spot visibility limit (in units of viewport vertical)
+	double mass { 0.0 };         // current body mass [kg]
+	double size { 0.0 };         // (mean) body radius [m]
+	Vector albedo { 1, 1, 1 };   // object albedo (RGB, 0-1)
+	double vislimit { 1e-3 };    // total visibility limit (in units of viewport vertical)
+	double spotlimit { 1e-3 };   // spot visibility limit (in units of viewport vertical)
 
 	Vector acc;          // current acceleration vector
 
-	VISHANDLE hVis;      // visual identifier passed to messages (NULL=no visual)
+	VISHANDLE hVis { nullptr };      // visual identifier passed to messages (NULL=no visual)
 
-	const CelestialBody *cbody; // orbit reference body
+	const CelestialBody* cbody { nullptr }; // orbit reference body
 
-	void Setup ();       // initialise body with default params
+	std::string name;          // object name
+	std::string filename;
 
-	char *name;          // object name
-	char *filename;	
-
-	Vector rpos_base, rpos_add; // base and incremental parts of rpos
-	Vector rvel_base, rvel_add; // base and incremental parts of rvel
-	int updcount;               // update counter
+	Vector rpos_base { 0, 0, 0 }, rpos_add { 0, 0, 0 }; // base and incremental parts of rpos
+	Vector rvel_base { 0, 0, 0 }, rvel_add { 0, 0, 0 }; // base and incremental parts of rvel
+	int updcount { 0 };               // update counter
 
 private:
 	void SetName (char *_name = 0);
-
-	void FlipState ();
-	// Switch the targets for state vector pointers s0 and s1.
-	// This is normally used by EndStateUpdate to make the updated state active.
-	// Note this assumes s0 to point to either sv[0] or sv[1]. After the function
-	// returns, both s0 and s1 will be valid, where s1 will point to the address s0
-	// was pointing to, while s0 will point to the other one.
-	// If s1 should be set invalid (NULL), this has to be done by the caller after
-	// the function returns.
 
 	StateVectors sv[2];  // State vectors for current and updated state - don't use directly
 };

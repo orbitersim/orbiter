@@ -11,6 +11,8 @@
 #include "Util.h"
 #include "Log.h"
 
+using std::max;
+
 extern Orbiter *g_pOrbiter;
 extern char DBG_MSG[256];
 COLORREF titlecol   = RGB(255,255,255);
@@ -147,7 +149,7 @@ void Select::Activate ()
 				colh = itemh;
 				submenu = false;
 			} else {
-				col[ncol].w = max (col[ncol].w, textW);
+				col[ncol].w = max (col[ncol].w, (int)textW);
 				colh += itemh;
 			}
 			col[ncol].nitem++;
@@ -176,7 +178,7 @@ void Select::Activate ()
 	SetFocus (g_pOrbiter->GetRenderWnd());
 }
 
-void Select::Open (char *_title, Callbk submenu_cbk, Callbk enter_cbk,
+void Select::Open (const char *_title, Callbk submenu_cbk, Callbk enter_cbk,
 				   void *_userdata, int _cntx, int _cnty)
 {
 	if (surf) Clear (true); // this line was commented. why?
@@ -312,10 +314,10 @@ void Select::AppendSeparator ()
 	listh += 3;
 }
 
-void Select::SetTitle (char *_title)
+void Select::SetTitle (const char *_title)
 {
-	if (strlen (_title) >= select_strlen) _title[select_strlen-1] = '\0';
-	strcpy (title, _title);
+	strncpy(title, _title, select_strlen);
+	title[select_strlen - 1] = '\0';
 }
 
 void Select::Push ()
@@ -489,7 +491,7 @@ void SelectionList::AllocSurface ()
 				colh = itemh;
 				submenu = false;
 			} else {
-				col[ncol].w = max (col[ncol].w, textw);
+				col[ncol].w = max ((DWORD)col[ncol].w, textw);
 				colh += itemh;
 			}
 			col[ncol].nitem++;
@@ -653,7 +655,7 @@ void InputBox::Activate (int cntx, int cnty)
 	RefreshSurface ();
 }
 
-void InputBox::Open (char *_title, char *_buf, int _vislen,
+void InputBox::Open (const char *_title, char *_buf, int _vislen,
 					 Callbk cbk, void *_userdata, int cntx, int cnty)
 {
 	OpenEx (_title, _buf, _vislen, cbk, 0, _userdata, 0, cntx, cnty);

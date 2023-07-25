@@ -51,7 +51,7 @@ public:
 protected:
 	bool TileIdx (double lat, double lng, int lvl, int *ilat, int *ilng) const;
 	INT16 *LoadElevationTile (int lvl, int ilat, int ilng, double tgt_res) const;
-	bool ElevationManager::LoadElevationTile_mod (int lvl, int ilat, int ilng, double tgt_res, INT16 *elev) const;
+	bool LoadElevationTile_mod (int lvl, int ilat, int ilng, double tgt_res, INT16 *elev) const;
 
 private:
 	const CelestialBody *cbody;

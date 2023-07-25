@@ -93,7 +93,7 @@ void ToolKit::Export()
 
 		oapiReleaseTexture(hSrf);
 	}
-	else oapiWriteLog("hSrf == NULL");
+	else oapiWriteLog((char*)"hSrf == NULL");
 }
 
 
@@ -102,7 +102,7 @@ void ToolKit::Export()
 void ToolKit::ExportElev()
 {
 
-	for each (selentry se in selection.area)
+	for (selentry se : selection.area)
 	{
 		INT16 *pElev = se.pNode->GetElevation();
 		if (!pElev) {

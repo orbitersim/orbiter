@@ -172,8 +172,8 @@ void Atlantis_SRB::clbkSetClassCaps (FILEHANDLE cfg)
 
 	// main engine
 	th_main = CreateThruster (_V(0,0,-21), THRUSTGIMBAL_LAUNCH, SRB_THRUST, ph_main, SRB_ISP0, SRB_ISP1);
-	SURFHANDLE tex = oapiRegisterExhaustTexture ("Exhaust2");
-	srb_exhaust.tex = oapiRegisterParticleTexture ("Contrail2");
+	SURFHANDLE tex = oapiRegisterExhaustTexture ((char*)"Exhaust2");
+	srb_exhaust.tex = oapiRegisterParticleTexture ((char*)"Contrail2");
 	AddExhaust (th_main, 16.0, 2.0, tex);
 	AddExhaustStream (th_main, _V(0,0,-30), &srb_contrail);
 	AddExhaustStream (th_main, _V(0,0,-25), &srb_exhaust);
@@ -236,7 +236,7 @@ void Atlantis_SRB::clbkSaveState (FILEHANDLE scn)
 {
 	VESSEL2::clbkSaveState (scn);
 	if (bMainEngine)
-		oapiWriteScenario_float(scn, "MET", oapiGetSimTime()-t0);
+		oapiWriteScenario_float(scn, (char*)"MET", oapiGetSimTime()-t0);
 }
 
 // Simulation time step

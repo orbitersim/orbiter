@@ -5,6 +5,8 @@
 #include "Vesselbase.h"
 #include "Psys.h"
 
+using std::max;
+
 extern PlanetarySystem *g_psys;
 extern TimeData td;
 extern char DBG_MSG[256];
@@ -35,7 +37,7 @@ void SurfParam::Set (const StateVectors &s, const StateVectors &s_ref, const Cel
 		if (ref->Type() == OBJTP_PLANET) {
 			ElevationManager *emgr = ((Planet*)ref)->ElevMgr();
 			if (emgr) {
-				int reslvl = (int)(32.0-log(max(alt0,100))*LOG2);
+				int reslvl = (int)(32.0-log(max(alt0,100.0))*LOG2);
 				elev = emgr->Elevation (lat, lng, reslvl, etilecache, &surfnml, &elev_lvl);
 				alt -= elev;
 			}
@@ -113,7 +115,7 @@ double SurfParam::ComputeAltitude(const StateVectors &s, const StateVectors &s_r
 	if (etilecache && _alt < alt_max && _ref->Type() == OBJTP_PLANET) {
 		ElevationManager *emgr = ((Planet*)_ref)->ElevMgr();
 		if (emgr) {
-			int reslvl = (int)(32.0-log(max(_alt,100))*LOG2);
+			int reslvl = (int)(32.0-log(max(_alt,100.0))*LOG2);
 			double elev = emgr->Elevation (_lat, _lng, reslvl, etilecache);
 			_alt -= elev;
 		}

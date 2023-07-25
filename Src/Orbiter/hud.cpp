@@ -419,7 +419,7 @@ void HUD::AddMesh_DirectionMarker (int &ivtx, int &iidx, const Vector &dir, bool
 	Vector d;
 	if (bVC) d.Set (tmul (g_focusobj->GRot(), dir));
 	else     d.Set (tmul (g_camera->GRot(), dir));
-	double len = _hypot (d.x, d.y);
+	double len = std::hypot (d.x, d.y);
 	if (!len) return;
 	double cosa = d.y/len, sina = -d.x/len;
 
@@ -971,11 +971,11 @@ void HUD::AddMesh_DockApproachGates (int &ivtx, int &iidx, const Body *tgt, cons
 			if (need_setup) {
 				rx = x[3]-x[0];
 				ry = y[3]-y[0];
-				double d  = _hypot(rx,ry);
+				double d  = std::hypot(rx,ry);
 				dx1 = rx*linew/d, dy1 = ry*linew/d;
 				rx = x[1]-x[0];
 				ry = y[1]-y[0];
-				d = _hypot(rx,ry);
+				d = std::hypot(rx,ry);
 				dx2 = rx*linew/d, dy2 = ry*linew/d;
 				need_setup = false;
 			}
@@ -1128,7 +1128,7 @@ void HUD::DrawTiltedRibbon (oapi::Sketchpad *skp, double phi, double alpha)
 	int    dtx = (int)(0.5*s*sina);
 	int    dty = (int)(0.5*s*cosa);
 	int x0, y0, iphin;
-	char cbuf[4];
+	char cbuf[16];
 	
 	skp->SetTextAlign (oapi::Sketchpad::CENTER);
 	double d1;
@@ -1147,7 +1147,7 @@ void HUD::DrawTiltedRibbon (oapi::Sketchpad *skp, double phi, double alpha)
 			skp->Line (x0-dtx, y0+dty, x0+dtx, y0-dty);
 		} else {
 			skp->Line (x0-dsx, y0+dsy, x0+dsx, y0-dsy);
-			_itoa (iphin, cbuf, 10);
+			sprintf(cbuf, "%d", iphin);
 			skp->Text (x0+dsx*2, y0-dsy*2-fH/2, cbuf, strlen(cbuf));
 		}
 	}
@@ -1161,7 +1161,7 @@ void HUD::DrawTiltedRibbon (oapi::Sketchpad *skp, double phi, double alpha)
 			skp->Line (x0-dtx, y0+dty, x0+dtx, y0-dty);
 		} else {
 			skp->Line (x0-dsx, y0+dsy, x0+dsx, y0-dsy);
-			_itoa (iphin, cbuf, 10);
+			sprintf(cbuf, "%d", iphin);
 			skp->Text (x0+dsx*2, y0-dsy*2-fH/2, cbuf, strlen(cbuf));
 		}
 	}
@@ -1234,7 +1234,7 @@ oapi::IVECTOR2 *HUD::OffscreenDirMarker (const Vector &dir) const
 	} else {
 		d.Set (tmul (g_camera->GRot(), dir));
 	}
-	double len = _hypot (d.y, d.x);
+	double len = std::hypot (d.y, d.x);
 	double scale = spec.Markersize * 0.6;
 	double dx = d.x/len*scale;
 	double dy = d.y/len*scale;

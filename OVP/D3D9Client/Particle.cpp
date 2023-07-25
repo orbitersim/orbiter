@@ -167,7 +167,7 @@ double D3D9ParticleStream::Level2Alpha(double level) const
 		case PARTICLESTREAMSPEC::LVL_FLAT:	return lmin;
 		case PARTICLESTREAMSPEC::LVL_LIN:	return level;
 		case PARTICLESTREAMSPEC::LVL_SQRT:	return sqrt (level);
-		case PARTICLESTREAMSPEC::LVL_PLIN:	return max (0, min (1, (level-lmin)/(lmax-lmin)));
+		case PARTICLESTREAMSPEC::LVL_PLIN:	return max (0.0, min (1.0, (level-lmin)/(lmax-lmin)));
 		case PARTICLESTREAMSPEC::LVL_PSQRT:	return (level <= lmin ? 0 : level >= lmax ? 1 : sqrt ((level-lmin)/(lmax-lmin)));
 	}
 	return 0; // should not happen
@@ -177,8 +177,8 @@ double D3D9ParticleStream::Atm2Alpha(double prm) const
 {
 	switch (amap) {
 		case PARTICLESTREAMSPEC::ATM_FLAT:	return amin;
-		case PARTICLESTREAMSPEC::ATM_PLIN:	return max (0, min (1, (prm-amin)*afac));
-		case PARTICLESTREAMSPEC::ATM_PLOG:	return max (0, min (1, log(prm/amin)*afac));
+		case PARTICLESTREAMSPEC::ATM_PLIN:	return max (0.0, min (1.0, (prm-amin)*afac));
+		case PARTICLESTREAMSPEC::ATM_PLOG:	return max (0.0, min (1.0, log(prm/amin)*afac));
 	}
 	return 0; // should not happen
 }

@@ -75,7 +75,7 @@ BOOL DlgTacc::OnCommand (HWND hDlg, WORD id, WORD code, HWND hControl)
 {
 	switch (id) {
 	case IDHELP:
-		DefHelpContext.topic = "/timeacc.htm";
+		DefHelpContext.topic = (char*)"/timeacc.htm";
 		g_pOrbiter->OpenHelp (&DefHelpContext);
 		return TRUE;
 	case IDC_WARP_01:

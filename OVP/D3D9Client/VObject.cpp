@@ -94,7 +94,7 @@ vObject *vObject::Create(OBJHANDLE _hObj, const Scene *scene)
 void vObject::GlobalInit(D3D9Client *gclient)
 {
 	_TRACE;
-	static char *fname[3] = {"Ball.dds","Ball2.dds","Ball3.dds"};
+	static const char *fname[3] = {"Ball.dds","Ball2.dds","Ball3.dds"};
 	gc = gclient;
 	for (int i=0;i<3;i++) blobtex[i] = SURFACE(gc->clbkLoadTexture(fname[i]));
 
@@ -258,7 +258,7 @@ bool vObject::IsVisible()
 	if ((objtp == OBJTP_VESSEL) && apprad < 0.005*apr) return false;
 	if ((objtp == OBJTP_SURFBASE) && apprad < 0.02*apr) return false;
 
-	return gc->GetScene()->IsVisibleInCamera(&D3DXVEC(pos), rad);
+	return gc->GetScene()->IsVisibleInCamera(ptr(D3DXVEC(pos)), rad);
 
 	/* 
 	if (bVis) {
@@ -360,24 +360,24 @@ void vObject::RenderVectors (LPDIRECT3DDEVICE9 dev, D3D9Pad* pSkp)
 				//scale *= 0.99f; // 1% "slimmer" to avoid z-fighting with force vector(s)
 				float ascale = float(size) * sclset * 0.5f;
 
-				RenderAxisVector(pSkp, &D3DXCOLOR(1, 0, 0, alpha), _V(1, 0, 0), ascale, scale);
-				RenderAxisLabel(pSkp, &D3DXCOLOR(1, 0, 0, alpha), _V(1, 0, 0), ascale, scale, "+X");
+				RenderAxisVector(pSkp, ptr(D3DXCOLOR(1, 0, 0, alpha)), _V(1, 0, 0), ascale, scale);
+				RenderAxisLabel(pSkp, ptr(D3DXCOLOR(1, 0, 0, alpha)), _V(1, 0, 0), ascale, scale, "+X");
 
-				RenderAxisVector(pSkp, &D3DXCOLOR(0, 1, 0, alpha), _V(0, 1, 0), ascale, scale);
-				RenderAxisLabel(pSkp, &D3DXCOLOR(0, 1, 0, alpha), _V(0, 1, 0), ascale, scale, "+Y");
+				RenderAxisVector(pSkp, ptr(D3DXCOLOR(0, 1, 0, alpha)), _V(0, 1, 0), ascale, scale);
+				RenderAxisLabel(pSkp, ptr(D3DXCOLOR(0, 1, 0, alpha)), _V(0, 1, 0), ascale, scale, "+Y");
 
-				RenderAxisVector(pSkp, &D3DXCOLOR(0, 0, 1, alpha), _V(0, 0, 1), ascale, scale);
-				RenderAxisLabel(pSkp, &D3DXCOLOR(0, 0, 1, alpha), _V(0, 0, 1), ascale, scale, "+Z");
+				RenderAxisVector(pSkp, ptr(D3DXCOLOR(0, 0, 1, alpha)), _V(0, 0, 1), ascale, scale);
+				RenderAxisLabel(pSkp, ptr(D3DXCOLOR(0, 0, 1, alpha)), _V(0, 0, 1), ascale, scale, "+Z");
 
 				if (favmode & FAV_NEGATIVE) {
-					RenderAxisVector(pSkp, &D3DXCOLOR(1, 0, 0, alpha * 0.5f), _V(-1, 0, 0), ascale, scale);
-					RenderAxisLabel(pSkp, &D3DXCOLOR(1, 0, 0, alpha), _V(-1, 0, 0), ascale, scale, "-X");
+					RenderAxisVector(pSkp, ptr(D3DXCOLOR(1, 0, 0, alpha * 0.5f)), _V(-1, 0, 0), ascale, scale);
+					RenderAxisLabel(pSkp, ptr(D3DXCOLOR(1, 0, 0, alpha)), _V(-1, 0, 0), ascale, scale, "-X");
 
-					RenderAxisVector(pSkp, &D3DXCOLOR(0, 1, 0, alpha * 0.5f), _V(0, -1, 0), ascale, scale);
-					RenderAxisLabel(pSkp, &D3DXCOLOR(0, 1, 0, alpha), _V(0, -1, 0), ascale, scale, "-Y");
+					RenderAxisVector(pSkp, ptr(D3DXCOLOR(0, 1, 0, alpha * 0.5f)), _V(0, -1, 0), ascale, scale);
+					RenderAxisLabel(pSkp, ptr(D3DXCOLOR(0, 1, 0, alpha)), _V(0, -1, 0), ascale, scale, "-Y");
 
-					RenderAxisVector(pSkp, &D3DXCOLOR(0, 0, 1, alpha * 0.5f), _V(0, 0, -1), ascale, scale);
-					RenderAxisLabel(pSkp, &D3DXCOLOR(0, 0, 1, alpha), _V(0, 0, -1), ascale, scale, "-Z");
+					RenderAxisVector(pSkp, ptr(D3DXCOLOR(0, 0, 1, alpha * 0.5f)), _V(0, 0, -1), ascale, scale);
+					RenderAxisLabel(pSkp, ptr(D3DXCOLOR(0, 0, 1, alpha)), _V(0, 0, -1), ascale, scale, "-Z");
 				}
 			}
 		}
@@ -387,7 +387,7 @@ void vObject::RenderVectors (LPDIRECT3DDEVICE9 dev, D3D9Pad* pSkp)
 
 // ===========================================================================================
 //
-void vObject::RenderAxisVector(D3D9Pad *pSkp, LPD3DXCOLOR pColor, VECTOR3 vector, float lscale, float size, bool bLog)
+void vObject::RenderAxisVector(D3D9Pad *pSkp, const D3DXCOLOR *pColor, VECTOR3 vector, float lscale, float size, bool bLog)
 {
 	D3DXMATRIX W;
 
@@ -422,7 +422,7 @@ void vObject::RenderAxisVector(D3D9Pad *pSkp, LPD3DXCOLOR pColor, VECTOR3 vector
 
 // ===========================================================================================
 //
-void vObject::RenderAxisLabel(D3D9Pad *pSkp, LPD3DXCOLOR clr, VECTOR3 vector, float lscale, float size, const char *label, bool bLog)
+void vObject::RenderAxisLabel(D3D9Pad *pSkp, const D3DXCOLOR *clr, VECTOR3 vector, float lscale, float size, const char *label, bool bLog)
 {
 	D3DXVECTOR3 homog, ws;
 	D3DXMATRIX W;
@@ -452,7 +452,7 @@ void vObject::RenderAxisLabel(D3D9Pad *pSkp, LPD3DXCOLOR clr, VECTOR3 vector, fl
 	if (bLog) len = max(0.0f, 13.0f + log(len)) * lscale / size;
 	else      len = len * lscale / size;
 
-	D3DXVec3TransformCoord(&ws, &D3DXVECTOR3(0, len, 0), &W);
+	D3DXVec3TransformCoord(&ws, ptr(D3DXVECTOR3(0, len, 0)), &W);
 	D3DXVec3TransformCoord(&homog, &ws, scn->GetProjectionViewMatrix());
 
 	if (D3DXVec3Dot(&ws, scn->GetCameraZ()) < 0) return;

@@ -17,17 +17,18 @@
 #include "D3D7Extra.h"
 #include "D3D7Config.h"
 #include "resource.h"
+#include <algorithm>
+
+using std::min;
 
 char *D3D7ClientCfg::Name ()
 {
-	static char *name = "D3D7 Graphics Configuration";
-	return name;
+	return (char*)"D3D7 Graphics Configuration";
 }
 
 char *D3D7ClientCfg::Description ()
 {
-	static char *desc = "Configure the D3D7 graphics client plugin.\r\n\r\nThis allows to fine-tune rendering options and visual quality.";
-	return desc;
+	return (char*)"Configure the D3D7 graphics client plugin.\r\n\r\nThis allows to fine-tune rendering options and visual quality.";
 }
 
 
@@ -39,14 +40,12 @@ D3D7PlanetRenderCfg::D3D7PlanetRenderCfg (oapi::D3D7Client *_gc)
 
 char *D3D7PlanetRenderCfg::Name ()
 {
-	static char *name = "Planet Rendering Options";
-	return name;
+	return (char*)"Planet Rendering Options";
 }
 
 char *D3D7PlanetRenderCfg::Description ()
 {
-	static char *desc = "Configure the rendering options for planets and other celestial objects.";
-	return desc;
+	return (char*)"Configure the rendering options for planets and other celestial objects.";
 }
 
 bool D3D7PlanetRenderCfg::clbkOpen (HWND hLaunchpad)

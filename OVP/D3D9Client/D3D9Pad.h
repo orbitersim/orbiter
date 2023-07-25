@@ -130,7 +130,7 @@ inline void SkpVtxFC(SkpVtx& v, float _x, float _y, DWORD c)
 }
 
 // Fill Rect, Ellipse, Polygon [only]
-inline void SkpVtxIC(SkpVtx &v, int _x, int _y, SkpColor &c)
+inline void SkpVtxIC(SkpVtx &v, int _x, int _y, const SkpColor &c)
 {
 	v.x = float(_x) - 0.5f;
 	v.y = float(_y) - 0.5f;
@@ -561,7 +561,7 @@ public:
 	void LoadDefaults();
 
 	void CopyRectNative(LPDIRECT3DTEXTURE9 pSrc, const LPRECT s, int tx, int ty);
-	void StretchRectNative(LPDIRECT3DTEXTURE9 pSrc, const LPRECT s, const LPRECT t);
+	void StretchRectNative(LPDIRECT3DTEXTURE9 pSrc, const RECT *s, const RECT *t);
 	
 
 private:
@@ -580,13 +580,13 @@ private:
 	void Reset();
 	bool Flush(HPOLY hPoly = NULL);
 	void AddRectIdx(WORD aV);
-	void FillRect(int l, int t, int r, int b, SkpColor &c);
+	void FillRect(int l, int t, int r, int b, const SkpColor &c);
 	void TexChange(SURFHANDLE hNew);
 	bool TexChangeNative(LPDIRECT3DTEXTURE9 hNew);
-	const LPRECT CheckRectNative(LPDIRECT3DTEXTURE9 hSrc, const LPRECT s);
+	RECT GetFullRectNative(LPDIRECT3DTEXTURE9 hSrc);
 	void SetFontTextureNative(LPDIRECT3DTEXTURE9 hNew);
 	void SetupDevice(Topo tNew);
-	LPRECT CheckRect(SURFHANDLE hSrc, const LPRECT s);
+	RECT GetFullRect(SURFHANDLE hSrc);
 	void IsLineTopologyAllowed();
 	DWORD ColorComp(DWORD c) const;
 	SkpColor ColorComp(const SkpColor &c) const;
@@ -630,7 +630,6 @@ private:
 	float linescale, pattern;
 	float zfar;
 	int cx, cy;
-	RECT src;
 	RECT tgt;
 
 	D3DSURFACE_DESC	   tgt_desc;

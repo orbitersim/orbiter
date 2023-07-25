@@ -337,13 +337,13 @@ void basefunction::saveself(FILEHANDLE scn)
 	{
 		id=planpointer->getplanid();
 	}
-	oapiWriteScenario_int(scn,"Int",id);//Saves the plan type
+	oapiWriteScenario_int(scn, (char*)"Int", id);//Saves the plan type
 	saveorbit(scn,basisorbit);
 	savehandle(scn,hmajor);
 	savehandle(scn,hminor);
 	savehandle(scn,hmajtarget);
 	vars.saveallvariables(scn);
-	oapiWriteScenario_string(scn,"Finish","BaseFunction");
+	oapiWriteScenario_string(scn, (char*)"Finish", (char*)"BaseFunction");
 }
 
 void basefunction::restoreself(FILEHANDLE scn)

@@ -2063,7 +2063,7 @@ void Runway::Activate ()
 	D3DVALUE x, z, step;
 	D3DVALUE dx = end2.x - end1.x;
 	D3DVALUE dz = end2.z - end1.z;
-	D3DVALUE len = D3DVAL(_hypot (dx, dz));
+	D3DVALUE len = D3DVAL(std::hypot (dx, dz));
 	D3DVALUE dwx = (width/len) * dz;
 	D3DVALUE dwz = (width/len) * dx;
 	D3DVALUE s0, x0, z0, ddx, ddz;
@@ -3533,7 +3533,8 @@ void SolarPlant::Activate ()
 	if (g_pOrbiter->Cfg()->CfgVisualPrm.bShadows) {
 		ShVtx = new VERTEX_XYZ[nShVtx = npanel*4]; TRACENEW
 		ShIdx = new WORD[nShIdx = npanel*6]; TRACENEW
-		D3DCOLOR shcol = base->ShadowColor();
+		Vector4 shadowCol = base->ShadowColor();
+		D3DCOLOR shcol = D3DRGBA(shadowCol.x, shadowCol.y, shadowCol.z, shadowCol.w);
 		for (n = 0; n < nShVtx; n++) {
 			ShVtx[n].y = 0.0f;
 			//ShVtx[n].col = shcol;

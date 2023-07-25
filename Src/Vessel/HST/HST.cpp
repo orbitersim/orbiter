@@ -16,6 +16,9 @@
 #include "HST.h"
 #include <stdio.h>
 
+using std::min;
+using std::max;
+
 // ==============================================================
 // HST class implementation
 // ==============================================================
@@ -151,11 +154,11 @@ void HST::clbkSaveState (FILEHANDLE scn)
 	char cbuf[256];
 	SaveDefaultState (scn);
 	sprintf (cbuf, "%d %0.4f", ant_status, ant_proc);
-	oapiWriteScenario_string (scn, "ANT", cbuf);
+	oapiWriteScenario_string (scn, (char*)"ANT", cbuf);
 	sprintf (cbuf, "%d %0.4f", hatch_status, hatch_proc);
-	oapiWriteScenario_string (scn, "HATCH", cbuf);
+	oapiWriteScenario_string (scn, (char*)"HATCH", cbuf);
 	sprintf (cbuf, "%d %0.4f", array_status, array_proc);
-	oapiWriteScenario_string (scn, "FOLD", cbuf);
+	oapiWriteScenario_string (scn, (char*)"FOLD", cbuf);
 }
 
 // --------------------------------------------------------------

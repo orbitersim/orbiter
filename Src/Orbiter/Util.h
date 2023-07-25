@@ -25,9 +25,6 @@ inline DWORD GetSurfColour (DWORD r, DWORD g, DWORD b)
 DWORDLONG Str2Crc (const char *str);
 // converts str into an integer identifier (not guaranteed unique!)
 
-// simple string de-scrambling routine
-char *uscram (const char *str);
-
 // create the directories 
 bool MakePath (const char *fname);
 

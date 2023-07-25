@@ -18,6 +18,8 @@
 #include "Astro.h"
 #include <stdio.h>
 #include <algorithm>
+using std::min;
+using std::max;
 
 using namespace oapi;
 
@@ -47,7 +49,7 @@ void VObject::CreateDeviceObjects (OrbiterGraphics *gclient)
 	FILE *file;
 	gc = gclient;
 	for (int i = 0; i < 3; i++) {
-		static char *fname[3] = {"Ball","Ball2","Ball3"};
+		static const char *fname[3] = {"Ball","Ball2","Ball3"};
 		file = fopen (g_pOrbiter->TexPath (fname[i]), "rb");
 		if (file) {
 			g_texmanager2->ReadTexture(file, blobtex + i);
@@ -183,7 +185,7 @@ void VObject::RenderAsPixel (LPDIRECT3DDEVICE7 dev)
 		RECT r;
 		int x, y;
 		DWORD viewW = g_pOrbiter->ViewW(), viewH = g_pOrbiter->ViewH();
-		if (_hypot (homog.x, homog.y) < 1e-6) {
+		if (std::hypot (homog.x, homog.y) < 1e-6) {
 			x = viewW/2, y = viewH/2;
 		} else {
 			x = (int)(viewW*0.5*(1.0f+homog.x));
@@ -268,7 +270,7 @@ void VObject::RenderSpot (LPDIRECT3DDEVICE7 dev, const Vector *ofs, float size, 
 	}
 
 	Vector bdir(pos/dist);
-	double hz = _hypot (bdir.x, bdir.z);
+	double hz = std::hypot (bdir.x, bdir.z);
 	double phi = atan2 (bdir.z, bdir.x);
 	float sphi = (float)sin(phi), cphi = (float)cos(phi);
 	DWORD alphamode;
@@ -428,7 +430,7 @@ bool VObject::DrawVector (LPDIRECT3DDEVICE7 dev, const Vector &end, const Vector
 	float w = (float)rad;
 	float h = (float)end.length();
 	if (h < EPS) return false;
-	float hb = max (h-4.0f*w, 0);
+	float hb = max (h-4.0f*w, 0.0f);
 
 	memcpy (Vtx, Vtx0, nVtx*sizeof(D3DVERTEX));
 

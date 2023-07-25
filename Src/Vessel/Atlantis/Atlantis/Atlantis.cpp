@@ -25,6 +25,9 @@
 #include <stdio.h>
 #include <fstream>
 
+using std::min;
+using std::max;
+
 #ifdef _DEBUG
     // D. Beachy: for BoundsChecker debugging
     extern int GrowStack();
@@ -37,13 +40,13 @@
 
 GDIParams g_Param;
 
-char *ActionString[5] = {"STOPPED", "ISCLOSED", "ISOPEN", "CLOSE", "OPEN"};
+const char *ActionString[5] = {"STOPPED", "ISCLOSED", "ISOPEN", "CLOSE", "OPEN"};
 
 HELPCONTEXT g_hc = {
-	"html/vessels/Atlantis.chm",
+	(char*)"html/vessels/Atlantis.chm",
 	0,
-	"html/vessels/Atlantis.chm::/Atlantis.hhc",
-	"html/vessels/Atlantis.chm::/Atlantis.hhk"
+	(char*)"html/vessels/Atlantis.chm::/Atlantis.hhc",
+	(char*)"html/vessels/Atlantis.chm::/Atlantis.hhk"
 };
 
 
@@ -200,7 +203,7 @@ void Atlantis::CreateSSME()
 	thg_main = CreateThrusterGroup (th_main, 3, THGROUP_MAIN);
 	gimbal_pos = THRUSTGIMBAL_LAUNCH; // the initial pitch gimbal setting positions the SSMEs to cancel pitch moment in launch configuration
 
-	SURFHANDLE tex_main = oapiRegisterExhaustTexture ("Exhaust_atsme");
+	SURFHANDLE tex_main = oapiRegisterExhaustTexture ((char*)"Exhaust_atsme");
 	for (int i = 0; i < 3; i++)
 		AddExhaust (th_main[i], 30.0, 2.0, tex_main);
 }
@@ -224,7 +227,7 @@ void Atlantis::CreateOMS()
 // --------------------------------------------------------------
 void Atlantis::CreateRCS()
 {
-	SURFHANDLE tex_rcs = oapiRegisterExhaustTexture ("Exhaust_atrcs");
+	SURFHANDLE tex_rcs = oapiRegisterExhaustTexture ((char*)"Exhaust_atrcs");
 	const double eh = 6.0;             // exhaust length scale
 	const double ew1 = 0.4, ew2 = 0.8; // exhaust width scales
 
@@ -674,9 +677,9 @@ void Atlantis::DefineAnimations (void)
 // --------------------------------------------------------------
 int Atlantis::RegisterAscentApMfd ()
 {
-	static char *name = "AscentAP";
+	static const char *name = "AscentAP";
 	MFDMODESPECEX spec;
-	spec.name = name;
+	spec.name = (char*)name;
 	spec.key = OAPI_KEY_B;
 	spec.context = NULL;
 	spec.msgproc = AscentApMfd::MsgProc;
@@ -1001,7 +1004,7 @@ void Atlantis::AutoGimbal (const VECTOR3 &tgt_rate)
 	maxdg = dt*0.3; // max gimbal speed [rad/s]
 	dgimbal = a_pitch*(avel.x-tgt_rate.x) + b_pitch*aacc.x;
 	dgimbal = max(-maxdg, min(maxdg, dgimbal));
-	gimbal_pos.x = min (0, max (pitch_gimbal_max, gimbal_pos.x+dgimbal));
+	gimbal_pos.x = min (0.0, max (pitch_gimbal_max, gimbal_pos.x+dgimbal));
 
 	// Yaw gimbal settings
 	dgimbal = a_yaw*(avel.y-tgt_rate.y) + b_yaw*aacc.y;
@@ -1314,7 +1317,7 @@ void Atlantis::clbkSetClassCaps (FILEHANDLE cfg)
 	SetTrimScale (0.05);
 	launchelev = 0.0;
 
-	if (!oapiReadItem_bool (cfg, "RenderCockpit", render_cockpit))
+	if (!oapiReadItem_bool (cfg, (char*)"RenderCockpit", render_cockpit))
 		render_cockpit = false;
 }
 
@@ -1376,7 +1379,7 @@ void Atlantis::clbkLoadStateEx (FILEHANDLE scn, void *vs)
 	if (status == 0) {
 		VESSELSTATUS2 *vs2 = (VESSELSTATUS2*)vs;
 		if (vs2->status & 1) { // idle flag
-			launchelev = max (0, vs2->vrot.x - 18.962);
+			launchelev = max (0.0, vs2->vrot.x - 18.962);
 			if (vs2->arot.x > 4.0) {   // rotation matrix not defined - need to construct manually
 				double slng = sin (vs2->surf_lng), clng = cos (vs2->surf_lng);
 				double slat = sin (vs2->surf_lat), clat = cos (vs2->surf_lat);
@@ -1388,7 +1391,7 @@ void Atlantis::clbkLoadStateEx (FILEHANDLE scn, void *vs)
 		} else {
 			double rad = length(vs2->rpos);
 			double alt = rad - oapiGetSize(vs2->rbody);
-			launchelev = max (0, alt - 18.962);
+			launchelev = max (0.0, alt - 18.962);
 		}
 	}
 
@@ -1423,33 +1426,33 @@ void Atlantis::clbkSaveState (FILEHANDLE scn)
 	VESSEL4::clbkSaveState (scn);
 
 	// custom parameters
-	oapiWriteScenario_int (scn, "CONFIGURATION", status);
+	oapiWriteScenario_int (scn, (char*)"CONFIGURATION", status);
 
 	//if (status == 1)
 	//	oapiWriteScenario_float (scn, "MET", oapiGetSimTime()-t0);
 
 	sprintf (cbuf, "%d %0.4f", gear_status-1, gear_proc);
-	oapiWriteScenario_string (scn, "GEAR", cbuf);
+	oapiWriteScenario_string (scn, (char*)"GEAR", cbuf);
 
 	if (spdb_status != AnimState::CLOSED) {
 		sprintf (cbuf, "%d %0.4f", spdb_status-1, spdb_proc);
-		oapiWriteScenario_string (scn, "SPEEDBRAKE", cbuf);
+		oapiWriteScenario_string (scn, (char*)"SPEEDBRAKE", cbuf);
 	}
 
 	//if (status == 0 && launchelev)
 	//	oapiWriteScenario_float (scn, "LAUNCHELEVATION", launchelev);
 
 	sprintf (cbuf, "%0.4f %0.4f %0.4f %0.4f %0.4f %0.4f", arm_sy, arm_sp, arm_ep, arm_wp, arm_wy, arm_wr);
-	oapiWriteScenario_string (scn, "ARM_STATUS", cbuf);
+	oapiWriteScenario_string (scn, (char*)"ARM_STATUS", cbuf);
 
-	oapiWriteScenario_float (scn, "SAT_OFS_X", ofs_sts_sat.x);
-	oapiWriteScenario_float (scn, "SAT_OFS_Y", ofs_sts_sat.y);
-	oapiWriteScenario_float (scn, "SAT_OFS_Z", ofs_sts_sat.z);
+	oapiWriteScenario_float (scn, (char*)"SAT_OFS_X", ofs_sts_sat.x);
+	oapiWriteScenario_float (scn, (char*)"SAT_OFS_Y", ofs_sts_sat.y);
+	oapiWriteScenario_float (scn, (char*)"SAT_OFS_Z", ofs_sts_sat.z);
 
 	if (do_cargostatic) {
-		oapiWriteScenario_string (scn, "CARGO_STATIC_MESH", cargo_static_mesh_name);
+		oapiWriteScenario_string (scn, (char*)"CARGO_STATIC_MESH", cargo_static_mesh_name);
 		if (cargo_static_ofs.x || cargo_static_ofs.y || cargo_static_ofs.z)
-			oapiWriteScenario_vec (scn, "CARGO_STATIC_OFS", cargo_static_ofs);
+			oapiWriteScenario_vec (scn, (char*)"CARGO_STATIC_OFS", cargo_static_ofs);
 	}
 
 	// save bay door operations status
@@ -2239,7 +2242,7 @@ DLLCLBK void InitModule (HINSTANCE hModule)
 	g_Param.tkbk_label = oapiCreateSurface (LOADBMP (IDB_TKBKLABEL));
 
 	// allocate GDI resources
-	g_Param.font[0] = oapiCreateFont(-11, false, "Arial");
+	g_Param.font[0] = oapiCreateFont(-11, false, (char*)"Arial");
 	g_Param.brush[0] = oapiCreateBrush(0x000000);
 }
 

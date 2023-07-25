@@ -140,7 +140,7 @@ void Pane::DelVessel (const Vessel *vessel)
 
 bool Pane::MFDConsumeKeyBuffered (int id, DWORD key)
 {
-	if (key == DIK_ESCAPE) {
+	if (key == OAPI_KEY_ESCAPE) {
 		ToggleMFD_on (id);
 		return true;
 	} else if (mfd[id].instr) {
@@ -512,7 +512,7 @@ void Pane::IncHUDIntens ()
 
 void Pane::DecHUDIntens ()
 {
-	SetHUDColour (-1, max (0, hudIntens - td.SysDT*0.3));
+	SetHUDColour (-1, max (0.0, hudIntens - td.SysDT*0.3));
 }
 
 void Pane::RenderCustomHUD (MESHHANDLE hMesh, SURFHANDLE *hTex)

@@ -185,7 +185,7 @@ public:
 
 	void OnOptionChanged(int cat, int item);
 
-	const D3D9Sun *Scene::GetSun() const { return &sunLight; }
+	const D3D9Sun *GetSun() const { return &sunLight; }
 	const D3D9Light *GetLight(int index) const;
 	const D3D9Light *GetLights() const { return Lights; }
 	DWORD GetLightCount() const { return nLights; }
@@ -342,7 +342,7 @@ public:
 	bool			CameraPan(VECTOR3 pan, double speed);
 
 					// Check if a sphere located in pCnt (relative to cam) with a specified radius is visible in a camera
-	bool			IsVisibleInCamera(D3DXVECTOR3 *pCnt, float radius);
+	bool			IsVisibleInCamera(const D3DXVECTOR3 *pCnt, float radius);
 	bool			IsProxyMesh();
 	bool            CameraDirection2Viewport(const VECTOR3 &dir, int &x, int &y);
 	double			GetTanAp() const { return tan(Camera.aperture); }

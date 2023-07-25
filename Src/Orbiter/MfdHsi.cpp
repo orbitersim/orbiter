@@ -8,7 +8,6 @@
 #include "Planet.h"
 #include "Config.h"
 #include <stdio.h>
-#include <dinput.h>
 
 using namespace std;
 
@@ -64,7 +63,7 @@ Instrument_HSI::~Instrument_HSI ()
 HELPCONTEXT *Instrument_HSI::HelpTopic () const
 {
 	extern HELPCONTEXT DefHelpContext;
-	DefHelpContext.topic = "/mfd_hsi.htm";
+	DefHelpContext.topic = (char*)"/mfd_hsi.htm";
 	return &DefHelpContext;
 }
 
@@ -83,7 +82,7 @@ void Instrument_HSI::UpdateDraw (oapi::Sketchpad *skp)
 	};
 	static const INT narrowseg = 3, arrowseg[3] = {7,4,4};
 
-	static char *label[12] = {"N", "3", "6", "E", "12", "15", "S", "21", "24", "W", "30", "33"};
+	static const char *label[12] = {"N", "3", "6", "E", "12", "15", "S", "21", "24", "W", "30", "33"};
 	static int llen[12] = {1,1,1,1,2,2,1,2,2,1,2,2};
 	
 	// gyro direction
@@ -179,12 +178,12 @@ void Instrument_HSI::UpdateDraw (oapi::Sketchpad *skp)
 		if (bglideslope) {
 			const double glslope = 4.0;
 			double dslope = slope*DEG-glslope;
-			dy1 = (int)(max(-2, min(2, dslope))*0.3*R0);
+			dy1 = (int)(max(-2.0, min(2.0, dslope))*0.3*R0);
 			skp->Rectangle (-R0/2, dy1-U4, R0/2, dy1+U4);
 		}
 
 		// draw obs arrows
-		dy1 = (int)(max(-10, min (10, DEG*crsdev))*0.06*R0)+U4;
+		dy1 = (int)(max(-10.0, min (10.0, DEG*crsdev))*0.06*R0)+U4;
 		dy2 = dy1-2*U4;
 		parrow[11].y = parrow[12].y = dy2;
 		parrow[13].y = parrow[14].y = dy1;
@@ -294,11 +293,11 @@ void Instrument_HSI::SetSize (const Spec &spec)
 bool Instrument_HSI::KeyBuffered (DWORD key)
 {
 	switch (key) {
-	case DIK_F:
+	case OAPI_KEY_F:
 		focus = 1-focus;
 		Refresh();
 		return true;
-	case DIK_N:
+	case OAPI_KEY_N:
 		if (vessel->nnav) hsi[focus].nv = (hsi[focus].nv+1) % vessel->nnav;
 		Refresh();
 		return true;
@@ -308,15 +307,15 @@ bool Instrument_HSI::KeyBuffered (DWORD key)
 
 bool Instrument_HSI::KeyImmediate (char *kstate)
 {
-	if (KEYDOWN (kstate, DIK_LBRACKET)) {
-		if (BufKey (DIK_LBRACKET, 0.05)) {
+	if (KEYDOWN (kstate, OAPI_KEY_LBRACKET)) {
+		if (BufKey (OAPI_KEY_LBRACKET, 0.05)) {
 			hsi[focus].obs = posangle (hsi[focus].obs-RAD);
 			Refresh();
 		}
 		return true;
 	}
-	if (KEYDOWN (kstate, DIK_RBRACKET)) {
-		if (BufKey (DIK_RBRACKET, 0.05)) {
+	if (KEYDOWN (kstate, OAPI_KEY_RBRACKET)) {
+		if (BufKey (OAPI_KEY_RBRACKET, 0.05)) {
 			hsi[focus].obs = posangle (hsi[focus].obs+RAD);
 			Refresh();
 		}
@@ -327,7 +326,7 @@ bool Instrument_HSI::KeyImmediate (char *kstate)
 
 bool Instrument_HSI::ProcessButton (int bt, int event)
 {
-	static const DWORD btkey[4] = { DIK_F, DIK_N, DIK_LBRACKET, DIK_RBRACKET };
+	static const DWORD btkey[4] = { OAPI_KEY_F, OAPI_KEY_N, OAPI_KEY_LBRACKET, OAPI_KEY_RBRACKET };
 	if (event & PANEL_MOUSE_LBDOWN) {
 		if (bt < 2) return KeyBuffered (btkey[bt]);
 	} else if (event & PANEL_MOUSE_LBPRESSED) {

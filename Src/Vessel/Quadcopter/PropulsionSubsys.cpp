@@ -3,6 +3,9 @@
 
 #include "PropulsionSubsys.h"
 
+using std::min;
+using std::max;
+
 // ==============================================================
 // Single-rotor implementation
 // ==============================================================
@@ -255,7 +258,7 @@ void PropulsionSubsystem::HoldVspd(double vh_tgt)
 	double dlvl_max = dt;
 	if (fabs(dlvl) > dlvl_max)
 		dlvl = (dlvl > 0.0 ? dlvl_max : -dlvl_max);
-	m_throttle = max(0, min(1.0, m_throttle + dlvl));
+	m_throttle = max(0.0, min(1.0, m_throttle + dlvl));
 }
 
 void PropulsionSubsystem::HoldAlt(double alt_tgt)

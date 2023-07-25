@@ -17,6 +17,7 @@
 #include "Scene.h"
 #include "Vstar.h"
 extern TextureManager2 *g_texmanager2;
+static int texrefcount = 0;
 #endif // INLINEGRAPHICS
 
 using namespace std;
@@ -25,21 +26,16 @@ extern Orbiter *g_pOrbiter;
 extern Camera *g_camera;
 extern char DBG_MSG[256];
 
-static int texrefcount = 0;
 
 Star::Star (double _mass, double _mean_radius)
 : CelestialBody (_mass, _mean_radius)
 {
-	psys  = 0;
-	upd_t = 0.0;
 	Setup ();
 }
 
 Star::Star (char *fname)
 : CelestialBody (fname)
 {
-	psys  = 0;
-	upd_t = 0.0;
 	ifstream ifs (g_pOrbiter->ConfigPath (fname));
 	if (!ifs) return;
 	bDynamicPosVel = false;
@@ -76,15 +72,14 @@ Vector Star::Pos2Barycentre (Vector &pos)
 	return Vector();
 }
 
-D3DCOLORVALUE Star::GetLightColor ()
+Vector4 Star::GetLightColor ()
 {
-	static D3DCOLORVALUE col = {1,1,1,1};
-	return col;
+	return {1,1,1,1};
 }
 
+#ifdef INLINEGRAPHICS
 void Star::InitDeviceObjects ()
 {
-#ifdef INLINEGRAPHICS
 	if (!texrefcount) { // not loaded yet
 		FILE *file;
 		if (file = fopen (g_pOrbiter->TexPath ("Star"), "rb")) {
@@ -96,7 +91,6 @@ void Star::InitDeviceObjects ()
 		}
 	}
 	texrefcount++;
-#endif
 }
 
 void Star::DestroyDeviceObjects ()
@@ -105,3 +99,4 @@ void Star::DestroyDeviceObjects ()
 	if (--texrefcount == 0)   // need to release
 		tex->Release();
 }
+#endif //INLINEGRAPHICS

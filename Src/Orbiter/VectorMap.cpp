@@ -1117,7 +1117,7 @@ void VectorMap::DrawMarker (double lng, double lat, const char *name, int which)
 	LineTo (hDCmem, x, y+11);
 	SelectObject (hDCmem, ppen);
 	SetTextColor (hDCmem, Instrument::draw[which][0].col);
-	TextOut (hDCmem, x+3, which==2 ? y:y-labelsize-3, name, min(64,strlen(name)));
+	TextOut (hDCmem, x+3, which==2 ? y:y-labelsize-3, name, min((size_t)64,strlen(name)));
 }
 
 // =======================================================================
@@ -1622,7 +1622,7 @@ double Groundtrack::VtxDst (const VPointGT &vp1, const VPointGT &vp2)
 	double dlat = fabs(vp1.lat - vp2.lat);
 	double dlng = fabs(vp1.lng - vp2.lng);
 	if (dlng > Pi) dlng = Pi2-dlng;
-	return _hypot (dlng, dlat);
+	return std::hypot (dlng, dlat);
 }
 
 void Groundtrack::Update ()

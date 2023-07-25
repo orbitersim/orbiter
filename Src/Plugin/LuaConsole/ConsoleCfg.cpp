@@ -16,13 +16,12 @@ ConsoleConfig::ConsoleConfig (HINSTANCE hDLL): LaunchpadItem ()
 
 char *ConsoleConfig::Name ()
 {
-	return "Console Configuration";
+	return (char*)"Console Configuration";
 }
 
 char *ConsoleConfig::Description ()
 {
-	static char *desc = "Customize the appearance and behaviour of the inline Lua Console.\r\n\r\nThe console allows to run scripts during a simulation session.";
-	return desc;
+	return (char*)"Customize the appearance and behaviour of the inline Lua Console.\r\n\r\nThe console allows to run scripts during a simulation session.";
 	bool clbkOpen (HWND hLaunchpad);
 }
 
@@ -36,7 +35,7 @@ int ConsoleConfig::clbkWriteConfig ()
 {
 	FILEHANDLE hFile = oapiOpenFile (cfgfile, FILE_OUT, CONFIG);
 	if (!hFile) return 1;
-	oapiWriteItem_int (hFile, "FSIZE", fontsize);
+	oapiWriteItem_int (hFile, (char*)"FSIZE", fontsize);
 	oapiCloseFile (hFile, FILE_OUT);
 	return 0;
 }
@@ -66,7 +65,7 @@ bool ConsoleConfig::ReadConfig ()
 		MessageBeep (-1);
 		return false;
 	}
-	if (oapiReadItem_int (hFile, "FSIZE", d)) fontsize = (DWORD)d;
+	if (oapiReadItem_int (hFile, (char*)"FSIZE", d)) fontsize = (DWORD)d;
 	oapiCloseFile (hFile, FILE_IN);
 	return true;
 }

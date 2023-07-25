@@ -20,7 +20,7 @@
 #define ORBITER_MODULE
 
 extern "C" {
-#include "Lua\lua.h"
+#include "Lua/lua.h"
 }
 #include "orbitersdk.h"
 
@@ -101,7 +101,7 @@ void ScriptVessel::clbkSetClassCaps (FILEHANDLE cfg)
 	int i;
 
 	// Load the vessel script
-	oapiReadItem_string (cfg, "Script", script);
+	oapiReadItem_string (cfg, (char*)"Script", script);
 	sprintf (cmd, "run_global('Config/Vessels/%s')", script);
 	oapiExecScriptCmd (hInterp, cmd);
 

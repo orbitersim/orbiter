@@ -161,7 +161,7 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 			tdist = (x > 0.0) ? sqrt(x) : 0.0;
 		}
 
-		bias -=  2.0 * sqrt(max(0,adist) / prm.viewap);
+		bias -=  2.0 * sqrt(max(0.0,adist) / prm.viewap);
 		int maxlvl = prm.maxlvl;
 
 		double apr = tdist * scene->GetTanAp() * resolutionScale;

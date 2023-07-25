@@ -14,7 +14,10 @@
 #include "VVessel.h"
 #include "MeshMgr.h"
 #include "Texture.h"
+#include <algorithm>
 
+using std::min;
+using std::max;
 using namespace oapi;
 
 // ==============================================================
@@ -585,7 +588,7 @@ void vVessel::RenderGroundShadow (LPDIRECT3DDEVICE7 dev, OBJHANDLE hPlanet)
 	DWORD tfactor;
 	bool resetalpha = false;
 	if (gc->UseStencilBuffer()) {
-		double scale = min (1, (csun-0.07)/0.015);
+		double scale = min (1.0, (csun-0.07)/0.015);
 		if (scale < 1) {
 			dev->GetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, &tfactor);
 			float modalpha = (float)(scale*RGBA_GETALPHA(tfactor)/256.0);
@@ -744,7 +747,7 @@ bool vVessel::ModLighting (LPD3DLIGHT7 light)
 						amb = amb0 / (alt*0.5e-4 + 1.0);
 						amb *= min (1.0, (sunelev+14.0*RAD)/(20.0*RAD));
 						if (!lightmod) lightmod = (amb > 0.05);
-						amb = max (0, amb-0.05);
+						amb = max (0.0, amb-0.05);
 						// reduce direct light component to avoid overexposure
 						lcol *= 1.0-amb*0.5;
 					}

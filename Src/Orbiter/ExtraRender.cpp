@@ -11,31 +11,31 @@
 #include "ExtraRender.h"
 #include "Help.h"
 #include "resource.h"
+#include <algorithm>
+using std::min;
 
 //=============================================================================
 
 char *Extra_RenderOptions::Name ()
 {
-	return "Visualisation parameters";
+	return (char*)"Visualisation parameters";
 }
 
 char *Extra_RenderOptions::Description ()
 {
-	static char *desc = "Configure advanced rendering options affecting the appearance of the 3D world.\r\n\r\nCommon options can be accessed under the 'Visual effects' tab.";
-	return desc;
+	return (char*)"Configure advanced rendering options affecting the appearance of the 3D world.\r\n\r\nCommon options can be accessed under the 'Visual effects' tab.";
 }
 
 //=============================================================================
 
 char *Extra_PlanetRenderOptions::Name ()
 {
-	return "Planet rendering options";
+	return (char*)"Planet rendering options";
 }
 
 char *Extra_PlanetRenderOptions::Description ()
 {
-	static char *desc = "Options affecting the visual quality and appearance of planetary bodies.";
-	return desc;
+	return (char*)"Options affecting the visual quality and appearance of planetary bodies.";
 }
 
 bool Extra_PlanetRenderOptions::clbkOpen (HWND hParent)

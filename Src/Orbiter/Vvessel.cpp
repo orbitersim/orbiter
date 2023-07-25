@@ -19,6 +19,9 @@
 #include "Log.h"
 #include "Astro.h"
 #include "Util.h"
+#include <algorithm>
+using std::min;
+using std::max;
 
 #define EXHAUST_SCALEALPHA
 //#define EXHAUST_SCALESIZE
@@ -668,7 +671,7 @@ void VVessel::RenderExhaust (LPDIRECT3DDEVICE7 dev, LPDIRECTDRAWSURFACE7 default
 	if (vessel->sp.is_in_atm && g_pOrbiter->Cfg()->CfgVisualPrm.bReentryFlames && vessel->reentry.do_render) {
 		const double afac = 1.0/log(1e11/2e8);
 		double friction = 0.5 * pow(vessel->sp.atmrho,0.6) * pow (vessel->sp.airspd, 3);
-		double opac = max (0, min (1, log(friction/2e8)*afac));
+		double opac = max (0.0, min (1.0, log(friction/2e8)*afac));
 		if (opac > 0.005) {
 
 			if (need_setup) { // initialise render state
@@ -752,7 +755,7 @@ void VVessel::RenderGroundShadow (LPDIRECT3DDEVICE7 dev, const Planet *planet)
 	if (g_pOrbiter->UseStencil()) {
 		static D3DMATERIAL7 shmat_grey = {{0,0,0,1},{0,0,0,0},{0,0,0,0},{0,0,0,0},0};
 
-		shmat_grey.diffuse.a = (float)(depth * min (1, (csun-0.07)/0.015));
+		shmat_grey.diffuse.a = (float)(depth * min (1.0, (csun-0.07)/0.015));
 		dev->SetMaterial (&shmat_grey);
 	}
 	for (UINT i = 0; i < nmesh; i++) {
@@ -979,7 +982,7 @@ bool VVessel::ModLighting (LPD3DLIGHT7 light)
 						amb = amb0 / (alt*0.5e-4 + 1.0);
 						amb *= min (1.0, (sunelev+14.0*RAD)/(20.0*RAD));
 						if (!lightmod) lightmod = (amb > 0.05);
-						amb = max (0, amb-0.05);
+						amb = max (0.0, amb-0.05);
 						// reduce direct light component to avoid overexposure
 						lcol *= 1.0-amb*0.5;
 					}
@@ -1017,7 +1020,7 @@ bool VVessel::ModLighting (LPD3DLIGHT7 light)
 	}
 
 	if (lightmod) {
-		D3DCOLORVALUE starcol = sun->GetLightColor();
+		D3DCOLORVALUE starcol = VObject::ColorToD3D(sun->GetLightColor());
 		light->dcvDiffuse.r = light->dcvSpecular.r = starcol.r * (float)lcol.x;
 		light->dcvDiffuse.g = light->dcvSpecular.g = starcol.g * (float)lcol.y;
 		light->dcvDiffuse.b = light->dcvSpecular.b = starcol.b * (float)lcol.z;

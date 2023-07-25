@@ -271,7 +271,7 @@ Planet::Planet (char *fname)
 		if (!GetItemReal (ifs, "AtmGamma", atm.gamma) && !atm.gamma)
 			atm.gamma = 1.4;  // default to air
 		if (!GetItemReal (ifs, "AtmHazeExtent", hazerange)) hazerange = 0.1;
-		hazerange = max (0, min (0.9, hazerange));
+		hazerange = max (0.0, min (0.9, hazerange));
 		if (!GetItemReal (ifs, "AtmHazeShift", hazeshift)) hazeshift = 0.0;
 		if (!GetItemReal (ifs, "AtmHazeDensity", hazedens)) hazedens = 1.0;
 		Vector col0;
@@ -317,14 +317,14 @@ Planet::Planet (char *fname)
 		max_patch_level = (DWORD)i;
 	else
 		max_patch_level = 8;
-	max_patch_level = min (max_patch_level, SURF_MAX_PATCHLEVEL2);
+	max_patch_level = min (max_patch_level, (DWORD)SURF_MAX_PATCHLEVEL2);
 	max_patch_level = min (max_patch_level, g_pOrbiter->Cfg()->CfgVisualPrm.PlanetMaxLevel);
 
 	bHasCloudlayer = g_pOrbiter->Cfg()->CfgVisualPrm.bClouds &&
 		GetItemInt (ifs, "MinCloudResolution", min_cloud_level) && min_cloud_level >= 1;
 	if (bHasCloudlayer) {
 		if (!GetItemInt (ifs, "MaxCloudResolution", max_cloud_level))
-			max_cloud_level = min (8, max_patch_level);
+			max_cloud_level = min (8, (int)max_patch_level);
 		if (!GetItemBool (ifs, "BrightenClouds", bBrightClouds))
 			bBrightClouds = false;
 		if (GetItemString (ifs, "CloudMicrotextureAlt", cbuf) &&
@@ -374,7 +374,7 @@ Planet::Planet (char *fname)
 			}
 		}
 	} else { // by default, scan folder 'Config/<pname>/Base'
-		sprintf (cbuf, "%s\\Base", name);
+		sprintf (cbuf, "%s/Base", name.c_str());
 		ScanBases (cbuf);
 	}
 
@@ -465,6 +465,8 @@ Planet::~Planet ()
 		labelLegend = NULL;
 	}
 	g_pOrbiter->UpdateDeallocationProgress();
+
+	delete emgr;
 }
 
 intptr_t Planet::FindFirst (int type, _finddata_t *fdata, char *path, char *fname)
@@ -475,7 +477,7 @@ intptr_t Planet::FindFirst (int type, _finddata_t *fdata, char *path, char *fnam
 	switch (type) {
 	case FILETYPE_MARKER:
 		if (labelpath) strcpy (path, labelpath);
-		else           sprintf (path, "%s%s\\Marker\\", g_pOrbiter->Cfg()->CfgDirPrm.ConfigDir, name);
+		else           sprintf (path, "%s%s/Marker/", g_pOrbiter->Cfg()->CfgDirPrm.ConfigDir, name.c_str());
 		break;
 	}
 	sprintf (cbuf, "%s*.mkr", path);
@@ -663,7 +665,7 @@ void Planet::ScanLabelLegend()
 {
 	char path[256];
 	if (labelpath) strncpy (path, labelpath, 256);
-	else           sprintf (path, "%s%s\\", g_pOrbiter->Cfg()->CfgDirPrm.ConfigDir, name);
+	else           sprintf (path, "%s%s/", g_pOrbiter->Cfg()->CfgDirPrm.ConfigDir, name.c_str());
 	strcat (path, "Label.cfg");
 	std::ifstream ifs(path);
 	while (ifs.good()) {
@@ -812,7 +814,7 @@ void Planet::InitDeviceObjects ()
 	if (bHasCloudlayer && cmgr_version == 1) { // create cloud texture array for old cloud implementation
 		ncloudtex = patchidx[max_cloud_level] - patchidx[min_cloud_level-1];
 		cloudtex = new LPDIRECTDRAWSURFACE7[ncloudtex]; TRACENEW
-		if (ncloudtex = g_texmanager2->OpenTextures (name, "_cloud.tex", cloudtex, ncloudtex)) {
+		if (ncloudtex = g_texmanager2->OpenTextures (name.c_str(), "_cloud.tex", cloudtex, ncloudtex)) {
 			while (ncloudtex < patchidx[max_cloud_level] - patchidx[min_cloud_level-1]) max_cloud_level--;
 			while (ncloudtex > patchidx[max_cloud_level] - patchidx[min_cloud_level-1]) cloudtex[--ncloudtex]->Release();
 		}
@@ -827,9 +829,8 @@ void Planet::InitDeviceObjects ()
 	}
 
 	if (bHasRings) { // load ring textures
-		char cbuf[256];
-		strcpy (cbuf, name); strcat (cbuf, "_ring");
-		if (file = fopen (g_pOrbiter->TexPath (cbuf, ".tex"), "rb")) {
+		string tex_name = name + "_ring";
+		if (file = fopen (g_pOrbiter->TexPath (tex_name.c_str(), ".tex"), "rb")) {
 			ringtex = new LPDIRECTDRAWSURFACE7[3]; TRACENEW
 			nringtex = g_texmanager2->ReadTextures (file, ringtex, 3);
 			fclose (file);

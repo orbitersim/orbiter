@@ -28,18 +28,6 @@ double rand1()
 	return (double)rand()*irmax;
 }
 
-char *uscram (const char *str)
-{
-	static char cbuf[4096];
-	char *c;
-	int k;
-	BYTE key = str[0];
-	for (k = 1, c = cbuf; k < 4096 && (str[k] || str[k+1]); k++)
-		*c++ = (k&1 ? str[k]+key : str[k]-key);
-	*c = '\0';
-	return cbuf;
-}
-
 bool MakePath (const char *fname)
 {
 	char cbuf[256];

@@ -36,7 +36,7 @@ orbiter::ConsoleNG::ConsoleNG(Orbiter* pOrbiter)
     , m_hStatWnd(NULL)
     , m_hThread(NULL)
 {
-    static const PSTR title = "Orbiter Server Console";
+    static PCSTR title = "Orbiter Server Console";
     static SIZE_T stackSize = 4096;
 
     s_console = this;
@@ -162,7 +162,7 @@ bool orbiter::ConsoleNG::ParseCmd()
 			return true;
 		}
 		else if (!_strnicmp(pc, "count", 5)) {
-			_itoa(g_psys->nVessel(), cbuf, 10);
+			sprintf(cbuf, "%zu", g_psys->nVessel());
 			Echo(cbuf);
 		}
 		else if (!_strnicmp(pc, "focus", 5)) {

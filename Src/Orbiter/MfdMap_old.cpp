@@ -7,7 +7,6 @@
 #include "Celbody.h"
 #include "Planet.h"
 #include "Base.h"
-#include <dinput.h>
 
 using namespace std;
 
@@ -95,24 +94,24 @@ Instrument_MapOld::~Instrument_MapOld ()
 HELPCONTEXT *Instrument_MapOld::HelpTopic () const
 {
 	extern HELPCONTEXT DefHelpContext;
-	DefHelpContext.topic = "/mfd_map.htm";
+	DefHelpContext.topic = (char*)"/mfd_map.htm";
 	return &DefHelpContext;
 }
 
 bool Instrument_MapOld::KeyBuffered (DWORD key)
 {
 	switch (key) {
-	case DIK_K:  // track mode on/off
+	case OAPI_KEY_K:  // track mode on/off
 		ToggleTrack ();
 		Refresh();
 		return true;
-	case DIK_R:  // select reference
+	case OAPI_KEY_R:  // select reference
 		OpenSelect_CelBody ("Map MFD: Reference", ClbkEnter_Map, 1);
 		return true;
-	case DIK_T:  // select target
+	case OAPI_KEY_T:  // select target
 		g_select->Open ("Map MFD: Target", ClbkSubmn_Target, ClbkEnter_Target, (void*)this);
 		return true;
-	case DIK_Z:  // zoom in/out
+	case OAPI_KEY_Z:  // zoom in/out
 		SetZoom (!zoom);
 		Refresh();
 		return true;
@@ -122,29 +121,29 @@ bool Instrument_MapOld::KeyBuffered (DWORD key)
 
 bool Instrument_MapOld::KeyImmediate (char *kstate)
 {
-	if (KEYDOWN (kstate, DIK_LBRACKET)) { // scroll left
-		if (!track && BufKey (DIK_LBRACKET, 0.05)) {
+	if (KEYDOWN (kstate, OAPI_KEY_LBRACKET)) { // scroll left
+		if (!track && BufKey (OAPI_KEY_LBRACKET, 0.05)) {
 			if ((mapx -= 1) < 0) mapx += mapw;
 			Refresh();
 		}
 		return true;
 	}
-	if (KEYDOWN (kstate, DIK_RBRACKET)) { // scroll left
-		if (!track && BufKey (DIK_RBRACKET, 0.05)) {
+	if (KEYDOWN (kstate, OAPI_KEY_RBRACKET)) { // scroll left
+		if (!track && BufKey (OAPI_KEY_RBRACKET, 0.05)) {
 			if ((mapx += 1) > mapw-IW) mapx -= mapw;
 			Refresh();
 		}
 		return true;
 	}
-	if (KEYDOWN (kstate, DIK_MINUS)) { // scroll down
-		if (!track && BufKey (DIK_MINUS, 0.05)) {
+	if (KEYDOWN (kstate, OAPI_KEY_MINUS)) { // scroll down
+		if (!track && BufKey (OAPI_KEY_MINUS, 0.05)) {
 			if ((mapy -= 1) < 0) mapy = 0;
 			Refresh();
 		}
 		return true;
 	}
-	if (KEYDOWN (kstate, DIK_EQUALS)) { // scroll down
-		if (!track && BufKey (DIK_EQUALS, 0.05)) {
+	if (KEYDOWN (kstate, OAPI_KEY_EQUALS)) { // scroll down
+		if (!track && BufKey (OAPI_KEY_EQUALS, 0.05)) {
 			if ((mapy += 1) > maph-IW/2) mapy = maph-IW/2;
 			Refresh();
 		}
@@ -155,7 +154,7 @@ bool Instrument_MapOld::KeyImmediate (char *kstate)
 
 bool Instrument_MapOld::ProcessButton (int bt, int event)
 {
-	static const DWORD btkey[8] = { DIK_R, DIK_T, DIK_K, DIK_Z, DIK_LBRACKET, DIK_RBRACKET, DIK_MINUS, DIK_EQUALS };
+	static const DWORD btkey[8] = { OAPI_KEY_R, OAPI_KEY_T, OAPI_KEY_K, OAPI_KEY_Z, OAPI_KEY_LBRACKET, OAPI_KEY_RBRACKET, OAPI_KEY_MINUS, OAPI_KEY_EQUALS };
 	if (event & PANEL_MOUSE_LBDOWN) {
 		if (bt < 4) return KeyBuffered (btkey[bt]);
 	} else if (event & PANEL_MOUSE_LBPRESSED) {
@@ -559,7 +558,7 @@ void Instrument_MapOld::CalcOrbitProj (const Elements *el, const Planet *planet,
 		rl.Set (mul (R, Vector(cosp[i],0,sinp[i])));
 		x = rl.x, y = rl.y, z = rl.z;
 		lng = atan2 (z,x) + Pi;  // maps start at -Pi (180°W)
-		lat = atan(y/_hypot(x,z));
+		lat = atan(y/std::hypot(x,z));
 		sp[i].x = (int)(lng*f1);
 		if ((sp[i+npt05].x = sp[i].x + mapw05) >= mapw) sp[i+npt05].x -= mapw;
 		ilat = (int)(lat*f1);

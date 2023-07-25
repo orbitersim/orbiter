@@ -32,6 +32,8 @@
 #include "D3D7Util.h"
 #include <algorithm>
 
+using std::min;
+using std::max;
 using namespace oapi;
 
 // Initialisation of static members
@@ -71,7 +73,7 @@ void vObject::GlobalInit (const D3D7Client *gclient)
 	gc = gclient;
 
 	for (int i = 0; i < 3; i++) {
-		static char *fname[3] = {"Ball.dds","Ball2.dds","Ball3.dds"};
+		static const char *fname[3] = {"Ball.dds","Ball2.dds","Ball3.dds"};
 		gc->GetTexMgr()->LoadTexture (fname[i], blobtex+i, 0);
 	}
 }
@@ -160,7 +162,7 @@ void vObject::RenderSpot (LPDIRECT3DDEVICE7 dev, const VECTOR3 *ofs, float size,
 	double dist = length (pos);
 	VECTOR3 bdir (pos/dist);
 	const VECTOR3 &camp = *scn->GetCamera()->GetGPos();
-	double hz = _hypot (bdir.x, bdir.z);
+	double hz = std::hypot (bdir.x, bdir.z);
 	double phi = atan2 (bdir.z, bdir.x);
 	float sphi = (float)sin(phi), cphi = (float)cos(phi);
 
@@ -296,7 +298,7 @@ bool vObject::DrawVector(LPDIRECT3DDEVICE7 dev, const VECTOR3& end, const VECTOR
 	float w = (float)rad;
 	float h = (float)length(end);
 	if (h < EPS) return false;
-	float hb = max(h - 4.0f * w, 0);
+	float hb = max(h - 4.0f * w, 0.0f);
 
 	memcpy(Vtx, Vtx0, nVtx * sizeof(D3DVERTEX));
 

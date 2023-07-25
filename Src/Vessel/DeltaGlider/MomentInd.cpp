@@ -15,6 +15,8 @@
 #include "meshres_p0.h"
 #include "meshres_vc.h"
 
+using std::min;
+
 // ==============================================================
 
 //SURFHANDLE AngRateIndicator::srf[3] = {0,0,0};

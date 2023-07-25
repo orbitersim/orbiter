@@ -13,6 +13,9 @@
 #include "adiball.h"
 #include "attref.h"
 
+using std::min;
+using std::max;
+
 // Generic ADI texture parameters
 static const float texw = 512.0f;  // ADI texture width
 static const float texh = 512.0f;  // ADI texture height
@@ -302,7 +305,7 @@ bool ADIBall::Redraw2D (SURFHANDLE surf)
 	double tgtx, tgty;
 	static const float yexofs[4] = {bb_cntx-needle_w2,bb_cntx+needle_w2,bb_cntx-needle_w2,bb_cntx+needle_w2};
 	static const float peyofs[4] = {bb_cnty+needle_w2,bb_cnty-needle_w2,bb_cnty+needle_w2,bb_cnty-needle_w2};
-	const float erange = 42.0f;
+	const double erange = 42.0;
 	int tgtflag;
 	VECTOR3 euler_tgt;
 	if (!aref->GetTgtEulerAngles (euler_tgt)) {

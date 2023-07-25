@@ -41,6 +41,7 @@
 #include <iomanip>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
 
 #ifdef INLINEGRAPHICS
 #include "VVessel.h"
@@ -80,8 +81,7 @@ static Vector DefAttExhaustDir[12] = {
 Vessel::Vessel (const PlanetarySystem *psys, const char *_name, const char *_classname, const VESSELSTATUS &status)
 : VesselBase()
 {
-	name = new char[strlen(_name)+1]; TRACENEW
-	strcpy (name, _name);
+	name = _name;
 
 	if (!_classname) _classname = _name;
 	classname = new char[strlen(_classname)+1]; TRACENEW
@@ -115,8 +115,7 @@ Vessel::Vessel (const PlanetarySystem *psys, const char *_name, const char *_cla
 Vessel::Vessel (const PlanetarySystem *psys, const char *_name, const char *_classname, const void *status)
 : VesselBase()
 {
-	name = new char[strlen(_name)+1]; TRACENEW
-	strcpy (name, _name);
+	name = _name;
 
 	if (!_classname) _classname = _name;
 	classname = new char[strlen(_classname)+1]; TRACENEW
@@ -158,8 +157,7 @@ Vessel::Vessel (const PlanetarySystem *psys, const char *_name, const char *_cla
 	sprintf (cbuf, "%s (%s)", _classname ? _classname : _name, _name);
 	g_pOrbiter->OutputLoadStatus (cbuf, 0);
 
-	name = new char[strlen(_name)+1]; TRACENEW
-	strcpy (name, _name);
+	name = _name;
 
 	if (!_classname) _classname = _name;
 	classname = new char[strlen(_classname)+1]; TRACENEW
@@ -197,6 +195,7 @@ Vessel::~Vessel ()
 	FRecorder_Clear();
 	ClearDockDefinitions ();
 	if (modIntf.ovcExit) modIntf.ovcExit(modIntf.v);
+	if (modIntf.coreCreated) delete modIntf.v;
 	if (classname) {
 		delete []classname;
 		classname = NULL;
@@ -213,6 +212,7 @@ Vessel::~Vessel ()
 	ClearAnimations (false);
 	ClearTouchdownPoints();
 	ClearReentryStreams();
+	ClearLightEmitters();
 	UnregisterMFDModes();
 
 	if (xpdr) {
@@ -227,6 +227,10 @@ Vessel::~Vessel ()
 		delete []onlinehelp;
 		onlinehelp = NULL;
 	}
+
+	delete[]forcevec;
+	delete[]forcepos;
+
 	ClearModule();
 	g_pOrbiter->UpdateDeallocationProgress();
 }
@@ -237,7 +241,7 @@ bool Vessel::OpenConfigFile (ifstream &cfgfile) const
 {
 	char cbuf[256];
 	strcpy (cbuf, "Vessels\\");
-	strcat (cbuf, classname ? classname : name);
+	strcat (cbuf, classname ? classname : name.c_str());
 	// first search in $CONFIGDIR\Vessels
 	cfgfile.open (g_pOrbiter->ConfigPath (cbuf));
 	if (cfgfile.good()) return true;
@@ -755,7 +759,7 @@ void Vessel::PostCreation ()
 			BYTE *bt = (BYTE*)&tmp;
 			for (j = 0; j < g_psys->nVessel(); j++) {
 				Vessel *v = g_psys->GetVessel(j);
-				char *name = v->Name();
+				const char *name = v->Name();
 				tmp = 0;
 				for (k = 0; name[k]; k++) bt[k%4] += name[k];
 				if (tmp == dock[i]->mate) {
@@ -1254,7 +1258,7 @@ bool Vessel::GetLiftVector (Vector &L) const
 		L.Set (0, 0, 0);
 		return false;
 	} else {
-		double v0 = _hypot (sp.airvel_ship.y, sp.airvel_ship.z);
+		double v0 = std::hypot (sp.airvel_ship.y, sp.airvel_ship.z);
 		double scale = (v0 ? Lift/v0 : 0.0);
 		L.Set (0, sp.airvel_ship.z*scale, -sp.airvel_ship.y*scale);
 		return true;
@@ -2706,15 +2710,9 @@ bool Vessel::Undock (UINT did, const Vessel *exclude, double vsep)
 		}
 	}
 	if (bFRrecord && undocked) { // record undock event
-		char cbuf[256] = "\0";
-		int len = 0;
-		for (n = n0; n < n1; n++) {
-			if (len >= 255) break;
-			if (n > n0) cbuf[len++] = ' ';
-			_itoa (n, cbuf+len, 10);
-			len += (n < 10 ? 1 : n < 100 ? 2 : 3);
-		}
-		FRecorder_SaveEvent ("UNDOCK", cbuf);
+		std::string buf;
+		for (n = n0; n < n1; ++n) buf += ' ' + std::to_string(n);
+		FRecorder_SaveEvent("UNDOCK", buf.substr(1).data());
 	}
 	return undocked;
 }
@@ -2733,7 +2731,7 @@ bool Vessel::ClbkSelect_Undock (Select *menu, int item, char *str, void *data)
 	DWORD i;
 	char cbuf[16] = "Dock ";
 	for (i = 0; i < us->vessel->ndock; i++) {
-		_itoa (i+1, cbuf+5, 10);
+		sprintf(cbuf + 5, "%d", i + 1);
 		menu->Append (cbuf, us->vessel->dock[i]->mate ? 0 : ITEM_NOHILIGHT);
 	}
 	return true;
@@ -3497,7 +3495,7 @@ void Vessel::InitOrbiting (const Vector &relr, const Vector &relv, const Vector 
 		double lng, lat, alt0;
 		cbody->LocalToEquatorial (tmul(cbody->GRot(), cpos), lng, lat, rad);
 		alt0 = rad-cbody->Size();
-		int reslvl = (int)(32.0-log(max(alt0,100))*LOG2);
+		int reslvl = (int)(32.0-log(max(alt0,100.0))*LOG2);
 		elev = emgr->Elevation (lat, lng, reslvl, &etile);
 	} else {
 		rad = cpos.length();
@@ -3669,7 +3667,7 @@ int Vessel::ConsumeBufferedKey (DWORD key, bool down, char *kstate)
 	if (KEYMOD_CONTROL (kstate)) {  // CTRL-Key combinations
 
 		switch (key) {
-		case DIK_C:        // landing/takeoff clearance request
+		case OAPI_KEY_C:        // landing/takeoff clearance request
 			IssueClearanceRequest ();
 			return 1;
 		}
@@ -3678,7 +3676,7 @@ int Vessel::ConsumeBufferedKey (DWORD key, bool down, char *kstate)
 	} else if (KEYMOD_ALT (kstate)) {   // ALT-Key combinations
 
 		switch (key) {
-		case DIK_DIVIDE:   // connect/disconnect user input to aerodynamic control surfaces
+		case OAPI_KEY_DIVIDE:   // connect/disconnect user input to aerodynamic control surfaces
 			ToggleADCtrlMode ();
 			return 1;
 		}
@@ -4134,7 +4132,7 @@ void Vessel::UpdateAerodynamicForces_OLD ()
 	if (LiftCoeff && (Cl = LiftCoeff (aoa))) {
 		Lift = Cl * sp.dynp * cs.y;    // lift magnitude
 		Vector L (0, sp.airvel_ship.z, -sp.airvel_ship.y); // lift direction
-		double lnorm = _hypot (sp.airvel_ship.z, sp.airvel_ship.y);
+		double lnorm = std::hypot (sp.airvel_ship.z, sp.airvel_ship.y);
 		if (lnorm) {
 			L *= Lift / lnorm;
 			Flin_add += L;
@@ -4219,7 +4217,7 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 
 	ElevationManager* emgr = (cbody->Type() == OBJTP_PLANET ? ((Planet*)cbody)->ElevMgr() : 0);
 	int reslvl = 1;
-	if (emgr) reslvl = (int)(32.0-log(max(alt,100))*LOG2);
+	if (emgr) reslvl = (int)(32.0-log(max(alt,100.0))*LOG2);
 
 	Vector shift = tmul(ps.R, s->pos - ps.pos);
 	for (i = 0; i < ntouchdown_vtx; i++) {
@@ -5555,8 +5553,10 @@ bool Vessel::VCRedrawEvent (int id, int event, SURFHANDLE surf) const
 
 bool Vessel::VCMouseEvent (int id, int event, Vector &p) const
 {
-	if (modIntf.v && modIntf.v->Version() >= 1)
-		return ((VESSEL2*)modIntf.v)->clbkVCMouseEvent (id, event, _V(p.x,p.y,p.z));
+	if (modIntf.v && modIntf.v->Version() >= 1) {
+		VECTOR3 v = _V(p.x,p.y,p.z);
+		return ((VESSEL2*)modIntf.v)->clbkVCMouseEvent (id, event, v);
+	}
 	else
 		return false;
 }
@@ -5826,6 +5826,7 @@ bool Vessel::LoadModule (ifstream &classf)
 	hMod = 0;
 	ClearModule();
 	modIntf.v = 0;
+	modIntf.coreCreated = false;
 	flightmodel = g_pOrbiter->Cfg()->CfgLogicPrm.FlightModelLevel;
 	if (found = GetItemString (classf, "Module", cbuf)) {
 		found = RegisterModule (cbuf);
@@ -5840,6 +5841,7 @@ bool Vessel::LoadModule (ifstream &classf)
 	}
 	if (!modIntf.v) { // Problem: module didn't create a VESSEL instance!
 		modIntf.v = new VESSEL ((OBJHANDLE)this, flightmodel); TRACENEW
+		modIntf.coreCreated = true;
 	}
 	return found;
 }
@@ -6126,7 +6128,7 @@ const OBJHANDLE VESSEL::GetHandle () const
 
 char *VESSEL::GetName () const
 {
-	return vessel->Name();
+	return (char*)vessel->Name();
 }
 
 char *VESSEL::GetClassName () const

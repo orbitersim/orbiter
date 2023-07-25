@@ -146,7 +146,7 @@ void Orbits::clbkSimulationStart(RenderMode rm)
 {
 	upidx = 0;
 
-	oapiWriteLog("oapi::Module::clbkSimulationStart");
+	oapiWriteLog((char*)"oapi::Module::clbkSimulationStart");
 	
 	size_t bcnt{ oapiGetGbodyCount() };
 	Ref = new ReferenceClass();
@@ -158,7 +158,7 @@ void Orbits::clbkSimulationStart(RenderMode rm)
 	if (pCore)
 	{
 		hTex = oapiLoadTexture("samples/DrawOrbits/Orbits.dds");
-		hFnt = oapiCreateFontEx(15, "Arial");
+		hFnt = oapiCreateFontEx(15, (char*)"Arial");
 
 		pCore->RegisterRenderProc(RenderOrbitClbk, RENDERPROC_PLANETARIUM, this);
 
@@ -176,7 +176,7 @@ void Orbits::clbkSimulationStart(RenderMode rm)
 			}
 		}
 	}
-	else oapiWriteLog("Error: No pCore");
+	else oapiWriteLog((char*)"Error: No pCore");
 }
 
 
@@ -184,7 +184,7 @@ void Orbits::clbkSimulationStart(RenderMode rm)
 //
 void Orbits::clbkSimulationEnd()
 {
-	oapiWriteLog("oapi::Module::clbkSimulationEnd");
+	oapiWriteLog((char*)"oapi::Module::clbkSimulationEnd");
 
 	if (pCore) 
 	{
@@ -374,7 +374,7 @@ bool Orbits::WorldToScreenSpace(const VECTOR3& wpos, oapi::IVECTOR2* pt, const F
 	bool bVis = true;
 	if (homog.x < -clip || homog.x > clip || homog.y < -clip || homog.y > clip) bVis = false;
 
-	if (_hypot(homog.x, homog.y) < 1e-6) {
+	if (std::hypot(homog.x, homog.y) < 1e-6) {
 		pt->x = s.cx / 2;
 		pt->y = s.cy / 2;
 	}

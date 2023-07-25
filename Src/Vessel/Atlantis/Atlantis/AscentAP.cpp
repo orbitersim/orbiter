@@ -16,6 +16,9 @@
 #include "resource.h"
 #include "Common\Dialog\Graph.h"
 
+using std::min;
+using std::max;
+
 extern GDIParams g_Param;
 
 // ==============================================================
@@ -503,10 +506,10 @@ void AscentAP::SaveState (FILEHANDLE scn)
 	char cbuf[256];
 	sprintf (cbuf, "%0.3f %0.3f %0.3f %0.3f",
 		met, met_meco, met_oms_start, met_oms_end);
-	oapiWriteScenario_string (scn, "MET", cbuf);
+	oapiWriteScenario_string (scn, (char*)"MET", cbuf);
 	sprintf (cbuf, "%d %d %d %0.0f %0.4f %0.5f %0.5f",
 		(int)active, (int)met_active, (int)do_oms2, tgt_alt, launch_azimuth, launch_lng, launch_lat);
-	oapiWriteScenario_string (scn, "ASCENTAP", cbuf);
+	oapiWriteScenario_string (scn, (char*)"ASCENTAP", cbuf);
 }
 
 // --------------------------------------------------------------
@@ -714,18 +717,18 @@ void AscentApMfd::DrawGimbal (oapi::Sketchpad *skp, int cx, int cy, double pitch
 char *AscentApMfd::ButtonLabel (int bt)
 {
 	if (!bt)
-		return (ap->Active() ? "DA" : ap->GetVessel()->status == 0 ? "L" : "EA");
+		return (char*)(ap->Active() ? "DA" : ap->GetVessel()->status == 0 ? "L" : "EA");
 
 	if (bt <= 2) {
-		static char *label[2] = {"PG-", "PG+"};
-		return label[bt-1];
+		static const char *label[2] = {"PG-", "PG+"};
+		return (char*)label[bt-1];
 	}
 
 	switch (cpg) {
 		case 0: {
 			if (ap->Active() || ap->GetVessel()->status) return 0;
-			static char *label[5] = {"AZ-", "AZ+", "AL-", "AL+", "OM2"};
-			return (bt < 8 ? label[bt-3] : 0);
+			static const char *label[5] = {"AZ-", "AZ+", "AL-", "AL+", "OM2"};
+			return (char*)(bt < 8 ? label[bt-3] : 0);
 		}
 	}
 
@@ -902,7 +905,7 @@ void AscentApMfd::InitDecAzimuth ()
 {
 	set_mode = MODE_AZIMUTH_DEC;
 	ref_t = oapiGetSysTime();
-	ref_val = max(ap->GetLaunchAzimuth()-RAD*0.1, 0);
+	ref_val = max(ap->GetLaunchAzimuth()-RAD*0.1, 0.0);
 	ap->SetLaunchAzimuth(ref_val);
 	InvalidateDisplay();
 }
@@ -929,7 +932,7 @@ void AscentApMfd::DecAzimuth()
 		da -= min(dt-3.0,3.0)*RAD*2.0;
 	if (dt > 6.0)
 		da -= (dt-6.0)*RAD*20.0;
-	double az = max(ref_val + da, 0);
+	double az = max(ref_val + da, 0.0);
 	ap->SetLaunchAzimuth (az);
 	InvalidateDisplay();
 }
@@ -956,7 +959,7 @@ void AscentApMfd::InitDecAltitude ()
 {
 	set_mode = MODE_AZIMUTH_DEC;
 	ref_t = oapiGetSysTime();
-	ref_val = max(ap->GetOrbitAltitude()-100, 0);
+	ref_val = max(ap->GetOrbitAltitude()-100, 0.0);
 	ap->SetOrbitAltitude(ref_val);
 	InvalidateDisplay();
 }
@@ -983,7 +986,7 @@ void AscentApMfd::DecAltitude()
 		da -= min(dt-3.0,3.0)*1e3*2.0;
 	if (dt > 6.0)
 		da -= (dt-6.0)*1e3*20.0;
-	double alt = max(ref_val + da, 0);
+	double alt = max(ref_val + da, 0.0);
 	ap->SetOrbitAltitude (alt);
 	InvalidateDisplay();
 }

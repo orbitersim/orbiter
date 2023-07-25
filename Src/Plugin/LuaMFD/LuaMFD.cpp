@@ -6,6 +6,8 @@
 #include "orbitersdk.h"
 #include "LuaMFD.h"
 
+using std::min;
+
 // ==============================================================
 // Global variables
 
@@ -38,8 +40,8 @@ ScriptMFD::~ScriptMFD ()
 char *ScriptMFD::ButtonLabel (int bt)
 {
 	// The labels for the two buttons used by our MFD mode
-	static char *label[5] = {"INP", "NEW", "DEL", "PG>", "<PG"};
-	return (bt < 5 ? label[bt] : 0);
+	static const char *label[5] = {"INP", "NEW", "DEL", "PG>", "<PG"};
+	return (char*)(bt < 5 ? label[bt] : 0);
 }
 
 // Return button menus
@@ -113,7 +115,7 @@ void ScriptMFD::QueryCommand ()
 {
 	InterpreterList::Environment *env = vi->env[pg];
 	if (!env->interp->IsBusy())
-		oapiOpenInputBox ("Input script command:", ScriptInput, 0, 40, (void*)this);
+		oapiOpenInputBox ((char*)"Input script command:", ScriptInput, 0, 40, (void*)this);
 }
 
 void ScriptMFD::CreateInterpreter ()
@@ -178,7 +180,7 @@ void ScriptMFD::Update (HDC hDC)
 			col = ls->col;
 			SetTextColor (hDC, col);
 		}
-		TextOut (hDC, xofs, yofs, ls->buf, min(strlen(ls->buf),nchar));
+		TextOut (hDC, xofs, yofs, ls->buf, min(strlen(ls->buf),(size_t)nchar));
 		yofs += fh;
 	}
 	SelectObject (hDC, oFont);
@@ -201,9 +203,8 @@ OAPI_MSGTYPE ScriptMFD::MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lpara
 
 DLLCLBK void InitModule (HINSTANCE hDLL)
 {
-	static char *name = "Terminal MFD";
 	MFDMODESPECEX spec;
-	spec.name = name;
+	spec.name = (char*)"Terminal MFD";
 	spec.key = OAPI_KEY_T;
 	spec.context = NULL;
 	spec.msgproc = ScriptMFD::MsgProc;

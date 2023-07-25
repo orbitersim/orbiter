@@ -620,7 +620,7 @@ WindowManager::~WindowManager()
 {
 	oapiUnregisterCustomCmd(Cmd);
 
-	for each (SideBar* sb in sbList) delete sb;
+	for(SideBar* sb : sbList) delete sb;
 	
 	UnregisterClass("SideBarWnd", hInst);
 	UnregisterClass("Floater", hInst);
@@ -664,7 +664,7 @@ HBITMAP	WindowManager::GetBitmap(int id) const
 SideBar * WindowManager::GetSideBar(HWND hWnd)
 {
 	if (sbList.size() == 0) return NULL;
-	for each (SideBar * sb in sbList) if (sb->GetHWND() == hWnd) return sb;
+	for (SideBar * sb : sbList) if (sb->GetHWND() == hWnd) return sb;
 	return NULL;
 }
 
@@ -789,7 +789,7 @@ void WindowManager::UpdateSize(HWND hDlg)
 //
 HNODE WindowManager::GetNode(HWND hDlg)
 {
-	for each (SideBar* sb in sbList)
+	for (SideBar* sb : sbList)
 	{
 		HNODE hNode = (HNODE)sb->FindNode(hDlg);
 		if (hNode) return hNode;
@@ -848,7 +848,7 @@ bool WindowManager::UnRegister(HNODE hNode)
 //
 bool WindowManager::DoesExist(Node *pn)
 {
-	for each (SideBar *sb in sbList) if (sb->DoesExists(pn)) return true;
+	for (SideBar *sb : sbList) if (sb->DoesExists(pn)) return true;
 	return false;
 }
 
@@ -910,7 +910,7 @@ void WindowManager::Animate()
 //
 SideBar *WindowManager::NewSideBar(Node *pAN)
 {
-	for each (SideBar* sb in sbList) if (sb->IsInactive() && sb->IsEmpty()) {
+	for (SideBar* sb : sbList) if (sb->IsInactive() && sb->IsEmpty()) {
 		sb->SetState(gcGUI::DS_FLOAT);
 		return sb;
 	}
@@ -956,9 +956,9 @@ SideBar* WindowManager::StartDrag(Node *pAN, int x, int y)
 
 		vector<Node*> tmp;
 
-		for each (Node * an in pSBOld->wList) if (an->pParent == pAN) tmp.push_back(an);
+		for (Node * an : pSBOld->wList) if (an->pParent == pAN) tmp.push_back(an);
 
-		for each (Node * an in tmp) 
+		for (Node * an : tmp) 
 		{
 			pSBOld->RemoveWindow(an); // Cant remove directly from a list being browsed 
 			pSBNew->AddWindow(an);
@@ -1050,11 +1050,11 @@ SideBar *WindowManager::FindDestination()
 	int z = 0;
 	SideBar *pOld = sbDest;
 	sbDest = NULL;
-	for each (SideBar* sb in sbList) {
+	for (SideBar* sb : sbList) {
 		if (sb->IsInactive()) continue;
 		if (sb != sbDrag) {
 			RECT out;
-			IntersectRect(&out, &(sb->GetRect()), &(sbDrag->GetRect()));
+			IntersectRect(&out, ptr(sb->GetRect()), ptr(sbDrag->GetRect()));
 			int a = (out.right - out.left) * (out.bottom - out.top);
 			if (a > z) { z = a;	sbDest = sb; }
 		}
@@ -1201,7 +1201,7 @@ SideBar::SideBar(class WindowManager *_pMgr, DWORD _state)
 //
 SideBar::~SideBar()
 {	
-	for each (Node *v in wList)
+	for (Node *v : wList)
 	{
 		if (v->hDlg) DestroyWindow(v->hDlg);
 		delete v;
@@ -1223,7 +1223,7 @@ void SideBar::ToggleLock()
 //
 void SideBar::ManageButtons()
 {
-	for each (Node* nd in wList)
+	for (Node* nd : wList)
 	{
 		nd->bClose = false;
 
@@ -1386,7 +1386,7 @@ void SideBar::RescaleWindow()
 //
 Node* SideBar::FindNode(HWND hDlg)
 {
-	for each (Node* nd in wList) if (nd->hDlg == hDlg) return nd;
+	for (Node* nd : wList) if (nd->hDlg == hDlg) return nd;
 	return NULL;
 }
 
@@ -1396,11 +1396,11 @@ Node* SideBar::FindNode(HWND hDlg)
 void SideBar::GetVisualList(vector<Node*> &tmp)
 {
 	if (Config->gcGUIMode == 3) {
-		for each (Node* ap in wList) if (ap->hDlg) tmp.push_back(ap);
+		for (Node* ap : wList) if (ap->hDlg) tmp.push_back(ap);
 	} 
 	else 
 	{
-		for each (Node* ap in wList) {
+		for (Node* ap : wList) {
 			Node* pPar = ap->pParent;
 			if (pPar) {
 				if (pPar->pSB == this) {
@@ -1420,11 +1420,11 @@ void SideBar::GetVisualList(vector<Node*> &tmp)
 void SideBar::Sort()
 {
 	vector<Node*> tmp;
-	for each (Node* ap in wList) {
+	for (Node* ap : wList) {
 		Node* pPar = ap->pParent;
 		if (pPar == NULL) {
 			tmp.push_back(ap);	// Root Node
-			for each (Node* ch in wList) if (ch->pParent == ap) tmp.push_back(ch); // Child
+			for (Node* ch : wList) if (ch->pParent == ap) tmp.push_back(ch); // Child
 		}
 		else if (pPar->GetSideBar()!=this) tmp.push_back(ap); // Foreing Child
 	}
@@ -1469,7 +1469,7 @@ Node *SideBar::GetTopNode()
 //
 bool SideBar::DoesExists(Node *pX)
 {
-	for each (Node* ap in wList) if (ap == pX) return true;
+	for (Node* ap : wList) if (ap == pX) return true;
 	return false;
 }
 
@@ -1482,7 +1482,7 @@ Node *SideBar::FindClosest(vector<Node*> &vis, Node *pRoot, int yval)
 	int y = rollpos;
 	Node *out = NULL;
 	if (!pRoot) if (abs(y - yval) < d) d = abs(y - yval);
-	for each (Node* ap in vis) {
+	for (Node* ap : vis) {
 		y += ap->CellSize();
 		if (ap->pParent == pRoot || ap == pRoot || ap == vis.back()) {
 			if (abs(y - yval) < d) d = abs(y - yval), out = ap;
@@ -1520,7 +1520,7 @@ bool SideBar::TryInsert(SideBar *sbIn)
 	if (!DoesExists(pParent)) pParent = NULL;
 
 	Node *pPlace = FindClosest(drawList, pParent, yp);
-	for each (Node* an in sbIn->wList) wIns[an] = pPlace;
+	for (Node* an : sbIn->wList) wIns[an] = pPlace;
 
 	return wIns != wPrev;
 }
@@ -1537,7 +1537,7 @@ bool SideBar::Apply()
 
 	if ((pIns->pTgt == this) && (pIns->List.size()>0)) 
 	{
-		for each (auto &var in pIns->List)
+		for (auto &var : pIns->List)
 		{
 			Node *pAfter = var.second;
 			Node *pSrc = var.first;
@@ -1599,7 +1599,7 @@ LRESULT SideBar::SideBarWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		xpos = GET_X_LPARAM(lParam);
 		ypos = GET_Y_LPARAM(lParam);
 
-		for each (Node* nd in wList)
+		for (Node* nd : wList)
 		{
 			Node *pPar = nd->pParent;
 
@@ -1767,12 +1767,12 @@ int SideBar::ComputeLength()
 
 	bool bInsert = (pIns->pTgt == this) && (wIns.size() > 0);
 
-	if (bInsert) for each (auto &var in wIns) if (var.second == NULL) y += var.first->CellSize();
+	if (bInsert) for (auto &var : wIns) if (var.second == NULL) y += var.first->CellSize();
 
-	for each (Node* ap in drawList) 
+	for (Node* ap : drawList) 
 	{
 		y += ap->CellSize();
-		if (bInsert) for each (auto &var in wIns) if (var.second == ap) y += var.first->CellSize();
+		if (bInsert) for (auto &var : wIns) if (var.second == ap) y += var.first->CellSize();
 	}
 
 	wndlen = y;
@@ -1799,12 +1799,12 @@ void SideBar::PaintWindow()
 
 	bool bInsert = (pIns->pTgt == this) && (wIns.size() > 0);
 	
-	if (bInsert) for each (auto &var in wIns)
+	if (bInsert) for (auto &var : wIns)
 	{
 		if (var.second == NULL) y = var.first->Spacer(hDC, y);
 	}
 
-	for each (Node* ap in drawList)
+	for (Node* ap : drawList)
 	{
 		if (ap != drawList.front()) if (ap->pParent == NULL) {
 			RECT fr = { 0, y, width, y + 3 };
@@ -1814,7 +1814,7 @@ void SideBar::PaintWindow()
 
 		y = ap->Paint(hDC, y);
 
-		if (bInsert) for each (auto &var in wIns)
+		if (bInsert) for (auto &var : wIns)
 		{
 			if (var.second == ap) y = var.first->Spacer(hDC, y);
 		}
@@ -1838,9 +1838,9 @@ void SideBar::PaintWindow()
 	EndPaint(hBar, &ps);
 
 	// Move dialogs in place
-	for each (Node* ap in wList) {
+	for (Node* ap : wList) {
 		bool bFound = false;
-		for each (Node* q in drawList) if (q == ap) { bFound = true; break; }
+		for (Node* q : drawList) if (q == ap) { bFound = true; break; }
 		
 		if (bFound && ap->hDlg) {
 			if (ap->bOpen) ap->Move();

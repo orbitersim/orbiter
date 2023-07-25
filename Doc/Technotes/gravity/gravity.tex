@@ -1,8 +1,8 @@
 % -*-latex-*-
 
 \title{Orbiter Technical Notes: Nonspherical gravitational field perturbations}
-\author{Martin Schweiger}
-\date{September 21, 2005}
+\author{Martin Schweiger \and Matthew Hume}
+\date{November 18, 2022}
 
 \documentclass[a4paper]{article}
 \usepackage{graphicx}
@@ -105,4 +105,163 @@ With $P = 2\pi\sqrt{a^3/\mu_E}$ we get $n = \sqrt{\mu_E/a^3} = 0.0012$\,rad/s. T
 \cos i_\text{sync} = -\frac{2}{0.0035} \left(\frac{6 678 137}{6 378 137}\right)^2 \frac{1.99\cdot 10^{-7}}{0.001082630} = -0.116,
 \end{equation}
 or $i_\text{sync} = 96.7$\,deg.
+%
+%	Section added by M. Hume
+%
+\section{Extension to Tesseral Harmonics}
+In some cases neglecting the variation in perturbation with longitude is insufficient. Long-term evolution of orbital parameters and the degree to which vessel position and velocity retain a high degree of congruence with real-world observations and with other state vector propagation software, require gravity model that depends on both latitude and longitude.
+This accomplished by replacing the zonal terms previously discussed with tesseral terms. A tesseral gravity model includes non-spherical perturbation that vary continuously with both latitude and longitude. Where zonal terms can be represented as an ordered list of terms, tesseral terms are represented in the following form, $C(n,m)$ and $S(n,m)$ where , $0 \leq n \leq n_\text{max}$ and $0 \leq m \leq n$.
+A conventional representation of a harmonic gravitational potential is shown below, Pines\cite{pines73}(3), note the similarities to (1).
+\begin{equation}
+U_G(r,\phi,\theta) = \frac{\mu}{r}\left\{1+\sum_{n=1}^{\infty}\left ( \frac{a}{r} \right )^n \sum_{m=1}^{n}P_{n,m}(sin (\theta))(C_{n,m}cos(m\phi)+S_{n,m}cos(m\phi)) \right\}
+\end{equation}
+Pines\cite{pines73} transforms this representation, such that the singularities present at the poles and the non-uniformities in numerical precision that would result in their vicinity in a computational representation are eliminated. Pines\cite{pines73} uniform representation of the gravitational potential is:
+\begin{equation}
+U_G(s, t, u) = \frac{\mu}{r}\left\{1+\sum_{n=1}^{\infty}\left ( \frac{a}{r} \right )^n \sum_{m=1}^{n}A_{n,m}(u)(C_{n,m}r_m(s,t)+S_{n,m}i_m(s,t)) \right\}
+\end{equation}
+where s, t, and u are the x, y, and z\footnote{Note: Orbiter uses a left-handed coordinate system, wherein the y and z axes are swaped with respect conventional systems like IAU.}, components of position normalized by the magnitude of the position vector, $r_m(s,t)$ and $i_m(s,t)$  are the real and imaginary components respectively of $(s+it)^m$, and $A_{n,m}(u)$ are the \emph{m}th derivative of the associated Legendre polynomial $P_{n,m}(u)$.
+Similar to the zonal representation, the acceleration vector acting upon the spacecraft is found by computing the gradient of the potential. The algorithm used to compute acceleration is discussed and described in detail by Eckman et al.\cite{Eckman08}, referencing the implementation developed by DeMars et al.\\cite{DeMars08}
+
+\subsection{Notes on Usage}
+Gravity models must follow certain conventions in order to be used. The format used by this implementation is the SHADR format, or Spherical Harmonic ASCII Data Record of PSI\cite{shadr}. Only ASCII models where degree = order are supported.
+The first line of a model file is the header and consists of properties for the entire model. All subsequent lines contain data for harmonics coefficients. Details of the header line format can be found in Table~\ref{tab:headlinefmat}
+\begin{table}[h]
+\begin{tabular}{llcc}
+Column	&Parameter                        				&Units      			& Notes     \\\hline
+1		&Reference Radius                 				&km         			&           \\
+2		&Standard Gravitational Parameter 			&km$^3$/sec$^2$ 	&           \\
+3		&Uncertainty in Standard Gravitational Parameter	&none           		& Not used. \\
+4		&Degree of Field						&none           		&		\\
+5		&Order of Field						&none				&		\\
+6		&Normalization Status					&none				&Must be 1	\\
+7		&Reference Latitude					&Degrees			&Must be 0	\\
+8		&Reference Longitude					&Degrees			&Must be 0	
+\end{tabular}
+\caption{Gravity Model Header Line Format}
+\label{tab:headlinefmat}
+\end{table}
+
+
+An example of a header line from the LP165 model is shown below.
+\begin{tiny}
+\begin{verbatim}
+  .1738000000000000E+04,  .4902801056000000E+04,  .2170000000000000E-03,  165,  165,    1,  .0000000000000000E+00,  .0000000000000000E+00   
+\end{verbatim}
+\end{tiny}
+
+Subsequent lines contain the $C(n,m)$ and $S(n,m)$ coefficients. Details on the coefficient lines can be found in Table~\ref{tab:coefflinefmat}
+
+\begin{table}[h]
+\begin{tabular}{llcc}
+Column	&Parameter                        				&Units      			& Notes     \\\hline
+1		&n                							&none        			&           \\
+2		&m 								&none 			&           \\
+3		&$C(n,m)$							&none           		&  \\
+4		&$S(n,m)$ 							&none           		&		\\
+5		&Uncertainty in $C(n,m)$	 				&none				&Not used		\\
+6		&Uncertainty in $S(n,m)$					&none				&Not used	
+\end{tabular}
+\caption{Gravity Model Header Line Format}
+\label{tab:coefflinefmat}
+\end{table}
+
+
+
+An example of lines defining the harmonic coefficients are shown below.
+\begin{tiny}
+\begin{verbatim}
+    1,    0,  .0000000000000000E+00,  .0000000000000000E+00,  .0000000000000000E+00,  .0000000000000000E+00             
+    1,    1,  .0000000000000000E+00,  .0000000000000000E+00,  .0000000000000000E+00,  .0000000000000000E+00             
+    2,    0, -.9089018075060000E-04,  .0000000000000000E+00,  .5462525382390000E-08,  .0000000000000000E+00             
+    2,    1, -.2722032361590000E-08, -.7575182920830000E-09,  .4505315582830000E-08,  .3485921417110000E-08             
+    2,    2,  .3463549937220000E-04,  .1672949053830000E-07,  .3684587359180000E-08,  .3042220665000000E-08             
+    3,    0, -.3203591400300000E-05,  .0000000000000000E+00,  .6482991943890000E-08,  .0000000000000000E+00             
+    3,    1,  .2632744012180000E-04,  .5464363089820000E-05,  .7496882504270000E-08,  .4465401948060000E-08             
+    3,    2,  .1418817932940000E-04,  .4892036500480000E-05,  .6742524852930000E-08,  .6037402771920000E-08             
+    3,    3,  .1228605894470000E-04, -.1785448081640000E-05,  .4519014367070000E-08,  .4568425931770000E-08             
+\end{verbatim}
+\end{tiny}
+New gravity models must be added to the folder \emph{./GravityModels}, the corresponding body configuration file must be edited to include the following lines:
+\begin{tiny}
+\begin{verbatim}
+; === Gravity Models ===
+; ref: see Doc/Technotes/gravity.pdf for details on implementation and usage
+GravModelPath = jgl165p1.sha       ; the name of the gravity model file to load, located in /GravityModels
+GravCoeffCutoff = 10               ; the maximum number of terms to load.
+\end{verbatim}
+\end{tiny}
+\subsubsection{Limitations}
+All gravity models must start with the C(1,0) and S(1,0) coefficients. In the case that they have been omitted by the original creator of the model, they must be padded by zeros as shown in the first two lines of the example above. Additionally: only normalized coefficients are supported, only models that have a reference latitude and longitude corresponding to Orbiter's positive X axis are supported (latitude = 0°, longitude = 0°).
+
+\subsubsection{Included Models}
+By default Orbiter comes with four gravity models, one each for: Mercury, Venus, Earth's Moon, and Mars. The default cut-off degree/order is 10 to minimize the impact on simulation performance, however this can be increased at the users discretion. A summary of the models included with this release and their respective default settings is shown in Table~\ref{tab:models}
+\begin{table}[h]
+\begin{tabular}{llcc}
+Body    	& Model                 					& Maximum Degree/Order 		& Default Degree/Order \\\hline
+Mercury 	& \emph{jgmess\_160a\_sha.tab} 		& 160                  			& 10                   \\
+Venus   	& \emph{mod\_shgj120p.a01}     		& 120                  			& 10                   \\
+Luna    	&\emph{ jgl165p1.sha}				& 165                  			& 10                   \\
+Mars    	&\emph{ jgmro\_120f\_sha.tab}  		& 120                  			& 10                  
+\end{tabular}
+\caption{Gravity models included with Orbiter}
+\label{tab:models}
+\end{table}
+
+\subsection{Testing and Results}
+A test was devised using NASA JPL's GMAT software package to produce control. A simulation was set up consisting of a spacecraft in a 45\textdegree inclination orbit around Earth's Moon, approximately 75x62km. The orbit was propagated for $10^5$ seconds while logging state vector. For control, the GMAT propagator was set to RungeKutta89 with an accuracy of $1\times10^{-13}$ and the RSSStep error control method. The gravity model \emph{jgl165p1.sha} was used with the coefficient cut-off set to the maximum value of 165. In Orbiter, the propagator was set to RK8. Both simulations used fixed 5 second time-steps. 
+
+Figure~\ref{fig:alt} show GMAT altitude above the mean Lunar surface, overlaid on the results from the Orbiter model as a comparison. Trends in apoapsis and periapsis height, and eccentricity are highly congruent between the two models. To quantify the relative error in the Orbiter implementation, the difference in position in the rotating lunar reference frame was computed and is plotted in Figure~\ref{fig:error}. A second test was carried out, recording position in both GMAT and Orbiter with point-mass gravity only. The difference in the error between these two test runs is plotted in Figure~\ref{fig:errordiff}, and was observed to be several orders of magnitude less than the absolute position error with or without complex gravity.
+
+Further work is needed to quantify the absolute position error between Orbiter and GMAT. The source of this error is believed to be differences in propagators and error control between GMAT and Orbiter. Changing propagator settings had the largest effect on the magnitude of the error plotted in Figure~\ref{fig:error}. Two models for Lunar position and rotation were tested, both Orbiter's default ELP82 and JPL's DE440, however neither had significant impact on reducing the error. Given the relatively small difference in error between the test case with point-mass gravity and with complex gravity, there is a high degree of confidence in the acceleration values this model produces.
+
+Further details on ephemeris models can be found at \begin{tiny}\begin{verbatim}https://www.orbiter-forum.com/threads/improved-tesseral-gravity-model.40266/post-603043\end{verbatim}\end{tiny}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=1.0\textwidth]{altitude.eps}
+\caption{Comparison of Orbiter-Pines and GMAT Altitude above Mean Lunar Radius}
+\label{fig:alt}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=1.0\textwidth]{position_error.eps}
+\caption{Comparison of Position Relative to Rotating Lunar ReferenceFrame}
+\label{fig:error}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=1.0\textwidth]{errordiff.eps}
+\caption{Difference Between Position Error with and without Complex Gravity}
+\label{fig:errordiff}
+\end{figure}
+
+
+
+\clearpage
+\begin{thebibliography}{999}
+
+\bibitem{shadr}
+Lemoine F., Jester P.
+\emph{Spherical Harmonics ASCII Data Record}
+Planetary Science Institute, Tucson AZ. 22 May 2013.\begin{verbatim}https://sbnarchive.psi.edu/pds3/dawn/grav/
+DWNCGRS_2_v3_181005/DOCUMENT/SHADR.ASC\end{verbatim}
+
+\bibitem{pines73}
+ Pines, S.,
+\emph{Uniform Representation of the Gravitational Potential and its Derivatives.}
+AIAA Journal Vol. 11, No. 11, Nov. 1973, pp. 1508-1511
+
+\bibitem{Eckman08}
+Eckman, R., Brown, A., Adamo, D.,
+\emph{Normalization and Implementation of Three Gravitational Acceleration Models.}
+National Aeronautics and Space Administration, Johnson Space Center, June 1, 2016. https://ntrs.nasa.gov/api/citations/20160011252/downloads/20160011252.pdf
+
+\bibitem{DeMars08}
+DeMars, K. J., Bishop, R. H., Crain, T. P., and Condon, G. L., 
+\emph{Engineering Analysis of Guidance and Navigation Performance in the Uncertain Lunar Environment to Support Human Exploration}
+Thirty-First Annual AAS Guidance and Control Conference, No. AAS 08-046, American Astronautical Society, Breckenridge, CO, Feb. 2008.
+        
+\end{thebibliography}
 \end{document}

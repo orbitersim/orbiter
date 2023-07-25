@@ -8,7 +8,6 @@
 #include "Log.h"
 #include "Select.h"
 #include "Orbiter.h"
-#include <dinput.h>
 
 using namespace std;
 
@@ -86,7 +85,7 @@ Instrument_Transfer::~Instrument_Transfer ()
 HELPCONTEXT *Instrument_Transfer::HelpTopic () const
 {
 	extern HELPCONTEXT DefHelpContext;
-	DefHelpContext.topic = "/mfd_transfer.htm";
+	DefHelpContext.topic = (char*)"/mfd_transfer.htm";
 	return &DefHelpContext;
 }
 
@@ -163,7 +162,7 @@ void Instrument_Transfer::UpdateDraw (oapi::Sketchpad *skp)
 	if (src != vessel) {
 		int x, y;
 		Vector dp (mul (irot, vessel->GPos() - src->GPos()));
-		double r = _hypot (dp.x, dp.z);
+		double r = std::hypot (dp.x, dp.z);
 		x = (int)(IW*0.1/r*dp.x);
 		y = (int)(IW*0.1/r*dp.z);
 		MapScreen (ICNTX, ICNTY, scale, mul (irot, shpel->RVec()), &p0);
@@ -420,40 +419,40 @@ bool Instrument_Transfer::InitNumTrajectory (const Elements *el)
 bool Instrument_Transfer::KeyBuffered (DWORD key)
 {
 	switch (key) {
-	case DIK_F:  // decrease step scale for numerical trajectory
+	case OAPI_KEY_F:  // decrease step scale for numerical trajectory
 		step_scale *= 0.5;
 		return true;
-	case DIK_G:  // increase step scale for numerical trajectory
+	case OAPI_KEY_G:  // increase step scale for numerical trajectory
 		step_scale *= 2.0;
 		return true;
-	case DIK_M:  // toggle numerical trajectory
+	case OAPI_KEY_M:  // toggle numerical trajectory
 		enable_num = !enable_num;
 		if (enable_num) InitNumTrajectory (enable_hyp ? shpel2 : shpel);
 		Refresh();
 		return true;
-	case DIK_N:  // deselect target
+	case OAPI_KEY_N:  // deselect target
 		tgt = 0;
 		Refresh();
 		return true;
-	case DIK_R:  // select reference
+	case OAPI_KEY_R:  // select reference
 		OpenSelect_CelBody ("Transfer MFD: Reference", ClbkEnter_Ref);
 		return true;
-	case DIK_S:  // select source
+	case OAPI_KEY_S:  // select source
 		OpenSelect_Tgt ("Transfer MFD: Source", ClbkEnter_Src, elref, 0);
 		//g_input->Open ("Enter source orbit body:", 0, 20, Instrument_Transfer::ClbkName_Src, (void*)this);
 		return true;
-	case DIK_T:  // select target
+	case OAPI_KEY_T:  // select target
 		OpenSelect_Tgt ("Transfer MFD: Target", ClbkEnter_Tgt, elref, 0);
 		return true;
-	case DIK_U:  // update numerical trajectory
+	case OAPI_KEY_U:  // update numerical trajectory
 		if (enable_num) InitNumTrajectory (enable_hyp ? shpel2 : shpel);
 		Refresh();
 		return true;
-	case DIK_X:  // toggle HTO orbit
+	case OAPI_KEY_X:  // toggle HTO orbit
 		enable_hyp = !enable_hyp;
 		Refresh();
 		return true;
-	case DIK_Z:  // change number of trajectory steps
+	case OAPI_KEY_Z:  // change number of trajectory steps
 		g_input->Open ("Enter # time steps:", 0, 20, Instrument_Transfer::ClbkNstep, (void*)this);
 		return true;
 	}
@@ -462,24 +461,24 @@ bool Instrument_Transfer::KeyBuffered (DWORD key)
 
 bool Instrument_Transfer::KeyImmediate (char *kstate)
 {
-	if (KEYDOWN (kstate, DIK_COMMA)) {
-		if (BufKey (DIK_COMMA, 0.1)) {
+	if (KEYDOWN (kstate, OAPI_KEY_COMMA)) {
+		if (BufKey (OAPI_KEY_COMMA, 0.1)) {
 			l_eject = posangle (l_eject-RAD);
 			dv_manip = true;
 			Refresh();
 		}
 		return true;
 	}
-	if (KEYDOWN (kstate, DIK_PERIOD)) {
-		if (BufKey (DIK_PERIOD, 0.1)) {
+	if (KEYDOWN (kstate, OAPI_KEY_PERIOD)) {
+		if (BufKey (OAPI_KEY_PERIOD, 0.1)) {
 			l_eject = posangle (l_eject+RAD);
 			dv_manip = true;
 			Refresh();
 		}
 		return true;
 	}
-	if (KEYDOWN (kstate, DIK_MINUS)) {
-		if (BufKey (DIK_MINUS, 0.1)) {
+	if (KEYDOWN (kstate, OAPI_KEY_MINUS)) {
+		if (BufKey (OAPI_KEY_MINUS, 0.1)) {
 			double da = 1.0;
 			if (td.SysT0-tbpress < 0.2)
 				da = (td.SysT0-tbdown < 1.0 ? 1.0:10.0);
@@ -492,8 +491,8 @@ bool Instrument_Transfer::KeyImmediate (char *kstate)
 		}
 		return true;
 	}
-	if (KEYDOWN (kstate, DIK_EQUALS)) {
-		if (BufKey (DIK_EQUALS, 0.1)) {
+	if (KEYDOWN (kstate, OAPI_KEY_EQUALS)) {
+		if (BufKey (OAPI_KEY_EQUALS, 0.1)) {
 			double da = 1.0;
 			if (td.SysT0-tbpress < 0.2)
 				da = (td.SysT0-tbdown < 1.0 ? 1.0:10.0);
@@ -511,8 +510,8 @@ bool Instrument_Transfer::KeyImmediate (char *kstate)
 
 bool Instrument_Transfer::ProcessButton (int bt, int event)
 {
-	static const DWORD btkey[14] = { DIK_R, DIK_S, DIK_T, DIK_N, DIK_X, DIK_M, DIK_U, DIK_Z,
-		DIK_COMMA, DIK_PERIOD, DIK_MINUS, DIK_EQUALS, DIK_F, DIK_G };
+	static const DWORD btkey[14] = { OAPI_KEY_R, OAPI_KEY_S, OAPI_KEY_T, OAPI_KEY_N, OAPI_KEY_X, OAPI_KEY_M, OAPI_KEY_U, OAPI_KEY_Z,
+		OAPI_KEY_COMMA, OAPI_KEY_PERIOD, OAPI_KEY_MINUS, OAPI_KEY_EQUALS, OAPI_KEY_F, OAPI_KEY_G };
 	if (event & PANEL_MOUSE_LBDOWN) {
 		if (bt < 8 || bt >= 12) return KeyBuffered (btkey[bt]);
 	} else if (event & PANEL_MOUSE_LBPRESSED) {
@@ -593,7 +592,7 @@ bool Instrument_Transfer::SelectRef (char *str)
 	return true;
 }
 
-bool Instrument_Transfer::SelectSrc (char *str)
+bool Instrument_Transfer::SelectSrc (const char *str)
 {
 	RigidBody *obj;
 	if (!_stricmp (str, "x")) {

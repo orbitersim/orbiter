@@ -115,7 +115,7 @@ void Create()
 	vObj = NULL;
 	hDlg = NULL;
 
-	dwCmd = oapiRegisterCustomCmd("D3D9 Atmospheric Controls", "This dialog allows to control various atmospheric parameters and effects", OpenDlgClbk, NULL);
+	dwCmd = oapiRegisterCustomCmd((char*)"D3D9 Atmospheric Controls", (char*)"This dialog allows to control various atmospheric parameters and effects", OpenDlgClbk, NULL);
 	
 	memset(Slider,0,sizeof(Slider));
 	
@@ -238,30 +238,30 @@ void OpenDlgClbk(void *context)
 	ConfigSlider(IDC_ATM_AUX4,		0.0, 8.0);		// Mie Phase-B
 	ConfigSlider(IDC_ATM_AUX5,		0.0, 5.0, 8);	// Clouds intensity
 	// -------------------------------------------------------
-	CreateToolTip(IDC_ATM_TW_DST,	hDlg, "Light travel distance behind terminator");
-	CreateToolTip(IDC_ATM_GREEN,	hDlg, "Green wave lenght. (Green balance)");
-	CreateToolTip(IDC_ATM_TW_BRI,	hDlg, "Terrain brightness during twilight");
-	CreateToolTip(IDC_ATM_RPOW,		hDlg, "Main control for atmospheric rayleigh color composition (4.0 for the Earth)");
-	CreateToolTip(IDC_ATM_MPOW,		hDlg, "Main control for atmospheric mie color composition");
-	CreateToolTip(IDC_ATM_HEIGHT,	hDlg, "Atmosphere Ray scale height (7km - 9km for the Earth)");
-	CreateToolTip(IDC_ATM_M_HEIGHT,	hDlg, "Atmosphere Mie scale height (0.6km - 2km for the Earth)");
+	CreateToolTip(IDC_ATM_TW_DST,	hDlg, (char*)"Light travel distance behind terminator");
+	CreateToolTip(IDC_ATM_GREEN,	hDlg, (char*)"Green wave lenght. (Green balance)");
+	CreateToolTip(IDC_ATM_TW_BRI,	hDlg, (char*)"Terrain brightness during twilight");
+	CreateToolTip(IDC_ATM_RPOW,		hDlg, (char*)"Main control for atmospheric rayleigh color composition (4.0 for the Earth)");
+	CreateToolTip(IDC_ATM_MPOW,		hDlg, (char*)"Main control for atmospheric mie color composition");
+	CreateToolTip(IDC_ATM_HEIGHT,	hDlg, (char*)"Atmosphere Ray scale height (7km - 9km for the Earth)");
+	CreateToolTip(IDC_ATM_M_HEIGHT,	hDlg, (char*)"Atmosphere Mie scale height (0.6km - 2km for the Earth)");
 	// -------------------------------------------------------
-	CreateToolTip(IDC_ATM_TRB,		hDlg, "Terrain/Ocean brightness control (default 1.0)");
-	CreateToolTip(IDC_ATM_TRGAMMA,	hDlg, "Terrain/Ocean gamma control value (default 1.0)");
-	CreateToolTip(IDC_ATM_TRLIGHTSHAD, hDlg, "Terrain light and shadow boost");
+	CreateToolTip(IDC_ATM_TRB,		hDlg, (char*)"Terrain/Ocean brightness control (default 1.0)");
+	CreateToolTip(IDC_ATM_TRGAMMA,	hDlg, (char*)"Terrain/Ocean gamma control value (default 1.0)");
+	CreateToolTip(IDC_ATM_TRLIGHTSHAD, hDlg, (char*)"Terrain light and shadow boost");
 	// -------------------------------------------------------
-	CreateToolTip(IDC_ATM_RAY,		hDlg, "Overall control for rayleigh scattering (i.e. Haze stickness, atmosphere transparency, optical depth");
-	CreateToolTip(IDC_ATM_IN,		hDlg, "Rayleigh in-scatter out-scatter ratio (1.0 nominal)");
-	CreateToolTip(IDC_ATM_RPHASE,	hDlg, "Ambient light level for buildings");
+	CreateToolTip(IDC_ATM_RAY,		hDlg, (char*)"Overall control for rayleigh scattering (i.e. Haze stickness, atmosphere transparency, optical depth");
+	CreateToolTip(IDC_ATM_IN,		hDlg, (char*)"Rayleigh in-scatter out-scatter ratio (1.0 nominal)");
+	CreateToolTip(IDC_ATM_RPHASE,	hDlg, (char*)"Ambient light level for buildings");
 	// -------------------------------------------------------
-	CreateToolTip(IDC_ATM_MIE,		hDlg, "Overall scale factor for mie scattering. (Mie-particle density)");
-	CreateToolTip(IDC_ATM_MPHASE,	hDlg, "Directional strength of Henyey-Greenstein phase function");
-	CreateToolTip(IDC_ATM_MIEIN,	hDlg, "Mie in-scatter out-scatter ratio (1.0 nominal)");
+	CreateToolTip(IDC_ATM_MIE,		hDlg, (char*)"Overall scale factor for mie scattering. (Mie-particle density)");
+	CreateToolTip(IDC_ATM_MPHASE,	hDlg, (char*)"Directional strength of Henyey-Greenstein phase function");
+	CreateToolTip(IDC_ATM_MIEIN,	hDlg, (char*)"Mie in-scatter out-scatter ratio (1.0 nominal)");
 	// -------------------------------------------------------
-	CreateToolTip(IDC_ATM_AUX2,		hDlg, "Altitude for cloud lighting calculations");
-	CreateToolTip(IDC_ATM_AUX3,		hDlg, "'HDR' Exposure factor");
-	CreateToolTip(IDC_ATM_AUX4,		hDlg, "Omnidirectional mie scattering scale factor");
-	CreateToolTip(IDC_ATM_AUX5,		hDlg, "[Dual purpose] Clouds intensity [on surface]. Multiscatter light level [on orbit]");
+	CreateToolTip(IDC_ATM_AUX2,		hDlg, (char*)"Altitude for cloud lighting calculations");
+	CreateToolTip(IDC_ATM_AUX3,		hDlg, (char*)"'HDR' Exposure factor");
+	CreateToolTip(IDC_ATM_AUX4,		hDlg, (char*)"Omnidirectional mie scattering scale factor");
+	CreateToolTip(IDC_ATM_AUX5,		hDlg, (char*)"[Dual purpose] Clouds intensity [on surface]. Multiscatter light level [on orbit]");
 	
 	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_ADDSTRING, 0, (LPARAM)"Auto");

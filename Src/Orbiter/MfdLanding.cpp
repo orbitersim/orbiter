@@ -7,7 +7,6 @@
 #include "Config.h"
 #include "Celbody.h"
 #include <stdio.h>
-#include <dinput.h>
 
 using namespace std;
 
@@ -54,14 +53,14 @@ Instrument_Landing::~Instrument_Landing ()
 HELPCONTEXT *Instrument_Landing::HelpTopic () const
 {
 	extern HELPCONTEXT DefHelpContext;
-	DefHelpContext.topic = "/mfd_vtol.htm";
+	DefHelpContext.topic = (char*)"/mfd_vtol.htm";
 	return &DefHelpContext;
 }
 
 bool Instrument_Landing::KeyBuffered (DWORD key)
 {
 	switch (key) {
-	case DIK_N: // NAV receiver select
+	case OAPI_KEY_N: // NAV receiver select
 		if (vessel->nnav) nv = (nv+1) % vessel->nnav;
 		Refresh();
 		return true;
@@ -71,7 +70,7 @@ bool Instrument_Landing::KeyBuffered (DWORD key)
 
 bool Instrument_Landing::ProcessButton (int bt, int event)
 {
-	static const DWORD btkey[1] = { DIK_N };
+	static const DWORD btkey[1] = { OAPI_KEY_N };
 	if (event & PANEL_MOUSE_LBDOWN) {
 		if (bt < 1) return KeyBuffered (btkey[bt]);
 	}
@@ -171,7 +170,7 @@ void Instrument_Landing::UpdateDraw (oapi::Sketchpad *skp)
 	}
 	Vector hvel (tmul (sp->ref->GRot(), sp->groundvel_glob));
 	hvel.Set (mul (sp->L2H, hvel));
-	hspd = _hypot (hvel.x, hvel.z);
+	hspd = std::hypot (hvel.x, hvel.z);
 	vdir = atan2 (hvel.x, hvel.z) - sp->dir;
 	if      (vdir <= -Pi) vdir += Pi2;
 	else if (vdir >=  Pi) vdir -= Pi2;
@@ -221,7 +220,7 @@ void Instrument_Landing::UpdateDraw (oapi::Sketchpad *skp)
 	for (i = 0; i <= 4; i++) {
 		dy = (barh*i)/4;
 		skp->Line (dx, bar0-dy, dx+barw+2, bar0-dy);
-		_itoa (i-1, cbuf, 10);
+		sprintf(cbuf, "%d", i-1);
 		skp->Text (dx+barw+3, bar0-dy-ch/2, cbuf, strlen(cbuf));
 	}
 

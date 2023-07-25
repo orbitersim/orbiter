@@ -210,7 +210,7 @@ INT_PTR CALLBACK DlgHelp::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 	case WM_COMMAND:
 		switch (LOWORD (wParam)) {
 		case IDHELP:
-			DefHelpContext.topic = "/help.htm";
+			DefHelpContext.topic = (char*)"/help.htm";
 			g_pOrbiter->OpenHelp (&DefHelpContext);
 			return TRUE;
 		case IDCANCEL:

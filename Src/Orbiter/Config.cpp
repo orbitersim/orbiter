@@ -554,7 +554,7 @@ bool Config::Load(const char *fname)
 	if (GetReal (ifs, "PlanetResolutionBias", d))
 		CfgPRenderPrm.ResolutionBias = max (-2.0, min (2.0, d));
 	if (GetInt (ifs, "TileLoadFlags", i))
-		CfgPRenderPrm.TileLoadFlags = max (min((DWORD)i, 3), 1);
+		CfgPRenderPrm.TileLoadFlags = max (min(i, 3), 1);
 
 	// map dialog parameters
 	if (GetInt (ifs, "MapDlgFlag", i))
@@ -642,7 +642,7 @@ bool Config::Load(const char *fname)
 	if (GetInt (ifs, "PlanetMaxPatchLevel", i))
 		CfgVisualPrm.PlanetMaxLevel = max (1, min (SURF_MAX_PATCHLEVEL2, i));
 	if (GetReal (ifs, "PlanetPatchRes", d))
-		CfgVisualPrm.PlanetPatchRes = max (0.1, min (10, d));
+		CfgVisualPrm.PlanetPatchRes = max (0.1, min (10.0, d));
 	if (GetReal (ifs, "NightlightBrightness", d))
 		CfgVisualPrm.LightBrightness = max (0.0, min (1.0, d));
 	if (GetInt (ifs, "ElevationMode", i) && i >= 0 && i <= 1)
@@ -1443,7 +1443,7 @@ void Config::DelActiveModule (const std::string& name)
 		m_activeModules.erase(it);
 }
 
-bool Config::GetString (istream &is, char *category, char *val)
+bool Config::GetString (istream &is, const char *category, char *val)
 {
 	char cbuf[512];
 	int i;
@@ -1469,25 +1469,25 @@ bool Config::GetString (istream &is, char *category, char *val)
 	return true;
 }
 
-bool Config::GetReal (istream &is, char *category, double &val)
+bool Config::GetReal (istream &is, const char *category, double &val)
 {
 	if (!GetString (is, category, g_cbuf)) return false;
 	return (sscanf (g_cbuf, "%lf", &val) == 1);
 }
 
-bool Config::GetInt (istream &is, char *category, int &val)
+bool Config::GetInt (istream &is, const char *category, int &val)
 {
 	if (!GetString (is, category, g_cbuf)) return false;
 	return (sscanf (g_cbuf, "%d", &val) == 1);
 }
 
-bool Config::GetSize(istream& is, char* category, size_t& val)
+bool Config::GetSize (istream& is, const char* category, size_t& val)
 {
 	if (!GetString(is, category, g_cbuf)) return false;
 	return (sscanf(g_cbuf, "%zu", &val) == 1);
 }
 
-bool Config::GetBool (istream &is, char *category, bool &val)
+bool Config::GetBool (istream &is, const char *category, bool &val)
 {
 	if (!GetString (is, category, g_cbuf)) return false;
 	if (!_strnicmp (g_cbuf, "true", 4)) { val = true; return true; }
@@ -1495,7 +1495,7 @@ bool Config::GetBool (istream &is, char *category, bool &val)
 	return false;
 }
 
-bool Config::GetVector (istream &is, char *category, Vector &val)
+bool Config::GetVector (istream &is, const char *category, Vector &val)
 {
 	double x, y, z;
 	if (!GetString (is, category, g_cbuf)) return false;
@@ -1504,7 +1504,7 @@ bool Config::GetVector (istream &is, char *category, Vector &val)
 	return true;
 }
 
-bool Config::GetString (char *category, char *val)
+bool Config::GetString (const char *category, char *val)
 {
 	if (!Root) return false;
 	ifstream ifs (Root);
@@ -1512,7 +1512,7 @@ bool Config::GetString (char *category, char *val)
 	return GetString (ifs, category, val);
 }
 
-bool Config::GetReal (char *category, double &val)
+bool Config::GetReal (const char *category, double &val)
 {
 	if (!Root) return false;
 	ifstream ifs (Root);
@@ -1520,7 +1520,7 @@ bool Config::GetReal (char *category, double &val)
 	return GetReal (ifs, category, val);
 }
 
-bool Config::GetInt (char *category, int &val)
+bool Config::GetInt (const char *category, int &val)
 {
 	if (!Root) return false;
 	ifstream ifs (Root);
@@ -1528,7 +1528,7 @@ bool Config::GetInt (char *category, int &val)
 	return GetInt (ifs, category, val);
 }
 
-bool Config::GetSize(char* category, size_t& val)
+bool Config::GetSize (const char* category, size_t& val)
 {
 	if (!Root) return false;
 	ifstream ifs(Root);
@@ -1536,7 +1536,7 @@ bool Config::GetSize(char* category, size_t& val)
 	return GetSize(ifs, category, val);
 }
 
-bool Config::GetBool (char *category, bool &val)
+bool Config::GetBool (const char *category, bool &val)
 {
 	if (!Root) return false;
 	ifstream ifs (Root);
@@ -1544,7 +1544,7 @@ bool Config::GetBool (char *category, bool &val)
 	return GetBool (ifs, category, val);
 }
 
-bool Config::GetVector (char *category, Vector &val)
+bool Config::GetVector (const char *category, Vector &val)
 {
 	if (!Root) return false;
 	ifstream ifs (Root);

@@ -8,6 +8,9 @@
 #include "NPClient.h"
 #include "NPClientWraps.h"
 
+using std::min;
+using std::max;
+
 // ==============================================================
 // Global parameters
 
@@ -40,15 +43,15 @@ TrackIR::TrackIR (): ExternalCameraControl (CAMDATA_POS|CAMDATA_DIR, CAMMODE_VC)
 		strcat (cbuf, dllPath);
 		oapiWriteLog (cbuf);
 	} else {
-		oapiWriteLog ("TrackIR module not found.");
+		oapiWriteLog ((char*)"TrackIR module not found.");
 		return;
 	}
 
     // Initialize the the TrackIR Enhanced DLL
 	if (connected = (NPClient_Init (dllPath) == NP_OK)) {
-		oapiWriteLog ("TrackIR initialised");
+		oapiWriteLog ((char*)"TrackIR initialised");
 	} else {
-		oapiWriteLog ("TrackIR initialisation failed");
+		oapiWriteLog ((char*)"TrackIR initialisation failed");
 		return;
 	}
 
@@ -61,7 +64,7 @@ TrackIR::TrackIR (): ExternalCameraControl (CAMDATA_POS|CAMDATA_DIR, CAMMODE_VC)
 		//sprintf (cbuf, "NaturalPoint software version %d.%02d", wNPClientVer >> 8, wNPClientVer & 0x00FF);
 		oapiWriteLog (cbuf);
 	} else {
-		oapiWriteLog ("Error querying NaturalPoint software version");
+		oapiWriteLog ((char*)"Error querying NaturalPoint software version");
 	}
 
 	laststate = 0;
@@ -85,27 +88,27 @@ bool TrackIR::ReadData ()
 	double t, s;
 	FILEHANDLE hFile = oapiOpenFile (cfgfile, FILE_IN, ROOT);
 	if (!hFile) return false;
-	if (oapiReadItem_int (hFile, "CMODE", mode)) cameramode = mode;
-	if (oapiReadItem_string (hFile, "VCROT", cbuf) && sscanf (cbuf, "%d%lf", &mode, &t) == 2) {
+	if (oapiReadItem_int (hFile, (char*)"CMODE", mode)) cameramode = mode;
+	if (oapiReadItem_string (hFile, (char*)"VCROT", cbuf) && sscanf (cbuf, "%d%lf", &mode, &t) == 2) {
 		vcmode.trackrotation = (mode ? true:false);
 		vcmode.rotationrange = max (1.0*RAD, min (PI, t));
 	}
-	if (oapiReadItem_string (hFile, "VCPOS", cbuf) && sscanf (cbuf, "%d%lf", &mode, &t) == 2) {
+	if (oapiReadItem_string (hFile, (char*)"VCPOS", cbuf) && sscanf (cbuf, "%d%lf", &mode, &t) == 2) {
 		vcmode.trackposition = (mode ? true:false);
 		vcmode.positionrange = max (0.0, min (2.0, t));
 	}
-	if (oapiReadItem_string (hFile, "FREEZE", cbuf) && sscanf (cbuf, "%d%lf", &mode, &t) == 2) {
+	if (oapiReadItem_string (hFile, (char*)"FREEZE", cbuf) && sscanf (cbuf, "%d%lf", &mode, &t) == 2) {
 		vcmode.freezeonmouse = (mode ? true:false);
 		vcmode.freeze_t = max (0.0, t);
 	}
-	if (oapiReadItem_string (hFile, "TRKROT", cbuf) && sscanf (cbuf, "%d%d", &mode, &i) == 2) {
+	if (oapiReadItem_string (hFile, (char*)"TRKROT", cbuf) && sscanf (cbuf, "%d%d", &mode, &i) == 2) {
 		trkmode.trackrotation = (mode ? true:false);
 		trkmode.rotationdata = (i ? TrackMode::BYPOSITION : TrackMode::BYROTATION);
 	}
-	if (oapiReadItem_string (hFile, "TRKZOOM", cbuf) && sscanf (cbuf, "%d", &mode) == 1) {
+	if (oapiReadItem_string (hFile, (char*)"TRKZOOM", cbuf) && sscanf (cbuf, "%d", &mode) == 1) {
 		trkmode.trackzoom = (mode ? true:false);
 	}
-	if (oapiReadItem_string (hFile, "TRKPRM", cbuf) && sscanf (cbuf, "%lf%lf", &t, &s) == 2) {
+	if (oapiReadItem_string (hFile, (char*)"TRKPRM", cbuf) && sscanf (cbuf, "%lf%lf", &t, &s) == 2) {
 		trkmode.deadzone = t;
 		trkmode.speed = s;
 	}
@@ -119,9 +122,9 @@ void TrackIR::StartSimulation (HWND hWnd)
 {
     // Register your applications Window Handle 
 	if (NP_RegisterWindowHandle (hWnd) == NP_OK)
-		oapiWriteLog ("NPClient: Simulation window registered.");
+		oapiWriteLog ((char*)"NPClient: Simulation window registered.");
 	else
-		oapiWriteLog ("NPClient: Error registering simulation window.");
+		oapiWriteLog ((char*)"NPClient: Error registering simulation window.");
 
 #ifdef UNDEF
 	// Query for the NaturalPoint TrackIR software version
@@ -157,15 +160,15 @@ void TrackIR::StartSimulation (HWND hWnd)
 
     // Stop the cursor
 	if (NP_StopCursor() == NP_OK)
-		oapiWriteLog ("NPClient: Cursor stopped");
+		oapiWriteLog ((char*)"NPClient: Cursor stopped");
 	else
-		oapiWriteLog ("NPClient: Error stopping cursor.");
+		oapiWriteLog ((char*)"NPClient: Error stopping cursor.");
 
     // Request that the TrackIR software begins sending Tracking Data
 	if (NP_StartDataTransmission() == NP_OK)
-		oapiWriteLog ("NPClient: Data transmission started");
+		oapiWriteLog ((char*)"NPClient: Data transmission started");
 	else
-		oapiWriteLog ("NPClient: Error starting data transmission");
+		oapiWriteLog ((char*)"NPClient: Error starting data transmission");
 }
 
 // ==============================================================
