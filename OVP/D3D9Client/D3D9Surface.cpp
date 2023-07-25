@@ -136,6 +136,7 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags, bool bPath)
 				pNat->AddMap(MAP_REFLECTION, NatLoadSpecialTexture(file, "refl"));
 				pNat->AddMap(MAP_TRANSLUCENCE, NatLoadSpecialTexture(file, "transl"));
 				pNat->AddMap(MAP_TRANSMITTANCE, NatLoadSpecialTexture(file, "transm"));
+				pNat->AddMap(MAP_AMBIENT, NatLoadSpecialTexture(file, "bkao"));
 			}
 			else oapiWriteLogV("FAILED: NatLoadSurface(%d)", path);
 		}

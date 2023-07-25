@@ -355,6 +355,12 @@ void InitMatList(WORD shader)
 		for (auto x : Dropdown) SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)x.name.c_str());
 	}
 
+	if (shader == SHADER_BAKED_VC) {
+		std::list<char> list = { 0, 3, 5, 7, 8, 9 };
+		for (auto x : list) Dropdown.push_back(PrmList[x]);
+		for (auto x : Dropdown) SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)x.name.c_str());
+	}
+
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_SETCURSEL, idx, 0);
 
 	switch (shader) {
@@ -363,6 +369,7 @@ void InitMatList(WORD shader)
 		Params[6].var[2] = DefVar(10.0f, 4096.0f, SQRT, "Specular lobe size");
 		break;
 	case SHADER_METALNESS:
+	case SHADER_BAKED_VC:
 		Params[6].var[1] = DefVar(0, 1, LIN, "Fresnel effect attennuation 1.0 = disabled, 0.0 = max intensity");
 		Params[6].var[2].bUsed = false;
 		break;
@@ -403,6 +410,7 @@ void OpenDlgClbk(void *context)
 	SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_ADDSTRING, 0, (LPARAM)"PBR (Old)");
 	SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_ADDSTRING, 0, (LPARAM)"Metalness PBR");
+	SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_ADDSTRING, 0, (LPARAM)"Baked VC");
 	SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_SETCURSEL, 0, 0);
 
 	SendDlgItemMessageA(hDlg, IDC_DBG_SCENEDBG, CB_RESETCONTENT, 0, 0);
@@ -646,6 +654,10 @@ void UpdateShader()
 	case 1:
 		hMesh->SetDefaultShader(SHADER_METALNESS);
 		pMgr->RegisterShaderChange(hMesh, SHADER_METALNESS);
+		break;
+	case 2:
+		hMesh->SetDefaultShader(SHADER_BAKED_VC);
+		pMgr->RegisterShaderChange(hMesh, SHADER_BAKED_VC);
 		break;
 	}
 
@@ -1106,6 +1118,7 @@ void UpdateMaterialDisplay(bool bSetup)
 	WORD Shader = hMesh->GetDefaultShader();
 	if (Shader == SHADER_NULL) SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_SETCURSEL, 0, 0);
 	if (Shader == SHADER_METALNESS) SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_SETCURSEL, 1, 0);
+	if (Shader == SHADER_BAKED_VC) SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_SETCURSEL, 2, 0);
 
 	DWORD matidx = hMesh->GetMeshGroupMaterialIdx(sGroup);
 

@@ -24,7 +24,8 @@
 #define	MAP_ROUGHNESS		6
 #define	MAP_METALNESS		7
 #define	MAP_HEAT			8
-#define MAP_MAX_COUNT		9
+#define MAP_AMBIENT			9
+#defineMAP_MAX_COUNT		10
 
 #define OAPISURFACE_MAPS		0x80000000		// Additional Texture Maps
 #define OAPISURFACE_BACKBUFFER	0x40000000		// It's a backbuffer

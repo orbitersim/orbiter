@@ -314,6 +314,8 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 		}
 	}
 
+	pBakeLights = new ImageProcessing(pDevice, "Modules/D3D9Client/PreBakeLights.hlsl", "PSMain");
+
 	LogAlw("================ Scene Created ===============");
 }
 
@@ -341,6 +343,7 @@ Scene::~Scene ()
 	SAFE_DELETE(pLocalCompute);
 	SAFE_DELETE(pRenderGlares);
 	SAFE_DELETE(pCreateGlare);
+	SAFE_DELETE(pBakeLights);
 
 	SAFE_RELEASE(pOffscreenTarget);
 	SAFE_RELEASE(pEnvDS);

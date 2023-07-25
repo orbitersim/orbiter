@@ -462,6 +462,76 @@ void D3D9Mesh::ReLoadMeshFromHandle(MESHHANDLE hMesh)
 
 // ===========================================================================================
 //
+void D3D9Mesh::LoadBakedLights()
+{
+	char id[8];
+	for (int i = 0; i < nTex; i++)
+	{
+		if (!Tex[i]) continue;
+		if (!Tex[i]->GetMap(MAP_AMBIENT)) continue;
+
+		const char* name = Tex[i]->GetName();
+		
+		for (int j = 0; j < 10; j++)
+		{
+			sprintf_s(id, "_bkl%d", j);
+			BakedLights[i].pMap[j] = NatLoadSpecialTexture(name, id);
+		}
+
+		HR(D3DXCreateTexture(pDev, Tex[i]->GetWidth(), Tex[i]->GetHeight(), 0, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &BakedLights[i].pCombined));
+	}
+	for (int i = 0; i < 10;i++) BakedLightsControl[i] = FVECTOR3(1, 1, 1);
+}
+
+
+// ===========================================================================================
+//
+void D3D9Mesh::SetBakedLightLevel(int idx, FVECTOR3 level)
+{
+	if (idx >= 0 && idx <= 9) BakedLightsControl[idx] = level;
+}
+
+
+// ===========================================================================================
+//
+void D3D9Mesh::BakeLights(ImageProcessing* pBaker)
+{
+	if (!pBaker->IsOK()) return;
+
+	DWORD flags = IPF_POINT;
+	FVECTOR3 control[10];
+
+	for (auto x : BakedLights)
+	{
+		int slot = 0;
+		for (int i = 0; i < 10; i++)
+		{
+			auto y = x.second.pMap[i];
+			if (y && length(BakedLightsControl[i]) > 0.01f)
+			{
+				pBaker->SetTextureNative(slot, y, flags);
+				control[slot] = BakedLightsControl[i];
+				slot++;
+			}
+		}
+
+		pBaker->SetFloat("fControl", control, slot * sizeof(FVECTOR3));
+		pBaker->SetInt("iCount", slot);
+
+		LPDIRECT3DSURFACE9 pSrf = NULL;
+
+		if (x.second.pCombined->GetSurfaceLevel(0, &pSrf) == S_OK)
+		{
+			pBaker->SetOutputNative(0, pSrf);
+			pBaker->Execute(true);
+			SAFE_RELEASE(pSrf);
+		}
+	}
+}
+
+
+// ===========================================================================================
+//
 void D3D9Mesh::LoadMeshFromHandle(MESHHANDLE hMesh, D3DXVECTOR3 *reorig, float *scale)
 {
 	const char* meshn = oapiGetMeshFilename(hMesh);
@@ -501,6 +571,7 @@ void D3D9Mesh::LoadMeshFromHandle(MESHHANDLE hMesh, D3DXVECTOR3 *reorig, float *
 
 	UpdateBoundingBox();
 	CheckMeshStatus();
+	LoadBakedLights();
 }
 
 // ===========================================================================================
@@ -1729,7 +1800,9 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 					if (pSpec) FX->SetTexture(eSpecMap, pSpec);
 					if (pRefl) FX->SetTexture(eReflMap, pRefl);
 
-					if (CurrentShader == SHADER_ADV || CurrentShader == SHADER_METALNESS)
+					if (CurrentShader == SHADER_ADV
+						|| CurrentShader == SHADER_METALNESS
+						|| CurrentShader == SHADER_BAKED_VC)
 					{
 						pTransl = Tex[ti]->GetMap(MAP_TRANSLUCENCE);
 						pTransm = Tex[ti]->GetMap(MAP_TRANSMITTANCE);
@@ -1747,6 +1820,17 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 						FC.Transl = false;
 						FC.Transm = false;
 						FC.Metl = false;
+					}
+
+					if (CurrentShader == SHADER_BAKED_VC)
+					{
+						LPDIRECT3DTEXTURE9 pAmbi = Tex[ti]->GetMap(MAP_AMBIENT);
+						LPDIRECT3DTEXTURE9 pComb = BakedLights[ti].pCombined;
+
+						if (pAmbi) FX->SetTexture(eAmbientMap, pAmbi);
+						if (pComb) FX->SetTexture(eCombinedMap, pComb);
+
+						FC.Baked = (pAmbi != NULL) && (pComb != NULL);
 					}
 
 					FC.Emis = (pEmis != NULL);
@@ -1868,7 +1952,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 				static const char *YesNo[2] = { "No", "Yes" };
 				static const char *LPW[2] = { "Legacy", "PBR" };
 				static const char *RGH[2] = { "Disabled", "Enabled" };
-				static const char *Shaders[7] = { "PBR", "PBR-ADV", "FAST", "XR2", "METALNESS", "SPECULAR", "???"};
+				static const char *Shaders[7] = { "PBR", "PBR-ADV", "FAST", "XR2", "METALNESS", "BAKED_VC", "???"};
 
 				DebugControls::Append("MeshIdx = %d, GrpIdx = %d\n", uCurrentMesh, g);
 				DebugControls::Append("MtrlIdx = %d, TexIdx = %d\n", Grp[g].MtrlIdx, Grp[g].TexIdx);

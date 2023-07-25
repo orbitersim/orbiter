@@ -631,6 +631,23 @@ void ImageProcessing::SetTextureNative(const char *var, LPDIRECT3DBASETEXTURE9 h
 
 // ================================================================================================
 //
+void ImageProcessing::SetTextureNative(int idx, LPDIRECT3DBASETEXTURE9 hTex, DWORD flags)
+{
+	if (idx < 0 || idx>15) return;
+
+	if (!hTex) {
+		pTextures[idx].hTex = NULL;
+		pTextures[idx].flags = 0;
+		return;
+	}
+
+	pTextures[idx].hTex = hTex;
+	pTextures[idx].flags = flags;
+}
+
+
+// ================================================================================================
+//
 void ImageProcessing::SetOutput(int id, SURFHANDLE hTex)
 {
 	if (id<0) id=0;

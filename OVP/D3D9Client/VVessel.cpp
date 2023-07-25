@@ -640,6 +640,44 @@ void vVessel::GetMinMaxLightDist(float *mind, float *maxd)
 	*maxd = max(*maxd, x + shd->rad);
 }
 
+// ============================================================================================
+//
+bool vVessel::GetVCPos(D3DXVECTOR3* out, float* rad)
+{
+	for (int i = 0; i < nmesh; i++)
+	{
+		if (!meshlist[i].mesh) continue;
+
+		if (meshlist[i].vismode == MESHVIS_VC)
+		{
+			D3DXVECTOR3 pos = meshlist[i].mesh->GetBoundingSpherePos();
+			
+			if (meshlist[i].trans)
+			{
+				D3DXMATRIX mWT;
+				D3DXMatrixMultiply(&mWT, (const D3DXMATRIX*)meshlist[i].trans, &mWorld);
+				D3DXVec3TransformCoord(&pos, &pos, &mWT);
+			}
+			else D3DXVec3TransformCoord(&pos, &pos, &mWorld);
+			if (out) *out = pos;
+			if (rad) *rad = meshlist[i].mesh->GetBoundingSphereRadius();
+			return true;
+		}
+	}
+	return false;
+}
+
+
+// ============================================================================================
+//
+void vVessel::NoVC()
+{
+	static bool bDisp = true;
+	if (bDisp) {
+		bDisp = false;
+		oapiWriteLogV("ERROR:D3D9: Cannot identify Virtual Cockpit mesh [%s]", vessel->GetClassNameA());
+	}
+}
 
 // ============================================================================================
 //

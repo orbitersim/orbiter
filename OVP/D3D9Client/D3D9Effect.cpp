@@ -75,7 +75,6 @@ D3DXHANDLE D3D9Effect::eTex3 = 0;		// Tertiary texture
 D3DXHANDLE D3D9Effect::eSpecMap = 0;
 D3DXHANDLE D3D9Effect::eEmisMap = 0;
 D3DXHANDLE D3D9Effect::eEnvMapA = 0;
-D3DXHANDLE D3D9Effect::eEnvMapB = 0;
 D3DXHANDLE D3D9Effect::eReflMap = 0;
 D3DXHANDLE D3D9Effect::eRghnMap = 0;
 D3DXHANDLE D3D9Effect::eMetlMap = 0;
@@ -84,6 +83,8 @@ D3DXHANDLE D3D9Effect::eShadowMap = 0;
 D3DXHANDLE D3D9Effect::eTranslMap = 0;
 D3DXHANDLE D3D9Effect::eTransmMap = 0;
 D3DXHANDLE D3D9Effect::eIrradMap = 0;
+D3DXHANDLE D3D9Effect::eAmbientMap = 0;
+D3DXHANDLE D3D9Effect::eCombinedMap = 0;
 
 D3DXHANDLE D3D9Effect::eSpecularMode = 0;
 D3DXHANDLE D3D9Effect::eHazeMode = 0;
@@ -469,7 +470,6 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eSpecMap	  = FX->GetParameterByName(0,"gSpecMap");
 	eEmisMap	  = FX->GetParameterByName(0,"gEmisMap");
 	eEnvMapA	  = FX->GetParameterByName(0,"gEnvMapA");
-	eEnvMapB	  = FX->GetParameterByName(0,"gEnvMapB");
 	eReflMap	  = FX->GetParameterByName(0,"gReflMap");
 	eRghnMap	  = FX->GetParameterByName(0,"gRghnMap");
 	eMetlMap	  = FX->GetParameterByName(0,"gMetlMap");
@@ -478,6 +478,8 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eTranslMap	  = FX->GetParameterByName(0, "gTranslMap");
 	eTransmMap	  = FX->GetParameterByName(0, "gTransmMap");
 	eIrradMap     = FX->GetParameterByName(0,"gIrradianceMap");
+	eAmbientMap	  = FX->GetParameterByName(0, "gAmbientMap");
+	eCombinedMap  = FX->GetParameterByName(0, "gCombinedMap");
 
 	// Atmosphere -----------------------------------------------------------
 	eGlobalAmb	  = FX->GetParameterByName(0,"gGlobalAmb");

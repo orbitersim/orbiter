@@ -20,9 +20,11 @@
 #include "D3D9Client.h"
 #include "D3D9Effect.h"
 #include "AABBUtil.h"
+#include "IProcess.h"
 #include <d3d9.h>
 #include <d3dx9.h>
 #include <vector>
+#include <map>
 
 const DWORD SPEC_DEFAULT = (DWORD)(-1); // "default" material/texture flag
 const DWORD SPEC_INHERIT = (DWORD)(-2); // "inherit" material/texture flag
@@ -45,6 +47,7 @@ const DWORD SPEC_INHERIT = (DWORD)(-2); // "inherit" material/texture flag
 #define SHADER_LEGACY			2			// Shader most compatible with DX7 Inline
 #define SHADER_XR2HUD			3			// XR2 HUD shader
 #define SHADER_METALNESS		4
+#define SHADER_BAKED_VC			5
 #define SHADER_SHADOWMAP		10
 #define SHADER_SHADOWMAP_OIT	11
 #define SHADER_NORMAL_DEPTH		12
@@ -69,6 +72,10 @@ struct _LightList {
 	float	illuminace;
 };
 
+struct _BakedLights {
+	LPDIRECT3DTEXTURE9 pMap[16];
+	LPDIRECT3DTEXTURE9 pCombined;
+};
 
 class MeshShader : public ShaderClass
 {
@@ -203,6 +210,9 @@ public:
 
 	void			Release();
 
+	void			LoadBakedLights();
+	void			BakeLights(ImageProcessing *pBaker);
+	void			SetBakedLightLevel(int idx, FVECTOR3 level);
 	void			LoadMeshFromHandle(MESHHANDLE hMesh, D3DXVECTOR3 *reorig = NULL, float *scale = NULL);
 	void			ReLoadMeshFromHandle(MESHHANDLE hMesh);
 	void			ReloadTextures();
@@ -352,6 +362,8 @@ private:
 	DWORD Flags;
 	D3D9MatExt *Mtrl;           // list of mesh materials
 	SurfNative **Tex;			// list of mesh textures
+	std::map<int, _BakedLights> BakedLights;
+	FVECTOR3 BakedLightsControl[10];
 	D3D9Tune *pTune;
 	D3DXMATRIX mTransform;
 	D3DXMATRIX mTransformInv;

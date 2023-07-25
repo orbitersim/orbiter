@@ -27,6 +27,8 @@ struct TexFlow {
 	BOOL Norm;		// Enable normal map
 	BOOL Metl;		// Enable metalness map
 	BOOL Heat;		// Enable heat map
+	BOOL Baked;		// Enable pre-baked maps
+};
 };
 
 
@@ -172,7 +174,6 @@ public:
 	static D3DXHANDLE	eSpecMap;
 	static D3DXHANDLE	eEmisMap;
 	static D3DXHANDLE	eEnvMapA;
-	static D3DXHANDLE	eEnvMapB;
 	static D3DXHANDLE	eReflMap;
 	static D3DXHANDLE	eMetlMap;
 	static D3DXHANDLE	eHeatMap;
@@ -181,6 +182,8 @@ public:
 	static D3DXHANDLE	eTransmMap;
 	static D3DXHANDLE	eShadowMap;
 	static D3DXHANDLE	eIrradMap;
+	static D3DXHANDLE	eAmbientMap;
+	static D3DXHANDLE	eCombinedMap;
 
 	// Legacy Atmosphere -----------------------------------------------
 	static D3DXHANDLE	eGlobalAmb;	 
