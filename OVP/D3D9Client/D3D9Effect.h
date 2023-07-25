@@ -29,7 +29,6 @@ struct TexFlow {
 	BOOL Heat;		// Enable heat map
 	BOOL Baked;		// Enable pre-baked maps
 };
-};
 
 
 

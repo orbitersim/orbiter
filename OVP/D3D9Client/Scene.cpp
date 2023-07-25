@@ -102,6 +102,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	pVisDepth = NULL;
 	pLocalResults = NULL;
 	pLocalResultsSL = NULL;
+	pBakeLights = NULL;
 
 	fDisplayScale = float(viewH) / 1080.0f;
 

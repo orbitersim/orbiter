@@ -640,6 +640,7 @@ void vVessel::GetMinMaxLightDist(float *mind, float *maxd)
 	*maxd = max(*maxd, x + shd->rad);
 }
 
+
 // ============================================================================================
 //
 bool vVessel::GetVCPos(D3DXVECTOR3* out, float* rad)

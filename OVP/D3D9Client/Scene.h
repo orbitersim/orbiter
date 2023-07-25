@@ -489,7 +489,7 @@ private:
 
 	SurfNative *pLblSrf;
 
-	class ImageProcessing *pLightBlur, *pBlur, *pGDIOverlay, *pIrradiance, *pVisDepth, *pCreateGlare;
+	class ImageProcessing *pLightBlur, *pBlur, *pGDIOverlay, *pIrradiance, *pVisDepth, *pCreateGlare, *pBakeLights;
 	class ShaderClass *pLocalCompute, *pRenderGlares;
 
 	class vVessel *vFocus;
