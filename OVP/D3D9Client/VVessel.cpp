@@ -636,8 +636,8 @@ void vVessel::GetMinMaxLightDist(float *mind, float *maxd)
 	D3DXVec3TransformCoord(&bc, ptr(D3DXVECTOR3f4(BBox.bs)), &mWorld);
 	bc -= shd->pos;
 	float x = D3DXVec3Dot(&bc, &(shd->ld));
-	*mind = min(*mind, x - shd->rad);
-	*maxd = max(*maxd, x + shd->rad);
+	*mind = min(*mind, x - BBox.bs.w);
+	*maxd = max(*maxd, x + BBox.bs.w);
 }
 
 

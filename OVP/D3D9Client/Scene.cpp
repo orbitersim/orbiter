@@ -2511,13 +2511,13 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bI
 		}
 	}
 
-	smap.depth = (mxd - mnd) + 10.0f;
+	smap.depth = (mxd + rad);
 
-	D3DXMatrixOrthoOffCenterRH(&smap.mProj, -rad, rad, rad, -rad, 50.0f, 50.0f + smap.depth);
+	D3DXMatrixOrthoOffCenterRH(&smap.mProj, -rad, rad, rad, -rad, -rad, smap.depth);
 
-	smap.dist = mnd - 55.0f;
+	smap.dist = mxd;
 
-	D3DXVECTOR3 lp = pos + ld * smap.dist;
+	D3DXVECTOR3 lp = pos - ld * smap.dist;
 
 	D3DXMatrixLookAtRH(&smap.mView, &lp, &pos, ptr(D3DXVECTOR3(0, 1, 0)));
 	D3DXMatrixMultiply(&smap.mViewProj, &smap.mView, &smap.mProj);
