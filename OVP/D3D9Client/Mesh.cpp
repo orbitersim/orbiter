@@ -2791,7 +2791,7 @@ void D3D9Mesh::RenderBaseTile(const LPD3DXMATRIX pW)
 
 // ================================================================================================
 //
-void D3D9Mesh::RenderShadowMap(const LPD3DXMATRIX pW, const LPD3DXMATRIX pVP, int opt)
+void D3D9Mesh::RenderShadowMap(const LPD3DXMATRIX pW, const LPD3DXMATRIX pVP, int opt, bool bNoCull)
 {
 	if (!IsOK()) return;
 
@@ -2865,7 +2865,13 @@ void D3D9Mesh::RenderShadowMap(const LPD3DXMATRIX pW, const LPD3DXMATRIX pVP, in
 		if (pShader->hPSB) pShader->SetPSConstants(pShader->hPSB, &MeshShader::ps_bools, sizeof(MeshShader::ps_bools));
 		pShader->UpdateTextures();
 
+		DWORD oc;
+		if (bNoCull) {
+			pDev->GetRenderState(D3DRS_CULLMODE, &oc);
+			pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+		}
 		pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Grp[g].VertOff, 0, Grp[g].nVert, Grp[g].IdexOff, Grp[g].nFace);
+		if (bNoCull) pDev->SetRenderState(D3DRS_CULLMODE, oc);
 	}
 }
 

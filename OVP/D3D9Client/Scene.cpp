@@ -1970,6 +1970,21 @@ void Scene::RenderMainScene()
 		if (znear>1.0)  znear=1.0;
 		OBJHANDLE hFocus = oapiGetFocusObject();
 		SetCameraFrustumLimits(znear, oapiGetSize(hFocus)*2.0);
+
+		if (Config->ShadowMapMode >= 1)
+		{
+			SmapRenderList.clear();
+
+			float rad = 1.5f;
+			D3DXVECTOR3 ld = sunLight.Dir;
+			D3DXVECTOR3 pos = Camera.z * rad;
+			
+			RenderShadowMap(pos, ld, rad, true, false);
+
+			pShdMap = smap.pShadowMap;	
+		}
+
+		// Render VC
 		vFocus->Render(pDevice, true);
 	}
 
@@ -2524,7 +2539,8 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bI
 	BeginPass(RENDERPASS_SHADOWMAP);
 
 	while(SmapRenderList.size()>0) {
-		SmapRenderList.front()->Render(pDevice, bInternal);
+		SmapRenderList.front()->Render(pDevice, false);
+		if (bInternal) SmapRenderList.front()->Render(pDevice, true);	
 		SmapRenderList.pop_front();
 	}
 

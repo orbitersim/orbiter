@@ -1,8 +1,5 @@
 
 #define KERNEL_RADIUS 2.0f
-#define SHADOW_THRESHOLD 0.1f       // 0.3 to 7.0
-
-
 
 // ============================================================================
 //
@@ -385,9 +382,9 @@ float ComputeShadow(float4 shdH, float dLN, float4 sc)
 
 	float kr = gSHD[0] * KERNEL_RADIUS;
 	float dx = rsqrt(1.0 - dLN*dLN);
-	float ofs = kr / (dLN * dx);
-	float omx = min(0.05 + ofs, 0.5);
-
+	float ofs = 0.33f * kr / (dLN * dx);
+	float omx = min(gSHD[0] * 2.0f + max(0, ofs), 0.25);
+	
 	float  pd = shdH.z + omx * gSHD[3];
 
 	if (pd < 0) pd = 0;

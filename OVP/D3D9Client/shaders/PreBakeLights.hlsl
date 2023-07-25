@@ -24,6 +24,5 @@ float4 PSMain(float x : TEXCOORD0, float y : TEXCOORD1) : COLOR
 {
 	float3 color = 0;
 	[unroll] for (int i = 0; i < iCount; i++) color += tex2D(tMap[i], float2(x, y)).rgb * fControl[i];
-	//[unroll] for (int i = 0; i < 10; i++) if (i < iCount) color += tex2D(tMap[i], float2(x, y)).rgb * fControl[i];
 	return float4(LightFX(color), 1.0f);
 }

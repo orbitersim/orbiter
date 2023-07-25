@@ -718,7 +718,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 	if (scn->GetRenderPass() == RENDERPASS_ENVCAM) bCockpit = bVC = false;
 	// Always render exterior view for envmaps
 
-	if (scn->GetRenderPass() == RENDERPASS_SHADOWMAP) bCockpit = bVC = false;
+	// if (scn->GetRenderPass() == RENDERPASS_SHADOWMAP) bCockpit = bVC = false;
 	// Always render exterior view for envmaps
 
 	// if (scn->GetRenderPass() == RENDERPASS_NORMAL_DEPTH) bCockpit = bVC = false;
@@ -824,7 +824,10 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 
 		// Render vessel meshes --------------------------------------------------------------------------
 		//
-		if (scn->GetRenderPass() == RENDERPASS_SHADOWMAP) meshlist[i].mesh->RenderShadowMap(pWT, pLVP, 0);
+		if (scn->GetRenderPass() == RENDERPASS_SHADOWMAP)
+		{
+			meshlist[i].mesh->RenderShadowMap(pWT, pLVP, 0, internalpass);
+		}
 		else if (scn->GetRenderPass() == RENDERPASS_NORMAL_DEPTH)
 		{
 			meshlist[i].mesh->RenderShadowMap(pWT, pVP, 1);
