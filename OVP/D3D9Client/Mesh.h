@@ -73,8 +73,9 @@ struct _LightList {
 };
 
 struct _BakedLights {
-	LPDIRECT3DTEXTURE9 pMap[16];
+	LPDIRECT3DTEXTURE9 pMap[10];
 	LPDIRECT3DTEXTURE9 pCombined;
+	bool bEnabled;
 };
 
 class MeshShader : public ShaderClass
@@ -212,7 +213,7 @@ public:
 
 	void			LoadBakedLights();
 	void			BakeLights(ImageProcessing *pBaker);
-	void			SetBakedLightLevel(int idx, FVECTOR3 level);
+	void			SetBakedLightLevel(int idx, const FVECTOR3 &level);
 	void			LoadMeshFromHandle(MESHHANDLE hMesh, D3DXVECTOR3 *reorig = NULL, float *scale = NULL);
 	void			ReLoadMeshFromHandle(MESHHANDLE hMesh);
 	void			ReloadTextures();
@@ -378,6 +379,7 @@ private:
 	bool bBSRecomputeAll;
 	bool bModulateMatAlpha;     // mix material and texture alpha channels
 	bool bGlobalTF;				// Mesh has a valid mTransform matrix
+	bool bMustRebake;			// Must run BakeTextures before rendering
 
 	char name[128];
 

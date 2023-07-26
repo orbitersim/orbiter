@@ -520,6 +520,11 @@ public:
 	{ return NULL; }
 
 	/**
+	 */
+	virtual SURFHANDLE clbkLoadMaps(const char* diff, const char* maps, bool bPath, SURFHANDLE hOld = NULL, bool bAll = true)
+	{ return NULL; }
+
+	/**
 	 * \brief Save the contents of a surface to a formatted image file or to the clipboard
 	 * \param surf surface handle (0 for primary render surface)
 	 * \param fname image file path relative to orbiter root directory (excluding file extension), or NULL to save to clipboard
@@ -593,7 +598,8 @@ public:
 	 * if value<>0 modulate (mix) material alpha values with texture alpha maps.
 	 * \default None, returns \e false.
 	 */
-	virtual bool clbkSetMeshProperty (DEVMESHHANDLE hMesh, DWORD property, DWORD value) { return false; }
+	virtual bool clbkSetMeshProperty(DEVMESHHANDLE hMesh, DWORD property, DWORD value) { return false; }
+	virtual bool clbkSetMeshProperty(DEVMESHHANDLE hMesh, MeshProp prp, const oapi::FVECTOR4 &value) { return false; }
 
 	// ==================================================================
 	/// \name Visual object interface

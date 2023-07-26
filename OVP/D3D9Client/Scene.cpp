@@ -1977,7 +1977,7 @@ void Scene::RenderMainScene()
 
 			float rad = 1.5f;
 			D3DXVECTOR3 ld = sunLight.Dir;
-			D3DXVECTOR3 pos = Camera.z * rad;
+			D3DXVECTOR3 pos = Camera.z * rad * 0.75f;
 			
 			RenderShadowMap(pos, ld, rad, true, false);
 
@@ -2157,8 +2157,12 @@ void Scene::RenderMainScene()
 			break;
 		case 8:
 			if (pShdMap) {
+				D3DSURFACE_DESC desc;
+				pShdMap->GetLevelDesc(0, &desc);
+				RECT scr = { 0, 0, long(viewH), long(viewH) };
 				pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
-				pSketch->CopyRectNative(pShdMap, NULL, 0, 0);
+				if (desc.Height>viewH) pSketch->StretchRectNative(pShdMap, NULL, &scr);
+				else pSketch->CopyRectNative(pShdMap, NULL, 0, 0);
 				pSketch->EndDrawing();
 			}
 			break;

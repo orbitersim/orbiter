@@ -1419,6 +1419,12 @@ DLLEXPORT DWORD oapiMeshTextureCount (MESHHANDLE hMesh)
 	return ((Mesh*)hMesh)->nTexture();
 }
 
+DLLEXPORT void oapiMeshProperty(DEVMESHHANDLE hMesh, MeshProp prp, const oapi::FVECTOR4 &value)
+{
+	oapi::GraphicsClient* gc = g_pOrbiter->GetGraphicsClient();
+	if (gc) gc->clbkSetMeshProperty(hMesh, prp, value);
+}
+
 DLLEXPORT SURFHANDLE oapiGetTextureHandle (MESHHANDLE hMesh, DWORD texidx)
 {
 	Mesh *mesh = (Mesh*)hMesh;
@@ -1436,6 +1442,13 @@ DLLEXPORT SURFHANDLE oapiLoadSurfaceEx(const char* fname, DWORD attrib, bool bPa
 {
 	oapi::GraphicsClient* gc = g_pOrbiter->GetGraphicsClient();
 	if (gc) return gc->clbkLoadSurface(fname, attrib, bPath);
+	else return NULL;
+}
+
+DLLEXPORT SURFHANDLE oapiLoadAdditionalTextureMaps(const char* diff, const char* maps, bool bPath, SURFHANDLE hOld, bool bAll)
+{
+	oapi::GraphicsClient* gc = g_pOrbiter->GetGraphicsClient();
+	if (gc) return gc->clbkLoadMaps(diff, maps, bPath, hOld, bAll);
 	else return NULL;
 }
 

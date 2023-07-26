@@ -349,6 +349,7 @@ typedef struct {
 #define OAPISURFACE_RENDER3D     0x0400 ///< Create a surface that can act as a target for rendering a 3D scene
 #define OAPISURFACE_ANTIALIAS    0x0800 ///< Create a surface with anti-aliasing the level will depend on launchpad settings.
 #define OAPISURFACE_SHARED		 0x1000 ///< Create a shared resource
+#define OAPISURFACE_DIFFUSE_ONLY 0x2000 ///< Load only a regular diffuse texture and ignore additional maps if exists
 //@}
 
 /**
@@ -449,7 +450,7 @@ typedef struct {
 } MATERIAL;
 
 
-enum MatProp {
+enum class MatProp {
 	Diffuse,			///< Material Diffuse color or Albedo depending on shader used. [.rgba]
 	Ambient,			///< Ambient color or Ambien occlusion [.rgb]
 	Specular,			///< Specular color [.rgb] power in [.a]
@@ -460,6 +461,12 @@ enum MatProp {
 	Metal,				///< Meralness in [.r]  (1 = metal, 0 = non-metal)
 	Fresnel,			///< Fresnel terms for fresnel effect. Used in older 2nd generation shader. 
 	SpecialFX			///< Heat map effect control variable in [.r] (i.e. average part temperature)
+};
+
+enum class MeshProp {
+	BAKED_0, BAKED_1, BAKED_2, BAKED_3, BAKED_4,	///< baked light level 0-4
+	BAKED_5, BAKED_6, BAKED_7, BAKED_8, BAKED_9,	///< baked light level 5-9
+	AMBIENT											///< ambient light level
 };
 
 /**
@@ -4816,6 +4823,7 @@ OAPIFUNC bool oapiSetMeshProperty (MESHHANDLE hMesh, DWORD property, DWORD value
 	 * \sa oapiSetMeshProperty(MESHHANDLE,DWORD,DWORD)
 	 */
 OAPIFUNC bool oapiSetMeshProperty (DEVMESHHANDLE hMesh, DWORD property, DWORD value);
+OAPIFUNC bool oapiSetMeshProperty (DEVMESHHANDLE hMesh, MeshProp prop, const oapi::FVECTOR4 &value);
 
 // Particle functions
 	/**
@@ -5481,6 +5489,18 @@ OAPIFUNC SURFHANDLE oapiCreateSurfaceEx (int width, int height, DWORD attrib);
 	* \return Surface handle for the loaded texture, or NULL if not found.
 	*/
 OAPIFUNC SURFHANDLE oapiLoadSurfaceEx(const char* fname, DWORD attrib, bool bPath = false);
+
+	/**
+	* \brief Load a diffuse/albedo texture and additional texture maps from a separate sources 
+	* \param diff difuse/albedo texture file name. If NULL, hOld must be specified 
+	* \param maps base name for texture maps, if NULL only diffuse is loaded.
+	* \param bPath if 'true' then 'fname' must contain absolute path to a file. If 'false' a normal Orbiter texture search path is used.
+	* \param hOld handle to an existing diffuse texture to receive additional maps, or NULL.
+	* \param bAll if true, auto load all existing additional maps. If false, load and add a simgle map. 
+	* \return Surface handle for the loaded texture, or NULL in a case of an error.
+	* \note A surface must always have a base diffuse texture. 
+	*/
+OAPIFUNC SURFHANDLE oapiLoadAdditionalTextureMaps(const char* diff, const char* maps = NULL, bool bPath = false, SURFHANDLE hOld = NULL, bool bAll = true);
 
 	/**
 	* \brief Create a surface from a bitmap. Bitmap surfaces are typically used for blitting

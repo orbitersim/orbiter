@@ -826,7 +826,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 		//
 		if (scn->GetRenderPass() == RENDERPASS_SHADOWMAP)
 		{
-			meshlist[i].mesh->RenderShadowMap(pWT, pLVP, 0, internalpass);
+			meshlist[i].mesh->RenderShadowMap(pWT, pLVP, 0, bVC);
 		}
 		else if (scn->GetRenderPass() == RENDERPASS_NORMAL_DEPTH)
 		{

@@ -1,6 +1,6 @@
 // ==============================================================
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
-// Dual licensed under GPL v3 and LGPL v3
+// Licensed under LGPL v2
 // Copyright (C) 2012 - 2016 Jarmo Nikkanen
 // ==============================================================
 
@@ -49,6 +49,9 @@ const char*			NatPool(D3DPOOL Pool);
 const char*			NatOAPIFlags(DWORD AF);
 const char*			NatOAPIFormat(DWORD PF);
 void				NatDumpResource(LPDIRECT3DRESOURCE9 pResource);
+void				NatLoadMaps(SurfNative* pNat, const char* file);
+void				NatLoadMap(SurfNative* pNat, const char* file);
+bool				NatIsTypeOf(const char*, const char*);
 
 
 #define ERR_DC_NOT_AVAILABLE		0x1
@@ -95,7 +98,9 @@ public:
 	DWORD*					GetClientFlags();
 
 	const char*				GetName() const { return name; }
+	const char*				GetPath() const { return path; }
 	void					SetName(const char*);
+	void					SetPath(const char*);
 	HDC						GetDC();
 	void					ReleaseDC(HDC);
 
@@ -135,6 +140,7 @@ public:
 	// -------------------------------------------------------------------------------
 
 	char					name[128];				// Surface name
+	char					path[MAX_PATH];			// Surface name with path
 	SURFHANDLE				hOrigin;
 	D3DSURFACE_DESC			desc;					// Surface size and format description
 	D3DRESOURCETYPE			type;					// Resource type

@@ -1470,6 +1470,29 @@ bool D3D9Client::clbkSetMeshProperty(DEVMESHHANDLE hMesh, DWORD prop, DWORD valu
 }
 
 // ==============================================================
+
+bool D3D9Client::clbkSetMeshProperty(DEVMESHHANDLE hMesh, MeshProp prp, const oapi::FVECTOR4& value)
+{
+	D3D9Mesh* mesh = (D3D9Mesh*)hMesh;
+	switch (prp) {
+	case MeshProp::BAKED_0: mesh->SetBakedLightLevel(0, value.xyz); return true;
+	case MeshProp::BAKED_1: mesh->SetBakedLightLevel(1, value.xyz); return true;
+	case MeshProp::BAKED_2: mesh->SetBakedLightLevel(2, value.xyz); return true;
+	case MeshProp::BAKED_3: mesh->SetBakedLightLevel(3, value.xyz); return true;
+	case MeshProp::BAKED_4: mesh->SetBakedLightLevel(4, value.xyz); return true;
+	case MeshProp::BAKED_5: mesh->SetBakedLightLevel(5, value.xyz); return true;
+	case MeshProp::BAKED_6: mesh->SetBakedLightLevel(6, value.xyz); return true;
+	case MeshProp::BAKED_7: mesh->SetBakedLightLevel(7, value.xyz); return true;
+	case MeshProp::BAKED_8: mesh->SetBakedLightLevel(8, value.xyz); return true;
+	case MeshProp::BAKED_9: mesh->SetBakedLightLevel(9, value.xyz); return true;
+	default:
+		oapiWriteLogV("oapiSetMeshProperty() FAILED: unknown property %u", DWORD(prp));
+		break;
+	}
+	return false;
+}
+
+// ==============================================================
 // Returns a dev-mesh for a visual
 
 MESHHANDLE D3D9Client::clbkGetMesh(VISHANDLE vis, UINT idx)
@@ -2057,6 +2080,35 @@ SURFHANDLE D3D9Client::clbkLoadTexture(const char *fname, DWORD flags)
 	if (flags & 0x8) attrib |= OAPISURFACE_SHARED;
 
 	return clbkLoadSurface(fname, attrib);
+}
+
+// ==============================================================
+
+SURFHANDLE D3D9Client::clbkLoadMaps(const char* diff, const char* maps, bool bPath, SURFHANDLE hOld, bool bAll)
+{
+	char mpath[MAX_PATH];
+
+	if (diff != NULL && hOld != NULL) {
+		oapiWriteLog((char*)"oapiLoadAdditionalTextureMaps() FAILED. Used either 'diff' or 'hOld'. The other one must be NULL");
+		return NULL;
+	}
+	if (maps) {
+		if (bPath) strcpy_s(mpath, MAX_PATH, maps);
+		else if (!g_client->TexturePath(maps, mpath)) return NULL;
+	}
+	if (diff) {
+		SURFHANDLE hSrf = NatLoadSurface(diff, OAPISURFACE_TEXTURE | OAPISURFACE_SHARED | OAPISURFACE_DIFFUSE_ONLY, bPath);
+		if (hSrf && maps) {	
+			if (bAll) NatLoadMaps(SURFACE(hSrf), mpath);
+			else NatLoadMap(SURFACE(hSrf), mpath);
+		}
+		return hSrf;
+	}
+	else if (maps) {
+		if (bAll) NatLoadMaps(SURFACE(hOld), mpath);
+		else NatLoadMap(SURFACE(hOld), mpath);
+	}
+	return hOld;
 }
 
 // ==============================================================

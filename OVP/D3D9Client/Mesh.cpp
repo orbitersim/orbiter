@@ -201,6 +201,7 @@ void D3D9Mesh::Null(const char *meshName /* = NULL */)
 	bIsReflective = false;
 	bCanRenderFast = false;
 	bMtrlModidied = false;
+	bMustRebake = true;
 
 	Locals = new LightStruct[Config->MaxLights()];
 
@@ -464,30 +465,34 @@ void D3D9Mesh::ReLoadMeshFromHandle(MESHHANDLE hMesh)
 //
 void D3D9Mesh::LoadBakedLights()
 {
+	bMustRebake = true;
 	char id[8];
+
 	for (int i = 0; i < nTex; i++)
 	{
 		if (!Tex[i]) continue;
 		if (!Tex[i]->GetMap(MAP_AMBIENT)) continue;
 
-		const char* name = Tex[i]->GetName();
-		
+		BakedLights[i].bEnabled = false;
+
 		for (int j = 0; j < 10; j++)
 		{
-			sprintf_s(id, "_bkl%d", j);
-			BakedLights[i].pMap[j] = NatLoadSpecialTexture(name, id);
+			sprintf_s(id, "_bkl%d", j);	
+			BakedLights[i].pMap[j] = NatLoadSpecialTexture(Tex[i]->GetPath(), id);
+			if (BakedLights[i].pMap[j] != NULL) BakedLights[i].bEnabled = true;
 		}
 
 		HR(D3DXCreateTexture(pDev, Tex[i]->GetWidth(), Tex[i]->GetHeight(), 0, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &BakedLights[i].pCombined));
 	}
-	for (int i = 0; i < 10;i++) BakedLightsControl[i] = FVECTOR3(1, 1, 1);
+	for (int i = 0; i < 10;i++) BakedLightsControl[i] = FVECTOR3(0, 0, 0);
 }
 
 
 // ===========================================================================================
 //
-void D3D9Mesh::SetBakedLightLevel(int idx, FVECTOR3 level)
+void D3D9Mesh::SetBakedLightLevel(int idx, const FVECTOR3 &level)
 {
+	bMustRebake = true;
 	if (idx >= 0 && idx <= 9) BakedLightsControl[idx] = level;
 }
 
@@ -527,6 +532,8 @@ void D3D9Mesh::BakeLights(ImageProcessing* pBaker)
 			SAFE_RELEASE(pSrf);
 		}
 	}
+
+	bMustRebake = false; // Done
 }
 
 

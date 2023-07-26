@@ -266,6 +266,8 @@ public:
 	 * \sa oapiCreateSurface(DWORD,DWORD,DWORD)
 	 */
 	SURFHANDLE clbkLoadSurface (const char *fname, DWORD attrib, bool bPath = false);
+	SURFHANDLE clbkLoadMaps(const char* diff, const char* maps, bool bPath, SURFHANDLE hOld = NULL, bool bAll = true);
+	
 
 
 	/**
@@ -361,6 +363,7 @@ public:
 	 * \default None, returns \e false.
 	 */
 	bool clbkSetMeshProperty (DEVMESHHANDLE hMesh, DWORD property, DWORD value);
+	bool clbkSetMeshProperty(DEVMESHHANDLE hMesh, MeshProp prp, const oapi::FVECTOR4& value);
 
 	/**
 	 * \brief React to vessel creation
