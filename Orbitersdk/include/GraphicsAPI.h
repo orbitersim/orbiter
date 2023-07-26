@@ -522,7 +522,9 @@ public:
 	/**
 	 */
 	virtual SURFHANDLE clbkLoadMaps(const char* diff, const char* maps, bool bPath, SURFHANDLE hOld = NULL, bool bAll = true)
-	{ return NULL; }
+	{
+		return clbkLoadTexture(diff);
+	}
 
 	/**
 	 * \brief Save the contents of a surface to a formatted image file or to the clipboard
