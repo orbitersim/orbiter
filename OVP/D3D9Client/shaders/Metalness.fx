@@ -126,6 +126,7 @@ void Transmittance(in out float4 cDiff, float uLN, float uLC, float2 uv, float3 
 	cDiff.rgb += cTransm.rgb * (sunSpotFromBehind * cSun);
 }
 
+#include "BakedVC.fx"
 
 // ============================================================================
 // A Shader for a typical "Metalness" PBR workflow.

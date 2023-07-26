@@ -25,6 +25,7 @@ inline float cmax(float3 color)
 // Must be included here
 #include "Metalness.fx"
 
+
 // ============================================================================
 // Vertex shader for physics based rendering
 //
@@ -315,10 +316,24 @@ technique VesselTech
 		DestBlend = InvSrcAlpha;
 		ZWriteEnable = true;
 	}
+
 	pass P4
 	{
 		vertexShader = compile vs_3_0 MetalnessVS();
 		pixelShader = compile ps_3_0 MetalnessPS();
+
+		AlphaBlendEnable = true;
+		BlendOp = Add;
+		ZEnable = true;
+		SrcBlend = SrcAlpha;
+		DestBlend = InvSrcAlpha;
+		ZWriteEnable = true;
+	}
+
+	pass P5
+	{
+		vertexShader = compile vs_3_0 MetalnessVS();
+		pixelShader = compile ps_3_0 BakedVC_PS();
 
 		AlphaBlendEnable = true;
 		BlendOp = Add;

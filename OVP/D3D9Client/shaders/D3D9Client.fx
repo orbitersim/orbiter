@@ -69,6 +69,7 @@ struct Flow
 	bool Norm;		// Enable normal map
 	bool Metl;		// Enable metalness map
 	bool Heat;		// Enable heat map
+	bool Baked;		// Enable pre-baked maps
 };
 
 
@@ -166,6 +167,8 @@ uniform extern texture   gTranslMap;		// Translucence Map
 uniform extern texture   gTransmMap;		// Transmittance Map
 uniform extern texture   gShadowMap;	    // Shadow Map
 uniform extern texture   gIrradianceMap;    // Irradiance Map
+uniform extern texture   gAmbientMap;		// Baked Ambient occlusion map
+uniform extern texture   gCombinedMap;		// Combined baked light map
 
 // Legacy Atmosphere --------------------------------------------------------
 
@@ -319,6 +322,31 @@ sampler EmisS = sampler_state       // Primary Mesh texture sampler
 	AddressU = WRAP;
 	AddressV = WRAP;
 };
+
+sampler BakedLightS = sampler_state       // Primary Mesh texture sampler
+{
+	Texture = <gCombinedMap>;
+	MinFilter = ANISOTROPIC;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	MaxAnisotropy = ANISOTROPY_MACRO;
+	MipMapLODBias = 0;
+	AddressU = WRAP;
+	AddressV = WRAP;
+};
+
+sampler BakedAOS = sampler_state       // Primary Mesh texture sampler
+{
+	Texture = <gAmbientMap>;
+	MinFilter = ANISOTROPIC;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	MaxAnisotropy = ANISOTROPY_MACRO;
+	MipMapLODBias = 0;
+	AddressU = WRAP;
+	AddressV = WRAP;
+};
+
 
 sampler ReflS = sampler_state       // Primary Mesh texture sampler
 {

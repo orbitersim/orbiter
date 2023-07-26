@@ -16,21 +16,19 @@ float4 BakedVC_PS(float4 sc : VPOS, PBRData frg) : COLOR
 	float3 nrmT;
 	float3 nrmW;
 	float3 cEmis;
-	//float4 cSpecularMap;
 	float4 cDiff;
-	//float  fHeat;
 	float  fSmth, fMetal;
 	
 	// ======================================================================
 	// Start fetching texture data
 	// ======================================================================
 
-	if (gTextured) cDiff = tex2D(WrapS, frg.tex0.xy);
-	else		   cDiff = 1;
-
 	// Fetch a normal map
 	//
 	if (gCfg.Norm) nrmT = tex2D(Nrm0S, frg.tex0.xy).rgb;
+
+	if (gTextured) cDiff = tex2D(WrapS, frg.tex0.xy);
+	else		   cDiff = 1;
 
 	// Fetch Smoothness map (i.e. *_rghn.dds)
 	//
@@ -47,21 +45,21 @@ float4 BakedVC_PS(float4 sc : VPOS, PBRData frg) : COLOR
 	if (gCfg.Emis) cEmis = tex2D(EmisS, frg.tex0.xy).rgb;
 	else		   cEmis = 0;
 
-	// Sample specular map
-	//
-	//if (gCfg.Spec) cSpecularMap = tex2D(SpecS, frg.tex0.xy).rgba;
+	float3 cBL = 0;
+	float3 cBAO = 0;
 
-	// Fetch Heat map
-	//
-	//if (gCfg.Heat) fHeat = saturate((tex2D(HeatS, frg.tex0.xy).g) - 1.0f + (gMtrl.specialfx.x * gMtrl.specialfx.x * gMtrl.specialfx.x));
-	//else fHeat = (gMtrl.specialfx.x * gMtrl.specialfx.x * gMtrl.specialfx.x);
+	if (gCfg.Baked) {
+		cBL = tex2D(BakedLightS, frg.tex0.xy).rgb;
+		cBAO = tex2D(BakedAOS, frg.tex0.xy).rgb;
+	}
+
 
 	// ----------------------------------------------------------------------
 	// Now do other calculations while textures are being fetched
 	// ----------------------------------------------------------------------
 
 	float3 camW = normalize(frg.camW);
-	float3 cSun = gSun.Color * lerp(float3(1.1, 1.1, 0.9), float3(1,1,1), saturate(gRadius[3]*2e-5));
+	float3 cSun = gSun.Color;
 
 
 	// ======================================================================
@@ -118,26 +116,20 @@ float4 BakedVC_PS(float4 sc : VPOS, PBRData frg) : COLOR
 
 /*
 #if defined(_ENVMAP)
-
 	if (gEnvMapEnable) {
-
 		// ======================================================================
 		// Sample Env Map
 		SampleEnvMap(cEnv, dCN, fRgh, fMetal, rflW, nrmW);
 	}
-
 	// ======================================================================
 	// Sample Irradiance Map
 	float3 cAmbient = Paraboloidal_LVLH(IrradS, nrmW).rgb;
 	cAmbient *= cAmbient;
-
 	//cAmbient = saturate(cAmbient * (1.0f + 15.0f * gNightTime));	
 	// Apply base ambient light
 	cAmbient = max(cAmbient, gSun.Ambient);
 #else
-
 #endif
-
 	cAmbient *= (1.0f - fMetal); // No ambient for metals
 */
 

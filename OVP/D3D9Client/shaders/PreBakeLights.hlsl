@@ -19,7 +19,8 @@ float3 LightFX(float3 c)
 	return c * 1.2f * rsqrt(2 + q * q);
 }
 
-
+// Combine multiple baked lightmaps into a single map
+//
 float4 PSMain(float x : TEXCOORD0, float y : TEXCOORD1) : COLOR
 {
 	float3 color = 0;

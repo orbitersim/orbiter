@@ -492,8 +492,12 @@ void D3D9Mesh::LoadBakedLights()
 //
 void D3D9Mesh::SetBakedLightLevel(int idx, const FVECTOR3 &level)
 {
-	bMustRebake = true;
-	if (idx >= 0 && idx <= 9) BakedLightsControl[idx] = level;
+	if (idx >= 0 && idx <= 9) {
+		if (BakedLightsControl[idx] != level) {
+			BakedLightsControl[idx] = level;
+			bMustRebake = true;
+		}
+	}
 }
 
 
@@ -502,6 +506,7 @@ void D3D9Mesh::SetBakedLightLevel(int idx, const FVECTOR3 &level)
 void D3D9Mesh::BakeLights(ImageProcessing* pBaker)
 {
 	if (!pBaker->IsOK()) return;
+	if (!bMustRebake) return;
 
 	DWORD flags = IPF_POINT;
 	FVECTOR3 control[10];

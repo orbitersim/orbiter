@@ -335,6 +335,16 @@ namespace oapi {
 			return FVECTOR3(-x, -y, -z);
 		}
 
+		inline bool operator== (const FVECTOR3& f) const
+		{
+			return x == f.x && y == f.y && z == f.z;
+		}
+
+		inline bool operator!= (const FVECTOR3& f) const
+		{
+			return x != f.x || y != f.y || z != f.z;
+		}
+
 #ifdef D3D9CLIENT_EXPORTS
 		inline operator D3DXVECTOR3() const
 		{

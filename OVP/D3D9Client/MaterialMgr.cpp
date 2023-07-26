@@ -23,8 +23,9 @@ MatMgr::MatMgr(class vObject *v, class D3D9Client *_gc)
 
 	ResetCamera(0);
 
-	Shaders.push_back(SHADER("PBR-Old",SHADER_NULL));
+	Shaders.push_back(SHADER("PBR-Old", SHADER_NULL));
 	Shaders.push_back(SHADER("Metalness", SHADER_METALNESS));
+	Shaders.push_back(SHADER("BakedVC", SHADER_BAKED_VC));
 }
 
 
