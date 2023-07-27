@@ -471,8 +471,6 @@ void D3D9Mesh::LoadBakedLights()
 	for (int i = 0; i < nTex; i++)
 	{
 		if (!Tex[i]) continue;
-		if (!Tex[i]->GetMap(MAP_AMBIENT)) continue;
-
 		BakedLights[i].bEnabled = false;
 
 		for (int j = 0; j < 10; j++)
@@ -506,6 +504,7 @@ void D3D9Mesh::SetBakedLightLevel(int idx, const FVECTOR3 &level)
 void D3D9Mesh::BakeLights(ImageProcessing* pBaker)
 {
 	if (!pBaker->IsOK()) return;
+	if (DefShader != SHADER_BAKED_VC) return;
 	if (!bMustRebake) return;
 
 	DWORD flags = IPF_POINT;
@@ -583,7 +582,6 @@ void D3D9Mesh::LoadMeshFromHandle(MESHHANDLE hMesh, D3DXVECTOR3 *reorig, float *
 
 	UpdateBoundingBox();
 	CheckMeshStatus();
-	LoadBakedLights();
 }
 
 // ===========================================================================================
@@ -1382,7 +1380,7 @@ void D3D9Mesh::SetTexTune(const D3D9Tune *pT, DWORD idx)
 
 // ===========================================================================================
 //
-void D3D9Mesh::SetAmbientColor(D3DCOLOR c)
+void D3D9Mesh::SetAmbientColor(const FVECTOR3& c)
 {
 	_TRACE;
 	if (!IsOK()) return;
@@ -1498,6 +1496,25 @@ void D3D9Mesh::CheckMeshStatus()
 	if (DefShader == SHADER_METALNESS) {
 		bIsReflective = true;
 		for (DWORD g = 0; g < nGrp; g++) Grp[g].Shader = SHADER_METALNESS;
+	}
+
+	if (DefShader == SHADER_BAKED_VC) {
+		bIsReflective = true;
+		for (DWORD g = 0; g < nGrp; g++) Grp[g].Shader = SHADER_BAKED_VC;
+	}
+}
+
+
+// ===========================================================================================
+//
+void D3D9Mesh::SetDefaultShader(WORD shader)
+{
+	DefShader = shader;
+	bMtrlModidied = true;
+	CheckMeshStatus();
+
+	if (shader == SHADER_BAKED_VC) {
+		LoadBakedLights();
 	}
 }
 

@@ -219,3 +219,5 @@
 #define IDC_EAQUALITY                           3035
 #define IDC_ATM_TRLIGHTSHAD                     3036
 #define IDC_ATD_TRLIGHTSHAD                     3037
+#define IDC_DBG_BKLID                           3038
+#define IDC_DBG_BKLADJ                          3039

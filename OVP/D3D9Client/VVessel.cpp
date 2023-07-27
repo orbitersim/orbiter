@@ -18,6 +18,7 @@
 #include "DebugControls.h"
 #include "D3D9Util.h"
 #include "MaterialMgr.h"
+#include "IProcess.h"
 
 using namespace oapi;
 
@@ -666,6 +667,21 @@ bool vVessel::GetVCPos(D3DXVECTOR3* out, float* rad)
 		}
 	}
 	return false;
+}
+
+
+// ============================================================================================
+//
+void vVessel::BakeLights(ImageProcessing *pBaker)
+{
+	for (int i = 0; i < nmesh; i++)
+	{
+		if (!meshlist[i].mesh) continue;
+		if (meshlist[i].vismode & MESHVIS_VC)
+		{
+			meshlist[i].mesh->BakeLights(pBaker);
+		}
+	}
 }
 
 

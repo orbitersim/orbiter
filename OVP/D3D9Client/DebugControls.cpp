@@ -34,6 +34,7 @@ extern D3D9Client *g_client;
 
 namespace DebugControls {
 
+int bkl_id = -1;
 DWORD dwGFX, dwCmd, nMesh, nGroup, sMesh, sGroup, debugFlags, dspMode, camMode, SelColor, sEmitter;
 double camSpeed;
 float cpr, cpg, cpb, cpa;
@@ -452,14 +453,35 @@ void OpenDlgClbk(void *context)
 	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"ScreenDepth");
 	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"Normals");
 	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"LightVisbil.");
+	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"BakedLightMap");
 	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_SETCURSEL, 0, 0);
+
+	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_RESETCONTENT, 0, 0);
+	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_ADDSTRING, 0, (LPARAM)"Baked_0");
+	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_ADDSTRING, 0, (LPARAM)"Baked_1");
+	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_ADDSTRING, 0, (LPARAM)"Baked_2");
+	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_ADDSTRING, 0, (LPARAM)"Baked_3");
+	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_ADDSTRING, 0, (LPARAM)"Baked_4");
+	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_ADDSTRING, 0, (LPARAM)"Baked_5");
+	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_ADDSTRING, 0, (LPARAM)"Baked_6");
+	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_ADDSTRING, 0, (LPARAM)"Baked_7");
+	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_ADDSTRING, 0, (LPARAM)"Baked_8");
+	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_ADDSTRING, 0, (LPARAM)"Baked_9");
+	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_ADDSTRING, 0, (LPARAM)"Ambient");
+	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_SETCURSEL, 0, 0);
 
 
 	SetWindowText(GetDlgItem(hDlg, IDC_DBG_VARA), "1.3");
 	SetWindowText(GetDlgItem(hDlg, IDC_DBG_VARB), "0.01");
 	SetWindowText(GetDlgItem(hDlg, IDC_DBG_VARC), "0.00");
 
-	// Speed slider
+	// BakedLights slider
+	SendDlgItemMessage(hDlg, IDC_DBG_BKLADJ, TBM_SETRANGEMAX, 1, 255);
+	SendDlgItemMessage(hDlg, IDC_DBG_BKLADJ, TBM_SETRANGEMIN, 1, 0);
+	SendDlgItemMessage(hDlg, IDC_DBG_BKLADJ, TBM_SETTICFREQ, 1, 0);
+	SendDlgItemMessage(hDlg, IDC_DBG_BKLADJ, TBM_SETPOS, 1, 0);
+
+	// Resolution bias slider
 	SendDlgItemMessage(hDlg, IDC_DBG_RESBIAS, TBM_SETRANGEMAX, 1,  10);
 	SendDlgItemMessage(hDlg, IDC_DBG_RESBIAS, TBM_SETRANGEMIN, 1, -10);
 	SendDlgItemMessage(hDlg, IDC_DBG_RESBIAS, TBM_SETTICFREQ, 1, 0);
@@ -1294,6 +1316,21 @@ void SetupMeshGroups()
 	InitMatList(mesh->GetDefaultShader());
 }
 
+
+// =============================================================================================
+//
+void UpdateBakedLights(float lvl)
+{
+	D3D9Mesh* mesh = (class D3D9Mesh*)vObj->GetMesh(sMesh);
+	if (mesh) {
+		if (bkl_id < 10 && bkl_id >= 0) {
+			mesh->SetBakedLightLevel(bkl_id, FVECTOR3(lvl, lvl, lvl));
+		}
+		if (bkl_id == 10) mesh->SetAmbientColor(FVECTOR3(lvl, lvl, lvl));
+	}
+}
+
+
 // =============================================================================================
 //
 double GetVisualSize()
@@ -1817,6 +1854,11 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				UpdateColorSlider(pos);
 				UpdateMaterialDisplay();
 			}
+
+			if (HWND(lParam) == GetDlgItem(hWnd, IDC_DBG_BKLADJ)) {
+				if (pos == 0) pos = WORD(SendDlgItemMessage(hDlg, IDC_DBG_BKLADJ, TBM_GETPOS, 0, 0));
+				float val = float(pos) / 255.0f;
+			}
 		}
 		return false;
 	}
@@ -1941,6 +1983,12 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			case IDC_DBG_DEFSHADER:
 				if (HIWORD(wParam) == CBN_SELCHANGE) {
 					UpdateShader();
+				}
+				break;
+
+			case IDC_DBG_BKLID:
+				if (HIWORD(wParam) == CBN_SELCHANGE) {
+					bkl_id = int(SendDlgItemMessage(hDlg, IDC_DBG_BKLID, CB_GETCURSEL, 0, 0));
 				}
 				break;
 

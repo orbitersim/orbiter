@@ -72,6 +72,7 @@ public:
 	int	 GetMatrixTransform(gcCore::MatrixId matrix_id, DWORD mesh, DWORD group, FMATRIX4 *pMat);
 	int  SetMatrixTransform(gcCore::MatrixId matrix_id, DWORD mesh, DWORD group, const FMATRIX4 *pMat);
 	bool GetVCPos(D3DXVECTOR3* out, float* rad);
+	void BakeLights(ImageProcessing* pBaker);
 	void NoVC();
 	void UpdateBoundingBox();
 	bool IsInsideShadows();

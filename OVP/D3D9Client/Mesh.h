@@ -222,7 +222,7 @@ public:
 	void			SetName(UINT idx);
 	const char *	GetName() const { return name; }
 
-	void			SetDefaultShader(WORD shader) { DefShader = shader; bMtrlModidied = true; }
+	void			SetDefaultShader(WORD shader);
 	WORD			GetDefaultShader() const { return DefShader; }
 	
 	void			SetClass(DWORD cl) { vClass = cl; }
@@ -323,7 +323,7 @@ public:
 	void			UpdateBoundingBox();
 	void			BoundingBox(const NMVERTEX *vtx, DWORD n, D9BBox *box);
 
-	void			SetAmbientColor(D3DCOLOR c);
+	void			SetAmbientColor(const FVECTOR3& c);
 	void			SetupFog(const LPD3DXMATRIX pW);
 	void			ResetRenderStatus();
 
@@ -370,7 +370,7 @@ private:
 	D3DXMATRIX mTransformInv;
 	D3DXMATRIX *pGrpTF;
 	D3D9Sun sunLight;
-	D3DCOLOR cAmbient;
+	FVECTOR3 cAmbient;
 	LightStruct null_light;
 
 	_LightList LightList[MAX_SCENE_LIGHTS];

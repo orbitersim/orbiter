@@ -1390,6 +1390,7 @@ void Scene::RenderMainScene()
 			vVessel* vV = (vVessel*)pv->vobj;
 			RenderList.push_back(vV);
 			vV->bStencilShadow = true;
+			vV->BakeLights(pBakeLights);
 		}
 	}
 
