@@ -117,7 +117,6 @@ public:
 
 	// Lighting related parameters ------------------------------------
 	static D3DXHANDLE   eMtrl;
-	static D3DXHANDLE   eTune;
 	static D3DXHANDLE	eMat;        ///< Material
 	static D3DXHANDLE	eWater;      ///< Water
 	static D3DXHANDLE	eSun;        ///< Sun
@@ -135,7 +134,6 @@ public:
 	static D3DXHANDLE	eNoColor;      ///< BOOL
 	static D3DXHANDLE	eLightsEnabled;///< BOOL
 	static D3DXHANDLE	eBaseBuilding; ///< BOOL
-	static D3DXHANDLE	eTuneEnabled;  ///< BOOL
 	static D3DXHANDLE	eFresnel;	   ///< BOOL
 	static D3DXHANDLE   eSwitch;	   ///< BOOL
 	static D3DXHANDLE   eRghnSw;	   ///< BOOL

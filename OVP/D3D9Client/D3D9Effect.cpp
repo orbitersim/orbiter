@@ -64,7 +64,6 @@ D3DXHANDLE D3D9Effect::eGT = 0;			// Mesh group transformation matrix
 D3DXHANDLE D3D9Effect::eMat = 0;		// Material
 D3DXHANDLE D3D9Effect::eWater = 0;		// Water
 D3DXHANDLE D3D9Effect::eMtrl = 0;
-D3DXHANDLE D3D9Effect::eTune = 0;
 D3DXHANDLE D3D9Effect::eSun = 0;
 D3DXHANDLE D3D9Effect::eNight = 0;
 D3DXHANDLE D3D9Effect::eLights = 0;		// Additional light sources
@@ -116,7 +115,6 @@ D3DXHANDLE D3D9Effect::eEnvMapEnable = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eInSpace = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eNoColor = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eLightsEnabled = 0;	// BOOL	
-D3DXHANDLE D3D9Effect::eTuneEnabled = 0; // BOOL
 D3DXHANDLE D3D9Effect::eBaseBuilding = 0; // BOOL
 D3DXHANDLE D3D9Effect::eOITEnable = 0; // BOOL
 // --------------------------------------------------------------
@@ -429,7 +427,6 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eInSpace	  = FX->GetParameterByName(0,"gInSpace");			
 	eNoColor	  = FX->GetParameterByName(0,"gNoColor");	
 	eLightsEnabled = FX->GetParameterByName(0,"gLightsEnabled");	
-	eTuneEnabled  = FX->GetParameterByName(0,"gTuneEnabled");
 	eBaseBuilding = FX->GetParameterByName(0,"gBaseBuilding");
 	eOITEnable	  = FX->GetParameterByName(0,"gOITEnable");
 
@@ -462,7 +459,6 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eMat		  = FX->GetParameterByName(0,"gMat");
 	eWater		  = FX->GetParameterByName(0,"gWater");
 	eMtrl		  = FX->GetParameterByName(0,"gMtrl");
-	eTune		  = FX->GetParameterByName(0,"gTune");
 	// ----------------------------------------------------------------------
 	eTex0		  = FX->GetParameterByName(0,"gTex0");
 	eTex1		  = FX->GetParameterByName(0,"gTex1");

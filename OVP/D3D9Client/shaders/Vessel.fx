@@ -159,14 +159,7 @@ float4 AdvancedPS(float4 sc : VPOS, PBRData frg) : COLOR
 
 		if (gCfg.Transl) {
 			cTransl = tex2D(TranslS, frg.tex0.xy).rgb;
-		}
-
-		// Texture Tuning -------------------------------------------------------
-		//
-		if (gTuneEnabled) {
-			cTransm *= gTune.Transm.rgba;
-			cTransl *= gTune.Transl.rgb;
-		}
+		}	
 
 		float sunLightFromBehind = saturate(dot(gSun.Dir, nrmW));
 		float sunSpotFromBehind = pow(saturate(dot(gSun.Dir, CamD)), cTransm.a);

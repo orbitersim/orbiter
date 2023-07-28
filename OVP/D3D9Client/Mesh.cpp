@@ -182,7 +182,6 @@ void D3D9Mesh::Null(const char *meshName /* = NULL */)
 	Grp = NULL;
 	nTex = 0;
 	Tex	= NULL;
-	pTune = NULL;
 	nMtrl = 0;
 	pBuf = NULL;
 	Mtrl = NULL;
@@ -391,7 +390,6 @@ void D3D9Mesh::Release()
 	SAFE_DELETEA(Tex);
 	SAFE_DELETEA(Mtrl);
 	SAFE_DELETEA(pGrpTF);
-	SAFE_DELETEA(pTune);
 
 	if (pBuf) if (pBuf->IsLocalTo(this)) delete pBuf;
 }
@@ -1379,31 +1377,6 @@ int D3D9Mesh::GetMaterialEx(DWORD idx, MatProp mid, FVECTOR4* value)
 
 // ===========================================================================================
 //
-bool D3D9Mesh::GetTexTune(D3D9Tune *pT, DWORD idx) const
-{
-	if (idx<nTex && idx!=0) {
-		if (!pTune) D3D9TuneInit(pT);
-		else memcpy(pT, &pTune[idx], sizeof(D3D9Tune));
-		return true;
-	}
-	return false;
-}
-
-// ===========================================================================================
-//
-void D3D9Mesh::SetTexTune(const D3D9Tune *pT, DWORD idx)
-{
-	if (idx < nTex && idx != 0) {
-		if (!pTune) {
-			pTune = new D3D9Tune[nTex];
-			for (DWORD i = 0; i < nTex; i++) D3D9TuneInit(&pTune[i]);
-		}
-		memcpy(&pTune[idx], pT, sizeof(D3D9Tune));
-	}
-}
-
-// ===========================================================================================
-//
 void D3D9Mesh::SetAmbientColor(const FVECTOR3& c)
 {
 	_TRACE;
@@ -1664,14 +1637,11 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	FX->SetTechnique(eVesselTech);
 	FX->SetBool(eFresnel, false);
 	FX->SetBool(eEnvMapEnable, false);
-	FX->SetBool(eTuneEnabled, false);
 	FX->SetBool(eLightsEnabled, false);
 	FX->SetBool(eOITEnable, false);
 	FX->SetVector(eColor, ptr(D3DXVECTOR4(0, 0, 0, 0)));
 
 	ConfigureAtmo();
-
-	if (DebugControls::IsActive()) if (pTune) FX->SetBool(eTuneEnabled, true);
 
 
 	TexFlow FC;	reset(FC);
@@ -1827,11 +1797,6 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 					if (tni && Tex[tni]) FX->SetTexture(eEmisMap, Tex[tni]->GetTexture());
 				}
 				else {
-
-					if (DebugControls::IsActive()) if (pTune) {
-						FX->SetValue(eTune, &pTune[ti], sizeof(D3D9Tune));
-					}
-
 					LPDIRECT3DTEXTURE9 pTransl = NULL;
 					LPDIRECT3DTEXTURE9 pTransm = NULL;
 					LPDIRECT3DTEXTURE9 pMetl = NULL;
@@ -2141,7 +2106,6 @@ void D3D9Mesh::RenderSimplified(const LPD3DXMATRIX pW, LPDIRECT3DCUBETEXTURE9 *p
 	FX->SetTechnique(eVesselTech);
 	FX->SetBool(eFresnel, false);
 	FX->SetBool(eEnvMapEnable, false);
-	FX->SetBool(eTuneEnabled, false);
 	FX->SetBool(eLightsEnabled, false);
 	FX->SetVector(eColor, ptr(D3DXVECTOR4(0, 0, 0, 0)));
 	FX->SetMatrix(eW, pW);
@@ -2436,14 +2400,10 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 
 
 	FX->SetTechnique(eVesselTech);
-	FX->SetBool(eTuneEnabled, false);
 	FX->SetBool(eLightsEnabled, false);
 	FX->SetVector(eColor, ptr(D3DXVECTOR4(0, 0, 0, 0)));
 
 	ConfigureAtmo();
-
-	if (DebugControls::IsActive()) if (pTune) FX->SetBool(eTuneEnabled, true);
-
 	TexFlow FC;	reset(FC);
 
 	const D3D9Light *pLights = gc->GetScene()->GetLights();
@@ -2547,10 +2507,6 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 		if (bTextured) {
 
 			if (Tex[ti] != old_tex) {
-
-				D3D9Stats.Mesh.TexChanges++;
-
-				if (DebugControls::IsActive()) if (pTune) FX->SetValue(eTune, &pTune[ti], sizeof(D3D9Tune));
 
 				old_tex = Tex[ti];
 				FX->SetTexture(eTex0, Tex[ti]->GetTexture());

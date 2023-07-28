@@ -34,7 +34,7 @@ extern D3D9Client *g_client;
 
 namespace DebugControls {
 
-int bkl_id = -1;
+int bkl_id = 0;
 DWORD dwGFX, dwCmd, nMesh, nGroup, sMesh, sGroup, debugFlags, dspMode, camMode, SelColor, sEmitter;
 double camSpeed;
 float cpr, cpg, cpb, cpa;
@@ -85,7 +85,7 @@ struct _Params {
 };
 
 
-_Params Params[20] = { 0 };
+_Params Params[10] = { 0 };
 
 
 
@@ -220,14 +220,6 @@ void Create()
 	PrmList.push_back(MatParams("Emission2", 7));
 	PrmList.push_back(MatParams("Metalness", 8));
 	PrmList.push_back(MatParams("SpecialFX", 9));
-	PrmList.push_back(MatParams("- - - - - -", 10));
-	PrmList.push_back(MatParams("Tune Albedo", 11));
-	PrmList.push_back(MatParams("Tune _Emis", 12));
-	PrmList.push_back(MatParams("Tune _Refl", 13));
-	PrmList.push_back(MatParams("Tune _Rghn", 14));
-	PrmList.push_back(MatParams("Tune _Transl", 15));
-	PrmList.push_back(MatParams("Tune _Transm", 16));
-	PrmList.push_back(MatParams("Tune _Spec", 17));
 }
 
 // =============================================================================================
@@ -347,7 +339,7 @@ void InitMatList(WORD shader)
 	Dropdown.clear();
 
 	if (shader == SHADER_NULL) {
-		std::list<char> list = { 0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 14, 15, 16, 17 };
+		std::list<char> list = { 0, 1, 2, 3, 4, 5, 6, 7, 9 };
 		for (auto x : list) Dropdown.push_back(PrmList[x]);
 		for (auto x : Dropdown) SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)x.name.c_str());	
 	}
@@ -575,75 +567,8 @@ void OpenDlgClbk(void *context)
 
 	// SpecialFX
 	Params[9].var[0] = DefVar(0, 1, LIN, "Part Temperature");
-	
-
-	// Unused index 10
-	
-	// Tuning -------------------------------------------------------------------------------------
-	// Albedo
-	int i = 11;
-	Params[i].var[0] = DefVar(0.2f, 5.0f, SQRT, "Red");
-	Params[i].var[1] = DefVar(0.2f, 5.0f, SQRT, "Green");
-	Params[i].var[2] = DefVar(0.2f, 5.0f, SQRT, "Blue");
-	Params[i].var[3] = DefVar(0.2f, 5.0f, SQRT, "Gamma", true);
-
-	Params[1 + i] = Params[i];	 // Emis
-	Params[1 + i].var[3] = DefVar(0.2f, 5.0f, SQRT, "Gamma", true);
-
-	Params[2 + i] = Params[i];	 // Refl
-	Params[2 + i].var[3] = DefVar(0.2f, 5.0f, SQRT, "Gamma", true);
-
-	Params[3 + i] = Params[i];  // Regn
-	Params[3 + i].var[3] = DefVar(0.2f, 5.0f, SQRT, "Gamma", true);
-
-	Params[4 + i] = Params[i];  // Transl
-	Params[4 + i].var[3] = DefVar(0.2f, 5.0f, SQRT, "???");
-
-	Params[5 + i] = Params[i];  // Transm
-	Params[5 + i].var[3] = DefVar(0.2f, 5.0f, SQRT, "???");
-
-	Params[6 + i] = Params[i];	 // Spec
-	Params[6 + i].var[3] = DefVar(0.1f, 9.9f, SQRT, "Power", false);
 }
 
-
-// =============================================================================================
-//
-void SetTuningValue(int idx, D3DCOLORVALUE *pClr, DWORD clr, float value)
-{
-	bool bExtend = (SendDlgItemMessageA(hDlg, IDC_DBG_EXTEND, BM_GETCHECK, 0, 0) == BST_CHECKED);
-
-	float mi = Params[idx].var[clr].min;
-	float mx = (bExtend ? Params[idx].var[clr].extmax : Params[idx].var[clr].max);
-
-	switch (clr) {
-		case 0: pClr->r = CLAMP(value, mi, mx); break;
-		case 1: pClr->g = CLAMP(value, mi, mx); break;
-		case 2: pClr->b = CLAMP(value, mi, mx); break;
-		case 3: 
-		{
-			if (Params[idx].var[clr].bGamma) pClr->a = 1.0f / CLAMP(value, mi, mx);		
-			else pClr->a = CLAMP(value, mi, mx);			
-		} break;
-	}
-}
-
-// =============================================================================================
-//
-float GetTuningValue(int idx, D3DCOLORVALUE *pClr, DWORD clr)
-{
-	switch (clr) {
-		case 0: return pClr->r;
-		case 1: return pClr->g;
-		case 2: return pClr->b;
-		case 3: 
-		{
-			if (Params[idx].var[clr].bGamma) return 1.0f / pClr->a;
-			else return pClr->a;
-		}
-	}
-	return 1.0f;
-}
 
 // =============================================================================================
 //
@@ -704,11 +629,7 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 	DWORD texidx = hMesh->GetMeshGroupTextureIdx(sGroup);
 
 	D3D9MatExt Mat;
-	D3D9Tune Tune;
-
 	if (!hMesh->GetMaterial(&Mat, matidx)) return;
-
-	bool bTune = hMesh->GetTexTune(&Tune, texidx);
 
 	switch(MatPrp) {
 
@@ -781,51 +702,8 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 			Mat.SpecialFX[clr] = _Clamp(value, MatPrp, clr);
 			break;
 		}
-
-		case 11:	// Tune Albedo
-		{
-			SetTuningValue(MatPrp, &Tune.Albedo, clr, value);
-			break;
-		}
-
-		case 12:	// Tune Emis
-		{
-			SetTuningValue(MatPrp, &Tune.Emis, clr, value);
-			break;
-		}
-
-		case 13:	// Tune Refl
-		{
-			SetTuningValue(MatPrp, &Tune.Refl, clr, value);
-			break;
-		}
-
-		case 14:	// Tune _Rghn
-		{
-			SetTuningValue(MatPrp, &Tune.Rghn, clr, value);
-			break;
-		}
-
-		case 15:	// Tune _Transl
-		{
-			SetTuningValue(MatPrp, &Tune.Transl, clr, value);
-			break;
-		}
-
-		case 16:	// Tune _Transm
-		{
-			SetTuningValue(MatPrp, &Tune.Transm, clr, value);
-			break;
-		}
-
-		case 17:	// Tune _Spec
-		{
-			SetTuningValue(MatPrp, &Tune.Spec, clr, value);
-			break;
-		}
 	}
 
-	if (bTune) hMesh->SetTexTune(&Tune, texidx);
 	hMesh->SetMaterial(&Mat, matidx);
 	vVessel *vVes = (vVessel *)vObj;
 
@@ -918,9 +796,6 @@ float GetMaterialValue(DWORD MatPrp, DWORD clr)
 	const D3D9MatExt *pMat = hMesh->GetMaterial(matidx);
 	
 	if (!pMat) return 0.0f;
-
-	D3D9Tune Tune;
-	bool bTune = hMesh->GetTexTune(&Tune, texidx);
 
 	switch(MatPrp) {
 
@@ -1022,41 +897,6 @@ float GetMaterialValue(DWORD MatPrp, DWORD clr)
 				case 3: return pMat->SpecialFX.w;
 			}
 			break;
-		}
-
-		case 11:	// Tune Albedo
-		{
-			return GetTuningValue(MatPrp, &Tune.Albedo, clr);
-		}
-
-		case 12:	// Tune Emis
-		{
-			return GetTuningValue(MatPrp, &Tune.Emis, clr);
-		}
-
-		case 13:	// Tune Refl
-		{
-			return GetTuningValue(MatPrp, &Tune.Refl, clr);
-		}
-
-		case 14:	// Tune _Rghn
-		{
-			return GetTuningValue(MatPrp, &Tune.Rghn, clr);
-		}
-
-		case 15:	// Tune _Transl
-		{
-			return GetTuningValue(MatPrp, &Tune.Transl, clr);
-		}
-
-		case 16:	// Tune _Transm
-		{
-			return GetTuningValue(MatPrp, &Tune.Transm, clr);
-		}
-
-		case 17:	// Tune _Spec
-		{
-			return GetTuningValue(MatPrp, &Tune.Spec, clr);
 		}
 	}
 

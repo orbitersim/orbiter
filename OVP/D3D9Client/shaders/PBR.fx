@@ -111,29 +111,6 @@ float4 PBR_PS(float4 sc : VPOS, PBRData frg) : COLOR
 	float3 cSun = saturate(gSun.Color);
 
 
-	// ----------------------------------------------------------------------
-	// Texture tuning controls for add-on developpers
-	// ----------------------------------------------------------------------
-
-#if defined(_DEBUG)
-	if (gTuneEnabled) {
-
-		nrmT *= gTune.Norm.rgb;
-
-		cDiff.rgb = pow(abs(cDiff.rgb), gTune.Albe.a) * gTune.Albe.rgb;
-		cRefl.rgb = pow(abs(cRefl.rgb), gTune.Refl.a) * gTune.Refl.rgb;
-		cEmis.rgb = pow(abs(cEmis.rgb), gTune.Emis.a) * gTune.Emis.rgb;
-		fRghn = pow(abs(fRghn), gTune.Rghn.a) * gTune.Rghn.g;
-		cSpec.rgba = cSpec.rgba * gTune.Spec.rgba;
-
-		cDiff = saturate(cDiff);
-		cRefl = saturate(cRefl);
-		fRghn = saturate(fRghn);
-		cSpec = min(cSpec, sMask);
-	}
-#endif
-
-
 	// Use alpha zero to mask off specular reflections
 	cSpec.rgb *= saturate(cSpec.a);
 

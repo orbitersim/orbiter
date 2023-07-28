@@ -261,8 +261,6 @@ public:
 	void			SetMaterial(const D3DMATERIAL9 *pMat, DWORD idx, bool bUpdateStatus = true);
 	int				SetMaterialEx(DWORD idx, MatProp mid, const FVECTOR4* in);
 	int				GetMaterialEx(DWORD idx, MatProp mid, FVECTOR4* out);
-	bool			GetTexTune(D3D9Tune *pT, DWORD idx) const;
-	void			SetTexTune(const D3D9Tune *pT, DWORD idx);
 
 	DWORD			GetGroupCount() const { return nGrp; }
 	DWORD			GetMaterialCount() const { return nMtrl; }
@@ -365,7 +363,6 @@ private:
 	SurfNative **Tex;			// list of mesh textures
 	std::map<int, _BakedLights> BakedLights;
 	FVECTOR3 BakedLightsControl[10];
-	D3D9Tune *pTune;
 	D3DXMATRIX mTransform;
 	D3DXMATRIX mTransformInv;
 	D3DXMATRIX *pGrpTF;
