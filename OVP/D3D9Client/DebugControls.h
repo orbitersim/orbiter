@@ -125,6 +125,8 @@ namespace DebugControls {
 	void		Append(const char *format, ...);
 	void		Refresh();
 
+	LPDIRECT3DTEXTURE9 GetCombinedMap();
+
 	INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	INT_PTR CALLBACK ViewProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };

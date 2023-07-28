@@ -75,7 +75,6 @@ struct _LightList {
 struct _BakedLights {
 	LPDIRECT3DTEXTURE9 pMap[10];
 	LPDIRECT3DTEXTURE9 pCombined;
-	bool bEnabled;
 };
 
 class MeshShader : public ShaderClass
@@ -327,6 +326,7 @@ public:
 	void			SetupFog(const LPD3DXMATRIX pW);
 	void			ResetRenderStatus();
 
+	LPDIRECT3DTEXTURE9 GetCombinedMap(int tex_idx = -1);
 
 	/**
 	 * \brief Enable/disable material alpha value for transparency calculation.

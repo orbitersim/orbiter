@@ -465,24 +465,31 @@ void D3D9Mesh::ReLoadMeshFromHandle(MESHHANDLE hMesh)
 //
 void D3D9Mesh::LoadBakedLights()
 {
+	if (BakedLights.size()) return;	// Already Loaded, skip the rest
+
 	bMustRebake = true;
 	char id[8];
 
 	for (int i = 0; i < nTex; i++)
 	{
-		if (!Tex[i]) continue;
-		BakedLights[i].bEnabled = false;
-
+		if (!Tex[i]) continue; // No base texture, pick next
 		for (int j = 0; j < 10; j++)
 		{
-			sprintf_s(id, "_bkl%d", j);	
-			BakedLights[i].pMap[j] = NatLoadSpecialTexture(Tex[i]->GetPath(), id);
-			if (BakedLights[i].pMap[j] != NULL) BakedLights[i].bEnabled = true;
+			sprintf_s(id, "bkl%d", j);
+			LPDIRECT3DTEXTURE9 pTex = NatLoadSpecialTexture(Tex[i]->GetPath(), id);
+			if (pTex) BakedLights[i].pMap[j] = pTex;
 		}
-
-		HR(D3DXCreateTexture(pDev, Tex[i]->GetWidth(), Tex[i]->GetHeight(), 0, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &BakedLights[i].pCombined));
 	}
-	for (int i = 0; i < 10;i++) BakedLightsControl[i] = FVECTOR3(0, 0, 0);
+
+	// Construct render surface for all combined maps 
+	for (auto& a : BakedLights) {
+		int i = a.first;
+		if (Tex[i]) {
+			HR(D3DXCreateTexture(pDev, Tex[i]->GetWidth(), Tex[i]->GetHeight(), 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &a.second.pCombined));
+		}
+	}
+
+	for (int i = 0; i < 10; i++) BakedLightsControl[i] = FVECTOR3(0.5, 0.5, 0.5);
 }
 
 
@@ -503,12 +510,15 @@ void D3D9Mesh::SetBakedLightLevel(int idx, const FVECTOR3 &level)
 //
 void D3D9Mesh::BakeLights(ImageProcessing* pBaker)
 {
-	if (!pBaker->IsOK()) return;
-	if (DefShader != SHADER_BAKED_VC) return;
-	if (!bMustRebake) return;
+	if (!pBaker->IsOK()) return; // Baker not initialized
+	if (DefShader != SHADER_BAKED_VC) return; // Not supported by shader
+	if (!bMustRebake) return; // Allready Done
+	if (BakedLights.size() == 0) return; // Nothing to bake
 
-	DWORD flags = IPF_POINT;
+	DWORD flags = IPF_POINT | IPF_CLAMP;
 	FVECTOR3 control[10];
+
+	pBaker->Activate("PSMain");
 
 	for (auto x : BakedLights)
 	{
@@ -516,7 +526,7 @@ void D3D9Mesh::BakeLights(ImageProcessing* pBaker)
 		for (int i = 0; i < 10; i++)
 		{
 			auto y = x.second.pMap[i];
-			if (y && length(BakedLightsControl[i]) > 0.01f)
+			if (y)
 			{
 				pBaker->SetTextureNative(slot, y, flags);
 				control[slot] = BakedLightsControl[i];
@@ -529,15 +539,29 @@ void D3D9Mesh::BakeLights(ImageProcessing* pBaker)
 
 		LPDIRECT3DSURFACE9 pSrf = NULL;
 
-		if (x.second.pCombined->GetSurfaceLevel(0, &pSrf) == S_OK)
+		if (x.second.pCombined)
 		{
-			pBaker->SetOutputNative(0, pSrf);
-			pBaker->Execute(true);
-			SAFE_RELEASE(pSrf);
+			if (x.second.pCombined->GetSurfaceLevel(0, &pSrf) == S_OK)
+			{
+				pBaker->SetOutputNative(0, pSrf);
+				pBaker->Execute(true);
+				SAFE_RELEASE(pSrf);
+			}
 		}
 	}
 
 	bMustRebake = false; // Done
+}
+
+
+// ===========================================================================================
+//
+LPDIRECT3DTEXTURE9 D3D9Mesh::GetCombinedMap(int tex_idx)
+{
+	if (tex_idx < 0 ) for (auto a : BakedLights) if (a.second.pCombined) return a.second.pCombined;
+	auto it = BakedLights.find(tex_idx);
+	if (it != BakedLights.end()) return it->second.pCombined;
+	return NULL;
 }
 
 
@@ -1853,13 +1877,15 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 
 					if (CurrentShader == SHADER_BAKED_VC)
 					{
+						auto bm = BakedLights.find(ti);
+
 						LPDIRECT3DTEXTURE9 pAmbi = Tex[ti]->GetMap(MAP_AMBIENT);
-						LPDIRECT3DTEXTURE9 pComb = BakedLights[ti].pCombined;
+						LPDIRECT3DTEXTURE9 pComb = (bm == BakedLights.end() ? NULL : bm->second.pCombined);
 
 						if (pAmbi) FX->SetTexture(eAmbientMap, pAmbi);
 						if (pComb) FX->SetTexture(eCombinedMap, pComb);
 
-						FC.Baked = (pAmbi != NULL) && (pComb != NULL);
+						FC.Baked = (pAmbi != NULL) || (pComb != NULL);
 					}
 
 					FC.Emis = (pEmis != NULL);
@@ -2016,6 +2042,12 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 					if (FC.Refl) DebugControls::Append("refl ");
 					if (FC.Transl) DebugControls::Append("transl ");
 					if (FC.Transm) DebugControls::Append("transm ");
+					DebugControls::Append("]\n");
+				}
+
+				if (CurrentShader == SHADER_BAKED_VC) {
+					DebugControls::Append("BakedLights = [ ");
+					for (auto& a : BakedLights) DebugControls::Append(" %d", a.first);
 					DebugControls::Append("]\n");
 				}
 

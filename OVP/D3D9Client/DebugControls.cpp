@@ -1330,6 +1330,17 @@ void UpdateBakedLights(float lvl)
 	}
 }
 
+// =============================================================================================
+//
+LPDIRECT3DTEXTURE9 GetCombinedMap()
+{
+	D3D9Mesh* mesh = (class D3D9Mesh*)vObj->GetMesh(sMesh);
+	if (mesh) {	
+		DWORD texidx = mesh->GetMeshGroupTextureIdx(sGroup);
+		return mesh->GetCombinedMap(texidx);
+	}
+	return NULL;
+}
 
 // =============================================================================================
 //
@@ -1858,6 +1869,7 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (HWND(lParam) == GetDlgItem(hWnd, IDC_DBG_BKLADJ)) {
 				if (pos == 0) pos = WORD(SendDlgItemMessage(hDlg, IDC_DBG_BKLADJ, TBM_GETPOS, 0, 0));
 				float val = float(pos) / 255.0f;
+				UpdateBakedLights(val);
 			}
 		}
 		return false;

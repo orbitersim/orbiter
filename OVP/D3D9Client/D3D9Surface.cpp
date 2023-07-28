@@ -73,6 +73,7 @@ LPDIRECT3DTEXTURE9 NatLoadTexture(const char* path)
 
 		if (S_OK == D3DXCreateTextureFromFileExA(g_client->GetDevice(), path, info.Width, info.Height, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex))
 		{
+			LogBlu("TextureLoaded [%s] Mips=%u Format=%u (%u,%u)", RemovePath(path), pTex->GetLevelCount(), info.Format, info.Width, info.Height);
 			return pTex;
 		}
 	}

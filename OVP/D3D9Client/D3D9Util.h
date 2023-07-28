@@ -74,10 +74,8 @@ const char *_PTR(const void *p);
 
 
 // Required only with c++20 without /permissive flag
-// template<typename T>
-// T* ptr(T&& x) { return &x; }
-
-#define ptr &	// use for faster code
+template<typename T>
+T* ptr(T&& x) { return &x; }
 
 // ------------------------------------------------------------------------------------
 // Vertex Declaration equal to NTVERTEX

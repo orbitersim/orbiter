@@ -1976,7 +1976,7 @@ void Scene::RenderMainScene()
 		{
 			SmapRenderList.clear();
 
-			float rad = 1.5f;
+			float rad = 2.0f;
 			D3DXVECTOR3 ld = sunLight.Dir;
 			D3DXVECTOR3 pos = Camera.z * rad * 0.75f;
 			
@@ -2214,6 +2214,16 @@ void Scene::RenderMainScene()
 				pSketch->EndDrawing();
 			}
 			break;
+		case 14:
+		{
+			LPDIRECT3DTEXTURE9 pTex = DebugControls::GetCombinedMap();
+			if (pTex) {
+				pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
+				pSketch->StretchRectNative(pTex, NULL, ptr(_RECT(0, 0, viewH, viewH)));
+				pSketch->EndDrawing();
+			}
+			break;
+		}
 		default:
 			break;
 		}
