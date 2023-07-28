@@ -70,10 +70,9 @@ const char *_PTR(const void *p);
 #define SURFACE(x) ((class SurfNative *)x)
 
 // helper function to get address of a temporary
+// The regular "easy" way no longer works on some compilers so lets use a hack to get a simple thing done.
 // NB: use with caution
 
-
-// Required only with c++20 without /permissive flag
 template<typename T>
 T* ptr(T&& x) { return &x; }
 
