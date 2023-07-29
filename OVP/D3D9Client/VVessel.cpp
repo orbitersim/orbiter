@@ -753,12 +753,21 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 	float sr = 2.0f * shd->rad / s;
 
 	HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, false));
-	HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, &shd->mViewProj));
+	HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, shd->mLVP.toCDX())); // Cascade 0 for all
 
 	if (shd->pShadowMap && (scn->GetRenderPass() == RENDERPASS_MAINSCENE)) {
-		HR(D3D9Effect::FX->SetTexture(D3D9Effect::eShadowMap, shd->pShadowMap));
-		HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, ptr(D3DXVECTOR4(sr, 1.0f / s, float(oapiRand()), 1.0f / shd->depth))));
+
+		D3DXVECTOR4 sh[2];
+		sh[0] = D3DXVECTOR4(sr, 1.0f / s, float(oapiRand()), 1.0f / shd->depth);
+		sh[1] = D3DXVECTOR4(sr, 1.0f / s, float(oapiRand()), 1.0f / shd->depth);
+
+		HR(D3D9Effect::FX->SetTexture(D3D9Effect::eShadowMap, shd->pShadowMap[0]));
+		HR(D3D9Effect::FX->SetValue(D3D9Effect::eSHD, &sh, sizeof(sh)));
 		HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, true));
+
+		if (bVC) {
+			//HR(D3D9Effect::FX->SetTexture(D3D9Effect::eShadowMap2, shd->pShadowMap[1]));
+		}
 	}
 	else {
 		HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, false));
@@ -836,7 +845,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 		}
 
 		const LPD3DXMATRIX pVP = scn->GetProjectionViewMatrix();
-		const LPD3DXMATRIX pLVP = (const LPD3DXMATRIX)&shd->mViewProj;
+		const LPD3DXMATRIX pLVP = (const LPD3DXMATRIX)&shd->mLVP;
 
 		// Render vessel meshes --------------------------------------------------------------------------
 		//

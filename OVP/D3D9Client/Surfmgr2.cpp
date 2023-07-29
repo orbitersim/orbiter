@@ -1003,14 +1003,14 @@ void SurfTile::Render ()
 				if (sqrt(D3DXVec3Dot(&bc, &bc) - x * x) < (shd->rad + mesh->bsRad)) {
 					float s = float(shd->size);
 					float sr = 2.0f * shd->rad / s;
-					sp->mLVP = shd->mViewProj;
+					sp->mLVP = shd->mLVP;
 					sp->vSHD = FVECTOR4(sr, 1.0f / s, 0.0f, 1.0f / shd->depth);
 					fc->bShadows = true;
 				}
 			}
 		}
 
-		pShader->SetTexture(pShader->tShadowMap, shd->pShadowMap);
+		pShader->SetTexture(pShader->tShadowMap, shd->pShadowMap[0]);
 	}
 
 	// ---------------------------------------------------------------------

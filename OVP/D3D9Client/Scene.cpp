@@ -61,6 +61,16 @@ float Rand()
 	return float(rand()) / 32768.0f;
 }
 
+void DebugMatrix(FMATRIX4* pM, const char* name)
+{
+	D3D9DebugLog("[%3.3f, %3.3f, %3.3f, %3.3f]", pM->m41, pM->m42, pM->m43, pM->m44);
+	D3D9DebugLog("[%3.3f, %3.3f, %3.3f, %3.3f]", pM->m31, pM->m32, pM->m33, pM->m34);
+	D3D9DebugLog("[%3.3f, %3.3f, %3.3f, %3.3f]", pM->m21, pM->m22, pM->m23, pM->m24);
+	D3D9DebugLog("[%3.3f, %3.3f, %3.3f, %3.3f]", pM->m11, pM->m12, pM->m13, pM->m14);
+	D3D9DebugLog("%s", name);
+}
+
+
 // ===========================================================================================
 //
 Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
@@ -111,6 +121,9 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	memset(&psShmDS, 0, sizeof(psShmDS));
 	memset(&ptShmRT, 0, sizeof(ptShmRT));
 	memset(&psShmRT, 0, sizeof(psShmRT));
+
+	memset(&ptVCShmRT, 0, sizeof(ptShmRT));
+	memset(&psVCShmRT, 0, sizeof(psShmRT));
 
 
 	pDevice = _gc->GetDevice();
@@ -217,6 +230,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	}
 
 
+	// Exterior shadows
 	if (Config->ShadowMapMode) {
 		UINT size = ShmMapSize;
 		for (int i = 0; i < SHM_LOD_COUNT; i++) {
@@ -226,9 +240,17 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 			size >>= 1;
 		}
 
-		smap.pShadowMap = ptShmRT[0];
+		smap.pShadowMap[0] = ptShmRT[0];
 	}
 
+	// VC Shadows
+	if (Config->ShadowMapMode) {
+		UINT size = ShmMapSize;
+		for (int i = 0; i < SHM_CASCADE_COUNT; i++) {
+			HR(pDevice->CreateTexture(size, size, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &ptVCShmRT[i], NULL));
+			HR(ptVCShmRT[i]->GetSurfaceLevel(0, &psVCShmRT[i]));
+		}
+	}
 
 
 	// Create auxiliary color buffer for on screen GDI
@@ -363,6 +385,8 @@ Scene::~Scene ()
 	for (int i = 0; i < ARRAYSIZE(psShmDS); i++) SAFE_RELEASE(psShmDS[i]);
 	for (int i = 0; i < ARRAYSIZE(ptShmRT); i++) SAFE_RELEASE(ptShmRT[i]);
 	for (int i = 0; i < ARRAYSIZE(psShmRT); i++) SAFE_RELEASE(psShmRT[i]);
+	for (int i = 0; i < ARRAYSIZE(ptVCShmRT); i++) SAFE_RELEASE(ptVCShmRT[i]);
+	for (int i = 0; i < ARRAYSIZE(psVCShmRT); i++) SAFE_RELEASE(psVCShmRT[i]);
 	for (int i = 0; i < ARRAYSIZE(pBlrTemp); i++) SAFE_RELEASE(pBlrTemp[i]);
 
 	if (Lights) {
@@ -1573,7 +1597,7 @@ void Scene::RenderMainScene()
 
 		shadow_lod = RenderShadowMap(pos, ld, rad, false, true);
 
-		pShdMap = smap.pShadowMap;
+		pShdMap = smap.pShadowMap[0];
 	}
 
 
@@ -1859,7 +1883,7 @@ void Scene::RenderMainScene()
 
 	// Render the remaining vessels those are not yet renderred
 	//
-	smap.pShadowMap = NULL;
+	smap.pShadowMap[SHM_CASCADE_COUNT] = { };
 
 	while (RenderList.empty()==false) {
 		RenderList.front()->Render(pDevice);
@@ -1976,13 +2000,13 @@ void Scene::RenderMainScene()
 		{
 			SmapRenderList.clear();
 
-			float rad = 2.0f;
+			float rad = 6.0f;
 			D3DXVECTOR3 ld = sunLight.Dir;
-			D3DXVECTOR3 pos = Camera.z * rad * 0.75f;
+			D3DXVECTOR3 pos = Camera.z * rad;
 			
-			RenderShadowMap(pos, ld, rad, true, false);
+			RenderVCShadowMap(pos, ld, rad, false);
 
-			pShdMap = smap.pShadowMap;	
+			pShdMap = smap.pShadowMap[0];	
 		}
 
 		// Render VC
@@ -2157,15 +2181,7 @@ void Scene::RenderMainScene()
 			VisualizeCubeMap(pIrradTemp, 0);
 			break;
 		case 8:
-			if (pShdMap) {
-				D3DSURFACE_DESC desc;
-				pShdMap->GetLevelDesc(0, &desc);
-				RECT scr = { 0, 0, long(viewH), long(viewH) };
-				pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
-				if (desc.Height>viewH) pSketch->StretchRectNative(pShdMap, NULL, &scr);
-				else pSketch->CopyRectNative(pShdMap, NULL, 0, 0);
-				pSketch->EndDrawing();
-			}
+			VisualizeShadowMap();
 			break;
 		case 9:
 			if (vFocus->GetIrradianceMap()) {
@@ -2475,11 +2491,13 @@ D3DXCOLOR Scene::GetSunDiffColor()
 //
 int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bInternal, bool bListExists)
 {
-	rad *= 1.02f;
-
+	
 	smap.pos = pos;
 	smap.ld = ld;
 	smap.rad = rad;
+	smap.cascades = 1;
+	smap.Center[0] = { 0, 0 };
+	smap.Subrect[0] = { 0, 0, 1, 1 };
 
 	float mnd =  1e16f;
 	float mxd = -1e16f;
@@ -2528,14 +2546,18 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bI
 
 	smap.depth = (mxd + rad);
 
-	D3DXMatrixOrthoOffCenterRH(&smap.mProj, -rad, rad, rad, -rad, -rad, smap.depth);
+	D3DXMATRIX mProj, mView;
+
+	D3DXMatrixOrthoOffCenterRH(&mProj, -rad, rad, rad, -rad, -rad, smap.depth);
 
 	smap.dist = mxd;
 
 	D3DXVECTOR3 lp = pos - ld * smap.dist;
 
-	D3DXMatrixLookAtRH(&smap.mView, &lp, &pos, ptr(D3DXVECTOR3(0, 1, 0)));
-	D3DXMatrixMultiply(&smap.mViewProj, &smap.mView, &smap.mProj);
+	D3DXMatrixLookAtRH(&mView, &lp, &pos, ptr(D3DXVECTOR3(0, 1, 0)));
+	D3DXMatrixMultiply(smap.mLVP.toDX(), &mView, &mProj);
+
+	smap.mVP[0] = smap.mLVP;
 
 	float lod = log2f(float(Config->ShadowMapSize) / (rsmax*1.5f));
 
@@ -2563,9 +2585,129 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bI
 
 	gc->PopRenderTargets();
 
-	smap.pShadowMap = ptShmRT[smap.lod];
+	for (int i = 1; i < SHM_CASCADE_COUNT; i++) smap.pShadowMap[i] = NULL;
+	smap.pShadowMap[0] = ptShmRT[smap.lod];
 
 	return smap.lod;
+}
+
+
+
+// ===========================================================================================
+//
+int Scene::RenderVCShadowMap(D3DXVECTOR3& pos, D3DXVECTOR3& ld, float rad, bool bListExists)
+{
+
+	smap.pos = pos;
+	smap.ld = ld;
+	smap.rad = rad;
+
+	float mnd = 1e16f;
+	float mxd = -1e16f;
+	float rsmax = 0.0f;
+	float tanap = float(GetTanAp());
+	float viewh = float(ViewH());
+
+
+	if (!bListExists) {
+
+		// If the list doesn't exists then create it...
+		SmapRenderList.clear();
+
+		// browse through vessels to find shadowers --------------------------
+		//
+		for (VOBJREC* pv = vobjFirst; pv; pv = pv->next) {
+			if (pv->type != OBJTP_VESSEL) continue;
+			vVessel* vV = (vVessel*)pv->vobj;
+			if (!vV->IsActive()) continue;
+			if (vV->IntersectShadowVolume()) {
+				SmapRenderList.push_back(vV);
+				vV->GetMinMaxLightDist(&mnd, &mxd);
+			}
+		}
+
+		// Compute shadow lod
+		rsmax = viewh * rad / (tanap * D3DXVec3Length(&pos));
+	}
+
+
+	if (SmapRenderList.size() == 0) return -1;	// The list is empty, Nothing to render
+
+
+	if (bListExists) {
+
+		for (auto vV : SmapRenderList)
+		{
+			// Get shadow min-max distances
+			vV->GetMinMaxLightDist(&mnd, &mxd);
+
+			// Compute shadow lod
+			D3DXVECTOR3 bspos = vV->GetBoundingSpherePosDX();
+			float rs = viewh * rad / (tanap * D3DXVec3Length(&bspos));
+			if (rs > rsmax) rsmax = rs;
+		}
+	}
+
+	smap.depth = (mxd + rad);
+	smap.dist = mxd;
+	smap.lod = 0;
+	smap.size = Config->ShadowMapSize;
+	smap.cascades = SHM_CASCADE_COUNT;
+
+	float fnear = -rad;
+	float ffar = smap.depth;
+	D3DXMATRIX mProj, mView;
+	FMATRIX4 mV;
+
+	for (int i = 0; i < SHM_CASCADE_COUNT; i++)
+	{
+		D3DXVECTOR3 ep = pos - ld * smap.dist;
+
+		D3DXMatrixOrthoOffCenterRH(&mProj, -rad, rad, rad, -rad, fnear, ffar);
+		D3DXMatrixLookAtRH(&mView, &ep, &pos, ptr(D3DXVECTOR3(0, 1, 0)));
+		D3DXMatrixMultiply(smap.mLVP.toDX(), &mView, &mProj);
+
+		smap.mVP[i] = smap.mLVP;
+
+		D3DXVECTOR3 xy;
+		D3DXVec3TransformCoord(&xy, &pos, smap.mVP[0].toDX());
+		float r = 0.5f * rad / smap.rad;
+
+		xy.y = -xy.y;
+		xy = (xy + 1.0f) * 0.5f;
+
+		smap.Center[i] = { xy.x, xy.y };
+		smap.Subrect[i] = { xy.x - r, xy.y - r, xy.x + r, xy.y + r };
+
+		D3D9DebugLog("Cascade %i  pos=[%f, %f]", i, xy.x, xy.y);
+		D3D9DebugLog("Cascade %i  rect=[%f, %f, %f, %f]", i, xy.x-r, xy.y-r, xy.x+r, xy.y+r);
+
+		gc->PushRenderTarget(psVCShmRT[i], psShmDS[0], RENDERPASS_SHADOWMAP);
+
+		// Clear the viewport
+		HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1.0f, 0L));
+
+		// render the vessel objects --------------------------------
+		//
+		BeginPass(RENDERPASS_SHADOWMAP);
+
+		for (auto &a : SmapRenderList)
+		{
+			a->Render(pDevice, false);
+			if (a == vFocus) a->Render(pDevice, true);
+		}
+
+		rad *= SHM_CASCADE_RATIO;
+		pos *= SHM_CASCADE_RATIO;
+
+		PopPass();
+
+		gc->PopRenderTargets();
+
+		smap.pShadowMap[i] = ptVCShmRT[i];
+	}
+
+	return 0;
 }
 
 
@@ -2959,6 +3101,39 @@ void Scene::VisualizeCubeMap(LPDIRECT3DCUBETEXTURE9 pCube, int mip)
 }
 
 
+// ===========================================================================================
+//
+void Scene::VisualizeShadowMap()
+{
+	if (smap.pShadowMap[0] == NULL) return;
+
+	D3DSURFACE_DESC desc;
+	smap.pShadowMap[0]->GetLevelDesc(0, &desc);
+
+	float w, h;
+	if (desc.Height > viewH) w = h = float(viewH);
+	else w = h = float(desc.Height);
+
+	D3D9Pad *pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
+
+	for (int i=0;i<smap.cascades;i++) 
+	{	
+		int l = int(w * smap.Subrect[i].x);
+		int t = int(h * smap.Subrect[i].y);
+		int r = int(w * smap.Subrect[i].z);
+		int b = int(h * smap.Subrect[i].w);
+
+		RECT tgt = { l,t,r,b };
+
+		pSketch->StretchRectNative(smap.pShadowMap[i], NULL, &tgt);
+		pSketch->QuickBrush(0);
+		pSketch->QuickPen(0xFFFFFFFF);
+		pSketch->Rectangle(l, t, r, b);
+	}
+	pSketch->EndDrawing();
+}
+
+
 
 // ===========================================================================================
 //
@@ -2995,10 +3170,10 @@ void Scene::RenderMesh(DEVMESHHANDLE hMesh, const oapi::FMATRIX4 *pWorld)
 	float s = float(shd->size);
 	float sr = 2.0f * shd->rad / s;
 
-	HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, &shd->mViewProj));
+	HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, shd->mLVP.toCDX()));
 
 	if (shd->pShadowMap) {
-		HR(D3D9Effect::FX->SetTexture(D3D9Effect::eShadowMap, shd->pShadowMap));
+		HR(D3D9Effect::FX->SetTexture(D3D9Effect::eShadowMap, shd->pShadowMap[0]));
 		HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, ptr(D3DXVECTOR4(sr, 1.0f / s, float(oapiRand()), 1.0f / shd->depth))));
 		HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, true));
 	}

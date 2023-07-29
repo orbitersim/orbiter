@@ -251,48 +251,15 @@ void LocalLightsEx(out float3 cDiffLocal, out float3 cSpecLocal, in float3 nrmW,
 
 
 
-
-
 // ==========================================================================================================
 // Object Self Shadows
 // ==========================================================================================================
-/*
-float ProjectShadows(float2 sp)
-{
-	if (!gShadowsEnabled) return 0.0f;
 
-	if (sp.x < 0 || sp.y < 0) return 0.0f;
-	if (sp.x > 1 || sp.y > 1) return 0.0f;
-
-	float2 dx = float2(gSHD[1], 0) * 1.5f;
-	float2 dy = float2(0, gSHD[1]) * 1.5f;
-	float  va = 0;
-	float  pd = 1e-4;
-
-	sp -= dy;
-	if ((tex2D(ShadowS, sp - dx).r) > pd) va++;
-	if ((tex2D(ShadowS, sp).r) > pd) va++;
-	if ((tex2D(ShadowS, sp + dx).r) > pd) va++;
-	sp += dy;
-	if ((tex2D(ShadowS, sp - dx).r) > pd) va++;
-	if ((tex2D(ShadowS, sp).r) > pd) va++;
-	if ((tex2D(ShadowS, sp + dx).r) > pd) va++;
-	sp += dy;
-	if ((tex2D(ShadowS, sp - dx).r) > pd) va++;
-	if ((tex2D(ShadowS, sp).r) > pd) va++;
-	if ((tex2D(ShadowS, sp + dx).r) > pd) va++;
-
-	return va / 9.0f;
-}*/
-
-
-// ---------------------------------------------------------------------------------------------------
-//
-float SampleShadows(float2 sp, float pd)
+float SampleShadows(float2 sp, float pd, float4 SHD)
 {
 
-	float2 dx = float2(gSHD[1], 0) * 1.5f;
-	float2 dy = float2(0, gSHD[1]) * 1.5f;
+	float2 dx = float2(SHD[1], 0) * 1.5f;
+	float2 dy = float2(0, SHD[1]) * 1.5f;
 	float  va = 0;
 
 	sp -= dy;
@@ -314,11 +281,11 @@ float SampleShadows(float2 sp, float pd)
 
 // ---------------------------------------------------------------------------------------------------
 //
-float SampleShadows2(float2 sp, float pd)
+float SampleShadows2(float2 sp, float pd, float4 SHD)
 {
 	
 	float val = 0;
-	float m = KERNEL_RADIUS * gSHD[1];
+	float m = KERNEL_RADIUS * SHD[1];
 
 	[unroll] for (int i = 0; i < KERNEL_SIZE; i++) {
 		if ((tex2D(ShadowS, sp + kernel[i].xy * m).r) > pd) val += kernel[i].z;
@@ -330,11 +297,11 @@ float SampleShadows2(float2 sp, float pd)
 
 // ---------------------------------------------------------------------------------------------------
 //
-float SampleShadows3(float2 sp, float pd, float4 frame)
+float SampleShadows3(float2 sp, float pd, float4 frame, float4 SHD)
 {
 
 	float val = 0;
-	frame *= KERNEL_RADIUS * gSHD[1];
+	frame *= KERNEL_RADIUS * SHD[1];
 
 	[unroll] for (int i = 0; i < KERNEL_SIZE; i++) {
 		float2 ofs = frame.xy*kernel[i].x + frame.zw*kernel[i].y;
@@ -347,25 +314,26 @@ float SampleShadows3(float2 sp, float pd, float4 frame)
 
 // ---------------------------------------------------------------------------------------------------
 //
-float SampleShadowsEx(float2 sp, float pd, float4 sc)
+float SampleShadowsEx(float2 sp, float pd, float4 sc, float4 SHD)
 {
 	
 #if SHDMAP == 1
-	return SampleShadows(sp, pd);
+	return SampleShadows(sp, pd, SHD);
 #elif SHDMAP == 2 || SHDMAP == 4
-	return SampleShadows2(sp, pd);
+	return SampleShadows2(sp, pd, SHD);
 #else
 	float si, co;
-	sc += (gSHD[2] * 2.0f);
+	sc += (SHD[2] * 2.0f);
 	sincos(sc.y + sc.x*149.0f, si, co);
-	return SampleShadows3(sp, pd, float4(si, co, co, -si));
+	return SampleShadows3(sp, pd, float4(si, co, co, -si), SHD);
 #endif
 }
 
 
+
 // ---------------------------------------------------------------------------------------------------
 //
-float ComputeShadow(float4 shdH, float dLN, float4 sc)
+float ComputeShadow(float4 shdH, float dLN, float4 sc, float4 SHD)
 {
 	if (!gShadowsEnabled) return 1.0f;
 
@@ -373,24 +341,24 @@ float ComputeShadow(float4 shdH, float dLN, float4 sc)
 	shdH.z = 1 - shdH.z;
 	float2 sp = shdH.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
 
-	sp += gSHD[1] * 0.5f;
+	sp += SHD[1] * 0.5f;
 
 	if (sp.x < 0 || sp.y < 0) return 1.0f;	// If a sample is outside border -> fully lit
 	if (sp.x > 1 || sp.y > 1) return 1.0f;
 	
 	float fShadow;
 
-	float kr = gSHD[0] * KERNEL_RADIUS;
+	float kr = SHD[0] * KERNEL_RADIUS;
 	float dx = rsqrt(1.0 - dLN*dLN);
 	float ofs = 0.33f * kr / (dLN * dx);
-	float omx = min(gSHD[0] * 2.0f + max(0, ofs), 0.25);
+	float omx = min(SHD[0] * 2.0f + max(0, ofs), 0.25);
 	
-	float  pd = shdH.z + omx * gSHD[3];
+	float  pd = shdH.z + omx * SHD[3];
 
 	if (pd < 0) pd = 0;
 	if (pd > 1) pd = 1;
 
-	fShadow = SampleShadowsEx(sp, pd, sc);
+	fShadow = SampleShadowsEx(sp, pd, sc, SHD);
 	
 	return 1 - fShadow;
 }

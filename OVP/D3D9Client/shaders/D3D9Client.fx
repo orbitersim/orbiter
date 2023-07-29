@@ -96,7 +96,7 @@ uniform extern float4    gFogColor;         // Distance fog color in "Legacy" im
 uniform extern float4    gAtmColor;         // Earth glow color
 uniform extern float4    gTexOff;			// Texture offsets used by surface manager
 uniform extern float4    gRadius;           // PlanetRad, AtmOuterLimit, CameraRad, CameraAlt
-uniform extern float4    gSHD;				// ShadowMap data
+uniform extern float4    gSHD[2];			// ShadowMap data
 uniform extern float3    gCameraPos;        // Planet relative camera position, Unit vector
 uniform extern float3    gNorth;
 uniform extern float3    gEast;
@@ -149,6 +149,7 @@ uniform extern texture   gHeatMap;   		// Heat Map
 uniform extern texture   gTranslMap;		// Translucence Map
 uniform extern texture   gTransmMap;		// Transmittance Map
 uniform extern texture   gShadowMap;	    // Shadow Map
+uniform extern texture   gShadowMap2;	    // Shadow Map2
 uniform extern texture   gIrradianceMap;    // Irradiance Map
 uniform extern texture   gAmbientMap;		// Baked Ambient occlusion map
 uniform extern texture   gCombinedMap;		// Combined baked light map

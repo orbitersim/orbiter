@@ -175,6 +175,18 @@ namespace oapi {
 			return FVECTOR2(x - f.x, y - f.y);
 		}
 
+		inline FVECTOR2& operator*= (float f)
+		{
+			x *= f; y *= f;
+			return *this;
+		}
+
+		inline FVECTOR2& operator/= (float f)
+		{
+			x /= f; y /= f;
+			return *this;
+		}
+
 		float x, y;
 	} FVECTOR2;
 
@@ -648,6 +660,17 @@ namespace oapi {
 		{
 			return (LPD3DXMATRIX)this;
 		}
+
+		inline LPD3DXMATRIX toDX()
+		{
+			return (LPD3DXMATRIX)this;
+		}
+
+		inline const D3DXMATRIX* toCDX() const
+		{
+			return (const D3DXMATRIX*)this;
+		}
+
 #endif
 
 		void Zero()
