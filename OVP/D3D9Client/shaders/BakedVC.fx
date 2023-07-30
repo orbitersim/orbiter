@@ -181,7 +181,8 @@ float4 BakedVC_PS(float4 sc : VPOS, PBRData frg) : COLOR
 	// Add a faint diffuse hue for rough metals. Rough metal doesn't look good if it's totally black
 	fA += fRgh * fMetal * 0.05f;
 
-	float3 zD = cDiff.rgb * fA * cBL * LightFXSq(gMtrl.diffuse.rgb * (Sq(cSun * fR * dLN)) + Sq(gMtrl.emissive.rgb) + Sq(cBL));
+	// gVCAmbient is an application and debug controls controllable variable
+	float3 zD = cDiff.rgb * fA * LightFXSq(gMtrl.diffuse.rgb * (Sq(cSun * fR * dLN)) + Sq(gMtrl.emissive.rgb) + Sq(cBL) + Sq(gVCAmbient));
 
 	// Combine specular terms
 	float3 zS = cS * (cSun * dLN);		

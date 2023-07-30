@@ -40,7 +40,7 @@ class D3D9Pad;
 #define GBUF_COUNT				5	// Buffer count
 
 #define SHM_LOD_COUNT			5
-#define SHM_CASCADE_COUNT		3
+#define SHM_CASCADE_COUNT		1
 #define SHM_CASCADE_RATIO		0.3333333333f
 
 #define TEX_NOISE				0
@@ -168,7 +168,7 @@ public:
 		D3DXVECTOR3	pos;		// Shadow map origin
 		D3DXVECTOR3	ld;			// Light direction
 		float		rad;		// radius of the area covered by map [meters]
-		float		dist;		// far plane distance from shadow origin
+		float		dist;		// Shadow camera distance from shadow origin
 		float		depth;		// near to far plane distance. i.r. depth of the field
 		int			lod;		// level of detail, 0 = highest
 		int			size;		// Map size in pixels

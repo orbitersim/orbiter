@@ -122,6 +122,7 @@ D3DXHANDLE D3D9Effect::eExposure = 0;
 D3DXHANDLE D3D9Effect::eCameraPos = 0;	
 D3DXHANDLE D3D9Effect::eNorth = 0;
 D3DXHANDLE D3D9Effect::eEast = 0;
+D3DXHANDLE D3D9Effect::eVCAmbient = 0;
 D3DXHANDLE D3D9Effect::eDistScale = 0;
 D3DXHANDLE D3D9Effect::eRadius = 0;
 D3DXHANDLE D3D9Effect::eAttennuate = 0;
@@ -441,6 +442,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eCameraPos	  = FX->GetParameterByName(0,"gCameraPos");
 	eNorth		  = FX->GetParameterByName(0,"gNorth");
 	eEast		  = FX->GetParameterByName(0,"gEast");
+	eVCAmbient	  = FX->GetParameterByName(0,"gVCAmbient");
 	ePointScale   = FX->GetParameterByName(0,"gPointScale");
 	eMix		  = FX->GetParameterByName(0,"gMix");
 	eTime		  = FX->GetParameterByName(0,"gTime");

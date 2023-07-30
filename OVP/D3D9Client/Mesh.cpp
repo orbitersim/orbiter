@@ -186,7 +186,7 @@ void D3D9Mesh::Null(const char *meshName /* = NULL */)
 	pBuf = NULL;
 	Mtrl = NULL;
 	pGrpTF = NULL;
-	cAmbient = 0;
+	cAmbient = { 0.0f, 0.0f, 0.0f };
 	MaxFace  = 0;
 	MaxVert  = 0;
 	vClass = 0;
@@ -1640,6 +1640,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	FX->SetBool(eLightsEnabled, false);
 	FX->SetBool(eOITEnable, false);
 	FX->SetVector(eColor, ptr(D3DXVECTOR4(0, 0, 0, 0)));
+	FX->SetValue(eVCAmbient, &cAmbient, sizeof(FVECTOR3));
 
 	ConfigureAtmo();
 

@@ -151,6 +151,7 @@ public:
 	static D3DXHANDLE	eCameraPos;	
 	static D3DXHANDLE   eNorth;
 	static D3DXHANDLE	eEast;
+	static D3DXHANDLE	eVCAmbient;
 	static D3DXHANDLE   eDistScale;
 	static D3DXHANDLE   eGlowConst;
 	static D3DXHANDLE   eRadius;

@@ -2000,9 +2000,17 @@ void Scene::RenderMainScene()
 		{
 			SmapRenderList.clear();
 
-			float rad = 6.0f;
+#if SHM_CASCADE_COUNT == 1
+			float rad = 1.5f;
+#endif
+#if SHM_CASCADE_COUNT == 2
+			float rad = 4.5f;
+#endif
+#if SHM_CASCADE_COUNT == 3
+			float rad = 9.0f;
+#endif
 			D3DXVECTOR3 ld = sunLight.Dir;
-			D3DXVECTOR3 pos = Camera.z * rad;
+			D3DXVECTOR3 pos = Camera.z * rad * 0.75f;
 			
 			RenderVCShadowMap(pos, ld, rad, false);
 
@@ -2576,8 +2584,7 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bI
 	BeginPass(RENDERPASS_SHADOWMAP);
 
 	while(SmapRenderList.size()>0) {
-		SmapRenderList.front()->Render(pDevice, false);
-		if (bInternal) SmapRenderList.front()->Render(pDevice, true);	
+		SmapRenderList.front()->Render(pDevice, bInternal);
 		SmapRenderList.pop_front();
 	}
 
@@ -2648,26 +2655,27 @@ int Scene::RenderVCShadowMap(D3DXVECTOR3& pos, D3DXVECTOR3& ld, float rad, bool 
 		}
 	}
 
-	smap.depth = (mxd + rad);
 	smap.dist = mxd;
 	smap.lod = 0;
 	smap.size = Config->ShadowMapSize;
 	smap.cascades = SHM_CASCADE_COUNT;
+	smap.depth = (mxd + vFocus->GetSize());
 
-	float fnear = -rad;
-	float ffar = smap.depth;
 	D3DXMATRIX mProj, mView;
-	FMATRIX4 mV;
-
+	
 	for (int i = 0; i < SHM_CASCADE_COUNT; i++)
 	{
-		D3DXVECTOR3 ep = pos - ld * smap.dist;
+		// Compute mLVP needed to render this cascade.
 
-		D3DXMatrixOrthoOffCenterRH(&mProj, -rad, rad, rad, -rad, fnear, ffar);
-		D3DXMatrixLookAtRH(&mView, &ep, &pos, ptr(D3DXVECTOR3(0, 1, 0)));
+		// Project pos to a shadow plane
+		D3DXVECTOR3 sp = pos - ld * D3DXVec3Dot(&pos, &ld);
+		D3DXVECTOR3 ep = sp - ld * smap.dist;
+		D3DXMatrixOrthoOffCenterRH(&mProj, -rad, rad, rad, -rad, 0, smap.depth);
+		D3DXMatrixLookAtRH(&mView, &ep, &sp, ptr(D3DXVECTOR3(0, 1, 0)));
 		D3DXMatrixMultiply(smap.mLVP.toDX(), &mView, &mProj);
 
-		smap.mVP[i] = smap.mLVP;
+		// Backup projection for a cascade for later use
+		smap.mVP[i] = smap.mLVP; 
 
 		D3DXVECTOR3 xy;
 		D3DXVec3TransformCoord(&xy, &pos, smap.mVP[0].toDX());
@@ -2676,12 +2684,15 @@ int Scene::RenderVCShadowMap(D3DXVECTOR3& pos, D3DXVECTOR3& ld, float rad, bool 
 		xy.y = -xy.y;
 		xy = (xy + 1.0f) * 0.5f;
 
+		// Cascade's center and subrect within the main level (i.e '0')
+		// All cascades share the same near and far plane and exists inside the previous cascade. 
 		smap.Center[i] = { xy.x, xy.y };
 		smap.Subrect[i] = { xy.x - r, xy.y - r, xy.x + r, xy.y + r };
 
+#ifdef CASCADE_DEBUG
 		D3D9DebugLog("Cascade %i  pos=[%f, %f]", i, xy.x, xy.y);
 		D3D9DebugLog("Cascade %i  rect=[%f, %f, %f, %f]", i, xy.x-r, xy.y-r, xy.x+r, xy.y+r);
-
+#endif
 		gc->PushRenderTarget(psVCShmRT[i], psShmDS[0], RENDERPASS_SHADOWMAP);
 
 		// Clear the viewport
@@ -2691,6 +2702,8 @@ int Scene::RenderVCShadowMap(D3DXVECTOR3& pos, D3DXVECTOR3& ld, float rad, bool 
 		//
 		BeginPass(RENDERPASS_SHADOWMAP);
 
+
+		// NOTE: smap.mLVP must containg the projection needed for rendering of the map
 		for (auto &a : SmapRenderList)
 		{
 			a->Render(pDevice, false);
@@ -3125,7 +3138,9 @@ void Scene::VisualizeShadowMap()
 
 		RECT tgt = { l,t,r,b };
 
+		pSketch->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, ptr(FVECTOR4(0.25f, 0.25f, 0.25f, 1.0f)));
 		pSketch->StretchRectNative(smap.pShadowMap[i], NULL, &tgt);
+		pSketch->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, NULL);
 		pSketch->QuickBrush(0);
 		pSketch->QuickPen(0xFFFFFFFF);
 		pSketch->Rectangle(l, t, r, b);

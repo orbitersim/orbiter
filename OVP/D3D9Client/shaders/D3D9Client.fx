@@ -100,6 +100,7 @@ uniform extern float4    gSHD[2];			// ShadowMap data
 uniform extern float3    gCameraPos;        // Planet relative camera position, Unit vector
 uniform extern float3    gNorth;
 uniform extern float3    gEast;
+uniform extern float3	 gVCAmbient;		// Ambient level inside virtual cockpit
 uniform extern Sun		 gSun;				// Sun light direction
 uniform extern Mat       gMat;			    // Material input structure  TODO:  Remove all reference to this. Use gMtrl
 uniform extern Mat       gWater;			// Water material input structure
