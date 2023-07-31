@@ -124,7 +124,7 @@ float4 AdvancedPS(float4 sc : VPOS, PBRData frg) : COLOR
 	// ----------------------------------------------------------------------
 
 #if SHDMAP > 0
-	cSun.rgb *= ComputeShadow(frg.shdH, dLN, sc, gSHD[0]);
+	cSun.rgb *= ComputeShadow(frg.shdH, dLN, sc);
 #endif
 
 

@@ -891,7 +891,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 	_TRACE;
 	if (!active) return false;
 
-	const Scene::SHADOWMAPPARAM *shd = scn->GetSMapData();
+	const SHADOWMAPPARAM *shd = scn->GetSMapData();
 
 	if (DebugControls::IsActive()) {
 		// DWORD flags  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
@@ -929,9 +929,10 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 				float is = 1.0f / s;
 				float qw = 1.0f / float(Config->ShadowMapSize);
 				HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, shd->mLVP.toCDX()));
-				HR(D3D9Effect::FX->SetTexture(D3D9Effect::eShadowMap, shd->pShadowMap[0]));
 				HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, ptr(D3DXVECTOR4(s, is, qw, 0))));
 				HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, true));
+
+				D3D9Mesh::SetShadows(shd);
 			}
 		}
 

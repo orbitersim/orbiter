@@ -24,8 +24,10 @@
 
 using namespace oapi;
 
-
+LPDIRECT3DTEXTURE9 D3D9Mesh::pShadowMap[SHM_CASCADE_COUNT] = {};
+FVECTOR4 D3D9Mesh::ShdSubRect[SHM_CASCADE_COUNT] = {};
 MeshShader* D3D9Mesh::s_pShader[16] = {};
+
 MeshShader::VSConst MeshShader::vs_const = {};
 MeshShader::PSConst MeshShader::ps_const = {};
 MeshShader::PSBools MeshShader::ps_bools = {};
@@ -203,6 +205,11 @@ void D3D9Mesh::Null(const char *meshName /* = NULL */)
 	bMustRebake = true;
 
 	Locals = new LightStruct[Config->MaxLights()];
+
+	for (int i = 0; i < SHM_CASCADE_COUNT; i++) {
+		pShadowMap[i] = NULL;
+		ShdSubRect[i] = { 0,0,1,1 };
+	}
 
 	memset(Locals, 0, sizeof(LightStruct) * Config->MaxLights());
 	memset(LightList, 0, sizeof(LightList));
@@ -1527,6 +1534,45 @@ void D3D9Mesh::ConfigureAtmo()
 }
 
 
+// ===========================================================================================
+// Setup shadow map samplers and textures
+//
+void D3D9Mesh::ConfigureShadows()
+{
+	for (int i = 0; i < SHM_CASCADE_COUNT; i++)
+	{
+		int idx = 13 + i; // Sampler index
+		HR(pDev->SetSamplerState(idx, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP));
+		HR(pDev->SetSamplerState(idx, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP));
+		HR(pDev->SetSamplerState(idx, D3DSAMP_ADDRESSW, D3DTADDRESS_CLAMP));	
+		HR(pDev->SetSamplerState(idx, D3DSAMP_MAGFILTER, D3DTEXF_POINT));
+		HR(pDev->SetSamplerState(idx, D3DSAMP_MINFILTER, D3DTEXF_POINT));
+		HR(pDev->SetSamplerState(idx, D3DSAMP_MIPFILTER, D3DTEXF_NONE));
+		HR(pDev->SetTexture(idx, pShadowMap[i]));
+	}
+	HR(FX->SetValue(D3D9Effect::eSHDSubRect, ShdSubRect, sizeof(ShdSubRect)));
+}
+
+
+// ===========================================================================================
+// static:
+void D3D9Mesh::SetShadows(const SHADOWMAPPARAM *sprm)
+{
+	if (sprm) {
+		for (int i = 0; i < SHM_CASCADE_COUNT; i++) {
+			pShadowMap[i] = sprm->pShadowMap[i];
+			ShdSubRect[i] = sprm->Subrect[i];
+		}
+	}
+	else {
+		for (int i = 0; i < SHM_CASCADE_COUNT; i++) {
+			pShadowMap[i] = NULL;
+			ShdSubRect[i] = { 0,0,1,1 };
+		}
+	}
+}
+
+
 // ================================================================================================
 // This is a rendering routine for a Exterior Mesh, non-spherical moons/asteroids
 //
@@ -1576,12 +1622,14 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	bool bGroupCull = true;
 	bool bUpdateFlow = true;
 	bool bShadowProjection = false;
+	bool bVirtualCockpit = false;
 
 
 
 	switch (iTech) {
 		case RENDER_VC:
 			EnablePlanetGlow(false);
+			bVirtualCockpit = true;
 			break;
 		case RENDER_BASE:
 			EnablePlanetGlow(false);
@@ -1605,6 +1653,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	}
 
 	HR(D3D9Effect::FX->SetBool(D3D9Effect::eBaseBuilding, bShadowProjection));
+	HR(D3D9Effect::FX->SetBool(D3D9Effect::eCockpit, bVirtualCockpit));
 
 	D3DXVECTOR4 Field;
 	D3DXMATRIX mWorldView,  q;
@@ -1631,6 +1680,8 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	pDev->SetVertexDeclaration(pMeshVertexDecl);
 	pDev->SetStreamSource(0, pBuf->pVB, 0, sizeof(NMVERTEX));
 	pDev->SetIndices(pBuf->pIB);
+
+	ConfigureShadows();
 
 	if (flags&DBG_FLAGS_DUALSIDED) pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 

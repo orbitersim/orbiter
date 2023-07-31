@@ -39,10 +39,6 @@ class D3D9Pad;
 #define GBUF_GDI				4
 #define GBUF_COUNT				5	// Buffer count
 
-#define SHM_LOD_COUNT			5
-#define SHM_CASCADE_COUNT		1
-#define SHM_CASCADE_RATIO		0.3333333333f
-
 #define TEX_NOISE				0
 #define TEX_CLUT				1
 #define TEX_COUNT				2
@@ -157,23 +153,7 @@ public:
 		D3DXCOLOR	color;
 	};
 
-	struct SHADOWMAPPARAM {
-		LPDIRECT3DTEXTURE9 pShadowMap[SHM_CASCADE_COUNT];
-		// Index 0 is also used for exterior map where the map size varies by LOD, distant object may use 128x128 map
-		// Interior VC cascades are all same size
-		FMATRIX4	mVP[SHM_CASCADE_COUNT];
-		FVECTOR4	Subrect[SHM_CASCADE_COUNT];
-		FVECTOR2	Center[SHM_CASCADE_COUNT];
-		FMATRIX4	mLVP;
-		D3DXVECTOR3	pos;		// Shadow map origin
-		D3DXVECTOR3	ld;			// Light direction
-		float		rad;		// radius of the area covered by map [meters]
-		float		dist;		// Shadow camera distance from shadow origin
-		float		depth;		// near to far plane distance. i.r. depth of the field
-		int			lod;		// level of detail, 0 = highest
-		int			size;		// Map size in pixels
-		int			cascades;	// Number of active cascades
-	} smap;
+	struct SHADOWMAPPARAM smap;
 
 	static void D3D9TechInit(LPDIRECT3DDEVICE9 pDev, const char *folder);
 
@@ -483,6 +463,7 @@ private:
 	VECTOR3		sky_color;
 	double      bglvl;
 
+	float		fCascadeRatio;
 	float		fDisplayScale;
 	float		lmaxdst2;
 	DWORD		nLights;

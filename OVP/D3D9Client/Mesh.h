@@ -338,6 +338,7 @@ public:
 
 	static void		GlobalInit(LPDIRECT3DDEVICE9 pDev);
 	static void		GlobalExit();
+	static void		SetShadows(const SHADOWMAPPARAM* sprm);
 
 private:
 
@@ -349,6 +350,7 @@ private:
 	void			Null(const char *meshName = NULL);
 	void			UpdateFlags();
 	void			ConfigureAtmo();
+	void			ConfigureShadows();
 
 	WORD	DefShader;
 	DWORD	MaxVert;
@@ -380,6 +382,8 @@ private:
 
 	char name[128];
 
+	static LPDIRECT3DTEXTURE9 pShadowMap[SHM_CASCADE_COUNT];
+	static FVECTOR4 ShdSubRect[SHM_CASCADE_COUNT];
 	static MeshShader* s_pShader[16];
 };
 

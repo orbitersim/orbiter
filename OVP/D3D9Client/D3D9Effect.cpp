@@ -78,7 +78,6 @@ D3DXHANDLE D3D9Effect::eReflMap = 0;
 D3DXHANDLE D3D9Effect::eRghnMap = 0;
 D3DXHANDLE D3D9Effect::eMetlMap = 0;
 D3DXHANDLE D3D9Effect::eHeatMap = 0;
-D3DXHANDLE D3D9Effect::eShadowMap = 0;
 D3DXHANDLE D3D9Effect::eTranslMap = 0;
 D3DXHANDLE D3D9Effect::eTransmMap = 0;
 D3DXHANDLE D3D9Effect::eIrradMap = 0;
@@ -95,6 +94,7 @@ D3DXHANDLE D3D9Effect::eMix = 0;		// FLOAT Auxiliary factor/multiplier
 D3DXHANDLE D3D9Effect::eFogDensity = 0;	// 
 D3DXHANDLE D3D9Effect::ePointScale = 0;
 D3DXHANDLE D3D9Effect::eSHD = 0;
+D3DXHANDLE D3D9Effect::eSHDSubRect = 0;
 
 D3DXHANDLE D3D9Effect::eAtmColor = 0;
 D3DXHANDLE D3D9Effect::eProxySize = 0;
@@ -116,6 +116,7 @@ D3DXHANDLE D3D9Effect::eInSpace = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eNoColor = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eLightsEnabled = 0;	// BOOL	
 D3DXHANDLE D3D9Effect::eBaseBuilding = 0; // BOOL
+D3DXHANDLE D3D9Effect::eCockpit = 0;
 D3DXHANDLE D3D9Effect::eOITEnable = 0; // BOOL
 // --------------------------------------------------------------
 D3DXHANDLE D3D9Effect::eExposure = 0;
@@ -429,6 +430,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eNoColor	  = FX->GetParameterByName(0,"gNoColor");	
 	eLightsEnabled = FX->GetParameterByName(0,"gLightsEnabled");	
 	eBaseBuilding = FX->GetParameterByName(0,"gBaseBuilding");
+	eCockpit	  = FX->GetParameterByName(0,"gCockpit");
 	eOITEnable	  = FX->GetParameterByName(0,"gOITEnable");
 
 	// General parameters -------------------------------------------------- 
@@ -449,6 +451,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eMtrlAlpha	  = FX->GetParameterByName(0,"gMtrlAlpha");
 	eGlowConst    = FX->GetParameterByName(0,"gGlowConst");
 	eSHD		  = FX->GetParameterByName(0,"gSHD");
+	eSHDSubRect	  = FX->GetParameterByName(0,"gSHDSubRect");
 	eKernel		  = FX->GetParameterByName(0,"kernel");
 	eAtmoParams	  = FX->GetParameterByName(0,"gAtmo");
 	// ----------------------------------------------------------------------
@@ -472,7 +475,6 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eRghnMap	  = FX->GetParameterByName(0,"gRghnMap");
 	eMetlMap	  = FX->GetParameterByName(0,"gMetlMap");
 	eHeatMap	  = FX->GetParameterByName(0,"gHeatMap");
-	eShadowMap	  = FX->GetParameterByName(0,"gShadowMap");
 	eTranslMap	  = FX->GetParameterByName(0, "gTranslMap");
 	eTransmMap	  = FX->GetParameterByName(0, "gTransmMap");
 	eIrradMap     = FX->GetParameterByName(0,"gIrradianceMap");

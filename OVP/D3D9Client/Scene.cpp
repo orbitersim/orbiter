@@ -1999,20 +1999,16 @@ void Scene::RenderMainScene()
 		if (Config->ShadowMapMode >= 1)
 		{
 			SmapRenderList.clear();
+			float dist = 1.5f;
+			fCascadeRatio = 1.00f;
 
-#if SHM_CASCADE_COUNT == 1
-			float rad = 1.5f;
-#endif
-#if SHM_CASCADE_COUNT == 2
-			float rad = 4.5f;
-#endif
-#if SHM_CASCADE_COUNT == 3
-			float rad = 9.0f;
-#endif
-			D3DXVECTOR3 ld = sunLight.Dir;
-			D3DXVECTOR3 pos = Camera.z * rad * 0.75f;
+			if (Config->VCCascadeCount == 2) dist = 4.00f, fCascadeRatio = 0.33f;
+			if (Config->VCCascadeCount == 3) dist = 6.25f, fCascadeRatio = 0.40f;
 			
-			RenderVCShadowMap(pos, ld, rad, false);
+			D3DXVECTOR3 ld = sunLight.Dir;
+			D3DXVECTOR3 pos = Camera.z * dist * 0.75f;
+			
+			RenderVCShadowMap(pos, ld, dist, false);
 
 			pShdMap = smap.pShadowMap[0];	
 		}
@@ -2658,12 +2654,12 @@ int Scene::RenderVCShadowMap(D3DXVECTOR3& pos, D3DXVECTOR3& ld, float rad, bool 
 	smap.dist = mxd;
 	smap.lod = 0;
 	smap.size = Config->ShadowMapSize;
-	smap.cascades = SHM_CASCADE_COUNT;
+	smap.cascades = Config->VCCascadeCount;
 	smap.depth = (mxd + vFocus->GetSize());
 
 	D3DXMATRIX mProj, mView;
 	
-	for (int i = 0; i < SHM_CASCADE_COUNT; i++)
+	for (int i = 0; i < smap.cascades; i++)
 	{
 		// Compute mLVP needed to render this cascade.
 
@@ -2672,10 +2668,7 @@ int Scene::RenderVCShadowMap(D3DXVECTOR3& pos, D3DXVECTOR3& ld, float rad, bool 
 		D3DXVECTOR3 ep = sp - ld * smap.dist;
 		D3DXMatrixOrthoOffCenterRH(&mProj, -rad, rad, rad, -rad, 0, smap.depth);
 		D3DXMatrixLookAtRH(&mView, &ep, &sp, ptr(D3DXVECTOR3(0, 1, 0)));
-		D3DXMatrixMultiply(smap.mLVP.toDX(), &mView, &mProj);
-
-		// Backup projection for a cascade for later use
-		smap.mVP[i] = smap.mLVP; 
+		D3DXMatrixMultiply(smap.mVP[i].toDX(), &mView, &mProj);
 
 		D3DXVECTOR3 xy;
 		D3DXVec3TransformCoord(&xy, &pos, smap.mVP[0].toDX());
@@ -2702,16 +2695,17 @@ int Scene::RenderVCShadowMap(D3DXVECTOR3& pos, D3DXVECTOR3& ld, float rad, bool 
 		//
 		BeginPass(RENDERPASS_SHADOWMAP);
 
-
 		// NOTE: smap.mLVP must containg the projection needed for rendering of the map
+		smap.mLVP = smap.mVP[i];
+
 		for (auto &a : SmapRenderList)
 		{
 			a->Render(pDevice, false);
 			if (a == vFocus) a->Render(pDevice, true);
 		}
 
-		rad *= SHM_CASCADE_RATIO;
-		pos *= SHM_CASCADE_RATIO;
+		rad *= fCascadeRatio;
+		pos *= fCascadeRatio;
 
 		PopPass();
 
@@ -2719,6 +2713,9 @@ int Scene::RenderVCShadowMap(D3DXVECTOR3& pos, D3DXVECTOR3& ld, float rad, bool 
 
 		smap.pShadowMap[i] = ptVCShmRT[i];
 	}
+
+	// smap.mLVP must point to cascade '0' by default
+	smap.mLVP = smap.mVP[0];
 
 	return 0;
 }
@@ -3142,7 +3139,7 @@ void Scene::VisualizeShadowMap()
 		pSketch->StretchRectNative(smap.pShadowMap[i], NULL, &tgt);
 		pSketch->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, NULL);
 		pSketch->QuickBrush(0);
-		pSketch->QuickPen(0xFFFFFFFF);
+		pSketch->QuickPen(0xFFFF00FF);
 		pSketch->Rectangle(l, t, r, b);
 	}
 	pSketch->EndDrawing();
@@ -3180,7 +3177,7 @@ void Scene::RenderMesh(DEVMESHHANDLE hMesh, const oapi::FMATRIX4 *pWorld)
 {
 	D3D9Mesh *pMesh = (D3D9Mesh *)hMesh;
 
-	const Scene::SHADOWMAPPARAM *shd = GetSMapData();
+	const SHADOWMAPPARAM *shd = GetSMapData();
 
 	float s = float(shd->size);
 	float sr = 2.0f * shd->rad / s;
@@ -3188,11 +3185,12 @@ void Scene::RenderMesh(DEVMESHHANDLE hMesh, const oapi::FMATRIX4 *pWorld)
 	HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, shd->mLVP.toCDX()));
 
 	if (shd->pShadowMap) {
-		HR(D3D9Effect::FX->SetTexture(D3D9Effect::eShadowMap, shd->pShadowMap[0]));
+		pMesh->SetShadows(shd);
 		HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, ptr(D3DXVECTOR4(sr, 1.0f / s, float(oapiRand()), 1.0f / shd->depth))));
 		HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, true));
 	}
 	else {
+		pMesh->SetShadows(NULL);
 		HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, false));
 	}
 

@@ -172,7 +172,7 @@ float4 PBR_PS(float4 sc : VPOS, PBRData frg) : COLOR
 	// ----------------------------------------------------------------------
 
 #if SHDMAP > 0
-	cSun *= smoothstep(0, 0.72, ComputeShadow(frg.shdH, dLN, sc, gSHD[0]));
+	cSun *= smoothstep(0, 0.72, ComputeShadow(frg.shdH, dLN, sc));
 #endif
 
 
@@ -422,8 +422,6 @@ float4 FAST_PS(float4 sc : VPOS, FASTData frg) : COLOR
 		float3 cSun  = saturate(gSun.Color);
 		float  dLN   = saturate(-dot(gSun.Dir, nrmW));
 
-		//cSpec.rgb *= 0.33333f;
-
 		if (gNoColor) cDiff.rgb = 1;
 
 		// ----------------------------------------------------------------------
@@ -431,7 +429,7 @@ float4 FAST_PS(float4 sc : VPOS, FASTData frg) : COLOR
 		// ----------------------------------------------------------------------
 
 #if SHDMAP > 0
-		float fShadow = smoothstep(0, 0.72, ComputeShadow(frg.shdH, dLN, sc, gSHD[0]));
+		float fShadow = smoothstep(0, 0.72, ComputeShadow(frg.shdH, dLN, sc));
 		dLN *= fShadow;
 #endif
 

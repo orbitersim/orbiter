@@ -988,7 +988,7 @@ void SurfTile::Render ()
 
 	if (pShader->bShdMap)
 	{
-		const Scene::SHADOWMAPPARAM* shd = scene->GetSMapData();
+		const SHADOWMAPPARAM* shd = scene->GetSMapData();
 
 		D3DXVECTOR3 bc = bs_pos - shd->pos;
 

@@ -134,6 +134,7 @@ public:
 	static D3DXHANDLE	eNoColor;      ///< BOOL
 	static D3DXHANDLE	eLightsEnabled;///< BOOL
 	static D3DXHANDLE	eBaseBuilding; ///< BOOL
+	static D3DXHANDLE	eCockpit;	   ///< BOOL
 	static D3DXHANDLE	eFresnel;	   ///< BOOL
 	static D3DXHANDLE   eSwitch;	   ///< BOOL
 	static D3DXHANDLE   eRghnSw;	   ///< BOOL
@@ -163,6 +164,7 @@ public:
 	static D3DXHANDLE	eAttennuate;
 	static D3DXHANDLE	eInScatter;
 	static D3DXHANDLE	eSHD;
+	static D3DXHANDLE	eSHDSubRect;
 	static D3DXHANDLE	eNight;
 
 	// Textures --------------------------------------------------------
@@ -178,7 +180,6 @@ public:
 	static D3DXHANDLE	eRghnMap;
 	static D3DXHANDLE	eTranslMap;
 	static D3DXHANDLE	eTransmMap;
-	static D3DXHANDLE	eShadowMap;
 	static D3DXHANDLE	eIrradMap;
 	static D3DXHANDLE	eAmbientMap;
 	static D3DXHANDLE	eCombinedMap;

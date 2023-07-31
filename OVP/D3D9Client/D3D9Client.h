@@ -33,6 +33,10 @@
 #include <list>
 #include "WindowMgr.h"
 
+#define SHM_CASCADE_COUNT	3
+#define SHM_LOD_COUNT		5
+
+
 #define PP_DEFAULT			0x1
 #define PP_LENSFLARE		0x2
 
@@ -125,6 +129,23 @@ struct RenderTgtData {
 };
 
 
+struct SHADOWMAPPARAM {
+	LPDIRECT3DTEXTURE9 pShadowMap[SHM_CASCADE_COUNT];
+	// Index 0 is also used for exterior map where the map size varies by LOD, distant object may use 128x128 map
+	// Interior VC cascades are all same size
+	FMATRIX4	mVP[SHM_CASCADE_COUNT];
+	FVECTOR4	Subrect[SHM_CASCADE_COUNT];
+	FVECTOR2	Center[SHM_CASCADE_COUNT];
+	FMATRIX4	mLVP;
+	D3DXVECTOR3	pos;		// Shadow map origin i.e. Cascade '0' origin
+	D3DXVECTOR3	ld;			// Light direction
+	float		rad;		// radius of the area covered by map [meters]
+	float		dist;		// Shadow camera distance from shadow origin
+	float		depth;		// near to far plane distance. i.r. depth of the field
+	int			lod;		// level of detail, 0 = highest
+	int			size;		// Map size in pixels
+	int			cascades;	// Number of active cascades
+};
 
 
 

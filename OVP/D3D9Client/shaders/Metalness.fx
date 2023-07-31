@@ -4,6 +4,7 @@
 // ==============================================================
 
 #define eps 0.001f
+//#define _VISCASCADES
 
 // ============================================================================
 // Vertex shader for physics based rendering
@@ -137,7 +138,7 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 	float3 nrmT;
 	float3 nrmW;
 	float3 cEmis;
-	float4 cSpecularMap;																							// Added
+	float4 cSpecularMap;
 	float4 cDiff;
 	float  fHeat;
 	float  fSmth, fMetal;
@@ -150,6 +151,11 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 
 	if (gTextured) cDiff = tex2D(WrapS, frg.tex0.xy);
 	else		   cDiff = 1;
+
+#if defined(_VISCASCADES)
+	cDiff.rgb *= VisualizeCascades(frg.shdH);
+	return cDiff;
+#endif
 
 	if (gOITEnable) if (cDiff.a < 0.5f) clip(-1);
 
@@ -285,7 +291,7 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 	// Add vessel self-shadows
 	// ======================================================================
 #if SHDMAP > 0
-	cSun *= smoothstep(0, 0.72, ComputeShadow(frg.shdH, dLN, sc, gSHD[0]));
+	cSun *= smoothstep(0, 0.72, ComputeShadow(frg.shdH, dLN, sc));
 #endif
 	
 

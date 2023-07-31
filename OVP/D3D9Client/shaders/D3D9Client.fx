@@ -96,7 +96,8 @@ uniform extern float4    gFogColor;         // Distance fog color in "Legacy" im
 uniform extern float4    gAtmColor;         // Earth glow color
 uniform extern float4    gTexOff;			// Texture offsets used by surface manager
 uniform extern float4    gRadius;           // PlanetRad, AtmOuterLimit, CameraRad, CameraAlt
-uniform extern float4    gSHD[2];			// ShadowMap data
+uniform extern float4    gSHD;				// ShadowMap data
+uniform extern float4	 gSHDSubRect[3];	// Shadow cascade sub-rects
 uniform extern float3    gCameraPos;        // Planet relative camera position, Unit vector
 uniform extern float3    gNorth;
 uniform extern float3    gEast;
@@ -120,6 +121,7 @@ uniform extern bool		 gInSpace;			// True if a mesh is located in space
 uniform extern bool		 gNoColor;			// No color flag
 uniform extern bool		 gBaseBuilding;
 uniform extern bool		 gOITEnable;
+uniform extern bool		 gCockpit;
 uniform extern int       gSpecMode;
 uniform extern int       gHazeMode;
 uniform extern float     gProxySize;		// Cosine of the angular size of the Proxy Gbody. (one half)
@@ -149,8 +151,6 @@ uniform extern texture   gMetlMap;   		// Metalness Map
 uniform extern texture   gHeatMap;   		// Heat Map
 uniform extern texture   gTranslMap;		// Translucence Map
 uniform extern texture   gTransmMap;		// Transmittance Map
-uniform extern texture   gShadowMap;	    // Shadow Map
-uniform extern texture   gShadowMap2;	    // Shadow Map2
 uniform extern texture   gIrradianceMap;    // Irradiance Map
 uniform extern texture   gAmbientMap;		// Baked Ambient occlusion map
 uniform extern texture   gCombinedMap;		// Combined baked light map
@@ -246,16 +246,6 @@ sampler IrradS = sampler_state      // Irradiance map sampler
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-};
-
-sampler ShadowS = sampler_state      // Shadow map sampler
-{
-	Texture = <gShadowMap>;
-	MinFilter = POINT;
-	MagFilter = POINT;
-	MipFilter = POINT;
 	AddressU = CLAMP;
 	AddressV = CLAMP;
 };

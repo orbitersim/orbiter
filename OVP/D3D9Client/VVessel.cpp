@@ -590,7 +590,7 @@ void vVessel::UpdateAnimations (int mshidx)
 bool vVessel::IsInsideShadows()
 {
 	D3DXVECTOR3 bc;
-	const Scene::SHADOWMAPPARAM *shd = scn->GetSMapData();
+	const SHADOWMAPPARAM *shd = scn->GetSMapData();
 	D3DXVec3TransformCoord(&bc, ptr(D3DXVECTOR3f4(BBox.bs)), &mWorld);
 	bc = bc - shd->pos;
 	float x = D3DXVec3Dot(&bc, &(shd->ld));
@@ -606,7 +606,7 @@ bool vVessel::IsInsideShadows()
 bool vVessel::IntersectShadowVolume()
 {
 	D3DXVECTOR3 bc;
-	const Scene::SHADOWMAPPARAM *shd = scn->GetSMapData();
+	const SHADOWMAPPARAM *shd = scn->GetSMapData();
 	D3DXVec3TransformCoord(&bc, ptr(D3DXVECTOR3f4(BBox.bs)), &mWorld);
 	bc = bc - shd->pos;
 	float x = D3DXVec3Dot(&bc, &(shd->ld));
@@ -620,7 +620,7 @@ bool vVessel::IntersectShadowVolume()
 bool vVessel::IntersectShadowTarget()
 {
 	D3DXVECTOR3 bc;
-	const Scene::SHADOWMAPPARAM *shd = scn->GetSMapData();
+	const SHADOWMAPPARAM *shd = scn->GetSMapData();
 	D3DXVec3TransformCoord(&bc, ptr(D3DXVECTOR3f4(BBox.bs)), &mWorld);
 	bc = bc - shd->pos;
 	if (D3DXVec3Length(&bc) < (shd->rad + BBox.bs.w)) return true;
@@ -633,7 +633,7 @@ bool vVessel::IntersectShadowTarget()
 void vVessel::GetMinMaxLightDist(float *mind, float *maxd)
 {
 	D3DXVECTOR3 bc;
-	const Scene::SHADOWMAPPARAM *shd = scn->GetSMapData();
+	const SHADOWMAPPARAM *shd = scn->GetSMapData();
 	D3DXVec3TransformCoord(&bc, ptr(D3DXVECTOR3f4(BBox.bs)), &mWorld);
 	bc -= shd->pos;
 	float x = D3DXVec3Dot(&bc, &(shd->ld));
@@ -746,30 +746,25 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 	static bool gotHUDSpec(false);
 	const VCMFDSPEC *mfdspec[MAXMFD] = { NULL };
 
-
-	const Scene::SHADOWMAPPARAM *shd = scn->GetSMapData();
+	const SHADOWMAPPARAM *shd = scn->GetSMapData();
 
 	float s = float(shd->size);
 	float sr = 2.0f * shd->rad / s;
-
+	
 	HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, false));
 	HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, shd->mLVP.toCDX())); // Cascade 0 for all
 
 	if (shd->pShadowMap && (scn->GetRenderPass() == RENDERPASS_MAINSCENE)) {
-
-		D3DXVECTOR4 sh[2];
-		sh[0] = D3DXVECTOR4(sr, 1.0f / s, float(oapiRand()), 1.0f / shd->depth);
-		sh[1] = D3DXVECTOR4(sr, 1.0f / s, float(oapiRand()), 1.0f / shd->depth);
-
-		HR(D3D9Effect::FX->SetTexture(D3D9Effect::eShadowMap, shd->pShadowMap[0]));
-		HR(D3D9Effect::FX->SetValue(D3D9Effect::eSHD, &sh, sizeof(sh)));
+		D3DXVECTOR4 sh = D3DXVECTOR4(sr, 1.0f / s, float(oapiRand()), 1.0f / shd->depth);
+		HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, &sh));
 		HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, true));
+		D3D9Mesh::SetShadows(shd);
 
 		if (bVC) {
-			//HR(D3D9Effect::FX->SetTexture(D3D9Effect::eShadowMap2, shd->pShadowMap[1]));
 		}
 	}
 	else {
+		D3D9Mesh::SetShadows(NULL);
 		HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, false));
 	}
 
