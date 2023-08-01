@@ -2002,11 +2002,11 @@ void Scene::RenderMainScene()
 			float dist = 1.5f;
 			fCascadeRatio = 1.00f;
 
-			if (Config->VCCascadeCount == 2) dist = 4.00f, fCascadeRatio = 0.33f;
-			if (Config->VCCascadeCount == 3) dist = 6.25f, fCascadeRatio = 0.40f;
+			if (Config->VCCascadeCount == 2) dist = 5.00f, fCascadeRatio = 0.25f;
+			if (Config->VCCascadeCount == 3) dist = 6.00f, fCascadeRatio = 0.25f;
 			
 			D3DXVECTOR3 ld = sunLight.Dir;
-			D3DXVECTOR3 pos = Camera.z * dist * 0.75f;
+			D3DXVECTOR3 pos = Camera.z * dist;
 			
 			RenderVCShadowMap(pos, ld, dist, false);
 
@@ -2502,6 +2502,7 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bI
 	smap.cascades = 1;
 	smap.Center[0] = { 0, 0 };
 	smap.Subrect[0] = { 0, 0, 1, 1 };
+	smap.SubrectTF[0] = { 0, 0, 1, 1 };
 
 	float mnd =  1e16f;
 	float mxd = -1e16f;
@@ -2672,15 +2673,17 @@ int Scene::RenderVCShadowMap(D3DXVECTOR3& pos, D3DXVECTOR3& ld, float rad, bool 
 
 		D3DXVECTOR3 xy;
 		D3DXVec3TransformCoord(&xy, &pos, smap.mVP[0].toDX());
-		float r = 0.5f * rad / smap.rad;
+		float s = 0.5f * rad / smap.rad;
 
 		xy.y = -xy.y;
 		xy = (xy + 1.0f) * 0.5f;
 
-		// Cascade's center and subrect within the main level (i.e '0')
+		// Cascade's center, subrect and subrect-transform within the main level (i.e '0')
 		// All cascades share the same near and far plane and exists inside the previous cascade. 
 		smap.Center[i] = { xy.x, xy.y };
-		smap.Subrect[i] = { xy.x - r, xy.y - r, xy.x + r, xy.y + r };
+		float l = xy.x - s;	float t = xy.y - s;	float r = xy.x + s;	float b = xy.y + s;
+		smap.Subrect[i] = FVECTOR4(l, t, r, b);
+		smap.SubrectTF[i] = FVECTOR4(-l, -t, 1.0f / (r - l), 1.0f / (b - t));
 
 #ifdef CASCADE_DEBUG
 		D3D9DebugLog("Cascade %i  pos=[%f, %f]", i, xy.x, xy.y);

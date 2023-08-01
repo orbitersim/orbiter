@@ -137,7 +137,12 @@ float4 BakedVC_PS(float4 sc : VPOS, PBRData frg) : COLOR
 	// Add vessel self-shadows
 	// ======================================================================
 #if SHDMAP > 0
-	cSun *= smoothstep(0, 0.72, ComputeShadow(frg.shdH, dLN, sc));
+	if (gCockpit) {
+		cSun *= smoothstep(0, 0.72, ComputeShadowVC(frg.shdH, dLN, sc));
+	}
+	else {
+		cSun *= smoothstep(0, 0.72, ComputeShadow(frg.shdH, dLN, sc));
+	}
 #endif
 	
 

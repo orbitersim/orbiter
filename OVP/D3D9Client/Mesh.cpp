@@ -1561,7 +1561,7 @@ void D3D9Mesh::SetShadows(const SHADOWMAPPARAM *sprm)
 	if (sprm) {
 		for (int i = 0; i < SHM_CASCADE_COUNT; i++) {
 			pShadowMap[i] = sprm->pShadowMap[i];
-			ShdSubRect[i] = sprm->Subrect[i];
+			ShdSubRect[i] = sprm->SubrectTF[i];
 		}
 	}
 	else {
@@ -2393,9 +2393,11 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 	bool bGroupCull = true;
 	bool bUpdateFlow = true;
 	bool bShadowProjection = false;
+	bool bVirtualCockpit = false;
 
 	switch (iTech) {
 		case RENDER_VC:
+			bVirtualCockpit = true;
 			EnablePlanetGlow(false);
 			break;
 		case RENDER_BASE:
@@ -2420,6 +2422,7 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 	}
 
 	HR(D3D9Effect::FX->SetBool(D3D9Effect::eBaseBuilding, bShadowProjection));
+	HR(D3D9Effect::FX->SetBool(D3D9Effect::eCockpit, bVirtualCockpit));
 
 	D3DXVECTOR4 Field;
 	D3DXMATRIX mWorldView, q;

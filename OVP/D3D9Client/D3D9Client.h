@@ -135,6 +135,7 @@ struct SHADOWMAPPARAM {
 	// Interior VC cascades are all same size
 	FMATRIX4	mVP[SHM_CASCADE_COUNT];
 	FVECTOR4	Subrect[SHM_CASCADE_COUNT];
+	FVECTOR4	SubrectTF[SHM_CASCADE_COUNT];
 	FVECTOR2	Center[SHM_CASCADE_COUNT];
 	FMATRIX4	mLVP;
 	D3DXVECTOR3	pos;		// Shadow map origin i.e. Cascade '0' origin

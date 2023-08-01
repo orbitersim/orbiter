@@ -25,12 +25,12 @@ float4 Sq(float4 x)
 	return x*x;
 }
 
-bool PointInRect(float2 pt, float4 rect)
+bool PointInRect(float2 pt)
 {
-	if (pt.x < rect[0]) return false;
-	if (pt.x > rect[2]) return false;
-	if (pt.y < rect[1]) return false;
-	if (pt.y > rect[3]) return false;
+	if (pt.x < 0) return false;
+	if (pt.x > 1) return false;
+	if (pt.y < 0) return false;
+	if (pt.y > 1) return false;
 	return true;
 }
 
@@ -376,6 +376,47 @@ float ComputeShadow(float4 shdH, float dLN, float4 sc)
 
 // ---------------------------------------------------------------------------------------------------
 //
+float ComputeShadowVC(float4 shdH, float dLN, float4 sc)
+{
+	if (!gShadowsEnabled) return 1.0f;
+
+	shdH.xyz /= shdH.w;
+	shdH.z = 1 - shdH.z;
+	float2 sp = shdH.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
+	float2 c[3];
+	int sid = 0;
+
+	sp += gSHD[1] * 0.5f;
+
+	c[0] = (sp + gSHDSubRect[0].xy) * gSHDSubRect[0].zw;
+	c[1] = (sp + gSHDSubRect[1].xy) * gSHDSubRect[1].zw;
+	c[2] = (sp + gSHDSubRect[2].xy) * gSHDSubRect[2].zw;
+
+	if (!PointInRect(c[0])) return 1.0f; // Sample outside of cascade '0' 
+	if (PointInRect(c[2])) sid = 2;
+	if (PointInRect(c[1])) sid = 1;
+
+	float kr = gSHD[0] * KERNEL_RADIUS;
+	float dx = rsqrt(1.0 - dLN * dLN);
+	float ofs = 0.33f * kr / (dLN * dx);
+	float omx = min(gSHD[0] * 0.1f + max(0, ofs), 0.25);
+
+	float  pd = shdH.z + omx * gSHD[3];
+
+	if (pd < 0) pd = 0;
+	if (pd > 1) pd = 1;
+
+	float fShadow[3];
+	fShadow[0] = SampleShadowsEx(c[0], pd, sc, 0);
+	fShadow[1] = SampleShadowsEx(c[1], pd, sc, 1);
+	fShadow[2] = SampleShadowsEx(c[2], pd, sc, 2);
+
+	return 1 - fShadow[sid];
+}
+
+
+// ---------------------------------------------------------------------------------------------------
+//
 float3 VisualizeCascades(float4 shdH)
 {
 	if (!gShadowsEnabled) return float3(1, 1, 1);
@@ -386,8 +427,12 @@ float3 VisualizeCascades(float4 shdH)
 
 	sp += gSHD[1] * 0.5f; // Shift 0.5 pixels aside
 
-	if (PointInRect(sp, gSHDSubRect[2])) return float3(0, 0, 1);
-	if (PointInRect(sp, gSHDSubRect[1])) return float3(0, 1, 0);
-	if (PointInRect(sp, gSHDSubRect[0])) return float3(1, 0, 0);
+	float2 c0 = (sp + gSHDSubRect[0].xy) * gSHDSubRect[0].zw;
+	float2 c1 = (sp + gSHDSubRect[1].xy) * gSHDSubRect[1].zw;
+	float2 c2 = (sp + gSHDSubRect[2].xy) * gSHDSubRect[2].zw;
+
+	if (PointInRect(c2)) return float3(0, 0, 1);
+	if (PointInRect(c1)) return float3(0, 1, 0);
+	if (PointInRect(c0)) return float3(1, 0, 0);
 	return float3(1, 1, 1);
 }
