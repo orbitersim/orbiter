@@ -1999,16 +1999,33 @@ void Scene::RenderMainScene()
 		if (Config->ShadowMapMode >= 1)
 		{
 			SmapRenderList.clear();
-			float dist = 1.5f;
-			fCascadeRatio = 1.00f;
+			cascfg[0].dist = 1.5f;
+			cascfg[0].size = 1.5f;
+			float sa = sin(GetCameraApertureCorner());
 
-			if (Config->VCCascadeCount == 2) dist = 5.00f, fCascadeRatio = 0.25f;
-			if (Config->VCCascadeCount == 3) dist = 6.00f, fCascadeRatio = 0.25f;
-			
-			D3DXVECTOR3 ld = sunLight.Dir;
-			D3DXVECTOR3 pos = Camera.z * dist;
-			
-			RenderVCShadowMap(pos, ld, dist, false);
+			if (Config->VCCascadeCount == 2) {
+				cascfg[0].size = 5.0f;
+				cascfg[0].dist = 5.0f;
+				cascfg[1].size = 1.5f;
+				cascfg[1].dist = cascfg[1].size * (1.0f + sa) / (2.0f * sa);
+			}
+
+			if (Config->VCCascadeCount == 3) {
+				cascfg[0].size = 7.0f;
+				cascfg[0].dist = 7.0f;
+				cascfg[1].size = 2.0f;
+				cascfg[1].dist = 2.0f;
+				cascfg[2].size = 0.6f;
+				cascfg[2].dist = cascfg[2].size * (1.0f + sa) / (2.0f * sa);
+			}
+
+			cascfg[1].dist = min(cascfg[0].dist, cascfg[1].dist);
+			cascfg[2].dist = min(cascfg[1].dist, cascfg[2].dist);
+
+			//D3D9DebugLog("Aperture = %f, dist=%f", GetCameraApertureCorner() * 2.0 * 180.0 / PI, cascfg[2].dist- cascfg[2].size);
+
+			D3DXVECTOR3 ld = sunLight.Dir;				
+			RenderVCShadowMap(Camera.z, ld, false);
 
 			pShdMap = smap.pShadowMap[0];	
 		}
@@ -2599,9 +2616,11 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bI
 
 // ===========================================================================================
 //
-int Scene::RenderVCShadowMap(D3DXVECTOR3& pos, D3DXVECTOR3& ld, float rad, bool bListExists)
+int Scene::RenderVCShadowMap(D3DXVECTOR3& cdir, D3DXVECTOR3& ld, bool bListExists)
 {
 
+	D3DXVECTOR3 pos = cdir * cascfg[0].dist;
+	float rad = cascfg[0].size;
 	smap.pos = pos;
 	smap.ld = ld;
 	smap.rad = rad;
@@ -2664,6 +2683,9 @@ int Scene::RenderVCShadowMap(D3DXVECTOR3& pos, D3DXVECTOR3& ld, float rad, bool 
 	{
 		// Compute mLVP needed to render this cascade.
 
+		pos = cdir * cascfg[i].dist;
+		rad = cascfg[i].size;
+
 		// Project pos to a shadow plane
 		D3DXVECTOR3 sp = pos - ld * D3DXVec3Dot(&pos, &ld);
 		D3DXVECTOR3 ep = sp - ld * smap.dist;
@@ -2707,9 +2729,6 @@ int Scene::RenderVCShadowMap(D3DXVECTOR3& pos, D3DXVECTOR3& ld, float rad, bool 
 			if (a == vFocus) a->Render(pDevice, true);
 		}
 
-		rad *= fCascadeRatio;
-		pos *= fCascadeRatio;
-
 		PopPass();
 
 		gc->PopRenderTargets();
@@ -2717,7 +2736,7 @@ int Scene::RenderVCShadowMap(D3DXVECTOR3& pos, D3DXVECTOR3& ld, float rad, bool 
 		smap.pShadowMap[i] = ptVCShmRT[i];
 	}
 
-	// smap.mLVP must point to cascade '0' by default
+	// smap.mLVP must point to cascade '0' by default. That's where subrects lie
 	smap.mLVP = smap.mVP[0];
 
 	return 0;
@@ -3514,6 +3533,9 @@ void Scene::SetCameraAperture(float ap, float as)
 	Camera.aspect = as;
 
 	float tanap = tan(ap);
+	float opa = 1.0f / as;
+	float cor = sqrt(tanap * tanap + tanap * tanap * as * as);
+	Camera.corner = atan(cor);
 
 	ZeroMemory(&Camera.mProj, sizeof(D3DXMATRIX));
 

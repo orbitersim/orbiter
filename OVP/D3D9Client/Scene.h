@@ -112,6 +112,7 @@ public:
 	// Camera frustum parameters ========================================================
 	//
 	struct CAMERA {
+		float		corner;		// corner to center aperture [rad]
 		float		aperture;   // aperture [rad]
 		float		aspect;     // aspect ratio
 		float		nearplane;  // frustum nearplane distance
@@ -233,7 +234,7 @@ public:
 	 */
 	void RenderSecondaryScene(std::set<class vVessel*> &RndList, std::set<class vVessel*> &AdditionalLightsList, DWORD flags = 0xFF);
 	int RenderShadowMap(D3DXVECTOR3& pos, D3DXVECTOR3& ld, float rad, bool bInternal = false, bool bListExists = false);
-	int RenderVCShadowMap(D3DXVECTOR3& pos, D3DXVECTOR3& ld, float rad, bool bListExists = false);
+	int RenderVCShadowMap(D3DXVECTOR3& cdir, D3DXVECTOR3& ld, bool bListExists = false);
 
 	bool IntegrateIrradiance(vVessel *vV, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRECT3DTEXTURE9 pOut);
 	bool RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc);
@@ -339,6 +340,7 @@ public:
 	float			GetCameraFarPlane() const { return Camera.farplane; }
 	float			GetCameraNearPlane() const { return Camera.nearplane; }
 	float			GetCameraAperture() const { return (float)Camera.aperture; }
+	float			GetCameraApertureCorner() const { return (float)Camera.corner; }
 	VECTOR3			GetCameraGPos() const { return Camera.pos; }
 	VECTOR3			GetCameraGDir() const { return Camera.dir; }
 	OBJHANDLE		GetCameraProxyBody() const { return Camera.hObj_proxy; }
@@ -427,6 +429,12 @@ private:
 
 	// Scene variables ================================================================
 	//
+
+	struct _cascfg {
+		float size;
+		float dist;
+	} cascfg[SHM_CASCADE_COUNT];
+
 	oapi::D3D9Client* gc;
 	LPDIRECT3DDEVICE9 pDevice; // render device
 	DWORD viewW, viewH;        // render viewport size
