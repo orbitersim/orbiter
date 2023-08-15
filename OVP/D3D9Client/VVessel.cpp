@@ -756,7 +756,9 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 
 	if (shd->pShadowMap && (scn->GetRenderPass() == RENDERPASS_MAINSCENE)) {
 		D3DXVECTOR4 sh = D3DXVECTOR4(sr, 1.0f / s, float(oapiRand()), 1.0f / shd->depth);
+		D3DXVECTOR4 px = D3DXVECTOR4(shd->SubPx[0], shd->SubPx[1], shd->SubPx[2], 0.0f);
 		HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, &sh));
+		HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHDPx, &px));
 		HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, true));
 		D3D9Mesh::SetShadows(shd);
 

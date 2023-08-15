@@ -137,6 +137,7 @@ struct SHADOWMAPPARAM {
 	FVECTOR4	Subrect[SHM_CASCADE_COUNT];
 	FVECTOR4	SubrectTF[SHM_CASCADE_COUNT];
 	FVECTOR2	Center[SHM_CASCADE_COUNT];
+	float		SubPx[SHM_CASCADE_COUNT];
 	FMATRIX4	mLVP;
 	D3DXVECTOR3	pos;		// Shadow map origin i.e. Cascade '0' origin
 	D3DXVECTOR3	ld;			// Light direction

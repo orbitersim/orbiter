@@ -97,6 +97,7 @@ uniform extern float4    gAtmColor;         // Earth glow color
 uniform extern float4    gTexOff;			// Texture offsets used by surface manager
 uniform extern float4    gRadius;           // PlanetRad, AtmOuterLimit, CameraRad, CameraAlt
 uniform extern float4    gSHD;				// ShadowMap data
+uniform extern float4    gSHDPx;			// Shadow resolution [Pixels / meter] for each cascade
 uniform extern float4	 gSHDSubRect[3];	// Shadow cascade sub-rects
 uniform extern float3    gCameraPos;        // Planet relative camera position, Unit vector
 uniform extern float3    gNorth;

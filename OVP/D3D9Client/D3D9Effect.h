@@ -164,6 +164,7 @@ public:
 	static D3DXHANDLE	eAttennuate;
 	static D3DXHANDLE	eInScatter;
 	static D3DXHANDLE	eSHD;
+	static D3DXHANDLE   eSHDPx;
 	static D3DXHANDLE	eSHDSubRect;
 	static D3DXHANDLE	eNight;
 

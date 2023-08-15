@@ -94,6 +94,7 @@ D3DXHANDLE D3D9Effect::eMix = 0;		// FLOAT Auxiliary factor/multiplier
 D3DXHANDLE D3D9Effect::eFogDensity = 0;	// 
 D3DXHANDLE D3D9Effect::ePointScale = 0;
 D3DXHANDLE D3D9Effect::eSHD = 0;
+D3DXHANDLE D3D9Effect::eSHDPx = 0;
 D3DXHANDLE D3D9Effect::eSHDSubRect = 0;
 
 D3DXHANDLE D3D9Effect::eAtmColor = 0;
@@ -339,8 +340,12 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	if (Config->ShadowFilter >= 3)  sprintf_s((char*)macro[5].Definition, 32, "%f", 0.0285f);
 	else							sprintf_s((char*)macro[5].Definition, 32, "%f", 1.0f / 27.0f); // 0.04634f);
 	// ------------------------------------------------------------------------------
+	macro[6].Name = "CASCOUNT";
+	macro[6].Definition = new char[32];
+	sprintf_s((char*)macro[6].Definition, 32, "%d", Config->VCCascadeCount);
+	// ------------------------------------------------------------------------------
 
-	int m = 6;
+	int m = 7;
 	if (Config->EnableGlass) macro[m++].Name = "_GLASS";
 	if (Config->EnableMeshDbg) macro[m++].Name = "_DEBUG";
 	if (Config->EnvMapMode) macro[m++].Name = "_ENVMAP"; 
@@ -451,6 +456,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eMtrlAlpha	  = FX->GetParameterByName(0,"gMtrlAlpha");
 	eGlowConst    = FX->GetParameterByName(0,"gGlowConst");
 	eSHD		  = FX->GetParameterByName(0,"gSHD");
+	eSHDPx		  = FX->GetParameterByName(0,"gSHDPx");
 	eSHDSubRect	  = FX->GetParameterByName(0,"gSHDSubRect");
 	eKernel		  = FX->GetParameterByName(0,"kernel");
 	eAtmoParams	  = FX->GetParameterByName(0,"gAtmo");

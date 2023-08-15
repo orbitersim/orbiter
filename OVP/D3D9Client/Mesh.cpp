@@ -1545,8 +1545,8 @@ void D3D9Mesh::ConfigureShadows()
 		HR(pDev->SetSamplerState(idx, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP));
 		HR(pDev->SetSamplerState(idx, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP));
 		HR(pDev->SetSamplerState(idx, D3DSAMP_ADDRESSW, D3DTADDRESS_CLAMP));	
-		HR(pDev->SetSamplerState(idx, D3DSAMP_MAGFILTER, D3DTEXF_POINT));
-		HR(pDev->SetSamplerState(idx, D3DSAMP_MINFILTER, D3DTEXF_POINT));
+		HR(pDev->SetSamplerState(idx, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR));
+		HR(pDev->SetSamplerState(idx, D3DSAMP_MINFILTER, D3DTEXF_LINEAR));
 		HR(pDev->SetSamplerState(idx, D3DSAMP_MIPFILTER, D3DTEXF_NONE));
 		HR(pDev->SetTexture(idx, pShadowMap[i]));
 	}
@@ -1567,7 +1567,7 @@ void D3D9Mesh::SetShadows(const SHADOWMAPPARAM *sprm)
 	else {
 		for (int i = 0; i < SHM_CASCADE_COUNT; i++) {
 			pShadowMap[i] = NULL;
-			ShdSubRect[i] = { 0,0,1,1 };
+			ShdSubRect[i] = { 0,0,0,0 };
 		}
 	}
 }
@@ -1818,11 +1818,9 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 
 		// ---------------------------------------------------------------------------------------------------------
 		//
-		if (Tex[ti] != old_tex) {
-			if (Tex[ti] == NULL) {
-				reset(FC);
-				bUpdateFlow = true;
-			}
+		if ((Tex[ti] == NULL) || (Tex[ti] != old_tex)) {
+			reset(FC);
+			bUpdateFlow = true;
 		}
 
 		if (Tex[ti]==NULL) bTextured = false, old_tex = NULL;

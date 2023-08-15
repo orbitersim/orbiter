@@ -96,7 +96,7 @@ void D3D9Config::Reset ()
 	bIrradiance			= 1;
 	bAtmoQuality		= 1;
 	NoPlanetAA			= 0;
-	VCCascadeCount		= 1;
+	VCCascadeCount		= 2;
 	
 	GFXIntensity = 0.5;
 	GFXDistance = 0.8;

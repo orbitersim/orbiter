@@ -1999,24 +1999,24 @@ void Scene::RenderMainScene()
 		if (Config->ShadowMapMode >= 1)
 		{
 			SmapRenderList.clear();
-			cascfg[0].dist = 1.5f;
-			cascfg[0].size = 1.5f;
+			cascfg[0].dist = 2.5f;
+			cascfg[0].size = 2.5f;
 			float sa = sin(GetCameraApertureCorner());
 
 			if (Config->VCCascadeCount == 2) {
-				cascfg[0].size = 5.0f;
-				cascfg[0].dist = 5.0f;
-				cascfg[1].size = 1.5f;
-				cascfg[1].dist = cascfg[1].size * (1.0f + sa) / (2.0f * sa);
+				cascfg[0].size = 4.0f;
+				cascfg[0].dist = 4.0f;
+				cascfg[1].size = 1.0f;
+				cascfg[1].dist = 1.0f;
 			}
 
 			if (Config->VCCascadeCount == 3) {
-				cascfg[0].size = 7.0f;
-				cascfg[0].dist = 7.0f;
-				cascfg[1].size = 2.0f;
-				cascfg[1].dist = 2.0f;
-				cascfg[2].size = 0.6f;
-				cascfg[2].dist = cascfg[2].size * (1.0f + sa) / (2.0f * sa);
+				cascfg[0].size = 9.0f;
+				cascfg[0].dist = 9.0f;
+				cascfg[1].size = 3.0f;
+				cascfg[1].dist = 3.0f;
+				cascfg[2].size = 1.0f;
+				cascfg[2].dist = 0.5f * cascfg[2].size * (1.0f + sa) / (2.0f * sa);
 			}
 
 			cascfg[1].dist = min(cascfg[0].dist, cascfg[1].dist);
@@ -2706,6 +2706,7 @@ int Scene::RenderVCShadowMap(D3DXVECTOR3& cdir, D3DXVECTOR3& ld, bool bListExist
 		float l = xy.x - s;	float t = xy.y - s;	float r = xy.x + s;	float b = xy.y + s;
 		smap.Subrect[i] = FVECTOR4(l, t, r, b);
 		smap.SubrectTF[i] = FVECTOR4(-l, -t, 1.0f / (r - l), 1.0f / (b - t));
+		smap.SubPx[i] = rad / float(smap.size);
 
 #ifdef CASCADE_DEBUG
 		D3D9DebugLog("Cascade %i  pos=[%f, %f]", i, xy.x, xy.y);
