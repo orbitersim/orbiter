@@ -2011,12 +2011,12 @@ void Scene::RenderMainScene()
 			}
 
 			if (Config->VCCascadeCount == 3) {
-				cascfg[0].size = 9.0f;
-				cascfg[0].dist = 9.0f;
+				cascfg[0].size = 12.0f;
+				cascfg[0].dist = 12.0f;
 				cascfg[1].size = 3.0f;
 				cascfg[1].dist = 3.0f;
 				cascfg[2].size = 1.0f;
-				cascfg[2].dist = 0.5f * cascfg[2].size * (1.0f + sa) / (2.0f * sa);
+				cascfg[2].dist = 1.0f; //cascfg[2].size * (1.0f + sa) / (2.0f * sa);
 			}
 
 			cascfg[1].dist = min(cascfg[0].dist, cascfg[1].dist);
