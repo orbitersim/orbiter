@@ -70,6 +70,7 @@ struct Flow
 	bool Metl;		// Enable metalness map
 	bool Heat;		// Enable heat map
 	bool Baked;		// Enable pre-baked maps
+	bool BakedAO;	// Enable pre-baked AO map
 };
 
 

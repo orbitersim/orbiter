@@ -28,6 +28,7 @@ struct TexFlow {
 	BOOL Metl;		// Enable metalness map
 	BOOL Heat;		// Enable heat map
 	BOOL Baked;		// Enable pre-baked maps
+	BOOL BakedAO;	// Enable pre-baked AO map
 };
 
 

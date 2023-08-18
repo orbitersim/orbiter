@@ -1902,7 +1902,8 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 						if (pAmbi) FX->SetTexture(eAmbientMap, pAmbi);
 						if (pComb) FX->SetTexture(eCombinedMap, pComb);
 
-						FC.Baked = (pAmbi != NULL) || (pComb != NULL);
+						FC.Baked = (pComb != NULL);
+						FC.BakedAO = (pAmbi != NULL);
 					}
 
 					FC.Emis = (pEmis != NULL);

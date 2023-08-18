@@ -48,10 +48,9 @@ float4 BakedVC_PS(float4 sc : VPOS, PBRData frg) : COLOR
 	float3 cBL = 0;
 	float3 cBAO = 0;
 
-	if (gCfg.Baked) {
-		cBL = tex2D(BakedLightS, frg.tex0.xy).rgb;
-		cBAO = tex2D(BakedAOS, frg.tex0.xy).rgb;
-	}
+	if (gCfg.Baked) cBL = tex2D(BakedLightS, frg.tex0.xy).rgb;
+	if (gCfg.BakedAO) cBAO = tex2D(BakedAOS, frg.tex0.xy).rgb;
+	
 
 
 	// ----------------------------------------------------------------------
