@@ -73,7 +73,7 @@ struct _LightList {
 };
 
 struct _BakedLights {
-	LPDIRECT3DTEXTURE9 pMap[10];
+	LPDIRECT3DTEXTURE9 pMap[16];
 	LPDIRECT3DTEXTURE9 pCombined;
 };
 
@@ -364,7 +364,7 @@ private:
 	D3D9MatExt *Mtrl;           // list of mesh materials
 	SurfNative **Tex;			// list of mesh textures
 	std::map<int, _BakedLights> BakedLights;
-	FVECTOR3 BakedLightsControl[10];
+	FVECTOR3 BakedLightsControl[16];
 	D3DXMATRIX mTransform;
 	D3DXMATRIX mTransformInv;
 	D3DXMATRIX *pGrpTF;

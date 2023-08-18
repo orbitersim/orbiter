@@ -478,11 +478,15 @@ void D3D9Mesh::LoadBakedLights()
 	for (int i = 0; i < nTex; i++)
 	{
 		if (!Tex[i]) continue; // No base texture, pick next
-		for (int j = 0; j < 10; j++)
+
+		for (int j = 0; j < 16; j++)
 		{
 			sprintf_s(id, "bkl%d", j);
 			LPDIRECT3DTEXTURE9 pTex = NatLoadSpecialTexture(Tex[i]->GetPath(), id);
-			if (pTex) BakedLights[i].pMap[j] = pTex;
+			if (pTex) {
+				if (BakedLights.find(i) == BakedLights.end()) for (int k = 0; k < 16; k++) BakedLights[i].pMap[k] = NULL;
+				BakedLights[i].pMap[j] = pTex;
+			}
 		}
 	}
 
@@ -494,7 +498,7 @@ void D3D9Mesh::LoadBakedLights()
 		}
 	}
 
-	for (int i = 0; i < 10; i++) BakedLightsControl[i] = FVECTOR3(0.5, 0.5, 0.5);
+	for (int i = 0; i < 16; i++) BakedLightsControl[i] = FVECTOR3(0.5, 0.5, 0.5);
 }
 
 
@@ -502,7 +506,7 @@ void D3D9Mesh::LoadBakedLights()
 //
 void D3D9Mesh::SetBakedLightLevel(int idx, const FVECTOR3 &level)
 {
-	if (idx >= 0 && idx <= 9) {
+	if (idx >= 0 && idx <= 15) {
 		if (BakedLightsControl[idx] != level) {
 			BakedLightsControl[idx] = level;
 			bMustRebake = true;
@@ -521,14 +525,14 @@ void D3D9Mesh::BakeLights(ImageProcessing* pBaker)
 	if (BakedLights.size() == 0) return; // Nothing to bake
 
 	DWORD flags = IPF_POINT | IPF_CLAMP;
-	FVECTOR3 control[10];
+	FVECTOR3 control[16];
 
 	pBaker->Activate("PSMain");
 
 	for (auto x : BakedLights)
 	{
 		int slot = 0;
-		for (int i = 0; i < 10; i++)
+		for (int i = 0; i < 16; i++)
 		{
 			auto y = x.second.pMap[i];
 			if (y)
@@ -1818,7 +1822,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 
 		// ---------------------------------------------------------------------------------------------------------
 		//
-		if ((Tex[ti] == NULL) || (Tex[ti] != old_tex)) {
+		if (Tex[ti] != old_tex) {
 			reset(FC);
 			bUpdateFlow = true;
 		}
@@ -1839,8 +1843,6 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 				old_tex = Tex[ti];
 
 				FX->SetTexture(eTex0, Tex[ti]->GetTexture());
-
-				bUpdateFlow = true;	// Fix this later
 
 				if (CurrentShader == SHADER_LEGACY) {
 					if (tni && Grp[g].TexMixEx[0] < 0.5f) tni = 0;

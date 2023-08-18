@@ -63,7 +63,7 @@ struct Flow
 	bool Emis;		// Enable Emission Maps
 	bool Spec;		// Enable Specular Maps
 	bool Refl;		// Enable Reflection Maps
-	bool Transl;	// Enble translucent effect
+	bool Transl;	// Enable translucent effect
 	bool Transm;	// Enable transmissive effect
 	bool Rghn;		// Enable roughness map
 	bool Norm;		// Enable normal map

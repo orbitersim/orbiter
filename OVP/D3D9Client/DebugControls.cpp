@@ -377,6 +377,7 @@ void InitMatList(WORD shader)
 //
 void OpenDlgClbk(void *context)
 {
+	char buf[64];
 	DWORD idx = 0;
 	HWND l_hDlg = oapiOpenDialog(g_hInst, IDD_D3D9MESHDEBUG, WndProc);
 
@@ -449,16 +450,10 @@ void OpenDlgClbk(void *context)
 	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_SETCURSEL, 0, 0);
 
 	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_ADDSTRING, 0, (LPARAM)"Baked_0");
-	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_ADDSTRING, 0, (LPARAM)"Baked_1");
-	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_ADDSTRING, 0, (LPARAM)"Baked_2");
-	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_ADDSTRING, 0, (LPARAM)"Baked_3");
-	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_ADDSTRING, 0, (LPARAM)"Baked_4");
-	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_ADDSTRING, 0, (LPARAM)"Baked_5");
-	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_ADDSTRING, 0, (LPARAM)"Baked_6");
-	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_ADDSTRING, 0, (LPARAM)"Baked_7");
-	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_ADDSTRING, 0, (LPARAM)"Baked_8");
-	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_ADDSTRING, 0, (LPARAM)"Baked_9");
+	for (int i = 0; i < 16; i++) {
+		sprintf_s(buf, 64, "Baked_%d", i);
+		SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_ADDSTRING, 0, (LPARAM)buf);
+	}
 	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_ADDSTRING, 0, (LPARAM)"Ambient");
 	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_SETCURSEL, 0, 0);
 
@@ -1163,10 +1158,10 @@ void UpdateBakedLights(float lvl)
 {
 	D3D9Mesh* mesh = (class D3D9Mesh*)vObj->GetMesh(sMesh);
 	if (mesh) {
-		if (bkl_id < 10 && bkl_id >= 0) {
+		if (bkl_id < 16 && bkl_id >= 0) {
 			mesh->SetBakedLightLevel(bkl_id, FVECTOR3(lvl, lvl, lvl));
 		}
-		if (bkl_id == 10) mesh->SetAmbientColor(FVECTOR3(lvl, lvl, lvl));
+		if (bkl_id == 16) mesh->SetAmbientColor(FVECTOR3(lvl, lvl, lvl));
 	}
 }
 

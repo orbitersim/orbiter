@@ -3,10 +3,10 @@
 // licensed under MIT
 // ==============================================================
 
-uniform extern float3  fControl[10];
+uniform extern float3  fControl[16];
 uniform extern int	   iCount;
 
-sampler tMap[10] : register(s0);
+sampler tMap[16] : register(s0);
 
 float cmax(float3 a)
 {

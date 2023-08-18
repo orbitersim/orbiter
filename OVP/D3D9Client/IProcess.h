@@ -129,7 +129,7 @@ private:
 	struct {
 		LPDIRECT3DBASETEXTURE9 hTex;
 		DWORD flags;
-	} pTextures[10];
+	} pTextures[16];
 
 	gcIPInterface::ipicull mesh_cull;
 
