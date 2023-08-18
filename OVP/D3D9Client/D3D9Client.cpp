@@ -1485,6 +1485,13 @@ bool D3D9Client::clbkSetMeshProperty(DEVMESHHANDLE hMesh, MeshProp prp, const oa
 	case MeshProp::BAKED_7: mesh->SetBakedLightLevel(7, value.xyz); return true;
 	case MeshProp::BAKED_8: mesh->SetBakedLightLevel(8, value.xyz); return true;
 	case MeshProp::BAKED_9: mesh->SetBakedLightLevel(9, value.xyz); return true;
+	case MeshProp::BAKED_10: mesh->SetBakedLightLevel(10, value.xyz); return true;
+	case MeshProp::BAKED_11: mesh->SetBakedLightLevel(11, value.xyz); return true;
+	case MeshProp::BAKED_12: mesh->SetBakedLightLevel(12, value.xyz); return true;
+	case MeshProp::BAKED_13: mesh->SetBakedLightLevel(13, value.xyz); return true;
+	case MeshProp::BAKED_14: mesh->SetBakedLightLevel(14, value.xyz); return true;
+	case MeshProp::BAKED_15: mesh->SetBakedLightLevel(15, value.xyz); return true;
+	case MeshProp::AMBIENT: mesh->SetAmbientColor(value.xyz); return true;
 	default:
 		oapiWriteLogV("oapiSetMeshProperty() FAILED: unknown property %u", DWORD(prp));
 		break;

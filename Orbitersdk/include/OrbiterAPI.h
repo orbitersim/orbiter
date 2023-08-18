@@ -464,8 +464,10 @@ enum class MatProp {
 };
 
 enum class MeshProp {
-	BAKED_0, BAKED_1, BAKED_2, BAKED_3, BAKED_4,	///< baked light level 0-4
-	BAKED_5, BAKED_6, BAKED_7, BAKED_8, BAKED_9,	///< baked light level 5-9
+	BAKED_0, BAKED_1, BAKED_2, BAKED_3, BAKED_4,	///< baked light level
+	BAKED_5, BAKED_6, BAKED_7, BAKED_8, BAKED_9,	///< baked light level
+	BAKED_10, BAKED_11, BAKED_12, BAKED_13,			///< baked light level
+	BAKED_14, BAKED_15,								///< baked light level
 	AMBIENT											///< ambient light level
 };
 
