@@ -105,7 +105,7 @@ typedef struct {      // obsolete exhaust render definition
 } OldExhaustSpec;
 
 typedef struct {      // airfoil definition
-	int version;          // 0: uses AirfoilCoeffFunc, 1: uses AirfoilCoeffFuncEx
+	int version;          // 0: uses AirfoilCoeffFunc, 1: uses AirfoilCoeffFuncEx, 3: uses AirfoilCoeffFuncEx2
 	AIRFOIL_ORIENTATION align; // vertical or horizontal
 	Vector ref;           //   lift,drag attack reference point
 	AirfoilCoeffFunc cf;  //   pointer to coefficients callback function
@@ -804,6 +804,9 @@ public:
 
 	AirfoilSpec *CreateAirfoil (AIRFOIL_ORIENTATION align, const Vector &ref, AirfoilCoeffFuncEx cf, void *context, double c, double S, double A);
 	// Create a new airfoil; extended version
+
+	AirfoilSpec* CreateAirfoil(AIRFOIL_ORIENTATION align, const Vector& ref, AirfoilCoeffFuncEx2 cf, void* context, double c, double S, double A);
+	// Create a new airfoil; extended force and moment version
 
 	bool GetAirfoilParam (AirfoilSpec *af, VECTOR3 *ref, AirfoilCoeffFunc *cf, void **context, double *c, double *S, double *A);
 	// Return airfoil parameters

@@ -1485,6 +1485,40 @@ public:
 	AIRFOILHANDLE CreateAirfoil3 (AIRFOIL_ORIENTATION align, const VECTOR3 &ref, AirfoilCoeffFuncEx cf, void *context, double c, double S, double A) const;
 
 	/**
+	 *  \brief Creates a new airfoil and defines its aerodynamic properties.
+	 * \param ref centre of pressure in vessel coordinates [<b>m</b>], nominally this shoud be at the CoM.
+	 * \param cf pointer to coefficient callback function (see notes)
+	 * \param context pointer to data block passed to cf callback function
+	 * \param c airfoil chord length [m]
+	 * \param S wing area [m<sup>2</sup>]
+	 * \param A wing aspect ratio
+	 * \return Handle for the new airfoil.
+	 * \note This method is an extension to \ref CreateAirfoil3, using a
+	 *   more versatile coefficient callback function.
+	 * \note AirfoilCoeffFuncEx has the following interface:
+	 *   \code
+	 *   void (*AirfoilCoeffFuncEx2)(
+	 *   VESSEL* v, 
+	 *   double alpha, double beta, double gamma,
+	 *   double M, double Re, void* context,
+	 *   double* CA, double* CN, double* CY,
+	 *   double* Cl, double* Cm, double* Cn);
+	 *   \endcode
+	 *   where \e v is a pointer to the calling vessel instance, and
+	 *   \a context is the pointer passed to CreateAirfoil4. It can be
+	 *   used to make available to the callback function any additional
+	 *   parameters required to calculate the lift and drag coefficients.
+	 *   The coefficients: CA, CN, and CY are force coefficients along the
+	 *   vessel's Z, Y, and X body axes respectively.
+	 *	 The coefficients: Cl, Cm, and Cn are moment coefficients about the
+	 *   vessel's Z, X, and Y body axes respectively.
+	 *   All other parameters are identical to AirfoilCoeffFunc (see
+	 *   \ref CreateAirfoil).
+	 * \sa CreateAirfoil, CreateAirfoil2, CreateAirfoil3, EditAirfoil, DelAirfoil
+	 */
+	AIRFOILHANDLE CreateAirfoil4(const VECTOR3& ref, AirfoilCoeffFuncEx2 cf, void* context, double c, double S, double A) const;
+
+	/**
 	 * \brief Returns the parameters of an existing airfoil.
 	 * \param [in] hAirfoil airfoil handle
 	 * \param [out] ref pointer to centre of pressure [<b>m</b>]
