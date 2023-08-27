@@ -4088,9 +4088,11 @@ void Vessel::UpdateAerodynamicForces ()
 			if (af->S) S = af->S;
 			else       S = fabs(ddir.z) * cs.z + fabs(ddir.x) * cs.z; // use projected vessel CS as reference area
 
-			Vector AeroForce((CY * S) * sp.dynp, (CN * S) * sp.dynp, (CA * S) * sp.dynp);
+			Vector AeroForce((CY * S) * sp.dynp, (CN * S) * sp.dynp, -(CA * S) * sp.dynp);
 
 			AddForce(AeroForce, af->ref);
+			Lift = dotp(AeroForce, ldir);
+			Drag = Lift = dotp(AeroForce, ddir);
 			
 			Amom_add.x += Cm * sp.dynp * af->S * af->c;
 			Amom_add.y -= Cn * sp.dynp * af->S * af->c;
