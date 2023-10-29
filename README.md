@@ -28,7 +28,7 @@ D3D9Client graphics engine is licensed under LGPL, see [LGPL](./OVP/D3D9Client/L
 | RAM: | 4GB | 8GB |
 | CPU: | Dual Core |  |
 | GPU: | 200 GFlops | 500 GFlops |
-| Disk: | 4GB of free space | 10GB of free space |
+| Disk: | 5GB of free space | 10GB of free space (80GB if you want hi-res textures) |
 
 Get the Orbiter source repository from github
 ```bash
