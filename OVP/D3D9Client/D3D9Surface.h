@@ -34,7 +34,8 @@
 
 #define OAPISURF_SKP_GDI_WARN	0x00000001
 
-LPDIRECT3DTEXTURE9	NatLoadSpecialTexture(const char* fname, const char* ext);
+LPDIRECT3DTEXTURE9	NatLoadTexture(const char* path, bool bNoMips = false);
+LPDIRECT3DTEXTURE9	NatLoadSpecialTexture(const char* fname, const char* ext, bool bNoMips = false);
 SURFHANDLE			NatLoadSurface(const char* file, DWORD flags, bool bPath = false);
 bool				NatSaveSurface(const char* file, LPDIRECT3DRESOURCE9 pResource);
 SURFHANDLE			NatCreateSurface(int width, int height, DWORD flags);

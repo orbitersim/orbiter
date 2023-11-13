@@ -338,6 +338,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	}
 
 	pBakeLights = new ImageProcessing(pDevice, "Modules/D3D9Client/PreBakeLights.hlsl", "PSMain");
+	pBakeLights->CompileShader("PSSunAO");
 
 	LogAlw("================ Scene Created ===============");
 }

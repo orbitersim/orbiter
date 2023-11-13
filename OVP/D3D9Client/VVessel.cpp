@@ -679,7 +679,9 @@ void vVessel::BakeLights(ImageProcessing *pBaker)
 		if (!meshlist[i].mesh) continue;
 		if (meshlist[i].vismode & MESHVIS_VC)
 		{
+			auto vSun = tmul(FVECTOR4(sundir, 0), oapi::FMATRIX4(mWorld));
 			meshlist[i].mesh->BakeLights(pBaker);
+			meshlist[i].mesh->BakeAO(pBaker, vSun.xyz);
 		}
 	}
 }

@@ -74,7 +74,9 @@ struct _LightList {
 
 struct _BakedLights {
 	LPDIRECT3DTEXTURE9 pMap[16];
+	LPDIRECT3DTEXTURE9 pSunAO[6];
 	LPDIRECT3DTEXTURE9 pCombined;
+	LPDIRECT3DTEXTURE9 pSunAOComb;
 };
 
 class MeshShader : public ShaderClass
@@ -209,9 +211,10 @@ public:
 	bool			IsOK() const { return pBuf != NULL; }
 
 	void			Release();
-
+	void			ClearBake(int i);
 	void			LoadBakedLights();
 	void			BakeLights(ImageProcessing *pBaker);
+	void			BakeAO(ImageProcessing* pBaker, const FVECTOR3 &vSun);
 	void			SetBakedLightLevel(int idx, const FVECTOR3 &level);
 	void			LoadMeshFromHandle(MESHHANDLE hMesh, D3DXVECTOR3 *reorig = NULL, float *scale = NULL);
 	void			ReLoadMeshFromHandle(MESHHANDLE hMesh);
@@ -220,6 +223,8 @@ public:
 	void			SetName(const char *name);
 	void			SetName(UINT idx);
 	const char *	GetName() const { return name; }
+	const char *	GetDirName(int i, int v);
+	FVECTOR3		GetDir(int i);
 
 	void			SetDefaultShader(WORD shader);
 	WORD			GetDefaultShader() const { return DefShader; }
@@ -364,6 +369,7 @@ private:
 	D3D9MatExt *Mtrl;           // list of mesh materials
 	SurfNative **Tex;			// list of mesh textures
 	std::map<int, _BakedLights> BakedLights;
+	std::map<int, _BakedLights>::const_iterator bli;
 	FVECTOR3 BakedLightsControl[16];
 	D3DXMATRIX mTransform;
 	D3DXMATRIX mTransformInv;

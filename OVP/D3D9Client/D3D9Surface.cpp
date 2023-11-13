@@ -59,7 +59,7 @@ void NatCheckFlags(DWORD &flags)
 // ===============================================================================================
 // Load a simple plain texture
 //
-LPDIRECT3DTEXTURE9 NatLoadTexture(const char* path)
+LPDIRECT3DTEXTURE9 NatLoadTexture(const char* path, bool bNoMips)
 {
 	LPDIRECT3DTEXTURE9 pTex = NULL;
 	D3DXIMAGE_INFO info;
@@ -70,6 +70,7 @@ LPDIRECT3DTEXTURE9 NatLoadTexture(const char* path)
 
 		if (Config->TextureMips == 2) Mips = 0;                         // Autogen all
 		if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;  // Autogen missing
+		if (bNoMips) Mips = 1;
 
 		if (S_OK == D3DXCreateTextureFromFileExA(g_client->GetDevice(), path, info.Width, info.Height, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex))
 		{
@@ -85,11 +86,11 @@ LPDIRECT3DTEXTURE9 NatLoadTexture(const char* path)
 // ===============================================================================================
 // Load a simple plain texture with map type extension
 //
-LPDIRECT3DTEXTURE9 NatLoadSpecialTexture(const char* path, const char* ext)
+LPDIRECT3DTEXTURE9 NatLoadSpecialTexture(const char* path, const char* ext, bool bNoMips)
 {
 	char name[MAX_PATH];
 	NatCreateName(name, ARRAYSIZE(name), path, ext);
-	return NatLoadTexture(name);
+	return NatLoadTexture(name, bNoMips);
 }
 
 
@@ -98,16 +99,16 @@ LPDIRECT3DTEXTURE9 NatLoadSpecialTexture(const char* path, const char* ext)
 //
 void NatLoadMaps(SurfNative *pNat, const char* path)
 {
-	pNat->AddMap(MAP_HEAT, NatLoadSpecialTexture(path, "heat"));
-	pNat->AddMap(MAP_NORMAL, NatLoadSpecialTexture(path, "norm"));
-	pNat->AddMap(MAP_SPECULAR, NatLoadSpecialTexture(path, "spec"));
-	pNat->AddMap(MAP_EMISSION, NatLoadSpecialTexture(path, "emis"));
-	pNat->AddMap(MAP_ROUGHNESS, NatLoadSpecialTexture(path, "rghn"));
-	pNat->AddMap(MAP_METALNESS, NatLoadSpecialTexture(path, "metal"));
-	pNat->AddMap(MAP_REFLECTION, NatLoadSpecialTexture(path, "refl"));
-	pNat->AddMap(MAP_TRANSLUCENCE, NatLoadSpecialTexture(path, "transl"));
-	pNat->AddMap(MAP_TRANSMITTANCE, NatLoadSpecialTexture(path, "transm"));
-	pNat->AddMap(MAP_AMBIENT, NatLoadSpecialTexture(path, "bkao"));
+	pNat->AddMap(MAP_HEAT, NatLoadSpecialTexture(path, "_heat"));
+	pNat->AddMap(MAP_NORMAL, NatLoadSpecialTexture(path, "_norm"));
+	pNat->AddMap(MAP_SPECULAR, NatLoadSpecialTexture(path, "_spec"));
+	pNat->AddMap(MAP_EMISSION, NatLoadSpecialTexture(path, "_emis"));
+	pNat->AddMap(MAP_ROUGHNESS, NatLoadSpecialTexture(path, "_rghn"));
+	pNat->AddMap(MAP_METALNESS, NatLoadSpecialTexture(path, "_metal"));
+	pNat->AddMap(MAP_REFLECTION, NatLoadSpecialTexture(path, "_refl"));
+	pNat->AddMap(MAP_TRANSLUCENCE, NatLoadSpecialTexture(path, "_transl"));
+	pNat->AddMap(MAP_TRANSMITTANCE, NatLoadSpecialTexture(path, "_transm"));
+	pNat->AddMap(MAP_AMBIENT, NatLoadSpecialTexture(path, "_bkao"));
 }
 
 
@@ -1067,15 +1068,15 @@ void SurfNative::Reload()
 			if (S_OK == D3DXCreateTextureFromFileExA(g_client->GetDevice(), path, info.Width, info.Height, Mips, 0,
 				D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, (LPDIRECT3DTEXTURE9 *)&pResource))
 			{
-				AddMap(MAP_HEAT, NatLoadSpecialTexture(name, "heat"));
-				AddMap(MAP_NORMAL, NatLoadSpecialTexture(name, "norm"));
-				AddMap(MAP_SPECULAR, NatLoadSpecialTexture(name, "spec"));
-				AddMap(MAP_EMISSION, NatLoadSpecialTexture(name, "emis"));
-				AddMap(MAP_ROUGHNESS, NatLoadSpecialTexture(name, "rghn"));
-				AddMap(MAP_METALNESS, NatLoadSpecialTexture(name, "metal"));
-				AddMap(MAP_REFLECTION, NatLoadSpecialTexture(name, "refl"));
-				AddMap(MAP_TRANSLUCENCE, NatLoadSpecialTexture(name, "transl"));
-				AddMap(MAP_TRANSMITTANCE, NatLoadSpecialTexture(name, "transm"));
+				AddMap(MAP_HEAT, NatLoadSpecialTexture(name, "_heat"));
+				AddMap(MAP_NORMAL, NatLoadSpecialTexture(name, "_norm"));
+				AddMap(MAP_SPECULAR, NatLoadSpecialTexture(name, "_spec"));
+				AddMap(MAP_EMISSION, NatLoadSpecialTexture(name, "_emis"));
+				AddMap(MAP_ROUGHNESS, NatLoadSpecialTexture(name, "_rghn"));
+				AddMap(MAP_METALNESS, NatLoadSpecialTexture(name, "_metal"));
+				AddMap(MAP_REFLECTION, NatLoadSpecialTexture(name, "_refl"));
+				AddMap(MAP_TRANSLUCENCE, NatLoadSpecialTexture(name, "_transl"));
+				AddMap(MAP_TRANSMITTANCE, NatLoadSpecialTexture(name, "_transm"));
 			}
 		}
 	}
@@ -1182,7 +1183,7 @@ bool NatCreateName(char* out, int mlen, const char* fname, const char* id)
 	char* p = strrchr(buffe, '.');
 	if (p != NULL) {
 		*p = '\0';
-		sprintf_s(out, mlen, "%s_%s.%s", buffe, id, ++p);
+		sprintf_s(out, mlen, "%s%s.%s", buffe, id, ++p);
 	}
 	return (p != NULL);
 }

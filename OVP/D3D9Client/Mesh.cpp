@@ -204,6 +204,8 @@ void D3D9Mesh::Null(const char *meshName /* = NULL */)
 	bMtrlModidied = false;
 	bMustRebake = true;
 
+	bli = BakedLights.begin();
+
 	Locals = new LightStruct[Config->MaxLights()];
 
 	for (int i = 0; i < SHM_CASCADE_COUNT; i++) {
@@ -399,6 +401,13 @@ void D3D9Mesh::Release()
 	SAFE_DELETEA(pGrpTF);
 
 	if (pBuf) if (pBuf->IsLocalTo(this)) delete pBuf;
+
+	for (auto x : BakedLights) {
+		for (auto y : x.second.pMap) SAFE_RELEASE(y);
+		for (auto y : x.second.pSunAO) SAFE_RELEASE(y);
+		SAFE_RELEASE(x.second.pCombined);
+		SAFE_RELEASE(x.second.pSunAOComb);
+	}
 }
 
 
@@ -465,6 +474,40 @@ void D3D9Mesh::ReLoadMeshFromHandle(MESHHANDLE hMesh)
 	pBuf->Map(pDev);
 }
 
+// ===========================================================================================
+//
+const char* D3D9Mesh::GetDirName(int i, int v)
+{
+	static const char* names[] = { "up", "down", "left", "right", "fwd", "aft" };
+	static const char* named[] = { "+y", "-y", "-x", "+x", "+z", "-z" };
+	if (v == 0) return names[i];
+	return named[i];
+}
+
+// ===========================================================================================
+//
+FVECTOR3 D3D9Mesh::GetDir(int i)
+{
+	switch (i) {
+	case 0: return FVECTOR3(0,  1, 0); // Up
+	case 1: return FVECTOR3(0, -1, 0); // Down
+	case 2: return FVECTOR3(-1, 0, 0); // Left
+	case 3: return FVECTOR3( 1, 0, 0); // Right
+	case 4: return FVECTOR3(0, 0,  1); // Fwd
+	case 5: return FVECTOR3(0, 0, -1); // Aft
+	}
+	return FVECTOR3(0, 0, 1);
+}
+
+// ===========================================================================================
+//
+void D3D9Mesh::ClearBake(int i)
+{
+	for (int k = 0; k < 16; k++) BakedLights[i].pMap[k] = NULL;
+	for (int k = 0; k < 6; k++) BakedLights[i].pSunAO[k] = NULL;
+	BakedLights[i].pCombined = NULL;
+	BakedLights[i].pSunAOComb = NULL;
+}
 
 // ===========================================================================================
 //
@@ -473,7 +516,7 @@ void D3D9Mesh::LoadBakedLights()
 	if (BakedLights.size()) return;	// Already Loaded, skip the rest
 
 	bMustRebake = true;
-	char id[8];
+	char id[32];
 
 	for (int i = 0; i < nTex; i++)
 	{
@@ -481,11 +524,29 @@ void D3D9Mesh::LoadBakedLights()
 
 		for (int j = 0; j < 16; j++)
 		{
-			sprintf_s(id, "bkl%d", j);
-			LPDIRECT3DTEXTURE9 pTex = NatLoadSpecialTexture(Tex[i]->GetPath(), id);
+			sprintf_s(id, "_bkl%d", j);		
+			LPDIRECT3DTEXTURE9 pTex = NatLoadSpecialTexture(Tex[i]->GetPath(), id, true);
 			if (pTex) {
-				if (BakedLights.find(i) == BakedLights.end()) for (int k = 0; k < 16; k++) BakedLights[i].pMap[k] = NULL;
+				if (BakedLights.find(i) == BakedLights.end()) ClearBake(i);
 				BakedLights[i].pMap[j] = pTex;
+			}
+		}
+
+		for (int j = 0; j < 6; j++)
+		{
+			sprintf_s(id, " baked sunlight %s", GetDirName(j, 0));
+			LPDIRECT3DTEXTURE9 pTex = NatLoadSpecialTexture(Tex[i]->GetPath(), id, true);
+			if (pTex) {
+				if (BakedLights.find(i) == BakedLights.end()) ClearBake(i);
+				BakedLights[i].pSunAO[j] = pTex;
+			}
+			else {
+				sprintf_s(id, "_bs%s", GetDirName(j, 1));
+				LPDIRECT3DTEXTURE9 pTex = NatLoadSpecialTexture(Tex[i]->GetPath(), id, true);
+				if (pTex) {
+					if (BakedLights.find(i) == BakedLights.end()) ClearBake(i);
+					BakedLights[i].pSunAO[j] = pTex;
+				}
 			}
 		}
 	}
@@ -494,11 +555,14 @@ void D3D9Mesh::LoadBakedLights()
 	for (auto& a : BakedLights) {
 		int i = a.first;
 		if (Tex[i]) {
-			HR(D3DXCreateTexture(pDev, Tex[i]->GetWidth(), Tex[i]->GetHeight(), 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &a.second.pCombined));
+			HR(D3DXCreateTexture(pDev, Tex[i]->GetWidth(), Tex[i]->GetHeight(), 0, D3DUSAGE_AUTOGENMIPMAP | D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &a.second.pCombined));
+			HR(D3DXCreateTexture(pDev, Tex[i]->GetWidth(), Tex[i]->GetHeight(), 0, D3DUSAGE_AUTOGENMIPMAP | D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &a.second.pSunAOComb));
 		}
 	}
 
-	for (int i = 0; i < 16; i++) BakedLightsControl[i] = FVECTOR3(0.5, 0.5, 0.5);
+	for (int i = 0; i < 16; i++) BakedLightsControl[i] = FVECTOR3(1.0f, 1.0f, 1.0f);
+
+	bli = BakedLights.begin();
 }
 
 
@@ -560,6 +624,57 @@ void D3D9Mesh::BakeLights(ImageProcessing* pBaker)
 	}
 
 	bMustRebake = false; // Done
+}
+
+
+// ===========================================================================================
+//
+void D3D9Mesh::BakeAO(ImageProcessing* pBaker, const FVECTOR3 &vSun)
+{
+	if (!pBaker->IsOK()) return; // Baker not initialized
+	if (DefShader != SHADER_BAKED_VC) return; // Not supported by shader
+	if (BakedLights.size() == 0) return; // Nothing to bake
+
+	DWORD flags = IPF_POINT | IPF_CLAMP;
+	FVECTOR3 control[6];
+	bool bSE[6];
+
+	pBaker->Activate("PSSunAO");
+
+	for (int i = 0; i < 6; i++)
+	{
+		auto y = bli->second.pSunAO[i];		
+		bSE[i] = (y != NULL);
+		if (y)
+		{
+			pBaker->SetTextureNative(i, y, flags);
+			control[i] = saturate(dot(GetDir(i), vSun));
+			control[i] *= control[i];
+			if (i == 4) D3D9DebugLog("Fwd %f", control[i].x);
+			if (i == 0) D3D9DebugLog("Up %f", control[i].x);
+		}
+		else {
+			control[i] = 0.0f;
+		}
+	}
+
+	pBaker->SetFloat("fControl", control, sizeof(control));
+	pBaker->SetBool("bEnabled", bSE, sizeof(bSE));
+
+	LPDIRECT3DSURFACE9 pSrf = NULL;
+
+	if (bli->second.pSunAOComb)
+	{
+		if (bli->second.pSunAOComb->GetSurfaceLevel(0, &pSrf) == S_OK)
+		{
+			pBaker->SetOutputNative(0, pSrf);
+			pBaker->Execute(true);
+			SAFE_RELEASE(pSrf);
+		}
+	}
+
+	bli++;
+	if (bli == BakedLights.end()) bli = BakedLights.begin();
 }
 
 
