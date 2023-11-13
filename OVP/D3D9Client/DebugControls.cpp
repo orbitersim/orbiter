@@ -59,6 +59,7 @@ char SaveFileName[255];
 
 void UpdateMaterialDisplay(bool bSetup=false);
 void SetGFXSliders();
+void UpdateLightsSlider();
 INT_PTR CALLBACK WndProcGFX(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 void OpenGFXDlgClbk(void *context);
 
@@ -1102,6 +1103,7 @@ void SelectMesh(D3D9Mesh *pMesh)
 		}
 	}
 	SetupMeshGroups();
+	UpdateLightsSlider();
 }
 
 // =============================================================================================
@@ -1162,6 +1164,19 @@ void UpdateBakedLights(float lvl)
 			mesh->SetBakedLightLevel(bkl_id, FVECTOR3(lvl, lvl, lvl));
 		}
 		if (bkl_id == 16) mesh->SetAmbientColor(FVECTOR3(lvl, lvl, lvl));
+	}
+}
+
+// =============================================================================================
+//
+void UpdateLightsSlider()
+{
+	float val = 0.0f;
+	D3D9Mesh* mesh = (class D3D9Mesh*)vObj->GetMesh(sMesh);
+	if (mesh) {
+		if (bkl_id < 16 && bkl_id >= 0) val = mesh->GetBakedLightLevel(bkl_id).x;
+		if (bkl_id == 16) val = mesh->GetAmbientColor().x;
+		SendDlgItemMessage(hDlg, IDC_DBG_BKLADJ, TBM_SETPOS, 1, WORD(255.0f * val));
 	}
 }
 
@@ -1836,6 +1851,7 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			case IDC_DBG_BKLID:
 				if (HIWORD(wParam) == CBN_SELCHANGE) {
 					bkl_id = int(SendDlgItemMessage(hDlg, IDC_DBG_BKLID, CB_GETCURSEL, 0, 0));
+					UpdateLightsSlider();
 				}
 				break;
 

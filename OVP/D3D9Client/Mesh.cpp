@@ -581,6 +581,15 @@ void D3D9Mesh::SetBakedLightLevel(int idx, const FVECTOR3 &level)
 
 // ===========================================================================================
 //
+FVECTOR3 D3D9Mesh::GetBakedLightLevel(int idx)
+{
+	if (idx >= 0 && idx <= 15) return BakedLightsControl[idx];
+	return FVECTOR3(1, 1, 1);
+}
+
+
+// ===========================================================================================
+//
 void D3D9Mesh::BakeLights(ImageProcessing* pBaker)
 {
 	if (!pBaker->IsOK()) return; // Baker not initialized
@@ -1508,6 +1517,14 @@ void D3D9Mesh::SetAmbientColor(const FVECTOR3& c)
 	_TRACE;
 	if (!IsOK()) return;
 	cAmbient = c;
+}
+
+// ===========================================================================================
+//
+const FVECTOR3& D3D9Mesh::GetAmbientColor()
+{
+	_TRACE;
+	return cAmbient;
 }
 
 // ===========================================================================================

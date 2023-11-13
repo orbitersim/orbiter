@@ -216,6 +216,7 @@ public:
 	void			BakeLights(ImageProcessing *pBaker);
 	void			BakeAO(ImageProcessing* pBaker, const FVECTOR3 &vSun);
 	void			SetBakedLightLevel(int idx, const FVECTOR3 &level);
+	FVECTOR3		GetBakedLightLevel(int idx);
 	void			LoadMeshFromHandle(MESHHANDLE hMesh, D3DXVECTOR3 *reorig = NULL, float *scale = NULL);
 	void			ReLoadMeshFromHandle(MESHHANDLE hMesh);
 	void			ReloadTextures();
@@ -326,6 +327,7 @@ public:
 	void			BoundingBox(const NMVERTEX *vtx, DWORD n, D9BBox *box);
 
 	void			SetAmbientColor(const FVECTOR3& c);
+	const FVECTOR3& GetAmbientColor();
 	void			SetupFog(const LPD3DXMATRIX pW);
 	void			ResetRenderStatus();
 
