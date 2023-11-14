@@ -185,6 +185,7 @@ public:
 	static D3DXHANDLE	eIrradMap;
 	static D3DXHANDLE	eAmbientMap;
 	static D3DXHANDLE	eCombinedMap;
+	static D3DXHANDLE	eCombSunMap;
 
 	// Legacy Atmosphere -----------------------------------------------
 	static D3DXHANDLE	eGlobalAmb;	 

@@ -46,9 +46,13 @@ float4 BakedVC_PS(float4 sc : VPOS, PBRData frg) : COLOR
 	else		   cEmis = 0;
 
 	float3 cBL = 0;
+	float3 cBS = 0;
 	float3 cBAO = 0;
 
-	if (gCfg.Baked) cBL = tex2D(BakedLightS, frg.tex0.xy).rgb;
+	if (gCfg.Baked) {
+		cBL = tex2D(BakedLightS, frg.tex0.xy).rgb;
+		cBS = tex2D(BakedSunS, frg.tex0.xy).rgb;
+	}
 	if (gCfg.BakedAO) cBAO = tex2D(BakedAOS, frg.tex0.xy).rgb;
 	
 
@@ -186,7 +190,7 @@ float4 BakedVC_PS(float4 sc : VPOS, PBRData frg) : COLOR
 	fA += fRgh * fMetal * 0.05f;
 
 	// gVCAmbient is an application and debug controls controllable variable
-	float3 zD = cDiff.rgb * fA * LightFXSq(gMtrl.diffuse.rgb * (Sq(cSun * fR * dLN)) + Sq(gMtrl.emissive.rgb) + Sq(cBL) + Sq(gVCAmbient));
+	float3 zD = cDiff.rgb * fA * LightFXSq(gMtrl.diffuse.rgb * (Sq(cSun * fR * dLN)) + Sq(gMtrl.emissive.rgb) + Sq(cBL) + Sq(cBS) + Sq(gVCAmbient));
 
 	// Combine specular terms
 	float3 zS = cS * (cSun * dLN);		

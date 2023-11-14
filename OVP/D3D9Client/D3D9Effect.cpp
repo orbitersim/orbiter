@@ -83,6 +83,7 @@ D3DXHANDLE D3D9Effect::eTransmMap = 0;
 D3DXHANDLE D3D9Effect::eIrradMap = 0;
 D3DXHANDLE D3D9Effect::eAmbientMap = 0;
 D3DXHANDLE D3D9Effect::eCombinedMap = 0;
+D3DXHANDLE D3D9Effect::eCombSunMap = 0;
 
 D3DXHANDLE D3D9Effect::eSpecularMode = 0;
 D3DXHANDLE D3D9Effect::eHazeMode = 0;
@@ -486,6 +487,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eIrradMap     = FX->GetParameterByName(0,"gIrradianceMap");
 	eAmbientMap	  = FX->GetParameterByName(0, "gAmbientMap");
 	eCombinedMap  = FX->GetParameterByName(0, "gCombinedMap");
+	eCombSunMap	  = FX->GetParameterByName(0, "gCombinedSunMap");
 
 	// Atmosphere -----------------------------------------------------------
 	eGlobalAmb	  = FX->GetParameterByName(0,"gGlobalAmb");

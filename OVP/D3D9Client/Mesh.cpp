@@ -2030,9 +2030,11 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 
 						LPDIRECT3DTEXTURE9 pAmbi = Tex[ti]->GetMap(MAP_AMBIENT);
 						LPDIRECT3DTEXTURE9 pComb = (bm == BakedLights.end() ? NULL : bm->second.pCombined);
+						LPDIRECT3DTEXTURE9 pSun = (bm == BakedLights.end() ? NULL : bm->second.pSunAOComb);
 
 						if (pAmbi) FX->SetTexture(eAmbientMap, pAmbi);
 						if (pComb) FX->SetTexture(eCombinedMap, pComb);
+						if (pSun)  FX->SetTexture(eCombSunMap, pSun);
 
 						FC.Baked = (pComb != NULL);
 						FC.BakedAO = (pAmbi != NULL);

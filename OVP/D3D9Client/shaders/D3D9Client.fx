@@ -156,6 +156,7 @@ uniform extern texture   gTransmMap;		// Transmittance Map
 uniform extern texture   gIrradianceMap;    // Irradiance Map
 uniform extern texture   gAmbientMap;		// Baked Ambient occlusion map
 uniform extern texture   gCombinedMap;		// Combined baked light map
+uniform extern texture   gCombinedSunMap;	// Combined baked light map
 
 // Legacy Atmosphere --------------------------------------------------------
 
@@ -303,6 +304,18 @@ sampler EmisS = sampler_state       // Primary Mesh texture sampler
 sampler BakedLightS = sampler_state       // Primary Mesh texture sampler
 {
 	Texture = <gCombinedMap>;
+	MinFilter = ANISOTROPIC;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	MaxAnisotropy = ANISOTROPY_MACRO;
+	MipMapLODBias = 0;
+	AddressU = WRAP;
+	AddressV = WRAP;
+};
+
+sampler BakedSunS = sampler_state       // Primary Mesh texture sampler
+{
+	Texture = <gCombinedSunMap>;
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
