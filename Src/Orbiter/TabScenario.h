@@ -12,6 +12,8 @@
 #include <CommCtrl.h>
 #include "LpadTab.h"
 #include "CustomControls.h"
+#include <filesystem>
+namespace fs = std::filesystem;
 
 namespace orbiter {
 
@@ -45,7 +47,7 @@ namespace orbiter {
 		void RefreshList(bool preserveSelection);
 		// refresh the scenario list
 
-		void ScanDirectory(const char* path, HTREEITEM hti);
+		void ScanDirectory(const fs::path &path, HTREEITEM hti);
 		// scan scenario files from a subdirectory
 
 		void ScenarioChanged();

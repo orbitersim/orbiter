@@ -17,7 +17,6 @@
 #include "DlgCtrl.h"
 #include <commctrl.h>
 #include <stdio.h>
-#include <io.h>
 
 using std::min;
 using std::max;
@@ -722,87 +721,75 @@ bool EditorTab_New::CreateVessel ()
 	return true;
 }
 
-void EditorTab_New::ScanConfigDir (const char *ppath, HTREEITEM hti)
+void EditorTab_New::ScanConfigDir (const fs::path& dir, HTREEITEM hti)
 {
 	// recursively scans a directory tree and adds to the list
 	TV_INSERTSTRUCT tvis;
 	HTREEITEM ht, hts0, ht0;
-	struct _finddata_t fdata;
-	intptr_t fh;
-	char cbuf[256], path[256], *fname;
-
-	strcpy (path, ppath);
-	fname = path + strlen(path);
+	char cbuf[256];
 
 	tvis.hParent = hti;
 	tvis.item.mask = TVIF_TEXT | TVIF_CHILDREN | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
 	tvis.item.pszText = cbuf;
+	tvis.hInsertAfter = TVI_SORT;
+	tvis.item.cChildren = 1;
+	tvis.item.iImage = ed->treeicon_idx[0];
+	tvis.item.iSelectedImage = ed->treeicon_idx[0];
 
 	// scan for subdirectories
-	strcpy (fname, "*.*");
-	if ((fh = _findfirst (path, &fdata)) != -1) {
-		tvis.hInsertAfter = TVI_SORT;
-		tvis.item.cChildren = 1;
-		tvis.item.iImage = ed->treeicon_idx[0];
-		tvis.item.iSelectedImage = ed->treeicon_idx[0];
-		do {
-			if ((fdata.attrib & _A_SUBDIR) && fdata.name[0] != '.') {
-				strcpy (cbuf, fdata.name);
-				ht = (HTREEITEM)SendDlgItemMessage (hTab, IDC_VESSELTP, TVM_INSERTITEM, 0, (LPARAM)&tvis);
-				strcpy (fname, fdata.name); strcat (fname, "\\");
-				ScanConfigDir (path, ht);
-			}
-		} while (!_findnext (fh, &fdata));
-		_findclose (fh);
+	for (const auto& entry : fs::directory_iterator(dir)) {
+		if (entry.is_directory()) {
+			strcpy(cbuf, entry.path().filename().string().c_str());
+			ht = (HTREEITEM)SendDlgItemMessage(hTab, IDC_VESSELTP, TVM_INSERTITEM, 0, (LPARAM)&tvis);
+			ScanConfigDir(entry.path(), ht);
+		}
 	}
+
 	hts0 = (HTREEITEM)SendDlgItemMessage (hTab, IDC_VESSELTP, TVM_GETNEXTITEM, TVGN_CHILD, (LPARAM)hti);
 	// the first subdirectory entry in this folder
 
 	// scan for files
-	strcpy (fname, "*.cfg");
-	if ((fh = _findfirst (path, &fdata)) != -1) {
-		tvis.hInsertAfter = TVI_FIRST;
-		tvis.item.cChildren = 0;
-		tvis.item.iImage = ed->treeicon_idx[2];
-		tvis.item.iSelectedImage = ed->treeicon_idx[3];
-		do {
+	tvis.hInsertAfter = TVI_FIRST;
+	tvis.item.cChildren = 0;
+	tvis.item.iImage = ed->treeicon_idx[2];
+	tvis.item.iSelectedImage = ed->treeicon_idx[3];
+	for (const auto& entry : fs::directory_iterator(dir)) {
+		if (entry.is_regular_file() && entry.path().extension().string() == ".cfg") {
 			bool skip = false;
-			strcpy (fname, fdata.name);
-			FILEHANDLE hFile = oapiOpenFile (path, FILE_IN);
+			FILEHANDLE hFile = oapiOpenFile(entry.path().string().c_str(), FILE_IN);
 			if (hFile) {
 				bool b;
-				skip = (oapiReadItem_bool (hFile, (char*)"EditorCreate", b) && !b);
-				oapiCloseFile (hFile, FILE_IN);
+				skip = (oapiReadItem_bool(hFile, (char*)"EditorCreate", b) && !b);
+				oapiCloseFile(hFile, FILE_IN);
 			}
 			if (skip) continue;
 
-			strcpy (cbuf, fdata.name);
-			cbuf[strlen(cbuf)-4] = '\0';
+			strcpy(cbuf, entry.path().stem().string().c_str());
 
 			char ch[256];
-			TV_ITEM tvi = {TVIF_HANDLE | TVIF_TEXT, 0, 0, 0, ch, 256};
+			TV_ITEM tvi = { TVIF_HANDLE | TVIF_TEXT, 0, 0, 0, ch, 256 };
 
-			ht0 = (HTREEITEM)SendDlgItemMessage (hTab, IDC_VESSELTP, TVM_GETNEXTITEM, TVGN_CHILD, (LPARAM)hti);
-			for (tvi.hItem = ht0; tvi.hItem && tvi.hItem != hts0; tvi.hItem = (HTREEITEM)SendDlgItemMessage (hTab, IDC_VESSELTP, TVM_GETNEXTITEM, TVGN_NEXT, (LPARAM)tvi.hItem)) {
-				SendDlgItemMessage (hTab, IDC_VESSELTP, TVM_GETITEM, 0, (LPARAM)&tvi);
-				if (strcmp (tvi.pszText, cbuf) > 0) break;
+			ht0 = (HTREEITEM)SendDlgItemMessage(hTab, IDC_VESSELTP, TVM_GETNEXTITEM, TVGN_CHILD, (LPARAM)hti);
+			for (tvi.hItem = ht0; tvi.hItem && tvi.hItem != hts0; tvi.hItem = (HTREEITEM)SendDlgItemMessage(hTab, IDC_VESSELTP, TVM_GETNEXTITEM, TVGN_NEXT, (LPARAM)tvi.hItem)) {
+				SendDlgItemMessage(hTab, IDC_VESSELTP, TVM_GETITEM, 0, (LPARAM)&tvi);
+				if (strcmp(tvi.pszText, cbuf) > 0) break;
 			}
 			if (tvi.hItem) {
-				ht = (HTREEITEM)SendDlgItemMessage (hTab, IDC_VESSELTP, TVM_GETNEXTITEM, TVGN_PREVIOUS, (LPARAM)tvi.hItem);
+				ht = (HTREEITEM)SendDlgItemMessage(hTab, IDC_VESSELTP, TVM_GETNEXTITEM, TVGN_PREVIOUS, (LPARAM)tvi.hItem);
 				tvis.hInsertAfter = (ht ? ht : TVI_FIRST);
-			} else {
+			}
+			else {
 				tvis.hInsertAfter = (hts0 ? TVI_FIRST : TVI_LAST);
 			}
-			(HTREEITEM)SendDlgItemMessage (hTab, IDC_VESSELTP, TVM_INSERTITEM, 0, (LPARAM)&tvis);
-		} while (!_findnext (fh, &fdata));
-		_findclose (fh);
+			(HTREEITEM)SendDlgItemMessage(hTab, IDC_VESSELTP, TVM_INSERTITEM, 0, (LPARAM)&tvis);
+		}
 	}
 }
 
 void EditorTab_New::RefreshVesselTpList ()
 {
 	SendDlgItemMessage (hTab, IDC_VESSELTP, TVM_DELETEITEM, 0, (LPARAM)TVI_ROOT);
-	ScanConfigDir ("Config\\Vessels\\", NULL);
+	ScanConfigDir ("Config/Vessels/", NULL);
 }
 
 int EditorTab_New::GetSelVesselTp (char *name, int len)

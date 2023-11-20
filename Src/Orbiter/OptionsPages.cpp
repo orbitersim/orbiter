@@ -6,7 +6,6 @@
 // ======================================================================
 
 #include <windows.h>
-#include <io.h>
 #include <array>
 #include "OptionsPages.h"
 #include "DlgCtrl.h"
@@ -1706,19 +1705,13 @@ void OptionsPage_Planetarium::RescanMarkerList(HWND hPage)
 	const std::vector< oapi::GraphicsClient::LABELLIST>& list = g_psys->LabelList();
 	if (!list.size()) return;
 
-	char cbuf[256];
-	_finddata_t fdata;
-	intptr_t fh = g_psys->FindFirst(FILETYPE_MARKER, &fdata, cbuf);
-	if (fh >= 0) {
-		int n = 0;
-		do {
-			SendDlgItemMessage(hPage, IDC_OPT_PLN_MKRLIST, LB_ADDSTRING, 0, (LPARAM)trim_string(cbuf));
-			if (n < list.size() && list[n].active)
-				SendDlgItemMessage(hPage, IDC_OPT_PLN_MKRLIST, LB_SETSEL, TRUE, n);
-			n++;
-		} while (!g_psys->FindNext(fh, &fdata, cbuf));
-		_findclose(fh);
-	}
+	int n = 0;
+	g_psys->ForEach(FILETYPE_MARKER, [&](const fs::directory_entry& entry) {
+		SendDlgItemMessage(hPage, IDC_OPT_PLN_MKRLIST, LB_ADDSTRING, 0, (LPARAM)entry.path().stem().string().c_str());
+		if (n < list.size() && list[n].active)
+			SendDlgItemMessage(hPage, IDC_OPT_PLN_MKRLIST, LB_SETSEL, TRUE, n);
+		n++;
+	});
 }
 
 // ======================================================================
@@ -1885,18 +1878,14 @@ void OptionsPage_Labels::UpdateFeatureList(HWND hPage)
 	if (planet->LabelFormat() < 2) {
 		oapi::GraphicsClient::LABELLIST* list = planet->LabelList(&nlist);
 		if (!nlist) return;
-		_finddata_t fdata;
-		long fh = planet->FindFirst(FILETYPE_MARKER, &fdata, cpath, cbuf);
-		if (fh >= 0) {
-			n = 0;
-			do {
-				SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATURELIST, LB_ADDSTRING, 0, (LPARAM)trim_string(cbuf));
+
+		n = 0;
+		planet->ForEach(FILETYPE_MARKER, [&](const fs::directory_entry& entry) {
+				SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATURELIST, LB_ADDSTRING, 0, (LPARAM)entry.path().stem().string().c_str());
 				if (n < nlist && list[n].active)
 					SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATURELIST, LB_SETSEL, TRUE, n);
 				n++;
-			} while (!planet->FindNext(fh, &fdata, cbuf));
-			_findclose(fh);
-		}
+			});
 	}
 	else {
 		int nlabel = planet->NumLabelLegend();
