@@ -1279,6 +1279,15 @@ const D3D9Mesh::GROUPREC *D3D9Mesh::GetGroup(DWORD idx) const
 
 // ===========================================================================================
 //
+D3D9Mesh::GROUPREC* D3D9Mesh::GetGroup(DWORD idx)
+{
+	if (!IsOK()) return NULL;
+	if (idx < nGrp) return &Grp[idx];
+	return NULL;
+}
+
+// ===========================================================================================
+//
 const D3D9MatExt * D3D9Mesh::GetMaterial(DWORD idx) const
 {
 	if (idx >= nMtrl) return NULL;

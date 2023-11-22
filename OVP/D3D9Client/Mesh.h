@@ -245,6 +245,7 @@ public:
 	 * \return Pointer to group structure.
 	 */
 	const GROUPREC * GetGroup(DWORD idx) const;
+	GROUPREC*		GetGroup(DWORD idx);
 	void            SetMFDScreenId(DWORD idx, WORD id);
 	void			SetDualSided(DWORD idx, bool bState) { Grp[idx].bDualSided = bState; }
 

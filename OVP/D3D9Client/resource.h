@@ -222,3 +222,14 @@
 #define IDC_DBG_BKLID                           3038
 #define IDC_DBG_BKLADJ                          3039
 #define IDC_CASCOUNT                            3040
+#define IDC_DBG_NOSHADOW                        3041
+#define IDC_DBG_NORENDER                        3042
+#define IDC_DBG_NOLIGHT                         3043
+#define IDC_DBG_ADDITIVE                        3044
+#define IDC_DBG_NOCOLOR                         3045
+#define IDC_DBG_OIT                             3046
+#define IDC_DBG_MATIDX                          3047
+#define IDC_DBG_TEXIDX                          3048
+#define IDC_DBG_MESHSAVE                        3049
+#define IDC_DBG_NEXT                            3050
+#define IDC_DBG_GRPLABEL                        3051

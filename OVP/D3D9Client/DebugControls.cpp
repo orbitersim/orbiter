@@ -17,7 +17,9 @@
 #include "Mesh.h"
 #include "MaterialMgr.h"
 #include "VectorHelpers.h"
+#include "OapiExtension.h"
 #include <stdio.h>
+#include <sstream>
 
 enum scale { LIN, SQRT, SQR };
 
@@ -45,6 +47,7 @@ HWND hGfxDlg = NULL;
 HWND hDlg = NULL;
 HWND hDataWnd = NULL;
 vObject *vObj = NULL;
+D3D9Mesh* hSelMesh = NULL;
 std::string buffer("");
 std::string buffer2("");
 D3DXVECTOR3 PickLocation;
@@ -53,9 +56,11 @@ std::map<int, const LightEmitter*> Emitters;
 
 HWND hTipRed, hTipGrn, hTipBlu, hTipAlp;
 
-OPENFILENAMEA OpenTex, SaveTex;
+OPENFILENAMEA OpenTex, SaveTex, SaveMesh;
 char OpenFileName[255];
 char SaveFileName[255];
+char SaveMeshName[255];
+char SaveMeshTitle[255];
 
 void UpdateMaterialDisplay(bool bSetup=false);
 void SetGFXSliders();
@@ -88,6 +93,200 @@ struct _Params {
 
 _Params Params[10] = { 0 };
 
+struct DbgMeshGrp {
+	vector<string> Lines;
+	vector<string> Vtx;
+	vector<string> Idx;
+};
+
+
+class DbgMesh
+{
+public:
+
+	DbgMesh(const char* file)
+	{
+		enum sec { header, group, geom, materials, textures  };
+		sec sec = header;
+		char buf[256];
+		DWORD ng = 0, nm = 0, nt = 0, nv = 0, ni = 0, gi = 0;
+		std::ifstream is(file);
+
+		if (is.is_open())
+		{
+			while (is.getline(buf, 256))
+			{
+				if (!_strnicmp(buf, "MATERIALS", 9)) sec = materials;
+				if (!_strnicmp(buf, "TEXTURES", 8)) sec = textures;
+					
+				if (sec == header) Header.push_back(buf);
+				if (sec == materials) Materials.push_back(buf);
+				if (sec == textures) Textures.push_back(buf);
+					
+				if (!_strnicmp(buf, "GROUPS", 6))
+				{				
+					if (sscanf(buf + 6, "%d", &ng) != 1) throw std::invalid_argument("End of file");
+					Groups.resize(ng);
+
+					for (gi = 0;gi<ng;gi++)
+					{
+						while (true)
+						{
+							if (!is.getline(buf, 256)) throw std::invalid_argument("End of file");
+							Groups[gi].Lines.push_back(buf);
+							if (!_strnicmp(buf, "GEOM", 4))
+							{
+								if (sscanf(buf + 4, "%d %d", &nv, &ni) != 2) throw std::invalid_argument("End of file");
+								for (DWORD i = 0; i < nv; i++) {
+									if (!is.getline(buf, 256)) throw std::invalid_argument("End of file");
+									Groups[gi].Vtx.push_back(buf);
+								}
+								for (DWORD i = 0; i < ni; i++) {
+									if (!is.getline(buf, 256)) throw std::invalid_argument("End of file");
+									Groups[gi].Idx.push_back(buf);
+								}
+								break;
+							}
+						}
+					}
+				}				
+			}
+			is.close();
+		}
+		else {
+			LogErr("[MeshDebug] Failed to Open a Mesh [%s]", file);
+		}
+	}
+
+	~DbgMesh()
+	{
+
+	}
+
+	void Save(const char* file)
+	{
+		std::ofstream os(file);
+
+		if (os.is_open())
+		{
+			for (auto a : Header) os << a << "\n";
+			for (auto a : Groups) {
+				for (auto b : a.Lines) os << b << "\n";
+				for (auto b : a.Vtx) os << b << "\n";
+				for (auto b : a.Idx) os << b << "\n";
+			}
+			for (auto a : Materials) os << a << "\n";
+			for (auto a : Textures) os << a << "\n";
+
+			os.close();
+		}
+	}
+
+	DWORD GetGroupFlags(DWORD grp)
+	{
+		DWORD x;
+		for (auto a : Groups[grp].Lines) {
+			if (a.find("FLAG") != string::npos) {
+				std::istringstream iss(a);
+				iss >> key >> std::hex >> x;
+				return x;
+			}
+		}
+		return 0;
+	}
+
+	DWORD GetGroupMaterial(DWORD grp)
+	{
+		DWORD x;
+		for (auto a : Groups[grp].Lines) {
+			if (a.find("MATERIAL") != string::npos) {
+				std::istringstream iss(a);
+				iss >> key >> x;
+				return x;
+			}
+		}
+		if (grp > 0) return GetGroupMaterial(grp - 1);
+		return 0;
+	}
+
+	DWORD GetGroupTexture(DWORD grp)
+	{
+		DWORD x;
+		for (auto a : Groups[grp].Lines) {
+			if (a.find("TEXTURE") != string::npos) {
+				std::istringstream iss(a);
+				iss >> key >> x;
+				return x;
+			}
+		}
+		if (grp > 0) return GetGroupTexture(grp - 1);
+		return 0;
+	}
+
+	string GetGroupLabel(DWORD grp)
+	{
+		string x;
+		for (auto a : Groups[grp].Lines) {
+			if (a.find("LABEL") != string::npos) {
+				std::istringstream iss(a);
+				iss >> key >> x;
+				return x;
+			}
+		}
+		return string("");
+	}
+
+	void SetGroupFlags(DWORD grp, DWORD f)
+	{
+		std::stringstream s;
+		s << std::hex << f;
+		for (auto &a : Groups[grp].Lines) {
+			if (a.find("FLAG") != string::npos) {
+				a = s.str();
+				return;
+			}
+		}
+	}
+
+	void SetGroupMaterial(DWORD grp, DWORD x)
+	{
+		for (auto& a : Groups[grp].Lines) {
+			if (a.find("MATERIAL") != string::npos) {
+				a = string("MATERIAL ") + std::to_string(x);
+				return;
+			}
+		}
+	}
+
+	void SetGroupTexture(DWORD grp, DWORD x)
+	{
+		for (auto& a : Groups[grp].Lines) {
+			if (a.find("TEXTURE") != string::npos) {
+				a = string("TEXTURE ") + std::to_string(x);
+				return;
+			}
+		}
+	}
+
+	void SetGroupLabel(DWORD grp, string x)
+	{
+		for (auto& a : Groups[grp].Lines) {
+			if (a.find("LABEL") != string::npos) {
+				a = string("LABEL ") + x;
+				return;
+			}
+		}
+	}
+
+	vector<string> Header;
+	vector<string> Materials;
+	vector<string> Textures;
+	vector<DbgMeshGrp> Groups;
+	string key;
+};
+
+
+map<D3D9Mesh *, DbgMesh *> dbgMsh;
 
 
 // ===========================================================================
@@ -211,6 +410,20 @@ void Create()
 	SaveTex.nMaxFileTitle = 0;
 	SaveTex.Flags = OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR;
 
+	memset(&SaveMesh, 0, sizeof(OPENFILENAME));
+	memset(SaveMeshName, 0, sizeof(SaveMeshName));
+	memset(SaveMeshTitle, 0, sizeof(SaveMeshTitle));
+	
+	SaveMesh.lStructSize = sizeof(OPENFILENAME);
+	SaveMesh.lpstrFile = SaveMeshName;
+	SaveMesh.lpstrInitialDir = "Meshes\0";
+	SaveMesh.nMaxFile = sizeof(SaveMeshName);
+	SaveMesh.lpstrFilter = "*.msh\0";
+	SaveMesh.nFilterIndex = 0;
+	SaveMesh.lpstrFileTitle = SaveMeshTitle;
+	SaveMesh.nMaxFileTitle = 0;
+	SaveMesh.Flags = OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR;
+
 	PrmList.push_back(MatParams("Diffuse", 0));
 	PrmList.push_back(MatParams("Ambient", 1));
 	PrmList.push_back(MatParams("Specular", 2));
@@ -268,6 +481,7 @@ void Release()
 	if (dwGFX) oapiUnregisterCustomCmd(dwGFX);
 	dwCmd = NULL;
 	dwGFX = NULL;
+	for (auto x : dbgMsh) SAFE_DELETE(x.second);
 }
 
 // =============================================================================================
@@ -574,6 +788,10 @@ float _Clamp(float value, DWORD p, DWORD v)
 	return CLAMP(value, Params[p].var[v].min, (bExtend ? Params[p].var[v].extmax : Params[p].var[v].max));
 }
 
+
+
+
+
 // =============================================================================================
 //
 void UpdateShader()
@@ -608,6 +826,78 @@ void UpdateShader()
 
 	InitMatList(hMesh->GetDefaultShader());
 }
+
+
+// =============================================================================================
+//
+void UpdateGroup(DWORD grp)
+{
+	D3D9Mesh* hMesh = (D3D9Mesh*)vObj->GetMesh(sMesh);
+	if (!hMesh) return;
+
+	auto dm = dbgMsh[hMesh];
+	if (grp >= hMesh->GetGroupCount()) return;
+	auto g = hMesh->GetGroup(grp);
+
+	if (g) {
+		SendDlgItemMessage(hDlg, IDC_DBG_NOSHADOW, BM_SETCHECK, (g->UsrFlag & 0x1) != 0, 0);
+		SendDlgItemMessage(hDlg, IDC_DBG_NORENDER, BM_SETCHECK, (g->UsrFlag & 0x2) != 0, 0);
+		SendDlgItemMessage(hDlg, IDC_DBG_NOLIGHT, BM_SETCHECK, (g->UsrFlag & 0x4) != 0, 0);
+		SendDlgItemMessage(hDlg, IDC_DBG_ADDITIVE, BM_SETCHECK, (g->UsrFlag & 0x8) != 0, 0);
+		SendDlgItemMessage(hDlg, IDC_DBG_NOCOLOR, BM_SETCHECK, (g->UsrFlag & 0x10) != 0, 0);
+		SendDlgItemMessage(hDlg, IDC_DBG_OIT, BM_SETCHECK, (g->UsrFlag & 0x20) != 0, 0);
+
+		char buf[64];
+		sprintf_s(buf, 64, "%d", g->MtrlIdx);
+		SetWindowText(GetDlgItem(hDlg, IDC_DBG_MATIDX), buf);
+		sprintf_s(buf, 64, "%d", g->TexIdx);
+		SetWindowText(GetDlgItem(hDlg, IDC_DBG_TEXIDX), buf);
+		if (dm) {
+			sprintf_s(buf, 64, "%s", dm->GetGroupLabel(grp).c_str());
+			SetWindowText(GetDlgItem(hDlg, IDC_DBG_GRPLABEL), buf);
+		}
+	}
+}
+
+
+// =============================================================================================
+//
+void ValidateGroup(DWORD grp)
+{
+	D3D9Mesh* hMesh = (D3D9Mesh*)vObj->GetMesh(sMesh);
+	if (!hMesh) return;
+
+	auto dm = dbgMsh[hMesh];
+	if (grp >= hMesh->GetGroupCount()) return;
+	auto g = hMesh->GetGroup(grp);
+	DWORD f = 0;
+
+	if (g && dm)
+	{
+		if (SendDlgItemMessage(hDlg, IDC_DBG_NOSHADOW, BM_GETCHECK, 0, 0) == BST_CHECKED) f |= 0x1;
+		if (SendDlgItemMessage(hDlg, IDC_DBG_NORENDER, BM_GETCHECK, 0, 0) == BST_CHECKED) f |= 0x2;
+		if (SendDlgItemMessage(hDlg, IDC_DBG_NOLIGHT, BM_GETCHECK, 0, 0) == BST_CHECKED) f |= 0x4;
+		if (SendDlgItemMessage(hDlg, IDC_DBG_ADDITIVE, BM_GETCHECK, 0, 0) == BST_CHECKED) f |= 0x8;
+		if (SendDlgItemMessage(hDlg, IDC_DBG_NOCOLOR, BM_GETCHECK, 0, 0) == BST_CHECKED) f |= 0x10;
+		if (SendDlgItemMessage(hDlg, IDC_DBG_OIT, BM_GETCHECK, 0, 0) == BST_CHECKED) f |= 0x20;
+
+		g->UsrFlag = f;
+		dm->SetGroupFlags(grp, f);
+
+		char buf[64];
+		GetWindowText(GetDlgItem(hDlg, IDC_DBG_MATIDX), buf, 64);
+		g->MtrlIdx = atoi(buf);
+		dm->SetGroupMaterial(grp, g->MtrlIdx);
+
+		GetWindowText(GetDlgItem(hDlg, IDC_DBG_TEXIDX), buf, 64);
+		g->TexIdx = atoi(buf);
+		dm->SetGroupTexture(grp, g->TexIdx);
+		
+		GetWindowText(GetDlgItem(hDlg, IDC_DBG_GRPLABEL), buf, 64);
+		dm->SetGroupLabel(grp, string(buf));
+	}
+}
+
 
 // =============================================================================================
 //
@@ -1096,10 +1386,18 @@ void SelectGroup(DWORD idx)
 //
 void SelectMesh(D3D9Mesh *pMesh)
 {
-	for (DWORD i=0;i<nMesh;i++) {
-		if (vObj->GetMesh(i)==pMesh) {
-			sMesh = i;
-			break;
+	char MeshFile[MAX_PATH];
+
+	if (pMesh != hSelMesh)
+	{
+		for (DWORD i = 0; i < nMesh; i++) {
+			if (vObj->GetMesh(i) == pMesh) {
+				sMesh = i;
+				hSelMesh = pMesh;
+				sprintf_s(MeshFile, MAX_PATH, "%s%s.msh", OapiExtension::GetMeshDir(), pMesh->GetName());
+				dbgMsh[pMesh] = new DbgMesh(MeshFile);
+				break;
+			}
 		}
 	}
 	SetupMeshGroups();
@@ -1138,6 +1436,7 @@ void SetupMeshGroups()
 	if (nGroup!=0) {
 		if (sGroup>0xFFFF)  sGroup = nGroup-1;
 		if (sGroup>=nGroup) sGroup = 0;
+		UpdateGroup(sGroup);
 	}
 	else {
 		sGroup=0;
@@ -1920,6 +2219,19 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				oapiSetPause(bPaused);
 				break;
 
+			case IDC_DBG_MESHSAVE:
+				if (dbgMsh[hSelMesh]) {
+					bPaused = oapiGetPause();
+					oapiSetPause(true);
+					strcpy(SaveMesh.lpstrFileTitle, hSelMesh->GetName());
+					if (GetSaveFileName(&SaveMesh)) {
+						dbgMsh[hSelMesh]->Save(SaveMesh.lpstrFile);
+						return true;
+					}
+					oapiSetPause(bPaused);
+				}
+				break;
+
 			case IDC_DBG_ACTION:
 				break;
 
@@ -1966,6 +2278,25 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				UpdateFlags();
 				break;
 
+			case IDC_DBG_NOSHADOW:
+			case IDC_DBG_NORENDER:
+			case IDC_DBG_NOLIGHT:
+			case IDC_DBG_ADDITIVE:
+			case IDC_DBG_NOCOLOR:
+			case IDC_DBG_OIT:
+				if (HIWORD(wParam) == BN_CLICKED) {
+					ValidateGroup(sGroup);
+				}
+				break;
+
+			case IDC_DBG_MATIDX:
+			case IDC_DBG_TEXIDX:					
+			case IDC_DBG_GRPLABEL:
+				if (HIWORD(wParam) == EN_KILLFOCUS) {
+					ValidateGroup(sGroup);
+				}
+				break;
+
 			case IDC_DBG_VARA:
 			case IDC_DBG_VARB:
 			case IDC_DBG_VARC:
@@ -1973,7 +2304,7 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				break;
 		
 			default: 
-				LogErr("LOWORD(%hu), HIWORD(0x%hX)",LOWORD(wParam),HIWORD(wParam));
+				//LogErr("LOWORD(%hu), HIWORD(0x%hX)",LOWORD(wParam),HIWORD(wParam));
 				break;
 		}
 		break;
@@ -2249,7 +2580,7 @@ INT_PTR CALLBACK WndProcGFX(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			break;
 
 		default:
-			LogErr("WndProcGFX() LOWORD(%hu), HIWORD(0x%hX)", LOWORD(wParam), HIWORD(wParam));
+			//LogErr("WndProcGFX() LOWORD(%hu), HIWORD(0x%hX)", LOWORD(wParam), HIWORD(wParam));
 			break;
 		}
 		break;
