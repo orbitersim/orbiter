@@ -1991,11 +1991,21 @@ void Scene::RenderMainScene()
 		}
 
 		pDevice->Clear(0, NULL, D3DCLEAR_ZBUFFER,  0, 1.0f, 0L); // clear z-buffer
+
 		double znear = Config->VCNearPlane;
+		if (DebugControls::IsActive()) if (DebugControls::debugFlags & DBG_FLAGS_NEARCLIP) znear = 0.02;
+	
 		if (znear<0.01) znear=0.01;
 		if (znear>1.0)  znear=1.0;
+
 		OBJHANDLE hFocus = oapiGetFocusObject();
 		SetCameraFrustumLimits(znear, oapiGetSize(hFocus)*2.0);
+
+		if (DebugControls::IsActive()) {
+			if (DebugControls::debugFlags & DBG_FLAGS_RENDEREXT) {
+				vFocus->Render(pDevice, false);
+			}
+		}
 
 		if (Config->ShadowMapMode >= 1)
 		{

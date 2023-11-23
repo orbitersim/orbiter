@@ -233,3 +233,5 @@
 #define IDC_DBG_MESHSAVE                        3049
 #define IDC_DBG_NEXT                            3050
 #define IDC_DBG_GRPLABEL                        3051
+#define IDC_DBG_EXTVC                           3052
+#define IDC_DBG_CLIPDIST                        3053

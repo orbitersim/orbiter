@@ -501,6 +501,8 @@ void UpdateFlags()
 	SETFLAG(debugFlags, DBG_FLAGS_DUALSIDED,	(SendDlgItemMessageA(hDlg, IDC_DBG_DUAL, BM_GETCHECK, 0, 0)==BST_CHECKED));
 	SETFLAG(debugFlags, DBG_FLAGS_PICK,			(SendDlgItemMessageA(hDlg, IDC_DBG_PICK, BM_GETCHECK, 0, 0)==BST_CHECKED));
 	SETFLAG(debugFlags, DBG_FLAGS_FPSLIM,		(SendDlgItemMessageA(hDlg, IDC_DBG_FPSLIM, BM_GETCHECK, 0, 0)==BST_CHECKED));
+	SETFLAG(debugFlags, DBG_FLAGS_NEARCLIP,		(SendDlgItemMessageA(hDlg, IDC_DBG_CLIPDIST, BM_GETCHECK, 0, 0) == BST_CHECKED));
+	SETFLAG(debugFlags, DBG_FLAGS_RENDEREXT,	(SendDlgItemMessageA(hDlg, IDC_DBG_EXTVC, BM_GETCHECK, 0, 0) == BST_CHECKED));
 
 	Config->EnableLimiter = (int)((debugFlags&DBG_FLAGS_FPSLIM)>0);
 }
@@ -887,15 +889,44 @@ void ValidateGroup(DWORD grp)
 		char buf[64];
 		GetWindowText(GetDlgItem(hDlg, IDC_DBG_MATIDX), buf, 64);
 		g->MtrlIdx = atoi(buf);
+		if (g->MtrlIdx >= hMesh->GetMaterialCount()) g->MtrlIdx = hMesh->GetMaterialCount() - 1;
 		dm->SetGroupMaterial(grp, g->MtrlIdx);
 
 		GetWindowText(GetDlgItem(hDlg, IDC_DBG_TEXIDX), buf, 64);
 		g->TexIdx = atoi(buf);
+		if (g->TexIdx >= hMesh->GetTextureCount()) g->TexIdx = hMesh->GetTextureCount() - 1;
+
 		dm->SetGroupTexture(grp, g->TexIdx);
 		
 		GetWindowText(GetDlgItem(hDlg, IDC_DBG_GRPLABEL), buf, 64);
 		dm->SetGroupLabel(grp, string(buf));
 	}
+}
+
+
+// =============================================================================================
+//
+void NextDoNotRender()
+{
+	D3D9Mesh* hMesh = (D3D9Mesh*)vObj->GetMesh(sMesh);
+	if (!hMesh) return;
+	DWORD bak = sGroup;
+	sGroup++;
+	for (; sGroup < hMesh->GetGroupCount(); sGroup++) {
+		auto g = hMesh->GetGroup(sGroup);
+		if (g->UsrFlag & 0x2) {
+			SetupMeshGroups();
+			return;
+		}
+	}
+	for (sGroup = 0; sGroup < hMesh->GetGroupCount(); sGroup++) {
+		auto g = hMesh->GetGroup(sGroup);
+		if (g->UsrFlag & 0x2) {
+			SetupMeshGroups();
+			return;
+		}
+	}
+	sGroup = bak;
 }
 
 
@@ -2038,6 +2069,12 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				break;
 			}
 
+			case IDC_DBG_NEXT:
+			{
+				NextDoNotRender();
+				break;
+			}
+
 			case IDC_DBG_MATSAVE:
 			{
 				OBJHANDLE hObj = vObj->GetObjectA();
@@ -2275,6 +2312,8 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			case IDC_DBG_PICK:
 			case IDC_DBG_FPSLIM:
 			case IDC_DBG_TILEBB:
+			case IDC_DBG_CLIPDIST:
+			case IDC_DBG_EXTVC:
 				UpdateFlags();
 				break;
 
