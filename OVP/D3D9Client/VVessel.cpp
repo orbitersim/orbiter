@@ -217,6 +217,14 @@ MESHHANDLE vVessel::GetMesh (UINT idx)
 
 // ============================================================================================
 //
+DWORD vVessel::GetMeshVisMode(UINT idx)
+{
+	return (idx < nmesh ? meshlist[idx].vismode : MESHVIS_ALWAYS);
+}
+
+
+// ============================================================================================
+//
 bool vVessel::HasExtPass()
 {
 	for (DWORD i=0;i<nmesh;i++) if (meshlist[i].vismode&MESHVIS_EXTPASS) return true;
@@ -1921,16 +1929,29 @@ D3D9Pick vVessel::Pick(const D3DXVECTOR3 *vDir)
 		// check if mesh should be rendered in this pass
 		WORD vismode = meshlist[i].vismode;
 
-		if (vismode==0) continue;
+		if (DebugControls::IsActive() && (DebugControls::debugFlags & DBG_FLAGS_RENDEREXT))
+		{
+			vismode |= MESHVIS_EXTPASS;
+		}
+
+		if (vismode == 0) continue;
+
+		bool bRender = false;
 
 		if (bCockpit) {
-			if (!(vismode & MESHVIS_COCKPIT)) {
-				if ((!bVC) || (!(vismode & MESHVIS_VC))) continue;
+			// Internal View
+			if (vismode & MESHVIS_COCKPIT) bRender = true;
+			if (vismode & MESHVIS_EXTPASS) bRender = true;
+			if (bVC) {
+				if (vismode & MESHVIS_VC) bRender = true;
 			}
 		}
 		else {
-			if (!(vismode & MESHVIS_EXTERNAL)) continue;
+			// External view
+			if (vismode & MESHVIS_EXTERNAL) bRender = true;
 		}
+
+		if (!bRender) continue;
 
 		D3D9Pick pick = hMesh->Pick(&mWorld, meshlist[i].trans, vDir);
 		if (pick.pMesh) if (pick.dist<result.dist) result = pick;

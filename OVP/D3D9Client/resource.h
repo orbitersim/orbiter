@@ -156,7 +156,6 @@
 #define IDC_FLATS                               2166
 #define IDC_DBG_DEFSHADER                       2167
 #define IDC_DBG_DATAVIEW2                       2168
-#define IDC_DBG_MESHGRP                         2169
 #define IDC_GFX_INTENSITY                       2170
 #define IDC_GFX_DISTANCE                        2171
 #define IDC_GFX_GAMMA                           2173
@@ -235,3 +234,4 @@
 #define IDC_DBG_GRPLABEL                        3051
 #define IDC_DBG_EXTVC                           3052
 #define IDC_DBG_CLIPDIST                        3053
+#define IDC_DBG_VISMODE                         3054

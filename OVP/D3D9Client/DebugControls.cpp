@@ -1335,9 +1335,20 @@ void UpdateMaterialDisplay(bool bSetup)
 
 	sprintf_s(lbl, 256, "Mesh: %s", RemovePath(hMesh->GetName()));
 	SetWindowText(GetDlgItem(hDlg, IDC_DBG_MESHNAME), lbl);
-	
-	GetWindowText(GetDlgItem(hDlg, IDC_DBG_MESHGRP), lbl2, 64);
-	if (strcmp(lbl, lbl2)) SetWindowText(GetDlgItem(hDlg, IDC_DBG_MESHGRP), lbl); // Avoid causing flashing
+
+	string str = "";
+	DWORD vis = vObj->GetMeshVisMode(sMesh);
+
+	if (vis == 0) str = "NEVER";
+	if (vis == MESHVIS_ALWAYS) str = "ALWAYS";
+
+	if (vis & MESHVIS_COCKPIT) str.append("COCKPIT ");
+	if (vis & MESHVIS_VC) str.append("VC ");
+	if (vis & MESHVIS_EXTERNAL) str.append("EXTERNAL ");
+	if (vis & MESHVIS_EXTPASS) str.append("EXTPASS ");
+
+	sprintf_s(lbl, 256, "MeshVisMode: %s", str.c_str());
+	SetWindowText(GetDlgItem(hDlg, IDC_DBG_VISMODE), lbl);
 }
 
 // =============================================================================================

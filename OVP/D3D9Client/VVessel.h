@@ -67,6 +67,7 @@ public:
 	void clbkEvent(DWORD evnt, DWORD_PTR context);
 
 	MESHHANDLE GetMesh (UINT idx);
+	DWORD GetMeshVisMode(UINT idx); 
 	bool GetMinMaxDistance(float *zmin, float *zmax, float *dmin);
 	void GetMinMaxLightDist(float *mind, float *maxd);
 	int	 GetMatrixTransform(gcCore::MatrixId matrix_id, DWORD mesh, DWORD group, FMATRIX4 *pMat);
