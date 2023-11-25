@@ -198,14 +198,8 @@ public:
 
 	void ActivatePlanetLabels(bool activate);
 
-	void ForEach(int type, auto&& callback) {
-		std::error_code ec;
-		for (const auto& entry : fs::directory_iterator(m_labelPath, ec)) {
-			if (entry.path().extension().string() == ".mkr") {
-				callback(entry);
-			}
-		}
-	}
+	intptr_t FindFirst (int type, _finddata_t *fdata, char *fname);
+	intptr_t FindNext (intptr_t fh, _finddata_t *fdata, char *fname);
 
 private:
 	std::string m_Name; // system's name

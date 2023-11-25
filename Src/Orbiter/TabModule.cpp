@@ -6,12 +6,12 @@
 //=============================================================================
 
 #include <windows.h>
+#include <commctrl.h>
+#include <io.h>
 #include "Orbiter.h"
 #include "Launchpad.h"
 #include "TabModule.h"
 #include "resource.h"
-#include <filesystem>
-namespace fs = std::filesystem;
 
 using std::max;
 
@@ -144,6 +144,7 @@ void orbiter::ModuleTab::Show ()
 }
 
 //-----------------------------------------------------------------------------
+
 void orbiter::ModuleTab::RefreshLists ()
 {
 	HWND hTree = GetDlgItem (hTab, IDC_MOD_TREE);
@@ -153,74 +154,72 @@ void orbiter::ModuleTab::RefreshLists ()
 	tvis.item.mask = TVIF_TEXT | TVIF_PARAM;
 
 	int idx, len;
-	char catstr[256];
-
-	const fs::path moddir{ "Modules/Plugin" };
-
-	for (const auto& file : fs::directory_iterator(moddir)) {
-		if (file.path().extension().string() == ".dll") {
-			auto name = file.path().filename().string();
-			// add module record
-			MODULEREC** tmp = new MODULEREC * [nmodulerec + 1];
-			if (nmodulerec) {
-				memcpy(tmp, modulerec, nmodulerec * sizeof(MODULEREC*));
-				delete[]modulerec;
-			}
-			modulerec = tmp;
-
-			MODULEREC* rec = modulerec[nmodulerec++] = new MODULEREC;
-			len = name.length() - 4;
-			rec->name = new char[len + 1];
-			strncpy(rec->name, name.c_str(), len);
-			rec->name[len] = '\0';
-			rec->info = 0;
-			rec->active = false;
-			rec->locked = false;
-
-			// check if module is set active in config
-			if (pCfg->IsActiveModule(rec->name))
-				rec->active = true;
-
-			// check if module is set active in command line
-			if (std::find(pCfg->CfgCmdlinePrm.LoadPlugins.begin(), pCfg->CfgCmdlinePrm.LoadPlugins.end(), rec->name) != pCfg->CfgCmdlinePrm.LoadPlugins.end()) {
-				rec->active = true;
-				rec->locked = true; // modules activated from the command line are not to be unloaded
-			}
-
-			HMODULE hMod = LoadLibraryEx((moddir / name).string().c_str(), 0, LOAD_LIBRARY_AS_DATAFILE);
-			if (hMod) {
-				char buf[1024];
-				// read module info string
-				if (LoadString(hMod, 1000, buf, 1024)) {
-					buf[1023] = '\0';
-					rec->info = new char[strlen(buf) + 1];
-					strcpy(rec->info, buf);
-				}
-				// read category string
-				if (LoadString(hMod, 1001, buf, 1024)) {
-					strncpy(catstr, buf, 255);
-					catstr[255] = '\0';
-				}
-				else {
-					strcpy(catstr, "Miscellaneous");
-				}
-				FreeLibrary(hMod);
-			}
-
-			if (!strcmp(catstr, "Graphics engines"))
-				continue; // graphics client modules are loaded via the Video tab
-
-			// find the category entry
-			HTREEITEM catItem = GetCategoryItem(catstr);
-
-			// tree view entry
-			tvis.item.pszText = rec->name;
-			tvis.item.lParam = (LPARAM)rec;
-			tvis.hInsertAfter = TVI_SORT;
-			tvis.hParent = catItem;
-			HTREEITEM hti = TreeView_InsertItem(hTree, &tvis);
+	char cbuf[256], catstr[256];
+	struct _finddata_t fdata;
+	intptr_t fh = _findfirst ("Modules\\Plugin\\*.dll", &fdata);
+	if (fh == -1) return; // no files found
+	do {
+		// add module record
+		MODULEREC **tmp = new MODULEREC*[nmodulerec+1];
+		if (nmodulerec) {
+			memcpy (tmp, modulerec, nmodulerec*sizeof(MODULEREC*));
+			delete []modulerec;
 		}
-	}
+		modulerec = tmp;
+
+		MODULEREC *rec = modulerec[nmodulerec++] = new MODULEREC;
+		len = strlen(fdata.name)-4;
+		rec->name = new char[len+1];
+		strncpy (rec->name, fdata.name, len);
+		rec->name[len] = '\0';
+		rec->info = 0;
+		rec->active = false;
+		rec->locked = false;
+
+		// check if module is set active in config
+		if (pCfg->IsActiveModule(rec->name))
+			rec->active = true;
+
+		// check if module is set active in command line
+		if (std::find(pCfg->CfgCmdlinePrm.LoadPlugins.begin(), pCfg->CfgCmdlinePrm.LoadPlugins.end(), rec->name) != pCfg->CfgCmdlinePrm.LoadPlugins.end()) {
+			rec->active = true;
+			rec->locked = true; // modules activated from the command line are not to be unloaded
+		}
+
+		sprintf (cbuf, "Modules\\Plugin\\%s", fdata.name);
+		HMODULE hMod = LoadLibraryEx (cbuf, 0, LOAD_LIBRARY_AS_DATAFILE);
+		if (hMod) {
+			char buf[1024];
+			// read module info string
+			if (LoadString (hMod, 1000, buf, 1024)) {
+				buf[1023] = '\0';
+				rec->info = new char[strlen(buf)+1];
+				strcpy (rec->info, buf);
+			}
+			// read category string
+			if (LoadString (hMod, 1001, buf, 1024)) {
+				strncpy (catstr, buf, 255);
+			} else {
+				strcpy (catstr, "Miscellaneous");
+			}
+			FreeLibrary (hMod);
+		}
+
+		if (!strcmp (catstr, "Graphics engines"))
+			continue; // graphics client modules are loaded via the Video tab
+
+		// find the category entry
+		HTREEITEM catItem = GetCategoryItem (catstr);
+
+		// tree view entry
+		tvis.item.pszText = rec->name;
+		tvis.item.lParam = (LPARAM)rec;
+		tvis.hInsertAfter = TVI_SORT;
+		tvis.hParent = catItem;
+		HTREEITEM hti = TreeView_InsertItem (hTree, &tvis);
+
+	} while (!_findnext (fh, &fdata));
+	_findclose (fh);
 	counter = 0;
 }
 

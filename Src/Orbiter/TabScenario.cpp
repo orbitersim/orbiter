@@ -6,6 +6,7 @@
 //=============================================================================
 
 #include <windows.h>
+#include <io.h>
 #include <direct.h>
 #include <string>
 #include "Orbiter.h"
@@ -257,57 +258,69 @@ void orbiter::ScenarioTab::LaunchpadShowing(bool show)
 }
 //-----------------------------------------------------------------------------
 
-void orbiter::ScenarioTab::ScanDirectory (const fs::path& path, HTREEITEM hti)
+void orbiter::ScenarioTab::ScanDirectory (const char *ppath, HTREEITEM hti)
 {
 	TV_INSERTSTRUCT tvis;
 	HTREEITEM ht, hts0, ht0;
-	char cbuf[256];
+	struct _finddata_t fdata;
+	intptr_t fh;
+	char cbuf[256], path[256], *fname;
+
+	strcpy (path, ppath);
+	fname = path + strlen(path);
 
 	tvis.hParent = hti;
 	tvis.item.mask = TVIF_TEXT | TVIF_CHILDREN | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
 	tvis.item.pszText = cbuf;
-	tvis.hInsertAfter = TVI_SORT;
-	tvis.item.cChildren = 1;
-	tvis.item.iImage = treeicon_idx[0];
-	tvis.item.iSelectedImage = treeicon_idx[0];
 
-	for (auto& entry : fs::directory_iterator(path)) {
-		if (entry.is_directory()) {
-			strcpy(cbuf, entry.path().stem().string().c_str());
-			ht = (HTREEITEM)SendDlgItemMessage(hTab, IDC_SCN_LIST, TVM_INSERTITEM, 0, (LPARAM)&tvis);
-			ScanDirectory(entry.path(), ht);
-		}
+	// scan for subdirectories
+	strcpy (fname, "*.*");
+	if ((fh = _findfirst (path, &fdata)) != -1) {
+		tvis.hInsertAfter = TVI_SORT;
+		tvis.item.cChildren = 1;
+		tvis.item.iImage = treeicon_idx[0];
+		tvis.item.iSelectedImage = treeicon_idx[0];
+		do {
+			if ((fdata.attrib & _A_SUBDIR) && fdata.name[0] != '.') {
+				strcpy (cbuf, fdata.name);
+				ht = (HTREEITEM)SendDlgItemMessage (hTab, IDC_SCN_LIST, TVM_INSERTITEM, 0, (LPARAM)&tvis);
+				strcpy (fname, fdata.name); strcat (fname, "\\");
+				ScanDirectory (path, ht);
+			}
+		} while (!_findnext (fh, &fdata));
+		_findclose (fh);
 	}
-
 	hts0 = (HTREEITEM)SendDlgItemMessage (hTab, IDC_SCN_LIST, TVM_GETNEXTITEM, TVGN_CHILD, (LPARAM)hti);
 	// the first subdirectory entry in this folder
 
 	// scan for files
-	tvis.hInsertAfter = TVI_FIRST;
-	tvis.item.cChildren = 0;
-	tvis.item.iImage = treeicon_idx[2];
-	tvis.item.iSelectedImage = treeicon_idx[3];
-	for (auto& entry : fs::directory_iterator(path)) {
-		if (entry.is_regular_file() && entry.path().extension().string() == ".scn") {
-			strcpy(cbuf, entry.path().stem().string().c_str());
+	strcpy (fname, "*.scn");
+	if ((fh = _findfirst (path, &fdata)) != -1) {
+		tvis.hInsertAfter = TVI_FIRST;
+		tvis.item.cChildren = 0;
+		tvis.item.iImage = treeicon_idx[2];
+		tvis.item.iSelectedImage = treeicon_idx[3];
+		do {
+			strcpy (cbuf, fdata.name);
+			cbuf[strlen(cbuf)-4] = '\0';
 
 			char ch[256];
-			TV_ITEM tvi = { TVIF_HANDLE | TVIF_TEXT, 0, 0, 0, ch, 256 };
+			TV_ITEM tvi = {TVIF_HANDLE | TVIF_TEXT, 0, 0, 0, ch, 256};
 
-			ht0 = (HTREEITEM)SendDlgItemMessage(hTab, IDC_SCN_LIST, TVM_GETNEXTITEM, TVGN_CHILD, (LPARAM)hti);
-			for (tvi.hItem = ht0; tvi.hItem && tvi.hItem != hts0; tvi.hItem = (HTREEITEM)SendDlgItemMessage(hTab, IDC_SCN_LIST, TVM_GETNEXTITEM, TVGN_NEXT, (LPARAM)tvi.hItem)) {
-				SendDlgItemMessage(hTab, IDC_SCN_LIST, TVM_GETITEM, 0, (LPARAM)&tvi);
-				if (strcmp(tvi.pszText, cbuf) > 0) break;
+			ht0 = (HTREEITEM)SendDlgItemMessage (hTab, IDC_SCN_LIST, TVM_GETNEXTITEM, TVGN_CHILD, (LPARAM)hti);
+			for (tvi.hItem = ht0; tvi.hItem && tvi.hItem != hts0; tvi.hItem = (HTREEITEM)SendDlgItemMessage (hTab, IDC_SCN_LIST, TVM_GETNEXTITEM, TVGN_NEXT, (LPARAM)tvi.hItem)) {
+				SendDlgItemMessage (hTab, IDC_SCN_LIST, TVM_GETITEM, 0, (LPARAM)&tvi);
+				if (strcmp (tvi.pszText, cbuf) > 0) break;
 			}
 			if (tvi.hItem) {
-				ht = (HTREEITEM)SendDlgItemMessage(hTab, IDC_SCN_LIST, TVM_GETNEXTITEM, TVGN_PREVIOUS, (LPARAM)tvi.hItem);
+				ht = (HTREEITEM)SendDlgItemMessage (hTab, IDC_SCN_LIST, TVM_GETNEXTITEM, TVGN_PREVIOUS, (LPARAM)tvi.hItem);
 				tvis.hInsertAfter = (ht ? ht : TVI_FIRST);
-			}
-			else {
+			} else {
 				tvis.hInsertAfter = (hts0 ? TVI_FIRST : TVI_LAST);
 			}
-			(HTREEITEM)SendDlgItemMessage(hTab, IDC_SCN_LIST, TVM_INSERTITEM, 0, (LPARAM)&tvis);
-		}
+			(HTREEITEM)SendDlgItemMessage (hTab, IDC_SCN_LIST, TVM_INSERTITEM, 0, (LPARAM)&tvis);
+		} while (!_findnext (fh, &fdata));
+		_findclose (fh);
 	}
 }
 
@@ -666,13 +679,15 @@ INT_PTR CALLBACK orbiter::ScenarioTab::SaveProc (HWND hWnd, UINT uMsg, WPARAM wP
 //-----------------------------------------------------------------------------
 void orbiter::ScenarioTab::ClearQSFolder()
 {
-	fs::path scnpath{ pLp->App()->ScnPath("Quicksave") };
-	scnpath.replace_extension(); // remove ".scn"
-
-	std::error_code ec;
-	fs::remove_all(scnpath, ec);
-	if (!ec) {
-		fs::create_directory(scnpath);
+	char filespec[256], fname[256] = "Quicksave\\";
+	strcpy (filespec, pLp->App()->ScnPath ("Quicksave\\*"));
+	struct _finddata_t fd;
+	intptr_t hf;
+	while ((hf = _findfirst (filespec, &fd)) != -1) {
+		strcpy (fname+10, fd.name);
+		fname[strlen(fname)-4] = '\0';
+		_findclose (hf);
+		remove (pLp->App()->ScnPath (fname));
 	}
 }
 

@@ -10,8 +10,6 @@
 #define __TABVIDEO_H
 
 #include "LpadTab.h"
-#include <filesystem>
-namespace fs = std::filesystem;
 
 namespace orbiter {
 
@@ -37,7 +35,7 @@ namespace orbiter {
 
 		void EnumerateClients(HWND hTab);
 
-		void ScanDir(HWND hTab, const fs::path &dir);
+		void ScanDir(HWND hTab, PCSTR dir);
 		// scan directory dir (relative to Orbiter root) for graphics clients
 		// and enter them in the combo box
 
