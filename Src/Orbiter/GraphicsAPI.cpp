@@ -17,8 +17,7 @@
 #include "Util.h"
 #include "resource.h"
 #include <wincodec.h>
-#include <filesystem>
-namespace fs = std::filesystem;
+#include <io.h>
 
 using std::min;
 
@@ -175,17 +174,24 @@ ScreenAnnotation *GraphicsClient::clbkCreateAnnotation ()
 
 bool GraphicsClient::TexturePath (const char *fname, char *path) const
 {
+	struct _finddata_t fd;
+	intptr_t fh;
+
 	// first try htex directory
 	strcpy (path, g_pOrbiter->Cfg()->CfgDirPrm.HightexDir);
 	strcat (path, fname);
-	if (fs::exists(path)) return true;
+	if ((fh = _findfirst (path, &fd)) != -1) {
+		_findclose (fh);
+		return true;
+	}
 
 	// try tex directory
 	strcpy (path, g_pOrbiter->Cfg()->CfgDirPrm.TextureDir);
 	strcat (path, fname);
-
-	if (fs::exists(path)) return true;
-
+	if ((fh = _findfirst (path, &fd)) != -1) {
+		_findclose (fh);
+		return true;
+	}
 	return false;
 }
 

@@ -6,14 +6,13 @@
 
 #include "orbitersdk.h"
 #include "resource.h"
-#include <filesystem>
-namespace fs = std::filesystem;
+#include <io.h>
 
 using namespace std;
 
 class AtmConfig;
 
-const fs::path CelbodyDir = fs::path("Modules") / "Celbody";
+const char *CelbodyDir = "Modules\\Celbody";
 const char *ModuleItem = "MODULE_ATM";
 
 struct {
@@ -215,49 +214,65 @@ void AtmConfig::ScanCelbodies (HWND hWnd)
 {
 	SendDlgItemMessage (hWnd, IDC_COMBO2, CB_RESETCONTENT, 0, 0);
 
-	for (auto& dir : fs::directory_iterator(CelbodyDir)) {
-		auto path = dir.path();
-		if (dir.is_directory()) {
-			std::error_code ec;
-			auto atmdir = fs::directory_entry(path / "Atmosphere", ec);
-			if(!ec && atmdir.is_directory()) {
-				SendDlgItemMessage(hWnd, IDC_COMBO2, CB_ADDSTRING, 0, (LPARAM)path.filename().string().c_str());
+	char filespec[256];
+	sprintf (filespec, "%s\\*.*", CelbodyDir);
+	_finddata_t info, subinfo;
+	intptr_t id = _findfirst (filespec, &info);
+	if (id >= 0) {
+		intptr_t res;
+		do {
+			if (info.attrib & _A_SUBDIR) {
+				sprintf (filespec, "%s\\%s\\atmosphere", CelbodyDir, info.name);
+				intptr_t id2 = _findfirst (filespec, &subinfo);
+				if (id2 >= 0 && (subinfo.attrib & _A_SUBDIR)) {
+					SendDlgItemMessage (hWnd, IDC_COMBO2, CB_ADDSTRING, 0, (LPARAM)info.name);
+				}
+				_findclose (id2);
 			}
-		}
+			res = _findnext (id, &info);
+		} while (!res);
 	}
+	_findclose (id);
 }
 
 void AtmConfig::ScanModules (const char *celbody)
 {
 	ClearModules ();
 
-	auto path = CelbodyDir / celbody / "Atmosphere";
-	MODULESPEC* module_last = 0;
-	for (auto& entry : fs::directory_iterator(path)) {
-		auto module = entry.path();
-		if (module.extension().string() == ".dll") {
-			const auto name = module.stem().string();
-
-			MODULESPEC* ms = new MODULESPEC;
+	char filespec[256];
+	sprintf (filespec, "%s\\%s\\Atmosphere\\*.dll", CelbodyDir, celbody);
+	_finddata_t info;
+	intptr_t id = _findfirst (filespec, &info);
+	if (id >= 0) {
+		int res;
+		MODULESPEC *module_last = 0;
+		do {
+			info.name[strlen(info.name)-4] = '\0'; // cut off '.dll' extension
+			char path[256];
+			sprintf (path, "%s\\%s\\Atmosphere\\%s", CelbodyDir, celbody, info.name);
+			char *model_name = 0;
+			MODULESPEC *ms = new MODULESPEC;
 			if (module_last) module_last->next = ms;
 			else             module_first = ms;
 			module_last = ms;
-			strncpy(ms->module_name, name.c_str(), 255);
-			strncpy(ms->model_name, name.c_str(), 255);
+			strncpy (ms->module_name, info.name, 255);
+			strncpy (ms->model_name, info.name, 255);
 			ms->model_desc[0] = '\0';
 			ms->next = 0;
 
 			// get info from the module
-			HINSTANCE hModule = LoadLibrary(module.string().c_str());
+			HINSTANCE hModule = LoadLibrary (path);
 			if (hModule) {
-				char* (*name_func)() = (char* (*)())GetProcAddress(hModule, "ModelName");
-				if (name_func) strncpy(ms->model_name, name_func(), 255);
-				char* (*desc_func)() = (char* (*)())GetProcAddress(hModule, "ModelDesc");
-				if (desc_func) strncpy(ms->model_desc, desc_func(), 511);
-				FreeLibrary(hModule);
+				char *(*name_func)() = (char*(*)())GetProcAddress (hModule, "ModelName");
+				if (name_func) strncpy (ms->model_name, name_func(), 255);
+				char *(*desc_func)() = (char*(*)())GetProcAddress (hModule, "ModelDesc");
+				if (desc_func) strncpy (ms->model_desc, desc_func(), 511);
+				FreeLibrary (hModule);
 			}
-		}
+			res = _findnext (id, &info);
+		} while (!res);
 	}
+	_findclose (id);
 }
 
 INT_PTR CALLBACK AtmConfig::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

@@ -21,9 +21,6 @@
 #include "Nav.h"
 #include "GraphicsAPI.h"
 #include "VObject.h" // temporary
-#include "Orbiter.h"
-#include <filesystem>
-namespace fs = std::filesystem;
 
 #define FILETYPE_MARKER 1
 
@@ -184,24 +181,9 @@ public:
 	TileManager2<SurfTile> *SurfMgr2() const { return smgr2; }
 	ElevationManager *ElevMgr() const { return emgr; }
 	TileManager2<CloudTile> *CloudMgr2() const { return cmgr2; }
-	void ForEach(int type, auto&& callback) {
-		extern Orbiter* g_pOrbiter;
-		fs::path path;
-		std::string ext;
-		switch (type) {
-		case FILETYPE_MARKER:
-			ext = ".mkr";
-			if (labelpath) path = labelpath;
-			else           path = fs::path(g_pOrbiter->Cfg()->CfgDirPrm.ConfigDir) / name / "Marker";
-			break;
-		}
-		std::error_code ec;
-		for (const auto& entry : fs::directory_iterator(path, ec)) {
-			if (entry.path().extension().string() == ext) {
-				callback(entry);
-			}
-		}
-	}
+
+	intptr_t FindFirst (int type, _finddata_t *fdata, char *path, char *fname);
+	intptr_t FindNext (intptr_t fh, _finddata_t *fdata, char *fname);
 
 	//USERLABELSPEC const *GetUserLabel (int idx) const { return userlabel+idx; }
 	//int nUserLabel () const { return nuserlabel; }
