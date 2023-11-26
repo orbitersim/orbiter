@@ -52,6 +52,7 @@ class D3D9Pad;
 #define RENDERPASS_SKETCHPAD	0x0006
 #define RENDERPASS_MAINOVERLAY	0x0007
 #define RENDERPASS_NORMAL_DEPTH	0x0008
+#define RENDERPASS_VC_SHADOWMAP 0x0009
 
 #define RESTORE ((LPDIRECT3DSURFACE9)(-1))
 #define CURRENT ((LPDIRECT3DSURFACE9)(-2))
@@ -290,7 +291,7 @@ public:
 	// Picking Functions ============================================================================================================
 	//
 	D3DXVECTOR3		GetPickingRay(short x, short y);
-	D3D9Pick		PickScene(short xpos, short ypos);
+	D3D9Pick		PickScene(short xpos, short ypos, const PickProp* p);
 	TILEPICK		PickSurface(short xpos, short ypos);
 	D3D9Pick		PickMesh(DEVMESHHANDLE hMesh, const LPD3DXMATRIX pW, short xpos, short ypos);
 

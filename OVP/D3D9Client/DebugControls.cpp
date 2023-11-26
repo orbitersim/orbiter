@@ -133,7 +133,8 @@ public:
 						while (true)
 						{
 							if (!is.getline(buf, 256)) throw std::invalid_argument("End of file");
-							Groups[gi].Lines.push_back(buf);
+							if (buf[0] != ';') Groups[gi].Lines.push_back(buf);
+
 							if (!_strnicmp(buf, "GEOM", 4))
 							{
 								if (sscanf(buf + 4, "%d %d", &nv, &ni) != 2) throw std::invalid_argument("End of file");
@@ -149,7 +150,7 @@ public:
 							}
 						}
 					}
-				}				
+				}
 			}
 			is.close();
 		}
@@ -169,8 +170,10 @@ public:
 
 		if (os.is_open())
 		{
+			int i = 0;
 			for (auto a : Header) os << a << "\n";
 			for (auto a : Groups) {
+				os << ";--- GroupIndex " << i << " ---\n"; i++;
 				for (auto b : a.Lines) os << b << "\n";
 				for (auto b : a.Vtx) os << b << "\n";
 				for (auto b : a.Idx) os << b << "\n";
@@ -180,47 +183,6 @@ public:
 
 			os.close();
 		}
-	}
-
-	DWORD GetGroupFlags(DWORD grp)
-	{
-		DWORD x;
-		for (auto a : Groups[grp].Lines) {
-			if (a.find("FLAG") != string::npos) {
-				std::istringstream iss(a);
-				iss >> key >> std::hex >> x;
-				return x;
-			}
-		}
-		return 0;
-	}
-
-	DWORD GetGroupMaterial(DWORD grp)
-	{
-		DWORD x;
-		for (auto a : Groups[grp].Lines) {
-			if (a.find("MATERIAL") != string::npos) {
-				std::istringstream iss(a);
-				iss >> key >> x;
-				return x;
-			}
-		}
-		if (grp > 0) return GetGroupMaterial(grp - 1);
-		return 0;
-	}
-
-	DWORD GetGroupTexture(DWORD grp)
-	{
-		DWORD x;
-		for (auto a : Groups[grp].Lines) {
-			if (a.find("TEXTURE") != string::npos) {
-				std::istringstream iss(a);
-				iss >> key >> x;
-				return x;
-			}
-		}
-		if (grp > 0) return GetGroupTexture(grp - 1);
-		return 0;
 	}
 
 	string GetGroupLabel(DWORD grp)
@@ -236,26 +198,43 @@ public:
 		return string("");
 	}
 
+	void SetMeshFlags(DWORD f)
+	{
+		std::stringstream s;
+		s << std::hex << f;
+		for (auto &a : Header) {
+			if (a.find("MESHFLAGS") != string::npos) {
+				a = string("MESHFLAGS ") + s.str();
+				return;
+			}
+		}
+		Header.insert(Header.begin() + 1, string("MESHFLAGS ") + s.str());
+	}
+
 	void SetGroupFlags(DWORD grp, DWORD f)
 	{
 		std::stringstream s;
 		s << std::hex << f;
 		for (auto &a : Groups[grp].Lines) {
 			if (a.find("FLAG") != string::npos) {
-				a = s.str();
+				a = string("FLAG ") + s.str();
 				return;
 			}
 		}
+		auto b = Groups[grp].Lines.begin();
+		Groups[grp].Lines.insert(b, string("FLAG ") + s.str());
 	}
 
 	void SetGroupMaterial(DWORD grp, DWORD x)
 	{
 		for (auto& a : Groups[grp].Lines) {
 			if (a.find("MATERIAL") != string::npos) {
-				a = string("MATERIAL ") + std::to_string(x);
+				a = string("MATERIAL ") + std::to_string(x + 1);
 				return;
 			}
 		}
+		auto b = Groups[grp].Lines.begin();
+		Groups[grp].Lines.insert(b, string("MATERIAL ") + std::to_string(x));
 	}
 
 	void SetGroupTexture(DWORD grp, DWORD x)
@@ -266,6 +245,8 @@ public:
 				return;
 			}
 		}
+		auto b = Groups[grp].Lines.begin();
+		Groups[grp].Lines.insert(b, string("TEXTURE ") + std::to_string(x));
 	}
 
 	void SetGroupLabel(DWORD grp, string x)
@@ -276,6 +257,8 @@ public:
 				return;
 			}
 		}
+		auto b = Groups[grp].Lines.begin();
+		Groups[grp].Lines.insert(b, string("LABEL ") + x);
 	}
 
 	vector<string> Header;
@@ -287,6 +270,7 @@ public:
 
 
 map<D3D9Mesh *, DbgMesh *> dbgMsh;
+DbgMesh* hDbgMsh = NULL;
 
 
 // ===========================================================================
@@ -503,6 +487,7 @@ void UpdateFlags()
 	SETFLAG(debugFlags, DBG_FLAGS_FPSLIM,		(SendDlgItemMessageA(hDlg, IDC_DBG_FPSLIM, BM_GETCHECK, 0, 0)==BST_CHECKED));
 	SETFLAG(debugFlags, DBG_FLAGS_NEARCLIP,		(SendDlgItemMessageA(hDlg, IDC_DBG_CLIPDIST, BM_GETCHECK, 0, 0) == BST_CHECKED));
 	SETFLAG(debugFlags, DBG_FLAGS_RENDEREXT,	(SendDlgItemMessageA(hDlg, IDC_DBG_EXTVC, BM_GETCHECK, 0, 0) == BST_CHECKED));
+	SETFLAG(debugFlags, DBG_FLAGS_PICKCURRENT,  (SendDlgItemMessageA(hDlg, IDC_DBG_PICKCURRENT, BM_GETCHECK, 0, 0) == BST_CHECKED));
 
 	Config->EnableLimiter = (int)((debugFlags&DBG_FLAGS_FPSLIM)>0);
 }
@@ -802,9 +787,7 @@ void UpdateShader()
 
 	if (!oapiIsVessel(hObj)) return;
 
-	D3D9Mesh *hMesh = (D3D9Mesh *)vObj->GetMesh(sMesh);
-
-	if (!hMesh) return;
+	if (!hSelMesh) return;
 
 	DWORD Shader = DWORD(SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_GETCURSEL, 0, 0));
 
@@ -813,20 +796,20 @@ void UpdateShader()
 	
 	switch (Shader) {
 	case 0:
-		hMesh->SetDefaultShader(SHADER_NULL);
-		pMgr->RegisterShaderChange(hMesh, SHADER_NULL);
+		hSelMesh->SetDefaultShader(SHADER_NULL);
+		pMgr->RegisterShaderChange(hSelMesh, SHADER_NULL);
 		break;
 	case 1:
-		hMesh->SetDefaultShader(SHADER_METALNESS);
-		pMgr->RegisterShaderChange(hMesh, SHADER_METALNESS);
+		hSelMesh->SetDefaultShader(SHADER_METALNESS);
+		pMgr->RegisterShaderChange(hSelMesh, SHADER_METALNESS);
 		break;
 	case 2:
-		hMesh->SetDefaultShader(SHADER_BAKED_VC);
-		pMgr->RegisterShaderChange(hMesh, SHADER_BAKED_VC);
+		hSelMesh->SetDefaultShader(SHADER_BAKED_VC);
+		pMgr->RegisterShaderChange(hSelMesh, SHADER_BAKED_VC);
 		break;
 	}
 
-	InitMatList(hMesh->GetDefaultShader());
+	InitMatList(hSelMesh->GetDefaultShader());
 }
 
 
@@ -834,12 +817,9 @@ void UpdateShader()
 //
 void UpdateGroup(DWORD grp)
 {
-	D3D9Mesh* hMesh = (D3D9Mesh*)vObj->GetMesh(sMesh);
-	if (!hMesh) return;
-
-	auto dm = dbgMsh[hMesh];
-	if (grp >= hMesh->GetGroupCount()) return;
-	auto g = hMesh->GetGroup(grp);
+	if (!hSelMesh) return;
+	if (grp >= hSelMesh->GetGroupCount()) return;
+	auto g = hSelMesh->GetGroup(grp);
 
 	if (g) {
 		SendDlgItemMessage(hDlg, IDC_DBG_NOSHADOW, BM_SETCHECK, (g->UsrFlag & 0x1) != 0, 0);
@@ -848,16 +828,15 @@ void UpdateGroup(DWORD grp)
 		SendDlgItemMessage(hDlg, IDC_DBG_ADDITIVE, BM_SETCHECK, (g->UsrFlag & 0x8) != 0, 0);
 		SendDlgItemMessage(hDlg, IDC_DBG_NOCOLOR, BM_SETCHECK, (g->UsrFlag & 0x10) != 0, 0);
 		SendDlgItemMessage(hDlg, IDC_DBG_OIT, BM_SETCHECK, (g->UsrFlag & 0x20) != 0, 0);
+		SendDlgItemMessage(hDlg, IDC_DBG_DYNAMIC, BM_SETCHECK, 0, 0);
 
 		char buf[64];
 		sprintf_s(buf, 64, "%d", g->MtrlIdx);
 		SetWindowText(GetDlgItem(hDlg, IDC_DBG_MATIDX), buf);
 		sprintf_s(buf, 64, "%d", g->TexIdx);
 		SetWindowText(GetDlgItem(hDlg, IDC_DBG_TEXIDX), buf);
-		if (dm) {
-			sprintf_s(buf, 64, "%s", dm->GetGroupLabel(grp).c_str());
-			SetWindowText(GetDlgItem(hDlg, IDC_DBG_GRPLABEL), buf);
-		}
+		string s = hDbgMsh->GetGroupLabel(grp);
+		SetWindowText(GetDlgItem(hDlg, IDC_DBG_GRPLABEL), s.c_str());
 	}
 }
 
@@ -866,15 +845,14 @@ void UpdateGroup(DWORD grp)
 //
 void ValidateGroup(DWORD grp)
 {
-	D3D9Mesh* hMesh = (D3D9Mesh*)vObj->GetMesh(sMesh);
-	if (!hMesh) return;
+	if (!hSelMesh) return;
+	if (!hDbgMsh) return;
 
-	auto dm = dbgMsh[hMesh];
-	if (grp >= hMesh->GetGroupCount()) return;
-	auto g = hMesh->GetGroup(grp);
+	if (grp >= hSelMesh->GetGroupCount()) return;
+	auto g = hSelMesh->GetGroup(grp);
 	DWORD f = 0;
 
-	if (g && dm)
+	if (g)
 	{
 		if (SendDlgItemMessage(hDlg, IDC_DBG_NOSHADOW, BM_GETCHECK, 0, 0) == BST_CHECKED) f |= 0x1;
 		if (SendDlgItemMessage(hDlg, IDC_DBG_NORENDER, BM_GETCHECK, 0, 0) == BST_CHECKED) f |= 0x2;
@@ -882,24 +860,24 @@ void ValidateGroup(DWORD grp)
 		if (SendDlgItemMessage(hDlg, IDC_DBG_ADDITIVE, BM_GETCHECK, 0, 0) == BST_CHECKED) f |= 0x8;
 		if (SendDlgItemMessage(hDlg, IDC_DBG_NOCOLOR, BM_GETCHECK, 0, 0) == BST_CHECKED) f |= 0x10;
 		if (SendDlgItemMessage(hDlg, IDC_DBG_OIT, BM_GETCHECK, 0, 0) == BST_CHECKED) f |= 0x20;
+		if (SendDlgItemMessage(hDlg, IDC_DBG_DYNAMIC, BM_GETCHECK, 0, 0) == BST_CHECKED) f |= 0x0; // TODO: To be implemented
 
 		g->UsrFlag = f;
-		dm->SetGroupFlags(grp, f);
+		hDbgMsh->SetGroupFlags(grp, f);
 
 		char buf[64];
 		GetWindowText(GetDlgItem(hDlg, IDC_DBG_MATIDX), buf, 64);
 		g->MtrlIdx = atoi(buf);
-		if (g->MtrlIdx >= hMesh->GetMaterialCount()) g->MtrlIdx = hMesh->GetMaterialCount() - 1;
-		dm->SetGroupMaterial(grp, g->MtrlIdx);
+		if (g->MtrlIdx >= hSelMesh->GetMaterialCount()) g->MtrlIdx = hSelMesh->GetMaterialCount() - 1;
+		hDbgMsh->SetGroupMaterial(grp, g->MtrlIdx);
 
 		GetWindowText(GetDlgItem(hDlg, IDC_DBG_TEXIDX), buf, 64);
 		g->TexIdx = atoi(buf);
-		if (g->TexIdx >= hMesh->GetTextureCount()) g->TexIdx = hMesh->GetTextureCount() - 1;
-
-		dm->SetGroupTexture(grp, g->TexIdx);
+		if (g->TexIdx >= hSelMesh->GetTextureCount()) g->TexIdx = hSelMesh->GetTextureCount() - 1;
+		hDbgMsh->SetGroupTexture(grp, g->TexIdx);
 		
 		GetWindowText(GetDlgItem(hDlg, IDC_DBG_GRPLABEL), buf, 64);
-		dm->SetGroupLabel(grp, string(buf));
+		hDbgMsh->SetGroupLabel(grp, string(buf));
 	}
 }
 
@@ -908,19 +886,18 @@ void ValidateGroup(DWORD grp)
 //
 void NextDoNotRender()
 {
-	D3D9Mesh* hMesh = (D3D9Mesh*)vObj->GetMesh(sMesh);
-	if (!hMesh) return;
+	if (!hSelMesh) return;
 	DWORD bak = sGroup;
 	sGroup++;
-	for (; sGroup < hMesh->GetGroupCount(); sGroup++) {
-		auto g = hMesh->GetGroup(sGroup);
+	for (; sGroup < hSelMesh->GetGroupCount(); sGroup++) {
+		auto g = hSelMesh->GetGroup(sGroup);
 		if (g->UsrFlag & 0x2) {
 			SetupMeshGroups();
 			return;
 		}
 	}
-	for (sGroup = 0; sGroup < hMesh->GetGroupCount(); sGroup++) {
-		auto g = hMesh->GetGroup(sGroup);
+	for (sGroup = 0; sGroup < hSelMesh->GetGroupCount(); sGroup++) {
+		auto g = hSelMesh->GetGroup(sGroup);
 		if (g->UsrFlag & 0x2) {
 			SetupMeshGroups();
 			return;
@@ -935,18 +912,14 @@ void NextDoNotRender()
 void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 {
 	OBJHANDLE hObj = vObj->GetObjectA();
-
 	if (!oapiIsVessel(hObj)) return;
-
-	D3D9Mesh *hMesh = (D3D9Mesh *)vObj->GetMesh(sMesh);
-
-	if (!hMesh) return;
+	if (!hSelMesh) return;
 	
-	DWORD matidx = hMesh->GetMeshGroupMaterialIdx(sGroup);
-	DWORD texidx = hMesh->GetMeshGroupTextureIdx(sGroup);
+	DWORD matidx = hSelMesh->GetMeshGroupMaterialIdx(sGroup);
+	DWORD texidx = hSelMesh->GetMeshGroupTextureIdx(sGroup);
 
 	D3D9MatExt Mat;
-	if (!hMesh->GetMaterial(&Mat, matidx)) return;
+	if (!hSelMesh->GetMaterial(&Mat, matidx)) return;
 
 	switch(MatPrp) {
 
@@ -1021,10 +994,9 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 		}
 	}
 
-	hMesh->SetMaterial(&Mat, matidx);
+	hSelMesh->SetMaterial(&Mat, matidx);
 	vVessel *vVes = (vVessel *)vObj;
-
-	vVes->GetMaterialManager()->RegisterMaterialChange(hMesh, matidx, &Mat); 
+	vVes->GetMaterialManager()->RegisterMaterialChange(hSelMesh, matidx, &Mat);
 }
 
 
@@ -1053,18 +1025,13 @@ DWORD GetModFlags(DWORD MatPrp)
 bool IsMaterialModified(DWORD MatPrp)
 {
 	OBJHANDLE hObj = vObj->GetObjectA();
-
 	if (!oapiIsVessel(hObj)) return false;
+	if (!hSelMesh) return false;
 
-	D3D9Mesh *hMesh = (D3D9Mesh *)vObj->GetMesh(sMesh);
-
-	if (!hMesh) return false;
-
-	DWORD matidx = hMesh->GetMeshGroupMaterialIdx(sGroup);
-	
+	DWORD matidx = hSelMesh->GetMeshGroupMaterialIdx(sGroup);
 	D3D9MatExt Mat;
 
-	if (!hMesh->GetMaterial(&Mat, matidx)) return false;
+	if (!hSelMesh->GetMaterial(&Mat, matidx)) return false;
 
 	return (Mat.ModFlags & GetModFlags(MatPrp)) != 0;
 }
@@ -1077,21 +1044,17 @@ void SetMaterialModified(DWORD MatPrp, bool bState)
 	OBJHANDLE hObj = vObj->GetObjectA();
 
 	if (!oapiIsVessel(hObj)) return;
+	if (!hSelMesh) return;
 
-	D3D9Mesh *hMesh = (D3D9Mesh *)vObj->GetMesh(sMesh);
-
-	if (!hMesh) return;
-
-	DWORD matidx = hMesh->GetMeshGroupMaterialIdx(sGroup);
-
+	DWORD matidx = hSelMesh->GetMeshGroupMaterialIdx(sGroup);
 	D3D9MatExt Mat;
 
-	if (!hMesh->GetMaterial(&Mat, matidx)) return;
+	if (!hSelMesh->GetMaterial(&Mat, matidx)) return;
 
 	if (bState) Mat.ModFlags |= GetModFlags(MatPrp);
 	else		Mat.ModFlags &= (~GetModFlags(MatPrp));
 
-	hMesh->SetMaterial(&Mat, matidx);
+	hSelMesh->SetMaterial(&Mat, matidx);
 }
 
 
@@ -1102,16 +1065,12 @@ float GetMaterialValue(DWORD MatPrp, DWORD clr)
 	OBJHANDLE hObj = vObj->GetObjectA();
 
 	if (!oapiIsVessel(hObj)) return 0.0f;
+	if (!hSelMesh) return 0.0f;
 
-	D3D9Mesh *hMesh = (D3D9Mesh *)vObj->GetMesh(sMesh);
+	DWORD matidx = hSelMesh->GetMeshGroupMaterialIdx(sGroup);
+	DWORD texidx = hSelMesh->GetMeshGroupTextureIdx(sGroup);
 
-	if (!hMesh) return 0.0f;
-
-	DWORD matidx = hMesh->GetMeshGroupMaterialIdx(sGroup);
-	DWORD texidx = hMesh->GetMeshGroupTextureIdx(sGroup);
-
-	const D3D9MatExt *pMat = hMesh->GetMaterial(matidx);
-	
+	const D3D9MatExt *pMat = hSelMesh->GetMaterial(matidx);	
 	if (!pMat) return 0.0f;
 
 	switch(MatPrp) {
@@ -1292,16 +1251,14 @@ void UpdateMaterialDisplay(bool bSetup)
 
 	OBJHANDLE hObj = vObj->GetObjectA();
 	if (!oapiIsVessel(hObj)) return;
-	
-	D3D9Mesh *hMesh = (D3D9Mesh *)vObj->GetMesh(sMesh);
-	if (!hMesh) return;
+	if (!hSelMesh) return;
 
-	WORD Shader = hMesh->GetDefaultShader();
+	WORD Shader = hSelMesh->GetDefaultShader();
 	if (Shader == SHADER_NULL) SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_SETCURSEL, 0, 0);
 	if (Shader == SHADER_METALNESS) SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_SETCURSEL, 1, 0);
 	if (Shader == SHADER_BAKED_VC) SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_SETCURSEL, 2, 0);
 
-	DWORD matidx = hMesh->GetMeshGroupMaterialIdx(sGroup);
+	DWORD matidx = hSelMesh->GetMeshGroupMaterialIdx(sGroup);
 
 	// Set material info
 	const char *skin = NULL;
@@ -1322,18 +1279,18 @@ void UpdateMaterialDisplay(bool bSetup)
 	SetToolTip(IDC_DBG_BLUE, hTipBlu, Params[MatPrp].var[2].tip);
 	SetToolTip(IDC_DBG_ALPHA, hTipAlp, Params[MatPrp].var[3].tip);
 
-	DWORD texidx = hMesh->GetMeshGroupTextureIdx(sGroup);
+	DWORD texidx = hSelMesh->GetMeshGroupTextureIdx(sGroup);
 
 	if (texidx==0) SetWindowText(GetDlgItem(hDlg, IDC_DBG_TEXTURE), "Texture: None");
 	else {
-		SURFHANDLE hSrf = hMesh->GetTexture(texidx);
+		SURFHANDLE hSrf = hSelMesh->GetTexture(texidx);
 		if (hSrf) {
 			sprintf_s(lbl, 256, "Texture: %s [%u]", RemovePath(SURFACE(hSrf)->GetName()), texidx);
 			SetWindowText(GetDlgItem(hDlg, IDC_DBG_TEXTURE), lbl);
 		}
 	}
 
-	sprintf_s(lbl, 256, "Mesh: %s", RemovePath(hMesh->GetName()));
+	sprintf_s(lbl, 256, "Mesh: %s", RemovePath(hSelMesh->GetName()));
 	SetWindowText(GetDlgItem(hDlg, IDC_DBG_MESHNAME), lbl);
 
 	string str = "";
@@ -1356,8 +1313,7 @@ void UpdateMaterialDisplay(bool bSetup)
 bool IsSelectedGroupRendered()
 {
 	if (!vObj) return false;
-	D3D9Mesh *hMesh = (D3D9Mesh *)vObj->GetMesh(sMesh);
-	if (hMesh) return hMesh->IsGroupRendered(sGroup);
+	if (hSelMesh) return hSelMesh->IsGroupRendered(sGroup);
 	return false;
 }
 
@@ -1426,24 +1382,46 @@ void SelectGroup(DWORD idx)
 
 // =============================================================================================
 //
+void ValidateMesh(D3D9Mesh* pMesh)
+{
+	if (pMesh != hSelMesh)
+	{	
+		if (dbgMsh.find(pMesh) == dbgMsh.end()) {
+			char MeshFile[MAX_PATH];
+			sprintf_s(MeshFile, MAX_PATH, "%s%s.msh", OapiExtension::GetMeshDir(), pMesh->GetName());
+			dbgMsh[pMesh] = new DbgMesh(MeshFile);
+		}
+		hSelMesh = pMesh;
+		hDbgMsh = dbgMsh[pMesh];
+	}
+}
+
+// =============================================================================================
+//
 void SelectMesh(D3D9Mesh *pMesh)
 {
-	char MeshFile[MAX_PATH];
-
-	if (pMesh != hSelMesh)
-	{
-		for (DWORD i = 0; i < nMesh; i++) {
-			if (vObj->GetMesh(i) == pMesh) {
-				sMesh = i;
-				hSelMesh = pMesh;
-				sprintf_s(MeshFile, MAX_PATH, "%s%s.msh", OapiExtension::GetMeshDir(), pMesh->GetName());
-				dbgMsh[pMesh] = new DbgMesh(MeshFile);
-				break;
-			}
+	sMesh = 0;
+	for (DWORD i = 0; i < nMesh; i++) {
+		if (vObj->GetMesh(i) == pMesh) {
+			sMesh = i;
+			ValidateMesh(pMesh);
+			SetupMeshGroups();
+			return;
 		}
 	}
-	SetupMeshGroups();
-	UpdateLightsSlider();
+}
+
+// =============================================================================================
+//
+void UpdateMeshFlags()
+{
+	if (!hSelMesh) return;
+	DWORD f = 0;
+
+	if (SendDlgItemMessage(hDlg, IDC_DBG_ISVCMESH, BM_GETCHECK, 0, 0) == BST_CHECKED) f |= MESHFLAG_VC;
+	if (SendDlgItemMessage(hDlg, IDC_DBG_VCSHADOW, BM_GETCHECK, 0, 0) == BST_CHECKED) f |= MESHFLAG_SHADOW_VC;
+	hSelMesh->MeshFlags = f | 0x1;
+	hDbgMsh->SetMeshFlags(hSelMesh->MeshFlags);
 }
 
 // =============================================================================================
@@ -1470,10 +1448,10 @@ void SetupMeshGroups()
 	sprintf_s(lbl,256,"%u/%u",sMesh,nMesh-1);
 	SetWindowText(GetDlgItem(hDlg, IDC_DBG_MESH), lbl);
 
-	D3D9Mesh *mesh = (class D3D9Mesh *)vObj->GetMesh(sMesh);
+	ValidateMesh(vObj->GetMesh(sMesh));
 
-	if (mesh) nGroup = mesh->GetGroupCount();
-	else	  nGroup = 0;
+	if (hSelMesh) nGroup = hSelMesh->GetGroupCount();
+	else nGroup = 0;
 
 	if (nGroup!=0) {
 		if (sGroup>0xFFFF)  sGroup = nGroup-1;
@@ -1489,9 +1467,15 @@ void SetupMeshGroups()
 	sprintf_s(lbl,256,"%u/%u",sGroup,nGroup-1);
 	SetWindowText(GetDlgItem(hDlg, IDC_DBG_GROUP), lbl);
 
+	if (hSelMesh) {
+		SendDlgItemMessage(hDlg, IDC_DBG_ISVCMESH, BM_SETCHECK, (hSelMesh->MeshFlags & MESHFLAG_VC) != 0, 0);
+		SendDlgItemMessage(hDlg, IDC_DBG_VCSHADOW, BM_SETCHECK, (hSelMesh->MeshFlags & MESHFLAG_SHADOW_VC) != 0, 0);
+	}
+
 	UpdateMaterialDisplay();
 	SetColorSlider();
-	InitMatList(mesh->GetDefaultShader());
+	UpdateLightsSlider();
+	InitMatList(hSelMesh->GetDefaultShader());
 }
 
 
@@ -1499,12 +1483,11 @@ void SetupMeshGroups()
 //
 void UpdateBakedLights(float lvl)
 {
-	D3D9Mesh* mesh = (class D3D9Mesh*)vObj->GetMesh(sMesh);
-	if (mesh) {
+	if (hSelMesh) {
 		if (bkl_id < 16 && bkl_id >= 0) {
-			mesh->SetBakedLightLevel(bkl_id, FVECTOR3(lvl, lvl, lvl));
+			hSelMesh->SetBakedLightLevel(bkl_id, FVECTOR3(lvl, lvl, lvl));
 		}
-		if (bkl_id == 16) mesh->SetAmbientColor(FVECTOR3(lvl, lvl, lvl));
+		if (bkl_id == 16) hSelMesh->SetAmbientColor(FVECTOR3(lvl, lvl, lvl));
 	}
 }
 
@@ -1513,10 +1496,9 @@ void UpdateBakedLights(float lvl)
 void UpdateLightsSlider()
 {
 	float val = 0.0f;
-	D3D9Mesh* mesh = (class D3D9Mesh*)vObj->GetMesh(sMesh);
-	if (mesh) {
-		if (bkl_id < 16 && bkl_id >= 0) val = mesh->GetBakedLightLevel(bkl_id).x;
-		if (bkl_id == 16) val = mesh->GetAmbientColor().x;
+	if (hSelMesh) {
+		if (bkl_id < 16 && bkl_id >= 0) val = hSelMesh->GetBakedLightLevel(bkl_id).x;
+		if (bkl_id == 16) val = hSelMesh->GetAmbientColor().x;
 		SendDlgItemMessage(hDlg, IDC_DBG_BKLADJ, TBM_SETPOS, 1, WORD(255.0f * val));
 	}
 }
@@ -1525,10 +1507,9 @@ void UpdateLightsSlider()
 //
 LPDIRECT3DTEXTURE9 GetCombinedMap()
 {
-	D3D9Mesh* mesh = (class D3D9Mesh*)vObj->GetMesh(sMesh);
-	if (mesh) {	
-		DWORD texidx = mesh->GetMeshGroupTextureIdx(sGroup);
-		return mesh->GetCombinedMap(texidx);
+	if (hSelMesh) {
+		DWORD texidx = hSelMesh->GetMeshGroupTextureIdx(sGroup);
+		return hSelMesh->GetCombinedMap(texidx);
 	}
 	return NULL;
 }
@@ -1549,6 +1530,13 @@ double GetVisualSize()
 vObject * GetVisual()
 {
 	return vObj;
+}
+
+// =============================================================================================
+//
+D3D9Mesh* GetMesh()
+{
+	return hSelMesh;
 }
 
 // =============================================================================================
@@ -2272,6 +2260,7 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					bPaused = oapiGetPause();
 					oapiSetPause(true);
 					strcpy(SaveMesh.lpstrFileTitle, hSelMesh->GetName());
+					SaveMesh.hwndOwner = hWnd;
 					if (GetSaveFileName(&SaveMesh)) {
 						dbgMsh[hSelMesh]->Save(SaveMesh.lpstrFile);
 						return true;
@@ -2310,6 +2299,11 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				SetColorSlider();
 				break;
 
+			case IDC_DBG_ISVCMESH:
+			case IDC_DBG_VCSHADOW:
+				UpdateMeshFlags();
+				break;
+
 			case IDC_DBG_GRPO:
 			case IDC_DBG_VISO:
 			case IDC_DBG_MSHO:
@@ -2325,6 +2319,7 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			case IDC_DBG_TILEBB:
 			case IDC_DBG_CLIPDIST:
 			case IDC_DBG_EXTVC:
+			case IDC_DBG_PICKCURRENT:
 				UpdateFlags();
 				break;
 
@@ -2334,6 +2329,7 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			case IDC_DBG_ADDITIVE:
 			case IDC_DBG_NOCOLOR:
 			case IDC_DBG_OIT:
+			case IDC_DBG_DYNAMIC:
 				if (HIWORD(wParam) == BN_CLICKED) {
 					ValidateGroup(sGroup);
 				}

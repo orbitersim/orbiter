@@ -193,6 +193,9 @@ void D3D9Mesh::Null(const char *meshName /* = NULL */)
 	MaxVert  = 0;
 	vClass = 0;
 	DefShader = SHADER_NULL;
+	hOapiMesh = NULL;
+	MeshFlags = 0;
+	Flags = 0;
 
 	bIsTemplate = false;
 	bGlobalTF = false;
@@ -328,6 +331,7 @@ D3D9Mesh::D3D9Mesh(const MESHGROUPEX *pGroup, const MATERIAL *pMat, SurfNative *
 D3D9Mesh::D3D9Mesh(MESHHANDLE hMesh, const D3D9Mesh &hTemp)
 {
 	Null(oapiGetMeshFilename(hMesh));
+	hOapiMesh = hMesh;
 
 	// Confirm the source is global template
 	assert(hTemp.bIsTemplate == true);
@@ -344,6 +348,9 @@ D3D9Mesh::D3D9Mesh(MESHHANDLE hMesh, const D3D9Mesh &hTemp)
 	BBox = hTemp.BBox;
 	MaxVert = hTemp.MaxVert;
 	MaxFace = hTemp.MaxFace;
+	MeshFlags = hTemp.MeshFlags;
+	Flags = hTemp.Flags;
+
 	// Clone group records from a tremplate
 	Grp = new GROUPREC[nGrp];
 	memcpy(Grp, hTemp.Grp, sizeof(GROUPREC)*nGrp);
@@ -417,6 +424,7 @@ void D3D9Mesh::Release()
 
 void D3D9Mesh::ReLoadMeshFromHandle(MESHHANDLE hMesh)
 {
+	hOapiMesh = hMesh;
 	const char* meshn = oapiGetMeshFilename(hMesh);
 	strcpy_s(name, 128, meshn ? meshn : "???");
 
@@ -464,6 +472,7 @@ void D3D9Mesh::ReLoadMeshFromHandle(MESHHANDLE hMesh)
 	for (DWORD i = 0; i<nGrp; i++) CopyVertices(&Grp[i], oapiMeshGroupEx(hMesh, i));
 
 	pGrpTF = new D3DXMATRIX[nGrp];
+	MeshFlags = oapiGetMeshFlags(hMesh);
 
 	D3DXMatrixIdentity(&mTransform);
 	D3DXMatrixIdentity(&mTransformInv);
@@ -702,6 +711,7 @@ LPDIRECT3DTEXTURE9 D3D9Mesh::GetCombinedMap(int tex_idx)
 //
 void D3D9Mesh::LoadMeshFromHandle(MESHHANDLE hMesh, D3DXVECTOR3 *reorig, float *scale)
 {
+	hOapiMesh = hMesh;
 	const char* meshn = oapiGetMeshFilename(hMesh);
 	strcpy_s(name, 128, meshn ? meshn : "???");
 
@@ -733,6 +743,7 @@ void D3D9Mesh::LoadMeshFromHandle(MESHHANDLE hMesh, D3DXVECTOR3 *reorig, float *
 	for (DWORD i = 0; i<nGrp; i++) CopyVertices(&Grp[i], oapiMeshGroupEx(hMesh, i), reorig, scale);
 
 	pGrpTF = new D3DXMATRIX[nGrp];
+	MeshFlags = oapiGetMeshFlags(hMesh);
 
 	D3DXMatrixIdentity(&mTransform);
 	D3DXMatrixIdentity(&mTransformInv);
@@ -3484,7 +3495,7 @@ float D3D9Mesh::GetBoundingSphereRadius()
 
 // ===========================================================================================
 //
-D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const LPD3DXMATRIX pT, const D3DXVECTOR3 *vDir)
+D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const LPD3DXMATRIX pT, const D3DXVECTOR3 *vDir, const PickProp *p)
 {
 	D3D9Pick result;
 	result.dist  = 1e30f;
@@ -3492,6 +3503,8 @@ D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const LPD3DXMATRIX pT, const D3DX
 	result.vObj  = NULL;
 	result.group = -1;
 	result.idx = -1;
+
+	if (p->pMesh) if (p->pMesh != this) return result;
 
 	if (!pBuf->pGBSys || !pBuf->pIBSys) {
 		LogErr("D3D9Mesh::Pick() Failed: No Geometry Available");
@@ -3553,9 +3566,9 @@ D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const LPD3DXMATRIX pT, const D3DX
 
 			D3DXVec3Cross(&cp, ptr(_c - _b), ptr(_a - _b));
 
-			if (D3DXVec3Dot(&cp, &dir)<0) {
+			if ((D3DXVec3Dot(&cp, &dir)<0) || p->bDualSided) {
 				if (D3DXIntersectTri(&_c, &_b, &_a, &pos, &dir, &u, &v, &dst)) {
-					if (dst > 0.1f) {
+					if (dst > p->fnear) {
 						if (dst < result.dist) {
 							result.dist = dst;
 							result.group = int(g);

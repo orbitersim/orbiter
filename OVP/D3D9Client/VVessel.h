@@ -66,7 +66,7 @@ public:
 
 	void clbkEvent(DWORD evnt, DWORD_PTR context);
 
-	MESHHANDLE GetMesh (UINT idx);
+	D3D9Mesh* GetMesh (UINT idx);
 	DWORD GetMeshVisMode(UINT idx); 
 	bool GetMinMaxDistance(float *zmin, float *zmax, float *dmin);
 	void GetMinMaxLightDist(float *mind, float *maxd);
@@ -140,7 +140,7 @@ public:
 
 	float GetExhaustLength() const { return ExhaustLength; }
 
-	D3D9Pick Pick(const D3DXVECTOR3 *vDir);
+	D3D9Pick Pick(const D3DXVECTOR3 *vDir, const PickProp* p);
 
 	bool HasExtPass();
 	bool HasShadow();

@@ -1509,7 +1509,7 @@ MESHHANDLE D3D9Client::clbkGetMesh(VISHANDLE vis, UINT idx)
 		LogErr("NULL visual in clbkGetMesh(NULL,%u)",idx);
 		return NULL;
 	}
-	MESHHANDLE hMesh = ((vObject*)vis)->GetMesh(idx);
+	MESHHANDLE hMesh = (MESHHANDLE)((vObject*)vis)->GetMesh(idx);
 	if (hMesh==NULL) LogWrn("clbkGetMesh() returns NULL");
 	return hMesh;
 }
@@ -1717,13 +1717,21 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 			TRACKMOUSEEVENT te; te.cbSize = sizeof(TRACKMOUSEEVENT); te.dwFlags = TME_LEAVE; te.hwndTrack = hRenderWnd;
 			TrackMouseEvent(&te);
+			PickProp prp = { NULL, 0.1f, false };
 
 			bool bShift = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
 			bool bCtrl = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
 			bool bPckVsl = IsGenericProcEnabled(GENERICPROC_PICK_VESSEL);
 
-			if (DebugControls::IsActive() || bPckVsl || (bShift && bCtrl)) {
-				pick = GetScene()->PickScene(xpos, ypos);
+			if (DebugControls::IsActive() || bPckVsl || (bShift && bCtrl))
+			{
+				if (DebugControls::IsActive()) {
+					if (DebugControls::debugFlags & DBG_FLAGS_PICKCURRENT) prp.pMesh = DebugControls::GetMesh();
+					if (DebugControls::debugFlags & DBG_FLAGS_DUALSIDED) prp.bDualSided = true;
+				}
+
+				pick = GetScene()->PickScene(xpos, ypos, &prp);
+
 				if (bPckVsl) {
 					gcCore::PickData out;
 					out.hVessel = pick.vObj->GetObjectA();

@@ -2031,6 +2031,9 @@ typedef union {
 //@}
 
 #define MESHPROPERTY_MODULATEMATALPHA 1
+#define MESHPROPERTY_FLAGS 2
+#define MESHFLAG_VC				0x2		///< This mesh is a virtual cockpit
+#define MESHFLAG_SHADOW_VC		0x4 	///< This mesh casts shadows in virual cockpit
 
 // ===========================================================================
 /// \ingroup defines
@@ -4533,6 +4536,7 @@ OAPIFUNC DWORD oapiGetMeshFlags (MESHHANDLE hMesh);
 	* \note See 3DModel document for details of the mesh format.
 	*/
 OAPIFUNC DWORD oapiMeshGroupCount (MESHHANDLE hMesh);
+OAPIFUNC void oapiMeshGroupLabel(MESHHANDLE hMesh, DWORD grp, char* label, DWORD bufsize);
 
 	/**
 	* \brief Returns a pointer to the group specification of a mesh group.
@@ -4804,12 +4808,14 @@ OAPIFUNC int oapiSetMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp prp, c
 	 * \return \e true if the property tag was recognised and the request could be executed, \e false otherwise.
 	 * \note Currently only a single mesh property is recognised, but this may be
 	 *  extended in future versions:
-	 * - \c MESHPROPERTY_MODULATEMATALPHA \n \n
+	 * - \c MESHPROPERTY_MODULATEMATALPHA
+	 * - \c MESHPROPERTY_FLAGS\n \n
 	 * if value==0 (default) disable material alpha information in textured mesh groups (only use texture alpha channel).\n
 	 * if value<>0 modulate (mix) material alpha values with texture alpha maps.
 	 * \sa oapiSetMeshProperty(DEVMESHHANDLE,DWORD,DWORD)
 	 */
 OAPIFUNC bool oapiSetMeshProperty (MESHHANDLE hMesh, DWORD property, DWORD value);
+OAPIFUNC bool oapiGetMeshProperty (MESHHANDLE hMesh, DWORD property, DWORD *value);
 
 	/**
      * \brief Set custom properties for a device-specific mesh.
@@ -4819,7 +4825,8 @@ OAPIFUNC bool oapiSetMeshProperty (MESHHANDLE hMesh, DWORD property, DWORD value
 	 * \return \e true if the property tag was recognised and the request could be executed, \e false otherwise.
 	 * \note Currently only a single mesh property is recognised, but this may be
 	 *  extended in future versions:
-	 * - \c MESHPROPERTY_MODULATEMATALPHA \n \n
+	 * - \c MESHPROPERTY_MODULATEMATALPHA
+	 * - \c MESHPROPERTY_FLAGS\n \n
 	 * if value==0 (default) disable material alpha information in textured mesh groups (only use texture alpha channel).\n
 	 * if value<>0 modulate (mix) material alpha values with texture alpha maps.		
 	 * \sa oapiSetMeshProperty(MESHHANDLE,DWORD,DWORD)

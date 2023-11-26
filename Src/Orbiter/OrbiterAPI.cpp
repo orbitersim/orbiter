@@ -1496,6 +1496,12 @@ DLLEXPORT DWORD oapiGetMeshFlags (MESHHANDLE hMesh)
 	return ((Mesh*)hMesh)->GetFlags();
 }
 
+DLLEXPORT void oapiMeshGroupLabel(MESHHANDLE hMesh, DWORD grp, char* label, DWORD bufsize)
+{
+	Mesh* pMesh = (Mesh*)hMesh;
+	strncpy(label, pMesh->GetLabel(grp).c_str(), bufsize);
+}
+
 DLLEXPORT MESHGROUP *oapiMeshGroup (MESHHANDLE hMesh, DWORD idx)
 {
 	if (!hMesh) {
@@ -1600,6 +1606,23 @@ DLLEXPORT bool oapiSetMeshProperty (MESHHANDLE hMesh, DWORD property, DWORD valu
 	switch (property) {
 	case MESHPROPERTY_MODULATEMATALPHA:
 		mesh->EnableMatAlpha (value != 0);
+		return true;
+	case MESHPROPERTY_FLAGS:
+		mesh->SetFlags(value);
+		return true;
+	}
+	return false;
+}
+
+DLLEXPORT bool oapiGetMeshProperty(MESHHANDLE hMesh, DWORD property, DWORD *value)
+{
+	Mesh* mesh = (Mesh*)hMesh;
+	switch (property) {
+	case MESHPROPERTY_MODULATEMATALPHA:
+		*value = mesh->EnableMatAlpha() ? 1 : 0;
+		return true;
+	case MESHPROPERTY_FLAGS:
+		*value = mesh->GetFlags();
 		return true;
 	}
 	return false;

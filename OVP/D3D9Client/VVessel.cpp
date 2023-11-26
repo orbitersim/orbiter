@@ -209,7 +209,7 @@ DWORD vVessel::GetMeshCount()
 
 // ============================================================================================
 //
-MESHHANDLE vVessel::GetMesh (UINT idx)
+D3D9Mesh* vVessel::GetMesh (UINT idx)
 {
 	return (idx < nmesh ? meshlist[idx].mesh : NULL);
 }
@@ -658,7 +658,7 @@ bool vVessel::GetVCPos(D3DXVECTOR3* out, float* rad)
 	{
 		if (!meshlist[i].mesh) continue;
 
-		if (meshlist[i].vismode == MESHVIS_VC)
+		if (meshlist[i].mesh->MeshFlags & MESHFLAG_VC)
 		{
 			D3DXVECTOR3 pos = meshlist[i].mesh->GetBoundingSpherePos();
 			
@@ -811,20 +811,22 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 
 		if (DebugControls::IsActive()) if (displ>1) vismode = MESHVIS_ALWAYS;
 
-		if (vismode==0) continue;
-
-		if (internalpass==false) {
-			if (vismode==MESHVIS_VC) continue; // Added 3-jan-2011 to prevent VC interior double rendering during exterior and interior passes
-			if ((vismode&MESHVIS_EXTPASS)==0 && bCockpit) continue;
-		}
-
-		if (bCockpit) {
-			if (internalpass && (vismode & MESHVIS_EXTPASS)) continue;
-			if (!(vismode & MESHVIS_COCKPIT)) {
-				if ((!bVC) || (!(vismode & MESHVIS_VC))) continue;
+		if (scn->GetRenderPass() != RENDERPASS_VC_SHADOWMAP)
+		{
+			if (vismode == 0) continue;
+			if (internalpass == false) {
+				if (vismode == MESHVIS_VC) continue; // Added 3-jan-2011 to prevent VC interior double rendering during exterior and interior passes
+				if ((vismode & MESHVIS_EXTPASS) == 0 && bCockpit) continue;
 			}
-		} else {
-			if (!(vismode & MESHVIS_EXTERNAL)) continue;
+			if (bCockpit) {
+				if (internalpass && (vismode & MESHVIS_EXTPASS)) continue;
+				if (!(vismode & MESHVIS_COCKPIT)) {
+					if ((!bVC) || (!(vismode & MESHVIS_VC))) continue;
+				}
+			}
+			else {
+				if (!(vismode & MESHVIS_EXTERNAL)) continue;
+			}
 		}
 
 		D3DXMATRIX mWT;
@@ -856,7 +858,12 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 
 		// Render vessel meshes --------------------------------------------------------------------------
 		//
-		if (scn->GetRenderPass() == RENDERPASS_SHADOWMAP)
+		if (scn->GetRenderPass() == RENDERPASS_VC_SHADOWMAP)
+		{
+			if (meshlist[i].mesh->MeshFlags & MESHFLAG_SHADOW_VC || meshlist[i].mesh->MeshFlags & MESHFLAG_VC)
+				meshlist[i].mesh->RenderShadowMap(pWT, pLVP, 0, bVC);
+		}
+		else if (scn->GetRenderPass() == RENDERPASS_SHADOWMAP)
 		{
 			meshlist[i].mesh->RenderShadowMap(pWT, pLVP, 0, bVC);
 		}
@@ -1900,7 +1907,7 @@ void vVessel::UpdateBoundingBox()
 
 // ===========================================================================================
 //
-D3D9Pick vVessel::Pick(const D3DXVECTOR3 *vDir)
+D3D9Pick vVessel::Pick(const D3DXVECTOR3 *vDir, const PickProp *p)
 {
 	D3DXMATRIX mWT;
 	LPD3DXMATRIX pWT = NULL;
@@ -1953,7 +1960,7 @@ D3D9Pick vVessel::Pick(const D3DXVECTOR3 *vDir)
 
 		if (!bRender) continue;
 
-		D3D9Pick pick = hMesh->Pick(&mWorld, meshlist[i].trans, vDir);
+		D3D9Pick pick = hMesh->Pick(&mWorld, meshlist[i].trans, vDir, p);
 		if (pick.pMesh) if (pick.dist<result.dist) result = pick;
 	}
 

@@ -2410,7 +2410,8 @@ Scene::SUNVISPARAMS Scene::GetSunScreenVisualState()
 	short xpos = short((scrPos.x + 0.5f) * w);
 	short ypos = short((1.0f - (scrPos.y + 0.5f)) * h);
 
-	D3D9Pick pick = PickScene(xpos, ypos);
+	PickProp prp = { NULL, 0.1f, false };
+	D3D9Pick pick = PickScene(xpos, ypos, &prp);
 
 	if (pick.pMesh != NULL)
 	{
@@ -2730,15 +2731,19 @@ int Scene::RenderVCShadowMap(D3DXVECTOR3& cdir, D3DXVECTOR3& ld, bool bListExist
 
 		// render the vessel objects --------------------------------
 		//
-		BeginPass(RENDERPASS_SHADOWMAP);
+		BeginPass(RENDERPASS_VC_SHADOWMAP);
 
 		// NOTE: smap.mLVP must containg the projection needed for rendering of the map
 		smap.mLVP = smap.mVP[i];
 
 		for (auto &a : SmapRenderList)
 		{
-			a->Render(pDevice, false);
-			if (a == vFocus) a->Render(pDevice, true);
+			if (a == vFocus) {			
+				a->Render(pDevice, true);
+			}
+			else {
+				a->Render(pDevice, false);
+			}
 		}
 
 		PopPass();
@@ -3489,7 +3494,7 @@ TILEPICK Scene::PickSurface(short xpos, short ypos)
 
 // ===========================================================================================
 //
-D3D9Pick Scene::PickScene(short xpos, short ypos)
+D3D9Pick Scene::PickScene(short xpos, short ypos, const PickProp *p)
 {
 	D3DXVECTOR3 vPick = GetPickingRay(xpos, ypos);
 
@@ -3510,7 +3515,7 @@ D3D9Pick Scene::PickScene(short xpos, short ypos)
 		double cd = vVes->CamDist();
 
 		if (cd<5e3 && cd>1e-3) {
-			D3D9Pick pick = vVes->Pick(&vPick);
+			D3D9Pick pick = vVes->Pick(&vPick, p);
 			if (pick.pMesh) if (pick.dist<result.dist) result = pick;
 		}
 	}
@@ -3522,7 +3527,8 @@ D3D9Pick Scene::PickScene(short xpos, short ypos)
 D3D9Pick Scene::PickMesh(DEVMESHHANDLE hMesh, const LPD3DXMATRIX pW, short xpos, short ypos)
 {
 	D3D9Mesh *pMesh = (D3D9Mesh *)hMesh;
-	return pMesh->Pick(pW, NULL, ptr(GetPickingRay(xpos, ypos)));
+	PickProp prp = { NULL, 0.1f, false };
+	return pMesh->Pick(pW, NULL, ptr(GetPickingRay(xpos, ypos)), &prp);
 }
 
 // ===========================================================================================

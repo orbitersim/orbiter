@@ -235,3 +235,7 @@
 #define IDC_DBG_EXTVC                           3052
 #define IDC_DBG_CLIPDIST                        3053
 #define IDC_DBG_VISMODE                         3054
+#define IDC_DBG_PICKCURRENT                     3055
+#define IDC_DBG_DYNAMIC                         3056
+#define IDC_DBG_ISVCMESH                        3057
+#define IDC_DBG_VCSHADOW                        3058

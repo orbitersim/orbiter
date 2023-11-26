@@ -170,9 +170,11 @@ public:
 	bool bIsReflective;			// Mesh has a reflective material in one or more groups
 	bool bMtrlModidied;
 	bool bIsTemplate;
-	
+
+	DWORD MeshFlags;
 	D9BBox BBox;
 	MeshBuffer *pBuf;
+	MESHHANDLE hOapiMesh;
 
 	struct GROUPREC {			// mesh group definition
 		DWORD VertOff;			// Main mesh Vertex Offset
@@ -209,7 +211,7 @@ public:
 					~D3D9Mesh();
 
 	bool			IsOK() const { return pBuf != NULL; }
-
+	MESHHANDLE		GetOapiHandle() { return hOapiMesh; }
 	void			Release();
 	void			ClearBake(int i);
 	void			LoadBakedLights();
@@ -322,7 +324,7 @@ public:
 
 	void			SetSunLight(const D3D9Sun *pLight);
 
-	D3D9Pick		Pick(const LPD3DXMATRIX pW, const LPD3DXMATRIX pT, const D3DXVECTOR3 *vDir);
+	D3D9Pick		Pick(const LPD3DXMATRIX pW, const LPD3DXMATRIX pT, const D3DXVECTOR3 *vDir, const PickProp* p);
 
 	void			UpdateBoundingBox();
 	void			BoundingBox(const NMVERTEX *vtx, DWORD n, D9BBox *box);

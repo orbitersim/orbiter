@@ -63,6 +63,7 @@
 #define DBG_FLAGS_TILEBOXES				0x4000	///< Tile Boxes
 #define DBG_FLAGS_NEARCLIP				0x8000	///< Set Clip distance to 2cm
 #define DBG_FLAGS_RENDEREXT			    0x10000	///< Render exterior meshes for VC view
+#define DBG_FLAGS_PICKCURRENT			0x20000 ///< Only use Pick for current mesh
 /// @}
 
 
@@ -109,6 +110,7 @@ namespace DebugControls {
 	void		RemoveVisual(vObject *vo);
 	vObject *	GetVisual();
 	void		SetPickPos(D3DXVECTOR3 pos);
+	D3D9Mesh*	GetMesh();
 
 	void		SetupMeshGroups();
 	void		UpdateVisual();

@@ -128,6 +128,11 @@ struct RenderTgtData {
 	int code;
 };
 
+struct PickProp {
+	D3D9Mesh* pMesh;	// Mesh to pick, or NULL for full scene
+	float fnear;		// Near clip distance, ignore entities closer than this
+	bool bDualSided;	// Pick also back-facing triangles
+};
 
 struct SHADOWMAPPARAM {
 	LPDIRECT3DTEXTURE9 pShadowMap[SHM_CASCADE_COUNT];
