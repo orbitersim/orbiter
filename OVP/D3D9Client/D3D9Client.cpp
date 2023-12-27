@@ -319,6 +319,7 @@ bool D3D9Client::clbkInitialise()
 	D3D9ON12_ARGS args = {};
 	args.Enable9On12 = Config->Enable9On12 != 0;
 
+	// NOTE: Link error 'unresolved external symbol' means that d3d9.lib is outdated, use the latest one.
 	g_pD3DObject = Direct3DCreate9On12(D3D_SDK_VERSION, &args, 1);
 
 	if (g_pD3DObject) {
