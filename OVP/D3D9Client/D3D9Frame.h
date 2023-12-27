@@ -57,7 +57,6 @@ private:
     DWORD                  dwRenderWidth;      // Dimensions of the render target
     DWORD                  dwRenderHeight;     // Dimensions of the render target
     DWORD                  dwFSMode;
-    LPDIRECT3D9            pD3D;               // The Direct3D object
     LPDIRECT3DDEVICE9      pDevice;            // The D3D device
     LPD3DXFONT             pLargeFont;
     LPD3DXFONT             pSmallFont;
@@ -84,7 +83,6 @@ public:
 
     // Access functions for DirectX objects
     inline HWND                GetRenderWindow() const          { return hWnd; }
-    inline LPDIRECT3D9         GetDirect3D() const              { return pD3D; }
     inline LPDIRECT3DDEVICE9   GetD3DDevice() const             { return pDevice; }
     inline DWORD               GetZBufferBitDepth() const       { return dwZBufferBitDepth; }
     inline DWORD               GetStencilBitDepth() const       { return dwStencilBitDepth; }

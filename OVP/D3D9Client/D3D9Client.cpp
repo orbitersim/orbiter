@@ -39,6 +39,7 @@
 #include "gcCore.h"
 #include "gcConst.h"
 #include <unordered_map>
+#include <d3d9on12.h>
 
 
 #if defined(_MSC_VER) && (_MSC_VER <= 1700 ) // Microsoft Visual Studio Version 2012 and lower
@@ -65,6 +66,7 @@ using namespace oapi;
 HINSTANCE g_hInst = 0;
 D3D9Client *g_client = 0;
 class gcConst* g_pConst = 0;
+IDirect3D9* g_pD3DObject = 0;  // Made valid when VideoTab is created
 
 D3D9Catalog<LPDIRECT3DTEXTURE9>	 *TileCatalog;
 
@@ -277,6 +279,7 @@ D3D9Client::~D3D9Client()
 {
 	LogAlw("D3D9Client destructor called");
 	SAFE_DELETE(vtab);
+	SAFE_RELEASE(g_pD3DObject);
 }
 
 
@@ -313,11 +316,27 @@ bool D3D9Client::clbkInitialise()
 	LogAlw("================ clbkInitialise ===============");
 	LogAlw("Orbiter Version = %d",oapiGetOrbiterVersion());
 
+	D3D9ON12_ARGS args = {};
+	args.Enable9On12 = Config->Enable9On12 != 0;
+
+	g_pD3DObject = Direct3DCreate9On12(D3D_SDK_VERSION, &args, 1);
+
+	if (g_pD3DObject) {
+		oapiWriteLog("[D3D9] DirectX9 Created...");
+		if (Config->Enable9On12) oapiWriteLog("[D3D9] DX9 emulation via DX12");
+		else oapiWriteLog("[D3D9] Native Interface");
+	}
+	else {
+		oapiWriteLog("[D3D9][ERROR] Failed to create DirectX9");
+		return false;
+	}
+
 	// Perform default setup
 	if (GraphicsClient::clbkInitialise()==false) return false;
 	//Create the Launchpad video tab interface
+	oapiWriteLog("[D3D9] Initialize VideoTab...");
 	vtab = new VideoTab(this, ModuleInstance(), OrbiterInstance(), LaunchpadVideoTab());
-
+	oapiWriteLog("[D3D9] VideoTab Created...");
 	return true;
 }
 
@@ -330,6 +349,8 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	_TRACE;
 
 	LogAlw("================ clbkCreateRenderWindow ===============");
+
+	if (!g_pD3DObject) return NULL;
 
 	Config->WriteParams();
 	
@@ -377,8 +398,6 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	LogOk("Starting to initialize device and 3D environment...");
 
 	pFramework = new CD3DFramework9();
-
-	if (pFramework->GetDirect3D()==NULL) return NULL;
 
 	WriteLog("[DirectX 9 Initialized]");
 
@@ -2900,10 +2919,14 @@ void D3D9Client::SplashScreen()
 	DWORD m = d/100; d-=m*100;
 	if (m>12) m=0;
 
+	char dataA[256];
+	strcpy(dataA, "D3D9Client");
+	if (Config->Enable9On12) strcat_s(dataA, 256, " via D3D9on12 emulator");
+
 #ifdef _DEBUG
-	char dataA[]={"Using D3D9Client (Debug Build)"};
+	strcat_s(dataA, 256, " (Debug Build)");
 #else
-	char dataA[]={"Using D3D9Client (Release Build)"};
+	strcat_s(dataA, 256, " (Release Build)");
 #endif
 
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %lu 20%lu [%u]", months[m], d, y, oapiGetOrbiterVersion());
