@@ -631,6 +631,9 @@ HINSTANCE Orbiter::LoadModule (const char *path, const char *name)
 	}
 
 	if (hDLL) {
+		// Can't initialize DirectX in DllMain(), let's do it over here (jarmonik 28.12.2023) 
+		if (register_module == gclient && gclient != NULL) gclient->clbkInitialise();
+
 		DLLModule module = { hDLL, register_module ? register_module : new oapi::Module(hDLL), std::string(name), !register_module };
 		// If the DLL doesn't provide a Module interface, create a default one which provides the legacy callbacks
 		LOGOUT(register_module ? "Loading module %s" : "Loading module %s (legacy interface)", name);
@@ -2874,7 +2877,7 @@ bool Orbiter::AttachGraphicsClient (oapi::GraphicsClient *gc)
 	if (gclient) return false; // another client is already attached
 	register_module = gc;
 	gclient = gc;
-	gclient->clbkInitialise();
+	//gclient->clbkInitialise(); // Cannot initialize with-in DllMain() will result DirectX device failure.
 	return true;
 }
 
