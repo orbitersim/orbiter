@@ -913,7 +913,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 	{   
 
 		// Must update the latest view projection matrix
-		cp.mVP = *scn->GetProjectionViewMatrix();
+		cp.mVP = to_FMATRIX4(*scn->GetProjectionViewMatrix());
 
 		// Setup shadow maps for surface base objects and mesh based bodies ---------------
 		//

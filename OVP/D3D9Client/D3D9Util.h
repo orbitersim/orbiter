@@ -564,6 +564,26 @@ inline float D3DVAL (double x)
 	return (float)x;
 }
 
+inline auto to_FVECTOR3(const D3DXVECTOR3 &v) { return FVECTOR3{v.x, v.y, v.z}; }
+inline auto to_FVECTOR4(const D3DXVECTOR4 &v) { return FVECTOR4{v.x, v.y, v.z, v.w}; }
+
+inline auto to_D3DXVECTOR3(const FVECTOR3 &v) { return D3DXVECTOR3{v.x, v.y, v.z}; }
+inline auto to_D3DXVECTOR4(const FVECTOR4 &v) { return D3DXVECTOR4{v.x, v.y, v.z, v.w}; }
+
+inline auto to_FMATRIX4(const D3DXMATRIX &m)
+{
+    return FMATRIX4{
+        m(0,0), m(0,1), m(0,2), m(0,3),
+        m(1,0), m(1,1), m(1,2), m(1,3),
+        m(2,0), m(2,1), m(2,2), m(2,3),
+        m(3,0), m(3,1), m(3,2), m(3,3),
+    };
+}
+
+inline auto to_D3DXCOLOR(const FVECTOR3 &v) { return D3DXCOLOR{v.x, v.y, v.z, 1}; }
+
+inline auto to_FVECTOR4(const D3DXCOLOR &c) { return FVECTOR4{c.r, c.g, c.b, c.a}; }
+
 //char* _fgets(char* cbuf, int num, FILE* stream, bool keepOneSpace = false);
 
 int fgets2(char *buf, int cmax, FILE *file, DWORD param=0);

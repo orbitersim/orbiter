@@ -262,9 +262,9 @@ void SurfaceLighting(D3D9Sun *light, OBJHANDLE hP, OBJHANDLE hO, float ao)
 		lcol *= 1.0f-amb*0.5f; // reduce direct light component to avoid overexposure
 	}
 
-	light->Color = D3DXCOLOR(lcol.x, lcol.y, lcol.z, 1.0f);
-	light->Ambient = D3DXCOLOR(amb, amb, amb, 1.0f);
-	light->Dir = D3DXVEC(S) * (-1.0f/s);
+	light->Color = to_FVECTOR3(lcol);
+	light->Ambient = FVECTOR3{amb, amb, amb};
+	light->Dir = to_FVECTOR3(D3DXVEC(S) / -s);
 }
 // ===========================================
 // Remove unecessary spaces and tablations
@@ -1375,7 +1375,7 @@ void D3D9Light::UpdateLight(const LightEmitter *_le, const class vObject *vo)
 	// -----------------------------------------------------------------------------
 	if (Type != 0) {
 		D3DXVec3TransformNormal(&Direction, ptr(D3DXVEC(le->GetDirection())), vo->MWorld());
-		float angle = acos(dot(unit(Position), Direction));
+		float angle = acos(dot(unit(to_FVECTOR3(Position)), to_FVECTOR3(Direction)));
 		cone = ilerp(U * 0.5f, P * 0.5f, angle);
 	}
 }

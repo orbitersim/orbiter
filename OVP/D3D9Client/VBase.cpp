@@ -424,8 +424,8 @@ bool vBase::RenderStructures(LPDIRECT3DDEVICE9 dev)
 
 	// render generic objects above shadows
 	for (DWORD i=0; i<nstructure_as; i++) {
-		FVECTOR3 bs = structure_as[i]->GetBoundingSpherePos();
-		FVECTOR3 qw = TransformCoord(bs, mWorld);
+		auto bs = to_FVECTOR3(structure_as[i]->GetBoundingSpherePos());
+		auto qw = TransformCoord(bs, to_FMATRIX4(mWorld));
 		D3D9Sun sp = vP->GetObjectAtmoParams(qw._V() + vP->CameraPos());
 		structure_as[i]->SetSunLight(&sp);
 		structure_as[i]->Render(&mWorld, RENDER_BASE);

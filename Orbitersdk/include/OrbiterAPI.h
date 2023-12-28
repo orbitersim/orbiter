@@ -11,23 +11,27 @@
  * \file OrbiterAPI.h
  * \brief General API interface functions
  * \todo Check functions in VESSELSTATUS2::arot and oapiGetPlanetObliquityMatrix(), 
- *	minus sign has changed a place in a matrix. Is this correct??
+ *  minus sign has changed a place in a matrix. Is this correct??
  * \todo class CameraMode documentation 
 */
 
-#ifndef __ORBITERAPI_H
-#define __ORBITERAPI_H
+#ifndef ORBITERAPI_H
+#define ORBITERAPI_H
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1300 ) // Microsoft Visual Studio Version 2003 and higher
-#if !defined(_CRT_SECURE_NO_DEPRECATE)
-#define _CRT_SECURE_NO_DEPRECATE 
+#if defined(_MSC_VER) && (_MSC_VER >= 1300) // Microsoft Visual Studio Version 2003 and higher
+    #if !defined(_CRT_SECURE_NO_DEPRECATE)
+        #define _CRT_SECURE_NO_DEPRECATE
+    #endif
 #endif
-#endif
+
+#include "math.hpp"
+#include "vector.hpp"
+
+#include <cmath>
 #include <fstream>
-#include <windows.h>
-#include <float.h>
-#include <math.h>
 #include <vector>
+
+#include <windows.h>
 
 extern "C" {
 #include "Lua/lua.h"
@@ -39,18 +43,18 @@ extern "C" {
 #define DLLCLBK extern "C" __declspec(dllexport)
 
 #ifdef OAPI_IMPLEMENTATION
-#define OAPIFUNC DLLEXPORT
+    #define OAPIFUNC DLLEXPORT
 #else
-#define OAPIFUNC DLLIMPORT
+    #define OAPIFUNC DLLIMPORT
 #endif
 
 #pragma warning(disable: 4201)
 
 // Message loop return type - maintain backward compatibility for 32-bit
 #ifdef _WIN64
-#define OAPI_MSGTYPE LRESULT
+    #define OAPI_MSGTYPE LRESULT
 #else
-#define OAPI_MSGTYPE int
+    #define OAPI_MSGTYPE int
 #endif
 
 // ======================================================================
@@ -60,11 +64,11 @@ extern "C" {
 const double PI    = 3.14159265358979323846;	///< pi
 const double PI05  = 1.57079632679489661923;	///< pi/2
 const double PI2   = 6.28318530717958647693;	///< pi*2
-const double RAD   = PI/180.0;      ///< factor to map degrees to radians
-const double DEG   = 180.0/PI;      ///< factor to map radians to degrees
-const double C0    = 299792458.0;   ///< speed of light in vacuum [m/s]
+const double RAD   = PI / 180;      ///< factor to map degrees to radians
+const double DEG   = 180 / PI;      ///< factor to map radians to degrees
+const double C0    = 299792458;     ///< speed of light in vacuum [m/s]
 const double TAUA  = 499.004783806; ///< light time for 1 AU [s]
-const double AU    = C0*TAUA;       ///< astronomical unit (mean geocentric distance of the sun) [m]
+const double AU    = C0 * TAUA;     ///< astronomical unit (mean geocentric distance of the sun) [m]
 const double GGRAV = 6.67259e-11;   ///< gravitational constant [m^3 kg^-1 s^-2]
 const double G     = 9.81;          ///< gravitational acceleration [m/s^2] at Earth mean radius
 const double ATMP  = 101.4e3;       ///< atmospheric pressure [Pa] at Earth sea level
@@ -79,10 +83,10 @@ const double ATMD  = 1.293;         ///< atmospheric density [kg/m^3] at Earth s
  * \param angle input angle [rad]
  * \return normalised angle [rad]
  */
-inline double normangle (double angle)
+inline double normangle(double angle)
 {
-	double a = fmod (angle, PI2);
-	return (a >= PI ? a-PI2 : a < -PI ? a+PI2 : a);
+	double a = std::fmod(angle, PI2);
+	return a >= PI ? (a - PI2) : a < -PI ? (a + PI2) : a;
 }
 
 /**
@@ -90,10 +94,10 @@ inline double normangle (double angle)
  * \param angle input angle [rad]
  * \return normalised angle [rad]
  */
-inline double posangle (double angle)
+inline double posangle(double angle)
 {
-	double a = fmod (angle, PI2);
-	return (a >= 0.0 ? a : a+PI2);
+	double a = std::fmod(angle, PI2);
+	return a >= 0 ? a : (a + PI2);
 }
 
 /**
@@ -106,7 +110,7 @@ inline double posangle (double angle)
  *   with 'k', 'M', 'G' postfixes as required
  * \note cbuf must be allocated to sufficient size to hold the string
  */
-OAPIFUNC void FormatValue (char *cbuf, int n, double f, int precision=4);
+OAPIFUNC void FormatValue(char *cbuf, int n, double f, int precision = 4);
 
 // ======================================================================
 // API data types
@@ -138,81 +142,79 @@ namespace oapi {
 // ======================================================================
 //@{
 /// \brief Handle for objects (vessels, stations, planets)
-typedef void *OBJHANDLE;
+using OBJHANDLE = void *;
 
 /// \brief Handle for vessel superstructures
-typedef void *SUPERVESSELHANDLE;
+using SUPERVESSELHANDLE = void *;
 
 /// \brief Handle for visuals
-typedef void *VISHANDLE;
+using VISHANDLE = void *;
 
 /// \brief Handle for meshes
-typedef void *MESHHANDLE;
+using MESHHANDLE = void *;
 
 /// \brief Handle for graphics-client-specific meshes
-typedef int *DEVMESHHANDLE;
-//struct DEVMESHHANDLE {
-//	DEVMESHHANDLE() { hMesh = NULL; }
-//	DEVMESHHANDLE(MESHHANDLE h) { hMesh = h; }
-//	DWORD id;
-//	MESHHANDLE hMesh;
-//	operator int() { return (int)hMesh; }
-//};
+using DEVMESHHANDLE = int *;
 
 /// \brief Handle for bitmap surfaces and textures (panels and panel items)
-typedef void *SURFHANDLE;
+using SURFHANDLE = void *;
 
 /// \brief Handle for 2D instrument panels
-typedef void *PANELHANDLE;
+using PANELHANDLE = void *;
 
 /// \brief Handle for file streams
-typedef void *FILEHANDLE;
+using FILEHANDLE = void *;
 
 /// \brief Handle for script interpreters
-typedef void *INTERPRETERHANDLE;
+using INTERPRETERHANDLE = void *;
 
 /// \brief Handle for thrusters
-typedef void *THRUSTER_HANDLE;
+using THRUSTER_HANDLE = void *;
 
 /// \brief Handle for logical thruster groups
-typedef void *THGROUP_HANDLE;
+using THGROUP_HANDLE = void *;
 
 /// \brief Propellant resource handle
-typedef void *PROPELLANT_HANDLE;
+using PROPELLANT_HANDLE = void *;
 
 /// \brief Handle for particle streams
-typedef void *PSTREAM_HANDLE;
+using PSTREAM_HANDLE = void *;
 
 /// \brief Handle for vessel docking ports
-typedef void *DOCKHANDLE;
+using DOCKHANDLE = void *;
 
 /// \brief Handle vor vessel passive attachment points
-typedef void *ATTACHMENTHANDLE;
+using ATTACHMENTHANDLE = void *;
 
 /// \brief Handle for vessel airfoils
-typedef void *AIRFOILHANDLE;
+using AIRFOILHANDLE = void *;
 
 /// \brief Handle for vessel aerodynamic control surfaces
-typedef void *CTRLSURFHANDLE;
+using CTRLSURFHANDLE = void *;
 
 /// \brief Handle for a navigation radio transmitter (VOR, ILS, IDS, XPDR)
-typedef void *NAVHANDLE;
+using NAVHANDLE = void *;
 
 /// \brief Handle for animation components
-typedef void *ANIMATIONCOMPONENT_HANDLE;
+using ANIMATIONCOMPONENT_HANDLE = void *;
 
 /// \brief Handle for custom items added to Launchpad "Extra" list
-typedef void *LAUNCHPADITEM_HANDLE;
+using LAUNCHPADITEM_HANDLE = void *;
 
 /// \brief Handle for onscreen annotation objects
-typedef void *NOTEHANDLE;
+using NOTEHANDLE = void *;
 
 /// \brief Handle for elevation query managers
-typedef void *ELEVHANDLE;
+using ELEVHANDLE = void *;
 //@}
 
-typedef enum { FILE_IN, FILE_OUT, FILE_APP, FILE_IN_ZEROONFAIL } FileAccessMode;
-typedef enum { ROOT, CONFIG, SCENARIOS, TEXTURES, TEXTURES2, MESHES, MODULES } PathRoot;
+enum FileAccessMode {
+    FILE_IN, FILE_OUT, FILE_APP, FILE_IN_ZEROONFAIL
+};
+
+enum PathRoot {
+    ROOT, CONFIG, SCENARIOS, TEXTURES, TEXTURES2, MESHES, MODULES
+};
 
 /// \defgroup surfid Identifiers for special render surfaces
 /// @{
@@ -231,22 +233,6 @@ typedef enum { ROOT, CONFIG, SCENARIOS, TEXTURES, TEXTURES2, MESHES, MODULES } P
  */
 // ===========================================================================
 //@{
-/**
- * \brief 3-element vector
- */
-typedef union {
-	double data[3];               ///< array data interface
-	struct { double x, y, z; };   ///< named data interface
-} VECTOR3;
-
-/**
- * \brief 4-element vector
- */
-typedef union {
-	double data[4];                ///< array data interface
-	struct { double x, y, z, w; }; ///< named data interface
-} VECTOR4;
-
 /**
  * \brief 3x3-element matrix
  */
@@ -7519,9 +7505,12 @@ inline VECTOR3 POINTERTOREF (VECTOR3 *p)
 // ======================================================================
 
 #ifdef ORBITER_MODULE
+
 void dummy();
-void calldummy () { dummy(); }
-DLLCLBK char *ModuleDate () { return (char*)__DATE__; }
+void calldummy() { dummy(); }
+
+DLLCLBK char *ModuleDate() { return (char*)__DATE__; }
+
 #endif
 
-#endif // !__ORBITERAPI_H
+#endif // ORBITERAPI_H
