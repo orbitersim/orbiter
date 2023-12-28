@@ -195,6 +195,7 @@ DLLCLBK void ExitModule(HINSTANCE hDLL)
 	delete TileCatalog;
 	delete Config;
 	delete g_pConst;
+	delete g_client;
 
 	DebugControls::Release();
 	AtmoControls::Release();
@@ -334,11 +335,11 @@ bool D3D9Client::clbkInitialise()
 
 	// Perform default setup
 	if (GraphicsClient::clbkInitialise()==false) return false;
+
 	//Create the Launchpad video tab interface
 	oapiWriteLog("[D3D9] Initialize VideoTab...");
 	vtab = new VideoTab(this, ModuleInstance(), OrbiterInstance(), LaunchpadVideoTab());
-	oapiWriteLog("[D3D9] VideoTab Created...");
-	return true;
+	return vtab->Initialise();
 }
 
 
