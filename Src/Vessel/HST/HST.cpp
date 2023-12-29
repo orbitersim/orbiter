@@ -45,16 +45,16 @@ void HST::DefineAnimations (void)
 {
 	// 1. Hi-gain antenna
 	static UINT HiGainAnt1Grp[2] = {1,3};
-	static MGROUP_ROTATE HiGainAnt1 (0, HiGainAnt1Grp, 2, _V(0.002579,1.993670,0.238158), _V(-1,0,0), (float)(PI*0.51));
+	static MGROUP_ROTATE HiGainAnt1 (0, HiGainAnt1Grp, 2, {0.002579,1.993670,0.238158}, {-1,0,0}, (float)(PI*0.51));
 	static UINT HiGainAnt2Grp[2] = {0,2};
-	static MGROUP_ROTATE HiGainAnt2 (0, HiGainAnt2Grp, 2, _V(0.002740,-2.013091,0.238118), _V(1,0,0), (float)(PI*0.51));
+	static MGROUP_ROTATE HiGainAnt2 (0, HiGainAnt2Grp, 2, {0.002740,-2.013091,0.238118}, {1,0,0}, (float)(PI*0.51));
 	anim_ant = CreateAnimation (0.0196);
 	AddAnimationComponent (anim_ant, 0, 0.5, &HiGainAnt1);
 	AddAnimationComponent (anim_ant, 0, 1,   &HiGainAnt2);
 
 	// 2. Main telescope hatch
 	static UINT HatchGrp[1] = {86};
-	static MGROUP_ROTATE Hatch (0, HatchGrp, 1, _V(0.089688,1.456229,7.526453), _V(-1,0,0), (float)(RAD*113));
+	static MGROUP_ROTATE Hatch (0, HatchGrp, 1, {0.089688,1.456229,7.526453}, {-1,0,0}, (float)(RAD*113));
 	anim_hatch = CreateAnimation (0);
 	AddAnimationComponent (anim_hatch, 0, 1, &Hatch);
 
@@ -62,17 +62,17 @@ void HST::DefineAnimations (void)
 	anim_array = CreateAnimation (1);
 	static UINT ArrayLFoldGrp[5] = {87,88,89,90,103};
 	static UINT ArrayRFoldGrp[5] = {92,93,94,95,102};
-	static MGROUP_ROTATE ArrayLFold1 (0, ArrayLFoldGrp, 5, _V(-1.9, 0.053583,1.429349), _V(0,-1,0), (float)(PI*0.5));
+	static MGROUP_ROTATE ArrayLFold1 (0, ArrayLFoldGrp, 5, {-1.9, 0.053583,1.429349}, {0,-1,0}, (float)(PI*0.5));
 	AddAnimationComponent (anim_array, 0,   0.4, &ArrayLFold1);
-	static MGROUP_ROTATE ArrayLFold2 (0, ArrayLFoldGrp, 5, _V(0,0.053583,1.429349), _V(-1,0,0), (float)(PI*0.5));
+	static MGROUP_ROTATE ArrayLFold2 (0, ArrayLFoldGrp, 5, {0,0.053583,1.429349}, {-1,0,0}, (float)(PI*0.5));
 	AddAnimationComponent (anim_array, 0.4, 0.6, &ArrayLFold2);
-	static MGROUP_SCALE  ArrayLFold3 (0, ArrayLFoldGrp, 4, _V(0,0.053583,1.429349), _V(1,1,4));
+	static MGROUP_SCALE  ArrayLFold3 (0, ArrayLFoldGrp, 4, {0,0.053583,1.429349}, {1,1,4});
 	AddAnimationComponent (anim_array, 0.6, 1,   &ArrayLFold3);
-	static MGROUP_ROTATE ArrayRFold1 (0, ArrayRFoldGrp, 5, _V( 1.9, 0.053583,1.429349), _V(0, 1,0), (float)(PI*0.5));
+	static MGROUP_ROTATE ArrayRFold1 (0, ArrayRFoldGrp, 5, { 1.9, 0.053583,1.429349}, {0, 1,0}, (float)(PI*0.5));
 	AddAnimationComponent (anim_array, 0,   0.4, &ArrayRFold1);
-	static MGROUP_ROTATE ArrayRFold2 (0, ArrayRFoldGrp, 5, _V(0,0.053583,1.429349), _V(-1,0,0), (float)(PI*0.5));
+	static MGROUP_ROTATE ArrayRFold2 (0, ArrayRFoldGrp, 5, {0,0.053583,1.429349}, {-1,0,0}, (float)(PI*0.5));
 	AddAnimationComponent (anim_array, 0.4, 0.6, &ArrayRFold2);
-	static MGROUP_SCALE  ArrayRFold3 (0, ArrayRFoldGrp, 4, _V(0,0.053583,1.429349), _V(1,1,4));
+	static MGROUP_SCALE  ArrayRFold3 (0, ArrayRFoldGrp, 4, {0,0.053583,1.429349}, {1,1,4});
 	AddAnimationComponent (anim_array, 0.6, 1,   &ArrayRFold3);
 }
 

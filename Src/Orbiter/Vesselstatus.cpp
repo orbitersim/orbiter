@@ -665,9 +665,9 @@ void Vessel::GetState2 (void *status)
 	vs->port  = nport;
 	Vector dp (GPos() - cbody->GPos());
 	Vector dv (GVel() - cbody->GVel());
-	vs->rpos  = _V(dp.x, dp.y, dp.z);
-	vs->rvel  = _V(dv.x, dv.y, dv.z);
-	vs->vrot  = (fstatus == FLIGHTSTATUS_LANDED ? _V(sp.alt, 0, 0) : _V(s0->omega.x, s0->omega.y, s0->omega.z));
+	vs->rpos  = {dp.x, dp.y, dp.z};
+	vs->rvel  = {dv.x, dv.y, dv.z};
+	vs->vrot  = (fstatus == FLIGHTSTATUS_LANDED ? VECTOR3{sp.alt, 0, 0} : VECTOR3{s0->omega.x, s0->omega.y, s0->omega.z});
 	EulerAngles (fstatus == FLIGHTSTATUS_LANDED ? land_rot : s0->R, vs->arot);
 	vs->surf_lng = sp.lng;
 	vs->surf_lat = sp.lat;

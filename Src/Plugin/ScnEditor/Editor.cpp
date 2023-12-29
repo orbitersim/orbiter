@@ -279,8 +279,8 @@ bool ScnEditor::CreateVessel (char *name, char *classname)
 	if (!vs.rbody) vs.rbody = oapiGetGbodyByIndex (0);
 	double rad = 1.1 * oapiGetSize (vs.rbody);
 	double vel = sqrt (GGRAV * oapiGetMass (vs.rbody) / rad);
-	vs.rpos = _V(rad,0,0);
-	vs.rvel = _V(0,0,vel);
+	vs.rpos = {rad,0,0};
+	vs.rvel = {0,0,vel};
 	// create the vessel
 	OBJHANDLE newvessel = oapiCreateVesselEx (name, classname, &vs);
 	if (!newvessel) return false; // failure
@@ -2039,8 +2039,8 @@ void EditorTab_Statevec::Apply ()
 			needrefresh = true;
 		}
 #endif
-		veccpy (vs.rpos, pos);
-		veccpy (vs.rvel, vel);
+		vs.rpos = pos;
+		vs.rvel = vel;
 		vessel->DefSetState (&vs);
 		if (needrefresh) Refresh();
 	}
@@ -2236,7 +2236,7 @@ void EditorTab_Landed::Refresh (OBJHANDLE hV)
 		oapiGetRelativePos (ed->hVessel, hRef, &pos);
 		oapiGetRotationMatrix (hRef, &rot);
 		pos = tmul (rot, pos);
-		VECTOR3 vel = _V(0,0,0);
+		VECTOR3 vel{0, 0, 0};
 		Crt2Pol (pos, vel);
 		sprintf (lngstr, "%lf", pos.data[1] * DEG);
 		sprintf (latstr, "%lf", pos.data[2] * DEG);

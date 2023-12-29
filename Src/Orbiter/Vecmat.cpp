@@ -281,7 +281,7 @@ Matrix4::Matrix4 (const Matrix4 &A)
 }
 
 
-void qrdcmp (Matrix4 &a, Vector4 &c, Vector4 &d, int *sing)
+void qrdcmp (Matrix4 &a, VECTOR4 &c, VECTOR4 &d, int *sing)
 {
 	int i, j, k;
 	double scale, sigma, sum, tau;
@@ -293,7 +293,7 @@ void qrdcmp (Matrix4 &a, Vector4 &c, Vector4 &d, int *sing)
 			scale = std::max (scale, fabs(a(i,k)));
 		if (scale == 0.0) {
 			if (sing) *sing = 1;
-			c(k) = d(k) = 0.0;
+			c[k] = d[k] = 0.0;
 		} else {
 			for (i = k; i < 4; i++)
 				a(i,k) /= scale;
@@ -301,43 +301,43 @@ void qrdcmp (Matrix4 &a, Vector4 &c, Vector4 &d, int *sing)
 				sum += a(i,k)*a(i,k);
 			sigma = (a(k,k) < 0 ? -sqrt(sum) : sqrt(sum));
 			a(k,k) += sigma;
-			c(k) = sigma*a(k,k);
-			d(k) = -scale*sigma;
+			c[k] = sigma * a(k, k);
+			d[k] = -scale * sigma;
 			for (j = k+1; j < 4; j++) {
 				for (sum = 0.0,i = k; i < 4; i++)
 					sum += a(i,k)*a(i,j);
-				tau = sum/c(k);
+				tau = sum / c[k];
 				for (i = k; i < 4; i++)
 					a(i,j) -= tau*a(i,k);
 			}
 		}
 	}
-	d(3) = a(3,3);
-	if (sing && d(3) == 0.0) *sing = 1;
+	d[3] = a(3, 3);
+	if (sing && d[3] == 0.0) *sing = 1;
 }
 
-void qrsolv (const Matrix4 &a, const Vector4 &c, const Vector4 &d, Vector4 &b)
+void qrsolv (const Matrix4 &a, const VECTOR4 &c, const VECTOR4 &d, VECTOR4 &b)
 {
 	int i, j;
 	double sum, tau;
 	for (j = 0; j < 3; j++) {
 		for (sum = 0.0, i = j; i < 4; i++)
-			sum += a(i,j)*b(i);
-		tau = sum/c(j);
+			sum += a(i, j) * b[i];
+		tau = sum / c[j];
 		for (i = j; i < 4; i++)
-			b(i) -= tau*a(i,j);
+			b[i] -= tau * a(i, j);
 	}
 
-	b(3) /= d(3);
+	b[3] /= d[3];
 	for (i = 2; i >= 0; i--) {
 		for (sum = 0.0, j = i+1; j < 4; j++)
-			sum += a(i,j)*b(j);
-		b(i) = (b(i)-sum)/d(i);
+			sum += a(i, j) * b[j];
+		b[i] = (b[i] - sum) / d[i];
 	}
 }
 
 
-void QRFactorize (Matrix4 &A, Vector4 &c, Vector4 &d)
+void QRFactorize (Matrix4 &A, VECTOR4 &c, VECTOR4 &d)
 {
     int i, j, k;
     double sum, b, f;
@@ -345,9 +345,9 @@ void QRFactorize (Matrix4 &A, Vector4 &c, Vector4 &d)
     for (k = 0; k < 4; k++) {
         for (sum = 0, i = k; i < 4; i++)
 	    sum += A(i,k)*A(i,k);
-		d(k) = (A(k,k) < 0 ? -sqrt(sum) : sqrt(sum));
-		b = sqrt(2.0*d(k)*(A(k,k) + d(k)));
-		A(k,k) = (A(k,k) + d(k))/b;
+		d[k] = A(k, k) < 0 ? -sqrt(sum) : sqrt(sum);
+		b = sqrt(2.0 * d[k] * (A(k, k) + d[k]));
+		A(k, k) = (A(k, k) + d[k]) / b;
 		for (i = k+1; i < 4; i++)
 			A(i,k) /= b;
 		for (j = k+1; j < 4; j++) {
@@ -360,20 +360,20 @@ void QRFactorize (Matrix4 &A, Vector4 &c, Vector4 &d)
     }
 }
 
-void RSolve (const Matrix4 &A, const Vector4 &d, Vector4 &b)
+void RSolve (const Matrix4 &A, const VECTOR4 &d, VECTOR4 &b)
 {
     int i, j;
     double sum;
-    b(3) /= -d(3);
+    b[3] /= -d[3];
     for (i = 2; i >= 0; i--) {
         for (sum = 0.0, j = i+1; j < 4; j++)
-	    sum += A(i,j) * b(j);
-		b(i) = (b(i)-sum) / -d(i);
+	    sum += A(i, j) * b[j];
+		b[i] = (b[i] - sum) / -d[i];
     }
 }
 
-void QRSolve (const Matrix4 &A, const Vector4 &c,
-    const Vector4 &d, const Vector4 &b, Vector4 &x)
+void QRSolve (const Matrix4 &A, const VECTOR4 &c,
+    const VECTOR4 &d, const VECTOR4 &b, VECTOR4 &x)
 {
     int i, k;
     double sum;
@@ -382,10 +382,10 @@ void QRSolve (const Matrix4 &A, const Vector4 &c,
     x = b;
     for (k = 0; k < 4; k++) {
         for (sum = 0, i = k; i < 4; i++)
-			sum += A(i,k)*x(i);
+			sum += A(i,k) * x[i];
 		sum *= 2.0;
 		for (i = k; i < 4; i++)
-			x(i) -= sum*A(i,k);
+			x[i] -= sum * A(i, k);
     }
 
     // Solves Rx = y

@@ -4,6 +4,8 @@
 #ifndef __VECMAT_H
 #define __VECMAT_H
 
+#include "vector.hpp"
+
 #include <math.h>
 #include <memory.h>
 #include <ostream>
@@ -232,38 +234,6 @@ Matrix inv (const Matrix &A);  // inverse of A
 Matrix transp (const Matrix &A); // transpose of A
 
 // =======================================================================
-// class Vector4:  4-element vector
-
-class Vector4 {
-public:
-	inline Vector4 ()
-	{ x = y = z = w = 0.0; }
-
-	inline Vector4 (double _x, double _y, double _z, double _w)
-	{ x = _x, y = _y, z = _z, w = _w; }
-
-	inline Vector4 (const Vector4 &vec)
-	{ memcpy (data, vec.data, 4*sizeof(double)); }
-
-	inline void Set (double _x, double _y, double _z, double _w)
-	{ x = _x, y = _y, z = _z, w = _w; }
-
-	inline void Set (const Vector4 &vec)
-	{ memcpy (data, vec.data, 4*sizeof(double)); }
-
-	inline double &operator() (int i)
-	{ return data[i]; }
-
-	inline double operator() (int i) const
-	{ return data[i]; }
-
-	union {
-		double data[4];
-		struct { double x, y, z, w; };
-	};
-};
-
-// =======================================================================
 // class Matrix4:  4x4 dense matrix
 
 class Matrix4 {
@@ -298,12 +268,12 @@ public:
 	inline double operator() (int i, int j) const
 	{ return data[i*4+j]; }
 
-	friend void qrdcmp (Matrix4 &a, Vector4 &c, Vector4 &d, int *sing = 0);
-	friend void qrsolv (const Matrix4 &a, const Vector4 &c, const Vector4 &d, Vector4 &b);
-	friend void QRFactorize (Matrix4 &A, Vector4 &c, Vector4 &d);
-	friend void RSolve (const Matrix4 &A, const Vector4 &d, Vector4 &b);
-	friend void QRSolve (const Matrix4 &A, const Vector4 &c,
-		const Vector4 &d, const Vector4 &b, Vector4 &x);
+	friend void qrdcmp (Matrix4 &a, VECTOR4 &c, VECTOR4 &d, int *sing = 0);
+	friend void qrsolv (const Matrix4 &a, const VECTOR4 &c, const VECTOR4 &d, VECTOR4 &b);
+	friend void QRFactorize (Matrix4 &A, VECTOR4 &c, VECTOR4 &d);
+	friend void RSolve (const Matrix4 &A, const VECTOR4 &d, VECTOR4 &b);
+	friend void QRSolve (const Matrix4 &A, const VECTOR4 &c,
+		const VECTOR4 &d, const VECTOR4 &b, VECTOR4 &x);
 
 	union {
 		double data[16];

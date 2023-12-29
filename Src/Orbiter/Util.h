@@ -36,8 +36,8 @@ bool iequal(const std::string& s1, const std::string& s2);
 inline Vector MakeVector (const VECTOR3 &v)
 { return Vector(v.x, v.y, v.z); }
 
-inline VECTOR3 MakeVECTOR3 (const Vector &v)
-{ return _V(v.x, v.y, v.z); }
+inline auto MakeVECTOR3 (const Vector &v)
+{ return VECTOR3{v.x, v.y, v.z}; }
 
 inline VECTOR4 MakeVECTOR4 (const Vector &v)
 { return _V(v.x, v.y, v.z, 1.0); }

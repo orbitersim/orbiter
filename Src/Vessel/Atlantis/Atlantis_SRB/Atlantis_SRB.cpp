@@ -25,19 +25,19 @@
 
 static const int ntdvtx = 13;
 static const TOUCHDOWNVTX tdvtx[ntdvtx] = {
-	{_V( 0,      2.5, -21.18), 1e9, 1e7, 0.3 },
-	{_V( 2.1651,-1.25,-21.18), 1e9, 1e7, 0.3 },
-	{_V(-2.1651,-1.25,-21.18), 1e9, 1e7, 0.3 },
-	{_V( 2.1651, 1.25,-21.18), 1e9, 1e7, 0.3 },
-	{_V( 0,     -2.5 ,-21.18), 1e9, 1e7, 0.3 },
-	{_V(-2.1651, 1.25,-21.18), 1e9, 1e7, 0.3 },
-	{_V( 0,      1.85, 18.95), 1e9, 1e7, 0.3 },
-	{_V( 1.6021,-0.925,18.95), 1e9, 1e7, 0.3 },
-	{_V(-1.6021,-0.925,18.95), 1e9, 1e7, 0.3 },
-	{_V( 1.6021, 0.925,18.95), 1e9, 1e7, 0.3 },
-	{_V( 0,     -1.85, 18.95), 1e9, 1e7, 0.3 },
-	{_V(-1.6021, 0.925,18.95), 1e9, 1e7, 0.3 },
-	{_V( 0,      0,    23.78), 1e9, 1e7, 0.3 }
+	{{ 0,      2.5, -21.18}, 1e9, 1e7, 0.3 },
+	{{ 2.1651,-1.25,-21.18}, 1e9, 1e7, 0.3 },
+	{{-2.1651,-1.25,-21.18}, 1e9, 1e7, 0.3 },
+	{{ 2.1651, 1.25,-21.18}, 1e9, 1e7, 0.3 },
+	{{ 0,     -2.5 ,-21.18}, 1e9, 1e7, 0.3 },
+	{{-2.1651, 1.25,-21.18}, 1e9, 1e7, 0.3 },
+	{{ 0,      1.85, 18.95}, 1e9, 1e7, 0.3 },
+	{{ 1.6021,-0.925,18.95}, 1e9, 1e7, 0.3 },
+	{{-1.6021,-0.925,18.95}, 1e9, 1e7, 0.3 },
+	{{ 1.6021, 0.925,18.95}, 1e9, 1e7, 0.3 },
+	{{ 0,     -1.85, 18.95}, 1e9, 1e7, 0.3 },
+	{{-1.6021, 0.925,18.95}, 1e9, 1e7, 0.3 },
+	{{ 0,      0,    23.78}, 1e9, 1e7, 0.3 }
 };
 
 // Constructor
@@ -153,16 +153,16 @@ void Atlantis_SRB::clbkSetClassCaps (FILEHANDLE cfg)
 	SetSize (23.0);
 	SetEmptyMass (SRB_EMPTY_MASS);
 	SetCW (0.1, 0.3, 1.4, 1.4);
-	SetCrossSections (_V(162.1,162.1,26.6));
-	SetRotDrag (_V(0.7,0.7,0.1));
-	SetPMI (_V(154.3,154.3,1.83));
+	SetCrossSections ({162.1,162.1,26.6});
+	SetRotDrag ({0.7,0.7,0.1});
+	SetPMI ({154.3,154.3,1.83});
 	//SetGravityGradientDamping (10.0);
 	SetTouchdownPoints (tdvtx, ntdvtx);
 	SetLiftCoeffFunc (0);
 
 	// ************************* docking port **************************************
 
-	CreateDock (_V(1.95,0,5),_V(1,0,0),_V(0,0,1)); // ET attachment
+	CreateDock ({1.95,0,5},{1,0,0},{0,0,1}); // ET attachment
 
 	// ************************* propellant specs **********************************
 
@@ -171,21 +171,21 @@ void Atlantis_SRB::clbkSetClassCaps (FILEHANDLE cfg)
 	// *********************** thruster definitions ********************************
 
 	// main engine
-	th_main = CreateThruster (_V(0,0,-21), THRUSTGIMBAL_LAUNCH, SRB_THRUST, ph_main, SRB_ISP0, SRB_ISP1);
+	th_main = CreateThruster ({0,0,-21}, THRUSTGIMBAL_LAUNCH, SRB_THRUST, ph_main, SRB_ISP0, SRB_ISP1);
 	SURFHANDLE tex = oapiRegisterExhaustTexture ((char*)"Exhaust2");
 	srb_exhaust.tex = oapiRegisterParticleTexture ((char*)"Contrail2");
 	AddExhaust (th_main, 16.0, 2.0, tex);
-	AddExhaustStream (th_main, _V(0,0,-30), &srb_contrail);
-	AddExhaustStream (th_main, _V(0,0,-25), &srb_exhaust);
+	AddExhaustStream (th_main, {0,0,-30}, &srb_contrail);
+	AddExhaustStream (th_main, {0,0,-25}, &srb_exhaust);
 
 	// separation bolts
-	th_bolt = CreateThruster (_V(0,0,3.0), _V(-1,0,0), 3e6, ph_main, 1e7);
+	th_bolt = CreateThruster ({0,0,3.0}, {-1,0,0}, 3e6, ph_main, 1e7);
 	// for simplicity, the separation bolts directly use SRB propellant. We give
 	// them an insanely high ISP to avoid significant propellant drainage
 
-	AddExhaust (th_bolt, 0.7, 0.1, _V(2.1,0,-8), _V(-1,0,0));
-	AddExhaust (th_bolt, 0.7, 0.1, _V(2.1,0,11), _V(-1,0,0));
-	AddExhaustStream (th_bolt, _V(2.1,0,0), &srb_bolt);
+	AddExhaust (th_bolt, 0.7, 0.1, {2.1,0,-8}, {-1,0,0});
+	AddExhaust (th_bolt, 0.7, 0.1, {2.1,0,11}, {-1,0,0});
+	AddExhaustStream (th_bolt, {2.1,0,0}, &srb_bolt);
 
 	// ************************ visual parameters **********************************
 
@@ -212,7 +212,7 @@ void Atlantis_SRB::clbkPostCreation ()
 		}
 	}
 	if (srbpos != SRB_UNDEFINED)
-		SetThrusterDir(th_bolt, srbpos == SRB_LEFT ? _V(-0.4,-0.9165,0) : _V(-0.4,0.9165,0));
+		SetThrusterDir(th_bolt, srbpos == SRB_LEFT ? VECTOR3{-0.4,-0.9165,0} : VECTOR3{-0.4,0.9165,0});
 }
 
 // Read current state
@@ -260,7 +260,7 @@ void Atlantis_SRB::clbkPostStep (double simt, double simdt, double mjd)
 		double dg_max = simdt*SRB_GIMBAL_SPEED;
 		VECTOR3 gimbalcur = GetThrustGimbal();
 		VECTOR3 gdiff = gimbalcmd-gimbalcur;
-		double dg = length(gdiff);
+		double dg = len(gdiff);
 		if (dg > dg_max) {
 			gdiff *= dg_max/dg;
 		} else {

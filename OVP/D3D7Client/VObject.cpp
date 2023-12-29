@@ -138,13 +138,13 @@ void vObject::UpdateRenderVectors()
 			double scale = size * *(float*)gc->GetConfigParam(CFGPRM_FRAMEAXISSCALE);
 			double rad = size * 0.01;
 			float alpha = *(float*)gc->GetConfigParam(CFGPRM_FRAMEAXISOPACITY);
-			AddVector(_V(scale, 0, 0), _V(0, 0, 0), rad, std::string("+x"), _V(1, 1, 1), alpha, D3DRGB(1, 1, 1));
-			AddVector(_V(0, scale, 0), _V(0, 0, 0), rad, std::string("+y"), _V(1, 1, 1), alpha, D3DRGB(1, 1, 1));
-			AddVector(_V(0, 0, scale), _V(0, 0, 0), rad, std::string("+z"), _V(1, 1, 1), alpha, D3DRGB(1, 1, 1));
+			AddVector({scale, 0, 0}, {0, 0, 0}, rad, std::string("+x"), {1, 1, 1}, alpha, D3DRGB(1, 1, 1));
+			AddVector({0, scale, 0}, {0, 0, 0}, rad, std::string("+y"), {1, 1, 1}, alpha, D3DRGB(1, 1, 1));
+			AddVector({0, 0, scale}, {0, 0, 0}, rad, std::string("+z"), {1, 1, 1}, alpha, D3DRGB(1, 1, 1));
 			if (flag & FAV_NEGATIVE) {
-				AddVector(_V(-scale, 0, 0), _V(0, 0, 0), rad, std::string("-x"), _V(1, 1, 1), alpha, D3DRGB(1, 1, 1));
-				AddVector(_V(0, -scale, 0), _V(0, 0, 0), rad, std::string("-y"), _V(1, 1, 1), alpha, D3DRGB(1, 1, 1));
-				AddVector(_V(0, 0, -scale), _V(0, 0, 0), rad, std::string("-z"), _V(1, 1, 1), alpha, D3DRGB(1, 1, 1));
+				AddVector({-scale, 0, 0}, {0, 0, 0}, rad, std::string("-x"), {1, 1, 1}, alpha, D3DRGB(1, 1, 1));
+				AddVector({0, -scale, 0}, {0, 0, 0}, rad, std::string("-y"), {1, 1, 1}, alpha, D3DRGB(1, 1, 1));
+				AddVector({0, 0, -scale}, {0, 0, 0}, rad, std::string("-z"), {1, 1, 1}, alpha, D3DRGB(1, 1, 1));
 			}
 		}
 	}
@@ -167,7 +167,7 @@ void vObject::RenderSpot (LPDIRECT3DDEVICE7 dev, const VECTOR3 *ofs, float size,
 	float sphi = (float)sin(phi), cphi = (float)cos(phi);
 
 	const double ambient = 0.2;
-	double cosa = dotp (unit(gpos), unit(gpos - camp));
+	double cosa = dot(unit(gpos), unit(gpos - camp));
 	double intens = (lighting ? 0.5 * ((1.0-ambient)*cosa + 1.0+ambient) : 1.0);
 
 	W._11 =  (float)bdir.x;
@@ -330,7 +330,7 @@ bool vObject::DrawVector(LPDIRECT3DDEVICE7 dev, const VECTOR3& end, const VECTOR
 	VECTOR3 gpos;
 	oapiGetRotationMatrix(hObj, &grot);
 	VECTOR3 cp = tmul(grot, -cpos);
-	if (dotp(d, unit(end - cp)) > 0)
+	if (dot(d, unit(end - cp)) > 0)
 		Idx = Idx1, nIdx = nIdx1;
 	else
 		Idx = Idx0, nIdx = nIdx0;

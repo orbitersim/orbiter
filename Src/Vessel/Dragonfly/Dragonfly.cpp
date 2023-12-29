@@ -151,9 +151,9 @@ void Dragonfly::SetClassCaps (FILEHANDLE cfg)
 
 	SetSize (4.0);
 	SetEmptyMass (EMPTY_MASS);
-	SetCrossSections (_V(23.7,22.5,17.3));
-	SetPMI (_V(5.4,5.4,2.5));
-	SetCameraOffset (_V(0,1.5,0));
+	SetCrossSections ({23.7,22.5,17.3});
+	SetPMI ({5.4,5.4,2.5});
+	SetCameraOffset ({0,1.5,0});
 
 	// ************************* propellant specs **********************************
 
@@ -162,33 +162,33 @@ void Dragonfly::SetClassCaps (FILEHANDLE cfg)
 	// *********************** thruster definitions ********************************
 
 	// thrusters in left pod
-	th_lp[0] = CreateThruster (_V(-3.5,0,0), _V(1,0,0), 2*MAX_RCS_THRUST, ph_main, ISP);
-	th_lp[1] = CreateThruster (_V(-2.98,0,-0.8), _V(0,0,1), MAX_RCS_THRUST, ph_main, ISP);
-	th_lp[2] = CreateThruster (_V(-2.98,0,0.8), _V(0,0,-1), MAX_RCS_THRUST, ph_main, ISP);
-	th_lp[3] = CreateThruster (_V(-2.98,-0.8,0), _V(0,1,0), MAX_RCS_THRUST, ph_main, ISP);
-	th_lp[4] = CreateThruster (_V(-2.98,0.8,0), _V(0,-1,0), MAX_RCS_THRUST, ph_main, ISP);
+	th_lp[0] = CreateThruster ({-3.5,0,0}, {1,0,0}, 2*MAX_RCS_THRUST, ph_main, ISP);
+	th_lp[1] = CreateThruster ({-2.98,0,-0.8}, {0,0,1}, MAX_RCS_THRUST, ph_main, ISP);
+	th_lp[2] = CreateThruster ({-2.98,0,0.8}, {0,0,-1}, MAX_RCS_THRUST, ph_main, ISP);
+	th_lp[3] = CreateThruster ({-2.98,-0.8,0}, {0,1,0}, MAX_RCS_THRUST, ph_main, ISP);
+	th_lp[4] = CreateThruster ({-2.98,0.8,0}, {0,-1,0}, MAX_RCS_THRUST, ph_main, ISP);
 
 	// thrusters in right pod
-	th_rp[0] = CreateThruster (_V(3.5,0,0), _V(-1,0,0), 2*MAX_RCS_THRUST, ph_main, ISP);
-	th_rp[1] = CreateThruster (_V(2.98,0,-0.8), _V(0,0,1), MAX_RCS_THRUST, ph_main, ISP);
-	th_rp[2] = CreateThruster (_V(2.98,0,0.8), _V(0,0,-1), MAX_RCS_THRUST, ph_main, ISP);
-	th_rp[3] = CreateThruster (_V(2.98,-0.8,0), _V(0,1,0), MAX_RCS_THRUST, ph_main, ISP);
-	th_rp[4] = CreateThruster (_V(2.98,0.8,0), _V(0,-1,0), MAX_RCS_THRUST, ph_main, ISP);
+	th_rp[0] = CreateThruster ({3.5,0,0}, {-1,0,0}, 2*MAX_RCS_THRUST, ph_main, ISP);
+	th_rp[1] = CreateThruster ({2.98,0,-0.8}, {0,0,1}, MAX_RCS_THRUST, ph_main, ISP);
+	th_rp[2] = CreateThruster ({2.98,0,0.8}, {0,0,-1}, MAX_RCS_THRUST, ph_main, ISP);
+	th_rp[3] = CreateThruster ({2.98,-0.8,0}, {0,1,0}, MAX_RCS_THRUST, ph_main, ISP);
+	th_rp[4] = CreateThruster ({2.98,0.8,0}, {0,-1,0}, MAX_RCS_THRUST, ph_main, ISP);
 
 	// thrusters in aft pod (rotational RCS)
-	th_ap[0] = CreateThruster (_V(-0.8,0,-11.1), _V(1,0,0), MAX_RCS_THRUST, ph_main, ISP);
-	th_ap[1] = CreateThruster (_V(0.8,0,-11.1), _V(-1,0,0), MAX_RCS_THRUST, ph_main, ISP);
-	th_ap[2] = CreateThruster (_V(0,-0.8,-11.1), _V(0,1,0), MAX_RCS_THRUST, ph_main, ISP);
-	th_ap[3] = CreateThruster (_V(0,0.8,-11.1), _V(0,-1,0), MAX_RCS_THRUST, ph_main, ISP);
+	th_ap[0] = CreateThruster ({-0.8,0,-11.1}, {1,0,0}, MAX_RCS_THRUST, ph_main, ISP);
+	th_ap[1] = CreateThruster ({0.8,0,-11.1}, {-1,0,0}, MAX_RCS_THRUST, ph_main, ISP);
+	th_ap[2] = CreateThruster ({0,-0.8,-11.1}, {0,1,0}, MAX_RCS_THRUST, ph_main, ISP);
+	th_ap[3] = CreateThruster ({0,0.8,-11.1}, {0,-1,0}, MAX_RCS_THRUST, ph_main, ISP);
 
 	// exhaust definitions for left pod
-	AddExhaust (th_lp[0], 1, 0.15, _V(-3.5,0.18,-0.18), _V(-1,0,0));
-	AddExhaust (th_lp[0], 1, 0.15, _V(-3.5,-0.18,0.18), _V(-1,0,0));
+	AddExhaust (th_lp[0], 1, 0.15, {-3.5,0.18,-0.18}, {-1,0,0});
+	AddExhaust (th_lp[0], 1, 0.15, {-3.5,-0.18,0.18}, {-1,0,0});
 	for (i = 1; i < 5; i++) AddExhaust (th_lp[i], 1, 0.15);
 
 	// exhaust definitions for right pod
-	AddExhaust (th_rp[0], 1, 0.15, _V(3.5,-0.18,-0.18), _V(1,0,0));
-	AddExhaust (th_rp[0], 1, 0.15, _V(3.5,0.18,0.18), _V(1,0,0));
+	AddExhaust (th_rp[0], 1, 0.15, {3.5,-0.18,-0.18}, {1,0,0});
+	AddExhaust (th_rp[0], 1, 0.15, {3.5,0.18,0.18}, {1,0,0});
 	for (i = 1; i < 5; i++) AddExhaust (th_rp[i], 1, 0.15);
 
 	// exhaust definitions for aft pod
@@ -199,7 +199,7 @@ void Dragonfly::SetClassCaps (FILEHANDLE cfg)
 	
 	// *************************** docking port ************************************
 
-	SetDockParams (_V(0,0,3.2), _V(0,0,1), _V(0,1,0));
+	SetDockParams ({0,0,3.2}, {0,0,1}, {0,1,0});
     
 	// ******************************** mesh ***************************************
 
@@ -228,12 +228,12 @@ void Dragonfly::LoadState (FILEHANDLE scn, void *vs)
 
 	    SetAnimState (anim_UY_ant, UY_pos);
 		float ang=(150-UY_pos*300.0)/180.0*acos(-1.0);
-	    Upper_ant_pitch.trans.P.rotparam.axis=_V(cos(ang),0,-sin(ang));	 
+	    Upper_ant_pitch.trans.P.rotparam.axis={cos(ang),0,-sin(ang)};	 
         SetAnimState (anim_UP_ant, UP_pos);		
 	    
 		SetAnimState (anim_LY_ant, LY_pos);
 		ang=(150-LY_pos*300.0)/180.0*acos(-1.0);
-	    Lower_ant_pitch.trans.P.rotparam.axis=_V(cos(ang),0,-sin(ang));	 
+	    Lower_ant_pitch.trans.P.rotparam.axis={cos(ang),0,-sin(ang)};	 
         SetAnimState (anim_LP_ant, LP_pos);		
 
 	    SetAnimState (anim_latch, dock_latched);
@@ -551,7 +551,7 @@ void Dragonfly::Timestep (double simt)
 		 if (UY_pos>1) UY_pos=1;
 		SetAnimState (anim_UY_ant, UY_pos);
 		float ang=(150-UY_pos*300.0)/180.0*acos(-1.0);
-	    Upper_ant_pitch.trans.P.rotparam.axis=_V(cos(ang),0,-sin(ang));	 
+	    Upper_ant_pitch.trans.P.rotparam.axis={cos(ang),0,-sin(ang)};	 
 	};
 	if ((*AC_power>0)&&(UP_handle))
 		{if ((UP_handle<0)&&(UP_pos>0)) UP_pos-=oapiGetSysStep()/18.0;
@@ -567,7 +567,7 @@ void Dragonfly::Timestep (double simt)
 		 if (LY_pos>1) LY_pos=1;
 		SetAnimState (anim_LY_ant, LY_pos);
 		float ang=(150-LY_pos*300.0)/180.0*acos(-1.0);
-	    Lower_ant_pitch.trans.P.rotparam.axis=_V(cos(ang),0,-sin(ang));	 
+	    Lower_ant_pitch.trans.P.rotparam.axis={cos(ang),0,-sin(ang)};	 
 	};
 	if ((*AC_power>0)&&(LP_handle))
 		{if ((LP_handle<0)&&(LP_pos>0)) LP_pos-=oapiGetSysStep()/18.0;

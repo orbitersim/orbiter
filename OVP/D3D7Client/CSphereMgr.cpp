@@ -309,7 +309,7 @@ void CSphereManager::Render (LPDIRECT3DDEVICE7 dev, int level, double bglvl)
 
 	MATRIX3 rcam = *scn->GetCamera()->GetGRot();
 	rcam = mul (ecl2gal, rcam);
-	RenderParam.camdir = _V(rcam.m13, rcam.m23, rcam.m33);
+	RenderParam.camdir = {rcam.m13, rcam.m23, rcam.m33};
 
 	dev->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_ONE);
 	dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
@@ -406,7 +406,7 @@ void CSphereManager::ProcessTile (int lvl, int hemisp, int ilat, int nlat, int i
 	static const double rad0 = sqrt(2.0)*PI05;
 	VECTOR3 cnt = TileCentre (hemisp, ilat, nlat, ilng, nlng);
 	double rad = rad0/(double)nlat;
-	double alpha = acos (dotp (RenderParam.camdir, cnt));
+	double alpha = std::acos(dot(RenderParam.camdir, cnt));
 	double adist = alpha - rad;
 	if (adist > RenderParam.viewap) return;
 
@@ -477,8 +477,8 @@ VECTOR3 CSphereManager::TileCentre (int hemisp, int ilat, int nlat, int ilng, in
 {
 	double cntlat = PI05 * ((double)ilat+0.5)/(double)nlat,      slat = sin(cntlat), clat = cos(cntlat);
 	double cntlng = PI2  * ((double)ilng+0.5)/(double)nlng + PI, slng = sin(cntlng), clng = cos(cntlng);
-	if (hemisp) return _V(clat*clng, -slat, -clat*slng);
-	else        return _V(clat*clng,  slat,  clat*slng);
+	if (hemisp) return {clat*clng, -slat, -clat*slng};
+	else        return {clat*clng,  slat,  clat*slng};
 }
 
 // =======================================================================

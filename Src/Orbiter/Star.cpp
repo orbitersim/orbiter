@@ -72,11 +72,6 @@ Vector Star::Pos2Barycentre (Vector &pos)
 	return Vector();
 }
 
-Vector4 Star::GetLightColor ()
-{
-	return {1,1,1,1};
-}
-
 #ifdef INLINEGRAPHICS
 void Star::InitDeviceObjects ()
 {
