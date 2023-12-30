@@ -90,7 +90,6 @@ jobs:
         del /Q exports_tmp*.txt
 
     - name: Diff exports with Orbiter 2016
-      working-directory: ${{ github.workspace }}/out/install/Orbiter
       shell: cmd
       continue-on-error: true
       run: git diff -U0 --ignore-cr-at-eol --ignore-space-at-eol --no-index exports.2016.txt out/install/Orbiter/exports.txt
