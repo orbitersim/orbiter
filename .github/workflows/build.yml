@@ -82,7 +82,12 @@ jobs:
     - name: List exports
       working-directory: ${{ github.workspace }}/out/install/Orbiter
       shell: cmd
-      run: dumpbin /EXPORTS G:\Games\Orbiter\Orbiter.exe /OUT:exports.txt
+      run: |
+        dumpbin /EXPORTS Orbiter.exe /OUT:exports_tmp0.txt
+        type exports_tmp0.txt | find " ?" > exports_tmp1.txt
+        for /F "tokens=4" %F in (exports_tmp1.txt) do @echo %F >> exports_tmp2.txt
+        undname exports_tmp2.txt | sort > exports.txt
+        del /Q exports_tmp*.txt
 
     - name: Upload exports
       uses: actions/upload-artifact@v4
