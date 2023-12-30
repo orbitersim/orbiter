@@ -83,9 +83,9 @@ jobs:
       working-directory: ${{ github.workspace }}/out/install/Orbiter
       shell: cmd
       run: |
-        dumpbin /EXPORTS Orbiter.exe /OUT:exports_tmp0.txt
+        dumpbin /EXPORTS Modules\Server\Orbiter.exe /OUT:exports_tmp0.txt
         type exports_tmp0.txt | find " ?" > exports_tmp1.txt
-        for /F "tokens=4" %F in (exports_tmp1.txt) do @echo %F >> exports_tmp2.txt
+        for /F "tokens=4" %%F in (exports_tmp1.txt) do @echo %%F >> exports_tmp2.txt
         undname exports_tmp2.txt | sort > exports.txt
         del /Q exports_tmp*.txt
 
@@ -101,7 +101,6 @@ jobs:
       working-directory: ${{ github.workspace }}/out/install/Orbiter
       shell: cmd
       run: '7z a "${{ github.workspace }}/out/Orbiter.zip" .'
-
 
     - name: Upload Build Artifact
       if: ${{ github.ref == 'refs/heads/main' }}
