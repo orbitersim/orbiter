@@ -58,10 +58,10 @@ private:
 	TriParam *pp;
 	D3DVECTOR bbmin, bbmax;        // bounding box
 	double bbvol;                  // bb volume
-	Vector bbcs;                   // bb cross sections
+	VECTOR3 bbcs;                  // bb cross sections
 	double vol;                    // volume
-	Vector cg, cg_base, cg_add;    // centre of gravity
-	Vector cs;                     // cross sections
+	VECTOR3 cg, cg_base, cg_add;   // centre of gravity
+	VECTOR3 cs;                    // cross sections
 	Matrix J, J_base, J_add;       // inertia tensor
 	BOOL bBackgroundOp;
 	int flushcount;
@@ -70,7 +70,7 @@ private:
 	// grid-integration related functions
 	void setup_grid (VOXGRID &g, int level);
 	bool scan_gridline (VOXGRID &g, int x, int y, int z, int dir_idx, int ntri, const TriParam *pp);
-	void analyse_grid (VOXGRID &g, double &vol, Vector &com, Vector &cs, Matrix &pmi);
+	void analyse_grid (VOXGRID &g, double &vol, VECTOR3 &com, VECTOR3 &cs, Matrix &pmi);
 
 // Overrides
 	// ClassWizard generated virtual function overrides

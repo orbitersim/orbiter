@@ -81,14 +81,14 @@ protected:
 
 	virtual void Render () {}
 
-	Vector Centre () const;
+	VECTOR3 Centre () const;
 	// Returns the direction of the tile centre from the planet centre in local planet coordinates
 
 	VBMESH *CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev=0, double elev_scale=1.0, double globelev=0.0,
-		const TEXCRDRANGE2 *range=0, bool shift_origin=false, Vector *shift=0, double bb_excess=0.0);
+		const TEXCRDRANGE2 *range=0, bool shift_origin=false, VECTOR3 *shift=0, double bb_excess=0.0);
 	// Creates a quadrilateral patch mesh
 
-	VBMESH *CreateMesh_tripatch (int grd, INT16 *elev=0, bool shift_origin=false, Vector *shift=0);
+	VBMESH *CreateMesh_tripatch (int grd, INT16 *elev=0, bool shift_origin=false, VECTOR3 *shift=0);
 	// Creates a triangular patch mesh for north or south pole
 
 	VBMESH *CreateMesh_hemisphere (int grd, INT16 *elev=0, double globelev=0.0);
@@ -102,8 +102,8 @@ protected:
 	bool owntex;				// true: tile owns the texture, false: tile uses ancestor subtexture
 	TEXCRDRANGE2 texrange;		// texture coordinate subrange (if using ancestor subtexture)
 	VBMESH *mesh;				// vertex-buffered tile mesh
-	Vector cnt;					// tile centre in local planet coords
-	Vector vtxshift;
+	VECTOR3 cnt;				// tile centre in local planet coords
+	VECTOR3 vtxshift;
 	bool edgeok;				// edges have been checked in this frame
 	TileState state;			// tile load/active/render state flags
 	int lngnbr_lvl, latnbr_lvl, dianbr_lvl;	// neighbour levels to which edges have been adapted
@@ -161,9 +161,9 @@ public:
 		MATRIX4 dwmat_tmp; // modifyable planet world matrix, double precision
 		MATRIX4 dviewproj; // view+projection matrix, double precision
 		Matrix grot;       // planet rotation matrix
-		Vector cpos;       // planet offset vector (in global frame)
-		Vector cdir;       // camera direction from planet centre (in planet frame)
-		Vector sdir;       // sun direction in local planet coords
+		VECTOR3 cpos;      // planet offset vector (in global frame)
+		VECTOR3 cdir;      // camera direction from planet centre (in planet frame)
+		VECTOR3 sdir;      // sun direction in local planet coords
 		double cdist;      // camera distance from planet centre (in units of planet radii)
 		double viewap;     // aperture of surface cap visible from camera pos
 		double scale;
@@ -171,7 +171,7 @@ public:
 		bool tint;         // apply atmospheric tint?
 		float shadowcol;   // cloud shadow colour
 		bool flatshadow;   // render cloud shadows onto sphere?
-		Vector atm_tint;   // atmospheric RGB surface tint at high atmosphere
+		VECTOR3 atm_tint;  // atmospheric RGB surface tint at high atmosphere
 		TileManager2<CloudTile> *cloudmgr; // cloud manager (for shadow projection); NULL if no clouds
 		double cloudrot;   // cloud layer rotation angle
 	} prm;

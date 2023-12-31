@@ -369,7 +369,7 @@ void VPlanet::Render (LPDIRECT3DDEVICE7 dev)
 			if (fogfactor < 0.0) prm.bFog = false;
 			else {
 				// day/nighttime fog lighting
-				double cosa = dotp (planet->GPos().unit(), (planet->GPos() - g_camera->GPos()).unit());
+				double cosa = dot(unit(planet->GPos()), unit(planet->GPos() - g_camera->GPos()));
 				double bright = 1.0 * max (0.0, min (1.0, cosa + 0.3));
 				float rfog = (float)(bright*(min(1.0,fogcol.x)+0.0)); // "whiten" the fog colour
 				float gfog = (float)(bright*(min(1.0,fogcol.y)+0.0));
@@ -641,8 +641,8 @@ void VPlanet::RenderRing (LPDIRECT3DDEVICE7 dev, bool addbkg)
 {
 	DWORD amb = g_pOrbiter->Cfg()->AmbientColour;
 	DWORD bpp = g_pOrbiter->ViewBPP();
-	Vector ppos (tmul (planet->GRot(), -cpos)); // camera pos in planet coords
-	Vector spos (tmul (planet->GRot(), -planet->GPos()));                 // sun pos in planet coords
+	VECTOR3 ppos = tmul(planet->GRot(), -cpos); // camera pos in planet coords
+	VECTOR3 spos = tmul(planet->GRot(), -planet->GPos());                 // sun pos in planet coords
 	bool islit = (ppos.y*spos.y >= 0.0); // we are facing the lit side of the rings
 	static D3DMATRIX imat, *ringmat;
 	if (ppos.y >= 0) { // camera above equator
@@ -703,7 +703,7 @@ int VPlanet::ShadowPlanetOnRing (VERTEX_XYZC *&vtx, DWORD &nvtx)
 	double r1 = planet->ringmax; // outer rim radius
 
 	// sun in planet local coords
-	Vector spos (tmul (planet->R_ecl, -planet->GPos()));
+	VECTOR3 spos = tmul(planet->R_ecl, -planet->GPos());
 	bool flip = (spos.y < 0.0); // is underside of rings lit?
 
 	// semi-minor axis of shadow ellipse (= planet radius)
@@ -711,7 +711,7 @@ int VPlanet::ShadowPlanetOnRing (VERTEX_XYZC *&vtx, DWORD &nvtx)
 	double b2 = b*b;
 
 	// square of semi-major axis of shadow ellipse
-	double a2 = b2*spos.length2()/(spos.y*spos.y);
+	double a2 = b2 * len_2(spos) / (spos.y * spos.y);
 	double a = sqrt (a2);
 
 	// intersection of shadow with inner rim
@@ -791,7 +791,7 @@ bool VPlanet::ModLighting (DWORD &ambient)
 	if (!planet->HasAtmosphere()) return false;
 	if (cdist >= planet->Size()+prm.atm_href) return false;
 
-	double alpha = acos (dotp (g_camera->GPos().unit(), (g_camera->GPos()-planet->GPos()).unit()));
+	double alpha = std::acos(dot(unit(g_camera->GPos()), unit(g_camera->GPos() - planet->GPos())));
 	// angular distance between sun and planet as seen from camera
 
 	double sunelev = alpha - PI05; // elevation of sun above horizon (assuming camera on ground)

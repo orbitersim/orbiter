@@ -49,18 +49,18 @@ const VECTOR3 PB_DOCK_ROT   = {0,0,-1};        // docking port alignment directi
 // Define impact convex hull
 static const DWORD ntdvtx = 12;
 static TOUCHDOWNVTX tdvtx[ntdvtx] = {
-	{_V( 0,  -1.5, 2  ), 2e4, 1e3, 1.6, 1},
-	{_V(-1,  -1.5,-1.5), 2e4, 1e3, 3.0, 1},
-	{_V( 1,  -1.5,-1.5), 2e4, 1e3, 3.0, 1},
-	{_V(-0.5,-0.75,3  ), 2e4, 1e3, 3.0},
-	{_V( 0.5,-0.75,3  ), 2e4, 1e3, 3.0},
-	{_V(-2.6,-1.1,-1.9), 2e4, 1e3, 3.0},
-	{_V( 2.6,-1.1,-1.9), 2e4, 1e3, 3.0},
-	{_V(-1,   1.3, 0  ), 2e4, 1e3, 3.0},
-	{_V( 1,   1.3, 0  ), 2e4, 1e3, 3.0},
-	{_V(-1,   1.3,-2  ), 2e4, 1e3, 3.0},
-	{_V( 1,   1.3,-2  ), 2e4, 1e3, 3.0},
-	{_V( 0,   0.3,-3.8), 2e4, 1e3, 3.0}
+	{{ 0,  -1.5, 2  }, 2e4, 1e3, 1.6, 1},
+	{{-1,  -1.5,-1.5}, 2e4, 1e3, 3.0, 1},
+	{{ 1,  -1.5,-1.5}, 2e4, 1e3, 3.0, 1},
+	{{-0.5,-0.75,3  }, 2e4, 1e3, 3.0},
+	{{ 0.5,-0.75,3  }, 2e4, 1e3, 3.0},
+	{{-2.6,-1.1,-1.9}, 2e4, 1e3, 3.0},
+	{{ 2.6,-1.1,-1.9}, 2e4, 1e3, 3.0},
+	{{-1,   1.3, 0  }, 2e4, 1e3, 3.0},
+	{{ 1,   1.3, 0  }, 2e4, 1e3, 3.0},
+	{{-1,   1.3,-2  }, 2e4, 1e3, 3.0},
+	{{ 1,   1.3,-2  }, 2e4, 1e3, 3.0},
+	{{ 0,   0.3,-3.8}, 2e4, 1e3, 3.0}
 };
 
 // Calculate lift coefficient [Cl] as a function of aoa (angle of attack) over -Pi ... Pi
@@ -160,17 +160,17 @@ void ShuttlePB::clbkSetClassCaps (FILEHANDLE cfg)
 	AddAnimationComponent (anim_elevator, 0, 1, &trans_Relevator);
 
 	// aerodynamic control surface defintions
-	CreateControlSurface (AIRCTRL_ELEVATOR, 1.5, 0.7, _V( 0,0,-2.5), AIRCTRL_AXIS_XPOS, anim_elevator);
-	CreateControlSurface (AIRCTRL_AILERON, 1.5, 0.25, _V( 1,0,-2.5), AIRCTRL_AXIS_XPOS, anim_Laileron);
-	CreateControlSurface (AIRCTRL_AILERON, 1.5, 0.25, _V(-1,0,-2.5), AIRCTRL_AXIS_XNEG, anim_Raileron);
+	CreateControlSurface (AIRCTRL_ELEVATOR, 1.5, 0.7, { 0,0,-2.5}, AIRCTRL_AXIS_XPOS, anim_elevator);
+	CreateControlSurface (AIRCTRL_AILERON, 1.5, 0.25, { 1,0,-2.5}, AIRCTRL_AXIS_XPOS, anim_Laileron);
+	CreateControlSurface (AIRCTRL_AILERON, 1.5, 0.25, {-1,0,-2.5}, AIRCTRL_AXIS_XNEG, anim_Raileron);
 
 	// propellant resources
 	PROPELLANT_HANDLE hpr = CreatePropellantResource (PB_FUELMASS);
 
 	// main engine
-	th_main = CreateThruster (_V(0,0,-4.35), _V(0,0,1), PB_MAXMAINTH, hpr, PB_ISP);
+	th_main = CreateThruster ({0,0,-4.35}, {0,0,1}, PB_MAXMAINTH, hpr, PB_ISP);
 	CreateThrusterGroup (&th_main, 1, THGROUP_MAIN);
-	AddExhaust (th_main, 8, 1, _V(0,0.3,-4.35), _V(0,0,-1));
+	AddExhaust (th_main, 8, 1, {0,0.3,-4.35}, {0,0,-1});
 
 	PARTICLESTREAMSPEC contrail_main = {
 		0, 5.0, 16, 200, 0.15, 1.0, 5, 3.0, PARTICLESTREAMSPEC::DIFFUSE,
@@ -182,14 +182,14 @@ void ShuttlePB::clbkSetClassCaps (FILEHANDLE cfg)
 		PARTICLESTREAMSPEC::LVL_SQRT, 0, 1,
 		PARTICLESTREAMSPEC::ATM_PLOG, 1e-5, 0.1
 	};
-	AddExhaustStream (th_main, _V(0,0.3,-10), &contrail_main);
-	AddExhaustStream (th_main, _V(0,0.3,-5), &exhaust_main);
+	AddExhaustStream (th_main, {0,0.3,-10}, &contrail_main);
+	AddExhaustStream (th_main, {0,0.3,-5}, &exhaust_main);
 
 	// hover engine
-	th_hover = CreateThruster (_V(0,-1.5,0), _V(0,1,0), PB_MAXHOVERTH, hpr, PB_ISP);
+	th_hover = CreateThruster ({0,-1.5,0}, {0,1,0}, PB_MAXHOVERTH, hpr, PB_ISP);
 	CreateThrusterGroup (&th_hover, 1, THGROUP_HOVER);
-	AddExhaust (th_hover, 8, 1, _V(0,-1.5,1), _V(0,-1,0));
-	AddExhaust (th_hover, 8, 1, _V(0,-1.5,-1), _V(0,-1,0));
+	AddExhaust (th_hover, 8, 1, {0,-1.5,1}, {0,-1,0});
+	AddExhaust (th_hover, 8, 1, {0,-1.5,-1}, {0,-1,0});
 
 	PARTICLESTREAMSPEC contrail_hover = {
 		0, 5.0, 8, 200, 0.15, 1.0, 5, 3.0, PARTICLESTREAMSPEC::DIFFUSE,
@@ -202,26 +202,26 @@ void ShuttlePB::clbkSetClassCaps (FILEHANDLE cfg)
 		PARTICLESTREAMSPEC::ATM_PLOG, 1e-5, 0.1
 	};
 
-	AddExhaustStream (th_hover, _V(0,-3, 1), &contrail_hover);
-	AddExhaustStream (th_hover, _V(0,-3,-1), &contrail_hover);
-	AddExhaustStream (th_hover, _V(0,-2, 1), &exhaust_hover);
-	AddExhaustStream (th_hover, _V(0,-2,-1), &exhaust_hover);
+	AddExhaustStream (th_hover, {0,-3, 1}, &contrail_hover);
+	AddExhaustStream (th_hover, {0,-3,-1}, &contrail_hover);
+	AddExhaustStream (th_hover, {0,-2, 1}, &exhaust_hover);
+	AddExhaustStream (th_hover, {0,-2,-1}, &exhaust_hover);
 
 	// RCS engines
-	th_rcs[ 0] = CreateThruster (_V( 1,0, 3), _V(0, 1,0), PB_MAXRCSTH, hpr, PB_ISP);
-	th_rcs[ 1] = CreateThruster (_V( 1,0, 3), _V(0,-1,0), PB_MAXRCSTH, hpr, PB_ISP);
-	th_rcs[ 2] = CreateThruster (_V(-1,0, 3), _V(0, 1,0), PB_MAXRCSTH, hpr, PB_ISP);
-	th_rcs[ 3] = CreateThruster (_V(-1,0, 3), _V(0,-1,0), PB_MAXRCSTH, hpr, PB_ISP);
-	th_rcs[ 4] = CreateThruster (_V( 1,0,-3), _V(0, 1,0), PB_MAXRCSTH, hpr, PB_ISP);
-	th_rcs[ 5] = CreateThruster (_V( 1,0,-3), _V(0,-1,0), PB_MAXRCSTH, hpr, PB_ISP);
-	th_rcs[ 6] = CreateThruster (_V(-1,0,-3), _V(0, 1,0), PB_MAXRCSTH, hpr, PB_ISP);
-	th_rcs[ 7] = CreateThruster (_V(-1,0,-3), _V(0,-1,0), PB_MAXRCSTH, hpr, PB_ISP);
-	th_rcs[ 8] = CreateThruster (_V( 1,0, 3), _V(-1,0,0), PB_MAXRCSTH, hpr, PB_ISP);
-	th_rcs[ 9] = CreateThruster (_V(-1,0, 3), _V( 1,0,0), PB_MAXRCSTH, hpr, PB_ISP);
-	th_rcs[10] = CreateThruster (_V( 1,0,-3), _V(-1,0,0), PB_MAXRCSTH, hpr, PB_ISP);
-	th_rcs[11] = CreateThruster (_V(-1,0,-3), _V( 1,0,0), PB_MAXRCSTH, hpr, PB_ISP);
-	th_rcs[12] = CreateThruster (_V( 0,0,-3), _V(0,0, 1), PB_MAXRCSTH, hpr, PB_ISP);
-	th_rcs[13] = CreateThruster (_V( 0,0, 3), _V(0,0,-1), PB_MAXRCSTH, hpr, PB_ISP);
+	th_rcs[ 0] = CreateThruster ({ 1,0, 3}, {0, 1,0}, PB_MAXRCSTH, hpr, PB_ISP);
+	th_rcs[ 1] = CreateThruster ({ 1,0, 3}, {0,-1,0}, PB_MAXRCSTH, hpr, PB_ISP);
+	th_rcs[ 2] = CreateThruster ({-1,0, 3}, {0, 1,0}, PB_MAXRCSTH, hpr, PB_ISP);
+	th_rcs[ 3] = CreateThruster ({-1,0, 3}, {0,-1,0}, PB_MAXRCSTH, hpr, PB_ISP);
+	th_rcs[ 4] = CreateThruster ({ 1,0,-3}, {0, 1,0}, PB_MAXRCSTH, hpr, PB_ISP);
+	th_rcs[ 5] = CreateThruster ({ 1,0,-3}, {0,-1,0}, PB_MAXRCSTH, hpr, PB_ISP);
+	th_rcs[ 6] = CreateThruster ({-1,0,-3}, {0, 1,0}, PB_MAXRCSTH, hpr, PB_ISP);
+	th_rcs[ 7] = CreateThruster ({-1,0,-3}, {0,-1,0}, PB_MAXRCSTH, hpr, PB_ISP);
+	th_rcs[ 8] = CreateThruster ({ 1,0, 3}, {-1,0,0}, PB_MAXRCSTH, hpr, PB_ISP);
+	th_rcs[ 9] = CreateThruster ({-1,0, 3}, { 1,0,0}, PB_MAXRCSTH, hpr, PB_ISP);
+	th_rcs[10] = CreateThruster ({ 1,0,-3}, {-1,0,0}, PB_MAXRCSTH, hpr, PB_ISP);
+	th_rcs[11] = CreateThruster ({-1,0,-3}, { 1,0,0}, PB_MAXRCSTH, hpr, PB_ISP);
+	th_rcs[12] = CreateThruster ({ 0,0,-3}, {0,0, 1}, PB_MAXRCSTH, hpr, PB_ISP);
+	th_rcs[13] = CreateThruster ({ 0,0, 3}, {0,0,-1}, PB_MAXRCSTH, hpr, PB_ISP);
 
 	th_group[0] = th_rcs[0];
 	th_group[1] = th_rcs[2];
@@ -279,7 +279,7 @@ void ShuttlePB::clbkSetClassCaps (FILEHANDLE cfg)
 	CreateThrusterGroup (th_rcs+13, 1, THGROUP_ATT_BACK);
 
 	// camera parameters
-	SetCameraOffset (_V(0,0.8,0));
+	SetCameraOffset ({0,0.8,0});
 
 	// associate a mesh for the visual
 	AddMesh ("ShuttlePB");

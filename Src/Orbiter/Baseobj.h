@@ -82,7 +82,7 @@ public:
 	// allow object to update itself (but not its shadows). Only needs to be implemented
 	// for objects which set OBJSPEC_UPDATEVERTEX
 
-	virtual void UpdateShadow (Vector &fromsun, double az) {}
+	virtual void UpdateShadow (VECTOR3 &fromsun, double az) {}
 	// update shadow vertices according to shadow vector 'fromsun' (azimuth angle 'az')
 	// Note that this function is for updates according to changes in sun position.
 	// Fast changing shadows due to dynamic objects should be updated in 'Update'
@@ -95,7 +95,7 @@ public:
 	// Object renders its own shadow or part of it.
 	// Only objects which set OBJSPEC_RENDERSHADOW need to implement this
 
-	const Vector &EquPos () const { return equpos; }
+	const VECTOR3 &EquPos () const { return equpos; }
 	// Returns the equatorial position of the reference point
 	// The radius value includes ground elevation
 	// x=lng [rad], y=lat [rad], z=radius [m]
@@ -121,9 +121,9 @@ protected:
 
 	const Base *base; // pointer to associated surface base
 	int ngrp;         // number of mesh groups used by the object
-	Vector relpos;    // object position relative to basis frame
-	Vector equpos;    // object position in equatorial frame: x=lng [rad], y=lat [rad], z=radius [m]
-	Vector scale;     // object scaling factors
+	VECTOR3 relpos;   // object position relative to basis frame
+	VECTOR3 equpos;   // object position in equatorial frame: x=lng [rad], y=lat [rad], z=radius [m]
+	VECTOR3 scale;    // object scaling factors
 	double rot;       // rotation around vertical axis
 	double elev;      // elevation of reference point above mean radius [m]
 	double yofs;      // vertical translation of reference point against base reference
@@ -147,7 +147,7 @@ public:
 	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs);
 	Mesh *ExportMesh ();
 	Mesh *ExportShadowMesh (double &elev);
-	void UpdateShadow (Vector &fromsun, double az);
+	void UpdateShadow (VECTOR3 &fromsun, double az);
 	void Render (LPDIRECT3DDEVICE7 dev, bool day=true);
 	void RenderShadow (LPDIRECT3DDEVICE7 dev);
 	
@@ -314,7 +314,7 @@ public:
 	Lpad (const Base *_base);
 	void SetPadno (DWORD no) { padno = no; }
 	DWORD GetPadno () const { return padno; }
-	const Vector &GetPos () const { return relpos; }
+	const VECTOR3 &GetPos () const { return relpos; }
 	const float GetILSfreq () const { return ILSfreq; }
 
 protected:
@@ -394,7 +394,7 @@ private:
 	D3DVECTOR end1, end2;
 	DWORD count;
 	double size;
-	Vector *Pos;
+	VECTOR3 *Pos;
 	POSTEXVERTEX *Vtx;
 	WORD *Idx;
 	DWORD nVtx, nIdx;
@@ -456,7 +456,7 @@ public:
 	void Deactivate ();
 
 private:
-	void VertexArray (DWORD count, const Vector &cpos, const Vector &pos, const Vector &ofs, double size, POSTEXVERTEX *&Vtx);
+	void VertexArray (DWORD count, const VECTOR3 &cpos, const VECTOR3 &pos, const VECTOR3 &ofs, double size, POSTEXVERTEX *&Vtx);
 	// Calculates the billboard vertices for an array of 'count' beacons, starting at 'pos', each offset from the previous
 	// by 'ofs'. cpos is camera position, 'size' is beacon size, 'Vtx' is the result
 	// The Vtx pointer is moved past the end of the current list on return
@@ -478,14 +478,14 @@ private:
 		DWORD nb_centre, nb_side, nb_approach, nb_end; // number of lights: runway centre, runway side, approach path, runway end
 		DWORD nb_vasi_w, nb_vasi_r;                    // number of white and red VASI approach indicators (if any)
 		DWORD nb_tot, nb_white_night, nb_white_day, nb_red; // number of lights: total, white, red
-		Vector ref1; // reference point 1 (=end1)
-		Vector ref2; // reference point 2 (=end2)
-		Vector dir;  // unit vector from ref1 to ref2
-		Vector nml;  // horizontal unit vector perpendicular to dir
-		Vector ofs1; // offset vector between centerline lights
-		Vector ofs3; // offset from centerline to runway edge
-		Vector ofs4; // offset from centerline to VASI white lights
-		Vector ofs5; // offset from centerline to VASI red lights
+		VECTOR3 ref1; // reference point 1 (=end1)
+		VECTOR3 ref2; // reference point 2 (=end2)
+		VECTOR3 dir;  // unit vector from ref1 to ref2
+		VECTOR3 nml;  // horizontal unit vector perpendicular to dir
+		VECTOR3 ofs1; // offset vector between centerline lights
+		VECTOR3 ofs3; // offset from centerline to runway edge
+		VECTOR3 ofs4; // offset from centerline to VASI white lights
+		VECTOR3 ofs5; // offset from centerline to VASI red lights
 		double vasi_ry, vasi_wy; // VASI red/white light elevation
 		int flashpos; // position of flashing approach light
 		double flashtime; // time of next strobe light change
@@ -548,7 +548,7 @@ public:
 	bool GetShadowSpec (DWORD &nvtx, DWORD &nidx);
 	void ExportShadow (VERTEX_XYZ *vtx, WORD *idx);
 	void Update ();
-	void UpdateShadow (Vector &fromsun, double az);
+	void UpdateShadow (VECTOR3 &fromsun, double az);
 	void Activate ();
 	void Deactivate ();
 
@@ -581,7 +581,7 @@ public:
 	bool GetShadowSpec (DWORD &nvtx, DWORD &nidx);
 	void ExportShadow (VERTEX_XYZ *vtx, WORD *idx);
 	void Update ();
-	void UpdateShadow (Vector &fromsun, double az);
+	void UpdateShadow (VECTOR3 &fromsun, double az);
 	void Activate ();
 	void Deactivate ();
 	void Render (LPDIRECT3DDEVICE7 dev, bool day);
@@ -616,7 +616,7 @@ public:
 	void Render (LPDIRECT3DDEVICE7 dev, bool day=true);
 	void RenderShadow (LPDIRECT3DDEVICE7 dev);
 	void Update ();
-	void UpdateShadow (Vector &fromsun, double az);
+	void UpdateShadow (VECTOR3 &fromsun, double az);
 	void Activate ();
 	void Deactivate();
 
@@ -637,7 +637,7 @@ private:
 	DWORD nIdx, nShIdx;        // number of indices
 	bool *flash;               // panel flashing in sunlight?
 	LPDIRECTDRAWSURFACE7 tex;  // texture to use
-	Vector nml;                // pointing direction of panels (towards sun)
+	VECTOR3 nml;               // pointing direction of panels (towards sun)
 	//VBase *vbase;              // associated base visual
 
 	double updT;             // time of next direction update

@@ -147,32 +147,32 @@ void vVessel::UpdateRenderVectors()
 		if ((flag & BFV_WEIGHT) && vessel->GetWeightVector(F)) {
 			sprintf(cbuf, "G = %fN", len = length(F));
 			if (logscale) len = log(len + shift) - lshift; else len *= scale;
-			AddVector(unit(F) * (len * pscale), _V(0, 0, 0), scale2, std::string(cbuf), _V(1, 1, 0), alpha, D3DRGB(1, 1, 0));
+			AddVector(unit(F) * (len * pscale), {0, 0, 0}, scale2, std::string(cbuf), {1, 1, 0}, alpha, D3DRGB(1, 1, 0));
 		}
 		if ((flag & BFV_THRUST) && vessel->GetThrustVector(F)) {
 			sprintf(cbuf, "T = %fN", len = length(F));
 			if (logscale) len = log(len + shift) - lshift; else len *= scale;
-			AddVector(unit(F) * (len * pscale), _V(0, 0, 0), scale2, std::string(cbuf), _V(0, 0, 1), alpha, D3DRGB(0.5, 0.5, 1));
+			AddVector(unit(F) * (len * pscale), {0, 0, 0}, scale2, std::string(cbuf), {0, 0, 1}, alpha, D3DRGB(0.5, 0.5, 1));
 		}
 		if ((flag & BFV_LIFT) && vessel->GetLiftVector(F)) {
 			sprintf(cbuf, "L = %fN", len = length(F));
 			if (logscale) len = log(len + shift) - lshift; else len *= scale;
-			AddVector(unit(F) * (len * pscale), _V(0, 0, 0), scale2, std::string(cbuf), _V(0, 1, 0), alpha, D3DRGB(0.5, 1, 0.5));
+			AddVector(unit(F) * (len * pscale), {0, 0, 0}, scale2, std::string(cbuf), {0, 1, 0}, alpha, D3DRGB(0.5, 1, 0.5));
 		}
 		if ((flag & BFV_DRAG) && vessel->GetDragVector(F)) {
 			sprintf(cbuf, "D = %fN", len = length(F));
 			if (logscale) len = log(len + shift) - lshift; else len *= scale;
-			AddVector(unit(F) * (len * pscale), _V(0, 0, 0), scale2, std::string(cbuf), _V(1, 0, 0), alpha, D3DRGB(1, 0.5, 0.5));
+			AddVector(unit(F) * (len * pscale), {0, 0, 0}, scale2, std::string(cbuf), {1, 0, 0}, alpha, D3DRGB(1, 0.5, 0.5));
 		}
 		if ((flag & BFV_TOTAL) && vessel->GetForceVector(F)) {
 			sprintf(cbuf, "F = %fN", len = length(F));
 			if (logscale) len = log(len + shift) - lshift; else len *= scale;
-			AddVector(unit(F) * (len * pscale), _V(0, 0, 0), scale2, std::string(cbuf), _V(1, 1, 1), alpha, D3DRGB(1, 1, 1));
+			AddVector(unit(F) * (len * pscale), {0, 0, 0}, scale2, std::string(cbuf), {1, 1, 1}, alpha, D3DRGB(1, 1, 1));
 		}
 		if ((flag & BFV_TORQUE) && vessel->GetTorqueVector(F)) {
 			sprintf(cbuf, "M = %fNm", len = length(F));
 			if (logscale) len = log(len + 1e-5) - log(1e-5); else len *= scale * 1e5;
-			AddVector(unit(F) * (len * pscale), _V(0, 0, 0), scale2 * 0.5, std::string(cbuf), _V(1, 0, 1), alpha, D3DRGB(1, 0, 1));
+			AddVector(unit(F) * (len * pscale), {0, 0, 0}, scale2 * 0.5, std::string(cbuf), {1, 0, 1}, alpha, D3DRGB(1, 0, 1));
 		}
 	}
 }
@@ -535,16 +535,16 @@ void vVessel::RenderGroundShadow (LPDIRECT3DDEVICE7 dev, OBJHANDLE hPlanet)
 	alt = d-R;                       // altitude above surface
 	if (alt*eps > vessel->GetSize()) // too high to cast a shadow
 		return;
-	normalise (sd);                  // shadow projection direction
+	sd = unit(sd);                   // shadow projection direction
 
 	// calculate the intersection of the vessel's shadow with the planet surface
-	double fac1 = dotp (sd, pvr);
+	double fac1 = dot(sd, pvr);
 	if (fac1 > 0.0)                  // shadow doesn't intersect planet surface
 		return;
 	double csun = -fac1/d;           // sun elevation above horizon
 	if (csun < shadow_elev_limit)    // sun too low to cast shadow
 		return;
-	double arg  = fac1*fac1 - (dotp (pvr, pvr) - R*R);
+	double arg  = fac1 * fac1 - (dot(pvr, pvr) - R * R);
 	if (arg <= 0.0)                  // shadow doesn't intersect with planet surface
 		return;
 	double a = -fac1 - sqrt(arg);
@@ -557,8 +557,8 @@ void vVessel::RenderGroundShadow (LPDIRECT3DDEVICE7 dev, OBJHANDLE hPlanet)
 	vessel->HorizonInvRot (hnp, hn);
 
 	// perform projections
-	double nr0 = dotp (hn, shp);
-	double nd  = dotp (hn, sdv);
+	double nr0 = dot(hn, shp);
+	double nd  = dot(hn, sdv);
 	VECTOR3 sdvs = sdv / nd;
 
 	DWORD j;
@@ -629,8 +629,8 @@ void vVessel::SetExhaustVertices (const VECTOR3 &edir, const VECTOR3 &cdir, cons
 {
 	// need to rotate the billboard so it faces the observer
 	const float flarescale = 7.0;
-	VECTOR3 sdir = crossp (cdir, edir); normalise (sdir);
-	VECTOR3 tdir = crossp (cdir, sdir); normalise (tdir);
+	VECTOR3 sdir = unit(cross(cdir, edir));
+	VECTOR3 tdir = unit(cross(cdir, sdir));
 	D3DVALUE rx = (D3DVALUE)ref.x, ry = (D3DVALUE)ref.y, rz = (D3DVALUE)ref.z;
 	D3DVALUE sx = (D3DVALUE)(sdir.x*wscale);
 	D3DVALUE sy = (D3DVALUE)(sdir.y*wscale);
@@ -684,7 +684,7 @@ bool vVessel::ModLighting (LPD3DLIGHT7 light)
 		double p = length(P);
 		if (p < s) {                                      // shadow only if planet closer than sun
 			double psize = oapiGetSize(hP);
-			double phi = acos (dotp(S,P)/(s*p));          // angular distance between sun and planet
+			double phi = std::acos(dot(S, P) / (s * p));       // angular distance between sun and planet
 			double ap = (psize < p ? asin(psize / p) : PI05);  // apparent size of planet disc [rad]
 
 			const ATMCONST *atm = (oapiGetObjectType(hP)==OBJTP_PLANET ? oapiGetPlanetAtmConstants (hP) : NULL);
@@ -734,7 +734,7 @@ bool vVessel::ModLighting (LPD3DLIGHT7 light)
 							dt = 0.1;
 						}
 					}
-					for	(j = 0; j < 3; j++) lcol.data[j] = min (lcol.data[j], plight.data[j]);
+					for (j = 0; j < 3; j++) lcol[j] = min(lcol[j], plight[j]);
 					lightmod = true;
 				}
 
@@ -773,7 +773,7 @@ bool vVessel::ModLighting (LPD3DLIGHT7 light)
 							dt = 0.1;
 						}
 					}
-					for (j = 0; j < 3; j++) lcol.data[j] = min (lcol.data[j], lfrac);
+					for (j = 0; j < 3; j++) lcol[j] = min(lcol[j], lfrac);
 					lightmod = true;
 				}
 			}

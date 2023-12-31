@@ -361,7 +361,7 @@ bool vBase::Update (bool bMainScene)
 	if (fabs(simt-Tchk)>1.0) {
 		VECTOR3 pos, sdir;
 		MATRIX3 rot;
-		oapiGetGlobalPos (hObj, &pos); normalise(pos);
+		oapiGetGlobalPos (hObj, &pos); pos = unit(pos);
 		oapiGetRotationMatrix (hObj, &rot);
 		sdir = tmul (rot, -pos);
 		double csun = sdir.y;
@@ -424,8 +424,8 @@ bool vBase::RenderStructures(LPDIRECT3DDEVICE9 dev)
 
 	// render generic objects above shadows
 	for (DWORD i=0; i<nstructure_as; i++) {
-		FVECTOR3 bs = structure_as[i]->GetBoundingSpherePos();
-		FVECTOR3 qw = TransformCoord(bs, mWorld);
+		auto bs = to_FVECTOR3(structure_as[i]->GetBoundingSpherePos());
+		auto qw = TransformCoord(bs, to_FMATRIX4(mWorld));
 		D3D9Sun sp = vP->GetObjectAtmoParams(qw._V() + vP->CameraPos());
 		structure_as[i]->SetSunLight(&sp);
 		structure_as[i]->Render(&mWorld, RENDER_BASE);
@@ -478,7 +478,7 @@ void vBase::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, float alpha)
 	pCurrentVisual = this;
 
 	VECTOR3 sd;
-	oapiGetGlobalPos(hObj, &sd); normalise(sd);
+	oapiGetGlobalPos(hObj, &sd); sd = unit(sd);
 	
 	MATRIX3 mRot;
 	oapiGetRotationMatrix(hObj, &mRot);
@@ -508,7 +508,7 @@ void vBase::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, float alpha)
 			float rad = structure_as[i]->BBox.bs.w;
 
 			if (rad<250.0f) ToLocal(q, &a, &b);	
-			else ToLocal(_V(0,0,0), &a, &b);
+			else ToLocal({0,0,0}, &a, &b);
 
 			if (vP->GetElevation(a, b, &el0) <= 0) el0 = oapiSurfaceElevation(hPlanet, a, b);
 			if (vP->GetElevation(a + d, b, &el1) <= 0) el1 = oapiSurfaceElevation(hPlanet, a + d, b);
@@ -522,11 +522,11 @@ void vBase::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, float alpha)
 			vb = FromLocal(vb);
 			vc = FromLocal(vc);
 				
-			VECTOR3 n = -unit(crossp(vb - va, vc - va));
+			VECTOR3 n = -unit(cross(vb - va, vc - va));
 
 			D3DXVECTOR3 hn = D3DXVEC(n); 
 				
-			float zo = float(-dotp(va, n));
+			float zo = float(-dot(va, n));
 			float nd = D3DXVec3Dot(&hn, &lsun);
 			hn /= nd;
 			float ofs = zo / nd;

@@ -24,12 +24,12 @@ _AN = crossp( _RefN,  _OrbN);
 #define J2000		51544.5			//!< Reference Epoch
 #define J2000_Ob    0.40909280422   //!< Obliquity of J2000 (rad) 23°26'21.448"
 
-#define _I_ECL	_V(1,  0,  0)	//!< [LH] Reference equinox
-#define _K_ECL	_V(0,  1,  0)	//!< [LH] Reference pole
-#define _J_ECL	_V(0,  0,  1)	//!< [LH] Perpendicular to both
+#define _I_ECL	{1, 0, 0}	//!< [LH] Reference equinox
+#define _K_ECL	{0, 1, 0}	//!< [LH] Reference pole
+#define _J_ECL	{0, 0, 1}	//!< [LH] Perpendicular to both
 
 #define _I_EQU	_I_ECL
-#define _K_EQU	_V(0, 0.9174820621, 0.3977771559) //!< [LH] Mean Earth Equator of J2000
+#define _K_EQU	{0, 0.9174820621, 0.3977771559} //!< [LH] Mean Earth Equator of J2000
 #define _J_EQU	crossp_LH(_K_EQU, _I_EQU)
 
 #define OPDAY   1.157407407407407407407407407407e-5	//!< 1/86400
@@ -107,9 +107,9 @@ inline double _aerr(double f, double t)
 	return n;
 }*/
 
-inline VECTOR3 crossp_LH(const VECTOR3 &r, const VECTOR3 &v)
+inline auto crossp_LH(const VECTOR3 &r, const VECTOR3 &v)
 {
-	return _V(v.y*r.z - r.y*v.z, v.z*r.x - r.z*v.x, v.x*r.y - r.x*v.y);
+	return VECTOR3{v.y*r.z - r.y*v.z, v.z*r.x - r.z*v.x, v.x*r.y - r.x*v.y};
 }
 
 /*! \details Limit the input between [0 to 2PI] (i.e. Get modulus of 2PI) */
@@ -137,7 +137,7 @@ return v * (1.0/sqrt(l));
 /*! \details Return angle between two vectors */
 inline double angle(const VECTOR3 &v, const VECTOR3 &h)
 {
-	double x = dotp(unit(v), unit(h));
+	double x = dot(unit(v), unit(h));
 	if (x >= 1.0)  return 0.0; else if (x <= -1.0) return PI;
 	return(acos(x));
 }
@@ -145,7 +145,7 @@ inline double angle(const VECTOR3 &v, const VECTOR3 &h)
 /*! \details Return angle between two unit vectors */
 inline double anglen(const VECTOR3 &v, const VECTOR3 &h)
 {
-	double x = dotp(v, h);
+	double x = dot(v, h);
 	if (x >= 1.0)  return 0.0; else if (x <= -1.0) return PI;
 	return(acos(x));
 }
@@ -179,7 +179,7 @@ If they are allreay normalized use GetAngle2() instead.
 */
 inline double GetAngle(const VECTOR3 &_p, const VECTOR3 &_I, const VECTOR3 &_J)
 {
-	double x = atan2(dotp(_p, unit(_J)), dotp(_p, unit(_I)));
+	double x = std::atan2(dot(_p, unit(_J)), dot(_p, unit(_I)));
 	if (x<0) return PI2 + x;
 	return x;
 }
@@ -189,7 +189,7 @@ inputs are not normalized internally, must be normalized externally. Vector _p d
 */
 inline double GetAngleN(const VECTOR3 &_p, const VECTOR3 &_I, const VECTOR3 &_J)
 {
-	double x = atan2(dotp(_p, _J), dotp(_p, _I));
+	double x = std::atan2(dot(_p, _J), dot(_p, _I));
 	if (x<0) return PI2 + x; return x;
 }
 

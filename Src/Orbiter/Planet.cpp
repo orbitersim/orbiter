@@ -45,7 +45,7 @@ extern char DBG_MSG[256];
 int patchidx[9] = {0, 1, 2, 3, 5, 13, 37, 137, 501};
 // index to the first texture of a given surface patch level
 
-void InterpretEphemeris (double *data, int format, Vector *pos, Vector *vel);
+void InterpretEphemeris (double *data, int format, VECTOR3 *pos, VECTOR3 *vel);
 
 
 const double OAPI_RAND_MAX = 65536.0;
@@ -274,20 +274,14 @@ Planet::Planet (char *fname)
 		hazerange = max (0.0, min (0.9, hazerange));
 		if (!GetItemReal (ifs, "AtmHazeShift", hazeshift)) hazeshift = 0.0;
 		if (!GetItemReal (ifs, "AtmHazeDensity", hazedens)) hazedens = 1.0;
-		Vector col0;
-		if (GetItemVector (ifs, "AtmColor0", col0)) {
-			atm.color0.x = col0.x; atm.color0.y = col0.y; atm.color0.z = col0.z;
-		}
-		if (!GetItemVector (ifs, "AtmHazeColor", hazecol))
-			hazecol.Set (atm.color0.x, atm.color0.y, atm.color0.z);
+		GetItemVector(ifs, "AtmColor0", atm.color0);
+		if (!GetItemVector(ifs, "AtmHazeColor", hazecol)) hazecol = atm.color0;
 
 		if (GetItemString (ifs, "AtmFogParam", cbuf)) {
 			i = sscanf (cbuf, "%lf%lf%lf", &fog.dens_0, &fog.dens_ref, &fog.alt_ref);
-			if (GetItemVector (ifs, "AtmFogColor", col0)) fog.col = MakeVECTOR3 (col0);
-			else fog.col = atm.color0;
+			if (!GetItemVector(ifs, "AtmFogColor", fog.col)) fog.col = atm.color0;
 		}
-		if (!GetItemVector (ifs, "AtmTintColor", tintcol))
-			tintcol.Set (fog.col.x*0.2, fog.col.y*0.2, fog.col.z*0.2);
+		if (!GetItemVector(ifs, "AtmTintColor", tintcol)) tintcol = fog.col * 0.2;
 	}
 
 	GetItemReal (ifs, "HorizonExcess", horizon_excess);
@@ -638,7 +632,7 @@ void Planet::ScanLabelLists (ifstream &cfg)
 				double lng, lat;
 				int nl;
 				char *pc;
-				Vector pos;
+				VECTOR3 pos;
 				FindLine (ulf, "BEGIN_DATA");
 				for (nl = 0;; nl++) {
 					if (!ulf.getline (cbuf, 256)) break;
@@ -646,7 +640,7 @@ void Planet::ScanLabelLists (ifstream &cfg)
 					if (!pc || sscanf (pc, "%lf%lf", &lng, &lat) != 2) continue;
 					EquatorialToLocal (RAD*lng, RAD*lat, size, pos);
 					oapi::GraphicsClient::LABELSPEC ls;
-					ls.pos = _V(pos.x, pos.y, pos.z);
+					ls.pos = {pos.x, pos.y, pos.z};
 					for (i = 0; i < 2; i++) {
 						if (pc = strtok (NULL, ":"))
 							ls.label[i] = trim_string(pc);
@@ -883,7 +877,7 @@ void Planet::ElToEcliptic (const Elements *el_equ, Elements *el_ecl) const
 	// this should be done by direct transform rather
 	// than going via pos/vel
 
-	Vector pos, vel;
+	VECTOR3 pos, vel;
 	el_equ->PosVel (pos, vel, 0.0);
 	el_ecl->Calculate (mul (GRot(), pos), mul (GRot(), vel), 0.0);
 }
@@ -1018,25 +1012,25 @@ double Planet::Elevation (double lng, double lat) const
 	return (emgr ? emgr->Elevation(lat,lng) : 0.0);
 }
 
-Vector Planet::GroundVelocity (double lng, double lat, double alt, int frame)
+VECTOR3 Planet::GroundVelocity (double lng, double lat, double alt, int frame)
 {
-	if (frame < 2 || frame > 3) return Vector(0,0,0); // sanity check
+	if (frame < 2 || frame > 3) return VECTOR3{0, 0, 0}; // sanity check
 
 	double vground = Pi2 * (size+alt) * cos(lat) / RotT();
-	Vector v(-vground*sin(lng), 0.0, vground*cos(lng));
+	VECTOR3 v{-vground * std::sin(lng), 0.0, vground * std::cos(lng)};
 	if (frame == 2) return v;
 	else            return mul (s0->R, v) + s0->vel;
 }
 
-Vector Planet::WindVelocity (double lng, double lat, double alt, int frame, WindPrm *prm, double *windspeed)
+VECTOR3 Planet::WindVelocity (double lng, double lat, double alt, int frame, WindPrm *prm, double *windspeed)
 {
-	Vector wv(0,0,0);
+	VECTOR3 wv{0, 0, 0};
 
 	if (bEnableWind && HasAtmosphere()) {
 		
 		int k, dim;
 		DWORD r, rnd;
-		Vector wv0[4];
+		VECTOR3 wv0[4];
 
 		// cubic interpolation
 		double alt_km = alt*1e-3;
@@ -1053,15 +1047,15 @@ Vector Planet::WindVelocity (double lng, double lat, double alt, int frame, Wind
 			oapi_srand(g_rseed[(r+k)%100]);
 			for (dim = 0; dim < 3; dim+=2) {
 				rnd = oapi_rand();
-				wv0[k].data[dim] = ((double)rnd/OAPI_RAND_MAX-0.5)*50;
+				wv0[k][dim] = ((double)rnd / OAPI_RAND_MAX - 0.5) * 50;
 				//pert = ((double)(g_rseed[((DWORD)(t*100)+dim+k+r)%100]>>16)/OAPI_RAND_MAX-0.5)*20;
 				//wv0[k].data[dim] += pert;
 			}
 		}
 		for (dim = 0; dim < 3; dim+=2) {
-			mk0 = 0.5 * (wv0[2].data[dim] - wv0[0].data[dim]);
-			mk1 = 0.5 * (wv0[3].data[dim] - wv0[1].data[dim]);
-			wv.data[dim] = h00*wv0[1].data[dim] + h10*mk0 + h01*wv0[2].data[dim] + h11*mk1;
+			mk0 = 0.5 * (wv0[2][dim] - wv0[0][dim]);
+			mk1 = 0.5 * (wv0[3][dim] - wv0[1][dim]);
+			wv[dim] = h00 * wv0[1][dim] + h10 * mk0 + h01 * wv0[2][dim] + h11 * mk1;
 		}
 
 		// short-term temporal perturbations
@@ -1074,9 +1068,9 @@ Vector Planet::WindVelocity (double lng, double lat, double alt, int frame, Wind
 			for (dim = 0; dim < 3; dim += 2) {
 				double p = ((double)rand()/(double)RAND_MAX - 0.5)*pert_amplitude; // make this a normal distribution
 				if (corr)
-					p = corr * prm->pert_v.data[dim] + (1.0-corr) * p;
-				prm->pert_v.data[dim] = p;
-				wv.data[dim] += p;
+					p = corr * prm->pert_v[dim] + (1 - corr) * p;
+				prm->pert_v[dim] = p;
+				wv[dim] += p;
 			}
 			prm->pert_t = tp;
 		}
@@ -1102,11 +1096,11 @@ Vector Planet::WindVelocity (double lng, double lat, double alt, int frame, Wind
 
 	}
 
-	if (windspeed) *windspeed = wv.length();
+	if (windspeed) *windspeed = len(wv);
 	if (frame == 0) return wv;  // surface-local frame
 
 	double slng = sin(lng), clng = cos(lng), slat = sin(lat), clat = cos(lat);
-	Vector wv_loc (tmul (Matrix (-slng,0,clng, clat*clng,slat,clat*slng, -slat*clng,clat,-slat*slng), wv));
+	VECTOR3 wv_loc = tmul(Matrix(-slng, 0, clng, clat * clng, slat, clat * slng, -slat * clng, clat, -slat * slng), wv);
 
 	switch (frame) {
 	case 1: // planet-local

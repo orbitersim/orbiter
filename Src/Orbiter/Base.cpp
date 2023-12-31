@@ -49,7 +49,7 @@ Base::Base (char *fname, Planet *_planet, double _lng, double _lat)
 	char cbuf[256];
 	int texid = 0, bias = 0;
 	//visual = 0;
-	sundir.Set(0,-1,0);
+	sundir = {0, -1, 0};
 	sundir_updt = 0.0;
 
 	InitDeviceObjects ();
@@ -114,8 +114,7 @@ Base::Base (char *fname, Planet *_planet, double _lng, double _lat)
 				LpadSpec *tmp = new LpadSpec[npad+1]; TRACENEW
 				if (npad) memcpy (tmp, lspec, npad*sizeof(LpadSpec)), delete []lspec;
 				lspec = tmp;
-				const Vector &pos = ((Lpad*)bo)->GetPos();
-				lspec[npad].relpos.Set (pos.x, pos.y, pos.z);
+				lspec[npad].relpos = ((Lpad*)bo)->GetPos();
 				lspec[npad].status = 0;
 				lspec[npad].vessel = 0;
 				if (float freq = ((Lpad*)bo)->GetILSfreq()) {
@@ -129,8 +128,8 @@ Base::Base (char *fname, Planet *_planet, double _lng, double _lat)
 				RwySpec *tmp = new RwySpec[nrwy+1]; TRACENEW
 				if (nrwy) memcpy (tmp, rwy, nrwy*sizeof(RwySpec)), delete []rwy;
 				rwy = tmp;
-				Vector p1 (Vector (prwy->end1.x, prwy->end1.y, prwy->end1.z));
-				Vector p2 (Vector (prwy->end2.x, prwy->end2.y, prwy->end2.z));
+				VECTOR3 p1{prwy->end1.x, prwy->end1.y, prwy->end1.z};
+				VECTOR3 p2{prwy->end2.x, prwy->end2.y, prwy->end2.z};
 				Rel_EquPos (p1, rwy[nrwy].lng1, rwy[nrwy].lat1);
 				Rel_EquPos (p2, rwy[nrwy].lng2, rwy[nrwy].lat2);
 				Orthodome (rwy[nrwy].lng1, rwy[nrwy].lat1, rwy[nrwy].lng2, rwy[nrwy].lat2, rwy[nrwy].length, rwy[nrwy].appr1);
@@ -422,13 +421,13 @@ void Base::Attach (Planet *_parent)
 	rad = cbody->Size(); // dist from planet centre
 	elev = 0.0;
 	cbody->EquatorialToLocal (slng, clng, slat, clat, rad, rpos);
-	s0->vel.Set (0,0,0);                         // base is fixed to ground
+	s0->vel = {0,0,0};                        // base is fixed to ground
 	rrot.Set ( clng*slat, clng*clat, -slng,   // rotate from local
 		      -clat,      slat,       0,      // base to local
 			   slng*slat, slng*clat,  clng);  // planet coords
 
 	double v = Pi2*rad*clat / cbody->RotT(); // surface velocity
-	rotvel.Set (-v*slng, 0.0, v*clng);        // velocity vector in non-rotating planet coords
+	rotvel = {-v * slng, 0.0, v * clng};      // velocity vector in non-rotating planet coords
 }
 
 DWORD Base::GetTileList (const SurftileSpec **_tile) const
@@ -585,8 +584,8 @@ void Base::Update (bool force)
 	// WARNING: this should work the other way round: combine the
 	// two quaternions and extract grot
 
-	s1->pos.Set (mul (cbody->s1->R, rpos) + cbody->s1->pos);
-	s1->vel.Set (mul (cbody->s1->R, rotvel) + cbody->s1->vel);
+	s1->pos = mul(cbody->s1->R, rpos) + cbody->s1->pos;
+	s1->vel = mul(cbody->s1->R, rotvel) + cbody->s1->vel;
 
 	// periodically update some secondary parameters
 	if (td.SimT1 > sundir_updt || force) {
@@ -596,7 +595,7 @@ void Base::Update (bool force)
 	}
 }
 
-void Base::Rel_EquPos (const Vector &relpos, double &_lng, double &_lat) const
+void Base::Rel_EquPos (const VECTOR3 &relpos, double &_lng, double &_lat) const
 {
 	_lng = lng + relpos.z/(cbody->Size()*cos(lat));
 	_lat = lat - relpos.x/cbody->Size();
@@ -777,5 +776,5 @@ int Base::ReportTouchdown (VesselBase *vessel, double vlng, double vlat)
 
 double Base::CosSunAlt () const
 {
-	return (s0->R.m12*s0->pos.x + s0->R.m22*s0->pos.y + s0->R.m32*s0->pos.z) / (-s0->pos.length());
+	return (s0->R.m12 * s0->pos.x + s0->R.m22 * s0->pos.y + s0->R.m32 * s0->pos.z) / -len(s0->pos);
 }

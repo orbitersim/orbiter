@@ -51,7 +51,7 @@ FMATRIX4 ToolKit::CreateWorldMatrix(OBJHANDLE hPlanet, double lng, double lat, d
 	double rad = oapiGetSize(hPlanet) + elev;
 	MATRIX3 mRot;
 	oapiGetRotationMatrix(hPlanet, &mRot);
-	VECTOR3 vRot = mul(mRot, _V(0, 1, 0));
+	VECTOR3 vRot = mul(mRot, VECTOR3{0, 1, 0});
 
 	VECTOR3 lpos, cpos, gp;
 	oapiEquToLocal(hPlanet, lng, lat, rad, &lpos);
@@ -63,8 +63,8 @@ FMATRIX4 ToolKit::CreateWorldMatrix(OBJHANDLE hPlanet, double lng, double lat, d
 	FMATRIX4 m;
 
 	VECTOR3 y = unit(lpos);				// up
-	VECTOR3 x = unit(crossp(y, vRot));	// west
-	VECTOR3 z = crossp(x, y);			// north
+	VECTOR3 x = unit(cross(y, vRot));	// west
+	VECTOR3 z = cross(x, y);			// north
 	VECTOR3 p = ((gp + lpos) - cpos);
 
 	x *= scale;
@@ -428,5 +428,5 @@ VECTOR3 ToolKit::GetSurfacePosUnit(double lng, double lat)
 	MATRIX3 mRot;
 	double w = cos(lat);
 	oapiGetRotationMatrix(hPlanet, &mRot);
-	return mul(mRot, _V(w*cos(lng), sin(lat), w*sin(lng)));
+	return mul(mRot, VECTOR3{w * cos(lng), sin(lat), w * sin(lng)});
 }

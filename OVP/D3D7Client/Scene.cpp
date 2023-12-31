@@ -292,16 +292,16 @@ VECTOR3 Scene::SkyColour ()
 		if (cdist < atmp->radlimit) {
 			ATMPARAM prm;
 			oapiGetPlanetAtmParams (hProxy, cdist, &prm);
-			normalise (rp);
-			double coss = dotp (pc, rp) / -cdist;
+			rp = unit(rp);
+			double coss = dot(pc, rp) / -cdist;
 			double intens = min (1.0,(1.0839*coss+0.4581)) * sqrt (prm.rho/atmp->rho0);
 			// => intensity=0 at sun zenith distance 115°
 			//    intensity=1 at sun zenith distance 60°
 			if (intens > 0.0)
-				col += _V(atmp->color0.x*intens, atmp->color0.y*intens, atmp->color0.z*intens);
+				col += {atmp->color0.x*intens, atmp->color0.y*intens, atmp->color0.z*intens};
 		}
 		for (int i = 0; i < 3; i++)
-			if (col.data[i] > 1.0) col.data[i] = 1.0;
+			if (col[i] > 1) col[i] = 1;
 	}
 	return col;
 }
@@ -450,7 +450,7 @@ void Scene::Render ()
 							const std::vector<oapi::GraphicsClient::LABELSPEC>& ls = list[n].marker;
 							VECTOR3 sp;
 							for (j = 0; j < ls.size(); j++) {
-								if (dotp(ls[j].pos, cpos - ls[j].pos) >= 0.0) { // surface point visible?
+								if (dot(ls[j].pos, cpos - ls[j].pos) >= 0.0) { // surface point visible?
 									sp = mul(prot, ls[j].pos) + ppos;
 									RenderObjectMarker(pSkp, sp, ls[j].label[0], ls[j].label[1], list[n].shape, size);
 								}
@@ -642,8 +642,7 @@ void Scene::RenderVesselShadows (OBJHANDLE hPlanet, float depth) const
 
 void Scene::RenderObjectMarker (oapi::Sketchpad* pSkp, const VECTOR3 &gpos, const std::string& label1, const std::string& label2, int mode, int scale)
 {
-	VECTOR3 dp (gpos - *cam->GetGPos());
-	normalise (dp);
+	VECTOR3 dp = unit(gpos - *cam->GetGPos());
 	m_celSphere->RenderMarker(pSkp, dp, label1, label2, mode, scale);
 }
 

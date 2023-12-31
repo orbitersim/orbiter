@@ -157,10 +157,10 @@ ScramSubsystem::ScramSubsystem (DeltaGlider *dg)
 		PARTICLESTREAMSPEC::ATM_PLOG, 1e-5, 0.1
 	};
 	for (int i = 0; i < 2; i++) {
-		hScram[i] = dg->CreateThruster (_V(i?0.9:-0.9, -0.8, -5.6), dir, 0, hProp, 0);
+		hScram[i] = dg->CreateThruster ({i?0.9:-0.9, -0.8, -5.6}, dir, 0, hProp, 0);
 		scram->AddThrusterDefinition (hScram[i], SCRAM_FHV[modelidx],
 			SCRAM_INTAKE_AREA, SCRAM_TEMAX[modelidx], SCRAM_MAX_DMF[modelidx]);
-		ph = DG()->AddExhaustStream (hScram[0], _V(i?1:-1,-1.1,-5.4), &exhaust_scram);
+		ph = DG()->AddExhaustStream(hScram[0], {i ? 1.0 : -1.0, -1.1, -5.4}, &exhaust_scram);
 		if (ph) oapiParticleSetLevelRef (ph, scram_intensity+i);
 		scram_max[i] = scram_intensity[i] = 0.0;
 	}
@@ -260,14 +260,14 @@ ScramThrottle::ScramThrottle (DGSubsystem *_subsys)
 	// VC animation: Left scram engine throttle
 	static UINT ScramThrottleLGrp[2] = {GRP_THROTTLE_SCRAM_L1_VC,GRP_THROTTLE_SCRAM_L2_VC};
 	static MGROUP_ROTATE ScramThrottleL (1, ScramThrottleLGrp, 2,
-		_V(0,0.7849,6.96), _V(1,0,0), (float)(30*RAD));
+		{0,0.7849,6.96}, {1,0,0}, (float)(30*RAD));
 	anim_lever[0] = DG()->CreateAnimation (0);
 	DG()->AddAnimationComponent (anim_lever[0], 0, 1, &ScramThrottleL);
 
 	// VC animation: Right scram engine throttle
 	static UINT ScramThrottleRGrp[2] = {GRP_THROTTLE_SCRAM_R1_VC,GRP_THROTTLE_SCRAM_R2_VC};
 	static MGROUP_ROTATE ScramThrottleR (1, ScramThrottleRGrp, 2,
-		_V(0,0.7849,6.96), _V(1,0,0), (float)(30*RAD));
+		{0,0.7849,6.96}, {1,0,0}, (float)(30*RAD));
 	anim_lever[1] =  DG()->CreateAnimation (0);
 	DG()->AddAnimationComponent (anim_lever[1], 0, 1, &ScramThrottleR);
 }
@@ -292,7 +292,7 @@ bool ScramThrottle::clbkLoadVC (int vcid)
 
 	// Throttle lever animations
 	oapiVCRegisterArea (ELID_LEVER, PANEL_REDRAW_ALWAYS, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_LBPRESSED);
-	oapiVCSetAreaClickmode_Quadrilateral (ELID_LEVER, _V(-0.45,0.98,6.94), _V(-0.39,0.98,6.94), _V(-0.45,0.95,7.07), _V(-0.39,0.95,7.07));
+	oapiVCSetAreaClickmode_Quadrilateral (ELID_LEVER, {-0.45,0.98,6.94}, {-0.39,0.98,6.94}, {-0.45,0.95,7.07}, {-0.39,0.95,7.07});
 
 	return true;
 }

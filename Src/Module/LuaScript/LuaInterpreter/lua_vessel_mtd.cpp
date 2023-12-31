@@ -1574,7 +1574,7 @@ int Interpreter::v_get_status (lua_State *L)
 
 	if (version == 1)
 	{
-		VESSELSTATUS status = {0};
+		VESSELSTATUS status{ };
 		v->GetStatus(status);
 		lua_push_vessel_status(L, status);
 		return 1;
@@ -1615,7 +1615,7 @@ int Interpreter::v_defset_status (lua_State *L)
 
 	if (version == 1)
 	{
-		VESSELSTATUS status = {0};
+		VESSELSTATUS status{ };
 		v->GetStatus(status);
 
 		// Extract known values from table
@@ -2347,7 +2347,7 @@ int Interpreter::v_get_progradedir (lua_State *L)
 	v->GetRelativeVel (hRef, vel);
 	v->GetRotationMatrix (rot);
 	vel = tmul (rot, vel);  // rotate into vessel frame
-	normalise (vel);
+	vel = unit(vel);
 	lua_pushvector (L, vel);
 	return 1;
 }

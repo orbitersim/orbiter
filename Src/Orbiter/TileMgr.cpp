@@ -73,7 +73,7 @@ TileManager::TileManager (const Planet *_cbody)
 	maxlvl = min (maxlvl, (DWORD)SURF_MAX_PATCHLEVEL);
 	maxbaselvl = min ((DWORD)8, maxlvl);
 	int maxidx = patchidx[maxbaselvl];
-	pcdir.Set (1,0,0);
+	pcdir = {1, 0, 0};
 	bRipple = (g_pOrbiter->Cfg()->CfgVisualPrm.bSpecularRipple && cbody->bWaterMicrotex);
 	bPreloadTile = (g_pOrbiter->Cfg()->CfgPRenderPrm.PreloadMode > 0);
 	lightfac = g_pOrbiter->Cfg()->CfgVisualPrm.LightBrightness;
@@ -496,16 +496,16 @@ void TileManager::Render (LPDIRECT3DDEVICE7 dev, D3DMATRIX &wmat, double scale, 
 	VMAT_copy (RenderParam.wmat_tmp, wmat);
 	RenderParam.grot = cbody->GRot() * scale;
 	RenderParam.cpos = vbody->CPos() * scale;
-	RenderParam.cdir.Set (tmul (cbody->GRot(), g_camera->GPos()-cbody->GPos()));
-	RenderParam.cdist = RenderParam.cdir.length()/cbody->Size();
-	RenderParam.cdir.unify();
-	RenderParam.sdir.Set (tmul (cbody->GRot(), -cbody->GPos()));
-	RenderParam.sdir.unify();
+	RenderParam.cdir = tmul(cbody->GRot(), g_camera->GPos()-cbody->GPos());
+	RenderParam.cdist = len(RenderParam.cdir) / cbody->Size();
+	RenderParam.cdir = unit(RenderParam.cdir);
+	RenderParam.sdir = tmul(cbody->GRot(), -cbody->GPos());
+	RenderParam.sdir = unit(RenderParam.sdir);
 	RenderParam.viewap = acos (1.0/(max (RenderParam.cdist, 1.0)));
 	RenderParam.fog = addfog;
 
 	// limit resolution for fast camera movements
-	double limitstep, cstep = acos (dotp (RenderParam.cdir, pcdir));
+	double limitstep, cstep = std::acos(dot(RenderParam.cdir, pcdir));
 	int maxlevel = SURF_MAX_PATCHLEVEL;
 	static double limitstep0 = 5.12 * pow(2.0, -(double)SURF_MAX_PATCHLEVEL);
 	for (limitstep = limitstep0; cstep > limitstep && maxlevel > 5; limitstep *= 2.0)
@@ -579,7 +579,7 @@ void TileManager::Render (LPDIRECT3DDEVICE7 dev, D3DMATRIX &wmat, double scale, 
 		dev->SetTextureStageState (1, D3DTSS_COLORARG2, D3DTA_CURRENT);
 	}
 
-	pcdir.Set (RenderParam.cdir); // store camera direction
+	pcdir = RenderParam.cdir; // store camera direction
 
 	// temporary
 	//if (!strcmp (cbody->Name(), "Earth"))
@@ -594,9 +594,9 @@ void TileManager::ProcessTile (int lvl, int hemisp, int ilat, int nlat, int ilng
 {
 	// Check if patch is visible from camera position
 	static const double rad0 = sqrt(2.0)*Pi05*0.5;
-	Vector cnt = TileCentre (hemisp, ilat, nlat, ilng, nlng);
+	VECTOR3 cnt = TileCentre(hemisp, ilat, nlat, ilng, nlng);
 	double rad = rad0/(double)nlat;
-	double alpha = acos (dotp (RenderParam.cdir, cnt)); // angle between tile centre and camera from planet centre
+	double alpha = std::acos(dot(RenderParam.cdir, cnt)); // angle between tile centre and camera from planet centre
 	double adist = alpha - rad;                         // angle between closest tile corner and camera
 	if (adist >= RenderParam.viewap) {
 		tilebuf->DeleteSubTiles (tile); // remove tile descriptions below
@@ -680,7 +680,7 @@ void TileManager::ProcessTile (int lvl, int hemisp, int ilat, int nlat, int ilng
 		}
 	} else {
 		// actually render the tile at this level
-		double sdist = acos (dotp (RenderParam.sdir, cnt));
+		double sdist = std::acos(dot(RenderParam.sdir, cnt));
 		if (bCoarseTex) {
 			if (sdist > Pi05+rad && bkp_flag & 2) bkp_flag &= 0xFD, bkp_flag |= 1; // supress specular reflection on dark side
 			RenderTile (lvl, hemisp, ilat, nlat, ilng, nlng, sdist, tile, bkp_range, bkp_tex, bkp_ltex, bkp_flag);
@@ -899,12 +899,12 @@ void TileManager::RenderSimple (int level, TILEDESC *tile)
 // returns the direction of the tile centre from the planet centre in local
 // planet coordinates
 
-Vector TileManager::TileCentre (int hemisp, int ilat, int nlat, int ilng, int nlng)
+VECTOR3 TileManager::TileCentre (int hemisp, int ilat, int nlat, int ilng, int nlng)
 {
 	double cntlat = Pi05 * ((double)ilat+0.5)/(double)nlat,      slat = sin(cntlat), clat = cos(cntlat);
 	double cntlng = Pi2  * ((double)ilng+0.5)/(double)nlng + Pi, slng = sin(cntlng), clng = cos(cntlng);
-	if (hemisp) return Vector (clat*clng, -slat, -clat*slng);
-	else        return Vector (clat*clng,  slat,  clat*slng);
+	return hemisp ? VECTOR3{clat * clng, -slat, -clat * slng}
+				  : VECTOR3{clat * clng,  slat,  clat * slng};
 }
 
 // =======================================================================
@@ -986,7 +986,7 @@ bool TileManager::SpecularColour (D3DCOLORVALUE *col)
 	const ATMCONST *ap = cbody->AtmParams();
 	if (ap) {
 		double fac = 0.7; // adjust!
-		double cosa = dotp (RenderParam.cdir, RenderParam.sdir);
+		double cosa = dot(RenderParam.cdir, RenderParam.sdir);
 		double alpha = 0.5*acos(cosa); // sun reflection angle
 			
 		double scale = sin(alpha)*fac;

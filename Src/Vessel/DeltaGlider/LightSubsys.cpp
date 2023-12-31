@@ -242,7 +242,7 @@ void CockpitLight::SetLight (int mode, bool force)
 		static const COLOUR4 wcol = {1.0f,1.0f,1.0f,0.0f};
 		static const COLOUR4 rcol = {0.6f,0.05f,0.0f,0.0f};
 		COLOUR4 col = (mode == 1 ? wcol : rcol);
-		light = (PointLight*)DG()->AddPointLight(_V(0,1.65,6.68), 3, 0, 0, 3, col, col, zero);
+		light = (PointLight*)DG()->AddPointLight({0,1.65,6.68}, 3, 0, 0, 3, col, col, zero);
 		light->SetVisibility (LightEmitter::VIS_COCKPIT);
 		light->Activate(true);
 		double intens = (float)(0.2 + brightness*0.8);
@@ -387,10 +387,10 @@ void LandDockLight::SetLight (int mode, bool force)
 		COLOUR4 col_a = {0,0,0,0};
 		COLOUR4 col_white = {1,1,1,0};
 		if (mode == 1) {
-			light = (SpotLight*)DG()->AddSpotLight(_V(0.3,0.3,8.5), _V(0,0,1), 150, 1e-3, 0, 1e-3, RAD*30, RAD*60, col_white, col_white, col_a);
+			light = (SpotLight*)DG()->AddSpotLight({0.3,0.3,8.5}, {0,0,1}, 150, 1e-3, 0, 1e-3, RAD*30, RAD*60, col_white, col_white, col_a);
 		} else {
 			double tilt = -10.0*RAD;
-			light = (SpotLight*)DG()->AddSpotLight(_V(0.1,-0.3,7.5), _V(0,sin(tilt),cos(tilt)), 5000, 1e-3, 1e-5, 2e-7, RAD*25, RAD*40, col_white, col_white, col_a);
+			light = (SpotLight*)DG()->AddSpotLight({0.1,-0.3,7.5}, {0,sin(tilt),cos(tilt)}, 5000, 1e-3, 1e-5, 2e-7, RAD*25, RAD*40, col_white, col_white, col_a);
 		}
 		light->SetVisibility (LightEmitter::VIS_ALWAYS);
 	}

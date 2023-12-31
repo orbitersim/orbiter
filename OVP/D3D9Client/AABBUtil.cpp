@@ -17,9 +17,8 @@
 // =================================================================================================================================
 
 #include "AABBUtil.h"
-#include "OrbiterAPI.h"
-#include "VectorHelpers.h"
 #include "Log.h"
+#include "OrbiterAPI.h"
 
 #pragma warning(push)
 #pragma warning(disable : 4838)

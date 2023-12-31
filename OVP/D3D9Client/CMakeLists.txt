@@ -109,7 +109,6 @@ set(IncludeFiles
 	TileMgr.h
 	Tilemgr2.h
 	VBase.h
-	VectorHelpers.h
 	VideoTab.h
 	VObject.h
 	VPlanet.h

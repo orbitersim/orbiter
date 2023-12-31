@@ -28,7 +28,7 @@ oapi::CelestialSphere::CelestialSphere(oapi::GraphicsClient* gc)
 		m_markerPen[i] = gc->clbkCreatePen(1, 0, MarkerColor(i));
 	m_textBlendAdditive = false;
 
-	m_skyCol = _V(0, 0, 0);
+	m_skyCol = {0, 0, 0};
 	m_skyBrt = 0.0;
 	m_meshGridLabel = 0;
 

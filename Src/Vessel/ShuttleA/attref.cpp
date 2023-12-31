@@ -21,10 +21,10 @@ AttitudeReference::AttitudeReference (const VESSEL *vessel)
 	valid_axes = false;
 	valid_euler = false;
 	valid_tgteuler = false;
-	euler_offs = _V(0,0,0);
-	tgt_offs = _V(0,0,0);
-	tgt_rvel = _V(0,0,0);
-	tgt_ppos = _V(0,0,0);
+	euler_offs = {0,0,0};
+	tgt_offs = {0,0,0};
+	tgt_rvel = {0,0,0};
+	tgt_ppos = {0,0,0};
 	tgt_ptime = 0;
 }
 
@@ -72,7 +72,7 @@ void AttitudeReference::SetNavid (int newnavid)
 void AttitudeReference::SetEulerOffset (const VECTOR3 &ofs)
 {
 	for (int i = 0; i < 3; i++)
-		euler_offs.data[i] = posangle (ofs.data[i]);
+		euler_offs[i] = posangle(ofs[i]);
 	valid_euler = false;
 }
 
@@ -81,7 +81,7 @@ void AttitudeReference::SetEulerOffset (const VECTOR3 &ofs)
 void AttitudeReference::SetTgtOffset (const VECTOR3 &ofs)
 {
 	for (int i = 0; i < 3; i++)
-		tgt_offs.data[i] = posangle (ofs.data[i]);
+		tgt_offs[i] = posangle(ofs[i]);
 }
 
 // ==============================================================
@@ -94,15 +94,15 @@ const MATRIX3 &AttitudeReference::GetFrameRotMatrix () const
 		VECTOR3 axis1, axis2, axis3;
 		switch (mode) {
 		case 0:    // inertial (ecliptic)
-			axis3 = _V(1,0,0);
-			axis2 = _V(0,1,0);
+			axis3 = {1,0,0};
+			axis2 = {0,1,0};
 			break;
 		case 1: {  // inertial (equator)
 			MATRIX3 R;
 			oapiGetPlanetObliquityMatrix (v->GetGravityRef(), &R);
-			//axis3 = _V(R.m13, R.m23, R.m33);
-			axis3 = _V(R.m11, R.m21, R.m31);
-			axis2 = _V(R.m12, R.m22, R.m32);
+			//axis3 = {R.m13, R.m23, R.m33};
+			axis3 = {R.m11, R.m21, R.m31};
+			axis2 = {R.m12, R.m22, R.m32};
 			} break;
 		case 2: {  // orbital velocity / orbital momentum vector
 			OBJHANDLE hRef = v->GetGravityRef();
@@ -110,8 +110,8 @@ const MATRIX3 &AttitudeReference::GetFrameRotMatrix () const
 			axis3 = unit (axis3);
 			VECTOR3 vv, vm;
 			v->GetRelativePos (hRef, vv);    // local vertical
-			vm = crossp (axis3,vv);    // direction of orbital momentum
-			axis2 = unit (crossp (vm,axis3));
+			vm = cross(axis3, vv);    // direction of orbital momentum
+			axis2 = unit(cross(vm, axis3));
 			} break;
 		case 3: {  // local horizon / local north (surface)
 			OBJHANDLE hRef = v->GetSurfaceRef();
@@ -120,14 +120,14 @@ const MATRIX3 &AttitudeReference::GetFrameRotMatrix () const
 			MATRIX3 prot;
 			oapiGetRotationMatrix (hRef, &prot);
 			VECTOR3 paxis = {prot.m12, prot.m22, prot.m32};  // planet rotation axis in global frame
-			VECTOR3 yaxis = unit (crossp (paxis,axis2));      // direction of yaw=+90 pole in global frame
-			axis3 = crossp (axis2,yaxis);
+			VECTOR3 yaxis = unit(cross(paxis, axis2));      // direction of yaw=+90 pole in global frame
+			axis3 = cross(axis2, yaxis);
 			} break;
 		case 4: {  // synced to NAV source (type-specific)
 			NAVDATA ndata;
 			NAVHANDLE hNav = v->GetNavSource (navid);
-			axis3 = _V(0,0,1);
-			axis2 = _V(0,1,0);
+			axis3 = {0,0,1};
+			axis2 = {0,1,0};
 			if (hNav) {
 				oapiGetNavData (hNav, &ndata);
 				switch (ndata.type) {
@@ -149,13 +149,13 @@ const MATRIX3 &AttitudeReference::GetFrameRotMatrix () const
 					axis2 = unit (axis2);
 					oapiGetNavPos (hNav, &npos);
 					npos -= spos;
-					axis3 = unit(crossp(crossp(axis2,npos),axis2));
+					axis3 = unit(cross(cross(axis2, npos), axis2));
 					} break;
 				}
 			}
 			} break;
 		}
-		axis1 = crossp(axis2,axis3);
+		axis1 = cross(axis2, axis3);
 		R = _M(axis1.x, axis2.x, axis3.x,  axis1.y, axis2.y, axis3.y,  axis1.z, axis2.z, axis3.z);
 
 		valid_axes = true;
@@ -195,7 +195,7 @@ const VECTOR3 &AttitudeReference::GetEulerAngles () const
 		}
 		euler += euler_offs;
 		for (int i = 0; i < 3; i++)
-			euler.data[i] = posangle (euler.data[i]);
+			euler[i] = posangle(euler[i]);
 
 		valid_euler = true;
 	}
@@ -284,7 +284,7 @@ void AttitudeReference::PostStep (double simt, double simdt, double mjd)
 					MATRIX3 Rp;
 					oapiGetRotationMatrix (hObj, &Rp);
 					oapiGetGlobalVel (hObj, &tvel);
-					tvel += mul (Rp, _V(-sin(data.vor.lng),0,cos(data.vor.lng)) * PI2/oapiGetPlanetPeriod(hObj)*oapiGetSize(hObj)*cos(data.vor.lat));
+					tvel += mul(Rp, VECTOR3{-std::sin(data.vor.lng), 0, std::cos(data.vor.lng)} * PI2 / oapiGetPlanetPeriod(hObj) * oapiGetSize(hObj) * std::cos(data.vor.lat));
 					tgt_rvel = svel-tvel;
 					sprintf (oapiDebugString(), "rvel: x=%f, y=%f, z=%f", tgt_rvel.x, tgt_rvel.y, tgt_rvel.z);
 					} return; // done

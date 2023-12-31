@@ -121,13 +121,13 @@ bool MfdSubsystem::clbkLoadVC (int vcid)
 	const double xofs = (mfdid == MFD_LEFT ? -0.2684 : 0.0616);
 
 	oapiVCRegisterArea (ELID_BTNROW, PANEL_REDRAW_MOUSE, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_LBUP|PANEL_MOUSE_LBPRESSED|PANEL_MOUSE_ONREPLAY);
-	oapiVCSetAreaClickmode_Quadrilateral (ELID_BTNROW, _V(0.0840+xofs, 1.0745, 7.2238), _V(0.1228+xofs, 1.0745, 7.2238), _V(0.0840+xofs, 1.0587, 7.2180), _V(0.1228+xofs, 1.0587, 7.2180));
+	oapiVCSetAreaClickmode_Quadrilateral (ELID_BTNROW, {0.0840+xofs, 1.0745, 7.2238}, {0.1228+xofs, 1.0745, 7.2238}, {0.0840+xofs, 1.0587, 7.2180}, {0.1228+xofs, 1.0587, 7.2180});
 
 	oapiVCRegisterArea (ELID_BTNCOL[0], PANEL_REDRAW_MOUSE|PANEL_REDRAW_USER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_LBUP|PANEL_MOUSE_LBPRESSED|PANEL_MOUSE_ONREPLAY);
-	oapiVCSetAreaClickmode_Quadrilateral (ELID_BTNCOL[0], _V(0+xofs, 1.2155, 7.2751), _V(0.0168+xofs, 1.2155, 7.2751), _V(0+xofs, 1.0963, 7.2317), _V(0.0168+xofs, 1.0963, 7.2317));
+	oapiVCSetAreaClickmode_Quadrilateral (ELID_BTNCOL[0], {0+xofs, 1.2155, 7.2751}, {0.0168+xofs, 1.2155, 7.2751}, {0+xofs, 1.0963, 7.2317}, {0.0168+xofs, 1.0963, 7.2317});
 
 	oapiVCRegisterArea (ELID_BTNCOL[1], PANEL_REDRAW_MOUSE|PANEL_REDRAW_USER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_LBUP|PANEL_MOUSE_LBPRESSED|PANEL_MOUSE_ONREPLAY);
-	oapiVCSetAreaClickmode_Quadrilateral (ELID_BTNCOL[1], _V(0.1900+xofs, 1.2155, 7.2751), _V(0.2068+xofs, 1.2155, 7.2751), _V(0.1900+xofs, 1.0963, 7.2317), _V(0.2068+xofs, 1.0963, 7.2317));
+	oapiVCSetAreaClickmode_Quadrilateral (ELID_BTNCOL[1], {0.1900+xofs, 1.2155, 7.2751}, {0.2068+xofs, 1.2155, 7.2751}, {0.1900+xofs, 1.0963, 7.2317}, {0.2068+xofs, 1.0963, 7.2317});
 
 	return true;
 }

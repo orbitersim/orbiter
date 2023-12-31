@@ -316,21 +316,19 @@ void CShipeditApp::InitMesh ()
 		pp[i].c = pp[i].x1*(pp[i].y2-pp[i].y3) - pp[i].y1*(pp[i].x2-pp[i].x3) + (pp[i].x2*pp[i].y3 - pp[i].x3*pp[i].y2);
 		pp[i].d = -(pp[i].x1*(pp[i].y2*pp[i].z3-pp[i].y3*pp[i].z2) - pp[i].y1*(pp[i].x2*pp[i].z3-pp[i].x3*pp[i].z2) + pp[i].z1*(pp[i].x2*pp[i].y3-pp[i].x3*pp[i].y2));
 
-		Vector dr, a;
-		dr.Set (pp[i].x1-pp[i].x2, pp[i].y1-pp[i].y2, pp[i].z1-pp[i].z2);
-		a.Set  (pp[i].x3-pp[i].x2, pp[i].y3-pp[i].y2, pp[i].z3-pp[i].z2);
-		pp[i].d1 = (float)(dotp (dr, a)/a.length2());
-		dr.Set (pp[i].x2-pp[i].x3, pp[i].y2-pp[i].y3, pp[i].z2-pp[i].z3);
-		a.Set  (pp[i].x1-pp[i].x3, pp[i].y1-pp[i].y3, pp[i].z1-pp[i].z3);
-		pp[i].d2 = (float)(dotp (dr, a)/a.length2());
-		dr.Set (pp[i].x3-pp[i].x1, pp[i].y3-pp[i].y1, pp[i].z3-pp[i].z1);
-		a.Set  (pp[i].x2-pp[i].x1, pp[i].y2-pp[i].y1, pp[i].z2-pp[i].z1);
-		pp[i].d3 = (float)(dotp (dr, a)/a.length2());
+		VECTOR3 dr{pp[i].x1 - pp[i].x2, pp[i].y1 - pp[i].y2, pp[i].z1 - pp[i].z2};
+		VECTOR3 a {pp[i].x3 - pp[i].x2, pp[i].y3 - pp[i].y2, pp[i].z3 - pp[i].z2};
+		pp[i].d1 = (float)(dot(dr, a) / len(a));
+		dr = {pp[i].x2 - pp[i].x3, pp[i].y2 - pp[i].y3, pp[i].z2 - pp[i].z3};
+		a  = {pp[i].x1 - pp[i].x3, pp[i].y1 - pp[i].y3, pp[i].z1 - pp[i].z3};
+		pp[i].d2 = (float)(dot(dr, a) / len(a));
+		dr = {pp[i].x3 - pp[i].x1, pp[i].y3 - pp[i].y1, pp[i].z3 - pp[i].z1};
+		a  = {pp[i].x2 - pp[i].x1, pp[i].y2 - pp[i].y1, pp[i].z2 - pp[i].z1};
+		pp[i].d3 = (float)(dot(dr, a) / len(a));
 	}
 
 	vol = 0.0;
-	cg.Set(0,0,0); cg_base.Set(0,0,0); cg_add.Set(0,0,0);
-	cs.Set(0,0,0);
+	cg = cg_base = cg_add = cs = {0, 0, 0};
 	J.Set(0,0,0,0,0,0,0,0,0); J_base.Set(J); J_add.Set(J);
 	nop = 0, nvol = 0;
 	for (i = 0; i < 3; i++) ncs[i] = 0;
@@ -343,7 +341,7 @@ void CShipeditApp::InitMesh ()
 void CShipeditApp::ProcessPackage ()
 {
 	int i, j, n;
-	Vector cg_tmp;
+	VECTOR3 cg_tmp;
 	Matrix J_tmp;
 
 	for (i = n = 0; i < 1000; i++) {
@@ -370,7 +368,7 @@ void CShipeditApp::ProcessPackage ()
 	cg_add += cg_tmp;
 	J_add += J_tmp;
 	if (!(++flushcount % 1000)) {
-		cg_base += cg_add;  cg_add.Set(0,0,0);
+		cg_base += cg_add;  cg_add = {0, 0, 0};
 		J_base  += J_add;   J_add.Set (0,0,0,0,0,0,0,0,0);
 	}
 	vol = bbvol * (double)nvol / (double)nop;
@@ -490,7 +488,7 @@ bool CShipeditApp::scan_gridline (VOXGRID &g, int x, int y, int z, int dir_idx, 
 	return isinter;
 }		
 
-void CShipeditApp::analyse_grid (VOXGRID &g, double &vol, Vector &com, Vector &cs, Matrix &pmi)
+void CShipeditApp::analyse_grid (VOXGRID &g, double &vol, VECTOR3 &com, VECTOR3 &cs, Matrix &pmi)
 {
 	int i, j, k, idx, ninside = 0;
 	double x, y, z;
@@ -814,7 +812,7 @@ void GridintDlg::OnGridintStart()
 //#endif
 
 	double vol;
-	Vector com, cs;
+	VECTOR3 com, cs;
 	Matrix pmi;
 	app->analyse_grid (g, vol, com, cs, pmi);
 	sprintf (cbuf, "%0.2f", vol);

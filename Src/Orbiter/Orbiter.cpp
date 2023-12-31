@@ -1325,7 +1325,7 @@ bool Orbiter::KillVessels ()
 						v = g_psys->GetVessel(j);
 						if (v->KillPending()) continue;
 						if (v != vessel && v->GetEnableFocus()) {
-							d = vessel->GPos().dist (v->GPos());
+							d = dist(vessel->GPos(), v->GPos());
 							if (d < dmin) dmin = d, tgt = v;
 						}
 					}
@@ -1370,7 +1370,7 @@ bool Orbiter::KillVessels ()
 	return true;
 }
 
-void Orbiter::NotifyObjectJump (const Body *obj, const Vector &shift)
+void Orbiter::NotifyObjectJump (const Body *obj, const VECTOR3 &shift)
 {
 	if (obj == g_camera->Target()) g_camera->Drag (-shift);
 	if (g_camera->Target()) g_camera->Update ();
@@ -1389,7 +1389,7 @@ void Orbiter::NotifyObjectJump (const Body *obj, const Vector &shift)
 
 void Orbiter::NotifyObjectSize (const Body *obj)
 {
-	if (obj == g_camera->Target()) g_camera->Drag (Vector(0,0,0));
+	if (obj == g_camera->Target()) g_camera->Drag({0, 0, 0});
 }
 
 //-----------------------------------------------------------------------------

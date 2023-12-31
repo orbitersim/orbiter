@@ -8,16 +8,16 @@
 
 #define D3D_OVERLOADS
 
+#include "AtmoControls.h"
+#include "D3D9Client.h"
+#include "D3D9Config.h"
+#include "D3D9Util.h"
+#include "IProcess.h"
+#include "VPlanet.h"
+
 #include <map>
 #include <sstream>
 #include <unordered_map>
-
-#include "D3D9Client.h"
-#include "D3D9Config.h"
-#include "VPlanet.h"
-#include "AtmoControls.h"
-#include "VectorHelpers.h"
-#include "IProcess.h"
 
 using namespace oapi;
 
@@ -423,7 +423,6 @@ FVECTOR4 vPlanet::SunLightColor(VECTOR3 relpos, double rf)
 		UpdateScatter();
 	}
 	
-	FVECTOR2 rm = 0.0f;
 	VECTOR3 up = unit(relpos);
 	double r = dot(up, relpos);
 	double ca = dot(up, SunDirection());
@@ -450,11 +449,12 @@ FVECTOR4 vPlanet::SunLightColor(VECTOR3 relpos, double rf)
 
 	if (!bAtm || !surfmgr2) return FVECTOR4(svb, svb, svb, svb);
 
+	FVECTOR2 rm;
 	if (svb < 1e-3) return FVECTOR4(0.0, 0.0, 0.0, svb); // Ray is obscured by planet
 	if (r > ar) rm = Gauss7(qr - size, 0.0f, cp.PlanetRad, cp.AtmoRad, cp.iH) * 2.0f; // Ray passes through atmosphere from space to space
 	else rm = Gauss7(r - size, -ca, cp.PlanetRad, cp.AtmoRad, cp.iH); // Sample point 'pos' lies with-in atmosphere
 
-	rm = rm * (cp.rmO * rf);
+	rm = rm * (cp.rmO * float(rf));
 	return FVECTOR4(exp(-(cp.RayWave * rm.x + cp.MieWave * rm.y)) * svb, svb);
 }
 
@@ -595,9 +595,9 @@ void vPlanet::UpdateScatter()
 	oapiGetRotationMatrix(hObj, &mRot);
 
 	VECTOR3 vNrm = mul(mRot, ReferencePoint());
-	VECTOR3 vRot = unit(mul(mRot, _V(0, 1, 0)));
-	VECTOR3 vTan = unit(crossp(vRot, vNrm));
-	VECTOR3 vBiT = unit(crossp(vTan, vNrm));
+	VECTOR3 vRot = unit(mul(mRot, VECTOR3{0, 1, 0}));
+	VECTOR3 vTan = unit(cross(vRot, vNrm));
+	VECTOR3 vBiT = unit(cross(vTan, vNrm));
 
 	memcpy(&cp.mVP, scn->GetProjectionViewMatrix(), sizeof(FMATRIX4));
 

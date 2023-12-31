@@ -366,10 +366,10 @@ void D3D9Pad::CopyTetragon(const SURFHANDLE hSrc, const LPRECT _s, const FVECTOR
 	{
 		auto s = _s ? *_s : GetFullRect(hSrc);
 
-		sp[0] = FVECTOR2{s.left , s.top   };
-		sp[1] = FVECTOR2{s.left , s.bottom};
-		sp[2] = FVECTOR2{s.right, s.bottom};
-		sp[3] = FVECTOR2{s.right, s.top   };
+		sp[0] = {static_cast<float>(s.left ), static_cast<float>(s.top   )};
+		sp[1] = {static_cast<float>(s.left ), static_cast<float>(s.bottom)};
+		sp[2] = {static_cast<float>(s.right), static_cast<float>(s.bottom)};
+		sp[3] = {static_cast<float>(s.right), static_cast<float>(s.top   )};
 
 		// Create indices
 		for (int j = 0; j < (n-1); j++)

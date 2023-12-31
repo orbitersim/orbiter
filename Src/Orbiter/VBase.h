@@ -32,7 +32,7 @@ public:
 	void RenderStructures (LPDIRECT3DDEVICE7 dev);
 	void RenderGroundShadow (LPDIRECT3DDEVICE7 dev);
 	const Base *GetBase() const { return base; }
-	Vector SunDir () const { return sundir; }
+	auto SunDir() const { return sundir; }
 
 	double csun;          // cosine of sun's zenith distance
 
@@ -77,7 +77,7 @@ private:
 	bool lights;
 	double CheckLightT;   // time for next lighting check
 	double BlinkT;        // counter for blinking landing lights
-	Vector sundir;        // direction of sun in local coords
+	VECTOR3 sundir;       // direction of sun in local coords
 	bool enable_shadows;  // true if shadow rendering is enabled
 	bool have_shadows;    // true if object shadows should be drawn
 	bool surftile_alpha;  // surface tiles support alpha blending?

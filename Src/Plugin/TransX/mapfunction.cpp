@@ -114,7 +114,7 @@ double mapfunction::getsoisize(OBJHANDLE handle)
 		VECTOR3 vecradius;
 
 		oapiGetRelativePos(parent,handle,&vecradius);
-		radius=sqrt(dotp(vecradius,vecradius)*body->gravbodyratio2);
+		radius = sqrt(dot(vecradius, vecradius) * body->gravbodyratio2);
 	}
 	return radius;
 }

@@ -68,7 +68,7 @@ public:
 	// on calculation of orbital elements in equatorial frame, and on
 	// oapiGetPlanetObliquityMatrix
 
-	inline const Vector &RotAxis() const { return R_axis; }
+	inline const VECTOR3 &RotAxis() const { return R_axis; }
 	// rotation axis (direction of north pole) in global coords
 
 	const Elements *Els() const;
@@ -86,12 +86,12 @@ public:
 	// parent state and its own relative state.
 	// Recursively updates all secondary body states.
 
-	bool PositionAtTime (double t, Vector *p) const;
+	bool PositionAtTime (double t, VECTOR3 *p) const;
 	// Returns planet's position p at simulation time t [s] in ecliptic frame,
 	// relative to planet's parent. This only works if planet updates
 	// its position analytically, otherwise the function returns false.
 
-	bool PosVelAtTime (double t, Vector *p, Vector *v) const;
+	bool PosVelAtTime (double t, VECTOR3 *p, VECTOR3 *v) const;
 	// Returns planet's position p and velocity v at simulation time t [s] in
 	// ecliptic frame, relative to planet's parent. Only works if planet updates
 	// position analytically, otherwise function returns false
@@ -100,7 +100,7 @@ public:
 	// Returns rotation matrix at time t.
 	// Note: this function assumes current precession, i.e. t sufficiently close to td.SimT0
 
-	Vector InterpolatePosition (double n) const;
+	VECTOR3 InterpolatePosition (double n) const;
 	// interpolate a planet position to a time between last and current time step,
 	// where n=0 refers to last step, and n=1 to current step.
 	// linear interpolation of position, plus linear interpolation of radius, if
@@ -112,7 +112,7 @@ public:
 	// Note: This function can only be called during the state calculation phase, after
 	// s1 has been evaluated, but before it is copied back to s0
 
-	const Vector &Barycentre () const { return bpos; }
+	const VECTOR3 &Barycentre () const { return bpos; }
 	// Returns position of barycentre (planet + secondaries)
 
 	inline DWORD nJcoeff() const { return njcoeff; }
@@ -123,7 +123,7 @@ public:
 
 	// returns true if the body uses Pines Algorithm to calculate gravitational acceleration from spherical harmonics
 	inline bool usePines() const { return usePinesGravity; }
-	inline Vector pinesAccel(const Vector rposmax, const int maxDegree, const int maxOrder){
+	inline VECTOR3 pinesAccel(const VECTOR3 rposmax, const int maxDegree, const int maxOrder){
 		return pinesgrav.GetPinesGrav(rposmax, maxDegree, maxOrder);
 	}
 	inline unsigned int GetPinesCutoff() const {
@@ -144,8 +144,8 @@ protected:
 	// Add an object as a secondary (e.g. moon)
 	// Secondaries are used e.g. for barycentre calculations
 
-	Vector Barycentre2Pos (const Vector &bary) const;
-	virtual Vector Pos2Barycentre (const Vector &pos) const;
+	VECTOR3 Barycentre2Pos (const VECTOR3 &bary) const;
+	virtual VECTOR3 Pos2Barycentre (const VECTOR3 &pos) const;
 	// Returns object's position from system barycentre or vice versa by scanning
 	// all secondary bodies.
 
@@ -216,7 +216,7 @@ private:
 
 	double rot_T, rot_omega; // siderial rotation time and angular velocity
 	double Dphi;             // rotation offset at t=0
-	Vector R_axis;           // rotation axis direction (north pole) in global coords
+	VECTOR3 R_axis;          // rotation axis direction (north pole) in global coords
 
 	double *jcoeff;          // coefficients Jn of the harmonic expansion of planet ellipsoid shape, starting with J2 (jcoeff[0]=J2, jcoeff[1]=J3, etc.)
 	DWORD njcoeff;           // number of coefficients in the jcoeff list
@@ -224,8 +224,8 @@ private:
 	PinesGravProp pinesgrav; // coefficients and methods for calculating non-spherical gravity vectors using Pines Algorithm
 	bool usePinesGravity;    // use Pines Algorithm if true, if false use the older jcoeff method
 
-	Vector bpos, bvel;       // object's barycentre state (the barycentre of the set of bodies including *this and its children) with respect to the true position of the parent of *this
-	Vector bposofs, bvelofs; // body barycentre state - true state
+	VECTOR3 bpos, bvel;      // object's barycentre state (the barycentre of the set of bodies including *this and its children) with respect to the true position of the parent of *this
+	VECTOR3 bposofs, bvelofs;// body barycentre state - true state
 	bool ephem_parentbary;   // true if body calculates its state with respect to the parent barycentre, false if with respect to parent's true position
 };
 

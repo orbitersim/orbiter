@@ -128,16 +128,16 @@ void Vessel::FRecorder_Save (bool force)
 
 	for (iter = 0; iter < niter; iter++) {
 		if (ref) {
-			Vector pos = s0->pos-ref->GPos();
-			Vector vel = s0->vel-ref->GVel();
+			VECTOR3 pos = s0->pos - ref->GPos();
+			VECTOR3 vel = s0->vel - ref->GVel();
 			if (frec_last.frm == 1) { // map to equatorial
 				//vel = tmul (cbody->GRot(), vel);
 				double lng, lat, rad, vref;
 				ref->LocalToEquatorial (tmul (ref->GRot(), pos), lng, lat, rad);
 				vref = Pi2/ref->RotT() * rad*cos(lat);
-				vel = tmul (ref->GRot(), vel) - Vector(-vref*sin(lng),0,vref*cos(lng));
+				vel = tmul(ref->GRot(), vel) - VECTOR3{-vref * std::sin(lng), 0, vref * std::cos(lng)};
 			}
-			double cddir = dotp (vel.unit(), frec_last.rvel.unit());
+			double cddir = dot(unit(vel), unit(frec_last.rvel));
 
 			bool nextstep = (fstatus == FLIGHTSTATUS_FREEFLIGHT &&
 				(g_pOrbiter->Cfg()->CfgRecPlayPrm.bSysInterval ? td.SysT1 - frec_last_syst : td.SimT1 - frec_last.simt) > max_step);
@@ -161,7 +161,7 @@ void Vessel::FRecorder_Save (bool force)
 				ofstream ofs (FRfname, ios::app);
 				ofs << setprecision(10)  << (frec_last.simt-Tofs) << ' ';
 				if (frec_last.crd == 1) { // store in polar coords
-					double r = frec_last.rpos.length();
+					double r = len(frec_last.rpos);
 					double phi = atan2 (frec_last.rpos.z, frec_last.rpos.x);
 					double tht = asin (frec_last.rpos.y/r);
 					ofs << setprecision(12) << r << ' ' << phi << ' ' << tht << ' ';
@@ -415,8 +415,8 @@ bool Vessel::FRecorder_Read (const char *scname)
 			frec[nfrec].simt = simt;
 			frec[nfrec].frm  = frm;
 			frec[nfrec].ref  = ref;
-			frec[nfrec].rpos.Set (x, y, z);
-			frec[nfrec].rvel.Set (vx, vy, vz);
+			frec[nfrec].rpos = { x,  y,  z};
+			frec[nfrec].rvel = {vx, vy, vz};
 			nfrec++;
 		}
 	}
@@ -487,51 +487,43 @@ void Vessel::FRecorder_Play ()
 		double dT, dt, w0, w1;
 		double r0, r1, v0, v1, a0, b, lng, lat, rad, vref;
 		int i;
-		static Vector s;
+		static VECTOR3 s;
 
 		while (cfrec+2 < nfrec && frec[cfrec+1].simt < td.SimT1) cfrec++;
 		dT = frec[cfrec+1].simt - frec[cfrec].simt;
 		dt = td.SimT1 - frec[cfrec].simt;
 
-		Vector P0 = frec[cfrec].rpos, P1 = frec[cfrec+1].rpos;
-		Vector V0 = frec[cfrec].rvel, V1 = frec[cfrec+1].rvel;
+		VECTOR3 P0 = frec[cfrec].rpos, P1 = frec[cfrec + 1].rpos;
+		VECTOR3 V0 = frec[cfrec].rvel, V1 = frec[cfrec + 1].rvel;
 		if (frec[cfrec].frm == 1) { // map from equatorial frame
 			// propagate from current rotation state to rotation state at last sample
 			double dlng = Pi2*dt/frec[cfrec].ref->RotT(), sind = sin(dlng), cosd = cos(dlng);
-			s.x =  P0.x*cosd + P0.z*sind;
-			s.z = -P0.x*sind + P0.z*cosd;
-			s.y =  P0.y;
-			P0.Set (mul (frec[cfrec].ref->s1->R, s));
+			s = {P0.x * cosd + P0.z * sind, P0.y, -P0.x * sind + P0.z * cosd};
+			P0 = mul(frec[cfrec].ref->s1->R, s);
 
 			// Needs to be fixed!
 			frec[cfrec].ref->LocalToEquatorial (s, lng, lat, rad);
 			vref = Pi2/frec[cfrec].ref->RotT() * rad * cos(lat);
-			s.x =  V0.x*cosd + V0.z*sind;
-			s.z = -V0.x*sind + V0.z*cosd;
-			s.y =  V0.y;
-			V0.Set (mul (frec[cfrec].ref->s1->R, s + Vector (-vref*sin(lng),0,vref*cos(lng))));
+			s = {V0.x * cosd + V0.z * sind, V0.y, -V0.x * sind + V0.z * cosd};
+			V0 = mul(frec[cfrec].ref->s1->R, s + VECTOR3{-vref * std::sin(lng), 0, vref * std::cos(lng)});
 		}
 		if (frec[cfrec+1].frm == 1) { // map from equatorial frame
 			double dlng = Pi2*(dt-dT)/frec[cfrec+1].ref->RotT(), sind = sin(dlng), cosd = cos(dlng);
-			s.x =  P1.x*cosd + P1.z*sind;
-			s.z = -P1.x*sind + P1.z*cosd;
-			s.y =  P1.y;
-			P1.Set (mul (frec[cfrec+1].ref->s1->R, s));
+			s = {P1.x * cosd + P1.z * sind, P1.y, -P1.x * sind + P1.z * cosd};
+			P1 = mul(frec[cfrec + 1].ref->s1->R, s);
 			frec[cfrec+1].ref->LocalToEquatorial (s, lng, lat, rad);
 			vref = Pi2/frec[cfrec+1].ref->RotT() * rad * cos(lat);
-			s.x =  V1.x*cosd + V1.z*sind;
-			s.z = -V1.x*sind + V1.z*cosd;
-			s.y =  V1.y;
-			V1.Set (mul (frec[cfrec].ref->s1->R, s + Vector (-vref*sin(lng),0,vref*cos(lng))));
+			s = {V1.x * cosd + V1.z * sind, V1.y, -V1.x * sind + V1.z * cosd};
+			V1 = mul(frec[cfrec].ref->s1->R, s + VECTOR3{-vref * std::sin(lng), 0, vref * std::cos(lng)});
 		}
 
 		for (i = 0; i < 3; i++) {
-			r0 = P0.data[i]; r1 = P1.data[i];
-			v0 = V0.data[i]; v1 = V1.data[i];
+			r0 = P0[i]; r1 = P1[i];
+			v0 = V0[i]; v1 = V1[i];
 			a0 = 2.0*(3.0*(r1-r0) - dT*(2.0*v0+v1)) / (dT*dT);
 			b  = 6.0*(2.0*(r0-r1) + dT*(v0+v1)) / (dT*dT*dT);
-			sv->vel.data[i] = v0 + a0*dt + 0.5*b*dt*dt;
-			sv->pos.data[i] = r0 + v0*dt + 0.5*a0*dt*dt + b*dt*dt*dt/6.0;
+			sv->vel[i] = v0 + a0 * dt + 0.5 * b * dt * dt;
+			sv->pos[i] = r0 + v0 * dt + 0.5 * a0 * dt * dt + b * dt * dt * dt / 6;
 		}
 
 		sv->pos += frec[cfrec].ref->s1->pos;
@@ -541,9 +533,9 @@ void Vessel::FRecorder_Play ()
 		if (td.SimT1 < frec_att[nfrec_att-1].simt) {
 
 			// store old orientation for calculating angular velocities
-			Vector r1 (sv->R.m11, sv->R.m21, sv->R.m31);
-			Vector r2 (sv->R.m12, sv->R.m22, sv->R.m32);
-			Vector r3 (sv->R.m13, sv->R.m23, sv->R.m33);
+			VECTOR3 r1{sv->R.m11, sv->R.m21, sv->R.m31};
+			VECTOR3 r2{sv->R.m12, sv->R.m22, sv->R.m32};
+			VECTOR3 r3{sv->R.m13, sv->R.m23, sv->R.m33};
 
 			while (cfrec_att+2 < nfrec_att && frec_att[cfrec_att+1].simt < td.SimT1) cfrec_att++;
 			dt = frec_att[cfrec_att+1].simt - frec_att[cfrec_att].simt;
@@ -560,7 +552,7 @@ void Vessel::FRecorder_Play ()
 				Q.interp (frec_att[cfrec_att].q, frec_att[cfrec_att+1].q, w1);
 				sv->R.Set (Q);
 				double lng, lat, rad, slng, clng, slat, clat;
-				Vector loc = tmul (frec_att[cfrec_att].ref->s1->R, sv->pos - frec_att[cfrec_att].ref->s1->pos);
+				VECTOR3 loc = tmul(frec_att[cfrec_att].ref->s1->R, sv->pos - frec_att[cfrec_att].ref->s1->pos);
 				frec_att[cfrec_att].ref->LocalToEquatorial (loc, lng, lat, rad);
 				slng = sin(lng), clng = cos(lng), slat = sin(lat), clat = cos(lat);
 				sv->R.postmul (Matrix (-slng,      0,     clng,
@@ -576,9 +568,9 @@ void Vessel::FRecorder_Play ()
 			// this may need more thought. The current algorithm may work
 			// in a differential sense, but there should be something more
 			// intelligent in the case of large changes in orientation
-			Vector dx = tmul (sv->R,r1);
-			Vector dy = tmul (sv->R,r2);
-			Vector dz = tmul (sv->R,r3);
+			VECTOR3 dx = tmul(sv->R,r1);
+			VECTOR3 dy = tmul(sv->R,r2);
+			VECTOR3 dz = tmul(sv->R,r3);
 			sv->omega.x =  atan2 (dy.z, dz.z) * td.iSimDT;
 			sv->omega.y = -atan2 (dx.z, dx.x) * td.iSimDT;
 			sv->omega.z =  atan2 (dx.y, dx.x) * td.iSimDT;
@@ -749,11 +741,11 @@ void Vessel::FRecorder_EndPlayback ()
 {
 	if (bFRplayback) {
 		bFRplayback = false;
-		Amom_add.Set(0,0,0);
-		rvel_base.Set (s0->vel);
-		rvel_add.Set(0,0,0);
-		rpos_base.Set (s0->pos);
-		rpos_add.Set(0,0,0);
+		Amom_add = {0, 0, 0};
+		rvel_base = s0->vel;
+		rvel_add = {0, 0, 0};
+		rpos_base = s0->pos;
+		rpos_add = {0, 0, 0};
 		s0->Q.Set (s0->R);
 		if (supervessel && supervessel->GetVessel(0) == this)
 			supervessel->FRecorder_EndPlayback();
