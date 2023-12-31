@@ -416,7 +416,7 @@ VentValve::VentValve(VESSEL *i_vessel,vector3 i_p,vector3 i_dir,float w,float h,
 {pos=i_p; dir=i_dir.normalize();													//need a way to inquire force for a vessel
  vessel=i_vessel;
  ph=vessel->CreatePropellantResource(0.005);
- th=vessel->CreateThruster(_V(pos.x,pos.y,pos.z),_V(dir.x,dir.y,dir.z),10*MaxF,ph,1e99);
+ th=vessel->CreateThruster({pos.x,pos.y,pos.z},{dir.x,dir.y,dir.z},10*MaxF,ph,1e99);
  vessel->AddExhaust(th,w,h);
 };
 void VentValve::Set(VESSEL *i_vessel,vector3 i_p,vector3 i_dir,float w,float h ,int i_open,int ct,float i_maxf, Valve *i_src)
@@ -424,7 +424,7 @@ void VentValve::Set(VESSEL *i_vessel,vector3 i_p,vector3 i_dir,float w,float h ,
  pos=i_p; dir=i_dir.normalize();													//need a way to inquire force for a vessel
  vessel=i_vessel;
  ph=vessel->CreatePropellantResource(0.005);
- th=vessel->CreateThruster(_V(pos.x,pos.y,pos.z),_V(dir.x,dir.y,dir.z),10*MaxF,ph,1e99);
+ th=vessel->CreateThruster({pos.x,pos.y,pos.z},{dir.x,dir.y,dir.z},10*MaxF,ph,1e99);
  vessel->AddExhaust(th,w,h);
 };
 

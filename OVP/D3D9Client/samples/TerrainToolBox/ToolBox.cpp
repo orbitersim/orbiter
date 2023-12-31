@@ -742,12 +742,12 @@ void ToolKit::clbkRender()
 			int c = i;
 			if (sel_corner == i) c = 4;
 		
-			FVECTOR4 base = mat[c];
-			FVECTOR4 emis = mat[c];
-			emis.rgb *= 0.5f;	
+			FVECTOR4 base{mat[c].r, mat[c].g, mat[c].b, mat[c].a};
+			FVECTOR4 emis = base * .5f;
+			emis.w = base.w;
 	
 			VECTOR3 uSP = GetSurfacePosUnit(points[i].lng, points[i].lat) * (oapiGetSize(hPlanet) + points[i].elev);
-			float scale = float(tan(0.75*RAD) * length(uSP - cpos));
+			auto scale = float(std::tan(0.75 * RAD) * len(uSP - cpos));
 			
 			points[i].mWorld = CreateWorldMatrix(hPlanet, points[i].lng, points[i].lat, points[i].elev, scale);
 
@@ -815,23 +815,20 @@ bool ToolKit::UpdateOverlay(int olay)
 
 	if (pSkp) 
 	{
-		FVECTOR4 clr = 1.0f;
-		FVECTOR4 adj = FVECTOR4(0, 1, 0, 0);
+		FVECTOR4 clr{1, 1, 1, 1};
+		FVECTOR4 adj{0, 1, 0, 0};
 
 		if (pLr) {
 			clr = pLr->GetColor();
 			adj = pLr->GetAdjustments();
 		}
 
-		FMATRIX4 mColor;
-
-		mColor.Ident();
-		mColor.m11 = clr.r;
-		mColor.m22 = clr.g;
-		mColor.m33 = clr.b;
-		mColor.m41 = adj.x;
-		mColor.m42 = adj.x;
-		mColor.m43 = adj.x;
+		FMATRIX4 mColor{
+			clr.x,     0,     0, 0,
+			    0, clr.y,     0, 0,
+			    0,     0, clr.z, 0,
+			adj.x, adj.x, adj.x, 1,
+		};
 
 		if (pLr) if (pLr->GetTransparency()) mColor.m44 = 0.5f;
 
@@ -936,7 +933,7 @@ bool ToolKit::UpdateOverlay(int olay)
 				}
 			}
 
-			FVECTOR4 Blend = 1.0f;
+			FVECTOR4 Blend{1, 1, 1, 1};
 			hOverlay = pCore->AddGlobalOverlay(hMgr, selection.bounds.vec, gcCore::OlayType::MASK, hOverlayMsk, hOverlay, &Blend);
 		}
 

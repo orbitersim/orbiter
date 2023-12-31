@@ -80,15 +80,15 @@ struct sFlow {
 
 struct ShaderParams
 {
-	float4x4 mWorld;			// World Matrix
-	float4x4 mLVP;				// Light-View-Projection
-	float4   vSHD;				// Shadow Map Parameters
-	float4   vMSc[3];			// Micro Texture offset-scale
-	float4	 vTexOff;			// Texture offset-scale
-	float4   vCloudOff;			// Cloud texture offset-scale
-	float4   vMicroOff;			// Micro texture offset-scale
-	float4   vOverlayOff;       // Overlay texture offset-scale
-	float4   vOverlayCtrl[4];
+	FMATRIX4 mWorld;			// World Matrix
+	FMATRIX4 mLVP;				// Light-View-Projection
+	FVECTOR4 vSHD;				// Shadow Map Parameters
+	FVECTOR4 vMSc[3];			// Micro Texture offset-scale
+	FVECTOR4 vTexOff;			// Texture offset-scale
+	FVECTOR4 vCloudOff;			// Cloud texture offset-scale
+	FVECTOR4 vMicroOff;			// Micro texture offset-scale
+	FVECTOR4 vOverlayOff;       // Overlay texture offset-scale
+	FVECTOR4 vOverlayCtrl[4];
 	float	 fAlpha;
 	float	 fBeta;
 	float	 fTgtScale;
@@ -121,25 +121,25 @@ struct FlowControlVS
 
 struct ConstParams
 {
-	float4x4 mVP;				// View Projection Matrix
-	float3 CamPos;				// Geocentric Camera position
-	float3 toCam;				// Geocentric Camera direction (unit vector)
-	float3 toSun;				// Geocentric Sun direction (unit vector)
-	float3 SunAz;				// Atmo scatter ref.frame (unit vector) (toCam, ZeroAz, SunAz)
-	float3 ZeroAz;				// Atmo scatter ref.frame (unit vector)
-	float3 Up;					// Sun/Shadow Ref Frame (Unit Vector) (Up, toSun, ZeroAz)
-	float3 vTangent;			// Reference frame for normal mapping (Unit Vector)
-	float3 vBiTangent;			// Reference frame for normal mapping (Unit Vector)
-	float3 vPolarAxis;			// North Pole (unit vector)
-	float3 cSun;				// Sun Color and intensity
-	float3 RayWave;				// .rgb Rayleigh Wave lenghts
-	float3 MieWave;				// .rgb Mie Wave lenghts
-	float4 HG;					// Henyey-Greenstein Phase function params
-	float2 iH;					// Inverse scale height for ray(.r) and mie(.g) e.g. exp(-altitude * iH) 
-	float2 rmO;					// Ray and Mie out-scatter factors
-	float2 rmI;					// Ray and Mie in-scatter factors
-	float3 cAmbient;			// Ambient light color at sealevel
-	float3 cGlare;				// Sun glare color
+	FMATRIX4 mVP;				// View Projection Matrix
+	FVECTOR3 CamPos;			// Geocentric Camera position
+	FVECTOR3 toCam;				// Geocentric Camera direction (unit vector)
+	FVECTOR3 toSun;				// Geocentric Sun direction (unit vector)
+	FVECTOR3 SunAz;				// Atmo scatter ref.frame (unit vector) (toCam, ZeroAz, SunAz)
+	FVECTOR3 ZeroAz;			// Atmo scatter ref.frame (unit vector)
+	FVECTOR3 Up;				// Sun/Shadow Ref Frame (Unit Vector) (Up, toSun, ZeroAz)
+	FVECTOR3 vTangent;			// Reference frame for normal mapping (Unit Vector)
+	FVECTOR3 vBiTangent;		// Reference frame for normal mapping (Unit Vector)
+	FVECTOR3 vPolarAxis;		// North Pole (unit vector)
+	FVECTOR3 cSun;				// Sun Color and intensity
+	FVECTOR3 RayWave;			// .rgb Rayleigh Wave lenghts
+	FVECTOR3 MieWave;			// .rgb Mie Wave lenghts
+	FVECTOR4 HG;				// Henyey-Greenstein Phase function params
+	FVECTOR2 iH;				// Inverse scale height for ray(.r) and mie(.g) e.g. exp(-altitude * iH) 
+	FVECTOR2 rmO;				// Ray and Mie out-scatter factors
+	FVECTOR2 rmI;				// Ray and Mie in-scatter factors
+	FVECTOR3 cAmbient;			// Ambient light color at sealevel
+	FVECTOR3 cGlare;			// Sun glare color
 	float  PlanetRad;			// Planet Radius
 	float  PlanetRad2;			// Planet Radius Squared
 	float  AtmoAlt;				// Atmospehere upper altitude limit

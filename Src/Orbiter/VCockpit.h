@@ -28,7 +28,7 @@ public:
 	inline int Connect (int dir) const { return connect[dir]; }
 	// return connected panel id for specified direction
 
-	void Shift (const Vector &shift);
+	void Shift (const VECTOR3 &shift);
 	// shift the HUD position and active areas by vector 'shift'
 
 	void DefineArea (int aid, const RECT &texrect, int draw_mode, int mouse_mode, int bkmode, SURFHANDLE tgt);
@@ -43,7 +43,7 @@ public:
 	void RedrawArea (int idx, int event);
 	void RedrawAllAreas (int event);
 	void ReleaseAreas ();
-	void ShiftAreas (const Vector &shift);
+	void ShiftAreas (const VECTOR3 &shift);
 
 	SURFHANDLE CreateHUDSurface (const VCHUDSPEC *spec, COLORREF col = 0x00ff00, double intens = 1.0);
 	// create a surface for the VC HUD (returns surface handle)
@@ -53,18 +53,18 @@ public:
 
 	void ClearHUD ();
 	void SetHUDCol (COLORREF col = 0, double intens = 0.0);
-	void ShiftHUDPos (const Vector &shift);
+	void ShiftHUDPos (const VECTOR3 &shift);
 
 	inline const SURFHANDLE GetHUDSurf () const { return hud.surf; }
 	inline const VCHUDSPEC *GetHUDParams () const { return &hud.spec; /*return (hud.surf ? &hud.spec : NULL);*/ }
 
 	void RedrawHUD ();
 
-	bool SetClickZone_Spherical (int i, const Vector &cnt, double rad);
-	bool SetClickZone_Quadrilateral (int i, const Vector &p1, const Vector &p2, const Vector &p3, const Vector &p4);
+	bool SetClickZone_Spherical (int i, const VECTOR3 &cnt, double rad);
+	bool SetClickZone_Quadrilateral (int i, const VECTOR3 &p1, const VECTOR3 &p2, const VECTOR3 &p3, const VECTOR3 &p4);
 
 	bool ProcessMouse (UINT event, DWORD state, int x, int y);
-	void GetMouseState (int &idx, int &state, Vector &xs) const;
+	void GetMouseState (int &idx, int &state, VECTOR3 &xs) const;
 	inline void SetMouseState (int state) { mstate = state; }
 
 	static bool Read (std::ifstream &ifs);
@@ -91,7 +91,7 @@ private:
 	int connect[4];   // connected panels (left,right,up,down) -1=none
 	int idx_mfocus;   // index of area currently receiving mouse focus
 	int mstate;       // current mouse state
-	mutable Vector mouse_r;   // mouse position coefficients (area-type dependent)
+	mutable VECTOR3 mouse_r; // mouse position coefficients (area-type dependent)
 	HWND cwnd;        // window handle for mouse position offset calculations
 
 	struct {          // HUD parameters
@@ -102,7 +102,7 @@ private:
 	} hud;
 
 	struct Area {
-		Area() {}
+		Area() { }
 		int id;       // area identifier
 		RECT texrect; // area rectangle in texture
 		int w, h;     // width, height of texture area
@@ -115,11 +115,11 @@ private:
 		enum ClickMode { CMODE_NONE, CMODE_SPHERICAL, CMODE_QUAD } cmode;
 		union {
 			struct {
-				Vector cnt;   // centre of click area in local vessel coords
+				VECTOR3 cnt;  // centre of click area in local vessel coords
 				double rad;   // radius of click area
 			};
 			struct {
-				Vector p[4];            // corner points
+				VECTOR3 p[4];           // corner points
 				float a, b, c, d;       // coeffs for equation of plane: ax+by+cz+d = 0
 				float u[4], v[4];       // coefficients for transforming to local quad frame
 			};

@@ -161,7 +161,7 @@ void Instrument_OSync::UpdateDraw (oapi::Sketchpad *skp)
 		rlng = man_rlng, sinr = man_sinr, cosr = man_cosr;
 		break;
 	}
-	Vector v(mul (rot1, Vector(cosr, 0.0, sinr)));
+	VECTOR3 v = mul(rot1, VECTOR3{cosr, 0, sinr});
 	skp->SetPen (draw[0][0].solidpen);
 	skp->Line (ICNTX, ICNTY, ICNTX+(int)(v.x*pixrad), ICNTY-(int)(v.z*pixrad));
 
@@ -170,15 +170,13 @@ void Instrument_OSync::UpdateDraw (oapi::Sketchpad *skp)
 	skp->Text (x, y, cbuf, strlen(cbuf)); y += (3*ch)/2;
 
 	// ship in planet coords
-	Vector sp = vessel->GPos()-ref->GPos();
-	Vector sv = vessel->GVel()-ref->GVel();
+	VECTOR3 sp = vessel->GPos() - ref->GPos();
+	VECTOR3 sv = vessel->GVel() - ref->GVel();
 	// normals of the two orbital planes
-	Vector nm1 = crossp (sv, sp);
-	Vector nm2 = crossp (tgt->GVel()-ref->GVel(), tgt->GPos()-ref->GPos());
-	nm1.unify();
-	nm2.unify();
+	VECTOR3 nm1 = unit(cross(sv, sp));
+	VECTOR3 nm2 = unit(cross(tgt->GVel() - ref->GVel(), tgt->GPos() - ref->GPos()));
 	// relative inclination between ship's and target's orbital planes
-	double reli = xangle (nm1, nm2);
+	double reli = angle(nm1, nm2);
 
 	// calculate ship time to reference point
 	double myta = myel->TrueAnm();
@@ -207,12 +205,12 @@ void Instrument_OSync::UpdateDraw (oapi::Sketchpad *skp)
 	sprintf (cbuf, "DLng%7.2fº", Deg(dlng));
 	skp->Text (x, y, cbuf, strlen(cbuf)); y += ch;
 	// target distance
-	Vector rp = tgt->GPos()-vessel->GPos();
-	sprintf (cbuf, "Dist%s", DistStr (rp.length()));
+	VECTOR3 rp = tgt->GPos() - vessel->GPos();
+	sprintf(cbuf, "Dist%s", DistStr(len(rp)));
 	skp->Text (x, y, cbuf, strlen(cbuf)); y += ch;
 	// target velocity
-	Vector rv = tgt->GVel()-vessel->GVel();
-	sprintf (cbuf, "RVel%s", DistStr (rv.length()));
+	VECTOR3 rv = tgt->GVel() - vessel->GVel();
+	sprintf(cbuf, "RVel%s", DistStr (len(rv)));
 	skp->Text (x, y, cbuf, strlen(cbuf)); y += ch;
 
 	// find best match

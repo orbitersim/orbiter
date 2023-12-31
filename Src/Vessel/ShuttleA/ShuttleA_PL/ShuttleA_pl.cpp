@@ -88,7 +88,7 @@ void ShuttleA_PL::SetNormalConfig()
 	SetMeshVisibilityMode (AddMesh (mesh_main), MESHVIS_EXTERNAL);
 	
 	ClearAirfoilDefinitions();
-	CreateAirfoil (LIFT_VERTICAL, _V(0,-4,4), None_MomentCoeff,  4, 2500, 0.5);
+	CreateAirfoil (LIFT_VERTICAL, {0,-4,4}, None_MomentCoeff,  4, 2500, 0.5);
 }
 
 void ShuttleA_PL::SetDrogueConfig()
@@ -98,7 +98,7 @@ void ShuttleA_PL::SetDrogueConfig()
 	SetMeshVisibilityMode (AddMesh (mesh_drogue), MESHVIS_EXTERNAL);
 	
 	ClearAirfoilDefinitions();
-	CreateAirfoil (LIFT_VERTICAL, _V(0.0f,-2.0f,0.0f), Drogue_MomentCoeff,  4, 2500, 0.5);
+	CreateAirfoil (LIFT_VERTICAL, {0.0f,-2.0f,0.0f}, Drogue_MomentCoeff,  4, 2500, 0.5);
 
 
 }
@@ -110,7 +110,7 @@ void ShuttleA_PL::SetParachuteConfig()
 	SetMeshVisibilityMode (AddMesh (mesh_parachute), MESHVIS_EXTERNAL);
 	
 	ClearAirfoilDefinitions();
-	CreateAirfoil (LIFT_VERTICAL, _V(0.0f,-2.0f,2.0f), Parachute_MomentCoeff,  4, 2500, 0.5);
+	CreateAirfoil (LIFT_VERTICAL, {0.0f,-2.0f,2.0f}, Parachute_MomentCoeff,  4, 2500, 0.5);
 }
 
 void ShuttleA_PL::SetPostLandingConfig()
@@ -191,18 +191,18 @@ void ShuttleA_PL::clbkSetClassCaps (FILEHANDLE cfg)
 	
 	//Common stuff on all configurations
 	SetSize (5.0);
-	SetPMI (_V(2.56,2.39,2.02));
+	SetPMI ({2.56,2.39,2.02});
 	SetEmptyMass (20000.0f);
-	SetCrossSections (_V(17.61f, 17.44f, 13.09f));
-	SetRotDrag (_V(0.7, 0.7, 0.3));
+	SetCrossSections ({17.61f, 17.44f, 13.09f});
+	SetRotDrag ({0.7, 0.7, 0.3});
 	SetSurfaceFrictionCoeff (0.5, 0.5);
-	SetCameraOffset (_V(0.0f,0.0f,0.0f));
-	SetDockParams (_V(2.00f,0.00f,0.00f), _V(1,0,0), _V(0,1,0));
+	SetCameraOffset ({0.0f,0.0f,0.0f});
+	SetDockParams ({2.00f,0.00f,0.00f}, {1,0,0}, {0,1,0});
 
 	char attach_id[8]={"SH"};
-	payload_attachment[0]=CreateAttachment (true,_V(-0.319f, 0.0f,   2.5f),_V(0.0f,0.0f,1.0f),_V(0.0f,1.0f,0.0f),attach_id);
-	payload_attachment[1]=CreateAttachment (true,_V(-0.319f, 0.0f,  -2.5f),_V(0.0f,0.0f,-1.0f),_V(0.0f,1.0f,0.0f),attach_id);
-	payload_attachment[2]=CreateAttachment (true,_V(-0.319f, 2.0f,   0.0f  ),_V(0.0f,1.0f, 0.0f),_V(1.0f,0.0f,0.0f),"GS"); // MS 060906: added by request
+	payload_attachment[0]=CreateAttachment (true,{-0.319f, 0.0f,   2.5f},{0.0f,0.0f,1.0f},{0.0f,1.0f,0.0f},attach_id);
+	payload_attachment[1]=CreateAttachment (true,{-0.319f, 0.0f,  -2.5f},{0.0f,0.0f,-1.0f},{0.0f,1.0f,0.0f},attach_id);
+	payload_attachment[2]=CreateAttachment (true,{-0.319f, 2.0f,   0.0f  },{0.0f,1.0f, 0.0f},{1.0f,0.0f,0.0f},"GS"); // MS 060906: added by request
 
 	TOUCHDOWNVTX tdvtx[8] = {
 		{{-2,-2, 2.5}, 2e5, 3e4, 5},

@@ -20,7 +20,7 @@ public:
 		TLABEL() { labeltype = 0; label = 0; }
 		~TLABEL() { if(label) delete[] label; }
 		double lat, lng, alt;
-		Vector pos;
+		VECTOR3 pos;
 		char labeltype;
 		char *label;
 	};

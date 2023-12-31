@@ -9,15 +9,15 @@
 
 #define STRICT
 
-#include "D3D9util.h"
 #include "AABBUtil.h"
 #include "D3D9Client.h"
-#include "VectorHelpers.h"
 #include "D3D9Config.h"
-#include "VPlanet.h"
+#include "D3D9Util.h"
 #include "Mesh.h"
-#include <functional>
+#include "VPlanet.h"
+
 #include <cctype>
+#include <functional>
 #include <unordered_map>
 
 extern D3D9Client* g_client;
@@ -229,9 +229,9 @@ void SurfaceLighting(D3D9Sun *light, OBJHANDLE hP, OBJHANDLE hO, float ao)
 	VECTOR3 S = GS-GO;							// sun's position from base
 	VECTOR3 P = unit(GO-GP);
 
-	float s  = float(length(S));				// sun's distance
+	float s  = float(len(S));					// sun's distance
 	float rs = float(oapiGetSize(hS)) / s;
-	float h  = float(dotp(S,P)) / s;			// sun elevation
+	float h  = float(dot(S, P)) / s;			// sun elevation
 	float d  = 0.173f;							// sun elevation for dispersion
 	float ae = 0.242f;							// sun elevation for ambient
 	float aq = 0.342f;
@@ -262,9 +262,9 @@ void SurfaceLighting(D3D9Sun *light, OBJHANDLE hP, OBJHANDLE hO, float ao)
 		lcol *= 1.0f-amb*0.5f; // reduce direct light component to avoid overexposure
 	}
 
-	light->Color = D3DXCOLOR(lcol.x, lcol.y, lcol.z, 1.0f);
-	light->Ambient = D3DXCOLOR(amb, amb, amb, 1.0f);
-	light->Dir = D3DXVEC(S) * (-1.0f/s);
+	light->Color = to_FVECTOR3(lcol);
+	light->Ambient = FVECTOR3{amb, amb, amb};
+	light->Dir = to_FVECTOR3(D3DXVEC(S) / -s);
 }
 // ===========================================
 // Remove unecessary spaces and tablations
@@ -1375,7 +1375,7 @@ void D3D9Light::UpdateLight(const LightEmitter *_le, const class vObject *vo)
 	// -----------------------------------------------------------------------------
 	if (Type != 0) {
 		D3DXVec3TransformNormal(&Direction, ptr(D3DXVEC(le->GetDirection())), vo->MWorld());
-		float angle = acos(dot(unit(Position), Direction));
+		float angle = acos(dot(unit(to_FVECTOR3(Position)), to_FVECTOR3(Direction)));
 		cone = ilerp(U * 0.5f, P * 0.5f, angle);
 	}
 }

@@ -151,7 +151,7 @@ protected:
 	void RenderSimple (int lvl, TILEDESC *tile);
 	// Render a full sphere (used for low resolutions)
 
-	Vector TileCentre (int hemisp, int ilat, int nlat, int ilng, int nlng);
+	VECTOR3 TileCentre (int hemisp, int ilat, int nlat, int ilng, int nlng);
 	// returns the direction of the tile centre from the planet centre in local
 	// planet coordinates
 
@@ -183,7 +183,7 @@ private:
 	bool bRipple;                    // render ripples in specular reflection
 	bool bPreloadTile;               // preload high-resolution tile textures
 	double lightfac;                 // city light intensity factor
-	Vector pcdir;                    // previous camera direction
+	VECTOR3 pcdir;                   // previous camera direction
 
 	// object-independent configuration parameters
 	static bool bSpecular;           // surface contains areas with specular reflection
@@ -197,11 +197,11 @@ private:
 		D3DMATRIX wmat;              // world matrix
 		D3DMATRIX wmat_tmp;          // copy of world matrix used as work buffer
 		Matrix grot;                 // planet rotation matrix
-		Vector cpos;                 // planet offset vector (in global frame)
+		VECTOR3 cpos;                // planet offset vector (in global frame)
 		VPlanet *vbody;              // pointer to visual
 		int tgtlvl;                  // target resolution level
-		Vector sdir;                 // sun direction from planet centre (in planet frame)
-		Vector cdir;                 // camera direction from planet centre (in planet frame)
+		VECTOR3 sdir;                // sun direction from planet centre (in planet frame)
+		VECTOR3 cdir;                // camera direction from planet centre (in planet frame)
 		double cdist;                // camera distance from planet centre (in units of planet radii)
 		double viewap;               // aperture of surface cap visible from camera pos
 		bool fog;                    // distance fog active?

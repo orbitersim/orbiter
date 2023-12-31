@@ -28,7 +28,7 @@ oapi::CelestialSphere::CelestialSphere(oapi::GraphicsClient* gc)
 		m_markerPen[i] = gc->clbkCreatePen(1, 0, MarkerColor(i));
 	m_textBlendAdditive = false;
 
-	m_skyCol = _V(0, 0, 0);
+	m_skyCol = {0, 0, 0};
 	m_skyBrt = 0.0;
 	m_meshGridLabel = 0;
 
@@ -624,18 +624,16 @@ oapi::FVECTOR4 oapi::CelestialSphere::ColorAdjusted(const FVECTOR4& baseCol) con
 
 DWORD oapi::CelestialSphere::MarkerColorAdjusted(const FVECTOR4& baseCol) const
 {
-	return ColorAdjusted(baseCol).dword_argb();
+	return to_argb32(to_COLOUR4(ColorAdjusted(baseCol)));
 }
 
 DWORD oapi::CelestialSphere::TextColorAdjusted(const FVECTOR4& baseCol) const
 {
 	FVECTOR4 textCol = ColorAdjusted(baseCol);
-	if (!m_textBlendAdditive) { // explicitly add background colour
-		textCol.r += (float)m_skyCol.x;
-		textCol.g += (float)m_skyCol.y;
-		textCol.b += (float)m_skyCol.z;
-	}
-	return textCol.dword_abgr();
+	if (!m_textBlendAdditive) // explicitly add background colour
+		textCol += morph_to<FVECTOR4>(m_skyCol, 0);
+
+	return to_abgr32(to_COLOUR4(textCol));
 }
 
 const MESHHANDLE oapi::CelestialSphere::GridLabelMesh()

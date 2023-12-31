@@ -69,7 +69,7 @@ void VStar::Update (bool moving, bool force)
 
 	VObject::Update (moving, force);
 
-	Vector bdir (cpos.unit());
+	VECTOR3 bdir = unit(cpos);
 	double hz = std::hypot (bdir.x, bdir.z);
 	double phi = atan2 (bdir.z, bdir.x);
 	FLOAT sphi = (FLOAT)sin(phi), cphi = (FLOAT)cos(phi);
@@ -107,7 +107,7 @@ void VStar::Update (bool moving, bool force)
 	mWorld._31 *= rad_scale; mWorld._32 *= rad_scale; mWorld._33 *= rad_scale;
 }
 
-void VStar::BlindColour (const Camera *cam, Vector &col)
+void VStar::BlindColour (const Camera *cam, VECTOR3 &col)
 {
 	//double alpha = xangle (cam->Direction(), cpos);
 	//double ratio = alpha/cam->Aperture();
@@ -118,13 +118,13 @@ void VStar::BlindColour (const Camera *cam, Vector &col)
 		appsize += 0.02;
 		if (appsize > 0.3) appsize = 0.3;
 		double val = /* scl* */ appsize*3.0;  // 0.9 max
-		col.Set (val,val,val);         // grey
+		col = {val, val, val};         // grey
 	//}
 }
 
 COLORREF VStar::CenterPixelColor ()
 {
-	Vector orig (cpos * (1.0/cdist));
+	VECTOR3 orig = cpos * (1.0 / cdist);
 	int x, y;
 	COLORREF col;
 	if (g_pane->GlobalToScreen (orig, x, y)) {

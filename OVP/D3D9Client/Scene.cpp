@@ -6,22 +6,22 @@
 //				 2012 - 2016 Jarmo Nikkanen
 // ==============================================================
 
-#include "Scene.h"
-#include "VPlanet.h"
-#include "VVessel.h"
-#include "VBase.h"
-#include "Particle.h"
+#include "AABBUtil.h"
 #include "CSphereMgr.h"
-#include "D3D9Util.h"
+#include "D3D9Catalog.h"
 #include "D3D9Config.h"
 #include "D3D9Surface.h"
 #include "D3D9TextMgr.h"
-#include "D3D9Catalog.h"
-#include "AABBUtil.h"
-#include "OapiExtension.h"
+#include "D3D9Util.h"
 #include "DebugControls.h"
 #include "IProcess.h"
-#include "VectorHelpers.h"
+#include "OapiExtension.h"
+#include "Particle.h"
+#include "Scene.h"
+#include "VBase.h"
+#include "VPlanet.h"
+#include "VVessel.h"
+
 #include <sstream>
 #include <vector>
 
@@ -444,17 +444,18 @@ void Scene::Initialise()
 
 	// Setup sunlight -------------------------------
 	//
-	sunLight.Color = 1.0f;
-	sunLight.Ambient = float(ambient)*0.0039f;
-	sunLight.Transmission = 1.0f;
-	sunLight.Incatter = 0.0f;
+	sunLight.Color = {1, 1, 1};
+	auto al = float(ambient * 0.0039);
+	sunLight.Ambient = {al, al, al};
+	sunLight.Transmission = {1, 1, 1};
+	sunLight.Incatter = {0, 0, 0};
 
 	// Update Sunlight direction -------------------------------------
 	//
 	VECTOR3 rpos, cpos;
 	oapiGetGlobalPos(hSun, &rpos);
 	oapiCameraGlobalPos(&cpos); rpos-=cpos;
-	sunLight.Dir = -unit(rpos);
+	sunLight.Dir = morph_to<FVECTOR3>(-unit(rpos));
 
 	// Do not "pre-create" visuals here. Will cause changed call order for vessel callbacks
 }
@@ -723,19 +724,19 @@ VECTOR3 Scene::SkyColour ()
 		rc = GetCameraGPos();
 		oapiGetGlobalPos (hProxy, &rp);
 		pc = rc-rp;
-		double cdist = length (pc);
+		double cdist = len(pc);
 		if (cdist < atmp->radlimit) {
 			ATMPARAM prm;
 			oapiGetPlanetAtmParams (hProxy, cdist, &prm);
-			normalise (rp);
-			double coss = dotp (pc, rp) / -cdist;
+			rp = unit(rp);
+			double coss = dot(pc, rp) / -cdist;
 			double intens = min (1.0,(1.0839*coss+0.4581)) * sqrt (prm.rho/atmp->rho0);
 			// => intensity=0 at sun zenith distance 115?
 			//    intensity=1 at sun zenith distance 60?
 			if (intens > 0.0)
-				col += _V(atmp->color0.x*intens, atmp->color0.y*intens, atmp->color0.z*intens);
+				col += {atmp->color0.x*intens, atmp->color0.y*intens, atmp->color0.z*intens};
 		}
-		for (int i=0;i<3;i++) if (col.data[i] > 1.0) col.data[i] = 1.0;
+		for (int i = 0; i < 3; i++) if (col[i] > 1) col[i] = 1;
 	}
 	return col;
 }
@@ -878,10 +879,10 @@ void Scene::GetLVLH(vVessel *vV, D3DXVECTOR3 *up, D3DXVECTOR3 *nr, D3DXVECTOR3 *
 	OBJHANDLE hRef = hV->GetGravityRef();
 	oapiGetRotationMatrix(hRef, &grot);
 	hV->GetRelativePos(hRef, rpos);
-	VECTOR3 axis = mul(grot, _V(0, 1, 0));
-	normalise(rpos);
+	VECTOR3 axis = mul(grot, VECTOR3{0, 1, 0});
+	rpos = unit(rpos);
 	*up = D3DXVEC(rpos);
-	*fw = D3DXVEC(unit(crossp(axis, rpos)));
+	*fw = D3DXVEC(unit(cross(axis, rpos)));
 	D3DXVec3Cross(nr, up, fw);
 	D3DXVec3Normalize(nr, nr);
 }
@@ -905,11 +906,11 @@ float Scene::ComputeNearClipPlane()
 		VECTOR3 pos;
 		oapiGetGlobalPos(hObj,&pos);
 		double g = atan(Camera.apsq);
-		double t = dotp(unit(Camera.pos-pos), unit(Camera.dir));
+		double t = dot(unit(Camera.pos-pos), unit(Camera.dir));
 		if (t<-1.0) t=1.0; if (t>1.0) t=1.0f;
 		double a = PI - acos(t);
 		double R = oapiGetSize(hObj) + hVes->GetSurfaceElevation();
-		double r = length(Camera.pos-pos);
+		double r = len(Camera.pos - pos);
 		double h = r - R;
 		if (h<10e3) {
 			double d = a - g; if (d<0) d=0;
@@ -1040,7 +1041,7 @@ void Scene::UpdateCamVis()
 	VECTOR3 rpos;
 	oapiGetGlobalPos(hSun, &rpos);
 	rpos -= Camera.pos;
-	sunLight.Dir = -unit(rpos);
+	sunLight.Dir = morph_to<FVECTOR3>(-unit(rpos));
 
 	// Get focus visual -----------------------------------------------
 	//
@@ -1160,7 +1161,7 @@ void Scene::ComputeLocalLightsVisibility()
 
 	// Put the Sun on a top of the list
 	LLCBuf[0].index = 0.0f;
-	LLCBuf[0].pos = FVECTOR3(unit(gsun - Camera.pos)) * 10e4;
+	LLCBuf[0].pos = morph_to<FVECTOR3>(unit(gsun - Camera.pos)) * 10e4;
 	LLCBuf[0].cone = 1.0f;
 
 	int nGlares = 1;
@@ -1169,7 +1170,7 @@ void Scene::ComputeLocalLightsVisibility()
 	{
 		if (Lights[i].cone > 0.0f) {
 			LLCBuf[nGlares].index = float(nGlares);
-			LLCBuf[nGlares].pos = Lights[i].Position;
+			LLCBuf[nGlares].pos = to_FVECTOR3(Lights[i].Position);
 			LLCBuf[nGlares].cone = Lights[i].cone;
 			Lights[i].GPUId = nGlares;
 			nGlares++;
@@ -1191,7 +1192,7 @@ void Scene::ComputeLocalLightsVisibility()
 	psgBuffer[GBUF_DEPTH]->GetDesc(&desc);
 
 	ComputeData.vSrc = FVECTOR4((float)desc.Width, (float)desc.Height, 1.0f / (float)desc.Width, 1.0f / (float)desc.Height);
-	ComputeData.vDir = Camera.z;
+	ComputeData.vDir = to_FVECTOR3(Camera.z);
 	ComputeData.mSVP = Camera.mProjView;
 
 	// Must setup render target before calling Setup()
@@ -1514,7 +1515,7 @@ void Scene::RenderMainScene()
 		SmapRenderList.clear();
 		SmapRenderList.push_back(vFocus);
 
-		D3DXVECTOR3 ld = sunLight.Dir;
+		auto ld = to_D3DXVECTOR3(sunLight.Dir);
 		D3DXVECTOR3 pos = vFocus->GetBoundingSpherePosDX();
 		float rad = vFocus->GetBoundingSphereRadius();
 		float frad = rad;
@@ -1643,7 +1644,7 @@ void Scene::RenderMainScene()
 								const std::vector<oapi::GraphicsClient::LABELSPEC>& ls = list[n].marker;
 								VECTOR3 sp;
 								for (int j = 0; j < ls.size(); j++) {
-									if (dotp(ls[j].pos, cpos - ls[j].pos) >= 0.0) { // surface point visible?
+									if (dot(ls[j].pos, cpos - ls[j].pos) >= 0.0) { // surface point visible?
 										sp = mul(prot, ls[j].pos) + ppos;
 										RenderObjectMarker(pSketch, sp, ls[j].label[0], ls[j].label[1], list[n].shape, size);
 									}
@@ -1673,9 +1674,9 @@ void Scene::RenderMainScene()
 							cpos = tmul(prot, cp - ppos); // camera in local planet coords
 							bpos = tmul(prot, bpos - ppos);
 
-							double apprad = 8000e3 / (length(cpos - bpos) * tan(GetCameraAperture()));
+							double apprad = 8000e3 / (len(cpos - bpos) * std::tan(GetCameraAperture()));
 
-							if (dotp(bpos, cpos - bpos) >= 0.0 && apprad > LABEL_DISTLIMIT) { // surface point visible?
+							if (dot(bpos, cpos - bpos) >= 0.0 && apprad > LABEL_DISTLIMIT) { // surface point visible?
 								char name[64]; oapiGetObjectName(hBase, name, 63);
 								VECTOR3 sp = mul(prot, bpos) + ppos;
 								RenderObjectMarker(pSketch, sp, std::string(name), std::string(), 0, size);
@@ -1779,7 +1780,7 @@ void Scene::RenderMainScene()
 	//
 	if (Config->ShadowMapMode >= 1) {
 
-		D3DXVECTOR3 ld = sunLight.Dir;
+		auto ld = to_D3DXVECTOR3(sunLight.Dir);
 		D3DXVECTOR3 pos = vFocus->GetBoundingSpherePosDX();
 		float rad = vFocus->GetBoundingSphereRadius();
 
@@ -1825,7 +1826,7 @@ void Scene::RenderMainScene()
 
 		while (!Intersect.empty()) {
 
-			D3DXVECTOR3 ld = sunLight.Dir;
+			auto ld = to_D3DXVECTOR3(sunLight.Dir);
 			D3DXVECTOR3 pos = Intersect.front()->GetBoundingSpherePosDX();
 			float rad = Intersect.front()->GetBoundingSphereRadius();
 
@@ -2373,13 +2374,13 @@ D3DXCOLOR Scene::GetSunDiffColor()
 	VECTOR3 S = GS - GO;						// sun's position from object
 	VECTOR3 P = GO - GP;
 
-	double s = length(S);
+	double s = len(S);
 
 	float pwr = 1.0f;
 
-	if (hP == hS) return GetSun()->Color;
+	if (hP == hS) return to_D3DXCOLOR(GetSun()->Color);
 
-	double r = length(P);
+	double r = len(P);
 	double pres = 1000.0;
 	double size = oapiGetSize(hP) + vP->GetMinElevation();
 	double grav = oapiGetMass(hP) * 6.67259e-11 / (size*size);
@@ -2394,7 +2395,7 @@ D3DXCOLOR Scene::GetSunDiffColor()
 	float k = float(sqrt(r*r - size*size));		// Horizon distance
 	float alt = float(r - size);
 	float rs = float(oapiGetSize(hS) / s);
-	float ac = float(-dotp(S, P) / (r*s));					// sun elevation
+	float ac = float(-dot(S, P) / (r * s));					// sun elevation
 
 															// Avoid some fault conditions
 	if (alt<0) alt = 0, k = 1e3, size = r;
@@ -3040,8 +3041,7 @@ bool Scene::WorldToScreenSpace2(const VECTOR3& wpos, oapi::FVECTOR2* pt, D3DXMAT
 //
 void Scene::RenderObjectMarker(oapi::Sketchpad *pSkp, const VECTOR3 &gpos, const std::string& label1, const std::string& label2, int mode, int scale)
 {
-	VECTOR3 dp (gpos - GetCameraGPos());
-	normalise (dp);
+	VECTOR3 dp = unit(gpos - GetCameraGPos());
 	m_celSphere->RenderMarker(pSkp, dp, label1, label2, mode, scale);
 }
 
@@ -3173,7 +3173,7 @@ FMATRIX4 Scene::PushCameraFrustumLimits(float nearlimit, float farlimit)
 	FRUSTUM fr = { Camera.nearplane, Camera.farplane };
 	FrustumStack.push(fr);
 	SetCameraFrustumLimits(nearlimit, farlimit);
-	return FMATRIX4(GetProjectionViewMatrix());
+	return to_FMATRIX4(*GetProjectionViewMatrix());
 }
 
 // ===========================================================================================
@@ -3182,7 +3182,7 @@ FMATRIX4 Scene::PopCameraFrustumLimits()
 {
 	SetCameraFrustumLimits(FrustumStack.top().znear, FrustumStack.top().zfar);
 	FrustumStack.pop();
-	return FMATRIX4(GetProjectionViewMatrix());
+	return to_FMATRIX4(*GetProjectionViewMatrix());
 }
 
 // ===========================================================================================
@@ -3375,7 +3375,7 @@ void Scene::UpdateCameraFromOrbiter(DWORD dwPass)
 	else {
 		// Camera target doesn't exist. (Should not happen)
 		oapiCameraGlobalPos(&Camera.pos);
-		Camera.relpos = _V(0,0,0);
+		Camera.relpos = {0,0,0};
 	}
 
 	oapiCameraGlobalDir(&Camera.dir);
@@ -3426,7 +3426,7 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 	for (int i = 0; i < n; i++) {
 		VECTOR3 gp; OBJHANDLE hB = oapiGetGbodyByIndex(i);
 		oapiGetGlobalPos(hB, &gp);
-		double l = length(gp - Camera.pos);
+		double l = len(gp - Camera.pos);
 		if (l < closest) {
 			closest = l;
 			Camera.hNear = hB;
@@ -3604,7 +3604,11 @@ void Scene::RenderGlares()
 		static SMVERTEX Vertex[4] = { {-1, -1, 0, 0, 0}, {-1, 1, 0, 0, 1}, {1, 1, 0, 1, 1}, {1, -1, 0, 1, 0} };
 		static WORD cIndex[6] = { 0, 2, 1, 0, 3, 2 };
 		D3DSURFACE_DESC desc; FVECTOR2 pt;
-		struct { D3DXMATRIX	mVP; float4	Pos, Color;	float GPUId, Alpha, Blend; } Const;
+		struct {
+			D3DXMATRIX mVP;
+			FVECTOR4 Pos, Color;
+			float GPUId, Alpha, Blend;
+		} Const;
 
 		Const.Color = FVECTOR4(1, 1, 1, 1);
 		D3DXMatrixOrthoOffCenterLH(&Const.mVP, 0.0f, (float)viewW, (float)viewH, 0.0f, 0.0f, 1.0f);
@@ -3621,7 +3625,7 @@ void Scene::RenderGlares()
 
 			// Render Sun glare
 			VECTOR3 gsun; oapiGetGlobalPos(oapiGetObjectByIndex(0), &gsun);
-			double sdst = length(gsun - Camera.pos);
+			double sdst = len(gsun - Camera.pos);
 			VECTOR3 pos = (gsun - Camera.pos) * 10e4 / sdst;
 
 			if (WorldToScreenSpace2(pos, &pt))
@@ -3636,16 +3640,17 @@ void Scene::RenderGlares()
 					VECTOR3 crp = vp->CameraPos();
 					clr = vp->SunLightColor(crp, 2.0);
 					cis = CameraInSpace();
-					glare *= pow(clr.MaxRGB(), 0.33f) * cis;				
+					glare *= std::pow(max_rgb(clr), 0.33f) * cis;
 				}
-							
-				float cd = length(pt - FVECTOR2(viewW, viewH) * 0.5f) / float(viewW); // Glare distance from a screen center
+
+				float cd = len(pt - FVECTOR2(viewW, viewH) * 0.5f) / float(viewW); // Glare distance from a screen center
 				float alpha = 2.0f * glare * max(0.5f, 1.0f - cd);
 				float size = 300.0f * GetDisplayScale() * pow(alpha, 0.25f);
 
 				Const.GPUId = 0.5f / float(desc.Width);
 				Const.Pos = FVECTOR4(pt.x, pt.y, size, size);
-				Const.Color.rgb = clr.rgb / (clr.MaxRGB() + 0.0001f);
+				clr /= max_rgb(clr) + 0.0001f; clr.w = Const.Color.w;
+				Const.Color = clr;
 				Const.Alpha = alpha * 2.0f;
 				Const.Blend = sqrt(cis);
 
@@ -3669,7 +3674,7 @@ void Scene::RenderGlares()
 						Const.GPUId = (float(GPUId) + 0.5f) / desc.Width;
 						Const.Pos = FVECTOR4(pt.x, pt.y, size, size);
 						Const.Alpha = Lights[i].cone;
-						Const.Color = Lights[i].Diffuse;
+						Const.Color = to_FVECTOR4(Lights[i].Diffuse);
 						Const.Blend = 1.0f;
 						pRenderGlares->SetVSConstants("Const", &Const, sizeof(Const));
 						pRenderGlares->SetPSConstants("Const", &Const, sizeof(Const));

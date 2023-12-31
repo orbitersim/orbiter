@@ -8,18 +8,31 @@
 #ifndef __D3DUTIL_H
 #define __D3DUTIL_H
 
-#include "OrbiterAPI.h"
-#include "Log.h"
 #include "DrawAPI.h"
+#include "gcCore.h"
+#include "Log.h"
+#include "OrbiterAPI.h"
+
 #include <d3d9.h>
 #include <d3dx9.h>
 #include <string>
-#include "gcCore.h"
 
-#define float2 FVECTOR2
-#define float3 FVECTOR3
-#define float4 FVECTOR4
-#define float4x4 FMATRIX4 
+template <typename T>
+constexpr auto sign(const T& x) { return x < T{0} ? T{-1} : T{1}; }
+
+template <typename T>
+constexpr auto ilerp(const T& a, const T& b, const T& x)
+{
+    auto v = (x - a) / (b - a);
+    return v > T{1} ? T{1} : v < T{0} ? T{0} : v;
+}
+
+template <typename T>
+constexpr auto hermite(const T& x) { return x * x * (T{3} - T{2} * x); }
+
+// enable vector operators for D3DXVECTOR3 and D3DXVECTOR4
+template<> struct is_vector3<D3DXVECTOR3> : std::true_type { };
+template<> struct is_vector4<D3DXVECTOR4> : std::true_type { };
 
 #ifdef _DEBUG
 #ifndef _TRACE
@@ -453,9 +466,9 @@ inline RECT _RECT(DWORD l, DWORD t, DWORD r, DWORD b)
 	return rect;
 }
 
-inline VECTOR3 _V(D3DXVECTOR3 &i)
+inline auto _V(D3DXVECTOR3 &i)
 {
-	return _V(double(i.x), double(i.y), double(i.z));
+	return VECTOR3{double(i.x), double(i.y), double(i.z)};
 }
 
 inline oapi::FVECTOR3 _FV(D3DXVECTOR3 &i)
@@ -463,9 +476,9 @@ inline oapi::FVECTOR3 _FV(D3DXVECTOR3 &i)
 	return oapi::FVECTOR3(i.x, i.y, i.z);
 }
 
-inline VECTOR3 _V(D3DXVECTOR4 &i)
+inline auto _V(D3DXVECTOR4 &i)
 {
-	return _V(double(i.x), double(i.y), double(i.z));
+	return VECTOR3{double(i.x), double(i.y), double(i.z)};
 }
 
 inline void D3DXCOLORSWAP(D3DXCOLOR *x)
@@ -549,9 +562,9 @@ inline D3DXCOLOR _D3DXCOLOR(const VECTOR3 &v, float a = 1.0f)
 	return D3DXCOLOR(float(v.x), float(v.y), float(v.z), a);
 }
 
-inline VECTOR3 _VD3DX(const D3DXVECTOR3 &v)
+inline auto _VD3DX(const D3DXVECTOR3 &v)
 {
-	return _V(double(v.x), double(v.y), double(v.z));
+	return VECTOR3{double(v.x), double(v.y), double(v.z)};
 }
 
 inline VECTOR4 _VD4DX(const D3DXVECTOR4 &v)
@@ -563,6 +576,31 @@ inline float D3DVAL (double x)
 {
 	return (float)x;
 }
+
+inline auto to_FVECTOR3(const D3DXVECTOR3 &v) { return FVECTOR3{v.x, v.y, v.z}; }
+inline auto to_FVECTOR4(const D3DXVECTOR4 &v) { return FVECTOR4{v.x, v.y, v.z, v.w}; }
+
+inline auto to_D3DXVECTOR3(const FVECTOR3 &v) { return D3DXVECTOR3{v.x, v.y, v.z}; }
+inline auto to_D3DXVECTOR4(const FVECTOR4 &v) { return D3DXVECTOR4{v.x, v.y, v.z, v.w}; }
+
+inline auto to_D3DXVECTOR3(const VECTOR3 &v)
+{
+    return D3DXVECTOR3{static_cast<float>(v.x), static_cast<float>(v.y), static_cast<float>(v.z)};
+}
+
+inline auto to_FMATRIX4(const D3DXMATRIX &m)
+{
+    return FMATRIX4{
+        m(0,0), m(0,1), m(0,2), m(0,3),
+        m(1,0), m(1,1), m(1,2), m(1,3),
+        m(2,0), m(2,1), m(2,2), m(2,3),
+        m(3,0), m(3,1), m(3,2), m(3,3),
+    };
+}
+
+inline auto to_D3DXCOLOR(const FVECTOR3 &v) { return D3DXCOLOR{v.x, v.y, v.z, 1}; }
+
+inline auto to_FVECTOR4(const D3DXCOLOR &c) { return FVECTOR4{c.r, c.g, c.b, c.a}; }
 
 //char* _fgets(char* cbuf, int num, FILE* stream, bool keepOneSpace = false);
 

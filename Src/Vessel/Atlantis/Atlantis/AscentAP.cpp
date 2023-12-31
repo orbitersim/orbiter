@@ -275,22 +275,22 @@ void AscentAP::SetLaunchAzimuth (double azimuth)
 	oapiGlobalToLocal (hRef, &pos, &equ);
 	oapiLocalToEqu (hRef, equ, &lng, &lat, &rad);
 	slng = sin(lng), clng = cos(lng), slat = sin(lat), clat = cos(lat);
-	normalise(equ); // unit radius vector
+	equ = unit(equ); // unit radius vector
 	
 	// launch direction in local planet frame
-	dir = _V(-clng*slat*caz - slng*saz, clat*caz, -slng*slat*caz + clng*saz);
+	dir = {-clng*slat*caz - slng*saz, clat*caz, -slng*slat*caz + clng*saz};
 
 	// normal of orbital plane in local planet frame
-	nml = crossp(dir, equ);
+	nml = cross(dir, equ);
 
 	// normal of equator plane in local planet frame
-	ne = _V(0,1,0);
+	ne = {0,1,0};
 
 	// direction of ascending node
-	nd = unit (crossp(nml, ne));
+	nd = unit(cross(nml, ne));
 
 	// orbit inclination
-	tgt.inc = acos(dotp(nml, ne));
+	tgt.inc = std::acos(dot(nml, ne));
 
 	// longitude of ascending node
 	tgt.lan = atan2(nd.z, nd.x);
@@ -315,10 +315,10 @@ double AscentAP::CalcTargetAzimuth () const
 	oapiGetRotationMatrix (hRef, &pR);
 	vessel->GetGlobalPos(pos);
 	oapiGlobalToLocal (hRef, &pos, &equ); // vessel position in planet frame
-	normalise(equ);
+	equ = unit(equ);
 	ep = tmul(tgt.R,equ);               // rotate to equator plane
 	double elng = atan2(ep.z, ep.x);    // longitude of rotated position
-	dir = _V(-sin(elng),0,cos(elng));   // rotated target direction
+	dir = {-sin(elng),0,cos(elng)};   // rotated target direction
 	dir = mul(tgt.R,dir);               // target direction in planet frame
 	dir = mul(pR, dir);                 // target direction in global frame
 	vessel->GetRotationMatrix (vR);
@@ -402,7 +402,7 @@ void AscentAP::GetTargetDirection (double met, VECTOR3 &dir, double &tgt_hdg) co
 	double tgt_pitch = tgt.pitch;
 	double xz = cos(tgt_pitch);
 
-	vessel->HorizonInvRot(_V(xz*sin(tgt_hdg), sin(tgt_pitch), xz*cos(tgt_hdg)), dir);
+	vessel->HorizonInvRot({xz*sin(tgt_hdg), sin(tgt_pitch), xz*cos(tgt_hdg)}, dir);
 }
 
 // --------------------------------------------------------------
@@ -482,7 +482,7 @@ double AscentAP::GetTargetRollRate (double tgt, bool tgt_is_heading) const
 	double dh, droll = avel.z;
 
 	if (tgt_is_heading) {
-		vessel->HorizonRot (_V(0,1,0), yh);
+		vessel->HorizonRot ({0,1,0}, yh);
 		double yhdg = atan2(yh.x, yh.z);
 		dh = yhdg-tgt;
 		if (dh > PI) dh -= PI2;

@@ -265,9 +265,9 @@ void CreateSpherePatch (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, int nlng, int nlat
 	double clng0 = cos(minlng), slng0 = sin(minlng);
 	double clat1 = cos(maxlat), slat1 = sin(maxlat);
 	double clng1 = cos(maxlng), slng1 = sin(maxlng);
-	VECTOR3 ex = {clat0*clng1 - clat0*clng0, 0, clat0*slng1 - clat0*slng0}; normalise(ex);
-	VECTOR3 ey = {0.5*(clng0+clng1)*(clat1-clat0), slat1-slat0, 0.5*(slng0+slng1)*(clat1-clat0)}; normalise(ey);
-	VECTOR3 ez = crossp (ey, ex);
+	auto ex = unit(VECTOR3{clat0*clng1 - clat0*clng0, 0, clat0*slng1 - clat0*slng0});
+	auto ey = unit(VECTOR3{0.5*(clng0+clng1)*(clat1-clat0), slat1-slat0, 0.5*(slng0+slng1)*(clat1-clat0)});
+	auto ez = cross(ey, ex);
 	MATRIX3 R = {ex.x, ex.y, ex.z,  ey.x, ey.y, ey.z,  ez.x, ez.y, ez.z};
 	VECTOR3 pref = {0.5*(clat0*clng1 + clat0*clng0), slat0, 0.5*(clat0*slng1 + clat0*slng0)}; // origin
 	VECTOR3 tpmin, tpmax; 
@@ -285,7 +285,7 @@ void CreateSpherePatch (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, int nlng, int nlat
 		for (j = 0; j <= nseg; j++) {
 			lng = (nseg ? minlng + (maxlng-minlng) * (double)j/(double)nseg : 0.0);
 			slng = sin(lng), clng = cos(lng);
-			pos = _V(clat*clng, slat, clat*slng);
+			pos = {clat*clng, slat, clat*slng};
 			tpos = mul (R, pos-pref);
 			if (!n) {
 				tpmin = tpos;
@@ -360,14 +360,14 @@ void CreateSpherePatch (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, int nlng, int nlat
 	}
 
 	// transform bounding box back to patch coordinates
-	mesh.Box[0] = _V(tmul (R, _V(tpmin.x, tpmin.y, tpmin.z)) + pref);
-	mesh.Box[1] = _V(tmul (R, _V(tpmax.x, tpmin.y, tpmin.z)) + pref);
-	mesh.Box[2] = _V(tmul (R, _V(tpmin.x, tpmax.y, tpmin.z)) + pref);
-	mesh.Box[3] = _V(tmul (R, _V(tpmax.x, tpmax.y, tpmin.z)) + pref);
-	mesh.Box[4] = _V(tmul (R, _V(tpmin.x, tpmin.y, tpmax.z)) + pref);
-	mesh.Box[5] = _V(tmul (R, _V(tpmax.x, tpmin.y, tpmax.z)) + pref);
-	mesh.Box[6] = _V(tmul (R, _V(tpmin.x, tpmax.y, tpmax.z)) + pref);
-	mesh.Box[7] = _V(tmul (R, _V(tpmax.x, tpmax.y, tpmax.z)) + pref);
+	mesh.Box[0] = _V(tmul (R, {tpmin.x, tpmin.y, tpmin.z}) + pref);
+	mesh.Box[1] = _V(tmul (R, {tpmax.x, tpmin.y, tpmin.z}) + pref);
+	mesh.Box[2] = _V(tmul (R, {tpmin.x, tpmax.y, tpmin.z}) + pref);
+	mesh.Box[3] = _V(tmul (R, {tpmax.x, tpmax.y, tpmin.z}) + pref);
+	mesh.Box[4] = _V(tmul (R, {tpmin.x, tpmin.y, tpmax.z}) + pref);
+	mesh.Box[5] = _V(tmul (R, {tpmax.x, tpmin.y, tpmax.z}) + pref);
+	mesh.Box[6] = _V(tmul (R, {tpmin.x, tpmax.y, tpmax.z}) + pref);
+	mesh.Box[7] = _V(tmul (R, {tpmax.x, tpmax.y, tpmax.z}) + pref);
 }
 
 

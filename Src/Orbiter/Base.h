@@ -19,7 +19,7 @@ class Base;
 struct SurftileSpec;
 
 typedef struct {
-	Vector relpos;
+	VECTOR3 relpos;
 	int status;           // 0=free, 1=occupied, 2=booked
 	VesselBase *vessel;   // vessel assigned to pad
 	Nav_VTOL *nav;        // pointer to NAV transmitter
@@ -65,7 +65,7 @@ public:
 	inline double Elevation() const { return elev; }
 	// Return mean base elevation
 
-	void Rel_EquPos (const Vector &relpos, double &_lng, double &_lat) const;
+	void Rel_EquPos (const VECTOR3 &relpos, double &_lng, double &_lat) const;
 	// converts a base-relative position into longitude/latitude
 
 	void Pad_EquPos (DWORD padno, double &_lng, double &_lat) const;
@@ -119,18 +119,18 @@ public:
 	// Return cosine of angle between surface normal and direction to
 	// the sun (which is assumed in the centre of the global coord system)
 
-	inline Vector SunDirection () const
-	{ return (s1 ? tmul(s1->R, -s1->pos.unit()) : tmul (s0->R, -s0->pos.unit())); }
+	inline VECTOR3 SunDirection () const
+	{ return (s1 ? tmul(s1->R, -unit(s1->pos)) : tmul(s0->R, -unit(s0->pos))); }
 	// Return vector pointing towards sun (= world coordiate origin) in
 	// base local coordinates
 
-	inline const Vector *SunDirectionBuffered () const
+	inline const VECTOR3 *SunDirectionBuffered () const
 	{ return &sundir; }
 	// Return vector pointing towards sun (= world coordiate origin) in
 	// base local coordinates.
 	// This version returns a stored value that is updated in regular intervals
 
-	inline Vector4 ShadowColor () const { return Vector4(0.0, 0.0, 0.0, 0.7); }
+	inline VECTOR4 ShadowColor () const { return VECTOR4{0.0, 0.0, 0.0, 0.7}; }
 	// colour and transparency of shadows. Make this planet-specific
 
 	DWORD GetTileList (const SurftileSpec **_tile) const;
@@ -171,11 +171,11 @@ private:
 	//const Planet *planet;
 	double rad, lng, lat;          // equatorial coords of the base
 	double elev;                   // mean elevation of the base
-	Vector rpos;                   // base position in local planet frame
+	VECTOR3 rpos;                   // base position in local planet frame
 	Matrix rrot;                   // rotation matrix in local planet frame
 	double objscale;               // size of "typical" base object (for camera-distance dependent render cutoff)
 	bool bObjmapsphere;            // map base objects onto spherical planet surface?
-	Vector rotvel;                 // base velocity as result of planet rotation in local planet coords (rotvel.y=0)
+	VECTOR3 rotvel;                 // base velocity as result of planet rotation in local planet coords (rotvel.y=0)
 
 	DWORD npad;                    // number of landing pads
 	int padfree;                   // number of available (unoccupied) pads
@@ -204,7 +204,7 @@ private:
 	DWORD ntilebuf;                // list length
 	DWORD ntile;                   // number of surface tiles
 
-	Vector sundir;                 // sun direction in base coordinates
+	VECTOR3 sundir;                 // sun direction in base coordinates
 	double sundir_updt;            // time of next buffered sun direction update
 
 	// common resources

@@ -8,14 +8,14 @@
 
 #define VISIBILITY_TOL 0.0015f
 
-#include "Mesh.h"
-#include "Log.h"
-#include "Scene.h"
-#include "D3D9Surface.h"
 #include "D3D9Catalog.h"
 #include "D3D9Config.h"
+#include "D3D9Surface.h"
+#include "D3D9Util.h"
 #include "DebugControls.h"
-#include "VectorHelpers.h"
+#include "Log.h"
+#include "Mesh.h"
+#include "Scene.h"
 
 #pragma warning(push)
 #pragma warning(disable : 4838)
@@ -1098,67 +1098,61 @@ int D3D9Mesh::SetMaterialEx(DWORD idx, MatProp mid, const FVECTOR4* value)
 	if (idx >= nMtrl) return 4;
 
 	// SET ---------------------------------------------------------------
-	if (value) {
-		switch (mid) {
+	if (value) switch (mid) {
 		case MatProp::Diffuse:
-			Mtrl[idx].Diffuse = *((D3DXVECTOR4*)value);
+			Mtrl[idx].Diffuse = morph_to<D3DXVECTOR4>(*value);
 			Mtrl[idx].ModFlags |= D3D9MATEX_DIFFUSE;
 			bMtrlModidied = true;
 			return 0;
 		case MatProp::Ambient:
-			Mtrl[idx].Ambient = *((D3DXVECTOR3*)value);
+			Mtrl[idx].Ambient = morph_to<D3DXVECTOR3>(*value);
 			Mtrl[idx].ModFlags |= D3D9MATEX_AMBIENT;
 			bMtrlModidied = true;
 			return 0;
 		case MatProp::Specular:
-			Mtrl[idx].Specular = *((D3DXVECTOR4*)value);
+			Mtrl[idx].Specular = morph_to<D3DXVECTOR4>(*value);
 			Mtrl[idx].ModFlags |= D3D9MATEX_SPECULAR;
 			bMtrlModidied = true;
 			return 0;
 		case MatProp::Light:
-			Mtrl[idx].Emissive = *((D3DXVECTOR3*)value);
+			Mtrl[idx].Emissive = morph_to<D3DXVECTOR3>(*value);
 			Mtrl[idx].ModFlags |= D3D9MATEX_EMISSIVE;
 			bMtrlModidied = true;
 			return 0;
 		case MatProp::Emission:
-			Mtrl[idx].Emission2 = *((D3DXVECTOR3*)value);
+			Mtrl[idx].Emission2 = morph_to<D3DXVECTOR3>(*value);
 			Mtrl[idx].ModFlags |= D3D9MATEX_EMISSION2;
 			bMtrlModidied = true;
 			return 0;
 		case MatProp::Reflect:
-			Mtrl[idx].Reflect = *((D3DXVECTOR3*)value);
+			Mtrl[idx].Reflect = morph_to<D3DXVECTOR3>(*value);
 			Mtrl[idx].ModFlags |= D3D9MATEX_REFLECT;
 			bMtrlModidied = true;
 			return 0;
 		case MatProp::Smooth:
-			Mtrl[idx].Roughness = D3DXVECTOR2(value->g, value->r);
+			Mtrl[idx].Roughness = {value->y, value->x};
 			Mtrl[idx].ModFlags |= D3D9MATEX_ROUGHNESS;
 			bMtrlModidied = true;
 			return 0;
 		case MatProp::Fresnel:
-			Mtrl[idx].Fresnel = *((D3DXVECTOR3*)value);
+			Mtrl[idx].Fresnel = morph_to<D3DXVECTOR3>(*value);
 			Mtrl[idx].ModFlags |= D3D9MATEX_FRESNEL;
 			bMtrlModidied = true;
 			return 0;
 		case MatProp::Metal:
-			Mtrl[idx].Metalness = value->r;
+			Mtrl[idx].Metalness = value->x;
 			Mtrl[idx].ModFlags |= D3D9MATEX_METALNESS;
 			bMtrlModidied = true;
 			return 0;
 		case MatProp::SpecialFX:
-			Mtrl[idx].SpecialFX = *((D3DXVECTOR4*)value);
+			Mtrl[idx].SpecialFX = morph_to<D3DXVECTOR4>(*value);
 			Mtrl[idx].ModFlags |= D3D9MATEX_SPECIALFX;
 			bMtrlModidied = true;
 			return 0;
 		}
-		return 5;
-	}
 
 	// CLEAR -------------------------------------------------------------
-
-	if (value == NULL)
-	{
-		switch (mid) {
+	else switch (mid) {
 		case MatProp::Diffuse:
 			Mtrl[idx].Diffuse = D3DXVECTOR4(1, 1, 1, 1);
 			Mtrl[idx].ModFlags &= (~D3D9MATEX_DIFFUSE);
@@ -1170,7 +1164,7 @@ int D3D9Mesh::SetMaterialEx(DWORD idx, MatProp mid, const FVECTOR4* value)
 			bMtrlModidied = true;
 			return 0;
 		case MatProp::Specular:
-			Mtrl[idx].Specular = D3DXVECTOR4(1, 1, 1, 20.0);
+			Mtrl[idx].Specular = D3DXVECTOR4(1, 1, 1, 20);
 			Mtrl[idx].ModFlags &= (~D3D9MATEX_SPECULAR);
 			bMtrlModidied = true;
 			return 0;
@@ -1190,17 +1184,17 @@ int D3D9Mesh::SetMaterialEx(DWORD idx, MatProp mid, const FVECTOR4* value)
 			bMtrlModidied = true;
 			return 0;
 		case MatProp::Smooth:
-			Mtrl[idx].Roughness = D3DXVECTOR2(0.0f, 1.0f);
+			Mtrl[idx].Roughness = D3DXVECTOR2(0, 1);
 			Mtrl[idx].ModFlags &= (~D3D9MATEX_ROUGHNESS);
 			bMtrlModidied = true;
 			return 0;
 		case MatProp::Fresnel:
-			Mtrl[idx].Fresnel = D3DXVECTOR3(1, 0, 1024.0f);
+			Mtrl[idx].Fresnel = D3DXVECTOR3(1, 0, 1024);
 			Mtrl[idx].ModFlags &= (~D3D9MATEX_FRESNEL);
 			bMtrlModidied = true;
 			return 0;
 		case MatProp::Metal:
-			Mtrl[idx].Metalness = 0.0f;
+			Mtrl[idx].Metalness = 0;
 			Mtrl[idx].ModFlags &= (~D3D9MATEX_METALNESS);
 			bMtrlModidied = true;
 			return 0;
@@ -1210,8 +1204,7 @@ int D3D9Mesh::SetMaterialEx(DWORD idx, MatProp mid, const FVECTOR4* value)
 			bMtrlModidied = true;
 			return 0;
 		}
-		return 5;
-	}
+
 	return 5;
 }
 
@@ -1225,50 +1218,47 @@ int D3D9Mesh::GetMaterialEx(DWORD idx, MatProp mid, FVECTOR4* value)
 {
 	if (idx >= nMtrl) return 4;
 
-	if (value)
-	{
-		switch (mid)
+	if (value) switch (mid)
 		{
 		case MatProp::Diffuse:
-			*((D3DXVECTOR4*)value) = Mtrl[idx].Diffuse;
+			*value = morph_to<FVECTOR4>(Mtrl[idx].Diffuse);
 			return 0;
 		case MatProp::Ambient:
-			*((D3DXVECTOR3*)value) = Mtrl[idx].Ambient;
+			*value = morph_to<FVECTOR4>(Mtrl[idx].Ambient, value->w);
 			return 0;
 		case MatProp::Specular:
-			*((D3DXVECTOR4*)value) = Mtrl[idx].Specular;
+			*value = morph_to<FVECTOR4>(Mtrl[idx].Specular);
 			return 0;
 		case MatProp::Light:
-			*((D3DXVECTOR3*)value) = Mtrl[idx].Emissive;
+			*value = morph_to<FVECTOR4>(Mtrl[idx].Emissive, value->w);
 			return 0;
 		case  MatProp::Emission:
-			if ((Mtrl[idx].ModFlags&D3D9MATEX_EMISSION2) == 0) return -2;
-			*((D3DXVECTOR3*)value) = Mtrl[idx].Emission2;
+			if ((Mtrl[idx].ModFlags & D3D9MATEX_EMISSION2) == 0) return -2;
+			*value = morph_to<FVECTOR4>(Mtrl[idx].Emission2, value->w);
 			return 0;
 		case MatProp::Reflect:
-			if ((Mtrl[idx].ModFlags&D3D9MATEX_REFLECT) == 0) return -2;
-			*((D3DXVECTOR3*)value) = Mtrl[idx].Reflect;
+			if ((Mtrl[idx].ModFlags & D3D9MATEX_REFLECT) == 0) return -2;
+			*value = morph_to<FVECTOR4>(Mtrl[idx].Reflect, value->w);
 			return 0;
 		case MatProp::Smooth:
-			if ((Mtrl[idx].ModFlags&D3D9MATEX_ROUGHNESS) == 0) return -2;
-			value->g = Mtrl[idx].Roughness.x;
-			value->r = Mtrl[idx].Roughness.y;
+			if ((Mtrl[idx].ModFlags & D3D9MATEX_ROUGHNESS) == 0) return -2;
+			value->y = Mtrl[idx].Roughness.x;
+			value->x = Mtrl[idx].Roughness.y;
 			return 0;
 		case MatProp::Fresnel:
-			if ((Mtrl[idx].ModFlags&D3D9MATEX_FRESNEL) == 0) return -2;
-			*((D3DXVECTOR3*)value) = Mtrl[idx].Fresnel;
+			if ((Mtrl[idx].ModFlags & D3D9MATEX_FRESNEL) == 0) return -2;
+			*value = morph_to<FVECTOR4>(Mtrl[idx].Fresnel, value->w);
 			return 0;
 		case MatProp::Metal:
-			if ((Mtrl[idx].ModFlags& D3D9MATEX_METALNESS) == 0) return -2;
-			value->r = Mtrl[idx].Metalness;
+			if ((Mtrl[idx].ModFlags & D3D9MATEX_METALNESS) == 0) return -2;
+			value->x = Mtrl[idx].Metalness;
 			return 0;
 		case MatProp::SpecialFX:
-			if ((Mtrl[idx].ModFlags& D3D9MATEX_SPECIALFX) == 0) return -2;
-			*((D3DXVECTOR4*)value) = Mtrl[idx].SpecialFX;
+			if ((Mtrl[idx].ModFlags & D3D9MATEX_SPECIALFX) == 0) return -2;
+			*value = morph_to<FVECTOR4>(Mtrl[idx].SpecialFX);
 			return 0;
 		}
-		return 5;
-	}
+
 	return 5;
 }
 
@@ -1424,7 +1414,7 @@ void D3D9Mesh::CheckMeshStatus()
 void D3D9Mesh::ConfigureAtmo()
 {
 	//LogSunLight(sunLight);
-	float x = 1.0f - saturate(max(sunLight.Color.r, sunLight.Color.b) * 2.0f);
+	float x = 1 - saturate(std::max(sunLight.Color.x, sunLight.Color.z) * 2);
 	FX->SetFloat(eNight, x);
 	FX->SetValue(eSun, &sunLight, sizeof(D3D9Sun));
 }
@@ -2716,11 +2706,11 @@ void D3D9Mesh::RenderShadowMap(const LPD3DXMATRIX pW, const LPD3DXMATRIX pVP, in
 	D3DXMATRIX GroupMatrix, mWorldMesh;
 
 	MeshShader* pShader = nullptr;
-	
-	MeshShader::vs_const.mVP = *pVP;
 
-	D3DXMatrixIdentity(MeshShader::vs_const.mW);
-	
+	MeshShader::vs_const.mVP = to_FMATRIX4(*pVP);
+
+	D3DXMatrixIdentity((D3DXMATRIX*)&MeshShader::vs_const.mW);
+
 	if (bGlobalTF) D3DXMatrixMultiply(&mWorldMesh, &mTransform, pW);
 	else mWorldMesh = *pW;
 
@@ -2768,11 +2758,11 @@ void D3D9Mesh::RenderShadowMap(const LPD3DXMATRIX pW, const LPD3DXMATRIX pVP, in
 		}
 
 		if (Grp[g].bTransform) {
-			D3DXMatrixMultiply(MeshShader::vs_const.mW, &pGrpTF[g], pW);		// Apply Animations to instance matrices
+			D3DXMatrixMultiply((D3DXMATRIX*)&MeshShader::vs_const.mW, &pGrpTF[g], pW);		// Apply Animations to instance matrices
 			bInit = true;
 		}
 		else {
-			if (bInit) MeshShader::vs_const.mW = mWorldMesh;
+			if (bInit) MeshShader::vs_const.mW = to_FMATRIX4(mWorldMesh);
 			bInit = false;
 		}
 

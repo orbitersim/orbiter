@@ -1327,7 +1327,7 @@ int Interpreter::vec_set (lua_State *L)
 	VECTOR3 v;
 	for (i = 0; i < 3; i++) {
 		ASSERT_SYNTAX(lua_isnumber(L,i+1), "expected three numeric arguments");
-		v.data[i] = lua_tonumber(L,i+1);
+		v[i] = lua_tonumber(L, i + 1);
 	}
 	lua_pushvector(L,v);
 	return 1;
@@ -1345,14 +1345,14 @@ int Interpreter::vec_add (lua_State *L)
 		} else {
 			ASSERT_SYNTAX (lua_isnumber(L,2), "Argument 2: expected vector or number");
 			fb = lua_tonumber (L,2);
-			lua_pushvector (L, _V(va.x+fb, va.y+fb, va.z+fb));
+			lua_pushvector (L, {va.x+fb, va.y+fb, va.z+fb});
 		}
 	} else {
 		ASSERT_SYNTAX (lua_isnumber(L,1), "Argument 1: expected vector or number");
 		fa = lua_tonumber (L,1);
 		if (lua_isvector (L,2)) {
 			vb = lua_tovector (L,2);
-			lua_pushvector (L, _V(fa+vb.x, fa+vb.y, fa+vb.z));
+			lua_pushvector (L, {fa+vb.x, fa+vb.y, fa+vb.z});
 		} else {
 			ASSERT_SYNTAX (lua_isnumber(L,2), "Argument 2: expected vector or number");
 			fb = lua_tonumber (L,2);
@@ -1374,14 +1374,14 @@ int Interpreter::vec_sub (lua_State *L)
 		} else {
 			ASSERT_SYNTAX (lua_isnumber(L,2), "Argument 2: expected vector or number");
 			fb = lua_tonumber (L,2);
-			lua_pushvector (L, _V(va.x-fb, va.y-fb, va.z-fb));
+			lua_pushvector (L, {va.x-fb, va.y-fb, va.z-fb});
 		}
 	} else {
 		ASSERT_SYNTAX (lua_isnumber(L,1), "Argument 1: expected vector or number");
 		fa = lua_tonumber (L,1);
 		if (lua_isvector (L,2)) {
 			vb = lua_tovector (L,2);
-			lua_pushvector (L, _V(fa-vb.x, fa-vb.y, fa-vb.z));
+			lua_pushvector (L, {fa-vb.x, fa-vb.y, fa-vb.z});
 		} else {
 			ASSERT_SYNTAX (lua_isnumber(L,2), "Argument 2: expected vector or number");
 			fb = lua_tonumber (L,2);
@@ -1400,18 +1400,18 @@ int Interpreter::vec_mul (lua_State *L)
 		v1 = lua_tovector(L,1);
 		if (lua_isvector(L,2)) {
 			v2 = lua_tovector(L,2);
-			for (i = 0; i < 3; i++) res.data[i] = v1.data[i]*v2.data[i];
+			for (i = 0; i < 3; i++) res[i] = v1[i] * v2[i];
 		} else {
 			ASSERT_SYNTAX (lua_isnumber(L,2), "Argument 2: expected vector or number");
 			f2 = lua_tonumber(L,2);
-			for (i = 0; i < 3; i++) res.data[i] = v1.data[i]*f2;
+			for (i = 0; i < 3; i++) res[i] = v1[i] * f2;
 		}
 	} else {
 		ASSERT_SYNTAX (lua_isnumber(L,1), "Argument 1: expected vector or number");
 		f1 = lua_tonumber(L,1);
 		if (lua_isvector(L,2)) {
 			v2 = lua_tovector(L,2);
-			for (i = 0; i < 3; i++) res.data[i] = f1*v2.data[i];
+			for (i = 0; i < 3; i++) res[i] = f1 * v2[i];
 		} else {
 			ASSERT_SYNTAX (lua_isnumber(L,2), "Argument 2: expected vector or number");
 			f2 = lua_tonumber(L,2);
@@ -1432,18 +1432,18 @@ int Interpreter::vec_div (lua_State *L)
 		v1 = lua_tovector(L,1);
 		if (lua_isvector(L,2)) {
 			v2 = lua_tovector(L,2);
-			for (i = 0; i < 3; i++) res.data[i] = v1.data[i]/v2.data[i];
+			for (i = 0; i < 3; i++) res[i] = v1[i] / v2[i];
 		} else {
 			ASSERT_SYNTAX (lua_isnumber(L,2), "Argument 2: expected vector or number");
 			f2 = lua_tonumber(L,2);
-			for (i = 0; i < 3; i++) res.data[i] = v1.data[i]/f2;
+			for (i = 0; i < 3; i++) res[i] = v1[i] / f2;
 		}
 	} else {
 		ASSERT_SYNTAX (lua_isnumber(L,1), "Argument 1: expected vector or number");
 		f1 = lua_tonumber(L,1);
 		if (lua_isvector(L,2)) {
 			v2 = lua_tovector(L,2);
-			for (i = 0; i < 3; i++) res.data[i] = f1/v2.data[i];
+			for (i = 0; i < 3; i++) res[i] = f1 / v2[i];
 		} else {
 			ASSERT_SYNTAX (lua_isnumber(L,2), "Argument 2: expected vector or number");
 			f2 = lua_tonumber(L,2);
@@ -1462,7 +1462,7 @@ int Interpreter::vec_dotp (lua_State *L)
 	v1 = lua_tovector(L,1);
 	ASSERT_SYNTAX(lua_isvector(L,2), "Argument 2: expected vector");
 	v2 = lua_tovector(L,2);
-	lua_pushnumber (L, dotp(v1,v2));
+	lua_pushnumber(L, dot(v1, v2));
 	return 1;
 }
 
@@ -1473,7 +1473,7 @@ int Interpreter::vec_crossp (lua_State *L)
 	v1 = lua_tovector(L,1);
 	ASSERT_SYNTAX(lua_isvector(L,2), "Argument 2: expected vector");
 	v2 = lua_tovector(L,2);
-	lua_pushvector (L, crossp(v1,v2));
+	lua_pushvector(L, cross(v1, v2));
 	return 1;
 }
 
@@ -1482,7 +1482,7 @@ int Interpreter::vec_length (lua_State *L)
 	VECTOR3 v;
 	ASSERT_SYNTAX(lua_isvector(L,1), "Argument 1: expected vector");
 	v = lua_tovector(L,1);
-	lua_pushnumber (L, length(v));
+	lua_pushnumber(L, len(v));
 	return 1;
 }
 
@@ -1894,7 +1894,7 @@ int Interpreter::oapi_set_maininfovisibilitymode (lua_State *L)
 int Interpreter::oapiCreateAnnotation (lua_State *L)
 {
 	NOTEHANDLE *pnote = (NOTEHANDLE*)lua_newuserdata (L, sizeof(NOTEHANDLE));
-	*pnote = ::oapiCreateAnnotation (true, 1.0, _V(1,0.8,0.6));
+	*pnote = ::oapiCreateAnnotation (true, 1.0, {1,0.8,0.6});
 	oapiAnnotationSetPos (*pnote, 0.03, 0.2, 0.4, 0.4);
 
 	g_notehandles.push_back(pnote);

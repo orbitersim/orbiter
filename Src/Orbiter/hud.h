@@ -54,8 +54,8 @@ protected:
 
 	void AddMesh_Billboard (int &ivtx, int &iidx, double x0, double y0, double dx, double dy, int texx, int texy, int texw, int texh);
 	void AddMesh_CenterMarker (int &ivtx, int &iidx);
-	bool AddMesh_Marker (int &ivtx, int &iidx, const Vector &dir, int markerid, double *xcnt=0, double *ycnt=0);
-	void AddMesh_DirectionMarker (int &ivtx, int &iidx, const Vector &dir, bool prograde=false, double *xcnt=0, double *ycnt=0);
+	bool AddMesh_Marker (int &ivtx, int &iidx, const VECTOR3 &dir, int markerid, double *xcnt=0, double *ycnt=0);
+	void AddMesh_DirectionMarker (int &ivtx, int &iidx, const VECTOR3 &dir, bool prograde=false, double *xcnt=0, double *ycnt=0);
 	void AddMesh_Readout (int &ivtx, int &iidx, int side, const char *str, int label=0);
 
 	void AddMesh_LadderBar (int &ivtx, int &iidx, double sina, double cosa,
@@ -67,18 +67,18 @@ protected:
 
 	int TexBltString (const char *str, int tgtx, int tgty);
 
-	bool GlobalToHUD (const Vector &dir, int &x, int &y) const;
-	bool GlobalToHUD (const Vector &dir, double &x, double &y) const;
+	bool GlobalToHUD (const VECTOR3 &dir, int &x, int &y) const;
+	bool GlobalToHUD (const VECTOR3 &dir, double &x, double &y) const;
 	// maps a global direction into HUD pixel coordinates (also works for VC)
 	// 'dir' must be unit length
 
-	bool GlobalDrawMarker (oapi::Sketchpad *skp, const Vector &dir, int style) const;
+	bool GlobalDrawMarker (oapi::Sketchpad *skp, const VECTOR3 &dir, int style) const;
 	// draw a marker on the HUD pointing in global direction dir
 	// return value indicates dir within sight
 	// styles (can be combined with OR):
 	// 1=rectangle, 2=circle, 4=cross
 
-	oapi::IVECTOR2 *OffscreenDirMarker (const Vector &dir) const;
+	oapi::IVECTOR2 *OffscreenDirMarker (const VECTOR3 &dir) const;
 	// returns points to draw a triangle to point in the direction of global direction dir
 	// from viewport centre. Used to indicate direction of offscreen markers
 
@@ -88,7 +88,7 @@ protected:
 	const Pane *pane;         // pane instance
 	oapi::GraphicsClient *gc; // client instance
 	int colidx;               // HUD colour index
-	Vector HUDofs;            // HUD centre offset from observer point [pixel]
+	VECTOR3 HUDofs;           // HUD centre offset from observer point [pixel]
 	double ladder_width;      // elevation ladder parameters
 	double ladder_range;
 	int HRES05, VRES05;       // semi-dimensions
@@ -101,7 +101,7 @@ protected:
 
 	// virtual cockpit parameters
 	bool bVC;                 // virtual cockpit flag
-	Vector VCcnt;             // HUD centre in VC [(m,m,m)]
+	VECTOR3 VCcnt;            // HUD centre in VC [(m,m,m)]
 	double VCscale;           // HUD semi-size in VC [m]
 
 	HUDPAINTSPEC spec;        // parameters required for painting the HUD (defined in Orbitersdk.h)

@@ -734,7 +734,7 @@ public:
 	*/
 	inline DWORD Color(const COLOUR4* c)
 	{
-		return FVECTOR4(*c).dword_abgr();
+		return to_abgr32(*c);
 	}
 
 	/**
@@ -745,7 +745,7 @@ public:
 	*/
 	inline DWORD Color(const oapi::FVECTOR4* c)
 	{
-		return c->dword_abgr();
+		return to_abgr32(to_COLOUR4(*c));
 	}
 
 	/**
@@ -756,7 +756,7 @@ public:
 	*/
 	inline COLOUR4 Colour4(DWORD dwABGR)
 	{
-		return FVECTOR4(dwABGR).Colour4();
+		return from_abgr32(dwABGR);
 	}
 
 	/**
@@ -784,7 +784,7 @@ public:
 	*/
 	inline void WorldMatrix(FMATRIX4* mat, const VECTOR3& pos, const VECTOR3& x, const VECTOR3& z, double scale = 1.0)
 	{
-		VECTOR3 y = crossp(x, z);
+		VECTOR3 y = cross(x, z);
 		mat->m11 = float(x.x * scale); mat->m12 = float(x.y * scale); mat->m13 = float(x.z * scale); mat->m14 = 0.0f;
 		mat->m21 = float(y.x * scale); mat->m22 = float(y.y * scale); mat->m23 = float(y.z * scale); mat->m24 = 0.0f;
 		mat->m31 = float(z.x * scale); mat->m32 = float(z.y * scale); mat->m33 = float(z.z * scale); mat->m34 = 0.0f;

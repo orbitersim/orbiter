@@ -226,14 +226,14 @@ Airbrake::Airbrake (AerodynCtrlSubsystem *_subsys)
 	static UINT LRudderGrp[2] = {GRP_LRudder1,GRP_LRudder2};
 	static UINT UpperBrakeGrp[4] = {GRP_RUAileron1,GRP_LUAileron1,GRP_LUAileron2,GRP_RUAileron2};
 	static MGROUP_ROTATE UpperBrake (0, UpperBrakeGrp, 4,
-		_V(0,-0.4,-6.0), _V(1,0,0), (float)(50*RAD));
+		{0,-0.4,-6.0}, {1,0,0}, (float)(50*RAD));
 	static UINT LowerBrakeGrp[4] = {GRP_LLAileron1,GRP_RLAileron1,GRP_LLAileron2,GRP_RLAileron2};
 	static MGROUP_ROTATE LowerBrake (0, LowerBrakeGrp, 4,
-		_V(0,-0.4,-6.0), _V(1,0,0), (float)(-50*RAD));
+		{0,-0.4,-6.0}, {1,0,0}, (float)(-50*RAD));
 	static MGROUP_ROTATE RRudderBrake (0, RRudderGrp, 2,
-		_V( 8.668,0.958,-6.204), _V( 0.143,0.975,-0.172), (float)( 25*RAD));
+		{ 8.668,0.958,-6.204}, { 0.143,0.975,-0.172}, (float)( 25*RAD));
 	static MGROUP_ROTATE LRudderBrake (0, LRudderGrp, 2,
-		_V(-8.668,0.958,-6.204), _V(-0.143,0.975,-0.172), (float)(-25*RAD));
+		{-8.668,0.958,-6.204}, {-0.143,0.975,-0.172}, (float)(-25*RAD));
 
 	anim_brake = DG()->CreateAnimation (0);
 	DG()->AddAnimationComponent (anim_brake, 0, 1, &UpperBrake);

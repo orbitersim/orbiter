@@ -22,7 +22,7 @@
 D3D7Light::D3D7Light (OBJHANDLE _hObj, LTYPE _ltype, const Scene *scene, DWORD _idx)
 {
 	hObj = _hObj;
-	rpos = _V(0,0,0);
+	rpos = {0,0,0};
 	ltype = _ltype;
 	scn = scene;
 	idx = _idx;
@@ -64,7 +64,7 @@ void D3D7Light::UpdateDirectional ()
 	VECTOR3 rpos;
 	oapiGetGlobalPos (hObj, &rpos);
 	rpos -= *scn->GetCamera()->GetGPos(); // object position rel. to camera
-	rpos /= -length(rpos); // normalise
+	rpos /= -len(rpos); // normalise
 	D3DVEC(rpos, light.dvDirection);
 }
 

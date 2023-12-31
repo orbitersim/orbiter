@@ -426,7 +426,7 @@ void CSphereManager::Render (LPDIRECT3DDEVICE9 dev, int level, double bglvl)
 
 	rcam = mul(ecl2gal, rcam);
 
-	RenderParam.camdir = _V(rcam.m13, rcam.m23, rcam.m33);
+	RenderParam.camdir = {rcam.m13, rcam.m23, rcam.m33};
 
 	WaitForSingleObject (tilebuf->hQueueMutex, INFINITE);
 
@@ -434,7 +434,7 @@ void CSphereManager::Render (LPDIRECT3DDEVICE9 dev, int level, double bglvl)
 	CelFlow.bBeta = m_bStarImg;
 	CelData.fAlpha = intens;
 	CelData.fBeta = bgscale;
-	CelData.mViewProj = *scn->GetProjectionViewMatrix();
+	CelData.mViewProj = to_FMATRIX4(*scn->GetProjectionViewMatrix());
 
 	pShader->Setup(pPatchVertexDecl, false, 0);
 	pShader->ClearTextures();
@@ -468,7 +468,7 @@ void CSphereManager::ProcessTile (int lvl, int hemisp, int ilat, int nlat, int i
 	static const double rad0 = sqrt(2.0)*PI05;
 	VECTOR3 cnt = TileCentre (hemisp, ilat, nlat, ilng, nlng);
 	double rad = rad0/(double)nlat;
-	double alpha = acos (dotp (RenderParam.camdir, cnt));
+	double alpha = std::acos(dot(RenderParam.camdir, cnt));
 	double adist = alpha - rad;
 	
 	if (adist > RenderParam.viewap) return;
@@ -502,8 +502,8 @@ void CSphereManager::RenderTile (int lvl, int hemisp, int ilat, int nlat, int il
 	VBMESH &mesh = PATCH_TPL[lvl][ilat]; // patch template
 
 	D3D9Stats.Old.Tiles[lvl]++;
-	
-	CelData.mWorld = mWorld;
+
+	CelData.mWorld = to_FMATRIX4(mWorld);
 
 	pShader->SetTexture(hTexA, tex, IPF_CLAMP | IPF_ANISOTROPIC);
 	pShader->SetTexture(hTexB, ltex, IPF_CLAMP | IPF_ANISOTROPIC);
@@ -524,8 +524,8 @@ VECTOR3 CSphereManager::TileCentre (int hemisp, int ilat, int nlat, int ilng, in
 {
 	double cntlat = PI05 * ((double)ilat+0.5)/(double)nlat,      slat = sin(cntlat), clat = cos(cntlat);
 	double cntlng = PI2  * ((double)ilng+0.5)/(double)nlng + PI, slng = sin(cntlng), clng = cos(cntlng);
-	if (hemisp) return _V(clat*clng, -slat, -clat*slng);
-	else        return _V(clat*clng,  slat,  clat*slng);
+	if (hemisp) return {clat*clng, -slat, -clat*slng};
+	else        return {clat*clng,  slat,  clat*slng};
 }
 
 // =======================================================================

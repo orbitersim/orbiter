@@ -17,25 +17,25 @@
 
 #define D3D_OVERLOADS
 
+#include "AtmoControls.h"
+#include "CloudMgr.h"
+#include "cloudmgr2.h"
+#include "D3D9Client.h"
+#include "D3D9Config.h"
+#include "D3D9Util.h"
+#include "DebugControls.h"
+#include "HazeMgr.h"
+#include "IProcess.h"
+#include "OapiExtension.h"
+#include "RingMgr.h"
+#include "SurfMgr.h"
+#include "surfmgr2.h"
+#include "VBase.h"
+#include "VPlanet.h"
+
 #include <map>
 #include <sstream>
 #include <unordered_map>
-
-#include "D3D9Client.h"
-#include "D3D9Config.h"
-#include "VPlanet.h"
-#include "VBase.h"
-#include "SurfMgr.h"
-#include "surfmgr2.h"
-#include "cloudmgr2.h"
-#include "CloudMgr.h"
-#include "HazeMgr.h"
-#include "RingMgr.h"
-#include "DebugControls.h"
-#include "AtmoControls.h"
-#include "VectorHelpers.h"
-#include "OapiExtension.h"
-#include "IProcess.h"
 
 using namespace oapi;
 
@@ -361,7 +361,7 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene) :
 	pSunColor(), pRaySkyView(), pMieSkyView(), pLandViewRay(), pLandViewMie(), pAmbientSky(), pLandViewAtn(), ShaderName("Auto\0")
 {
 	memset(&MicroCfg, 0, sizeof(MicroCfg));
-	vRefPoint = _V(1,0,0);
+	vRefPoint = {1,0,0};
 	atm_mode = 0;
 	iConfig = 0;
 	dist_scale = 1.0f;
@@ -619,7 +619,7 @@ VECTOR3 vPlanet::GetUnitSurfacePos(double lng, double lat) const
 {
 	double slat = sin(lat), clat = cos(lat);
 	double slng = sin(lng), clng = cos(lng);
-	return _V(clat*clng, slat, clat*slng);
+	return {clat*clng, slat, clat*slng};
 }
 
 // ==============================================================
@@ -878,7 +878,7 @@ void vPlanet::CheckResolution()
 
 void vPlanet::RenderZRange (double *nplane, double *fplane)
 {
-	double d = dotp (scn->GetCameraGDir(), cpos);
+	double d = dot(scn->GetCameraGDir(), cpos);
 	*fplane = max (1e3, d+size*1.2);
 	*nplane = max (1e0, d-size*1.2);
 	*fplane = min (*fplane, *nplane*1e5);
@@ -913,7 +913,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 	{   
 
 		// Must update the latest view projection matrix
-		cp.mVP = *scn->GetProjectionViewMatrix();
+		cp.mVP = to_FMATRIX4(*scn->GetProjectionViewMatrix());
 
 		// Setup shadow maps for surface base objects and mesh based bodies ---------------
 		//
@@ -947,7 +947,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 		prm.AmbColor	= D3DXCOLOR(0,0,0,0);
 		prm.FogColor	= D3DXCOLOR(0,0,0,0);
 		prm.TintColor	= D3DXCOLOR(0,0,0,0);
-		prm.SunDir		= _D3DXVECTOR3(SunDirection());
+		prm.SunDir		= to_D3DXVECTOR3(SunDirection());
 
 		if (ringmgr) {
 			ringmgr->Render(dev, mWorld, false);
@@ -999,7 +999,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 				// day/nighttime fog lighting
 				VECTOR3 ppos;
 				oapiGetGlobalPos (hObj, &ppos);
-				double cosa = dotp (unit(ppos), unit(cpos));
+				double cosa = dot(unit(ppos), unit(cpos));
 				double bright = 1.0 * max (0.0, min (1.0, cosa + 0.3));
 				float rfog = (float)(bright*(min(1.0,fogcol.x)+0.0)); // "whiten" the fog colour
 				float gfog = (float)(bright*(min(1.0,fogcol.y)+0.0));
@@ -1232,7 +1232,7 @@ bool vPlanet::ModLighting (DWORD &ambient)
 	if (!prm.bAtm) return false;
 	if (cdist >= size+prm.atm_href) return false;
 
-	double alpha = acos (dotp (unit(scn->GetCameraGPos()), -unit(cpos)));
+	double alpha = std::acos(dot(unit(scn->GetCameraGPos()), -unit(cpos)));
 	// angular distance between sun and planet as seen from camera
 
 	double sunelev = alpha - PI05; // elevation of sun above horizon (assuming camera on ground)
@@ -1260,7 +1260,7 @@ VECTOR3 vPlanet::ReferencePoint()
 	MATRIX3 mRot;
 	oapiGetRotationMatrix(hObj, &mRot);
 	VECTOR3 vLPos = unit(tmul(mRot, PosFromCamera()));
-	if (dotp(vLPos, vRefPoint)<0.9993) vRefPoint = vLPos;
+	if (dot(vLPos, vRefPoint) < 0.9993) vRefPoint = vLPos;
 	return vRefPoint;
 }
 
@@ -1379,7 +1379,7 @@ vPlanet::sOverlay * vPlanet::AddOverlaySurface(VECTOR4 lnglat, gcCore::OlayType 
 	if (pOld) {
 		pOld->pSurf[int(type)] = pSrf;
 		pOld->lnglat = lnglat;
-		if (pB) pOld->Blend[int(type)] = D3DXVECTOR4(pB->r, pB->g, pB->b, pB->a);
+		if (pB) pOld->Blend[int(type)] = morph_to<D3DXVECTOR4>(*pB);
 		else pOld->Blend[int(type)] = D3DXVECTOR4(1, 1, 1, 1);
 		return pOld;
 	}
@@ -1388,7 +1388,7 @@ vPlanet::sOverlay * vPlanet::AddOverlaySurface(VECTOR4 lnglat, gcCore::OlayType 
 	memset(&oLay->pSurf, 0, sizeof(oLay->pSurf));
 	oLay->pSurf[int(type)] = pSrf;
 	oLay->lnglat = lnglat;
-	if (pB) oLay->Blend[int(type)] = D3DXVECTOR4(pB->r, pB->g, pB->b, pB->a);
+	if (pB) oLay->Blend[int(type)] = morph_to<D3DXVECTOR4>(*pB);
 	else oLay->Blend[int(type)] = D3DXVECTOR4(1, 1, 1, 1);
 	overlays.push_back(oLay);
 	return oLay;

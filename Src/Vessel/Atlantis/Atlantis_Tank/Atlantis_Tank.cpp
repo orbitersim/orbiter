@@ -19,21 +19,21 @@
 
 static const int ntdvtx = 15;
 static const TOUCHDOWNVTX tdvtx[ntdvtx] = {
-	{_V( 0,   5.85, 3.1  ), 1e9, 1e7, 0.3 },
-	{_V( 2.4, 5.1, -21.3 ), 1e9, 1e7, 0.3 },
-	{_V(-2.4, 5.1, -21.3 ), 1e9, 1e7, 0.3 },
-	{_V( 4.2, 0,   -21   ), 1e9, 1e7, 0.3 },
-	{_V( 2.1,-3.637,-21  ), 1e9, 1e7, 0.3 },
-	{_V(-2.1,-3.637,-21  ), 1e9, 1e7, 0.3 },
-	{_V(-4.2, 0,   -21   ), 1e9, 1e7, 0.3 },
-	{_V( 4.2, 0,    15   ), 1e9, 1e7, 0.3 },
-	{_V( 2.1,-3.637,15   ), 1e9, 1e7, 0.3 },
-	{_V(-2.1,-3.637,15   ), 1e9, 1e7, 0.3 },
-	{_V(-4.2, 0,    15   ), 1e9, 1e7, 0.3 },
-	{_V(-2.1, 3.637,15   ), 1e9, 1e7, 0.3 },
-	{_V( 2.1, 3.637,15   ), 1e9, 1e7, 0.3 },
-	{_V( 0,   0,   -23.57), 1e9, 1e7, 0.3 },
-	{_V( 0,   0,    23.57), 1e9, 1e7, 0.3 }
+	{{ 0,   5.85, 3.1  }, 1e9, 1e7, 0.3 },
+	{{ 2.4, 5.1, -21.3 }, 1e9, 1e7, 0.3 },
+	{{-2.4, 5.1, -21.3 }, 1e9, 1e7, 0.3 },
+	{{ 4.2, 0,   -21   }, 1e9, 1e7, 0.3 },
+	{{ 2.1,-3.637,-21  }, 1e9, 1e7, 0.3 },
+	{{-2.1,-3.637,-21  }, 1e9, 1e7, 0.3 },
+	{{-4.2, 0,   -21   }, 1e9, 1e7, 0.3 },
+	{{ 4.2, 0,    15   }, 1e9, 1e7, 0.3 },
+	{{ 2.1,-3.637,15   }, 1e9, 1e7, 0.3 },
+	{{-2.1,-3.637,15   }, 1e9, 1e7, 0.3 },
+	{{-4.2, 0,    15   }, 1e9, 1e7, 0.3 },
+	{{-2.1, 3.637,15   }, 1e9, 1e7, 0.3 },
+	{{ 2.1, 3.637,15   }, 1e9, 1e7, 0.3 },
+	{{ 0,   0,   -23.57}, 1e9, 1e7, 0.3 },
+	{{ 0,   0,    23.57}, 1e9, 1e7, 0.3 }
 };
 
 // ==============================================================
@@ -52,9 +52,9 @@ Atlantis_Tank::Atlantis_Tank (OBJHANDLE hObj)
 	hProp = CreatePropellantResource (TANK_MAX_PROPELLANT_MASS);
 
 	// docking ports
-	CreateDock (_V(0,5.5,-5), _V(0,1,0), _V(0,0,1));      // orbiter attachment
-	CreateDock (_V(-4.25,0,-6.4), _V(-1,0,0), _V(0,0,1)); // left SRB attachment
-	CreateDock (_V( 4.25,0,-6.4), _V( 1,0,0), _V(0,0,1)); // right SRB attachment
+	CreateDock ({0,5.5,-5}, {0,1,0}, {0,0,1});      // orbiter attachment
+	CreateDock ({-4.25,0,-6.4}, {-1,0,0}, {0,0,1}); // left SRB attachment
+	CreateDock ({ 4.25,0,-6.4}, { 1,0,0}, {0,0,1}); // right SRB attachment
 
 	// by default, disable orbiter and SRB connectors
 	hDockOrbiter = NULL;
@@ -107,7 +107,7 @@ void Atlantis_Tank::clbkSetClassCaps (FILEHANDLE cfg)
 	// since the Tank doesn't define a 'cockpit'
 
 	SetCOG_elev (-5.0);
-	//SetTouchdownPoints (_V(0,9,3), _V(-1,1,-3), _V(1,1,-3));
+	//SetTouchdownPoints ({0,9,3}, {-1,1,-3}, {1,1,-3});
 	SetTouchdownPoints (tdvtx, ntdvtx);
 	SetLiftCoeffFunc (0);
 
@@ -150,7 +150,7 @@ Atlantis_SRB *Atlantis_Tank::GetSRB (int which) const
 void Atlantis_Tank::EnableOrbiterConnector ()
 {
 	//if (!hDockOrbiter) {
-	//	hDockOrbiter = CreateDock (_V(0.0, 4.64, -9.285), _V(0,1,0), _V(1,0,0));
+	//	hDockOrbiter = CreateDock ({0.0, 4.64, -9.285}, {0,1,0}, {1,0,0});
 	//}
 }
 
@@ -192,7 +192,7 @@ void Atlantis_Tank::SetSRBGimbal (const VECTOR3 &angle) const
 VECTOR3 Atlantis_Tank::GetSRBThrustDir (int which) const
 {
 	if (pSRB[which]) return pSRB[which]->GetThrustGimbal();
-	else return _V(0,0,1);
+	else return {0,0,1};
 }
 
 bool Atlantis_Tank::IgniteSRBs () const
@@ -218,7 +218,7 @@ void Atlantis_Tank::SeparateSRBs ()
 	for (int i = 0; i < 2; i++) {
 		if (pSRB[i]) {
 			const double angle = 0.25*PI;
-			VECTOR3 dir = _V(0.0, i ? -0.04 : 0.04, 0.9992);
+			VECTOR3 dir = {0.0, i ? -0.04 : 0.04, 0.9992};
 			Undock (i+1);
 			pSRB[i]->CmdThrustGimbal (dir); // set SRB gimbals for safe separation
 			pSRB[i]->FireBolt();

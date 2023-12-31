@@ -71,7 +71,7 @@ public:
 	// (the angle between the perihelion and the object)
 	// Note -Pi <= theta < Pi
 
-	void Pol2Crt (double r, double ta, Vector &pos) const;
+	void Pol2Crt (double r, double ta, VECTOR3 &pos) const;
 	// Convert orbital position from polar coordinates (radius r, true anomaly ta)
 	// to cartesian coordinates (pos)
 
@@ -83,31 +83,31 @@ public:
 	{ return sqrt (priv_mu * (2.0/r - 1.0/a)); }
 	// return magnitude of orbital velocity for given radius distance
 
-	void PosVel (Vector &pos, Vector &vel, double t) const;
+	void PosVel (VECTOR3 &pos, VECTOR3 &vel, double t) const;
 	// calculate position and velocity relative to reference
 	// body at time t
 
-	Vector Pos (double t) const;
+	VECTOR3 Pos (double t) const;
 
-	void PosVel_TA (Vector &pos, Vector &vel, double ta) const;
+	void PosVel_TA (VECTOR3 &pos, VECTOR3 &vel, double ta) const;
 	// calculate position and velocity relative to reference
 	// at true anomaly ta
 
 	double Spd_TA(double ta) const;
 	// magnitude of orbital velocity at true anomaly ta
 
-	void Update (Vector &pos, Vector &vel);
+	void Update (VECTOR3 &pos, VECTOR3 &vel);
 	// as PosVel, but also updates internal time-varying data to current simulation time
 
-	void Calculate (const Vector &R, const Vector &V, double t);
+	void Calculate (const VECTOR3 &R, const VECTOR3 &V, double t);
 	// Calculate elements from position and velocity at simulation time t
 
-	void PlaneCoeffs (const Vector &R, const Vector &V, double &a, double &b, double &c);
+	void PlaneCoeffs (const VECTOR3 &R, const VECTOR3 &V, double &a, double &b, double &c);
 	// Given position and velocity vectors, return the coefficients of the
 	// orbital plane E: ax + by + cz + d = 0 (d=0 since plane through origin)
 
-	bool AscendingNode (Vector &asc) const;
-	bool DescendingNode (Vector &desc) const;
+	bool AscendingNode (VECTOR3 &asc) const;
+	bool DescendingNode (VECTOR3 &desc) const;
 	// return cartesian coordinates of ascending and descending nodes
 	// in the reference system
 	// return value: error flag (true=ok, false=node doesn't exist (only
@@ -132,9 +132,9 @@ public:
 	double P()       const { return priv_p; }     // parameter of conic section (semi-latus rectum)
 
 	// time-varying parameters (calculated at the time of the last call to Calculate2)
-	const Vector &RVec() const { return priv_R; } // radius vector
-	const Vector &VVec() const { return priv_V; } // velocity vector
-	const Vector &HVec() const { return priv_H; } // specific angular momentum H = R x V
+	const VECTOR3 &RVec() const { return priv_R; }// radius vector
+	const VECTOR3 &VVec() const { return priv_V; }// velocity vector
+	const VECTOR3 &HVec() const { return priv_H; }// specific angular momentum H = R x V
 	double Radius()  const { return priv_r; }     // radius vector length
 	double Vel()     const { return priv_v; }     // magnitude of velocity
 	double MeanAnm() const { return priv_ma; }    // mean anomaly
@@ -167,14 +167,14 @@ private:
 	double priv_omega;	// argument of periapsis [rad]
 	double priv_p;		// parameter of conic section: r = p / (1 + e cos nu)
 	double priv_tmp;    // for calculation of true anomaly (if e < 1)
-	Vector priv_H;      // normal to orbital plane        (no unit vector)
-	Vector priv_N;      // points towards ascending node  (unit vector)
-	Vector priv_E;		// points towards periapsis       (no unit vector)
+	VECTOR3 priv_H;      // normal to orbital plane        (no unit vector)
+	VECTOR3 priv_N;      // points towards ascending node  (unit vector)
+	VECTOR3 priv_E;      // points towards periapsis       (no unit vector)
 
 	// the following parameters vary with time and are only valid at the
 	// time when Calculate or Update is called
-	Vector priv_R;      // radius vector
-	Vector priv_V;      // velocity vector
+	VECTOR3 priv_R;     // radius vector
+	VECTOR3 priv_V;     // velocity vector
 	double priv_r;      // radius vector length
 	double priv_v;      // magnitude of velocity
 	double priv_ea;     // eccentric anomaly

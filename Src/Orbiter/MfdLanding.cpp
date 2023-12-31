@@ -168,8 +168,8 @@ void Instrument_Landing::UpdateDraw (oapi::Sketchpad *skp)
 		cbuf[0] = '0'+i-1;
 		skp->Text (circx+1, circy+rd-2, cbuf, 1);
 	}
-	Vector hvel (tmul (sp->ref->GRot(), sp->groundvel_glob));
-	hvel.Set (mul (sp->L2H, hvel));
+	VECTOR3 hvel = tmul(sp->ref->GRot(), sp->groundvel_glob);
+	hvel = mul(sp->L2H, hvel);
 	hspd = std::hypot (hvel.x, hvel.z);
 	vdir = atan2 (hvel.x, hvel.z) - sp->dir;
 	if      (vdir <= -Pi) vdir += Pi2;

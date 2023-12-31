@@ -67,8 +67,8 @@ private:
 	int step_curr;
 	double step_scale;
 	double step_t, step_0;
-	Vector step_gpos, step_gvel;
-	Vector *path; // trajectory path
+	VECTOR3 step_gpos, step_gvel;
+	VECTOR3 *path; // trajectory path
 	oapi::IVECTOR2 *pathp; // screen mapping of trajectory path
 
 	static struct SavePrm {

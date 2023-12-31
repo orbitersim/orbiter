@@ -630,7 +630,7 @@ void basefunction::calculate(VECTOR3 *targetvel)
 		VECTOR3 pos,vel;
 		oapiGetRelativeVel(hcraft,hmajor,&vel);
 		oapiGetRelativePos(hcraft,hmajor,&pos);
-		double distance=length(pos);
+		double distance = len(pos);
 		double velenergy=length2my(vel)*0.5;
 		double overallenergy=-GRAVITY*oapiGetMass(hmajor)/distance+velenergy;
 		craft.init(hmajor, hcraft);
@@ -928,14 +928,14 @@ void basefunction::doupdate(oapi::Sketchpad *sketchpad,int tw, int th,int viewmo
 				//Describe targeting quality
 				int hpos=8*linespacing;
 				int wpos=0;
-				double closestApp = length(craftpos-targetpos);
+				double closestApp = len(craftpos-targetpos);
 				TextShow(sketchpad, "Cl. App.: ", wpos, hpos, closestApp);
 				hpos+=linespacing;
 				TextShow(sketchpad, "Hohmann dv: ", wpos, hpos, GetHohmannDV());
 				hpos+=linespacing;
 				VECTOR3 relvel;
 				primary.getrelvel(&relvel);
-				TextShow(sketchpad,"Enc. V:", wpos, hpos, length(relvel));
+				TextShow(sketchpad,"Enc. V:", wpos, hpos, len(relvel));
 				hpos+=linespacing;
 				double intercepttime=primary.gettimeintercept();
 				double arrmjd=oapiTime2MJD(intercepttime);
@@ -999,7 +999,7 @@ void basefunction::Getmode2hypo(VECTOR3 *targetvel)
 
 	//basisorbit.timetovectors(difftime, &ejradius, &ejvel);
 	VECTOR3 forward=unit(ejvel)*m_prograde;
-	VECTOR3 outward=unit(crossp(ejvel, basisorbit.getplanevector()))*m_outwardvel;
+	VECTOR3 outward = unit(cross(ejvel, basisorbit.getplanevector())) * m_outwardvel;
 	VECTOR3 sideward=unit(basisorbit.getplanevector())*m_chplvel;
 	VECTOR3 ejectvector=forward+outward+sideward; //=Eject vector in basisorbit frame
 
@@ -1043,8 +1043,8 @@ double basefunction::GetHohmannDV()
     VECTOR3 posSrc, posTgt;
     oapiGetRelativePos(currentMinor, hmajor, &posSrc);
     oapiGetRelativePos(hmajtarget, hmajor, &posTgt);
-    double radSrc = length(posSrc);
-    double radTgt = length(posTgt);
+    double radSrc = len(posSrc);
+    double radTgt = len(posTgt);
     double dv = GetHohmannDVExtend(radSrc, radTgt, oapiGetMass(hmajor));
     if (radTgt > radSrc)
         return dv;
@@ -1057,18 +1057,16 @@ VECTOR3 basefunction::GetPlaneAxis(const OBJHANDLE hObj, const OBJHANDLE hRef)
 	VECTOR3 pos, vel;
 	oapiGetRelativePos(hObj, hRef, &pos);
 	oapiGetRelativeVel(hObj, hRef, &vel);
-	const VECTOR3& axis = crossp(pos, vel);
 
-	return axis;
+	return cross(pos, vel);
 }
 
 VECTOR3 basefunction::GetLineOfNodes()
 {
     OBJHANDLE currentMinor = hminor ? hminor : oapiGetFocusObject(); // Eject or Manoeuvre?
-   if (!currentMinor || !hmajor || !hmajtarget)
-        return _V(0,0,0);
-    const VECTOR3 & planeMinor = GetPlaneAxis(currentMinor, hmajor);
-    const VECTOR3 & planeMajor = GetPlaneAxis(hmajtarget, hmajor);
-	const VECTOR3 & lineOfNodes = crossp(planeMinor, planeMajor);
-    return lineOfNodes;
+    if (!currentMinor || !hmajor || !hmajtarget) return {0, 0, 0};
+
+    auto planeMinor = GetPlaneAxis(currentMinor, hmajor);
+    auto planeMajor = GetPlaneAxis(hmajtarget, hmajor);
+	return cross(planeMinor, planeMajor);
 }

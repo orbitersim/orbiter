@@ -343,19 +343,19 @@ int gcConst::GetElevation(HTILE hTile, double lng, double lat, double *out_elev)
 //
 DWORD gcConst::Color(const COLOUR4* c)
 {
-	return FVECTOR4(*c).dword_abgr();
+	return to_abgr32(*c);
 }
 
 // ===============================================================================================
 //
 DWORD gcConst::Color(const oapi::FVECTOR4* c)
 {
-	return c->dword_abgr();
+	return to_abgr32(to_COLOUR4(*c));
 }
 
 // ===============================================================================================
 //
 COLOUR4	gcConst::Colour4(DWORD dwABGR)
 {
-	return FVECTOR4(dwABGR).Colour4();
+	return from_abgr32(dwABGR);
 }

@@ -75,14 +75,14 @@ class MeshShader : public ShaderClass
 public:
 
 	static struct VSConst {
-		float4x4 mVP;	// View Projection Matrix
-		float4x4 mW;	// World Matrix
+		FMATRIX4 mVP;	// View Projection Matrix
+		FMATRIX4 mW;	// World Matrix
 	} vs_const;
 
 	static struct PSConst {
-		float3 Cam_X;
-		float3 Cam_Y;
-		float3 Cam_Z;
+		FVECTOR3 Cam_X;
+		FVECTOR3 Cam_Y;
+		FVECTOR3 Cam_Z;
 	} ps_const;
 
 	static struct PSBools {

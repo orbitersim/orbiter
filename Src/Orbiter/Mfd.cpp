@@ -1194,7 +1194,7 @@ void UpdateEllipse (int cntx, int cnty, double scale,
 {
 	int i;
 	int idx1 = ELN-1, idx2 = 2*ELNQ, idx3 = idx2-1;
-	Vector tmp, v[ELN];
+	VECTOR3 tmp, v[ELN];
 	double phi, sphi, cphi, r, x, y;
 	double fac = Pi05/(double)ELNQ;
 	double e2 = el->e * el->e;
@@ -1230,7 +1230,7 @@ void UpdateHyperbola (int cntx, int cnty, int IW, int IH, double scale,
 
 	int i;
 	int idx = ELNH-1;
-	Vector asc, desc, v[ELN-1];
+	VECTOR3 asc, desc, v[ELN-1];
 	double phi, cphi, sphi, r, x, y, len = 1;
 	double p = el->PeDist()*(1.0+el->e); // parameter of polar equation
 	double radmax = 1.5*cntx/scale;
@@ -1264,11 +1264,11 @@ void UpdateHyperbola (int cntx, int cnty, int IW, int IH, double scale,
 	pt[ELN+1].y = pt[idx].y;
 	pt[ELN+2].x = -1;                      // apoapsis - mark invalid
 	if (ascok = el->AscendingNode (asc)) {               // ascending node
-		if ((len = asc.length()) > radmax) asc *= (radmax/len);
+		if ((len = ::len(asc)) > radmax) asc *= (radmax / len);
 		MapScreen (cntx, cnty, scale, mul (irot, asc), pt+(ELN+3));
 	}
 	if (descok = el->DescendingNode (desc)) {              // descending node
-		if ((len = desc.length()) > radmax) desc *= (radmax/len);
+		if ((len = ::len(desc)) > radmax) desc *= (radmax / len);
 		MapScreen (cntx, cnty, scale, mul (irot, desc), pt+(ELN+4));
 	}
 	if (!ascok) {

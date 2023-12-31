@@ -182,7 +182,7 @@ void gcCore::ReleaseSwap(HSWAP hSwap)
 //
 CAMERAHANDLE gcCore::SetupCustomCamera(CAMERAHANDLE hCam, OBJHANDLE hVessel, VECTOR3 &pos, VECTOR3 &dir, VECTOR3 &up, double fov, SURFHANDLE hSurf, DWORD flags)
 {
-	VECTOR3 x = crossp(up, dir);
+	VECTOR3 x = cross(up, dir);
 	MATRIX3 mTake;
 	mTake.m11 = x.x;	mTake.m21 = x.y;	mTake.m31 = x.z;
 	mTake.m12 = up.x;	mTake.m22 = up.y;	mTake.m32 = up.z;
@@ -628,10 +628,10 @@ gcCore::PickGround gcCore2::GetTileData(HPLANETMGR vPl, double lng, double lat, 
 	pg.emin = float(pTile->GetMinElev());
 
 	pg.msg = 0;
-	pg.dist = length(pos);
+	pg.dist = len(pos);
 	pg.level = pTile->Level();
 	pg.hTile = HTILE(pTile);
-	pg.pos = FVECTOR3(pos);
+	pg.pos = morph_to<FVECTOR3>(pos);
 
 	return pg;
 }

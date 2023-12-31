@@ -105,7 +105,7 @@ bool vObject::Update ()
 	cpos -= *scn->GetCamera()->GetGPos(); // global object position relative to camera
 	campos = tmul(grot, -cpos); // camera position in object frame
 
-	cdist = length (cpos);
+	cdist = len(cpos);
 	// camera distance
 
 	dmWorld = _M(grot.m11, grot.m21, grot.m31, 0,
@@ -138,13 +138,13 @@ void vObject::UpdateRenderVectors()
 			double scale = size * *(float*)gc->GetConfigParam(CFGPRM_FRAMEAXISSCALE);
 			double rad = size * 0.01;
 			float alpha = *(float*)gc->GetConfigParam(CFGPRM_FRAMEAXISOPACITY);
-			AddVector(_V(scale, 0, 0), _V(0, 0, 0), rad, std::string("+x"), _V(1, 1, 1), alpha, D3DRGB(1, 1, 1));
-			AddVector(_V(0, scale, 0), _V(0, 0, 0), rad, std::string("+y"), _V(1, 1, 1), alpha, D3DRGB(1, 1, 1));
-			AddVector(_V(0, 0, scale), _V(0, 0, 0), rad, std::string("+z"), _V(1, 1, 1), alpha, D3DRGB(1, 1, 1));
+			AddVector({scale, 0, 0}, {0, 0, 0}, rad, std::string("+x"), {1, 1, 1}, alpha, D3DRGB(1, 1, 1));
+			AddVector({0, scale, 0}, {0, 0, 0}, rad, std::string("+y"), {1, 1, 1}, alpha, D3DRGB(1, 1, 1));
+			AddVector({0, 0, scale}, {0, 0, 0}, rad, std::string("+z"), {1, 1, 1}, alpha, D3DRGB(1, 1, 1));
 			if (flag & FAV_NEGATIVE) {
-				AddVector(_V(-scale, 0, 0), _V(0, 0, 0), rad, std::string("-x"), _V(1, 1, 1), alpha, D3DRGB(1, 1, 1));
-				AddVector(_V(0, -scale, 0), _V(0, 0, 0), rad, std::string("-y"), _V(1, 1, 1), alpha, D3DRGB(1, 1, 1));
-				AddVector(_V(0, 0, -scale), _V(0, 0, 0), rad, std::string("-z"), _V(1, 1, 1), alpha, D3DRGB(1, 1, 1));
+				AddVector({-scale, 0, 0}, {0, 0, 0}, rad, std::string("-x"), {1, 1, 1}, alpha, D3DRGB(1, 1, 1));
+				AddVector({0, -scale, 0}, {0, 0, 0}, rad, std::string("-y"), {1, 1, 1}, alpha, D3DRGB(1, 1, 1));
+				AddVector({0, 0, -scale}, {0, 0, 0}, rad, std::string("-z"), {1, 1, 1}, alpha, D3DRGB(1, 1, 1));
 			}
 		}
 	}
@@ -159,7 +159,7 @@ void vObject::RenderSpot (LPDIRECT3DDEVICE7 dev, const VECTOR3 *ofs, float size,
 	oapiGetGlobalPos (hObj, &gpos);
 	VECTOR3 pos (cpos);
 	if (ofs) pos += mul (grot, *ofs);
-	double dist = length (pos);
+	double dist = len(pos);
 	VECTOR3 bdir (pos/dist);
 	const VECTOR3 &camp = *scn->GetCamera()->GetGPos();
 	double hz = std::hypot (bdir.x, bdir.z);
@@ -167,7 +167,7 @@ void vObject::RenderSpot (LPDIRECT3DDEVICE7 dev, const VECTOR3 *ofs, float size,
 	float sphi = (float)sin(phi), cphi = (float)cos(phi);
 
 	const double ambient = 0.2;
-	double cosa = dotp (unit(gpos), unit(gpos - camp));
+	double cosa = dot(unit(gpos), unit(gpos - camp));
 	double intens = (lighting ? 0.5 * ((1.0-ambient)*cosa + 1.0+ambient) : 1.0);
 
 	W._11 =  (float)bdir.x;
@@ -206,11 +206,11 @@ void vObject::RenderSpot (LPDIRECT3DDEVICE7 dev, const VECTOR3 *ofs, float size,
 
 void vObject::AddVector(const VECTOR3& v, const VECTOR3& orig, double rad, const std::string& label, const VECTOR3& col, float alpha, DWORD lcol, float lsize)
 {
-	double len = length(v);
+	double len = ::len(v);
 	if (len < 2.0 * rad) return; // too short to be rendered
 
 	VECTOR3 vu = v / len;
-	double dist = length(vu - campos); // distance of vector tip from camera
+	double dist = ::len(vu - campos); // distance of vector tip from camera
 
 	BodyVectorRec rec;
 	rec.v = v;
@@ -296,7 +296,7 @@ bool vObject::DrawVector(LPDIRECT3DDEVICE7 dev, const VECTOR3& end, const VECTOR
 	}
 
 	float w = (float)rad;
-	float h = (float)length(end);
+	float h = (float)len(end);
 	if (h < EPS) return false;
 	float hb = max(h - 4.0f * w, 0.0f);
 
@@ -330,7 +330,7 @@ bool vObject::DrawVector(LPDIRECT3DDEVICE7 dev, const VECTOR3& end, const VECTOR
 	VECTOR3 gpos;
 	oapiGetRotationMatrix(hObj, &grot);
 	VECTOR3 cp = tmul(grot, -cpos);
-	if (dotp(d, unit(end - cp)) > 0)
+	if (dot(d, unit(end - cp)) > 0)
 		Idx = Idx1, nIdx = nIdx1;
 	else
 		Idx = Idx0, nIdx = nIdx0;

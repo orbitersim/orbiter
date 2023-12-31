@@ -280,7 +280,7 @@ void ADICtrl::UpdateDisplay (SURFHANDLE surf, bool force)
 
 	if (!sh->GetAttref()->GetTgtEulerAngles (ofs)) {
 		tgtmode = 0;
-		ofs = _V(0,0,0);
+		ofs = {0,0,0};
 	}
 	DispAngle (surf, ofs.y, 58, 39, dispprm.tgtdev[0]);
 	DispAngle (surf, ofs.z, 86, 39, dispprm.tgtdev[1]);
@@ -393,8 +393,8 @@ bool ADICtrl::ProcessSwitches (int event, int mx, int my)
 
 	if (mx < 23) {
 		if (mx < 17 && (event & PANEL_MOUSE_LBDOWN)) {
-			if (settgt) sh->GetAttref()->SetTgtOffset (_V(0,0,0));
-			else        sh->GetAttref()->SetEulerOffset (_V(0,0,0));
+			if (settgt) sh->GetAttref()->SetTgtOffset ({0,0,0});
+			else        sh->GetAttref()->SetEulerOffset ({0,0,0});
 			return true;
 		}
 		return false;
@@ -433,7 +433,7 @@ bool ADICtrl::ProcessSwitches (int event, int mx, int my)
 			}
 			double step = (btstate[btactive] == 1 ? 1.0*RAD : -1.0*RAD);
 			VECTOR3 ofs = (settgt ? sh->GetAttref()->GetTgtOffset() : sh->GetAttref()->GetEulerOffset());
-			ofs.data[btactive] += step;
+			ofs[btactive] += step;
 			if (settgt) sh->GetAttref()->SetTgtOffset (ofs);
 			else        sh->GetAttref()->SetEulerOffset (ofs);
 			return true;

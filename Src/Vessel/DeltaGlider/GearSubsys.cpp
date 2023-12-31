@@ -66,42 +66,42 @@ GearControl::GearControl (GearSubsystem *_subsys)
 	// Landing gear animation
 	static UINT NWheelStrutGrp[2] = {GRP_NWheelStrut1,GRP_NWheelStrut2};
 	static MGROUP_ROTATE NWheelStrut (0, NWheelStrutGrp, 2,
-		_V(0,-1.048,8.561), _V(1,0,0), (float)(-95*RAD));
+		{0,-1.048,8.561}, {1,0,0}, (float)(-95*RAD));
 	static UINT NWheelFCoverGrp[2] = {GRP_NWheelFCover1,GRP_NWheelFCover2};
 	static MGROUP_ROTATE NWheelFCover (0, NWheelFCoverGrp, 2,
-		_V(0,-1.145,8.65), _V(1,0,0), (float)(-90*RAD));
+		{0,-1.145,8.65}, {1,0,0}, (float)(-90*RAD));
 	static UINT NWheelLCoverGrp[2] = {GRP_NWheelLCover1,GRP_NWheelLCover2};
 	static MGROUP_ROTATE NWheelLCover1 (0, NWheelLCoverGrp, 2,
-		_V(-0.3,-1.222,7.029), _V(0,0.052,0.999), (float)(-90*RAD));
+		{-0.3,-1.222,7.029}, {0,0.052,0.999}, (float)(-90*RAD));
 	static MGROUP_ROTATE NWheelLCover2 (0, NWheelLCoverGrp, 2,
-		_V(-0.3,-1.222,7.029), _V(0,0.052,0.999), (float)( 90*RAD));
+		{-0.3,-1.222,7.029}, {0,0.052,0.999}, (float)( 90*RAD));
 	static UINT NWheelRCoverGrp[2] = {GRP_NWheelRCover1,GRP_NWheelRCover2};
 	static MGROUP_ROTATE NWheelRCover1 (0, NWheelRCoverGrp, 2,
-		_V( 0.3,-1.222,7.029), _V(0,0.052,0.999), (float)( 90*RAD));
+		{ 0.3,-1.222,7.029}, {0,0.052,0.999}, (float)( 90*RAD));
 	static MGROUP_ROTATE NWheelRCover2 (0, NWheelRCoverGrp, 2,
-		_V( 0.3,-1.222,7.029), _V(0,0.052,0.999), (float)(-90*RAD));
+		{ 0.3,-1.222,7.029}, {0,0.052,0.999}, (float)(-90*RAD));
 	static UINT LWheelStrutGrp[2] = {GRP_LWheelStrut1,GRP_LWheelStrut2};
 	static MGROUP_ROTATE LWheelStrut (0, LWheelStrutGrp, 2,
-		_V(-3.607,-1.137,-3.08), _V(0,0,1), (float)(-90*RAD));
+		{-3.607,-1.137,-3.08}, {0,0,1}, (float)(-90*RAD));
 	static UINT RWheelStrutGrp[2] = {GRP_RWheelStrut1,GRP_RWheelStrut2};
 	static MGROUP_ROTATE RWheelStrut (0, RWheelStrutGrp, 2,
-		_V( 3.607,-1.137,-3.08), _V(0,0,1), (float)(90*RAD));
+		{ 3.607,-1.137,-3.08}, {0,0,1}, (float)(90*RAD));
 	static UINT LWheelOCoverGrp[4] = {GRP_LWheelOCover1,GRP_LWheelOCover2,GRP_LWheelOCover3,GRP_LWheelOCover4};
 	static MGROUP_ROTATE LWheelOCover (0, LWheelOCoverGrp, 4,
-		_V(-3.658,-1.239,-3.038), _V(0,0,1), (float)(-110*RAD));
+		{-3.658,-1.239,-3.038}, {0,0,1}, (float)(-110*RAD));
 	static UINT LWheelICoverGrp[2] = {GRP_LWheelICover1,GRP_LWheelICover2};
 	static MGROUP_ROTATE LWheelICover1 (0, LWheelICoverGrp, 2,
-		_V(-2.175,-1.178,-3.438), _V(0,0,1), (float)(90*RAD));
+		{-2.175,-1.178,-3.438}, {0,0,1}, (float)(90*RAD));
 	static MGROUP_ROTATE LWheelICover2 (0, LWheelICoverGrp, 2,
-		_V(-2.175,-1.178,-3.438), _V(0,0,1), (float)(-90*RAD));
+		{-2.175,-1.178,-3.438}, {0,0,1}, (float)(-90*RAD));
 	static UINT RWheelOCoverGrp[4] = {GRP_RWheelOCover1,GRP_RWheelOCover2,GRP_RWheelOCover3,GRP_RWheelOCover4};
 	static MGROUP_ROTATE RWheelOCover (0, RWheelOCoverGrp, 4,
-		_V( 3.658,-1.239,-3.038), _V(0,0,1), (float)( 110*RAD));
+		{ 3.658,-1.239,-3.038}, {0,0,1}, (float)( 110*RAD));
 	static UINT RWheelICoverGrp[2] = {GRP_RWheelICover1,GRP_RWheelICover2};
 	static MGROUP_ROTATE RWheelICover1 (0, RWheelICoverGrp, 2,
-		_V( 2.175,-1.178,-3.438), _V(0,0,1), (float)(-90*RAD));
+		{ 2.175,-1.178,-3.438}, {0,0,1}, (float)(-90*RAD));
 	static MGROUP_ROTATE RWheelICover2 (0, RWheelICoverGrp, 2,
-		_V( 2.175,-1.178,-3.438), _V(0,0,1), (float)( 90*RAD));
+		{ 2.175,-1.178,-3.438}, {0,0,1}, (float)( 90*RAD));
 	anim_gear = DG()->CreateAnimation (1);
 	DG()->AddAnimationComponent (anim_gear, 0.3, 1, &NWheelStrut);
 	DG()->AddAnimationComponent (anim_gear, 0.3, 0.9, &NWheelFCover);

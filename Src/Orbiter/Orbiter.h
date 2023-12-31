@@ -141,7 +141,7 @@ public:
 		}
 	}
 
-	void NotifyObjectJump (const Body *obj, const Vector &shift);
+	void NotifyObjectJump (const Body *obj, const VECTOR3 &shift);
 	void NotifyObjectSize (const Body *obj);
 
 	void SetWarpFactor (double warp, bool force = false, double delay = 0.0);

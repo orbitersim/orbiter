@@ -206,9 +206,9 @@ void CreateSpherePatch (const oapi::D3D7Client *gclient, VBMESH &mesh, int nlng,
 	double clng0 = cos(minlng), slng0 = sin(minlng);
 	double clat1 = cos(maxlat), slat1 = sin(maxlat);
 	double clng1 = cos(maxlng), slng1 = sin(maxlng);
-	VECTOR3 ex = {clat0*clng1 - clat0*clng0, 0, clat0*slng1 - clat0*slng0}; normalise(ex);
-	VECTOR3 ey = {0.5*(clng0+clng1)*(clat1-clat0), slat1-slat0, 0.5*(slng0+slng1)*(clat1-clat0)}; normalise(ey);
-	VECTOR3 ez = crossp (ey, ex);
+	auto ex = unit(VECTOR3{clat0*clng1 - clat0*clng0, 0, clat0*slng1 - clat0*slng0});
+	auto ey = unit(VECTOR3{0.5*(clng0+clng1)*(clat1-clat0), slat1-slat0, 0.5*(slng0+slng1)*(clat1-clat0)});
+	auto ez = cross(ey, ex);
 	MATRIX3 R = {ex.x, ex.y, ex.z,  ey.x, ey.y, ey.z,  ez.x, ez.y, ez.z};
 	VECTOR3 pref = {0.5*(clat0*clng1 + clat0*clng0), slat0, 0.5*(clat0*slng1 + clat0*slng0)}; // origin
 	VECTOR3 tpmin, tpmax; 
@@ -226,7 +226,7 @@ void CreateSpherePatch (const oapi::D3D7Client *gclient, VBMESH &mesh, int nlng,
 		for (j = 0; j <= nseg; j++) {
 			lng = (nseg ? minlng + (maxlng-minlng) * (double)j/(double)nseg : 0.0);
 			slng = sin(lng), clng = cos(lng);
-			pos = _V(clat*clng, slat, clat*slng);
+			pos = {clat*clng, slat, clat*slng};
 			tpos = mul (R, pos-pref);
 			if (!n) {
 				tpmin = tpos;
@@ -312,21 +312,21 @@ void CreateSpherePatch (const oapi::D3D7Client *gclient, VBMESH &mesh, int nlng,
 	}
 
 	// transform bounding box back to patch coordinates
-	pos = tmul (R, _V(tpmin.x, tpmin.y, tpmin.z)) + pref;
+	pos = tmul (R, {tpmin.x, tpmin.y, tpmin.z}) + pref;
 	V[0].x = D3DVAL(pos.x); V[0].y = D3DVAL(pos.y); V[0].z = D3DVAL(pos.z);
-	pos = tmul (R, _V(tpmax.x, tpmin.y, tpmin.z)) + pref;
+	pos = tmul (R, {tpmax.x, tpmin.y, tpmin.z}) + pref;
 	V[1].x = D3DVAL(pos.x); V[1].y = D3DVAL(pos.y); V[1].z = D3DVAL(pos.z);
-	pos = tmul (R, _V(tpmin.x, tpmax.y, tpmin.z)) + pref;
+	pos = tmul (R, {tpmin.x, tpmax.y, tpmin.z}) + pref;
 	V[2].x = D3DVAL(pos.x); V[2].y = D3DVAL(pos.y); V[2].z = D3DVAL(pos.z);
-	pos = tmul (R, _V(tpmax.x, tpmax.y, tpmin.z)) + pref;
+	pos = tmul (R, {tpmax.x, tpmax.y, tpmin.z}) + pref;
 	V[3].x = D3DVAL(pos.x); V[3].y = D3DVAL(pos.y); V[3].z = D3DVAL(pos.z);
-	pos = tmul (R, _V(tpmin.x, tpmin.y, tpmax.z)) + pref;
+	pos = tmul (R, {tpmin.x, tpmin.y, tpmax.z}) + pref;
 	V[4].x = D3DVAL(pos.x); V[4].y = D3DVAL(pos.y); V[4].z = D3DVAL(pos.z);
-	pos = tmul (R, _V(tpmax.x, tpmin.y, tpmax.z)) + pref;
+	pos = tmul (R, {tpmax.x, tpmin.y, tpmax.z}) + pref;
 	V[5].x = D3DVAL(pos.x); V[5].y = D3DVAL(pos.y); V[5].z = D3DVAL(pos.z);
-	pos = tmul (R, _V(tpmin.x, tpmax.y, tpmax.z)) + pref;
+	pos = tmul (R, {tpmin.x, tpmax.y, tpmax.z}) + pref;
 	V[6].x = D3DVAL(pos.x); V[6].y = D3DVAL(pos.y); V[6].z = D3DVAL(pos.z);
-	pos = tmul (R, _V(tpmax.x, tpmax.y, tpmax.z)) + pref;
+	pos = tmul (R, {tpmax.x, tpmax.y, tpmax.z}) + pref;
 	V[7].x = D3DVAL(pos.x); V[7].y = D3DVAL(pos.y); V[7].z = D3DVAL(pos.z);
 	mesh.bb->Unlock ();
 }

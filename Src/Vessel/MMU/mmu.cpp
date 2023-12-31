@@ -46,124 +46,124 @@ void AddAttitudeJets(VESSEL *vessel)
 	main_tank = vessel->CreatePropellantResource(11.8);
 
 	
-	m_exhaust_pos= _V(.37,0.64,-.22);
-	m_exhaust_ref = _V(0,0,1);
+	m_exhaust_pos= {.37,0.64,-.22};
+	m_exhaust_ref = {0,0,1};
 	thruster[0] = vessel->CreateThruster(m_exhaust_pos, m_exhaust_ref, JET_THRUST, main_tank, JET_ISP);
 	vessel->AddExhaust(thruster[0],0.2,0.01);
 	
-	m_exhaust_pos= _V(-.37,0.64,-.22);
-	m_exhaust_ref = _V(0,0,1);
+	m_exhaust_pos= {-.37,0.64,-.22};
+	m_exhaust_ref = {0,0,1};
 	thruster[6] = vessel->CreateThruster(m_exhaust_pos, m_exhaust_ref, JET_THRUST, main_tank, JET_ISP);
 	vessel->AddExhaust(thruster[6],0.2,0.01);
 	
-	m_exhaust_pos= _V(.37,-0.64,-.22);
-	m_exhaust_ref = _V(0,0,1);
+	m_exhaust_pos= {.37,-0.64,-.22};
+	m_exhaust_ref = {0,0,1};
 	thruster[12] = vessel->CreateThruster(m_exhaust_pos, m_exhaust_ref, JET_THRUST, main_tank, JET_ISP);
 	vessel->AddExhaust(thruster[12],0.2,0.01);
 	
-	m_exhaust_pos= _V(-.37,-0.64,-.22);
-	m_exhaust_ref = _V(0,0,1);
+	m_exhaust_pos= {-.37,-0.64,-.22};
+	m_exhaust_ref = {0,0,1};
 	thruster[18] = vessel->CreateThruster(m_exhaust_pos, m_exhaust_ref, JET_THRUST, main_tank, JET_ISP);
 	vessel->AddExhaust(thruster[18],0.2,0.01);
 
-	m_exhaust_pos= _V(.37,.64,0.22);
-	m_exhaust_ref = _V(0,0,-1);
+	m_exhaust_pos= {.37,.64,0.22};
+	m_exhaust_ref = {0,0,-1};
 	thruster[1] = vessel->CreateThruster(m_exhaust_pos, m_exhaust_ref, JET_THRUST, main_tank, JET_ISP);
 	vessel->AddExhaust(thruster[1],0.2,0.01);
 	
-	m_exhaust_pos= _V(-.37,0.64, 0.22);
-	m_exhaust_ref = _V(0,0,-1);
+	m_exhaust_pos= {-.37,0.64, 0.22};
+	m_exhaust_ref = {0,0,-1};
 	thruster[7] = vessel->CreateThruster(m_exhaust_pos, m_exhaust_ref, JET_THRUST, main_tank, JET_ISP);
 	vessel->AddExhaust(thruster[7],0.2,0.01);
 	
-	m_exhaust_pos= _V(.37,-0.64,0.22);
-	m_exhaust_ref = _V(0,0,-1);
+	m_exhaust_pos= {.37,-0.64,0.22};
+	m_exhaust_ref = {0,0,-1};
 	thruster[13] = vessel->CreateThruster(m_exhaust_pos, m_exhaust_ref, JET_THRUST, main_tank, JET_ISP);
 	vessel->AddExhaust(thruster[13],0.2,0.01);
 	
-	m_exhaust_pos= _V(-.37,-0.64,0.22);
-	m_exhaust_ref = _V(0,0,-1);
+	m_exhaust_pos= {-.37,-0.64,0.22};
+	m_exhaust_ref = {0,0,-1};
 	thruster[19] = vessel->CreateThruster(m_exhaust_pos, m_exhaust_ref, JET_THRUST, main_tank, JET_ISP);
 	vessel->AddExhaust(thruster[19],0.2,0.01);
 
 	
-	m_exhaust_pos= _V(.40,.64,0.17);
-	m_exhaust_ref = _V(-1,0,0);
+	m_exhaust_pos= {.40,.64,0.17};
+	m_exhaust_ref = {-1,0,0};
 	thruster[2] = vessel->CreateThruster(m_exhaust_pos, m_exhaust_ref, JET_THRUST, main_tank, JET_ISP);
 	vessel->AddExhaust(thruster[2],0.2,0.01);
 
-	m_exhaust_pos= _V(.40,.64,-0.17);
-	m_exhaust_ref = _V(-1,0,0);
+	m_exhaust_pos= {.40,.64,-0.17};
+	m_exhaust_ref = {-1,0,0};
 	thruster[3] = vessel->CreateThruster(m_exhaust_pos, m_exhaust_ref, JET_THRUST, main_tank, JET_ISP);
 	vessel->AddExhaust(thruster[3],0.2,0.01);
 
-	m_exhaust_pos= _V(.37,.68,0.17);
-	m_exhaust_ref = _V(0,-1,0);
+	m_exhaust_pos= {.37,.68,0.17};
+	m_exhaust_ref = {0,-1,0};
 	thruster[4] = vessel->CreateThruster(m_exhaust_pos, m_exhaust_ref, JET_THRUST, main_tank, JET_ISP);
 	vessel->AddExhaust(thruster[4],0.2,0.01);
 
-	m_exhaust_pos= _V(.37,.68,-0.17);
-	m_exhaust_ref = _V(0,-1,0);
+	m_exhaust_pos= {.37,.68,-0.17};
+	m_exhaust_ref = {0,-1,0};
 	thruster[5] = vessel->CreateThruster(m_exhaust_pos, m_exhaust_ref, JET_THRUST, main_tank, JET_ISP);
 	vessel->AddExhaust(thruster[5],0.2,0.01);
 
-	m_exhaust_pos= _V(-.40,0.64, 0.17);
-	m_exhaust_ref = _V(1,0,0);
+	m_exhaust_pos= {-.40,0.64, 0.17};
+	m_exhaust_ref = {1,0,0};
 	thruster[8] = vessel->CreateThruster(m_exhaust_pos, m_exhaust_ref, JET_THRUST, main_tank, JET_ISP);
 	vessel->AddExhaust(thruster[8],0.2,0.01);
 
-	m_exhaust_pos= _V(-.40,0.64, -0.17);
-	m_exhaust_ref = _V(1,0,0);
+	m_exhaust_pos= {-.40,0.64, -0.17};
+	m_exhaust_ref = {1,0,0};
 	thruster[9] = vessel->CreateThruster(m_exhaust_pos, m_exhaust_ref, JET_THRUST, main_tank, JET_ISP);
 	vessel->AddExhaust(thruster[9],0.2,0.01);
 
-	m_exhaust_pos= _V(-.37,0.68, 0.17);
-	m_exhaust_ref = _V(0,-1,0);
+	m_exhaust_pos= {-.37,0.68, 0.17};
+	m_exhaust_ref = {0,-1,0};
 	thruster[10] = vessel->CreateThruster(m_exhaust_pos, m_exhaust_ref, JET_THRUST, main_tank, JET_ISP);
 	vessel->AddExhaust(thruster[10],0.2,0.01);
 
-	m_exhaust_pos= _V(-.37,0.68, -0.17);
-	m_exhaust_ref = _V(0,-1,0);
+	m_exhaust_pos= {-.37,0.68, -0.17};
+	m_exhaust_ref = {0,-1,0};
 	thruster[11] = vessel->CreateThruster(m_exhaust_pos, m_exhaust_ref, JET_THRUST, main_tank, JET_ISP);
 	vessel->AddExhaust(thruster[11],0.2,0.01);
 	
-	m_exhaust_pos= _V(.40,-0.64,0.17);
-	m_exhaust_ref = _V(-1,0,0);
+	m_exhaust_pos= {.40,-0.64,0.17};
+	m_exhaust_ref = {-1,0,0};
 	thruster[14] = vessel->CreateThruster(m_exhaust_pos, m_exhaust_ref, JET_THRUST, main_tank, JET_ISP);
 	vessel->AddExhaust(thruster[14],0.2,0.01);
 
-	m_exhaust_pos= _V(.40,-0.64,-0.17);
-	m_exhaust_ref = _V(-1,0,0);
+	m_exhaust_pos= {.40,-0.64,-0.17};
+	m_exhaust_ref = {-1,0,0};
 	thruster[15] = vessel->CreateThruster(m_exhaust_pos, m_exhaust_ref, JET_THRUST, main_tank, JET_ISP);
 	vessel->AddExhaust(thruster[15],0.2,0.01);
 	
-	m_exhaust_pos= _V(.37,-0.68,0.17);
-	m_exhaust_ref = _V(0,1,0);
+	m_exhaust_pos= {.37,-0.68,0.17};
+	m_exhaust_ref = {0,1,0};
 	thruster[16] = vessel->CreateThruster(m_exhaust_pos, m_exhaust_ref, JET_THRUST, main_tank, JET_ISP);
 	vessel->AddExhaust(thruster[16],0.2,0.01);
 
-	m_exhaust_pos= _V(.37,-0.68,-0.17);
-	m_exhaust_ref = _V(0,1,0);
+	m_exhaust_pos= {.37,-0.68,-0.17};
+	m_exhaust_ref = {0,1,0};
 	thruster[17] = vessel->CreateThruster(m_exhaust_pos, m_exhaust_ref, JET_THRUST, main_tank, JET_ISP);
 	vessel->AddExhaust(thruster[17],0.2,0.01);
 
-	m_exhaust_pos= _V(-.40,-0.68,0.17);
-	m_exhaust_ref = _V(1,0,0);
+	m_exhaust_pos= {-.40,-0.68,0.17};
+	m_exhaust_ref = {1,0,0};
 	thruster[20] = vessel->CreateThruster(m_exhaust_pos, m_exhaust_ref, JET_THRUST, main_tank, JET_ISP);
 	vessel->AddExhaust(thruster[20],0.2,0.01);
 
-	m_exhaust_pos= _V(-.40,-0.68,-0.17);
-	m_exhaust_ref = _V(1,0,0);
+	m_exhaust_pos= {-.40,-0.68,-0.17};
+	m_exhaust_ref = {1,0,0};
 	thruster[21] = vessel->CreateThruster(m_exhaust_pos, m_exhaust_ref, JET_THRUST, main_tank, JET_ISP);
 	vessel->AddExhaust(thruster[21],0.2,0.01);
 
-	m_exhaust_pos= _V(-.37,-0.68,0.17);
-	m_exhaust_ref = _V(0,1,0);
+	m_exhaust_pos= {-.37,-0.68,0.17};
+	m_exhaust_ref = {0,1,0};
 	thruster[22] = vessel->CreateThruster(m_exhaust_pos, m_exhaust_ref, JET_THRUST, main_tank, JET_ISP);
 	vessel->AddExhaust(thruster[22],0.2,0.01);
 
-	m_exhaust_pos= _V(-.37,-0.68,-0.17);
-	m_exhaust_ref = _V(0,1,0);
+	m_exhaust_pos= {-.37,-0.68,-0.17};
+	m_exhaust_ref = {0,1,0};
 	thruster[23] = vessel->CreateThruster(m_exhaust_pos, m_exhaust_ref, JET_THRUST, main_tank, JET_ISP);
 	vessel->AddExhaust(thruster[23],0.2,0.01);
 
@@ -263,15 +263,15 @@ void SetMMU (VESSEL *vessel)
 //	vessel->SetMaxThrust (ENGINE_HOVER, 0);
 //	vessel->SetMaxThrust (ENGINE_ATTITUDE, 31.5);
 // ==============================================================
-	vessel->SetPMI (_V(.35,.13,0.35));
-	vessel->SetCrossSections (_V(1.64,.77,1.64));
+	vessel->SetPMI ({.35,.13,0.35});
+	vessel->SetCrossSections ({1.64,.77,1.64});
 // ==============================================================
 	vessel->SetCW (0.3, 0.3, .3, .3);
-	vessel->SetRotDrag (_V(0.7,0.7,1.2));
+	vessel->SetRotDrag ({0.7,0.7,1.2});
 	vessel->SetPitchMomentScale (0);
 	vessel->SetYawMomentScale (0);
 	vessel->SetLiftCoeffFunc (0); 
-	vessel->SetDockParams (_V(0,0,.44), _V(0,0,1), _V(0,1,0));
+	vessel->SetDockParams ({0,0,.44}, {0,0,1}, {0,1,0});
 
 // ==============================================================
 	vessel->ClearMeshes();
@@ -279,12 +279,12 @@ void SetMMU (VESSEL *vessel)
 	vessel->ClearAttExhaustRefs();
 	vessel->ClearPropellantResources();
 	vessel->ClearThrusterDefinitions();
-	mesh_pos = _V(0,-0.24,0.16);
+	mesh_pos = {0,-0.24,0.16};
 	vessel->AddMesh("mmu", &mesh_pos);
 	AddAttitudeJets(vessel);
-	vessel->SetDockParams(_V(0,0,0.5),_V(0,0,1),_V(0,1,0));
-	//vessel->SetDockParams(_V(0,0,0),_V(0,-1,0),_V(0,0,1));
-	//vessel->CreateDock(_V(0,0,0.22),_V(0,0,1),_V(0,1,0));
+	vessel->SetDockParams({0,0,0.5},{0,0,1},{0,1,0});
+	//vessel->SetDockParams({0,0,0},{0,-1,0},{0,0,1});
+	//vessel->CreateDock({0,0,0.22},{0,0,1},{0,1,0});
 }
 
 
