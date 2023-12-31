@@ -35,7 +35,7 @@
 #define PROP_SY8        9
 
 #define SURF_MAX_PATCHLEVEL 14
-#define SURF_MAX_PATCHLEVEL2 19
+#define SURF_MAX_PATCHLEVEL2 21
 
 class Mesh;
 class PlanetarySystem;
