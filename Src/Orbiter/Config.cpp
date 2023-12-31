@@ -392,21 +392,12 @@ bool GetItemBool (istream &is, const char *label, bool &val)
 	return false;
 }
 
-bool GetItemVector (istream &is, const char *label, Vector &val)
+bool GetItemVector (istream &is, const char *label, VECTOR3 &val)
 {
 	double x, y, z;
 	if (!GetItemString (is, label, g_cbuf)) return false;
 	if (sscanf (g_cbuf, "%lf%lf%lf", &x, &y, &z) != 3) return false;
-	val.Set (x,y,z);
-	return true;
-}
-
-bool GetItemVECTOR (istream &is, const char *label, VECTOR3 &val)
-{
-	double x, y, z;
-	if (!GetItemString (is, label, g_cbuf)) return false;
-	if (sscanf (g_cbuf, "%lf%lf%lf", &x, &y, &z) != 3) return false;
-	val.x = x; val.y = y; val.z = z;
+	val = {x, y, z};
 	return true;
 }
 
@@ -1495,12 +1486,12 @@ bool Config::GetBool (istream &is, const char *category, bool &val)
 	return false;
 }
 
-bool Config::GetVector (istream &is, const char *category, Vector &val)
+bool Config::GetVector (istream &is, const char *category, VECTOR3 &val)
 {
 	double x, y, z;
 	if (!GetString (is, category, g_cbuf)) return false;
 	if (sscanf (g_cbuf, "%lf%lf%lf", &x, &y, &z) < 3) return false;
-	val.Set (x, y, z);
+	val = {x, y, z};
 	return true;
 }
 
@@ -1544,7 +1535,7 @@ bool Config::GetBool (const char *category, bool &val)
 	return GetBool (ifs, category, val);
 }
 
-bool Config::GetVector (const char *category, Vector &val)
+bool Config::GetVector (const char *category, VECTOR3 &val)
 {
 	if (!Root) return false;
 	ifstream ifs (Root);

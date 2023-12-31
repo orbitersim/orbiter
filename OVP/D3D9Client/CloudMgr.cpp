@@ -33,7 +33,7 @@ CloudManager::CloudManager(D3D9Client *gclient, const vPlanet *vplanet)
 	maxlvl = min (*(int*)gc->GetConfigParam (CFGPRM_SURFACEMAXLEVEL),        // global setting
 	              *(int*)oapiGetObjectParam (obj, OBJPRM_PLANET_SURFACEMAXLEVEL)); // planet-specific setting
 	maxbaselvl = min (8, maxlvl);
-	pcdir = _V(1,0,0);
+	pcdir = {1,0,0};
 	lightfac = *(double*)gc->GetConfigParam (CFGPRM_SURFACELIGHTBRT);
 	nmask = 0;
 	nhitex = nhispec = 0;

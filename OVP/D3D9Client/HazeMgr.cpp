@@ -13,13 +13,12 @@
 // Implemented as transparent overlay on planetary disc
 // ============================================================================
 
-#include "HazeMgr.h"
-#include "VPlanet.h"
+#include "D3D9Config.h"
+#include "D3D9Effect.h"
 #include "D3D9Surface.h"
 #include "D3D9Util.h"
-#include "VectorHelpers.h"
-#include "D3D9Effect.h"
-#include "D3D9Config.h"
+#include "HazeMgr.h"
+#include "VPlanet.h"
 
 using namespace oapi;
 
@@ -34,7 +33,7 @@ HazeManager::HazeManager (const D3D9Client *gclient, const vPlanet *vplanet) : D
 		hralt = (float)(atmc->horizonalt / rad);
 		dens0 = (float)(min (1.0, atmc->horizonalt/64e3 * *(double*)oapiGetObjectParam(obj, OBJPRM_PLANET_HAZEDENSITY)));
 	} else {
-		basecol = _V(1,1,1);
+		basecol = {1,1,1};
 		hralt = 0.01f;
 		dens0 = 1.0f;
 	}
@@ -84,7 +83,7 @@ void HazeManager::Render(LPDIRECT3DDEVICE9 pDev, D3DXMATRIX &wmat, bool dual)
 
 	D3DMAT_MatrixInvert (&imat, &wmat);
 	VECTOR3 rpos = {imat._41, imat._42, imat._43};   // camera in local coords (planet radius = 1)
-	double cdist = length (rpos);
+	double cdist = len(rpos);
 
 	alpha = dens0 * min (1.0, (cdist-1.0)*200.0);
 	if (!dual) alpha = 1.0-alpha;
@@ -119,7 +118,7 @@ void HazeManager::Render(LPDIRECT3DDEVICE9 pDev, D3DXMATRIX &wmat, bool dual)
 	float dens = (float)max (1.0, 1.4 - 0.3/hralt*(cdist-1.0)); // saturate haze colour at low altitudes
 	if (dual) dens *= (float)(0.5 + 0.5/cdist);                 // scale down intensity at large distances
 
-	normalise (rpos);
+	rpos = unit(rpos);
 	cost = (float)rpos.y, sint = (float)sqrt (1.0-cost*cost);
 	phi = atan2 (rpos.z, rpos.x), cosp = (float)cos(phi), sinp = (float)sin(phi);
 
@@ -139,17 +138,17 @@ void HazeManager::Render(LPDIRECT3DDEVICE9 pDev, D3DXMATRIX &wmat, bool dual)
 	oapiGetGlobalPos (obj, &gpos);
 	psun = tmul (grot, -gpos); // sun in planet coords
 	psun = mul (rrmat, psun);  // sun in camera-relative horizon coords
-	VECTOR3 cs = psun-cpos; normalise(cs); // camera->sun
-	normalise (psun);
+	VECTOR3 cs = unit(psun - cpos); // camera->sun
+	psun = unit(psun);
 	// float psunx = (float)psun.x, psuny = (float)psun.y, psunz = (float)psun.z;
 
 	colofs = (dual ? 0.4 : 0.3);
 
 	for (i = j = 0; i < HORIZON_NSEG; i++) {
 		VECTOR3 hp = {Vtx[j].x = r1*CosP[i], Vtx[j].y = h1, Vtx[j].z = r1*SinP[i]};
-		csun = dotp (hp, psun);
-		VECTOR3 cp = hp-cpos; normalise(cp);
-		double colsh = 0.5*(dotp (cp,cs) + 1.0);
+		csun = dot(hp, psun);
+		VECTOR3 cp = unit(hp - cpos);
+		double colsh = 0.5 * (dot(cp, cs) + 1.0);
 
 		// compose a colourful sunset
 		double maxred   = colofs-0.18*colsh,  minred   = maxred-0.4;
@@ -303,25 +302,25 @@ void HazeManager2::RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr)
 {
 	cpos = -cpos;
 
-	double cr = length(cpos); if (cr<(rad+100.0)) cr=rad+100.0;
+	double cr = len(cpos); if (cr < (rad + 100.0)) cr = rad + 100.0;
 	double hd = sqrt(cr*cr - rad*rad) * 10.0;
 	double al = asin(rad/cr);
 
 	VECTOR3 ur = unit(cpos);
-	VECTOR3 ux = unit(crossp(cdir, ur));
-	VECTOR3 uy = unit(crossp(ur, ux));
+	VECTOR3 ux = unit(cross(cdir, ur));
+	VECTOR3 uy = unit(cross(ur, ux));
 
 	D3DXMATRIX mWL, mL;
 	D3DMAT_Identity(&mWL);
-	D3DMAT_FromAxisT(&mWL, ptr(_D3DXVECTOR3(ux)), ptr(_D3DXVECTOR3(ur)), ptr(_D3DXVECTOR3(uy)));
+	D3DMAT_FromAxisT(&mWL, ptr(to_D3DXVECTOR3(ux)), ptr(to_D3DXVECTOR3(ur)), ptr(to_D3DXVECTOR3(uy)));
 
 	double a = 15.0*RAD;
 	double b = (PI-asin(rad/cr))/6.0;
 	
-	D3DXVECTOR3 vTileCenter = D3DXVECTOR3(float(sin(15.0*RAD)), 1.0f, float(1.0+cos(15.0*RAD))) * 0.5;
-	D3DXMatrixRotationAxis(&mL, ptr(_D3DXVECTOR3(ur)), float(-a*0.5));
+	auto vTileCenter = D3DXVECTOR3(float(std::sin(15.0 * RAD)), 1, float(1 + std::cos(15.0 * RAD))) * 0.5f;
+	D3DXMatrixRotationAxis(&mL, ptr(to_D3DXVECTOR3(ur)), float(-a*0.5));
 	D3DXMatrixMultiply(&mWL, &mWL, &mL);
-	D3DXMatrixRotationAxis(&mL, ptr(_D3DXVECTOR3(ur)), float(-a));
+	D3DXMatrixRotationAxis(&mL, ptr(to_D3DXVECTOR3(ur)), float(-a));
 
 	//vp->GetScatterConst()->mVP = vp->GetScene()->PushCameraFrustumLimits(hd * 0.1, hd * 5.0);
 
@@ -385,7 +384,7 @@ void HazeManager2::RenderSkySegment(D3DXMATRIX &wmat, double rad, double dmin, d
 void HazeManager2::RenderRing(VECTOR3 cpos, VECTOR3 cdir, double rad, double hralt)
 {
 	cpos = -cpos;
-	double cr = length(cpos);
+	double cr = len(cpos);
 	double hd = sqrt(cr*cr - rad*rad);
 	double al = asin(rad/cr);
 	double mx = hralt * 4.0;
@@ -401,12 +400,12 @@ void HazeManager2::RenderRing(VECTOR3 cpos, VECTOR3 cdir, double rad, double hra
 	vp->GetScatterConst()->mVP = vp->GetScene()->PushCameraFrustumLimits(hd * 0.1, hd * 5.0);
 	
 	VECTOR3 ur = unit(cpos);
-	VECTOR3 ux = unit(crossp(cdir, ur));
-	VECTOR3 uy = unit(crossp(ur, ux));
+	VECTOR3 ux = unit(cross(cdir, ur));
+	VECTOR3 uy = unit(cross(ur, ux));
 
 	D3DXMATRIX mW;
 	D3DMAT_Identity(&mW);
-	D3DMAT_FromAxisT(&mW, ptr(_D3DXVECTOR3(ux)), ptr(_D3DXVECTOR3(ur)), ptr(_D3DXVECTOR3(uy)));
+	D3DMAT_FromAxisT(&mW, ptr(to_D3DXVECTOR3(ux)), ptr(to_D3DXVECTOR3(ur)), ptr(to_D3DXVECTOR3(uy)));
 
 	ShaderParams sprm;
 	memcpy_s(&sprm.mWorld, sizeof(sprm.mWorld), &mW, sizeof(mW));

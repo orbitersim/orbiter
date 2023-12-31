@@ -52,7 +52,7 @@ public:
 		bool bFog;              // render distance fog?
 		bool bTint;             // render atmospheric tint?
 		bool bCloudFlatShadows; // render cloud shadows onto a sphere?
-		Vector rgbTint;         // tint colour
+		VECTOR3 rgbTint;        // tint colour
 		double cloudrot;        // cloud layer rotation state
 	} prm;
 

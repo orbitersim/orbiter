@@ -138,7 +138,7 @@ VECTOR3 Tile::Centre () const
 	int nlng = 2 << lvl;
 	double cntlat = PI05 - PI * ((double)ilat+0.5)/(double)nlat, slat = sin(cntlat), clat = cos(cntlat);
 	double cntlng = PI2  * ((double)ilng+0.5)/(double)nlng + PI, slng = sin(cntlng), clng = cos(cntlng);
-	return _V(clat*clng,  slat,  clat*slng);
+	return {clat*clng,  slat,  clat*slng};
 }
 
 
@@ -190,9 +190,9 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 	double clng0 = cos(minlng), slng0 = sin(minlng);
 	double clat1 = cos(maxlat), slat1 = sin(maxlat);
 	double clng1 = cos(maxlng), slng1 = sin(maxlng);
-	VECTOR3 ex = {clat0*clng1 - clat0*clng0, 0, clat0*slng1 - clat0*slng0}; normalise (ex);
-	VECTOR3 ey = {0.5*(clng0+clng1)*(clat1-clat0), slat1-slat0, 0.5*(slng0+slng1)*(clat1-clat0)}; normalise (ey);
-	VECTOR3 ez = crossp (ey, ex);
+	auto ex = unit(VECTOR3{clat0*clng1 - clat0*clng0, 0, clat0*slng1 - clat0*slng0});
+	auto ey = unit(VECTOR3{0.5*(clng0+clng1)*(clat1-clat0), slat1-slat0, 0.5*(slng0+slng1)*(clat1-clat0)});
+	auto ez = cross(ey, ex);
 	MATRIX3 R = {ex.x, ex.y, ex.z,  ey.x, ey.y, ey.z,  ez.x, ez.y, ez.z};
 	VECTOR3 pref = {radius*clat0*0.5*(clng1+clng0), radius*slat0, radius*clat0*0.5*(slng1+slng0)}; // origin
 	VECTOR3 tpmin, tpmax; 
@@ -220,7 +220,7 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 
 			eradius = radius + globelev; // radius including node elevation
 			if (elev) eradius += (double)elev[(i+1)*TILE_ELEVSTRIDE + j+1]*elev_scale;
-			nml = _V(clat*clng, slat, clat*slng);
+			nml = {clat*clng, slat, clat*slng};
 			pos = nml*eradius;
 			tpos = mul (R, pos-pref);
 			if (!n) {
@@ -322,8 +322,7 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 
 				// This version avoids the normalisation of the 4 intermediate face normals
 				// It's faster and doesn't seem to make much difference
-				VECTOR3 nml = {2.0*dydz, dz*elev_scale*(elev[en-TILE_ELEVSTRIDE]-elev[en+TILE_ELEVSTRIDE]), dy*elev_scale*(elev[en-1]-elev[en+1])};
-				normalise (nml);
+				auto nml = unit(VECTOR3{2.0*dydz, dz*elev_scale*(elev[en-TILE_ELEVSTRIDE]-elev[en+TILE_ELEVSTRIDE]), dy*elev_scale*(elev[en-1]-elev[en+1])});
 				// rotate into place
 				nx1 = nml.x*clat - nml.y*slat;
 				ny1 = nml.x*slat + nml.y*clat;
@@ -365,14 +364,14 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 	pref.x -= dx;
 	pref.y -= dy;
 	mesh->bbvtx = new VECTOR4[8];
-	mesh->bbvtx[0] = _V(tmul (R, _V(tpmin.x, tpmin.y, tpmin.z)) + pref);
-	mesh->bbvtx[1] = _V(tmul (R, _V(tpmax.x, tpmin.y, tpmin.z)) + pref);
-	mesh->bbvtx[2] = _V(tmul (R, _V(tpmin.x, tpmax.y, tpmin.z)) + pref);
-	mesh->bbvtx[3] = _V(tmul (R, _V(tpmax.x, tpmax.y, tpmin.z)) + pref);
-	mesh->bbvtx[4] = _V(tmul (R, _V(tpmin.x, tpmin.y, tpmax.z)) + pref);
-	mesh->bbvtx[5] = _V(tmul (R, _V(tpmax.x, tpmin.y, tpmax.z)) + pref);
-	mesh->bbvtx[6] = _V(tmul (R, _V(tpmin.x, tpmax.y, tpmax.z)) + pref);
-	mesh->bbvtx[7] = _V(tmul (R, _V(tpmax.x, tpmax.y, tpmax.z)) + pref);
+	mesh->bbvtx[0] = _V(tmul (R, {tpmin.x, tpmin.y, tpmin.z}) + pref);
+	mesh->bbvtx[1] = _V(tmul (R, {tpmax.x, tpmin.y, tpmin.z}) + pref);
+	mesh->bbvtx[2] = _V(tmul (R, {tpmin.x, tpmax.y, tpmin.z}) + pref);
+	mesh->bbvtx[3] = _V(tmul (R, {tpmax.x, tpmax.y, tpmin.z}) + pref);
+	mesh->bbvtx[4] = _V(tmul (R, {tpmin.x, tpmin.y, tpmax.z}) + pref);
+	mesh->bbvtx[5] = _V(tmul (R, {tpmax.x, tpmin.y, tpmax.z}) + pref);
+	mesh->bbvtx[6] = _V(tmul (R, {tpmin.x, tpmax.y, tpmax.z}) + pref);
+	mesh->bbvtx[7] = _V(tmul (R, {tpmax.x, tpmax.y, tpmax.z}) + pref);
 
 	mesh->MapVertices (TileManager2Base::d3d, TileManager2Base::dev, TileManager2Base::vbMemCaps); // TODO
 	return mesh;
@@ -417,7 +416,7 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, INT16 *elev, double globelev)
 			slng = sin(lng), clng = cos(lng);
 			eradius = radius + globelev; // radius including node elevation
 			if (elev) eradius += (double)elev[(grd+1-y)*TILE_ELEVSTRIDE + x+1];
-			nml = _V(slat*clng, clat, slat*slng);
+			nml = {slat*clng, clat, slat*slng};
 			pos = nml*eradius;
 			vtx->x = D3DVAL(pos.x);  vtx->nx = D3DVAL(nml.x);
 			vtx->y = D3DVAL(pos.y);  vtx->ny = D3DVAL(nml.y);
@@ -450,7 +449,7 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, INT16 *elev, double globelev)
 		for (x = 0; x < x2; x++) mn += (double)elev[TILE_ELEVSTRIDE*(grd+1) + x+1];
 		eradius += mn/x2;
 	}
-	nml = _V(0,1,0);
+	nml = {0,1,0};
 	pos = nml*eradius;
 	vtx->x = D3DVAL(pos.x);  vtx->nx = D3DVAL(nml.x);
 	vtx->y = D3DVAL(pos.y);  vtx->ny = D3DVAL(nml.y);
@@ -468,7 +467,7 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, INT16 *elev, double globelev)
 		for (x = 0; x < x2; x++) mn += (double)elev[TILE_ELEVSTRIDE + x+1];
 		eradius += mn/x2;
 	}
-	nml = _V(0,-1,0);
+	nml = {0,-1,0};
 	pos = nml*eradius;
 	vtx->x = D3DVAL(pos.x);  vtx->nx = D3DVAL(nml.x);
 	vtx->y = D3DVAL(pos.y);  vtx->ny = D3DVAL(nml.y);
@@ -516,8 +515,7 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, INT16 *elev, double globelev)
 				if (!ilng) lng -= PI;
 				slng = sin(lng), clng = cos(lng);
 				en = (grd+1-y)*TILE_ELEVSTRIDE + x+1;
-				VECTOR3 nml = {2.0*dydz, dz*(elev[en-TILE_ELEVSTRIDE]-elev[en+TILE_ELEVSTRIDE]), dy*(elev[en-1]-elev[en+1])};
-				normalise(nml);
+				auto nml = unit(VECTOR3{2.0*dydz, dz*(elev[en-TILE_ELEVSTRIDE]-elev[en+TILE_ELEVSTRIDE]), dy*(elev[en-1]-elev[en+1])});
 				// rotate into place
 				nx1 = nml.x*clat - nml.y*slat;
 				ny1 = nml.x*slat + nml.y*clat;
@@ -794,11 +792,10 @@ void TileManager2Base::SetRenderPrm (MATRIX4 &dwmat, double prerot, bool use_zbu
 	prm.dwmat_tmp = prm.dwmat;
 	prm.cpos = obj_pos-cam_pos;
 	prm.cdir = tmul (prm.grot, -prm.cpos); // camera's direction in planet frame
-	double cdist = length(prm.cdir);
+	double cdist = len(prm.cdir);
 	prm.cdist = cdist / obj_size;          // camera's distance in units of planet radius
-	normalise (prm.cdir);
-	prm.sdir = tmul (prm.grot, -obj_pos);  // sun's direction in planet frame
-	normalise (prm.sdir);
+	prm.cdir = unit(prm.cdir);
+	prm.sdir = unit(tmul (prm.grot, -obj_pos));  // sun's direction in planet frame
 	prm.viewap = acos (1.0/(max (prm.cdist, 1.0+minalt)));
 	prm.scale = 1.0;
 	prm.fog = rprm.bFog;

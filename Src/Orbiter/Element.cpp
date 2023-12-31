@@ -140,7 +140,7 @@ void Elements::Setup (double m, double M, double mjd)
 
 	// specific angular momentum
 	double h = sqrt(priv_mu * priv_p); // magnitude of momentum
-	priv_H.Set(h*sini*sint, h*cosi, -h*sini*cost);
+	priv_H = {h * sini * sint, h * cosi, -h * sini * cost};
 }
 
 void Elements::Reset (double _a, double _e, double _i,
@@ -240,17 +240,17 @@ double Elements::EccAnomaly (double ma) const
 	return E;
 }
 
-bool Elements::AscendingNode (Vector &asc) const
+bool Elements::AscendingNode (VECTOR3 &asc) const
 {
 	double d = Rdist (priv_omega);
-	asc.Set (priv_N * d);
+	asc = priv_N * d;
 	return (d >= 0.0);
 }
 
-bool Elements::DescendingNode (Vector &desc) const
+bool Elements::DescendingNode (VECTOR3 &desc) const
 {
 	double d = Rdist (priv_omega+Pi);
-	desc.Set (priv_N * -d);
+	desc = priv_N * -d;
 	return (d >= 0.0);
 }
 
@@ -269,7 +269,7 @@ void Elements::RelPos (double &r, double &ta, double t) const
 	r = priv_p / (1.0 + e * cos(ta));
 }
 
-void Elements::Pol2Crt (double r, double ta, Vector &pos) const
+void Elements::Pol2Crt (double r, double ta, VECTOR3 &pos) const
 {
 	double sinto = sin (ta + priv_omega);
 	double costo = cos (ta + priv_omega);
@@ -278,7 +278,7 @@ void Elements::Pol2Crt (double r, double ta, Vector &pos) const
 	pos.y = r * sinto * sini;
 }
 
-void Elements::PosVel (Vector &pos, Vector &vel, double t) const
+void Elements::PosVel (VECTOR3 &pos, VECTOR3 &vel, double t) const
 {
 	double r, ta;
 
@@ -297,16 +297,16 @@ void Elements::PosVel (Vector &pos, Vector &vel, double t) const
 	vel.y = rv * sinto * sini;
 }
 
-Vector Elements::Pos (double t) const
+VECTOR3 Elements::Pos (double t) const
 {
 	double r, ta;
-	Vector pos;
+	VECTOR3 pos;
 	RelPos (r, ta, t);
 	Pol2Crt (r, ta, pos);
 	return pos;
 }
 
-void Elements::PosVel_TA (Vector &pos, Vector &vel, double ta) const
+void Elements::PosVel_TA (VECTOR3 &pos, VECTOR3 &vel, double ta) const
 {
 	double r = Rdist (ta);
 	Pol2Crt (r, ta, pos);
@@ -330,7 +330,7 @@ double Elements::Spd_TA(double ta) const
 	return hypot(vx, vz);
 }
 
-void Elements::Update (Vector &pos, Vector &vel)
+void Elements::Update (VECTOR3 &pos, VECTOR3 &vel)
 {
 	double sinto, costo, vx, vz, thetav;
 
@@ -369,32 +369,32 @@ void Elements::Update (Vector &pos, Vector &vel)
 	if ((priv_Tpe = -priv_ma/priv_n) < 0.0) priv_Tpe += priv_T;
 	if ((priv_Tap = priv_Tpe-0.5*priv_T) < 0.0) priv_Tap += priv_T;
 
-	pos.Set (priv_R);
-	vel.Set (priv_V);
+	pos = priv_R;
+	vel = priv_V;
 }
 
-void Elements::Calculate (const Vector &R, const Vector &V, double simt)
+void Elements::Calculate (const VECTOR3 &R, const VECTOR3 &V, double simt)
 {
 	bool closed_orbit;
 
-	priv_R.Set (R); // store radius vector
-	priv_V.Set (V); // store velocity vector
+	priv_R = R; // store radius vector
+	priv_V = V; // store velocity vector
 
 	// auxiliary vectors and norms
-	double v2 = V.length2();
-	priv_v    = sqrt (v2);
-	priv_r    = R.length();
-	priv_H.Set (crossp (V, R)); // left-handed coordinates!
-	double h  = priv_H.length();
-	double rv = dotp (R, V);
+	double v2 = len(V);
+	priv_v    = sqrt(v2);
+	priv_r    = len(R);
+	priv_H    = cross(V, R); // left-handed coordinates!
+	double h  = len(priv_H);
+	double rv = dot(R, V);
 
 	// semi-major axis
 	a = priv_r * priv_mu / (2.0*priv_mu - priv_r*v2);
 
 	//priv_E.Set ((R * (v2-priv_mu/priv_r) - V * rv)/priv_mu);
-	priv_E.Set (R * (1.0/priv_r - 1.0/a) - V * (rv/priv_mu));
+	priv_E = R * (1.0 / priv_r - 1.0 / a) - V * (rv / priv_mu);
 
-	e = priv_E.length();
+	e = len(priv_E);
 	closed_orbit = (e < 1.0);
 
 	// inclination
@@ -425,11 +425,11 @@ void Elements::Calculate (const Vector &R, const Vector &V, double simt)
 	// longitude of ascending node
 	if (i > I_NOINC_LIMIT) {
 		double tmp = 1.0/std::hypot(priv_H.z, priv_H.x);
-		priv_N.Set (-priv_H.z*tmp, 0.0, priv_H.x*tmp); // unit vector
+		priv_N = {-priv_H.z * tmp, 0.0, priv_H.x * tmp}; // unit vector
 		theta = acos (priv_N.x);
 		if (priv_N.z < 0.0) theta = Pi2-theta;
 	} else {
-		priv_N.Set (1.0, 0.0, 0.0);
+		priv_N = {1.0, 0.0, 0.0};
 		theta = 0.0; // convention for equatorial orbits
 	}
 	sint = sin(theta), cost = cos(theta);
@@ -437,7 +437,7 @@ void Elements::Calculate (const Vector &R, const Vector &V, double simt)
 	// argument of periapsis
 	if (e > E_CIRCLE_LIMIT) {
 		if (i > I_NOINC_LIMIT) {
-			double arg = dotp (priv_N, priv_E)/e;
+			double arg = dot(priv_N, priv_E) / e;
 			if      (arg < -1.0) priv_omega = Pi;
 			else if (arg >  1.0) priv_omega = 0.0;
 			else                 priv_omega = acos (arg);
@@ -456,12 +456,12 @@ void Elements::Calculate (const Vector &R, const Vector &V, double simt)
 
 	// true anomaly
 	if (e > E_CIRCLE_LIMIT) {
-		priv_tra = acos (dotp (priv_E, R)/(e*priv_r));
+		priv_tra = std::acos(dot(priv_E, R) / (e * priv_r));
 		if (rv < 0.0) priv_tra = Pi2-priv_tra;
 	} else {
 		if (i > I_NOINC_LIMIT) {
-			priv_tra = acos (dotp (priv_N, R)/priv_r);
-			if (dotp (priv_N, V) > 0.0) priv_tra = Pi2-priv_tra;
+			priv_tra = std::acos(dot(priv_N, R) / priv_r);
+			if (dot(priv_N, V) > 0.0) priv_tra = Pi2 - priv_tra;
 		} else {
 			priv_tra = acos (R.x/priv_r);
 			if (V.x > 0.0) priv_tra = Pi2-priv_tra;
@@ -526,7 +526,7 @@ void Elements::Calculate (const Vector &R, const Vector &V, double simt)
 #endif
 }
 
-void Elements::PlaneCoeffs (const Vector &R, const Vector &V, double &a, double &b, double &c)
+void Elements::PlaneCoeffs (const VECTOR3 &R, const VECTOR3 &V, double &a, double &b, double &c)
 {
 	// warning: may need unit vectors for R and V
 	// for numerical stability

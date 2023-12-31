@@ -61,7 +61,7 @@ vObject::vObject(OBJHANDLE _hObj, const Scene *scene)
 	if (_hObj) size = oapiGetSize(_hObj);
 	else size = 0;
 	dmWorld = identity4();
-	albedo = _V(1,1,1);
+	albedo = {1,1,1};
 	oapiGetObjectName(hObj, name, 64);
 	sunLight = *scene->GetSun();
 	objtp = oapiGetObjectType(hObj);
@@ -139,7 +139,7 @@ void vObject::ReOrigin(VECTOR3 global_pos)
 {
 	cpos = gpos - global_pos;
 
-	cdist = length(cpos);
+	cdist = len(cpos);
 
 	dmWorld.m41 = cpos.x;
 	dmWorld.m42 = cpos.y;
@@ -172,9 +172,9 @@ bool vObject::Update(bool bMainScene)
 
 	oapiGetGlobalPos(hTgt, &tpos);
 
-	axis   = mul(grot, _V(0, 1, 0));
+	axis   = mul(grot, VECTOR3{0, 1, 0});
 	cpos   = gpos - scn->GetCameraGPos();
-	cdist  = length(cpos);
+	cdist  = len(cpos);
 
 	// Create double precision world matrix
 	//
@@ -192,8 +192,8 @@ bool vObject::Update(bool bMainScene)
 	OBJHANDLE hSun = oapiGetGbodyByIndex(0);
 	oapiGetGlobalPos(hSun, &sundir);
 
-	ctgtdst = length(tpos - gpos);
-	sundst = length(sundir - gpos);
+	ctgtdst = len(tpos - gpos);
+	sundst = len(sundir - gpos);
 	sundir = unit(sundir - gpos);
 	sunapprad = oapiGetSize(hSun) / sundst;
 	CheckResolution();
@@ -225,7 +225,7 @@ D3DXVECTOR3 vObject::GetBoundingSpherePosDX()
 VECTOR3 vObject::GetBoundingSpherePos()
 {
 	D3DXVECTOR3 pos = GetBoundingSpherePosDX();
-	return _V((double)pos.x, (double)pos.y, (double)pos.z);
+	return VECTOR3{(double)pos.x, (double)pos.y, (double)pos.z};
 }
 
 
@@ -285,7 +285,7 @@ void vObject::RenderSpot(LPDIRECT3DDEVICE9 dev, const VECTOR3 *ofs, float size, 
 	VECTOR3 camp = scn->GetCameraGPos();
 
 	const double ambient = 0.2;
-	double cosa = dotp (unit(gpos), unit(gpos - camp));
+	double cosa = dot(unit(gpos), unit(gpos - camp));
 	double intens = (lighting ? 0.5 * ((1.0-ambient)*cosa + 1.0+ambient) : 1.0);
 
 	D3DXMATRIX W;
@@ -311,7 +311,7 @@ void vObject::RenderDot(LPDIRECT3DDEVICE9 dev)
 	oapiGetGlobalPos(oapiGetGbodyByIndex(0), &spos);
 	oapiGetGlobalPos(hObj, &gpos);
 	cpos = gpos - scn->GetCameraGPos();
-	cdist = length(cpos);
+	cdist = len(cpos);
 
 	double alt = max(1.0, cdist - size);
 	double apr = size * scn->ViewH()*0.5 / (alt * tan(scn->GetCameraAperture()));
@@ -329,7 +329,7 @@ void vObject::RenderDot(LPDIRECT3DDEVICE9 dev)
 	D3DXVec3Normalize(&vCam, &vPos);
 	D3DMAT_CreateX_Billboard(&vCam, &vPos, scale, &W);
 
-	float ints = float(sqrt(1.0+dotp(unit(gpos-spos), unit(cpos)))) * 1.0f;
+	float ints = float(sqrt(1.0 + dot(unit(gpos - spos), unit(cpos)))) * 1.0f;
 
 	if (ints>1.0f) ints=1.0f;
 
@@ -360,24 +360,24 @@ void vObject::RenderVectors (LPDIRECT3DDEVICE9 dev, D3D9Pad* pSkp)
 				//scale *= 0.99f; // 1% "slimmer" to avoid z-fighting with force vector(s)
 				float ascale = float(size) * sclset * 0.5f;
 
-				RenderAxisVector(pSkp, ptr(D3DXCOLOR(1, 0, 0, alpha)), _V(1, 0, 0), ascale, scale);
-				RenderAxisLabel(pSkp, ptr(D3DXCOLOR(1, 0, 0, alpha)), _V(1, 0, 0), ascale, scale, "+X");
+				RenderAxisVector(pSkp, ptr(D3DXCOLOR(1, 0, 0, alpha)), {1, 0, 0}, ascale, scale);
+				RenderAxisLabel(pSkp, ptr(D3DXCOLOR(1, 0, 0, alpha)), {1, 0, 0}, ascale, scale, "+X");
 
-				RenderAxisVector(pSkp, ptr(D3DXCOLOR(0, 1, 0, alpha)), _V(0, 1, 0), ascale, scale);
-				RenderAxisLabel(pSkp, ptr(D3DXCOLOR(0, 1, 0, alpha)), _V(0, 1, 0), ascale, scale, "+Y");
+				RenderAxisVector(pSkp, ptr(D3DXCOLOR(0, 1, 0, alpha)), {0, 1, 0}, ascale, scale);
+				RenderAxisLabel(pSkp, ptr(D3DXCOLOR(0, 1, 0, alpha)), {0, 1, 0}, ascale, scale, "+Y");
 
-				RenderAxisVector(pSkp, ptr(D3DXCOLOR(0, 0, 1, alpha)), _V(0, 0, 1), ascale, scale);
-				RenderAxisLabel(pSkp, ptr(D3DXCOLOR(0, 0, 1, alpha)), _V(0, 0, 1), ascale, scale, "+Z");
+				RenderAxisVector(pSkp, ptr(D3DXCOLOR(0, 0, 1, alpha)), {0, 0, 1}, ascale, scale);
+				RenderAxisLabel(pSkp, ptr(D3DXCOLOR(0, 0, 1, alpha)), {0, 0, 1}, ascale, scale, "+Z");
 
 				if (favmode & FAV_NEGATIVE) {
-					RenderAxisVector(pSkp, ptr(D3DXCOLOR(1, 0, 0, alpha * 0.5f)), _V(-1, 0, 0), ascale, scale);
-					RenderAxisLabel(pSkp, ptr(D3DXCOLOR(1, 0, 0, alpha)), _V(-1, 0, 0), ascale, scale, "-X");
+					RenderAxisVector(pSkp, ptr(D3DXCOLOR(1, 0, 0, alpha * 0.5f)), {-1, 0, 0}, ascale, scale);
+					RenderAxisLabel(pSkp, ptr(D3DXCOLOR(1, 0, 0, alpha)), {-1, 0, 0}, ascale, scale, "-X");
 
-					RenderAxisVector(pSkp, ptr(D3DXCOLOR(0, 1, 0, alpha * 0.5f)), _V(0, -1, 0), ascale, scale);
-					RenderAxisLabel(pSkp, ptr(D3DXCOLOR(0, 1, 0, alpha)), _V(0, -1, 0), ascale, scale, "-Y");
+					RenderAxisVector(pSkp, ptr(D3DXCOLOR(0, 1, 0, alpha * 0.5f)), {0, -1, 0}, ascale, scale);
+					RenderAxisLabel(pSkp, ptr(D3DXCOLOR(0, 1, 0, alpha)), {0, -1, 0}, ascale, scale, "-Y");
 
-					RenderAxisVector(pSkp, ptr(D3DXCOLOR(0, 0, 1, alpha * 0.5f)), _V(0, 0, -1), ascale, scale);
-					RenderAxisLabel(pSkp, ptr(D3DXCOLOR(0, 0, 1, alpha)), _V(0, 0, -1), ascale, scale, "-Z");
+					RenderAxisVector(pSkp, ptr(D3DXCOLOR(0, 0, 1, alpha * 0.5f)), {0, 0, -1}, ascale, scale);
+					RenderAxisLabel(pSkp, ptr(D3DXCOLOR(0, 0, 1, alpha)), {0, 0, -1}, ascale, scale, "-Z");
 				}
 			}
 		}
@@ -395,11 +395,11 @@ void vObject::RenderAxisVector(D3D9Pad *pSkp, const D3DXCOLOR *pColor, VECTOR3 v
 	VECTOR3 camp = gc->GetScene()->GetCameraGPos();
 
     VECTOR3 pos = gpos - camp;
-	VECTOR3 rot = crossp(pos, vector);
+	VECTOR3 rot = cross(pos, vector);
 
     VECTOR3 y = mul (grot, unit(vector)) * size;
     VECTOR3 x = mul (grot, unit(rot)) * size;
-    VECTOR3 z = mul (grot, unit(crossp(vector, rot))) * size;
+    VECTOR3 z = mul (grot, unit(cross(vector, rot))) * size;
 
     D3DXMatrixIdentity(&W);
 
@@ -411,7 +411,7 @@ void vObject::RenderAxisVector(D3D9Pad *pSkp, const D3DXCOLOR *pColor, VECTOR3 v
     W._42 = float(pos.y);
     W._43 = float(pos.z);
 
-	float len = float(length(vector));
+	auto len = float(::len(vector));
 
 	if (bLog) len = max(0.0f, 13.0f+log(len)) * lscale / size;
 	else      len = len * lscale / size;
@@ -431,11 +431,11 @@ void vObject::RenderAxisLabel(D3D9Pad *pSkp, const D3DXCOLOR *clr, VECTOR3 vecto
 	VECTOR3 camp = gc->GetScene()->GetCameraGPos();
 
 	VECTOR3 pos = gpos - camp;
-	VECTOR3 rot = crossp(pos, vector);
+	VECTOR3 rot = cross(pos, vector);
 
 	VECTOR3 y = mul(grot, unit(vector)) * size;
 	VECTOR3 x = mul(grot, unit(rot)) * size;
-	VECTOR3 z = mul(grot, unit(crossp(vector, rot))) * size;
+	VECTOR3 z = mul(grot, unit(cross(vector, rot))) * size;
 
 	D3DXMatrixIdentity(&W);
 
@@ -447,7 +447,7 @@ void vObject::RenderAxisLabel(D3D9Pad *pSkp, const D3DXCOLOR *clr, VECTOR3 vecto
 	W._42 = float(pos.y);
 	W._43 = float(pos.z);
 
-	float len = float(length(vector));
+	auto len = float(::len(vector));
 
 	if (bLog) len = max(0.0f, 13.0f + log(len)) * lscale / size;
 	else      len = len * lscale / size;

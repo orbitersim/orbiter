@@ -70,8 +70,8 @@ ADIBall::ADIBall (VESSEL3 *v, AttitudeReference *attref): PanelElement (v)
 	rho_curr = tht_curr = phi_curr = 0.0;
 	tgtx_curr = tgty_curr = 0.0;
 	ballvtx0 = 0;
-	peuler = _V(0,0,0);
-	vrot = _V(0,0,0);
+	peuler = {0,0,0};
+	vrot = {0,0,0};
 	euler_t = 0;
 	rate_local = true;
 }
@@ -316,9 +316,9 @@ bool ADIBall::Redraw2D (SURFHANDLE surf)
 		double sint = sin(euler_tgt.y), cost = cos(euler_tgt.y);
 		double sinp = sin(euler_tgt.z), cosp = cos(euler_tgt.z);
 		if (layout == 0) {
-			tgt = _V(rad*sinp*cost, rad*sint, rad*cosp*cost);
+			tgt = {rad*sinp*cost, rad*sint, rad*cosp*cost};
 		} else {
-			tgt = _V(-rad*sint*cosp, rad*sinp, rad*cost*cosp);
+			tgt = {-rad*sint*cosp, rad*sinp, rad*cost*cosp};
 		}
 		tgtx = min(max( (a1*tgt.x + b1*tgt.y + c1*tgt.z), -erange), erange);
 		tgty = min(max(-(a2*tgt.x + b2*tgt.y + c2*tgt.z), -erange), erange);

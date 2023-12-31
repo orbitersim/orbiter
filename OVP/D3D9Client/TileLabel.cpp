@@ -284,8 +284,8 @@ void TileLabel::Render (D3D9Pad *skp, oapi::Font **labelfont, int *fontidx)
 
 	for (i = 0; i < nrenderlabel; ++i) {
 		VECTOR3 camlabelpos = campos-renderlabel[i]->pos;
-		if (dotp (renderlabel[i]->pos, camlabelpos) >= 0.0) {
-			double fontscale = 1e4/length(camlabelpos)*(13-min(tile->lvl,12)*1);
+		if (dot(renderlabel[i]->pos, camlabelpos) >= 0.0) {
+			double fontscale = 1e4 / ::len(camlabelpos) * (13 - min(tile->lvl, 12) * 1);
 			int idx = max(0, min(3, (int)fontscale));
 			if (idx != *fontidx) {
 				skp->SetFont(labelfont[idx]);

@@ -55,10 +55,10 @@ struct ScenarioData { // packed vessel state
 	BYTE fstate;            // flight status
 	union {
 		struct {
-			Vector rpos;    // reference body-relative position
-			Vector rvel;    // reference body-relative velocity
-			Vector arot;    // orientation (Euler angles)
-			Vector vrot;    // angular velocity
+			VECTOR3 rpos;   // reference body-relative position
+			VECTOR3 rvel;   // reference body-relative velocity
+			VECTOR3 arot;   // orientation (Euler angles)
+			VECTOR3 vrot;   // angular velocity
 		};
 		struct {
 			double lng;     // longitude of landing site [rad]
@@ -99,15 +99,15 @@ struct ThrustGroupSpec {      // thruster group definition
 };
 
 typedef struct {      // obsolete exhaust render definition
-	Vector ref;             // exhaust reference pos
-	Vector dir;             // exhaust reference dir
+	VECTOR3 ref;            // exhaust reference pos
+	VECTOR3 dir;            // exhaust reference dir
 	double lscale, wscale;  // exhaust size scaling
 } OldExhaustSpec;
 
 typedef struct {      // airfoil definition
 	int version;          // 0: uses AirfoilCoeffFunc, 1: uses AirfoilCoeffFuncEx
 	AIRFOIL_ORIENTATION align; // vertical or horizontal
-	Vector ref;           //   lift,drag attack reference point
+	VECTOR3 ref;          //   lift,drag attack reference point
 	AirfoilCoeffFunc cf;  //   pointer to coefficients callback function
 	void *context;        //   user-defined pointer passed to AirfoilCoeffFuncEx
 	double c;             //   airfoil chord length
@@ -117,7 +117,7 @@ typedef struct {      // airfoil definition
 
 typedef struct {      // airfoil control surface definition
 	AIRCTRL_TYPE ctrl;      // control type
-	Vector ref;             // lift/drag attack point
+	VECTOR3 ref;            // lift/drag attack point
 	int axis;               // axis orientation: 1=+Y, 2=-Y, 3=+X, 4=-X (should allow freely defined axes)
 	double area;            // surface area
 	double dCl;             // lift coefficient differential
@@ -125,15 +125,15 @@ typedef struct {      // airfoil control surface definition
 } CtrlsurfSpec;
 
 typedef struct {      // variable drag element definition
-	Vector ref;             // drag attack point
+	VECTOR3 ref;            // drag attack point
 	const double *drag;     // pointer to external drag magnitude
 	double factor;          // drag magnitude multiplier: *drag * factor = Cd
 } DragElementSpec;
 
 typedef struct {      // docking port definition
-	Vector ref;             // docking port reference pos
-	Vector dir;             // approach direction
-	Vector rot;             // longitudinal rotation alignment direction
+	VECTOR3 ref;            // docking port reference pos
+	VECTOR3 dir;            // approach direction
+	VECTOR3 rot;            // longitudinal rotation alignment direction
 	Vessel *mate;           // vessel attached to port (NULL for none)
 	Vessel *pending;        // vessel being currently docked/undocked
 	int status;             // 0=normal (docked/free), 1=docking in progress, 2=undocking in progress
@@ -142,9 +142,9 @@ typedef struct {      // docking port definition
 } PortSpec;
 
 typedef struct tagAttachmentSpec { // parent/child attachment definition
-	Vector ref;             // reference pos
-	Vector dir;             // approach direction
-	Vector rot;             // longitudinal rotation alignment direction
+	VECTOR3 ref;            // reference pos
+	VECTOR3 dir;            // approach direction
+	VECTOR3 rot;            // longitudinal rotation alignment direction
 	bool toparent;          // attachment is from child to parent
 	bool loose;             // loose attachment allowed (orientation not enforced)
 	Vessel *mate;           // attached vessel
@@ -185,8 +185,8 @@ struct FRecord {	       // flight recorder status sample
 	int frm;                  // 0=ecliptic, 1=equatorial
 	int crd;                  // 0=cartesian, 1=polar
 	const CelestialBody *ref; // status reference object
-	Vector rpos;	          // planet-relative position
-	Vector rvel;              // planet-relative velocity
+	VECTOR3 rpos;	          // planet-relative position
+	VECTOR3 rvel;             // planet-relative velocity
 };
 
 struct FRecord_att {      // flight recorder attitude sample
@@ -290,16 +290,16 @@ public:
 	void SetClipRadius (double rad) { clipradius = rad; }
 	// near plane render clipping distance
 
-	void RPlace (const Vector &rpos, const Vector &rvel);
+	void RPlace(const VECTOR3 &rpos, const VECTOR3 &rvel);
 	// Set vessel position and velocity in parent coords
 	// If the vessel is part of a superstructure, the complete structure
 	// is moved accordingly
 
-	void RPlace_individual (const Vector &rpos, const Vector &rvel);
+	void RPlace_individual(const VECTOR3 &rpos, const VECTOR3 &rvel);
 	// this version enforces the repositioning of the vessel without reporting
 	// to the supervessel
 
-	void SetGlobalOrientation (const Vector &arot);
+	void SetGlobalOrientation(const VECTOR3 &arot);
 	// Set vessel orientation from vector of Euler angles
 	// If the vessel is part of a superstructure, the complete structure is
 	// rotated
@@ -309,27 +309,27 @@ public:
 	// If the vessel is part of a superstructure, the complete structure is
 	// rotated
 
-	void GetIntermediateMoments (Vector &acc, Vector &tau,
+	void GetIntermediateMoments(VECTOR3 &acc, VECTOR3 &tau,
 		const StateVectors &state, double tfrac, double dt);
 	// Returns acceleration acc and torque tau, at time SimT0+tfrac*SimDT
 	// and step size dt, given intermediate state in global frame
 
-	void GetIntermediateMoments_pert (Vector &acc, Vector &tau,
+	void GetIntermediateMoments_pert(VECTOR3 &acc, VECTOR3 &tau,
 		const StateVectors &state_rel, double tfrac, double dt, const CelestialBody *cbody);
 
-	Vector GetTorque () const;
+	VECTOR3 GetTorque() const;
 	// Returns mass-normalised torque at state s0.
 
-	Vector GetMomentumFlux () const;
+	VECTOR3 GetMomentumFlux() const;
 	// returns the momentum flux vector due to solar radiation at current spacecraft position
 
-	void SetAngVel (const Vector &omega);
-	void SetAngVel_individual (const Vector &omega);
+	void SetAngVel(const VECTOR3 &omega);
+	void SetAngVel_individual(const VECTOR3 &omega);
 	// Set angular velocity components to omega [rad/s]
 	// If the vessel is part of a superstructure, SetAngVel applies the spin is to the
 	// complete structure, while SetAngVel_individual only affects the single vessel
 
-	inline const Vector &Flin_induced() { return Flin; }
+	inline const VECTOR3 &Flin_induced() { return Flin; }
 	// Return linear forces (other than gravity) currently acting on the vessel
 
 	void FocusChanged (bool getfocus, Vessel *newvessel, Vessel *oldvessel);
@@ -360,35 +360,35 @@ public:
 
 	double GetLift () const { return Lift; }
 	double GetDrag () const { return Drag; }
-	double GetWeight () const { Vector G; GetWeightVector(G); return G.length(); }
+	double GetWeight() const { VECTOR3 G; GetWeightVector(G); return len(G); }
 
-	bool GetWeightVector (Vector &G) const;
+	bool GetWeightVector(VECTOR3 &G) const;
 	// Returns gravitational force vector (weight) (in local vessel frame).
 
-	bool GetThrustVector (Vector &T) const;
+	bool GetThrustVector(VECTOR3 &T) const;
 	// Returns linear thrust vector in T (in local vessel frame).
 	// Return value indicates if thrust is present
 
-	bool GetLiftVector (Vector &L) const;
+	bool GetLiftVector(VECTOR3 &L) const;
 	// Returns lift vector in L (in local vessel frame).
 	// Return value indicates if lift is present
 
-	bool GetDragVector (Vector &D) const;
+	bool GetDragVector(VECTOR3 &D) const;
 	// Returns drag vector in D (in local vessel frame).
 	// Return value indicates if drag is present
 
-	bool GetForceVector (Vector &F) const;
+	bool GetForceVector(VECTOR3 &F) const;
 	// Returns total linear force vector acting on the vessel
 	// Return value is always true
 
-	bool GetTorqueVector (Vector &M) const;
+	bool GetTorqueVector(VECTOR3 &M) const;
 	// Returns the total torque vector acting on the vessel
 	// Return value is always true
 
 	// ========================================================================
 	// thruster management
 
-	ThrustSpec *CreateThruster (const Vector &pos, const Vector &dir, double maxth0,
+	ThrustSpec *CreateThruster(const VECTOR3 &pos, const VECTOR3 &dir, double maxth0,
 		TankSpec *ts=0, double isp0=0.0, double isp_ref=0.0, double p_ref=101.4e3);
 	// Add a (logical) thruster with given position, thrust direction and max vacuum thrust [N]
 	// If ts=0 then the thruster is disabled until it is linked to a propellant resource
@@ -400,13 +400,13 @@ public:
 	bool DelThruster (ThrustSpec *ts);
 	// delete thruster ts from list
 
-	void ShiftThrusters (const Vector &shift);
+	void ShiftThrusters(const VECTOR3 &shift);
 	// shift all thruster reference points (usually in response to CG shift)
 
-	Vector GetThrusterForce (const ThrustSpec *ts) const;
+	VECTOR3 GetThrusterForce(const ThrustSpec *ts) const;
 	// returns linear force F currently produced by thruster ts
 
-	void GetThrusterMoment (const ThrustSpec *ts, Vector &F, Vector &T) const;
+	void GetThrusterMoment(const ThrustSpec *ts, VECTOR3 &F, VECTOR3 &T) const;
 	// returns linear force F and torque T currently produced by thruster ts
 
 	void ClearThrusterDefinitions ();
@@ -669,14 +669,14 @@ public:
 	 *    or a user-defined type (THGROUP_USER+x)
 	 * \return Current linear force vector generated by the group [N]
 	 */
-	Vector GetThrusterGroupForce (THGROUP_TYPE thgt) const;
+	VECTOR3 GetThrusterGroupForce(THGROUP_TYPE thgt) const;
 
 	/**
 	 * \brief Return the linear force vector currently produced by all thrusters in a group
 	 * \param tgs Pointer to thruster group object (must not be 0)
 	 * \return Current linear force vector generated by the group [N]
 	 */
-	Vector GetThrusterGroupForce (const ThrustGroupSpec *tgs) const;
+	VECTOR3 GetThrusterGroupForce(const ThrustGroupSpec *tgs) const;
 
 	void IncMainRetroLevel (double dlevel);
 	// This is a special treatment of the main/retro groups: increase forward thrust by
@@ -708,11 +708,11 @@ public:
 	bool DelExhaust (UINT idx);
 	// removes the idx-th exhaust render specification from the list
 
-	oapi::ParticleStream *AddParticleStream (PARTICLESTREAMSPEC *pss, const Vector &pos, const Vector &dir, double *lvl);
+	oapi::ParticleStream *AddParticleStream(PARTICLESTREAMSPEC *pss, const VECTOR3 &pos, const VECTOR3 &dir, double *lvl);
 	// Add a generic particle stream to the vessel for given position and direction.
 	// Lvl is a pointer to an external level control variable
 
-	oapi::ParticleStream *AddExhaustStream (ThrustSpec *ts, PARTICLESTREAMSPEC *pss = 0, const Vector *pos = 0, const Vector *dir = 0);
+	oapi::ParticleStream *AddExhaustStream(ThrustSpec *ts, PARTICLESTREAMSPEC *pss = 0, const VECTOR3 *pos = 0, const VECTOR3 *dir = 0);
 	// Add a particle exhaust stream render specification for thruster ts, using its 'level'
 	// parameter for controlling the particle emission system
 
@@ -738,10 +738,10 @@ public:
 	// ========================================================================
 	// light emitter management
 
-	LightEmitter *AddPointLight (const VECTOR3 &pos, double range, double att0, double att1, double att2, COLOUR4 col_diff, COLOUR4 col_spec, COLOUR4 col_ambi);
+	LightEmitter *AddPointLight(const VECTOR3 &pos, double range, double att0, double att1, double att2, COLOUR4 col_diff, COLOUR4 col_spec, COLOUR4 col_ambi);
 	// Add a point light emitter to the vessel with the specified specs, intensity, position and direction references
 
-	LightEmitter *AddSpotLight (const VECTOR3 &pos, const VECTOR3 &dir, double range, double att0, double att1, double att2, double umbra, double penumbra, COLOUR4 col_diff, COLOUR4 col_spec, COLOUR4 col_ambi);
+	LightEmitter *AddSpotLight(const VECTOR3 &pos, const VECTOR3 &dir, double range, double att0, double att1, double att2, double umbra, double penumbra, COLOUR4 col_diff, COLOUR4 col_spec, COLOUR4 col_ambi);
 	// Add a spot light emitter to the vessel with the specified specs, intensity, position and direction references
 
 	bool DelLightEmitter (LightEmitter *le);
@@ -759,7 +759,7 @@ public:
 	void LightEmitterState (LightEmitter *le, int param, void *value);
 	// Notification of emitter state change
 
-	void ShiftLightEmitters (const VECTOR3 &ofs);
+	void ShiftLightEmitters(const VECTOR3 &ofs);
 	// Shift all light emitter positions by 'ofs' (usually to react to a shift in CG)
 
 	// ========================================================================
@@ -799,16 +799,16 @@ public:
 	// ========================================================================
 	// aerodynamics
 
-	AirfoilSpec *CreateAirfoil (AIRFOIL_ORIENTATION align, const Vector &ref, AirfoilCoeffFunc cf, double c, double S, double A);
+	AirfoilSpec *CreateAirfoil(AIRFOIL_ORIENTATION align, const VECTOR3 &ref, AirfoilCoeffFunc cf, double c, double S, double A);
 	// Create a new airfoil
 
-	AirfoilSpec *CreateAirfoil (AIRFOIL_ORIENTATION align, const Vector &ref, AirfoilCoeffFuncEx cf, void *context, double c, double S, double A);
+	AirfoilSpec *CreateAirfoil(AIRFOIL_ORIENTATION align, const VECTOR3 &ref, AirfoilCoeffFuncEx cf, void *context, double c, double S, double A);
 	// Create a new airfoil; extended version
 
-	bool GetAirfoilParam (AirfoilSpec *af, VECTOR3 *ref, AirfoilCoeffFunc *cf, void **context, double *c, double *S, double *A);
+	bool GetAirfoilParam(AirfoilSpec *af, VECTOR3 *ref, AirfoilCoeffFunc *cf, void **context, double *c, double *S, double *A);
 	// Return airfoil parameters
 
-	void EditAirfoil (AirfoilSpec *af, DWORD flag, const Vector &ref, AirfoilCoeffFunc cf, double c, double S, double A);
+	void EditAirfoil(AirfoilSpec *af, DWORD flag, const VECTOR3 &ref, AirfoilCoeffFunc cf, double c, double S, double A);
 	// Edit an existing airfoil definition
 
 	bool DelAirfoil (AirfoilSpec *af);
@@ -820,7 +820,7 @@ public:
 	void ClearAirfoilDefinitions ();
 	// Remove all airfoil lift,drag definitions
 
-	CtrlsurfSpec *CreateControlSurface (AIRCTRL_TYPE ctrl, double area, double dCl, const Vector &ref, int axis, double delay = 1.0, UINT anim = (UINT)-1);
+	CtrlsurfSpec *CreateControlSurface(AIRCTRL_TYPE ctrl, double area, double dCl, const VECTOR3 &ref, int axis, double delay = 1.0, UINT anim = (UINT)-1);
 	// Create a new control surface definition of the specified type
 
 	bool DelControlSurface (CtrlsurfSpec *cs);
@@ -840,7 +840,7 @@ public:
 	void ApplyControlSurfaceLevels ();
 	// synchronise actual with target airfoil control surface levels
 
-	void CreateVariableDragElement (const double *drag, double factor, const Vector &ref);
+	void CreateVariableDragElement(const double *drag, double factor, const VECTOR3 &ref);
 	// creates a drag source whose magnitude is controlled by external variable "drag"
 	// useful for drag generated by landing gear, speed brakes etc.
 
@@ -876,10 +876,10 @@ public:
 	inline void SetEnableFocus (bool enable) { enablefocus = enable; }
 	// get/set input focus enabled state
 
-	inline Vector *CamPos () { return &campos; }
+	inline VECTOR3 *CamPos() { return &campos; }
 	// camera position offset
 
-	inline Vector *CamDir0 () { return &camdir0; }
+	inline VECTOR3 *CamDir0() { return &camdir0; }
 	inline double CamTilt0 () { return camtilt0; }
 	// camera default view direction and rotation around that direction
 
@@ -963,21 +963,21 @@ public:
 	// ========================================================================
 	// Docking port management
 
-	PortSpec *CreateDock (const Vector &pos, const Vector &dir, const Vector &rot);
+	PortSpec *CreateDock(const VECTOR3 &pos, const VECTOR3 &dir, const VECTOR3 &rot);
 	// Create a new docking port and return a pointer to it
 
-	void SetDockParams (PortSpec *dock, const Vector &pos, const Vector &dir, const Vector &rot);
+	void SetDockParams(PortSpec *dock, const VECTOR3 &pos, const VECTOR3 &dir, const VECTOR3 &rot);
 	// Reset parameters of an existing dock
 
 	inline void SetDockMode (int mode) { dockmode = mode; }
 	inline int GetDockMode () const { return dockmode; }
 
-	void ShiftDocks (const Vector &ofs);
+	void ShiftDocks(const VECTOR3 &ofs);
 	// shift all dock positions by ofs
 
 	inline const PortSpec *GetDockParams (DWORD did) const { return dock[did]; }
 
-	Vector GetDockGPos (const PortSpec *dock) const
+	VECTOR3 GetDockGPos(const PortSpec *dock) const
 	{ return (mul (s0->R, dock->ref) + s0->pos); }
 	// Dock position in global coordinates
 
@@ -1013,14 +1013,14 @@ public:
 	inline DWORD nDock () const { return ndock; }
 	inline Vessel *DockMate (DWORD n) const { return dock[n]->mate; }
 
-	void RelDockingPos (const Vessel *target, UINT mydid, UINT tgtdid, Vector &P, Matrix &R);
+	void RelDockingPos(const Vessel *target, UINT mydid, UINT tgtdid, VECTOR3 &P, Matrix &R);
 	// Calculate the relative position 'P' and orientation 'R' of 'target'
 	// in my reference frame, if we are docked between 'mydid' and 'tgtdid'
 
 	// ========================================================================
 	// attachment management
 
-	AttachmentSpec *CreateAttachment (bool toparent, const Vector &pos, const Vector &dir, const Vector &rot, const char *id, bool loose = false);
+	AttachmentSpec *CreateAttachment(bool toparent, const VECTOR3 &pos, const VECTOR3 &dir, const VECTOR3 &rot, const char *id, bool loose = false);
 	// create a new defintion for a parent/child attachment point
 	// if loose==true, we freeze current relative orientation between child and parent;
 	// otherwise, the orientation defined by the attachment orientation axes is used
@@ -1031,7 +1031,7 @@ public:
 	void ClearAttachments ();
 	// remove all attachment definitions
 
-	void SetAttachmentParams (AttachmentSpec *as, const Vector &pos, const Vector &dir, const Vector &rot);
+	void SetAttachmentParams(AttachmentSpec *as, const VECTOR3 &pos, const VECTOR3 &dir, const VECTOR3 &rot);
 	// reset parameters of an existing attachment point
 
 	bool AttachChild (Vessel *child, AttachmentSpec *as, AttachmentSpec *asc, bool allow_loose = true);
@@ -1062,7 +1062,7 @@ public:
 	AttachmentSpec *GetAttachmentFromIndex (bool toparent, DWORD i);
 	// returns the attachment for a given index from either the to-parent or the to-child list
 
-	void ShiftAttachments (const Vector &ofs);
+	void ShiftAttachments(const VECTOR3 &ofs);
 	// move all attachment points by offset ofs
 
 	// ========================================================================
@@ -1121,7 +1121,7 @@ public:
 	void UpdateRadiationForces ();
 	void UpdateAerodynamicForces ();
 	void UpdateAerodynamicForces_OLD ();
-	bool AddSurfaceForces (Vector *F, Vector *M,
+	bool AddSurfaceForces(VECTOR3 *F, VECTOR3 *M,
 		const StateVectors *s=NULL, double tfrac=1.0, double dt=0.0,
 		bool allow_groundcontact=true) const;
 
@@ -1179,7 +1179,7 @@ public:
 	inline SuperVessel *SuperStruct() const { return supervessel; }
 	inline void SetSuperStruct (SuperVessel *sv) { supervessel = sv; }
 
-	bool GetSuperStructCG (Vector &cg) const;
+	bool GetSuperStructCG(VECTOR3 &cg) const;
 	// If vessel is part of a superstructure: set 'cg' to coordinates of
 	// superstructure CG in vessel coordinates and return true.
 	// Otherwise: set 'cg' to (0,0,0) and return false
@@ -1260,7 +1260,7 @@ public:
 	bool VCRedrawEvent (int id, int event, SURFHANDLE surf) const;
 	// pass an area redraw request to the vessel's virtual cockpit redraw method
 
-	bool VCMouseEvent (int id, int event, Vector &p) const;
+	bool VCMouseEvent(int id, int event, VECTOR3 &p) const;
 	// pass a mouse event to the vessel's virtual cockpit mouse event handler
 
 	void LeanCamera (int dir, bool smooth = true);
@@ -1299,10 +1299,10 @@ protected:
 	bool IsComponent () const { return supervessel != 0 || attach; }
 	const VesselBase *GetSuperStructure () const;
 
-	inline void AddForce (const Vector &F, const Vector &r)
+	inline void AddForce(const VECTOR3 &F, const VECTOR3 &r)
 	{
 		Flin_add += F;
-		Amom_add += crossp (F, r);
+		Amom_add += cross(F, r);
 	}
 	// given a force vector F and attack point r, this updates the linear and angular force
 	// vectors Flin and Amom for the rigid-body model
@@ -1364,17 +1364,17 @@ protected:
 	void ReadGenericCaps (std::ifstream &ifs);
 	// read generic vessel caps from a class cfg file
 
-	UINT AddMesh (const char *mname, const VECTOR3 *ofs = 0);
+	UINT AddMesh(const char *mname, const VECTOR3 *ofs = 0);
 	// add a mesh with offset to the list (load from file). Return value is mesh index
 
-	UINT AddMesh (MESHHANDLE hMesh, const VECTOR3 *ofs = 0);
+	UINT AddMesh(MESHHANDLE hMesh, const VECTOR3 *ofs = 0);
 	// add a mesh with offset to the list (copy from handle). Return value is mesh index
 
-	UINT InsertMesh (const char *mname, UINT idx, const VECTOR3 *ofs = 0);
+	UINT InsertMesh(const char *mname, UINT idx, const VECTOR3 *ofs = 0);
 	// Insert a mesh at a particular position (load from file). If a mesh is already registered
 	// with index 'idx', the existing mesh is replaced
 
-	UINT InsertMesh (MESHHANDLE hMesh, UINT idx, const VECTOR3 *ofs = 0);
+	UINT InsertMesh(MESHHANDLE hMesh, UINT idx, const VECTOR3 *ofs = 0);
 	// Insert a mesh at a particular position (copy from handle). If a mesh is already registered
 	// with index 'idx', the existing mesh is replaced
 
@@ -1387,7 +1387,7 @@ protected:
 	// remove all entries from mesh list
 	// If retain_anim=true, animations are not removed.
 
-	bool ShiftMesh (UINT idx, const VECTOR3 &ofs);
+	bool ShiftMesh(UINT idx, const VECTOR3 &ofs);
 	// shift mesh 'idx' by 'ofs' from current position
 
 	const MESHHANDLE GetMeshTemplate (UINT idx) const;
@@ -1461,7 +1461,7 @@ private:
 	void InitDocked (const Vessel *vessel, int port);
 	// init vessel docked in orbit to another vessel
 
-	void InitOrbiting (const Vector &relr, const Vector &relv, const Vector &rot, const Vector *_vrot = 0);
+	void InitOrbiting(const VECTOR3 &relr, const VECTOR3 &relv, const VECTOR3 &rot, const VECTOR3 *_vrot = 0);
 	// init vessel as orbiting around cbody with rel. position relr, rel. velocity relv and
 	// orientation rot (all w.r.t. ecliptic axis orientation). _vrot is rotation vector (rad/s) around the
 	// three axes, if provided
@@ -1549,7 +1549,7 @@ private:
 	DWORD npattach, ncattach;                    // list lengths
 	AttachmentSpec *attach;                      // the current attachment to a parent, if applicable
 	Matrix attach_rrot;                          // rotation matrix from vessel to current parent
-	Vector attach_rpos;                          // position of vessel in current parent's frame
+	VECTOR3 attach_rpos;                         // position of vessel in current parent's frame
 
 	struct {                                     // this structure is used when parsing attachment
 		DWORD ci, pi;                            // info from a scenario to prepare deferred attachment
@@ -1589,8 +1589,8 @@ private:
 	double wbrake_permanent[2];  // current permanent wheel brake level [0..1] (left and right)
 	double wbrake_override[2];   // wheel brake override level for current frame [0..1] (left and right)
 	double wbrake[2];            // current wheel brake levels
-	Vector cs;                   // ship's cross-sections in the three axis direction (z=longitudinal) [m^2]
-	Vector rdrag;                // resistance constant against rotation in the three directions
+	VECTOR3 cs;                  // ship's cross-sections in the three axis direction (z=longitudinal) [m^2]
+	VECTOR3 rdrag;               // resistance constant against rotation in the three directions
 	bool enablefocus;            // can vessel get input focus?
 	bool burnfuel;               // no unlimited fuel
 	bool extpassmesh;
@@ -1634,34 +1634,34 @@ private:
 	double surf_rad;       // surface distance from planet centre at landing site
 	Matrix rot_land;       // vessel's local rotation matrix when landed on a planet surface
 					       // such that grot = grot(planet) * rot_land
-	Vector touchdown_nm;   // upward normal of touchdown plane (vessel frame)
-	Vector touchdown_cg;   // projection of CG onto touchdown plane
+	VECTOR3 touchdown_nm;  // upward normal of touchdown plane (vessel frame)
+	VECTOR3 touchdown_cg;  // projection of CG onto touchdown plane
 	TOUCHDOWN_VTX *touchdown_vtx;
 	DWORD ntouchdown_vtx;    // number of touchdown vertices
 	DWORD next_hullvtx;      // used by hull vertex iterator
 
-	Vector campos;             // internal camera position (cockpit mode);
-	Vector camdir0;            // internal default camera direction (cockpit mode)
+	VECTOR3 campos;            // internal camera position (cockpit mode);
+	VECTOR3 camdir0;           // internal default camera direction (cockpit mode)
 	double camtilt0;           // internal default camera rotation around default direction (cockpit mode)
 	double camcatchangle;      // internal camera autochenter catch range
 	double camdp_left, camdp_right, camdt_up, camdt_down; // cockpit camera rotation ranges
 	static struct LeanCam {    // cockpit camera 'leaning' ranges'
 		LeanCam() { phi = tht = 0; }
-		Vector pos;
+		VECTOR3 pos;
 		double phi, tht;
 	} camfwd, camleft, camright;
 
 	double trim_scale;         // effect of trimming (0 = can't trim) - OBSOLETE
 
-	Vector Flin;               // linear moment (force)
-	Vector Amom;               // angular moment (torque)
-	Vector Flin_add;           // linear body force
-	Vector Amom_add;           // used for collecting torque components
-	mutable Vector Torque;     // torque vector
+	VECTOR3 Flin;              // linear moment (force)
+	VECTOR3 Amom;              // angular moment (torque)
+	VECTOR3 Flin_add;          // linear body force
+	VECTOR3 Amom_add;          // used for collecting torque components
+	mutable VECTOR3 Torque;    // torque vector
 	mutable bool torque_valid; // flag for 'Torque' up to date
 
-	Vector Thrust;             // linear thrust vector (sum of all thruster contributions)
-	mutable Vector Weight;     // weight vector (due to gravitational acceleration)
+	VECTOR3 Thrust;            // linear thrust vector (sum of all thruster contributions)
+	mutable VECTOR3 Weight;    // weight vector (due to gravitational acceleration)
 	mutable bool weight_valid; // flag for 'Weight' up to date
 	double Lift, Drag;         // current lift and drag magnitudes
 
@@ -1676,8 +1676,8 @@ private:
 	//double refalt, palt, valt; // reference+prev altitude for "hold altitude" mode
 	//double holdaltT;
 
-	Vector *forcevec;  // list of force vectors to render
-	Vector *forcepos;  // list of force vector attack points
+	VECTOR3 *forcevec; // list of force vectors to render
+	VECTOR3 *forcepos; // list of force vector attack points
 	int forcevecbuf;   // length of vector list
 	mutable int nforcevec;     // number of vectors to render
 

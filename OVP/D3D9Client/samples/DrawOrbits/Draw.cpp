@@ -232,14 +232,14 @@ void Orbits::clbkPreStep(double simt, double simdt, double mjd)
 
 		VECTOR3 rdir = unit(bpos - cpos);		// Reference body direction
 		double cdst = oapiCameraTargetDist();
-		double rdst = length(bpos - cpos);
+		double rdst = len(bpos - cpos);
 
 		COrbit *pO = pBody[upidx].pOrb;
 
 		// Compute/Update orbit line intensity ---------------------------------------
 
 		// Fade away orbits viewed from a shallow angle
-		float f = float(pow(abs(dotp(rdir, pO->_W)), 0.2));
+		float f = float(std::pow(std::abs(dot(rdir, pO->_W)), 0.2));
 
 		if (f < 0.6f) f = 0.6f;
 
@@ -328,7 +328,7 @@ void Orbits::SetClipper(Sketchpad *pSkp2, OBJHANDLE hObj, DWORD idx)
 		Clip[idx].Pos = (bpos - CamPos);				// Object position
 		Clip[idx].dRad = dRad;
 
-		double len2 = dotp(Clip[idx].Pos, Clip[idx].Pos);
+		double len2 = dot(Clip[idx].Pos, Clip[idx].Pos);
 		double hdst = sqrt(len2 - dRad*dRad);
 		double ilen = 1.0 / sqrt(len2);
 		
@@ -393,10 +393,10 @@ bool Orbits::WorldToScreenSpace(const VECTOR3& wpos, oapi::IVECTOR2* pt, const F
 bool Orbits::IsVisible(VECTOR3 pos, oapi::IVECTOR2 *pt, const SIZE &s)
 {
 	pos += Clip[0].Pos;	// Conver to camera centric location. Clip[0].Pos = camera centric planet position
-	double len = length(pos);
+	double len = ::len(pos);
 	VECTOR3 uPos = pos / len;
 
-	for (int i = 0; i < 2; i++) if ((Clip[i].vcov < dotp(Clip[i].uPos, uPos)) && (len > Clip[i].hdst)) return false;
+	for (int i = 0; i < 2; i++) if ((Clip[i].vcov < dot(Clip[i].uPos, uPos)) && (len > Clip[i].hdst)) return false;
 
 	return WorldToScreenSpace(pos, pt, pVP, s);
 }

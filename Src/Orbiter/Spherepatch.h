@@ -63,7 +63,7 @@ class PatchManager {
 public:
 	PatchManager (const char *_name, char _res_id, int _npatch,
 		int _nlat, int *_nlng, VBMESH *_patch, D3DMATRIX *_trans,
-		Vector *_patchcnt, double *_patchrad,
+		VECTOR3 *_patchcnt, double *_patchrad,
 		LPDIRECTDRAWSURFACE7 *_tex, LPDIRECTDRAWSURFACE7 *_ntex = 0);
 
 	virtual ~PatchManager();
@@ -90,10 +90,10 @@ public:
 	// device-dependent static initialisation
 
 protected:
-	void SetupPatchBands (D3DMATRIX *trans, Vector *pcnt, double *prad);
+	void SetupPatchBands (D3DMATRIX *trans, VECTOR3 *pcnt, double *prad);
 	// initialise all latitude bands
 
-	void SetupPatchBand (int ilat, D3DMATRIX *trans, Vector *pcnt, double *prad);
+	void SetupPatchBand (int ilat, D3DMATRIX *trans, VECTOR3 *pcnt, double *prad);
 	// generate transformation matrices for patches in latitude band
 	// ilat (for northern hemisphere in ntrans, for southern in strans)
 
@@ -112,7 +112,7 @@ protected:
 	static LPDIRECTDRAWSURFACE7 lightstruct1;
 	static LPDIRECTDRAWSURFACE7 cloudstruct;
 	D3DMATRIX *trans;
-	Vector *patchcnt;
+	VECTOR3 *patchcnt;
 	const CelestialBody *ref;   // global position of reference object
 	double *patchrad;
 	bool *vis;
@@ -168,7 +168,7 @@ public:
 private:
 	static bool needsetup;
 	static D3DMATRIX TRANS[8];  // transformation matrices for the 8 patches
-	static Vector PATCHCNT[8];
+	static VECTOR3 PATCHCNT[8];
 	static double PATCHRAD[8];
 };
 
@@ -182,7 +182,7 @@ public:
 private:
 	static bool needsetup;
 	static D3DMATRIX TRANS[24]; // transformation matrices for the 8 patches
-	static Vector PATCHCNT[24];
+	static VECTOR3 PATCHCNT[24];
 	static double PATCHRAD[24];
 };
 
@@ -196,7 +196,7 @@ public:
 private:
 	static bool needsetup;
 	static D3DMATRIX TRANS[100]; // transformation matrices for the 8 patches
-	static Vector PATCHCNT[100];
+	static VECTOR3 PATCHCNT[100];
 	static double PATCHRAD[100];
 };
 
@@ -211,7 +211,7 @@ public:
 private:
 	static bool needsetup;
 	static D3DMATRIX TRANS[364]; // transformation matrices for patches
-	static Vector PATCHCNT[364];
+	static VECTOR3 PATCHCNT[364];
 	static double PATCHRAD[364];
 };
 
@@ -233,7 +233,7 @@ public:
 private:
 	const Planet *planet;
 	const VPlanet *vplanet;
-	Vector basecol;
+	VECTOR3 basecol;
 	float  hralt;  // relative horizon altitude
 	float  dens0;  // atmosphere density factor
 	float  hshift; // horizon reference shift factor

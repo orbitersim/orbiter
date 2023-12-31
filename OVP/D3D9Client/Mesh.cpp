@@ -8,14 +8,14 @@
 
 #define VISIBILITY_TOL 0.0015f
 
-#include "Mesh.h"
-#include "Log.h"
-#include "Scene.h"
-#include "D3D9Surface.h"
 #include "D3D9Catalog.h"
 #include "D3D9Config.h"
+#include "D3D9Surface.h"
+#include "D3D9Util.h"
 #include "DebugControls.h"
-#include "VectorHelpers.h"
+#include "Log.h"
+#include "Mesh.h"
+#include "Scene.h"
 
 #pragma warning(push)
 #pragma warning(disable : 4838)
@@ -1424,7 +1424,7 @@ void D3D9Mesh::CheckMeshStatus()
 void D3D9Mesh::ConfigureAtmo()
 {
 	//LogSunLight(sunLight);
-	float x = 1.0f - saturate(max(sunLight.Color.r, sunLight.Color.b) * 2.0f);
+	float x = 1 - saturate(std::max(sunLight.Color.x, sunLight.Color.z) * 2);
 	FX->SetFloat(eNight, x);
 	FX->SetValue(eSun, &sunLight, sizeof(D3D9Sun));
 }
@@ -2716,11 +2716,11 @@ void D3D9Mesh::RenderShadowMap(const LPD3DXMATRIX pW, const LPD3DXMATRIX pVP, in
 	D3DXMATRIX GroupMatrix, mWorldMesh;
 
 	MeshShader* pShader = nullptr;
-	
-	MeshShader::vs_const.mVP = *pVP;
 
-	D3DXMatrixIdentity(MeshShader::vs_const.mW);
-	
+	MeshShader::vs_const.mVP = to_FMATRIX4(*pVP);
+
+	D3DXMatrixIdentity((D3DXMATRIX*)&MeshShader::vs_const.mW);
+
 	if (bGlobalTF) D3DXMatrixMultiply(&mWorldMesh, &mTransform, pW);
 	else mWorldMesh = *pW;
 
@@ -2768,11 +2768,11 @@ void D3D9Mesh::RenderShadowMap(const LPD3DXMATRIX pW, const LPD3DXMATRIX pVP, in
 		}
 
 		if (Grp[g].bTransform) {
-			D3DXMatrixMultiply(MeshShader::vs_const.mW, &pGrpTF[g], pW);		// Apply Animations to instance matrices
+			D3DXMatrixMultiply((D3DXMATRIX*)&MeshShader::vs_const.mW, &pGrpTF[g], pW);		// Apply Animations to instance matrices
 			bInit = true;
 		}
 		else {
-			if (bInit) MeshShader::vs_const.mW = mWorldMesh;
+			if (bInit) MeshShader::vs_const.mW = to_FMATRIX4(mWorldMesh);
 			bInit = false;
 		}
 

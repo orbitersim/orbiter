@@ -24,7 +24,7 @@ public:
 	void RenderVectors (LPDIRECT3DDEVICE7 dev) {}
 	COLORREF CenterPixelColor();
 
-	void BlindColour (const Camera *cam, Vector &col);
+	void BlindColour (const Camera *cam, VECTOR3 &col);
 	// returns background colour including blind effect
 	// depending on camera direction
 	// Vector is interpreted as RGB (0-1)

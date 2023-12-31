@@ -87,7 +87,7 @@ void BodyProvider::InitialiseSolarSystem()
 
 				VECTOR3 pos;
 				oapiGetRelativePos(body->bodyhandle, (*it)->bodyhandle, &pos);
-				double distance2 = dotp(pos, pos);
+				double distance2 = dot(pos, pos);
 				if(distance2 < (*it)->soisize2)
 				{
 					currparent = *it;

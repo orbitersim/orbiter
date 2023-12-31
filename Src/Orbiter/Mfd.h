@@ -353,7 +353,7 @@ void UpdateOrbitGraph (int cntx, int cnty, int IW, int IH, double scale,
 // generate polygon for general conical section (ellipse or hyperbola)
 // given orbital elements and projection matrices
 
-inline void MapScreen (int cntx, int cnty, double scale, const Vector &v, oapi::IVECTOR2 *p)
+inline void MapScreen (int cntx, int cnty, double scale, const VECTOR3 &v, oapi::IVECTOR2 *p)
 {
 	// map logical point into instrument coords
 	p->x = cntx + (int)(v.x*scale);

@@ -97,14 +97,14 @@ MainRetroThrottle::MainRetroThrottle (MainRetroSubsystem *_subsys)
 	// VC animation: Left main engine throttle
 	static UINT MainThrottleLGrp[2] = {GRP_THROTTLE_MAIN_L1_VC,GRP_THROTTLE_MAIN_L2_VC};
 	static MGROUP_ROTATE MainThrottleL (1, MainThrottleLGrp, 2,
-		_V(0,0.72,6.9856), _V(1,0,0), (float)(50*RAD));
+		{0,0.72,6.9856}, {1,0,0}, (float)(50*RAD));
 	anim_lever[0] = DG()->CreateAnimation (0.4);
 	DG()->AddAnimationComponent (anim_lever[0], 0, 1, &MainThrottleL);
 
 	// VC animation: Right main engine throttle
 	static UINT MainThrottleRGrp[2] = {GRP_THROTTLE_MAIN_R1_VC,GRP_THROTTLE_MAIN_R2_VC};
 	static MGROUP_ROTATE MainThrottleR (1, MainThrottleRGrp, 2,
-		_V(0,0.72,6.9856), _V(1,0,0), (float)(50*RAD));
+		{0,0.72,6.9856}, {1,0,0}, (float)(50*RAD));
 	anim_lever[1] = DG()->CreateAnimation (0.4);
 	DG()->AddAnimationComponent (anim_lever[1], 0, 1, &MainThrottleR);
 }
@@ -129,7 +129,7 @@ bool MainRetroThrottle::clbkLoadVC (int vcid)
 
 	// Throttle lever animations
 	oapiVCRegisterArea (ELID_LEVERS, PANEL_REDRAW_ALWAYS, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_LBPRESSED);
-	oapiVCSetAreaClickmode_Quadrilateral (ELID_LEVERS, _V(-0.372,0.918,6.905), _V(-0.279,0.918,6.905), _V(-0.372,0.885,7.11), _V(-0.279,0.885,7.11));
+	oapiVCSetAreaClickmode_Quadrilateral (ELID_LEVERS, {-0.372,0.918,6.905}, {-0.279,0.918,6.905}, {-0.372,0.885,7.11}, {-0.279,0.885,7.11});
 
 	return true;
 }
@@ -975,16 +975,16 @@ RetroCoverControl::RetroCoverControl (MainRetroSubsystem *_subsys)
 	// Retro cover animation
 	static UINT RCoverTLGrp[2] = {GRP_RCoverTL1,GRP_RCoverTL2};
 	static MGROUP_ROTATE RCoverTL (0, RCoverTLGrp, 2,
-		_V(-2.156,-0.49,6.886), _V(-0.423,0.23,-0.877), (float)( 70*RAD));
+		{-2.156,-0.49,6.886}, {-0.423,0.23,-0.877}, (float)( 70*RAD));
 	static UINT RCoverBLGrp[2] = {GRP_RCoverBL1,GRP_RCoverBL2};
 	static MGROUP_ROTATE RCoverBL (0, RCoverBLGrp, 2,
-		_V(-2.156,-0.49,6.886), _V(-0.434,-0.037,-0.9), (float)(-70*RAD));
+		{-2.156,-0.49,6.886}, {-0.434,-0.037,-0.9}, (float)(-70*RAD));
 	static UINT RCoverTRGrp[2] = {GRP_RCoverTR1,GRP_RCoverTR2};
 	static MGROUP_ROTATE RCoverTR (0, RCoverTRGrp, 2,
-		_V( 2.156,-0.49,6.886), _V( 0.423,0.23,-0.877), (float)(-70*RAD));
+		{ 2.156,-0.49,6.886}, { 0.423,0.23,-0.877}, (float)(-70*RAD));
 	static UINT RCoverBRGrp[2] = {GRP_RCoverBR1,GRP_RCoverBR2};
 	static MGROUP_ROTATE RCoverBR (0, RCoverBRGrp, 2,
-		_V( 2.156,-0.49,6.886), _V( 0.434,-0.037,-0.9), (float)( 70*RAD));
+		{ 2.156,-0.49,6.886}, { 0.434,-0.037,-0.9}, (float)( 70*RAD));
 	anim_rcover = DG()->CreateAnimation (0);
 	DG()->AddAnimationComponent (anim_rcover, 0, 1, &RCoverTL);
 	DG()->AddAnimationComponent (anim_rcover, 0, 1, &RCoverBL);

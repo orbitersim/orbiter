@@ -24,14 +24,14 @@ struct ElevationTile {
 	int lat0 = 0, lng0 = 0;
 	bool celldiag = false;
 	int nmlidx = 0;
-	Vector normal;
+	VECTOR3 normal;
 };
 
 class ElevationManager {
 public:
 	ElevationManager (const CelestialBody *_cbody);
 	~ElevationManager();
-	double Elevation (double lat, double lng, int reqlvl=0, std::vector<ElevationTile> *tilecache = 0, Vector *normal=0, int *lvl=0) const;
+	double Elevation (double lat, double lng, int reqlvl=0, std::vector<ElevationTile> *tilecache = 0, VECTOR3 *normal=0, int *lvl=0) const;
 	/**
 	* \brief Synthesize an elevation tile by interpolating from the parent
 	* \param ilat latitude index of target tile

@@ -347,7 +347,7 @@ const float RCSDefaultSoundPreStep::s_minThrustLevelForSound = 0.20f;
 RCSDefaultSoundPreStep::RCSDefaultSoundPreStep(VesselXRSoundEngine *pEngine) :
     DefaultSoundPreStep(pEngine)
 {
-    m_thrustVectorsROT = m_thrustVectorsLIN = _V(0, 0, 0);  // set by value
+    m_thrustVectorsROT = m_thrustVectorsLIN = {0, 0, 0};  // set by value
 
     // we have six total axes, but need to check for both rotation and translation: rotation and translation for a given axis share the same sound slot
     const XRSoundConfigFileParser &config = m_pEngine->GetConfig();

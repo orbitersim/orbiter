@@ -50,12 +50,12 @@ inline VECTOR3 Nml (const NTVERTEX *v1, const NTVERTEX *v2, const NTVERTEX *v3)
 	float dy1 = v2->y - v1->y,   dy2 = v3->y - v1->y;
 	float dz1 = v2->z - v1->z,   dz2 = v3->z - v1->z;
 
-	return _V(dy1*dz2 - dy2*dz1, dz1*dx2 - dz2*dx1, dx1*dy2 - dx2*dy1);
+	return {dy1*dz2 - dy2*dz1, dz1*dx2 - dz2*dx1, dx1*dy2 - dx2*dy1};
 }
 
 inline VECTOR3 crossp (const NTVERTEX *v1, const NTVERTEX *v2)
 {
-	return _V(v1->y*v2->z - v2->y*v1->z, v1->z*v2->x - v2->z*v1->x, v1->x*v2->y - v2->x*v1->y);
+	return {v1->y*v2->z - v2->y*v1->z, v1->z*v2->x - v2->z*v1->x, v1->x*v2->y - v2->x*v1->y};
 }
 
 // --------------------------------------------------------------
@@ -124,7 +124,7 @@ SolarSail::SolarSail (OBJHANDLE hVessel, int flightmodel)
 	int i;
 
 	hMesh = NULL;
-	mf = _V(0,0,0);
+	mf = {0,0,0};
 	DefineAnimations();
 	for (i = 0; i < 4; i++)
 		paddle_rot[i] = paddle_vis[i] = 0.5;
@@ -140,10 +140,10 @@ void SolarSail::DefineAnimations ()
 	// Steering paddle animations
 	static UINT PaddleGrp[4] = {GRP_paddle1, GRP_paddle2, GRP_paddle3, GRP_paddle4};
 
-	static MGROUP_ROTATE Paddle0 (0, PaddleGrp+0, 1, _V(0,0,0), _V(0,1,0), (float)(180.0*RAD));
-	static MGROUP_ROTATE Paddle1 (0, PaddleGrp+1, 1, _V(0,0,0), _V(1,0,0), (float)(180.0*RAD));
-	static MGROUP_ROTATE Paddle2 (0, PaddleGrp+2, 1, _V(0,0,0), _V(0,1,0), (float)(180.0*RAD));
-	static MGROUP_ROTATE Paddle3 (0, PaddleGrp+3, 1, _V(0,0,0), _V(1,0,0), (float)(180.0*RAD));
+	static MGROUP_ROTATE Paddle0 (0, PaddleGrp+0, 1, {0,0,0}, {0,1,0}, (float)(180.0*RAD));
+	static MGROUP_ROTATE Paddle1 (0, PaddleGrp+1, 1, {0,0,0}, {1,0,0}, (float)(180.0*RAD));
+	static MGROUP_ROTATE Paddle2 (0, PaddleGrp+2, 1, {0,0,0}, {0,1,0}, (float)(180.0*RAD));
+	static MGROUP_ROTATE Paddle3 (0, PaddleGrp+3, 1, {0,0,0}, {1,0,0}, (float)(180.0*RAD));
 	static MGROUP_ROTATE *Paddle[4] = {&Paddle0, &Paddle1, &Paddle2, &Paddle3};
 
 	for (i = 0; i < 4; i++) {
@@ -175,11 +175,11 @@ void SolarSail::UpdateSail (const VECTOR3 *rpressure)
 	MESHGROUP *sail = oapiMeshGroup (hMesh, sailidx);
 
 	for (i = 0; i < sail_nvtx; i++) {
-		F = _V(0,0,rpressure->z*pscale); // note - should be calculated for LOCAL normal
+		F = {0,0,rpressure->z*pscale}; // note - should be calculated for LOCAL normal
 		vi = sail->Vtx+i;
 		nb = nbhr+i;
 		if (nb->fix) {
-			sail_vbuf[i] = _V(0,0,0);
+			sail_vbuf[i] = {0,0,0};
 			continue;
 		}
 		for (j = 0; j < nb->nnd; j++) {
@@ -187,7 +187,7 @@ void SolarSail::UpdateSail (const VECTOR3 *rpressure)
 			dv.x = vj->x - vi->x;
 			dv.y = vj->y - vi->y;
 			dv.z = vj->z - vi->z;
-			dst = length(dv);
+			dst = len(dv);
 			if (dst > nb->dst0[j]) { // is stretched
 				F += dv*(elast/nb->dst0[j]);
 			}
@@ -255,18 +255,18 @@ void SolarSail::clbkSetClassCaps (FILEHANDLE cfg)
 	SetCW (0.3, 0.3, 0.6, 0.9);
 	SetWingAspect (0.7);
 	SetWingEffectiveness (2.5);
-	SetCrossSections (_V(10.5,15.0,5.8));
-	SetRotDrag (_V(0.6,0.6,0.35));
+	SetCrossSections ({10.5,15.0,5.8});
+	SetRotDrag ({0.6,0.6,0.35});
 	if (GetFlightModel() >= 1) {
 		SetPitchMomentScale (1e-4);
 		SetYawMomentScale (1e-4);
 	}
-	SetPMI (_V(3e3,3e3,6e3));
+	SetPMI ({3e3,3e3,6e3});
 	SetTrimScale (0.05);
-	SetCameraOffset (_V(0,0.8,0));
+	SetCameraOffset ({0,0.8,0});
 	SetLiftCoeffFunc (LiftCoeff);
-	SetDockParams (_V(0,1.3,-1), _V(0,1,0), _V(0,0,-1));
-	SetTouchdownPoints (_V(0,-1.5,2), _V(-1,-1.5,-1.5), _V(1,-1.5,-1.5));
+	SetDockParams ({0,1.3,-1}, {0,1,0}, {0,0,-1});
+	SetTouchdownPoints ({0,-1.5,2}, {-1,-1.5,-1.5}, {1,-1.5,-1.5});
 
 	// visual specs
 	AddMesh (hMeshTpl);
@@ -282,15 +282,15 @@ void SolarSail::clbkPreStep (double simt, double simdt, double mjd)
 	const double paddle_area = 7812.5;
 	const double albedo = 2.0;
 	static VECTOR3 ppos[4] = {
-		_V(0,-550,0), _V(-550,0,0), _V(0,550,0), _V(550,0,0)
+		{0,-550,0}, {-550,0,0}, {0,550,0}, {550,0,0}
 	};
 	VECTOR3 nml;
 	for (i = 0; i < 4; i++) {
 		double phi = (paddle_rot[i]-0.5)*PI;
 		double sphi = sin(phi), cphi = cos(phi);
-		if (i%2 == 0) nml = _V(-sphi,0,cphi);
-		else          nml = _V(0,sphi,cphi);
-		double f = dotp (mf, nml);
+		if (i%2 == 0) nml = {-sphi,0,cphi};
+		else          nml = {0,sphi,cphi};
+		double f = dot(mf, nml);
 		if (f < 0) {
 			nml = -nml;
 			f = -f;
@@ -328,8 +328,8 @@ void SolarSail::clbkGetRadiationForce (const VECTOR3 &mflux, VECTOR3 &F, VECTOR3
 	// Therefore only the z-component of the radiation momentum flux contributes
 	// to change the sail's momentum (Fresnel reflection)
 	double mom = mflux.z * albedo *area;
-	F = _V(0,0,mom);
-	pos = _V(0,0,0);        // don't induce torque
+	F = {0,0,mom};
+	pos = {0,0,0};        // don't induce torque
 }
 
 // --------------------------------------------------------------

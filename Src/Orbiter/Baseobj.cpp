@@ -175,7 +175,7 @@ void BaseObject::MapToAltitude (NTVERTEX *vtx, int nvtx)
 	double lng, lat;
 	double elev0 = base->Elevation();
 	for (int i = 0; i < nvtx; i++) {
-		base->Rel_EquPos (Vector (vtx[i].x, vtx[i].y, vtx[i].z), lng, lat);
+		base->Rel_EquPos({vtx[i].x, vtx[i].y, vtx[i].z}, lng, lat);
 		vtx[i].y += (float)base->RefPlanet()->Elevation (lng, lat) - elev;
 	}
 }
@@ -369,7 +369,7 @@ bool MeshObject::LoadMesh (char *fname)
 	return true;
 }
 
-void MeshObject::UpdateShadow (Vector &fromsun, double azim)
+void MeshObject::UpdateShadow (VECTOR3 &fromsun, double azim)
 {
 	ax = (float)fromsun.x;
 	az = (float)fromsun.z;
@@ -2174,7 +2174,7 @@ int RunwayLights::Read (istream &is)
 
 void RunwayLights::Setup ()
 {
-	relpos = Vector((end1.x+end2.x)*0.5, (end1.y+end2.y)*0.5, (end1.z+end2.z)*0.5);
+	relpos = {(end1.x + end2.x) * 0.5, (end1.y + end2.y) * 0.5, (end1.z + end2.z) * 0.5};
 	BaseObject::Setup();
 	NTVERTEX vtx[2];
 	vtx[0].x = end1.x, vtx[0].y = end1.y, vtx[0].z = end1.z;
@@ -2225,31 +2225,31 @@ void RunwayLights::Render (LPDIRECT3DDEVICE7 dev, bool day)
 #endif // INLINEGRAPHICS
 }
 
-void RunwayLights::VertexArray (DWORD count, const Vector &cpos, const Vector &pos, const Vector &ofs, double size, POSTEXVERTEX *&Vtx)
+void RunwayLights::VertexArray (DWORD count, const VECTOR3 &cpos, const VECTOR3 &pos, const VECTOR3 &ofs, double size, POSTEXVERTEX *&Vtx)
 {
 	size *= 0.15; // for distance resizing (see below bsize)
 
 	DWORD i;
 	double bsize, ap = g_camera->Aperture();
-	Vector p(pos), bdir, v1, v2;
+	VECTOR3 p = pos, bdir, v1, v2;
 
 	for (i = 0; i < count; i++) {
 
-		bdir.Set (p-cpos);
+		bdir = p - cpos;
 		// beacon position rel to camera
 
-		bsize = size * sqrt((bdir.length()+1.0)*ap);
+		bsize = size * sqrt((len(bdir) + 1.0) * ap);
 		// this resizes the beacons so they appear larger at greater distance
 		// may need more thought
 
 		if (!bdir.y || !bdir.z) {
-			v1.Set (0,bsize,0);
-			v2.Set (0,0,bsize);
+			v1 = {0, bsize, 0};
+			v2 = {0, 0, bsize};
 		} else {
-			v1.Set (bdir.z,0,-bdir.x);
-			v2.Set (-bdir.x*bdir.y, bdir.z*bdir.z+bdir.x*bdir.x, -bdir.y*bdir.z);
-			v1 *= bsize/v1.length();
-			v2 *= bsize/v2.length();
+			v1 = {bdir.z, 0, -bdir.x};
+			v2 = {-bdir.x * bdir.y, bdir.z * bdir.z + bdir.x * bdir.x, -bdir.y * bdir.z};
+			v1 *= bsize / len(v1);
+			v2 *= bsize / len(v2);
 		}
 		// v1 and v2 are two orthogonal vectors perpendicular to the vector from
 		// camera to beacon. Required to set up the billboard vertices
@@ -2279,14 +2279,11 @@ void RunwayLights::VertexArray (DWORD count, const Vector &cpos, const Vector &p
 
 void RunwayLights::Update ()
 {
-	Vector pos, ofs;
-	POSTEXVERTEX *Vtx;
-
 	// transform camera position and direction into local base coords
-	Vector cpos (tmul (base->GRot(), g_camera->GPos()-base->GPos()));
-	Vector cdir (tmul (base->GRot(), g_camera->Direction()));
+	VECTOR3 cpos = tmul(base->GRot(), g_camera->GPos() - base->GPos());
+	VECTOR3 cdir = tmul(base->GRot(), g_camera->Direction());
 
-	bool look12 = (dotp (cdir, dyndata->ref2-dyndata->ref1) >= 0);
+	bool look12 = (dot(cdir, dyndata->ref2-dyndata->ref1) >= 0);
 	// camera looks in direction from ref1 to ref2
 
 	if (papi) { // light configuration for PAPI indicator
@@ -2310,6 +2307,9 @@ void RunwayLights::Update ()
 	// skip runway lights during daytime
 
 	// generate billboard vertices for all light components
+
+	VECTOR3 pos, ofs;
+	POSTEXVERTEX *Vtx;
 
 	if (dyndata->night) {
 		Vtx = dyndata->Vtx_white_night;
@@ -2411,18 +2411,18 @@ void RunwayLights::Activate ()
 	nbp  = (papi ? 8:0);                                 // number of precision approach lights
 	nbt  = dyndata->nb_tot = nbwn + nbwd + nbr + nbp;    // total number of lights
 
-	dyndata->ref1.Set (end1.x, end1.y, end1.z);
-	dyndata->ref2.Set (end2.x, end2.y, end2.z);
-	Vector dr(end2.x-end1.x, end2.y-end1.y, end2.z-end1.z);
-	dyndata->ofs1.Set (dr/(nbc-1));
-	dr.unify();
-	dyndata->dir.Set (dr);
-	dyndata->ofs3.Set (dr.z*width, 0, -dr.x*width);
-	dyndata->nml.Set (dyndata->ofs3.unit());
+	dyndata->ref1 = {end1.x, end1.y, end2.z};
+	dyndata->ref2 = {end2.x, end2.y, end2.z};
+	VECTOR3 dr{end2.x - end1.x, end2.y - end1.y, end2.z - end1.z};
+	dyndata->ofs1 = dr / (nbc - 1);
+	dr = unit(dr);
+	dyndata->dir = dr;
+	dyndata->ofs3 = {dr.z * width, 0, -dr.x * width};
+	dyndata->nml = unit(dyndata->ofs3);
 	if (vasi) {
-		dyndata->ofs5.Set (dr*vasi->ofs + dyndata->ofs3*2.0);
+		dyndata->ofs5 = dr * vasi->ofs + dyndata->ofs3 * 2.0;
 		//dyndata->ofs5.y += 2.0;
-		dyndata->ofs4.Set (dyndata->ofs5 - dr*vasi->lightsep);
+		dyndata->ofs4 = dyndata->ofs5 - dr * vasi->lightsep;
 		dyndata->vasi_ry = 2.0;
 		dyndata->vasi_wy = dyndata->vasi_ry + vasi->lightsep * tan(vasi->apprangle);
 		//dyndata->ofs4.y += vasi->lightsep * tan(vasi->apprangle);
@@ -2543,41 +2543,40 @@ void BeaconArray::Update ()
 	const double resize_fac = 0.1;
 
 	DWORD i;
-	Vector p, v1, v2;
+	VECTOR3 p, v1, v2;
 	double bsize = size;
 
 	// transform camera into local base coords
-	Vector cdir (tmul (base->GRot(), g_camera->GPos()-base->GPos()));
+	VECTOR3 cdir = tmul(base->GRot(), g_camera->GPos() - base->GPos());
 
 	for (i = 0; i < count; i++) {
-		Vector bdir (Pos[i]-cdir); // vector from camera to beacon i
-		bsize = size * sqrt(bdir.length()+1.0)*resize_fac; // distance scaling of beacon size
+		VECTOR3 bdir = Pos[i] - cdir; // vector from camera to beacon i
+		bsize = size * sqrt(len(bdir) + 1.0) * resize_fac; // distance scaling of beacon size
 
 		if (bdir.y == 0.0 && bdir.z == 0.0) {
-			v1.Set (0,1,0);
-			v2.Set (0,0,1);
+			v1 = {0, 1, 0};
+			v2 = {0, 0, 1};
 		} else {
-			v1.Set (bdir.z,0,-bdir.x);
-			v2.Set (-bdir.x*bdir.y, bdir.z*bdir.z+bdir.x*bdir.x, -bdir.y*bdir.z);
-			v1.unify(); v2.unify();
+			v1 = unit(VECTOR3{bdir.z, 0, -bdir.x});
+			v2 = unit(VECTOR3{-bdir.x * bdir.y, bdir.z * bdir.z + bdir.x * bdir.x, -bdir.y * bdir.z});
 		}
 
-		p.Set(Pos[i] - (v1+v2)*bsize);
+		p = Pos[i] - (v1 + v2) * bsize;
 		Vtx[i*4].x = (float)p.x;
 		Vtx[i*4].y = (float)p.y;
 		Vtx[i*4].z = (float)p.z;
 
-		p.Set(Pos[i] + (v1-v2)*bsize);
+		p = Pos[i] + (v1 - v2) * bsize;
 		Vtx[i*4+1].x = (float)p.x;
 		Vtx[i*4+1].y = (float)p.y;
 		Vtx[i*4+1].z = (float)p.z;
 
-		p.Set(Pos[i] + (v1+v2)*bsize);
+		p = Pos[i] + (v1 + v2) * bsize;
 		Vtx[i*4+2].x = (float)p.x;
 		Vtx[i*4+2].y = (float)p.y;
 		Vtx[i*4+2].z = (float)p.z;
 
-		p.Set(Pos[i] - (v1-v2)*bsize);
+		p = Pos[i] - (v1 - v2) * bsize;
 		Vtx[i*4+3].x = (float)p.x;
 		Vtx[i*4+3].y = (float)p.y;
 		Vtx[i*4+3].z = (float)p.z;
@@ -2590,14 +2589,16 @@ void BeaconArray::Activate ()
 
 	Vtx = new POSTEXVERTEX[nVtx = count*4]; TRACENEW
 	Idx = new WORD[nIdx = count*6]; TRACENEW
-	Pos = new Vector[count]; TRACENEW
+	Pos = new VECTOR3[count]; TRACENEW
 
 	double ici, ic = 1.0/(count-1);
 	for (i = 0; i < count; i++) {
 		ici = ic*i;
-		Pos[i].Set ((end2.x-end1.x)*ici + end1.x,
-			        (end2.y-end1.y)*ici + end1.y,
-					(end2.z-end1.z)*ici + end1.z);
+		Pos[i] = {
+            (end2.x - end1.x) * ici + end1.x,
+            (end2.y - end1.y) * ici + end1.y,
+            (end2.z - end1.z) * ici + end1.z
+        };
 	}
 
 	for (i = 0; i < count; i++) {
@@ -2665,9 +2666,9 @@ void Train::Init (const D3DVECTOR &_end1, const D3DVECTOR &_end2)
 void Train::Setup ()
 {
 	double lng, lat;
-	base->Rel_EquPos (Vector(end1.x, end1.y, end1.z), lng, lat);
+	base->Rel_EquPos({end1.x, end1.y, end1.z}, lng, lat);
 	end1.y += base->RefPlanet()->Elevation (lng, lat)-base->Elevation();
-	base->Rel_EquPos (Vector(end2.x, end2.y, end2.z), lng, lat);
+	base->Rel_EquPos({end2.x, end2.y, end2.z}, lng, lat);
 	end2.y += base->RefPlanet()->Elevation (lng, lat)-base->Elevation();
 }
 
@@ -2951,7 +2952,7 @@ void Train1::Update ()
 			_shvtx[i].x += dx, _shvtx[i].z += dz;
 }
 
-void Train1::UpdateShadow (Vector &fromsun, double az)
+void Train1::UpdateShadow (VECTOR3 &fromsun, double az)
 {
 	static DWORD i, j, nCH, ii[12] = {2,3,4,5,6,7,10,11,12,13,14,15};
 	static VECTOR2D proj[12];
@@ -3278,7 +3279,7 @@ void Train2::Update ()
 	}
 }
 
-void Train2::UpdateShadow (Vector &fromsun, double az)
+void Train2::UpdateShadow (VECTOR3 &fromsun, double az)
 {
 	static DWORD i, j, nCH, ii[12] = {2,3,4,5,6,7,10,11,12,13,14,15};
 	static VECTOR2D proj[12];
@@ -3412,13 +3413,12 @@ void SolarPlant::Render (LPDIRECT3DDEVICE7 dev, bool)
 	int i, j;
 
 	// check for flashing panels
-	Vector pc, cdir (tmul (base->GRot(), g_camera->GPos()-base->GPos()));
+	VECTOR3 cdir = tmul(base->GRot(), g_camera->GPos() - base->GPos());
 	bool anyflash = false;
 	double alpha;
 	for (i = 0; i < npanel; i++) {
-		pc.Set (cdir.x - ppos[i].x, cdir.y - ppos[i].y, cdir.z - ppos[i].z);
-		pc.unify();
-		alpha = dotp (pc, nml);
+		VECTOR3 pc = unit(cdir - VECTOR3{ppos[i].x, ppos[i].y, ppos[i].z});
+		alpha = dot(pc, nml);
 		if (alpha > 0.999) {
 			anyflash = flash[i] = true;
 			for (j = i*4; j < (i+1)*4; j++) Vtx[j].tu += 0.25;
@@ -3533,7 +3533,7 @@ void SolarPlant::Activate ()
 	if (g_pOrbiter->Cfg()->CfgVisualPrm.bShadows) {
 		ShVtx = new VERTEX_XYZ[nShVtx = npanel*4]; TRACENEW
 		ShIdx = new WORD[nShIdx = npanel*6]; TRACENEW
-		Vector4 shadowCol = base->ShadowColor();
+		auto shadowCol = base->ShadowColor();
 		D3DCOLOR shcol = D3DRGBA(shadowCol.x, shadowCol.y, shadowCol.z, shadowCol.w);
 		for (n = 0; n < nShVtx; n++) {
 			ShVtx[n].y = 0.0f;
@@ -3580,7 +3580,7 @@ void SolarPlant::Update ()
 	nml = *base->SunDirectionBuffered();
 	if (nml.y < 0.0) {
 		nml.y = 0.0;
-		nml.unify();
+		nml = unit(nml);
 	}
 
 	int i, vtx_ofs = npanel*4;
@@ -3617,7 +3617,7 @@ void SolarPlant::Update ()
 	updT = td.SimT1 + 60.0;
 }
 
-void SolarPlant::UpdateShadow (Vector &fromsun, double az)
+void SolarPlant::UpdateShadow (VECTOR3 &fromsun, double az)
 {
 	if (!g_pOrbiter->Cfg()->CfgVisualPrm.bShadows) return;
 	if (have_shadows = (nml.y > 0.2)) {

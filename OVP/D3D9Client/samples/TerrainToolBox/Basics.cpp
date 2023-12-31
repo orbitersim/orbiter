@@ -51,7 +51,7 @@ FMATRIX4 ToolKit::CreateWorldMatrix(OBJHANDLE hPlanet, double lng, double lat, d
 	double rad = oapiGetSize(hPlanet) + elev;
 	MATRIX3 mRot;
 	oapiGetRotationMatrix(hPlanet, &mRot);
-	VECTOR3 vRot = mul(mRot, _V(0, 1, 0));
+	VECTOR3 vRot = mul(mRot, VECTOR3{0, 1, 0});
 
 	VECTOR3 lpos, cpos, gp;
 	oapiEquToLocal(hPlanet, lng, lat, rad, &lpos);
@@ -63,8 +63,8 @@ FMATRIX4 ToolKit::CreateWorldMatrix(OBJHANDLE hPlanet, double lng, double lat, d
 	FMATRIX4 m;
 
 	VECTOR3 y = unit(lpos);				// up
-	VECTOR3 x = unit(crossp(y, vRot));	// west
-	VECTOR3 z = crossp(x, y);			// north
+	VECTOR3 x = unit(cross(y, vRot));	// west
+	VECTOR3 z = cross(x, y);			// north
 	VECTOR3 p = ((gp + lpos) - cpos);
 
 	x *= scale;
@@ -111,8 +111,8 @@ void ToolKit::RenderTileBounds(gcCore::PickGround &pg, DWORD color)
 	double s = size - cos(h*0.5) * size;
 
 	FVECTOR3 box[8];
-	for (int i = 0; i < 4; i++) box[i] = FVECTOR3(V[i] * (size + pg.emax + s) - cpos);
-	for (int i = 0; i < 4; i++) box[i + 4] = FVECTOR3(V[i] * (size + pg.emin) - cpos);
+	for (int i = 0; i < 4; i++) box[i] = morph_to<FVECTOR3>(V[i] * (size + pg.emax + s) - cpos);
+	for (int i = 0; i < 4; i++) box[i + 4] = morph_to<FVECTOR3>(V[i] * (size + pg.emin) - cpos);
 
 	DrawBox(box, color);
 }
@@ -145,8 +145,8 @@ void ToolKit::RenderTileBounds(QTree *tn, DWORD color)
 		double s = size - cos(h*0.5) * size;
 		
 		FVECTOR3 box[8];
-		for (int i = 0; i < 4; i++) box[i] = FVECTOR3(V[i] * (size + pg.emax + s) - cpos);
-		for (int i = 0; i < 4; i++) box[i + 4] = FVECTOR3(V[i] * (size + pg.emin) - cpos);
+		for (int i = 0; i < 4; i++) box[i] = morph_to<FVECTOR3>(V[i] * (size + pg.emax + s) - cpos);
+		for (int i = 0; i < 4; i++) box[i + 4] = morph_to<FVECTOR3>(V[i] * (size + pg.emin) - cpos);
 
 		DrawBox(box, color);
 	}
@@ -191,8 +191,8 @@ void ToolKit::RenderSelection(sSelection *sel, int mode, DWORD color)
 		double s = size - cos(max(w, h)*0.5) * size;
 
 		FVECTOR3 box[8];
-		for (int i = 0; i < 4; i++) box[i] = FVECTOR3(V[i] * (size + emax + s) - cpos);
-		for (int i = 0; i < 4; i++) box[i + 4] = FVECTOR3(V[i] * (size + emin) - cpos);
+		for (int i = 0; i < 4; i++) box[i] = morph_to<FVECTOR3>(V[i] * (size + emax + s) - cpos);
+		for (int i = 0; i < 4; i++) box[i + 4] = morph_to<FVECTOR3>(V[i] * (size + emin) - cpos);
 
 		DrawBox(box, color);
 	}
@@ -256,8 +256,8 @@ void ToolKit::RenderSelection(list<QTree*> sel, int mode, DWORD color)
 		double s = size - cos(max(w, h) * 0.5) * size;
 
 		FVECTOR3 box[8];
-		for (int i = 0; i < 4; i++) box[i] = FVECTOR3(V[i] * (size + emax + s) - cpos);
-		for (int i = 0; i < 4; i++) box[i + 4] = FVECTOR3(V[i] * (size + emin) - cpos);
+		for (int i = 0; i < 4; i++) box[i] = morph_to<FVECTOR3>(V[i] * (size + emax + s) - cpos);
+		for (int i = 0; i < 4; i++) box[i + 4] = morph_to<FVECTOR3>(V[i] * (size + emin) - cpos);
 
 		DrawBox(box, color);
 	}
@@ -428,5 +428,5 @@ VECTOR3 ToolKit::GetSurfacePosUnit(double lng, double lat)
 	MATRIX3 mRot;
 	double w = cos(lat);
 	oapiGetRotationMatrix(hPlanet, &mRot);
-	return mul(mRot, _V(w*cos(lng), sin(lat), w*sin(lng)));
+	return mul(mRot, VECTOR3{w * cos(lng), sin(lat), w * sin(lng)});
 }

@@ -332,11 +332,11 @@ void D3D9CelestialSphere::Render(LPDIRECT3DDEVICE9 pDevice, const VECTOR3& skyCo
 		// render ecliptic grid
 		if (renderFlag & PLN_EGRID) {
 			FVECTOR4 baseCol1(0.0f, 0.2f, 0.3f, 1.0f);
-			D3DXVECTOR4 vColor1 = ColorAdjusted(baseCol1);
+			auto vColor1 = to_D3DXVECTOR4(ColorAdjusted(baseCol1));
 			HR(s_FX->SetVector(s_eColor, &vColor1));
 			RenderGrid(s_FX, false);
 			FVECTOR4 baseCol2(0.0f, 0.4f, 0.6f, 1.0f);
-			D3DXVECTOR4 vColor2 = ColorAdjusted(baseCol2);
+			auto vColor2 = to_D3DXVECTOR4(ColorAdjusted(baseCol2));
 			HR(s_FX->SetVector(s_eColor, &vColor2));
 			RenderGreatCircle(s_FX);
 			MATRIX3 ident = _M(1, 0, 0, 0, 1, 0, 0, 0, 1);
@@ -355,11 +355,11 @@ void D3D9CelestialSphere::Render(LPDIRECT3DDEVICE9 pDevice, const VECTOR3& skyCo
 			D3DXMatrixMultiply(&rot, &T, m_scene->GetProjectionViewMatrix());
 			HR(s_FX->SetMatrix(s_eWVP, &rot));
 			FVECTOR4 baseCol1(0.3f, 0.0f, 0.0f, 1.0f);
-			D3DXVECTOR4 vColor1 = ColorAdjusted(baseCol1);
+			auto vColor1 = to_D3DXVECTOR4(ColorAdjusted(baseCol1));
 			HR(s_FX->SetVector(s_eColor, &vColor1));
 			RenderGrid(s_FX, false);
 			FVECTOR4 baseCol2(0.7f, 0.0f, 0.0f, 1.0f);
-			D3DXVECTOR4 vColor2 = ColorAdjusted(baseCol2);
+			auto vColor2 = to_D3DXVECTOR4(ColorAdjusted(baseCol2));
 			HR(s_FX->SetVector(s_eColor, &vColor2));
 			RenderGreatCircle(s_FX);
 			double dphi = ElevationScaleRotation(R);
@@ -374,11 +374,11 @@ void D3D9CelestialSphere::Render(LPDIRECT3DDEVICE9 pDevice, const VECTOR3& skyCo
 			D3DXMatrixMultiply(&rot, &m_transformCelestial, m_scene->GetProjectionViewMatrix());
 			HR(s_FX->SetMatrix(s_eWVP, &rot));
 			FVECTOR4 baseCol1(0.3f, 0.0f, 0.3f, 1.0f);
-			D3DXVECTOR4 vColor1 = ColorAdjusted(baseCol1);
+			auto vColor1 = to_D3DXVECTOR4(ColorAdjusted(baseCol1));
 			HR(s_FX->SetVector(s_eColor, &vColor1));
 			RenderGrid(s_FX, false);
 			FVECTOR4 baseCol2(0.7f, 0.0f, 0.7f, 1.0f);
-			D3DXVECTOR4 vColor2 = ColorAdjusted(baseCol2);
+			auto vColor2 = to_D3DXVECTOR4(ColorAdjusted(baseCol2));
 			HR(s_FX->SetVector(s_eColor, &vColor2));
 			RenderGreatCircle(s_FX);
 			double dphi = ElevationScaleRotation(m_rotCelestial);
@@ -393,11 +393,11 @@ void D3D9CelestialSphere::Render(LPDIRECT3DDEVICE9 pDevice, const VECTOR3& skyCo
 				D3DXMatrixMultiply(&rot, &T, m_scene->GetProjectionViewMatrix());
 				HR(s_FX->SetMatrix(s_eWVP, &rot));
 				oapi::FVECTOR4 baseCol1(0.2f, 0.2f, 0.0f, 1.0f);
-				D3DXVECTOR4 vColor1 = ColorAdjusted(baseCol1);
+				auto vColor1 = to_D3DXVECTOR4(ColorAdjusted(baseCol1));
 				HR(s_FX->SetVector(s_eColor, &vColor1));
 				RenderGrid(s_FX, false);
 				oapi::FVECTOR4 baseCol2(0.5f, 0.5f, 0.0f, 1.0f);
-				D3DXVECTOR4 vColor2 = ColorAdjusted(baseCol2);
+				auto vColor2 = to_D3DXVECTOR4(ColorAdjusted(baseCol2));
 				HR(s_FX->SetVector(s_eColor, &vColor2));
 				RenderGreatCircle(s_FX);
 				double dphi = ElevationScaleRotation(R);
@@ -421,7 +421,7 @@ void D3D9CelestialSphere::Render(LPDIRECT3DDEVICE9 pDevice, const VECTOR3& skyCo
 				D3DXMatrixMultiply(&rot, &iR, m_scene->GetProjectionViewMatrix());
 				HR(s_FX->SetMatrix(s_eWVP, &rot));
 				FVECTOR4 baseCol(0.0f, 0.6f, 0.0f, 1.0f);
-				D3DXVECTOR4 vColor = ColorAdjusted(baseCol);
+				auto vColor = to_D3DXVECTOR4(ColorAdjusted(baseCol));
 				HR(s_FX->SetVector(s_eColor, &vColor));
 				RenderGreatCircle(s_FX);
 			}
@@ -497,7 +497,7 @@ void D3D9CelestialSphere::RenderStars(ID3DXEffect *FX)
 void D3D9CelestialSphere::RenderConstellationLines(ID3DXEffect *FX)
 {
 	const FVECTOR4 baseCol(0.5f, 0.3f, 0.2f, 1.0f);
-	D3DXVECTOR4 vColor = ColorAdjusted(baseCol);
+	auto vColor = to_D3DXVECTOR4(ColorAdjusted(baseCol));
 	HR(s_FX->SetVector(s_eColor, &vColor));
 
 	_TRACE;
@@ -516,7 +516,7 @@ void D3D9CelestialSphere::RenderConstellationLines(ID3DXEffect *FX)
 void D3D9CelestialSphere::RenderConstellationBoundaries(ID3DXEffect* FX)
 {
 	const FVECTOR4 baseCol(0.25f, 0.2f, 0.15f, 1.0f);
-	D3DXVECTOR4 vColor = ColorAdjusted(baseCol);
+	auto vColor = to_D3DXVECTOR4(ColorAdjusted(baseCol));
 	HR(s_FX->SetVector(s_eColor, &vColor));
 
 	_TRACE;

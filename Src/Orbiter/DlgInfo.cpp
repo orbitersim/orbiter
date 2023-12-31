@@ -560,7 +560,7 @@ void DlgInfo::UpdateItems_vessel ()
 		vlist.srf->GetItem (2)->SetValue (cbuf+1);
 		sprintf (cbuf, "%sm/s", FloatStr (sp->groundspd)+1);
 		vlist.srf->GetItem (3)->SetValue (cbuf);
-		Vector V (mul (sp->L2H, tmul (vessel->ProxyBody()->GRot(), sp->groundvel_glob)));
+		VECTOR3 V = mul(sp->L2H, tmul(vessel->ProxyBody()->GRot(), sp->groundvel_glob));
 		sprintf (cbuf, "%sm/s", FloatStr (V.y)+1);
 		vlist.srf->GetItem (4)->SetValue (cbuf);
 		sprintf (cbuf, "%0.0f°", sp->dir*DEG);
@@ -851,8 +851,8 @@ void DlgInfo::UpdateItems_celbody ()
 	if (cblist.loc) {
 		Planet *earth = g_psys->GetPlanet ("Earth");
 		if (earth && earth != cbody) {
-			Vector p (cbody->GPos() - earth->GPos());
-			double r   = p.length();
+			VECTOR3 p = cbody->GPos() - earth->GPos();
+			double r   = len(p);
 			double lng = atan2 (p.z, p.x);
 			double lat = p.y/r;
 			double ra, dc, rah, ram, ras, dcd, dcm, dcs;
@@ -875,8 +875,8 @@ void DlgInfo::UpdateItems_celbody ()
 
 	if (cblist.ecl) {
 		if (el) {
-			Vector p (cbody->GPos() - cbody->ElRef()->GPos());
-			double r   = p.length();
+			VECTOR3 p = cbody->GPos() - cbody->ElRef()->GPos();
+			double r   = len(p);
 			double lng = atan2 (p.z, p.x);
 			double lat = p.y/r;
 			sprintf (cbuf, "%0.3f°", DEG*posangle(lng));

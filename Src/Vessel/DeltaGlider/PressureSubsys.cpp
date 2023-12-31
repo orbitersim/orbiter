@@ -288,10 +288,10 @@ AirlockCtrl::AirlockCtrl (PressureSubsystem *_subsys)
 	// Outer airlock animation
 	static UINT OLockGrp[2] = {GRP_OLock1,GRP_OLock2};
 	static MGROUP_ROTATE OLock (0, OLockGrp, 2,
-		_V(0,-0.080,9.851), _V(1,0,0), (float)(110*RAD));
+		{0,-0.080,9.851}, {1,0,0}, (float)(110*RAD));
 	static UINT VCOLockGrp[1] = {13};
 	static MGROUP_ROTATE VCOLock (1, VCOLockGrp, 1,
-		_V(0,-0.080,9.851), _V(1,0,0), (float)(110*RAD));
+		{0,-0.080,9.851}, {1,0,0}, (float)(110*RAD));
 	anim_olock = DG()->CreateAnimation (0);
 	DG()->AddAnimationComponent (anim_olock, 0, 1, &OLock);
 	DG()->AddAnimationComponent (anim_olock, 0, 1, &VCOLock);
@@ -299,11 +299,11 @@ AirlockCtrl::AirlockCtrl (PressureSubsystem *_subsys)
 	// Inner airlock animation
 	static UINT ILockGrp[2] = {GRP_ILock1,GRP_ILock2};
 	static MGROUP_ROTATE ILock (0, ILockGrp, 2,
-		_V(0,-0.573,7.800), _V(1,0,0), (float)(85*RAD));
+		{0,-0.573,7.800}, {1,0,0}, (float)(85*RAD));
 	// virtual cockpit mesh animation (inner airlock visible from cockpit)
 	static UINT VCILockGrp[4] = {GRP_ILOCK1_VC,GRP_ILOCK2_VC,GRP_ILOCK3_VC,GRP_ILOCK_GLASS_VC};
 	static MGROUP_ROTATE VCILock (1, VCILockGrp, 4,
-		_V(0,-0.573,7.800), _V(1,0,0), (float)(85*RAD));
+		{0,-0.573,7.800}, {1,0,0}, (float)(85*RAD));
 	anim_ilock = DG()->CreateAnimation (0);
 	DG()->AddAnimationComponent (anim_ilock, 0, 1, &ILock);
 	DG()->AddAnimationComponent (anim_ilock, 0, 1, &VCILock);
@@ -609,22 +609,22 @@ TophatchCtrl::TophatchCtrl (PressureSubsystem *_subsys)
 	// Top hatch animation
 	static UINT HatchGrp[2] = {GRP_Hatch1,GRP_Hatch2};
 	static MGROUP_ROTATE Hatch (0, HatchGrp, 2,
-		_V(0,2.069,5.038), _V(1,0,0), (float)(110*RAD));
+		{0,2.069,5.038}, {1,0,0}, (float)(110*RAD));
 	static UINT VCHatchGrp[1] = {GRP_HATCH_VC};
 	static MGROUP_ROTATE VCHatch (1, VCHatchGrp, 1,
-		_V(0,2.069,5.038), _V(1,0,0), (float)(110*RAD));
+		{0,2.069,5.038}, {1,0,0}, (float)(110*RAD));
 	static UINT RearLadderGrp[2] = {GRP_RearLadder1,GRP_RearLadder2};
 	static MGROUP_ROTATE RearLadder1 (0, RearLadderGrp, 2,
-		_V(0,1.7621,4.0959), _V(1,0,0), (float)(-20*RAD));
+		{0,1.7621,4.0959}, {1,0,0}, (float)(-20*RAD));
 	static MGROUP_ROTATE RearLadder2 (0, RearLadderGrp+1, 1,
-		_V(0,1.1173,4.1894), _V(1,0,0), (float)(180*RAD));
+		{0,1.1173,4.1894}, {1,0,0}, (float)(180*RAD));
 
 	// virtual cockpit ladder animation
 	static UINT VCRearLadderGrp[2] = {GRP_LADDER1_VC,GRP_LADDER2_VC};
 	static MGROUP_ROTATE VCRearLadder1 (1, VCRearLadderGrp, 2,
-		_V(0,1.7621,4.0959), _V(1,0,0), (float)(-20*RAD));
+		{0,1.7621,4.0959}, {1,0,0}, (float)(-20*RAD));
 	static MGROUP_ROTATE VCRearLadder2 (1, VCRearLadderGrp+1, 1,
-		_V(0,1.1173,4.1894), _V(1,0,0), (float)(180*RAD));
+		{0,1.1173,4.1894}, {1,0,0}, (float)(180*RAD));
 	anim_hatch = DG()->CreateAnimation (0);
 	DG()->AddAnimationComponent (anim_hatch, 0, 1, &Hatch);
 	DG()->AddAnimationComponent (anim_hatch, 0, 1, &VCHatch);

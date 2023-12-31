@@ -12,16 +12,16 @@
 // LOD (level-of-detail) algorithm for surface patch resolution.
 // ==============================================================
 
-#include "Surfmgr2.h"
-#include "Tilemgr2.h"
 #include "Cloudmgr2.h"
 #include "D3D9Catalog.h"
 #include "D3D9Config.h"
-#include "vVessel.h"
-#include "VectorHelpers.h"
+#include "D3D9Surface.h"
+#include "D3D9Util.h"
 #include "DebugControls.h"
 #include "gcCore.h"
-#include "D3D9Surface.h"
+#include "Surfmgr2.h"
+#include "Tilemgr2.h"
+#include "VVessel.h"
 
 // =======================================================================
 extern void FilterElevationGraphics(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, float *elev);
@@ -724,7 +724,7 @@ double SurfTile::GetCameraDistance()
 {
 	VECTOR3 cnt = Centre() * (mgr->CbodySize() + GetMeanElev());
 	cnt = mgr->prm.cpos + mul(mgr->prm.grot, cnt);
-	return length(cnt);
+	return len(cnt);
 }
 
 // -----------------------------------------------------------------------
@@ -797,7 +797,7 @@ void SurfTile::Render ()
 	bool render_shadows = (mgr->GetPlanet()->CloudMgr2() != NULL) && mgr->GetClient()->GetConfigParam(CFGPRM_CLOUDSHADOWS) && pShader->bCloudShd;
 
 	if (ltex) {
-		sdist = acos(dotp(mgr->prm.sdir, cnt));
+		sdist = std::acos(dot(mgr->prm.sdir, cnt));
 		rad = rad0 / (double)(2 << lvl); // tile radius
 		has_specular = (ltex != NULL) && sdist < (1.75 + rad);
 		has_lights = (render_lights && ltex && sdist > 1.35);
@@ -921,7 +921,7 @@ void SurfTile::Render ()
 	// ----------------------------------------------------------------------
 
 	FVECTOR4 texcoord;
-	const vPlanet::sOverlay *oLay = vPlanet->IntersectOverlay(bnd.vec, &texcoord);
+	const vPlanet::sOverlay *oLay = vPlanet->IntersectOverlay(to_VECTOR4(bnd), &texcoord);
 
 	if (pShader->bDevtools)
 	{
@@ -973,7 +973,7 @@ void SurfTile::Render ()
 
 	sp->vTexOff = GetTexRangeDX(&texrange);
 	sp->vMicroOff = GetTexRangeDX(&microrange);
-	sp->mWorld = mWorld;
+	sp->mWorld = to_FMATRIX4(mWorld);
 	sp->fTgtScale = tgtscale;
 
 	if (has_lights) sp->fBeta = float(mgr->Cprm().lightfac);
@@ -1003,7 +1003,7 @@ void SurfTile::Render ()
 				if (sqrt(D3DXVec3Dot(&bc, &bc) - x * x) < (shd->rad + mesh->bsRad)) {
 					float s = float(shd->size);
 					float sr = 2.0f * shd->rad / s;
-					sp->mLVP = shd->mViewProj;
+					sp->mLVP = to_FMATRIX4(shd->mViewProj);
 					sp->vSHD = FVECTOR4(sr, 1.0f / s, 0.0f, 1.0f / shd->depth);
 					fc->bShadows = true;
 				}
@@ -1066,11 +1066,11 @@ void SurfTile::Render ()
 					for (int i = 0; i < nMeshLights; i++)
 					{
 						auto pL = pLights[LightList[i].idx];
-						Locals.attenuation[i] = pL.Attenuation;
+						Locals.attenuation[i] = to_FVECTOR3(pL.Attenuation);
 						Locals.diffuse[i] = FVECTOR4(pL.Diffuse).rgb;
-						Locals.direction[i] = pL.Direction;
-						Locals.param[i] = pL.Param;
-						Locals.position[i] = pL.Position;
+						Locals.direction[i] = to_FVECTOR3(pL.Direction);
+						Locals.param[i] = to_FVECTOR4(pL.Param);
+						Locals.position[i] = to_FVECTOR3(pL.Position);
 						Spots[i] = (pL.Type == 1);
 					}
 

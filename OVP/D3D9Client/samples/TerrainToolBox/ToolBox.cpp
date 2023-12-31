@@ -747,7 +747,7 @@ void ToolKit::clbkRender()
 			emis.rgb *= 0.5f;	
 	
 			VECTOR3 uSP = GetSurfacePosUnit(points[i].lng, points[i].lat) * (oapiGetSize(hPlanet) + points[i].elev);
-			float scale = float(tan(0.75*RAD) * length(uSP - cpos));
+			auto scale = float(std::tan(0.75 * RAD) * len(uSP - cpos));
 			
 			points[i].mWorld = CreateWorldMatrix(hPlanet, points[i].lng, points[i].lat, points[i].elev, scale);
 

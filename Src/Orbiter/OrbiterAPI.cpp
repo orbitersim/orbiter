@@ -382,70 +382,49 @@ DLLEXPORT void oapiSetEmptyMass (OBJHANDLE hVessel, double mass)
 
 DLLEXPORT void oapiGetGlobalPos (OBJHANDLE hObj, VECTOR3 *pos)
 {
-	if (((Body*)hObj)->s0) {
-		Vector gp(((Body*)hObj)->GPos());
-		pos->x = gp.x, pos->y = gp.y, pos->z = gp.z;
-	}
+	if (((Body*)hObj)->s0) *pos = ((Body*)hObj)->GPos();
 }
 
 DLLEXPORT void oapiGetGlobalVel (OBJHANDLE hObj, VECTOR3 *vel)
 {
-	if (((Body*)hObj)->s0) {
-		Vector gv(((Body*)hObj)->GVel());
-		vel->x = gv.x, vel->y = gv.y, vel->z = gv.z;
-	}
+	if (((Body*)hObj)->s0) *vel = ((Body*)hObj)->GVel();
 }
 
 DLLEXPORT void oapiGetFocusGlobalPos (VECTOR3 *pos)
 {
-	Vector gp(g_focusobj->GPos());
-	pos->x = gp.x, pos->y = gp.y, pos->z = gp.z;
+	*pos = g_focusobj->GPos();
 }
 
 DLLEXPORT void oapiGetFocusGlobalVel (VECTOR3 *vel)
 {
-	Vector gv(g_focusobj->GVel());
-	vel->x = gv.x, vel->y = gv.y, vel->z = gv.z;
+	*vel = g_focusobj->GVel();
 }
 
 DLLEXPORT void oapiGetRelativePos (OBJHANDLE hObj, OBJHANDLE hRef, VECTOR3 *pos)
 {
 	if (((Body*)hObj)->s0 && ((Body*)hRef)->s0) {
-		Vector dp(((Body*)hObj)->GPos()-((Body*)hRef)->GPos());
-		pos->x = dp.x, pos->y = dp.y, pos->z = dp.z;
+		*pos = ((Body*)hObj)->GPos() - ((Body*)hRef)->GPos();
 	}
 }
 
 DLLEXPORT void oapiGetRelativeVel (OBJHANDLE hObj, OBJHANDLE hRef, VECTOR3 *vel)
 {
-	if (((Body*)hObj)->s0 && ((Body*)hRef)->s0) {
-		Vector dv(((Body*)hObj)->GVel() - ((Body*)hRef)->GVel());
-		vel->x = dv.x, vel->y = dv.y, vel->z = dv.z;
-	}
+	if (((Body*)hObj)->s0 && ((Body*)hRef)->s0) *vel = ((Body*)hObj)->GVel() - ((Body*)hRef)->GVel();
 }
 
 DLLEXPORT void oapiGetFocusRelativePos (OBJHANDLE hRef, VECTOR3 *pos)
 {
-	if (((Body*)hRef)->s0) {
-		Vector dp(g_focusobj->GPos() - ((Body*)hRef)->GPos());
-		pos->x = dp.x, pos->y = dp.y, pos->z = dp.z;
-	}
+	if (((Body*)hRef)->s0) *pos = g_focusobj->GPos() - ((Body*)hRef)->GPos();
 }
 
 DLLEXPORT void oapiGetFocusRelativeVel (OBJHANDLE hRef, VECTOR3 *vel)
 {
-	if (((Body*)hRef)->s0) {
-		Vector dv(g_focusobj->GVel() - ((Body*)hRef)->GVel());
-		vel->x = dv.x, vel->y = dv.y, vel->z = dv.z;
-	}
+	if (((Body*)hRef)->s0) *vel = g_focusobj->GVel() - ((Body*)hRef)->GVel();
 }
 
 DLLEXPORT void oapiGetBarycentre (OBJHANDLE hObj, VECTOR3 *bary)
 {
-	if (((Body*)hObj)->s0) {
-		Vector b(((CelestialBody*)hObj)->Barycentre());
-		bary->x = b.x, bary->y = b.y, bary->z = b.z;
-	}
+	if (((Body*)hObj)->s0) *bary = ((CelestialBody*)hObj)->Barycentre();
 }
 
 DLLEXPORT void oapiGetRotationMatrix (OBJHANDLE hObj, MATRIX3 *mat)
@@ -458,54 +437,32 @@ DLLEXPORT void oapiGetRotationMatrix (OBJHANDLE hObj, MATRIX3 *mat)
 
 DLLEXPORT void oapiGlobalToLocal (OBJHANDLE hObj, const VECTOR3 *glob, VECTOR3 *loc)
 {
-	if (((Body*)hObj)->s0) {
-		Vector vloc;
-		((Body*)hObj)->GlobalToLocal(Vector(glob->x, glob->y, glob->z), vloc);
-		loc->x = vloc.x, loc->y = vloc.y, loc->z = vloc.z;
-	}
+	if (((Body*)hObj)->s0) ((Body*)hObj)->GlobalToLocal(*glob, *loc);
 }
 
 DLLEXPORT void oapiLocalToGlobal (OBJHANDLE hObj, const VECTOR3 *loc, VECTOR3 *glob)
 {
-	if (((Body*)hObj)->s0) {
-		Vector vglob;
-		((Body*)hObj)->LocalToGlobal(Vector(loc->x, loc->y, loc->z), vglob);
-		glob->x = vglob.x, glob->y = vglob.y, glob->z = vglob.z;
-	}
+	if (((Body*)hObj)->s0) ((Body*)hObj)->LocalToGlobal(*loc, *glob);
 }
 
 DLLEXPORT void oapiEquToLocal (OBJHANDLE hObj, double lng, double lat, double rad, VECTOR3 *loc)
 {
-	if (((Body*)hObj)->s0) {
-		Vector vloc;
-		((Body*)hObj)->EquatorialToLocal(lng, lat, rad, vloc);
-		loc->x = vloc.x, loc->y = vloc.y, loc->z = vloc.z;
-	}
+	if (((Body*)hObj)->s0) ((Body*)hObj)->EquatorialToLocal(lng, lat, rad, *loc);
 }
 
 DLLEXPORT void oapiLocalToEqu (OBJHANDLE hObj, const VECTOR3 &loc, double *lng, double *lat, double *rad)
 {
-	if (((Body*)hObj)->s0) {
-		Vector vloc(loc.x, loc.y, loc.z);
-		((Body*)hObj)->LocalToEquatorial(vloc, *lng, *lat, *rad);
-	}
+	if (((Body*)hObj)->s0) ((Body*)hObj)->LocalToEquatorial(loc, *lng, *lat, *rad);
 }
 
 DLLEXPORT void oapiEquToGlobal (OBJHANDLE hObj, double lng, double lat, double rad, VECTOR3 *glob)
 {
-	if (((Body*)hObj)->s0) {
-		Vector vglob;
-		((Body*)hObj)->EquatorialToGlobal(lng, lat, rad, vglob);
-		glob->x = vglob.x, glob->y = vglob.y, glob->z = vglob.z;
-	}
+	if (((Body*)hObj)->s0) ((Body*)hObj)->EquatorialToGlobal(lng, lat, rad, *glob);
 }
 
 DLLEXPORT void oapiGlobalToEqu (OBJHANDLE hObj, const VECTOR3 &glob, double *lng, double *lat, double *rad)
 {
-	if (((Body*)hObj)->s0) {
-		Vector vglob(glob.x, glob.y, glob.z);
-		((Body*)hObj)->GlobalToEquatorial(vglob, *lng, *lat, *rad);
-	}
+	if (((Body*)hObj)->s0) ((Body*)hObj)->GlobalToEquatorial(glob, *lng, *lat, *rad);
 }
 
 DLLEXPORT double oapiOrthodome (double lng1, double lat1, double lng2, double lat2)
@@ -684,28 +641,22 @@ DLLEXPORT bool oapiGetGroundspeedVector (OBJHANDLE hVessel, REFFRAME frame, VECT
 	if (sp) {
 		switch (frame) {
 		case FRAME_GLOBAL:
-			vel->x = sp->groundvel_glob.x, vel->y = sp->groundvel_glob.y, vel->z = sp->groundvel_glob.z;
+			*vel = sp->groundvel_glob;
 			return true;
 		case FRAME_LOCAL:
-			vel->x = sp->groundvel_ship.x, vel->y = sp->groundvel_ship.y, vel->z = sp->groundvel_ship.z;
+			*vel = sp->groundvel_ship;
 			return true;
-		case FRAME_REFLOCAL: {
-			Vector hvel (tmul (sp->ref->GRot(), sp->groundvel_glob));
-			vel->x = hvel.x, vel->y = hvel.y, vel->z = hvel.z;
-			} return true;
-		case FRAME_HORIZON: {
-			Vector hvel (tmul (sp->ref->GRot(), sp->groundvel_glob));
-			hvel.Set (mul (sp->L2H, hvel));
-			vel->x = hvel.x, vel->y = hvel.y, vel->z = hvel.z;
-			} return true;
-		default:
-			vel->x = vel->y = vel->z = 0.0;
-			return false;
+		case FRAME_REFLOCAL:
+			*vel = tmul(sp->ref->GRot(), sp->groundvel_glob);
+			return true;
+		case FRAME_HORIZON:
+			*vel = mul(sp->L2H, tmul(sp->ref->GRot(), sp->groundvel_glob));
+			return true;
 		}
-	} else {
-		vel->x = vel->y = vel->z = 0.0;
-		return false;
 	}
+
+    *vel = {0, 0, 0};
+    return false;
 }
 
 DLLEXPORT BOOL oapiGetAirspeed (OBJHANDLE hVessel, double *airspeed)
@@ -727,28 +678,22 @@ DLLEXPORT bool oapiGetAirspeedVector (OBJHANDLE hVessel, REFFRAME frame, VECTOR3
 	if (sp) {
 		switch (frame) {
 		case FRAME_GLOBAL:
-			vel->x = sp->airvel_glob.x, vel->y = sp->airvel_glob.y, vel->z = sp->airvel_glob.z;
+			*vel = sp->airvel_glob;
 			return true;
 		case FRAME_LOCAL:
-			vel->x = sp->airvel_ship.x, vel->y = sp->airvel_ship.y, vel->z = sp->airvel_ship.z;
+			*vel = sp->airvel_ship;
 			return true;
-		case FRAME_REFLOCAL: {
-			Vector hvel (tmul (sp->ref->GRot(), sp->airvel_glob));
-			vel->x = hvel.x, vel->y = hvel.y, vel->z = hvel.z;
-			} return true;
-		case FRAME_HORIZON: {
-			Vector hvel (tmul (sp->ref->GRot(), sp->airvel_glob));
-			hvel.Set (mul (sp->L2H, hvel));
-			vel->x = hvel.x, vel->y = hvel.y, vel->z = hvel.z;
-			} return true;
-		default:
-			vel->x = vel->y = vel->z = 0.0;
-			return false;
+		case FRAME_REFLOCAL:
+			*vel = tmul(sp->ref->GRot(), sp->airvel_glob);
+			return true;
+		case FRAME_HORIZON:
+			*vel = mul(sp->L2H, tmul(sp->ref->GRot(), sp->airvel_glob));
+			return true;
 		}
-	} else {
-		vel->x = vel->y = vel->z = 0.0;
-		return false;
-	}
+    }
+
+    *vel = {0, 0, 0};
+    return false;
 }
 
 DLLEXPORT BOOL oapiGetAirspeedVector (OBJHANDLE hVessel, VECTOR3 *speedvec)
@@ -756,9 +701,7 @@ DLLEXPORT BOOL oapiGetAirspeedVector (OBJHANDLE hVessel, VECTOR3 *speedvec)
 	LOGOUT_OBSOLETE;
 	const SurfParam *sp = ((Vessel*)hVessel)->GetSurfParam();
 	if (sp) {
-		Vector hvel (tmul (sp->ref->GRot(), sp->airvel_glob));
-		hvel.Set (mul (sp->L2H, hvel));
-		speedvec->x = hvel.x, speedvec->y = hvel.y, speedvec->z = hvel.z;
+		*speedvec = mul(sp->L2H, tmul(sp->ref->GRot(), sp->airvel_glob));
 		return TRUE;
 	} else {
 		return FALSE;
@@ -794,9 +737,7 @@ DLLEXPORT BOOL oapiGetFocusAirspeedVector (VECTOR3 *speedvec)
 	LOGOUT_OBSOLETE;
 	const SurfParam *sp = g_focusobj->GetSurfParam();
 	if (sp) {
-		Vector hvel (tmul (sp->ref->GRot(), sp->airvel_glob));
-		hvel.Set (mul (sp->L2H, hvel));
-		speedvec->x = hvel.x, speedvec->y = hvel.y, speedvec->z = hvel.z;
+		*speedvec = mul(sp->L2H, tmul(sp->ref->GRot(), sp->airvel_glob));
 		return TRUE;
 	} else {
 		return FALSE;
@@ -853,12 +794,12 @@ DLLEXPORT void oapiGetFocusAtmPressureDensity (double *pressure, double *density
 
 DLLEXPORT VECTOR3 oapiGetGroundVector (OBJHANDLE hPlanet, double lng, double lat, int frame)
 {
-	return MakeVECTOR3 (((Planet*)hPlanet)->GroundVelocity (lng, lat, 0, frame));
+	return ((Planet*)hPlanet)->GroundVelocity(lng, lat, 0, frame);
 }
 
 DLLEXPORT VECTOR3 oapiGetWindVector (OBJHANDLE hPlanet, double lng, double lat, double alt, int frame, double *windspeed)
 {
-	return MakeVECTOR3 (((Planet*)hPlanet)->WindVelocity (lng, lat, alt, frame, 0, windspeed));
+	return ((Planet*)hPlanet)->WindVelocity (lng, lat, alt, frame, 0, windspeed);
 }
 
 // ===========================================================================
@@ -1049,18 +990,12 @@ DLLEXPORT OBJHANDLE oapiCameraProxyGbody ()
 
 DLLEXPORT void oapiCameraGlobalPos (VECTOR3 *gpos)
 {
-	const Vector *gp = g_camera->GPosPtr();
-	gpos->x = gp->x;
-	gpos->y = gp->y;
-	gpos->z = gp->z;
+	*gpos = g_camera->GPos();
 }
 
 DLLEXPORT void oapiCameraGlobalDir (VECTOR3 *gdir)
 {
-	const Vector gd = g_camera->Direction();
-	gdir->x = gd.x;
-	gdir->y = gd.y;
-	gdir->z = gd.z;
+	*gdir = g_camera->Direction();
 }
 
 DLLEXPORT void oapiCameraRotationMatrix (MATRIX3 *rmat)
@@ -1230,13 +1165,7 @@ DLLEXPORT double oapiSurfaceElevationEx(OBJHANDLE hPlanet, double lng, double la
 	if (body->Type() != OBJTP_PLANET) return 0.0;
 	Planet *planet = (Planet*)body;
 	ElevationManager *emgr = planet->ElevMgr();
-	Vector normal;
-	if (nml)
-		normal = MakeVector(*nml);
-	double elev = (emgr ? emgr->Elevation(lat, lng, tgtlvl, tilecache, nml ? &normal : 0, lvl) : 0.0);
-	if (nml)
-		*nml = MakeVECTOR3(normal);
-	return elev;
+	return emgr ? emgr->Elevation(lat, lng, tgtlvl, tilecache, nml, lvl) : 0;
 }
 
 DLLEXPORT std::vector<ElevationTile> *InitTileCache(int size)
@@ -1291,11 +1220,7 @@ DLLEXPORT NAVHANDLE oapiGetBasePadNav (OBJHANDLE hBase, DWORD pad)
 
 DLLEXPORT void oapiGetNavPos (NAVHANDLE hNav, VECTOR3 *gpos)
 {
-	Vector p;
-	((Nav*)hNav)->GPos (p);
-	gpos->x = p.x;
-	gpos->y = p.y;
-	gpos->z = p.z;
+	((Nav*)hNav)->GPos(*gpos);
 }
 
 DLLEXPORT DWORD oapiGetNavChannel (NAVHANDLE hNav)
@@ -1310,7 +1235,7 @@ DLLEXPORT float oapiGetNavFreq (NAVHANDLE hNav)
 
 DLLEXPORT double oapiGetNavSignal (NAVHANDLE hNav, const VECTOR3 &gpos)
 {
-	return ((Nav*)hNav)->FieldStrength (MakeVector(gpos));
+	return ((Nav*)hNav)->FieldStrength(gpos);
 }
 
 DLLEXPORT float oapiGetNavRange (NAVHANDLE hNav)
@@ -1337,8 +1262,7 @@ DLLEXPORT int oapiGetNavDescr (NAVHANDLE hNav, char *descr, int maxlen)
 
 DLLEXPORT bool oapiNavInRange (NAVHANDLE hNav, const VECTOR3 &gpos)
 {
-	Vector p(gpos.x, gpos.y, gpos.z);
-	return ((Nav*)hNav)->InRange (p);
+	return ((Nav*)hNav)->InRange(gpos);
 }
 
 DLLEXPORT INTERPRETERHANDLE oapiCreateInterpreter ()
@@ -1855,12 +1779,12 @@ DLLEXPORT void oapiVCRegisterArea (int id, int draw_event, int mouse_event)
 
 DLLEXPORT void oapiVCSetAreaClickmode_Spherical (int id, const VECTOR3 &cnt, double rad)
 {
-	g_pane->SetVCAreaClickmode_Spherical (id, Vector(cnt.x, cnt.y, cnt.z), rad);
+	g_pane->SetVCAreaClickmode_Spherical(id, cnt, rad);
 }
 
 DLLEXPORT void oapiVCSetAreaClickmode_Quadrilateral (int id, const VECTOR3 &p1, const VECTOR3 &p2, const VECTOR3 &p3, const VECTOR3 &p4)
 {
-	g_pane->SetVCAreaClickmode_Quadrilateral (id, Vector(p1.x, p1.y, p1.z), Vector(p2.x,p2.y,p2.z), Vector(p3.x,p3.y,p3.z), Vector(p4.x,p4.y,p4.z));
+	g_pane->SetVCAreaClickmode_Quadrilateral(id, p1, p2, p3, p4);
 }
 
 DLLEXPORT oapi::Sketchpad *oapiGetSketchpad (SURFHANDLE surf)
@@ -2419,12 +2343,7 @@ DLLEXPORT bool oapiReadItem_bool (FILEHANDLE f, char *item, bool &val)
 
 DLLEXPORT bool oapiReadItem_vec (FILEHANDLE f, char *item, VECTOR3 &val)
 {
-	Vector vec;
-	bool res = GetItemVector (*(ifstream*)f, item, vec);
-	val.x = vec.x;
-	val.y = vec.y;
-	val.z = vec.z;
-	return res;
+	return GetItemVector(*(ifstream*)f, item, val);
 }
 
 DLLEXPORT void oapiOpenInputBox (char *title, bool (*Clbk)(void*,char*,void*), char *buf, int vislen, void *usrdata)

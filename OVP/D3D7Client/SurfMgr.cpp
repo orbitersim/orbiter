@@ -32,7 +32,7 @@ SurfaceManager::SurfaceManager (const D3D7Client *gclient, const vPlanet *vplane
 	maxlvl = min (*(int*)gc->GetConfigParam (CFGPRM_SURFACEMAXLEVEL),        // global setting
 	              *(int*)oapiGetObjectParam (obj, OBJPRM_PLANET_SURFACEMAXLEVEL)); // planet-specific setting
 	maxbaselvl = min (8, maxlvl);
-	pcdir = _V(1,0,0);
+	pcdir = {1,0,0};
 	lightfac = *(double*)gc->GetConfigParam (CFGPRM_SURFACELIGHTBRT);
 	spec_base = 0.95f;
 	atmc = oapiGetPlanetAtmConstants (obj);

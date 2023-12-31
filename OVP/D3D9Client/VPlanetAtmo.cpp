@@ -8,16 +8,16 @@
 
 #define D3D_OVERLOADS
 
+#include "AtmoControls.h"
+#include "D3D9Client.h"
+#include "D3D9Config.h"
+#include "D3D9Util.h"
+#include "IProcess.h"
+#include "VPlanet.h"
+
 #include <map>
 #include <sstream>
 #include <unordered_map>
-
-#include "D3D9Client.h"
-#include "D3D9Config.h"
-#include "VPlanet.h"
-#include "AtmoControls.h"
-#include "VectorHelpers.h"
-#include "IProcess.h"
 
 using namespace oapi;
 
@@ -315,8 +315,8 @@ FVECTOR4 vPlanet::ComputeCameraView(FVECTOR3 vPos, FVECTOR3 vNrm, FVECTOR3 vRay,
 FVECTOR4 vPlanet::ComputeCameraView(FVECTOR3 vPos)
 {
 	FVECTOR3 vRP = vPos - cp.CamPos;
-	float d = length(vRP);
-	float r = length(vPos);
+	float d = len(vRP);
+	float r = len(vPos);
 	FVECTOR3 vRay = vRP / d;
 	float a = dot(vPos / r, vRay);
 	if (!CameraInAtmosphere()) d = RayLength(a, r); // Recompute distance to atm exit
@@ -339,7 +339,7 @@ void vPlanet::IntegrateSegment(FVECTOR3 vOrig, FVECTOR3 vRay, float len, FVECTOR
 	{
 		float dst = len * (iNSEG * (float(i) + 0.5f));
 		FVECTOR3 pos = vOrig + vRay * dst;
-		FVECTOR3 n = normalize(pos);
+		FVECTOR3 n = unit(pos);
 		float rad = dot(n, pos);
 		float alt = rad - cp.PlanetRad;
 		float ang = dot(n, vRay);
@@ -423,7 +423,6 @@ FVECTOR4 vPlanet::SunLightColor(VECTOR3 relpos, double rf)
 		UpdateScatter();
 	}
 	
-	FVECTOR2 rm = 0.0f;
 	VECTOR3 up = unit(relpos);
 	double r = dot(up, relpos);
 	double ca = dot(up, SunDirection());
@@ -450,11 +449,12 @@ FVECTOR4 vPlanet::SunLightColor(VECTOR3 relpos, double rf)
 
 	if (!bAtm || !surfmgr2) return FVECTOR4(svb, svb, svb, svb);
 
+	FVECTOR2 rm;
 	if (svb < 1e-3) return FVECTOR4(0.0, 0.0, 0.0, svb); // Ray is obscured by planet
 	if (r > ar) rm = Gauss7(qr - size, 0.0f, cp.PlanetRad, cp.AtmoRad, cp.iH) * 2.0f; // Ray passes through atmosphere from space to space
 	else rm = Gauss7(r - size, -ca, cp.PlanetRad, cp.AtmoRad, cp.iH); // Sample point 'pos' lies with-in atmosphere
 
-	rm = rm * (cp.rmO * rf);
+	rm = rm * (cp.rmO * float(rf));
 	return FVECTOR4(exp(-(cp.RayWave * rm.x + cp.MieWave * rm.y)) * svb, svb);
 }
 
@@ -480,26 +480,28 @@ D3D9Sun vPlanet::GetObjectAtmoParams(VECTOR3 vRelPos)
 	}
 
 	D3D9Sun op;
-	op.Transmission = 1.0f;
-	op.Incatter = 0.0f;
+	op.Transmission = {1, 1, 1};
+	op.Incatter = {0, 0, 0};
 
-	double r = length(vRelPos);
+	double r = len(vRelPos);
 	float a = cp.AtmoAlt * 0.5f;
 	FVECTOR3 cSun = SunLightColor(vRelPos).rgb * cp.cSun;
+	if (auto mx = max_rgb(cSun); mx > 1) cSun /= mx;
 	DWORD ambient = *(DWORD*)gc->GetConfigParam(CFGPRM_AMBIENTLEVEL);
 
 	if (((r - size) > a) || !HasAtmosphere() || !surfmgr2) // In space
 	{
 		op.Dir = -cp.toSun;
-		op.Color = (cSun.MaxRGB() > 1.0f ? cSun / cSun.MaxRGB() : cSun) * Config->GFXSunIntensity;
-		op.Ambient = float(ambient) * 0.0039f;
+		op.Color = cSun * Config->GFXSunIntensity;
+		auto al = float(ambient * 0.0039);
+		op.Ambient = {al, al, al};
 		return op;
 	}
 
-	VECTOR3 vNrm = unit(vRelPos);
+	auto vNrm = morph_to<FVECTOR3>(unit(vRelPos));
 	VECTOR3 vRP = (vRelPos + cpos);			// Camera relative position
-	double d = length(vRP);					// Distance to camera
-	FVECTOR3 vRay = (vRP / d);				// Unit viewing ray from cameta to obj_gpos
+	double d = len(vRP);					// Distance to camera
+	auto vRay = morph_to<FVECTOR3>(vRP / d);// Unit viewing ray from cameta to obj_gpos
 	float dNR = dot(vNrm, vRay);			// cosine of (Normal/vRay) angle 
 	float dRS = dot(vRay, cp.toSun);
 	float dNS = dot(vNrm, cp.toSun);	
@@ -510,17 +512,17 @@ D3D9Sun vPlanet::GetObjectAtmoParams(VECTOR3 vRelPos)
 
 
 	FVECTOR3 cSunAmb = SunLightColor(-dNS, alt) * cp.cSun;
-	cSunAmb = cSunAmb.MaxRGB() > 1.0f ? cSunAmb / cSunAmb.MaxRGB() : cSunAmb;
+	if (auto mx = max_rgb(cSunAmb); mx > 1) cSunAmb /= mx;
 
 	op.Dir = -cp.toSun;
-	op.Color = (cSun.MaxRGB() > 1.0f ? cSun / cSun.MaxRGB() : cSun) * Config->GFXSunIntensity;
+	op.Color = cSun * Config->GFXSunIntensity;
 	op.Ambient = unit(mc.rgb + cSunAmb * 2.0f) * mc.a * mc.g;
 	op.Ambient *= exp(-alt * cp.iH.x) * cp.rmI.x * 6e5;
 	op.Ambient += float(ambient) * 0.0039f;
 
 	if (d > 1000.0f) {
 		FVECTOR4 rl, mi; // Incatter Color
-		IntegrateSegment(vRelPos, -vRay, d, &rl, &mi);	// Rayleigh and Mie inscatter
+		IntegrateSegment(morph_to<FVECTOR3>(vRelPos), -vRay, d, &rl, &mi); // Rayleigh and Mie inscatter
 		op.Transmission = ComputeCameraView(dNR, r, d).rgb;
 		op.Incatter = HDR(rl.rgb * RayPhase(dRS) + mi.rgb * MiePhase(dRS));
 	}
@@ -566,8 +568,8 @@ void vPlanet::UpdateScatter()
 	oapiCameraGlobalPos(&campos);
 
 	sundir = unit(sundir - gpos);
-	FVECTOR3 cam = (campos - gpos);
-	
+	auto cam = morph_to<FVECTOR3>(campos - gpos);
+
 	const ScatterParams* atmo = GetAtmoParams();
 
 	DWORD dAmbient = *(DWORD*)gc->GetConfigParam(CFGPRM_AMBIENTLEVEL);
@@ -595,15 +597,15 @@ void vPlanet::UpdateScatter()
 	oapiGetRotationMatrix(hObj, &mRot);
 
 	VECTOR3 vNrm = mul(mRot, ReferencePoint());
-	VECTOR3 vRot = unit(mul(mRot, _V(0, 1, 0)));
-	VECTOR3 vTan = unit(crossp(vRot, vNrm));
-	VECTOR3 vBiT = unit(crossp(vTan, vNrm));
+	VECTOR3 vRot = unit(mul(mRot, VECTOR3{0, 1, 0}));
+	VECTOR3 vTan = unit(cross(vRot, vNrm));
+	VECTOR3 vBiT = unit(cross(vTan, vNrm));
 
 	memcpy(&cp.mVP, scn->GetProjectionViewMatrix(), sizeof(FMATRIX4));
 
-	cp.vPolarAxis = vRot;
-	cp.vTangent = vTan;		// RefFrame for surface micro-tex and water
-	cp.vBiTangent = vBiT;	// RefFrame for surface micro-tex and water
+	cp.vPolarAxis = morph_to<FVECTOR3>(vRot);
+	cp.vTangent   = morph_to<FVECTOR3>(vTan); // RefFrame for surface micro-tex and water
+	cp.vBiTangent = morph_to<FVECTOR3>(vBiT); // RefFrame for surface micro-tex and water
 	cp.cSun = FVECTOR3(1, 1, 1) * atmo->suni;
 	cp.PlanetRad = float(pr);
 	cp.PlanetRad2 = float(pr * pr);
@@ -616,7 +618,7 @@ void vPlanet::UpdateScatter()
 	cp.CamRad2 = float(cr * cr);
 	cp.CamPos = cam;
 	cp.toCam = unit(cam);
-	cp.toSun = sundir;								// Sun-aligned Atmo Scatter RefFrame
+	cp.toSun = morph_to<FVECTOR3>(sundir);			// Sun-aligned Atmo Scatter RefFrame
 	cp.dCS = dot(cp.toCam, cp.toSun);
 	cp.ZeroAz = unit(cross(cp.toCam, cp.toSun));	// Sun-aligned Atmo Scatter RefFrame
 	cp.SunAz = unit(cross(cp.toCam, cp.ZeroAz));	// Sun-aligned Atmo Scatter RefFrame
@@ -1021,17 +1023,17 @@ void vPlanet::SaveStruct(FILEHANDLE hFile, ScatterParams* prm, int iCnf)
 
 void vPlanet::LoadStruct(FILEHANDLE hFile, ScatterParams* prm, int iCnf)
 {
-	VECTOR3 v3;
 	iConfig = iCnf;
 	oapiReadItem_float(hFile, (char*)"OrbitAlt", prm->orbalt);
 	oapiReadItem_float(hFile, (char*)"AtmoVisualAlt", prm->visalt);
 	oapiReadItem_float(hFile, (char*)"Red", prm->red);
 	oapiReadItem_float(hFile, (char*)"Blue", prm->blue);
 	oapiReadItem_float(hFile, (char*)"SunI", prm->suni);
-	oapiReadItem_vec(hFile, (char*)"zcolor", v3); prm->zcolor = v3;
-	oapiReadItem_vec(hFile, (char*)"hcolor", v3); prm->hcolor = v3;
-	oapiReadItem_vec(hFile, (char*)"acolor", v3); prm->acolor = v3;
 
+	VECTOR3 v3;
+	oapiReadItem_vec(hFile, (char*)"zcolor", v3); prm->zcolor = morph_to<FVECTOR3>(v3);
+	oapiReadItem_vec(hFile, (char*)"hcolor", v3); prm->hcolor = morph_to<FVECTOR3>(v3);
+	oapiReadItem_vec(hFile, (char*)"acolor", v3); prm->acolor = morph_to<FVECTOR3>(v3);
 
 	// -----------------------------------------------------------------
 
@@ -1091,9 +1093,9 @@ void vPlanet::SaveAtmoConfig()
 	oapiWriteItem_float(hFile, (char*)"Red", SPrm.red);
 	oapiWriteItem_float(hFile, (char*)"Blue", SPrm.blue);
 	oapiWriteItem_float(hFile, (char*)"SunI", SPrm.suni);
-	oapiWriteItem_vec(hFile, (char*)"zcolor", SPrm.zcolor._V());
-	oapiWriteItem_vec(hFile, (char*)"hcolor", SPrm.hcolor._V());
-	oapiWriteItem_vec(hFile, (char*)"acolor", SPrm.acolor._V());
+	oapiWriteItem_vec(hFile, (char*)"zcolor", morph_to<VECTOR3>(SPrm.zcolor));
+	oapiWriteItem_vec(hFile, (char*)"hcolor", morph_to<VECTOR3>(SPrm.hcolor));
+	oapiWriteItem_vec(hFile, (char*)"acolor", morph_to<VECTOR3>(SPrm.acolor));
 
 	SaveStruct(hFile, &SPrm, 0);
 	SaveStruct(hFile, &OPrm, 1);
@@ -1189,20 +1191,20 @@ void vPlanet::TestComputations(Sketchpad* pSkp)
 	oapiCameraGlobalPos(&campos);
 	campos -= rpos;
 
-	FVECTOR3 vCam(campos);
+	auto vCam = morph_to<FVECTOR3>(campos);
 
-	static FVECTOR3 vRef = 0;
-	static FVECTOR3 vPos = 0;
-	static FVECTOR3 vRay = 0;
-	static float beta = 0.0f;
+	static FVECTOR3 vRef;
+	static FVECTOR3 vPos;
+	static FVECTOR3 vRay;
+	static float beta = 0;
 
-	if (length(GetScene()->vPickRay) > 0.8f) {
-		vRef = campos;
+	if (len(GetScene()->vPickRay) > 0.8f) {
+		vRef = morph_to<FVECTOR3>(campos);
 		beta = dot(unit(vRef), GetScene()->vPickRay);
 		TestPrm.CamPos = cp.CamPos;
 		TestPrm.toSun = cp.toSun;
 		TestPrm.toCam = unit(vRef);
-		TestPrm.CamRad = length(vRef);
+		TestPrm.CamRad = len(vRef);
 		TestPrm.CamRad2 = TestPrm.CamRad * TestPrm.CamRad;
 		TestPrm.ZeroAz = unit(cross(TestPrm.toCam, TestPrm.toSun));
 		TestPrm.SunAz = unit(cross(TestPrm.toCam, TestPrm.ZeroAz));
@@ -1219,7 +1221,7 @@ void vPlanet::TestComputations(Sketchpad* pSkp)
 	float ds = Ref * beta;
 	float he2 = Ref2 - ds * ds;
 
-	if (length(GetScene()->vPickRay) > 0.8f)
+	if (len(GetScene()->vPickRay) > 0.8f)
 	{
 		if (he2 < cp.PlanetRad2 && beta < 0) {	// Surface contact
 			float s = sqrt(cp.PlanetRad2 - he2);
@@ -1242,11 +1244,11 @@ void vPlanet::TestComputations(Sketchpad* pSkp)
 				status = 3;
 			}
 		}
-		GetScene()->vPickRay = 0;
-		vRay = normalize(vPos - vRef); // From vRef to vPos
+		GetScene()->vPickRay = {0, 0, 0};
+		vRay = unit(vPos - vRef); // From vRef to vPos
 	}
 
-	float cd = length(vRef - vPos);
+	float cd = len(vRef - vPos);
 
 	SHDPrm sp = ComputeShadow(vRay);
 
@@ -1375,8 +1377,6 @@ void vPlanet::TestComputations(Sketchpad* pSkp)
 	D3D9DebugLog("CameraInSpace=%f", cp.CamSpace);
 
 	D3DXMATRIX mI; D3DXMatrixIdentity(&mI);
-	VECTOR3 V0, V1;
-	IVECTOR2 pt0, pt1;
 
 	pSkp->SetViewMode(Sketchpad::ORTHO);
 	pSkp->SetWorldTransform();
@@ -1387,8 +1387,9 @@ void vPlanet::TestComputations(Sketchpad* pSkp)
 
 	if (e0 > s0) {
 		D3D9DebugLog("Primary Integral");
-		V0 = (vR + vRay * s0)._V();
-		V1 = V0 + vRay._V() * (e0 - s0);
+		auto V0 = morph_to<VECTOR3>(vR + vRay * s0);
+		auto V1 = V0 + morph_to<VECTOR3>(vRay) * (e0 - s0);
+		IVECTOR2 pt0, pt1;
 		scn->WorldToScreenSpace(V0, &pt0);
 		scn->WorldToScreenSpace(V1, &pt1);
 		pSkp->QuickPen(0xFF90FF90);
@@ -1397,8 +1398,9 @@ void vPlanet::TestComputations(Sketchpad* pSkp)
 
 	if (e1 > s1) {
 		D3D9DebugLog("Secondary Integral");
-		V0 = (vR + vRay * s1)._V();
-		V1 = V0 + vRay._V() * (e1 - s1);
+		auto V0 = morph_to<VECTOR3>(vR + vRay * s1);
+		auto V1 = V0 + morph_to<VECTOR3>(vRay) * (e1 - s1);
+		IVECTOR2 pt0, pt1;
 		scn->WorldToScreenSpace(V0, &pt0);
 		scn->WorldToScreenSpace(V1, &pt1);
 		pSkp->QuickPen(0xFF9090FF);

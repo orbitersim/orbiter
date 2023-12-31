@@ -94,25 +94,25 @@ NoseconeCtrl::NoseconeCtrl (DockingCtrlSubsystem *_subsys)
 	// Nosecone animation
 	static UINT NConeTLGrp[2] = {GRP_NConeTL1,GRP_NConeTL2};
 	static MGROUP_ROTATE NConeTL (0, NConeTLGrp, 2,
-		_V(-0.424,-0.066,9.838), _V(-0.707,-0.707,0), (float)(150*RAD));
+		{-0.424,-0.066,9.838}, {-0.707,-0.707,0}, (float)(150*RAD));
 	static UINT NConeTRGrp[2] = {GRP_NConeTR1,GRP_NConeTR2};
 	static MGROUP_ROTATE NConeTR (0, NConeTRGrp, 2,
-		_V( 0.424,-0.066,9.838), _V(-0.707, 0.707,0), (float)(150*RAD));
+		{ 0.424,-0.066,9.838}, {-0.707, 0.707,0}, (float)(150*RAD));
 	static UINT NConeBLGrp[2] = {GRP_NConeBL1,GRP_NConeBL2};
 	static MGROUP_ROTATE NConeBL (0, NConeBLGrp, 2,
-		_V(-0.424,-0.914,9.838), _V( 0.707,-0.707,0), (float)(150*RAD));
+		{-0.424,-0.914,9.838}, { 0.707,-0.707,0}, (float)(150*RAD));
 	static UINT NConeBRGrp[2] = {GRP_NConeBR1,GRP_NConeBR2};
 	static MGROUP_ROTATE NConeBR (0, NConeBRGrp, 2,
-		_V( 0.424,-0.914,9.838), _V( 0.707, 0.707,0), (float)(150*RAD));
+		{ 0.424,-0.914,9.838}, { 0.707, 0.707,0}, (float)(150*RAD));
 	static UINT NConeDockGrp[1] = {GRP_NConeDock};
-	static MGROUP_TRANSLATE NConeDock (0, NConeDockGrp, 1, _V(0,0,0.06));
+	static MGROUP_TRANSLATE NConeDock (0, NConeDockGrp, 1, {0,0,0.06});
 	// virtual cockpit mesh animation (nose cone visible from cockpit)
 	static UINT VCNConeTLGrp[1] = {GRP_NOSECONE_L_VC};
 	static MGROUP_ROTATE VCNConeTL (1, VCNConeTLGrp, 1,
-		_V(-0.424,-0.066,9.838), _V(-0.707,-0.707,0), (float)(150*RAD));
+		{-0.424,-0.066,9.838}, {-0.707,-0.707,0}, (float)(150*RAD));
 	static UINT VCNConeTRGrp[1] = {GRP_NOSECONE_R_VC};
 	static MGROUP_ROTATE VCNConeTR (1, VCNConeTRGrp, 1,
-		_V( 0.424,-0.066,9.838), _V(-0.707, 0.707,0), (float)(150*RAD));
+		{ 0.424,-0.066,9.838}, {-0.707, 0.707,0}, (float)(150*RAD));
 	anim_nose = DG()->CreateAnimation (0);
 	DG()->AddAnimationComponent (anim_nose, 0.01, 0.92, &NConeTL);
 	DG()->AddAnimationComponent (anim_nose, 0.01, 0.92, &VCNConeTL);
@@ -541,9 +541,9 @@ EscapeLadderCtrl::EscapeLadderCtrl (DockingCtrlSubsystem *_subsys)
 
 	// Escape ladder animation
 	static UINT LadderGrp[2] = {GRP_Ladder1,GRP_Ladder2};
-	static MGROUP_TRANSLATE Ladder1 (0, LadderGrp, 2, _V(0,0,1.1));
+	static MGROUP_TRANSLATE Ladder1 (0, LadderGrp, 2, {0,0,1.1});
 	static MGROUP_ROTATE Ladder2 (0, LadderGrp, 2,
-		_V(0,-1.05,9.85), _V(1,0,0), (float)(80*RAD));
+		{0,-1.05,9.85}, {1,0,0}, (float)(80*RAD));
 	anim_ladder = DG()->CreateAnimation (0);
 	DG()->AddAnimationComponent (anim_ladder, 0, 0.5, &Ladder1);
 	DG()->AddAnimationComponent (anim_ladder, 0.5, 1, &Ladder2);

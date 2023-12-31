@@ -53,9 +53,9 @@ static PARTICLESTREAMSPEC DefaultParticleStreamSpec = {
 
 D3D7ParticleStream::D3D7ParticleStream (oapi::GraphicsClient *_gc, PARTICLESTREAMSPEC *pss): ParticleStream (_gc, pss)
 {
-	cam_ref = g_camera->GPOSPtr();
+	cam_ref = g_camera->GPosPtr();
 	src_ref = 0;
-	src_ofs = _V(0,0,0);
+	src_ofs = {0,0,0};
 	interval = 0.1;
 	SetSpecs (pss ? pss : &DefaultParticleStreamSpec);
 	t0 = td.SimT0;
@@ -232,7 +232,7 @@ double D3D7ParticleStream::MinCameraDist() const
 		int i;
 		for (p = pfirst, i = 0; p; p = p->next, i++) {
 			if (!(i % 5)) { // only check every 5th particle for performance
-				double cdist = length2(*cam_ref - p->pos);
+				double cdist = len(*cam_ref - p->pos);
 				if (cdist < min_cam_dist) {
 					min_cam_dist = cdist;
 					size = p->size;
@@ -557,7 +557,7 @@ void ExhaustStream::Update ()
 			rad = oapiGetSize (hPlanet);
 			if (vessel) rad += vessel->GetSurfaceElevation();
 			VECTOR3 dv = pp-plast->pos; // gravitational dv
-			double d = length (dv);
+			double d = len(dv);
 			dv *= Ggrav * oapiGetMass(hPlanet)/(d*d*d) * td.SimDT;
 
 			ATMPARAM prm;
@@ -585,19 +585,19 @@ void ExhaustStream::Update ()
 				p->size += (alpha+alpha1) * td.SimDT;
 
 				VECTOR3 s (p->pos - pp);
-				if (length(s) < rad) {
-					VECTOR3 dp = s * (rad/length(s)-1.0);
+				if (len(s) < rad) {
+					VECTOR3 dp = s * (rad / len(s) - 1.0);
 					p->pos += dp;
 
-					static double dv_scale = length(vv)*0.2;
+					static double dv_scale = len(vv) * 0.2;
 					VECTOR3 dv = {((double)rand()/(double)RAND_MAX-0.5)*dv_scale,
 								  ((double)rand()/(double)RAND_MAX-0.5)*dv_scale,
 								  ((double)rand()/(double)RAND_MAX-0.5)*dv_scale};
 					dv += vv;
 
-					normalise(s);
-					VECTOR3 vv2 = dv - s*dotp(s,dv);
-					if (length(vv2)) vv2 *= 0.5*length(vv)/length(vv2);
+					s = unit(s);
+					VECTOR3 vv2 = dv - s * dot(s, dv);
+					if (len(vv2)) vv2 *= 0.5 * len(vv) / len(vv2);
 					vv2 += s*(((double)rand()/(double)RAND_MAX)*dv_scale);
 					p->vel = vv2*1.0/*2.0*/+av;
 					double r = (double)rand()/(double)RAND_MAX;
@@ -686,9 +686,9 @@ void ExhaustStream::RenderGroundShadow (LPDIRECT3DDEVICE7 dev, LPDIRECTDRAWSURFA
 			}
 
 			// calculate the intersection of the vessel's shadow with the planet surface
-			double fac1 = dotp (sd, pv0);
+			double fac1 = dot(sd, pv0);
 			if (fac1 > 0.0) return;       // shadow doesn't intersect planet surface
-			double arg  = fac1*fac1 - (dotp (pv0, pv0) - rad*rad);
+			double arg  = fac1 * fac1 - (dot(pv0, pv0) - rad * rad);
 			if (arg <= 0.0) return;       // shadow doesn't intersect with planet surface
 			double a = -fac1 - sqrt(arg);
 			VECTOR3 shp = sd*a;           // projection point in global frame
@@ -707,9 +707,9 @@ void ExhaustStream::RenderGroundShadow (LPDIRECT3DDEVICE7 dev, LPDIRECTDRAWSURFA
 		VECTOR3 pvr = p->pos - pp;   // rel. particle position
 
 		// calculate the intersection of the vessel's shadow with the planet surface
-		double fac1 = dotp (sd, pvr);
+		double fac1 = dot(sd, pvr);
 		if (fac1 > 0.0) break;       // shadow doesn't intersect planet surface
-		double arg  = fac1*fac1 - (dotp (pvr, pvr) - rad*rad);
+		double arg  = fac1 * fac1 - (dot(pvr, pvr) - rad * rad);
 		if (arg <= 0.0) break;       // shadow doesn't intersect with planet surface
 		double a = -fac1 - sqrt(arg);
 
@@ -746,7 +746,7 @@ ReentryStream::ReentryStream (oapi::GraphicsClient *_gc, OBJHANDLE hV, PARTICLES
 : D3D7ParticleStream (_gc, pss)
 {
 	llevel = 1.0;
-	Attach (hV, _V(0,0,0), _V(0,0,0), &llevel);
+	Attach (hV, {0,0,0}, {0,0,0}, &llevel);
 	hPlanet = 0;
 }
 
