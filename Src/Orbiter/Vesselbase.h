@@ -17,7 +17,7 @@ typedef enum {
 } FlightStatus;
 
 typedef struct { // touchdown vertex specifications
-	Vector pos;          // touchdown point position (uncompressed) in vessel frame
+	VECTOR3 pos;         // touchdown point position (uncompressed) in vessel frame
 	double stiffness;    // suspension stiffness
 	double damping;      // suspension damping
 	double compression;  // suspension compression factor
@@ -36,15 +36,15 @@ struct SurfParam {//Surface-relative vessel state
 		std::vector<ElevationTile> *etilecache=NULL);
 	// recalculate altitude
 
-	void SetLanded (double lng, double lat, double alt, double dir, const Vector &nml, const CelestialBody *ref);
+	void SetLanded (double lng, double lat, double alt, double dir, const VECTOR3 &nml, const CelestialBody *ref);
 	// Set surface parameters for a landed object
 
 	const CelestialBody *ref; // body to which data refer
-	Vector ploc;              // ship position in planet local cartesian coords
-	Vector groundvel_glob;    // ground-relative velocity in global frame
-	Vector groundvel_ship;    // ground-relative velocity in local vessel frame
-	Vector airvel_glob;       // airspeed vector in global frame
-	Vector airvel_ship;       // airspeed vector in local vessel frame
+	VECTOR3 ploc;             // ship position in planet local cartesian coords
+	VECTOR3 groundvel_glob;   // ground-relative velocity in global frame
+	VECTOR3 groundvel_ship;   // ground-relative velocity in local vessel frame
+	VECTOR3 airvel_glob;      // airspeed vector in global frame
+	VECTOR3 airvel_ship;      // airspeed vector in local vessel frame
 	double groundspd;         // ground-relative velocity magnitude
 	double airspd;            // airspeed magnitude
 	double vspd;              // vertical velocity (negative for descent)
@@ -54,7 +54,7 @@ struct SurfParam {//Surface-relative vessel state
 	double alt0;              // ship altitude over mean radius
 	double elev;              // ground elevation with respect to mean planet radius
 	int elev_lvl;             // resolution level at which elevation was computed
-	Vector surfnml;           // surface normal in local horizon frame (+y=up)
+	VECTOR3 surfnml;          // surface normal in local horizon frame (+y=up)
 	double pitch, bank;       // vessel orientation w.r.t. horizon
 	double dir;               // compass orientation
 	bool is_in_atm;           // true if ship is within a planetary atmosphere
@@ -68,7 +68,7 @@ struct SurfParam {//Surface-relative vessel state
 
 struct WindPrm {           // per-vessel wind parameters
 	double pert_t;            // time for wind perturbation vector
-	Vector pert_v;            // wind perturbation vector
+	VECTOR3 pert_v;           // wind perturbation vector
 };
 
 // =======================================================================
@@ -82,7 +82,7 @@ class Base;
 class VesselBase: public RigidBody {
 public:
 	VesselBase ();
-	VesselBase (double _mass, double _size, const Vector &_pmi);
+	VesselBase (double _mass, double _size, const VECTOR3 &_pmi);
 
 	virtual void Update (bool force = false) = 0;
 	// Update vessel state by propagating across current time step
@@ -97,7 +97,7 @@ public:
 	inline Base *ProxyBase () const { return proxybase; }
 	// closest surface base
 
-	virtual void RPlace (const Vector &rpos, const Vector &rvel) {}
+	virtual void RPlace (const VECTOR3 &rpos, const VECTOR3 &rvel) {}
 	// Set vessel position and velocity in parent coords
 	// If the vessel is part of a superstructure, the complete structure
 	// is moved accordingly
@@ -147,7 +147,7 @@ protected:
 	// Returns the heading of a vessel landed at lng/lat
 	// using state vectors s0
 
-	virtual void GetIntermediateMoments (Vector &acc, Vector &tau,
+	virtual void GetIntermediateMoments (VECTOR3 &acc, VECTOR3 &tau,
 		const StateVectors &state, double tfrac, double dt);
 	// Returns acceleration acc and torque tau, at time SimT0+tfrac*SimDT
 	// and step size dt, given intermediate state in global frame
@@ -176,7 +176,7 @@ protected:
 
 	virtual bool ValidateStateUpdate (StateVectors *s);
 
-	virtual bool AddSurfaceForces (Vector *F, Vector *M,
+	virtual bool AddSurfaceForces (VECTOR3 *F, VECTOR3 *M,
 		const StateVectors *s = NULL, double tfrac = 1.0, double dt = 0.0) const;
 	// Return linear force F and angular moment M due to planet surface interaction,
 	// given state vectors s at fraction tfrac (0..1) of the current time step, with
@@ -209,7 +209,7 @@ protected:
 	struct LANDING_TEST {        // parameters for testing LANDED status eligibility
 		bool testing;
 		double testt;
-		Vector surfpos;
+		VECTOR3 surfpos;
 		Quaternion surfrot;
 	} LandingTest;
 

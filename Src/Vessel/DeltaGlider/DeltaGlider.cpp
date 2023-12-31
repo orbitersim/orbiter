@@ -55,36 +55,36 @@ static HELPCONTEXT g_hc = {
 
 static const DWORD ntdvtx_geardown = 13;
 static TOUCHDOWNVTX tdvtx_geardown[ntdvtx_geardown] = {
-	{_V( 0   ,-2.57,10   ), 1e6, 1e5, 1.6, 0.1},
-	{_V(-3.5 ,-2.57,-1   ), 1e6, 1e5, 3.0, 0.2},
-	{_V( 3.5 ,-2.57,-1   ), 1e6, 1e5, 3.0, 0.2},
-	{_V(-8.5 ,-0.3 ,-7.05), 1e7, 1e5, 3.0},
-	{_V( 8.5 ,-0.3 ,-7.05), 1e7, 1e5, 3.0},
-	{_V(-8.5 ,-0.4 ,-3   ), 1e7, 1e5, 3.0},
-	{_V( 8.5 ,-0.4 ,-3   ), 1e7, 1e5, 3.0},
-	{_V(-8.85, 2.3 ,-5.05), 1e7, 1e5, 3.0},
-	{_V( 8.85, 2.3 ,-5.05), 1e7, 1e5, 3.0},
-	{_V(-8.85, 2.3 ,-7.05), 1e7, 1e5, 3.0},
-	{_V( 8.85, 2.3 ,-7.05), 1e7, 1e5, 3.0},
-	{_V( 0   , 2   , 6.2 ), 1e7, 1e5, 3.0},
-	{_V( 0   ,-0.6 ,10.65), 1e7, 1e5, 3.0}
+	{{ 0   ,-2.57,10   }, 1e6, 1e5, 1.6, 0.1},
+	{{-3.5 ,-2.57,-1   }, 1e6, 1e5, 3.0, 0.2},
+	{{ 3.5 ,-2.57,-1   }, 1e6, 1e5, 3.0, 0.2},
+	{{-8.5 ,-0.3 ,-7.05}, 1e7, 1e5, 3.0},
+	{{ 8.5 ,-0.3 ,-7.05}, 1e7, 1e5, 3.0},
+	{{-8.5 ,-0.4 ,-3   }, 1e7, 1e5, 3.0},
+	{{ 8.5 ,-0.4 ,-3   }, 1e7, 1e5, 3.0},
+	{{-8.85, 2.3 ,-5.05}, 1e7, 1e5, 3.0},
+	{{ 8.85, 2.3 ,-5.05}, 1e7, 1e5, 3.0},
+	{{-8.85, 2.3 ,-7.05}, 1e7, 1e5, 3.0},
+	{{ 8.85, 2.3 ,-7.05}, 1e7, 1e5, 3.0},
+	{{ 0   , 2   , 6.2 }, 1e7, 1e5, 3.0},
+	{{ 0   ,-0.6 ,10.65}, 1e7, 1e5, 3.0}
 };
 
 static const DWORD ntdvtx_gearup = 13;
 static TOUCHDOWNVTX tdvtx_gearup[ntdvtx_gearup] = {
-	{_V( 0   ,-1.5 ,9),     1e7, 1e5, 3.0, 3.0},
-	{_V(-6   ,-0.8 ,-5),    1e7, 1e5, 3.0, 3.0},
-	{_V( 3   ,-1.2 ,-5),    1e7, 1e5, 3.0, 3.0},
-	{_V(-8.5 ,-0.3 ,-7.05), 1e7, 1e5, 3.0},
-	{_V( 8.5 ,-0.3 ,-7.05), 1e7, 1e5, 3.0},
-	{_V(-8.5 ,-0.4 ,-3   ), 1e7, 1e5, 3.0},
-	{_V( 8.5 ,-0.4 ,-3   ), 1e7, 1e5, 3.0},
-	{_V(-8.85, 2.3 ,-5.05), 1e7, 1e5, 3.0},
-	{_V( 8.85, 2.3 ,-5.05), 1e7, 1e5, 3.0},
-	{_V(-8.85, 2.3 ,-7.05), 1e7, 1e5, 3.0},
-	{_V( 8.85, 2.3 ,-7.05), 1e7, 1e5, 3.0},
-	{_V( 0   , 2   , 6.2 ), 1e7, 1e5, 3.0},
-	{_V( 0   ,-0.6 ,10.65), 1e7, 1e5, 3.0}
+	{{ 0   ,-1.5 ,9},     1e7, 1e5, 3.0, 3.0},
+	{{-6   ,-0.8 ,-5},    1e7, 1e5, 3.0, 3.0},
+	{{ 3   ,-1.2 ,-5},    1e7, 1e5, 3.0, 3.0},
+	{{-8.5 ,-0.3 ,-7.05}, 1e7, 1e5, 3.0},
+	{{ 8.5 ,-0.3 ,-7.05}, 1e7, 1e5, 3.0},
+	{{-8.5 ,-0.4 ,-3   }, 1e7, 1e5, 3.0},
+	{{ 8.5 ,-0.4 ,-3   }, 1e7, 1e5, 3.0},
+	{{-8.85, 2.3 ,-5.05}, 1e7, 1e5, 3.0},
+	{{ 8.85, 2.3 ,-5.05}, 1e7, 1e5, 3.0},
+	{{-8.85, 2.3 ,-7.05}, 1e7, 1e5, 3.0},
+	{{ 8.85, 2.3 ,-7.05}, 1e7, 1e5, 3.0},
+	{{ 0   , 2   , 6.2 }, 1e7, 1e5, 3.0},
+	{{ 0   ,-0.6 ,10.65}, 1e7, 1e5, 3.0}
 };
 
 // ==============================================================
@@ -242,10 +242,10 @@ void DeltaGlider::DefineAnimations ()
 	// ***** Rudder animation *****
 	static UINT RRudderGrp[2] = {GRP_RRudder1,GRP_RRudder2};
 	static MGROUP_ROTATE RRudder (0, RRudderGrp, 2,
-		_V( 8.668,0.958,-6.204), _V( 0.143,0.975,-0.172), (float)(-60*RAD));
+		{ 8.668,0.958,-6.204}, { 0.143,0.975,-0.172}, (float)(-60*RAD));
 	static UINT LRudderGrp[2] = {GRP_LRudder1,GRP_LRudder2};
 	static MGROUP_ROTATE LRudder (0, LRudderGrp, 2,
-		_V(-8.668,0.958,-6.204), _V(-0.143,0.975,-0.172), (float)(-60*RAD));
+		{-8.668,0.958,-6.204}, {-0.143,0.975,-0.172}, (float)(-60*RAD));
 	anim_rudder = CreateAnimation (0.5);
 	AddAnimationComponent (anim_rudder, 0, 1, &RRudder);
 	AddAnimationComponent (anim_rudder, 0, 1, &LRudder);
@@ -253,26 +253,26 @@ void DeltaGlider::DefineAnimations ()
 	// ***** Elevator animation *****
 	static UINT ElevatorGrp[8] = {GRP_LUAileron1,GRP_LUAileron2,GRP_LLAileron1,GRP_LLAileron2,GRP_RUAileron1,GRP_RUAileron2,GRP_RLAileron1,GRP_RLAileron2};
 	static MGROUP_ROTATE Elevator (0, ElevatorGrp, 8,
-		_V(0,-0.4,-6.0), _V(1,0,0), (float)(40*RAD));
+		{0,-0.4,-6.0}, {1,0,0}, (float)(40*RAD));
 	anim_elevator = CreateAnimation (0.5);
 	AddAnimationComponent (anim_elevator, 0, 1, &Elevator);
 
 	// ***** Elevator trim animation *****
 	static MGROUP_ROTATE ElevatorTrim (0, ElevatorGrp, 8,
-		_V(0,-0.4,-6.0), _V(1,0,0), (float)(10*RAD));
+		{0,-0.4,-6.0}, {1,0,0}, (float)(10*RAD));
 	anim_elevatortrim = CreateAnimation (0.5);
 	AddAnimationComponent (anim_elevatortrim, 0, 1, &ElevatorTrim);
 
 	// ***** Aileron animation *****
 	static UINT LAileronGrp[4] = {GRP_LUAileron1,GRP_LUAileron2,GRP_LLAileron1,GRP_LLAileron2};
 	static MGROUP_ROTATE LAileron (0, LAileronGrp, 4,
-		_V(0,-0.4,-6.0), _V(1,0,0), (float)(-20*RAD));
+		{0,-0.4,-6.0}, {1,0,0}, (float)(-20*RAD));
 	anim_laileron = CreateAnimation (0.5);
 	AddAnimationComponent (anim_laileron, 0, 1, &LAileron);
 
 	static UINT RAileronGrp[4] = {GRP_RUAileron1,GRP_RUAileron2,GRP_RLAileron1,GRP_RLAileron2};
 	static MGROUP_ROTATE RAileron (0, RAileronGrp, 4,
-		_V(0,-0.4,-6.0), _V(1,0,0), (float)(20*RAD));
+		{0,-0.4,-6.0}, {1,0,0}, (float)(20*RAD));
 	anim_raileron = CreateAnimation (0.5);
 	AddAnimationComponent (anim_raileron, 0, 1, &RAileron);
 }
@@ -612,7 +612,7 @@ void DeltaGlider::ApplyDamage ()
 {
 	double balance = (rwingstatus-lwingstatus)*3.0;
 	double surf    = (rwingstatus+lwingstatus)*35.0 + 20.0;
-	EditAirfoil (hwing, 0x09, _V(balance,0,-0.3), 0, 0, surf, 0);
+	EditAirfoil (hwing, 0x09, {balance,0,-0.3}, 0, 0, surf, 0);
 
 	if (rwingstatus < 1 || lwingstatus < 1)
 		ssys_failure->MWSActivate();
@@ -624,11 +624,11 @@ void DeltaGlider::RepairDamage ()
 {
 	int i;
 	lwingstatus = rwingstatus = 1.0;
-	EditAirfoil (hwing, 0x09, _V(0,0,-0.3), 0, 0, 90.0, 0);
+	EditAirfoil (hwing, 0x09, {0,0,-0.3}, 0, 0, 90.0, 0);
 	if (!hlaileron)
-		hlaileron = CreateControlSurface2 (AIRCTRL_AILERON, 0.3, 1.5, _V( 7.5,0,-7.2), AIRCTRL_AXIS_XPOS, anim_raileron);
+		hlaileron = CreateControlSurface2 (AIRCTRL_AILERON, 0.3, 1.5, { 7.5,0,-7.2}, AIRCTRL_AXIS_XPOS, anim_raileron);
 	if (!hraileron)
-		hraileron = CreateControlSurface2 (AIRCTRL_AILERON, 0.3, 1.5, _V(-7.5,0,-7.2), AIRCTRL_AXIS_XNEG, anim_laileron);
+		hraileron = CreateControlSurface2 (AIRCTRL_AILERON, 0.3, 1.5, {-7.5,0,-7.2}, AIRCTRL_AXIS_XNEG, anim_laileron);
 	for (i = 0; i < 4; i++)
 		aileronfail[i] = false;
 	ssys_pressurectrl->RepairDamage ();
@@ -885,16 +885,16 @@ void DeltaGlider::clbkSetClassCaps (FILEHANDLE cfg)
 	VECTOR3 r[2] = {{0,0,6}, {0,0,-4}};
 	SetSize (10.0);
 	SetVisibilityLimit (7.5e-4, 1.5e-3);
-	SetAlbedoRGB (_V(0.77,0.20,0.13));
+	SetAlbedoRGB ({0.77,0.20,0.13});
 	SetGravityGradientDamping (20.0);
 	SetCW (0.09, 0.09, 2, 1.4);
 	SetWingAspect (0.7);
 	SetWingEffectiveness (2.5);
-	SetCrossSections (_V(53.0,186.9,25.9));
+	SetCrossSections ({53.0,186.9,25.9});
 	SetMaxWheelbrakeForce (2e5);
-	SetPMI (_V(15.5,22.1,7.7));
+	SetPMI ({15.5,22.1,7.7});
 
-	SetDockParams (_V(0,-0.49,10.076), _V(0,0,1), _V(0,1,0));
+	SetDockParams ({0,-0.49,10.076}, {0,0,1}, {0,1,0});
 	SetTouchdownPoints (tdvtx_geardown, ntdvtx_geardown);
 	SetNosewheelSteering (true);
 	bGearIsDown = true;
@@ -946,34 +946,34 @@ void DeltaGlider::clbkSetClassCaps (FILEHANDLE cfg)
 	};
 
 	// main thrusters
-	th_main[0] = CreateThruster (_V(-1,0.0,-7.7), _V(0,0,1), MAX_MAIN_THRUST[modelidx], ph_main, ISP, ISP*ispscale);
-	th_main[1] = CreateThruster (_V( 1,0.0,-7.7), _V(0,0,1), MAX_MAIN_THRUST[modelidx], ph_main, ISP, ISP*ispscale);
+	th_main[0] = CreateThruster ({-1,0.0,-7.7}, {0,0,1}, MAX_MAIN_THRUST[modelidx], ph_main, ISP, ISP*ispscale);
+	th_main[1] = CreateThruster ({ 1,0.0,-7.7}, {0,0,1}, MAX_MAIN_THRUST[modelidx], ph_main, ISP, ISP*ispscale);
 	thg_main = CreateThrusterGroup (th_main, 2, THGROUP_MAIN);
 	EXHAUSTSPEC es_main[2] = {
 		{th_main[0], NULL, NULL, NULL, 12, 1, 0, 0.1, NULL},
 		{th_main[1], NULL, NULL, NULL, 12, 1, 0, 0.1, NULL}
 	};
 	for (i = 0; i < 2; i++) AddExhaust (es_main+i);
-	AddExhaustStream (th_main[0], _V(-1,0,-15), &contrail);
-	AddExhaustStream (th_main[1], _V( 1,0,-15), &contrail);
-	AddExhaustStream (th_main[0], _V(-1,0,-10), &exhaust_main);
-	AddExhaustStream (th_main[1], _V( 1,0,-10), &exhaust_main);
+	AddExhaustStream (th_main[0], {-1,0,-15}, &contrail);
+	AddExhaustStream (th_main[1], { 1,0,-15}, &contrail);
+	AddExhaustStream (th_main[0], {-1,0,-10}, &exhaust_main);
+	AddExhaustStream (th_main[1], { 1,0,-10}, &exhaust_main);
 	//DWORD i = GetGroupThrusterCount (THGROUP_MAIN);
 
 	// retro thrusters
 	// note that we have to tilt retros slightly downwards to avoid inducing
 	// an angular momentum, since they are mounted below the level of CG.
 	// This also means that retros will induce an upward linear component.
-	th_retro[0] = CreateThruster (_V(-3,-0.236,5.6), _V(0,0.04210548,-0.99911317), MAX_RETRO_THRUST, ph_main, ISP, ISP*ispscale);
-	th_retro[1] = CreateThruster (_V( 3,-0.236,5.6), _V(0,0.04210548,-0.99911317), MAX_RETRO_THRUST, ph_main, ISP, ISP*ispscale);
+	th_retro[0] = CreateThruster ({-3,-0.236,5.6}, {0,0.04210548,-0.99911317}, MAX_RETRO_THRUST, ph_main, ISP, ISP*ispscale);
+	th_retro[1] = CreateThruster ({ 3,-0.236,5.6}, {0,0.04210548,-0.99911317}, MAX_RETRO_THRUST, ph_main, ISP, ISP*ispscale);
 	thg_retro = CreateThrusterGroup (th_retro, 2, THGROUP_RETRO);
 	EXHAUSTSPEC es_retro[2] = {{th_retro[0], NULL, NULL, NULL, 3, 0.4, 0, 0.1, NULL}, {th_retro[1], NULL, NULL, NULL, 3, 0.4, 0, 0.1, NULL}};
 	for (i = 0; i < 2; i++) AddExhaust (es_retro+i);
 
 	// hover thrusters
-	th_hover[0] = CreateThruster (_V(0,0,3), _V(0,1,0), MAX_HOVER_THRUST[modelidx], ph_main, ISP, ISP*ispscale);
-	th_hover[1] = CreateThruster (_V(-3,0,-4.55), _V(0,1,0), 3.0/4.55*0.5*MAX_HOVER_THRUST[modelidx], ph_main, ISP, ISP*ispscale);
-	th_hover[2] = CreateThruster (_V( 3,0,-4.55), _V(0,1,0), 3.0/4.55*0.5*MAX_HOVER_THRUST[modelidx], ph_main, ISP, ISP*ispscale);
+	th_hover[0] = CreateThruster ({0,0,3}, {0,1,0}, MAX_HOVER_THRUST[modelidx], ph_main, ISP, ISP*ispscale);
+	th_hover[1] = CreateThruster ({-3,0,-4.55}, {0,1,0}, 3.0/4.55*0.5*MAX_HOVER_THRUST[modelidx], ph_main, ISP, ISP*ispscale);
+	th_hover[2] = CreateThruster ({ 3,0,-4.55}, {0,1,0}, 3.0/4.55*0.5*MAX_HOVER_THRUST[modelidx], ph_main, ISP, ISP*ispscale);
 	thg_hover = CreateThrusterGroup (th_hover, 3, THGROUP_HOVER);
 	VECTOR3 hoverp0 = {0,-1.5, 3}, hoverp1 = {-3,-1.3,-4.55}, hoverp2 = {3,-1.3,-4.55}, hoverd = {0,1,0};
 	EXHAUSTSPEC es_hover[3] = {
@@ -982,92 +982,92 @@ void DeltaGlider::clbkSetClassCaps (FILEHANDLE cfg)
 		{th_hover[2], NULL, &hoverp2, &hoverd, 6, 0.5, 0, 0.1, NULL, EXHAUST_CONSTANTPOS|EXHAUST_CONSTANTDIR}
 	};
 	for (i = 0; i < 3; i++) AddExhaust (es_hover+i);
-	AddExhaustStream (th_hover[0], _V(0,-4,0), &contrail);
-	AddExhaustStream (th_hover[0], _V(0,-2,3), &exhaust_hover);
-	AddExhaustStream (th_hover[1], _V(-3,-2,-4.55), &exhaust_hover);
-	AddExhaustStream (th_hover[2], _V( 3,-2,-4.55), &exhaust_hover);
+	AddExhaustStream (th_hover[0], {0,-4,0}, &contrail);
+	AddExhaustStream (th_hover[0], {0,-2,3}, &exhaust_hover);
+	AddExhaustStream (th_hover[1], {-3,-2,-4.55}, &exhaust_hover);
+	AddExhaustStream (th_hover[2], { 3,-2,-4.55}, &exhaust_hover);
 
 	// set of attitude thrusters (idealised). The arrangement is such that no angular
 	// momentum is created in linear mode, and no linear momentum is created in rotational mode.
 	THRUSTER_HANDLE th_att_rot[4], th_att_lin[4];
-	th_att_rot[0] = th_att_lin[0] = CreateThruster (_V(0,0, 8), _V(0, 1,0), MAX_RCS_THRUST, ph_rcs, ISP);
-	th_att_rot[1] = th_att_lin[3] = CreateThruster (_V(0,0,-8), _V(0,-1,0), MAX_RCS_THRUST, ph_rcs, ISP);
-	th_att_rot[2] = th_att_lin[2] = CreateThruster (_V(0,0, 8), _V(0,-1,0), MAX_RCS_THRUST, ph_rcs, ISP);
-	th_att_rot[3] = th_att_lin[1] = CreateThruster (_V(0,0,-8), _V(0, 1,0), MAX_RCS_THRUST, ph_rcs, ISP);
+	th_att_rot[0] = th_att_lin[0] = CreateThruster ({0,0, 8}, {0, 1,0}, MAX_RCS_THRUST, ph_rcs, ISP);
+	th_att_rot[1] = th_att_lin[3] = CreateThruster ({0,0,-8}, {0,-1,0}, MAX_RCS_THRUST, ph_rcs, ISP);
+	th_att_rot[2] = th_att_lin[2] = CreateThruster ({0,0, 8}, {0,-1,0}, MAX_RCS_THRUST, ph_rcs, ISP);
+	th_att_rot[3] = th_att_lin[1] = CreateThruster ({0,0,-8}, {0, 1,0}, MAX_RCS_THRUST, ph_rcs, ISP);
 	CreateThrusterGroup (th_att_rot,   2, THGROUP_ATT_PITCHUP);
 	CreateThrusterGroup (th_att_rot+2, 2, THGROUP_ATT_PITCHDOWN);
 	CreateThrusterGroup (th_att_lin,   2, THGROUP_ATT_UP);
 	CreateThrusterGroup (th_att_lin+2, 2, THGROUP_ATT_DOWN);
-	AddExhaust (th_att_rot[0], 0.6,  0.078, _V( -0.816081, -0.616431, 9.594813 ), _V(0,-1,0));
-	AddExhaust (th_att_rot[0], 0.6,  0.078, _V( 0.816081, -0.616431, 9.594813 ), _V(0,-1,0));
-	AddExhaust (th_att_rot[1], 0.79, 0.103, _V( -0.120063, 0.409999, -7.357354 ), _V(0, 1,0));
-	AddExhaust (th_att_rot[1], 0.79, 0.103, _V( 0.120063, 0.409999, -7.357354 ), _V(0, 1,0));
-	AddExhaust (th_att_rot[2], 0.6,  0.078, _V( -0.816081, -0.35857, 9.594813 ), _V(0, 1,0));
-	AddExhaust (th_att_rot[2], 0.6,  0.078, _V( 0.816081, -0.35857, 9.594813 ), _V(0, 1,0));
-	AddExhaust (th_att_rot[3], 0.79, 0.103, _V( -0.120063, -0.409999, -7.357354 ), _V(0,-1,0));
-	AddExhaust (th_att_rot[3], 0.79, 0.103, _V( 0.120063, -0.409999, -7.357354 ), _V(0,-1,0));
+	AddExhaust (th_att_rot[0], 0.6,  0.078, { -0.816081, -0.616431, 9.594813 }, {0,-1,0});
+	AddExhaust (th_att_rot[0], 0.6,  0.078, { 0.816081, -0.616431, 9.594813 }, {0,-1,0});
+	AddExhaust (th_att_rot[1], 0.79, 0.103, { -0.120063, 0.409999, -7.357354 }, {0, 1,0});
+	AddExhaust (th_att_rot[1], 0.79, 0.103, { 0.120063, 0.409999, -7.357354 }, {0, 1,0});
+	AddExhaust (th_att_rot[2], 0.6,  0.078, { -0.816081, -0.35857, 9.594813 }, {0, 1,0});
+	AddExhaust (th_att_rot[2], 0.6,  0.078, { 0.816081, -0.35857, 9.594813 }, {0, 1,0});
+	AddExhaust (th_att_rot[3], 0.79, 0.103, { -0.120063, -0.409999, -7.357354 }, {0,-1,0});
+	AddExhaust (th_att_rot[3], 0.79, 0.103, { 0.120063, -0.409999, -7.357354 }, {0,-1,0});
 
-	th_att_rot[0] = th_att_lin[0] = CreateThruster (_V(0,0, 6), _V(-1,0,0), MAX_RCS_THRUST, ph_rcs, ISP);
-	th_att_rot[1] = th_att_lin[3] = CreateThruster (_V(0,0,-6), _V( 1,0,0), MAX_RCS_THRUST, ph_rcs, ISP);
-	th_att_rot[2] = th_att_lin[2] = CreateThruster (_V(0,0, 6), _V( 1,0,0), MAX_RCS_THRUST, ph_rcs, ISP);
-	th_att_rot[3] = th_att_lin[1] = CreateThruster (_V(0,0,-6), _V(-1,0,0), MAX_RCS_THRUST, ph_rcs, ISP);
+	th_att_rot[0] = th_att_lin[0] = CreateThruster ({0,0, 6}, {-1,0,0}, MAX_RCS_THRUST, ph_rcs, ISP);
+	th_att_rot[1] = th_att_lin[3] = CreateThruster ({0,0,-6}, { 1,0,0}, MAX_RCS_THRUST, ph_rcs, ISP);
+	th_att_rot[2] = th_att_lin[2] = CreateThruster ({0,0, 6}, { 1,0,0}, MAX_RCS_THRUST, ph_rcs, ISP);
+	th_att_rot[3] = th_att_lin[1] = CreateThruster ({0,0,-6}, {-1,0,0}, MAX_RCS_THRUST, ph_rcs, ISP);
 	CreateThrusterGroup (th_att_rot,   2, THGROUP_ATT_YAWLEFT);
 	CreateThrusterGroup (th_att_rot+2, 2, THGROUP_ATT_YAWRIGHT);
 	CreateThrusterGroup (th_att_lin,   2, THGROUP_ATT_LEFT);
 	CreateThrusterGroup (th_att_lin+2, 2, THGROUP_ATT_RIGHT);
-	AddExhaust (th_att_rot[0], 0.6,  0.078, _V( 0.888971, -0.488177, 9.3408 ), _V(1,0,0));
-	AddExhaust (th_att_rot[1], 0.94, 0.122, _V( -2.029295, 0.182903, -6.043046 ), _V(-1,0,0));
-	AddExhaust (th_att_rot[2], 0.6,  0.078, _V( -0.888971, -0.488177, 9.3408 ), _V(-1,0,0));
-	AddExhaust (th_att_rot[3], 0.94, 0.122, _V( 2.029295, 0.182903, -6.043046 ), _V(1,0,0));
+	AddExhaust (th_att_rot[0], 0.6,  0.078, { 0.888971, -0.488177, 9.3408 }, {1,0,0});
+	AddExhaust (th_att_rot[1], 0.94, 0.122, { -2.029295, 0.182903, -6.043046 }, {-1,0,0});
+	AddExhaust (th_att_rot[2], 0.6,  0.078, { -0.888971, -0.488177, 9.3408 }, {-1,0,0});
+	AddExhaust (th_att_rot[3], 0.94, 0.122, { 2.029295, 0.182903, -6.043046 }, {1,0,0});
 
-	th_att_rot[0] = CreateThruster (_V( 6,0,0), _V(0, 1,0), MAX_RCS_THRUST, ph_rcs, ISP);
-	th_att_rot[1] = CreateThruster (_V(-6,0,0), _V(0,-1,0), MAX_RCS_THRUST, ph_rcs, ISP);
-	th_att_rot[2] = CreateThruster (_V(-6,0,0), _V(0, 1,0), MAX_RCS_THRUST, ph_rcs, ISP);
-	th_att_rot[3] = CreateThruster (_V( 6,0,0), _V(0,-1,0), MAX_RCS_THRUST, ph_rcs, ISP);
+	th_att_rot[0] = CreateThruster ({ 6,0,0}, {0, 1,0}, MAX_RCS_THRUST, ph_rcs, ISP);
+	th_att_rot[1] = CreateThruster ({-6,0,0}, {0,-1,0}, MAX_RCS_THRUST, ph_rcs, ISP);
+	th_att_rot[2] = CreateThruster ({-6,0,0}, {0, 1,0}, MAX_RCS_THRUST, ph_rcs, ISP);
+	th_att_rot[3] = CreateThruster ({ 6,0,0}, {0,-1,0}, MAX_RCS_THRUST, ph_rcs, ISP);
 	CreateThrusterGroup (th_att_rot, 2, THGROUP_ATT_BANKLEFT);
 	CreateThrusterGroup (th_att_rot+2, 2, THGROUP_ATT_BANKRIGHT);
-	AddExhaust (th_att_rot[0], 1.03, 0.134, _V( -5.121185, -0.073903, 0.375386 ), _V(0, 1,0));
-	AddExhaust (th_att_rot[1], 1.03, 0.134, _V( 5.121185, -0.654322, 0.375386 ), _V(0,-1,0));
-	AddExhaust (th_att_rot[2], 1.03, 0.134, _V( 5.121185, -0.073903, 0.375386 ), _V(0, 1,0));
-	AddExhaust (th_att_rot[3], 1.03, 0.134, _V( -5.121185, -0.654322, 0.375386 ), _V(0,-1,0));
+	AddExhaust (th_att_rot[0], 1.03, 0.134, { -5.121185, -0.073903, 0.375386 }, {0, 1,0});
+	AddExhaust (th_att_rot[1], 1.03, 0.134, { 5.121185, -0.654322, 0.375386 }, {0,-1,0});
+	AddExhaust (th_att_rot[2], 1.03, 0.134, { 5.121185, -0.073903, 0.375386 }, {0, 1,0});
+	AddExhaust (th_att_rot[3], 1.03, 0.134, { -5.121185, -0.654322, 0.375386 }, {0,-1,0});
 
-	th_att_lin[0] = CreateThruster (_V(0,0,-7), _V(0,0, 1), 2*MAX_RCS_THRUST, ph_rcs, ISP);
-	th_att_lin[1] = CreateThruster (_V(0,0, 7), _V(0,0,-1), 2*MAX_RCS_THRUST, ph_rcs, ISP);
+	th_att_lin[0] = CreateThruster ({0,0,-7}, {0,0, 1}, 2*MAX_RCS_THRUST, ph_rcs, ISP);
+	th_att_lin[1] = CreateThruster ({0,0, 7}, {0,0,-1}, 2*MAX_RCS_THRUST, ph_rcs, ISP);
 	CreateThrusterGroup (th_att_lin,   1, THGROUP_ATT_FORWARD);
 	CreateThrusterGroup (th_att_lin+1, 1, THGROUP_ATT_BACK);
-	AddExhaust (th_att_lin[0], 0.6, 0.078, _V( 0.0, -0.228914, -7.462329 ), _V(0,0,-1));
-	AddExhaust (th_att_lin[0], 0.6, 0.078, _V( 0.0, 0.229, -7.462329 ), _V(0,0,-1));
-	AddExhaust (th_att_lin[1], 0.6, 0.078, _V( -0.817096, -0.488177, 9.729635 ), _V(0,0,1));
-	AddExhaust (th_att_lin[1], 0.6, 0.078, _V( 0.817096, -0.488177, 9.729635 ), _V(0,0,1));
+	AddExhaust (th_att_lin[0], 0.6, 0.078, { 0.0, -0.228914, -7.462329 }, {0,0,-1});
+	AddExhaust (th_att_lin[0], 0.6, 0.078, { 0.0, 0.229, -7.462329 }, {0,0,-1});
+	AddExhaust (th_att_lin[1], 0.6, 0.078, { -0.817096, -0.488177, 9.729635 }, {0,0,1});
+	AddExhaust (th_att_lin[1], 0.6, 0.078, { 0.817096, -0.488177, 9.729635 }, {0,0,1});
 
 	COLOUR4 col_d = {0.9,0.8,1,0};
 	COLOUR4 col_s = {1.9,0.8,1,0};
 	COLOUR4 col_a = {0,0,0,0};
 	COLOUR4 col_white = {1,1,1,0};
-	LightEmitter *le = AddPointLight (_V(0,0,-10), 200, 1e-3, 0, 2e-3, col_d, col_s, col_a);
+	LightEmitter *le = AddPointLight ({0,0,-10}, 200, 1e-3, 0, 2e-3, col_d, col_s, col_a);
 	le->SetIntensityRef (&th_main_level);
 
 	// ********************* aerodynamics ***********************
 
-	hwing = CreateAirfoil3 (LIFT_VERTICAL, _V(0,0,-0.3), VLiftCoeff, 0, 5, 90, 1.5);
+	hwing = CreateAirfoil3 (LIFT_VERTICAL, {0,0,-0.3}, VLiftCoeff, 0, 5, 90, 1.5);
 	// wing and body lift+drag components
 
-	CreateAirfoil3 (LIFT_HORIZONTAL, _V(0,0,-4), HLiftCoeff, 0, 5, 15, 1.5);
+	CreateAirfoil3 (LIFT_HORIZONTAL, {0,0,-4}, HLiftCoeff, 0, 5, 15, 1.5);
 	// vertical stabiliser and body lift and drag components
 
-	CreateControlSurface3 (AIRCTRL_ELEVATOR,     1.4, 1.7, _V(   0,0,-7.2), AIRCTRL_AXIS_XPOS, 1.0, anim_elevator);
-	CreateControlSurface3 (AIRCTRL_RUDDER,       0.8, 1.7, _V(   0,0,-7.2), AIRCTRL_AXIS_YPOS, 1.0, anim_rudder);
-	hlaileron = CreateControlSurface3 (AIRCTRL_AILERON, 0.3, 1.7, _V( 7.5,0,-7.2), AIRCTRL_AXIS_XPOS, 1.0, anim_raileron);
-	hraileron = CreateControlSurface3 (AIRCTRL_AILERON, 0.3, 1.7, _V(-7.5,0,-7.2), AIRCTRL_AXIS_XNEG, 1.0, anim_laileron);
-	CreateControlSurface3 (AIRCTRL_ELEVATORTRIM, 0.3, 1.7, _V(   0,0,-7.2), AIRCTRL_AXIS_XPOS, 1.0, anim_elevatortrim);
+	CreateControlSurface3 (AIRCTRL_ELEVATOR,     1.4, 1.7, {   0,0,-7.2}, AIRCTRL_AXIS_XPOS, 1.0, anim_elevator);
+	CreateControlSurface3 (AIRCTRL_RUDDER,       0.8, 1.7, {   0,0,-7.2}, AIRCTRL_AXIS_YPOS, 1.0, anim_rudder);
+	hlaileron = CreateControlSurface3 (AIRCTRL_AILERON, 0.3, 1.7, { 7.5,0,-7.2}, AIRCTRL_AXIS_XPOS, 1.0, anim_raileron);
+	hraileron = CreateControlSurface3 (AIRCTRL_AILERON, 0.3, 1.7, {-7.5,0,-7.2}, AIRCTRL_AXIS_XNEG, 1.0, anim_laileron);
+	CreateControlSurface3 (AIRCTRL_ELEVATORTRIM, 0.3, 1.7, {   0,0,-7.2}, AIRCTRL_AXIS_XPOS, 1.0, anim_elevatortrim);
 
-	CreateVariableDragElement (ssys_gear->GearState().StatePtr(), 0.8, _V(0, -1, 0));     // landing gear
-	CreateVariableDragElement (ssys_mainretro->RetroCoverState().StatePtr(), 0.2, _V(0,-0.5,6.5)); // retro covers
-	CreateVariableDragElement (ssys_docking->NconeState().StatePtr(), 3, _V(0, 0, 8));        // nose cone
-	CreateVariableDragElement (ssys_thermal->RadiatorState().StatePtr(), 1, _V(0,1.5,-4));   // radiator
-	CreateVariableDragElement (ssys_aerodyn->AirbrakeState().StatePtr(), 4, _V(0,0,-8));        // airbrake
+	CreateVariableDragElement (ssys_gear->GearState().StatePtr(), 0.8, {0, -1, 0});     // landing gear
+	CreateVariableDragElement (ssys_mainretro->RetroCoverState().StatePtr(), 0.2, {0,-0.5,6.5}); // retro covers
+	CreateVariableDragElement (ssys_docking->NconeState().StatePtr(), 3, {0, 0, 8});        // nose cone
+	CreateVariableDragElement (ssys_thermal->RadiatorState().StatePtr(), 1, {0,1.5,-4});   // radiator
+	CreateVariableDragElement (ssys_aerodyn->AirbrakeState().StatePtr(), 4, {0,0,-8});        // airbrake
 
-	SetRotDrag (_V(0.10,0.13,0.04));
+	SetRotDrag ({0.10,0.13,0.04});
 	// angular damping
 
 	// ************************* mesh ***************************
@@ -1339,7 +1339,7 @@ void DeltaGlider::clbkPostStep (double simt, double simdt, double mjd)
 
 bool DeltaGlider::clbkLoadGenericCockpit ()
 {
-	SetCameraOffset (_V(0,1.467,6.782));
+	SetCameraOffset ({0,1.467,6.782});
 	oapiSetDefNavDisplay (1);
 	oapiSetDefRCSDisplay (1);
 	campos = CAM_GENERIC;
@@ -1360,14 +1360,14 @@ bool DeltaGlider::clbkLoadPanel2D (int id, PANELHANDLE hPanel, DWORD viewW, DWOR
 		DefinePanelMain (hPanel);
 		SetPanelScale (hPanel, viewW, viewH);
 		oapiSetPanelNeighbours (-1,-1,1,-1);
-		SetCameraDefaultDirection (_V(0,0,1)); // forward
+		SetCameraDefaultDirection ({0,0,1}); // forward
 		oapiCameraSetCockpitDir (0,0);         // look forward
 		return true;
 	case 1:
 		DefinePanelOverhead (hPanel);
 		SetPanelScale (hPanel, viewW, viewH);
 		oapiSetPanelNeighbours (-1,-1,-1,0);
-		SetCameraDefaultDirection (_V(0,0,1)); // forward
+		SetCameraDefaultDirection ({0,0,1}); // forward
 		oapiCameraSetCockpitDir (0,20*RAD);    // look up
 		return true;
 	default:
@@ -1454,15 +1454,15 @@ bool DeltaGlider::clbkLoadVC (int id)
 
 	InitVC (id);
 
-	SetCameraDefaultDirection (_V(0,0,1)); // forward
+	SetCameraDefaultDirection ({0,0,1}); // forward
 	oapiVCRegisterHUD (&huds); // HUD parameters
 	oapiVCRegisterMFD (MFD_LEFT, &mfds_left);   // left MFD
 	oapiVCRegisterMFD (MFD_RIGHT, &mfds_right); // right MFD
 
 	switch (id) {
 	case 0: // pilot
-		SetCameraOffset (_V(0,1.467,6.782));
-		SetCameraShiftRange (_V(0,0,0.1), _V(-0.2,0,0), _V(0.2,0,0));
+		SetCameraOffset ({0,1.467,6.782});
+		SetCameraShiftRange ({0,0,0.1}, {-0.2,0,0}, {0.2,0,0});
 		oapiVCSetNeighbours (1, 2, -1, -1);
 
 		// main/retro/hover engine indicators
@@ -1480,29 +1480,29 @@ bool DeltaGlider::clbkLoadVC (int id)
 		break;
 
 	case 1: // front left passenger
-		SetCameraOffset (_V(-0.7, 1.15, 5.55));
-		SetCameraMovement (_V(0.2,-0.05,0.3), -10*RAD, 10*RAD, _V(-0.3,0,0), 80*RAD, 0, _V(0.4,0,0), -90*RAD, 0);
+		SetCameraOffset ({-0.7, 1.15, 5.55});
+		SetCameraMovement ({0.2,-0.05,0.3}, -10*RAD, 10*RAD, {-0.3,0,0}, 80*RAD, 0, {0.4,0,0}, -90*RAD, 0);
 		oapiVCSetNeighbours (-1, 2, 0, 3);
 		campos = CAM_VCPSNGR1;
 		break;
 
 	case 2: // front right passenger
-		SetCameraOffset (_V(0.7, 1.15, 5.55));
-		SetCameraMovement (_V(-0.2,-0.05,0.3), 10*RAD, 10*RAD, _V(-0.4,0,0), 90*RAD, 0, _V(0.3,0,0), -80*RAD, 0);
+		SetCameraOffset ({0.7, 1.15, 5.55});
+		SetCameraMovement ({-0.2,-0.05,0.3}, 10*RAD, 10*RAD, {-0.4,0,0}, 90*RAD, 0, {0.3,0,0}, -80*RAD, 0);
 		oapiVCSetNeighbours (1, -1, 0, 4);
 		campos = CAM_VCPSNGR2;
 		break;
 
 	case 3: // rear left passenger
-		SetCameraOffset (_V(-0.8, 1.2, 4.4));
-		SetCameraMovement (_V(0.4,0,0), 0, 0, _V(-0.3,0,0), 70*RAD, 0, _V(0.4,0,0), -90*RAD, 0);
+		SetCameraOffset ({-0.8, 1.2, 4.4});
+		SetCameraMovement ({0.4,0,0}, 0, 0, {-0.3,0,0}, 70*RAD, 0, {0.4,0,0}, -90*RAD, 0);
 		oapiVCSetNeighbours (-1, 4, 1, -1);
 		campos = CAM_VCPSNGR3;
 		break;
 
 	case 4: // rear right passenger
-		SetCameraOffset (_V(0.8, 1.2, 4.4));
-		SetCameraMovement (_V(-0.4,0,0), 0, 0, _V(-0.4,0,0), 90*RAD, 0, _V(0.3,0,0), -70*RAD, 0);
+		SetCameraOffset ({0.8, 1.2, 4.4});
+		SetCameraMovement ({-0.4,0,0}, 0, 0, {-0.4,0,0}, 90*RAD, 0, {0.3,0,0}, -70*RAD, 0);
 		oapiVCSetNeighbours (3, -1, 2, -1);
 		campos = CAM_VCPSNGR4;
 		break;

@@ -55,7 +55,8 @@ Instrument_Transfer::Instrument_Transfer (Pane *_pane, INT_PTR _id, const Spec &
 	hto_a = 0.0;
 	nstep = 2000; // should be variable
 	step_scale = 10.0;
-	path = new Vector[nstep]; TRACENEW
+	// TODO: re-write without using raw pointers
+	path = new VECTOR3[nstep]; TRACENEW
 	pathp = new oapi::IVECTOR2[100]; TRACENEW
 	process_num = false;
 
@@ -109,7 +110,7 @@ void Instrument_Transfer::UpdateDraw (oapi::Sketchpad *skp)
 	int y, x0 = cw/2, x1 = IW-12*cw, y0 = 1+(ch*3)/2;
 	double scale; // scaling factor for orbit display
 	const Elements *tgtel, *workel;
-	Vector sp, sv;
+	VECTOR3 sp, sv;
 	Matrix rot2, *workr;
 	oapi::IVECTOR2 pt[ELN+5], p0;
 	double p1, p2, A, B, C, d, p, q, arg, sinr, cosr, rlng;
@@ -122,8 +123,8 @@ void Instrument_Transfer::UpdateDraw (oapi::Sketchpad *skp)
 
 	// sanity checks
 	if (elref) {
-		sp.Set (src->GPos()-elref->GPos());	// ship in planet coords
-		sv.Set (src->GVel()-elref->GVel());
+		sp = src->GPos() - elref->GPos();	// ship in planet coords
+		sv = src->GVel() - elref->GVel();
 		shpel->Calculate (sp, sv, td.SimT1);
 		bValid = true;
 	} else bValid = false;
@@ -161,7 +162,7 @@ void Instrument_Transfer::UpdateDraw (oapi::Sketchpad *skp)
 	// ship -> src location indicator
 	if (src != vessel) {
 		int x, y;
-		Vector dp (mul (irot, vessel->GPos() - src->GPos()));
+		VECTOR3 dp = mul(irot, vessel->GPos() - src->GPos());
 		double r = std::hypot (dp.x, dp.z);
 		x = (int)(IW*0.1/r*dp.x);
 		y = (int)(IW*0.1/r*dp.z);
@@ -230,7 +231,7 @@ void Instrument_Transfer::UpdateDraw (oapi::Sketchpad *skp)
 			cosr = cos(rlng);
 			// resolve ambiguity in sine
 			if (fabs (A*cosr + B*sinr + C) > fabs (-A*cosr + B*sinr + C)) rlng = Pi-rlng, cosr = -cosr;
-			Vector v(mul (*workr, Vector(cosr, 0.0, sinr)));
+			VECTOR3 v = mul(*workr, VECTOR3{cosr, 0, sinr});
 			skp->SetPen (draw[2][1].solidpen);
 			skp->Line (ICNTX, ICNTY, ICNTX+(int)(v.x*pixrad), ICNTY-(int)(v.z*pixrad));
 
@@ -249,7 +250,7 @@ void Instrument_Transfer::UpdateDraw (oapi::Sketchpad *skp)
 			// target postition at intersect time
 			tanm = tgtel->TrueAnomaly (tgtel->MeanAnomaly (td.SimT1+dt0));
 			tlng = tanm + tgtel->omegab;
-			v.Set (mul (rot2, Vector (cos(tanm), 0.0, sin(tanm))));
+			v = mul(rot2, VECTOR3{std::cos(tanm), 0.0, std::sin(tanm)});
 			skp->SetPen (draw[1][1].dashpen);
 			skp->Line (ICNTX, ICNTY, ICNTX+(int)(v.x*pixrad), ICNTY-(int)(v.z*pixrad));
 		} else {
@@ -325,12 +326,10 @@ void Instrument_Transfer::UpdateDraw (oapi::Sketchpad *skp)
 
 	if (bTarget) {
 		// normals of the two orbital planes
-		Vector nm1 = crossp (sv, sp);
-		Vector nm2 = crossp (tgt->GVel()-elref->GVel(), tgt->GPos()-elref->GPos());
-		nm1.unify();
-		nm2.unify();
+		VECTOR3 nm1 = unit(cross(sv, sp));
+		VECTOR3 nm2 = unit(cross(tgt->GVel() - elref->GVel(), tgt->GPos() - elref->GPos()));
 		// relative inclination between ship's and target's orbital planes
-		double reli = xangle (nm1, nm2);
+		double reli = angle(nm1, nm2);
 
 		// relative inclination ship orbit <-> target orbit
 		skp->SetTextColor (draw[reli < RAD*1.0 ? 0:1][1].col);
@@ -356,19 +355,19 @@ void Instrument_Transfer::DisplayOrbit (oapi::Sketchpad *skp, oapi::IVECTOR2 *p)
 double Instrument_Transfer::CalcElements (const Elements *el1, Elements *el2, double lng, double a)
 {
 	// first calculate pos & vel of orbit el1 at ejection point
-	Vector P, V;
+	VECTOR3 P, V;
 	double ta = l_eject - el1->omegab; // true anomaly at ejection point
 	el1->PosVel_TA (P, V, ta);
 
 	// add thrust
 	double dv;
 	if (a) { // rescale deltav so as to maintain a
-		double ip2 = 2.0/P.length();
+		double ip2 = 2.0 / len(P);
 		dv = sqrt (el1->Mu() * (ip2 - 1.0/a)) - sqrt (el1->Mu() * (ip2 - 1.0/el1->a));
-		V *= 1.0 + dv/V.length();
+		V *= 1.0 + dv / len(V);
 	} else { // rescale a so as to maintain deltav
 		dv = deltav;
-		V *= 1.0 + dv/V.length();
+		V *= 1.0 + dv / len(V);
 	}
 
 	// calculate new elements
@@ -378,11 +377,11 @@ double Instrument_Transfer::CalcElements (const Elements *el1, Elements *el2, do
 
 bool Instrument_Transfer::CalcStep ()
 {
-	Vector refpos, a0, a1, a2, v1, v2;
+	VECTOR3 refpos, a0, a1, a2, v1, v2;
 	double tstep, tstep_i2, tstep_i6, tb, tc;
 
 	a0 = g_psys->GaccAt (step_t, step_gpos, src);
-	tstep = step_scale/a0.length();
+	tstep = step_scale / len(a0);
 	tstep_i2 = tstep*0.5;
 	tstep_i6 = tstep/6.0;
 	tb = step_t + tstep_i2;
@@ -402,7 +401,7 @@ bool Instrument_Transfer::CalcStep ()
 
 bool Instrument_Transfer::InitNumTrajectory (const Elements *el)
 {
-	Vector refpos, refvel, pos, vel;
+	VECTOR3 refpos, refvel, pos, vel;
 	step_t = step_0 = td.SimT0;
 	if (elref->Type() == OBJTP_PLANET) 
 		if (!((Planet*)elref)->PosVelAtTime (td.SimT0, &refpos, &refvel))
@@ -627,8 +626,9 @@ bool Instrument_Transfer::SetNstep (int np)
 {
 	if (np < 2) return false;
 	if (np == nstep) return true; // nothing to do
-	Vector *path_tmp = new Vector[np]; TRACENEW
-	memcpy (path_tmp, path, min (np, nstep)*sizeof(Vector));
+	// TODO: re-write without using raw pointers
+	VECTOR3 *path_tmp = new VECTOR3[np]; TRACENEW
+	memcpy (path_tmp, path, min (np, nstep)*sizeof(VECTOR3));
 	delete []path;
 	path = path_tmp;
 	if (enable_num && np > nstep)

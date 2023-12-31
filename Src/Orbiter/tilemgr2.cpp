@@ -117,17 +117,17 @@ bool Tile::InView (const MATRIX4 &transform)
 // returns the direction of the tile centre from the planet centre in local
 // planet coordinates
 
-Vector Tile::Centre () const
+VECTOR3 Tile::Centre () const
 {
 	if (lvl >= 0) {
 		int nlat = 1 << lvl;
 		int nlng = 2 << lvl;
 		double cntlat = Pi05 - Pi * ((double)ilat + 0.5) / (double)nlat, slat = sin(cntlat), clat = cos(cntlat);
 		double cntlng = Pi2  * ((double)ilng + 0.5) / (double)nlng + Pi, slng = sin(cntlng), clng = cos(cntlng);
-		return Vector(clat*clng, slat, clat*slng);
+		return {clat * clng, slat, clat * slng};
 	}
 	else {
-		return Vector(1.0, 0.0, 0.0);
+		return {1, 0, 0};
 	}
 }
 
@@ -149,7 +149,7 @@ void Tile::Extents (double *latmin, double *latmax, double *lngmin, double *lngm
 // -----------------------------------------------------------------------
 
 VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double elev_scale, double globelev,
-	const TEXCRDRANGE2 *range, bool shift_origin, Vector *shift, double bb_excess)
+	const TEXCRDRANGE2 *range, bool shift_origin, VECTOR3 *shift, double bb_excess)
 {
 	const float TEX2_MULTIPLIER = 4.0f; // was: 16.0f
 	const float c1 = 1.0f, c2 = 0.0f;   // -1.0f/512.0f; // assumes 256x256 texture patches
@@ -164,7 +164,7 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 	double minlng = 0;
 	double maxlng = Pi2/(double)nlng;
 	double radius = (mgr->Cbody() ? mgr->Cbody()->Size() : 1.0);
-	Vector pos, tpos, nml;
+	VECTOR3 pos, tpos, nml;
 	if (!range) range = &fullrange;
 	float turange = range->tumax-range->tumin;
 	float tvrange = range->tvmax-range->tvmin;
@@ -182,12 +182,12 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 	double clng0 = cos(minlng), slng0 = sin(minlng);
 	double clat1 = cos(maxlat), slat1 = sin(maxlat);
 	double clng1 = cos(maxlng), slng1 = sin(maxlng);
-	Vector ex(clat0*clng1 - clat0*clng0, 0, clat0*slng1 - clat0*slng0); ex.unify();
-	Vector ey(0.5*(clng0+clng1)*(clat1-clat0), slat1-slat0, 0.5*(slng0+slng1)*(clat1-clat0)); ey.unify();
-	Vector ez(crossp (ey, ex));
+	auto ex = unit(VECTOR3{clat0 * clng1 - clat0 * clng0, 0, clat0 * slng1 - clat0 * slng0});
+	auto ey = unit(VECTOR3{0.5 * (clng0 + clng1) * (clat1 - clat0), slat1 - slat0, 0.5 * (slng0 + slng1) * (clat1 - clat0)});
+	auto ez = cross(ey, ex);
 	Matrix R(ex.x, ex.y, ex.z,  ey.x, ey.y, ey.z,  ez.x, ez.y, ez.z);
-	Vector pref (radius*clat0*0.5*(clng1+clng0), radius*slat0, radius*clat0*0.5*(slng1+slng0)); // origin
-	Vector tpmin, tpmax; 
+	VECTOR3 pref{radius * clat0 * 0.5 * (clng1 + clng0), radius * slat0, radius * clat0 * 0.5 * (slng1 + slng0)}; // origin
+	VECTOR3 tpmin, tpmax; 
 
 	// patch translation vector
 	if (shift_origin) {
@@ -212,8 +212,8 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 
 			eradius = radius + globelev; // radius including node elevation
 			if (elev) eradius += (double)elev[(i+1)*TILE_ELEVSTRIDE + j+1]*elev_scale;
-			nml.Set (clat*clng, slat, clat*slng);
-			pos.Set (nml*eradius);
+			nml = {clat * clng, slat, clat * slng};
+			pos = nml * eradius;
 			tpos = mul (R, pos-pref);
 			if (!n) {
 				tpmin = tpos;
@@ -316,8 +316,10 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 #ifdef QUICK_NORMALS
 				// This version avoids the normalisation of the 4 intermediate face normals
 				// It's faster and doesn't seem to make much difference
-				Vector nml(2.0*dydz, dz*elev_scale*(elev[en-TILE_ELEVSTRIDE]-elev[en+TILE_ELEVSTRIDE]), dy*elev_scale*(elev[en-1]-elev[en+1]));
-				nml.unify();
+				auto nml = unit(VECTOR3{2.0 * dydz,
+                    dz * elev_scale * (elev[en - TILE_ELEVSTRIDE] - elev[en + TILE_ELEVSTRIDE]),
+                    dy * elev_scale * (elev[en - 1] - elev[en + 1])
+                });
 #else
 				double dy_dezp = -dy*(elev[en+1]-elev[en]);
 				double dy_dezm =  dy*(elev[en-1]-elev[en]);
@@ -370,14 +372,14 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 	pref.x -= dx;
 	pref.y -= dy;
 	mesh->bbvtx = new VECTOR4[8];
-	mesh->bbvtx[0] = MakeVECTOR4 (tmul (R, Vector(tpmin.x, tpmin.y, tpmin.z)) + pref);
-	mesh->bbvtx[1] = MakeVECTOR4 (tmul (R, Vector(tpmax.x, tpmin.y, tpmin.z)) + pref);
-	mesh->bbvtx[2] = MakeVECTOR4 (tmul (R, Vector(tpmin.x, tpmax.y, tpmin.z)) + pref);
-	mesh->bbvtx[3] = MakeVECTOR4 (tmul (R, Vector(tpmax.x, tpmax.y, tpmin.z)) + pref);
-	mesh->bbvtx[4] = MakeVECTOR4 (tmul (R, Vector(tpmin.x, tpmin.y, tpmax.z)) + pref);
-	mesh->bbvtx[5] = MakeVECTOR4 (tmul (R, Vector(tpmax.x, tpmin.y, tpmax.z)) + pref);
-	mesh->bbvtx[6] = MakeVECTOR4 (tmul (R, Vector(tpmin.x, tpmax.y, tpmax.z)) + pref);
-	mesh->bbvtx[7] = MakeVECTOR4 (tmul (R, Vector(tpmax.x, tpmax.y, tpmax.z)) + pref);
+	mesh->bbvtx[0] = MakeVECTOR4(tmul(R, VECTOR3{tpmin.x, tpmin.y, tpmin.z}) + pref);
+	mesh->bbvtx[1] = MakeVECTOR4(tmul(R, VECTOR3{tpmax.x, tpmin.y, tpmin.z}) + pref);
+	mesh->bbvtx[2] = MakeVECTOR4(tmul(R, VECTOR3{tpmin.x, tpmax.y, tpmin.z}) + pref);
+	mesh->bbvtx[3] = MakeVECTOR4(tmul(R, VECTOR3{tpmax.x, tpmax.y, tpmin.z}) + pref);
+	mesh->bbvtx[4] = MakeVECTOR4(tmul(R, VECTOR3{tpmin.x, tpmin.y, tpmax.z}) + pref);
+	mesh->bbvtx[5] = MakeVECTOR4(tmul(R, VECTOR3{tpmax.x, tpmin.y, tpmax.z}) + pref);
+	mesh->bbvtx[6] = MakeVECTOR4(tmul(R, VECTOR3{tpmin.x, tpmax.y, tpmax.z}) + pref);
+	mesh->bbvtx[7] = MakeVECTOR4(tmul(R, VECTOR3{tpmax.x, tpmax.y, tpmax.z}) + pref);
 
 	mesh->MapVertices (TileManager2Base::D3d(), TileManager2Base::Dev(), VB_MemFlag); // TODO
 	return mesh;
@@ -385,7 +387,7 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 
 // -----------------------------------------------------------------------
 
-VBMESH *Tile::CreateMesh_tripatch (int grd, INT16 *elev, bool shift_origin, Vector *shift)
+VBMESH *Tile::CreateMesh_tripatch (int grd, INT16 *elev, bool shift_origin, VECTOR3 *shift)
 {
 	int nlng = 2 << lvl;
 	int nlat = 1 << lvl;
@@ -402,7 +404,7 @@ VBMESH *Tile::CreateMesh_tripatch (int grd, INT16 *elev, bool shift_origin, Vect
 	double minlng = 0;
 	double maxlng = Pi2/(double)nlng;
 	double eradius, radius = mgr->cbody->Size();
-	Vector pos, tpos, nml;
+	VECTOR3 pos, tpos, nml;
 
 	int nvtx = (grd+1)*(grd+1) - ((grd+1)*grd)/2;
 	int nvtxbuf = nvtx + (grd+1)*2;
@@ -417,12 +419,12 @@ VBMESH *Tile::CreateMesh_tripatch (int grd, INT16 *elev, bool shift_origin, Vect
 	double clng0 = cos(minlng), slng0 = sin(minlng);
 	double clat1 = cos(maxlat), slat1 = sin(maxlat);
 	double clng1 = cos(maxlng), slng1 = sin(maxlng);
-	Vector ex(clat0*clng1 - clat0*clng0, 0, clat0*slng1 - clat0*slng0); ex.unify();
-	Vector ey(0.5*(clng0+clng1)*(clat1-clat0), slat1-slat0, 0.5*(slng0+slng1)*(clat1-clat0)); ey.unify();
-	Vector ez(crossp (ey, ex));
+	auto ex = unit(VECTOR3{clat0 * clng1 - clat0 * clng0, 0, clat0 * slng1 - clat0 * slng0});
+	auto ey = unit(VECTOR3{0.5 * (clng0 + clng1) * (clat1 - clat0), slat1 - slat0, 0.5 * (slng0 + slng1) * (clat1 - clat0)});
+	auto ez = cross(ey, ex);
 	Matrix R(ex.x, ex.y, ex.z,  ey.x, ey.y, ey.z,  ez.x, ez.y, ez.z);
-	Vector pref (radius*clat0*0.5*(clng1+clng0), radius*slat0, radius*clat0*0.5*(slng1+slng0)); // origin
-	Vector tpmin, tpmax; 
+	VECTOR3 pref{radius * clat0 * 0.5 * (clng1 + clng0), radius * slat0, radius * clat0 * 0.5 * (slng1 + slng0)}; // origin
+	VECTOR3 tpmin, tpmax; 
 
 	// patch translation vector
 	if (shift_origin) {
@@ -446,8 +448,8 @@ VBMESH *Tile::CreateMesh_tripatch (int grd, INT16 *elev, bool shift_origin, Vect
 			lng = (nseg ? minlng + (maxlng-minlng) * (double)j/(double)nseg : 0.0);
 			slng = sin(lng), clng = cos(lng);
 			eradius = radius; // TODO: elevation
-			nml.Set (clat*clng, slat, clat*slng);
-			pos.Set (nml * eradius);
+			nml = {clat * clng, slat, clat * slng};
+			pos = nml * eradius;
 			tpos = mul (R, pos-pref);
 			if (!n) {
 				tpmin = tpos;
@@ -528,14 +530,14 @@ VBMESH *Tile::CreateMesh_tripatch (int grd, INT16 *elev, bool shift_origin, Vect
 	pref.x -= dx;
 	pref.y -= dy;
 	mesh->bbvtx = new VECTOR4[8];
-	mesh->bbvtx[0] = MakeVECTOR4 (tmul (R, Vector(tpmin.x, tpmin.y, tpmin.z)) + pref);
-	mesh->bbvtx[1] = MakeVECTOR4 (tmul (R, Vector(tpmax.x, tpmin.y, tpmin.z)) + pref);
-	mesh->bbvtx[2] = MakeVECTOR4 (tmul (R, Vector(tpmin.x, tpmax.y, tpmin.z)) + pref);
-	mesh->bbvtx[3] = MakeVECTOR4 (tmul (R, Vector(tpmax.x, tpmax.y, tpmin.z)) + pref);
-	mesh->bbvtx[4] = MakeVECTOR4 (tmul (R, Vector(tpmin.x, tpmin.y, tpmax.z)) + pref);
-	mesh->bbvtx[5] = MakeVECTOR4 (tmul (R, Vector(tpmax.x, tpmin.y, tpmax.z)) + pref);
-	mesh->bbvtx[6] = MakeVECTOR4 (tmul (R, Vector(tpmin.x, tpmax.y, tpmax.z)) + pref);
-	mesh->bbvtx[7] = MakeVECTOR4 (tmul (R, Vector(tpmax.x, tpmax.y, tpmax.z)) + pref);
+	mesh->bbvtx[0] = MakeVECTOR4(tmul(R, VECTOR3{tpmin.x, tpmin.y, tpmin.z}) + pref);
+	mesh->bbvtx[1] = MakeVECTOR4(tmul(R, VECTOR3{tpmax.x, tpmin.y, tpmin.z}) + pref);
+	mesh->bbvtx[2] = MakeVECTOR4(tmul(R, VECTOR3{tpmin.x, tpmax.y, tpmin.z}) + pref);
+	mesh->bbvtx[3] = MakeVECTOR4(tmul(R, VECTOR3{tpmax.x, tpmax.y, tpmin.z}) + pref);
+	mesh->bbvtx[4] = MakeVECTOR4(tmul(R, VECTOR3{tpmin.x, tpmin.y, tpmax.z}) + pref);
+	mesh->bbvtx[5] = MakeVECTOR4(tmul(R, VECTOR3{tpmax.x, tpmin.y, tpmax.z}) + pref);
+	mesh->bbvtx[6] = MakeVECTOR4(tmul(R, VECTOR3{tpmin.x, tpmax.y, tpmax.z}) + pref);
+	mesh->bbvtx[7] = MakeVECTOR4(tmul(R, VECTOR3{tpmax.x, tpmax.y, tpmax.z}) + pref);
 
 	mesh->MapVertices (TileManager2<Tile>::d3d, TileManager2<Tile>::dev, VB_MemFlag);
 	return mesh;
@@ -548,7 +550,7 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, INT16 *elev, double globelev)
 	const int texres = 512;
 	double radius = mgr->cbody->Size() + globelev;
 	double eradius, slat, clat, slng, clng;
-	Vector pos, nml;
+	VECTOR3 pos, nml;
 
 	// Allocate memory for the vertices and indices
 	int         nVtx = (grd-1)*(grd+1)+2;
@@ -580,8 +582,8 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, INT16 *elev, double globelev)
 			slng = sin(lng), clng = cos(lng);
 			eradius = radius + globelev; // radius including node elevation
 			if (elev) eradius += (double)elev[(grd+1-y)*TILE_ELEVSTRIDE + x+1];
-			nml.Set (slat*clng, clat, slat*slng);
-			pos.Set (nml*eradius);
+			nml = {slat * clng, clat, slat * slng};
+			pos = nml * eradius;
 			vtx->x = D3DVAL(pos.x);  vtx->nx = D3DVAL(nml.x);
 			vtx->y = D3DVAL(pos.y);  vtx->ny = D3DVAL(nml.y);
 			vtx->z = D3DVAL(pos.z);  vtx->nz = D3DVAL(nml.z);
@@ -613,8 +615,8 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, INT16 *elev, double globelev)
 		for (x = 0; x < x2; x++) mn += (double)elev[TILE_ELEVSTRIDE*(grd+1) + x+1];
 		eradius += mn/x2;
 	}
-	nml.Set (0,1,0);
-	pos.Set (nml*eradius);
+	nml = {0, 1, 0};
+	pos = nml * eradius;
 	vtx->x = D3DVAL(pos.x);  vtx->nx = D3DVAL(nml.x);
 	vtx->y = D3DVAL(pos.y);  vtx->ny = D3DVAL(nml.y);
 	vtx->z = D3DVAL(pos.z);  vtx->nz = D3DVAL(nml.z);
@@ -631,8 +633,8 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, INT16 *elev, double globelev)
 		for (x = 0; x < x2; x++) mn += (double)elev[TILE_ELEVSTRIDE + x+1];
 		eradius += mn/x2;
 	}
-	nml.Set (0,-1,0);
-	pos.Set (nml*eradius);
+	nml = {0, -1, 0};
+	pos = nml * eradius;
 	vtx->x = D3DVAL(pos.x);  vtx->nx = D3DVAL(nml.x);
 	vtx->y = D3DVAL(pos.y);  vtx->ny = D3DVAL(nml.y);
 	vtx->z = D3DVAL(pos.z);  vtx->nz = D3DVAL(nml.z);
@@ -679,8 +681,10 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, INT16 *elev, double globelev)
 				if (!ilng) lng -= Pi;
 				slng = sin(lng), clng = cos(lng);
 				en = (grd+1-y)*TILE_ELEVSTRIDE + x+1;
-				Vector nml(2.0*dydz, dz*(elev[en-TILE_ELEVSTRIDE]-elev[en+TILE_ELEVSTRIDE]), dy*(elev[en-1]-elev[en+1]));
-				nml.unify();
+				auto nml = unit(VECTOR3{2.0 * dydz,
+                    dz * (elev[en - TILE_ELEVSTRIDE] - elev[en + TILE_ELEVSTRIDE]),
+                    dy * (elev[en - 1] - elev[en + 1])
+                });
 				// rotate into place
 				nx1 = nml.x*clat - nml.y*slat;
 				ny1 = nml.x*slat + nml.y*clat;
@@ -923,11 +927,11 @@ void TileManager2Base::SetRenderPrm (MATRIX4 &dwmat, double prerot, VPlanet *vbo
 		prm.cdist = vbody->CDist() / cbody->Size();               // camera distance from planet centre in units of planet radius
 	}
 	else {
-		prm.cpos.Set(Vector(0, 0, 0));
+		prm.cpos = {0, 0, 0};
 		prm.cdist = 0.0;
 	}
-	prm.cdir.Set (tmul (prm.grot, -prm.cpos.unit()));  // camera direction in local planet coords
-	prm.sdir.Set (tmul (prm.grot, -cbody->GPos().unit()));    // sun direction in local planet coords
+	prm.cdir = tmul(prm.grot, -unit(prm.cpos));  // camera direction in local planet coords
+	prm.sdir = tmul(prm.grot, -unit(cbody->GPos()));    // sun direction in local planet coords
 	prm.viewap = acos (rprm.horizon_minrad/(max (prm.cdist, 1.0+minalt)));
 	prm.scale = 1.0;
 	prm.fog = rprm.bFog;

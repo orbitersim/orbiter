@@ -8,6 +8,30 @@
 
 using namespace std;
 
+char *trim_string (char *cbuf)
+{
+	char *c;
+
+	// strip comments starting with ';'
+	for (c = cbuf; *c; c++) {
+		if (*c == ';') {
+			*c = '\0';
+			break;
+		}
+	}
+	// strip trailing white space
+	for (--c; c >= cbuf; c--) {
+		if (*c == ' ' || *c == '\t') *c = '\0';
+		else break;
+	}
+	// skip leading white space
+	for (c = cbuf; *c; c++)
+		if (*c != ' ' && *c != '\t') return c;
+
+	// should never get here
+	return c;
+}
+
 // =======================================================================
 // Class Triangle
 

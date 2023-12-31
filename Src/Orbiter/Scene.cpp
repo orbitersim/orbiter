@@ -292,7 +292,7 @@ void Scene::UpdateVisual (Body *body, Camera **camlist, int ncam)
 
 	for (i = 0; !vis && i < ncam; i++) {
 		Camera *cam = camlist[i];
-		double dist = body->GPos().dist (cam->GPos());
+		double dist = ::dist(body->GPos(), cam->GPos());
 		double apps = body->Size()/(dist*cam->TanAperture());
 		vis = (apps > body->VisLimit());
 #ifdef UNDEF
@@ -501,7 +501,7 @@ void Scene::AddLocalLight (const LightEmitter *le, const VObject *vo, DWORD idx)
 	}
 	if (lght.dltType != D3DLIGHT_POINT) {
 		const VECTOR3 dir = le->GetDirection();
-		Vector d = mul (vo->GetBody()->GRot(), MakeVector(dir));
+		VECTOR3 d = mul(vo->GetBody()->GRot(), dir);
 		lght.dvDirection.dvX = (float)d.x;
 		lght.dvDirection.dvY = (float)d.y;
 		lght.dvDirection.dvZ = (float)d.z;
@@ -570,7 +570,7 @@ void Scene::Timejump (PlanetarySystem *psys, Camera **camlist, DWORD ncam, bool 
 
 static int lvlid[256];
 
-void Scene::Render3DLabel (const Vector &gp, const char *label, double scale, DWORD colour)
+void Scene::Render3DLabel (const VECTOR3 &gp, const char *label, double scale, DWORD colour)
 {
 	static VERTEX_TL1TEX Vtx[4] = {
 		{0,0,0,0,(D3DCOLOR)D3DRGBA(1,1,1,1),0.001f,0.001f},
@@ -580,8 +580,8 @@ void Scene::Render3DLabel (const Vector &gp, const char *label, double scale, DW
 	};
 	static WORD Idx[6] = {0,1,2,3,2,1};
 
-	Vector lp = gp-g_camera->GPos();
-	double dist = lp.length();
+	VECTOR3 lp = gp - g_camera->GPos();
+	double dist = len(lp);
 	int ix, iy, w;
 	RECT sr = {0,0,0,28};
 	if (g_pane->GlobalToScreen (lp/dist, ix, iy)) {
@@ -654,40 +654,39 @@ double Scene::MinParticleCameraDist() const
 
 VECTOR3 Scene::SkyColour()
 {
-	Vector col;
+	VECTOR3 col;
 	const Planet* pp = g_camera->ProxyPlanet();
 	if (pp && pp->HasAtmosphere()) {
 		const ATMCONST* atmp = pp->AtmParams();
-		Vector pc(g_camera->GPos() - pp->GPos());
-		double cdist = pc.length();
+		VECTOR3 pc = g_camera->GPos() - pp->GPos();
+		double cdist = len(pc);
 		if (cdist < atmp->radlimit) {
 			ATMPARAM prm;
 			pp->GetAtmParam(cdist - pp->Size(), 0, 0, &prm);
-			Vector ps(-pp->GPos());
-			ps.unify();
-			double coss = (pc & ps) / cdist;
+			VECTOR3 ps = unit(-pp->GPos());
+			double coss = dot(pc, ps) / cdist;
 			double intens = min(1.0, (1.0839 * coss + 0.4581)) * sqrt(prm.rho / atmp->rho0);
 			// => intensity=0 at sun zenith distance 115°
 			//    intensity=1 at sun zenith distance 60°
 			if (intens > 0.0)
-				col += Vector(atmp->color0.x * intens, atmp->color0.y * intens, atmp->color0.z * intens);
+				col += atmp->color0 * intens;
 		}
 		for (int i = 0; i < 3; i++)
 			if (col.data[i] > 1.0) col.data[i] = 1.0;
 	}
-	return MakeVECTOR3(col);
+	return col;
 }
 
-void Scene::RenderObjectMarker (oapi::Sketchpad* pSkp, const Vector &gpos, const std::string& label1, const std::string& label2, int mode, int scale)
+void Scene::RenderObjectMarker (oapi::Sketchpad* pSkp, const VECTOR3 &gpos, const std::string& label1, const std::string& label2, int mode, int scale)
 {
-	m_celSphere->RenderMarker(pSkp, MakeVECTOR3((gpos - g_camera->GPos()).unit()), label1, label2, mode, scale);
+	m_celSphere->RenderMarker(pSkp, unit(gpos - g_camera->GPos()), label1, label2, mode, scale);
 }
 
 void Scene::Render (D3DRECT* vp_rect)
 {
 	int i, j, k;
 	DWORD n;
-	Vector col;
+	VECTOR3 col;
 	HRESULT res;
 	g_vtxcount = g_tilecount = 0;
 
@@ -708,8 +707,7 @@ void Scene::Render (D3DRECT* vp_rect)
 	// set lighting
 	for (i = 0; i < nstarlight; i++) {
 		star_lght->dcvDiffuse = starlight[i].col;
-		Vector dir = g_camera->GPos() - *starlight[i].gpos;
-		dir.unify();
+		VECTOR3 dir = unit(g_camera->GPos() - *starlight[i].gpos);
 		star_lght->dvDirection.x = (D3DVALUE)dir.x;
 		star_lght->dvDirection.y = (D3DVALUE)dir.y;
 		star_lght->dvDirection.z = (D3DVALUE)dir.z;
@@ -823,19 +821,19 @@ void Scene::Render (D3DRECT* vp_rect)
 				font = nullptr;
 				Planet* pl = (Planet*)vo->GetBody();
 				double lng, lat, apprad = vo->AppRad() / (0.5 * viewH);
-				Vector sp;
+				VECTOR3 sp;
 				if ((flagMItem & MKR_BMARK) && apprad > SURFLABEL_LIMIT) { // mark surface bases
 					for (n = 0; n < pl->nBase(); n++) {
 						Base* base = pl->GetBase(n);
 						base->EquPos(lng, lat);
 						pl->EquatorialToGlobal(lng, lat, pl->Size(), sp);
-						if (dotp(sp - pl->GPos(), g_camera->GPos() - sp) >= 0.0) // surface point visible?
+						if (dot(sp - pl->GPos(), g_camera->GPos() - sp) >= 0.0) // surface point visible?
 							RenderObjectMarker(pSkp, sp, std::string(base->Name()), std::string(), 0);
 					}
 				}
 				if ((flagMItem & MKR_RMARK) && apprad > VORLABEL_LIMIT && pl->nNav()) { // mark VOR transmitters
 					NavManager& navm = pl->NavMgr();
-					Vector cloc(tmul(pl->GRot(), g_camera->GPos() - pl->GPos())); // camera in planet coords
+					VECTOR3 cloc = tmul(pl->GRot(), g_camera->GPos() - pl->GPos()); // camera in planet coords
 					char cbuf[64];
 					bool found;
 					for (n = 0; n < navm.nNav(); n++) {
@@ -850,7 +848,7 @@ void Scene::Render (D3DRECT* vp_rect)
 							break;
 						}
 						if (found) {
-							if (sp.dist2(cloc) < 2.5e11 && dotp(sp, cloc - sp) >= 0.0) { // surface point visible?
+							if (dist_2(sp, cloc) < 2.5e11 && dot(sp, cloc - sp) >= 0.0) { // surface point visible?
 								sprintf(cbuf, "%0.2f", nav->GetFreq());
 								RenderObjectMarker(pSkp, mul(pl->GRot(), sp) + pl->GPos(), std::string(cbuf), std::string(), 0);
 							}
@@ -859,7 +857,7 @@ void Scene::Render (D3DRECT* vp_rect)
 				}
 				if (pl->LabelFormat() < 2 && (flagMItem & MKR_LMARK)) { // user-defined planetary surface labels
 					int nlist;
-					Vector cp, mp;
+					VECTOR3 cp, mp;
 					bool bNeedSetup = true;
 					oapi::GraphicsClient::LABELLIST* list = pl->LabelList(&nlist);
 					for (k = 0; k < nlist; k++) {
@@ -876,8 +874,8 @@ void Scene::Render (D3DRECT* vp_rect)
 								}
 								const std::vector< oapi::GraphicsClient::LABELSPEC>& uls = list[k].marker;
 								for (j = 0; j < uls.size(); j++) {
-									mp = MakeVector(uls[j].pos);
-									if (dotp(mp, cp - mp) >= 0.0) { // surface point visible?
+									mp = uls[j].pos;
+									if (dot(mp, cp - mp) >= 0.0) { // surface point visible?
 										sp = mul(pl->GRot(), mp) + pl->GPos();
 										RenderObjectMarker(pSkp, sp, uls[j].label[0], uls[j].label[1], shape, size);
 									}

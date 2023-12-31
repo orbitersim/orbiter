@@ -262,7 +262,7 @@ void VectorMap::Update ()
 		//if (focuscenter) SetCenter (drawdata.focuslng, drawdata.focuslat);
 	}
 	if (drawdata.sun_disp = true) {
-		cbody->GlobalToEquatorial (Vector(0,0,0), lng, lat, rad);
+		cbody->GlobalToEquatorial({0, 0, 0}, lng, lat, rad);
 		drawdata.sunlng = lng;
 		drawdata.sunlat = lat;
 	}
@@ -1284,12 +1284,12 @@ void VectorMap::CalcOrbitProj (const Elements *el, const CelestialBody *body, VP
                       el->sint, 0,  el->cost));
 	R.tpremul (body->GRot());
 
-	Vector r, rt;
+	VECTOR3 r, rt;
 
 	for (i = 0; i < NVTX_CIRCLE; i++) {
 		r.x = cosp[i];
 		r.z = sinp[i];
-		rt.Set (mul (R, r));
+		rt = mul(R, r);
 		p[i].lng = atan2 (rt.z, rt.x);
 		p[i].lat = Pi05-acos(rt.y);
 	}
@@ -1306,7 +1306,7 @@ VPoint *VectorMap::GreatCircle (double lng, double lat)
 	Matrix R(clat,slat,0,  -slat,clat,0,  0,0,1);
 	Matrix R2(clng,0,-slng,  0,1,0,  slng,0,clng);
 	R.premul(R2);
-	Vector pt, ptt;
+	VECTOR3 pt, ptt;
 	static VPoint vp[nvtx];
 
 	for (i = 0; i < nvtx; i++) {
@@ -1332,7 +1332,7 @@ VPoint *VectorMap::SmallCircle (double lng, double lat, double dst)
 	Matrix R(clat,slat,0,  -slat,clat,0,  0,0,1);
 	Matrix R2(clng,0,-slng,  0,1,0,  slng,0,clng);
 	R.premul(R2);
-	Vector pt, ptt;
+	VECTOR3 pt, ptt;
 	static VPoint vp[nvtx];
 
 	for (i = 0; i < nvtx; i++) {
@@ -1518,7 +1518,7 @@ void CustomMkrSpec::Convert ()
 	for (int i = 0; i < nvtx; i++) {
 		VECTOR3 &p = list->marker[i].pos;
 		vtx[i].lng = atan2 (p.z, p.x);
-		vtx[i].lat = asin  (p.y / length(p));
+		vtx[i].lat = std::asin(p.y / len(p));
 	}
 }
 
@@ -1604,10 +1604,10 @@ void Groundtrack::Reset (const CelestialBody *body, const Elements *_el)
 void Groundtrack::CalcPoint (VPointGT &p, double *angvel)
 {
 	double r, ta, lng, lat, rad;
-	Vector pos, loc;
+	VECTOR3 pos, loc;
 	el->RelPos (r, ta, p.t);
 	el->Pol2Crt (r, ta, pos);
-	loc.Set (tmul (cbody->GRot(), pos));
+	loc = tmul(cbody->GRot(), pos);
 	cbody->LocalToEquatorial (loc, lng, lat, rad);
 	p.lng = normangle(lng - Pi2*(p.t-td.SimT0)/cbody->RotT());
 	p.lat = lat;

@@ -86,7 +86,7 @@ Atlantis::Atlantis (OBJHANDLE hObj, int fmodel)
 	engine_light_level = 0.0;
 	COLOUR4 col_diff = {1,0.8,0.8,0};
 	COLOUR4 col_zero = {0,0,0,0};
-	engine_light = AddPointLight (_V(0,0,-25), 300, 2e-4, 0, 4e-4, col_diff, col_zero, col_zero);
+	engine_light = AddPointLight ({0,0,-25}, 300, 2e-4, 0, 4e-4, col_diff, col_zero, col_zero);
 	engine_light->SetIntensityRef (&engine_light_level);
 
 	LoadMeshes();
@@ -111,19 +111,19 @@ Atlantis::Atlantis (OBJHANDLE hObj, int fmodel)
 	// Aerodynamics
 	CreateAirfoils();
 
-	CreateDock (ORBITER_DOCKPOS, _V(0,1,0), _V(0,0,-1));
-	hDockET = CreateDock (_V(0.0,-2.48, 8.615), _V(0,-1,0), _V(0,0,1));
+	CreateDock (ORBITER_DOCKPOS, {0,1,0}, {0,0,-1});
+	hDockET = CreateDock ({0.0,-2.48, 8.615}, {0,-1,0}, {0,0,1});
 	pET = NULL; // ET reference
 
 	center_arm      = false;
 	arm_moved       = arm_scheduled = false;
 	bManualSeparate = false;
-	ofs_sts_sat     = _V(0,0,0);      
+	ofs_sts_sat     = {0,0,0};      
 	do_eva          = false;
 	do_plat         = false;
 	do_cargostatic  = false;
 	vis             = NULL;
-	cargo_static_ofs   =_V(0,0,0);
+	cargo_static_ofs   ={0,0,0};
 
 	// default arm status: stowed
 	arm_sy = 0.5;
@@ -132,11 +132,11 @@ Atlantis::Atlantis (OBJHANDLE hObj, int fmodel)
 	arm_wp = 0.5;
 	arm_wy = 0.5;
 	arm_wr = 0.5;
-	arm_tip[0] = _V(-2.26,1.71,-6.5);
-	arm_tip[1] = _V(-2.26,1.71,-7.5);
-	arm_tip[2] = _V(-2.26,2.71,-6.5);
+	arm_tip[0] = {-2.26,1.71,-6.5};
+	arm_tip[1] = {-2.26,1.71,-7.5};
+	arm_tip[2] = {-2.26,2.71,-6.5};
 
-	sat_attach = CreateAttachment (false, ofs_sts_sat, _V(0,1,0), _V(0,0,1), "X");
+	sat_attach = CreateAttachment (false, ofs_sts_sat, {0,1,0}, {0,0,1}, "X");
 	rms_attach = CreateAttachment (false, arm_tip[0], arm_tip[1]-arm_tip[0], arm_tip[2]-arm_tip[0], "G", true);
 
 	// Entry particle stream
@@ -234,105 +234,105 @@ void Atlantis::CreateRCS()
 	// set of attitude thrusters (idealised). The arrangement is such that no angular
 	// momentum is created in linear mode, and no linear momentum is created in rotational mode.
 	THRUSTER_HANDLE th_att_rot[4], th_att_lin[4];
-	th_att_rot[0] = th_att_lin[0] = CreateThruster (_V(0,0, 15.5), _V(0, 1,0), ORBITER_RCS_THRUST, NULL, ORBITER_RCS_ISP0, ORBITER_RCS_ISP1);
-	th_att_rot[1] = th_att_lin[3] = CreateThruster (_V(0,0,-15.5), _V(0,-1,0), ORBITER_RCS_THRUST, NULL, ORBITER_RCS_ISP0, ORBITER_RCS_ISP1);
-	th_att_rot[2] = th_att_lin[2] = CreateThruster (_V(0,0, 15.5), _V(0,-1,0), ORBITER_RCS_THRUST, NULL, ORBITER_RCS_ISP0, ORBITER_RCS_ISP1);
-	th_att_rot[3] = th_att_lin[1] = CreateThruster (_V(0,0,-15.5), _V(0, 1,0), ORBITER_RCS_THRUST, NULL, ORBITER_RCS_ISP0, ORBITER_RCS_ISP1);
+	th_att_rot[0] = th_att_lin[0] = CreateThruster ({0,0, 15.5}, {0, 1,0}, ORBITER_RCS_THRUST, NULL, ORBITER_RCS_ISP0, ORBITER_RCS_ISP1);
+	th_att_rot[1] = th_att_lin[3] = CreateThruster ({0,0,-15.5}, {0,-1,0}, ORBITER_RCS_THRUST, NULL, ORBITER_RCS_ISP0, ORBITER_RCS_ISP1);
+	th_att_rot[2] = th_att_lin[2] = CreateThruster ({0,0, 15.5}, {0,-1,0}, ORBITER_RCS_THRUST, NULL, ORBITER_RCS_ISP0, ORBITER_RCS_ISP1);
+	th_att_rot[3] = th_att_lin[1] = CreateThruster ({0,0,-15.5}, {0, 1,0}, ORBITER_RCS_THRUST, NULL, ORBITER_RCS_ISP0, ORBITER_RCS_ISP1);
 	CreateThrusterGroup (th_att_rot,   2, THGROUP_ATT_PITCHUP);
 	CreateThrusterGroup (th_att_rot+2, 2, THGROUP_ATT_PITCHDOWN);
 	CreateThrusterGroup (th_att_lin,   2, THGROUP_ATT_UP);
 	CreateThrusterGroup (th_att_lin+2, 2, THGROUP_ATT_DOWN);
 
-	AddExhaust (th_att_rot[0], eh, ew1, _V( 1.60,-0.20, 18.78), _V( 0.4339,-0.8830,-0.1793), tex_rcs);//F2D
-	AddExhaust (th_att_rot[0], eh, ew1, _V( 1.68,-0.18, 18.40), _V( 0.4339,-0.8830,-0.1793), tex_rcs);//F4D
-	AddExhaust (th_att_rot[0], eh, ew1, _V(-1.55,-0.20, 18.78), _V(-0.4339,-0.8830,-0.1793), tex_rcs);//F1D
-	AddExhaust (th_att_rot[0], eh, ew1, _V(-1.63,-0.18, 18.40), _V(-0.4339,-0.8830,-0.1793), tex_rcs);//F3D
+	AddExhaust (th_att_rot[0], eh, ew1, { 1.60,-0.20, 18.78}, { 0.4339,-0.8830,-0.1793}, tex_rcs);//F2D
+	AddExhaust (th_att_rot[0], eh, ew1, { 1.68,-0.18, 18.40}, { 0.4339,-0.8830,-0.1793}, tex_rcs);//F4D
+	AddExhaust (th_att_rot[0], eh, ew1, {-1.55,-0.20, 18.78}, {-0.4339,-0.8830,-0.1793}, tex_rcs);//F1D
+	AddExhaust (th_att_rot[0], eh, ew1, {-1.63,-0.18, 18.40}, {-0.4339,-0.8830,-0.1793}, tex_rcs);//F3D
 
-	AddExhaust (th_att_rot[1], eh, ew1, _V(-3.46, 3.20,-12.30), _V(0, 1,0), tex_rcs);//L4U
-	AddExhaust (th_att_rot[1], eh, ew1, _V(-3.46, 3.20,-12.70), _V(0, 1,0), tex_rcs);//L2U
-	AddExhaust (th_att_rot[1], eh, ew1, _V(-3.46, 3.20,-13.10), _V(0, 1,0), tex_rcs);//L1U
+	AddExhaust (th_att_rot[1], eh, ew1, {-3.46, 3.20,-12.30}, {0, 1,0}, tex_rcs);//L4U
+	AddExhaust (th_att_rot[1], eh, ew1, {-3.46, 3.20,-12.70}, {0, 1,0}, tex_rcs);//L2U
+	AddExhaust (th_att_rot[1], eh, ew1, {-3.46, 3.20,-13.10}, {0, 1,0}, tex_rcs);//L1U
 
-	AddExhaust (th_att_rot[1], eh, ew1, _V( 3.43, 3.20,-12.30), _V(0, 1,0), tex_rcs);//R4U
-	AddExhaust (th_att_rot[1], eh, ew1, _V( 3.43, 3.20,-12.70), _V(0, 1,0), tex_rcs);//R2U
-	AddExhaust (th_att_rot[1], eh, ew1, _V( 3.43, 3.20,-13.10), _V(0, 1,0), tex_rcs);//R1U
+	AddExhaust (th_att_rot[1], eh, ew1, { 3.43, 3.20,-12.30}, {0, 1,0}, tex_rcs);//R4U
+	AddExhaust (th_att_rot[1], eh, ew1, { 3.43, 3.20,-12.70}, {0, 1,0}, tex_rcs);//R2U
+	AddExhaust (th_att_rot[1], eh, ew1, { 3.43, 3.20,-13.10}, {0, 1,0}, tex_rcs);//R1U
 
-	AddExhaust (th_att_rot[2], eh, ew1, _V(-0.4 , 1.10, 18.3 ), _V(0, 1,0), tex_rcs);//F1U	
-	AddExhaust (th_att_rot[2], eh, ew1, _V( 0.0 , 1.15 ,18.3 ), _V(0, 1,0), tex_rcs);//F3U
-	AddExhaust (th_att_rot[2], eh, ew1, _V( 0.4 , 1.10, 18.3 ), _V(0, 1,0), tex_rcs);//F2U
+	AddExhaust (th_att_rot[2], eh, ew1, {-0.4 , 1.10, 18.3 }, {0, 1,0}, tex_rcs);//F1U	
+	AddExhaust (th_att_rot[2], eh, ew1, { 0.0 , 1.15 ,18.3 }, {0, 1,0}, tex_rcs);//F3U
+	AddExhaust (th_att_rot[2], eh, ew1, { 0.4 , 1.10, 18.3 }, {0, 1,0}, tex_rcs);//F2U
 
-	AddExhaust (th_att_rot[3], eh, ew1, _V(-3.1 , 1.55,-12.45), _V(-0.2844,-0.9481,-0.1422), tex_rcs);//L4D
-	AddExhaust (th_att_rot[3], eh, ew1, _V(-3.1 , 1.6 ,-12.8 ), _V(-0.2844,-0.9481,-0.1422), tex_rcs);//L2D
-	AddExhaust (th_att_rot[3], eh, ew1, _V(-3.1 , 1.65,-13.15), _V(-0.2844,-0.9481,-0.1422), tex_rcs);//L3D
+	AddExhaust (th_att_rot[3], eh, ew1, {-3.1 , 1.55,-12.45}, {-0.2844,-0.9481,-0.1422}, tex_rcs);//L4D
+	AddExhaust (th_att_rot[3], eh, ew1, {-3.1 , 1.6 ,-12.8 }, {-0.2844,-0.9481,-0.1422}, tex_rcs);//L2D
+	AddExhaust (th_att_rot[3], eh, ew1, {-3.1 , 1.65,-13.15}, {-0.2844,-0.9481,-0.1422}, tex_rcs);//L3D
 
-	AddExhaust (th_att_rot[3], eh, ew1, _V( 3.15, 1.55,-12.45), _V( 0.2844,-0.9481,-0.1422), tex_rcs);//R4D
-	AddExhaust (th_att_rot[3], eh, ew1, _V( 3.15, 1.6 ,-12.8 ), _V( 0.2844,-0.9481,-0.1422), tex_rcs);//R2D
-	AddExhaust (th_att_rot[3], eh, ew1, _V( 3.15, 1.65,-13.15), _V( 0.2844,-0.9481,-0.1422), tex_rcs);//R3D
+	AddExhaust (th_att_rot[3], eh, ew1, { 3.15, 1.55,-12.45}, { 0.2844,-0.9481,-0.1422}, tex_rcs);//R4D
+	AddExhaust (th_att_rot[3], eh, ew1, { 3.15, 1.6 ,-12.8 }, { 0.2844,-0.9481,-0.1422}, tex_rcs);//R2D
+	AddExhaust (th_att_rot[3], eh, ew1, { 3.15, 1.65,-13.15}, { 0.2844,-0.9481,-0.1422}, tex_rcs);//R3D
 
-	th_att_rot[0] = th_att_lin[0] = CreateThruster (_V(0,0, 15.5), _V(-1,0,0), ORBITER_RCS_THRUST, NULL, ORBITER_RCS_ISP0, ORBITER_RCS_ISP1);
-	th_att_rot[1] = th_att_lin[3] = CreateThruster (_V(0,0,-15.5), _V( 1,0,0), ORBITER_RCS_THRUST, NULL, ORBITER_RCS_ISP0, ORBITER_RCS_ISP1);
-	th_att_rot[2] = th_att_lin[2] = CreateThruster (_V(0,0, 15.5), _V( 1,0,0), ORBITER_RCS_THRUST, NULL, ORBITER_RCS_ISP0, ORBITER_RCS_ISP1);
-	th_att_rot[3] = th_att_lin[1] = CreateThruster (_V(0,0,-15.5), _V(-1,0,0), ORBITER_RCS_THRUST, NULL, ORBITER_RCS_ISP0, ORBITER_RCS_ISP1);
+	th_att_rot[0] = th_att_lin[0] = CreateThruster ({0,0, 15.5}, {-1,0,0}, ORBITER_RCS_THRUST, NULL, ORBITER_RCS_ISP0, ORBITER_RCS_ISP1);
+	th_att_rot[1] = th_att_lin[3] = CreateThruster ({0,0,-15.5}, { 1,0,0}, ORBITER_RCS_THRUST, NULL, ORBITER_RCS_ISP0, ORBITER_RCS_ISP1);
+	th_att_rot[2] = th_att_lin[2] = CreateThruster ({0,0, 15.5}, { 1,0,0}, ORBITER_RCS_THRUST, NULL, ORBITER_RCS_ISP0, ORBITER_RCS_ISP1);
+	th_att_rot[3] = th_att_lin[1] = CreateThruster ({0,0,-15.5}, {-1,0,0}, ORBITER_RCS_THRUST, NULL, ORBITER_RCS_ISP0, ORBITER_RCS_ISP1);
 	CreateThrusterGroup (th_att_rot,   2, THGROUP_ATT_YAWLEFT);
 	CreateThrusterGroup (th_att_rot+2, 2, THGROUP_ATT_YAWRIGHT);
 	CreateThrusterGroup (th_att_lin,   2, THGROUP_ATT_LEFT);
 	CreateThrusterGroup (th_att_lin+2, 2, THGROUP_ATT_RIGHT);
 
-	AddExhaust (th_att_rot[0], eh, ew2, _V( 1.8 ,-0.3 , 18.0 ), _V( 1,0,0), tex_rcs);//F4R
-	AddExhaust (th_att_rot[0], eh, ew2, _V( 1.75, 0.1 , 18.05), _V( 1,0,0), tex_rcs);//F2R
-	AddExhaust (th_att_rot[2], eh, ew2, _V(-1.7 ,-0.3 , 18.0 ), _V(-1,0,0), tex_rcs);//F1L
-	AddExhaust (th_att_rot[2], eh, ew2, _V(-1.65,-0.1 , 18.05), _V(-1,0,0), tex_rcs);//F3L
+	AddExhaust (th_att_rot[0], eh, ew2, { 1.8 ,-0.3 , 18.0 }, { 1,0,0}, tex_rcs);//F4R
+	AddExhaust (th_att_rot[0], eh, ew2, { 1.75, 0.1 , 18.05}, { 1,0,0}, tex_rcs);//F2R
+	AddExhaust (th_att_rot[2], eh, ew2, {-1.7 ,-0.3 , 18.0 }, {-1,0,0}, tex_rcs);//F1L
+	AddExhaust (th_att_rot[2], eh, ew2, {-1.65,-0.1 , 18.05}, {-1,0,0}, tex_rcs);//F3L
 
-	AddExhaust (th_att_rot[1], eh, ew2, _V(-4.0 , 2.35,-12.35), _V(-1,0,0), tex_rcs);//L4L
-	AddExhaust (th_att_rot[1], eh, ew2, _V(-4.0 , 2.35,-12.6 ), _V(-1,0,0), tex_rcs);//L2L
-	AddExhaust (th_att_rot[1], eh, ew2, _V(-4.0 , 2.35,-13.0 ), _V(-1,0,0), tex_rcs);//L3L
-	AddExhaust (th_att_rot[1], eh, ew2, _V(-4.0 , 2.35,-13.35), _V(-1,0,0), tex_rcs);//L1L
+	AddExhaust (th_att_rot[1], eh, ew2, {-4.0 , 2.35,-12.35}, {-1,0,0}, tex_rcs);//L4L
+	AddExhaust (th_att_rot[1], eh, ew2, {-4.0 , 2.35,-12.6 }, {-1,0,0}, tex_rcs);//L2L
+	AddExhaust (th_att_rot[1], eh, ew2, {-4.0 , 2.35,-13.0 }, {-1,0,0}, tex_rcs);//L3L
+	AddExhaust (th_att_rot[1], eh, ew2, {-4.0 , 2.35,-13.35}, {-1,0,0}, tex_rcs);//L1L
 
-	AddExhaust (th_att_rot[3], eh, ew2, _V( 4.0 , 2.35,-12.35), _V( 1,0,0), tex_rcs);//R4R
-	AddExhaust (th_att_rot[3], eh, ew2, _V( 4.0 , 2.35,-12.6 ), _V( 1,0,0), tex_rcs);//R2R
-	AddExhaust (th_att_rot[3], eh, ew2, _V( 4.0 , 2.35,-13.0 ), _V( 1,0,0), tex_rcs);//R3R
-	AddExhaust (th_att_rot[3], eh, ew2, _V( 4.0,  2.35,-13.35), _V( 1,0,0), tex_rcs);//R1R
+	AddExhaust (th_att_rot[3], eh, ew2, { 4.0 , 2.35,-12.35}, { 1,0,0}, tex_rcs);//R4R
+	AddExhaust (th_att_rot[3], eh, ew2, { 4.0 , 2.35,-12.6 }, { 1,0,0}, tex_rcs);//R2R
+	AddExhaust (th_att_rot[3], eh, ew2, { 4.0 , 2.35,-13.0 }, { 1,0,0}, tex_rcs);//R3R
+	AddExhaust (th_att_rot[3], eh, ew2, { 4.0,  2.35,-13.35}, { 1,0,0}, tex_rcs);//R1R
 
-	th_att_rot[0] = CreateThruster (_V( 2.7,0,0), _V(0, 1,0), ORBITER_RCS_THRUST, NULL, ORBITER_RCS_ISP0, ORBITER_RCS_ISP1);
-	th_att_rot[1] = CreateThruster (_V(-2.7,0,0), _V(0,-1,0), ORBITER_RCS_THRUST, NULL, ORBITER_RCS_ISP0, ORBITER_RCS_ISP1);
-	th_att_rot[2] = CreateThruster (_V(-2.7,0,0), _V(0, 1,0), ORBITER_RCS_THRUST, NULL, ORBITER_RCS_ISP0, ORBITER_RCS_ISP1);
-	th_att_rot[3] = CreateThruster (_V( 2.7,0,0), _V(0,-1,0), ORBITER_RCS_THRUST, NULL, ORBITER_RCS_ISP0, ORBITER_RCS_ISP1);
+	th_att_rot[0] = CreateThruster ({ 2.7,0,0}, {0, 1,0}, ORBITER_RCS_THRUST, NULL, ORBITER_RCS_ISP0, ORBITER_RCS_ISP1);
+	th_att_rot[1] = CreateThruster ({-2.7,0,0}, {0,-1,0}, ORBITER_RCS_THRUST, NULL, ORBITER_RCS_ISP0, ORBITER_RCS_ISP1);
+	th_att_rot[2] = CreateThruster ({-2.7,0,0}, {0, 1,0}, ORBITER_RCS_THRUST, NULL, ORBITER_RCS_ISP0, ORBITER_RCS_ISP1);
+	th_att_rot[3] = CreateThruster ({ 2.7,0,0}, {0,-1,0}, ORBITER_RCS_THRUST, NULL, ORBITER_RCS_ISP0, ORBITER_RCS_ISP1);
 	CreateThrusterGroup (th_att_rot,   2, THGROUP_ATT_BANKLEFT);
 	CreateThrusterGroup (th_att_rot+2, 2, THGROUP_ATT_BANKRIGHT);
 
-	AddExhaust (th_att_rot[0], eh, ew1, _V( 1.60,-0.20, 18.78), _V( 0.4339,-0.8830,-0.1793), tex_rcs);//F2D
-	AddExhaust (th_att_rot[0], eh, ew1, _V( 1.68,-0.18, 18.40), _V( 0.4339,-0.8830,-0.1793), tex_rcs);//F4D
-	AddExhaust (th_att_rot[2], eh, ew1, _V(-1.55,-0.20, 18.78), _V(-0.4339,-0.8830,-0.1793), tex_rcs);//F1D
-	AddExhaust (th_att_rot[2], eh, ew1, _V(-1.63,-0.18, 18.40), _V(-0.4339,-0.8830,-0.1793), tex_rcs);//F3D
+	AddExhaust (th_att_rot[0], eh, ew1, { 1.60,-0.20, 18.78}, { 0.4339,-0.8830,-0.1793}, tex_rcs);//F2D
+	AddExhaust (th_att_rot[0], eh, ew1, { 1.68,-0.18, 18.40}, { 0.4339,-0.8830,-0.1793}, tex_rcs);//F4D
+	AddExhaust (th_att_rot[2], eh, ew1, {-1.55,-0.20, 18.78}, {-0.4339,-0.8830,-0.1793}, tex_rcs);//F1D
+	AddExhaust (th_att_rot[2], eh, ew1, {-1.63,-0.18, 18.40}, {-0.4339,-0.8830,-0.1793}, tex_rcs);//F3D
 
-	AddExhaust (th_att_rot[1], eh, ew1, _V(-3.46, 3.20,-12.30), _V(0, 1,0), tex_rcs);//L4U
-	AddExhaust (th_att_rot[1], eh, ew1, _V(-3.46, 3.20,-12.70), _V(0, 1,0), tex_rcs);//L2U
-	AddExhaust (th_att_rot[1], eh, ew1, _V(-3.46, 3.20,-13.10), _V(0, 1,0), tex_rcs);//L1U
+	AddExhaust (th_att_rot[1], eh, ew1, {-3.46, 3.20,-12.30}, {0, 1,0}, tex_rcs);//L4U
+	AddExhaust (th_att_rot[1], eh, ew1, {-3.46, 3.20,-12.70}, {0, 1,0}, tex_rcs);//L2U
+	AddExhaust (th_att_rot[1], eh, ew1, {-3.46, 3.20,-13.10}, {0, 1,0}, tex_rcs);//L1U
 
-	AddExhaust (th_att_rot[3], eh, ew1, _V( 3.43, 3.20,-12.30), _V(0, 1,0), tex_rcs);//R4U
-	AddExhaust (th_att_rot[3], eh, ew1, _V( 3.43, 3.20,-12.70), _V(0, 1,0), tex_rcs);//R2U
-	AddExhaust (th_att_rot[3], eh, ew1, _V( 3.43, 3.20,-13.10), _V(0, 1,0), tex_rcs);//R1U
+	AddExhaust (th_att_rot[3], eh, ew1, { 3.43, 3.20,-12.30}, {0, 1,0}, tex_rcs);//R4U
+	AddExhaust (th_att_rot[3], eh, ew1, { 3.43, 3.20,-12.70}, {0, 1,0}, tex_rcs);//R2U
+	AddExhaust (th_att_rot[3], eh, ew1, { 3.43, 3.20,-13.10}, {0, 1,0}, tex_rcs);//R1U
 
-	AddExhaust (th_att_rot[2], eh, ew1, _V(-3.1 , 1.55,-12.45), _V(-0.2844,-0.9481,-0.1422), tex_rcs);//L4D
-	AddExhaust (th_att_rot[2], eh, ew1, _V(-3.1 , 1.6 ,-12.8 ), _V(-0.2844,-0.9481,-0.1422), tex_rcs);//L2D
-	AddExhaust (th_att_rot[2], eh, ew1, _V(-3.1 , 1.65,-13.15), _V(-0.2844,-0.9481,-0.1422), tex_rcs);//L3D
+	AddExhaust (th_att_rot[2], eh, ew1, {-3.1 , 1.55,-12.45}, {-0.2844,-0.9481,-0.1422}, tex_rcs);//L4D
+	AddExhaust (th_att_rot[2], eh, ew1, {-3.1 , 1.6 ,-12.8 }, {-0.2844,-0.9481,-0.1422}, tex_rcs);//L2D
+	AddExhaust (th_att_rot[2], eh, ew1, {-3.1 , 1.65,-13.15}, {-0.2844,-0.9481,-0.1422}, tex_rcs);//L3D
 
-	AddExhaust (th_att_rot[0], eh, ew1, _V( 3.15, 1.55,-12.45), _V( 0.2844,-0.9481,-0.1422), tex_rcs);//R4D
-	AddExhaust (th_att_rot[0], eh, ew1, _V( 3.15, 1.6 ,-12.8 ), _V( 0.2844,-0.9481,-0.1422), tex_rcs);//R2D
-	AddExhaust (th_att_rot[0], eh, ew1, _V( 3.15, 1.65,-13.15), _V( 0.2844,-0.9481,-0.1422), tex_rcs);//R3D
+	AddExhaust (th_att_rot[0], eh, ew1, { 3.15, 1.55,-12.45}, { 0.2844,-0.9481,-0.1422}, tex_rcs);//R4D
+	AddExhaust (th_att_rot[0], eh, ew1, { 3.15, 1.6 ,-12.8 }, { 0.2844,-0.9481,-0.1422}, tex_rcs);//R2D
+	AddExhaust (th_att_rot[0], eh, ew1, { 3.15, 1.65,-13.15}, { 0.2844,-0.9481,-0.1422}, tex_rcs);//R3D
 
-	th_att_lin[0] = CreateThruster (_V(0,0,-16), _V(0,0, 1), ORBITER_RCS_THRUST, NULL, ORBITER_RCS_ISP0, ORBITER_RCS_ISP1);
-	th_att_lin[1] = CreateThruster (_V(0,0, 16), _V(0,0,-1), ORBITER_RCS_THRUST, NULL, ORBITER_RCS_ISP0, ORBITER_RCS_ISP1);
+	th_att_lin[0] = CreateThruster ({0,0,-16}, {0,0, 1}, ORBITER_RCS_THRUST, NULL, ORBITER_RCS_ISP0, ORBITER_RCS_ISP1);
+	th_att_lin[1] = CreateThruster ({0,0, 16}, {0,0,-1}, ORBITER_RCS_THRUST, NULL, ORBITER_RCS_ISP0, ORBITER_RCS_ISP1);
 	CreateThrusterGroup (th_att_lin,   1, THGROUP_ATT_FORWARD);
 	CreateThrusterGroup (th_att_lin+1, 1, THGROUP_ATT_BACK);
 
-	AddExhaust (th_att_lin[0], eh, ew1, _V(-3.59, 2.8 ,-13.6 ), _V(0,0,-1), tex_rcs);//L1A
-	AddExhaust (th_att_lin[0], eh, ew1, _V(-3.27, 2.8 ,-13.6 ), _V(0,0,-1), tex_rcs);//L3A
-	AddExhaust (th_att_lin[0], eh, ew1, _V( 3.64, 2.8 ,-13.6 ), _V(0,0,-1), tex_rcs);//R1A
-	AddExhaust (th_att_lin[0], eh, ew1, _V( 3.27, 2.8 ,-13.6 ), _V(0,0,-1), tex_rcs);//R3A
+	AddExhaust (th_att_lin[0], eh, ew1, {-3.59, 2.8 ,-13.6 }, {0,0,-1}, tex_rcs);//L1A
+	AddExhaust (th_att_lin[0], eh, ew1, {-3.27, 2.8 ,-13.6 }, {0,0,-1}, tex_rcs);//L3A
+	AddExhaust (th_att_lin[0], eh, ew1, { 3.64, 2.8 ,-13.6 }, {0,0,-1}, tex_rcs);//R1A
+	AddExhaust (th_att_lin[0], eh, ew1, { 3.27, 2.8 ,-13.6 }, {0,0,-1}, tex_rcs);//R3A
 
-	AddExhaust (th_att_lin[1], eh, ew1, _V( 0.0 , 0.75, 19.2 ), _V(0, 0.0499, 0.9988), tex_rcs);//F3F
-	AddExhaust (th_att_lin[1], eh, ew1, _V(-0.4 , 0.7 , 19.2 ), _V(0, 0.0499, 0.9988), tex_rcs);//F1F
-	AddExhaust (th_att_lin[1], eh, ew1, _V( 0.4 , 0.7 , 19.2 ), _V(0, 0.0499, 0.9988), tex_rcs);//F2F
+	AddExhaust (th_att_lin[1], eh, ew1, { 0.0 , 0.75, 19.2 }, {0, 0.0499, 0.9988}, tex_rcs);//F3F
+	AddExhaust (th_att_lin[1], eh, ew1, {-0.4 , 0.7 , 19.2 }, {0, 0.0499, 0.9988}, tex_rcs);//F1F
+	AddExhaust (th_att_lin[1], eh, ew1, { 0.4 , 0.7 , 19.2 }, {0, 0.0499, 0.9988}, tex_rcs);//F2F
 }
 
 // --------------------------------------------------------------
@@ -340,18 +340,18 @@ void Atlantis::CreateRCS()
 // --------------------------------------------------------------
 void Atlantis::CreateAirfoils ()
 {
-	CreateAirfoil (LIFT_VERTICAL,   _V(0,0,-0.5), VLiftCoeff, 20, 270, 2.266);
-	CreateAirfoil (LIFT_HORIZONTAL, _V(0,0,-4), HLiftCoeff, 20,  50, 1.5);
+	CreateAirfoil (LIFT_VERTICAL,   {0,0,-0.5}, VLiftCoeff, 20, 270, 2.266);
+	CreateAirfoil (LIFT_HORIZONTAL, {0,0,-4}, HLiftCoeff, 20,  50, 1.5);
 
-	CreateControlSurface (AIRCTRL_ELEVATOR, 5.0, 1.5, _V( 0, 0,  -15), AIRCTRL_AXIS_XPOS, anim_elev);
-	CreateControlSurface (AIRCTRL_RUDDER,   2.0, 1.5, _V( 0, 3,  -16), AIRCTRL_AXIS_YPOS, anim_rudder);
-	CreateControlSurface (AIRCTRL_AILERON,  3.0, 1.5, _V( 7,-0.5,-15), AIRCTRL_AXIS_XPOS, anim_raileron);
-	CreateControlSurface (AIRCTRL_AILERON,  3.0, 1.5, _V(-7,-0.5,-15), AIRCTRL_AXIS_XNEG, anim_laileron);
+	CreateControlSurface (AIRCTRL_ELEVATOR, 5.0, 1.5, { 0, 0,  -15}, AIRCTRL_AXIS_XPOS, anim_elev);
+	CreateControlSurface (AIRCTRL_RUDDER,   2.0, 1.5, { 0, 3,  -16}, AIRCTRL_AXIS_YPOS, anim_rudder);
+	CreateControlSurface (AIRCTRL_AILERON,  3.0, 1.5, { 7,-0.5,-15}, AIRCTRL_AXIS_XPOS, anim_raileron);
+	CreateControlSurface (AIRCTRL_AILERON,  3.0, 1.5, {-7,-0.5,-15}, AIRCTRL_AXIS_XNEG, anim_laileron);
 
-	CreateVariableDragElement (&spdb_proc, 5, _V(0, 7.5, -14)); // speedbrake drag
-	CreateVariableDragElement (&gear_proc, 2, _V(0,-3,0));      // landing gear drag
-	CreateVariableDragElement (&rdoor_drag, 7, _V(2.9,0,10));   // right cargo door drag
-	CreateVariableDragElement (&ldoor_drag, 7, _V(-2.9,0,10));  // right cargo door drag
+	CreateVariableDragElement (&spdb_proc, 5, {0, 7.5, -14}); // speedbrake drag
+	CreateVariableDragElement (&gear_proc, 2, {0,-3,0});      // landing gear drag
+	CreateVariableDragElement (&rdoor_drag, 7, {2.9,0,10});   // right cargo door drag
+	CreateVariableDragElement (&ldoor_drag, 7, {-2.9,0,10});  // right cargo door drag
 }
 
 // --------------------------------------------------------------
@@ -500,10 +500,10 @@ void Atlantis::DefineAnimations (void)
 
 	static UINT RCargoDoorGrp[4] = {GRP_cargodooroutR,GRP_cargodoorinR,GRP_radiatorFR,GRP_radiatorBR};
 	static MGROUP_ROTATE RCargoDoor (midx, RCargoDoorGrp, 4,
-		_V(2.88, 1.3, 0), _V(0,0,1), (float)(-175.5*RAD));
+		{2.88, 1.3, 0}, {0,0,1}, (float)(-175.5*RAD));
 	static UINT LCargoDoorGrp[4] = {GRP_cargodooroutL,GRP_cargodoorinL,GRP_radiatorFL,GRP_radiatorBL};
 	static MGROUP_ROTATE LCargoDoor (midx, LCargoDoorGrp, 4,
-		_V(-2.88, 1.3, 0), _V(0,0,1), (float)(175.5*RAD));
+		{-2.88, 1.3, 0}, {0,0,1}, (float)(175.5*RAD));
 
 	anim_door = CreateAnimation (0);
 	AddAnimationComponent (anim_door, 0.0, 0.4632, &RCargoDoor);
@@ -511,10 +511,10 @@ void Atlantis::DefineAnimations (void)
 
 	static UINT RRadiatorGrp[1] = {GRP_radiatorFR};
 	static MGROUP_ROTATE RRadiator (midx, RRadiatorGrp, 1,
-		_V(2.88, 1.3, 0), _V(0,0,1), (float)(35.5*RAD));
+		{2.88, 1.3, 0}, {0,0,1}, (float)(35.5*RAD));
 	static UINT LRadiatorGrp[1] = {GRP_radiatorFL};
 	static MGROUP_ROTATE LRadiator (midx, LRadiatorGrp, 1,
-		_V(-2.88, 1.3, 0), _V(0,0,1), (float)(-35.5*RAD));
+		{-2.88, 1.3, 0}, {0,0,1}, (float)(-35.5*RAD));
 
 	anim_rad = CreateAnimation (0);
 	AddAnimationComponent (anim_rad, 0, 1, &RRadiator);
@@ -524,22 +524,22 @@ void Atlantis::DefineAnimations (void)
 
 	static UINT LNosewheelDoorGrp[1] = {GRP_nosedoorL};
 	static MGROUP_ROTATE LNosewheelDoor (midx, LNosewheelDoorGrp, 1,
-		_V(-0.78, -2.15, 17), _V(0, 0.195, 0.981), (float)(-60.0*RAD));
+		{-0.78, -2.15, 17}, {0, 0.195, 0.981}, (float)(-60.0*RAD));
 	static UINT RNosewheelDoorGrp[1] = {GRP_nosedoorR};
 	static MGROUP_ROTATE RNosewheelDoor (midx, RNosewheelDoorGrp, 1,
-		_V(0.78, -2.15, 17), _V(0, 0.195, 0.981), (float)(60.0*RAD));
+		{0.78, -2.15, 17}, {0, 0.195, 0.981}, (float)(60.0*RAD));
 	static UINT NosewheelGrp[2] = {GRP_nosewheel,GRP_nosegear};
 	static MGROUP_ROTATE Nosewheel (midx, NosewheelGrp, 2,
-		_V(0.0, -1.95, 17.45), _V(1, 0, 0), (float)(109.0*RAD));
+		{0.0, -1.95, 17.45}, {1, 0, 0}, (float)(109.0*RAD));
 	static UINT RGearDoorGrp[1] = {GRP_geardoorR};
 	static MGROUP_ROTATE RGearDoor (midx, RGearDoorGrp, 1,
-		_V(4.35, -2.64, -1.69), _V(0, 0.02, 0.9), (float)(96.2*RAD));
+		{4.35, -2.64, -1.69}, {0, 0.02, 0.9}, (float)(96.2*RAD));
 	static UINT LGearDoorGrp[1] = {GRP_geardoorL};
 	static MGROUP_ROTATE LGearDoor (midx, LGearDoorGrp, 1,
-		_V(-4.35, -2.64, -1.69), _V(0, 0.02, 0.9), (float)(-96.2*RAD));
+		{-4.35, -2.64, -1.69}, {0, 0.02, 0.9}, (float)(-96.2*RAD));
 	static UINT MainGearGrp[4] = {GRP_wheelR,GRP_gearR,GRP_wheelL,GRP_gearL};
 	static MGROUP_ROTATE MainGear (midx, MainGearGrp, 4,
-		_V(0, -2.66, -3.68), _V(1, 0, 0), (float)(94.5*RAD));
+		{0, -2.66, -3.68}, {1, 0, 0}, (float)(94.5*RAD));
 
 	anim_gear = CreateAnimation (0);
 	AddAnimationComponent (anim_gear, 0,   0.5, &LNosewheelDoor);
@@ -553,13 +553,13 @@ void Atlantis::DefineAnimations (void)
 
 	static UINT KuBand1Grp[3] = {GRP_startrackers,GRP_KUband1,GRP_KUband2};
 	static MGROUP_ROTATE KuBand1 (midx, KuBand1Grp, 3,
-		_V(2.85, 0.85, 0), _V(0,0,1), (float)(-18*RAD));
+		{2.85, 0.85, 0}, {0,0,1}, (float)(-18*RAD));
 	static UINT KuBand2Grp[1] = {GRP_KUband2};
 	static MGROUP_ROTATE KuBand2 (midx, KuBand2Grp, 1,
-		_V(2.78, 1.7, 0), _V(0,0,1), (float)(-90*RAD));
+		{2.78, 1.7, 0}, {0,0,1}, (float)(-90*RAD));
 	static UINT KuBand3Grp[2] = {GRP_KUband1,GRP_KUband2};
 	static MGROUP_ROTATE KuBand3 (midx, KuBand3Grp, 2,
-		_V(2.75, 2.05, 11.47), _V(0,1,0), (float)(-113*RAD));
+		{2.75, 2.05, 11.47}, {0,1,0}, (float)(-113*RAD));
 
 	anim_kubd = CreateAnimation (0);
 	AddAnimationComponent (anim_kubd, 0,     0.333, &KuBand1);
@@ -570,7 +570,7 @@ void Atlantis::DefineAnimations (void)
 
 	static UINT ElevGrp[4] = {GRP_flapR,GRP_flapL,GRP_aileronL,GRP_aileronR};
 	static MGROUP_ROTATE Elevator (midx, ElevGrp, 4,
-		_V(0,-2.173,-8.84), _V(1,0,0), (float)(30.0*RAD));
+		{0,-2.173,-8.84}, {1,0,0}, (float)(30.0*RAD));
 	anim_elev = CreateAnimation (0.5);
 	AddAnimationComponent (anim_elev, 0, 1, &Elevator);
 
@@ -578,10 +578,10 @@ void Atlantis::DefineAnimations (void)
 
 	static UINT LAileronGrp[2] = {GRP_flapL,GRP_aileronL};
 	static MGROUP_ROTATE LAileron (midx, LAileronGrp, 2,
-		_V(0,-2.173,-8.84), _V(-1,0,0), (float)(10.0*RAD));
+		{0,-2.173,-8.84}, {-1,0,0}, (float)(10.0*RAD));
 	static UINT RAileronGrp[2] = {GRP_flapR,GRP_aileronR};
 	static MGROUP_ROTATE RAileron (midx, RAileronGrp, 2,
-		_V(0,-2.173,-8.84), _V(1,0,0), (float)(10.0*RAD));
+		{0,-2.173,-8.84}, {1,0,0}, (float)(10.0*RAD));
 	anim_laileron = CreateAnimation (0.5);
 	AddAnimationComponent (anim_laileron, 0, 1, &LAileron);
 	anim_raileron = CreateAnimation (0.5);
@@ -591,7 +591,7 @@ void Atlantis::DefineAnimations (void)
 
 	static UINT RudderGrp[2] = {GRP_rudderR,GRP_rudderL};
 	static MGROUP_ROTATE Rudder (midx, RudderGrp, 2,
-		_V(0,5.77,-12.17), _V(-0.037,0.833,-0.552), (float)(-54.2*RAD));
+		{0,5.77,-12.17}, {-0.037,0.833,-0.552}, (float)(-54.2*RAD));
 	anim_rudder = CreateAnimation (0.5);
 	AddAnimationComponent (anim_rudder, 0, 1, &Rudder);
 
@@ -599,10 +599,10 @@ void Atlantis::DefineAnimations (void)
 
 	static UINT SB1Grp[1] = {GRP_rudderR};
 	static MGROUP_ROTATE SB1 (midx, SB1Grp, 1,
-		_V(0.32,5.77,-12.17), _V(-0.037,0.833,-0.552), (float)(-49.3*RAD));
+		{0.32,5.77,-12.17}, {-0.037,0.833,-0.552}, (float)(-49.3*RAD));
 	static UINT SB2Grp[1] = {GRP_rudderL};
 	static MGROUP_ROTATE SB2 (midx, SB2Grp, 1,
-		_V(-0.32,5.77,-12.17), _V(0.037,0.833,-0.552), (float)(49.3*RAD));
+		{-0.32,5.77,-12.17}, {0.037,0.833,-0.552}, (float)(49.3*RAD));
 
 	anim_spdb = CreateAnimation (0);
 	AddAnimationComponent (anim_spdb, 0, 1, &SB1);
@@ -616,36 +616,36 @@ void Atlantis::DefineAnimations (void)
 
 	static UINT RMSShoulderYawGrp[1] = {GRP_Shoulder};
 	rms_anim[0] = new MGROUP_ROTATE (midx, RMSShoulderYawGrp, 1,
-		_V(-2.26, 1.70, 9.65), _V(0, 1, 0), (float)(-360*RAD)); // -180 .. +180
+		{-2.26, 1.70, 9.65}, {0, 1, 0}, (float)(-360*RAD)); // -180 .. +180
 	anim_arm_sy = CreateAnimation (0.5);
 	parent = AddAnimationComponent (anim_arm_sy, 0, 1, rms_anim[0]);
 
 	static UINT RMSShoulderPitchGrp[1] = {GRP_Humerus};
 	rms_anim[1] = new MGROUP_ROTATE (midx, RMSShoulderPitchGrp, 1,
-		_V(-2.26, 1.70, 9.65), _V(1, 0, 0), (float)(147*RAD)); // -2 .. +145
+		{-2.26, 1.70, 9.65}, {1, 0, 0}, (float)(147*RAD)); // -2 .. +145
 	anim_arm_sp = CreateAnimation (0.0136);
 	parent = AddAnimationComponent (anim_arm_sp, 0, 1, rms_anim[1], parent);
 
 	static UINT RMSElbowPitchGrp[3] = {GRP_radii,GRP_RMScamera,GRP_RMScamera_pivot};
 	rms_anim[2] = new MGROUP_ROTATE (midx, RMSElbowPitchGrp, 3,
-		_V(-2.26,1.55,3.10), _V(1,0,0), (float)(-162*RAD)); // -160 .. +2
+		{-2.26,1.55,3.10}, {1,0,0}, (float)(-162*RAD)); // -160 .. +2
 	anim_arm_ep = CreateAnimation (0.0123);
 	parent = AddAnimationComponent (anim_arm_ep, 0, 1, rms_anim[2], parent);
 
 	static UINT RMSWristPitchGrp[1] = {GRP_wrist};
 	rms_anim[3] = new MGROUP_ROTATE (midx, RMSWristPitchGrp, 1,
-		_V(-2.26,1.7,-3.55), _V(1,0,0), (float)(240*RAD)); // -120 .. +120
+		{-2.26,1.7,-3.55}, {1,0,0}, (float)(240*RAD)); // -120 .. +120
 	anim_arm_wp = CreateAnimation (0.5);
 	parent = AddAnimationComponent (anim_arm_wp, 0, 1, rms_anim[3], parent);
 
 	static UINT RMSWristYawGrp[1] = {GRP_endeffecter};
 	rms_anim[4] = new MGROUP_ROTATE (midx, RMSWristYawGrp, 1,
-		_V(-2.26,1.7,-4.9), _V(0,1,0), (float)(-240*RAD)); // -120 .. +120
+		{-2.26,1.7,-4.9}, {0,1,0}, (float)(-240*RAD)); // -120 .. +120
 	anim_arm_wy = CreateAnimation (0.5);
 	parent = AddAnimationComponent (anim_arm_wy, 0, 1, rms_anim[4], parent);
 
 	rms_anim[5] = new MGROUP_ROTATE (LOCALVERTEXLIST, MAKEGROUPARRAY(arm_tip), 3,
-		_V(-2.26,1.7,-6.5), _V(0,0,1), (float)(894*RAD)); // -447 .. +447
+		{-2.26,1.7,-6.5}, {0,0,1}, (float)(894*RAD)); // -447 .. +447
 	anim_arm_wr = CreateAnimation (0.5);
 	hAC_arm = AddAnimationComponent (anim_arm_wr, 0, 1, rms_anim[5], parent);
 
@@ -655,15 +655,15 @@ void Atlantis::DefineAnimations (void)
 	anim_ssme = CreateAnimation (init_gimbal/max_gimbal);
 
 	static UINT SSMEL_Grp = GRP_SSMEL;
-	ssme_anim[0] = new MGROUP_ROTATE (midx, &SSMEL_Grp, 1, _V(-1.55,-0.37,-12.5), _V(-1,0,0), max_gimbal);
+	ssme_anim[0] = new MGROUP_ROTATE (midx, &SSMEL_Grp, 1, {-1.55,-0.37,-12.5}, {-1,0,0}, max_gimbal);
 	AddAnimationComponent (anim_ssme, 0, 1, ssme_anim[0]);
 
 	static UINT SSMER_Grp = GRP_SSMER;
-	ssme_anim[1] = new MGROUP_ROTATE (midx, &SSMER_Grp, 1, _V( 1.55,-0.37,-12.5), _V(-1,0,0), max_gimbal);
+	ssme_anim[1] = new MGROUP_ROTATE (midx, &SSMER_Grp, 1, { 1.55,-0.37,-12.5}, {-1,0,0}, max_gimbal);
 	AddAnimationComponent (anim_ssme, 0, 1, ssme_anim[1]);
 
 	static UINT SSMET_Grp = GRP_SSMET;
-	ssme_anim[2] = new MGROUP_ROTATE (midx, &SSMET_Grp, 1, _V(0.0,  2.7, -12.5), _V(-1,0,0), max_gimbal);
+	ssme_anim[2] = new MGROUP_ROTATE (midx, &SSMET_Grp, 1, {0.0,  2.7, -12.5}, {-1,0,0}, max_gimbal);
 	AddAnimationComponent (anim_ssme, 0, 1, ssme_anim[2]);
 
 	// ======================================================
@@ -1017,7 +1017,7 @@ void Atlantis::AutoGimbal (const VECTOR3 &tgt_rate)
 	// Set SRB gimbals
 	if (status < 2 && pET) {
 		pET->SetSRBGimbal (gimbal_pos);
-		SetSSMEGimbal (_V(gimbal_pos.x,0,0)); // If SRBs are available, we gimbal the SSMEs only in pitch
+		SetSSMEGimbal ({gimbal_pos.x,0,0}); // If SRBs are available, we gimbal the SSMEs only in pitch
 	} else {
 		SetSSMEGimbal (gimbal_pos);
 	}
@@ -1080,7 +1080,7 @@ void Atlantis::LaunchClamps ()
 {
 	// TODO
 #ifdef UNDEF
-	VECTOR3 F, T, r = _V(0,0,0), Fc = _V(0,0,0), Tc = _V(0,0,0);
+	VECTOR3 F, T, r = {0,0,0}, Fc = {0,0,0}, Tc = {0,0,0};
 	GetThrusterMoment (th_srb[0], F, T);
 	Fc.z = -2*F.z;
 	Tc.x =  2*T.x;
@@ -1095,7 +1095,7 @@ void Atlantis::LaunchClamps ()
 	r.z = (Fc.y ? Tc.x/Fc.y : 0);
 	AddForce (Fc, r);
 
-	Tc = _V(0,0,0);
+	Tc = {0,0,0};
 	GetThrusterMoment(th_srb[0], F, T);
 	Tc += T;
 	GetThrusterMoment(th_srb[1], F, T);
@@ -1110,35 +1110,35 @@ void Atlantis::LaunchClamps ()
 void Atlantis::SetGearParameters (double state)
 {
 	static TOUCHDOWNVTX tdvtx[14] = {
-		{_V( 0,    -3.3,18.75), 1e8, 1e6, 1.6, 0.1},
-		{_V(-3.96, -5.5, -3.2), 1e8, 1e6, 3, 0.2},
-		{_V( 3.96, -5.5, -3.2), 1e8, 1e6, 3, 0.2},
-		{_V(-11.9, -2.1, -10),  1e8, 1e6, 3},
-		{_V( 11.9, -2.1, -10),  1e8, 1e6, 3},
-		{_V(-11.3, -2.1, -6),   1e8, 1e6, 3},
-		{_V( 11.3, -2.1, -6),   1e8, 1e6, 3},
-		{_V(-2.95, -2.0,-14.35),1e8, 1e6, 3},
-		{_V( 2.95, -2.0,-14.35),1e8, 1e6, 3},
-		{_V(-1.9,  -1.0,-14.8), 1e8, 1e6, 3},
-		{_V( 1.9,  -1.0,-14.8), 1e8, 1e6, 3},
-		{_V( 0,    11.2,-16.4), 1e8, 1e6, 3},
-		{_V( 0,    11.3,-14.0), 1e8, 1e6, 3},
-		{_V( 0,    -0.9, 20.6), 1e8, 1e6, 3}
+		{{ 0,    -3.3,18.75}, 1e8, 1e6, 1.6, 0.1},
+		{{-3.96, -5.5, -3.2}, 1e8, 1e6, 3, 0.2},
+		{{ 3.96, -5.5, -3.2}, 1e8, 1e6, 3, 0.2},
+		{{-11.9, -2.1, -10},  1e8, 1e6, 3},
+		{{ 11.9, -2.1, -10},  1e8, 1e6, 3},
+		{{-11.3, -2.1, -6},   1e8, 1e6, 3},
+		{{ 11.3, -2.1, -6},   1e8, 1e6, 3},
+		{{-2.95, -2.0,-14.35},1e8, 1e6, 3},
+		{{ 2.95, -2.0,-14.35},1e8, 1e6, 3},
+		{{-1.9,  -1.0,-14.8}, 1e8, 1e6, 3},
+		{{ 1.9,  -1.0,-14.8}, 1e8, 1e6, 3},
+		{{ 0,    11.2,-16.4}, 1e8, 1e6, 3},
+		{{ 0,    11.3,-14.0}, 1e8, 1e6, 3},
+		{{ 0,    -0.9, 20.6}, 1e8, 1e6, 3}
 	};
 	if (state == 1.0) { // gear fully deployed
 		static TOUCHDOWNVTX geardn_vtx[3] = {
-			{_V( 0,    -3.95,17.5), 1e8, 1e6, 1.6, 0.1},
-			{_V(-3.96, -5.5, -3.2), 1e8, 1e6, 3, 0.2},
-			{_V( 3.96, -5.5, -3.2), 1e8, 1e6, 3, 0.2},
+			{{ 0,    -3.95,17.5}, 1e8, 1e6, 1.6, 0.1},
+			{{-3.96, -5.5, -3.2}, 1e8, 1e6, 3, 0.2},
+			{{ 3.96, -5.5, -3.2}, 1e8, 1e6, 3, 0.2},
 		};
 		memcpy (tdvtx, geardn_vtx, 3*sizeof(TOUCHDOWNVTX));
 		SetTouchdownPoints (tdvtx, 14);
 		SetSurfaceFrictionCoeff (0.05, 0.4);
 	} else {
 		static TOUCHDOWNVTX gearup_vtx[3] = {
-			{_V( 0,    -2.2,16.75), 1e8, 1e6, 3},
-			{_V(-3.96, -2.7, -3.2), 1e8, 1e6, 3},
-			{_V( 3.96, -2.7, -3.2), 1e8, 1e6, 3},
+			{{ 0,    -2.2,16.75}, 1e8, 1e6, 3},
+			{{-3.96, -2.7, -3.2}, 1e8, 1e6, 3},
+			{{ 3.96, -2.7, -3.2}, 1e8, 1e6, 3},
 		};
 		memcpy (tdvtx, gearup_vtx, 3*sizeof(TOUCHDOWNVTX));
 		SetTouchdownPoints (tdvtx, 14);
@@ -1310,10 +1310,10 @@ void Atlantis::clbkSetClassCaps (FILEHANDLE cfg)
 	
 	SetSize (19.6);
 	SetEmptyMass (ORBITER_EMPTY_MASS);
-	SetPMI (_V(78.2,82.1,10.7));
+	SetPMI ({78.2,82.1,10.7});
 	SetGravityGradientDamping (20.0);
 	SetCrossSections (ORBITER_CS);
-	SetRotDrag (_V(0.43,0.43,0.29)); // angular drag
+	SetRotDrag ({0.43,0.43,0.29}); // angular drag
 	SetTrimScale (0.05);
 	launchelev = 0.0;
 
@@ -1389,7 +1389,7 @@ void Atlantis::clbkLoadStateEx (FILEHANDLE scn, void *vs)
 				vs2->arot.z =  atan2(clng*slat*cdir+slng*sdir, clng*slat*sdir-slng*cdir);
 			}
 		} else {
-			double rad = length(vs2->rpos);
+			double rad = len(vs2->rpos);
 			double alt = rad - oapiGetSize(vs2->rbody);
 			launchelev = max (0.0, alt - 18.962);
 		}
@@ -1399,7 +1399,7 @@ void Atlantis::clbkLoadStateEx (FILEHANDLE scn, void *vs)
 		ofs_sts_sat.x=sts_sat_x;
 		ofs_sts_sat.y=sts_sat_y;
 		ofs_sts_sat.z=sts_sat_z;
-		SetAttachmentParams (sat_attach, ofs_sts_sat, _V(0,1,0), _V(0,0,1));
+		SetAttachmentParams (sat_attach, ofs_sts_sat, {0,1,0}, {0,0,1});
 	}
 
 	// optional meshes
@@ -1407,7 +1407,7 @@ void Atlantis::clbkLoadStateEx (FILEHANDLE scn, void *vs)
 		mesh_cargo = AddMesh (cargo_static_mesh_name, &cargo_static_ofs);
 	}
 	if (do_plat && !mesh_platform) {
-		VECTOR3 plat_ofs = _V(-2.59805, 1.69209, -5.15524);
+		VECTOR3 plat_ofs = {-2.59805, 1.69209, -5.15524};
 		mesh_platform = AddMesh("shuttle_eva_plat", &plat_ofs);
 	}
 	t0 = ascap->GetMT0();
@@ -1552,7 +1552,7 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
 
 	engine_light_level = GetThrusterGroupLevel (THGROUP_MAIN);
 
-	VECTOR3 tgt_rate = _V(0,0,0); // target rotation rates - used for setting engine gimbals
+	VECTOR3 tgt_rate = {0,0,0}; // target rotation rates - used for setting engine gimbals
 
 	if (status >= 1 && status <= 3) {
 		// ascent autopilot
@@ -1814,8 +1814,8 @@ void Atlantis::clbkMFDMode (int mfd, int mode)
 // --------------------------------------------------------------
 bool Atlantis::clbkLoadGenericCockpit ()
 {
-	SetCameraOffset (_V(-0.67,2.55,14.4));
-	SetCameraDefaultDirection (_V(0,0,1));
+	SetCameraOffset ({-0.67,2.55,14.4});
+	SetCameraDefaultDirection ({0,0,1});
 	return true;
 }
 
@@ -1826,21 +1826,21 @@ bool Atlantis::clbkLoadGenericCockpit ()
 void Atlantis::RegisterVC_CdrMFD ()
 {
 	// activate MFD function buttons
-	oapiVCSetAreaClickmode_Quadrilateral (AID_CDR1_BUTTONS, _V(-0.9239,2.0490,15.0595), _V(-0.7448,2.0490,15.0595),  _V(-0.9239,2.0280,15.0595), _V(-0.7448,2.0280,15.0595));
-	oapiVCSetAreaClickmode_Quadrilateral (AID_CDR2_BUTTONS, _V(-0.6546,2.0490,15.0595), _V(-0.4736,2.0490,15.0595),  _V(-0.6546,2.0280,15.0595), _V(-0.4736,2.0280,15.0595));
+	oapiVCSetAreaClickmode_Quadrilateral (AID_CDR1_BUTTONS, {-0.9239,2.0490,15.0595}, {-0.7448,2.0490,15.0595},  {-0.9239,2.0280,15.0595}, {-0.7448,2.0280,15.0595});
+	oapiVCSetAreaClickmode_Quadrilateral (AID_CDR2_BUTTONS, {-0.6546,2.0490,15.0595}, {-0.4736,2.0490,15.0595},  {-0.6546,2.0280,15.0595}, {-0.4736,2.0280,15.0595});
 
     // D. Beachy: register+activate MFD power buttons
     const double powerButtonRadius = 0.0075; // radius of power button on each MFD
 	oapiVCRegisterArea (AID_CDR1_PWR, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_ONREPLAY);
 	oapiVCRegisterArea (AID_CDR2_PWR, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_ONREPLAY);
-    oapiVCSetAreaClickmode_Spherical(AID_CDR1_PWR, _V(-0.950, 2.060, 15.060), powerButtonRadius);  
-    oapiVCSetAreaClickmode_Spherical(AID_CDR2_PWR, _V(-0.680, 2.060, 15.060), powerButtonRadius);  
+    oapiVCSetAreaClickmode_Spherical(AID_CDR1_PWR, {-0.950, 2.060, 15.060}, powerButtonRadius);  
+    oapiVCSetAreaClickmode_Spherical(AID_CDR2_PWR, {-0.680, 2.060, 15.060}, powerButtonRadius);  
 
 	// register+activate MFD brightness buttons
 	oapiVCRegisterArea (AID_CDR1_BRT, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_LBPRESSED|PANEL_MOUSE_ONREPLAY);
 	oapiVCRegisterArea (AID_CDR2_BRT, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_LBPRESSED|PANEL_MOUSE_ONREPLAY);
-	oapiVCSetAreaClickmode_Quadrilateral (AID_CDR1_BRT, _V(-0.729,2.0675,15.060), _V(-0.714,2.0675,15.060), _V(-0.729,2.0525,15.060), _V(-0.714,2.0525,15.060));
-	oapiVCSetAreaClickmode_Quadrilateral (AID_CDR2_BRT, _V(-0.459,2.0675,15.060), _V(-0.444,2.0675,15.060), _V(-0.459,2.0525,15.060), _V(-0.444,2.0525,15.060));
+	oapiVCSetAreaClickmode_Quadrilateral (AID_CDR1_BRT, {-0.729,2.0675,15.060}, {-0.714,2.0675,15.060}, {-0.729,2.0525,15.060}, {-0.714,2.0525,15.060});
+	oapiVCSetAreaClickmode_Quadrilateral (AID_CDR2_BRT, {-0.459,2.0675,15.060}, {-0.444,2.0675,15.060}, {-0.459,2.0525,15.060}, {-0.444,2.0525,15.060});
 }
 
 // --------------------------------------------------------------
@@ -1850,21 +1850,21 @@ void Atlantis::RegisterVC_CdrMFD ()
 void Atlantis::RegisterVC_PltMFD ()
 {
 	// activate MFD function buttons
-	oapiVCSetAreaClickmode_Quadrilateral (AID_PLT1_BUTTONS, _V(0.4759,2.0490,15.0595), _V(0.6568,2.0490,15.0595),  _V(0.4759,2.0280,15.0595), _V(0.6568,2.0280,15.0595));
-	oapiVCSetAreaClickmode_Quadrilateral (AID_PLT2_BUTTONS, _V(0.7461,2.0490,15.0595), _V(0.9271,2.0490,15.0595),  _V(0.7461,2.0280,15.0595), _V(0.9271,2.0280,15.0595));
+	oapiVCSetAreaClickmode_Quadrilateral (AID_PLT1_BUTTONS, {0.4759,2.0490,15.0595}, {0.6568,2.0490,15.0595},  {0.4759,2.0280,15.0595}, {0.6568,2.0280,15.0595});
+	oapiVCSetAreaClickmode_Quadrilateral (AID_PLT2_BUTTONS, {0.7461,2.0490,15.0595}, {0.9271,2.0490,15.0595},  {0.7461,2.0280,15.0595}, {0.9271,2.0280,15.0595});
 
     // D. Beachy: register+activate MFD power buttons
     const double powerButtonRadius = 0.0075; // radius of power button on each MFD
 	oapiVCRegisterArea (AID_PLT1_PWR, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_ONREPLAY);
 	oapiVCRegisterArea (AID_PLT2_PWR, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_ONREPLAY);
-    oapiVCSetAreaClickmode_Spherical(AID_PLT1_PWR, _V( 0.450, 2.060, 15.060), powerButtonRadius);  
-    oapiVCSetAreaClickmode_Spherical(AID_PLT2_PWR, _V( 0.720, 2.060, 15.060), powerButtonRadius);  
+    oapiVCSetAreaClickmode_Spherical(AID_PLT1_PWR, { 0.450, 2.060, 15.060}, powerButtonRadius);  
+    oapiVCSetAreaClickmode_Spherical(AID_PLT2_PWR, { 0.720, 2.060, 15.060}, powerButtonRadius);  
 
 	// register+activate MFD brightness buttons
 	oapiVCRegisterArea (AID_PLT1_BRT, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_LBPRESSED|PANEL_MOUSE_ONREPLAY);
 	oapiVCRegisterArea (AID_PLT2_BRT, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_LBPRESSED|PANEL_MOUSE_ONREPLAY);
-	oapiVCSetAreaClickmode_Quadrilateral (AID_PLT1_BRT, _V(0.671,2.0675,15.060), _V(0.686,2.0675,15.060), _V(0.671,2.0525,15.060), _V(0.686,2.0525,15.060));
-	oapiVCSetAreaClickmode_Quadrilateral (AID_PLT2_BRT, _V(0.941,2.0675,15.060), _V(0.956,2.0675,15.060), _V(0.941,2.0525,15.060), _V(0.956,2.0525,15.060));
+	oapiVCSetAreaClickmode_Quadrilateral (AID_PLT1_BRT, {0.671,2.0675,15.060}, {0.686,2.0675,15.060}, {0.671,2.0525,15.060}, {0.686,2.0525,15.060});
+	oapiVCSetAreaClickmode_Quadrilateral (AID_PLT2_BRT, {0.941,2.0675,15.060}, {0.956,2.0675,15.060}, {0.941,2.0525,15.060}, {0.956,2.0525,15.060});
 }
 
 // --------------------------------------------------------------
@@ -1874,11 +1874,11 @@ void Atlantis::RegisterVC_PltMFD ()
 void Atlantis::RegisterVC_CntMFD ()
 {
 	// activate MFD function buttons
-	oapiVCSetAreaClickmode_Quadrilateral (AID_MFD1_BUTTONS, _V(-0.3579,2.1451,15.0863), _V(-0.1770,2.1451,15.0863), _V(-0.3579,2.1241,15.0863), _V(-0.1770,2.1241,15.0863));
-	oapiVCSetAreaClickmode_Quadrilateral (AID_MFD2_BUTTONS, _V(-0.3579,1.9143,15.0217), _V(-0.1770,1.9143,15.0217), _V(-0.3579,1.8933,15.0217), _V(-0.1770,1.8933,15.0217));
-	oapiVCSetAreaClickmode_Quadrilateral (AID_MFD3_BUTTONS, _V(-0.0888,2.0288,15.0538), _V(0.0922,2.0288,15.0538), _V(-0.0888,2.0078,15.0538), _V(0.0922,2.0078,15.0538));
-	oapiVCSetAreaClickmode_Quadrilateral (AID_MFD4_BUTTONS, _V(0.1795,2.1451,15.0863), _V(0.3604,2.1451,15.0863), _V(0.1795,2.1241,15.0863), _V(0.3604,2.1241,15.0863));
-	oapiVCSetAreaClickmode_Quadrilateral (AID_MFD5_BUTTONS, _V(0.1795,1.9143,15.0217), _V(0.3604,1.9143,15.0217), _V(0.1795,1.8933,15.0217), _V(0.3604,1.8933,15.0217));
+	oapiVCSetAreaClickmode_Quadrilateral (AID_MFD1_BUTTONS, {-0.3579,2.1451,15.0863}, {-0.1770,2.1451,15.0863}, {-0.3579,2.1241,15.0863}, {-0.1770,2.1241,15.0863});
+	oapiVCSetAreaClickmode_Quadrilateral (AID_MFD2_BUTTONS, {-0.3579,1.9143,15.0217}, {-0.1770,1.9143,15.0217}, {-0.3579,1.8933,15.0217}, {-0.1770,1.8933,15.0217});
+	oapiVCSetAreaClickmode_Quadrilateral (AID_MFD3_BUTTONS, {-0.0888,2.0288,15.0538}, {0.0922,2.0288,15.0538}, {-0.0888,2.0078,15.0538}, {0.0922,2.0078,15.0538});
+	oapiVCSetAreaClickmode_Quadrilateral (AID_MFD4_BUTTONS, {0.1795,2.1451,15.0863}, {0.3604,2.1451,15.0863}, {0.1795,2.1241,15.0863}, {0.3604,2.1241,15.0863});
+	oapiVCSetAreaClickmode_Quadrilateral (AID_MFD5_BUTTONS, {0.1795,1.9143,15.0217}, {0.3604,1.9143,15.0217}, {0.1795,1.8933,15.0217}, {0.3604,1.8933,15.0217});
 
     // D. Beachy: register+activate MFD power buttons
     const double powerButtonRadius = 0.0075; // radius of power button on each MFD
@@ -1887,11 +1887,11 @@ void Atlantis::RegisterVC_CntMFD ()
 	oapiVCRegisterArea (AID_MFD3_PWR, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_ONREPLAY);
 	oapiVCRegisterArea (AID_MFD4_PWR, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_ONREPLAY);
 	oapiVCRegisterArea (AID_MFD5_PWR, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_ONREPLAY);
-    oapiVCSetAreaClickmode_Spherical(AID_MFD1_PWR, _V(-0.383, 2.153, 15.090), powerButtonRadius);  
-    oapiVCSetAreaClickmode_Spherical(AID_MFD2_PWR, _V(-0.383, 1.922, 15.023), powerButtonRadius);  
-    oapiVCSetAreaClickmode_Spherical(AID_MFD3_PWR, _V(-0.114, 2.037, 15.058), powerButtonRadius);  
-    oapiVCSetAreaClickmode_Spherical(AID_MFD4_PWR, _V( 0.155, 2.153, 15.090), powerButtonRadius);  
-    oapiVCSetAreaClickmode_Spherical(AID_MFD5_PWR, _V( 0.155, 1.922, 15.023), powerButtonRadius);  
+    oapiVCSetAreaClickmode_Spherical(AID_MFD1_PWR, {-0.383, 2.153, 15.090}, powerButtonRadius);  
+    oapiVCSetAreaClickmode_Spherical(AID_MFD2_PWR, {-0.383, 1.922, 15.023}, powerButtonRadius);  
+    oapiVCSetAreaClickmode_Spherical(AID_MFD3_PWR, {-0.114, 2.037, 15.058}, powerButtonRadius);  
+    oapiVCSetAreaClickmode_Spherical(AID_MFD4_PWR, { 0.155, 2.153, 15.090}, powerButtonRadius);  
+    oapiVCSetAreaClickmode_Spherical(AID_MFD5_PWR, { 0.155, 1.922, 15.023}, powerButtonRadius);  
 
 	// register+activate MFD brightness buttons
 	oapiVCRegisterArea (AID_MFD1_BRT, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_LBPRESSED|PANEL_MOUSE_ONREPLAY);
@@ -1899,11 +1899,11 @@ void Atlantis::RegisterVC_CntMFD ()
 	oapiVCRegisterArea (AID_MFD3_BRT, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_LBPRESSED|PANEL_MOUSE_ONREPLAY);
 	oapiVCRegisterArea (AID_MFD4_BRT, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_LBPRESSED|PANEL_MOUSE_ONREPLAY);
 	oapiVCRegisterArea (AID_MFD5_BRT, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_LBPRESSED|PANEL_MOUSE_ONREPLAY);
-	oapiVCSetAreaClickmode_Quadrilateral (AID_MFD1_BRT, _V(-0.162,2.1605,15.090), _V(-0.147,2.1605,15.090), _V(-0.162,2.1455,15.090), _V(-0.147,2.1455,15.090));
-	oapiVCSetAreaClickmode_Quadrilateral (AID_MFD2_BRT, _V(-0.162,1.9295,15.023), _V(-0.147,1.9295,15.023), _V(-0.162,1.9145,15.023), _V(-0.147,1.9145,15.023));
-	oapiVCSetAreaClickmode_Quadrilateral (AID_MFD3_BRT, _V(0.107,2.0445,15.058), _V(0.122,2.0445,15.058), _V(0.107,2.0295,15.058), _V(0.122,2.0295,15.058));
-	oapiVCSetAreaClickmode_Quadrilateral (AID_MFD4_BRT, _V(0.376,2.1605,15.090), _V(0.391,2.1605,15.090), _V(0.376,2.1455,15.090), _V(0.391,2.1455,15.090));
-	oapiVCSetAreaClickmode_Quadrilateral (AID_MFD5_BRT, _V(0.376,1.9295,15.023), _V(0.391,1.9295,15.023), _V(0.376,1.9145,15.023), _V(0.391,1.9145,15.023));
+	oapiVCSetAreaClickmode_Quadrilateral (AID_MFD1_BRT, {-0.162,2.1605,15.090}, {-0.147,2.1605,15.090}, {-0.162,2.1455,15.090}, {-0.147,2.1455,15.090});
+	oapiVCSetAreaClickmode_Quadrilateral (AID_MFD2_BRT, {-0.162,1.9295,15.023}, {-0.147,1.9295,15.023}, {-0.162,1.9145,15.023}, {-0.147,1.9145,15.023});
+	oapiVCSetAreaClickmode_Quadrilateral (AID_MFD3_BRT, {0.107,2.0445,15.058}, {0.122,2.0445,15.058}, {0.107,2.0295,15.058}, {0.122,2.0295,15.058});
+	oapiVCSetAreaClickmode_Quadrilateral (AID_MFD4_BRT, {0.376,2.1605,15.090}, {0.391,2.1605,15.090}, {0.376,2.1455,15.090}, {0.391,2.1455,15.090});
+	oapiVCSetAreaClickmode_Quadrilateral (AID_MFD5_BRT, {0.376,1.9295,15.023}, {0.391,1.9295,15.023}, {0.376,1.9145,15.023}, {0.391,1.9145,15.023});
 }
 
 // --------------------------------------------------------------
@@ -1915,16 +1915,16 @@ void Atlantis::RegisterVC_AftMFD ()
 	// register+activate aft MFD function buttons
 	SURFHANDLE tex1 = oapiGetTextureHandle (hOrbiterVCMesh, 7);
 	oapiVCRegisterArea (AID_MFDA_BUTTONS, _R(0,127,255,140), PANEL_REDRAW_USER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_LBUP|PANEL_MOUSE_LBPRESSED|PANEL_MOUSE_ONREPLAY, PANEL_MAP_BACKGROUND, tex1);
-	oapiVCSetAreaClickmode_Quadrilateral (AID_MFDA_BUTTONS, _V(1.3862,2.2570,13.8686), _V(1.3862,2.2570,13.6894), _V(1.3678,2.2452,13.8686), _V(1.3678,2.2452,13.6894));
+	oapiVCSetAreaClickmode_Quadrilateral (AID_MFDA_BUTTONS, {1.3862,2.2570,13.8686}, {1.3862,2.2570,13.6894}, {1.3678,2.2452,13.8686}, {1.3678,2.2452,13.6894});
 
 	// register+activate MFD power button
     const double powerButtonRadius = 0.0075; // radius of power button on each MFD
 	oapiVCRegisterArea (AID_MFDA_PWR, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_ONREPLAY);
-    oapiVCSetAreaClickmode_Spherical(AID_MFDA_PWR, _V(1.3929,2.2632,13.8947), powerButtonRadius);
+    oapiVCSetAreaClickmode_Spherical(AID_MFDA_PWR, {1.3929,2.2632,13.8947}, powerButtonRadius);
 
 	// register+activate MFD brightness buttons
 	oapiVCRegisterArea (AID_MFDA_BRT, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_LBPRESSED|PANEL_MOUSE_ONREPLAY);
-	oapiVCSetAreaClickmode_Quadrilateral (AID_MFDA_BRT, _V(1.4024,2.2675,13.6736), _V(1.4024,2.2675,13.6586), _V(1.3893,2.2590,13.6736), _V(1.3893,2.2590,13.6586));
+	oapiVCSetAreaClickmode_Quadrilateral (AID_MFDA_BRT, {1.4024,2.2675,13.6736}, {1.4024,2.2675,13.6586}, {1.3893,2.2590,13.6736}, {1.3893,2.2590,13.6586});
 }
 
 // --------------------------------------------------------------
@@ -1976,10 +1976,10 @@ bool Atlantis::clbkLoadVC (int id)
 
 	switch (id) {
 	case 0: // commander position
-		SetCameraOffset (_V(-0.67,2.55,14.4));
-		SetCameraDefaultDirection (_V(0,0,1));
-		SetCameraMovement (_V(0,0,0.3), 0, 0, _V(-0.3,0,0), 75*RAD, -5*RAD, _V(0.3,0,0), -20*RAD, -27*RAD);
-		huds.hudcnt = _V(-0.671257, 2.523535, 14.969);
+		SetCameraOffset ({-0.67,2.55,14.4});
+		SetCameraDefaultDirection ({0,0,1});
+		SetCameraMovement ({0,0,0.3}, 0, 0, {-0.3,0,0}, 75*RAD, -5*RAD, {0.3,0,0}, -20*RAD, -27*RAD);
+		huds.hudcnt = {-0.671257, 2.523535, 14.969};
 		oapiVCSetNeighbours (-1, 1, -1, 2);
 
 		RegisterVC_CdrMFD (); // activate commander MFD controls
@@ -1988,10 +1988,10 @@ bool Atlantis::clbkLoadVC (int id)
 		ok = true;
 		break;
 	case 1: // pilot position
-		SetCameraOffset (_V(0.67,2.55,14.4));
-		SetCameraDefaultDirection (_V(0,0,1));
-		SetCameraMovement (_V(0,0,0.3), 0, 0, _V(-0.3,0,0), 20*RAD, -27*RAD, _V(0.3,0,0), -75*RAD, -5*RAD);
-		huds.hudcnt = _V(0.671257, 2.523535, 14.969);
+		SetCameraOffset ({0.67,2.55,14.4});
+		SetCameraDefaultDirection ({0,0,1});
+		SetCameraMovement ({0,0,0.3}, 0, 0, {-0.3,0,0}, 20*RAD, -27*RAD, {0.3,0,0}, -75*RAD, -5*RAD);
+		huds.hudcnt = {0.671257, 2.523535, 14.969};
 		oapiVCSetNeighbours (0, -1, -1, 2);
 
 		RegisterVC_PltMFD (); // activate pilot MFD controls
@@ -2000,9 +2000,9 @@ bool Atlantis::clbkLoadVC (int id)
 		ok = true;
 		break;
 	case 2: // payload view position
-		SetCameraOffset (_V(0.4,3.15,13.0));
-		SetCameraDefaultDirection (_V(0,0,-1));
-		SetCameraMovement (_V(0,-0.1,-0.1), 0, 80.0*RAD, _V(0.3,-0.3,0.15), 60.0*RAD, -50.0*RAD, _V(-0.8,0,0), 0, 0);
+		SetCameraOffset ({0.4,3.15,13.0});
+		SetCameraDefaultDirection ({0,0,-1});
+		SetCameraMovement ({0,-0.1,-0.1}, 0, 80.0*RAD, {0.3,-0.3,0.15}, 60.0*RAD, -50.0*RAD, {-0.8,0,0}, 0, 0);
 		oapiVCSetNeighbours (1, 0, -1, 0);
 
 		RegisterVC_AftMFD (); // activate aft MFD controls

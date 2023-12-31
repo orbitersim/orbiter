@@ -36,7 +36,7 @@ SurfaceManager::SurfaceManager (D3D9Client *gclient, const vPlanet *vplanet)
 
 	maxbaselvl = min(8, maxlvl);
 
-	pcdir = _V(1,0,0);
+	pcdir = {1,0,0};
 	lightfac = *(double*)gc->GetConfigParam (CFGPRM_SURFACELIGHTBRT);
 	spec_base = 0.95f;
 	atmc = oapiGetPlanetAtmConstants (obj);

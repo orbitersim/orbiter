@@ -37,9 +37,9 @@ Rotor::Rotor(const PropulsionSubsystem *ssys, const VECTOR3 &pos, SpinDirection 
 	, m_spin(spin)
 	, m_throttle(0.0)
 {
-	m_liftDir = _V(0, 1, 0);
+	m_liftDir = {0, 1, 0};
 	VECTOR3 cgDir = unit(-pos);
-	m_torqueDir = crossp(cgDir, m_liftDir);
+	m_torqueDir = cross(cgDir, m_liftDir);
 	if (spin == SPIN_RIGHT)
 		m_torqueDir = -m_torqueDir;
 }
@@ -75,10 +75,10 @@ PropulsionSubsystem::PropulsionSubsystem(Quadcopter *qc)
 {
 	const double px = 0.4, pz = 0.4, py = 0.15;
 
-	m_rotor[ROTOR_FL] = new Rotor(this, _V(-px, py,  pz), Rotor::SPIN_LEFT);
-	m_rotor[ROTOR_FR] = new Rotor(this, _V( px, py,  pz), Rotor::SPIN_RIGHT);
-	m_rotor[ROTOR_BL] = new Rotor(this, _V(-px, py, -pz), Rotor::SPIN_RIGHT);
-	m_rotor[ROTOR_BR] = new Rotor(this, _V( px, py, -pz), Rotor::SPIN_LEFT);
+	m_rotor[ROTOR_FL] = new Rotor(this, {-px, py,  pz}, Rotor::SPIN_LEFT);
+	m_rotor[ROTOR_FR] = new Rotor(this, { px, py,  pz}, Rotor::SPIN_RIGHT);
+	m_rotor[ROTOR_BL] = new Rotor(this, {-px, py, -pz}, Rotor::SPIN_RIGHT);
+	m_rotor[ROTOR_BR] = new Rotor(this, { px, py, -pz}, Rotor::SPIN_LEFT);
 	m_holdActive = false;
 	m_throttle = 0.0;
 
@@ -166,7 +166,7 @@ void PropulsionSubsystem::clbkPreStep(double simt, double simdt, double mjd)
 		if (m_autoHeading) {
 			VECTOR3 v;
 			QC()->GetHorizonAirspeedVector(v);
-			if (length(v) > 5.0) {
+			if (len(v) > 5.0) {
 				double course = atan2(v.x, v.z);
 				SetHeading(course, dy);
 				fixedHeading = true;

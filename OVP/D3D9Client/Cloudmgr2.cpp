@@ -112,7 +112,7 @@ void CloudTile::Render()
 	sp->vMicroOff = GetTexRangeDX(&microrange);
 	sp->fAlpha = 1.0f;
 	sp->fBeta = 1.0f;
-	sp->mWorld = mWorld;
+	sp->mWorld = to_FMATRIX4(mWorld);
 
 	// -------------------------------------------------------------------
 	// render surface mesh

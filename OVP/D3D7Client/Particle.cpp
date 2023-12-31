@@ -58,7 +58,7 @@ D3D7ParticleStream::D3D7ParticleStream (GraphicsClient *_gc, PARTICLESTREAMSPEC 
 	d3d7c = (D3D7Client*)_gc;
 	cam_ref = d3d7c->GetScene()->GetCamera()->GetGPos();
 	src_ref = 0;
-	src_ofs = _V(0,0,0);
+	src_ofs = {0,0,0};
 	interval = 0.1;
 	SetSpecs (pss ? pss : &DefaultParticleStreamSpec);
 	t0 = oapiGetSimTime();
@@ -590,8 +590,8 @@ void ExhaustStream::Update ()
 								  ((double)rand()/(double)RAND_MAX-0.5)*dv_scale};
 					dv += vv;
 
-					normalise(s);
-					VECTOR3 vv2 = dv - s*dotp(s,dv);
+					s = unit(s);
+					VECTOR3 vv2 = dv - s * dot(s, dv);
 					if (length(vv2)) vv2 *= 0.5*length(vv)/length(vv2);
 					vv2 += s*(((double)rand()/(double)RAND_MAX)*dv_scale);
 					p->vel = vv2*1.0/*2.0*/+av;
@@ -675,9 +675,9 @@ void ExhaustStream::RenderGroundShadow (LPDIRECT3DDEVICE7 dev, LPDIRECTDRAWSURFA
 			rad += oapiSurfaceElevation (hPlanet, lng, lat);
 
 			// calculate the intersection of the vessel's shadow with the planet surface
-			double fac1 = dotp (sd, pv0);
+			double fac1 = dot(sd, pv0);
 			if (fac1 > 0.0) return;       // shadow doesn't intersect planet surface
-			double arg  = fac1*fac1 - (dotp (pv0, pv0) - rad*rad);
+			double arg = fac1 * fac1 - (dot(pv0, pv0) - rad * rad);
 			if (arg <= 0.0) return;       // shadow doesn't intersect with planet surface
 			double a = -fac1 - sqrt(arg);
 			VECTOR3 shp = sd*a;           // projection point in global frame
@@ -696,9 +696,9 @@ void ExhaustStream::RenderGroundShadow (LPDIRECT3DDEVICE7 dev, LPDIRECTDRAWSURFA
 		VECTOR3 pvr = p->pos - pp;   // rel. particle position
 
 		// calculate the intersection of the vessel's shadow with the planet surface
-		double fac1 = dotp (sd, pvr);
+		double fac1 = dot(sd, pvr);
 		if (fac1 > 0.0) break;       // shadow doesn't intersect planet surface
-		double arg  = fac1*fac1 - (dotp (pvr, pvr) - rad*rad);
+		double arg = fac1 * fac1 - (dot(pvr, pvr) - rad * rad);
 		if (arg <= 0.0) break;       // shadow doesn't intersect with planet surface
 		double a = -fac1 - sqrt(arg);
 
@@ -734,7 +734,7 @@ ReentryStream::ReentryStream (oapi::GraphicsClient *_gc, OBJHANDLE hV, PARTICLES
 : D3D7ParticleStream (_gc, pss)
 {
 	llevel = 1.0;
-	Attach (hV, _V(0,0,0), _V(0,0,0), &llevel);
+	Attach (hV, {0,0,0}, {0,0,0}, &llevel);
 	hPlanet = 0;
 }
 

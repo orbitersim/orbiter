@@ -191,9 +191,9 @@ void CameraMFD::SelectVessel(VESSEL *hVes, Type _type)
 	VECTOR3 pos, dir, rot;
 
 
-	pos = _V(0, 0, 0);
-	dir = _V(1, 0, 0);
-	rot = _V(0, 1, 0);
+	pos = {0, 0, 0};
+	dir = {1, 0, 0};
+	rot = {0, 1, 0};
 
 	type = _type;
 

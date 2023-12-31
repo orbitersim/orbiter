@@ -99,19 +99,19 @@ END_MESSAGE_MAP()
 void RotateDlg::OnDoRotx() 
 {
 	UpdateData();
-	mesh->Rotate (mesh->ROTATE_X, (float)(RAD*m_Rotx));
+	mesh->Rotate (mesh->ROTATE_X, (float)(_RAD_*m_Rotx));
 }
 
 void RotateDlg::OnDoRoty() 
 {
 	UpdateData();
-	mesh->Rotate (mesh->ROTATE_Y, (float)(RAD*m_Roty));
+	mesh->Rotate (mesh->ROTATE_Y, (float)(_RAD_*m_Roty));
 }
 
 void RotateDlg::OnDoRotz() 
 {
 	UpdateData();
-	mesh->Rotate (mesh->ROTATE_Z, (float)(RAD*m_Rotz));
+	mesh->Rotate (mesh->ROTATE_Z, (float)(_RAD_*m_Rotz));
 }
 /////////////////////////////////////////////////////////////////////////////
 // ScaleDlg dialog

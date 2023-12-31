@@ -8,16 +8,16 @@
 
 #define D3D_OVERLOADS
 
+#include "AtmoControls.h"
+#include "D3D9Client.h"
+#include "D3D9Config.h"
+#include "D3D9Util.h"
+#include "IProcess.h"
+#include "VPlanet.h"
+
 #include <map>
 #include <sstream>
 #include <unordered_map>
-
-#include "D3D9Client.h"
-#include "D3D9Config.h"
-#include "VPlanet.h"
-#include "AtmoControls.h"
-#include "VectorHelpers.h"
-#include "IProcess.h"
 
 using namespace oapi;
 
@@ -595,9 +595,9 @@ void vPlanet::UpdateScatter()
 	oapiGetRotationMatrix(hObj, &mRot);
 
 	VECTOR3 vNrm = mul(mRot, ReferencePoint());
-	VECTOR3 vRot = unit(mul(mRot, _V(0, 1, 0)));
-	VECTOR3 vTan = unit(crossp(vRot, vNrm));
-	VECTOR3 vBiT = unit(crossp(vTan, vNrm));
+	VECTOR3 vRot = unit(mul(mRot, VECTOR3{0, 1, 0}));
+	VECTOR3 vTan = unit(cross(vRot, vNrm));
+	VECTOR3 vBiT = unit(cross(vTan, vNrm));
 
 	memcpy(&cp.mVP, scn->GetProjectionViewMatrix(), sizeof(FMATRIX4));
 

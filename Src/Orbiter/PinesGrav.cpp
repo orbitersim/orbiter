@@ -182,9 +182,9 @@ int PinesGravProp::readGravModel(char* filename, int cutoff, int &actualLoadedTe
 	}
 }
 
-Vector PinesGravProp::GetPinesGrav(const Vector rpos, const int maxDegree, const int maxOrder)
+VECTOR3 PinesGravProp::GetPinesGrav(const VECTOR3 rpos, const int maxDegree, const int maxOrder)
 {
-	r = rpos.length();
+	r = len(rpos);
 	s = rpos.x / r;
 	t = rpos.y / r;
 	u = rpos.z / r;
@@ -254,11 +254,5 @@ Vector PinesGravProp::GetPinesGrav(const Vector rpos, const int maxDegree, const
 
 	}
 
-	Vector gperturbed;
-
-	gperturbed.x = (g1 - g4 * s);
-	gperturbed.y = (g2 - g4 * t);
-	gperturbed.z = (g3 - g4 * u);
-
-	return gperturbed;
+	return VECTOR3{g1 - g4 * s, g2 - g4 * t, g3 - g4 * u};
 }

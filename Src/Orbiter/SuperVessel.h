@@ -44,7 +44,7 @@
 
 typedef struct {     // vessel component specs
 	Vessel *vessel;     // vessel pointer
-	Vector rpos;        // rel vessel position in SuperVessel coords
+	VECTOR3 rpos;       // rel vessel position in SuperVessel coords
 	Matrix rrot;        // rel vessel orientation: vessel -> supervessel
 	Quaternion rq;      // rel vessel orientation in quaternion representation
 } SubVesselData;
@@ -91,11 +91,11 @@ public:
 	void Detach (Vessel *vessel, DWORD port, double vsep = 0.2);
 	// detach "vessel" from the super-structure
 
-	void RPlace (const Vector &_rpos, const Vector &_rvel, const Vessel *ref = 0);
+	void RPlace (const VECTOR3 &_rpos, const VECTOR3 &_rvel, const Vessel *ref = 0);
 	// Sets the supervessel's position and velocity state vectors in parent coordinates
 	// If ref is set, then rpos refers to that vessel. Otherwise it refers to the supervessel CG.
 
-	void SetGlobalOrientation (const Vector &arot, const Vessel *ref = 0);
+	void SetGlobalOrientation (const VECTOR3 &arot, const Vessel *ref = 0);
 	// Set superstructure orientation from vector of Euler angles
 	// If ref is set, then arot refers to that vessel.
 
@@ -103,7 +103,7 @@ public:
 	// Set global superstructure rotation matrix to R
 	// If ref is set, then arot refers to that vessel.
 
-	void SetAngVel (const Vector &omega, const Vessel *ref = 0);
+	void SetAngVel (const VECTOR3 &omega, const Vessel *ref = 0);
 	// Set angular velocity components to omega [rad/s]
 	// If ref is set, then avel refers to that vessel.
 
@@ -114,7 +114,7 @@ public:
 	void Refuel ();
 	// Re-fill all tank in all components
 
-	void GetIntermediateMoments (Vector &acc, Vector &tau,
+	void GetIntermediateMoments (VECTOR3 &acc, VECTOR3 &tau,
 		const StateVectors &state, double tfrac, double dt);
 	// Returns acceleration acc and torque tau, at time SimT0+tfrac*SimDT
 	// and step size dt, given intermediate state in global frame
@@ -124,17 +124,17 @@ public:
 
 	void PostUpdate ();
 
-	bool AddSurfaceForces (Vector *F, Vector *M,
+	bool AddSurfaceForces (VECTOR3 *F, VECTOR3 *M,
 		const StateVectors *s = NULL, double tfrac = 1.0, double dt = 0.0) const;
 
-	void NotifyShiftVesselOrigin (Vessel *vessel, const Vector &dr);
+	void NotifyShiftVesselOrigin (Vessel *vessel, const VECTOR3 &dr);
 	// sent by a vessel to notify a shift of its local coordinate origin (i.e. its centre of mass)
 
-	bool GetCG (const Vessel *vessel, Vector &vcg);
+	bool GetCG (const Vessel *vessel, VECTOR3 &vcg);
 	// Sets 'vcg' to centre of gravity of super-structure in coordinates of 'vessel', if vessel is
 	// part of the super-structure. Otherwise returns false
 
-	bool GetPMI (const Vessel *vessel, Vector &vpmi);
+	bool GetPMI (const Vessel *vessel, VECTOR3 &vpmi);
 	// Returns PMI values of supervessel in 'vpmi' rotated into coordinate frame of
 	// vessel 'vessel'
 
@@ -195,8 +195,8 @@ private:
 	// Returns state vectors scomp for component vessel comp, given supervessel
 	// state vectors s
 
-	void AddComponentForceAndMoment (Vector *F, Vector *M,
-		const Vector *Fcomp, const Vector *Mcomp, int comp) const;
+	void AddComponentForceAndMoment (VECTOR3 *F, VECTOR3 *M,
+		const VECTOR3 *Fcomp, const VECTOR3 *Mcomp, int comp) const;
 	// Adds component force Fcomp and moment Mcomp from component vessel 'comp' to the
 	// supervessel force F and moment M
 
@@ -205,11 +205,11 @@ private:
 	DWORD nv;             // length of vlist;
 
 	// *** global data ***
-	Vector cg;            // centre of gravity in supervessel coords
+	VECTOR3 cg;           // centre of gravity in supervessel coords
 	// Note: The supervessel origin is the origin of the first vessel in the
 	// list, not the CG of the composite structure.
 
-	Vector Flin, Amom;
+	VECTOR3 Flin, Amom;
 	// linear, angular forces on structure other than gravitational;
 	// collected from vessel components
 

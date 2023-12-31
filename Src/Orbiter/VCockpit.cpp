@@ -53,7 +53,7 @@ void VirtualCockpit::SetConnections (int left, int right, int top, int bottom)
 	connect[3] = bottom;
 }
 
-void VirtualCockpit::Shift (const Vector &shift)
+void VirtualCockpit::Shift (const VECTOR3 &shift)
 {
 	ShiftHUDPos (shift);
 	ShiftAreas (shift);
@@ -218,7 +218,7 @@ void VirtualCockpit::ReleaseAreas ()
 	narea = nareabuf = 0;
 }
 
-void VirtualCockpit::ShiftAreas (const Vector &shift)
+void VirtualCockpit::ShiftAreas (const VECTOR3 &shift)
 {
 	for (int i = 0; i < narea; i++) {
 		switch (area[i]->cmode) {
@@ -252,13 +252,9 @@ void VirtualCockpit::DestroyHUDSurface ()
 	}
 }
 
-void VirtualCockpit::ShiftHUDPos (const Vector &shift)
+void VirtualCockpit::ShiftHUDPos (const VECTOR3 &shift)
 {
-	if (hud.surf) {
-		hud.spec.hudcnt.x += (float)shift.x;
-		hud.spec.hudcnt.y += (float)shift.y;
-		hud.spec.hudcnt.z += (float)shift.z;
-	}
+	if (hud.surf) hud.spec.hudcnt += shift;
 }
 
 void VirtualCockpit::ClearHUD ()
@@ -290,25 +286,25 @@ void VirtualCockpit::SetHUDCol (COLORREF col, double intens)
 #endif
 }
 
-bool VirtualCockpit::SetClickZone_Spherical (int i, const Vector &cnt, double rad)
+bool VirtualCockpit::SetClickZone_Spherical (int i, const VECTOR3 &cnt, double rad)
 {
-	area[i]->cnt.Set (cnt);
+	area[i]->cnt = cnt;
 	area[i]->rad = rad;
 	area[i]->cmode = Area::CMODE_SPHERICAL;
 	return true;
 }
 
 bool VirtualCockpit::SetClickZone_Quadrilateral (int i,
-	const Vector &p1, const Vector &p2, const Vector &p3, const Vector &p4)
+	const VECTOR3 &p1, const VECTOR3 &p2, const VECTOR3 &p3, const VECTOR3 &p4)
 {
 	const double EPS = 1e-8;
 	int j;
 
 	// save corner points
-	area[i]->p[0].Set (p1);
-	area[i]->p[1].Set (p2);
-	area[i]->p[2].Set (p3);
-	area[i]->p[3].Set (p4);
+	area[i]->p[0] = p1;
+	area[i]->p[1] = p2;
+	area[i]->p[2] = p3;
+	area[i]->p[3] = p4;
 
 	// global coefficients of equation of the plane: ax+by+cz+d = 0
 	double a, b, c, d;
@@ -320,8 +316,8 @@ bool VirtualCockpit::SetClickZone_Quadrilateral (int i,
 
 	double pdst = fabs(PointPlaneDist(p4, a, b, c, d));
 	if (pdst < EPS) { // the 4 points are coplanar, so we need to avoid singularity
-		Vector nml(PlaneNormal(a, b, c, d));
-		area[i]->p[3].Set(p4 + nml * EPS);
+		VECTOR3 nml = PlaneNormal(a, b, c, d);
+		area[i]->p[3] = p4 + nml * EPS;
 	}
 
 	// calculate coefficients for mapping global quadrilateral to local square (0,1)x(0,1)
@@ -333,14 +329,14 @@ bool VirtualCockpit::SetClickZone_Quadrilateral (int i,
 		area[i]->p[3].x, area[i]->p[3].y, area[i]->p[3].z, 1
 	);
 	Matrix4 P2(P1);
-	Vector4 cc, dd, r;
-	Vector4 u(0,1,0,1), v(0,0,1,1);
+	VECTOR4 cc{ }, dd{ };
+	VECTOR4 u{0, 1, 0, 1}, v{0, 0, 1, 1};
 	qrdcmp (P1, cc, dd);
 	qrsolv (P1, cc, dd, u);
-	for (j = 0; j < 4; j++) area[i]->u[j] = (float)u(j);
+	for (j = 0; j < 4; j++) area[i]->u[j] = (float)u[j];
 	qrdcmp (P2, cc, dd);
 	qrsolv (P2, cc, dd, v);
-	for (j = 0; j < 4; j++) area[i]->v[j] = (float)v(j);
+	for (j = 0; j < 4; j++) area[i]->v[j] = (float)v[j];
 
 	area[i]->cmode = Area::CMODE_QUAD;
 	return true;
@@ -367,12 +363,12 @@ bool VirtualCockpit::ProcessMouse (UINT event, DWORD state, int x, int y)
 		idx_mfocus = -1;
 
 		// convert mouse position into vessel-local ray
-		Vector gdir, ldir;
+		VECTOR3 gdir, ldir;
 		g_camera->ViewportToGlobalDir (x, y, gdir);
 		ldir = tmul (g_focusobj->GRot(), gdir);
 
 		// vessel-local camera position
-		Vector cpos (tmul (g_focusobj->GRot(), *g_camera->GPosPtr() - g_focusobj->GPos()));
+		VECTOR3 cpos = tmul(g_focusobj->GRot(), *g_camera->GPosPtr() - g_focusobj->GPos());
 
 		int i, imatch;
 		double minreldist, mx = 0, my = 0;
@@ -380,7 +376,7 @@ bool VirtualCockpit::ProcessMouse (UINT event, DWORD state, int x, int y)
 
 			switch (area[i]->cmode) {
 			case Area::CMODE_SPHERICAL: {
-				if (dotp(ldir, area[i]->cnt-cpos) > 0.0) { // otherwise target is behind camera
+				if (dot(ldir, area[i]->cnt-cpos) > 0.0) { // otherwise target is behind camera
 					double d = PointLineDist (area[i]->cnt, cpos, ldir);
 					if (d < area[i]->rad) {
 						if (d/area[i]->rad < minreldist) {
@@ -392,9 +388,9 @@ bool VirtualCockpit::ProcessMouse (UINT event, DWORD state, int x, int y)
 				}
 				} break;
 			case Area::CMODE_QUAD: {
-				Vector r;
+				VECTOR3 r;
 				if (LinePlaneIntersect (area[i]->a, area[i]->b, area[i]->c, area[i]->d, cpos, ldir, r)) {
-					if (dotp(ldir, r-cpos) > 0.0) { // otherwise target is behind camera
+					if (dot(ldir, r-cpos) > 0.0) { // otherwise target is behind camera
 						mx = area[i]->u[0]*r.x + area[i]->u[1]*r.y + area[i]->u[2]*r.z + area[i]->u[3];
 						my = area[i]->v[0]*r.x + area[i]->v[1]*r.y + area[i]->v[2]*r.z + area[i]->v[3];
 						if (mx >= 0 && mx <= 1 && my >= 0 && my <= 1) {
@@ -424,7 +420,7 @@ bool VirtualCockpit::ProcessMouse (UINT event, DWORD state, int x, int y)
 	}
 }
 
-void VirtualCockpit::GetMouseState (int &idx, int &state, Vector &xs) const
+void VirtualCockpit::GetMouseState (int &idx, int &state, VECTOR3 &xs) const
 {
 	if (mstate & PANEL_MOUSE_PRESSED) {
 		POINT pt;
@@ -433,12 +429,12 @@ void VirtualCockpit::GetMouseState (int &idx, int &state, Vector &xs) const
 			ScreenToClient (cwnd, &pt);
 
 		// calculate ray intersection with current focus area
-		Vector gdir, ldir;
+		VECTOR3 gdir, ldir;
 		g_camera->ViewportToGlobalDir (pt.x, pt.y, gdir);
 		ldir = tmul (g_focusobj->GRot(), gdir);
 
 		// vessel-local camera position
-		Vector cpos (tmul (g_focusobj->GRot(), *g_camera->GPosPtr() - g_focusobj->GPos()));
+		VECTOR3 cpos = tmul(g_focusobj->GRot(), *g_camera->GPosPtr() - g_focusobj->GPos());
 
 		switch (area[idx_mfocus]->cmode) {
 		case Area::CMODE_SPHERICAL: {
@@ -448,7 +444,7 @@ void VirtualCockpit::GetMouseState (int &idx, int &state, Vector &xs) const
 			mouse_r.y = mouse_r.z = 0.0;
 			} break;
 		case Area::CMODE_QUAD: {
-			Vector r;
+			VECTOR3 r;
 			LinePlaneIntersect (area[idx_mfocus]->a, area[idx_mfocus]->b, area[idx_mfocus]->c, area[idx_mfocus]->d, cpos, ldir, r);
 			mouse_r.x = area[idx_mfocus]->u[0]*r.x + area[idx_mfocus]->u[1]*r.y + area[idx_mfocus]->u[2]*r.z + area[idx_mfocus]->u[3];
 			mouse_r.y = area[idx_mfocus]->v[0]*r.x + area[idx_mfocus]->v[1]*r.y + area[idx_mfocus]->v[2]*r.z + area[idx_mfocus]->v[3];

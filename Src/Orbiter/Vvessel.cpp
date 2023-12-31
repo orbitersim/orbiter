@@ -494,8 +494,8 @@ void SetExhaustVertices (const VECTOR3 &edir, const VECTOR3 &cdir, const VECTOR3
 {
 	// need to rotate the billboard so it faces the observer
 	const float flarescale = 7.0;
-	VECTOR3 sdir = unit (crossp (cdir, edir));
-	VECTOR3 tdir = unit (crossp (cdir, sdir));
+	VECTOR3 sdir = unit(cross(cdir, edir));
+	VECTOR3 tdir = unit(cross(cdir, sdir));
 	D3DVALUE rx = (D3DVALUE)ref.x, ry = (D3DVALUE)ref.y, rz = (D3DVALUE)ref.z;
 	if (lofs) rx += (D3DVALUE)(edir.x*lofs), ry += (D3DVALUE)(edir.y*lofs), rz += (D3DVALUE)(edir.z*lofs);
 	D3DVALUE sx = (D3DVALUE)(sdir.x*wscale);
@@ -529,8 +529,8 @@ void SetReentryVertices (const VECTOR3 &edir, const VECTOR3 &cdir, const VECTOR3
 	const float flarescale = 1.0;
 	const float lscale1 = (float)(lscale*llen * (1.0 + 0.1*rand()/(double)RAND_MAX));
 	const float lscale2 = (float)(lscale * 0.125);
-	VECTOR3 sdir = unit (crossp (cdir, edir));
-	VECTOR3 tdir = unit (crossp (cdir, sdir));
+	VECTOR3 sdir = unit(cross(cdir, edir));
+	VECTOR3 tdir = unit(cross(cdir, sdir));
 	D3DVALUE rx = (D3DVALUE)ref.x, ry = (D3DVALUE)ref.y, rz = (D3DVALUE)ref.z;
 	D3DVALUE sx = (D3DVALUE)(sdir.x*wscale);
 	D3DVALUE sy = (D3DVALUE)(sdir.y*wscale);
@@ -594,8 +594,8 @@ void VVessel::RenderBeacons (LPDIRECT3DDEVICE7 dev)
 					continue;
 				double size = bs->size;
 				if (cdist > 50.0) size *= pow (cdist/50.0, bs->falloff);
-				Vector pos (MakeVector (*bs->pos));
-				Vector col (MakeVector (*bs->col));
+				auto pos = *bs->pos;
+				auto col = *bs->col;
 				if (need_setup) {
 					dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
 					dev->SetRenderState (D3DRENDERSTATE_ZWRITEENABLE, FALSE);
@@ -630,7 +630,7 @@ void VVessel::RenderExhaust (LPDIRECT3DDEVICE7 dev, LPDIRECTDRAWSURFACE7 default
 			dev->SetRenderState (D3DRENDERSTATE_ZWRITEENABLE, FALSE);
 			dev->SetMaterial (&engmat);
 			dev->SetTransform (D3DTRANSFORMSTATE_WORLD, &mWorld);
-			cdir = MakeVECTOR3 (tmul (body->GRot(), cpos));
+			cdir = tmul(body->GRot(), cpos);
 #ifdef EXHAUST_SCALEALPHA
 			dev->SetTextureStageState (0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
 			dev->SetTextureStageState (0, D3DTSS_ALPHAARG2, D3DTA_TFACTOR);
@@ -678,7 +678,7 @@ void VVessel::RenderExhaust (LPDIRECT3DDEVICE7 dev, LPDIRECTDRAWSURFACE7 default
 				dev->SetRenderState (D3DRENDERSTATE_ZWRITEENABLE, FALSE);
 				//dev->SetMaterial (&engmat);
 				dev->SetTransform (D3DTRANSFORMSTATE_WORLD, &mWorld);
-				cdir = MakeVECTOR3 (tmul (body->GRot(), cpos));
+				cdir = tmul(body->GRot(), cpos);
 				need_setup = false;
 			}
 
@@ -690,8 +690,8 @@ void VVessel::RenderExhaust (LPDIRECT3DDEVICE7 dev, LPDIRECTDRAWSURFACE7 default
 			mat.emissive.g = (float)(0.7+0.3*opac);
 			mat.emissive.b = (float)(0.5+0.5*opac);
 			dev->SetMaterial (&mat);
-			VECTOR3 dir = unit (MakeVECTOR3 (vessel->sp.airvel_ship));
-			VECTOR3 ref = dir*(0.2*vessel->size);
+			VECTOR3 dir = unit(vessel->sp.airvel_ship);
+			VECTOR3 ref = dir * (0.2 * vessel->size);
 			SetReentryVertices (-dir, cdir, ref, vessel->reentry.lscale*vessel->size,
 				vessel->reentry.wscale*(0.15+max(opac,0.5))*vessel->size, opac, ReentryVtx);
 
@@ -720,31 +720,31 @@ void VVessel::RenderGroundShadow (LPDIRECT3DDEVICE7 dev, const Planet *planet)
 	double depth = planet->ShadowDepth();
 	if (!depth) return;
 
-	Vector pp (planet->GPos());   // planet position
-	Vector pv (vessel->GPos());   // vessel position
-	Vector pvr (pv-pp);           // rel. vessel position
-	Vector sd (pv.unit());        // shadow projection direction
+	VECTOR3 pp  = planet->GPos(); // planet position
+	VECTOR3 pv  = vessel->GPos(); // vessel position
+	VECTOR3 pvr = pv - pp;        // rel. vessel position
+	VECTOR3 sd  = unit(pv);       // shadow projection direction
 	double R = planet->Size();    // planet radius
 	R += sp->elev;  // Note: this only works at low vessel altitudes (shadow close to vessel position)
 
 	// calculate the intersection of the vessel's shadow with the planet surface
-	double fac1 = dotp (sd, pvr);
+	double fac1 = dot(sd, pvr);
 	if (fac1 > 0.0) return;       // shadow doesn't intersect planet surface
-	double csun = -fac1/pvr.length(); // sun elevation above horizon
+	double csun = -fac1 / len(pvr); // sun elevation above horizon
 	if (csun < shadow_elev_limit) return; // sun too low to cast shadow
-	double arg  = fac1*fac1 - (dotp (pvr, pvr) - R*R);
+	double arg  = fac1 * fac1 - (dot(pvr, pvr) - R * R);
 	if (arg <= 0.0) return;       // shadow doesn't intersect with planet surface
 	double a = -fac1 - sqrt(arg);
 
-	Vector sdv (tmul (vessel->GRot(), sd)); // projection direction in vessel frame
-	Vector shp (sdv*a);                     // projection point
+	VECTOR3 sdv = tmul(vessel->GRot(), sd); // projection direction in vessel frame
+	VECTOR3 shp = sdv * a;                     // projection point
 	//Vector hn (tmul (vessel->GRot(), (sd*a + pvr).unit())); // horizon normal in vessel frame
-	Vector hn (tmul (vessel->GRot(), mul (planet->GRot(), tmul (sp->L2H, sp->surfnml))));
+	VECTOR3 hn = tmul(vessel->GRot(), mul(planet->GRot(), tmul(sp->L2H, sp->surfnml)));
 
 	// perform projections
-	double nr0 = dotp (hn, shp);
-	double nd  = dotp (hn, sdv);
-	Vector sdvs (sdv / nd);
+	double nr0 = dot(hn, shp);
+	double nd  = dot(hn, sdv);
+	VECTOR3 sdvs = sdv / nd;
 
 	VERTEX_XYZ *pvtx; // shadow vertex buffer
 	double ndr, vx, vy, vz;
@@ -803,47 +803,47 @@ void VVessel::UpdateRenderVectors()
 		double pscale = *(float*)gc->GetConfigParam(CFGPRM_FORCEVECTORSCALE);
 		float alpha = *(float*)gc->GetConfigParam(CFGPRM_FORCEVECTOROPACITY);
 		char cbuf[256];
-		Vector F;
+		VECTOR3 F;
 
 		if ((flag & BFV_WEIGHT) && vessel->GetWeightVector (F)) {
-			sprintf (cbuf, "G =%sN", FloatStr (len = F.length(), 4));
+			sprintf(cbuf, "G =%sN", FloatStr(len = ::len(F), 4));
 			if (logscale) len = log(len+shift) - lshift; else len *= scale;
-			AddVector (F.unit()*(len*pscale), Vector(0,0,0), scale2, std::string(cbuf), Vector (1,1,0), alpha, D3DRGB (1,1,0));
+			AddVector(unit(F) * (len * pscale), {0, 0, 0}, scale2, std::string{cbuf}, {1, 1, 0}, alpha, D3DRGB(1, 1, 0));
 		}
 		if ((flag & BFV_THRUST) && vessel->GetThrustVector (F)) {
-			sprintf (cbuf, "T =%sN", FloatStr (len = F.length(), 4));
+			sprintf(cbuf, "T =%sN", FloatStr(len = ::len(F), 4));
 			if (logscale) len = log(len+shift) - lshift; else len *= scale;
-			AddVector (F.unit()*(len*pscale), Vector(0,0,0), scale2, std::string(cbuf), Vector (0,0,1), alpha, D3DRGB (0.5,0.5,1));
+			AddVector(unit(F) * (len * pscale), {0, 0, 0}, scale2, std::string{cbuf}, {0, 0, 1}, alpha, D3DRGB(0.5, 0.5, 1));
 		}
 		if ((flag & BFV_LIFT) && vessel->GetLiftVector (F)) {
-			sprintf (cbuf, "L =%sN", FloatStr (len = F.length(), 4));
+			sprintf(cbuf, "L =%sN", FloatStr(len = ::len(F), 4));
 			if (logscale) len = log(len+shift) - lshift; else len *= scale;
-			AddVector (F.unit()*(len*pscale), Vector(0,0,0), scale2, std::string(cbuf), Vector (0,1,0), alpha, D3DRGB (0.5,1,0.5));
+			AddVector(unit(F) * (len * pscale), {0, 0, 0}, scale2, std::string{cbuf}, {0, 1, 0}, alpha, D3DRGB(0.5, 1, 0.5));
 		}
 		if ((flag & BFV_DRAG) && vessel->GetDragVector (F)) {
-			sprintf (cbuf, "D =%sN", FloatStr (len = vessel->Drag, 4));
+			sprintf(cbuf, "D =%sN", FloatStr(len = vessel->Drag, 4));
 			if (logscale) len = log(len+shift) - lshift; else len *= scale;
-			AddVector (F.unit()*(len*pscale), Vector(0,0,0), scale2, std::string(cbuf), Vector (1,0,0), alpha, D3DRGB (1,0.5,0.5));
+			AddVector(unit(F) * (len * pscale), {0, 0, 0}, scale2, std::string{cbuf}, {1, 0, 0}, alpha, D3DRGB(1, 0.5, 0.5));
 		}
 		if ((flag & BFV_TOTAL) && vessel->GetForceVector (F)) {
-			sprintf (cbuf, "F =%sN", FloatStr (len = F.length(), 4));
+			sprintf(cbuf, "F =%sN", FloatStr(len = ::len(F), 4));
 			if (logscale) len = log(len+shift) - lshift; else len *= scale;
-			AddVector (F.unit()*(len*pscale), Vector(0,0,0), scale2, std::string(cbuf), Vector (1,1,1), alpha, D3DRGB (1,1,1));
+			AddVector(unit(F) * (len * pscale), {0, 0, 0}, scale2, std::string{cbuf}, {1, 1, 1}, alpha, D3DRGB(1, 1, 1));
 		}
 		if (1) {
 			for (int i = 0; i < vessel->nforcevec; i++) {
 				F = vessel->forcevec[i];
-				sprintf (cbuf, "F =%sN", FloatStr (len = F.length(), 4));
+				sprintf(cbuf, "F =%sN", FloatStr(len = ::len(F), 4));
 				len *= 1e-2;
 				if (logscale) len = log(len+shift) - lshift; else len *= scale;
-				AddVector (F.unit()*(len*pscale), vessel->forcepos[i], scale2, std::string(cbuf), Vector (0,1,1), alpha, D3DRGB (1,1,1));
+				AddVector(unit(F) * (len * pscale), vessel->forcepos[i], scale2, std::string{cbuf}, {0, 1, 1}, alpha, D3DRGB(1, 1, 1));
 			}
 		}
 		if ((flag & BFV_TORQUE) && vessel->GetTorqueVector(F)) {
-			if (len = F.length()) {
+			if (len = ::len(F)) {
 				sprintf(cbuf, "M =%sNm", FloatStr(len, 4));
 				if (logscale) len = log(len + 1e-5) - log(1e-5); else len *= scale * 1e5;
-				AddVector(F.unit() * (len * pscale), Vector(0, 0, 0), scale2 * 0.5, std::string(cbuf), Vector(1, 0, 1), alpha, D3DRGB(1, 0, 1), (float)(0.5 * vessel->size));
+				AddVector(unit(F) * (len * pscale), {0, 0, 0}, scale2 * 0.5, std::string{cbuf}, {1, 0, 1}, alpha, D3DRGB(1, 0, 1), (float)(0.5 * vessel->size));
 			}
 		}
 	}
@@ -859,7 +859,7 @@ void VVessel::RenderAttachmentMarkers (LPDIRECT3DDEVICE7 dev, bool pa)
 	AttachmentSpec **attach;
 	DWORD i, j, nattach;
 	D3DMATERIAL7 *mat;
-	Vector v;
+	VECTOR3 v;
 
 	if (pa) {
 		nattach = vessel->npattach;
@@ -879,17 +879,17 @@ void VVessel::RenderAttachmentMarkers (LPDIRECT3DDEVICE7 dev, bool pa)
 		//if (as->id[0] != 'G') continue; // only mark grappling points
 		float ux = (float)as->ref.x, uy = (float)as->ref.y, uz = (float)as->ref.z;
 		vtx[0].x = 0;          vtx[0].y = 0;          vtx[0].z = 0;
-		v.Set ((as->dir+as->rot)*0.25);
+		v = (as->dir + as->rot) * 0.25;
 		vtx[1].x = (float)v.x; vtx[1].y = (float)v.y; vtx[1].z = (float)v.z;
-		v.Set (as->dir*0.25 + as->rot*0.125);
+		v = as->dir * 0.25 + as->rot * 0.125;
 		vtx[2].x = (float)v.x; vtx[2].y = (float)v.y; vtx[2].z = (float)v.z;
-		v.Set (as->dir*0.5 + as->rot*0.125);
+		v = as->dir * 0.5 + as->rot * 0.125;
 		vtx[3].x = (float)v.x; vtx[3].y = (float)v.y; vtx[3].z = (float)v.z;
-		v.Set (as->dir*0.5 - as->rot*0.125);
+		v = as->dir * 0.5 - as->rot * 0.125;
 		vtx[4].x = (float)v.x; vtx[4].y = (float)v.y; vtx[4].z = (float)v.z;
-		v.Set (as->dir*0.25 - as->rot*0.125);
+		v = as->dir * 0.25 - as->rot * 0.125;
 		vtx[5].x = (float)v.x; vtx[5].y = (float)v.y; vtx[5].z = (float)v.z;
-		v.Set ((as->dir-as->rot)*0.25);
+		v = (as->dir - as->rot) * 0.25;
 		vtx[6].x = (float)v.x; vtx[6].y = (float)v.y; vtx[6].z = (float)v.z;
 		for (j = 0; j < 7; j++) {
 			vtx[j].x += ux, vtx[j].y += uy, vtx[j].z += uz;
@@ -903,10 +903,10 @@ bool VVessel::ModLighting (LPD3DLIGHT7 light)
 	const CelestialBody *cb = vessel->ProxyPlanet();
 	if (!cb) return false;
 	Star *sun = g_psys->GetStar(0); // should really loop over all suns
-	Vector S(sun->GPos() - vessel->GPos());
-	double s = S.length();
+	VECTOR3 S = sun->GPos() - vessel->GPos();
+	double s = len(S);
 	double as = asin (sun->Size()/s);                     // apparent size of sun disc [rad]
-	Vector lcol (1,1,1);
+	VECTOR3 lcol{1, 1, 1};
 	double amb = 0;
 	double dt = 1.0;
 	bool lightmod = false;
@@ -915,10 +915,10 @@ bool VVessel::ModLighting (LPD3DLIGHT7 light)
 	// calculate shadowing by planet
 
 	for (i = 0;; i++) {
-		Vector P(cb->GPos() - vessel->GPos());
-		double p = P.length();
+		VECTOR3 P = cb->GPos() - vessel->GPos();
+		double p = len(P);
 		if (p < s) {                                      // shadow only if planet closer than sun
-			double phi = acos (dotp(S,P)/(s*p));          // angular distance between sun and planet
+			double phi = std::acos(dot(S, P) / (s * p));  // angular distance between sun and planet
 			double ap = (cb->Size() < p ? asin(cb->Size() / p) : Pi05); // apparent size of planet disc [rad]
 
 			if (cb->Type() == OBJTP_PLANET && ((Planet*)cb)->HasAtmosphere()) { // case 1: planet has atmosphere
@@ -937,10 +937,10 @@ bool VVessel::ModLighting (LPD3DLIGHT7 light)
 
 				if (as+ap1 >= phi && ap/as > 0.1) {       // overlap and significant planet size
 					double dap = ap1-ap;
-					Vector plight(1,1,1);
+					VECTOR3 plight{1, 1, 1};
 					if (as < ap) {                        // planet disc larger than sun disc
 						if (phi < ap-as) {                // totality (sun below horizon)
-							plight.Set(0,0,0);
+							plight = {0, 0, 0};
 						} else {
 							double dispersion = max (0.02, min (0.9, log (atm->rho0+1.0)));
 							double r0 = 1.0-0.40*dispersion;
@@ -962,10 +962,10 @@ bool VVessel::ModLighting (LPD3DLIGHT7 light)
 					} else {
 						double maxcover = ap*ap / (as*as);
 						if (phi < as-ap)
-							plight.Set(1.0-maxcover,1.0-maxcover,1.0-maxcover); // annularity
+							plight = {1.0 - maxcover, 1.0 - maxcover, 1.0 - maxcover}; // annularity
 						else {
 							double frac = 1.0 - 0.5*maxcover * (1.0 + (as-phi)/ap); // partial cover
-							plight.Set (frac,frac,frac);
+							plight = {frac, frac, frac};
 							dt = 0.1;
 						}
 					}

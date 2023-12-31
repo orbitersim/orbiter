@@ -729,7 +729,7 @@ void Instrument_Surface::UpdateDraw (oapi::Sketchpad *skp)
 		spd_valid = IAS (vessel->ProxyBody(), spd);
 		break;
 	case 4: // orbital speed
-		spd = (vessel->GVel()-vessel->ProxyBody()->GVel()).length();
+		spd = len(vessel->GVel()-vessel->ProxyBody()->GVel());
 		spd_valid = true;
 		break;
 	}

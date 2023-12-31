@@ -68,10 +68,10 @@ const char noclass[] = "unknown";
 const double holdaltDT = 0.1; // update interval for "hold altitude" mode
 
 static VECTOR3 DefExhaustDir[4] = {{0,0,-1}, {0,0,1}, {0,-1,0}, {0,0,-1}};
-static Vector DefAttExhaustDir[12] = {
-	Vector(0,-1,0), Vector(0,1,0), Vector(0,1,0), Vector(0,-1,0),
-	Vector(-1,0,0), Vector(1,0,0), Vector(1,0,0), Vector(-1,0,0),
-	Vector(0,-1,0), Vector(0,1,0), Vector(0,1,0), Vector(0,-1,0)
+static VECTOR3 DefAttExhaustDir[12] = {
+	{0,-1,0}, {0,1,0}, {0,1,0}, {0,-1,0},
+	{-1,0,0}, {1,0,0}, {1,0,0}, {-1,0,0},
+	{0,-1,0}, {0,1,0}, {0,1,0}, {0,-1,0}
 };
 
 // ==============================================================
@@ -278,12 +278,12 @@ void Vessel::SetDefaultState ()
 
 	VesselBase::SetDefaultState ();
 
-	Flin.Set (0,0,0);  // sum of linear forces
-	Amom.Set (0,0,0);  // torque (sum of angular moments)
-	Flin_add.Set (0,0,0);
-	Amom_add.Set (0,0,0);
-	Thrust.Set (0,0,0);
-	Weight.Set (0,0,0);
+	Flin = {0, 0, 0};  // sum of linear forces
+	Amom = {0, 0, 0};  // torque (sum of angular moments)
+	Flin_add = {0, 0, 0};
+	Amom_add = {0, 0, 0};
+	Thrust = {0, 0, 0};
+	Weight = {0, 0, 0};
 	weight_valid        = false;
 	torque_valid        = false;
 	fmass = pfmass      = 0.0;
@@ -325,8 +325,9 @@ void Vessel::SetDefaultState ()
 
 	nforcevec = 0;
 	forcevecbuf = 10;
-	forcevec = new Vector[forcevecbuf];
-	forcepos = new Vector[forcevecbuf];
+	// TODO: re-write without raw pointers
+	forcevec = new VECTOR3[forcevecbuf];
+	forcepos = new VECTOR3[forcevecbuf];
 
 	proxyT    = -(double)rand()*100.0/(double)RAND_MAX - 1.0;
 	commsT    = -(double)rand()*5.0/(double)RAND_MAX - 1.0;
@@ -362,10 +363,10 @@ void Vessel::DefaultGenericCaps ()
 	bElevTrim          = false;
 	pitch_moment_scale = 0.0;
 	bank_moment_scale  = 0.0;
-	cs.Set             (20,20,20);
-	rdrag.Set          (0.01,0.01,0.01);
-	campos.Set         (0,0,0);
-	camdir0.Set        (0,0,1);    // "forward"
+	cs                 = {20, 20, 20};
+	rdrag              = {0.01, 0.01, 0.01};
+	campos             = {0, 0, 0};
+	camdir0            = {0, 0, 1}; // "forward"
 	camtilt0           = 0.0;
 	camcatchangle      = RAD*5.0;
 	camdp_left = camdp_right = 0.8*Pi;
@@ -376,9 +377,9 @@ void Vessel::DefaultGenericCaps ()
 	mu                 = 0.5;  // default isotropic/lateral friction coefficient
 	mu_lng             = 0.1;  // default longitudinal friction coefficient
 	TOUCHDOWNVTX tdvtx[3];
-	tdvtx[0].pos = _V( 0,-2,10);
-	tdvtx[1].pos = _V(-3,-2,-5);
-	tdvtx[2].pos = _V( 3,-2,-5);
+	tdvtx[0].pos = { 0,-2,10};
+	tdvtx[1].pos = {-3,-2,-5};
+	tdvtx[2].pos = { 3,-2,-5};
 	for (i = 0; i < 3; i++) {
 		tdvtx[i].stiffness = 1e6;
 		tdvtx[i].damping   = 1e5;
@@ -529,7 +530,7 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 	GetItemVector (ifs, "RotResistance", rdrag);
 	GetItemVector (ifs, "CameraOffset", campos);
 
-	Vector ref, dir, rot;
+	VECTOR3 ref, dir, rot;
 	if (GetItemVector (ifs, "DockRef", ref) &&
 		GetItemVector (ifs, "DockDir", dir) &&
 		GetItemVector (ifs, "DockRot", rot)) {
@@ -542,7 +543,7 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 	if (m_thrusterGroupDef[0].ts.size()) {
 		for (i = 0;; i++) {
 			sprintf (cbuf, "MEngineRef%d", i+1);
-			if (!GetItemVECTOR (ifs, cbuf, tmp)) break;
+			if (!GetItemVector(ifs, cbuf, tmp)) break;
 			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[0].ts[0], NULL, &tmp, NULL, 16.0, 1.0, 0.0, 0.0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
@@ -551,7 +552,7 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 	if (m_thrusterGroupDef[1].ts.size()) {
 		for (i = 0;; i++) {
 			sprintf (cbuf, "REngineRef%d", i+1);
-			if (!GetItemVECTOR (ifs, cbuf, tmp)) break;
+			if (!GetItemVector(ifs, cbuf, tmp)) break;
 			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[1].ts[0], NULL, &tmp, NULL, 8.0, 0.5, 0.0, 0.0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
@@ -560,13 +561,13 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 	if (m_thrusterGroupDef[2].ts.size()) {
 		for (i = 0;; i++) {
 			sprintf (cbuf, "HEngineRef%d", i+1);
-			if (!GetItemVECTOR (ifs, cbuf, tmp)) break;
+			if (!GetItemVector(ifs, cbuf, tmp)) break;
 			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[2].ts[0], NULL, &tmp, NULL, 12.0, 1.0, 0.0, 0.0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
 	}
 	// attitude thruster exhaust refs
-	if (GetItemVECTOR (ifs, "AttRefX00", tmp)) {
+	if (GetItemVector(ifs, "AttRefX00", tmp)) {
 		if (m_thrusterGroupDef[THGROUP_ATT_PITCHUP].ts.size() >= 1) {
 			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_PITCHUP].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
@@ -576,7 +577,7 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 			AddExhaust (&es);
 		}
 	}
-	if (GetItemVECTOR (ifs, "AttRefX01", tmp)) {
+	if (GetItemVector(ifs, "AttRefX01", tmp)) {
 		if (m_thrusterGroupDef[THGROUP_ATT_PITCHUP].ts.size() >= 2) {
 			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_PITCHUP].ts[1], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
@@ -586,7 +587,7 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 			AddExhaust (&es);
 		}
 	}
-	if (GetItemVECTOR (ifs, "AttRefX10", tmp)) {
+	if (GetItemVector(ifs, "AttRefX10", tmp)) {
 		if (m_thrusterGroupDef[THGROUP_ATT_PITCHDOWN].ts.size() >= 1) {
 			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_PITCHDOWN].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
@@ -596,7 +597,7 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 			AddExhaust (&es);
 		}
 	}
-	if (GetItemVECTOR (ifs, "AttRefX11", tmp)) {
+	if (GetItemVector(ifs, "AttRefX11", tmp)) {
 		if (m_thrusterGroupDef[THGROUP_ATT_PITCHDOWN].ts.size() >= 2) {
 			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_PITCHDOWN].ts[1], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
@@ -606,7 +607,7 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 			AddExhaust (&es);
 		}
 	}
-	if (GetItemVECTOR (ifs, "AttRefY01", tmp)) {
+	if (GetItemVector(ifs, "AttRefY01", tmp)) {
 		if (m_thrusterGroupDef[THGROUP_ATT_YAWLEFT].ts.size() >= 1) {
 			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_YAWLEFT].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
@@ -616,7 +617,7 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 			AddExhaust (&es);
 		}
 	}
-	if (GetItemVECTOR (ifs, "AttRefY00", tmp)) {
+	if (GetItemVector(ifs, "AttRefY00", tmp)) {
 		if (m_thrusterGroupDef[THGROUP_ATT_YAWLEFT].ts.size() >= 2) {
 			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_YAWLEFT].ts[1], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
@@ -626,7 +627,7 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 			AddExhaust (&es);
 		}
 	}
-	if (GetItemVECTOR (ifs, "AttRefY11", tmp)) {
+	if (GetItemVector(ifs, "AttRefY11", tmp)) {
 		if (m_thrusterGroupDef[THGROUP_ATT_YAWRIGHT].ts.size() >= 1) {
 			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_YAWRIGHT].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
@@ -636,7 +637,7 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 			AddExhaust (&es);
 		}
 	}
-	if (GetItemVECTOR (ifs, "AttRefY10", tmp)) {
+	if (GetItemVector(ifs, "AttRefY10", tmp)) {
 		if (m_thrusterGroupDef[THGROUP_ATT_YAWRIGHT].ts.size() >= 2) {
 			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_YAWRIGHT].ts[1], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
@@ -646,22 +647,22 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 			AddExhaust (&es);
 		}
 	}
-	if (GetItemVECTOR (ifs, "AttRefZ00", tmp))
+	if (GetItemVector(ifs, "AttRefZ00", tmp))
 		if (m_thrusterGroupDef[THGROUP_ATT_BANKRIGHT].ts.size() >= 1) {
 			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_BANKRIGHT].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
-	if (GetItemVECTOR (ifs, "AttRefZ01", tmp))
+	if (GetItemVector(ifs, "AttRefZ01", tmp))
 		if (m_thrusterGroupDef[THGROUP_ATT_BANKRIGHT].ts.size() >= 2) {
 			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_BANKRIGHT].ts[1], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
-	if (GetItemVECTOR (ifs, "AttRefZ11", tmp))
+	if (GetItemVector(ifs, "AttRefZ11", tmp))
 		if (m_thrusterGroupDef[THGROUP_ATT_BANKLEFT].ts.size() >= 1) {
 			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_BANKLEFT].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
-	if (GetItemVECTOR (ifs, "AttRefZ10", tmp))
+	if (GetItemVector(ifs, "AttRefZ10", tmp))
 		if (m_thrusterGroupDef[THGROUP_ATT_BANKLEFT].ts.size() >= 2) {
 			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_BANKLEFT].ts[1], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
@@ -669,7 +670,7 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 	if (m_thrusterGroupDef[THGROUP_ATT_BACK].ts.size()) {
 		for (i = 0;; i++) {
 			sprintf (cbuf, "LongAttRef0%d", i);
-			if (!GetItemVECTOR (ifs, cbuf, tmp)) break;
+			if (!GetItemVector(ifs, cbuf, tmp)) break;
 			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_BACK].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
@@ -677,7 +678,7 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 	if (m_thrusterGroupDef[THGROUP_ATT_FORWARD].ts.size()) {
 		for (i = 0;; i++) {
 			sprintf (cbuf, "LongAttRef1%d", i);
-			if (!GetItemVECTOR (ifs, cbuf, tmp)) break;
+			if (!GetItemVector(ifs, cbuf, tmp)) break;
 			EXHAUSTSPEC es = {(THRUSTER_HANDLE)m_thrusterGroupDef[THGROUP_ATT_FORWARD].ts[0], NULL, &tmp, NULL, 3, 0.39, 0, 0, NULL, EXHAUST_CONSTANTPOS};
 			AddExhaust (&es);
 		}
@@ -685,7 +686,7 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 
 	if (FindLine (ifs, "BEGIN_DOCKLIST")) {
 		for (;;) {
-			Vector pos, dir, rot;
+			VECTOR3 pos, dir, rot;
 			int n, ids_step;
 			if (!ifs.getline (cbuf, 256) || !_strnicmp (cbuf, "END_DOCKLIST", 12)) break;
 			n = sscanf (cbuf, "%lf%lf%lf%lf%lf%lf%lf%lf%lf%d",
@@ -700,7 +701,7 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 	}
 
 	if (FindLine (ifs, "BEGIN_ATTACHMENT")) {
-		Vector pos, dir, rot;
+		VECTOR3 pos, dir, rot;
 		char type;
 		int n;
 		bool toparent;
@@ -845,7 +846,7 @@ const VesselBase *Vessel::GetSuperStructure () const
 
 // ==============================================================
 
-void Vessel::RPlace (const Vector &rpos, const Vector &rvel)
+void Vessel::RPlace (const VECTOR3 &rpos, const VECTOR3 &rvel)
 {
 	if (supervessel) supervessel->RPlace (rpos, rvel, this);
 	else             RPlace_individual (rpos, rvel);
@@ -853,7 +854,7 @@ void Vessel::RPlace (const Vector &rpos, const Vector &rvel)
 
 // ==============================================================
 
-void Vessel::RPlace_individual (const Vector &rpos, const Vector &rvel)
+void Vessel::RPlace_individual (const VECTOR3 &rpos, const VECTOR3 &rvel)
 {
 	// this version enforces the repositioning of the vessel without reporting
 	// to the supervessel
@@ -877,7 +878,7 @@ void Vessel::RPlace_individual (const Vector &rpos, const Vector &rvel)
 
 // ==============================================================
 
-void Vessel::SetGlobalOrientation (const Vector &arot)
+void Vessel::SetGlobalOrientation (const VECTOR3 &arot)
 {
 	if (supervessel) {
 		supervessel->SetGlobalOrientation (arot, this);
@@ -908,11 +909,11 @@ void Vessel::SetRotationMatrix (const Matrix &R)
 
 // ==============================================================
 
-void Vessel::GetIntermediateMoments (Vector &acc, Vector &tau, const StateVectors &state, double tfrac, double dt)
+void Vessel::GetIntermediateMoments (VECTOR3 &acc, VECTOR3 &tau, const StateVectors &state, double tfrac, double dt)
 {
 	// TODO: Move this up to VesselBase
-	Vector F(Flin_add); // linear forces excluding gravitational and ground contact forces
-	Vector M(Amom_add); // angular momentum excluding gravity gradient torque and ground contact torques
+	VECTOR3 F = Flin_add; // linear forces excluding gravitational and ground contact forces
+	VECTOR3 M = Amom_add; // angular momentum excluding gravity gradient torque and ground contact torques
 	collision_during_update |=
 		AddSurfaceForces (&F, &M, &state, tfrac, dt, update_with_collision); // add ground contact forces and moments
 	// note: we may want to remove aerodynamic forces from Flin_add/Amom_add and calculate
@@ -924,14 +925,14 @@ void Vessel::GetIntermediateMoments (Vector &acc, Vector &tau, const StateVector
 
 // ==============================================================
 
-void Vessel::GetIntermediateMoments_pert (Vector &acc, Vector &tau,
+void Vessel::GetIntermediateMoments_pert (VECTOR3 &acc, VECTOR3 &tau,
 	const StateVectors &state_rel, double tfrac, double dt, const CelestialBody *cbody)
 {
 	StateVectors state(state_rel);
 	state.pos += cbody->InterpolatePosition (tfrac);
 
-	Vector F(Flin_add); // linear forces excluding gravitational and ground contact forces
-	Vector M(Amom_add); // angular momentum excluding gravity gradient torque and ground contact torques
+	VECTOR3 F = Flin_add; // linear forces excluding gravitational and ground contact forces
+	VECTOR3 M = Amom_add; // angular momentum excluding gravity gradient torque and ground contact torques
 	collision_during_update |=
 		AddSurfaceForces (&F, &M, &state, tfrac, dt, update_with_collision); // add ground contact forces and moments
 	// note: we may want to remove aerodynamic forces from Flin_add/Amom_add and calculate
@@ -943,17 +944,17 @@ void Vessel::GetIntermediateMoments_pert (Vector &acc, Vector &tau,
 
 // ==============================================================
 
-Vector Vessel::GetTorque () const
+VECTOR3 Vessel::GetTorque () const
 {
-	static Vector F(0,0,0);
-	Vector M(Amom);
+	static VECTOR3 F{0, 0, 0};
+	VECTOR3 M = Amom;
 	AddSurfaceForces (&F, &M, s0, 0, 0);
 	return RigidBody::GetTorque() + M/mass;
 }
 
 // ==============================================================
 
-Vector Vessel::GetMomentumFlux () const
+VECTOR3 Vessel::GetMomentumFlux () const
 {
 	// map momentum flux into vessel frame
 	return tmul (s0->R, g_psys->GetMomentumFlux (s0->pos));
@@ -961,7 +962,7 @@ Vector Vessel::GetMomentumFlux () const
 
 // ==============================================================
 
-void Vessel::SetAngVel (const Vector &omega)
+void Vessel::SetAngVel (const VECTOR3 &omega)
 {
 	if (supervessel)
 		supervessel->SetAngVel (omega, this);
@@ -971,7 +972,7 @@ void Vessel::SetAngVel (const Vector &omega)
 
 // ==============================================================
 
-void Vessel::SetAngVel_individual (const Vector &omega)
+void Vessel::SetAngVel_individual (const VECTOR3 &omega)
 {
 	RigidBody::SetAngVel (omega);
 }
@@ -1148,7 +1149,7 @@ bool Vessel::SetTouchdownPoints (const TOUCHDOWNVTX *tdvtx, DWORD ntp)
 		touchdown_vtx = new TOUCHDOWN_VTX[ntouchdown_vtx = ntp];
 	}
 	for (i = 0; i < ntp; i++) {
-		touchdown_vtx[i].pos.Set (MakeVector(tdvtx[i].pos));
+		touchdown_vtx[i].pos       = tdvtx[i].pos;
 		touchdown_vtx[i].stiffness = tdvtx[i].stiffness;
 		touchdown_vtx[i].damping   = tdvtx[i].damping;
 		touchdown_vtx[i].mu        = tdvtx[i].mu;
@@ -1157,12 +1158,11 @@ bool Vessel::SetTouchdownPoints (const TOUCHDOWNVTX *tdvtx, DWORD ntp)
 
 	// The rest of this function refers to the first 3 (primary) touchdown points
 	// upward normal of touchdown plane
-	Vector tp[3];
-	for (i = 0; i < 3; i++)
-		tp[i].Set (touchdown_vtx[i].pos);
+	VECTOR3 tp[3];
+	for (i = 0; i < 3; i++) tp[i] = touchdown_vtx[i].pos;
 
-	touchdown_nm = crossp (tp[0] - (tp[1] + tp[2])*0.5, tp[2] - tp[1]);
-	double len = touchdown_nm.length();
+	touchdown_nm = cross(tp[0] - (tp[1] + tp[2]) * 0.5, tp[2] - tp[1]);
+	double len = ::len(touchdown_nm);
 	if (len > eps) touchdown_nm /= len; // normalise
 	else           return false;
 
@@ -1176,16 +1176,16 @@ bool Vessel::SetTouchdownPoints (const TOUCHDOWNVTX *tdvtx, DWORD ntp)
 
 	// elevation of CoM over ground when landed
 	cog_elev = fabs(d/scl);
-	touchdown_cg.Set (-a*cog_elev/scl, -b*cog_elev/scl, -c*cog_elev/scl);
+	touchdown_cg = {-a * cog_elev / scl, -b * cog_elev / scl, -c * cog_elev / scl};
 
 	// precompute equilibrium suspension compression parameters
 	// 1. Compute rotation matrix that rotates touchdown points into y=const plane
-	Vector ex((touchdown_vtx[2].pos-touchdown_vtx[1].pos).unit());
-	Vector ez(crossp(ex,touchdown_nm));
+	VECTOR3 ex = unit(touchdown_vtx[2].pos - touchdown_vtx[1].pos);
+	VECTOR3 ez = cross(ex, touchdown_nm);
 	Matrix R(ex.x,ex.y,ex.z,  touchdown_nm.x,touchdown_nm.y, touchdown_nm.z, ez.x,ez.y,ez.z);
 	// 2. Compute the compression factors (actual compression length is given by factor*mg)
 	// See Doc/Technotes/dynsurf.pdf for details
-	Vector tr[3];
+	VECTOR3 tr[3];
 	a = b = c = d = e = f = 0.0;
 	for (i = 0; i < 3; i++) {
 		tr[i] = mul (R, touchdown_vtx[i].pos);
@@ -1231,86 +1231,85 @@ void Vessel::SetSurfaceFrictionCoeff (double mlng, double mlat)
 
 // ==============================================================
 
-bool Vessel::GetWeightVector (Vector &G) const
+bool Vessel::GetWeightVector (VECTOR3 &G) const
 {
 	if (!weight_valid) {
-		Weight.Set (tmul (s0->R, g_psys->Gacc (s0->pos, this, &gfielddata)) * mass);
+		Weight = tmul(s0->R, g_psys->Gacc(s0->pos, this, &gfielddata)) * mass;
 		weight_valid = true;
 	}
-	G.Set (Weight);
+	G = Weight;
 	return true;
 }
 
 // ==============================================================
 
-bool Vessel::GetThrustVector (Vector &T) const
+bool Vessel::GetThrustVector (VECTOR3 &T) const
 {
-	if (m_bThrustEngaged) T.Set (Thrust);
-	else                  T.Set (0,0,0);
+	T = m_bThrustEngaged ? Thrust : VECTOR3{ };
 	return m_bThrustEngaged;
 }
 
 // ==============================================================
 
-bool Vessel::GetLiftVector (Vector &L) const
+bool Vessel::GetLiftVector (VECTOR3 &L) const
 {
 	if (!Lift) {
-		L.Set (0, 0, 0);
+		L = {0, 0, 0};
 		return false;
 	} else {
 		double v0 = std::hypot (sp.airvel_ship.y, sp.airvel_ship.z);
 		double scale = (v0 ? Lift/v0 : 0.0);
-		L.Set (0, sp.airvel_ship.z*scale, -sp.airvel_ship.y*scale);
+		L = {0, sp.airvel_ship.z * scale, -sp.airvel_ship.y * scale};
 		return true;
 	}
 }
 
 // ==============================================================
 
-bool Vessel::GetDragVector (Vector &D) const
+bool Vessel::GetDragVector (VECTOR3 &D) const
 {
 	if (!Drag) {
-		D.Set (0, 0, 0);
+		D = {0, 0, 0};
 		return false;
 	} else {
-		double v0 = -sp.airvel_ship.length();
-		D.Set (sp.airvel_ship * (v0 ? Drag/v0 : 0.0));
+		double v0 = -len(sp.airvel_ship);
+		D = sp.airvel_ship * (v0 ? Drag / v0 : 0.0);
 		return true;
 	}
 }
 
 // ==============================================================
 
-bool Vessel::GetForceVector (Vector &F) const
+bool Vessel::GetForceVector (VECTOR3 &F) const
 {
 	// Obtain total force vector from acceleration vector
 	// This also captures ground contact effects, docking, etc.
 
-	F.Set (tmul (s0->R, acc) * mass);
-	//F.Set (tmul (s0->R, (s0->vel - prvel) * (mass*td.iSimDT)));
+	F = tmul(s0->R, acc) * mass;
+	//F = tmul(s0->R, (s0->vel - prvel) * (mass*td.iSimDT));
 	return true;
 }
 
 // ==============================================================
 
-bool Vessel::GetTorqueVector (Vector &M) const
+bool Vessel::GetTorqueVector (VECTOR3 &M) const
 {
 	if (!torque_valid) {
-		Torque.Set (GetTorque());
+		Torque = GetTorque();
 		torque_valid = true;
 	}
-	M.Set (Torque);
+	M = Torque;
 	return true;
 }
 
 // ==============================================================
 
-ThrustSpec *Vessel::CreateThruster (const Vector &pos, const Vector &dir, double maxth0,
+ThrustSpec *Vessel::CreateThruster (const VECTOR3 &pos, const VECTOR3 &dir, double maxth0,
 	TankSpec *ts, double isp0, double isp_ref, double p_ref)
 {
 	ThrustSpec* thruster = new ThrustSpec;
-	thruster->ref = MakeVECTOR3(pos);
-	thruster->dir = MakeVECTOR3(dir.unit());
+	thruster->ref = pos;
+	thruster->dir = unit(dir);
 	thruster->maxth0 = maxth0;
 	thruster->tank = ts;
 	thruster->isp0 = (isp0 > 0.0 ? isp0 : m_defaultIsp);
@@ -1371,37 +1370,36 @@ bool Vessel::DelThruster (ThrustSpec *ts)
 
 // ==============================================================
 
-void Vessel::ShiftThrusters (const Vector &shift)
+void Vessel::ShiftThrusters (const VECTOR3 &shift)
 {
-	for (auto it = m_thruster.begin(); it != m_thruster.end(); it++)
-		(*it)->ref += MakeVECTOR3(shift);
+	for (auto& th : m_thruster) th->ref += shift;
 }
 
 // ==============================================================
 
-Vector Vessel::GetThrusterForce (const ThrustSpec *ts) const
+VECTOR3 Vessel::GetThrusterForce (const ThrustSpec *ts) const
 {
 	if (!ts->tank || !ts->tank->mass) {
-		return Vector(0,0,0);
+		return {0, 0, 0};
 	} else {
 		double th = ts->maxth0 * ts->level;
 		th *= ThrusterAtmScale (ts, sp.atmp);
-		return MakeVector(ts->dir *th);
+		return ts->dir * th;
 	}
 }
 
 // ==============================================================
 
-void Vessel::GetThrusterMoment (const ThrustSpec *ts, Vector &F, Vector &T) const
+void Vessel::GetThrusterMoment (const ThrustSpec *ts, VECTOR3 &F, VECTOR3 &T) const
 {
 	if (!ts->tank || !ts->tank->mass) {
-		F.Set(0,0,0);
-		T.Set(0,0,0);
+		F = {0, 0, 0};
+		T = {0, 0, 0};
 	} else {
 		double th = ts->maxth0 * ts->level;
 		th *= ThrusterAtmScale (ts, sp.atmp);
-		F = MakeVector(ts->dir * th);
-		T = crossp (F, MakeVector(ts->ref));
+		F = ts->dir * th;
+		T = cross(F, ts->ref);
 	}
 }
 
@@ -1521,10 +1519,10 @@ ThrustGroupSpec *Vessel::CreateThrusterGroup (ThrustSpec **ts, DWORD nts, THGROU
 	}
 	// rotational attitude mode: calculate max. angular momentum
 	if (thgt >= THGROUP_ATT_PITCHUP && thgt <= THGROUP_ATT_BANKRIGHT) {
-		Vector M;
+		VECTOR3 M;
 		for (i = 0; i < nts; i++)
-			M += MakeVector(crossp (ts[i]->dir * ts[i]->maxth0, ts[i]->ref));
-		max_angular_moment[thgt-THGROUP_ATT_PITCHUP] = M.length();
+			M += cross(ts[i]->dir * ts[i]->maxth0, ts[i]->ref);
+		max_angular_moment[thgt-THGROUP_ATT_PITCHUP] = len(M);
 	}
 
 	return tgs;
@@ -1701,27 +1699,26 @@ double Vessel::GetThrusterGroupMaxth(THGROUP_TYPE thgt) const
 
 // ==============================================================
 
-Vector Vessel::GetThrusterGroupForce (THGROUP_TYPE thgt) const
+VECTOR3 Vessel::GetThrusterGroupForce (THGROUP_TYPE thgt) const
 {
 	const ThrustGroupSpec* tgs = GetThrusterGroup(thgt);
-	return (tgs ? GetThrusterGroupForce(tgs) : Vector(0, 0, 0));
+	return tgs ? GetThrusterGroupForce(tgs) : VECTOR3{ };
 }
 
 // ==============================================================
 
-Vector Vessel::GetThrusterGroupForce (const ThrustGroupSpec *tgs) const
+VECTOR3 Vessel::GetThrusterGroupForce (const ThrustGroupSpec *tgs) const
 {
 	dCHECK(tgs, "Zero ThrustGroupSpec pointer not permitted.")
 
-	Vector F;
-	for (auto it = tgs->ts.begin(); it != tgs->ts.end(); it++)
-		F += GetThrusterForce (*it);
+	VECTOR3 F;
+	for (auto& th : tgs->ts) F += GetThrusterForce(th);
 	return F;
 }
 
 // ==============================================================
 
-AirfoilSpec *Vessel::CreateAirfoil (AIRFOIL_ORIENTATION align, const Vector &ref, AirfoilCoeffFunc cf, double c, double S, double A)
+AirfoilSpec *Vessel::CreateAirfoil (AIRFOIL_ORIENTATION align, const VECTOR3 &ref, AirfoilCoeffFunc cf, double c, double S, double A)
 {
 	AirfoilSpec *af, **tmp = new AirfoilSpec*[nairfoil+1]; TRACENEW
 	if (nairfoil) {
@@ -1733,7 +1730,7 @@ AirfoilSpec *Vessel::CreateAirfoil (AIRFOIL_ORIENTATION align, const Vector &ref
 	af = airfoil[nairfoil++] = new AirfoilSpec; TRACENEW
 	af->version = 0;
 	af->align   = align;
-	af->ref.Set (ref);
+	af->ref     = ref;
 	af->cf      = cf;
 	af->context = 0;
 	af->c       = c;
@@ -1744,7 +1741,7 @@ AirfoilSpec *Vessel::CreateAirfoil (AIRFOIL_ORIENTATION align, const Vector &ref
 
 // ==============================================================
 
-AirfoilSpec *Vessel::CreateAirfoil (AIRFOIL_ORIENTATION align, const Vector &ref, AirfoilCoeffFuncEx cf, void *context, double c, double S, double A)
+AirfoilSpec *Vessel::CreateAirfoil (AIRFOIL_ORIENTATION align, const VECTOR3 &ref, AirfoilCoeffFuncEx cf, void *context, double c, double S, double A)
 {
 	AirfoilSpec *af, **tmp = new AirfoilSpec*[nairfoil+1]; TRACENEW
 	if (nairfoil) {
@@ -1756,7 +1753,7 @@ AirfoilSpec *Vessel::CreateAirfoil (AIRFOIL_ORIENTATION align, const Vector &ref
 	af = airfoil[nairfoil++] = new AirfoilSpec; TRACENEW
 	af->version = 1;
 	af->align   = align;
-	af->ref.Set (ref);
+	af->ref     = ref;
 	af->cf      = (AirfoilCoeffFunc)cf;
 	af->context = context;
 	af->c       = c;
@@ -1771,7 +1768,7 @@ bool Vessel::GetAirfoilParam (AirfoilSpec *af, VECTOR3 *ref, AirfoilCoeffFunc *c
 {
 	for (DWORD i = 0; i < nairfoil; i++) {
 		if (af == airfoil[i]) {
-			if (ref)     *ref     = MakeVECTOR3(af->ref);
+			if (ref)     *ref     = af->ref;
 			if (cf)      *cf      = af->cf;
 			if (context) *context = af->context;
 			if (c)       *c       = af->c;
@@ -1785,9 +1782,9 @@ bool Vessel::GetAirfoilParam (AirfoilSpec *af, VECTOR3 *ref, AirfoilCoeffFunc *c
 
 // ==============================================================
 
-void Vessel::EditAirfoil (AirfoilSpec *af, DWORD flag, const Vector &ref, AirfoilCoeffFunc cf, double c, double S, double A)
+void Vessel::EditAirfoil (AirfoilSpec *af, DWORD flag, const VECTOR3 &ref, AirfoilCoeffFunc cf, double c, double S, double A)
 {
-	if (flag & 0x01) af->ref.Set (ref);
+	if (flag & 0x01) af->ref= ref;
 	if (flag & 0x02) af->cf = cf;
 	if (flag & 0x04) af->c  = c;
 	if (flag & 0x08) af->S  = S;
@@ -1837,11 +1834,11 @@ void Vessel::ClearAirfoilDefinitions ()
 
 // ==============================================================
 
-CtrlsurfSpec *Vessel::CreateControlSurface (AIRCTRL_TYPE ctrl, double area, double dCl, const Vector &ref, int axis, double delay, UINT anim)
+CtrlsurfSpec *Vessel::CreateControlSurface (AIRCTRL_TYPE ctrl, double area, double dCl, const VECTOR3 &ref, int axis, double delay, UINT anim)
 {
 	CtrlsurfSpec *css = new CtrlsurfSpec; TRACENEW
 	css->ctrl = ctrl;
-	css->ref.Set (ref);
+	css->ref = ref;
 	css->area = area;
 	css->dCl = dCl;
 	css->anim = anim;
@@ -1965,10 +1962,10 @@ void Vessel::ApplyControlSurfaceLevels ()
 
 // ==============================================================
 
-void Vessel::CreateVariableDragElement (const double *drag, double factor, const Vector &ref)
+void Vessel::CreateVariableDragElement (const double *drag, double factor, const VECTOR3 &ref)
 {
 	DragElementSpec *des = new DragElementSpec; TRACENEW
-	des->ref.Set (ref);
+	des->ref = ref;
 	des->drag = drag;
 	des->factor = factor;
 
@@ -2059,7 +2056,7 @@ bool Vessel::SetMaxThrust_old (ENGINETYPE eng, double maxth)
 	switch (eng) {
 	case ENGINE_MAIN:
 		if (!m_thrusterGroupDef[THGROUP_MAIN].ts.size()) {
-			ts = CreateThruster (Vector(0,0,0), Vector(0,0,1), maxth, tnk, m_defaultIsp);
+			ts = CreateThruster({0, 0, 0}, {0, 0, 1}, maxth, tnk, m_defaultIsp);
 			CreateThrusterGroup (&ts, 1, THGROUP_MAIN);
 			return true;
 		} else if (m_thrusterGroupDef[THGROUP_MAIN].ts.size() == 1) {
@@ -2069,7 +2066,7 @@ bool Vessel::SetMaxThrust_old (ENGINETYPE eng, double maxth)
 		} else return false;
 	case ENGINE_RETRO:
 		if (!m_thrusterGroupDef[THGROUP_RETRO].ts.size()) {
-			ts = CreateThruster (Vector(0,0,0), Vector(0,0,-1), maxth, tnk, m_defaultIsp);
+			ts = CreateThruster({0, 0, 0}, {0, 0, -1}, maxth, tnk, m_defaultIsp);
 			CreateThrusterGroup (&ts, 1, THGROUP_RETRO);
 			return true;
 		} else if (m_thrusterGroupDef[THGROUP_RETRO].ts.size() == 1) {
@@ -2079,7 +2076,7 @@ bool Vessel::SetMaxThrust_old (ENGINETYPE eng, double maxth)
 		} else return false;
 	case ENGINE_HOVER:
 		if (!m_thrusterGroupDef[THGROUP_HOVER].ts.size()) {
-			ts = CreateThruster (Vector(0,0,0), Vector(0,1,0), maxth, tnk, m_defaultIsp);
+			ts = CreateThruster({0, 0, 0}, {0, 1, 0}, maxth, tnk, m_defaultIsp);
 			CreateThrusterGroup (&ts, 1, THGROUP_HOVER);
 			return true;
 		} else if (m_thrusterGroupDef[THGROUP_HOVER].ts.size() == 1) {
@@ -2099,38 +2096,38 @@ void Vessel::CreateDefaultAttitudeSet (double maxth)
 	TankSpec *tnk = (ntank ? tank[0] : 0);
 
 	// linear groups
-	ts_lin = CreateThruster (Vector (0,0,0), Vector (0, 1,0), maxth, tnk, m_defaultIsp);
+	ts_lin = CreateThruster({0, 0, 0}, { 0, 1, 0}, maxth, tnk, m_defaultIsp);
 	CreateThrusterGroup (&ts_lin, 1, THGROUP_ATT_UP);
-	ts_lin = CreateThruster (Vector (0,0,0), Vector (0,-1,0), maxth, tnk, m_defaultIsp);
+	ts_lin = CreateThruster({0, 0, 0}, { 0,-1, 0}, maxth, tnk, m_defaultIsp);
 	CreateThrusterGroup (&ts_lin, 1, THGROUP_ATT_DOWN);
-	ts_lin = CreateThruster (Vector (0,0,0), Vector (-1,0,0), maxth, tnk, m_defaultIsp);
+	ts_lin = CreateThruster({0, 0, 0}, {-1, 0, 0}, maxth, tnk, m_defaultIsp);
 	CreateThrusterGroup (&ts_lin, 1, THGROUP_ATT_LEFT);
-	ts_lin = CreateThruster (Vector (0,0,0), Vector ( 1,0,0), maxth, tnk, m_defaultIsp);
+	ts_lin = CreateThruster({0, 0, 0}, { 1, 0, 0}, maxth, tnk, m_defaultIsp);
 	CreateThrusterGroup (&ts_lin, 1, THGROUP_ATT_RIGHT);
-	ts_lin = CreateThruster (Vector (0,0,0), Vector (0,0, 1), maxth, tnk, m_defaultIsp);
+	ts_lin = CreateThruster({0, 0, 0}, { 0, 0, 1}, maxth, tnk, m_defaultIsp);
 	CreateThrusterGroup (&ts_lin, 1, THGROUP_ATT_FORWARD);
-	ts_lin = CreateThruster (Vector (0,0,0), Vector (0,0,-1), maxth, tnk, m_defaultIsp);
+	ts_lin = CreateThruster({0, 0, 0}, { 0, 0,-1}, maxth, tnk, m_defaultIsp);
 	CreateThrusterGroup (&ts_lin, 1, THGROUP_ATT_BACK);
 
 	// rotational groups
 	maxth *= 0.5; // since each group has 2 thrusters
-	ts_rot[0] = CreateThruster (Vector(0,0, size), Vector(0, 1,0), maxth, tnk, m_defaultIsp);
-	ts_rot[1] = CreateThruster (Vector(0,0,-size), Vector(0,-1,0), maxth, tnk, m_defaultIsp);
+	ts_rot[0] = CreateThruster({ 0, 0, size}, { 0, 1, 0}, maxth, tnk, m_defaultIsp);
+	ts_rot[1] = CreateThruster({ 0, 0,-size}, { 0,-1, 0}, maxth, tnk, m_defaultIsp);
 	CreateThrusterGroup (ts_rot, 2, THGROUP_ATT_PITCHUP);
-	ts_rot[0] = CreateThruster (Vector(0,0, size), Vector(0,-1,0), maxth, tnk, m_defaultIsp);
-	ts_rot[1] = CreateThruster (Vector(0,0,-size), Vector(0, 1,0), maxth, tnk, m_defaultIsp);
+	ts_rot[0] = CreateThruster({ 0, 0, size}, { 0,-1, 0}, maxth, tnk, m_defaultIsp);
+	ts_rot[1] = CreateThruster({ 0, 0,-size}, { 0, 1, 0}, maxth, tnk, m_defaultIsp);
 	CreateThrusterGroup (ts_rot, 2, THGROUP_ATT_PITCHDOWN);
-	ts_rot[0] = CreateThruster (Vector(0,0, size), Vector(-1,0,0), maxth, tnk, m_defaultIsp);
-	ts_rot[1] = CreateThruster (Vector(0,0,-size), Vector( 1,0,0), maxth, tnk, m_defaultIsp);
+	ts_rot[0] = CreateThruster({ 0, 0, size}, {-1, 0, 0}, maxth, tnk, m_defaultIsp);
+	ts_rot[1] = CreateThruster({ 0, 0,-size}, { 1, 0, 0}, maxth, tnk, m_defaultIsp);
 	CreateThrusterGroup (ts_rot, 2, THGROUP_ATT_YAWLEFT);
-	ts_rot[0] = CreateThruster (Vector(0,0, size), Vector( 1,0,0), maxth, tnk, m_defaultIsp);
-	ts_rot[1] = CreateThruster (Vector(0,0,-size), Vector(-1,0,0), maxth, tnk, m_defaultIsp);
+	ts_rot[0] = CreateThruster({ 0, 0, size}, { 1, 0, 0}, maxth, tnk, m_defaultIsp);
+	ts_rot[1] = CreateThruster({ 0, 0,-size}, {-1, 0, 0}, maxth, tnk, m_defaultIsp);
 	CreateThrusterGroup (ts_rot, 2, THGROUP_ATT_YAWRIGHT);
-	ts_rot[0] = CreateThruster (Vector( size,0,0), Vector(0, 1,0), maxth, tnk, m_defaultIsp);
-	ts_rot[1] = CreateThruster (Vector(-size,0,0), Vector(0,-1,0), maxth, tnk, m_defaultIsp);
+	ts_rot[0] = CreateThruster({ size, 0, 0}, { 0, 1, 0}, maxth, tnk, m_defaultIsp);
+	ts_rot[1] = CreateThruster({-size, 0, 0}, { 0,-1, 0}, maxth, tnk, m_defaultIsp);
 	CreateThrusterGroup (ts_rot, 2, THGROUP_ATT_BANKLEFT);
-	ts_rot[0] = CreateThruster (Vector(-size,0,0), Vector(0, 1,0), maxth, tnk, m_defaultIsp);
-	ts_rot[1] = CreateThruster (Vector( size,0,0), Vector(0,-1,0), maxth, tnk, m_defaultIsp);
+	ts_rot[0] = CreateThruster({-size, 0, 0}, { 0, 1, 0}, maxth, tnk, m_defaultIsp);
+	ts_rot[1] = CreateThruster({ size, 0, 0}, { 0,-1, 0}, maxth, tnk, m_defaultIsp);
 	CreateThrusterGroup (ts_rot, 2, THGROUP_ATT_BANKRIGHT);
 }
 
@@ -2162,7 +2159,7 @@ UINT Vessel::AddExhaust (EXHAUSTSPEC *spec)
 		es->flags &= ~EXHAUST_CONSTANTPOS;
 	} else if (!es->lpos || (es->flags & EXHAUST_CONSTANTPOS)) {
 		es->lpos = new VECTOR3;
-		*es->lpos = (spec->lpos ? *spec->lpos : _V(0,0,0));
+		*es->lpos = (spec->lpos ? *spec->lpos : VECTOR3{0, 0, 0});
 		es->flags |= EXHAUST_CONSTANTPOS;
 	}
 
@@ -2171,7 +2168,7 @@ UINT Vessel::AddExhaust (EXHAUSTSPEC *spec)
 		es->flags &= ~EXHAUST_CONSTANTDIR;
 	} else if (!es->ldir || (es->flags & EXHAUST_CONSTANTDIR)) {
 		es->ldir = new VECTOR3;
-		*es->ldir = (spec->ldir ? *spec->ldir : _V(0,0,1));
+		*es->ldir = (spec->ldir ? *spec->ldir : VECTOR3{0,0,1});
 		es->flags |= EXHAUST_CONSTANTDIR;
 	}
 
@@ -2212,7 +2209,7 @@ bool Vessel::DelExhaust (UINT idx)
 
 // ==============================================================
 
-oapi::ParticleStream *Vessel::AddParticleStream (PARTICLESTREAMSPEC *pss, const Vector &pos, const Vector &dir, double *lvl)
+oapi::ParticleStream *Vessel::AddParticleStream (PARTICLESTREAMSPEC *pss, const VECTOR3 &pos, const VECTOR3 &dir, double *lvl)
 {
 	if (!g_pOrbiter->Cfg()->CfgVisualPrm.bParticleStreams) return 0;
 	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient ();
@@ -2224,13 +2221,13 @@ oapi::ParticleStream *Vessel::AddParticleStream (PARTICLESTREAMSPEC *pss, const 
 		delete []contrail;
 	}
 	contrail = tmp;
-	contrail[ncontrail] = gc->clbkCreateExhaustStream (pss, (OBJHANDLE)this, lvl, MakeVECTOR3(pos), MakeVECTOR3(-dir));
+	contrail[ncontrail] = gc->clbkCreateExhaustStream(pss, (OBJHANDLE)this, lvl, pos, -dir);
 	return contrail[ncontrail++];	
 }
 
 // ==============================================================
 
-oapi::ParticleStream *Vessel::AddExhaustStream (ThrustSpec *ts, PARTICLESTREAMSPEC *pss, const Vector *pos, const Vector *dir)
+oapi::ParticleStream *Vessel::AddExhaustStream (ThrustSpec *ts, PARTICLESTREAMSPEC *pss, const VECTOR3 *pos, const VECTOR3 *dir)
 {
 	if (!g_pOrbiter->Cfg()->CfgVisualPrm.bParticleStreams) return 0;
 	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient ();
@@ -2244,9 +2241,9 @@ oapi::ParticleStream *Vessel::AddExhaustStream (ThrustSpec *ts, PARTICLESTREAMSP
 	contrail = tmp;
 	contrail[ncontrail] = gc->clbkCreateExhaustStream (pss, (OBJHANDLE)this, &ts->level, &ts->ref, &ts->dir);
 	if (pos) // local position reference
-		contrail[ncontrail]->SetFixedPos (MakeVECTOR3(*pos));
+		contrail[ncontrail]->SetFixedPos(*pos);
 	if (dir) // local direction reference
-		contrail[ncontrail]->SetFixedDir (MakeVECTOR3(*dir));
+		contrail[ncontrail]->SetFixedDir(*dir);
 	return contrail[ncontrail++];
 }
 
@@ -2526,7 +2523,7 @@ double Vessel::GetPropellantFlowrate (const TankSpec *ts) const
 
 // ==============================================================
 
-PortSpec *Vessel::CreateDock (const Vector &pos, const Vector &dir, const Vector &rot)
+PortSpec *Vessel::CreateDock (const VECTOR3 &pos, const VECTOR3 &dir, const VECTOR3 &rot)
 {
 	PortSpec **tmp = new PortSpec*[ndock+1]; TRACENEW
 	if (ndock) {
@@ -2535,9 +2532,9 @@ PortSpec *Vessel::CreateDock (const Vector &pos, const Vector &dir, const Vector
 	}
 	dock = tmp;
 	dock[ndock] = new PortSpec; TRACENEW
-	dock[ndock]->ref.Set (pos);
-	dock[ndock]->dir.Set (dir);
-	dock[ndock]->rot.Set (rot);
+	dock[ndock]->ref = pos;
+	dock[ndock]->dir = dir;
+	dock[ndock]->rot = rot;
 	dock[ndock]->mate = 0;
 	dock[ndock]->ids  = 0;
 	dock[ndock]->pending = 0;
@@ -2547,16 +2544,16 @@ PortSpec *Vessel::CreateDock (const Vector &pos, const Vector &dir, const Vector
 
 // ==============================================================
 
-void Vessel::SetDockParams (PortSpec *dock, const Vector &pos, const Vector &dir, const Vector &rot)
+void Vessel::SetDockParams (PortSpec *dock, const VECTOR3 &pos, const VECTOR3 &dir, const VECTOR3 &rot)
 {
-	dock->ref.Set (pos);
-	dock->dir.Set (dir);
-	dock->rot.Set (rot);
+	dock->ref = pos;
+	dock->dir = dir;
+	dock->rot = rot;
 }
 
 // ==============================================================
 
-void Vessel::ShiftDocks (const Vector &ofs)
+void Vessel::ShiftDocks (const VECTOR3 &ofs)
 {
 	for (DWORD i = 0; i < ndock; i++)
 		SetDockParams (dock[i], dock[i]->ref+ofs, dock[i]->dir, dock[i]->rot);
@@ -2663,7 +2660,7 @@ int Vessel::Dock (Vessel *target, DWORD mydid, DWORD tgtdid, DWORD mode)
 		// error: we are already docked to the target (directly or indirectly)
 
 	if (mode) {
-		Vector P;
+		VECTOR3 P;
 		Matrix R;
 		if (mode == 1) { // drag target to our current position
 			RelDockingPos (target, mydid, tgtdid, P, R);
@@ -2773,18 +2770,18 @@ void Vessel::UndockInteractive (const Vessel *exclude, double vsep)
 
 // ==============================================================
 
-void Vessel::RelDockingPos (const Vessel *target, UINT mydid, UINT tgtdid, Vector &P, Matrix &R)
+void Vessel::RelDockingPos (const Vessel *target, UINT mydid, UINT tgtdid, VECTOR3 &P, Matrix &R)
 {
 	// Calculate the relative position 'P' and orientation 'R' of 'target'
 	// in my reference frame, if we are docked between 'mydid' and 'tgtdid'
 
 	// relative orientation
-	Vector as(target->dock[tgtdid]->dir);
-	Vector bs(target->dock[tgtdid]->rot);
-	Vector cs(crossp(as,bs));
-	Vector at(-dock[mydid]->dir);
-	Vector bt( dock[mydid]->rot);
-	Vector ct(crossp(at,bt));
+	VECTOR3 as = target->dock[tgtdid]->dir;
+	VECTOR3 bs = target->dock[tgtdid]->rot;
+	VECTOR3 cs = cross(as, bs);
+	VECTOR3 at = -dock[mydid]->dir;
+	VECTOR3 bt =  dock[mydid]->rot;
+	VECTOR3 ct = cross(at, bt);
 	double den = cs.x * (as.y*bs.z - as.z*bs.y) +
 		         cs.y * (as.z*bs.x - as.x*bs.z) +
 				 cs.z * (as.x*bs.y - as.y*bs.x);
@@ -2817,11 +2814,11 @@ void Vessel::RelDockingPos (const Vessel *target, UINT mydid, UINT tgtdid, Vecto
 			 at.z * (bs.x*cs.y - bs.y*cs.x)) / den;
 
 	// relative position
-	P.Set (dock[mydid]->ref - mul (R, target->dock[tgtdid]->ref));
+	P = dock[mydid]->ref - mul(R, target->dock[tgtdid]->ref);
 }
 
 
-AttachmentSpec *Vessel::CreateAttachment (bool toparent, const Vector &pos, const Vector &dir, const Vector &rot, const char *id, bool loose)
+AttachmentSpec *Vessel::CreateAttachment (bool toparent, const VECTOR3 &pos, const VECTOR3 &dir, const VECTOR3 &rot, const char *id, bool loose)
 {
 	AttachmentSpec *as;
 	if (toparent) { // create attachment to parent vessel
@@ -2841,9 +2838,9 @@ AttachmentSpec *Vessel::CreateAttachment (bool toparent, const Vector &pos, cons
 		cattach = tmp;
 		as = cattach[ncattach++] = new AttachmentSpec; TRACENEW
 	}
-	as->ref.Set (pos);
-	as->dir.Set (dir);
-	as->rot.Set (rot);
+	as->ref = pos;
+	as->dir = dir;
+	as->rot = rot;
 	as->toparent = toparent;
 	as->loose = loose;
 	as->mate = 0;
@@ -2918,15 +2915,15 @@ void Vessel::ClearAttachments ()
 	}
 }
 
-void Vessel::SetAttachmentParams (AttachmentSpec *as, const Vector &pos, const Vector &dir, const Vector &rot)
+void Vessel::SetAttachmentParams (AttachmentSpec *as, const VECTOR3 &pos, const VECTOR3 &dir, const VECTOR3 &rot)
 {
-	Vector at(-as->dir);
-	Vector bt( as->rot);
-	Vector ct(crossp(at,bt));
+	VECTOR3 at = -as->dir;
+	VECTOR3 bt =  as->rot;
+	VECTOR3 ct = cross(at, bt);
 
-	as->ref.Set (pos);
-	as->dir.Set (dir);
-	as->rot.Set (rot);
+	as->ref = pos;
+	as->dir = dir;
+	as->rot = rot;
 
 	if (as->mate) {
 		if (as->toparent) {
@@ -2935,12 +2932,12 @@ void Vessel::SetAttachmentParams (AttachmentSpec *as, const Vector &pos, const V
 			UpdatePassive ();
 		} else {
 			Matrix R1(at.x, at.y, at.z,  bt.x, bt.y, bt.z,  ct.x, ct.y, ct.z);
-			at.Set (-as->dir), bt.Set (as->rot), ct.Set (crossp(at,bt));
+			at = -as->dir; bt = as->rot; ct = cross(at, bt);
 			Matrix R2(at.x, bt.x, ct.x,  at.y, bt.y, ct.y,  at.z, bt.z, ct.z);
 			as->mate->attach_rrot.premul (R1);
 			as->mate->attach_rrot.premul (R2);
 			as->mate->attach_rrot.orthogonalise (++orthoaxis % 3);
-			as->mate->attach_rpos.Set (as->ref - mul (as->mate->attach_rrot, as->mate_attach->ref));
+			as->mate->attach_rpos = as->ref - mul(as->mate->attach_rrot, as->mate_attach->ref);
 			as->mate->UpdatePassive ();
 		}
 	}
@@ -2991,16 +2988,16 @@ bool Vessel::DetachFromParent (double v)
 	if (!attach || !proxybody) return false; // we are not attached to any parent
 	Vessel *prnt = attach->mate;
 
-	Vector vel(s0->vel);
+	VECTOR3 vel = s0->vel;
 	cbody = prnt->cbody;
-	vel += mul (prnt->GRot(), crossp (attach_rpos, prnt->s0->omega));
+	vel += mul(prnt->GRot(), cross(attach_rpos, prnt->s0->omega));
 	if (v) { // ejection velocity
 		vel += mul (s0->R, tmul (attach_rrot, attach->mate_attach->dir)) * v;
 	}
 	//fstatus = FLIGHTSTATUS_FREEFLIGHT;
 	RPlace (s0->pos, vel);
 	UpdateProxies ();
-	sp.alt = s0->pos.dist (proxybody->GPos()) - proxybody->Size();
+	sp.alt = dist(s0->pos, proxybody->GPos()) - proxybody->Size();
 	UpdateSurfParams ();
 	bSurfaceContact = CheckSurfaceContact();
 	attach->mate = 0;
@@ -3022,17 +3019,17 @@ void Vessel::InitAttachmentToParent (AttachmentSpec *asc, bool allow_loose)
 
 	if (allow_loose && asp->loose) { // freeze current relative child orientation
 
-		attach_rrot.Set (GRot());
+		attach_rrot = GRot();
 		attach_rrot.tpremul (asc->mate->GRot());
 
 	} else {
 
-		Vector as(asc->dir);
-		Vector bs(asc->rot);
-		Vector cs(crossp(as,bs));
-		Vector at(-asp->dir);
-		Vector bt( asp->rot);
-		Vector ct(crossp(at,bt));
+		VECTOR3 as = asc->dir;
+		VECTOR3 bs = asc->rot;
+		VECTOR3 cs = cross(as, bs);
+		VECTOR3 at = -asp->dir;
+		VECTOR3 bt =  asp->rot;
+		VECTOR3 ct = cross(at, bt);
 		double den = cs.x * (as.y*bs.z - as.z*bs.y) +
 			     cs.y * (as.z*bs.x - as.x*bs.z) +
 				 cs.z * (as.x*bs.y - as.y*bs.x);
@@ -3066,7 +3063,7 @@ void Vessel::InitAttachmentToParent (AttachmentSpec *asc, bool allow_loose)
 	}
 
 	// child position relative to parent
-	attach_rpos.Set (asp->ref - mul (attach_rrot, asc->ref));
+	attach_rpos = asp->ref - mul(attach_rrot, asc->ref);
 	attach = asc;
 }
 
@@ -3094,7 +3091,7 @@ DWORD Vessel::GetAttachmentIndex (AttachmentSpec *as) const
 
 // ==============================================================
 
-void Vessel::ShiftAttachments (const Vector &ofs)
+void Vessel::ShiftAttachments (const VECTOR3 &ofs)
 {
 	DWORD i;
 	for (i = 0; i < npattach; i++)
@@ -3346,34 +3343,34 @@ void Vessel::InitLanded (Planet *planet, double lng, double lat, double dir, con
 {
 	dCHECK(!g_bStateUpdate, "Vessel::InitLanded must not be called during state update") // not valid during update phase
 
-	Vector nml;
+	VECTOR3 nml;
 	int i;
 
 	if (!hrot) {
 		// Calculate compressed touchdown points at equilibrium
 		double prad = planet->Size();
 		double mg = Ggrav * planet->Mass() * mass / (prad*prad); // approximate vessel weight
-		Vector tp_comp[3];
+		VECTOR3 tp_comp[3];
 		for (i = 0; i < 3; i++)
 			tp_comp[i] = touchdown_vtx[i].pos + touchdown_nm*(touchdown_vtx[i].compression*mg);
 
 		// equilibrium touchdown plane normal
-		nml = crossp (tp_comp[0]-(tp_comp[1]+tp_comp[2])*0.5, tp_comp[2]-tp_comp[1]).unit();
+		nml = unit(cross(tp_comp[0] - (tp_comp[1] + tp_comp[2]) * 0.5, tp_comp[2] - tp_comp[1]));
 
 		// Distance of origin from compressed touchdown plane
-		cgelev = dotp (nml, -tp_comp[0]);
+		cgelev = dot(nml, -tp_comp[0]);
 	} else {
 		double slng = sin(lng), clng = cos(lng);
 		double slat = sin(lat), clat = cos(lat);
 		Matrix L2H (-slng,0,clng, clat*clng,slat,clat*slng, -slat*clng,clat,-slat*slng);
-		nml = tmul (*hrot, tmul (L2H, Vector(0,1,0)));
+		nml = tmul(*hrot, tmul(L2H, VECTOR3{0, 1, 0}));
 	}
 
 	proxybody = proxyplanet = planet;
 	sp.SetLanded (lng, lat, cgelev, dir, nml, planet);
 
 	if (hrot) {
-		land_rot.Set (*hrot);
+		land_rot = *hrot;
 	} else {
 		double sdir = sin(dir), cdir = cos(dir);
 		planet->EquatorialToLocal (sp.slng, sp.clng, sp.slat, sp.clat, sp.rad, sp.ploc);
@@ -3401,12 +3398,12 @@ void Vessel::InitLanded (Planet *planet, double lng, double lat, double dir, con
 	}
 
 	double vground = Pi2 * sp.rad * sp.clat / planet->RotT();
-	s0->vel.Set (-vground*sp.slng, 0.0, vground*sp.clng);
-	s0->pos.Set (mul (planet->GRot(), sp.ploc) + planet->GPos());
-	s0->vel.Set (mul (planet->GRot(), s0->vel) + planet->GVel());
-	rvel_base.Set (s0->vel);
-	rvel_add.Set (0,0,0);
-	Amom.Set (0,0,0); // this is not quite true since the planet rotates ...
+	s0->vel = {-vground * sp.slng, 0.0, vground * sp.clng};
+	s0->pos = mul(planet->GRot(), sp.ploc) + planet->GPos();
+	s0->vel = mul(planet->GRot(), s0->vel) + planet->GVel();
+	rvel_base = s0->vel;
+	rvel_add = {0, 0, 0};
+	Amom = {0, 0, 0}; // this is not quite true since the planet rotates ...
 	s0->Q.Set (land_rot);
 	s0->Q.premul (planet->GQ());
 	s0->R.Set (s0->Q);
@@ -3434,12 +3431,12 @@ void Vessel::InitLanded (Planet *planet, double lng, double lat, double dir, con
 void Vessel::InitDocked (const Vessel *vessel, int port)
 {
 	if (!ndock) return; // problems!
-	Vector as(dock[0]->dir);
-	Vector bs(dock[0]->rot);
-	Vector cs(crossp(as,bs));
-	Vector at(vessel->dock[0]->dir);
-	Vector bt(vessel->dock[0]->rot);
-	Vector ct(crossp(at,bt));
+	VECTOR3 as = dock[0]->dir;
+	VECTOR3 bs = dock[0]->rot;
+	VECTOR3 cs = cross(as, bs);
+	VECTOR3 at = vessel->dock[0]->dir;
+	VECTOR3 bt = vessel->dock[0]->rot;
+	VECTOR3 ct = cross(at, bt);
 	double den = cs.x * (as.y*bs.z - as.z*bs.y) +
 		         cs.y * (as.z*bs.x - as.x*bs.z) +
 				 cs.z * (as.x*bs.y - as.y*bs.x);
@@ -3472,7 +3469,7 @@ void Vessel::InitDocked (const Vessel *vessel, int port)
 					at.z * (bs.x*cs.y - bs.y*cs.x)) / den;
 	// can land_rot be expressed directly in quaternion representation?
 
-	Vector dockpos;
+	VECTOR3 dockpos;
 	vessel->LocalToGlobal (vessel->dock[0]->ref, dockpos);
 	s0->Q.Set (land_rot);
 	s0->Q.premul (vessel->GQ());
@@ -3481,7 +3478,7 @@ void Vessel::InitDocked (const Vessel *vessel, int port)
 	fstatus = FLIGHTSTATUS_FREEFLIGHT;
 }
 
-void Vessel::InitOrbiting (const Vector &relr, const Vector &relv, const Vector &rot, const Vector *_vrot)
+void Vessel::InitOrbiting (const VECTOR3 &relr, const VECTOR3 &relv, const VECTOR3 &rot, const VECTOR3 *_vrot)
 {
 	cpos = relr, cvel = relv;
 
@@ -3498,7 +3495,7 @@ void Vessel::InitOrbiting (const Vector &relr, const Vector &relv, const Vector 
 		int reslvl = (int)(32.0-log(max(alt0,100.0))*LOG2);
 		elev = emgr->Elevation (lat, lng, reslvl, &etile);
 	} else {
-		rad = cpos.length();
+		rad = len(cpos);
 	}
 	if (rad < cbody->Size() + elev) {
 		double scale = (cbody->Size() + elev) / rad;
@@ -3511,7 +3508,7 @@ void Vessel::InitOrbiting (const Vector &relr, const Vector &relv, const Vector 
 	s0->R.Set (rot);
 	s0->Q.Set (s0->R);
 
-	if (_vrot) s0->omega.Set (*_vrot);
+	if (_vrot) s0->omega = *_vrot;
 
 	RPlace(cpos + cbody->GPos(), cvel + cbody->GVel());
 }
@@ -3690,10 +3687,10 @@ int Vessel::ConsumeBufferedKey (DWORD key, bool down, char *kstate)
 // superstructure CG in vessel coordinates and return true.
 // Otherwise: set 'cg' to (0,0,0) and return false
 
-bool Vessel::GetSuperStructCG (Vector &cg) const
+bool Vessel::GetSuperStructCG (VECTOR3 &cg) const
 {
 	if (!supervessel) {
-		cg.Set(0,0,0);
+		cg = {0, 0, 0};
 		return false;
 	} else {
 		supervessel->GetCG (this, cg);
@@ -3708,13 +3705,13 @@ double Vessel::MaxAngularMoment (int axis) const
 	dCHECK(axis >= 0 && axis < 6, "Invalid axis index.")
 
 	if (!supervessel) return max_angular_moment[axis];
-	Vector vcg;
-	VECTOR3 M = {0,0,0};
+	VECTOR3 vcg;
 	supervessel->GetCG (this, vcg);
 	const ThrustGroupSpec *tgs = &m_thrusterGroupDef[THGROUP_ATT_PITCHUP+axis];
-	for (auto it = tgs->ts.begin(); it != tgs->ts.end(); it++)
-		M += crossp ((*it)->dir * (*it)->maxth0, (*it)->ref-MakeVECTOR3(vcg));
-	return length (M);
+
+	VECTOR3 M;
+	for (auto& th : tgs->ts) M += cross(th->dir * th->maxth0, th->ref - vcg);
+	return len(M);
 }
 
 // =======================================================================
@@ -3757,7 +3754,7 @@ void Vessel::UpdateBodyForces ()
 void Vessel::UpdateThrustForces ()
 {
 	UINT j;
-	Vector F;
+	VECTOR3 F;
 
 	// Navigation computer sequences
 	if (navmode) {
@@ -3765,14 +3762,14 @@ void Vessel::UpdateThrustForces ()
 		int navmode_core = (modIntf.v->Version() >= 3 ? ((VESSEL4*)modIntf.v)->clbkNavProcess(navmode) : navmode);
 		// allow module to process the navigation modes itself
 			
-		Vector fpmi, *fullpmi;
+		VECTOR3 fpmi, *fullpmi;
 		if (supervessel) {
 			fullpmi = &fpmi;
 			supervessel->GetPMI (this, fpmi);
 		} else {
 			fullpmi = &pmi;
 		}
-		//const Vector *fullpmi = (supervessel ? supervessel->GetPMI() : &pmi);
+		//const VECTOR3 *fullpmi = (supervessel ? supervessel->GetPMI() : &pmi);
 		double mam[6];
 		for (int i = 0; i < 6; i++) mam[i] = MaxAngularMoment(i) * 10.0;
 
@@ -3812,7 +3809,7 @@ void Vessel::UpdateThrustForces ()
 			}
 
 			//if (finished && ++killrot_delay > 8) // add a delay to improve performance at high time acceleration
-			if (s0->omega.length() < 1e-5)
+			if (len(s0->omega) < 1e-5)
 				ClrNavMode (NAVMODE_KILLROT);
 
 			//sprintf (DBG_MSG, "vrot: x=%e, y=%e, z=%e", vrot.x, vrot.y, vrot.z);
@@ -3846,15 +3843,15 @@ void Vessel::UpdateThrustForces ()
 		// "turn prograde/retrograde/normal/antinormal" navcomp mode
 		if (navmode_core & (NAVBIT_PROGRADE|NAVBIT_RETROGRADE|NAVBIT_NORMAL|NAVBIT_ANTINORMAL)) {
 			double v1, dth;
-			Vector tgtdir;
+			VECTOR3 tgtdir;
 			if (navmode_core & (NAVBIT_PROGRADE|NAVBIT_RETROGRADE)) {
-				tgtdir.Set (tmul (GRot(), GVel() - cbody->GVel()));  // prograde direction in ship coordinates
+				tgtdir = tmul(GRot(), GVel() - cbody->GVel());  // prograde direction in ship coordinates
 				if (navmode_core & NAVBIT_RETROGRADE) tgtdir = -tgtdir;
 			} else {
-				tgtdir.Set (tmul (GRot(), crossp (GVel()-cbody->GVel(), GPos()-cbody->GPos()))); // remember left-handed system
+				tgtdir = tmul(GRot(), cross(GVel() - cbody->GVel(), GPos() - cbody->GPos())); // remember left-handed system
 				if (navmode_core & NAVBIT_ANTINORMAL) tgtdir = -tgtdir;
 			}
-			tgtdir.unify();
+			tgtdir = unit(tgtdir);
 
 			const double dvmax = 5.0*RAD; // max change in angular velocity [rad/s]
 			const double alpha0 = 20.0*RAD; // angular distance from target at which thrust is being reduced
@@ -3874,8 +3871,7 @@ void Vessel::UpdateThrustForces ()
 			else
 				SetThrusterGroupOverride (THGROUP_ATT_YAWRIGHT, min (-dth, 0.4));
 
-			tgtdir.Set (tmul (GRot(), GPos()- cbody->GPos()));
-			tgtdir.unify();
+			tgtdir = unit(tmul(GRot(), GPos() - cbody->GPos()));
 			v1 = asin(tgtdir.y) * ((navmode_core & (NAVBIT_PROGRADE|NAVBIT_NORMAL)) ? -f0:f0);
 			if (v1 >= 0.0) dth = (min (v1, dvmax)-s0->omega.z)/max_angular_moment[5];
 			else           dth = (max (v1,-dvmax)-s0->omega.z)/max_angular_moment[4];
@@ -3900,7 +3896,7 @@ void Vessel::UpdateThrustForces ()
 
 	// update thruster-induced forces
 	m_bThrustEngaged = false;
-	Thrust.Set (0,0,0);
+	Thrust = {0, 0, 0};
 	for (auto it = m_thruster.begin(); it != m_thruster.end(); it++) {
 		ThrustSpec* thruster = *it;
 		if (thruster->level = max (0.0, min (1.0, thruster->level_permanent + thruster->level_override))) {
@@ -3911,9 +3907,9 @@ void Vessel::UpdateThrustForces ()
 					if (ts->mass < 0.0) ts->mass = 0.0;
 				}
 				th *= ThrusterAtmScale (thruster, sp.atmp);  // atmospheric thrust scaling
-				F = MakeVector(thruster->dir * th);
+				F = thruster->dir * th;
 				Thrust += F;
-				Amom_add += crossp (F, MakeVector(thruster->ref));
+				Amom_add += cross(F, thruster->ref);
 				m_bThrustEngaged = true;
 			} else thruster->level = thruster->level_permanent = 0.0; // no fuel
 		}
@@ -3963,16 +3959,12 @@ void Vessel::UpdateRadiationForces ()
 	double illum = IlluminationFactor();
 	if (!illum) return; // we are in shadow
 
-	Vector mflux = GetMomentumFlux() * illum;
-	Vector F, r;
+	VECTOR3 mflux = GetMomentumFlux() * illum;
+	VECTOR3 F, r;
 
 	if (modIntf.v->Version() >= 2) {
 		// retrieve customised force calculation
-		VECTOR3 Mflux, p, pos;
-		Mflux.x = mflux.x, Mflux.y = mflux.y, Mflux.z = mflux.z;
-		((VESSEL3*)modIntf.v)->clbkGetRadiationForce (Mflux, p, pos);
-		F.x = p.x, F.y = p.y, F.z = p.z;
-		r.x = pos.x, r.y = pos.y, r.z = pos.z;
+		((VESSEL3*)modIntf.v)->clbkGetRadiationForce(mflux, F, r);
 	} else {
 		// simplistic implementation
 		double cs = size*size;
@@ -3981,7 +3973,7 @@ void Vessel::UpdateRadiationForces ()
 	}
 	Flin_add += F;
 	if (r.x || r.y || r.z)
-		Amom_add += crossp (F, r);
+		Amom_add += cross(F, r);
 }
 
 // =======================================================================
@@ -4028,9 +4020,9 @@ void Vessel::UpdateAerodynamicForces ()
 
 #endif
 
-	Vector ddir (-sp.airvel_ship.unit());           // freestream airflow direction (= drag direction)
-	Vector ldir (0, sp.airvel_ship.z, -sp.airvel_ship.y);  ldir.unify(); // lift direction (vertical on drag and transversal ship axis)
-	Vector sdir (sp.airvel_ship.z, 0, -sp.airvel_ship.x);  sdir.unify(); // sidelift direction (vertical on drag and vertical ship axis)
+	VECTOR3 ddir = unit(-sp.airvel_ship);           // freestream airflow direction (= drag direction)
+	VECTOR3 ldir = unit(VECTOR3{0, sp.airvel_ship.z, -sp.airvel_ship.y}); // lift direction (vertical on drag and transversal ship axis)
+	VECTOR3 sdir = unit(VECTOR3{sp.airvel_ship.z, 0, -sp.airvel_ship.x}); // sidelift direction (vertical on drag and vertical ship axis)
 	double lift, drag, S;
 	double Cl, Cm, Cd;   // lift, moment, drag coeffs
 
@@ -4125,13 +4117,13 @@ void Vessel::UpdateAerodynamicForces_OLD ()
 	// lift and drag. Note: this only generates a linear force. Angular momentum is
 	// generated by the hack above.
 
-	Vector vnorm (sp.airvel_ship/sp.airspd);
+	VECTOR3 vnorm = sp.airvel_ship / sp.airspd;
 	double Cl;   // lift coeff
 
 	// === wing lift ===
 	if (LiftCoeff && (Cl = LiftCoeff (aoa))) {
 		Lift = Cl * sp.dynp * cs.y;    // lift magnitude
-		Vector L (0, sp.airvel_ship.z, -sp.airvel_ship.y); // lift direction
+		VECTOR3 L{0, sp.airvel_ship.z, -sp.airvel_ship.y}; // lift direction
 		double lnorm = std::hypot (sp.airvel_ship.z, sp.airvel_ship.y);
 		if (lnorm) {
 			L *= Lift / lnorm;
@@ -4156,7 +4148,7 @@ void Vessel::UpdateAerodynamicForces_OLD ()
 // If tfrac==1, the full step is calculated
 // Note that no interpolation of rotation states is performed
 
-bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, double tfrac, double dt, bool allow_groundcontact) const
+bool Vessel::AddSurfaceForces (VECTOR3 *F, VECTOR3 *M, const StateVectors *s, double tfrac, double dt, bool allow_groundcontact) const
 {
 	nforcevec = 0; // should move higher up
 	E_comp = 0.0;  // compression energy
@@ -4178,15 +4170,15 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 	if (!dt) dt = td.SimDT;
 
 	if (!s) { // full step, based on pre-step vessel position (but new planet position!)
-		ls.pos.Set (s0->pos);
-		ls.vel.Set (s0->vel);
+		ls.pos = s0->pos;
+		ls.vel = s0->vel;
 		ls.Q.Set (s0->Q);
-		ls.omega.Set (s0->omega);
+		ls.omega = s0->omega;
 		s = &ls;
 	} else {    // partial step, based on intermediate position
 		// we need to propagate the gravbody backwards, since it has been updated already
 	}
-	alt = s->pos.dist (ps.pos) - proxybody->Size(); // altitude over normal zero
+	alt = dist(s->pos, ps.pos) - proxybody->Size(); // altitude over normal zero
 	if (alt > sp.elev + 1e4) return false; // add safety margin
 
 	surfp.Set (*s, ps, proxybody, &etile, &windp); // intermediate surface parameters
@@ -4219,9 +4211,9 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 	int reslvl = 1;
 	if (emgr) reslvl = (int)(32.0-log(max(alt,100.0))*LOG2);
 
-	Vector shift = tmul(ps.R, s->pos - ps.pos);
+	VECTOR3 shift = tmul(ps.R, s->pos - ps.pos);
 	for (i = 0; i < ntouchdown_vtx; i++) {
-		Vector p (mul (T, touchdown_vtx[i].pos) + shift);
+		VECTOR3 p = mul(T, touchdown_vtx[i].pos) + shift;
 		double lng, lat, rad, elev = 0.0;
 		proxybody->LocalToEquatorial (p, lng, lat, rad);
 		if (emgr)
@@ -4252,14 +4244,14 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 	double fn_tot_undamped = 0.0, fn_tot = 0.0, flng_tot = 0.0, flat_tot = 0.0;
 
 	// longitudinal touchdown direction - could be precalculated
-	Vector d1 ((touchdown_vtx[0].pos-(touchdown_vtx[1].pos+touchdown_vtx[2].pos)*0.5));
+	VECTOR3 d1 = (touchdown_vtx[0].pos - (touchdown_vtx[1].pos + touchdown_vtx[2].pos) * 0.5);
 	// horizon normal in vessel frame
 	//Vector hn (tmul (s->R, s->pos - ps.pos).unit());
-	Vector hn (tmul (T, tmul (surfp.L2H, surfp.surfnml)));
+	VECTOR3 hn = tmul(T, tmul(surfp.L2H, surfp.surfnml));
 	// project d1 (longitudinal touchdown direction) into horizon plane
-	Vector d1h ((d1 - hn * dotp (d1, hn)).unit());
+	VECTOR3 d1h = unit(d1 - hn * dot(d1, hn));
 	// lateral touchdown direction
-	Vector d2h (crossp (hn, d1h));
+	VECTOR3 d2h = cross(hn, d1h);
 
 	if (bDynamicGroundContact) {
 
@@ -4273,16 +4265,16 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 			for (i = 0; i < ntouchdown_vtx; i++) {
 				if (tdy[i] < 0.0) {
 					tidx[ntouch++] = i;
-					Vector gV (surfp.groundvel_ship + crossp(touchdown_vtx[i].pos,s->omega)); // ground velocity of touchdown point in vessel frame
-					gv_n   = dotp (gV, hn);                                             // gv projected on horizon normal in vessel frame
-					gv_lon = dotp (gV, d1h);											// longitudinal speed component for touchdown point i
-					gv_lat = dotp (gV, d2h);											// lateral speed component
+					VECTOR3 gV = surfp.groundvel_ship + cross(touchdown_vtx[i].pos, s->omega); // ground velocity of touchdown point in vessel frame
+					gv_n   = dot(gV, hn);                                             // gv projected on horizon normal in vessel frame
+					gv_lon = dot(gV, d1h);											// longitudinal speed component for touchdown point i
+					gv_lat = dot(gV, d2h);											// lateral speed component
 
-					Vector gV_hor = d1h*gv_lon + d2h*gv_lat;
-					Vector gV_hor2 = gV - hn*gv_n;  // is this the same?
+					VECTOR3 gV_hor = d1h * gv_lon + d2h * gv_lat;
+					VECTOR3 gV_hor2 = gV - hn * gv_n;  // is this the same?
 
 					gv_hor = hypot(gv_lon,gv_lat);
-					Vector gV_hor0 (gV_hor/gv_hor);
+					VECTOR3 gV_hor0 = gV_hor / gv_hor;
 
 					fn[i] = -tdy[i]*touchdown_vtx[i].stiffness; 	// horizon-normal force component: gear compression forces
 
@@ -4328,7 +4320,7 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 			for (i = 0; i < ntouch; i++) {
 				j = tidx[i];
 				if (tdy[j] < 0.0) {
-					*M += crossp (hn*fn[j]+d1h*flng[j]+d2h*flat[j], touchdown_vtx[j].pos);
+					*M += cross(hn * fn[j] + d1h * flng[j] + d2h * flat[j], touchdown_vtx[j].pos);
 				}
 			}
 		}
@@ -4340,10 +4332,10 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 			if (tdy[i] < 0.0) { // ground contact on point i!
 				tdy[i] = max(tdy[i], -1.0); // DEBUG
 				tidx[ntouch++] = i;
-				Vector gv (surfp.groundvel_ship + crossp(touchdown_vtx[i].pos,s->omega)); // ground velocity of touchdown point in vessel frame
-				gv_n   = dotp (gv, hn);                                             // gv projected on horizon normal in vessel frame
-				gv_lon = dotp (gv, d1h);											// longitudinal speed component for touchdown point i
-				gv_lat = dotp (gv, d2h);											// lateral speed component
+				VECTOR3 gv = surfp.groundvel_ship + cross(touchdown_vtx[i].pos, s->omega); // ground velocity of touchdown point in vessel frame
+				gv_n   = dot(gv, hn);                                             // gv projected on horizon normal in vessel frame
+				gv_lon = dot(gv, d1h);											// longitudinal speed component for touchdown point i
+				gv_lat = dot(gv, d2h);											// lateral speed component
 
 				fn[i] = -tdy[i]*touchdown_vtx[i].stiffness; 						// horizon-normal force component: gear compression forces
 				double maxpress = min (-tdy[i], 0.1)*touchdown_vtx[i].stiffness;
@@ -4386,9 +4378,9 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 		}
 
 		// limit forces to avoid velocity reversal
-		gv_lon = dotp (surfp.groundvel_ship, d1h);
-		gv_lat = dotp (surfp.groundvel_ship, d2h);
-		gv_n   = dotp (surfp.groundvel_ship, hn);
+		gv_lon = dot(surfp.groundvel_ship, d1h);
+		gv_lat = dot(surfp.groundvel_ship, d2h);
+		gv_n   = dot(surfp.groundvel_ship, hn);
 		double fmax_lon = -gv_lon * massdt;
 		if ((fmax_lon >= 0.0 && flng_tot > fmax_lon) || (fmax_lon <= 0.0 && flng_tot < fmax_lon)) {
 			double scale = fmax_lon/flng_tot;
@@ -4408,7 +4400,7 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 		double d_eff = -E/fn_tot_undamped*2.0/ntouch; // effective compression depth
 		
 		E += 0.5*mass*gv_n*gv_n; // add current linear kinetic energy
-		E += 0.5*mass*dotp(s->omega*pmi, s->omega);
+		E += 0.5*mass*dot(s->omega*pmi, s->omega);
 		double dv = fn_tot/mass*dt;
 		double gv_n_new = gv_n + dv;
 		double d_eff_new = d_eff + dv*dt;
@@ -4434,15 +4426,15 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 		//		fn[tidx[i]] *= scale;
 		//}
 
-		Vector M_surf, F_surf = hn*fn_tot + d1h*flng_tot + d2h*flat_tot;
+		VECTOR3 M_surf, F_surf = hn * fn_tot + d1h * flng_tot + d2h * flat_tot;
 		for (i = 0; i < ntouch; i++) {
 			j = tidx[i];
-			M_surf += crossp (hn*fn[j]+d1h*flng[j]+d2h*flat[j], touchdown_vtx[j].pos);
+			M_surf += cross(hn * fn[j] + d1h * flng[j] + d2h * flat[j], touchdown_vtx[j].pos);
 		}
 
 		// limit the change in angle over the current time step induced by impact forces
-		Vector dA = EulerInv_full (M_surf/mass, s->omega)*dt*dt;
-		double da = dA.length();
+		VECTOR3 dA = EulerInv_full(M_surf / mass, s->omega) * dt * dt;
+		double da = len(dA);
 		static double da_max = 0.0;
 		if (da > da_max) da_max = da;
 		if (da > 10.0*RAD) {
@@ -4452,30 +4444,30 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 
 
 #ifdef UNDEF
-		Vector V0 = surfp.groundvel_ship;
-		Vector V1 = V0 + F_surf * (dt/mass);
-		double E0_kin_lin = 0.5*mass*dotp(V0,V0);
-		double E1_kin_lin = 0.5*mass*dotp(V1,V1);
+		VECTOR3 V0 = surfp.groundvel_ship;
+		VECTOR3 V1 = V0 + F_surf * (dt/mass);
+		double E0_kin_lin = 0.5*mass*dot(V0,V0);
+		double E1_kin_lin = 0.5*mass*dot(V1,V1);
 		double dE_kin = E1_kin_lin-E0_kin_lin;                 // change in linear kinetic energy over time step
-		Vector W0 = s->omega;
-		Vector W1 = W0 + EulerInv_full (M_surf/mass, s->omega)*dt;
-		double E0_kin_rot = 0.5*mass*dotp(W0*pmi, W0);
-		double E1_kin_rot = 0.5*mass*dotp(W1*pmi, W1);
+		VECTOR3 W0 = s->omega;
+		VECTOR3 W1 = W0 + EulerInv_full (M_surf/mass, s->omega)*dt;
+		double E0_kin_rot = 0.5*mass*dot(W0*pmi, W0);
+		double E1_kin_rot = 0.5*mass*dot(W1*pmi, W1);
 		dE_kin += E1_kin_rot-E0_kin_rot;                       // change in rotational kinetic energy over time step
 		double dE_comp = E_comp-E0_comp;
 
 		if (dE_kin + dE_comp > 1e5) { // limit kinetic energy
 			double E1_kin_rot_fix = max(0, E1_kin_rot - (dE_kin+dE_comp-1e5));
 			double alpha = sqrt(E1_kin_rot_fix/E1_kin_rot);
-			Vector W1_fix = W1*alpha;
-			Vector Wdot = (W1_fix - W0)/dt;
-			Vector tau = Euler_full(Wdot, s->omega);
+			VECTOR3 W1_fix = W1*alpha;
+			VECTOR3 Wdot = (W1_fix - W0)/dt;
+			VECTOR3 tau = Euler_full(Wdot, s->omega);
 			M_surf = tau*mass;
 
 			// sanity check
 			W1 = W0 + EulerInv_full (M_surf/mass, s->omega)*dt;
 			dE_kin -= E1_kin_rot;
-			E1_kin_rot = 0.5*mass*dotp(W1*pmi, W1);
+			E1_kin_rot = 0.5*mass*dot(W1*pmi, W1);
 			dE_kin += E1_kin_rot;
 			double de = dE_kin + dE_comp;
 		}
@@ -4491,9 +4483,9 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 		double v1, v2;
 		for (i = 0; i < 3; i++) {
 			if (tdy[i] < 0.0) {
-				Vector gv (surfp.groundvel_ship + crossp(touchdown_vtx[i].pos,s->omega)); // ground velocity of touchdown point in vessel frame
-				v1 = dotp (gv, d1h); // longitudinal speed component for touchdown point i
-				v2 = dotp (gv, d2h); // lateral speed component
+				VECTOR3 gv = surfp.groundvel_ship + cross(touchdown_vtx[i].pos, s->omega); // ground velocity of touchdown point in vessel frame
+				v1 = dot(gv, d1h); // longitudinal speed component for touchdown point i
+				v2 = dot(gv, d2h); // lateral speed component
 
 				// longitudinal forces
 				flng[i] = touchdown_vtx[i].mu_lng * mass * 9.81;    // friction: generalise!
@@ -4515,9 +4507,9 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 		}
 
 		// project ground speed vector into horizon plane (vessel frame)
-		Vector vh (sp.groundvel_ship - hn * dotp (sp.groundvel_ship, hn));
-		v1 = dotp (vh, d1h);
-		v2 = dotp (vh, d2h);
+		VECTOR3 vh = sp.groundvel_ship - hn * dot(sp.groundvel_ship, hn);
+		v1 = dot(vh, d1h);
+		v2 = dot(vh, d2h);
 		// limit linear force
 		fmax = v1*massdt;
 		if (flng_tot*fmax < 0.0) {
@@ -4537,10 +4529,10 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 		// apply angular forces
 		for (i = 0; i < 3; i++) {
 			if (tdy[i] < 0.0) {
-				Vector f_attack(touchdown_vtx[i].pos);
+				VECTOR3 f_attack = touchdown_vtx[i].pos;
 				//f_attack.y = 0.0; // hack to avoid nicking
-				Vector F(d1h*flng[i] + d2h*flat[i]);
-				*M -= crossp (F, f_attack);
+				VECTOR3 F = d1h * flng[i] + d2h * flat[i];
+				*M -= cross(F, f_attack);
 			}
 		}
 	}
@@ -4608,8 +4600,8 @@ void Vessel::Update (bool force)
 		// simplified state update for idle vessels
 		proxyplanet->LocalToGlobal_t1 (sp.ploc, s1->pos);
 		double vground = Pi2 * proxyplanet->Size() * sp.clat / proxyplanet->RotT();
-		s1->vel.Set (-vground*sp.slng, 0.0, vground*sp.clng);
-		s1->vel.Set (mul (proxyplanet->s1->R, s1->vel) + proxyplanet->s1->vel);
+		s1->vel = {-vground * sp.slng, 0.0, vground * sp.clng};
+		s1->vel = mul(proxyplanet->s1->R, s1->vel) + proxyplanet->s1->vel;
 		s1->R.Set (land_rot);
 		s1->R.premul (proxyplanet->s1->R);
 		s1->Q.Set (s1->R);
@@ -4626,10 +4618,10 @@ void Vessel::Update (bool force)
 			if (lstatus == 3 || lstatus == 5) lstatus = 1;
 
 			// need to synchronise state vectors - DO WE NEED THIS?
-			rpos_base = s1->pos; rpos_add.Set (0,0,0);
+			rpos_base = s1->pos; rpos_add = {0, 0, 0};
 			s1->vel += rvel_add; // MS-071005: rvel_add included to fix "stuck at latitude 90" bug
-			rvel_base = s1->vel; rvel_add.Set (0,0,0);
-			s1->omega.Set (0,0,0);
+			rvel_base = s1->vel; rvel_add = {0, 0, 0};
+			s1->omega = {0, 0, 0};
 		}
 
 		//if (bFRplayback)
@@ -4655,7 +4647,7 @@ void Vessel::Update (bool force)
 			double py, pymin;
 			int imin;
 			for (i = 0; i < 3; i++) {
-				Vector p (mul (T, touchdown_vtx[i].pos));
+				VECTOR3 p = mul(T, touchdown_vtx[i].pos);
 				py = p.y + sp.alt;                 // vertical position
 				if (!i || py < pymin) pymin = py, imin = i;
 			}
@@ -4666,27 +4658,27 @@ void Vessel::Update (bool force)
 
 				// Calculate compressed touchdown points at equilibrium
 				double mg = GetWeight();
-				Vector tp_comp[3];
+				VECTOR3 tp_comp[3];
 				for (i = 0; i < 3; i++)
 					tp_comp[i] = touchdown_vtx[i].pos + touchdown_nm*(touchdown_vtx[i].compression*mg);
 
 				// equilibrium touchdown plane normal
-				Vector tnm_comp = crossp (tp_comp[0]-(tp_comp[1]+tp_comp[2])*0.5, tp_comp[2]-tp_comp[1]).unit();
+				VECTOR3 tnm_comp = unit(cross(tp_comp[0] - (tp_comp[1] + tp_comp[2]) * 0.5, tp_comp[2] - tp_comp[1]));
 
 				// horizon normal in vessel frame
-				Vector horizon_nm (T.m21, T.m22, T.m23);
-				double tilt = acos (dotp (tnm_comp, horizon_nm));
+				VECTOR3 horizon_nm{T.m21, T.m22, T.m23};
+				double tilt = std::acos(dot(tnm_comp, horizon_nm));
 
 				if (tilt > 1e-10) {
 					// rotate rotation axis into vessel x-axis
-					Vector raxis (crossp (tnm_comp, horizon_nm).unit());
+					VECTOR3 raxis = unit(cross(tnm_comp, horizon_nm));
 					double theta = asin (raxis.y);
 					double phi   = atan2 (raxis.z, raxis.x);
 					double sint  = sin (theta), cost = cos (theta);
 					double sinp  = sin (phi), cosp = cos (phi);
 					Matrix R (cost*cosp, sint, cost*sinp,  -sint*cosp, cost, -sint*sinp,  -sinp, 0, cosp);
 					// rotate around x-axis to compensate tilt
-					double arm = touchdown_vtx[imin].pos.dist(touchdown_cg)/size;
+					double arm = dist(touchdown_vtx[imin].pos, touchdown_cg) / size;
 					// rotate around x-axis to compensate tilt
 					double dtilt = min (tilt, -pymin * arm * 0.03 /*0.005e-1*/);
 					double sina = sin(dtilt), cosa = cos(dtilt);
@@ -4695,7 +4687,7 @@ void Vessel::Update (bool force)
 					R.premul (Matrix (cost*cosp, -sint*cosp, -sinp,  sint, cost, 0,  cost*sinp, -sint*sinp, cosp));
 
 					// modify angular velocity
-					Vector dv = raxis * (dtilt*td.iSimDT);
+					VECTOR3 dv = raxis * (dtilt * td.iSimDT);
 					s1->omega -= dv;
 
 					// limit angular velocity when we are flat on the ground
@@ -4714,7 +4706,7 @@ void Vessel::Update (bool force)
 
 				// Update touchdown points for compression
 				for (i = 0; i < 3; i++) {
-					Vector p (mul (T, tp_comp[i]));
+					VECTOR3 p = mul(T, tp_comp[i]);
 					py = p.y + sp.alt;
 					if (!i || py < pymin) pymin = py, imin = i;
 				}
@@ -4723,13 +4715,13 @@ void Vessel::Update (bool force)
 				if (pymin < 0.0) {
 					sp.rad -= pymin;
 					sp.alt -= pymin;
-					Vector loc;
+					VECTOR3 loc;
 					proxyplanet->EquatorialToLocal (sp.slng, sp.clng, sp.slat, sp.clat, sp.rad, loc);
-					Vector pgpos(s1->pos);
+					VECTOR3 pgpos = s1->pos;
 					SetRPos (mul (proxyplanet->s1->R, loc) + proxyplanet->s1->pos);
-					Vector dv ((s1->pos-pgpos)*td.iSimDT);
+					VECTOR3 dv = (s1->pos - pgpos) * td.iSimDT;
 					double ay = mul (sp.L2H, tmul (proxyplanet->s1->R, acc)).y;
-					if (ay < 0) dv -= mul (proxyplanet->s1->R, tmul(sp.L2H, Vector (0, ay, 0)))*0.5*td.SimDT;
+					if (ay < 0) dv -= mul(proxyplanet->s1->R, tmul(sp.L2H, VECTOR3{0, ay, 0})) * 0.5 * td.SimDT;
 					AddRVel (dv);
 				}
 
@@ -4791,10 +4783,10 @@ void Vessel::Update (bool force)
 			((VESSEL2*)modIntf.v)->clbkAnimate (td.SimT1);
 	}
 
-	Flin.Set (Flin_add);    // store current linear force
-	Amom.Set (Amom_add);    // store current torque
-	Flin_add.Set (0,0,0);   // reset linear force
-	Amom_add.Set (0,0,0);   // reset angular moments
+	Flin = Flin_add;    // store current linear force
+	Amom = Amom_add;    // store current torque
+	Flin_add = {0, 0, 0};   // reset linear force
+	Amom_add = {0, 0, 0};   // reset angular moments
 	E0_comp = E_comp;       // store compression energy
 	//for (i = 0; i < 2; i++) wbrake_override[i] = 0;
 	weight_valid = torque_valid = false;
@@ -4814,22 +4806,22 @@ void Vessel::UpdatePassive ()
 	AttachmentSpec *pa = attach->mate_attach;
 	StateVectors *ps = (s1 ? prnt->s1 : prnt->s0);
 
-	s->pos.Set (mul (ps->R, attach_rpos) + ps->pos);
+	s->pos = mul(ps->R, attach_rpos) + ps->pos;
 	rpos_base = s->pos;
-	rpos_add.Set (0,0,0);
-	s->vel.Set (ps->vel);
+	rpos_add = {0, 0, 0};
+	s->vel = ps->vel;
 	rvel_base = s->vel;
-	rvel_add.Set (0,0,0);
+	rvel_add = {0, 0, 0};
 	s->R.Set (ps->R);
 	s->R.postmul (attach_rrot);
 	s->Q.Set (s->R);
-	s->omega.Set (tmul (attach_rrot, ps->omega));
-	acc.Set (prnt->acc);
+	s->omega = tmul(attach_rrot, ps->omega);
+	acc = prnt->acc;
 
-	Flin.Set (Flin_add);    // store current linear force
-	Amom.Set (Amom_add);    // store current torque
-	Flin_add.Set (0,0,0);   // reset linear force
-	Amom_add.Set (0,0,0);   // reset angular moments
+	Flin = Flin_add;    // store current linear force
+	Amom = Amom_add;    // store current torque
+	Flin_add = {0, 0, 0};   // reset linear force
+	Amom_add = {0, 0, 0};   // reset angular moments
 
 	proxybody = prnt->proxybody;
 	proxyplanet = prnt->proxyplanet;
@@ -4873,18 +4865,18 @@ void Vessel::PostUpdate ()
 			if (++scanvessel >= g_psys->nVessel()) scanvessel = 0;
 			Vessel *v = g_psys->GetVessel(scanvessel);
 			if (v != this && v->ndock && v->proxybody == proxybody) {
-				double dst = s0->pos.dist (v->GPos());
+				double dst = dist(s0->pos, v->GPos());
 
 				if ((dst < 1.5 * (size + v->Size()) || (dst < size + v->Size() + 1e3))) { // valid candidate
-					Vector dref, gref, vref;
+					VECTOR3 dref, gref, vref;
 					for (j = 0; j < ndock; j++) { // loop over my own docks
 						if (dock[j]->mate) continue; // dock already busy
 						if (dockmode == 0) { // legacy docking mode
-							if (dotp (s0->vel - v->GVel(), mul (s0->R, dock[j]->dir)) < -0.01) continue; // moving away from dock
+							if (dot(s0->vel - v->GVel(), mul(s0->R, dock[j]->dir)) < -0.01) continue; // moving away from dock
 							for (k = 0; k < v->ndock; k++) { // loop over other vessel's docks
 								if (v->dock[k]->mate) continue; // dock already busy
-								dref.Set (tmul (v->GRot(), mul (s0->R, dock[j]->ref) + s0->pos - v->GPos()));
-								double d = dref.dist (v->dock[k]->ref);
+								dref = tmul(v->GRot(), mul(s0->R, dock[j]->ref) + s0->pos - v->GPos());
+								double d = dist(dref, v->dock[k]->ref);
 								if (d < MIN_DOCK_DIST) {
 									Dock (v, j, k);
 								}
@@ -4892,12 +4884,12 @@ void Vessel::PostUpdate ()
 						} else { // new docking mode
 							for (k = 0; k < v->ndock; k++) { // loop over other vessel's docks
 								if (v->dock[k]->mate) continue; // dock already busy
-								gref.Set (mul (s0->R, dock[j]->ref) + s0->pos);            // my dock in global frame
-								vref.Set (mul (v->GRot(), v->dock[k]->ref) + v->GPos()); // target dock in global frame
-								//dref.Set (tmul (v->GRot(), mul (*grot, dock[j]->ref) + *gpos - v->GPos())); // my dock in the target's frame
-								double d = gref.dist(vref); //dref.dist (v->dock[k]->ref);
+								gref = mul(s0->R, dock[j]->ref) + s0->pos;            // my dock in global frame
+								vref = mul(v->GRot(), v->dock[k]->ref) + v->GPos(); // target dock in global frame
+								//dref = tmul(v->GRot(), mul (*grot, dock[j]->ref) + *gpos - v->GPos()); // my dock in the target's frame
+								double d = dist(gref, vref); //dref.dist (v->dock[k]->ref);
 								if (d < MIN_DOCK_DIST) {
-									if (dotp (s0->vel - v->GVel(), vref-gref) >= 0) { // on approach
+									if (dot(s0->vel - v->GVel(), vref-gref) >= 0) { // on approach
 										dock[j]->pending = v;
 									} else if (dock[j]->pending == v) {
 										Dock (v, j, k);
@@ -4908,15 +4900,15 @@ void Vessel::PostUpdate ()
 					}
 					// update information about closest dock in range of our dock 0
 					if (closedock.vessel && closedock.vessel->ndock && closedock.dock < closedock.vessel->ndock) {
-						dref.Set (tmul (closedock.vessel->GRot(), mul (s0->R, dock[0]->ref) + s0->pos - closedock.vessel->GPos()));
-						closedock.dist = dref.dist (closedock.vessel->dock[closedock.dock]->ref);
+						dref = tmul(closedock.vessel->GRot(), mul(s0->R, dock[0]->ref) + s0->pos - closedock.vessel->GPos());
+						closedock.dist = dist(dref, closedock.vessel->dock[closedock.dock]->ref);
 					} else {
 						closedock.dist = 1e50;
 					}
 					for (k = 0; k < v->ndock; k++) {
 						if (v->dock[k]->mate) continue;
-						dref.Set (tmul (v->GRot(), mul (s0->R, dock[0]->ref) + s0->pos - v->GPos()));
-						double d = dref.dist (v->dock[k]->ref);
+						dref = tmul(v->GRot(), mul(s0->R, dock[0]->ref) + s0->pos - v->GPos());
+						double d = dist(dref, v->dock[k]->ref);
 						if (d < closedock.dist) {
 							closedock.dist = d;
 							closedock.vessel = v;
@@ -4942,7 +4934,7 @@ bool Vessel::CheckSurfaceContact () const
 	T.tpostmul (proxybody->s0->R);
 	T.postmul (s0->R);
 	for (DWORD i = 0; i < ntouchdown_vtx; i++) {
-		Vector p (mul (T, touchdown_vtx[i].pos));
+		VECTOR3 p = mul(T, touchdown_vtx[i].pos);
 		if (p.y + alt < 0.0) return true;
 	}
 	return false;
@@ -4973,8 +4965,8 @@ void Vessel::Timejump (double dt, int mode)
 		case PROP_SORBITAL_FIXEDSURF: {
 			double dphi = Pi2*dt/proxyplanet->RotT(), cphi = cos(dphi), sphi = sin(dphi);
 			Matrix Rb (cphi,0,-sphi,  0,1,0,  sphi,0,cphi);
-			Vector cp = mul (proxyplanet->GRot(), mul (Rb, tmul (proxyplanet->GRot(), cpos)));
-			Vector cv = mul (proxyplanet->GRot(), mul (Rb, tmul (proxyplanet->GRot(), cvel)));
+			VECTOR3 cp = mul(proxyplanet->GRot(), mul(Rb, tmul(proxyplanet->GRot(), cpos)));
+			VECTOR3 cv = mul(proxyplanet->GRot(), mul(Rb, tmul(proxyplanet->GRot(), cvel)));
 			s0->R.tpremul (proxyplanet->GRot());
 			s0->R.premul (Rb);
 			s0->R.premul (proxyplanet->GRot());
@@ -4994,8 +4986,8 @@ void Vessel::Timejump (double dt, int mode)
 
 		proxyplanet->LocalToGlobal (sp.ploc, s0->pos);
 		double vground = Pi2 * proxyplanet->Size() * sp.clat / proxyplanet->RotT();
-		s0->vel.Set (-vground*sp.slng, 0.0, vground*sp.clng);
-		s0->vel.Set (mul (proxyplanet->GRot(), s0->vel) + proxyplanet->GVel());
+		s0->vel = {-vground * sp.slng, 0.0, vground * sp.clng};
+		s0->vel = mul(proxyplanet->GRot(), s0->vel) + proxyplanet->GVel();
 		s0->R.Set (land_rot);
 		s0->R.premul (proxyplanet->GRot());
 		s0->Q.Set (s0->R);
@@ -5089,7 +5081,7 @@ void Vessel::UpdateProxies ()
 	for (i = g_psys->nVessel()-1, proxydist2 = 1e100; i >= 0; i--) {
 		Vessel *vessel = g_psys->GetVessel(i);
 		if (vessel == this) continue;
-		if ((dist2 = s0->pos.dist2 (vessel->GPos())) < proxydist2) {
+		if ((dist2 = dist_2(s0->pos, vessel->GPos())) < proxydist2) {
 			proxydist2 = dist2;
 			proxyvessel = vessel;
 		}
@@ -5145,7 +5137,7 @@ void Vessel::UpdateReceiverStatus (DWORD idx)
 	// scan surface-base related signal transmitters
 	for (i = 0; i < proxyplanet->nBase(); i++) {
 		Base *base = proxyplanet->GetBase(i);
-		if ((s0->pos.dist2 (base->GPos()) < 1e12) && (nn = base->nNav())) {
+		if ((dist_2(s0->pos, base->GPos()) < 1e12) && (nn = base->nNav())) {
 			for (n = 0; n < nn; n++) {
 				const Nav *navsend = base->NavMgr().GetNav (n);
 				for (m = n0; m < n1; m++) {
@@ -5165,7 +5157,7 @@ void Vessel::UpdateReceiverStatus (DWORD idx)
 	for (i = g_psys->nVessel()-1; i >= 0; i--) {
 		Vessel *vessel = g_psys->GetVessel(i);
 		if (vessel == this) continue;
-		if ((dist2 = s0->pos.dist2 (vessel->GPos())) < 1e12) { // max XPDR range 1000 km
+		if ((dist2 = dist_2(s0->pos, vessel->GPos())) < 1e12) { // max XPDR range 1000 km
 
 			for (n = n0; n < n1; n++) {
 				if (vessel->xpdr && vessel->xpdr->GetStep() == nav[n].step) {
@@ -5220,16 +5212,16 @@ double Vessel::IlluminationFactor () const
 		lightfac_T1 = lightfac_T0+updt;
 		return lightfac;
 	}
-	Vector S(sun->GPos() - s0->pos);
-	double s = S.length();
+	VECTOR3 S = sun->GPos() - s0->pos;
+	double s = len(S);
 	double as = asin (sun->Size()/s);
 	int i;
 
 	for (i = 0;; i++) {
-		Vector P(cb->GPos() - s0->pos);
-		double p = P.length();
+		VECTOR3 P = cb->GPos() - s0->pos;
+		double p = len(P);
 		if (p < s) {   // shadow only if planet closer than sun
-			double phi = acos (dotp(S,P)/(s*p));
+			double phi = std::acos(dot(S, P) / (s * p));
 			double ap  = asin (cb->Size()/p);
 
 			// for now disregard atmospheric effects
@@ -5453,16 +5445,16 @@ void Vessel::SetCameraMovement (const VECTOR3 &fwdpos, double fwdphi, double fwd
 	const VECTOR3 &lpos, double lphi, double ltht,
 	const VECTOR3 &rpos, double rphi, double rtht)
 {
-	camfwd.pos.Set (fwdpos.x, fwdpos.y, fwdpos.z);   camfwd.phi   = fwdphi; camfwd.tht = fwdtht;
-	camleft.pos.Set (lpos.x, lpos.y, lpos.z);  camleft.phi  = lphi; camleft.tht = ltht;
-	camright.pos.Set (rpos.x, rpos.y, rpos.z); camright.phi = rphi; camright.tht = rtht;
+	camfwd.pos = fwdpos; camfwd.phi = fwdphi; camfwd.tht = fwdtht;
+	camleft.pos = lpos;  camleft.phi = lphi;  camleft.tht = ltht;
+	camright.pos = rpos; camright.phi = rphi; camright.tht = rtht;
 }
 
 void Vessel::UnsetCameraMovement ()
 {
-	camfwd.pos.Set (0,0,0);   camfwd.phi = camfwd.tht = 0;
-	camleft.pos.Set (0,0,0);  camleft.phi = camleft.tht = 0;
-	camright.pos.Set (0,0,0); camright.phi = camright.tht = 0;
+	camfwd.pos = {0, 0, 0};   camfwd.phi = camfwd.tht = 0;
+	camleft.pos = {0, 0, 0};  camleft.phi = camleft.tht = 0;
+	camright.pos = {0, 0, 0}; camright.phi = camright.tht = 0;
 }
 
 void Vessel::RegisterVisual (VISHANDLE vis)
@@ -5551,10 +5543,10 @@ bool Vessel::VCRedrawEvent (int id, int event, SURFHANDLE surf) const
 		return false;
 }
 
-bool Vessel::VCMouseEvent (int id, int event, Vector &p) const
+bool Vessel::VCMouseEvent (int id, int event, VECTOR3 &p) const
 {
 	if (modIntf.v && modIntf.v->Version() >= 1) {
-		VECTOR3 v = _V(p.x,p.y,p.z);
+		VECTOR3 v{p.x,p.y,p.z};
 		return ((VESSEL2*)modIntf.v)->clbkVCMouseEvent (id, event, v);
 	}
 	else
@@ -5565,8 +5557,8 @@ void Vessel::LeanCamera (int dir, bool smooth)
 {
 	switch (dir) {
 	case 0: // default position
-		if (smooth) g_camera->MoveTo (Vector(0,0,0));
-		else        g_camera->MoveToDirect (Vector(0,0,0));
+		if (smooth) g_camera->MoveTo({0, 0, 0});
+		else        g_camera->MoveToDirect({0, 0, 0});
 		g_camera->ResetCockpitDir (smooth);
 		break;
 	case 1: // forward
@@ -5919,8 +5911,8 @@ bool Vessel::Read (ifstream &scn)
 	//vs.xpdr    = 0;
 	//vs.nfuel = vs.nthruster = vs.ndockinfo = 0;
 	//vs.surf_lng = vs.surf_lat = vs.surf_hdg = 0.0;
-	//veccpy (vs.vrot, _V(0,0,0));
-	//veccpy (vs.arot, _V(0,0,0));
+	//veccpy (vs.vrot, {0, 0, 0});
+	//veccpy (vs.arot, {0, 0, 0});
 
 	void *vsptr = (void*)&vs;
 	if (modIntf.v->Version() >= 1) {
@@ -6029,7 +6021,7 @@ void Vessel::WriteDefault (ostream &ofs) const
 			ofs << "  AROT " << setprecision(3) <<  DEG*atan2 (s0->R.m23, s0->R.m33) << ' '
 												<< -DEG*asin  (s0->R.m13) << ' '
 							                    <<  DEG*atan2 (s0->R.m12, s0->R.m11) << endl;
-			if (s0->omega.length2() > 1e-8)
+			if (len_2(s0->omega) > 1e-8)
 				ofs << "  VROT " << setprecision(4) << DEG*s0->omega.x << ' ' << DEG*s0->omega.y << ' ' << DEG*s0->omega.z << endl;
 		}
 		break;
@@ -6294,9 +6286,7 @@ double VESSEL::GetCOG_elev () const
 
 void VESSEL::GetCrossSections (VECTOR3 &cs) const
 {
-	cs.x = vessel->cs.x;
-	cs.y = vessel->cs.y;
-	cs.z = vessel->cs.z;
+	cs = vessel->cs;
 }
 
 void VESSEL::GetCW (double &cw_z_pos, double &cw_z_neg, double &cw_x, double &cw_y) const
@@ -6319,30 +6309,22 @@ double VESSEL::GetWingEffectiveness () const
 
 void VESSEL::GetRotDrag (VECTOR3 &rd) const
 {
-	rd.x = vessel->rdrag.x;
-	rd.y = vessel->rdrag.y;
-	rd.z = vessel->rdrag.z;
+	rd = vessel->rdrag;
 }
 
 void VESSEL::GetPMI (VECTOR3 &pmi) const
 {
-	pmi.x = vessel->pmi.x;
-	pmi.y = vessel->pmi.y;
-	pmi.z = vessel->pmi.z;
+	pmi = vessel->pmi;
 }
 
 void VESSEL::GetCameraOffset (VECTOR3 &co) const
 {
-	co.x = vessel->campos.x;
-	co.y = vessel->campos.y;
-	co.z = vessel->campos.z;
+	co = vessel->campos;
 }
 
 void VESSEL::GetCameraDefaultDirection (VECTOR3 &cd) const
 {
-	cd.x = vessel->camdir0.x;
-	cd.y = vessel->camdir0.y;
-	cd.z = vessel->camdir0.z;
+	cd = vessel->camdir0;
 }
 
 double VESSEL::GetAtmTemperature () const
@@ -6406,65 +6388,47 @@ const OBJHANDLE VESSEL::GetAtmRef () const
 
 void VESSEL::GetGlobalPos (VECTOR3 &pos) const
 {
-	pos.x = vessel->s0->pos.x;
-	pos.y = vessel->s0->pos.y;
-	pos.z = vessel->s0->pos.z;
+	pos = vessel->s0->pos;
 }
 
 void VESSEL::GetGlobalVel (VECTOR3 &vel) const
 {
-	vel.x = vessel->s0->vel.x;
-	vel.y = vessel->s0->vel.y;
-	vel.z = vessel->s0->vel.z;
+	vel = vessel->s0->vel;
 }
 
 void VESSEL::GetRelativePos (OBJHANDLE hRef, VECTOR3 &pos) const
 {
-	Vector dp (vessel->GPos() - ((Body*)hRef)->GPos());
-	pos.x = dp.x;
-	pos.y = dp.y;
-	pos.z = dp.z;
+	pos = vessel->GPos() - ((Body*)hRef)->GPos();
 }
 
 void VESSEL::GetRelativeVel (OBJHANDLE hRef, VECTOR3 &vel) const
 {
-	Vector dv (vessel->GVel() - ((Body*)hRef)->GVel());
-	vel.x = dv.x;
-	vel.y = dv.y;
-	vel.z = dv.z;
+	vel = vessel->GVel() - ((Body*)hRef)->GVel();
 }
 
 void VESSEL::GetLinearMoment (VECTOR3 &F) const
 {
-	F.x = vessel->Flin.x;
-	F.y = vessel->Flin.y;
-	F.z = vessel->Flin.z;
+	F = vessel->Flin;
 }
 
 void VESSEL::GetAngularVel (VECTOR3 &avel) const
 {
-	avel.x = vessel->s0->omega.x;
-	avel.y = vessel->s0->omega.y;
-	avel.z = vessel->s0->omega.z;
+	avel = vessel->s0->omega;
 }
 
 void VESSEL::SetAngularVel (const VECTOR3 &avel) const
 {
-	vessel->SetAngVel (MakeVector (avel));
+	vessel->SetAngVel(avel);
 }
 
 void VESSEL::GetAngularAcc (VECTOR3 &aacc) const
 {
-	aacc.x = vessel->arot.x;
-	aacc.y = vessel->arot.y;
-	aacc.z = vessel->arot.z;
+	aacc = vessel->arot;
 }
 
 void VESSEL::GetAngularMoment (VECTOR3 &amom) const
 {
-	amom.x = vessel->Amom.x;
-	amom.y = vessel->Amom.y;
-	amom.z = vessel->Amom.z;
+	amom = vessel->Amom;
 }
 
 void VESSEL::GetGlobalOrientation (VECTOR3 &arot) const
@@ -6474,7 +6438,7 @@ void VESSEL::GetGlobalOrientation (VECTOR3 &arot) const
 
 void VESSEL::SetGlobalOrientation (const VECTOR3 &arot) const
 {
-	vessel->SetGlobalOrientation (MakeVector (arot));
+	vessel->SetGlobalOrientation(arot);
 }
 
 OBJHANDLE VESSEL::GetEquPos (double &longitude, double &latitude, double &radius) const
@@ -6532,23 +6496,17 @@ bool VESSEL::GetGroundspeedVector (REFFRAME frame, VECTOR3 &v) const
 		case FRAME_LOCAL:
 			v.x = sp->groundvel_ship.x, v.y = sp->groundvel_ship.y, v.z = sp->groundvel_ship.z;
 			return true;
-		case FRAME_REFLOCAL: {
-			Vector hvel (tmul (sp->ref->GRot(), sp->groundvel_glob));
-			v.x = hvel.x, v.y = hvel.y, v.z = hvel.z;
-			} return true;
-		case FRAME_HORIZON: {
-			Vector hvel (tmul (sp->ref->GRot(), sp->groundvel_glob));
-			hvel.Set (mul (sp->L2H, hvel));
-			v.x = hvel.x, v.y = hvel.y, v.z = hvel.z;
-			} return true;
-		default:
-			v.x = v.y = v.z = 0.0;
-			return false;
+		case FRAME_REFLOCAL:
+			v = tmul(sp->ref->GRot(), sp->groundvel_glob);
+			return true;
+		case FRAME_HORIZON:
+			v = mul(sp->L2H, tmul(sp->ref->GRot(), sp->groundvel_glob));
+			return true;
 		}
-	} else {
-		v.x = v.y = v.z = 0.0;
-		return false;
 	}
+
+	v = {0, 0, 0};
+	return false;
 }
 
 double VESSEL::GetAirspeed (void) const
@@ -6569,23 +6527,17 @@ bool VESSEL::GetAirspeedVector (REFFRAME frame, VECTOR3 &v) const
 		case FRAME_LOCAL:
 			v.x = sp->airvel_ship.x, v.y = sp->airvel_ship.y, v.z = sp->airvel_ship.z;
 			return true;
-		case FRAME_REFLOCAL: {
-			Vector hvel (tmul (sp->ref->GRot(), sp->airvel_glob));
-			v.x = hvel.x, v.y = hvel.y, v.z = hvel.z;
-			} return true;
-		case FRAME_HORIZON: {
-			Vector hvel (tmul (sp->ref->GRot(), sp->airvel_glob));
-			hvel.Set (mul (sp->L2H, hvel));
-			v.x = hvel.x, v.y = hvel.y, v.z = hvel.z;
-			} return true;
-		default:
-			v.x = v.y = v.z = 0.0;
-			return false;
+		case FRAME_REFLOCAL:
+			v = tmul(sp->ref->GRot(), sp->airvel_glob);
+			return true;
+		case FRAME_HORIZON:
+			v = mul(sp->L2H, tmul(sp->ref->GRot(), sp->airvel_glob));
+			return true;
 		}
-	} else {
-		v.x = v.y = v.z = 0.0;
-		return false;
 	}
+
+	v = {0, 0, 0};
+	return false;
 }
 
 bool VESSEL::GetShipAirspeedVector (VECTOR3 &v) const
@@ -6606,12 +6558,10 @@ bool VESSEL::GetHorizonAirspeedVector (VECTOR3 &v) const
 	LOGOUT_OBSOLETE;
 	const SurfParam *sp = vessel->GetSurfParam();
 	if (sp) {
-		Vector hvel (tmul (sp->ref->GRot(), sp->airvel_glob));
-		hvel.Set (mul (sp->L2H, hvel));
-		v.x = hvel.x, v.y = hvel.y, v.z = hvel.z;
+		v = mul(sp->L2H, tmul(sp->ref->GRot(), sp->airvel_glob));
 		return true;
 	} else {
-		v.x = v.y = v.z = 0.0;
+		v = {0, 0, 0};
 		return false;
 	}
 }
@@ -6655,7 +6605,7 @@ double VESSEL::GetSurfaceElevation () const
 VECTOR3 VESSEL::GetSurfaceNormal () const
 {
 	const SurfParam *sp = vessel->GetSurfParam();
-	return sp ? _V(sp->surfnml.x, sp->surfnml.y, sp->surfnml.z): _V(0,0,0);
+	return sp ? VECTOR3{sp->surfnml.x, sp->surfnml.y, sp->surfnml.z}: VECTOR3{0, 0, 0};
 }
 
 double VESSEL::GetLift (void) const
@@ -6668,52 +6618,34 @@ double VESSEL::GetDrag (void) const
 	return vessel->Drag;
 }
 
-bool VESSEL::GetWeightVector (VECTOR3 &G) const
+bool VESSEL::GetWeightVector(VECTOR3 &G) const
 {
-	static Vector F;
-	bool bWeight = vessel->GetWeightVector (F);
-	CopyVector (F, G);
-	return bWeight;
+	return vessel->GetWeightVector(G);
 }
 
-bool VESSEL::GetThrustVector (VECTOR3 &T) const
+bool VESSEL::GetThrustVector(VECTOR3 &T) const
 {
-	static Vector F;
-	bool bThrust = vessel->GetThrustVector (F);
-	CopyVector (F, T);
-	return bThrust;
+	return vessel->GetThrustVector(T);
 }
 
-bool VESSEL::GetLiftVector (VECTOR3 &L) const
+bool VESSEL::GetLiftVector(VECTOR3 &L) const
 {
-	static Vector F;
-	bool bLift = vessel->GetLiftVector (F);
-	CopyVector (F, L);
-	return bLift;
+	return vessel->GetLiftVector(L);
 }
 
-bool VESSEL::GetDragVector (VECTOR3 &D) const
+bool VESSEL::GetDragVector(VECTOR3 &D) const
 {
-	static Vector F;
-	bool bDrag = vessel->GetDragVector (F);
-	CopyVector (F, D);
-	return bDrag;
+	return vessel->GetDragVector(D);
 }
 
-bool VESSEL::GetForceVector (VECTOR3 &F) const
+bool VESSEL::GetForceVector(VECTOR3 &F) const
 {
-	static Vector FF;
-	bool bForce = vessel->GetForceVector (FF);
-	CopyVector (FF, F);
-	return bForce;
+	return vessel->GetForceVector(F);
 }
 
-bool VESSEL::GetTorqueVector (VECTOR3 &M) const
+bool VESSEL::GetTorqueVector(VECTOR3 &M) const
 {
-	static Vector F;
-	bool bTorque = vessel->GetTorqueVector (F);
-	CopyVector (F, M);
-	return bTorque;
+	return vessel->GetTorqueVector(M);
 }
 
 OBJHANDLE VESSEL::GetElements (ELEMENTS &el, double &mjd_ref) const
@@ -6738,8 +6670,8 @@ bool VESSEL::GetElements (OBJHANDLE hRef, ELEMENTS &el, ORBITPARAM *prm, double 
 	const CelestialBody *ref = (hRef ? (CelestialBody*)hRef : vessel->cbody);
 	Elements els (1, 0, 0, 0, 0, 0, mjd_ref ? mjd_ref : td.MJD0);
 	els.SetMasses (0, ref->Mass());
-	Vector p (vessel->GPos()-ref->GPos());
-	Vector v (vessel->GVel()-ref->GVel());
+	VECTOR3 p = vessel->GPos() - ref->GPos();
+	VECTOR3 v = vessel->GVel() - ref->GVel();
 
 	// rotate ecliptic -> equatorial frame
 	if (frame == FRAME_EQU) {
@@ -6780,7 +6712,7 @@ bool VESSEL::SetElements (OBJHANDLE hRef, const ELEMENTS &el, ORBITPARAM *prm, d
 	if (!mjd_ref) mjd_ref = td.MJD0;
 	els.Set (el.a, el.e, el.i, el.theta, el.omegab, el.L, mjd_ref);
 	els.Setup (0, ref->Mass(), mjd_ref);
-	Vector p, v;
+	VECTOR3 p, v;
 	if (prm) {
 		els.Update (p, v);
 		prm->SMi = els.SMi();
@@ -6802,7 +6734,7 @@ bool VESSEL::SetElements (OBJHANDLE hRef, const ELEMENTS &el, ORBITPARAM *prm, d
 		p = mul (ref->RotObliq(), p);
 		v = mul (ref->RotObliq(), v);
 	}
-	if (p.length() < ref->Size())
+	if (len(p) < ref->Size())
 		return false; // don't allow vessel below planet surface
 
 	vessel->RPlace (p + ref->GPos(), v + ref->GVel());
@@ -7026,11 +6958,11 @@ void VESSEL::SetCOG_elev (double cog) const
 
 void VESSEL::SetCrossSections (const VECTOR3 &cs) const
 {
-	vessel->cs.Set (cs.x, cs.y, cs.z);
-	vessel->vd_forw = cs.z * 0.5*vessel->CWz[0];
-	vessel->vd_back = cs.z * 0.5*vessel->CWz[1];
-	vessel->vd_vert = cs.y * 0.5*vessel->CWy;
-	vessel->vd_side = cs.x * 0.5*vessel->CWx;
+	vessel->cs = cs;
+	vessel->vd_forw = cs.z * 0.5 * vessel->CWz[0];
+	vessel->vd_back = cs.z * 0.5 * vessel->CWz[1];
+	vessel->vd_vert = cs.y * 0.5 * vessel->CWy;
+	vessel->vd_side = cs.x * 0.5 * vessel->CWx;
 }
 
 void VESSEL::SetCW (double cw_z_pos, double cw_z_neg, double cw_x, double cw_y) const
@@ -7060,7 +6992,7 @@ void VESSEL::SetWingEffectiveness (double eff) const
 
 void VESSEL::SetRotDrag (const VECTOR3 &rd) const
 {
-	vessel->rdrag.Set (rd.x, rd.y, rd.z);
+	vessel->rdrag = rd;
 }
 
 double VESSEL::GetPitchMomentScale () const
@@ -7097,12 +7029,12 @@ void VESSEL::SetBankMomentScale (double scale) const
 
 void VESSEL::SetPMI (const VECTOR3 &pmi) const
 {
-	vessel->pmi.Set (pmi.x, pmi.y, pmi.z);
+	vessel->pmi = pmi;
 }
 
 void VESSEL::SetAlbedoRGB (const VECTOR3 &albedo) const
 {
-	vessel->albedo.Set(albedo.x, albedo.y, albedo.z);
+	vessel->albedo = albedo;
 }
 
 double VESSEL::GetTrimScale () const
@@ -7118,19 +7050,19 @@ void VESSEL::SetTrimScale (double scale) const
 
 void VESSEL::SetCameraOffset (const VECTOR3 &co) const
 {
-	vessel->campos.Set (co.x, co.y, co.z);
+	vessel->campos = co;
 }
 
 void VESSEL::SetCameraDefaultDirection (const VECTOR3 &cd) const
 {
-	vessel->camdir0.Set (cd.x, cd.y, cd.z);
+	vessel->camdir0 = cd;
 	vessel->camtilt0 = 0;
 	if (vessel == g_focusobj) g_camera->SetDefaultCockpitDir (vessel->camdir0);
 }
 
 void VESSEL::SetCameraDefaultDirection (const VECTOR3 &cd, double tilt) const
 {
-	vessel->camdir0.Set (cd.x, cd.y, cd.z);
+	vessel->camdir0 = cd;
 	vessel->camtilt0 = tilt;
 	if (vessel == g_focusobj) g_camera->SetDefaultCockpitDir (vessel->camdir0, tilt);
 }
@@ -7180,7 +7112,7 @@ void VESSEL::SetLiftCoeffFunc (LiftCoeffFunc lcf) const
 
 DOCKHANDLE VESSEL::CreateDock (const VECTOR3 &pos, const VECTOR3 &dir, const VECTOR3 &rot) const
 {
-	return (DOCKHANDLE)vessel->CreateDock (MakeVector (pos), MakeVector (dir), MakeVector (rot));
+	return (DOCKHANDLE)vessel->CreateDock(pos, dir, rot);
 }
 
 bool VESSEL::DelDock (DOCKHANDLE hDock) const
@@ -7196,14 +7128,14 @@ void VESSEL::ClearDockDefinitions () const
 void VESSEL::SetDockParams (const VECTOR3 &pos, const VECTOR3 &dir, const VECTOR3 &rot) const
 {
 	if (!vessel->ndock)
-		vessel->CreateDock (MakeVector (pos), MakeVector (dir), MakeVector (rot));
+		vessel->CreateDock(pos, dir, rot);
 	else
-		vessel->SetDockParams (vessel->dock[0], MakeVector (pos), MakeVector (dir), MakeVector (rot));
+		vessel->SetDockParams(vessel->dock[0], pos, dir, rot);
 }
 
 void VESSEL::SetDockParams (DOCKHANDLE dock, const VECTOR3 &pos, const VECTOR3 &dir, const VECTOR3 &rot) const
 {
-	vessel->SetDockParams ((PortSpec*)dock, MakeVector (pos), MakeVector (dir), MakeVector (rot));
+	vessel->SetDockParams((PortSpec*)dock, pos, dir, rot);
 }
 
 void VESSEL::GetDockParams (DOCKHANDLE dock, VECTOR3 &pos, VECTOR3 &dir, VECTOR3 &rot) const
@@ -7252,7 +7184,7 @@ void VESSEL::SetDockMode (int mode) const
 
 ATTACHMENTHANDLE VESSEL::CreateAttachment (bool toparent, const VECTOR3 &pos, const VECTOR3 &dir, const VECTOR3 &rot, const char *id, bool loose) const
 {
-	return (ATTACHMENTHANDLE)vessel->CreateAttachment (toparent, MakeVector (pos), MakeVector (dir), MakeVector (rot), id, loose);
+	return (ATTACHMENTHANDLE)vessel->CreateAttachment(toparent, pos, dir, rot, id, loose);
 }
 
 bool VESSEL::DelAttachment (ATTACHMENTHANDLE attachment) const
@@ -7267,7 +7199,7 @@ void VESSEL::ClearAttachments () const
 
 void VESSEL::SetAttachmentParams (ATTACHMENTHANDLE attachment, const VECTOR3 &pos, const VECTOR3 &dir, const VECTOR3 &rot) const
 {
-	vessel->SetAttachmentParams ((AttachmentSpec*)attachment, MakeVector (pos), MakeVector (dir), MakeVector (rot));
+	vessel->SetAttachmentParams((AttachmentSpec*)attachment, pos, dir, rot);
 }
 
 void VESSEL::GetAttachmentParams (ATTACHMENTHANDLE attachment, VECTOR3 &pos, VECTOR3 &dir, VECTOR3 &rot) const
@@ -7369,12 +7301,7 @@ void VESSEL::ClearLightEmitters () const
 
 bool VESSEL::GetSuperstructureCG (VECTOR3 &cg) const
 {
-	Vector vcg;
-	bool ok = vessel->GetSuperStructCG (vcg);
-	cg.x = vcg.x;
-	cg.y = vcg.y;
-	cg.z = vcg.z;
-	return ok;
+	return vessel->GetSuperStructCG (cg);
 }
 
 void VESSEL::SetTouchdownPoints (const VECTOR3 &pt1, const VECTOR3 &pt2, const VECTOR3 &pt3) const
@@ -7400,9 +7327,9 @@ void VESSEL::SetTouchdownPoints (const TOUCHDOWNVTX *tdvtx, DWORD ntdvtx) const
 
 void VESSEL::GetTouchdownPoints (VECTOR3 &pt1, VECTOR3 &pt2, VECTOR3 &pt3) const
 {
-	CopyVector (vessel->touchdown_vtx[0].pos, pt1);
-	CopyVector (vessel->touchdown_vtx[1].pos, pt2);
-	CopyVector (vessel->touchdown_vtx[2].pos, pt3);
+	pt1 = vessel->touchdown_vtx[0].pos;
+	pt2 = vessel->touchdown_vtx[1].pos;
+	pt3 = vessel->touchdown_vtx[2].pos;
 }
 
 bool VESSEL::GetTouchdownPoint (TOUCHDOWNVTX &tdvtx, DWORD idx) const
@@ -7644,8 +7571,8 @@ UINT VESSEL::AddAttExhaustRef (const VECTOR3 &pos, const VECTOR3 &dir, double ws
 		vessel->oexhaust = NULL;
 	}
 	tmp[n] = new OldExhaustSpec; TRACENEW
-	tmp[n]->ref = MakeVector(pos);
-	tmp[n]->dir = -MakeVector(dir);
+	tmp[n]->ref = pos;
+	tmp[n]->dir = -dir;
 	tmp[n]->lscale = 3.0*lscale;
 	tmp[n]->wscale = 0.387*wscale;
 	vessel->oexhaust = tmp;
@@ -7704,12 +7631,11 @@ void VESSEL::ClearAttExhaustRefs (void) const
 void VESSEL::ShiftCentreOfMass (const VECTOR3 &shift)
 {
 	if (vessel->bFRrecord) vessel->FRecorder_Save (true);
-	Vector dr (shift.x, shift.y, shift.z);
-	Vector gdr (mul (vessel->GRot(), dr));
+	VECTOR3 gdr = mul(vessel->GRot(), shift);
 	vessel->FlushRPos ();
 	if (!vessel->bFRplayback) {  // ignore during playback
 		vessel->AddRPos (gdr);
-		if (vessel->supervessel) vessel->supervessel->NotifyShiftVesselOrigin (vessel, dr);
+		if (vessel->supervessel) vessel->supervessel->NotifyShiftVesselOrigin (vessel, shift);
 	}
 	g_pOrbiter->NotifyObjectJump (vessel, gdr);
 	if (vessel->bFRrecord) vessel->FRecorder_Save (true);
@@ -7717,17 +7643,16 @@ void VESSEL::ShiftCentreOfMass (const VECTOR3 &shift)
 
 void VESSEL::ShiftCG (const VECTOR3 &shift)
 {
-	VECTOR3 nshift = -shift;
-	Vector vs = MakeVector (nshift);
-	ShiftMeshes (nshift);
-	vessel->ShiftThrusters (vs);
-	vessel->ShiftAttachments (vs);
-	vessel->ShiftDocks (vs);
-	vessel->ShiftLightEmitters (nshift);
-	vessel->campos.Set (vessel->campos+vs);
+	auto nshift = -shift;
+	ShiftMeshes(nshift);
+	vessel->ShiftThrusters(nshift);
+	vessel->ShiftAttachments(nshift);
+	vessel->ShiftDocks(nshift);
+	vessel->ShiftLightEmitters(nshift);
+	vessel->campos = vessel->campos + nshift;
 	// only shift the vc of this vessel
-	if ((g_pane) && (g_focusobj == vessel)) g_pane->ShiftVC (vs);
-	ShiftCentreOfMass (shift);
+	if ((g_pane) && (g_focusobj == vessel)) g_pane->ShiftVC(nshift);
+	ShiftCentreOfMass(shift);
 }
 
 void VESSEL::GetRotationMatrix (MATRIX3 &R) const
@@ -7744,52 +7669,34 @@ void VESSEL::SetRotationMatrix (const MATRIX3 &R) const
 
 void VESSEL::GlobalRot (const VECTOR3 &rloc, VECTOR3 &rglob) const
 {
-	Vector loc(rloc.x, rloc.y, rloc.z);
-	Vector glob (mul (vessel->GRot(), loc));
-	rglob.x = glob.x;
-	rglob.y = glob.y;
-	rglob.z = glob.z;
+	rglob = mul(vessel->GRot(), rloc);
 }
 
 void VESSEL::HorizonRot (const VECTOR3 &rloc, VECTOR3 &rhorizon) const
 {
 	if (!vessel->proxyplanet) return;
-	Vector h (mul (vessel->sp.L2H, tmul (vessel->proxyplanet->GRot(), mul (vessel->GRot(), MakeVector(rloc)))));
-	rhorizon = _V(h.x, h.y, h.z);
+	rhorizon = mul(vessel->sp.L2H, tmul(vessel->proxyplanet->GRot(), mul(vessel->GRot(), rloc)));
 }
 
 void VESSEL::HorizonInvRot (const VECTOR3 &rhorizon, VECTOR3 &rloc) const
 {
 	if (!vessel->proxyplanet) return;
-	Vector r (tmul (vessel->GRot(), mul (vessel->proxyplanet->GRot(), tmul (vessel->sp.L2H, MakeVector (rhorizon)))));
-	rloc = _V(r.x, r.y, r.z);
+	rloc = tmul(vessel->GRot(), mul(vessel->proxyplanet->GRot(), tmul(vessel->sp.L2H, rhorizon)));
 }
 
 void VESSEL::Local2Global (const VECTOR3 &local, VECTOR3 &global) const
 {
-	Vector loc(local.x, local.y, local.z);
-	Vector glob (mul (vessel->GRot(), loc) + vessel->GPos());
-	global.x = glob.x;
-	global.y = glob.y;
-	global.z = glob.z;
+	global = mul(vessel->GRot(), local) + vessel->GPos();
 }
 
 void VESSEL::Global2Local (const VECTOR3 &global, VECTOR3 &local) const
 {
-	Vector glob(global.x, global.y, global.z);
-	Vector loc (tmul (vessel->GRot(), glob - vessel->GPos()));
-	local.x = loc.x;
-	local.y = loc.y;
-	local.z = loc.z;
+	local = tmul(vessel->GRot(), global - vessel->GPos());
 }
 
 void VESSEL::Local2Rel (const VECTOR3 &local, VECTOR3 &rel) const
 {
-	Vector loc(local.x, local.y, local.z);
-	Vector r (mul (vessel->GRot(), loc) + vessel->GPos() - vessel->cbody->GPos());
-	rel.x = r.x;
-	rel.y = r.y;
-	rel.z = r.z;
+	rel = mul(vessel->GRot(), local) + vessel->GPos() - vessel->cbody->GPos();
 }
 
 void VESSEL::RegisterAnimation (void) const
@@ -7861,12 +7768,8 @@ SUPERVESSELHANDLE VESSEL::GetSupervessel () const
 
 VECTOR3 VESSEL::GetSupervesselCG () const
 {
-	VECTOR3 cg = _V(0,0,0);
-	if (vessel->supervessel) {
-		Vector vcg;
-		if (vessel->supervessel->GetCG (vessel, vcg))
-			cg = MakeVECTOR3 (vcg);
-	}
+	VECTOR3 cg{0, 0, 0};
+	if (vessel->supervessel) vessel->supervessel->GetCG(vessel, cg);
 	return cg;
 }
 
@@ -7892,7 +7795,7 @@ void VESSEL::SaveDefaultState (FILEHANDLE scn) const
 
 void VESSEL::AddForce (const VECTOR3 &F, const VECTOR3 &r) const
 {
-	vessel->AddForce (MakeVector(F), MakeVector(r));
+	vessel->AddForce(F, r);
 }
 
 PROPELLANT_HANDLE VESSEL::CreatePropellantResource (double maxmass, double mass, double efficiency) const
@@ -7981,8 +7884,7 @@ double VESSEL::GetTotalPropellantFlowrate () const
 THRUSTER_HANDLE VESSEL::CreateThruster (const VECTOR3 &pos, const VECTOR3 &dir, double maxth0,
 	PROPELLANT_HANDLE hp, double isp0, double isp_ref, double p_ref) const
 {
-	return (THRUSTER_HANDLE)vessel->CreateThruster (MakeVector(pos), MakeVector(dir),
-		maxth0, (TankSpec*)hp, isp0, isp_ref, p_ref);
+	return (THRUSTER_HANDLE)vessel->CreateThruster(pos, dir, maxth0, (TankSpec*)hp, isp0, isp_ref, p_ref);
 }
 
 bool VESSEL::DelThruster (THRUSTER_HANDLE &th) const
@@ -8014,9 +7916,7 @@ void VESSEL::SetThrusterRef (THRUSTER_HANDLE th, const VECTOR3 &pos) const
 
 void VESSEL::GetThrusterRef (THRUSTER_HANDLE th, VECTOR3 &pos) const
 {
-	pos.x = ((ThrustSpec*)th)->ref.x;
-	pos.y = ((ThrustSpec*)th)->ref.y;
-	pos.z = ((ThrustSpec*)th)->ref.z;
+	pos = ((ThrustSpec*)th)->ref;
 }
 
 void VESSEL::SetThrusterDir (THRUSTER_HANDLE th, const VECTOR3 &dir) const
@@ -8026,9 +7926,7 @@ void VESSEL::SetThrusterDir (THRUSTER_HANDLE th, const VECTOR3 &dir) const
 
 void VESSEL::GetThrusterDir (THRUSTER_HANDLE th, VECTOR3 &dir) const
 {
-	dir.x = ((ThrustSpec*)th)->dir.x;
-	dir.y = ((ThrustSpec*)th)->dir.y;
-	dir.z = ((ThrustSpec*)th)->dir.z;
+	dir = ((ThrustSpec*)th)->dir;
 }
 
 void VESSEL::SetThrusterMax0 (THRUSTER_HANDLE th, double maxth0) const
@@ -8137,14 +8035,7 @@ double VESSEL::GetThrusterLevel (THRUSTER_HANDLE th) const
 
 void VESSEL::GetThrusterMoment (THRUSTER_HANDLE th, VECTOR3 &F, VECTOR3 &T) const
 {
-	Vector f, t;
-	vessel->GetThrusterMoment ((ThrustSpec*)th, f, t);
-	F.x = f.x;
-	F.y = f.y;
-	F.z = f.z;
-	T.x = t.x;
-	T.y = t.y;
-	T.z = t.z;
+	vessel->GetThrusterMoment ((ThrustSpec*)th, F, T);
 }
 
 THGROUP_HANDLE VESSEL::CreateThrusterGroup (THRUSTER_HANDLE *th, int nth, THGROUP_TYPE thgt) const
@@ -8274,8 +8165,7 @@ UINT VESSEL::AddExhaust (THRUSTER_HANDLE th, double lscale, double wscale, doubl
 
 UINT VESSEL::AddExhaust (THRUSTER_HANDLE th, double lscale, double wscale, const VECTOR3 &pos, const VECTOR3 &dir, SURFHANDLE tex) const
 {
-	VECTOR3 p = {pos.x, pos.y, pos.z};
-	VECTOR3 d = {-dir.x, -dir.y, -dir.z};
+	VECTOR3 p = pos, d = -dir;
 	EXHAUSTSPEC es = {th, NULL, &p, &d, lscale, wscale, 0, 0, tex, EXHAUST_CONSTANTPOS|EXHAUST_CONSTANTDIR};
 	return vessel->AddExhaust (&es);
 }
@@ -8327,9 +8217,7 @@ double VESSEL::GetExhaustLevel (UINT idx) const
 
 PSTREAM_HANDLE VESSEL::AddParticleStream (PARTICLESTREAMSPEC *pss, const VECTOR3 &pos, const VECTOR3 &dir, double *lvl) const
 {
-	Vector p (pos.x, pos.y, pos.z);
-	Vector d (dir.x, dir.y, dir.z);
-	return (PSTREAM_HANDLE)vessel->AddParticleStream (pss, p, d, lvl);
+	return (PSTREAM_HANDLE)vessel->AddParticleStream (pss, pos, dir, lvl);
 }
 
 PSTREAM_HANDLE VESSEL::AddExhaustStream (THRUSTER_HANDLE th, PARTICLESTREAMSPEC *pss) const
@@ -8339,8 +8227,7 @@ PSTREAM_HANDLE VESSEL::AddExhaustStream (THRUSTER_HANDLE th, PARTICLESTREAMSPEC 
 
 PSTREAM_HANDLE VESSEL::AddExhaustStream (THRUSTER_HANDLE th, const VECTOR3 &pos, PARTICLESTREAMSPEC *pss) const
 {
-	Vector p (pos.x, pos.y, pos.z);
-	return (PSTREAM_HANDLE)vessel->AddExhaustStream ((ThrustSpec*)th, pss, &p);
+	return (PSTREAM_HANDLE)vessel->AddExhaustStream((ThrustSpec*)th, pss, &pos);
 }
 
 bool VESSEL::DelExhaustStream (PSTREAM_HANDLE ch) const
@@ -8357,20 +8244,17 @@ PSTREAM_HANDLE VESSEL::AddReentryStream (PARTICLESTREAMSPEC *pss) const
 
 void VESSEL::CreateAirfoil (AIRFOIL_ORIENTATION align, const VECTOR3 &ref, AirfoilCoeffFunc cf, double c, double S, double A) const
 {
-	Vector r(MakeVector(ref));
-	vessel->CreateAirfoil (align, r, cf, c, S, A);
+	vessel->CreateAirfoil(align, ref, cf, c, S, A);
 }
 
 AIRFOILHANDLE VESSEL::CreateAirfoil2 (AIRFOIL_ORIENTATION align, const VECTOR3 &ref, AirfoilCoeffFunc cf, double c, double S, double A) const
 {
-	Vector r(MakeVector(ref));
-	return (AIRFOILHANDLE)vessel->CreateAirfoil (align, r, cf, c, S, A);
+	return (AIRFOILHANDLE)vessel->CreateAirfoil(align, ref, cf, c, S, A);
 }
 
 AIRFOILHANDLE VESSEL::CreateAirfoil3 (AIRFOIL_ORIENTATION align, const VECTOR3 &ref, AirfoilCoeffFuncEx cf, void *context, double c, double S, double A) const
 {
-	Vector r(MakeVector(ref));
-	return (AIRFOILHANDLE)vessel->CreateAirfoil (align, r, cf, context, c, S, A);
+	return (AIRFOILHANDLE)vessel->CreateAirfoil(align, ref, cf, context, c, S, A);
 }
 
 bool VESSEL::GetAirfoilParam (AIRFOILHANDLE hAirfoil, VECTOR3 *ref, AirfoilCoeffFunc *cf, void **context, double *c, double *S, double *A) const
@@ -8380,7 +8264,7 @@ bool VESSEL::GetAirfoilParam (AIRFOILHANDLE hAirfoil, VECTOR3 *ref, AirfoilCoeff
 
 void VESSEL::EditAirfoil (AIRFOILHANDLE hAirfoil, DWORD flag, const VECTOR3 &ref, AirfoilCoeffFunc cf, double c, double S, double A) const
 {
-	vessel->EditAirfoil ((AirfoilSpec*)hAirfoil, flag, MakeVector(ref), cf, c, S, A);
+	vessel->EditAirfoil((AirfoilSpec*)hAirfoil, flag, ref, cf, c, S, A);
 }
 
 bool VESSEL::DelAirfoil (AIRFOILHANDLE hAirfoil) const
@@ -8395,17 +8279,17 @@ void VESSEL::ClearAirfoilDefinitions () const
 
 void VESSEL::CreateControlSurface (AIRCTRL_TYPE type, double area, double dCl, const VECTOR3 &ref, int axis, UINT anim) const
 {
-	vessel->CreateControlSurface (type, area, dCl, MakeVector(ref), axis, 1.0, anim);
+	vessel->CreateControlSurface(type, area, dCl, ref, axis, 1.0, anim);
 }
 
 CTRLSURFHANDLE VESSEL::CreateControlSurface2 (AIRCTRL_TYPE type, double area, double dCl, const VECTOR3 &ref, int axis, UINT anim) const
 {
-	return vessel->CreateControlSurface (type, area, dCl, MakeVector(ref), axis, 1.0, anim);
+	return vessel->CreateControlSurface(type, area, dCl, ref, axis, 1.0, anim);
 }
 
 CTRLSURFHANDLE VESSEL::CreateControlSurface3 (AIRCTRL_TYPE type, double area, double dCl, const VECTOR3 &ref, int axis, double delay, UINT anim) const
 {
-	return vessel->CreateControlSurface (type, area, dCl, MakeVector(ref), axis, delay, anim);
+	return vessel->CreateControlSurface(type, area, dCl, ref, axis, delay, anim);
 }
 
 bool VESSEL::DelControlSurface (CTRLSURFHANDLE hCtrlSurf) const
@@ -8436,12 +8320,12 @@ double VESSEL::GetControlSurfaceLevel (AIRCTRL_TYPE type) const
 void VESSEL::CreateVariableDragElement (double *drag, double factor, const VECTOR3 &ref) const
 {
 	LOGOUT_OBSOLETE;
-	vessel->CreateVariableDragElement (drag, factor, MakeVector(ref));
+	vessel->CreateVariableDragElement(drag, factor, ref);
 }
 
 void VESSEL::CreateVariableDragElement (const double *drag, double factor, const VECTOR3 &ref) const
 {
-	vessel->CreateVariableDragElement (drag, factor, MakeVector(ref));
+	vessel->CreateVariableDragElement(drag, factor, ref);
 }
 
 void VESSEL::ClearVariableDragElements () const
@@ -8711,7 +8595,7 @@ int VESSEL2::clbkConsumeBufferedKey (DWORD key, bool down, char *keystate)
 
 bool VESSEL2::clbkLoadGenericCockpit ()
 {
-	SetCameraDefaultDirection (_V(0,0,1));
+	SetCameraDefaultDirection ({0,0,1});
 	return true;
 }
 
@@ -8818,7 +8702,7 @@ void VESSEL3::clbkGetRadiationForce (const VECTOR3 &mflux, VECTOR3 &F, VECTOR3 &
 	double albedo = 1.5;    // simplistic albedo (mixture of absorption, reflection)
 
 	F = mflux * (cs*albedo);
-	pos = _V(0,0,0);        // don't induce torque
+	pos = {0, 0, 0};        // don't induce torque
 }
 
 

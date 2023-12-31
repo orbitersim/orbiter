@@ -30,7 +30,7 @@ public:
 	static void CreateDeviceObjects (OrbiterGraphics *gclient);
 	static void DestroyDeviceObjects ();
 
-	static D3DCOLORVALUE ColorToD3D(Vector4 col) { return { (float)col.x, (float)col.y, (float)col.z, (float)col.w }; };
+	static D3DCOLORVALUE ColorToD3D(VECTOR4 col) { return { (float)col.x, (float)col.y, (float)col.z, (float)col.w }; };
 
 	virtual unsigned long GetCaps () const
 	{ return 0; }
@@ -66,7 +66,7 @@ public:
 	// allows objects to render light beacons or similar
 
 	inline double CDist () const { return cdist; }
-	inline const Vector &CPos () const { return cpos; }
+	inline const VECTOR3 &CPos () const { return cpos; }
 	inline double ScaleFactor () const { return apprad_factor; }
 	inline double AppRad () const { return 1.0/iapprad; }
 
@@ -76,11 +76,11 @@ public:
 	// Notification of visual event (e.g. mesh addition/deletion)
 
 	struct BodyVectorRec {
-		Vector v;
-		Vector orig;
+		VECTOR3 v;
+		VECTOR3 orig;
 		double rad;
 		double dist;
-		Vector col;
+		VECTOR3 col;
 		float alpha;
 		std::string label;
 		DWORD lcol;
@@ -100,24 +100,24 @@ protected:
 	void RenderAsDisc (LPDIRECT3DDEVICE7 dev);
 	// Render distant object as a billboard disc texture
 
-	void RenderSpot (LPDIRECT3DDEVICE7 dev, const Vector *ofs, float size, const Vector &col, bool lighting, int shape = 0);
+	void RenderSpot (LPDIRECT3DDEVICE7 dev, const VECTOR3 *ofs, float size, const VECTOR3 &col, bool lighting, int shape = 0);
 	// Render a spot with the given parameters (representing either a
 	// complete object, or a beacon etc.)
 
 	void RenderAsSpot (LPDIRECT3DDEVICE7 dev, D3DCOLORVALUE *illumination = 0);
 	// Render distant object as circular blob with a billboard texture
 
-	void AddVector(const Vector& v, const Vector& orig, double rad, const std::string& label, const Vector& col, float alpha = 1.0f, DWORD lcol = 0, float lsize = -1.0);
+	void AddVector(const VECTOR3& v, const VECTOR3& orig, double rad, const std::string& label, const VECTOR3& col, float alpha = 1.0f, DWORD lcol = 0, float lsize = -1.0);
 
-	bool DrawVector(LPDIRECT3DDEVICE7 dev, const Vector& end, const Vector& orig, double rad = 1.0);
+	bool DrawVector(LPDIRECT3DDEVICE7 dev, const VECTOR3& end, const VECTOR3& orig, double rad = 1.0);
 
 	const Body *body;    // reference to logical object
 	static Scene *scene; // reference to scene
 	D3DMATRIX mWorld;    // world transform matrix
 	MATRIX4 dmWorld;     // world transformation matrix in double precision
 
-	Vector cpos;         // object position relative to camera in global frame
-	Vector campos;       // camera position in object frame
+	VECTOR3 cpos;        // object position relative to camera in global frame
+	VECTOR3 campos;      // camera position in object frame
 	double cdist;        // current distance from camera
 	double iapprad;      // inverse of apparent radius
 	std::vector<BodyVectorRec> veclist; // list of body vectors to be rendered

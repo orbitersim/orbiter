@@ -439,9 +439,8 @@ double VesselXRSoundEngine::GetCameraDistance()
     if (pVessel == nullptr)        // vessel deleted out from under us?
         return 10.0;            // just assume the camera is close
 
-    const VECTOR3 &zero = _V(0, 0, 0);
     VECTOR3 vesselGlobalCoords;
-    pVessel->Local2Global(zero, vesselGlobalCoords);
+    pVessel->Local2Global(VECTOR3{0, 0, 0}, vesselGlobalCoords);
 
     return dist(vesselGlobalCoords, GetCameraCoordinates());
 }

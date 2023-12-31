@@ -23,8 +23,8 @@ RunwayLights::RunwayLights(class vBase *_vB, const class Scene *scn)
 {
 	vB = _vB;
 	scene = scn;
-	end1 = _V(0, 0, 0);
-	end2 = _V(0, 0, 0);
+	end1 = {0, 0, 0};
+	end2 = {0, 0, 0};
 	width = 50.0;
 	td_disp = 0.0;
 	td_disp2 = 0.0;
@@ -39,13 +39,13 @@ RunwayLights::RunwayLights(class vBase *_vB, const class Scene *scn)
 	bDisp2 = false;
 
 	for (int i=0; i<12; ++i) {
-		PAPI_pos[i] = _V(0,0,0);
+		PAPI_pos[i] = {0,0,0};
 		PAPI_disp[i] = 0.0;
 		PAPI_end[i] = 0;
 		papi[i] = NULL;
 	}
 	for (int i=0; i<2; ++i) {
-		VASI[i] = _V(0,0,0);
+		VASI[i] = {0,0,0};
 		VASI_end[i] = 0;
 		vasi[i] = NULL;
 	}
@@ -199,7 +199,7 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end, double disp
 	VECTOR3 _space; // Vector between each light
 	VECTOR3 _current; // Incremented in the for loop
 	VECTOR3 _shift;
-	VECTOR3 _widthDir = unit(crossp(_dir, _V(0, 1, 0))); // used to calculate the edge lights
+	VECTOR3 _widthDir = unit(cross(_dir, VECTOR3{0, 1, 0})); // used to calculate the edge lights
 
 	BeaconArrayEntry* beaconsEntry1 = new BeaconArrayEntry[numLights];
 	
@@ -218,9 +218,9 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end, double disp
 	centerLight.loff = 1.0f;
 	centerLight.bright = 1.5f * brightness;
 	centerLight.fall = 0.5;
-	centerLight.pos = _V(0,0,0);
+	centerLight.pos = {0,0,0};
 	centerLight.color = 0;
-	centerLight.dir = _dir*cos(upAngle*RAD) + _V(0, 1, 0)*sin(upAngle*RAD);
+	centerLight.dir = _dir * std::cos(upAngle * RAD) + VECTOR3{0, 1, 0} * std::sin(upAngle * RAD);
 
 	endLight  = centerLight;
 	edgeLight = centerLight;
@@ -510,7 +510,7 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end, double disp
 	OBJHANDLE hPlanet = oapiGetBasePlanet(hObj);
 //	double size = oapiGetSize(hPlanet);
 
-	for (int k=0;k<i;k++) beaconsEntry1[k].dir = _V(-beaconsEntry1[k].dir.x, beaconsEntry1[k].dir.y, -beaconsEntry1[k].dir.z);
+	for (int k=0;k<i;k++) beaconsEntry1[k].dir = {-beaconsEntry1[k].dir.x, beaconsEntry1[k].dir.y, -beaconsEntry1[k].dir.z};
 
 	BeaconArray *beacons = new BeaconArray(beaconsEntry1, i, vB);
 	delete[] beaconsEntry1;
@@ -525,7 +525,7 @@ BeaconArray * RunwayLights::BuildPAPI(VECTOR3 start, VECTOR3 end, DWORD i)
 	// Helping vectors
 	VECTOR3 direction = end - start; // Vector of the runway
 	VECTOR3 dir = unit(direction); // Normalized direction
-	VECTOR3 widthDir = unit(crossp(direction, _V(0, 1, 0))); // used to calculate the edge lights
+	VECTOR3 widthDir = unit(cross(direction, {0, 1, 0})); // used to calculate the edge lights
 	
 	BeaconArrayEntry papiLight;
 
@@ -541,16 +541,16 @@ BeaconArray * RunwayLights::BuildPAPI(VECTOR3 start, VECTOR3 end, DWORD i)
 	papiLight.loff = 1.0f;
 	papiLight.bright = 4.0f * float(Config->RwyBrightness);
 	papiLight.fall = 0.5;
-	papiLight.pos = _V(0,0,0);
+	papiLight.pos = {0,0,0};
 	papiLight.color = 0;
-	papiLight.dir = dir*cos(upAngle*RAD) + _V(0, 1, 0)*sin(upAngle*RAD);
+	papiLight.dir = dir * std::cos(upAngle * RAD) + VECTOR3{0, 1, 0} * std::sin(upAngle * RAD);
 
 	BeaconArrayEntry entryPAPI[4];
 
 	for(int j=0; j<4; j++)
 	{
 		entryPAPI[j] = papiLight;
-		entryPAPI[j].dir = _V(-entryPAPI[j].dir.x, entryPAPI[j].dir.y, -entryPAPI[j].dir.z);
+		entryPAPI[j].dir = {-entryPAPI[j].dir.x, entryPAPI[j].dir.y, -entryPAPI[j].dir.z};
 		entryPAPI[j].pos = start + dir*PAPI_pos[i].z + widthDir*disp + widthDir*j*papi_separation - widthDir*papi_separation*1.5;
 	}
 
@@ -569,8 +569,7 @@ BeaconArray *RunwayLights::BuildVASI(VECTOR3 _start, VECTOR3 _end, DWORD idx)
 
 	// Helping vectors
 	VECTOR3 _direction = _end - _start; // Vector of the runway
-	VECTOR3 _dir = _direction; // Normalized direction
-	normalise(_dir);
+	VECTOR3 _dir = unit(_direction); // Normalized direction
 	VECTOR3 _td_disp = _dir * td_disp; // Touch zone displacement vector
 	
 	_start += _td_disp;
@@ -583,8 +582,7 @@ BeaconArray *RunwayLights::BuildVASI(VECTOR3 _start, VECTOR3 _end, DWORD idx)
 
 	// Main lights vectors
 	VECTOR3 _current; // Incremented in the for loop
-	VECTOR3 _widthDir = crossp(_direction, _V(0, 1, 0)); // used to calculate the edge lights
-	normalise(_widthDir);
+	VECTOR3 _widthDir = unit(cross(_direction, VECTOR3{0, 1, 0})); // used to calculate the edge lights
 
 	BeaconArrayEntry* beaconsEntry1 = new BeaconArrayEntry[30];
 	
@@ -601,9 +599,9 @@ BeaconArray *RunwayLights::BuildVASI(VECTOR3 _start, VECTOR3 _end, DWORD idx)
 	vasiLight.loff = 1.0f;
 	vasiLight.bright = 3.0f * float(Config->RwyBrightness);
 	vasiLight.fall = 0.1f;
-	vasiLight.pos = _V(0,0,0);
+	vasiLight.pos = {0,0,0};
 	vasiLight.color = 0;
-	vasiLight.dir = _dir*cos(upAngle*RAD) + _V(0, 1, 0)*sin(upAngle*RAD);
+	vasiLight.dir = _dir * std::cos(upAngle * RAD) + VECTOR3{0, 1, 0} * std::sin(upAngle * RAD);
 
 	_current = _start + _dir * VASI[e].z + _widthDir * (width/2.0 + 30.0);
 	_current.y = 0;
@@ -612,7 +610,7 @@ BeaconArray *RunwayLights::BuildVASI(VECTOR3 _start, VECTOR3 _end, DWORD idx)
 		beaconsEntry1[i] = vasiLight;
 		beaconsEntry1[i].color = red;
 		beaconsEntry1[i].size = 1.0f * lightSize;
-		beaconsEntry1[i].pos = _current + _widthDir * 2.0 * float(k) + _V(0,1,0);
+		beaconsEntry1[i].pos = _current + _widthDir * 2.0 * float(k) + VECTOR3{0, 1, 0};
 	}
 
 	_current -= _dir * VASI[e].y;
@@ -620,7 +618,7 @@ BeaconArray *RunwayLights::BuildVASI(VECTOR3 _start, VECTOR3 _end, DWORD idx)
 	for (k=0;k<5;k++, i++) {
 		beaconsEntry1[i] = vasiLight;
 		beaconsEntry1[i].color = white;
-		beaconsEntry1[i].pos = _current + _widthDir * 2.0 * float(k) + _V(0,1,0) + _V(0,1,0)*(sin(VASI[e].x*RAD)*VASI[e].y);
+		beaconsEntry1[i].pos = _current + _widthDir * 2.0 * float(k) + VECTOR3{0, 1, 0} + VECTOR3{0, 1, 0} * (std::sin(VASI[e].x * RAD) * VASI[e].y);
 	}
 	
 	// Post process lights ------------------------------------------
@@ -629,7 +627,7 @@ BeaconArray *RunwayLights::BuildVASI(VECTOR3 _start, VECTOR3 _end, DWORD idx)
 	double size = oapiGetSize(hPlanet);
 
 	for (int k=0;k<i;k++) {
-		beaconsEntry1[k].dir = _V(-beaconsEntry1[k].dir.x, beaconsEntry1[k].dir.y, -beaconsEntry1[k].dir.z);
+		beaconsEntry1[k].dir = {-beaconsEntry1[k].dir.x, beaconsEntry1[k].dir.y, -beaconsEntry1[k].dir.z};
 		double dst = length(beaconsEntry1[k].pos);
 		double dif = sqrt(dst*dst + size*size) - size;
 		beaconsEntry1[k].pos.y -= (dif-0.2);
@@ -910,9 +908,9 @@ int RunwayLights::CreateRunwayLights(class vBase *vB, const class Scene *scn, co
 TaxiLights::TaxiLights(OBJHANDLE handle, const class Scene *scn)
 {
 	scene = scn;
-	end1  = _V(0, 0, 0);
-	end2  = _V(0, 0, 0);
-	color = _V(1, 1, 1);
+	end1  = {0, 0, 0};
+	end2  = {0, 0, 0};
+	color = {1, 1, 1};
 	size  = 1.0;
 	count = 10;
 	hObj  = handle;
@@ -957,8 +955,7 @@ void TaxiLights::Init()
 	_TRACE;
 	// Helping vectors
 	VECTOR3 direction = end2 - end1; // Vector of the runway
-	VECTOR3 dir = direction; // Normalized direction
-	normalise(dir);
+	VECTOR3 dir = unit(direction); // Normalized direction
 	double len = length(direction); // Length of the runway
 
 	BeaconArrayEntry* beaconsEntry1 = new BeaconArrayEntry[count];
@@ -970,8 +967,8 @@ void TaxiLights::Init()
 	taxiLight.loff = 1.0f;
 	taxiLight.bright = 5.0f;
 	taxiLight.fall = 0.5;
-	taxiLight.dir = _V(0, 1, 0);
-	taxiLight.pos = _V(0, 0, 0);
+	taxiLight.dir = {0, 1, 0};
+	taxiLight.pos = {0, 0, 0};
 	//taxiLight.lat = taxiLight.lng = 0.0;
 	taxiLight.color = D3DXCOLOR(float(color.x), float(color.y), float(color.z), 1.0f);
 

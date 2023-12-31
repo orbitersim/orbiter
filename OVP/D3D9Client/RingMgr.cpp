@@ -99,9 +99,9 @@ bool RingManager::Render(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &mWorld, bool front)
 	
 	VECTOR3 gdir; oapiCameraGlobalDir(&gdir);
 
-	VECTOR3 yaxis =  mul(grot, _V(0,1,0));
-	VECTOR3 xaxis = unit(crossp(gdir, yaxis));
-	VECTOR3 zaxis = unit(crossp(xaxis, yaxis));
+	VECTOR3 yaxis = mul(grot, VECTOR3{0, 1, 0});
+	VECTOR3 xaxis = unit(cross(gdir, yaxis));
+	VECTOR3 zaxis = unit(cross(xaxis, yaxis));
 
 	if (!front) {
 		xaxis = -xaxis;

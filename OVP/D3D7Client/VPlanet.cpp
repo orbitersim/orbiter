@@ -321,7 +321,7 @@ void vPlanet::CheckResolution ()
 
 void vPlanet::RenderZRange (double *nplane, double *fplane)
 {
-	double d = dotp (*scn->GetCamera()->GetGDir(), cpos);
+	double d = dot(*scn->GetCamera()->GetGDir(), cpos);
 	*fplane = max (1e3, d+rad*1.2);
 	*nplane = max (1e0, d-rad*1.2);
 	*fplane = min (*fplane, *nplane*1e5);
@@ -411,7 +411,7 @@ bool vPlanet::Render (LPDIRECT3DDEVICE7 dev)
 				// day/nighttime fog lighting
 				VECTOR3 ppos;
 				oapiGetGlobalPos (hObj, &ppos);
-				double cosa = dotp (unit(ppos), unit(cpos));
+				double cosa = dot(unit(ppos), unit(cpos));
 				double bright = 1.0 * max (0.0, min (1.0, cosa + 0.3));
 				float rfog = (float)(bright*(min(1.0,fogcol.x)+0.0)); // "whiten" the fog colour
 				float gfog = (float)(bright*(min(1.0,fogcol.y)+0.0));
@@ -738,7 +738,7 @@ bool vPlanet::ModLighting (DWORD &ambient)
 	if (!prm.bAtm) return false;
 	if (cdist >= size+prm.atm_href) return false;
 
-	double alpha = acos (dotp (unit(*scn->GetCamera()->GetGPos()), -unit(cpos)));
+	double alpha = std::acos(dot(unit(*scn->GetCamera()->GetGPos()), -unit(cpos)));
 	// angular distance between sun and planet as seen from camera
 
 	double sunelev = alpha - PI05; // elevation of sun above horizon (assuming camera on ground)

@@ -262,7 +262,7 @@ double COrbit::RelTrAByMJD(double mjd) const
 //
 double COrbit::TrAOfProjection(const VECTOR3 _p) const
 {
-	return limit(atan2(dotp(_p, _Q), dotp(_p, _P)));
+	return limit(std::atan2(dot(_p, _Q), dot(_p, _P)));
 }
 
 // =================================================================================================
@@ -270,7 +270,7 @@ double COrbit::TrAOfProjection(const VECTOR3 _p) const
 double COrbit::TrAOfAscendingNode(const VECTOR3 _n) const
 {
 	VECTOR3 _p = crossp_LH(_n, _W);
-	return limit(atan2(dotp(_p, _Q), dotp(_p, _P)));
+	return limit(std::atan2(dot(_p, _Q), dot(_p, _P)));
 }
 
 // =================================================================================================
@@ -299,7 +299,7 @@ double COrbit::Inc() const
 double COrbit::LAN() const
 {
 	VECTOR3 _p = crossp_LH(_Pol, _W);
-	double x = atan2(dotp(_p, _Aux), dotp(_p, _Equ));
+	double x = std::atan2(dot(_p, _Aux), dot(_p, _Equ));
 	if (x<0) return PI2 + x; return x;
 }
 
@@ -308,7 +308,7 @@ double COrbit::LAN() const
 double COrbit::AgP() const
 {
 	VECTOR3 _p = crossp_LH(_Pol, _W);
-	return PI2 - limit(atan2(dotp(_p, _Q), dotp(_p, _P)));
+	return PI2 - limit(std::atan2(dot(_p, _Q), dot(_p, _P)));
 }
 
 // =================================================================================================
@@ -418,7 +418,7 @@ void COrbit::CreateFromStateVectors(const VECTOR3 &_pos, const VECTOR3 &_vel, do
 	double om = 1.0 / mu;
 
 	// Eccentricity VECTOR3
-	_P = ((_pos * (v2 - mu* Or )) - (_vel * dotp(_pos, _vel))) * om;
+	_P = ((_pos * (v2 - mu* Or )) - (_vel * dot(_pos, _vel))) * om;
 	_H = crossp_LH(_pos, _vel);
 	_Q = unit(crossp_LH(_H, _P));
 	_R = _pos* Or ;
@@ -430,7 +430,7 @@ void COrbit::CreateFromStateVectors(const VECTOR3 &_pos, const VECTOR3 &_vel, do
 		ecc = 0.0;
 		VECTOR3 _i = unit(crossp_LH(_K_ECL, _H));
 		VECTOR3 _j = unit(crossp_LH(_H, _i));
-		_P = -unit(_j*dotp(_i, _J_ECL) - _i*dotp(_i, _I_ECL));
+		_P = -unit(_j * dot(_i, _J_ECL) - _i * dot(_i, _I_ECL));
 		_Q = unit(crossp_LH(_H, _P));
 		par = sqrlen(_H)*om;
 		sma = par;
@@ -443,12 +443,12 @@ void COrbit::CreateFromStateVectors(const VECTOR3 &_pos, const VECTOR3 &_vel, do
 
 	// Calculate True anomaly
 	//
-	double x = dotp(_P, _R);
+	double x = dot(_P, _R);
 	if (x >= 1.0)  tra = 0.0;
 	else if (x <= -1.0) tra = PI;
 	else {
 		tra = acos(x);
-		x = dotp(_pos, _vel);
+		x = dot(_pos, _vel);
 		if (fabs(x)<1e-9) x = 0.0; // Avoid some precision problems
 		if (x <= 0.0) tra = PI2 - tra;
 	}
@@ -508,7 +508,7 @@ void COrbit::CreateFromElements(const ELEMENTS *Elem, double iMu, double iEpoch)
 void COrbit::EscapeOrbit(const VECTOR3 &_Pos, const VECTOR3 &_Esc, double Mu, double MJD, double Dir)
 {
 	VECTOR3 _H = crossp_LH(_Pos, _Esc);
-	double Es2 = dotp(_Esc, _Esc);
+	double Es2 = dot(_Esc, _Esc);
 
 	mu = Mu;
 	sma = -mu / Es2;

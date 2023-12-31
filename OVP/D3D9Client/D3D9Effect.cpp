@@ -5,13 +5,13 @@
 // Copyright (C) 2011 - 2016 Jarmo Nikkanen
 // ===========================================================================================
 
-#include "D3D9Effect.h"
-#include "Log.h"
-#include "Scene.h"
-#include "D3D9Surface.h"
 #include "D3D9Config.h"
+#include "D3D9Effect.h"
+#include "D3D9Surface.h"
+#include "D3D9Util.h"
+#include "Log.h"
 #include "Mesh.h"
-#include "VectorHelpers.h"
+#include "Scene.h"
 
 D3D9Client  * D3D9Effect::gc = 0;
 ID3DXEffect * D3D9Effect::FX = 0;
@@ -570,9 +570,9 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 
 	oapiGetRotationMatrix(hGRef, &grot);
 	
-	VECTOR3 polaraxis = mul(grot, _V(0, 1, 0));
-	VECTOR3 east = unit(crossp(polaraxis, cam));
-	VECTOR3 north = unit(crossp(cam, east));
+	VECTOR3 polaraxis = mul(grot, VECTOR3{0, 1, 0});
+	VECTOR3 east = unit(cross(polaraxis, cam));
+	VECTOR3 north = unit(cross(cam, east));
 
 	if (hVessel==NULL) {
 		LogErr("hVessel = NULL in UpdateEffectCamera()");
@@ -606,7 +606,7 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 	FX->SetFloat(ePointScale, 0.5f*float(height)/tan(ap));
 	FX->SetFloat(eProxySize, cos(proxy_size));
 	FX->SetFloat(eInvProxySize, 1.0f/(1.0f-cos(proxy_size)));
-	FX->SetFloat(eGlowConst, saturate(float(dotp(cam, sun))));
+	FX->SetFloat(eGlowConst, saturate(float(dot(cam, sun))));
 }
 
 
@@ -784,8 +784,8 @@ void D3D9Effect::RenderExhaust(const LPD3DXMATRIX pW, VECTOR3 &cdir, EXHAUSTSPEC
 	VECTOR3 ref =  (*es->lpos) - (*es->ldir)*es->lofs;
 
 	const float flarescale = 7.0;
-	VECTOR3 sdir = crossp(cdir, edir); normalise(sdir);
-	VECTOR3 tdir = crossp(cdir, sdir); normalise(tdir);
+	VECTOR3 sdir = unit(cross(cdir, edir));
+	VECTOR3 tdir = unit(cross(cdir, sdir));
 	float rx = (float)ref.x; 
 	float ry = (float)ref.y; 
 	float rz = (float)ref.z;
@@ -988,7 +988,7 @@ void D3D9Effect::RenderArrow(OBJHANDLE hObj, const VECTOR3 *ofs, const VECTOR3 *
 
     VECTOR3 z = mul (grot, unit(*dir)) * size;
     VECTOR3 y = mul (grot, unit(*rot)) * size;
-    VECTOR3 x = mul (grot, unit(crossp(*dir, *rot))) * size;
+    VECTOR3 x = mul (grot, unit(cross(*dir, *rot))) * size;
 
     D3DXMatrixIdentity(&W);
 

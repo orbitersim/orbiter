@@ -303,8 +303,7 @@ bool GetItemInt    (std::istream &is, const char *label, int &val);
 bool GetItemSize   (std::istream& is, const char* label, size_t& val);
 bool GetItemHex    (std::istream &is, const char *label, int &val);
 bool GetItemBool   (std::istream &is, const char *label, bool &val);
-bool GetItemVector (std::istream &is, const char *label, Vector &val);
-bool GetItemVECTOR (std::istream &is, const char *label, VECTOR3 &val);
+bool GetItemVector (std::istream &is, const char *label, VECTOR3 &val);
 
 bool FindLine      (std::istream &is, const char *line);
 // scans stream 'is' from beginning for a line beginning with 'line' 
@@ -436,7 +435,7 @@ public:
 	bool GetInt (const char *category, int &val);
 	bool GetSize (const char* category, size_t& val);
 	bool GetBool (const char *category, bool &val);
-	bool GetVector (const char *category, Vector &val);
+	bool GetVector (const char *category, VECTOR3 &val);
 
 private:
 	bool GetString (std::istream &is, const char *category, char *val);
@@ -444,7 +443,7 @@ private:
 	bool GetInt (std::istream &is, const char *category, int &val);
 	bool GetSize (std::istream& is, const char* category, size_t& val);
 	bool GetBool (std::istream &is, const char *category, bool &val);
-	bool GetVector (std::istream &is, const char *category, Vector &val);
+	bool GetVector (std::istream &is, const char *category, VECTOR3 &val);
 
 	mutable char cfgpath[256];  // buffer for creating full path names
 	char mshpath[256];

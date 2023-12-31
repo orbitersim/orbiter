@@ -203,7 +203,7 @@ bool vBase::Update ()
 	if (simt > Tchk) {
 		VECTOR3 pos, sdir;
 		MATRIX3 rot;
-		oapiGetGlobalPos (hObj, &pos); normalise(pos);
+		oapiGetGlobalPos (hObj, &pos); pos = unit(pos);
 		oapiGetRotationMatrix (hObj, &rot);
 		sdir = tmul (rot, -pos);
 		double csun = sdir.y;
@@ -298,10 +298,10 @@ void vBase::RenderGroundShadow (LPDIRECT3DDEVICE7 dev)
 	oapiGetGlobalPos (hPlanet, &pp);              // planet global pos
 	oapiGetGlobalPos (hObj, &sd);                 // base global pos
 	pvr = sd-pp;                                  // planet-relative base position
-	d = length (pvr);                             // planet radius at base location
-	normalise (sd);                               // shadow projection direction
+	d = len(pvr);                                 // planet radius at base location
+	sd = unit(sd);                                // shadow projection direction
 
-	double fac1 = dotp (sd, pvr);
+	double fac1 = dot(sd, pvr);
 	if (fac1 > 0.0)                               // base is on planet night-side
 		return;
 	csun = -fac1/d;                               // sun elevation above horizon
@@ -311,11 +311,11 @@ void vBase::RenderGroundShadow (LPDIRECT3DDEVICE7 dev)
 	MATRIX3 vR;
 	oapiGetRotationMatrix (hObj, &vR);
 	VECTOR3 sdv = tmul (vR, sd);     // projection direction in base frame
-	VECTOR3 hnp = pvr; normalise(hnp);
+	VECTOR3 hnp = unit(pvr);
 	VECTOR3 hn = tmul (vR, hnp);     // horizon normal in vessel frame
 
 	// perform projections
-	double nd = dotp (hn, sdv);
+	double nd = dot(hn, sdv);
 	VECTOR3 sdvs = sdv / nd;
 	if (!sdvs.y) return; // required for plane offset correction
 
@@ -382,7 +382,7 @@ bool vBase::ModLighting (LPD3DLIGHT7 light, double &nextcheck)
 	oapiGetGlobalPos (hS, &GS);            // sun position
 	oapiGetGlobalPos (hP, &GP);            // planet position
 	S = GS-GB;                             // sun's position from base
-	s = length(S);                         // sun's distance
+	s = len(S);                         // sun's distance
 	rs = oapiGetSize (hS);
 	as = asin (rs/s);                      // apparent radius of sun's disc [rad]
 	double amb = 0;
@@ -390,8 +390,8 @@ bool vBase::ModLighting (LPD3DLIGHT7 light, double &nextcheck)
 
 	// Calculate shadowing by planet
 	P = GP-GB;
-	p = length(P);
-	phi = acos (dotp(S,P)/(s*p));    // angular distance between sun and planet
+	p = len(P);
+	phi = std::acos(dot(S, P) / (s * p));    // angular distance between sun and planet
 	static const double ap = PI05;   // apparent size of planet disc [rad]
 
 	const ATMCONST *atm = (oapiGetObjectType(hP)==OBJTP_PLANET ? oapiGetPlanetAtmConstants (hP) : NULL);

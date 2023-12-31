@@ -42,7 +42,7 @@ protected:
 	MATRIX4 WorldMatrix (int ilng, int nlng, int ilat, int nlat);
 	void SetWorldMatrix (const MATRIX4 &W);
 
-	Vector TileCentre (int hemisp, int ilat, int nlat, int ilng, int nlng);
+	VECTOR3 TileCentre (int hemisp, int ilat, int nlat, int ilng, int nlng);
 	// returns the direction of the tile centre from the planet centre in local
 	// planet coordinates
 
@@ -76,7 +76,7 @@ private:
 		MATRIX4 transform;           // full transformation matrix (for frustum checks)
 		MATRIX4 viewproj;            // view+projection matrix
 		MATRIX4 dwmat;               // world matrix
-		Vector camdir;               // camera direction in galactic frame
+		VECTOR3 camdir;              // camera direction in galactic frame
 		double viewap;               // viewport aperture (semi-diagonal)
 	} RenderParam;
 

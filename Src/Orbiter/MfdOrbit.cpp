@@ -267,8 +267,8 @@ void Instrument_Orbit::UpdateDraw (oapi::Sketchpad *skp)
 	bool bValidTgtEl = (elref && tgt);
 
 	if (bValidShpEl) {
-		Vector pos = vessel->GPos()-elref->GPos();
-		Vector vel = vessel->GVel()-elref->GVel();
+		VECTOR3 pos = vessel->GPos() - elref->GPos();
+		VECTOR3 vel = vessel->GVel() - elref->GVel();
 		if (frmmode == FRM_EQU) { // convert to equatorial frame
 			pos = tmul (elref->RotObliq(), pos);
 			vel = tmul (elref->RotObliq(), vel);
@@ -281,8 +281,8 @@ void Instrument_Orbit::UpdateDraw (oapi::Sketchpad *skp)
 						  max (2.0*shpel->PeDist(), shpel->Radius()));
 	}
 	if (bValidTgtEl) {
-		Vector pos = tgt->GPos()-elref->GPos();
-		Vector vel = tgt->GVel()-elref->GVel();
+		VECTOR3 pos = tgt->GPos() - elref->GPos();
+		VECTOR3 vel = tgt->GVel() - elref->GVel();
 		if (frmmode == FRM_EQU) { // convert to equatorial frame
 			pos = tmul (elref->RotObliq(), pos);
 			vel = tmul (elref->RotObliq(), vel);

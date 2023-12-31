@@ -1172,7 +1172,7 @@ vector3 Vpos,Vvel,Vnorm;
  Vvel=_vector3(vel2.x,vel2.y,vel2.z);//this is V vector in local frame
  Vvel.selfnormalize();
  Vnorm.x+=gpos.x;Vnorm.y+=gpos.y;Vnorm.z+=gpos.z;
- parent->v->Global2Local(_V(Vnorm.x,Vnorm.y,Vnorm.z),vel2);
+ parent->v->Global2Local({Vnorm.x,Vnorm.y,Vnorm.z},vel2);
 
  Vnorm=_vector3(vel2.x,vel2.y,vel2.z);//and this is N vector in local frame
  Vnorm.selfnormalize();

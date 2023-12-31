@@ -75,11 +75,11 @@ bool veccomp(const VObject::BodyVectorRec& v1, const VObject::BodyVectorRec& v2)
 void VObject::Update (bool moving, bool force)
 {
 	if (body == g_camera->Target())
-		cpos.Set (-(*g_camera->GSPosPtr()));
+		cpos = -(*g_camera->GSPosPtr());
 	else
-		cpos.Set (body->GPos() - g_camera->GPos());
+		cpos = body->GPos() - g_camera->GPos();
 	campos = tmul(body->GRot(), -cpos);
-	cdist = cpos.length();
+	cdist = len(cpos);
 
 	if (force) {
 		apprad_factor = g_camera->TanAperture() /
@@ -127,13 +127,13 @@ void VObject::UpdateRenderVectors()
 			double scale = body->Size() * *(float*)gc->GetConfigParam(CFGPRM_FRAMEAXISSCALE);
 			double rad = body->Size() * 0.01;
 			float alpha = *(float*)gc->GetConfigParam(CFGPRM_FRAMEAXISOPACITY);
-			AddVector(Vector(scale, 0, 0), Vector(0, 0, 0), rad, std::string("+x"), Vector(1, 1, 1), alpha, D3DRGB(1, 1, 1));
-			AddVector(Vector(0, scale, 0), Vector(0, 0, 0), rad, std::string("+y"), Vector(1, 1, 1), alpha, D3DRGB(1, 1, 1));
-			AddVector(Vector(0, 0, scale), Vector(0, 0, 0), rad, std::string("+z"), Vector(1, 1, 1), alpha, D3DRGB(1, 1, 1));
+			AddVector({scale, 0, 0}, {0, 0, 0}, rad, std::string("+x"), {1, 1, 1}, alpha, D3DRGB(1, 1, 1));
+			AddVector({0, scale, 0}, {0, 0, 0}, rad, std::string("+y"), {1, 1, 1}, alpha, D3DRGB(1, 1, 1));
+			AddVector({0, 0, scale}, {0, 0, 0}, rad, std::string("+z"), {1, 1, 1}, alpha, D3DRGB(1, 1, 1));
 			if (flag & FAV_NEGATIVE) {
-				AddVector(Vector(-scale, 0, 0), Vector(0, 0, 0), rad, std::string("-x"), Vector(1, 1, 1), alpha, D3DRGB(1, 1, 1));
-				AddVector(Vector(0, -scale, 0), Vector(0, 0, 0), rad, std::string("-y"), Vector(1, 1, 1), alpha, D3DRGB(1, 1, 1));
-				AddVector(Vector(0, 0, -scale), Vector(0, 0, 0), rad, std::string("-z"), Vector(1, 1, 1), alpha, D3DRGB(1, 1, 1));
+				AddVector({-scale, 0, 0}, {0, 0, 0}, rad, std::string("-x"), {1, 1, 1}, alpha, D3DRGB(1, 1, 1));
+				AddVector({0, -scale, 0}, {0, 0, 0}, rad, std::string("-y"), {1, 1, 1}, alpha, D3DRGB(1, 1, 1));
+				AddVector({0, 0, -scale}, {0, 0, 0}, rad, std::string("-z"), {1, 1, 1}, alpha, D3DRGB(1, 1, 1));
 			}
 		}
 	}
@@ -148,18 +148,17 @@ void VObject::RenderAsDisc (LPDIRECT3DDEVICE7 dev)
 
 	// scale down intensity with angle of illumination
 	const double ambient = 0.3; // assumed unlit/lit emission ratio
-	double cosa = dotp (body->GPos().unit(), (body->GPos() - g_camera->GPos()).unit());
+	double cosa = dot(unit(body->GPos()), unit(body->GPos() - g_camera->GPos()));
 	double illum = 0.5 * ((1.0-ambient)*cosa + 1.0+ambient);
 
 	// scale down intensity with distance from sun (only very gently)
-	double sundist = body->GPos().length() * iAU;
+	double sundist = len(body->GPos()) * iAU;
 	illum *= pow(sundist, -0.4);
 
 	// scale with albedo components
-	const Vector &albedo = body->Albedo();
-	double abr = albedo.x*illum;
-	double abg = albedo.y*illum;
-	double abb = albedo.z*illum;
+	double abr = body->Albedo().x * illum;
+	double abg = body->Albedo().y * illum;
+	double abb = body->Albedo().z * illum;
 	double abmax = max (abr, max (abg, abb));
 	if (abmax > 1.0) {
 		rad *= sqrt(abmax);
@@ -168,7 +167,7 @@ void VObject::RenderAsDisc (LPDIRECT3DDEVICE7 dev)
 		abb *= 1.0/abmax;
 	}
 
-	RenderSpot (dev, 0, (float)rad, Vector(abr,abg,abb), false, 0);
+	RenderSpot (dev, 0, (float)rad, {abr, abg, abb}, false, 0);
 }
 
 void VObject::RenderAsPixel (LPDIRECT3DDEVICE7 dev)
@@ -202,13 +201,12 @@ void VObject::RenderAsPixel (LPDIRECT3DDEVICE7 dev)
 
 		// 2. angle of illumination
 		const double ambient = 0.3;
-		double cosa = dotp (body->GPos().unit(), (body->GPos() - g_camera->GPos()).unit());
+		double cosa = dot(unit(body->GPos()), unit(body->GPos() - g_camera->GPos()));
 		intens *= 0.5 * ((1.0-ambient)*cosa + 1.0+ambient);
 
-		const Vector &albedo = body->Albedo();
-		double abr = albedo.x;
-		double abg = albedo.y;
-		double abb = albedo.z;
+		double abr = body->Albedo().x;
+		double abg = body->Albedo().y;
+		double abb = body->Albedo().z;
 		double abmax = max (abr, max (abg, abb));
 		intens *= abmax;
 		abr *= 256.0/abmax;
@@ -254,13 +252,13 @@ void VObject::RenderAsPixel (LPDIRECT3DDEVICE7 dev)
 	}
 }
 
-void VObject::RenderSpot (LPDIRECT3DDEVICE7 dev, const Vector *ofs, float size, const Vector &col, bool lighting, int shape)
+void VObject::RenderSpot (LPDIRECT3DDEVICE7 dev, const VECTOR3 *ofs, float size, const VECTOR3 &col, bool lighting, int shape)
 {
 	static D3DMATRIX W = {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,1};
 
-	Vector pos (cpos);
+	auto pos = cpos;
 	if (ofs) pos += mul (body->GRot(), *ofs);
-	double dist = pos.length();
+	double dist = len(pos);
 
 	double maxdist = 0.9*g_camera->Farplane();
 	if (dist > maxdist) {
@@ -269,14 +267,14 @@ void VObject::RenderSpot (LPDIRECT3DDEVICE7 dev, const Vector *ofs, float size, 
 		dist = maxdist;
 	}
 
-	Vector bdir(pos/dist);
+	VECTOR3 bdir = pos / dist;
 	double hz = std::hypot (bdir.x, bdir.z);
 	double phi = atan2 (bdir.z, bdir.x);
 	float sphi = (float)sin(phi), cphi = (float)cos(phi);
 	DWORD alphamode;
 
 	const double ambient = 0.2;
-	double cosa = dotp (body->GPos().unit(), (body->GPos() - g_camera->GPos()).unit());
+	double cosa = dot(unit(body->GPos()), unit(body->GPos() - g_camera->GPos()));
 	double intens = (lighting ? 0.5 * ((1.0-ambient)*cosa + 1.0+ambient) : 1.0);
 
 	W._11 =  (float)bdir.x;
@@ -325,17 +323,17 @@ void VObject::RenderAsSpot (LPDIRECT3DDEVICE7 dev, D3DCOLORVALUE *illumination)
 	// scale blob size so that apparent size reduces linearly from d0 to d1
 	if (size < 0.0) return; // sanity check
 	dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
-	RenderSpot (dev, 0, size, illumination ? body->Albedo()*Vector(illumination->r,illumination->g,illumination->b) : body->Albedo(), true);
+	RenderSpot(dev, 0, size, illumination ? body->Albedo() * VECTOR3{illumination->r, illumination->g, illumination->b} : body->Albedo(), true);
 	dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
 }
 
-void VObject::AddVector (const Vector &v, const Vector &orig, double rad, const std::string& label, const Vector &col, float alpha, DWORD lcol, float lsize)
+void VObject::AddVector (const VECTOR3 &v, const VECTOR3 &orig, double rad, const std::string& label, const VECTOR3 &col, float alpha, DWORD lcol, float lsize)
 {
-	double len = v.length();
+	double len = ::len(v);
 	if (len < 2.0*rad) return; // too short to be rendered
 
-	Vector vu = v / len;
-	double dist = (vu - campos).length();
+	VECTOR3 vu = v / len;
+	double dist = ::len(vu - campos);
 
 	BodyVectorRec rec;
 	rec.v = v;
@@ -355,7 +353,7 @@ void VObject::RenderVectors (LPDIRECT3DDEVICE7 dev)
 {
 	if (veclist.size()) {
 		float palpha = -1.0f;
-		Vector pcol(-1, -1, -1);
+		VECTOR3 pcol{-1, -1, -1};
 		for (auto&& vec : veclist) {
 			if (vec.alpha != palpha || vec.col.x != pcol.x || vec.col.y != pcol.y || vec.col.z != pcol.z) {
 				dev->SetRenderState(D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(vec.col.x, vec.col.y, vec.col.z, vec.alpha));
@@ -372,14 +370,14 @@ void VObject::RenderVectorLabels(LPDIRECT3DDEVICE7 dev)
 		for (auto&& vec : veclist) {
 			if (vec.label.size()) {
 				double scale = (vec.lsize >= 0 ? vec.lsize : body->Size());
-				scene->Render3DLabel (mul (body->GRot(), vec.v + vec.v.unit()*(scale*0.1)) + body->GPos(),
+				scene->Render3DLabel(mul(body->GRot(), vec.v + unit(vec.v) * (scale * 0.1)) + body->GPos(),
 					vec.label.c_str(), scale, vec.lcol);
 			}
 		}
 	}
 }
 
-bool VObject::DrawVector (LPDIRECT3DDEVICE7 dev, const Vector &end, const Vector &orig, double rad)
+bool VObject::DrawVector (LPDIRECT3DDEVICE7 dev, const VECTOR3 &end, const VECTOR3 &orig, double rad)
 {
 	static const float EPS = 1e-2f;
 	static const int nseg = 8;
@@ -428,7 +426,7 @@ bool VObject::DrawVector (LPDIRECT3DDEVICE7 dev, const Vector &end, const Vector
 	}
 
 	float w = (float)rad;
-	float h = (float)end.length();
+	float h = (float)len(end);
 	if (h < EPS) return false;
 	float hb = max (h-4.0f*w, 0.0f);
 
@@ -442,7 +440,7 @@ bool VObject::DrawVector (LPDIRECT3DDEVICE7 dev, const Vector &end, const Vector
 	}
 
 	// rotate vector
-	Vector d(end/h);
+	VECTOR3 d = end / h;
 	double tht = acos(d.y), phi = atan2(d.z, d.x);
 	float cost = (float)cos(tht), sint = (float)sin(tht);
 	float cosp = (float)cos(phi), sinp = (float)sin(phi);
@@ -458,8 +456,8 @@ bool VObject::DrawVector (LPDIRECT3DDEVICE7 dev, const Vector &end, const Vector
 	D3DMath_MatrixMultiply (W, mWorld, R);
 	dev->SetTransform (D3DTRANSFORMSTATE_WORLD, &W);
 
-	Vector cp (tmul (body->GRot(), -cpos));
-	if (dotp (d, (end - cp).unit()) > 0)
+	VECTOR3 cp = tmul(body->GRot(), -cpos);
+	if (dot(d, unit(end - cp)) > 0)
 		Idx = Idx1, nIdx = nIdx1;
 	else
 		Idx = Idx0, nIdx = nIdx0;

@@ -143,7 +143,7 @@ public:
 	inline double AtmHazeRange () const { return hazerange; }
 	inline double AtmHazeShift () const { return hazeshift; }
 	inline double AtmHazeDensity () const { return hazedens; }
-	inline const Vector &AtmHazeColor () const { return hazecol; }
+	inline const VECTOR3 &AtmHazeColor () const { return hazecol; }
 	inline double ShadowDepth () const { return shadowalpha; }
 	inline double CloudRotationAngle () const { return cloudrot; }
 	inline float CloudShadowDepth () const { return cloudshadowcol; }
@@ -157,8 +157,8 @@ public:
 	void SetLabelActive(int i, bool active)
 	{ if (i >= 0 && i < nLabelLegend) labelLegend[i].active = active; }
 
-	Vector GroundVelocity (double lng, double lat, double alt=0.0, int frame=2);
-	Vector WindVelocity (double lng, double lat, double alt, int frame=0, WindPrm *prm=NULL, double *windspeed=NULL);
+	VECTOR3 GroundVelocity (double lng, double lat, double alt=0.0, int frame=2);
+	VECTOR3 WindVelocity (double lng, double lat, double alt, int frame=0, WindPrm *prm=NULL, double *windspeed=NULL);
 	// returns a velocity vector in local planet coordinates for ground/air at a point given
 	// in equatorial coordinates
 
@@ -224,8 +224,8 @@ protected:
 	double hazerange;        // bleed-in factor of horizon haze into planet disc (0-0.9, 0=none)
 	double hazeshift;        // shift of horizon haze reference radius (units of planet radius, default=0)
 	double hazedens;         // horizon haze density factor
-	Vector hazecol;          // horizon haze colour
-	Vector tintcol;          // atmospheric tint colour
+	VECTOR3 hazecol;         // horizon haze colour
+	VECTOR3 tintcol;         // atmospheric tint colour
 	double minelev;          // minimum elevation as read from config file
 	double maxelev;          // maximum elevation as read from config file
 	double crot_t, crot_offset; // cloud layer rotation time and offset

@@ -228,28 +228,28 @@ public:
 
 	void RegisterVCMFD (int id, const VCMFDSPEC *spec);
 	void RegisterVCHUD (const VCHUDSPEC *spec);
-	void ShiftVC (const Vector &shift);
+	void ShiftVC (const VECTOR3 &shift);
 	void RegisterVCArea (int id, const RECT &tgtrect, int draw_mode, int mouse_mode, int bkmode, SURFHANDLE tgt);
-	void SetVCAreaClickmode_Spherical (int id, const Vector &cnt, double rad);
-	void SetVCAreaClickmode_Quadrilateral (int id, const Vector &p1, const Vector &p2, const Vector &p3, const Vector &p4);
+	void SetVCAreaClickmode_Spherical (int id, const VECTOR3 &cnt, double rad);
+	void SetVCAreaClickmode_Quadrilateral (int id, const VECTOR3 &p1, const VECTOR3 &p2, const VECTOR3 &p3, const VECTOR3 &p4);
 	void TriggerVCRedrawArea (int vcid, int area_id);
 	void TriggerRedrawArea (int pid, int vcid, int area_id);
 
 	void SetPanel2DBlink (VECTOR3 v[4]);
 
-	bool GlobalToHomog (const Vector &glob, D3DVECTOR &homog) const;
+	bool GlobalToHomog (const VECTOR3 &glob, D3DVECTOR &homog) const;
 	// transform global position glob into homogeneous viewport
 	// coordinates (x=-1: left edge of viewing fustrum etc.)
 	// return value indicates point within fustrum (does not check
 	// front and back planes)
 
-	bool GlobalToScreen (const Vector &glob, int &x, int &y) const;
-	bool GlobalToScreen (const Vector &glob, double &x, double &y) const;
+	bool GlobalToScreen (const VECTOR3 &glob, int &x, int &y) const;
+	bool GlobalToScreen (const VECTOR3 &glob, double &x, double &y) const;
 	// return screen coordinates for global position glob
 	// return value indicates point visible on screen
 	// x and y are undefined if not visible
 
-	void ScreenToGlobal (int x, int y, Vector &glob) const;
+	void ScreenToGlobal (int x, int y, VECTOR3 &glob) const;
 	// return global direction corresponding to screen coordinate x,y
 
 	void InitState (const char *scn);

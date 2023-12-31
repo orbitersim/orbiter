@@ -38,11 +38,11 @@ RigidBody::PROPMODE RigidBody::PropMode[MAX_PROP_LEVEL] = {&RigidBody::RK2_LinAn
 
 const double gfielddata_updt_interval = 60.0;
 
-inline Vector Call_EulerInv_full (RigidBody *body, const Vector &tau, const Vector &omega)
+inline auto Call_EulerInv_full (RigidBody *body, const VECTOR3 &tau, const VECTOR3 &omega)
 { return body->EulerInv_full (tau, omega); }
-inline Vector Call_EulerInv_simple (RigidBody *body, const Vector &tau, const Vector &omega)
+inline auto Call_EulerInv_simple (RigidBody *body, const VECTOR3 &tau, const VECTOR3 &omega)
 { return body->EulerInv_simple (tau, omega); }
-inline Vector Call_EulerInv_zero (RigidBody *body, const Vector &tau, const Vector &omega)
+inline auto Call_EulerInv_zero (RigidBody *body, const VECTOR3 &tau, const VECTOR3 &omega)
 { return body->EulerInv_zero (tau, omega); }
 
 // =======================================================================
@@ -53,10 +53,10 @@ RigidBody::RigidBody (): Body ()
 	SetDefaultCaps ();
 }
 
-RigidBody::RigidBody (double _mass, double _size, const Vector &_pmi): Body (_mass, _size)
+RigidBody::RigidBody (double _mass, double _size, const VECTOR3 &_pmi): Body (_mass, _size)
 {
 	SetDefaultCaps ();
-	pmi.Set (_pmi);
+	pmi = _pmi;
 }
 
 RigidBody::RigidBody (char *fname): Body (fname)
@@ -81,7 +81,7 @@ void RigidBody::SetDefaultCaps ()
 	el          = 0;
 	el_valid    = false;
 
-	pmi.Set (-1,-1,-1); // "undef"
+	pmi = {-1, -1, -1}; // "undef"
 	bDynamicPosVel = true;
 	bCanUpdateStabilised = g_pOrbiter->Cfg()->CfgPhysicsPrm.bOrbitStabilise;
 	bDistmass = g_pOrbiter->Cfg()->CfgPhysicsPrm.bDistributedMass;
@@ -104,8 +104,8 @@ void RigidBody::ReadGenericCaps (ifstream &ifs)
 
 void RigidBody::SetDefaultState ()
 {
-	arot.Set (0,0,0);
-	torque.Set (0,0,0);
+	arot = {0, 0, 0};
+	torque = {0, 0, 0};
 }
 
 void RigidBody::SetOrbitReference (CelestialBody *body)
@@ -169,7 +169,7 @@ void RigidBody::SetPropagator (int &plevel, int &nstep) const
 		if (td.SimDT < PropMode[plevel].tlim)
 			break;
 	// 2. Angle step limit
-	double astep = s0->omega.length()*td.SimDT; // angular step size
+	double astep = len(s0->omega) * td.SimDT; // angular step size
 	for (; plevel < nPropLevel-1; plevel++)
 		if (astep < PropMode[plevel].alim)
 			break;
@@ -192,9 +192,9 @@ void RigidBody::Update (bool force)
 		//    incremental part to minimise roundoff errors
 
 		int i;
-		Vector tau;
-		pcpos.Set (cpos);
-		ostep = cvel.length()*td.SimDT / (Pi2 * cpos.length());
+		VECTOR3 tau;
+		pcpos = cpos;
+		ostep = len(cvel) * td.SimDT / (Pi2 * len(cpos));
 
 		// approx. orbit step length (fraction of full orbit)
 		bIgnoreGravTorque = (!bDistmass || ostep > 0.1 /*||
@@ -224,14 +224,14 @@ void RigidBody::Update (bool force)
 			if (!bOrbitStabilised) {
 				FlushRPos();
 				FlushRVel();
-				s1->pos.Set (cpos);
-				s1->vel.Set (cvel);
+				s1->pos = cpos;
+				s1->vel = cvel;
 				GetIntermediateMoments_pert (acc_pert, tau, *s0, 0, dt, cbody);
 				el->Calculate (cpos, cvel, td.SimT0); // get elements from previous step
 			}
 			Encke();
-			s1->pos.Set (cpos + cbody->s1->pos);
-			s1->vel.Set (cvel + cbody->s1->vel);
+			s1->pos = cpos + cbody->s1->pos;
+			s1->vel = cvel + cbody->s1->vel;
 			FlushRPos();
 			FlushRVel();
 			s1->R.Set (s1->Q);
@@ -240,8 +240,8 @@ void RigidBody::Update (bool force)
 
 		} else { // do a dynamic state vector integration
 
-			Vector acc0(acc), arot0(arot);
-			Vector rpos_add0(rpos_add), rvel_add0(rvel_add);
+			VECTOR3 acc0 = acc, arot0 = arot;
+			VECTOR3 rpos_add0 = rpos_add, rvel_add0 = rvel_add;
 			do {
 				// Select propagator
 				SetPropagator (PropLevel, nPropSubsteps);
@@ -257,16 +257,16 @@ void RigidBody::Update (bool force)
 					s1->vel = rvel_base + rvel_add;
 					s1->R.Set (s1->Q);
 					GetIntermediateMoments (acc, tau, *s1, (i+1.0)/nPropSubsteps, dt);
-					arot.Set (EulerInv_full (tau, s1->omega));
+					arot = EulerInv_full(tau, s1->omega);
 				}
 			} while (!ValidateStateUpdate (s1));
 			//s1->R.Set (s1->Q);
 
 			if (updcount++ == 1000) { // flush increments
 				rpos_base += rpos_add;
-				rpos_add.Set (0,0,0);
+				rpos_add = {0, 0, 0};
 				rvel_base += rvel_add;
-				rvel_add.Set (0,0,0);
+				rvel_add = {0, 0, 0};
 				updcount = 0;
 			}
 			el_valid = bOrbitStabilised = false;
@@ -279,10 +279,10 @@ void RigidBody::Update (bool force)
 		const double vmag_max = 100.0*Pi; // limit angular velocities to 100Hz - make user-definable!
 		extern int errno;
 		errno = 0;
-		double vmag = s1->omega.length();
+		double vmag = len(s1->omega);
 		if (vmag > vmag_max || errno) {
 			if (errno) {                  // fatal error - reset to arbitrary values
-				s1->omega.Set (0,0,vmag_max);
+				s1->omega = {0, 0, vmag_max};
 				vmag = vmag_max;
 				s1->Q.Set (0,0,0,1);
 				s1->R.Set (s0->Q);
@@ -290,7 +290,7 @@ void RigidBody::Update (bool force)
 				s1->omega *= vmag_max/vmag;
 				vmag = vmag_max;
 			}
-			arot.Set(0,0,0);
+			arot = {0, 0, 0};
 		}
 	}
 	Body::Update (force);
@@ -317,13 +317,13 @@ void RigidBody::UpdateGFieldSources (const PlanetarySystem *psys)
 
 // =======================================================================
 
-Vector RigidBody::InterpolatePos (const Vector &p0, const Vector &p1, double t1, double dt, double tfrac) const
+VECTOR3 RigidBody::InterpolatePos (const VECTOR3 &p0, const VECTOR3 &p1, double t1, double dt, double tfrac) const
 {
 	if (ostep < 1e-3) {        // use simple linear interpolation
 		return p0 + (p1-p0)*tfrac;
 	} else if (ostep < 1e-2) { // slightly more sophisticated interpolation
-		Vector dir (p0 + (p1-p0)*tfrac);
-		return dir.unit() * (p0.length()*(1.0-tfrac) + p1.length()*tfrac);
+		VECTOR3 dir = p0 + (p1 - p0) * tfrac;
+		return unit(dir) * (len(p0) * (1.0 - tfrac) + len(p1) * tfrac);
 	} else {                   // use Kepler orbit interpolation
 		if (!el_valid) { 
 			el->Calculate (cpos, cvel, td.SimT0);
@@ -335,7 +335,7 @@ Vector RigidBody::InterpolatePos (const Vector &p0, const Vector &p1, double t1,
 
 // =======================================================================
 
-void RigidBody::GetIntermediateMoments (Vector &acc, Vector &tau,
+void RigidBody::GetIntermediateMoments (VECTOR3 &acc, VECTOR3 &tau,
 	const StateVectors &state, double tfrac, double dt)
 {
 	// linear acceleration due to graviational field
@@ -343,14 +343,14 @@ void RigidBody::GetIntermediateMoments (Vector &acc, Vector &tau,
 
 	// angular acceleration due to gravity gradient torque
 	if (!cbody || bIgnoreGravTorque) {
-		tau.Set (0,0,0);
+		tau = {0, 0, 0};
 	} else {
 		// map cbody into vessel frame
-		Vector R0 (tmul (state.Q, cbody->InterpolatePosition (tfrac) - state.pos));
-		double r0 = R0.length();
-		Vector Re = R0/r0;
+		VECTOR3 R0 = tmul(state.Q, cbody->InterpolatePosition(tfrac) - state.pos);
+		double r0 = len(R0);
+		VECTOR3 Re = R0 / r0;
 		double mag = 3.0 * Ggrav * cbody->Mass() / pow(r0,3.0);
-		tau.Set (crossp (pmi*Re, Re) * mag);
+		tau = cross(pmi * Re, Re) * mag;
 
 		// damping of angular velocity
 		if (tidaldamp) {
@@ -365,7 +365,7 @@ void RigidBody::GetIntermediateMoments (Vector &acc, Vector &tau,
 
 // =======================================================================
 
-void RigidBody::GetIntermediateMoments_pert (Vector &acc, Vector &tau,
+void RigidBody::GetIntermediateMoments_pert (VECTOR3 &acc, VECTOR3 &tau,
 	const StateVectors &state_rel, double tfrac, double dt, const CelestialBody *cbody)
 {
 	// Note: Encke's method in the current implementation doesn't seem
@@ -373,8 +373,8 @@ void RigidBody::GetIntermediateMoments_pert (Vector &acc, Vector &tau,
 	// altogether to revert to a simple 2-body solution
 #define NO_GRAV_PERT
 #ifdef NO_GRAV_PERT
-	acc.Set (0,0,0);
-	tau.Set (0,0,0);
+	acc = {0, 0, 0};
+	tau = {0, 0, 0};
 #else
 	Vector gpos = state_rel.pos + cbody->InterpolatePosition (tfrac);
 	// linear acceleration due to graviational field
@@ -382,14 +382,14 @@ void RigidBody::GetIntermediateMoments_pert (Vector &acc, Vector &tau,
 
 	// angular acceleration due to gravity gradient torque
 	if (!cbody || bIgnoreGravTorque) {
-		tau.Set (0,0,0);
+		tau = {0, 0, 0};
 	} else {
 		// map cbody into vessel frame
 		Vector R0 (tmul (state_rel.Q, cbody->InterpolatePosition (tfrac) - gpos));
-		double r0 = R0.length();
+		double r0 = len(R0);
 		Vector Re = R0/r0;
 		double mag = 3.0 * Ggrav * cbody->Mass() / pow(r0,3.0);
-		tau.Set (crossp (pmi*Re, Re) * mag);
+		tau = cross(pmi * Re, Re) * mag;
 
 		// damping of angular velocity
 		if (tidaldamp) {
@@ -405,13 +405,13 @@ void RigidBody::GetIntermediateMoments_pert (Vector &acc, Vector &tau,
 
 // =======================================================================
 
-Vector RigidBody::GetPertAcc (const PertIntData &data, const Vector &pos, double tfrac)
+VECTOR3 RigidBody::GetPertAcc (const PertIntData &data, const VECTOR3 &pos, double tfrac)
 {
 	// acceleration perturbation: difference of the perturbation fields
 	// between vessel position and central body position (at last step)
 
-	static Vector zero(0,0,0);
-	Vector accp (g_psys->GaccRel (pos, cbody, tfrac, cbody, &gfielddata) - g_psys->GaccRel (zero, cbody, tfrac, cbody, &gfielddata));
+	static VECTOR3 zero{0, 0, 0};
+	VECTOR3 accp = g_psys->GaccRel(pos, cbody, tfrac, cbody, &gfielddata) - g_psys->GaccRel(zero, cbody, tfrac, cbody, &gfielddata);
 
 	if (data.nonspherical)
 		accp += SingleGacc_perturbation (-pos, cbody);
@@ -421,18 +421,18 @@ Vector RigidBody::GetPertAcc (const PertIntData &data, const Vector &pos, double
 
 // =======================================================================
 
-Vector RigidBody::GetTorque () const
+VECTOR3 RigidBody::GetTorque () const
 {
-	if (!cbody || bIgnoreGravTorque) return Vector(0,0,0); // sanity check
+	if (!cbody || bIgnoreGravTorque) return {0, 0, 0}; // sanity check
 
-	Vector R0;
+	VECTOR3 R0;
 
 	// map cbody into vessel frame
-	R0.Set (tmul (s0->R, cbody->s0->pos - s0->pos));
-	double r0 = R0.length();
-	Vector Re = R0/r0;
+	R0 = tmul (s0->R, cbody->s0->pos - s0->pos);
+	double r0 = len(R0);
+	VECTOR3 Re = R0 / r0;
 	double mag = 3.0 * Ggrav * cbody->Mass() / pow(r0,3.0);
-	Vector M (crossp (pmi*Re, Re) * mag);
+	VECTOR3 M = cross(pmi * Re, Re) * mag;
 
 	// damping of angular velocity
 	if (tidaldamp) {
@@ -448,24 +448,25 @@ Vector RigidBody::GetTorque () const
 
 // =======================================================================
 
-void RigidBody::SetAngVel (const Vector &omega)
+void RigidBody::SetAngVel (const VECTOR3 &omega)
 {
-	s0->omega.Set (omega);
+	s0->omega = omega;
 }
 
 // =======================================================================
 
-Vector RigidBody::Euler_full (const Vector &omegadot, const Vector &omega) const
+VECTOR3 RigidBody::Euler_full (const VECTOR3 &omegadot, const VECTOR3 &omega) const
 {
-	return Vector (
-		omegadot.x*pmi.x + (pmi.y-pmi.z)*omega.y*omega.z,
-		omegadot.y*pmi.y + (pmi.z-pmi.x)*omega.z*omega.x,
-		omegadot.z*pmi.z + (pmi.x-pmi.y)*omega.x*omega.y);
+	return VECTOR3{
+		omegadot.x * pmi.x + (pmi.y - pmi.z) * omega.y * omega.z,
+		omegadot.y * pmi.y + (pmi.z - pmi.x) * omega.z * omega.x,
+		omegadot.z * pmi.z + (pmi.x - pmi.y) * omega.x * omega.y
+    };
 }
 
 // =======================================================================
 
-Vector RigidBody::EulerInv_full (const Vector &tau, const Vector &omega) const
+VECTOR3 RigidBody::EulerInv_full (const VECTOR3 &tau, const VECTOR3 &omega) const
 {
 	// Solves Euler's equation (in left-handed system):
 	//
@@ -474,15 +475,16 @@ Vector RigidBody::EulerInv_full (const Vector &tau, const Vector &omega) const
 	// for angular acceleration domega/dt, given torque tau, angular
 	// velocity omega and inertia tensor I (assumed to be diagonal).
 
-	return Vector (
-		(tau.x - (pmi.y-pmi.z)*omega.y*omega.z) / pmi.x,
-		(tau.y - (pmi.z-pmi.x)*omega.z*omega.x) / pmi.y,
-		(tau.z - (pmi.x-pmi.y)*omega.x*omega.y) / pmi.z);
+	return VECTOR3{
+		(tau.x - (pmi.y - pmi.z) * omega.y * omega.z) / pmi.x,
+		(tau.y - (pmi.z - pmi.x) * omega.z * omega.x) / pmi.y,
+		(tau.z - (pmi.x - pmi.y) * omega.x * omega.y) / pmi.z
+    };
 }
 
 // =======================================================================
 
-Vector RigidBody::EulerInv_simple (const Vector &tau, const Vector &omega) const
+VECTOR3 RigidBody::EulerInv_simple (const VECTOR3 &tau, const VECTOR3 &omega) const
 {
 	// Simplified version of Euler's equation: ignores coupling terms,
 	// and only solves
@@ -493,12 +495,12 @@ Vector RigidBody::EulerInv_simple (const Vector &tau, const Vector &omega) const
 	// tensor I (assumed to be diagonal).
 	// Used at high time acceleration to avoid instabilities.
 
-	return Vector (tau.x/pmi.x, tau.y/pmi.y, tau.z/pmi.z);
+	return tau / pmi;
 }
 
 // =======================================================================
 
-Vector RigidBody::EulerInv_zero (const Vector &tau, const Vector &omega) const
+VECTOR3 RigidBody::EulerInv_zero (const VECTOR3 &tau, const VECTOR3 &omega) const
 {
 	// Trivial version of Euler's equation: suppresses cross-axis
 	// coupling terms and torque, i.e. solves
@@ -507,7 +509,7 @@ Vector RigidBody::EulerInv_zero (const Vector &tau, const Vector &omega) const
 	//
 	// for angular acceleration domega/dt, and thus returns zero.
 
-	return Vector (0,0,0);
+	return {0, 0, 0};
 }
 
 // =======================================================================
@@ -516,8 +518,8 @@ void RigidBody::SetDynamicUpdate (bool dynamic)
 {
 	if (bDynamicPosVel == dynamic) return; // nothing to do
 	if (bDynamicPosVel = dynamic) {
-		rpos_base.Set (s0->pos);
-		rpos_add.Set (0,0,0);
+		rpos_base = s0->pos;
+		rpos_add = {0, 0, 0};
 	} else {
 	}
 }

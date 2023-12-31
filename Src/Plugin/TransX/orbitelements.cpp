@@ -131,9 +131,9 @@ void OrbitElements::majortominorinit(OBJHANDLE target, OBJHANDLE object, const I
 	closestapproach.getrelvel(&minorvel);
 
 	//First use dotp to get to closest approach exactly
-	double minorvelsize=length(minorvel);
-	double firsttime=dotp(minorpos,minorvel)/(minorvelsize*minorvelsize);//Small correction - not the problem, though
-	minorpos=minorpos-minorvel*(dotp(minorpos,minorvel)/minorvelsize);
+	double minorvelsize = len(minorvel);
+	double firsttime = dot(minorpos, minorvel) / (minorvelsize * minorvelsize); //Small correction - not the problem, though
+	minorpos=minorpos - minorvel * (dot(minorpos, minorvel) / minorvelsize);
 	//Now precisely at closest approach
 	//Now use pythagoras to find required length back to 10xSOI
 	double backradius=100*soisize*soisize;
@@ -144,7 +144,7 @@ void OrbitElements::majortominorinit(OBJHANDLE target, OBJHANDLE object, const I
 		oapiGetRelativePos(object, target,&currvector);
 		double actdistance2=length2my(currvector);
 		if (actdistance2<backradius) backradius=actdistance2;
-		backradius-=dotp(minorpos,minorpos);//Make allowance for distance of closest approach
+		backradius -= dot(minorpos, minorpos); //Make allowance for distance of closest approach
 	}
 	backradius = backradius > 0 ? sqrt(backradius) : 0;
 	double timeoffset=backradius/minorvelsize-firsttime;
@@ -175,7 +175,7 @@ void OrbitElements::radiustovectors(double radius, bool outward, VECTOR3 *positi
 	if (!outward) sinthi=-sinthi;
 	*position=majoraxis*(radius*costhi)+minoraxis*(radius*sinthi);
 	VECTOR3 outvector=unit(*position);
-	VECTOR3 roundvector=unit(crossp(planevector, outvector));
+	VECTOR3 roundvector=unit(cross(planevector, outvector));
 	double rndvel2=angularmomentum2/(radius*radius);
 	double outvel=eccentricity*planet*sinthi/sqrt(angularmomentum2);
 	*velocity=outvector*outvel+roundvector*sqrt(rndvel2);
@@ -254,23 +254,23 @@ void OrbitElements::init(const VECTOR3 &rposition, const VECTOR3 &rvelocity, dou
 void OrbitElements::init(const VECTOR3 &rposition, const VECTOR3 &rvelocity, double ttimestamp, double gmplanet)
 {
 	VECTOR3 *ptr = const_cast<VECTOR3*>(&rvelocity);
-	if(length(rvelocity) < 0.00000001)
+	if(len(rvelocity) < 0.00000001)
 		ptr->x = 0.00000000001;	// If it is zero, it causes problems, so make it very small.
 	valid=true;
-	planevector=crossp(rposition,rvelocity);
-	angularmomentum2=dotp(planevector, planevector); //Angular momentum squared (don't usually need it non-squared)
+	planevector = cross(rposition, rvelocity);
+	angularmomentum2 = dot(planevector, planevector); //Angular momentum squared (don't usually need it non-squared)
 
-	double rvel2=dotp(rvelocity, rvelocity);
-	double radius=length(rposition);
+	double rvel2 = dot(rvelocity, rvelocity);
+	double radius = len(rposition);
 	if (radius != 0)
 	{
-		eccvector=(rposition*(rvel2-gmplanet/radius)-rvelocity*dotp(rposition, rvelocity))*(1/gmplanet); //Eccentricity vector
+		eccvector = (rposition * (rvel2 - gmplanet / radius) - rvelocity * dot(rposition, rvelocity)) * (1/gmplanet); //Eccentricity vector
 		semimajor=gmplanet/(rvel2-2*gmplanet/radius); //Length of semimajor axis  - is NEGATIVE if orbit is elliptical, POSITIVE if hyperbolic
-		eccentricity=length(eccvector); //Eccentricity of orbit
+		eccentricity = len(eccvector); //Eccentricity of orbit
 		majoraxis=unit(eccvector); //Vector towards Periapsis
-		minoraxis=unit(crossp(planevector, majoraxis)); // Vector parallel to Minor axis of orbit - important for extracting vectors later
-		currcosthi=dotp(rposition, majoraxis)/radius; //cos thi is angle from periapsis, as measured from planet centre
-		currsinthi=dotp(rposition, minoraxis)/radius;
+		minoraxis = unit(cross(planevector, majoraxis)); // Vector parallel to Minor axis of orbit - important for extracting vectors later
+		currcosthi = dot(rposition, majoraxis) / radius; //cos thi is angle from periapsis, as measured from planet centre
+		currsinthi = dot(rposition, minoraxis) / radius;
 		currposition=rposition;
 		currvelocity=rvelocity;
 		planet=gmplanet;
@@ -518,8 +518,8 @@ double OrbitElements::GetTimeToThi(double costhi, double sinthi,int fullorbits,i
 
 void OrbitElements::vectortothi(const VECTOR3 &vector,double *costhi,double *sinthi) const
 {
-	double majorsize=dotp(vector,majoraxis);
-	double minorsize=dotp(vector,minoraxis);
+	double majorsize = dot(vector, majoraxis);
+	double minorsize = dot(vector, minoraxis);
 	double scaling=sqrt(majorsize*majorsize+minorsize*minorsize);
 	*costhi=majorsize/scaling;
 	*sinthi=minorsize/scaling;
@@ -553,12 +553,12 @@ double OrbitElements::getapodistance() const
 
 double OrbitElements::getcurrradius() const
 {
-	return length(currposition);
+	return len(currposition);
 }
 
 VECTOR3 OrbitElements::getintersectvector(const OrbitElements &torbit) const
 {
-	return crossp(planevector, torbit.planevector);
+	return cross(planevector, torbit.planevector);
 }
 
 double OrbitElements::geteccentricity() const
@@ -741,8 +741,8 @@ void OrbitElements::draworbit(oapi::Sketchpad *sketchpad, const Graph *graph, bo
 	{
 		ct=0;
 		currvector=majoraxis*(topconstant/(eccentricity+1));
-		xposd= dotp(xaxis, currvector)*scale +xoffset;
-		yposd= dotp(yaxis, currvector)*scale +yoffset;
+		xposd = dot(xaxis, currvector) * scale + xoffset;
+		yposd = dot(yaxis, currvector) * scale + yoffset;
 		if (xposd<xstart || xposd>xend || yposd<xstart || yposd>xend) return; // Makes safe if orbit too large to fit screen!
 		xpos=int(xposd);
 		ypos=int(yposd);
@@ -764,8 +764,8 @@ void OrbitElements::draworbit(oapi::Sketchpad *sketchpad, const Graph *graph, bo
 			}
 			currentradius=topconstant/currdivisor;
 			currvector=majoraxis*(currcos*currentradius)+minoraxis*(currentradius*currsin);
-			xposd=dotp(xaxis,currvector)*scale+xoffset;
-			yposd=dotp(yaxis,currvector)*scale+yoffset;
+			xposd = dot(xaxis, currvector) * scale + xoffset;
+			yposd = dot(yaxis, currvector) * scale + yoffset;
 			// Following four if statements ensure proper truncation of line segments attempting to draw
 			// beyond the boundaries of the MFD
 			if (xposd<xstart)
@@ -820,8 +820,8 @@ void OrbitElements::draworbit(oapi::Sketchpad *sketchpad, const Graph *graph, bo
 		ypos=(int) yoffset;
 		sketchpad->MoveTo(xpos, ypos);
 		currvector=currposition;
-		xpos= int(dotp(xaxis, currvector)*scale +xoffset);
-		ypos= int(dotp(yaxis, currvector)*scale +yoffset);
+		xpos = int(dot(xaxis, currvector) * scale + xoffset);
+		ypos = int(dot(yaxis, currvector) * scale + yoffset);
 		sketchpad->LineTo(xpos, ypos);
 	}
 }

@@ -23,8 +23,8 @@ LightEmitter::LightEmitter ()
 	col_diff.r = col_diff.g = col_diff.b = col_diff.a = 1.0f;
 	col_spec.r = col_spec.g = col_spec.b = col_spec.a = 1.0f;
 	col_ambi.r = col_ambi.g = col_ambi.b = col_ambi.a = 1.0f;
-	lpos = _V(0,0,0);  pos = &lpos;
-	ldir = _V(0,0,1);  dir = &ldir;
+	lpos = {0,0,0};  pos = &lpos;
+	ldir = {0,0,1};  dir = &ldir;
 	lintens = 1.0;     intens = &lintens;
 }
 
@@ -39,8 +39,8 @@ LightEmitter::LightEmitter (COLOUR4 diffuse, COLOUR4 specular, COLOUR4 ambient)
 	col_diff = diffuse;
 	col_spec = specular;
 	col_ambi = ambient;
-	lpos = _V(0,0,0);  pos = &lpos;
-	ldir = _V(0,0,1);  dir = &ldir;
+	lpos = {0,0,0};  pos = &lpos;
+	ldir = {0,0,1};  dir = &ldir;
 	lintens = 1.0;     intens = &lintens;
 }
 
