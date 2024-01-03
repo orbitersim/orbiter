@@ -1624,7 +1624,8 @@ typedef void (*AirfoilCoeffFuncEx)(
 // user-defined data)
 
 typedef void (*AirfoilCoeffFuncEx2)(
-	VESSEL* v, 
+	VESSEL* v,
+	VECTOR3 WindDir,
 	double alpha, double beta, double gamma,
 	double M, double Re, void* context,
 	double* CA, double* CN, double* CY,
@@ -1644,7 +1645,7 @@ typedef void (*AirfoilCoeffFuncEx2)(
  *
  * Defines the orientation of an airfoil by the direction of the lift vector
  * generated (vertical or horizontal).
- * \sa VESSEL::CreateAirfoil, VESSEL::CreateAirfoil2, VESSEL::CreateAirfoil3
+ * \sa VESSEL::CreateAirfoil, VESSEL::CreateAirfoil2, VESSEL::CreateAirfoil3, VESSEL::CreateAirfoil4
  */
 typedef enum {
 	LIFT_VERTICAL,     ///< lift direction is vertical (e.g. elevator)

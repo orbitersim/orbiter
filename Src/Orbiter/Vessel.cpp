@@ -4084,7 +4084,7 @@ void Vessel::UpdateAerodynamicForces ()
 			if (Cm) Amom_add.y += Cm*sp.dynp*af->S*af->c;
 			Drag += drag;
 		} else if (af->align == FORCE_AND_MOMENT) {
-			((AirfoilCoeffFuncEx2)af->cf)((VESSEL*)modIntf.v, aoa, beta, gamma, sp.atmM, Re0 * af->c, af->context, &CA, &CN, &CY, &Cl, &Cm, &Cn);
+			((AirfoilCoeffFuncEx2)af->cf)((VESSEL*)modIntf.v, -_V(sp.airvel_ship.unit().x, sp.airvel_ship.unit().y, sp.airvel_ship.unit().z), aoa, beta, gamma, sp.atmM, Re0 * af->c, af->context, &CA, &CN, &CY, &Cl, &Cm, &Cn);
 			if (af->S) S = af->S;
 			else       S = fabs(ddir.z) * cs.z + fabs(ddir.x) * cs.z; // use projected vessel CS as reference area
 
