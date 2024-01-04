@@ -4092,7 +4092,7 @@ void Vessel::UpdateAerodynamicForces ()
 
 			AddForce(AeroForce, af->ref);
 			Lift = dotp(AeroForce, ldir);
-			Drag = Lift = dotp(AeroForce, ddir);
+			Drag = dotp(AeroForce, ddir);
 			
 			Amom_add.x += Cm * sp.dynp * af->S * af->c;
 			Amom_add.y -= Cn * sp.dynp * af->S * af->c;
