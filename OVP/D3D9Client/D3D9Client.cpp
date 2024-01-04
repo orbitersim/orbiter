@@ -991,6 +991,14 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 
 // ==============================================================
 
+void D3D9Client::clbkDebugString(const char* str)
+{
+	D3D9DebugLog("%s", str);
+}
+
+
+// ==============================================================
+
 void D3D9Client::PushSketchpad(SURFHANDLE surf, D3D9Pad *pSkp) const
 {
 	if (surf) {
