@@ -469,6 +469,12 @@ public:
 	virtual void clbkOptionChanged(DWORD cat, DWORD item) {}
 
 	/**
+	 * \brief Print multiple debug strings onto a screen, will be cleared when printed on screen.
+	 * \param str Text string to print
+	 */
+	virtual void clbkDebugString(const char *str) {}
+	
+	/**
 	 * \brief Texture request
 	 *
 	 * Load a texture from a file into a device-specific texture object, and

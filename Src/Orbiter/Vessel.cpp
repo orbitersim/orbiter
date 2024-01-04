@@ -4834,8 +4834,9 @@ void Vessel::UpdatePassive ()
 	proxybody = prnt->proxybody;
 	proxyplanet = prnt->proxyplanet;
 	fstatus = prnt->fstatus;
+
+	if (proxybody) UpdateSurfParams();
 	if (fstatus != FLIGHTSTATUS_LANDED) {
-		if (proxybody) UpdateSurfParams();
 		bSurfaceContact = false;
 	}
 	UpdateMass(); // register fuel consumption
