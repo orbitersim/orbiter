@@ -319,6 +319,7 @@ typedef void *HDC;
 #define BFV_DRAG      0x0020 ///< Show drag vector
 #define BFV_TOTAL     0x0040 ///< Show total force vector
 #define BFV_TORQUE    0x0080 ///< Show torque vector
+#define BVF_SIDEFORCE 0x0100 ///< Show side-force vector
 /// @}
 
 /// \defgroup favflag Bit flags for frame axis vector render options

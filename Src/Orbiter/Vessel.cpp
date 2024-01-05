@@ -315,7 +315,7 @@ void Vessel::SetDefaultState ()
 	m_bThrustEngaged    = false;
 	bForceActive        = false;
 	rpressure           = g_pOrbiter->Cfg()->CfgPhysicsPrm.bRadiationPressure;
-	Lift = Drag         = 0.0;
+	Lift = Drag = SideForce = 0.0;
 	attach_status.pname = 0;
 	hudskp              = NULL;
 	next_hullvtx        = 0;
@@ -3763,7 +3763,7 @@ double Vessel::GetGravityGradientDamping () const
 
 void Vessel::UpdateBodyForces ()
 {
-	Lift = Drag = 0.0;
+	Lift = Drag = SideForce = 0.0;
 
 	if (m_thruster.size()) UpdateThrustForces ();
 	if (CtrlSurfSyncMode) ApplyControlSurfaceLevels ();

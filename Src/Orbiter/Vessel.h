@@ -377,6 +377,10 @@ public:
 	// Returns drag vector in D (in local vessel frame).
 	// Return value indicates if drag is present
 
+	bool GetSideForceVector(Vector& SF) const;
+	// Returns side-force vector in SF (in local vessel frame).
+	// Return value indicates if side-force is present
+
 	bool GetForceVector (Vector &F) const;
 	// Returns total linear force vector acting on the vessel
 	// Return value is always true
@@ -1666,7 +1670,7 @@ private:
 	Vector Thrust;             // linear thrust vector (sum of all thruster contributions)
 	mutable Vector Weight;     // weight vector (due to gravitational acceleration)
 	mutable bool weight_valid; // flag for 'Weight' up to date
-	double Lift, Drag;         // current lift and drag magnitudes
+	double Lift, Drag, SideForce;         // current lift and drag magnitudes
 
 	DWORD navmode;             // bitflags for currently active navmodes
 	struct HoverHoldAlt {      // Hover hold altitude data

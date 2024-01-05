@@ -2013,6 +2013,14 @@ public:
 	double GetDrag () const;
 
 	/**
+	 * \brief Returns magnitude of aerodynamic side-force vector.
+	 * \return Magnitude of drag force vector [N].
+	 * \note Return value is the sum of drag components from all airfoils.
+	 * \sa GetDragVector, GetLift
+	 */
+	double GetSideForce() const;
+
+	/**
 	 * \brief Returns gravitational force vector in local vessel coordinates.
 	 * \param[out] G gravitational force vector [<b>N</b>]
 	 * \return Always true.
