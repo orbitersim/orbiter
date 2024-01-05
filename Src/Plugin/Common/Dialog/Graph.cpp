@@ -13,7 +13,7 @@
 #include "Graph.h"
 #include <stdio.h>
 #include <math.h>
-#include <strstream>
+#include <sstream>
 #include "orbitersdk.h"
 
 static COLORREF plotcol[MAXPLOT] = { 0x0000ff, 0xff0000, 0x00ff00 };
@@ -232,12 +232,12 @@ void Graph::Refresh (HDC hDC, int w, int h)
 	}
 	
 	SelectObject (hDC, gdi.font[1]);
-	std::ostrstream oss(cbuf,64);
+	std::ostringstream oss(cbuf,64);
 	if (m_ylabel.size()) {
 		oss << m_ylabel;
 		if (m_tickscale && m_tickscale != 1.0f) oss << " x " << 1.0/m_tickscale;
 		oss << '\0';
-		TextOut (hDC, 0, (y0+y1)/2, oss.str(), strlen(oss.str()));
+		TextOut (hDC, 0, (y0+y1)/2, oss.str().c_str(), strlen(oss.str().c_str()));
 	}
 
 	SelectObject (hDC, pfont);
