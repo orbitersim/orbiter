@@ -29,6 +29,10 @@
 #include <math.h>
 #include <vector>
 
+#if defined(_MSC_VER) && (_MSC_VER < 1920 ) // Microsoft Visual Studio Version 2017 and lower
+#include <algorithm>
+#endif
+
 extern "C" {
 #include "Lua/lua.h"
 }
