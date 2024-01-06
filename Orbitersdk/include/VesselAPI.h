@@ -2076,6 +2076,20 @@ public:
 	bool GetDragVector (VECTOR3 &D) const;
 
 	/**
+	 * \brief Returns aerodynamic side-force force vector in local vessel
+	 *   coordinates.
+	 * \param[out] SF drag vector [<b>N</b>]
+	 * \return false indicates zero side-force. In that case, the returned vector
+	 *   is (0,0,0).
+	 * \note On return, SD contains the sum of Side-force components from all
+	 *   airfoils.
+	 * \note The side-force vector is mutually orthogonal to the Lift and Drag vectors
+	 * \sa GetDrag, GetWeightVector, GetThrustVector, GetLiftVector,
+	 *   GetForceVector
+	 */
+	bool GetSideForceVector (VECTOR3 &SF) const;
+
+	/**
 	 * \brief Returns total force vector acting on the vessel in local
 	 *   vessel coordinates.
 	 * \param[out] F total force vector [<b>N</b>]

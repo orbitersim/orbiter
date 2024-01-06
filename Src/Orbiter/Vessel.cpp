@@ -6709,6 +6709,11 @@ double VESSEL::GetDrag (void) const
 	return vessel->Drag;
 }
 
+double VESSEL::GetSideForce() const
+{
+	return vessel->SideForce;
+}
+
 bool VESSEL::GetWeightVector (VECTOR3 &G) const
 {
 	static Vector F;
@@ -6739,6 +6744,14 @@ bool VESSEL::GetDragVector (VECTOR3 &D) const
 	bool bDrag = vessel->GetDragVector (F);
 	CopyVector (F, D);
 	return bDrag;
+}
+
+bool VESSEL::GetSideForceVector(VECTOR3 &SF) const
+{
+	static Vector F;
+	bool bSideForce = vessel->GetDragVector(F);
+	CopyVector(F, SF);
+	return bSideForce;
 }
 
 bool VESSEL::GetForceVector (VECTOR3 &F) const
