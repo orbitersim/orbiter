@@ -2500,6 +2500,14 @@ DLLEXPORT char *oapiDebugString ()
 	return DBG_MSG;
 }
 
+DLLEXPORT void oapiDebugString(const char* str)
+{
+#ifndef INLINEGRAPHICS
+	oapi::GraphicsClient* gc = g_pOrbiter->GetGraphicsClient();
+	if (gc) gc->clbkDebugString(str);
+#endif // !INLINEGRAPHICS
+}
+
 DLLEXPORT double oapiRand ()
 {
 	static double irmax = 1.0/(double)RAND_MAX;

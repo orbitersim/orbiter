@@ -44,14 +44,9 @@ static const char *d3dmessage={"Required DirectX version (June 2010 or newer) no
 
 CD3DFramework9::CD3DFramework9()
 {
-	pD3D = NULL;
 	Clear();
 
-	// Create the Direct3D9 ---------------------------------------------
-	//
-	pD3D = Direct3DCreate9(D3D_SDK_VERSION);
-
-	if (pD3D==NULL) {
+	if (g_pD3DObject == NULL) {
 		LogErr("ERROR: [Direct3D9 Creation Failed]");
 		LogErr(d3dmessage);
 		MessageBoxA(NULL, d3dmessage, "D3D9Client Initialization Failed",MB_OK);
@@ -65,13 +60,10 @@ CD3DFramework9::CD3DFramework9()
 CD3DFramework9::~CD3DFramework9 ()
 {
 	LogAlw("Deleting Framework");
-	SAFE_RELEASE(pD3D);
 }
 
 void CD3DFramework9::Clear()
 {
-	// NOTE: pD3D won't be cleared in here
-
 	hWnd			  = NULL;
 	bIsFullscreen	  = false;
 	bVertexTexture    = false;
@@ -172,7 +164,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	LogAlw("[VideoConfiguration] Adapter=%u, ModeIndex=%u", Adapter, Mode);
 
 	D3DADAPTER_IDENTIFIER9 info;
-	pD3D->GetAdapterIdentifier(Adapter, 0, &info);
+	g_pD3DObject->GetAdapterIdentifier(Adapter, 0, &info);
 	LogOapi("3D-Adapter.............. : %s",info.Description);
 	LogAlw("dwFSMode................ : %u",dwFSMode);
 
@@ -187,9 +179,9 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 			{
 				dwDisplayMode = 0;
 				D3DDISPLAYMODE mode;
-				if (Adapter<pD3D->GetAdapterCount()) {
-					if (Mode<pD3D->GetAdapterModeCount(Adapter, D3DFMT_X8R8G8B8)) {
-						pD3D->EnumAdapterModes(Adapter, D3DFMT_X8R8G8B8, Mode, &mode);
+				if (Adapter<g_pD3DObject->GetAdapterCount()) {
+					if (Mode<g_pD3DObject->GetAdapterModeCount(Adapter, D3DFMT_X8R8G8B8)) {
+						g_pD3DObject->EnumAdapterModes(Adapter, D3DFMT_X8R8G8B8, Mode, &mode);
 						dwRenderWidth = mode.Width;
 						dwRenderHeight = mode.Height;
 					}
@@ -233,19 +225,19 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 
 	// Hardware CAPS Checks --------------------------------------------------
 	//
-	HRESULT hr = pD3D->GetDeviceCaps(Adapter, D3DDEVTYPE_HAL, &caps);
+	HRESULT hr = g_pD3DObject->GetDeviceCaps(Adapter, D3DDEVTYPE_HAL, &caps);
 
 	if (hr!=S_OK) {
-		LogErr("pD3D->GetDeviceCaps(Adapter, D3DDEVTYPE_HAL, &caps)");
+		LogErr("g_pD3DObject->GetDeviceCaps(Adapter, D3DDEVTYPE_HAL, &caps)");
 		return hr;
 	}
 
 	// AA CAPS Checks --------------------------------------------------
 	//
 	DWORD aamax = 0;
-	if (pD3D->CheckDeviceMultiSampleType(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, true, D3DMULTISAMPLE_2_SAMPLES, NULL)==S_OK) aamax=2;
-	if (pD3D->CheckDeviceMultiSampleType(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, true, D3DMULTISAMPLE_4_SAMPLES, NULL)==S_OK) aamax=4;
-	if (pD3D->CheckDeviceMultiSampleType(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, true, D3DMULTISAMPLE_8_SAMPLES, NULL)==S_OK) aamax=8;
+	if (g_pD3DObject->CheckDeviceMultiSampleType(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, true, D3DMULTISAMPLE_2_SAMPLES, NULL)==S_OK) aamax=2;
+	if (g_pD3DObject->CheckDeviceMultiSampleType(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, true, D3DMULTISAMPLE_4_SAMPLES, NULL)==S_OK) aamax=4;
+	if (g_pD3DObject->CheckDeviceMultiSampleType(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, true, D3DMULTISAMPLE_8_SAMPLES, NULL)==S_OK) aamax=8;
 
 	MultiSample = min(aamax, DWORD(Config->SceneAntialias));
 
@@ -314,23 +306,23 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	// Check shadow mapping support
 	//
 	bool bShadowMap = true;
-	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_R32F)!=S_OK) bShadowMap = false;
-	if (pD3D->CheckDepthStencilMatch(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DFMT_R32F, D3DFMT_D24X8)!=S_OK) bShadowMap = false;
+	if (g_pD3DObject->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_R32F)!=S_OK) bShadowMap = false;
+	if (g_pD3DObject->CheckDepthStencilMatch(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DFMT_R32F, D3DFMT_D24X8)!=S_OK) bShadowMap = false;
 
 	if (bShadowMap) LogOapi("Shadow Mapping.......... : Yes");
 	else			LogOapi("Shadow Mapping.......... : No");
 
 	bool bFloat16BB = true;
-	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_A16B16G16R16F)!=S_OK) bFloat16BB = false;
-	if (pD3D->CheckDepthStencilMatch(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DFMT_A16B16G16R16F, D3DFMT_D24X8)!=S_OK) bFloat16BB = false;
+	if (g_pD3DObject->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_A16B16G16R16F)!=S_OK) bFloat16BB = false;
+	if (g_pD3DObject->CheckDepthStencilMatch(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DFMT_A16B16G16R16F, D3DFMT_D24X8)!=S_OK) bFloat16BB = false;
 				  
 	if (bFloat16BB) LogOapi("D3DFMT_A16B16G16R16F.... : Yes");
 	else		    LogOapi("D3DFMT_A16B16G16R16F.... : No");
 
-	HRESULT VT16BB = pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_QUERY_VERTEXTEXTURE, D3DRTYPE_TEXTURE, D3DFMT_A16B16G16R16F);
-	HRESULT VT32BB = pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_QUERY_VERTEXTEXTURE, D3DRTYPE_TEXTURE, D3DFMT_A32B32G32R32F);
-	HRESULT VT16BC = pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_QUERY_VERTEXTEXTURE, D3DRTYPE_TEXTURE, D3DFMT_R16F);
-	HRESULT VT32BC = pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_QUERY_VERTEXTEXTURE, D3DRTYPE_TEXTURE, D3DFMT_R32F);
+	HRESULT VT16BB = g_pD3DObject->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_QUERY_VERTEXTEXTURE, D3DRTYPE_TEXTURE, D3DFMT_A16B16G16R16F);
+	HRESULT VT32BB = g_pD3DObject->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_QUERY_VERTEXTEXTURE, D3DRTYPE_TEXTURE, D3DFMT_A32B32G32R32F);
+	HRESULT VT16BC = g_pD3DObject->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_QUERY_VERTEXTEXTURE, D3DRTYPE_TEXTURE, D3DFMT_R16F);
+	HRESULT VT32BC = g_pD3DObject->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_QUERY_VERTEXTEXTURE, D3DRTYPE_TEXTURE, D3DFMT_R32F);
 
 	if (VT16BB == S_OK) LogOapi("Vertex_A16B16G16R16F.... : Yes");
 	else 				LogOapi("Vertex_A16B16G16R16F.... : No");
@@ -345,23 +337,23 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	
 
 	bool bFloat32BB = true;
-	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_A32B32G32R32F)!=S_OK) bFloat32BB = false;
+	if (g_pD3DObject->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_A32B32G32R32F)!=S_OK) bFloat32BB = false;
 			  
 	if (bFloat32BB) LogOapi("D3DFMT_A32B32G32R32F.... : Yes");
 	else		    LogOapi("D3DFMT_A32B32G32R32F.... : No");
 
-	HRESULT D32F = pD3D->CheckDeviceFormat(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, D3DFMT_D32F_LOCKABLE);
+	HRESULT D32F = g_pD3DObject->CheckDeviceFormat(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, D3DFMT_D32F_LOCKABLE);
 
 	if (D32F==S_OK) LogOapi("D3DFMT_D32F_LOCKABLE.... : Yes"); 
 	else		    LogOapi("D3DFMT_D32F_LOCKABLE.... : No");
 
-	HRESULT AR10 = pD3D->CheckDeviceFormat(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_A2R10G10B10);
+	HRESULT AR10 = g_pD3DObject->CheckDeviceFormat(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_A2R10G10B10);
 
 	if (AR10==S_OK) LogOapi("D3DFMT_A2R10G10B10...... : Yes"); 
 	else		    LogOapi("D3DFMT_A2R10G10B10...... : No");
 
-	HRESULT L8 = pD3D->CheckDeviceFormat(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_L8);
-	if (pD3D->CheckDepthStencilMatch(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DFMT_L8, D3DFMT_D24X8) != S_OK) L8 = S_FALSE;//-1;
+	HRESULT L8 = g_pD3DObject->CheckDeviceFormat(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_L8);
+	if (g_pD3DObject->CheckDepthStencilMatch(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DFMT_L8, D3DFMT_D24X8) != S_OK) L8 = S_FALSE;//-1;
 
 	if (L8 == S_OK) LogOapi("D3DFMT_L8............... : Yes");
 	else		    LogOapi("D3DFMT_L8............... : No");
@@ -486,7 +478,7 @@ HRESULT CD3DFramework9::CreateFullscreenMode()
 	// Store the rectangle which contains the renderer
 	SetRect(&rcScreenRect, 0, 0, dwRenderWidth, dwRenderHeight);
 
-	HR(pD3D->CheckDeviceType(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DFMT_X8R8G8B8, false));
+	HR(g_pD3DObject->CheckDeviceType(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DFMT_X8R8G8B8, false));
 
 	LogAlw("[FULLSCREEN MODE] %u x %u,  hWindow=%s", dwRenderWidth, dwRenderHeight, _PTR(hWnd));
 
@@ -519,7 +511,7 @@ HRESULT CD3DFramework9::CreateFullscreenMode()
 
 	if (DDM)	devBehaviorFlags |= D3DCREATE_DISABLE_DRIVER_MANAGEMENT;
 
-	HR(pD3D->CreateDevice(
+	HR(g_pD3DObject->CreateDevice(
 		Adapter,			// primary adapter
 		D3DDEVTYPE_HAL,		// device type
 		hWnd,				// window associated with device
@@ -566,7 +558,7 @@ HRESULT CD3DFramework9::CreateWindowedMode()
 	if (MultiSample) {
 
 		DWORD level;
-		HR(pD3D->CheckDeviceMultiSampleType(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, true, (D3DMULTISAMPLE_TYPE)MultiSample, &level));
+		HR(g_pD3DObject->CheckDeviceMultiSampleType(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, true, (D3DMULTISAMPLE_TYPE)MultiSample, &level));
 
 		d3dPP.BackBufferWidth            = dwRenderWidth;
 		d3dPP.BackBufferHeight           = dwRenderHeight;
@@ -614,7 +606,7 @@ HRESULT CD3DFramework9::CreateWindowedMode()
 
 		LogErr("[WARNING] NVPerfHUD mode is Active (Disable from D3D9Client.cfg) [WARNING]");
 
-		hr = pD3D->CreateDevice(
+		hr = g_pD3DObject->CreateDevice(
 			Adapter,				// primary adapter
 			D3DDEVTYPE_REF,			// device type
 			hWnd,					// window associated with device
@@ -624,7 +616,7 @@ HRESULT CD3DFramework9::CreateWindowedMode()
 	}
 	else {
 
-		hr = pD3D->CreateDevice(
+		hr = g_pD3DObject->CreateDevice(
 			Adapter,				// primary adapter
 			D3DDEVTYPE_HAL,			// device type
 			hWnd,					// window associated with device

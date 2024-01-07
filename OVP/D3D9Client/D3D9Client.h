@@ -69,6 +69,7 @@ typedef class SurfNative* lpSurfNative;
 extern D3D9Catalog<LPDIRECT3DTEXTURE9>	*TileCatalog;
 extern set<D3D9Mesh*> MeshCatalog;
 extern set<SurfNative*>	SurfaceCatalog;
+extern IDirect3D9* g_pD3DObject;
 
 
 /**
@@ -206,6 +207,8 @@ public:
      * \param item option item, see \ref optitem
      */
 	void clbkOptionChanged(DWORD cat, DWORD item);
+
+	void clbkDebugString(const char* str);
 
 	/**
 	 * \brief Texture request
