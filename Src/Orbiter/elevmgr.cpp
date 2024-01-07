@@ -11,7 +11,7 @@ using std::max;
 
 static int elev_grid = 256;
 static int elev_stride = elev_grid+3;
-static int MAXLVL_LIMIT = 11;
+static int MAXLVL_LIMIT = SURF_MAX_PATCHLEVEL2 - 7;
 
 extern Orbiter *g_pOrbiter;
 extern TimeData td;
