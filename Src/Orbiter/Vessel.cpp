@@ -4055,7 +4055,7 @@ void Vessel::UpdateAerodynamicForces ()
 	Vector ddir (-sp.airvel_ship.unit());           // freestream airflow direction (= drag direction)
 	Vector ldir (0, sp.airvel_ship.z, -sp.airvel_ship.y);  ldir.unify(); // lift direction (vertical on drag and transversal ship axis)
 	Vector sdir (sp.airvel_ship.z, 0, -sp.airvel_ship.x);  sdir.unify(); // sidelift direction (vertical on drag and vertical ship axis)
-	double lift, drag, S;
+	double lift, drag, side, S;
 	double CL, CD;   // lift, drag coeffs (used by AirfoilCoeffFunc and AirfoilCoeffFuncEx)
 	double CA, CN, CY; //force coefficients along Orbiter Z, Y, X axes (AirfoilCoeffFuncEx2)
 	double Cl, Cm, Cn; //moment coefficients about Orbiter Z, X, Y axes (AirfoilCoeffFuncEx2 uses Cl and Cn)
@@ -4080,9 +4080,10 @@ void Vessel::UpdateAerodynamicForces ()
 				((AirfoilCoeffFuncEx)af->cf)((VESSEL*)modIntf.v, beta, sp.atmM, Re0*af->c, af->context, &CL, &Cm, &CD);
 			if (af->S) S = af->S;
 			else       S = fabs(ddir.z)*cs.z + fabs(ddir.x)*cs.z; // use projected vessel CS as reference area
-			AddForce (sdir*(CL*sp.dynp*S) + ddir*(drag=(CD*sp.dynp*S)), af->ref);
+			AddForce (sdir*(side = (CL*sp.dynp*S)) + ddir*(drag=(CD*sp.dynp*S)), af->ref);
 			if (Cm) Amom_add.y += Cm*sp.dynp*af->S*af->c;
 			Drag += drag;
+			SideForce += side;
 		} else if (af->align == FORCE_AND_MOMENT) {
 			((AirfoilCoeffFuncEx2)af->cf)((VESSEL*)modIntf.v, -_V(sp.airvel_ship.unit().x, sp.airvel_ship.unit().y, sp.airvel_ship.unit().z), aoa, beta, gamma, sp.atmM, Re0 * af->c, af->context, &CA, &CN, &CY, &Cl, &Cm, &Cn);
 			if (af->S) S = af->S;
@@ -4093,6 +4094,7 @@ void Vessel::UpdateAerodynamicForces ()
 			AddForce(AeroForce, af->ref);
 			Lift = dotp(AeroForce, ldir);
 			Drag = dotp(AeroForce, ddir);
+			SideForce = dotp(AeroForce, sdir);
 			
 			Amom_add.x += Cm * sp.dynp * af->S * af->c;
 			Amom_add.y -= Cn * sp.dynp * af->S * af->c;
