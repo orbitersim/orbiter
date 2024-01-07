@@ -23,6 +23,10 @@
 #include <assert.h>
 #include <xmmintrin.h>
 
+#if defined(_MSC_VER) && (_MSC_VER < 1920 ) // Microsoft Visual Studio Version 2017 and lower
+#include <algorithm>
+#endif
+
 #ifdef D3D9CLIENT_EXPORTS
 #include "d3dx9.h"
 #endif
