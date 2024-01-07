@@ -2446,6 +2446,13 @@ OAPIFUNC void oapiRegisterModule (oapi::Module *module);
 OAPIFUNC char *oapiDebugString ();
 
 
+/**
+* \brief Print multiple debug strings onto a screen, will be cleared when printed on screen.
+* \param str Text string to print
+*/
+OAPIFUNC void oapiDebugString(const char*);
+
+
 // ======================================================================
 /**
  * \defgroup ObjectAccess Object access functions
