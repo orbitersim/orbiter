@@ -174,81 +174,81 @@ void VideoTab::Initialise()
 	SendDlgItemMessageA(hTab, IDC_VID_MODE, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessage(hTab, IDC_VID_BPP, CB_RESETCONTENT, 0, 0);
 
-
 	ScanAtmoCfgs();
 
-	// Create the Direct3D9 ---------------------------------------------
-	//
-    IDirect3D9* d3dObject = Direct3DCreate9(D3D_SDK_VERSION);
+	char cbuf[32];
+	int nAdapter = g_pD3DObject->GetAdapterCount();
 
-	if (d3dObject==NULL) LogErr("VideoTab::Initialize() Direct3DCreate9 Failed");
-	else {
-
-		char cbuf[32];
-		int nAdapter = d3dObject->GetAdapterCount();
-		
-		if (data->deviceidx < 0 || (data->deviceidx)>=nAdapter) {
-			data->deviceidx = 0;
-		}
-
-		for (int i=0;i<nAdapter;i++) {
-			d3dObject->GetAdapterIdentifier(i, 0, &info);
-			SendDlgItemMessageA(hTab, IDC_VID_DEVICE, CB_ADDSTRING, 0, (LPARAM)info.Description);
-		}
-
-		SendDlgItemMessage(hTab, IDC_VID_DEVICE, CB_SETCURSEL, data->deviceidx, 0);
-
-		d3dObject->GetAdapterDisplayMode(data->deviceidx, &curMode);
-
-		UINT nModes = d3dObject->GetAdapterModeCount(data->deviceidx, D3DFMT_X8R8G8B8);
-		
-		for (UINT k=0;k<nModes;k++) {
-			d3dObject->EnumAdapterModes(data->deviceidx, D3DFMT_X8R8G8B8, k, &mode); 
-			sprintf_s(cbuf,32,"%u x %u  %uHz", mode.Width, mode.Height, mode.RefreshRate);
-			LogAlw("Index:%u %u x %u  %uHz (%u)", k, mode.Width, mode.Height, mode.RefreshRate, mode.Format);
-			SendDlgItemMessageA(hTab, IDC_VID_MODE, CB_ADDSTRING, 0, (LPARAM)cbuf);
-			SendDlgItemMessageA(hTab, IDC_VID_MODE, CB_SETITEMDATA, k, (LPARAM)(mode.Height<<16 | mode.Width));
-		}
-
-		SendDlgItemMessageA(hTab, IDC_VID_BPP, CB_ADDSTRING, 0, (LPARAM)"True Full Screen (no alt-tab)");
-		SendDlgItemMessageA(hTab, IDC_VID_BPP, CB_ADDSTRING, 0, (LPARAM)"Full Screen Window");
-		SendDlgItemMessageA(hTab, IDC_VID_BPP, CB_ADDSTRING, 0, (LPARAM)"Window with Taskbar");
-		SendDlgItemMessageA(hTab, IDC_VID_BPP, CB_SETCURSEL, (data->modeidx>>8)&0xFF, 0);
-
-		//SetWindowText(GetDlgItem(hTab, IDC_VID_STATIC5), "Resolution");
-		SetWindowText(GetDlgItem(hTab, IDC_VID_STATIC6), "Full Screen Mode");
-
-
-		SendDlgItemMessage(hTab, IDC_VID_MODE, CB_SETCURSEL, data->modeidx&0xFF, 0);
-		SendDlgItemMessage(hTab, IDC_VID_VSYNC, BM_SETCHECK, data->novsync ? BST_CHECKED : BST_UNCHECKED, 0);
-		
-		SetWindowText(GetDlgItem(hTab, IDC_VID_WIDTH), std::to_string(data->winw).c_str());
-		SetWindowText(GetDlgItem(hTab, IDC_VID_HEIGHT), std::to_string(data->winh).c_str());
-
-		aspect_idx = 0;
-		
-		if (data->winw == (4*data->winh)/3 || data->winh == (3*data->winw)/4)	aspect_idx = 1;
-		else if (data->winw == (16*data->winh)/10 || data->winh == (10*data->winw)/16) aspect_idx = 2;
-		else if (data->winw == (16*data->winh)/9 || data->winh == (9*data->winw)/16) aspect_idx = 3;
-		
-		SendDlgItemMessage(hTab, IDC_VID_ASPECT, BM_SETCHECK, aspect_idx ? BST_CHECKED : BST_UNCHECKED, 0);
-		if (aspect_idx) aspect_idx--;
-		SendDlgItemMessage(hTab, IDC_VID_4X3+aspect_idx, BM_SETCHECK, BST_CHECKED, 0);
-
-		SendDlgItemMessage(hTab, IDC_VID_STENCIL,  BM_SETCHECK, data->trystencil, 0); // GDI Compatibility mode
-		SendDlgItemMessage(hTab, IDC_VID_ENUM,     BM_SETCHECK, data->forceenum, 0);  
-		SendDlgItemMessage(hTab, IDC_VID_PAGEFLIP, BM_SETCHECK, data->pageflip, 0);	  // Full scrren Window
-		
-		SAFE_RELEASE(d3dObject);
-
-		SelectAdapter(data->deviceidx);
-
-		SelectFullscreen(data->fullscreen);
-
-		ShowWindow (GetDlgItem (hTab, IDC_VID_INFO), SW_SHOW);
-
-		SetWindowText(GetDlgItem(hTab, IDC_VID_INFO), "Advanced");
+	if (nAdapter == 0) {
+		LogErr("VideoTab::Initialize() No DirectX9 Adapters Found");
+		return;
 	}
+
+	if (data->deviceidx < 0 || (data->deviceidx)>=nAdapter) data->deviceidx = 0;
+
+	for (int i=0;i<nAdapter;i++) {
+		HR(g_pD3DObject->GetAdapterIdentifier(i, 0, &info));
+		LogAlw("Adapter %d: %s", i, info.Description);
+		SendDlgItemMessageA(hTab, IDC_VID_DEVICE, CB_ADDSTRING, 0, (LPARAM)info.Description);
+	}
+
+	SendDlgItemMessage(hTab, IDC_VID_DEVICE, CB_SETCURSEL, data->deviceidx, 0);
+
+
+	HR(g_pD3DObject->GetAdapterDisplayMode(data->deviceidx, &curMode));
+
+	LogAlw("Current Mode W=%u, H=%u", curMode.Width, curMode.Height);
+
+	UINT nModes = g_pD3DObject->GetAdapterModeCount(data->deviceidx, D3DFMT_X8R8G8B8);
+
+	if (nModes == 0) {
+		LogErr("VideoTab::Initialize() No Display Modes Available");
+	}
+
+	for (UINT k=0;k<nModes;k++) {
+		HR(g_pD3DObject->EnumAdapterModes(data->deviceidx, D3DFMT_X8R8G8B8, k, &mode));
+		sprintf_s(cbuf,32,"%u x %u  %uHz", mode.Width, mode.Height, mode.RefreshRate);
+		LogAlw("Index:%u %u x %u  %uHz (%u)", k, mode.Width, mode.Height, mode.RefreshRate, mode.Format);
+		SendDlgItemMessageA(hTab, IDC_VID_MODE, CB_ADDSTRING, 0, (LPARAM)cbuf);
+		SendDlgItemMessageA(hTab, IDC_VID_MODE, CB_SETITEMDATA, k, (LPARAM)(mode.Height<<16 | mode.Width));
+	}
+
+	SendDlgItemMessageA(hTab, IDC_VID_BPP, CB_ADDSTRING, 0, (LPARAM)"True Full Screen (no alt-tab)");
+	SendDlgItemMessageA(hTab, IDC_VID_BPP, CB_ADDSTRING, 0, (LPARAM)"Full Screen Window");
+	SendDlgItemMessageA(hTab, IDC_VID_BPP, CB_ADDSTRING, 0, (LPARAM)"Window with Taskbar");
+	SendDlgItemMessageA(hTab, IDC_VID_BPP, CB_SETCURSEL, (data->modeidx>>8)&0xFF, 0);
+
+	//SetWindowText(GetDlgItem(hTab, IDC_VID_STATIC5), "Resolution");
+	SetWindowText(GetDlgItem(hTab, IDC_VID_STATIC6), "Full Screen Mode");
+
+
+	SendDlgItemMessage(hTab, IDC_VID_MODE, CB_SETCURSEL, data->modeidx&0xFF, 0);
+	SendDlgItemMessage(hTab, IDC_VID_VSYNC, BM_SETCHECK, data->novsync ? BST_CHECKED : BST_UNCHECKED, 0);
+		
+	SetWindowText(GetDlgItem(hTab, IDC_VID_WIDTH), std::to_string(data->winw).c_str());
+	SetWindowText(GetDlgItem(hTab, IDC_VID_HEIGHT), std::to_string(data->winh).c_str());
+
+	aspect_idx = 0;
+		
+	if (data->winw == (4*data->winh)/3 || data->winh == (3*data->winw)/4)	aspect_idx = 1;
+	else if (data->winw == (16*data->winh)/10 || data->winh == (10*data->winw)/16) aspect_idx = 2;
+	else if (data->winw == (16*data->winh)/9 || data->winh == (9*data->winw)/16) aspect_idx = 3;
+		
+	SendDlgItemMessage(hTab, IDC_VID_ASPECT, BM_SETCHECK, aspect_idx ? BST_CHECKED : BST_UNCHECKED, 0);
+	if (aspect_idx) aspect_idx--;
+	SendDlgItemMessage(hTab, IDC_VID_4X3+aspect_idx, BM_SETCHECK, BST_CHECKED, 0);
+
+	SendDlgItemMessage(hTab, IDC_VID_STENCIL,  BM_SETCHECK, data->trystencil, 0); // GDI Compatibility mode
+	SendDlgItemMessage(hTab, IDC_VID_ENUM,     BM_SETCHECK, data->forceenum, 0);  
+	SendDlgItemMessage(hTab, IDC_VID_PAGEFLIP, BM_SETCHECK, data->pageflip, 0);	  // Full scrren Window	
+
+	SelectAdapter(data->deviceidx);
+
+	SelectFullscreen(data->fullscreen);
+
+	ShowWindow (GetDlgItem (hTab, IDC_VID_INFO), SW_SHOW);
+
+	SetWindowText(GetDlgItem(hTab, IDC_VID_INFO), "Advanced");	
 }
 
 
@@ -274,35 +274,37 @@ void VideoTab::SelectAdapter(DWORD index)
 
 	// Create the Direct3D9 ---------------------------------------------
 	//
-    IDirect3D9* d3dObject = Direct3DCreate9(D3D_SDK_VERSION);
 
-	if (d3dObject==NULL) LogErr("VideoTab::SelectAdapter(%u) Direct3DCreate9 Failed",index);
+	if (g_pD3DObject == NULL) LogErr("VideoTab::SelectAdapter(%u) Direct3DCreate9 Failed",index);
 	else {
 
 		char cbuf[32];
 		D3DDISPLAYMODE mode, curMode;
 	
-		if (d3dObject->GetAdapterCount()<=index) {
+		if (g_pD3DObject->GetAdapterCount()<=index) {
 			LogErr("Adapter Index out of range");
 			return;
 		}
 
-		d3dObject->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &curMode);
+		HR(g_pD3DObject->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &curMode));
 
 		SendDlgItemMessage(hTab, IDC_VID_MODE, CB_RESETCONTENT, 0, 0);
 
-		DWORD nModes = d3dObject->GetAdapterModeCount(index, D3DFMT_X8R8G8B8);
+		DWORD nModes = g_pD3DObject->GetAdapterModeCount(index, D3DFMT_X8R8G8B8);
+
+		if (nModes == 0) {
+			LogErr("VideoTab::SelectAdapter() No Display Modes Available");
+			return;
+		}
 
 		for (DWORD k=0;k<nModes;k++) {
-			d3dObject->EnumAdapterModes(index, D3DFMT_X8R8G8B8, k, &mode); 
+			HR(g_pD3DObject->EnumAdapterModes(index, D3DFMT_X8R8G8B8, k, &mode));
 			sprintf_s(cbuf,32,"%u x %u %uHz", mode.Width, mode.Height, mode.RefreshRate);
 			SendDlgItemMessageA(hTab, IDC_VID_MODE, CB_ADDSTRING, 0, (LPARAM)cbuf);
 			SendDlgItemMessageA(hTab, IDC_VID_MODE, CB_SETITEMDATA, k, (LPARAM)(mode.Height<<16 | mode.Width));
 		}
 
 		SendDlgItemMessage(hTab, IDC_VID_MODE, CB_SETCURSEL, data->modeidx&0xFF, 0);
-
-		SAFE_RELEASE(d3dObject);
 	}
 }
 
@@ -549,24 +551,21 @@ INT_PTR CALLBACK VideoTab::SetupDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 
 void VideoTab::InitSetupDialog(HWND hWnd)
 {
-	// Create the Direct3D9 ---------------------------------------------
-	//
-    IDirect3D9* d3dObject = Direct3DCreate9(D3D_SDK_VERSION);
 
 	char cbuf[32];
 	DWORD aamax = 0;
 	D3DCAPS9 caps;
 
-	if (d3dObject==NULL) {
-		LogErr("VideoTab::SelectAdapter(%u) Direct3DCreate9 Failed",SelectedAdapterIdx);
+	if (g_pD3DObject == NULL) {
+		LogErr("VideoTab::SelectAdapter(%u) Direct3DCreate9 Failed", SelectedAdapterIdx);
 		return;
 	}
 
-	d3dObject->GetDeviceCaps(SelectedAdapterIdx, D3DDEVTYPE_HAL, &caps);
+	g_pD3DObject->GetDeviceCaps(SelectedAdapterIdx, D3DDEVTYPE_HAL, &caps);
 
-	if (d3dObject->CheckDeviceMultiSampleType(SelectedAdapterIdx, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, true, D3DMULTISAMPLE_2_SAMPLES, NULL)==S_OK) aamax=2;
-	if (d3dObject->CheckDeviceMultiSampleType(SelectedAdapterIdx, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, true, D3DMULTISAMPLE_4_SAMPLES, NULL)==S_OK) aamax=4;
-	if (d3dObject->CheckDeviceMultiSampleType(SelectedAdapterIdx, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, true, D3DMULTISAMPLE_8_SAMPLES, NULL)==S_OK) aamax=8;
+	if (g_pD3DObject->CheckDeviceMultiSampleType(SelectedAdapterIdx, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, true, D3DMULTISAMPLE_2_SAMPLES, NULL)==S_OK) aamax=2;
+	if (g_pD3DObject->CheckDeviceMultiSampleType(SelectedAdapterIdx, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, true, D3DMULTISAMPLE_4_SAMPLES, NULL)==S_OK) aamax=4;
+	if (g_pD3DObject->CheckDeviceMultiSampleType(SelectedAdapterIdx, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, true, D3DMULTISAMPLE_8_SAMPLES, NULL)==S_OK) aamax=8;
 	
 	LogAlw("InitSetupDialog() Enum Device AA capability = %u",aamax);
 
@@ -847,8 +846,6 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 		case 4: SendDlgItemMessage(hWnd, IDC_AA, CB_SETCURSEL, 2, 0); break;
 		case 8: SendDlgItemMessage(hWnd, IDC_AA, CB_SETCURSEL, 3, 0); break;
 	}
-	
-	SAFE_RELEASE(d3dObject);
 }
 
 
