@@ -167,7 +167,7 @@ void vVessel::UpdateRenderVectors()
 		if ((flag & BFV_SIDEFORCE) && vessel->GetSideForceVector(F)) {
 			sprintf(cbuf, "SF = %fN", len = length(F));
 			if (logscale) len = log(len + shift) - lshift; else len *= scale;
-			AddVector(unit(F) * (len * pscale), _V(0, 0, 0), scale2, std::string(cbuf), _V(0, 0, 1), alpha, D3DRGB(0.0392, 0.6235, 0.4941));
+			AddVector(unit(F) * (len * pscale), _V(0, 0, 0), scale2, std::string(cbuf), _V(0.0392, 0.6235, 0.4941), alpha, D3DRGB(0.0392, 0.6235, 0.4941));
 		}
 		if ((flag & BFV_TOTAL) && vessel->GetForceVector(F)) {
 			sprintf(cbuf, "F = %fN", len = length(F));
