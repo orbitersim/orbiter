@@ -1281,6 +1281,21 @@ bool Vessel::GetDragVector (Vector &D) const
 
 // ==============================================================
 
+bool Vessel::GetSideForceVector (Vector &SF) const
+{
+	if (!SideForce) {
+		SF.Set (0, 0, 0);
+		return false;
+	} else {
+		double v0 = std::hypot(sp.airvel_ship.x, sp.airvel_ship.z);
+		double scale = (v0 ? SideForce / v0 : 0.0);
+		SF.Set(0, sp.airvel_ship.z * scale, -sp.airvel_ship.x * scale);
+		return true;
+	}
+}
+
+// ==============================================================
+
 bool Vessel::GetForceVector (Vector &F) const
 {
 	// Obtain total force vector from acceleration vector
@@ -6751,7 +6766,7 @@ bool VESSEL::GetDragVector (VECTOR3 &D) const
 bool VESSEL::GetSideForceVector(VECTOR3 &SF) const
 {
 	static Vector F;
-	bool bSideForce = vessel->GetDragVector(F);
+	bool bSideForce = vessel->GetSideForceVector(F);
 	CopyVector(F, SF);
 	return bSideForce;
 }

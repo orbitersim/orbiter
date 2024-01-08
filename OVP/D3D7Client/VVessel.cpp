@@ -164,6 +164,11 @@ void vVessel::UpdateRenderVectors()
 			if (logscale) len = log(len + shift) - lshift; else len *= scale;
 			AddVector(unit(F) * (len * pscale), _V(0, 0, 0), scale2, std::string(cbuf), _V(1, 0, 0), alpha, D3DRGB(1, 0.5, 0.5));
 		}
+		if ((flag & BFV_SIDEFORCE) && vessel->GetSideForceVector(F)) {
+			sprintf(cbuf, "SF = %fN", len = length(F));
+			if (logscale) len = log(len + shift) - lshift; else len *= scale;
+			AddVector(unit(F) * (len * pscale), _V(0, 0, 0), scale2, std::string(cbuf), _V(0, 0, 1), alpha, D3DRGB(0.0392, 0.6235, 0.4941));
+		}
 		if ((flag & BFV_TOTAL) && vessel->GetForceVector(F)) {
 			sprintf(cbuf, "F = %fN", len = length(F));
 			if (logscale) len = log(len + shift) - lshift; else len *= scale;
@@ -173,11 +178,6 @@ void vVessel::UpdateRenderVectors()
 			sprintf(cbuf, "M = %fNm", len = length(F));
 			if (logscale) len = log(len + 1e-5) - log(1e-5); else len *= scale * 1e5;
 			AddVector(unit(F) * (len * pscale), _V(0, 0, 0), scale2 * 0.5, std::string(cbuf), _V(1, 0, 1), alpha, D3DRGB(1, 0, 1));
-		}
-		if ((flag & BFV_SIDEFORCE) && vessel->GetSideForceVector(F)) {
-			sprintf(cbuf, "SF = %fN", len = length(F));
-			if (logscale) len = log(len + shift) - lshift; else len *= scale;
-			AddVector(unit(F) * (len * pscale), _V(0, 0, 0), scale2, std::string(cbuf), _V(0, 0, 1), alpha, D3DRGB(0.0392, 0.6235, 0.4941));
 		}
 	}
 }
