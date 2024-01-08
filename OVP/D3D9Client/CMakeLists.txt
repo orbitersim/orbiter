@@ -8,6 +8,7 @@ configure_file(D3D9ClientConfig.h.in D3D9ClientConfig.h)
 # set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(DXSDK_LIB_DIR ${DXSDK_DIR}/lib/${ARCH})
+set(DXSDK_LIB_DIR2 "C:/Program Files (x86)/Windows Kits/10/Lib/10.0.19041.0/um/${ARCH}")  #Must acquire d3d9.lib from here
 
 set(D3D9_SOURCE_DIR ${CMAKE_SOURCE_DIR}/OVP/D3D9Client)
 set(ShaderDir ${D3D9_SOURCE_DIR}/shaders)
@@ -174,6 +175,7 @@ target_include_directories(D3D9Client PUBLIC
 
 target_link_directories(D3D9Client PUBLIC
 	${ORBITER_BINARY_SDK_DIR}/lib
+	${DXSDK_LIB_DIR2}
 	${DXSDK_LIB_DIR}
 )
 

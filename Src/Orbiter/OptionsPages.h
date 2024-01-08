@@ -268,6 +268,7 @@ public:
 
 protected:
 	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
+	BOOL OnCommand( HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl );
 };
 
 /************************************************************************

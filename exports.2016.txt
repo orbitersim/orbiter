@@ -1,0 +1,1146 @@
+bool __cdecl oapiAcceptDelayedKey(char,double) 
+bool __cdecl oapiAddMeshGroupBlock(void *,unsigned long,struct NTVERTEX const *,unsigned long,unsigned short const *,unsigned long) 
+bool __cdecl oapiAddTitleButton(unsigned long,struct HBITMAP__ *,unsigned long) 
+bool __cdecl oapiAsyncScriptCmd(void *,char const *) 
+bool __cdecl oapiBltPanelAreaBackground(int,void *) 
+bool __cdecl oapiCameraInternal(void) 
+bool __cdecl oapiDelAnnotation(void *) 
+bool __cdecl oapiDeleteMaterial(void *,unsigned long) 
+bool __cdecl oapiDeleteVessel(void *,void *) 
+bool __cdecl oapiExecScriptCmd(void *,char const *) 
+bool __cdecl oapiGetAirspeedVector(void *,enum REFFRAME,union VECTOR3 *) 
+bool __cdecl oapiGetBasePadEquPos(void *,unsigned long,double *,double *,double *) 
+bool __cdecl oapiGetBasePadStatus(void *,unsigned long,int *) 
+bool __cdecl oapiGetGroundspeedVector(void *,enum REFFRAME,union VECTOR3 *) 
+bool __cdecl oapiGetPause(void) 
+bool __cdecl oapiGetShowGrapplePoints(void) 
+bool __cdecl oapiIsVessel(void *) 
+bool __cdecl oapiMoveGroundCamera(double,double,double) 
+bool __cdecl oapiNavInRange(void *,union VECTOR3 const &) 
+bool __cdecl oapiOpenHelp(struct HELPCONTEXT *) 
+bool __cdecl oapiOpenLaunchpadHelp(struct HELPCONTEXT *) 
+bool __cdecl oapiPlanetHasAtmosphere(void *) 
+bool __cdecl oapiProcessMFDButton(int,int,int) 
+bool __cdecl oapiReadItem_bool(void *,char *,bool &) 
+bool __cdecl oapiReadItem_float(void *,char *,double &) 
+bool __cdecl oapiReadItem_int(void *,char *,int &) 
+bool __cdecl oapiReadItem_string(void *,char *,char *) 
+bool __cdecl oapiReadItem_vec(void *,char *,union VECTOR3 &) 
+bool __cdecl oapiReadScenario_nextline(void *,char * &) 
+bool __cdecl oapiRegisterExternalCameraControl(class ExternalCameraControl *) 
+bool __cdecl oapiRegisterGraphicsClient(class oapi::GraphicsClient *) 
+bool __cdecl oapiRegisterWindow(struct HINSTANCE__ *,struct HWND__ *,unsigned long) 
+bool __cdecl oapiSaveScenario(char const *,char const *) 
+bool __cdecl oapiSetAttitudeMode(void *,int) 
+bool __cdecl oapiSetCameraMode(class CameraMode const &) 
+bool __cdecl oapiSetFocusAttitudeMode(int) 
+bool __cdecl oapiSetHUDMode(int) 
+bool __cdecl oapiSetHUDMode(int,union HUDPARAM const *) 
+bool __cdecl oapiSetMeshProperty(int *,unsigned long,unsigned long) 
+bool __cdecl oapiSetMeshProperty(void *,unsigned long,unsigned long) 
+bool __cdecl oapiSetSimMJD(double,int) 
+bool __cdecl oapiSetTexture(int *,unsigned long,void *) 
+bool __cdecl oapiSetTexture(void *,unsigned long,void *) 
+bool __cdecl oapiSetTitleButtonState(struct HWND__ *,unsigned long,unsigned long) 
+bool __cdecl oapiUnregisterCustomCmd(int) 
+bool __cdecl oapiUnregisterExternalCameraControl(void) 
+bool __cdecl oapiUnregisterExternMFD(class ExternMFD *) 
+bool __cdecl oapiUnregisterGraphicsClient(class oapi::GraphicsClient *) 
+bool __cdecl oapiUnregisterLaunchpadItem(class LaunchpadItem *) 
+bool __cdecl oapiUnregisterMFDMode(int) 
+char * __cdecl oapiDebugString(void) 
+char const * __cdecl oapiGetCmdLine(void) 
+char const * __cdecl oapiMFDButtonLabel(int,int) 
+class CELBODY * __cdecl oapiGetCelbodyInterface(void *) 
+class oapi::Brush * __cdecl oapiCreateBrush(unsigned long) 
+class oapi::Font * __cdecl oapiCreateFont(int,bool,char *,enum FontStyle) 
+class oapi::Font * __cdecl oapiCreateFont(int,bool,char const *,enum FontStyle,int) 
+class oapi::Pen * __cdecl oapiCreatePen(int,int,unsigned long) 
+class oapi::Sketchpad * __cdecl oapiGetSketchpad(void *) 
+class VESSEL * __cdecl oapiGetFocusInterface(void) 
+class VESSEL * __cdecl oapiGetVesselInterface(void *) 
+const ATMOSPHERE::`vftable' 
+const CameraMode::`vftable' 
+const CameraMode_Cockpit::`vftable' 
+const CameraMode_Ground::`vftable' 
+const CameraMode_Track::`vftable' 
+const CELBODY::`vftable' 
+const CELBODY2::`vftable' 
+const ExternalCameraControl::`vftable' 
+const ExternMFD::`vftable' 
+const GraphMFD::`vftable' 
+const LaunchpadItem::`vftable' 
+const MFD::`vftable' 
+const MFD2::`vftable' 
+const oapi::Brush::`vftable' 
+const oapi::DrawingTool::`vftable' 
+const oapi::Font::`vftable' 
+const oapi::GraphicsClient::`vftable' 
+const oapi::Module::`vftable' 
+const oapi::Pen::`vftable' 
+const oapi::Sketchpad::`vftable' 
+const VESSEL2::`vftable' 
+const VESSEL3::`vftable' 
+const VESSEL4::`vftable' 
+double __cdecl oapiCameraAperture(void) 
+double __cdecl oapiCameraAzimuth(void) 
+double __cdecl oapiCameraPolar(void) 
+double __cdecl oapiCameraTargetDist(void) 
+double __cdecl oapiGetEmptyMass(void *) 
+double __cdecl oapiGetFrameRate(void) 
+double __cdecl oapiGetFuelMass(void *) 
+double __cdecl oapiGetHUDIntensity(void) 
+double __cdecl oapiGetInducedDrag(double,double,double) 
+double __cdecl oapiGetMass(void *) 
+double __cdecl oapiGetMaxFuelMass(void *) 
+double __cdecl oapiGetNavSignal(void *,union VECTOR3 const &) 
+double __cdecl oapiGetPanel2DScale(void) 
+double __cdecl oapiGetPanelScale(void) 
+double __cdecl oapiGetPlanetCurrentRotation(void *) 
+double __cdecl oapiGetPlanetJCoeff(void *,unsigned long) 
+double __cdecl oapiGetPlanetObliquity(void *) 
+double __cdecl oapiGetPlanetPeriod(void *) 
+double __cdecl oapiGetPlanetTheta(void *) 
+double __cdecl oapiGetPropellantMass(void *) 
+double __cdecl oapiGetPropellantMaxMass(void *) 
+double __cdecl oapiGetSimMJD(void) 
+double __cdecl oapiGetSimStep(void) 
+double __cdecl oapiGetSimTime(void) 
+double __cdecl oapiGetSize(void *) 
+double __cdecl oapiGetSysMJD(void) 
+double __cdecl oapiGetSysStep(void) 
+double __cdecl oapiGetSysTime(void) 
+double __cdecl oapiGetTimeAcceleration(void) 
+double __cdecl oapiGetWaveDrag(double,double,double,double,double) 
+double __cdecl oapiOrthodome(double,double,double,double) 
+double __cdecl oapiRand(void) 
+double __cdecl oapiSetMFDRefreshIntervalMultiplier(int,double) 
+double __cdecl oapiSurfaceElevation(void *,double,double) 
+double __cdecl oapiTime2MJD(double) 
+float __cdecl oapiGetNavFreq(void *) 
+float __cdecl oapiGetNavRange(void *) 
+int __cdecl Date2Int(char *) 
+int __cdecl oapiBeginBltGroup(void *) 
+int __cdecl oapiBroadcastMFDMessage(int,int,void *) 
+int __cdecl oapiCameraMode(void) 
+int __cdecl oapiCockpitMode(void) 
+int __cdecl oapiDefDialogProc(struct HWND__ *,unsigned int,unsigned int,long) 
+int __cdecl oapiDelInterpreter(void *) 
+int __cdecl oapiEditMeshGroup(int *,unsigned long,struct GROUPEDITSPEC *) 
+int __cdecl oapiEditMeshGroup(void *,unsigned long,struct GROUPEDITSPEC *) 
+int __cdecl oapiEndBltGroup(void) 
+int __cdecl oapiGetAirspeed(void *,double *) 
+int __cdecl oapiGetAirspeedVector(void *,union VECTOR3 *) 
+int __cdecl oapiGetAltitude(void *,double *) 
+int __cdecl oapiGetAltitude(void *,enum AltitudeMode,double *) 
+int __cdecl oapiGetAttitudeMode(void *) 
+int __cdecl oapiGetBank(void *,double *) 
+int __cdecl oapiGetEquPos(void *,double *,double *,double *) 
+int __cdecl oapiGetFocusAirspeed(double *) 
+int __cdecl oapiGetFocusAirspeedVector(union VECTOR3 *) 
+int __cdecl oapiGetFocusAltitude(double *) 
+int __cdecl oapiGetFocusAttitudeMode(void) 
+int __cdecl oapiGetFocusBank(double *) 
+int __cdecl oapiGetFocusEquPos(double *,double *,double *) 
+int __cdecl oapiGetFocusHeading(double *) 
+int __cdecl oapiGetFocusPitch(double *) 
+int __cdecl oapiGetFocusShipAirspeedVector(union VECTOR3 *) 
+int __cdecl oapiGetGroundspeed(void *,double *) 
+int __cdecl oapiGetHeading(void *,double *) 
+int __cdecl oapiGetHUDMode(union HUDPARAM *) 
+int __cdecl oapiGetHUDMode(void) 
+int __cdecl oapiGetMeshGroup(int *,unsigned long,struct GROUPREQUESTSPEC *) 
+int __cdecl oapiGetMFDMode(int) 
+int __cdecl oapiGetMFDModeSpec(char *,struct MFDMODESPEC * *) 
+int __cdecl oapiGetMFDModeSpecEx(char *,struct MFDMODESPECEX * *) 
+int __cdecl oapiGetNavData(void *,struct NAVDATA *) 
+int __cdecl oapiGetNavDescr(void *,char *,int) 
+int __cdecl oapiGetObjectType(void *) 
+int __cdecl oapiGetOrbiterVersion(void) 
+int __cdecl oapiGetPitch(void *,double *) 
+int __cdecl oapiGetShipAirspeedVector(void *,union VECTOR3 *) 
+int __cdecl oapiMeshMaterial(int *,unsigned long,struct MATERIAL *) 
+int __cdecl oapiRegisterMFDMode(struct MFDMODESPEC &) 
+int __cdecl oapiRegisterMFDMode(struct MFDMODESPECEX &) 
+int __cdecl oapiSendMFDKey(int,unsigned long) 
+int __cdecl oapiSetMaterial(int *,unsigned long,struct MATERIAL const *) 
+int __cdecl oapiSetPanel(int) 
+int __cdecl oapiSwitchPanel(int) 
+int __cdecl oapiToggleAttitudeMode(void *) 
+int __cdecl oapiToggleFocusAttitudeMode(void) 
+int __stdcall LaunchpadVideoWndProc(struct HWND__ *,unsigned int,unsigned int,long) 
+long __stdcall WndProc(struct HWND__ *,unsigned int,unsigned int,long) 
+private: struct HWND__ * __thiscall oapi::GraphicsClient::InitRenderWnd(struct HWND__ *) 
+protected: __thiscall oapi::Brush::Brush(unsigned long) 
+protected: __thiscall oapi::Font::Font(int,bool,char const *,enum oapi::Font::Style,int) 
+protected: __thiscall oapi::Pen::Pen(int,int,unsigned long) 
+protected: bool __thiscall CELBODY2::FreeAtmosphere(void) 
+protected: bool __thiscall CELBODY2::FreeAtmosphereModule(void) 
+protected: bool __thiscall CELBODY2::LoadAtmosphereModule(char const *) 
+protected: bool __thiscall oapi::GraphicsClient::WriteImageDataToFile(struct oapi::ImageData const &,char const *,enum oapi::ImageFileFormat,float) 
+protected: struct HBITMAP__ * __thiscall oapi::GraphicsClient::ReadImageFromFile(char const *,unsigned int,unsigned int) 
+protected: struct HBITMAP__ * __thiscall oapi::GraphicsClient::ReadImageFromMemory(unsigned char *,unsigned long,unsigned int,unsigned int) 
+protected: struct HINSTANCE__ * __thiscall oapi::GraphicsClient::ModuleInstance(void)const  
+protected: struct HINSTANCE__ * __thiscall oapi::GraphicsClient::OrbiterInstance(void)const  
+protected: struct HWND__ * __thiscall oapi::GraphicsClient::LaunchpadVideoTab(void)const  
+protected: virtual bool __thiscall oapi::GraphicsClient::clbkDisplayFrame(void) 
+protected: virtual bool __thiscall oapi::GraphicsClient::clbkSplashLoadMsg(char const *,int) 
+protected: virtual bool __thiscall oapi::GraphicsClient::clbkUseLaunchpadVideoTab(void)const  
+protected: virtual struct HWND__ * __thiscall oapi::GraphicsClient::clbkCreateRenderWindow(void) 
+protected: virtual void __thiscall oapi::GraphicsClient::clbkCloseSession(bool) 
+protected: virtual void __thiscall oapi::GraphicsClient::clbkDestroyRenderWindow(bool) 
+protected: virtual void __thiscall oapi::GraphicsClient::clbkPostCreation(void) 
+protected: virtual void __thiscall oapi::GraphicsClient::clbkStoreMeshPersistent(void *,char const *) 
+protected: virtual void __thiscall oapi::GraphicsClient::clbkUpdate(bool) 
+protected: void * __thiscall LightEmitter::Attach(void *) 
+protected: void * __thiscall LightEmitter::Detach(void) 
+protected: void __thiscall CELBODY::Pol2Crt(double *,double *) 
+protected: void __thiscall CELBODY2::SetAtmosphere(class ATMOSPHERE *) 
+protected: void __thiscall oapi::GraphicsClient::Render2DOverlay(void) 
+protected: void __thiscall oapi::GraphicsClient::ShowDefaultSplash(void) 
+public: __thiscall ATMOSPHERE::ATMOSPHERE(class ATMOSPHERE const &) 
+public: __thiscall ATMOSPHERE::ATMOSPHERE(class CELBODY2 *) 
+public: __thiscall CameraMode::CameraMode(class CameraMode const &) 
+public: __thiscall CameraMode::CameraMode(void) 
+public: __thiscall CameraMode_Cockpit::CameraMode_Cockpit(class CameraMode_Cockpit const &) 
+public: __thiscall CameraMode_Cockpit::CameraMode_Cockpit(void) 
+public: __thiscall CameraMode_Ground::CameraMode_Ground(class CameraMode_Ground const &) 
+public: __thiscall CameraMode_Ground::CameraMode_Ground(void) 
+public: __thiscall CameraMode_Track::CameraMode_Track(class CameraMode_Track const &) 
+public: __thiscall CameraMode_Track::CameraMode_Track(void) 
+public: __thiscall CELBODY::CELBODY(class CELBODY const &) 
+public: __thiscall CELBODY::CELBODY(void) 
+public: __thiscall CELBODY2::CELBODY2(class CELBODY2 const &) 
+public: __thiscall CELBODY2::CELBODY2(void *) 
+public: __thiscall ExternalCameraControl::ExternalCameraControl(class ExternalCameraControl const &) 
+public: __thiscall ExternalCameraControl::ExternalCameraControl(unsigned long,unsigned long) 
+public: __thiscall ExternMFD::ExternMFD(class ExternMFD const &) 
+public: __thiscall ExternMFD::ExternMFD(struct MFDSPEC const &) 
+public: __thiscall GraphMFD::GraphMFD(class GraphMFD const &) 
+public: __thiscall GraphMFD::GraphMFD(unsigned long,unsigned long,class VESSEL *) 
+public: __thiscall LaunchpadItem::LaunchpadItem(class LaunchpadItem const &) 
+public: __thiscall LaunchpadItem::LaunchpadItem(void) 
+public: __thiscall LightEmitter::LightEmitter(struct COLOUR4,struct COLOUR4,struct COLOUR4) 
+public: __thiscall LightEmitter::LightEmitter(void) 
+public: __thiscall MFD::MFD(class MFD const &) 
+public: __thiscall MFD::MFD(unsigned long,unsigned long,class VESSEL *) 
+public: __thiscall MFD2::MFD2(class MFD2 const &) 
+public: __thiscall MFD2::MFD2(unsigned long,unsigned long,class VESSEL *) 
+public: __thiscall oapi::Brush::Brush(class oapi::Brush const &) 
+public: __thiscall oapi::DrawingTool::DrawingTool(class oapi::DrawingTool const &) 
+public: __thiscall oapi::DrawingTool::DrawingTool(void) 
+public: __thiscall oapi::Font::Font(class oapi::Font const &) 
+public: __thiscall oapi::GraphicsClient::GraphicsClient(class oapi::GraphicsClient const &) 
+public: __thiscall oapi::GraphicsClient::GraphicsClient(struct HINSTANCE__ *) 
+public: __thiscall oapi::Module::Module(class oapi::Module const &) 
+public: __thiscall oapi::Module::Module(struct HINSTANCE__ *) 
+public: __thiscall oapi::ModuleNV::ModuleNV(struct HINSTANCE__ *) 
+public: __thiscall oapi::ParticleStream::~ParticleStream(void) 
+public: __thiscall oapi::ParticleStream::ParticleStream(class oapi::GraphicsClient *,struct PARTICLESTREAMSPEC *) 
+public: __thiscall oapi::Pen::Pen(class oapi::Pen const &) 
+public: __thiscall oapi::Sketchpad::Sketchpad(class oapi::Sketchpad const &) 
+public: __thiscall oapi::Sketchpad::Sketchpad(void *) 
+public: __thiscall PointLight::PointLight(void *,union VECTOR3 const &,double,double,double,double) 
+public: __thiscall PointLight::PointLight(void *,union VECTOR3 const &,double,double,double,double,struct COLOUR4,struct COLOUR4,struct COLOUR4) 
+public: __thiscall SpotLight::SpotLight(void *,union VECTOR3 const &,union VECTOR3 const &,double,double,double,double,double,double) 
+public: __thiscall SpotLight::SpotLight(void *,union VECTOR3 const &,union VECTOR3 const &,double,double,double,double,double,double,struct COLOUR4,struct COLOUR4,struct COLOUR4) 
+public: __thiscall VESSEL::VESSEL(void *,int) 
+public: __thiscall VESSEL2::VESSEL2(class VESSEL2 const &) 
+public: __thiscall VESSEL2::VESSEL2(void *,int) 
+public: __thiscall VESSEL3::VESSEL3(class VESSEL3 const &) 
+public: __thiscall VESSEL3::VESSEL3(void *,int) 
+public: __thiscall VESSEL4::VESSEL4(class VESSEL4 const &) 
+public: __thiscall VESSEL4::VESSEL4(void *,int) 
+public: bool __thiscall CameraMode_Cockpit::GetLeaningSmooth(void)const  
+public: bool __thiscall CameraMode_Ground::GetAltMode(void)const  
+public: bool __thiscall CameraMode_Ground::GetTgtLock(void)const  
+public: bool __thiscall ExternMFD::Active(void)const  
+public: bool __thiscall ExternMFD::OpenModeHelp(void)const  
+public: bool __thiscall ExternMFD::ProcessButton(int,int) 
+public: bool __thiscall ExternMFD::Resize(struct MFDSPEC const &) 
+public: bool __thiscall ExternMFD::SendKey(unsigned long) 
+public: bool __thiscall ExternMFD::SetMode(int) 
+public: bool __thiscall LightEmitter::IsActive(void)const  
+public: bool __thiscall oapi::GraphicsClient::ElevationGrid(void *,int,int,int,int,int,int,short *,short *,double *)const  
+public: bool __thiscall oapi::GraphicsClient::TexturePath(char const *,char *)const  
+public: bool __thiscall VESSEL::ActivateNavmode(int) 
+public: bool __thiscall VESSEL::AddAnimComp(unsigned int,struct ANIMCOMP *) 
+public: bool __thiscall VESSEL::AttachChild(void *,void *,void *)const  
+public: bool __thiscall VESSEL::DeactivateNavmode(int) 
+public: bool __thiscall VESSEL::DelAirfoil(void *)const  
+public: bool __thiscall VESSEL::DelAnimation(unsigned int)const  
+public: bool __thiscall VESSEL::DelAnimationComponent(unsigned int,void *) 
+public: bool __thiscall VESSEL::DelAttachment(void *)const  
+public: bool __thiscall VESSEL::DelBeacon(struct BEACONLIGHTSPEC *) 
+public: bool __thiscall VESSEL::DelControlSurface(void *)const  
+public: bool __thiscall VESSEL::DelDock(void *)const  
+public: bool __thiscall VESSEL::DelExhaust(unsigned int)const  
+public: bool __thiscall VESSEL::DelExhaustStream(void *)const  
+public: bool __thiscall VESSEL::DelLightEmitter(class LightEmitter *)const  
+public: bool __thiscall VESSEL::DelMesh(unsigned int,bool)const  
+public: bool __thiscall VESSEL::DelThruster(void * &)const  
+public: bool __thiscall VESSEL::DelThrusterGroup(enum THGROUP_TYPE,bool)const  
+public: bool __thiscall VESSEL::DelThrusterGroup(void * &,enum THGROUP_TYPE,bool)const  
+public: bool __thiscall VESSEL::DelThrusterGroup(void *,bool)const  
+public: bool __thiscall VESSEL::DetachChild(void *,double)const  
+public: bool __thiscall VESSEL::GetAirfoilParam(void *,union VECTOR3 *,void (__cdecl**)(double,double,double,double *,double *,double *),void * *,double *,double *,double *)const  
+public: bool __thiscall VESSEL::GetAirspeedVector(enum REFFRAME,union VECTOR3 &)const  
+public: bool __thiscall VESSEL::GetDragVector(union VECTOR3 &)const  
+public: bool __thiscall VESSEL::GetEditorModule(char *)const  
+public: bool __thiscall VESSEL::GetElements(void *,struct ELEMENTS &,struct ORBITPARAM *,double,int)const  
+public: bool __thiscall VESSEL::GetEnableFocus(void)const  
+public: bool __thiscall VESSEL::GetExhaustSpec(unsigned int,double *,double *,union VECTOR3 *,union VECTOR3 *,void * *)const  
+public: bool __thiscall VESSEL::GetExhaustSpec(unsigned int,struct EXHAUSTSPEC *) 
+public: bool __thiscall VESSEL::GetForceVector(union VECTOR3 &)const  
+public: bool __thiscall VESSEL::GetGroundspeedVector(enum REFFRAME,union VECTOR3 &)const  
+public: bool __thiscall VESSEL::GetHorizonAirspeedVector(union VECTOR3 &)const  
+public: bool __thiscall VESSEL::GetHoverHoldAltitude(double &,bool &) 
+public: bool __thiscall VESSEL::GetLiftVector(union VECTOR3 &)const  
+public: bool __thiscall VESSEL::GetMeshOffset(unsigned int,union VECTOR3 &)const  
+public: bool __thiscall VESSEL::GetNavmodeState(int) 
+public: bool __thiscall VESSEL::GetNosewheelSteering(void)const  
+public: bool __thiscall VESSEL::GetShipAirspeedVector(union VECTOR3 &)const  
+public: bool __thiscall VESSEL::GetSuperstructureCG(union VECTOR3 &)const  
+public: bool __thiscall VESSEL::GetThrustVector(union VECTOR3 &)const  
+public: bool __thiscall VESSEL::GetTorqueVector(union VECTOR3 &)const  
+public: bool __thiscall VESSEL::GetTouchdownPoint(struct TOUCHDOWNVTX &,unsigned long)const  
+public: bool __thiscall VESSEL::GetWeightVector(union VECTOR3 &)const  
+public: bool __thiscall VESSEL::GroundContact(void)const  
+public: bool __thiscall VESSEL::MeshgroupTransform(void *,struct MESHGROUP_TRANSFORM const &)const  
+public: bool __thiscall VESSEL::NonsphericalGravityEnabled(void)const  
+public: bool __thiscall VESSEL::OrbitStabilised(void)const  
+public: bool __thiscall VESSEL::Playback(void)const  
+public: bool __thiscall VESSEL::Recording(void)const  
+public: bool __thiscall VESSEL::SetAnimation(unsigned int,double)const  
+public: bool __thiscall VESSEL::SetAnimState(unsigned int,double) 
+public: bool __thiscall VESSEL::SetAttitudeMode(int)const  
+public: bool __thiscall VESSEL::SetElements(void *,struct ELEMENTS const &,struct ORBITPARAM *,double,int)const  
+public: bool __thiscall VESSEL::SetGravityGradientDamping(double)const  
+public: bool __thiscall VESSEL::SetIDSChannel(void *,unsigned long)const  
+public: bool __thiscall VESSEL::SetNavChannel(unsigned long,unsigned long)const  
+public: bool __thiscall VESSEL::SetNavRecv(unsigned long,unsigned long)const  
+public: bool __thiscall VESSEL::SetTransponderChannel(unsigned long)const  
+public: bool __thiscall VESSEL::ShiftMesh(unsigned int,union VECTOR3 const &)const  
+public: bool __thiscall VESSEL::ThrusterGroupDefined(enum THGROUP_TYPE)const  
+public: bool __thiscall VESSEL::ToggleNavmode(int) 
+public: bool __thiscall VESSEL::Undock(unsigned int,void * const)const  
+public: bool __thiscall VESSEL4::UnregisterMFDMode(int) 
+public: char * __thiscall VESSEL::GetClassNameA(void)const  
+public: char * __thiscall VESSEL::GetName(void)const  
+public: char const * __thiscall ExternMFD::GetButtonLabel(int)const  
+public: char const * __thiscall VESSEL::GetAttachmentId(void *)const  
+public: char const * __thiscall VESSEL::GetMeshName(unsigned int)const  
+public: class ATMOSPHERE & __thiscall ATMOSPHERE::operator=(class ATMOSPHERE const &) 
+public: class ATMOSPHERE * __thiscall CELBODY2::GetAtmosphere(void)const  
+public: class CameraMode & __thiscall CameraMode::operator=(class CameraMode const &) 
+public: class CameraMode_Cockpit & __thiscall CameraMode_Cockpit::operator=(class CameraMode_Cockpit const &) 
+public: class CameraMode_Ground & __thiscall CameraMode_Ground::operator=(class CameraMode_Ground const &) 
+public: class CameraMode_Track & __thiscall CameraMode_Track::operator=(class CameraMode_Track const &) 
+public: class CELBODY & __thiscall CELBODY::operator=(class CELBODY const &) 
+public: class CELBODY2 & __thiscall CELBODY2::operator=(class CELBODY2 const &) 
+public: class ExternalCameraControl & __thiscall ExternalCameraControl::operator=(class ExternalCameraControl const &) 
+public: class ExternMFD & __thiscall ExternMFD::operator=(class ExternMFD const &) 
+public: class GraphMFD & __thiscall GraphMFD::operator=(class GraphMFD const &) 
+public: class LaunchpadItem & __thiscall LaunchpadItem::operator=(class LaunchpadItem const &) 
+public: class LightEmitter & __thiscall LightEmitter::operator=(class LightEmitter const &) 
+public: class LightEmitter * __thiscall VESSEL::AddPointLight(union VECTOR3 const &,double,double,double,double,struct COLOUR4,struct COLOUR4,struct COLOUR4)const  
+public: class LightEmitter * __thiscall VESSEL::AddSpotLight(union VECTOR3 const &,union VECTOR3 const &,double,double,double,double,double,double,struct COLOUR4,struct COLOUR4,struct COLOUR4)const  
+public: class LightEmitter const * __thiscall VESSEL::GetLightEmitter(unsigned long)const  
+public: class MFD & __thiscall MFD::operator=(class MFD const &) 
+public: class MFD2 & __thiscall MFD2::operator=(class MFD2 const &) 
+public: class oapi::Brush & __thiscall oapi::Brush::operator=(class oapi::Brush const &) 
+public: class oapi::DrawingTool & __thiscall oapi::DrawingTool::operator=(class oapi::DrawingTool const &) 
+public: class oapi::Font & __thiscall oapi::Font::operator=(class oapi::Font const &) 
+public: class oapi::Font * __thiscall MFD2::GetDefaultFont(unsigned long)const  
+public: class oapi::GraphicsClient & __thiscall oapi::GraphicsClient::operator=(class oapi::GraphicsClient const &) 
+public: class oapi::Module & __thiscall oapi::Module::operator=(class oapi::Module const &) 
+public: class oapi::ModuleNV & __thiscall oapi::ModuleNV::operator=(class oapi::ModuleNV const &) 
+public: class oapi::ParticleStream & __thiscall oapi::ParticleStream::operator=(class oapi::ParticleStream const &) 
+public: class oapi::Pen & __thiscall oapi::Pen::operator=(class oapi::Pen const &) 
+public: class oapi::Pen * __thiscall MFD2::GetDefaultPen(unsigned long,unsigned long,unsigned long)const  
+public: class oapi::Sketchpad & __thiscall oapi::Sketchpad::operator=(class oapi::Sketchpad const &) 
+public: class PointLight & __thiscall PointLight::operator=(class PointLight const &) 
+public: class SpotLight & __thiscall SpotLight::operator=(class SpotLight const &) 
+public: class VESSEL & __thiscall VESSEL::operator=(class VESSEL const &) 
+public: class VESSEL2 & __thiscall VESSEL2::operator=(class VESSEL2 const &) 
+public: class VESSEL3 & __thiscall VESSEL3::operator=(class VESSEL3 const &) 
+public: class VESSEL4 & __thiscall VESSEL4::operator=(class VESSEL4 const &) 
+public: double * __thiscall VESSEL::GetMainThrustModPtr(void)const  
+public: double __thiscall CameraMode::GetFOV(void)const  
+public: double __thiscall CELBODY2::SidRotPeriod(void)const  
+public: double __thiscall LightEmitter::GetIntensity(void)const  
+public: double __thiscall oapi::ModuleNV::GetSimMJD(void)const  
+public: double __thiscall oapi::ModuleNV::GetSimStep(void)const  
+public: double __thiscall oapi::ModuleNV::GetSimTime(void)const  
+public: double __thiscall PointLight::GetRange(void)const  
+public: double __thiscall SpotLight::GetPenumbra(void)const  
+public: double __thiscall SpotLight::GetUmbra(void)const  
+public: double __thiscall VESSEL::GetAirspeed(void)const  
+public: double __thiscall VESSEL::GetAltitude(enum AltitudeMode,int *) 
+public: double __thiscall VESSEL::GetAltitude(void)const  
+public: double __thiscall VESSEL::GetAnimation(unsigned int)const  
+public: double __thiscall VESSEL::GetAOA(void)const  
+public: double __thiscall VESSEL::GetAtmDensity(void)const  
+public: double __thiscall VESSEL::GetAtmPressure(void)const  
+public: double __thiscall VESSEL::GetAtmTemperature(void)const  
+public: double __thiscall VESSEL::GetBank(void)const  
+public: double __thiscall VESSEL::GetBankMomentScale(void)const  
+public: double __thiscall VESSEL::GetClipRadius(void)const  
+public: double __thiscall VESSEL::GetCOG_elev(void)const  
+public: double __thiscall VESSEL::GetControlSurfaceLevel(enum AIRCTRL_TYPE)const  
+public: double __thiscall VESSEL::GetDrag(void)const  
+public: double __thiscall VESSEL::GetDynPressure(void)const  
+public: double __thiscall VESSEL::GetEmptyMass(void)const  
+public: double __thiscall VESSEL::GetEngineLevel(enum ENGINETYPE)const  
+public: double __thiscall VESSEL::GetExhaustLevel(unsigned int)const  
+public: double __thiscall VESSEL::GetFuelMass(void)const  
+public: double __thiscall VESSEL::GetFuelRate(void)const  
+public: double __thiscall VESSEL::GetGravityGradientDamping(void)const  
+public: double __thiscall VESSEL::GetGroundspeed(void)const  
+public: double __thiscall VESSEL::GetISP(void)const  
+public: double __thiscall VESSEL::GetLift(void)const  
+public: double __thiscall VESSEL::GetMachNumber(void)const  
+public: double __thiscall VESSEL::GetManualControlLevel(enum THGROUP_TYPE,unsigned long,unsigned long)const  
+public: double __thiscall VESSEL::GetMass(void)const  
+public: double __thiscall VESSEL::GetMaxFuelMass(void)const  
+public: double __thiscall VESSEL::GetMaxThrust(enum ENGINETYPE)const  
+public: double __thiscall VESSEL::GetPitch(void)const  
+public: double __thiscall VESSEL::GetPitchMomentScale(void)const  
+public: double __thiscall VESSEL::GetPropellantEfficiency(void *)const  
+public: double __thiscall VESSEL::GetPropellantFlowrate(void *)const  
+public: double __thiscall VESSEL::GetPropellantMass(void *)const  
+public: double __thiscall VESSEL::GetPropellantMaxMass(void *)const  
+public: double __thiscall VESSEL::GetSize(void)const  
+public: double __thiscall VESSEL::GetSlipAngle(void)const  
+public: double __thiscall VESSEL::GetSurfaceElevation(void)const  
+public: double __thiscall VESSEL::GetThrusterGroupLevel(enum THGROUP_TYPE)const  
+public: double __thiscall VESSEL::GetThrusterGroupLevel(void *)const  
+public: double __thiscall VESSEL::GetThrusterIsp(void *)const  
+public: double __thiscall VESSEL::GetThrusterIsp(void *,double)const  
+public: double __thiscall VESSEL::GetThrusterIsp0(void *)const  
+public: double __thiscall VESSEL::GetThrusterLevel(void *)const  
+public: double __thiscall VESSEL::GetThrusterMax(void *)const  
+public: double __thiscall VESSEL::GetThrusterMax(void *,double)const  
+public: double __thiscall VESSEL::GetThrusterMax0(void *)const  
+public: double __thiscall VESSEL::GetTotalPropellantFlowrate(void)const  
+public: double __thiscall VESSEL::GetTotalPropellantMass(void)const  
+public: double __thiscall VESSEL::GetTrimScale(void)const  
+public: double __thiscall VESSEL::GetWheelbrakeLevel(int)const  
+public: double __thiscall VESSEL::GetWingAspect(void)const  
+public: double __thiscall VESSEL::GetWingEffectiveness(void)const  
+public: double __thiscall VESSEL::GetYaw(void)const  
+public: double __thiscall VESSEL::GetYawMomentScale(void)const  
+public: double const * __thiscall LightEmitter::GetIntensityRef(void)const  
+public: double const * __thiscall oapi::ParticleStream::Level(void)const  
+public: double const * __thiscall PointLight::GetAttenuation(void)const  
+public: enum CameraMode_Cockpit::CockpitMode __thiscall CameraMode_Cockpit::GetCockpitMode(void)const  
+public: enum CameraMode_Track::TrackMode __thiscall CameraMode_Track::GetTrackMode(void)const  
+public: enum LightEmitter::TYPE __thiscall LightEmitter::GetType(void)const  
+public: enum LightEmitter::VISIBILITY __thiscall LightEmitter::GetVisibility(void)const  
+public: float __thiscall VESSEL::GetNavRecvFreq(unsigned long)const  
+public: int * __thiscall VESSEL::GetDevMesh(void *,unsigned int)const  
+public: int __thiscall CameraMode_Cockpit::GetLeaning(void)const  
+public: int __thiscall CameraMode_Cockpit::GetPosition(void)const  
+public: int __thiscall CELBODY::Version(void)const  
+public: int __thiscall GraphMFD::AddGraph(void) 
+public: int __thiscall oapi::ModuleNV::Version(void)const  
+public: int __thiscall VESSEL::Dock(void *,unsigned int,unsigned int,unsigned int)const  
+public: int __thiscall VESSEL::GetAttitudeMode(void)const  
+public: int __thiscall VESSEL::GetDamageModel(void)const  
+public: int __thiscall VESSEL::GetFlightModel(void)const  
+public: int __thiscall VESSEL::MeshModified(void *,unsigned int,unsigned long) 
+public: int __thiscall VESSEL::SendBufferedKey(unsigned long,bool,char *) 
+public: int __thiscall VESSEL::ToggleAttitudeMode(void)const  
+public: int __thiscall VESSEL::Version(void)const  
+public: int __thiscall VESSEL3::RegisterPanelArea(void *,int,struct tagRECT const &,int,int,void *,void *) 
+public: int __thiscall VESSEL3::RegisterPanelArea(void *,int,struct tagRECT const &,struct tagRECT const &,int,int,int) 
+public: int __thiscall VESSEL3::RegisterPanelMFDGeometry(void *,int,int,int) 
+public: int __thiscall VESSEL3::SetPanelBackground(void *,void * *,unsigned long,void *,unsigned long,unsigned long,unsigned long,unsigned long) 
+public: int __thiscall VESSEL3::SetPanelScaling(void *,double,double) 
+public: int __thiscall VESSEL4::RegisterMFDMode(struct MFDMODESPECEX const &) 
+public: int __thiscall VESSEL4::RegisterPanelArea(void *,int,struct tagRECT const &,int,struct tagRECT const &,int,int,int) 
+public: static class CameraMode * __cdecl CameraMode::Create(char *) 
+public: static void * __cdecl VESSEL::Create(char const *,char const *,struct VESSELSTATUS const &) 
+public: struct BEACONLIGHTSPEC const * __thiscall VESSEL::GetBeacon(unsigned long)const  
+public: struct COLOUR4 const & __thiscall LightEmitter::GetAmbientColour(void)const  
+public: struct COLOUR4 const & __thiscall LightEmitter::GetDiffuseColour(void)const  
+public: struct COLOUR4 const & __thiscall LightEmitter::GetSpecularColour(void)const  
+public: struct ExternalCameraControl::TrackMode const * __thiscall ExternalCameraControl::GetTrackMode(void)const  
+public: struct ExternalCameraControl::VCMode const * __thiscall ExternalCameraControl::GetVCMode(void)const  
+public: struct HFONT__ * __thiscall MFD::SelectDefaultFont(struct HDC__ *,unsigned long)const  
+public: struct HINSTANCE__ * __thiscall oapi::ModuleNV::GetModule(void)const  
+public: struct HPEN__ * __thiscall MFD::SelectDefaultPen(struct HDC__ *,unsigned long)const  
+public: struct HWND__ * __thiscall oapi::GraphicsClient::GetRenderWindow(void)const  
+public: struct oapi::GraphicsClient::VIDEODATA * __thiscall oapi::GraphicsClient::GetVideoData(void) 
+public: union VECTOR3 __thiscall LightEmitter::GetDirection(void)const  
+public: union VECTOR3 __thiscall LightEmitter::GetPosition(void)const  
+public: union VECTOR3 __thiscall VESSEL::GetSupervesselCG(void)const  
+public: union VECTOR3 __thiscall VESSEL::GetSurfaceNormal(void)const  
+public: union VECTOR3 const * __thiscall LightEmitter::GetDirectionRef(void)const  
+public: union VECTOR3 const * __thiscall LightEmitter::GetPositionRef(void)const  
+public: unsigned int __thiscall ExternMFD::Id(void)const  
+public: unsigned int __thiscall VESSEL::AddAttExhaustRef(union VECTOR3 const &,union VECTOR3 const &,double,double)const  
+public: unsigned int __thiscall VESSEL::AddExhaust(struct EXHAUSTSPEC *) 
+public: unsigned int __thiscall VESSEL::AddExhaust(void *,double,double,double,void *)const  
+public: unsigned int __thiscall VESSEL::AddExhaust(void *,double,double,union VECTOR3 const &,union VECTOR3 const &,void *)const  
+public: unsigned int __thiscall VESSEL::AddExhaust(void *,double,double,void *)const  
+public: unsigned int __thiscall VESSEL::AddExhaustRef(enum EXHAUSTTYPE,union VECTOR3 &,double,double,union VECTOR3 *)const  
+public: unsigned int __thiscall VESSEL::AddMesh(char const *,union VECTOR3 const *)const  
+public: unsigned int __thiscall VESSEL::AddMesh(void *,union VECTOR3 const *)const  
+public: unsigned int __thiscall VESSEL::CreateAnimation(double)const  
+public: unsigned int __thiscall VESSEL::DockCount(void)const  
+public: unsigned int __thiscall VESSEL::DockingStatus(unsigned int)const  
+public: unsigned int __thiscall VESSEL::GetAnimPtr(struct ANIMATION * *)const  
+public: unsigned int __thiscall VESSEL::GetMeshCount(void)const  
+public: unsigned int __thiscall VESSEL::InsertMesh(char const *,unsigned int,union VECTOR3 const *)const  
+public: unsigned int __thiscall VESSEL::InsertMesh(void *,unsigned int,union VECTOR3 const *)const  
+public: unsigned int __thiscall VESSEL::RegisterAnimSequence(double)const  
+public: unsigned long __thiscall ExternalCameraControl::GetCameraMode(void)const  
+public: unsigned long __thiscall ExternalCameraControl::GetDataMode(void)const  
+public: unsigned long __thiscall MFD2::GetDefaultColour(unsigned long,unsigned long)const  
+public: unsigned long __thiscall MFD2::GetHeight(void)const  
+public: unsigned long __thiscall MFD2::GetWidth(void)const  
+public: unsigned long __thiscall oapi::GraphicsClient::GetBaseTileList(void *,struct SurftileSpec const * *)const  
+public: unsigned long __thiscall oapi::GraphicsClient::GetCelestialMarkers(struct oapi::GraphicsClient::LABELLIST const * *)const  
+public: unsigned long __thiscall oapi::GraphicsClient::GetPopupList(struct HWND__ * const * *)const  
+public: unsigned long __thiscall oapi::GraphicsClient::GetSurfaceMarkers(void *,struct oapi::GraphicsClient::LABELLIST const * *)const  
+public: unsigned long __thiscall oapi::GraphicsClient::LoadConstellationLines(unsigned long,struct oapi::GraphicsClient::ConstRec *) 
+public: unsigned long __thiscall oapi::GraphicsClient::LoadStars(unsigned long,struct oapi::GraphicsClient::StarRec *) 
+public: unsigned long __thiscall VESSEL::AttachmentCount(bool)const  
+public: unsigned long __thiscall VESSEL::GetADCtrlMode(void)const  
+public: unsigned long __thiscall VESSEL::GetAttachmentIndex(void *)const  
+public: unsigned long __thiscall VESSEL::GetExhaustCount(void)const  
+public: unsigned long __thiscall VESSEL::GetFlightStatus(void)const  
+public: unsigned long __thiscall VESSEL::GetGroupThrusterCount(enum THGROUP_TYPE)const  
+public: unsigned long __thiscall VESSEL::GetGroupThrusterCount(void *)const  
+public: unsigned long __thiscall VESSEL::GetNavChannel(unsigned long)const  
+public: unsigned long __thiscall VESSEL::GetNavCount(void)const  
+public: unsigned long __thiscall VESSEL::GetNavRecv(unsigned long)const  
+public: unsigned long __thiscall VESSEL::GetPropellantCount(void)const  
+public: unsigned long __thiscall VESSEL::GetThrusterCount(void)const  
+public: unsigned long __thiscall VESSEL::GetTouchdownPointCount(void)const  
+public: unsigned long __thiscall VESSEL::GetUserThrusterGroupCount(void)const  
+public: unsigned long __thiscall VESSEL::LightEmitterCount(void)const  
+public: unsigned short __thiscall VESSEL::GetMeshVisibilityMode(unsigned int)const  
+public: virtual __thiscall CELBODY2::~CELBODY2(void) 
+public: virtual __thiscall ExternMFD::~ExternMFD(void) 
+public: virtual __thiscall GraphMFD::~GraphMFD(void) 
+public: virtual __thiscall LaunchpadItem::~LaunchpadItem(void) 
+public: virtual __thiscall MFD::~MFD(void) 
+public: virtual __thiscall MFD2::~MFD2(void) 
+public: virtual __thiscall oapi::Brush::~Brush(void) 
+public: virtual __thiscall oapi::DrawingTool::~DrawingTool(void) 
+public: virtual __thiscall oapi::Font::~Font(void) 
+public: virtual __thiscall oapi::GraphicsClient::~GraphicsClient(void) 
+public: virtual __thiscall oapi::Module::~Module(void) 
+public: virtual __thiscall oapi::Pen::~Pen(void) 
+public: virtual __thiscall oapi::Sketchpad::~Sketchpad(void) 
+public: virtual bool __thiscall ATMOSPHERE::clbkConstants(struct ATMCONST *)const  
+public: virtual bool __thiscall ATMOSPHERE::clbkParams(struct ATMOSPHERE::PRM_IN const *,struct ATMOSPHERE::PRM_OUT *) 
+public: virtual bool __thiscall CELBODY::bEphemeris(void)const  
+public: virtual bool __thiscall CELBODY::clbkAtmParam(double,struct ATMPARAM *) 
+public: virtual bool __thiscall CELBODY2::LegacyAtmosphereInterface(void)const  
+public: virtual bool __thiscall LaunchpadItem::clbkOpen(struct HWND__ *) 
+public: virtual bool __thiscall LaunchpadItem::OpenDialog(struct HINSTANCE__ *,struct HWND__ *,int,int (__stdcall*)(struct HWND__ *,unsigned int,unsigned int,long)) 
+public: virtual bool __thiscall MFD::ConsumeButton(int,int) 
+public: virtual bool __thiscall MFD::ConsumeKeyBuffered(unsigned long) 
+public: virtual bool __thiscall MFD::ConsumeKeyImmediate(char *) 
+public: virtual bool __thiscall MFD2::Update(class oapi::Sketchpad *) 
+public: virtual bool __thiscall oapi::GraphicsClient::clbkBlt(void *,unsigned long,unsigned long,void *,unsigned long)const  
+public: virtual bool __thiscall oapi::GraphicsClient::clbkBlt(void *,unsigned long,unsigned long,void *,unsigned long,unsigned long,unsigned long,unsigned long,unsigned long)const  
+public: virtual bool __thiscall oapi::GraphicsClient::clbkCopyBitmap(void *,struct HBITMAP__ *,int,int,int,int) 
+public: virtual bool __thiscall oapi::GraphicsClient::clbkFillSurface(void *,unsigned long)const  
+public: virtual bool __thiscall oapi::GraphicsClient::clbkFillSurface(void *,unsigned long,unsigned long,unsigned long,unsigned long,unsigned long)const  
+public: virtual bool __thiscall oapi::GraphicsClient::clbkGetSurfaceSize(void *,unsigned long *,unsigned long *) 
+public: virtual bool __thiscall oapi::GraphicsClient::clbkInitialise(void) 
+public: virtual bool __thiscall oapi::GraphicsClient::clbkReleaseSurface(void *) 
+public: virtual bool __thiscall oapi::GraphicsClient::clbkSaveSurfaceToImage(void *,char const *,enum oapi::ImageFileFormat,float) 
+public: virtual bool __thiscall oapi::GraphicsClient::clbkScaleBlt(void *,unsigned long,unsigned long,unsigned long,unsigned long,void *,unsigned long,unsigned long,unsigned long,unsigned long,unsigned long)const  
+public: virtual bool __thiscall oapi::GraphicsClient::clbkSetMeshProperty(int *,unsigned long,unsigned long) 
+public: virtual bool __thiscall oapi::GraphicsClient::clbkSetMeshTexture(int *,unsigned long,void *) 
+public: virtual bool __thiscall oapi::GraphicsClient::clbkSetSurfaceColourKey(void *,unsigned long) 
+public: virtual bool __thiscall oapi::Module::clbkProcessKeyboardBuffered(unsigned long,char * const,bool) 
+public: virtual bool __thiscall oapi::Module::clbkProcessKeyboardImmediate(char * const,bool) 
+public: virtual bool __thiscall oapi::Module::clbkProcessMouse(unsigned int,unsigned long,unsigned long,unsigned long) 
+public: virtual bool __thiscall oapi::Sketchpad::Text(int,int,char const *,int) 
+public: virtual bool __thiscall oapi::Sketchpad::TextBox(int,int,int,int,char const *,int) 
+public: virtual bool __thiscall VESSEL2::clbkLoadGenericCockpit(void) 
+public: virtual bool __thiscall VESSEL2::clbkLoadPanel(int) 
+public: virtual bool __thiscall VESSEL2::clbkLoadVC(int) 
+public: virtual bool __thiscall VESSEL2::clbkPanelMouseEvent(int,int,int,int) 
+public: virtual bool __thiscall VESSEL2::clbkPanelRedrawEvent(int,int,void *) 
+public: virtual bool __thiscall VESSEL2::clbkPlaybackEvent(double,double,char const *,char const *) 
+public: virtual bool __thiscall VESSEL2::clbkVCMouseEvent(int,int,union VECTOR3 &) 
+public: virtual bool __thiscall VESSEL2::clbkVCRedrawEvent(int,int,void *) 
+public: virtual bool __thiscall VESSEL3::clbkDrawHUD(int,struct HUDPAINTSPEC const *,class oapi::Sketchpad *) 
+public: virtual bool __thiscall VESSEL3::clbkLoadPanel2D(int,void *,unsigned long,unsigned long) 
+public: virtual bool __thiscall VESSEL3::clbkPanelMouseEvent(int,int,int,int,void *) 
+public: virtual bool __thiscall VESSEL3::clbkPanelRedrawEvent(int,int,void *,void *) 
+public: virtual char * __thiscall LaunchpadItem::Description(void) 
+public: virtual char * __thiscall LaunchpadItem::Name(void) 
+public: virtual char * __thiscall MFD::ButtonLabel(int) 
+public: virtual class oapi::Brush * __thiscall oapi::GraphicsClient::clbkCreateBrush(unsigned long)const  
+public: virtual class oapi::Brush * __thiscall oapi::Sketchpad::SetBrush(class oapi::Brush *)const  
+public: virtual class oapi::Font * __thiscall oapi::GraphicsClient::clbkCreateFont(int,bool,char const *,enum oapi::Font::Style,int)const  
+public: virtual class oapi::Font * __thiscall oapi::Sketchpad::SetFont(class oapi::Font *)const  
+public: virtual class oapi::ParticleStream * __thiscall oapi::GraphicsClient::clbkCreateExhaustStream(struct PARTICLESTREAMSPEC *,void *,double const *,union VECTOR3 const &,union VECTOR3 const &) 
+public: virtual class oapi::ParticleStream * __thiscall oapi::GraphicsClient::clbkCreateExhaustStream(struct PARTICLESTREAMSPEC *,void *,double const *,union VECTOR3 const *,union VECTOR3 const *) 
+public: virtual class oapi::ParticleStream * __thiscall oapi::GraphicsClient::clbkCreateParticleStream(struct PARTICLESTREAMSPEC *) 
+public: virtual class oapi::ParticleStream * __thiscall oapi::GraphicsClient::clbkCreateReentryStream(struct PARTICLESTREAMSPEC *,void *) 
+public: virtual class oapi::Pen * __thiscall oapi::GraphicsClient::clbkCreatePen(int,int,unsigned long)const  
+public: virtual class oapi::Pen * __thiscall oapi::Sketchpad::SetPen(class oapi::Pen *)const  
+public: virtual class oapi::ScreenAnnotation * __thiscall oapi::GraphicsClient::clbkCreateAnnotation(void) 
+public: virtual class oapi::Sketchpad * __thiscall oapi::GraphicsClient::clbkGetSketchpad(void *) 
+public: virtual enum CameraMode::Mode __thiscall CameraMode_Cockpit::GetMode(void)const  
+public: virtual enum CameraMode::Mode __thiscall CameraMode_Ground::GetMode(void)const  
+public: virtual enum CameraMode::Mode __thiscall CameraMode_Track::GetMode(void)const  
+public: virtual int __thiscall CELBODY::clbkEphemeris(double,int,double *) 
+public: virtual int __thiscall CELBODY::clbkFastEphemeris(double,int,double *) 
+public: virtual int __thiscall LaunchpadItem::clbkWriteConfig(void) 
+public: virtual int __thiscall MFD::ButtonMenu(struct MFDBUTTONMENU const * *)const  
+public: virtual int __thiscall oapi::GraphicsClient::clbkBeginBltGroup(void *) 
+public: virtual int __thiscall oapi::GraphicsClient::clbkEditMeshGroup(int *,unsigned long,struct GROUPEDITSPEC *) 
+public: virtual int __thiscall oapi::GraphicsClient::clbkEndBltGroup(void) 
+public: virtual int __thiscall oapi::GraphicsClient::clbkGetMeshGroup(int *,unsigned long,struct GROUPREQUESTSPEC *) 
+public: virtual int __thiscall oapi::GraphicsClient::clbkMeshMaterial(int *,unsigned long,struct MATERIAL *) 
+public: virtual int __thiscall oapi::GraphicsClient::clbkSetMeshMaterial(int *,unsigned long,struct MATERIAL const *) 
+public: virtual int __thiscall oapi::GraphicsClient::clbkVisEvent(void *,void *,unsigned long,unsigned int) 
+public: virtual int __thiscall oapi::GraphicsClient::LaunchpadVideoWndProc(struct HWND__ *,unsigned int,unsigned int,long) 
+public: virtual int __thiscall VESSEL2::clbkConsumeBufferedKey(unsigned long,bool,char *) 
+public: virtual int __thiscall VESSEL2::clbkConsumeDirectKey(char *) 
+public: virtual int __thiscall VESSEL3::clbkGeneric(int,int,void *) 
+public: virtual int __thiscall VESSEL4::clbkNavProcess(int) 
+public: virtual long __thiscall oapi::GraphicsClient::RenderWndProc(struct HWND__ *,unsigned int,unsigned int,long) 
+public: virtual struct HDC__ * __thiscall oapi::GraphicsClient::clbkGetSurfaceDC(void *) 
+public: virtual struct HDC__ * __thiscall oapi::Sketchpad::GetDC(void) 
+public: virtual struct HFONT__ * __thiscall oapi::Font::GetGDIFont(void)const  
+public: virtual unsigned long __thiscall oapi::GraphicsClient::clbkGetDeviceColour(unsigned char,unsigned char,unsigned char) 
+public: virtual unsigned long __thiscall oapi::Sketchpad::GetCharSize(void) 
+public: virtual unsigned long __thiscall oapi::Sketchpad::GetTextWidth(char const *,int) 
+public: virtual unsigned long __thiscall oapi::Sketchpad::SetBackgroundColor(unsigned long) 
+public: virtual unsigned long __thiscall oapi::Sketchpad::SetTextColor(unsigned long) 
+public: virtual void * __thiscall oapi::GraphicsClient::clbkCreateSurface(struct HBITMAP__ *) 
+public: virtual void * __thiscall oapi::GraphicsClient::clbkCreateSurface(unsigned long,unsigned long,void *) 
+public: virtual void * __thiscall oapi::GraphicsClient::clbkCreateSurfaceEx(unsigned long,unsigned long,unsigned long) 
+public: virtual void * __thiscall oapi::GraphicsClient::clbkCreateTexture(unsigned long,unsigned long) 
+public: virtual void * __thiscall oapi::GraphicsClient::clbkGetMesh(void *,unsigned int) 
+public: virtual void * __thiscall oapi::GraphicsClient::clbkLoadSurface(char const *,unsigned long) 
+public: virtual void * __thiscall oapi::GraphicsClient::clbkLoadTexture(char const *,unsigned long) 
+public: virtual void __thiscall CameraMode_Cockpit::GetDescr(char *,int) 
+public: virtual void __thiscall CameraMode_Cockpit::Init(char *) 
+public: virtual void __thiscall CameraMode_Cockpit::Store(char *) 
+public: virtual void __thiscall CameraMode_Ground::GetDescr(char *,int) 
+public: virtual void __thiscall CameraMode_Ground::Init(char *) 
+public: virtual void __thiscall CameraMode_Ground::Store(char *) 
+public: virtual void __thiscall CameraMode_Track::GetDescr(char *,int) 
+public: virtual void __thiscall CameraMode_Track::Init(char *) 
+public: virtual void __thiscall CameraMode_Track::Store(char *) 
+public: virtual void __thiscall CELBODY::clbkInit(void *) 
+public: virtual void __thiscall CELBODY2::clbkInit(void *) 
+public: virtual void __thiscall ExternMFD::clbkFocusChanged(void *) 
+public: virtual void __thiscall ExternMFD::clbkRefreshButtons(void) 
+public: virtual void __thiscall ExternMFD::clbkRefreshDisplay(void *) 
+public: virtual void __thiscall ExternMFD::clbkUpdate(void) 
+public: virtual void __thiscall ExternMFD::SetVessel(void *) 
+public: virtual void __thiscall MFD::ReadStatus(void *) 
+public: virtual void __thiscall MFD::RecallStatus(void) 
+public: virtual void __thiscall MFD::StoreStatus(void)const  
+public: virtual void __thiscall MFD::WriteStatus(void *)const  
+public: virtual void __thiscall MFD2::Update(struct HDC__ *) 
+public: virtual void __thiscall oapi::GraphicsClient::clbkIncrSurfaceRef(void *) 
+public: virtual void __thiscall oapi::GraphicsClient::clbkPreOpenPopup(void) 
+public: virtual void __thiscall oapi::GraphicsClient::clbkRefreshVideoData(void) 
+public: virtual void __thiscall oapi::GraphicsClient::clbkReleaseBrush(class oapi::Brush *)const  
+public: virtual void __thiscall oapi::GraphicsClient::clbkReleaseFont(class oapi::Font *)const  
+public: virtual void __thiscall oapi::GraphicsClient::clbkReleasePen(class oapi::Pen *)const  
+public: virtual void __thiscall oapi::GraphicsClient::clbkReleaseSketchpad(class oapi::Sketchpad *) 
+public: virtual void __thiscall oapi::GraphicsClient::clbkReleaseSurfaceDC(void *,struct HDC__ *) 
+public: virtual void __thiscall oapi::GraphicsClient::clbkReleaseTexture(void *) 
+public: virtual void __thiscall oapi::GraphicsClient::clbkRender2DPanel(void * *,void *,union MATRIX3 *,bool) 
+public: virtual void __thiscall oapi::GraphicsClient::clbkRender2DPanel(void * *,void *,union MATRIX3 *,float,bool) 
+public: virtual void __thiscall oapi::Module::clbkDeleteVessel(void *) 
+public: virtual void __thiscall oapi::Module::clbkFocusChanged(void *,void *) 
+public: virtual void __thiscall oapi::Module::clbkNewVessel(void *) 
+public: virtual void __thiscall oapi::Module::clbkPause(bool) 
+public: virtual void __thiscall oapi::Module::clbkPostStep(double,double,double) 
+public: virtual void __thiscall oapi::Module::clbkPreStep(double,double,double) 
+public: virtual void __thiscall oapi::Module::clbkSimulationEnd(void) 
+public: virtual void __thiscall oapi::Module::clbkSimulationStart(enum oapi::Module::RenderMode) 
+public: virtual void __thiscall oapi::Module::clbkTimeAccChanged(double,double) 
+public: virtual void __thiscall oapi::Module::clbkTimeJump(double,double,double) 
+public: virtual void __thiscall oapi::Module::clbkVesselJump(void *) 
+public: virtual void __thiscall oapi::Sketchpad::Ellipse(int,int,int,int) 
+public: virtual void __thiscall oapi::Sketchpad::GetOrigin(int *,int *)const  
+public: virtual void __thiscall oapi::Sketchpad::Line(int,int,int,int) 
+public: virtual void __thiscall oapi::Sketchpad::LineTo(int,int) 
+public: virtual void __thiscall oapi::Sketchpad::MoveTo(int,int) 
+public: virtual void __thiscall oapi::Sketchpad::Pixel(int,int,unsigned long) 
+public: virtual void __thiscall oapi::Sketchpad::Polygon(union oapi::IVECTOR2 const *,int) 
+public: virtual void __thiscall oapi::Sketchpad::Polyline(union oapi::IVECTOR2 const *,int) 
+public: virtual void __thiscall oapi::Sketchpad::PolyPolygon(union oapi::IVECTOR2 const *,int const *,int) 
+public: virtual void __thiscall oapi::Sketchpad::PolyPolyline(union oapi::IVECTOR2 const *,int const *,int) 
+public: virtual void __thiscall oapi::Sketchpad::Rectangle(int,int,int,int) 
+public: virtual void __thiscall oapi::Sketchpad::SetBackgroundMode(enum oapi::Sketchpad::BkgMode) 
+public: virtual void __thiscall oapi::Sketchpad::SetOrigin(int,int) 
+public: virtual void __thiscall oapi::Sketchpad::SetTextAlign(enum oapi::Sketchpad::TAlign_horizontal,enum oapi::Sketchpad::TAlign_vertical) 
+public: virtual void __thiscall VESSEL2::clbkADCtrlMode(unsigned long) 
+public: virtual void __thiscall VESSEL2::clbkAnimate(double) 
+public: virtual void __thiscall VESSEL2::clbkDockEvent(int,void *) 
+public: virtual void __thiscall VESSEL2::clbkDrawHUD(int,struct HUDPAINTSPEC const *,struct HDC__ *) 
+public: virtual void __thiscall VESSEL2::clbkFocusChanged(bool,void *,void *) 
+public: virtual void __thiscall VESSEL2::clbkHUDMode(int) 
+public: virtual void __thiscall VESSEL2::clbkLoadStateEx(void *,void *) 
+public: virtual void __thiscall VESSEL2::clbkMFDMode(int,int) 
+public: virtual void __thiscall VESSEL2::clbkNavMode(int,bool) 
+public: virtual void __thiscall VESSEL2::clbkPostCreation(void) 
+public: virtual void __thiscall VESSEL2::clbkPostStep(double,double,double) 
+public: virtual void __thiscall VESSEL2::clbkPreStep(double,double,double) 
+public: virtual void __thiscall VESSEL2::clbkRCSMode(int) 
+public: virtual void __thiscall VESSEL2::clbkSaveState(void *) 
+public: virtual void __thiscall VESSEL2::clbkSetClassCaps(void *) 
+public: virtual void __thiscall VESSEL2::clbkSetStateEx(void const *) 
+public: virtual void __thiscall VESSEL2::clbkVisualCreated(void *,int) 
+public: virtual void __thiscall VESSEL2::clbkVisualDestroyed(void *,int) 
+public: virtual void __thiscall VESSEL3::clbkGetRadiationForce(union VECTOR3 const &,union VECTOR3 &,union VECTOR3 &) 
+public: virtual void __thiscall VESSEL3::clbkRenderHUD(int,struct HUDPAINTSPEC const *,void *) 
+public: void * __thiscall CameraMode::GetTarget(void)const  
+public: void * __thiscall CameraMode_Ground::GetRef(void)const  
+public: void * __thiscall CameraMode_Track::GetRef(void)const  
+public: void * __thiscall CELBODY2::GetChild(unsigned long)const  
+public: void * __thiscall CELBODY2::GetHandle(void)const  
+public: void * __thiscall CELBODY2::GetParent(void)const  
+public: void * __thiscall ExternMFD::GetDisplaySurface(void)const  
+public: void * __thiscall ExternMFD::GetVessel(void)const  
+public: void * __thiscall LightEmitter::GetObjectHandle(void)const  
+public: void * __thiscall oapi::GraphicsClient::GetMFDSurface(int)const  
+public: void * __thiscall oapi::GraphicsClient::GetVCHUDSurface(struct VCHUDSPEC const * *)const  
+public: void * __thiscall oapi::GraphicsClient::GetVCMFDSurface(int,struct VCMFDSPEC const * *)const  
+public: void * __thiscall oapi::Sketchpad::GetSurface(void)const  
+public: void * __thiscall VESSEL::AddAnimationComponent(unsigned int,double,double,class MGROUP_TRANSFORM *,void *)const  
+public: void * __thiscall VESSEL::AddExhaustStream(void *,struct PARTICLESTREAMSPEC *)const  
+public: void * __thiscall VESSEL::AddExhaustStream(void *,union VECTOR3 const &,struct PARTICLESTREAMSPEC *)const  
+public: void * __thiscall VESSEL::AddParticleStream(struct PARTICLESTREAMSPEC *,union VECTOR3 const &,union VECTOR3 const &,double *)const  
+public: void * __thiscall VESSEL::AddReentryStream(struct PARTICLESTREAMSPEC *)const  
+public: void * __thiscall VESSEL::CopyMeshFromTemplate(unsigned int)const  
+public: void * __thiscall VESSEL::CreateAirfoil2(enum AIRFOIL_ORIENTATION,union VECTOR3 const &,void (__cdecl*)(double,double,double,double *,double *,double *),double,double,double)const  
+public: void * __thiscall VESSEL::CreateAirfoil3(enum AIRFOIL_ORIENTATION,union VECTOR3 const &,void (__cdecl*)(class VESSEL *,double,double,double,void *,double *,double *,double *),void *,double,double,double)const  
+public: void * __thiscall VESSEL::CreateAttachment(bool,union VECTOR3 const &,union VECTOR3 const &,union VECTOR3 const &,char const *,bool)const  
+public: void * __thiscall VESSEL::CreateControlSurface2(enum AIRCTRL_TYPE,double,double,union VECTOR3 const &,int,unsigned int)const  
+public: void * __thiscall VESSEL::CreateControlSurface3(enum AIRCTRL_TYPE,double,double,union VECTOR3 const &,int,double,unsigned int)const  
+public: void * __thiscall VESSEL::CreateDock(union VECTOR3 const &,union VECTOR3 const &,union VECTOR3 const &)const  
+public: void * __thiscall VESSEL::CreatePropellantResource(double,double,double)const  
+public: void * __thiscall VESSEL::CreateThruster(union VECTOR3 const &,union VECTOR3 const &,double,void *,double,double,double)const  
+public: void * __thiscall VESSEL::CreateThrusterGroup(void * *,int,enum THGROUP_TYPE)const  
+public: void * __thiscall VESSEL::GetApDist(double &)const  
+public: void * __thiscall VESSEL::GetArgPer(double &)const  
+public: void * __thiscall VESSEL::GetAtmRef(void)const  
+public: void * __thiscall VESSEL::GetAttachmentHandle(bool,unsigned long)const  
+public: void * __thiscall VESSEL::GetAttachmentStatus(void *)const  
+public: void * __thiscall VESSEL::GetDefaultPropellantResource(void)const  
+public: void * __thiscall VESSEL::GetDockHandle(unsigned int)const  
+public: void * __thiscall VESSEL::GetDockStatus(void *)const  
+public: void * __thiscall VESSEL::GetElements(struct ELEMENTS &,double &)const  
+public: void * __thiscall VESSEL::GetEquPos(double &,double &,double &)const  
+public: void * __thiscall VESSEL::GetGravityRef(void)const  
+public: void * __thiscall VESSEL::GetGroupThruster(enum THGROUP_TYPE,unsigned long)const  
+public: void * __thiscall VESSEL::GetGroupThruster(void *,unsigned long)const  
+public: void * __thiscall VESSEL::GetHandle(void)const  
+public: void * __thiscall VESSEL::GetIDS(void *)const  
+public: void * __thiscall VESSEL::GetMesh(void *,unsigned int)const  
+public: void * __thiscall VESSEL::GetMeshTemplate(unsigned int)const  
+public: void * __thiscall VESSEL::GetNavSource(unsigned long)const  
+public: void * __thiscall VESSEL::GetPeDist(double &)const  
+public: void * __thiscall VESSEL::GetPropellantHandleByIndex(unsigned long)const  
+public: void * __thiscall VESSEL::GetSMi(double &)const  
+public: void * __thiscall VESSEL::GetSupervessel(void)const  
+public: void * __thiscall VESSEL::GetSurfaceRef(void)const  
+public: void * __thiscall VESSEL::GetThrusterGroupHandle(enum THGROUP_TYPE)const  
+public: void * __thiscall VESSEL::GetThrusterHandleByIndex(unsigned long)const  
+public: void * __thiscall VESSEL::GetThrusterResource(void *)const  
+public: void * __thiscall VESSEL::GetTransponder(void)const  
+public: void * __thiscall VESSEL::GetUserThrusterGroupHandleByIndex(unsigned long)const  
+public: void __thiscall CameraMode::SetFOV(double) 
+public: void __thiscall CameraMode::SetTarget(void *) 
+public: void __thiscall CameraMode_Ground::GetOrientation(double *,double *)const  
+public: void __thiscall CameraMode_Ground::GetPosition(double *,double *,double *,void * *)const  
+public: void __thiscall CameraMode_Ground::SetOrientation(double,double) 
+public: void __thiscall CameraMode_Ground::SetPosition(double,double,double,void *) 
+public: void __thiscall CameraMode_Track::GetPosition(double *,double *,double *)const  
+public: void __thiscall CameraMode_Track::SetPosition(double,double,double) 
+public: void __thiscall CameraMode_Track::SetTrackMode(enum CameraMode_Track::TrackMode,void *) 
+public: void __thiscall ExternalCameraControl::SetCameraMode(unsigned long) 
+public: void __thiscall ExternalCameraControl::SetDataMode(unsigned long) 
+public: void __thiscall GraphMFD::AddPlot(int,float *,float *,int,int,int *) 
+public: void __thiscall GraphMFD::FindRange(float *,int,float &,float &)const  
+public: void __thiscall GraphMFD::Plot(struct HDC__ *,int,int,int,char const *) 
+public: void __thiscall GraphMFD::SetAutoRange(int,int,int) 
+public: void __thiscall GraphMFD::SetAutoTicks(int,int) 
+public: void __thiscall GraphMFD::SetAxisTitle(int,int,char *) 
+public: void __thiscall GraphMFD::SetRange(int,int,float,float) 
+public: void __thiscall LightEmitter::Activate(bool) 
+public: void __thiscall LightEmitter::SetDirection(union VECTOR3 const &) 
+public: void __thiscall LightEmitter::SetDirectionRef(union VECTOR3 const *) 
+public: void __thiscall LightEmitter::SetIntensity(double) 
+public: void __thiscall LightEmitter::SetIntensityRef(double *) 
+public: void __thiscall LightEmitter::SetPosition(union VECTOR3 const &) 
+public: void __thiscall LightEmitter::SetPositionRef(union VECTOR3 const *) 
+public: void __thiscall LightEmitter::SetVisibility(enum LightEmitter::VISIBILITY) 
+public: void __thiscall LightEmitter::ShiftExplicitPosition(union VECTOR3 const &) 
+public: void __thiscall MFD::InvalidateButtons(void) 
+public: void __thiscall MFD::InvalidateDisplay(void) 
+public: void __thiscall MFD::Title(struct HDC__ *,char const *)const  
+public: void __thiscall MFD2::Title(class oapi::Sketchpad *,char const *)const  
+public: void __thiscall oapi::GraphicsClient::GetBaseShadowGeometry(void *,void * * *,double * *,unsigned long *)const  
+public: void __thiscall oapi::GraphicsClient::GetBaseStructures(void *,void * * *,unsigned long *,void * * *,unsigned long *)const  
+public: void __thiscall oapi::GraphicsClient::RegisterVisObject(void *,void *) 
+public: void __thiscall oapi::GraphicsClient::UnregisterVisObject(void *) 
+public: void __thiscall oapi::ParticleStream::Attach(void *,union VECTOR3 const &,union VECTOR3 const &,double const *) 
+public: void __thiscall oapi::ParticleStream::Attach(void *,union VECTOR3 const *,union VECTOR3 const *,double const *) 
+public: void __thiscall oapi::ParticleStream::Detach(void) 
+public: void __thiscall oapi::ParticleStream::SetFixedDir(union VECTOR3 const &) 
+public: void __thiscall oapi::ParticleStream::SetFixedPos(union VECTOR3 const &) 
+public: void __thiscall oapi::ParticleStream::SetLevelPtr(double const *) 
+public: void __thiscall oapi::ParticleStream::SetVariableDir(union VECTOR3 const *) 
+public: void __thiscall oapi::ParticleStream::SetVariablePos(union VECTOR3 const *) 
+public: void __thiscall PointLight::SetAttenuation(double,double,double) 
+public: void __thiscall PointLight::SetRange(double) 
+public: void __thiscall SpotLight::SetAperture(double,double) 
+public: void __thiscall VESSEL::AddAttExhaustMode(unsigned int,enum ATTITUDEMODE,int,int)const  
+public: void __thiscall VESSEL::AddBeacon(struct BEACONLIGHTSPEC *) 
+public: void __thiscall VESSEL::AddForce(union VECTOR3 const &,union VECTOR3 const &)const  
+public: void __thiscall VESSEL::ClearAirfoilDefinitions(void)const  
+public: void __thiscall VESSEL::ClearAttachments(void)const  
+public: void __thiscall VESSEL::ClearAttExhaustRefs(void)const  
+public: void __thiscall VESSEL::ClearBeacons(void) 
+public: void __thiscall VESSEL::ClearControlSurfaceDefinitions(void)const  
+public: void __thiscall VESSEL::ClearDockDefinitions(void)const  
+public: void __thiscall VESSEL::ClearExhaustRefs(void)const  
+public: void __thiscall VESSEL::ClearLightEmitters(void)const  
+public: void __thiscall VESSEL::ClearMeshes(bool)const  
+public: void __thiscall VESSEL::ClearMeshes(void)const  
+public: void __thiscall VESSEL::ClearPropellantResources(void)const  
+public: void __thiscall VESSEL::ClearThrusterDefinitions(void)const  
+public: void __thiscall VESSEL::ClearVariableDragElements(void)const  
+public: void __thiscall VESSEL::CreateAirfoil(enum AIRFOIL_ORIENTATION,union VECTOR3 const &,void (__cdecl*)(double,double,double,double *,double *,double *),double,double,double)const  
+public: void __thiscall VESSEL::CreateControlSurface(enum AIRCTRL_TYPE,double,double,union VECTOR3 const &,int,unsigned int)const  
+public: void __thiscall VESSEL::CreateVariableDragElement(double *,double,union VECTOR3 const &)const  
+public: void __thiscall VESSEL::CreateVariableDragElement(double const *,double,union VECTOR3 const &)const  
+public: void __thiscall VESSEL::DefSetState(struct VESSELSTATUS const *)const  
+public: void __thiscall VESSEL::DefSetStateEx(void const *)const  
+public: void __thiscall VESSEL::DelExhaustRef(enum EXHAUSTTYPE,unsigned short)const  
+public: void __thiscall VESSEL::DelPropellantResource(void * &)const  
+public: void __thiscall VESSEL::EditAirfoil(void *,unsigned long,union VECTOR3 const &,void (__cdecl*)(double,double,double,double *,double *,double *),double,double,double)const  
+public: void __thiscall VESSEL::EnableIDS(void *,bool)const  
+public: void __thiscall VESSEL::EnableTransponder(bool)const  
+public: void __thiscall VESSEL::GetAngularAcc(union VECTOR3 &)const  
+public: void __thiscall VESSEL::GetAngularMoment(union VECTOR3 &)const  
+public: void __thiscall VESSEL::GetAngularVel(union VECTOR3 &)const  
+public: void __thiscall VESSEL::GetAttachmentParams(void *,union VECTOR3 &,union VECTOR3 &,union VECTOR3 &)const  
+public: void __thiscall VESSEL::GetAttitudeLinLevel(union VECTOR3 &)const  
+public: void __thiscall VESSEL::GetAttitudeRotLevel(union VECTOR3 &)const  
+public: void __thiscall VESSEL::GetCameraDefaultDirection(union VECTOR3 &)const  
+public: void __thiscall VESSEL::GetCameraOffset(union VECTOR3 &)const  
+public: void __thiscall VESSEL::GetCrossSections(union VECTOR3 &)const  
+public: void __thiscall VESSEL::GetCW(double &,double &,double &,double &)const  
+public: void __thiscall VESSEL::GetDockParams(void *,union VECTOR3 &,union VECTOR3 &,union VECTOR3 &)const  
+public: void __thiscall VESSEL::GetGlobalOrientation(union VECTOR3 &)const  
+public: void __thiscall VESSEL::GetGlobalPos(union VECTOR3 &)const  
+public: void __thiscall VESSEL::GetGlobalVel(union VECTOR3 &)const  
+public: void __thiscall VESSEL::GetLinearMoment(union VECTOR3 &)const  
+public: void __thiscall VESSEL::GetPMI(union VECTOR3 &)const  
+public: void __thiscall VESSEL::GetRelativePos(void *,union VECTOR3 &)const  
+public: void __thiscall VESSEL::GetRelativeVel(void *,union VECTOR3 &)const  
+public: void __thiscall VESSEL::GetRotationMatrix(union MATRIX3 &)const  
+public: void __thiscall VESSEL::GetRotDrag(union VECTOR3 &)const  
+public: void __thiscall VESSEL::GetStatus(struct VESSELSTATUS &)const  
+public: void __thiscall VESSEL::GetStatusEx(void *)const  
+public: void __thiscall VESSEL::GetThrusterDir(void *,union VECTOR3 &)const  
+public: void __thiscall VESSEL::GetThrusterMoment(void *,union VECTOR3 &,union VECTOR3 &)const  
+public: void __thiscall VESSEL::GetThrusterRef(void *,union VECTOR3 &)const  
+public: void __thiscall VESSEL::GetTouchdownPoints(union VECTOR3 &,union VECTOR3 &,union VECTOR3 &)const  
+public: void __thiscall VESSEL::Global2Local(union VECTOR3 const &,union VECTOR3 &)const  
+public: void __thiscall VESSEL::GlobalRot(union VECTOR3 const &,union VECTOR3 &)const  
+public: void __thiscall VESSEL::HorizonInvRot(union VECTOR3 const &,union VECTOR3 &)const  
+public: void __thiscall VESSEL::HorizonRot(union VECTOR3 const &,union VECTOR3 &)const  
+public: void __thiscall VESSEL::IncEngineLevel(enum ENGINETYPE,double)const  
+public: void __thiscall VESSEL::IncThrusterGroupLevel(enum THGROUP_TYPE,double)const  
+public: void __thiscall VESSEL::IncThrusterGroupLevel(void *,double)const  
+public: void __thiscall VESSEL::IncThrusterGroupLevel_SingleStep(enum THGROUP_TYPE,double)const  
+public: void __thiscall VESSEL::IncThrusterGroupLevel_SingleStep(void *,double)const  
+public: void __thiscall VESSEL::IncThrusterLevel(void *,double)const  
+public: void __thiscall VESSEL::IncThrusterLevel_SingleStep(void *,double)const  
+public: void __thiscall VESSEL::InitNavRadios(unsigned long)const  
+public: void __thiscall VESSEL::Local2Global(union VECTOR3 const &,union VECTOR3 &)const  
+public: void __thiscall VESSEL::Local2Rel(union VECTOR3 const &,union VECTOR3 &)const  
+public: void __thiscall VESSEL::ParseScenarioLine(char *,struct VESSELSTATUS *)const  
+public: void __thiscall VESSEL::ParseScenarioLineEx(char *,void *)const  
+public: void __thiscall VESSEL::RecordEvent(char const *,char const *)const  
+public: void __thiscall VESSEL::RegisterAnimation(void)const  
+public: void __thiscall VESSEL::SaveDefaultState(void *)const  
+public: void __thiscall VESSEL::SetADCtrlMode(unsigned long)const  
+public: void __thiscall VESSEL::SetAlbedoRGB(union VECTOR3 const &)const  
+public: void __thiscall VESSEL::SetAngularVel(union VECTOR3 const &)const  
+public: void __thiscall VESSEL::SetAttachmentParams(void *,union VECTOR3 const &,union VECTOR3 const &,union VECTOR3 const &)const  
+public: void __thiscall VESSEL::SetAttitudeLinLevel(int,double)const  
+public: void __thiscall VESSEL::SetAttitudeLinLevel(union VECTOR3 const &)const  
+public: void __thiscall VESSEL::SetAttitudeRotLevel(int,double)const  
+public: void __thiscall VESSEL::SetAttitudeRotLevel(union VECTOR3 const &)const  
+public: void __thiscall VESSEL::SetBankMomentScale(double)const  
+public: void __thiscall VESSEL::SetCameraCatchAngle(double)const  
+public: void __thiscall VESSEL::SetCameraDefaultDirection(union VECTOR3 const &)const  
+public: void __thiscall VESSEL::SetCameraDefaultDirection(union VECTOR3 const &,double)const  
+public: void __thiscall VESSEL::SetCameraMovement(union VECTOR3 const &,double,double,union VECTOR3 const &,double,double,union VECTOR3 const &,double,double)const  
+public: void __thiscall VESSEL::SetCameraOffset(union VECTOR3 const &)const  
+public: void __thiscall VESSEL::SetCameraRotationRange(double,double,double,double)const  
+public: void __thiscall VESSEL::SetCameraShiftRange(union VECTOR3 const &,union VECTOR3 const &,union VECTOR3 const &)const  
+public: void __thiscall VESSEL::SetClipRadius(double)const  
+public: void __thiscall VESSEL::SetCOG_elev(double)const  
+public: void __thiscall VESSEL::SetControlSurfaceLevel(enum AIRCTRL_TYPE,double)const  
+public: void __thiscall VESSEL::SetControlSurfaceLevel(enum AIRCTRL_TYPE,double,bool)const  
+public: void __thiscall VESSEL::SetCrossSections(union VECTOR3 const &)const  
+public: void __thiscall VESSEL::SetCW(double,double,double,double)const  
+public: void __thiscall VESSEL::SetDefaultPropellantResource(void *)const  
+public: void __thiscall VESSEL::SetDockMode(int)const  
+public: void __thiscall VESSEL::SetDockParams(union VECTOR3 const &,union VECTOR3 const &,union VECTOR3 const &)const  
+public: void __thiscall VESSEL::SetDockParams(void *,union VECTOR3 const &,union VECTOR3 const &,union VECTOR3 const &)const  
+public: void __thiscall VESSEL::SetEmptyMass(double)const  
+public: void __thiscall VESSEL::SetEnableFocus(bool)const  
+public: void __thiscall VESSEL::SetEngineLevel(enum ENGINETYPE,double)const  
+public: void __thiscall VESSEL::SetExhaustScales(enum EXHAUSTTYPE,unsigned short,double,double)const  
+public: void __thiscall VESSEL::SetFuelMass(double)const  
+public: void __thiscall VESSEL::SetGlobalOrientation(union VECTOR3 const &)const  
+public: void __thiscall VESSEL::SetHoverHoldAltitude(double,bool) 
+public: void __thiscall VESSEL::SetISP(double)const  
+public: void __thiscall VESSEL::SetLiftCoeffFunc(double (__cdecl*)(double))const  
+public: void __thiscall VESSEL::SetMaxFuelMass(double)const  
+public: void __thiscall VESSEL::SetMaxThrust(enum ENGINETYPE,double)const  
+public: void __thiscall VESSEL::SetMaxWheelbrakeForce(double)const  
+public: void __thiscall VESSEL::SetMeshVisibilityMode(unsigned int,unsigned short)const  
+public: void __thiscall VESSEL::SetMeshVisibleInternal(unsigned int,bool)const  
+public: void __thiscall VESSEL::SetNosewheelSteering(bool)const  
+public: void __thiscall VESSEL::SetPitchMomentScale(double)const  
+public: void __thiscall VESSEL::SetPMI(union VECTOR3 const &)const  
+public: void __thiscall VESSEL::SetPropellantEfficiency(void *,double)const  
+public: void __thiscall VESSEL::SetPropellantMass(void *,double)const  
+public: void __thiscall VESSEL::SetPropellantMaxMass(void *,double)const  
+public: void __thiscall VESSEL::SetReentryTexture(void *,double,double,double)const  
+public: void __thiscall VESSEL::SetRotationMatrix(union MATRIX3 const &)const  
+public: void __thiscall VESSEL::SetRotDrag(union VECTOR3 const &)const  
+public: void __thiscall VESSEL::SetSize(double)const  
+public: void __thiscall VESSEL::SetSurfaceFrictionCoeff(double,double)const  
+public: void __thiscall VESSEL::SetThrusterDir(void *,union VECTOR3 const &)const  
+public: void __thiscall VESSEL::SetThrusterGroupLevel(enum THGROUP_TYPE,double)const  
+public: void __thiscall VESSEL::SetThrusterGroupLevel(void *,double)const  
+public: void __thiscall VESSEL::SetThrusterIsp(void *,double)const  
+public: void __thiscall VESSEL::SetThrusterIsp(void *,double,double,double)const  
+public: void __thiscall VESSEL::SetThrusterLevel(void *,double)const  
+public: void __thiscall VESSEL::SetThrusterLevel_SingleStep(void *,double)const  
+public: void __thiscall VESSEL::SetThrusterMax0(void *,double)const  
+public: void __thiscall VESSEL::SetThrusterRef(void *,union VECTOR3 const &)const  
+public: void __thiscall VESSEL::SetThrusterResource(void *,void *)const  
+public: void __thiscall VESSEL::SetTouchdownPoints(struct TOUCHDOWNVTX const *,unsigned long)const  
+public: void __thiscall VESSEL::SetTouchdownPoints(union VECTOR3 const &,union VECTOR3 const &,union VECTOR3 const &)const  
+public: void __thiscall VESSEL::SetTrimScale(double)const  
+public: void __thiscall VESSEL::SetVisibilityLimit(double,double)const  
+public: void __thiscall VESSEL::SetWheelbrakeLevel(double,int,bool)const  
+public: void __thiscall VESSEL::SetWingAspect(double)const  
+public: void __thiscall VESSEL::SetWingEffectiveness(double)const  
+public: void __thiscall VESSEL::SetYawMomentScale(double)const  
+public: void __thiscall VESSEL::ShiftCentreOfMass(union VECTOR3 const &) 
+public: void __thiscall VESSEL::ShiftCG(union VECTOR3 const &) 
+public: void __thiscall VESSEL::ShiftMeshes(union VECTOR3 const &)const  
+public: void __thiscall VESSEL::TriggerPanelRedrawArea(int,int) 
+public: void __thiscall VESSEL::TriggerRedrawArea(int,int,int) 
+public: void __thiscall VESSEL::UnregisterAnimation(void)const  
+public: void const * __thiscall oapi::GraphicsClient::GetConfigParam(unsigned long)const  
+struct ATMCONST const * __cdecl oapiGetPlanetAtmConstants(void *) 
+struct HDC__ * __cdecl oapiGetDC(void *) 
+struct HINSTANCE__ * __cdecl oapiGetOrbiterInstance(void) 
+struct HWND__ * __cdecl oapiFindDialog(struct HINSTANCE__ *,int) 
+struct HWND__ * __cdecl oapiOpenDialog(struct HINSTANCE__ *,int,int (__stdcall*)(struct HWND__ *,unsigned int,unsigned int,long),void *) 
+struct HWND__ * __cdecl oapiOpenDialogEx(struct HINSTANCE__ *,int,int (__stdcall*)(struct HWND__ *,unsigned int,unsigned int,long),unsigned long,void *) 
+struct lua_State * __cdecl oapiGetLua(void *) 
+struct MATERIAL * __cdecl oapiMeshMaterial(void *,unsigned long) 
+struct MESHGROUP * __cdecl oapiMeshGroup(int *,unsigned long) 
+struct MESHGROUP * __cdecl oapiMeshGroup(void *,unsigned long) 
+struct MESHGROUPEX * __cdecl oapiMeshGroupEx(void *,unsigned long) 
+union VECTOR3 __cdecl oapiGetGroundVector(void *,double,double,int) 
+union VECTOR3 __cdecl oapiGetWindVector(void *,double,double,double,int,double *) 
+unsigned long __cdecl oapiAddMaterial(void *,struct MATERIAL *) 
+unsigned long __cdecl oapiAddMeshGroup(void *,struct MESHGROUP *) 
+unsigned long __cdecl oapiDeflate(unsigned char const *,unsigned long,unsigned char *,unsigned long) 
+unsigned long __cdecl oapiGetBaseCount(void *) 
+unsigned long __cdecl oapiGetBasePadCount(void *) 
+unsigned long __cdecl oapiGetColour(unsigned long,unsigned long,unsigned long) 
+unsigned long __cdecl oapiGetGbodyCount(void) 
+unsigned long __cdecl oapiGetMainInfoVisibilityMode(void) 
+unsigned long __cdecl oapiGetMainMenuVisibilityMode(void) 
+unsigned long __cdecl oapiGetMeshFlags(void *) 
+unsigned long __cdecl oapiGetNavChannel(void *) 
+unsigned long __cdecl oapiGetNavType(void *) 
+unsigned long __cdecl oapiGetObjectCount(void) 
+unsigned long __cdecl oapiGetPlanetJCoeffCount(void *) 
+unsigned long __cdecl oapiGetStationCount(void) 
+unsigned long __cdecl oapiGetTitleButtonState(struct HWND__ *,unsigned long) 
+unsigned long __cdecl oapiGetVesselCount(void) 
+unsigned long __cdecl oapiInflate(unsigned char const *,unsigned long,unsigned char *,unsigned long) 
+unsigned long __cdecl oapiMeshGroupCount(void *) 
+unsigned long __cdecl oapiMeshMaterialCount(void *) 
+unsigned long __cdecl oapiMeshTextureCount(void *) 
+unsigned long __cdecl oapiRegisterCustomCmd(char *,char *,void (__cdecl*)(void *),void *) 
+void * * __cdecl oapiObjectVisualPtr(void *) 
+void * __cdecl oapiCameraProxyGbody(void) 
+void * __cdecl oapiCameraTarget(void) 
+void * __cdecl oapiCreateAnnotation(bool,double,union VECTOR3 const &) 
+void * __cdecl oapiCreateInterpreter(void) 
+void * __cdecl oapiCreateMesh(unsigned long,struct MESHGROUP *) 
+void * __cdecl oapiCreateSurface(int,int) 
+void * __cdecl oapiCreateSurface(struct HBITMAP__ *,bool) 
+void * __cdecl oapiCreateSurfaceEx(int,int,unsigned long) 
+void * __cdecl oapiCreateTextureSurface(int,int) 
+void * __cdecl oapiCreateVessel(char const *,char const *,struct VESSELSTATUS const &) 
+void * __cdecl oapiCreateVesselEx(char const *,char const *,void const *) 
+void * __cdecl oapiElevationManager(void *) 
+void * __cdecl oapiFindLaunchpadItem(char const *,void *) 
+void * __cdecl oapiGetBaseByIndex(void *,int) 
+void * __cdecl oapiGetBaseByName(void *,char *) 
+void * __cdecl oapiGetBasePadNav(void *,unsigned long) 
+void * __cdecl oapiGetBasePlanet(void *) 
+void * __cdecl oapiGetDialogContext(struct HWND__ *) 
+void * __cdecl oapiGetDockHandle(void *,unsigned int) 
+void * __cdecl oapiGetDockStatus(void *) 
+void * __cdecl oapiGetFocusObject(void) 
+void * __cdecl oapiGetGbodyByIndex(int) 
+void * __cdecl oapiGetGbodyByName(char *) 
+void * __cdecl oapiGetObjectByIndex(int) 
+void * __cdecl oapiGetObjectByName(char *) 
+void * __cdecl oapiGetPropellantHandle(void *,unsigned long) 
+void * __cdecl oapiGetStationByIndex(int) 
+void * __cdecl oapiGetStationByName(char *) 
+void * __cdecl oapiGetTextureHandle(void *,unsigned long) 
+void * __cdecl oapiGetVesselByIndex(int) 
+void * __cdecl oapiGetVesselByName(char *) 
+void * __cdecl oapiLoadMesh(char const *) 
+void * __cdecl oapiLoadMeshGlobal(char const *) 
+void * __cdecl oapiLoadMeshGlobal(char const *,void (__cdecl*)(void *,bool)) 
+void * __cdecl oapiLoadTexture(char const *,bool) 
+void * __cdecl oapiOpenFile(char const *,enum FileAccessMode,enum PathRoot) 
+void * __cdecl oapiRegisterExhaustTexture(char *) 
+void * __cdecl oapiRegisterLaunchpadItem(class LaunchpadItem *,void *) 
+void * __cdecl oapiRegisterParticleTexture(char *) 
+void * __cdecl oapiRegisterReentryTexture(char *) 
+void * __cdecl oapiSetFocusObject(void *) 
+void __cdecl ExitLib(struct HINSTANCE__ *) 
+void __cdecl FormatValue(char *,int,double,int) 
+void __cdecl InitLib(struct HINSTANCE__ *) 
+void __cdecl oapiAnnotationSetColour(void *,union VECTOR3 const &) 
+void __cdecl oapiAnnotationSetPos(void *,double,double,double,double) 
+void __cdecl oapiAnnotationSetSize(void *,double) 
+void __cdecl oapiAnnotationSetText(void *,char *) 
+void __cdecl oapiBlt(void *,void *,int,int,int,int,int,int,unsigned long) 
+void __cdecl oapiBlt(void *,void *,struct tagRECT *,struct tagRECT *,unsigned long,unsigned long) 
+void __cdecl oapiCameraAttach(void *,int) 
+void __cdecl oapiCameraGlobalDir(union VECTOR3 *) 
+void __cdecl oapiCameraGlobalPos(union VECTOR3 *) 
+void __cdecl oapiCameraRotationMatrix(union MATRIX3 *) 
+void __cdecl oapiCameraRotAzimuth(double) 
+void __cdecl oapiCameraRotPolar(double) 
+void __cdecl oapiCameraScaleDist(double) 
+void __cdecl oapiCameraSetAperture(double) 
+void __cdecl oapiCameraSetCockpitDir(double,double,bool) 
+void __cdecl oapiClearSurface(void *,unsigned long) 
+void __cdecl oapiClearSurfaceColourKey(void *) 
+void __cdecl oapiCloseDialog(struct HWND__ *) 
+void __cdecl oapiCloseFile(void *,enum FileAccessMode) 
+void __cdecl oapiColourFill(void *,unsigned long,int,int,int,int) 
+void __cdecl oapiDecHUDIntensity(void) 
+void __cdecl oapiDeleteMesh(void *) 
+void __cdecl oapiDestroySurface(void *) 
+void __cdecl oapiDisableMFDMode(int) 
+void __cdecl oapiEquToGlobal(void *,double,double,double,union VECTOR3 *) 
+void __cdecl oapiEquToLocal(void *,double,double,double,union VECTOR3 *) 
+void __cdecl oapiGetAtm(void *,struct ATMPARAM *,void * *) 
+void __cdecl oapiGetAtmPressureDensity(void *,double *,double *) 
+void __cdecl oapiGetBarycentre(void *,union VECTOR3 *) 
+void __cdecl oapiGetBaseEquPos(void *,double *,double *,double *) 
+void __cdecl oapiGetEngineStatus(void *,struct ENGINESTATUS *) 
+void __cdecl oapiGetFocusAtmPressureDensity(double *,double *) 
+void __cdecl oapiGetFocusEngineStatus(struct ENGINESTATUS *) 
+void __cdecl oapiGetFocusGlobalPos(union VECTOR3 *) 
+void __cdecl oapiGetFocusGlobalVel(union VECTOR3 *) 
+void __cdecl oapiGetFocusRelativePos(void *,union VECTOR3 *) 
+void __cdecl oapiGetFocusRelativeVel(void *,union VECTOR3 *) 
+void __cdecl oapiGetGlobalPos(void *,union VECTOR3 *) 
+void __cdecl oapiGetGlobalVel(void *,union VECTOR3 *) 
+void __cdecl oapiGetNavPos(void *,union VECTOR3 *) 
+void __cdecl oapiGetObjectName(void *,char *,int) 
+void __cdecl oapiGetPlanetAtmParams(void *,double,double,double,struct ATMPARAM *) 
+void __cdecl oapiGetPlanetAtmParams(void *,double,struct ATMPARAM *) 
+void __cdecl oapiGetPlanetObliquityMatrix(void *,union MATRIX3 *) 
+void __cdecl oapiGetRelativePos(void *,void *,union VECTOR3 *) 
+void __cdecl oapiGetRelativeVel(void *,void *,union VECTOR3 *) 
+void __cdecl oapiGetRotationMatrix(void *,union MATRIX3 *) 
+void __cdecl oapiGetViewportSize(unsigned long *,unsigned long *,unsigned long *) 
+void __cdecl oapiGlobalToEqu(void *,union VECTOR3 const &,double *,double *,double *) 
+void __cdecl oapiGlobalToLocal(void *,union VECTOR3 const *,union VECTOR3 *) 
+void __cdecl oapiIncHUDIntensity(void) 
+void __cdecl oapiLocalToEqu(void *,union VECTOR3 const &,double *,double *,double *) 
+void __cdecl oapiLocalToGlobal(void *,union VECTOR3 const *,union VECTOR3 *) 
+void __cdecl oapiOpenInputBox(char *,bool (__cdecl*)(void *,char *,void *),char *,int,void *) 
+void __cdecl oapiOpenInputBoxEx(char const *,bool (__cdecl*)(void *,char *,void *),bool (__cdecl*)(void *,char *,void *),char *,int,void *,unsigned long) 
+void __cdecl oapiOpenMFD(int,int) 
+void __cdecl oapiParticleSetLevelRef(void *,double *) 
+void __cdecl oapiRefreshMFDButtons(int,void *) 
+void __cdecl oapiRegisterExternMFD(class ExternMFD *,struct MFDSPEC const &) 
+void __cdecl oapiRegisterMFD(int,struct EXTMFDSPEC const *) 
+void __cdecl oapiRegisterMFD(int,struct MFDSPEC const &) 
+void __cdecl oapiRegisterModule(class oapi::Module *) 
+void __cdecl oapiRegisterPanelArea(int,struct tagRECT const &,int,int,int) 
+void __cdecl oapiRegisterPanelBackground(struct HBITMAP__ *,unsigned long,unsigned long) 
+void __cdecl oapiReleaseBrush(class oapi::Brush *) 
+void __cdecl oapiReleaseDC(void *,struct HDC__ *) 
+void __cdecl oapiReleaseFont(class oapi::Font *) 
+void __cdecl oapiReleasePen(class oapi::Pen *) 
+void __cdecl oapiReleaseSketchpad(class oapi::Sketchpad *) 
+void __cdecl oapiReleaseTexture(void *) 
+void __cdecl oapiRenderHUD(void *,void * *) 
+void __cdecl oapiSetDefNavDisplay(int) 
+void __cdecl oapiSetDefRCSDisplay(int) 
+void __cdecl oapiSetEmptyMass(void *,double) 
+void __cdecl oapiSetEngineLevel(void *,enum ENGINETYPE,double) 
+void __cdecl oapiSetHUDIntensity(double) 
+void __cdecl oapiSetMainInfoVisibilityMode(unsigned long) 
+void __cdecl oapiSetMainMenuVisibilityMode(unsigned long) 
+void __cdecl oapiSetPanelBlink(union VECTOR3 * const) 
+void __cdecl oapiSetPanelNeighbours(int,int,int,int) 
+void __cdecl oapiSetPause(bool) 
+void __cdecl oapiSetShowGrapplePoints(bool) 
+void __cdecl oapiSetSurfaceColourKey(void *,unsigned long) 
+void __cdecl oapiSetTimeAcceleration(double) 
+void __cdecl oapiToggleHUDColour(void) 
+void __cdecl oapiToggleMFD_on(int) 
+void __cdecl oapiTriggerPanelRedrawArea(int,int) 
+void __cdecl oapiTriggerRedrawArea(int,int,int) 
+void __cdecl oapiVCRegisterArea(int,int,int) 
+void __cdecl oapiVCRegisterArea(int,struct tagRECT const &,int,int,int,void *) 
+void __cdecl oapiVCRegisterHUD(struct VCHUDSPEC const *) 
+void __cdecl oapiVCRegisterMFD(int,struct VCMFDSPEC const *) 
+void __cdecl oapiVCSetAreaClickmode_Quadrilateral(int,union VECTOR3 const &,union VECTOR3 const &,union VECTOR3 const &,union VECTOR3 const &) 
+void __cdecl oapiVCSetAreaClickmode_Spherical(int,union VECTOR3 const &,double) 
+void __cdecl oapiVCSetNeighbours(int,int,int,int) 
+void __cdecl oapiVCTriggerRedrawArea(int,int) 
+void __cdecl oapiWriteItem_bool(void *,char *,bool) 
+void __cdecl oapiWriteItem_float(void *,char *,double) 
+void __cdecl oapiWriteItem_int(void *,char *,int) 
+void __cdecl oapiWriteItem_string(void *,char *,char *) 
+void __cdecl oapiWriteItem_vec(void *,char *,union VECTOR3 const &) 
+void __cdecl oapiWriteLine(void *,char *) 
+void __cdecl oapiWriteLog(char *) 
+void __cdecl oapiWriteLogV(char const *,...) 
+void __cdecl oapiWriteScenario_float(void *,char *,double) 
+void __cdecl oapiWriteScenario_int(void *,char *,int) 
+void __cdecl oapiWriteScenario_string(void *,char *,char *) 
+void __cdecl oapiWriteScenario_vec(void *,char *,union VECTOR3 const &) 
+void __cdecl sscan_state(char *,class AnimState &) 
+void __cdecl WriteScenario_state(void *,char *,class AnimState const &) 
+void const * __cdecl oapiGetObjectParam(void *,unsigned long) 

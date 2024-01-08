@@ -528,16 +528,170 @@ BOOL OptionsPage_Visual::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
 
 BOOL OptionsPage_Visual::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
 {
-	switch (ctrlId) {
-	case IDC_OPT_VIS_CLOUD:
-	case IDC_OPT_VIS_REFWATER:
-		if (notification == BN_CLICKED) {
-			VisualsChanged(hPage);
-			return TRUE;
-		}
-		break;
+	switch (ctrlId)
+	{
+		case IDC_OPT_VIS_CLOUD:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_CLOUD, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgVisualPrm.bClouds = check;
+				VisualsChanged( hPage );
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_CSHADOW:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_CSHADOW, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgVisualPrm.bCloudShadows = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_HAZE:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_HAZE, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgVisualPrm.bHaze = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_FOG:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_FOG, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgVisualPrm.bFog = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_REFWATER:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_REFWATER, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgVisualPrm.bWaterreflect = check;
+				VisualsChanged( hPage );
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_RIPPLE:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_RIPPLE, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgVisualPrm.bSpecularRipple = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_LIGHTS:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_LIGHTS, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgVisualPrm.bNightlights = check;
+				VisualsChanged( hPage );
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_LTLEVEL:
+			if (notification == EN_CHANGE)
+			{
+				char cbuf[16];
+				double d;
+				GetWindowText( GetDlgItem( hPage, IDC_OPT_VIS_LTLEVEL ), cbuf, 16 );
+				if (!sscanf( cbuf, "%lf", &d )) d = 0.5;
+				else if (d < 0) d = 0.0;
+				else if (d > 1) d = 1.0;
+				Cfg()->CfgVisualPrm.LightBrightness = d;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_ELEV:
+			if (notification == BN_CLICKED)
+			{
+				int elevmode = SendDlgItemMessage( hPage, IDC_OPT_VIS_ELEV, BM_GETCHECK, 0, 0 ) != BST_CHECKED ? 0 : (SendDlgItemMessage( hPage, IDC_OPT_VIS_ELEVMODE, CB_GETCURSEL, 0, 0 ) + 1);
+				Cfg()->CfgVisualPrm.ElevMode = elevmode;
+				VisualsChanged( hPage );
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_ELEVMODE:
+			if (notification == CBN_SELCHANGE)
+			{
+				int elevmode = SendDlgItemMessage( hPage, IDC_OPT_VIS_ELEV, BM_GETCHECK, 0, 0 ) != BST_CHECKED ? 0 : (SendDlgItemMessage( hPage, IDC_OPT_VIS_ELEVMODE, CB_GETCURSEL, 0, 0 ) + 1);
+				Cfg()->CfgVisualPrm.ElevMode = elevmode;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_MAXLEVEL:
+			if (notification == EN_CHANGE)
+			{
+				char cbuf[16];
+				DWORD i;
+				GetWindowText( GetDlgItem( hPage, IDC_OPT_VIS_MAXLEVEL ), cbuf, 16 );
+				if (!sscanf( cbuf, "%lu", &i )) i = SURF_MAX_PATCHLEVEL2;
+				Cfg()->CfgVisualPrm.PlanetMaxLevel = max((DWORD)1, min((DWORD)SURF_MAX_PATCHLEVEL2, i));
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_VSHADOW:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_VSHADOW, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgVisualPrm.bVesselShadows = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_REENTRY:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_REENTRY, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgVisualPrm.bReentryFlames = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_SHADOW:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_SHADOW, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgVisualPrm.bShadows = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_PARTICLE:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_PARTICLE, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgVisualPrm.bParticleStreams = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_SPECULAR:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_SPECULAR, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgVisualPrm.bSpecular = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_LOCALLIGHT:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_LOCALLIGHT, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgVisualPrm.bLocalLight = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_AMBIENT:
+			if (notification == EN_CHANGE)
+			{
+				char cbuf[16];
+				DWORD i;
+				GetWindowText( GetDlgItem(hPage, IDC_OPT_VIS_AMBIENT ), cbuf, 16 );
+				if (!sscanf( cbuf, "%lu", &i )) i = 15;
+				else if (i > 255) i = 255;
+				Cfg()->SetAmbientLevel( i );
+				return FALSE;
+			}
+			break;
 	}
-	return FALSE;
+	return TRUE;
 }
 
 //-----------------------------------------------------------------------------
@@ -548,6 +702,9 @@ void OptionsPage_Visual::VisualsChanged(HWND hPage)
 		SendDlgItemMessage(hPage, IDC_OPT_VIS_CLOUD, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	EnableWindow(GetDlgItem(hPage, IDC_OPT_VIS_RIPPLE),
 		SendDlgItemMessage(hPage, IDC_OPT_VIS_REFWATER, BM_GETCHECK, 0, 0) == BST_CHECKED);
+	EnableWindow( GetDlgItem( hPage, IDC_OPT_VIS_ELEVMODE ), SendDlgItemMessage( hPage, IDC_OPT_VIS_ELEV, BM_GETCHECK, 0, 0 ) == BST_CHECKED );
+	EnableWindow( GetDlgItem( hPage, IDC_OPT_VIS_LTLEVEL ), SendDlgItemMessage( hPage, IDC_OPT_VIS_LIGHTS, BM_GETCHECK, 0, 0 ) == BST_CHECKED );
+	return;
 }
 
 // ======================================================================
@@ -609,6 +766,48 @@ void OptionsPage_Physics::UpdateConfig(HWND hPage)
 BOOL OptionsPage_Physics::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
 {
 	OptionsPage::OnInitDialog(hPage, wParam, lParam);
+	return TRUE;
+}
+
+// ----------------------------------------------------------------------
+
+BOOL OptionsPage_Physics::OnCommand( HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl )
+{
+	switch (ctrlId)
+	{
+		case IDC_OPT_PHYS_DISTMASS:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_PHYS_DISTMASS, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgPhysicsPrm.bDistributedMass = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_PHYS_COMPLEXGRAV:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_PHYS_COMPLEXGRAV, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgPhysicsPrm.bNonsphericalGrav = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_PHYS_RPRESSURE:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_PHYS_RPRESSURE, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgPhysicsPrm.bRadiationPressure = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_PHYS_WIND:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_PHYS_WIND, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgPhysicsPrm.bAtmWind = check;
+				return FALSE;
+			}
+			break;
+	}
 	return TRUE;
 }
 
