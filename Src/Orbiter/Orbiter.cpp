@@ -629,6 +629,22 @@ HINSTANCE Orbiter::LoadModule (const char *path, const char *name)
 		}
 	}
 
+#ifndef INLINEGRAPHICS
+	// Can't initialize DirectX in DllMain(), let's do it over here (jarmonik 28.12.2023) 
+	if (hDLL) {
+		if (register_module == gclient && gclient != NULL) {
+			if (gclient->clbkInitialise() == false) {
+				// If graphics initialization fails remove client
+				RemoveGraphicsClient(gclient);
+				FreeLibrary(hDLL);
+				LOGOUT_ERR("Client Initialization Failed. Unloading  %s", name);
+				hDLL = NULL;		
+				return NULL;
+			}
+		}
+	}
+#endif
+
 	if (hDLL) {
 		DLLModule module = { hDLL, register_module ? register_module : new oapi::Module(hDLL), std::string(name), !register_module };
 		// If the DLL doesn't provide a Module interface, create a default one which provides the legacy callbacks
@@ -2873,7 +2889,7 @@ bool Orbiter::AttachGraphicsClient (oapi::GraphicsClient *gc)
 	if (gclient) return false; // another client is already attached
 	register_module = gc;
 	gclient = gc;
-	gclient->clbkInitialise();
+	//gclient->clbkInitialise(); // Cannot initialize with-in DllMain() will result DirectX device failure.
 	return true;
 }
 

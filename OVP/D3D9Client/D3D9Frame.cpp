@@ -156,10 +156,10 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	bAAEnabled    = (Config->SceneAntialias != 0);
 	bIsFullscreen = vData->fullscreen;
 	bNoVSync      = vData->novsync;
-	dwFSMode	  = (vData->modeidx>>8)&0xFF;
+	dwFSMode	  = vData->style;
 	bGDIBB		  = vData->trystencil;
 	Adapter		  = vData->deviceidx;
-	Mode		  = vData->modeidx&0xFF;
+	Mode		  = vData->modeidx;
 
 	LogAlw("[VideoConfiguration] Adapter=%u, ModeIndex=%u", Adapter, Mode);
 

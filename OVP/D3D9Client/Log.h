@@ -64,6 +64,7 @@ double D3D9GetTime();
 void   D3D9SetTime(D3D9Time &inout, double ref);
 
 void   MissingRuntimeError();
+void   FailedDeviceError();
 void   LogAttribs(DWORD attrib, DWORD w, DWORD h, LPCSTR origin);
 
 #define HALT() { RuntimeError(__FILE__,__FUNCTION__,__LINE__); }

@@ -61,6 +61,15 @@ void MissingRuntimeError()
 
 //-------------------------------------------------------------------------------------------
 //
+void FailedDeviceError()
+{
+	MessageBoxA(NULL,
+		"DirectX9 Device Failed. Try to enable EnableDX12Wrapper from D3D9Client.cfg",
+		"D3D9Client Initialization Failed", MB_OK);
+}
+
+//-------------------------------------------------------------------------------------------
+//
 void RuntimeError(const char* File, const char* Fnc, UINT Line)
 {
 	if (Config->DebugLvl == 0) return;

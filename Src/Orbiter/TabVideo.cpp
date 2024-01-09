@@ -127,6 +127,8 @@ void orbiter::DefVideoTab::SetConfig (Config *cfg)
 		cfg->CfgDevPrm.WinH        = data->winh;
 		cfg->CfgDevPrm.Device_idx  = data->deviceidx;
 		cfg->CfgDevPrm.Device_mode = data->modeidx;
+		cfg->CfgDevPrm.Device_out  = data->outputidx;
+		cfg->CfgDevPrm.Device_style= data->style;
 	} else {
 		// should not be required
 		cfg->CfgDevPrm.bFullscreen = false;
@@ -138,6 +140,8 @@ void orbiter::DefVideoTab::SetConfig (Config *cfg)
 		cfg->CfgDevPrm.WinH        = 300;
 		cfg->CfgDevPrm.Device_idx  = 0;
 		cfg->CfgDevPrm.Device_mode = 0;
+		cfg->CfgDevPrm.Device_out  = 0;
+		cfg->CfgDevPrm.Device_style= 1;
 	}
 	cfg->CfgDevPrm.bStereo = false; // not currently set
 }

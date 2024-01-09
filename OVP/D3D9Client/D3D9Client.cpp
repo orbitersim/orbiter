@@ -196,13 +196,14 @@ DLLCLBK void ExitModule(HINSTANCE hDLL)
 	delete Config;
 	delete g_pConst;
 
-	DebugControls::Release();
-	AtmoControls::Release();
-
 	if (g_client) {
 		oapiUnregisterGraphicsClient(g_client);
+		delete g_client;
 		g_client = 0;
 	}
+
+	DebugControls::Release();
+	AtmoControls::Release();
 
 #ifdef _NVAPI_H
 	if (bNVAPI) if (NvAPI_Unload()==NVAPI_OK) LogAlw("[nVidia API Unloaded]");
@@ -329,16 +330,17 @@ bool D3D9Client::clbkInitialise()
 	}
 	else {
 		oapiWriteLog("[D3D9][ERROR] Failed to create DirectX9");
+		FailedDeviceError();
 		return false;
 	}
 
 	// Perform default setup
 	if (GraphicsClient::clbkInitialise()==false) return false;
+
 	//Create the Launchpad video tab interface
 	oapiWriteLog("[D3D9] Initialize VideoTab...");
 	vtab = new VideoTab(this, ModuleInstance(), OrbiterInstance(), LaunchpadVideoTab());
-	oapiWriteLog("[D3D9] VideoTab Created...");
-	return true;
+	return vtab->Initialise();
 }
 
 

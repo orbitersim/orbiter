@@ -47,8 +47,6 @@ VideoTab::VideoTab(D3D9Client *gc, HINSTANCE _hInst, HINSTANCE _hOrbiterInst, HW
 	hTab         = hVideoTab;
 	aspect_idx	 = 0;
 	SelectedAdapterIdx = 0;
-
-	Initialise();
 }
 
 VideoTab::~VideoTab()
@@ -160,7 +158,7 @@ BOOL VideoTab::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 // ==============================================================
 // Initialise the Launchpad "video" tab
 
-void VideoTab::Initialise()
+bool VideoTab::Initialise()
 {
 	D3DDISPLAYMODE mode, curMode;
 	D3DADAPTER_IDENTIFIER9 info;
@@ -171,7 +169,7 @@ void VideoTab::Initialise()
 	data->trystencil = false;
 
 	SendDlgItemMessage(hTab, IDC_VID_DEVICE, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessageA(hTab, IDC_VID_MODE, CB_RESETCONTENT, 0, 0);
+	SendDlgItemMessage(hTab, IDC_VID_MODE, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessage(hTab, IDC_VID_BPP, CB_RESETCONTENT, 0, 0);
 
 	ScanAtmoCfgs();
@@ -181,7 +179,8 @@ void VideoTab::Initialise()
 
 	if (nAdapter == 0) {
 		LogErr("VideoTab::Initialize() No DirectX9 Adapters Found");
-		return;
+		FailedDeviceError();
+		return false;
 	}
 
 	if (data->deviceidx < 0 || (data->deviceidx)>=nAdapter) data->deviceidx = 0;
@@ -203,6 +202,7 @@ void VideoTab::Initialise()
 
 	if (nModes == 0) {
 		LogErr("VideoTab::Initialize() No Display Modes Available");
+		FailedDeviceError();
 	}
 
 	for (UINT k=0;k<nModes;k++) {
@@ -216,13 +216,13 @@ void VideoTab::Initialise()
 	SendDlgItemMessageA(hTab, IDC_VID_BPP, CB_ADDSTRING, 0, (LPARAM)"True Full Screen (no alt-tab)");
 	SendDlgItemMessageA(hTab, IDC_VID_BPP, CB_ADDSTRING, 0, (LPARAM)"Full Screen Window");
 	SendDlgItemMessageA(hTab, IDC_VID_BPP, CB_ADDSTRING, 0, (LPARAM)"Window with Taskbar");
-	SendDlgItemMessageA(hTab, IDC_VID_BPP, CB_SETCURSEL, (data->modeidx>>8)&0xFF, 0);
+	SendDlgItemMessageA(hTab, IDC_VID_BPP, CB_SETCURSEL, data->style, 0);
 
 	//SetWindowText(GetDlgItem(hTab, IDC_VID_STATIC5), "Resolution");
 	SetWindowText(GetDlgItem(hTab, IDC_VID_STATIC6), "Full Screen Mode");
 
 
-	SendDlgItemMessage(hTab, IDC_VID_MODE, CB_SETCURSEL, data->modeidx&0xFF, 0);
+	SendDlgItemMessage(hTab, IDC_VID_MODE, CB_SETCURSEL, data->modeidx, 0);
 	SendDlgItemMessage(hTab, IDC_VID_VSYNC, BM_SETCHECK, data->novsync ? BST_CHECKED : BST_UNCHECKED, 0);
 		
 	SetWindowText(GetDlgItem(hTab, IDC_VID_WIDTH), std::to_string(data->winw).c_str());
@@ -242,13 +242,15 @@ void VideoTab::Initialise()
 	SendDlgItemMessage(hTab, IDC_VID_ENUM,     BM_SETCHECK, data->forceenum, 0);  
 	SendDlgItemMessage(hTab, IDC_VID_PAGEFLIP, BM_SETCHECK, data->pageflip, 0);	  // Full scrren Window	
 
-	SelectAdapter(data->deviceidx);
+	bool bRet = SelectAdapter(data->deviceidx);
 
 	SelectFullscreen(data->fullscreen);
 
 	ShowWindow (GetDlgItem (hTab, IDC_VID_INFO), SW_SHOW);
 
-	SetWindowText(GetDlgItem(hTab, IDC_VID_INFO), "Advanced");	
+	SetWindowText(GetDlgItem(hTab, IDC_VID_INFO), "Advanced");
+
+	return bRet;
 }
 
 
@@ -258,24 +260,24 @@ void VideoTab::SelectMode(DWORD index)
 {
 	GraphicsClient::VIDEODATA *data = gclient->GetVideoData();
 	SendDlgItemMessage(hTab, IDC_VID_MODE, CB_GETITEMDATA, index, 0);
-	data->modeidx = index + data->modeidx&0xFF00;
+	data->modeidx = index;
 }
 
 
 // ==============================================================
 // Respond to user adapter selection
 //
-void VideoTab::SelectAdapter(DWORD index)
+bool VideoTab::SelectAdapter(DWORD index)
 {
 
 	SelectedAdapterIdx = index; 
 
 	GraphicsClient::VIDEODATA *data = gclient->GetVideoData();
 
-	// Create the Direct3D9 ---------------------------------------------
-	//
-
-	if (g_pD3DObject == NULL) LogErr("VideoTab::SelectAdapter(%u) Direct3DCreate9 Failed",index);
+	if (g_pD3DObject == NULL) {
+		LogErr("VideoTab::SelectAdapter(%u) Direct3DCreate9 Failed", index);
+		return false;
+	}
 	else {
 
 		char cbuf[32];
@@ -283,7 +285,7 @@ void VideoTab::SelectAdapter(DWORD index)
 	
 		if (g_pD3DObject->GetAdapterCount()<=index) {
 			LogErr("Adapter Index out of range");
-			return;
+			return false;
 		}
 
 		HR(g_pD3DObject->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &curMode));
@@ -293,8 +295,7 @@ void VideoTab::SelectAdapter(DWORD index)
 		DWORD nModes = g_pD3DObject->GetAdapterModeCount(index, D3DFMT_X8R8G8B8);
 
 		if (nModes == 0) {
-			LogErr("VideoTab::SelectAdapter() No Display Modes Available");
-			return;
+			LogErr("VideoTab::SelectAdapter() No Display Modes Available");	
 		}
 
 		for (DWORD k=0;k<nModes;k++) {
@@ -304,8 +305,10 @@ void VideoTab::SelectAdapter(DWORD index)
 			SendDlgItemMessageA(hTab, IDC_VID_MODE, CB_SETITEMDATA, k, (LPARAM)(mode.Height<<16 | mode.Width));
 		}
 
-		SendDlgItemMessage(hTab, IDC_VID_MODE, CB_SETCURSEL, data->modeidx&0xFF, 0);
+		SendDlgItemMessage(hTab, IDC_VID_MODE, CB_SETCURSEL, data->modeidx, 0);
 	}
+
+	return true;
 }
 
 
@@ -394,8 +397,9 @@ void VideoTab::UpdateConfigData()
 	GraphicsClient::VIDEODATA *data = gclient->GetVideoData();
 
 	// device parameters
-	data->deviceidx  = (int)SendDlgItemMessageA(hTab, IDC_VID_DEVICE, CB_GETCURSEL, 0, 0);
-	data->modeidx    = (int)SendDlgItemMessage(hTab, IDC_VID_MODE, CB_GETCURSEL, 0, 0) + ((int)SendDlgItemMessageA(hTab, IDC_VID_BPP, CB_GETCURSEL, 0, 0)<<8);
+	data->deviceidx  = (int)SendDlgItemMessage (hTab, IDC_VID_DEVICE, CB_GETCURSEL, 0, 0);
+	data->modeidx	 = (int)SendDlgItemMessage (hTab, IDC_VID_MODE, CB_GETCURSEL, 0, 0);
+	data->style		 = SendDlgItemMessage (hTab, IDC_VID_BPP, CB_GETCURSEL, 0, 0);
 	data->fullscreen = (SendDlgItemMessage (hTab, IDC_VID_FULL, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	data->novsync    = (SendDlgItemMessage (hTab, IDC_VID_VSYNC, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	data->pageflip   = (SendDlgItemMessage (hTab, IDC_VID_PAGEFLIP, BM_GETCHECK, 0, 0) == BST_CHECKED);

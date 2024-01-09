@@ -205,6 +205,8 @@ struct CFG_RECPLAYPRM {
 struct CFG_DEVPRM {
 	int    Device_idx;			// index of default device
 	DWORD  Device_mode;			// index of default fullscreen mode
+	DWORD  Device_out;			// device output
+	DWORD  Device_style;		// Rendering layout
 	bool   bForceEnum;			// force enumeration, bypass device.dat
 	bool   bFullscreen;			// use window mode
 	bool   bStereo;				// use stereo mode
