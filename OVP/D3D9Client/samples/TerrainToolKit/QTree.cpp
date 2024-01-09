@@ -5,7 +5,7 @@
 
 #include "OrbiterAPI.h"
 #include "QTree.h"
-#include "ToolBox.h"
+#include "ToolKit.h"
 #include "gcCoreAPI.h"
 #include <stack>
 
@@ -340,27 +340,27 @@ int QTree::SaveTile(int flags, SURFHANDLE hSurf, SURFHANDLE hTemp, DRECT bounds,
 
 	// ---------------------------------------------------------
 
-	DWORD fa = GetFileAttributesA("TerrainToolBox");
-	if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA("TerrainToolBox", NULL);
+	DWORD fa = GetFileAttributesA("TerrainToolKit");
+	if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA("TerrainToolKit", NULL);
 	else if ((fa & FILE_ATTRIBUTE_DIRECTORY) == 0) return -1;
 	
 	// ---------------------------------------------------------
 
-	sprintf_s(name, 63, "TerrainToolBox\\%s", dir);
+	sprintf_s(name, 63, "TerrainToolKit\\%s", dir);
 	fa = GetFileAttributesA(name);
 	if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA(name, NULL);
 	else if ((fa & FILE_ATTRIBUTE_DIRECTORY) == 0) return -2;
 
 	// ---------------------------------------------------------
 
-	sprintf_s(name, 63, "TerrainToolBox\\%s\\%02d", dir, level + 4);
+	sprintf_s(name, 63, "TerrainToolKit\\%s\\%02d", dir, level + 4);
 	fa = GetFileAttributesA(name);
 	if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA(name, NULL);
 	else if ((fa & FILE_ATTRIBUTE_DIRECTORY) == 0) return -3;
 
 	// ---------------------------------------------------------
 
-	sprintf_s(name, 63, "TerrainToolBox\\%s\\%02d\\%06d", dir, level +4, ilat);
+	sprintf_s(name, 63, "TerrainToolKit\\%s\\%02d\\%06d", dir, level +4, ilat);
 	fa = GetFileAttributesA(name);
 	if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA(name, NULL);
 	else if ((fa & FILE_ATTRIBUTE_DIRECTORY) == 0) return -4;
@@ -368,7 +368,7 @@ int QTree::SaveTile(int flags, SURFHANDLE hSurf, SURFHANDLE hTemp, DRECT bounds,
 
 	//----------------------------------------------------------
 
-	sprintf_s(name, 63, "TerrainToolBox\\%s\\%02d\\%06d\\%06d.dds", dir, level + 4, ilat, ilng);
+	sprintf_s(name, 63, "TerrainToolKit\\%s\\%02d\\%06d\\%06d.dds", dir, level + 4, ilat, ilng);
 
 	Sketchpad *pSkp = oapiGetSketchpad(hTemp);
 

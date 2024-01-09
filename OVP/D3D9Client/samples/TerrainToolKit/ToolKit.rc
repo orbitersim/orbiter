@@ -88,7 +88,7 @@ FONT 8, "Ms Shell Dlg"
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 STRINGTABLE
 {
-    IDS_INFO                      "Terrain and Base Development ToolBox"
+    IDS_INFO                      "Terrain and Base Development ToolKit"
     IDS_TYPE                      "Developer resources and samples"
 }
 
@@ -111,12 +111,12 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
     {
         BLOCK "080904E4"
         {
-            VALUE "FileDescription", "Terrain and Base Development ToolBox"
+            VALUE "FileDescription", "Terrain and Base Development ToolKit"
             VALUE "FileVersion", "1.0.0.0"
-            VALUE "InternalName", "TerrainToolBox"
+            VALUE "InternalName", "TerrainToolKit"
             VALUE "LegalCopyright", "Copyright © 2019"
-            VALUE "OriginalFilename", "TerrainToolBox.dll"
-            VALUE "ProductName", "TerrainToolBox"
+            VALUE "OriginalFilename", "TerrainToolKit.dll"
+            VALUE "ProductName", "TerrainToolKit"
             VALUE "ProductVersion", "1.0.0.0"
         }
     }

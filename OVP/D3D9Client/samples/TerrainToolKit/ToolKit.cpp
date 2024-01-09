@@ -15,7 +15,7 @@
 #include "ModuleAPI.h"
 #include "DrawAPI.h"
 #include "gcCoreAPI.h"
-#include "ToolBox.h"
+#include "ToolKit.h"
 #include "resource.h"
 #include "gcPropertyTree.h"
 #include "QTree.h"
@@ -251,7 +251,7 @@ ToolKit::ToolKit(HINSTANCE hInst) : gcGUIApp(), Module(hInst)
 	bGo = false;
 
 	// Can do very little here since graphics servises are not yet running 
-	dwCmd = oapiRegisterCustomCmd((char*)"TerrainToolBox", (char*)"ToolBox for terrain and base editing", OpenToolsClbk, this);
+	dwCmd = oapiRegisterCustomCmd((char*)"TerrainToolKit", (char*)"ToolKit for terrain and base editing", OpenToolsClbk, this);
 	gcPropertyTreeInitialize(hInst);
 
 	mIdent.Ident();

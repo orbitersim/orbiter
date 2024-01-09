@@ -10,7 +10,7 @@
 #include "VesselAPI.h"
 #include "ModuleAPI.h"
 #include "DrawAPI.h"
-#include "ToolBox.h"
+#include "ToolKit.h"
 #include "resource.h"
 #include "gcPropertyTree.h"
 #include "QTree.h"
