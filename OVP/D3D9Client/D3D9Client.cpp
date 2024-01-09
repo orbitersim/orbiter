@@ -195,15 +195,15 @@ DLLCLBK void ExitModule(HINSTANCE hDLL)
 	delete TileCatalog;
 	delete Config;
 	delete g_pConst;
-	delete g_client;
-
-	DebugControls::Release();
-	AtmoControls::Release();
 
 	if (g_client) {
 		oapiUnregisterGraphicsClient(g_client);
+		delete g_client;
 		g_client = 0;
 	}
+
+	DebugControls::Release();
+	AtmoControls::Release();
 
 #ifdef _NVAPI_H
 	if (bNVAPI) if (NvAPI_Unload()==NVAPI_OK) LogAlw("[nVidia API Unloaded]");
@@ -330,6 +330,7 @@ bool D3D9Client::clbkInitialise()
 	}
 	else {
 		oapiWriteLog("[D3D9][ERROR] Failed to create DirectX9");
+		FailedDeviceError();
 		return false;
 	}
 

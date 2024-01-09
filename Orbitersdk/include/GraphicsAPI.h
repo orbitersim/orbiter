@@ -836,10 +836,12 @@ public:
 		bool trystencil; ///< stencil buffer flag
 		bool novsync;    ///< no vsync flag
 		bool pageflip;   ///< allow page flipping in fullscreen
-		int deviceidx;   ///< video device index
-		int modeidx;     ///< video mode index
-		int winw;        ///< window width
-		int winh;        ///< window height
+		int deviceidx;   ///< video device (adapter) index
+		int modeidx;     ///< video mode index (fullscreen resolution)
+		int winw;        ///< window/screen width
+		int winh;        ///< window/screen height
+		int outputidx;	 ///< video output
+		int style;		 ///< true fullscreen, fulscreen window, window with taskbar
 	};
 
 	/**

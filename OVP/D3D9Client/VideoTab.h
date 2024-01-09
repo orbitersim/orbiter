@@ -51,7 +51,6 @@ private:
 	void SaveSetupState(HWND hWnd);
 	void ScanAtmoCfgs();
 	bool GetConfigName(const char* file, string& cfg, string& planet);
-	void LoadAtmoCfg();
 	
 	oapi::D3D9Client *gclient;
 	HINSTANCE hOrbiterInst; // orbiter instance handle

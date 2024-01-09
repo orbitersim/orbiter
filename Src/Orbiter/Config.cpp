@@ -180,6 +180,8 @@ CFG_RECPLAYPRM CfgRecPlayPrm_default = {
 CFG_DEVPRM CfgDevPrm_default = {
 	-1,	        // Device_idx (-1=undefined)
 	0,			// Device_mode
+	0,
+	0,
 	true,		// bForceEnum (enumerate devices at each simulation start)
 	false,		// bFullscreen (default to window mode)
 	false,		// bStereo (no stereo support)
@@ -515,6 +517,8 @@ bool Config::Load(const char *fname)
 	// Device information
 	GetInt  (ifs, "DeviceIndex", CfgDevPrm.Device_idx);
 	if (GetInt (ifs, "ModeIndex", i)) CfgDevPrm.Device_mode = (DWORD)i;
+	if (GetInt(ifs, "OutputIndex", i)) CfgDevPrm.Device_out = (DWORD)i;
+	if (GetInt(ifs, "Style", i)) CfgDevPrm.Device_style = (DWORD)i;
 	GetBool (ifs, "DeviceForceEnum", CfgDevPrm.bForceEnum);
 	GetBool (ifs, "Fullscreen", CfgDevPrm.bFullscreen);
 	GetBool (ifs, "Stereo", CfgDevPrm.bStereo);
@@ -1219,6 +1223,9 @@ BOOL Config::Write (const char *fname) const
 		ofs << "\n; === Device settings ===\n";
 		ofs << "DeviceIndex = " << CfgDevPrm.Device_idx << '\n';
 		ofs << "ModeIndex = " << CfgDevPrm.Device_mode << '\n';
+		ofs << "OutputIndex" << CfgDevPrm.Device_out << '\n';
+		ofs << "Style" << CfgDevPrm.Device_style << '\n';
+
 		if (CfgDevPrm.bForceEnum != CfgDevPrm_default.bForceEnum || bEchoAll)
 			ofs << "DeviceForceEnum = " << BoolStr (CfgDevPrm.bForceEnum) << '\n';
 		if (CfgDevPrm.bFullscreen != CfgDevPrm_default.bFullscreen || bEchoAll)
