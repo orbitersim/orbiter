@@ -208,6 +208,8 @@ public:
      */
 	void clbkOptionChanged(DWORD cat, DWORD item);
 
+	void clbkDebugString(const char* str);
+
 	/**
 	 * \brief Texture request
 	 *

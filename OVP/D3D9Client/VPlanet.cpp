@@ -377,12 +377,9 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene) :
 	physics_patchres = *(DWORD*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_SURFACEMAXLEVEL);
 	physics_patchres = min (physics_patchres, *(DWORD*)gc->GetConfigParam (CFGPRM_SURFACEMAXLEVEL));
 
+	// Push the graphics resolution higher than the one used for physics
+	// to enable more accurate bilinear interpolation of the terrain.
 	max_patchres = physics_patchres + 4;
-	//if (elev_mode == 1)	max_patchres = physics_patchres + 4;	// Push the graphics resolution higher than the one used for physics
-	//else max_patchres = physics_patchres;							// to enable more accurate bilinear interpolation of the terrain.
-																	// Works well on the Moon, not so well on high-res KSC.
-
-	max_patchres = min(max_patchres, *(DWORD*)gc->GetConfigParam(CFGPRM_SURFACEMAXLEVEL));
 
 	tilever = *(int*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_TILEENGINE);
 	if (tilever < 2) {

@@ -29,6 +29,10 @@
 #include <math.h>
 #include <vector>
 
+#if defined(_MSC_VER) && (_MSC_VER < 1920 ) // Microsoft Visual Studio Version 2017 and lower
+#include <algorithm>
+#endif
+
 extern "C" {
 #include "Lua/lua.h"
 }
@@ -2444,6 +2448,13 @@ OAPIFUNC void oapiRegisterModule (oapi::Module *module);
  * \endcode
  */
 OAPIFUNC char *oapiDebugString ();
+
+
+/**
+* \brief Print multiple debug strings onto a screen, will be cleared when printed on screen.
+* \param str Text string to print
+*/
+OAPIFUNC void oapiDebugString(const char*);
 
 
 // ======================================================================

@@ -18,6 +18,10 @@
 #ifndef __VESSELAPI_H
 #define __VESSELAPI_H
 
+#if defined(_MSC_VER) && (_MSC_VER < 1920 ) // Microsoft Visual Studio Version 2017 and lower
+#include <algorithm>
+#endif
+
 // reference frame flags
 #define FRAME_ECL 0
 #define FRAME_EQU 1
