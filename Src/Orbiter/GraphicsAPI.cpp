@@ -48,6 +48,8 @@ GraphicsClient::GraphicsClient (HINSTANCE hInstance): Module (hInstance)
 	VideoData.pageflip = true;
 	VideoData.deviceidx = -1;
 	VideoData.modeidx = 0;
+	VideoData.outputidx = 0;
+	VideoData.style = 1;
 	VideoData.winw = 1024;
 	VideoData.winh = 768;
 	surfBltTgt = RENDERTGT_NONE;
@@ -98,6 +100,8 @@ bool GraphicsClient::clbkInitialise ()
 	VideoData.novsync    = cfg->CfgDevPrm.bNoVsync;
 	VideoData.pageflip   = cfg->CfgDevPrm.bPageflip;
 	VideoData.deviceidx  = cfg->CfgDevPrm.Device_idx;
+	VideoData.outputidx  = cfg->CfgDevPrm.Device_out;
+	VideoData.style		 = cfg->CfgDevPrm.Device_style;
 	VideoData.modeidx    = (int)cfg->CfgDevPrm.Device_mode;
 	VideoData.winw       = (int)cfg->CfgDevPrm.WinW;
 	VideoData.winh       = (int)cfg->CfgDevPrm.WinH;
