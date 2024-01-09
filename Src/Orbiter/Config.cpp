@@ -1223,8 +1223,8 @@ BOOL Config::Write (const char *fname) const
 		ofs << "\n; === Device settings ===\n";
 		ofs << "DeviceIndex = " << CfgDevPrm.Device_idx << '\n';
 		ofs << "ModeIndex = " << CfgDevPrm.Device_mode << '\n';
-		ofs << "OutputIndex" << CfgDevPrm.Device_out << '\n';
-		ofs << "Style" << CfgDevPrm.Device_style << '\n';
+		ofs << "OutputIndex = " << CfgDevPrm.Device_out << '\n';
+		ofs << "Style = " << CfgDevPrm.Device_style << '\n';
 
 		if (CfgDevPrm.bForceEnum != CfgDevPrm_default.bForceEnum || bEchoAll)
 			ofs << "DeviceForceEnum = " << BoolStr (CfgDevPrm.bForceEnum) << '\n';
