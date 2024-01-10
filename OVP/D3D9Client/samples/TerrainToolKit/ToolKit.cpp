@@ -418,7 +418,7 @@ bool ToolKit::Initialize()
 	SendDlgItemMessage(hCtrlDlg, IDC_SELECT, CB_ADDSTRING, 0, (LPARAM)"Heighest Existing");		// 1
 	SendDlgItemMessage(hCtrlDlg, IDC_SELECT, CB_SETCURSEL, 1, 0);
 
-	for (int i = 5; i < 20; i++) {
+	for (int i = 5; i < 22; i++) {
 		char Lbl[32]; sprintf_s(Lbl, 32, "Level %d", i);
 		SendDlgItemMessageA(hCtrlDlg, IDC_SELECT, CB_ADDSTRING, 0, (LPARAM)Lbl);
 	}
