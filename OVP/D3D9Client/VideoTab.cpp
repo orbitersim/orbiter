@@ -672,6 +672,7 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessage(hWnd, IDC_MIPMAPS, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hWnd, IDC_MIPMAPS, CB_ADDSTRING, 0, (LPARAM)"None");
 	SendDlgItemMessageA(hWnd, IDC_MIPMAPS, CB_ADDSTRING, 0, (LPARAM)"Low level only");
+	SendDlgItemMessageA(hWnd, IDC_MIPMAPS, CB_ADDSTRING, 0, (LPARAM)"All levels");
 	SendDlgItemMessage(hWnd, IDC_MIPMAPS, CB_SETCURSEL, 0, 0);
 
 	// ARCHIVE METHOD ------------------------------------------
