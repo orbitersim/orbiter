@@ -1340,13 +1340,17 @@ vPlanet::sOverlay * vPlanet::IntersectOverlay(VECTOR4 q, FVECTOR4 *texcoord) con
 {
 	for (auto olay : overlays)
 	{
-		if (q.x > olay->lnglat.z) continue;
-		if (q.z < olay->lnglat.x) continue;
-		if (q.y < olay->lnglat.w) continue;
-		if (q.w > olay->lnglat.y) continue;
-
 		double ow = fabs(olay->lnglat.x - olay->lnglat.z);
 		double oh = fabs(olay->lnglat.y - olay->lnglat.w);
+		double ew = ow * 0.001;
+		double eh = oh * 0.001;
+
+		if (q.x > (olay->lnglat.z - ew)) continue;
+		if (q.z < (olay->lnglat.x + ew)) continue;
+		if (q.y < (olay->lnglat.w + eh)) continue;
+		if (q.w > (olay->lnglat.y - eh)) continue;
+
+
 		double tw = fabs(q.x - q.z);
 		double th = fabs(q.y - q.w);
 

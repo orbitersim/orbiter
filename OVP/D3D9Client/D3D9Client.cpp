@@ -1031,7 +1031,8 @@ void D3D9Client::PushRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 
 		pDevice->SetViewport(&vp);
 	}
 
-	if (pDepthStencil) if (pDevice->SetDepthStencilSurface(pDepthStencil) != S_OK) assert(false);
+	// If pDepthStencil is NULL set NULL
+	if (pDevice->SetDepthStencilSurface(pDepthStencil) != S_OK) assert(false);
 	if (pColor) if (pDevice->SetRenderTarget(0, pColor) != S_OK) assert(false);
 
 	RenderStack.push_front(data);

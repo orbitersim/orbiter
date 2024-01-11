@@ -10,7 +10,7 @@
 #include "ModuleAPI.h"
 #include "DrawAPI.h"
 #include "gcCoreAPI.h"
-#include "ToolBox.h"
+#include "ToolKit.h"
 #include "resource.h"
 #include "gcPropertyTree.h"
 #include "QTree.h"
@@ -30,8 +30,10 @@ BOOL CALLBACK gDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 void ToolKit::StopImport()
 {
 	for (auto x : pLr) {
-		if (x->hSource) oapiReleaseTexture(x->hSource);
-		x->hSource = NULL;
+		if (x) {
+			if (x->hSource) oapiReleaseTexture(x->hSource);
+			x->hSource = NULL;
+		}
 	}
 
 	if (hOverlay) pCore->AddGlobalOverlay(hMgr, _V(0, 0, 0, 0), gcCore::OlayType::RELEASE_ALL, NULL, hOverlay);
@@ -151,7 +153,7 @@ void ToolKit::ExportElev()
 void ToolKit::BakeImport()
 {
 
-	if (MessageBox(pCore->GetRenderWindow(), "Bake and Write the tiles in 'OrbiterRoot/TerrainToolBox/' Folder ?", "Are you sure", MB_YESNO | MB_ICONEXCLAMATION) != IDYES) return;
+	if (MessageBox(pCore->GetRenderWindow(), "Bake and Write the tiles in 'OrbiterRoot/TerrainToolKit/' Folder ?", "Are you sure", MB_YESNO | MB_ICONEXCLAMATION) != IDYES) return;
 
 	bool bWater = IsLayerValid(Layer::LayerType::WATER);
 	bool bNight = IsLayerValid(Layer::LayerType::NIGHT);
