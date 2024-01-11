@@ -74,7 +74,7 @@ public:
 	FVECTOR4	GetColor();
 	FVECTOR4	GetAdjustments();
 	double		Max(double a, double b, double c, double d);
-		double		Min(double a, double b, double c, double d);
+	double		Min(double a, double b, double c, double d);
 
 	SURFHANDLE hSource;
 	string name;

@@ -917,11 +917,11 @@ void SurfTile::Render ()
 	// DevTools: Render with overlay image
 	// ----------------------------------------------------------------------
 
-	FVECTOR4 texcoord;
-	const vPlanet::sOverlay *oLay = vPlanet->IntersectOverlay(bnd.vec, &texcoord);
-
-	if (pShader->bDevtools)
+	if (pShader->bDevtools && scene->GetRenderPass() == RENDERPASS_MAINSCENE)
 	{
+		FVECTOR4 texcoord;
+		const vPlanet::sOverlay* oLay = vPlanet->IntersectOverlay(bnd.vec, &texcoord);
+
 		if (oLay)
 		{
 			bool bOlayEnable = false; for (auto x : oLay->pSurf) if (x) bOlayEnable = true;

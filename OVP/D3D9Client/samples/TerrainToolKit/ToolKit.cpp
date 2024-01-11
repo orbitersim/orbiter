@@ -15,7 +15,7 @@
 #include "ModuleAPI.h"
 #include "DrawAPI.h"
 #include "gcCoreAPI.h"
-#include "ToolBox.h"
+#include "ToolKit.h"
 #include "resource.h"
 #include "gcPropertyTree.h"
 #include "QTree.h"
@@ -176,13 +176,6 @@ BOOL ToolKit::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			return true;
 		}
 
-		case IDC_UPDATECLIP:
-		{
-			if (selection.area.size() != 0) oldsel = selection;
-			selection.area.clear();
-			break;
-		}
-
 		case IDC_DATAVIEW:
 		{
 			break;
@@ -251,7 +244,7 @@ ToolKit::ToolKit(HINSTANCE hInst) : gcGUIApp(), Module(hInst)
 	bGo = false;
 
 	// Can do very little here since graphics servises are not yet running 
-	dwCmd = oapiRegisterCustomCmd((char*)"TerrainToolBox", (char*)"ToolBox for terrain and base editing", OpenToolsClbk, this);
+	dwCmd = oapiRegisterCustomCmd((char*)"TerrainToolKit", (char*)"ToolKit for terrain and base editing", OpenToolsClbk, this);
 	gcPropertyTreeInitialize(hInst);
 
 	mIdent.Ident();
@@ -418,7 +411,7 @@ bool ToolKit::Initialize()
 	SendDlgItemMessage(hCtrlDlg, IDC_SELECT, CB_ADDSTRING, 0, (LPARAM)"Heighest Existing");		// 1
 	SendDlgItemMessage(hCtrlDlg, IDC_SELECT, CB_SETCURSEL, 1, 0);
 
-	for (int i = 5; i < 20; i++) {
+	for (int i = 5; i < 22; i++) {
 		char Lbl[32]; sprintf_s(Lbl, 32, "Level %d", i);
 		SendDlgItemMessageA(hCtrlDlg, IDC_SELECT, CB_ADDSTRING, 0, (LPARAM)Lbl);
 	}

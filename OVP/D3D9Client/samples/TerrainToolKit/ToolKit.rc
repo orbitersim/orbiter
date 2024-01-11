@@ -44,17 +44,16 @@ IDD_IMPORT DIALOG 0, 0, 180, 120
 STYLE DS_CENTER | DS_SHELLFONT | WS_CHILDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS
 FONT 8, "Ms Shell Dlg"
 {
-    PUSHBUTTON      "Open Elevation", IDC_OPENELEV, 95, 20, 75, 14, 0, WS_EX_LEFT
-    PUSHBUTTON      "Open Nightlights", IDC_OPENNIGHT, 95, 5, 75, 14, 0, WS_EX_LEFT
-    PUSHBUTTON      "Open Mesh", IDC_OPENMESH, 5, 45, 75, 14, 0, WS_EX_LEFT
+    PUSHBUTTON      "Open Elevation", IDC_OPENELEV, 95, 5, 75, 14, WS_DISABLED, WS_EX_LEFT
+    PUSHBUTTON      "Open Nightlights", IDC_OPENNIGHT, 5, 36, 75, 14, 0, WS_EX_LEFT
+    PUSHBUTTON      "Open Mesh", IDC_OPENMESH, 96, 21, 75, 14, WS_DISABLED, WS_EX_LEFT
     PUSHBUTTON      "Open Surface", IDC_OPENIMAGE, 5, 5, 75, 14, 0, WS_EX_LEFT
     PUSHBUTTON      "Bake", IDC_BAKE, 95, 100, 75, 14, 0, WS_EX_LEFT
-    PUSHBUTTON      "Reset Corners", IDC_CORNERS, 95, 60, 75, 14, 0, WS_EX_LEFT
-    PUSHBUTTON      "Reselect Region", IDC_UPDATECLIP, 95, 45, 75, 14, 0, WS_EX_LEFT
-    PUSHBUTTON      "Cancel Import", IDC_STOP, 95, 75, 75, 14, 0, WS_EX_LEFT
-    PUSHBUTTON      "Edit Elevation", IDC_EDITELEV, 5, 100, 75, 14, 0, WS_EX_LEFT
+    PUSHBUTTON      "Reset Corners", IDC_CORNERS, 95, 83, 75, 14, 0, WS_EX_LEFT
+    PUSHBUTTON      "Cancel Import", IDC_STOP, 5, 100, 75, 14, 0, WS_EX_LEFT
+    PUSHBUTTON      "Edit Elevation", IDC_EDITELEV, 95, 36, 75, 14, WS_DISABLED, WS_EX_LEFT
     PUSHBUTTON      "Open Water", IDC_OPENWATER, 5, 20, 75, 14, 0, WS_EX_LEFT
-    PUSHBUTTON      "Start Import", IDC_STARTIMPORT, 5, 75, 75, 14, 0, WS_EX_LEFT
+    PUSHBUTTON      "Start Import", IDC_STARTIMPORT, 5, 83, 75, 14, 0, WS_EX_LEFT
 }
 
 
@@ -88,7 +87,7 @@ FONT 8, "Ms Shell Dlg"
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 STRINGTABLE
 {
-    IDS_INFO                      "Terrain and Base Development ToolBox"
+    IDS_INFO                      "Terrain and Base Development ToolKit"
     IDS_TYPE                      "Developer resources and samples"
 }
 
@@ -111,12 +110,12 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
     {
         BLOCK "080904E4"
         {
-            VALUE "FileDescription", "Terrain and Base Development ToolBox"
+            VALUE "FileDescription", "Terrain and Base Development ToolKit"
             VALUE "FileVersion", "1.0.0.0"
-            VALUE "InternalName", "TerrainToolBox"
+            VALUE "InternalName", "TerrainToolKit"
             VALUE "LegalCopyright", "Copyright © 2019"
-            VALUE "OriginalFilename", "TerrainToolBox.dll"
-            VALUE "ProductName", "TerrainToolBox"
+            VALUE "OriginalFilename", "TerrainToolKit.dll"
+            VALUE "ProductName", "TerrainToolKit"
             VALUE "ProductVersion", "1.0.0.0"
         }
     }
