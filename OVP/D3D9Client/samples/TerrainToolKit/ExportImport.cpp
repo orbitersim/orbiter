@@ -30,8 +30,10 @@ BOOL CALLBACK gDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 void ToolKit::StopImport()
 {
 	for (auto x : pLr) {
-		if (x->hSource) oapiReleaseTexture(x->hSource);
-		x->hSource = NULL;
+		if (x) {
+			if (x->hSource) oapiReleaseTexture(x->hSource);
+			x->hSource = NULL;
+		}
 	}
 
 	if (hOverlay) pCore->AddGlobalOverlay(hMgr, _V(0, 0, 0, 0), gcCore::OlayType::RELEASE_ALL, NULL, hOverlay);

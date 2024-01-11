@@ -176,13 +176,6 @@ BOOL ToolKit::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			return true;
 		}
 
-		case IDC_UPDATECLIP:
-		{
-			if (selection.area.size() != 0) oldsel = selection;
-			selection.area.clear();
-			break;
-		}
-
 		case IDC_DATAVIEW:
 		{
 			break;
