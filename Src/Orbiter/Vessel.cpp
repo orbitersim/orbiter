@@ -1289,7 +1289,7 @@ bool Vessel::GetSideForceVector (Vector &SF) const
 	} else {
 		double v0 = std::hypot(sp.airvel_ship.x, sp.airvel_ship.z);
 		double scale = (v0 ? SideForce / v0 : 0.0);
-		SF.Set(0, sp.airvel_ship.z * scale, -sp.airvel_ship.x * scale);
+		SF.Set(sp.airvel_ship.z * scale, 0, - sp.airvel_ship.x * scale);
 		return true;
 	}
 }
