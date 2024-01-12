@@ -466,6 +466,7 @@ protected:
 	static int oapi_deflate (lua_State *L);
 	static int oapi_inflate (lua_State *L);
 	static int oapi_get_color (lua_State *L);
+	static int oapi_formatvalue (lua_State* L);
 
 	// term library functions
 	static int termOut (lua_State *L);

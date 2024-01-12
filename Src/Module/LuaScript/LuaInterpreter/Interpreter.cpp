@@ -814,6 +814,7 @@ void Interpreter::LoadAPI ()
 		{"deflate", oapi_deflate},
 		{"inflate", oapi_inflate},
 		{"get_color", oapi_get_color},
+		{"formatvalue", oapi_formatvalue},
 
 		{NULL, NULL}
 	};
@@ -3180,7 +3181,6 @@ int Interpreter::oapi_writescenario_vec (lua_State* L)
 	return 0;
 }
 
-// @todo: check!
 /***
 Reads an item from a scenario file.
 
@@ -3204,9 +3204,7 @@ int Interpreter::oapi_readscenario_nextline (lua_State* L)
 	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
 	ASSERT_SYNTAX(scn = lua_toObject(L, 1), "Argument 1: invalid object");
 
-	//ASSERT_STRING(L, 2); // I don't think readscenario_nextline should have 2 parameters
 	char* line;
-
 	bool ok = oapiReadScenario_nextline(scn, line);
 	if (ok) {
 		lua_pushstring(L, line);
@@ -3216,10 +3214,8 @@ int Interpreter::oapi_readscenario_nextline (lua_State* L)
 	return 1;
 }
 
-// @todo: check!
 /***
 Read the value of a tag from a configuration file.
-
 
 Note: The tag-value entries of a configuration file have the format \<tag\> = \<value\>
    The functions search the complete file independent of the current position of the file pointer.
@@ -3242,19 +3238,16 @@ int Interpreter::oapi_readitem_string (lua_State* L)
 	ASSERT_STRING(L, 2);
 	const char* item = lua_tostringex(L, 2);
 
-	//ASSERT_STRING(L, 3); // I don't think readitem_string should have 3 parameters
-	char* line = nullptr;
-
-	bool ok = oapiReadItem_string(f, const_cast<char*>(item), line);
+	char cbuf[1024];
+	bool ok = oapiReadItem_string(f, const_cast<char*>(item), cbuf);
 	if (ok) {
-		lua_pushstring(L, line);
+		lua_pushstring(L, cbuf);
 	} else {
 		lua_pushnil(L);
 	}
 	return 1;
 }
 
-// @todo: check!
 /***
 Read the value of a tag from a configuration file.
 
@@ -3273,9 +3266,7 @@ int Interpreter::oapi_readitem_float (lua_State* L)
 	ASSERT_STRING(L, 2);
 	const char* item = lua_tostringex(L, 2);
 
-	//ASSERT_NUMBER(L, 3); // I don't think readitem_float should have 3 parameters
 	double d;
-
 	bool ok = oapiReadItem_float(f, const_cast<char*>(item), d);
 	if (ok) {
 		lua_pushnumber(L, d);
@@ -3285,7 +3276,6 @@ int Interpreter::oapi_readitem_float (lua_State* L)
 	return 1;
 }
 
-// @todo: check!
 /***
 Read the value of a tag from a configuration file.
 
@@ -3304,9 +3294,7 @@ int Interpreter::oapi_readitem_int (lua_State* L)
 	ASSERT_STRING(L, 2);
 	const char* item = lua_tostringex(L, 2);
 
-	//ASSERT_NUMBER(L, 3); // I don't think readitem_int should have 3 parameters
 	int i;
-
 	bool ok = oapiReadItem_int(f, const_cast<char*>(item), i);
 	if (ok) {
 		lua_pushnumber(L, i);
@@ -3316,7 +3304,6 @@ int Interpreter::oapi_readitem_int (lua_State* L)
 	return 1;
 }
 
-// @todo: check!
 /***
 Read the value of a tag from a configuration file.
 
@@ -3337,9 +3324,7 @@ int Interpreter::oapi_readitem_bool (lua_State* L)
 	ASSERT_STRING(L, 2);
 	const char* item = lua_tostringex(L, 2);
 
-	//ASSERT_NUMBER(L, 3); // I don't think readitem_bool should have 3 parameters
 	bool b;
-
 	bool ok = oapiReadItem_bool(f, const_cast<char*>(item), b);
 	if (ok) {
 		lua_pushboolean(L, b);
@@ -3349,7 +3334,6 @@ int Interpreter::oapi_readitem_bool (lua_State* L)
 	return 1;
 }
 
-// @todo: check!
 /***
 Read the value of a tag from a configuration file.
 
@@ -3370,9 +3354,7 @@ int Interpreter::oapi_readitem_vec (lua_State* L)
 	ASSERT_STRING(L, 2);
 	const char* item = lua_tostringex(L, 2);
 
-	//ASSERT_NUMBER(L, 3); // I don't think readitem_vec should have 3 parameters
 	VECTOR3 vec;
-
 	bool ok = oapiReadItem_vec(f, const_cast<char*>(item), vec);
 	if (ok) {
 		lua_pushvector(L, vec);
@@ -3641,6 +3623,31 @@ int Interpreter::oapi_get_color (lua_State *L)
 	lua_pushnumber(L, oapiGetColour(r, g, b));
 	return 1;
 }
+
+/***
+Formats floating point value f in the standard Orbiter convention,
+   with given precision, using 'k', 'M' and 'G' postfixes as required.
+
+@function formatvalue
+@tparam number f floating point value
+@tparam int precision output precision (optional, default: 4)
+@treturn string formatted string
+*/
+int Interpreter::oapi_formatvalue (lua_State* L)
+{
+	ASSERT_NUMBER(L, 1);
+	double f = lua_tonumber(L, 1);
+	int p = 4; // default
+	if (lua_gettop(L) >= 2) {
+		ASSERT_NUMBER(L, 2);
+		p = lua_tointeger(L, 2);
+	}
+	char cbuf[64];
+	FormatValue(cbuf, 64, f, p);
+	lua_pushfstring(L, cbuf);
+	return 1;
+}
+
 
 // ============================================================================
 // terminal library functions
