@@ -3,6 +3,8 @@
 
 #include "Util.h"
 #include <shlobj.h>
+#include <sstream>
+#include <iomanip>
 
 LONGLONG NameToId (const char *name)
 {
@@ -97,3 +99,35 @@ void SetClientPos (HWND hWnd, HWND hChild, RECT &r)
 	MoveWindow (hChild, r.left, r.top, r.right-r.left, r.bottom-r.top, true);
 }
 
+
+// ------------------------------------------------------------------------------
+// Floating point output stream formatter
+// ------------------------------------------------------------------------------
+
+FltFormatter::FltFormatter (int precision, double value)
+	: precision(precision)
+	, value(value)
+{
+}
+
+std::ostream& operator<< (std::ostream& os, const FltFormatter& v)
+{
+	std::stringstream ss;
+	ss << std::setprecision(v.precision) << std::fixed << v.value;
+	std::string str;
+	ss.str().swap(str);
+	str.resize(str.find_last_not_of("0") + 1);
+//	if (str[str.length() - 1] == '.') { str.resize(str.length() - 1); } // results in "1"   instead of "1."
+	if (str[str.length() - 1] == '.') { str.push_back('0'); }           // results in "1.0" instead of "1."
+	os << str;
+	return os;
+}
+
+FltFormat::FltFormat (int precision /* = 6 */)
+	: precision(precision)
+{
+}
+
+FltFormatter FltFormat::operator() (double value) const {
+	return FltFormatter(precision, value);
+}
