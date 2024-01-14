@@ -2177,8 +2177,8 @@ const HELPCONTEXT* OptionsPage_Forces::HelpContext() const
 
 void OptionsPage_Forces::UpdateControls(HWND hPage)
 {
-	std::array<int, 15> residForces = {
-		IDC_OPT_VEC_WEIGHT, IDC_OPT_VEC_THRUST, IDC_OPT_VEC_LIFT, IDC_OPT_VEC_DRAG, IDC_OPT_VEC_TOTAL,
+	std::array<int, 16> residForces = {
+		IDC_OPT_VEC_WEIGHT, IDC_OPT_VEC_THRUST, IDC_OPT_VEC_LIFT, IDC_OPT_VEC_DRAG, IDC_OPT_VEC_SIDEFORCE, IDC_OPT_VEC_TOTAL,
 		IDC_OPT_VEC_TORQUE, IDC_OPT_VEC_LINSCL, IDC_OPT_VEC_LOGSCL, IDC_OPT_VEC_SCALE, IDC_OPT_VEC_OPACITY,
 		IDC_STATIC1, IDC_STATIC2, IDC_STATIC3, IDC_STATIC4, IDC_STATIC5
 	};
@@ -2193,6 +2193,7 @@ void OptionsPage_Forces::UpdateControls(HWND hPage)
 	SendDlgItemMessage(hPage, IDC_OPT_VEC_THRUST, BM_SETCHECK, vecFlag & BFV_THRUST ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hPage, IDC_OPT_VEC_LIFT, BM_SETCHECK, vecFlag & BFV_LIFT ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hPage, IDC_OPT_VEC_DRAG, BM_SETCHECK, vecFlag & BFV_DRAG ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_VEC_SIDEFORCE, BM_SETCHECK, vecFlag & BFV_SIDEFORCE ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hPage, IDC_OPT_VEC_TOTAL, BM_SETCHECK, vecFlag & BFV_TOTAL ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hPage, IDC_OPT_VEC_TORQUE, BM_SETCHECK, vecFlag & BFV_TORQUE ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hPage, IDC_OPT_VEC_LINSCL, BM_SETCHECK, vecFlag & BFV_LOGSCALE ? BST_UNCHECKED : BST_CHECKED, 0);
@@ -2227,6 +2228,7 @@ BOOL OptionsPage_Forces::OnCommand(HWND hPage, WORD ctrlId, WORD notification, H
 	case IDC_OPT_VEC_THRUST:
 	case IDC_OPT_VEC_LIFT:
 	case IDC_OPT_VEC_DRAG:
+	case IDC_OPT_VEC_SIDEFORCE:
 	case IDC_OPT_VEC_TOTAL:
 	case IDC_OPT_VEC_TORQUE:
 	case IDC_OPT_VEC_LINSCL:
@@ -2247,14 +2249,15 @@ void OptionsPage_Forces::OnItemClicked(HWND hPage, WORD ctrlId)
 	bool check = (SendDlgItemMessage(hPage, ctrlId, BM_GETCHECK, 0, 0) == TRUE);
 	DWORD flag;
 	switch (ctrlId) {
-	case IDC_OPT_VEC:        flag = BFV_ENABLE;  break;
-	case IDC_OPT_VEC_WEIGHT: flag = BFV_WEIGHT;  break;
-	case IDC_OPT_VEC_THRUST: flag = BFV_THRUST;  break;
-	case IDC_OPT_VEC_LIFT:   flag = BFV_LIFT;    break;
-	case IDC_OPT_VEC_DRAG:   flag = BFV_DRAG;    break;
-	case IDC_OPT_VEC_TOTAL:  flag = BFV_TOTAL;   break;
-	case IDC_OPT_VEC_TORQUE: flag = BFV_TORQUE;  break;
-	case IDC_OPT_VEC_LINSCL: flag = BFV_LOGSCALE; check = false; break;
+	case IDC_OPT_VEC:           flag = BFV_ENABLE;    break;
+	case IDC_OPT_VEC_WEIGHT:    flag = BFV_WEIGHT;    break;
+	case IDC_OPT_VEC_THRUST:    flag = BFV_THRUST;    break;
+	case IDC_OPT_VEC_LIFT:      flag = BFV_LIFT;      break;
+	case IDC_OPT_VEC_DRAG:      flag = BFV_DRAG;      break;
+	case IDC_OPT_VEC_SIDEFORCE: flag = BFV_SIDEFORCE; break;
+	case IDC_OPT_VEC_TOTAL:     flag = BFV_TOTAL;     break;
+	case IDC_OPT_VEC_TORQUE:    flag = BFV_TORQUE;    break;
+	case IDC_OPT_VEC_LINSCL:    flag = BFV_LOGSCALE; check = false; break;
 	case IDC_OPT_VEC_LOGSCL: flag = BFV_LOGSCALE; check = true;  break;
 	default:                 flag = 0;           break;
 	}
