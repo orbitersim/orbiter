@@ -275,6 +275,7 @@
 #define IDC_OPT_JOY_STATIC2             1103
 #define IDC_OPT_JOY_STATIC3             1104
 #define IDC_OPT_JOY_STATIC4             1105
+#define IDC_OPT_VEC_SIDEFORCE			1106
 
 // Unsorted
 #define IDC_SCN_LIST                    1090
