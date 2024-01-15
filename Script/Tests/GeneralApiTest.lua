@@ -2,7 +2,7 @@
 -- General TEST Utils
 -- ---------------------------------------------------
 
-local tests_passed = 0 -- to be filled with TEST_ID.xxx
+-- local tests_passed = 0 -- to be filled with TEST_ID.xxx
 
 function add_line(line)
 	oapi.dbg_out(line)
@@ -17,15 +17,16 @@ function assert(cond)
 	end
 end
 
-function pass(test_id)
+function pass() -- (test_id)
 	add_line(" - passed")
-	tests_passed = tests_passed + test_id
+	-- tests_passed = tests_passed + test_id
 end
 
 -- ---------------------------------------------------
 -- "Constants"
 -- ---------------------------------------------------
 
+--[[
 local TEST_ID = {
   openfile_read  = 0x001,
   openfile_write = 0x002, -- can't write :(
@@ -38,6 +39,7 @@ local TEST_ID = {
   formatvalue    = 0x100
 }
 local ALL_PASSED = 0x1E1 -- make sure this is the sum of TEST_ID values!
+--]]
 
 local data = "Hello world! Hello world! Hello world! Hello world!\n"
           .. "Hello world! Hello world! Hello world! Hello world!\n"
@@ -92,7 +94,7 @@ f2 = oapi.openfile("nofile.txt", FILE_ACCESS_MODE.FILE_IN_ZEROONFAIL)
 assert(f1 ~= f2)
 assert(f1 ~= nil) ; oapi.closefile(f1, FILE_ACCESS_MODE.FILE_IN)
 assert(f2 == nil) ; oapi.closefile(f2, FILE_ACCESS_MODE.FILE_IN_ZEROONFAIL)
-pass(TEST_ID.openfile_read)
+pass()--(TEST_ID.openfile_read)
 -- ---------------------------------------------------
 
 --[[
@@ -173,7 +175,7 @@ add_line("Test: oapi.rand()")
 assert( oapi.rand() <= 1.0 ) -- not much to "test" ;)
 assert( oapi.rand() >= 0.0 )
 assert( oapi.rand() ~= oapi.rand() ) -- very unlikely ;)
-pass(TEST_ID.rand)
+pass()--(TEST_ID.rand)
 -- ---------------------------------------------------
 
 
@@ -184,7 +186,7 @@ add_line("Test: oapi.deflate()")
 zdata = oapi.deflate(data) -- zipped data
 assert( #zdata < #data ) -- 30 < 155
 assert( #zdata == 30 )
-pass(TEST_ID.deflate)
+pass()--(TEST_ID.deflate)
 -- ---------------------------------------------------
 
 -- ---------------------------------------------------
@@ -193,7 +195,7 @@ add_line("Test: oapi.inflate()")
 udata = oapi.inflate(zdata) -- unzipped zdata
 assert( #udata == #data ) -- both 155 in size
 assert( udata == data ) -- should be equal
-pass(TEST_ID.inflate)
+pass()--(TEST_ID.inflate)
 -- ---------------------------------------------------
 
 
@@ -321,7 +323,7 @@ assert( oapi.formatvalue(-PI*1e17) == "-3e+17"  )
 assert( oapi.formatvalue(-PI*1e18) == "-3e+18"  )
 assert( oapi.formatvalue(-PI*1e19) == "-3e+19"  )
 assert( oapi.formatvalue(-PI*1e20) == "-3e+20"  )
-pass(TEST_ID.formatvalue)
+pass()--(TEST_ID.formatvalue)
 -- ---------------------------------------------------
 
 
