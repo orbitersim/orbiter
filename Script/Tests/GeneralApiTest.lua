@@ -47,6 +47,8 @@ local data = "Hello world! Hello world! Hello world! Hello world!\n"
 local vec = {x=1.2, y=-3.4, z=5.6}
 
 
+oapi.set_tacc(10)
+
 -- ---------------------------------------------------
 -- TEST(S)
 -- ---------------------------------------------------
