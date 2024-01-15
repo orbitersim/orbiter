@@ -99,6 +99,9 @@ pass(TEST_ID.openfile_read)
 add_line("Test: oapi.openfile(fname,mode,root) write")
 -- ---------------------------------------------------
 fname = "__delete_me__.txt"
+local function cleanup() -- to be called at end of test
+	os.remove(fname) -- does the path fit?
+end
 
 add_line("   ...FILE_OUT write (overwrite)")
 f = oapi.openfile(fname, FILE_ACCESS_MODE.FILE_OUT)
@@ -326,5 +329,6 @@ pass(TEST_ID.formatvalue)
 -- ---------------------------------------------------
 assert(tests_passed == ALL_PASSED)
 add_line("=== All tests passed ===")
+cleanup()
 --proc.wait_simdt(5) -- just for GUI checking...
 oapi.exit(0)
