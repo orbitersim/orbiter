@@ -2,6 +2,8 @@
 -- General TEST Utils
 -- ---------------------------------------------------
 
+local tests_passed = 0 -- to be filled with TEST_ID.xxx
+
 function add_line(line)
 	oapi.dbg_out(line)
 	oapi.write_log(line)
@@ -15,16 +17,32 @@ function assert(cond)
 	end
 end
 
-function pass()
+function pass(test_id)
 	add_line(" - passed")
+	tests_passed = tests_passed + test_id
 end
 
 -- ---------------------------------------------------
 -- "Constants"
 -- ---------------------------------------------------
 
-data = "Hello world! Hello world! Hello world! Hello world!"
-vec = {x=1.2, y=-3.4, z=5.6}
+local TEST_ID = {
+  openfile_read  = 0x001,
+  openfile_write = 0x002,
+  writeline      = 0x004,
+  writeitem_xxx  = 0x008,
+  readitem_xxx   = 0x010,
+  rand           = 0x020,
+  deflate        = 0x040,
+  inflate        = 0x080,
+  formatvalue    = 0x100
+}
+local ALL_PASSED = 0x1FF -- make sure this is the sum of TEST_ID values!
+
+local data = "Hello world! Hello world! Hello world! Hello world!\n"
+          .. "Hello world! Hello world! Hello world! Hello world!\n"
+          .. "Hello world! Hello world! Hello world! Hello world!"
+local vec = {x=1.2, y=-3.4, z=5.6}
 
 
 -- ---------------------------------------------------
@@ -35,7 +53,6 @@ add_line("=== Lua script unit tests ===")
 add_line("")
 
 add_line("--- oapi module ---")
-
 
 -- ---------------------------------------------------
 add_line("Test: oapi.openfile(fname,mode,root) read")
@@ -75,7 +92,7 @@ f2 = oapi.openfile("nofile.txt", FILE_ACCESS_MODE.FILE_IN_ZEROONFAIL)
 assert(f1 ~= f2)
 assert(f1 ~= nil) ; oapi.closefile(f1, FILE_ACCESS_MODE.FILE_IN)
 assert(f2 == nil) ; oapi.closefile(f2, FILE_ACCESS_MODE.FILE_IN_ZEROONFAIL)
-pass()
+pass(TEST_ID.openfile_read)
 -- ---------------------------------------------------
 
 -- ---------------------------------------------------
@@ -92,7 +109,7 @@ add_line("   ...FILE_APP write (append)")
 f = oapi.openfile(fname, FILE_ACCESS_MODE.FILE_APP)
 assert(f ~= nil)
 -- oapi.closefile(f, FILE_ACCESS_MODE.FILE_APP) -- NOT yet! oapi_writeitem_xxx test use it!
-pass()
+pass(TEST_ID.openfile_write)
 -- ---------------------------------------------------
 
 
@@ -101,7 +118,7 @@ add_line("Test: oapi.writeline(f,line)")
 -- ---------------------------------------------------
 oapi.writeline(f, "# >>> This is a test-artifact and can be deleted! <<<");
 oapi.writeline(f, "");
-pass()
+pass(TEST_ID.writeline)
 -- ---------------------------------------------------
 
 
@@ -120,7 +137,7 @@ oapi.writeitem_bool(f, "VAL_BOOL[1]", true)
 add_line("   ...oapi.writeitem_vec()")
 oapi.writeitem_vec(f, "VAL_VEC", vec)
 oapi.closefile(f, FILE_ACCESS_MODE.FILE_APP)
-pass()
+pass(TEST_ID.writeitem_xxx)
 -- ---------------------------------------------------
 
 
@@ -142,7 +159,7 @@ assert( oapi.readitem_float(f, "VAL_FLOAT") == 3.14159 ) -- close enough ;)
 add_line("   ...oapi.readitem_string()")
 assert( oapi.readitem_string(f, "VAL_STR") == "foo" )
 oapi.closefile(f, FILE_ACCESS_MODE.FILE_IN)
-pass()
+pass(TEST_ID.readitem_xxx)
 -- ---------------------------------------------------
 
 
@@ -152,16 +169,29 @@ add_line("Test: oapi.rand()")
 assert( oapi.rand() <= 1.0 ) -- not much to "test" ;)
 assert( oapi.rand() >= 0.0 )
 assert( oapi.rand() ~= oapi.rand() ) -- very unlikely ;)
-pass()
+pass(TEST_ID.rand)
 -- ---------------------------------------------------
 
 
 -- ---------------------------------------------------
-add_line("Test: oapi.deflate() & oapi.inflate()")
+add_line("Test: oapi.deflate()")
 -- ---------------------------------------------------
-assert( oapi.inflate(oapi.deflate(data)) == data )
-pass()
+-- assert( #data == 155 )
+zdata = oapi.deflate(data) -- zipped data
+assert( #zdata < #data ) -- 30 < 155
+assert( #zdata == 30 )
+pass(TEST_ID.deflate)
 -- ---------------------------------------------------
+
+-- ---------------------------------------------------
+add_line("Test: oapi.inflate()")
+-- ---------------------------------------------------
+udata = oapi.inflate(zdata) -- unzipped zdata
+assert( #udata == #data ) -- both 155 in size
+assert( udata == data ) -- should be equal
+pass(TEST_ID.inflate)
+-- ---------------------------------------------------
+
 
 --[[ get_color doesn't seem to work in "headless" CI test :(
 -- ---------------------------------------------------
@@ -175,7 +205,7 @@ assert( oapi.get_color(  0,255,255)  == 65535    )
 assert( oapi.get_color(255,255,255)  == 16777215 )
 assert( oapi.get_color(255,255,  0)  == 16776960 )
 assert( oapi.get_color(  1,  2,  3)  == 66051    )
-pass()
+pass(TEST_ID.get_color)
 -- ---------------------------------------------------
 --]]
 
@@ -287,14 +317,14 @@ assert( oapi.formatvalue(-PI*1e17) == "-3e+17"  )
 assert( oapi.formatvalue(-PI*1e18) == "-3e+18"  )
 assert( oapi.formatvalue(-PI*1e19) == "-3e+19"  )
 assert( oapi.formatvalue(-PI*1e20) == "-3e+20"  )
-pass()
+pass(TEST_ID.formatvalue)
 -- ---------------------------------------------------
 
 
 -- ---------------------------------------------------
 -- FINAL RESULT
 -- ---------------------------------------------------
-
+assert(tests_passed == ALL_PASSED)
 add_line("=== All tests passed ===")
 --proc.wait_simdt(5) -- just for GUI checking...
 oapi.exit(0)
