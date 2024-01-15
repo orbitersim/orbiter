@@ -100,7 +100,7 @@ add_line("Test: oapi.openfile(fname,mode,root) write")
 -- ---------------------------------------------------
 fname = "__delete_me__.txt"
 local function cleanup() -- to be called at end of test
-	os.remove(fname) -- does the path fit?
+	-- os.remove(fname) -- does the path fit?
 end
 
 add_line("   ...FILE_OUT write (overwrite)")
