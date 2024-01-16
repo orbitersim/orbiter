@@ -244,20 +244,14 @@ f = oapi.openfile(fname_modules, mode, PATH_ROOT.MODULES)
 assert(f ~= nil)
 oapi.closefile(f, mode)
 
---[[
-
 add_line("   ...FILE_IN vs. FILE_IN_ZEROONFAIL on non-existing file")
 f1 = oapi.openfile("nofile.txt", FILE_ACCESS_MODE.FILE_IN)
 f2 = oapi.openfile("nofile.txt", FILE_ACCESS_MODE.FILE_IN_ZEROONFAIL)
 assert(f1 ~= f2)
-assert(f1 ~= nil) ; oapi.closefile(f1, FILE_ACCESS_MODE.FILE_IN)
-assert(f2 == nil) ; oapi.closefile(f2, FILE_ACCESS_MODE.FILE_IN_ZEROONFAIL)
-pass()
-
---]]
-
-
-
+assert(f1 ~= nil)
+assert(f2 == nil)
+oapi.closefile(f1, FILE_ACCESS_MODE.FILE_IN)
+oapi.closefile(f2, FILE_ACCESS_MODE.FILE_IN_ZEROONFAIL)
 
 pass()
 -- ---------------------------------------------------
