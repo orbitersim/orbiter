@@ -33,7 +33,10 @@ data = "Hello world! Hello world! Hello world! Hello world!\n"
     .. "Hello world! Hello world! Hello world! Hello world!"
 vec = { x = 1.2, y = -3.4, z = 5.6 }
 
-fname_root = "__delete_me__.txt"
+fname_root      = "__delete_me__.txt"
+fname_config    = "Sun.cfg"
+fname_scenarios = "Tests\\Description.txt"
+fname_textures  = "transp.dds"
 
 
 -- ---------------------------------------------------
@@ -197,20 +200,64 @@ oapi.closefile(f, mode)
 pass()
 -- ---------------------------------------------------
 
---[[
 
 -- ---------------------------------------------------
 add_line("Test: oapi.openfile(fname,FILE_IN,...)")
 -- ---------------------------------------------------
 mode = FILE_ACCESS_MODE.FILE_IN
+
 add_line("   ...ROOT Orbiter main directory")
 f = oapi.openfile(fname_root, mode, PATH_ROOT.ROOT)
 assert(f ~= nil)
 oapi.closefile(f, mode)
+
+add_line("   ...CONFIG Orbiter config folder")
+f = oapi.openfile(fname_config, mode, PATH_ROOT.CONFIG)
+assert(f ~= nil)
+oapi.closefile(f, mode)
+
+add_line("   ...SCENARIOS Orbiter scenarios folder")
+f = oapi.openfile(fname_scenarios, mode, PATH_ROOT.SCENARIOS)
+assert(f ~= nil)
+oapi.closefile(f, mode)
+
+add_line("   ...TEXTURES Orbiter standard texture folder")
+f = oapi.openfile(fname_textures, mode, PATH_ROOT.TEXTURES)
+assert(f ~= nil)
+oapi.closefile(f, mode)
+
+
+--[[
+
+
+add_line("   ...TEXTURES2 Orbiter high-res texture folder")
+f = oapi.openfile("DG\\dgmk4_1.dds", mode, PATH_ROOT.TEXTURES2)
+assert(f ~= nil) ; oapi.closefile(f, mode)
+
+add_line("   ...MESHES Orbiter mesh folder")
+f = oapi.openfile("dummy.msh", mode, PATH_ROOT.MESHES)
+assert(f ~= nil) ; oapi.closefile(f, mode)
+
+add_line("   ...MODULES Orbiter module folder")
+f = oapi.openfile("ScriptVessel.dll", mode, PATH_ROOT.MODULES)
+assert(f ~= nil) ; oapi.closefile(f, mode)
+
+add_line("   ...FILE_IN vs. FILE_IN_ZEROONFAIL on non-existing file")
+f1 = oapi.openfile("nofile.txt", FILE_ACCESS_MODE.FILE_IN)
+f2 = oapi.openfile("nofile.txt", FILE_ACCESS_MODE.FILE_IN_ZEROONFAIL)
+assert(f1 ~= f2)
+assert(f1 ~= nil) ; oapi.closefile(f1, FILE_ACCESS_MODE.FILE_IN)
+assert(f2 == nil) ; oapi.closefile(f2, FILE_ACCESS_MODE.FILE_IN_ZEROONFAIL)
+pass()--(TEST_ID.openfile_read)
+
+--]]
+
+
+
+
 pass()
 -- ---------------------------------------------------
 
---]]
 
 
 -- ---------------------------------------------------
