@@ -43,6 +43,13 @@ fname_modules   = "ScriptVessel.dll"
 
 
 -- ---------------------------------------------------
+-- Helper
+-- ---------------------------------------------------
+local function equ (fa, fb)
+	return (math.abs(fa - fb) < 0.00001)
+end
+
+-- ---------------------------------------------------
 -- TEST(S)
 -- ---------------------------------------------------
 
@@ -189,6 +196,23 @@ pass()
 -- ---------------------------------------------------
 
 
+--[[ get_color doesn't seem to work in "headless" tests :(
+-- ---------------------------------------------------
+add_line("Test: oapi.get_color(r,g,b)")
+-- ---------------------------------------------------
+assert( oapi.get_color(  0,  0,  0)  == 0        )
+assert( oapi.get_color(  0,  0,255)  == 255      )
+assert( oapi.get_color(  0,255,  0)  == 65280    )
+assert( oapi.get_color(255,  0,  0)  == 16711680 )
+assert( oapi.get_color(  0,255,255)  == 65535    )
+assert( oapi.get_color(255,255,255)  == 16777215 )
+assert( oapi.get_color(255,255,  0)  == 16776960 )
+assert( oapi.get_color(  1,  2,  3)  == 66051    )
+pass()
+-- ---------------------------------------------------
+--]]
+
+
 -- ---------------------------------------------------
 add_line("Test: oapi.openfile(fname,FILE_OUT,root)")
 -- ---------------------------------------------------
@@ -244,16 +268,45 @@ pass()
 
 
 -- ---------------------------------------------------
+add_line("Test: oapi.readitem_xxx(f,item)")
+-- ---------------------------------------------------
+mode = FILE_ACCESS_MODE.FILE_IN
+f = oapi.openfile(fname_root, mode)
+assert(f ~= nil)
+
+add_line("   ...oapi.readitem_vec()")
+vec2 = oapi.readitem_vec(f, "VAL_VEC")
+assert( vec2.x == vec.x and vec2.y == vec.y and vec2.z == vec.z )
+
+add_line("   ...oapi.readitem_bool()")
+assert( oapi.readitem_bool(f, "VAL_BOOL[1]") == true )
+assert( oapi.readitem_bool(f, "VAL_BOOL[0]") == false )
+
+add_line("   ...oapi.readitem_int()")
+assert( oapi.readitem_int(f, "VAL_INT") == 4711 )
+
+add_line("   ...oapi.readitem_float()")
+assert( equ( oapi.readitem_float(f, "VAL_FLOAT"), 3.14159) ) -- close enough?
+
+add_line("   ...oapi.readitem_string()")
+assert( oapi.readitem_string(f, "VAL_STR") == "foo" )
+
+oapi.closefile(f, mode)
+pass()
+-- ---------------------------------------------------
+
+
+-- ---------------------------------------------------
 add_line("Test: oapi.openfile(fname,FILE_IN,...)")
 -- ---------------------------------------------------
 mode = FILE_ACCESS_MODE.FILE_IN
 
-add_line("   ...ROOT Orbiter main directory")
+add_line("   ...ROOT      Orbiter main directory")
 f = oapi.openfile(fname_root, mode, PATH_ROOT.ROOT)
 assert(f ~= nil)
 oapi.closefile(f, mode)
 
-add_line("   ...CONFIG Orbiter config folder")
+add_line("   ...CONFIG    Orbiter config folder")
 f = oapi.openfile(fname_config, mode, PATH_ROOT.CONFIG)
 assert(f ~= nil)
 oapi.closefile(f, mode)
@@ -263,7 +316,7 @@ f = oapi.openfile(fname_scenarios, mode, PATH_ROOT.SCENARIOS)
 assert(f ~= nil)
 oapi.closefile(f, mode)
 
-add_line("   ...TEXTURES Orbiter standard texture folder")
+add_line("   ...TEXTURES  Orbiter standard texture folder")
 f = oapi.openfile(fname_textures, mode, PATH_ROOT.TEXTURES)
 assert(f ~= nil)
 oapi.closefile(f, mode)
@@ -273,12 +326,12 @@ f = oapi.openfile(fname_textures2, mode, PATH_ROOT.TEXTURES2)
 assert(f ~= nil)
 oapi.closefile(f, mode)
 
-add_line("   ...MESHES Orbiter mesh folder")
+add_line("   ...MESHES    Orbiter mesh folder")
 f = oapi.openfile(fname_meshes, mode, PATH_ROOT.MESHES)
 assert(f ~= nil)
 oapi.closefile(f, mode)
 
-add_line("   ...MODULES Orbiter module folder")
+add_line("   ...MODULES   Orbiter module folder")
 f = oapi.openfile(fname_modules, mode, PATH_ROOT.MODULES)
 assert(f ~= nil)
 oapi.closefile(f, mode)
