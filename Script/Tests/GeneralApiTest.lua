@@ -1,10 +1,6 @@
-maxline = 20
-nline = 0
-first_line = 0
-linebuf = {}
-
-function disp_output()
-end
+-- ---------------------------------------------------
+-- General TEST Utils
+-- ---------------------------------------------------
 
 function add_line(line)
 	oapi.dbg_out(line)
@@ -353,6 +349,7 @@ pass()
 -- ---------------------------------------------------
 -- FINAL RESULT
 -- ---------------------------------------------------
+os.remove(fname_root) -- cleanup the mess we left...
 
 add_line("=== All tests passed ===")
 oapi.exit(0)
