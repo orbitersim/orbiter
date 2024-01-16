@@ -116,8 +116,8 @@ assert( oapi.formatvalue(PI,12) == " 3.1415926536")
 assert( oapi.formatvalue(PI,13) == " 3.14159265359")
 assert( oapi.formatvalue(PI,14) == " 3.141592653590")
 assert( oapi.formatvalue(PI,15) == " 3.1415926535898")
-assert( oapi.formatvalue(PI,16) == " 3.14159265358979")
-assert( oapi.formatvalue(PI,17) == " 3.141592653589790")
+assert( oapi.formatvalue(PI,16) == " 3.14159265358979") -- <= From here on it's just "base-2 noise"
+assert( oapi.formatvalue(PI,17) == " 3.141592653589790") --   see definition of PI in oapi_init.lua
 assert( oapi.formatvalue(PI,18) == " 3.1415926535897900")
 assert( oapi.formatvalue(PI,19) == " 3.14159265358979001")
 assert( oapi.formatvalue(PI,20) == " 3.141592653589790007")
@@ -199,6 +199,45 @@ mode = FILE_ACCESS_MODE.FILE_OUT
 add_line("   ...FILE_OUT write (overwrite)")
 f = oapi.openfile(fname_root, mode)
 assert(f ~= nil)
+oapi.closefile(f, mode)
+
+mode = FILE_ACCESS_MODE.FILE_APP
+add_line("   ...FILE_APP write (append)")
+f = oapi.openfile(fname_root, mode)
+assert(f ~= nil)
+-- oapi.closefile(f, mode) -- NOT yet! oapi_writeitem_xxx test use it!
+pass()
+-- ---------------------------------------------------
+
+
+-- ---------------------------------------------------
+add_line("Test: oapi.writeline(f,line)")
+-- ---------------------------------------------------
+oapi.writeline(f, "# >>> This is a test-artifact and can be deleted! <<<");
+oapi.writeline(f, "");
+pass() -- not much to test here
+-- ---------------------------------------------------
+
+
+-- ---------------------------------------------------
+add_line("Test: oapi.writeitem_xxx(f,item,value)")
+-- ---------------------------------------------------
+add_line("   ...oapi.writeitem_string()")
+oapi.writeitem_string(f, "VAL_STR", "foo")
+
+add_line("   ...oapi.writeitem_float()")
+oapi.writeitem_float(f, "VAL_FLOAT", PI)
+
+add_line("   ...oapi.writeitem_int()")
+oapi.writeitem_int(f, "VAL_INT", 4711)
+
+add_line("   ...oapi.writeitem_bool()")
+oapi.writeitem_bool(f, "VAL_BOOL[0]", false)
+oapi.writeitem_bool(f, "VAL_BOOL[1]", true)
+
+add_line("   ...oapi.writeitem_vec()")
+oapi.writeitem_vec(f, "VAL_VEC", vec)
+
 oapi.closefile(f, mode)
 pass()
 -- ---------------------------------------------------
