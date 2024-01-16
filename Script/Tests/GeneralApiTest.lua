@@ -37,6 +37,9 @@ fname_root      = "__delete_me__.txt"
 fname_config    = "Sun.cfg"
 fname_scenarios = "Tests\\Description.txt"
 fname_textures  = "transp.dds"
+fname_textures2 = "DG\\dgmk4_1.dds"
+fname_meshes    = "dummy.msh"
+fname_modules   = "ScriptVessel.dll"
 
 
 -- ---------------------------------------------------
@@ -226,21 +229,22 @@ f = oapi.openfile(fname_textures, mode, PATH_ROOT.TEXTURES)
 assert(f ~= nil)
 oapi.closefile(f, mode)
 
-
---[[
-
-
 add_line("   ...TEXTURES2 Orbiter high-res texture folder")
-f = oapi.openfile("DG\\dgmk4_1.dds", mode, PATH_ROOT.TEXTURES2)
-assert(f ~= nil) ; oapi.closefile(f, mode)
+f = oapi.openfile(fname_textures2, mode, PATH_ROOT.TEXTURES2)
+assert(f ~= nil)
+oapi.closefile(f, mode)
 
 add_line("   ...MESHES Orbiter mesh folder")
-f = oapi.openfile("dummy.msh", mode, PATH_ROOT.MESHES)
-assert(f ~= nil) ; oapi.closefile(f, mode)
+f = oapi.openfile(fname_meshes, mode, PATH_ROOT.MESHES)
+assert(f ~= nil)
+oapi.closefile(f, mode)
 
 add_line("   ...MODULES Orbiter module folder")
-f = oapi.openfile("ScriptVessel.dll", mode, PATH_ROOT.MODULES)
-assert(f ~= nil) ; oapi.closefile(f, mode)
+f = oapi.openfile(fname_modules, mode, PATH_ROOT.MODULES)
+assert(f ~= nil)
+oapi.closefile(f, mode)
+
+--[[
 
 add_line("   ...FILE_IN vs. FILE_IN_ZEROONFAIL on non-existing file")
 f1 = oapi.openfile("nofile.txt", FILE_ACCESS_MODE.FILE_IN)
@@ -248,7 +252,7 @@ f2 = oapi.openfile("nofile.txt", FILE_ACCESS_MODE.FILE_IN_ZEROONFAIL)
 assert(f1 ~= f2)
 assert(f1 ~= nil) ; oapi.closefile(f1, FILE_ACCESS_MODE.FILE_IN)
 assert(f2 == nil) ; oapi.closefile(f2, FILE_ACCESS_MODE.FILE_IN_ZEROONFAIL)
-pass()--(TEST_ID.openfile_read)
+pass()
 
 --]]
 
