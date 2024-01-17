@@ -786,11 +786,35 @@ void Interpreter::LoadAPI ()
 		{"simulatebufferedkey", oapi_simulatebufferedkey},
 		{"simulateimmediatekey", oapi_simulateimmediatekey},
 
+		// file i/o functions
+		{"openfile", oapi_openfile},
+		{"closefile", oapi_closefile},
+		{"savescenario", oapi_savescenario},
+		{"writeline", oapi_writeline},
+		// {"writelog", oapi_writelog}, // see "write_log" above!
+		// {"writelogv", oapi_writelogv}, //  ???
+		{"writescenario_string", oapi_writescenario_string},
+		{"writescenario_int", oapi_writescenario_int},
+		{"writescenario_float", oapi_writescenario_float},
+		{"writescenario_vec", oapi_writescenario_vec},
+		{"readscenario_nextline", oapi_readscenario_nextline},
+		{"readitem_string", oapi_readitem_string},
+		{"readitem_float", oapi_readitem_float},
+		{"readitem_int", oapi_readitem_int},
+		{"readitem_bool", oapi_readitem_bool},
+		{"readitem_vec", oapi_readitem_vec},
+		{"writeitem_string", oapi_writeitem_string},
+		{"writeitem_float", oapi_writeitem_float},
+		{"writeitem_int", oapi_writeitem_int},
+		{"writeitem_bool", oapi_writeitem_bool},
+		{"writeitem_vec", oapi_writeitem_vec},
+
 		// utility functions
 		{"rand", oapi_rand},
 		{"deflate", oapi_deflate},
 		{"inflate", oapi_inflate},
 		{"get_color", oapi_get_color},
+		{"formatvalue", oapi_formatvalue},
 
 		{NULL, NULL}
 	};
@@ -937,6 +961,25 @@ void Interpreter::LoadAPI ()
 	lua_pushnumber (L, ALTMODE_MEANRAD); lua_setfield (L, -2, "MEANRAD");
 	lua_pushnumber (L, ALTMODE_GROUND);  lua_setfield (L, -2, "GROUND");
 	lua_setglobal (L, "ALTMODE");
+
+	// file access mode identifiers
+	lua_createtable(L, 0, 4);
+	lua_pushnumber(L, FileAccessMode::FILE_IN);            lua_setfield(L, -2, "FILE_IN");
+	lua_pushnumber(L, FileAccessMode::FILE_OUT);           lua_setfield(L, -2, "FILE_OUT");
+	lua_pushnumber(L, FileAccessMode::FILE_APP);           lua_setfield(L, -2, "FILE_APP");
+	lua_pushnumber(L, FileAccessMode::FILE_IN_ZEROONFAIL); lua_setfield(L, -2, "FILE_IN_ZEROONFAIL");
+	lua_setglobal(L, "FILE_ACCESS_MODE");
+
+	// path root identifiers
+	lua_createtable(L, 0, 4);
+	lua_pushnumber(L, PathRoot::ROOT);      lua_setfield(L, -2, "ROOT");
+	lua_pushnumber(L, PathRoot::CONFIG);    lua_setfield(L, -2, "CONFIG");
+	lua_pushnumber(L, PathRoot::SCENARIOS); lua_setfield(L, -2, "SCENARIOS");
+	lua_pushnumber(L, PathRoot::TEXTURES);  lua_setfield(L, -2, "TEXTURES");
+	lua_pushnumber(L, PathRoot::TEXTURES2); lua_setfield(L, -2, "TEXTURES2");
+	lua_pushnumber(L, PathRoot::MESHES);    lua_setfield(L, -2, "MESHES");
+	lua_pushnumber(L, PathRoot::MODULES);   lua_setfield(L, -2, "MODULES");
+	lua_setglobal(L, "PATH_ROOT");
 }
 
 void Interpreter::LoadMFDAPI ()
@@ -2919,6 +2962,540 @@ int Interpreter::oapi_simulateimmediatekey (lua_State *L)
 }
 
 // ============================================================================
+// file i/o functions
+
+/***
+Open a file for reading or writing.
+
+Note: The following access modes are supported:
+   - FILE_IN read
+   - FILE_IN_ZEROONFAIL read
+   - FILE_OUT write (overwrite)
+   - FILE_APP write (append)
+
+The file path defined in fname is relative to either the main Orbiter folder or
+   to one of Orbiter's default subfolders, depending on the root parameter:
+   - ROOT Orbiter main directory
+   - CONFIG Orbiter config folder
+   - SCENARIOS Orbiter scenarios folder
+   - TEXTURES Orbiter standard texture folder
+   - TEXTURES2 Orbiter high-res texture folder
+   - MESHES Orbiter mesh folder
+   - MODULES Orbiter module folder
+
+You should always specify a standard Orbiter subfolder by the above
+   mechanism, rather than manually as a path in fname, because Orbiter
+   installations can redirect these directories.
+Access mode FILE_IN will always return a valid file handle, even if the file
+   doesn't exist or can't be opened for reading (in which case all subsequent read
+   attempts will fail). By contrast, FILE_IN_ZEROONFAIL will return 0 if the requested
+   file can't be opened for reading.
+Be careful when opening a file for writing in the standard Orbiter subfolders:
+   except for ROOT and SCENARIOS, all other standard folders may be readonly
+   (e.g. for CD installations)
+
+@function openfile
+@tparam string fname file name (with optional path)
+@tparam FILE_ACCESS_MODE mode read/write mode (see notes)
+@tparam PATH_ROOT root path origin (see notes)
+@treturn FILEHANDLE file handle
+@see closefile
+*/
+int Interpreter::oapi_openfile (lua_State* L)
+{
+	ASSERT_STRING(L, 1);
+	ASSERT_NUMBER(L, 2);
+
+	const char*    fname = lua_tostringex(L, 1);
+	FileAccessMode mode = (FileAccessMode)lua_tointeger(L, 2);
+	PathRoot       root = PathRoot::ROOT; // default
+	if (lua_gettop(L) > 2) {
+		ASSERT_NUMBER(L, 3);
+		root = (PathRoot)lua_tointeger(L, 3);
+	}
+
+	FILEHANDLE f = oapiOpenFile(fname, mode, root);
+
+	if (f) {
+		lua_pushlightuserdata(L, f);
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+/***
+Close a file after reading or writing.
+
+Note: Use this function on files opened with oapiOpenFile after finishing with it.
+   The file access mode passed to closefile must be the same as used to open it.
+
+@function closefile
+@tparam FILEHANDLE f file handle
+@tparam FILE_ACCESS_MODE mode access mode with which the file was opened
+*/
+int Interpreter::oapi_closefile (lua_State* L)
+{
+	FILEHANDLE file;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(file = lua_toObject(L, 1), "Argument 1: invalid object");
+
+	ASSERT_NUMBER(L, 2);
+	FileAccessMode mode = (FileAccessMode)lua_tointeger(L, 2);
+
+	oapiCloseFile(file, mode);
+	return 0;
+}
+
+/***
+Writes the current simulation state to a scenario file.
+
+Note: The file name is always calculated relative from the default orbiter scenario
+   folder (usually Orbiter\\Scenarios). The file name can contain a relative path
+   starting from that directory, but the subdirectories must already exist. The
+   function will not create new directories. The file name should not contain an
+   absolute path.
+   The file name should not contain an extension. Orbiter will automatically add
+   a .scn extension.
+   The description string can be empty ("").
+
+@function savescenario
+@tparam string fname scenario file name
+@tparam string desc scenario description
+@treturn boolean _true_ if scenario could be written successfully, _false_ if an error occurred.
+*/
+int Interpreter::oapi_savescenario (lua_State* L)
+{
+	ASSERT_STRING(L, 1);
+	ASSERT_STRING(L, 2);
+	const char* fname = lua_tostringex(L, 1);
+	const char* desc = lua_tostringex(L, 2);
+	lua_pushboolean(L, oapiSaveScenario(fname, desc));
+	return 1;
+}
+
+/***
+Writes a line to a file.
+
+@function writeline
+@tparam FILEHANDLE f file handle
+@tparam string line line to be written (zero-terminated)
+*/
+int Interpreter::oapi_writeline (lua_State* L)
+{
+	FILEHANDLE file;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(file = lua_toObject(L, 1), "Argument 1: invalid object");
+	ASSERT_STRING(L, 2);
+	const char* line = lua_tostringex(L, 2);
+	oapiWriteLine(file, const_cast<char*>(line));
+	return 0;
+}
+
+// int Interpreter::oapi_writelogv (lua_State * L);
+// {
+// 	return 1;
+// }
+
+/***
+Writes a string-valued item to a scenario file.
+
+@function writescenario_string
+@tparam FILEHANDLE scn scenario file handle
+@tparam string item item id
+@tparam  string string to be written (zero-terminated)
+*/
+int Interpreter:: oapi_writescenario_string (lua_State* L)
+{
+	FILEHANDLE scn;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(scn = lua_toObject(L, 1), "Argument 1: invalid object");
+	ASSERT_STRING(L, 2);
+	const char* item = lua_tostringex(L, 2);
+	ASSERT_STRING(L, 3);
+	const char* string = lua_tostringex(L, 3);
+	oapiWriteScenario_string(scn, const_cast<char*>(item), const_cast<char*>(string));
+	return 0;
+}
+
+/***
+Writes an integer-valued item to a scenario file.
+
+@function writescenario_int
+@tparam FILEHANDLE scn scenario file handle
+@tparam string item item id
+@tparam integer i integer value to be written
+*/
+int Interpreter::oapi_writescenario_int (lua_State* L)
+{
+	FILEHANDLE scn;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(scn = lua_toObject(L, 1), "Argument 1: invalid object");
+	ASSERT_STRING(L, 2);
+	const char* item = lua_tostringex(L, 2);
+	ASSERT_NUMBER(L, 3);
+	int i = lua_tointeger(L, 3);
+	oapiWriteScenario_int(scn, const_cast<char*>(item), i);
+	return 0;
+}
+
+/***
+Writes a floating point-valued item to a scenario file.
+
+@function writescenario_float
+@tparam FILEHANDLE scn scenario file handle
+@tparam string item item id
+@tparam double d floating point value to be written
+*/
+int Interpreter::oapi_writescenario_float (lua_State* L)
+{
+	FILEHANDLE scn;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(scn = lua_toObject(L, 1), "Argument 1: invalid object");
+	ASSERT_STRING(L, 2);
+	const char* item = lua_tostringex(L, 2);
+	ASSERT_NUMBER(L, 3);
+	double d = lua_tonumber(L, 3);
+	oapiWriteScenario_float(scn, const_cast<char*>(item), d);
+	return 0;
+}
+
+/***
+Writes a vector-valued item to a scenario file.
+
+@function writescenario_vec
+@tparam FILEHANDLE scn scenario file handle
+@tparam string item item id
+@tparam VECTOR3 vec vector to be written
+*/
+int Interpreter::oapi_writescenario_vec (lua_State* L)
+{
+	FILEHANDLE scn;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(scn = lua_toObject(L, 1), "Argument 1: invalid object");
+	ASSERT_STRING(L, 2);
+	const char* item = lua_tostringex(L, 2);
+	ASSERT_VECTOR(L, 3);
+	const VECTOR3 vec = lua_tovector(L, 3);
+	oapiWriteScenario_vec(scn, const_cast<char*>(item), vec);
+	return 0;
+}
+
+/***
+Reads an item from a scenario file.
+
+Note: The function returns lines as long as an item for the current block could be
+   read. It returns _nil_ at EOF, or when an "END" token is read.
+   Leading and trailing whitespace, and trailing comments (from ";" to EOL) are
+   automatically removed.
+   "line" points to an internal static character buffer. The buffer grows
+   automatically to hold lines of arbitrary length.
+   The buffer is overwritten on the next call to readscenario_nextline,
+   so it must be copied or processed before the next call.
+
+@function readscenario_nextline
+@tparam FILEHANDLE scn scenario file handle
+@treturn line pointer to the scanned line as long as an item for the current block
+   could be read, _nil_ if not.
+*/
+int Interpreter::oapi_readscenario_nextline (lua_State* L)
+{
+	FILEHANDLE scn;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(scn = lua_toObject(L, 1), "Argument 1: invalid object");
+
+	char* line;
+	bool ok = oapiReadScenario_nextline(scn, line);
+	if (ok) {
+		lua_pushstring(L, line);
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+/***
+Read the value of a tag from a configuration file.
+
+Note: The tag-value entries of a configuration file have the format \<tag\> = \<value\>
+   The functions search the complete file independent of the current position of the file pointer.
+   Whitespace around tag and value are discarded, as well as comments
+   beginning with a semicolon (;) to the end of the line.
+   String values can contain internal whitespace.
+
+@function readitem_string
+@tparam FILEHANDLE f file handle
+@tparam string item pointer to tag string
+@treturn string value if tag was found in the file, _nil_ if not.
+@see readitem_string for more details
+*/
+int Interpreter::oapi_readitem_string (lua_State* L)
+{
+	FILEHANDLE f;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(f = lua_toObject(L, 1), "Argument 1: invalid object");
+
+	ASSERT_STRING(L, 2);
+	const char* item = lua_tostringex(L, 2);
+
+	char cbuf[1024];
+	bool ok = oapiReadItem_string(f, const_cast<char*>(item), cbuf);
+	if (ok) {
+		lua_pushstring(L, cbuf);
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+/***
+Read the value of a tag from a configuration file.
+
+@function readitem_float
+@tparam FILEHANDLE f file handle
+@tparam string item pointer to tag string
+@treturn float value if tag was found in the file, _nil_ if not.
+@see readitem_string for more details
+*/
+int Interpreter::oapi_readitem_float (lua_State* L)
+{
+	FILEHANDLE f;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(f = lua_toObject(L, 1), "Argument 1: invalid object");
+
+	ASSERT_STRING(L, 2);
+	const char* item = lua_tostringex(L, 2);
+
+	double d;
+	bool ok = oapiReadItem_float(f, const_cast<char*>(item), d);
+	if (ok) {
+		lua_pushnumber(L, d);
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+/***
+Read the value of a tag from a configuration file.
+
+@function readitem_int
+@tparam FILEHANDLE f file handle
+@tparam string item pointer to tag string
+@treturn integer value if tag was found in the file, _nil_ if not.
+@see readitem_string for more details
+*/
+int Interpreter::oapi_readitem_int (lua_State* L)
+{
+	FILEHANDLE f;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(f = lua_toObject(L, 1), "Argument 1: invalid object");
+
+	ASSERT_STRING(L, 2);
+	const char* item = lua_tostringex(L, 2);
+
+	int i;
+	bool ok = oapiReadItem_int(f, const_cast<char*>(item), i);
+	if (ok) {
+		lua_pushnumber(L, i);
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+/***
+Read the value of a tag from a configuration file.
+
+Note: In a file boolean values are represented by the strings "FALSE" and "TRUE".
+
+@function readitem_bool
+@tparam FILEHANDLE f file handle
+@tparam string item pointer to tag string
+@treturn boolean value if tag was found in the file, _nil_ if not.
+@see readitem_string for more details
+*/
+int Interpreter::oapi_readitem_bool (lua_State* L)
+{
+	FILEHANDLE f;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(f = lua_toObject(L, 1), "Argument 1: invalid object");
+
+	ASSERT_STRING(L, 2);
+	const char* item = lua_tostringex(L, 2);
+
+	bool b;
+	bool ok = oapiReadItem_bool(f, const_cast<char*>(item), b);
+	if (ok) {
+		lua_pushboolean(L, b);
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+/***
+Read the value of a tag from a configuration file.
+
+Note: Vector values are represented by space-separated triplets of floating point values.
+
+@function readitem_vec
+@tparam FILEHANDLE f file handle
+@tparam string item pointer to tag string
+@treturn VECTOR3 value if tag was found in the file, _nil_ if not.
+@see readitem_string for more details
+*/
+int Interpreter::oapi_readitem_vec (lua_State* L)
+{
+	FILEHANDLE f;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(f = lua_toObject(L, 1), "Argument 1: invalid object");
+
+	ASSERT_STRING(L, 2);
+	const char* item = lua_tostringex(L, 2);
+
+	VECTOR3 vec;
+	bool ok = oapiReadItem_vec(f, const_cast<char*>(item), vec);
+	if (ok) {
+		lua_pushvector(L, vec);
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+/***
+Write a tag and its value to a configuration file.
+
+Note: Use these functions to write items (tags and values) to configuration files.
+   The format of the written items is recognised by the corresponding readitem_xxx functions.
+
+For historic reasons, the format for scenario file entries is different.
+   Use the writeline function.
+
+@function writeitem_string
+@tparam FILEHANDLE f file handle
+@tparam string item pointer to tag string
+@tparam string string character-string value
+@see readitem_string
+*/
+int Interpreter::oapi_writeitem_string (lua_State* L)
+{
+	FILEHANDLE f;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(f = lua_toObject(L, 1), "Argument 1: invalid object");
+	ASSERT_STRING(L, 2);
+	ASSERT_STRING(L, 3);
+
+	const char* item = lua_tostringex(L, 2);
+	const char* string = lua_tostringex(L, 3);
+
+	oapiWriteItem_string(f, const_cast<char*>(item), const_cast<char*>(string));
+	return 0;
+}
+
+/***
+Write a tag and its value to a configuration file.
+
+@function writeitem_float
+@tparam FILEHANDLE f file handle
+@tparam string item pointer to tag string
+@tparam number d double value
+@see writeitem_string for more details
+*/
+int Interpreter::oapi_writeitem_float (lua_State* L)
+{
+	FILEHANDLE f;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(f = lua_toObject(L, 1), "Argument 1: invalid object");
+	ASSERT_STRING(L, 2);
+	ASSERT_NUMBER(L, 3);
+
+	const char* item = lua_tostringex(L, 2);
+	double d = lua_tonumber(L, 3);
+
+	oapiWriteItem_float(f, const_cast<char*>(item), d);
+	return 0;
+}
+
+/***
+Write a tag and its value to a configuration file.
+
+@function writeitem_int
+@tparam FILEHANDLE f file handle
+@tparam string item pointer to tag string
+@tparam int i integer value
+@see writeitem_string for more details
+*/
+int Interpreter::oapi_writeitem_int (lua_State* L)
+{
+	FILEHANDLE f;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(f = lua_toObject(L, 1), "Argument 1: invalid object");
+	ASSERT_STRING(L, 2);
+	ASSERT_NUMBER(L, 3);
+
+	const char* item = lua_tostringex(L, 2);
+	int i = lua_tointeger(L, 3);
+
+	oapiWriteItem_int(f, const_cast<char*>(item), i);
+	return 0;
+}
+
+/***
+Write a tag and its value to a configuration file.
+
+Note: In a file boolean values are represented by the strings "FALSE" and "TRUE".
+
+@function writeitem_bool
+@tparam FILEHANDLE f file handle
+@tparam string item pointer to tag string
+@tparam bool b boolean value
+@see writeitem_string for more details
+*/
+int Interpreter::oapi_writeitem_bool (lua_State* L)
+{
+	FILEHANDLE f;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(f = lua_toObject(L, 1), "Argument 1: invalid object");
+	ASSERT_STRING(L, 2);
+	ASSERT_BOOLEAN(L, 3);
+
+	const char* item = lua_tostringex(L, 2);
+	bool b = lua_toboolean(L, 3);
+
+	oapiWriteItem_bool(f, const_cast<char*>(item), b);
+	return 0;
+}
+
+/***
+Write a tag and its value to a configuration file.
+
+Note: Vector values are represented by space-separated triplets of floating point values.
+
+@function writeitem_vec
+@tparam FILEHANDLE f file handle
+@tparam string item pointer to tag string
+@tparam VECTOR3 vec vector value
+@see writeitem_string for more details
+*/
+int Interpreter::oapi_writeitem_vec (lua_State* L)
+{
+	FILEHANDLE f;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(f = lua_toObject(L, 1), "Argument 1: invalid object");
+	ASSERT_STRING(L, 2);
+	ASSERT_VECTOR(L, 3);
+
+	const char* item = lua_tostringex(L, 2);
+	VECTOR3 vec = lua_tovector(L, 3);
+
+	oapiWriteItem_vec(f,  const_cast<char*>(item), vec);
+	return 0;
+}
+
+
+// ============================================================================
 // utility functions
 
 /***
@@ -3046,6 +3623,31 @@ int Interpreter::oapi_get_color (lua_State *L)
 	lua_pushnumber(L, oapiGetColour(r, g, b));
 	return 1;
 }
+
+/***
+Formats floating point value f in the standard Orbiter convention,
+   with given precision, using 'k', 'M' and 'G' postfixes as required.
+
+@function formatvalue
+@tparam number f floating point value
+@tparam int precision output precision (optional, default: 4)
+@treturn string formatted string
+*/
+int Interpreter::oapi_formatvalue (lua_State* L)
+{
+	ASSERT_NUMBER(L, 1);
+	double f = lua_tonumber(L, 1);
+	int p = 4; // default
+	if (lua_gettop(L) >= 2) {
+		ASSERT_NUMBER(L, 2);
+		p = lua_tointeger(L, 2);
+	}
+	char cbuf[64];
+	FormatValue(cbuf, 64, f, p);
+	lua_pushfstring(L, cbuf);
+	return 1;
+}
+
 
 // ============================================================================
 // terminal library functions

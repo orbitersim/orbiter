@@ -30,6 +30,7 @@ extern "C" {
 #define ASSERT_VECTOR(L,idx)           ASSERT_PRM(L,idx,PRMTP_VECTOR)
 #define ASSERT_STRING(L,idx)           ASSERT_PRM(L,idx,PRMTP_STRING)
 #define ASSERT_LIGHTUSERDATA(L,idx)    ASSERT_PRM(L,idx,PRMTP_LIGHTUSERDATA)
+#define ASSERT_FILEHANDLE(L,idx)       ASSERT_PRM(L,idx,PRMTP_LIGHTUSERDATA)
 #define ASSERT_TABLE(L,idx)            ASSERT_PRM(L,idx,PRMTP_TABLE)
 #define ASSERT_BOOLEAN(L,idx)          ASSERT_PRM(L,idx,PRMTP_BOOLEAN)
 #define ASSERT_MATRIX(L,idx)           ASSERT_PRM(L,idx,PRMTP_MATRIX)
@@ -437,11 +438,35 @@ protected:
 	static int oapi_simulatebufferedkey (lua_State *L);
 	static int oapi_simulateimmediatekey (lua_State *L);
 
+	// file i/o functions
+	static int oapi_openfile (lua_State* L);
+	static int oapi_closefile (lua_State* L);
+	static int oapi_savescenario (lua_State* L);
+	static int oapi_writeline (lua_State* L);
+	// static int oapi_writelog (lua_State * L);    // see oapiWriteLog(lua_State* L) above!
+	// static int oapi_writelogv (lua_State * L);
+	static int oapi_writescenario_string (lua_State* L);
+	static int oapi_writescenario_int (lua_State *L);
+	static int oapi_writescenario_float (lua_State* L);
+	static int oapi_writescenario_vec (lua_State* L);
+	static int oapi_readscenario_nextline (lua_State* L);
+	static int oapi_readitem_string (lua_State* L);
+	static int oapi_readitem_float (lua_State* L);
+	static int oapi_readitem_int (lua_State* L);
+	static int oapi_readitem_bool (lua_State* L);
+	static int oapi_readitem_vec (lua_State* L);
+	static int oapi_writeitem_string (lua_State* L);
+	static int oapi_writeitem_float (lua_State* L);
+	static int oapi_writeitem_int (lua_State* L);
+	static int oapi_writeitem_bool (lua_State* L);
+	static int oapi_writeitem_vec (lua_State* L);
+
 	// utility functions
 	static int oapi_rand (lua_State *L);
 	static int oapi_deflate (lua_State *L);
 	static int oapi_inflate (lua_State *L);
 	static int oapi_get_color (lua_State *L);
+	static int oapi_formatvalue (lua_State* L);
 
 	// term library functions
 	static int termOut (lua_State *L);
