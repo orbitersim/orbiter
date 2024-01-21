@@ -70,6 +70,8 @@ IDirect3D9* g_pD3DObject = 0;  // Made valid when VideoTab is created
 
 D3D9Catalog<LPDIRECT3DTEXTURE9>	 *TileCatalog;
 
+typedef IDirect3D9* (__stdcall* __Direct3DCreate9On12)(UINT SDKVersion, D3D9ON12_ARGS* pOverrideList, UINT NumOverrideEntries);
+
 set<D3D9Mesh*> MeshCatalog;
 set<SurfNative*> SurfaceCatalog;
 unordered_map<string, SURFHANDLE> SharedTextures;
@@ -320,14 +322,22 @@ bool D3D9Client::clbkInitialise()
 	D3D9ON12_ARGS args = {};
 	args.Enable9On12 = Config->Enable9On12 != 0;
 
-	// NOTE: Link error 'unresolved external symbol' means that d3d9.lib is outdated, use the latest one.
-	g_pD3DObject = Direct3DCreate9On12(D3D_SDK_VERSION, &args, 1);
+	HMODULE hDXMod = GetModuleHandle("D3D9.dll");
+	__Direct3DCreate9On12 pDirect3DCreate9On12 = nullptr;
 
-	if (g_pD3DObject) {
-		oapiWriteLog("[D3D9] DirectX9 Created...");
+	if (hDXMod) pDirect3DCreate9On12 = (__Direct3DCreate9On12)GetProcAddress(hDXMod, "Direct3DCreate9On12");
+
+	if (OapiExtension::RunsUnderWINE() || pDirect3DCreate9On12 == nullptr) {
+		g_pD3DObject = Direct3DCreate9(D3D_SDK_VERSION);
+		oapiWriteLog("[D3D9] Native Interface");
+	}
+	else {
+		g_pD3DObject = pDirect3DCreate9On12(D3D_SDK_VERSION, &args, 1);
 		if (Config->Enable9On12) oapiWriteLog("[D3D9] DX9 emulation via DX12");
 		else oapiWriteLog("[D3D9] Native Interface");
 	}
+
+	if (g_pD3DObject) oapiWriteLog("[D3D9] DirectX9 Created...");
 	else {
 		oapiWriteLog("[D3D9][ERROR] Failed to create DirectX9");
 		FailedDeviceError();
