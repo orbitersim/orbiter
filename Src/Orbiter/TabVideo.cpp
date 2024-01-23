@@ -8,8 +8,6 @@
 #define OAPI_IMPLEMENTATION
 
 #include <windows.h>
-#include <commctrl.h>
-#include <io.h>
 #include "Orbiter.h"
 #include "TabVideo.h"
 #include "resource.h"
@@ -170,53 +168,27 @@ void orbiter::DefVideoTab::EnumerateClients(HWND hTab)
 	SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_SETCURSEL, 0, 0);
 }
 
-static bool FileExists(const char* path)
-{
-	return access(path, 0) != -1;
-}
-
-//! @param extension is a file extension without the '.'
-static bool HasExtension(const char* filepath, const char* extension)
-{
-	std::string str(filepath);
-	return (str.substr(str.find_last_of(".") + 1) == extension);
-}
-
-static std::string GetNameWithoutFileExtension(const char* filepath)
-{
-	std::string str(filepath);
-	return str.substr(0, str.find_last_of("."));
-}
-
 //-----------------------------------------------------------------------------
 //! Find Graphics engine DLLs in dir
-void orbiter::DefVideoTab::ScanDir(HWND hTab, PCSTR dir)
+void orbiter::DefVideoTab::ScanDir(HWND hTab, const fs::path& dir)
 {
-	char pattern[256], filepath[256];
-	sprintf(pattern, "%s\\*", dir);
-	struct _finddata_t fdata;
-	intptr_t fh = _findfirst(pattern, &fdata);
-	if (fh == -1) return; // nothing found
-	do {
-		if (fdata.attrib & _A_SUBDIR) { // directory found
-			if (fdata.name[0] == '.')
-				continue; // skip self and parent directory entries
-			// Special case: look for DLLs in subdirectories if subdir and DLL names match
-			sprintf(filepath, "%s\\%s\\%s.dll", dir, fdata.name, fdata.name);
-			if (!FileExists(filepath))
+	for (auto& entry : fs::directory_iterator(dir)) {
+		fs::path modulepath;
+		auto clientname = entry.path().stem().string();
+		if (entry.is_directory()) {
+			modulepath = dir / clientname / (clientname + ".dll");
+			if (!fs::exists(modulepath))
 				continue;
 		}
-		else { // file found
-			if (!HasExtension(fdata.name, "dll")) // skip if not a DLL
-				continue;
-			sprintf(filepath, "%s\\%s", dir, fdata.name);
-		}
+		else if (entry.path().extension().string() == ".dll")
+			modulepath = entry.path();
+		else
+			continue;
 
 		// We've found a potential module DLL. Load it.
-		HMODULE hMod = LoadLibraryEx(filepath, 0, LOAD_LIBRARY_AS_DATAFILE);
+		HMODULE hMod = LoadLibraryEx(modulepath.string().c_str(), 0, LOAD_LIBRARY_AS_DATAFILE);
 		if (hMod) {
 			char catstr[256];
-			std::string clientname = GetNameWithoutFileExtension(fdata.name);
 			// read category string
 			if (LoadString(hMod, 1001, catstr, 256)) {
 				if (!strcmp(catstr, "Graphics engines")) {
@@ -224,8 +196,7 @@ void orbiter::DefVideoTab::ScanDir(HWND hTab, PCSTR dir)
 				}
 			}
 		}
-	} while (!_findnext(fh, &fdata));
-	_findclose(fh);
+	}
 }
 
 //-----------------------------------------------------------------------------

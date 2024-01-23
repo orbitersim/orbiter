@@ -53,56 +53,25 @@ void FileList::Scan(const char *pPath, const int recursionLevel)
 
     // This code was broken out from XRPayloadClassData::InitializeXRPayloadClassData().
 
-    WIN32_FIND_DATA findFileData;
-    char pConfigFilespecWildcard[MAX_PATH];
-    sprintf_s(pConfigFilespecWildcard, "%s\\*", pPath);  // iterate through all files and directories
-
-    HANDLE hFind = ::FindFirstFile(pConfigFilespecWildcard, &findFileData);
-    if (hFind == INVALID_HANDLE_VALUE)
-        return;    // directory is empty (should really never happen because "." and ".." are always present)
-
-    // found at least one file
-    goto process_file;   // a little goofy, but that's Windows' goofy FindFirstFile/FindNextFile for you...
-
-    // now loop through all remaining files
-    for (;;)
-    {
-        if (::FindNextFile(hFind, &findFileData) != 0)
-        {
-        process_file:   // entry point from FirstFirstFile
-                        // build the new configdir-relative path
-            char pNodeFilespec[MAX_PATH];
-            sprintf_s(pNodeFilespec, "%s\\%s", pPath, findFileData.cFileName);  // e.g., "Vessels\XRParts.cfg"
-
-            if (!STARTSWITH_DOT(findFileData))   // file not "." or ".."?
+    for (auto& file : fs::directory_iterator(pPath)) {
+        if (file.path().stem().c_str()[0] != '.') {
+            if (clbkFilterNode(file))
             {
-                if (clbkFilterNode(pNodeFilespec, findFileData))
+                // node should be included
+                if (file.is_directory())
                 {
-                    // node should be included
-                    if (IS_DIRECTORY(findFileData))
-                    {
-                        // this is a directory, so recurse down into it
-                        Scan(pNodeFilespec, recursionLevel + 1);
-                    }
-                    else if (!IS_EMPTY(findFileData))  // it's a file node; is it not empty?
-                    {
-                        // it's a file and it's not empty, so add it to our master list of nodes and invoke the callback for subclasses to hook
-                        m_allFiles.push_back(pNodeFilespec);
-                        clbkProcessFile(pNodeFilespec, findFileData);
-                    }
+                    // this is a directory, so recurse down into it
+                    Scan(file.path().string().c_str(), recursionLevel + 1);
+                }
+                else if (file.file_size() > 0)  // it's a file node; is it not empty?
+                {
+                    // it's a file and it's not empty, so add it to our master list of nodes and invoke the callback for subclasses to hook
+                    m_allFiles.push_back(file.path().string().c_str());
+                    clbkProcessFile(file);
                 }
             }
-        }  // if (::FindNextFile(hFind, &findFileData) != 0)
-        else   // FindNextFile failed
-        {
-            // check the error; continue parsing next file unless "no more files" reached
-            DWORD dwError = GetLastError();
-            if (dwError == ERROR_NO_MORE_FILES)
-                break;      // all done
-                            // else skip this file: fall through and parse the next file
         }
-    }  // for (;;)
-    FindClose(hFind);
+    }
 }
 
 // Invoked for each file or folder node found.  The default method here looks at bRecurseSubfolders (for folder nodes) and
@@ -110,22 +79,21 @@ void FileList::Scan(const char *pPath, const int recursionLevel)
 // Subclasses should override this method if they want more advanced filtering.
 //
 // Returns true if file node should be included or folder should be recursed into, or false if the node should be skipped.
-bool FileList::clbkFilterNode(const char *pPathOfNode, const WIN32_FIND_DATA &fd)
+bool FileList::clbkFilterNode(const fs::directory_entry& entry)
 {
-    if (IS_DIRECTORY(fd))
-        return m_bRecurseSubfolders; 
+    if (entry.is_directory())
+        return m_bRecurseSubfolders;
 
     // it's a file node
     bool bAcceptFile = false;
     if (!m_fileTypesToAccept.empty())
     {
-        const char *pFileExtension = strrchr(fd.cFileName, '.');
-        if (pFileExtension)     // e.g., ".flac"
+        if (entry.path().extension().string().length() > 0)     // e.g., ".flac"
         {
             // see if we have a case-insensitive match for this extension in our master list
-            for (vector<CString>::const_iterator it = m_fileTypesToAccept.begin(); it != m_fileTypesToAccept.end(); it++)
+            for (auto it = m_fileTypesToAccept.begin(); it != m_fileTypesToAccept.end(); it++)
             {
-                if (_stricmp(pFileExtension, *it) == 0)
+                if (stricmp(entry.path().extension().string().c_str(), *it) == 0)
                 {
                     bAcceptFile = true;
                     break;
@@ -140,7 +108,7 @@ bool FileList::clbkFilterNode(const char *pPathOfNode, const WIN32_FIND_DATA &fd
 }
 
 // Callback invoked for non-empty file nodes that passed the clbkFilterNode check; this is here for subclasses to hook.
-void FileList::clbkProcessFile(const char *pFilespec, const WIN32_FIND_DATA &fd)
+void FileList::clbkProcessFile(const fs::directory_entry& entry)
 {
     // no-op; this method is for subclasses to use
 }

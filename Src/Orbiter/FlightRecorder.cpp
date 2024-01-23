@@ -16,11 +16,9 @@
 #include "State.h"
 #include "MenuInfoBar.h"
 #include <fstream>
-#include <iomanip>
-#include <io.h>
-#include <direct.h>
-#include <errno.h>
 #include <string>
+#include <filesystem>
+namespace fs = std::filesystem;
 
 using namespace std;
 
@@ -776,24 +774,17 @@ void Orbiter::FRecorder_Reset ()
 
 bool Orbiter::FRecorder_PrepareDir (const char *fname, bool force)
 {
-	char cbuf[256];
-	strcpy (cbuf, "Flights\\"); strcat (cbuf, fname);
-	if (_mkdir (cbuf) == -1) {
-		if (errno == EEXIST && !force) return false;
-		// don't overwrite existing recording
-		struct _finddata_t fd;
-		char cb2[256], cb3[256];
-		strcpy (cb2, cbuf); strcat (cb2, "\\*");
-		intptr_t handle = _findfirst (cb2, &fd), res = handle;
-		while (res != -1) {
-			if (!(fd.attrib & _A_SUBDIR)) {
-				sprintf (cb3, "%s\\%s", cbuf, fd.name);
-				_unlink (cb3);
-			}
-			res = _findnext (handle, &fd);
-		}
-		_findclose (handle);
+	fs::path dir = fs::path("Flights") / fname;
+	std::error_code ec;
+	auto status = fs::status(dir, ec);
+
+	// don't overwrite existing recording
+	if (!ec) {
+		if(fs::is_directory(status) && !force) return false;
+		fs::remove_all(dir);
 	}
+	fs::create_directory(dir);
+
 	return true;
 }
 
