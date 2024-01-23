@@ -315,7 +315,7 @@ void Vessel::SetDefaultState ()
 	m_bThrustEngaged    = false;
 	bForceActive        = false;
 	rpressure           = g_pOrbiter->Cfg()->CfgPhysicsPrm.bRadiationPressure;
-	Lift = Drag         = 0.0;
+	Lift = Drag = SideForce = 0.0;
 	attach_status.pname = 0;
 	hudskp              = NULL;
 	next_hullvtx        = 0;
@@ -1281,6 +1281,21 @@ bool Vessel::GetDragVector (Vector &D) const
 
 // ==============================================================
 
+bool Vessel::GetSideForceVector (Vector &SF) const
+{
+	if (!SideForce) {
+		SF.Set (0, 0, 0);
+		return false;
+	} else {
+		double v0 = std::hypot(sp.airvel_ship.x, sp.airvel_ship.z);
+		double scale = (v0 ? SideForce / v0 : 0.0);
+		SF.Set(sp.airvel_ship.z * scale, 0, - sp.airvel_ship.x * scale);
+		return true;
+	}
+}
+
+// ==============================================================
+
 bool Vessel::GetForceVector (Vector &F) const
 {
 	// Obtain total force vector from acceleration vector
@@ -1762,6 +1777,29 @@ AirfoilSpec *Vessel::CreateAirfoil (AIRFOIL_ORIENTATION align, const Vector &ref
 	af->c       = c;
 	af->S       = S;
 	af->A       = A;
+	return af;
+}
+
+// ==============================================================
+
+AirfoilSpec* Vessel::CreateAirfoil(AIRFOIL_ORIENTATION align, const Vector& ref, AirfoilCoeffFuncEx2 cf, void* context, double c, double S, double A)
+{
+	AirfoilSpec* af, ** tmp = new AirfoilSpec * [nairfoil + 1]; TRACENEW
+		if (nairfoil) {
+			memcpy(tmp, airfoil, nairfoil * sizeof(AirfoilSpec*));
+			delete[]airfoil;
+		}
+	airfoil = tmp;
+
+	af = airfoil[nairfoil++] = new AirfoilSpec; TRACENEW
+		af->version = 2;
+	af->align = align;
+	af->ref.Set(ref);
+	af->cf = (AirfoilCoeffFunc)cf;
+	af->context = context;
+	af->c = c;
+	af->S = S;
+	af->A = A;
 	return af;
 }
 
@@ -3794,7 +3832,7 @@ double Vessel::GetGravityGradientDamping () const
 
 void Vessel::UpdateBodyForces ()
 {
-	Lift = Drag = 0.0;
+	Lift = Drag = SideForce = 0.0;
 
 	if (m_thruster.size()) UpdateThrustForces ();
 	if (CtrlSurfSyncMode) ApplyControlSurfaceLevels ();
@@ -4054,6 +4092,7 @@ void Vessel::UpdateAerodynamicForces ()
 
 	double aoa  = atan2 (-sp.airvel_ship.y,sp.airvel_ship.z); // angle of attack
 	double beta = atan2 (-sp.airvel_ship.x,sp.airvel_ship.z); // lateral angle of attack (slip)
+	double gamma = (!sp.airvel_ship.y) ? atan2(-sp.airvel_ship.x, -sp.airvel_ship.y) : 0;
 
 	const double mu = 1.7894e-5; // viscosity coefficient dummy - MAKE VARIABLE!
 	double Re0 = sp.atmrho * sp.airspd / mu; // template for Reynolds coefficient (to be multiplied by chord length)
@@ -4085,32 +4124,51 @@ void Vessel::UpdateAerodynamicForces ()
 	Vector ddir (-sp.airvel_ship.unit());           // freestream airflow direction (= drag direction)
 	Vector ldir (0, sp.airvel_ship.z, -sp.airvel_ship.y);  ldir.unify(); // lift direction (vertical on drag and transversal ship axis)
 	Vector sdir (sp.airvel_ship.z, 0, -sp.airvel_ship.x);  sdir.unify(); // sidelift direction (vertical on drag and vertical ship axis)
-	double lift, drag, S;
-	double Cl, Cm, Cd;   // lift, moment, drag coeffs
+	double lift, drag, side, S;
+	double CL, CD;   // lift, drag coeffs (used by AirfoilCoeffFunc and AirfoilCoeffFuncEx)
+	double CA, CN, CY; //force coefficients along Orbiter Z, Y, X axes (AirfoilCoeffFuncEx2)
+	double Cl, Cm, Cn; //moment coefficients about Orbiter Z, X, Y axes (AirfoilCoeffFuncEx2 uses Cl and Cn)
 
 	// airfoil lift+drag components
 	for (i = 0; i < nairfoil; i++) {
 		AirfoilSpec *af = airfoil[i];
 		if (af->align == LIFT_VERTICAL) {
 			if (af->version == 0)
-				af->cf (aoa, sp.atmM, Re0*af->c, &Cl, &Cm, &Cd);
+				af->cf (aoa, sp.atmM, Re0*af->c, &CL, &Cm, &CD);
 			else
-				((AirfoilCoeffFuncEx)af->cf)((VESSEL*)modIntf.v, aoa, sp.atmM, Re0*af->c, af->context, &Cl, &Cm, &Cd);
+				((AirfoilCoeffFuncEx)af->cf)((VESSEL*)modIntf.v, aoa, sp.atmM, Re0*af->c, af->context, &CL, &Cm, &CD);
 			if (af->S) S = af->S;
 			else       S = fabs(ddir.z)*cs.z + fabs(ddir.y)*cs.y; // use projected vessel CS as reference area
-			AddForce (ldir*(lift=(Cl*sp.dynp*S)) + ddir*(drag=(Cd*sp.dynp*S)), af->ref);
+			AddForce (ldir*(lift=(CL*sp.dynp*S)) + ddir*(drag=(CD*sp.dynp*S)), af->ref);
 			if (Cm) Amom_add.x += Cm*sp.dynp*af->S*af->c;
 			Lift += lift, Drag += drag;
-		} else { // horizontal lift component
+		} else if (af->align == LIFT_HORIZONTAL) { // horizontal lift component
 			if (af->version == 0)
-				af->cf (beta, sp.atmM, Re0*af->c, &Cl, &Cm, &Cd);
+				af->cf (beta, sp.atmM, Re0*af->c, &CL, &Cm, &CD);
 			else
-				((AirfoilCoeffFuncEx)af->cf)((VESSEL*)modIntf.v, beta, sp.atmM, Re0*af->c, af->context, &Cl, &Cm, &Cd);
+				((AirfoilCoeffFuncEx)af->cf)((VESSEL*)modIntf.v, beta, sp.atmM, Re0*af->c, af->context, &CL, &Cm, &CD);
 			if (af->S) S = af->S;
 			else       S = fabs(ddir.z)*cs.z + fabs(ddir.x)*cs.z; // use projected vessel CS as reference area
-			AddForce (sdir*(Cl*sp.dynp*S) + ddir*(drag=(Cd*sp.dynp*S)), af->ref);
+			AddForce (sdir*(side = (CL*sp.dynp*S)) + ddir*(drag=(CD*sp.dynp*S)), af->ref);
 			if (Cm) Amom_add.y += Cm*sp.dynp*af->S*af->c;
 			Drag += drag;
+			SideForce += side;
+		} else if (af->align == FORCE_AND_MOMENT) {
+			((AirfoilCoeffFuncEx2)af->cf)((VESSEL*)modIntf.v, -_V(sp.airvel_ship.unit().x, sp.airvel_ship.unit().y, sp.airvel_ship.unit().z), aoa, beta, gamma, sp.atmM, Re0 * af->c, af->context, &CA, &CN, &CY, &Cl, &Cm, &Cn);
+			if (af->S) S = af->S;
+			else       S = fabs(ddir.z) * cs.z + fabs(ddir.x) * cs.z; // use projected vessel CS as reference area
+
+			Vector AeroForce((CY * S) * sp.dynp, (CN * S) * sp.dynp, -(CA * S) * sp.dynp);
+
+			AddForce(AeroForce, af->ref);
+			Lift = dotp(AeroForce, ldir);
+			Drag = dotp(AeroForce, ddir);
+			SideForce = dotp(AeroForce, sdir);
+			
+			Amom_add.x += Cm * sp.dynp * af->S * af->c;
+			Amom_add.y -= Cn * sp.dynp * af->S * af->c;
+			Amom_add.z -= Cl * sp.dynp * af->S * af->c;
+
 		}
 	}
 
@@ -4143,8 +4201,8 @@ void Vessel::UpdateAerodynamicForces ()
 	for (i = 0; i < ndragel; i++) {
 		double lvl = *dragel[i]->drag;
 		if (lvl) {
-			Cd = lvl*dragel[i]->factor;
-			drag = Cd*sp.dynp;
+			CD = lvl*dragel[i]->factor;
+			drag = CD*sp.dynp;
 			AddForce (ddir*drag, dragel[i]->ref);
 			Drag += drag;
 		}
@@ -4888,8 +4946,9 @@ void Vessel::UpdatePassive ()
 	proxybody = prnt->proxybody;
 	proxyplanet = prnt->proxyplanet;
 	fstatus = prnt->fstatus;
+
+	if (proxybody) UpdateSurfParams();
 	if (fstatus != FLIGHTSTATUS_LANDED) {
-		if (proxybody) UpdateSurfParams();
 		bSurfaceContact = false;
 	}
 	UpdateMass(); // register fuel consumption
@@ -6722,6 +6781,11 @@ double VESSEL::GetDrag (void) const
 	return vessel->Drag;
 }
 
+double VESSEL::GetSideForce() const
+{
+	return vessel->SideForce;
+}
+
 bool VESSEL::GetWeightVector (VECTOR3 &G) const
 {
 	static Vector F;
@@ -6752,6 +6816,14 @@ bool VESSEL::GetDragVector (VECTOR3 &D) const
 	bool bDrag = vessel->GetDragVector (F);
 	CopyVector (F, D);
 	return bDrag;
+}
+
+bool VESSEL::GetSideForceVector(VECTOR3 &SF) const
+{
+	static Vector F;
+	bool bSideForce = vessel->GetSideForceVector(F);
+	CopyVector(F, SF);
+	return bSideForce;
 }
 
 bool VESSEL::GetForceVector (VECTOR3 &F) const
@@ -8430,6 +8502,12 @@ AIRFOILHANDLE VESSEL::CreateAirfoil3 (AIRFOIL_ORIENTATION align, const VECTOR3 &
 {
 	Vector r(MakeVector(ref));
 	return (AIRFOILHANDLE)vessel->CreateAirfoil (align, r, cf, context, c, S, A);
+}
+
+AIRFOILHANDLE VESSEL::CreateAirfoil4 (const VECTOR3& ref, AirfoilCoeffFuncEx2 cf, void* context, double c, double S, double A) const
+{
+	Vector r(MakeVector(ref));
+	return (AIRFOILHANDLE)vessel->CreateAirfoil(FORCE_AND_MOMENT, r, cf, context, c, S, A);
 }
 
 bool VESSEL::GetAirfoilParam (AIRFOILHANDLE hAirfoil, VECTOR3 *ref, AirfoilCoeffFunc *cf, void **context, double *c, double *S, double *A) const

@@ -6,7 +6,6 @@
 // ======================================================================
 
 #include <windows.h>
-#include <io.h>
 #include <array>
 #include "OptionsPages.h"
 #include "DlgCtrl.h"
@@ -528,16 +527,170 @@ BOOL OptionsPage_Visual::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
 
 BOOL OptionsPage_Visual::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
 {
-	switch (ctrlId) {
-	case IDC_OPT_VIS_CLOUD:
-	case IDC_OPT_VIS_REFWATER:
-		if (notification == BN_CLICKED) {
-			VisualsChanged(hPage);
-			return TRUE;
-		}
-		break;
+	switch (ctrlId)
+	{
+		case IDC_OPT_VIS_CLOUD:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_CLOUD, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgVisualPrm.bClouds = check;
+				VisualsChanged( hPage );
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_CSHADOW:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_CSHADOW, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgVisualPrm.bCloudShadows = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_HAZE:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_HAZE, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgVisualPrm.bHaze = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_FOG:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_FOG, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgVisualPrm.bFog = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_REFWATER:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_REFWATER, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgVisualPrm.bWaterreflect = check;
+				VisualsChanged( hPage );
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_RIPPLE:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_RIPPLE, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgVisualPrm.bSpecularRipple = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_LIGHTS:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_LIGHTS, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgVisualPrm.bNightlights = check;
+				VisualsChanged( hPage );
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_LTLEVEL:
+			if (notification == EN_CHANGE)
+			{
+				char cbuf[16];
+				double d;
+				GetWindowText( GetDlgItem( hPage, IDC_OPT_VIS_LTLEVEL ), cbuf, 16 );
+				if (!sscanf( cbuf, "%lf", &d )) d = 0.5;
+				else if (d < 0) d = 0.0;
+				else if (d > 1) d = 1.0;
+				Cfg()->CfgVisualPrm.LightBrightness = d;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_ELEV:
+			if (notification == BN_CLICKED)
+			{
+				int elevmode = SendDlgItemMessage( hPage, IDC_OPT_VIS_ELEV, BM_GETCHECK, 0, 0 ) != BST_CHECKED ? 0 : (SendDlgItemMessage( hPage, IDC_OPT_VIS_ELEVMODE, CB_GETCURSEL, 0, 0 ) + 1);
+				Cfg()->CfgVisualPrm.ElevMode = elevmode;
+				VisualsChanged( hPage );
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_ELEVMODE:
+			if (notification == CBN_SELCHANGE)
+			{
+				int elevmode = SendDlgItemMessage( hPage, IDC_OPT_VIS_ELEV, BM_GETCHECK, 0, 0 ) != BST_CHECKED ? 0 : (SendDlgItemMessage( hPage, IDC_OPT_VIS_ELEVMODE, CB_GETCURSEL, 0, 0 ) + 1);
+				Cfg()->CfgVisualPrm.ElevMode = elevmode;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_MAXLEVEL:
+			if (notification == EN_CHANGE)
+			{
+				char cbuf[16];
+				DWORD i;
+				GetWindowText( GetDlgItem( hPage, IDC_OPT_VIS_MAXLEVEL ), cbuf, 16 );
+				if (!sscanf( cbuf, "%lu", &i )) i = SURF_MAX_PATCHLEVEL2;
+				Cfg()->CfgVisualPrm.PlanetMaxLevel = max((DWORD)1, min((DWORD)SURF_MAX_PATCHLEVEL2, i));
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_VSHADOW:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_VSHADOW, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgVisualPrm.bVesselShadows = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_REENTRY:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_REENTRY, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgVisualPrm.bReentryFlames = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_SHADOW:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_SHADOW, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgVisualPrm.bShadows = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_PARTICLE:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_PARTICLE, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgVisualPrm.bParticleStreams = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_SPECULAR:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_SPECULAR, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgVisualPrm.bSpecular = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_LOCALLIGHT:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_LOCALLIGHT, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgVisualPrm.bLocalLight = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_AMBIENT:
+			if (notification == EN_CHANGE)
+			{
+				char cbuf[16];
+				DWORD i;
+				GetWindowText( GetDlgItem(hPage, IDC_OPT_VIS_AMBIENT ), cbuf, 16 );
+				if (!sscanf( cbuf, "%lu", &i )) i = 15;
+				else if (i > 255) i = 255;
+				Cfg()->SetAmbientLevel( i );
+				return FALSE;
+			}
+			break;
 	}
-	return FALSE;
+	return TRUE;
 }
 
 //-----------------------------------------------------------------------------
@@ -548,6 +701,9 @@ void OptionsPage_Visual::VisualsChanged(HWND hPage)
 		SendDlgItemMessage(hPage, IDC_OPT_VIS_CLOUD, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	EnableWindow(GetDlgItem(hPage, IDC_OPT_VIS_RIPPLE),
 		SendDlgItemMessage(hPage, IDC_OPT_VIS_REFWATER, BM_GETCHECK, 0, 0) == BST_CHECKED);
+	EnableWindow( GetDlgItem( hPage, IDC_OPT_VIS_ELEVMODE ), SendDlgItemMessage( hPage, IDC_OPT_VIS_ELEV, BM_GETCHECK, 0, 0 ) == BST_CHECKED );
+	EnableWindow( GetDlgItem( hPage, IDC_OPT_VIS_LTLEVEL ), SendDlgItemMessage( hPage, IDC_OPT_VIS_LIGHTS, BM_GETCHECK, 0, 0 ) == BST_CHECKED );
+	return;
 }
 
 // ======================================================================
@@ -609,6 +765,48 @@ void OptionsPage_Physics::UpdateConfig(HWND hPage)
 BOOL OptionsPage_Physics::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
 {
 	OptionsPage::OnInitDialog(hPage, wParam, lParam);
+	return TRUE;
+}
+
+// ----------------------------------------------------------------------
+
+BOOL OptionsPage_Physics::OnCommand( HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl )
+{
+	switch (ctrlId)
+	{
+		case IDC_OPT_PHYS_DISTMASS:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_PHYS_DISTMASS, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgPhysicsPrm.bDistributedMass = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_PHYS_COMPLEXGRAV:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_PHYS_COMPLEXGRAV, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgPhysicsPrm.bNonsphericalGrav = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_PHYS_RPRESSURE:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_PHYS_RPRESSURE, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgPhysicsPrm.bRadiationPressure = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_PHYS_WIND:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_PHYS_WIND, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgPhysicsPrm.bAtmWind = check;
+				return FALSE;
+			}
+			break;
+	}
 	return TRUE;
 }
 
@@ -1706,19 +1904,13 @@ void OptionsPage_Planetarium::RescanMarkerList(HWND hPage)
 	const std::vector< oapi::GraphicsClient::LABELLIST>& list = g_psys->LabelList();
 	if (!list.size()) return;
 
-	char cbuf[256];
-	_finddata_t fdata;
-	intptr_t fh = g_psys->FindFirst(FILETYPE_MARKER, &fdata, cbuf);
-	if (fh >= 0) {
-		int n = 0;
-		do {
-			SendDlgItemMessage(hPage, IDC_OPT_PLN_MKRLIST, LB_ADDSTRING, 0, (LPARAM)trim_string(cbuf));
-			if (n < list.size() && list[n].active)
-				SendDlgItemMessage(hPage, IDC_OPT_PLN_MKRLIST, LB_SETSEL, TRUE, n);
-			n++;
-		} while (!g_psys->FindNext(fh, &fdata, cbuf));
-		_findclose(fh);
-	}
+	int n = 0;
+	g_psys->ForEach(FILETYPE_MARKER, [&](const fs::directory_entry& entry) {
+		SendDlgItemMessage(hPage, IDC_OPT_PLN_MKRLIST, LB_ADDSTRING, 0, (LPARAM)entry.path().stem().string().c_str());
+		if (n < list.size() && list[n].active)
+			SendDlgItemMessage(hPage, IDC_OPT_PLN_MKRLIST, LB_SETSEL, TRUE, n);
+		n++;
+	});
 }
 
 // ======================================================================
@@ -1885,18 +2077,14 @@ void OptionsPage_Labels::UpdateFeatureList(HWND hPage)
 	if (planet->LabelFormat() < 2) {
 		oapi::GraphicsClient::LABELLIST* list = planet->LabelList(&nlist);
 		if (!nlist) return;
-		_finddata_t fdata;
-		long fh = planet->FindFirst(FILETYPE_MARKER, &fdata, cpath, cbuf);
-		if (fh >= 0) {
-			n = 0;
-			do {
-				SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATURELIST, LB_ADDSTRING, 0, (LPARAM)trim_string(cbuf));
+
+		n = 0;
+		planet->ForEach(FILETYPE_MARKER, [&](const fs::directory_entry& entry) {
+				SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATURELIST, LB_ADDSTRING, 0, (LPARAM)entry.path().stem().string().c_str());
 				if (n < nlist && list[n].active)
 					SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATURELIST, LB_SETSEL, TRUE, n);
 				n++;
-			} while (!planet->FindNext(fh, &fdata, cbuf));
-			_findclose(fh);
-		}
+			});
 	}
 	else {
 		int nlabel = planet->NumLabelLegend();
@@ -1978,8 +2166,8 @@ const HELPCONTEXT* OptionsPage_Forces::HelpContext() const
 
 void OptionsPage_Forces::UpdateControls(HWND hPage)
 {
-	std::array<int, 15> residForces = {
-		IDC_OPT_VEC_WEIGHT, IDC_OPT_VEC_THRUST, IDC_OPT_VEC_LIFT, IDC_OPT_VEC_DRAG, IDC_OPT_VEC_TOTAL,
+	std::array<int, 16> residForces = {
+		IDC_OPT_VEC_WEIGHT, IDC_OPT_VEC_THRUST, IDC_OPT_VEC_LIFT, IDC_OPT_VEC_DRAG, IDC_OPT_VEC_SIDEFORCE, IDC_OPT_VEC_TOTAL,
 		IDC_OPT_VEC_TORQUE, IDC_OPT_VEC_LINSCL, IDC_OPT_VEC_LOGSCL, IDC_OPT_VEC_SCALE, IDC_OPT_VEC_OPACITY,
 		IDC_STATIC1, IDC_STATIC2, IDC_STATIC3, IDC_STATIC4, IDC_STATIC5
 	};
@@ -1994,6 +2182,7 @@ void OptionsPage_Forces::UpdateControls(HWND hPage)
 	SendDlgItemMessage(hPage, IDC_OPT_VEC_THRUST, BM_SETCHECK, vecFlag & BFV_THRUST ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hPage, IDC_OPT_VEC_LIFT, BM_SETCHECK, vecFlag & BFV_LIFT ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hPage, IDC_OPT_VEC_DRAG, BM_SETCHECK, vecFlag & BFV_DRAG ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_VEC_SIDEFORCE, BM_SETCHECK, vecFlag & BFV_SIDEFORCE ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hPage, IDC_OPT_VEC_TOTAL, BM_SETCHECK, vecFlag & BFV_TOTAL ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hPage, IDC_OPT_VEC_TORQUE, BM_SETCHECK, vecFlag & BFV_TORQUE ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hPage, IDC_OPT_VEC_LINSCL, BM_SETCHECK, vecFlag & BFV_LOGSCALE ? BST_UNCHECKED : BST_CHECKED, 0);
@@ -2028,6 +2217,7 @@ BOOL OptionsPage_Forces::OnCommand(HWND hPage, WORD ctrlId, WORD notification, H
 	case IDC_OPT_VEC_THRUST:
 	case IDC_OPT_VEC_LIFT:
 	case IDC_OPT_VEC_DRAG:
+	case IDC_OPT_VEC_SIDEFORCE:
 	case IDC_OPT_VEC_TOTAL:
 	case IDC_OPT_VEC_TORQUE:
 	case IDC_OPT_VEC_LINSCL:
@@ -2048,14 +2238,15 @@ void OptionsPage_Forces::OnItemClicked(HWND hPage, WORD ctrlId)
 	bool check = (SendDlgItemMessage(hPage, ctrlId, BM_GETCHECK, 0, 0) == TRUE);
 	DWORD flag;
 	switch (ctrlId) {
-	case IDC_OPT_VEC:        flag = BFV_ENABLE;  break;
-	case IDC_OPT_VEC_WEIGHT: flag = BFV_WEIGHT;  break;
-	case IDC_OPT_VEC_THRUST: flag = BFV_THRUST;  break;
-	case IDC_OPT_VEC_LIFT:   flag = BFV_LIFT;    break;
-	case IDC_OPT_VEC_DRAG:   flag = BFV_DRAG;    break;
-	case IDC_OPT_VEC_TOTAL:  flag = BFV_TOTAL;   break;
-	case IDC_OPT_VEC_TORQUE: flag = BFV_TORQUE;  break;
-	case IDC_OPT_VEC_LINSCL: flag = BFV_LOGSCALE; check = false; break;
+	case IDC_OPT_VEC:           flag = BFV_ENABLE;    break;
+	case IDC_OPT_VEC_WEIGHT:    flag = BFV_WEIGHT;    break;
+	case IDC_OPT_VEC_THRUST:    flag = BFV_THRUST;    break;
+	case IDC_OPT_VEC_LIFT:      flag = BFV_LIFT;      break;
+	case IDC_OPT_VEC_DRAG:      flag = BFV_DRAG;      break;
+	case IDC_OPT_VEC_SIDEFORCE: flag = BFV_SIDEFORCE; break;
+	case IDC_OPT_VEC_TOTAL:     flag = BFV_TOTAL;     break;
+	case IDC_OPT_VEC_TORQUE:    flag = BFV_TORQUE;    break;
+	case IDC_OPT_VEC_LINSCL:    flag = BFV_LOGSCALE; check = false; break;
 	case IDC_OPT_VEC_LOGSCL: flag = BFV_LOGSCALE; check = true;  break;
 	default:                 flag = 0;           break;
 	}

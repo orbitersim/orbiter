@@ -13,6 +13,9 @@
 
 using namespace std;
 
+#include <filesystem>
+namespace fs = std::filesystem;
+
 class FileList
 {
 public:
@@ -23,9 +26,10 @@ public:
 
     static bool DirectoryExists(const char *pPath)
     {
-        DWORD dwAttrib = GetFileAttributes(pPath);
-
-        return (dwAttrib != INVALID_FILE_ATTRIBUTES && (dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
+        std::error_code ec;
+        auto status = fs::status(pPath, ec);
+     	if(ec) return false;
+    	return fs::is_directory(status);
     }
 
     // Scan (or rescan) file tree.
@@ -41,10 +45,10 @@ public:
 
     // Invoked for each file or folder node found; should return true if file node should be included or folder should be
     // recursed into, or false if the node should be skipped.
-    virtual bool clbkFilterNode(const char *pPathOfNode, const WIN32_FIND_DATA &fd);
+    virtual bool clbkFilterNode(const fs::directory_entry &);
 
     // Callback invoked for non-empty file nodes that passed the clbkFilterNode check; this is here for subclasses to hook.
-    virtual void clbkProcessFile(const char *pFilespec, const WIN32_FIND_DATA &fd);
+    virtual void clbkProcessFile(const fs::directory_entry &);
 
     int GetScannedFileCount() const { return static_cast<int>(m_allFiles.size()); }
     bool IsEmpty() const { return m_allFiles.empty(); }

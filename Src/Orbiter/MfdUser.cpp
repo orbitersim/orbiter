@@ -13,7 +13,7 @@
 #include "Psys.h"
 #include "Nav.h"
 #include <stdio.h>
-#include <strstream>
+#include <sstream>
 #include <iomanip>
 #include "Log.h"
 #include "Util.h"
@@ -397,11 +397,11 @@ void GraphMFD::Plot (HDC hDC, int g, int h0, int h1, const char *title)
 		}
 	}
 	if (gf.absc_title[0]) {
-		ostrstream oss(cbuf, 64);
+		ostringstream oss(cbuf, 64);
 		oss << gf.absc_title;
 		if (gf.absc_tickscale != 1.0f) oss << " x " << 1.0/gf.absc_tickscale;
 		oss << '\0';
-		TextOut (hDC, (x0+x1)/2, y0+(3*ch)/4, oss.str(), strlen(oss.str()));
+		TextOut (hDC, (x0+x1)/2, y0+(3*ch)/4, oss.str().c_str(), strlen(oss.str().c_str()));
 	}
 
 	// ordinate ticks/labels
@@ -430,11 +430,11 @@ void GraphMFD::Plot (HDC hDC, int g, int h0, int h1, const char *title)
 	SetTextAlign (hDC, TA_CENTER);
 	if (gf.data_title[0]) {
 		SelectDefaultFont (hDC, 2);
-		ostrstream oss(cbuf, 64);
+		ostringstream oss(cbuf, 64);
 		oss << gf.data_title;
 		if (gf.data_tickscale != 1.0f) oss << " x " << 1.0/gf.data_tickscale;
 		oss << '\0';
-		TextOut (hDC, 0, (y0+y1)/2, oss.str(), strlen(oss.str()));
+		TextOut (hDC, 0, (y0+y1)/2, oss.str().c_str(), strlen(oss.str().c_str()));
 	}
 
 	// plot frame

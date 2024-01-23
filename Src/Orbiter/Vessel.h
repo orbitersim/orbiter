@@ -105,7 +105,7 @@ typedef struct {      // obsolete exhaust render definition
 } OldExhaustSpec;
 
 typedef struct {      // airfoil definition
-	int version;          // 0: uses AirfoilCoeffFunc, 1: uses AirfoilCoeffFuncEx
+	int version;          // 0: uses AirfoilCoeffFunc, 1: uses AirfoilCoeffFuncEx, 3: uses AirfoilCoeffFuncEx2
 	AIRFOIL_ORIENTATION align; // vertical or horizontal
 	Vector ref;           //   lift,drag attack reference point
 	AirfoilCoeffFunc cf;  //   pointer to coefficients callback function
@@ -376,6 +376,10 @@ public:
 	bool GetDragVector (Vector &D) const;
 	// Returns drag vector in D (in local vessel frame).
 	// Return value indicates if drag is present
+
+	bool GetSideForceVector(Vector& SF) const;
+	// Returns side-force vector in SF (in local vessel frame).
+	// Return value indicates if side-force is present
 
 	bool GetForceVector (Vector &F) const;
 	// Returns total linear force vector acting on the vessel
@@ -804,6 +808,9 @@ public:
 
 	AirfoilSpec *CreateAirfoil (AIRFOIL_ORIENTATION align, const Vector &ref, AirfoilCoeffFuncEx cf, void *context, double c, double S, double A);
 	// Create a new airfoil; extended version
+
+	AirfoilSpec* CreateAirfoil(AIRFOIL_ORIENTATION align, const Vector& ref, AirfoilCoeffFuncEx2 cf, void* context, double c, double S, double A);
+	// Create a new airfoil; extended force and moment version
 
 	bool GetAirfoilParam (AirfoilSpec *af, VECTOR3 *ref, AirfoilCoeffFunc *cf, void **context, double *c, double *S, double *A);
 	// Return airfoil parameters
@@ -1666,7 +1673,7 @@ private:
 	Vector Thrust;             // linear thrust vector (sum of all thruster contributions)
 	mutable Vector Weight;     // weight vector (due to gravitational acceleration)
 	mutable bool weight_valid; // flag for 'Weight' up to date
-	double Lift, Drag;         // current lift and drag magnitudes
+	double Lift, Drag, SideForce;         // current lift and drag magnitudes
 
 	DWORD navmode;             // bitflags for currently active navmodes
 	struct HoverHoldAlt {      // Hover hold altitude data

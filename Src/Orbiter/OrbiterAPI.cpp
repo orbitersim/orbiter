@@ -2389,13 +2389,15 @@ DLLEXPORT void oapiWriteScenario_int (FILEHANDLE file, char *item, int i)
 DLLEXPORT void oapiWriteScenario_float (FILEHANDLE file, char *item, double d)
 {
 	ofstream &ofs = *(ofstream*)file;
-	ofs << "  " << item << ' ' << d << endl;
+	FltFormat f{ 6 }; // default precision: 6
+	ofs << "  " << item << ' ' << f(d) << endl;
 }
 
 DLLEXPORT void oapiWriteScenario_vec (FILEHANDLE file, char *item, const VECTOR3 &vec)
 {
 	ofstream &ofs = *(ofstream*)file;
-	ofs << "  " << item << ' ' << vec.x << ' ' << vec.y << ' ' << vec.z << endl;
+	FltFormat f{ 6 }; // default precision: 6
+	ofs << "  " << item << ' ' << f(vec.x) << ' ' << f(vec.y) << ' ' << f(vec.z) << endl;
 }
 
 DLLEXPORT bool oapiReadScenario_nextline (FILEHANDLE file, char *&line)
@@ -2539,6 +2541,14 @@ DLLEXPORT bool oapiDelAnnotation (NOTEHANDLE hNote)
 DLLEXPORT char *oapiDebugString ()
 {
 	return DBG_MSG;
+}
+
+DLLEXPORT void oapiDebugString(const char* str)
+{
+#ifndef INLINEGRAPHICS
+	oapi::GraphicsClient* gc = g_pOrbiter->GetGraphicsClient();
+	if (gc) gc->clbkDebugString(str);
+#endif // !INLINEGRAPHICS
 }
 
 DLLEXPORT double oapiRand ()

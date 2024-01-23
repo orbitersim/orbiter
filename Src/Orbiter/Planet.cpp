@@ -8,7 +8,6 @@
 #include <fstream>
 #include <stdio.h>
 #include <string.h>
-#include <io.h>
 #include "Orbiter.h"
 #include "Config.h"
 #include "State.h"
@@ -469,35 +468,6 @@ Planet::~Planet ()
 	delete emgr;
 }
 
-intptr_t Planet::FindFirst (int type, _finddata_t *fdata, char *path, char *fname)
-{
-	intptr_t fh;
-	char cbuf[256];
-
-	switch (type) {
-	case FILETYPE_MARKER:
-		if (labelpath) strcpy (path, labelpath);
-		else           sprintf (path, "%s%s/Marker/", g_pOrbiter->Cfg()->CfgDirPrm.ConfigDir, name.c_str());
-		break;
-	}
-	sprintf (cbuf, "%s*.mkr", path);
-	if ((fh = _findfirst (cbuf, fdata)) != -1) {
-		strncpy (fname, fdata->name, strlen(fdata->name)-4);
-		fname[strlen(fdata->name)-4] = '\0';
-	}
-	return fh;
-}
-
-intptr_t Planet::FindNext (intptr_t fh, _finddata_t *fdata, char *fname)
-{
-	intptr_t fn = _findnext (fh, fdata);
-	if (!fn) {
-		strncpy (fname, fdata->name, strlen(fdata->name)-4);
-		fname[strlen(fdata->name)-4] = '\0';
-	}
-	return fn;
-}
-
 void Planet::ScanBases (char *path)
 {
 	char cbuf[256], spath[256], *pc, *cut = 0;
@@ -525,25 +495,24 @@ void Planet::ScanBases (char *path)
 		trim_string (path);
 	}
 
-	intptr_t fh;
-	_finddata_t fdata;
-	sprintf (spath, "%s\\*", path);
+	sprintf (spath, "%s/dummy", path);
 	strcpy (cbuf, g_pOrbiter->ConfigPath(spath));
-	if ((fh = _findfirst (cbuf, &fdata)) != -1) {
-		do {
-			sprintf (spath, "%s\\%s", path, fdata.name);
-			spath[strlen(spath)-4] = '\0'; // strip 'cfg' extension
-			ifstream ifs (g_pOrbiter->ConfigPath (spath));
+	fs::path configdir = fs::path(cbuf).parent_path();
+	std::error_code ec;
+	for (const auto& entry : fs::directory_iterator(configdir, ec)) {
+		if (entry.path().extension().string() == ".cfg") {
+			ifstream ifs(entry);
 			if (!ifs) continue;
 			do {
-				if (!ifs.getline (cbuf, 256)) break;
-				pc = trim_string (cbuf);
+				if (!ifs.getline(cbuf, 256)) break;
+				pc = trim_string(cbuf);
 			} while (!pc[0]);
-			if (_strnicmp (pc, "BASE-V2.0", 9)) continue;
-			Base *base = new Base (spath, this); TRACENEW
-			if (!AddBase (base))
+			if (_strnicmp(pc, "BASE-V2.0", 9)) continue;
+			sprintf(spath, "%s\\%s", path, entry.path().stem().string().c_str());
+			Base* base = new Base(spath, this); TRACENEW
+			if (!AddBase(base))
 				delete base;
-		} while (!_findnext (fh, &fdata));
+		}
 	}
 }
 
@@ -568,97 +537,94 @@ bool Planet::AddBase (Base *base)
 void Planet::ScanLabelLists (ifstream &cfg)
 {
 	int i;
-	char cbuf[256], fname[256], lbpath[256];
 	int nlabellistbuf = 0;
 	nlabellist = 0;
 
-	_finddata_t fdata;
-	intptr_t fh = FindFirst (FILETYPE_MARKER, &fdata, lbpath, fname);
-	if (fh >= 0) {
+	oapi::GraphicsClient::LABELLIST* ll;
+	bool scanheader = (labellist == 0); // only need to parse the headers for the initial scan
+	ForEach(FILETYPE_MARKER, [&](const fs::directory_entry& entry) {
+		char cbuf[256];
+		// open marker file
+		ifstream ulf(entry);
 
-		oapi::GraphicsClient::LABELLIST *ll;
-		bool scanheader = (labellist == 0); // only need to parse the headers for the initial scan
-		
-		do {
-			// open marker file
-			sprintf (cbuf, "%s%s.mkr", lbpath, fname);
-			ifstream ulf (cbuf);
-
-			// read label header
-			if (scanheader) {
-				if (nlabellist == nlabellistbuf) { // increase buffer
-					oapi::GraphicsClient::LABELLIST *tmp = new oapi::GraphicsClient::LABELLIST[nlabellistbuf += 8];
-					for (int i = 0; i < nlabellist; i++)
-						tmp[i] = labellist[i];
-					if (nlabellist) delete []labellist;
-					labellist = tmp;
-				}
-				ll = labellist+nlabellist;
-				ll->name = fname;
-				ll->marker.clear();
-				ll->colour  = 1;
-				ll->shape   = 0;
-				ll->size    = 1.0f;
-				ll->distfac = 1.0f;
-				ll->active  = false;
-				ll->flag    = 0;
-				if (FindLine (ulf, "BEGIN_HEADER")) {
-					char item[256], value[256];
-					for (;;) {
-						if (!ulf.getline (cbuf, 256) || !_strnicmp (cbuf, "END_HEADER", 10)) break;
-						sscanf (cbuf, "%s %s", item, value);
-						if (!_stricmp (item, "InitialState")) {
-							if (!_stricmp (value, "on")) ll->active = true;
-						} else if (!_stricmp (item, "ColourIdx")) {
-							int col;
-							sscanf (value, "%d", &col);
-							ll->colour = max (0, min (5, col));
-						} else if (!_stricmp (item, "ShapeIdx")) {
-							int shape;
-							sscanf (value, "%d", &shape);
-							ll->shape = max (0, min (6, shape));
-						} else if (!_stricmp (item, "Size")) {
-							float size;
-							sscanf (value, "%f", &size);
-							ll->size = max (0.1f, min (2.0f, size));
-						} else if (!_stricmp (item, "DistanceFactor")) {
-							float distfac;
-							sscanf (value, "%f", &distfac);
-							ll->distfac = max (1e-5f, min (1e3f, distfac));
-						}
+		// read label header
+		if (scanheader) {
+			if (nlabellist == nlabellistbuf) { // increase buffer
+				oapi::GraphicsClient::LABELLIST* tmp = new oapi::GraphicsClient::LABELLIST[nlabellistbuf += 8];
+				for (int i = 0; i < nlabellist; i++)
+					tmp[i] = labellist[i];
+				if (nlabellist) delete[]labellist;
+				labellist = tmp;
+			}
+			ll = labellist + nlabellist;
+			ll->name = entry.path().filename().string();
+			ll->marker.clear();
+			ll->colour = 1;
+			ll->shape = 0;
+			ll->size = 1.0f;
+			ll->distfac = 1.0f;
+			ll->active = false;
+			ll->flag = 0;
+			if (FindLine(ulf, "BEGIN_HEADER")) {
+				char item[256], value[256];
+				for (;;) {
+					if (!ulf.getline(cbuf, 256) || !_strnicmp(cbuf, "END_HEADER", 10)) break;
+					sscanf(cbuf, "%s %s", item, value);
+					if (!_stricmp(item, "InitialState")) {
+						if (!_stricmp(value, "on")) ll->active = true;
+					}
+					else if (!_stricmp(item, "ColourIdx")) {
+						int col;
+						sscanf(value, "%d", &col);
+						ll->colour = max(0, min(5, col));
+					}
+					else if (!_stricmp(item, "ShapeIdx")) {
+						int shape;
+						sscanf(value, "%d", &shape);
+						ll->shape = max(0, min(6, shape));
+					}
+					else if (!_stricmp(item, "Size")) {
+						float size;
+						sscanf(value, "%f", &size);
+						ll->size = max(0.1f, min(2.0f, size));
+					}
+					else if (!_stricmp(item, "DistanceFactor")) {
+						float distfac;
+						sscanf(value, "%f", &distfac);
+						ll->distfac = max(1e-5f, min(1e3f, distfac));
 					}
 				}
-			} else {
-				ll = labellist+nlabellist;
 			}
+		}
+		else {
+			ll = labellist + nlabellist;
+		}
 
-			// read label list for active labels, if not already present
-			if (ll->active && !ll->marker.size()) {
-				int nlistbuf = 0;
-				double lng, lat;
-				int nl;
-				char *pc;
-				Vector pos;
-				FindLine (ulf, "BEGIN_DATA");
-				for (nl = 0;; nl++) {
-					if (!ulf.getline (cbuf, 256)) break;
-					pc = strtok (cbuf, ":");
-					if (!pc || sscanf (pc, "%lf%lf", &lng, &lat) != 2) continue;
-					EquatorialToLocal (RAD*lng, RAD*lat, size, pos);
-					oapi::GraphicsClient::LABELSPEC ls;
-					ls.pos = _V(pos.x, pos.y, pos.z);
-					for (i = 0; i < 2; i++) {
-						if (pc = strtok (NULL, ":"))
-							ls.label[i] = trim_string(pc);
-					}
-					ll->marker.push_back(ls);
+		// read label list for active labels, if not already present
+		if (ll->active && !ll->marker.size()) {
+			int nlistbuf = 0;
+			double lng, lat;
+			int nl;
+			char* pc;
+			Vector pos;
+			FindLine(ulf, "BEGIN_DATA");
+			for (nl = 0;; nl++) {
+				if (!ulf.getline(cbuf, 256)) break;
+				pc = strtok(cbuf, ":");
+				if (!pc || sscanf(pc, "%lf%lf", &lng, &lat) != 2) continue;
+				EquatorialToLocal(RAD * lng, RAD * lat, size, pos);
+				oapi::GraphicsClient::LABELSPEC ls;
+				ls.pos = _V(pos.x, pos.y, pos.z);
+				for (i = 0; i < 2; i++) {
+					if (pc = strtok(NULL, ":"))
+						ls.label[i] = trim_string(pc);
 				}
+				ll->marker.push_back(ls);
 			}
-			nlabellist++;
+		}
+		nlabellist++;
 
-		} while (!FindNext (fh, &fdata, fname));
-		_findclose (fh);
-	}
+	});
 }
 
 void Planet::ScanLabelLegend()

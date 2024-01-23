@@ -8,17 +8,11 @@
 #pragma comment(linker,"\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
 #include <windows.h>
-#include <zmouse.h>
-#include <commctrl.h>
-#include <mmsystem.h>
-#include <process.h>
 #include <direct.h>
 #include <stdio.h>
 #include <time.h>
 #include <fstream>
-#include <strstream>
-#include <iomanip>
-#include <io.h>
+#include <process.h> 
 #include "cmdline.h"
 #include "D3d7util.h"
 #include "D3dmath.h"
@@ -49,6 +43,8 @@
 #include "DlgCtrl.h"
 #include "GraphicsAPI.h"
 #include "ConsoleManager.h"
+#include <filesystem>
+namespace fs = std::filesystem;
 
 #ifdef INLINEGRAPHICS
 #include "OGraphics.h"
@@ -545,18 +541,13 @@ int Orbiter::GetVersion () const
 	return v;
 }
 
-static bool FileExists(const char* path)
-{
-	return access(path, 0) != -1;
-}
-
 //! Finds legacy module consisting of a single DLL
 //! @return true on success
 //! @param cbufOut returns path to the plugin DLL
 static bool FindStandaloneDll(const char *path, const char *name, char* cbufOut)
 {
 	sprintf (cbufOut, "%s\\%s.dll", path, name);
-	return FileExists(cbufOut);
+	return fs::exists(cbufOut);
 }
 
 //! Finds module consisting of a plugin DLL inside a plugin-specific folder
@@ -565,7 +556,7 @@ static bool FindStandaloneDll(const char *path, const char *name, char* cbufOut)
 static bool FindDllInPluginFolder(const char *path, const char *name, char* cbufOut)
 {
 	sprintf(cbufOut, "%s\\%s\\%s.dll", path, name, name);
-	return FileExists(cbufOut);
+	return fs::exists(cbufOut);
 }
 
 void Orbiter::LoadModules(const std::string& path, const std::list<std::string>& names)
@@ -574,19 +565,14 @@ void Orbiter::LoadModules(const std::string& path, const std::list<std::string>&
 		LoadModule(path.c_str(), name.c_str());
 }
 
-
 void Orbiter::LoadModules(const std::string& path)
 {
-	struct _finddata_t fdata;
-	intptr_t fh = _findfirst((path + std::string("\\*.dll")).c_str(), &fdata);
-	if (fh == -1) return; // no files found
-	do {
-		if (strlen(fdata.name) > 4) {
-			fdata.name[strlen(fdata.name) - 4] = '\0'; // cut off extension
-			LoadModule(path.c_str(), fdata.name);
+	for (const auto& entry : fs::directory_iterator(path)) {
+		auto fpath = entry.path();
+		if (fpath.extension().string() == ".dll") {
+			LoadModule(path.c_str(), fpath.stem().string().c_str());
 		}
-	} while (!_findnext(fh, &fdata));
-	_findclose(fh);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -629,6 +615,22 @@ HINSTANCE Orbiter::LoadModule (const char *path, const char *name)
 			return NULL;
 		}
 	}
+
+#ifndef INLINEGRAPHICS
+	// Can't initialize DirectX in DllMain(), let's do it over here (jarmonik 28.12.2023) 
+	if (hDLL) {
+		if (register_module == gclient && gclient != NULL) {
+			if (gclient->clbkInitialise() == false) {
+				// If graphics initialization fails remove client
+				RemoveGraphicsClient(gclient);
+				FreeLibrary(hDLL);
+				LOGOUT_ERR("Client Initialization Failed. Unloading  %s", name);
+				hDLL = NULL;		
+				return NULL;
+			}
+		}
+	}
+#endif
 
 	if (hDLL) {
 		DLLModule module = { hDLL, register_module ? register_module : new oapi::Module(hDLL), std::string(name), !register_module };
@@ -2878,7 +2880,7 @@ bool Orbiter::AttachGraphicsClient (oapi::GraphicsClient *gc)
 	if (gclient) return false; // another client is already attached
 	register_module = gc;
 	gclient = gc;
-	gclient->clbkInitialise();
+	//gclient->clbkInitialise(); // Cannot initialize with-in DllMain() will result DirectX device failure.
 	return true;
 }
 

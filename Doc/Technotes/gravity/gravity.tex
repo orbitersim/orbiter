@@ -120,7 +120,7 @@ Pines\cite{pines73} transforms this representation, such that the singularities 
 U_G(s, t, u) = \frac{\mu}{r}\left\{1+\sum_{n=1}^{\infty}\left ( \frac{a}{r} \right )^n \sum_{m=1}^{n}A_{n,m}(u)(C_{n,m}r_m(s,t)+S_{n,m}i_m(s,t)) \right\}
 \end{equation}
 where s, t, and u are the x, y, and z\footnote{Note: Orbiter uses a left-handed coordinate system, wherein the y and z axes are swaped with respect conventional systems like IAU.}, components of position normalized by the magnitude of the position vector, $r_m(s,t)$ and $i_m(s,t)$  are the real and imaginary components respectively of $(s+it)^m$, and $A_{n,m}(u)$ are the \emph{m}th derivative of the associated Legendre polynomial $P_{n,m}(u)$.
-Similar to the zonal representation, the acceleration vector acting upon the spacecraft is found by computing the gradient of the potential. The algorithm used to compute acceleration is discussed and described in detail by Eckman et al.\cite{Eckman08}, referencing the implementation developed by DeMars et al.\\cite{DeMars08}
+Similar to the zonal representation, the acceleration vector acting upon the spacecraft is found by computing the gradient of the potential. The algorithm used to compute acceleration is discussed and described in detail by Eckman et al.\cite{Eckman08}, referencing the implementation developed by DeMars et al.\cite{DeMars08}
 
 \subsection{Notes on Usage}
 Gravity models must follow certain conventions in order to be used. The format used by this implementation is the SHADR format, or Spherical Harmonic ASCII Data Record of PSI\cite{shadr}. Only ASCII models where degree = order are supported.
@@ -194,14 +194,16 @@ GravCoeffCutoff = 10               ; the maximum number of terms to load.
 All gravity models must start with the C(1,0) and S(1,0) coefficients. In the case that they have been omitted by the original creator of the model, they must be padded by zeros as shown in the first two lines of the example above. Additionally: only normalized coefficients are supported, only models that have a reference latitude and longitude corresponding to Orbiter's positive X axis are supported (latitude = 0°, longitude = 0°).
 
 \subsubsection{Included Models}
-By default Orbiter comes with four gravity models, one each for: Mercury, Venus, Earth's Moon, and Mars. The default cut-off degree/order is 10 to minimize the impact on simulation performance, however this can be increased at the users discretion. A summary of the models included with this release and their respective default settings is shown in Table~\ref{tab:models}
+By default Orbiter comes with four gravity models, one each for: Mercury, Venus, Earth, Luna, Mars, and Vesta. The default cut-off degree/order is 10 to minimize the impact on simulation performance, however this can be increased at the users discretion. A summary of the models included with this release and their respective default settings is shown in Table~\ref{tab:models}
 \begin{table}[h]
 \begin{tabular}{llcc}
 Body    	& Model                 					& Maximum Degree/Order 		& Default Degree/Order \\\hline
 Mercury 	& \emph{jgmess\_160a\_sha.tab} 		& 160                  			& 10                   \\
 Venus   	& \emph{mod\_shgj120p.a01}     		& 120                  			& 10                   \\
+Earth   	& \emph{egm96\_to360.tab}     			& 360                 			& 10                   \\
 Luna    	&\emph{ jgl165p1.sha}				& 165                  			& 10                   \\
-Mars    	&\emph{ jgmro\_120f\_sha.tab}  		& 120                  			& 10                  
+Mars    	&\emph{ jgmro\_120f\_sha.tab}  		& 120                  			& 10		     \\
+Vesta    	&\emph{ JGDWN\_VES20H\_SHA.TAB}		& 20                  			& 10
 \end{tabular}
 \caption{Gravity models included with Orbiter}
 \label{tab:models}

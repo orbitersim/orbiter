@@ -377,12 +377,9 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene) :
 	physics_patchres = *(DWORD*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_SURFACEMAXLEVEL);
 	physics_patchres = min (physics_patchres, *(DWORD*)gc->GetConfigParam (CFGPRM_SURFACEMAXLEVEL));
 
+	// Push the graphics resolution higher than the one used for physics
+	// to enable more accurate bilinear interpolation of the terrain.
 	max_patchres = physics_patchres + 4;
-	//if (elev_mode == 1)	max_patchres = physics_patchres + 4;	// Push the graphics resolution higher than the one used for physics
-	//else max_patchres = physics_patchres;							// to enable more accurate bilinear interpolation of the terrain.
-																	// Works well on the Moon, not so well on high-res KSC.
-
-	max_patchres = min(max_patchres, *(DWORD*)gc->GetConfigParam(CFGPRM_SURFACEMAXLEVEL));
 
 	tilever = *(int*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_TILEENGINE);
 	if (tilever < 2) {
@@ -1344,13 +1341,17 @@ vPlanet::sOverlay * vPlanet::IntersectOverlay(VECTOR4 q, FVECTOR4 *texcoord) con
 {
 	for (auto olay : overlays)
 	{
-		if (q.x > olay->lnglat.z) continue;
-		if (q.z < olay->lnglat.x) continue;
-		if (q.y < olay->lnglat.w) continue;
-		if (q.w > olay->lnglat.y) continue;
-
 		double ow = fabs(olay->lnglat.x - olay->lnglat.z);
 		double oh = fabs(olay->lnglat.y - olay->lnglat.w);
+		double ew = ow * 0.001;
+		double eh = oh * 0.001;
+
+		if (q.x > (olay->lnglat.z - ew)) continue;
+		if (q.z < (olay->lnglat.x + ew)) continue;
+		if (q.y < (olay->lnglat.w + eh)) continue;
+		if (q.w > (olay->lnglat.y - eh)) continue;
+
+
 		double tw = fabs(q.x - q.z);
 		double th = fabs(q.y - q.w);
 

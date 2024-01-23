@@ -8,6 +8,7 @@ configure_file(D3D9ClientConfig.h.in D3D9ClientConfig.h)
 # set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(DXSDK_LIB_DIR ${DXSDK_DIR}/lib/${ARCH})
+set(DXSDK_LIB_DIR2 "C:/Program Files (x86)/Windows Kits/10/Lib/10.0.19041.0/um/${ARCH}")  #Must acquire d3d9.lib from here
 
 set(D3D9_SOURCE_DIR ${CMAKE_SOURCE_DIR}/OVP/D3D9Client)
 set(ShaderDir ${D3D9_SOURCE_DIR}/shaders)
@@ -176,6 +177,7 @@ target_include_directories(D3D9Client PUBLIC
 
 target_link_directories(D3D9Client PUBLIC
 	${ORBITER_BINARY_SDK_DIR}/lib
+	${DXSDK_LIB_DIR2}
 	${DXSDK_LIB_DIR}
 )
 
@@ -238,13 +240,13 @@ install(TARGETS D3D9Client
 add_subdirectory(samples/DrawOrbits)
 add_subdirectory(samples/DX9ExtMFD)
 add_subdirectory(samples/GenericCamera)
-add_subdirectory(samples/TerrainToolBox)
+add_subdirectory(samples/TerrainToolKit)
 
 install(DIRECTORY ${D3D9_SOURCE_DIR}/shaders/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Modules/D3D9Client)
 install(DIRECTORY ${D3D9_SOURCE_DIR}/samples/DrawOrbits/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/DrawOrbits)
 install(DIRECTORY ${D3D9_SOURCE_DIR}/samples/DX9ExtMFD/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/DX9ExtMFD)
 install(DIRECTORY ${D3D9_SOURCE_DIR}/samples/GenericCamera/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/GenericCamera)
-install(DIRECTORY ${D3D9_SOURCE_DIR}/samples/TerrainToolBox/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/TerrainToolBox)
+install(DIRECTORY ${D3D9_SOURCE_DIR}/samples/TerrainToolKit/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/TerrainToolKit)
 install(FILES ${INCLUDE_TARGET_DIR}/gcCoreAPI.h DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/include)
 install(FILES ${INCLUDE_TARGET_DIR}/gcGUI.h DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/include)
 install(FILES ${ORBITER_SOURCE_SDK_DIR}/doc/Orbiter2DGraphics.pdf DESTINATION ${ORBITER_INSTALL_SDK_DIR}/doc)

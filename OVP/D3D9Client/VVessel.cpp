@@ -973,6 +973,7 @@ void vVessel::RenderVectors (LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp)
 			if (bfvmode & BFV_LIFT) { vessel->GetLiftVector(vector); if (length(vector)>len) len = length(vector); }
 			if (bfvmode & BFV_TOTAL) { vessel->GetForceVector(vector); if (length(vector)>len) len = length(vector); }
 			if (bfvmode & BFV_TORQUE) {	vessel->GetTorqueVector(vector); if (length(vector)>len) len = length(vector); }
+			if (bfvmode & BFV_SIDEFORCE) { vessel->GetSideForceVector(vector); if (length(vector) > len) len = length(vector); }
 
 			lscale = float(size * sclset / len);
 		}
@@ -1035,6 +1036,15 @@ void vVessel::RenderVectors (LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp)
 					RenderAxisVector(pSkp, ptr(D3DXCOLOR(1,0,1,alpha)), vector, lscale, scale, bLog);
 					sprintf_s(label, 64, "M = %sNm", value_string(length(vector)));
 					RenderAxisLabel(pSkp, ptr(D3DXCOLOR(1,0,1,alpha)), vector, lscale, scale, label, bLog);
+				}
+			}
+
+			if (bfvmode & BFV_SIDEFORCE) {
+				vessel->GetSideForceVector(vector);
+				if (length(vector) > threshold) {
+					RenderAxisVector(pSkp, ptr(D3DXCOLOR(0.0392, 0.6235, 0.4941, alpha)), vector, lscale, scale, bLog);
+					sprintf_s(label, 64, "SF = %sN", value_string(length(vector)));
+					RenderAxisLabel(pSkp, ptr(D3DXCOLOR(0.0392, 0.6235, 0.4941, alpha)), vector, lscale, scale, label, bLog);
 				}
 			}
 		}

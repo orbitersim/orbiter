@@ -35,6 +35,7 @@ D3D9Config::~D3D9Config ()
 
 void D3D9Config::Reset ()
 {
+	Enable9On12			= 0;
 	OrbitalShadowMult   = 0.85;
 	PlanetPreloadMode	= 0;
 	PlanetLoadFrequency	= 20;
@@ -68,7 +69,7 @@ void D3D9Config::Reset ()
 	FrameRate			= 200.0;
 	EnableLimiter		= 0;
 	CustomCamMode		= 1;
-	TileMipmaps			= 1;
+	TileMipmaps			= 2;
 	TextureMips			= 1;
 	LODBias				= 0.0;
 	MeshRes				= 1;
@@ -130,6 +131,7 @@ bool D3D9Config::ReadParams ()
 	FILEHANDLE hFile = oapiOpenFile(cfgfile, FILE_IN_ZEROONFAIL, ROOT);
 	if (!hFile) return false;
 
+	if (oapiReadItem_int   (hFile, (char*)"EnableDX12Wrapper", i))		Enable9On12 = max(0, min(1, i));
 	if (oapiReadItem_float (hFile, (char*)"FrameRate", d))				FrameRate = max(0.0, min(300.0, d));
 	if (oapiReadItem_int   (hFile, (char*)"EnableLimiter", i))			EnableLimiter = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, (char*)"CustomCamMode", i))			CustomCamMode = max(0, min(1, i));
@@ -221,6 +223,7 @@ void D3D9Config::WriteParams ()
 {
 	FILEHANDLE hFile = oapiOpenFile (cfgfile, FILE_OUT, ROOT);
 
+	oapiWriteItem_int   (hFile, (char*)"EnableDX12Wrapper", Enable9On12);
 	oapiWriteItem_float (hFile, (char*)"FrameRate", FrameRate);
 	oapiWriteItem_int   (hFile, (char*)"EnableLimiter", EnableLimiter);
 	oapiWriteItem_int   (hFile, (char*)"CustomCamMode", CustomCamMode);

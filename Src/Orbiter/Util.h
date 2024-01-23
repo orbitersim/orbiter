@@ -72,4 +72,20 @@ double toc(); // stop clock and return value
 RECT GetClientPos (HWND hWnd, HWND hChild);
 void SetClientPos (HWND hWnd, HWND hChild, RECT &r);
 
+// Floating point output stream formatter
+struct FltFormatter
+{
+	int precision;
+	double value;
+	FltFormatter (int precision, double value);
+	friend std::ostream& operator<< (std::ostream& os, const FltFormatter& v);
+};
+
+struct FltFormat
+{
+	int precision;
+	FltFormat (int precision = 6);
+	FltFormatter operator() (double value) const;
+};
+
 #endif //!__UTIL_H

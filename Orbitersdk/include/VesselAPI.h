@@ -18,6 +18,10 @@
 #ifndef __VESSELAPI_H
 #define __VESSELAPI_H
 
+#if defined(_MSC_VER) && (_MSC_VER < 1920 ) // Microsoft Visual Studio Version 2017 and lower
+#include <algorithm>
+#endif
+
 // reference frame flags
 #define FRAME_ECL 0
 #define FRAME_EQU 1
@@ -1485,6 +1489,40 @@ public:
 	AIRFOILHANDLE CreateAirfoil3 (AIRFOIL_ORIENTATION align, const VECTOR3 &ref, AirfoilCoeffFuncEx cf, void *context, double c, double S, double A) const;
 
 	/**
+	 *  \brief Creates a new airfoil and defines its aerodynamic properties.
+	 * \param ref centre of pressure in vessel coordinates [<b>m</b>], nominally this shoud be at the CoM.
+	 * \param cf pointer to coefficient callback function (see notes)
+	 * \param context pointer to data block passed to cf callback function
+	 * \param c airfoil chord length [m]
+	 * \param S wing area [m<sup>2</sup>]
+	 * \param A wing aspect ratio
+	 * \return Handle for the new airfoil.
+	 * \note This method is an extension to \ref CreateAirfoil3, using a
+	 *   more versatile coefficient callback function.
+	 * \note AirfoilCoeffFuncEx has the following interface:
+	 *   \code
+	 *   void (*AirfoilCoeffFuncEx2)(
+	 *   VESSEL* v, 
+	 *   double alpha, double beta, double gamma,
+	 *   double M, double Re, void* context,
+	 *   double* CA, double* CN, double* CY,
+	 *   double* Cl, double* Cm, double* Cn);
+	 *   \endcode
+	 *   where \e v is a pointer to the calling vessel instance, and
+	 *   \a context is the pointer passed to CreateAirfoil4. It can be
+	 *   used to make available to the callback function any additional
+	 *   parameters required to calculate the lift and drag coefficients.
+	 *   The coefficients: CA, CN, and CY are force coefficients along the
+	 *   vessel's Z, Y, and X body axes respectively.
+	 *	 The coefficients: Cl, Cm, and Cn are moment coefficients about the
+	 *   vessel's Z, X, and Y body axes respectively.
+	 *   All other parameters are identical to AirfoilCoeffFunc (see
+	 *   \ref CreateAirfoil).
+	 * \sa CreateAirfoil, CreateAirfoil2, CreateAirfoil3, EditAirfoil, DelAirfoil
+	 */
+	AIRFOILHANDLE CreateAirfoil4(const VECTOR3& ref, AirfoilCoeffFuncEx2 cf, void* context, double c, double S, double A) const;
+
+	/**
 	 * \brief Returns the parameters of an existing airfoil.
 	 * \param [in] hAirfoil airfoil handle
 	 * \param [out] ref pointer to centre of pressure [<b>m</b>]
@@ -1979,6 +2017,14 @@ public:
 	double GetDrag () const;
 
 	/**
+	 * \brief Returns magnitude of aerodynamic side-force vector.
+	 * \return Magnitude of drag force vector [N].
+	 * \note Return value is the sum of drag components from all airfoils.
+	 * \sa GetDragVector, GetLift
+	 */
+	double GetSideForce() const;
+
+	/**
 	 * \brief Returns gravitational force vector in local vessel coordinates.
 	 * \param[out] G gravitational force vector [<b>N</b>]
 	 * \return Always true.
@@ -2032,6 +2078,20 @@ public:
 	 *   GetForceVector
 	 */
 	bool GetDragVector (VECTOR3 &D) const;
+
+	/**
+	 * \brief Returns aerodynamic side-force force vector in local vessel
+	 *   coordinates.
+	 * \param[out] SF drag vector [<b>N</b>]
+	 * \return false indicates zero side-force. In that case, the returned vector
+	 *   is (0,0,0).
+	 * \note On return, SD contains the sum of Side-force components from all
+	 *   airfoils.
+	 * \note The side-force vector is mutually orthogonal to the Lift and Drag vectors
+	 * \sa GetDrag, GetWeightVector, GetThrustVector, GetLiftVector,
+	 *   GetForceVector
+	 */
+	bool GetSideForceVector (VECTOR3 &SF) const;
 
 	/**
 	 * \brief Returns total force vector acting on the vessel in local

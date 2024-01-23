@@ -33,7 +33,7 @@ public:
 	static const int LABEL_DISPLAY_RECORD = 0x1; ///< Display label "Record" on active recording session
 	static const int LABEL_DISPLAY_REPLAY = 0x2; ///< Display label "Replay" on active playback session
 
-
+	int Enable9On12;				///< Enable DX9 through DX12
 	int PlanetPreloadMode;			///< Planet preload mode setting (0=load on demand, 1=preload)
 	int PlanetLoadFrequency;		///< Load frequency for on-demand textures \[Hz\] (1...1000)
 	int Anisotrophy;				///< Anisotropic filtering setting \[factor\] (1...16)

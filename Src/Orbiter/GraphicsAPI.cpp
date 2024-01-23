@@ -17,7 +17,8 @@
 #include "Util.h"
 #include "resource.h"
 #include <wincodec.h>
-#include <io.h>
+#include <filesystem>
+namespace fs = std::filesystem;
 
 using std::min;
 
@@ -48,6 +49,8 @@ GraphicsClient::GraphicsClient (HINSTANCE hInstance): Module (hInstance)
 	VideoData.pageflip = true;
 	VideoData.deviceidx = -1;
 	VideoData.modeidx = 0;
+	VideoData.outputidx = 0;
+	VideoData.style = 1;
 	VideoData.winw = 1024;
 	VideoData.winh = 768;
 	surfBltTgt = RENDERTGT_NONE;
@@ -98,6 +101,8 @@ bool GraphicsClient::clbkInitialise ()
 	VideoData.novsync    = cfg->CfgDevPrm.bNoVsync;
 	VideoData.pageflip   = cfg->CfgDevPrm.bPageflip;
 	VideoData.deviceidx  = cfg->CfgDevPrm.Device_idx;
+	VideoData.outputidx  = cfg->CfgDevPrm.Device_out;
+	VideoData.style		 = cfg->CfgDevPrm.Device_style;
 	VideoData.modeidx    = (int)cfg->CfgDevPrm.Device_mode;
 	VideoData.winw       = (int)cfg->CfgDevPrm.WinW;
 	VideoData.winh       = (int)cfg->CfgDevPrm.WinH;
@@ -174,24 +179,17 @@ ScreenAnnotation *GraphicsClient::clbkCreateAnnotation ()
 
 bool GraphicsClient::TexturePath (const char *fname, char *path) const
 {
-	struct _finddata_t fd;
-	intptr_t fh;
-
 	// first try htex directory
 	strcpy (path, g_pOrbiter->Cfg()->CfgDirPrm.HightexDir);
 	strcat (path, fname);
-	if ((fh = _findfirst (path, &fd)) != -1) {
-		_findclose (fh);
-		return true;
-	}
+	if (fs::exists(path)) return true;
 
 	// try tex directory
 	strcpy (path, g_pOrbiter->Cfg()->CfgDirPrm.TextureDir);
 	strcat (path, fname);
-	if ((fh = _findfirst (path, &fd)) != -1) {
-		_findclose (fh);
-		return true;
-	}
+
+	if (fs::exists(path)) return true;
+
 	return false;
 }
 

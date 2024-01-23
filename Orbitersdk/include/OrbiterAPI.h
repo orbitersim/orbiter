@@ -29,6 +29,10 @@
 #include <math.h>
 #include <vector>
 
+#if defined(_MSC_VER) && (_MSC_VER < 1920 ) // Microsoft Visual Studio Version 2017 and lower
+#include <algorithm>
+#endif
+
 extern "C" {
 #include "Lua/lua.h"
 }
@@ -1645,6 +1649,17 @@ typedef void (*AirfoilCoeffFuncEx)(
 // Contains additional parameters (calling vessel and pointer to
 // user-defined data)
 
+typedef void (*AirfoilCoeffFuncEx2)(
+	VESSEL* v,
+	VECTOR3 WindDir,
+	double alpha, double beta, double gamma,
+	double M, double Re, void* context,
+	double* CA, double* CN, double* CY,
+	double* Cl, double* Cm, double* Cn);
+// Further extended version of aerodynamic coefficients callback function
+// Contains additional parameters (calling vessel and pointer to
+// user-defined data for all force and moment coefficients)
+
 
 // ===========================================================================
 /// \ingroup defines
@@ -1656,11 +1671,12 @@ typedef void (*AirfoilCoeffFuncEx)(
  *
  * Defines the orientation of an airfoil by the direction of the lift vector
  * generated (vertical or horizontal).
- * \sa VESSEL::CreateAirfoil, VESSEL::CreateAirfoil2, VESSEL::CreateAirfoil3
+ * \sa VESSEL::CreateAirfoil, VESSEL::CreateAirfoil2, VESSEL::CreateAirfoil3, VESSEL::CreateAirfoil4
  */
 typedef enum {
 	LIFT_VERTICAL,     ///< lift direction is vertical (e.g. elevator)
-	LIFT_HORIZONTAL    ///< lift direction is horizontal (e.g. rudder)
+	LIFT_HORIZONTAL,    ///< lift direction is horizontal (e.g. rudder)
+	FORCE_AND_MOMENT	///< complex model of forces and moments along and about all axes
 } AIRFOIL_ORIENTATION;
 //@}
 
@@ -2469,6 +2485,13 @@ OAPIFUNC void oapiRegisterModule (oapi::Module *module);
  * \endcode
  */
 OAPIFUNC char *oapiDebugString ();
+
+
+/**
+* \brief Print multiple debug strings onto a screen, will be cleared when printed on screen.
+* \param str Text string to print
+*/
+OAPIFUNC void oapiDebugString(const char*);
 
 
 // ======================================================================

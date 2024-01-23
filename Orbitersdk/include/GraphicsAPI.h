@@ -319,6 +319,7 @@ typedef void *HDC;
 #define BFV_DRAG      0x0020 ///< Show drag vector
 #define BFV_TOTAL     0x0040 ///< Show total force vector
 #define BFV_TORQUE    0x0080 ///< Show torque vector
+#define BFV_SIDEFORCE 0x0100 ///< Show side-force vector
 /// @}
 
 /// \defgroup favflag Bit flags for frame axis vector render options
@@ -475,6 +476,12 @@ public:
 	 * \param type Event type
 	 */
 	virtual void clbkScenarioChanged(OBJHANDLE hVessel, ScnChgEvent type) {}
+
+	/**
+	 * \brief Print multiple debug strings onto a screen, will be cleared when printed on screen.
+	 * \param str Text string to print
+	 */
+	virtual void clbkDebugString(const char *str) {}
 
 	/**
 	 * \brief Texture request
@@ -852,10 +859,12 @@ public:
 		bool trystencil; ///< stencil buffer flag
 		bool novsync;    ///< no vsync flag
 		bool pageflip;   ///< allow page flipping in fullscreen
-		int deviceidx;   ///< video device index
-		int modeidx;     ///< video mode index
-		int winw;        ///< window width
-		int winh;        ///< window height
+		int deviceidx;   ///< video device (adapter) index
+		int modeidx;     ///< video mode index (fullscreen resolution)
+		int winw;        ///< window/screen width
+		int winh;        ///< window/screen height
+		int outputidx;	 ///< video output
+		int style;		 ///< true fullscreen, fulscreen window, window with taskbar
 	};
 
 	/**

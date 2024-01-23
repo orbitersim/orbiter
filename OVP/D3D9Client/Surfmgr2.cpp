@@ -282,9 +282,6 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 
 	if (e) {
 	
-		//
-		//for (i = 0; i < ndat; i++) elev[i] = (trunc(float(e[i]) * (ehdr.scale / tgt_res)) + trunc(ehdr.offset / tgt_res)) * tgt_res;
-
 		if (ehdr.scale != tgt_res) { // rescale the data
 			double rescale = ehdr.scale / tgt_res;
 			for (i = 0; i < ndat; i++)
@@ -371,8 +368,8 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 				phdr->scale = 1.0;
 #endif
 				p += phdr->hdrsize;
-				rescale = (do_rescale = (phdr->scale != 1.0)) ? phdr->scale : 1.0;
-				offset = (do_shift = (phdr->offset != 0.0)) ? INT16(phdr->offset) : 0;
+				rescale = (do_rescale = (phdr->scale != tgt_res)) ? phdr->scale/tgt_res : 1.0;
+				offset = (do_shift = (phdr->offset != 0.0)) ? INT16(phdr->offset/tgt_res) : 0;
 
 				switch(phdr->dtype) {
 				case 0:
@@ -920,11 +917,11 @@ void SurfTile::Render ()
 	// DevTools: Render with overlay image
 	// ----------------------------------------------------------------------
 
-	FVECTOR4 texcoord;
-	const vPlanet::sOverlay *oLay = vPlanet->IntersectOverlay(bnd.vec, &texcoord);
-
-	if (pShader->bDevtools)
+	if (pShader->bDevtools && scene->GetRenderPass() == RENDERPASS_MAINSCENE)
 	{
+		FVECTOR4 texcoord;
+		const vPlanet::sOverlay* oLay = vPlanet->IntersectOverlay(bnd.vec, &texcoord);
+
 		if (oLay)
 		{
 			bool bOlayEnable = false; for (auto x : oLay->pSurf) if (x) bOlayEnable = true;
