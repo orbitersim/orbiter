@@ -25,7 +25,7 @@
 #include <sstream>
 #include <vector>
 
-#define IKernelSize 150
+#define IKernelSize 120
 
 using namespace oapi;
 
@@ -78,8 +78,6 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	_TRACE;
 
 	gc = _gc;
-	vobjEnv = NULL;
-	vobjIrd = NULL;
 	m_celSphere = NULL;
 	Lights = NULL;
 	hSun = NULL;
@@ -87,6 +85,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	pLabelFont = NULL;
 	pDebugFont = NULL;
 	pBlur = NULL;
+	pBlur2D = NULL;
 	pOffscreenTarget = NULL;
 	pLocalCompute = NULL;
 	pRenderGlares = NULL;
@@ -103,16 +102,16 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	pSunGlare = NULL;
 	pSunGlareAtm = NULL;
 	pEnvDS = NULL;
-	pIrradDS = NULL;
 	pIrradiance = NULL;
 	pIrradTemp = NULL;
-	pIrradTemp2 = NULL;
-	pIrradTemp3 = NULL;
 	pDepthNormalDS = NULL;
 	pVisDepth = NULL;
 	pLocalResults = NULL;
 	pLocalResultsSL = NULL;
 	pBakeLights = NULL;
+	ptRandom = NULL;
+
+	vobjEnv = eCamRenderList.begin();
 
 	fDisplayScale = float(viewH) / 1080.0f;
 
@@ -144,6 +143,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	memset(&smap, 0, sizeof(smap));
 
 	CLEARARRAY(pBlrTemp);
+	CLEARARRAY(pBlrTemp2D);
 	CLEARARRAY(pTextures);
 	CLEARARRAY(ptgBuffer);
 	CLEARARRAY(psgBuffer);
@@ -158,7 +158,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 		float dx = 0;
 		float dy = 0;
 		for (int i = 0; i < IKernelSize; i++) {
-			double r = oapiRand();
+			double r = sqrt(oapiRand());
 			double a = oapiRand() * PI2;
 			IKernel[i].x = float(cos(a) * r);
 			IKernel[i].y = float(sin(a) * r);
@@ -171,7 +171,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	for (int i = 0; i < IKernelSize; i++) {
 		float d = IKernel[i].x*IKernel[i].x + IKernel[i].y*IKernel[i].y;
 		IKernel[i].z = sqrt(1.0f - saturate(d));
-		IKernel[i].w = sqrt(IKernel[i].z);
+		IKernel[i].w = IKernel[i].z;
 	}
 
 
@@ -225,11 +225,6 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 		HR(pDevice->CreateDepthStencilSurface(EnvMapSize, EnvMapSize, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, true, &pEnvDS, NULL));
 	}
 
-	if (Config->bIrradiance) {
-		HR(pDevice->CreateDepthStencilSurface(128, 128, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, true, &pIrradDS, NULL));
-	}
-
-
 	// Exterior shadows
 	if (Config->ShadowMapMode) {
 		UINT size = ShmMapSize;
@@ -269,6 +264,14 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 		HR(D3DXCreateTexture(pDevice, viewW, viewH, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_DEPTH]));
 	}
 
+	HR(D3DXCreateTexture(pDevice, 64, 64, 1, D3DUSAGE_DYNAMIC, D3DFMT_R32F, D3DPOOL_DEFAULT, &ptRandom));
+
+	D3DLOCKED_RECT rect;
+	if (ptRandom->LockRect(0, &rect, 0, 0) == S_OK) {
+		for (int i = 0; i < (64 * 64); i++) ((float*)rect.pBits)[i] = oapiRand();
+		ptRandom->UnlockRect(0);
+	}
+	else LogErr("Failed to create random table");
 
 	// Initialize post processing effects --------------------------------------------------------------------------------------------------
 	//
@@ -371,10 +374,7 @@ Scene::~Scene ()
 
 	SAFE_RELEASE(pOffscreenTarget);
 	SAFE_RELEASE(pEnvDS);
-	SAFE_RELEASE(pIrradDS);
 	SAFE_RELEASE(pIrradTemp);
-	SAFE_RELEASE(pIrradTemp2);
-	SAFE_RELEASE(pIrradTemp3);
 	SAFE_RELEASE(pDepthNormalDS);
 	SAFE_RELEASE(pLocalResults);
 	SAFE_RELEASE(pLocalResultsSL);
@@ -382,6 +382,7 @@ Scene::~Scene ()
 	SAFE_RELEASE(pLightGlare);
 	SAFE_RELEASE(pSunGlare);
 	SAFE_RELEASE(pSunGlareAtm);
+	SAFE_RELEASE(ptRandom);
 
 	for (int i = 0; i < ARRAYSIZE(psShmDS); i++) SAFE_RELEASE(psShmDS[i]);
 	for (int i = 0; i < ARRAYSIZE(ptShmRT); i++) SAFE_RELEASE(ptShmRT[i]);
@@ -389,6 +390,7 @@ Scene::~Scene ()
 	for (int i = 0; i < ARRAYSIZE(ptVCShmRT); i++) SAFE_RELEASE(ptVCShmRT[i]);
 	for (int i = 0; i < ARRAYSIZE(psVCShmRT); i++) SAFE_RELEASE(psVCShmRT[i]);
 	for (int i = 0; i < ARRAYSIZE(pBlrTemp); i++) SAFE_RELEASE(pBlrTemp[i]);
+	for (int i = 0; i < ARRAYSIZE(pBlrTemp2D); i++) SAFE_RELEASE(pBlrTemp2D[i]);
 
 	if (Lights) {
 		delete []Lights;
@@ -463,7 +465,7 @@ void Scene::CreateSunGlare()
 
 // ===========================================================================================
 //
-void Scene::Initialise()
+void Scene::clbkInitialise()
 {
 	_TRACE;
 
@@ -502,7 +504,7 @@ static D3D9Pad *_pad = NULL;
 
 // ===========================================================================================
 
-void Scene::OnOptionChanged(int cat, int item)
+void Scene::clbkOnOptionChanged(int cat, int item)
 {
 	if (cat == OPTCAT_CELSPHERE)
 		m_celSphere->OnOptionChanged(cat, item);
@@ -659,12 +661,9 @@ void Scene::DelVisualRec (VOBJREC *pv)
 
 	DebugControls::RemoveVisual(pv->vobj);
 
-	vobjEnv = NULL;
-	vobjIrd = NULL;
-
 	// delete the visual, its children and the entry itself
 	gc->UnregisterVisObject(pv->vobj->GetObject());
-
+	if (pv->type == OBJTP_VESSEL) gc->clbkScenarioChanged(pv->vobj, ScnChgEvent::VisualDeleted);
 	delete pv->vobj;
 	delete pv;
 }
@@ -688,8 +687,6 @@ void Scene::DeleteAllVisuals()
 		pv = pvn;
 	}
 	vobjFirst = vobjLast = NULL;
-	vobjEnv = NULL;
-	vobjIrd = NULL;
 }
 
 // ===========================================================================================
@@ -726,6 +723,8 @@ Scene::VOBJREC *Scene::AddVisualRec(OBJHANDLE hObj)
 	
 	// Initialize Meshes
 	pv->vobj->PreInitObject();
+
+	if (pv->type == OBJTP_VESSEL) gc->clbkScenarioChanged(pv->vobj, ScnChgEvent::VisualCreated);
 
 	return pv;
 }
@@ -771,7 +770,7 @@ VECTOR3 Scene::SkyColour ()
 
 // ===========================================================================================
 //
-void Scene::Update ()
+void Scene::clbkUpdate ()
 {
 	_TRACE;
 
@@ -1262,7 +1261,61 @@ void Scene::RecallDefaultState()
 
 // ===========================================================================================
 //
-void Scene::RenderMainScene()
+void Scene::clbkNewVessel(OBJHANDLE hVessel)
+{
+	CheckVisual(hVessel);
+}
+
+// ===========================================================================================
+//
+void Scene::clbkDeleteVessel(OBJHANDLE hVessel)
+{
+	VOBJREC* pv = FindVisual(hVessel);
+	if (pv) DelVisualRec(pv);
+}
+
+// ===========================================================================================
+//
+void Scene::clbkScenarioChanged(OBJHANDLE hVessel, ScnChgEvent e)
+{
+	LogVerbose("=== clbkScenarioChanged(%d) Event ===", e);
+
+	// Acquire list of vessel visuals
+	//
+	Vessels.clear();
+
+	for (VOBJREC* pv = vobjFirst; pv; pv = pv->next) 
+		if (pv->type == OBJTP_VESSEL) Vessels.insert((vVessel*)pv->vobj);
+
+	// Update Attachment hierarchy
+	//
+	RootList.clear();
+	for (auto v : Vessels) {
+		OBJHANDLE hRoot = v->GetInterface()->GetAttachmentRoot();
+		v->vRoot = (vVessel*)GetVisObject(hRoot);
+		RootList.insert(v->vRoot);
+	}
+
+	// Update eCam render list
+	//
+	eCamRenderList.clear();
+
+	// Render env-map for all root vessels in range
+	for (auto v : RootList) eCamRenderList.insert(v);
+
+	// Render env-map for all vessels with user defined eCam setup, if enabled
+	if (Config->EnvMapFaces > 1) 
+		for (auto v : Vessels)
+			if (v->HasOwnEnvCam(EnvCamType::Exterior)) eCamRenderList.insert(v);
+
+	// Return vobjEnv iterator to start of the list
+	vobjEnv = eCamRenderList.begin();
+}
+
+
+// ===========================================================================================
+//
+void Scene::clbkRenderMainScene()
 {
 	_TRACE;
 
@@ -1273,15 +1326,13 @@ void Scene::RenderMainScene()
 
 	UpdateCamVis();
 
+	set<vVessel*> Active;
+	for (auto v : Vessels) if (v->IsActive()) Active.insert(v);
+
 
 	// Update Vessel Animations
 	//
-	for (VOBJREC *pv = vobjFirst; pv; pv = pv->next) {
-		if (pv->type == OBJTP_VESSEL) {
-			vVessel *vv = (vVessel *)pv->vobj;
-			vv->UpdateAnimations();
-		}
-	}
+	for (auto v : Active) v->UpdateAnimations();
 
 
 	if (vFocus == NULL) return;
@@ -1305,9 +1356,7 @@ void Scene::RenderMainScene()
 
 	if (Config->CustomCamMode == 0 && dwTurn == RENDERTURN_CUSTOMCAM) dwTurn++;
 	if (Config->EnvMapMode == 0 && dwTurn == RENDERTURN_ENVCAM) dwTurn++;
-	if (!bIrrad && dwTurn == RENDERTURN_IRRADIANCE) dwTurn++;
-
-	if (dwTurn>RENDERTURN_LAST) dwTurn = 0;
+	if (dwTurn > RENDERTURN_LAST) dwTurn = 0;
 
 	int RenderCount = max(1, Config->EnvMapFaces);
 
@@ -1344,54 +1393,25 @@ void Scene::RenderMainScene()
 
 
 	// -------------------------------------------------------------------------------------------------------
-	// Render Environmental Map For the Vessels
+	// Render reflection cube maps for vessels
 	// -------------------------------------------------------------------------------------------------------
 
-	if (dwTurn == RENDERTURN_ENVCAM) {
+	if (dwTurn == RENDERTURN_ENVCAM && Config->EnvMapMode)
+	{	
+		DWORD flags = 0;
+		if (Config->EnvMapMode == 1) flags |= 0x01;
+		if (Config->EnvMapMode == 2) flags |= (0x03 | 0x20);
 
-		if (Config->EnvMapMode) {
-			DWORD flags = 0;
-			if (Config->EnvMapMode == 1) flags |= 0x01;
-			if (Config->EnvMapMode == 2) flags |= (0x03 | 0x20);
+		if (vobjEnv == eCamRenderList.end()) vobjEnv = eCamRenderList.begin();
 
-			if (vobjEnv == NULL) vobjEnv = vobjFirst;
-
-			while (vobjEnv) {
-				if (vobjEnv->type == OBJTP_VESSEL && vobjEnv->apprad>8.0f) {
-					if (vobjEnv->vobj) {
-						vVessel *vVes = (vVessel *)vobjEnv->vobj;
-						if (vVes->RenderENVMap(pDevice, RenderCount, flags) == false) break; // Not yet done with this vessel
-					}
+		while (vobjEnv != eCamRenderList.end()) {
+			auto vV = (*vobjEnv);
+			if (vV->IsVisible()) {
+				if (vV->CamDist() < 10e3) {
+					if (vV->ProcessEnvMaps(pDevice, RenderCount, flags) == false) break;
 				}
-				vobjEnv = vobjEnv->next; // Move to the next one
 			}
-		}
-	}
-
-
-
-	// -------------------------------------------------------------------------------------------------------
-	// Render Irradiance Map For Vessels
-	// -------------------------------------------------------------------------------------------------------
-
-	if (dwTurn == RENDERTURN_IRRADIANCE) {
-
-		if (Config->EnvMapMode && Config->bIrradiance) {
-			DWORD flags = 0;
-			if (Config->EnvMapMode == 1) flags |= 0x01;
-			if (Config->EnvMapMode == 2) flags |= (0x03 | 0x20);
-
-			if (vobjIrd == NULL) vobjIrd = vobjFirst;
-
-			while (vobjIrd) {
-				if (vobjIrd->type == OBJTP_VESSEL && vobjIrd->apprad>8.0f) {
-					if (vobjIrd->vobj) {
-						vVessel *vVes = (vVessel *)vobjIrd->vobj;
-						if (vVes->ProbeIrradiance(pDevice, RenderCount, flags) == false) break; // Not yet done with this vessel
-					}
-				}
-				vobjIrd = vobjIrd->next; // Move to the next one
-			}
+			vobjEnv++;
 		}
 	}
 
@@ -1408,15 +1428,11 @@ void Scene::RenderMainScene()
 
 	RenderList.clear();
 
-	for (pv = vobjFirst; pv; pv = pv->next) {
-		if (!pv->vobj->IsActive()) continue;
-		if (!pv->vobj->IsVisible()) continue;
-		if (pv->type == OBJTP_VESSEL) {
-			vVessel* vV = (vVessel*)pv->vobj;
-			RenderList.push_back(vV);
-			vV->bStencilShadow = true;
-			vV->BakeLights(pBakeLights);
-		}
+	for (auto vV : Active) {
+		if (!vV->IsVisible()) continue;
+		vV->bStencilShadow = true;
+		vV->BakeLights(pBakeLights);
+		RenderList.push_back(vV);
 	}
 
 	float znear_for_vessels = ComputeNearClipPlane();
@@ -1441,7 +1457,7 @@ void Scene::RenderMainScene()
 		HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0L));
 
 		// Render vessels
-		for (auto* vVes : RenderList) vVes->Render(pDevice, false);
+		for (auto vVes : RenderList) vVes->Render(pDevice, false);
 
 		// Render Cockpit
 		if (oapiCameraInternal() && vFocus) vFocus->Render(pDevice, true);
@@ -1522,12 +1538,8 @@ void Scene::RenderMainScene()
 	// ---------------------------------------------------------------------------------------------
 
 	Casters.clear();
-
-	for (pv = vobjFirst; pv; pv = pv->next) {
-		if (!pv->vobj->IsActive()) continue;
-		if (pv->type == OBJTP_VESSEL) Casters.push_back((vVessel *)pv->vobj);
-	}
-
+	for (auto v : Active) Casters.push_back(v);
+	
 	Casters.sort(sort_vessels);
 
 
@@ -1913,27 +1925,16 @@ void Scene::RenderMainScene()
 
 	// render exhausts
 	//
-	for (pv=vobjFirst; pv; pv=pv->next) {
-		if (!pv->vobj->IsActive() || !pv->vobj->IsVisible() || pv->vobj->GetMeshCount() < 1) continue;
-		OBJHANDLE hObj = pv->vobj->Object();
-		if (oapiGetObjectType(hObj) == OBJTP_VESSEL) {
-			((vVessel*)pv->vobj)->RenderExhaust();
-		}
+	for (auto v : Active) {
+		if (!v->IsVisible() || v->GetMeshCount() < 1) continue;
+		v->RenderExhaust();
 	}
 
-	// render beacons
+	// render beacons and grapple points
 	//
-	for (pv=vobjFirst; pv; pv=pv->next) {
-		if (!pv->vobj->IsActive()) continue;
-		pv->vobj->RenderBeacons(pDevice);
-	}
-
-	// render grapple points
-    //
-    for (pv=vobjFirst; pv; pv=pv->next) {
-        if (!pv->vobj->IsActive()) continue;
-        pv->vobj->RenderGrapplePoints(pDevice);
-    }
+	for (auto v : Active) v->RenderBeacons(pDevice);
+	for (auto v : Active) v->RenderGrapplePoints(pDevice);
+    
 
 	// render exhaust particle system
 	//
@@ -2192,7 +2193,9 @@ void Scene::RenderMainScene()
 	//
 	if (bFreezeEnable) bFreeze = true;
 
-	
+
+	bool bVC = oapiCameraInternal() && (oapiCockpitMode() == COCKPIT_VIRTUAL);
+
 	// -------------------------------------------------------------------------------------------------------
 	// EnvMap Debugger  TODO: Should be allowed to visualize other maps as well, not just index 0
 	// -------------------------------------------------------------------------------------------------------
@@ -2204,22 +2207,40 @@ void Scene::RenderMainScene()
 		switch (sel) {
 		case 1:		case 2:		case 3:		case 4:
 		case 5:
-			VisualizeCubeMap(vFocus->GetEnvMap(ENVMAP_MAIN), sel - 1);
+		{
+			if (bVC) {
+				auto pE = emVC.pEnv;
+				if (pE) if (pE->GetType() == D3DRTYPE_CUBETEXTURE) 
+					VisualizeCubeMap((LPDIRECT3DCUBETEXTURE9)pE, sel - 1);
+			}
+			else {
+				auto pE = vFocus->GetEnvMap()->pEnv;
+				if (pE) if (pE->GetType() == D3DRTYPE_CUBETEXTURE) 				
+					VisualizeCubeMap((LPDIRECT3DCUBETEXTURE9)pE, sel - 1);
+			}
 			break;
+		}
 		case 6:
-			VisualizeCubeMap(vFocus->GetIrradEnv(), 0);
 			break;
 		case 7:
-			VisualizeCubeMap(pIrradTemp, 0);
 			break;
 		case 8:
 			VisualizeShadowMap();
 			break;
 		case 9:
-			if (vFocus->GetIrradianceMap()) {
-				pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
-				pSketch->CopyRectNative(vFocus->GetIrradianceMap(), NULL, 0, 0);
-				pSketch->EndDrawing();
+			if (bVC) {
+				if (emVC.pIrrad) {
+					pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
+					pSketch->CopyRectNative(emVC.pIrrad, NULL, 0, 0);
+					pSketch->EndDrawing();
+				}
+			}
+			else {
+				if (vFocus->GetEnvMap()->pIrrad) {
+					pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
+					pSketch->CopyRectNative(vFocus->GetEnvMap()->pIrrad, NULL, 0, 0);
+					pSketch->EndDrawing();
+				}
 			}
 			break;
 		case 10:
@@ -2890,7 +2911,7 @@ bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc
 	LPDIRECT3DSURFACE9 pSrf = NULL;
 	LPDIRECT3DSURFACE9 pTmp = NULL;
 
-	// Create clurred mip sub-levels
+	// Copy Src to Temp
 	//
 	for (DWORD i = 0; i < 6; i++) {
 		pSrc->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pSrf);
@@ -2901,7 +2922,7 @@ bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc
 	}
 
 
-	// Create clurred mip sub-levels
+	// Create blurred mip sub-levels
 	//
 	for (int mip = 1; mip < 5; mip++) {
 
@@ -2965,13 +2986,99 @@ bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc
 
 // ===========================================================================================
 //
-bool Scene::IntegrateIrradiance(vVessel *vV, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRECT3DTEXTURE9 pOut)
+bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DTEXTURE9 pSrc)
 {
+	bool bQuality = true;
+
 	if (!pSrc) return false;
 
+	if (!pBlur2D) {
+		pBlur2D = new ImageProcessing(pDev, "Modules/D3D9Client/EnvMapBlur.hlsl", "PS2DBlur");
+	}
+
+	if (!pBlur2D->IsOK()) {
+		LogErr("pBlur is not OK");
+		return false;
+	}
+
+	if (!pEnvDS) {
+		LogErr("EnvDepthStencil doesn't exists");
+		return false;
+	}
+
+	D3DSURFACE_DESC desc;
+	pEnvDS->GetDesc(&desc);
+	DWORD width = min((UINT)512, desc.Width);
+	DWORD height = min((UINT)512, desc.Height);
+
+	if (!pBlrTemp2D[0]) {
+		if (D3DXCreateTexture(pDev, width >> 0, height >> 0, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pBlrTemp2D[0]) != S_OK) return false;
+		if (D3DXCreateTexture(pDev, width >> 1, height >> 1, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pBlrTemp2D[1]) != S_OK) return false;
+		if (D3DXCreateTexture(pDev, width >> 2, height >> 2, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pBlrTemp2D[2]) != S_OK) return false;
+		if (D3DXCreateTexture(pDev, width >> 3, height >> 3, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pBlrTemp2D[3]) != S_OK) return false;
+		if (D3DXCreateTexture(pDev, width >> 4, height >> 4, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pBlrTemp2D[4]) != S_OK) return false;
+	}
+
+	LPDIRECT3DSURFACE9 pSrf = NULL;
+	LPDIRECT3DSURFACE9 pTmp = NULL;
+
+	// Copy Src to Temp
+	//
+	pSrc->GetSurfaceLevel(0, &pSrf);
+	pBlrTemp2D[0]->GetSurfaceLevel(0, &pTmp);
+	pDevice->StretchRect(pSrf, NULL, pTmp, NULL, D3DTEXF_POINT);
+	SAFE_RELEASE(pSrf);
+	SAFE_RELEASE(pTmp);
+
+	// Create blurred mip sub-levels
+	//
+	for (int mip = 1; mip < 5; mip++) {
+
+		pBlur2D->SetFloat("fD", (4.0f / float(256 >> (mip - 1))));
+		pBlur2D->SetBool("bDir", false);
+		pBlur2D->SetTextureNative("tTex", pBlrTemp2D[mip - 1], IPF_LINEAR);
+
+		pSrc->GetSurfaceLevel(mip, &pSrf);
+		pBlur2D->SetOutputNative(0, pSrf);
+		
+		if (!pBlur2D->Execute(true)) {
+			LogErr("pBlur2D Execute Failed");
+			return false;
+		}
+
+		pBlrTemp2D[mip - 1]->GetSurfaceLevel(0, &pTmp);
+		pDevice->StretchRect(pSrf, NULL, pTmp, NULL, D3DTEXF_POINT);
+		SAFE_RELEASE(pTmp);
+		
+		pBlur2D->SetBool("bDir", true);
+		pSrc->GetSurfaceLevel(mip, &pSrf);
+		pBlur2D->SetOutputNative(0, pSrf);
+			
+		if (!pBlur2D->Execute(true)) {
+			LogErr("pBlur Execute Failed");
+			return false;
+		}
+
+		pBlrTemp2D[mip]->GetSurfaceLevel(0, &pTmp);
+		pDevice->StretchRect(pSrf, NULL, pTmp, NULL, D3DTEXF_POINT);
+		SAFE_RELEASE(pTmp);
+		SAFE_RELEASE(pSrf);
+	}
+
+	return true;
+}
+
+// ===========================================================================================
+//
+bool Scene::IntegrateIrradiance(vVessel *vV, LPDIRECT3DBASETEXTURE9 pIn, LPDIRECT3DTEXTURE9 pOut)
+{
+	if (!pIn) return false;
+	if (pIn->GetType() != D3DRTYPE_CUBETEXTURE) return false;
+
+	LPDIRECT3DCUBETEXTURE9 pSrc = (LPDIRECT3DCUBETEXTURE9)pIn;
+
 	if (!pIrradiance) {
-		pIrradiance = new ImageProcessing(pDevice, "Modules/D3D9Client/IrradianceInteg.hlsl", "PSPreInteg");
-		pIrradiance->CompileShader("PSInteg");
+		pIrradiance = new ImageProcessing(pDevice, "Modules/D3D9Client/IrradianceInteg.hlsl", "PSInteg");
 		pIrradiance->CompileShader("PSPostBlur");
 	}
 
@@ -2980,71 +3087,25 @@ bool Scene::IntegrateIrradiance(vVessel *vV, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRE
 		return false;
 	}
 
-	if (!pIrradDS) {
-		LogErr("pIrradDS doesn't exists");
-		return false;
-	}
-
+	D3DSURFACE_DESC desc;
 	LPDIRECT3DSURFACE9 pOuts = NULL;
-	HR(pOut->GetSurfaceLevel(0, &pOuts));
 
-	D3DSURFACE_DESC desc, desc_out;
-	pIrradDS->GetDesc(&desc);
-	pOuts->GetDesc(&desc_out);
-	
-	if (!pIrradTemp) {
-		if (D3DXCreateCubeTexture(pDevice, 16, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pIrradTemp) != S_OK) {
-			LogErr("Failed to create irradiance temp");
-			return false;
-		}
-		if (D3DXCreateTexture(pDevice, 128, 128, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pIrradTemp2) != S_OK) {
-			LogErr("Failed to create irradiance temp");
-			return false;
-		}
-		if (D3DXCreateTexture(pDevice, desc_out.Width, desc_out.Height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pIrradTemp3) != S_OK) {
-			LogErr("Failed to create irradiance temp");
-			return false;
-		}
-	}
+	HR(pOut->GetSurfaceLevel(0, &pOuts));
+	HR(pOuts->GetDesc(&desc));
+
 
 	D3DXVECTOR3 nr, up, cp;
-	LPDIRECT3DSURFACE9 pSrf = NULL;
-	LPDIRECT3DSURFACE9 pTgt = NULL;
-	LPDIRECT3DSURFACE9 pTmp2 = NULL;
-	LPDIRECT3DSURFACE9 pTmp3 = NULL;
-	
-	HR(pIrradTemp2->GetSurfaceLevel(0, &pTmp2));
-	HR(pIrradTemp3->GetSurfaceLevel(0, &pTmp3));
+	LPDIRECT3DSURFACE9 pTmp = NULL;
 
-
-	// ---------------------------------------------------------------------
-	// Pre-Integrate Irradiance Cube
-	//
-	pIrradiance->Activate("PSPreInteg");
-	pIrradiance->SetFloat("fD", ptr(D3DXVECTOR2(1.0f / float(desc.Width), 1.0f / float(desc.Height))), sizeof(D3DXVECTOR2));
-
-	for (DWORD i = 0; i < 6; i++)
-	{
-		pSrc->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pSrf);
-		pIrradTemp->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pTgt);
-		
-		pDevice->StretchRect(pSrf, NULL, pTmp2, NULL, D3DTEXF_POINT);
-
-		pIrradiance->SetOutputNative(0, pTgt);
-		pIrradiance->SetTextureNative("tSrc", pIrradTemp2, IPF_POINT | IPF_CLAMP);
-
-		if (!pIrradiance->Execute(true)) {
-			LogErr("pIrradiance Execute Failed");
+	if (!pIrradTemp) {
+		if (D3DXCreateTexture(pDevice, desc.Width, desc.Height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pIrradTemp) != S_OK) {
+			LogErr("Failed to create irradiance temp");
 			return false;
 		}
-
-		SAFE_RELEASE(pTgt);
-		SAFE_RELEASE(pSrf);
 	}
 
+	HR(pIrradTemp->GetSurfaceLevel(0, &pTmp));
 	
-
-
 	// ---------------------------------------------------------------------
 	// Main Integration
 	//
@@ -3053,8 +3114,9 @@ bool Scene::IntegrateIrradiance(vVessel *vV, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRE
 	float Glow = float(Config->PlanetGlow);
 
 	pIrradiance->Activate("PSInteg");
-	pIrradiance->SetOutputNative(0, pTmp3);
-	pIrradiance->SetTextureNative("tCube", pIrradTemp, IPF_LINEAR);
+	pIrradiance->SetOutputNative(0, pTmp);
+	pIrradiance->SetTextureNative("tCube", pSrc, IPF_LINEAR);
+	pIrradiance->SetTextureNative("tRandom", ptRandom, IPF_POINT);
 	pIrradiance->SetFloat("Kernel", IKernel, sizeof(IKernel));
 	pIrradiance->SetFloat("vNr", &nr, sizeof(D3DXVECTOR3));
 	pIrradiance->SetFloat("vUp", &up, sizeof(D3DXVECTOR3));
@@ -3076,21 +3138,21 @@ bool Scene::IntegrateIrradiance(vVessel *vV, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRE
 		return false;
 	}
 
+	SAFE_RELEASE(pTmp);
+
 	// ---------------------------------------------------------------------
 	// Post Blur
 	//
 	pIrradiance->Activate("PSPostBlur");
-	pIrradiance->SetFloat("fD", ptr(D3DXVECTOR2(1.0f / float(desc_out.Width), 1.0f / float(desc_out.Height))), sizeof(D3DXVECTOR2));
+	pIrradiance->SetFloat("fD", ptr(D3DXVECTOR2(1.0f / float(desc.Width), 1.0f / float(desc.Height))), sizeof(D3DXVECTOR2));
 	pIrradiance->SetOutputNative(0, pOuts);
-	pIrradiance->SetTextureNative("tSrc", pIrradTemp3, IPF_POINT | IPF_WRAP);
+	pIrradiance->SetTextureNative("tSrc", pIrradTemp, IPF_POINT | IPF_WRAP);
 
 	if (!pIrradiance->Execute(true)) {
 		LogErr("pIrradiance Execute Failed");
 		return false;
 	}
 
-	SAFE_RELEASE(pTmp2);
-	SAFE_RELEASE(pTmp3);
 	SAFE_RELEASE(pOuts);
 
 	return true;
@@ -3305,21 +3367,6 @@ void Scene::RenderObjectMarker(oapi::Sketchpad *pSkp, const VECTOR3 &gpos, const
 	VECTOR3 dp (gpos - GetCameraGPos());
 	normalise (dp);
 	m_celSphere->RenderMarker(pSkp, dp, label1, label2, mode, scale);
-}
-
-// ===========================================================================================
-//
-void Scene::NewVessel(OBJHANDLE hVessel)
-{
-	CheckVisual(hVessel);
-}
-
-// ===========================================================================================
-//
-void Scene::DeleteVessel(OBJHANDLE hVessel)
-{
-	VOBJREC *pv = FindVisual(hVessel);
-	if (pv) DelVisualRec(pv);
 }
 
 // ===========================================================================================

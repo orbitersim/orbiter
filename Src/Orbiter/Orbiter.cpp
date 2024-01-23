@@ -1287,10 +1287,12 @@ void Orbiter::InsertVessel (Vessel *vessel)
 		it->pModule->clbkNewVessel((OBJHANDLE)vessel);
 
 #ifdef INLINEGRAPHICS
-	oclient->clbkNewVessel ((OBJHANDLE)vessel);
+	oclient->clbkNewVessel((OBJHANDLE)vessel);
 #else
-	if (gclient)
+	if (gclient) {
 		gclient->clbkNewVessel((OBJHANDLE)vessel);
+		gclient->clbkScenarioChanged((OBJHANDLE)vessel, ScnChgEvent::Added);
+	}
 #endif // INLINEGRAPHICS
 
 	if (pDlgMgr) pDlgMgr->BroadcastMessage (MSG_CREATEVESSEL, vessel);
@@ -1345,10 +1347,12 @@ bool Orbiter::KillVessels ()
 				it->pModule->clbkDeleteVessel((OBJHANDLE)vessel);
 
 #ifdef INLINEGRAPHICS
-			oclient->clbkDeleteVessel ((OBJHANDLE)vessel);
+			oclient->clbkDeleteVessel((OBJHANDLE)vessel);
 #else
-			if (gclient)
+			if (gclient) {
 				gclient->clbkDeleteVessel((OBJHANDLE)vessel);
+				gclient->clbkScenarioChanged((OBJHANDLE)vessel, ScnChgEvent::Deleted);
+			}
 #endif
 			// broadcast vessel destruction to all vessels
 			g_psys->BroadcastVessel (MSG_KILLVESSEL, vessel);

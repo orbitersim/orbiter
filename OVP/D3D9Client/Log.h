@@ -56,6 +56,7 @@ void   LogOk (const char *format, ...);
 void   LogBreak(const char* format, ...);
 void   LogBlu(const char *format, ...);
 void   LogOapi(const char *format, ...);
+void   LogVerbose(const char* format, ...);
 void   LogAlw(const char *format, ...);
 void   LogDbg(const char *color, const char *format, ...);
 void   LogClr(const char *color, const char *format, ...);

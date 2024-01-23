@@ -1034,10 +1034,12 @@ public:
 		RENDER_ALL = 0x04		///< Render all meshgroups
 	};
 
-
+	/**
+	 * \brief Source layout structure for GUI element drawing 
+	 */
 	typedef struct {
-		RECT intr;
-		RECT outr;
+		RECT intr;				///< Interrior rect
+		RECT outr;				///< Outerrior rect
 	} skpRegion;
 
 	/**

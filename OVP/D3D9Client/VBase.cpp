@@ -400,7 +400,7 @@ bool vBase::RenderSurface(LPDIRECT3DDEVICE9 dev)
 	if (nstructure_bs) {
 		for (DWORD i = 0; i < nstructure_bs; ++i) {
 			structure_bs[i]->SetSunLight(&sunLight);
-			structure_bs[i]->Render(&mWorld, RENDER_BASEBS);
+			structure_bs[i]->Render(&mWorld, nullptr, RENDER_BASEBS);
 			++uCurrentMesh;
 		}
 	}
@@ -428,7 +428,7 @@ bool vBase::RenderStructures(LPDIRECT3DDEVICE9 dev)
 		FVECTOR3 qw = TransformCoord(bs, mWorld);
 		D3D9Sun sp = vP->GetObjectAtmoParams(qw._V() + vP->CameraPos());
 		structure_as[i]->SetSunLight(&sp);
-		structure_as[i]->Render(&mWorld, RENDER_BASE);
+		structure_as[i]->Render(&mWorld, nullptr, RENDER_BASE);
 		++uCurrentMesh;
 	}
 	return true;

@@ -44,6 +44,9 @@ typedef struct {
 class vVessel: public vObject {
 public:
 	friend class D3D9Client;
+	
+	vVessel* vRoot = nullptr;
+
 	/**
 	 * \brief Creates a new vessel visual for a scene
 	 * \param _hObj vessel object handle
@@ -72,7 +75,8 @@ public:
 	void GetMinMaxLightDist(float *mind, float *maxd);
 	int	 GetMatrixTransform(gcCore::MatrixId matrix_id, DWORD mesh, DWORD group, FMATRIX4 *pMat);
 	int  SetMatrixTransform(gcCore::MatrixId matrix_id, DWORD mesh, DWORD group, const FMATRIX4 *pMat);
-	bool GetVCPos(D3DXVECTOR3* out, float* rad);
+	bool GetVCPos(D3DXVECTOR3* cpos, D3DXVECTOR3* lpos, float* rad);
+	bool GetMeshPosition(int idx, D3DXVECTOR3* cpos, D3DXVECTOR3* lpos, float* rad);
 	void BakeLights(ImageProcessing* pBaker);
 	void NoVC();
 	void UpdateBoundingBox();
@@ -131,13 +135,18 @@ public:
 	void RenderGrapplePoints (LPDIRECT3DDEVICE9 dev);
 	void RenderGroundShadow (LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float depth);
 	void RenderVectors (LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp);
-	bool RenderENVMap (LPDIRECT3DDEVICE9 pDev, DWORD cnt=2, DWORD flags=0xFF);
-	bool ProbeIrradiance(LPDIRECT3DDEVICE9 pDev, DWORD cnt = 2, DWORD flags = 0xFF);
+	bool RenderENVMap (LPDIRECT3DDEVICE9 pDev, ENVCAMREC* ec, DWORD cnt = 2, DWORD flags = 0xFF);
+	bool ProcessEnvMaps(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags);
 
-	LPDIRECT3DCUBETEXTURE9 GetEnvMap(int idx);
-	LPDIRECT3DCUBETEXTURE9 GetIrradEnv() { return pIrdEnv; }
-	LPDIRECT3DTEXTURE9 GetIrradianceMap() { return pIrrad; }
+	ENVMAPS* GetEnvMap();
+	ENVCAMREC* CreateEnvCam(EnvCamType ec);
+	ENVCAMREC* GetEnvCam(EnvCamType ec, int idx = 0);
 
+	bool HasOwnEnvCam(EnvCamType ec);
+
+	bool IsRoot() const;
+	vVessel* GetRoot() const { return vRoot; }
+	
 	float GetExhaustLength() const { return ExhaustLength; }
 
 	D3D9Pick Pick(const D3DXVECTOR3 *vDir, const PickProp* p);
@@ -202,17 +211,13 @@ private:
 	std::map<MGROUP_TRANSFORM *, _defstate> defstate;
 	std::unordered_set<UINT> applyanim;
 	std::map<int, double> currentstate;
+	std::vector<ENVCAMREC *> mesh_cams;
 
+	// Default eCam configurations
+	ENVCAMREC ecDefExt, ecDefVC;
 
 	VESSEL *vessel;			// access instance for the vessel
 	class MatMgr *pMatMgr;
-
-	LPDIRECT3DCUBETEXTURE9 pEnv[4], pIrdEnv;
-	LPDIRECT3DTEXTURE9 pIrrad;
-
-	int nEnv;				// Number of environmental maps
-	int iFace;				// EnvMap Face index that is to be rendered next
-	int eFace;
 
 	struct MESHREC {
 		D3D9Mesh *mesh;		// DX9 mesh representation

@@ -2344,6 +2344,11 @@ DLLEXPORT void oapiWriteLog (char *line)
 	LOGOUT (line);
 }
 
+DLLEXPORT void oapiWriteLogVerbose(char* line)
+{
+	LogOutFine(line);
+}
+
 DLLEXPORT void oapiExitOrbiter(int code)
 {
 	exit(code);

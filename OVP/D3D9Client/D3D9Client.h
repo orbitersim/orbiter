@@ -74,6 +74,33 @@ extern D3D9Catalog<LPDIRECT3DTEXTURE9>	*TileCatalog;
 extern set<D3D9Mesh*> MeshCatalog;
 extern set<SurfNative*>	SurfaceCatalog;
 
+enum class EnvCamType { Undefined, Exterior, VC, Mesh };
+
+struct ENVMAPS
+{
+	LPDIRECT3DBASETEXTURE9 pEnv = nullptr;	///< Reflection map (cube)
+	LPDIRECT3DTEXTURE9 pIrrad = nullptr;	///< Irradiance map (baraboloidal)
+};
+
+/**
+ * \brief Storage structure to keep reflection camera information.
+ */
+struct ENVCAMREC
+{
+	std::vector<WORD> omitAttc;
+	std::vector<WORD> omitDock;
+	ENVMAPS			tex;
+	EnvCamType		type = EnvCamType::Undefined;
+	FVECTOR3		lPos = { 0,0,0 };	///< Camera local position
+	FVECTOR3		lDir = { 1,0,0 };	///< Camera local direction (in 'PLANE' mode only)
+	float			near_clip = 0.1f;	///< Near clip-plane distance
+	DWORD			flags = 0;			///< Camera flags
+	int				mesh_idx = -1;		///< Camera is attached to a mesh 
+	int				group_idx = -1;		///< Camera is attached to a group
+	int				id = -1;			///< User Id, for binding
+	BYTE			iSide = 0;			///< [Private] Current side being rendered
+	bool			bRendered = false;	///< [Private] Rendering of camera view is completed
+};
 
 /**
  * \brief Statistical data storage
@@ -154,6 +181,11 @@ struct SHADOWMAPPARAM {
 	int			cascades;	// Number of active cascades
 };
 
+struct LVLH {
+	FVECTOR3 Up;
+	FVECTOR3 North;
+	FVECTOR3 East;
+};
 
 
 extern _D3D9Stats D3D9Stats;
@@ -392,6 +424,14 @@ public:
 	 */
 	bool clbkSetMeshProperty (DEVMESHHANDLE hMesh, DWORD property, DWORD value);
 	bool clbkSetMeshProperty(DEVMESHHANDLE hMesh, MeshProp prp, const oapi::FVECTOR4& value);
+
+	/**
+	 * \brief React to vessel docking, attaching events
+	 * \param hVesselA object handle of first vessel
+	 * \param hVesselB object handle of second vessel
+	 * \param type Event type
+	 */
+	void clbkScenarioChanged(OBJHANDLE hVessel, ScnChgEvent type);
 
 	/**
 	 * \brief React to vessel creation

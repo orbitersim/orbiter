@@ -352,6 +352,33 @@ void LogOapi(const char *format, ...)
 	}
 }
 
+//-------------------------------------------------------------------------------------------
+//
+void LogVerbose(const char* format, ...)
+{
+
+	if (d3d9client_log == NULL) return;
+	if (iLine > LOG_MAX_LINES) return;
+	if (uEnableLog > 0) {
+		EnterCriticalSection(&LogCrit);
+		DWORD th = GetCurrentThreadId();
+		fprintf(d3d9client_log, "<font color=Gray>(%s)(0x%lX)</font><font color=Olive> ", my_ctime(), th);
+
+		va_list args;
+		va_start(args, format);
+		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args);
+		va_end(args);
+
+		oapiWriteLogVerbose(ErrBuf);
+
+		escape_ErrBuf();
+		fputs(ErrBuf, d3d9client_log);
+		fputs("</font><br>\n", d3d9client_log);
+		fflush(d3d9client_log);
+		LeaveCriticalSection(&LogCrit);
+	}
+}
+
 // ---------------------------------------------------
 //
 void LogErr(const char *format, ...)

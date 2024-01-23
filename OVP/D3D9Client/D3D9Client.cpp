@@ -140,6 +140,7 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 #endif
 
 	D3D9InitLog("Modules/D3D9Client/D3D9ClientLog.html");
+	LogVerbose("[D3D9] === InitModule ===");
 
 	if (!D3DXCheckVersion(D3D_SDK_VERSION, D3DX_SDK_VERSION)) {
 		MissingRuntimeError();
@@ -188,7 +189,7 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 
 DLLCLBK void ExitModule(HINSTANCE hDLL)
 {
-	LogAlw("--------------ExitModule------------");
+	LogVerbose("[D3D9] === ExitModule ===");
 
 	delete TileCatalog;
 	delete Config;
@@ -275,7 +276,7 @@ D3D9Client::D3D9Client (HINSTANCE hInstance) :
 
 D3D9Client::~D3D9Client()
 {
-	LogAlw("D3D9Client destructor called");
+	LogVerbose("[D3D9] === destructor called ===");
 	SAFE_DELETE(vtab);
 }
 
@@ -310,7 +311,7 @@ const void *D3D9Client::GetConfigParam (DWORD paramtype) const
 bool D3D9Client::clbkInitialise()
 {
 	_TRACE;
-	LogAlw("================ clbkInitialise ===============");
+	LogVerbose("[D3D9] === clbkInitialise ===");
 	LogAlw("Orbiter Version = %d",oapiGetOrbiterVersion());
 
 	// Perform default setup
@@ -329,7 +330,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 {
 	_TRACE;
 
-	LogAlw("================ clbkCreateRenderWindow ===============");
+	LogVerbose("[D3D9] === clbkCreateRenderWindow ===");
 
 	Config->WriteParams();
 	
@@ -421,7 +422,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	LogAlw("Render Target = %s", _PTR(pBackBuffer));
 	LogAlw("DepthStencil = %s", _PTR(pDepthStencil));
 
-	meshmgr		= new MeshManager(this);
+	meshmgr = new MeshManager(this);
 
 	// Bring Sketchpad Online
 	D3D9PadFont::D3D9TechInit(pDevice);
@@ -531,9 +532,10 @@ HWND D3D9Client::clbkCreateRenderWindow()
 void D3D9Client::clbkPostCreation()
 {
 	_TRACE;
-	LogAlw("================ clbkPostCreation ===============");
 
-	if (scene) scene->Initialise();
+	LogVerbose("[D3D9] === clbkPostCreation ===");
+
+	if (scene) scene->clbkInitialise();
 
 	// Create Window Manager -----------------------------------------
 	//
@@ -543,8 +545,6 @@ void D3D9Client::clbkPostCreation()
 	}
 
 	bRunning = true;
-
-	LogAlw("=============== Loading Completed and Visuals Created ================");
 
 #ifdef _DEBUG
 	SketchPadTest();
@@ -762,9 +762,8 @@ void D3D9Client::SketchPadTest()
 //
 void D3D9Client::clbkCloseSession(bool fastclose)
 {
-
-	LogAlw("================ clbkCloseSession ===============");
-
+	LogVerbose("[D3D9] === clbkCloseSession ===");
+	
 	//	Post shutdown signals for gcGUI applications
 	//
 	for (auto pApp : g_gcGUIAppList) pApp->clbkShutdown();
@@ -824,7 +823,8 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 {
 	_TRACE;
 	oapiWriteLog((char*)"D3D9: [Destroy Render Window Called]");
-	LogAlw("============= clbkDestroyRenderWindow ===========");
+
+	LogVerbose("[D3D9] === clbkDestroyRenderWindow ===");
 
 #ifdef _NVAPI_H
 	if (bNVAPI) {
@@ -1096,7 +1096,7 @@ void D3D9Client::clbkUpdate(bool running)
 {
 	_TRACE;
 	double tot_update = D3D9GetTime();
-	if (bFailed==false && bRunning) scene->Update();
+	if (bFailed==false && bRunning) scene->clbkUpdate();
 	D3D9SetTime(D3D9Stats.Timer.Update, tot_update);
 }
 
@@ -1128,7 +1128,7 @@ void D3D9Client::clbkRenderScene()
 	UINT mem = pDevice->GetAvailableTextureMem()>>20;
 	if (mem<32) TileBuffer::HoldThread(true);
 
-	scene->RenderMainScene();		// Render the main scene
+	scene->clbkRenderMainScene();		// Render the main scene
 
 	VESSEL *hVes = oapiGetFocusInterface();
 
@@ -1538,14 +1538,14 @@ int D3D9Client::clbkGetMeshGroup (DEVMESHHANDLE hMesh, DWORD grpidx, GROUPREQUES
 void D3D9Client::clbkNewVessel(OBJHANDLE hVessel)
 {
 	_TRACE;
-	if (scene) scene->NewVessel(hVessel);
+	if (scene) scene->clbkNewVessel(hVessel);
 }
 
 // ==============================================================
 
 void D3D9Client::clbkDeleteVessel(OBJHANDLE hVessel)
 {
-	if (scene) scene->DeleteVessel(hVessel);
+	if (scene) scene->clbkDeleteVessel(hVessel);
 }
 
 
@@ -1564,9 +1564,16 @@ void D3D9Client::clbkOptionChanged(DWORD cat, DWORD item)
 {
 	switch (cat) {
 	case OPTCAT_CELSPHERE:
-		if (scene) scene->OnOptionChanged(cat, item);
+		if (scene) scene->clbkOnOptionChanged(cat, item);
 		return;
 	}
+}
+
+// ==============================================================
+
+void D3D9Client::clbkScenarioChanged(OBJHANDLE hVesselA, ScnChgEvent type)
+{
+	if (scene) scene->clbkScenarioChanged(hVesselA, type);
 }
 
 // ==============================================================

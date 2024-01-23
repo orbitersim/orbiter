@@ -647,7 +647,7 @@ void D3D9Mesh::BakeLights(ImageProcessing* pBaker)
 
 // ===========================================================================================
 //
-void D3D9Mesh::BakeAO(ImageProcessing* pBaker, const FVECTOR3 &vSun)
+void D3D9Mesh::BakeAO(ImageProcessing* pBaker, const FVECTOR3 &vSun, const LVLH &lvlh, const LPDIRECT3DTEXTURE9 pIrrad)
 {
 	if (!pBaker->IsOK()) return; // Baker not initialized
 	if (DefShader != SHADER_BAKED_VC) return; // Not supported by shader
@@ -655,28 +655,43 @@ void D3D9Mesh::BakeAO(ImageProcessing* pBaker, const FVECTOR3 &vSun)
 
 	DWORD flags = IPF_POINT | IPF_CLAMP;
 	FVECTOR3 control[6];
+	FVECTOR3 ParTexCoord[6];
 	bool bSE[6];
+	float fShine = 1.0f;
+
+	// Compute texcoords for Irradiance lookup for prime directions
+	//
+	for (int i = 0; i < 6; i++) {
+		FVECTOR3 DirL = GetDir(i);
+		float z = dot(lvlh.Up, DirL);	// lvlh is in a local vessel frame
+		FVECTOR2 p = FVECTOR2(dot(lvlh.East, DirL), dot(lvlh.North, DirL)) / (1.0f + abs(z));
+		p *= FVECTOR2(0.2273f, 0.4545f);
+		ParTexCoord[i] = FVECTOR3(p.x, p.y, z);
+	}
 
 	pBaker->Activate("PSSunAO");
 
+	// Compute sunligh intensity factors for prime directions
+	//
 	for (int i = 0; i < 6; i++)
 	{
-		auto y = bli->second.pSunAO[i];		
-		bSE[i] = (y != NULL);
-		if (y)
+		auto tex = bli->second.pSunAO[i];		
+		bSE[i] = (tex != NULL);
+		if (tex)
 		{
-			pBaker->SetTextureNative(i, y, flags);
+			pBaker->SetTextureNative(i, tex, flags);
 			control[i] = saturate(dot(GetDir(i), vSun));
 			control[i] *= control[i];
-			if (i == 4) D3D9DebugLog("Fwd %f", control[i].x);
-			if (i == 0) D3D9DebugLog("Up %f", control[i].x);
 		}
 		else {
 			control[i] = 0.0f;
 		}
 	}
 
+	pBaker->SetTextureNative("tIrrad", pIrrad, IPF_LINEAR | IPF_CLAMP);
 	pBaker->SetFloat("fControl", control, sizeof(control));
+	pBaker->SetFloat("vParTexPos", ParTexCoord, sizeof(ParTexCoord));
+	pBaker->SetFloat("fShine", &fShine, sizeof(fShine));
 	pBaker->SetBool("bEnabled", bSE, sizeof(bSE));
 
 	LPDIRECT3DSURFACE9 pSrf = NULL;
@@ -1732,9 +1747,8 @@ void D3D9Mesh::SetShadows(const SHADOWMAPPARAM *sprm)
 // ================================================================================================
 // This is a rendering routine for a Exterior Mesh, non-spherical moons/asteroids
 //
-void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *pEnv, int nEnv)
+void D3D9Mesh::Render(const LPD3DXMATRIX pW, const ENVMAPS* em, int iTech)
 {
-
 	_TRACE;
 	
 	if (!IsOK()) return;
@@ -1843,7 +1857,6 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 
 	FX->SetTechnique(eVesselTech);
 	FX->SetBool(eFresnel, false);
-	FX->SetBool(eEnvMapEnable, false);
 	FX->SetBool(eLightsEnabled, false);
 	FX->SetBool(eOITEnable, false);
 	FX->SetVector(eColor, ptr(D3DXVECTOR4(0, 0, 0, 0)));
@@ -1854,6 +1867,9 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 
 	TexFlow FC;	reset(FC);
 
+
+	// Setup Local lights -------------------------------------------
+	//
 	const D3D9Light *pLights = gc->GetScene()->GetLights();
 	int nSceneLights = gc->GetScene()->GetLightCount();
 
@@ -1899,7 +1915,16 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	FX->SetValue(eLights, Locals, sizeof(LightStruct) * Config->MaxLights());
 
 
-	if (nEnv >= 1 && pEnv[0]) FX->SetTexture(eEnvMapA, pEnv[0]);
+	// Setup Env Maps -------------------------------------------
+	//	
+	if (em && em->pEnv && em->pIrrad) {
+		FX->SetBool(eEnvMapEnable, true);
+		FX->SetTexture(eEnvMapA, em->pEnv);
+		FX->SetTexture(eIrradMap, em->pIrrad);
+	}
+	else {
+		FX->SetBool(eEnvMapEnable, false);
+	}
 
 
 	UINT numPasses = 0;
@@ -1908,6 +1933,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	WORD CurrentShader = SHADER_NULL;
 
 	bool bRefl = true;
+	int iEnvCam = -1;
 
 	for (DWORD g=0; g<nGrp; g++) {
 
@@ -1983,7 +2009,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 		else bTextured = true;
 
 
-
+		
 		// Setup Textures and Normal Maps ==========================================================================
 		//
 		if (bTextured) {

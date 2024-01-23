@@ -1065,6 +1065,9 @@ public:
 	void ShiftAttachments (const Vector &ofs);
 	// move all attachment points by offset ofs
 
+	Vessel* Vessel::GetAttachmentRoot();
+	// Get the root vessel. (i.e. vessel with no parent attachments)
+
 	// ========================================================================
 	// navigation radio interface
 

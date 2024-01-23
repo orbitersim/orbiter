@@ -4562,6 +4562,12 @@ public:
 	ATTACHMENTHANDLE GetAttachmentHandle (bool toparent, DWORD i) const;
 
 	/**
+	 * \brief Return the handle of a root object in a attachment hierarchy. (i.e. vessel that has not parent)
+	 * \return Vessel handle. Returns vessel's own handle "this" if no parent exists.
+	 */
+	OBJHANDLE GetAttachmentRoot() const;
+
+	/**
 	 * \brief Attach a child vessel to an attachment point.
 	 * \param child handle of child vessel to be attached.
 	 * \param attachment attachment point to which the child will be attached.

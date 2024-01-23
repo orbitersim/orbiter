@@ -3,7 +3,7 @@
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2006-2016 Martin Schweiger
-//				 2012-2019 Jarmo Nikkanen
+//				 2012-2023 Jarmo Nikkanen
 // ==============================================================
 
 // ==============================================================
@@ -57,12 +57,19 @@ const DWORD SPEC_INHERIT = (DWORD)(-2); // "inherit" material/texture flag
 #define VCLASS_ULTRA		3
 #define VCLASS_SSU_CENTAUR	4
 
+
 // Mesh memory mapping mode
 #define MAPMODE_UNKNOWN		0
 #define MAPMODE_CURRENT		1
 #define MAPMODE_STATIC		2
 #define MAPMODE_DYNAMIC		3
 
+
+#define ENVCAM_OMIT_ATTC		0x0001	///< Do not render attachments, rendered by default
+#define ENVCAM_OMIT_DOCKS		0x0002	///< Do not render docked vessels, rendered by default
+#define ENVCAM_FOCUS			0x0004	///< Force rendering of focus object, omitted by default
+#define ENVCAM_PLANE			0x0008	///< Camera view is 160deg square plane, 360deg cube-map by default
+#define ENVCAM_DEFAULT			0x0010	///< Default setup, not user supplied
 
 
 
@@ -216,7 +223,7 @@ public:
 	void			ClearBake(int i);
 	void			LoadBakedLights();
 	void			BakeLights(ImageProcessing *pBaker);
-	void			BakeAO(ImageProcessing* pBaker, const FVECTOR3 &vSun);
+	void			BakeAO(ImageProcessing* pBaker, const FVECTOR3 &vSun, const LVLH& lvlh, const LPDIRECT3DTEXTURE9 pIrrad);
 	void			SetBakedLightLevel(int idx, const FVECTOR3 &level);
 	FVECTOR3		GetBakedLightLevel(int idx);
 	void			LoadMeshFromHandle(MESHHANDLE hMesh, D3DXVECTOR3 *reorig = NULL, float *scale = NULL);
@@ -306,7 +313,7 @@ public:
 	void			RenderGroup(int idx);
 	void			RenderBaseTile(const LPD3DXMATRIX pW);
 	void			RenderBoundingBox(const LPD3DXMATRIX pW);
-	void			Render(const LPD3DXMATRIX pW, int iTech=RENDER_VESSEL, LPDIRECT3DCUBETEXTURE9 *pEnv=NULL, int nEnv=0);
+	void			Render(const LPD3DXMATRIX pW, const ENVMAPS *em = NULL, int iTech = RENDER_VESSEL);
 	void			RenderFast(const LPD3DXMATRIX pW, int iTech);
 	void			RenderShadowMap(const LPD3DXMATRIX pW, const LPD3DXMATRIX pVP, int flags, bool bNoCull = false);
 	void			RenderStencilShadows(float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, bool bShadowMap = false, const D3DXVECTOR4 *elev = NULL);
@@ -375,6 +382,8 @@ private:
 	SurfNative **Tex;			// list of mesh textures
 	std::map<int, _BakedLights> BakedLights;
 	std::map<int, _BakedLights>::const_iterator bli;
+	std::vector<ENVCAMREC*> env_cams;
+
 	FVECTOR3 BakedLightsControl[16];
 	D3DXMATRIX mTransform;
 	D3DXMATRIX mTransformInv;

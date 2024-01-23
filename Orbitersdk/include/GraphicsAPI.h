@@ -469,6 +469,14 @@ public:
 	virtual void clbkOptionChanged(DWORD cat, DWORD item) {}
 
 	/**
+	 * \brief React to vessel creation, deletion, docking, attaching events
+	 * \param hVesselA object handle of first vessel
+	 * \param hVesselB object handle of second vessel
+	 * \param type Event type
+	 */
+	virtual void clbkScenarioChanged(OBJHANDLE hVessel, ScnChgEvent type) {}
+
+	/**
 	 * \brief Texture request
 	 *
 	 * Load a texture from a file into a device-specific texture object, and

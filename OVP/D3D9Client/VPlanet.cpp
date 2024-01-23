@@ -1013,7 +1013,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 
 		if (mesh) {
 			mesh->SetSunLight(scn->GetSun());
-			mesh->Render(&mWorld, RENDER_ASTEROID);
+			mesh->RenderFast(&mWorld, RENDER_ASTEROID);
 		} else {
 			RenderSphere (dev);
 		}

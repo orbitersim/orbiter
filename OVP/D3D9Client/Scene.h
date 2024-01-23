@@ -28,6 +28,7 @@
 
 class vObject;
 class vPlanet;
+class vVessel;
 class D3D9ParticleStream;
 class D3D9Text;
 class D3D9Pad;
@@ -59,8 +60,7 @@ class D3D9Pad;
 
 #define RENDERTURN_ENVCAM		0
 #define RENDERTURN_CUSTOMCAM	1
-#define RENDERTURN_IRRADIANCE   2
-#define RENDERTURN_LAST			2
+#define RENDERTURN_LAST			1
 
 #define SMAP_MODE_FOCUS			1
 #define SMAP_MODE_SCENE			2
@@ -107,8 +107,14 @@ public:
 		void*		pUser;
 	};
 
+	ENVMAPS emVC;
+
+	std::set<vVessel*> RootList;
+	std::set<vVessel*> Vessels;
+	std::set<vVessel*> eCamRenderList;
 	std::set<CAMREC*> CustomCams;
-	std::set<CAMREC*>::const_iterator camCurrent{};
+	std::set<CAMREC*>::const_iterator camCurrent = {};
+	std::set<vVessel*>::const_iterator vobjEnv = {};
 
 	// Camera frustum parameters ========================================================
 	//
@@ -173,7 +179,34 @@ public:
 	//inline const oapi::D3D9Client *GetClient() const { return gc; }
 	inline oapi::D3D9Client *GetClient() const { return gc; }
 
-	void OnOptionChanged(int cat, int item);
+
+	void clbkOnOptionChanged(int cat, int item);
+	void clbkScenarioChanged(OBJHANDLE hV, ScnChgEvent e);
+	void clbkInitialise();
+
+	/**
+	 * \brief Update camera position, visuals, etc.
+	 */
+	void clbkUpdate();
+
+	/**
+	 * \brief Render the whole main scene
+	 */
+	void clbkRenderMainScene();
+
+	/**
+	 * \brief Create a visual for a new vessel if within visual range.
+	 * \param hVessel vessel object handle
+	 */
+	void clbkNewVessel(OBJHANDLE hVessel);
+
+	/**
+	 * \brief Delete a vessel visual prior to destruction of the logical vessel.
+	 * \param hVessel vessel object handle
+	 */
+	void clbkDeleteVessel(OBJHANDLE hVessel);
+
+
 
 	const D3D9Sun *GetSun() const { return &sunLight; }
 	const D3D9Light *GetLight(int index) const;
@@ -208,18 +241,9 @@ public:
 	inline const DWORD ViewH() const { return viewH; }
 
 	void UpdateCamVis();
-	void Initialise ();
+	
 
-	/**
-	 * \brief Update camera position, visuals, etc.
-	 */
-	void Update();
-
-	/**
-	 * \brief Render the whole main scene
-	 */
-	void RenderMainScene();
-
+	
 	/**
 	 * \brief Returns screen space sun visual parameters for Lens Flare rendering.
 	*/
@@ -237,11 +261,11 @@ public:
 	int RenderShadowMap(D3DXVECTOR3& pos, D3DXVECTOR3& ld, float rad, bool bInternal = false, bool bListExists = false);
 	int RenderVCShadowMap(D3DXVECTOR3& cdir, D3DXVECTOR3& ld, bool bListExists = false);
 
-	bool IntegrateIrradiance(vVessel *vV, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRECT3DTEXTURE9 pOut);
+	bool IntegrateIrradiance(vVessel *vV, LPDIRECT3DBASETEXTURE9 pSrc, LPDIRECT3DTEXTURE9 pOut);
 	bool RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc);
+	bool RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DTEXTURE9 pSrc);
 	void RenderMesh(DEVMESHHANDLE hMesh, const oapi::FMATRIX4 *pWorld);
 
-	LPDIRECT3DSURFACE9 GetIrradianceDepthStencil() const { return pIrradDS; }
 	LPDIRECT3DSURFACE9 GetEnvDepthStencil() const { return pEnvDS; }
 	LPDIRECT3DSURFACE9 GetBuffer(int id) const { return psgBuffer[id]; }
 	LPDIRECT3DTEXTURE9 GetSunTexture() const { return pSunTex; }
@@ -258,17 +282,7 @@ public:
 	 */
 	void RenderVesselShadows(OBJHANDLE hPlanet, float depth) const;
 
-	/**
-	 * \brief Create a visual for a new vessel if within visual range.
-	 * \param hVessel vessel object handle
-	 */
-	void NewVessel (OBJHANDLE hVessel);
-
-	/**
-	 * \brief Delete a vessel visual prior to destruction of the logical vessel.
-	 * \param hVessel vessel object handle
-	 */
-	void DeleteVessel (OBJHANDLE hVessel);
+	
 
 	void AddParticleStream (class D3D9ParticleStream *_pstream);
 	void DelParticleStream (DWORD idx);
@@ -489,11 +503,10 @@ private:
 
 	SurfNative *pLblSrf;
 
-	class ImageProcessing *pLightBlur, *pBlur, *pGDIOverlay, *pIrradiance, *pVisDepth, *pCreateGlare, *pBakeLights;
+	class ImageProcessing *pLightBlur, *pBlur, *pBlur2D, *pGDIOverlay, *pIrradiance, *pVisDepth, *pCreateGlare, *pBakeLights;
 	class ShaderClass *pLocalCompute, *pRenderGlares;
 
 	class vVessel *vFocus;
-	VOBJREC *vobjEnv, *vobjIrd;
 	double dVisualAppRad;
 
 	FVECTOR2 DepthSampleKernel[57];
@@ -504,8 +517,8 @@ private:
 
 	// Blur Sampling Kernel ==============================================================
 	LPDIRECT3DCUBETEXTURE9 pBlrTemp[5];
-	LPDIRECT3DCUBETEXTURE9 pIrradTemp;
-	LPDIRECT3DTEXTURE9 pIrradTemp2, pIrradTemp3;
+	LPDIRECT3DTEXTURE9 pBlrTemp2D[5];
+	LPDIRECT3DTEXTURE9 pIrradTemp, ptRandom;
 
 	// Deferred Experiment ===============================================================
 	//
@@ -514,7 +527,7 @@ private:
 	LPDIRECT3DSURFACE9 pOffscreenTarget;
 	LPDIRECT3DTEXTURE9 pTextures[TEX_COUNT];
 
-	LPDIRECT3DSURFACE9 pEnvDS, pIrradDS, pDepthNormalDS;
+	LPDIRECT3DSURFACE9 pEnvDS, pDepthNormalDS;
 	LPDIRECT3DSURFACE9 psShmDS[SHM_LOD_COUNT];
 	LPDIRECT3DSURFACE9 psShmRT[SHM_LOD_COUNT];
 	LPDIRECT3DTEXTURE9 ptShmRT[SHM_LOD_COUNT];

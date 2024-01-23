@@ -463,6 +463,19 @@ enum class MatProp {
 	SpecialFX			///< Heat map effect control variable in [.r] (i.e. average part temperature)
 };
 
+enum class ScnChgEvent {
+	Invalid = 0,		///< Unspecified event
+	Added = 1,			///< Vessel dynamically added in scenario
+	Deleted = 2,		///< Vessel dynamically deleted from scenario
+	Docked = 3,			///< Vessels docked
+	UnDocked = 4,		///< Vessels undocked
+	Attached = 5,		///< Vessels attached
+	Detached = 6,		///< Vessels detached
+	VisualConfig = 7,	///< Vessel's rendering configuration has changed
+	VisualCreated = 8,	///< Vessel visual created
+	VisualDeleted = 9	///< Vessel visual deleted
+};
+
 enum class MeshProp {
 	BAKED_0, BAKED_1, BAKED_2, BAKED_3, BAKED_4,	///< baked light level
 	BAKED_5, BAKED_6, BAKED_7, BAKED_8, BAKED_9,	///< baked light level
@@ -6232,6 +6245,7 @@ OAPIFUNC void oapiWriteLine (FILEHANDLE file, char *line);
 	* \sa oapiWriteLogV
 	*/
 OAPIFUNC void oapiWriteLog (char *line);
+OAPIFUNC void oapiWriteLogVerbose(char* line);
 
 	/**
 	* \brief Writes a formatted string with variable number of arguments to orbiter.log.
