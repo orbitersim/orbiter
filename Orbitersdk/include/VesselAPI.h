@@ -26,6 +26,8 @@
 #define FRAME_ECL 0
 #define FRAME_EQU 1
 
+#include <typeinfo>
+
 class Vessel; // Orbiter internal vessel class
 class SuperVessel; // Orbiter internal supervessel class
 
@@ -39,6 +41,13 @@ typedef struct {
 	double mu;        ///< isotropic/lateral friction coefficient
 	double mu_lng;    ///< longitudinal friction coefficient (only used for first 3 points)
 } TOUCHDOWNVTX;
+
+enum class VesselProp {
+	BAKED_LIGHT,		///< baked light level
+	AMBIENT,			///< ambient light level
+	EXT_PROBE_POS,		///< Exterior probe position
+	VC_PROBE_POS		///< Virtual cockpit probe position
+};
 
 //  ======================================================================
 /**
@@ -3832,6 +3841,15 @@ public:
 	 * \sa GetMeshVisibilityMode, meshvis
 	 */
 	void SetMeshVisibilityMode (UINT idx, WORD mode) const;
+
+	/**
+	 * \brief Set vessel visual propery
+	 * \param vis visual object handle
+	 * \param prp property id
+	 * \param idx index of property
+	 * \param val value to be set
+	 */
+	void SetVisualProperty(VISHANDLE vis, VesselProp prp, int idx, const type_info &t, const void *val);
 
 	/**
 	 * \brief Affine transformation of a mesh group.

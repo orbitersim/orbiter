@@ -222,10 +222,8 @@ public:
 	void			Release();
 	void			ClearBake(int i);
 	void			LoadBakedLights();
-	void			BakeLights(ImageProcessing *pBaker);
+	void			BakeLights(ImageProcessing *pBaker, const FVECTOR3* BakedLightsControl);
 	void			BakeAO(ImageProcessing* pBaker, const FVECTOR3 &vSun, const LVLH& lvlh, const LPDIRECT3DTEXTURE9 pIrrad);
-	void			SetBakedLightLevel(int idx, const FVECTOR3 &level);
-	FVECTOR3		GetBakedLightLevel(int idx);
 	void			LoadMeshFromHandle(MESHHANDLE hMesh, D3DXVECTOR3 *reorig = NULL, float *scale = NULL);
 	void			ReLoadMeshFromHandle(MESHHANDLE hMesh);
 	void			ReloadTextures();
@@ -384,7 +382,6 @@ private:
 	std::map<int, _BakedLights>::const_iterator bli;
 	std::vector<ENVCAMREC*> env_cams;
 
-	FVECTOR3 BakedLightsControl[16];
 	D3DXMATRIX mTransform;
 	D3DXMATRIX mTransformInv;
 	D3DXMATRIX *pGrpTF;
@@ -398,7 +395,6 @@ private:
 	bool bBSRecomputeAll;
 	bool bModulateMatAlpha;     // mix material and texture alpha channels
 	bool bGlobalTF;				// Mesh has a valid mTransform matrix
-	bool bMustRebake;			// Must run BakeTextures before rendering
 
 	char name[128];
 

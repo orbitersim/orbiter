@@ -7679,6 +7679,12 @@ void VESSEL::SetMeshVisibilityMode (UINT idx, WORD mode) const
 	vessel->SetMeshVisibilityMode (idx, mode);
 }
 
+void VESSEL::SetVisualProperty(VISHANDLE vis, VesselProp prp, int idx, const type_info& t, const void* val)
+{
+	oapi::GraphicsClient* gc = g_pOrbiter->GetGraphicsClient();
+	gc->clbkSetVisualProperty(vis, prp, idx, t, val);
+}
+
 void VESSEL::SetMeshVisibleInternal (UINT idx, bool visible) const
 {
 	vessel->SetMeshVisibilityMode (idx, visible ? MESHVIS_ALWAYS : MESHVIS_EXTERNAL);

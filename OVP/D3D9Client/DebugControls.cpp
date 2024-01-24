@@ -796,7 +796,7 @@ float _Clamp(float value, DWORD p, DWORD v)
 //
 void UpdateShader()
 {
-	OBJHANDLE hObj = vObj->GetObjectA();
+	OBJHANDLE hObj = vObj->GetObjHandle();
 
 	if (!oapiIsVessel(hObj)) return;
 
@@ -924,7 +924,7 @@ void NextDoNotRender()
 //
 void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 {
-	OBJHANDLE hObj = vObj->GetObjectA();
+	OBJHANDLE hObj = vObj->GetObjHandle();
 	if (!oapiIsVessel(hObj)) return;
 	if (!hSelMesh) return;
 	
@@ -1037,7 +1037,7 @@ DWORD GetModFlags(DWORD MatPrp)
 //
 bool IsMaterialModified(DWORD MatPrp)
 {
-	OBJHANDLE hObj = vObj->GetObjectA();
+	OBJHANDLE hObj = vObj->GetObjHandle();
 	if (!oapiIsVessel(hObj)) return false;
 	if (!hSelMesh) return false;
 
@@ -1054,7 +1054,7 @@ bool IsMaterialModified(DWORD MatPrp)
 //
 void SetMaterialModified(DWORD MatPrp, bool bState)
 {
-	OBJHANDLE hObj = vObj->GetObjectA();
+	OBJHANDLE hObj = vObj->GetObjHandle();
 
 	if (!oapiIsVessel(hObj)) return;
 	if (!hSelMesh) return;
@@ -1075,7 +1075,7 @@ void SetMaterialModified(DWORD MatPrp, bool bState)
 //
 float GetMaterialValue(DWORD MatPrp, DWORD clr)
 {
-	OBJHANDLE hObj = vObj->GetObjectA();
+	OBJHANDLE hObj = vObj->GetObjHandle();
 
 	if (!oapiIsVessel(hObj)) return 0.0f;
 	if (!hSelMesh) return 0.0f;
@@ -1262,7 +1262,7 @@ void UpdateMaterialDisplay(bool bSetup)
 	char lbl[256];
 	char lbl2[64];
 
-	OBJHANDLE hObj = vObj->GetObjectA();
+	OBJHANDLE hObj = vObj->GetObjHandle();
 	if (!oapiIsVessel(hObj)) return;
 	if (!hSelMesh) return;
 
@@ -1496,11 +1496,11 @@ void SetupMeshGroups()
 //
 void UpdateBakedLights(float lvl)
 {
-	if (hSelMesh) {
-		if (bkl_id < 16 && bkl_id >= 0) {
-			hSelMesh->SetBakedLightLevel(bkl_id, FVECTOR3(lvl, lvl, lvl));
-		}
-		if (bkl_id == 16) hSelMesh->SetAmbientColor(FVECTOR3(lvl, lvl, lvl));
+	vVessel* vV = (vVessel*)vObj;
+	if (vObj->Type() == OBJTP_VESSEL) {	
+		if (bkl_id < 16 && bkl_id >= 0) 
+			vV->SetVisualProperty(VesselProp::BAKED_LIGHT, bkl_id, typeid(FVECTOR3), &FVECTOR3(lvl, lvl, lvl));
+		if (bkl_id == 16) vV->SetVisualProperty(VesselProp::AMBIENT, 0, typeid(FVECTOR3), &FVECTOR3(lvl, lvl, lvl));
 	}
 }
 
@@ -1508,11 +1508,12 @@ void UpdateBakedLights(float lvl)
 //
 void UpdateLightsSlider()
 {
-	float val = 0.0f;
-	if (hSelMesh) {
-		if (bkl_id < 16 && bkl_id >= 0) val = hSelMesh->GetBakedLightLevel(bkl_id).x;
-		if (bkl_id == 16) val = hSelMesh->GetAmbientColor().x;
-		SendDlgItemMessage(hDlg, IDC_DBG_BKLADJ, TBM_SETPOS, 1, WORD(255.0f * val));
+	FVECTOR3 val = 0.0f;
+	vVessel* vV = (vVessel*)vObj;
+	if (vObj->Type() == OBJTP_VESSEL) {
+		if (bkl_id < 16 && bkl_id >= 0) vV->GetVisualProperty(VesselProp::BAKED_LIGHT, bkl_id, typeid(val), &val);
+		if (bkl_id == 16) vV->GetVisualProperty(VesselProp::AMBIENT, 0, typeid(val), &val);
+		SendDlgItemMessage(hDlg, IDC_DBG_BKLADJ, TBM_SETPOS, 1, WORD(255.0f * val.x));
 	}
 }
 
@@ -1532,7 +1533,7 @@ LPDIRECT3DTEXTURE9 GetCombinedMap()
 double GetVisualSize()
 {
 	if (hDlg && vObj) {
-		OBJHANDLE hObj = vObj->GetObjectA();
+		OBJHANDLE hObj = vObj->GetObjHandle();
 		if (hObj) return oapiGetSize(hObj);
 	}
 	return 1.0;
@@ -2091,7 +2092,7 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			case IDC_DBG_MATSAVE:
 			{
-				OBJHANDLE hObj = vObj->GetObjectA();
+				OBJHANDLE hObj = vObj->GetObjHandle();
 				if (oapiIsVessel(hObj)) {
 					vVessel *vVes = (vVessel *)vObj;
 					vVes->GetMaterialManager()->SaveConfiguration();

@@ -205,7 +205,6 @@ void D3D9Mesh::Null(const char *meshName /* = NULL */)
 	bIsReflective = false;
 	bCanRenderFast = false;
 	bMtrlModidied = false;
-	bMustRebake = true;
 
 	bli = BakedLights.begin();
 
@@ -523,8 +522,6 @@ void D3D9Mesh::ClearBake(int i)
 void D3D9Mesh::LoadBakedLights()
 {
 	if (BakedLights.size()) return;	// Already Loaded, skip the rest
-
-	bMustRebake = true;
 	char id[32];
 
 	for (int i = 0; i < nTex; i++)
@@ -569,41 +566,16 @@ void D3D9Mesh::LoadBakedLights()
 		}
 	}
 
-	for (int i = 0; i < 16; i++) BakedLightsControl[i] = FVECTOR3(0.0f, 0.0f, 0.0f);
-
 	bli = BakedLights.begin();
 }
 
 
 // ===========================================================================================
 //
-void D3D9Mesh::SetBakedLightLevel(int idx, const FVECTOR3 &level)
-{
-	if (idx >= 0 && idx <= 15) {
-		if (BakedLightsControl[idx] != level) {
-			BakedLightsControl[idx] = level;
-			bMustRebake = true;
-		}
-	}
-}
-
-
-// ===========================================================================================
-//
-FVECTOR3 D3D9Mesh::GetBakedLightLevel(int idx)
-{
-	if (idx >= 0 && idx <= 15) return BakedLightsControl[idx];
-	return FVECTOR3(1, 1, 1);
-}
-
-
-// ===========================================================================================
-//
-void D3D9Mesh::BakeLights(ImageProcessing* pBaker)
+void D3D9Mesh::BakeLights(ImageProcessing* pBaker, const FVECTOR3* BakedLightsControl)
 {
 	if (!pBaker->IsOK()) return; // Baker not initialized
 	if (DefShader != SHADER_BAKED_VC) return; // Not supported by shader
-	if (!bMustRebake) return; // Allready Done
 	if (BakedLights.size() == 0) return; // Nothing to bake
 
 	DWORD flags = IPF_POINT | IPF_CLAMP;
@@ -640,8 +612,6 @@ void D3D9Mesh::BakeLights(ImageProcessing* pBaker)
 			}
 		}
 	}
-
-	bMustRebake = false; // Done
 }
 
 

@@ -166,6 +166,10 @@ public:
 	*/
 	void UpdateAnimations(int mshidx = -1);
 
+	void SetVisualProperty(VesselProp prp, int idx, const type_info& t, const void* val);
+	bool GetVisualProperty(VesselProp prp, int idx, const type_info& t, void* val);
+	
+
 protected:
 
 	void LoadMeshes();
@@ -215,6 +219,9 @@ private:
 
 	// Default eCam configurations
 	ENVCAMREC ecDefExt, ecDefVC;
+	FVECTOR3 BakedLightsControl[16];
+	FVECTOR3 VCAmbient;
+	bool bMustRebake;
 
 	VESSEL *vessel;			// access instance for the vessel
 	class MatMgr *pMatMgr;

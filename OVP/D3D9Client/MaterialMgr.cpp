@@ -127,7 +127,7 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 	char meshname[64];
 	char shadername[64];
 
-	OBJHANDLE hObj = vObj->GetObjectA();
+	OBJHANDLE hObj = vObj->GetObjHandle();
 
 	if (oapiGetObjectType(hObj)!=OBJTP_VESSEL) return false; 
 
@@ -291,7 +291,7 @@ bool MatMgr::SaveConfiguration()
 	char classname[256];
 	
 	
-	OBJHANDLE hObj = vObj->GetObjectA();
+	OBJHANDLE hObj = vObj->GetObjHandle();
 
 	if (oapiGetObjectType(hObj)!=OBJTP_VESSEL) return false; 
 
@@ -361,7 +361,7 @@ bool MatMgr::LoadCameraConfig()
 	char path[256];
 	char classname[256];
 
-	OBJHANDLE hObj = vObj->GetObjectA();
+	OBJHANDLE hObj = vObj->GetObjHandle();
 
 	if (oapiGetObjectType(hObj)!=OBJTP_VESSEL) return false; 
 

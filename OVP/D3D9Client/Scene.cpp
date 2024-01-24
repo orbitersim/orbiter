@@ -662,7 +662,7 @@ void Scene::DelVisualRec (VOBJREC *pv)
 	DebugControls::RemoveVisual(pv->vobj);
 
 	// delete the visual, its children and the entry itself
-	gc->UnregisterVisObject(pv->vobj->GetObject());
+	gc->UnregisterVisObject(pv->vobj->GetObjHandle());
 	if (pv->type == OBJTP_VESSEL) gc->clbkScenarioChanged(pv->vobj, ScnChgEvent::VisualDeleted);
 	delete pv->vobj;
 	delete pv;
@@ -679,7 +679,7 @@ void Scene::DeleteAllVisuals()
 
 		DebugControls::RemoveVisual(pv->vobj);
 
-		gc->UnregisterVisObject(pv->vobj->GetObject());
+		gc->UnregisterVisObject(pv->vobj->GetObjHandle());
 		
 		LogAlw("Deleting Visual %s", _PTR(pv->vobj));
 		delete pv->vobj;
@@ -1371,7 +1371,7 @@ void Scene::clbkRenderMainScene()
 		{
 			if (camCurrent == CustomCams.cend()) camCurrent = CustomCams.cbegin();
 
-			OBJHANDLE hVessel = vFocus->GetObjectA();
+			OBJHANDLE hVessel = vFocus->GetObjHandle();
 			
 			vObject *vO = GetVisObject((*camCurrent)->hVessel);
 			double maxd = min(500e3, GetCameraAltitude() + 15e3);

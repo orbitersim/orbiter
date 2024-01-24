@@ -480,14 +480,6 @@ enum class ScnChgEvent {
 	VisualDeleted = 9	///< Vessel visual deleted
 };
 
-enum class MeshProp {
-	BAKED_0, BAKED_1, BAKED_2, BAKED_3, BAKED_4,	///< baked light level
-	BAKED_5, BAKED_6, BAKED_7, BAKED_8, BAKED_9,	///< baked light level
-	BAKED_10, BAKED_11, BAKED_12, BAKED_13,			///< baked light level
-	BAKED_14, BAKED_15,								///< baked light level
-	AMBIENT											///< ambient light level
-};
-
 /**
  * \brief Kepler orbital elements
  *
@@ -4868,7 +4860,6 @@ OAPIFUNC bool oapiGetMeshProperty (MESHHANDLE hMesh, DWORD property, DWORD *valu
 	 * \sa oapiSetMeshProperty(MESHHANDLE,DWORD,DWORD)
 	 */
 OAPIFUNC bool oapiSetMeshProperty (DEVMESHHANDLE hMesh, DWORD property, DWORD value);
-OAPIFUNC bool oapiSetMeshProperty (DEVMESHHANDLE hMesh, MeshProp prop, const oapi::FVECTOR4 &value);
 
 // Particle functions
 	/**

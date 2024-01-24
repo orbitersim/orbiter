@@ -1512,32 +1512,10 @@ bool D3D9Client::clbkSetMeshProperty(DEVMESHHANDLE hMesh, DWORD prop, DWORD valu
 
 // ==============================================================
 
-bool D3D9Client::clbkSetMeshProperty(DEVMESHHANDLE hMesh, MeshProp prp, const oapi::FVECTOR4& value)
+void D3D9Client::clbkSetVisualProperty(VISHANDLE vis, VesselProp prp, int idx, const type_info& t, const void* val)
 {
-	D3D9Mesh* mesh = (D3D9Mesh*)hMesh;
-	switch (prp) {
-	case MeshProp::BAKED_0: mesh->SetBakedLightLevel(0, value.xyz); return true;
-	case MeshProp::BAKED_1: mesh->SetBakedLightLevel(1, value.xyz); return true;
-	case MeshProp::BAKED_2: mesh->SetBakedLightLevel(2, value.xyz); return true;
-	case MeshProp::BAKED_3: mesh->SetBakedLightLevel(3, value.xyz); return true;
-	case MeshProp::BAKED_4: mesh->SetBakedLightLevel(4, value.xyz); return true;
-	case MeshProp::BAKED_5: mesh->SetBakedLightLevel(5, value.xyz); return true;
-	case MeshProp::BAKED_6: mesh->SetBakedLightLevel(6, value.xyz); return true;
-	case MeshProp::BAKED_7: mesh->SetBakedLightLevel(7, value.xyz); return true;
-	case MeshProp::BAKED_8: mesh->SetBakedLightLevel(8, value.xyz); return true;
-	case MeshProp::BAKED_9: mesh->SetBakedLightLevel(9, value.xyz); return true;
-	case MeshProp::BAKED_10: mesh->SetBakedLightLevel(10, value.xyz); return true;
-	case MeshProp::BAKED_11: mesh->SetBakedLightLevel(11, value.xyz); return true;
-	case MeshProp::BAKED_12: mesh->SetBakedLightLevel(12, value.xyz); return true;
-	case MeshProp::BAKED_13: mesh->SetBakedLightLevel(13, value.xyz); return true;
-	case MeshProp::BAKED_14: mesh->SetBakedLightLevel(14, value.xyz); return true;
-	case MeshProp::BAKED_15: mesh->SetBakedLightLevel(15, value.xyz); return true;
-	case MeshProp::AMBIENT: mesh->SetAmbientColor(value.xyz); return true;
-	default:
-		oapiWriteLogV("oapiSetMeshProperty() FAILED: unknown property %u", DWORD(prp));
-		break;
-	}
-	return false;
+	vVessel* vV = (vVessel*)vis;
+	if (vV && vV->Type() == OBJTP_VESSEL) vV->SetVisualProperty(prp, idx, t, val);
 }
 
 // ==============================================================
@@ -1782,7 +1760,7 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 				if (bPckVsl) {
 					gcCore::PickData out;
-					out.hVessel = pick.vObj->GetObjectA();
+					out.hVessel = pick.vObj->GetObjHandle();
 					out.mesh = MESHHANDLE(pick.pMesh);
 					out.group = pick.group;
 					out.pos = _FV(pick.pos);

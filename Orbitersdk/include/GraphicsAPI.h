@@ -616,7 +616,6 @@ public:
 	 * \default None, returns \e false.
 	 */
 	virtual bool clbkSetMeshProperty(DEVMESHHANDLE hMesh, DWORD property, DWORD value) { return false; }
-	virtual bool clbkSetMeshProperty(DEVMESHHANDLE hMesh, MeshProp prp, const oapi::FVECTOR4 &value) { return false; }
 
 	// ==================================================================
 	/// \name Visual object interface
@@ -680,6 +679,7 @@ public:
 	 * \sa RegisterVisObject, UnregisterVisObject, visevent
 	 */
 	virtual int clbkVisEvent (OBJHANDLE hObj, VISHANDLE vis, DWORD msg, DWORD_PTR context);
+	virtual void clbkSetVisualProperty(VISHANDLE vis, VesselProp prp, int idx, const type_info& t, const void* val) { }
 
 	/**
 	 * \brief Return a mesh handle for a visual, defined by its index

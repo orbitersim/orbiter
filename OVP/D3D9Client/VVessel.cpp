@@ -97,8 +97,11 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 		for (UINT k = 0; k < anim[i].ncomp; ++k) LogComp(anim[i].comp[k], 2);
 	}*/
 
-
 	UpdateAnimations();
+
+	for (int i = 0; i < 16; i++) BakedLightsControl[i] = FVECTOR3(0.0f, 0.0f, 0.0f);
+	VCAmbient = FVECTOR3(0.5f, 0.5f, 0.5f);
+	bMustRebake = true;
 }
 
 
@@ -721,13 +724,15 @@ void vVessel::BakeLights(ImageProcessing *pBaker)
 	for (int i = 0; i < nmesh; i++)
 	{
 		if (!meshlist[i].mesh) continue;
-		if (meshlist[i].vismode & MESHVIS_VC)
+		if (meshlist[i].vismode & MESHVIS_VC) // TODO:  Should check Shader type
 		{
 			auto vSun = tmul(FVECTOR4(sundir, 0), mW);
-			meshlist[i].mesh->BakeLights(pBaker);
+			if (bMustRebake) meshlist[i].mesh->BakeLights(pBaker, BakedLightsControl);
 			meshlist[i].mesh->BakeAO(pBaker, vSun.xyz, lvlh, maps->pIrrad);
 		}
 	}
+
+	bMustRebake = false;
 }
 
 
@@ -1811,7 +1816,54 @@ void vVessel::AnimateComponent (ANIMATIONCOMP *comp, const D3DXMATRIX &T)
 
 // ============================================================================================
 //
+void vVessel::SetVisualProperty(VesselProp prp, int idx, const type_info& t, const void* val)
+{
+	if (t == typeid(FVECTOR3))
+	{
+		FVECTOR3* v = (FVECTOR3*)val;
 
+		if (prp == VesselProp::BAKED_LIGHT) {
+			if (idx >= 0 && idx <= 15) {
+				if (BakedLightsControl[idx] != *v) {
+					BakedLightsControl[idx] = *v;
+					bMustRebake = true;
+				}
+			}
+			return;
+		}
+	
+		if (prp == VesselProp::AMBIENT) {
+			VCAmbient = *v;
+			return;
+		}
+	}
+
+	oapiWriteLogV("Failed to set visual property prp=%d, type=[%s]", int(prp), t.name());
+}
+
+
+// ============================================================================================
+//
+bool vVessel::GetVisualProperty(VesselProp prp, int idx, const type_info& t, void* val)
+{
+	if (t == typeid(FVECTOR3))
+	{
+		if (prp == VesselProp::BAKED_LIGHT) if (idx >= 0 && idx <= 15) {
+			*((FVECTOR3*)val) = BakedLightsControl[idx];
+			return true;
+		}
+
+		if (prp == VesselProp::AMBIENT) {
+			*((FVECTOR3*)val) = VCAmbient;
+			return true;
+		}
+	}
+	return false;
+}
+
+
+// ============================================================================================
+//
 void vVessel::RenderReentry(LPDIRECT3DDEVICE9 dev)
 {
 

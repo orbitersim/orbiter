@@ -426,7 +426,7 @@ public:
 	 * \default None, returns \e false.
 	 */
 	bool clbkSetMeshProperty (DEVMESHHANDLE hMesh, DWORD property, DWORD value);
-	bool clbkSetMeshProperty(DEVMESHHANDLE hMesh, MeshProp prp, const oapi::FVECTOR4& value);
+	void clbkSetVisualProperty(VISHANDLE vis, VesselProp prp, int idx, const type_info& t, const void* val);
 
 	/**
 	 * \brief React to vessel docking, attaching events
@@ -1472,7 +1472,7 @@ public:
 	 * \brief Returns the object handle associated with the visual.
 	 * \return Object handle
 	 */
-	OBJHANDLE GetObject () const { return hObj; }
+	OBJHANDLE GetObjHandle () const { return hObj; }
 
 	/**
 	 * \brief Message callback.

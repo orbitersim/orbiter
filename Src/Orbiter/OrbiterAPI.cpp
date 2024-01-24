@@ -1419,12 +1419,6 @@ DLLEXPORT DWORD oapiMeshTextureCount (MESHHANDLE hMesh)
 	return ((Mesh*)hMesh)->nTexture();
 }
 
-DLLEXPORT void oapiMeshProperty(DEVMESHHANDLE hMesh, MeshProp prp, const oapi::FVECTOR4 &value)
-{
-	oapi::GraphicsClient* gc = g_pOrbiter->GetGraphicsClient();
-	if (gc) gc->clbkSetMeshProperty(hMesh, prp, value);
-}
-
 DLLEXPORT SURFHANDLE oapiGetTextureHandle (MESHHANDLE hMesh, DWORD texidx)
 {
 	Mesh *mesh = (Mesh*)hMesh;
