@@ -64,6 +64,8 @@
 #define DBG_FLAGS_NEARCLIP				0x8000	///< Set Clip distance to 2cm
 #define DBG_FLAGS_RENDEREXT			    0x10000	///< Render exterior meshes for VC view
 #define DBG_FLAGS_PICKCURRENT			0x20000 ///< Only use Pick for current mesh
+#define DBG_FLAGS_NOSUNAMB				0x40000 ///< Disable sun ambient effect in VC
+#define DBG_FLAGS_NOPLNAMB				0x80000 ///< Disable planet shine ambient effect in VC
 /// @}
 
 
@@ -73,6 +75,7 @@ class vObject;
 
 namespace DebugControls {
 
+	extern  int ambdir;
 	extern  DWORD sMesh;
 	extern  DWORD sGroup;
 	extern  DWORD debugFlags;

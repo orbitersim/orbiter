@@ -239,3 +239,6 @@
 #define IDC_DBG_DYNAMIC                         3056
 #define IDC_DBG_ISVCMESH                        3057
 #define IDC_DBG_VCSHADOW                        3058
+#define IDC_DBG_AMBDIR                          3059
+#define IDC_DBG_NOSUNAMB                        3060
+#define IDC_DBG_NOPLNAMB                        3061

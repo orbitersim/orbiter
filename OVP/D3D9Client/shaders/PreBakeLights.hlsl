@@ -8,6 +8,7 @@ uniform extern float3  fControl[16];
 uniform extern int	   iCount;
 uniform extern bool    bEnabled[6];
 uniform extern float   fShine;
+uniform extern bool	   bShine;
 
 sampler tMap[16] : register(s0);	// Lightmaps
 sampler tAO[6] : register(s0);		// AO Textures for prime directions
@@ -60,11 +61,13 @@ float4 PSSunAO(float x : TEXCOORD0, float y : TEXCOORD1) : COLOR
 
 	// For a given pixel in texture (x,y)
 	[unroll] for (int i = 0; i < 6; i++) { // Browse through direction
-		if (bEnabled[i]) {
-			// Get planet shine color for a given direction 'i'
-			float3 cShine = ParaboloidalSampler(tIrrad, vParTexPos[i]).rgb;
+		if (bEnabled[i]) {		
 			// Get ambient distribution inside VC for a given light direction 'i'
 			float3 ad = tex2D(tAO[i], float2(x, y)).rgb;
+
+			float3 cShine = 0.0f;
+			// Get planet shine color for a given direction 'i'
+			if (bShine) cShine = ParaboloidalSampler(tIrrad, vParTexPos[i]).rgb;
 			// Compute sunlight and planet shine factors
 			float3 shineAO = ad * cShine * fShine;
 			float3 sunAO = ad * fControl[i];

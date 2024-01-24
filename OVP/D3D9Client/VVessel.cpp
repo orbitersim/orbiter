@@ -716,6 +716,8 @@ void vVessel::BakeLights(ImageProcessing *pBaker)
 	lvlh.East = tmul(FVECTOR4(lvlh.East, 0), mW).xyz;
 	lvlh.North = tmul(FVECTOR4(lvlh.North, 0), mW).xyz;
 
+	auto maps = GetEnvMap();
+
 	for (int i = 0; i < nmesh; i++)
 	{
 		if (!meshlist[i].mesh) continue;
@@ -723,7 +725,7 @@ void vVessel::BakeLights(ImageProcessing *pBaker)
 		{
 			auto vSun = tmul(FVECTOR4(sundir, 0), mW);
 			meshlist[i].mesh->BakeLights(pBaker);
-			meshlist[i].mesh->BakeAO(pBaker, vSun.xyz, lvlh, ecDefExt.tex.pIrrad);
+			meshlist[i].mesh->BakeAO(pBaker, vSun.xyz, lvlh, maps->pIrrad);
 		}
 	}
 }

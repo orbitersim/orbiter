@@ -36,6 +36,7 @@ extern D3D9Client *g_client;
 
 namespace DebugControls {
 
+int ambdir = -1;
 int bkl_id = 0;
 DWORD dwGFX, dwCmd, nMesh, nGroup, sMesh, sGroup, debugFlags, dspMode, camMode, SelColor, sEmitter;
 double camSpeed;
@@ -488,6 +489,8 @@ void UpdateFlags()
 	SETFLAG(debugFlags, DBG_FLAGS_NEARCLIP,		(SendDlgItemMessageA(hDlg, IDC_DBG_CLIPDIST, BM_GETCHECK, 0, 0) == BST_CHECKED));
 	SETFLAG(debugFlags, DBG_FLAGS_RENDEREXT,	(SendDlgItemMessageA(hDlg, IDC_DBG_EXTVC, BM_GETCHECK, 0, 0) == BST_CHECKED));
 	SETFLAG(debugFlags, DBG_FLAGS_PICKCURRENT,  (SendDlgItemMessageA(hDlg, IDC_DBG_PICKCURRENT, BM_GETCHECK, 0, 0) == BST_CHECKED));
+	SETFLAG(debugFlags, DBG_FLAGS_NOSUNAMB,		(SendDlgItemMessageA(hDlg, IDC_DBG_NOSUNAMB, BM_GETCHECK, 0, 0) == BST_CHECKED));
+	SETFLAG(debugFlags, DBG_FLAGS_NOPLNAMB,		(SendDlgItemMessageA(hDlg, IDC_DBG_NOPLNAMB, BM_GETCHECK, 0, 0) == BST_CHECKED));
 
 	Config->EnableLimiter = (int)((debugFlags&DBG_FLAGS_FPSLIM)>0);
 }
@@ -650,6 +653,16 @@ void OpenDlgClbk(void *context)
 	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"LightVisbil.");
 	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"BakedLightMap");
 	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_SETCURSEL, 0, 0);
+	
+	SendDlgItemMessageA(hDlg, IDC_DBG_AMBDIR, CB_RESETCONTENT, 0, 0);
+	SendDlgItemMessageA(hDlg, IDC_DBG_AMBDIR, CB_ADDSTRING, 0, (LPARAM)"Omnidir");
+	SendDlgItemMessageA(hDlg, IDC_DBG_AMBDIR, CB_ADDSTRING, 0, (LPARAM)"From Up (+y)");
+	SendDlgItemMessageA(hDlg, IDC_DBG_AMBDIR, CB_ADDSTRING, 0, (LPARAM)"From Down (-y)");
+	SendDlgItemMessageA(hDlg, IDC_DBG_AMBDIR, CB_ADDSTRING, 0, (LPARAM)"From Left (-x)");
+	SendDlgItemMessageA(hDlg, IDC_DBG_AMBDIR, CB_ADDSTRING, 0, (LPARAM)"From Right (+x)");
+	SendDlgItemMessageA(hDlg, IDC_DBG_AMBDIR, CB_ADDSTRING, 0, (LPARAM)"From Fwd (+z)");
+	SendDlgItemMessageA(hDlg, IDC_DBG_AMBDIR, CB_ADDSTRING, 0, (LPARAM)"From Aft (-z)");
+	SendDlgItemMessageA(hDlg, IDC_DBG_AMBDIR, CB_SETCURSEL, 0, 0);
 
 	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_RESETCONTENT, 0, 0);
 	for (int i = 0; i < 16; i++) {
@@ -2192,6 +2205,12 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				}
 				break;
 
+			case IDC_DBG_AMBDIR:
+				if (HIWORD(wParam) == CBN_SELCHANGE) {
+					ambdir = int(SendDlgItemMessage(hDlg, IDC_DBG_AMBDIR, CB_GETCURSEL, 0, 0)) - 1;
+				}
+				break;
+
 			case IDC_DBG_DISPLAY:
 				if (HIWORD(wParam)==CBN_SELCHANGE) dspMode = DWORD(SendDlgItemMessage(hWnd, IDC_DBG_DISPLAY, CB_GETCURSEL, 0, 0));
 				break;
@@ -2322,6 +2341,8 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			case IDC_DBG_CLIPDIST:
 			case IDC_DBG_EXTVC:
 			case IDC_DBG_PICKCURRENT:
+			case IDC_DBG_NOSUNAMB:
+			case IDC_DBG_NOPLNAMB:
 				UpdateFlags();
 				break;
 

@@ -569,7 +569,7 @@ void D3D9Mesh::LoadBakedLights()
 		}
 	}
 
-	for (int i = 0; i < 16; i++) BakedLightsControl[i] = FVECTOR3(1.0f, 1.0f, 1.0f);
+	for (int i = 0; i < 16; i++) BakedLightsControl[i] = FVECTOR3(0.0f, 0.0f, 0.0f);
 
 	bli = BakedLights.begin();
 }
@@ -658,6 +658,7 @@ void D3D9Mesh::BakeAO(ImageProcessing* pBaker, const FVECTOR3 &vSun, const LVLH 
 	FVECTOR3 ParTexCoord[6];
 	bool bSE[6];
 	float fShine = 1.0f;
+	bool bShine = true;
 
 	// Compute texcoords for Irradiance lookup for prime directions
 	//
@@ -675,24 +676,37 @@ void D3D9Mesh::BakeAO(ImageProcessing* pBaker, const FVECTOR3 &vSun, const LVLH 
 	//
 	for (int i = 0; i < 6; i++)
 	{
-		auto tex = bli->second.pSunAO[i];		
+		bSE[i] = false;
+		control[i] = 0.0f;
+
+		if (DebugControls::IsActive())
+			if ((DebugControls::ambdir != i) && (DebugControls::ambdir != -1)) continue;
+
+		auto tex = bli->second.pSunAO[i];
 		bSE[i] = (tex != NULL);
 		if (tex)
 		{
 			pBaker->SetTextureNative(i, tex, flags);
 			control[i] = saturate(dot(GetDir(i), vSun));
 			control[i] *= control[i];
-		}
-		else {
-			control[i] = 0.0f;
-		}
+		}	
 	}
+
+	if (DebugControls::IsActive()) {
+		if (DebugControls::debugFlags & DBG_FLAGS_NOSUNAMB)
+			for (int i = 0; i < 6; i++) control[i] = 0;
+		if (DebugControls::debugFlags & DBG_FLAGS_NOPLNAMB)
+			fShine = 0.0f, bShine = false;
+	}
+
+	if (pIrrad == nullptr) fShine = 0.0f, bShine = false;
 
 	pBaker->SetTextureNative("tIrrad", pIrrad, IPF_LINEAR | IPF_CLAMP);
 	pBaker->SetFloat("fControl", control, sizeof(control));
 	pBaker->SetFloat("vParTexPos", ParTexCoord, sizeof(ParTexCoord));
 	pBaker->SetFloat("fShine", &fShine, sizeof(fShine));
 	pBaker->SetBool("bEnabled", bSE, sizeof(bSE));
+	pBaker->SetBool("bShine", &bShine, sizeof(bShine));
 
 	LPDIRECT3DSURFACE9 pSrf = NULL;
 
