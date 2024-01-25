@@ -69,7 +69,7 @@ const DWORD SPEC_INHERIT = (DWORD)(-2); // "inherit" material/texture flag
 #define ENVCAM_OMIT_DOCKS		0x0002	///< Do not render docked vessels, rendered by default
 #define ENVCAM_FOCUS			0x0004	///< Force rendering of focus object, omitted by default
 #define ENVCAM_PLANE			0x0008	///< Camera view is 160deg square plane, 360deg cube-map by default
-#define ENVCAM_DEFAULT			0x0010	///< Default setup, not user supplied
+#define ENVCAM_USER				0x0010	///< User supplied setup
 
 
 

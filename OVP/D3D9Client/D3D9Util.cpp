@@ -1849,14 +1849,14 @@ HANDLE ShaderClass::GetVSHandle(const char* name)
 
 
 
-void ShaderClass::SetTexture(const char* name, LPDIRECT3DTEXTURE9 pTex, UINT flags, UINT aniso)
+void ShaderClass::SetTexture(const char* name, LPDIRECT3DBASETEXTURE9 pTex, UINT flags, UINT aniso)
 {
 	D3DXHANDLE hVar = pPSCB->GetConstantByName(NULL, name);
 	SetTexture((HANDLE)hVar, pTex, flags, aniso);
 }
 
 
-void ShaderClass::SetTextureVS(const char* name, LPDIRECT3DTEXTURE9 pTex, UINT flags, UINT aniso)
+void ShaderClass::SetTextureVS(const char* name, LPDIRECT3DBASETEXTURE9 pTex, UINT flags, UINT aniso)
 {
 	D3DXHANDLE hVar = pVSCB->GetConstantByName(NULL, name);
 	SetTextureVS((HANDLE)hVar, pTex, flags, aniso);
@@ -1894,7 +1894,7 @@ void ShaderClass::SetVSConstants(const char* name, void* data, UINT bytes)
 	
 
 
-void ShaderClass::SetTexture(HANDLE hVar, LPDIRECT3DTEXTURE9 pTex, UINT flags, UINT aniso)
+void ShaderClass::SetTexture(HANDLE hVar, LPDIRECT3DBASETEXTURE9 pTex, UINT flags, UINT aniso)
 {
 #ifdef SHDCLSDBG
 	if (!hVar) {
@@ -1919,7 +1919,7 @@ void ShaderClass::SetTexture(HANDLE hVar, LPDIRECT3DTEXTURE9 pTex, UINT flags, U
 }
 
 
-void ShaderClass::SetTextureVS(HANDLE hVar, LPDIRECT3DTEXTURE9 pTex, UINT flags, UINT aniso)
+void ShaderClass::SetTextureVS(HANDLE hVar, LPDIRECT3DBASETEXTURE9 pTex, UINT flags, UINT aniso)
 {
 #ifdef SHDCLSDBG
 	if (!hVar) {

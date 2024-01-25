@@ -78,10 +78,10 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 
 	// Initialize default eCams;
 	//
-	ecDefExt.flags = ENVCAM_OMIT_ATTC | ENVCAM_DEFAULT;
+	ecDefExt.flags = ENVCAM_OMIT_ATTC;
 	ecDefExt.type = EnvCamType::Exterior;
 
-	ecDefVC.flags = ENVCAM_DEFAULT;
+	ecDefVC.flags = 0;
 	ecDefVC.type = EnvCamType::VC;
 
 	D3DXVECTOR3 pos;
@@ -1486,10 +1486,10 @@ ENVCAMREC* vVessel::CreateEnvCam(EnvCamType ec)
 //
 bool vVessel::HasOwnEnvCam(EnvCamType ec)
 {
-	if (ec == EnvCamType::Exterior && (ecDefExt.flags & ENVCAM_DEFAULT)) return false;
-	if (ec == EnvCamType::VC && (ecDefVC.flags & ENVCAM_DEFAULT)) return false;
-	if (ec == EnvCamType::Mesh && mesh_cams.size() == 0) return false;
-	return true;
+	if (ec == EnvCamType::Exterior && (ecDefExt.flags & ENVCAM_USER)) return true;
+	if (ec == EnvCamType::VC && (ecDefVC.flags & ENVCAM_USER)) return true;
+	if (ec == EnvCamType::Mesh && mesh_cams.size() > 0) return true;
+	return false;
 }
 
 // ============================================================================================
@@ -1816,13 +1816,13 @@ void vVessel::AnimateComponent (ANIMATIONCOMP *comp, const D3DXMATRIX &T)
 
 // ============================================================================================
 //
-void vVessel::SetVisualProperty(VesselProp prp, int idx, const type_info& t, const void* val)
+void vVessel::SetVisualProperty(VisualProp prp, int idx, const type_info& t, const void* val)
 {
 	if (t == typeid(FVECTOR3))
 	{
 		FVECTOR3* v = (FVECTOR3*)val;
 
-		if (prp == VesselProp::BAKED_LIGHT) {
+		if (prp == VisualProp::BAKED_LIGHT) {
 			if (idx >= 0 && idx <= 15) {
 				if (BakedLightsControl[idx] != *v) {
 					BakedLightsControl[idx] = *v;
@@ -1832,8 +1832,20 @@ void vVessel::SetVisualProperty(VesselProp prp, int idx, const type_info& t, con
 			return;
 		}
 	
-		if (prp == VesselProp::AMBIENT) {
+		if (prp == VisualProp::AMBIENT) {
 			VCAmbient = *v;
+			return;
+		}
+
+		if (prp == VisualProp::EXT_PROBE_POS) {
+			ecDefExt.lPos = *v;
+			ecDefExt.flags |= ENVCAM_USER;
+			return;
+		}
+
+		if (prp == VisualProp::VC_PROBE_POS) {
+			ecDefVC.lPos = *v;
+			ecDefVC.flags |= ENVCAM_USER;
 			return;
 		}
 	}
@@ -1844,20 +1856,21 @@ void vVessel::SetVisualProperty(VesselProp prp, int idx, const type_info& t, con
 
 // ============================================================================================
 //
-bool vVessel::GetVisualProperty(VesselProp prp, int idx, const type_info& t, void* val)
+bool vVessel::GetVisualProperty(VisualProp prp, int idx, const type_info& t, void* val)
 {
 	if (t == typeid(FVECTOR3))
 	{
-		if (prp == VesselProp::BAKED_LIGHT) if (idx >= 0 && idx <= 15) {
+		if (prp == VisualProp::BAKED_LIGHT) if (idx >= 0 && idx <= 15) {
 			*((FVECTOR3*)val) = BakedLightsControl[idx];
 			return true;
 		}
 
-		if (prp == VesselProp::AMBIENT) {
+		if (prp == VisualProp::AMBIENT) {
 			*((FVECTOR3*)val) = VCAmbient;
 			return true;
 		}
 	}
+	oapiWriteLogV("Failed to get visual property prp=%d, type=[%s]", int(prp), t.name());
 	return false;
 }
 

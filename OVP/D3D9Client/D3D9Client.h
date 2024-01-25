@@ -426,7 +426,7 @@ public:
 	 * \default None, returns \e false.
 	 */
 	bool clbkSetMeshProperty (DEVMESHHANDLE hMesh, DWORD property, DWORD value);
-	void clbkSetVisualProperty(VISHANDLE vis, VesselProp prp, int idx, const type_info& t, const void* val);
+	void clbkSetVisualProperty(VISHANDLE vis, VisualProp prp, int idx, const type_info& t, const void* val);
 
 	/**
 	 * \brief React to vessel docking, attaching events

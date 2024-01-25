@@ -1499,8 +1499,8 @@ void UpdateBakedLights(float lvl)
 	vVessel* vV = (vVessel*)vObj;
 	if (vObj->Type() == OBJTP_VESSEL) {	
 		if (bkl_id < 16 && bkl_id >= 0) 
-			vV->SetVisualProperty(VesselProp::BAKED_LIGHT, bkl_id, typeid(FVECTOR3), &FVECTOR3(lvl, lvl, lvl));
-		if (bkl_id == 16) vV->SetVisualProperty(VesselProp::AMBIENT, 0, typeid(FVECTOR3), &FVECTOR3(lvl, lvl, lvl));
+			vV->SetVisualProperty(VisualProp::BAKED_LIGHT, bkl_id, typeid(FVECTOR3), &FVECTOR3(lvl, lvl, lvl));
+		if (bkl_id == 16) vV->SetVisualProperty(VisualProp::AMBIENT, 0, typeid(FVECTOR3), &FVECTOR3(lvl, lvl, lvl));
 	}
 }
 
@@ -1511,8 +1511,8 @@ void UpdateLightsSlider()
 	FVECTOR3 val = 0.0f;
 	vVessel* vV = (vVessel*)vObj;
 	if (vObj->Type() == OBJTP_VESSEL) {
-		if (bkl_id < 16 && bkl_id >= 0) vV->GetVisualProperty(VesselProp::BAKED_LIGHT, bkl_id, typeid(val), &val);
-		if (bkl_id == 16) vV->GetVisualProperty(VesselProp::AMBIENT, 0, typeid(val), &val);
+		if (bkl_id < 16 && bkl_id >= 0) vV->GetVisualProperty(VisualProp::BAKED_LIGHT, bkl_id, typeid(val), &val);
+		if (bkl_id == 16) vV->GetVisualProperty(VisualProp::AMBIENT, 0, typeid(val), &val);
 		SendDlgItemMessage(hDlg, IDC_DBG_BKLADJ, TBM_SETPOS, 1, WORD(255.0f * val.x));
 	}
 }

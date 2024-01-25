@@ -143,6 +143,7 @@ set(ShaderFiles
     ${ShaderDir}/Scatter.hlsl
     ${ShaderDir}/Glare.hlsl
     ${ShaderDir}/PreBakeLights.hlsl
+    ${ShaderDir}/Custom.hlsl
 	${ShaderDir}/Mesh.fx
 	${ShaderDir}/Metalness.fx
 	${ShaderDir}/Particle.fx

@@ -110,6 +110,8 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	pLocalResultsSL = NULL;
 	pBakeLights = NULL;
 	ptRandom = NULL;
+	dmCubeMesh = NULL;
+	pRenderStage = NULL;
 
 	vobjEnv = eCamRenderList.begin();
 
@@ -197,8 +199,17 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 
 
 	// ------------------------------------------------------------------------------
-	// Initialize a shaders for local lights visibility checks and rendering 
+	// Load a mesh to create a stage
+	//
+	MESHHANDLE hCubeMesh = oapiLoadMeshGlobal("D3D9Cube");
+	if (!hCubeMesh) { oapiWriteLog("Failed to open D3D9Cube.msh"); DebugBreak(); }
+	dmCubeMesh = gc->GetDevMesh(hCubeMesh);
+	pRenderStage = new ShaderClass(pDevice, "Modules/D3D9Client/Custom.hlsl", "StageVS", "StagePS", "RenderStage", "");
 
+
+	// ------------------------------------------------------------------------------
+	// Initialize a shaders for local lights visibility checks and rendering 
+	//
 	if (Config->bGlares || Config->bLocalGlares)
 	{
 		pRenderGlares = new ShaderClass(pDevice, "Modules/D3D9Client/Glare.hlsl", "GlareVS", "GlarePS", "RenderGlares", "");
@@ -264,14 +275,15 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 		HR(D3DXCreateTexture(pDevice, viewW, viewH, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_DEPTH]));
 	}
 
-	HR(D3DXCreateTexture(pDevice, 64, 64, 1, D3DUSAGE_DYNAMIC, D3DFMT_R32F, D3DPOOL_DEFAULT, &ptRandom));
 
+	// Create a random number table --------------------------------------------------------------------------------------------------
+	//
+	HR(D3DXCreateTexture(pDevice, 64, 64, 1, D3DUSAGE_DYNAMIC, D3DFMT_R32F, D3DPOOL_DEFAULT, &ptRandom));
 	D3DLOCKED_RECT rect;
 	if (ptRandom->LockRect(0, &rect, 0, 0) == S_OK) {
 		for (int i = 0; i < (64 * 64); i++) ((float*)rect.pBits)[i] = oapiRand();
 		ptRandom->UnlockRect(0);
-	}
-	else LogErr("Failed to create random table");
+	} else LogErr("Failed to create random table");
 
 	// Initialize post processing effects --------------------------------------------------------------------------------------------------
 	//
@@ -371,6 +383,7 @@ Scene::~Scene ()
 	SAFE_DELETE(pRenderGlares);
 	SAFE_DELETE(pCreateGlare);
 	SAFE_DELETE(pBakeLights);
+	SAFE_DELETE(pRenderStage);
 
 	SAFE_RELEASE(pOffscreenTarget);
 	SAFE_RELEASE(pEnvDS);
@@ -1968,6 +1981,10 @@ void Scene::clbkRenderMainScene()
 		pSketch->EndDrawing();	// SKETCHPAD_LABELS
 	}
 
+	if (vFocus) {
+		auto a = vFocus->GetEnvMap()->pEnv;
+		if (a && bStageSet) RenderStage((LPDIRECT3DCUBETEXTURE9)a);
+	}
 
 
 
@@ -2783,7 +2800,7 @@ int Scene::RenderVCShadowMap(D3DXVECTOR3& cdir, D3DXVECTOR3& ld, bool bListExist
 
 // ===========================================================================================
 //
-void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList, std::set<vVessel*> &LightsList, DWORD flags)
+void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList, std::set<vVessel*> &LightsList, DWORD flags, const LPDIRECT3DCUBETEXTURE9 pCT)
 {
 	_TRACE;
 	RenderFlags = flags;
@@ -2822,10 +2839,15 @@ void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList, std::set<vVessel*>
 	// Clear the viewport
 	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0xFF000000, 1.0f, 0L));
 
+
+	// render stage around the scene ----------------------------
+	//
+	if ((flags & SCN_STAGE) && pCT) RenderStage(pCT);
+
 	
 	// render planets -------------------------------------------
 	//
-	if (flags & 0x01) {
+	if (flags & SCN_PLANETS) {
 		for (DWORD i = 0; i<nplanets; i++) {
 			bool isActive = plist[i].vo->IsActive();
 			if (isActive) plist[i].vo->Render(pDevice);
@@ -2835,7 +2857,7 @@ void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList, std::set<vVessel*>
 
 	// render the vessel objects --------------------------------
 	//
-	if (flags & 0x02) {
+	if (flags & SCN_VESSELS) {
 		for (auto vVes : RndList) {
 			if (!vVes->IsActive()) continue;
 			if (!vVes->IsVisible()) continue;
@@ -2845,7 +2867,7 @@ void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList, std::set<vVessel*>
 
 	// render exhausts -------------------------------------------
 	//
-	if (flags & 0x04) {
+	if (flags & SCN_EXHAUST) {
 		for (auto vVes : RndList) {
 			if (!vVes->IsActive()) continue;
 			if (!vVes->IsVisible()) continue;
@@ -2855,7 +2877,7 @@ void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList, std::set<vVessel*>
 
 	// render beacons -------------------------------------------
 	//
-	if (flags & 0x08) {
+	if (flags & SCN_BEACONS) {
 		for (auto vVes : RndList) {
 			if (!vVes->IsActive()) continue;
 			vVes->RenderBeacons(pDevice);
@@ -2863,13 +2885,43 @@ void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList, std::set<vVessel*>
 	}
 
 	// render exhaust particle system ----------------------------
-	if (flags & 0x10) {
+	if (flags & SCN_PARTICLES) {
 		for (DWORD n = 0; n < nstream; n++) pstream[n]->Render(pDevice);
 	}
 
 	// Flags 0x20 = BaseStructures
 }
 
+
+// ===========================================================================================
+// Rernder a stage/set to contain some meshes.
+//
+void Scene::RenderStage(LPDIRECT3DCUBETEXTURE9 pCT)
+{
+	if (!pRenderStage) return;
+
+	struct {
+		D3DXMATRIX mVP;
+		D3DXMATRIX mW;
+	} ShaderData;
+
+	ShaderData.mVP = Camera.mProjView;
+	D3DXMatrixIdentity(&ShaderData.mW);
+	ShaderData.mW._11 = 10e3f;
+	ShaderData.mW._22 = 10e3f;
+	ShaderData.mW._33 = 10e3f;
+
+	pRenderStage->ClearTextures();
+	pRenderStage->SetPSConstants("cbPS", &ShaderData, sizeof(ShaderData));
+	pRenderStage->SetVSConstants("cbPS", &ShaderData, sizeof(ShaderData));
+	pRenderStage->SetTexture("tTex", pCT, IPF_CLAMP | IPF_LINEAR);
+	pRenderStage->Setup(pMeshVertexDecl, false, 0);
+	pRenderStage->UpdateTextures();
+
+	((D3D9Mesh*)dmCubeMesh)->RenderGroup(0);
+
+	pRenderStage->DetachTextures();
+}
 
 // ===========================================================================================
 //

@@ -679,7 +679,7 @@ public:
 	 * \sa RegisterVisObject, UnregisterVisObject, visevent
 	 */
 	virtual int clbkVisEvent (OBJHANDLE hObj, VISHANDLE vis, DWORD msg, DWORD_PTR context);
-	virtual void clbkSetVisualProperty(VISHANDLE vis, VesselProp prp, int idx, const type_info& t, const void* val) { }
+	virtual void clbkSetVisualProperty(VISHANDLE vis, VisualProp prp, int idx, const type_info& t, const void* val) { }
 
 	/**
 	 * \brief Return a mesh handle for a visual, defined by its index

@@ -166,8 +166,8 @@ public:
 	*/
 	void UpdateAnimations(int mshidx = -1);
 
-	void SetVisualProperty(VesselProp prp, int idx, const type_info& t, const void* val);
-	bool GetVisualProperty(VesselProp prp, int idx, const type_info& t, void* val);
+	void SetVisualProperty(VisualProp prp, int idx, const type_info& t, const void* val);
+	bool GetVisualProperty(VisualProp prp, int idx, const type_info& t, void* val);
 	
 
 protected:

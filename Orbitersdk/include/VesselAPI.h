@@ -42,7 +42,7 @@ typedef struct {
 	double mu_lng;    ///< longitudinal friction coefficient (only used for first 3 points)
 } TOUCHDOWNVTX;
 
-enum class VesselProp {
+enum class VisualProp {
 	BAKED_LIGHT,		///< baked light level
 	AMBIENT,			///< ambient light level
 	EXT_PROBE_POS,		///< Exterior probe position
@@ -3849,7 +3849,7 @@ public:
 	 * \param idx index of property
 	 * \param val value to be set
 	 */
-	void SetVisualProperty(VISHANDLE vis, VesselProp prp, int idx, const type_info &t, const void *val);
+	void SetVisualProperty(VISHANDLE vis, VisualProp prp, int idx, const type_info &t, const void *val);
 
 	/**
 	 * \brief Affine transformation of a mesh group.

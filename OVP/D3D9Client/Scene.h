@@ -67,6 +67,19 @@ class D3D9Pad;
 
 #define OBJTP_BUILDING			1000
 
+// Secundary scene render flags
+#define SCN_PLANETS		0x1
+#define SCN_VESSELS		0x2
+#define SCN_EXHAUST		0x4
+#define SCN_BEACONS		0x8
+#define SCN_PARTICLES	0x10
+#define SCN_BASESTRUCT	0x20
+#define SCN_ALLEXT		0x3F	///< All exterior features
+#define SCN_VC			0x40	///< Virtual cockpit
+#define SCN_STAGE		0x100	///< Render a stage around the world. Cude texture needed.
+
+
+
 #define CAMERA(x) ((Scene::CAMREC*)x)
 
 class Scene {
@@ -86,6 +99,7 @@ class Scene {
 public:
 
 	FVECTOR3 vPickRay;
+	bool bStageSet = false;
 
 	struct FRUSTUM {
 		float znear;
@@ -257,7 +271,7 @@ public:
 	/**
 	 * \brief Render a secondary scene. (Env Maps, Shadow Maps, MFD Camera Views)
 	 */
-	void RenderSecondaryScene(std::set<class vVessel*> &RndList, std::set<class vVessel*> &AdditionalLightsList, DWORD flags = 0xFF);
+	void RenderSecondaryScene(std::set<class vVessel*> &RndList, std::set<class vVessel*> &AdditionalLightsList, DWORD flags = SCN_ALLEXT, const LPDIRECT3DCUBETEXTURE9 pCT = nullptr);
 	int RenderShadowMap(D3DXVECTOR3& pos, D3DXVECTOR3& ld, float rad, bool bInternal = false, bool bListExists = false);
 	int RenderVCShadowMap(D3DXVECTOR3& cdir, D3DXVECTOR3& ld, bool bListExists = false);
 
@@ -265,6 +279,7 @@ public:
 	bool RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc);
 	bool RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DTEXTURE9 pSrc);
 	void RenderMesh(DEVMESHHANDLE hMesh, const oapi::FMATRIX4 *pWorld);
+	void RenderStage(LPDIRECT3DCUBETEXTURE9 pCT);
 
 	LPDIRECT3DSURFACE9 GetEnvDepthStencil() const { return pEnvDS; }
 	LPDIRECT3DSURFACE9 GetBuffer(int id) const { return psgBuffer[id]; }
@@ -464,7 +479,7 @@ private:
 	D3D9ParticleStream **pstream; // list of particle streams
 	DWORD                nstream; // number of streams
 
-
+	DEVMESHHANDLE dmCubeMesh;
 	D3DCOLOR bg_rgba;          // ambient background colour
 
 	// GDI resources ====================================================================
@@ -504,7 +519,7 @@ private:
 	SurfNative *pLblSrf;
 
 	class ImageProcessing *pLightBlur, *pBlur, *pBlur2D, *pGDIOverlay, *pIrradiance, *pVisDepth, *pCreateGlare, *pBakeLights;
-	class ShaderClass *pLocalCompute, *pRenderGlares;
+	class ShaderClass *pLocalCompute, *pRenderGlares, *pRenderStage;
 
 	class vVessel *vFocus;
 	double dVisualAppRad;

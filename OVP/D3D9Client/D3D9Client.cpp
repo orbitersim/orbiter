@@ -1512,7 +1512,7 @@ bool D3D9Client::clbkSetMeshProperty(DEVMESHHANDLE hMesh, DWORD prop, DWORD valu
 
 // ==============================================================
 
-void D3D9Client::clbkSetVisualProperty(VISHANDLE vis, VesselProp prp, int idx, const type_info& t, const void* val)
+void D3D9Client::clbkSetVisualProperty(VISHANDLE vis, VisualProp prp, int idx, const type_info& t, const void* val)
 {
 	vVessel* vV = (vVessel*)vis;
 	if (vV && vV->Type() == OBJTP_VESSEL) vV->SetVisualProperty(prp, idx, t, val);
@@ -1843,6 +1843,7 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			bool bCtrl  = (GetAsyncKeyState(VK_CONTROL) & 0x8000)!=0;
 			if (wParam == 'C' && bShift && bCtrl) bControlPanel = !bControlPanel;
 			if (wParam == 'N' && bShift && bCtrl) Config->bCloudNormals = !Config->bCloudNormals;
+			if (wParam == 'V' && bShift && bCtrl) GetScene()->bStageSet = !GetScene()->bStageSet;
 			break;
 		}
 

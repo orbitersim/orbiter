@@ -374,13 +374,13 @@ public:
 	HANDLE	GetPSHandle(const char* name);
 	HANDLE	GetVSHandle(const char* name);
 
-	void	SetTexture(const char* name, LPDIRECT3DTEXTURE9 pTex, UINT Flags = IPF_CLAMP | IPF_ANISOTROPIC, UINT AnisoLvl = 4);
-	void	SetTextureVS(const char* name, LPDIRECT3DTEXTURE9 pTex, UINT flags = IPF_CLAMP | IPF_POINT, UINT AnisoLvl = 0);
+	void	SetTexture(const char* name, LPDIRECT3DBASETEXTURE9 pTex, UINT Flags = IPF_CLAMP | IPF_ANISOTROPIC, UINT AnisoLvl = 4);
+	void	SetTextureVS(const char* name, LPDIRECT3DBASETEXTURE9 pTex, UINT flags = IPF_CLAMP | IPF_POINT, UINT AnisoLvl = 0);
 	void	SetPSConstants(const char* name, void* data, UINT bytes);
 	void	SetVSConstants(const char* name, void* data, UINT bytes);
 
-	void	SetTexture(HANDLE hVar, LPDIRECT3DTEXTURE9 pTex, UINT flags = IPF_CLAMP | IPF_POINT, UINT AnisoLvl = 0);
-	void	SetTextureVS(HANDLE hVar, LPDIRECT3DTEXTURE9 pTex, UINT flags, UINT aniso);
+	void	SetTexture(HANDLE hVar, LPDIRECT3DBASETEXTURE9 pTex, UINT flags = IPF_CLAMP | IPF_POINT, UINT AnisoLvl = 0);
+	void	SetTextureVS(HANDLE hVar, LPDIRECT3DBASETEXTURE9 pTex, UINT flags, UINT aniso);
 	void	SetPSConstants(HANDLE hVar, void* data, UINT bytes);
 	void	SetVSConstants(HANDLE hVar, void* data, UINT bytes);
 	LPDIRECT3DDEVICE9 GetDevice() { return pDev; }
@@ -389,8 +389,8 @@ private:
 
 	struct TexParams
 	{
-		LPDIRECT3DTEXTURE9 pTex;
-		LPDIRECT3DTEXTURE9 pAssigned;
+		LPDIRECT3DBASETEXTURE9 pTex;
+		LPDIRECT3DBASETEXTURE9 pAssigned;
 		UINT Flags;
 		UINT AnisoLvl;
 		bool bSamplerSet;
