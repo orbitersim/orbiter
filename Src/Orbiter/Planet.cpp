@@ -501,7 +501,7 @@ void Planet::ScanBases (char *path)
 	std::error_code ec;
 	for (const auto& entry : fs::directory_iterator(configdir, ec)) {
 		if (entry.path().extension().string() == ".cfg") {
-			ifstream ifs(entry);
+			ifstream ifs(entry.path());
 			if (!ifs) continue;
 			do {
 				if (!ifs.getline(cbuf, 256)) break;
@@ -545,7 +545,7 @@ void Planet::ScanLabelLists (ifstream &cfg)
 	ForEach(FILETYPE_MARKER, [&](const fs::directory_entry& entry) {
 		char cbuf[256];
 		// open marker file
-		ifstream ulf(entry);
+		ifstream ulf(entry.path());
 
 		// read label header
 		if (scanheader) {
