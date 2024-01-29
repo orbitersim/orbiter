@@ -764,7 +764,7 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessage(hWnd, IDC_LODBIAS, TBM_SETRANGEMIN, 1, -10);
 	SendDlgItemMessage(hWnd, IDC_LODBIAS, TBM_SETTICFREQ, 1, 0);
 
-	SendDlgItemMessage(hWnd, IDC_MESHRES, TBM_SETRANGEMAX, 1, 2);
+	SendDlgItemMessage(hWnd, IDC_MESHRES, TBM_SETRANGEMAX, 1, 1);
 	SendDlgItemMessage(hWnd, IDC_MESHRES, TBM_SETRANGEMIN, 1, 0);
 	SendDlgItemMessage(hWnd, IDC_MESHRES, TBM_SETTICFREQ, 1, 0);
 
