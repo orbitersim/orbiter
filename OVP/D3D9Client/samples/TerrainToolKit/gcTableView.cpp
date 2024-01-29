@@ -9,9 +9,12 @@
 #include <windowsx.h>
 #include <list>
 #include <CommCtrl.h>
+#include <locale>
+#include <codecvt>
 
 
 list<gcPropertyTree *> g_gcPropertyTrees;
+std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
 
 
 // ==================================================================================
@@ -502,7 +505,10 @@ int gcPropertyTree::PaintSection(HDC _hDC, HPROP hPar, int ident, int wlbl, int 
 		
 		TextOut(hBM, n + ident, y + z, hp->label.c_str(), hp->label.size());
 
-		if (!hp->hCtrl)	TextOut(hBM, wlbl + n, y + z, hp->val.c_str(), hp->val.size());
+		if (!hp->hCtrl) {
+			wstring ws = converter.from_bytes(hp->val);
+			TextOutW(hBM, wlbl + n, y + z, ws.c_str(), hp->val.size());
+		}
 		else {
 
 			// Textbox
