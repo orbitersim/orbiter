@@ -290,6 +290,7 @@ D3D9Pad::D3D9Pad(SURFHANDLE s, const char *_name) : Sketchpad(s),
 #ifdef SKPDBG 
 	Log("#### Sketchpad Interface Created");
 #endif
+	pRState = new RenderState(pDev);
 	if (_name) strcpy_s(name, 32, _name);
 	else strcpy_s(name, 32, "NoName");
 	Reset();
@@ -313,6 +314,7 @@ D3D9Pad::D3D9Pad(const char *_name) : Sketchpad(NULL),
 #endif
 	if (_name) strcpy_s(name, 32, _name);
 	else strcpy_s(name, 32, "NoName");
+	pRState = new RenderState(pDev);
 	Reset();
 	LoadDefaults();
 }
@@ -326,6 +328,7 @@ D3D9Pad::~D3D9Pad ()
 #ifdef SKPDBG 
 	Log("#### Sketchpad Interface Deleted");
 #endif
+	if (pRState) delete pRState;
 	assert(bBeginDraw == false);
 	SAFE_DELETEA(_saveBuffer);
 }
@@ -369,7 +372,10 @@ void D3D9Pad::BeginDrawing(LPDIRECT3DSURFACE9 pRenderTgt, LPDIRECT3DSURFACE9 pDe
 		LogErr("D3D9Pad::BeginDrawing() called multiple times");
 		HALT();
 	}
-	
+
+	// Capture current device state
+	pRState->Capture();
+
 	Reset();
 	
 	bBeginDraw = true;
@@ -410,6 +416,8 @@ void D3D9Pad::EndDrawing()
 	Flush();
 
 	bBeginDraw = false;
+
+	if (pRState) pRState->Restore();
 
 	if (bMustEndScene) {
 		gc->EndScene();

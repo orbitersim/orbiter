@@ -474,6 +474,8 @@ FVECTOR4 vPlanet::AmbientApprox(FVECTOR3 vNrm, bool bR)
 //
 D3D9Sun vPlanet::GetObjectAtmoParams(VECTOR3 vRelPos)
 {
+	assert(string(name) != "Sun");
+
 	if (!active) {
 		Update(true);
 		UpdateScatter();
@@ -484,7 +486,9 @@ D3D9Sun vPlanet::GetObjectAtmoParams(VECTOR3 vRelPos)
 	op.Incatter = 0.0f;
 
 	double r = length(vRelPos);
-	float a = cp.AtmoAlt * 0.5f;
+	float a = 0.0f;
+	if (HasAtmosphere()) a = cp.AtmoAlt * 0.5f;
+
 	FVECTOR3 cSun = SunLightColor(vRelPos).rgb * cp.cSun;
 	DWORD ambient = *(DWORD*)gc->GetConfigParam(CFGPRM_AMBIENTLEVEL);
 
@@ -599,6 +603,7 @@ void vPlanet::UpdateScatter()
 	VECTOR3 vTan = unit(crossp(vRot, vNrm));
 	VECTOR3 vBiT = unit(crossp(vTan, vNrm));
 
+	memset(&cp, 0, sizeof(cp));
 	memcpy(&cp.mVP, scn->GetProjectionViewMatrix(), sizeof(FMATRIX4));
 
 	cp.vPolarAxis = vRot;

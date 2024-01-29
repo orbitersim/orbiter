@@ -616,6 +616,7 @@ private:
 	D3DXCOLOR		 cColorKey;
 	SkpView			 vmode;
 	Topo			 tCurrent;
+	RenderState* 	 pRState;
 
 
 	WORD vI = 0, iI = 0;
