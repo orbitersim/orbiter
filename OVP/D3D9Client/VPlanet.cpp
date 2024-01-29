@@ -505,6 +505,28 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene) :
 	ParseConfig(oapiGetObjectFileName(hObj));
 
 	UpdateScatter();
+
+	char msg[256]; char path[MAX_PATH];
+	// Check texture directory
+	GetClient()->PlanetTexturePath(GetName(), path);
+	auto x = filesystem::status(path);
+	bool bExists = filesystem::is_directory(x);
+
+	// Check *.tex file
+	string tf = string(GetName()) + ".tex";
+	GetClient()->PlanetTexturePath(tf.c_str(), path);
+	auto y = filesystem::status(path);
+	bExists |= filesystem::exists(y);
+	
+	if (!bExists) {
+		VESSEL* vss = oapiGetFocusInterface();
+		sprintf_s(msg, sizeof(msg), "[WARNING] Surface textures are missing for %s", GetName());
+		if (vss && (vss->GetGravityRef() == hObj)) {
+			oapiWriteLog(msg);
+			MessageBox(GetClient()->GetWindow(), msg, "Warning", MB_OK);
+		}
+		else oapiWriteLog(msg);
+	}
 }
 
 
