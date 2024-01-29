@@ -36,6 +36,7 @@
 #include "VectorHelpers.h"
 #include "OapiExtension.h"
 #include "IProcess.h"
+#include <filesystem>
 
 using namespace oapi;
 

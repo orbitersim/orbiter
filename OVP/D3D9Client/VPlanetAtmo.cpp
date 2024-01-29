@@ -418,15 +418,25 @@ FVECTOR4 vPlanet::SunLightColor(VECTOR3 relpos, double rf)
 {
 	static const float lim = 0.0f;
 
+	OBJHANDLE hSun = oapiGetGbodyByIndex(0);
+	assert(hSun != hObj);
+
 	if (!active) {
 		Update(true);
 		UpdateScatter();
 	}
-	
+
+	VECTOR3 sunp;
+	oapiGetGlobalPos(hSun, &sunp);
+
+	VECTOR3 crs = sunp - (relpos + gpos);	// 'relpos' relative to sun
+	double	sd = length(crs);				// 'relpos' sun distance
+	VECTOR3 ucs = crs / sd;
+
 	FVECTOR2 rm = 0.0f;
 	VECTOR3 up = unit(relpos);
-	double r = dot(up, relpos);
-	double ca = dot(up, SunDirection());
+	double r = dotp(up, relpos);
+	double ca = dotp(up, ucs);
 	double om = saturate(1.0 - ca * ca);
 	double qr = sqrt(om) * r;
 	double ar = GetHorizonAlt() + size;
@@ -441,8 +451,6 @@ FVECTOR4 vPlanet::SunLightColor(VECTOR3 relpos, double rf)
 		if (r > ar && ca > lim) return FVECTOR4(1, 1, 1, 1); // Ray doesn't intersect atmosphere
 	}
 
-	OBJHANDLE hSun = oapiGetObjectByIndex(0);
-	double sd = SunDistance();
 	double dp = r * r - size * size;
 	double hd = dp > 1e4 ? sqrt(dp) : 1000.0; // Distance to horizon
 	double sr = oapiGetSize(hSun) * abs(hd) / sd;

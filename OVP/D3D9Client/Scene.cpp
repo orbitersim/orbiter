@@ -3441,7 +3441,12 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 
 	// find the visual
 	Camera.vProxy = (vPlanet *)GetVisObject(Camera.hObj_proxy);
-	Camera.vNear = (vPlanet *)GetVisObject(Camera.hNear);
+	if (oapiGetObjectType(Camera.hNear) == OBJTP_PLANET) {
+		Camera.vNear = (vPlanet*)GetVisObject(Camera.hNear);
+	}
+	else {
+		Camera.vNear = nullptr;
+	}
 
 	// Something is very wrong... abort...
 	if (Camera.hObj_proxy == NULL || Camera.vProxy == NULL || Camera.vNear == NULL) return;
