@@ -3627,7 +3627,8 @@ void Scene::RenderGlares()
 			// Render Sun glare
 			VECTOR3 gsun; oapiGetGlobalPos(oapiGetObjectByIndex(0), &gsun);
 			double sdst = length(gsun - Camera.pos);
-			VECTOR3 pos = (gsun - Camera.pos) * 10e4 / sdst;
+			VECTOR3 usun = (gsun - Camera.pos) / sdst;
+			VECTOR3 pos = usun * 10e4;
 
 			if (WorldToScreenSpace2(pos, &pt))
 			{

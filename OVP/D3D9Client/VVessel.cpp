@@ -252,7 +252,7 @@ bool vVessel::Update(bool bMainScene)
 	if (!active) return false;
 	vObject::Update(bMainScene);
 
-	if (fabs(oapiGetSimTime()-tCheckLight)>0.1 || oapiGetPause()) ModLighting();
+	if (fabs(oapiGetSimTime()-tCheckLight)>0.03 || oapiGetPause()) ModLighting();
 
 	bBSRecompute = true;
 	return true;

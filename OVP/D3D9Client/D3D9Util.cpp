@@ -49,6 +49,34 @@ WORD crc16(const char *data, int length)
 	return WORD(crc & 0xFFFF);	
 }
 
+// ===========================================================================================
+// Sun occlusion by planet hObj for a given global position gpos
+//
+float SunOcclusionByPlanet(OBJHANDLE hObj, VECTOR3 gpos)
+{
+	VECTOR3 gsun, gpln;
+	OBJHANDLE hSun = oapiGetObjectByIndex(0);
+	
+	oapiGetGlobalPos(hSun, &gsun);
+	oapiGetGlobalPos(hObj, &gpln);
+
+	VECTOR3 rpos = gpln - gpos;
+	VECTOR3 spos = gsun - gpos;	
+	double	sd = length(spos);				
+	double  sz = oapiGetSize(hObj);
+	VECTOR3 usd = spos / sd;					
+	VECTOR3 up = unit(rpos);
+	double r  = length(rpos);
+	double ca = -dot(up, usd);
+	double qr = sqrt(saturate(1.0 - ca * ca)) * r;
+	double dp = r * r - sz * sz;
+	double hd = dp > 1e4 ? sqrt(dp) : 1000.0; // Distance to horizon
+	double sr = oapiGetSize(hSun) * abs(hd) / sd;
+	double svb = ca > 0.0 ? 1.0 : ilerp(sz - sr * 0.33, sz + sr, qr); // How much of the sun's "disc" is shadowed by planet
+	return svb;
+}
+
+
 #if _WIN64
 #define PTR_FMT_STRING "0x%llX"
 #else // 32 bit
