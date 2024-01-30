@@ -2090,6 +2090,11 @@ void Scene::RenderMainScene()
 		}
 	}
 
+	if (Camera.vNear) {
+		D3D9DebugLog("vNear = %s", Camera.vNear->GetName());
+		D3D9DebugLog("vProxy = %s", Camera.vProxy->GetName());
+		D3D9DebugLog("vGravRef = %s", Camera.vGravRef->GetName());
+	}
 
 	// -------------------------------------------------------------------------------------------------------
 	// Render HUD Overlay to backbuffer directly
@@ -3419,37 +3424,56 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 	// find a logical reference body
 	Camera.hObj_proxy = oapiCameraProxyGbody();
 	Camera.hNear = NULL;
+	Camera.hGravRef = NULL;
+	Camera.vGravRef = NULL;
 
 	// find the planet closest to the current camera position
-	double closest = 1e32;
+	double closest = 0;
 	int n = oapiGetGbodyCount();
-	for (int i = 0; i < n; i++) {
+	for (int i = 1; i < n; i++) {
 		VECTOR3 gp; OBJHANDLE hB = oapiGetGbodyByIndex(i);
 		oapiGetGlobalPos(hB, &gp);
-		double l = length(gp - Camera.pos);
-		if (l < closest) {
+		VECTOR3 dst = gp - Camera.pos;
+		double l = pow(oapiGetMass(hB), 0.33) / dotp(dst, dst);
+		if (l > closest) {
 			closest = l;
 			Camera.hNear = hB;
 		}	
 	}
 
-	if (Camera.hNear) {
+	// find the planet closest to the current camera position
+	closest = 0;
+	for (int i = 0; i < n; i++) {
+		VECTOR3 gp; OBJHANDLE hB = oapiGetGbodyByIndex(i);
+		oapiGetGlobalPos(hB, &gp);
+		VECTOR3 dst = gp - Camera.pos;
+		double l = oapiGetMass(hB) / dotp(dst, dst);
+		if (l > closest) {
+			closest = l;
+			Camera.hGravRef = hB;
+		}
+	}
+
+	/*if (Camera.hNear) {
 		// If the near body is not visible enough, switch to proxy.
 		double apr = oapiGetSize(Camera.hNear) / closest;
 		if (apr < 4e-3) Camera.hNear = Camera.hObj_proxy;
-	}
+	}*/
 
 	// find the visual
-	Camera.vProxy = (vPlanet *)GetVisObject(Camera.hObj_proxy);
-	if (oapiGetObjectType(Camera.hNear) == OBJTP_PLANET) {
+	if (oapiGetObjectType(Camera.hObj_proxy) == OBJTP_PLANET)
+		Camera.vProxy = (vPlanet*)GetVisObject(Camera.hObj_proxy);
+	else Camera.vProxy = nullptr;
+	
+	if (oapiGetObjectType(Camera.hNear) == OBJTP_PLANET)
 		Camera.vNear = (vPlanet*)GetVisObject(Camera.hNear);
-	}
-	else {
-		Camera.vNear = nullptr;
-	}
+	else Camera.vNear = nullptr;
 
+	Camera.vGravRef = GetVisObject(Camera.hGravRef);
+
+	
 	// Something is very wrong... abort...
-	if (Camera.hObj_proxy == NULL || Camera.vProxy == NULL || Camera.vNear == NULL) return;
+	if (Camera.hObj_proxy == NULL || Camera.hObj_proxy == NULL || Camera.hNear == NULL) return;
 
 	// Camera altitude over the proxy
 	VECTOR3 pos; MATRIX3 grot; double rad;
