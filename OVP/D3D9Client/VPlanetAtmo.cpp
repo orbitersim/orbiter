@@ -418,44 +418,58 @@ FVECTOR4 vPlanet::SunLightColor(VECTOR3 relpos, double rf)
 {
 	static const float lim = 0.0f;
 
+	OBJHANDLE hSun = oapiGetGbodyByIndex(0);
+	assert(hSun != hObj);
+
 	if (!active) {
 		Update(true);
 		UpdateScatter();
 	}
-	
+	FVECTOR3 cSun = 1.0f;
+
+	OBJHANDLE hParent = oapiGetGbodyParent(hObj);
+	if (oapiGetObjectType(hParent) == OBJTP_PLANET) {
+		cSun *= ::SunOcclusionByPlanet(hParent, relpos + gpos);
+	}
+
+	VECTOR3 sunp;
+	oapiGetGlobalPos(hSun, &sunp);
+
+	VECTOR3 crs = sunp - (relpos + gpos);	// 'relpos' relative to sun
+	double	sd = length(crs);				// 'relpos' sun distance
+	VECTOR3 ucs = crs / sd;					// unit sun direction
 	FVECTOR2 rm = 0.0f;
 	VECTOR3 up = unit(relpos);
-	double r = dot(up, relpos);
-	double ca = dot(up, SunDirection());
+	double r = dotp(up, relpos);			// length of 'relpos'
+	double ca = dotp(up, ucs);
 	double om = saturate(1.0 - ca * ca);
-	double qr = sqrt(om) * r;
+	double qr = sqrt(om) * r;				// distance of ray's closest approach to a planet
 	double ar = GetHorizonAlt() + size;
 
 	bool bAtm = HasAtmosphere() && (surfmgr2 != NULL);
-	
+
 	if (!bAtm) {
-		if (ca > lim) return FVECTOR4(1, 1, 1, 1); // Ray doesn't intersect planet
+		if (ca > lim) return FVECTOR4(cSun, 1); //'relpos' is on a sun lit side of the planet
 	}
 	else {
-		if (qr > ar) return FVECTOR4(1, 1, 1, 1); // Ray doesn't intersect atmosphere
-		if (r > ar && ca > lim) return FVECTOR4(1, 1, 1, 1); // Ray doesn't intersect atmosphere
+		if (qr > ar) return FVECTOR4(cSun, 1); // Ray doesn't intersect atmosphere
+		if (r > ar && ca > lim) return FVECTOR4(cSun, 1); // Ray doesn't intersect atmosphere
 	}
 
-	OBJHANDLE hSun = oapiGetObjectByIndex(0);
-	double sd = SunDistance();
 	double dp = r * r - size * size;
 	double hd = dp > 1e4 ? sqrt(dp) : 1000.0; // Distance to horizon
 	double sr = oapiGetSize(hSun) * abs(hd) / sd;
 	double svb = ca > lim ? 1.0 : ilerp(size - sr * 0.33, size + sr, qr); // How much of the sun's "disc" is shadowed by planet
 
-	if (!bAtm || !surfmgr2) return FVECTOR4(svb, svb, svb, svb);
+	if (!bAtm || !surfmgr2) return FVECTOR4(cSun*svb, svb);
 
 	if (svb < 1e-3) return FVECTOR4(0.0, 0.0, 0.0, svb); // Ray is obscured by planet
 	if (r > ar) rm = Gauss7(qr - size, 0.0f, cp.PlanetRad, cp.AtmoRad, cp.iH) * 2.0f; // Ray passes through atmosphere from space to space
 	else rm = Gauss7(r - size, -ca, cp.PlanetRad, cp.AtmoRad, cp.iH); // Sample point 'pos' lies with-in atmosphere
 
 	rm = rm * (cp.rmO * rf);
-	return FVECTOR4(exp(-(cp.RayWave * rm.x + cp.MieWave * rm.y)) * svb, svb);
+	cSun *= exp(-(cp.RayWave * rm.x + cp.MieWave * rm.y)) * svb;
+	return FVECTOR4(cSun, svb);
 }
 
 
@@ -474,6 +488,8 @@ FVECTOR4 vPlanet::AmbientApprox(FVECTOR3 vNrm, bool bR)
 //
 D3D9Sun vPlanet::GetObjectAtmoParams(VECTOR3 vRelPos)
 {
+	assert(string(name) != "Sun");
+
 	if (!active) {
 		Update(true);
 		UpdateScatter();
@@ -484,8 +500,18 @@ D3D9Sun vPlanet::GetObjectAtmoParams(VECTOR3 vRelPos)
 	op.Incatter = 0.0f;
 
 	double r = length(vRelPos);
-	float a = cp.AtmoAlt * 0.5f;
-	FVECTOR3 cSun = SunLightColor(vRelPos).rgb * cp.cSun;
+	float a = 0.0f;
+	if (HasAtmosphere()) a = cp.AtmoAlt * 0.5f;
+
+	FVECTOR3 cSun = 1.0f;
+
+	OBJHANDLE hParent = oapiGetGbodyParent(hObj);
+	if (oapiGetObjectType(hParent) == OBJTP_PLANET) {
+		cSun *= ::SunOcclusionByPlanet(hParent, vRelPos + gpos);
+	}
+
+	cSun *= SunLightColor(vRelPos).rgb * cp.cSun;
+
 	DWORD ambient = *(DWORD*)gc->GetConfigParam(CFGPRM_AMBIENTLEVEL);
 
 	if (((r - size) > a) || !HasAtmosphere() || !surfmgr2) // In space
@@ -599,6 +625,7 @@ void vPlanet::UpdateScatter()
 	VECTOR3 vTan = unit(crossp(vRot, vNrm));
 	VECTOR3 vBiT = unit(crossp(vTan, vNrm));
 
+	memset(&cp, 0, sizeof(cp));
 	memcpy(&cp.mVP, scn->GetProjectionViewMatrix(), sizeof(FMATRIX4));
 
 	cp.vPolarAxis = vRot;

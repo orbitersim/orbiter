@@ -252,7 +252,7 @@ bool vVessel::Update(bool bMainScene)
 	if (!active) return false;
 	vObject::Update(bMainScene);
 
-	if (fabs(oapiGetSimTime()-tCheckLight)>0.1 || oapiGetPause()) ModLighting();
+	if (fabs(oapiGetSimTime()-tCheckLight)>0.03 || oapiGetPause()) ModLighting();
 
 	bBSRecompute = true;
 	return true;
@@ -1468,12 +1468,24 @@ bool vVessel::ModLighting()
 	OBJHANDLE hP = vessel->GetSurfaceRef();
 	if (hP==NULL) {	LogErr("Vessel's surface reference is NULL"); return false;	}
 
-	vPlanet *vP = (vPlanet *)GetScene()->GetVisObject(hP);
-	if (vP) {
-		VECTOR3 rpos = gpos - vP->GlobalPos();
-		sunLight = vP->GetObjectAtmoParams(rpos);
-	}
+	vObject *vO = GetScene()->GetVisObject(hP);
 
+	if (vO) {
+		if (vO->Type() == OBJTP_PLANET) {
+			vPlanet* vP = (vPlanet*)vO;	
+			VECTOR3 rpos = gpos - vP->GlobalPos();
+			sunLight = vP->GetObjectAtmoParams(rpos);
+			return true;		
+		}
+	}
+	
+	DWORD ambient = *(DWORD*)gc->GetConfigParam(CFGPRM_AMBIENTLEVEL);
+	sunLight.Ambient = float(ambient) * 0.0039f;
+	sunLight.Transmission = 1.0f;
+	sunLight.Incatter = 0.0f;
+	sunLight.Color = 1.0f; // Config->GFXSunIntensity;
+	sunLight.Dir = FVECTOR3(-sundir);
+	
 	return true;
 }
 

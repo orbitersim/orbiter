@@ -36,6 +36,7 @@
 #include "VectorHelpers.h"
 #include "OapiExtension.h"
 #include "IProcess.h"
+#include <filesystem>
 
 using namespace oapi;
 
@@ -50,6 +51,7 @@ typedef std::map<std::string, vPlanet::_MicroCfg>::iterator MicroCfgsIterator;
 
 ImageProcessing* vPlanet::pIP;
 LPDIRECT3DDEVICE9 vPlanet::pDev;
+LPDIRECT3DTEXTURE9 vPlanet::ptEclipse;
 
 int vPlanet::Qc = 0;
 int vPlanet::Wc = 0;
@@ -341,6 +343,7 @@ void vPlanet::GlobalExit()
 	g_ShapesLoaded.clear();
 
 	SAFE_DELETE(pIP);
+	SAFE_RELEASE(ptEclipse);
 
 	for (int i=0;i<8;i++) SAFE_DELETE(pRender[i]);
 }
@@ -350,6 +353,8 @@ void vPlanet::GlobalExit()
 void vPlanet::GlobalInit(oapi::D3D9Client* gc)
 {
 	pDev = gc->GetDevice();
+
+	D3DXCreateTexture(pDev, 512, 1, 1, D3DUSAGE_DYNAMIC, D3DFMT_R32F, D3DPOOL_DEFAULT, &ptEclipse);
 	LoadMicroTextures(pDev);
 	GlobalInitAtmosphere(gc);
 }
@@ -505,6 +510,28 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene) :
 	ParseConfig(oapiGetObjectFileName(hObj));
 
 	UpdateScatter();
+
+	char msg[256]; char path[MAX_PATH];
+	// Check texture directory
+	GetClient()->PlanetTexturePath(GetName(), path);
+	auto x = filesystem::status(path);
+	bool bExists = filesystem::is_directory(x);
+
+	// Check *.tex file
+	string tf = string(GetName()) + ".tex";
+	GetClient()->PlanetTexturePath(tf.c_str(), path);
+	auto y = filesystem::status(path);
+	bExists |= filesystem::exists(y);
+	
+	if (!bExists) {
+		VESSEL* vss = oapiGetFocusInterface();
+		sprintf_s(msg, sizeof(msg), "[WARNING] Surface textures are missing for %s", GetName());
+		if (vss && (vss->GetGravityRef() == hObj)) {
+			oapiWriteLog(msg);
+			MessageBox(GetClient()->GetWindow(), msg, "Warning", MB_OK);
+		}
+		else oapiWriteLog(msg);
+	}
 }
 
 
@@ -901,6 +928,14 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 		}
 	}
 
+
+	FlowControlPS* fc = GetFlowControl();
+	FlowControlVS* fcv = GetFlowControlVS();
+
+	memset(fc, 0, sizeof(FlowControlPS));
+	memset(fcv, 0, sizeof(FlowControlVS));
+
+
 	pCurrentVisual = this;
 
 	if (renderpix) { // render as 2x2 pixel block
@@ -945,6 +980,8 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 		prm.FogColor	= D3DXCOLOR(0,0,0,0);
 		prm.TintColor	= D3DXCOLOR(0,0,0,0);
 		prm.SunDir		= _D3DXVECTOR3(SunDirection());
+
+		SetupEclipse();
 
 		if (ringmgr) {
 			ringmgr->Render(dev, mWorld, false);
@@ -1219,6 +1256,101 @@ void vPlanet::RenderBaseStructures (LPDIRECT3DDEVICE9 dev)
 		for (DWORD i = 0; i < nbase; i++) if (vbase[i]) vbase[i]->RenderStructures(dev);
 		for (DWORD i = 0; i < nbase; i++) if (vbase[i]) vbase[i]->RenderBeacons(dev);
 	}
+}
+
+// ==============================================================
+
+void vPlanet::SetupEclipse()
+{
+	if (scn->GetRenderPass() != RENDERPASS_MAINSCENE) {
+		Eclipse.bEnable = false;
+		return;
+	}
+
+	// Check Eclipse conditions -------------------------------------------
+	//
+	OBJHANDLE hPar = oapiGetGbodyParent(hObj);
+	OBJHANDLE hSun = oapiGetGbodyByIndex(0);
+	VECTOR3 refpoint = _V(0, 0, 0);
+	double sunsize = 0.0;
+	double plnsize = 0.0;
+	double apprad = 0.0;
+
+	vObject* vE = nullptr;
+
+	if (hPar != hSun) {
+		// Eclipse by Parent
+		vE = scn->GetVisObject(hPar);
+		if (IsCastingShadows(vE, this, &sunsize))
+		{
+			refpoint = vE->GlobalPos() - GlobalPos();
+			plnsize = vE->GetSize();
+		}
+	}
+	else {
+		// Eclipse by child
+		int i = 0;
+		while (true)
+		{
+			OBJHANDLE hC = oapiGetGbodyChild(hObj, i); i++;
+			if (!hC) break;
+			auto vO = scn->GetVisObject(hC);
+			double sz;
+			// Find biggest shadow caster
+			if (vO && IsCastingShadows(vO, this, &sz)) {
+				double pz = vO->GetSize() / Distance(vO, this);
+				if (pz > apprad) {
+					vE = vO;
+					apprad = pz;
+					sunsize = sz;
+					refpoint = vO->GlobalPos() - GlobalPos();
+					plnsize = vO->GetSize();
+				}
+			}
+		}
+	}
+
+	if (plnsize > 1.0 && ptEclipse && vE)
+	{
+		D3DLOCKED_RECT rect;
+		if (ptEclipse->LockRect(0, &rect, nullptr, D3DLOCK_DISCARD) == S_OK) {
+			for (int i = 0; i < 512; i++) {
+				float x = float(i) * float(plnsize + sunsize) / 512.0f;
+				float v = OcclusionFactor(x, float(sunsize), float(plnsize));
+				((float*)rect.pBits)[i] = saturate(v);
+			}
+			ptEclipse->UnlockRect(0);
+		}
+		else LogErr("Failed to Lock 'hEclipse'");
+
+		VECTOR3 toSun = SunDirection();
+		Eclipse.bEnable = true;
+		Eclipse.vPos = FVECTOR3(refpoint - toSun * dotp(refpoint, toSun)); // Flatten
+		Eclipse.fScale = float(1.0 / (plnsize + sunsize));
+
+		float s = sunsize / 1e6f;
+		float p = plnsize / 1e6f;
+
+		D3D9DebugLog("Eclipse of %s by %s Sun(%1.1fGm) %s(%1.1fGm)",
+			GetName(), vE->GetName(), s, vE->GetName(), p);
+	}
+	else {
+		Eclipse.bEnable = false;
+	}
+
+	
+}
+
+// ==============================================================
+
+void vPlanet::InitEclipse(ShaderClass* pShr)
+{
+	ShaderParams* sp = GetTerrainParams();
+	FlowControlPS* fc = GetFlowControl();
+	fc->bEclipse = Eclipse.bEnable;
+	sp->vEclipse = Eclipse.vPos;
+	sp->fEclipse = Eclipse.fScale;
+	pShr->SetTexture("tEclipse", ptEclipse, IPF_CLAMP | IPF_LINEAR, 0);
 }
 
 // ==============================================================

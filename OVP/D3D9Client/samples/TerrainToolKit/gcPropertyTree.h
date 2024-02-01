@@ -63,8 +63,8 @@ public:
 	void	SetValue(HPROP hEntry, int val);
 	void	SetValue(HPROP hEntry, DWORD val, bool bHex = false);
 	void	SetValue(HPROP hEntry, double val, int digits = 6, Format st = Format::NORMAL);
-	void	SetValue(HPROP hEntry, const string &val);
-	void	SetValue(HPROP hEntry, const char *lbl);
+	void	SetValue(HPROP hEntry, const string &val, DWORD clr = 0);
+	void	SetValue(HPROP hEntry, const char *lbl, DWORD clr = 0);
 
 	//		--------------------------------------------------------------------------
 
@@ -137,4 +137,5 @@ typedef struct gcProperty
 	gcPropertyTree::Style style;
 	WORD idc;
 	int oldx, oldy;
+	DWORD color;
 } gcProperty;

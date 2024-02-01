@@ -1420,4 +1420,60 @@ protected:
 
 }; // namespace oapi
 
+
+
+class RenderState
+{
+public:
+
+	RenderState(LPDIRECT3DDEVICE9 pD) : pDev(pD)
+	{
+		bkABE = bkZEN = bkZW = bkCULL = 0;
+		bkCW = bkSE = bkFM = bkSTE = bkATE = 0;
+		bkBO = bkSB = bkDB = 0;
+		bCaptured = false;
+	}
+
+	void Capture()
+	{
+		bCaptured = true;
+		HR(pDev->GetScissorRect(&bkSR));
+		HR(pDev->GetRenderState(D3DRS_ALPHABLENDENABLE, &bkABE));
+		HR(pDev->GetRenderState(D3DRS_ZENABLE, &bkZEN));
+		HR(pDev->GetRenderState(D3DRS_ZWRITEENABLE, &bkZW));
+		HR(pDev->GetRenderState(D3DRS_CULLMODE, &bkCULL));
+		HR(pDev->GetRenderState(D3DRS_COLORWRITEENABLE, &bkCW));
+		HR(pDev->GetRenderState(D3DRS_SCISSORTESTENABLE, &bkSE));
+		HR(pDev->GetRenderState(D3DRS_FILLMODE, &bkFM));
+		HR(pDev->GetRenderState(D3DRS_STENCILENABLE, &bkSTE));
+		HR(pDev->GetRenderState(D3DRS_ALPHATESTENABLE, &bkATE));
+		HR(pDev->GetRenderState(D3DRS_BLENDOP, &bkBO));
+		HR(pDev->GetRenderState(D3DRS_SRCBLEND, &bkSB));
+		HR(pDev->GetRenderState(D3DRS_DESTBLEND, &bkDB));
+	}
+
+	void Restore()
+	{
+		assert(bCaptured);
+		HR(pDev->SetScissorRect(&bkSR));
+		HR(pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, bkABE));
+		HR(pDev->SetRenderState(D3DRS_ZENABLE, bkZEN));
+		HR(pDev->SetRenderState(D3DRS_ZWRITEENABLE, bkZW));
+		HR(pDev->SetRenderState(D3DRS_CULLMODE, bkCULL));
+		HR(pDev->SetRenderState(D3DRS_COLORWRITEENABLE, bkCW));
+		HR(pDev->SetRenderState(D3DRS_SCISSORTESTENABLE, bkSE));
+		HR(pDev->SetRenderState(D3DRS_FILLMODE, bkFM));
+		HR(pDev->SetRenderState(D3DRS_STENCILENABLE, bkSTE));
+		HR(pDev->SetRenderState(D3DRS_ALPHATESTENABLE, bkATE));
+		HR(pDev->SetRenderState(D3DRS_BLENDOP, bkBO));
+		HR(pDev->SetRenderState(D3DRS_SRCBLEND, bkSB));
+		HR(pDev->SetRenderState(D3DRS_DESTBLEND, bkDB));
+	}
+
+	RECT bkSR = {};
+	DWORD bkABE, bkZEN, bkZW, bkCULL, bkCW, bkSE, bkFM, bkSTE, bkATE, bkBO, bkSB, bkDB;
+	LPDIRECT3DDEVICE9 pDev;
+	bool bCaptured;
+};
+
 #endif // !__D3D9CLIENT_H
