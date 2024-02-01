@@ -507,7 +507,9 @@ int gcPropertyTree::PaintSection(HDC _hDC, HPROP hPar, int ident, int wlbl, int 
 
 		if (!hp->hCtrl) {
 			wstring ws = converter.from_bytes(hp->val);
+			SetTextColor(hBM, hp->color);
 			TextOutW(hBM, wlbl + n, y + z, ws.c_str(), hp->val.size());
+			SetTextColor(hBM, 0);
 		}
 		else {
 
@@ -669,6 +671,7 @@ HPROP gcPropertyTree::AddEntry(const string &lbl, HPROP parent)
 	td->idc = 0;
 	td->oldx = 65536;
 	td->oldy = 65536;
+	td->color = 0;
 	if (parent) parent->bChildren = true;
 	Data.push_back(td);
 	return td;
@@ -797,17 +800,19 @@ void gcPropertyTree::SetValue(HPROP hEntry, double val, int digits, Format st)
 
 // ==================================================================================
 //
-void gcPropertyTree::SetValue(HPROP hEntry, const string &val)
+void gcPropertyTree::SetValue(HPROP hEntry, const string &val, DWORD clr)
 {
 	hEntry->val = val;
+	hEntry->color = clr;
 }
 
 
 // ==================================================================================
 //
-void  gcPropertyTree::SetValue(HPROP hEntry, const char *lbl)
+void  gcPropertyTree::SetValue(HPROP hEntry, const char *lbl, DWORD clr)
 {
 	hEntry->val = string(lbl);
+	hEntry->color = clr;
 }
 
 
