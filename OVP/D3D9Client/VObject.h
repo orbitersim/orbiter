@@ -172,6 +172,7 @@ public:
 	 */
 	inline const VECTOR3 &SunDirection() const { return sundir; }
 	inline const double SunDistance() const { return sundst; }
+	inline bool Is(const string x) const { return string(name) == x; }
 
 	/**
 	 * \brief Per-frame object parameter updates

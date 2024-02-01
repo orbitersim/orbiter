@@ -1160,6 +1160,9 @@ bool TileManager2Base::ShutDown()
 void TileManager2Base::GlobalExit ()
 {
 	DeleteObject(hFont); hFont = NULL;
+	SAFE_RELEASE(hOcean);
+	SAFE_RELEASE(hCloudMicro);
+	SAFE_RELEASE(hCloudMicroNorm);
 	delete loader;
 }
 

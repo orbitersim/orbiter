@@ -116,10 +116,8 @@ void CloudTile::Render()
 
 	// -------------------------------------------------------------------
 	// render surface mesh
-	if (cfg != PLT_GIANT) {
-		if (Config->CloudMicro)
-			pShader->SetPSConstants(pShader->Prm, sp, sizeof(ShaderParams));
-	}
+	
+	pShader->SetPSConstants(pShader->Prm, sp, sizeof(ShaderParams));
 	pShader->SetVSConstants(pShader->PrmVS, sp, sizeof(ShaderParams));
 
 	pShader->UpdateTextures();
@@ -173,8 +171,9 @@ void TileManager2<CloudTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlan
 	ElevMode = eElevMode::Spherical;
 	ElevModeLvl = 0;
 
-	FlowControlPS fc = { 0 };
-	fc.bBelowClouds = vp->CameraAltitude() < rprm.cloudalt;
+	ShaderParams* sp = vp->GetTerrainParams();
+	FlowControlPS* fc = vp->GetFlowControl();
+	fc->bBelowClouds = vp->CameraAltitude() < rprm.cloudalt;
 
 	int cfg = vp->GetShaderID();
 
@@ -184,9 +183,15 @@ void TileManager2<CloudTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlan
 	pShader->ClearTextures();
 	pShader->Setup(pPatchVertexDecl, false, 1);
 
+
+	// Check Eclipse conditions -------------------------------------------
+	//
+
+	vp->InitEclipse(pShader);
+
 	pShader->SetPSConstants("Const", vp->GetScatterConst(), sizeof(ConstParams));
 	pShader->SetVSConstants("Const", vp->GetScatterConst(), sizeof(ConstParams));
-	pShader->SetPSConstants("Flow", &fc, sizeof(FlowControlPS));
+	pShader->SetPSConstants("Flow", fc, sizeof(FlowControlPS));
 
 	if (cfg != PLT_GIANT)
 	{

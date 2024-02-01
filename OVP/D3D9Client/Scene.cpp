@@ -2090,11 +2090,11 @@ void Scene::RenderMainScene()
 		}
 	}
 
-	if (Camera.vNear) {
+	/*if (Camera.vNear) {
 		D3D9DebugLog("vNear = %s", Camera.vNear->GetName());
 		D3D9DebugLog("vProxy = %s", Camera.vProxy->GetName());
 		D3D9DebugLog("vGravRef = %s", Camera.vGravRef->GetName());
-	}
+	}*/
 
 	// -------------------------------------------------------------------------------------------------------
 	// Render HUD Overlay to backbuffer directly
@@ -2193,6 +2193,18 @@ void Scene::RenderMainScene()
 				pSketch->StretchRectNative(pLocalResults, NULL, ptr(_RECT(0, 0, viewW, 10)));
 				pSketch->SetBlendState(Sketchpad::BlendState::FILTER_LINEAR);
 				pSketch->EndDrawing();
+			}
+			break;
+		case 14:
+			if (Camera.vNear) {
+				auto ptE = Camera.vNear->GetEclipse();
+				if (ptE) {
+					pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
+					pSketch->SetBlendState(Sketchpad::BlendState::FILTER_POINT);
+					pSketch->StretchRectNative(ptE, NULL, ptr(_RECT(0, 0, viewW, 10)));
+					pSketch->SetBlendState(Sketchpad::BlendState::FILTER_LINEAR);
+					pSketch->EndDrawing();
+				}
 			}
 			break;
 		default:
@@ -3483,7 +3495,11 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 	oapiLocalToEqu(Camera.hObj_proxy, tmul(grot, Camera.pos - pos), &Camera.lng, &Camera.lat, &rad);
 
 	Camera.alt_proxy = dist(Camera.pos, pos) - oapiGetSize(Camera.hObj_proxy);
-	Camera.vProxy->GetElevation(Camera.lng, Camera.lat, &rad);
+
+	if (Camera.vProxy) {
+		if (Camera.vProxy->Type() == OBJTP_PLANET) Camera.vProxy->GetElevation(Camera.lng, Camera.lat, &rad);
+	}
+
 	Camera.elev = Camera.alt_proxy - rad;
 
 	// Camera altitude over the proxy
