@@ -1701,6 +1701,8 @@ void D3D9Mesh::ConfigureAtmo()
 	//LogSunLight(sunLight);
 	float x = 1.0f - saturate(max(sunLight.Color.r, sunLight.Color.b) * 2.0f);
 	FX->SetFloat(eNight, x);
+	if (DebugControls::IsActive() && DebugControls::debugFlags & DBG_FLAGS_NODYNSUN)
+		sunLight.Color = sunLight.Ambient = 0;
 	FX->SetValue(eSun, &sunLight, sizeof(D3D9Sun));
 }
 
@@ -1779,9 +1781,9 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, const ENVCAMREC* em, int iTech)
 		selmsh = *(DWORD*)gc->GetConfigParam(CFGPRM_GETSELECTEDMESH);
 		selgrp = *(DWORD*)gc->GetConfigParam(CFGPRM_GETSELECTEDGROUP);
 		displ  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDISPLAYMODE);
-		bActiveVisual = (pCurrentVisual==DebugControls::GetVisual());
+		bActiveVisual = (g_pCurrentVisual == DebugControls::GetVisual());
 		if (displ>0 && !bActiveVisual) return;
-		if ((displ==2 || displ==3) && uCurrentMesh!=selmsh) return;
+		if ((displ==2 || displ==3) && g_uCurrentMesh!=selmsh) return;
 	}
 
 	Scene *scn = gc->GetScene();
@@ -1985,12 +1987,12 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, const ENVCAMREC* em, int iTech)
 				FX->SetVector(eColor, ptr(D3DXVECTOR4(0, 0, 0, 0)));
 
 				if (flags&DBG_FLAGS_HLMESH) {
-					if (uCurrentMesh==selmsh) {
+					if (g_uCurrentMesh==selmsh) {
 						FX->SetVector(eColor, ptr(D3DXVECTOR4(0.0f, 0.0f, 0.5f, 0.5f)));
 					}
 				}
-				if (flags&DBG_FLAGS_HLGROUP) {
-					if (g==selgrp && uCurrentMesh==selmsh) {
+				if (flags&DBG_FLAGS_HLGROUP) {				
+					if (g == selgrp && g_uCurrentMesh == selmsh) {
 						FX->SetVector(eColor, ptr(D3DXVECTOR4(0.0f, 0.5f, 0.0f, 0.5f)));
 					}
 				}
@@ -2197,7 +2199,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, const ENVCAMREC* em, int iTech)
 		//
 		if (DebugControls::IsActive()) {
 
-			if ((bActiveVisual) && (g == selgrp) && (uCurrentMesh == selmsh)) {
+			if ((bActiveVisual) && (g == selgrp) && (g_uCurrentMesh == selmsh)) {
 
 				bool bAdd = (Grp[g].UsrFlag & 0x08) != 0;
 				bool bNoS = (Grp[g].UsrFlag & 0x01) != 0;
@@ -2207,7 +2209,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, const ENVCAMREC* em, int iTech)
 				static const char *RGH[2] = { "Disabled", "Enabled" };
 				static const char *Shaders[7] = { "PBR", "PBR-ADV", "FAST", "XR2", "METALNESS", "BAKED_VC", "???"};
 
-				DebugControls::Append("MeshIdx = %d, GrpIdx = %d\n", uCurrentMesh, g);
+				DebugControls::Append("MeshIdx = %d, GrpIdx = %d\n", g_uCurrentMesh, g);
 				DebugControls::Append("MtrlIdx = %d, TexIdx = %d\n", Grp[g].MtrlIdx, Grp[g].TexIdx);
 				DebugControls::Append("FaceCnt = %d, VtxCnt = %d\n", Grp[g].nFace, Grp[g].nVert);
 
@@ -2561,9 +2563,9 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 		selmsh = *(DWORD*)gc->GetConfigParam(CFGPRM_GETSELECTEDMESH);
 		selgrp = *(DWORD*)gc->GetConfigParam(CFGPRM_GETSELECTEDGROUP);
 		displ = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDISPLAYMODE);
-		bActiveVisual = (pCurrentVisual == DebugControls::GetVisual());
+		bActiveVisual = (g_pCurrentVisual == DebugControls::GetVisual());
 		if (displ>0 && !bActiveVisual) return;
-		if ((displ == 2 || displ == 3) && uCurrentMesh != selmsh) return;
+		if ((displ == 2 || displ == 3) && g_uCurrentMesh != selmsh) return;
 	}
 
 	Scene *scn = gc->GetScene();
@@ -2709,12 +2711,12 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 				FX->SetVector(eColor, ptr(D3DXVECTOR4(0, 0, 0, 0)));
 
 				if (flags&DBG_FLAGS_HLMESH) {
-					if (uCurrentMesh == selmsh) {
+					if (g_uCurrentMesh == selmsh) {
 						FX->SetVector(eColor, ptr(D3DXVECTOR4(0.0f, 0.0f, 0.5f, 0.5f)));
 					}
 				}
 				if (flags&DBG_FLAGS_HLGROUP) {
-					if (g == selgrp && uCurrentMesh == selmsh) {
+					if (g == selgrp && g_uCurrentMesh == selmsh) {
 						FX->SetVector(eColor, ptr(D3DXVECTOR4(0.0f, 0.5f, 0.0f, 0.5f)));
 					}
 				}
@@ -3296,10 +3298,10 @@ void D3D9Mesh::RenderBoundingBox(const LPD3DXMATRIX pW)
 	DWORD flags  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 	DWORD selmsh = *(DWORD*)gc->GetConfigParam(CFGPRM_GETSELECTEDMESH);
 	DWORD selgrp = *(DWORD*)gc->GetConfigParam(CFGPRM_GETSELECTEDGROUP);
-	bool  bSel   =  (uCurrentMesh==selmsh);
+	bool  bSel   =  (g_uCurrentMesh==selmsh);
 
 
-	if (flags&(DBG_FLAGS_SELVISONLY|DBG_FLAGS_SELMSHONLY|DBG_FLAGS_SELGRPONLY) && DebugControls::GetVisual()!=pCurrentVisual) return;
+	if (flags&(DBG_FLAGS_SELVISONLY|DBG_FLAGS_SELMSHONLY|DBG_FLAGS_SELGRPONLY) && DebugControls::GetVisual()!=g_pCurrentVisual) return;
 	if (flags&DBG_FLAGS_SELMSHONLY && !bSel) return;
 	if (flags&DBG_FLAGS_SELGRPONLY && !bSel) return;
 

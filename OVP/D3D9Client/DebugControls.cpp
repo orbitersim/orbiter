@@ -493,6 +493,7 @@ void UpdateFlags()
 	SETFLAG(debugFlags, DBG_FLAGS_PICKCURRENT,  (SendDlgItemMessageA(hDlg, IDC_DBG_PICKCURRENT, BM_GETCHECK, 0, 0) == BST_CHECKED));
 	SETFLAG(debugFlags, DBG_FLAGS_NOSUNAMB,		(SendDlgItemMessageA(hDlg, IDC_DBG_NOSUNAMB, BM_GETCHECK, 0, 0) == BST_CHECKED));
 	SETFLAG(debugFlags, DBG_FLAGS_NOPLNAMB,		(SendDlgItemMessageA(hDlg, IDC_DBG_NOPLNAMB, BM_GETCHECK, 0, 0) == BST_CHECKED));
+	SETFLAG(debugFlags, DBG_FLAGS_NODYNSUN,		(SendDlgItemMessageA(hDlg, IDC_DBG_NODYNSUN, BM_GETCHECK, 0, 0) == BST_CHECKED));
 
 	Config->EnableLimiter = (int)((debugFlags&DBG_FLAGS_FPSLIM)>0);
 }
@@ -2367,6 +2368,7 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			case IDC_DBG_PICKCURRENT:
 			case IDC_DBG_NOSUNAMB:
 			case IDC_DBG_NOPLNAMB:
+			case IDC_DBG_NODYNSUN:
 				UpdateFlags();
 				break;
 

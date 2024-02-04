@@ -62,8 +62,8 @@ class FileParser;
 class OapiExtension;
 class D3D9Pad;
 
-extern DWORD			uCurrentMesh;
-extern class vObject *	pCurrentVisual;
+extern DWORD g_uCurrentMesh;
+extern class vObject* g_pCurrentVisual;
 
 typedef char * LPCHAR;
 typedef void * CAMERAHANDLE;

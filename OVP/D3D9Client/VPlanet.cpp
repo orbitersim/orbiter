@@ -936,7 +936,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 	memset(fcv, 0, sizeof(FlowControlVS));
 
 
-	pCurrentVisual = this;
+	g_pCurrentVisual = this;
 
 	if (renderpix) { // render as 2x2 pixel block
 		RenderDot (dev);

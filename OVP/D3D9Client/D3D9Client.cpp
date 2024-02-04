@@ -79,8 +79,8 @@ unordered_map<string, SURFHANDLE> ClonedTextures;
 unordered_map<MESHHANDLE, class SketchMesh*> MeshMap;
 unordered_map<std::string, LPDIRECT3DTEXTURE9> MicroTextures;
 
-DWORD uCurrentMesh = 0;
-vObject *pCurrentVisual = 0;
+DWORD g_uCurrentMesh = 0;
+vObject *g_pCurrentVisual = nullptr;
 _D3D9Stats D3D9Stats;
 
 #ifdef _NVAPI_H
@@ -1693,8 +1693,6 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 	static bool bTrackMouse = false;
 	static short xpos=0, ypos=0;
 
-	D3D9Pick pick;
-
 	if (hRenderWnd!=hWnd && uMsg!= WM_NCDESTROY) {
 		LogErr("Invalid Window !! RenderWndProc() called after calling clbkDestroyRenderWindow() uMsg=0x%X", uMsg);
 		return 0;
@@ -1756,7 +1754,7 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 					if (DebugControls::debugFlags & DBG_FLAGS_DUALSIDED) prp.bDualSided = true;
 				}
 
-				pick = GetScene()->PickScene(xpos, ypos, &prp);
+				D3D9Pick pick = GetScene()->PickScene(xpos, ypos, &prp);
 
 				if (bPckVsl) {
 					gcCore::PickData out;
@@ -1768,48 +1766,49 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 					out.dist = pick.dist;
 					MakeGenericProcCall(GENERICPROC_PICK_VESSEL, sizeof(gcCore::PickData), &out);
 				}
-			}
 
-			PickTerrain(uMsg, xpos, ypos);
 
-			// No Debug Controls
-			if (bShift && bCtrl && !DebugControls::IsActive() && !oapiCameraInternal()) {
-
-				if (!pick.pMesh) break;
-
-				OBJHANDLE hObj = pick.vObj->Object();
-				if (oapiGetObjectType(hObj) == OBJTP_VESSEL) {
-					oapiSetFocusObject(hObj);
-				}
-
-				break;
-			}
-
-			// With Debug Controls
-			if (DebugControls::IsActive()) {
-
-				DWORD flags = *(DWORD*)GetConfigParam(CFGPRM_GETDEBUGFLAGS);
-
-				if (flags&DBG_FLAGS_PICK) {
+				// No Debug Controls
+				if (bShift && bCtrl && !DebugControls::IsActive() && !oapiCameraInternal()) {
 
 					if (!pick.pMesh) break;
 
-					if (bShift && bCtrl) {
-						OBJHANDLE hObj = pick.vObj->Object();
-						if (oapiGetObjectType(hObj)==OBJTP_VESSEL) {
-							oapiSetFocusObject(hObj);
-							break;
-						}
+					OBJHANDLE hObj = pick.vObj->Object();
+					if (oapiGetObjectType(hObj) == OBJTP_VESSEL) {
+						oapiSetFocusObject(hObj);
 					}
-					else if (pick.group>=0) {
-						DebugControls::SetVisual(pick.vObj);
-						DebugControls::SelectMesh(pick.pMesh);
-						DebugControls::SelectGroup(pick.group);
-						DebugControls::SetGroupHighlight(true);
-						DebugControls::SetPickPos(pick.pos);
+
+					break;
+				}
+
+				// With Debug Controls
+				if (DebugControls::IsActive()) {
+
+					DWORD flags = *(DWORD*)GetConfigParam(CFGPRM_GETDEBUGFLAGS);
+
+					if (flags & DBG_FLAGS_PICK) {
+
+						if (!pick.pMesh) break;
+
+						if (bShift && bCtrl) {
+							OBJHANDLE hObj = pick.vObj->Object();
+							if (oapiGetObjectType(hObj) == OBJTP_VESSEL) {
+								oapiSetFocusObject(hObj);
+								break;
+							}
+						}
+						else if (pick.group >= 0) {
+							DebugControls::SetVisual(pick.vObj);
+							DebugControls::SelectMesh(pick.pMesh);
+							DebugControls::SelectGroup(pick.group);
+							DebugControls::SetGroupHighlight(true);
+							DebugControls::SetPickPos(pick.pos);
+						}
 					}
 				}
 			}
+
+			PickTerrain(uMsg, xpos, ypos);
 
 			break;
 		}

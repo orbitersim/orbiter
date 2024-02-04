@@ -758,7 +758,6 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev)
 {
 	_TRACE;
 	if (!active) return false;
-	pCurrentVisual = this; // Set current visual for mesh debugger
 	UpdateBoundingBox();
 	bool bRet = Render(dev, false, nullptr);
 	if (oapiCameraInternal()==false) RenderReentry(dev);
@@ -775,6 +774,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass, const SHADOWMAP *
 
 	UINT i, mfd;
 
+	g_pCurrentVisual = this; // Set current visual for mesh debugger
 	DWORD flags = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 	DWORD displ = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDISPLAYMODE);
 
@@ -849,7 +849,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass, const SHADOWMAP *
 
 		if (!meshlist[i].mesh) continue;
 
-		uCurrentMesh = i; // Used for debugging
+		g_uCurrentMesh = i; // Used for debugging
 
 		// check if mesh should be rendered in this pass
 		WORD vismode = meshlist[i].vismode;
