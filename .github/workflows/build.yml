@@ -21,8 +21,9 @@ jobs:
       fail-fast: false
       matrix:
         architecture: [x64, x86]
+        os: [windows-2019, windows-2022]
       
-    runs-on: windows-2019
+    runs-on: ${{ matrix.os }}
 
     steps:
     - name: Checkout
@@ -44,14 +45,14 @@ jobs:
         mkdir out\install
     
     - name: Cache irrKlang package
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ${{ github.workspace }}/Extern/irrKlang/${{ matrix.architecture }}
         key: irrKlang-${{ matrix.architecture }}
         
     - name: Cache DirectX SDK
       id:   cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: "${{ github.workspace }}\\DXSDK"
         key:  dxsdk_jun10
@@ -96,6 +97,7 @@ jobs:
       run: git diff -U0 --ignore-cr-at-eol --ignore-space-at-eol --no-index exports.2016.txt out/install/Orbiter/exports.txt
 
     - name: Upload exports
+      if: ${{ matrix.os == 'windows-2019' }}
       uses: actions/upload-artifact@v4
       with:
         name: exports-${{ matrix.architecture }}
@@ -109,7 +111,7 @@ jobs:
       run: '7z a "${{ github.workspace }}/out/Orbiter.zip" .'
 
     - name: Upload Build Artifact
-      if: ${{ github.ref == 'refs/heads/main' }}
+      if: ${{ github.ref == 'refs/heads/main' && matrix.os == 'windows-2019' }}
       uses: actions/upload-artifact@v4
       with:
         name: Orbiter-${{ matrix.architecture }}

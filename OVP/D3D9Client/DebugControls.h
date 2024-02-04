@@ -74,7 +74,7 @@ class vObject;
 enum class DbgDisplay {
 	None, Mirror, Blur1, Blur2, Blur3, Blur4,
 	smSS, smVC, smEX, Irradiance, GlowMask,
-	ScreenDepth, Normals, LightVisbil, BakedLightMap
+	ScreenDepth, Normals, LightVisbil, BakedLightMap, Eclipse
 };
 
 // ==============================================================

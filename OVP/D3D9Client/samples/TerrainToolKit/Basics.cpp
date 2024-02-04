@@ -365,20 +365,20 @@ void ToolKit::AutoSelectCorners()
 void ToolKit::UpdateTileInfo(int flags, QTree* pF, gcCore::PickGround* pP)
 {
 	if (!pP) return;
-	char name[64]; strcpy_s(name, 64, "No Data Available");
+	char name[64];
 
+	DWORD color = 0;
 	pProp->SetValue(hCLng, pP->lng, 4, gcPropertyTree::LONGITUDE);
 	pProp->SetValue(hCLat, pP->lat, 4, gcPropertyTree::LATITUDE);
 	pProp->SetValue(hCEle, pP->elev, 1);
+
 	if (pF) {
-		if (pF->HasOwnTex(flags))
-		{
-			if (flags & gcTileFlags::TEXTURE) sprintf_s(name, 63, "Surf/%d/%d/%d.dds", pF->level + 4, pF->ilat, pF->ilng);
-			if (flags & gcTileFlags::MASK) sprintf_s(name, 63, "Mask/%d/%d/%d.dds", pF->level + 4, pF->ilat, pF->ilng);
-			if (flags & gcTileFlags::ELEVATION) sprintf_s(name, 63, "Elev/%d/%d/%d.dds", pF->level + 4, pF->ilat, pF->ilng);
-		}
+		if (flags & gcTileFlags::TEXTURE) sprintf_s(name, 63, "Surf/%d/%d/%d.dds", pF->level + 4, pF->ilat, pF->ilng);
+		if (flags & gcTileFlags::MASK) sprintf_s(name, 63, "Mask/%d/%d/%d.dds", pF->level + 4, pF->ilat, pF->ilng);
+		if (flags & gcTileFlags::ELEVATION) sprintf_s(name, 63, "Elev/%d/%d/%d.dds", pF->level + 4, pF->ilat, pF->ilng);
+		if (!pF->HasOwnTex(flags)) color = 0x000000FF;
 	}
-	pProp->SetValue(hCFil, string(name));
+	pProp->SetValue(hCFil, string(name), color);
 	pProp->Update();
 }
 

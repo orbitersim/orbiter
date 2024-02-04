@@ -169,6 +169,10 @@ public:
 
 		OBJHANDLE	hNear;		// closest celestial body
 		vPlanet *	vNear;		// closest celestial body (visual)
+
+		OBJHANDLE	hGravRef;	// closest celestial body
+		vObject*	vGravRef;	// closest celestial body (visual)
+
 		double		alt_near;
 		double		lng, lat, elev;
 	};

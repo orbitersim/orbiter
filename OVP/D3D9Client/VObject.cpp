@@ -157,7 +157,7 @@ bool vObject::Update(bool bMainScene)
 
 	assert(bMainScene==true);
 
-	VECTOR3 tpos;
+	VECTOR3 tpos, cgpo;
 	OBJHANDLE hTgt = oapiCameraTarget();
 
 	if (hObj) {
@@ -172,8 +172,9 @@ bool vObject::Update(bool bMainScene)
 
 	oapiGetGlobalPos(hTgt, &tpos);
 
+	cgpo   = scn->GetCameraGPos();
 	axis   = mul(grot, _V(0, 1, 0));
-	cpos   = gpos - scn->GetCameraGPos();
+	cpos   = gpos - cgpo;
 	cdist  = length(cpos);
 
 	// Create double precision world matrix
@@ -194,8 +195,11 @@ bool vObject::Update(bool bMainScene)
 
 	ctgtdst = length(tpos - gpos);
 	sundst = length(sundir - gpos);
-	sundir = unit(sundir - gpos);
 	sunapprad = oapiGetSize(hSun) / sundst;
+
+	if (hSun != hObj) sundir = unit(sundir - gpos);
+	else			  sundir = unit(sundir - cgpo);
+
 	CheckResolution();
 
 

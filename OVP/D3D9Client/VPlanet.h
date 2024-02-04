@@ -89,6 +89,8 @@ struct ShaderParams
 	float4   vMicroOff;			// Micro texture offset-scale
 	float4   vOverlayOff;       // Overlay texture offset-scale
 	float4   vOverlayCtrl[4];
+	float3	 vEclipse;			// Eclipse caster position (geocentric)
+	float	 fEclipse;			// Eclipse data addressing scale factor. (to access tExlipse)
 	float	 fAlpha;
 	float	 fBeta;
 	float	 fTgtScale;
@@ -108,6 +110,7 @@ struct FlowControlPS
 	BOOL bRipples;				// Water riples texture is peovided
 	BOOL bMicroTex;				// Micro textures exists and enabled
 	BOOL bPlanetShadow;			// Use spherical approximation for shadow
+	BOOL bEclipse;				// Eclipse is occuring
 };
 
 struct FlowControlVS
@@ -298,6 +301,9 @@ public:
 	FVECTOR3		LightFX(FVECTOR3 x);
 	float			SunOcclusionByPlanet();
 	bool			SphericalShadow();
+	void			SetupEclipse();
+	void			InitEclipse(ShaderClass* pShader);
+	LPDIRECT3DTEXTURE9 GetEclipse() { return ptEclipse; }
 
 	// v2 Labels interface ----------------------------------------------------
 	void            ActivateLabels(bool activate);
@@ -338,6 +344,12 @@ public:
 		float		DistScale;
 	} prm;
 
+	struct _eclipse {
+		FVECTOR3 vPos;
+		float fScale;
+		bool  bEnable;	
+	} Eclipse;
+
 	list<sOverlay *> overlays;
 
 	// Access functions
@@ -370,6 +382,7 @@ private:
 	static ImageProcessing* pIP;
 	static PlanetShader* pRender[8];
 	static LPDIRECT3DDEVICE9 pDev;
+	static LPDIRECT3DTEXTURE9 ptEclipse;
 	static int Qc, Wc, Nc;
 
 	float dist_scale;         // planet rescaling factor

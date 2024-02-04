@@ -2119,6 +2119,11 @@ void Scene::clbkRenderMainScene()
 		}
 	}
 
+	/*if (Camera.vNear) {
+		D3D9DebugLog("vNear = %s", Camera.vNear->GetName());
+		D3D9DebugLog("vProxy = %s", Camera.vProxy->GetName());
+		D3D9DebugLog("vGravRef = %s", Camera.vGravRef->GetName());
+	}*/
 
 	// -------------------------------------------------------------------------------------------------------
 	// Render HUD Overlay to backbuffer directly
@@ -2268,6 +2273,19 @@ void Scene::clbkRenderMainScene()
 			}
 			break;
 		}
+		
+		case DbgDisplay::Eclipse:
+			if (Camera.vNear) {
+				auto ptE = Camera.vNear->GetEclipse();
+				if (ptE) {
+					pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
+					pSketch->SetBlendState(Sketchpad::BlendState::FILTER_POINT);
+					pSketch->StretchRectNative(ptE, NULL, ptr(_RECT(0, 0, viewW, 10)));
+					pSketch->SetBlendState(Sketchpad::BlendState::FILTER_LINEAR);
+					pSketch->EndDrawing();
+				}
+			}
+			break;
 		default:
 			break;
 		}
@@ -3917,32 +3935,56 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 	// find a logical reference body
 	Camera.hObj_proxy = oapiCameraProxyGbody();
 	Camera.hNear = NULL;
+	Camera.hGravRef = NULL;
+	Camera.vGravRef = NULL;
 
 	// find the planet closest to the current camera position
-	double closest = 1e32;
+	double closest = 0;
 	int n = oapiGetGbodyCount();
-	for (int i = 0; i < n; i++) {
+	for (int i = 1; i < n; i++) {
 		VECTOR3 gp; OBJHANDLE hB = oapiGetGbodyByIndex(i);
 		oapiGetGlobalPos(hB, &gp);
-		double l = length(gp - Camera.pos);
-		if (l < closest) {
+		VECTOR3 dst = gp - Camera.pos;
+		double l = pow(oapiGetMass(hB), 0.33) / dotp(dst, dst);
+		if (l > closest) {
 			closest = l;
 			Camera.hNear = hB;
 		}	
 	}
 
-	if (Camera.hNear) {
+	// find the planet closest to the current camera position
+	closest = 0;
+	for (int i = 0; i < n; i++) {
+		VECTOR3 gp; OBJHANDLE hB = oapiGetGbodyByIndex(i);
+		oapiGetGlobalPos(hB, &gp);
+		VECTOR3 dst = gp - Camera.pos;
+		double l = oapiGetMass(hB) / dotp(dst, dst);
+		if (l > closest) {
+			closest = l;
+			Camera.hGravRef = hB;
+		}	
+	}
+
+	/*if (Camera.hNear) {
 		// If the near body is not visible enough, switch to proxy.
 		double apr = oapiGetSize(Camera.hNear) / closest;
 		if (apr < 4e-3) Camera.hNear = Camera.hObj_proxy;
-	}
+	}*/
 
 	// find the visual
+	if (oapiGetObjectType(Camera.hObj_proxy) == OBJTP_PLANET)
 	Camera.vProxy = (vPlanet *)GetVisObject(Camera.hObj_proxy);
+	else Camera.vProxy = nullptr;
+	
+	if (oapiGetObjectType(Camera.hNear) == OBJTP_PLANET)
 	Camera.vNear = (vPlanet *)GetVisObject(Camera.hNear);
+	else Camera.vNear = nullptr;
+
+	Camera.vGravRef = GetVisObject(Camera.hGravRef);
+
 
 	// Something is very wrong... abort...
-	if (Camera.hObj_proxy == NULL || Camera.vProxy == NULL || Camera.vNear == NULL) return;
+	if (Camera.hObj_proxy == NULL || Camera.hObj_proxy == NULL || Camera.hNear == NULL) return;
 
 	// Camera altitude over the proxy
 	VECTOR3 pos; MATRIX3 grot; double rad;
@@ -3952,7 +3994,11 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 	oapiLocalToEqu(Camera.hObj_proxy, tmul(grot, Camera.pos - pos), &Camera.lng, &Camera.lat, &rad);
 
 	Camera.alt_proxy = dist(Camera.pos, pos) - oapiGetSize(Camera.hObj_proxy);
-	Camera.vProxy->GetElevation(Camera.lng, Camera.lat, &rad);
+
+	if (Camera.vProxy) {
+		if (Camera.vProxy->Type() == OBJTP_PLANET) Camera.vProxy->GetElevation(Camera.lng, Camera.lat, &rad);
+	}
+
 	Camera.elev = Camera.alt_proxy - rad;
 
 	// Camera altitude over the proxy
@@ -4126,7 +4172,8 @@ void Scene::RenderGlares()
 			// Render Sun glare
 			VECTOR3 gsun; oapiGetGlobalPos(oapiGetObjectByIndex(0), &gsun);
 			double sdst = length(gsun - Camera.pos);
-			VECTOR3 pos = (gsun - Camera.pos) * 10e4 / sdst;
+			VECTOR3 usun = (gsun - Camera.pos) / sdst;
+			VECTOR3 pos = usun * 10e4;
 
 			if (WorldToScreenSpace2(pos, &pt))
 			{

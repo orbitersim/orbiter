@@ -1086,16 +1086,14 @@ void SurfTile::Render ()
 	pShader->SetVSConstants(pShader->PrmVS, sp, sizeof(ShaderParams));
 	pShader->SetPSConstants(pShader->Prm, sp, sizeof(ShaderParams));
 
-	if (cfg != PLT_GIANT)
-	{
-		pShader->SetVSConstants(pShader->FlowVS, fcv, sizeof(FlowControlVS));
-		pShader->SetPSConstants(pShader->Flow, fc, sizeof(FlowControlPS));
 
-		if (fc->bLocals)
-		{
-			pShader->SetPSConstants(pShader->Lights, &Locals, sizeof(Locals));
-			pShader->SetPSConstants(pShader->Spotlight, Spots, sizeof(Spots));
-		}
+	pShader->SetVSConstants(pShader->FlowVS, fcv, sizeof(FlowControlVS));
+	pShader->SetPSConstants(pShader->Flow, fc, sizeof(FlowControlPS));
+
+	if (fc->bLocals && (cfg != PLT_GIANT))
+	{
+		pShader->SetPSConstants(pShader->Lights, &Locals, sizeof(Locals));
+		pShader->SetPSConstants(pShader->Spotlight, Spots, sizeof(Spots));
 	}
 
 	pShader->UpdateTextures();
@@ -1398,8 +1396,6 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 	FlowControlVS* fcv = vp->GetFlowControlVS();
 	ConstParams* cp = vp->GetScatterConst();
 
-	memset(fc, 0, sizeof(FlowControlPS));
-	memset(fcv, 0, sizeof(FlowControlVS));
 
 	pShader->SetVSConstants("Const", cp, sizeof(ConstParams));
 	pShader->SetPSConstants("Const", cp, sizeof(ConstParams));
@@ -1448,6 +1444,8 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 		fc->bRipples = true;
 		pShader->SetTexture("tOcean", hOcean, IPF_WRAP | IPF_ANISOTROPIC, 4);
 	}
+
+	vp->InitEclipse(pShader);
 
 	if (Config->NoPlanetAA) pShader->GetDevice()->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, 0);
 

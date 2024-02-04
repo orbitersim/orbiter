@@ -82,6 +82,7 @@ struct FlowControlPS
 	BOOL bRipples;				// Water riples texture is peovided
 	BOOL bMicroTex;				// Micro textures exists and enabled
 	BOOL bPlanetShadow;			// Use spherical approximation for shadow
+	BOOL bEclipse;				// Eclipse is occuring
 };
 
 struct FlowControlVS
@@ -102,6 +103,8 @@ struct PerObjectParams
 	float4   vMicroOff;			// Micro texture offset-scale
 	float4   vOverlayOff;       // Overlay texture offset-scale
 	float4   vOverlayCtrl[4];
+	float3	 vEclipse;			// Eclipse caster position (geocentric)
+	float	 fEclipse;
 	float	 fAlpha;
 	float	 fBeta;
 	float	 fTgtScale;
@@ -130,6 +133,7 @@ sampler	tShadowMap;
 sampler	tOverlay;
 sampler	tMskOverlay;
 sampler	tElvOverlay;
+sampler	tEclipse;
 
 
 
@@ -219,6 +223,21 @@ void LocalLights(
 }
 
 
+// Render Eclipse ------------------------------------------------------------
+//
+float GetEclipse(float3 vVrt)
+{
+	if (Flow.bEclipse)
+	{
+		float3 b = vVrt - Const.toSun * dot(vVrt, Const.toSun); // Flatten
+		float  x = length(Prm.vEclipse - b) * Prm.fEclipse;
+		return tex1D(tEclipse, saturate(x)).r;
+	}
+	return 1.0;
+}
+	
+
+
 // ============================================================================
 // Render SkyDome and Horizon
 // ============================================================================
@@ -267,10 +286,10 @@ float4 HorizonRingPS(HazeVS frg) : COLOR
 {
 	float3 uDir = normalize(frg.posW);
 	float3 uOrt = normalize(uDir - Const.toCam * dot(uDir, Const.toCam));
-
+	float3 vVrt = Const.CamPos + frg.posW;
 	float d = dot(uDir, frg.posW);
 	float x = dot(uOrt, Const.SunAz) * 0.5 + 0.5;
-	float r = length(Const.CamPos + frg.posW);
+	float r = length(vVrt);
 	float q = (r - Const.PlanetRad) / Const.AtmoAlt;
 
 	float2 uv = float2(x, q > 0 ? sqrt(q) : 0);
@@ -281,6 +300,8 @@ float4 HorizonRingPS(HazeVS frg) : COLOR
 	float ph = dot(uDir, Const.toSun);
 
 	float3 color = HDR(cRay.rgb * RayPhase(ph) + cMie * MiePhase(ph));
+
+	color *= GetEclipse(vVrt);
 
 	return float4(color, cRay.a);
 }
@@ -538,6 +559,10 @@ float4 TerrainPS(TileVS frg) : COLOR
 #endif
 
 
+	// Render Eclipse ------------------------------------------------------------
+	//
+	float fECL = GetEclipse(vVrt);
+
 	float3 cDiffLocal = 0;
 
 #if defined(_LOCALLIGHTS)
@@ -568,6 +593,7 @@ float4 TerrainPS(TileVS frg) : COLOR
 #endif
 
 	fLvl *= fSHD;	// Apply planet shadow
+	fLvl *= fECL;	// Apply eclipse
 
 	float3 color = cTex.rgb * LightFX(max(fLvl, 0) * fShadow + cDiffLocal);
 	return float4(pow(saturate(color * Const.TrExpo), Const.TrGamma), 1.0f);		// Gamma corrention
@@ -658,6 +684,8 @@ float4 TerrainPS(TileVS frg) : COLOR
 	// Add Haze and night lights
 	cTex.rgb *= sct.atn.rgb;
 	cTex.rgb += (sct.ray.rgb * RayPhase(-fDRS) + sct.mie.rgb * MiePhase(-fDRS)) * fOrbShd * (1.0f + fNoise);
+
+	cTex.rgb *= fECL;	// Apply eclipse
 	cTex.rgb += cNgt2;
 
 	return float4(HDR(cTex.rgb), 1.0f);
@@ -718,6 +746,7 @@ float4 CloudPS(CldVS frg) : COLOR
 	}
 
 	float3 vPlN = normalize(vPxl);					// Mean Normal at pixel's locatin
+	float3 vVrt = Const.CamPos + frg.posW.xyz;	// Geo-centric pixel position
 	float3 nrm = vPlN;
 
 	float dRS = dot(vRay, Const.toSun);
@@ -791,6 +820,9 @@ float4 CloudPS(CldVS frg) : COLOR
 	cTex.a = saturate(lerp(g, h, f) * f);
 #endif
 
+	// Render Eclipse ------------------------------------------------------------
+	//
+	float fECL = GetEclipse(vVrt);
 
 	if (Flow.bBelowClouds)
 	{
@@ -813,6 +845,7 @@ float4 CloudPS(CldVS frg) : COLOR
 		cTex.rgb *= cSun;
 		cTex.rgb *= sct.atn.rgb;
 		cTex.rgb += sct.ray.rgb * 2.0f;
+		cTex.rgb *= fECL;
 
 		return float4(HDR(cTex.rgb), saturate(cTex.a));
 	}
@@ -832,6 +865,7 @@ float4 CloudPS(CldVS frg) : COLOR
 		cTex.rgb *= cSun;
 		cTex.rgb *= sct.atn.rgb;
 		cTex.rgb += sct.ray.rgb;
+		cTex.rgb *= fECL;
 
 		return float4(sqr(HDR(cTex.rgb * 4.0f)), cTex.a * cAmb.a * cAmb.a);
 	}	
@@ -879,8 +913,13 @@ float4 GiantPS(TileVS frg) : COLOR
 	float3 vRay = normalize(frg.camW.xyz);		// Unit viewing ray
 	float3 vVrt = Const.CamPos - frg.camW.xyz;	// Geo-centric pixel position
 	float3 vPlN = normalize(vVrt);				// Planet mean normal
-	float fDPS = dot(vPlN, Const.toSun);
+	float  fDPS = dot(vPlN, Const.toSun);
 	float3 cSun = saturate((fDPS + 0.1) * 5.0);
+
+
+	// Render Eclipse ------------------------------------------------------------
+	//
+	cSun *= GetEclipse(vVrt);
 
 	// Terrain with gamma correction and attennuation
 	cTex.rgb = pow(saturate(cTex.rgb), Const.TrGamma) * Const.TrExpo;
@@ -900,12 +939,18 @@ float4 GiantCloudPS(CldVS frg) : COLOR
 	float4 cTex = tex2D(tDiff, frg.texUV.xy);
 	float3 vPlN = normalize(frg.nrmW);
 	float3 vRay = normalize(frg.posW);
+	float3 vVrt = Const.CamPos + frg.posW.xyz;	// Geo-centric pixel position
 	float  fDPS = dot(vPlN, Const.toSun);    // Planet mean normal sun angle
 
 	float3 cSun = saturate((fDPS + 0.1) * 5.0);
 
+	// Render Eclipse ------------------------------------------------------------
+	//
+	float fECL = GetEclipse(vVrt);
+
 	cTex.rgb *= LightFX(cSun + float3(1.0, 1.0, 1.0) * Const.Ambient);
 	cTex.rgb = pow(saturate(cTex.rgb), Const.TrGamma) * Const.TrExpo;
+	cTex.rgb *= fECL;
 
 	return float4(HDR(cTex.rgb), saturate(cTex.a));
 }

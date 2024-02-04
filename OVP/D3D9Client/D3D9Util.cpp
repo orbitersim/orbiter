@@ -49,6 +49,120 @@ WORD crc16(const char *data, int length)
 	return WORD(crc & 0xFFFF);	
 }
 
+// ===========================================================================================
+// Sun occlusion by planet hObj for a given global position gpos
+//
+float SunOcclusionByPlanet(OBJHANDLE hObj, VECTOR3 gpos)
+{
+	VECTOR3 gsun, gpln;
+	OBJHANDLE hSun = oapiGetObjectByIndex(0);
+	
+	oapiGetGlobalPos(hSun, &gsun);
+	oapiGetGlobalPos(hObj, &gpln);
+
+	VECTOR3 rpos = gpln - gpos;
+	VECTOR3 spos = gsun - gpos;	
+	double	sd = length(spos);				
+	double  sz = oapiGetSize(hObj);
+	VECTOR3 usd = spos / sd;					
+	VECTOR3 up = unit(rpos);
+	double r  = length(rpos);
+	double ca = -dot(up, usd);
+	double qr = sqrt(saturate(1.0 - ca * ca)) * r;
+	double dp = r * r - sz * sz;
+	double hd = dp > 1e4 ? sqrt(dp) : 1000.0; // Distance to horizon
+	double sr = oapiGetSize(hSun) * abs(hd) / sd;
+	// How much of the sun's "disc" is shadowed by planet (APPROXIMATION)
+	double svb = ca > 0.0 ? 1.0 : ilerp(sz - sr * 0.33, sz + sr, qr); 
+	return svb;
+}
+
+// Check if object 'body' is casting shadows on 'ref' ---------------------
+//
+bool IsCastingShadows(vObject* body, vObject* ref, double* sunsize_out)
+{
+	double sz = oapiGetSize(oapiGetGbodyByIndex(0));
+	VECTOR3 bc = body->GlobalPos() - ref->GlobalPos();
+	double x = dot(bc, ref->SunDirection());			// Distance to projection plane
+	double s = abs(x) * sz / ref->SunDistance();		// Size of the sun at projection plane
+	double refrad = body->GetSize() + ref->GetSize() + s;
+	if (sunsize_out) *sunsize_out = s;
+
+	if (x < 0) return false; // 'body' is behind 'ref'
+	if (sqrt(dotp(bc, bc) - x * x) < refrad) return true;
+	return false;
+}
+
+
+double Distance(vObject* a, vObject* b)
+{
+	return length(a->GlobalPos() - b->GlobalPos());
+}
+
+
+float OcclusionFactor(float x, float sunrad, float plnrad)
+{
+	bool bReverse = sunrad > plnrad;
+	return OcclusionFactor(x, sunrad, plnrad, bReverse);
+}
+
+
+// =================================================================================================================================
+// Occlusion area of two circles, 1.0f = zero occlusion, 0.0f = full occlusion of smaller circle by bigger one  
+// if bReverse then occlusion of bigger by smaller one
+//
+float OcclusionFactor(float x, float r1, float r2, bool bReverse)
+{
+	if (x > (r1 + r2)) return 1.0f;
+
+	float rmax = std::max(r1, r2);
+	float rmin = std::min(r1, r2);
+
+	float a2 = rmin * rmin;
+	float b2 = rmax * rmax;
+
+	if (x < (rmax - rmin)) {
+		if (bReverse) return 1.0f - a2 / b2;
+		return 0.0f;
+	}
+
+	bool bInv = x < sqrt(b2 - a2);
+
+	float s = (r1 + r2 + x) * 0.5f;
+	float A = sqrt(s * (s - r1) * (s - r2) * (s - x)); //Heron's area formula
+	float h = 2.0f * A / x;
+
+	/*float x2 = x * x;
+	float bx = b2 - x2;
+	float d = -(a2 * a2) + 2.0f * a2 * (b2 + x2) - bx * bx;
+	if (d < 0.0f) d = 0.0f;
+	float h = sqrt(d) / (2.0*x);
+	*/
+
+	float s1 = asin(saturate(h / rmin)); // Sector 1
+	float s2 = asin(saturate(h / rmax)); // Sector 2
+
+	if (bInv) s1 = float(PI) - s1;
+
+	s1 *= a2;
+	s2 *= b2;
+
+	float h2 = h * h;
+	float t1 = h * sqrt(std::max(0.0f, a2 - h2)); // Triangle 1
+	float t2 = h * sqrt(std::max(0.0f, b2 - h2)); // Triangle 2
+
+	if (bInv) t1 = -t1;
+
+	float area = (s1 - t1) + (s2 - t2);
+
+
+	//LogAlw("x=%f, area=%f, h=%f, s1=%f, t1=%f, s2=%f, t2=%f", x, area, h, s1, t1, s2, t2);
+	
+
+	return 1.0f - area / (float(PI) * (bReverse ? b2 : a2));
+}
+
+
 #if _WIN64
 #define PTR_FMT_STRING "0x%llX"
 #else // 32 bit
