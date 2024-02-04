@@ -53,6 +53,7 @@ MeshBuffer::MeshBuffer(DWORD _nVtx, DWORD _nFace, const class D3D9Mesh *_pRoot)
 {
 	nVtx = _nVtx;
 	nIdx = _nFace * 3;
+	nRef = 1;
 
 	pVB = NULL;
 	pIB = NULL;
@@ -74,6 +75,7 @@ MeshBuffer::MeshBuffer(MeshBuffer *pSrc, const class D3D9Mesh *_pRoot)
 {
 	nVtx = pSrc->nVtx;
 	nIdx = pSrc->nIdx;
+	nRef = 1;
 
 	pVB = NULL;
 	pIB = NULL;
@@ -106,6 +108,19 @@ MeshBuffer::~MeshBuffer()
 	SAFE_RELEASE(pVB);
 	SAFE_RELEASE(pGB);
 	SAFE_RELEASE(pSB);
+	oapiWriteLog("MeshBuffer::Destruct");
+}
+
+bool MeshBuffer::Release()
+{
+	nRef--;
+	return nRef <= 0;
+}
+
+MeshBuffer* MeshBuffer::Reference()
+{
+	nRef++;
+	return this;
 }
 
 void MeshBuffer::MustRemap(DWORD mode)
@@ -342,7 +357,7 @@ D3D9Mesh::D3D9Mesh(MESHHANDLE hMesh, const D3D9Mesh &hTemp)
 	strcpy_s(name, ARRAYSIZE(name), hTemp.name);
 
 	// Use Template's Vertex Data directly, no need for a local copy unless locally modified. 
-	pBuf = hTemp.pBuf;
+	pBuf = hTemp.pBuf->Reference();
 
 	BBox = hTemp.BBox;
 	MaxVert = hTemp.MaxVert;
@@ -406,7 +421,8 @@ void D3D9Mesh::Release()
 	SAFE_DELETEA(Mtrl);
 	SAFE_DELETEA(pGrpTF);
 
-	if (pBuf) if (pBuf->IsLocalTo(this)) delete pBuf;
+	if (pBuf) if (pBuf->Release()) delete pBuf;
+	pBuf = nullptr;
 
 	for (auto x : BakedLights) {
 		for (auto y : x.second.pMap) SAFE_RELEASE(y);
@@ -447,7 +463,7 @@ void D3D9Mesh::ReLoadMeshFromHandle(MESHHANDLE hMesh)
 
 	if (MaxVert == 0 || MaxFace == 0) {
 		if (pBuf) if (pBuf->IsLocalTo(this)) {
-			delete pBuf; pBuf = NULL;
+			if (pBuf->Release()) SAFE_DELETE(pBuf);
 		}
 		return;
 	}
@@ -1711,11 +1727,11 @@ void D3D9Mesh::ConfigureShadows()
 
 // ===========================================================================================
 // static:
-void D3D9Mesh::SetShadows(const SHADOWMAPPARAM *sprm)
+void D3D9Mesh::SetShadows(const SHADOWMAP *sprm)
 {
 	if (sprm) {
 		for (int i = 0; i < SHM_CASCADE_COUNT; i++) {
-			pShadowMap[i] = sprm->pShadowMap[i];
+			pShadowMap[i] = sprm->Map(i);
 			ShdSubRect[i] = sprm->SubrectTF[i];
 		}
 	}
@@ -1731,7 +1747,7 @@ void D3D9Mesh::SetShadows(const SHADOWMAPPARAM *sprm)
 // ================================================================================================
 // This is a rendering routine for a Exterior Mesh, non-spherical moons/asteroids
 //
-void D3D9Mesh::Render(const LPD3DXMATRIX pW, const ENVMAPS* em, int iTech)
+void D3D9Mesh::Render(const LPD3DXMATRIX pW, const ENVCAMREC* em, int iTech)
 {
 	_TRACE;
 	
@@ -1901,9 +1917,9 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, const ENVMAPS* em, int iTech)
 
 	// Setup Env Maps -------------------------------------------
 	//	
-	if (em && em->pEnv && em->pIrrad) {
+	if (em && em->pCube && em->pIrrad) {
 		FX->SetBool(eEnvMapEnable, true);
-		FX->SetTexture(eEnvMapA, em->pEnv);
+		FX->SetTexture(eEnvMapA, em->pCube);
 		FX->SetTexture(eIrradMap, em->pIrrad);
 	}
 	else {
@@ -3038,7 +3054,7 @@ void D3D9Mesh::RenderShadowMap(const LPD3DXMATRIX pW, const LPD3DXMATRIX pVP, in
 
 	MeshShader* pShader = nullptr;
 	
-	MeshShader::vs_const.mVP = *pVP;
+	MeshShader::vs_const.mVP = pVP ? *pVP : FMATRIX4::Identity();
 
 	D3DXMatrixIdentity(MeshShader::vs_const.mW);
 	

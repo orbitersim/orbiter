@@ -81,14 +81,6 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	ecDefExt.flags = ENVCAM_OMIT_ATTC;
 	ecDefExt.type = EnvCamType::Exterior;
 
-	ecDefVC.flags = 0;
-	ecDefVC.type = EnvCamType::VC;
-
-	D3DXVECTOR3 pos;
-	if (GetVCPos(nullptr, &pos, nullptr)) {
-		ecDefVC.lPos = pos;
-	}
-	
 	/*
 	oapiWriteLogV("%s", vessel->GetClassNameA());
 	oapiWriteLogV("nanim = %u", na);
@@ -114,10 +106,7 @@ vVessel::~vVessel ()
 	DisposeAnimations();
 	DisposeMeshes();
 
-	SAFE_RELEASE(ecDefVC.tex.pEnv);
-	SAFE_RELEASE(ecDefVC.tex.pIrrad);
-	SAFE_RELEASE(ecDefExt.tex.pEnv);
-	SAFE_RELEASE(ecDefExt.tex.pIrrad);
+	for (auto& x: InteriorCams) SAFE_DELETE(x);
 	
 	LogAlw("Vessel visual deleted succesfully");
 }
@@ -602,59 +591,64 @@ void vVessel::UpdateAnimations (int mshidx)
 	}
 }
 
+// ============================================================================================
+//
+SMapInput vVessel::GetSMapRenderData()
+{
+	SMapInput sm = {
+		GetBoundingSpherePosDX(),
+		FVECTOR3(-sundir),
+		GetBoundingSphereRadius()
+	};
+	return sm;
+}
 
 // ============================================================================================
 //
-bool vVessel::IsInsideShadows()
+bool vVessel::IsInsideShadows(const SMapInput* shd)
 {
 	D3DXVECTOR3 bc;
-	const SHADOWMAPPARAM *shd = scn->GetSMapData();
 	D3DXVec3TransformCoord(&bc, ptr(D3DXVECTOR3f4(BBox.bs)), &mWorld);
-	bc = bc - shd->pos;
-	float x = D3DXVec3Dot(&bc, &(shd->ld));
-
-	if (sqrt(D3DXVec3Dot(&bc, &bc) - x*x) < (shd->rad - BBox.bs.w)) return true;
-
+	FVECTOR3 fbc = FVECTOR3(bc) - shd->pos;
+	float x = dot(fbc, shd->ld);
+	if (sqrt(dot(fbc, fbc) - x*x) < ((shd->rad * 1.01f) - BBox.bs.w)) return true;
 	return false;
 }
 
 
 // ============================================================================================
 //
-bool vVessel::IntersectShadowVolume()
+bool vVessel::IntersectShadowVolume(const SMapInput* shd)
 {
 	D3DXVECTOR3 bc;
-	const SHADOWMAPPARAM *shd = scn->GetSMapData();
 	D3DXVec3TransformCoord(&bc, ptr(D3DXVECTOR3f4(BBox.bs)), &mWorld);
-	bc = bc - shd->pos;
-	float x = D3DXVec3Dot(&bc, &(shd->ld));
-	if (sqrt(D3DXVec3Dot(&bc, &bc) - x*x) > (shd->rad + BBox.bs.w)) return false;
+	FVECTOR3 fbc = FVECTOR3(bc) - shd->pos;
+	float x = dot(fbc, shd->ld);
+	if (sqrt(dot(fbc, fbc) - x*x) > (shd->rad + BBox.bs.w)) return false;
 	return true;
 }
 
 
 // ============================================================================================
 //
-bool vVessel::IntersectShadowTarget()
+bool vVessel::IntersectShadowTarget(const SMapInput* shd)
 {
 	D3DXVECTOR3 bc;
-	const SHADOWMAPPARAM *shd = scn->GetSMapData();
 	D3DXVec3TransformCoord(&bc, ptr(D3DXVECTOR3f4(BBox.bs)), &mWorld);
-	bc = bc - shd->pos;
-	if (D3DXVec3Length(&bc) < (shd->rad + BBox.bs.w)) return true;
+	FVECTOR3 fbc = FVECTOR3(bc) - shd->pos;
+	if (length(fbc) < (shd->rad + BBox.bs.w)) return true;
 	return false;
 }
 
 
 // ============================================================================================
 //
-void vVessel::GetMinMaxLightDist(float *mind, float *maxd)
+void vVessel::GetMinMaxLightDist(const SMapInput* shd, float *mind, float *maxd)
 {
 	D3DXVECTOR3 bc;
-	const SHADOWMAPPARAM *shd = scn->GetSMapData();
 	D3DXVec3TransformCoord(&bc, ptr(D3DXVECTOR3f4(BBox.bs)), &mWorld);
-	bc -= shd->pos;
-	float x = D3DXVec3Dot(&bc, &(shd->ld));
+	FVECTOR3 fbc = FVECTOR3(bc) - shd->pos;
+	float x = dot(fbc, shd->ld);
 	*mind = min(*mind, x - BBox.bs.w);
 	*maxd = max(*maxd, x + BBox.bs.w);
 }
@@ -719,16 +713,18 @@ void vVessel::BakeLights(ImageProcessing *pBaker)
 	lvlh.East = tmul(FVECTOR4(lvlh.East, 0), mW).xyz;
 	lvlh.North = tmul(FVECTOR4(lvlh.North, 0), mW).xyz;
 
-	auto maps = GetEnvMap();
+	auto maps = GetExteriorEnvMap();
 
-	for (int i = 0; i < nmesh; i++)
-	{
-		if (!meshlist[i].mesh) continue;
-		if (meshlist[i].vismode & MESHVIS_VC) // TODO:  Should check Shader type
+	if (maps) {
+		for (int i = 0; i < nmesh; i++)
 		{
-			auto vSun = tmul(FVECTOR4(sundir, 0), mW);
-			if (bMustRebake) meshlist[i].mesh->BakeLights(pBaker, BakedLightsControl);
-			meshlist[i].mesh->BakeAO(pBaker, vSun.xyz, lvlh, maps->pIrrad);
+			if (!meshlist[i].mesh) continue;
+			if (meshlist[i].vismode & MESHVIS_VC) // TODO:  Should check Shader type
+			{
+				auto vSun = tmul(FVECTOR4(sundir, 0), mW);
+				if (bMustRebake) meshlist[i].mesh->BakeLights(pBaker, BakedLightsControl);
+				meshlist[i].mesh->BakeAO(pBaker, vSun.xyz, lvlh, maps->pIrrad);
+			}
 		}
 	}
 
@@ -738,12 +734,21 @@ void vVessel::BakeLights(ImageProcessing *pBaker)
 
 // ============================================================================================
 //
-void vVessel::NoVC()
+void vVessel::ErrorOnce(Errors e)
 {
-	static bool bDisp = true;
-	if (bDisp) {
-		bDisp = false;
-		oapiWriteLogV("ERROR:D3D9: Cannot identify Virtual Cockpit mesh [%s]", vessel->GetClassNameA());
+	static bool bDisp[Errors::ITEMS] = { true };
+	static DWORD dwDisp[Errors::ITEMS] = { 0 };
+
+	if (bDisp[e]) {
+		switch (e) {
+		case Errors::NoVC:
+			oapiWriteLogV("[ERROR:D3D9] Cannot identify Virtual Cockpit mesh [%s]", vessel->GetClassNameA());
+			break;
+		default:
+			oapiWriteLogV("[ERROR:D3D9] Unknows error code [%s]", vessel->GetName());
+		}
+		dwDisp[e]++; // Count the errors;
+		bDisp[e] = false; // Disable error from printing again
 	}
 }
 
@@ -755,7 +760,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev)
 	if (!active) return false;
 	pCurrentVisual = this; // Set current visual for mesh debugger
 	UpdateBoundingBox();
-	bool bRet = Render(dev, false);
+	bool bRet = Render(dev, false, nullptr);
 	if (oapiCameraInternal()==false) RenderReentry(dev);
 	return bRet;
 }
@@ -763,7 +768,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev)
 
 // ============================================================================================
 //
-bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
+bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass, const SHADOWMAP *shd)
 {
 	_TRACE;
 	if (!active) return false;
@@ -793,28 +798,29 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 
 
 	static VCHUDSPEC hudspec_;
-	const VCHUDSPEC *hudspec = &hudspec_;
+	const VCHUDSPEC* hudspec = &hudspec_;
 	static bool gotHUDSpec(false);
-	const VCMFDSPEC *mfdspec[MAXMFD] = { NULL };
+	const VCMFDSPEC* mfdspec[MAXMFD] = { NULL };
+	float s = 0.0f, sr = 0.0f;
 
-	const SHADOWMAPPARAM *shd = scn->GetSMapData();
+	if (shd)
+	{
+		s = float(shd->size);
+		sr = 2.0f * shd->rad / s;
+		HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, false));
+		HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, shd->mLVP.toCDX())); // Cascade 0 for all
+		if (scn->GetRenderPass() == RENDERPASS_MAINSCENE)
+			D3D9DebugLog("[%s] IsValid(%d), Map=0x%X", GetName(), int(shd->IsValid()), shd->Map(0));
+	}
 
-	float s = float(shd->size);
-	float sr = 2.0f * shd->rad / s;
-	
-	HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, false));
-	HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, shd->mLVP.toCDX())); // Cascade 0 for all
-
-	if (shd->pShadowMap && (scn->GetRenderPass() == RENDERPASS_MAINSCENE)) {
+	if (shd && shd->IsValid() && (scn->GetRenderPass() == RENDERPASS_MAINSCENE))
+	{
 		D3DXVECTOR4 sh = D3DXVECTOR4(sr, 1.0f / s, float(oapiRand()), 1.0f / shd->depth);
 		D3DXVECTOR4 px = D3DXVECTOR4(shd->SubPx[0], shd->SubPx[1], shd->SubPx[2], 0.0f);
 		HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, &sh));
 		HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHDPx, &px));
 		HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, true));
 		D3D9Mesh::SetShadows(shd);
-
-		if (bVC) {
-		}
 	}
 	else {
 		D3D9Mesh::SetShadows(NULL);
@@ -893,7 +899,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 		}
 
 		const LPD3DXMATRIX pVP = scn->GetProjectionViewMatrix();
-		const LPD3DXMATRIX pLVP = (const LPD3DXMATRIX)&shd->mLVP;
+		const LPD3DXMATRIX pLVP = shd ? (const LPD3DXMATRIX)&shd->mLVP : nullptr;
 
 		// Render vessel meshes --------------------------------------------------------------------------
 		//
@@ -911,8 +917,11 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 			meshlist[i].mesh->RenderShadowMap(pWT, pVP, 1);
 		}
 		else {
-			if (internalpass) meshlist[i].mesh->Render(pWT, &(scn->emVC), RENDER_VC);
-			else meshlist[i].mesh->Render(pWT, GetEnvMap(), RENDER_VESSEL);
+			if (internalpass) {
+				auto ec = GetEnvCam(EnvCamType::Interior, 0);
+				meshlist[i].mesh->Render(pWT, ec, RENDER_VC);
+			}
+			else meshlist[i].mesh->Render(pWT, GetExteriorEnvMap(), RENDER_VESSEL);
 		}
 
 
@@ -1290,67 +1299,50 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, ENVCAMREC* ec, DWORD cnt, DWO
 
 	// Create a EnvMap if doesn't already exists --------------------------------------------------------------------
 	//
-	LPDIRECT3DCUBETEXTURE9 pCube = nullptr;
-	LPDIRECT3DTEXTURE9 pTex = nullptr;
-	LPDIRECT3DTEXTURE9 pIrrad = nullptr;
-
-	if (ec->tex.pEnv) // If the maps exists check the type and assign
+	if (ec->flags & ENVCAM_PLANE)
 	{
-		if (ec->tex.pEnv->GetType() == D3DRTYPE_CUBETEXTURE) pCube = (LPDIRECT3DCUBETEXTURE9)ec->tex.pEnv;
-		if (ec->tex.pEnv->GetType() == D3DRTYPE_TEXTURE) pTex = (LPDIRECT3DTEXTURE9)ec->tex.pEnv;
-	}
-	else // Map doesn't exists, then create one
-	{
-		if (ec->flags & ENVCAM_PLANE)
+		if (!ec->pPlane)
 		{
 			D3DSURFACE_DESC desc;
 			pEnvDS->GetDesc(&desc);
-			if (D3DXCreateTexture(pDev, desc.Width, desc.Height, 5, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pTex) != S_OK) {
+			if (D3DXCreateTexture(pDev, desc.Width, desc.Height, 5, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &ec->pPlane) != S_OK) {
 				LogErr("Failed to create env-plane for visual %s", _PTR(this));
 				return true;
 			}
-			ec->tex.pEnv = pTex;
 		}
-		else
+	}
+	else {
+		if (!ec->pCube) // If the maps exists check the type and assign
 		{
 			D3DSURFACE_DESC desc;
 			pEnvDS->GetDesc(&desc);
-			if (D3DXCreateCubeTexture(pDev, desc.Width, 5, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pCube) != S_OK) {
+			if (D3DXCreateCubeTexture(pDev, desc.Width, 5, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &ec->pCube) != S_OK) {
 				LogErr("Failed to create env-cubemap for visual %s", _PTR(this));
 				return true;
 			}
-			ec->tex.pEnv = pCube;
 		}
 	}
 
 
 	// Create a Irradiance map if doesn't already exists --------------------------------------------------------------------
 	//
-	if (ec->tex.pIrrad)
-	{
-		pIrrad = ec->tex.pIrrad;
-	}
-	else
+	if (!ec->pIrrad)
 	{	
-		if (D3DXCreateTexture(pDev, 128, 64, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pIrrad) != S_OK) {
+		if (D3DXCreateTexture(pDev, 128, 64, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &ec->pIrrad) != S_OK) {
 			LogErr("Failed to create irradiance map for visual %s", _PTR(this));
 			return true;
 		}
-		ec->tex.pIrrad = pIrrad;
 	}
 
 
 	// Create blurred maps and irradiance ---------------------------------------------------------------------
 	//
 	if (ec->bRendered) {
-		if (pCube) {
-			scn->RenderBlurredMap(pDev, pCube);
-			scn->IntegrateIrradiance(this, pCube, pIrrad);
+		if (ec->pCube) {
+			scn->RenderBlurredMap(pDev, ec->pCube);
+			scn->IntegrateIrradiance(this, ec->pCube, ec->pIrrad);
 		}
-		if (pTex) {
-			scn->RenderBlurredMap(pDev, pTex);
-			SAFE_RELEASE(ec->tex.pIrrad);
-		}
+		// TODO: Blur 2D plane map
 		return true;
 	}
 
@@ -1398,7 +1390,7 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, ENVCAMREC* ec, DWORD cnt, DWO
 	VECTOR3 gpos;
 	vessel->Local2Global(_V(ec->lPos.x, ec->lPos.y, ec->lPos.z), gpos);
 
-	if (pCube)
+	if (ec->pCube)
 	{
 		// Prepare camera and scene for env map rendering
 		scn->PushCamera();
@@ -1412,7 +1404,7 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, ENVCAMREC* ec, DWORD cnt, DWO
 
 		for (DWORD i = 0; i < cnt; i++) {
 
-			HR(pCube->GetCubeMapSurface(D3DCUBEMAP_FACES(ec->iSide), 0, &pSrf));
+			HR(ec->pCube->GetCubeMapSurface(D3DCUBEMAP_FACES(ec->iSide), 0, &pSrf));
 
 			gc->AlterRenderTarget(pSrf, pEnvDS);
 
@@ -1446,8 +1438,7 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, ENVCAMREC* ec, DWORD cnt, DWO
 		return false;
 	}
 
-
-	if (pTex)
+	if (ec->pPlane)
 	{
 		// TODO:
 		return true;
@@ -1457,16 +1448,136 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, ENVCAMREC* ec, DWORD cnt, DWO
 }
 
 
+
 // ============================================================================================
-// Return env-map for debug purposes
-//
-ENVMAPS *vVessel::GetEnvMap()
+// Render interior Env Map, return 'true' if the map is completed
+// 
+bool vVessel::RenderInteriorENVMap(LPDIRECT3DDEVICE9 pDev, ENVCAMREC* ec, SHADOWMAP *sm)
 {
-	if (ecDefExt.tex.pEnv) {
-		if (ecDefExt.tex.pEnv->GetType() == D3DRTYPE_CUBETEXTURE) return &ecDefExt.tex;
+	if (!ec) return true;
+
+	LPDIRECT3DSURFACE9 pEnvDS = GetScene()->GetDepthStencil(256);
+
+	if (!pEnvDS) {
+		LogErr("RenderInteriorENVMap() DS doesn't exists");
+		return true;
 	}
-	else {
-		if (vRoot != this && vRoot) return vRoot->GetEnvMap();
+
+	D3DSURFACE_DESC desc;
+	pEnvDS->GetDesc(&desc);
+
+	// Create a EnvMap if doesn't already exists --------------------------------------------------------------------
+	//
+	if (!ec->pCube) {
+		LPDIRECT3DCUBETEXTURE9 pCube = nullptr;
+		if (D3DXCreateCubeTexture(pDev, desc.Width, 5, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &ec->pCube) != S_OK) {
+			LogErr("Failed to create env-cubemap for visual %s", _PTR(this));
+			return true;
+		}
+	}
+
+
+	// Create a Irradiance map if doesn't already exists --------------------------------------------------------------------
+	//
+	if (!ec->pIrrad) {
+		LPDIRECT3DTEXTURE9 pIrrad = nullptr;
+		if (D3DXCreateTexture(pDev, 128, 64, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pIrrad) != S_OK) {
+			LogErr("Failed to create irradiance map for visual %s", _PTR(this));
+			return true;
+		}
+		ec->pIrrad = pIrrad;
+	}
+
+	// Render EnvMaps ---------------------------------------------------------------------------------------
+	//
+	std::set<vVessel*> RndList;
+	std::set<vVessel*> AddLightSrc; // empty
+
+	RndList.insert(this);
+	
+	// -----------------------------------------------------------------------------------------------
+	//
+	VECTOR3 gpos;
+	vessel->Local2Global(ec->lPos._V(), gpos);
+
+	if (ec->pCube)
+	{
+		// Prepare camera and scene for env map rendering
+		scn->PushCamera();
+		scn->SetupInternalCamera(NULL, &gpos, 0.7853981634, 1.0);
+		scn->BeginPass(RENDERPASS_ENVCAM);
+		gc->PushRenderTarget(NULL, pEnvDS, RENDERPASS_ENVCAM);
+
+		D3DXMATRIX mEnv;
+		D3DXVECTOR3 dir, up;
+		LPDIRECT3DSURFACE9 pSrf = NULL;
+
+		for (DWORD i = 0; i < 6; i++)
+		{
+			HR(ec->pCube->GetCubeMapSurface(D3DCUBEMAP_FACES(ec->iSide), 0, &pSrf));
+			gc->AlterRenderTarget(pSrf, pEnvDS);
+			EnvMapDirection(ec->iSide, &dir, &up);
+			D3DXVECTOR3 cp;
+			D3DXVec3Cross(&cp, &up, &dir);
+			D3DXVec3Normalize(&cp, &cp);
+			D3DXMatrixIdentity(&mEnv);
+			D3DMAT_FromAxis(&mEnv, &cp, &up, &dir);
+
+			scn->SetCameraFrustumLimits(0.1, 1e4);
+			scn->SetupInternalCamera(&mEnv, NULL, 0.7853981634, 1.0);
+			scn->RenderSecondaryScene(RndList, AddLightSrc, SCN_STAGE | SCN_VC, ecDefExt.pCube, sm);
+
+			SAFE_RELEASE(pSrf);
+		}
+
+		gc->PopRenderTargets();
+		scn->PopPass();
+		scn->PopCamera();
+
+		if (ec->pCube) {
+			scn->RenderBlurredMap(pDev, ec->pCube);
+			scn->IntegrateIrradiance(this, ec->pCube, ec->pIrrad);
+		}
+	}
+
+	return true;
+}
+
+
+// ============================================================================================
+// Return exterior env-map for a vessel, seek from a root if doesn't exists.
+// Root must always have a map
+//
+ENVCAMREC*vVessel::GetExteriorEnvMap()
+{
+	if (ecDefExt.pCube) return &ecDefExt;
+	else if (vRoot != this && vRoot) return vRoot->GetExteriorEnvMap();
+
+	assert(Config->EnvMapMode != 0); // Should always return valid map if feature is enabled
+	return nullptr;
+}
+
+
+// ============================================================================================
+//
+ENVCAMREC* vVessel::CreateEnvCam(EnvCamType ec, int idx)
+{
+	if (ec == EnvCamType::Interior)
+	{
+		if (idx >= MAX_INTCAM) return nullptr;
+		auto x = new ENVCAMREC;
+		x->type = ec;
+
+		if (idx < 0) { 
+			for (auto& c : InteriorCams) if (!c) { c = x; return x;	} // Use empty slot
+			idx = 0; // No empty slot
+		}
+		SAFE_DELETE(InteriorCams[idx]);
+		InteriorCams[idx] = x;
+		return x;
+	}
+	if (ec == EnvCamType::Exterior) {
+		return &ecDefExt;
 	}
 	return nullptr;
 }
@@ -1474,21 +1585,13 @@ ENVMAPS *vVessel::GetEnvMap()
 
 // ============================================================================================
 //
-ENVCAMREC* vVessel::CreateEnvCam(EnvCamType ec)
-{
-	auto x = new ENVCAMREC;
-	x->type = ec;
-	mesh_cams.push_back(x);	
-	return x;
-}
-
-// ============================================================================================
-//
 bool vVessel::HasOwnEnvCam(EnvCamType ec)
 {
 	if (ec == EnvCamType::Exterior && (ecDefExt.flags & ENVCAM_USER)) return true;
-	if (ec == EnvCamType::VC && (ecDefVC.flags & ENVCAM_USER)) return true;
-	if (ec == EnvCamType::Mesh && mesh_cams.size() > 0) return true;
+	if (ec == EnvCamType::Interior) for (auto x : InteriorCams) if (x) return true;
+	if (ec == EnvCamType::Mesh) {
+		// TODO:
+	}
 	return false;
 }
 
@@ -1496,14 +1599,27 @@ bool vVessel::HasOwnEnvCam(EnvCamType ec)
 //
 ENVCAMREC* vVessel::GetEnvCam(EnvCamType ec, int idx)
 {
-	if (ec == EnvCamType::Mesh) {
-		if (idx >= mesh_cams.size()) return nullptr;
-		return mesh_cams[idx];
-	}
 	if (ec == EnvCamType::Exterior) return &ecDefExt;
-	if (ec == EnvCamType::VC) return &ecDefVC;
+	if (ec == EnvCamType::Interior) {
+		if (idx >= MAX_INTCAM) return nullptr;
+		if (idx < 0) for (auto c : InteriorCams) if (c) return c; // Get any cam
+		else return InteriorCams[idx];
+	}
+	if (ec == EnvCamType::Mesh) {
+		// TODO:
+	}
 	return nullptr;
 }
+
+// ============================================================================================
+//
+bool vVessel::GetInteriorCams(std::list<ENVCAMREC*>* pCams)
+{
+	pCams->clear();
+	for (auto x : InteriorCams) if (x) pCams->push_back(x);
+	return !pCams->empty();
+}
+
 
 // ============================================================================================
 //
@@ -1842,10 +1958,12 @@ void vVessel::SetVisualProperty(VisualProp prp, int idx, const type_info& t, con
 			ecDefExt.flags |= ENVCAM_USER;
 			return;
 		}
-
-		if (prp == VisualProp::VC_PROBE_POS) {
-			ecDefVC.lPos = *v;
-			ecDefVC.flags |= ENVCAM_USER;
+	
+		if (prp == VisualProp::CREATE_VC_PROBE) {
+			auto ec = GetEnvCam(EnvCamType::Interior, idx);
+			if (!ec) ec = CreateEnvCam(EnvCamType::Interior, idx);
+			ec->lPos = *v;
+			oapiWriteLogV("-- [ CREATE_VC_PROBE ] --");
 			return;
 		}
 	}

@@ -3244,3 +3244,43 @@ VisObject::VisObject(OBJHANDLE hObj) : hObj(hObj)
 VisObject::~VisObject ()
 {
 }
+
+// =======================================================================
+
+SHADOWMAP::SHADOWMAP(LPDIRECT3DDEVICE9 pDevice, sMapType t, DWORD sz) : SMapInput(), tp(t)
+{
+	if (Config->ShadowMapMode == 0) return;
+
+	// Single fixed size shadow map
+	if (tp == sMapType::SingleLod) {
+		HR(pDevice->CreateTexture(sz, sz, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &ptShmRT[0], NULL));
+		HR(ptShmRT[0]->GetSurfaceLevel(0, &psShmRT[0]));
+	}
+
+	// Exterior shadows
+	if (tp == sMapType::MultiLod) {
+		UINT size = Config->ShadowMapSize;
+		for (int i = 0; i < SHM_LOD_COUNT; i++) {
+			HR(pDevice->CreateTexture(size, size, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &ptShmRT[i], NULL));
+			HR(ptShmRT[i]->GetSurfaceLevel(0, &psShmRT[i]));
+			size >>= 1;
+		}
+	}
+	
+	// VC Shadows
+	if (tp == sMapType::Cascaded) {
+		UINT size = Config->ShadowMapSize;
+		for (int i = 0; i < SHM_CASCADE_COUNT; i++) {
+			HR(pDevice->CreateTexture(size, size, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &ptShmRT[i], NULL));
+			HR(ptShmRT[i]->GetSurfaceLevel(0, &psShmRT[i]));
+		}
+	}
+}
+
+// =======================================================================
+
+SHADOWMAP::~SHADOWMAP()
+{
+	for (auto& x : psShmRT) SAFE_RELEASE(x);
+	for (auto& x : ptShmRT) SAFE_RELEASE(x);
+}

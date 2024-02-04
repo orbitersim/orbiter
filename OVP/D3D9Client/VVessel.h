@@ -9,6 +9,8 @@
 #ifndef __VVESSEL_H
 #define __VVESSEL_H
 
+#define MAX_INTCAM 6
+
 #include "VObject.h"
 #include "Mesh.h"
 #include "gcCore.h"
@@ -44,7 +46,9 @@ typedef struct {
 class vVessel: public vObject {
 public:
 	friend class D3D9Client;
-	
+
+	enum Errors { NoVC, ITEMS }; // ITEMS must be last entry
+
 	vVessel* vRoot = nullptr;
 
 	/**
@@ -72,17 +76,21 @@ public:
 	D3D9Mesh* GetMesh (UINT idx);
 	DWORD GetMeshVisMode(UINT idx); 
 	bool GetMinMaxDistance(float *zmin, float *zmax, float *dmin);
-	void GetMinMaxLightDist(float *mind, float *maxd);
 	int	 GetMatrixTransform(gcCore::MatrixId matrix_id, DWORD mesh, DWORD group, FMATRIX4 *pMat);
 	int  SetMatrixTransform(gcCore::MatrixId matrix_id, DWORD mesh, DWORD group, const FMATRIX4 *pMat);
 	bool GetVCPos(D3DXVECTOR3* cpos, D3DXVECTOR3* lpos, float* rad);
 	bool GetMeshPosition(int idx, D3DXVECTOR3* cpos, D3DXVECTOR3* lpos, float* rad);
 	void BakeLights(ImageProcessing* pBaker);
-	void NoVC();
+	void ErrorOnce(Errors e);
 	void UpdateBoundingBox();
-	bool IsInsideShadows();
-	bool IntersectShadowVolume();
-	bool IntersectShadowTarget();
+
+	// Shadow Map Methods
+	bool IsInsideShadows(const SMapInput* shd);
+	bool IntersectShadowVolume(const SMapInput* shd);
+	bool IntersectShadowTarget(const SMapInput* shd);
+	void GetMinMaxLightDist(const SMapInput* shd, float* mind, float* maxd);
+	SMapInput GetSMapRenderData();
+
 	void ReloadTextures();
 	
 	inline DWORD GetMeshCount();
@@ -121,7 +129,7 @@ public:
 	 *   in cockpit camera mode.
 	 * \sa Render(LPDIRECT3DDEVICE9)
 	 */
-	bool Render (LPDIRECT3DDEVICE9 dev, bool bInternalPass);
+	bool Render (LPDIRECT3DDEVICE9 dev, bool bInternalPass, const SHADOWMAP *sm);
 
 	bool RenderExhaust();
 
@@ -136,13 +144,15 @@ public:
 	void RenderGroundShadow (LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float depth);
 	void RenderVectors (LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp);
 	bool RenderENVMap (LPDIRECT3DDEVICE9 pDev, ENVCAMREC* ec, DWORD cnt = 2, DWORD flags = 0xFF);
+	bool RenderInteriorENVMap(LPDIRECT3DDEVICE9 pDev, ENVCAMREC* ec, SHADOWMAP* sm);
 	bool ProcessEnvMaps(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags);
 
-	ENVMAPS* GetEnvMap();
-	ENVCAMREC* CreateEnvCam(EnvCamType ec);
-	ENVCAMREC* GetEnvCam(EnvCamType ec, int idx = 0);
+	ENVCAMREC*	GetExteriorEnvMap();
+	ENVCAMREC*	CreateEnvCam(EnvCamType ec, int idx = -1);
+	ENVCAMREC*	GetEnvCam(EnvCamType ec, int idx = -1);
+	bool		GetInteriorCams(std::list<ENVCAMREC*>* pCams);
+	bool		HasOwnEnvCam(EnvCamType ec);
 
-	bool HasOwnEnvCam(EnvCamType ec);
 
 	bool IsRoot() const;
 	vVessel* GetRoot() const { return vRoot; }
@@ -215,10 +225,10 @@ private:
 	std::map<MGROUP_TRANSFORM *, _defstate> defstate;
 	std::unordered_set<UINT> applyanim;
 	std::map<int, double> currentstate;
-	std::vector<ENVCAMREC *> mesh_cams;
+	ENVCAMREC* InteriorCams[MAX_INTCAM] = { nullptr };
 
 	// Default eCam configurations
-	ENVCAMREC ecDefExt, ecDefVC;
+	ENVCAMREC ecDefExt;
 	FVECTOR3 BakedLightsControl[16];
 	FVECTOR3 VCAmbient;
 	bool bMustRebake;

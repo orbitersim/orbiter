@@ -261,6 +261,11 @@ namespace oapi {
 			return v;
 		}
 
+		inline VECTOR3 toV3() const
+		{
+			return { x,y,z };
+		}
+
 		inline FVECTOR3& operator*= (float f)
 		{
 			x *= f; y *= f; z *= f;
@@ -695,6 +700,12 @@ namespace oapi {
 			_swap(m12, m21); _swap(m13, m31);
 			_swap(m14, m41); _swap(m23, m32);
 			_swap(m24, m42); _swap(m34, m43);
+		}
+
+		static FMATRIX4 Identity() { 
+			FMATRIX4 a; 
+			a.m11 = a.m22 = a.m33 = a.m44 = 1.0f;
+			return a; 
 		}
 
 		float data[16];

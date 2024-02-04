@@ -1,4 +1,3 @@
-#include <commctrl.h>
 // Fix Microsoft Visual Studio Version 2012 resource compiler RC4011 warnings.
 // Instead of #include <Richedit.h>
 #if defined(RC_INVOKED)
@@ -242,3 +241,4 @@
 #define IDC_DBG_AMBDIR                          3059
 #define IDC_DBG_NOSUNAMB                        3060
 #define IDC_DBG_NOPLNAMB                        3061
+#define IDC_DBG_DATASRC                         3062

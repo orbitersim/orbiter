@@ -33,14 +33,6 @@ static D3DXMATRIX ident;
 
 const double LABEL_DISTLIMIT = 0.6;
 
-struct PList { // auxiliary structure for object distance sorting
-	vObject *vo;
-	double dist;
-};
-
-const int MAXPLANET = 512; // hard limit; should be fixed
-static PList plist[MAXPLANET];
-
 ID3DXEffect * Scene::FX = 0;
 D3DXHANDLE Scene::eLine = 0;
 D3DXHANDLE Scene::eStar = 0;
@@ -51,9 +43,14 @@ D3DXHANDLE Scene::eTex0 = 0;
 
 D3DXVECTOR4 IKernel[IKernelSize];
 
-bool sort_vessels(const vVessel *a, const vVessel *b)
+bool sort_tgt_dist(const vObject *a, const vObject *b)
 {
 	return a->CameraTgtDist() < b->CameraTgtDist();
+}
+
+bool sort_cdist(const vObject* a, const vObject* b)
+{
+	return a->CamDist() > b->CamDist();
 }
 
 float Rand()
@@ -113,23 +110,17 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	dmCubeMesh = NULL;
 	pRenderStage = NULL;
 
-	vobjEnv = eCamRenderList.begin();
+	vobjEnv = eCamRenderList.cend();
+	itIC = InteriorCams.cend();
 
 	fDisplayScale = float(viewH) / 1080.0f;
 
 	for (auto& a : DepthSampleKernel) a = FVECTOR2(0, 0);
 
 	memset(&psShmDS, 0, sizeof(psShmDS));
-	memset(&ptShmRT, 0, sizeof(ptShmRT));
-	memset(&psShmRT, 0, sizeof(psShmRT));
-
-	memset(&ptVCShmRT, 0, sizeof(ptShmRT));
-	memset(&psVCShmRT, 0, sizeof(psShmRT));
-
+	memset(&Camera, 0, sizeof(Camera));
 
 	pDevice = _gc->GetDevice();
-
-	memset(&Camera, 0, sizeof(Camera));
 
 	D3DXMatrixIdentity(&ident);
 
@@ -142,7 +133,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	bLocalLight = *(bool*)gc->GetConfigParam(CFGPRM_LOCALLIGHT);
 	
 	memset(&sunLight, 0, sizeof(D3D9Sun));
-	memset(&smap, 0, sizeof(smap));
+
 
 	CLEARARRAY(pBlrTemp);
 	CLEARARRAY(pBlrTemp2D);
@@ -150,7 +141,6 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	CLEARARRAY(ptgBuffer);
 	CLEARARRAY(psgBuffer);
 
-	vobjFirst = vobjLast = NULL;
 	nstream = 0;
 	iVCheck = 0;
 
@@ -233,30 +223,26 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	DWORD ShmMapSize = Config->ShadowMapSize;
 
 	if (Config->EnvMapMode) {
-		HR(pDevice->CreateDepthStencilSurface(EnvMapSize, EnvMapSize, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, true, &pEnvDS, NULL));
+		HR(pDevice->CreateDepthStencilSurface(EnvMapSize, EnvMapSize, D3DFMT_D24X8, D3DMULTISAMPLE_NONE, 0, true, &pEnvDS, NULL));
 	}
 
-	// Exterior shadows
+
+	// Create Depth Stencil buffers for shadow maps
+	//
 	if (Config->ShadowMapMode) {
 		UINT size = ShmMapSize;
 		for (int i = 0; i < SHM_LOD_COUNT; i++) {
 			HR(pDevice->CreateDepthStencilSurface(size, size, D3DFMT_D24X8, D3DMULTISAMPLE_NONE, 0, true, &psShmDS[i], NULL));
-			HR(pDevice->CreateTexture(size, size, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &ptShmRT[i], NULL));
-			HR(ptShmRT[i]->GetSurfaceLevel(0, &psShmRT[i]));
 			size >>= 1;
 		}
-
-		smap.pShadowMap[0] = ptShmRT[0];
 	}
 
-	// VC Shadows
-	if (Config->ShadowMapMode) {
-		UINT size = ShmMapSize;
-		for (int i = 0; i < SHM_CASCADE_COUNT; i++) {
-			HR(pDevice->CreateTexture(size, size, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &ptVCShmRT[i], NULL));
-			HR(ptVCShmRT[i]->GetSurfaceLevel(0, &psVCShmRT[i]));
-		}
-	}
+	// Create shadow map for vessel exterior shadowing
+	smEX = new SHADOWMAP(pDevice, SHADOWMAP::sMapType::MultiLod);
+	// Create shadow map for virtual cockpit shadowing
+	smVC = new SHADOWMAP(pDevice, SHADOWMAP::sMapType::Cascaded);
+	// Create shadow map for shadowing in a stage-set
+	smSS = new SHADOWMAP(pDevice, SHADOWMAP::sMapType::SingleLod);
 
 
 	// Create auxiliary color buffer for on screen GDI
@@ -271,7 +257,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	// Create an auxiliary screen space normal and depth buffer (i.e. Shader readable depth buffer)
 	//
 	if (Config->bGlares || Config->bLocalGlares) {
-		HR(pDevice->CreateDepthStencilSurface(viewW, viewH, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, true, &pDepthNormalDS, NULL));
+		HR(pDevice->CreateDepthStencilSurface(viewW, viewH, D3DFMT_D24X8, D3DMULTISAMPLE_NONE, 0, true, &pDepthNormalDS, NULL));
 		HR(D3DXCreateTexture(pDevice, viewW, viewH, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_DEPTH]));
 	}
 
@@ -397,11 +383,11 @@ Scene::~Scene ()
 	SAFE_RELEASE(pSunGlareAtm);
 	SAFE_RELEASE(ptRandom);
 
+	SAFE_DELETE(smEX);
+	SAFE_DELETE(smVC);
+	SAFE_DELETE(smSS);
+
 	for (int i = 0; i < ARRAYSIZE(psShmDS); i++) SAFE_RELEASE(psShmDS[i]);
-	for (int i = 0; i < ARRAYSIZE(ptShmRT); i++) SAFE_RELEASE(ptShmRT[i]);
-	for (int i = 0; i < ARRAYSIZE(psShmRT); i++) SAFE_RELEASE(psShmRT[i]);
-	for (int i = 0; i < ARRAYSIZE(ptVCShmRT); i++) SAFE_RELEASE(ptVCShmRT[i]);
-	for (int i = 0; i < ARRAYSIZE(psVCShmRT); i++) SAFE_RELEASE(psVCShmRT[i]);
 	for (int i = 0; i < ARRAYSIZE(pBlrTemp); i++) SAFE_RELEASE(pBlrTemp[i]);
 	for (int i = 0; i < ARRAYSIZE(pBlrTemp2D); i++) SAFE_RELEASE(pBlrTemp2D[i]);
 
@@ -632,8 +618,7 @@ const D3D9Light *Scene::GetLight(int index) const
 Scene::VOBJREC *Scene::FindVisual(OBJHANDLE hObj) const
 {
 	if (hObj==NULL) return NULL;
-	VOBJREC *pv;
-	for (pv=vobjFirst; pv; pv=pv->next) if (pv->vobj->Object()==hObj) return pv;
+	for (auto v : Visuals) if (v->vobj->Object() == hObj) return v;
 	return NULL;
 }
 
@@ -641,8 +626,8 @@ Scene::VOBJREC *Scene::FindVisual(OBJHANDLE hObj) const
 //
 class vObject *Scene::GetVisObject(OBJHANDLE hObj) const
 {
-	Scene::VOBJREC *v = FindVisual(hObj);
-	if (v) return v->vobj;
+	if (hObj == NULL) return NULL;
+	for (auto v : Visuals) if (v->vobj->Object() == hObj) return v->vobj;
 	return NULL;
 }
 
@@ -651,11 +636,10 @@ class vObject *Scene::GetVisObject(OBJHANDLE hObj) const
 std::set<vVessel *> Scene::GetVessels(double max_dst, bool bAct)
 {
 	std::set<vVessel *> List;
-	VOBJREC *pv;
-	for (pv = vobjFirst; pv; pv = pv->next) {
-		if (pv->type != OBJTP_VESSEL) continue;
-		if (bAct && pv->vobj->IsActive() == false) continue;
-		if (pv->vobj->CamDist() < max_dst) List.insert((vVessel *)pv->vobj);
+	for (auto v : Visuals) {
+		if (v->type != OBJTP_VESSEL) continue;
+		if (bAct && v->vobj->IsActive() == false) continue;
+		if (v->vobj->CamDist() < max_dst) List.insert((vVessel *)v->vobj);
 	}
 	return List;
 }
@@ -664,42 +648,26 @@ std::set<vVessel *> Scene::GetVessels(double max_dst, bool bAct)
 //
 void Scene::DelVisualRec (VOBJREC *pv)
 {
-	_TRACE;
-	// unlink the entry
-	if (pv->prev) pv->prev->next = pv->next;
-	else          vobjFirst = pv->next;
-
-	if (pv->next) pv->next->prev = pv->prev;
-	else          vobjLast = pv->prev;
-
-	DebugControls::RemoveVisual(pv->vobj);
-
 	// delete the visual, its children and the entry itself
+	DebugControls::RemoveVisual(pv->vobj);
 	gc->UnregisterVisObject(pv->vobj->GetObjHandle());
 	if (pv->type == OBJTP_VESSEL) gc->clbkScenarioChanged(pv->vobj, ScnChgEvent::VisualDeleted);
 	delete pv->vobj;
-	delete pv;
+	Visuals.remove(pv);
 }
 
 // ===========================================================================================
 //
 void Scene::DeleteAllVisuals()
 {
-	_TRACE;
-	VOBJREC *pv = vobjFirst;
-	while (pv) {
-		VOBJREC *pvn = pv->next;
-
-		DebugControls::RemoveVisual(pv->vobj);
-
-		gc->UnregisterVisObject(pv->vobj->GetObjHandle());
-		
-		LogAlw("Deleting Visual %s", _PTR(pv->vobj));
-		delete pv->vobj;
-		delete pv;
-		pv = pvn;
+	for (auto v : Visuals)
+	{
+		DebugControls::RemoveVisual(v->vobj);
+		gc->UnregisterVisObject(v->vobj->GetObjHandle());	
+		LogAlw("Deleting Visual %s", _PTR(v->vobj));
+		delete v->vobj;
 	}
-	vobjFirst = vobjLast = NULL;
+	Visuals.clear();
 }
 
 // ===========================================================================================
@@ -715,6 +683,8 @@ Scene::VOBJREC *Scene::AddVisualRec(OBJHANDLE hObj)
 
 	memset(pv, 0, sizeof(VOBJREC));
 
+	Visuals.push_back(pv);
+
 	pv->vobj = vObject::Create(hObj, this);
 	pv->type = oapiGetObjectType(hObj);
 
@@ -722,13 +692,6 @@ Scene::VOBJREC *Scene::AddVisualRec(OBJHANDLE hObj)
 
 	VESSEL *hVes=NULL;
 	if (pv->type==OBJTP_VESSEL) hVes = oapiGetVesselInterface(hObj);
-
-	// link entry to end of list
-	pv->prev = vobjLast;
-	pv->next = NULL;
-	if (vobjLast) vobjLast->next = pv;
-	else          vobjFirst = pv;
-	vobjLast = pv;
 
 	LogAlw("RegisteringVisual (%s) hVessel=%s, hObj=%s, Vis=%s, Rec=%s, Type=%d", buf, _PTR(hVes), _PTR(hObj), _PTR(pv->vobj), _PTR(pv), pv->type);
 
@@ -970,7 +933,7 @@ float Scene::ComputeNearClipPlane()
 	float nearpoint = 10e3f;
 	float neardist = 10e3f;
 
-	for (pv = vobjFirst; pv; pv = pv->next) {
+	for (auto pv : Visuals) {
 
 		float nr = 10e3f;
 		float fr = 0.0f;
@@ -1087,7 +1050,7 @@ void Scene::UpdateCamVis()
 	//
 	OBJHANDLE hFocus = oapiGetFocusObject();
 	vFocus = NULL;
-	for (VOBJREC *pv=vobjFirst; pv; pv=pv->next) {
+	for (auto pv : Visuals) {
 		if (pv->type==OBJTP_VESSEL) if (pv->vobj->Object()==hFocus) {
 			vFocus = (vVessel *)pv->vobj;
 			break;
@@ -1108,7 +1071,7 @@ void Scene::UpdateCamVis()
 		ClearLocalLights();
 
 		VOBJREC *pv = NULL;
-		for (pv = vobjFirst; pv; pv = pv->next) {
+		for (auto pv : Visuals) {
 			if (!pv->vobj->IsActive()) continue;
 			OBJHANDLE hObj = pv->vobj->Object();
 			if (oapiGetObjectType (hObj) == OBJTP_VESSEL) {
@@ -1129,21 +1092,14 @@ void Scene::UpdateCamVis()
 	// we render without z-buffer, so need to distance-sort the objects
 	// ----------------------------------------------------------------
 
-	VOBJREC *pv = NULL;
-	nplanets = 0;
+	Planets.clear();
 
-	for (pv = vobjFirst; pv && nplanets < MAXPLANET; pv = pv->next) {
+	for (auto pv : Visuals) {
 		if (pv->apprad < 0.01 && pv->type != OBJTP_STAR) continue;
-		if (pv->type == OBJTP_PLANET || pv->type == OBJTP_STAR) {
-			plist[nplanets].vo = pv->vobj;
-			plist[nplanets].dist = pv->vobj->CamDist();
-			nplanets++;
-		}
+		if (pv->type == OBJTP_PLANET || pv->type == OBJTP_STAR)	Planets.push_back(pv->vobj);
 	}
 
-	int distcomp(const void *arg1, const void *arg2);
-
-	qsort((void*)plist, nplanets, sizeof(PList), distcomp);
+	Planets.sort(sort_cdist);
 }
 
 // ===========================================================================================
@@ -1296,9 +1252,9 @@ void Scene::clbkScenarioChanged(OBJHANDLE hVessel, ScnChgEvent e)
 	// Acquire list of vessel visuals
 	//
 	Vessels.clear();
+	for (auto v : Visuals) 
+		if (v->type == OBJTP_VESSEL) Vessels.insert((vVessel*)v->vobj);
 
-	for (VOBJREC* pv = vobjFirst; pv; pv = pv->next) 
-		if (pv->type == OBJTP_VESSEL) Vessels.insert((vVessel*)pv->vobj);
 
 	// Update Attachment hierarchy
 	//
@@ -1321,8 +1277,18 @@ void Scene::clbkScenarioChanged(OBJHANDLE hVessel, ScnChgEvent e)
 		for (auto v : Vessels)
 			if (v->HasOwnEnvCam(EnvCamType::Exterior)) eCamRenderList.insert(v);
 
-	// Return vobjEnv iterator to start of the list
+
+	// ---------------------------------------------------------------------------------------
+	// Return critical iterators to a start of the list. List context may have changed
+	// ---------------------------------------------------------------------------------------
+
 	vobjEnv = eCamRenderList.begin();
+	vobjIP = eCamRenderList.begin();
+
+	if (e == ScnChgEvent::Deleted) {
+		InteriorCams.clear();
+		itIC = InteriorCams.begin();
+	}
 }
 
 
@@ -1348,9 +1314,10 @@ void Scene::clbkRenderMainScene()
 	for (auto v : Active) v->UpdateAnimations();
 
 
-	if (vFocus == NULL) return;
+	if (vFocus == nullptr) return;
 
-	LPDIRECT3DSURFACE9 pBackBuffer;
+	LPDIRECT3DSURFACE9 pBackBuffer = nullptr;
+	LPDIRECT3DTEXTURE9 pExtShdMap = nullptr;
 
 	if (pOffscreenTarget) pBackBuffer = pOffscreenTarget;
 	else				  pBackBuffer = gc->GetBackBuffer();
@@ -1391,7 +1358,7 @@ void Scene::clbkRenderMainScene()
 
 			if (vO->CamDist() < maxd && (*camCurrent)->bActive)
 			{
-				RenderCustomCameraView((*camCurrent));
+				RenderCustomCameraView((*camCurrent));	// Note: World origin is changed here
 
 				if ((*camCurrent)->pRenderProc) {
 					D3D9Pad *pSkp = (D3D9Pad * )gc->clbkGetSketchpad((*camCurrent)->hSurface);
@@ -1412,8 +1379,8 @@ void Scene::clbkRenderMainScene()
 	if (dwTurn == RENDERTURN_ENVCAM && Config->EnvMapMode)
 	{	
 		DWORD flags = 0;
-		if (Config->EnvMapMode == 1) flags |= 0x01;
-		if (Config->EnvMapMode == 2) flags |= (0x03 | 0x20);
+		if (Config->EnvMapMode == 1) flags |= SCN_PLANETS;
+		if (Config->EnvMapMode == 2) flags |= SCN_PLANETS | SCN_VESSELS | SCN_BASESTRUCT;
 
 		if (vobjEnv == eCamRenderList.end()) vobjEnv = eCamRenderList.begin();
 
@@ -1421,6 +1388,7 @@ void Scene::clbkRenderMainScene()
 			auto vV = (*vobjEnv);
 			if (vV->IsVisible()) {
 				if (vV->CamDist() < 10e3) {
+					// Note: World origin is changed here
 					if (vV->ProcessEnvMaps(pDevice, RenderCount, flags) == false) break;
 				}
 			}
@@ -1429,15 +1397,31 @@ void Scene::clbkRenderMainScene()
 	}
 
 
+	// -------------------------------------------------------------------------------------------------------
+	// Render reflection cube maps and irradiance for interior parts
+	// -------------------------------------------------------------------------------------------------------
+
+	if (Config->EnvMapMode)
+	{
+		if (vobjIP == eCamRenderList.end()) vobjIP = eCamRenderList.begin();
+
+		while (vobjIP != eCamRenderList.end()) {
+			auto vV = (*vobjIP);
+			if (vV->IsVisible()) {
+				if (vV->CamDist() < 500.0) {
+					if (RenderVCProbes(vV) == false) break; // Note: World origin is changed here
+				}
+			}
+			vobjIP++;
+		}
+	}
+
+
 	// ---------------------------------------------------------------------------------------------
 	// Init. camera setup and create a render list
 	// ---------------------------------------------------------------------------------------------
 
-	VOBJREC* pv = NULL;
-	LPDIRECT3DTEXTURE9 pShdMap = NULL;
-
-	UpdateCameraFromOrbiter(RENDERPASS_MAINSCENE);
-	UpdateCamVis();
+	ResetOrigin(Camera.pos);	// Restore world origin to main camera position
 
 	RenderList.clear();
 
@@ -1467,13 +1451,13 @@ void Scene::clbkRenderMainScene()
 		RecallDefaultState();
 
 		// Clear buffers
-		HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0L));
+		HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1.0f, 0L));
 
 		// Render vessels
-		for (auto vVes : RenderList) vVes->Render(pDevice, false);
+		for (auto vVes : RenderList) vVes->Render(pDevice, false, nullptr);
 
 		// Render Cockpit
-		if (oapiCameraInternal() && vFocus) vFocus->Render(pDevice, true);
+		if (oapiCameraInternal() && vFocus) vFocus->Render(pDevice, true, nullptr);
 
 		gc->PopRenderTargets();
 		PopPass();
@@ -1550,10 +1534,10 @@ void Scene::clbkRenderMainScene()
 	// Create a caster list for shadow mapping
 	// ---------------------------------------------------------------------------------------------
 
-	Casters.clear();
-	for (auto v : Active) Casters.push_back(v);
+	ObjectsToShadowMap.clear();
+	for (auto v : Active) ObjectsToShadowMap.push_back(v);
 	
-	Casters.sort(sort_vessels);
+	ObjectsToShadowMap.sort(sort_tgt_dist);
 
 
 
@@ -1564,10 +1548,12 @@ void Scene::clbkRenderMainScene()
 	int shadow_lod = -1;
 	float bouble_rad = 10.0f;		// Terrain shadow mapping coverage
 
-	if (Config->ShadowMapMode >= 1 && Config->TerrainShadowing == 2) {
 
-		SmapRenderList.clear();
-		SmapRenderList.push_back(vFocus);
+	if (Config->ShadowMapMode >= 1 && Config->TerrainShadowing == 2)
+	{
+		// Create a list of objects casting shadows on vFocus
+		Casters.clear();
+		Casters.push_back(vFocus);
 
 		D3DXVECTOR3 ld = sunLight.Dir;
 		D3DXVECTOR3 pos = vFocus->GetBoundingSpherePosDX();
@@ -1579,7 +1565,7 @@ void Scene::clbkRenderMainScene()
 
 		// What else should be included besides vFocus ?
 
-		for (auto v : Casters)
+		for (auto v : ObjectsToShadowMap)
 		{
 			if (v == vFocus) continue;
 			if (v->HasShadow() == false) continue;
@@ -1606,7 +1592,7 @@ void Scene::clbkRenderMainScene()
 			if (bInclude) {
 
 				v->bStencilShadow = false;
-				SmapRenderList.push_back(v);
+				Casters.push_back(v);
 
 				if (nrd < rad) continue;
 
@@ -1621,9 +1607,8 @@ void Scene::clbkRenderMainScene()
 			}
 		}
 
-		shadow_lod = RenderShadowMap(pos, ld, rad, false, true);
-
-		pShdMap = smap.pShadowMap[0];
+		SMapInput smi = { pos, ld, rad };
+		RenderShadowMap(&smi, smEX, Casters, true);	
 	}
 
 
@@ -1635,26 +1620,26 @@ void Scene::clbkRenderMainScene()
 	DWORD plnmode = *(DWORD*)gc->GetConfigParam(CFGPRM_PLANETARIUMFLAG);
 	DWORD mkrmode = *(DWORD*)gc->GetConfigParam(CFGPRM_SURFMARKERFLAG);
 
-	for (DWORD i=0;i<nplanets;i++) {
-
+	for (auto pl : Planets)
+	{
 		// double nplane, fplane;
 		// plist[i].vo->RenderZRange (&nplane, &fplane);
 		// cam->SetFrustumLimits (nplane, fplane);
 		// since we are not using z-buffers here, we can adjust the projection
 		// matrix at will to make sure the object is within the viewing frustum
 
-		OBJHANDLE hObj = plist[i].vo->Object();
-		bool isActive = plist[i].vo->IsActive();
+		OBJHANDLE hObj = pl->Object();
+		bool isActive = pl->IsActive();
 
-		if (isActive) plist[i].vo->Render(pDevice);
-		else		  plist[i].vo->RenderDot(pDevice);
+		if (isActive) pl->Render(pDevice);
+		else		  pl->RenderDot(pDevice);
 
 
 		D3D9Pad *pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
 
 		if (pSketch) {
 
-			if (isActive) plist[i].vo->RenderVectors(pDevice, pSketch);
+			if (isActive) pl->RenderVectors(pDevice, pSketch);
 
 			if (mkrmode & MKR_ENABLE) {
 
@@ -1674,7 +1659,7 @@ void Scene::clbkRenderMainScene()
 					if (label_format < 2 && (mkrmode & MKR_LMARK)) // user-defined planetary surface labels
 					{
 						double rad = oapiGetSize(hObj);
-						double apprad = rad / (plist[i].dist * tan(GetCameraAperture()));
+						double apprad = rad / (pl->CamDist() * tan(GetCameraAperture()));
 						const GraphicsClient::LABELLIST *list;
 						DWORD n, nlist;
 						MATRIX3 prot;
@@ -1788,19 +1773,19 @@ void Scene::clbkRenderMainScene()
 		m_celSphere->EnsureMarkerDrawingContext((oapi::Sketchpad**)&pSketch, 0, 0, m_celSphere->MarkerPen(6));
 
 		int fontidx = -1;
-		for (DWORD i = 0; i < nplanets; ++i)
+		for (auto pl : Planets)
 		{
-			OBJHANDLE hObj = plist[i].vo->Object();
+			OBJHANDLE hObj = pl->Object();
 			if (oapiGetObjectType(hObj) != OBJTP_PLANET) { continue; }
 			if (!surfLabelsActive) {
-				static_cast<vPlanet*>( plist[i].vo )->ActivateLabels(true);
+				static_cast<vPlanet*>(pl)->ActivateLabels(true);
 			}
 
 			int label_format = *(int*)oapiGetObjectParam(hObj, OBJPRM_PLANET_LABELENGINE);
 
 			if (label_format == 2)
 			{
-				static_cast<vPlanet*>(plist[i].vo)->RenderLabels(pDevice, pSketch, label_font, &fontidx);
+				static_cast<vPlanet*>(pl)->RenderLabels(pDevice, pSketch, label_font, &fontidx);
 			}
 		}
 
@@ -1830,86 +1815,45 @@ void Scene::clbkRenderMainScene()
 	D3D9Pad* pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
 	m_celSphere->EnsureMarkerDrawingContext((oapi::Sketchpad**)&pSketch, 0, m_celSphere->MarkerColor(0), m_celSphere->MarkerPen(0));
 
-	// Render the vessels inside the shadows
+
+	// Render the vessels inside the shadows  ( Phase 1 ) ================================
 	//
-	if (Config->ShadowMapMode >= 1) {
-
-		D3DXVECTOR3 ld = sunLight.Dir;
-		D3DXVECTOR3 pos = vFocus->GetBoundingSpherePosDX();
-		float rad = vFocus->GetBoundingSphereRadius();
-
-		int shadow_lod = RenderShadowMap(pos, ld, rad);
-
-		if (shadow_lod >= 0) {
-
-			pShdMap = ptShmRT[shadow_lod];
-
-			auto it = RenderList.begin();
-
-			while (it != RenderList.end()) {
-				if ((*it)->IsInsideShadows()) {
-					(*it)->Render(pDevice);
-					RenderVesselMarker((*it), pSketch);
-					it = RenderList.erase(it);
-				}
-				else ++it;
-			}
-		}
+	if (Config->ShadowMapMode >= 1)
+	{	
+		// Get shadowing params for vFocus
+		SMapInput smi = vFocus->GetSMapRenderData();	
+		pExtShdMap = RenderObjectsInShadow(&smi, RenderList, pSketch);
 	}
 
 
+	// Render additional shadows ( Phase 2 ) =============================================
+	//
+	if ((Config->ShadowMapMode >= 2) && (DebugControls::IsActive()==false))
+	{
+		// Don't render more shadows if debug controls are open to keep pExtShdMap valid
 
-	if ((Config->ShadowMapMode >= 2) && (DebugControls::IsActive()==false)) {
-		// Don't render more shadows if debug controls are open
+		SMapInput smf = vFocus->GetSMapRenderData();
+		list<vVessel*> RenderThese;
 
-		std::list<vVessel *> Intersect;
-
-		// Select the objects to shadow map
+		// Select objects to render with shadow map
 		//
-		if (Config->ShadowMapMode >= 3) {
-			for (auto it = RenderList.begin(); it != RenderList.end(); ++it) {
-				if ((*it)->CamDist() < 1e3) Intersect.push_back((*it));
-			}
-		}
-		else {
-			for (auto it = RenderList.begin(); it != RenderList.end(); ++it) {
-				if ((*it)->IntersectShadowTarget()) Intersect.push_back((*it));
-			}
-		}
+		if (Config->ShadowMapMode >= 3) for (auto v : RenderList) if (v->CamDist() < 1e3) RenderThese.push_back(v);
+		else for (auto v : RenderList) if (v->IntersectShadowTarget(&smf)) RenderThese.push_back(v);
 
+		// Erase objects from render list
+		for (auto v : RenderThese) RenderList.remove(v);
 
-		while (!Intersect.empty()) {
-
-			D3DXVECTOR3 ld = sunLight.Dir;
-			D3DXVECTOR3 pos = Intersect.front()->GetBoundingSpherePosDX();
-			float rad = Intersect.front()->GetBoundingSphereRadius();
-
-			Intersect.pop_front();
-
-			int lod = RenderShadowMap(pos, ld, rad);
-
-			if (lod >= 0) {
-
-				// Render objects in shadow
-				auto it = RenderList.begin();
-
-				while (it != RenderList.end()) {
-					if ((*it)->IsInsideShadows()) {
-						(*it)->Render(pDevice);
-						RenderVesselMarker((*it), pSketch);
-						Intersect.remove((*it));
-						it = RenderList.erase(it);
-					}
-					else ++it;
-				}
-			}
+		while (RenderThese.size())
+		{		
+			SMapInput smi = RenderThese.front()->GetSMapRenderData();
+			RenderObjectsInShadow(&smi, RenderThese, pSketch);
 		}
 	}
 
 
 	// Render the remaining vessels those are not yet renderred
 	//
-	smap.pShadowMap[SHM_CASCADE_COUNT] = { };
+	smEX->Clear();
 
 	while (RenderList.empty()==false) {
 		RenderList.front()->Render(pDevice);
@@ -1970,7 +1914,7 @@ void Scene::clbkRenderMainScene()
 		pSketch->SetFont(pAxisFont);
 		pSketch->SetTextAlign(Sketchpad::LEFT, Sketchpad::TOP);
 
-		for (pv=vobjFirst; pv; pv=pv->next) {
+		for (auto pv : Visuals) {
 			if (!pv->vobj->IsActive()) continue;
 			if (!pv->vobj->IsVisible()) continue;
 			if (oapiCameraInternal() && vFocus==pv->vobj) continue;
@@ -1980,13 +1924,6 @@ void Scene::clbkRenderMainScene()
 
 		pSketch->EndDrawing();	// SKETCHPAD_LABELS
 	}
-
-	if (vFocus) {
-		auto a = vFocus->GetEnvMap()->pEnv;
-		if (a && bStageSet) RenderStage((LPDIRECT3DCUBETEXTURE9)a);
-	}
-
-
 
 
 	// -------------------------------------------------------------------------------------------------------
@@ -2021,13 +1958,12 @@ void Scene::clbkRenderMainScene()
 
 		if (DebugControls::IsActive()) {
 			if (DebugControls::debugFlags & DBG_FLAGS_RENDEREXT) {
-				vFocus->Render(pDevice, false);
+				// vFocus->Render(pDevice, false, nullptr);
 			}
 		}
 
 		if (Config->ShadowMapMode >= 1)
 		{
-			SmapRenderList.clear();
 			cascfg[0].dist = 2.5f;
 			cascfg[0].size = 2.5f;
 			float sa = sin(GetCameraApertureCorner());
@@ -2053,14 +1989,13 @@ void Scene::clbkRenderMainScene()
 
 			//D3D9DebugLog("Aperture = %f, dist=%f", GetCameraApertureCorner() * 2.0 * 180.0 / PI, cascfg[2].dist- cascfg[2].size);
 
-			D3DXVECTOR3 ld = sunLight.Dir;				
-			RenderVCShadowMap(Camera.z, ld, false);
-
-			pShdMap = smap.pShadowMap[0];	
+			D3DXVECTOR3 ld = sunLight.Dir;
+			Casters.clear();
+			RenderVCShadowMap(Camera.z, ld, Casters);
 		}
 
 		// Render VC
-		vFocus->Render(pDevice, true);
+		vFocus->Render(pDevice, true, smVC);
 	}
 
 	pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
@@ -2214,60 +2149,80 @@ void Scene::clbkRenderMainScene()
 	bool bVC = oapiCameraInternal() && (oapiCockpitMode() == COCKPIT_VIRTUAL);
 
 	// -------------------------------------------------------------------------------------------------------
-	// EnvMap Debugger  TODO: Should be allowed to visualize other maps as well, not just index 0
+	// EnvMap Debugger
 	// -------------------------------------------------------------------------------------------------------
 
-	if (DebugControls::IsActive()) {
-		
-		int sel = DebugControls::GetSelectedEnvMap();
+	if (DebugControls::IsActive())
+	{
+		auto sel = DebugControls::GetSelectedEnvMap();
+		int probeid = DebugControls::GetProbeId();
+
+		EnvCamType tp = probeid < 0 ? EnvCamType::Exterior : EnvCamType::Interior;
+		if (probeid < 0) probeid = 0;
 
 		switch (sel) {
-		case 1:		case 2:		case 3:		case 4:
-		case 5:
+		case DbgDisplay::Mirror:
+		case DbgDisplay::Blur1:
+		case DbgDisplay::Blur2:
+		case DbgDisplay::Blur3:
+		case DbgDisplay::Blur4:
 		{
-			if (bVC) {
-				auto pE = emVC.pEnv;
-				if (pE) if (pE->GetType() == D3DRTYPE_CUBETEXTURE) 
-					VisualizeCubeMap((LPDIRECT3DCUBETEXTURE9)pE, sel - 1);
-			}
-			else {
-				auto pE = vFocus->GetEnvMap()->pEnv;
-				if (pE) if (pE->GetType() == D3DRTYPE_CUBETEXTURE) 				
-					VisualizeCubeMap((LPDIRECT3DCUBETEXTURE9)pE, sel - 1);
-			}
+			int idx = int(sel) - int(DbgDisplay::Mirror);
+			auto ec = vFocus->GetEnvCam(tp, probeid);
+			auto pData = ec ? ec->pCube : nullptr;
+			if (pData) VisualizeCubeMap((LPDIRECT3DCUBETEXTURE9)pData, idx);
+			
+			/*else {
+				auto ec = vFocus->GetExteriorEnvMap();
+				auto pData = ec ? ec->pCube : nullptr;
+				if (pData) if (pData->GetType() == D3DRTYPE_CUBETEXTURE)
+					VisualizeCubeMap((LPDIRECT3DCUBETEXTURE9)pData, idx);
+			}*/
 			break;
 		}
-		case 6:
+
+		case DbgDisplay::smSS:
+			VisualizeShadowMap(smSS);
 			break;
-		case 7:
+
+		case DbgDisplay::smVC:
+			VisualizeShadowMap(smVC);
 			break;
-		case 8:
-			VisualizeShadowMap();
+
+		case DbgDisplay::smEX:
+			VisualizeShadowMap(smEX);
 			break;
-		case 9:
-			if (bVC) {
-				if (emVC.pIrrad) {
+
+		case DbgDisplay::Irradiance:
+		{
+			auto ec = vFocus->GetEnvCam(tp, probeid);
+			auto pData = ec ? ec->pIrrad : nullptr;
+			if (pData) {
+				pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
+				pSketch->CopyRectNative(pData, NULL, 0, 0);
+				pSketch->EndDrawing();
+			}
+			/*else {
+				auto ec = vFocus->GetExteriorEnvMap();
+				auto pData = ec ? ec->pIrrad : nullptr;
+				if (pData) {
 					pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
-					pSketch->CopyRectNative(emVC.pIrrad, NULL, 0, 0);
+					pSketch->CopyRectNative(pData, NULL, 0, 0);
 					pSketch->EndDrawing();
 				}
-			}
-			else {
-				if (vFocus->GetEnvMap()->pIrrad) {
-					pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
-					pSketch->CopyRectNative(vFocus->GetEnvMap()->pIrrad, NULL, 0, 0);
-					pSketch->EndDrawing();
-				}
-			}
+			}*/
 			break;
-		case 10:
+		}
+
+		case DbgDisplay::GlowMask:
 			if (ptgBuffer[GBUF_BLUR]) {
 				pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
 				pSketch->CopyRectNative(ptgBuffer[GBUF_BLUR], NULL, 0, 0);
 				pSketch->EndDrawing();
 			}
 			break;
-		case 11:
+
+		case DbgDisplay::ScreenDepth:
 			if (ptgBuffer[GBUF_DEPTH]) {
 				if (pVisDepth) {
 					if (pVisDepth->IsOK()) {
@@ -2279,7 +2234,8 @@ void Scene::clbkRenderMainScene()
 				}
 			}
 			break;
-		case 12:
+
+		case DbgDisplay::Normals:
 			if (ptgBuffer[GBUF_DEPTH]) {
 				if (pVisDepth) {
 					if (pVisDepth->IsOK()) {
@@ -2291,7 +2247,8 @@ void Scene::clbkRenderMainScene()
 				}
 			}
 			break;
-		case 13:
+
+		case DbgDisplay::LightVisbil:
 			if (pLocalResults) {
 				pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
 				pSketch->SetBlendState(Sketchpad::BlendState::FILTER_POINT);
@@ -2300,7 +2257,8 @@ void Scene::clbkRenderMainScene()
 				pSketch->EndDrawing();
 			}
 			break;
-		case 14:
+
+		case DbgDisplay::BakedLightMap:
 		{
 			LPDIRECT3DTEXTURE9 pTex = DebugControls::GetCombinedMap();
 			if (pTex) {
@@ -2403,6 +2361,66 @@ void Scene::clbkRenderMainScene()
 	dwTurn++;
 }
 
+
+// ===========================================================================================
+//
+float Scene::GetLODLevel(SMapInput* smi)
+{
+	float dist = length(smi->pos);
+	float tanap = float(GetTanAp());
+	float viewh = float(ViewH());
+	float rsmax = viewh * smi->rad / (tanap * dist);
+	return log2f(float(Config->ShadowMapSize) / (rsmax * 1.5f));
+}
+
+
+// ===========================================================================================
+//
+void Scene::CombineSMaps(SMapInput* a, SMapInput* b, SMapInput* out)
+{
+	FVECTOR3 ab = b->pos - a->pos;
+	FVECTOR3 ap = a->pos;
+	FVECTOR3 bp = a->pos - b->ld * dot(ab, b->ld);	// Project 'b' to a plane of 'a'
+
+	ab = bp - ap;
+	float le = length(ab);			// a-b distance
+	FVECTOR3 uab = ab / le;			// Unit vector from a to b
+	float arad = a->rad;			//  Store 'a'-rad just in case if out == a 
+
+	out->rad = (le + a->rad + b->rad) * 0.5f;
+	out->pos = ap - uab * arad + uab * out->rad;
+	out->ld = a->ld;	// ld should be identical in a,b
+}
+
+
+// ===========================================================================================
+//
+LPDIRECT3DTEXTURE9 Scene::RenderObjectsInShadow(SMapInput* smi, list<vVessel*>& rList, D3D9Pad* pSkp)
+{
+	Casters.clear();	// Clear shadow casters to auto-generate the list
+	Shadowed.clear();	// Clear list of objects receiving shadow
+
+	int shadow_lod = RenderShadowMap(smi, smEX, Casters);
+
+	if (shadow_lod >= 0) {
+
+		// Create a list of objects that can be shadowed in a defined shadow volume
+		for (auto x : rList)
+			if (x->Type() == OBJTP_VESSEL)
+				if (((vVessel*)x)->IsInsideShadows(smi)) Shadowed.push_back(x);
+
+		// Render objects in shadow
+		for (auto it : Shadowed) {
+			it->Render(pDevice, false, smEX);
+			if (pSkp) RenderVesselMarker(it, pSkp);
+			rList.remove(it); // Remove from a list of "objects needing rendering"		
+		}
+
+		// Get the map for debugging
+		return smEX->ptShmRT[shadow_lod];
+	}
+	return nullptr;
+}
 
 
 // ===========================================================================================
@@ -2560,85 +2578,87 @@ D3DXCOLOR Scene::GetSunDiffColor()
 
 // ===========================================================================================
 //
-int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bInternal, bool bListExists)
+int Scene::RenderShadowMap(SMapInput* smi, SHADOWMAP *sm, std::list<vVessel*>& Casters, bool bInternal)
 {
-	
-	smap.pos = pos;
-	smap.ld = ld;
-	smap.rad = rad;
-	smap.cascades = 1;
-	smap.Center[0] = { 0, 0 };
-	smap.Subrect[0] = { 0, 0, 1, 1 };
-	smap.SubrectTF[0] = { 0, 0, 1, 1 };
+	assert(sm->tp != SHADOWMAP::sMapType::Cascaded);
 
+	float rad = smi->rad * 1.1f;
+
+	sm->pos = smi->pos;
+	sm->ld = smi->ld;
+	sm->rad = rad;
+	sm->cascades = 1;
+	sm->Center[0] = { 0, 0 };
+	sm->Subrect[0] = { 0, 0, 1, 1 };
+	sm->SubrectTF[0] = { 0, 0, 1, 1 };
+
+	float dst = length(smi->pos);
 	float mnd =  1e16f;
 	float mxd = -1e16f;
 	float rsmax = 0.0f;
 	float tanap = float(GetTanAp());
 	float viewh = float(ViewH());
+	bool bExists = Casters.size() != 0;
+	D3DSURFACE_DESC desc;
 
-	if (!bListExists) {
-
-		// If the list doesn't exists then create it...
-		SmapRenderList.clear();
-
+	if (!bExists)
+	{
 		// browse through vessels to find shadowers --------------------------
 		//
-		for (VOBJREC *pv = vobjFirst; pv; pv = pv->next) {
+		for (auto pv : Visuals) {
 			if (pv->type != OBJTP_VESSEL) continue;
 			vVessel *vV = (vVessel *)pv->vobj;
 			if (!vV->IsActive()) continue;
-			if (vV->IntersectShadowVolume()) {
-				SmapRenderList.push_back(vV);
-				vV->GetMinMaxLightDist(&mnd, &mxd);
+			if (vV->IntersectShadowVolume(smi)) {
+				Casters.push_back(vV);
+				vV->GetMinMaxLightDist(smi, &mnd, &mxd);
 			}
 		}
-
-		// Compute shadow lod
-		rsmax = viewh * rad / (tanap * D3DXVec3Length(&pos));
 	}
+	else for (auto vV : Casters) vV->GetMinMaxLightDist(smi, &mnd, &mxd);
 
 
-	if (SmapRenderList.size() == 0) return -1;	// The list is empty, Nothing to render
+	if (Casters.size() == 0) return -1;	// The list is empty, Nothing to render
 
+	// Compute shadow lod
+	rsmax = viewh * rad / (tanap * dst);
 
-	if (bListExists) {
-
-		for (auto vV : SmapRenderList)
-		{
-			// Get shadow min-max distances
-			vV->GetMinMaxLightDist(&mnd, &mxd);
-
-			// Compute shadow lod
-			D3DXVECTOR3 bspos = vV->GetBoundingSpherePosDX();
-			float rs = viewh * rad / (tanap * D3DXVec3Length(&bspos));
-			if (rs > rsmax) rsmax = rs;
-		}
-	}
-
-	smap.depth = (mxd + rad);
+	sm->depth = (mxd + rad);
 
 	D3DXMATRIX mProj, mView;
+	D3DXMatrixOrthoOffCenterRH(&mProj, -rad, rad, rad, -rad, -rad, sm->depth);
 
-	D3DXMatrixOrthoOffCenterRH(&mProj, -rad, rad, rad, -rad, -rad, smap.depth);
+	sm->dist = mxd;
 
-	smap.dist = mxd;
-
-	D3DXVECTOR3 lp = pos - ld * smap.dist;
+	D3DXVECTOR3 lp = smi->pos - smi->ld * sm->dist;
+	D3DXVECTOR3 pos = smi->pos;
 
 	D3DXMatrixLookAtRH(&mView, &lp, &pos, ptr(D3DXVECTOR3(0, 1, 0)));
-	D3DXMatrixMultiply(smap.mLVP.toDX(), &mView, &mProj);
+	D3DXMatrixMultiply(sm->mLVP.toDX(), &mView, &mProj);
 
-	smap.mVP[0] = smap.mLVP;
+	sm->mVP[0] = sm->mLVP;
 
-	float lod = log2f(float(Config->ShadowMapSize) / (rsmax*1.5f));
+	if (sm->tp == SHADOWMAP::sMapType::SingleLod) // Manual LOD selection
+	{
+		sm->psShmRT[0]->GetDesc(&desc);
+		sm->lod = 0;
+		sm->size = desc.Width;
+		auto psDS = GetDepthStencilMatch(sm->psShmRT[0]);
+		gc->PushRenderTarget(sm->psShmRT[0], psDS, RENDERPASS_SHADOWMAP);
+	}
+	else // Automatic LOD selection
+	{
+		int lod = round(log2f(float(Config->ShadowMapSize) / (rsmax * 1.5f)));
+		lod = min(lod, SHM_LOD_COUNT - 1);
+		lod = max(lod, 0);
+		sm->psShmRT[lod]->GetDesc(&desc);
+		sm->lod = lod;
+		sm->size = desc.Width;
+		gc->PushRenderTarget(sm->psShmRT[lod], psShmDS[lod], RENDERPASS_SHADOWMAP);
+	}
 
-	smap.lod = min(int(round(lod)), SHM_LOD_COUNT - 1);
-	smap.lod = max(smap.lod, 0);
-	smap.size = Config->ShadowMapSize >> smap.lod;
-
-	gc->PushRenderTarget(psShmRT[smap.lod], psShmDS[smap.lod], RENDERPASS_SHADOWMAP);
-
+	sm->bValid = true;
+	
 	// Clear the viewport
 	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1.0f, 0L));
 
@@ -2647,33 +2667,33 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bI
 	//
 	BeginPass(RENDERPASS_SHADOWMAP);
 
-	while(SmapRenderList.size()>0) {
-		SmapRenderList.front()->Render(pDevice, bInternal);
-		SmapRenderList.pop_front();
+	for (auto vV : Casters) {
+		if (vV == vFocus) {
+			if (bInternal) vV->Render(pDevice, true, sm);
+			vV->Render(pDevice, false, sm);
+		}
+		else vV->Render(pDevice, false, sm);
 	}
 
 	PopPass();
-
 	gc->PopRenderTargets();
-
-	for (int i = 1; i < SHM_CASCADE_COUNT; i++) smap.pShadowMap[i] = NULL;
-	smap.pShadowMap[0] = ptShmRT[smap.lod];
-
-	return smap.lod;
+	
+	return sm->lod;
 }
 
 
 
 // ===========================================================================================
 //
-int Scene::RenderVCShadowMap(D3DXVECTOR3& cdir, D3DXVECTOR3& ld, bool bListExists)
+int Scene::RenderVCShadowMap(D3DXVECTOR3& cdir, D3DXVECTOR3& ld, std::list<vVessel*>& Casters)
 {
+	SHADOWMAP* sm = smVC;
 
 	D3DXVECTOR3 pos = cdir * cascfg[0].dist;
 	float rad = cascfg[0].size;
-	smap.pos = pos;
-	smap.ld = ld;
-	smap.rad = rad;
+	sm->pos = pos;
+	sm->ld = ld;
+	sm->rad = rad;
 
 	float mnd = 1e16f;
 	float mxd = -1e16f;
@@ -2681,55 +2701,50 @@ int Scene::RenderVCShadowMap(D3DXVECTOR3& cdir, D3DXVECTOR3& ld, bool bListExist
 	float tanap = float(GetTanAp());
 	float viewh = float(ViewH());
 
+	bool bExists = Casters.size() != 0;
 
-	if (!bListExists) {
-
-		// If the list doesn't exists then create it...
-		SmapRenderList.clear();
+	if (!bExists) {
 
 		// browse through vessels to find shadowers --------------------------
 		//
-		for (VOBJREC* pv = vobjFirst; pv; pv = pv->next) {
+		for (auto pv : Visuals) {
 			if (pv->type != OBJTP_VESSEL) continue;
 			vVessel* vV = (vVessel*)pv->vobj;
 			if (!vV->IsActive()) continue;
-			if (vV->IntersectShadowVolume()) {
-				SmapRenderList.push_back(vV);
-				vV->GetMinMaxLightDist(&mnd, &mxd);
+			if (vV->IntersectShadowVolume(sm)) {
+				Casters.push_back(vV);
+				vV->GetMinMaxLightDist(sm, &mnd, &mxd);
 			}
 		}
-
-		// Compute shadow lod
-		rsmax = viewh * rad / (tanap * D3DXVec3Length(&pos));
 	}
-
-
-	if (SmapRenderList.size() == 0) return -1;	// The list is empty, Nothing to render
-
-
-	if (bListExists) {
-
-		for (auto vV : SmapRenderList)
+	else {
+		for (auto vV : Casters)
 		{
 			// Get shadow min-max distances
-			vV->GetMinMaxLightDist(&mnd, &mxd);
+			vV->GetMinMaxLightDist(sm, &mnd, &mxd);
 
 			// Compute shadow lod
-			D3DXVECTOR3 bspos = vV->GetBoundingSpherePosDX();
-			float rs = viewh * rad / (tanap * D3DXVec3Length(&bspos));
-			if (rs > rsmax) rsmax = rs;
+			//D3DXVECTOR3 bspos = vV->GetBoundingSpherePosDX();
+			//float rs = viewh * rad / (tanap * D3DXVec3Length(&bspos));
+			//if (rs > rsmax) rsmax = rs;
 		}
 	}
 
-	smap.dist = mxd;
-	smap.lod = 0;
-	smap.size = Config->ShadowMapSize;
-	smap.cascades = Config->VCCascadeCount;
-	smap.depth = (mxd + vFocus->GetSize());
+	if (Casters.size() == 0) return -1;	// The list is empty, Nothing to render
+
+	// Compute shadow lod
+	rsmax = viewh * rad / (tanap * D3DXVec3Length(&pos));
+
+	sm->dist = mxd;
+	sm->lod = 0;
+	sm->size = Config->ShadowMapSize;
+	sm->cascades = Config->VCCascadeCount;
+	sm->depth = (mxd + vFocus->GetSize());
+	sm->bValid = true;
 
 	D3DXMATRIX mProj, mView;
 	
-	for (int i = 0; i < smap.cascades; i++)
+	for (int i = 0; i < sm->cascades; i++)
 	{
 		// Compute mLVP needed to render this cascade.
 
@@ -2738,31 +2753,31 @@ int Scene::RenderVCShadowMap(D3DXVECTOR3& cdir, D3DXVECTOR3& ld, bool bListExist
 
 		// Project pos to a shadow plane
 		D3DXVECTOR3 sp = pos - ld * D3DXVec3Dot(&pos, &ld);
-		D3DXVECTOR3 ep = sp - ld * smap.dist;
-		D3DXMatrixOrthoOffCenterRH(&mProj, -rad, rad, rad, -rad, 0, smap.depth);
+		D3DXVECTOR3 ep = sp - ld * sm->dist;
+		D3DXMatrixOrthoOffCenterRH(&mProj, -rad, rad, rad, -rad, 0, sm->depth);
 		D3DXMatrixLookAtRH(&mView, &ep, &sp, ptr(D3DXVECTOR3(0, 1, 0)));
-		D3DXMatrixMultiply(smap.mVP[i].toDX(), &mView, &mProj);
+		D3DXMatrixMultiply(sm->mVP[i].toDX(), &mView, &mProj);
 
 		D3DXVECTOR3 xy;
-		D3DXVec3TransformCoord(&xy, &pos, smap.mVP[0].toDX());
-		float s = 0.5f * rad / smap.rad;
+		D3DXVec3TransformCoord(&xy, &pos, sm->mVP[0].toDX());
+		float s = 0.5f * rad / sm->rad;
 
 		xy.y = -xy.y;
 		xy = (xy + 1.0f) * 0.5f;
 
 		// Cascade's center, subrect and subrect-transform within the main level (i.e '0')
 		// All cascades share the same near and far plane and exists inside the previous cascade. 
-		smap.Center[i] = { xy.x, xy.y };
+		sm->Center[i] = { xy.x, xy.y };
 		float l = xy.x - s;	float t = xy.y - s;	float r = xy.x + s;	float b = xy.y + s;
-		smap.Subrect[i] = FVECTOR4(l, t, r, b);
-		smap.SubrectTF[i] = FVECTOR4(-l, -t, 1.0f / (r - l), 1.0f / (b - t));
-		smap.SubPx[i] = rad / float(smap.size);
+		sm->Subrect[i] = FVECTOR4(l, t, r, b);
+		sm->SubrectTF[i] = FVECTOR4(-l, -t, 1.0f / (r - l), 1.0f / (b - t));
+		sm->SubPx[i] = rad / float(sm->size);
 
 #ifdef CASCADE_DEBUG
 		D3D9DebugLog("Cascade %i  pos=[%f, %f]", i, xy.x, xy.y);
 		D3D9DebugLog("Cascade %i  rect=[%f, %f, %f, %f]", i, xy.x-r, xy.y-r, xy.x+r, xy.y+r);
 #endif
-		gc->PushRenderTarget(psVCShmRT[i], psShmDS[0], RENDERPASS_SHADOWMAP);
+		gc->PushRenderTarget(sm->psShmRT[i], psShmDS[0], RENDERPASS_SHADOWMAP);
 
 		// Clear the viewport
 		HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1.0f, 0L));
@@ -2771,36 +2786,120 @@ int Scene::RenderVCShadowMap(D3DXVECTOR3& cdir, D3DXVECTOR3& ld, bool bListExist
 		//
 		BeginPass(RENDERPASS_VC_SHADOWMAP);
 
-		// NOTE: smap.mLVP must containg the projection needed for rendering of the map
-		smap.mLVP = smap.mVP[i];
+		// NOTE: sm.mLVP must containg the projection needed for rendering of the map
+		sm->mLVP = sm->mVP[i];
 
-		for (auto &a : SmapRenderList)
+		for (auto &a : Casters)
 		{
 			if (a == vFocus) {			
-				a->Render(pDevice, true);
+				a->Render(pDevice, true, sm);
 			}
 			else {
-				a->Render(pDevice, false);
+				a->Render(pDevice, false, sm);
 			}
 		}
 
 		PopPass();
 
 		gc->PopRenderTargets();
-
-		smap.pShadowMap[i] = ptVCShmRT[i];
 	}
 
-	// smap.mLVP must point to cascade '0' by default. That's where subrects lie
-	smap.mLVP = smap.mVP[0];
+	// sm.mLVP must point to cascade '0' by default. That's where subrects lie
+	sm->mLVP = sm->mVP[0];
 
 	return 0;
 }
 
 
 // ===========================================================================================
+// Return 'true' if rendering for the vessel is done
 //
-void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList, std::set<vVessel*> &LightsList, DWORD flags, const LPDIRECT3DCUBETEXTURE9 pCT)
+bool Scene::RenderVCProbes(vVessel* vV)
+{
+	// Render only focus if in debug mode
+	if (DebugControls::IsActive() && vV != vFocus) return true;
+
+	if (InteriorCams.empty())	// Get Interior cams and render shadow map
+	{
+		if (vV->GetInteriorCams(&InteriorCams))
+		{
+			ResetOrigin(Camera.pos);
+
+			SMapInput smi = vV->GetSMapRenderData();
+			Casters.clear();
+
+			if (RenderShadowMap(&smi, smSS, Casters, true) < 0) {
+				LogErr("Failed to render shadow map for stage-set");
+			}
+			else {
+
+				/*if (DebugControls::IsActive() && psStageSetDbg && vV == vFocus) {
+					if (DebugControls::dbgdsp == DbgDisplay::smSS) {
+						HR(pDevice->StretchRect(smSS->psShmRT[0], nullptr, psStageSetDbg, nullptr, D3DTEXF_POINT));
+					}
+				}
+				*/
+
+				D3D9DebugLog("Rendered SS ShadowMap for %s", vV->GetName());
+				D3D9DebugLogVec("Pos ", FVECTOR4(smi.pos));
+				D3D9DebugLogVec("Ld ", FVECTOR4(smi.ld));
+				D3D9DebugLog("Rad %f", smi.rad);
+				D3D9DebugLog("Pass %u", GetRenderPass());
+				D3D9DebugLog("Cams %d", int(InteriorCams.size()));
+			}
+		}
+		else return true; // Nothing to do for this vessel, All done.
+
+		itIC = InteriorCams.cbegin();
+	}
+
+	if (itIC != InteriorCams.cend())
+	{
+		vV->RenderInteriorENVMap(pDevice, *itIC, smSS);
+		itIC++;
+	}
+
+	if (itIC == InteriorCams.cend()) // All done for this vessel
+	{
+		InteriorCams.clear();
+		return true;
+	}
+
+	return false; // Not done yet, Continue this vessel next frame
+}
+
+
+// ===========================================================================================
+//
+LPDIRECT3DSURFACE9 Scene::GetDepthStencilMatch(LPDIRECT3DSURFACE9 pRef)
+{
+	D3DSURFACE_DESC desc;
+	pRef->GetDesc(&desc);
+	for (int i = 0; i < (SHM_LOD_COUNT - 1); i++) {
+		D3DSURFACE_DESC d; psShmDS[i]->GetDesc(&d);
+		if ((d.Width == desc.Width) && (d.Height == desc.Height)) return psShmDS[i];
+	}
+	return nullptr;
+}
+
+
+// ===========================================================================================
+//
+LPDIRECT3DSURFACE9 Scene::GetDepthStencil(DWORD size)
+{
+	for (int i = 0; i < (SHM_LOD_COUNT - 1); i++) {
+		D3DSURFACE_DESC d; psShmDS[i]->GetDesc(&d);
+		if (d.Width == size) return psShmDS[i];
+	}
+	return nullptr;
+}
+
+
+// ===========================================================================================
+//
+void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList,
+	std::set<vVessel*> &LightsList, DWORD flags,
+	const LPDIRECT3DCUBETEXTURE9 pCT, SHADOWMAP *sm)
 {
 	_TRACE;
 	RenderFlags = flags;
@@ -2818,7 +2917,10 @@ void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList, std::set<vVessel*>
 			DWORD nemitter = vessel->LightEmitterCount();
 			for (DWORD j = 0; j < nemitter; j++) {
 				const LightEmitter *em = vessel->GetLightEmitter(j);
-				if ((em->GetVisibility() == LightEmitter::VIS_EXTERNAL) || (em->GetVisibility() == LightEmitter::VIS_ALWAYS)) AddLocalLight(em, vVes);
+				if (flags & SCN_VC)
+					if ((em->GetVisibility() == LightEmitter::VIS_COCKPIT) || (em->GetVisibility() == LightEmitter::VIS_ALWAYS)) AddLocalLight(em, vVes);
+					else 
+						if ((em->GetVisibility() == LightEmitter::VIS_EXTERNAL) || (em->GetVisibility() == LightEmitter::VIS_ALWAYS)) AddLocalLight(em, vVes);
 			}		
 		}
 
@@ -2829,7 +2931,11 @@ void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList, std::set<vVessel*>
 			DWORD nemitter = vessel->LightEmitterCount();
 			for (DWORD j = 0; j < nemitter; j++) {
 				const LightEmitter *em = vessel->GetLightEmitter(j);
-				if ((em->GetVisibility() == LightEmitter::VIS_EXTERNAL) || (em->GetVisibility() == LightEmitter::VIS_ALWAYS)) AddLocalLight(em, vVes);
+				if (flags & SCN_VC)
+					if ((em->GetVisibility() == LightEmitter::VIS_COCKPIT) || (em->GetVisibility() == LightEmitter::VIS_ALWAYS)) AddLocalLight(em, vVes);
+					else
+						if ((em->GetVisibility() == LightEmitter::VIS_EXTERNAL) || (em->GetVisibility() == LightEmitter::VIS_ALWAYS)) AddLocalLight(em, vVes);
+
 			}
 		}
 	}
@@ -2837,21 +2943,25 @@ void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList, std::set<vVessel*>
 	D3D9Effect::UpdateEffectCamera(GetCameraProxyBody());
 
 	// Clear the viewport
-	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0xFF000000, 1.0f, 0L));
-
+	if ((flags & SCN_NOCLEAR) == 0) {
+		HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0xFF000000, 1.0f, 0L));
+	}
 
 	// render stage around the scene ----------------------------
 	//
 	if ((flags & SCN_STAGE) && pCT) RenderStage(pCT);
 
-	
+	// Don't combine these
+	if ((flags & SCN_STAGE) && (flags & SCN_PLANETS)) assert(false);
+	if ((flags & SCN_VC) && (flags & SCN_ALLEXT)) assert(false);
+
 	// render planets -------------------------------------------
 	//
 	if (flags & SCN_PLANETS) {
-		for (DWORD i = 0; i<nplanets; i++) {
-			bool isActive = plist[i].vo->IsActive();
-			if (isActive) plist[i].vo->Render(pDevice);
-			else		  plist[i].vo->RenderDot(pDevice);
+		for (auto pl : Planets) {
+			bool isActive = pl->IsActive();
+			if (isActive) pl->Render(pDevice);
+			else		  pl->RenderDot(pDevice);
 		}
 	}
 
@@ -2889,6 +2999,10 @@ void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList, std::set<vVessel*>
 		for (DWORD n = 0; n < nstream; n++) pstream[n]->Render(pDevice);
 	}
 
+	if (flags & SCN_VC) {
+		
+	}
+
 	// Flags 0x20 = BaseStructures
 }
 
@@ -2907,15 +3021,15 @@ void Scene::RenderStage(LPDIRECT3DCUBETEXTURE9 pCT)
 
 	ShaderData.mVP = Camera.mProjView;
 	D3DXMatrixIdentity(&ShaderData.mW);
-	ShaderData.mW._11 = 10e3f;
-	ShaderData.mW._22 = 10e3f;
-	ShaderData.mW._33 = 10e3f;
+	ShaderData.mW._11 = 1e5f;
+	ShaderData.mW._22 = 1e5f;
+	ShaderData.mW._33 = 1e5f;
 
 	pRenderStage->ClearTextures();
 	pRenderStage->SetPSConstants("cbPS", &ShaderData, sizeof(ShaderData));
 	pRenderStage->SetVSConstants("cbPS", &ShaderData, sizeof(ShaderData));
 	pRenderStage->SetTexture("tTex", pCT, IPF_CLAMP | IPF_LINEAR);
-	pRenderStage->Setup(pMeshVertexDecl, false, 0);
+	pRenderStage->Setup(nullptr, false, 0);
 	pRenderStage->UpdateTextures();
 
 	((D3D9Mesh*)dmCubeMesh)->RenderGroup(0);
@@ -3216,8 +3330,7 @@ bool Scene::IntegrateIrradiance(vVessel *vV, LPDIRECT3DBASETEXTURE9 pIn, LPDIREC
 //
 void Scene::ClearOmitFlags()
 {
-	VOBJREC *pv = NULL;
-	for (pv=vobjFirst; pv; pv=pv->next) pv->vobj->bOmit = false;
+	for (auto pv : Visuals) pv->vobj->bOmit = false;
 }
 
 
@@ -3263,37 +3376,60 @@ void Scene::VisualizeCubeMap(LPDIRECT3DCUBETEXTURE9 pCube, int mip)
 	}
 }
 
-
 // ===========================================================================================
 //
-void Scene::VisualizeShadowMap()
+const SHADOWMAP* Scene::GetSMapData(ShdPackage tp) const
 {
-	if (smap.pShadowMap[0] == NULL) return;
+	if (tp == ShdPackage::Main) return smEX;
+	if (tp == ShdPackage::VC) return smVC;
+	if (tp == ShdPackage::Stage) return smSS;
+	return nullptr;
+}
+
+
+// ===========================================================================================
+// Optional parameters 'sm' or 'pTex' not both
+//
+void Scene::VisualizeShadowMap(SHADOWMAP *sm)
+{
+	LPDIRECT3DTEXTURE9 pTex = sm ? sm->Map(0) : nullptr;
+	if (!pTex) return;
 
 	D3DSURFACE_DESC desc;
-	smap.pShadowMap[0]->GetLevelDesc(0, &desc);
-
+	pTex->GetLevelDesc(0, &desc);
+	
+	DWORD s = 0;
 	float w, h;
-	if (desc.Height > viewH) w = h = float(viewH);
-	else w = h = float(desc.Height);
+	if (desc.Height > viewH) w = h = float(s = viewH);
+	else w = h = float(s = desc.Height);
 
 	D3D9Pad *pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
 
-	for (int i=0;i<smap.cascades;i++) 
-	{	
-		int l = int(w * smap.Subrect[i].x);
-		int t = int(h * smap.Subrect[i].y);
-		int r = int(w * smap.Subrect[i].z);
-		int b = int(h * smap.Subrect[i].w);
+	if (sm) {
+		for (int i = 0; i < sm->cascades; i++)
+		{
+			int l = int(w * sm->Subrect[i].x);
+			int t = int(h * sm->Subrect[i].y);
+			int r = int(w * sm->Subrect[i].z);
+			int b = int(h * sm->Subrect[i].w);
 
-		RECT tgt = { l,t,r,b };
-
+			RECT tgt = { l, t, r, b };
+			auto map = sm->Map(i);
+			if (map) {
+				pSketch->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, ptr(FVECTOR4(0.25f, 0.25f, 0.25f, 1.0f)));
+				pSketch->StretchRectNative(map, nullptr, &tgt);
+				pSketch->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, nullptr);
+			}
+			pSketch->QuickBrush(0);
+			pSketch->QuickPen(0xFFFF00FF);
+			pSketch->Rectangle(l, t, r, b);
+		}
+	}
+	else if (pTex) {
+		RECT tgt = { 0, 0, long(s), long(s) };
 		pSketch->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, ptr(FVECTOR4(0.25f, 0.25f, 0.25f, 1.0f)));
-		pSketch->StretchRectNative(smap.pShadowMap[i], NULL, &tgt);
-		pSketch->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, NULL);
-		pSketch->QuickBrush(0);
-		pSketch->QuickPen(0xFFFF00FF);
-		pSketch->Rectangle(l, t, r, b);
+		pSketch->StretchRectNative(pTex, nullptr, &tgt);
+		pSketch->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, nullptr);
 	}
 	pSketch->EndDrawing();
 }
@@ -3308,8 +3444,7 @@ void Scene::RenderVesselShadows (OBJHANDLE hPlanet, float depth) const
 	if (hPlanet != oapiCameraProxyGbody()) return;
 
 	// render vessel shadows
-	VOBJREC *pv;
-	for (pv = vobjFirst; pv; pv = pv->next) {
+	for (auto pv : Visuals) {
 		if (!pv->vobj->IsActive()) continue;
 		if (oapiGetObjectType(pv->vobj->Object()) == OBJTP_VESSEL)
 			((vVessel*)(pv->vobj))->RenderGroundShadow(pDevice, hPlanet, depth);
@@ -3330,16 +3465,14 @@ void Scene::RenderMesh(DEVMESHHANDLE hMesh, const oapi::FMATRIX4 *pWorld)
 {
 	D3D9Mesh *pMesh = (D3D9Mesh *)hMesh;
 
-	const SHADOWMAPPARAM *shd = GetSMapData();
+	float s = float(smEX->size);
+	float sr = 2.0f * smEX->rad / s;
 
-	float s = float(shd->size);
-	float sr = 2.0f * shd->rad / s;
+	HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, smEX->mLVP.toCDX()));
 
-	HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, shd->mLVP.toCDX()));
-
-	if (shd->pShadowMap) {
-		pMesh->SetShadows(shd);
-		HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, ptr(D3DXVECTOR4(sr, 1.0f / s, float(oapiRand()), 1.0f / shd->depth))));
+	if (smEX->IsValid()) {
+		pMesh->SetShadows(smEX);
+		HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, ptr(D3DXVECTOR4(sr, 1.0f / s, float(oapiRand()), 1.0f / smEX->depth))));
 		HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, true));
 	}
 	else {
@@ -3604,7 +3737,7 @@ D3D9Pick Scene::PickScene(short xpos, short ypos, const PickProp *p)
 	result.group = -1;
 	result.idx = -1;
 
-	for (VOBJREC *pv=vobjFirst; pv; pv=pv->next) {
+	for (auto pv : Visuals) {
 
 		if (pv->type!=OBJTP_VESSEL) continue;
 		if (!pv->vobj->IsActive()) continue;
@@ -3756,7 +3889,7 @@ void Scene::UpdateCameraFromOrbiter(DWORD dwPass)
 	// translational transformation between orbiter global coordinates
 	// and render coordinates.
 
-	for (VOBJREC *pv = vobjFirst; pv; pv = pv->next) pv->vobj->Update(true);
+	for (auto pv : Visuals) pv->vobj->Update(true);
 
 	SetupInternalCamera(&Camera.mView, NULL, oapiCameraAperture(), double(viewH)/double(viewW));
 }
@@ -3830,11 +3963,19 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 	SetCameraAperture(float(apr), float(asp));
 
 	// Finally update world matrices from all visuals
-	//
-	if (gpos) for (VOBJREC *pv = vobjFirst; pv; pv = pv->next) pv->vobj->ReOrigin(Camera.pos);
+	ResetOrigin(Camera.pos);
 }
 
 
+// ===========================================================================================
+//
+void Scene::ResetOrigin(VECTOR3 pos)
+{
+	// Update world matrices from all visuals
+	if (origin.x != pos.x || origin.y != pos.y || origin.z != pos.z)
+		for (auto pv : Visuals) pv->vobj->ReOrigin(pos);
+	origin = pos;
+}
 
 
 // ===========================================================================================
@@ -3936,18 +4077,16 @@ void Scene::RenderCustomCameraView(CAMREC *cCur)
 	SetCameraFrustumLimits(0.1, 2e7);
 	SetupInternalCamera(&mEnv, &gpos, cCur->dAperture, double(h)/double(w));
 
-	
-	VOBJREC *pv = NULL;
 	std::set<vVessel*> List;
 	std::set<vVessel*> Lights;
 
-	for (pv = vobjFirst; pv; pv = pv->next) if (pv->type == OBJTP_VESSEL) List.insert((vVessel *)pv->vobj);
+	for (auto pv : Visuals) if (pv->type == OBJTP_VESSEL) List.insert((vVessel *)pv->vobj);
 	
 	BeginPass(RENDERPASS_CUSTOMCAM);
 
 	gc->PushRenderTarget(pSrf, pDSs, RENDERPASS_CUSTOMCAM);
 
-	RenderSecondaryScene(List, Lights, 0xFF);
+	RenderSecondaryScene(List, Lights, SCN_ALLEXT);
 
 	gc->PopRenderTargets();
 
@@ -4132,13 +4271,4 @@ void Scene::D3D9TechInit(LPDIRECT3DDEVICE9 pDev, const char *folder)
 	eColor = FX->GetParameterByName(0,"gColor");
 
 	D3D9CelestialSphere::D3D9TechInit(FX);
-}
-
-// ===========================================================================================
-//
-int distcomp (const void *arg1, const void *arg2)
-{
-	double d1 = ((PList*)arg1)->dist;
-	double d2 = ((PList*)arg2)->dist;
-	return (d1 > d2 ? -1 : d1 < d2 ? 1 : 0);
 }

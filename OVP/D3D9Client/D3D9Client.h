@@ -75,22 +75,25 @@ extern set<D3D9Mesh*> MeshCatalog;
 extern set<SurfNative*>	SurfaceCatalog;
 extern IDirect3D9* g_pD3DObject;
 
-enum class EnvCamType { Undefined, Exterior, VC, Mesh };
+enum class EnvCamType { Undefined, Exterior, Interior, Mesh };
+enum class ShdPackage { None, Main, VC, Stage };
 
-struct ENVMAPS
-{
-	LPDIRECT3DBASETEXTURE9 pEnv = nullptr;	///< Reflection map (cube)
-	LPDIRECT3DTEXTURE9 pIrrad = nullptr;	///< Irradiance map (baraboloidal)
-};
 
 /**
  * \brief Storage structure to keep reflection camera information.
  */
 struct ENVCAMREC
 {
-	std::vector<WORD> omitAttc;
-	std::vector<WORD> omitDock;
-	ENVMAPS			tex;
+	~ENVCAMREC()
+	{
+		SAFE_RELEASE(pCube);
+		SAFE_RELEASE(pIrrad);
+		SAFE_RELEASE(pPlane);
+		oapiWriteLog("ENVCAMREC::Destruct");
+	}
+
+	std::vector<WORD> omitAttc = {};
+	std::vector<WORD> omitDock = {};
 	EnvCamType		type = EnvCamType::Undefined;
 	FVECTOR3		lPos = { 0,0,0 };	///< Camera local position
 	FVECTOR3		lDir = { 1,0,0 };	///< Camera local direction (in 'PLANE' mode only)
@@ -101,6 +104,9 @@ struct ENVCAMREC
 	int				id = -1;			///< User Id, for binding
 	BYTE			iSide = 0;			///< [Private] Current side being rendered
 	bool			bRendered = false;	///< [Private] Rendering of camera view is completed
+	LPDIRECT3DCUBETEXTURE9 pCube = nullptr;	///< Reflection cube map
+	LPDIRECT3DTEXTURE9 pIrrad = nullptr;	///< Irradiance map (baraboloidal)
+	LPDIRECT3DTEXTURE9 pPlane = nullptr;	///< Reflection 2D map if (flags & ENVCAM_PLANE)
 };
 
 /**
@@ -162,24 +168,55 @@ struct PickProp {
 	bool bDualSided;	// Pick also back-facing triangles
 };
 
-struct SHADOWMAPPARAM {
-	LPDIRECT3DTEXTURE9 pShadowMap[SHM_CASCADE_COUNT];
-	// Index 0 is also used for exterior map where the map size varies by LOD, distant object may use 128x128 map
-	// Interior VC cascades are all same size
-	FMATRIX4	mVP[SHM_CASCADE_COUNT];
-	FVECTOR4	Subrect[SHM_CASCADE_COUNT];
-	FVECTOR4	SubrectTF[SHM_CASCADE_COUNT];
-	FVECTOR2	Center[SHM_CASCADE_COUNT];
-	float		SubPx[SHM_CASCADE_COUNT];
-	FMATRIX4	mLVP;
-	D3DXVECTOR3	pos;		// Shadow map origin i.e. Cascade '0' origin
-	D3DXVECTOR3	ld;			// Light direction
-	float		rad;		// radius of the area covered by map [meters]
-	float		dist;		// Shadow camera distance from shadow origin
-	float		depth;		// near to far plane distance. i.r. depth of the field
-	int			lod;		// level of detail, 0 = highest
-	int			size;		// Map size in pixels
-	int			cascades;	// Number of active cascades
+struct SMapInput {
+	FVECTOR3 pos = { };		///< Shadow map center in camera centric coords (ecl frame)
+	FVECTOR3 ld = { };		///< Direction of sunlight (ecl frame)
+	float rad = { };			///< Radius of shadow mapped area
+};
+
+class SHADOWMAP : public SMapInput
+{
+public:
+
+	enum class sMapType { MultiLod, Cascaded, SingleLod };
+
+	SHADOWMAP(LPDIRECT3DDEVICE9 pDevice, sMapType tp, DWORD sz = 1024);
+	~SHADOWMAP();
+
+	LPDIRECT3DTEXTURE9 Map(int idx) const
+	{
+		if (tp == sMapType::MultiLod) {
+			if (idx == 0) return ptShmRT[lod];
+			else return nullptr;
+		}
+		return ptShmRT[idx];
+	}
+
+	void Clear() { bValid = false; }
+	bool IsValid() const { return bValid && (Map(0) != nullptr); }
+
+	
+
+	FMATRIX4	mVP[SHM_CASCADE_COUNT] = {};
+	FVECTOR4	Subrect[SHM_CASCADE_COUNT] = {};
+	FVECTOR4	SubrectTF[SHM_CASCADE_COUNT] = {};
+	FVECTOR2	Center[SHM_CASCADE_COUNT] = {};
+	float		SubPx[SHM_CASCADE_COUNT] = {};
+	FMATRIX4	mLVP = {};
+	float		dist = 0.0f;	// Shadow camera distance from shadow origin
+	float		depth = 0.0f;	// near to far plane distance. i.r. depth of the field
+	int			lod = 0;		// level of detail, 0 = highest
+	int			size = 0;		// Map size in pixels
+	int			cascades = 0;	// Number of active cascades
+	bool		bValid = false;
+	sMapType	tp;
+	
+
+	// Cascades are located in entries 0, 1, 2
+	// Active entry in MultiLod map is located in index pointed by 'lod'
+	// Active entry in SingleLod map is in index 0, 'lod' entry is 0
+	LPDIRECT3DSURFACE9 psShmRT[max(SHM_LOD_COUNT, SHM_CASCADE_COUNT)] = { nullptr };
+	LPDIRECT3DTEXTURE9 ptShmRT[max(SHM_LOD_COUNT, SHM_CASCADE_COUNT)] = { nullptr };
 };
 
 struct LVLH {

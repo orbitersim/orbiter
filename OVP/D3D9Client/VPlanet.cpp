@@ -888,7 +888,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 	_TRACE;
 	if (!active) return false;
 
-	const SHADOWMAPPARAM *shd = scn->GetSMapData();
+	const SHADOWMAP *shd = scn->GetSMapData(ShdPackage::Main);
 
 	if (DebugControls::IsActive()) {
 		// DWORD flags  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
@@ -920,7 +920,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 		HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, false));
 		HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, false));
 
-		if (shd->pShadowMap && (scn->GetRenderPass() == RENDERPASS_MAINSCENE) && (Config->TerrainShadowing == 2)) {
+		if (shd->IsValid() && (scn->GetRenderPass() == RENDERPASS_MAINSCENE) && (Config->TerrainShadowing == 2)) {
 			if (scn->GetCameraAltitude() < 10e3 || IsMesh()) {
 				float s = float(shd->size);
 				float is = 1.0f / s;

@@ -402,7 +402,7 @@ bool MatMgr::LoadCameraConfig()
 				pCamera->flags = 0; // Clear default flags
 			}
 			if (idx == 1) {
-				pCamera = ((vVessel*)vObj)->CreateEnvCam(EnvCamType::VC);
+				pCamera = ((vVessel*)vObj)->CreateEnvCam(EnvCamType::Interior);
 				pCamera->id = -1;
 				pCamera->flags = 0; // Clear default flags
 			}

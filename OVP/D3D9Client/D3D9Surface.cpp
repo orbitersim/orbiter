@@ -374,7 +374,7 @@ SURFHANDLE NatCreateSurface(int width, int height, DWORD flags)
 		{
 			if (flags & OAPISURFACE_RENDER3D)
 			{
-				HR(pDev->CreateDepthStencilSurface(width, height, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, true, &pDepth, NULL));	
+				HR(pDev->CreateDepthStencilSurface(width, height, D3DFMT_D24X8, D3DMULTISAMPLE_NONE, 0, true, &pDepth, NULL));	
 			}
 			return SURFHANDLE(new SurfNative(pTex, flags, pDepth));
 		}
@@ -390,7 +390,7 @@ SURFHANDLE NatCreateSurface(int width, int height, DWORD flags)
 		{
 			if (flags & OAPISURFACE_RENDER3D)
 			{
-				HR(pDev->CreateDepthStencilSurface(width, height, D3DFMT_D24S8, Multi, 0, true, &pDepth, NULL));
+				HR(pDev->CreateDepthStencilSurface(width, height, D3DFMT_D24X8, Multi, 0, true, &pDepth, NULL));
 			}
 			return SURFHANDLE(new SurfNative(pSurf, flags, pDepth));
 		}

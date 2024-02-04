@@ -46,7 +46,7 @@ enum class VisualProp {
 	BAKED_LIGHT,		///< baked light level
 	AMBIENT,			///< ambient light level
 	EXT_PROBE_POS,		///< Exterior probe position
-	VC_PROBE_POS		///< Virtual cockpit probe position
+	CREATE_VC_PROBE		///< Virtual cockpit probe position
 };
 
 //  ======================================================================

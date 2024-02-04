@@ -71,11 +71,19 @@
 
 class vObject;
 
+enum class DbgDisplay {
+	None, Mirror, Blur1, Blur2, Blur3, Blur4,
+	smSS, smVC, smEX, Irradiance, GlowMask,
+	ScreenDepth, Normals, LightVisbil, BakedLightMap
+};
+
 // ==============================================================
 
 namespace DebugControls {
 
+	extern  DbgDisplay dbgdsp;
 	extern  int ambdir;
+	extern  int probe_id;
 	extern  DWORD sMesh;
 	extern  DWORD sGroup;
 	extern  DWORD debugFlags;
@@ -124,13 +132,15 @@ namespace DebugControls {
 	void		SelectMesh(D3D9Mesh *pMesh);
 	void		SetGroupHighlight(bool bStat);
 	int			GetSceneDebug();
-	int			GetSelectedEnvMap();
+	DbgDisplay	GetSelectedEnvMap();
 	
 	bool		IsActive();
 	bool		IsSelectedGroupRendered();
 
 	void		Append(const char *format, ...);
 	void		Refresh();
+
+	inline int  GetProbeId() { return probe_id; }
 
 	LPDIRECT3DTEXTURE9 GetCombinedMap();
 

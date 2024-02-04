@@ -36,8 +36,10 @@ extern D3D9Client *g_client;
 
 namespace DebugControls {
 
+DbgDisplay dbgdsp = {};
 int ambdir = -1;
 int bkl_id = 0;
+int probe_id = -1;
 DWORD dwGFX, dwCmd, nMesh, nGroup, sMesh, sGroup, debugFlags, dspMode, camMode, SelColor, sEmitter;
 double camSpeed;
 float cpr, cpg, cpb, cpa;
@@ -449,10 +451,10 @@ int GetSceneDebug()
 
 // =============================================================================================
 //
-int GetSelectedEnvMap()
+DbgDisplay GetSelectedEnvMap()
 {
-	if (!hDlg) return 0;
-	return (int)SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_GETCURSEL, 0, 0);
+	if (!hDlg) return DbgDisplay(0);
+	return (DbgDisplay)SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_GETCURSEL, 0, 0);
 }
 
 // =============================================================================================
@@ -643,9 +645,9 @@ void OpenDlgClbk(void *context)
 	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"Blur 2");
 	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"Blur 3");
 	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"Blur 4");
-	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"--unused--");
-	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"--unused--");
-	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"ShadowMap");
+	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"SS_ShadowMap");
+	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"VC_ShadowMap");
+	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"EX_ShadowMap");
 	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"Irradiance");
 	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"GlowMask");
 	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"ScreenDepth");
@@ -663,6 +665,14 @@ void OpenDlgClbk(void *context)
 	SendDlgItemMessageA(hDlg, IDC_DBG_AMBDIR, CB_ADDSTRING, 0, (LPARAM)"From Fwd (+z)");
 	SendDlgItemMessageA(hDlg, IDC_DBG_AMBDIR, CB_ADDSTRING, 0, (LPARAM)"From Aft (-z)");
 	SendDlgItemMessageA(hDlg, IDC_DBG_AMBDIR, CB_SETCURSEL, 0, 0);
+
+	SendDlgItemMessageA(hDlg, IDC_DBG_DATASRC, CB_RESETCONTENT, 0, 0);
+	SendDlgItemMessageA(hDlg, IDC_DBG_DATASRC, CB_ADDSTRING, 0, (LPARAM)"Exterior");
+	SendDlgItemMessageA(hDlg, IDC_DBG_DATASRC, CB_ADDSTRING, 0, (LPARAM)"Interior 0");
+	SendDlgItemMessageA(hDlg, IDC_DBG_DATASRC, CB_ADDSTRING, 0, (LPARAM)"Interior 1");
+	SendDlgItemMessageA(hDlg, IDC_DBG_DATASRC, CB_ADDSTRING, 0, (LPARAM)"Interior 2");
+	SendDlgItemMessageA(hDlg, IDC_DBG_DATASRC, CB_ADDSTRING, 0, (LPARAM)"Interior 3");
+	SendDlgItemMessageA(hDlg, IDC_DBG_DATASRC, CB_SETCURSEL, 0, 0);
 
 	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_RESETCONTENT, 0, 0);
 	for (int i = 0; i < 16; i++) {
@@ -1853,7 +1863,7 @@ void SaveEnvMap()
 
 	if (oapiIsVessel(hObj)) {
 		vVessel *vVes = (vVessel *)vObj;
-		auto pTex = vVes->GetEnvMap() ? vVes->GetEnvMap()->pEnv : nullptr;
+		auto pTex = vVes->GetExteriorEnvMap() ? vVes->GetExteriorEnvMap()->pCube : nullptr;
 		if (pTex->GetType() == D3DRTYPE_CUBETEXTURE) {
 			if (D3DXSaveTextureToFileA("EnvMap.dds", D3DXIFF_DDS, (LPDIRECT3DCUBETEXTURE9)pTex, NULL) != S_OK) {
 				LogErr("Failed to save envmap");
@@ -2206,9 +2216,21 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				}
 				break;
 
+			case IDC_DBG_DATASRC:
+				if (HIWORD(wParam) == CBN_SELCHANGE) {
+					probe_id = int(SendDlgItemMessage(hDlg, IDC_DBG_DATASRC, CB_GETCURSEL, 0, 0)) - 1;					
+				}
+				break;
+
 			case IDC_DBG_AMBDIR:
 				if (HIWORD(wParam) == CBN_SELCHANGE) {
 					ambdir = int(SendDlgItemMessage(hDlg, IDC_DBG_AMBDIR, CB_GETCURSEL, 0, 0)) - 1;
+				}
+				break;
+
+			case IDC_DBG_ENVMAP:
+				if (HIWORD(wParam) == CBN_SELCHANGE) {
+					dbgdsp = DbgDisplay(SendDlgItemMessage(hDlg, IDC_DBG_ENVMAP, CB_GETCURSEL, 0, 0));
 				}
 				break;
 

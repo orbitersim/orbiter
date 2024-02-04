@@ -985,19 +985,19 @@ void SurfTile::Render ()
 
 	if (pShader->bShdMap)
 	{
-		const SHADOWMAPPARAM* shd = scene->GetSMapData();
+		const SHADOWMAP* shd = scene->GetSMapData(ShdPackage::Main);
 
-		D3DXVECTOR3 bc = bs_pos - shd->pos;
+		FVECTOR3 bc = FVECTOR3(bs_pos) - shd->pos;
 
 		double alt = scene->GetCameraAltitude() - scene->GetTargetElevation();
 
 		if ((alt < 10e3) && (scene->GetCameraProxyVisual() == mgr->GetPlanet())) {
 
-			if (shd->pShadowMap && (Config->ShadowMapMode != 0) && (Config->TerrainShadowing == 2)) {
+			if (shd->IsValid() && (Config->ShadowMapMode != 0) && (Config->TerrainShadowing == 2)) {
 
-				float x = D3DXVec3Dot(&bc, &(shd->ld));
+				float x = dot(bc, shd->ld);
 
-				if (sqrt(D3DXVec3Dot(&bc, &bc) - x * x) < (shd->rad + mesh->bsRad)) {
+				if (sqrt(dot(bc, bc) - x * x) < (shd->rad + mesh->bsRad)) {
 					float s = float(shd->size);
 					float sr = 2.0f * shd->rad / s;
 					sp->mLVP = shd->mLVP;
@@ -1007,7 +1007,7 @@ void SurfTile::Render ()
 			}
 		}
 
-		pShader->SetTexture(pShader->tShadowMap, shd->pShadowMap[0]);
+		pShader->SetTexture(pShader->tShadowMap, shd->ptShmRT[0]);
 	}
 
 	// ---------------------------------------------------------------------

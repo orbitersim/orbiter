@@ -137,6 +137,8 @@ public:
 	void Map(LPDIRECT3DDEVICE9 pDev);
 	bool IsLocalTo(const class D3D9Mesh *_pRoot) const { return (_pRoot == pRoot); }
 	void MustRemap(DWORD mode);
+	bool Release();
+	MeshBuffer* Reference();
 
 	LPDIRECT3DVERTEXBUFFER9 pVB;
 	LPDIRECT3DVERTEXBUFFER9 pGB;
@@ -148,6 +150,7 @@ public:
 	WORD					*pIBSys;
 	SMVERTEX				*pSBSys;
 
+	DWORD nRef;
 	DWORD nVtx;
 	DWORD nIdx;
 	DWORD mapMode;
@@ -311,7 +314,7 @@ public:
 	void			RenderGroup(int idx);
 	void			RenderBaseTile(const LPD3DXMATRIX pW);
 	void			RenderBoundingBox(const LPD3DXMATRIX pW);
-	void			Render(const LPD3DXMATRIX pW, const ENVMAPS *em = NULL, int iTech = RENDER_VESSEL);
+	void			Render(const LPD3DXMATRIX pW, const ENVCAMREC* em = NULL, int iTech = RENDER_VESSEL);
 	void			RenderFast(const LPD3DXMATRIX pW, int iTech);
 	void			RenderShadowMap(const LPD3DXMATRIX pW, const LPD3DXMATRIX pVP, int flags, bool bNoCull = false);
 	void			RenderStencilShadows(float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, bool bShadowMap = false, const D3DXVECTOR4 *elev = NULL);
@@ -353,7 +356,7 @@ public:
 
 	static void		GlobalInit(LPDIRECT3DDEVICE9 pDev);
 	static void		GlobalExit();
-	static void		SetShadows(const SHADOWMAPPARAM* sprm);
+	static void		SetShadows(const SHADOWMAP* sprm);
 
 private:
 
