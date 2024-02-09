@@ -207,7 +207,7 @@ void D3D9Mesh::Null(const char *meshName /* = NULL */)
 	MaxFace  = 0;
 	MaxVert  = 0;
 	vClass = 0;
-	DefShader = SHADER_NULL;
+	DefShader = SHADER_LEGACY;
 	hOapiMesh = NULL;
 	MeshFlags = 0;
 	Flags = 0;
@@ -3056,7 +3056,7 @@ void D3D9Mesh::RenderShadowMap(const LPD3DXMATRIX pW, const LPD3DXMATRIX pVP, in
 
 	MeshShader* pShader = nullptr;
 	
-	MeshShader::vs_const.mVP = pVP ? *pVP : FMATRIX4::Identity();
+	MeshShader::vs_const.mVP = pVP ? *pVP : FMATRIX4();
 
 	D3DXMatrixIdentity(MeshShader::vs_const.mW);
 	

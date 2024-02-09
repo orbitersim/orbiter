@@ -154,6 +154,21 @@ void D3D9DebugLogVec(const char* lbl, oapi::FVECTOR4 &v)
 
 //-------------------------------------------------------------------------------------------
 //
+void D3D9DebugLogMatrix(const char* name, D3DXMATRIX* pM)
+{
+	D3D9DebugQueue.push(std::string(name));
+	sprintf_s(ErrBuf, ERRBUF, "[%9.9g, %9.9g, %9.9g, %9.9g]", pM->_11, pM->_12, pM->_13, pM->_14);
+	D3D9DebugQueue.push(std::string(ErrBuf));
+	sprintf_s(ErrBuf, ERRBUF, "[%9.9g, %9.9g, %9.9g, %9.9g]", pM->_21, pM->_22, pM->_23, pM->_24);
+	D3D9DebugQueue.push(std::string(ErrBuf));
+	sprintf_s(ErrBuf, ERRBUF, "[%9.9g, %9.9g, %9.9g, %9.9g]", pM->_31, pM->_32, pM->_33, pM->_34);
+	D3D9DebugQueue.push(std::string(ErrBuf));
+	sprintf_s(ErrBuf, ERRBUF, "[%9.9g, %9.9g, %9.9g, %9.9g]", pM->_41, pM->_42, pM->_43, pM->_44);
+	D3D9DebugQueue.push(std::string(ErrBuf));
+}
+
+//-------------------------------------------------------------------------------------------
+//
 void D3D9InitLog(const char *file)
 {
 	QueryPerformanceFrequency((LARGE_INTEGER*)&qpcFrq);
@@ -513,4 +528,25 @@ void LogOk(const char *format, ...)
 		fflush(d3d9client_log);
 		LeaveCriticalSection(&LogCrit);
 	}*/
+}
+
+void LogMatrix(D3DXMATRIX* pM, const char* name)
+{
+	LogAlw("%s", name);
+	LogAlw("[%9.9g, %9.9g, %9.9g, %9.9g]", pM->_11, pM->_12, pM->_13, pM->_14);
+	LogAlw("[%9.9g, %9.9g, %9.9g, %9.9g]", pM->_21, pM->_22, pM->_23, pM->_24);
+	LogAlw("[%9.9g, %9.9g, %9.9g, %9.9g]", pM->_31, pM->_32, pM->_33, pM->_34);
+	LogAlw("[%9.9g, %9.9g, %9.9g, %9.9g]", pM->_41, pM->_42, pM->_43, pM->_44);
+}
+
+void LogVec(D3DXVECTOR4* pM, const char* name)
+{
+	LogAlw("%s", name);
+	LogAlw("[%9.9g, %9.9g, %9.9g, %9.9g]", pM->x, pM->y, pM->z, pM->w);
+}
+
+void LogVec(VECTOR3* pM, const char* name)
+{
+	LogAlw("%s", name);
+	LogAlw("[%9.9g, %9.9g, %9.9g]", pM->x, pM->y, pM->z);
 }

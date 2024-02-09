@@ -49,6 +49,14 @@ public:
 
 	enum Errors { NoVC, ITEMS }; // ITEMS must be last entry
 
+	enum class SMI { VC, Visual, Mesh };
+
+	struct Render {
+		static const int VC		= 0x1;	// Camera in VC view
+		static const int D2		= 0x2;	// Camera in 2D panel view
+		static const int IP		= 0x4;	// Internal pass
+	};
+
 	vVessel* vRoot = nullptr;
 
 	/**
@@ -89,7 +97,7 @@ public:
 	bool IntersectShadowVolume(const SMapInput* shd);
 	bool IntersectShadowTarget(const SMapInput* shd);
 	void GetMinMaxLightDist(const SMapInput* shd, float* mind, float* maxd);
-	SMapInput GetSMapRenderData();
+	SMapInput GetSMapRenderData(SMI type, int idx = 0);
 
 	void ReloadTextures();
 	
@@ -129,7 +137,8 @@ public:
 	 *   in cockpit camera mode.
 	 * \sa Render(LPDIRECT3DDEVICE9)
 	 */
-	bool Render (LPDIRECT3DDEVICE9 dev, bool bInternalPass, const SHADOWMAP *sm);
+	bool Render (LPDIRECT3DDEVICE9 dev, const SHADOWMAP *sm, DWORD flags);
+	bool Render(LPDIRECT3DDEVICE9 dev, bool internalpass, const SHADOWMAP* shd);
 
 	bool RenderExhaust();
 

@@ -232,15 +232,6 @@ bool CopyBuffer(LPDIRECT3DRESOURCE9 _pDst, LPDIRECT3DRESOURCE9 _pSrc)
 	return false;
 }
 
-void LogMatrix(D3DXMATRIX *pM, const char *name)
-{
-	LogAlw("%s", name);
-	LogAlw("[%9.9g, %9.9g, %9.9g, %9.9g]", pM->_11, pM->_12, pM->_13, pM->_14);
-	LogAlw("[%9.9g, %9.9g, %9.9g, %9.9g]", pM->_21, pM->_22, pM->_23, pM->_24);
-	LogAlw("[%9.9g, %9.9g, %9.9g, %9.9g]", pM->_31, pM->_32, pM->_33, pM->_34);
-	LogAlw("[%9.9g, %9.9g, %9.9g, %9.9g]", pM->_41, pM->_42, pM->_43, pM->_44);
-}
-
 inline D3DXVECTOR4 CV2VEC4(const D3DCOLORVALUE &in)
 {
 	return D3DXVECTOR4(in.r, in.g, in.b, in.a);

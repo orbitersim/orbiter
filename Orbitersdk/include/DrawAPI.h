@@ -637,10 +637,19 @@ namespace oapi {
 	*/
 	typedef union __declspec(align(16)) FMATRIX4
 	{
+		
 		FMATRIX4() {
-			m11 = m12 = m13, m14 = m21 = m22 = m23 = m24 = m31 = m32 = m33 = m34 = m41 = m42 = m43 = m44 = 0;
+			m21 = m31 = m41 = m12 = m32 = m42 = 0.0f;
+			m13 = m23 = m43 = m14 = m24 = m34 = 0.0f;
+			m11 = m22 = m33 = m44 = 1.0f;
 		}
 
+
+		FMATRIX4(float f) {
+			m11 = m12 = m13, m14 = m21 = m22 = m23 = m24 = m31 = m32 = m33 = m34 = m41 = m42 = m43 = m44 = f;
+		}
+
+		
 		FMATRIX4(float m11, float m12, float m13, float m14,
 				 float m21, float m22, float m23, float m24,
 				 float m31, float m32, float m33, float m34,
@@ -689,7 +698,8 @@ namespace oapi {
 
 		void Ident()
 		{
-			for (int i = 0; i < 16; i++) data[i] = 0.0;
+			m21 = m31 = m41 = m12 = m32 = m42 = 0.0f;
+			m13 = m23 = m43 = m14 = m24 = m34 = 0.0f;
 			m11 = m22 = m33 = m44 = 1.0f;
 		}
 
@@ -702,11 +712,6 @@ namespace oapi {
 			_swap(m24, m42); _swap(m34, m43);
 		}
 
-		static FMATRIX4 Identity() { 
-			FMATRIX4 a; 
-			a.m11 = a.m22 = a.m33 = a.m44 = 1.0f;
-			return a; 
-		}
 
 		float data[16];
 		struct { FVECTOR4 _x, _y, _z, _p; };

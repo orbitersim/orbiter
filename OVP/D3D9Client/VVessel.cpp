@@ -593,13 +593,21 @@ void vVessel::UpdateAnimations (int mshidx)
 
 // ============================================================================================
 //
-SMapInput vVessel::GetSMapRenderData()
+SMapInput vVessel::GetSMapRenderData(SMI type, int idx)
 {
-	SMapInput sm = {
-		GetBoundingSpherePosDX(),
-		FVECTOR3(-sundir),
-		GetBoundingSphereRadius()
-	};
+	SMapInput sm; D3DXVECTOR3 cpos; float rad;
+
+	if (type == SMI::Visual) {
+		sm = { GetBoundingSpherePosDX(), FVECTOR3(-sundir), GetBoundingSphereRadius() };
+	}
+	if (type == SMI::VC) {
+		GetVCPos(&cpos, NULL, &rad);
+		sm = { cpos, FVECTOR3(-sundir), rad };
+	}
+	if (type == SMI::Mesh) {
+		GetMeshPosition(idx, &cpos, nullptr, &rad);
+		sm = { cpos, FVECTOR3(-sundir), rad };
+	}
 	return sm;
 }
 
@@ -764,10 +772,24 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev)
 	return bRet;
 }
 
+// ============================================================================================
+//
+bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass, const SHADOWMAP* shd)
+{
+	bool bCockpit = (oapiCameraInternal() && (hObj == oapiGetFocusObject()));
+	bool bVC = (bCockpit && (oapiCockpitMode() == COCKPIT_VIRTUAL));
+
+	DWORD flags = 0;
+	flags |= bCockpit ? Render::D2 : 0;
+	flags |= bVC ? Render::VC : 0;
+	flags |= internalpass ? Render::IP : 0;
+
+	return Render(dev, shd, flags);
+}
 
 // ============================================================================================
 //
-bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass, const SHADOWMAP *shd)
+bool vVessel::Render(LPDIRECT3DDEVICE9 dev, const SHADOWMAP *shd, DWORD flg)
 {
 	_TRACE;
 	if (!active) return false;
@@ -778,45 +800,28 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass, const SHADOWMAP *
 	DWORD flags = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 	DWORD displ = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDISPLAYMODE);
 
-	bool bCockpit = (oapiCameraInternal() && (hObj == oapiGetFocusObject()));
-	// render cockpit view
-
-	bool bVC = (bCockpit && (oapiCockpitMode() == COCKPIT_VIRTUAL));
-	// render virtual cockpit
+	bool bCockpit = (flg & Render::D2) | (flg & Render::VC);
+	bool bVC = (flg & Render::VC);
+	bool bInternal = (flg & Render::IP);
 
 	if (scn->GetRenderPass() == RENDERPASS_CUSTOMCAM) bCockpit = bVC = false;
 	// Always render exterior view for custom cams
-
-	if (scn->GetRenderPass() == RENDERPASS_ENVCAM) bCockpit = bVC = false;
-	// Always render exterior view for envmaps
-
-	// if (scn->GetRenderPass() == RENDERPASS_SHADOWMAP) bCockpit = bVC = false;
-	// Always render exterior view for envmaps
-
-	// if (scn->GetRenderPass() == RENDERPASS_NORMAL_DEPTH) bCockpit = bVC = false;
-	// Always render exterior view for envmaps
 
 
 	static VCHUDSPEC hudspec_;
 	const VCHUDSPEC* hudspec = &hudspec_;
 	static bool gotHUDSpec(false);
 	const VCMFDSPEC* mfdspec[MAXMFD] = { NULL };
-	float s = 0.0f, sr = 0.0f;
 
-	if (shd)
-	{
-		s = float(shd->size);
-		sr = 2.0f * shd->rad / s;
-		HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, false));
-		HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, shd->mLVP.toCDX())); // Cascade 0 for all
-		if (scn->GetRenderPass() == RENDERPASS_MAINSCENE)
-			D3D9DebugLog("[%s] IsValid(%d), Map=0x%X", GetName(), int(shd->IsValid()), shd->Map(0));
-	}
+	HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, false));
 
-	if (shd && shd->IsValid() && (scn->GetRenderPass() == RENDERPASS_MAINSCENE))
+	if (shd && shd->IsValid())
 	{
+		float s = float(shd->size);
+		float sr = 2.0f * shd->rad / s;
 		D3DXVECTOR4 sh = D3DXVECTOR4(sr, 1.0f / s, float(oapiRand()), 1.0f / shd->depth);
 		D3DXVECTOR4 px = D3DXVECTOR4(shd->SubPx[0], shd->SubPx[1], shd->SubPx[2], 0.0f);
+		HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, shd->mLVP.toCDX())); // Cascade 0 for all
 		HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, &sh));
 		HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHDPx, &px));
 		HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, true));
@@ -829,7 +834,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass, const SHADOWMAP *
 
 	// Check VC MFD screen resolutions ------------------------------------------------
 	//
-	if (bVC && internalpass) {
+	if (bVC && bInternal) {
 		for (mfd = 0; mfd < MAXMFD; mfd++) gc->GetVCMFDSurface(mfd, &mfdspec[mfd]);
 		gotHUDSpec = !!gc->GetVCHUDSurface(&hudspec);
 	}
@@ -842,12 +847,12 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass, const SHADOWMAP *
 	MeshShader::ps_const.Cam_Z = *scn->GetCameraZ();
 
 
-
 	// Render Exterior and Interior (VC) meshes --------------------------------------------
 	//
-	for (i=0;i<nmesh;i++) {
-
-		if (!meshlist[i].mesh) continue;
+	for (i=0;i<nmesh;i++)
+	{
+		auto pMesh = meshlist[i].mesh;
+		if (!pMesh) continue;
 
 		g_uCurrentMesh = i; // Used for debugging
 
@@ -859,12 +864,12 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass, const SHADOWMAP *
 		if (scn->GetRenderPass() != RENDERPASS_VC_SHADOWMAP)
 		{
 			if (vismode == 0) continue;
-			if (internalpass == false) {
+			if (bInternal == false) {
 				if (vismode == MESHVIS_VC) continue; // Added 3-jan-2011 to prevent VC interior double rendering during exterior and interior passes
 				if ((vismode & MESHVIS_EXTPASS) == 0 && bCockpit) continue;
 			}
 			if (bCockpit) {
-				if (internalpass && (vismode & MESHVIS_EXTPASS)) continue;
+				if (bInternal && (vismode & MESHVIS_EXTPASS)) continue;
 				if (!(vismode & MESHVIS_COCKPIT)) {
 					if ((!bVC) || (!(vismode & MESHVIS_VC))) continue;
 				}
@@ -874,26 +879,33 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass, const SHADOWMAP *
 			}
 		}
 
+		WORD Shader = pMesh->GetDefaultShader();
+		DWORD mFlags = pMesh->MeshFlags;
+
 		D3DXMATRIX mWT;
 		LPD3DXMATRIX pWT;
-
-		// transform mesh
-		if (meshlist[i].trans) pWT = D3DXMatrixMultiply(&mWT, (const D3DXMATRIX *)meshlist[i].trans, &mWorld);
+		
+		if (meshlist[i].trans) pWT = D3DXMatrixMultiply(&mWT, (const D3DXMATRIX*)meshlist[i].trans, &mWorld);
 		else pWT = &mWorld;
-
-
-		if (bVC && internalpass) {
+		
+		if (bVC && bInternal && (pMesh->GetDefaultShader() == SHADER_LEGACY)) {
 			D3D9Sun local = sunLight;
 			local.Color *= 0.5f;
-			meshlist[i].mesh->SetSunLight(&local);
+			pMesh->SetSunLight(&local);
 		}
-		else meshlist[i].mesh->SetSunLight(&sunLight);
+		else pMesh->SetSunLight(&sunLight);
 
 
-		if (bVC && internalpass) {
+		if (bVC && bInternal)
+		{
 			for (mfd=0;mfd<MAXMFD;mfd++) {
 				if (mfdspec[mfd] && mfdspec[mfd]->nmesh == i) {
-					meshlist[i].mesh->SetMFDScreenId(mfdspec[mfd]->ngroup, 1 + mfd);
+					pMesh->SetMFDScreenId(mfdspec[mfd]->ngroup, 1 + mfd);
+				}
+			}
+			if (gotHUDSpec) {
+				if (hudspec->nmesh == i) {
+					pMesh->SetMFDScreenId(hudspec->ngroup, 0x100);
 				}
 			}
 		}
@@ -905,33 +917,34 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass, const SHADOWMAP *
 		//
 		if (scn->GetRenderPass() == RENDERPASS_VC_SHADOWMAP)
 		{
-			if (meshlist[i].mesh->MeshFlags & MESHFLAG_SHADOW_VC || meshlist[i].mesh->MeshFlags & MESHFLAG_VC)
-				meshlist[i].mesh->RenderShadowMap(pWT, pLVP, 0, bVC);
+			if (mFlags & MESHFLAG_SHADOW_VC || mFlags & MESHFLAG_VC)
+				pMesh->RenderShadowMap(pWT, pLVP, 0, bVC);
 		}
 		else if (scn->GetRenderPass() == RENDERPASS_SHADOWMAP)
 		{
-			meshlist[i].mesh->RenderShadowMap(pWT, pLVP, 0, bVC);
+			pMesh->RenderShadowMap(pWT, pLVP, 0, bVC);
 		}
 		else if (scn->GetRenderPass() == RENDERPASS_NORMAL_DEPTH)
 		{
-			meshlist[i].mesh->RenderShadowMap(pWT, pVP, 1);
+			pMesh->RenderShadowMap(pWT, pVP, 1);
 		}
-		else {
-			if (internalpass) {
-				auto ec = GetEnvCam(EnvCamType::Interior, 0);
-				meshlist[i].mesh->Render(pWT, ec, RENDER_VC);
-			}
-			else meshlist[i].mesh->Render(pWT, GetExteriorEnvMap(), RENDER_VESSEL);
-		}
+		else
+		{
+			auto ec = GetEnvCam(EnvCamType::Interior, 0);
+			bool bSL = false;
+			if (shd) bSL = (shd->tp == SHADOWMAP::sMapType::SingleLod);
 
-
-		// render VC HUD and MFDs ------------------------------------------------------------------------
-		//
-		if (scn->GetRenderPass() == RENDERPASS_MAINSCENE) {
-			if (bVC && internalpass && gotHUDSpec) {
-				if (hudspec->nmesh == i) {
-					meshlist[i].mesh->SetMFDScreenId(hudspec->ngroup, 0x100);
+			if (Shader != SHADER_LEGACY)
+			{
+				if (mFlags & MESHFLAG_VC) {
+					if (bSL) pMesh->Render(pWT, ec, RENDER_VESSEL);
+					else pMesh->Render(pWT, ec, RENDER_VC);
 				}
+				else pMesh->Render(pWT, GetExteriorEnvMap(), RENDER_VESSEL);
+			}
+			else {
+				if (bInternal) pMesh->Render(pWT, ec, RENDER_VC);
+				else pMesh->Render(pWT, GetExteriorEnvMap(), RENDER_VESSEL);
 			}
 		}
 	}
@@ -942,7 +955,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass, const SHADOWMAP *
 	if (scn->GetRenderPass() == RENDERPASS_MAINSCENE) {
 		if (DebugControls::IsActive()) {
 			if (flags&DBG_FLAGS_SELVISONLY && this != DebugControls::GetVisual()) return true;
-			if (flags&DBG_FLAGS_BOXES && !internalpass) {
+			if (flags&DBG_FLAGS_BOXES && !bInternal) {
 				D3DXMATRIX id;
 				D3D9Effect::RenderBoundingBox(&mWorld, D3DXMatrixIdentity(&id), &BBox.min, &BBox.max, ptr(D3DXVECTOR4(1, 0, 0, 0.75f)));
 			}
@@ -1469,7 +1482,6 @@ bool vVessel::RenderInteriorENVMap(LPDIRECT3DDEVICE9 pDev, ENVCAMREC* ec, SHADOW
 	// Create a EnvMap if doesn't already exists --------------------------------------------------------------------
 	//
 	if (!ec->pCube) {
-		LPDIRECT3DCUBETEXTURE9 pCube = nullptr;
 		if (D3DXCreateCubeTexture(pDev, desc.Width, 5, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &ec->pCube) != S_OK) {
 			LogErr("Failed to create env-cubemap for visual %s", _PTR(this));
 			return true;
@@ -1480,32 +1492,38 @@ bool vVessel::RenderInteriorENVMap(LPDIRECT3DDEVICE9 pDev, ENVCAMREC* ec, SHADOW
 	// Create a Irradiance map if doesn't already exists --------------------------------------------------------------------
 	//
 	if (!ec->pIrrad) {
-		LPDIRECT3DTEXTURE9 pIrrad = nullptr;
-		if (D3DXCreateTexture(pDev, 128, 64, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pIrrad) != S_OK) {
+		if (D3DXCreateTexture(pDev, 128, 64, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &ec->pIrrad) != S_OK) {
 			LogErr("Failed to create irradiance map for visual %s", _PTR(this));
 			return true;
 		}
-		ec->pIrrad = pIrrad;
 	}
 
+	
 	// Render EnvMaps ---------------------------------------------------------------------------------------
 	//
 	std::set<vVessel*> RndList;
 	std::set<vVessel*> AddLightSrc; // empty
 
 	RndList.insert(this);
-	
-	// -----------------------------------------------------------------------------------------------
-	//
-	VECTOR3 gpos;
-	vessel->Local2Global(ec->lPos._V(), gpos);
 
 	if (ec->pCube)
 	{
+		auto eStage = GetExteriorEnvMap();
+
+		VECTOR3 gp;
+		vessel->Local2Global(ec->lPos._V(), gp);
+
+		//FVECTOR3 rpos = TransformCoord(ec->lPos, FMATRIX4(mWorld));
+		//D3DXMATRIX mW, mWI;
+		//D3DXMatrixIdentity(&mW);
+		//D3DMAT_SetTranslation(&mW, &rpos._V());
+		//D3DXMatrixInverse(&mWI, NULL, &mW);
+
 		// Prepare camera and scene for env map rendering
 		scn->PushCamera();
-		scn->SetupInternalCamera(NULL, &gpos, 0.7853981634, 1.0);
 		scn->BeginPass(RENDERPASS_ENVCAM);
+		scn->SetCameraFrustumLimits(0.1, 3e4);
+
 		gc->PushRenderTarget(NULL, pEnvDS, RENDERPASS_ENVCAM);
 
 		D3DXMATRIX mEnv;
@@ -1514,18 +1532,19 @@ bool vVessel::RenderInteriorENVMap(LPDIRECT3DDEVICE9 pDev, ENVCAMREC* ec, SHADOW
 
 		for (DWORD i = 0; i < 6; i++)
 		{
-			HR(ec->pCube->GetCubeMapSurface(D3DCUBEMAP_FACES(ec->iSide), 0, &pSrf));
+			HR(ec->pCube->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pSrf));
 			gc->AlterRenderTarget(pSrf, pEnvDS);
-			EnvMapDirection(ec->iSide, &dir, &up);
+			EnvMapDirection(i, &dir, &up);
 			D3DXVECTOR3 cp;
 			D3DXVec3Cross(&cp, &up, &dir);
 			D3DXVec3Normalize(&cp, &cp);
 			D3DXMatrixIdentity(&mEnv);
 			D3DMAT_FromAxis(&mEnv, &cp, &up, &dir);
-
-			scn->SetCameraFrustumLimits(0.1, 1e4);
-			scn->SetupInternalCamera(&mEnv, NULL, 0.7853981634, 1.0);
-			scn->RenderSecondaryScene(RndList, AddLightSrc, SCN_STAGE | SCN_VC, ecDefExt.pCube, sm);
+			//D3DXMatrixMultiply(&mEnv, &mWI, &mEnv);
+		
+			//scn->CameraOffOrigin90(&mEnv, rpos);
+			scn->SetupInternalCamera(&mEnv, &gp, 0.7853981634, 1.0);
+			scn->RenderStageSet(eStage->pCube);
 
 			SAFE_RELEASE(pSrf);
 		}
@@ -1533,11 +1552,9 @@ bool vVessel::RenderInteriorENVMap(LPDIRECT3DDEVICE9 pDev, ENVCAMREC* ec, SHADOW
 		gc->PopRenderTargets();
 		scn->PopPass();
 		scn->PopCamera();
-
-		if (ec->pCube) {
-			scn->RenderBlurredMap(pDev, ec->pCube);
-			scn->IntegrateIrradiance(this, ec->pCube, ec->pIrrad);
-		}
+	
+		scn->RenderBlurredMap(pDev, ec->pCube);
+		scn->IntegrateIrradiance(this, ec->pCube, ec->pIrrad);
 	}
 
 	return true;
@@ -1602,8 +1619,10 @@ ENVCAMREC* vVessel::GetEnvCam(EnvCamType ec, int idx)
 	if (ec == EnvCamType::Exterior) return &ecDefExt;
 	if (ec == EnvCamType::Interior) {
 		if (idx >= MAX_INTCAM) return nullptr;
-		if (idx < 0) for (auto c : InteriorCams) if (c) return c; // Get any cam
-		else return InteriorCams[idx];
+		if (idx < 0) {
+			for (auto c : InteriorCams) if (c) return c; // Get any cam
+		}
+		else return InteriorCams[clamp(idx, 0, MAX_INTCAM - 1)];
 	}
 	if (ec == EnvCamType::Mesh) {
 		// TODO:

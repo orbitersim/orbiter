@@ -123,8 +123,6 @@ public:
 		void*		pUser;
 	};
 
-	//ENVCAMREC ecVC;
-
 	std::list<ENVCAMREC*> InteriorCams;
 	std::list<vObject*> Planets;
 	std::list<VOBJREC*> Visuals;
@@ -132,8 +130,8 @@ public:
 	std::set<vVessel*> Vessels;
 	std::set<vVessel*> eCamRenderList;
 	std::set<CAMREC*> CustomCams;
-	std::set<CAMREC*>::const_iterator camCurrent = {};
-	std::set<vVessel*>::const_iterator vobjEnv = {}, vobjIP = {};
+	std::set<CAMREC*>::const_iterator camCurrent;
+	std::set<vVessel*>::const_iterator vobjEnv, vobjIP;
 	std::list<ENVCAMREC*>::const_iterator itIC;
 
 
@@ -286,6 +284,7 @@ public:
 	/**
 	 * \brief Render a secondary scene. (Env Maps, Shadow Maps, MFD Camera Views)
 	 */
+	void RenderStageSet(const LPDIRECT3DCUBETEXTURE9 pCT);
 	void RenderSecondaryScene(std::set<class vVessel*> &RndList,
 		std::set<class vVessel*> &AdditionalLightsList, DWORD flags = SCN_ALLEXT,
 		const LPDIRECT3DCUBETEXTURE9 pCT = nullptr, SHADOWMAP* sm = nullptr);
@@ -380,6 +379,7 @@ public:
 
 					// Manually initialize client's internal camera setup
 	void			SetupInternalCamera(D3DXMATRIX *mView, VECTOR3 *pos, double apr, double asp);
+	void			CameraOffOrigin90(D3DXMATRIX* mView, FVECTOR3 pos);
 
 					// Pan Camera in a mesh debugger
 	bool			CameraPan(VECTOR3 pan, double speed);

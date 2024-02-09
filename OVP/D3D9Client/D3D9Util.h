@@ -418,7 +418,6 @@ inline double wrap(double a)
 	return a;
 }
 
-void LogMatrix(D3DXMATRIX *pM, const char *name);
 inline void LogSunLight(D3D9Sun& s)
 {
 	LogAlw("Sunlight.Dir   = [%f, %f, %f]", s.Dir.x, s.Dir.y, s.Dir.z);

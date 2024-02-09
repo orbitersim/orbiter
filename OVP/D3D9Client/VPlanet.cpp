@@ -1332,8 +1332,8 @@ void vPlanet::SetupEclipse()
 		float s = sunsize / 1e6f;
 		float p = plnsize / 1e6f;
 
-		D3D9DebugLog("Eclipse of %s by %s Sun(%1.1fGm) %s(%1.1fGm)",
-			GetName(), vE->GetName(), s, vE->GetName(), p);
+		//D3D9DebugLog("Eclipse of %s by %s Sun(%1.1fGm) %s(%1.1fGm)",
+		//	GetName(), vE->GetName(), s, vE->GetName(), p);
 	}
 	else {
 		Eclipse.bEnable = false;

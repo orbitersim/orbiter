@@ -1821,7 +1821,7 @@ void Scene::clbkRenderMainScene()
 	if (Config->ShadowMapMode >= 1)
 	{	
 		// Get shadowing params for vFocus
-		SMapInput smi = vFocus->GetSMapRenderData();	
+		SMapInput smi = vFocus->GetSMapRenderData(vVessel::SMI::Visual);	
 		pExtShdMap = RenderObjectsInShadow(&smi, RenderList, pSketch);
 	}
 
@@ -1832,7 +1832,7 @@ void Scene::clbkRenderMainScene()
 	{
 		// Don't render more shadows if debug controls are open to keep pExtShdMap valid
 
-		SMapInput smf = vFocus->GetSMapRenderData();
+		SMapInput smf = vFocus->GetSMapRenderData(vVessel::SMI::Visual);
 		list<vVessel*> RenderThese;
 
 		// Select objects to render with shadow map
@@ -1845,7 +1845,7 @@ void Scene::clbkRenderMainScene()
 
 		while (RenderThese.size())
 		{		
-			SMapInput smi = RenderThese.front()->GetSMapRenderData();
+			SMapInput smi = RenderThese.front()->GetSMapRenderData(vVessel::SMI::Visual);
 			RenderObjectsInShadow(&smi, RenderThese, pSketch);
 		}
 	}
@@ -1930,8 +1930,8 @@ void Scene::clbkRenderMainScene()
 	// render the internal parts of the focus object in a separate render pass
 	// -------------------------------------------------------------------------------------------------------
 
-	if (oapiCameraInternal() && vFocus) {
-
+	if (oapiCameraInternal() && vFocus && (oapiCockpitMode() == COCKPIT_VIRTUAL))
+	{
 		// switch cockpit lights on, external-only lights off
 		//
 		if (bLocalLight) {
@@ -2596,7 +2596,7 @@ D3DXCOLOR Scene::GetSunDiffColor()
 
 // ===========================================================================================
 //
-int Scene::RenderShadowMap(SMapInput* smi, SHADOWMAP *sm, std::list<vVessel*>& Casters, bool bInternal)
+int Scene::RenderShadowMap(SMapInput* smi, SHADOWMAP *sm, std::list<vVessel*>& Casters, bool bInterior)
 {
 	assert(sm->tp != SHADOWMAP::sMapType::Cascaded);
 
@@ -2656,13 +2656,16 @@ int Scene::RenderShadowMap(SMapInput* smi, SHADOWMAP *sm, std::list<vVessel*>& C
 
 	sm->mVP[0] = sm->mLVP;
 
+	WORD Pass = RENDERPASS_SHADOWMAP;
+
 	if (sm->tp == SHADOWMAP::sMapType::SingleLod) // Manual LOD selection
 	{
+		Pass = RENDERPASS_VC_SHADOWMAP;
 		sm->psShmRT[0]->GetDesc(&desc);
 		sm->lod = 0;
 		sm->size = desc.Width;
 		auto psDS = GetDepthStencilMatch(sm->psShmRT[0]);
-		gc->PushRenderTarget(sm->psShmRT[0], psDS, RENDERPASS_SHADOWMAP);
+		gc->PushRenderTarget(sm->psShmRT[0], psDS, Pass);
 	}
 	else // Automatic LOD selection
 	{
@@ -2672,7 +2675,7 @@ int Scene::RenderShadowMap(SMapInput* smi, SHADOWMAP *sm, std::list<vVessel*>& C
 		sm->psShmRT[lod]->GetDesc(&desc);
 		sm->lod = lod;
 		sm->size = desc.Width;
-		gc->PushRenderTarget(sm->psShmRT[lod], psShmDS[lod], RENDERPASS_SHADOWMAP);
+		gc->PushRenderTarget(sm->psShmRT[lod], psShmDS[lod], Pass);
 	}
 
 	sm->bValid = true;
@@ -2683,14 +2686,14 @@ int Scene::RenderShadowMap(SMapInput* smi, SHADOWMAP *sm, std::list<vVessel*>& C
 
 	// render the vessel objects --------------------------------
 	//
-	BeginPass(RENDERPASS_SHADOWMAP);
+	BeginPass(Pass);
 
 	for (auto vV : Casters) {
 		if (vV == vFocus) {
-			if (bInternal) vV->Render(pDevice, true, sm);
-			vV->Render(pDevice, false, sm);
+			if (bInterior) vV->Render(pDevice, sm, vVessel::Render::VC);
+			else vV->Render(pDevice, sm, 0);
 		}
-		else vV->Render(pDevice, false, sm);
+		else vV->Render(pDevice, sm, 0);
 	}
 
 	PopPass();
@@ -2740,11 +2743,6 @@ int Scene::RenderVCShadowMap(D3DXVECTOR3& cdir, D3DXVECTOR3& ld, std::list<vVess
 		{
 			// Get shadow min-max distances
 			vV->GetMinMaxLightDist(sm, &mnd, &mxd);
-
-			// Compute shadow lod
-			//D3DXVECTOR3 bspos = vV->GetBoundingSpherePosDX();
-			//float rs = viewh * rad / (tanap * D3DXVec3Length(&bspos));
-			//if (rs > rsmax) rsmax = rs;
 		}
 	}
 
@@ -2809,12 +2807,7 @@ int Scene::RenderVCShadowMap(D3DXVECTOR3& cdir, D3DXVECTOR3& ld, std::list<vVess
 
 		for (auto &a : Casters)
 		{
-			if (a == vFocus) {			
-				a->Render(pDevice, true, sm);
-			}
-			else {
-				a->Render(pDevice, false, sm);
-			}
+			a->Render(pDevice, sm, vVessel::Render::VC | vVessel::Render::IP);
 		}
 
 		PopPass();
@@ -2841,39 +2834,29 @@ bool Scene::RenderVCProbes(vVessel* vV)
 	{
 		if (vV->GetInteriorCams(&InteriorCams))
 		{
-			ResetOrigin(Camera.pos);
-
-			SMapInput smi = vV->GetSMapRenderData();
-			Casters.clear();
-
-			if (RenderShadowMap(&smi, smSS, Casters, true) < 0) {
-				LogErr("Failed to render shadow map for stage-set");
-			}
-			else {
-
-				/*if (DebugControls::IsActive() && psStageSetDbg && vV == vFocus) {
-					if (DebugControls::dbgdsp == DbgDisplay::smSS) {
-						HR(pDevice->StretchRect(smSS->psShmRT[0], nullptr, psStageSetDbg, nullptr, D3DTEXF_POINT));
-					}
-				}
-				*/
-
-				D3D9DebugLog("Rendered SS ShadowMap for %s", vV->GetName());
-				D3D9DebugLogVec("Pos ", FVECTOR4(smi.pos));
-				D3D9DebugLogVec("Ld ", FVECTOR4(smi.ld));
-				D3D9DebugLog("Rad %f", smi.rad);
-				D3D9DebugLog("Pass %u", GetRenderPass());
-				D3D9DebugLog("Cams %d", int(InteriorCams.size()));
-			}
 		}
-		else return true; // Nothing to do for this vessel, All done.
+		else return true;
 
 		itIC = InteriorCams.cbegin();
 	}
 
+
 	if (itIC != InteriorCams.cend())
 	{
-		vV->RenderInteriorENVMap(pDevice, *itIC, smSS);
+		auto ec = *itIC;
+		VECTOR3 gp;
+		vV->GetInterface()->Local2Global(ec->lPos._V(), gp);
+		ResetOrigin(gp);
+
+		SMapInput smi = vV->GetSMapRenderData(vVessel::SMI::VC);
+		Casters.clear();
+
+		if (RenderShadowMap(&smi, smSS, Casters, true) < 0) {
+			LogErr("Failed to render shadow map for stage-set");
+		}
+		else {
+			vV->RenderInteriorENVMap(pDevice, ec, smSS);
+		}
 		itIC++;
 	}
 
@@ -2967,7 +2950,9 @@ void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList,
 
 	// render stage around the scene ----------------------------
 	//
-	if ((flags & SCN_STAGE) && pCT) RenderStage(pCT);
+	if (flags & SCN_STAGE) {
+		RenderStage(pCT);
+	}
 
 	// Don't combine these
 	if ((flags & SCN_STAGE) && (flags & SCN_PLANETS)) assert(false);
@@ -2989,7 +2974,7 @@ void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList,
 		for (auto vVes : RndList) {
 			if (!vVes->IsActive()) continue;
 			if (!vVes->IsVisible()) continue;
-			vVes->Render(pDevice);
+			vVes->Render(pDevice, nullptr, 0);
 		}
 	}
 
@@ -3017,11 +3002,35 @@ void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList,
 		for (DWORD n = 0; n < nstream; n++) pstream[n]->Render(pDevice);
 	}
 
-	if (flags & SCN_VC) {
-		
+	if (flags & SCN_VC)
+	{
+		vFocus->Render(pDevice, smSS, vVessel::Render::VC | vVessel::Render::IP);
 	}
 
 	// Flags 0x20 = BaseStructures
+}
+
+
+// ===========================================================================================
+//
+void Scene::RenderStageSet(const LPDIRECT3DCUBETEXTURE9 pCT)
+{
+	if (bLocalLight) {
+		ClearLocalLights();
+		VESSEL* vessel = vFocus->GetInterface();
+		DWORD nemitter = vessel->LightEmitterCount();
+		for (DWORD j = 0; j < nemitter; j++) {
+			const LightEmitter* em = vessel->GetLightEmitter(j);
+			if ((em->GetVisibility() == LightEmitter::VIS_COCKPIT) || (em->GetVisibility() == LightEmitter::VIS_ALWAYS))
+				AddLocalLight(em, vFocus);
+		}		
+	}
+	
+	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0xFF000000, 1.0f, 0L));
+	
+	RenderStage(pCT);
+
+	vFocus->Render(pDevice, smSS, vVessel::Render::VC | vVessel::Render::IP);
 }
 
 
@@ -3039,9 +3048,11 @@ void Scene::RenderStage(LPDIRECT3DCUBETEXTURE9 pCT)
 
 	ShaderData.mVP = Camera.mProjView;
 	D3DXMatrixIdentity(&ShaderData.mW);
-	ShaderData.mW._11 = 1e5f;
-	ShaderData.mW._22 = 1e5f;
-	ShaderData.mW._33 = 1e5f;
+	ShaderData.mW._11 = 1e3f;
+	ShaderData.mW._22 = 1e3f;
+	ShaderData.mW._33 = 1e3f;
+	
+	HR(pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
 
 	pRenderStage->ClearTextures();
 	pRenderStage->SetPSConstants("cbPS", &ShaderData, sizeof(ShaderData));
@@ -3801,7 +3812,6 @@ void Scene::SetCameraAperture(float ap, float as)
 	Camera.aspect = as;
 
 	float tanap = tan(ap);
-	float opa = 1.0f / as;
 	float cor = sqrt(tanap * tanap + tanap * tanap * as * as);
 	Camera.corner = atan(cor);
 
@@ -3913,6 +3923,26 @@ void Scene::UpdateCameraFromOrbiter(DWORD dwPass)
 }
 
 
+// ===========================================================================================
+//
+void Scene::CameraOffOrigin90(D3DXMATRIX *mView, FVECTOR3 pos)
+{
+	Camera.mView = *mView;
+	Camera.x = D3DXVECTOR3(Camera.mView._11, Camera.mView._21, Camera.mView._31);
+	Camera.y = D3DXVECTOR3(Camera.mView._12, Camera.mView._22, Camera.mView._32);
+	Camera.z = D3DXVECTOR3(Camera.mView._13, Camera.mView._23, Camera.mView._33);
+
+	auto x = D3DXVECTOR3(Camera.mView._11, Camera.mView._12, Camera.mView._13);
+	auto y = D3DXVECTOR3(Camera.mView._21, Camera.mView._22, Camera.mView._23);
+	auto z = D3DXVECTOR3(Camera.mView._31, Camera.mView._32, Camera.mView._33);
+
+	Camera.mView._14 = -D3DXVec3Dot(&x, (const D3DXVECTOR3*)&pos);
+	Camera.mView._24 = -D3DXVec3Dot(&y, (const D3DXVECTOR3*)&pos);
+	Camera.mView._34 = -D3DXVec3Dot(&z, (const D3DXVECTOR3*)&pos);
+
+	SetCameraAperture(0.7853981634, 1.0f);
+}
+
 
 // ===========================================================================================
 //
@@ -3984,7 +4014,7 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 
 
 	// Something is very wrong... abort...
-	if (Camera.hObj_proxy == NULL || Camera.hObj_proxy == NULL || Camera.hNear == NULL) return;
+	if (Camera.hObj_proxy == NULL || Camera.hGravRef == NULL || Camera.hNear == NULL) return;
 
 	// Camera altitude over the proxy
 	VECTOR3 pos; MATRIX3 grot; double rad;
