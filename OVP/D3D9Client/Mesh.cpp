@@ -1918,8 +1918,8 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, const ENVCAMREC* em, int iTech)
 
 
 	// Setup Env Maps -------------------------------------------
-	//	
-	if (em && em->pCube && em->pIrrad) {
+	//
+	if (em && em->pCube && em->pIrrad) { 
 		FX->SetBool(eEnvMapEnable, true);
 		FX->SetTexture(eEnvMapA, em->pCube);
 		FX->SetTexture(eIrradMap, em->pIrrad);
@@ -1927,6 +1927,13 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, const ENVCAMREC* em, int iTech)
 	else {
 		FX->SetBool(eEnvMapEnable, false);
 	}
+
+	bool bNoAmbient = false;
+
+	if (DebugControls::IsActive()) {
+		bNoAmbient = (flags & DBG_FLAGS_NOSUNAMB) != 0 & (flags & DBG_FLAGS_NOPLNAMB) != 0;
+	}
+
 
 
 	UINT numPasses = 0;
@@ -2086,6 +2093,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, const ENVCAMREC* em, int iTech)
 
 						FC.Baked = (pComb != NULL);
 						FC.BakedAO = (pAmbi != NULL);
+						FC.BakedAmb = (pSun != NULL) & !bNoAmbient;
 					}
 
 					FC.Emis = (pEmis != NULL);
@@ -2175,16 +2183,18 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, const ENVCAMREC* em, int iTech)
 		FX->SetBool(eOITEnable, bOIT);
 		FX->SetBool(eTextured, bTextured);
 		FX->SetBool(eFullyLit, bNoL);
-		FX->SetBool(eNoColor,  bNoC);
 		FX->SetBool(eSwitch, bPBR);
 		FX->SetBool(eRghnSw, bRGH);
+
+		if (bNoC) FX->SetValue(eNoColor, &D3DXVECTOR3(1, 1, 1), sizeof(D3DXVECTOR3));
+		else FX->SetValue(eNoColor, &D3DXVECTOR3(0, 0, 0), sizeof(D3DXVECTOR3));
 
 		// Update envmap and fresnel status as required
 		if (bRefl) {
 			bFRS = (Grp[g].PBRStatus & 0x1E) >= 0x10;
 			FX->SetBool(eFresnel, bFRS);
 			if (IsReflective()) {			
-				bENV = ((Grp[g].PBRStatus & 0x1E) >= 0xA) | (Grp[g].Shader == SHADER_METALNESS);
+				bENV = ((Grp[g].PBRStatus & 0x1E) >= 0xA) | (Grp[g].Shader == SHADER_METALNESS) | (Grp[g].Shader == SHADER_BAKED_VC);
 				FX->SetBool(eEnvMapEnable, bENV);
 			}
 		}
@@ -2514,9 +2524,11 @@ void D3D9Mesh::RenderSimplified(const LPD3DXMATRIX pW, LPDIRECT3DCUBETEXTURE9 *p
 		FX->SetBool(eOITEnable, bOIT);
 		FX->SetBool(eTextured, bTextured);
 		FX->SetBool(eFullyLit, bNoL);
-		FX->SetBool(eNoColor, bNoC);
 		FX->SetBool(eSwitch, bPBR);
 		FX->SetBool(eRghnSw, bRGH);
+
+		if (bNoC) FX->SetValue(eNoColor, &D3DXVECTOR3(1, 1, 1), sizeof(D3DXVECTOR3));
+		else FX->SetValue(eNoColor, &D3DXVECTOR3(0, 0, 0), sizeof(D3DXVECTOR3));
 
 
 		// Update envmap and fresnel status as required
@@ -2831,8 +2843,10 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 		//
 		FX->SetBool(eTextured, bTextured);
 		FX->SetBool(eFullyLit, (Grp[g].UsrFlag & 0x4) != 0);
-		FX->SetBool(eNoColor, (Grp[g].UsrFlag & 0x10) != 0);
 		FX->SetBool(eOITEnable, (Grp[g].UsrFlag & 0x20) != 0);
+
+		if ((Grp[g].UsrFlag & 0x10) != 0) FX->SetValue(eNoColor, &D3DXVECTOR3(1, 1, 1), sizeof(D3DXVECTOR3));
+		else FX->SetValue(eNoColor, &D3DXVECTOR3(0, 0, 0), sizeof(D3DXVECTOR3));
 
 		FX->CommitChanges();
 

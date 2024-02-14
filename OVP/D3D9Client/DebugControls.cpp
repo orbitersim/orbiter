@@ -682,6 +682,9 @@ void OpenDlgClbk(void *context)
 		SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_ADDSTRING, 0, (LPARAM)buf);
 	}
 	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_ADDSTRING, 0, (LPARAM)"Ambient");
+	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_ADDSTRING, 0, (LPARAM)"DA.Curve");
+	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_ADDSTRING, 0, (LPARAM)"DA.Bounch");
+	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_ADDSTRING, 0, (LPARAM)"DA.Force");
 	SendDlgItemMessageA(hDlg, IDC_DBG_BKLID, CB_SETCURSEL, 0, 0);
 
 
@@ -1509,10 +1512,17 @@ void SetupMeshGroups()
 void UpdateBakedLights(float lvl)
 {
 	vVessel* vV = (vVessel*)vObj;
-	if (vObj->Type() == OBJTP_VESSEL) {	
+	if (vObj->Type() == OBJTP_VESSEL)
+	{	
 		if (bkl_id < 16 && bkl_id >= 0) 
 			vV->SetVisualProperty(VisualProp::BAKED_LIGHT, bkl_id, typeid(FVECTOR3), &FVECTOR3(lvl, lvl, lvl));
 		if (bkl_id == 16) vV->SetVisualProperty(VisualProp::AMBIENT, 0, typeid(FVECTOR3), &FVECTOR3(lvl, lvl, lvl));
+		if (bkl_id == 17) vV->SetVisualProperty(VisualProp::DA_CURVE, 0, typeid(float), &lvl);
+		if (bkl_id == 18) vV->SetVisualProperty(VisualProp::DA_BOUNCH, 0, typeid(float), &lvl);
+		if (bkl_id == 19) vV->SetVisualProperty(VisualProp::DA_FORCE, 0, typeid(float), &lvl);
+
+		char lbl[128]; sprintf_s(lbl, 128, "Light Controls  (%1.3f)", lvl);
+		SetWindowText(GetDlgItem(hDlg, IDC_DBG_BKLGROUP), lbl);
 	}
 }
 
@@ -1521,11 +1531,19 @@ void UpdateBakedLights(float lvl)
 void UpdateLightsSlider()
 {
 	FVECTOR3 val = 0.0f;
+	float fVal = 0.0f;
 	vVessel* vV = (vVessel*)vObj;
-	if (vObj->Type() == OBJTP_VESSEL) {
+	if (vObj->Type() == OBJTP_VESSEL)
+	{
 		if (bkl_id < 16 && bkl_id >= 0) vV->GetVisualProperty(VisualProp::BAKED_LIGHT, bkl_id, typeid(val), &val);
 		if (bkl_id == 16) vV->GetVisualProperty(VisualProp::AMBIENT, 0, typeid(val), &val);
-		SendDlgItemMessage(hDlg, IDC_DBG_BKLADJ, TBM_SETPOS, 1, WORD(255.0f * val.x));
+		fVal = val.x;
+		if (bkl_id == 17) vV->GetVisualProperty(VisualProp::DA_CURVE, 0, typeid(float), &fVal);
+		if (bkl_id == 18) vV->GetVisualProperty(VisualProp::DA_BOUNCH, 0, typeid(float), &fVal);
+		if (bkl_id == 19) vV->GetVisualProperty(VisualProp::DA_FORCE, 0, typeid(float), &fVal);
+		SendDlgItemMessage(hDlg, IDC_DBG_BKLADJ, TBM_SETPOS, 1, WORD(255.0f * fVal));
+		char lbl[128]; sprintf_s(lbl, 128, "Light Controls  (%1.3f)", fVal);
+		SetWindowText(GetDlgItem(hDlg, IDC_DBG_BKLGROUP), lbl);
 	}
 }
 
@@ -1594,7 +1612,7 @@ void UpdateVisual()
 		SendDlgItemMessageA(hDlg, IDC_DBG_CONES, CB_ADDSTRING, 0, (LPARAM)"NONE");
 		Emitters[0] = NULL;
 
-		char line[64];
+		char line[64]; strcpy(line, "");
 
 		vVessel *vV = static_cast<vVessel*>(vObj);
 		VESSEL *vessel = vV->GetInterface();

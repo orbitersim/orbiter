@@ -94,11 +94,14 @@ struct ENVCAMREC
 
 	std::vector<WORD> omitAttc = {};
 	std::vector<WORD> omitDock = {};
+	DWORD			flags = 0;			///< Camera flags
 	EnvCamType		type = EnvCamType::Undefined;
 	FVECTOR3		lPos = { 0,0,0 };	///< Camera local position
 	FVECTOR3		lDir = { 1,0,0 };	///< Camera local direction (in 'PLANE' mode only)
 	float			near_clip = 0.1f;	///< Near clip-plane distance
-	DWORD			flags = 0;			///< Camera flags
+	float			da_curve = 0.5f;
+	float			da_bounch = 0.38f;
+	float			da_force = 0.055f;
 	int				mesh_idx = -1;		///< Camera is attached to a mesh 
 	int				group_idx = -1;		///< Camera is attached to a group
 	int				id = -1;			///< User Id, for binding

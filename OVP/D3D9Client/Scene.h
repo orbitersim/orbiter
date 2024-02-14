@@ -293,7 +293,7 @@ public:
 	int RenderVCShadowMap(D3DXVECTOR3& cdir, D3DXVECTOR3& ld, std::list<vVessel*>& Casters);
 	bool RenderVCProbes(vVessel *vFocus);
 
-	bool IntegrateIrradiance(vVessel *vV, LPDIRECT3DBASETEXTURE9 pSrc, LPDIRECT3DTEXTURE9 pOut);
+	bool IntegrateIrradiance(vVessel *vV, ENVCAMREC* ec, bool bInterior);
 	bool RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc);
 	bool RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DTEXTURE9 pSrc);
 	void RenderMesh(DEVMESHHANDLE hMesh, const oapi::FMATRIX4 *pWorld);

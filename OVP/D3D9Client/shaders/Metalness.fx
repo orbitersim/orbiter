@@ -217,7 +217,7 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 	// ======================================================================
 
 	cDiff.a = saturate(cDiff.a * gMtrlAlpha);
-	if (gNoColor) cDiff.rgb = 1;
+	cDiff.rgb = saturate(cDiff.rgb + gNoColor.rgb);
 	
 
 	// ======================================================================

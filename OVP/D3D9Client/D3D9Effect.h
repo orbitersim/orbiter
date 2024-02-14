@@ -29,6 +29,7 @@ struct TexFlow {
 	BOOL Heat;		// Enable heat map
 	BOOL Baked;		// Enable pre-baked maps
 	BOOL BakedAO;	// Enable pre-baked AO map
+	BOOL BakedAmb;	// Enable pre-baked Ambient light map
 };
 
 
@@ -132,7 +133,6 @@ public:
 	static D3DXHANDLE	eShadowToggle; ///< BOOL
 	static D3DXHANDLE	eEnvMapEnable; ///< BOOL
 	static D3DXHANDLE	eInSpace;      ///< BOOL
-	static D3DXHANDLE	eNoColor;      ///< BOOL
 	static D3DXHANDLE	eLightsEnabled;///< BOOL
 	static D3DXHANDLE	eBaseBuilding; ///< BOOL
 	static D3DXHANDLE	eCockpit;	   ///< BOOL
@@ -142,6 +142,8 @@ public:
 	static D3DXHANDLE	eTextured;	   ///< BOOL
 	static D3DXHANDLE	eOITEnable;	   ///< BOOL
 	static D3DXHANDLE	eInvProxySize;
+	static D3DXHANDLE	eNoColor;
+	static D3DXHANDLE	eVCIrrad;
 	static D3DXHANDLE	eMix;          ///< FLOAT Auxiliary factor/multiplier
 	static D3DXHANDLE   eColor;        ///< Auxiliary color input
 	static D3DXHANDLE   eFogColor;     ///< Fog color input

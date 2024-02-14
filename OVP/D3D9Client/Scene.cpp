@@ -2851,13 +2851,20 @@ bool Scene::RenderVCProbes(vVessel* vV)
 		SMapInput smi = vV->GetSMapRenderData(vVessel::SMI::VC);
 		Casters.clear();
 
-		if (RenderShadowMap(&smi, smSS, Casters, true) < 0) {
-			LogErr("Failed to render shadow map for stage-set");
-		}
-		else {
+		if (ec->bRendered) {
 			vV->RenderInteriorENVMap(pDevice, ec, smSS);
 		}
-		itIC++;
+		else {
+			if (RenderShadowMap(&smi, smSS, Casters, true) < 0) {
+				LogErr("Failed to render shadow map for stage-set");
+			}
+			else {
+				vV->RenderInteriorENVMap(pDevice, ec, smSS);
+				return false;
+			}
+		}
+
+		itIC++; // Pick next camera
 	}
 
 	if (itIC == InteriorCams.cend()) // All done for this vessel
@@ -3265,12 +3272,12 @@ bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DTEXTURE9 pSrc)
 
 // ===========================================================================================
 //
-bool Scene::IntegrateIrradiance(vVessel *vV, LPDIRECT3DBASETEXTURE9 pIn, LPDIRECT3DTEXTURE9 pOut)
+bool Scene::IntegrateIrradiance(vVessel *vV, ENVCAMREC *ec, bool bInterior)
 {
-	if (!pIn) return false;
-	if (pIn->GetType() != D3DRTYPE_CUBETEXTURE) return false;
+	if (!ec) return false;
 
-	LPDIRECT3DCUBETEXTURE9 pSrc = (LPDIRECT3DCUBETEXTURE9)pIn;
+	LPDIRECT3DCUBETEXTURE9 pSrc = ec->pCube;
+	LPDIRECT3DTEXTURE9 pOut = ec->pIrrad;
 
 	if (!pIrradiance) {
 		pIrradiance = new ImageProcessing(pDevice, "Modules/D3D9Client/IrradianceInteg.hlsl", "PSInteg");
@@ -3293,7 +3300,7 @@ bool Scene::IntegrateIrradiance(vVessel *vV, LPDIRECT3DBASETEXTURE9 pIn, LPDIREC
 	LPDIRECT3DSURFACE9 pTmp = NULL;
 
 	if (!pIrradTemp) {
-		if (D3DXCreateTexture(pDevice, desc.Width, desc.Height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pIrradTemp) != S_OK) {
+		if (D3DXCreateTexture(pDevice, desc.Width*4, desc.Height*4, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pIrradTemp) != S_OK) {
 			LogErr("Failed to create irradiance temp");
 			return false;
 		}
@@ -3307,6 +3314,8 @@ bool Scene::IntegrateIrradiance(vVessel *vV, LPDIRECT3DBASETEXTURE9 pIn, LPDIREC
 	GetLVLH(vV, &up, &nr, &cp);
 
 	float Glow = float(Config->PlanetGlow);
+
+	if (bInterior) Glow = 4.0f;
 
 	pIrradiance->Activate("PSInteg");
 	pIrradiance->SetOutputNative(0, pTmp);

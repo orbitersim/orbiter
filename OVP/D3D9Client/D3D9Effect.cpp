@@ -115,10 +115,9 @@ D3DXHANDLE D3D9Effect::eRghnSw = 0;		// BOOL
 D3DXHANDLE D3D9Effect::eShadowToggle = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eEnvMapEnable = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eInSpace = 0;	// BOOL
-D3DXHANDLE D3D9Effect::eNoColor = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eLightsEnabled = 0;	// BOOL	
 D3DXHANDLE D3D9Effect::eBaseBuilding = 0; // BOOL
-D3DXHANDLE D3D9Effect::eCockpit = 0;
+D3DXHANDLE D3D9Effect::eCockpit = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eOITEnable = 0; // BOOL
 // --------------------------------------------------------------
 D3DXHANDLE D3D9Effect::eExposure = 0;
@@ -132,6 +131,8 @@ D3DXHANDLE D3D9Effect::eAttennuate = 0;
 D3DXHANDLE D3D9Effect::eInScatter = 0;
 D3DXHANDLE D3D9Effect::eInvProxySize = 0;
 D3DXHANDLE D3D9Effect::eGlowConst = 0;
+D3DXHANDLE D3D9Effect::eNoColor = 0;
+D3DXHANDLE D3D9Effect::eVCIrrad = 0;
 // --------------------------------------------------------------
 D3DXHANDLE D3D9Effect::eGlobalAmb = 0;	 
 D3DXHANDLE D3D9Effect::eSunAppRad = 0;	 
@@ -433,13 +434,14 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eSwitch		  = FX->GetParameterByName(0,"gPBRSw");
 	eRghnSw		  = FX->GetParameterByName(0,"gRghnSw");
 	eInSpace	  = FX->GetParameterByName(0,"gInSpace");			
-	eNoColor	  = FX->GetParameterByName(0,"gNoColor");	
 	eLightsEnabled = FX->GetParameterByName(0,"gLightsEnabled");	
 	eBaseBuilding = FX->GetParameterByName(0,"gBaseBuilding");
 	eCockpit	  = FX->GetParameterByName(0,"gCockpit");
 	eOITEnable	  = FX->GetParameterByName(0,"gOITEnable");
 
-	// General parameters -------------------------------------------------- 
+	// General parameters --------------------------------------------------
+	eNoColor	  = FX->GetParameterByName(0, "gNoColor");
+	eVCIrrad	  = FX->GetParameterByName(0, "gVCIrrad");
 	eSpecularMode = FX->GetParameterByName(0,"gSpecMode");
 	eLights		  = FX->GetParameterByName(0,"gLights");
 	eColor		  = FX->GetParameterByName(0,"gColor");

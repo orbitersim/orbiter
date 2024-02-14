@@ -17,6 +17,9 @@ float4 BakedVC_PS(float4 sc : VPOS, PBRData frg) : COLOR
 	float3 nrmW;
 	float3 cEmis;
 	float4 cDiff;
+	float3 cBL;
+	float3 cBA;
+	float3 cBAO;
 	float  fSmth, fMetal;
 	
 	// ======================================================================
@@ -44,16 +47,21 @@ float4 BakedVC_PS(float4 sc : VPOS, PBRData frg) : COLOR
 	//
 	if (gCfg.Emis) cEmis = tex2D(EmisS, frg.tex0.xy).rgb;
 	else		   cEmis = 0;
+	
+	// Load baked light emitters
+	//
+	if (gCfg.Baked) cBL = tex2D(BakedLightS, frg.tex0.xy).rgb;
+	else			cBL = 0.0f;
 
-	float3 cBL = 0;
-	float3 cBS = 0;
-	float3 cBAO = 0;
+	// Load baked ambient lights
+	//
+	if (gCfg.BakedAmb) cBA = tex2D(BakedSunS, frg.tex0.xy).rgb;
+	else			   cBA = 1.0f;
 
-	if (gCfg.Baked) {
-		cBL = tex2D(BakedLightS, frg.tex0.xy).rgb;
-		cBS = tex2D(BakedSunS, frg.tex0.xy).rgb;
-	}
+	// Load baked ambient occlusion (note: gCfg.BakedAO ahouldn't be enabled at the same time with gCfg.BakedAmb)
+	//
 	if (gCfg.BakedAO) cBAO = tex2D(BakedAOS, frg.tex0.xy).rgb;
+	else			  cBAO = 1.0f;
 	
 
 
@@ -87,7 +95,8 @@ float4 BakedVC_PS(float4 sc : VPOS, PBRData frg) : COLOR
 	// ======================================================================
 
 	cDiff.a = saturate(cDiff.a * gMtrlAlpha);
-	if (gNoColor) cDiff.rgb = 1;
+	cDiff.rgb = saturate(cDiff.rgb + gNoColor.rgb);
+	
 
 	// ======================================================================
 	// Some Precomputations
@@ -116,29 +125,32 @@ float4 BakedVC_PS(float4 sc : VPOS, PBRData frg) : COLOR
 	float fRgh = saturate(1.0f - fSmth);
 	float fRgh3 = fRgh*fRgh*fRgh;
 
-/*
-#if defined(_ENVMAP)
-	if (gEnvMapEnable) {
-		// ======================================================================
-		// Sample Env Map
-		SampleEnvMap(cEnv, dCN, fRgh, fMetal, rflW, nrmW);
-	}
+
 	// ======================================================================
-	// Sample Irradiance Map
-	float3 cAmbient = Paraboloidal_LVLH(IrradS, nrmW).rgb;
-	cAmbient *= cAmbient;
-	//cAmbient = saturate(cAmbient * (1.0f + 15.0f * gNightTime));	
-	// Apply base ambient light
-	cAmbient = max(cAmbient, gSun.Ambient);
+	// Sample reflections and irradiance
+	// ======================================================================
+
+#if defined(_ENVMAP)
+	if (gEnvMapEnable)
+	{
+		SampleEnvMap(cEnv, dCN, fRgh, fMetal, rflW, nrmW);
+
+		// Use dynamic ambient light if baked doesn't exists
+		if (!gCfg.BakedAmb) {
+			float3 cP = Paraboloidal_LVLH(IrradS, nrmW).rgb;
+			cBA *= pow(abs(cP), gVCIrrad.w) * cBAO * gVCIrrad.rgb;
+		}
+	}
 #else
 #endif
-	cAmbient *= (1.0f - fMetal); // No ambient for metals
-*/
+
+	cBA *= (1.0f - fMetal);		// No ambient for metals
 
 
 	// ======================================================================
 	// Add vessel self-shadows
 	// ======================================================================
+
 #if SHDMAP > 0
 	if (gCockpit) {
 		cSun *= smoothstep(0, 0.72, ComputeShadowVC(frg.shdH, dLN, sc));
@@ -149,9 +161,11 @@ float4 BakedVC_PS(float4 sc : VPOS, PBRData frg) : COLOR
 #endif
 	
 
+
 	// ======================================================================
 	// Main shader core MetalnessPS
 	// ======================================================================
+
 	float  fD = GGX_NDF(dHN, lerp(0.01f, 1.0f, fRgh3));
 	float  fG = SchlickBeckmanGSF(dLN, dCN, fRgh);
 	float  fR = DiffuseRetroReflectance(dLN, dCN, dLH, fRgh, fMetal); 
@@ -189,12 +203,16 @@ float4 BakedVC_PS(float4 sc : VPOS, PBRData frg) : COLOR
 	// Add a faint diffuse hue for rough metals. Rough metal doesn't look good if it's totally black
 	fA += fRgh * fMetal * 0.05f;
 
+	// Light
+	float3 zL = Sq(cSun * fR * dLN) + Sq(cBL) + Sq(cBA) + Sq(gVCAmbient);
+
 	// gVCAmbient is an application and debug controls controllable variable
-	float3 zD = cDiff.rgb * fA * LightFXSq(gMtrl.diffuse.rgb * (Sq(cSun * fR * dLN)) + Sq(gMtrl.emissive.rgb) + Sq(cBL) + Sq(cBS) + Sq(gVCAmbient));
+	float3 zD = cDiff.rgb * fA * LightFXSq(gMtrl.diffuse.rgb * zL + Sq(gMtrl.emissive.rgb));
 
 	// Combine specular terms
 	float3 zS = cS * (cSun * dLN);		
-	
+
+	// Combine Diffuse, Specular and Environment
 	cDiff.rgb = zD + zS + cE;
 
 	// Override material alpha to make reflections visible

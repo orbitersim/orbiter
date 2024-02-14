@@ -239,7 +239,7 @@ float4 PBR_PS(float4 sc : VPOS, PBRData frg) : COLOR
 
 	// Special alpha only texture in use, set the .rgb to 1.0f
 	// Used for panel background lighting in Delta Glider
-	if (gNoColor) cDiff.rgb = 1;
+	cDiff.rgb = saturate(cDiff.rgb + gNoColor.rgb);
 
 	// ------------------------------------------------------------------------
 	cDiff.rgb *= diffBaked;				// Lit the texture
@@ -408,7 +408,7 @@ float4 FAST_PS(float4 sc : VPOS, FASTData frg) : COLOR
 	if (gOITEnable) if (cDiff.a < 0.5f) clip(-1);
 
 	if (gFullyLit) {
-		if (gNoColor) cDiff.rgb = 1;
+		cDiff.rgb = saturate(cDiff.rgb + gNoColor.rgb);
 		cDiff.rgb *= saturate(gMtrl.diffuse.rgb + gMtrl.emissive.rgb);
 	}
 	else {
@@ -422,7 +422,7 @@ float4 FAST_PS(float4 sc : VPOS, FASTData frg) : COLOR
 		float3 cSun  = saturate(gSun.Color);
 		float  dLN   = saturate(-dot(gSun.Dir, nrmW));
 
-		if (gNoColor) cDiff.rgb = 1;
+		cDiff.rgb = saturate(cDiff.rgb + gNoColor.rgb);
 
 		// ----------------------------------------------------------------------
 		// Add vessel self-shadows

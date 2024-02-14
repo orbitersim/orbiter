@@ -243,3 +243,4 @@
 #define IDC_DBG_NOPLNAMB                        3061
 #define IDC_DBG_DATASRC                         3062
 #define IDC_DBG_NODYNSUN                        3063
+#define IDC_DBG_BKLGROUP                        3064

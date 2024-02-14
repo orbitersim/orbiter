@@ -69,8 +69,9 @@ struct Flow
 	bool Norm;		// Enable normal map
 	bool Metl;		// Enable metalness map
 	bool Heat;		// Enable heat map
-	bool Baked;		// Enable pre-baked maps
+	bool Baked;		// Enable pre-baked local light map
 	bool BakedAO;	// Enable pre-baked AO map
+	bool BakedAmb;	// Enable pre-baked Ambient light map
 };
 
 
@@ -100,10 +101,12 @@ uniform extern float4    gRadius;           // PlanetRad, AtmOuterLimit, CameraR
 uniform extern float4    gSHD;				// ShadowMap data
 uniform extern float4    gSHDPx;			// Shadow resolution [Pixels / meter] for each cascade
 uniform extern float4	 gSHDSubRect[3];	// Shadow cascade sub-rects
+uniform extern float4	 gVCIrrad;			// Virtual Cockpit ambient lighting control
 uniform extern float3    gCameraPos;        // Planet relative camera position, Unit vector
 uniform extern float3    gNorth;
 uniform extern float3    gEast;
 uniform extern float3	 gVCAmbient;		// Ambient level inside virtual cockpit
+uniform extern float3	 gNoColor;			// No Color option.
 uniform extern Sun		 gSun;				// Sun light direction
 uniform extern Mat       gMat;			    // Material input structure  TODO:  Remove all reference to this. Use gMtrl
 uniform extern Mat       gWater;			// Water material input structure
@@ -120,7 +123,6 @@ uniform extern bool      gNight;			// Nighttime/Daytime
 uniform extern bool      gShadowsEnabled;	// Enable shadow maps
 uniform extern bool      gEnvMapEnable;		// Enable Environment mapping
 uniform extern bool		 gInSpace;			// True if a mesh is located in space
-uniform extern bool		 gNoColor;			// No color flag
 uniform extern bool		 gBaseBuilding;
 uniform extern bool		 gOITEnable;
 uniform extern bool		 gCockpit;

@@ -937,6 +937,15 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, const SHADOWMAP *shd, DWORD flg)
 			if (Shader != SHADER_LEGACY)
 			{
 				if (mFlags & MESHFLAG_VC) {
+					if (ec) {
+						float f = ec->da_force * 60.0f;
+						float b = ec->da_bounch * 2.0f;
+						float c = ec->da_curve * 3.0f;
+						if (scn->GetRenderPass() != RENDERPASS_MAINSCENE)					
+							D3D9Effect::FX->SetValue(D3D9Effect::eVCIrrad, &D3DXVECTOR4(b, b, b, 1.0f), sizeof(D3DXVECTOR4));
+						else
+							D3D9Effect::FX->SetValue(D3D9Effect::eVCIrrad, &D3DXVECTOR4(f, f, f, c), sizeof(D3DXVECTOR4));
+					}
 					if (bSL) pMesh->Render(pWT, ec, RENDER_VESSEL);
 					else pMesh->Render(pWT, ec, RENDER_VC);
 				}
@@ -1341,7 +1350,7 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, ENVCAMREC* ec, DWORD cnt, DWO
 	//
 	if (!ec->pIrrad)
 	{	
-		if (D3DXCreateTexture(pDev, 128, 64, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &ec->pIrrad) != S_OK) {
+		if (D3DXCreateTexture(pDev, 128, 64, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &ec->pIrrad) != S_OK) {
 			LogErr("Failed to create irradiance map for visual %s", _PTR(this));
 			return true;
 		}
@@ -1353,7 +1362,7 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, ENVCAMREC* ec, DWORD cnt, DWO
 	if (ec->bRendered) {
 		if (ec->pCube) {
 			scn->RenderBlurredMap(pDev, ec->pCube);
-			scn->IntegrateIrradiance(this, ec->pCube, ec->pIrrad);
+			scn->IntegrateIrradiance(this, ec, false);
 		}
 		// TODO: Blur 2D plane map
 		return true;
@@ -1498,7 +1507,18 @@ bool vVessel::RenderInteriorENVMap(LPDIRECT3DDEVICE9 pDev, ENVCAMREC* ec, SHADOW
 		}
 	}
 
-	
+
+	// Compute blur and irradiance --------------------------------------------------------------------------
+	//
+	if (ec->bRendered) {
+		scn->RenderBlurredMap(pDev, ec->pCube);
+		scn->IntegrateIrradiance(this, ec, true);
+		ec->bRendered = false;
+		return true;
+	}
+
+
+
 	// Render EnvMaps ---------------------------------------------------------------------------------------
 	//
 	std::set<vVessel*> RndList;
@@ -1552,12 +1572,11 @@ bool vVessel::RenderInteriorENVMap(LPDIRECT3DDEVICE9 pDev, ENVCAMREC* ec, SHADOW
 		gc->PopRenderTargets();
 		scn->PopPass();
 		scn->PopCamera();
-	
-		scn->RenderBlurredMap(pDev, ec->pCube);
-		scn->IntegrateIrradiance(this, ec->pCube, ec->pIrrad);
+
+		ec->bRendered = true;
 	}
 
-	return true;
+	return false;
 }
 
 
@@ -1999,6 +2018,17 @@ void vVessel::SetVisualProperty(VisualProp prp, int idx, const type_info& t, con
 		}
 	}
 
+	if (t == typeid(float))
+	{
+		float* v = (float*)val;
+		auto ec = GetEnvCam(EnvCamType::Interior, idx);
+		if (ec) {
+			if (prp == VisualProp::DA_CURVE) ec->da_curve = *v;
+			if (prp == VisualProp::DA_BOUNCH) ec->da_bounch = *v;
+			if (prp == VisualProp::DA_FORCE) ec->da_force = *v;
+		}
+	}
+
 	oapiWriteLogV("Failed to set visual property prp=%d, type=[%s]", int(prp), t.name());
 }
 
@@ -2019,6 +2049,17 @@ bool vVessel::GetVisualProperty(VisualProp prp, int idx, const type_info& t, voi
 			return true;
 		}
 	}
+
+	if (t == typeid(float))
+	{
+		auto ec = GetEnvCam(EnvCamType::Interior, idx);
+		if (ec) {
+			if (prp == VisualProp::DA_CURVE) *((float*)val) = ec->da_curve;
+			if (prp == VisualProp::DA_BOUNCH) *((float*)val) = ec->da_bounch;
+			if (prp == VisualProp::DA_FORCE) *((float*)val) = ec->da_force;
+		}
+	}
+
 	oapiWriteLogV("Failed to get visual property prp=%d, type=[%s]", int(prp), t.name());
 	return false;
 }
