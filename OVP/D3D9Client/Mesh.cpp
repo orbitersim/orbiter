@@ -554,20 +554,23 @@ void D3D9Mesh::LoadBakedLights()
 			}
 		}
 
-		for (int j = 0; j < 6; j++)
+		if (Config->ExpVCLight == 0)
 		{
-			sprintf_s(id, " baked sunlight %s", GetDirName(j, 0));
-			LPDIRECT3DTEXTURE9 pTex = NatLoadSpecialTexture(Tex[i]->GetPath(), id, true);
-			if (pTex) {
-				if (BakedLights.find(i) == BakedLights.end()) ClearBake(i);
-				BakedLights[i].pSunAO[j] = pTex;
-			}
-			else {
-				sprintf_s(id, "_bs%s", GetDirName(j, 1));
+			for (int j = 0; j < 6; j++)
+			{
+				sprintf_s(id, " baked sunlight %s", GetDirName(j, 0));
 				LPDIRECT3DTEXTURE9 pTex = NatLoadSpecialTexture(Tex[i]->GetPath(), id, true);
 				if (pTex) {
 					if (BakedLights.find(i) == BakedLights.end()) ClearBake(i);
 					BakedLights[i].pSunAO[j] = pTex;
+				}
+				else {
+					sprintf_s(id, "_bs%s", GetDirName(j, 1));
+					LPDIRECT3DTEXTURE9 pTex = NatLoadSpecialTexture(Tex[i]->GetPath(), id, true);
+					if (pTex) {
+						if (BakedLights.find(i) == BakedLights.end()) ClearBake(i);
+						BakedLights[i].pSunAO[j] = pTex;
+					}
 				}
 			}
 		}
@@ -1928,11 +1931,11 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, const ENVCAMREC* em, int iTech)
 		FX->SetBool(eEnvMapEnable, false);
 	}
 
-	bool bNoAmbient = false;
+	bool bNoAmbient = (Config->ExpVCLight == 1);
 
-	if (DebugControls::IsActive()) {
+	/*if (DebugControls::IsActive()) {
 		bNoAmbient = (flags & DBG_FLAGS_NOSUNAMB) != 0 & (flags & DBG_FLAGS_NOPLNAMB) != 0;
-	}
+	}*/
 
 
 

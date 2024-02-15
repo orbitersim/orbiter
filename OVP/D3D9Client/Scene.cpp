@@ -264,10 +264,10 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 
 	// Create a random number table --------------------------------------------------------------------------------------------------
 	//
-	HR(D3DXCreateTexture(pDevice, 64, 64, 1, D3DUSAGE_DYNAMIC, D3DFMT_R32F, D3DPOOL_DEFAULT, &ptRandom));
+	HR(D3DXCreateTexture(pDevice, 128, 128, 1, D3DUSAGE_DYNAMIC, D3DFMT_R32F, D3DPOOL_DEFAULT, &ptRandom));
 	D3DLOCKED_RECT rect;
 	if (ptRandom->LockRect(0, &rect, 0, 0) == S_OK) {
-		for (int i = 0; i < (64 * 64); i++) ((float*)rect.pBits)[i] = oapiRand();
+		for (int i = 0; i < (128 * 128); i++) ((float*)rect.pBits)[i] = oapiRand();
 		ptRandom->UnlockRect(0);
 	} else LogErr("Failed to create random table");
 
@@ -3282,6 +3282,7 @@ bool Scene::IntegrateIrradiance(vVessel *vV, ENVCAMREC *ec, bool bInterior)
 	if (!pIrradiance) {
 		pIrradiance = new ImageProcessing(pDevice, "Modules/D3D9Client/IrradianceInteg.hlsl", "PSInteg");
 		pIrradiance->CompileShader("PSPostBlur");
+		pIrradiance->CompileShader("PSPostBlurIntr");
 	}
 
 	if (!pIrradiance->IsOK()) {
@@ -3299,8 +3300,14 @@ bool Scene::IntegrateIrradiance(vVessel *vV, ENVCAMREC *ec, bool bInterior)
 	D3DXVECTOR3 nr, up, cp;
 	LPDIRECT3DSURFACE9 pTmp = NULL;
 
+	UINT size = bInterior ? 3 : 1;
+	UINT W = desc.Width * size;
+	UINT H = desc.Height * size;
+
+
+
 	if (!pIrradTemp) {
-		if (D3DXCreateTexture(pDevice, desc.Width*4, desc.Height*4, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pIrradTemp) != S_OK) {
+		if (D3DXCreateTexture(pDevice, W, H, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pIrradTemp) != S_OK) {
 			LogErr("Failed to create irradiance temp");
 			return false;
 		}
@@ -3347,8 +3354,10 @@ bool Scene::IntegrateIrradiance(vVessel *vV, ENVCAMREC *ec, bool bInterior)
 	// ---------------------------------------------------------------------
 	// Post Blur
 	//
-	pIrradiance->Activate("PSPostBlur");
-	pIrradiance->SetFloat("fD", ptr(D3DXVECTOR2(1.0f / float(desc.Width), 1.0f / float(desc.Height))), sizeof(D3DXVECTOR2));
+	if (bInterior)	pIrradiance->Activate("PSPostBlurIntr");
+	else			pIrradiance->Activate("PSPostBlur");
+
+	pIrradiance->SetFloat("fD", ptr(D3DXVECTOR2(1.0f / float(W), 1.0f / float(H))), sizeof(D3DXVECTOR2));
 	pIrradiance->SetOutputNative(0, pOuts);
 	pIrradiance->SetTextureNative("tSrc", pIrradTemp, IPF_POINT | IPF_WRAP);
 

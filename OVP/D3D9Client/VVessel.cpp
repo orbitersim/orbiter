@@ -731,7 +731,7 @@ void vVessel::BakeLights(ImageProcessing *pBaker)
 			{
 				auto vSun = tmul(FVECTOR4(sundir, 0), mW);
 				if (bMustRebake) meshlist[i].mesh->BakeLights(pBaker, BakedLightsControl);
-				meshlist[i].mesh->BakeAO(pBaker, vSun.xyz, lvlh, maps->pIrrad);
+				if (Config->ExpVCLight == 0) meshlist[i].mesh->BakeAO(pBaker, vSun.xyz, lvlh, maps->pIrrad);
 			}
 		}
 	}
@@ -917,7 +917,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, const SHADOWMAP *shd, DWORD flg)
 		//
 		if (scn->GetRenderPass() == RENDERPASS_VC_SHADOWMAP)
 		{
-			if (mFlags & MESHFLAG_SHADOW_VC || mFlags & MESHFLAG_VC)
+			if (mFlags & MESHFLAG_SHADOW_VC)
 				pMesh->RenderShadowMap(pWT, pLVP, 0, bVC);
 		}
 		else if (scn->GetRenderPass() == RENDERPASS_SHADOWMAP)
@@ -1478,7 +1478,7 @@ bool vVessel::RenderInteriorENVMap(LPDIRECT3DDEVICE9 pDev, ENVCAMREC* ec, SHADOW
 {
 	if (!ec) return true;
 
-	LPDIRECT3DSURFACE9 pEnvDS = GetScene()->GetDepthStencil(256);
+	LPDIRECT3DSURFACE9 pEnvDS = GetScene()->GetDepthStencil(128);
 
 	if (!pEnvDS) {
 		LogErr("RenderInteriorENVMap() DS doesn't exists");
@@ -1512,7 +1512,7 @@ bool vVessel::RenderInteriorENVMap(LPDIRECT3DDEVICE9 pDev, ENVCAMREC* ec, SHADOW
 	//
 	if (ec->bRendered) {
 		scn->RenderBlurredMap(pDev, ec->pCube);
-		scn->IntegrateIrradiance(this, ec, true);
+		if (Config->ExpVCLight) scn->IntegrateIrradiance(this, ec, true);
 		ec->bRendered = false;
 		return true;
 	}

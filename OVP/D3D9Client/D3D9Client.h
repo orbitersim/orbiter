@@ -34,7 +34,7 @@
 #include "WindowMgr.h"
 
 #define SHM_CASCADE_COUNT	3
-#define SHM_LOD_COUNT		5
+#define SHM_LOD_COUNT		6
 
 
 #define PP_DEFAULT			0x1
@@ -99,9 +99,9 @@ struct ENVCAMREC
 	FVECTOR3		lPos = { 0,0,0 };	///< Camera local position
 	FVECTOR3		lDir = { 1,0,0 };	///< Camera local direction (in 'PLANE' mode only)
 	float			near_clip = 0.1f;	///< Near clip-plane distance
-	float			da_curve = 0.5f;
-	float			da_bounch = 0.38f;
-	float			da_force = 0.055f;
+	float			da_curve = 0.4f;
+	float			da_bounch = 0.5f;
+	float			da_force = 0.2f;
 	int				mesh_idx = -1;		///< Camera is attached to a mesh 
 	int				group_idx = -1;		///< Camera is attached to a group
 	int				id = -1;			///< User Id, for binding

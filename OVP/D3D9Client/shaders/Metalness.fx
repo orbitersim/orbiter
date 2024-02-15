@@ -357,7 +357,10 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 	// Add a faint diffuse hue for rough metals. Rough metal doesn't look good if it's totally black
 	fA += fRgh * fMetal * 0.05f;
 
-	float3 zD = cDiff.rgb * fA * LightFXSq(gMtrl.diffuse.rgb * (Sq(cSun * fR * dLN) + cDiffLocal + Sq(cAmbient)) + Sq(gMtrl.emissive.rgb));
+	// Light terms
+	float3 zL = Sq(cSun * fR * dLN) + cDiffLocal + Sq(cAmbient);
+
+	float3 zD = cDiff.rgb * fA * LightFXSq(gMtrl.diffuse.rgb * zL + Sq(gMtrl.emissive.rgb));
 
 	// Combine specular terms
 	// float3 zS = cS * (cSun * dLN) + cSpec * LightFX(cSpecLocal) * 0.5f;
