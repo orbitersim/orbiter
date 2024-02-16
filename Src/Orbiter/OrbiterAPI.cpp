@@ -1893,6 +1893,11 @@ DLLEXPORT void oapiVCSetAreaClickmode_Quadrilateral (int id, const VECTOR3 &p1, 
 	g_pane->SetVCAreaClickmode_Quadrilateral (id, Vector(p1.x, p1.y, p1.z), Vector(p2.x,p2.y,p2.z), Vector(p3.x,p3.y,p3.z), Vector(p4.x,p4.y,p4.z));
 }
 
+DLLEXPORT void oapiVCGetAreaClickZones(std::list<VCClickZone>* p_List)
+{
+	g_pane->GetVCAreaClickZones(p_List);
+}
+
 DLLEXPORT oapi::Sketchpad *oapiGetSketchpad (SURFHANDLE surf)
 {
 	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();

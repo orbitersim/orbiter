@@ -191,9 +191,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	// ------------------------------------------------------------------------------
 	// Load a mesh to create a stage
 	//
-	MESHHANDLE hCubeMesh = oapiLoadMeshGlobal("D3D9Cube");
-	if (!hCubeMesh) { oapiWriteLog("Failed to open D3D9Cube.msh"); DebugBreak(); }
-	dmCubeMesh = gc->GetDevMesh(hCubeMesh);
+	dmCubeMesh = (DEVMESHHANDLE) new D3D9Mesh("D3D9Cube");
 	pRenderStage = new ShaderClass(pDevice, "Modules/D3D9Client/Custom.hlsl", "StageVS", "StagePS", "RenderStage", "");
 
 

@@ -1416,7 +1416,6 @@ private:
 	LPDIRECT3DSURFACE9		pDepthStencil;
 	CD3DFramework9 *		pFramework;
 	const D3DCAPS9 *		pCaps;
-	//FileParser *			parser;
 	std::string				scenarioName;
 	HANDLE					hMainThread;
 	WindowManager *			pWM;

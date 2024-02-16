@@ -28,6 +28,7 @@
 #include <float.h>
 #include <math.h>
 #include <vector>
+#include <list>
 
 #if defined(_MSC_VER) && (_MSC_VER < 1920 ) // Microsoft Visual Studio Version 2017 and lower
 #include <algorithm>
@@ -329,6 +330,18 @@ typedef struct {
 	DWORD TexIdxEx[MAXTEX]; ///< additional texture indices
 	float TexMixEx[MAXTEX]; ///< texture mix values
 } MESHGROUPEX;
+
+
+typedef struct {
+	union {
+		VECTOR3 pt[4];
+		struct {
+			VECTOR3 cnt;
+			float rad;
+		};
+	};
+	int id, mode;
+} VCClickZone;
 
 /**
  * \ingroup defines
@@ -5869,6 +5882,8 @@ OAPIFUNC void       oapiVCSetAreaClickmode_Spherical (int id, const VECTOR3 &cnt
 	* \sa VESSEL2::clbkVCMouseEvent
 	*/
 OAPIFUNC void       oapiVCSetAreaClickmode_Quadrilateral (int id, const VECTOR3 &p1, const VECTOR3 &p2, const VECTOR3 &p3, const VECTOR3 &p4);
+
+OAPIFUNC void		oapiVCGetAreaClickZones(std::list<VCClickZone>* p_List);
 
 	/**
 	* \brief Defines the neighbouring virtual cockpit camera positions in relation to the current

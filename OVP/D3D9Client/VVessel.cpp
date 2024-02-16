@@ -117,8 +117,10 @@ vVessel::~vVessel ()
 void vVessel::GlobalInit(D3D9Client *gc)
 {
 	_TRACE;
+	auto pDevice = gc->GetDevice();
 	defreentrytex = SURFACE(gc->clbkLoadTexture("Reentry.dds", 0));
 	defexhausttex = SURFACE(gc->clbkLoadTexture("Exhaust.dds", 0));
+	pRenderZone = new ShaderClass(pDevice, "Modules/D3D9Client/Custom.hlsl", "QuadVS", "QuadPS", "RenderZones", "");
 }
 
 
@@ -128,6 +130,7 @@ void vVessel::GlobalExit ()
 {
 	DELETE_SURFACE(defexhausttex);
 	DELETE_SURFACE(defreentrytex);
+	SAFE_DELETE(pRenderZone);
 }
 
 
@@ -970,12 +973,65 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, const SHADOWMAP *shd, DWORD flg)
 			}
 
 			RenderLightCone(&mWorld);
+
+			dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+			if (flags & DBG_FLAGS_VCZONES) RenderClickZones();
 		}
 	}
 
 	HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, false))
 
 	return true;
+}
+
+
+// ============================================================================================
+//
+void vVessel::RenderClickZones()
+{
+	std::list<VCClickZone> Zones;
+	oapiVCGetAreaClickZones(&Zones);
+
+	auto hPS = pRenderZone->GetPSHandle("cb");
+	auto hVS = pRenderZone->GetVSHandle("cb");
+
+	pRenderZone->Setup(nullptr, false, 1);
+
+	struct {
+		FVECTOR3 pt[4];
+		FVECTOR4 color;
+		FMATRIX4 mW;
+		FMATRIX4 mVP;
+		BOOL	 bSphere;
+	} cb;
+
+	cb.mW = mWorld;
+	cb.mVP = scn->GetProjectionViewMatrix();
+
+	cb.bSphere = false;
+	for (auto& z : Zones)
+	{
+		if (z.mode == 2) { // Quadrilateral
+			for (int i = 0; i < 4; i++) cb.pt[i] = z.pt[i];
+			cb.color = FVECTOR4(1.0f, 1.0f, 0.0f, 1.0f);
+			pRenderZone->SetPSConstants(hPS, &cb, sizeof(cb));
+			pRenderZone->SetVSConstants(hVS, &cb, sizeof(cb));
+			hStockMesh[D3D9SM_BOX]->RenderGroup(0);
+		}
+	}
+
+	cb.bSphere = true;
+	for (auto& z : Zones)
+	{
+		if (z.mode == 1) { // Spherical
+			cb.pt[0] = z.cnt;
+			cb.pt[1] = z.rad;
+			cb.color = FVECTOR4(0.3f, 1.0f, 1.0f, 1.0f);
+			pRenderZone->SetPSConstants(hPS, &cb, sizeof(cb));
+			pRenderZone->SetVSConstants(hVS, &cb, sizeof(cb));
+			hStockMesh[D3D9SM_SPHERE]->RenderGroup(0);
+		}
+	}
 }
 
 
@@ -2333,6 +2389,7 @@ void vVessel::ReloadTextures()
 
 SurfNative * vVessel::defreentrytex = 0;
 SurfNative * vVessel::defexhausttex = 0;
+ShaderClass* vVessel::pRenderZone = 0;
 
 
 // ==============================================================

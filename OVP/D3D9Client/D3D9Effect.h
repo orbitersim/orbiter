@@ -9,6 +9,7 @@
 
 #define D3D9SM_SPHERE	0x01
 #define D3D9SM_ARROW	0x02
+#define D3D9SM_BOX		0x03
 
 #include "D3D9Client.h"
 #include <d3d9.h> 

@@ -246,6 +246,9 @@ D3D9Mesh::D3D9Mesh(const char *fname) : D3D9Effect()
 		LoadMeshFromHandle(hMesh);
 		oapiDeleteMesh(hMesh);
 	}
+	else {
+		LogErr("Failed to load [%s]", fname);
+	}
 
 	MeshCatalog.insert(this);
 	if (pBuf) pBuf->Map(pDev);

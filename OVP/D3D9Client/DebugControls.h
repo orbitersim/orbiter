@@ -67,6 +67,7 @@
 #define DBG_FLAGS_NOSUNAMB				0x40000 ///< Disable sun ambient effect in VC
 #define DBG_FLAGS_NOPLNAMB				0x80000 ///< Disable planet shine ambient effect in VC
 #define DBG_FLAGS_NODYNSUN				0x100000 ///< Disable dynamic sunlight
+#define DBG_FLAGS_VCZONES				0x200000 ///< Display VC Click Zones 
 /// @}
 
 

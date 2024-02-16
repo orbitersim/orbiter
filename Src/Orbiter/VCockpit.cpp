@@ -346,6 +346,20 @@ bool VirtualCockpit::SetClickZone_Quadrilateral (int i,
 	return true;
 }
 
+void VirtualCockpit::GetClickZones(std::list<VCClickZone>* p_List)
+{
+	if (!p_List) return;
+	for (int i = 0; i < narea; i++) {
+		auto& a = area[i];
+		VCClickZone A;
+		A.id = a->id;
+		A.mode = a->cmode;
+		if (a->cmode == Area::ClickMode::CMODE_QUAD) for (int k = 0; k < 4; k++) A.pt[k] = _V(a->p[k]);
+		if (a->cmode == Area::ClickMode::CMODE_SPHERICAL) { A.cnt = _V(a->cnt); A.rad = a->rad; }
+		p_List->push_back(A);
+	}	
+}
+
 bool VirtualCockpit::ProcessMouse (UINT event, DWORD state, int x, int y)
 {
 	mstate = 0;

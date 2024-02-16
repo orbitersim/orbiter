@@ -244,3 +244,4 @@
 #define IDC_DBG_DATASRC                         3062
 #define IDC_DBG_NODYNSUN                        3063
 #define IDC_DBG_BKLGROUP                        3064
+#define IDC_DBG_VCZONES                         3065

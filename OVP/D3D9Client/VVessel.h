@@ -152,6 +152,7 @@ public:
 	void RenderGrapplePoints (LPDIRECT3DDEVICE9 dev);
 	void RenderGroundShadow (LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float depth);
 	void RenderVectors (LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp);
+	void RenderClickZones();
 	bool RenderENVMap (LPDIRECT3DDEVICE9 pDev, ENVCAMREC* ec, DWORD cnt = 2, DWORD flags = 0xFF);
 	bool RenderInteriorENVMap(LPDIRECT3DDEVICE9 pDev, ENVCAMREC* ec, SHADOWMAP* sm);
 	bool ProcessEnvMaps(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags);
@@ -258,6 +259,7 @@ private:
 	float ExhaustLength;
 
 	static class SurfNative *defreentrytex, *defexhausttex;
+	static class ShaderClass* pRenderZone;
 };
 
 #endif // !__VVESSEL_H
