@@ -100,7 +100,7 @@ struct ENVCAMREC
 	FVECTOR3		lDir = { 1,0,0 };	///< Camera local direction (in 'PLANE' mode only)
 	float			near_clip = 0.1f;	///< Near clip-plane distance
 	float			da_curve = 0.4f;
-	float			da_bounch = 0.5f;
+	float			da_bounch = 0.35f;
 	float			da_force = 0.2f;
 	int				mesh_idx = -1;		///< Camera is attached to a mesh 
 	int				group_idx = -1;		///< Camera is attached to a group

@@ -452,6 +452,8 @@ protected:
 	void RenderGlares();
 
 private:
+	void		ActivateLocalLights(vObject* vO, bool bInterior);
+	void		ActivateAllLocalLights(bool bInterior);
 	void		ComputeLocalLightsVisibility();
 	DWORD		GetActiveParticleEffectCount();
 	float		ComputeNearClipPlane();

@@ -1062,29 +1062,6 @@ void Scene::UpdateCamVis()
 	bg_rgba = D3DCOLOR_RGBA ((int)(sky_color.x*255), (int)(sky_color.y*255), (int)(sky_color.z*255), 255);
 
 
-	// Process Local Light Sources -------------------------------------
-	//
-	if (bLocalLight) {
-
-		ClearLocalLights();
-
-		VOBJREC *pv = NULL;
-		for (auto pv : Visuals) {
-			if (!pv->vobj->IsActive()) continue;
-			OBJHANDLE hObj = pv->vobj->Object();
-			if (oapiGetObjectType (hObj) == OBJTP_VESSEL) {
-				VESSEL *vessel = oapiGetVesselInterface (hObj);
-				DWORD nemitter = vessel->LightEmitterCount();
-				for (DWORD j = 0; j < nemitter; j++) {
-					const LightEmitter *em = vessel->GetLightEmitter(j);
-					if ((em->GetVisibility() == LightEmitter::VIS_EXTERNAL) || (em->GetVisibility() == LightEmitter::VIS_ALWAYS))
-						AddLocalLight(em, pv->vobj);
-				}
-			}
-		}
-	}
-
-
 	// ----------------------------------------------------------------
 	// render solar system celestial objects (planets and moons)
 	// we render without z-buffer, so need to distance-sort the objects
@@ -1138,6 +1115,38 @@ void Scene::AddLocalLight(const LightEmitter *le, const vObject *vo)
 		nLights++;
 	}
 }
+
+// ===========================================================================================
+//
+void Scene::ActivateAllLocalLights(bool bInterior)
+{
+	if (bLocalLight) {
+		ClearLocalLights();
+		for (auto pv : Visuals) if (pv) ActivateLocalLights(pv->vobj, bInterior);
+	}
+}
+
+
+// ===========================================================================================
+//
+void Scene::ActivateLocalLights(vObject *vO, bool bInterior)
+{
+	if (!vO) return;
+	if (!vO->IsActive()) return;
+	if (vO->Type() == OBJTP_VESSEL) {
+		VESSEL* vessel = ((vVessel*)vO)->GetInterface();
+		DWORD nemitter = vessel->LightEmitterCount();
+		for (DWORD j = 0; j < nemitter; j++) {
+			const LightEmitter* em = vessel->GetLightEmitter(j);
+			if (em->GetVisibility() == LightEmitter::VIS_ALWAYS) AddLocalLight(em, vO);
+			else {		
+				if ((em->GetVisibility() == LightEmitter::VIS_COCKPIT) && bInterior) AddLocalLight(em, vO);
+				if ((em->GetVisibility() == LightEmitter::VIS_EXTERNAL) && !bInterior) AddLocalLight(em, vO);		
+			}
+		}
+	}
+}
+
 
 // ===========================================================================================
 //
@@ -1302,6 +1311,7 @@ void Scene::clbkRenderMainScene()
 	D3D9SetTime(D3D9Stats.Timer.CamVis, scene_time);
 
 	UpdateCamVis();
+	ActivateAllLocalLights(false);
 
 	set<vVessel*> Active;
 	for (auto v : Vessels) if (v->IsActive()) Active.insert(v);
@@ -1466,6 +1476,7 @@ void Scene::clbkRenderMainScene()
 	// ---------------------------------------------------------------------------------------------
 
 	ComputeLocalLightsVisibility();
+	ActivateAllLocalLights(false);
 
 
 	// -------------------------------------------------------------------------------------------------------
@@ -1930,18 +1941,9 @@ void Scene::clbkRenderMainScene()
 
 	if (oapiCameraInternal() && vFocus && (oapiCockpitMode() == COCKPIT_VIRTUAL))
 	{
-		// switch cockpit lights on, external-only lights off
-		//
-		if (bLocalLight) {
-			ClearLocalLights();
-			VESSEL *vessel = oapiGetFocusInterface();
-			DWORD nemitter = vessel->LightEmitterCount();
-			for (DWORD j = 0; j < nemitter; j++) {
-				const LightEmitter *em = vessel->GetLightEmitter(j);
-				if ((em->GetVisibility() == LightEmitter::VIS_COCKPIT) || (em->GetVisibility() == LightEmitter::VIS_ALWAYS))
-					AddLocalLight(em, vFocus);
-			}
-		}
+		// Activate local lights for interior
+		ClearLocalLights();
+		ActivateLocalLights(vFocus, true);
 
 		pDevice->Clear(0, NULL, D3DCLEAR_ZBUFFER,  0, 1.0f, 0L); // clear z-buffer
 
@@ -2913,36 +2915,16 @@ void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList,
 	// Process Local Light Sources -------------------------------------
 	// And toggle external lights on
 	//
-	if (bLocalLight) {
-
-		ClearLocalLights();
-
+	if (bLocalLight)
+	{
+		ClearLocalLights(); 
 		for (auto vVes : RndList) {
-			if (!vVes->IsActive()) continue;
-			VESSEL *vessel = vVes->GetInterface();
-			DWORD nemitter = vessel->LightEmitterCount();
-			for (DWORD j = 0; j < nemitter; j++) {
-				const LightEmitter *em = vessel->GetLightEmitter(j);
-				if (flags & SCN_VC)
-					if ((em->GetVisibility() == LightEmitter::VIS_COCKPIT) || (em->GetVisibility() == LightEmitter::VIS_ALWAYS)) AddLocalLight(em, vVes);
-					else 
-						if ((em->GetVisibility() == LightEmitter::VIS_EXTERNAL) || (em->GetVisibility() == LightEmitter::VIS_ALWAYS)) AddLocalLight(em, vVes);
-			}		
+			ActivateLocalLights(vVes, (flags && SCN_VC) != 0);
 		}
-
 		for (auto vVes : LightsList) {
 			if (!vVes->IsActive()) continue;
 			if (RndList.count(vVes)) continue; // Already included skip it
-			VESSEL *vessel = vVes->GetInterface();
-			DWORD nemitter = vessel->LightEmitterCount();
-			for (DWORD j = 0; j < nemitter; j++) {
-				const LightEmitter *em = vessel->GetLightEmitter(j);
-				if (flags & SCN_VC)
-					if ((em->GetVisibility() == LightEmitter::VIS_COCKPIT) || (em->GetVisibility() == LightEmitter::VIS_ALWAYS)) AddLocalLight(em, vVes);
-					else
-						if ((em->GetVisibility() == LightEmitter::VIS_EXTERNAL) || (em->GetVisibility() == LightEmitter::VIS_ALWAYS)) AddLocalLight(em, vVes);
-
-			}
+			ActivateLocalLights(vVes, (flags && SCN_VC) != 0);
 		}
 	}
 
@@ -3020,16 +3002,8 @@ void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList,
 //
 void Scene::RenderStageSet(const LPDIRECT3DCUBETEXTURE9 pCT)
 {
-	if (bLocalLight) {
-		ClearLocalLights();
-		VESSEL* vessel = vFocus->GetInterface();
-		DWORD nemitter = vessel->LightEmitterCount();
-		for (DWORD j = 0; j < nemitter; j++) {
-			const LightEmitter* em = vessel->GetLightEmitter(j);
-			if ((em->GetVisibility() == LightEmitter::VIS_COCKPIT) || (em->GetVisibility() == LightEmitter::VIS_ALWAYS))
-				AddLocalLight(em, vFocus);
-		}		
-	}
+	ClearLocalLights();
+	ActivateLocalLights(vFocus, true);
 	
 	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0xFF000000, 1.0f, 0L));
 	
