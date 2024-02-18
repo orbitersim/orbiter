@@ -354,8 +354,17 @@ void VirtualCockpit::GetClickZones(std::list<VCClickZone>* p_List)
 		VCClickZone A;
 		A.id = a->id;
 		A.mode = a->cmode;
-		if (a->cmode == Area::ClickMode::CMODE_QUAD) for (int k = 0; k < 4; k++) A.pt[k] = _V(a->p[k]);
-		if (a->cmode == Area::ClickMode::CMODE_SPHERICAL) { A.cnt = _V(a->cnt); A.rad = a->rad; }
+		if (a->cmode == Area::ClickMode::CMODE_QUAD) for (int k = 0; k < 4; k++) {
+			A.pt[k].x = a->p[k].x;
+			A.pt[k].y = a->p[k].y;
+			A.pt[k].z = a->p[k].z;
+		}
+		if (a->cmode == Area::ClickMode::CMODE_SPHERICAL) { 
+			A.cnt.x = a->cnt.x; 
+			A.cnt.y = a->cnt.y;
+			A.cnt.z = a->cnt.z;
+			A.rad = a->rad; 
+		}
 		p_List->push_back(A);
 	}	
 }
