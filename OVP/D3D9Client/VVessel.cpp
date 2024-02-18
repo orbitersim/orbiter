@@ -596,22 +596,25 @@ void vVessel::UpdateAnimations (int mshidx)
 
 // ============================================================================================
 //
-SMapInput vVessel::GetSMapRenderData(SMI type, int idx)
+bool vVessel::GetSMapRenderData(SMI type, int idx, SMapInput *sm)
 {
-	SMapInput sm; D3DXVECTOR3 cpos; float rad;
+	D3DXVECTOR3 cpos; float rad;
 
 	if (type == SMI::Visual) {
-		sm = { GetBoundingSpherePosDX(), FVECTOR3(-sundir), GetBoundingSphereRadius() };
+		*sm = { GetBoundingSpherePosDX(), FVECTOR3(-sundir), GetBoundingSphereRadius() };
+		return true;
 	}
 	if (type == SMI::VC) {
-		GetVCPos(&cpos, NULL, &rad);
-		sm = { cpos, FVECTOR3(-sundir), rad };
+		bool bRet = GetVCPos(&cpos, NULL, &rad);
+		*sm = { cpos, FVECTOR3(-sundir), rad };
+		return bRet;
 	}
 	if (type == SMI::Mesh) {
-		GetMeshPosition(idx, &cpos, nullptr, &rad);
-		sm = { cpos, FVECTOR3(-sundir), rad };
+		bool bRet = GetMeshPosition(idx, &cpos, nullptr, &rad);
+		*sm = { cpos, FVECTOR3(-sundir), rad };
+		return bRet;
 	}
-	return sm;
+	return false;
 }
 
 // ============================================================================================

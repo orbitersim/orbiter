@@ -80,12 +80,6 @@ public:
 
 private:
 
-	inline VECTOR3 _V(const Vector& v)
-	{
-		VECTOR3 vec = { v.x, v.y, v.z };
-		return vec;
-	}
-
 	inline int AreaIndex (int aid) const
 	{ 
 		for (int i = 0; i < narea; i++) if (area[i]->id == aid) return i;

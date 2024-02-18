@@ -1830,8 +1830,11 @@ void Scene::clbkRenderMainScene()
 	if (Config->ShadowMapMode >= 1)
 	{	
 		// Get shadowing params for vFocus
-		SMapInput smi = vFocus->GetSMapRenderData(vVessel::SMI::Visual);	
-		pExtShdMap = RenderObjectsInShadow(&smi, RenderList, pSketch);
+		SMapInput smi;
+		if (vFocus->GetSMapRenderData(vVessel::SMI::Visual, 0, &smi)) {
+			pExtShdMap = RenderObjectsInShadow(&smi, RenderList, pSketch);
+		}
+		else pExtShdMap = nullptr;
 	}
 
 
@@ -1841,7 +1844,9 @@ void Scene::clbkRenderMainScene()
 	{
 		// Don't render more shadows if debug controls are open to keep pExtShdMap valid
 
-		SMapInput smf = vFocus->GetSMapRenderData(vVessel::SMI::Visual);
+		SMapInput smf;
+		vFocus->GetSMapRenderData(vVessel::SMI::Visual, 0, &smf);
+
 		list<vVessel*> RenderThese;
 
 		// Select objects to render with shadow map
@@ -1854,8 +1859,10 @@ void Scene::clbkRenderMainScene()
 
 		while (RenderThese.size())
 		{		
-			SMapInput smi = RenderThese.front()->GetSMapRenderData(vVessel::SMI::Visual);
-			RenderObjectsInShadow(&smi, RenderThese, pSketch);
+			SMapInput smi;
+			if (RenderThese.front()->GetSMapRenderData(vVessel::SMI::Visual, 0, &smi)) {
+				RenderObjectsInShadow(&smi, RenderThese, pSketch);
+			}
 		}
 	}
 
@@ -2848,19 +2855,22 @@ bool Scene::RenderVCProbes(vVessel* vV)
 		vV->GetInterface()->Local2Global(ec->lPos._V(), gp);
 		ResetOrigin(gp);
 
-		SMapInput smi = vV->GetSMapRenderData(vVessel::SMI::VC);
-		Casters.clear();
+		SMapInput smi;
 
-		if (ec->bRendered) {
-			vV->RenderInteriorENVMap(pDevice, ec, smSS);
-		}
-		else {
-			if (RenderShadowMap(&smi, smSS, Casters, true) < 0) {
-				LogErr("Failed to render shadow map for stage-set");
+		if (vV->GetSMapRenderData(vVessel::SMI::VC, 0, &smi))
+		{
+			if (ec->bRendered) {
+				vV->RenderInteriorENVMap(pDevice, ec, smSS);
 			}
 			else {
-				vV->RenderInteriorENVMap(pDevice, ec, smSS);
-				return false;
+				Casters.clear();
+				if (RenderShadowMap(&smi, smSS, Casters, true) < 0) {
+					LogErr("Failed to render shadow map for stage-set");
+				}
+				else {
+					vV->RenderInteriorENVMap(pDevice, ec, smSS);
+					return false;
+				}
 			}
 		}
 

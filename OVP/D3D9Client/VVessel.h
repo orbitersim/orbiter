@@ -97,7 +97,7 @@ public:
 	bool IntersectShadowVolume(const SMapInput* shd);
 	bool IntersectShadowTarget(const SMapInput* shd);
 	void GetMinMaxLightDist(const SMapInput* shd, float* mind, float* maxd);
-	SMapInput GetSMapRenderData(SMI type, int idx = 0);
+	bool GetSMapRenderData(SMI type, int idx, SMapInput* sm);
 
 	void ReloadTextures();
 	

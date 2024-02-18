@@ -1,12 +1,15 @@
 // Copyright (c) Martin Schweiger
 // Licensed under the MIT License
 
+#define OAPI_IMPLEMENTATION
+
 #ifndef __VECMAT_H
 #define __VECMAT_H
 
 #include <math.h>
 #include <memory.h>
 #include <ostream>
+#include <OrbiterAPI.h>
 
 // =======================================================================
 // Some useful constants
@@ -166,6 +169,13 @@ public:
 		struct { double x, y, z; };
 	};
 };
+
+
+inline VECTOR3 _V(const Vector& v)
+{
+	return { v.x, v.y, v.z };
+}
+
 
 // =======================================================================
 // class Matrix
