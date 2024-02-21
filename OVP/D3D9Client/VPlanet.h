@@ -111,6 +111,7 @@ struct FlowControlPS
 	BOOL bMicroTex;				// Micro textures exists and enabled
 	BOOL bPlanetShadow;			// Use spherical approximation for shadow
 	BOOL bEclipse;				// Eclipse is occuring
+	BOOL bTexture;				// Surface texture exists
 };
 
 struct FlowControlVS
@@ -230,6 +231,7 @@ public:
 
 	void			TestComputations(Sketchpad *);
 
+	bool			HasTextures() { return bHasTextures; }
 	bool			IsMesh() { return mesh != NULL; }
 	bool			Update (bool bMainScene);
 	void			CheckResolution ();
@@ -410,6 +412,7 @@ private:
 	HazeManager *hazemgr;     // horizon haze rendering
 	HazeManager2 *hazemgr2;	  // horizon haze rendering
 	RingManager *ringmgr;     // ring manager
+	bool bHasTextures;
 	bool bRipple;             // render specular ripples on water surfaces
 	bool bVesselShadow;       // render vessel shadows on surface
 	bool bObjectShadow;       // render object shadows on surface

@@ -83,6 +83,7 @@ struct FlowControlPS
 	BOOL bMicroTex;				// Micro textures exists and enabled
 	BOOL bPlanetShadow;			// Use spherical approximation for shadow
 	BOOL bEclipse;				// Eclipse is occuring
+	BOOL bTexture;				// Surface texture exists
 };
 
 struct FlowControlVS
@@ -394,15 +395,17 @@ float4 TerrainPS(TileVS frg) : COLOR
 
 	vUVWtr.x += Const.Time / 180.0f;
 
-	float3 cNrm;
+	float3 cNrm = float3(0.5, 0.5, 1.0);
 	float fChA = 0.0f, fChB = 0.0f;
 
 #if defined(_RIPPLES)
-	cNrm = tex2D(tOcean, vUVWtr).xyz;
+	if (Flow.bTexture) cNrm = tex2D(tOcean, vUVWtr).xyz;
 #endif
 
 	// Fetch Main Textures
-	float4 cTex = tex2D(tDiff, vUVSrf);
+	float4 cTex = float4(0.5, 0.5, 0.5, 1.0);
+	if (Flow.bTexture) cTex = tex2D(tDiff, vUVSrf);
+
 	float4 cMsk = float4(0, 0, 0, 1);
 	if (Flow.bMask) cMsk = tex2D(tMask, vUVSrf);
 
@@ -443,17 +446,20 @@ float4 TerrainPS(TileVS frg) : COLOR
 #if defined(_MICROTEX)
 	float2 UV = frg.texUV.xy;
 	// Create normals
-	if (Flow.bMicroNormals) {
-		// Normal in .ag luminance in .b
-		cFar = tex2D(tMicroC, UV * Prm.vMSc[2].zw + Prm.vMSc[2].xy).agb;	// High altitude micro texture C
-		cMed = tex2D(tMicroB, UV * Prm.vMSc[1].zw + Prm.vMSc[1].xy).agb;	// Medimum altitude micro texture B
-		cLow = tex2D(tMicroA, UV * Prm.vMSc[0].zw + Prm.vMSc[0].xy).agb;	// Low altitude micro texture A
-	}
-	else {
-		// Color in .rgb no normals
-		cFar = tex2D(tMicroC, UV * Prm.vMSc[2].zw + Prm.vMSc[2].xy).rgb;	// High altitude micro texture C
-		cMed = tex2D(tMicroB, UV * Prm.vMSc[1].zw + Prm.vMSc[1].xy).rgb;	// Medimum altitude micro texture B
-		cLow = tex2D(tMicroA, UV * Prm.vMSc[0].zw + Prm.vMSc[0].xy).rgb;	// Low altitude micro texture A
+	if (Flow.bMicroTex)
+	{
+		if (Flow.bMicroNormals) {
+			// Normal in .ag luminance in .b
+			cFar = tex2D(tMicroC, UV * Prm.vMSc[2].zw + Prm.vMSc[2].xy).agb;	// High altitude micro texture C
+			cMed = tex2D(tMicroB, UV * Prm.vMSc[1].zw + Prm.vMSc[1].xy).agb;	// Medimum altitude micro texture B
+			cLow = tex2D(tMicroA, UV * Prm.vMSc[0].zw + Prm.vMSc[0].xy).agb;	// Low altitude micro texture A
+		}
+		else {
+			// Color in .rgb no normals
+			cFar = tex2D(tMicroC, UV * Prm.vMSc[2].zw + Prm.vMSc[2].xy).rgb;	// High altitude micro texture C
+			cMed = tex2D(tMicroB, UV * Prm.vMSc[1].zw + Prm.vMSc[1].xy).rgb;	// Medimum altitude micro texture B
+			cLow = tex2D(tMicroA, UV * Prm.vMSc[0].zw + Prm.vMSc[0].xy).rgb;	// Low altitude micro texture A
+		}
 	}
 #endif
 
