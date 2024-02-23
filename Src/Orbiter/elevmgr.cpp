@@ -59,6 +59,7 @@ ElevationManager::ElevationManager (const CelestialBody *_cbody)
 
 ElevationManager::~ElevationManager ()
 {
+	if (local_cache) delete local_cache;
 	for (int i = 0; i < 2; i++)
 		if (treeMgr[i])
 			delete treeMgr[i];
@@ -266,9 +267,8 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 	if (reslvl) *reslvl = 0;
 	reqlvl = (reqlvl ? min (max(0,reqlvl-7), maxlvl) : maxlvl);
 
-	if (mode) {
-		static ElevationTile local_tile;
-
+	if (mode) 
+	{
 		ElevationTile *tile;
 		int ntile = 0;
 		if (tilecache) {
@@ -277,21 +277,21 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 		}
 
 		if (!ntile) {
-			tile = &local_tile;
-			ntile = 1;
+			if (!local_cache) local_cache = new std::vector<ElevationTile>(8);
+			tile = local_cache->data();
+			ntile = local_cache->size();
 		}
 
-		int i, lvl, ilat, ilng;
+		int i, lvl, cilat, cilng;
 		ElevationTile *t = 0;
 
+		TileIdx(lat, lng, reqlvl, &cilat, &cilng);
+
 		for (i = 0; i < ntile; i++) {
-			if (tile[i].data &&
-				reqlvl == tile[i].tgtlvl &&
-				lat >= tile[i].latmin && lat <= tile[i].latmax &&
-				lng >= tile[i].lngmin && lng <= tile[i].lngmax) {
-					t = tile+i;
-					break;
-				}
+			if (reqlvl == tile[i].tgtlvl && cilat == tile[i].cilat && cilng == tile[i].cilng) {
+				t = &tile[i];
+				break;
+			}
 		}
 		if (!t) { // correct tile not in list - need to load from file
 			t = tile;  // find oldest tile
@@ -303,7 +303,13 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 				delete []t->data;
 				t->data = 0;
 			}
+
+			t->cilat = cilat;
+			t->cilng = cilng;
+			t->tgtlvl = reqlvl;
+
 			for (lvl = reqlvl; lvl >= 0; lvl--) {
+				int ilat, ilng;
 				TileIdx (lat, lng, lvl, &ilat, &ilng);
 				t->data = LoadElevationTile (lvl+4, ilat, ilng, elev_res);
 				if (t->data) {
@@ -311,7 +317,6 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 					int nlat = 1 << lvl;
 					int nlng = 2 << lvl;
 					t->lvl = lvl;
-					t->tgtlvl = reqlvl;
 					t->latmin = (0.5-(double)(ilat+1)/double(nlat))*Pi;
 					t->latmax = (0.5-(double)ilat/double(nlat))*Pi;
 					t->lngmin = (double)ilng/(double)nlng*Pi2 - Pi;
@@ -324,6 +329,8 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 			}
 			t->lat0 = t->lng0 = t->nmlidx = -1;
 		}
+
+		t->last_access = td.SysT0;
 
 		if (t->data) {
 			INT16 *elev_base = t->data+elev_stride+1; // strip padding
@@ -416,7 +423,6 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 					normal->unify();
 				}
 			}
-			t->last_access = td.SysT0;
 			t->lat0 = lat0;
 			t->lng0 = lng0;
 			if (reslvl) *reslvl = t->lvl+7;
