@@ -2731,6 +2731,7 @@ void D3D9Client::MakeRenderProcCall(Sketchpad *pSkp, DWORD id, LPD3DXMATRIX pV, 
 			}
 			pSkp2->SetViewProj(pV, pP);
 			it->proc(pSkp, it->pParam);
+			pSkp2->FlushAll(); // Flush render queue
 		}
 	}
 }
