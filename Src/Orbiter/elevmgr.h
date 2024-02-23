@@ -22,6 +22,7 @@ struct ElevationTile {
 	double emin = 0, emax = 0;
 	double last_access = 0;
 	int lat0 = 0, lng0 = 0;
+	int cilat = -1, cilng = -1;
 	bool celldiag = false;
 	int nmlidx = 0;
 	Vector normal;
@@ -60,6 +61,7 @@ private:
 	double elev_res = 1;  // elevation resolution [m]
 	DWORD tilesource = 2; // bit 1: try loading from cache, bit 2: try loading from archive
 	ZTreeMgr *treeMgr[5];
+	mutable std::vector<ElevationTile> *local_cache = nullptr;
 };
 
 #endif // !__ELEVMGR_H
