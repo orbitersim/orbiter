@@ -298,8 +298,7 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 	if (reslvl) *reslvl = 0;
 	reqlvl = (reqlvl ? min (max(0,reqlvl-7), maxlvl) : maxlvl);
 
-	if (mode) 
-	{
+	if (mode) {
 		ElevationTile *tile;
 		int ntile = 0;
 		if (tilecache) {
@@ -315,8 +314,7 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 
 		int i, lvl, ilat, ilng;
 		ElevationTile *t = 0;
-		
-		// Scan tile cache		
+
 		for (i = 0; i < ntile; i++) {
 			if (reqlvl == tile[i].tgtlvl &&
 				lat >= tile[i].latmin && lat <= tile[i].latmax &&
@@ -333,20 +331,21 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 				break;
 			}
 		}
-
 		if (!t) { // correct tile not in list - need to load from file
 			t = tile;  // find oldest tile
 			for (i = 1; i < ntile; i++) 
 				if (tile[i].last_access < t->last_access)
 					t = tile+i;
 
-			if (t->data) { delete []t->data; t->data = nullptr; }
-	
+			if (t->data) {
+				delete []t->data;
+				t->data = 0;
+			}
 			for (lvl = reqlvl; lvl >= 0; lvl--) {
 				TileIdx (lat, lng, lvl, &ilat, &ilng);
 				t->data = LoadElevationTile (lvl+4, ilat, ilng, elev_res);
-				if (t->data) 
-				{
+				if (t->data) {
+					LoadElevationTile_mod (lvl+4, ilat, ilng, elev_res, t->data); // load modifications
 					// Check if higher lvl data exists for any of the quadrants, set flag bits
 					int qlat = ilat * 2, qlng = ilng * 2, qlvl = lvl + 1;
 					t->quadrants = 0;
@@ -357,8 +356,6 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 
 					//int q = Quadrant(lat, lng, lvl);
 					//oapiWriteLogV("LoadTile[0x%X]: lvl=%d, flags=0x%X, q=%d, i(%d, %d)", t, lvl, t->quadrants, q, ilng, ilat);
-					
-					LoadElevationTile_mod (lvl+4, ilat, ilng, elev_res, t->data); // load modifications	
 					// still need to store emin and emax
 					auto gc = g_pOrbiter->GetGraphicsClient();
 					if (gc) gc->clbkFilterElevation((OBJHANDLE)cbody, ilat, ilng, lvl, elev_res, t->data);
