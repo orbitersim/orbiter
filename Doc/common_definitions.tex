@@ -15,3 +15,29 @@
 \usepackage{caption}
 \usepackage{longtable}
 \usepackage{pifont}
+\usepackage{tcolorbox}
+\usepackage{listings}
+\usepackage{color}
+
+
+
+\newcommand{\alertbox}[1]{\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=Alert]#1\end{tcolorbox}}
+
+
+% code block
+\definecolor{darkorange}{rgb}{0.99,0.91,0.85}
+\definecolor{gray}{rgb}{0.6,0.6,0.6}
+
+\lstset{
+	language=C++,
+	basicstyle=\fontfamily{NotoSansMono-TLF}\small,
+	frame=single,
+	showstringspaces=false,
+	numbers=none,
+	backgroundcolor=\color{darkorange},
+	commentstyle=\color{gray},
+	linewidth=1\linewidth,
+	aboveskip=12pt,
+	belowskip=12pt,
+	tabsize=4
+}
