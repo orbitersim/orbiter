@@ -2,7 +2,110 @@
 \begin{document}
 
 \section{Spacecraft design}
+This section describes how to create a new \textit{vessel class} for Orbiter by writing a \textit{vessel DLL module}. Although it is possible to create simple vessel classes by writing a vessel configura­tion file without a custom module, the full potential of Orbiter’s custom spacecraft design ca­pabilities can only be realised with a specialised module.\\
 
+\alertbox{All vessels of a given class share the same DLL module. Orbiter only loads a single in­stance of the DLL. This means that global variables are shared between all vessels of that class. Do not store data which are specific to individual vessels in global or static variables, because they can be overwritten by another vessel.}
+
+
+\subsection{Module initialisation}
+When the user launches the simulation by picking a scenario from the Orbiter Launchpad dialog and pressing the “Launch Orbiter” button, Orbiter will load the vessel DLL module for each spacecraft type used in the simulation, and call its \textit{InitModule} function. This function is called only once per Orbiter session, no matter how many spacecraft of that type appear in the simulation. It will not be called again if the user exits the simulation to the Launchpad, and reloads another simulation scenario. You can use it to initialise global (non-instance specific and non-session specific) parameters.
+
+\begin{lstlisting}
+#define ORBITER_MODULE
+#include "orbitersdk.h"
+
+HINSTANCE g_hDLL;
+
+DLLCLBK void InitModule( HINSTANCE hModule )
+{
+	g_hDLL = hModule;
+	// perform global module initialisation here
+}
+\end{lstlisting}
+
+\noindent
+In this example, we use the \textit{InitModule} function to save the module instance handle passed to the function in global variable \textit{g\_hDLL}. This handle is useful later, e.g. when loading resources stored in the module file. Note the first line of the code example, which defines the \textit{ORBITER\_MODULE} flag. This flag should be included in all Orbiter DLL modules, to ensure proper execution of initialisation and cleanup functions.\\
+\\
+At the end of a simulation run, Orbiter calls the \textit{ExitModule} function for each DLL module.
+
+\begin{lstlisting}
+DLLCLBK void ExitModule( HINSTANCE hModule )
+{
+	// perform module cleanup here
+}
+\end{lstlisting}
+
+\noindent
+If you performed any dynamic memory allocation in \textit{InitModule}, this is a good place to perform the corresponding cleanup operations which de-allocate that memory.
+
+
+\subsection{Vessel initialisation}
+To allow initialisation of individual spacecraft, Orbiter will call the ovcInit function each time a scenario is loaded, for each vessel of that type listed in the scenario file. Orbiter will also call \textit{ovcInit} during the simulation if a new vessel of this type is created. The main purpose of ovcInit is to create an instance of a \textit{VESSEL}-derived in­terface class. \textit{VESSEL} is a class defined in the Orbiter API which is the primary means of communication between Orbiter and your own spacecraft class. In order to make use of the interface, you should derive your own vessel class derived from \textit{VESSEL}. In \textit{ovcInit}, you then create an instance of that class and return it back to Orbiter. Note that in the latest Orbiter version, the new \textit{VESSEL2} class has been introduced which inherits all the methods of \textit{VESSEL}, and introduces a number of new callback functions which replace the previous method of event notification. You should derive your vessel class from \textit{VESSEL2} to make use of this latest interface.\\
+\\
+As an example, let’s create a new class called \textit{MyVessel}, and create an instance in \textit{ovcInit}:
+
+\begin{lstlisting}
+class MyVessel: public VESSEL2
+{
+	public:
+		MyVessel( OBJHANDLE hObj, int fmodel ) : VESSEL2( hObj, fmodel ) {}
+		~MyVessel() {}
+		// add more vessel methods here
+};
+
+DLLCLBK VESSEL* ovcInit( OBJHANDLE hvessel, int flightmodel )
+{
+	return new MyVessel( hvessel, flightmodel );
+}
+\end{lstlisting}
+
+\noindent
+\textit{ovcInit} passes two parameters to your module: a handle to the vessel for which you are about to create an interface, and a flag for the type of flight model requested by the user. Both parameters are passed on to the vessel constructor. The vessel handle is required to identify your vessel when requesting information from Orbiter. The \textit{flightmodel} flag can be used to im­plement different behaviour in your module, for ex­ample to define an “easy” and a “complex” flight model, which can then be selected by the user. You don’t need to store these parameters in your module, because you can retrieve them with the \textit{GetHandle} and \textit{GetFlightModel} methods of the \textit{VESSEL} class.\\
+\\
+To ensure proper cleanup at the end of a simulation session, you must implement the \textit{ovcExit} function to delete your vessel:
+
+\begin{lstlisting}
+DLLCLBK void ovcExit( VESSEL* vessel )
+{
+	if (vessel) delete (MyVessel*)vessel;
+}
+\end{lstlisting}
+
+\noindent
+Note that you need to cast the generic \textit{VESSEL} pointer passed by Orbiter to your own vessel class to ensure that the correct destructors are called.
+
+
+\subsection{Reading and saving a vessel state}
+% TODO
+
+\subsection{Defining class capabilities}
+% TODO
+
+\subsection{Creating rocket engines}
+% TODO
+
+\subsection{Air-breathing engines}
+% TODO
+
+\subsection{Rendering re-entry flames}
+% TODO
+
+\subsection{Adding particle streams for exhaust and reentry effects}
+% TODO
+
+\subsection{Atmospheric flight model}
+% TODO
+
+\subsection{Defining an animation sequence}
+% TODO
+
+\subsection{Designing 2D-instrument panels}
+% TODO
+
+\subsection{Designing instrument panels (legacy style)}
+% TODO
+
+\subsection{Designing virtual cockpits}
 % TODO
 
 \end{document}
