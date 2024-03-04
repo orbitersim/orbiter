@@ -1,0 +1,73 @@
+% import macros and common styles
+\input{..//common_definitions}
+
+
+\graphicspath{{Images//}}
+
+
+
+\renewcommand*\familydefault{\sfdefault}
+\sffamily
+
+
+\pagestyle{fancy}
+\renewcommand{\footrulewidth}{0.4pt}
+
+
+% define page header/footer
+\lhead{}
+\chead{}
+\rhead{}
+\lfoot{Orbiter Developer Manual}
+\cfoot{\thepage}
+
+
+\titleformat{\paragraph}[hang]{\bfseries}{\theparagraph}{1em}{}
+
+
+
+\begin{document}
+
+\begin{titlepage}
+\begin{center}
+
+
+\textsc{\fontsize{60}{60} \textbf{Orbiter}}\\
+\vspace{0.5cm}
+\textsc{\Huge Space Flight Simulator}\\
+\vspace{2.0cm}
+
+% TODO image
+
+\textsc{\LARGE Orbiter Developer Manual}
+
+\end{center}
+\end{titlepage}
+
+
+\newpage
+\pagenumbering{roman}
+
+\tableofcontents
+
+
+\pagenumbering{arabic}
+
+\newpage
+\subfile{CONFIG}
+\newpage
+\subfile{SCENARIO}
+\newpage
+\subfile{PLANETS}
+\newpage
+\subfile{KEYMAP}
+\newpage
+\subfile{SPACECRAFT}
+\newpage
+\subfile{MESH}
+\newpage
+\subfile{PUBLISH}
+\newpage
+\subfile{REFERENCES}
+
+\end{document}

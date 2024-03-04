@@ -20,3 +20,6 @@ Sound/XRSound/**/Debug-with-OrbiterRelease/
 Sound/XRSound/**/Release-with-OrbiterRelease/
 
 Extern/irrKlang
+
+Doc/**/*.pdf
+Doc/**/*.gz
