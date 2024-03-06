@@ -485,8 +485,10 @@ float4 TerrainPS(TileVS frg) : COLOR
 
 	// Compute world space normal for water rendering
 	//
-	cNrm.xy = clamp((cNrm.xy - 0.5f) * fSrf * 5.0f, -1, 1);
-	cNrm.z = cos(cNrm.x * cNrm.y * 1.570796);
+	cNrm.xy = (cNrm.xy - 0.5f) * 2.0f;
+	cNrm.z *= Const.wNrmStr;
+	cNrm = normalize(cNrm);
+
 	float3 wnrmW = (Const.vTangent * cNrm.r) + (Const.vBiTangent * cNrm.g) + (vPlN * cNrm.b);
 	wnrmW = lerp(nvrW, wnrmW, fMask);
 	float fDWS = dot(wnrmW, Const.toSun); // Water normal dot sun
@@ -497,20 +499,22 @@ float4 TerrainPS(TileVS frg) : COLOR
 	float fDCN = saturate(dot(vRay, wnrmW));
 	float fDHN = dot(hlvW, wnrmW);
 
-	float2 f = 1.0 - float2(fDCH, fDCN);
-	float2 fFresnel = f * f * f * f;
-	
+	float3 f = 1.0 - float3(fDCH, fDCN, fDWS);
+	float3 fFresnel4 = f * f * f;
+	float3 fF = (0.15f + fFresnel4 * 0.85f) * fMask * Const.wSpec;
+
 	// Compute specular reflection intensity
-	fSpe = GGX_NDF(fDHN, 0.1f + saturate(fDWS) * 0.1f)  * (0.1f + fFresnel.x * 0.9f) * fMask;
+	fSpe = GGX_NDF(fDHN, 0.1f + saturate(fDWS) * 0.1f) * fF.y;
 	fSpe /= (4.0f * fDCH * max(fDWS, fDCN) + 1e-3);
-	
+
 	// Apply fresnel water only if close enough to a surface
 	//
 	if (!Flow.bInSpace)
 	{
-		cRfl = GetAmbient(reflect(-vRay, wnrmW)) * fFresnel.y * fSrf * fMask;
+		cRfl = GetAmbient(reflect(-vRay, wnrmW)) * fF.y * fSrf;	
 		// Attennuate diffuse texture for fresnel refl.
-		cTex.rgb *= saturate(1.0f - fFresnel.y * fSrf * fMask);
+		cTex.rgb *= saturate(1.0f - f.y * fSrf * fMask) * saturate(1.0f - f.z * fSrf * fMask);
+		cTex.rgb = saturate(cTex.rgb + float3(0, 0.6, 1.0) * Const.wBrightness * fMask);
 	}
 
 #else
