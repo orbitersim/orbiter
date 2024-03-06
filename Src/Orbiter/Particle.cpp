@@ -153,7 +153,7 @@ double D3D7ParticleStream::Level2Alpha (double level) const
 	case PARTICLESTREAMSPEC::LVL_SQRT:
 		return sqrt (level);
 	case PARTICLESTREAMSPEC::LVL_PLIN:
-		return max (0.0, min (.01, (level-lmin)/(lmax-lmin)));
+		return max (0.0, min (1.0, (level-lmin)/(lmax-lmin)));
 	case PARTICLESTREAMSPEC::LVL_PSQRT:
 		return (level <= lmin ? 0 : level >= lmax ? 1 : sqrt ((level-lmin)/(lmax-lmin)));
 	}
