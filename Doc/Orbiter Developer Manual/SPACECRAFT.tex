@@ -76,10 +76,67 @@ Note that you need to cast the generic \textit{VESSEL} pointer passed by Orbiter
 
 
 \subsection{Reading and saving a vessel state}
-% TODO
+Next, you need to make sure that your vessel is able to read its initial state from a scenario file at the start of a simulation, and to save its state in a scenario at the end of the simulation. This is done by overloading the \textit{clbkLoadStateEx} and \textit{clbkSaveState} methods of the \textit{VESSEL2} class. Note that you only need to overload these methods if your vessel requires nonstandard parameters to be stored in the scenario file. Standard parameters (such as position or velocity) are automatically read and written by the base class methods.
+
+\begin{lstlisting}
+class MyVessel: public VESSEL2
+{
+	public:
+		MyVessel( OBJHANDLE hObj, int fmodel ): VESSEL2( hObj, fmodel ) {}
+		~MyVessel() {}
+		void clbkLoadStateEx( FILEHANDLE scn, void* status );
+		void clbkSaveState( FILEHANDLE scn );
+	private:
+		double myparam;
+};
+
+void MyVessel::clbkLoadStateEx( FILEHANDLE scn, void* status )
+{
+	char *line;
+
+	while (oapiReadScenario_nextline( scn, line ))
+	{
+		if (!strnicmp( line, "MYPARAM", 7 ))
+		{
+			sscanf( line + 7, "%lf", &myparam );
+		}
+		else
+		{
+			ParseScenarioLineEx( line, status );
+		}
+	}
+}
+
+void MyVessel::clbkSaveState( FILEHANDLE scn )
+{
+	VESSEL2::clbkSaveState( scn );
+	oapiWriteScenario_float( scn, "MYPARAM", myparam );
+}
+\end{lstlisting}
+
+\noindent
+In the code fragment above, we use the overloaded \textit{clbkLoadStateEx} function to read myparam from the scenario, were it is stored under the \textit{MYPARAM} label. The function reads each line of the scenario file associated with our vessel, using the \textit{oapiReadScenario\_nextline} function. In the loop, we process the \textit{MYPARAM} line, and pass everything else to Orbiter via \textit{ParseScenarioLineEx} for default processing. Likewise, in \textit{clbkSaveState}, the base class method \textit{VESSEL2::clbkSaveState} is called to store all default parameters, before writing our private \textit{MYPARAM} value. Of course, a real vessel implementation may need to store a large number of parameters in the scenario to make sure its status is completely defined when the scenario is loaded next time.
+
 
 \subsection{Defining class capabilities}
-% TODO
+One of the most important callback functions that should be overloaded is the \textit{clbkSetClassCaps} method. It defines the general capabilities and properties of your spacecraft, e.g. its mass, size, visual representation, engine layout etc.
+
+\begin{lstlisting}
+void MyVessel::clbkSetClassCaps( FILEHANDLE cfg )
+{
+	SetEmptyMass( 1000.0 );
+	SetSize( 10.0 );
+	AddMesh( oapiLoadMeshGlobal( "MyVessel.msh" ) );
+	// define vessel capabilities here
+}
+\end{lstlisting}
+
+\noindent
+In the above example, we define a few essential parameters (empty mass and mean radius), and load a mesh to provide a visual representation for our new spacecraft class. In practical applications, many more parameters may have to be defined here. Note that the file handle passed to the function points to the configuration file (.cfg) of the vessel. This can be used to read parameters from the file, thereby allowing the user to overwrite parameters by editing the configuration file.\\
+\\
+We now have a “skeleton implementation” for our new spacecraft class. To make it interesting, many more properties need to be defined, such as rocket engines (or air-breathing engines), aerodynamic properties, animations, etc. Some of these aspects are described in the rest of this chapter. For a com­plete (and sometimes quite complex) vessel implementations, see the sample projects in the \textit{Orbitersdk\\samples} subdirectory.
+
+
 
 \subsection{Creating rocket engines}
 To propel your ship in space, you must equip it with engines. There exist a variety of different rocket engine types, such as liquid and solid fuel engines, or more futuristic ones such as ion or photon drives.
@@ -200,13 +257,237 @@ where ($J_{x}$, $J_{y}$, $J_{z}$) are the principal moments of the inertia tenso
 
 
 \subsubsection{Putting it all into the module}
-% TODO
+Now that you know how thrusters work, it is time to add a few to your new ship. As with other vessel capabilities, thrusters should usually be designed in the \textit{clbkSetClassCaps} callback function, for example like this (assuming that \textit{MyVessel} is a class derived from \textit{VESSEL2}):
+
+\begin{lstlisting}
+void MyVessel::clbkSetClassCaps( FILEHANDLE cfg )
+{
+	// vessel caps definitions
+}
+\end{lstlisting}
+
+\noindent
+\textbf{Propellant resources}\\
+\\
+Thrusters can only be operated if they are connected to propellant resources (e.g. fuel tanks). To create a propellant resource:
+
+\begin{lstlisting}
+class MyVessel: public VESSEL
+{
+	...
+	PROPELLANT_HANDLE ph_main;
+}
+
+void MyVessel::clbkSetClassCaps( FILEHANDLE cfg )
+{
+	...
+	const double MAX_MAIN_FUEL = 1e5;
+	ph_main = CreatePropellantResource( MAX_MAIN_FUEL );
+	...
+}
+\end{lstlisting}
+
+\noindent
+which creates a fuel tank of capacity 10$^{5}$kg. \textit{CreatePropellantResource} returns a handle to the new tank, which is used later to connect thrusters to the tank.\\
+\\
+\textit{CreatePropellantResource} accepts two further optional parameters: the initial fuel mass, and a fuel efficiency factor \textit{eff} between 0 and 1. By default, the tank is full, with fuel efficiency 1. If an \textit{eff} < 1 is specified, then the thrust force generated by all connected thrusters is modified by
+
+\[ F' = F \cdot eff \]
+
+\noindent
+\textbf{Creating thrusters}\\
+\\
+To add a new thruster, use the \textit{CreateThruster} command:
+\begin{lstlisting}
+class MyVessel: public VESSEL
+{
+	...
+	THRUSTER_HANDLE th_main;
+}
+
+void MyVessel::clbkSetClassCaps( FILEHANDLE cfg )
+{
+	...
+	const double MAX_MAIN_THRUST = 2e5;
+	const double VAC_MAIN_ISP = 4200.0;
+	th_main = CreateThruster( _V( 0, 0, -8 ), _V( 0, 0, 1 ),
+		MAX_MAIN_THRUST, ph_main, VAC_MAIN_ISP );
+	...
+}
+\end{lstlisting}
+
+\noindent
+This adds a thruster at position (0,0,-8) with a thrust vector in the positive z-direction, with the specified max. thrust and Isp values, and connected to the tank we added earlier. In this configuration, the engine efficiency is assumed not to be affected by atmospheric pressure. For increased realism, we could introduce pressure-dependency by adding an additional Isp value at a reference pressure, and the reference pressure itself:
+
+
+\begin{lstlisting}
+void MyVessel::clbkSetClassCaps( FILEHANDLE cfg )
+{
+	...
+	const double MAX_MAIN_THRUST = 2e5;
+	const double VAC_MAIN_ISP = 4200.0;
+	const double NML_MAIN_ISP = 3500.0;
+	const double P_NML = 101.4e3;
+	th_main = CreateThruster( _V( 0, 0, -8 ), _V( 0, 0, 1 ),
+		MAX_MAIN_THRUST, ph_main, VAC_MAIN_ISP, NML_MAIN_ISP, P_NML );
+	...
+}
+\end{lstlisting}
+
+\noindent
+This reduces the Isp value at sea level to 3500 and performs a linear interpolation to obtain the Isp at arbitrary pressures. Note that we could have omitted the last parameter, \textit{P\_NML}, because the reference pressure defaults to 101.4 kPa (atmospheric pressure at Earth sea level).\\
+\\
+If you descend into a very dense planetary atmosphere, Orbiter will extrapolate the Isp value beyond sea level pressure, until Isp drops to zero. At this point, the thruster will stop working altogether.\\
+\\
+\textbf{Grouping thrusters}\\
+\\
+Although it is possible to address thrusters individually in your module, it is often easier to engage them in groups. Groups are also required to activate manual user thruster control via the keyboard or joystick, and the automatic navigation modes such as \textit{killrot}.\\
+\\
+% TODO fix overflow in following line
+Orbiter has a number of standard thruster groups, such as \textit{THGROUP\_MAIN}, \textit{THGROUP\_RETRO}, \textit{THGROUP\_HOVER}, and a full set of attitude thruster groups. For a full listing, see \textit{VESSEL::CreateThrusterGroup} in the Reference Manual.\\
+\\
+It is the responsibility of the vessel designer to make sure that thrusters are grouped in a sensible way. For example, whenever the user presses the “+” key on the numerical keypad, all thrusters in \textit{THGROUP\_MAIN} will fire. If the thrusters grouped in \textit{THGROUP\_MAIN} behave in an unexpected or non-intuitive way it will be confusing to the user. Furthermore, if attitude thrusters are not appropriately grouped, some or all of the navigation modes may fail.\\
+\\
+To group thrusters, use the \textit{CreateThrusterGroup} command:
+
+\begin{lstlisting}
+void MyVessel::clbkSetClassCaps( FILEHANDLE cfg )
+{
+	...
+	thg_main = CreateThrusterGroup( th_main, 2, THGROUP_MAIN );
+	...
+}
+\end{lstlisting}
+
+\noindent
+(this assumes that \textit{th\_main} is an array of 2 thruster handles which have been created previously). The function returns a handle to the group which can be used later to address the group.\\
+\\
+Apart from the standard groups, Orbiter allows to create custom groups by using the \textit{THGROUP\_USER} label. Custom groups are not engaged by any of the standard manual or automatic control methods, therefore the module must implement a suitable control interface for these groups.
+
 
 \subsubsection{Defining exhaust flames}
-% TODO
+When you define a thruster with \textit{CreateThruster}, Orbiter will not automatically generate visuals for the exhaust flames when the thruster is engaged. Sometimes exhaust flames may not be appropriate, or, more importantly, you may want to detach the \textit{logical} thruster definition from the physical definition (more about this below).\\
+\\
+To create an exhaust flame definition use the \textit{AddExhaust} function. \textit{AddExhaust} comes in two flavours:
+\begin{itemize}
+\item \textit{UINT AddExhaust( THRUSTER\_HANDLE th, double lscale, double wscale, SURFHANDLE tex = 0 ) const}
+\item \textit{UINT AddExhaust( THRUSTER\_HANDLE th, double lscale, double wscale, const VECTOR3 \&pos, const VECTOR3 \&dir, SURFHANDLE tex = 0 ) const}
+\end{itemize}
+
+\noindent
+Both versions require a handle to the logical thruster they are linked to, and two size parameters (longitudinal and transversal scaling), but while the first version takes exhaust location and direction directly from the thruster definition, the second version gets location and direction passed as parameters.\\
+\\
+Here is an example demonstrating how you would use the second version of \textit{AddExhaust}:\\
+\\
+Let’s assume you build a rocket propelled by 4 main engines arranged in a regular square pattern. The engines have fixed orientation (no individual gimbal mode) and all thrust force vectors are parallel. In addition, the engines produce identical thrust magnitudes at all times.\\
+\\
+Then the 4 engines can be represented by a single logical thruster, whose magnitude is the sum of the 4 actual engines, and positioned in the geometric centre. This simplifies the code, and is more efficient, because Orbiter does not need to add up 4 individual force vectors.\\
+\\
+However, you still want to see exhaust flames for each of the 4 engines, so you would use the second version of \textit{AddExhaust} to define 4 exhaust flames at the correct positions.\\
+\\
+The disadvantage of the second version is that changes in the position or orientation of the thruster (for example as a result of \textit{SetThrusterPos} or \textit{SetThrusterDir}) are not automatically propagated to the exhaust flames. Therefore, if you plan to move or tilt the thrusters, you should create them individually and use the first version of \textit{AddExhaust}.\\
+\\
+\textbf{Custom exhaust textures}\\
+\\
+By default, Orbiter uses a standard texture to render exhaust flames. If you want to customise the exhaust appearance on a per-thruster basis, you can pass a nonzero surface handle tex to both of the \textit{AddExhaust} versions. To obtain a surface handle for a custom texture, use the \textit{oapiRegisterExhaustTexture} function.
+
+\begin{lstlisting}
+...
+SURFHANDLE tex = oapiRegisterExhaustTexture( "MyExhaust" );
+AddExhaust( th_main, 10, 2, tex );
+...
+\end{lstlisting}
+
+\noindent
+The texture file must be stored in DDS format in Orbiter’s default texture directory. Note that \textit{oapiRegisterExhaustTexture} can be safely called multiple times with the same texture.
+
 
 \subsection{Air-breathing engines}
-% TODO
+Orbiter is not limited to rocket engines. Other devices for generating thrust can be implemented as well, from turbojet engines to solar sails or some hypothetical future technology. Unlike conventional rocket engines, which are natively supported by the Orbiter core, custom designs require a bit more work from the developer. As an example, I will here discuss the (tentative) scramjet engine implementation used by the delta-glider.\\
+\\
+A ramjet engine is a type of a jet engine which compresses the air for combustion not by any mechanical rotating machinery, but simply by “ramming” through the atmosphere, i.e. by using the aircraft’s velocity in the airstream. This is an efficient way of generating thrust at supersonic speeds, but does not work at very low speed. (A scramjet is a variant where the air is not slowed down to subsonic speeds in the combustor and therefore avoids excessive heating at extreme velocities).\\
+\\
+A typical ramjet engine is composed of 3 sections:
+
+\begin{itemize}
+\item the inlet diffuser where the air is isentropically decelerated, with pressure increasing from freestream pressure $p_{\infty}$ to $p_{d}$, and temperature increasing from freestream temperature $T_{\infty}$ to $T_{d}$.
+\item the combustion chamber, where the air-fuel mixture is burned at constant pressure $p_{b} = p_{d}$, and temperature increases from $T_{d}$ to $T_{b}$.
+\item the exhaust nozzle, where the hot, high-pressure gas is expanded isentropically, with pressure decreasing from $p_{b}$ to $p_{\infty}$, and temperature decreasing from $T_{b}$ to $T_{e}$.
+\end{itemize}
+
+\noindent
+The temperatures and pressures in the three parts of the engine (diffuser, burner and exhaust) can be calculated in the following form:
+
+%TODO place equations into columns
+\[ T_{d} = T_{\infty}\left(1 + \frac{\gamma - 1}{2} M_{\infty}^{2}\right) \]
+\[ T_{b} = max(T_{b0},T_{d}) \]
+\[ T_{e} = T_{b}\left(\frac{p_{e}}{p_{b}}\right)^{(\gamma - 1) / \gamma} \]
+\[ p_{d} = p_{\infty}\left(\frac{T_{d}}{T_{\infty}}\right)^{\gamma / (\gamma - 1)} \]
+\[ p_{b} = p_{d} \]
+\[ p_{e} = p_{\infty} \]
+
+\noindent
+where $M_{\infty}$ is the freestream Mach number, $\gamma$ is the ratio of specific heats, and $T_{b0}$ is the burner temperature limit, an engine design parameter defined by the heat resistance of the combustion chamber material. Note that if at high velocities $T_{d} > T_{b0}$, the engine will start to overheat purely from the isentropic compression in the diffuser, without any combustion taking place! The figure below shows an example for the temperature distribution in the engine compartments as a function of freestream Mach number. The example assumes a burner temperature limit of $T_{b0}$ = 3200 K. In this case, the limiting velocity is $v$ = Mach 8.2.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\hsize]{ramjet_temp.png}
+\end{figure}
+
+\noindent
+To calculate the thrust generated by a scramjet, we start from the fundamental thrust equation for jet propulsion,
+
+\[ F = (\dot{m}_{a} + \dot{m}_{f})v_{e} - \dot{m}_{a} v_{\infty} + (p_{e} - p_{\infty})A_{e} \]
+
+\noindent
+where $\dot{m}_{a}$ and $\dot{m}_{f}$ are the air and fuel mass rates, respectively (using the common notation $\dot{x} = dx / dt$), $v_{e}$ and $v_{\infty}$ are the exhaust and freestream velocities, and $A_{e}$ is the exhaust cross section.\\
+\\
+Because of the assumption $p_{e} = p_{\infty}$ the last term vanishes. The \textit{specific thrust} is then given by
+
+\[ \frac{F}{\dot{m}_{a}} = (1 + D)v_{e} - v_{\infty} \]
+
+\noindent
+where $D = \dot{m}_{f} / \dot{m}_{a}$ is the \textit{fuel-to-air} ratio.\\
+\\
+The amount of fuel burned in the combustion chamber must be adjusted so that the burner temperature limit is not exceeded. This leads to the following expression for \textit{D}:
+
+\[ D = \frac{T_{b} - T_{d}}{Q / c_{p} - T_{b}} \]
+
+\noindent
+where \textit{Q} is a fuel-specific heating value and $c_{p}$ is the specific heat at constant pressure, given by
+
+\[ c_{P} = \frac{\gamma R}{\gamma - 1} \]
+
+\noindent
+The mass flow of air collected by the engine is a function of air intake cross section $A_{i}$, freestream density $\rho_{\infty}$ and freestream velocity $v_{\infty}$:
+
+\[ \dot{m}_{a} = \rho_{\infty} v_{\infty} A_{i} \]
+
+\noindent
+where $v_{\infty}$ can be expressed in terms of the freestream Mach number:
+
+\[ v_{\infty} = M_{\infty} \sqrt{\gamma R T_{\infty}} \]
+
+\noindent
+From the above equations for \textit{D} and $\dot{m}_{a}$ we can calculate the fuel rate $\dot{m}_{f}$ required to achieve combustion temperature $T_{b}$.\\
+\\
+The final quantity required to calculate \textit{F} is the exhaust velocity $v_{e}$. This can be obtained from the energy balance
+
+\[ c_{p} T_{b} = c_{p} T_{e} + v^{2}_{e} / 2 \]
+
+\noindent
+We now have all the components to calculate the thrust \textit{F} generated by the engine. The graphs below show various scramjet parameters for velocities in the range from Mach 0 to Mach 10 at an altitude of 10 km (assuming $\rho_{\infty}$ = 0.43 kg/m$^{3}$ and $T_{\infty}$ = 225 K). The DG engine design parameters in this example are \textit{Q} = 4.5 $\cdot$ 10$^{7}$ J/kg, $A_{i}$ = 0.6 m$^{2}$, and $T_{b0}$ = 3200 K.
+
+\begin{figure}[H]
+	\centering
+	\subfigure{\includegraphics[width=0.49\textwidth]{fuel_to_air_ratio.png}}
+	\subfigure{\includegraphics[width=0.49\textwidth]{enhaust_velocity.png}}
+	\subfigure{\includegraphics[width=0.49\textwidth]{engine_thrust.png}}
+	\subfigure{\includegraphics[width=0.49\textwidth]{thrust_specific_fuel_consumption.png}}
+\end{figure}
+
+\noindent
+%TODO
 
 \subsection{Rendering re-entry flames}
 % TODO
