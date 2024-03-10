@@ -5,6 +5,7 @@
 #include "Celbody.h"
 #include "Planet.h"
 #include "Orbiter.h"
+#include <filesystem>
 
 using std::min;
 using std::max;
@@ -59,9 +60,24 @@ ElevationManager::ElevationManager (const CelestialBody *_cbody)
 
 ElevationManager::~ElevationManager ()
 {
+	if (local_cache) delete local_cache;
 	for (int i = 0; i < 2; i++)
 		if (treeMgr[i])
 			delete treeMgr[i];
+}
+
+
+int ElevationManager::Quadrant(double lat, double lng, int lvl) const
+{
+	// 0 = North-West, 1 = North-East, 2 = South-West, 3 = South-East corner
+	int nlat = 1 << (lvl + 1);
+	int nlng = 2 << (lvl + 1);
+	int ilat = (int)((Pi05 - lat) / Pi * nlat);
+	int ilng = (int)((lng + Pi) / Pi2 * nlng);
+	int q = 0;
+	if (ilng & 1) q += 1;
+	if (ilat & 1) q += 2;
+	return q;
 }
 
 bool ElevationManager::TileIdx (double lat, double lng, int lvl, int *ilat, int *ilng) const
@@ -72,6 +88,22 @@ bool ElevationManager::TileIdx (double lat, double lng, int lvl, int *ilat, int 
 	*ilat = (int)((Pi05-lat)/Pi * nlat);
 	*ilng = (int)((lng+Pi)/Pi2 * nlng);
 	return true;
+}
+
+bool ElevationManager::HasElevationTile(int lvl, int ilat, int ilng) const
+{
+	if (mode) {
+		if (tilesource & 0x0001) {
+			char fname[256], path[256];
+			sprintf(fname, "%s\\Elev\\%02d\\%06d\\%06d.elv", cbody->Name(), lvl, ilat, ilng);
+			g_pOrbiter->Cfg()->PTexPath(path, fname);
+			if (std::filesystem::exists(path)) return true;
+		}
+		if (treeMgr[0]) {
+			if (treeMgr[0]->Idx(lvl, ilat, ilng) != DWORD(-1)) return true;
+		}
+	}
+	return false;
 }
 
 INT16 *ElevationManager::LoadElevationTile (int lvl, int ilat, int ilng, double tgt_res) const
@@ -267,8 +299,6 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 	reqlvl = (reqlvl ? min (max(0,reqlvl-7), maxlvl) : maxlvl);
 
 	if (mode) {
-		static ElevationTile local_tile;
-
 		ElevationTile *tile;
 		int ntile = 0;
 		if (tilecache) {
@@ -277,21 +307,29 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 		}
 
 		if (!ntile) {
-			tile = &local_tile;
-			ntile = 1;
+			if (!local_cache) local_cache = new std::vector<ElevationTile>(8);
+			tile = local_cache->data();
+			ntile = local_cache->size();
 		}
 
 		int i, lvl, ilat, ilng;
 		ElevationTile *t = 0;
 
 		for (i = 0; i < ntile; i++) {
-			if (tile[i].data &&
-				reqlvl == tile[i].tgtlvl &&
+			if (reqlvl == tile[i].tgtlvl &&
 				lat >= tile[i].latmin && lat <= tile[i].latmax &&
 				lng >= tile[i].lngmin && lng <= tile[i].lngmax) {
-					t = tile+i;
-					break;
+				int q = -1;
+				if (tile[i].quadrants != 0) {
+					q = 0;
+					if (lng > (tile[i].lngmin + tile[i].lngmax) * 0.5) q += 1;
+					if (lat < (tile[i].latmin + tile[i].latmax) * 0.5) q += 2;
+					if (tile[i].quadrants & (1 << q)) continue; // Higher lvl data exists, continue search		
 				}
+				//oapiWriteLogV("CacheHit idx=%d, lvl=%d, f=0x%X, q=%d, ilat=%d, ilng=%d", i, tile[i].lvl, tile[i].quadrants, q, tile[i].ilat, tile[i].ilng);
+				t = tile + i;
+				break;
+			}
 		}
 		if (!t) { // correct tile not in list - need to load from file
 			t = tile;  // find oldest tile
@@ -308,22 +346,43 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 				t->data = LoadElevationTile (lvl+4, ilat, ilng, elev_res);
 				if (t->data) {
 					LoadElevationTile_mod (lvl+4, ilat, ilng, elev_res, t->data); // load modifications
-					int nlat = 1 << lvl;
-					int nlng = 2 << lvl;
-					t->lvl = lvl;
-					t->tgtlvl = reqlvl;
-					t->latmin = (0.5-(double)(ilat+1)/double(nlat))*Pi;
-					t->latmax = (0.5-(double)ilat/double(nlat))*Pi;
-					t->lngmin = (double)ilng/(double)nlng*Pi2 - Pi;
-					t->lngmax = (double)(ilng+1)/(double)nlng*Pi2 - Pi;
+					// Check if higher lvl data exists for any of the quadrants, set flag bits
+					int qlat = ilat * 2, qlng = ilng * 2, qlvl = lvl + 1;
+					t->quadrants = 0;
+					t->quadrants |= DWORD(HasElevationTile(qlvl + 4, qlat + 0, qlng + 0)) << 0; // NW
+					t->quadrants |= DWORD(HasElevationTile(qlvl + 4, qlat + 0, qlng + 1)) << 1;	// NE
+					t->quadrants |= DWORD(HasElevationTile(qlvl + 4, qlat + 1, qlng + 0)) << 2; // SW
+					t->quadrants |= DWORD(HasElevationTile(qlvl + 4, qlat + 1, qlng + 1)) << 3;	// SE
+
+					//int q = Quadrant(lat, lng, lvl);
+					//oapiWriteLogV("LoadTile[0x%X]: lvl=%d, flags=0x%X, q=%d, i(%d, %d)", t, lvl, t->quadrants, q, ilng, ilat);
 					// still need to store emin and emax
 					auto gc = g_pOrbiter->GetGraphicsClient();
 					if (gc) gc->clbkFilterElevation((OBJHANDLE)cbody, ilat, ilng, lvl, elev_res, t->data);
 					break;
 				}
 			}
+
+			// Let's store tile in a cache even if data doesn't exists, 
+			// just to prevent re-checking missing data over and over.
+			if (!t->data) {
+				lvl = reqlvl;
+				TileIdx(lat, lng, lvl, &ilat, &ilng);
+			}
+			int nlat = 1 << lvl;
+			int nlng = 2 << lvl;
+			t->lvl = lvl;
+			t->ilat = ilat;
+			t->ilng = ilng;
+			t->tgtlvl = reqlvl;
+			t->latmin = (0.5 - (double)(ilat + 1) / double(nlat)) * Pi;
+			t->latmax = (0.5 - (double)ilat / double(nlat)) * Pi;
+			t->lngmin = (double)ilng / (double)nlng * Pi2 - Pi;
+			t->lngmax = (double)(ilng + 1) / (double)nlng * Pi2 - Pi;
 			t->lat0 = t->lng0 = t->nmlidx = -1;
 		}
+
+		t->last_access = td.SysT0; // Set tile access time regardless of existance of data
 
 		if (t->data) {
 			INT16 *elev_base = t->data+elev_stride+1; // strip padding
@@ -416,7 +475,6 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 					normal->unify();
 				}
 			}
-			t->last_access = td.SysT0;
 			t->lat0 = lat0;
 			t->lng0 = lng0;
 			if (reslvl) *reslvl = t->lvl+7;

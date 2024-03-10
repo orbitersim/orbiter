@@ -83,6 +83,7 @@ struct FlowControlPS
 	BOOL bMicroTex;				// Micro textures exists and enabled
 	BOOL bPlanetShadow;			// Use spherical approximation for shadow
 	BOOL bEclipse;				// Eclipse is occuring
+	BOOL bTexture;				// Surface texture exists
 };
 
 struct FlowControlVS
@@ -394,15 +395,17 @@ float4 TerrainPS(TileVS frg) : COLOR
 
 	vUVWtr.x += Const.Time / 180.0f;
 
-	float3 cNrm;
+	float3 cNrm = float3(0.5, 0.5, 1.0);
 	float fChA = 0.0f, fChB = 0.0f;
 
 #if defined(_RIPPLES)
-	cNrm = tex2D(tOcean, vUVWtr).xyz;
+	if (Flow.bTexture) cNrm = tex2D(tOcean, vUVWtr).xyz;
 #endif
 
 	// Fetch Main Textures
-	float4 cTex = tex2D(tDiff, vUVSrf);
+	float4 cTex = float4(0.5, 0.5, 0.5, 1.0);
+	if (Flow.bTexture) cTex = tex2D(tDiff, vUVSrf);
+
 	float4 cMsk = float4(0, 0, 0, 1);
 	if (Flow.bMask) cMsk = tex2D(tMask, vUVSrf);
 
@@ -443,17 +446,20 @@ float4 TerrainPS(TileVS frg) : COLOR
 #if defined(_MICROTEX)
 	float2 UV = frg.texUV.xy;
 	// Create normals
-	if (Flow.bMicroNormals) {
-		// Normal in .ag luminance in .b
-		cFar = tex2D(tMicroC, UV * Prm.vMSc[2].zw + Prm.vMSc[2].xy).agb;	// High altitude micro texture C
-		cMed = tex2D(tMicroB, UV * Prm.vMSc[1].zw + Prm.vMSc[1].xy).agb;	// Medimum altitude micro texture B
-		cLow = tex2D(tMicroA, UV * Prm.vMSc[0].zw + Prm.vMSc[0].xy).agb;	// Low altitude micro texture A
-	}
-	else {
-		// Color in .rgb no normals
-		cFar = tex2D(tMicroC, UV * Prm.vMSc[2].zw + Prm.vMSc[2].xy).rgb;	// High altitude micro texture C
-		cMed = tex2D(tMicroB, UV * Prm.vMSc[1].zw + Prm.vMSc[1].xy).rgb;	// Medimum altitude micro texture B
-		cLow = tex2D(tMicroA, UV * Prm.vMSc[0].zw + Prm.vMSc[0].xy).rgb;	// Low altitude micro texture A
+	if (Flow.bMicroTex)
+	{
+		if (Flow.bMicroNormals) {
+			// Normal in .ag luminance in .b
+			cFar = tex2D(tMicroC, UV * Prm.vMSc[2].zw + Prm.vMSc[2].xy).agb;	// High altitude micro texture C
+			cMed = tex2D(tMicroB, UV * Prm.vMSc[1].zw + Prm.vMSc[1].xy).agb;	// Medimum altitude micro texture B
+			cLow = tex2D(tMicroA, UV * Prm.vMSc[0].zw + Prm.vMSc[0].xy).agb;	// Low altitude micro texture A
+		}
+		else {
+			// Color in .rgb no normals
+			cFar = tex2D(tMicroC, UV * Prm.vMSc[2].zw + Prm.vMSc[2].xy).rgb;	// High altitude micro texture C
+			cMed = tex2D(tMicroB, UV * Prm.vMSc[1].zw + Prm.vMSc[1].xy).rgb;	// Medimum altitude micro texture B
+			cLow = tex2D(tMicroA, UV * Prm.vMSc[0].zw + Prm.vMSc[0].xy).rgb;	// Low altitude micro texture A
+		}
 	}
 #endif
 
@@ -479,8 +485,10 @@ float4 TerrainPS(TileVS frg) : COLOR
 
 	// Compute world space normal for water rendering
 	//
-	cNrm.xy = clamp((cNrm.xy - 0.5f) * fSrf * 5.0f, -1, 1);
-	cNrm.z = cos(cNrm.x * cNrm.y * 1.570796);
+	cNrm.xy = (cNrm.xy - 0.5f) * 2.0f;
+	cNrm.z *= Const.wNrmStr;
+	cNrm = normalize(cNrm);
+
 	float3 wnrmW = (Const.vTangent * cNrm.r) + (Const.vBiTangent * cNrm.g) + (vPlN * cNrm.b);
 	wnrmW = lerp(nvrW, wnrmW, fMask);
 	float fDWS = dot(wnrmW, Const.toSun); // Water normal dot sun
@@ -491,21 +499,24 @@ float4 TerrainPS(TileVS frg) : COLOR
 	float fDCN = saturate(dot(vRay, wnrmW));
 	float fDHN = dot(hlvW, wnrmW);
 
-	float2 f = 1.0 - float2(fDCH, fDCN);
-	float2 fFresnel = f * f * f * f;
-	
+	float3 f = 1.0 - float3(fDCH, fDCN, fDWS);
+	float3 fFresnel4 = f * f * f;
+	float3 fF = (0.15f + fFresnel4 * 0.85f) * fMask * Const.wSpec;
+
 	// Compute specular reflection intensity
-	fSpe = GGX_NDF(fDHN, 0.1f + saturate(fDWS) * 0.1f)  * (0.1f + fFresnel.x * 0.9f) * fMask;
+	fSpe = GGX_NDF(fDHN, 0.1f + saturate(fDWS) * 0.1f) * fF.y;
 	fSpe /= (4.0f * fDCH * max(fDWS, fDCN) + 1e-3);
-	
+
 	// Apply fresnel water only if close enough to a surface
 	//
 	if (!Flow.bInSpace)
 	{
-		cRfl = GetAmbient(reflect(-vRay, wnrmW)) * fFresnel.y * fSrf * fMask;
+		cRfl = GetAmbient(reflect(-vRay, wnrmW)) * fF.y * fSrf;	
 		// Attennuate diffuse texture for fresnel refl.
-		cTex.rgb *= saturate(1.0f - fFresnel.y * fSrf * fMask);
+		cTex.rgb *= saturate(1.0f - f.y * fSrf * fMask) * saturate(1.0f - f.z * fSrf * fMask);
 	}
+
+	cTex.rgb = saturate(cTex.rgb + float3(0, 0.55, 1.0) * Const.wBrightness * fMask);
 
 #else
 	// Fallback to simple specular reflection

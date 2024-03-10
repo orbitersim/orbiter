@@ -106,25 +106,31 @@ void CloudTile::Render()
 	// Feed tile specific data to shaders
 	//
 	// ----------------------------------------------------------------------
-	pShader->SetTexture(pShader->tDiff, tex, IPF_ANISOTROPIC | IPF_CLAMP, Config->Anisotrophy);
 
-	sp->vCloudOff = GetTexRangeDX(&texrange);
-	sp->vMicroOff = GetTexRangeDX(&microrange);
-	sp->fAlpha = 1.0f;
-	sp->fBeta = 1.0f;
-	sp->mWorld = mWorld;
+	bool bTexture = (tex && vPlanet->HasTextures());
 
-	// -------------------------------------------------------------------
-	// render surface mesh
-	
-	pShader->SetPSConstants(pShader->Prm, sp, sizeof(ShaderParams));
-	pShader->SetVSConstants(pShader->PrmVS, sp, sizeof(ShaderParams));
+	if (bTexture)
+	{
+		pShader->SetTexture(pShader->tDiff, tex, IPF_ANISOTROPIC | IPF_CLAMP, Config->Anisotrophy);
 
-	pShader->UpdateTextures();
+		sp->vCloudOff = GetTexRangeDX(&texrange);
+		sp->vMicroOff = GetTexRangeDX(&microrange);
+		sp->fAlpha = 1.0f;
+		sp->fBeta = 1.0f;
+		sp->mWorld = mWorld;
 
-	pDev->SetStreamSource(0, mesh->pVB, 0, sizeof(VERTEX_2TEX));
-	pDev->SetIndices(mesh->pIB);
-	pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mesh->nv, 0, mesh->nf);
+		// -------------------------------------------------------------------
+		// render surface mesh
+
+		pShader->SetPSConstants(pShader->Prm, sp, sizeof(ShaderParams));
+		pShader->SetVSConstants(pShader->PrmVS, sp, sizeof(ShaderParams));
+
+		pShader->UpdateTextures();
+
+		pDev->SetStreamSource(0, mesh->pVB, 0, sizeof(VERTEX_2TEX));
+		pDev->SetIndices(mesh->pIB);
+		pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mesh->nv, 0, mesh->nf);
+	}
 }
 
 

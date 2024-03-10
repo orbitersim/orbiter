@@ -9,12 +9,13 @@
 #define __ATMOCONTROLS_H
 
 #define ATM_SLIDER_COUNT 20
+#define ATM_DATA_COUNT 24
 
 
 typedef struct ScatterParams {
 	ScatterParams();			///< Defaut c'tor
 	union {
-		double data[ATM_SLIDER_COUNT];  // ATTENTION: Order of params must match with slider indexes
+		double data[ATM_DATA_COUNT];  // ATTENTION: Order of params must match with slider indexes
 		struct {
 			double tw_dst;		///< 0 Twilight distance
 			double green;		///< 1 Green wavw length
@@ -36,6 +37,11 @@ typedef struct ScatterParams {
 			double mphaseb;		///< 17 MiePhase-B
 			double hazei;		///< 18 cloud intensity
 			double tr3D;		///< 19 Terrain light and shadow boost
+			// PAGE 1
+			double wnrml;		///< 20 Water normal strength
+			double wspec;		///< 21 Water specular color
+			double wtrans;		///< 22 Water color / transparency
+			double wboost;		///< 23 Terrain light and shadow boost	
 		};
 	};
 	double orbalt;
@@ -43,12 +49,34 @@ typedef struct ScatterParams {
 	double red;
 	double blue;
 	double suni;
+	FVECTOR3 wcolor;	// Water color
 	FVECTOR3 zcolor;	// sun-glare color at zenith (camera at sealevel)
 	FVECTOR3 hcolor;	// sun-glare color at horizon (camera at sealevel)
 	FVECTOR3 acolor;	// Abmient color at sealevel
 	double cfg_alt;
 	double cfg_halt;
 } ScatterParams;
+
+struct sValue {
+	double min, max;
+	WORD id;			// User id
+	WORD sprm;		// Value index (ScatterTable)
+	WORD style;
+	WORD page;
+	WORD slider;
+	string lbl;
+	string tooltip;
+};
+
+struct sSlider {
+	HWND hWnd;
+	HWND hwndTip;	// ToolTip
+	int res;		// Slider resource id
+	int dsp;		// Slider display resource id
+	int lbl;		// Slider label resource id 
+	sValue* val;
+};
+
 
 class vPlanet;
 class vObject;
@@ -65,10 +93,11 @@ namespace AtmoControls {
 	vPlanet *	GetVisual();
 	bool		IsActive();
 
+	void		InitPage(int p);
 	double		GetValue(int id);
-	void		UpdateSlider(int id, bool bSetPos = true);
-	void		ConfigSlider(int id, double min, double max, int style=0);
-	void		SetSlider(int id, WORD pos);
+	void		UpdateSlider(sSlider& s, bool bSetPos = true);
+	void		ConfigValue(int sid, int vid, int pid, string lbl, double min, double max, int style = 0);
+	void		SetSlider(sSlider& s);
 	void		UpdateSliders();
 	bool		Visualize();
 
