@@ -1439,7 +1439,7 @@ DLLEXPORT SURFHANDLE oapiLoadSurfaceEx(const char* fname, DWORD attrib, bool bPa
 	else return NULL;
 }
 
-DLLEXPORT bool oapiSaveSurface(const char* fname, SURFHANDLE hSrf, oapi::ImageFileFormat fmt, float quality = 0.7f)
+DLLEXPORT bool oapiSaveSurface(const char* fname, SURFHANDLE hSrf, oapi::ImageFileFormat fmt, float quality)
 {
 	oapi::GraphicsClient* gc = g_pOrbiter->GetGraphicsClient();
 	if (gc) return gc->clbkSaveSurfaceToImage(hSrf, fname, fmt, quality);

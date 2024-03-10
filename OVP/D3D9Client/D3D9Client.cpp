@@ -642,7 +642,7 @@ void D3D9Client::SketchPadTest()
 
 	oapiReleaseSketchpad(pSkp);
 
-	clbkSaveSurfaceToImage(hTgt, "SketchpadOutput", ImageFileFormat::IMAGE_PNG);
+	oapiSaveSurface("SketchpadOutput", hTgt, ImageFileFormat::IMAGE_PNG);
 
 	oapiReleaseTexture(hSrc);
 	oapiReleaseTexture(hTgt);
@@ -781,7 +781,7 @@ void D3D9Client::SketchPadTest()
 	pCore->DeletePoly(hStrip);
 	pCore->DeletePoly(hStrip2);
 
-	clbkSaveSurfaceToImage(hTgt, "SketchpadOutput2", ImageFileFormat::IMAGE_PNG);
+	oapiSaveSurface("SketchpadOutput2", hTgt, ImageFileFormat::IMAGE_DDS);
 
 	oapiReleaseTexture(hTgt);
 }
@@ -1988,6 +1988,12 @@ bool D3D9Client::clbkSaveSurfaceToImage(SURFHANDLE surf, const char *fname, Imag
 	bool bRet = false;
 	const D3DSURFACE_DESC *desc = SURFACE(surf)->GetDesc();
 	D3DLOCKED_RECT pRect;
+
+	if (fmt == ImageFileFormat::IMAGE_DDS) {
+		char path[MAX_PATH];
+		sprintf_s(path, "%s.dds", fname);
+		return NatSaveSurface(path, pSurf);
+	}
 
 	if (desc->Pool != D3DPOOL_SYSTEMMEM)
 	{
