@@ -997,14 +997,614 @@ There are two ways to define a cockpit interior: you can build one (or several) 
 In this section we will discuss the steps required to define 2-D panels in the vessel module. Section TODO will deal with virtual cockpits.
 
 \subsubsection{The panel request callback function}
-% TODO
+Whenever the vessel switches to a new 2-D panel cockpit view (either from an outside view or another cockpit view), it calls the \textit{clbkLoadPanel2D} callback function. This is the point where we need to define the panel geometry and functions. For now, we are going to implement only a single main panel:
+
+\begin{lstlisting}
+bool MyVessel::clbkLoadPanel2D( int id, PANELHANDLE hPanel,
+	DWORD viewW, DWORD viewH )
+{
+	switch (id)
+	{
+		case 0: 
+			DefineMainPanel( hPanel );
+			ScalePanel( hPanel, viewW, viewH );
+			return true;
+		default:
+			return false;
+	}
+}
+\end{lstlisting}
+
+\noindent
+Note that \textit{clbkLoadPanel2D} has been introduced in the \textit{VESSEL3} interface, so your vessel class must be derived from \textit{VESSEL3} to make use of it. \textit{clbkLoadPanel2D} is the equivalent of \textit{clbkLoadPanel} for the old-style 2-D panel interface. If your vessel defines \textit{clbkLoadPanel2D}, it should \textit{not} also define \textit{clbkLoadPanel}.\\
+\\
+The \textit{id} parameter defines the panel (the main panel has always \textit{id} 0, but additional neighbour panels can be defined as well). The \textit{hPanel} object is a handle that is required by various functions during the definition of the panel. The \textit{viewW} and \textit{viewH} parameters define the width and height of the viewport in pixels, which can be useful for scaling purposes.\\
+\\
+Now we need to implement the \textit{DefineMainPanel} function which defines the panel mesh, textures and active areas.
+
 
 \subsubsection{The panel mesh}
-% TODO
+2-D instrument panels are defined as \textit{2-D meshes}. Orbiter uses the same mesh format for 2-D meshes as it does for 3-D meshes (used e.g. to describe vessel and virtual cockpit geometries), with the exception that the vertex z-coordinates for 2-D meshes are ignored and should be set to 0.\\
+\\
+The mesh coordinate system to which the mesh vertex coordinates refer can be freely chosen by the developer. A convenient convention is to set the bottom left corner of the mesh to coordinates (0,0), and the top right corner to coordinates (\textit{px},\textit{py}), where \textit{px} and \textit{py} are the width and height of the panel background texture in pixels. With this convention, mesh coordinates correspond to the pixel positions of the background texture.\\
+\\
+As a first example, let’s start with a simple rectangular panel, which can be defined with 4 vertices and 2 triangles. If we plan for a panel texture of dimension 1280x400, then the mesh would look like this:
+\begin{itemize}
+\item Vertex coordinate list: (0,0,0), (0,400,0), (1280,400,0), (1280,0,0)
+\item Triangle index list: (0,2,1), (2,0,3)
+\end{itemize}
+
+\noindent
+In principle it is possible to put this mesh definition into a standard Orbiter mesh file, and read it when required with \textit{oapiLoadMesh}. However, this mesh is so simple that it is more efficient to define it directly in the vessel code. Defining the 2-D panel mesh in the code will later also have the advantage that we are better able to control animations and moving parts which require direct access to the vertex lists. The main panel mesh definition could look like this:
+
+\begin{lstlisting}
+void MyVessel::DefineMainPanel( PANELHANDLE hPanel )
+{
+	static DWORD panelW = 1280;
+	static DWORD panelH = 400;
+	float fpanelW = (float)panelW;
+	float fpanelH = (float)panelH;
+	static NTVERTEX VTX[4] = {
+		{      0,       0, 0, 0, 0, 0, 0, 0},
+		{      0, fpanelH, 0, 0, 0, 0, 0, 0},
+		{fpanelW, fpanelH, 0, 0, 0, 0, 0, 0},
+		{fpanelW,       0, 0, 0, 0, 0, 0, 0}
+		};
+	static WORD IDX[6] = {
+		0, 2, 1,
+		2, 0, 3
+		};
+
+	if (hPanelMesh) oapiDeleteMesh( hPanelMesh );
+	hPanelMesh = oapiCreateMesh( 0, 0 );
+	MESHGROUP grp = {VTX, IDX, 4, 6, 0, 0, 0, 0, 0};
+	oapiAddMeshGroup( hPanelMesh, &grp );
+	SetPanelBackground( hPanel, 0, 0, hPanelMesh, panelW, panelH, 0,
+		PANEL_ATTACH_BOTTOM | PANEL_MOVEOUT_BOTTOM );
+}
+\end{lstlisting}
+
+\noindent
+Here, \textit{hPanelMesh} is assumed to be a \textit{MESHHANDLE} object defined as a member of \textit{MyVessel}. The call to \textit{oapiCreateMesh} creates an empty mesh, to which the group for the main panel background is added by \textit{oapiMeshGroup}.\\
+\\
+Since the \textit{hPanelMesh} object may be shared with other cockpit panel views, we need to check if it is allocated already, and delete it before defining the new one, using the \textit{oapiDeleteMesh} function. For this to work, it must be initialised it to \textit{NULL} in the constructor:
+
+\begin{lstlisting}
+MyVessel::MyVessel( OBJHANDLE hObj, int fmodel )
+{
+	...
+	hPanelMesh = NULL;
+	...
+}
+\end{lstlisting}
+
+\noindent
+To avoid memory leaks, the destructor should delete the mesh if required:
+
+\begin{lstlisting}
+MyVessel::~MyVessel()
+{
+	...
+	if (hPanelMesh) oapiDeleteMesh( hPanelMesh );
+	...
+}
+\end{lstlisting}
+
+\noindent
+The \textit{SetPanelBackground} call in our \textit{DefineMainPanel} function registers the panel mesh with Orbiter. Its parameters are:
+
+\begin{itemize}
+\item The panel handle, as provided by \textit{clbkLoadPanel2D}
+\item A list of textures, and the number of textures in the list (set to 0 for now – we’ll come back to those later)
+\item The panel mesh handle
+\item The width and height of the panel in mesh units
+\item The panel base line
+\item The viewport attachment and scroll flags
+\end{itemize}
+
+
+\subsubsection{Scaling the panel}
+Now we have to think about scaling the panel to the viewport. This will be done in the \textit{ScalePanel} method that has already been called in \textit{clbkLoadPanel2D}.\\
+\\
+By default, we want to scale the panel so that it fills the width of the viewport, independent of its actual size. This can be done painlessly by using the \textit{VESSEL3::SetPanelScaling} method. This is a big improvement over the old-style panel definitions, which only provided an awkward global scaling option. In addition, we can also define a zoom option that magnifies the panel. This will only display a part of the panel, but other parts can be scrolled in. This is particularly useful for small viewport sizes, where scaling the panel to fit would make it too small to use. The user can switch between standard and magnified scaling with the mouse wheel.\\
+\\
+The scaling parameters passed to \textit{SetPanelScaling} are magnification factors that describe how many viewport pixels should be covered by one mesh unit. The implementation of \textit{ScalePanel} could therefore look like this:
+
+\begin{lstlisting}
+void MyVessel::ScalePanel( PANELHANDLE hPanel, DWORD viewW, DWORD viewH )
+{
+	double defscale = (double)viewW / 1280.0;
+	double magscale = max(defscale, 1.0);
+	SetPanelScaling( hPanel, defscale, magscale );
+}
+\end{lstlisting}
+
+\noindent
+The \textit{defscale} factor makes sure that the panel (defined as size 1280) stretches over the full viewport width (viewW). The \textit{magscale} factor magnifies the panel such that 1 mesh unit covers one screen pixel if the viewport width is smaller than the panel width. This is a sensible convention, but of course you are free to implement different scaling strategies for your panels.
+
+
+\subsubsection{Adding a panel background texture}
+We now want to draw a texture over the bare panel mesh. The texture serves the same function as the bitmap in the old-style panel definitions, but it must be stored in DDS format, rather than BMP format. You may have to experiment with the compression format, but usually DXT1 is best if no or only binary transparency is required, or DXT5 if continuous transparency is required.\\
+\\
+Another important restriction is the fact that textures must have sizes that are multiples of 2. So for our 1280x400 texture we will have to create a 2048x512 pixel texture. For now this is a lot of waste, but we can use the same texture to add additional panels and active elements later on. Sometimes you may also be able to reduce the required texture size by clever mesh design and re-using the same texture elements multiple times (e.g. defining the right half of the panel as a mirror of the left).\\
+\\
+The panel texture is a global resource (it is shared by all vessels of the MyVessel class, so we can make it static and load it during module initialisation:
+
+\begin{lstlisting}
+// vessel class interface
+class MyVessel: public VESSEL3
+{
+	public:
+		...
+		static SURFHANDLE panel2dtex;
+		...
+};
+
+// public member initialisation
+SURFHANDLE MyVessel::panel2dtex = NULL;
+
+// module initialisation
+DLLCLBK void InitModule( HINSTANCE hModule )
+{
+	...
+	MyVessel::panel2dtex = oapiLoadTexture( "MyVessel\\panel2d.dds" );
+	...
+}
+
+// module cleanup
+DLLCLBK void ExitModule( HINSTANCE hModule )
+{
+	...
+	oapiDestroySurface( MyVessel::panel2dtex );
+	...
+}
+\end{lstlisting}
+
+\noindent
+where the panel texture is assumed to be located in file \textit{Textures\textbackslash MyVessel\textbackslash panel2d.dds}.\\
+\\
+We can now modify the \textit{DefineMainPanel} method to make use of the background texture:
+
+\begin{lstlisting}
+void MyVessel::DefineMainPanel( PANELHANDLE hPanel )
+{
+	static DWORD panelW = 1280;
+	static DWORD panelH = 400;
+	float fpanelW = (float)panelW;
+	float fpanelH = (float)panelH;
+	static DWORD texW = 2048;
+	static DWORD texH = 512;
+	float ftexW = (float)texW;
+	float ftexH = (float)texH;
+	static NTVERTEX VTX[4] = {
+		{      0,       0, 0, 0, 0, 0,
+			           0.0f, 1.0f - fpanelH / ftexH},
+		{      0, fpanelH, 0, 0, 0, 0,
+			           0.0f, 1.0f                  },
+		{fpanelW, fpanelH, 0, 0, 0, 0,
+			fpanelW / ftexW, 1.0f                  },
+		{fpanelW,       0, 0, 0, 0, 0,
+			fpanelW / ftexW, 1.0f - fpanelH / ftexH}
+		};
+	static WORD IDX[6] = {
+		0, 2, 1,
+		2, 0, 3
+		};
+
+	if (hPanelMesh) oapiDeleteMesh( hPanelMesh );
+	hPanelMesh = oapiCreateMesh( 0, 0 );
+	MESHGROUP grp = {VTX, IDX, 4, 6, 0, 0, 0, 0, 0};
+	oapiAddMeshGroup( hPanelMesh, &grp );
+	SetPanelBackground( hPanel, &panel2dtex, 1, hPanelMesh, panelW, panelH, 0,
+		PANEL_ATTACH_BOTTOM | PANEL_MOVEOUT_BOTTOM );
+}
+\end{lstlisting}
+
+\noindent
+The texture coordinates for the mesh vertices have now been defined (where I am assuming that the main panel image is located in the lower left corner of the texture. The call to \textit{SetPanelBackground} contains a pointer to the texture handle, and the number of textures (1). If your panel mesh references more than one texture, put them in a list, pass the list as the second parameter of \textit{SetPanelBackground}, and the number of textures in the list as the third parameter.\\
+\\
+At this point, you can compile your vessel code and run it in Orbiter. It isn’t very exciting yet (a static panel background texture covering the lower half of the screen), but it is the basis for the next steps. You should be able to scroll the panel up and down with the cursor keys.
 
 
 \subsection{Designing instrument panels (legacy style)}
-% TODO
+% TODO add section link
+This section describes the design for a legacy-style 2-D instrument panel. This method is still supported by Orbiter, but its use is discouraged, because it does not work well with newer 3-D rendering engines and external graphics clients. Vessel addon designers should switch to the new 2-D panel method described in Section TODO.
+
+\subsubsection{Defining a panel}
+You will first need to create a bitmap which represents the 2-D instrument panel. You can use any paint tool capable of generating Windows BMP files. The panel can be saved in 8-bit or 24-bit mode, but 8-bit mode is strongly recommended to reduce the size of the resulting vessel module, and improve simulation performance.
+
+\begin{figure}[H]
+	\centering
+	\subfigure{\includegraphics[width=0.99\textwidth]{dg_panel.png}}
+	\caption{The DG main panel bitmap.}
+\end{figure}
+
+\noindent
+Some thought should be given to the size of the panel bitmap. Remember that users will run Orbiter at different screen resolutions and window sizes. If the bitmap is made very large, a lot of panning will be required to bring different parts of the panel into view at low resolutions. If the bitmap is very small, it will cover only a small area of the screen at high resolutions. It is probably best to design panels for medium screen resolutions (between 1024x768 and 1280x960 pixels). Users with very low or very high screen resolutions will be able to adjust the panel size by using Orbiter's panel rescaling option.\\
+\\
+You should also consider whether the panel is to cover the whole screen, or only part of it. The main panel should usually obstruct only part of the 3-D scenery, but side panels could take up the whole simulation window.\\
+\\
+The main panel should typically also provide space for MFDs (multifunctional displays), which are the primary method to provide flight data to the pilot. Most common is a layout with two MFDs, but fewer or more can be defined as well. The size of the MFD displays should be chosen so that they are easily readable over a 'typical' range of screen resolutions.\\
+\\
+You can define more than one panel for a vessel. For example, you may define a main panel which is visible in the lower half of the screen when the pilot looks forward, an overhead panel, side panels, etc. The user can switch between the different panels with Ctrl+cursor keys. We will discuss later how to define the connectivity between panels. To start with, let's look at the definition of a single main panel.\\
+\\
+Once you have created the panel BMP file, you should add it as a bitmap resource to your vessel module project. Now you are ready to write the code to support the panel. To do so, you need to overload the \textit{clbkLoadPanel} method of the \textit{VESSEL2} class:
+
+\begin{lstlisting}
+bool MyVessel::clbkLoadPanel( int id )
+{
+	...
+}
+\end{lstlisting}
+
+\noindent
+%TODO section link
+Here we assume that \textit{MyVessel} is a class derived from \textit{VESSEL2} (see Section TODO on how to create vessel instances). \textit{id} is a panel identifier which Orbiter will provide to let your function know which panel is required. If only a single main panel is defined, \textit{id} will always be 0. If you define more than one panel, you should examine this parameter to decide which panel to load.\\
+\\
+Orbiter will call your \textit{clbkLoadPanel} method whenever it needs to load an instrument panel. This happens if
+
+\begin{itemize}
+\item the user switches to instrument panel view from another view mode by pressing F8.
+\item the user switches between panels with Ctrl+cursor keys.
+\item the user switches from an external view to a cockpit view.
+\item the user switches to a different spacecraft with F3.
+\end{itemize}
+
+\noindent
+In the body of \textit{clbkLoadPanel}, we need to load the panel bitmap and pass it to Orbiter via the \textit{oapiRegisterPanelBackground} function:
+
+\begin{lstlisting}
+bool MyVessel::clbkLoadPanel( int id )
+{
+	HBITMAP hBmp = LoadBitmap( hDLL, MAKEINTRESOURCE(IDB_PANEL) );
+	oapiRegisterPanelBackground( hBmp );
+	return true;
+}
+\end{lstlisting}
+
+\noindent
+Here, \textit{hDLL} is a module instance handle passed to the \textit{InitModule} callback function of your module, and \textit{IDB\_PANEL} is assumed to be the numerical resource identifier of the panel bitmap. The return value of \textit{clbkLoadPanel} should normally be \textit{true}. \textit{false} signifies an error, e.g. failure to load the panel bitmap.\\
+\\
+\textit{oapiRegisterPanelBackground} has an additional optional parameter which defines how the panel is connected to the edges of the simulation window, and how it can be scrolled across the screen with the cursor keys. A common choice for a main window is to connect it to the lower edge of the window, and allow it to be scrolled downward. This can be accomplished as follows:
+
+\begin{lstlisting}
+	oapiRegisterPanelBackground( hBmp,
+		PANEL_ATTACH_BOTTOM|PANEL_MOVEOUT_BOTTOM );
+\end{lstlisting}
+
+\noindent
+(This is in fact the default setting, so you only need to provide this parameter if you need to define a different behaviour.) For a full list of supported attachment and scroll parameters, see the \textit{oapiRegisterPanelBackground} description in the Reference Manual.\\
+\\
+\textit{oapiRegisterPanelBackground} has a further optional parameter to define a transparent colour. Any part of the bitmap containing that colour will be transparent in the render window. This allows to implement irregular panel shapes such as windows which provide a view of the 3-D scene though the panel.\\
+\\
+The transparent colour is given in 0xRRGGBB format. Note that if Orbiter is run in 16-bit mode, not all colours can be represented. For that reason, it is recommended to use either black (0x000000) or white (0xFFFFFF) as the transparent colour which are always available in 16-bit mode, to avoid problems. In any case, you should always check that your panel appears correctly in both 16 and 32 bit modes before publishing your addon.\\
+\\
+So the final version of our main panel loading call looks like this, where we allow the panel to be scrolled out at the bottom, and use white as the transparent colour:
+
+\begin{lstlisting}
+	oapiRegisterPanelBackground( hBmp,
+		PANEL_ATTACH_BOTTOM|PANEL_MOVEOUT_BOTTOM, 0xFFFFFF );
+\end{lstlisting}
+
+\noindent
+At this point, you can try to compile your module and test the panel in Orbiter. You should be able to make the panel visible by pressing F8 when you are in the cockpit of an instance of your vessel class, and scroll it up and down with the cursor keys.
+
+
+\subsubsection{Defining active panel areas}
+Now we can start to do something interesting with our new panel. We need to activate areas of the panel. Active areas can do two things:
+
+\begin{itemize}
+\item They can be repainted from within the code, for example to dynamically update an instrument display, and/or
+\item they can register mouse button events to allow the user to interact with the panel.
+\end{itemize}
+
+\noindent
+A panel area is activated with the \textit{oapiRegisterPanelArea} function. This must be called in your vessel's \textit{clbkLoadPanel} method, after the panel has been loaded with \textit{oapiRegisterPanelBackground}. Let's define an area that contains a button which the user can press:
+
+\begin{lstlisting}
+	oapiRegisterPanelArea( AID_BUTTON, _R( 10, 10, 30, 20 ),
+		PANEL_REDRAW_MOUSE, PANEL_MOUSE_LBDOWN, PANEL_MAP_BACKGROUND );
+\end{lstlisting}
+
+\noindent
+The first parameter, \textit{AID\_BUTTON}, is a value that uniquely identifies the area across all panels. The next parameter defines a rectangular area in the panel given by the left, top, right and bottom edges (measured from the top left corner of the panel bitmap).\\
+\\
+The next parameter, \textit{PANEL\_REDRAW\_MOUSE}, specifies that the area must be redrawn whenever a mouse event occurs inside the area. Other areas may need to be redrawn at each frame, by explicitly requesting a redraw, or not at all.\\
+\\
+\textit{PANEL\_MOUSE\_LBDOWN} requests a notification whenever the user presses the left mouse button inside the area. You can also request mouse button releases, or continuous notifications as long as a button is pressed. A panel area defined with \textit{PANEL\_MOUSE\_IGNORE} will never generate any mouse events.\\
+\\
+\textit{PANEL\_MAP\_BACKGROUND} requests the area background (i.e. the portion of the panel bitmap under the area) to be passed to the redraw function. Instead, you could request the current status of the area, or an un-initialised bitmap to be passed to the redraw function. See the documentation to \textit{oapiRegisterPanelArea} in the Reference Manual for more details.\\
+\\
+You can define more panel areas to turn your panel into a useful interface, but avoid overlapping areas.\\
+\\
+Next, we need to implement the callback functions Orbiter will call to allow the module to respond to redraw and mouse events generated by the active areas.
+
+
+\subsubsection{The mouse event handler}
+To intercept mouse events generated by a panel you must overload the \textit{clbkPanelMouseEvent} method of the \textit{VESSEL2} class:
+
+\begin{lstlisting}
+bool MyVessel::clbkPanelMouseEvent( int id, int event, int mx, int my )
+{
+	...
+}
+\end{lstlisting}
+
+\noindent
+where \textit{id} is the identifier of the panel area for which the event was generated (e.g. \textit{AID\_BUTTON} in our example), \textit{event} specifies the mouse event type, and \textit{mx},\textit{my} are the panel coordinates at which the event occurred.\\
+\\
+\textbf{Important}: A button-up event is always generated for the instrument which produced the preceding button-down event, even if the mouse has been dragged out of the panel area in the mean time.\\
+\\
+The following mouse events are available:\\
+\textit{PANEL\_MOUSE\_LBDOWN} - Left mouse button pressed down.\\
+\textit{PANEL\_MOUSE\_RBDOWN} - Right mouse button pressed down.\\
+\textit{PANEL\_MOUSE\_LBUP} - Left mouse button released.\\
+\textit{PANEL\_MOUSE\_RBUP} - Right mouse button released.\\
+\textit{PANEL\_MOUSE\_LBPRESSED} - Left mouse button down\\
+\textit{PANEL\_MOUSE\_RBPRESSED} - Right mouse button down.\\
+\\
+The \textit{PANEL\_MOUSE\_LBPRESSED} and \textit{PANEL\_MOUSE\_RBPRESSED} events are sent continuously while the buttons are held down. This allows the implementation of mouse-dragging event, for example to move sliders with the mouse.\\
+\\
+Inside \textit{clbkPanelMouseEvent}, your code must check the area id and perform the appropriate actions:
+
+\begin{lstlisting}
+bool MyVessel::clbkPanelMouseEvent( int id, int event, int mx, int my )
+{
+	switch (id)
+	{
+		case AID_BUTTON:
+			DoProcessButtonPress(...);
+			return true;
+		case ... // place response to other areas here
+	}
+	return false;
+}
+\end{lstlisting}
+
+\noindent
+Here, \textit{DoProcesButtonPress} is assumed to be a locally defined method which performs the required action.\\
+\\
+The return value is currently only used for areas which use the \textit{PANEL\_REDRAW\_MOUSE} flag. In this case, returning \textit{true} will trigger a redraw event, while returning \textit{false} will not. For efficiency, return \textit{true} only if the area needs to be redrawn as a consequence of the mouse event.\\
+\\
+The \textit{mx} and \textit{my} parameters define the area coordinates (0,0 is the top left corner of the area) at which the mouse event occurred. This is sometimes useful to fine-tune the response. For example, let's assume that the button defined in the example is actually a switch which can be flipped left or right. Then we could do this:
+
+\begin{lstlisting}
+	...
+	case AID_BUTTON:
+		if (mx < 10)
+			DoProcessFlipLeft(...);
+		else
+			DoProcessFlipRight(...);
+		return true;
+	...
+\end{lstlisting}
+
+
+\subsubsection{The redraw event handler}
+To provide a visual cue of the button press, we may want to redraw the area (e.g. to simulate a control lamp lighting up). Other areas representing gauges and displays may need to be redrawn continuously without any mouse events. To respond to redraw requests, we need to overload the \textit{clbkPanelRedrawEvent} method of the \textit{VESSEL2} class:
+
+\begin{lstlisting}
+bool MyVessel::clbkPanelRedrawEvent( int id, int event, SURFHANDLE surf )
+{
+	...
+}
+\end{lstlisting}
+
+\noindent
+As with the mouse event handler, your implementation of \textit{clbkPanelRedrawEvent} should examine the area \textit{id} (and the redraw event, if required), and redraw the corresponding area as required.\\
+\\
+\textit{surf} is a handle to the paint surface for the area in which all repainting takes place. The contents of the surface passed to the callback function depend on the parameters specified during the definition of the area:\\
+\textit{PANEL\_MAP\_NONE} - surf is undefined\\
+\textit{PANEL\_MAP\_BACKGROUND} - surf contains area background\\
+\textit{PANEL\_MAP\_CURRENT} - surf contains current area contents\\
+\textit{PANEL\_MAP\_BGONREQUEST} - surf is undefined, but area background can be obtained on request\\
+\\
+\textit{PANEL\_MAP\_NONE} is the most efficient option if the whole area needs to be redrawn at each redraw event. \textit{PANEL\_MAP\_BACKGROUND} is least efficient, because it involves the most internal surface copy processes. If you need the background bitmap, but your area doesn't need to be redrawn for each redraw request generated (for example, if you have defined a gauge, to be redrawn at each simulation frame, but often the contents don't change between subsequent frames), it is more efficient to use the \textit{PANEL\_MAP\_BGONREQUEST} flag, and obtaining the background bitmap explicitly with a call to \textit{oapiBltPanelAreaBackground} whenever the area actually needs to be redrawn (see documentation to \textit{oapiBltPanelAreaBackground} in the Reference Manual for more details).\\
+\\
+Our redraw function might look like this:
+
+\begin{lstlisting}
+bool MyVessel::clbkPanelRedrawEvent( int id, int event, SURFHANDLE surf )
+{
+	switch (id)
+	{
+		case AID_BUTTON:
+			if (button_pressed)
+				oapiBlt( surf, buttonSurf, 0, 0, 0, 0, 20, 10 );
+			else
+				oapiBlt( surf, buttonSurf, 0, 0, 0, 10, 20, 10 );
+			return true;
+		case ... // imprement redraw methods for other areas
+	}
+	return false;
+}
+\end{lstlisting}
+
+\noindent
+Here, \textit{buttonSurf} is assumed to be the surface handle to a bitmap which contains images of the button for both the pressed and the released state. (You can store this bitmap as a module resource and obtain a surface handle to it with the \textit{oapiCreateSurface} method.) \textit{oapiBlt} copies the relevant part of the bitmap into the area's surface (the \textit{button\_pressed} flag could for example have been set in the mouse event handler).\\
+\\
+When more complex redrawing is required, you can obtain a device context handle to the surface with \textit{oapiGetDC} and then use standard Windows GDI methods to paint in the surface. (see Windows API documentation). Don't forget to release the device context with \textit{oapiReleaseDC} at the end.\\
+\\
+The return value of \textit{clbkPanelRedrawEvent} signals to Orbiter if the contents of the area have been redrawn. Return \textit{true} only if you did modify the surface, \textit{false} otherwise.
+
+
+\subsubsection{Defining panel MFDs}
+MFD (multifunctional displays) are probably the most important components of your panel. They are defined differently to other panel areas, because some of the redraw events are processed directly by Orbiter.\\
+\\
+MFDs consist of a square display area (representing a colour CRT or LCD display) and rows of control buttons to the left and right. The number of buttons can be defined individually.\\
+\\
+You reserve a panel area for an MFD with the \textit{oapiRegisterMFD} method during setting up the panel in the overloaded \textit{clbkLoadPanel} callback function:
+
+\begin{lstlisting}
+bool MyVessel::clbkLoadPanel( int id )
+{
+	oapiRegisterPanelBackground(...);
+	...
+	MFDSPEC mfds_left  = {{100, 10, 200, 110}, 6, 6, 10, 20};
+	oapiRegisterMFD( MFD_LEFT,  mfds_left );
+	...
+	return true;
+}
+\end{lstlisting}
+
+\noindent
+The first parameter of \textit{oapiRegisterMFD} identifies the MFD (left, right, or a user-defined MFD). The left and right MFDs can be controlled with keyboard commands, while user-defined MFDs can only be controlled with the mouse. Therefore you should always first define the left and right MFDs, and use user-defined ones only if more than two MFDs are to be defined in the panel.\\
+\\
+The second parameter is a structure which defines the layout of the MFD. It contains:
+
+\begin{itemize}
+\item the rectangular area (left, top, right and bottom edge) of the panel area to contain the MFD display,
+\item the number of buttons along the left and right edges,
+\item the y-offset of the upper edge of the topmost button from the top edge of the display,
+\item the y-distance between the top edges of the buttons.
+\end{itemize}
+
+\noindent
+The button rows must be implemented as separate areas. Note that a single area is used for the left row of buttons, and another one for the right row. In addition, a bottom row of 3 buttons can be defined to perform MFD on/off, display of button commands, and display of mode contents:
+
+\begin{lstlisting}
+bool MyVessel::clbkLoadPanel( int id )
+{
+	oapiRegisterPanelBackground(...);
+	...
+	MFDSPEC mfds_left  = {{100, 10, 200, 110}, 6, 6, 10, 20};
+	oapiRegisterMFD( MFD_LEFT,  mfds_left );
+	oapiRegisterPanelArea(
+		AID_LBUTTONS, _R( 80, 20, 100, 100 ), PANEL_REDRAW_USER,
+		PANEL_MOUSE_LBDOWN | PANEL_MOUSE_LBPRESSED, PANEL_MAP_BACKGROUND );
+	oapiRegisterPanelArea(
+		AID_RBUTTONS, _R( 200, 20, 220, 100 ), PANEL_REDRAW_USER,
+		PANEL_MOUSE_LBDOWN | PANEL_MOUSE_LBPRESSED, PANEL_MAP_BACKGROUND );
+	oapiRegisterPanelArea(
+		AID_BBUTTONS, _R( 100, 110, 200, 130 ), PANEL_REDRAW_NEVER,
+		PANEL_MOUSE_LBDOWN );
+	...
+	return true;
+}
+\end{lstlisting}
+
+\noindent
+% TODO fix text overflow
+The button areas have been defined with the \textit{PANEL\_MOUSE\_LBPRESSED} flag in addition to \textit{PANEL\_MOUSE\_LBDOWN}, so that continued mouse presses can be recorded when required.\\
+\\
+Mouse button events now need to be processed in the mouse event handler:
+
+\begin{lstlisting}
+bool MyVessel::clbkPanelMouseEvent( int id, int event, int mx, int my )
+{
+	switch (id)
+	{
+		case AID_LBUTTONS:
+		case AID_RBUTTONS:
+			if (my % 20 < 15)
+			{
+				int bt = my / 20 + (id == AID_LBUTTONS ? 0 : 6);
+				oapiProcessMFDButton( MFD_LEFT, bt, event );
+				return true;
+			}
+			break;
+		case ...
+	}
+	return false;
+}
+\end{lstlisting}
+
+\noindent
+This code fragment processes all the buttons in the left and right button columns simultaneously. It first checks if the mouse event occurred over a button ($my\%20 < 15$), assuming that each button is 15 pixels high, and buttons are spaced in 20 pixel intervals. It then checks if the event occurred in the left or right button column, and determines which of the buttons was pressed (\textit{bt}). Finally, the \textit{oapiProcessMFDButton} function is called with the appropriate parameters, to allow Orbiter to respond to the MFD request.\\
+\\
+The bottom row of buttons is processed similarly:
+
+\begin{lstlisting}
+	...
+	case AID_BBUTTONS:
+		if (mx < 20)
+			oapiToggleMFD_on( MFD_LEFT );
+		else if (mx >= 30 && mx < 50)
+			oapiSendMFDKey( MFD_LEFT, OAPI_KEY_F1 );
+		else if (mx > 60)
+			oapiSendMFDKey( MFD_LEFT, OAPI_KEY_GRAVE );
+		return true;
+	...
+\end{lstlisting}
+
+\noindent
+where \textit{oapiToggleMFD\_on} switches the MFD on/off, and the \textit{oapiSendMFDKey} commands trigger the default actions of displaying the key commands and the MFD mode list.\\
+\\
+Of course, the values of the various mouse x and y values in an actual implementation will depend on the geometry of the individual MFD layout. You could even define each single button as a separate area, but this will generally result in less efficient code.\\
+\\
+Finally, the MFD buttons need to respond to redraw events, to reflect the change of button labels (for example, when the MFD mode changes). Note that the MFD display area itself is automatically updated by Orbiter and therefore doesn't need to implement a redraw response.
+
+\begin{lstlisting}
+bool MyVessel::clbkPanelRedrawEvent( int id, int event, SURFHANDLE surf )
+{
+	switch (id)
+	{
+		case AID_LBUTTONS:
+		case AID_RBUTTONS:
+			side = (id == AID_LBUTTONS ? 0 : 1);
+			hDC = oapiGetDC( surf );
+			for (int bt = 0; bt < 6; bt++)
+			{
+				if (label = oapiMFDButtonLabel( MFD_LEFT, bt + side * 6) )
+				TextOut( hDC, 5, 2 + 20 * bt, label, strlen( label ) );
+				else break;
+			}
+			oapiReleaseDC( surf, hDC );
+			return true;
+		case ...
+	}
+	return false;
+}
+\end{lstlisting}
+
+\noindent
+This uses the \textit{oapiMFDButtonLabel} function to retrieve the label text for each of the buttons (button labels consist of 1 to 3 characters). The redraw function can be customised to reflect the style in which the button labels are displayed (for example by changing the font size or colour).\\
+\\
+Note that the bottom row of buttons does not necessarily need to implement a redraw method, because their labels never change.
+
+
+\subsubsection{Multiple panels}
+To implement multiple panels for a vessel, the \textit{clbkLoadPanel} method must load different panels depending on the provided panel \textit{id}, and each of the panels must define its connectivity to neighbouring panels via the \textit{oapiSetPanelNeighbours} function.\\
+\\
+Example: If your vessel supports a main panel, an overhead and a left side panel, the structure of the overloaded \textit{clbkLoadPanel} could look like this:
+
+\begin{lstlisting}
+bool MyVessel::clbkLoadPanel( int id )
+{
+	switch (id)
+	{
+		case 0:// main panel
+			oapiRegisterPanelBackground( LoadBitmap( hDLL,
+				MAKEINTRESOURCE(IDB_PANEL0) ) );
+			oapiSetPanelNeighbours( 2, -1, 1, -1 );
+			// register areas for panel 0 here
+			break;
+		case 1:// overhead panel
+			oapiRegisterPanelBackground( LoadBitmap( hDLL,
+				MAKEINTRESOURCE(IDB_PANEL1) ) );
+			oapiSetPanelNeighbours( -1, -1, -1, 0 );
+			// register areas for panel 1 here
+			break;
+		case 2:// left side panel
+			oapiRegisterPanelBackground( LoadBitmap( hDLL,
+				MAKEINTRESOURCE(IDB_PANEL2) ) );
+			oapiSetPanelNeighbours( -1, 0, -1, -1 );
+			// register areas for panel 2 here
+			break;
+	}
+	return true;
+}
+\end{lstlisting}
+
+\noindent
+Each panel must register its own background bitmap via the \textit{oapiRegisterPanelBackground} function.\\
+\\
+In a vessel that defines multiple panels, the user can switch between them by using Ctrl-Arrow keys. Orbiter must know the relative location of bitmaps to each other, so that the correct panel can be loaded. This connectivity is provided by the \textit{oapiSetPanelNeighbours} function. This function tells Orbiter which panels are to the left, right, top and bottom of the current panel. A value of –1 indicates that no panel is located at that side.\\
+\\
+\textbf{Important}: All the panel id’s defined during \textit{oapiSetPanelNeighbours} must be supported by \textit{clbkLoadPanel}. For example, if panel 0 calls \textit{oapiSetPanelNeighbours( 2, -1, 1, -1 )}, then panels 1 and 2 must be handled by \textit{clbkLoadPanel}.\\
+\\
+All panels must call the \textit{oapiSetPanelNeighbours} function, otherwise there is no way for the user to switch back to a different panel. Panel connectivities should usually be reciprocal, i.e. if panel 0 defines panel 1 as its top neighbour, then panel 1 should define panel 0 as its bottom neighbour. If only a single panel (panel 0) is supported, calling \textit{oapiSetPanelNeighbours} is not necessary.
+
 
 \subsection{Designing virtual cockpits}
 % TODO
