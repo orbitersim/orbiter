@@ -514,8 +514,9 @@ float4 TerrainPS(TileVS frg) : COLOR
 		cRfl = GetAmbient(reflect(-vRay, wnrmW)) * fF.y * fSrf;	
 		// Attennuate diffuse texture for fresnel refl.
 		cTex.rgb *= saturate(1.0f - f.y * fSrf * fMask) * saturate(1.0f - f.z * fSrf * fMask);
-		cTex.rgb = saturate(cTex.rgb + float3(0, 0.6, 1.0) * Const.wBrightness * fMask);
 	}
+
+	cTex.rgb = saturate(cTex.rgb + float3(0, 0.55, 1.0) * Const.wBrightness * fMask);
 
 #else
 	// Fallback to simple specular reflection

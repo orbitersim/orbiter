@@ -474,7 +474,8 @@ namespace oapi {
 		IMAGE_BMP = 0,
 		IMAGE_PNG = 1,
 		IMAGE_JPG = 2,
-		IMAGE_TIF = 3
+		IMAGE_TIF = 3,
+		IMAGE_DDS = 4	///< D3D9+ only
 	};
 }
 
@@ -5527,7 +5528,7 @@ OAPIFUNC SURFHANDLE oapiLoadSurfaceEx(const char* fname, DWORD attrib, bool bPat
 	* \return Should return true on success
 	* \default Nothing, returns false
 	*/
-OAPIFUNC bool oapiSaveSurface(const char* fname, SURFHANDLE hSrf, oapi::ImageFileFormat fmt, float quality);
+OAPIFUNC bool oapiSaveSurface(const char* fname, SURFHANDLE hSrf, oapi::ImageFileFormat fmt, float quality = 0.7f);
 
 
 	/**

@@ -54,9 +54,10 @@ ScatterParams::ScatterParams() :
 	// ----------------------------------------
 	orbalt	 ( 250e3 ),
 	visalt	 ( 70e3 ),
-	wtrans	 ( 0.0 ),
-	wspec	 ( 0.0 ),	
-	wnrml	 ( 4.0 ),			
+	wtrans	 ( 0.1 ),
+	wspec	 ( 0.8 ),
+	wnrml	 ( 1.0 ),
+	wboost	 ( 0.0 ),
 	zcolor	 (1.0f, 1.0f, 0.9f),
 	hcolor	 (1.0f, 0.7f, 0.0f),
 	acolor	 (0.9f, 0.9f, 1.0f)
@@ -103,9 +104,6 @@ void InitToolTips()
 	{
 		if (!s.hWnd || !s.hwndTip) return;
 
-		if (s.val) SendMessage(s.hwndTip, TTM_ACTIVATE, TRUE, 0);
-		else SendMessage(s.hwndTip, TTM_ACTIVATE, FALSE, 0);
-
 		if (s.val && s.val->tooltip.size() > 2)
 		{
 			TOOLINFO toolInfo = { 0 };
@@ -115,6 +113,10 @@ void InitToolTips()
 			toolInfo.uId = (UINT_PTR)s.hWnd;
 			toolInfo.lpszText = LPSTR(s.val->tooltip.c_str());
 			SendMessage(s.hwndTip, TTM_UPDATETIPTEXT, 0, (LPARAM)&toolInfo);
+			SendMessage(s.hwndTip, TTM_ACTIVATE, TRUE, 0);
+		}
+		else {
+			SendMessage(s.hwndTip, TTM_ACTIVATE, FALSE, 0);
 		}
 	}
 }
@@ -174,10 +176,10 @@ void Create()
 	ConfigValue(20, 18, 0, "Intensity", 0.0, 5.0, 0x8 | 0x40);	// Clouds intensity
 
 	// PAGE 1 ------------------------------------------------
-	ConfigValue(14,  20, 1, "Normals", 0.2, 4.0, 0x8);
+	ConfigValue(14,  20, 1, "Normals", 0.2, 2.0, 0x8);
 	ConfigValue(15,  21, 1, "Spec",  0.5, 1.5);
 	ConfigValue(16,  22, 1, "Color", 0.01, 0.4);
-	ConfigValue(17,  23, 1, "n/a", 0.01, 1.0);
+	ConfigValue(17,  23, 1, " ", 0.01, 1.0);
 
 
 	SetToolTip(0, (char*)"Light travel distance behind terminator");
@@ -204,6 +206,11 @@ void Create()
 	SetToolTip(15, (char*)"'HDR' Exposure factor");
 	SetToolTip(17, (char*)"Omnidirectional mie scattering scale factor");
 	SetToolTip(18, (char*)"[Dual purpose] Clouds intensity [on surface]. Multiscatter light level [on orbit]");
+	// -------------------------------------------------------
+	SetToolTip(20, (char*)"Water normal map strength");
+	SetToolTip(21, (char*)"Water reflectivity");
+	SetToolTip(22, (char*)"Water color / transparency");
+	SetToolTip(23, (char*)"Unused");
 }
 
 // ==============================================================
