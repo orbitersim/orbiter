@@ -9,60 +9,60 @@ ORBITER meshes are defined in a left-handed coordinate system. Vessel meshes sho
 The units for vertex coordinates are \textit{meters} [m].\\
 \\
 Mesh file format:
-\begin{lstlisting}
-MSHX1	header
-GROUPS <n>	<n>: number of groups
-<group 1>	group spec 1
-<group 2>	group spec 2
+\begin{lstlisting}[language=MESH]
+MSHX1	;header
+GROUPS <n>	;<n>: number of groups
+<group 1>	;group spec 1
+<group 2>	;group spec 2
 ...
-<group n>	group spec n
+<group n>	;group spec n
 
-MATERIALS <m>	<m>: number of materials
-<mtrl-name 1>	material name 1
-<mtrl-name 2>	material name 2
+MATERIALS <m>	;<m>: number of materials
+<mtrl-name 1>	;material name 1
+<mtrl-name 2>	;material name 2
 ...
-<mtrl-name m>	material name m
-<material 1>	material spec 1
-<material 2>	material spec 2
+<mtrl-name m>	;material name m
+<material 1>	;material spec 1
+<material 2>	;material spec 2
 ...
-<material m>	material spec m
+<material m>	;material spec m
 
-TEXTURES <t>	<t>: number of textures
-<tex-name 1>	texture name 1
-<tex-name 2>	texture name 2
+TEXTURES <t>	;<t>: number of textures
+<tex-name 1>	;texture name 1
+<tex-name 2>	;texture name 2
 ...
-<tex-name t>	texture name t
+<tex-name t>	;texture name t
 \end{lstlisting}
 
 \noindent
 Group specs:
 
-\begin{lstlisting}
-[LABEL <label>]		group label; optional
-[MATERIAL <i>]		material index; optional
-[TEXTURE <j>]		texture index; optional
-[TEXWRAP <wrap>]	texture wrap mode: <wrap> = U or V or UV; optional
-[NONORMAL]			"no normals" flag; see below; optional
-[FLAG <f>]			multi-purpose bit-flags; see below; optional
-GEOM <nv> <nt>	<nv>: vertex count, <nt>: triangle count
-<vtx 0>			vertex spec 0
-<vtx 1>			vertex spec 1
+\begin{lstlisting}[language=MESH]
+[LABEL <label>]		;group label, optional
+[MATERIAL <i>]		;material index, optional
+[TEXTURE <j>]		;texture index, optional
+[TEXWRAP <wrap>]	;texture wrap mode, <wrap> = U or V or UV, optional
+[NONORMAL]			;"no normals" flag; see below, optional
+[FLAG <f>]			;multi-purpose bit-flags; see below, optional
+GEOM <nv> <nt>	;<nv>: vertex count, <nt>: triangle count
+<vtx 0>			;vertex spec 0
+<vtx 1>			;vertex spec 1
 ...
-<vtx nv-1>	vertex spec nv-1
-<tri 0>		triangle spec 0
-<tri 1>		triangle spec 1
+<vtx nv-1>	;vertex spec nv-1
+<tri 0>		;triangle spec 0
+<tri 1>		;triangle spec 1
 ...
-<tri nt-1>	triangle spec nt-1
+<tri nt-1>	;triangle spec nt-1
 \end{lstlisting}
 
 \noindent
 Vertex specs:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=MESH]
 <x> <y> <z> [<nx> <ny> <nz> [<tu> <tv>]]
-	<x> <y> <z>: vertex position
-	<nx> <ny> <nz>: vertex normal (optional)
-	<tu> <tv>: texture coordinates (optional)
+	;<x> <y> <z>: vertex position
+	;<nx> <ny> <nz>: vertex normal (optional)
+	;<tu> <tv>: texture coordinates (optional)
 \end{lstlisting}
 
 \noindent
@@ -70,19 +70,19 @@ Missing normals are automatically calculated as the mean of the normals of adjac
 \\
 Triangle specs:
 
-\begin{lstlisting}
-<i> <j> <k>	vertex indices (zero-based). Left-hand face is rendered.
+\begin{lstlisting}[language=MESH]
+<i> <j> <k>	;vertex indices (zero-based). Left-hand face is rendered.
 \end{lstlisting}
 
 \noindent
 Material specs:
 
-\begin{lstlisting}
-MATERIAL <mtrl-name>	material header
-<dr> <dg> <db> <da>		Diffuse colour (RGBA)
-<ar> <ag> <ab> <aa>		Ambient colour (RGBA)
-<sr> <sg> <sb> <sa> <pow>	Specular colour (RGBA) and specular power (float)
-<er> <eg> <eb> <ea>		Emissive colour (RGBA)
+\begin{lstlisting}[language=MESH]
+MATERIAL <mtrl-name>	;material header
+<dr> <dg> <db> <da>		;Diffuse colour (RGBA)
+<ar> <ag> <ab> <aa>		;Ambient colour (RGBA)
+<sr> <sg> <sb> <sa> <pow>	;Specular colour (RGBA) and specular power (float)
+<er> <eg> <eb> <ea>		;Emissive colour (RGBA)
 \end{lstlisting}
 
 
