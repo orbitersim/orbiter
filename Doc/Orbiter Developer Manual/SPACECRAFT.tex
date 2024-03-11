@@ -1607,6 +1607,264 @@ All panels must call the \textit{oapiSetPanelNeighbours} function, otherwise the
 
 
 \subsection{Designing virtual cockpits}
-% TODO
+A virtual cockpit requires a 3-D mesh representation. In principle it is possible to add the cockpit directly to the mesh used to represent the vessel in external views, and flag this mesh to be visible both in external and cockpit views (via the \textit{SetMeshVisibility} method), but in general it is more efficient to design a separate mesh for the cockpit which is visible only in virtual cockpit view mode (using \textit{SetMeshVisibility} with the \textit{MESHVIS\_VC} flag). Make sure that the cockpit mesh is consistent with the external mesh. A good way to achieve this is by building the VC together with the external mesh in your 3D design program, but exporting the cockpit and the external parts to separate mesh files.
+
+\begin{figure}[H]
+	\centering
+	\subfigure{\includegraphics[width=0.99\textwidth]{dg_vc.png}}
+	\caption{A view of the DG virtual cockpit.}
+\end{figure}
+
+\noindent
+To make the VC mode available in your mesh class, you must overload the \textit{clbkLoadVC} method of the \textit{VESSEL2} class:
+
+\begin{lstlisting}
+bool MyVessel::clbkLoadVC( int id )
+{
+	...
+}
+\end{lstlisting}
+
+\noindent
+This will allow the user to switch to VC mode with the F8 key. The \textit{id} parameter is currently always 0. Eventually it will allow to select different cockpit positions.\\
+\\
+In the body of \textit{clbkLoadVC}, you can define camera parameters:
+
+\begin{lstlisting}
+bool MyVessel::clbkLoadVC( int id )
+{
+	SetCameraOffset( _V( 0, 1.5, 6.0 ) );
+	SetCameraDefaultDirection( _V( 0, 0, 1 ) );
+	SetCameraRotationRange( RAD * 120, RAD * 120, RAD * 70, RAD * 70 );
+	SetCameraShiftRange( _V( 0, 0, 0.1 ), _V( -0.2, 0, 0 ), _V( 0.2, 0, 0 ) );
+	...
+}
+\end{lstlisting}
+
+\noindent
+\textit{SetCameraOffset} defines the camera (or pilot eye) position in the vessel coordinate frame. \textit{SetCameraDefaultDirection} defines the default direction the pilot is looking toward, \textit{SetCameraRotationRange} defines how far he can turn his head left right, up and down, and \textit{SetCameraShiftRange} allows to simulate the pilot 'leaning' forward, left or right, for example to get a better view out of a window.\\
+\\
+Note that you only need to define these camera parameters here if they change between different cockpit view modes. If all camera modes use the same parameters, they can be defined globally in the overloaded \textit{clbkSetClassCaps} method.\\
+\\
+Once you have implemented the \textit{clbkLoadVC} method thus far and defined the VC mesh, you should be able to compile the module and test the virtual cockpit mode in Orbiter. Try rotating the view with Alt+cursor keys, and 'leaning' with Ctrl+Alt+cursor keys. When you are satisfied with the camera parameters, you can proceed to activate VC areas.
+
+
+\subsubsection{Defining active VC areas}
+As with 2-D panels, virtual cockpit areas must be activated to allow dynamic updates or to respond to user input. This is how an active area is defined in \textit{clbkLoadVC}:
+
+\begin{lstlisting}
+bool MyVessel::clbkLoadVC( int id )
+{
+	...
+	SURFHANDLE tex = oapiGetTextureHandle( vcmesh, 10 );
+	oapiVCRegisterArea( AID_BUTTON, _R( 0, 0, 20, 10 ), PANEL_REDRAW_ALWAYS,
+		PANEL_MOUSE_LBDOWN, PANEL_MAP_BGONREQUEST, tex );
+	oapiVCSetAreaClickmode_Spherical( AID_BUTTON, _V( 5, 3.3, 7.1 ), 2.5 );
+	...
+}
+\end{lstlisting}
+
+\noindent
+As with 2-D panel area definitions, the first parameter of \textit{oapiVCRegisterArea} defines a unique identifier for the area (\textit{AID\_BUTTON} in this case). The next parameter defines a rectangular area (in pixel units) in a texture that is updated dynamically in a redraw event. If the area doesn't need to update any textures (e.g. because it only responds to mouse events, or because it provides visual feedback by modifying the mesh geometry), this parameter is ignored and can be set to \_R(0,0,0,0).\\
+\\
+The third parameter defines the events which trigger a redraw notification for the area. In this case we have set it to \textit{PANEL\_REDRAW\_ALWAYS}, i.e. we request a redraw notification at each simulation frame (typical for gauges whose displays change constantly). Note that unlike 2-D panels, the term 'redraw event' stands for any change in the visual representation of the area. This may consist of repainting a dynamic texture, but it could also mean a mesh group animation or direct editing of mesh vertices or texture coordinates.\\
+\\
+The fourth parameter defines the mouse events which trigger a notification for the area. They are used in the same way as 2-D panel areas, but an additional function call is required to define the mouse-sensitive area (see below).\\
+\\
+The fifth parameter defines the initial contents of the drawing bitmap passed to the redraw notification. It is used in the same way as for 2-D panels. However, if the redraw event does not update a dynamic texture, this \textit{must} be set to \textit{PANEL\_MAP\_NONE}.\\
+\\
+The last parameter is a handle to the dynamic texture passed to redraw notifications. In this example, we have obtained the texture handle from mesh group 10 of the VC mesh via a call to \textit{oapiGetTextureHandle}. Note that textures obtained for dynamic repainting must be labelled as dynamic in the mesh file (see next section). If the area does not need to redraw a texture during a redraw event, this parameter can be set to \textit{NULL}. In that case, there is a shorter version of \textit{oapiVCRegisterArea} for convenience which omits the second, fifth and sixth parameters.\\
+\\
+Unlike 2-D panels, the mouse-sensitive region of a VC area must be defined with a separate function call. In virtual cockpits, the sensitive region is a 3-D volume. Orbiter draws a virtual ray from the camera position through the screen point at which a mouse event occurred, and checks whether the ray intersects a mouse-sensitive volume. If so, the corresponding mouse event is generated.\\
+\\
+You can define either a spherical or a quadrilateral mouse-sensitive region. A spherical region is defined via the \textit{oapiVCSetAreaClickmode\_Spherical} method, where you specifiy the centre of the spherical region in the vessel frame of reference, and its radius. This will trigger a mouse event whenever the user clicks inside the projection of the sphere onto the simulation window.\\
+\\
+Quadrilateral (e.g. rectangular) regions are defined via the \textit{oapiVCSetAreaClickmode\_Quadrilateral} method, where you specify the four corners of the mouse-sensitive region in space. Again, this will trigger mouse events whenever the user clicks inside the projection of the sensitive area on the simulation window.\\
+\\
+Spherical regions are slightly more efficient for Orbiter to test, but quadrilateral regions return information about the relative position at which the mouse click occurred, so they are somewhat more versatile.
+
+
+\subsubsection{Defining dynamic textures}
+One way to provide information to the pilot in VC mode is by repainting the bitmaps used to texture VC mesh groups. For example, you can implement gauges and data displays in this way. You may even be able to re-use a panel area redraw method used for 2-D panels to update a VC texture, minimising the additional coding effort.\\
+\\
+\textbf{Important}: Orbiter can only draw into uncompressed textures. For this reason, textures which support dynamic repainting must be marked in the mesh file with a 'D' (\textit{dynamic}), e.g.
+
+\begin{lstlisting}
+...
+Textures 2
+tex1.dds
+tex2_dyn.dds D
+\end{lstlisting}
+
+\noindent
+Dynamic textures are less efficient than static ones, so you should try to keep them to a minimum. Collect all parts that require dynamic updates in one or few (small) texture files, and keep them apart from the static parts.
+
+
+\subsubsection{The mouse event handler}
+Whenever a mouse event occurs inside the mouse-sensitive volume of an active area, a notification is passed to your module. To respond to such events, you must overload the \textit{clbkVCMouseEvent} method of the \textit{VESSEL2} class.
+
+\begin{lstlisting}
+bool MyVessel::clbkVCMouseEvent( int id, int event, VECTOR3 &p )
+{
+	...
+}
+\end{lstlisting}
+
+\noindent
+where \textit{id} is the area identifier, and \textit{event} is the mouse event that triggered the notification (The VC notification uses the same event types as 2-D panels).\\
+\\
+Parameter \textit{p} returns some information about the mouse position at the event. The information returned depends on the area type for which the event was generated. For spherical regions, p.x contains the distance of the mouse position from the centre of the area, while p.y and p.z are not used. For quadrilateral regions, p.x and p.y contain the relative mouse x and y positions within the region, where the top left corner of the region has coordinates (0,0), and the bottom right corner has coordinates (1,1). This allows to define differentiated responses depending on where in the region the event occurred, similar to the procedure in 2-D panel regions.\\
+\\
+Inside \textit{clbkVCMouseEvent}, your code must check the area id and perform the appropriate actions:
+
+\begin{lstlisting}
+bool MyVessel::clbkVCMouseEvent( int id, int event, VECTOR3 &p )
+{
+	switch (id)
+	{
+		case AID_BUTTON:
+			DoProcessButtonPress(...);
+			return true;
+		case ... // place response to other areas here
+	}
+	return false;
+}
+\end{lstlisting}
+
+
+\subsubsection{The redraw event handler}
+Any active areas which specified a redraw flag other than \textit{PANEL\_REDRAW\_NEVER} during initialisation, will trigger redraw notifications for the appropriate events. Your code needs to overload the \textit{clbkVCRedrawEvent} method of the \textit{VESSEL2} class to respond to those events.
+
+\begin{lstlisting}
+bool MyVessel::clbkVCRedrawEvent( int id, int event, SURFHANDLE surf )
+{
+	...
+}
+\end{lstlisting}
+
+\noindent
+where \textit{id} is the area identifier, \textit{event} is the redraw event that triggered the notification, and \textit{surf} is a handle to the dynamic texture to be redrawn. \textit{surf} may be \textit{NULL} if you didn't specify a texture during the area initialisation.\\
+\\
+Inside \textit{clbkVCRedrawEvent}, check the area id and perform the appropriate redraw action for that area. Typically, this will be one of the following:
+
+\begin{itemize}
+\item Repainting the dynamic texture passed to the notification handler. This is done in the same way as repainting 2-D panel areas. In fact, you may even be able to re-use the same code. Repainting textures is a good way to update displays and instrument gauges.
+%TODO add section link
+\item Animating a mesh group. This can be used to simulate flipping a switch or pushing a lever. See Section TODO for details on animations.
+\item Editing a mesh. You can use the \textit{oapiMeshGroup} function to access the vertices of a mesh group, and edit the vertex positions or texture coordinates. Editing texture coordinates may be a good alternative to redrawing a texture if the texture is to switch between discrete pre-defined states.
+\end{itemize}
+
+\noindent
+\textit{clbkVCRedrawEvent} should return \textit{true} only if you have modified the dynamic texture. If the texture was not modified, or is undefined, the function should return \textit{false}.
+
+
+\subsubsection{Defining MFDs in the virtual cockpit}
+To define a multifunctional display inside a virtual cockpit, you need to perform the following steps:\\
+\\
+Create a new group in the mesh consisting of a flat square area (defined by 4 vertices and 2 triangles). This is going to be the MFD display. The texture coordinates of the vertices should be: top left corner: (0,0), top right corner: (1,0), bottom left corner: (0,1) and bottom right corner: (1,1). Set 'TEXTURE 0' and 'FLAG 3' for this group. This will exclude the group from normal rendering (Orbiter uses a special render pass for MFDs). You can select a material of your choice. A material with specular reflection will produce a 'glass surface' effect.\\
+\\
+In \textit{clbkLoadVC}, define the MFD display with \textit{oapiVCRegisterMFD}:
+
+\begin{lstlisting}
+bool MyVessel::clbkLoadVC( int id )
+{
+	...
+	static VCMFDSPEC mfds_left = {1, 100};
+	oapiVCRegisterMFD( MFD_LEFT, &mfds_left );
+	...
+}
+\end{lstlisting}
+
+\noindent
+\textit{VCMFDSPEC} is a structure which contains the mesh index and group index of the MFD display group defined in the previous step. \textit{oapiVCRegisterMFD} registers this group as an MFD display (in this case, the left MFD).\\
+\\
+Next, you need to define the MFD control buttons. How you implement them is mostly up to you. Typically, you define each button as a rectangle and collect all rectangles into a single mesh group. Reserve space on a dynamic texture for drawing the button labels, and set the texture coordinates for the button rectangles accordingly.\\
+\\
+Then you define an active area for each button to receive mouse events (but no redraw events). You also define a dummy area for redraw events. Pass the dynamic texture handle reserved for that purpose to the redraw area. This could look as follows:
+
+\begin{lstlisting}
+bool MyVessel::clbkLoadVC( int id )
+{
+	...
+	oapiVCRegisterArea( AID_LBUTTONS, _R( 0, 0, 20, 100 ), PANEL_REDRAW_USER,
+		PANEL_MOUSE_IGNORE, PANEL_MAP_BACKGROUND, tex );
+	oapiVCRegisterArea( AID_RBUTTONS,_R( 20, 0, 40, 100 ), PANEL_REDRAW_USER,
+		PANEL_MOUSE_IGNORE, PANEL_MAP_BACKGROUND, tex );
+	for (i = 0; i < 6; i++)
+	{
+		oapiVCRegisterArea( AID_LBUTTON1 + i, PANEL_REDRAW_NEVER,
+			PANEL_MOUSE_LBDOWN | PANEL_MOUSE_LBPRESSED );
+		oapiVCSetAreaClickmode_Spherical( AID_LBUTTON1 + i,
+			_V( 0.2, 0.1 - i * 0.02, 2.0 ), 0.01 );
+		oapiVCRegisterArea( AID_RBUTTON1 + i, PANEL_REDRAW_NEVER,
+			PANEL_MOUSE_LBDOWN | PANEL_MOUSE_LBPRESSED );
+		oapiVCSetAreaClickmode_Spherical( AID_RBUTTON1 + i,
+			_V( 0.4, 0.1 - i * 0.02, 2.0 ), 0.01 );
+	}
+	...
+}
+\end{lstlisting}
+
+\noindent
+You should also define mouse-active areas for the three bottom MFD buttons.\\
+\\
+In the mouse event handler, trap any mouse clicks on the MFD buttons and pass them to the \textit{oapiProcessMFDButton} function:
+
+\begin{lstlisting}
+bool MyVessel::clbkVCMouseEvent( int id, int event )
+{
+	if (id >= AID_LBUTTON1 && id < AID_LBUTTON1 + 12)
+	{
+		oapiProcessMFDButton( MFD_LEFT, id - AID_LBUTTON1, event );
+		return true;
+	}
+	...
+	return false;
+}
+\end{lstlisting}
+
+\noindent
+In the redraw event handler, trap MFD button redraw requests and redraw the buttons as required:
+
+\begin{lstlisting}
+bool MyVessel::clbkVCRedrawEvent( int id, int event, SURFHANDLE surf )
+{
+	switch (id)
+	{
+		case AID_LBUTTONS:
+			RedrawMFDButtons( surf, MFD_LEFT, 0 );
+			return true;
+		case AID_RBUTTONS:
+			RedrawMFDButtons( surf, MFD_RIGHT, 0 );
+			return true;
+		case ...
+	}
+}
+\end{lstlisting}
+
+\noindent
+%TODO add section link
+where \textit{RedrawMFDButtons} is assumed to be a locally defined function performing the redraw action. You may be able to re-use the same method used for drawing the MFD buttons in the 2-D panel (see Section TODO).\\
+\\
+Finally, trigger a redraw event in the body of the MFD mode change callback notification.
+
+\begin{lstlisting}
+void MyVessel::MFDMode( int mfd, int mode )
+{
+	switch (mfd)
+	{
+		case MFD_LEFT:
+			oapiTriggerVCRedrawArea( 0, AID_LBUTTONS );
+			oapiTriggerVCRedrawArea( 0, AID_RBUTTONS );
+			break;
+		case ...
+	}
+}
+\end{lstlisting}
+
+
+\subsubsection{Defining the HUD in the virtual cockpit}
+< to be completed >
+
 
 \end{document}
