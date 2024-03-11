@@ -84,10 +84,6 @@ struct AtmoParams
 	float  smi;
 	float  ecc;
 	float  trLS;
-	float  wNrmStr;				// Water normal strength
-	float  wSpec;				// Water smoothness
-	float  wBrightness;
-	float  wBoost;
 };
 
 struct sFlow {

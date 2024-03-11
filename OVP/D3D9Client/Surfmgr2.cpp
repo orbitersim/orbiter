@@ -954,8 +954,7 @@ void SurfTile::Render ()
 	// ----------------------------------------------------------------------
 
 	pShader->SetTexture(pShader->tDiff, tex, IPF_CLAMP | IPF_ANISOTROPIC, Config->Anisotrophy);
-	fc->bTexture = (tex != nullptr);
-
+	
 	// ----------------------------------------------------------------------
 	// Night Lights and Water Specular
 	// ----------------------------------------------------------------------
@@ -967,14 +966,6 @@ void SurfTile::Render ()
 			fc->bMask = true;
 		}
 		else pShader->SetTexture(pShader->tMask, NULL, IPF_CLAMP | IPF_ANISOTROPIC, Config->Anisotrophy);
-	}
-
-	if (tex == nullptr || !vPlanet->HasTextures())
-	{
-		fc->bTexture = false;
-		fc->bMask = false;
-		fc->bCloudShd = false;
-		fc->bMicroTex = false;
 	}
 
 	sp->vTexOff = GetTexRangeDX(&texrange);

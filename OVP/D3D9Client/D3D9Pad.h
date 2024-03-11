@@ -551,8 +551,6 @@ public:
 	void BeginDrawing(LPDIRECT3DSURFACE9 pRenderTgt, LPDIRECT3DSURFACE9 pDepthStensil = NULL);
 	void BeginDrawing();
 
-	inline void FlushAll() { Flush(NULL); }
-
 	void SetViewProj(const D3DXMATRIX* pV, const D3DXMATRIX* pP);
 
 	LPD3DXMATRIX WorldMatrix();
