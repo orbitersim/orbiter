@@ -292,6 +292,20 @@ bool ElevationManager::LoadElevationTile_mod (int lvl, int ilat, int ilng, doubl
 	return false;
 }
 
+// Tile quadrants and mask bits
+// +--------+--------+
+// |        |        |
+// |   NW   |   NE   |
+// |  bit 0 |  bit 1 |
+// +--------+--------+
+// |        |        |
+// |   SW   |   SE   |
+// |  bit 2 |  bit 3 |
+// +--------+--------+
+// tile index (ilat=0 and ilng=0) lies in a NW corner
+// lat(PI) = North pole, lat(-PI) = South Pole
+// lng(-PI) = 180deg West, lng(PI) = 180deg East
+
 double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vector<ElevationTile> *tilecache, Vector *normal, int *reslvl) const
 {
 	double e = 0.0;
@@ -316,15 +330,16 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 		ElevationTile *t = 0;
 
 		for (i = 0; i < ntile; i++) {
-			if (reqlvl == tile[i].tgtlvl &&
+			if (tile[i].data &&
+				reqlvl == tile[i].tgtlvl &&
 				lat >= tile[i].latmin && lat <= tile[i].latmax &&
 				lng >= tile[i].lngmin && lng <= tile[i].lngmax) {
 				int q = -1;
-				if (tile[i].quadrants != 0) {
+				if (tile[i].quadrants != 0) { // Tile contain higher lvl data for some of it's quadtants
 					q = 0;
 					if (lng > (tile[i].lngmin + tile[i].lngmax) * 0.5) q += 1;
 					if (lat < (tile[i].latmin + tile[i].latmax) * 0.5) q += 2;
-					if (tile[i].quadrants & (1 << q)) continue; // Higher lvl data exists, continue search		
+					if (tile[i].quadrants & (1 << q)) continue; // Tile not usable, continue search
 				}
 				//oapiWriteLogV("CacheHit idx=%d, lvl=%d, f=0x%X, q=%d, ilat=%d, ilng=%d", i, tile[i].lvl, tile[i].quadrants, q, tile[i].ilat, tile[i].ilng);
 				t = tile + i;
@@ -337,16 +352,28 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 				if (tile[i].last_access < t->last_access)
 					t = tile+i;
 
-			if (t->data) {
-				delete []t->data;
-				t->data = 0;
-			}
+			if (t->data) t->Clear();
+
 			for (lvl = reqlvl; lvl >= 0; lvl--) {
 				TileIdx (lat, lng, lvl, &ilat, &ilng);
 				t->data = LoadElevationTile (lvl+4, ilat, ilng, elev_res);
 				if (t->data) {
 					LoadElevationTile_mod (lvl+4, ilat, ilng, elev_res, t->data); // load modifications
-					// Check if higher lvl data exists for any of the quadrants, set flag bits
+					int nlat = 1 << lvl;
+					int nlng = 2 << lvl;
+					t->lvl = lvl;
+					t->ilat = ilat;
+					t->ilng = ilng;
+					t->tgtlvl = reqlvl;
+					t->latmin = (0.5-(double)(ilat+1)/double(nlat))*Pi;
+					t->latmax = (0.5-(double)ilat/double(nlat))*Pi;
+					t->lngmin = (double)ilng/(double)nlng*Pi2 - Pi;
+					t->lngmax = (double)(ilng+1)/(double)nlng*Pi2 - Pi;
+
+					LoadElevationTile_mod (lvl+4, ilat, ilng, elev_res, t->data); // load modifications
+					
+					// Check if higher lvl data exists for any of the quadrants, 
+					// set flag bit to mark it dirty (un-usable)
 					int qlat = ilat * 2, qlng = ilng * 2, qlvl = lvl + 1;
 					t->quadrants = 0;
 					t->quadrants |= DWORD(HasElevationTile(qlvl + 4, qlat + 0, qlng + 0)) << 0; // NW
@@ -362,27 +389,8 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 					break;
 				}
 			}
-
-			// Let's store tile in a cache even if data doesn't exists, 
-			// just to prevent re-checking missing data over and over.
-			if (!t->data) {
-				lvl = reqlvl;
-				TileIdx(lat, lng, lvl, &ilat, &ilng);
-			}
-			int nlat = 1 << lvl;
-			int nlng = 2 << lvl;
-			t->lvl = lvl;
-			t->ilat = ilat;
-			t->ilng = ilng;
-			t->tgtlvl = reqlvl;
-			t->latmin = (0.5 - (double)(ilat + 1) / double(nlat)) * Pi;
-			t->latmax = (0.5 - (double)ilat / double(nlat)) * Pi;
-			t->lngmin = (double)ilng / (double)nlng * Pi2 - Pi;
-			t->lngmax = (double)(ilng + 1) / (double)nlng * Pi2 - Pi;
 			t->lat0 = t->lng0 = t->nmlidx = -1;
 		}
-
-		t->last_access = td.SysT0; // Set tile access time regardless of existance of data
 
 		if (t->data) {
 			INT16 *elev_base = t->data+elev_stride+1; // strip padding
@@ -475,6 +483,7 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 					normal->unify();
 				}
 			}
+			t->last_access = td.SysT0;
 			t->lat0 = lat0;
 			t->lng0 = lng0;
 			if (reslvl) *reslvl = t->lvl+7;
