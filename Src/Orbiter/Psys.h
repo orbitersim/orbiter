@@ -64,6 +64,7 @@ public:
 	inline size_t nVessel() const { return vessels.size(); }
 	Vessel *GetVessel (const char *name, bool ignorecase = false) const;
 	inline Vessel *GetVessel (DWORD i) const { return vessels[i]; }
+	inline std::vector<Vessel *> &GetVessels() { return vessels; }
 	// Return pointer to vessel by name or index, or 0 if not present
 
 	bool isObject (const Body *obj) const;

@@ -4421,6 +4421,32 @@ public:
 	void MoveDock(DOCKHANDLE hDock, const VECTOR3& pos, const VECTOR3& dir, const VECTOR3& rot);
 
 	/**
+	 * \brief Get closest free docking port from an other vessel
+	 * \param hDock dock handle
+	 * \return Docking port handle, or NULL if nothing founds on hDock is already occupied.
+	 * \sa GetDockStatus, GetDockHandle
+	 */
+	DOCKHANDLE GetProxyDock(DOCKHANDLE hDock);
+
+	/**
+	 * \brief Get the vessel docking port index
+	 * \param hDock dock handle
+	 * \return Dock index or -1 if hDock doesn't belong to a vessel.
+	 */
+	int GetDockIndex(DOCKHANDLE hDock);
+
+	/**
+	 * \brief Get docking port alignment relative to hDock in local vessel coords
+	 * \param hDock dock handle
+	 * \param hTgt Target dock handle
+	 * \param ref Target position
+	 * \param dir Target direction
+	 * \param rot Target rotation
+	 * \sa GetDockStatus, GetDockHandle
+	 */
+	bool GetTargetDockAlignment(DOCKHANDLE hDock, DOCKHANDLE hTgt, VECTOR3* ref, VECTOR3* dir, VECTOR3* rot);
+
+	/**
 	 * \brief Dock to another vessel.
 	 * \param target handle of docking target vessel
 	 * \param n docking port index on vessel (>= 0)
@@ -4446,6 +4472,7 @@ public:
 	 *     docking.
 	 *   - 1: Keep this in place, and teleport the target vessel for docking
 	 *   - 2: Keep the target in place, and teleport this for docking.
+	 *   - 3: Softdock. Keep the target in place, and let this be pulled to a harddock.
 	 * \sa Undock, GetDockHandle, GetDockStatus, DockCount
 	 */
 	int Dock (OBJHANDLE target, UINT n, UINT tgtn, UINT mode) const;

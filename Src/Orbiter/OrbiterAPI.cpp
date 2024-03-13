@@ -375,6 +375,16 @@ DLLEXPORT OBJHANDLE oapiGetDockStatus (DOCKHANDLE dock)
 	return (OBJHANDLE)((PortSpec*)dock)->mate;
 }
 
+DLLEXPORT void oapiSetAutoCapture(DOCKHANDLE hDock, bool enable)
+{
+	((PortSpec*)hDock)->autodock = enable;
+}
+
+DLLEXPORT OBJHANDLE oapiGetDockOwner(DOCKHANDLE hDock)
+{
+	return (OBJHANDLE)((PortSpec*)hDock)->owner;
+}
+
 DLLEXPORT void oapiSetEmptyMass (OBJHANDLE hVessel, double mass)
 {
 	if ((Vessel*)hVessel) ((Vessel*)hVessel)->SetEmptyMass (mass);

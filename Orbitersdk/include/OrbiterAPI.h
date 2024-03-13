@@ -2995,6 +2995,21 @@ OAPIFUNC DOCKHANDLE oapiGetDockHandle (OBJHANDLE hVessel, UINT n);
 OAPIFUNC OBJHANDLE oapiGetDockStatus (DOCKHANDLE dock);
 
 /**
+* \brief Set a docking port to auto capture when get in close proximity with some other port
+* \param hDock docking port handle
+* \param enable Enable or disable auto capture
+* \note Auto capture is enabled by default
+*/
+OAPIFUNC void oapiSetAutoCapture(DOCKHANDLE hDock, bool enable);
+
+/**
+* \brief Get the vessel docking port belongs to
+* \param hDock dock handle
+* \return Vessel owning the docking port
+*/
+OAPIFUNC OBJHANDLE oapiGetDockOwner(DOCKHANDLE hDock);
+
+/**
  * \brief Returns the position of the current focus object in the global reference frame.
  * \param pos pointer to vector receiving coordinates
  * \note The global reference frame is the heliocentric ecliptic system at ecliptic and
