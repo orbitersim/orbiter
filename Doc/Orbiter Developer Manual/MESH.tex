@@ -9,7 +9,7 @@ ORBITER meshes are defined in a left-handed coordinate system. Vessel meshes sho
 The units for vertex coordinates are \textit{meters} [m].\\
 \\
 Mesh file format:
-\begin{lstlisting}[language=MESH]
+\begin{lstlisting}[language=OSFS]
 MSHX1	;header
 GROUPS <n>	;<n>: number of groups
 <group 1>	;group spec 1
@@ -37,7 +37,7 @@ TEXTURES <t>	;<t>: number of textures
 \noindent
 Group specs:
 
-\begin{lstlisting}[language=MESH]
+\begin{lstlisting}[language=OSFS]
 [LABEL <label>]		;group label, optional
 [MATERIAL <i>]		;material index, optional
 [TEXTURE <j>]		;texture index, optional
@@ -58,7 +58,7 @@ GEOM <nv> <nt>	;<nv>: vertex count, <nt>: triangle count
 \noindent
 Vertex specs:
 
-\begin{lstlisting}[language=MESH]
+\begin{lstlisting}[language=OSFS]
 <x> <y> <z> [<nx> <ny> <nz> [<tu> <tv>]]
 	;<x> <y> <z>: vertex position
 	;<nx> <ny> <nz>: vertex normal (optional)
@@ -70,14 +70,14 @@ Missing normals are automatically calculated as the mean of the normals of adjac
 \\
 Triangle specs:
 
-\begin{lstlisting}[language=MESH]
+\begin{lstlisting}[language=OSFS]
 <i> <j> <k>	;vertex indices (zero-based). Left-hand face is rendered.
 \end{lstlisting}
 
 \noindent
 Material specs:
 
-\begin{lstlisting}[language=MESH]
+\begin{lstlisting}[language=OSFS]
 MATERIAL <mtrl-name>	;material header
 <dr> <dg> <db> <da>		;Diffuse colour (RGBA)
 <ar> <ag> <ab> <aa>		;Ambient colour (RGBA)

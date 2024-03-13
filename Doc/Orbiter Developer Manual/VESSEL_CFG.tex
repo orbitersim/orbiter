@@ -14,7 +14,7 @@ Below is a description of the default vessel configuration options recognised by
 	\hline\rule{0pt}{2ex}
 	BaseClass & S & Optional; parent class. Missing entries are taken from this class. Allows the construction of class hierarchies. (Make sure not to introduce circular dependencies!)\\
 	\hline\rule{0pt}{2ex}
-	Module & S & Optional; name of plugin module for vessel customisation. The module must be located in the Modules folder.\\
+	Module & S & Optional; name of plugin module for vessel customisation. The module must be located in the \textit{Modules} folder.\\
 	\hline\rule{0pt}{2ex}
 	Help & S,S & Optional; name of help file to be used for vessel class specific help when the user presses the “Vessel” button on the Help dialog. The help file must be a compiled html file (.CHM) and be located in directory Html/Vessels. The entry contains the file name without path and extension, and (separated by comma) the name of the first page of the file to be displayed (without extension). Default: no vessel class specific help.\\
 	\hline\rule{0pt}{2ex}
@@ -48,9 +48,9 @@ Below is a description of the default vessel configuration options recognised by
 	\hline\rule{0pt}{2ex}
 	CW & F F F F & Airflow resistance coefficients: forward, backward, transversal, vertical. Only used by legacy flight model (if no airfoils are defined in the module).\\
 	\hline\rule{0pt}{2ex}
-	WingAspect & F & The wing aspect ratio (wingspan2 / wing area). Used for atmospheric drag calculation in the legacy flight model.\\
+	WingAspect & F & The wing aspect ratio (wingspan$^{2}$ / wing area). Used for atmospheric drag calculation in the legacy flight model.\\
 	\hline\rule{0pt}{2ex}
-	WingEffectiveness & F & A wing form factor: ~3.1 for elliptic wings, ~2.8 for tapered wings, ~2.5 for rectangular wings. Only used by legacy flight model.\\
+	WingEffectiveness & F & A wing form factor: $\sim$3.1 for elliptic wings, $\sim$2.8 for tapered wings, $\sim$2.5 for rectangular wings. Only used by legacy flight model.\\
 	\hline\rule{0pt}{2ex}
 	CrossSections & V & Cross sections in axis directions (z=longitudinal) [m$^{2}$]\\
 	\hline\rule{0pt}{2ex}
@@ -60,21 +60,21 @@ Below is a description of the default vessel configuration options recognised by
 	\hline\rule{0pt}{2ex}
 	GravityGradientDamping & F & Damping coefficient for gravity gradient torque. Determines relaxation time for tidal locking. Default: 0 (undamped).\\
 	\hline\rule{0pt}{2ex}
-	PropellantResource\textit{i} & F [F] & Specs for propellant resource \textit{i} ($i \geq 1$). First value: max. fuel capacity [kg]. Second value: fuel efficiency factor (>0, default: 1)\\
+	PropellantResource\textit{i} & F [F] & Specs for propellant resource \textit{i} (\textit{i} $\geq$ 1). First value: max. fuel capacity [kg]. Second value: fuel efficiency factor (>0, default: 1)\\
 	\hline\rule{0pt}{2ex}
 	MaxFuel & F & Max. fuel mass [kg]. Obsolete; only used if no propellant resources are defined\\
 	\hline\rule{0pt}{2ex}
 	Isp & F & Default value for fuel-specific impulse [m/s]: Amount of thrust [N] obtained by burning 1kg of fuel per second. Vessel modules can override this value for individual engines.\\
 	\hline\rule{0pt}{2ex}
-	MEngineRef\textit{i} & V & Reference position for main thruster i (i=1...)\\
+	MEngineRef\textit{i} & V & Reference position for main thruster \textit{i} (\textit{i}=1...)\\
 	\hline\rule{0pt}{2ex}
-	REngineRef\textit{i} & V & Reference position for retro thruster i (i=1...)\\
+	REngineRef\textit{i} & V & Reference position for retro thruster \textit{i} (\textit{i}=1...)\\
 	\hline\rule{0pt}{2ex}
-	HEngineRef\textit{i} & V & Reference position for hover thruster i (i=1...)\\
+	HEngineRef\textit{i} & V & Reference position for hover thruster \textit{i} (\textit{i}=1...)\\
 	\hline\rule{0pt}{2ex}
-	AttRefd\textit{ij} & V & Reference position for attitude thruster (for rotation around axis d (d=X,Y,Z), rotation direction i (i=1,2) and thruster index j (j=1,2)) for a total of 12 attitude thrusters\\
+	AttRefd\textit{ij} & V & Reference position for attitude thruster (for rotation around axis \textit{d} (\textit{d}=X,Y,Z), rotation direction \textit{i} (\textit{i}=1,2) and thruster index \textit{j} (\textit{j}=1,2)) for a total of 12 attitude thrusters\\
 	\hline\rule{0pt}{2ex}
-	LongAttRef\textit{ij} & V & Reference position for attitude thrusters (for linear forward/backward translation), direction i (i=1,2) and thruster index j (j=1,2)) for a total of 4 attitude thrusters\\
+	LongAttRef\textit{ij} & V & Reference position for attitude thrusters (for linear forward/backward translation), direction \textit{i} (\textit{i}=1,2) and thruster index \textit{j} (\textit{j}=1,2)) for a total of 4 attitude thrusters\\
 	\hline\rule{0pt}{2ex}
 	DockRef & V & Docking reference point for first docking port (obsolete)\\
 	\hline\rule{0pt}{2ex}
@@ -95,21 +95,84 @@ Below is a description of the default vessel configuration options recognised by
 
 \begin{itemize}
 \item A vessel class can be derived from a different vessel class, by defining the BaseClass entry. All properties not defined in the new class configuration file are taken from the base class.
-\item The mesh name should not contain the file extension (.msh)  and should not contain a directory path.
+\item The mesh name should not contain the file extension (.msh) and should not contain a directory path.
 \item The MaxFuel entry has been replaced by PropellantResource, which allows the definition of multiple propellant resources (fuel tanks).
 \item The DockRef, DockDir, DockRot entries have been replaced with the more versatile Docklist (see below), which allows the configuration of multiple docking ports and IDS frequencies.
-%TODO
-\item The attachment list is similar to the docklist: it allows to specify points at which vessels can be connected to each other. Unlike docking ports, attachment points define parent-child hierarchies, and each attachment point is either a parent or a child port. For more details see the Vessel attachment management section in the API Reference Manual.
-%TODO
-\item Inertia tensor J: Relates angular momentum and angular velocity:
-%TODO
+
+\begin{lstlisting}[language=OSFS]
+BEGIN_DOCKLIST
+	<Dock-spec 0>
+	<Dock-spec 1>
+	...
+	<Dock-spec n-1>
+END_DOCKLIST
+\end{lstlisting}
+
+\noindent
+where <Dock-spec i>:
+
+\begin{lstlisting}[language=OSFS,mathescape=true]
+<x$_{i}$> <y$_{i}$> <z$_{i}$> <dx$_{i}$> <dy$_{i}$> <dz$_{i}$> <rx$_{i}$> <ry$_{i}$> <rz$_{i}$> [<ids-channel>]
+\end{lstlisting}
+
+\noindent
+<x$_{i}$> <y$_{i}$> <z$_{i}$> is the reference position of the docking port in the vessel’s local coordinates. <dx$_{i}$> <dy$_{i}$> <dz$_{i}$> is the direction in which a ship approaches the docking port in the station’s local reference frame.\\
+\\
+<rx$_{i}$> <ry$_{i}$> <rz$_{i}$> is a reference direction perpendicular to the approach direction used for aligning an approaching ship’s rotation along its longitudinal axis.\\
+\\
+<\textit{ids-channel}> is an optional parameter which allows to define the channel for an IDS (Instrument Docking System) transmitter for the dock. The value is an integer from which the frequency is calculated by \textit{f} = \textit{f}$_{min}$ + <\textit{ids-channel}> * 0.05 kHz, where \textit{f}$_{min}$ = 108.0 kHz.\\
+The IDS setting can be overridden by individual vessels via the IDS option in the scenario file. Defining the IDS in the config file is usually only useful for objects with a single instance, for example space stations.
+
+%TODO fix reference
+\item The attachment list is similar to the docklist: it allows to specify points at which vessels can be connected to each other. Unlike docking ports, attachment points define parent-child hierarchies, and each attachment point is either a parent or a child port. For more details see the \textit{Vessel attachment management} section in the API Reference Manual.
+
+\begin{lstlisting}[language=OSFS]
+BEGIN_ATTACHMENT
+	<Attach-spec 0>
+	<Attach-spec 1>
+	...
+	<Attach-spec n-1>
+END_ATTACHMENT
+\end{lstlisting}
+
+\noindent
+where \textit{<Attach-spec i>}:
+
+\begin{lstlisting}[language=OSFS,mathescape=true]
+<type> <x$_{i}$> <y$_{i}$> <z$_{i}$> <dx$_{i}$> <dy$_{i}$> <dz$_{i}$> <rx$_{i}$> <ry$_{i}$> <rz$_{i}$> <id>
+\end{lstlisting}
+
+\noindent
+<\textit{type}> is a single character: ‘P’ – “attach to a parent”, or ‘C’ – “attach to a child”.\\
+The next 9 entries define the attachment position and direction in the same way as docking ports.\\
+<\textit{id}> is a string of up to 8 characters used for defining compatibility between attachment points.
+
+\item \textbf{Inertia tensor $J$}: Relates angular momentum and angular velocity: $L = J \cdot \omega$\\
+\[ J = \frac{1}{M} \int_{Vol} m(r)  
+\begin{pmatrix}
+y(r)^{2} + z(r)^{2} & x(r)y(r) & x(r)z(r)\\
+y(r)x(r) & x(r)^{2} + z(r)^{2} & y(r)z(r)\\
+z(r)x(r) & z(r)y(r) & x(r)^{2} + y(r)^{2}
+\end{pmatrix}
+dr
+\]
+
+where \textit{M} is the total vessel mass, and the integration is over the vessel volume. Note that this definition normalises by \textit{M}, so the unit of \textit{J} is [m$^{2}$]. The principal moments of inertia (PMI) $J_{x}$, $J_{y}$, $J_{z}$ required by the configuration file are the diagonal elements of J in a reference frame in which \textit{J} is diagonal:
+\[ \hat{J} = 
+\begin{pmatrix}
+J_{x} & 0 & 0\\
+0 & J_{y} & 0\\
+0 & 0 & J_{z}
+\end{pmatrix}
+\]
+
 \end{itemize}
 
 \noindent
 \alertbox{The SDK contains a simple tool to calculate the inertia tensor for a given mesh: Orbitersdk\textbackslash utils\textbackslash shipedit.exe. The tool requires “well behaved” meshes (composed of closed compact surfaces) and assumes a homogeneous density distribution inside the mesh. The latter is not very realistic, so the results must be interpreted carefully. They should still serve as a good starting point for experimentation.}
 
 
-\section{Configuration files for individual vessels}
+\subsection{Configuration files for individual vessels}
 A vessel only requires an individual definition file if it is not an instance of a vessel class. In this case the format for the vessel’s .cfg file is identical to the vessel class .cfg files described above.
 
 
