@@ -4411,6 +4411,16 @@ public:
 	UINT DockingStatus (UINT port) const;
 
 	/**
+	 * \brief Moves a docking port while vessel is docked. 
+	 * \param hDock dock handle
+	 * \param pos new dock reference position [<b>m</b>]
+	 * \param dir new approach direction
+	 * \param rot new longitudinal rotation alignment vector
+	 * \sa GetDockStatus, GetDockHandle
+	 */
+	void MoveDock(DOCKHANDLE hDock, const VECTOR3& pos, const VECTOR3& dir, const VECTOR3& rot);
+
+	/**
 	 * \brief Dock to another vessel.
 	 * \param target handle of docking target vessel
 	 * \param n docking port index on vessel (>= 0)

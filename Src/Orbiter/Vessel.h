@@ -1005,6 +1005,8 @@ public:
 	void UnregisterDocking (DWORD did);
 	// Register an undocking event at dock 'did'
 
+	void MoveDock(PortSpec* dock, const Vector& pos, const Vector& dir, const Vector& rot);
+
 	int Dock (Vessel *target, DWORD mydid, DWORD tgtdid, DWORD mode = 0);
 	// Dock with 'target', using dock 'mydid' and attach to target dock 'tgtdid'
 	// Return values: 0=ok, 1=my dock in use, 2=target dock in use, 3=already docked to target

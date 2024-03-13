@@ -2692,6 +2692,16 @@ void Vessel::UnregisterDocking (DWORD did)
 
 // ==============================================================
 
+void Vessel::MoveDock(PortSpec* pD, const Vector& pos, const Vector& dir, const Vector& rot)
+{
+	pD->ref = pos;
+	pD->dir = dir;
+	pD->rot = rot;
+	if (pD->mate) if (supervessel) supervessel->SoftDockUpdate(this, pD);
+}
+
+// ==============================================================
+
 int Vessel::Dock (Vessel *target, DWORD mydid, DWORD tgtdid, DWORD mode)
 {
 	if (dock[mydid]->mate) return 1;          // error: my dock already in use
@@ -7305,6 +7315,11 @@ UINT VESSEL::DockingStatus (UINT port) const
 {
 	if (port >= vessel->ndock) return 0;
 	return (vessel->GetDockParams(port)->mate ? 1 : 0);
+}
+
+void VESSEL::MoveDock(DOCKHANDLE hDock, const VECTOR3& pos, const VECTOR3& dir, const VECTOR3& rot)
+{
+	vessel->MoveDock((PortSpec*)hDock, MakeVector(pos), MakeVector(dir), MakeVector(rot));
 }
 
 int VESSEL::Dock (OBJHANDLE target, UINT n, UINT tgtn, UINT mode) const
