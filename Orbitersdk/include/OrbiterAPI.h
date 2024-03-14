@@ -2995,17 +2995,17 @@ OAPIFUNC DOCKHANDLE oapiGetDockHandle (OBJHANDLE hVessel, UINT n);
 OAPIFUNC OBJHANDLE oapiGetDockStatus (DOCKHANDLE dock);
 
 /**
-* \brief Set a docking port to auto capture when get in close proximity with some other port
+* \brief Set a docking port to auto capture when in close proximity with some other dicking port.
 * \param hDock docking port handle
 * \param enable Enable or disable auto capture
-* \note Auto capture is enabled by default
+* \note Auto capture is enabled by default.
 */
 OAPIFUNC void oapiSetAutoCapture(DOCKHANDLE hDock, bool enable);
 
 /**
-* \brief Get the vessel docking port belongs to
+* \brief Get the vessel a docking port belongs to.
 * \param hDock dock handle
-* \return Vessel owning the docking port
+* \return Vessel owning the docking port.
 */
 OAPIFUNC OBJHANDLE oapiGetDockOwner(DOCKHANDLE hDock);
 

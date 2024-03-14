@@ -2744,9 +2744,9 @@ bool Vessel::GetTargetDockAlignment(PortSpec* pD, PortSpec* pT, Vector* ref, Vec
 {
 	Vessel* pVT = pT->owner;
 	if (pVT->proxybody != proxybody) return false;
-	*ref = tmul(GRot(), mul(pVT->GRot(), pT->ref) + pVT->GPos() - GPos()) - pD->ref;
-	*dir = tmul(GRot(), mul(pVT->GRot(), pT->dir));
-	*rot = tmul(GRot(), mul(pVT->GRot(), pT->rot));
+	if (ref) *ref = tmul(GRot(), mul(pVT->GRot(), pT->ref) + pVT->GPos() - GPos()) - pD->ref;
+	if (dir) *dir = tmul(GRot(), mul(pVT->GRot(), pT->dir));
+	if (rot) *rot = tmul(GRot(), mul(pVT->GRot(), pT->rot));
 	return true;
 }
 
@@ -7384,21 +7384,24 @@ void VESSEL::MoveDock(DOCKHANDLE hDock, const VECTOR3& pos, const VECTOR3& dir, 
 	vessel->MoveDock((PortSpec*)hDock, MakeVector(pos), MakeVector(dir), MakeVector(rot));
 }
 
-DOCKHANDLE VESSEL::GetProxyDock(DOCKHANDLE hDock)
+DOCKHANDLE VESSEL::GetProxyDock(DOCKHANDLE hDock) const
 {
 	return (DOCKHANDLE)vessel->GetProxyDock((PortSpec*)hDock);
 }
 
-int VESSEL::GetDockIndex(DOCKHANDLE hDock)
+int VESSEL::GetDockIndex(DOCKHANDLE hDock) const
 {
 	for (int i = 0; i < vessel->ndock; i++) if (vessel->dock[i] == hDock) return i;
 	return -1;
 }
 
-bool VESSEL::GetTargetDockAlignment(DOCKHANDLE pD, DOCKHANDLE pT, VECTOR3* ofs, VECTOR3* dir, VECTOR3* rot)
+bool VESSEL::GetTargetDockAlignment(DOCKHANDLE pD, DOCKHANDLE pT, VECTOR3* ofs, VECTOR3* dir, VECTOR3* rot) const
 {
-	Vector o, d, r;
-	if (vessel->GetTargetDockAlignment((PortSpec*)pD, (PortSpec*)pT, &o, &d, &r)) {
+	Vector o, d, r; 
+	Vector* op = ofs ? &o : nullptr;
+	Vector* dp = dir ? &d : nullptr;
+	Vector* rp = rot ? &r : nullptr;
+	if (vessel->GetTargetDockAlignment((PortSpec*)pD, (PortSpec*)pT, op, dp, rp)) {
 		if (ofs) { ofs->x = o.x; ofs->y = o.y; ofs->z = o.z; }
 		if (dir) { dir->x = d.x; dir->y = d.y; dir->z = d.z; }
 		if (rot) { rot->x = r.x; rot->y = r.y; rot->z = r.z; }
