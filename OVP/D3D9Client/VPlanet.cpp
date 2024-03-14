@@ -746,10 +746,6 @@ bool vPlanet::Update (bool bMainScene)
 
 	vObject::Update(bMainScene);
 
-	// Update Atmospheric Scattering Tables
-	UpdateScatter();
-
-	
 	if (patchres==0) return true;
 
 	int i, j;
@@ -982,6 +978,8 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 		prm.SunDir		= _D3DXVECTOR3(SunDirection());
 
 		SetupEclipse();
+
+		if (surfmgr2 && scn->GetRenderPass() == RENDERPASS_MAINSCENE) UpdateScatter();
 
 		if (ringmgr) {
 			ringmgr->Render(dev, mWorld, false);

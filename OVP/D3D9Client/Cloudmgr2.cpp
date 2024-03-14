@@ -186,8 +186,8 @@ void TileManager2<CloudTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlan
 	// Select cloud layer shader
 	pShader = (cfg == PLT_GIANT ? vp->GetShader(PLT_G_CLOUDS) : vp->GetShader(PLT_CLOUDS));
 	
-	pShader->ClearTextures();
 	pShader->Setup(pPatchVertexDecl, false, 1);
+	pShader->ClearTextures();
 
 
 	// Check Eclipse conditions -------------------------------------------

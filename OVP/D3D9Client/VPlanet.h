@@ -106,8 +106,8 @@ struct FlowControlPS
 	BOOL bLocals;				// Local Lights on/off
 	BOOL bMicroNormals;			// Micro texture has normals
 	BOOL bCloudShd;				// Cloud shadow textures valid and enabled
-	BOOL bMask;					// Nightlights/water mask texture is peovided
-	BOOL bRipples;				// Water riples texture is peovided
+	BOOL bMask;					// Nightlights/water mask texture is enabled
+	BOOL bRipples;				// Water riples texture is enabled
 	BOOL bMicroTex;				// Micro textures exists and enabled
 	BOOL bPlanetShadow;			// Use spherical approximation for shadow
 	BOOL bEclipse;				// Eclipse is occuring
