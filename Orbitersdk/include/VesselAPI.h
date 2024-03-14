@@ -4443,9 +4443,10 @@ public:
 	 * \param ref Target position, set to NULL if not needed.
 	 * \param dir Target direction, set to NULL if not needed.
 	 * \param rot Target rotation, set to NULL if not needed.
+	 * \param vel Relative velocity between ports ECL frame, set to NULL if not needed.
 	 * \sa GetDockStatus, GetDockHandle
 	 */
-	bool GetTargetDockAlignment(DOCKHANDLE hDock, DOCKHANDLE hTgt, VECTOR3* ref, VECTOR3* dir, VECTOR3* rot) const;
+	bool GetTargetDockAlignment(DOCKHANDLE hDock, DOCKHANDLE hTgt, VECTOR3* ref, VECTOR3* dir, VECTOR3* rot, VECTOR3* vel = nullptr) const;
 
 	/**
 	 * \brief Dock to another vessel.
@@ -4479,6 +4480,7 @@ public:
 	 * \sa Undock, GetDockHandle, GetDockStatus, DockCount, MoveDock
 	 */
 	int Dock (OBJHANDLE target, UINT n, UINT tgtn, UINT mode) const;
+	int Dock (DOCKHANDLE hSrc, DOCKHANDLE hTgt, DWORD mode) const;
 
 	/**
 	 * \brief Release a docked vessel from a docking port.

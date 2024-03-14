@@ -1009,7 +1009,7 @@ public:
 
 	void MoveDock(PortSpec* dock, const Vector& pos, const Vector& dir, const Vector& rot);
 	PortSpec* GetProxyDock(PortSpec* pD);
-	bool GetTargetDockAlignment(PortSpec* pD, PortSpec* pT, Vector* ofs, Vector* dir, Vector* rot);
+	bool GetTargetDockAlignment(PortSpec* pD, PortSpec* pT, Vector* ofs, Vector* dir, Vector* rot, Vector* rvel = nullptr);
 
 	int Dock (Vessel *target, DWORD mydid, DWORD tgtdid, DWORD mode = 0);
 	// Dock with 'target', using dock 'mydid' and attach to target dock 'tgtdid'
