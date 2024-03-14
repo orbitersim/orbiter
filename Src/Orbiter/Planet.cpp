@@ -695,15 +695,7 @@ void Planet::Setup ()
 	// otherwise the cloud manager is handled by the VPlanet object
 #endif // INLINEGRAPHICS
 	if (tmgr_version == 2)
-	{
-		// Check that Elev dir exists before starting ElevationManager
-		char path[MAX_PATH]; char fname[MAX_PATH];
-		sprintf(fname, "%s\\Elev", Name());
-		g_pOrbiter->Cfg()->PTexPath(path, fname);
-		auto x = filesystem::status(path);
-		if (filesystem::is_directory(x))
-			emgr = new ElevationManager(this);
-	}
+		emgr = new ElevationManager(this);
 	for (DWORD i = 0; i < nbase; i++)
 		baselist[i]->Setup();
 }

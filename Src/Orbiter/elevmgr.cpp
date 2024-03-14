@@ -56,6 +56,18 @@ ElevationManager::ElevationManager (const CelestialBody *_cbody)
 		for (int i = 0; i < 2; i++)
 			treeMgr[i] = 0;
 	}
+
+	// Check if Elev dir exists
+	char path[MAX_PATH]; char fname[MAX_PATH];
+	sprintf(fname, "%s\\Elev", cbody->Name());
+	g_pOrbiter->Cfg()->PTexPath(path, fname);
+	auto x = std::filesystem::status(path);
+	bDirExists = std::filesystem::is_directory(x);
+
+	sprintf(fname, "%s\\Elev_mod", cbody->Name());
+	g_pOrbiter->Cfg()->PTexPath(path, fname);
+	auto y = std::filesystem::status(path);
+	bModExists = std::filesystem::is_directory(y);
 }
 
 ElevationManager::~ElevationManager ()
@@ -93,7 +105,7 @@ bool ElevationManager::TileIdx (double lat, double lng, int lvl, int *ilat, int 
 bool ElevationManager::HasElevationTile(int lvl, int ilat, int ilng) const
 {
 	if (mode) {
-		if (tilesource & 0x0001) {
+		if (tilesource & 0x0001 && bDirExists) {
 			char fname[256], path[256];
 			sprintf(fname, "%s\\Elev\\%02d\\%06d\\%06d.elv", cbody->Name(), lvl, ilat, ilng);
 			g_pOrbiter->Cfg()->PTexPath(path, fname);
@@ -115,7 +127,7 @@ INT16 *ElevationManager::LoadElevationTile (int lvl, int ilat, int ilng, double 
 		int i;
 		const int ndat = elev_stride*elev_stride;
 		double scale, offset;
-		if (tilesource & 0x0001) {
+		if (tilesource & 0x0001 && bDirExists) {
 			FILE *f;
 			char fname[256], path[256];
 			sprintf (fname, "%s\\Elev\\%02d\\%06d\\%06d.elv", cbody->Name(), lvl, ilat, ilng);
@@ -199,7 +211,7 @@ bool ElevationManager::LoadElevationTile_mod (int lvl, int ilat, int ilng, doubl
 		double rescale;
 		INT16 offset;
 		bool do_shift, do_rescale;
-		if (tilesource & 0x0001) {
+		if (tilesource & 0x0001 && bModExists) {
 			FILE *f;
 			char fname[256], path[256];
 			sprintf (fname, "%s\\Elev_mod\\%02d\\%06d\\%06d.elv", cbody->Name(), lvl, ilat, ilng);
