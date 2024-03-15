@@ -86,7 +86,7 @@ Camera::Camera (double _nearplane, double _farplane)
 	VMAT_identity (view_mat);
 	SetFrustumLimits (nearplane, farplane);
 	ECC = 0;
-	etile.resize(2);
+	etile.resize(8);
 }
 
 Camera::~Camera ()

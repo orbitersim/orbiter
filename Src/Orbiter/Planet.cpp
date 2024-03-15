@@ -695,8 +695,7 @@ void Planet::Setup ()
 	// otherwise the cloud manager is handled by the VPlanet object
 #endif // INLINEGRAPHICS
 	if (tmgr_version == 2)
-		emgr = new ElevationManager (this);
-
+		emgr = new ElevationManager(this);
 	for (DWORD i = 0; i < nbase; i++)
 		baselist[i]->Setup();
 }

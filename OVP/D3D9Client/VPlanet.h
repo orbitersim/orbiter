@@ -106,11 +106,12 @@ struct FlowControlPS
 	BOOL bLocals;				// Local Lights on/off
 	BOOL bMicroNormals;			// Micro texture has normals
 	BOOL bCloudShd;				// Cloud shadow textures valid and enabled
-	BOOL bMask;					// Nightlights/water mask texture is peovided
-	BOOL bRipples;				// Water riples texture is peovided
+	BOOL bMask;					// Nightlights/water mask texture is enabled
+	BOOL bRipples;				// Water riples texture is enabled
 	BOOL bMicroTex;				// Micro textures exists and enabled
 	BOOL bPlanetShadow;			// Use spherical approximation for shadow
 	BOOL bEclipse;				// Eclipse is occuring
+	BOOL bTexture;				// Surface texture exists
 };
 
 struct FlowControlVS
@@ -179,6 +180,10 @@ struct ConstParams
 	float  smi;
 	float  ecc;
 	float  trLS;
+	float  wNrmStr;				// Water normal strength
+	float  wSpec;				// Water smoothness
+	float  wBrightness;
+	float  wBoost;
 };
 
 #pragma pack(pop)
@@ -230,6 +235,7 @@ public:
 
 	void			TestComputations(Sketchpad *);
 
+	bool			HasTextures() { return bHasTextures; }
 	bool			IsMesh() { return mesh != NULL; }
 	bool			Update (bool bMainScene);
 	void			CheckResolution ();
@@ -410,6 +416,7 @@ private:
 	HazeManager *hazemgr;     // horizon haze rendering
 	HazeManager2 *hazemgr2;	  // horizon haze rendering
 	RingManager *ringmgr;     // ring manager
+	bool bHasTextures;
 	bool bRipple;             // render specular ripples on water surfaces
 	bool bVesselShadow;       // render vessel shadows on surface
 	bool bObjectShadow;       // render object shadows on surface
