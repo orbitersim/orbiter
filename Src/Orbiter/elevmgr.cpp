@@ -343,7 +343,7 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 
 		for (i = 0; i < ntile; i++) {
 			if (tile[i].data &&
-				reqlvl == tile[i].tgtlvl &&
+				reqlvl == tile[i].tgtlvl && tile[i].mgr == this &&
 				lat >= tile[i].latmin && lat <= tile[i].latmax &&
 				lng >= tile[i].lngmin && lng <= tile[i].lngmax) {
 				int q = -1;
@@ -373,6 +373,7 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 					LoadElevationTile_mod (lvl+4, ilat, ilng, elev_res, t->data); // load modifications
 					int nlat = 1 << lvl;
 					int nlng = 2 << lvl;
+					t->mgr = this;
 					t->lvl = lvl;
 					t->ilat = ilat;
 					t->ilng = ilng;

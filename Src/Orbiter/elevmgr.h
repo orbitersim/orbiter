@@ -21,6 +21,7 @@ struct ElevationTile {
 	void Clear() { 
 		if (data) delete[]data; 
 		data = nullptr;
+		mgr = nullptr;
 		lvl = tgtlvl = 0;
 		latmin = latmax = 0.0;
 		lngmin = lngmax = 0.0;
@@ -44,6 +45,7 @@ struct ElevationTile {
 	int quadrants;
 	bool celldiag;
 	int nmlidx;
+	const class ElevationManager* mgr;
 };
 
 class ElevationManager {
