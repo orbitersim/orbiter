@@ -79,8 +79,8 @@ unordered_map<string, SURFHANDLE> ClonedTextures;
 unordered_map<MESHHANDLE, class SketchMesh*> MeshMap;
 unordered_map<std::string, LPDIRECT3DTEXTURE9> MicroTextures;
 
-DWORD uCurrentMesh = 0;
-vObject *pCurrentVisual = 0;
+DWORD g_uCurrentMesh = 0;
+vObject *g_pCurrentVisual = nullptr;
 _D3D9Stats D3D9Stats;
 
 #ifdef _NVAPI_H
@@ -144,6 +144,7 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 #endif
 
 	D3D9InitLog("Modules/D3D9Client/D3D9ClientLog.html");
+	LogVerbose("[D3D9] === InitModule ===");
 
 	if (!D3DXCheckVersion(D3D_SDK_VERSION, D3DX_SDK_VERSION)) {
 		MissingRuntimeError();
@@ -192,7 +193,7 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 
 DLLCLBK void ExitModule(HINSTANCE hDLL)
 {
-	LogAlw("--------------ExitModule------------");
+	LogVerbose("[D3D9] === ExitModule ===");
 
 	delete TileCatalog;
 	delete Config;
@@ -280,7 +281,7 @@ D3D9Client::D3D9Client (HINSTANCE hInstance) :
 
 D3D9Client::~D3D9Client()
 {
-	LogAlw("D3D9Client destructor called");
+	LogVerbose("[D3D9] === destructor called ===");
 	SAFE_DELETE(vtab);
 	SAFE_RELEASE(g_pD3DObject);
 }
@@ -316,7 +317,7 @@ const void *D3D9Client::GetConfigParam (DWORD paramtype) const
 bool D3D9Client::clbkInitialise()
 {
 	_TRACE;
-	LogAlw("================ clbkInitialise ===============");
+	LogVerbose("[D3D9] === clbkInitialise ===");
 	LogAlw("Orbiter Version = %d",oapiGetOrbiterVersion());
 
 	D3D9ON12_ARGS args = {};
@@ -361,7 +362,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 {
 	_TRACE;
 
-	LogAlw("================ clbkCreateRenderWindow ===============");
+	LogVerbose("[D3D9] === clbkCreateRenderWindow ===");
 
 	if (!g_pD3DObject) return NULL;
 
@@ -453,7 +454,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	LogAlw("Render Target = %s", _PTR(pBackBuffer));
 	LogAlw("DepthStencil = %s", _PTR(pDepthStencil));
 
-	meshmgr		= new MeshManager(this);
+	meshmgr = new MeshManager(this);
 
 	// Bring Sketchpad Online
 	D3D9PadFont::D3D9TechInit(pDevice);
@@ -563,9 +564,10 @@ HWND D3D9Client::clbkCreateRenderWindow()
 void D3D9Client::clbkPostCreation()
 {
 	_TRACE;
-	LogAlw("================ clbkPostCreation ===============");
 
-	if (scene) scene->Initialise();
+	LogVerbose("[D3D9] === clbkPostCreation ===");
+
+	if (scene) scene->clbkInitialise();
 
 	// Create Window Manager -----------------------------------------
 	//
@@ -575,8 +577,6 @@ void D3D9Client::clbkPostCreation()
 	}
 
 	bRunning = true;
-
-	LogAlw("=============== Loading Completed and Visuals Created ================");
 
 #ifdef _DEBUG
 	SketchPadTest();
@@ -794,9 +794,8 @@ void D3D9Client::SketchPadTest()
 //
 void D3D9Client::clbkCloseSession(bool fastclose)
 {
-
-	LogAlw("================ clbkCloseSession ===============");
-
+	LogVerbose("[D3D9] === clbkCloseSession ===");
+	
 	//	Post shutdown signals for gcGUI applications
 	//
 	for (auto pApp : g_gcGUIAppList) pApp->clbkShutdown();
@@ -856,7 +855,8 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 {
 	_TRACE;
 	oapiWriteLog((char*)"D3D9: [Destroy Render Window Called]");
-	LogAlw("============= clbkDestroyRenderWindow ===========");
+
+	LogVerbose("[D3D9] === clbkDestroyRenderWindow ===");
 
 #ifdef _NVAPI_H
 	if (bNVAPI) {
@@ -1137,7 +1137,7 @@ void D3D9Client::clbkUpdate(bool running)
 {
 	_TRACE;
 	double tot_update = D3D9GetTime();
-	if (bFailed==false && bRunning) scene->Update();
+	if (bFailed==false && bRunning) scene->clbkUpdate();
 	D3D9SetTime(D3D9Stats.Timer.Update, tot_update);
 }
 
@@ -1169,7 +1169,7 @@ void D3D9Client::clbkRenderScene()
 	UINT mem = pDevice->GetAvailableTextureMem()>>20;
 	if (mem<32) TileBuffer::HoldThread(true);
 
-	scene->RenderMainScene();		// Render the main scene
+	scene->clbkRenderMainScene();		// Render the main scene
 
 	VESSEL *hVes = oapiGetFocusInterface();
 
@@ -1511,6 +1511,14 @@ bool D3D9Client::clbkSetMeshProperty(DEVMESHHANDLE hMesh, DWORD prop, DWORD valu
 }
 
 // ==============================================================
+
+void D3D9Client::clbkSetVisualProperty(VISHANDLE vis, VisualProp prp, int idx, const type_info& t, const void* val)
+{
+	vVessel* vV = (vVessel*)vis;
+	if (vV && vV->Type() == OBJTP_VESSEL) vV->SetVisualProperty(prp, idx, t, val);
+}
+
+// ==============================================================
 // Returns a dev-mesh for a visual
 
 MESHHANDLE D3D9Client::clbkGetMesh(VISHANDLE vis, UINT idx)
@@ -1520,7 +1528,7 @@ MESHHANDLE D3D9Client::clbkGetMesh(VISHANDLE vis, UINT idx)
 		LogErr("NULL visual in clbkGetMesh(NULL,%u)",idx);
 		return NULL;
 	}
-	MESHHANDLE hMesh = ((vObject*)vis)->GetMesh(idx);
+	MESHHANDLE hMesh = (MESHHANDLE)((vObject*)vis)->GetMesh(idx);
 	if (hMesh==NULL) LogWrn("clbkGetMesh() returns NULL");
 	return hMesh;
 }
@@ -1549,14 +1557,14 @@ int D3D9Client::clbkGetMeshGroup (DEVMESHHANDLE hMesh, DWORD grpidx, GROUPREQUES
 void D3D9Client::clbkNewVessel(OBJHANDLE hVessel)
 {
 	_TRACE;
-	if (scene) scene->NewVessel(hVessel);
+	if (scene) scene->clbkNewVessel(hVessel);
 }
 
 // ==============================================================
 
 void D3D9Client::clbkDeleteVessel(OBJHANDLE hVessel)
 {
-	if (scene) scene->DeleteVessel(hVessel);
+	if (scene) scene->clbkDeleteVessel(hVessel);
 }
 
 
@@ -1575,9 +1583,16 @@ void D3D9Client::clbkOptionChanged(DWORD cat, DWORD item)
 {
 	switch (cat) {
 	case OPTCAT_CELSPHERE:
-		if (scene) scene->OnOptionChanged(cat, item);
+		if (scene) scene->clbkOnOptionChanged(cat, item);
 		return;
 	}
+}
+
+// ==============================================================
+
+void D3D9Client::clbkScenarioChanged(OBJHANDLE hVesselA, ScnChgEvent type)
+{
+	if (scene) scene->clbkScenarioChanged(hVesselA, type);
 }
 
 // ==============================================================
@@ -1678,8 +1693,6 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 	static bool bTrackMouse = false;
 	static short xpos=0, ypos=0;
 
-	D3D9Pick pick;
-
 	if (hRenderWnd!=hWnd && uMsg!= WM_NCDESTROY) {
 		LogErr("Invalid Window !! RenderWndProc() called after calling clbkDestroyRenderWindow() uMsg=0x%X", uMsg);
 		return 0;
@@ -1728,16 +1741,24 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 			TRACKMOUSEEVENT te; te.cbSize = sizeof(TRACKMOUSEEVENT); te.dwFlags = TME_LEAVE; te.hwndTrack = hRenderWnd;
 			TrackMouseEvent(&te);
+			PickProp prp = { NULL, 0.1f, false };
 
 			bool bShift = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
 			bool bCtrl = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
 			bool bPckVsl = IsGenericProcEnabled(GENERICPROC_PICK_VESSEL);
 
-			if (DebugControls::IsActive() || bPckVsl || (bShift && bCtrl)) {
-				pick = GetScene()->PickScene(xpos, ypos);
+			if (DebugControls::IsActive() || bPckVsl || (bShift && bCtrl))
+			{
+				if (DebugControls::IsActive()) {
+					if (DebugControls::debugFlags & DBG_FLAGS_PICKCURRENT) prp.pMesh = DebugControls::GetMesh();
+					if (DebugControls::debugFlags & DBG_FLAGS_DUALSIDED) prp.bDualSided = true;
+				}
+
+				D3D9Pick pick = GetScene()->PickScene(xpos, ypos, &prp);
+
 				if (bPckVsl) {
 					gcCore::PickData out;
-					out.hVessel = pick.vObj->GetObjectA();
+					out.hVessel = pick.vObj->GetObjHandle();
 					out.mesh = MESHHANDLE(pick.pMesh);
 					out.group = pick.group;
 					out.pos = _FV(pick.pos);
@@ -1745,48 +1766,49 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 					out.dist = pick.dist;
 					MakeGenericProcCall(GENERICPROC_PICK_VESSEL, sizeof(gcCore::PickData), &out);
 				}
-			}
 
-			PickTerrain(uMsg, xpos, ypos);
 
-			// No Debug Controls
-			if (bShift && bCtrl && !DebugControls::IsActive() && !oapiCameraInternal()) {
-
-				if (!pick.pMesh) break;
-
-				OBJHANDLE hObj = pick.vObj->Object();
-				if (oapiGetObjectType(hObj) == OBJTP_VESSEL) {
-					oapiSetFocusObject(hObj);
-				}
-
-				break;
-			}
-
-			// With Debug Controls
-			if (DebugControls::IsActive()) {
-
-				DWORD flags = *(DWORD*)GetConfigParam(CFGPRM_GETDEBUGFLAGS);
-
-				if (flags&DBG_FLAGS_PICK) {
+				// No Debug Controls
+				if (bShift && bCtrl && !DebugControls::IsActive() && !oapiCameraInternal()) {
 
 					if (!pick.pMesh) break;
 
-					if (bShift && bCtrl) {
-						OBJHANDLE hObj = pick.vObj->Object();
-						if (oapiGetObjectType(hObj)==OBJTP_VESSEL) {
-							oapiSetFocusObject(hObj);
-							break;
-						}
+					OBJHANDLE hObj = pick.vObj->Object();
+					if (oapiGetObjectType(hObj) == OBJTP_VESSEL) {
+						oapiSetFocusObject(hObj);
 					}
-					else if (pick.group>=0) {
-						DebugControls::SetVisual(pick.vObj);
-						DebugControls::SelectMesh(pick.pMesh);
-						DebugControls::SelectGroup(pick.group);
-						DebugControls::SetGroupHighlight(true);
-						DebugControls::SetPickPos(pick.pos);
+
+					break;
+				}
+
+				// With Debug Controls
+				if (DebugControls::IsActive()) {
+
+					DWORD flags = *(DWORD*)GetConfigParam(CFGPRM_GETDEBUGFLAGS);
+
+					if (flags & DBG_FLAGS_PICK) {
+
+						if (!pick.pMesh) break;
+
+						if (bShift && bCtrl) {
+							OBJHANDLE hObj = pick.vObj->Object();
+							if (oapiGetObjectType(hObj) == OBJTP_VESSEL) {
+								oapiSetFocusObject(hObj);
+								break;
+							}
+						}
+						else if (pick.group >= 0) {
+							DebugControls::SetVisual(pick.vObj);
+							DebugControls::SelectMesh(pick.pMesh);
+							DebugControls::SelectGroup(pick.group);
+							DebugControls::SetGroupHighlight(true);
+							DebugControls::SetPickPos(pick.pos);
+						}
 					}
 				}
 			}
+
+			PickTerrain(uMsg, xpos, ypos);
 
 			break;
 		}
@@ -1820,6 +1842,7 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			bool bCtrl  = (GetAsyncKeyState(VK_CONTROL) & 0x8000)!=0;
 			if (wParam == 'C' && bShift && bCtrl) bControlPanel = !bControlPanel;
 			if (wParam == 'N' && bShift && bCtrl) Config->bCloudNormals = !Config->bCloudNormals;
+			if (wParam == 'V' && bShift && bCtrl) GetScene()->bStageSet = !GetScene()->bStageSet;
 			break;
 		}
 
@@ -2098,6 +2121,35 @@ SURFHANDLE D3D9Client::clbkLoadTexture(const char *fname, DWORD flags)
 	if (flags & 0x8) attrib |= OAPISURFACE_SHARED;
 
 	return clbkLoadSurface(fname, attrib);
+}
+
+// ==============================================================
+
+SURFHANDLE D3D9Client::clbkLoadMaps(const char* diff, const char* maps, bool bPath, SURFHANDLE hOld, bool bAll)
+{
+	char mpath[MAX_PATH];
+
+	if (diff != NULL && hOld != NULL) {
+		oapiWriteLog((char*)"oapiLoadAdditionalTextureMaps() FAILED. Used either 'diff' or 'hOld'. The other one must be NULL");
+		return NULL;
+	}
+	if (maps) {
+		if (bPath) strcpy_s(mpath, MAX_PATH, maps);
+		else if (!g_client->TexturePath(maps, mpath)) return NULL;
+	}
+	if (diff) {
+		SURFHANDLE hSrf = NatLoadSurface(diff, OAPISURFACE_TEXTURE | OAPISURFACE_SHARED | OAPISURFACE_DIFFUSE_ONLY, bPath);
+		if (hSrf && maps) {	
+			if (bAll) NatLoadMaps(SURFACE(hSrf), mpath);
+			else NatLoadMap(SURFACE(hSrf), mpath);
+		}
+		return hSrf;
+	}
+	else if (maps) {
+		if (bAll) NatLoadMaps(SURFACE(hOld), mpath);
+		else NatLoadMap(SURFACE(hOld), mpath);
+	}
+	return hOld;
 }
 
 // ==============================================================
@@ -3190,4 +3242,44 @@ VisObject::VisObject(OBJHANDLE hObj) : hObj(hObj)
 
 VisObject::~VisObject ()
 {
+}
+
+// =======================================================================
+
+SHADOWMAP::SHADOWMAP(LPDIRECT3DDEVICE9 pDevice, sMapType t, DWORD sz) : SMapInput(), tp(t)
+{
+	if (Config->ShadowMapMode == 0) return;
+
+	// Single fixed size shadow map
+	if (tp == sMapType::SingleLod) {
+		HR(pDevice->CreateTexture(sz, sz, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &ptShmRT[0], NULL));
+		HR(ptShmRT[0]->GetSurfaceLevel(0, &psShmRT[0]));
+	}
+
+	// Exterior shadows
+	if (tp == sMapType::MultiLod) {
+		UINT size = Config->ShadowMapSize;
+		for (int i = 0; i < SHM_LOD_COUNT; i++) {
+			HR(pDevice->CreateTexture(size, size, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &ptShmRT[i], NULL));
+			HR(ptShmRT[i]->GetSurfaceLevel(0, &psShmRT[i]));
+			size >>= 1;
+		}
+	}
+	
+	// VC Shadows
+	if (tp == sMapType::Cascaded) {
+		UINT size = Config->ShadowMapSize;
+		for (int i = 0; i < SHM_CASCADE_COUNT; i++) {
+			HR(pDevice->CreateTexture(size, size, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &ptShmRT[i], NULL));
+			HR(ptShmRT[i]->GetSurfaceLevel(0, &psShmRT[i]));
+		}
+	}
+}
+
+// =======================================================================
+
+SHADOWMAP::~SHADOWMAP()
+{
+	for (auto& x : psShmRT) SAFE_RELEASE(x);
+	for (auto& x : ptShmRT) SAFE_RELEASE(x);
 }

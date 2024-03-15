@@ -1175,6 +1175,11 @@ void Pane::SetVCAreaClickmode_Quadrilateral (int aid, const Vector &p1, const Ve
 	}
 }
 
+void Pane::GetVCAreaClickZones(std::list<VCClickZone>* p_List)
+{
+	if (vcockpit) vcockpit->GetClickZones(p_List);
+}
+
 Instrument::Spec Pane::GetVCMFDSpec ()
 {
 	Instrument::Spec spec;

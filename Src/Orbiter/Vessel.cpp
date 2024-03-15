@@ -2726,6 +2726,11 @@ int Vessel::Dock (Vessel *target, DWORD mydid, DWORD tgtdid, DWORD mode)
 	g_psys->DockVessels (this, target, mydid, tgtdid);
 	RegisterDocking (mydid, target, tgtdid);
 	target->RegisterDocking (tgtdid, this, mydid);
+
+#ifndef INLINEGRAPHICS
+	auto gc = g_pOrbiter->GetGraphicsClient();
+	if (gc) gc->clbkScenarioChanged((OBJHANDLE)this, ScnChgEvent::Docked);
+#endif
 	return 0;
 }
 
@@ -2752,6 +2757,11 @@ bool Vessel::Undock (UINT did, const Vessel *exclude, double vsep)
 		for (n = n0; n < n1; ++n) buf += ' ' + std::to_string(n);
 		FRecorder_SaveEvent("UNDOCK", buf.substr(1).data());
 	}
+
+#ifndef INLINEGRAPHICS
+	auto gc = g_pOrbiter->GetGraphicsClient();
+	if (gc) gc->clbkScenarioChanged((OBJHANDLE)this, ScnChgEvent::UnDocked);
+#endif
 	return undocked;
 }
 
@@ -2997,6 +3007,11 @@ bool Vessel::AttachChild (Vessel *child, AttachmentSpec *as, AttachmentSpec *asc
 		if (allow_loose) strcat (cbuf, " LOOSE");
 		FRecorder_SaveEvent ("ATTACH", cbuf);
 	}
+
+#ifndef INLINEGRAPHICS
+	auto gc = g_pOrbiter->GetGraphicsClient();
+	if (gc) gc->clbkScenarioChanged((OBJHANDLE)this, ScnChgEvent::Attached);
+#endif
 	return true;
 }
 
@@ -3007,6 +3022,11 @@ bool Vessel::AttachToParent (Vessel *parent, AttachmentSpec *asp, AttachmentSpec
 	as->mate = parent;
 	as->mate_attach = asp;
 	InitAttachmentToParent (as, allow_loose);
+
+#ifndef INLINEGRAPHICS
+	auto gc = g_pOrbiter->GetGraphicsClient();
+	if (gc) gc->clbkScenarioChanged((OBJHANDLE)this, ScnChgEvent::Attached);
+#endif
 	return true;
 }
 
@@ -3021,6 +3041,11 @@ bool Vessel::DetachChild (AttachmentSpec *asp, double v)
 		sprintf (cbuf, "%d, %0.3f", pidx, v);
 		FRecorder_SaveEvent ("DETACH", cbuf);
 	}
+
+#ifndef INLINEGRAPHICS
+	auto gc = g_pOrbiter->GetGraphicsClient();
+	if (gc) gc->clbkScenarioChanged((OBJHANDLE)this, ScnChgEvent::Detached);
+#endif
 	return true;
 }
 
@@ -3048,6 +3073,10 @@ bool Vessel::DetachFromParent (double v)
 	if (bFRplayback) FRecorder_CheckEnd();
 	//bFRplayback = false;
 
+#ifndef INLINEGRAPHICS
+	auto gc = g_pOrbiter->GetGraphicsClient();
+	if (gc) gc->clbkScenarioChanged((OBJHANDLE)this, ScnChgEvent::Detached);
+#endif
 	return true;
 }
 
@@ -3139,6 +3168,31 @@ void Vessel::ShiftAttachments (const Vector &ofs)
 		SetAttachmentParams (pattach[i], pattach[i]->ref+ofs, pattach[i]->dir, pattach[i]->rot);
 	for (i = 0; i < ncattach; i++)
 		SetAttachmentParams (cattach[i], cattach[i]->ref+ofs, cattach[i]->dir, cattach[i]->rot);
+}
+
+// ==============================================================
+
+Vessel* Vessel::GetAttachmentRoot()
+{
+	Vessel* mate = nullptr;
+	int cnt = 0;
+	for (DWORD i = 0; i < npattach; i++) {
+		if (pattach[i]) {
+			if (pattach[i]->toparent == false) {
+				oapiWriteLog("[ERROR] Parent attachment with no toparent flag"); // Sanity check
+				DebugBreak();
+			}
+			if (pattach[i]->mate) {	mate = pattach[i]->mate; cnt++;	}
+		}
+	}
+	if (cnt > 1) {
+		oapiWriteLog("[ERROR] Vessel has multiple parent attachments"); // Sanity check
+		DebugBreak();
+	}
+
+	if (cnt == 1) return mate->GetAttachmentRoot();
+
+	return this;
 }
 
 // ==============================================================
@@ -7389,6 +7443,11 @@ ATTACHMENTHANDLE VESSEL::GetAttachmentHandle (bool toparent, DWORD i) const
 	}
 }
 
+OBJHANDLE VESSEL::GetAttachmentRoot() const
+{
+	return vessel->GetAttachmentRoot();
+}
+
 void VESSEL::AddBeacon (BEACONLIGHTSPEC *bs)
 {
 	vessel->AddBeacon (bs);
@@ -7618,6 +7677,12 @@ WORD VESSEL::GetMeshVisibilityMode (UINT idx) const
 void VESSEL::SetMeshVisibilityMode (UINT idx, WORD mode) const
 {
 	vessel->SetMeshVisibilityMode (idx, mode);
+}
+
+void VESSEL::SetVisualProperty(VISHANDLE vis, VisualProp prp, int idx, const type_info& t, const void* val)
+{
+	oapi::GraphicsClient* gc = g_pOrbiter->GetGraphicsClient();
+	gc->clbkSetVisualProperty(vis, prp, idx, t, val);
 }
 
 void VESSEL::SetMeshVisibleInternal (UINT idx, bool visible) const
