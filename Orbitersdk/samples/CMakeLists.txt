@@ -7,5 +7,6 @@ add_subdirectory(AscentMFD)
 add_subdirectory(DialogTemplate)
 add_subdirectory(LaunchpadParamTemplate)
 add_subdirectory(MFDTemplate)
+add_subdirectory(Lua)
 
 endif()
