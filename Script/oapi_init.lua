@@ -2,6 +2,7 @@
 
 -- Some useful general constants
 PI=3.14159265358979    -- pi
+PI2=PI*2               -- pi*2
 PI05=1.57079632679490  -- pi/2
 RAD=PI/180.0           -- deg->rad conversion factor
 DEG=180.0/PI           -- rad->deg conversion factor
@@ -219,3 +220,346 @@ end
 function _nbranch ()
     return branch.count
 end
+
+
+-- helpers for basic types
+function _V(x,y,z)
+	return {x=x, y=y, z=z}
+end
+function _M(m11, m12, m13, m21, m22, m23, m31, m32, m33)
+	return {m11=m11,m12=m12,m13=m13,m21=m21,m22=m22,m23=m23,m31=m31,m32=m32,m33=m33}
+end
+function _R(left, top, right, bottom)
+	return {left=left, top=top, right=right, bottom=bottom}
+end
+function _COLOUR4(r,g,b,a)
+	return {r=r, g=g, b=b, a=a}
+end
+function _RGB(r,g,b)
+	return r + g*256 + b*65536
+end
+
+-- helper to create a classlike object
+-- Usage:
+--      myclass = Class()
+--      function myclass:new(a,b)
+--      	self.a = a
+--      	self.b = b
+--      end
+--      function myclass:print()
+--      	print(a+b)
+--      end
+--      myobj = myclass(1,2)
+--      myobj:print()
+
+function Class(parent)
+    local class = {}
+    class.__index = class
+    local mt = parent or {}
+    setmetatable(class, mt)
+    local function __new(self, ...)
+        local obj = setmetatable({}, self)
+        if obj.new then
+            obj.new(obj, ...)
+        end
+        return obj
+    end
+    mt.__call = __new
+    return class
+end
+
+-- helpers for Lua MFDs
+
+-- ==============================================================
+-- __orbiter_extend_userdata:
+--     associate the userdata metatable with the one from a Lua object
+--     so that we can call both OAPI and Lua methods from it
+--     For example for an MFD you can do :
+--          self:set_title(skp, title)  -- native MFD2 method
+--          self:update_pg_prm(skp)     -- Lua method
+-- ==============================================================
+local function __orbiter_extend_userdata(module, userdata)
+    local mt = {}
+	function mt.__index(self, key)
+		-- first search in the module
+		local ret = rawget(module, key)
+		if ret then
+			return ret
+		else
+			-- try in the userdata
+			ret = userdata[key]
+			if type(ret) == "function" then
+				return function(self, ...)
+					return ret(userdata, ...)
+				end
+			else
+				return ret
+			end
+		end
+	end
+    return setmetatable({}, mt)
+end
+
+local function __orbiter_extend_vessel(module)
+    local mt = {}
+	function mt.__index(self, key)
+		-- first search in the module
+		local ret = rawget(module, key)
+		if ret then
+			return ret
+		else
+			-- try in the userdata
+			ret = vi[key]
+			if type(ret) == "function" then
+				return function(self, ...)
+					-- native functions expect a vessel handle so we pass vi instead of self
+					return ret(vi, ...)
+				end
+			else
+				return ret
+			end
+		end
+	end
+    return setmetatable({}, mt)
+end
+
+-- ==============================================================
+-- MFDModule:
+-- Create a module object from a Lua MFD implementation
+--   It only provides a __call meta function and you can
+--   use it like this with require:
+--      mymfdmodule = require("mymfdmodule")
+--      mymfd = mymfdmodule()
+--
+-- The method links the C++ MFD (userdata containing a VesselMFD *)
+-- with the Lua object using __orbiter_extend_userdata then
+-- calls the "init" method
+-- This hides the userdata part from the MFD implementation
+-- ==============================================================
+function MFDModule(impl)
+	local module = {}
+	module.__index = module
+	setmetatable(module, module)
+	function module.__call(_, mfd, w, h, vessel, userdata)
+		local mfd = __orbiter_extend_userdata(impl, userdata)
+		mfd:init(mfd, w, h, vessel)
+		return mfd
+	end
+	return module
+end
+
+-- Syntactic sugar for animation components to look like their C++ equivalents
+function MGROUP_ROTATE(_mesh, _grp, _ref, _axis, _angle)
+	return oapi.create_animationcomponent {
+		type = 'rotation',
+		mesh = _mesh,
+		grp = _grp,
+		ref = _ref,
+		axis = _axis,
+		angle = _angle
+	}
+end
+
+function MGROUP_TRANSLATE(_mesh, _grp, _shift)
+	return oapi.create_animationcomponent {
+		type = 'translation',
+		mesh = _mesh,
+		grp = _grp,
+		shift = _shift
+	}
+end
+
+function MGROUP_SCALE(_mesh, _grp, _ref, _scale)
+	return oapi.create_animationcomponent {
+		type = 'scaling',
+		mesh = _mesh,
+		grp = _grp,
+		ref = _ref,
+		scale = _scale
+	}
+end
+
+-- scenario parsing helpers
+--
+-- ==============================================================
+-- scenario_lines(scn)
+--     returns an iterator constructed from a filehandle to use in for loops, typically used in clbk_loadstateex
+-- Typical usage:
+--     function clbk_loadstateex(scn, vs)
+--         ...
+--         for line in scenario_lines(scn) do
+--             ... do stuff with the line
+--         end
+--         ...
+--     end
+-- ==============================================================
+function scenario_lines(scn)
+    return function()
+              return oapi.readscenario_nextline(scn)
+           end
+end
+
+-- ==============================================================
+-- __orbiter__tointeger(str)
+--     return a number from a string if it represents an integer, nil otherwise
+-- ==============================================================
+local function __orbiter__tointeger(str)
+    if str:find("[^0-9%-]") then
+        return nil
+    end
+    return tonumber(str)
+end
+
+-- ==============================================================
+-- __orbiter__toboolean(str)
+--     return a boolean from a string if it is "0" or "1", nil otherwise
+-- ==============================================================
+local function __orbiter__toboolean(str)
+	if str == "0" or str == "false" then
+		return false
+	elseif str == "1" or str == "true" then
+		return true
+	else
+		return nil
+	end
+end
+
+-- ==============================================================
+-- scenario_line_match(line, format, result)
+--     match a line with a pattern and extract the associated values, typically used in clbk_loadstateex
+--     return true if the line matches the pattern and initialise the result table
+--     return false otherwise
+-- Parameters:
+--     line: string containing the pattern to match
+--     format: format of the expected pattern in a scanf like format
+--           supported format types:
+--                - %d: integer
+--                - %f: number (float or integer)
+--                - %b: boolean (0 or 1)
+--                - %s: string
+--     result: table whose "res" member will be populated with the matched values in their expected format
+-- Typical usage:
+--      function clbk_loadstateex(scn, vs)
+--          for line in scenario_lines(scn) do
+--              match = {}
+--              if scenario_line_match(line, "ASCENTAP %b %b %b %f %f %f %f", match) then
+--              		active         = match.res[1]  -- boolean
+--              		met_active     = match.res[2]  -- boolean
+--              		do_oms2        = match.res[3]  -- boolean
+--              		tgt_alt        = match.res[4]  -- number
+--              		launch_azimuth = match.res[5]  -- number
+--              		launch_lng     = match.res[6]  -- number
+--              		launch_lat     = match.res[7]  -- number
+--              		return true
+--              end
+--          end
+--      end
+-- ==============================================================
+function scenario_line_match(line, format, result)
+    local patterns={}
+    local types = {}
+    for str in string.gmatch(format, "([^%s]+)") do
+        if str == "%d" then
+            table.insert(patterns,"(%S+)")
+            table.insert(types, __orbiter__tointeger)
+        elseif str == "%f" then
+            table.insert(patterns,"(%S+)")
+            table.insert(types, tonumber)
+        elseif str == "%b" then
+            table.insert(patterns,"(%S+)")
+            table.insert(types, __orbiter__toboolean)
+        elseif str == "%s" then
+            table.insert(patterns,"(%S+)")
+            table.insert(types, tostring)
+        else
+            table.insert(patterns,str)
+        end    
+    end
+
+    local match_pattern = table.concat(patterns, "%s+")
+    local matches = {line:match(match_pattern)}
+    if #matches ~= 0 then
+        result.res = {}
+        for i=1,#matches do
+            local conversion = types[i](matches[i])
+            if conversion == nil then
+                return false
+            end
+            result.res[i] = conversion
+        end
+        return true
+    end
+    return false
+end
+
+-- Object style vessels
+function VesselClass(parent)
+	parent = parent or {}
+	local vessel = __orbiter_extend_vessel(parent)
+	
+	return vessel
+end
+
+-- create global functions from object methods if they don't start with '_'
+function register_vesselclass(vessel, cpp_names)
+	local cpp_mapping = {
+		clbkSetClassCaps	     = "clbk_setclasscaps",
+		clbkPostCreation	     = "clbk_postcreation",
+		clbkPreStep	         = "clbk_prestep",
+		clbkPostStep	         = "clbk_poststep",
+		clbkSaveState	         = "clbk_savestate",
+		clbkLoadStateEx	     = "clbk_loadstateex",
+		clbkConsumeDirectKey	 = "clbk_consumedirectkey",
+		clbkConsumeBufferedKey = "clbk_consumebufferedkey",
+		clbkFocusChanged	     = "clbk_focuschanged",
+		clbkPlaybackEvent	     = "clbk_playbackevent",
+		clbkRCSMode	         = "clbk_RCSmode",
+		clbkADCtrlMode	     = "clbk_ADctrlmode",
+		clbkHUDMode	         = "clbk_HUDmode",
+		clbkMFDMode	         = "clbk_MFDmode",
+		clbkNavMode	         = "clbk_NAVmode",
+		clbkDockEvent	         = "clbk_dockevent",
+		clbkAnimate	         = "clbk_animate",
+		clbkLoadGenericCockpit = "clbk_loadgenericcockpit",
+		clbkPanelMouseEvent	 = "clbk_panelmouseevent",
+		clbkPanelRedrawEvent	 = "clbk_panelredrawevent",
+		clbkLoadVC	         = "clbk_loadVC",
+		clbkVisualCreated	     = "clbk_visualcreated",
+		clbkVisualDestroyed	 = "clbk_visualdestroyed",
+		clbkVCMouseEvent	     = "clbk_VCmouseevent",
+		clbkVCRedrawEvent	     = "clbk_VCredrawevent",
+		clbkDrawHUD	         = "clbk_drawHUD",
+		clbkNavProcess	     = "clbk_navprocess",
+		clbkLoadPanel2D	     = "clbk_loadpanel2d",
+		clbkRenderHUD	         = "clbk_renderHUD",
+		new = "clbk_new",
+		destroy = "clbk_destroy"
+	}
+	if cpp_names == nil then
+		cpp_names = false
+	end
+	for k, v in pairs(vessel) do
+		if type(v) == "function" and k:sub(1, 1) ~= '_' then
+			if cpp_names then
+				k = cpp_mapping[k] or k
+			end
+			oapi.write_log("Exporting "..k)
+			-- declare global if in strict mode
+			if strictmode_add_global then
+				strictmode_add_global(k)
+			end
+			_G[k] = function(...) return v(vessel, ...) end
+		end
+	end
+end
+
+function KEYMOD_CONTROL(kstate)
+	return oapi.keydown(kstate, OAPI_KEY.LCONTROL) or oapi.keydown(kstate, OAPI_KEY.RCONTROL)
+end
+function KEYMOD_ALT(kstate)
+	return oapi.keydown(kstate, OAPI_KEY.LALT) or oapi.keydown(kstate, OAPI_KEY.RALT)
+end
+function KEYMOD_SHIFT(kstate)
+	return oapi.keydown(kstate, OAPI_KEY.LSHIFT) or oapi.keydown(kstate, OAPI_KEY.RSHIFT)
+end
+

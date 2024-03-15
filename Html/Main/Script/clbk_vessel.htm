@@ -23,8 +23,16 @@ format in the following list.</p>
 
 <table class="summary">
 <tr>
+<td><a href="#clbk_new">clbk_new</a></td>
+<td>Vessel creation.</td>
+</tr>
+<tr>
+<td><a href="#clbk_destroy">clbk_destroy</a></td>
+<td>Vessel destruction.</td>
+</tr>
+<tr>
 <td><a href="#clbk_setclasscaps">clbk_setclasscaps</a></td>
-<td>Called during vessel creation to set physical parameters, load meshes, etc.</td>
+<td>Initialisation of vessel capabilities.</td>
 </tr>
 <tr>
 <td><a href="#clbk_postcreation">clbk_postcreation</a></td>
@@ -38,13 +46,121 @@ format in the following list.</p>
 <td><a href="#clbk_poststep">clbk_poststep</a></td>
 <td>Per-frame processing at the end of a time step.</td>
 </tr>
+<tr>
+<td><a href="#clbk_consumebufferedkey">clbk_consumebufferedkey</a></td>
+<td>Keyboard event notification.</td>
+</tr>
+<tr>
+<td><a href="#clbk_consumedirectkey">clbk_consumedirectkey</a></td>
+<td>Keyboard status notification.</td>
+</tr>
+<tr>
+<td><a href="#clbk_savestate">clbk_savestate</a></td>
+<td>Vessel state saving notification.</td>
+</tr>
+<tr>
+<td><a href="#clbk_loadstateex">clbk_loadstateex</a></td>
+<td>Vessel state loading notification.</td>
+</tr>
+<tr>
+<td><a href="#clbk_focuschanged">clbk_focuschanged</a></td>
+<td>Vessel focus change notification.</td>
+<tr>
+<td><a href="#clbk_playbackevent">clbk_playbackevent</a></td>
+<td>Playback event notification.</td>
+</tr>
+<tr>
+<td><a href="#clbk_RCSmode">clbk_RCSmode</a></td>
+<td>Reaction Control System mode change notification.</td>
+</tr>
+<tr>
+<td><a href="#clbk_ADctrlmode">clbk_ADctrlmode</a></td>
+<td>Aerodynamic control surface mode change notification.</td>
+</tr>
+<tr>
+<td><a href="#clbk_HUDmode">clbk_HUDmode</a></td>
+<td>HUD mode change notification</td>
+</tr>
+<tr>
+<td><a href="#clbk_MFDmode">clbk_MFDmode</a></td>
+<td>MFD mode change modification.</td>
+</tr>
+<tr>
+<td><a href="#clbk_NAVmode">clbk_NAVmode</a></td>
+<td>Navigation mode change notification.</td>
+</tr>
+<tr>
+<td><a href="#clbk_dockevent">clbk_dockevent</a></td>
+<td>Docking event notification.</td>
+</tr>
+<tr>
+<td><a href="#clbk_animate">clbk_animate</a></td>
+<td>Manual animation notification.</td>
+</tr>
+<tr>
+<td><a href="#clbk_loadgenericcockpit">clbk_loadgenericcockpit</a></td>
+<td>Generic cockpit view mode request notification.</td>
+</tr>
+<tr>
+<td><a href="#clbk_panelmouseevent">clbk_panelmouseevent</a></td>
+<td>Mouse event notification for 2-D panel views.</td>
+</tr>
+<tr>
+<td><a href="#clbk_panelredrawevent">clbk_panelredrawevent</a></td>
+<td>Redraw event notification for 2-D panel views.</td>
+</tr>
+<tr>
+<td><a href="#clbk_loadVC">clbk_loadVC</a></td>
+<td>3-D virtual cockpit view mode request notification.</td>
+</tr>
+<tr>
+<td><a href="#clbk_visualcreated">clbk_visualcreated</a></td>
+<td>Vessel visual creation notification.</td>
+</tr>
+<tr>
+<td><a href="#clbk_visualdestroyed">clbk_visualdestroyed</a></td>
+<td>Vessel visual destruction notification.</td>
+</tr>
+<tr>
+<td><a href="#clbk_VCmouseevent">clbk_VCmouseevent</a></td>
+<td>Mouse event notification for 3-D virtual cockpit views.</td>
+</tr>
+<tr>
+<td><a href="#clbk_VCredrawevent">clbk_VCredrawevent</a></td>
+<td>Redraw event notification for 3-D virtual cockpit views.</td>
+</tr>
+<tr>
+<td><a href="#clbk_navprocess">clbk_navprocess</a></td>
+<td>Processing of navigation autopilot programs.</td>
+</tr>
 </table>
 
 <div class="func_block">
 
+<div class="func"><a name="clbk_new"></a>
+<h3>clbk_new()</h3>
+<p>This function is the first function called during vessel creation, just before clbk_setclasscaps.
+It allows to create resources that don't depend on the vessel configuration file (fonts, pens, ...).
+You can also register custom MFDs from here.
+</p>
+</div>
+
+<div class="func"><a name="clbk_destroy"></a>
+<h3>clbk_destroy()</h3>
+<p>This function is called last during vessel destruction. No more functions will be called after that one.
+It's a good place to release resources created in clbk_new.
+</p>
+</div>
+
 <div class="func"><a name="clbk_setclasscaps"></a>
 <h3>clbk_setclasscaps(cfg)</h3>
-<p>Called during vessel creation to set physical parameters, load meshes, etc.</p>
+<p>Called after vessel creation, this function allows to set vessel
+class capabilities and parameters. This can include definition of
+physical properties (size, mass, docking ports, etc.), creation of
+propellant resources and engines, aerodynamic parameters, including
+airfoil definitions, lift and drag properties, or active control
+surfaces.
+</p>
 
 <h4>Parameters:</h4>
 <table>
@@ -52,13 +168,18 @@ format in the following list.</p>
 </table>
 
 <h4>Notes:</h4>
-<p>This function is called after Orbiter has created an instance of the vessel
-class, but before its state is defined. It should be implemented to set general
-physical vessel parameters (empty mass, fuel capacity, engine layout and specs,
-atmospheric parameters, etc.)
-It is also a good place to load meshes, define animations, and performing similar
-setup functions. It should not be used to set a specific vessel state (state
-vectors, fuel level, etc.).</p>
+<p>This function is called after the vessel has been created, but
+before its state is read from the scenario file. This means that
+its state (position, velocity, fuel level, etc.) is undefined at
+this point.</p>
+<p>Use this function to set vessel class capabilities, not vessel
+state parameters.</p>
+<p>Orbiter will scan the vessel class configuration file for generic
+parameters (like mass or size) after clbk_setclasscaps returns.
+This allows to override generic caps defined in the module by
+editing the configuration file.</p>
+<p>The configuration file handle is also passed to clbk_setclasscaps,
+to allow reading of vessel class-specific parameters from file.</p>
 </div>
 
 
@@ -110,6 +231,466 @@ the vessel to perform continuous processing tasks, including processing of
 physical parameters and animation updates.</p>
 </div>
 
+
+<div class="func"><a name="clbk_consumebufferedkey"></a>
+<h3>clbk_consumebufferedkey(key, down, kstate)</h3>
+<p>Keyboard event notification.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>key&nbsp;(number):</td><td>keycode of the toggled key</td></tr>
+<tr><td>down&nbsp;(boolean):</td><td>true is the key is pressed, false if released</td></tr>
+<tr><td>kstate&nbsp;(userdata):</td><td>current keyboard state</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This callback function notifies the vessel of a buffered key event (key pressed or key released).
+kstate can be used with the oapi.keydown API, notably to check if a modifier key (CTRL/MAJ/ALT) is pressed.
+</p>
+</div>
+
+
+<div class="func"><a name="clbk_consumedirectkey"></a>
+<h3>clbk_consumedirectkey(kstate)</h3>
+<p>Keyboard status notification.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>kstate&nbsp;(userdata):</td><td>current keyboard state</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Called at each simulation time step to allow the module to query the current keyboard status.
+This callback can be used to install a custom keyboard interface for the vessel.
+To be used with the oapi.keydown API, to check the state of a particular key.
+</p>
+</div>
+
+
+<div class="func"><a name="clbk_savestate"></a>
+<h3>clbk_savestate(scn)</h3>
+<p>Vessel state saving notification.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>scn&nbsp;(file handle):</td><td>Scenario file handle</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Called when the vessel needs to save its current status to a scenario file.
+Can be used with the oapi.writescenario_* API to write data to the scenario file.
+</p>
+</div>
+
+
+<div class="func"><a name="clbk_loadstateex"></a>
+<h3>clbk_loadstateex(scn, vs)</h3>
+<p>Vessel state loading notification.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>scn&nbsp;(file handle):</td><td>Scenario file handle</td></tr>
+<tr><td>vs&nbsp;(userdata):</td><td>Vessel status</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This callback function allows to read custom vessel status parameters from a scenario file.
+scn is to be used with the oapi.readscenario_nextline API to read lines from the scenario file.
+Any lines which the module parser does not recognise should be forwarded to Orbiter's default scenario parser via vi:parse_scenario_line_ex(line, vs).
+</p>
+</div>
+
+
+<div class="func"><a name="clbk_focuschanged"></a>
+<h3>clbk_focuschanged(getfocus, hNewVessel, hOldVessel)</h3>
+<p>Vessel focus change notification.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>getfocus&nbsp;(boolean):</td><td>true if the vessel gained focus, false if it lost focus</td></tr>
+<tr><td>hNewVessel&nbsp;(handle):</td><td>handle of vessel gaining focus</td></tr>
+<tr><td>hOldVessel&nbsp;(handle):</td><td>handle of vessel losing focus</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Whenever the input focus is switched to a new vessel (e.g. via user selection F3), this method is called for both the vessel losing focus (getfocus=false) and the vessel gaining focus (getfocus=true).</p>
+<p>In both calls, hNewVessel and hOldVessel are the vessel handles for the vessel gaining and the vessel losing focus, respectively.</p>
+<p>This method is also called at the beginning of the simulation for the initial focus object. In this case hOldVessel is nil.</p>
+</div>
+
+
+<div class="func"><a name="clbk_playbackevent"></a>
+<h3>clbk_playbackevent(simt, event_t, event_type, event)</h3>
+<p>Playback event notification.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>simt&nbsp;(number):</td><td>current simulation time [s]</td></tr>
+<tr><td>event_t&nbsp;(number):</td><td>recorded event time [s]</td></tr>
+<tr><td>event_type&nbsp;(string):</td><td>event tag string</td></tr>
+<tr><td>event&nbsp;(string):</td><td>event data string</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function can be used to process any custom vessel events that have been recorded with VESSEL::RecordEvent during a recording session.</p>
+</div>
+
+
+<div class="func"><a name="clbk_RCSmode"></a>
+<h3>clbk_RCSmode(mode)</h3>
+<p>Reaction Control System mode change notification.</p>
+<h4>Parameters:</h4>
+<table>
+<tr><td>mode&nbsp;(number):</td><td>new RCS mode: RCSMODE.OFF=disabled, RCSMODE.ROT=rotational, RCSMODE.LIN=linear</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This callback function is invoked when the user switches RCS mode via the keyboard ("/" or "Ctrl-/" on numerical keypad) or after a
+call to set_rcsmode or toggle_RCSmode.</p>
+<p>Not all vessel types may support a reaction control system. In that case, the callback function can be ignored by the module.</p>
+</div>
+
+
+<div class="func"><a name="clbk_ADctrlmode"></a>
+<h3>clbk_ADctrlmode(mode)</h3>
+<p>Aerodynamic control surface mode change notification.</p>
+<p>Called when user input mode for aerodynamic control surfaces (elevator, rudder, aileron) changes.</p>
+<h4>Parameters:</h4>
+<table>
+<tr><td>mode&nbsp;(number):</td><td>control mode</td></tr>
+</table>
+<h4>Notes:</h4>
+<p>The returned control mode contains bit flags as follows:</p>
+<table>
+<tr><td>bit 0</td><td>elevator enabled/disabled</td></tr>
+<tr><td>bit 1</td><td>rudder enabled/disabled</td></tr>
+<tr><td>bit 2</td><td>ailerons enabled/disabled</td></tr>
+</table>
+Therefore, mode=0 indicates control surfaces disabled, mode=7 indicates fully enabled.</p>
+<p>Since Lua has no native support for bit operations, you can use the bit library to test specific bits</p>
+<p>The following constants are provided:</p>
+<table>
+<tr><td>ADCMODE.OFF</td><td>All control surfaces disabled</td></tr>
+<tr><td>ADCMODE.ELEVATOR</td><td>Elevator surface enabled</td></tr>
+<tr><td>ADCMODE.RUDDER</td><td>Rudder surface enabled</td></tr>
+<tr><td>ADCMODE.AILERON</td><td>Aileron surface enabled</td></tr>
+<tr><td>ADCMODE.ON</td><td>All control surfaces enabled</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="clbk_HUDmode"></a>
+<h3>clbk_HUDmode(mode)</h3>
+<p>HUD mode change notification.</p>
+<h4>Parameters:</h4>
+<table>
+<tr><td>mode&nbsp;(number):</td><td>new HUD mode: HUDMODE.SURFACE, HUDMODE.ORBIT, HUDMODE.DOCKING or HUDMODE.NONE (HUD has been turned off) </td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="clbk_MFDmode"></a>
+<h3>clbk_MFDmode(mfd, mode)</h3>
+<p>MFD mode change modification.</p>
+<h4>Parameters:</h4>
+<table>
+<tr><td>mfd&nbsp;(number):</td><td>MFD instrument identifier</td></tr>
+<tr><td>mode&nbsp;(number):</td><td>new MFD mode identifier</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This callback function can be used to refresh the MFD button labels after the MFD mode has changed, or if a mode requires a dynamic label update.</p>
+<p>The mode parameter can be one of the MFD mode identifiers or MFDMODE.REFRESHBUTTONS. The latter is sent as a result of a call to oapi.refresh_mfdbuttons.
+It indicates not a mode change, but the need to refresh the button labels within a mode (i.e. a mode that dynamically changed its labels).</p>
+<p>Mode identifiers:
+<table>
+	<tr><td>MFDMODE.NONE</td></tr>
+	<tr><td>MFDMODE.ORBIT</td></tr>
+	<tr><td>MFDMODE.SURFACE</td></tr>
+	<tr><td>MFDMODE.MAP</td></tr>
+	<tr><td>MFDMODE.HSI</td></tr>
+	<tr><td>MFDMODE.LANDING</td></tr>
+	<tr><td>MFDMODE.DOCKING</td></tr>
+	<tr><td>MFDMODE.OPLANEALIGN</td></tr>
+	<tr><td>MFDMODE.OSYNC</td></tr>
+	<tr><td>MFDMODE.TRANSFER</td></tr>
+	<tr><td>MFDMODE.COMMS</td></tr>
+	<tr><td>MFDMODE.USERTYPE</td></tr>
+</table>
+</p>
+</div>
+
+
+<div class="func"><a name="clbk_NAVmode"></a>
+<h3>clbk_NAVmode(mode, active)</h3>
+<p>Navigation mode change notification.</p>
+<h4>Parameters:</h4>
+<table>
+<tr><td>mode&nbsp;(number):</td><td>navmode identifier</td></tr>
+<tr><td>active&nbsp;(boolean):</td><td>true if activated, false if deactivated</td></tr>
+</table>
+<h4>Notes:</h4>
+<p>Called when an automated "navigation mode" is activated or deactivated for a vessel. Most navigation modes engage the vessel's
+RCS to attain a specific attitude, including pro/retrograde, normal to the orbital plane, level with the local horizon, etc.</p>
+<p>Mode identifiers:
+<table>
+	<tr><td>NAVMODE.KILLROT</td></tr>
+	<tr><td>NAVMODE.HLEVEL</td></tr>
+	<tr><td>NAVMODE.PROGRADE</td></tr>
+	<tr><td>NAVMODE.RETROGRADE</td></tr>
+	<tr><td>NAVMODE.NORMAL</td></tr>
+	<tr><td>NAVMODE.ANTINORMAL</td></tr>
+	<tr><td>NAVMODE.HOLDALT</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="clbk_dockevent"></a>
+<h3>clbk_dockevent(dock, mate)</h3>
+<p>Docking event notification.</p>
+<h4>Parameters:</h4>
+<table>
+<tr><td>dock&nbsp;(number):</td><td>docking port index</td></tr>
+<tr><td>mate&nbsp;(handle):</td><td>handle to docked vessel, or nil for undocking event</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="clbk_animate"></a>
+<h3>clbk_animate(simt)</h3>
+<p>Manual animation notification.</p>
+<h4>Parameters:</h4>
+<table>
+<tr><td>simt&nbsp;(number):</td><td>simulation time [s]</td></tr>
+</table>
+<p>Called at each simulation time step if the module has registered at least one animation notification request and if the vessel's visual exists.</p>
+<h4>Notes</h4>
+<p>This callback allows the module to animate the vessel's visual representation (moving undercarriage, cargo bay doors, etc.)<p>
+<p>It is only called as long as the vessel has registered an animation request (between matching register_animation and unregister_animation calls) and if the vessel's visual exists.</p>
+<p>This callback is not used for the "semi-automatic" animation mechanism (create_animation, add_animationcomponent)</p>
+</div>
+
+
+<div class="func"><a name="clbk_loadgenericcockpit"></a>
+<h3>clbk_loadgenericcockpit()</h3>
+<p>Generic cockpit view mode request notification.</p>
+<p>
+Called when the vessel's generic "glass cockpit" view (consisting of
+two "floating" MFD instruments and a HUD, displayed on top of the
+3-D render window) is selected by the user pressing F8, or by a
+function call.
+</p>
+<h4>Return value</h4>
+<p>The function should return true if it supports generic cockpit view, false otherwise.</p>
+<h4>Notes</h4>
+<p>The generic cockpit view is available for all vessel types by
+  default, unless this function is overwritten to return false.</p>
+<p>Only disable the generic view if the vessel supports either
+  2-D instrument panels (see clbk_loadpanel) or a virtual cockpit
+  (see clbk_loadVC). If no valid cockpit view at all is available for
+  a vessel, Orbiter will crash.</p>
+<p>Even if the vessel supports panels or virtual cockpits, you
+  shouldn't normally disable the generic view, because it provides
+  the best performance on slower computers.</p>
+</div>
+
+
+<div class="func"><a name="clbk_panelmouseevent"></a>
+<h3>clbk_panelmouseevent(id, event, mx, my)</h3>
+<p>Mouse event notification for 2-D panel views.</p>
+<h4>Parameters:</h4>
+<table>
+<tr><td>id&nbsp;(number):</td><td>panel area identifier</td></tr>
+<tr><td>event&nbsp;(number):</td><td>mouse event</td></tr>
+<tr><td>mx&nbsp;(number):</td><td>relative mouse x position in area at event</td></tr>
+<tr><td>my&nbsp;(number):</td><td>relative mouse y position in area at event</td></tr>
+</table>
+<h4>Return value</h4>
+<p>The function should return true if it processes the event, false otherwise.</p>
+</div>
+
+
+<div class="func"><a name="clbk_panelredrawevent"></a>
+<h3>clbk_panelredrawevent(id, event, surf)</h3>
+<p>Redraw event notification for 2-D panel views.</p>
+<h4>Parameters:</h4>
+<table>
+<tr><td>id&nbsp;(number):</td><td>panel area identifier</td></tr>
+<tr><td>event&nbsp;(number):</td><td>redraw event</td></tr>
+<tr><td>surf&nbsp;(handle):</td><td>area surface handle</td></tr>
+</table>
+<h4>Return value</h4>
+<p>The function should return true if it processes the event, false otherwise.</p>
+<h4>Notes</h4>
+<p>This callback function is only called for areas which were
+  not registered with the PANEL_REDRAW.NEVER flag.</p>
+<p>All redrawable panel areas receive a PANEL_REDRAW.INIT redraw
+  notification when the panel is created, in addition to any
+  registered redraw notification events.</p>
+<p>The surface handle surf contains either the current area
+  state, or the area background, depending on the flags passed
+  during area registration.</p>
+</div>
+
+
+<div class="func"><a name="clbk_loadVC"></a>
+<h3>clbk_loadVC(id)</h3>
+<p>3-D virtual cockpit view mode request notification.</p>
+<h4>Parameters:</h4>
+<table>
+<tr><td>id&nbsp;(number):</td><td>virtual cockpit identifier</td></tr>
+</table>
+<h4>Return value</h4>
+<p>The function should return true if the vessel supports the requested virtual cockpit, false otherwise.</p>
+<h4>Notes:</h4>
+<p>Multiple virtual cockpit camera positions (e.g. for pilot and
+  co-pilot) can be defined. In this case, the body of clbkLoadVC
+  should examine the value of id and set the VC parameters
+  accordingly. Multiple positions are defined by specifying the
+  neighbour positions of the current position via a call to
+  oapiVCSetNeighbours.</p>
+<p>In the body of this function the module should define MFD
+  display targets and other active areas
+  (with oapi.VC_register_area) for the requested virtual cockpit.</p>
+</div>
+
+
+<div class="func"><a name="clbk_visualcreated"></a>
+<h3>clbk_visualcreated(vis, refcount)</h3>
+<p>Called after a vessel visual has been created by the renderer.</p>
+<h4>Parameters:</h4>
+<table>
+<tr><td>vis&nbsp;(handle):</td><td>handle for the newly created visual</td></tr>
+<tr><td>refcount&nbsp;(number):</td><td>visual reference count</td></tr>
+</table>
+<h4>Notes:</h4>
+<p>The logical interface to a vessel exists as long as the vessel is
+  present in the simulation. However, the visual interface exists
+  only when the vessel is within visual range of the camera. Orbiter
+  creates and destroys visuals as required. This enhances simulation
+  performance in the presence of a large number of objects in the
+  simulation.</p>
+<p>Whenever Orbiter creates a vessel's visual it reverts to its
+  initial configuration (e.g. as defined in the mesh file). The
+  module can use this function to update the visual to the current
+  state, wherever dynamic changes are required.</p>
+<p>More than one visual representation of an object may exist. The
+  refcount parameter defines how many visual interfaces to the
+  object exist.</p>
+</div>
+
+
+<div class="func"><a name="clbk_visualdestroyed"></a>
+<h3>clbk_visualdestroyed(vis, refcount)</h3>
+<p>Called before a vessel visual is destroyed.</p>
+<h4>Parameters:</h4>
+<table>
+<tr><td>vis&nbsp;(handle):</td><td>handle for the visual to be destroyed</td></tr>
+<tr><td>refcount&nbsp;(number):</td><td>visual reference count</td></tr>
+</table>
+<h4>Notes</h4>
+<p>	Orbiter calls this function before it destroys a visual
+representation of the vessel. This may be in response to the
+destruction of the actual vessel, but in general simply means that
+the vessel has moved out of visual range of the current camera
+location.
+</p>
+</div>
+
+
+<div class="func"><a name="clbk_VCmouseevent"></a>
+<h3>clbk_VCmouseevent(id, event, pos)</h3>
+<p>Called when a mouse-activated virtual cockpit area receives a mouse event</p>
+<h4>Parameters:</h4>
+<table>
+<tr><td>id&nbsp;(number):</td><td>area identifier</td></tr>
+<tr><td>event&nbsp;(number):</td><td>mouse event</td></tr>
+<tr><td>p&nbsp;(vector):</td><td>parameter vector (area type-dependent, see notes)</td></tr>
+</table>
+<h4>Return value</h4>
+<p>The function should return true if it processes the event, false otherwise.</p>
+<h4>Notes</h4>
+<p>To generate a mouse-activated area in a virtual cockpit, you
+must do the following when registering the area during clbkLoadVC:
+<ul>
+<li>register the area with a call to oapiVCRegisterArea with a
+  mouse mode other than PANEL_MOUSE_IGNORE.</li>
+<li>define a mouse-click area in the vessel's local frame. Use one
+  of the oapiVCRegisterAreaClickmode_XXX functions. You can define
+  spherical or quadrilateral click areas.</li>
+</ul>
+</p>
+<p>Parameter p returns information about the mouse position at
+the mouse event. The type of information returned depends on the
+area type for which the event was generated:
+<ul>
+<li>spherical area:
+<ul>
+<li>p.x is distance of mouse event from area centre</li>
+<li>p.y and p.z not used</li>
+</ul>
+</li>
+<li>quadrilateral area:
+<ul>
+<li>p.x and p.y are the area-relative mouse x and y positions (top
+    left = (0,0), bottom right = (1,1)</li>
+<li>p.z not used</li>
+</ul>
+</li>
+</p>
+</ul>
+</div>
+
+
+<div class="func"><a name="clbk_VCredrawevent"></a>
+<h3>clbk_VCredrawevent(id, event, surf)</h3>
+<p>Mouse event notification for 2-D panel views.</p>
+<h4>Parameters:</h4>
+<table>
+<tr><td>id&nbsp;(number):</td><td>area identifier</td></tr>
+<tr><td>event&nbsp;(number):</td><td>redraw event</td></tr>
+<tr><td>surf&nbsp;(handle):</td><td>associated texture handle</td></tr>
+</table>
+<h4>Return value</h4>
+<p>The function should return true if it processes the event, false otherwise.</p>
+<h4>Notes</h4>
+<p>To allow an area of the virtual cockpit to be redrawn
+ dynamically, the area must be registered with oapi.VC_register_area
+ during clbk_loadVC, using a redraw mode other than
+ PANEL_REDRAW.NEVER.</p>
+<p>When registering the area with  oapi.VC_register_area, you must
+ also provide a handle to the texture onto which the redrawn
+ surface is mapped. This texture must be part of the virtual
+ cockpit mesh, and it must be listed in the mesh file with the 'D'
+ ("dynamic") flag (see 3DModel.pdf).</p>
+<p>"Redrawing" an area is not limited to dynamically updating
+ textures. It may also involve mesh transforms (e.g. to animate
+ levers and switches rendered in 3D).</p>
+</div>
+
+
+
+<div class="func"><a name="clbk_navprocess"></a>
+<h3>clbk_navprocess(mode)</h3>
+<p>Mouse event notification for 2-D panel views.</p>
+<h4>Parameters:</h4>
+<table>
+<tr><td>mode&nbsp;(number):</td><td>Bit-flags for active nav programs</td></tr>
+</table>
+<h4>Return value</h4>
+<p>Modified nav programme bitflags (see notes).</p>
+<h4>Notes</h4>
+<p>This method is called at each frame while at least one nav programme
+is active. It is only called once per frame even if multiple programmes are
+active. Check the mode parameter against NAVMODE constants to see which programs are active.</p>
+<p>The module is free to process all, a subset, or none of the active
+programmes. The return value indicates to Orbiter which of the programmes
+have been processed: clear the flags for all processed programmes, and leave
+the flags for any skipped programmes.</p>
+<p>You cannot set any flags in the return value that were not set already
+in the input parameter. Activating/deactivating navmodes should be done via
+set_navmode or toggle_navmode</p>
+</div>
 
 </div>
 </body>

@@ -5,6 +5,31 @@
 
 #include "Interpreter.h"
 #include "VesselAPI.h"
+#include "MfdApi.h"
+
+
+/***
+VesselMFD: Class instantiated for MFDs declared inside Lua Vessel modules
+*/
+class VesselMFD : public MFD2
+{
+public:
+	VesselMFD(DWORD w, DWORD h, VESSEL* vessel, VesselMFDContext* ctx);
+	virtual ~VesselMFD() {}
+	bool ConsumeButton(int bt, int event) override;
+	bool ConsumeKeyBuffered(DWORD key) override;
+	bool ConsumeKeyImmediate(char* kstate) override;
+	char* ButtonLabel(int bt) override;
+	int ButtonMenu(const MFDBUTTONMENU** menu) const override;
+	bool Update(oapi::Sketchpad* skp) override;
+	void StoreStatus() const override;
+	void RecallStatus() override;
+	void WriteStatus(FILEHANDLE scn) const override;
+	void ReadStatus(FILEHANDLE scn) override;
+
+	lua_State* L;
+	int mfd_ref;
+};
 
 /***
 Vessel class: Lua access to VESSEL objects
@@ -180,6 +205,7 @@ void Interpreter::lua_push_vessel_status (lua_State *L, const VESSELSTATUS2 &vs)
 	lua_setfield(L, -2, "dockinfo");
 }
 
+
 void Interpreter::LoadVesselAPI ()
 {
 	static const struct luaL_reg vesselAcc[] = {
@@ -194,6 +220,9 @@ void Interpreter::LoadVesselAPI ()
 		{"version", v_version},
 		{"get_handle", v_get_handle},
 		{"send_bufferedkey", v_send_bufferedkey},
+
+		{"register_mfdmode", v_register_mfdmode},
+		{"unregister_mfdmode", v_unregister_mfdmode},
 
 		// General vessel properties
 		{"get_name", v_get_name},
@@ -229,6 +258,7 @@ void Interpreter::LoadVesselAPI ()
 		{"get_relativevel", v_get_relativevel},
 		{"get_rotationmatrix", v_get_rotationmatrix},
 		{"get_status", v_get_status},
+		{"get_rawstatus", v_get_rawstatus},
 		{"defset_status", v_defset_status},
 		{"get_angvel", v_get_angvel},
 		{"set_angvel", v_set_angvel},
@@ -270,6 +300,7 @@ void Interpreter::LoadVesselAPI ()
 		{"edit_airfoil", v_edit_airfoil},
 		{"del_airfoil", v_del_airfoil},
 		{"create_controlsurface", v_create_controlsurface},
+		{"del_controlsurface", v_del_controlsurface},
 		{"get_adcmode", v_get_adcmode},
 		{"set_adcmode", v_set_adcmode},
 		{"get_adclevel", v_get_adclevel},
@@ -303,7 +334,8 @@ void Interpreter::LoadVesselAPI ()
 		{"get_groundcontact", v_get_groundcontact},
 
 		// fuel management
-		{"create_propellantresource", v_create_propellantresource},
+		{"create_propellantresource", v_create_propellantresource },
+		{"set_default_propellantresource", v_set_default_propellantresource },
 		{"del_propellantresource", v_del_propellantresource},
 		{"clear_propellantresources", v_clear_propellantresources},
 		{"get_propellantcount", v_get_propellantcount},
@@ -353,6 +385,8 @@ void Interpreter::LoadVesselAPI ()
 		{"set_thrustergrouplevel", v_set_thrustergrouplevel},
 		{"inc_thrustergrouplevel", v_inc_thrustergrouplevel},
 		{"inc_thrustergrouplevel_singlestep", v_inc_thrustergrouplevel_singlestep},
+		{"get_manualcontrollevel", v_get_manualcontrollevel },
+			
 
 		// Reaction control system
 		{"get_navmode", v_get_navmode},
@@ -370,7 +404,8 @@ void Interpreter::LoadVesselAPI ()
 		{"get_dockhandle", v_get_dockhandle},
 		{"get_dockstatus", v_get_dockstatus},
 		{"dockingstatus", v_dockingstatus},
-		{"undock", v_undock},
+		{"undock", v_undock },
+		{"dock", v_dock },
 
 		// Attachment management
 		{"create_attachment", v_create_attachment},
@@ -403,7 +438,8 @@ void Interpreter::LoadVesselAPI ()
 		{"add_exhaust", v_add_exhaust},
 		{"del_exhaust", v_del_exhaust},
 		{"get_exhaustcount", v_get_exhaustcount},
-		{"add_exhauststream", v_add_exhauststream},
+		{"add_exhauststream", v_add_exhauststream },
+		{"add_reentrystream", v_add_reentrystream },
 
 		// Nosewheel-steering and wheel brakes
 		{"set_nosewheelsteering", v_set_nosewheelsteering},
@@ -442,7 +478,9 @@ void Interpreter::LoadVesselAPI ()
 		{"get_meshcount", v_get_meshcount},
 		{"shift_mesh", v_shift_mesh},
 		{"shift_meshes", v_shift_meshes},
-		{"get_meshoffset", v_get_meshoffset},
+		{"get_meshoffset", v_get_meshoffset },
+		{"get_devmesh", v_get_devmesh },
+		{"set_mesh_visibility_mode", v_set_mesh_visibility_mode },
 
 		// animation methods
 		{"create_animation", v_create_animation},
@@ -477,11 +515,14 @@ void Interpreter::LoadVesselAPI ()
         {"get_smi", v_get_smi},
         {"get_argper", v_get_argper},
         {"get_pedist", v_get_pedist},
-        {"get_apdist", v_get_apdist},
+		{"get_apdist", v_get_apdist},
+		{"get_equpos", v_get_equpos},
         {"get_dragvector", v_get_dragvector},
         {"get_forcevector", v_get_forcevector},
         {"get_torquevector", v_get_torquevector},
         {"add_force", v_add_force},
+        {"create_variabledragelement", v_create_variabledragelement },
+        {"clear_variabledragelements", v_clear_variabledragelements },
         {"is_orbitstabilised", v_is_orbitstabilised},
         {"is_nonsphericalgravityenabled", v_is_nonsphericalgravityenabled},
         {"toggle_navmode", v_toggle_navmode},
@@ -489,13 +530,26 @@ void Interpreter::LoadVesselAPI ()
         {"set_hoverholdaltitude", v_set_hoverholdaltitude},
         {"toggle_RCSmode", v_toggle_RCSmode},
         {"get_COG_elev", v_get_COG_elev},
+		{"parse_scenario_line_ex", v_parse_scenario_line_ex},
 
+		// Recording
+		{"record_event", v_record_event},
+		{"playback", v_playback},
+
+		// Panels
+		{"register_panelarea", v_register_panelarea},
+		{"register_panelmfdgeometry", v_register_panelmfdgeometry},
+		{"set_panelscaling", v_set_panelscaling},
+		{"set_panelbackground", v_set_panelbackground},
+			
 		{NULL, NULL}
 	};
 	luaL_newmetatable (L, "VESSEL.vtable");
+
 	lua_pushstring (L, "__index");
 	lua_pushvalue (L, -2); // push metatable
 	lua_settable (L, -3);  // metatable.__index = metatable
+	
 	luaL_openlib (L, NULL, vesselLib, 0);
 	luaL_openlib (L, "vessel", vesselAcc, 0);
 
@@ -504,6 +558,14 @@ void Interpreter::LoadVesselAPI ()
 	luaL_getmetatable (L, "VESSEL.vtable");  // push metatable
 	lua_setmetatable (L, -2);               // set metatable for user data
 	lua_setglobal (L, "focus");
+
+	lua_createtable(L, 0, 4);
+	lua_pushnumber(L, OAPI_MSG_MFD_OPENED);     lua_setfield(L, -2, "MFD_OPENED");
+	lua_pushnumber(L, OAPI_MSG_MFD_CLOSED);     lua_setfield(L, -2, "MFD_CLOSED");
+	lua_pushnumber(L, OAPI_MSG_MFD_UPDATE);     lua_setfield(L, -2, "MFD_UPDATE");
+	lua_pushnumber(L, OAPI_MSG_MFD_OPENEDEX);   lua_setfield(L, -2, "MFD_OPENEDEX");
+	lua_setglobal(L, "OAPI_MSG");
+
 
 	// store thruster group identifiers in global "THGROUP" table
 	// C identifiers "THGROUP_xxx" become table entries "THGROUP.xxx"
@@ -543,6 +605,18 @@ void Interpreter::LoadVesselAPI ()
 	lua_pushnumber (L, RCS_LIN);               lua_setfield (L, -2, "LIN");
 	lua_setglobal (L, "RCSMODE");
 
+
+	lua_createtable(L, 0, 8);
+	lua_pushnumber(L, MANCTRL_ATTMODE);              lua_setfield(L, -2, "ATTMODE");
+	lua_pushnumber(L, MANCTRL_REVMODE);              lua_setfield(L, -2, "REVMODE");
+	lua_pushnumber(L, MANCTRL_ROTMODE);              lua_setfield(L, -2, "ROTMODE");
+	lua_pushnumber(L, MANCTRL_LINMODE);              lua_setfield(L, -2, "LINMODE");
+	lua_pushnumber(L, MANCTRL_ANYMODE);              lua_setfield(L, -2, "ANYMODE");
+	lua_pushnumber(L, MANCTRL_KEYBOARD);             lua_setfield(L, -2, "KEYBOARD");
+	lua_pushnumber(L, MANCTRL_JOYSTICK);             lua_setfield(L, -2, "JOYSTICK");
+	lua_pushnumber(L, MANCTRL_ANYDEVICE);            lua_setfield(L, -2, "ANYDEVICE");
+	lua_setglobal(L, "MANCTRL");
+
 	// store aerodynamic control surface mode identifiers in global ADCMODE table
 	lua_createtable (L, 0, 5);
 	lua_pushnumber (L, 0);                     lua_setfield (L, -2, "OFF");
@@ -576,6 +650,75 @@ void Interpreter::LoadVesselAPI ()
 	lua_pushnumber (L, LIFT_VERTICAL);         lua_setfield (L, -2, "VERTICAL");
 	lua_pushnumber (L, LIFT_HORIZONTAL);       lua_setfield (L, -2, "HORIZONTAL");
 	lua_setglobal (L, "LIFT");
+
+	// store HUD modes in global HUDMODE table
+	lua_createtable(L, 0, 4);
+	lua_pushnumber(L, HUD_NONE);               lua_setfield(L, -2, "NONE");
+	lua_pushnumber(L, HUD_ORBIT);              lua_setfield(L, -2, "ORBIT");
+	lua_pushnumber(L, HUD_SURFACE);            lua_setfield(L, -2, "SURFACE");
+	lua_pushnumber(L, HUD_DOCKING);            lua_setfield(L, -2, "DOCKING");
+	lua_setglobal(L, "HUDMODE");
+
+	// store MFD modes in global MFDMODE table
+	lua_createtable(L, 0, 13);
+	lua_pushnumber(L, MFD_REFRESHBUTTONS);     lua_setfield(L, -2, "REFRESHBUTTONS");
+	lua_pushnumber(L, MFD_NONE);               lua_setfield(L, -2, "NONE");
+	lua_pushnumber(L, MFD_ORBIT);              lua_setfield(L, -2, "ORBIT");
+	lua_pushnumber(L, MFD_SURFACE);            lua_setfield(L, -2, "SURFACE");
+	lua_pushnumber(L, MFD_MAP);                lua_setfield(L, -2, "MAP");
+	lua_pushnumber(L, MFD_HSI);                lua_setfield(L, -2, "HSI");
+	lua_pushnumber(L, MFD_LANDING);            lua_setfield(L, -2, "LANDING");
+	lua_pushnumber(L, MFD_DOCKING);            lua_setfield(L, -2, "DOCKING");
+	lua_pushnumber(L, MFD_OPLANEALIGN);        lua_setfield(L, -2, "OPLANEALIGN");
+	lua_pushnumber(L, MFD_OSYNC);              lua_setfield(L, -2, "OSYNC");
+	lua_pushnumber(L, MFD_TRANSFER);           lua_setfield(L, -2, "TRANSFER");
+	lua_pushnumber(L, MFD_COMMS);              lua_setfield(L, -2, "COMMS");
+	lua_pushnumber(L, MFD_USERTYPE);           lua_setfield(L, -2, "USERTYPE");
+	lua_setglobal(L, "MFDMODE");
+
+	// store MFD IDs in global MFDID table
+	lua_createtable(L, 0, 13);
+	lua_pushnumber(L, MFD_LEFT);               lua_setfield(L, -2, "LEFT");
+	lua_pushnumber(L, MFD_RIGHT);              lua_setfield(L, -2, "RIGHT");
+	lua_pushnumber(L, MFD_USER1);              lua_setfield(L, -2, "USER1");
+	lua_pushnumber(L, MFD_USER2);              lua_setfield(L, -2, "USER2");
+	lua_pushnumber(L, MFD_USER3);              lua_setfield(L, -2, "USER3");
+	lua_pushnumber(L, MFD_USER4);              lua_setfield(L, -2, "USER4");
+	lua_pushnumber(L, MFD_USER5);              lua_setfield(L, -2, "USER5");
+	lua_pushnumber(L, MFD_USER6);              lua_setfield(L, -2, "USER6");
+	lua_pushnumber(L, MFD_USER7);              lua_setfield(L, -2, "USER7");
+	lua_pushnumber(L, MFD_USER8);              lua_setfield(L, -2, "USER8");
+	lua_pushnumber(L, MFD_USER9);              lua_setfield(L, -2, "USER9");
+	lua_pushnumber(L, MFD_USER10);             lua_setfield(L, -2, "USER10");
+	lua_pushnumber(L, MAXMFD);                 lua_setfield(L, -2, "MAX");
+	lua_setglobal(L, "MFDID");
+
+
+	// store mesh visibility modes in global MESHVIS table
+	lua_createtable(L, 0, 6);
+	lua_pushnumber(L, MESHVIS_NEVER);           lua_setfield(L, -2, "NEVER");
+	lua_pushnumber(L, MESHVIS_EXTERNAL);        lua_setfield(L, -2, "EXTERNAL");
+	lua_pushnumber(L, MESHVIS_COCKPIT);         lua_setfield(L, -2, "COCKPIT");
+	lua_pushnumber(L, MESHVIS_EXTERNAL | MESHVIS_COCKPIT);  lua_setfield(L, -2, "ALWAYS");
+	lua_pushnumber(L, MESHVIS_VC);              lua_setfield(L, -2, "VC");
+	lua_pushnumber(L, MESHVIS_EXTPASS);         lua_setfield(L, -2, "EXTPASS");
+	lua_setglobal(L, "MESHVIS");
+
+
+	// store materian properties for oapiSetMaterialEx in MATPROP table
+	lua_createtable(L, 0, 10);
+	lua_pushnumber(L, MatProp::Diffuse);        lua_setfield(L, -2, "DIFFUSE");
+	lua_pushnumber(L, MatProp::Ambient);        lua_setfield(L, -2, "AMBIENT");
+	lua_pushnumber(L, MatProp::Specular);       lua_setfield(L, -2, "SPECULAR");
+	lua_pushnumber(L, MatProp::Light);          lua_setfield(L, -2, "LIGHT");
+	lua_pushnumber(L, MatProp::Emission);       lua_setfield(L, -2, "EMISSION");
+	lua_pushnumber(L, MatProp::Reflect);        lua_setfield(L, -2, "REFLECT");
+	lua_pushnumber(L, MatProp::Smooth);         lua_setfield(L, -2, "SMOOTH");
+	lua_pushnumber(L, MatProp::Metal);          lua_setfield(L, -2, "METAL");
+	lua_pushnumber(L, MatProp::Fresnel);        lua_setfield(L, -2, "FRESNEL");
+	lua_pushnumber(L, MatProp::SpecialFX);      lua_setfield(L, -2, "SPECIALFX");
+	lua_setglobal(L, "MATPROP");
+
 
 	// store vessel propagation modes in global PROP table
 	/***
@@ -633,13 +776,25 @@ void Interpreter::LoadVesselAPI ()
 	// predefined help contexts
 	lua_pushstring (L, "intro.htm"); lua_setfield (L, LUA_GLOBALSINDEX, "orbiter");
 	lua_pushstring (L, "script/ScriptRef.htm"); lua_setfield (L, LUA_GLOBALSINDEX, "api");
+
+	// Panels
+	lua_createtable(L, 0, 8);
+	lua_pushnumber (L, PANEL_ATTACH_BOTTOM   ); lua_setfield(L,-2, "ATTACH_BOTTOM"  );
+	lua_pushnumber (L, PANEL_ATTACH_TOP      ); lua_setfield(L,-2, "ATTACH_TOP"     );
+	lua_pushnumber (L, PANEL_ATTACH_LEFT     ); lua_setfield(L,-2, "ATTACH_LEFT"    );
+	lua_pushnumber (L, PANEL_ATTACH_RIGHT    ); lua_setfield(L,-2, "ATTACH_RIGHT"   );
+	lua_pushnumber (L, PANEL_MOVEOUT_BOTTOM  ); lua_setfield(L,-2, "MOVEOUT_BOTTOM" );
+	lua_pushnumber (L, PANEL_MOVEOUT_TOP     ); lua_setfield(L,-2, "MOVEOUT_TOP"    );
+	lua_pushnumber (L, PANEL_MOVEOUT_LEFT    ); lua_setfield(L,-2, "MOVEOUT_LEFT"   );
+	lua_pushnumber (L, PANEL_MOVEOUT_RIGHT   ); lua_setfield(L,-2, "MOVEOUT_RIGHT"  );
+	lua_setglobal (L, "PANEL");
+
 }
 
 /***
 General properties
 @section vessel_mtd_props
 */
-
 int Interpreter::v_version (lua_State *L)
 {
 	static const char *funcname = "version";
@@ -1562,11 +1717,11 @@ To be documented
 
 @function get_status
 */
-int Interpreter::v_get_status (lua_State *L)
+int Interpreter::v_get_status(lua_State* L)
 {
-	static const char *funcname = "get_status";
+	static const char* funcname = "get_status";
 	AssertMtdMinPrmCount(L, 1, funcname);
-	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
 
 	// For version 2 (or greater) the caller has to set version number as 1st parameter
 	DWORD version = (lua_gettop(L) >= 2) ? lua_tointeger(L, 2) : 2; // default to version 2
@@ -1574,14 +1729,14 @@ int Interpreter::v_get_status (lua_State *L)
 
 	if (version == 1)
 	{
-		VESSELSTATUS status = {0};
+		VESSELSTATUS status = { 0 };
 		v->GetStatus(status);
 		lua_push_vessel_status(L, status);
 		return 1;
 	}
 	else if (version == 2)
 	{
-		VESSELSTATUS2 status = {0};
+		VESSELSTATUS2 status = { 0 };
 		status.version = 2;
 		// check additional flags...(currently not implemented)
 		status.flag |= VS_FUELLIST | VS_THRUSTLIST | VS_DOCKINFOLIST;
@@ -1596,6 +1751,244 @@ int Interpreter::v_get_status (lua_State *L)
 		//if (status.dockinfo) delete[] status.dockinfo;
 		return 1;
 	}
+	return 0;
+}
+int Interpreter::v_get_rawstatus(lua_State* L)
+{
+	static const char* funcname = "get_status";
+	AssertMtdMinPrmCount(L, 1, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+
+	// For version 2 (or greater) the caller has to set version number as 1st parameter
+	DWORD version = (lua_gettop(L) >= 2) ? lua_tointeger(L, 2) : 2; // default to version 2
+	ASSERT_SYNTAX((version > 0 && version <= 2), "Invalid version");
+
+	if (version == 1)
+	{
+		VESSELSTATUS *status = (VESSELSTATUS *)lua_newuserdata(L, sizeof(VESSELSTATUS));
+		luaL_getmetatable(L, "VESSELSTATUS.table");   // push metatable
+		lua_setmetatable(L, -2);              // set metatable for annotation objects
+
+		v->GetStatus(*status);
+		lua_pushlightuserdata(L, status);
+		return 1;
+	}
+	else if (version == 2)
+	{
+		VESSELSTATUS2* status = (VESSELSTATUS2*)lua_newuserdata(L, sizeof(VESSELSTATUS2));
+		luaL_getmetatable(L, "VESSELSTATUS2.table");   // push metatable
+		lua_setmetatable(L, -2);              // set metatable for annotation objects
+		status->version = 2;
+		// check additional flags...(currently not implemented)
+		status->flag |= VS_FUELLIST | VS_THRUSTLIST | VS_DOCKINFOLIST;
+		//status.fuel = new VESSELSTATUS2::FUELSPEC[256]();
+
+		v->GetStatusEx(status);
+		lua_pushlightuserdata(L, status);
+
+		// Who frees these resources?
+		//if (status.fuel) delete[] status.fuel;
+		//if (status.thruster) delete[] status.thruster;
+		//if (status.dockinfo) delete[] status.dockinfo;
+		return 1;
+	}
+	return 0;
+}
+
+int Interpreter::vsget(lua_State* L)
+{
+	static const char* funcname = "vsget";
+	AssertMtdMinPrmCount(L, 1, funcname);
+	VESSELSTATUS* vs = (VESSELSTATUS*)lua_touserdata(L, 1);
+	lua_push_vessel_status(L, *vs);
+	return 1;
+}
+
+int Interpreter::vs2get(lua_State* L)
+{
+	static const char* funcname = "vs2get";
+	AssertMtdMinPrmCount(L, 1, funcname);
+	VESSELSTATUS2* vs = (VESSELSTATUS2*)lua_touserdata(L, 1);
+	lua_push_vessel_status(L, *vs);
+	return 1;
+}
+
+int Interpreter::vsset(lua_State* L)
+{
+	static const char* funcname = "vsset";
+	AssertMtdMinPrmCount(L, 2, funcname);
+	VESSELSTATUS* vs = (VESSELSTATUS*)lua_touserdata(L, 1);
+	// Extract known values from table
+	lua_getfield(L, 2, "rpos");
+
+	if (lua_isvector(L, -1)) vs->rpos = lua_tovector(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "rvel");
+	if (lua_isvector(L, -1)) vs->rvel = lua_tovector(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "vrot");
+	if (lua_isvector(L, -1)) vs->vrot = lua_tovector(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "arot");
+	if (lua_isvector(L, -1)) vs->arot = lua_tovector(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "fuel");
+	if (lua_isnumber(L, -1)) vs->fuel = lua_tonumber(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "eng_main");
+	if (lua_isnumber(L, -1)) vs->eng_main = lua_tonumber(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "eng_hovr");
+	if (lua_isnumber(L, -1)) vs->eng_hovr = lua_tonumber(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "rbody");
+	if (lua_islightuserdata(L, -1)) vs->rbody = lua_toObject(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "base");
+	if (lua_islightuserdata(L, -1)) vs->base = lua_toObject(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "port");
+	if (lua_isnumber(L, -1)) vs->port = lua_tointeger(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "status");
+	if (lua_isnumber(L, -1)) vs->status = lua_tointeger(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "vdata");
+	if (lua_isvector(L, -1)) vs->vdata[0] = lua_tovector(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "fdata");
+	if (lua_isnumber(L, -1)) vs->fdata[0] = lua_tonumber(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "flag");
+	if (lua_isnumber(L, -1)) vs->flag[0] = lua_tointeger(L, -1);
+	lua_pop(L, 1);
+	return 0;
+}
+
+int Interpreter::vs2set(lua_State* L)
+{
+	static const char* funcname = "vs2set";
+	AssertMtdMinPrmCount(L, 2, funcname);
+	VESSELSTATUS2* vs = (VESSELSTATUS2*)lua_touserdata(L, 1);
+
+	// Extract known values from table
+	lua_getfield(L, 2, "flags");
+	if (lua_isnumber(L, -1)) vs->flag = lua_tointeger(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "port");
+	if (lua_isnumber(L, -1)) vs->port = lua_tointeger(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "status");
+	if (lua_isnumber(L, -1)) vs->status = lua_tointeger(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "surf_lng");
+	if (lua_isnumber(L, -1)) vs->surf_lng = lua_tonumber(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "surf_lat");
+	if (lua_isnumber(L, -1)) vs->surf_lat = lua_tonumber(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "surf_hdg");
+	if (lua_isnumber(L, -1)) vs->surf_hdg = lua_tonumber(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "rpos");
+	if (lua_isvector(L, -1)) vs->rpos = lua_tovector(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "rvel");
+	if (lua_isvector(L, -1)) vs->rvel = lua_tovector(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "vrot");
+	if (lua_isvector(L, -1)) vs->vrot = lua_tovector(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "arot");
+	if (lua_isvector(L, -1)) vs->arot = lua_tovector(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "rbody");
+	if (lua_islightuserdata(L, -1)) vs->rbody = lua_toObject(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "base");
+	if (lua_islightuserdata(L, -1)) vs->base = lua_toObject(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "xpdr");
+	if (lua_isnumber(L, -1)) vs->xpdr = lua_tointeger(L, -1);
+	lua_pop(L, 1);
+
+	lua_getfield(L, 2, "fuel");
+	if (lua_istable(L, -1)) {
+		int n = lua_objlen(L, -1);
+		if (n) {
+			vs->fuel = new VESSELSTATUS2::FUELSPEC[n]();
+
+			lua_pushnil(L);
+			while (lua_next(L, -2)) {
+				// stack now contains: -1 => value; -2 => key; -3 => table (value is FUELSPEC)
+				if (lua_istable(L, -1)) // is_fuelspec() ?
+				{
+					size_t i = lua_tointeger(L, -2) - 1; //lua_next() does not always iteerate in order :(
+					lua_getfield(L, -1, "idx");
+					vs->fuel[i].idx = lua_tointeger(L, -1);
+					lua_pop(L, 1);
+					lua_getfield(L, -1, "level");
+					vs->fuel[i].level = lua_tonumber(L, -1);
+					lua_pop(L, 1);
+					vs->nfuel++;
+				}
+				lua_pop(L, 1);
+			}
+		}
+	}
+	lua_pop(L, 1);
+
+	lua_getfield(L, 2, "thruster");
+	if (lua_istable(L, -1)) {
+		int n = lua_objlen(L, -1);
+		if (n) {
+			vs->thruster = new VESSELSTATUS2::THRUSTSPEC[n]();
+			lua_pushnil(L);
+			while (lua_next(L, -2)) {
+				if (lua_istable(L, -1)) { // is_thrustspec()
+					size_t i = lua_tointeger(L, -2) - 1;
+					lua_getfield(L, -1, "idx");
+					vs->thruster[i].idx = lua_tointeger(L, -1);
+					lua_pop(L, 1);
+					lua_getfield(L, -1, "level");
+					vs->thruster[i].level = lua_tonumber(L, -1);
+					lua_pop(L, 1);
+					vs->nthruster++;
+				}
+				lua_pop(L, 1);
+			}
+		}
+	}
+	lua_pop(L, 1);
+
+	lua_getfield(L, 2, "dockinfo");
+	if (lua_istable(L, -1)) {
+		int n = lua_objlen(L, -1);
+		if (n) {
+			vs->dockinfo = new VESSELSTATUS2::DOCKINFOSPEC[n]();
+			lua_pushnil(L);
+			while (lua_next(L, -2)) {
+				if (lua_istable(L, -1)) { // is_dockinfospec()
+					size_t i = lua_tointeger(L, -2) - 1;
+					lua_getfield(L, -1, "idx");
+					vs->dockinfo[i].idx = lua_tointeger(L, -1);
+					lua_pop(L, 1);
+					lua_getfield(L, -1, "ridx");
+					vs->dockinfo[i].ridx = lua_tointeger(L, -1);
+					lua_pop(L, 1);
+					lua_getfield(L, -1, "rvessel");
+					vs->dockinfo[i].rvessel = lua_touserdata(L, -1);
+					lua_pop(L, 1);
+					vs->ndockinfo++;
+				}
+				lua_pop(L, 1);
+			}
+		}
+	}
+	lua_pop(L, 1);
+
+	
+
 	return 0;
 }
 
@@ -2204,6 +2597,7 @@ Returns osculating orbital elements and additional orbital parameters.
 The returned mean longitude parameter (L) refers to the the current epoch.
 
 @function get_elementsex
+@tparam[opt] objhandle to query
 @treturn table list of orbital elements (see @{types.ELEMENTS|Elements table})
 @treturn table list of additional orbital parameters (see @{types.ORBITPARAMS|Orbital parameters})
 @see vessel:get_gravityref, vessel:get_elements, vessel:set_elements
@@ -2215,7 +2609,13 @@ int Interpreter::v_get_elementsex (lua_State *L)
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	ELEMENTS el;
 	ORBITPARAM prm;
-	v->GetElements (0, el, &prm);
+	OBJHANDLE hObj = 0;
+
+	if (lua_gettop(L) >= 2) {
+		hObj = lua_toObject(L, 2);
+	}
+
+	v->GetElements (hObj, el, &prm);
 	lua_createtable (L, 0, 6);
 	lua_pushnumber (L, el.a);
 	lua_setfield (L, -2, "a");
@@ -2451,21 +2851,43 @@ The apoapsis distance is the largest radius of the orbit (see
    calculated. NULL indicates failure (no orbit information available)
 @see orbit, ELEMENTS, ORBITPARAM, get_pedist, get_argper, get_elements
 */
-int Interpreter::v_get_apdist (lua_State *L)
+int Interpreter::v_get_apdist(lua_State* L)
 {
-	static const char *funcname = "get_apdist";
+	static const char* funcname = "get_apdist";
 	AssertMtdMinPrmCount(L, 1, funcname);
-	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
 	double apdist;
 	OBJHANDLE refbody = v->GetApDist(apdist);
 	if (refbody) {
 		lua_pushnumber(L, apdist);
 		lua_pushlightuserdata(L, refbody);
-	} else {
+	}
+	else {
 		lua_pushnil(L);
 		lua_pushnil(L);
 	}
 	return 2;
+}
+
+int Interpreter::v_get_equpos(lua_State* L)
+{
+	static const char* funcname = "v_get_equpos";
+	AssertMtdMinPrmCount(L, 1, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	double longitude, latitude, radius;
+	OBJHANDLE h = v->GetEquPos(longitude, latitude, radius);
+	if(h) {
+		lua_createtable(L, 0, 3);
+		lua_pushnumber(L, longitude);
+		lua_setfield(L, -2, "lng");
+		lua_pushnumber(L, latitude);
+		lua_setfield(L, -2, "lat");
+		lua_pushnumber(L, radius);
+		lua_setfield(L, -2, "rad");
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
 }
 
 
@@ -2768,7 +3190,7 @@ int Interpreter::v_get_groundspeed (lua_State *L)
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetGroundspeed ());
-	GetInterpreter(L)->term_echo(L);
+//	GetInterpreter(L)->term_echo(L);
 	return 1;
 }
 
@@ -2927,7 +3349,7 @@ void AirfoilFunc (VESSEL *v, double aoa, double M, double Re,
 
 	AirfoilContext *ac = (AirfoilContext*)context;
 	lua_State *L = ac->L;                             // interpreter instance
-	lua_getfield (L, LUA_GLOBALSINDEX, ac->funcname); // the callback function
+	lua_rawgeti(L, LUA_REGISTRYINDEX, ac->funcref);   // push the callback function
 
 	// push callback arguments
 	lua_pushlightuserdata (L, v->GetHandle());  // vessel handle
@@ -3008,13 +3430,24 @@ int Interpreter::v_create_airfoil (lua_State *L)
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	AIRFOIL_ORIENTATION ao = (AIRFOIL_ORIENTATION)(int)(luamtd_tointeger_safe(L, 2, funcname));
 	VECTOR3 ref = luamtd_tovector_safe(L, 3, funcname);
-	const char *fname = luamtd_tostring_safe(L, 4, funcname);
+	int funcref;
+	if (lua_isstring(L, 4)) {
+		const char* fname = luamtd_tostring_safe(L, 4, funcname);
+		lua_getfield(L, LUA_GLOBALSINDEX, fname);
+		funcref = luaL_ref(L, LUA_REGISTRYINDEX);
+	} else if (lua_isfunction(L, 4)) {
+		lua_pushvalue(L, 4);
+		funcref = luaL_ref(L, LUA_REGISTRYINDEX);
+	} else {
+		return luaL_error(L, "Invalid callback parameter, string or function expected");
+	}
 	double c = luamtd_tonumber_safe(L, 5, funcname);
 	double S = luamtd_tonumber_safe(L, 6, funcname);
 	double A = luamtd_tonumber_safe(L, 7, funcname);
 	AirfoilContext *ac = new AirfoilContext;
 	ac->L = L;
-	strncpy (ac->funcname, fname, 127);
+	ac->funcref = funcref;
+
 	AIRFOILHANDLE ha = v->CreateAirfoil3 (ao, ref, AirfoilFunc, ac, c, S, A);
 	lua_pushlightuserdata (L, ha);
 	return 1;
@@ -3031,15 +3464,32 @@ int Interpreter::v_edit_airfoil (lua_State *L)
 	AIRFOILHANDLE hAirfoil = (AIRFOILHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
 	DWORD flag = luamtd_tointeger_safe(L, 3, funcname);
 	VECTOR3 ref = luamtd_tovector_safe(L, 4, funcname);
-	const char *fname = luamtd_tostring_safe(L, 5, funcname);
 	double c = luamtd_tonumber_safe(L, 6, funcname),
 	       S = luamtd_tonumber_safe(L, 7, funcname),
 	       A = luamtd_tonumber_safe(L, 8, funcname);
 
-	AirfoilContext *ac;
-	if (v->GetAirfoilParam(hAirfoil, NULL, NULL, (void**)&ac, NULL, NULL, NULL)) {
-		ac->L = L;
-		strncpy(ac->funcname, fname, 127);
+	if (flag & 0x02) { // only update the context if we want to change the callback
+		AirfoilContext* ac;
+		if (v->GetAirfoilParam(hAirfoil, NULL, NULL, (void**)&ac, NULL, NULL, NULL)) {
+			int funcref;
+			if (lua_isstring(L, 5)) {
+				const char* fname = luamtd_tostring_safe(L, 5, funcname);
+				lua_getfield(L, LUA_GLOBALSINDEX, fname);
+				funcref = luaL_ref(L, LUA_REGISTRYINDEX);
+			}
+			else if (lua_isfunction(L, 5)) {
+				lua_pushvalue(L, 5);
+				funcref = luaL_ref(L, LUA_REGISTRYINDEX);
+			}
+			else {
+				term_strout(L, "Invalid callback parameter in edit_airfoil, string or function expected", true);
+				return 0;
+			}
+
+			ac->L = L;
+			luaL_unref(L, LUA_REGISTRYINDEX, ac->funcref);
+			ac->funcref = funcref;
+		}
 	}
 
 	v->EditAirfoil(hAirfoil, flag, ref, (AirfoilCoeffFunc)AirfoilFunc, c, S, A);
@@ -3065,7 +3515,10 @@ int Interpreter::v_del_airfoil (lua_State *L)
 	AIRFOILHANDLE ha = (AIRFOILHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
 	AirfoilContext *ac;
 	if (v->GetAirfoilParam (ha, 0, 0, (void**)&ac, 0, 0, 0)) {
-		if (ac) delete ac; // delete the context buffer before deleting the airfoil
+		if (ac) {
+			luaL_unref(L, LUA_REGISTRYINDEX, ac->funcref);
+			delete ac; // delete the context buffer before deleting the airfoil
+		}
 	}
 	bool ok = v->DelAirfoil (ha);
 	lua_pushboolean (L, ok?1:0);
@@ -3136,6 +3589,17 @@ int Interpreter::v_create_controlsurface (lua_State *L)
 	}
 	CTRLSURFHANDLE hctrl = v->CreateControlSurface3 (type, area, dCl, ref, axis, delay, anim);
 	lua_pushlightuserdata (L, hctrl);
+	return 1;
+}
+
+int Interpreter::v_del_controlsurface (lua_State *L)
+{
+	static const char *funcname = "del_controlsurface";
+	AssertMtdMinPrmCount(L, 2, funcname);
+	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
+	CTRLSURFHANDLE hCtrl = (CTRLSURFHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
+	bool ret = v->DelControlSurface(hCtrl);
+	lua_pushboolean(L, ret);
 	return 1;
 }
 
@@ -3311,7 +3775,7 @@ int Interpreter::v_set_cw (lua_State *L)
 	static const char *funcname = "set_cw";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	VECTOR3 cw = luamtd_tovector_safe(L, 2, funcname);
+	VECTOR3 cw = lua_tovector(L, 2);
 	lua_getfield(L, 2, "zn");
 	double zn = lua_tonumber(L,-1);
 	v->SetCW (cw.z, zn, cw.x, cw.y);
@@ -3845,6 +4309,29 @@ int Interpreter::v_add_force (lua_State *L)
 	return 0;
 }
 
+int Interpreter::v_create_variabledragelement(lua_State* L)
+{
+	static const char* funcname = "create_variabledragelement";
+	AssertMtdMinPrmCount(L, 3, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	double factor = lua_tonumber(L, 2);
+	VECTOR3 ref = lua_tovector(L, 3);
+	lua_pushnumberref(L);
+	double* ptr = (double*)lua_touserdata(L, -1);
+	*ptr = 0.0;
+	v->CreateVariableDragElement((const double *)ptr, factor, ref);
+	return 1;
+}
+
+int Interpreter::v_clear_variabledragelements(lua_State* L)
+{
+	static const char* funcname = "clear_variabledragelements";
+	AssertMtdMinPrmCount(L, 1, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	// numberrefs allocated in v_create_variabledragelement should be handled by Lua's GC when we stop referencing them
+	v->ClearVariableDragElements();
+	return 0;
+}
 
 /***
 Fuel management
@@ -3905,15 +4392,27 @@ to a new fuel resource.
 @tparam handle hProp propellant resource handle
 @see vessel:create_propellantresource, vessel:clear_propellantresources
 */
-int Interpreter::v_del_propellantresource (lua_State *L)
+int Interpreter::v_del_propellantresource(lua_State* L)
 {
-	static const char *funcname = "del_propellantresource";
+	static const char* funcname = "del_propellantresource";
 	AssertMtdMinPrmCount(L, 2, funcname);
-	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
 	PROPELLANT_HANDLE hPrp = (PROPELLANT_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
-	v->DelPropellantResource (hPrp);
+	v->DelPropellantResource(hPrp);
 	return 0;
 }
+
+int Interpreter::v_set_default_propellantresource(lua_State* L)
+{
+	static const char* funcname = "set_default_propellantresource";
+	AssertMtdMinPrmCount(L, 2, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	PROPELLANT_HANDLE hPrp = (PROPELLANT_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
+	v->SetDefaultPropellantResource(hPrp);
+	return 0;
+}
+
+
 
 /***
 Removes all propellant resources for the vessel.
@@ -5096,6 +5595,23 @@ int Interpreter::v_inc_thrustergrouplevel_singlestep (lua_State *L)
 	return 0;
 }
 
+int Interpreter::v_get_manualcontrollevel(lua_State* L) {
+	static const char* funcname = "get_manualcontrollevel";
+	AssertMtdMinPrmCount(L, 3, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	THGROUP_TYPE thgt = (THGROUP_TYPE)lua_tointeger(L, 2);
+	int mode = 0;
+	if(lua_gettop(L)>=3)
+		mode = luaL_checkinteger(L, 3);
+	int device = 2;
+	if(lua_gettop(L)>=4)
+		luaL_checkinteger(L, 4);
+
+	double lvl = v->GetManualControlLevel(thgt, mode, device);
+	lua_pushnumber(L, lvl);
+	return 1;
+}
+
 
 /***
 Reaction control system
@@ -5456,13 +5972,26 @@ simultaneously from all docking ports.
 @function undock
 @tparam int idx docking port index (0 &le; idx &lt; @{get_dockcount}, or -1)
 */
-int Interpreter::v_undock (lua_State *L)
+int Interpreter::v_undock(lua_State* L)
 {
-	static const char *funcname = "undock";
+	static const char* funcname = "undock";
 	AssertMtdMinPrmCount(L, 2, funcname);
-	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
 	UINT idx = (UINT)luamtd_tointeger_safe(L, 2, funcname);
-	v->Undock (idx);
+	v->Undock(idx);
+	return 0;
+}
+
+int Interpreter::v_dock(lua_State* L)
+{
+	static const char* funcname = "undock";
+	AssertMtdMinPrmCount(L, 2, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	OBJHANDLE target = (OBJHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
+	UINT n = (UINT)luamtd_tointeger_safe(L, 3, funcname);
+	UINT tgtn = (UINT)luamtd_tointeger_safe(L, 4, funcname);
+	UINT mode = (UINT)luamtd_tointeger_safe(L, 5, funcname);
+	v->Dock(target, n, tgtn, mode);
 	return 0;
 }
 
@@ -5579,6 +6108,7 @@ orthogonal.
 @param rot (<i><b>@{types.vector|vector}</b></i>) longitudinal alignment vector in vessel coordinates
 @see vessel:create_attachment, vessel:get_attachmentparams, vessel:get_attachmenthandle
 */
+#include <cassert>
 int Interpreter::v_set_attachmentparams (lua_State *L)
 {
 	static const char *funcname = "set_attachmentparams";
@@ -6465,12 +6995,12 @@ int Interpreter::v_add_mesh (lua_State *L)
 		ofs = luamtd_tovector_safe(L, 3, funcname);
 		pofs = &ofs;
 	}
-	AssertMtdPrmType(L, 2, PRMTP_STRING | PRMTP_LIGHTUSERDATA, funcname);
+	AssertMtdPrmType(L, 2, PRMTP_STRING | PRMTP_USERDATA, funcname);
 	if (lua_isstring(L, 2)) {
 		const char *str = lua_tostring(L,2);
 		midx = v->AddMesh (str, pofs);
 	} else {
-		MESHHANDLE hMesh = (MESHHANDLE)lua_touserdata(L, 2);
+		MESHHANDLE hMesh = lua_tomeshhandle(L, 2);
 		midx = v->AddMesh (hMesh, pofs);
 	}
 	lua_pushnumber (L, midx);
@@ -6516,12 +7046,12 @@ int Interpreter::v_insert_mesh (lua_State *L)
 		ofs = luamtd_tovector_safe(L, 4, funcname);
 		pofs = &ofs;
 	}
-	AssertMtdPrmType(L, 2, PRMTP_STRING | PRMTP_LIGHTUSERDATA, funcname);
+	AssertMtdPrmType(L, 2, PRMTP_STRING | PRMTP_USERDATA, funcname);
 	if (lua_isstring(L, 2)) {
 		const char *str = lua_tostring(L,2);
 		midx = v->InsertMesh (str, idx, pofs);
 	} else {
-		MESHHANDLE hMesh = (MESHHANDLE)lua_touserdata(L,2);
+		MESHHANDLE hMesh = lua_tomeshhandle(L,2);
 		midx = v->InsertMesh (hMesh, idx, pofs);
 	}
 	lua_pushnumber (L, midx);
@@ -6669,17 +7199,41 @@ Returns the mesh offset in the vessel frame.
 @return (<i><b>@{types.vector|vector}</b></i>) mesh offset [<b>m</b>], or _nil_ if index out of range
 @see vessel:add_mesh, vessel:insert_mesh, vessel:shift_mesh, vessel:shift_meshes
 */
-int Interpreter::v_get_meshoffset (lua_State *L)
+int Interpreter::v_get_meshoffset(lua_State* L)
 {
-	static const char *funcname = "get_meshoffset";
+	static const char* funcname = "get_meshoffset";
 	AssertMtdMinPrmCount(L, 2, funcname);
-	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
 	UINT idx = (UINT)luamtd_tointeger_safe(L, 2, funcname);
 	VECTOR3 ofs;
-	bool ok = v->GetMeshOffset (idx, ofs);
-	if (ok) lua_pushvector (L, ofs);
-	else lua_pushnil (L);
+	bool ok = v->GetMeshOffset(idx, ofs);
+	if (ok) lua_pushvector(L, ofs);
+	else lua_pushnil(L);
 	return 1;
+}
+
+int Interpreter::v_get_devmesh(lua_State* L)
+{
+	static const char* funcname = "v_get_devmesh";
+	AssertMtdMinPrmCount(L, 3, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	VISHANDLE h = (VISHANDLE)lua_tolightuserdata_safe(L, 2, funcname);
+	UINT idx = (UINT)luamtd_tointeger_safe(L, 3, funcname);
+	DEVMESHHANDLE hDM = v->GetDevMesh(h, idx);
+	if (hDM) lua_pushdevmeshhandle(L, hDM);
+	else lua_pushnil(L);
+	return 1;
+}
+
+int Interpreter::v_set_mesh_visibility_mode(lua_State* L)
+{
+	static const char* funcname = "v_set_mesh_visibility_mode";
+	AssertMtdMinPrmCount(L, 3, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	UINT idx = (UINT)luamtd_tointeger_safe(L, 2, funcname);
+	UINT mode = (UINT)luamtd_tointeger_safe(L, 3, funcname);
+	v->SetMeshVisibilityMode(idx, mode);
+	return 0;
 }
 
 
@@ -7222,6 +7776,165 @@ int Interpreter::v_local2rel (lua_State *L)
 	return 1;
 }
 
+/***
+Pass a line read from a scenario file to Orbiter for default processing.
+
+@function v_parse_scenario_line_ex
+@tparam line string obtain via oapi_readscenario_nextline
+@tparam status status obtained from the clbkLoadStateEx callback
+*/
+int Interpreter::v_parse_scenario_line_ex(lua_State* L)
+{
+	static const char* funcname = "parse_scenario_line_ex";
+	AssertMtdMinPrmCount(L, 3, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	const char* line = lua_tostring_safe(L, 2, funcname);
+	void* status = lua_touserdata(L, 3);
+	v->ParseScenarioLineEx(const_cast<char*>(line), status);
+	return 0;
+}
+
+
+int Interpreter::v_record_event(lua_State* L)
+{
+	static const char* funcname = "record_event";
+	AssertMtdMinPrmCount(L, 3, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	const char* event_type = lua_tostring_safe(L, 2, funcname);
+	const char* event = lua_tostring_safe(L, 3, funcname);
+	v->RecordEvent(event_type, event);
+	return 0;
+}
+
+int Interpreter::v_playback(lua_State* L)
+{
+	static const char* funcname = "playback";
+	AssertMtdMinPrmCount(L, 1, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	bool pb = v->Playback();
+	lua_pushboolean(L, pb);
+	return 1;
+}
+
+int Interpreter::v_set_panelscaling(lua_State* L)
+{
+	static const char* funcname = "set_panelscaling";
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	if (v->Version() < 2) {
+		lua_pushnil(L);
+		lua_pushstring(L, "Invalid vessel version in set_panelscaling");
+		return 2;
+	}
+	VESSEL3* v3 = (VESSEL3*)v;
+
+	PANELHANDLE hPanel = lua_touserdata(L, 2);
+	double defscale = luaL_checknumber(L, 3);
+	double extscale = luaL_checknumber(L, 4);
+	
+	v3->SetPanelScaling(hPanel, defscale, extscale);
+	return 0;
+}
+
+int Interpreter::v_set_panelbackground(lua_State* L)
+{
+	static const char* funcname = "set_panelbackground";
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	if (v->Version() < 2) {
+		lua_pushnil(L);
+		lua_pushstring(L, "Invalid vessel version in set_panelbackground");
+		return 2;
+	}
+	PANELHANDLE hPanel = lua_touserdata(L, 2);
+	SURFHANDLE *hSurf = NULL;  //FIXME: implement textures
+	int nsurf = 0;
+	if(!lua_isnil(L, 3)) {
+		luaL_error(L, "FIXME: texture not supported in set_panelbackground");
+	}
+	
+	MESHHANDLE hMesh = lua_tomeshhandle(L, 4);
+	DWORD width = luaL_checkinteger(L, 5);
+	DWORD height = luaL_checkinteger(L, 6);
+	DWORD baseline =  luaL_checkinteger(L, 7);
+	DWORD scrollflag =  luaL_checkinteger(L, 8);
+	VESSEL3* v3 = (VESSEL3*)v;
+	v3->SetPanelBackground(hPanel, hSurf, nsurf, hMesh, width, height, baseline, scrollflag);
+	return 0;
+}
+
+int Interpreter::v_register_panelarea(lua_State* L)
+{
+	static const char* funcname = "register_panelarea";
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+		if (v->Version() < 3) {
+		lua_pushnil(L);
+		lua_pushstring(L, "Invalid vessel version in register_panelarea");
+		return 2;
+	}
+	VESSEL4* v4 = (VESSEL4*)v;
+
+	PANELHANDLE hPanel = lua_touserdata(L, 2);
+	int id = luaL_checkinteger(L, 3);
+	RECT pos = lua_torect(L, 4);
+
+	if(lua_istable(L, 5)) {
+		//int RegisterPanelArea (PANELHANDLE hPanel, int id, const RECT &pos, const RECT &texpos, int draw_event, int mouse_event, int bkmode);
+		RECT texpos = lua_torect(L, 5);
+		int draw_event = luaL_checkinteger(L, 6);
+		int mouse_event = luaL_checkinteger(L, 7);
+		int bkmode = luaL_checkinteger(L, 8);
+		v4->RegisterPanelArea (hPanel, id, pos, texpos, draw_event, mouse_event, bkmode);
+	} else {
+		if(lua_istable(L, 6)) {
+			//int RegisterPanelArea (PANELHANDLE hPanel, int id, const RECT &pos, int texidx, const RECT &texpos, int draw_event, int mouse_event, int bkmode);
+			int texidx = luaL_checkinteger(L, 5);
+			RECT texpos = lua_torect(L, 6);
+			int draw_event = luaL_checkinteger(L, 7);
+			int mouse_event = luaL_checkinteger(L, 8);
+			int bkmode = luaL_checkinteger(L, 9);
+			v4->RegisterPanelArea(hPanel, id, pos, texidx, texpos, draw_event, mouse_event, bkmode);
+		} else {
+			//int RegisterPanelArea (PANELHANDLE hPanel, int id, const RECT &pos, int draw_event, int mouse_event, SURFHANDLE surf = NULL, void *context = NULL);
+			int draw_event = luaL_checkinteger(L, 5);
+			int mouse_event = luaL_checkinteger(L, 6);
+
+			SURFHANDLE surf = NULL;
+			if(lua_gettop(L) >= 7) {
+				surf = lua_touserdata(L, 7);
+			}
+			
+			void *context = NULL;
+			if(lua_gettop(L) >= 8) {
+				lua_pushvalue(L, 8);
+				context = (void *)(ptrdiff_t)(luaL_ref(L, LUA_REGISTRYINDEX));
+			}
+			v4->RegisterPanelArea(hPanel, id, pos, draw_event, mouse_event, surf, context);
+		}
+	}
+
+
+	lua_pushnumber(L, 0);
+	return 1;
+}
+
+int Interpreter::v_register_panelmfdgeometry (lua_State *L)
+{
+	static const char* funcname = "register_panelarea";
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+		if (v->Version() < 2) {
+		lua_pushnil(L);
+		lua_pushstring(L, "Invalid vessel version in register_panelarea");
+		return 2;
+	}
+	VESSEL3* v3 = (VESSEL3*)v;
+
+	PANELHANDLE hPanel = lua_touserdata(L, 2);
+	int id = luaL_checkinteger(L, 3);
+	int nmesh = luaL_checkinteger(L, 4);
+	int ngroup = luaL_checkinteger(L, 5);
+
+	v3->RegisterPanelMFDGeometry(hPanel, id, nmesh, ngroup);
+	return 0;
+}
 
 /***
 Exhaust rendering
@@ -7263,7 +7976,7 @@ This version uses a user-defined position and direction for the exhaust.
 @tparam handle hThrust thruster handle
 @tparam number lscale exhaust flame length [m]
 @tparam number wscale exhaust flame width [m]
-@param pos (<i><b>@{types.vector|vector}</b></i>) exaust source position in vessel frame [<b>m</b>]
+@param pos (<i><b>@{types.vector|vector}</b></i>) exhaust source position in vessel frame [<b>m</b>]
 @param dir (<i><b>@{types.vector|vector}</b></i>) exhaust direction in vessel frame
 @tparam[opt] handle hTex texture handle for custom exhaust flames
 @treturn int integer exhaust identifier (&ge; 0)
@@ -7370,91 +8083,170 @@ function will return nil. The module must be able to cope with this case.
 @treturn handle particle stream handle
 @see vessel:add_exhaust
 */
-int Interpreter::v_add_exhauststream (lua_State *L)
+int Interpreter::v_add_exhauststream(lua_State* L)
 {
-	static const char *funcname = "add_exhauststream";
+	static const char* funcname = "add_exhauststream";
 	AssertMtdMinPrmCount(L, 3, funcname);
-	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
 	THRUSTER_HANDLE ht = (THRUSTER_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
-	PARTICLESTREAMSPEC pss;  memset (&pss, 0, sizeof(PARTICLESTREAMSPEC));
+	PARTICLESTREAMSPEC pss;  memset(&pss, 0, sizeof(PARTICLESTREAMSPEC));
 	VECTOR3 pos;
 	bool do_pos = false;
 	int idx = 3;
-	if (lua_isvector(L,idx)) {
+	if (lua_isvector(L, idx)) {
 		pos = lua_tovector(L, idx++);
 		do_pos = true;
 		AssertMtdMinPrmCount(L, idx, funcname);
 	}
 	AssertMtdPrmType(L, idx, PRMTP_TABLE, funcname);
 
-	lua_getfield(L,idx,"flags");
-	pss.flags = (lua_isnumber(L,-1) ? (DWORD)(lua_tonumber(L,-1)+0.5) : 0);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "flags");
+	pss.flags = (lua_isnumber(L, -1) ? (DWORD)(lua_tonumber(L, -1) + 0.5) : 0);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"srcsize");
-	pss.srcsize = (lua_isnumber(L,-1) ? lua_tonumber(L,-1) : 1.0);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "srcsize");
+	pss.srcsize = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 1.0);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"srcrate");
-	pss.srcrate = (lua_isnumber(L,-1) ? lua_tonumber(L,-1) : 1.0);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "srcrate");
+	pss.srcrate = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 1.0);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"v0");
-	pss.v0 = (lua_isnumber(L,-1) ? lua_tonumber(L,-1) : 0.0);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "v0");
+	pss.v0 = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"srcspread");
-	pss.srcspread = (lua_isnumber(L,-1) ? lua_tonumber(L,-1) : 0.0);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "srcspread");
+	pss.srcspread = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"lifetime");
-	pss.lifetime = (lua_isnumber(L,-1) ? lua_tonumber(L,-1) : 10.0);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "lifetime");
+	pss.lifetime = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 10.0);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"growthrate");
-	pss.growthrate = (lua_isnumber(L,-1) ? lua_tonumber(L,-1) : 0.0);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "growthrate");
+	pss.growthrate = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"atmslowdown");
-	pss.atmslowdown = (lua_isnumber(L,-1) ? lua_tonumber(L,-1) : 0.0);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "atmslowdown");
+	pss.atmslowdown = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"ltype");
-	pss.ltype = (lua_isnumber(L,-1) ? (PARTICLESTREAMSPEC::LTYPE)(int)(lua_tonumber(L,-1)+0.5) : PARTICLESTREAMSPEC::DIFFUSE);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "ltype");
+	pss.ltype = (lua_isnumber(L, -1) ? (PARTICLESTREAMSPEC::LTYPE)(int)(lua_tonumber(L, -1) + 0.5) : PARTICLESTREAMSPEC::DIFFUSE);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"levelmap");
-	pss.levelmap = (lua_isnumber(L,-1) ? (PARTICLESTREAMSPEC::LEVELMAP)(int)(lua_tonumber(L,-1)+0.5) : PARTICLESTREAMSPEC::LVL_LIN);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "levelmap");
+	pss.levelmap = (lua_isnumber(L, -1) ? (PARTICLESTREAMSPEC::LEVELMAP)(int)(lua_tonumber(L, -1) + 0.5) : PARTICLESTREAMSPEC::LVL_LIN);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"lmin");
-	pss.lmin = (lua_isnumber(L,-1) ? lua_tonumber(L,-1) : 0.0);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "lmin");
+	pss.lmin = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"lmax");
-	pss.lmax = (lua_isnumber(L,-1) ? lua_tonumber(L,-1) : 1.0);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "lmax");
+	pss.lmax = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 1.0);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"atmsmap");
-	pss.atmsmap = (lua_isnumber(L,-1) ? (PARTICLESTREAMSPEC::ATMSMAP)(int)(lua_tonumber(L,-1)+0.5) : PARTICLESTREAMSPEC::ATM_FLAT);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "atmsmap");
+	pss.atmsmap = (lua_isnumber(L, -1) ? (PARTICLESTREAMSPEC::ATMSMAP)(int)(lua_tonumber(L, -1) + 0.5) : PARTICLESTREAMSPEC::ATM_FLAT);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"amin");
-	pss.amin = (lua_isnumber(L,-1) ? lua_tonumber(L,-1) : 0.0);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "amin");
+	pss.amin = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"amax");
-	pss.amax = (lua_isnumber(L,-1) ? lua_tonumber(L,-1) : 1.0);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "amax");
+	pss.amax = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 1.0);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"tex");
-	pss.tex = (lua_islightuserdata(L,-1) ? (SURFHANDLE)lua_touserdata(L,-1) : NULL);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "tex");
+	pss.tex = (lua_islightuserdata(L, -1) ? (SURFHANDLE)lua_touserdata(L, -1) : NULL);
+	lua_pop(L, 1);
 
 	PSTREAM_HANDLE hp;
-	if (do_pos) hp = v->AddExhaustStream (ht, pos, &pss);
-	else        hp = v->AddExhaustStream (ht, &pss);
-	lua_pushlightuserdata(L,hp);
+	if (do_pos) hp = v->AddExhaustStream(ht, pos, &pss);
+	else        hp = v->AddExhaustStream(ht, &pss);
+	lua_pushlightuserdata(L, hp);
+	return 1;
+}
+
+int Interpreter::v_add_reentrystream(lua_State* L)
+{
+	static const char* funcname = "add_reentrystream";
+	AssertMtdMinPrmCount(L, 2, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	PARTICLESTREAMSPEC pss;  memset(&pss, 0, sizeof(PARTICLESTREAMSPEC));
+	int idx = 2;
+	AssertMtdPrmType(L, idx, PRMTP_TABLE, funcname);
+
+	lua_getfield(L, idx, "flags");
+	pss.flags = (lua_isnumber(L, -1) ? (DWORD)(lua_tonumber(L, -1) + 0.5) : 0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "srcsize");
+	pss.srcsize = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 1.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "srcrate");
+	pss.srcrate = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 1.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "v0");
+	pss.v0 = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "srcspread");
+	pss.srcspread = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "lifetime");
+	pss.lifetime = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 10.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "growthrate");
+	pss.growthrate = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "atmslowdown");
+	pss.atmslowdown = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "ltype");
+	pss.ltype = (lua_isnumber(L, -1) ? (PARTICLESTREAMSPEC::LTYPE)(int)(lua_tonumber(L, -1) + 0.5) : PARTICLESTREAMSPEC::DIFFUSE);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "levelmap");
+	pss.levelmap = (lua_isnumber(L, -1) ? (PARTICLESTREAMSPEC::LEVELMAP)(int)(lua_tonumber(L, -1) + 0.5) : PARTICLESTREAMSPEC::LVL_LIN);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "lmin");
+	pss.lmin = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "lmax");
+	pss.lmax = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 1.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "atmsmap");
+	pss.atmsmap = (lua_isnumber(L, -1) ? (PARTICLESTREAMSPEC::ATMSMAP)(int)(lua_tonumber(L, -1) + 0.5) : PARTICLESTREAMSPEC::ATM_FLAT);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "amin");
+	pss.amin = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "amax");
+	pss.amax = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 1.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "tex");
+	pss.tex = (lua_islightuserdata(L, -1) ? (SURFHANDLE)lua_touserdata(L, -1) : NULL);
+	lua_pop(L, 1);
+
+	PSTREAM_HANDLE hp;
+	hp = v->AddReentryStream(&pss);
+	lua_pushlightuserdata(L, hp);
 	return 1;
 }
 
@@ -7803,6 +8595,92 @@ int Interpreter::v_trigger_redrawarea (lua_State *L)
 	return 0;
 }
 
+// We create a VesselMFD, the lua side is in charge of overloading the metatable,
+// then we save the lua object reference to be used when then core will call VesselMFD calllbacks
+OAPI_MSGTYPE Interpreter::MsgProcMFD(UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam)
+{
+	switch (msg) {
+		case OAPI_MSG_MFD_OPENEDEX:
+		{
+			MFDMODEOPENSPEC* ospec = (MFDMODEOPENSPEC*)wparam;
+			DWORD w = ospec->w;
+			DWORD h = ospec->h;
+			VesselMFDContext* ctx = (VesselMFDContext*)ospec->spec->context;
+			VESSEL* vessel = (VESSEL*)lparam;
+			VesselMFD* vmfd = new VesselMFD(w, h, vessel, ctx);
+
+			lua_State* L = ctx->L;
+
+			lua_rawgeti(L, LUA_REGISTRYINDEX, ctx->msgproc);   // push the callback function
+			lua_pushnumber(L, msg);
+			lua_pushnumber(L, mfd);
+			lua_pushnumber(L, w);
+			lua_pushnumber(L, h);
+			lua_pushvessel(L, vessel);
+			lua_pushmfd(L, vmfd);
+
+			if (lua_pcall(L,  6, 1, 0) != 0) {
+				fprintf(stderr, "Error MsgProcMFD: %s\n", lua_tostring(L, -1));
+				//return 0;
+			} else {
+				vmfd->mfd_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+			}
+			return (OAPI_MSGTYPE)(vmfd);
+		}
+	}
+	return 0;
+}
+
+int Interpreter::v_register_mfdmode(lua_State* L)
+{
+	static const char* funcname = "register_mfdmode";
+	AssertMtdMinPrmCount(L, 2, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	if (v->Version() < 3) {
+		lua_pushnil(L);
+		lua_pushstring(L, "Invalid vessel version in register_mfdmode");
+		return 2;
+	}
+	VESSEL4* v4 = (VESSEL4*)v;
+
+	MFDMODESPECEX spec;
+	spec.msgproc = MsgProcMFD;
+	lua_getfield(L, 2, "name");
+	spec.name = const_cast<char *>(lua_tostring(L, -1)); lua_pop(L, 1);
+	lua_getfield(L, 2, "key");
+	spec.key = lua_tonumber(L, -1); lua_pop(L, 1);
+	lua_getfield(L, 2, "msgproc");
+	VesselMFDContext *ctx = new VesselMFDContext;
+	ctx->L = L;
+	ctx->msgproc = luaL_ref(L, LUA_REGISTRYINDEX);
+	spec.context = ctx;
+
+	int mode = v4->RegisterMFDMode(spec);
+
+	lua_pushnumber(L, mode);
+	return 1;
+}
+
+int Interpreter::v_unregister_mfdmode(lua_State* L)
+{
+	static const char* funcname = "unregister_mfdmode";
+	AssertMtdMinPrmCount(L, 2, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	if (v->Version() < 3) {
+		lua_pushnil(L);
+		lua_pushstring(L, "Invalid vessel version in unregister_mfdmode");
+		return 2;
+	} else {
+		VESSEL4* v4 = (VESSEL4*)v;
+		int mode = luamtd_tointeger_safe(L, 2, funcname);
+		//FIXME: The mode gives us no way to retrieve the context so we leak 16 bytes per unregistered MFD
+		//       Should probably add a table in the lua_State indexed by mode to track the contexts
+		bool res = v4->UnregisterMFDMode(mode);
+		lua_pushboolean(L, res);
+		return 1;
+	}
+}
+
 
 /***
 User interface
@@ -7832,4 +8710,205 @@ int Interpreter::v_send_bufferedkey (lua_State *L)
 	int res = v->SendBufferedKey (key);
 	lua_pushnumber (L, res);
 	return 1;
+}
+
+
+VesselMFD::VesselMFD(DWORD w, DWORD h, VESSEL* vessel, VesselMFDContext* ctx) : MFD2(w, h, vessel) {
+	L = ctx->L;
+	mfd_ref = LUA_REFNIL;
+}
+
+bool VesselMFD::ConsumeButton(int bt, int event) {
+	lua_rawgeti(L, LUA_REGISTRYINDEX, mfd_ref);
+	lua_getfield(L, -1, "consumebutton");
+	bool consumed = false;
+	if (lua_isfunction(L, -1)) {
+		lua_pushvalue(L, -2); //self
+		lua_pushnumber(L, bt);
+		lua_pushnumber(L, event);
+		lua_call(L, 3, 1);
+		consumed = (lua_toboolean(L, -1) ? true : false);
+	}
+	else {
+		lua_pop(L, 1);
+	}
+	lua_pop(L, 1);
+	return consumed;
+}
+bool VesselMFD::ConsumeKeyBuffered(DWORD key) {
+	lua_rawgeti(L, LUA_REGISTRYINDEX, mfd_ref);
+	lua_getfield(L, -1, "consumekeybuffered");
+	bool consumed = false;
+	if (lua_isfunction(L, -1)) {
+		lua_pushvalue(L, -2); //self
+		lua_pushnumber(L, key);
+		lua_call(L, 2, 1);
+		consumed = (lua_toboolean(L, -1) ? true : false);
+	}
+	else {
+		lua_pop(L, 1);
+	}
+	lua_pop(L, 1);
+	return consumed;
+}
+bool VesselMFD::ConsumeKeyImmediate(char* kstate) {
+	lua_rawgeti(L, LUA_REGISTRYINDEX, mfd_ref);
+	lua_getfield(L, -1, "consumekeyimmediate");
+	bool consumed = false;
+	if (lua_isfunction(L, -1)) {
+		lua_pushvalue(L, -2); //self
+		lua_pushlightuserdata(L, kstate);
+		lua_call(L, 2, 1);
+		consumed = (lua_toboolean(L, -1) ? true : false);
+	}
+	else {
+		lua_pop(L, 1);
+	}
+	lua_pop(L, 1);
+	return consumed;
+}
+char* VesselMFD::ButtonLabel(int bt) {
+	lua_rawgeti(L, LUA_REGISTRYINDEX, mfd_ref); //self
+	lua_getfield(L, -1, "buttonlabel");
+	char* label = NULL;
+	if (lua_isfunction(L, -1)) {
+		lua_pushvalue(L, -2); //self
+		lua_pushnumber(L, bt);
+		lua_call(L, 2, 1);
+		if (lua_isstring(L, -1)) {
+			label = (char*)lua_tostring(L, -1);
+		}
+	}
+	else {
+		lua_pop(L, 1);
+	}
+	lua_pop(L, 1);
+	return label;
+}
+int VesselMFD::ButtonMenu(const MFDBUTTONMENU** menu) const {
+	int i, nbt = 0;
+	lua_rawgeti(L, LUA_REGISTRYINDEX, mfd_ref);
+	lua_getfield(L, -1, "buttonmenu");
+	if (lua_isfunction(L, -1)) {
+		static MFDBUTTONMENU* mnu = 0;
+		static int nmnu = 0;
+		lua_pushvalue(L, -2); //self
+		lua_call(L, 1, 2);
+		if (lua_isnumber(L, -1)) {
+			nbt = lua_tointeger(L, -1);
+			if (menu) {
+				if (nmnu) {
+					for (i = 0; i < nmnu; i++) {
+						if (mnu[i].line1) delete[]mnu[i].line1;
+						if (mnu[i].line2) delete[]mnu[i].line2;
+					}
+					delete[]mnu;
+					nmnu = 0;
+				}
+				if (nbt) {
+					mnu = new MFDBUTTONMENU[nmnu = nbt];
+					for (i = 0; i < nbt; i++) {
+						mnu[i].line1 = 0;
+						mnu[i].line2 = 0;
+						mnu[i].selchar = 'x';
+					}
+					if (lua_istable(L, -2)) {
+						for (i = 0; i < nbt; i++) {
+							lua_pushnumber(L, i + 1);
+							lua_gettable(L, -3);
+							if (lua_istable(L, -1)) {
+								lua_getfield(L, -1, "l1");
+								if (lua_isstring(L, -1)) {
+									const char* line = lua_tostring(L, -1);
+									char* linebuf = new char[strlen(line) + 1];
+									strcpy(linebuf, line);
+									mnu[i].line1 = linebuf;
+								}
+								lua_pop(L, 1);
+								lua_getfield(L, -1, "l2");
+								if (lua_isstring(L, -1)) {
+									const char* line = lua_tostring(L, -1);
+									char* linebuf = new char[strlen(line) + 1];
+									strcpy(linebuf, line);
+									mnu[i].line2 = linebuf;
+								}
+								lua_pop(L, 1);
+								lua_getfield(L, -1, "sel");
+								if (lua_isstring(L, -1)) {
+									const char* line = lua_tostring(L, -1);
+									mnu[i].selchar = line[0];
+								}
+								lua_pop(L, 1);
+							}
+							lua_pop(L, 1);
+						}
+					}
+				}
+				*menu = mnu;
+			}
+		}
+		lua_pop(L, 2);
+	}
+	else {
+		lua_pop(L, 1);
+	}
+	lua_pop(L, 1);
+	return nbt;
+}
+bool VesselMFD::Update(oapi::Sketchpad* skp) {
+	lua_rawgeti(L, LUA_REGISTRYINDEX, mfd_ref);
+	lua_getfield(L, -1, "update");
+
+	if (lua_isfunction(L, -1)) {
+		lua_pushvalue(L, -2); //self
+		Interpreter::lua_pushsketchpad(L, skp);
+		lua_call(L, 2, 1);
+		bool consumed = (lua_toboolean(L, -1) ? true : false);
+		lua_pop(L, 1);
+		return true; //consumed;
+	}
+	lua_pop(L, 1);
+	return false;
+}
+void VesselMFD::StoreStatus() const {
+	lua_rawgeti(L, LUA_REGISTRYINDEX, mfd_ref);
+	lua_getfield(L, -1, "storestatus");
+
+	if (lua_isfunction(L, -1)) {
+		lua_pushvalue(L, -2); //self
+		lua_call(L, 1, 0);
+	}
+	lua_pop(L, 1);
+}
+void VesselMFD::RecallStatus() {
+	lua_rawgeti(L, LUA_REGISTRYINDEX, mfd_ref);
+	lua_getfield(L, -1, "recallstatus");
+
+	if (lua_isfunction(L, -1)) {
+		lua_pushvalue(L, -2); //self
+		lua_call(L, 1, 0);
+	}
+	lua_pop(L, 1);
+}
+void VesselMFD::WriteStatus(FILEHANDLE scn) const {
+	lua_rawgeti(L, LUA_REGISTRYINDEX, mfd_ref);
+	lua_getfield(L, -1, "writestatus");
+
+	if (lua_isfunction(L, -1)) {
+		lua_pushvalue(L, -2); //self
+		lua_pushlightuserdata(L, scn);
+		lua_call(L, 2, 0);
+	}
+	lua_pop(L, 1);
+}
+void VesselMFD::ReadStatus(FILEHANDLE scn) {
+	lua_rawgeti(L, LUA_REGISTRYINDEX, mfd_ref);
+	lua_getfield(L, -1, "readstatus");
+
+	if (lua_isfunction(L, -1)) {
+		lua_pushvalue(L, -2); //self
+		lua_pushlightuserdata(L, scn);
+		lua_call(L, 2, 0);
+	}
+	lua_pop(L, 1);
 }
