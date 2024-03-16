@@ -370,16 +370,6 @@ struct IWICImagingFactory;
 namespace oapi {
 
 /**
- * \brief Format specifiers for image files
- */
-enum ImageFileFormat {
-	IMAGE_BMP = 0,
-	IMAGE_PNG = 1,
-	IMAGE_JPG = 2,
-	IMAGE_TIF = 3
-};
-
-/**
  * \brief Structure for defining a raw image.
  */
 struct ImageData {

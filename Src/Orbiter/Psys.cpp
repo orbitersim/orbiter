@@ -227,7 +227,7 @@ void PlanetarySystem::ScanLabelLists (ifstream &cfg, bool bScanHeaders)
 	int idx = 0;
 	ForEach(FILETYPE_MARKER, [&](const fs::directory_entry& entry) {
 		// open marker file
-		ifstream ulf(entry);
+		ifstream ulf(entry.path());
 		// read label header
 		if (bScanHeaders) {
 			oapi::GraphicsClient::LABELLIST list;

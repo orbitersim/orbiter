@@ -106,27 +106,31 @@ void CloudTile::Render()
 	// Feed tile specific data to shaders
 	//
 	// ----------------------------------------------------------------------
-	pShader->SetTexture(pShader->tDiff, tex, IPF_ANISOTROPIC | IPF_CLAMP, Config->Anisotrophy);
 
-	sp->vCloudOff = GetTexRangeDX(&texrange);
-	sp->vMicroOff = GetTexRangeDX(&microrange);
-	sp->fAlpha = 1.0f;
-	sp->fBeta = 1.0f;
-	sp->mWorld = mWorld;
+	bool bTexture = (tex && vPlanet->HasTextures());
 
-	// -------------------------------------------------------------------
-	// render surface mesh
-	if (cfg != PLT_GIANT) {
-		if (Config->CloudMicro)
-			pShader->SetPSConstants(pShader->Prm, sp, sizeof(ShaderParams));
+	if (bTexture)
+	{
+		pShader->SetTexture(pShader->tDiff, tex, IPF_ANISOTROPIC | IPF_CLAMP, Config->Anisotrophy);
+
+		sp->vCloudOff = GetTexRangeDX(&texrange);
+		sp->vMicroOff = GetTexRangeDX(&microrange);
+		sp->fAlpha = 1.0f;
+		sp->fBeta = 1.0f;
+		sp->mWorld = mWorld;
+
+		// -------------------------------------------------------------------
+		// render surface mesh
+
+		pShader->SetPSConstants(pShader->Prm, sp, sizeof(ShaderParams));
+		pShader->SetVSConstants(pShader->PrmVS, sp, sizeof(ShaderParams));
+
+		pShader->UpdateTextures();
+
+		pDev->SetStreamSource(0, mesh->pVB, 0, sizeof(VERTEX_2TEX));
+		pDev->SetIndices(mesh->pIB);
+		pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mesh->nv, 0, mesh->nf);
 	}
-	pShader->SetVSConstants(pShader->PrmVS, sp, sizeof(ShaderParams));
-
-	pShader->UpdateTextures();
-
-	pDev->SetStreamSource(0, mesh->pVB, 0, sizeof(VERTEX_2TEX));
-	pDev->SetIndices(mesh->pIB);
-	pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mesh->nv, 0, mesh->nf);
 }
 
 
@@ -173,20 +177,27 @@ void TileManager2<CloudTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlan
 	ElevMode = eElevMode::Spherical;
 	ElevModeLvl = 0;
 
-	FlowControlPS fc = { 0 };
-	fc.bBelowClouds = vp->CameraAltitude() < rprm.cloudalt;
+	ShaderParams* sp = vp->GetTerrainParams();
+	FlowControlPS* fc = vp->GetFlowControl();
+	fc->bBelowClouds = vp->CameraAltitude() < rprm.cloudalt;
 
 	int cfg = vp->GetShaderID();
 
 	// Select cloud layer shader
 	pShader = (cfg == PLT_GIANT ? vp->GetShader(PLT_G_CLOUDS) : vp->GetShader(PLT_CLOUDS));
 	
-	pShader->ClearTextures();
 	pShader->Setup(pPatchVertexDecl, false, 1);
+	pShader->ClearTextures();
+
+
+	// Check Eclipse conditions -------------------------------------------
+	//
+
+	vp->InitEclipse(pShader);
 
 	pShader->SetPSConstants("Const", vp->GetScatterConst(), sizeof(ConstParams));
 	pShader->SetVSConstants("Const", vp->GetScatterConst(), sizeof(ConstParams));
-	pShader->SetPSConstants("Flow", &fc, sizeof(FlowControlPS));
+	pShader->SetPSConstants("Flow", fc, sizeof(FlowControlPS));
 
 	if (cfg != PLT_GIANT)
 	{

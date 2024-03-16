@@ -409,17 +409,23 @@ void HazeManager2::RenderRing(VECTOR3 cpos, VECTOR3 cdir, double rad, double hra
 	D3DMAT_FromAxisT(&mW, ptr(_D3DXVECTOR3(ux)), ptr(_D3DXVECTOR3(ur)), ptr(_D3DXVECTOR3(uy)));
 
 	ShaderParams sprm;
+	pRing->Setup(pPositionDecl, false, 2);
+	pRing->ClearTextures();
+	vp->InitEclipse(pRing);
+
+	memcpy_s(&sprm, sizeof(ShaderParams), vp->GetTerrainParams(), sizeof(ShaderParams));
 	memcpy_s(&sprm.mWorld, sizeof(sprm.mWorld), &mW, sizeof(mW));
+
 	sprm.vTexOff = FVECTOR4(r1, r2, h1, h2);
 	sprm.fAlpha = float(qw);
 
-	pRing->Setup(pPositionDecl, false, 2);
-	pRing->ClearTextures();
 	pRing->SetTexture("tSkyRayColor", vp->GetScatterTable(RAY_COLOR), IPF_LINEAR | IPF_CLAMP);
 	pRing->SetTexture("tSkyMieColor", vp->GetScatterTable(MIE_COLOR), IPF_LINEAR | IPF_CLAMP);
 	pRing->SetPSConstants("Const", vp->GetScatterConst(), sizeof(ConstParams));
 	pRing->SetVSConstants("Const", vp->GetScatterConst(), sizeof(ConstParams));
 	pRing->SetVSConstants("Prm", &sprm, sizeof(ShaderParams));
+	pRing->SetPSConstants("Prm", &sprm, sizeof(ShaderParams));
+	pRing->SetPSConstants("Flow", vp->GetFlowControl(), sizeof(FlowControlPS));
 	pRing->UpdateTextures();
 
 	UINT nPrims = HORIZON2_NSEG * HORIZON2_NRING * 2 - 2;
@@ -451,7 +457,7 @@ void HazeManager2::CreateRingBuffers()
 	float z = float(sin(phi));
 	float y = 0.0f;
 
-	for (int k=0;k<HORIZON2_NRING;k++) {
+	for (int k=0;k<HORIZON2_NRING;k++) {  // TODO: No need for grid anymore (jarmonik 01-Feb-2024)
 		for (int i=0;i<HORIZON2_NSEG;i++) {
 			pVrt[v++] = D3DXVECTOR3(x, y, z);
 			phi+=dphi;

@@ -90,6 +90,8 @@ public:
 
 	void Detach (Vessel *vessel, DWORD port, double vsep = 0.2);
 	// detach "vessel" from the super-structure
+	
+	void SoftDockUpdate(Vessel* vessel, PortSpec* pD);
 
 	void RPlace (const Vector &_rpos, const Vector &_rvel, const Vessel *ref = 0);
 	// Sets the supervessel's position and velocity state vectors in parent coordinates

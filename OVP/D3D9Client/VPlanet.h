@@ -89,6 +89,8 @@ struct ShaderParams
 	float4   vMicroOff;			// Micro texture offset-scale
 	float4   vOverlayOff;       // Overlay texture offset-scale
 	float4   vOverlayCtrl[4];
+	float3	 vEclipse;			// Eclipse caster position (geocentric)
+	float	 fEclipse;			// Eclipse data addressing scale factor. (to access tExlipse)
 	float	 fAlpha;
 	float	 fBeta;
 	float	 fTgtScale;
@@ -104,10 +106,12 @@ struct FlowControlPS
 	BOOL bLocals;				// Local Lights on/off
 	BOOL bMicroNormals;			// Micro texture has normals
 	BOOL bCloudShd;				// Cloud shadow textures valid and enabled
-	BOOL bMask;					// Nightlights/water mask texture is peovided
-	BOOL bRipples;				// Water riples texture is peovided
+	BOOL bMask;					// Nightlights/water mask texture is enabled
+	BOOL bRipples;				// Water riples texture is enabled
 	BOOL bMicroTex;				// Micro textures exists and enabled
 	BOOL bPlanetShadow;			// Use spherical approximation for shadow
+	BOOL bEclipse;				// Eclipse is occuring
+	BOOL bTexture;				// Surface texture exists
 };
 
 struct FlowControlVS
@@ -176,6 +180,10 @@ struct ConstParams
 	float  smi;
 	float  ecc;
 	float  trLS;
+	float  wNrmStr;				// Water normal strength
+	float  wSpec;				// Water smoothness
+	float  wBrightness;
+	float  wBoost;
 };
 
 #pragma pack(pop)
@@ -227,6 +235,7 @@ public:
 
 	void			TestComputations(Sketchpad *);
 
+	bool			HasTextures() { return bHasTextures; }
 	bool			IsMesh() { return mesh != NULL; }
 	bool			Update (bool bMainScene);
 	void			CheckResolution ();
@@ -298,6 +307,9 @@ public:
 	FVECTOR3		LightFX(FVECTOR3 x);
 	float			SunOcclusionByPlanet();
 	bool			SphericalShadow();
+	void			SetupEclipse();
+	void			InitEclipse(ShaderClass* pShader);
+	LPDIRECT3DTEXTURE9 GetEclipse() { return ptEclipse; }
 
 	// v2 Labels interface ----------------------------------------------------
 	void            ActivateLabels(bool activate);
@@ -338,6 +350,12 @@ public:
 		float		DistScale;
 	} prm;
 
+	struct _eclipse {
+		FVECTOR3 vPos;
+		float fScale;
+		bool  bEnable;	
+	} Eclipse;
+
 	list<sOverlay *> overlays;
 
 	// Access functions
@@ -370,6 +388,7 @@ private:
 	static ImageProcessing* pIP;
 	static PlanetShader* pRender[8];
 	static LPDIRECT3DDEVICE9 pDev;
+	static LPDIRECT3DTEXTURE9 ptEclipse;
 	static int Qc, Wc, Nc;
 
 	float dist_scale;         // planet rescaling factor
@@ -397,6 +416,7 @@ private:
 	HazeManager *hazemgr;     // horizon haze rendering
 	HazeManager2 *hazemgr2;	  // horizon haze rendering
 	RingManager *ringmgr;     // ring manager
+	bool bHasTextures;
 	bool bRipple;             // render specular ripples on water surfaces
 	bool bVesselShadow;       // render vessel shadows on surface
 	bool bObjectShadow;       // render object shadows on surface

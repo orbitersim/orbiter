@@ -12,19 +12,40 @@
 class CelestialBody;
 
 struct ElevationTile {
-	ElevationTile() { data = 0; last_access = 0.0; }
+	ElevationTile() { 
+		data = nullptr;
+		Clear();
+	}
 	~ElevationTile() { if (data) delete []data; }
-	void Clear() { if (data) { delete[]data; data = 0; } last_access = 0.0; }
+
+	void Clear() { 
+		if (data) delete[]data; 
+		data = nullptr;
+		mgr = nullptr;
+		lvl = tgtlvl = 0;
+		latmin = latmax = 0.0;
+		lngmin = lngmax = 0.0;
+		emin = emax = 0.0;
+		last_access = 0.0;
+		lat0 = lng0 = 0;
+		ilat = ilng = 0;
+		quadrants = 0;
+		celldiag = false;
+		nmlidx = 0;
+	}
+
 	INT16 *data;
-	int lvl = 0, tgtlvl = 0;
-	double latmin = 0, latmax = 0;
-	double lngmin = 0, lngmax = 0;
-	double emin = 0, emax = 0;
-	double last_access = 0;
-	int lat0 = 0, lng0 = 0;
-	bool celldiag = false;
-	int nmlidx = 0;
-	Vector normal;
+	int lvl, tgtlvl;
+	double latmin, latmax;
+	double lngmin, lngmax;
+	double emin, emax;
+	double last_access;
+	int lat0, lng0;
+	int ilat, ilng;
+	int quadrants;
+	bool celldiag;
+	int nmlidx;
+	const class ElevationManager* mgr;
 };
 
 class ElevationManager {
@@ -49,9 +70,11 @@ public:
 	void ElevationGrid(int ilat, int ilng, int lvl, int pilat, int pilng, int plvl, INT16* pelev, INT16* elev, double* emean = 0) const;
 
 protected:
+	int  Quadrant(double lat, double lng, int lvl) const;
 	bool TileIdx (double lat, double lng, int lvl, int *ilat, int *ilng) const;
 	INT16 *LoadElevationTile (int lvl, int ilat, int ilng, double tgt_res) const;
 	bool LoadElevationTile_mod (int lvl, int ilat, int ilng, double tgt_res, INT16 *elev) const;
+	bool HasElevationTile(int lvl, int ilat, int ilng) const;
 
 private:
 	const CelestialBody *cbody;
@@ -60,6 +83,8 @@ private:
 	double elev_res = 1;  // elevation resolution [m]
 	DWORD tilesource = 2; // bit 1: try loading from cache, bit 2: try loading from archive
 	ZTreeMgr *treeMgr[5];
+	bool bDirExists, bModExists;
+	mutable std::vector<ElevationTile> *local_cache = nullptr;
 };
 
 #endif // !__ELEVMGR_H

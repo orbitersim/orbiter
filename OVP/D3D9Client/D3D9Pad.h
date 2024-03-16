@@ -551,6 +551,8 @@ public:
 	void BeginDrawing(LPDIRECT3DSURFACE9 pRenderTgt, LPDIRECT3DSURFACE9 pDepthStensil = NULL);
 	void BeginDrawing();
 
+	inline void FlushAll() { Flush(NULL); }
+
 	void SetViewProj(const D3DXMATRIX* pV, const D3DXMATRIX* pP);
 
 	LPD3DXMATRIX WorldMatrix();
@@ -616,6 +618,7 @@ private:
 	D3DXCOLOR		 cColorKey;
 	SkpView			 vmode;
 	Topo			 tCurrent;
+	RenderState* 	 pRState;
 
 
 	WORD vI = 0, iI = 0;

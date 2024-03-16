@@ -375,6 +375,16 @@ DLLEXPORT OBJHANDLE oapiGetDockStatus (DOCKHANDLE dock)
 	return (OBJHANDLE)((PortSpec*)dock)->mate;
 }
 
+DLLEXPORT void oapiSetAutoCapture(DOCKHANDLE hDock, bool enable)
+{
+	((PortSpec*)hDock)->autodock = enable;
+}
+
+DLLEXPORT OBJHANDLE oapiGetDockOwner(DOCKHANDLE hDock)
+{
+	return (OBJHANDLE)((PortSpec*)hDock)->owner;
+}
+
 DLLEXPORT void oapiSetEmptyMass (OBJHANDLE hVessel, double mass)
 {
 	if ((Vessel*)hVessel) ((Vessel*)hVessel)->SetEmptyMass (mass);
@@ -1437,6 +1447,13 @@ DLLEXPORT SURFHANDLE oapiLoadSurfaceEx(const char* fname, DWORD attrib, bool bPa
 	oapi::GraphicsClient* gc = g_pOrbiter->GetGraphicsClient();
 	if (gc) return gc->clbkLoadSurface(fname, attrib, bPath);
 	else return NULL;
+}
+
+DLLEXPORT bool oapiSaveSurface(const char* fname, SURFHANDLE hSrf, oapi::ImageFileFormat fmt, float quality)
+{
+	oapi::GraphicsClient* gc = g_pOrbiter->GetGraphicsClient();
+	if (gc) return gc->clbkSaveSurfaceToImage(hSrf, fname, fmt, quality);
+	return false;
 }
 
 DLLEXPORT void oapiReleaseTexture (SURFHANDLE hTex)
