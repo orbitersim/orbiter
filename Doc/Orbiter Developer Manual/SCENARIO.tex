@@ -288,9 +288,9 @@ END
 If both the vessel and class names are present, the vessel is created as an instance of the vessel class, and a configuration file for the vessel class, <\textit{Class name}>.cfg must exist. If only the vessel name is present, it is assumed to be a soliton (the only representative of its class) and the vessel class is assumed to coincide with its name.
 The following generic parameters are supported:
 
-\begin{table}[H]
-	\centering
-	\begin{tabularx}{\textwidth}{ |l|l|X| }
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.25\textwidth}|p{0.09\textwidth}|p{0.58\textwidth}| }
 	\hline\rule{0pt}{2ex}
 	\textbf{Item} & \textbf{Type} & \textbf{Description}\\
 	\hline\rule{0pt}{2ex}
@@ -325,8 +325,8 @@ The following generic parameters are supported:
 	\hline\rule{0pt}{2ex}
 	DOCKINFO & List & Docking status list. This contains information about all docked vessels. Each entry is of the form <\textit{id}>:<\textit{rid}> <\textit{rvessel}>, where <\textit{id}> is the docking port identifier (Int $\geq$ 0), <\textit{rid}> is the docking port identifier of the docked vessel, and <\textit{rvessel}> is the docked vessel. Only engaged docking ports are listed. See notes below.\\
 	\hline
-	\end{tabularx}
-\end{table}
+	\end{longtable}
+%\end{table}
 
 \noindent
 In addition to these generic parameters, individual vessel classes may define class-specific parameters.\\

@@ -991,7 +991,7 @@ It is up to the module to implement its animations in the body of \textit{ovcAni
 \subsection{Designing 2D-instrument panels}
 Instrument panels are a good way to give an individual feel to a spacecraft class and allow the user to monitor flight parameters and control specific aspects of the vessel via the mouse, without the need to remember a large number of keyboard commands.\\
 \\
-There are two ways to define a cockpit interior: you can build one (or several) flat two-dimensional panels as bitmaps which are overlayed on top of the three-dimensional scenery of the simulation window (denoted as \textit{panels} below), or you can construct a full three-dimensional mesh representation of the cockpit (denoted as \textit{virtual cockpit}, or \textit{VC} below). A vessel can implement both 2-D panels and virtual cockpits. The user can switch between them (and the generic cockpit view comprising two MFD displays and HUD) by pressing F8.\\
+There are two ways to define a cockpit interior: you can build one (or several) flat two-dimensional panels as bitmaps which are overlayed on top of the three-dimensional scenery of the simulation window (denoted as \textit{panels} below), or you can construct a full three-dimensional mesh representation of the cockpit (denoted as \textit{virtual cockpit}, or \textit{VC} below). A vessel can implement both 2-D panels and virtual cockpits. The user can switch between them (and the generic cockpit view comprising two MFD displays and HUD) by pressing \keystroke{F8}.\\
 \\
 % TODO add link below
 In this section we will discuss the steps required to define 2-D panels in the vessel module. Section TODO will deal with virtual cockpits.
@@ -1226,7 +1226,7 @@ You should also consider whether the panel is to cover the whole screen, or only
 \\
 The main panel should typically also provide space for MFDs (multifunctional displays), which are the primary method to provide flight data to the pilot. Most common is a layout with two MFDs, but fewer or more can be defined as well. The size of the MFD displays should be chosen so that they are easily readable over a 'typical' range of screen resolutions.\\
 \\
-You can define more than one panel for a vessel. For example, you may define a main panel which is visible in the lower half of the screen when the pilot looks forward, an overhead panel, side panels, etc. The user can switch between the different panels with Ctrl+cursor keys. We will discuss later how to define the connectivity between panels. To start with, let's look at the definition of a single main panel.\\
+You can define more than one panel for a vessel. For example, you may define a main panel which is visible in the lower half of the screen when the pilot looks forward, an overhead panel, side panels, etc. The user can switch between the different panels with \Ctrl\DArrow\UArrow\RArrow\LArrow keys. We will discuss later how to define the connectivity between panels. To start with, let's look at the definition of a single main panel.\\
 \\
 Once you have created the panel BMP file, you should add it as a bitmap resource to your vessel module project. Now you are ready to write the code to support the panel. To do so, you need to overload the \textit{clbkLoadPanel} method of the \textit{VESSEL2} class:
 
@@ -1244,10 +1244,10 @@ Here we assume that \textit{MyVessel} is a class derived from \textit{VESSEL2} (
 Orbiter will call your \textit{clbkLoadPanel} method whenever it needs to load an instrument panel. This happens if
 
 \begin{itemize}
-\item the user switches to instrument panel view from another view mode by pressing F8.
-\item the user switches between panels with Ctrl+cursor keys.
+\item the user switches to instrument panel view from another view mode by pressing \keystroke{F8}.
+\item the user switches between panels with \Ctrl\DArrow\UArrow\RArrow\LArrow keys.
 \item the user switches from an external view to a cockpit view.
-\item the user switches to a different spacecraft with F3.
+\item the user switches to a different spacecraft with \keystroke{F3}.
 \end{itemize}
 
 \noindent
@@ -1287,7 +1287,7 @@ So the final version of our main panel loading call looks like this, where we al
 \end{lstlisting}
 
 \noindent
-At this point, you can try to compile your module and test the panel in Orbiter. You should be able to make the panel visible by pressing F8 when you are in the cockpit of an instance of your vessel class, and scroll it up and down with the cursor keys.
+At this point, you can try to compile your module and test the panel in Orbiter. You should be able to make the panel visible by pressing \keystroke{F8} when you are in the cockpit of an instance of your vessel class, and scroll it up and down with the cursor keys.
 
 
 \subsubsection{Defining active panel areas}
@@ -1510,7 +1510,7 @@ bool MyVessel::clbkPanelMouseEvent( int id, int event, int mx, int my )
 \end{lstlisting}
 
 \noindent
-This code fragment processes all the buttons in the left and right button columns simultaneously. It first checks if the mouse event occurred over a button ($my\%20 < 15$), assuming that each button is 15 pixels high, and buttons are spaced in 20 pixel intervals. It then checks if the event occurred in the left or right button column, and determines which of the buttons was pressed (\textit{bt}). Finally, the \textit{oapiProcessMFDButton} function is called with the appropriate parameters, to allow Orbiter to respond to the MFD request.\\
+This code fragment processes all the buttons in the left and right button columns simultaneously. It first checks if the mouse event occurred over a button (\textit{my\%20 < 15}), assuming that each button is 15 pixels high, and buttons are spaced in 20 pixel intervals. It then checks if the event occurred in the left or right button column, and determines which of the buttons was pressed (\textit{bt}). Finally, the \textit{oapiProcessMFDButton} function is called with the appropriate parameters, to allow Orbiter to respond to the MFD request.\\
 \\
 The bottom row of buttons is processed similarly:
 
@@ -1599,7 +1599,7 @@ bool MyVessel::clbkLoadPanel( int id )
 \noindent
 Each panel must register its own background bitmap via the \textit{oapiRegisterPanelBackground} function.\\
 \\
-In a vessel that defines multiple panels, the user can switch between them by using Ctrl-Arrow keys. Orbiter must know the relative location of bitmaps to each other, so that the correct panel can be loaded. This connectivity is provided by the \textit{oapiSetPanelNeighbours} function. This function tells Orbiter which panels are to the left, right, top and bottom of the current panel. A value of –1 indicates that no panel is located at that side.\\
+In a vessel that defines multiple panels, the user can switch between them by using \Ctrl\DArrow\UArrow\RArrow\LArrow keys. Orbiter must know the relative location of bitmaps to each other, so that the correct panel can be loaded. This connectivity is provided by the \textit{oapiSetPanelNeighbours} function. This function tells Orbiter which panels are to the left, right, top and bottom of the current panel. A value of –1 indicates that no panel is located at that side.\\
 \\
 \textbf{Important}: All the panel id’s defined during \textit{oapiSetPanelNeighbours} must be supported by \textit{clbkLoadPanel}. For example, if panel 0 calls \textit{oapiSetPanelNeighbours( 2, -1, 1, -1 )}, then panels 1 and 2 must be handled by \textit{clbkLoadPanel}.\\
 \\
@@ -1626,7 +1626,7 @@ bool MyVessel::clbkLoadVC( int id )
 \end{lstlisting}
 
 \noindent
-This will allow the user to switch to VC mode with the F8 key. The \textit{id} parameter is currently always 0. Eventually it will allow to select different cockpit positions.\\
+This will allow the user to switch to VC mode with the \keystroke{F8} key. The \textit{id} parameter is currently always 0. Eventually it will allow to select different cockpit positions.\\
 \\
 In the body of \textit{clbkLoadVC}, you can define camera parameters:
 
@@ -1646,7 +1646,7 @@ bool MyVessel::clbkLoadVC( int id )
 \\
 Note that you only need to define these camera parameters here if they change between different cockpit view modes. If all camera modes use the same parameters, they can be defined globally in the overloaded \textit{clbkSetClassCaps} method.\\
 \\
-Once you have implemented the \textit{clbkLoadVC} method thus far and defined the VC mesh, you should be able to compile the module and test the virtual cockpit mode in Orbiter. Try rotating the view with Alt+cursor keys, and 'leaning' with Ctrl+Alt+cursor keys. When you are satisfied with the camera parameters, you can proceed to activate VC areas.
+Once you have implemented the \textit{clbkLoadVC} method thus far and defined the VC mesh, you should be able to compile the module and test the virtual cockpit mode in Orbiter. Try rotating the view with \Alt\DArrow\UArrow\RArrow\LArrow keys, and 'leaning' with \Ctrl\Alt\DArrow\UArrow\RArrow\LArrow keys. When you are satisfied with the camera parameters, you can proceed to activate VC areas.
 
 
 \subsubsection{Defining active VC areas}
