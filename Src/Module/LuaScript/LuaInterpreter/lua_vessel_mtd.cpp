@@ -406,6 +406,10 @@ void Interpreter::LoadVesselAPI ()
 		{"dockingstatus", v_dockingstatus},
 		{"undock", v_undock },
 		{"dock", v_dock },
+		{"get_proxydock", v_get_proxydock },
+		{"get_dockindex", v_get_dockindex },
+		{"get_targetdockalignment", v_get_targetdockalignment },
+		{"move_dock", v_move_dock },
 
 		// Attachment management
 		{"create_attachment", v_create_attachment},
@@ -5995,6 +5999,73 @@ int Interpreter::v_dock(lua_State* L)
 	return 0;
 }
 
+int Interpreter::v_get_proxydock(lua_State* L)
+{
+	static const char *funcname = "get_proxydock";
+	AssertMtdMinPrmCount(L, 2, funcname);
+	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
+	DOCKHANDLE hDock = (DOCKHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
+
+	DOCKHANDLE hProxy = v->GetProxyDock(hDock);
+
+	if(hProxy)
+		lua_pushlightuserdata(L, hProxy);
+	else
+		lua_pushnil(L);
+	return 1;
+}
+
+int Interpreter::v_get_dockindex(lua_State* L)
+{
+	static const char *funcname = "get_dockindex";
+	AssertMtdMinPrmCount(L, 2, funcname);
+	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
+	DOCKHANDLE hDock = (DOCKHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
+
+	int idx = v->GetDockIndex(hDock);
+
+	lua_pushinteger(L, idx);
+	return 1;
+}
+
+int Interpreter::v_get_targetdockalignment(lua_State* L)
+{
+	static const char *funcname = "get_targetdockalignment";
+	AssertMtdMinPrmCount(L, 3, funcname);
+	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
+	DOCKHANDLE hDock = (DOCKHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
+	DOCKHANDLE hTgt = (DOCKHANDLE)luamtd_tolightuserdata_safe(L, 3, funcname);
+
+	VECTOR3 ref, dir, rot, vel;
+
+	bool ret = v->GetTargetDockAlignment(hDock, hTgt, &ref, &dir, &rot, &vel);
+
+	if(ret) {
+		lua_pushvector(L, ref);
+		lua_pushvector(L, dir);
+		lua_pushvector(L, rot);
+		lua_pushvector(L, vel);
+		return 4;
+	}
+	return 0;
+}
+
+int Interpreter::v_move_dock(lua_State* L)
+{
+	static const char *funcname = "move_dock";
+	AssertMtdMinPrmCount(L, 5, funcname);
+	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
+	DOCKHANDLE hDock = (DOCKHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
+
+	VECTOR3 pos = luamtd_tovector_safe(L, 3, funcname);
+	VECTOR3 dir = luamtd_tovector_safe(L, 4, funcname);
+	VECTOR3 rot = luamtd_tovector_safe(L, 5, funcname);
+
+	v->MoveDock(hDock, pos, dir, rot);
+	return 0;
+}
+
+
 /***
 Attachments
 @section vessel_mtd_attachment
@@ -6108,7 +6179,7 @@ orthogonal.
 @param rot (<i><b>@{types.vector|vector}</b></i>) longitudinal alignment vector in vessel coordinates
 @see vessel:create_attachment, vessel:get_attachmentparams, vessel:get_attachmenthandle
 */
-#include <cassert>
+
 int Interpreter::v_set_attachmentparams (lua_State *L)
 {
 	static const char *funcname = "set_attachmentparams";

@@ -888,6 +888,8 @@ void Interpreter::LoadAPI ()
 		// Docking
 		{"get_dockhandle", oapi_get_dockhandle},
 		{"get_dockstatus", oapi_get_dockstatus},
+		{"get_dockowner", oapi_get_dockowner},
+		{"set_autocapture", oapi_set_autocapture},
 
 		// Navigation radio transmitter functions
 		{"get_navpos", oapi_get_navpos},
@@ -1266,7 +1268,7 @@ void Interpreter::LoadAPI ()
 	lua_pushnumber (L, GRPEDIT_VTXMOD     ); lua_setfield (L, -2, "VTXMOD");
 	lua_setglobal (L, "GRPEDIT");
 
-	lua_createtable (L, 0, 8);
+	lua_createtable (L, 0, 5);
 	lua_pushnumber (L, oapi::ImageFileFormat::IMAGE_BMP); lua_setfield (L, -2, "BMP");
 	lua_pushnumber (L, oapi::ImageFileFormat::IMAGE_PNG); lua_setfield (L, -2, "PNG");
 	lua_pushnumber (L, oapi::ImageFileFormat::IMAGE_JPG); lua_setfield (L, -2, "JPG");
@@ -3446,7 +3448,7 @@ int Interpreter::oapi_get_dockhandle(lua_State* L)
 }
 int Interpreter::oapi_get_dockstatus(lua_State* L)
 {
-	DOCKHANDLE hDock = (DOCKHANDLE)luamtd_tolightuserdata_safe(L, 1, "oapi_get_dockstatus");
+	DOCKHANDLE hDock = (DOCKHANDLE)lua_tolightuserdata_safe(L, 1, "get_dockstatus");
 	OBJHANDLE hDockedVessel = oapiGetDockStatus(hDock);
 	if (hDockedVessel) {
 		lua_pushlightuserdata(L, hDockedVessel);
@@ -3456,6 +3458,28 @@ int Interpreter::oapi_get_dockstatus(lua_State* L)
 	return 1;
 }
 
+int Interpreter::oapi_set_autocapture(lua_State* L)
+{
+	DOCKHANDLE hDock = (DOCKHANDLE)lua_tolightuserdata_safe(L, 1, "set_autocapture");
+	if(!lua_isboolean(L, 2)) {
+		return luaL_error(L, "Argument 2: set_autocapture expects a boolean");
+	}
+	bool enable = lua_toboolean(L, 2);
+	oapiSetAutoCapture(hDock, enable);
+	return 0;
+}
+
+int Interpreter::oapi_get_dockowner(lua_State* L)
+{
+	DOCKHANDLE hDock = (DOCKHANDLE)lua_tolightuserdata_safe(L, 1, "get_dockowner");
+	OBJHANDLE hOwner = oapiGetDockOwner(hDock);
+	if (hOwner) {
+		lua_pushlightuserdata(L, hOwner);
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
 
 
 int Interpreter::oapi_get_navpos (lua_State *L)

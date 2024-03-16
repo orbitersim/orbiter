@@ -479,6 +479,8 @@ protected:
 	// docking
 	static int oapi_get_dockhandle(lua_State* L);
 	static int oapi_get_dockstatus(lua_State* L);
+	static int oapi_set_autocapture(lua_State* L);
+	static int oapi_get_dockowner(lua_State* L);
 
 	// Navigation radio transmitter functions
 	static int oapi_get_navpos (lua_State *L);
@@ -825,6 +827,10 @@ protected:
 	static int v_dockingstatus (lua_State *L);
 	static int v_undock(lua_State* L);
 	static int v_dock(lua_State* L);
+	static int v_get_proxydock(lua_State* L);
+	static int v_get_dockindex(lua_State* L);
+	static int v_get_targetdockalignment(lua_State* L);
+	static int v_move_dock(lua_State* L);
 
 	// attachment management
 	static int v_create_attachment (lua_State *L);
