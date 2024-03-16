@@ -401,6 +401,7 @@ protected:
 	static int oapi_set_texture(lua_State* L);
 	static int oapi_create_surface(lua_State* L);
 	static int oapi_destroy_surface(lua_State* L);
+	static int oapi_save_surface(lua_State* L);
 
 	// GC
 	static int oapi_set_materialex(lua_State* L);

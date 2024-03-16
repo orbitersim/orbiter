@@ -803,6 +803,7 @@ void Interpreter::LoadAPI ()
 		{"set_texture", oapi_set_texture},
 		{"create_surface", oapi_create_surface},
 		{"destroy_surface", oapi_destroy_surface},
+		{"save_surface", oapi_save_surface},
 		
 		// GC
 		{"set_materialex", oapi_set_materialex},
@@ -1265,6 +1266,13 @@ void Interpreter::LoadAPI ()
 	lua_pushnumber (L, GRPEDIT_VTXMOD     ); lua_setfield (L, -2, "VTXMOD");
 	lua_setglobal (L, "GRPEDIT");
 
+	lua_createtable (L, 0, 8);
+	lua_pushnumber (L, oapi::ImageFileFormat::IMAGE_BMP); lua_setfield (L, -2, "BMP");
+	lua_pushnumber (L, oapi::ImageFileFormat::IMAGE_PNG); lua_setfield (L, -2, "PNG");
+	lua_pushnumber (L, oapi::ImageFileFormat::IMAGE_JPG); lua_setfield (L, -2, "JPG");
+	lua_pushnumber (L, oapi::ImageFileFormat::IMAGE_TIF); lua_setfield (L, -2, "TIF");
+	lua_pushnumber (L, oapi::ImageFileFormat::IMAGE_DDS); lua_setfield (L, -2, "DDS");
+	lua_setglobal (L, "IMAGEFORMAT");
 }
 
 void Interpreter::LoadMFDAPI ()
@@ -2549,6 +2557,20 @@ int Interpreter::oapi_destroy_surface(lua_State* L)
 	SURFHANDLE surf = (SURFHANDLE)lua_touserdata(L, 1);
 	oapiDestroySurface(surf);
 	return 0;
+}
+
+int Interpreter::oapi_save_surface(lua_State* L)
+{
+	const char *name = luaL_checkstring(L, 1);
+	SURFHANDLE surf = (SURFHANDLE)lua_touserdata(L, 2);
+	oapi::ImageFileFormat format = (oapi::ImageFileFormat)luaL_checkinteger(L, 3);
+	float quality = 0.7;
+	if(lua_gettop(L)>=4)
+		quality = luaL_checknumber(L, 4);
+
+	bool ret = oapiSaveSurface(name, surf, format, quality);
+	lua_pushboolean(L, ret);
+	return 1;
 }
 
 int Interpreter::oapi_set_texture(lua_State* L)
