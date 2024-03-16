@@ -71,6 +71,11 @@ extern set<D3D9Mesh*> MeshCatalog;
 extern set<SurfNative*>	SurfaceCatalog;
 extern IDirect3D9* g_pD3DObject;
 
+extern Memgr<float>* g_pMemgr_f;
+extern Memgr<INT16>* g_pMemgr_i;
+extern Memgr<UINT8>* g_pMemgr_u;
+extern Memgr<WORD>* g_pMemgr_w;
+extern Memgr<VERTEX_2TEX>* g_pMemgr_vtx;
 
 /**
  * \brief Statistical data storage

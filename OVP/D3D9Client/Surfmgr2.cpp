@@ -83,14 +83,8 @@ SurfTile::SurfTile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 
 SurfTile::~SurfTile ()
 {
-	if (elev) {
-		delete []elev;
-		elev = NULL;
-	}
-	if (elev_file) {
-		delete []elev_file;
-		elev_file = NULL;
-	}
+	if (elev) g_pMemgr_f->Free(elev);
+	if (elev_file) g_pMemgr_i->Free(elev_file);	
 	if (ltex && owntex) {
 		if (TileCatalog->Remove(ltex)) ltex->Release();
 	}
@@ -219,8 +213,8 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 	if (smgr->DoLoadIndividualFiles(2)) { // try loading from individual tile file
 		sprintf_s(path, MAX_PATH, "%s\\Elev\\%02d\\%06d\\%06d.elv", mgr->DataRootDir().c_str(), lvl, ilat, ilng);
 		if (!fopen_s(&f, path, "rb")) {
-			e = new INT16[ndat];
-			elev = new float[ndat];
+			e = g_pMemgr_i->New(ndat);
+			elev = g_pMemgr_f->New(ndat);
 			// read the elevation file header
 			fread (&ehdr, sizeof(ELEVFILEHEADER), 1, f);
 			if (ehdr.hdrsize != sizeof(ELEVFILEHEADER)) fseek (f, ehdr.hdrsize, SEEK_SET);
@@ -234,11 +228,11 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 				for (i = 0; i < ndat; i++) e[i] = 0;
 				break;
 			case 8: {
-				UINT8 *tmp = new UINT8[ndat];
+				UINT8 *tmp = g_pMemgr_u->New(ndat);
 				fread (tmp, sizeof(UINT8), ndat, f);
 				for (i = 0; i < ndat; i++)
 					e[i] = (INT16)tmp[i];
-				delete []tmp;
+				g_pMemgr_u->Free(tmp);
 				tmp = NULL;
 				}
 				break;
@@ -254,8 +248,8 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 		DWORD ndata = smgr->ZTreeManager(2)->ReadData(lvl, ilat, ilng, &buf);
 		if (ndata) {
 			BYTE *p = buf;
-			e = new INT16[ndat];
-			elev = new float[ndat];
+			e = g_pMemgr_i->New(ndat);
+			elev = g_pMemgr_f->New(ndat);
 			memcpy(&ehdr, p, sizeof(ELEVFILEHEADER));
 			LogClr("Teal", "NewTileA[%s]: Lvl=%d, Scale=%g, Offset=%g", name, lvl-4, ehdr.scale, ehdr.offset);
 
@@ -323,7 +317,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 					break;
 				case 8: {
 					const UINT8 mask = UCHAR_MAX;
-					UINT8 *tmp = new UINT8[ndat];
+					UINT8 *tmp = g_pMemgr_u->New(ndat);
 					fread (tmp, sizeof(UINT8), ndat, f);
 					for (i = 0; i < ndat; i++) {
 						if (tmp[i] != mask) {
@@ -332,13 +326,13 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 							elev[i] = float(e[i]) * float(tgt_res);
 						}
 					}
-					delete []tmp;
+					g_pMemgr_u->Free(tmp);
 					tmp = NULL;
 					}
 					break;
 				case -16: {
 					const INT16 mask = SHRT_MAX;
-					INT16 *tmp = new INT16[ndat];
+					INT16* tmp = g_pMemgr_i->New(ndat);
 					fread (tmp, sizeof(INT16), ndat, f);
 					for (i = 0; i < ndat; i++) {
 						if (tmp[i] != mask) {
@@ -347,7 +341,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 							elev[i] = float(e[i]) * float(tgt_res);
 						}
 					}
-					delete []tmp;
+					g_pMemgr_i->Free(tmp);
 					tmp = NULL;
 					}
 					break;
@@ -549,7 +543,7 @@ bool SurfTile::LoadElevationData ()
 
 			if (!pelev_file) return false;
 
-			elev = new float[ndat];
+			elev = g_pMemgr_f->New(ndat);
 
 			// submit ancestor data to elevation manager for interpolation
 			mgr->GetClient()->ElevationGrid(hElev, ilat, ilng, lvl, pilat, pilng, plvl, pelev_file, elev);
@@ -562,7 +556,7 @@ bool SurfTile::LoadElevationData ()
 		else {
 			QuadTreeNode<SurfTile> *parent = node->Parent();
 			if (parent &&  parent->Entry()->elev) {
-				elev = new float[ndat];
+				elev = g_pMemgr_f->New(ndat);
 				InterpolateElevationGrid(parent->Entry()->elev, elev);
 			}
 		}

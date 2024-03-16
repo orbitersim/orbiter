@@ -57,8 +57,8 @@ VBMESH::~VBMESH ()
 		SAFE_RELEASE(pVB);
 		SAFE_RELEASE(pIB);
 	}
-	SAFE_DELETEA(vtx);
-	SAFE_DELETEA(idx);
+	if (vtx) g_pMemgr_vtx->Free(vtx);
+	if (idx) g_pMemgr_w->Free(idx);
 	nv_cur = 0;
 	nf_cur = 0;
 }
@@ -139,8 +139,8 @@ void CreateSphere (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, DWORD nrings, bool hemi
 	// Allocate memory for the vertices and indices
 	DWORD       nVtx = hemisphere ? nrings*(nrings+1)+2 : nrings*(2*nrings+1)+2;
 	DWORD       nIdx = hemisphere ? 6*nrings*nrings : 12*nrings*nrings;
-	VERTEX_2TEX* Vtx = new VERTEX_2TEX[nVtx];
-	WORD*        Idx = new WORD[nIdx];
+	VERTEX_2TEX* Vtx = g_pMemgr_vtx->New(nVtx);
+	WORD*        Idx = g_pMemgr_w->New(nIdx);
 
 	// Counters
     WORD x, y, nvtx = 0, nidx = 0;
@@ -223,8 +223,8 @@ void CreateSphere (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, DWORD nrings, bool hemi
 	mesh.idx = Idx;
 	mesh.MapVertices(pDev);
 	
-	delete []Vtx;
-	delete []Idx;
+	if (Vtx) g_pMemgr_vtx->Free(Vtx);
+	if (Idx) g_pMemgr_w->Free(Idx);
 
 	Vtx = NULL;
 	Idx = NULL;
@@ -254,7 +254,7 @@ void CreateSpherePatch (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, int nlng, int nlat
 	// generate nodes
 	nVtx = (bseg+1)*(res+1);
 	if (reduce) nVtx -= ((res+1)*res)/2;
-	VERTEX_2TEX *Vtx = new VERTEX_2TEX[nVtx];
+	VERTEX_2TEX *Vtx = g_pMemgr_vtx->New(nVtx);
 
 	// create transformation for bounding box
 	// we define the local coordinates for the patch so that the x-axis points
@@ -320,7 +320,7 @@ void CreateSpherePatch (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, int nlng, int nlat
 
 	// generate faces
 	nIdx = (reduce ? res * (2*bseg-res) : 2*res*bseg) * 3;
-	WORD *Idx = new WORD[nIdx]();
+	WORD *Idx = g_pMemgr_w->New(nIdx);
 
 	for (i = n = nofs0 = 0; i < res; i++) {
 		nseg = (reduce ? bseg-i : bseg);
@@ -346,8 +346,8 @@ void CreateSpherePatch (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, int nlng, int nlat
 	mesh.idx = Idx;
 	mesh.MapVertices(pDev);
 
-	delete []Vtx;
-	delete []Idx;
+	if (Vtx) g_pMemgr_vtx->Free(Vtx);
+	if (Idx) g_pMemgr_w->Free(Idx);
 
 	Vtx = NULL;
 	Idx = NULL;

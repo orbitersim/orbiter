@@ -8,6 +8,11 @@
 #define __D3D9CATALOG_H
 
 #include <set>
+#include <map>
+#include <list>
+#include <string>
+#include <assert.h>
+#include "OrbiterAPI.h"
 
 template <typename T>
 class D3D9Catalog {
@@ -37,6 +42,67 @@ public:
 
 private:
 	TSet _data;
+};
+
+
+// ---------------------------------------------------------------
+// Memory Manager
+// ---------------------------------------------------------------
+
+template <typename T>
+class Memgr
+{
+private:
+
+	std::string name;
+	std::map<DWORD, std::list<T*>> Fre;
+	std::map<T*, DWORD> Rsv;
+
+public:
+	Memgr(std::string n) : name(n)
+	{
+	}
+
+	~Memgr()
+	{
+#ifdef _DEBUG
+		size_t size = 0; DWORD ent = 0;
+		for (auto x : Fre) for (auto y : x.second) { ent++; size += x.first * sizeof(T); delete y; }
+		oapiWriteLogV("Memgr[%s] Total of %u bytes in %u entries", name.c_str(), size, ent);
+		if (Rsv.size() == 0) oapiWriteLogV("Memgr[%s] All clear",name.c_str());
+		else for (auto x : Rsv) {
+			oapiWriteLogV("Memgr[%s] Leaking %u bytes", name.c_str(), x.second * sizeof(T));
+			delete x.first;
+		}
+#else
+		for (auto x : Fre) for (auto y : x.second) delete y;
+		for (auto x : Rsv) delete x.first;
+#endif // DEBUG
+	}
+
+	T* New(DWORD size)
+	{
+		if (Fre.find(size) != Fre.end()) { // Do we have entries of size 'size'
+			auto& r = Fre[size];
+			if (r.size() > 0) {			// Any any unused exists ?
+				auto p = r.front();		// Get top entry
+				r.pop_front();			// Remove it
+				Rsv[p] = size;			// List it as used
+				return p;
+			}
+		}
+		auto x = new T[size];			// Allocate new entry
+		Rsv[x] = size;					// List it as used
+		return x;
+	}
+
+	void Free(T* p)
+	{
+		auto it = Rsv.find(p);			// Find the entry (log2 complexity)
+		assert(it != Rsv.end());
+		Fre[it->second].push_front(p);	// Add it in a fron of free entries
+		Rsv.erase(it);					// Remove from used (reserved)
+	}
 };
 
 #endif // !__D3D9EXTRA_H

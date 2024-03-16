@@ -67,6 +67,11 @@ HINSTANCE g_hInst = 0;
 D3D9Client *g_client = 0;
 class gcConst* g_pConst = 0;
 IDirect3D9* g_pD3DObject = 0;  // Made valid when VideoTab is created
+Memgr<float>* g_pMemgr_f = nullptr;
+Memgr<INT16>* g_pMemgr_i = nullptr;
+Memgr<UINT8>* g_pMemgr_u = nullptr;
+Memgr<WORD>* g_pMemgr_w = nullptr;
+Memgr<VERTEX_2TEX>* g_pMemgr_vtx = nullptr;
 
 D3D9Catalog<LPDIRECT3DTEXTURE9>	 *TileCatalog;
 
@@ -145,6 +150,12 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 
 	D3D9InitLog("Modules/D3D9Client/D3D9ClientLog.html");
 
+	g_pMemgr_f = new Memgr<float>("float");
+	g_pMemgr_i = new Memgr<INT16>("UINT16");
+	g_pMemgr_u = new Memgr<UINT8>("UINT8");
+	g_pMemgr_w = new Memgr<WORD>("WORD");
+	g_pMemgr_vtx = new Memgr<VERTEX_2TEX>("VERTEX_2TEX");
+
 	if (!D3DXCheckVersion(D3D_SDK_VERSION, D3DX_SDK_VERSION)) {
 		MissingRuntimeError();
 		return;
@@ -213,6 +224,12 @@ DLLCLBK void ExitModule(HINSTANCE hDLL)
 
 	LogAlw("Log Closed");
 	D3D9CloseLog();
+
+	SAFE_DELETE(g_pMemgr_f);
+	SAFE_DELETE(g_pMemgr_i);
+	SAFE_DELETE(g_pMemgr_u);
+	SAFE_DELETE(g_pMemgr_w);
+	SAFE_DELETE(g_pMemgr_vtx);
 }
 
 DLLCLBK gcGUIBase * gcGetGUICore()

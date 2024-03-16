@@ -440,7 +440,7 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, float *elev, double 
 
 	int nvtx = (grdlat+1)*(grdlng+1);         // patch mesh node grid
 	int nvtxbuf = nvtx + grdlat+1 + grdlng+1; // add buffer for storage of edges (for elevation matching)
-	VERTEX_2TEX *vtx = new VERTEX_2TEX[nvtxbuf];
+	VERTEX_2TEX *vtx = g_pMemgr_vtx->New(nvtxbuf);
 
 	// create transformation for bounding box
 	// we define the local coordinates for the patch so that the x-axis points
@@ -517,7 +517,7 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, float *elev, double 
 
 	// create the face indices
 	int nidx = 2*grdlat*grdlng * 3;
-	WORD *idx = new WORD[nidx];
+	WORD *idx = g_pMemgr_w->New(nidx);
 
 	if (elev) { // do adaptive orientation of cell diagonal
 		float *elev1, *elev2, *elev1n, *elev2n, err1, err2;
@@ -657,8 +657,8 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, float *elev, double globelev)
 	// Allocate memory for the vertices and indices
 	int         nVtx = (grd-1)*(grd+1)+2;
 	int         nIdx = 6*(grd*(grd-2)+grd);
-	VERTEX_2TEX *Vtx = new VERTEX_2TEX[nVtx];
-	WORD*       Idx = new WORD[nIdx];
+	VERTEX_2TEX *Vtx = g_pMemgr_vtx->New(nVtx);
+	WORD*       Idx = g_pMemgr_w->New(nIdx);
 
 	// Counters
     WORD x, y, nvtx = 0, nidx = 0;
