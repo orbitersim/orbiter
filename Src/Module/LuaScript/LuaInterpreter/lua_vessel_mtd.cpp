@@ -5988,15 +5988,24 @@ int Interpreter::v_undock(lua_State* L)
 
 int Interpreter::v_dock(lua_State* L)
 {
-	static const char* funcname = "undock";
-	AssertMtdMinPrmCount(L, 2, funcname);
+	static const char* funcname = "dock";
+	AssertMtdMinPrmCount(L, 4, funcname);
 	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
-	OBJHANDLE target = (OBJHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
-	UINT n = (UINT)luamtd_tointeger_safe(L, 3, funcname);
-	UINT tgtn = (UINT)luamtd_tointeger_safe(L, 4, funcname);
-	UINT mode = (UINT)luamtd_tointeger_safe(L, 5, funcname);
-	v->Dock(target, n, tgtn, mode);
-	return 0;
+	int ret;
+	if(lua_isnumber(L, 3)) {
+		OBJHANDLE target = (OBJHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
+		UINT n = (UINT)luamtd_tointeger_safe(L, 3, funcname);
+		UINT tgtn = (UINT)luamtd_tointeger_safe(L, 4, funcname);
+		UINT mode = (UINT)luamtd_tointeger_safe(L, 5, funcname);
+		ret = v->Dock(target, n, tgtn, mode);
+	} else {
+		DOCKHANDLE source = (DOCKHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
+		DOCKHANDLE target = (DOCKHANDLE)luamtd_tolightuserdata_safe(L, 3, funcname);
+		UINT mode = (UINT)luamtd_tointeger_safe(L, 4, funcname);
+		ret = v->Dock(source, target, mode);
+	}
+	lua_pushinteger(L, ret);
+	return 1;
 }
 
 int Interpreter::v_get_proxydock(lua_State* L)
