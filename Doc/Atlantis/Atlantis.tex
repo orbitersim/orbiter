@@ -165,9 +165,230 @@ Prior to docking, the cargo bay doors must be fully open. The docking approach d
 \captionof{figure}{Effect of RCS command input on linear/rotational alignment cues in Docking MFD for Shuttle with docking adapter installed in cargo bay.}
 \end{center}
 
+\break
+\subsection{Subsystem operations}
 
+The payload bay operations in Orbiter’s Atlantis implementation consist of
+\begin{itemize} 
+\item opening and closing the payload bay doors
+\item deploying and retracting the forward radiator panels
+\item deploying and retracting the Ku-band antenna
+\item operating the RMS arm for deploying and stowing payload
+\end{itemize}
 
+The bay doors, radiators and Ku-band antenna operation closely follows the real shuttle procedures, using panel R13L. This panel is accessible from the payload operator position of the VC (via \ks{Ctrl}\ks{Alt}\ks{$\leftarrow$}). Alternatively, a dialog representation of the panel is available by pressing \ks{Ctrl}\ks{Space} and selecting Payload door operation. The dialog is also available in external views.
 
+\begin{center}
+\includegraphics[width=0.75\textwidth]{Images//Pic7.png}
+\captionof{figure}{Panel R13L in the virtual cockpit (left) and as a dialog (right).}
+\end{center}
 
+\subsubsection{Bay door operation}
+
+\textbf{Bay door opening sequence:}
+\begin{itemize} 
+\item Set the PL BAY DOOR switch to STOP.
+\item Set the PL BAY DOOR SYS 1 and SYS 2 switches to ENABLE.
+\item Set the PL BAY DOOR switch to OPEN.
+\item Wait until the OP/CL status of the talkback indicator shows OP.
+\item Set the PL BAY DOOR switch to STOP.
+\item Set the PL BAY DOOR SYS 1 and SYS 2 switches to DISABLE.
+\end{itemize}
+
+\textbf{Bay door closing sequence:}
+\begin{itemize} 
+\item Make sure that the radiators, Ku-band antenna and RMS arm are stowed.
+\item Set the PL BAY DOOR switch to STOP.
+\item Set the PL BAY DOOR SYS 1 and SYS 2 switches to ENABLE.
+\item Set the PL BAY DOOR switch to CLOSE.
+\item Wait until the OP/CL status of the talkback indicator shows CL.
+\item Set the PL BAY DOOR switch to STOP.
+\item Set the PL BAY DOOR SYS 1 and SYS 2 switches to DISABLE.
+\end{itemize}
+(Ref: Operations Manual Sec. 2.17)
+
+\subsubsection{Radiator operation}
+The Space Shuttle has four radiators to dissipate heat from the coolant loops – two on the inside of each of the payload bay doors. The forward radiator panels on each side can be deployed when the doors are open; the aft panels are fixed. The radiator deployment is also controlled from panel R13L.\\
+
+\textbf{Radiator deployment sequence:}
+\begin{itemize} 
+\item The payload bay doors must be fully open.
+\item Set the PL BAY MECH PWR SYS 1 and SYS 2 switches to ON.
+\item Set the LATCH CONTROL SYS A and SYS B switches to REL (release).
+\item After 30 seconds, set both latch control switches back to OFF.
+\item Set the RADIATOR CONTROL SYS A and SYS B switches to DEPLOY.
+\item After 50 seconds, set both radiator control switches back to OFF.
+\item Set both PL BAY MECH PWR switches back to OFF.
+\end{itemize}
+
+\textbf{Radiator stowing sequence:}
+\begin{itemize} 
+\item Set the PL BAY MECH PWR SYS 1 and SYS 2 switches to ON.
+\item Set the RADIATOR CONTROL SYS A and SYS B switches to STOW.
+\item After 50 seconds, set both radiator control switches back to OFF.
+\item Set the LATCH CONTROL SYS A and SYS B switches to LATCH.
+\item After 30 seconds, set both latch control switches back to OFF.
+\item Set both PL BAY MECH PWR switches back to OFF.
+\end{itemize}
+(Ref: Operations Manual Sec. 2.9)
+
+\subsubsection{Ku-band antenna operation}
+The Ku-band antenna is carried on the starboard sill longeron inside the orbiter’s cargo bay and can be deployed once the payload bay doors are open. The antenna is used for communication with ground stations. Alternatively, it can also be used as a radar system for tracking objects in space. The controls for deployment and stowage of the Ku-band system are located on panel R13L. Jettisoning the assembly, and the actual functionality of the Ku-band system are not currently implemented in this version.\\
+
+\textbf{Ku-band deployment sequence:}
+\begin{itemize} 
+\item The payload bay doors must be fully open.
+\item Set the KU ANTENNA switch to DEPLOY.
+\item The deployment procedure takes approximately 23 seconds.
+\item When the talkback indicator shows DPL, set the KU ANTENNA switch back to GND.
+\end{itemize}
+
+\textbf{Ku-band stowing sequence:}
+\begin{itemize} 
+\item Set the KU ANTENNA switch to STOW.
+\item The stowing procedure takes approximately 23 seconds.
+\item When the talkback indicator shows STO, set the KU ANTENNA switch back to GND.
+\item If the assembly does not respond to the normal stowing operation, set the KU ANTENNA DIRECT STOW switch to ON. This bypasses the normal stow control sequences and causes the assembly to be driven inside the payload bay.
+\end{itemize}
+(Ref: Operations Manual Sec. 2.4)
+
+\break
+\subsection{SRMS operation and grappling}
+
+\begin{wrapfigure}{r}{0.25\linewidth}
+\includegraphics[width=\linewidth]{Images//Pic8.png}
+\caption{}
+\end{wrapfigure}
+
+The Shuttle carries a mechanical manipulator arm (SRMS, Shuttle Remote Manipulator System, also “Canadarm”) in the cargo bay which can be used for releasing and recapturing satellites, deliver modules to the space station, as an MMU platform, etc.
+
+The arm can be used in orbit once the cargo bay doors have been fully opened. Likewise, the arm must be stowed before the doors can be closed again.
+
+In Orbiter, the arm is controlled with a dialog. Press \ks{Ctrl}\ks{Space} to bring up the Atlantis control box and select “RMS operation”.
+
+The arm has three joints: the shoulder joint can be rotated in yaw and pitch, the elbow joint can be rotated in pitch, and the wrist joint can be rotated in pitch, yaw and roll.
+
+To grapple a satellite while stowed in the cargo bay, move the SRMS tip onto a grappling point and press “Grapple”. If the satellite was successfully attached, the button label switches to “Release”. To make it easier to identify the grappling points on the satellite, you can tick the “Show grapple points” box. This marks all grappling points with flashing arrows.
+
+To release the satellite, press “Release”.
+
+You can also grapple freely drifting satellites if you move the SRMS tip onto a grappling point. To return a satellite back to Earth, it must be stowed in the cargo bay. Use the SRMS arm to bring the satellite into its correct stowing position in the payload bay. When the Payload “Arrest” button becomes active, the satellite can be fixed in the bay by pressing the button. It is automatically released from the SRMS tip.\\
+
+The SRMS arm can be stowed in its transport position by pressing the SRMS “Stow” button. This is only possible as long as no object is attached to the arm. Payload can be released directly from the bay by pressing the “Purge” button.
+\begin{center}
+\includegraphics[width=0.6\textwidth]{Images//Pic9.jpg}
+\captionof{figure}{}
+\end{center}
+
+\section{Keyboard controls}
+In addition to the generic Orbiter vessel control keys, Atlantis supports the following vessel-specific key controls:
+
+\begin{table}[H]
+	\centering
+	\begin{tabular}{ |l|l| }
+	\hline\rule{0pt}{2ex}
+	\textbf{Shortcut} & \textbf{Action}\\
+	\hline\rule{0pt}{2ex}
+	\ks{G} & Operate landing gear (activated only after ET separation)\\
+	\hline\rule{0pt}{2ex}
+	\ks{J} & Jettison: separate SRBs or ET\\
+	\hline\rule{0pt}{2ex}
+	\ks{K} & Operate cargo bay doors (shortcut – for the full procedure see chapter 3.4)\\
+	\hline\rule{0pt}{2ex}
+	\ks{Ctrl}\ks{B} & Operate split-rudder brake\\
+	\hline\rule{0pt}{2ex}
+	\ks{Ctrl}\ks{U} & Deploy/retract Ku-band antenna (shortcut – for the full procedure see chapter 3.4)\\
+	\hline\rule{0pt}{2ex}
+	\ks{Ctrl}\ks{Space} & Open control box for access to payload bay and SRMS control dialogs.\\
+	\hline
+	\end{tabular}
+\end{table}
+
+\section{Configuration}
+\begin{wrapfigure}{r}{0.4\linewidth}
+\includegraphics[width=\linewidth]{Images//Pic10.png}
+\caption{}
+\end{wrapfigure}
+The Space Shuttle model included with the Orbiter distribution contains very detailed meshes and textures of the exterior and flightdeck interior to provide the best possible visual appearance. On some older computers this may lead to loss of performance and slow response. To address this problem, Orbiter can be configured to use a less detailed visual model.
+On the Extra tab of the Orbiter Launchpad, double-click Vessel configuration, followed by Atlantis Configuration. Switch the Texture and Mesh resolution settings to Low. This will put less load on the graphics system of your computer, at the cost of some visual detail.
+
+\section{Implementation notes}
+
+This section contains details of the implementation of the Space Shuttle (Atlantis) vessel class in Orbiter. The C++ module code for the Shuttle orbiter, the external tank and the solid rocket boosters is available in the.$/Src/Vessel/Atlantis$ subdirectory of the Orbiter source distribution. The physical parameters discussed in this section are the values used by Orbiter, as collected from public sources or guessed from fitting flight parameters. They may in some cases deviate from the actual Space Shuttle specifications. Suggestions and corrections to the model are always welcome.
+
+\break
+\subsection{Mesh-derived parameters}
+The following parameters were extracted from the surface meshes of the Shuttle components:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|l|}
+\hline
+\multicolumn{4}{|l|}{\cellcolor{cyan!10}Orbiter}\\
+\hline
+Length & 39.16 & m & \\
+\hline
+Wingspan & 24.54 & m & \\
+\hline
+Height & 14.29 & m & \\
+\hline
+Volume & 1133 & m3 & \\
+\hline
+Cross-sections & 234.8 / 389.1 / 68.2 & m2 & (side-on / top-down / head-on)\\
+\hline
+PMI* & 78.2 / 82.1 / 10.7 & m2 & (xx / yy / zz)\\
+\hline
+\multicolumn{4}{|l|}{\cellcolor{yellow!10}External tank (ET)}\\
+\hline
+Length & 47.83 & m & \\
+\hline
+Diameter & 9.68 & m & \\
+\hline
+Volume & 2829 & m3 & \\
+\hline
+Cross-sections & 412.1 / 411.8 / 72.7 & m2 & (side-on / top-down / head-on)\\
+\hline
+PMI* & 145.6 / 145.6 / 10.5 & m2 & (xx / yy / zz)\\
+\hline
+\multicolumn{4}{|l|}{\cellcolor{cyan!10}Solid rocket booster (SRB)}\\
+\hline
+Length & 45.7 & m & \\
+\hline
+Diameter & 3.8 & m & \\
+\hline
+Volume & 452 & m3 & \\
+\hline
+Cross-sections & 162.1 / 162.1 / 26.6 & m2 & (side-on / top-down / head-on)\\
+\hline
+PMI* & 154.3 / 154.3 / 1.83 & m2 & (xx / yy / zz)\\
+\hline
+\multicolumn{4}{|l|}{\cellcolor{yellow!10}Orbiter + ET assembly}\\
+\hline
+Length & 57.55 & m & \\
+\hline
+Height & 24.44 & m & \\
+\hline
+Volume & 3962 & m3 & \\
+\hline
+Cross-sections & 646.2 / 597.5 / 140.0 & m2 & (side-on / top-down / head-on)\\
+\hline
+PMI* & 173.3 / 161.0 / 24.0 & m2 & (xx / yy / zz)\\
+\hline
+\multicolumn{4}{|l|}{\cellcolor{cyan!10}Orbiter + ET + SRBs (launch assembly)}\\
+\hline
+Length & 57.91 & m & \\
+\hline
+Height & 24.44 & m & \\
+\hline
+Volume & 4868 & m3 & \\
+\hline
+Cross-sections & 687.4 / 849.5 / 189.4 & m2 & (side-on / top-down / head-on)\\
+\hline
+PMI* & 179.1 / 176.8 / 29.3 & m2 & (xx / yy / zz)\\
+\hline
+\end{tabular}
+\end{table}
+\textit{*:	PMI (principal moments of inertia, diagonal elements of inertia tensor, mass-normalised, assuming homogeneous density distribution}
+\textit{**:	ET dimensions including Orbiter mounting brackets}
 
 \end{document}
