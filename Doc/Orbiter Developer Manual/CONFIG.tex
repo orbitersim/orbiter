@@ -16,7 +16,7 @@ All configuration files except the main configuration file (see TODO) are locate
 
 \subsection{Planetary systems}
 Planetary systems contain stars, planets and moons. Each planetary system requires at least one star. Stars, planets and moons are defined in the planetary system’s configuration file\\
-.\textbackslash Config\textbackslash <\textit{Solsys-name}>.cfg\\
+\indent .\textbackslash Config\textbackslash <\textit{Solsys-name}>.cfg\\
 %TODO add section link
 Orbiter can support multiple planetary systems, but only one per scenario. The planetary system to be used by a scenario is referenced in the scenario file (see Chapter TODO).
 
@@ -404,7 +404,7 @@ Surface bases (or “spaceports”) are launch and landing sites on the surface 
 
 \subsubsection*{Base definition file}
 Each surface base must be defined with a base configuration file. By default, this will be located in\\
-.\textbackslash Config\textbackslash <\textit{Planet-name}>\textbackslash Base\textbackslash <\textit{Base-name}>.cfg\\
+\indent .\textbackslash Config\textbackslash <\textit{Planet-name}>\textbackslash Base\textbackslash <\textit{Base-name}>.cfg\\
 %TODO add section link
 where <\textit{Planet-name}> is the name of the celestial body the base is located on, and <\textit{Base-name}> is the name of the surface base. Different locations for the base folder can be defined, for example to allow selective base loading (see TODO).\\
 The format of the surface base definition file is as follows:
@@ -938,7 +938,7 @@ Notes:
 Labels can be defined to mark objects on the celestial sphere (e.g. bright stars, navigation stars, nebulae, etc.) or on planetary surfaces to locate natural landmarks, points of interest, historic landing sites, navigational aids, etc.\\
 The user can display these markers during the simulation with the Visual helpers option (\keystroke{F9} or \Ctrl\keystroke{F9}).\\
 By default, all files for celestial and planetary surface markers are placed in a subdirectory\\
-.\textbackslash Config\textbackslash <\textit{name}>\textbackslash Marker\\
+\indent .\textbackslash Config\textbackslash <\textit{name}>\textbackslash Marker\\
 %TODO add section link
 where <\textit{name}> is the name of the planetary system (for celestial markers) or the celestial body (for surface markers) they are referring to. A different location for marker files can be specified with the MarkerPath option in the planet’s or planetary system’s configuration file (see Chapters TODO and TODO). Marker files are text files with extension .mkr. Multiple files can be defined for a single planet or planetary system, which the user can turn on and off individually. The format is
 

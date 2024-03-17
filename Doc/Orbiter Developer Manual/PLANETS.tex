@@ -15,10 +15,93 @@ Orbiter allows to create new planets or planetary systems in a few simple steps.
 
 
 \subsection{Planetary textures}
-% TODO
+This section describes the format Orbiter 2016 uses to define the surface textures, surface elevations and cloud layers for planetary bodies (planets, moons, asteroids, etc.)\\
+Orbiter 2016 introduces a more powerful planetary texturing mechanism than previous releases that provides
+
+\begin{itemize}
+\item higher resolution levels
+\item support for surface elevation modelling
+\item a consistent hierarchical quad-tree implementation for level-of-detail (LOD) mapping over a large resolution range
+\end{itemize}
+
+\noindent
+%TODO handle legacy model link
+The legacy texture mapping used in previous Orbiter releases is still supported by Orbiter 2016 for backward compatibility, but its use in new planet texture projects is discouraged. The legacy model is described in TODO.
+
 
 \subsubsection{The file layout}
+The files which describe the surface and cloud layer of a planetary body are located in a subdirectory\\
+\indent Textures\textbackslash <\textit{planet name}>\\
+relative to the Orbiter root directory, where <\textit{planet name}> is a place holder for the name of the celestial body, e.g. Textures\textbackslash Earth.\\
+The folder for each celestial body contains one or several sub-folders for various layers. Currently Orbiter supports the following layers:
+
+\begin{itemize}
+\item Surf $\Rightarrow$ Surface textures
+\item Mask $\Rightarrow$ Water masks and night light textures
+\item Elev $\Rightarrow$ Surface elevation maps
+\item Elev\_mod $\Rightarrow$ Surface elevation modifiers
+\item Label $\Rightarrow$ Labels for surface features
+\item Cloud $\Rightarrow$ Cloud textures
+\end{itemize}
+
+\noindent
+Only the Surf layer is required. All other layers are optional.\\
+The files for each layer are arranged in a hierarchical quad-tree that is reflected by the folder structure within each layer.\\
+Each layer can be represented by multiple resolution levels ($\geq$ 1) up to a maximum level of currently 19. The different resolution levels are split into subdirectories represented by 2-digit folder names. For example,\\
+\indent Textures\textbackslash Earth\textbackslash Surf\textbackslash 08\\
+contains the level-8 surface textures for Earth.\\
+Each resolution level is further subdivided into latitude bands ($\geq$ 0), represented by 6-digit subdirectories, e.g.\\
+\indent Textures\textbackslash Earth\textbackslash Surf\textbackslash 08\textbackslash 000005\\
+contains the surface textures for latitude band 5 at resolution 8. The range of latitude bands \textit{ilat} depends on the resolution level \textit{n}:\\
+\indent 0 $\leq$ \textit{ilat} $\leq$ \textit{nlat} - 1  with  \textit{nlat} = 2$^{n-4}$  (n $\geq$ 4)\\
+where \textit{ilat} = 0 contains the northernmost latitude band, and \textit{ilat} = \textit{nlat} - 1 contains the southernmost latitude band.\\
+Each latitude band subfolder contains the files for the tiles of that latitude band. Each file has a 6-digit file name representing the longitude index of the file, and an extension depending on the layer type. The range of longitude indices (\textit{ilng}) also depends on the resolution level:\\
+\indent 0 $\leq$ \textit{ilng} $\leq$ \textit{nlng} - 1  with  \textit{nlng} = 2$^{n-3}$  (n $\geq$ 4)\\
+where \textit{ilng} = 0 contains the westernmost longitude tile (left edge at longitude 180°W), and \textit{ilng} = \textit{nlng} - 1 contains the easternmost longitude tile (right edge at longitude 180°E).\\
+For example the Earth surface texture tile for resolution level 8, latitude index 5 and longitude index 7 is located in\\
+\indent Textures\textbackslash Earth\textbackslash Surf\textbackslash 08\textbackslash 000005\textbackslash 000007.dds
+
+
 \subsubsection{The quadtree structure}
+The planet surface is divided into tiles along latitude and longitude boundaries. Each tile at resolution level n can be divided into 2×2 sub-tiles at resolution level \textit{n} + 1. Each tile can therefore be represented as a \textit{node} in a quadtree structure with one parent (except for the root tiles) and up to four children.\\
+The root of the tile quadtree consists of two tiles at resolution level 4:\\
+\indent Textures\textbackslash <\textit{planet name}>\textbackslash <\textit{layer}>\textbackslash 04\textbackslash 000000\textbackslash 000000.<\textit{ext}>\\
+\indent Textures\textbackslash <\textit{planet name}>\textbackslash <\textit{layer}>\textbackslash 04\textbackslash 000000\textbackslash 000001.<\textit{ext}>\\
+where file 04\textbackslash 000000\textbackslash 000000.<\textit{ext}> contains the western hemisphere (-180° $\leq$ \textit{lng} $\leq$ 0° and -90° $\leq$ \textit{lat} $\leq$ +90°), and file 04\textbackslash 000000\textbackslash 000001.<ext> contains the eastern hemisphere (0° $\leq$ \textit{lng} $\leq$ +180° and -90° $\leq$ \textit{lat} $\leq$ +90°).\\
+The area covered by tile 04\textbackslash 000000\textbackslash 000000.<\textit{ext}> can be split into four subtiles at level 5:\\
+\indent Textures\textbackslash <\textit{planet name}>\textbackslash <\textit{layer}>\textbackslash 05\textbackslash 000000\textbackslash 000000.<\textit{ext}>\\
+\indent Textures\textbackslash <\textit{planet name}>\textbackslash <\textit{layer}>\textbackslash 05\textbackslash 000000\textbackslash 000001.<\textit{ext}>\\
+\indent Textures\textbackslash <\textit{planet name}>\textbackslash <\textit{layer}>\textbackslash 05\textbackslash 000001\textbackslash 000000.<\textit{ext}>\\
+\indent Textures\textbackslash <\textit{planet name}>\textbackslash <\textit{layer}>\textbackslash 05\textbackslash 000001\textbackslash 000001.<\textit{ext}>\\
+In general, a tile at resolution level n with latitude and longitude indices [\textit{n}, \textit{ilat}, \textit{ilng}] has subtiles\\
+\indent [\textit{n} + 1, 2 \textit{ilat}, 2 \textit{ilng}]	[\textit{n} + 1, 2 \textit{ilat}, 2 \textit{ilng} + 1]\\
+\indent [\textit{n} + 1, 2 \textit{ilat} + 1, 2 \textit{ilng}]	[\textit{n} + 1, 2 \textit{ilat} + 1, 2 \textit{ilng} + 1]\\
+at resolution level \textit{n} + 1.\\
+The latitude and longitude range covered by tile [\textit{n}, \textit{ilat}, \textit{ilng}] is given by
+
+\[ -180^{\circ} + \frac{360^{\circ}}{nlng}(ilat + 1) \leq lng \leq -180^{\circ} + \frac{360^{\circ}}{nlng}(ilng + 1), nlng = 2^{n - 3} \]
+\[ 90^{\circ} - \frac{180^{\circ}}{nlat}(ilat + 1) \leq lat \leq 90^{\circ} - \frac{180^{\circ}}{nlat}ilat, nlat = 2^{n - 4} \]
+
+\noindent
+For example, tile [n = 8, ilat = 5, ilng = 7] spans the area
+
+\[ 22.5^{\circ} \leq lat \leq 33.75^{\circ}, -101.25^{\circ} \leq lng \leq -90^{\circ} \]
+
+\noindent
+Resolution levels 1, 2 and 3 are not part of the quadtree. They cover the entire planet surface at different resolution levels. For example, for the Surf layer, tile 01\textbackslash 000000\textbackslash 000000.dds contains the planet surface as a 128×128 pixel texture, 02\textbackslash 000000\textbackslash 000000.dds contains the planet surface as a 256×256 pixel texture, and  03\textbackslash 000000\textbackslash 000000.dds contains the planet surface as a 512×512 pixel texture.
+
+\begin{figure}[H]
+	\centering
+	\subfigure{\includegraphics[width=0.5\textwidth]{quad_tree_tile.png}}
+	\caption{Quadtree tile subdivision and child tiles at the next resolution level.}
+\end{figure}
+
+\noindent
+The quadtree doesn’t need to be populated completely. Missing tiles are interpolated by Orbiter from a sub-area of an ancestor tile. The quadtree is also allowed to contain gaps, that is, it can contain high-resolution tiles of an area (e.g. a surface base) even if some of the ancestor tiles are missing from the tree, so that there is no unbroken chain to the quadtree root.\\
+The minimum requirement is the presence of all tiles for resolution levels 1 to 4 for a given layer, i.e. the global tiles (level 1–3) and the quadtree root (level 4) must be present. All higher resolution quadtree tiles are optional. The maximum currently supported resolution level is 17 for elevation layers (Elev and Elev\_mod), and level 19 for all other layers.
+
+
+
 \subsubsection{Layer types}
 \subsubsection{Compressed archive layer format}
 %\subsubsubsection{The .tree file format}
@@ -331,9 +414,9 @@ DLLCLBK void DeleteAtmosphere( ATMOSPHERE* atm )
 
 \noindent
 By convention, external planetary atmosphere modules should be placed in the\\
-\textit{Modules\textbackslash Celbody\textbackslash <Name>\textbackslash Atmosphere}\\
+\indent \textit{Modules\textbackslash Celbody\textbackslash <Name>\textbackslash Atmosphere}\\
 folder, where <\textit{Name}> is the celestial body's name. So in our case,\\
-\textit{Modules\textbackslash Celbody\textbackslash MyPlanet\textbackslash Atmosphere\textbackslash MyAtmosphere.dll}\\
+\indent \textit{Modules\textbackslash Celbody\textbackslash MyPlanet\textbackslash Atmosphere\textbackslash MyAtmosphere.dll}\\
 We now need to modify the \textit{MyPlanet} code to allow it to load its atmosphere interface from an external module. Replace the \textit{SetAtmosphere} statement in the \textit{clbkInit} function with
 
 \begin{lstlisting}
@@ -387,15 +470,110 @@ DLLCLBK char* ModelDesc()
 \noindent
 The string returned by the \textit{ModelName} function represents the model in the dialog's selection list box. The string returned by \textit{ModelDesc} should contain a short description (max 256 characters displayed in the dialog box when the model is selected.\\
 If you don't want to design your own custom atmosphere model, you can quickly add atmospheres to planets by replicating existing ones. Simply copy an atmosphere module from the\\
-\textit{Modules\textbackslash Celbody\textbackslash <Name>\textbackslash Atmosphere}\\
+\indent \textit{Modules\textbackslash Celbody\textbackslash <Name>\textbackslash Atmosphere}\\
 folder of one planet to that of another one. It then becomes available in the list of atmospheres for that planet. Note that the module only provides the physical atmospheric parameters. You will still have to edit the definition file to provide visual effects.\\
 Of course, replicating an atmosphere should be regarded as a quick and dirty trick for experimentation. Atmospheres are always tailor-made for specific bodies, and don't realistically fit anywhere else.
 
 
 \subsubsection{Earth default atmosphere models}
+%TODO add tech note earth atm link
+The Orbiter distribution contains three Earth atmosphere models that can be selected by the user from the Extra tab in the Launchpad dialog. See TODO for further details on the different models.\\
+\textbf{Jacchia71-Gill Atmosphere Model.} This is an implementation of the Jacchia-71 (J71) model\cite{jacchia71}, using a polynomial series approximation by Gill\cite{gill96}. It uses a static US Standard Atmosphere model below 90km, and a diffusion-equilibrium solution be­tween 90 and 2500km altitude. The only model parameter is the exospheric temperature.\\
+\textbf{NRLMSISE-00 Atmosphere Model.} This model is based on the MSISE90 model, with the addition of further corrections based on observation data. MSISE90 provides the neutral temperature and density from ground level to thermospheric altitudes. Unlike the Jacchia models, the low-altitude data are not static, but vary with location.\\
+\textbf{Orbiter 2006 Legacy model.} This is the model that was used in the Orbiter 2006 Edition. It is based on a static standard model\cite{anderson2000} below 105km, and assumes constant temperature and exponentially decaying density and pressure between 105 and 200km. This model underestimates density and pressure above $\sim$120km, which reduces the orbit decay of object in low Earth orbit.\\
+In addition, the atmosphere can be disabled for testing/debugging purposes.
+
 \subsubsection{Mars atmosphere}
+Orbiter uses the following atmospheric parameter profiles for Mars:
+
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.2\textwidth}|p{0.1\textwidth}|p{0.1\textwidth}|p{0.1\textwidth}|p{0.1\textwidth}|p{0.1\textwidth}|p{0.1\textwidth}| }
+	\hline\rule{0pt}{2ex}
+	Altitude [km] & 0 & 2 & 4 & 14 & 20 & 30\\
+	\hline\rule{0pt}{2ex}
+	Temperature [K] & 195 & 200 & 200 & 180 & 180 & 165\\
+	\hline\rule{0pt}{2ex}
+	Pressure [Pa] & 610.0 & 499.5 & 410.1 & 145.1 & 75.2 & 23.9\\
+	\hline\rule{0pt}{2ex}
+	Density [kg m$^{-3}$] & 0.02 & 0.0160 & 0.0131 & 0.0052 & 2.7$\cdot$10$^{-3}$ & 9.3$\cdot$10$^{-4}$\\
+	\hline
+	\end{longtable}
+%\end{table}
+
+\noindent
+\begin{figure}[H]
+	\centering
+	\subfigure{\includegraphics[width=0.49\textwidth]{mars_atm_temperature.png}}
+	\subfigure{\includegraphics[width=0.49\textwidth]{mars_atm_pressure.png}}
+	\subfigure{\includegraphics[width=0.49\textwidth]{mars_atm_density.png}}
+\end{figure}
+
+\noindent
+Atmospheric parameters:
+
+\begin{itemize}
+\item Surface pressure: $p_{0}$ = 610.0 Pa
+\item Surface density: $\rho_{0}$ = 0.020 kg m$^{-3}$
+\item Ratio of specific heats: $\gamma$ = 1.2941
+\item Specific gas constant: \textit{R} = 188.92 J K$^{-1}$ kg$^{-1}$
+\end{itemize}
+
+\noindent
+Orbiter defines the upper atmosphere altitude limit as 100 km.
+
+
 \subsubsection{Venus atmosphere}
+Orbiter uses the following atmospheric parameter profiles for Venus:
+
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.2\textwidth}|p{0.1\textwidth}|p{0.1\textwidth}|p{0.1\textwidth}|p{0.1\textwidth}|p{0.1\textwidth}|p{0.1\textwidth}| }
+	\hline\rule{0pt}{2ex}
+	Altitude [km] & 0 & 30 & 60 & 70 & 90 & 200\\
+	\hline\rule{0pt}{2ex}
+	Temperature [K] & 750 & 480 & 230 & 230 & 180 & 180\\
+	\hline\rule{0pt}{2ex}
+	Pressure [Pa] & 9.2M & 897k & 14.2k & 1.85k & 18.5 & 3.4$\cdot$10$^{-11}$\\
+	\hline\rule{0pt}{2ex}
+	Density [kg m$^{-3}$] & 65 & 9.9 & 0.33 & 0.043 & 5.4$\cdot$10$^{-4}$ & 1.0$\cdot$10$^{-15}$\\
+	\hline
+	\end{longtable}
+%\end{table}
+
+\noindent
+\begin{figure}[H]
+	\centering
+	\subfigure{\includegraphics[width=0.49\textwidth]{venus_atm_temperature.png}}
+	\subfigure{\includegraphics[width=0.49\textwidth]{venus_atm_pressure.png}}
+	\subfigure{\includegraphics[width=0.49\textwidth]{venus_atm_density.png}}
+\end{figure}
+
+\noindent
+Atmospheric parameters:
+
+\begin{itemize}
+\item Surface pressure: $p_{0}$ = 9.2 MPa
+\item Surface density: $\rho_{0}$ = 65 kg m$^{-3}$
+\item Ratio of specific heats: $\gamma$ = 1.2857
+\item Specific gas constant: \textit{R} = 188.92 J K$^{-1}$ kg$^{-1}$
+\end{itemize}
+
+\noindent
+Orbiter defines the upper atmosphere altitude limit as 200 km. The cloud layer is set at an altitude of 60 km.
+
+
 \subsubsection{The speed of sound}
+Orbiter uses the equation for an ideal gas to compute the speed of sound as a function of absolute temperature:
+
+\[ a = \sqrt{\gamma RT} \]
+
+\noindent
+where $\gamma$ is the ratio of specific heat at constant pressure $c_{p}$, and specific heat at constant temperature, $c_{v}$, for the gas, $\gamma = c_{p} / c_{v}$ For air at normal conditions, $\gamma$ = 1.4. This value is used by Orbiter as a default. It can be overridden by setting the \textit{AtmGamma} parameter in the planet’s configuration file.\\
+\textit{R} is the specific gas constant. By default, Orbiter uses the value for air, 286.91 J K$^{-1}$ kg$^{-1}$. This can be overridden by setting the \textit{AtmGasConstant} parameter in the planet’s configuration file.\\
+\textbf{Mach number:} The Mach number is an essential parameter in aerodynamics. It expresses a velocity \textit{v} in units of the current speed of sound:
+
+\[ M = \frac{v}{a} \]
 
 
 \end{document}
