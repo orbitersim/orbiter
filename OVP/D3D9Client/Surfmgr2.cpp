@@ -73,8 +73,7 @@ SurfTile::SurfTile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 	label = NULL;
 	imicrolvl = 14;	// Water resolution level
 	MaxRep = mgr->Client()->GetFramework()->GetCaps()->MaxTextureRepeat;
-	if (Config->TileMipmaps == 2) bMipmaps = true;
-	if (Config->TileMipmaps == 1 && _lvl < 10) bMipmaps = true;
+	if (Config->TileMipmaps == 1) bMipmaps = true;
 
 	memset(&ehdr, 0, sizeof(ELEVFILEHEADER));
 }
@@ -85,9 +84,9 @@ SurfTile::~SurfTile ()
 {
 	if (elev) g_pMemgr_f->Free(elev);
 	if (elev_file) g_pMemgr_i->Free(elev_file);	
-	if (ltex && owntex) {
-		if (TileCatalog->Remove(ltex)) ltex->Release();
-	}
+	if (tex && owntex) g_pTexmgr_tt->Free(tex);
+	if (ltex && owntex) g_pTexmgr_tt->Free(ltex);
+		
 	DeleteLabels();
 }
 
@@ -97,8 +96,15 @@ void SurfTile::PreLoad()
 {
 	char fname[128];
 	char path[MAX_PATH];
-	bool ok = false;
+	
+	owntex = true;
 
+	assert(tex == nullptr);
+	assert(ltex == nullptr);
+
+	LPDIRECT3DDEVICE9  pDev = mgr->Dev();
+	LPDIRECT3DTEXTURE9 pSysSrf = nullptr;
+	
 	// Configure microtexture range for "Water texture" and "Cloud microtexture".
 	GetParentMicroTexRange(&microrange);
 	GetParentOverlayRange(&overlayrange);
@@ -107,67 +113,59 @@ void SurfTile::PreLoad()
 
 	if (smgr->DoLoadIndividualFiles(0)) { // try loading from individual tile file
 		sprintf_s(path, MAX_PATH, "%s\\Surf\\%02d\\%06d\\%06d.dds", mgr->DataRootDir().c_str(), lvl + 4, ilat, ilng);
-		ok = LoadTextureFile(path, &pPreSrf);
+		LoadTextureFile(path, &pSysSrf);
 	}
-
-	if (!ok && smgr->ZTreeManager(0)) { // try loading from compressed archive
+	if (!pSysSrf && smgr->ZTreeManager(0)) { // try loading from compressed archive
 		BYTE *buf;
 		DWORD ndata = smgr->ZTreeManager(0)->ReadData(lvl+4, ilat, ilng, &buf);
 		if (ndata) {
-			ok = LoadTextureFromMemory(buf, ndata, &pPreSrf);
+			LoadTextureFromMemory(buf, ndata, &pSysSrf);
 			smgr->ZTreeManager(0)->ReleaseData(buf);
 		}
 	}
+	
+	if (CreateTexture(pDev, pSysSrf, &tex) != true) {
+		if (GetParentSubTexRange(&texrange)) {
+			tex = getSurfParent()->Tex();
+			owntex = false;
+		}
+	}
+	
+	SAFE_RELEASE(pSysSrf);
+
 
 	// Load mask texture
 
-	if (ok && (mgr->Cprm().bSpecular || mgr->Cprm().bLights)) {
-		ok = false; // <= in case tileLoadFlags is set to "Archive only", we have to reset this, else no (compressed) Mask would be loaded
-
+	if (tex && (mgr->Cprm().bSpecular || mgr->Cprm().bLights))
+	{
 		if (smgr->DoLoadIndividualFiles(1)) { // try loading from individual tile file
 			sprintf_s(path, MAX_PATH, "%s\\Mask\\%02d\\%06d\\%06d.dds", mgr->DataRootDir().c_str(), lvl + 4, ilat, ilng);
-			ok = LoadTextureFile(path, &pPreMsk);
+			LoadTextureFile(path, &pSysSrf);
 		}
-		if (!ok && smgr->ZTreeManager(1)) { // try loading from compressed archive
-			BYTE *buf;
-			DWORD ndata = smgr->ZTreeManager(1)->ReadData(lvl+4, ilat, ilng, &buf);
+		if (!pSysSrf && smgr->ZTreeManager(1)) { // try loading from compressed archive
+			BYTE* buf;
+			DWORD ndata = smgr->ZTreeManager(1)->ReadData(lvl + 4, ilat, ilng, &buf);
 			if (ndata) {
-				LoadTextureFromMemory(buf, ndata, &pPreMsk);
+				LoadTextureFromMemory(buf, ndata, &pSysSrf);
 				smgr->ZTreeManager(1)->ReleaseData(buf);
 			}
 		}
+		
+		if (owntex) {
+			CreateTexture(pDev, pSysSrf, &ltex);			
+		}
+		else if (node && node->Parent()) {
+			ltex = getSurfParent()->ltex;
+		}		
+		
+		SAFE_RELEASE(pSysSrf);
 	}
-
-	mgr->TileLabel(pPreSrf, lvl, ilat, ilng);
-	mgr->TileLabel(pPreMsk, lvl, ilat, ilng);
 }
 
 // -----------------------------------------------------------------------
 
 void SurfTile::Load ()
 {
-
-	LPDIRECT3DDEVICE9 pDev = mgr->Dev();
-
-	owntex = true;
-
-	if (CreateTexture(pDev, pPreSrf, &tex) != true) {
-		if (GetParentSubTexRange(&texrange)) {
-			tex = getSurfParent()->Tex();
-			owntex = false;
-		}
-	} else TileCatalog->Add(tex);
-
-	// Load mask texture
-	if (mgr->Cprm().bSpecular || mgr->Cprm().bLights) {
-		if (owntex && tex) {
-			CreateTexture(pDev, pPreMsk, &ltex);
-			if (ltex) TileCatalog->Add(ltex);
-		} else if (node && node->Parent()) {
-			ltex = getSurfParent()->ltex;
-		}
-	}
-
 	// Load elevation data
 	float *elev = ElevationData ();
 
@@ -432,7 +430,7 @@ bool SurfTile::DeleteOverlay(LPDIRECT3DTEXTURE9 pOverlay)
 	if (overlay) {
 		if (pOverlay == overlay) {
 			if (ownoverlay) {
-				if (TileCatalog->Remove(overlay)) overlay->Release();
+				overlay->Release();
 				bReturn = true;
 			}
 			for (int i = 0; i < 4; i++) {

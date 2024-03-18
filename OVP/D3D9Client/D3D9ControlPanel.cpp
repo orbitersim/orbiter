@@ -166,28 +166,17 @@ void D3D9Client::RenderControlPanel()
 	Label("Render Textures......: %u (%u MB)", rttex_count, rttex_size>>20);
 	Label("Dual Layer Surfaces..: %u (%u MB)", duall_count, duall_size>>20);
 	Label("Plain Textures.......: %u (%u MB)", textr_count, textr_size>>20);
-
-	size_t mesh_count = MeshCatalog.size();
-	size_t tile_count = TileCatalog->CountEntries();
-	DWORD tile_size = 0;
-	DWORD tile_render_countA = 0;
-	DWORD tile_render_countB = 0;
 	
-	for (auto it = TileCatalog->cbegin(); it != TileCatalog->cend(); ++it) {
-		if (*it) tile_size += TextureSizeInBytes(*it);
-	}
-
-	for (DWORD i = 0; i<32; i++) {
-		tile_render_countA += D3D9Stats.Old.Tiles[i];
-		tile_render_countB += D3D9Stats.Surf.Tiles[i];
-	}
-		
 	LabelPos += 22;
-	Label("Tile Textures Loaded.: %u (%u MB)", tile_count, tile_size>>20); 
-	Label("Tiles Rendered (Old).: %u (%u kVtx)", tile_render_countA, D3D9Stats.Old.Verts>>10);
-	Label("Tiles Rendered (New).: %u (%u kVtx)", tile_render_countB, D3D9Stats.Surf.Verts>>10);
+
+	size_t tt_c = g_pTexmgr_tt->UsedSize() + g_pTexmgr_tt->FreeSize();
+	size_t tv_c = g_pVtxmgr_vb->UsedSize() + g_pVtxmgr_vb->FreeSize();
+
+	Label("Tile Texture Cache...: Used[%u] Free[%u] Capacity (%u MB)", g_pTexmgr_tt->UsedCount(), g_pTexmgr_tt->FreeCount(), tt_c >> 20);
+	Label("Tile Vertex Cache....: Used[%u] Free[%u] Capacity (%u MB)", g_pVtxmgr_vb->UsedCount(), g_pVtxmgr_vb->FreeCount(), tv_c >> 20);
+
 	Label("Tiles Allocated (New): %u", D3D9Stats.TilesAllocated);
-	Label("Tile Vertex Cache....: %u (%u MB)", D3D9Stats.TilesCached, D3D9Stats.TilesCachedMB>>20);
+	
 
 
 	DWORD tot_verts = 0;
@@ -209,8 +198,7 @@ void D3D9Client::RenderControlPanel()
 	static double LockPeak = 0.0;
 
 	LabelPos += 22;
-	Label("Meshes Loaded........: %u ", mesh_count);
-	Label("Vertices Allocated...: %u (%u MB)", tot_verts, (tot_verts*sizeof(NMVERTEX))>>20); 
+	Label("Mesh Vtx Allocated...: %u (%u MB)", tot_verts, (tot_verts*sizeof(NMVERTEX))>>20); 
 	Label("Groups Allocated.....: %u", tot_group);
 	Label("Group Tarnsforms.....: %u", tot_trans); 
 	Label("Mesh vertices render.: %u", verts);

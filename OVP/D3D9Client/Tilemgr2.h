@@ -176,8 +176,8 @@ protected:
 	virtual void Load () = 0;
 
 	bool	CreateTexture(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DTEXTURE9 pPre, LPDIRECT3DTEXTURE9 *pTex);
-	bool	LoadTextureFile(const char *path, LPDIRECT3DTEXTURE9 *pPre, bool bEnableDebug = true);
-	bool	LoadTextureFromMemory(void *data, DWORD ndata, LPDIRECT3DTEXTURE9 *pPre, bool bEnableDebug = true);
+	bool	LoadTextureFile(const char *path, LPDIRECT3DTEXTURE9 *pPre);
+	bool	LoadTextureFromMemory(void *data, DWORD ndata, LPDIRECT3DTEXTURE9 *pPre);
 
 	VBMESH *CreateMesh_quadpatch (int grdlat, int grdlng, float *elev=0, double elev_scale = 1.0, double globelev=0.0,
 		const TEXCRDRANGE2 *range=0, bool shift_origin=false, VECTOR3 *shift=0, double bb_excess=0.0);
@@ -192,8 +192,6 @@ protected:
 	int ilng;                  // longitude index
 	int imicrolvl;			   // Micro texture level
 	LPDIRECT3DTEXTURE9 tex;	   // diffuse surface texture
-	LPDIRECT3DTEXTURE9 pPreSrf;
-	LPDIRECT3DTEXTURE9 pPreMsk;
 	LPDIRECT3DTEXTURE9 overlay;
 	bool bMipmaps;			   // create mipmaps for the tile
 	bool owntex;               // true: tile owns the texture, false: tile uses ancestor subtexture
@@ -351,9 +349,6 @@ public:
 	static LPDIRECT3DDEVICE9 Dev() { return pDev; }
 	static HFONT GetDebugFont() { return hFont; }
 
-	void TileLabel(LPDIRECT3DTEXTURE9 tex, int lvl, int ilat, int ilng);
-
-
 	template<class TileType>
 	QuadTreeNode<TileType> *FindNode (QuadTreeNode<TileType> root[2], int lvl, int ilat, int ilng);
 	// Returns the node at the specified position, or 0 if it doesn't exist
@@ -372,15 +367,6 @@ public:
 	void RenderNodeLabels(QuadTreeNode<TileType> *node, D3D9Pad *skp, oapi::Font **labelfont, int *fontidx);
 
 	void SetRenderPrm (MATRIX4 &dwmat, double prerot, bool use_zbuf, const vPlanet::RenderPrm &rprm);
-
-	/**
-	 * \brief Create and/or Recycle a vertex buffer
-	 * \param nVerts Number of vertices requested for a new buffer. Use "Zero" to recycle/release a buffer that is no-longer needed.
-	 * \param pVB (in/out) Pointer to vertex buffer. The "old" input buffer is recycled and a new one is returned.
-	 * \return Number of vertices in a returned buffer. Could be larger than requested.
-	 */
-	DWORD RecycleVertexBuffer(DWORD nVerts, LPDIRECT3DVERTEXBUFFER9 *pVB);
-	DWORD RecycleIndexBuffer(DWORD nf, LPDIRECT3DINDEXBUFFER9 *pIB);
 
 	inline class Scene * GetScene() const { return gc->GetScene(); }
 	inline oapi::D3D9Client *GetClient() const { return gc; }

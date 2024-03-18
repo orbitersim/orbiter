@@ -72,8 +72,9 @@ Memgr<INT16>* g_pMemgr_i = nullptr;
 Memgr<UINT8>* g_pMemgr_u = nullptr;
 Memgr<WORD>* g_pMemgr_w = nullptr;
 Memgr<VERTEX_2TEX>* g_pMemgr_vtx = nullptr;
-
-D3D9Catalog<LPDIRECT3DTEXTURE9>	 *TileCatalog;
+Texmgr<LPDIRECT3DTEXTURE9>* g_pTexmgr_tt = nullptr;
+Vtxmgr<LPDIRECT3DVERTEXBUFFER9>* g_pVtxmgr_vb = nullptr;
+Idxmgr<LPDIRECT3DINDEXBUFFER9>* g_pIdxmgr_ib = nullptr;
 
 typedef IDirect3D9* (__stdcall* __Direct3DCreate9On12)(UINT SDKVersion, D3D9ON12_ARGS* pOverrideList, UINT NumOverrideEntries);
 
@@ -183,7 +184,6 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 	}
 
 	g_pConst = new gcConst();
-	TileCatalog	= new D3D9Catalog<LPDIRECT3DTEXTURE9>();
 
 	DebugControls::Create();
 	AtmoControls::Create();
@@ -205,7 +205,6 @@ DLLCLBK void ExitModule(HINSTANCE hDLL)
 {
 	LogAlw("--------------ExitModule------------");
 
-	delete TileCatalog;
 	delete Config;
 	delete g_pConst;
 
@@ -415,8 +414,6 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	oapiDebugString()[0] = '\0';
 
-	TileCatalog->Clear();
-
 	MeshCatalog.clear();
 	SurfaceCatalog.clear();
 
@@ -461,6 +458,10 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	bVSync		= (pFramework->GetVSync() == TRUE);
 
 	char fld[] = "D3D9Client";
+
+	g_pTexmgr_tt = new Texmgr<LPDIRECT3DTEXTURE9>(pDevice, "TileTextures");
+	g_pVtxmgr_vb = new Vtxmgr<LPDIRECT3DVERTEXBUFFER9>(pDevice, "TileVertex");
+	g_pIdxmgr_ib = new Idxmgr<LPDIRECT3DINDEXBUFFER9>(pDevice, "TileIndices");
 
 	HR(D3DXCreateTextureFromFileA(pDevice, "Textures/D3D9Noise.dds", &pNoiseTex));
 
@@ -992,8 +993,6 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 
 	// Check tile catalog --------------------------------------------------------------------------------------
 	//
-	size_t nt = TileCatalog->CountEntries();
-	if (nt) LogErr("SurfaceTile catalog contains %lu unreleased entries", nt);
 
 	for (auto it : MeshMap)	SAFE_DELETE(it.second);
 
@@ -1001,7 +1000,13 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 	SharedTextures.clear();
 	SurfaceCatalog.clear();
 	MeshCatalog.clear();
-	TileCatalog->Clear();
+
+	g_pTexmgr_tt->CleanUp();
+	g_pVtxmgr_vb->CleanUp();
+	g_pIdxmgr_ib->CleanUp();
+	SAFE_DELETE(g_pTexmgr_tt);
+	SAFE_DELETE(g_pVtxmgr_vb);
+	SAFE_DELETE(g_pIdxmgr_ib);
 
 	pFramework->DestroyObjects();
 

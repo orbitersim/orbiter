@@ -28,7 +28,6 @@ VBMESH::VBMESH (class TileManager2Base *pmgr)
 	, bBox(false)
 	, nv_cur(0)
 	, nf_cur(0)
-	, pMgr(pmgr)
 	, bsRad(0.0)
 {
 }
@@ -41,7 +40,6 @@ VBMESH::VBMESH ()
 	, nv(0)
 	, nf(0)
 	, bBox(false)
-	, pMgr(NULL)
 	, nv_cur(0)
 	, nf_cur(0)
 	, bsRad(0.0)
@@ -50,13 +48,8 @@ VBMESH::VBMESH ()
 
 VBMESH::~VBMESH ()
 {
-	if (pMgr) {
-		pMgr->RecycleVertexBuffer(0, &pVB);
-		pMgr->RecycleIndexBuffer(0, &pIB);
-	} else {
-		SAFE_RELEASE(pVB);
-		SAFE_RELEASE(pIB);
-	}
+	if (pVB) g_pVtxmgr_vb->Free(pVB);
+	if (pIB) g_pIdxmgr_ib->Free(pIB);
 	if (vtx) g_pMemgr_vtx->Free(vtx);
 	if (idx) g_pMemgr_w->Free(idx);
 	nv_cur = 0;
@@ -73,25 +66,11 @@ void VBMESH::ComputeSphere()
 void VBMESH::MapVertices(LPDIRECT3DDEVICE9 pDev, DWORD MemFlag)
 {
 	if (nv!=nv_cur && vtx) {
-		// Resize Vertex Buffer
-		if (pMgr) {
-			nv_cur = pMgr->RecycleVertexBuffer(nv, &pVB);
-		} else {
-			SAFE_RELEASE(pVB);
-			HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &pVB, NULL));
-			nv_cur = nv;
-		}
+		pVB = g_pVtxmgr_vb->New(nv); nv_cur = nv;
 	}
 
 	if (nf!=nf_cur && idx) {
-		// Resize Index Buffer
-		if (pMgr) {
-			nf_cur = pMgr->RecycleIndexBuffer(nf, &pIB);
-		} else {
-			SAFE_RELEASE(pIB);
-			HR(pDev->CreateIndexBuffer(nf*sizeof(WORD)*3, D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_DEFAULT, &pIB, NULL));
-			nf_cur = nf;
-		}
+		pIB = g_pIdxmgr_ib->New(nf); nf_cur = nf;
 	}
 
 	VERTEX_2TEX *pVBuffer;
@@ -375,22 +354,19 @@ void CreateSpherePatch (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, int nlng, int nlat
 // ====================================================================
 // NOTE: This is used to delete a vertex buffers from a static VBMESH
 //
-void DestroyVBMesh (VBMESH &mesh)
+void ClearVBMesh (VBMESH &mesh)
 {
-	if (mesh.pMgr) {
-		mesh.pMgr->RecycleVertexBuffer(0, &mesh.pVB);
-		mesh.pMgr->RecycleIndexBuffer(0, &mesh.pIB);
-	} else {
-		SAFE_RELEASE(mesh.pVB);
-		SAFE_RELEASE(mesh.pIB);
-	}
-
-	SAFE_DELETEA(mesh.vtx);
-	SAFE_DELETEA(mesh.idx);
-
+	if (mesh.pVB) g_pVtxmgr_vb->Free(mesh.pVB);
+	if (mesh.pIB) g_pIdxmgr_ib->Free(mesh.pIB);
+	if (mesh.vtx) g_pMemgr_vtx->Free(mesh.vtx);
+	if (mesh.idx) g_pMemgr_w->Free(mesh.idx);
 	mesh.nv = 0;
 	mesh.nf = 0;
 	mesh.nv_cur = 0;
 	mesh.nf_cur = 0;
+	mesh.pVB = nullptr;
+	mesh.pIB = nullptr;
+	mesh.vtx = nullptr;
+	mesh.idx = nullptr;
 }
 

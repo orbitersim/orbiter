@@ -66,7 +66,6 @@ typedef void * CAMERAHANDLE;
 typedef class D3D9Mesh * HMESH;
 typedef class SurfNative* lpSurfNative;
 
-extern D3D9Catalog<LPDIRECT3DTEXTURE9>	*TileCatalog;
 extern set<D3D9Mesh*> MeshCatalog;
 extern set<SurfNative*>	SurfaceCatalog;
 extern IDirect3D9* g_pD3DObject;
@@ -76,6 +75,9 @@ extern Memgr<INT16>* g_pMemgr_i;
 extern Memgr<UINT8>* g_pMemgr_u;
 extern Memgr<WORD>* g_pMemgr_w;
 extern Memgr<VERTEX_2TEX>* g_pMemgr_vtx;
+extern Texmgr<LPDIRECT3DTEXTURE9>* g_pTexmgr_tt;
+extern Vtxmgr<LPDIRECT3DVERTEXBUFFER9>* g_pVtxmgr_vb;
+extern Idxmgr<LPDIRECT3DINDEXBUFFER9>* g_pIdxmgr_ib;
 
 /**
  * \brief Statistical data storage

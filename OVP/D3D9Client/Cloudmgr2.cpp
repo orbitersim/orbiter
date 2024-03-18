@@ -32,31 +32,46 @@ CloudTile::CloudTile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 
 CloudTile::~CloudTile ()
 {
+	if (tex && owntex) g_pTexmgr_tt->Free(tex);
 }
 
 // -----------------------------------------------------------------------
 
 void CloudTile::PreLoad()
 {
+	assert(tex == nullptr);
 
 	// Configure microtexture range for "Water texture" and "Cloud microtexture".
 	GetParentMicroTexRange(&microrange);
 	
-	bool ok = false;
+	LPDIRECT3DDEVICE9  pDev = mgr->Dev();
+	LPDIRECT3DTEXTURE9 pSysSrf = nullptr;
 
 	if (cmgr->DoLoadIndividualFiles(0)) { // try loading from individual tile file
 		char path[MAX_PATH];
 		sprintf_s (path, MAX_PATH, "%s\\Cloud\\%02d\\%06d\\%06d.dds", mgr->DataRootDir().c_str(), lvl+4, ilat, ilng);
-		ok = LoadTextureFile(path, &pPreSrf, false);
+		LoadTextureFile(path, &pSysSrf);
 	}
-	if (!ok && cmgr->ZTreeManager(0)) { // try loading from compressed archive
+	if (!pSysSrf && cmgr->ZTreeManager(0)) { // try loading from compressed archive
 		BYTE *buf;
 		DWORD ndata = cmgr->ZTreeManager(0)->ReadData(lvl+4, ilat, ilng, &buf);
 		if (ndata) {
-			LoadTextureFromMemory(buf, ndata, &pPreSrf, false);
+			LoadTextureFromMemory(buf, ndata, &pSysSrf);
 			cmgr->ZTreeManager(0)->ReleaseData(buf);
 		}
 	}
+
+	owntex = true;
+
+	if (CreateTexture(pDev, pSysSrf, &tex) != true) {
+		if (GetParentSubTexRange(&texrange)) {
+			tex = getParent()->Tex();
+			owntex = false;
+		}
+		else tex = nullptr;
+	}
+	
+	SAFE_RELEASE(pSysSrf);
 }
 
 
@@ -65,17 +80,6 @@ void CloudTile::PreLoad()
 void CloudTile::Load ()
 {
 	
-	LPDIRECT3DDEVICE9 pDev = mgr->Dev();
-
-	owntex = true;
-
-	if (CreateTexture(pDev, pPreSrf, &tex) != true) {
-		if (GetParentSubTexRange (&texrange)) {
-			tex = getParent()->Tex();
-			owntex = false;
-		} else tex = 0;
-	} else TileCatalog->Add(tex);
-
 	bool shift_origin = (lvl >= 4);
 	int res = mgr->GridRes();
 
