@@ -46,7 +46,13 @@ This page contains a list of these tables.</p>
 V1 = {x=1,y=0,z=-1}<br>
 V2 = {}; V2.x=0; V2.y=1.1; V2.z=-16<br>
 V3 = {}; V3["x"]=15; V3["y"]=-3.145; V3["z"]=1e3
-</div></p>
+</div>
+<p>To provide an easier path when migrating from C++ to Lua, a _V(x, y, z) function is also available to create vectors.
+Since this adds a level of indirection, you should avoid using this syntax in tight loops.
+<div class="code">
+V1 = _V(1, 0, -1)
+</div>
+</p>
 
 <h4>See also:</h4>
 <p>
@@ -67,7 +73,19 @@ M1 = {m11=1,m12=0,m13=0,m21=0,m22=1,m23=0,m31=0,m32=0,m33=1}<br>
 M2 = {}; M2.m11=1; M2.m12=0; M2.m13=0; M2.m21=0; M2.m22=1; M2.m23=0; M2.m31=0; M2.m32=0; M2.m33=1<br>
 M3 = {}; M3["m11"]=1; M3["m12"]=0; M3["m13"]=0; M3["m21"]=0; M3["m22"]=1; M3["m23"]=0; M3["m31"]=0; M3["m32"]=0; M3["m33"]=1;
 </div></p>
-
+<p>
+To provide an easier path when migrating from C++ to Lua, an _M(...) function is also available to create matrices.
+Since this adds a level of indirection, you should avoid using this syntax in tight loops.
+<div class="code">
+	local sinc = math.sin(tgt.inc)</br>
+	local cinc = math.cos(tgt.inc)</br>
+	local slan = math.sin(tgt.lan)</br>
+	local clan = math.cos(tgt.lan)</br>
+</br>
+	local R1 = _M(1,0,0, 0,cinc,sinc, 0,-sinc,cinc)</br>
+	local R2 = _M(clan,0,-slan, 0,1,0, slan,0,clan)
+</div>
+</p>
 <h4>See also:</h4>
 <p>
 <a href="api_vec.htm">Vector and matrix operations</a>,

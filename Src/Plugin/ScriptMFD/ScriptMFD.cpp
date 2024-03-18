@@ -29,6 +29,7 @@ int g_MFDmode; // identifier for new MFD mode
 
 SCRIPTMFDMODESPEC *modespec;
 int nmode = 0;
+static NOTEHANDLE errorbox;
 
 struct VINTERP { // list of vessel-based interpreters
 	INTERPRETERHANDLE hInterp;
@@ -52,6 +53,29 @@ static void ClearVinterpList()
 		delete []vinterp;
 		nvinterp = 0;
 	}
+}
+
+static int traceback(lua_State *L) {
+    lua_getfield(L, LUA_GLOBALSINDEX, "debug");
+    lua_getfield(L, -1, "traceback");
+    lua_pushvalue(L, 1);
+    lua_pushinteger(L, 2);
+    lua_call(L, 2, 1);
+    return 1;
+}
+
+int LuaCall(lua_State *L, int narg, int nres)
+{
+	int base = lua_gettop(L) - narg;
+	lua_pushcfunction(L, traceback);
+	lua_insert(L, base);
+	int res = lua_pcall(L, narg, nres, base);
+	lua_remove(L, base);
+	if(res != 0) {
+		oapiWriteLogError("%s", lua_tostring(L, -1));
+		oapiAnnotationSetText(errorbox, const_cast<char *>(lua_tostring(L, -1)));
+	}
+	return res;
 }
 
 // ==============================================================
@@ -108,15 +132,21 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 DLLCLBK void ExitModule (HINSTANCE hDLL)
 {
 	int i;
-
 	for (i = 0; i < nmode; i++) {
 		oapiUnregisterMFDMode (modespec[i].mode);
 	}
 	ClearVinterpList();
 }
 
+DLLCLBK void opcOpenRenderViewport(HWND,DWORD,DWORD,BOOL)
+{
+	errorbox = ::oapiCreateAnnotation(false, 1, _V(1.0,0,0));
+	::oapiAnnotationSetPos (errorbox, 0, 0.75, 1, 1);
+}
+
 DLLCLBK void opcCloseRenderViewport ()
 {
+	oapiDelAnnotation(errorbox);
 	ClearVinterpList();
 }
 
@@ -130,7 +160,7 @@ DLLCLBK void opcPreStep (double simt, double simdt, double mjd)
 			lua_pushnumber(L,simt);
 			lua_pushnumber(L,simdt);
 			lua_pushnumber(L,mjd);
-			lua_call (L, 3, 0);
+			LuaCall (L, 3, 0);
 		}
 	}
 }
@@ -145,7 +175,7 @@ DLLCLBK void opcPostStep (double simt, double simdt, double mjd)
 			lua_pushnumber(L,simt);
 			lua_pushnumber(L,simdt);
 			lua_pushnumber(L,mjd);
-			lua_call (L, 3, 0);
+			LuaCall (L, 3, 0);
 		}
 	}
 }
@@ -227,7 +257,7 @@ ScriptMFD::ScriptMFD (DWORD w, DWORD h, VESSEL *vessel, const SCRIPTMFDMODESPEC 
 		lua_getfield (L, LUA_GLOBALSINDEX, CLBKNAME[SETUP]);
 		lua_pushnumber(L, w);
 		lua_pushnumber(L, h);
-		lua_call (L, 2, 0);
+		LuaCall (L, 2, 0);
 	}
 }
 
@@ -245,7 +275,7 @@ bool ScriptMFD::ConsumeButton (int bt, int event)
 		lua_getfield (L, LUA_GLOBALSINDEX, CLBKNAME[CONSUMEBUTTON]);
 		lua_pushnumber (L, bt);
 		lua_pushnumber (L, event);
-		lua_call (L, 2, 1);
+		LuaCall (L, 2, 1);
 		bool consumed = (lua_toboolean (L, -1) ? true : false);
 		lua_pop (L, 1);
 		return consumed;
@@ -259,7 +289,7 @@ bool ScriptMFD::ConsumeKeyBuffered (DWORD key)
 	if (bclbk[CONSUMEKEYBUFFERED]) {
 		lua_getfield (L, LUA_GLOBALSINDEX, CLBKNAME[CONSUMEKEYBUFFERED]);
 		lua_pushnumber (L, key);
-		lua_call (L, 1, 1);
+		LuaCall (L, 1, 1);
 		bool consumed = (lua_toboolean (L, -1) ? true : false);
 		lua_pop (L, 1);
 		return consumed;
@@ -272,7 +302,7 @@ bool ScriptMFD::ConsumeKeyImmediate (char *kstate)
 	if (bclbk[CONSUMEKEYIMMEDIATE]) {
 		lua_getfield (L, LUA_GLOBALSINDEX, CLBKNAME[CONSUMEKEYIMMEDIATE]);
 		lua_pushlightuserdata (L, kstate);
-		lua_call (L, 1, 1);
+		LuaCall (L, 1, 1);
 		bool consumed = (lua_toboolean (L, -1) ? true : false);
 		lua_pop (L, 1);
 		return consumed;
@@ -288,7 +318,7 @@ char *ScriptMFD::ButtonLabel (int bt)
 	if (bclbk[BUTTONLABEL]) {
 		lua_getfield (L, LUA_GLOBALSINDEX, CLBKNAME[BUTTONLABEL]);
 		lua_pushnumber (L, bt);
-		lua_call (L, 1, 1);
+		LuaCall (L, 1, 1);
 		if (lua_isstring (L, -1)) {
 			label = (char*)lua_tostring (L,-1);
 		}
@@ -306,7 +336,7 @@ int ScriptMFD::ButtonMenu (const MFDBUTTONMENU **menu) const
 		static MFDBUTTONMENU *mnu = 0;
 		static int nmnu = 0;
 		lua_getfield (L, LUA_GLOBALSINDEX, CLBKNAME[BUTTONMENU]);
-		lua_call (L, 0, 2);
+		LuaCall (L, 0, 2);
 		if (lua_isnumber(L,-1)) {
 			nbt = lua_tointeger(L,-1);
 			if (menu) {
@@ -372,7 +402,7 @@ bool ScriptMFD::Update (oapi::Sketchpad *skp)
 	if (bclbk[UPDATE]) {
 		lua_getfield (L, LUA_GLOBALSINDEX, CLBKNAME[UPDATE]);
 		Interpreter::lua_pushsketchpad (L, skp);
-		lua_call (L, 1, 1);
+		LuaCall (L, 1, 1);
 		bool consumed = (lua_toboolean (L, -1) ? true : false);
 		lua_pop (L, 1);
 		return true; //consumed;
@@ -385,7 +415,7 @@ void ScriptMFD::StoreStatus () const
 {
 	if (bclbk[STORESTATUS]) {
 		lua_getfield (L, LUA_GLOBALSINDEX, CLBKNAME[STORESTATUS]);
-		lua_call (L, 0, 0);
+		LuaCall (L, 0, 0);
 	}
 }
 
@@ -394,7 +424,7 @@ void ScriptMFD::RecallStatus ()
 {
 	if (bclbk[RECALLSTATUS]) {
 		lua_getfield (L, LUA_GLOBALSINDEX, CLBKNAME[RECALLSTATUS]);
-		lua_call (L, 0, 0);
+		LuaCall (L, 0, 0);
 	}
 }
 
@@ -404,7 +434,7 @@ void ScriptMFD::WriteStatus (FILEHANDLE scn) const
 	if (bclbk[WRITESTATUS]) {
 		lua_getfield (L, LUA_GLOBALSINDEX, CLBKNAME[WRITESTATUS]);
 		lua_pushlightuserdata (L, scn);
-		lua_call (L, 1, 0);
+		LuaCall (L, 1, 0);
 	}
 }
 
@@ -414,7 +444,7 @@ void ScriptMFD::ReadStatus (FILEHANDLE scn)
 	if (bclbk[READSTATUS]) {
 		lua_getfield (L, LUA_GLOBALSINDEX, CLBKNAME[READSTATUS]);
 		lua_pushlightuserdata (L, scn);
-		lua_call (L, 1, 0);
+		LuaCall (L, 1, 0);
 	}
 }
 

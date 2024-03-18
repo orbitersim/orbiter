@@ -29,6 +29,7 @@
 
 // ==============================================================
 // class InterpreterList::Environment: implementation
+static NOTEHANDLE errorbox;
 
 InterpreterList::Environment::Environment()
 {
@@ -36,6 +37,7 @@ InterpreterList::Environment::Environment()
 	singleCmd = false;
 	hThread = NULL;
 	interp = CreateInterpreter ();
+	interp->SetErrorBox(errorbox);
 }
 
 InterpreterList::Environment::~Environment()
@@ -105,9 +107,19 @@ InterpreterList::~InterpreterList ()
 	while (nlist) DelInterpreter(list[0]);
 }
 
+void InterpreterList::clbkSimulationStart (RenderMode mode)
+{
+	errorbox = ::oapiCreateAnnotation(false, 1, _V(1.0,0,0));
+	::oapiAnnotationSetPos (errorbox, 0, 0.75, 1, 1);
+
+	for (int i = 0; i < nlist; i++) // prune all finished interpreters
+		list[i]->interp->SetErrorBox(errorbox);
+}
+
 void InterpreterList::clbkSimulationEnd ()
 {
 	while (nlist) DelInterpreter(list[0]);
+	oapiDelAnnotation(errorbox);
 }
 
 void InterpreterList::clbkPostStep (double simt, double simdt, double mjd)
@@ -123,6 +135,7 @@ void InterpreterList::clbkPostStep (double simt, double simdt, double mjd)
 		}
 	}
 }
+
 
 InterpreterList::Environment *InterpreterList::AddInterpreter ()
 {
