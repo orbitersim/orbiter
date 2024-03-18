@@ -71,7 +71,7 @@ template<class TileType>
 void TileManager2Base::QueryTiles(QuadTreeNode<TileType> *node, std::list<Tile*> &tiles)
 {
 	Tile *tile = node->Entry();
-	if (tile->state == Tile::ForRender) 	tiles.push_back(tile);
+	if (tile->state == Tile::ForRender) tiles.push_back(tile);
 	else if (tile->state == Tile::Active) {
 		for (int i = 0; i < 4; i++) {
 			if (node->Child(i)) {
@@ -185,30 +185,34 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 		}
 	}
 	
-	// Recursion to next level: subdivide into 2x2 patch
-	if (bstepdown) {
-		bool subcomplete = true;
-		int i, idx;
-		// check if all 4 subtiles are available already, and queue any missing for loading
-		for (idx = 0; idx < 4; idx++) {
-			QuadTreeNode<TileType> *child = node->Child(idx);
-			if (!child)
-				child = LoadChildNode (node, idx);
-			else if (child->Entry()->state == Tile::Invalid)
-				loader->LoadTileAsync (child->Entry());
-			Tile::TileState state = child->Entry()->state;
-			if (!(state & TILE_VALID))
-				subcomplete = false;
+	if (scene->GetRenderPass() == RENDERPASS_MAINSCENE)
+	{
+		// Recursion to next level: subdivide into 2x2 patch
+		if (bstepdown)
+		{
+			bool subcomplete = true;
+			int i, idx;
+			// check if all 4 subtiles are available already, and queue any missing for loading
+			for (idx = 0; idx < 4; idx++) {
+				QuadTreeNode<TileType>* child = node->Child(idx);
+				if (!child)
+					child = LoadChildNode(node, idx);
+				else if (child->Entry()->state == Tile::Invalid)
+					loader->LoadTileAsync(child->Entry());
+				Tile::TileState state = child->Entry()->state;
+				if (!(state & TILE_VALID))
+					subcomplete = false;
+			}
+			if (subcomplete) {
+				tile->state = Tile::Active;
+				for (i = 0; i < 4; i++)
+					ProcessNode(node->Child(i));
+				return; // otherwise render at current resolution until all subtiles are available
+			}
 		}
-		if (subcomplete) {
-			tile->state = Tile::Active;
-			for (i = 0; i < 4; i++)
-				ProcessNode (node->Child(i));
-			return; // otherwise render at current resolution until all subtiles are available
+		else {
+			node->DelChildren();
 		}
-	}
-	else {
-		if (scene->GetRenderPass() == RENDERPASS_MAINSCENE) node->DelChildren();
 	}
 }
 
@@ -276,6 +280,7 @@ TileManager2<TileType>::TileManager2 (vPlanet *vplanet, int _maxres, int _gridre
 	for (int i = 0; i < 3; i++)
 	{
 		globtile[i] = new TileType(this, i - 3, 0, 0);
+		globtile[i]->PreLoad();
 		globtile[i]->Load();
 	}
 

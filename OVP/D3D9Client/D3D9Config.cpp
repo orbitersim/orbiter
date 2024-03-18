@@ -38,7 +38,7 @@ void D3D9Config::Reset ()
 	Enable9On12			= 0;
 	OrbitalShadowMult   = 0.85;
 	PlanetPreloadMode	= 0;
-	PlanetLoadFrequency	= 20;
+	PlanetLoadFrequency	= 40;
 	Anisotrophy			= 4;
 	SceneAntialias		= 4;
 	DebugLvl			= 1;

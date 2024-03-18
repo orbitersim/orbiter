@@ -64,6 +64,7 @@ Tile::Tile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 
 Tile::~Tile ()
 {
+	D3D9Stats.TilesAllocated--;
 	state = Invalid;
 	if (mesh) delete mesh;
 }

@@ -174,8 +174,7 @@ void D3D9Client::RenderControlPanel()
 
 	Label("Tile Texture Cache...: Used[%u] Free[%u] Capacity (%u MB)", g_pTexmgr_tt->UsedCount(), g_pTexmgr_tt->FreeCount(), tt_c >> 20);
 	Label("Tile Vertex Cache....: Used[%u] Free[%u] Capacity (%u MB)", g_pVtxmgr_vb->UsedCount(), g_pVtxmgr_vb->FreeCount(), tv_c >> 20);
-
-	Label("Tiles Allocated (New): %u", D3D9Stats.TilesAllocated);
+	Label("Tiles Allocated......: %u", D3D9Stats.TilesAllocated);
 	
 
 
