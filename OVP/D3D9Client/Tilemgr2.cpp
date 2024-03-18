@@ -18,6 +18,7 @@
 
 #include <stack>
 #include <io.h>
+#include <filesystem>
 
 // =======================================================================
 // Externals
@@ -74,11 +75,13 @@ Tile::~Tile ()
 
 bool Tile::LoadTextureFile(const char *fullpath, LPDIRECT3DTEXTURE9 *pPre)
 {
-	DWORD Mips = 1, Filter = D3DX_FILTER_NONE;
-	if (bMipmaps) Filter = D3DX_FILTER_BOX, Mips = 0;
-	if (D3DXCreateTextureFromFileEx(mgr->Dev(), fullpath, 0, 0, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, Filter, 0, NULL, NULL, pPre)==S_OK) {
-
-		return true;
+	auto y = filesystem::status(fullpath);
+	if (filesystem::exists(y)) {
+		DWORD Mips = 1, Filter = D3DX_FILTER_NONE;
+		if (bMipmaps) Filter = D3DX_FILTER_BOX, Mips = 0;
+		if (D3DXCreateTextureFromFileEx(mgr->Dev(), fullpath, 0, 0, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, Filter, 0, NULL, NULL, pPre) == S_OK) {
+			return true;
+		}
 	}
 
 	*pPre = NULL;
