@@ -7,7 +7,7 @@ Orbiter allows to create new planets or planetary systems in a few simple steps.
 \begin{itemize}
 \item find or create a surface texture map
 \item optionally, find or create texture maps for a cloud layer, for a land/sea mask, and for night lights
-\item convert the texture map(s) into Orbiter’s .tex format by invoking pltex
+\item convert the texture map(s) into Orbiter's .tex format by invoking pltex
 \item create a configuration file (.cfg) in the Config subfolder, containing physical and orbital planet parameters.
 \item Add an entry for the planet in the configuration file of the planetary system (e.g. Sol.cfg).
 \item Optionally, create a DLL plugin module to allow detailed control of planet movement and atmosphere definition.
@@ -26,7 +26,17 @@ Orbiter 2016 introduces a more powerful planetary texturing mechanism than previ
 
 \noindent
 %TODO handle legacy model link
-The legacy texture mapping used in previous Orbiter releases is still supported by Orbiter 2016 for backward compatibility, but its use in new planet texture projects is discouraged. The legacy model is described in TODO.
+The legacy texture mapping used in previous Orbiter releases is still supported by Orbiter 2016 for backward compatibility, but its use in new planet texture projects is discouraged. The legacy model is described in TODO.\\
+\\
+To configure a planet for use of the new surface texture format, its configuration file\\
+\indent Config\textbackslash <\textit{planet name}>.cfg\\
+must contain the following line:\\
+\indent TileFormat = 2\\
+If missing, the legacy format is assumed. Likewise, if a cloud layer is present and is defined in the new format, the configuration file must contain\\
+\indent CloudFormat = 2\\
+otherwise a cloud layer defined in the legacy format is assumed.\\
+The MaxPatchResolution tag can be used to specify the maximum resolution level Orbiter will use for rendering the planet surface. This can be higher than than the maximum resolution defined in the texture quadtree, in which case Orbiter interpolates the missing high-resolution tile from the highest available resolution ancestor tile. This can be useful for providing a smoother surface representation (in particular for elevation data). The maximum supported value is 19. If the MaxPatchResolution value is set to less than the highest resolution level supported by quadtree nodes, then the higher resolution tiles are not used for rendering.\\
+Likewise, the MaxCloudResolution tag can be used to specify the maximum resolution level for cloud tiles (the MinCloudResolution tag should always be set to 1).
 
 
 \subsubsection{The file layout}
@@ -97,19 +107,288 @@ Resolution levels 1, 2 and 3 are not part of the quadtree. They cover the entire
 \end{figure}
 
 \noindent
-The quadtree doesn’t need to be populated completely. Missing tiles are interpolated by Orbiter from a sub-area of an ancestor tile. The quadtree is also allowed to contain gaps, that is, it can contain high-resolution tiles of an area (e.g. a surface base) even if some of the ancestor tiles are missing from the tree, so that there is no unbroken chain to the quadtree root.\\
-The minimum requirement is the presence of all tiles for resolution levels 1 to 4 for a given layer, i.e. the global tiles (level 1–3) and the quadtree root (level 4) must be present. All higher resolution quadtree tiles are optional. The maximum currently supported resolution level is 17 for elevation layers (Elev and Elev\_mod), and level 19 for all other layers.
+The quadtree doesn't need to be populated completely. Missing tiles are interpolated by Orbiter from a sub-area of an ancestor tile. The quadtree is also allowed to contain gaps, that is, it can contain high-resolution tiles of an area (e.g. a surface base) even if some of the ancestor tiles are missing from the tree, so that there is no unbroken chain to the quadtree root.\\
+The minimum requirement is the presence of all tiles for resolution levels 1 to 4 for a given layer, i.e. the global tiles (level 1-3) and the quadtree root (level 4) must be present. All higher resolution quadtree tiles are optional. The maximum currently supported resolution level is 17 for elevation layers (Elev and Elev\_mod), and level 19 for all other layers.
 
 
 
 \subsubsection{Layer types}
-\subsubsection{Compressed archive layer format}
-%\subsubsubsection{The .tree file format}
-\subsubsection{Utilities}
-\subsubsection{Elevation tile file format}
-\subsubsection{Label tile format}
-\subsubsection{Converting surface base tiles}
+The following layer types are currently supported by Orbiter:\\
 
+\noindent
+\textbf{Surf layer}\\
+The Surf layer contains the surface texture of a planet, where the file for each tile is a 512×512 pixel bitmap in DXT1 format (no transparency). You can for example use the Utils\textbackslash DxTex.exe (DirectX Texture Tool) utility to convert a bitmap to DXT1 format. You can also use the Utils\textbackslash plsplit64.exe utility to convert a planetary map in cylindrical projection to a set of files at a given resolution level.\\
+
+\noindent
+\textbf{Mask layer}\\
+The Mask layer contains the planet water mask (for rendering specular reflection of water surfaces) and night light texture, if applicable, in a combined  512×512 pixel DXT1 texture file (1-bit transparency). The RGB channels of the texture provide the night light information, while the 1-bit alpha channel provides the water mask (alpha = 0: water, alpha = 1: land). Due to a limitation of the DXT1 format, pixels with alpha = 0 do not contain RGB information. Therefore, night lights cannot be defined on water surfaces.\\
+A planet with neither night lights nor specular reflection surfaces does not need to provide a Mask layer.\\
+
+\noindent
+\textbf{Elev layer}\\
+%TODO add section link
+The Elev layer contains files defining the surface elevation of a tile in a custom format (*.elv, see TODO). Planets which do not define an Elev layer are represented as spheres.\\
+
+\noindent
+\textbf{Elev\_mod layer}\\
+%TODO add section link
+The Elev\_mod layer allows to modify tile elevations without the need to modify the original Elev files. The Elev\_mod layer can be used e.g. for editing the elevations at surface bases (flattening runways, etc.). The files are in a custom format (*.elv, see Chapter TODO). A tile in the Elev\_mod layer can only modify an existing tile in the Elev layer, not create a new tile. Therefore, for each tile in the Elev\_mod layer, the corresponding tile in the Elev layer must exist.\\
+
+\noindent
+\textbf{Cloud layer}\\
+The Cloud layer contains the tiles for a global cloud layer in 512×512 pixel DXT5 format, containing colour and transparency information. Planets without clouds don't define this layer.\\
+
+\noindent
+\textbf{Label layer}\\
+%TODO add section link
+The Label layer contains positions and labels for surface features such as cities, mountains, craters, landing sites, etc. See Chapter TODO for details.
+
+
+\subsubsection{Compressed archive layer format}
+The quadtree tile format described in Chapters 2 and 3 consists of individual files for each tile. This can lead to a very large number of files and a complex directory structure, which is often not desirable. Therefore, Orbiter alternatively supports a compressed archive layer format, where all files for a given planet and layer are merged into a single file.\\
+The archive files can exist alongside the directory tree containing the individual tile files (the “cache”). Orbiter can be configured to read only from the cache, only from the archive, or from both (first trying the cache, then the archive). To set these preferences, use the\\
+\indent Extra | Visualisation parameters | Planet rendering options | Tile sources\\
+controls in the Orbiter Launchpad dialog (for the inline graphics version), or the corresponding client-specific controls for external graphics clients.\\
+Compressed archive files have a custom format. They consist of a header, a table of contents (TOC) representing the tree structure, and the compressed and concatenated tile files. Archive files have the extension .tree (to signify that they contain quadtree data). They are located in\\
+\indent Textures\textbackslash <\textit{planet name}>\textbackslash Archive\\
+with
+
+\begin{itemize}
+\item Surf.tree $\Rightarrow$ Surf layer
+\item Mask.tree $\Rightarrow$ Water mask and night light layer
+\item Elev.tree $\Rightarrow$ Elevation layer
+\item Elev\_mod.tree $\Rightarrow$ Elevation modification layer
+\item Cloud.tree $\Rightarrow$ Cloud layer
+\end{itemize}
+
+\noindent
+A layer archive (.tree) file consists of a header, TOC and compressed node data. The file header has the following format:
+
+\begin{lstlisting}
+struct ZtreeHeader
+{
+	BYTE magic[4];// file ID and version ('T', 'X', 1, 0)
+	DWORD size;// header size [bytes] (48)
+	DWORD flags;// bit flags (currently ignored)
+	DWORD dataOfs;// data block offset (header + TOC)
+	__int64 dataLength;// total length of compressed data block
+	DWORD nodeCount;// total number of tree nodes
+	DWORD rootPos1;// index of level-1 tile
+	DWORD rootPos2;// index of level-2 tile
+	DWORD rootPos3;// index of level-3 tile
+	DWORD rootPos4[2];// index of level-4 tiles (quadtree roots)
+};
+\end{lstlisting}
+
+\noindent
+where dataOfs specifies the offset of the data block from the file start (= size of header + table of contents), dataLength is the size of the data block (= file size - dataOfs) and nodeCount is the number of entries in the TOC.\\
+rootPos1, rootPos2, rootPos3 are the indices of the level 1, 2 and 3 tiles in the TOC, respectively, and rootPos4 are the indices of the two level 4 quadtree roots in the TOC. If any of these is not present in the TOC, the value is set to (DWORD)-1.\\
+The header is followed by the TOC, consisting of a list of nodeCount quadtree node descriptors. A descriptor is given by
+
+\begin{lstlisting}
+struct TreeNode
+{
+	__int64 pos;// file position of node data
+	DWORD size;// data block size [bytes]
+	DWORD child[4];// array index positions of the children
+};
+\end{lstlisting}
+
+\noindent
+where pos is the node's data position in the file relative to the beginning of the data block, size is the node's decompressed data size, and child contains the indices of the four descendants, where (DWORD)-1 terminates the branch.\\
+The compressed data size of node i can be inferred from node[i+1].pos - node[i].pos, where node[i+1].pos must be replaced with dataLength for the last node.\\
+Note that the TOC may contain nodes without data block, if they are required to provide connectivity across gaps to higher-resolution descendants. The uncompressed size of such dummy nodes is set to 0.\\
+The TOC is followed by the compressed node data, following the same order as the TOC. The data for each node are compressed individually, using the zlib “deflate” method with Z\_DEFAULT\_COMPRESSION setting, essentially providing a gz compression format for each individual data block.
+
+
+\subsubsection{Utilities}
+The Utils folder contains some tools to assist with planetary texture management and editing.\\
+\\
+\textbf{tileedit}\\
+Utils\textbackslash tileedit.exe is a tile viewer that is useful for navigating the tile quadtree. It can display multiple layers side by side, and has some basic editing capabilities for elevation tiles.
+
+\begin{figure}[H]
+	\centering
+	\subfigure{\includegraphics[width=0.99\textwidth]{tileedit.png}}
+\end{figure}
+
+\noindent
+%TODO add section link
+Tileedit can be configured to read from the quadtree cache or from a compressed archive (under File | Configure). Any modifications are always written as individual tiles into the cache directory structure. Therefore, changes will only be visible in Orbiter if it uses the cache (see Chapter TODO), unless the changes are merged into the archive afterwards (see Chapter TODO).\\
+After launching tileedit, select a planet with File | Open and navigate to the root folder of a planet texture directory, for example\\
+\indent Textures\textbackslash Earth\\
+Then click Select Folder. This will open the Earth textures at the lowest resolution (level 1). The three map panels will show three surface layers, e.g. Surface, Elevation and water mask. Note that some layers may not be defined at level 1, and show a black square.\\
+\\
+Move the mouse over one of the map panels until it is surrounded by a red square. Click on it to proceed to the next higher level. At level 3 you can click on the western or eastern hemisphere to progress to one of the level 4 tiles. At higher levels you can click on one of the four quadrants to proceed to a child tile.\\
+Moving the mouse to the centre of the image until an “X” appears and clicking will return to the parent tile.\\
+Moving the mouse towards one of the edges until an arrow appears and clicking will move the view to the corresponding neighbour tile.\\
+You can also select a tile directly by entering the resolution level, latitude and longitude index in the index fields at the top left.\\
+Note that tileedit will display a representation of the selected tile even if there is no file for that tile. Tileedit then interpolates a sub-region of an ancestor tile. You can see the tile designation in the top left corner of the map panel when the mouse is hovering over it, e.g 16\textbackslash 000887\textbackslash 004095 . If the map was synthesized from an ancestor tile, the source tile is displayed below it in brackets, e.g. [13\textbackslash 000110\textbackslash 000511].\\
+\\
+You can select different layers from the drop-down box above each of the map panels.\\
+\\
+Tileedit allows to modify elevation data.
+
+\begin{itemize}
+\item Navigate to the tile you want to modify
+\item Make sure that one of the map panels shows the elevation layer
+\item Under the Action tab in the user interface area, click the Edit elevation icon.
+\item Pick one of the paint modes, and adjust any option-specific parameters
+\item Move the mouse over the elevation image and click to start drawing
+\end{itemize}
+
+\noindent
+Changes will be written to the Elev\_mod layer rather than the original Elev layer. Having the Elevation\_mod layer open next to the Elevation layer can give a better of what parts of the map have been modified. Note that the Elevation map shows the modifications merged with any unmodified parts of the original map.\\
+You can edit the elevation layer even by clicking in a different map panel (e.g. the Surface map). This gives better control for synchronising elevation modifications with surface features, e.g. for flattening a runway or similar. Cross hairs appear on all three map panels when in editing mode to provide an additional visual cue.\\
+You can undo all modifications to an elevation tile by deleting the corresponding file in the Elev\_mod layer cache directory.\\
+\\
+\textbf{plsplit}\\
+Utils\textbackslash plsplit.exe is an interactive command line utility that allows a planetary surface bitmap to be split into individual tile files at a specific resolution level.\\
+The user must provide the surface bitmap in BMP (24-bit) format at the correct resolution. To generate multiple resolution levels, plsplit must be run multiple times with surface bitmaps at the corresponding resolutions.\\
+The source bitmap must represent the global planet surface or a rectangular sub-area in cylindrical projection (longitude along horizontal axis, latitude along vertical axis). If the entire planet surface is to be processed from a single bitmap, the bitmap must cover longitude from -180$^{\circ}$ (left edge) to +180$^{\circ}$ (right edge) and latitude from -90$^{\circ}$ (bottom edge) to +90$^{\circ}$ (top edge).\\
+To create a level-4 tile set, the source bitmap for global coverage must be 1024×512 pixels in size. For each subsequent resolution level, the bitmap must double in size both horizontally and vertically.\\
+In practice, start with the highest resolution supported by your source map. If the size of the map is not a power of 2, use an image editing tool to interpolate to the closest power of 2. Then repeat reducing the size of the bitmap by a factor of 2 using an image editing tool to create the next lower level all the way to level 4 (1024×512). Levels 3, 2 and 1 must be created from source maps 512×512, 256×256 and 128×128, respectively.\\
+If the planet surface contains water areas with specular reflections or night lights, the corresponding source bitmaps for these must also be provided to plsplit in the same sizes as the surface map.\\
+\\
+\textbf{texpack}\\
+Utils\textbackslash texpack.exe is a command line utility which packs individual tile files from the cache directory tree into a compressed archive and stores it in the Archive subfolder of the planet texture directory. Please be aware that for very large tile trees the packing operation can take a long time (several hours).
+
+
+\subsubsection{Elevation tile file format}
+Orbiter uses a custom file format (*.elv) for encoding tile elevation data. The data file uses a binary format consisting of a header and the raw elevation data.
+
+\begin{figure}[H]
+	\centering
+	\subfigure{\includegraphics[width=0.5\textwidth]{tile_elev_grid.png}}
+	\caption{Tile elevation grid and surface cover}
+\end{figure}
+
+\noindent
+Each tile file represents a 259×259 grid of elevation points (with row and column indices 0-258). Column 1 represents the left edge of the tile, column 257 represents the right edge of the tile. Columns 0 and 258 are padding and are used for computing surface normals at the edges. This means that columns 0, 1 and 2 are shared with the left neighbour, and columns 256, 257 and 258 are shared with the right neighbour. The same is true for the top and bottom neighbours. The values stored for the shared nodes must be consistent between neighbouring tiles, otherwise edge artefacts can occur.\\
+The file header has the following structure:
+
+\begin{lstlisting}
+struct ELEVFILEHEADER// file header for patch elevation file
+{
+	char id[4];// ID string + version ('E','L','E',1)
+	int hdrsize;// header size (100 expected)
+	int dtype;// data format (0=flat, no data block; 8=uint8, -8=int8,
+				//16 =uint16, -16=int16)
+	int xgrd,ygrd;// data grid size (259 x 259 expected)
+	int xpad,ypad;// horizontal, vertical padding width (1, 1 expected)
+	double scale;// data scaling factor
+	double offset;// data offset (elevation = raw value * scale + offset)
+	double latmin,latmax;// latitude range [rad]
+	double lngmin,lngmax;// longitude range [rad]
+	double emin,emax,emean;// min, max, mean elevation [m]
+};
+\end{lstlisting}
+
+\noindent
+This is followed by the 259×259 node data in row format, starting from the bottom left corner (min. longitude, min. latitude). The representation of the data entries depends on the dtype entry in the header file:
+
+\begin{itemize}
+\item dtype = 0 $\Rightarrow$ file contains no node data. All nodes have the elevation specified by the offset value.
+\item dtype = 8 $\Rightarrow$ node data are provided in unsigned char (8-bit) values.
+\item dtype = -16 $\Rightarrow$ node data are provided in signed short (16-bit little-endian) values.
+\end{itemize}
+
+\noindent
+dtypes -8 and 16 are not currently used.\\
+In all cases, the data are in units of meters [m]. The scale value defines the height resolution of the elevation data. Currently, the following restrictions exist for scale values:
+
+\begin{itemize}
+\item All elevation tiles of a planet's elevation layer should have the same scale value.
+\item Scale values should be 2$^{n}$ (integer \textit{n})
+\end{itemize}
+
+\noindent
+The elevations h are computed from the raw file data z with
+
+\[ h = z \cdot scale + offset \]
+
+%\noindent
+The \textit{h} represents elevations relative to the planet mean radius.
+
+\begin{figure}[H]
+	\centering
+	\subfigure{\includegraphics[width=0.5\textwidth]{67_subgrid.png}}
+	\caption{67×67 subgrid selection from a grandparent elevation tile.}
+\end{figure}
+
+\noindent
+The files in the Elev\_mod layer, if present, use the same file format, except that the data block can contain mask flags for individual elevation points to signify that this point is not to be modified. The mask flags are
+
+\begin{itemize}
+\item dtype = 8: $\Rightarrow$ mask = UCHAR\_MAX
+\item dtype = -16: $\Rightarrow$ mask = SHRT\_MAX
+\end{itemize}
+
+\noindent
+Note that the 259×259 grid elevation tile resolution is higher than the mesh patch resolution used by Orbiter for that tile (which can be user-defined). If the patch resolution has been set to 64×64 (corresponding to 67×67 including edges and padding) then Orbiter will query a subset of the tile's grandparent node to retrieve the mesh elevation data for that tile. This arrangement allows to reduce the number of files required for the elevation layer.
+
+
+\subsubsection{Label tile format}
+Files in the Label quadtree layer are text files in UTF-8 format and have file extension .lab.\\
+Each label file contains the position and labels of surface features within the confines of the corresponding tile to be displayed at a given resolution level when the user enables surface labels in Planetarium mode (\Ctrl-\keystroke{F9}) in Orbiter.\\
+Each line in the file describes one label. The format for each label entry is\\
+\indent <\textit{type-id}> <\textit{latitude}> <\textit{longitude}> <\textit{elevation}> <\textit{label}>\\
+where <\textit{type-id}> is a character defining the feature type, <\textit{latitude}> and <\textit{longitude}> are the feature's centre coordinates in degrees, <\textit{elevation}> is the feature's elevation relative to the planet reference radius in metres, and <\textit{label}> is a string describing the feature.\\
+<\textit{elevation}> can be set to NaN, in which case Orbiter computes the elevation from its terrain elevation data. This should be avoided if possible to reduce computational cost.\\
+The resolution level at which a label appears in the quadtree determines the camera distance at which it appears in the Orbiter render window. By moving a label to a lower resolution level it becomes visible at a greater distance. For example, large cities should be entered at a lower resolution level than small villages.\\
+Note that in order to reduce the number of quadtree nodes, Orbiter shifts the resolution visibility by four levels. That is, a label entered in a level-2 tile will become visible when the corresponding level-6 tile is rendered.\\
+A label tile file should only contain labels at positions covered by the tile. For example, file\\
+\indent Label\textbackslash 05\textbackslash 000000\textbackslash 000001.lab\\
+should only contain features with positions 0$^{\circ}$ $\leq$ lat $\leq$ 90$^{\circ}$ and -90$^{\circ}$ $\leq$ lng $\leq$ 0$^{\circ}$.\\
+To enable the Label layer, the planet's configuration file (Config\textbackslash <\textit{planet-name}>.cfg) must contain the line\\
+\indent LabelFormat = 2\\
+otherwise the legacy label format is assumed.\\
+A label layer for a planet must be accompanied by a label legend file\\
+\indent Config\textbackslash <\textit{planet-name}>\textbackslash Label.cfg\\
+in UTF-8 format. Each line in the legend file describes a label type, with the format\\
+\indent <\textit{type-id}> <\textit{default-visible}> <\textit{marker-id}> <\textit{r}> <\textit{g}> <\textit{b}> <\textit{type-name}>\\
+where <\textit{type-id}> is a character defining the feature type, corresponding to the IDs in the quadtree label files, <\textit{default-visible}> is one of the characters 'x' (visible by default) or 'o' (not visible by default), <\textit{marker-id}> is a character defining the marker shape: 'S' (square, $\Box$), 'O' (circle, $\bigcirc$), 'D' (Delta, $\Delta$) or 'N' (Nabla, $\nabla$). <\textit{r}>, <\textit{g}> and <\textit{b}> are the red, green and blue components (0-255) of the label display colour, and <\textit{type-name}> is a string describing the label type.\\
+The user can activate and deactivate the display of specific label types by opening the Planetarium dialog (\Ctrl-\keystroke{F9}) in Orbiter, enabling \textit{Surface Markers}, and opening the \textit{Surface Marker Config} list to select label types.\\
+Note that Surface base and Navaid markers are currently not included in the quadtree Label layer. They are generated automatically from parsed Base configuration files and the navaid list in the planet's configuration file.
+
+
+
+\subsubsection{Converting surface base tiles}
+The main difference in the definition of surface bases between Orbiter releases 2010 and 2016 is the fact that base tiles (surface textures that provide high-resolution texture content in the vicinity of the base) are no longer supported. Base tiles must now be defined directly in the planet's tile quadtree structure.\\
+The legacy base tile format consisted of individual tile files in the Textures folder with the naming format\\
+\indent <\textit{planet-name}>\_<\textit{res}>\_<\textit{lng-id}>\_<\textit{lat-id}>.dds\\
+where <\textit{res}> defines the base tile resolution m ($\geq$ 1), <\textit{lng-id}> is the langitude identifier string, starting with 'W' (west) or 'E' (east) followed by a 4-digit index ($\geq$ 0), and <\textit{lat-id}> is the latitude identifier string, starting with 'N' (north) or 'S' (south) followed by a 4-digit index ($\geq$ 0), e.g.\\
+\indent Earth\_2\_W0462\_N0161.dds\\
+The relationship between the base tile resolution designation m and the quadtree resolution level n is given by\\
+\indent \textit{n} = \textit{m} + 12\\
+At base tile resolution level m, the global planet surface map can be considered to be divided into a grid of 2$^{m+9}$ longitude strips and 2$^{m+8}$ latitude strips, with longitude ID strings (from 180$^{\circ}$W to 180$^{\circ}$E)\\
+\indent [W2$^{m+8}$, ... , W0001, E0000, E2$^{m+8}$-1]\\
+and latitude ID strings (from 90$^{\circ}$S to 90$^{\circ}$N)\\
+\indent [S2$^{m+7}$, ... , S0001, N0000, N2$^{m+7}$-1]\\
+(Note that there are no base tile designations W0000 or S0000). Therefore, mapping base tile longitude designations to quadtree longitude indices is given by:\\
+\indent Western hemisphere: W\textit{x} $\rightarrow$ 2$^{m+8}$ - \textit{x}\\
+\indent Eastern hemisphere: E\textit{x} $\rightarrow$ 2$^{m+8}$ + \textit{x}\\
+and mapping base tile latitude designations to quadtree latitude indices is given by:\\
+\indent Northern hemisphere: N\textit{x} $\rightarrow$ 2$^{m+7}$ - 1 - \textit{x}\\
+\indent Southern hemisphere: S\textit{x} $\rightarrow$ 2$^{m+7}$ - 1 + \textit{x}\\
+For example, base tile Earth\_2\_W0462\_N0161.dds would translate to quadtree tile\\
+\indent Earth\textbackslash Surf\textbackslash 14\textbackslash 000350\textbackslash 000562.dds\\
+Note that the surface tiles in the quadtree are expected to be size 512×512. The base tiles may be present in various resolutions. This has to be taken into account during the conversion. For example, if base tile Earth\_2\_W0462\_N0161.dds is a 1024×1024 texture, it must be split into four 512×512 tiles which are then stored one level up in the quadtree:\\
+\indent Earth\textbackslash Surf\textbackslash 15\textbackslash 000700\textbackslash 001124.dds\\
+\indent Earth\textbackslash Surf\textbackslash 15\textbackslash 000700\textbackslash 001125.dds\\
+\indent Earth\textbackslash Surf\textbackslash 15\textbackslash 000701\textbackslash 001124.dds\\
+\indent Earth\textbackslash Surf\textbackslash 15\textbackslash 000701\textbackslash 001125.dds\\
+(A version of the original tile downsized to 512×512 should also be added as Earth\textbackslash Surf\textbackslash 14\textbackslash 000350\textbackslash 000562.dds).\\
+If Earth\_2\_W0462\_N0161.dds is a 256×256 texture, it can't be directly converted into a quadtree tile. The following options are available:\\
+a) If the appropriate neighbour base tiles are available – in this case,\\
+\indent Earth\_2\_W0463\_N0161.dds,\\
+\indent Earth\_2\_W0462\_N0160.dds,\\
+\indent Earth\_2\_W0463\_N0160.dds,\\
+they can be combined into a single 512×512 quadtree tile and stored one resolution level down, as\\
+\indent Earth\textbackslash Surf\textbackslash 13\textbackslash 000175\textbackslash 000281.dds.\\
+b) The texture can be interpolated to size 512×512 using an image processing utility and then saved as a quadtree tile. This option is less than ideal because the tile is then lacking the high-frequency content supported at that resolution level.\\
+c) The 256×256 base tile can be copied into the appropriate quadrant of the original Earth\textbackslash Surf\textbackslash 13\textbackslash 000175\textbackslash 000281.dds parent quadtree tile, if it exists.\\
+Note that the base tiles may need to be edited to colour-match the underlying lower-resolution quadtree tiles to provide a seamless transition. Histogram-matching algorithms can be useful here.
 
 
 \subsection{Planet modules}
@@ -187,7 +466,7 @@ int clbkFastEphemeris( double simt, int req, double* ret )
 
 \noindent
 The first line defining \textit{ORBITER\_MODULE} is required to ensure that all initialisation functions are properly called by Orbiter.\\
-\textit{clbkEphemeris} and \textit{clbkFastEphemeris} are the functions which will contain the actual ephemeris calculations for the planet at the requested time. \textit{clbkEphemeris} is only called by Orbiter if the planet’s state at an arbitrary time is required (for example by an instrument calculating the position at some future time). When Orbiter updates the planet’s position for the next simulation time frame, the \textit{clbkFastEphemeris} function will be called instead. This means that \textit{clbkFastEphemeris} will be called at each frame, each time advancing the time by a small amount. This can be used for a more efficient calculation. Instead of performing a full series evaluation, which can be lengthy, you may implement an interpolation scheme which performs the full calculation only occasionally, and interpolates between these samples to return the state at an intermediate time.\\
+\textit{clbkEphemeris} and \textit{clbkFastEphemeris} are the functions which will contain the actual ephemeris calculations for the planet at the requested time. \textit{clbkEphemeris} is only called by Orbiter if the planet's state at an arbitrary time is required (for example by an instrument calculating the position at some future time). When Orbiter updates the planet's position for the next simulation time frame, the \textit{clbkFastEphemeris} function will be called instead. This means that \textit{clbkFastEphemeris} will be called at each frame, each time advancing the time by a small amount. This can be used for a more efficient calculation. Instead of performing a full series evaluation, which can be lengthy, you may implement an interpolation scheme which performs the full calculation only occasionally, and interpolates between these samples to return the state at an intermediate time.\\
 For both functions, the requested type of data is specified as a group of \textit{EPHEM\_xxx} bitflags in the \textit{req} parameter. This can be any combination of position and velocity data for the celestial body itself and/or the barycentre of the system defined by the body and all its children (moons). The functions should calculate all required data, either in cartesian or polar coordinates, and fill the \textit{ret} array with the results. \textit{ret} contains 12 entries, used as follows:
 
 \begin{itemize}
@@ -236,17 +515,17 @@ DLLCLBK void ExitModule( HINSTANCE hModule )
 \end{lstlisting}
 
 \noindent
-Because usually only a single instance of a specific planet object is created during a simulation, the difference between \textit{InitInstance} and \textit{InitModule} is not as significant here as it is for vessel modules. The \textit{InitModule} and \textit{ExitModule} methods can be omitted if the module doesn’t need any global parameter initialisation.
+Because usually only a single instance of a specific planet object is created during a simulation, the difference between \textit{InitInstance} and \textit{InitModule} is not as significant here as it is for vessel modules. The \textit{InitModule} and \textit{ExitModule} methods can be omitted if the module doesn't need any global parameter initialisation.
 
 
 \subsection{Defining an atmosphere}
 Planetary atmospheres have a significant influence on the flight behavior of spacecraft. The primary atmospheric parameters are temperature, pressure and density as a function of altitude.\\
-Defining a simple atmospheric model is possible by setting a few parameters in the planet’s configuration file. More sophisticated models must be coded in the planet’s DLL module.\\
+Defining a simple atmospheric model is possible by setting a few parameters in the planet's configuration file. More sophisticated models must be coded in the planet's DLL module.\\
 Orbiter currently does not model local atmospheric perturbations (climatic/weather effects), although local temperature and pressure variations can be implemented by customised atmosphere models.
 
 
 \subsubsection{A simple atmosphere}
-To define a simple exponentially decaying atmosphere, define the following items in the planet’s configuration (.cfg) file:
+To define a simple exponentially decaying atmosphere, define the following items in the planet's configuration (.cfg) file:
 
 \begin{itemize}
 \item AtmPressure0 $\Rightarrow$ The static atmospheric pressure [Pa] at altitude zero, $p_{0}$.
@@ -255,7 +534,7 @@ To define a simple exponentially decaying atmosphere, define the following items
 \end{itemize}
 
 \noindent
-where altitude zero is defined as distance \textit{Size} (as defined in the configuration file) from the planet’s centre.\\
+where altitude zero is defined as distance \textit{Size} (as defined in the configuration file) from the planet's centre.\\
 The pressure and density at any altitude h is then calculated by Orbiter as
 
 \[ p =
@@ -569,8 +848,8 @@ Orbiter uses the equation for an ideal gas to compute the speed of sound as a fu
 \[ a = \sqrt{\gamma RT} \]
 
 \noindent
-where $\gamma$ is the ratio of specific heat at constant pressure $c_{p}$, and specific heat at constant temperature, $c_{v}$, for the gas, $\gamma = c_{p} / c_{v}$ For air at normal conditions, $\gamma$ = 1.4. This value is used by Orbiter as a default. It can be overridden by setting the \textit{AtmGamma} parameter in the planet’s configuration file.\\
-\textit{R} is the specific gas constant. By default, Orbiter uses the value for air, 286.91 J K$^{-1}$ kg$^{-1}$. This can be overridden by setting the \textit{AtmGasConstant} parameter in the planet’s configuration file.\\
+where $\gamma$ is the ratio of specific heat at constant pressure $c_{p}$, and specific heat at constant temperature, $c_{v}$, for the gas, $\gamma = c_{p} / c_{v}$ For air at normal conditions, $\gamma$ = 1.4. This value is used by Orbiter as a default. It can be overridden by setting the \textit{AtmGamma} parameter in the planet's configuration file.\\
+\textit{R} is the specific gas constant. By default, Orbiter uses the value for air, 286.91 J K$^{-1}$ kg$^{-1}$. This can be overridden by setting the \textit{AtmGasConstant} parameter in the planet's configuration file.\\
 \textbf{Mach number:} The Mach number is an essential parameter in aerodynamics. It expresses a velocity \textit{v} in units of the current speed of sound:
 
 \[ M = \frac{v}{a} \]
