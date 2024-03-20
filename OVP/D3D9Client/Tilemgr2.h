@@ -354,6 +354,9 @@ public:
 	// Returns the node at the specified position, or 0 if it doesn't exist
 
 	template<class TileType>
+	void DebugDump(QuadTreeNode<TileType>* node);
+
+	template<class TileType>
 	void ProcessNode (QuadTreeNode<TileType> *node);
 
 	template<class TileType>
@@ -409,11 +412,6 @@ private:
 	ELEVHANDLE emgr;                 // elevation data query handle
 	int gridRes;                     // mesh grid resolution. must be multiple of 2. Default: 64 for surfaces, 32 for clouds
 	double elevRes;                  // target elevation resolution
-
-	DWORD VtxPoolSize[NPOOLS];
-	DWORD IdxPoolSize[NPOOLS];
-	std::stack<LPDIRECT3DVERTEXBUFFER9> VtxPool[NPOOLS];
-	std::stack<LPDIRECT3DINDEXBUFFER9> IdxPool[NPOOLS];
 
 	static oapi::D3D9Client* gc;
 	static LPDIRECT3DDEVICE9 pDev;

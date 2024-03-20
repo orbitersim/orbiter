@@ -175,7 +175,9 @@ void D3D9Client::RenderControlPanel()
 	Label("Tile Texture Cache...: Used[%u] Free[%u] Capacity (%u MB)", g_pTexmgr_tt->UsedCount(), g_pTexmgr_tt->FreeCount(), tt_c >> 20);
 	Label("Tile Vertex Cache....: Used[%u] Free[%u] Capacity (%u MB)", g_pVtxmgr_vb->UsedCount(), g_pVtxmgr_vb->FreeCount(), tv_c >> 20);
 	Label("Tiles Allocated......: %u", D3D9Stats.TilesAllocated);
+	Label("Tiles Renderred......: %u", D3D9Stats.TilesRendered);
 	
+	D3D9Stats.TilesRendered = 0;
 
 
 	DWORD tot_verts = 0;
@@ -277,24 +279,6 @@ void D3D9Client::RenderControlPanel()
 		outside = total - (scene + update + display + lock + blit + getdc);
 
 		scale   = double(viewW - 16) / total;
-
-		// SCENE --------------------------------
-//		prt_cam = D3D9Stats.Timer.CustCams.time;
-//		prt_env = D3D9Stats.Timer.EnvMap.time;
-//		prt_blr = D3D9Stats.Timer.EnvBlur.time;
-		// -------------------------------------
-//		pln_srf = D3D9Stats.Timer.Surface.time;
-//		pln_cld = D3D9Stats.Timer.Clouds.time;
-		// -------------------------------------
-//		scn_cam = D3D9Stats.Timer.CamVis.time;
-//		scn_pst = D3D9Stats.Timer.PostProcess.time;
-//		scn_ves = D3D9Stats.Timer.Vessels.time;
-//		scn_vc  = D3D9Stats.Timer.VirtualCP.time;
-//		scn_hud = D3D9Stats.Timer.HUDOverlay.time;
-
-		// -------------------------------------
-		//scene -= prt_cam + prt_env + prt_blr + pln_srf + pln_cld + scn_cam + scn_pst + scn_ves + scn_vc + scn_hud;
-		// At this point scene contains a time spend in unmeasured sections
 
 		// -------------------------------------
 		Reset(D3D9Stats.Timer.CamVis);

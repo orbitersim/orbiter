@@ -500,8 +500,6 @@ void CSphereManager::RenderTile (int lvl, int hemisp, int ilat, int nlat, int il
 	TILEDESC *tile, const TEXCRDRANGE &range, LPDIRECT3DTEXTURE9 tex, LPDIRECT3DTEXTURE9 ltex, DWORD flag)
 {
 	VBMESH &mesh = PATCH_TPL[lvl][ilat]; // patch template
-
-	D3D9Stats.Old.Tiles[lvl]++;
 	
 	CelData.mWorld = mWorld;
 

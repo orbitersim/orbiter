@@ -58,26 +58,10 @@ class FileParser;
 class OapiExtension;
 class D3D9Pad;
 
-extern DWORD			uCurrentMesh;
-extern class vObject *	pCurrentVisual;
-
-typedef char * LPCHAR;
-typedef void * CAMERAHANDLE;
-typedef class D3D9Mesh * HMESH;
+typedef char* LPCHAR;
+typedef void* CAMERAHANDLE;
+typedef class D3D9Mesh* HMESH;
 typedef class SurfNative* lpSurfNative;
-
-extern set<D3D9Mesh*> MeshCatalog;
-extern set<SurfNative*>	SurfaceCatalog;
-extern IDirect3D9* g_pD3DObject;
-
-extern Memgr<float>* g_pMemgr_f;
-extern Memgr<INT16>* g_pMemgr_i;
-extern Memgr<UINT8>* g_pMemgr_u;
-extern Memgr<WORD>* g_pMemgr_w;
-extern Memgr<VERTEX_2TEX>* g_pMemgr_vtx;
-extern Texmgr<LPDIRECT3DTEXTURE9>* g_pTexmgr_tt;
-extern Vtxmgr<LPDIRECT3DVERTEXBUFFER9>* g_pVtxmgr_vb;
-extern Idxmgr<LPDIRECT3DINDEXBUFFER9>* g_pIdxmgr_ib;
 
 /**
  * \brief Statistical data storage
@@ -91,17 +75,7 @@ struct _D3D9Stats {
 		DWORD TexChanges;	///< Number of texture changes
 		DWORD MtrlChanges;	///< Number of material changes
 	} Mesh;					///< Mesh related statistics
-
-	struct {
-		DWORD Verts;		///< Number of vertices rendered
-		WORD  Tiles[32];	///< Number of tiles rendered (per level)
-	} Old;					///< Surface related statistics (old surface engine)
-
-	struct {
-		DWORD Verts;		///< Number of vertices rendered
-		WORD  Tiles[32];	///< Number of tiles rendered (per level)
-	} Surf;					///< Surface related statistics (new surface engine)
-
+			
 	struct {
 		D3D9Time Update;		///< clbkUpdate
 		D3D9Time Scene;			///< clbkRenderScene
@@ -118,9 +92,8 @@ struct _D3D9Stats {
 		D3D9Time GetDC;			///<
 	} Timer;					///< Render timing related statistics
 
-	DWORD TilesCached;		///< Number of cached tiles
-	DWORD TilesCachedMB;	///< Total size of tile cache (MBytes)
 	DWORD TilesAllocated;	///< Number of allocated tiles
+	DWORD TilesRendered;	///< Number of rendered tiles
 };
 
 
@@ -133,12 +106,23 @@ struct RenderTgtData {
 };
 
 
-
-
-
 extern _D3D9Stats D3D9Stats;
 extern bool bFreeze;
 extern bool bFreezeEnable;
+extern bool bFreezeRenderAll;
+extern DWORD			uCurrentMesh;
+extern class vObject* pCurrentVisual;
+extern set<D3D9Mesh*> MeshCatalog;
+extern set<SurfNative*>	SurfaceCatalog;
+extern IDirect3D9* g_pD3DObject;
+extern Memgr<float>* g_pMemgr_f;
+extern Memgr<INT16>* g_pMemgr_i;
+extern Memgr<UINT8>* g_pMemgr_u;
+extern Memgr<WORD>* g_pMemgr_w;
+extern Memgr<VERTEX_2TEX>* g_pMemgr_vtx;
+extern Texmgr<LPDIRECT3DTEXTURE9>* g_pTexmgr_tt;
+extern Vtxmgr<LPDIRECT3DVERTEXBUFFER9>* g_pVtxmgr_vb;
+extern Idxmgr<LPDIRECT3DINDEXBUFFER9>* g_pIdxmgr_ib;
 
 
 namespace oapi {

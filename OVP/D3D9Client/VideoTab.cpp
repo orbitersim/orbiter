@@ -317,14 +317,14 @@ void VideoTab::SelectFullscreen(bool bFull)
 {
 
 	SetWindowText(GetDlgItem(hTab, IDC_VID_ENUM), "(unused)");
-	SetWindowText(GetDlgItem(hTab, IDC_VID_STENCIL), "(unused)");
+	SetWindowText(GetDlgItem(hTab, IDC_VID_STENCIL), "Force window size");
 	SetWindowText(GetDlgItem(hTab, IDC_VID_PAGEFLIP), "Multiple displays");
 
 	SendDlgItemMessage(hTab, IDC_VID_FULL, BM_SETCHECK, bFull ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hTab, IDC_VID_WINDOW, BM_SETCHECK, bFull ? BST_UNCHECKED : BST_CHECKED, 0);
 
 	EnableWindow(GetDlgItem(hTab, IDC_VID_ENUM), false);
-	EnableWindow(GetDlgItem(hTab, IDC_VID_STENCIL), false);
+	EnableWindow(GetDlgItem(hTab, IDC_VID_STENCIL), true);
 
 	if (bFull) {
 		EnableWindow(GetDlgItem(hTab, IDC_VID_ASPECT), false);

@@ -664,9 +664,6 @@ void TileManager::ProcessTile (int lvl, int hemisp, int ilat, int nlat, int ilng
 		if ((dist-bsrad)>RenderParam.horzdist) return; //Tile is behind the horizon
 		if (gc->GetScene()->IsVisibleInCamera(&vBS, bsrad)==false) return;
 
-		D3D9Stats.Old.Verts += mesh->nv;
-		D3D9Stats.Old.Tiles[lvl]++;
-
 		// actually render the tile at this level ---------------------------------------
 		//
 		double sdist = acos (dotp (RenderParam.sdir, cnt));

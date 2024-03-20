@@ -95,6 +95,7 @@ _D3D9Stats D3D9Stats;
 
 bool bFreeze = false;
 bool bFreezeEnable = false;
+bool bFreezeRenderAll = false;
 
 // Debuging Brush-, Pen- and Font-accounting
 std::set<Font *> g_fonts;
@@ -1211,6 +1212,11 @@ void D3D9Client::clbkRenderScene()
 		}
 	}
 
+	if (bFreeze) {
+		RECT rect2 = _RECT(0, viewH - 60, viewW, viewH - 20);
+		pFramework->GetLargeFont()->DrawTextA(0, "Frozen", 6, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(255, 255, 0));
+	}
+
 	D3D9SetTime(D3D9Stats.Timer.Scene, scene_time);
 
 
@@ -1219,9 +1225,6 @@ void D3D9Client::clbkRenderScene()
 	// Compute total frame time
 	D3D9SetTime(D3D9Stats.Timer.FrameTotal, frame_time);
 	frame_time = D3D9GetTime();
-
-	memset(&D3D9Stats.Old, 0, sizeof(D3D9Stats.Old));
-	memset(&D3D9Stats.Surf, 0, sizeof(D3D9Stats.Surf));
 }
 
 // ==============================================================
@@ -1832,16 +1835,16 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 		case WM_KEYDOWN:
 		{
-			if (DebugControls::IsActive()) {
-				if (wParam == 'F') {
-					if (bFreeze) bFreezeEnable = bFreeze = false;
-					else bFreezeEnable = true;
-				}
-			}
 			bool bShift = (GetAsyncKeyState(VK_SHIFT) & 0x8000)!=0;
 			bool bCtrl  = (GetAsyncKeyState(VK_CONTROL) & 0x8000)!=0;
 			if (wParam == 'C' && bShift && bCtrl) bControlPanel = !bControlPanel;
 			if (wParam == 'N' && bShift && bCtrl) Config->bCloudNormals = !Config->bCloudNormals;
+			if (wParam == 'F' && bShift && bCtrl) {
+				if (bFreeze) bFreezeEnable = bFreeze = false;
+				else bFreezeEnable = true;
+			}
+			if (wParam == 'A' && bFreeze) bFreezeRenderAll = !bFreezeRenderAll;
+
 			break;
 		}
 

@@ -69,9 +69,11 @@ public:
 	~Memgr()
 	{
 #ifdef _DEBUG
-		size_t size = 0; DWORD ent = 0;
-		for (auto x : Fre) for (auto y : x.second) { ent++; size += x.first; delete y; }
-		oapiWriteLogV("Memgr[%s] Total of %u bytes in %u entries", name.c_str(), size * sizeof(T), ent);
+		for (auto x : Fre) {
+			size_t size = 0; DWORD ent = 0;
+			for (auto y : x.second) { ent++; size += x.first; delete y; }
+			oapiWriteLogV("Memgr[%s] Size[%u]: Total of %u bytes in %u entries", name.c_str(), x.first, size * sizeof(T), ent);
+		}
 		if (Rsv.size() == 0) oapiWriteLogV("Memgr[%s] All clear",name.c_str());
 		else for (auto x : Rsv) {
 			oapiWriteLogV("Memgr[%s] Leaking %u bytes", name.c_str(), x.second * sizeof(T));
@@ -152,9 +154,11 @@ public:
 	{
 		mm.lock();
 #ifdef _DEBUG
-		size_t size = 0; DWORD ent = 0;
-		for (auto x : Fre) for (auto y : x.second) { ent++; size += UnitSize(x.first); Delete(y); }
-		oapiWriteLogV("Objmgr[%s] Total of %u bytes in %u entries", name.c_str(), size, ent);
+		for (auto x : Fre) {
+			size_t size = 0; DWORD ent = 0;
+			for (auto y : x.second) { ent++; size += UnitSize(x.first); Delete(y); }
+			oapiWriteLogV("Objmgr[%s] Size[%u]: Total of %u bytes in %u entries", name.c_str(), x.first, size, ent);
+		}	
 		if (Rsv.size() == 0) oapiWriteLogV("Objmgr[%s] All clear", name.c_str());
 		else for (auto x : Rsv) {
 			oapiWriteLogV("Objmgr[%s] Leaking %u bytes", name.c_str(), UnitSize(x.second));
@@ -295,7 +299,10 @@ protected:
 		return (T)pT;
 	}
 
-	void Delete(T x) { x->Release(); }
+	void Delete(T x) {
+		UINT q = x->Release();
+		assert(q == 0);
+	}
 	size_t UnitSize(DWORD size) { return (size & 0xFFFF) * (size & 0xFFFF); }
 };
 
@@ -321,7 +328,10 @@ protected:
 		}
 		return (T)pVB;
 	}
-	void Delete(T x) { x->Release(); }
+	void Delete(T x) {
+		UINT q = x->Release();
+		assert(q == 0);
+	}
 	size_t UnitSize(DWORD size) { return size * sizeof(VERTEX_2TEX); }
 };
 
@@ -347,7 +357,10 @@ protected:
 		}
 		return (T)pIB;
 	}
-	void Delete(T x) { x->Release(); }
+	void Delete(T x) {
+		UINT q = x->Release();
+		assert(q == 0);
+	}
 	size_t UnitSize(DWORD size) { return size * sizeof(WORD) * 3; }
 };
 

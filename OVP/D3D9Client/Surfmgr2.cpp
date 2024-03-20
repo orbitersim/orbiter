@@ -1597,8 +1597,6 @@ int TileManager2<SurfTile>::GetElevation(double lng, double lat, double *elev, F
 template<>
 void TileManager2<SurfTile>::Pick(D3DXVECTOR3 &vRay, TILEPICK *pPick)
 {
-	if (bFreeze) return;
-
 	std::list<Tile *> tiles;
 
 	pPick->d = 1e12f;

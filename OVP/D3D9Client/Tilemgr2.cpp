@@ -1073,7 +1073,6 @@ TileManager2Base::TileManager2Base (vPlanet *vplanet, int _maxres, int _gridres)
 	oapiGetObjectName (obj, cbody_name, 256);
 	emgr = oapiElevationManager(obj);
 	elevRes = *(double*)oapiGetObjectParam (obj, OBJPRM_PLANET_ELEVRESOLUTION);
-	for (int i=0;i<NPOOLS;i++) VtxPoolSize[i]=IdxPoolSize[i]=0;
 	LogClr("Teal", "Planet ElevRes %s = %g", vplanet->GetName(), elevRes);
 
 	char path[1024];
@@ -1086,27 +1085,7 @@ TileManager2Base::TileManager2Base (vPlanet *vplanet, int _maxres, int _gridres)
 TileManager2Base::~TileManager2Base ()
 {
 	LogAlw("Deleting TileManagerBase %s ...", _PTR(this));
-
-	if (loader) {
-		loader->Unqueue(this);
-	}
-
-	DWORD nVtx=0, nIdx=0;
-
-	for (int i=0;i<NPOOLS;i++) {
-		while (!VtxPool[i].empty()) {
-			VtxPool[i].top()->Release();
-			VtxPool[i].pop();
-			nVtx++;
-		}
-		while (!IdxPool[i].empty()) {
-			IdxPool[i].top()->Release();
-			IdxPool[i].pop();
-			nIdx++;
-		}
-	}
-
-	LogAlw("Recycling Pool Status nVtx=%u, nIdx=%u", nVtx, nIdx);
+	if (loader) loader->Unqueue(this);
 }
 
 // -----------------------------------------------------------------------

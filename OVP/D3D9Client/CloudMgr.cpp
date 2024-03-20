@@ -132,11 +132,7 @@ void CloudManager::RenderSimple(int level, int npatch, TILEDESC *tile, LPD3DXMAT
 	HR(FX->BeginPass(0));
 
 	for (int idx = 0; idx < npatch; idx++) {
-		
-		VBMESH &mesh = PATCH_TPL[level][idx]; // patch template
-
-		D3D9Stats.Old.Tiles[level]++;
-		
+		VBMESH &mesh = PATCH_TPL[level][idx]; // patch template	
 		HR(FX->SetTexture(eTex0, tile[idx].tex));
 		FX->CommitChanges();
 
