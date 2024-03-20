@@ -317,6 +317,7 @@ public:
 	} elvstat, prevstat;
 
 	int ElevMode, ElevModeLvl;
+	int TilesLoaded;
 
 	/**
 	 * \brief Constructs a new tile manager object

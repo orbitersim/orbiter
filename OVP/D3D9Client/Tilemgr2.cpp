@@ -57,6 +57,7 @@ Tile::Tile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 	tgtscale = 1.0f;
 	Extents(&bnd.minlat, &bnd.maxlat, &bnd.minlng, &bnd.maxlng);
 	D3D9Stats.TilesAllocated++;
+	mgr->TilesLoaded++;
 	bMipmaps = false;
 }
 
@@ -65,6 +66,7 @@ Tile::Tile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 Tile::~Tile ()
 {
 	D3D9Stats.TilesAllocated--;
+	mgr->TilesLoaded--;
 	state = Invalid;
 	if (mesh) delete mesh;
 }
@@ -1067,6 +1069,7 @@ TileManager2Base::TileManager2Base (vPlanet *vplanet, int _maxres, int _gridres)
 : vp(vplanet), gridRes(_gridres), ElevMode(eElevMode::DontCare), ElevModeLvl(0)
 {
 	// set persistent parameters
+	TilesLoaded = 0;
 	prm.maxlvl = max (0, _maxres-4);
 	obj = vp->Object();
 	obj_size = oapiGetSize (obj);

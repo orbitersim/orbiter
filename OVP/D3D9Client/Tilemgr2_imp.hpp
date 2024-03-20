@@ -191,7 +191,12 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 		bias -=  2.0 * sqrt(max(0.0,adist) / prm.viewap);
 		int maxlvl = prm.maxlvl;
 
-		double apr = tdist * scene->GetTanAp() * resolutionScale;
+		// Dynamic tile count limiter, start reducing above 600 tiles
+		double tc = double(TilesLoaded-600) / 300;
+		double fc = tc < 0 ? 1.0 : 1.0 + tc * tc;
+
+		// This doesn't work with narrow FOV, added max() to set low limit
+		double apr = tdist * fc * max(0.25, scene->GetTanAp()) * resolutionScale;
 		tgtres = (apr < 1e-6 ? maxlvl : max(0, min(maxlvl, (int)(bias - log(apr)*res_scale))));
 		bstepdown = (lvl < tgtres);
 		tile->tgtscale = pow(2.0f, float(tgtres - lvl));
