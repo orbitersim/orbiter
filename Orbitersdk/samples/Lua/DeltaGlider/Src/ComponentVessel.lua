@@ -181,11 +181,11 @@ end
 function ComponentVessel:clbkConsumeDirectKey(kstate)
 	for _, v in ipairs(self.ssys) do
 		local res = v:clbkConsumeDirectKey(kstate)
-		if res ~= 0 then
-			return res
+		if res then
+			return true
 		end
 	end
-	return 0
+	return false
 end
 
 function ComponentVessel:GetSsysId()

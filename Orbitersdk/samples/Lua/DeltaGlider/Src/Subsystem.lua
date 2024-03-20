@@ -188,21 +188,21 @@ end
 function Subsystem:clbkConsumeBufferedKey(key, down, kstate)
 	for _, v in pairs(self.child) do
 		local res = v:clbkConsumeBufferedKey(key, down, kstate)
-		if res ~= 0 then
-			return res
+		if res then
+			return true
 		end
 	end
-	return 0
+	return false
 end
 
 function Subsystem:clbkConsumeDirectKey(kstate)
 	for _, v in pairs(self.child) do
 		local res = v:clbkConsumeDirectKey(kstate)
-		if res ~= 0 then
-			return res
+		if res then
+			return true
 		end
 	end
-	return 0
+	return false
 end
 
 
