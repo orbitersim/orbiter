@@ -1595,6 +1595,15 @@ int TileManager2<SurfTile>::GetElevation(double lng, double lat, double *elev, F
 // -----------------------------------------------------------------------
 
 template<>
+void TileManager2<SurfTile>::Unload(int lvl)
+{
+	tiletree[0].DelAbove(lvl);
+	tiletree[1].DelAbove(lvl);	
+}
+
+// -----------------------------------------------------------------------
+
+template<>
 void TileManager2<SurfTile>::Pick(D3DXVECTOR3 &vRay, TILEPICK *pPick)
 {
 	std::list<Tile *> tiles;

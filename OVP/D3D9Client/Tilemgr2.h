@@ -438,6 +438,7 @@ public:
 	void Render (MATRIX4 &dwmat, bool use_zbuf, const vPlanet::RenderPrm &rprm);
 
 	int GetElevation(double lng, double lat, double *elev, FVECTOR3 *nrm, SurfTile **cache);
+	void Unload(int lvl);
 
 	void Pick(D3DXVECTOR3 &vRay, TILEPICK *pPick);
 

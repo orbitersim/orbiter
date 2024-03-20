@@ -571,6 +571,16 @@ vPlanet::~vPlanet ()
 }
 
 
+// ===========================================================================================
+//
+void vPlanet::Activate(bool isactive)
+{
+	vObject::Activate(isactive);
+	if (!isactive) {
+		if (surfmgr2) surfmgr2->Unload(1);
+		if (cloudmgr2) cloudmgr2->Unload(1);
+	}
+}
 
 
 

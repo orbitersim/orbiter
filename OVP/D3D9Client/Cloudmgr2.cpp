@@ -287,3 +287,12 @@ Tile * TileManager2<CloudTile>::SearchTile (double lng, double lat, int maxlvl, 
 	if (lng<0) return SearchTileSub(&tiletree[0], lng, lat, maxlvl, bOwntex);
 	else	   return SearchTileSub(&tiletree[1], lng, lat, maxlvl, bOwntex);
 }
+
+// -----------------------------------------------------------------------
+
+template<>
+void TileManager2<CloudTile>::Unload(int lvl)
+{
+	tiletree[0].DelAbove(lvl);
+	tiletree[1].DelAbove(lvl);
+}

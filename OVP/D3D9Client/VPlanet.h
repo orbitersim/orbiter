@@ -235,6 +235,7 @@ public:
 
 	void			TestComputations(Sketchpad *);
 
+	void			Activate(bool isactive);
 	bool			HasTextures() { return bHasTextures; }
 	bool			IsMesh() { return mesh != NULL; }
 	bool			Update (bool bMainScene);

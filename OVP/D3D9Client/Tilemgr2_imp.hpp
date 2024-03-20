@@ -330,8 +330,9 @@ TileManager2<TileType>::TileManager2 (vPlanet *vplanet, int _maxres, int _gridre
 template<class TileType>
 TileManager2<TileType>::~TileManager2 ()
 {
+	//oapiWriteLogV("=== Tile Dump for %s ===", vp->GetName());
 	//for (int i = 0; i < 2; i++)
-	//DebugDump(&tiletree[i]);
+	//  DebugDump(&tiletree[i]);
 
 	for (int i = 0; i < 2; i++)
 		tiletree[i].DelChildren();
