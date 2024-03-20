@@ -811,6 +811,7 @@ This convention must be taken into account when defining the lift coefficient pr
 
 
 \subsection{Defining an animation sequence}
+ \label{ssec:def_anim_sec}
 Animation sequences can be used to simulate movable parts of a vessel. Examples are the deployment of landing gear, cargo door operation, or animation of airfoils.\\
 \\
 Animations are implemented in \textit{vessel modules}, using the \textit{VESSEL} interface class.\\
@@ -989,12 +990,12 @@ It is up to the module to implement its animations in the body of \textit{ovcAni
 
 
 \subsection{Designing 2D-instrument panels}
+\label{ssec:2d_panel_design}
 Instrument panels are a good way to give an individual feel to a spacecraft class and allow the user to monitor flight parameters and control specific aspects of the vessel via the mouse, without the need to remember a large number of keyboard commands.\\
 \\
 There are two ways to define a cockpit interior: you can build one (or several) flat two-dimensional panels as bitmaps which are overlayed on top of the three-dimensional scenery of the simulation window (denoted as \textit{panels} below), or you can construct a full three-dimensional mesh representation of the cockpit (denoted as \textit{virtual cockpit}, or \textit{VC} below). A vessel can implement both 2-D panels and virtual cockpits. The user can switch between them (and the generic cockpit view comprising two MFD displays and HUD) by pressing \keystroke{F8}.\\
 \\
-% TODO add link below
-In this section we will discuss the steps required to define 2-D panels in the vessel module. Section TODO will deal with virtual cockpits.
+In this section we will discuss the steps required to define 2-D panels in the vessel module. Section \ref{ssec:vc_design} will deal with virtual cockpits.
 
 \subsubsection{The panel request callback function}
 Whenever the vessel switches to a new 2-D panel cockpit view (either from an outside view or another cockpit view), it calls the \textit{clbkLoadPanel2D} callback function. This is the point where we need to define the panel geometry and functions. For now, we are going to implement only a single main panel:
@@ -1207,8 +1208,7 @@ At this point, you can compile your vessel code and run it in Orbiter. It isn’
 
 
 \subsection{Designing instrument panels (legacy style)}
-% TODO add section link
-This section describes the design for a legacy-style 2-D instrument panel. This method is still supported by Orbiter, but its use is discouraged, because it does not work well with newer 3-D rendering engines and external graphics clients. Vessel addon designers should switch to the new 2-D panel method described in Section TODO.
+This section describes the design for a legacy-style 2-D instrument panel. This method is still supported by Orbiter, but its use is discouraged, because it does not work well with newer 3-D rendering engines and external graphics clients. Vessel addon designers should switch to the new 2-D panel method described in section \ref{ssec:2d_panel_design}.
 
 \subsubsection{Defining a panel}
 You will first need to create a bitmap which represents the 2-D instrument panel. You can use any paint tool capable of generating Windows BMP files. The panel can be saved in 8-bit or 24-bit mode, but 8-bit mode is strongly recommended to reduce the size of the resulting vessel module, and improve simulation performance.
@@ -1429,6 +1429,7 @@ The return value of \textit{clbkPanelRedrawEvent} signals to Orbiter if the cont
 
 
 \subsubsection{Defining panel MFDs}
+\label{sssec:def_panel_mfd}
 MFD (multifunctional displays) are probably the most important components of your panel. They are defined differently to other panel areas, because some of the redraw events are processed directly by Orbiter.\\
 \\
 MFDs consist of a square display area (representing a colour CRT or LCD display) and rows of control buttons to the left and right. The number of buttons can be defined individually.\\
@@ -1607,6 +1608,7 @@ All panels must call the \textit{oapiSetPanelNeighbours} function, otherwise the
 
 
 \subsection{Designing virtual cockpits}
+\label{ssec:vc_design}
 A virtual cockpit requires a 3-D mesh representation. In principle it is possible to add the cockpit directly to the mesh used to represent the vessel in external views, and flag this mesh to be visible both in external and cockpit views (via the \textit{SetMeshVisibility} method), but in general it is more efficient to design a separate mesh for the cockpit which is visible only in virtual cockpit view mode (using \textit{SetMeshVisibility} with the \textit{MESHVIS\_VC} flag). Make sure that the cockpit mesh is consistent with the external mesh. A good way to achieve this is by building the VC together with the external mesh in your 3D design program, but exporting the cockpit and the external parts to separate mesh files.
 
 \begin{figure}[H]
@@ -1749,8 +1751,7 @@ Inside \textit{clbkVCRedrawEvent}, check the area id and perform the appropriate
 
 \begin{itemize}
 \item Repainting the dynamic texture passed to the notification handler. This is done in the same way as repainting 2-D panel areas. In fact, you may even be able to re-use the same code. Repainting textures is a good way to update displays and instrument gauges.
-%TODO add section link
-\item Animating a mesh group. This can be used to simulate flipping a switch or pushing a lever. See Section TODO for details on animations.
+\item Animating a mesh group. This can be used to simulate flipping a switch or pushing a lever. See section \ref{ssec:def_anim_sec} for details on animations.
 \item Editing a mesh. You can use the \textit{oapiMeshGroup} function to access the vertices of a mesh group, and edit the vertex positions or texture coordinates. Editing texture coordinates may be a good alternative to redrawing a texture if the texture is to switch between discrete pre-defined states.
 \end{itemize}
 
@@ -1844,7 +1845,7 @@ bool MyVessel::clbkVCRedrawEvent( int id, int event, SURFHANDLE surf )
 
 \noindent
 %TODO add section link
-where \textit{RedrawMFDButtons} is assumed to be a locally defined function performing the redraw action. You may be able to re-use the same method used for drawing the MFD buttons in the 2-D panel (see Section TODO).\\
+where \textit{RedrawMFDButtons} is assumed to be a locally defined function performing the redraw action. You may be able to re-use the same method used for drawing the MFD buttons in the 2-D panel (see section \ref{sssec:def_panel_mfd}).\\
 \\
 Finally, trigger a redraw event in the body of the MFD mode change callback notification.
 
