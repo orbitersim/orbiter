@@ -129,6 +129,7 @@ void Interpreter::Initialise ()
 	LoadAPI ();           // load default set of API interface functions
 	LoadVesselAPI ();     // load vessel-specific part of API
 	LoadLightEmitterMethods (); // load light source methods
+	LoadBeaconMethods ();
 	LoadMFDAPI ();        // load MFD methods
 	LoadNTVERTEXAPI();
 	LoadBitAPI();         // load bit library
@@ -997,6 +998,8 @@ void Interpreter::LoadAPI ()
 		{"create_indexarray", oapi_create_indexarray },
 		{"del_indexarray", oapi_del_indexarray },
 
+		{"create_beacon", oapi_create_beacon },
+
 
 		{NULL, NULL}
 	};
@@ -1398,6 +1401,8 @@ void Interpreter::LoadLightEmitterMethods ()
 		{"set_spotaperture", le_set_spotaperture},
 		{"activate", le_activate},
 		{"is_active", le_is_active},
+		{"get_visibility", le_get_visibility},
+		{"set_visibility", le_set_visibility},
 		{NULL, NULL}
 	};
 
@@ -1406,6 +1411,34 @@ void Interpreter::LoadLightEmitterMethods ()
 	lua_pushvalue (L, -2); // push metatable
 	lua_settable (L, -3); // metatable.__index = metatable
 	luaL_openlib (L, NULL, methodLib, 0);
+
+	lua_createtable(L, 0, 3);
+	lua_pushnumber(L, LightEmitter::VIS_EXTERNAL); lua_setfield(L, -2, "EXTERNAL");
+	lua_pushnumber(L, LightEmitter::VIS_COCKPIT);  lua_setfield(L, -2, "COCKPIT");
+	lua_pushnumber(L, LightEmitter::VIS_ALWAYS);lua_setfield(L, -2, "ALWAYS");
+	lua_setglobal(L, "VIS");
+}
+
+void Interpreter::LoadBeaconMethods ()
+{
+	static const struct luaL_reg beaconLib[] = {
+		{"__gc", beacon_collect},
+		{"__index", beacon_get},
+		{"__newindex", beacon_set},
+		{NULL, NULL}
+	};
+
+	luaL_newmetatable (L, "Beacon.vtable");
+	lua_pushstring (L, "__index");
+	lua_pushvalue (L, -2); // push metatable
+	lua_settable (L, -3);  // metatable.__index = metatable
+	luaL_openlib (L, NULL, beaconLib, 0);
+
+	lua_createtable(L, 0, 3);
+	lua_pushnumber(L, BEACONSHAPE_COMPACT); lua_setfield(L, -2, "COMPACT");
+	lua_pushnumber(L, BEACONSHAPE_DIFFUSE); lua_setfield(L, -2, "DIFFUSE");
+	lua_pushnumber(L, BEACONSHAPE_STAR);	lua_setfield(L, -2, "STAR");
+	lua_setglobal(L, "BEACONSHAPE");
 }
 
 void Interpreter::LoadSketchpadAPI ()
@@ -2660,11 +2693,23 @@ int Interpreter::oapi_VC_trigger_redrawarea(lua_State* L)
 int Interpreter::oapi_VC_set_areaclickmode_quadrilateral(lua_State* L)
 {
 	int id = (int)lua_tointeger(L, 1);
-	VECTOR3 p1 = lua_tovector(L, 2);
-	VECTOR3 p2 = lua_tovector(L, 3);
-	VECTOR3 p3 = lua_tovector(L, 4);
-	VECTOR3 p4 = lua_tovector(L, 5);
-	oapiVCSetAreaClickmode_Quadrilateral(id, p1, p2, p3, p4);
+	if(lua_isvector(L, 2)) {
+		VECTOR3 p1 = lua_tovector(L, 2);
+		VECTOR3 p2 = lua_tovector(L, 3);
+		VECTOR3 p3 = lua_tovector(L, 4);
+		VECTOR3 p4 = lua_tovector(L, 5);
+		oapiVCSetAreaClickmode_Quadrilateral(id, p1, p2, p3, p4);
+	} else {
+		lua_rawgeti(L, 2, 1);
+		VECTOR3 p1 = lua_tovector(L, -1); lua_pop(L, 1);
+		lua_rawgeti(L, 2, 2);
+		VECTOR3 p2 = lua_tovector(L, -1); lua_pop(L, 1);
+		lua_rawgeti(L, 2, 3);
+		VECTOR3 p3 = lua_tovector(L, -1); lua_pop(L, 1);
+		lua_rawgeti(L, 2, 4);
+		VECTOR3 p4 = lua_tovector(L, -1); lua_pop(L, 1);
+		oapiVCSetAreaClickmode_Quadrilateral(id, p1, p2, p3, p4);
+	}
 	return 0;
 }
 
@@ -5340,6 +5385,24 @@ int Interpreter::le_set_position (lua_State *L)
 	return 0;
 }
 
+int Interpreter::le_get_visibility (lua_State *L)
+{
+	LightEmitter *le = lua_tolightemitter(L,1);
+	ASSERT_SYNTAX(le, "Invalid emitter object");
+	LightEmitter::VISIBILITY visibility = le->GetVisibility();
+	lua_pushinteger (L,visibility);
+	return 1;
+}
+
+int Interpreter::le_set_visibility (lua_State *L)
+{
+	LightEmitter *le = lua_tolightemitter(L,1);
+	ASSERT_SYNTAX(le, "Invalid emitter object");
+	LightEmitter::VISIBILITY visibility = (LightEmitter::VISIBILITY)luaL_checkinteger(L,2);
+	le->SetVisibility (visibility);
+	return 0;
+}
+
 int Interpreter::le_get_direction (lua_State *L)
 {
 	LightEmitter *le = lua_tolightemitter(L,1);
@@ -5786,16 +5849,6 @@ void Interpreter::ntvproxy_create(lua_State *L, NTVERTEX *vtx)
 {
 	NTVERTEX **proxy = (NTVERTEX **)lua_newuserdata(L, sizeof(NTVERTEX *));
     *proxy = vtx;
-	/*
-	if (luaL_newmetatable(L, "NTVPROXY.vtable")) {
-		lua_pushcfunction(L, ntvproxy_set);
-		lua_setfield(L, -2, "__newindex");
-		lua_pushcfunction(L, ntvproxy_get);
-		lua_setfield(L, -2, "__index");
-		lua_pushstring(L, "NTVPROXY.vtable");
-		lua_setfield(L, -2, "__metatable");
-	}
-	*/
 	luaL_getmetatable(L, "NTVPROXY.vtable");
 	lua_setmetatable(L, -2);
 }
@@ -5980,8 +6033,11 @@ int Interpreter::ntv_get(lua_State *L) {
 	ntv_data* inst = (ntv_data*)luaL_checkudata(L, 1, "NTV.vtable");
 	if(lua_isnumber(L, 2)) { // return proxy object for vertex
 		int index = luaL_checkint(L, 2);
-		luaL_argcheck(L, 1 <= index && index <= inst->nVtxUsed, 2, "index out of range");
-    
+		char cbuf[256];
+		if(!(1 <= index && index <= inst->nVtxUsed)) {
+			sprintf(cbuf, "index out of range (%d/%d)", index, inst->nVtxUsed);
+			luaL_argcheck(L, false, 2, cbuf);
+		}
 		/* return element address */
 		NTVERTEX *vtx = &inst->vtx[index - 1];
 		ntvproxy_create(L, vtx);
@@ -6291,6 +6347,95 @@ int Interpreter::lua_isdevmeshhandle(lua_State *L, int idx)
 {
 	return luaL_tryudata(L, idx, "DEVMESHHANDLE") != NULL;
 }
+
+int Interpreter::oapi_create_beacon(lua_State *L)
+{
+	BEACONLIGHTSPEC_Lua *beacon = (BEACONLIGHTSPEC_Lua *)lua_newuserdata(L, sizeof(BEACONLIGHTSPEC_Lua));
+	beacon->bs.pos = &beacon->pos;
+	beacon->bs.col = &beacon->col;
+	beacon->vessel = nullptr;
+	luaL_getmetatable(L, "Beacon.vtable");
+	lua_setmetatable(L, -2);
+
+	lua_getfield (L, 1, "shape");  beacon->bs.shape = luaL_checkinteger (L, -1);  lua_pop (L,1);
+	lua_getfield (L, 1, "pos");  beacon->pos = lua_tovector_safe (L, -1, "create_beacon");  lua_pop (L,1);
+	lua_getfield (L, 1, "col");  beacon->col = lua_tovector_safe (L, -1, "create_beacon");  lua_pop (L,1);
+	lua_getfield (L, 1, "size");  beacon->bs.size = luaL_checknumber (L, -1);  lua_pop (L,1);
+	lua_getfield (L, 1, "falloff");  beacon->bs.falloff = luaL_checknumber (L, -1);  lua_pop (L,1);
+	lua_getfield (L, 1, "period");  beacon->bs.period = luaL_checknumber (L, -1);  lua_pop (L,1);
+	lua_getfield (L, 1, "duration");  beacon->bs.duration = luaL_checknumber (L, -1);  lua_pop (L,1);
+	lua_getfield (L, 1, "tofs");  beacon->bs.tofs = luaL_checknumber (L, -1);  lua_pop (L,1);
+	lua_getfield (L, 1, "active");  beacon->bs.active = lua_toboolean (L, -1);  lua_pop (L,1);
+	
+	return 1;
+}
+
+int Interpreter::beacon_collect(lua_State *L)
+{
+	BEACONLIGHTSPEC_Lua* beacon = (BEACONLIGHTSPEC_Lua*)luaL_checkudata(L, 1, "Beacon.vtable");
+	if(beacon->vessel) {
+		// Remove the association in case the reference is lost to prevent potential use after free bugs
+		beacon->vessel->DelBeacon(&beacon->bs);
+	}
+
+	return 1;
+}
+
+int Interpreter::beacon_get(lua_State *L)
+{
+	BEACONLIGHTSPEC_Lua *beacon = (BEACONLIGHTSPEC_Lua *)luaL_checkudata(L, 1, "Beacon.vtable");
+    const char *member = luaL_checkstring(L, 2);
+	if(!strcmp(member, "shape"))
+		lua_pushinteger(L, beacon->bs.shape);
+	else if(!strcmp(member, "pos"))
+		lua_pushvector(L, beacon->pos);
+	else if(!strcmp(member, "col"))
+		lua_pushvector(L, beacon->col);
+	else if(!strcmp(member, "size"))
+		lua_pushnumber(L, beacon->bs.size);
+	else if(!strcmp(member, "falloff"))
+		lua_pushnumber(L, beacon->bs.falloff);
+	else if(!strcmp(member, "period"))
+		lua_pushnumber(L, beacon->bs.period);
+	else if(!strcmp(member, "duration"))
+		lua_pushnumber(L, beacon->bs.duration);
+	else if(!strcmp(member, "tofs"))
+		lua_pushnumber(L, beacon->bs.tofs);
+	else if(!strcmp(member, "active"))
+		lua_pushboolean(L, beacon->bs.active);
+	else
+		luaL_error(L, "Trying to access unknown beacon field '%s'", member);
+
+	return 1;
+}
+
+int Interpreter::beacon_set (lua_State *L)
+{
+	BEACONLIGHTSPEC_Lua *beacon = (BEACONLIGHTSPEC_Lua *)luaL_checkudata(L, 1, "Beacon.vtable");
+    const char *member = luaL_checkstring(L, 2);
+
+	if(!strcmp(member, "shape"))
+		beacon->bs.shape = luaL_checkinteger(L, 3);
+	else if(!strcmp(member, "pos"))
+		beacon->pos = lua_tovector_safe(L, 3, "beacon_set");
+	else if(!strcmp(member, "col"))
+		beacon->col = lua_tovector_safe(L, 3, "beacon_set");
+	else if(!strcmp(member, "size"))
+		beacon->bs.size = luaL_checknumber(L, 3);
+	else if(!strcmp(member, "falloff"))
+		beacon->bs.falloff = luaL_checknumber(L, 3);
+	else if(!strcmp(member, "period"))
+		beacon->bs.period = luaL_checknumber(L, 3);
+	else if(!strcmp(member, "duration"))
+		beacon->bs.duration = luaL_checknumber(L, 3);
+	else if(!strcmp(member, "tofs"))
+		beacon->bs.tofs = luaL_checknumber(L, 3);
+	else if(!strcmp(member, "active"))
+		beacon->bs.active = lua_toboolean(L, 3);
+		
+	return 0;
+}
+
 
 // ============================================================================
 // core thread functions

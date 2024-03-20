@@ -66,6 +66,13 @@ struct VesselMFDContext {
 	int msgproc;
 };
 
+typedef struct  {
+	BEACONLIGHTSPEC bs;
+	VECTOR3 pos;
+	VECTOR3 col;
+	VESSEL *vessel;
+} BEACONLIGHTSPEC_Lua;
+
 // ======================================================================
 // ======================================================================
 // Nonmember functions
@@ -153,6 +160,8 @@ public:
 	virtual void LoadNTVERTEXAPI ();
 
 	virtual void LoadLightEmitterMethods ();
+
+	virtual void LoadBeaconMethods ();
 
 	virtual void LoadSketchpadAPI ();
 
@@ -881,6 +890,15 @@ protected:
 	static int v_del_lightemitter (lua_State *L);
 	static int v_clear_lightemitters (lua_State *L);
 
+	// beacons
+	static int oapi_create_beacon (lua_State *L);
+	static int v_add_beacon (lua_State *L);
+	static int v_del_beacon (lua_State *L);
+	static int v_clear_beacons (lua_State *L);
+	static int beacon_collect (lua_State *L);
+	static int beacon_get (lua_State *L);
+	static int beacon_set (lua_State *L);
+
 	// camera management
 	static int v_get_cameraoffset (lua_State *L);
 	static int v_set_cameraoffset (lua_State *L);
@@ -973,6 +991,8 @@ protected:
 	static int le_set_spotaperture (lua_State *L);
 	static int le_activate (lua_State *L);
 	static int le_is_active (lua_State *L);
+	static int le_get_visibility (lua_State *L);
+	static int le_set_visibility (lua_State *L);
 
 	// -------------------------------------------
 	// Sketchpad methods
