@@ -3485,7 +3485,12 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 
 	
 	// Something is very wrong... abort...
-	if (Camera.hObj_proxy == NULL || Camera.hObj_proxy == NULL || Camera.hNear == NULL) return;
+	if (Camera.hGravRef == NULL || Camera.hObj_proxy == NULL || Camera.hNear == NULL) {
+		assert(false); return;
+	}
+	if (Camera.vGravRef == NULL || Camera.vProxy == NULL || Camera.vNear == NULL) {
+		assert(false); return;
+	}
 
 	// Camera altitude over the proxy
 	VECTOR3 pos; MATRIX3 grot; double rad;
@@ -3496,10 +3501,9 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 
 	Camera.alt_proxy = dist(Camera.pos, pos) - oapiGetSize(Camera.hObj_proxy);
 
-	if (Camera.vProxy) {
-		if (Camera.vProxy->Type() == OBJTP_PLANET) Camera.vProxy->GetElevation(Camera.lng, Camera.lat, &rad);
-	}
-
+	if (Camera.vProxy->Type() == OBJTP_PLANET) 
+		rad = oapiSurfaceElevation(Camera.hObj_proxy, Camera.lng, Camera.lat);
+	
 	Camera.elev = Camera.alt_proxy - rad;
 
 	// Camera altitude over the proxy

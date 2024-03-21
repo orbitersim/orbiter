@@ -82,6 +82,8 @@ SurfTile::SurfTile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 
 SurfTile::~SurfTile ()
 {
+	smgr->GetPlanet()->TileDeleted(this);
+
 	if (elev) g_pMemgr_f->Free(elev);
 	if (elev_file) g_pMemgr_i->Free(elev_file);	
 	if (tex && owntex) g_pTexmgr_tt->Free(tex);
@@ -672,11 +674,18 @@ int SurfTile::GetElevation(double lng, double lat, double *elev, FVECTOR3 *nrm, 
 
 	if (state == Invisible) return 0;
 
-	if (state==Active) {
+	if (state == Active) {
 		int i = 0;
 		if (lng > (bnd.minlng + bnd.maxlng)*0.5) i++;
 		if (lat < (bnd.minlat + bnd.maxlat)*0.5) i += 2;
-		return  node->Child(i)->Entry()->GetElevation(lng, lat, elev, nrm, cache);
+		if (node->Child(i))
+			return node->Child(i)->Entry()->GetElevation(lng, lat, elev, nrm, cache);
+	}
+
+	if (state == Inactive) {
+		// Calling elevation without tree being fully initialized.
+		// Force data acquision using current level due to lack of render level. 
+		return GetElevation(lng, lat, elev, nrm, cache, bFilter, true);
 	}
 
 	return -3;
