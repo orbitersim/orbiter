@@ -27,7 +27,6 @@ struct VBMESH {
 	LPDIRECT3DVERTEXBUFFER9 pVB;	// mesh vertex buffer
 	LPDIRECT3DINDEXBUFFER9  pIB;	// mesh index buffer
 
-	class TileManager2Base * pMgr; 
 	VERTEX_2TEX *vtx;				// separate storage of vertices (NULL if not available)
 	WORD *idx;						// list of indices
 	DWORD nv;						// number of vertices
@@ -42,6 +41,6 @@ struct VBMESH {
 
 void CreateSphere(LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, DWORD nrings, bool hemisphere, int which_half, int texres);
 void CreateSpherePatch(LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, int nlng, int nlat, int ilat, int res, int bseg = -1, bool reduce = true, bool outside = true, bool store_vtx = false, bool shift_origin = false);
-void DestroyVBMesh (VBMESH &mesh);
+void ClearVBMesh (VBMESH &mesh);
 
 #endif // !__SPHEREPATCH_H

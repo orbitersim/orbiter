@@ -381,6 +381,7 @@ void Camera::Attach (Body *_target, int mode)
 	if (mode != 2) external_view = (mode != 0); // otherwise don't change
 
 	if (external_view) {
+		rdist = 2.0; // Initial viewing distance on focus change
 		SetViewExternal();
 		SetRelPos (rdist, ephi, etheta);
 		gspos.Set (mul (target->GRot(), rpos));
@@ -526,7 +527,7 @@ void Camera::ShiftDist (double shift)
 {
 	double fact;
 	if (external_view && extmode != CAMERA_GROUNDOBSERVER) {
-		double scale = max (1e-6, (rdist-1.0)/rdist); // slow down when approaching target radius
+		double scale = max (1e-4, (rdist-1.0)/rdist); // slow down when approaching target radius
 		scale = max(scale, 1.0/target->Size());       // move at least 1m/s
 		shift *= scale;
 	}

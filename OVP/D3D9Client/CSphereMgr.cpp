@@ -239,14 +239,14 @@ void CSphereManager::GlobalExit ()
 {
 	int i;
 
-	DestroyVBMesh (PATCH_TPL_1);
-	DestroyVBMesh (PATCH_TPL_2);
-	DestroyVBMesh (PATCH_TPL_3);
-	for (i = 0; i <  2; i++) DestroyVBMesh (PATCH_TPL_4[i]);
-	DestroyVBMesh (PATCH_TPL_5);
-	for (i = 0; i <  2; i++) DestroyVBMesh (PATCH_TPL_6[i]);
-	for (i = 0; i <  4; i++) DestroyVBMesh (PATCH_TPL_7[i]);
-	for (i = 0; i <  8; i++) DestroyVBMesh (PATCH_TPL_8[i]);
+	ClearVBMesh(PATCH_TPL_1);
+	ClearVBMesh(PATCH_TPL_2);
+	ClearVBMesh(PATCH_TPL_3);
+	for (i = 0; i <  2; i++) ClearVBMesh(PATCH_TPL_4[i]);
+	ClearVBMesh(PATCH_TPL_5);
+	for (i = 0; i <  2; i++) ClearVBMesh(PATCH_TPL_6[i]);
+	for (i = 0; i <  4; i++) ClearVBMesh(PATCH_TPL_7[i]);
+	for (i = 0; i <  8; i++) ClearVBMesh(PATCH_TPL_8[i]);
 
 	/*
 	const int n = 8;
@@ -500,8 +500,6 @@ void CSphereManager::RenderTile (int lvl, int hemisp, int ilat, int nlat, int il
 	TILEDESC *tile, const TEXCRDRANGE &range, LPDIRECT3DTEXTURE9 tex, LPDIRECT3DTEXTURE9 ltex, DWORD flag)
 {
 	VBMESH &mesh = PATCH_TPL[lvl][ilat]; // patch template
-
-	D3D9Stats.Old.Tiles[lvl]++;
 	
 	CelData.mWorld = mWorld;
 

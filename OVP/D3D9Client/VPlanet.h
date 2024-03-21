@@ -235,6 +235,8 @@ public:
 
 	void			TestComputations(Sketchpad *);
 
+	void			TileDeleted(SurfTile *tile) { if (tile == tile_cache) tile_cache = nullptr; }
+	void			Activate(bool isactive);
 	bool			HasTextures() { return bHasTextures; }
 	bool			IsMesh() { return mesh != NULL; }
 	bool			Update (bool bMainScene);

@@ -23,6 +23,7 @@ public:
 	CloudTile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng);
 	~CloudTile ();
 
+	inline QuadTreeNode<CloudTile>* GetNode() const { return node; }
 	inline void SetNode (QuadTreeNode<CloudTile> *_node) { node = _node; }
 	// Register the tile to a quad tree node
 

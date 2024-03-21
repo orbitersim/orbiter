@@ -18,6 +18,7 @@
 
 #include <stack>
 #include <io.h>
+#include <filesystem>
 
 // =======================================================================
 // Externals
@@ -44,7 +45,7 @@ Tile::Tile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 : mgr(_mgr), lvl(_lvl), ilat(_ilat), ilng(_ilng),
   lngnbr_lvl(_lvl), latnbr_lvl(_lvl), dianbr_lvl(_lvl),
   texrange(fullrange), microrange(fullrange), overlayrange(fullrange), cnt(Centre()),
-  mesh(NULL), tex(NULL), pPreSrf(NULL), pPreMsk(NULL), overlay(NULL),
+  mesh(NULL), tex(NULL), overlay(NULL),
   FrameId(0),
   state(Invalid),
   edgeok(false), owntex (true), ownoverlay(false)
@@ -56,6 +57,7 @@ Tile::Tile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 	tgtscale = 1.0f;
 	Extents(&bnd.minlat, &bnd.maxlat, &bnd.minlng, &bnd.maxlng);
 	D3D9Stats.TilesAllocated++;
+	mgr->TilesLoaded++;
 	bMipmaps = false;
 }
 
@@ -63,13 +65,10 @@ Tile::Tile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 
 Tile::~Tile ()
 {
+	D3D9Stats.TilesAllocated--;
+	mgr->TilesLoaded--;
 	state = Invalid;
 	if (mesh) delete mesh;
-
-	if (tex && owntex) {
-		if (TileCatalog->Remove(tex)) tex->Release();
-	}
-	D3D9Stats.TilesAllocated--;
 }
 
 
@@ -77,33 +76,26 @@ Tile::~Tile ()
 // Pre Load routine for surface tiles
 // ------------------------------------------------------------------------
 
-bool Tile::LoadTextureFile(const char *fullpath, LPDIRECT3DTEXTURE9 *pPre, bool bEnableDebug)
+bool Tile::LoadTextureFile(const char *fullpath, LPDIRECT3DTEXTURE9 *pPre)
 {
-	DWORD Usage = 0, Mips = 1, Filter = D3DX_FILTER_NONE;
-	D3DFORMAT Format = D3DFMT_FROM_FILE;
-	if (bMipmaps && !Config->TileDebug) Filter = D3DX_FILTER_BOX, Mips = 4;
-	if (Config->TileDebug && bEnableDebug) Usage = D3DUSAGE_DYNAMIC, Format = D3DFMT_R5G6B5;
-
-	if (D3DXCreateTextureFromFileEx(mgr->Dev(), fullpath, 0, 0, Mips, Usage, Format, D3DPOOL_SYSTEMMEM, D3DX_FILTER_NONE, Filter, 0, NULL, NULL, pPre)==S_OK) {
-		return true;
+	auto y = filesystem::status(fullpath);
+	if (filesystem::exists(y)) {
+		DWORD Mips = 1, Filter = D3DX_FILTER_NONE;
+		if (bMipmaps) Filter = D3DX_FILTER_BOX, Mips = 0;
+		if (D3DXCreateTextureFromFileEx(mgr->Dev(), fullpath, 0, 0, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, Filter, 0, NULL, NULL, pPre) == S_OK) {
+			return true;
+		}
 	}
 
 	*pPre = NULL;
 	return false;
 }
 
-// ------------------------------------------------------------------------
-// Pre Load routine for surface tiles
-// ------------------------------------------------------------------------
-
-bool Tile::LoadTextureFromMemory(void *data, DWORD ndata, LPDIRECT3DTEXTURE9 *pPre, bool bEnableDebug)
+bool Tile::LoadTextureFromMemory(void *data, DWORD ndata, LPDIRECT3DTEXTURE9 *pPre)
 {
-	DWORD Usage = 0, Mips = 1, Filter = D3DX_FILTER_NONE;
-	D3DFORMAT Format = D3DFMT_FROM_FILE;
-	if (bMipmaps && !Config->TileDebug) Filter = D3DX_FILTER_BOX, Mips = 4;
-	if (Config->TileDebug && bEnableDebug) Usage = D3DUSAGE_DYNAMIC, Format = D3DFMT_R5G6B5;
-
-	if (D3DXCreateTextureFromFileInMemoryEx(mgr->Dev(), data, ndata, 0, 0, Mips, Usage, Format, D3DPOOL_SYSTEMMEM, D3DX_FILTER_NONE, Filter, 0, NULL, NULL, pPre) == S_OK) {
+	DWORD Mips = 1, Filter = D3DX_FILTER_NONE;
+	if (bMipmaps) Filter = D3DX_FILTER_BOX, Mips = 0;
+	if (D3DXCreateTextureFromFileInMemoryEx(mgr->Dev(), data, ndata, 0, 0, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, Filter, 0, NULL, NULL, pPre) == S_OK) {
 		return true;
 	}
 
@@ -121,9 +113,8 @@ bool Tile::CreateTexture(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DTEXTURE9 pPre, LPDIRE
 	D3DSURFACE_DESC desc;
 	if (pPre) {
 		pPre->GetLevelDesc(0, &desc);
-		HR(D3DXCreateTexture(pDev, desc.Width, desc.Height, pPre->GetLevelCount(), 0, desc.Format, D3DPOOL_DEFAULT, pTex));
+		*pTex = g_pTexmgr_tt->New(desc.Width, desc.Format);
 		HR(pDev->UpdateTexture(pPre, (*pTex)));
-		pPre->Release();//SAFE_RELEASE(pPre);
 		return true;
 	}
 	return false;
@@ -440,7 +431,7 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, float *elev, double 
 
 	int nvtx = (grdlat+1)*(grdlng+1);         // patch mesh node grid
 	int nvtxbuf = nvtx + grdlat+1 + grdlng+1; // add buffer for storage of edges (for elevation matching)
-	VERTEX_2TEX *vtx = new VERTEX_2TEX[nvtxbuf];
+	VERTEX_2TEX *vtx = g_pMemgr_vtx->New(nvtxbuf);
 
 	// create transformation for bounding box
 	// we define the local coordinates for the patch so that the x-axis points
@@ -517,7 +508,7 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, float *elev, double 
 
 	// create the face indices
 	int nidx = 2*grdlat*grdlng * 3;
-	WORD *idx = new WORD[nidx];
+	WORD *idx = g_pMemgr_w->New(nidx);
 
 	if (elev) { // do adaptive orientation of cell diagonal
 		float *elev1, *elev2, *elev1n, *elev2n, err1, err2;
@@ -657,8 +648,8 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, float *elev, double globelev)
 	// Allocate memory for the vertices and indices
 	int         nVtx = (grd-1)*(grd+1)+2;
 	int         nIdx = 6*(grd*(grd-2)+grd);
-	VERTEX_2TEX *Vtx = new VERTEX_2TEX[nVtx];
-	WORD*       Idx = new WORD[nIdx];
+	VERTEX_2TEX *Vtx = g_pMemgr_vtx->New(nVtx);
+	WORD*       Idx = g_pMemgr_w->New(nIdx);
 
 	// Counters
     WORD x, y, nvtx = 0, nidx = 0;
@@ -1031,12 +1022,14 @@ DWORD WINAPI TileLoader::Load_ThreadProc (void *data)
 		ReleaseMutex ();
 
 		if (nload) {
-			for (i = 0; i < nload; i++)
-				tile[i]->PreLoad(); // load/create the tile
-
-			WaitForMutex ();
+			
 			for (i = 0; i < nload; i++) {
+				tile[i]->PreLoad(); // load/create the tile
 				tile[i]->Load();
+			}
+
+			WaitForMutex();
+			for (i = 0; i < nload; i++) {	
 				tile[i]->state = Tile::Inactive; // unlock tile
 			}
 			ReleaseMutex ();
@@ -1076,13 +1069,13 @@ TileManager2Base::TileManager2Base (vPlanet *vplanet, int _maxres, int _gridres)
 : vp(vplanet), gridRes(_gridres), ElevMode(eElevMode::DontCare), ElevModeLvl(0)
 {
 	// set persistent parameters
+	TilesLoaded = 0;
 	prm.maxlvl = max (0, _maxres-4);
 	obj = vp->Object();
 	obj_size = oapiGetSize (obj);
 	oapiGetObjectName (obj, cbody_name, 256);
 	emgr = oapiElevationManager(obj);
 	elevRes = *(double*)oapiGetObjectParam (obj, OBJPRM_PLANET_ELEVRESOLUTION);
-	for (int i=0;i<NPOOLS;i++) VtxPoolSize[i]=IdxPoolSize[i]=0;
 	LogClr("Teal", "Planet ElevRes %s = %g", vplanet->GetName(), elevRes);
 
 	char path[1024];
@@ -1095,27 +1088,7 @@ TileManager2Base::TileManager2Base (vPlanet *vplanet, int _maxres, int _gridres)
 TileManager2Base::~TileManager2Base ()
 {
 	LogAlw("Deleting TileManagerBase %s ...", _PTR(this));
-
-	if (loader) {
-		loader->Unqueue(this);
-	}
-
-	DWORD nVtx=0, nIdx=0;
-
-	for (int i=0;i<NPOOLS;i++) {
-		while (!VtxPool[i].empty()) {
-			VtxPool[i].top()->Release();
-			VtxPool[i].pop();
-			nVtx++;
-		}
-		while (!IdxPool[i].empty()) {
-			IdxPool[i].top()->Release();
-			IdxPool[i].pop();
-			nIdx++;
-		}
-	}
-
-	LogAlw("Recycling Pool Status nVtx=%u, nIdx=%u", nVtx, nIdx);
+	if (loader) loader->Unqueue(this);
 }
 
 // -----------------------------------------------------------------------
@@ -1240,137 +1213,4 @@ MATRIX4 TileManager2Base::WorldMatrix (int ilng, int nlng, int ilat, int nlat)
 		prm.dwmat_tmp.m43 = (dx*prm.grot.m31 + dy*prm.grot.m32 + dz*prm.grot.m33 + prm.cpos.z) * (float)prm.scale;
 		return mul(lrot,prm.dwmat_tmp);
 	}
-}
-
-
-// -----------------------------------------------------------------------
-
-// TODO:   This should be global not a tile manager (i.e. planet specific)
-
-DWORD TileManager2Base::RecycleVertexBuffer(DWORD nv, LPDIRECT3DVERTEXBUFFER9 *pVB)
-{
-	int pool = -1;
-	D3DVERTEXBUFFER_DESC desc;
-
-	if (*pVB) {
-		(*pVB)->GetDesc(&desc);
-		desc.Size /= sizeof(VERTEX_2TEX);
-		for (int i=0;i<NPOOLS;i++) if (VtxPoolSize[i]==desc.Size) { pool = i; break; }
-		if (pool>=0) {
-			VtxPool[pool].push(*pVB);
-			*pVB = NULL;
-			if (nv==0) return 0; // Store buffer, do not allocate new one.
-		}
-		else LogErr("Pool Doesn't exists");
-	}
-
-
-	pool = -1;
-
-	// Find a pool
-	for (int i=0;i<NPOOLS;i++) if (VtxPoolSize[i]==nv) { pool = i; break; }
-
-	// Create a new pool size
-	if (pool==-1) {
-		for (int i=0;i<NPOOLS;i++) if (VtxPoolSize[i]==0) { VtxPoolSize[i] = nv; pool = i; break; }
-		if (pool<0) {
-			LogErr("Failed to Crerate a Pool (size=%u)", nv);
-			*pVB = NULL;
-			return 0;
-		}
-	}
-
-	if (VtxPool[pool].empty()) {
-		D3D9Stats.TilesCached++;
-		D3D9Stats.TilesCachedMB += nv*sizeof(VERTEX_2TEX);
-
-		HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, pVB, NULL));
-		//HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), 0, 0, D3DPOOL_DEFAULT, pVB, NULL));
-		//HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, pVB, NULL));
-		return VtxPoolSize[pool];
-	}
-	else {
-		*pVB = VtxPool[pool].top();
-		VtxPool[pool].pop();
-		return VtxPoolSize[pool];
-	}
-}
-
-// -----------------------------------------------------------------------
-
-DWORD TileManager2Base::RecycleIndexBuffer(DWORD nf, LPDIRECT3DINDEXBUFFER9 *pIB)
-{
-	int pool = -1;
-	D3DINDEXBUFFER_DESC desc;
-
-	if (*pIB) {
-		(*pIB)->GetDesc(&desc);
-		desc.Size /= (sizeof(WORD)*3);
-		for (int i=0;i<NPOOLS;i++) if (IdxPoolSize[i]==desc.Size) { pool = i; break; }
-		if (pool>=0) {
-			IdxPool[pool].push(*pIB);
-			*pIB = NULL;
-			if (nf==0) return 0; // Store buffer, do not allocate new one.
-		}
-		else LogErr("Pool Doesn't exists");
-	}
-
-
-	pool = -1;
-
-	// Find a pool
-	for (int i=0;i<NPOOLS;i++) if (IdxPoolSize[i]==nf) { pool = i; break; }
-
-	// Create a new pool size
-	if (pool==-1) {
-		for (int i=0;i<NPOOLS;i++) if (IdxPoolSize[i]==0) { IdxPoolSize[i] = nf; pool = i; break; }
-		if (pool<0) {
-			LogErr("Failed to Crerate a Pool (size=%u)", nf);
-			*pIB = NULL;
-			return 0;
-		}
-	}
-
-	if (IdxPool[pool].empty()) {
-		HR(pDev->CreateIndexBuffer(nf*sizeof(WORD)*3, D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_DEFAULT, pIB, NULL));
-		//HR(pDev->CreateIndexBuffer(nf*sizeof(WORD)*3, 0, D3DFMT_INDEX16, D3DPOOL_DEFAULT, pIB, NULL));
-		//HR(pDev->CreateIndexBuffer(nf*sizeof(WORD) * 3, D3DUSAGE_DYNAMIC, D3DFMT_INDEX16, D3DPOOL_DEFAULT, pIB, NULL));
-		return IdxPoolSize[pool];
-	}
-	else {
-		*pIB = IdxPool[pool].top();
-		IdxPool[pool].pop();
-		return IdxPoolSize[pool];
-	}
-}
-
-// -----------------------------------------------------------------------
-
-void TileManager2Base::TileLabel(LPDIRECT3DTEXTURE9 tex, int lvl, int ilat, int ilng)
-{
-	if (!tex) return;
-	if (!Config->TileDebug) return;
-
-	LPDIRECT3DSURFACE9 pSurf = NULL;
-	HDC hDC = NULL;
-	D3DSURFACE_DESC desc;
-
-	HR(tex->GetSurfaceLevel(0, &pSurf));
-	HR(tex->GetLevelDesc(0, &desc));
-	HR(pSurf->GetDC(&hDC));
-
-	char label[256];
-	sprintf_s(label, 256, "%02d-%06d-%06d.dds", lvl+4, ilat, ilng);
-	HFONT hOld = (HFONT)SelectObject(hDC, GetDebugFont());
-	TextOut(hDC, 16, 16, label, lstrlen(label));
-	SetBkMode(hDC, TRANSPARENT);
-	SelectObject(hDC, GetStockObject (NULL_BRUSH));
-	SelectObject(hDC, GetStockObject (WHITE_PEN));
-	Rectangle(hDC, 0, 0, desc.Width-1, desc.Height-1);
-	SelectObject(hDC, GetStockObject (BLACK_PEN));
-	Rectangle(hDC, 1, 1, desc.Width-2, desc.Height-2);
-	SelectObject(hDC, hOld);
-
-	HR(pSurf->ReleaseDC(hDC));
-	pSurf->Release();
 }

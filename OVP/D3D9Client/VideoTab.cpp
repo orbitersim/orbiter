@@ -317,14 +317,14 @@ void VideoTab::SelectFullscreen(bool bFull)
 {
 
 	SetWindowText(GetDlgItem(hTab, IDC_VID_ENUM), "(unused)");
-	SetWindowText(GetDlgItem(hTab, IDC_VID_STENCIL), "(unused)");
+	SetWindowText(GetDlgItem(hTab, IDC_VID_STENCIL), "Force window size");
 	SetWindowText(GetDlgItem(hTab, IDC_VID_PAGEFLIP), "Multiple displays");
 
 	SendDlgItemMessage(hTab, IDC_VID_FULL, BM_SETCHECK, bFull ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hTab, IDC_VID_WINDOW, BM_SETCHECK, bFull ? BST_UNCHECKED : BST_CHECKED, 0);
 
 	EnableWindow(GetDlgItem(hTab, IDC_VID_ENUM), false);
-	EnableWindow(GetDlgItem(hTab, IDC_VID_STENCIL), false);
+	EnableWindow(GetDlgItem(hTab, IDC_VID_STENCIL), true);
 
 	if (bFull) {
 		EnableWindow(GetDlgItem(hTab, IDC_VID_ASPECT), false);
@@ -670,9 +670,8 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	// TILE MIPMAP POLICY -----------------------------------------
 
 	SendDlgItemMessage(hWnd, IDC_MIPMAPS, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessageA(hWnd, IDC_MIPMAPS, CB_ADDSTRING, 0, (LPARAM)"None");
-	SendDlgItemMessageA(hWnd, IDC_MIPMAPS, CB_ADDSTRING, 0, (LPARAM)"Low level only");
-	SendDlgItemMessageA(hWnd, IDC_MIPMAPS, CB_ADDSTRING, 0, (LPARAM)"All levels");
+	SendDlgItemMessageA(hWnd, IDC_MIPMAPS, CB_ADDSTRING, 0, (LPARAM)"Disabled");
+	SendDlgItemMessageA(hWnd, IDC_MIPMAPS, CB_ADDSTRING, 0, (LPARAM)"Enabled (slow2load)");
 	SendDlgItemMessage(hWnd, IDC_MIPMAPS, CB_SETCURSEL, 0, 0);
 
 	// ARCHIVE METHOD ------------------------------------------

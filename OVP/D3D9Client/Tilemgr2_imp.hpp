@@ -70,8 +70,15 @@ QuadTreeNode<TileType> *TileManager2Base::LoadChildNode (QuadTreeNode<TileType> 
 template<class TileType>
 void TileManager2Base::QueryTiles(QuadTreeNode<TileType> *node, std::list<Tile*> &tiles)
 {
+/*Tile *tile = node->Entry();
+	for (int i = 0; i < 4; i++) {
+		if (node->Child(i)) {
+			if (node->Child(i)->Entry()) QueryTiles(node->Child(i), tiles);
+		} else tiles.push_back(tile);
+	}
+*/
 	Tile *tile = node->Entry();
-	if (tile->state == Tile::ForRender) 	tiles.push_back(tile);
+	if (tile->state == Tile::ForRender) tiles.push_back(tile);
 	else if (tile->state == Tile::Active) {
 		for (int i = 0; i < 4; i++) {
 			if (node->Child(i)) {
@@ -84,17 +91,26 @@ void TileManager2Base::QueryTiles(QuadTreeNode<TileType> *node, std::list<Tile*>
 // -----------------------------------------------------------------------
 
 template<class TileType>
+void TileManager2Base::DebugDump(QuadTreeNode<TileType>* node)
+{
+	Tile* tile = node->Entry();
+	oapiWriteLogV("Tile[0x%X] OwnTex=%u, Mesh=%u, state=%u, lvl=%u", tile, UINT(tile->owntex), UINT(tile->mesh != 0), UINT(tile->state), tile->lvl);
+	for (int i = 0; i < 4; i++) {
+		auto c = node->Child(i);
+		if (c) DebugDump(c);
+	}
+}
+
+// -----------------------------------------------------------------------
+
+template<class TileType>
 void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 {
-	if (bFreeze) return;
-
 	static const double res_scale = 1.1; // resolution scale with distance
 
 	const Scene *scene = GetScene();
 
 	Tile *tile = node->Entry();
-	tile->state = Tile::ForRender;
-	tile->edgeok = false;
 	int lvl = tile->lvl;
 	int ilng = tile->ilng;
 	int ilat = tile->ilat;
@@ -115,6 +131,17 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 	
 	tile->dmWorld = WorldMatrix(ilng, nlng, ilat, nlat);
 	MATRIX4toD3DMATRIX(tile->dmWorld, tile->mWorld);
+
+	if (bFreeze) {
+		for (int i = 0; i < 4; i++) {
+			auto child = node->Child(i);
+			if (child) ProcessNode(child);
+		}
+		return;
+	}
+
+	tile->state = Tile::ForRender;
+	tile->edgeok = false;
 
 	// check if patch is visible from camera position
 	VECTOR3 &cnt = tile->cnt;                   // tile centre in unit planet frame
@@ -141,7 +168,7 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 			// Keep a tile allocated as long as the tile can be seen from a current camera position.
 			// We have multiple views and only the active (current) view is checked here.
 			tile->state = Tile::Invisible;
-			return;
+			//return;  Cannot return here, must check the tile tatget level and release childs if needed.
 		}
 	}
 
@@ -164,51 +191,60 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 		bias -=  2.0 * sqrt(max(0.0,adist) / prm.viewap);
 		int maxlvl = prm.maxlvl;
 
-		double apr = tdist * scene->GetTanAp() * resolutionScale;
+		// Dynamic tile count limiter, start reducing above 600 tiles
+		double tc = double(TilesLoaded-600) / 300;
+		double fc = tc < 0 ? 1.0 : 1.0 + tc * tc;
+
+		// This doesn't work with narrow FOV, added max() to set low limit
+		double apr = tdist * fc * max(0.25, scene->GetTanAp()) * resolutionScale;
 		tgtres = (apr < 1e-6 ? maxlvl : max(0, min(maxlvl, (int)(bias - log(apr)*res_scale))));
 		bstepdown = (lvl < tgtres);
 		tile->tgtscale = pow(2.0f, float(tgtres - lvl));
 	}
-	
-	if (!bstepdown) {
-		// Count the tile elevation stats
-		if (tile->IsElevated()) elvstat.Elev++;
-		else elvstat.Sphe++;
-	}
 
-	if (!bstepdown) {	
-		// Search elevated tiles from sub-trees
-		// This can severally impact in performance if used incorrectly
-		if ((ElevMode == eElevMode::ForcedElevated) && (tile->IsElevated() == false)) {
-			if (ElevModeLvl == 0) ElevModeLvl = lvl + 1;
-			bstepdown = ElevModeLvl >= lvl;
+	if (scene->GetRenderPass() == RENDERPASS_MAINSCENE)
+	{
+		if (!bstepdown) {
+			// Count the tile elevation stats
+			if (tile->IsElevated()) elvstat.Elev++;
+			else elvstat.Sphe++;
 		}
-	}
+
+		if (!bstepdown) {	
+			// Search elevated tiles from sub-trees
+			// This can severally impact in performance if used incorrectly
+			if ((ElevMode == eElevMode::ForcedElevated) && (tile->IsElevated() == false)) {
+				if (ElevModeLvl == 0) ElevModeLvl = lvl + 1;
+				bstepdown = ElevModeLvl >= lvl;
+			}
+		}
 	
-	// Recursion to next level: subdivide into 2x2 patch
-	if (bstepdown) {
-		bool subcomplete = true;
-		int i, idx;
-		// check if all 4 subtiles are available already, and queue any missing for loading
-		for (idx = 0; idx < 4; idx++) {
-			QuadTreeNode<TileType> *child = node->Child(idx);
-			if (!child)
-				child = LoadChildNode (node, idx);
-			else if (child->Entry()->state == Tile::Invalid)
-				loader->LoadTileAsync (child->Entry());
-			Tile::TileState state = child->Entry()->state;
-			if (!(state & TILE_VALID))
-				subcomplete = false;
+		// Recursion to next level: subdivide into 2x2 patch
+		if (bstepdown)
+		{
+			bool subcomplete = true;
+			int i, idx;
+			// check if all 4 subtiles are available already, and queue any missing for loading
+			for (idx = 0; idx < 4; idx++) {
+				QuadTreeNode<TileType>* child = node->Child(idx);
+				if (!child)
+					child = LoadChildNode(node, idx);
+				else if (child->Entry()->state == Tile::Invalid)
+					loader->LoadTileAsync(child->Entry());
+				Tile::TileState state = child->Entry()->state;
+				if (!(state & TILE_VALID))
+					subcomplete = false;
+			}
+			if (subcomplete) {
+				tile->state = Tile::Active;
+				for (i = 0; i < 4; i++)
+					ProcessNode(node->Child(i));
+				return; // otherwise render at current resolution until all subtiles are available
+			}
 		}
-		if (subcomplete) {
-			tile->state = Tile::Active;
-			for (i = 0; i < 4; i++)
-				ProcessNode (node->Child(i));
-			return; // otherwise render at current resolution until all subtiles are available
+		else {
+			node->DelChildren();
 		}
-	}
-	else {
-		if (scene->GetRenderPass() == RENDERPASS_MAINSCENE) node->DelChildren();
 	}
 }
 
@@ -219,16 +255,22 @@ void TileManager2Base::RenderNode (QuadTreeNode<TileType> *node)
 {
 	TileType *tile = node->Entry();
 	const Scene *scene = GetScene();
+	int lvl = tile->lvl;
+
+	if (bFreeze && bFreezeRenderAll && lvl >= 4) {
+		if (tile->state == Tile::Invisible) {	
+			tile->StepIn();
+			tile->Render();
+			return;
+		}
+	}
 
 	if (tile->state == Tile::ForRender) {
-		int lvl = tile->lvl;
 		if (scene->GetRenderPass() == RENDERPASS_MAINSCENE) tile->MatchEdges ();
 		tile->StepIn ();
 		tile->Render ();
 		tile->FrameId = scene->GetFrameId();		// Keep a record about when this tile is actually rendered.
-		D3D9Stats.Surf.Tiles[lvl]++;
-		D3D9Stats.Surf.Verts += tile->mesh->nv;
-
+		D3D9Stats.TilesRendered++;
 	} else if (tile->state == Tile::Active) {
 		tile->StepIn ();
 		for (int i = 0; i < 4; i++) {
@@ -276,6 +318,7 @@ TileManager2<TileType>::TileManager2 (vPlanet *vplanet, int _maxres, int _gridre
 	for (int i = 0; i < 3; i++)
 	{
 		globtile[i] = new TileType(this, i - 3, 0, 0);
+		globtile[i]->PreLoad();
 		globtile[i]->Load();
 	}
 
@@ -292,6 +335,10 @@ TileManager2<TileType>::TileManager2 (vPlanet *vplanet, int _maxres, int _gridre
 template<class TileType>
 TileManager2<TileType>::~TileManager2 ()
 {
+	//oapiWriteLogV("=== Tile Dump for %s ===", vp->GetName());
+	//for (int i = 0; i < 2; i++)
+	//  DebugDump(&tiletree[i]);
+
 	for (int i = 0; i < 2; i++)
 		tiletree[i].DelChildren();
 	for (int i = 0; i < 3; i++)
