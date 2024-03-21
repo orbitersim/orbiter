@@ -2,102 +2,77 @@
 \begin{document}
 
 \section{The mesh file}
-ORBITER uses a proprietary mesh file format. Mesh files are ASCII text files. (A binary format may be introduced in the future). Mesh files are located in the Meshes subdirectory unless the MeshDir entry in Orbiter.cfg points to a different directory.\\
+\label{sec:mesh_file}
+%TODO add section link
+Orbiter uses a custom mesh file format. Mesh files are ASCII text files, and are by default located in the .\textbackslash Meshes subdirectory, unless the MeshDir entry in the main configuration file points to a different location (see section TODO). Some objects (e.g. Vessel classes) may place their meshes into their own subdirectory below .\textbackslash Meshes to keep them grouped together.\\
 \\
-ORBITER meshes are defined in a left-handed coordinate system. Vessel meshes should be oriented such that the \textit{vessel’s nose} (or more precisely, its \textit{main thrust direction}) points in the positive z-direction, the positive x-axis points \textit{right}, and the positive y-axis points \textit{up}.\\
+Vertex coordinates are defined in the object’s local coordinate system. Remember that Orbiter uses a left-handed coordinate system, where +x = right axis, +y = up axis, +z = forward axis. To conform with Orbiter’s default vessel orientation conventions, vessel meshes should be aligned so that the main thrust direction points to the positive z-direction, the positive x-axis points right, and the positive y-axis points up.\\
 \\
-The units for vertex coordinates are \textit{meters} [m].\\
+Vertex coordinate values are in units of meters [m].\\
 \\
-Mesh file format:
-\begin{lstlisting}[language=OSFS]
+The mesh file format is given by
+
+\begin{lstlisting}[language=OSFS,mathescape=true]
 MSHX1	;header
-GROUPS <n>	;<n>: number of groups
-<group 1>	;group spec 1
-<group 2>	;group spec 2
+GROUPS <$n$>	;<$n$>: number of groups
+<$group$ $\mathit{1}$>	;group spec 1
+<$group$ $\mathit{2}$>	;group spec 2
 ...
-<group n>	;group spec n
-
-MATERIALS <m>	;<m>: number of materials
-<mtrl-name 1>	;material name 1
-<mtrl-name 2>	;material name 2
+<$group$ $n$>	;group spec $n$
+MATERIALS <$m$>	;<$m$>: number of materials
+<$mtrl-name$ $\mathit{1}$>	;material name 1
+<$mtrl-name$ $\mathit{2}$>	;material name 2
 ...
-<mtrl-name m>	;material name m
-<material 1>	;material spec 1
-<material 2>	;material spec 2
+<$mtrl-name$ $m$>	;material name $m$
+<$material$ $\mathit{1}$>	;material spec 1
+<$material$ $\mathit{2}$>	;material spec 2
 ...
-<material m>	;material spec m
-
-TEXTURES <t>	;<t>: number of textures
-<tex-name 1>	;texture name 1
-<tex-name 2>	;texture name 2
+<$material$ $m$>	;material spec $m$
+TEXTURES <$t$>	;<t>: number of textures
+<$tex-name$ $\mathit{1}$>	;texture name 1
+<$tex-name$ $\mathit{2}$>	;texture name 2
 ...
-<tex-name t>	;texture name t
+<$tex-name$ $t$>	;texture name $t$
 \end{lstlisting}
 
 \noindent
-Group specs:
-
-\begin{lstlisting}[language=OSFS]
-[LABEL <label>]		;group label, optional
-[MATERIAL <i>]		;material index, optional
-[TEXTURE <j>]		;texture index, optional
-[TEXWRAP <wrap>]	;texture wrap mode, <wrap> = U or V or UV, optional
-[NONORMAL]			;"no normals" flag; see below, optional
-[FLAG <f>]			;multi-purpose bit-flags; see below, optional
-GEOM <nv> <nt>	;<nv>: vertex count, <nt>: triangle count
-<vtx 0>			;vertex spec 0
-<vtx 1>			;vertex spec 1
-...
-<vtx nv-1>	;vertex spec nv-1
-<tri 0>		;triangle spec 0
-<tri 1>		;triangle spec 1
-...
-<tri nt-1>	;triangle spec nt-1
-\end{lstlisting}
-
-\noindent
-Vertex specs:
-
-\begin{lstlisting}[language=OSFS]
-<x> <y> <z> [<nx> <ny> <nz> [<tu> <tv>]]
-	;<x> <y> <z>: vertex position
-	;<nx> <ny> <nz>: vertex normal (optional)
-	;<tu> <tv>: texture coordinates (optional)
-\end{lstlisting}
-
-\noindent
-Missing normals are automatically calculated as the mean of the normals of adjacent faces. Texture coordinates are only required if the group uses a texture.\\
-\\
-Triangle specs:
-
-\begin{lstlisting}[language=OSFS]
-<i> <j> <k>	;vertex indices (zero-based). Left-hand face is rendered.
-\end{lstlisting}
-
-\noindent
-Material specs:
-
-\begin{lstlisting}[language=OSFS]
-MATERIAL <mtrl-name>	;material header
-<dr> <dg> <db> <da>		;Diffuse colour (RGBA)
-<ar> <ag> <ab> <aa>		;Ambient colour (RGBA)
-<sr> <sg> <sb> <sa> <pow>	;Specular colour (RGBA) and specular power (float)
-<er> <eg> <eb> <ea>		;Emissive colour (RGBA)
-\end{lstlisting}
+The rest of this chapter contains details about the components of the mesh file format.
 
 
 \subsection{Mesh groups}
-Meshes are divided into groups. Each group can define its own material and texture specification. For example, if you want different parts of the object to have different material properties, you need to split the mesh into groups accordingly.\\
+Meshes are subdivided into mesh groups. Each mesh group has one material and one texture map associated with it. If you want different parts of the objects to have different material properties, the mesh must be split into groups accordingly. Mesh groups act as a rigid sub-units within the mesh for the purposes of mesh animation.\\
 \\
-Each group contains
+\textbf{Group specs}\\
+A mesh group specification inside the mesh file has the following format:
+
+\begin{lstlisting}[language=OSFS,mathescape=true]
+[LABEL <$label$>]		;group label, optional
+[MATERIAL <$i$>]		;material index, optional
+[TEXTURE <$j$>]		;texture index, optional
+[TEXWRAP <$wrap$>]	;texture wrap mode, <$wrap$> = U or V or UV, optional
+[NONORMAL]			;"no normals" flag; see below, optional
+[FLAG <$f$>]			;multi-purpose bit-flags; see below, optional
+GEOM <$nv$> <$nt$>	;<$nv$>: vertex count, <$nt$>: triangle count
+<$vtx$ $0$>			;vertex spec 0
+<$vtx$ $1$>			;vertex spec 1
+...
+<$vtx$ $nv-1$>	;vertex spec $nv-1$
+<$tri$ $0$>		;triangle spec 0
+<$tri$ $1$>		;triangle spec 1
+...
+<$tri$ $nt-1$>	;triangle spec $nt-1$
+\end{lstlisting}
+
+\noindent
+Group components:
 
 \begin{itemize}
-\item An optional label (tag LABEL). The label must be a single word without white spaces. It has no direct effect on the mesh, but can be used to associate a name with a mesh group. Named groups are easier to access from within a vessel module code than group indices (e.g. for defining animations etc.)
-\item An optional material index. Indices $\geq 1$ select a material of the mesh’s material list. Index 0 means “default material” (which is white, diffuse and opaque). If the group doesn’t specify a material index it inherits the previous group’s material. The first group in the mesh \textit{must} specify a material index, otherwise the result is undefined.
-\item An optional texture index. Indices $\geq 1$ select a texture from the mesh’s texture list. Index 0 means “no texture”. If the group doesn’t specify a texture index it inherits the previous group’s texture. The first group in the mesh \textit{must} specify a texture index, otherwise the result is undefined.
-\item An optional TEXWRAP flag. This defines how textures wrap around the object. “U” causes textures to wrap in the u-coordinate direction in texel space, “V” wraps in v-coordinate direction, and “UV” wraps in both directions. Default is no wrapping.
-\item An optional NONORMAL flag. This indicates that vertex definitions in this group don’t contain normal definitions, and the first two numbers after the vertex coordinate (x,y,z) triplet is interpreted as texture coordinate (u,v) pair.
-\item An optional FLAG entry. This allows to specify a user-defined 32-bit flag (in hex format) whose interpretation is context-dependent. Below is a list of flags currently recognised by Orbiter:
+\item A group can be assigned an optional label (tag LABEL) to make it easier to address from within the vessel module code (e.g. for coding an animation sequence). The label must be a single word without white space. A separate tool (.\textbackslash Orbitersdk\textbackslash Utils\textbackslash meshc.exe) can be used to scan a mesh file and write out a C++ header file containing the group labels and their integer indices. This header file can then be included in the vessel module code. Make sure to re-run meshc whenever the mesh group structure changes, to keep the associations up to date.
+\item A material index can be used to assign a material to the group. Indices $\geq$ 1 assign a material from the mesh material list. Index 0 refers to the default material (white, diffuse and opaque). If the group doesn’t specify a material index, it inherits the previous group’s material. If the first mesh group does not specify a material index, index 0 is implied.
+\item A texture index can be used to assign a texture map to the group. Indices $\geq$ 1 assign a texture from the mesh texture list. Index 0 indicates "no texture". If the group doesn’t specify a texture index, it inherits the previous group’s texture. If the first mesh group does not specify a texture index, index 0 is implied.
+\item The optional TEXWRAP flag defines how textures wrap around the object. "U" causes textures to wrap in the u-coordinate direction in texel space, "V" wraps in v-coordinate direction, and "UV" wraps in both directions. Default is no wrapping.
+\item The optional NONORMAL flag indicates that vertex definitions in this group don’t contain normal information, meaning that the first two numbers after the vertex coordinate (x,y,z) triplet are interpreted as texture coordinate (u,v) pair.
+\item The optional FLAG tag allows to specify a user-defined 32-bit flag whose interpretation is context-dependent. Below is a list of bit settings currently recognised by Orbiter:
 
 \begin{table}[H]
 	\centering
@@ -116,99 +91,96 @@ Each group contains
 	\end{tabular}
 \end{table}
 
-\item A GEOM specification, defining the number of vertices and triangles in the group.
-\item A vertx list (see below)
+\item The GEOM specification heads the vertex and triangle list for the mesh group. It specifies the lengths of both lists.
+\item A vertex list (see below)
 \item A triangle list (see below)
 \end{itemize}
 
 \noindent
-\textbf{Vertex lists}\\
+\textbf{Vertex list}\\
 Each group contains a vertex list, defining the positions, and optionally normal directions and texture coordinates of the vertices in the group.\\
-Each line in the list defines a vertex, and contains up to 8 floating point numbers (separated by spaces)
+Each line in the list defines a vertex and contains up to 8 floating point numbers (separated by spaces):
+
+\indent <\textit{x}> <\textit{y}> <\textit{z}> [<\textit{nx}> <\textit{ny}> <\textit{nz}>] [<\textit{tu}> <\textit{tv}>]
 
 \begin{itemize}
-\item The first 3 numbers contain the cartesian vertex coordinates (x,y,z) in the object local coordinate space. Units are meters [m]
-\item The next 3 numbers (if present) contain the vertex normal direction (nx,ny,nz) (unless the group has set the NONORMAL flag). The normal direction is the direction perpendicular to the mesh surface at the vertex position. Orbiter needs this to generate correct lighting effects. If no normals are specified (or if the NONORMAL flag is set) Orbiter guesses the normal direction as the average of the normals of the surrounding triangles. This works well for smooth surfaces, but should be avoided for surfaces which contain sharp edges. Normal directions should be normalised, i.e. $\sqrt{nx^{2}+ny^{2}+nz^{2}} = 1$.
-\item The next 2 numbers (if present) contain the vertex texture coordinates (u,v). Texture coordinates are only required if the group uses a texture (i.e. has texture index $\geq 1$). Texture coordinates define how a rectangular 2D texture is mapped onto the object surface. Texture coordinate (0,0) refers to the lower left corner of the texture, (1,1) refers to the upper right corner. Coordinates > 1 are allowed and cause textures to repeat periodically.
+\item The first 3 numbers contain the Cartesian vertex coordinates (\textit{x}, \textit{y}, \textit{z}) in the object’s local frame of reference. Units are meters [m].
+\item The next 3 numbers (if present) contain the surface normal direction at the vertex location (\textit{nx}, \textit{ny}, \textit{nz}), unless the group has the NONORMAL flag set. Orbiter needs the normal direction for lighting calculations. If no normal specification is available (or if the NONORMAL flag is present), Orbiter guesses the normal direction as the average of the normals of the adjacent triangles. This works well for smooth surfaces, but should be avoided for surfaces that contain sharp edges. Vertices located on edges require two vertex entries with different normals, referenced by the appropriate triangles. Normal definitions should be normalised: $\sqrt{nx^{2}+ny^{2}+nz^{2}} = 1$.
+\item The next 2 numbers (if present) contain the vertex texture coordinates (\textit{u}, \textit{v}). Texture coordinates are only required if the group uses a texture (has texture index $\geq$ 1). Texture coordinates define how a rectangular 2D texture is mapped onto the object surface. Texture coordinate (0, 0) refers to the lower left corner of the texture, (1, 1) refers to the upper right corner. Coordinates > 1 and < 0 are allowed and cause textures to repeat periodically.
 \end{itemize}
 
-\noindent
-\underline{Notes:}
-
-\begin{itemize}
-\item Vertices located at sharp edges or corners require multiple entries in the vertex list, because they have multiple normal directions (in other words, the surfaces are \textit{non-differentiable} at edges). In that case you should always define the normals in the mesh file, and not leave it to Orbiter to generate them for you. Otherwise the edges will appear unrealistically smooth.
-\item Likewise, vertices with multiple vertex coordinates (e.g. at the edge between two texture maps) need multiple entries in the vertex list.
-\end{itemize}
 
 \noindent
-\textbf{Triangle lists}\\
-The group’s triangle list follows immediately below the vertex list. It defines the triangles which compose the group’s mesh surface.
+\textbf{Triangle list}\\
+The group’s triangle list follows immediately below the vertex list. It defines the triangles which compose the group’s polygonal (piecewise flat) surface.
 
 \begin{itemize}
-\item Each line in the list defines a triangle and consists of 3 integer numbers (i,j,k). Each of the numbers specifies a vertex from the group’s vertex list (starting from 0)
-\item Only the “clockwise” (CW) side of each triangle is rendered: the side which, if you look at it, has the vertices arranged in a clockwise order. The opposite “counterclockwise” (CCW) side is invisible.
-\item If you need to render both sides of a triangle (e.g. for a thin plate) you need to define two triangles.
-\item If you want to flip the rendered side of a triangle (e.g. to correct for “inside out” artefacts) you need to rearrange the triangle indices in the following way: (i,j,k) $\to$ (i,k,j)
+\item Each line in the list defines a triangle and consists of 3 integer numbers (\textit{i}, \textit{j}, \textit{k}). Each is an index referencing a vertex in the vertex list (starting from 0).
+\item Only the “clockwise” (CW) side of the triangle is rendered: the side which, when looked at, has the vertices arranged in a clockwise order. The opposite, “counterclockwise” (CCW) side is invisible.
+\item If both sides of the triangle must be rendered (e.g. if representing part of a thin plate), two triangles must be defined, one for each side.
+\item To flip the rendered side of a triangle (e.g. to correct for “inside out” artefacts), the vertex index order must be rearranged: (\textit{i},\textit{j},\textit{k}) $\rightarrow$ (\textit{i},\textit{k},\textit{j})
 \end{itemize}
 
 
 \subsection{Material list}
-Materials allow to specify the homogeneous lighting properties of a mesh group. The material lists consists of
+Material specifications allow specification of general light reflection and emission properties, as well as opacity values, that can be applied to mesh group surfaces. The material list consists of
 
 \begin{itemize}
-\item A header line, MATERIALS <m>, defining the number <m> of materials.
-\item A list of material \textit{names}.
-\item A list of material \textit{properties}.
+\item A header line, MATERIALS <\textit{m}>, defining the number <\textit{m}> of materials.
+\item A list of material names.
+\item A list of material properties.
 \end{itemize}
 
 \noindent
-Each material property specification consists of 4 RGBA quadruplets, where R, G and B define the red, green and blue components, and A is the opacity. RGB values should be between 0 and 1, but can be > 1 for special effects. A \textit{must} be between 0 (fully transparent) and 1 (fully opaque).
+Each material property specification consists of
 
 \begin{itemize}
-\item The first line specifies the \textit{diffuse material colour}. This is the colour that is diffusely (in all directions) reflected from an illuminated surface.
-\item The second line specifies the \textit{ambient material colour}. This is the colour of an unlit surface.
-\item The third line specifies the \textit{specular colour}. This is the colour of light reflected by a polished surface into a narrow beam. The \textit{power} entry specifies the width of the cone into which specular light is reflected. Higher values mean a narrower cone, i.e. sharper reflections. Typical values are around 10. If omitted, the default value for power is 0.
-\item The fourth line specifies the \textit{emissive colour}. This is the colour of light emitted by a glowing surface.
+\item A header line, MATERIAL <\textit{name}>, where <\textit{name}> is an entry from the list of material names
+\item A line containing the \textit{diffuse reflection} colour and opacity: <$r_{d}$> <$g_{d}$> <$b_{d}$> <$a_{d}$>. This is the colour that is diffusely (in all directions) reflected from an illuminated surface.
+\item A line containing the \textit{ambient} material colour and opacity: <$r_{a}$> <$g_{a}$> <$b_{a}$> <$a_{a}$>. This is the colour of an unlit surface.
+\item A line containing the \textit{specular} colour, opacity and reflection characteristics: <$r_{s}$> <$g_{s}$> <$b_{s}$> <$a_{s}$> [<\textit{p}>]. This is the colour of light reflected by a polished surface into a narrow cone. The power entry (<\textit{p}>) specifies the width of the cone into which light is reflected. Higher values represent a narrower cone, i.e. sharper reflections. Typical values are around 10. If <\textit{p}> is omitted, the default value is 0.
+\item A line containing the \textit{emissive} colour and opacity: <$r_{e}$> <$g_{e}$> <$b_{e}$> <$a_{e}$>. This is the colour of light emitted by a glowing surface.
 \end{itemize}
+
+\noindent
+For each colour specification, <\textit{r}>, <\textit{g}> and <\textit{b}> denote the red, green and blue (RGB) colour components. <\textit{a}> is the opacity. RGB values should be between 0 and 1, but can be > 1 for special effects. Opacity values must be between 0 and 1.
 
 
 \subsection{Texture list}
-The texture list contains the names of texture files used by the various mesh groups. Texture names should contain file extensions “.dds” but no directory paths. Textures must be located in Orbiter’s Textures subdirectory.\\
-\\
-\underline{Notes:}
+The texture list contains the names of the texture files loaded by the mesh. Textures must be in DDS (Direct Draw Surface) format. The names in the list must contain the file extension (.dds). They can contain a path specification, which is interpreted relative to Orbiter's main Texture directory (.\textbackslash Textures by default).
 
 \begin{itemize}
-\item Textures must be in DDS format (“Direct Draw Surface”). A DirectX SDK tool, dxtex, which is included in the Orbiter SDK package, allows to convert BMP bitmaps into DDS.
-\item You should store the textures either in DXT1 compressed format (opaque textures or textures with binary transparency), or in DXT5 compressed format (for textures with continuous transparency).
-\item For maximum compatibility, avoid textures larger than 256x256 pixels, because of limitations of some older graphics cards.
-\item If a texture is to be dynamically updated during the simulation (e.g. instrument panels in virtual cockpits), the texture name should be followed by the flag ‘D’. Orbiter will decompress these textures to allow more efficient dynamic updates.
+\item A DirectX SDK tool, dxtex, which is included in the Orbiter SDK package, can be used to convert to DDS from other bitmap formats.
+\item Use either DXT1 compressed format (for opaque textures or textures with binary transparency) or DXT5 (for textures containing semi-transparent areas). DXT1 compresses to half the size of DXT5 but has slightly higher compression artefacts.
+\item Texture bitmaps should have sizes of powers of 2 for maximum compatibility (in particular with older graphics cards). Also avoid texture maps > 2048×2048 pixels.
+\item If a texture is to be dynamically updated during the simulation (e.g. instrument panels in virtual cockpits) the texture name in the list should be followed by the flag 'D'. Orbiter decompresses these surfaces on loading to allow more efficient dynamic updates.
 \end{itemize}
 
 
 \subsection{Performance optimisation}
-To achieve the best results with your new mesh, consider the following points:
+Complex meshes can improve the visual appearance of the object they represent, but they also impose a computational cost on the render engine, leading to lower simulation frame rates and less fluid animation. It can also potentially lead to a loss of accuracy in the trajectory calculation. A balance between visualisation quality and simulation performance should be kept in mind. There are a few ways to optimise the mesh structure to improve performance:
 
 \begin{itemize}
-\item Texture groups which use the same texture should be stored in sequence in the mesh. Unnecessary switching between textures can degrade performance if textures must be swapped in and out of video memory.
-\item Within a sequence of groups using the same textures, groups which use the same material should be stored in sequence. Again, this avoids the need of switching render parameters.
-\item Avoid large numbers of very small groups. If small groups use the same parameters (material, texture, etc.) they should be merged into a single group.
-\item Groups which use transparent materials or textures should be sorted to the end of the mesh. If transparent groups overlap, the innermost ones should be listed before the outer ones.\\
-In order to render transparency correctly, DirectX requires the scene seen through the transparent object to be fully built before the transparent object itself is rendered. Any objects rendered after the transparent object will be masked by it.
-\item Objects with transparency and specular reflection are more expensive to render than opaque and diffusive objects, so use these features sparingly.
-% TODO add section link
-\item And most importantly, \textit{keep the vertex count low!} (See section TODO)
+\item Mesh groups using the same texture should be listed in sequence in the mesh. Unnecessary switching between textures can degrade performance if textures must be swapped in and out of video memory.
+\item Within a sequence of groups using the same texture, groups using the same material should be kept together for the same reason.
+\item Avoid large numbers of very small groups. If small mesh groups use the same texture and material parameters, and are not animated individually, consider merging them into a single group.
+\item To avoid visual artefacts, groups using transparent textures or materials should be sorted to the end of the mesh. If transparent groups overlap, the innermost ones should be listed before the outer ones.\\
+In order to render transparency correctly, DirectX requires the scene seen through the transparent surfaces to be fully built before the transparent part itself is rendered. Any objects rendered after the transparent part can be obscured by it (z-buffering artefact).
+\item Surfaces with transparency and specular reflection are more expensive to render than opaque and diffusive surfaces.
+\item And most importantly: Keep the vertex count reasonably low!
 \end{itemize}
 
 
 \subsection{Mesh converters}
-If you want to convert an existing model into an Orbiter mesh, check the Orbiter web forum for mesh converters created by other users. There is currently a converter which converts from Truespace asc format, which many 3D editors can export. If you have written your own mesh editor or converter, publish it!
+To convert an existing model in a standard mesh format to an Orbiter mesh, check the Orbiter web forum for mesh converters created by other users. There is currently a converter which converts from Truespace asc format, which many 3D editors can export. If you have written your own mesh editor or converter, publish it!
 
 
 \subsection{Mesh utilities}
-The Orbiter SDK contains a few utilities that help to extract data from mesh files. They are located in the Orbitersdk\textbackslash utils folder.\\
-\\
-\textbf{shipedit}: extracts geometric information from a mesh that are useful for defining physical parameters for vessel modules. These include the bounding box extents, volume, cross-sectional areas, and inertia tensor for homogeneous density distribution.\\
-\\
-\textbf{meshc}: mesh compiler. Eventually this may be extended to convert mesh files from text to a binary format (for more compact storage and faster loading) but currently it only extracts mesh parameters into a C header file that can be included in a vessel module project for convenient access to named mesh groups.
+The Orbiter SDK contains a few utilities that help to extract data from mesh files. They are located in the Orbitersdk\textbackslash utils folder.
+
+\begin{itemize}
+\item \textbf{shipedit}: Extracts geometric information from a mesh that is useful for setting up the physical vessel parameters in its configuration file or module code. These include the mesh bounding box, volume, cross-sectional areas, and inertia tensor assuming a homogeneous density distribution.
+\item \textbf{meshc}: Mesh compiler. Currently, this extracts mesh parameters and group labels into a C++ header file that can be included by the vessel code for convenient access to named mesh groups, e.g. to address them for animations and dynamic material updates.
+\end{itemize}
 
 \end{document}

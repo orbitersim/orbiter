@@ -2,10 +2,11 @@
 \begin{document}
 
 \section{Scenario files}
+\label{sec:scn_files}
 Scenarios are simulation startup definitions which contain all parameters required to set up the starting conditions of the simulation at a particular time. They are used for loading and saving simulation states. A scenario file is generated during the simulation when the user saves a state, or automatically at the simulation termination so it can be picked up later.\\
 \\
 %TODO change doc ref to section link
-Scenario files are text files that can be created or modified manually. An easier way to edit scenarios is with the \textit{Scenario Editor} plugin, which can be used to modify and save a running simulation. The Scenario Editor is described in a separate document (ScenarioEditor.pdf).\\
+Scenario files are text files that can be created or modified manually. An easier way to edit scenarios is with the \textit{Scenario Editor} plugin, which can be used to modify and save a running simulation. The Scenario Editor is described in TODO.\\
 \\
 %TODO add section link
 Scenario files are located in a subdirectory tree specified by the ScenarioDir entry in the main configuration file (see Chapter TODO), usually .\textbackslash Scenarios. They have file extension .scn.
@@ -88,8 +89,7 @@ The following environment parameters are supported:
 	\hline\rule{0pt}{2ex}
 	\textbf{Item} & \textbf{Type} & \textbf{Description}\\
 	\hline\rule{0pt}{2ex}
-	%TODO add section link
-	SYSTEM & String & Name of the planetary system. A configuration file for this system must exist (see Chapter TODO). Default: "Sol"\\
+	SYSTEM & String & Name of the planetary system. A configuration file for this system must exist (see section \ref{ssec:planetery_sys}). Default: "Sol"\\
 	\hline\rule{0pt}{2ex}
 	DATE &   & Contains the simulation start time. Allowed formats are:\newline
 	MJD <mjd> (Modified Julian date [days])\newline
@@ -99,8 +99,7 @@ The following environment parameters are supported:
 	\hline\rule{0pt}{2ex}
 	HELP & String [,String] & Scenario help file (in HTML or compressed CHM format). For a HTML page, specify the location of the page relative to the Html\textbackslash Scenarios folder and without extension (.htm is assumed). For a page in a CHM file, specify the location of the file relative to the Html\textbackslash Scenarios folder without extension (.chm is assumed), followed by a comma and the name of the page inside the file without extension (.htm is assumed). Scenario help files can be opened during the simulation with Alt+F1. Default: no help file\\
 	\hline\rule{0pt}{2ex}
-	%TODO add section link
-	CONTEXT & String & Optional context string. This can be used to fine-tune the setup of a planetary system, e.g. by selective loading of surface bases (see Chapter TODO).\\
+	CONTEXT & String & Optional context string. This can be used to fine-tune the setup of a planetary system, e.g. by selective loading of surface bases (see section \ref{ssec:surface_bases}).\\
 	\hline\rule{0pt}{2ex}
 	SCRIPT & String & A script file to launch at the scenario start. The string should include any path relative to the “Script” subdirectory, but no file extension (.lua is assumed). Default: no script\\
 	\hline

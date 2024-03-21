@@ -15,10 +15,10 @@ A semicolon starts a comment, continuing to the end of the line.\\
 All configuration files except the main configuration file (see TODO) are located in a subdirectory tree defined by the ConfigDir entry in the main file, usually ".\textbackslash Config".
 
 \subsection{Planetary systems}
+\label{ssec:planetery_sys}
 Planetary systems contain stars, planets and moons. Each planetary system requires at least one star. Stars, planets and moons are defined in the planetary system’s configuration file\\
 \indent .\textbackslash Config\textbackslash <\textit{Solsys-name}>.cfg\\
-%TODO add section link
-Orbiter can support multiple planetary systems, but only one per scenario. The planetary system to be used by a scenario is referenced in the scenario file (see Chapter TODO).
+Orbiter can support multiple planetary systems, but only one per scenario. The planetary system to be used by a scenario is referenced in the scenario file (see section \ref{sec:scn_files}).
 
 \subsubsection*{General parameters}
 
@@ -36,8 +36,8 @@ Orbiter can support multiple planetary systems, but only one per scenario. The p
 %\end{table}
 
 \noindent
-%TODO add section link
-The MarkerPath entry is used only for legacy-style marker definitions (see Chapter TODO). For new quadtree-based markers, see TODO.
+%TODO handle legacy model link? or just mention it and don't detail it? or mention old documentation?
+The MarkerPath entry is used only for legacy-style marker definitions (see Chapter TODO). For new quadtree-based markers, see section \ref{sssec:label_tile_format}.
 
 \subsubsection*{Object list}
 The object list defines the celestial bodies populating the planetary system and their hierarchy.\\
@@ -84,16 +84,14 @@ Mars:Moon2 = Deimos
 
 
 \subsection{Planets}
+\label{ssec:planets}
 Adding a new celestial body (planet or moon) to a planetary system requires the following steps:
 
 \begin{itemize}
-%TODO add section link
-\item Add an entry for the body in the planetary system configuration file (see chapter TODO).
+\item Add an entry for the body in the planetary system configuration file (see section \ref{ssec:planetery_sys}).
 \item Create a configuration file for the planet, defining its orbital, physical and visual parameters, located in .\textbackslash Config\textbackslash <\textit{Planet-name}>.cfg, for example, Config\textbackslash Earth.cfg. The configuration entries are described below.
-%TODO add section link
-\item Create the required surface texture maps, and optionally elevation, night light, water mask, cloud layer and feature label maps. See TODO for details.
-%TODO add section link
-\item Optionally, create configuration files for surface bases in .\textbackslash Config\textbackslash <\textit{Planet-name}>\textbackslash Base and reference them in the planet configuration file. See Chapter TODO for details on surface base definitions.
+\item Create the required surface texture maps, and optionally elevation, night light, water mask, cloud layer and feature label maps. See section \ref{ssec:planetery_tex} for details.
+\item Optionally, create configuration files for surface bases in .\textbackslash Config\textbackslash <\textit{Planet-name}>\textbackslash Base and reference them in the planet configuration file. See section \ref{ssec:surface_bases} for details on surface base definitions.
 \item Optionally, compile a DLL module for the planet for ephemeris calculations and atmospheric parameter computation. See the Orbiter sources for examples, e.g. the Src\textbackslash Celbody\textbackslash Vsop87 project.
 \item Optionally, create polyline definitions for coastlines (.\textbackslash Config\textbackslash <\textit{Planet-name}>\textbackslash Data\textbackslash coast.vec) and/or topography (.\textbackslash Config\textbackslash <\textit{Planet-name}>\textbackslash Data\textbackslash contour.vec) to be used in scalable map displays. See .\textbackslash Config\textbackslash Earth\textbackslash Data\textbackslash coast.vec for an example.
 \end{itemize}
@@ -240,7 +238,7 @@ Only required if the planet defines an atmosphere.
 	\hline\rule{0pt}{2ex}
 	AtmHorizonAlt & Float & Altitude scale for horizon haze rendering [m]. Default: 0.01 of planet radius.\\
 	\hline\rule{0pt}{2ex}
-	ShadowDepth & Float & Depth (“blackness”) of object shadows (0-1, where 0 = black, 1 = no shadows). Default: exp(-$\rho_{0}$/2), where $\rho_{0}$ is atmospheric density at the surface. This option is only used when stencil buffering is enabled, otherwise shadows are always black.\\
+	ShadowDepth & Float & Depth ("blackness") of object shadows (0-1, where 0 = black, 1 = no shadows). Default: exp(-$\rho_{0}$/2), where $\rho_{0}$ is atmospheric density at the surface. This option is only used when stencil buffering is enabled, otherwise shadows are always black.\\
 	\hline
 	\end{longtable}
 %\end{table}
@@ -259,7 +257,7 @@ Only required if the planet defines a cloud layer.
 	\hline\rule{0pt}{2ex}
 	CloudAlt & Float & Altitude of cloud layer [m]\\
 	\hline\rule{0pt}{2ex}
-	CloudShadowDepth & Float & Depth (“blackness”) of cloud shadows on the ground (0-1, where 0 = black, 1 = don’t render shadows). Default: 1\\
+	CloudShadowDepth & Float & Depth ("blackness") of cloud shadows on the ground (0-1, where 0 = black, 1 = don’t render shadows). Default: 1\\
 	\hline\rule{0pt}{2ex}
 	CloudRotPeriod & Float & Rotation period of cloud layer against surface [s]. Default: 0 (static cloud layer)\\
 	\hline\rule{0pt}{2ex}
@@ -291,7 +289,7 @@ Only required if the planet defines a cloud layer.
 	\hline\rule{0pt}{2ex}
 	MinElevation & Float & Min. surface elevation rel. to planet mean radius [m]. Used to adjust lower edge of rendered horizon.\\
 	\hline\rule{0pt}{2ex}
-	SpecularRipple & Bool & If TRUE, and if “Specular ripples” option is enabled in the Launchpad dialog, specularly reflecting surfaces use a “water ripple” microtexture. Default: FALSE\\
+	SpecularRipple & Bool & If TRUE, and if "Specular ripples" option is enabled in the Launchpad dialog, specularly reflecting surfaces use a "water ripple" microtexture. Default: FALSE\\
 	\hline
 	\end{longtable}
 %\end{table}
@@ -310,13 +308,12 @@ Only required if the planet defines a cloud layer.
 %\end{table}
 
 \noindent
-%TODO add section link
-This entry refers to legacy surface markers (see Chapter TODO). For new quadtree-based marker definitions, see TODO.
+%TODO handle legacy model link? or just mention it and don't detail it? or mention old documentation?
+This entry refers to legacy surface markers (see Chapter TODO). For new quadtree-based marker definitions, see section \ref{sssec:label_tile_format}.
 
 
 \subsubsection*{Surface bases (optional)}
-%TODO add section link
-This is a list containing the names and locations of surface landing installations (“spaceports”). Each entry in the list must be accompanied by a configuration file for the corresponding surface base (see Chapter TODO).
+This is a list containing the names and locations of surface landing installations ("spaceports"). Each entry in the list must be accompanied by a configuration file for the corresponding surface base (see section \ref{ssec:surface_bases}).
 
 \begin{lstlisting}[language=OSFS]
 BEGIN_SURFBASE
@@ -371,8 +368,7 @@ The easiest way to find the coordinates for a new observer spot is to open the C
 
 
 \subsubsection*{Navbeacon transmitter list (optional)}
-%TODO add section link
-This is a list containing the specs of all navigation radio transmitters on the planet surface except for those directly associated with a spaceport, which are defined in the base definition file (see Chapter TODO). The list format is as follows:
+This is a list containing the specs of all navigation radio transmitters on the planet surface except for those directly associated with a spaceport, which are defined in the base definition file (see section \ref{ssec:surface_bases}). The list format is as follows:
 
 \begin{lstlisting}[language=OSFS]
 BEGIN_NAVBEACON
@@ -400,13 +396,13 @@ where
 
 
 \subsection{Surface bases}
-Surface bases (or “spaceports”) are launch and landing sites on the surface of planets or moons, usually equipped with launchpads or runways, for vertical and horizontal take-off and/or landing. Each surface base is defined in its own configuration file. When Orbiter loads a planet configuration, it scans all surface base definitions and creates the corresponding bases.
+\label{ssec:surface_bases}
+Surface bases (or "spaceports") are launch and landing sites on the surface of planets or moons, usually equipped with launchpads or runways, for vertical and horizontal take-off and/or landing. Each surface base is defined in its own configuration file. When Orbiter loads a planet configuration, it scans all surface base definitions and creates the corresponding bases.
 
 \subsubsection*{Base definition file}
 Each surface base must be defined with a base configuration file. By default, this will be located in\\
 \indent .\textbackslash Config\textbackslash <\textit{Planet-name}>\textbackslash Base\textbackslash <\textit{Base-name}>.cfg\\
-%TODO add section link
-where <\textit{Planet-name}> is the name of the celestial body the base is located on, and <\textit{Base-name}> is the name of the surface base. Different locations for the base folder can be defined, for example to allow selective base loading (see TODO).\\
+where <\textit{Planet-name}> is the name of the celestial body the base is located on, and <\textit{Base-name}> is the name of the surface base. Different locations for the base folder can be defined, for example to allow selective base loading (see \textit{Linking surface bases to planets} below).\\
 The format of the surface base definition file is as follows:
 
 \begin{lstlisting}[language=OSFS]
@@ -438,14 +434,12 @@ where
 \item NAME = <\textit{Base-name}> $\Rightarrow$ Logical name of the base as it will be displayed by Orbiter. Doesn’t need correspond to the base file name.
 \item LOCATION = <\textit{lng}> <\textit{lat}> $\Rightarrow$ The position of the base reference point on the planet surface, where <\textit{lng}> [deg] is longitude (< 0 for west, >0 for east), and <\textit{lat}> [deg] is latitude (< 0 for south, > 0 for north). This item is optional if the base is defined directly in the planet’s base list.
 \item SIZE = <\textit{size}> $\Rightarrow$ Specifies the size of the base’s footprint on the planet surface (defined as its mean radius [m]. This parameter determines the camera distance at which Orbiter will start rendering the base.
-\item OBJECTSIZE = <\textit{osize}> $\Rightarrow$ Defines the “typical” size of individual base objects (buildings, etc.). In addition to the SIZE parameter, this value is used by Orbiter to fine-tune the rendering of base objects. Objects will not be rendered if the apparent size of an object of size <\textit{osize}> located at the base reference point, would be smaller than 1 pixel. The default value for <\textit{osize}> is 100.0.
+\item OBJECTSIZE = <\textit{osize}> $\Rightarrow$ Defines the "typical" size of individual base objects (buildings, etc.). In addition to the SIZE parameter, this value is used by Orbiter to fine-tune the rendering of base objects. Objects will not be rendered if the apparent size of an object of size <\textit{osize}> located at the base reference point, would be smaller than 1 pixel. The default value for <\textit{osize}> is 100.0.
 \item MAPOBJECTSTOSPHERE = [TRUE|FALSE] $\Rightarrow$ If TRUE, the altitude of objects in the object list will be adjusted automatically to map them from a flat plane onto a spherical planet surface. So for example, a building defined with altitude 0 will be rendered at altitude 0 relative to the planet’s reference sphere. If FALSE, elevation 0 maps onto the flat plane tangential to the base reference point (and therefore to a point above the reference sphere for any objects not located at the reference point). Default: FALSE\\
 Note: Currently this function is only implemented for a limited number of base object types.
-%TODO add section link
-\item <\textit{NAV list}> $\Rightarrow$ Contains a list of navigation radio transmitters associated with the base. The format of the list is identical to the <\textit{NAV list}> in the planet configuration file (see Chapter TODO).
+\item <\textit{NAV list}> $\Rightarrow$ Contains a list of navigation radio transmitters associated with the base. The format of the list is identical to the <\textit{NAV list}> in the planet configuration file (see section \ref{ssec:planets}).
 \item <\textit{Object list}> $\Rightarrow$ Contains a list of objects which make up the visual elements of the base. See next section for details.
-%TODO add section link
-\item <\textit{Surface tile list}> $\Rightarrow$ This list is deprecated and is only retained for backward compatibility of old planet definitions. See document TODO for details on how to define surface textures for new planet definitions, including high-resolution patches around surface bases.
+\item <\textit{Surface tile list}> $\Rightarrow$ This list is deprecated and is only retained for backward compatibility of old planet definitions. See section \ref{ssec:planetery_tex} for details on how to define surface textures for new planet definitions, including high-resolution patches around surface bases.
 \end{itemize}
 
 
@@ -454,8 +448,7 @@ After creating the base configuration file, it must be referenced by a planet to
 
 \begin{itemize}
 \item Place the base configuration file in the default base configuration folder for the planet. By default, Orbiter scans the folder .\textbackslash Config\textbackslash <\textit{Planet-name}>\textbackslash Base for base definitions. The default folder is scanned only if the planet doesn’t explicitly define a base list (see below).
-%TODO add section link
-\item To make Orbiter scan different folders, create a surface base list in the planet’s configuration file, enclosed by BEGIN\_SURFBASE and END\_SURFBASE tags (see Chapter TODO). In this list, specify the new surface base directory with the line ‘DIR <\textit{folder}>’, where <\textit{folder}> is the path to the folder containing the base configurations (relative to the Config folder). Multiple folders can be specified. If the same base is defined in more than one of the scanned folders, only the first is used. This allows to replace base definitions without having to delete the original configuration file. Example:
+\item To make Orbiter scan different folders, create a surface base list in the planet’s configuration file, enclosed by BEGIN\_SURFBASE and END\_SURFBASE tags (see section \ref{ssec:planets}). In this list, specify the new surface base directory with the line ‘DIR <\textit{folder}>’, where <\textit{folder}> is the path to the folder containing the base configurations (relative to the Config folder). Multiple folders can be specified. If the same base is defined in more than one of the scanned folders, only the first is used. This allows to replace base definitions without having to delete the original configuration file. Example:
 
 \begin{lstlisting}[language=OSFS]
 BEGIN_SURFBASE
@@ -489,8 +482,7 @@ DIR <folder> PERIOD <MJD0> <MJD1>
 
 \noindent
 where <\textit{MJD0}> and <\textit{MJD1}> are the start and end dates of the period over which the base folder is scanned, in MJD (Modified Julian Date) format [days]. Either can be set to ‘-’ to disable the limit at one end.
-%TODO add section link
-\item Specify a scenario context with the CONTEXT parameter. The corresponding directory is scanned only if the scenario specifies the same context string in its environment context entry (see Chapter TODO). This allows to add or replace bases only within a defined set of scenarios. Syntax:
+\item Specify a scenario context with the CONTEXT parameter. The corresponding directory is scanned only if the scenario specifies the same context string in its environment context entry (see section \ref{sec:scn_files}). This allows to add or replace bases only within a defined set of scenarios. Syntax:
 
 \begin{lstlisting}[language=OSFS]
 DIR <folder> CONTEXT <string>
@@ -540,7 +532,7 @@ Note that textures used by base objects must be listed in the texture list of th
 The following pre-defined object types are currently supported:\\
 \\
 \textbf{BLOCK}\\
-A 5-sided “brick” (without a floor) which can be used as a simple generic building, or as part of a more complex structure. The following parameters are supported:
+A 5-sided "brick" (without a floor) which can be used as a simple generic building, or as part of a more complex structure. The following parameters are supported:
 
 %\begin{table}[H]
 	%\centering
@@ -884,8 +876,7 @@ Similar to LPAD2, but uses a different layout for the texture map, providing a h
 
 \noindent
 \textbf{MESH}\\
-%add section link
-Generic mesh for custom objects. Mesh files must be in Orbiter mesh file format (see Chapter TODO)
+Generic mesh for custom objects. Mesh files must be in Orbiter mesh file format (see section \ref{sec:mesh_file})
 
 %\begin{table}[H]
 	%\centering
@@ -925,22 +916,19 @@ Notes:
 
 \begin{itemize}
 \item If the mesh only uses a single texture it is more efficient to specify it via the TEX entry instead of defining it in the mesh and using the OWNMATERIAL flag, because Orbiter can merge objects with the same TEX entries for improved performance.
-%TODO add section link
-\item If OWNSHADOW is used, any mesh groups which have bit 0 set in their FLAG entry do not cast shadows, otherwise they do cast shadows (see Chapter TODO).
+\item If OWNSHADOW is used, any mesh groups which have bit 0 set in their FLAG entry do not cast shadows, otherwise they do cast shadows (see section \label{sec:mesh_file}).
 \end{itemize}
 
 
 \subsection{Custom markers (legacy)}
-%TODO add section link
-\alertbox{As regards markers for planetary surface featues, this section contains information for old-style (pre-Orbiter 2016) marker definitions. These are retained for backward compatibility. For new, quadtree-based marker definitions, see TODO.}
+\alertbox{As regards markers for planetary surface featues, this section contains information for old-style (pre-Orbiter 2016) marker definitions. These are retained for backward compatibility. For new, quadtree-based marker definitions, see section \ref{sssec:label_tile_format}.}
 
 \noindent
 Labels can be defined to mark objects on the celestial sphere (e.g. bright stars, navigation stars, nebulae, etc.) or on planetary surfaces to locate natural landmarks, points of interest, historic landing sites, navigational aids, etc.\\
 The user can display these markers during the simulation with the Visual helpers option (\keystroke{F9} or \Ctrl\keystroke{F9}).\\
 By default, all files for celestial and planetary surface markers are placed in a subdirectory\\
 \indent .\textbackslash Config\textbackslash <\textit{name}>\textbackslash Marker\\
-%TODO add section link
-where <\textit{name}> is the name of the planetary system (for celestial markers) or the celestial body (for surface markers) they are referring to. A different location for marker files can be specified with the MarkerPath option in the planet’s or planetary system’s configuration file (see Chapters TODO and TODO). Marker files are text files with extension .mkr. Multiple files can be defined for a single planet or planetary system, which the user can turn on and off individually. The format is
+where <\textit{name}> is the name of the planetary system (for celestial markers) or the celestial body (for surface markers) they are referring to. A different location for marker files can be specified with the MarkerPath option in the planet’s or planetary system’s configuration file (see sections \ref{ssec:planetery_sys} and \ref{ssec:planets}). Marker files are text files with extension .mkr. Multiple files can be defined for a single planet or planetary system, which the user can turn on and off individually. The format is
 
 \begin{lstlisting}[language=OSFS]
 BEGIN_HEADER

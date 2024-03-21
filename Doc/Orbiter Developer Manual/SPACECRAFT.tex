@@ -40,6 +40,7 @@ If you performed any dynamic memory allocation in \textit{InitModule}, this is a
 
 
 \subsection{Vessel initialisation}
+\label{ssec:vessel_init}
 To allow initialisation of individual spacecraft, Orbiter will call the ovcInit function each time a scenario is loaded, for each vessel of that type listed in the scenario file. Orbiter will also call \textit{ovcInit} during the simulation if a new vessel of this type is created. The main purpose of ovcInit is to create an instance of a \textit{VESSEL}-derived interface class. \textit{VESSEL} is a class defined in the Orbiter API which is the primary means of communication between Orbiter and your own spacecraft class. In order to make use of the interface, you should derive your own vessel class derived from \textit{VESSEL}. In \textit{ovcInit}, you then create an instance of that class and return it back to Orbiter. Note that in the latest Orbiter version, the new \textit{VESSEL2} class has been introduced which inherits all the methods of \textit{VESSEL}, and introduces a number of new callback functions which replace the previous method of event notification. You should derive your vessel class from \textit{VESSEL2} to make use of this latest interface.\\
 \\
 As an example, let’s create a new class called \textit{MyVessel}, and create an instance in \textit{ovcInit}:
@@ -1238,8 +1239,7 @@ bool MyVessel::clbkLoadPanel( int id )
 \end{lstlisting}
 
 \noindent
-%TODO section link
-Here we assume that \textit{MyVessel} is a class derived from \textit{VESSEL2} (see Section TODO on how to create vessel instances). \textit{id} is a panel identifier which Orbiter will provide to let your function know which panel is required. If only a single main panel is defined, \textit{id} will always be 0. If you define more than one panel, you should examine this parameter to decide which panel to load.\\
+Here we assume that \textit{MyVessel} is a class derived from \textit{VESSEL2} (see section \ref{ssec:vessel_init} on how to create vessel instances). \textit{id} is a panel identifier which Orbiter will provide to let your function know which panel is required. If only a single main panel is defined, \textit{id} will always be 0. If you define more than one panel, you should examine this parameter to decide which panel to load.\\
 \\
 Orbiter will call your \textit{clbkLoadPanel} method whenever it needs to load an instrument panel. This happens if
 
@@ -1844,7 +1844,6 @@ bool MyVessel::clbkVCRedrawEvent( int id, int event, SURFHANDLE surf )
 \end{lstlisting}
 
 \noindent
-%TODO add section link
 where \textit{RedrawMFDButtons} is assumed to be a locally defined function performing the redraw action. You may be able to re-use the same method used for drawing the MFD buttons in the 2-D panel (see section \ref{sssec:def_panel_mfd}).\\
 \\
 Finally, trigger a redraw event in the body of the MFD mode change callback notification.
