@@ -72,11 +72,11 @@ Group components:
 \item A texture index can be used to assign a texture map to the group. Indices $\geq$ 1 assign a texture from the mesh texture list. Index 0 indicates "no texture". If the group doesn’t specify a texture index, it inherits the previous group’s texture. If the first mesh group does not specify a texture index, index 0 is implied.
 \item The optional TEXWRAP flag defines how textures wrap around the object. "U" causes textures to wrap in the u-coordinate direction in texel space, "V" wraps in v-coordinate direction, and "UV" wraps in both directions. Default is no wrapping.
 \item The optional NONORMAL flag indicates that vertex definitions in this group don’t contain normal information, meaning that the first two numbers after the vertex coordinate (x,y,z) triplet are interpreted as texture coordinate (u,v) pair.
-\item The optional FLAG tag allows to specify a user-defined 32-bit flag whose interpretation is context-dependent. Below is a list of bit settings currently recognised by Orbiter:
+\item The optional FLAG tag allows to specify a user-defined 32-bit flag whose interpretation is context-dependent. Below is a list of bit settings currently recognized by Orbiter:
 
 \begin{table}[H]
 	\centering
-	\begin{tabular}{ |c|c|c| }
+	\begin{tabular}{ |c|c|l| }
 	\hline\rule{0pt}{2ex}
 	\textbf{Mesh type} & \textbf{Flag} & \textbf{Interpretation} \\
 	\hline\rule{0pt}{2ex}
@@ -87,6 +87,10 @@ Group components:
 	Vessel & 0x00000004 & Do not apply lighting when rendering this group\\
 	\hline\rule{0pt}{2ex}
 	Vessel & 0x00000008 & Texture blending directive: additive with background\\
+	\hline\rule{0pt}{2ex}
+	Vessel & 0x00000010 & Texture blending directive: Texture alpha, material color\\
+	\hline\rule{0pt}{2ex}
+	Vessel & 0x00000020 & Order independent transparency for trees and fences\\
 	\hline
 	\end{tabular}
 \end{table}
@@ -156,7 +160,38 @@ The texture list contains the names of the texture files loaded by the mesh. Tex
 \item If a texture is to be dynamically updated during the simulation (e.g. instrument panels in virtual cockpits) the texture name in the list should be followed by the flag 'D'. Orbiter decompresses these surfaces on loading to allow more efficient dynamic updates.
 \end{itemize}
 
+\subsection{Physics Based Rendering}
+Orbiter is supporting a Physics Based Rendering using typical metalness work-flow allowing more realistic looking models. Material is composed of three basic values: albedo, smoothness and metalness which is either (Metal = 1.0, or Non-metal = 0.0). Albedo is a RGB color of the material. Here are some approximate values for smoothness:
 
+\begin{itemize}
+\item	1.0 Chrome, Glass
+\item	0.8 Gold foil
+\item	0.7 Metals
+\item 0.6 Brushed metals
+\item	0.4 Plastics, Ceramics, Painted surfaces
+\item	0.2 Rough Rubber, Rock
+\end{itemize}
+\break
+\subsection{Advanced texturing}
+Additional texture maps are identified by adding an id in the end of texture's file-name like mytex\_norm.dds where regular albedo texture would be mytex.dds.\\\ 
+
+\textbf{Here's a list of most common texture maps:}
+\begin{itemize}
+\item	\texttt{\_rghn} Monochromatic smoothness map specifies material roughness/smoothness. Valid formats are (L8) and (DXT1) from which only green channel is used.
+\item	\texttt{\_metal} Monochromatic metalness map containing per pixel metalness value. Most commonly either '255' for metal or '0' for non-metal. Valid formats are (L8) and (DXT1) from which only green channel is used.
+\item	\texttt{\_norm} Tangent space normal map. Note: Loading of normal map is ignored if a bump map texture is also found. However, the normal map is the preferred one that should be used when you have a choice. 
+\end{itemize}
+
+\textbf{Here's a list of supported additional texture maps:}
+\begin{itemize}
+\item	\texttt{\_bump} Bump maps are also supported by the D3D9Client. They are automatically converted into normal maps during loading of bump maps (see note). Valid formats are (L8) and (DXT1):  Where, (L8) is 1-byte per pixel luminance, from (DXT1) only green channel is used.
+\item	\texttt{\_emis} Emission map is added to a final color after all other computations has been made. 
+\item	\texttt{\_transl} Translucence map controls the material translucency on a per pixel basis. The texture behaves much like a diffuse texture, except that it is illuminated from behind. Illumination is based on the angle of the sun relative to the surface; if the sun is directly behind the surface, the illumination is strong, and if the sun is at a low angle but still behind the surface, the illumination is dim. If the sun begins to illuminate the surface from in front, the translucence effect is no longer visible. Only (RGB) channels from a texture are used. 
+\item	\texttt{\_transm} Transmittance map controls the amount of light that passes through a translucent material without being diffused. The effect is very similar to a specular reflection, except that it simulates the bright spot on a semi-transparent material that is directly between the sun and the observer. The (RGBA) channels from a texture are used. The RGB channels provide color and brightness, while the alpha channel changes the size of the bright spot. This is analogous to how the specular map is used.
+\item	\texttt{\_spec} Specular map controls a specular reflection in per pixel basis. Alpha channel is containing a smoothness setting like a smoothness map do.
+\end{itemize}
+
+\break
 \subsection{Performance optimisation}
 Complex meshes can improve the visual appearance of the object they represent, but they also impose a computational cost on the render engine, leading to lower simulation frame rates and less fluid animation. It can also potentially lead to a loss of accuracy in the trajectory calculation. A balance between visualisation quality and simulation performance should be kept in mind. There are a few ways to optimise the mesh structure to improve performance:
 
