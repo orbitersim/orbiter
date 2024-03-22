@@ -191,12 +191,16 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 		bias -=  2.0 * sqrt(max(0.0,adist) / prm.viewap);
 		int maxlvl = prm.maxlvl;
 
-		// Dynamic tile count limiter, start reducing above 600 tiles
-		double tc = double(TilesLoaded-600) / 300;
+		double maxtiles = 1200.0;
+		if (Config->MaxTiles == 0) maxtiles = 600.0;
+		if (Config->MaxTiles == 2) maxtiles = 2400.0;
+
+		// Dynamic tile count limiter, start reducing above 900 tiles
+		double tc = double(TilesLoaded - (maxtiles*0.75)) / 500;
 		double fc = tc < 0 ? 1.0 : 1.0 + tc * tc;
 
 		// This doesn't work with narrow FOV, added max() to set low limit
-		double apr = tdist * fc * max(0.25, scene->GetTanAp()) * resolutionScale;
+		double apr = tdist * fc * max(0.12, scene->GetTanAp()) * resolutionScale;
 		tgtres = (apr < 1e-6 ? maxlvl : max(0, min(maxlvl, (int)(bias - log(apr)*res_scale))));
 		bstepdown = (lvl < tgtres);
 		tile->tgtscale = pow(2.0f, float(tgtres - lvl));
@@ -218,33 +222,33 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 				bstepdown = ElevModeLvl >= lvl;
 			}
 		}
+	}
 	
-		// Recursion to next level: subdivide into 2x2 patch
-		if (bstepdown)
-		{
-			bool subcomplete = true;
-			int i, idx;
-			// check if all 4 subtiles are available already, and queue any missing for loading
-			for (idx = 0; idx < 4; idx++) {
-				QuadTreeNode<TileType>* child = node->Child(idx);
-				if (!child)
-					child = LoadChildNode(node, idx);
-				else if (child->Entry()->state == Tile::Invalid)
-					loader->LoadTileAsync(child->Entry());
-				Tile::TileState state = child->Entry()->state;
-				if (!(state & TILE_VALID))
-					subcomplete = false;
-			}
-			if (subcomplete) {
-				tile->state = Tile::Active;
-				for (i = 0; i < 4; i++)
-					ProcessNode(node->Child(i));
-				return; // otherwise render at current resolution until all subtiles are available
-			}
+	// Recursion to next level: subdivide into 2x2 patch
+	if (bstepdown)
+	{
+		bool subcomplete = true;
+		int i, idx;
+		// check if all 4 subtiles are available already, and queue any missing for loading
+		for (idx = 0; idx < 4; idx++) {
+			QuadTreeNode<TileType>* child = node->Child(idx);
+			if (!child)
+				child = LoadChildNode(node, idx);
+			else if (child->Entry()->state == Tile::Invalid)
+				loader->LoadTileAsync(child->Entry());
+			Tile::TileState state = child->Entry()->state;
+			if (!(state & TILE_VALID))
+				subcomplete = false;
 		}
-		else {
-			node->DelChildren();
+		if (subcomplete) {
+			tile->state = Tile::Active;
+			for (i = 0; i < 4; i++)
+				ProcessNode(node->Child(i));
+			return; // otherwise render at current resolution until all subtiles are available
 		}
+	}
+	else {
+		node->DelChildren();
 	}
 }
 

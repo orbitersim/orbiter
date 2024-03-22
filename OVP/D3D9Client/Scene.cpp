@@ -1025,13 +1025,13 @@ float Scene::ComputeNearClipPlane()
 // - Setup local light sources
 // ===========================================================================================
 
-void Scene::UpdateCamVis()
+bool Scene::UpdateCamVis()
 {
 
 	// Update camera parameters --------------------------------------
 	// and call vObject::Update() for all visuals
 	//
-	UpdateCameraFromOrbiter(RENDERPASS_MAINSCENE);
+	bool bRet = UpdateCameraFromOrbiter(RENDERPASS_MAINSCENE);
 
 	if (Camera.hObj_proxy) D3D9Effect::UpdateEffectCamera(Camera.hObj_proxy);
 
@@ -1103,6 +1103,8 @@ void Scene::UpdateCamVis()
 	int distcomp(const void *arg1, const void *arg2);
 
 	qsort((void*)plist, nplanets, sizeof(PList), distcomp);
+
+	return bRet && (vFocus != nullptr);
 }
 
 // ===========================================================================================
@@ -1242,7 +1244,7 @@ void Scene::RenderMainScene()
 	double scene_time = D3D9GetTime();
 	D3D9SetTime(D3D9Stats.Timer.CamVis, scene_time);
 
-	UpdateCamVis();
+	if (!UpdateCamVis()) return; // Scene not yet properly inilialized, return
 
 
 	// Update Vessel Animations
@@ -3367,7 +3369,7 @@ bool Scene::CameraPan(VECTOR3 pan, double speed)
 
 // ===========================================================================================
 //
-void Scene::UpdateCameraFromOrbiter(DWORD dwPass)
+bool Scene::UpdateCameraFromOrbiter(DWORD dwPass)
 {
 	MATRIX3 grot;
 	VECTOR3 pos;
@@ -3410,14 +3412,14 @@ void Scene::UpdateCameraFromOrbiter(DWORD dwPass)
 
 	for (VOBJREC *pv = vobjFirst; pv; pv = pv->next) pv->vobj->Update(true);
 
-	SetupInternalCamera(&Camera.mView, NULL, oapiCameraAperture(), double(viewH)/double(viewW));
+	return SetupInternalCamera(&Camera.mView, NULL, oapiCameraAperture(), double(viewH)/double(viewW));
 }
 
 
 
 // ===========================================================================================
 //
-void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, double asp)
+bool Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, double asp)
 {
 
 	// Update camera orientation if a new matrix is provided
@@ -3486,10 +3488,10 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 	
 	// Something is very wrong... abort...
 	if (Camera.hGravRef == NULL || Camera.hObj_proxy == NULL || Camera.hNear == NULL) {
-		assert(false); return;
+		assert(false); return false;
 	}
 	if (Camera.vGravRef == NULL || Camera.vProxy == NULL || Camera.vNear == NULL) {
-		assert(false); return;
+		return false;
 	}
 
 	// Camera altitude over the proxy
@@ -3516,6 +3518,8 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 	// Finally update world matrices from all visuals
 	//
 	if (gpos) for (VOBJREC *pv = vobjFirst; pv; pv = pv->next) pv->vobj->ReOrigin(Camera.pos);
+
+	return true;
 }
 
 

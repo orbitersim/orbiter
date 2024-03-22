@@ -177,6 +177,7 @@
 #define IDC_EARTHVISCFG                         3033
 #define IDC_ESCACHE                             3034
 #define IDC_EAQUALITY                           3035
+#define IDC_TILECOUNT                           3036
 #define IDC_ATM_S1                              4000
 #define IDC_ATM_S2                              4001
 #define IDC_ATM_S3                              4002
