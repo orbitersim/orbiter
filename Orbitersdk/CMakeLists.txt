@@ -42,5 +42,3 @@ endif()
 install(DIRECTORY html include
 	DESTINATION ${ORBITER_INSTALL_SDK_DIR}
 )
-
-install(DIRECTORY ${ORBITER_SOURCE_SDK_DIR}/debug_libs/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/lib)
