@@ -31,6 +31,8 @@
 
 \newcommand{\alertbox}[1]{\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=Alert]#1\end{tcolorbox}}
 
+\newcommand{\infobox}[1]{\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Information]#1\end{tcolorbox}}
+
 
 % code block
 \definecolor{darkorange}{rgb}{0.99,0.91,0.85}
@@ -69,3 +71,16 @@
 	tabsize=4,
 	keywords = {}
 }
+
+
+% HACK to center char in key box (https://tex.stackexchange.com/questions/634917/center-align-the-items-in-the-keystroke-package)
+\usepackage{xpatch}
+
+\makeatletter
+\xpatchcmd\suse@keystr@ke
+  {\hbox to 0pt{\unhbox\suse@key\hss}}
+  % \suse@key = \hbox{{\keystroke@font\strut#1}}
+  % \@tempdimb = max(\wd\suse@key, \dp\suse@key)
+  {\hbox to 0pt{\hbox to \@tempdimb{\hss\unhbox\suse@key\hss}\hss}}
+  {}{\PatchFailed}
+\makeatother
