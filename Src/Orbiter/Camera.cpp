@@ -381,7 +381,6 @@ void Camera::Attach (Body *_target, int mode)
 	if (mode != 2) external_view = (mode != 0); // otherwise don't change
 
 	if (external_view) {
-		rdist = 2.0; // Initial viewing distance on focus change
 		SetViewExternal();
 		SetRelPos (rdist, ephi, etheta);
 		gspos.Set (mul (target->GRot(), rpos));
@@ -638,6 +637,11 @@ void Camera::SetCockpitDir (double ph, double th)
 	}
 	eyeofs = mul (rrot, Vector (0,0.1,0.08)) - eyeofs0;
 	if (!isStdDir) eyeofs = mul (rrot0, eyeofs);
+}
+
+void Camera::SetDistance(double rd)
+{
+	rdist = rd;
 }
 
 void Camera::ResetCockpitDir (bool smooth)
