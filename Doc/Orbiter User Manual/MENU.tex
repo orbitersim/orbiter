@@ -87,9 +87,9 @@ This tab contains controls for moving and tilting the viewer camera. The availab
 \end{figure}
 
 \noindent
-In internal (cockpit) views, the camera can be rotated to allow the pilot to look around (keyboard shortcuts \Alt\DArrow\UArrow\RArrow\LArrow Cur, or alternatively right-click and drag the mouse). The view direction can be re-centred with the Forward button (shortcut \Home Cur).\\
-In external views the camera can be rotated around the target (keyboard shortcuts \Ctrl\DArrow\UArrow\RArrow\LArrow Cur or right-click and drag the mouse). It can also be moved towards or away from the target (shortcuts \keystroke{PageUp}\keystroke{PageDown}Cur or mouse wheel).\\
-In ground-based views, the camera can be tilted (shortcuts \DArrow\UArrow\RArrow\LArrow Cur), panned (shortcuts \Ctrl\DArrow\UArrow\RArrow\LArrow Cur) or raised and lowered (shortcuts \keystroke{PageUp}\keystroke{PageDown} Cur) unless locked onto a target, in which case it can only be rotated around the target (shortcuts \Ctrl\RArrow\LArrow Cur), moved towards or away from the target (shortcuts \Ctrl\DArrow\UArrow Cur). Raising and lowering the camera is also possible in target-locked mode.\\
+In internal (cockpit) views, the camera can be rotated to allow the pilot to look around (keyboard shortcuts \Alt\DArrow\UArrow\RArrow\LArrow$_{Cur}$, or alternatively right-click and drag the mouse). The view direction can be re-centred with the Forward button (shortcut \Home$_{Cur}$).\\
+In external views the camera can be rotated around the target (keyboard shortcuts \Ctrl\DArrow\UArrow\RArrow\LArrow$_{Cur}$ or right-click and drag the mouse). It can also be moved towards or away from the target (shortcuts \keystroke{PageUp}\keystroke{PageDown}$_{Cur}$ or mouse wheel).\\
+In ground-based views, the camera can be tilted (shortcuts \DArrow\UArrow\RArrow\LArrow$_{Cur}$), panned (shortcuts \Ctrl\DArrow\UArrow\RArrow\LArrow$_{Cur}$) or raised and lowered (shortcuts \keystroke{PageUp}\keystroke{PageDown}$_{Cur}$) unless locked onto a target, in which case it can only be rotated around the target (shortcuts \Ctrl\RArrow\LArrow$_{Cur}$), moved towards or away from the target (shortcuts \Ctrl\DArrow\UArrow$_{Cur}$). Raising and lowering the camera is also possible in target-locked mode.\\
 The Sensitivity slider can be used to adjust the speed of movement.\\
 \\
 \textbf{Target tab:}\\
@@ -102,7 +102,7 @@ This tab provides a list of potential camera targets (vessels, celestial bodies,
 \end{figure}
 
 \noindent
-Note that after selecting a new camera target, you may need to adjust the distance (\keystroke{PageUp}\keystroke{PageDown}Num).\\
+Note that after selecting a new camera target, you may need to adjust the distance (\keystroke{PageUp}\keystroke{PageDown}$_{Num}$).\\
 \\
 \textbf{Track tab:}\\
 Allows to select different camera track modes which determine how the camera moves around and follows the target.\\
@@ -172,10 +172,11 @@ Spaceflight missions can take take weeks, months or even years in real time. If 
 
 \noindent
 Open the \textit{Time acceleration} dialog with the speed button on the main menu (keyboard shortcut: \Ctrl\keystroke{F2}). Time can be accelerated up to 1000x in discrete steps with the buttons, or continuously with the slider. It can also be slowed town to one tenth of real time. Keyboard shortcuts are \keystroke{T} for speeding up by a factor of 10, and \keystroke{R} for slowing down by a factor of 10. The maximum time acceleration supported with the keyboard shortcuts is 100000x, compressing a year into approximately 5 minutes.
-
+\\
 \alertbox{High time accelerations can affect the accuracy and stability of the simulation, in particular close to planetary bodies or in the atmosphere, because the intervals between time frames become too large to allow precise integration of the vessel state vectors. Use high time accelerations only far from gravitational sources in interplanetary space.
 Always switch back to real time before firing thrusters or other manual control actions. Things happen too fast even at moderate time accelerations to make it practical during manual manoeuvres.}
-
+\noindent
+\\
 The dialog also provides a button for pausing/resuming the simulation (shortcut: \Ctrl\keystroke{P}). This function is also directly available from the main menu.
 
 
