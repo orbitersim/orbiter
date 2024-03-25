@@ -46,7 +46,7 @@ Tile::Tile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
   lngnbr_lvl(_lvl), latnbr_lvl(_lvl), dianbr_lvl(_lvl),
   texrange(fullrange), microrange(fullrange), overlayrange(fullrange), cnt(Centre()),
   mesh(NULL), tex(NULL), overlay(NULL),
-  FrameId(0),
+  last_used(0.0),
   state(Invalid),
   edgeok(false), owntex (true), ownoverlay(false)
 {
@@ -133,6 +133,15 @@ bool Tile::PreDelete ()
 	default:
 		return true;
 	}
+}
+
+// -----------------------------------------------------------------------
+
+void Tile::Render()
+{
+	if (mgr->gc->IsControlPanelOpen())
+		if (D3D9Stats.TilesRendered.count(mgr->GetScene()->GetRenderPass()))
+			D3D9Stats.TilesRendered[mgr->GetScene()->GetRenderPass()]++;
 }
 
 // -----------------------------------------------------------------------

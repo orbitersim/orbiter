@@ -764,7 +764,8 @@ void SurfTile::StepIn ()
 
 void SurfTile::Render ()
 {
-	
+	Tile::Render();
+
 	if (!mesh) return; // DEBUG : TEMPORARY
 
 	LPDIRECT3DDEVICE9 pDev = mgr->Dev();

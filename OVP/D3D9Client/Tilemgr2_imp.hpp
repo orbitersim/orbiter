@@ -248,7 +248,18 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 		}
 	}
 	else {
-		node->DelChildren();
+		bool bDelete = true;
+		for (int idx = 0; idx < 4; idx++) {
+			QuadTreeNode<TileType>* child = node->Child(idx);
+			// Check if any of the child tiles is rendered resently
+			double used = child ? child->Entry()->last_used : 0.0;
+			if ((used < 1.0) || ((used + 1.0) > oapiGetSysTime())) {
+				// This one been used, or just created, keep the tiles in memory
+				bDelete = false;
+			}
+		}
+		// If not then delete all children
+		if (bDelete) node->DelChildren();
 	}
 }
 
@@ -269,12 +280,12 @@ void TileManager2Base::RenderNode (QuadTreeNode<TileType> *node)
 		}
 	}
 
+	tile->last_used = oapiGetSysTime();
+
 	if (tile->state == Tile::ForRender) {
 		if (scene->GetRenderPass() == RENDERPASS_MAINSCENE) tile->MatchEdges ();
 		tile->StepIn ();
 		tile->Render ();
-		tile->FrameId = scene->GetFrameId();		// Keep a record about when this tile is actually rendered.
-		D3D9Stats.TilesRendered++;
 	} else if (tile->state == Tile::Active) {
 		tile->StepIn ();
 		for (int i = 0; i < 4; i++) {
