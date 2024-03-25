@@ -31,6 +31,7 @@ QuadTreeNode<TileType> *TileManager2Base::FindNode (QuadTreeNode<TileType> root[
 	// Find the level-0 root
 	QuadTreeNode<TileType> *node = root + ((ilng >> lvl) & 1);
 	for (i = lvl-1; i >= 0; i--) {
+		if (node->Entry()->state == Tile::ForRender) return node;
 		if (node->Entry()->state == Tile::Invisible) return 0; // tile invisible
 		sublat = (ilat >> i) & 1;
 		sublng = (ilng >> i) & 1;

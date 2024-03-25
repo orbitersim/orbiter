@@ -383,15 +383,18 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 					t->latmax = (0.5-(double)ilat/double(nlat))*Pi;
 					t->lngmin = (double)ilng/(double)nlng*Pi2 - Pi;
 					t->lngmax = (double)(ilng+1)/(double)nlng*Pi2 - Pi;
-					
-					// Check if higher lvl data exists for any of the quadrants, 
-					// set flag bit to mark it dirty (un-usable)
-					int qlat = ilat * 2, qlng = ilng * 2, qlvl = lvl + 1;
 					t->quadrants = 0;
-					t->quadrants |= DWORD(HasElevationTile(qlvl + 4, qlat + 0, qlng + 0)) << 0; // NW
-					t->quadrants |= DWORD(HasElevationTile(qlvl + 4, qlat + 0, qlng + 1)) << 1;	// NE
-					t->quadrants |= DWORD(HasElevationTile(qlvl + 4, qlat + 1, qlng + 0)) << 2; // SW
-					t->quadrants |= DWORD(HasElevationTile(qlvl + 4, qlat + 1, qlng + 1)) << 3;	// SE
+
+					if (reqlvl > lvl) 
+					{
+						// Check if higher lvl data exists for any of the quadrants, 
+						// set flag bit to mark it dirty (un-usable)
+						int qlat = ilat * 2, qlng = ilng * 2, qlvl = lvl + 1;
+						t->quadrants |= DWORD(HasElevationTile(qlvl + 4, qlat + 0, qlng + 0)) << 0; // NW
+						t->quadrants |= DWORD(HasElevationTile(qlvl + 4, qlat + 0, qlng + 1)) << 1;	// NE
+						t->quadrants |= DWORD(HasElevationTile(qlvl + 4, qlat + 1, qlng + 0)) << 2; // SW
+						t->quadrants |= DWORD(HasElevationTile(qlvl + 4, qlat + 1, qlng + 1)) << 3;	// SE
+					}
 
 					//int q = Quadrant(lat, lng, lvl);
 					//oapiWriteLogV("LoadTile[0x%X]: lvl=%d, flags=0x%X, q=%d, i(%d, %d)", t, lvl, t->quadrants, q, ilng, ilat);
