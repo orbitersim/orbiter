@@ -563,3 +563,18 @@ function KEYMOD_SHIFT(kstate)
 	return oapi.keydown(kstate, OAPI_KEY.LSHIFT) or oapi.keydown(kstate, OAPI_KEY.RSHIFT)
 end
 
+-- perform a simple copy of an object :
+--   only deepcopies the values, not the keys
+--   no recursive table support
+--   no meta types support
+function simplecopy(obj)
+    if type(obj) == 'table' then
+        local copy = {}
+        for k, v in pairs(obj) do
+            copy[k] = simplecopy(v)
+        end
+        return copy
+    else
+        return obj
+    end
+end

@@ -142,7 +142,7 @@ function MainRetroThrottleLevers:ProcessMouseVC (event, p)
 				local lmin = modevc == 0 and 0.0 or -1.0 -- prevent direct crossover from main to retro
 				local lmax = modevc == 1 and 0.0 or  1.0 -- prevent direct crossover from retro to main
 				lvl = math.max (lmin, math.min (lmax, lvl + 2.0*(p.y-pyvc)))
-				if math.fabs (lvl) < 0.01 then
+				if math.abs (lvl) < 0.01 then
 					lvl = 0.0
 				end
 				if lvl >= 0.0 then

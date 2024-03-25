@@ -32,6 +32,11 @@ local th  =  52.0/1024.0
 
 function DGSwitch1:new (v, m)
 	PanelElement.new(self, v)
+
+	if m == nil then
+		m = DGSwitch1.TWOSTATE
+	end
+
 	self.mode = m
 	-- we always initiate as centered, even for 2state switches
 	self.state   = DGSwitch1.CENTER
@@ -139,7 +144,7 @@ end
 
 function DGSwitch1:Redraw2D (surf)
 	if self.state ~= self.vstate2 then
-		for i=1, 4 do
+		for i=1,4 do
 			self.grp.Vtx[self.vofs+i].tu = tu0[self.state+1] + (i%2 ~= 0 and tw or 0)
 		end
 		self.vstate2 = self.state

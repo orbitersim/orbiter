@@ -1,0 +1,28 @@
+local DGSwitch1 = require("DGSwitch1")
+
+local CockpitLightSwitch = Class(DGSwitch1)
+
+function CockpitLightSwitch:new (comp)
+	DGSwitch1.new(self, comp:DG(), DGSwitch1.THREESTATE)
+	self.component = comp
+end
+
+--------------------------------------------------------------
+
+function CockpitLightSwitch:ResetVC (hMesh)
+	self:SetState (self.component:GetLight())
+	DGSwitch1.ResetVC (self, hMesh)
+end
+
+--------------------------------------------------------------
+
+function CockpitLightSwitch:ProcessMouseVC (event, p)
+	if DGSwitch1.ProcessMouseVC (self, event, p) then
+		local state = self:GetState()
+		self.component:SetLight (state)
+		return true
+	end
+	return false
+end
+
+return CockpitLightSwitch

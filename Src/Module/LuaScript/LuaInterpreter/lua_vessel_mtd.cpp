@@ -460,6 +460,11 @@ void Interpreter::LoadVesselAPI ()
 		{"del_lightemitter", v_del_lightemitter},
 		{"clear_lightemitters", v_clear_lightemitters},
 
+		// beacons
+		{"add_beacon", v_add_beacon},
+		{"del_beacon", v_del_beacon},
+		{"clear_beacons", v_clear_beacons},
+
 		// Camera management
 		{"get_cameraoffset", v_get_cameraoffset},
 		{"set_cameraoffset", v_set_cameraoffset},
@@ -8759,6 +8764,47 @@ int Interpreter::v_unregister_mfdmode(lua_State* L)
 		lua_pushboolean(L, res);
 		return 1;
 	}
+}
+
+
+int Interpreter::v_add_beacon(lua_State *L)
+{
+	static const char* funcname = "add_beacon";
+	AssertMtdMinPrmCount(L, 2, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	BEACONLIGHTSPEC_Lua* beacon = (BEACONLIGHTSPEC_Lua*)luaL_checkudata(L, 2, "Beacon.vtable");
+
+	v->AddBeacon(&beacon->bs);
+	beacon->vessel = v;
+
+	return 0;
+}
+
+int Interpreter::v_del_beacon(lua_State *L)
+{
+	static const char* funcname = "del_beacon";
+	AssertMtdMinPrmCount(L, 2, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	BEACONLIGHTSPEC_Lua* beacon = (BEACONLIGHTSPEC_Lua*)luaL_checkudata(L, 2, "Beacon.vtable");
+
+	bool ret = v->DelBeacon(&beacon->bs);
+	if(ret)
+		beacon->vessel = nullptr;
+
+	lua_pushboolean(L, ret);
+
+	return 1;
+}
+
+int Interpreter::v_clear_beacons(lua_State *L)
+{
+	static const char* funcname = "clear_beacons";
+	AssertMtdMinPrmCount(L, 1, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	
+	v->ClearBeacons();
+
+	return 0;
 }
 
 

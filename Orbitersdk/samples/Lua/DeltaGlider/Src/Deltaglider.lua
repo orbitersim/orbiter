@@ -24,6 +24,7 @@ local RcsSubsystem = require("RcsSubsystem")
 local HoverSubsystem = require("HoverSubsystem")
 local HUDControl = require("HUDControl")
 local AvionicsSubsystem = require("AvionicsSubsystem")
+local LightCtrlSubsystem = require("LightCtrlSubsystem")
 
 local EMPTY_MASS    = 11000.0  -- standard configuration
 local EMPTY_MASS_SC = 13000.0  -- ramjet configuration
@@ -218,7 +219,7 @@ function DeltaGlider:new(fmodel)
 --	self.ssys_pressurectrl = self:AddSubsystem(PressureSubsystem (self))
 --	self.ssys_thermal      = self:AddSubsystem(ThermalSubsystem (self))
 --	self.ssys_docking      = self:AddSubsystem(DockingCtrlSubsystem (self))
---	self.ssys_light        = self:AddSubsystem(LightCtrlSubsystem (self))
+	self.ssys_light        = self:AddSubsystem(LightCtrlSubsystem (self))
 	self.ssys_avionics     = self:AddSubsystem(AvionicsSubsystem (self))
 --	self.ssys_failure      = self:AddSubsystem(FailureSubsystem (self))
 
@@ -1164,24 +1165,28 @@ function DeltaGlider:clbkSetClassCaps (cfg)
 	-- ************************* mesh ***************************
 
 	-- ********************* beacon lights **********************
-	--[[
-	static VECTOR3 beaconpos[8] = {{-8.6,0,-3.3}, {8.6,0,-3.3}, {0,0.5,-7.5}, {0,2.2,2}, {0,-1.4,2}, {-8.9,2.5,-5.4}, {8.9,2.5,-5.4}, {2.5,-0.5,6.5}};
-	static VECTOR3 beaconpos_scram = {0,-1.8,2};
-	static VECTOR3 beaconcol[8] = {{1.0,0.5,0.5}, {0.5,1.0,0.5}, {1,1,1}, {1,0.6,0.6}, {1,0.6,0.6}, {1,1,1}, {1,1,1} , {1,1,1}};
-	for (i = 0; i < 8; i++) {
-		beacon[i].shape = (i < 3 ? BEACONSHAPE_DIFFUSE : BEACONSHAPE_STAR);
-		beacon[i].pos = beaconpos+i;
-		beacon[i].col = beaconcol+i;
-		beacon[i].size = (i < 3 || i == 7 ? 0.3 : 0.55);
-		beacon[i].falloff = (i < 3 ? 0.4 : 0.6);
-		beacon[i].period = (i < 3 ? 0 : i < 5 ? 2 : i < 7 ? 1.13 : 0);
-		beacon[i].duration = (i < 5 ? 0.1 : 0.05);
-		beacon[i].tofs = (6-i)*0.2;
-		beacon[i].active = false;
-		AddBeacon (beacon+i);
-	}
-	if (ssys_scram) beacon[4].pos = &beaconpos_scram;
-	]]
+	local beaconpos = {_V(-8.6,0,-3.3), _V(8.6,0,-3.3), _V(0,0.5,-7.5), _V(0,2.2,2), _V(0,-1.4,2), _V(-8.9,2.5,-5.4), _V(8.9,2.5,-5.4), _V(2.5,-0.5,6.5)}
+	local beaconpos_scram = _V(0,-1.8,2)
+	local beaconcol = {_V(1.0,0.5,0.5), _V(0.5,1.0,0.5), _V(1,1,1), _V(1,0.6,0.6), _V(1,0.6,0.6), _V(1,1,1), _V(1,1,1) , _V(1,1,1)}
+	self.beacon = {}
+	for i=1,8 do
+		self.beacon[i] = oapi.create_beacon({
+			shape = i < 4 and BEACONSHAPE.DIFFUSE or BEACONSHAPE.STAR,
+			pos = beaconpos[i],
+			col = beaconcol[i],
+			size = (i < 4 or i == 8) and 0.3 or 0.55,
+			falloff = i < 4 and 0.4 or 0.6,
+			period = i < 4 and 0 or (i < 6 and 2 or (i < 8 and 1.13 or 0)),
+			duration = i < 6 and 0.1 or 0.05,
+			tofs = (6-i-1)*0.2,
+			active = false
+		})
+		self:add_beacon (self.beacon[i])
+	end
+	if self.ssys_scram then
+		beacon[5].pos = beaconpos_scram
+	end
+
 	self.exmesh_tpl = oapi.load_mesh_global(self:ScramVersion() and "DG/deltaglider" or "DG/deltaglider_ns")
 	self:set_mesh_visibility_mode (self:add_mesh (self.exmesh_tpl), MESHVIS.EXTERNAL)
 	self.panelmesh0 = oapi.load_mesh_global ("DG/dg_2dpanel0")
@@ -1250,14 +1255,15 @@ function DeltaGlider:clbkSaveState (scn)
 	if self.panelcol ~= 0 then
 		oapi.writescenario_int (scn, "PANELCOL", self.panelcol)
 	end
-	--[[
-	for (i = 0; i < 8; i++)
-		if (beacon[i].active) {
-			snprintf (cbuf, sizeof(cbuf) - 1, "%d %d %d %d", beacon[0].active, beacon[3].active, beacon[5].active, beacon[7].active);
-			oapiWriteScenario_string (scn, (char*)"LIGHTS", cbuf);
-			break;
-		}
-	]]
+
+	local written = false
+	for i=1,8 do
+		if self.beacon[i].active and not written then
+			local cbuf = string.format("%d %d %d %d", self.beacon[1].active, self.beacon[4].active, self.beacon[6].active, self.beacon[8].active)
+			oapi.writescenario_string (scn, "LIGHTS", cbuf)
+			written = true
+		end
+	end
 	if self.tankconfig ~= 0 then
 		oapi.writescenario_int (scn, "TANKCONFIG", self.tankconfig)
 	end
@@ -1628,8 +1634,8 @@ end
 -- Process buffered key events
 -- --------------------------------------------------------------
 function DeltaGlider:clbkConsumeBufferedKey (key, down, kstate)
-	if not down then return 0 end -- only process keydown events
-	if self:playback() then return 0 end -- don't allow manual user input during a playback
+	if not down then return false end -- only process keydown events
+	if self:playback() then return false end -- don't allow manual user input during a playback
 
 	return ComponentVessel.clbkConsumeBufferedKey (self, key, down, kstate)
 end
