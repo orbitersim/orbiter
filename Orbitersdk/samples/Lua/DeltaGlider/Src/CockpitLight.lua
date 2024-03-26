@@ -101,8 +101,8 @@ end
 function CockpitLight:clbkParseScenarioLine (line)
 	local match = {}
 	if scenario_line_match(line, "FLOODLIGHT %d %f", match) then
-		self.light_mode = math.max (0, math.min (2, math.res[1]))
-		self.brightness = math.max (0, math.min (1, math.res[2]))
+		self.light_mode = math.max (0, math.min (2, match.res[1]))
+		self.brightness = math.max (0, math.min (1, match.res[2]))
 		return true
 	end
 	return false

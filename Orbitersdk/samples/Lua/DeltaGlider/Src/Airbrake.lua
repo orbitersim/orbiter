@@ -190,7 +190,7 @@ end
 
 function Airbrake:clbkConsumeBufferedKey (key, down, kstate)
 	if KEYMOD_ALT(kstate) or KEYMOD_SHIFT(kstate) then
-		return 0
+		return false
 	end
 
 	if key == OAPI_KEY.B then
@@ -199,9 +199,9 @@ function Airbrake:clbkConsumeBufferedKey (key, down, kstate)
 		else
 			self:Extend()
 		end
-		return 1
+		return true
 	end
-	return 0
+	return false
 end
 
 function Airbrake:State() 

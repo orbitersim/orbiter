@@ -135,7 +135,7 @@ end
 
 function InstrumentLight:clbkSaveState (scn)
 	if self.light_on or self.light_col ~= 0 or self.brightness ~= 0.5 then
-		oapi.writescenario_string (scn, "INSTRLIGHT", string.format("%d %d %0.2f", self.light_on, self.light_col, self.brightness))
+		oapi.writescenario_string (scn, "INSTRLIGHT", string.format("%d %d %0.2f", self.light_on and 1 or 0, self.light_col, self.brightness))
 	end
 end
 

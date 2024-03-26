@@ -1636,7 +1636,6 @@ end
 function DeltaGlider:clbkConsumeBufferedKey (key, down, kstate)
 	if not down then return false end -- only process keydown events
 	if self:playback() then return false end -- don't allow manual user input during a playback
-
 	return ComponentVessel.clbkConsumeBufferedKey (self, key, down, kstate)
 end
 

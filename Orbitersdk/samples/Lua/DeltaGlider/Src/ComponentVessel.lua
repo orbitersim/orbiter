@@ -169,7 +169,7 @@ end
 function ComponentVessel:clbkConsumeBufferedKey(key, down, kstate)
 	for _, v in ipairs(self.ssys) do
 		local res = v:clbkConsumeBufferedKey(key, down, kstate)
-		if res ~= 0 then
+		if res then
 			return res
 		end
 	end
