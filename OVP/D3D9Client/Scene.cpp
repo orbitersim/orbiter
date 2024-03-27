@@ -1774,8 +1774,7 @@ void Scene::RenderMainScene()
 	D3D9Effect::UpdateEffectCamera(Camera.hObj_proxy);
 
 
-	D3D9Pad* pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
-	m_celSphere->EnsureMarkerDrawingContext((oapi::Sketchpad**)&pSketch, 0, m_celSphere->MarkerColor(0), m_celSphere->MarkerPen(0));
+	auto RenderMarkers = RenderList;
 
 	// Render the vessels inside the shadows
 	//
@@ -1796,7 +1795,6 @@ void Scene::RenderMainScene()
 			while (it != RenderList.end()) {
 				if ((*it)->IsInsideShadows()) {
 					(*it)->Render(pDevice);
-					RenderVesselMarker((*it), pSketch);
 					it = RenderList.erase(it);
 				}
 				else ++it;
@@ -1843,7 +1841,6 @@ void Scene::RenderMainScene()
 				while (it != RenderList.end()) {
 					if ((*it)->IsInsideShadows()) {
 						(*it)->Render(pDevice);
-						RenderVesselMarker((*it), pSketch);
 						Intersect.remove((*it));
 						it = RenderList.erase(it);
 					}
@@ -1860,11 +1857,15 @@ void Scene::RenderMainScene()
 
 	while (RenderList.empty()==false) {
 		RenderList.front()->Render(pDevice);
-		RenderVesselMarker(RenderList.front(), pSketch);
 		RenderList.pop_front();
 	}
 
-	pSketch->EndDrawing();	// SKETCHPAD_LABELS
+	D3D9Pad* pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
+	if (pSketch) {
+		m_celSphere->EnsureMarkerDrawingContext((oapi::Sketchpad**)&pSketch, 0, m_celSphere->MarkerColor(0), m_celSphere->MarkerPen(0));
+		for (auto x : RenderMarkers) RenderVesselMarker(x, pSketch);
+		pSketch->EndDrawing();	// SKETCHPAD_LABELS
+	}
 
 
 
