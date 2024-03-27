@@ -1244,7 +1244,13 @@ void Scene::RenderMainScene()
 	double scene_time = D3D9GetTime();
 	D3D9SetTime(D3D9Stats.Timer.CamVis, scene_time);
 
-	if (!UpdateCamVis()) return; // Scene not yet properly inilialized, return
+	if (!UpdateCamVis()) {
+		if (SUCCEEDED(gc->BeginScene())) {
+			HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0L));
+			gc->EndScene();
+		}
+		return; // Scene not yet properly inilialized, return
+	}
 
 
 	// Update Vessel Animations
