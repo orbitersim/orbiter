@@ -15,6 +15,8 @@
 #include "Mesh.h"
 #include "psapi.h"
 #include "DebugControls.h"
+#include <sstream>
+#include <string>
 
 using namespace oapi;
 
@@ -90,10 +92,9 @@ void D3D9Client::DrawTimeBar(double t, double s, double f, DWORD color, const ch
 
 void D3D9Client::RenderControlPanel()
 {
+	static std::map<DWORD, DWORD> TileBuf;
 	static const char *OnOff[]={"Off","On"};
 	static const char *SkpU[]={"Auto","GDI"};
-
-//	static double sim_time  = 0.0;
 
 	LPDIRECT3DDEVICE9 dev = pDevice;
 
@@ -172,14 +173,24 @@ void D3D9Client::RenderControlPanel()
 	size_t tt_c = g_pTexmgr_tt->UsedSize() + g_pTexmgr_tt->FreeSize();
 	size_t tv_c = g_pVtxmgr_vb->UsedSize() + g_pVtxmgr_vb->FreeSize();
 
+	std::stringstream tiles{};
+
+	for (auto& x : D3D9Stats.TilesRendered) {
+		if (x.second != 0) TileBuf[x.first] = x.second;
+		x.second = 0;
+	}
+
+	if (D3D9Stats.TilesRendered.size()) {
+		if (TileBuf.count(RENDERPASS_MAINSCENE)) tiles << "Main[" << TileBuf[RENDERPASS_MAINSCENE] << "] ";
+		if (TileBuf.count(RENDERPASS_CUSTOMCAM)) tiles << "Cams[" << TileBuf[RENDERPASS_CUSTOMCAM] << "] ";
+		if (TileBuf.count(RENDERPASS_ENVCAM)) tiles << "Env[" << TileBuf[RENDERPASS_ENVCAM] << "] ";
+	}
+
 	Label("Tile Texture Cache...: Used[%u] Free[%u] Capacity (%u MB)", g_pTexmgr_tt->UsedCount(), g_pTexmgr_tt->FreeCount(), tt_c >> 20);
 	Label("Tile Vertex Cache....: Used[%u] Free[%u] Capacity (%u MB)", g_pVtxmgr_vb->UsedCount(), g_pVtxmgr_vb->FreeCount(), tv_c >> 20);
 	Label("Tiles Allocated......: %u", D3D9Stats.TilesAllocated);
-	Label("Tiles Renderred......: %u", D3D9Stats.TilesRendered);
+	Label("Tiles Renderred......: %s", tiles.str().c_str());
 	
-	D3D9Stats.TilesRendered = 0;
-
-
 	DWORD tot_verts = 0;
 	DWORD tot_trans = 0;
 	DWORD tot_group = 0;

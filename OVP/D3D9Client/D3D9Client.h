@@ -66,7 +66,14 @@ typedef class SurfNative* lpSurfNative;
 /**
  * \brief Statistical data storage
  */
-struct _D3D9Stats {
+struct _D3D9Stats
+{
+	_D3D9Stats()
+	{
+		memset(&Mesh, 0, sizeof(Mesh));
+		memset(&Timer, 0, sizeof(Timer));
+		TilesAllocated = 0;
+	}
 
 	struct {
 		DWORD Vertices;		///< Number of vertices rendered
@@ -93,7 +100,7 @@ struct _D3D9Stats {
 	} Timer;					///< Render timing related statistics
 
 	DWORD TilesAllocated;	///< Number of allocated tiles
-	DWORD TilesRendered;	///< Number of rendered tiles
+	std::map<DWORD, DWORD> TilesRendered;	///< Number of rendered tiles
 };
 
 
@@ -1041,6 +1048,7 @@ public:
 	SURFHANDLE			GetBackBufferHandle() const;
 	LPDIRECT3DTEXTURE9  GetNoiseTex() const { return pNoiseTex; }
 	void 				SplashScreen();
+	inline bool			IsControlPanelOpen() const { return bControlPanel; }
 	inline bool 		IsRunning() const { return bRunning; }
 	inline bool			IsLimited() const { return ((pCaps->TextureCaps&D3DPTEXTURECAPS_POW2) && (pCaps->TextureCaps&D3DPTEXTURECAPS_NONPOW2CONDITIONAL)); }
 	const LPD3DXMATRIX 	GetIdentity() const { return (const LPD3DXMATRIX)&ident; }
@@ -1296,7 +1304,6 @@ private:
 	LPDIRECT3DSURFACE9		pDepthStencil;
 	CD3DFramework9 *		pFramework;
 	const D3DCAPS9 *		pCaps;
-	//FileParser *			parser;
 	std::string				scenarioName;
 	HANDLE					hMainThread;
 	WindowManager *			pWM;

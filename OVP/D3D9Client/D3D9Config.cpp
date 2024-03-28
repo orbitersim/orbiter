@@ -73,6 +73,7 @@ void D3D9Config::Reset ()
 	TextureMips			= 1;
 	LODBias				= 0.0;
 	MeshRes				= 1;
+	MaxTiles			= 1;
 	TileDebug			= 0;
 	MicroMode			= 1;
 	MicroFilter			= 2;
@@ -172,6 +173,7 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, (char*)"DisableVisualHelperReadout", i))	DisableVisualHelperReadout = max(0, min(1, i));
 	if (oapiReadItem_float (hFile, (char*)"LODBias", d))						LODBias = max(-2.0, min(2.0, d));
 	if (oapiReadItem_int   (hFile, (char*)"MeshRes", i))						MeshRes = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, (char*)"MaxTiles", i))						MaxTiles = max(0, min(2, i));
 	if (oapiReadItem_int   (hFile, (char*)"MicroMode", i))						MicroMode = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, (char*)"MicroFilter", i))					MicroFilter = max(0, min(5, i));
 	if (oapiReadItem_int   (hFile, (char*)"BlendMode", i))						BlendMode = max(0, min(2, i));
@@ -262,6 +264,7 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int   (hFile, (char*)"DisableVisualHelperReadout", DisableVisualHelperReadout);
 	oapiWriteItem_float (hFile, (char*)"LODBias", LODBias);
 	oapiWriteItem_int   (hFile, (char*)"MeshRes", MeshRes);
+	oapiWriteItem_int	(hFile, (char*)"MaxTiles", MaxTiles);
 	oapiWriteItem_int   (hFile, (char*)"MicroMode", MicroMode);
 	oapiWriteItem_int   (hFile, (char*)"MicroFilter", MicroFilter);
 	oapiWriteItem_int   (hFile, (char*)"BlendMode", BlendMode);

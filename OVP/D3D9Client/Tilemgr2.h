@@ -155,7 +155,7 @@ public:
 protected:
 	virtual Tile *getParent() const = 0;
 
-	virtual void Render () {}
+	virtual void Render ();
 	virtual void StepIn () {}
 
 	virtual bool IsElevated() { return false; }
@@ -206,7 +206,7 @@ protected:
 	bool edgeok;               // edges have been checked in this frame
 	TileState state;           // tile load/active/render state flags
 	int lngnbr_lvl, latnbr_lvl, dianbr_lvl; // neighbour levels to which edges have been adapted
-	DWORD FrameId;
+	double last_used;		   // time when this tile was last used as a part of active tile chain
 	float width;			   // tile width [rad] (widest section i.e base)
 	float height;			   // tile height [rad]
 	float tgtscale;

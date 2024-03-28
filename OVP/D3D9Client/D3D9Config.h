@@ -76,6 +76,7 @@ public:
 	int ShaderDebug;				///< Shader Debug Logging enable flag (0=disabled, 1=enabled)
 	double LODBias;					///< 3D Terrain resolution bias
 	int MeshRes;					///< Tile patch mesh resolution
+	int MaxTiles;
 	int TileDebug;					///< Enable tile debugger
 	int TextureMips;				///< Texture mipmap auto-gen policy
 	int PostProcess;				///< Enable post processing effects

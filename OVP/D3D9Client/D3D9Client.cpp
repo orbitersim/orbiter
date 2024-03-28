@@ -190,6 +190,10 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 	AtmoControls::Create();
 	vPlanet::ParseMicroTexturesFile();
 
+	D3D9Stats.TilesRendered[RENDERPASS_MAINSCENE] = 0;
+	D3D9Stats.TilesRendered[RENDERPASS_CUSTOMCAM] = 0;
+	D3D9Stats.TilesRendered[RENDERPASS_ENVCAM] = 0;
+
 	g_hInst = hDLL;
 	g_client = new D3D9Client(hDLL);
 
@@ -408,8 +412,6 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	pNoiseTex		 = NULL;
 	surfBltTgt		 = NULL;	// This variable is not used, set it to NULL anyway
 	hMainThread		 = GetCurrentThread();
-
-	memset(&D3D9Stats, 0, sizeof(D3D9Stats));
 
 	D3DXMatrixIdentity(&ident);
 
@@ -1214,7 +1216,7 @@ void D3D9Client::clbkRenderScene()
 
 	if (bFreeze) {
 		RECT rect2 = _RECT(0, viewH - 60, viewW, viewH - 20);
-		pFramework->GetLargeFont()->DrawTextA(0, "Frozen", 6, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(255, 255, 0));
+		pFramework->GetLargeFont()->DrawTextA(0, "Frozen", 6, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(0, 255, 255));
 	}
 
 	D3D9SetTime(D3D9Stats.Timer.Scene, scene_time);

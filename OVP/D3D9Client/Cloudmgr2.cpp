@@ -99,6 +99,8 @@ void CloudTile::Load ()
 
 void CloudTile::Render()
 {
+	Tile::Render();
+
 	LPDIRECT3DDEVICE9 pDev = mgr->Dev();
 	vPlanet* vPlanet = mgr->GetPlanet();
 	PlanetShader* pShader = mgr->GetShader();
