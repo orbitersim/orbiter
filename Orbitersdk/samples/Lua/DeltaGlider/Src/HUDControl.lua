@@ -282,7 +282,7 @@ end
 
 function HUDControl:clbkConsumeBufferedKey (key, down, kstate)
 	if KEYMOD_ALT(kstate) or KEYMOD_SHIFT(kstate) then
-		return 0
+		return false
 	end
 
 	if key == OAPI_KEY.H then
@@ -291,9 +291,9 @@ function HUDControl:clbkConsumeBufferedKey (key, down, kstate)
 		else
 			self:ToggleHUDMode()
 		end
-		return 1
+		return true
 	end
-	return 0
+	return false
 end
 
 return HUDControl

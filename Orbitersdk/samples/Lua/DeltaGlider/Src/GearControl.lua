@@ -241,13 +241,13 @@ end
 --------------------------------------------------------------
 function GearControl:clbkConsumeBufferedKey (key, down, kstate)
 	if KEYMOD_ALT(kstate) or KEYMOD_CONTROL(kstate) or KEYMOD_SHIFT(kstate) then
-		return 0
+		return false
 	end
 	if key == OAPI_KEY.G then
 		self:RevertGear()
-		return 1
+		return true
 	end
-	return 0
+	return false
 end
 
 function GearControl:GearState()
