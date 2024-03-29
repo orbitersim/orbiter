@@ -111,10 +111,155 @@ The positions and frequencies of VOR stations in your vicinity can also be displ
 
 
 \subsection{Surface}
-% TODO
+The \textit{Surface} MFD mode provides avionics data useful in flight situations close to planetary surfaces. It contains an attitude indicator (artificial horizon) displaying the vessel’s attitude relative to the local horizon plane, various tapes for altitude, speed and acceleration readouts, as well as position, pressure and temperature data.\\
+\\
+\textbf{Key options:}
+
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.15\textwidth}|p{0.15\textwidth}|p{0.6\textwidth}| }
+	\hline\rule{0pt}{2ex}
+	\textbf{Button} & \textbf{Shortcut} & \textbf{Action}\\
+	\hline\rule{0pt}{2ex}
+	IAS & \Shift\keystroke{I} & Switch speed readout to indicated airspeed\\
+	\hline\rule{0pt}{2ex}
+	TAS & \Shift\keystroke{T} & Switch speed readout to true airspeed\\
+	\hline\rule{0pt}{2ex}
+	GS & \Shift\keystroke{G} & Switch speed readout to ground-relative speed\\
+	\hline\rule{0pt}{2ex}
+	OS & \Shift\keystroke{O} & Switch speed readout to orbital speed\\
+	\hline\rule{0pt}{2ex}
+	HUD & \Shift\keystroke{H} & Set HUD to Surface mode\\
+	\hline
+	\end{longtable}
+%\end{table}
+
+\noindent
+\textbf{MFD control layout:}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\hsize]{orbit_input.png}
+\end{figure}
+
+\noindent
+\textbf{MFD display components:}\\
+The display contains an attitude indicator (AI) with horizon line and pitch ladder indicating pitch and bank attitude (including numerical readouts). Above is a compass ribbon with a heading readout. To the left of the AI is the speed readout which can be set to different modes with the MFD buttons:
+
+\begin{itemize}
+\item TAS (true airspeed): The speed of the spacecraft relative to the surrounding atmosphere. Airspeed is usually measured with a pitot tube in the airstream recording the difference between free-stream and stagnation point pressure. The TAS mode is only available if the free-stream pressure $p_{1}$ > 10$^{-3}$ Pa (on Earth, this corresponds to approx. 140 km altitude). If TAS cannot be measured, the speed tape is reset to 0 and the readout shows "-{}-{}-{}-".
+\item IAS (indicated airspeed): Commonly used in conventional aircraft. IAS is calibrated to atmospheric density and speed of sound at sea level. IAS and TAS are similar at low altitude, but start to diverge at higher altitudes, with IAS < TAS. The limit $p_{1}$ > 10$^{-3}$ Pa also applies to IAS availability.
+\item GS (ground-relative speed): The magnitude of the vessel’s velocity vector in the rotating planet reference frame. This is similar to TAS at lower altitudes, but diverges at higher altitudes. Usually, TAS is no longer available where the differences would become significant. \textit{Note:} for an object in geostationary orbit, GS would be zero since it is stationary relative to the rotating planet frame.
+\item OS (orbital speed): The magnitude of the vessel’s velocity relative to the planet’s centre in a non-rotating frame. This is identical to the Vel readout in the \textit{Orbit} MFD. Note: OS is usually non-zero for a vessel at rest on the planet surface, because the planet itself is rotating.
+\end{itemize}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.99\hsize]{orbit_layout.png}
+\end{figure}
+
+\noindent
+To the right of the IA is the altitude tape showing the vessel altitude [km] above the surface (ALT-R) at altitudes < 10 km, or altitude above mean planet radius (ALT) otherwise. To the right of the altitude tape is the vertical speed tape (VS) [m/s].\\
+In the lower part of the display are the acceleration tape (ACC) [m/s$^{2}$] (left), and the AOA (angle of attack) and vertical acceleration (VACC) [m/s$^{2}$] tapes (right).\\
+Below the AI are atmospheric data readouts: atmospheric density (DNS), static pressure (STP), dynamic pressure (DNP), outside air temperature (OAT) and Mach number (M). In the block below are vessel’s equatorial position (longitude, latitude) [deg] and their rates [deg/s].
+
 
 \subsection{Map}
-% TODO
+%TODO add section link
+The \textit{Map} MFD mode shows the surface of a celestial body in a cylindrical projection, including coastlines and contour lines. It can display surface markers for bases and VOR beacons, as well as ground tracks or orbital plane intersections for objects orbiting the body. The display elements are similar to the \textit{Map} dialog (see TODO).\\
+\\
+\textbf{Key options (map view):}
+
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.15\textwidth}|p{0.15\textwidth}|p{0.6\textwidth}| }
+	\hline\rule{0pt}{2ex}
+	\textbf{Button} & \textbf{Shortcut} & \textbf{Action}\\
+	\hline
+	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Map view:}}}\\
+	\hline\rule{0pt}{2ex}
+	REF & \Shift\keystroke{R} & Select a celestial body for map display\\
+	\hline\rule{0pt}{2ex}
+	TGT & \Shift\keystroke{T} & Select a target object\\
+	\hline\rule{0pt}{2ex}
+	ZM- & \Shift\keystroke{X} & Zoom out by factor 2 down to 1x (global view)\\
+	\hline\rule{0pt}{2ex}
+	ZM+ & \Shift\keystroke{Z} & Zoom in by factor 2 up to 128x (2.8° x 2.8° cover)\\
+	\hline\rule{0pt}{2ex}
+	TRK & \Shift\keystroke{K} & Toggle automatic vessel track mode on/off\\
+	\hline\rule{0pt}{2ex}
+	DSP & \Shift\keystroke{D} & Display parameter configuration page\\
+	\hline\rule{0pt}{2ex}
+	UP & \Shift\keystroke{-} & Scroll map display up (disabled in track mode)\\
+	\hline\rule{0pt}{2ex}
+	DN & \Shift\keystroke{=} & Scroll map display down (disabled in track mode)\\
+	\hline\rule{0pt}{2ex}
+	< & \Shift\keystroke{[} & Scroll map display left (disabled in track mode)\\
+	\hline\rule{0pt}{2ex}
+	> & \Shift\keystroke{]} & Scroll map display right (disabled in track mode)\\
+	\hline
+	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Parameter selection view:}}}\\
+	\hline\rule{0pt}{2ex}
+	UP & \Shift\keystroke{-} & Move selection marker up\\
+	\hline\rule{0pt}{2ex}
+	DN & \Shift\keystroke{=} & Move selection marker down\\
+	\hline\rule{0pt}{2ex}
+	MOD & \Shift\keystroke{M} & Modify the currently selected option\\
+	\hline\rule{0pt}{2ex}
+	OK & \Shift\keystroke{O} & Return to map view\\
+	\hline
+	\end{longtable}
+%\end{table}
+
+\noindent
+\textbf{MFD control layout:}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.99\hsize]{map_input.png}
+\end{figure}
+
+\noindent
+\textbf{MFD display components:}\\
+The map display elements include:
+
+\begin{itemize}
+\item Current position (green +) projected onto the planet surface.
+\item Positions of any other spacecraft currently located on the planet surface or orbiting the planet (yellow +)
+\item Orbit ground track (past and predicted for a few orbits), or alternatively orbit plane (the great circle defined by the intersection of the orbital plane with the planet surface)
+\item Horizon line: indicates the limit of visibility of the planet surface as seen from the current vessel position (or equivalently, the area of the planet surface from which the spacecraft would appear above the horizon for a ground-based observer).
+\item Terminator line: indicates the lit hemisphere of the planet with a boundary line and/or a shaded area.
+\item Coastlines and contour lines (e.g. topographical levels) where supported.
+\item Location of surface bases, VOR transmitters with frequencies and other surface features (cities or geological features)
+\item The current position (longitude, latitude, altitude) and course of the vessel, and the position data of an optional target object or surface base are shown at the bottom of the screen. If the target is a base, distance and bearing from the current vessel position are also displayed.
+\end{itemize}
+
+\noindent
+The map can be zoomed and scrolled. It is also possible track the current position (which disables manual scrolling). At high zoom levels, labels for marked surface features are shown.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.99\hsize]{map_layout_1.png}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.99\hsize]{map_layout_2.png}
+\end{figure}
+
+\noindent
+Display options can be selected from the configuration page (DSP, \Shift\keystroke{D}). Select an item with the UP (\Shift\keystroke{-}) and DN (\Shift\keystroke{=}) buttons, then cycle its settings with MOD (\Shift\keystroke{M}). Return to the map screen with OK (\Shift\keystroke{O}).
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.99\hsize]{map_params.png}
+\end{figure}
+
+\begin{itemize}
+\item Only objects (ships, stations or moons) orbiting the displayed celestial body will be accepted as orbit targets. Likewise, only surface bases located on the body will be accepted as target bases.
+\item Your ship’s orbital plane will only be plotted if you are orbiting the displayed body.
+\end{itemize}
+
 
 \subsection{VOR/VTOL}
 % TODO
