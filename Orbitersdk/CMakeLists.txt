@@ -43,3 +43,9 @@ endif()
 install(DIRECTORY html include
 	DESTINATION ${ORBITER_INSTALL_SDK_DIR}
 )
+
+# Copy Prebuild PDFs ------------------------------------------------------
+
+install(FILES doc/Orbiter2DGraphics.pdf DESTINATION ${ORBITER_INSTALL_SDK_DIR}/doc)
+install(FILES doc/BuildingSamples.pdf DESTINATION ${ORBITER_INSTALL_SDK_DIR}/doc)
+
