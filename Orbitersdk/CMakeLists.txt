@@ -2,6 +2,7 @@
 # Licensed under the MIT License
 
 add_subdirectory(samples)
+add_subdirectory(sample_build)
 
 file(GLOB_RECURSE includes
 	RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}

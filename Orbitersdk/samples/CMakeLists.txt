@@ -7,9 +7,13 @@ add_subdirectory(LaunchpadParamTemplate)
 add_subdirectory(MFDTemplate)
 add_subdirectory(Lua)
 
-install(DIRECTORY ${ORBITER_SOURCE_SDK_DIR}/samples/AscentMFD/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/AscentMFD)
-install(DIRECTORY ${ORBITER_SOURCE_SDK_DIR}/samples/DialogTemplate/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/DialogTemplate)
-install(DIRECTORY ${ORBITER_SOURCE_SDK_DIR}/samples/LaunchpadParamTemplate/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/LaunchpadParamTemplate)
-install(DIRECTORY ${ORBITER_SOURCE_SDK_DIR}/samples/MFDTemplate/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/MFDTemplate)
-install(DIRECTORY ${ORBITER_SOURCE_SDK_DIR}/samples/Lua/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/Lua)
+set(Exclude
+	PATTERN CMakeLists.txt EXCLUDE
+)
+
+install(DIRECTORY ${ORBITER_SOURCE_SDK_DIR}/samples/AscentMFD/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/AscentMFD ${Exclude})
+install(DIRECTORY ${ORBITER_SOURCE_SDK_DIR}/samples/DialogTemplate/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/DialogTemplate ${Exclude})
+install(DIRECTORY ${ORBITER_SOURCE_SDK_DIR}/samples/LaunchpadParamTemplate/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/LaunchpadParamTemplate ${Exclude})
+install(DIRECTORY ${ORBITER_SOURCE_SDK_DIR}/samples/MFDTemplate/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/MFDTemplate ${Exclude})
+install(DIRECTORY ${ORBITER_SOURCE_SDK_DIR}/samples/Lua/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/Lua ${Exclude})
 
