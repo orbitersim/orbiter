@@ -863,6 +863,9 @@ void Interpreter::LoadAPI ()
 
 		// planet functions
 		{"get_planetperiod", oapi_get_planetperiod},
+		{"get_objecttype", oapi_get_objecttype},
+		{"get_gbody", oapi_get_gbody},
+		{"get_gbodyparent", oapi_get_gbodyparent},
 
 		// vessel functions
 		{"get_propellanthandle", oapi_get_propellanthandle},
@@ -936,7 +939,8 @@ void Interpreter::LoadAPI ()
 		{"resetkey", oapi_resetkey},
 		{"simulatebufferedkey", oapi_simulatebufferedkey},
 		{"simulateimmediatekey", oapi_simulateimmediatekey},
-
+		{"acceptdelayedkey", oapi_acceptdelayedkey},
+			
 		// file i/o functions
 		{"openfile", oapi_openfile},
 		{"closefile", oapi_closefile},
@@ -1278,6 +1282,17 @@ void Interpreter::LoadAPI ()
 	lua_pushnumber (L, oapi::ImageFileFormat::IMAGE_TIF); lua_setfield (L, -2, "TIF");
 	lua_pushnumber (L, oapi::ImageFileFormat::IMAGE_DDS); lua_setfield (L, -2, "DDS");
 	lua_setglobal (L, "IMAGEFORMAT");
+
+	lua_createtable (L, 0, 7);
+	lua_pushnumber (L, OBJTP_INVALID); lua_setfield (L, -2, "INVALID");
+	lua_pushnumber (L, OBJTP_GENERIC); lua_setfield (L, -2, "GENERIC");
+	lua_pushnumber (L, OBJTP_CBODY); lua_setfield (L, -2, "CBODY");
+	lua_pushnumber (L, OBJTP_STAR); lua_setfield (L, -2, "STAR");
+	lua_pushnumber (L, OBJTP_PLANET); lua_setfield (L, -2, "PLANET");
+	lua_pushnumber (L, OBJTP_VESSEL); lua_setfield (L, -2, "VESSEL");
+	lua_pushnumber (L, OBJTP_SURFBASE); lua_setfield (L, -2, "SURFBASE");
+	lua_setglobal (L, "OBJTP");
+
 }
 
 void Interpreter::LoadMFDAPI ()
@@ -3153,6 +3168,49 @@ int Interpreter::oapi_get_planetperiod(lua_State* L)
 	return 1;
 }
 
+int Interpreter::oapi_get_objecttype(lua_State* L)
+{
+	OBJHANDLE hRef;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 1: invalid object");
+	int type = oapiGetObjectType(hRef);
+
+	lua_pushnumber(L, type);
+	return 1;
+}
+int Interpreter::oapi_get_gbodyparent(lua_State* L)
+{
+	OBJHANDLE hRef;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 1: invalid object");
+	OBJHANDLE hObj = oapiGetGbodyParent(hRef);
+
+	if(hObj)
+		lua_pushlightuserdata(L, hObj);
+	else
+		lua_pushnil(L);
+	return 1;
+}
+	
+int Interpreter::oapi_get_gbody(lua_State* L)
+{
+	OBJHANDLE hObj = NULL;
+	if(lua_isnumber(L, 1)) {
+		int idx = lua_tointeger(L, 1);
+		hObj = oapiGetGbodyByIndex(idx);
+	} else if(lua_isstring(L, 1)) {
+		char *name = const_cast<char *>(lua_tostring(L, 1));
+		hObj = oapiGetGbodyByName(name);
+	} else {
+		ASSERT_SYNTAX(false, "Argument 1: name(string) or index(number) required");
+	}
+	
+	if(hObj)
+		lua_pushlightuserdata(L, hObj);
+	else
+		lua_pushnil(L);
+	return 1;
+}
 
 int Interpreter::oapi_get_propellanthandle (lua_State *L)
 {
@@ -4118,6 +4176,17 @@ int Interpreter::oapi_simulateimmediatekey (lua_State *L)
 	}
 	oapiSimulateImmediateKey ((char*)kstate);
 	return 0;
+}
+
+int Interpreter::oapi_acceptdelayedkey (lua_State *L)
+{
+	ASSERT_NUMBER(L,1);
+	ASSERT_NUMBER(L,2);
+	char key = lua_tointeger(L, 1);
+	double interval = lua_tonumber(L, 2);
+	bool ret = oapiAcceptDelayedKey (key, interval);
+	lua_pushboolean(L, ret);
+	return 1;
 }
 
 // ============================================================================

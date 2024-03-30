@@ -302,9 +302,18 @@ end
 
 local function __orbiter_extend_vessel(module)
     local mt = {}
+
+	local obj = {}
+	for k, v in pairs(module) do
+		if type(v) == "function" then
+			obj[k] = v
+		end
+	end
+
 	function mt.__index(self, key)
 		-- first search in the module
-		local ret = rawget(module, key)
+--		local ret = rawget(module, key)
+		local ret = module[key]
 		if ret then
 			return ret
 		else
@@ -320,7 +329,8 @@ local function __orbiter_extend_vessel(module)
 			end
 		end
 	end
-    return setmetatable({}, mt)
+--    return setmetatable({}, mt)
+    return setmetatable(obj, mt)
 end
 
 -- ==============================================================
@@ -543,7 +553,7 @@ function register_vesselclass(vessel, cpp_names)
 			if cpp_names then
 				k = cpp_mapping[k] or k
 			end
-			oapi.write_log("Exporting "..k)
+			--oapi.write_log("Exporting "..k)
 			-- declare global if in strict mode
 			if strictmode_add_global then
 				strictmode_add_global(k)

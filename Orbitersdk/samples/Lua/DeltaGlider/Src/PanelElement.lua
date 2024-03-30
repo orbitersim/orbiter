@@ -28,7 +28,6 @@ function PanelElement:LoadVC(vcid) end
 function PanelElement:LoadPanel2D(panelid, hPanel, viewW, viewH) end
 
 function PanelElement:Redraw2D(surf)
-	oapi.dbg_out(string.format("PanelElement %f", oapi.get_simtime()))
 	return false
 end
 

@@ -173,7 +173,7 @@ function ComponentVessel:clbkConsumeBufferedKey(key, down, kstate)
 			return res
 		end
 	end
-	return 0
+	return false
 end
 
 --------------------------------------------------------------

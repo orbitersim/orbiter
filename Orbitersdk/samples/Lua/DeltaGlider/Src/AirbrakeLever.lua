@@ -17,7 +17,7 @@ local GRP_P0 = meshres_p0.GRP
 local AirbrakeLever = Class(PanelElement)
 
 function AirbrakeLever:new (comp)
-	PanelElement.new(comp:DG())
+	PanelElement.new(self, comp:DG())
 	self.component = comp
 end
 

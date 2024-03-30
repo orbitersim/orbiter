@@ -16,7 +16,7 @@ local GRP_P0 = meshres_p0.GRP
 local GearLever = Class(PanelElement)
 
 function GearLever:new (comp)
-	PanelElement.new(comp:DG())
+	PanelElement.new(self, comp:DG())
 	self.component = comp
 end
 
