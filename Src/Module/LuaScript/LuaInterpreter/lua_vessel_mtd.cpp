@@ -228,6 +228,7 @@ void Interpreter::LoadVesselAPI ()
 		{"get_name", v_get_name},
 		{"get_classname", v_get_classname},
 		{"get_flightmodel", v_get_flightmodel},
+		{"get_flightstatus", v_get_flightstatus},
 		{"get_damagemodel", v_get_damagemodel},
 		{"get_enablefocus", v_get_enablefocus},
 		{"set_enablefocus", v_set_enablefocus},
@@ -444,7 +445,9 @@ void Interpreter::LoadVesselAPI ()
 		{"get_exhaustcount", v_get_exhaustcount},
 		{"add_exhauststream", v_add_exhauststream },
 		{"add_reentrystream", v_add_reentrystream },
-
+		{"del_exhauststream", v_del_exhauststream },
+		{"add_particlestream", v_add_particlestream },
+			
 		// Nosewheel-steering and wheel brakes
 		{"set_nosewheelsteering", v_set_nosewheelsteering},
 		{"get_nosewheelsteering", v_get_nosewheelsteering},
@@ -898,6 +901,15 @@ int Interpreter::v_get_flightmodel (lua_State *L)
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetFlightModel());
+	return 1;
+}
+
+int Interpreter::v_get_flightstatus (lua_State *L)
+{
+	static const char *funcname = "get_flightstatus";
+	AssertMtdMinPrmCount(L, 1, funcname);
+	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
+	lua_pushnumber (L, v->GetFlightStatus());
 	return 1;
 }
 
@@ -8256,6 +8268,24 @@ int Interpreter::v_add_exhauststream(lua_State* L)
 	return 1;
 }
 
+int Interpreter::v_del_exhauststream(lua_State* L)
+{
+	static const char* funcname = "del_exhauststream";
+	AssertMtdMinPrmCount(L, 2, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	PSTREAM_HANDLE hp = lua_tolightuserdata_safe(L, 2, "del_exhauststream");
+
+	// remove reference to numberref
+	lua_pushlightuserdata(L, hp);
+    lua_pushnil(L);
+    lua_settable(L, LUA_REGISTRYINDEX);
+
+	bool ret = v->DelExhaustStream(hp);
+	lua_pushboolean(L, ret);
+	return 1;
+}
+
+
 int Interpreter::v_add_reentrystream(lua_State* L)
 {
 	static const char* funcname = "add_reentrystream";
@@ -8333,6 +8363,102 @@ int Interpreter::v_add_reentrystream(lua_State* L)
 	hp = v->AddReentryStream(&pss);
 	lua_pushlightuserdata(L, hp);
 	return 1;
+}
+
+int Interpreter::v_add_particlestream(lua_State* L)
+{
+	static const char* funcname = "add_particlestream";
+	AssertMtdMinPrmCount(L, 2, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	PARTICLESTREAMSPEC pss;  memset(&pss, 0, sizeof(PARTICLESTREAMSPEC));
+	int idx = 2;
+	AssertMtdPrmType(L, idx, PRMTP_TABLE, funcname);
+
+	lua_getfield(L, idx, "flags");
+	pss.flags = (lua_isnumber(L, -1) ? (DWORD)(lua_tonumber(L, -1) + 0.5) : 0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "srcsize");
+	pss.srcsize = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 1.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "srcrate");
+	pss.srcrate = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 1.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "v0");
+	pss.v0 = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "srcspread");
+	pss.srcspread = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "lifetime");
+	pss.lifetime = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 10.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "growthrate");
+	pss.growthrate = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "atmslowdown");
+	pss.atmslowdown = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "ltype");
+	pss.ltype = (lua_isnumber(L, -1) ? (PARTICLESTREAMSPEC::LTYPE)(int)(lua_tonumber(L, -1) + 0.5) : PARTICLESTREAMSPEC::DIFFUSE);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "levelmap");
+	pss.levelmap = (lua_isnumber(L, -1) ? (PARTICLESTREAMSPEC::LEVELMAP)(int)(lua_tonumber(L, -1) + 0.5) : PARTICLESTREAMSPEC::LVL_LIN);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "lmin");
+	pss.lmin = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "lmax");
+	pss.lmax = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 1.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "atmsmap");
+	pss.atmsmap = (lua_isnumber(L, -1) ? (PARTICLESTREAMSPEC::ATMSMAP)(int)(lua_tonumber(L, -1) + 0.5) : PARTICLESTREAMSPEC::ATM_FLAT);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "amin");
+	pss.amin = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "amax");
+	pss.amax = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 1.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "tex");
+	pss.tex = (lua_islightuserdata(L, -1) ? (SURFHANDLE)lua_touserdata(L, -1) : NULL);
+	lua_pop(L, 1);
+
+	VECTOR3 pos = lua_tovector_safe(L, 3, "add_particlestream");
+	VECTOR3 dir = lua_tovector_safe(L, 4, "add_particlestream");
+
+	// AddParticleStream's last argument must be a pointer to a double whose lifetime must be compatible with the particle stream itself
+	// We create a "numberref" object to do that
+
+	lua_pushnumberref(L);
+	double* lvl = (double*)lua_touserdata(L, -1);
+	*lvl = lua_tonumber(L, 5);
+
+	PSTREAM_HANDLE hp = v->AddParticleStream(&pss, pos, dir , lvl);
+
+	// Add the numberref in the registry to prevent its collection if the script does not recover it
+	// Use the PSTREAM_HANDLE as the key so we can remove it when deleting the stream
+	lua_pushlightuserdata(L, hp);  /* push address */
+    lua_pushvalue(L, -2);
+    lua_settable(L, LUA_REGISTRYINDEX);
+
+	lua_pushlightuserdata(L, hp);
+	lua_insert(L, -2); // swap the 2 top elements (numberref & handle)
+	return 2;
 }
 
 

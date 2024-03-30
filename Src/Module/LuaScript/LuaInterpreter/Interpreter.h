@@ -462,6 +462,9 @@ protected:
 
 	// Planets
 	static int oapi_get_planetperiod(lua_State* L);
+	static int oapi_get_objecttype(lua_State* L);
+	static int oapi_get_gbodyparent(lua_State* L);
+	static int oapi_get_gbody(lua_State* L);
 
 	// Vessel functions
 	static int oapi_get_propellanthandle (lua_State *L);
@@ -536,6 +539,7 @@ protected:
 	static int oapi_resetkey (lua_State *L);
 	static int oapi_simulatebufferedkey (lua_State *L);
 	static int oapi_simulateimmediatekey (lua_State *L);
+	static int oapi_acceptdelayedkey (lua_State *L);
 
 	// file i/o functions
 	static int oapi_openfile (lua_State* L);
@@ -638,6 +642,7 @@ protected:
 	static int v_get_name (lua_State *L);
 	static int v_get_classname (lua_State *L);
 	static int v_get_flightmodel (lua_State *L);
+	static int v_get_flightstatus (lua_State *L);
 	static int v_get_damagemodel (lua_State *L);
 	static int v_get_enablefocus (lua_State *L);
 	static int v_set_enablefocus (lua_State *L);
@@ -874,6 +879,9 @@ protected:
 	static int v_get_exhaustcount (lua_State *L);
 	static int v_add_exhauststream(lua_State* L);
 	static int v_add_reentrystream(lua_State* L);
+	static int v_add_particlestream(lua_State* L);
+	static int v_del_exhauststream(lua_State* L);
+
 
 	// Nosewheel-steering and wheel brakes
 	static int v_set_nosewheelsteering (lua_State *L);

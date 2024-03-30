@@ -25,6 +25,9 @@ local HoverSubsystem = require("HoverSubsystem")
 local HUDControl = require("HUDControl")
 local AvionicsSubsystem = require("AvionicsSubsystem")
 local LightCtrlSubsystem = require("LightCtrlSubsystem")
+local ThermalSubsystem = require("ThermalSubsystem")
+local PressureSubsystem = require("PressureSubsystem")
+local DockingCtrlSubsystem = require("DockingCtrlSubsystem")
 
 local EMPTY_MASS    = 11000.0  -- standard configuration
 local EMPTY_MASS_SC = 13000.0  -- ramjet configuration
@@ -216,9 +219,9 @@ function DeltaGlider:new(fmodel)
 	self.ssys_aerodyn      = self:AddSubsystem(AerodynCtrlSubsystem (self))
 	self.ssys_gear         = self:AddSubsystem(GearSubsystem (self))
 	self.ssys_hud          = self:AddSubsystem(HUDControl (self))
---	self.ssys_pressurectrl = self:AddSubsystem(PressureSubsystem (self))
---	self.ssys_thermal      = self:AddSubsystem(ThermalSubsystem (self))
---	self.ssys_docking      = self:AddSubsystem(DockingCtrlSubsystem (self))
+	self.ssys_pressurectrl = self:AddSubsystem(PressureSubsystem (self))
+	self.ssys_thermal      = self:AddSubsystem(ThermalSubsystem (self))
+	self.ssys_docking      = self:AddSubsystem(DockingCtrlSubsystem (self))
 	self.ssys_light        = self:AddSubsystem(LightCtrlSubsystem (self))
 	self.ssys_avionics     = self:AddSubsystem(AvionicsSubsystem (self))
 --	self.ssys_failure      = self:AddSubsystem(FailureSubsystem (self))
@@ -441,23 +444,19 @@ function DeltaGlider:clbkDrawHUD(mode, hps, skp)
 			end
 		end
 	end
-
---[[
 	if oapi.get_hudmode() == HUD.DOCKING then
 		if not self.ssys_docking:NconeState():IsOpen() then
 			local d = hps.Markersize*5
-			if self.ssys_docking:NconeState():IsClosed() then
-				local int, frac = math.modf(oapi.get_simtime())
-				if frac < 0.5 then
-					skp:line (cx-d,cy-d,cx+d,cy+d)
-					skp:line (cx-d,cy+d,cx+d,cy-d)
-				end
+			local int, frac = math.modf(oapi.get_simtime())
+			if self.ssys_docking:NconeState():IsClosed() or frac < 0.5 then
+				skp:line (cx-d,cy-d,cx+d,cy+d)
+				skp:line (cx-d,cy+d,cx+d,cy-d)
 			end
 			local str = "NOSECONE"
 			local w = skp:get_textwidth (str)
 			skp:text (cx-w/2, cy-d, str, 8)
 		end
-	en]]
+	end
 	return true
 end
 
@@ -540,7 +539,6 @@ function DeltaGlider:clbkRenderHUD(mode, hps, hTex)
 		idx:append(igear)
 		vtx:append(vgear)
 	end
-	--[[
 
 	-- show nosecone status
 	if oapi.get_hudmode() == HUD.DOCKING and not self.ssys_docking:NconeState():IsOpen() then
@@ -549,7 +547,6 @@ function DeltaGlider:clbkRenderHUD(mode, hps, hTex)
 			vtx:append(vnose)
 		end
 	end
-	]]
 
 	-- show airbrake status
 	if not self.ssys_aerodyn:AirbrakeState():IsClosed() then
@@ -754,7 +751,7 @@ function  DeltaGlider:RedrawPanel_RetroFlow (surf)
 end
 
 function DeltaGlider:RedrawPanel_HoverFlow (surf)
-    local gaugeSize = 66.99;  -- pointer can move 66 pixels; also round up to next pixel
+    local gaugeSize = 66.99  -- pointer can move 66 pixels; also round up to next pixel
     -- since hover flow rates are always locked we can assume the second hover thruster has the same flow as the first
     local flowRate = self:GetThrusterFlowRate(self.th_hover[1]) 
 	local p = math.floor(math.min(flowRate*gaugeSize/3.6,gaugeSize)) -- gauge maxes out at 3.6
@@ -817,27 +814,27 @@ function DeltaGlider:UpdateStatusIndicators ()
 	vtx[6].tu = x
 
 	-- nose cone indicator
-	x = 0--BlinkStateCoord(self.ssys_docking:GearState())
+	x = BlinkStateCoord(self.ssys_docking:NconeState())
 	vtx[7].tu = x
 	vtx[8].tu = x
 
 	-- top hatch indicator
-	x = 0--BlinkStateCoord(self.ssys_pressurectrl:GearState())
+	x = BlinkStateCoord(self.ssys_pressurectrl:HatchState())
 	vtx[9].tu = x
 	vtx[10].tu = x
 
 	-- radiator indicator
-	x = 0--BlinkStateCoord(self.ssys_thermal:GearState())
+	x = BlinkStateCoord(self.ssys_thermal:RadiatorState())
 	vtx[11].tu = x
 	vtx[12].tu = x
 
 	-- outer airlock indicator
-	x = 0--BlinkStateCoord(self.ssys_pressurectrl:GearState())
+	x = BlinkStateCoord(self.ssys_pressurectrl:OLockState())
 	vtx[13].tu = x
 	vtx[14].tu = x
 
 	-- inner airlock indicator
-	x = 0--BlinkStateCoord(self.ssys_pressurectrl:GearState())
+	x = BlinkStateCoord(self.ssys_pressurectrl:ILockState())
 	vtx[15].tu = x
 	vtx[16].tu = x
 
@@ -1155,8 +1152,8 @@ function DeltaGlider:clbkSetClassCaps (cfg)
 
 	self.ssys_gear:GearState():SetDragElement(self:create_variabledragelement (0.8, _V(0, -1, 0)))     -- landing gear
 	self.ssys_mainretro:RetroCoverState():SetDragElement(self:create_variabledragelement (0.2, _V(0,-0.5,6.5))) -- retro covers
---	self.ssys_docking:NconeState():SetDragElement(self:create_variabledragelement (3, _V(0, 0, 8)))       -- nose cone
---	self.ssys_thermal:RadiatorState():SetDragElement(self:create_variabledragelement (1, _V(0,1.5,-4)))   -- radiator
+	self.ssys_docking:NconeState():SetDragElement(self:create_variabledragelement (3, _V(0, 0, 8)))       -- nose cone
+	self.ssys_thermal:RadiatorState():SetDragElement(self:create_variabledragelement (1, _V(0,1.5,-4)))   -- radiator
 	self.ssys_aerodyn:AirbrakeState():SetDragElement(self:create_variabledragelement (4, _V(0,0,-8)))     -- airbrake
 
 	self:set_rotdrag (_V(0.10,0.13,0.04))
@@ -1394,7 +1391,7 @@ end
 -- Respond to docking/undocking event
 -- --------------------------------------------------------------
 function DeltaGlider:clbkDockEvent (dock, mate)
---	self.ssys_docking:clbkDockEvent (dock, mate)
+	self.ssys_docking:clbkDockEvent (dock, mate)
 end
 
 -- --------------------------------------------------------------
@@ -1663,5 +1660,12 @@ function DeltaGlider:SetHoverThrusterLevel (which, lvl)
 	self:set_thrusterlevel(self.th_hover[which], lvl)
 end
 
+function DeltaGlider:SubsysPressure()
+	return self.ssys_pressurectrl
+end
+
+function DeltaGlider:SubsysDocking()
+	return self.ssys_docking
+end
 
 register_vesselclass(DeltaGlider, true) -- use C++ names (clbkCamelCase)

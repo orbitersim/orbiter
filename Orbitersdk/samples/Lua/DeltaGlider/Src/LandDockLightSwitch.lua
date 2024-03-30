@@ -3,7 +3,7 @@ local DGSwitch1 = require("DGSwitch1")
 local LandDockLightSwitch = Class(DGSwitch1)
 
 function LandDockLightSwitch:new (comp)
-	DGSwitch1.new(comp:DG(), DGSwitch1.THREESTATE)
+	DGSwitch1.new(self, comp:DG(), DGSwitch1.THREESTATE)
 	self.component = comp
 end
  --------------------------------------------------------------
