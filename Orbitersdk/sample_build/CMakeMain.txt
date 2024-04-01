@@ -51,10 +51,12 @@ set(DebugLib
 	#Orbitersdkd 
 	#DlgCtrld
 	#Lua/luad 
+	#Lua/LuaInterpreterd
 	Orbiter
 	Orbitersdk
 	DlgCtrl
 	Lua/lua
+	Lua/LuaInterpreter
 	UxTheme
 )
 
@@ -63,6 +65,7 @@ set(ReleaseLib
 	Orbitersdk 
 	DlgCtrl
 	Lua/lua
+	Lua/LuaInterpreter
 	UxTheme
 )
 
@@ -73,10 +76,12 @@ set(APIHeaders
 	${INCLUDE_DIR}/MFDAPI.h
 	${INCLUDE_DIR}/CelBodyAPI.h
 	${INCLUDE_DIR}/ModuleAPI.h
+	${INCLUDE_DIR}/CamAPI.h
 )
 
 set(IncludeDirs
 	${SAMPLES_SRC_DIR}/Atlantis/Atlantis
+	${SAMPLES_SRC_DIR}/LuaInterpreter
 	${SAMPLES_SRC_DIR}
 )
 
@@ -96,3 +101,9 @@ add_subdirectory(${SAMPLES_SRC_DIR}/HST)
 add_subdirectory(${SAMPLES_SRC_DIR}/LaunchpadParamTemplate)
 add_subdirectory(${SAMPLES_SRC_DIR}/MFDTemplate)
 add_subdirectory(${SAMPLES_SRC_DIR}/Quadcopter)
+add_subdirectory(${SAMPLES_SRC_DIR}/LuaConsole)
+add_subdirectory(${SAMPLES_SRC_DIR}/LuaMFD)
+add_subdirectory(${SAMPLES_SRC_DIR}/ScriptMFD)
+add_subdirectory(${SAMPLES_SRC_DIR}/ScriptVessel)
+add_subdirectory(${SAMPLES_SRC_DIR}/Solarsail)
+add_subdirectory(${SAMPLES_SRC_DIR}/TransX)

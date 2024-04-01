@@ -5,8 +5,24 @@
 # SDK Sample Installation
 # ==========================================================================
 
-install(DIRECTORY AscentMFD Atlantis DeltaGlider DialogTemplate DrawOrbits DX9ExtMFD GenericCamera HST
-	LaunchpadParamTemplate MFDTemplate Quadcopter
+install(DIRECTORY 
+	AscentMFD 
+	Atlantis 
+	DeltaGlider 
+	DialogTemplate 
+	DrawOrbits 
+	DX9ExtMFD 
+	GenericCamera 
+	HST
+	LaunchpadParamTemplate 
+	MFDTemplate 
+	Quadcopter
+	LuaConsole
+	LuaMFD
+	ScriptMFD
+	ScriptVessel
+	Solarsail
+	TransX
 	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/samples
 )
 

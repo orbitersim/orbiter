@@ -42,5 +42,16 @@ set(IgnoreFiles
 	PATTERN Thumbnail EXCLUDE
 )
 
-install(DIRECTORY DeltaGlider HST Quadcopter DESTINATION ${ORBITER_INSTALL_SDK_DIR}/samples ${IgnoreFiles})
+install(DIRECTORY 
+	DeltaGlider 
+	HST 
+	Quadcopter 
+	ScriptVessel
+	Solarsail
+	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/samples ${IgnoreFiles}
+)
+
+install(DIRECTORY Common/ DESTINATION ${ORBITER_INSTALL_SDK_DIR}/samples/Common/Vessel/ ${IgnoreFiles})
+install(DIRECTORY Common/ DESTINATION ${ORBITER_INSTALL_SDK_DIR}/samples/Common/ ${IgnoreFiles})
+
 

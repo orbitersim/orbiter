@@ -2,29 +2,23 @@
 
 
 # =============================================================================
-# Quadcopter
+# LuaMFD
 # =============================================================================
 
-set(PRJ Quadcopter)
-set(MESH_DIR ${ROOT_DIR}/Meshes)
+set(PRJ LuaMFD)
 
 set(Sources
-	Quadcopter.cpp
-	QuadcopterLua.cpp
-	QuadcopterSubsys.cpp
-	PropulsionSubsys.cpp
-	${SAMPLES_SRC_DIR}/Common/Vessel/Instrument.cpp
+	LuaMFD.cpp
+	MfdInterpreter.cpp
 )
 
 set(Headers
-	Quadcopter.h
-	QuadcopterLua.h
-	QuadcopterSubsys.h
-	PropulsionSubsys.h
-	${SAMPLES_SRC_DIR}/Common/Vessel/Instrument.h
+	LuaMFD.h
+	MfdInterpreter.h
+	resource.h
 )
 set(Other
-	${MESH_DIR}/quadcopter.msh
+	LuaMFD.rc
 )
 	
 source_group(APIHeaders FILES ${APIHeaders})
@@ -42,11 +36,9 @@ add_library(${PRJ} SHARED
 target_link_libraries(${PRJ} debug ${DebugLib})
 target_link_libraries(${PRJ} optimized ${ReleaseLib})
 
-#target_include_directories(${PRJ} PUBLIC ${INCLUDE_DIR} ${IncludeDirs})
-
 set_target_properties(${PRJ}
 	PROPERTIES
-	RUNTIME_OUTPUT_DIRECTORY_DEBUG ${MODULE_DIR}
-	RUNTIME_OUTPUT_DIRECTORY_RELEASE ${MODULE_DIR}
-	FOLDER Vessel
+	RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PLUGIN_DIR}
+	RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PLUGIN_DIR}
+	FOLDER MFD
 )

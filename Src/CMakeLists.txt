@@ -18,6 +18,9 @@ endif()
 # SDK Sample Installation
 # ==========================================================================
 
-install(DIRECTORY Plugin/Common/Dialog/ DESTINATION ${ORBITER_INSTALL_SDK_DIR}/samples/Common/Dialog/ ${IgnoreFiles})
-install(DIRECTORY Vessel/Common/ DESTINATION ${ORBITER_INSTALL_SDK_DIR}/samples/Common/Vessel/ ${IgnoreFiles})
-install(DIRECTORY Vessel/Common/ DESTINATION ${ORBITER_INSTALL_SDK_DIR}/samples/Common/ ${IgnoreFiles})
+set(IgnoreFiles
+	PATTERN CMakeLists.txt EXCLUDE
+)
+
+install(DIRECTORY Module/LuaScript/LuaInline/ DESTINATION ${ORBITER_INSTALL_SDK_DIR}/samples/LuaInline ${IgnoreFiles})
+install(DIRECTORY Module/LuaScript/LuaInterpreter/ DESTINATION ${ORBITER_INSTALL_SDK_DIR}/samples/LuaInterpreter/ ${IgnoreFiles})
