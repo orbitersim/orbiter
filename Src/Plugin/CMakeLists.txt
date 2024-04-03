@@ -17,3 +17,26 @@ add_subdirectory(ScnEditor)
 add_subdirectory(ScriptMFD)
 add_subdirectory(TrackIR)
 add_subdirectory(TransX)
+
+# ==========================================================================
+# SDK Sample Installation
+# ==========================================================================
+
+set(IgnoreFiles
+	PATTERN CMakeLists.txt EXCLUDE
+	PATTERN Textures EXCLUDE
+	PATTERN Textures2 EXCLUDE
+	PATTERN Config EXCLUDE
+	PATTERN Meshes EXCLUDE
+	PATTERN Thumbnail EXCLUDE
+)
+
+install(DIRECTORY 
+	LuaConsole
+	LuaMFD
+	ScriptMFD
+	TransX
+	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/samples ${IgnoreFiles}
+)
+
+install(DIRECTORY Common/Dialog/ DESTINATION ${ORBITER_INSTALL_SDK_DIR}/samples/Common/Dialog/ ${IgnoreFiles})
