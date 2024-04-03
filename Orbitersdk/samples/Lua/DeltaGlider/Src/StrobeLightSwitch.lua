@@ -1,3 +1,14 @@
+-- Copyright (c) Martin Schweiger
+-- Copyright 2024 (c) Gondos
+-- Licensed under the MIT License
+
+-- ==============================================================
+--               ORBITER MODULE: StrobeLightSwitch.lua
+--                  Part of the ORBITER SDK
+--
+-- Original Delta glider rewritten in lua
+-- ==============================================================
+
 local DGSwitch1 = require("DGSwitch1")
 
 

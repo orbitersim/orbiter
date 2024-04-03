@@ -1,3 +1,14 @@
+-- Copyright (c) Martin Schweiger
+-- Copyright 2024 (c) Gondos
+-- Licensed under the MIT License
+
+-- ==============================================================
+--               ORBITER MODULE: DocksealCtrl.lua
+--                  Part of the ORBITER SDK
+--
+-- Original Delta glider rewritten in lua
+-- ==============================================================
+
 local DGSubsystem = require("DGSubsystem")
 local DocksealIndicator = require("DocksealIndicator")
 
@@ -19,7 +30,7 @@ function DocksealCtrl:SetDockStatus (docked)
 	self.isDocked = docked
 	self.dockTime = oapi.get_simtime()
 	if not self.docked or self.dockTime < 1.0 then
-		dockTime = dockTime - 1e10
+		self.dockTime = self.dockTime - 1e10
 		self.isSealing = false
 	else
 		self.isSealing = true

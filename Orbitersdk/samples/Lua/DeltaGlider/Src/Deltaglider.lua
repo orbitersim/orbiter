@@ -28,6 +28,7 @@ local LightCtrlSubsystem = require("LightCtrlSubsystem")
 local ThermalSubsystem = require("ThermalSubsystem")
 local PressureSubsystem = require("PressureSubsystem")
 local DockingCtrlSubsystem = require("DockingCtrlSubsystem")
+local ScramSubsystem = require("ScramSubsystem")
 
 local EMPTY_MASS    = 11000.0  -- standard configuration
 local EMPTY_MASS_SC = 13000.0  -- ramjet configuration
@@ -207,7 +208,6 @@ g_Param.surf = oapi.load_texture ("DG/blitsrc1.dds", true)
 DeltaGlider = VesselClass(ComponentVessel)
 
 function DeltaGlider:new(fmodel)
---	oapi.write_log("DeltaGlider:new")
 	ComponentVessel.new(self)
 
 	self.modelidx = fmodel ~= 0 and 2 or 1
@@ -677,10 +677,10 @@ end
 
 function DeltaGlider:RedrawPanel_ScramFlow (surf)
 	local redraw = false
-	for i = 0, 1 do
+	for i = 1,2 do
 		local p = math.min (66, math.floor(self.ssys_scram:DMF(i)/3.0*67.0))
-		if p ~= self.scflowidx[i+1] then
-			self.scflowidx[i+1] = p
+		if p ~= self.scflowidx[i] then
+			self.scflowidx[i] = p
 			redraw = true
 		end
 	end
@@ -696,15 +696,15 @@ function DeltaGlider:RedrawPanel_ScramTempDisp (surf)
 	local isVC = oapi.cockpit_mode() == COCKPIT.VIRTUAL
 
 	local skp = oapi.get_sketchpad(surf)
-	skp:set_pen(g_Param.pen[0]);
-	for j = 0, 2 do
-		for i = 0, 1 do
+	skp:set_pen(g_Param.pen[0])
+	for j = 1,3 do
+		for i = 1,2 do
 			local T = self.ssys_scram:Temp (i, j)
 			local phi = PI * math.min (T,3900.0)/2000.0
 			local dx = rad*math.sin(phi)
 			local dy = rad*math.cos(phi)
-			local x0 = (isVC and 20 or (22-j)) + i*43
-			local y0 = 19+j*46
+			local x0 = (isVC and 20 or (22-j-1)) + (i-1)*43
+			local y0 = 19+(j-1)*46
 			skp:moveto (x0, y0)
 			skp:lineto (x0+dx, y0-dy)
 		end
@@ -894,7 +894,7 @@ function DeltaGlider:InitVCMesh()
 		oapi.edit_meshgroup (self.vcmesh, GRP_VC.PILOT_HEAD, ges)
 		oapi.edit_meshgroup (self.vcmesh, GRP_VC.PILOT_VISOR, ges)
 
-		--ComponentVessel::clbkResetVC (0, vcmesh);
+		ComponentVessel.clbkResetVC (self, 0, self.vcmesh)
 	end
 end
 
@@ -907,11 +907,11 @@ end
 -- Set vessel class parameters
 -- --------------------------------------------------------------
 function DeltaGlider:clbkSetClassCaps (cfg)
---	oapi.write_log("DeltaGlider:clbkSetClassCaps")
 	-- *************** physical parameters **********************
 
---	if (oapiReadItem_bool (cfg, (char*)"SCRAMJET", b) && b) -- set up scramjet configuration
---		AddSubsystem (ssys_scram = new ScramSubsystem (this));
+	if oapi.readitem_bool (cfg, "SCRAMJET") then -- set up scramjet configuration
+		self.ssys_scram = self:AddSubsystem (ScramSubsystem (self))
+	end
 
 	ComponentVessel.set_emptymass (self, self.ssys_scram and EMPTY_MASS_SC or EMPTY_MASS)
 	local r = {_V(0,0,6), _V(0,0,-4)}
@@ -1181,7 +1181,7 @@ function DeltaGlider:clbkSetClassCaps (cfg)
 		self:add_beacon (self.beacon[i])
 	end
 	if self.ssys_scram then
-		beacon[5].pos = beaconpos_scram
+		self.beacon[5].pos = beaconpos_scram
 	end
 
 	self.exmesh_tpl = oapi.load_mesh_global(self:ScramVersion() and "DG/deltaglider" or "DG/deltaglider_ns")
@@ -1205,7 +1205,6 @@ end
 -- Read status from scenario file
 -- --------------------------------------------------------------
 function DeltaGlider:clbkLoadStateEx (scn, vs)
---	oapi.write_log("DeltaGlider:clbkLoadStateEx")
 	local match = {}
 	for line in scenario_lines(scn) do
 		if scenario_line_match(line, "TANKCONFIG %d", match) then
@@ -1238,7 +1237,6 @@ end
 -- Write status to scenario file
 -- --------------------------------------------------------------
 function DeltaGlider:clbkSaveState (scn)
---	oapi.write_log("DeltaGlider:clbkSaveState")
 	-- Write default and subsystem vessel parameters
 	ComponentVessel.clbkSaveState (self, scn)
 
@@ -1271,7 +1269,6 @@ end
 -- Finalise vessel creation
 -- --------------------------------------------------------------
 function DeltaGlider:clbkPostCreation ()
---	oapi.write_log("DeltaGlider:clbkPostCreation")
 	ComponentVessel.clbkPostCreation (self)
 
 	self:SetEmptyMass ()
@@ -1287,7 +1284,7 @@ function DeltaGlider:clbkPostCreation ()
 				self.max_rocketfuel = TANK2_CAPACITY
 				max_scramfuel  = TANK1_CAPACITY
 			end
-			self:set_propellantmaxmass (self.ph_main, max_rocketfuel)
+			self:set_propellantmaxmass (self.ph_main, self.max_rocketfuel)
 			self.ssys_scram:SetPropellantMaxMass (max_scramfuel)
 		end
 	end
@@ -1301,7 +1298,6 @@ end
 -- Create DG visual
 -- --------------------------------------------------------------
 function DeltaGlider:clbkVisualCreated (vis, refcount)
---	oapi.write_log("DeltaGlider:clbkVisualCreated")
 	self.visual = vis
 	self.exmesh = self:get_devmesh (vis, 0)
 	self.vcmesh = self:get_devmesh (vis, 1)
@@ -1341,7 +1337,6 @@ end
 -- Destroy DG visual
 -- --------------------------------------------------------------
 function DeltaGlider:clbkVisualDestroyed (vis, refcount)
---	oapi.write_log("DeltaGlider:clbkVisualDestroyed")
 	self.visual = nil
 	self.exmesh = nil
 	self.vcmesh = nil
@@ -1409,7 +1404,6 @@ end
 -- Frame update
 -- --------------------------------------------------------------
 function DeltaGlider:clbkPostStep (simt, simdt, mjd)
---	oapi.write_log("DeltaGlider:clbkPostStep")
 	self.th_main_level = self:get_thrustergrouplevel (THGROUP.MAIN)
 
 	-- damage/failure system
@@ -1421,7 +1415,6 @@ function DeltaGlider:clbkPostStep (simt, simdt, mjd)
 end
 
 function DeltaGlider:clbkLoadGenericCockpit ()
---	oapi.write_log("DeltaGlider:clbkLoadGenericCockpit")
 	self:set_cameraoffset (_V(0,1.467,6.782))
 	oapi.set_defnavdisplay (1)
 	oapi.set_defrcsdisplay (1)
@@ -1434,7 +1427,6 @@ end
 -- --------------------------------------------------------------
 
 function DeltaGlider:clbkLoadPanel2D (id, hPanel, viewW, viewH)
---	oapi.write_log("DeltaGlider:clbkLoadPanel2D")
 	-- set up subsystem panel elements
 	ComponentVessel.clbkLoadPanel2D (self, id, hPanel, viewW, viewH)
 
@@ -1478,8 +1470,7 @@ function DeltaGlider:DefinePanelMain (hPanel)
 
 	local ges = {}
 	ges.flags = GRPEDIT.ADDUSERFLAG
-	ges.UsrFlag = 3
-	--FIXME:	grp->UsrFlag = (ScramVersion() ? 0 : 3);
+	ges.UsrFlag = self:ScramVersion() and 0 or 3
 
 	oapi.edit_meshgroup (self.hPanelMesh, GRP_P0.SCRAM_INSTRUMENTS, ges)
 
@@ -1511,7 +1502,6 @@ end
 -- Respond to panel redraw event
 -- --------------------------------------------------------------
 function DeltaGlider:clbkPanelRedrawEvent (id, event, surf, context)
---	oapi.write_log(string.format("clbkPanelRedrawEvent %f %d %d %s", oapi.get_simtime(), id, event, tostring(context)))
 	if context then
 		return context:Redraw2D (surf)
 	end
@@ -1523,7 +1513,6 @@ end
 -- Load virtual cockpit mode
 -- --------------------------------------------------------------
 function DeltaGlider:clbkLoadVC (id)
---	oapi.write_log(string.format("DeltaGlider:clbkLoadVC %d", id))
 	local mfds_left  = {nmesh=1, ngroup=GRP_VC.LMFD_DISPLAY}
 	local mfds_right = {nmesh=1, ngroup=GRP_VC.RMFD_DISPLAY}
 	local huds = {nmesh=1, ngroup=GRP_VC.HUDDISP, hudcnt=_V(0,1.462,7.09), size=0.15}
@@ -1589,7 +1578,6 @@ end
 -- Respond to virtual cockpit mouse event
 -- --------------------------------------------------------------
 function DeltaGlider:clbkVCMouseEvent (id, event, p)
---	oapi.write_log(string.format("clbkVCMouseEvent %d %d %f,%f,%f",id,event,p.x,p.y,p.z))
 	-- standalone id
 	if id == AID_MFD1_PWR then
 		oapi.toggle_mfdon (MFDID.LEFT)
@@ -1607,7 +1595,6 @@ end
 -- Respond to virtual cockpit area redraw request
 -- --------------------------------------------------------------
 function DeltaGlider:clbkVCRedrawEvent (id, event, surf)
---	oapi.write_log(string.format("DeltaGlider:clbkVCRedrawEvent %d", id))
 	if not self.vcmesh then return false end
 
 	-- standalone id
@@ -1666,6 +1653,10 @@ end
 
 function DeltaGlider:SubsysDocking()
 	return self.ssys_docking
+end
+
+function DeltaGlider:SubsysScram()
+	return self.ssys_scram
 end
 
 register_vesselclass(DeltaGlider, true) -- use C++ names (clbkCamelCase)

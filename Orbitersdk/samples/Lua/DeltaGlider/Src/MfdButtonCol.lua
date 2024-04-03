@@ -3,7 +3,7 @@
 -- Licensed under the MIT License
 
 -- ==============================================================
---               ORBITER MODULE: DeltaGlider.lua
+--               ORBITER MODULE: MfdButtonCol.lua
 --                  Part of the ORBITER SDK
 --
 -- Original Delta glider rewritten in lua
@@ -237,7 +237,6 @@ function MfdButtonCol:ProcessMouseVC (event, p)
 			anim_btn = process_btn
 			self.curbtn = anim_btn
 			pushed = true
---			oapi.dbg_out(string.format("MfdButtonCol:ProcessMouseVC LBDOWN %d %d", process_btn, self.sd))
 		end
 	elseif self.curbtn >= 0 then
 		process_btn = self.curbtn

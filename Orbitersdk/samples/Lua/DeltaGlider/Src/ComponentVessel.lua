@@ -3,7 +3,7 @@
 -- Licensed under the MIT License
 
 -- ==============================================================
---               ORBITER MODULE: DeltaGlider.lua
+--               ORBITER MODULE: ComponentVessel.lua
 --                  Part of the ORBITER SDK
 --
 -- Original Delta glider rewritten in lua
@@ -145,7 +145,6 @@ end
 
 function ComponentVessel:clbkVCMouseEvent(elid, event, p)
 	local subsys = math.floor(elid/1000)
---	oapi.dbg_out(string.format("clbkVCMouseEvent elid=%d ssys=%d", elid, subsys))
 	local el = self.ssys[subsys]
 	if el then
 		return el:clbkVCMouseEvent(elid, event, p)

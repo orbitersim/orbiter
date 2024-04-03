@@ -3,7 +3,7 @@
 -- Licensed under the MIT License
 
 -- ==============================================================
---               ORBITER MODULE: DeltaGlider.lua
+--               ORBITER MODULE: GimbalControl.lua
 --                  Part of the ORBITER SDK
 --
 -- Original Delta glider rewritten in lua
@@ -295,7 +295,6 @@ local VC_GIMBAL_YSWITCH_ref = _V(-0.21342,0.98355,7.18374)
 local VC_GIMBAL_YSWITCH_axis = _V(0.00000,-0.81262,-0.58280)
 
 function GimbalControl:clbkLoadVC (vcid)
-	oapi.write_log(string.format("------------------------------GimbalControl:clbkLoadVC %d", vcid))
 	if vcid ~= 0 then return false end
 
 	-- Gimbal control dial

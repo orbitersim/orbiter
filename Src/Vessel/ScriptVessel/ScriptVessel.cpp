@@ -387,6 +387,7 @@ void ScriptVessel::clbkPostStep (double simt, double simdt, double mjd)
 		lua_pushnumber(L,mjd);
 		LuaCall (L, 3, 0);
 	}
+	oapiExecScriptCmd (hInterp, "--"); // update background threads count
 }
 
 void ScriptVessel::clbkSaveState(FILEHANDLE scn)

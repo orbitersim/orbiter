@@ -2905,10 +2905,12 @@ int Interpreter::v_get_equpos(lua_State* L)
 		lua_setfield(L, -2, "lat");
 		lua_pushnumber(L, radius);
 		lua_setfield(L, -2, "rad");
+		lua_pushlightuserdata(L, h);
+		return 2;
 	} else {
 		lua_pushnil(L);
+		return 1;
 	}
-	return 1;
 }
 
 

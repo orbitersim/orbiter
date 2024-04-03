@@ -1,3 +1,14 @@
+-- Copyright (c) Martin Schweiger
+-- Copyright 2024 (c) Gondos
+-- Licensed under the MIT License
+
+-- ==============================================================
+--               ORBITER MODULE: PressureSubsystem.lua
+--                  Part of the ORBITER SDK
+--
+-- Original Delta glider rewritten in lua
+-- ==============================================================
+
 local DGSubsystem = require("DGSubsystem")
 local AirlockCtrl = require("AirlockCtrl")
 local TophatchCtrl = require("TophatchCtrl")

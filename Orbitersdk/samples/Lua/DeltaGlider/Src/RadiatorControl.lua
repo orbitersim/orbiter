@@ -1,3 +1,14 @@
+-- Copyright (c) Martin Schweiger
+-- Copyright 2024 (c) Gondos
+-- Licensed under the MIT License
+
+-- ==============================================================
+--               ORBITER MODULE: RadiatorControl.lua
+--                  Part of the ORBITER SDK
+--
+-- Original Delta glider rewritten in lua
+-- ==============================================================
+
 local DGSubsystem = require("DGSubsystem")
 local RadiatorSwitch = require("RadiatorSwitch")
 local DGSwitch1 = require("DGSwitch1")

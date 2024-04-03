@@ -1,3 +1,14 @@
+-- Copyright (c) Martin Schweiger
+-- Copyright 2024 (c) Gondos
+-- Licensed under the MIT License
+
+-- ==============================================================
+--               ORBITER MODULE: CoolantPumpDial.lua
+--                  Part of the ORBITER SDK
+--
+-- Original Delta glider rewritten in lua
+-- ==============================================================
+
 local PanelElement = require("PanelElement")
 
 local CoolantPumpDial = Class(PanelElement)

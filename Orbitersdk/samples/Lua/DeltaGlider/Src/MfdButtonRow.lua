@@ -3,7 +3,7 @@
 -- Licensed under the MIT License
 
 -- ==============================================================
---               ORBITER MODULE: DeltaGlider.lua
+--               ORBITER MODULE: MfdButtonRow.lua
 --                  Part of the ORBITER SDK
 --
 -- Original Delta glider rewritten in lua
@@ -69,7 +69,6 @@ function MfdButtonRow:ProcessMouseVC (event, p)
 				oapi.send_mfdkey (self.subsys:MfdId(), OAPI_KEY.GRAVE)
 				proc = true
 			end
---			oapi.dbg_out(string.format("MfdButtonRow:ProcessMouseVC LBDOWN %d", self.curbtn))
 		end
 	elseif self.curbtn >= 0 then
 		if bit.anyset(event, PANEL_MOUSE.LBUP) then

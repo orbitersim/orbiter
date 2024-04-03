@@ -3,7 +3,7 @@
 -- Licensed under the MIT License
 
 -- ==============================================================
---               ORBITER MODULE: DeltaGlider.lua
+--               ORBITER MODULE: RetroCoverIndicator.lua
 --                  Part of the ORBITER SDK
 --
 -- Original Delta glider rewritten in lua
@@ -43,12 +43,10 @@ end
 --------------------------------------------------------------
 
 function RetroCoverIndicator:Redraw2D (surf)
---	oapi.dbg_out(string.format("RetroCoverIndicator %f", oapi.get_simtime()))
 	local state = self.component:State()
 
 	local int, frac = math.modf(oapi.get_simtime()*1.7)
 	local blink = frac < 0.5
-	--oapi.dbg_out(string.format("%f %f %f %s %f", state:State(), state:Speed(), frac, tostring(blink), oapi.get_simtime()))
 	local showlights = state:State() == 1.0 or (state:Speed() ~= 0 and blink)
 	if showlights ~= self.vlight_2D then
 		local v = (showlights and 420.0 or 412.0)/1024.0

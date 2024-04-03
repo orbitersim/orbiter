@@ -1,3 +1,14 @@
+-- Copyright (c) Martin Schweiger
+-- Copyright 2024 (c) Gondos
+-- Licensed under the MIT License
+
+-- ==============================================================
+--               ORBITER MODULE: TophatchCtrl.lua
+--                  Part of the ORBITER SDK
+--
+-- Original Delta glider rewritten in lua
+-- ==============================================================
+
 local DGSubsystem = require("DGSubsystem")
 local AnimState2 = require("AnimState2")
 local HatchCtrlSwitch = require("HatchCtrlSwitch")

@@ -1,11 +1,22 @@
+-- Copyright (c) Martin Schweiger
+-- Copyright 2024 (c) Gondos
+-- Licensed under the MIT License
+
+-- ==============================================================
+--               ORBITER MODULE: AvionicsSubsystem.lua
+--                  Part of the ORBITER SDK
+--
+-- Original Delta glider rewritten in lua
+-- ==============================================================
+
 local DGSubsystem = require("DGSubsystem")
---local AAPSubsystem = require("AAPSubsystem")
+local AAPSubsystem = require("AAPSubsystem")
 local InstrAtt = require("InstrAtt")
---local InstrHSI = require("InstrHSI")
+local InstrHSI = require("InstrHSI")
 local InstrAOA = require("InstrAOA")
 local InstrVS = require("InstrVS")
 local FuelMFD = require("FuelMFD")
---local AngRateIndicator = require("AngRateIndicator")
+local AngRateIndicator = require("AngRateIndicator")
 
 local AvionicsSubsystem = Class(DGSubsystem)
 
@@ -14,15 +25,15 @@ function AvionicsSubsystem:new (v)
 
 	-- create component instances
 	self.ELID_INSTRATT, self.instratt = self:AddElement (InstrAtt (v))
---	self.ELID_INSTRHSI, self.instrhsi = self:AddElement (InstrHSI (v))
+	self.ELID_INSTRHSI, self.instrhsi = self:AddElement (InstrHSI (v))
 	self.ELID_INSTRAOA, self.instraoa = self:AddElement (InstrAOA (v))
 	self.ELID_INSTRVS, self.instrvs   = self:AddElement (InstrVS (v))
 	self.ELID_FUELMFD, self.fuelmfd   = self:AddElement (FuelMFD (v))
---	self.ELID_ANGRATEIND, self.angrateind = self:AddElement (AngRateIndicator (v, g_Param.surf))
+	self.ELID_ANGRATEIND, self.angrateind = self:AddElement (AngRateIndicator (v, g_Param.surf))
 
 	-- create subsystem instances
---	self.aapssys = self:AddSubsystem (AAPSubsystem (self))
---	self.aapssys:AttachHSI(self.instrhsi)
+	self.aapssys = self:AddSubsystem (AAPSubsystem (self))
+	self.aapssys:AttachHSI(self.instrhsi)
 end
 
 --------------------------------------------------------------
@@ -39,7 +50,7 @@ function AvionicsSubsystem:clbkLoadPanel2D (panelid, hPanel, viewW, viewH)
 	self:DG():register_panelarea (hPanel, self.ELID_INSTRATT, _R(0,0,0,0), PANEL_REDRAW.ALWAYS, PANEL_MOUSE.IGNORE, 0, self.instratt)
 
 	-- HSI indicator
---	self:DG():register_panelarea (hPanel, self.ELID_INSTRHSI, _R(0,0,0,0), PANEL_REDRAW.ALWAYS, PANEL_MOUSE.IGNORE, 0, self.instrhsi)
+	self:DG():register_panelarea (hPanel, self.ELID_INSTRHSI, _R(0,0,0,0), PANEL_REDRAW.ALWAYS, PANEL_MOUSE.IGNORE, 0, self.instrhsi)
 
 	-- AOA/VS tape
 	self:DG():register_panelarea (hPanel, self.ELID_INSTRAOA, _R(0,0,0,0), PANEL_REDRAW.ALWAYS, PANEL_MOUSE.IGNORE, panel2dtex, self.instraoa)
@@ -49,7 +60,7 @@ function AvionicsSubsystem:clbkLoadPanel2D (panelid, hPanel, viewW, viewH)
 	self:DG():register_panelarea (hPanel, self.ELID_FUELMFD,  _R(0,0,0,0), PANEL_REDRAW.ALWAYS, PANEL_MOUSE.IGNORE, instr2dtex, self.fuelmfd)
 
 	-- angular rate indicators
---	self:DG():register_panelarea (hPanel, self.ELID_ANGRATEIND, _R(0,0,0,0), PANEL_REDRAW.ALWAYS, PANEL_MOUSE.IGNORE, panel2dtex, self.angrateind)
+	self:DG():register_panelarea (hPanel, self.ELID_ANGRATEIND, _R(0,0,0,0), PANEL_REDRAW.ALWAYS, PANEL_MOUSE.IGNORE, panel2dtex, self.angrateind)
 
 	return true
 end
@@ -65,7 +76,7 @@ function AvionicsSubsystem:clbkLoadVC (vcid)
 	oapi.VC_register_area (self.ELID_INSTRATT, PANEL_REDRAW.ALWAYS, PANEL_MOUSE.IGNORE)
 
 	-- HSI indicator
---	oapi.VC_register_area (self.ELID_INSTRHSI, PANEL_REDRAW.ALWAYS, PANEL_MOUSE.IGNORE)
+	oapi.VC_register_area (self.ELID_INSTRHSI, PANEL_REDRAW.ALWAYS, PANEL_MOUSE.IGNORE)
 
 	-- AOA/VS tapes
 	oapi.VC_register_area (self.ELID_INSTRAOA, PANEL_REDRAW.ALWAYS, PANEL_MOUSE.IGNORE)
@@ -75,7 +86,7 @@ function AvionicsSubsystem:clbkLoadVC (vcid)
 	oapi.VC_register_area (self.ELID_FUELMFD, _R(0,0,1,1), PANEL_REDRAW.ALWAYS, PANEL_MOUSE.IGNORE, PANEL_MAP.DIRECT, oapi.get_texturehandle (self:DG().vcmesh_tpl, 19))
 
 	-- angular rate indicators
---	oapi.VC_register_area (self.ELID_ANGRATEIND, _R(0,0,1,1), PANEL_REDRAW.ALWAYS, PANEL_MOUSE.IGNORE, PANEL_MAP.DIRECT, oapi.get_texturehandle (self:DG().vcmesh_tpl, 14))
+	oapi.VC_register_area (self.ELID_ANGRATEIND, _R(0,0,1,1), PANEL_REDRAW.ALWAYS, PANEL_MOUSE.IGNORE, PANEL_MAP.DIRECT, oapi.get_texturehandle (self:DG().vcmesh_tpl, 14))
 
 	return true
 end

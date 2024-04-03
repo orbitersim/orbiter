@@ -3,7 +3,7 @@
 -- Licensed under the MIT License
 
 -- ==============================================================
---               ORBITER MODULE: DeltaGlider.lua
+--               ORBITER MODULE: AAPSubsystem.lua
 --                  Part of the ORBITER SDK
 --
 -- Original Delta glider rewritten in lua
@@ -16,8 +16,7 @@ local AAPSubsystem = Class(DGSubsystem)
 
 function AAPSubsystem:new(...)
 	DGSubsystem.new(self, ...)
-	self.aap = AAP(self)
-	self.ELID_AAP = AddElement (aap)
+	self.ELID_AAP, self.aap = self:AddElement (AAP(self))
 end
 
 function AAPSubsystem:clbkLoadPanel2D(panelid, hPanel, viewW, viewH)

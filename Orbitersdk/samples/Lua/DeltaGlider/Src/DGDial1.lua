@@ -3,7 +3,7 @@
 -- Licensed under the MIT License
 
 -- ==============================================================
---               ORBITER MODULE: DeltaGlider.lua
+--               ORBITER MODULE: DGDial1.lua
 --                  Part of the ORBITER SDK
 --
 -- Original Delta glider rewritten in lua
@@ -52,7 +52,6 @@ function DGDial1:ProcessMouseVC (event, p)
 		else
 			self:Right()
 		end
---		oapi.dbg_out(string.format("DGDial1 pos=%d vpos=%d", self.pos, self.vpos))
 	end
 	return self.pos ~= self.vpos
 end
