@@ -866,6 +866,7 @@ void Interpreter::LoadAPI ()
 		{"get_objecttype", oapi_get_objecttype},
 		{"get_gbody", oapi_get_gbody},
 		{"get_gbodyparent", oapi_get_gbodyparent},
+		{"get_planetatmconstants", oapi_get_planetatmconstants},
 
 		// vessel functions
 		{"get_propellanthandle", oapi_get_propellanthandle},
@@ -888,6 +889,7 @@ void Interpreter::LoadAPI ()
 		{"get_atm", oapi_get_atm},
 		{"get_induceddrag", oapi_get_induceddrag},
 		{"get_wavedrag", oapi_get_wavedrag},
+		{"particle_getlevelref", oapi_particle_getlevelref},
 
 		// Docking
 		{"get_dockhandle", oapi_get_dockhandle},
@@ -1323,6 +1325,8 @@ void Interpreter::LoadNTVERTEXAPI ()
 		{"zeroize", ntv_zeroize},
 		{"append", ntv_append},
 		{"copy", ntv_copy},
+		{"write", ntv_write},
+		{"view", ntv_view},
 		{"__gc", ntv_collect},
 		{"__index", ntv_get},
 		{"__newindex", ntv_set},
@@ -2548,6 +2552,7 @@ int Interpreter::oapi_register_particletexture(lua_State* L)
 		lua_pushnil(L);
 	return 1;
 }
+
 int Interpreter::oapi_get_texturehandle(lua_State* L)
 {
 	MESHHANDLE hMesh = lua_tomeshhandle(L, 1);
@@ -3168,6 +3173,40 @@ int Interpreter::oapi_get_planetperiod(lua_State* L)
 	return 1;
 }
 
+int Interpreter::oapi_get_planetatmconstants(lua_State* L)
+{
+	OBJHANDLE hRef;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 2: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 2: invalid object");
+	const ATMCONST *c = oapiGetPlanetAtmConstants(hRef);
+
+	if(c) {
+		lua_createtable (L, 0, 10);
+		lua_pushnumber (L, c->p0);
+		lua_setfield (L, -2, "p0");
+		lua_pushnumber (L, c->rho0);
+		lua_setfield (L, -2, "rho0");
+		lua_pushnumber (L, c->R);
+		lua_setfield (L, -2, "R");
+		lua_pushnumber (L, c->gamma);
+		lua_setfield (L, -2, "gamma");
+		lua_pushnumber (L, c->C);
+		lua_setfield (L, -2, "C");
+		lua_pushnumber (L, c->O2pp);
+		lua_setfield (L, -2, "O2pp");
+		lua_pushnumber (L, c->altlimit);
+		lua_setfield (L, -2, "altlimit");
+		lua_pushnumber (L, c->radlimit);
+		lua_setfield (L, -2, "radlimit");
+		lua_pushnumber (L, c->horizonalt);
+		lua_setfield (L, -2, "horizonalt");
+		lua_pushvector (L, c->color0);
+		lua_setfield (L, -2, "color0");
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
 int Interpreter::oapi_get_objecttype(lua_State* L)
 {
 	OBJHANDLE hRef;
@@ -3455,6 +3494,19 @@ int Interpreter::oapi_get_shipairspeedvector (lua_State *L)
 		lua_pushvector (L, speedv);
 	else
 		lua_pushnil (L);
+	return 1;
+}
+
+int Interpreter::oapi_particle_getlevelref(lua_State* L)
+{
+	static const char* funcname = "particle_getlevelref";
+	ASSERT_SYNTAX (lua_islightuserdata (L,1), "Argument 1: invalid type (expected handle)");
+	PSTREAM_HANDLE ph = (PSTREAM_HANDLE)lua_touserdata (L, 1);
+	ASSERT_SYNTAX(ph, "Argument 1: invalid object");
+	lua_pushnumberref(L);
+	double *lvl = (double *)lua_touserdata(L, -1);
+
+	oapiParticleSetLevelRef(ph, lvl);
 	return 1;
 }
 
@@ -5945,8 +5997,8 @@ int Interpreter::ntvproxy_get(lua_State *L)
 		lua_pushnumber(L, (*vtx)->nx);
 	else if(!strcmp(member, "ny"))
 		lua_pushnumber(L, (*vtx)->ny);
-	else if(!strcmp(member, "ny"))
-		lua_pushnumber(L, (*vtx)->ny);
+	else if(!strcmp(member, "nz"))
+		lua_pushnumber(L, (*vtx)->nz);
 	else if(!strcmp(member, "normal")) {
 		VECTOR3 normal;
 		normal.x = (*vtx)->nx;
@@ -5982,7 +6034,7 @@ int Interpreter::ntvproxy_set(lua_State *L)
 		(*vtx)->nx = luaL_checknumber(L, 3);
 	else if(!strcmp(member, "ny"))
 		(*vtx)->ny = luaL_checknumber(L, 3);
-	else if(!strcmp(member, "ny"))
+	else if(!strcmp(member, "nz"))
 		(*vtx)->nz = luaL_checknumber(L, 3);
 	else if(!strcmp(member, "normal")) {
 		VECTOR3 normal = lua_tovector(L, 3);
@@ -6137,6 +6189,15 @@ int Interpreter::ntv_get(lua_State *L) {
 			lua_pushcfunction(L, ntv_copy);
 			return 1;
 		}
+		if(!strcmp(method, "view")) {
+			lua_pushcfunction(L, ntv_view);
+			return 1;
+		}
+		if(!strcmp(method, "write")) {
+			lua_pushcfunction(L, ntv_write);
+			return 1;
+		}
+		
 		return luaL_error(L, "invalid ntvertex method %s", method);
 	}
 }
@@ -6194,19 +6255,95 @@ int Interpreter::ntv_append(lua_State *L) {
 	return 0;
 }
 
+int Interpreter::ntv_write(lua_State *L) {
+	ntv_data* self = (ntv_data*)luaL_checkudata(L, 1, "NTV.vtable");
+	ntv_data* from = (ntv_data*)luaL_checkudata(L, 2, "NTV.vtable");
+	int size = from->nVtxUsed;
+	int start = 0;
+
+	if(lua_gettop(L)>=3) {
+		start = luaL_checkinteger(L,3) - 1;
+		if(start < 0) {
+			luaL_error(L, "Invalid write offset (%d)", start+1);
+		}
+		if(start > self->nVtx) {
+			luaL_error(L, "Write out of bound (%d/%d)", start+1,self->nVtx);
+		}
+	}
+	if(lua_gettop(L)>=4) {
+		size = luaL_checkinteger(L,4);
+		if(size+start > self->nVtx) {
+			luaL_error(L, "Write out of bound (%d/%d)", start+size,self->nVtx);
+		}
+	}
+	memcpy(self->vtx + start, from->vtx, size*sizeof(NTVERTEX));
+	self->nVtxUsed = std::max(self->nVtxUsed, start + size);
+	return 0;
+}
+
 int Interpreter::ntv_copy(lua_State *L) {
 	ntv_data* from = (ntv_data*)luaL_checkudata(L, 1, "NTV.vtable");
 
+	int start = 0;
+	int size = from->nVtx;
+	if(lua_gettop(L) >= 2) {
+		start = luaL_checkinteger(L, 2) - 1; // 1 based
+		if(start < 0) {
+			return luaL_error(L, "Invalid start offset (%d)", start + 1);
+		}
+		if(start > from->nVtx) {
+			return luaL_error(L, "Start offset outside of vertex array (%d/%d)", start + 1, from->nVtx);
+		}
+		size -= start;
+	}
+	if(lua_gettop(L) >= 3) {
+		size = luaL_checkinteger(L, 3);
+		if(size <= 0) {
+			return luaL_error(L, "Invalid size (%d)", size);
+		}
+		if(start + size > from->nVtx) {
+			return luaL_error(L, "Trying to copy outside of vertex array (%d/%d)", start + size, from->nVtx);
+		}
+	}
+
 	ntv_data *copy = (ntv_data *)lua_newuserdata(L, sizeof(ntv_data));
-    
+
 	luaL_getmetatable(L, "NTV.vtable");
 	lua_setmetatable(L, -2);
     
-	copy->nVtx = from->nVtx;
-	copy->nVtxUsed = from->nVtx;
-	copy->vtx = new NTVERTEX[from->nVtx];
-	memcpy(copy->vtx, from->vtx, from->nVtx*sizeof(NTVERTEX));
+	copy->nVtx = size;
+	copy->nVtxUsed = size;
+	copy->vtx = new NTVERTEX[size];
+	memcpy(copy->vtx, from->vtx + start, size*sizeof(NTVERTEX));
 	copy->owning = true;
+	return 1;
+}
+
+int Interpreter::ntv_view(lua_State *L) {
+	ntv_data* from = (ntv_data*)luaL_checkudata(L, 1, "NTV.vtable");
+	int start = lua_tointeger(L, 2) - 1;  // 1 based indexing
+	int size = lua_tointeger(L, 3);
+
+	if(size < 0) {
+		return luaL_error(L, "Invalid view size (%d)", size);
+	}
+
+	// if size is 0 or not specified then create a view to the end
+	if(size == 0)
+		size = from->nVtxUsed - start;
+
+	if( start+size > from->nVtx) {
+		return luaL_error(L, "Cannot create a view out the the array (%d>%d)", start+size > from->nVtx);
+	}
+
+	ntv_data *view = (ntv_data *)lua_newuserdata(L, sizeof(ntv_data));
+	luaL_getmetatable(L, "NTV.vtable");
+	lua_setmetatable(L, -2);
+    
+	view->nVtx = size;
+	view->nVtxUsed = size;
+	view->vtx = from->vtx + start;
+	view->owning = false;
 	return 1;
 }
 

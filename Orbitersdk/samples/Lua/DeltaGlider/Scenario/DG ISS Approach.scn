@@ -1,0 +1,65 @@
+BEGIN_DESC
+Lined up for docking at the International Space Station.
+
+Watch the approach path indicator on your left MFD and the HUD approach markers while closing in on the ISS.
+
+Use your linear RCS (Reaction control system) thrusters to keep aligned with the approach path.
+
+Your final closing velocity should be less than 0.1 m/s.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 51982.0975169074
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship DG-01
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET GL-01
+  MODE Cockpit
+  FOV 50.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Orbit
+END_HUD
+
+BEGIN_MFD Left
+  TYPE Docking
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Orbit
+  PROJ Ship
+  REF Earth
+  TARGET ISS
+END_MFD
+
+BEGIN_VC
+END_VC
+
+BEGIN_SHIPS
+ISS:ProjectAlpha_ISS
+  STATUS Orbiting Earth
+  RPOS 4770488.27 4245945.37 -2122703.08
+  RVEL 5242.970 -5610.802 567.655
+  AROT -110.00 -15.00 -84.00
+  IDS 0:1 100 1:2 100 2:3 100 3:4 100 4:5 100
+  NAVFREQ 0 0
+  XPDR 466
+END
+DG-01:DeltaGlider.lua
+  STATUS Orbiting Earth
+  RPOS 4771047.22 4246110.75 -2122707.67
+  RVEL 5242.499 -5610.933 567.655
+  AROT -137.35 48.57 117.57
+  PRPLEVEL 0:0.998 1:0.978
+  NAVFREQ 2 466
+  XPDR 0
+  DOCKSTATE 1 1.0000
+  AIRLOCK 0 0.0000
+END
+END_SHIPS

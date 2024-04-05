@@ -3,7 +3,7 @@
 -- Licensed under the MIT License
 
 -- ==============================================================
---               ORBITER MODULE: DeltaGlider.lua
+--               ORBITER MODULE: Subsystem.lua
 --                  Part of the ORBITER SDK
 --
 -- Original Delta glider rewritten in lua
@@ -152,7 +152,6 @@ end
 function Subsystem:clbkVCMouseEvent(elid, event, p)
 	-- note: this callback is not distributed to children, because the top-level
 	-- subsystem manages all panel elements
---	oapi.write_log(string.format("clbkVCMouseEvent id:%d elid:%d -> %d", self.id, elid, elid - (self.id+1)*1000))
 	elid = elid - (self.id+1)*1000 +1-- convert to index
 	local el = self.element[elid]
 	if el then

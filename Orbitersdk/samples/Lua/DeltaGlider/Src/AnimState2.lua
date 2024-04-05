@@ -3,7 +3,7 @@
 -- Licensed under the MIT License
 
 -- ==============================================================
---               ORBITER MODULE: DeltaGlider.lua
+--               ORBITER MODULE: AnimState2.lua
 --                  Part of the ORBITER SDK
 --
 -- Original Delta glider rewritten in lua

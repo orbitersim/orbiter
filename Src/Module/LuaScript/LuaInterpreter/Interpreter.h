@@ -465,6 +465,7 @@ protected:
 	static int oapi_get_objecttype(lua_State* L);
 	static int oapi_get_gbodyparent(lua_State* L);
 	static int oapi_get_gbody(lua_State* L);
+	static int oapi_get_planetatmconstants(lua_State* L);
 
 	// Vessel functions
 	static int oapi_get_propellanthandle (lua_State *L);
@@ -881,7 +882,7 @@ protected:
 	static int v_add_reentrystream(lua_State* L);
 	static int v_add_particlestream(lua_State* L);
 	static int v_del_exhauststream(lua_State* L);
-
+	static int oapi_particle_getlevelref(lua_State* L);
 
 	// Nosewheel-steering and wheel brakes
 	static int v_set_nosewheelsteering (lua_State *L);
@@ -1034,10 +1035,12 @@ protected:
 	static int ntv_zeroize(lua_State *L);
 	static int ntv_append(lua_State *L);
 	static int ntv_copy(lua_State *L);
+	static int ntv_write(lua_State *L);
 	static int ntv_extract(lua_State *L); // create a table containing the NTVERTEX data
 	static int ntv_set(lua_State *L);     // assignment operator array[i] = table/NTV proxy
 	static int ntv_get(lua_State *L);// proxy = array[i]
 	static int ntv_collect(lua_State *L);
+	static int ntv_view(lua_State *L); // create a temporary view similar to C++ string_views
 		
 	static void push_ntvertexarray(lua_State *L, NTVERTEX *, int);
 

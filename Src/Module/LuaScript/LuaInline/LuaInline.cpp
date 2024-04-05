@@ -72,7 +72,6 @@ unsigned int WINAPI InterpreterList::Environment::InterpreterThreadProc (LPVOID 
 {
 	InterpreterList::Environment *env = (InterpreterList::Environment*)context;
 	Interpreter *interp = env->interp;
-
 	// interpreter loop
 	for (;;) {
 		interp->WaitExec(); // wait for execution permission

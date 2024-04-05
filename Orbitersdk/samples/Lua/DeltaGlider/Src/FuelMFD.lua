@@ -1,3 +1,14 @@
+-- Copyright (c) Martin Schweiger
+-- Copyright 2024 (c) Gondos
+-- Licensed under the MIT License
+
+-- ==============================================================
+--               ORBITER MODULE: FuelMFD.lua
+--                  Part of the ORBITER SDK
+--
+-- Original Delta glider rewritten in lua
+-- ==============================================================
+
 local PanelElement = require("PanelElement")
 
 local meshres_p0 = require("meshres_p0")
@@ -52,16 +63,16 @@ function FuelMFD:Reset2D (panelid, hMesh)
 	if panelid ~= 0 then return end
 
 	local dg = self.vessel
-	local isScram = dg:ScramVersion()
+	self.isScram = dg:ScramVersion()
 
 	local ges = {}
 	ges.flags = GRPEDIT.SETUSERFLAG
-	ges.UsrFlag = isScram and 0 or 3
+	ges.UsrFlag = self.isScram and 0 or 3
 	oapi.edit_meshgroup (hMesh, GRP_P0.FUEL_DISP_SCRAM, ges)
-	ges.UsrFlag = isScram and 3 or 0
+	ges.UsrFlag = self.isScram and 3 or 0
 	oapi.edit_meshgroup (hMesh, GRP_P0.FUEL_DISP_NOSCRAM, ges)
 
-	self.grp = oapi.mesh_group (hMesh, isScram and GRP_P0.FUEL_DISP_SCRAM or GRP_P0.FUEL_DISP_NOSCRAM)
+	self.grp = oapi.mesh_group (hMesh, self.isScram and GRP_P0.FUEL_DISP_SCRAM or GRP_P0.FUEL_DISP_NOSCRAM)
 
 	self.crd_2D = {}
 	self.crd_2D[1] = 511.5
@@ -71,7 +82,7 @@ function FuelMFD:Reset2D (panelid, hMesh)
 
 	self.Mmain = dg:get_propellantmass(dg.ph_main)
 	self.Mrcs = dg:get_propellantmass(dg.ph_rcs)
-	if isScram then
+	if self.isScram then
 		self.Mscram = dg:SubsysScram():GetPropellantMass()
 	end
 end
@@ -82,7 +93,7 @@ function FuelMFD:ResetVC (hMesh)
 	-- NEED TO DO VERTEX TRANSFORMATIONS HERE!
 
 	local dg = self.vessel
-	local isScram = dg:ScramVersion()
+	self.isScram = dg:ScramVersion()
 
 	self.vc_grp.nVtx = 20
 	if not self.vc_grp.Vtx then
@@ -91,12 +102,12 @@ function FuelMFD:ResetVC (hMesh)
 
 	local ges = {}
 	ges.flags = GRPEDIT.SETUSERFLAG
-	ges.UsrFlag = isScram and 3 or 0
+	ges.UsrFlag = self.isScram and 3 or 0
 	oapi.edit_meshgroup(hMesh, GRP_VC.PROPELLANT_STATUS_NOSCRAM, ges)
-	ges.UsrFlag = isScram and 0 or 3
+	ges.UsrFlag = self.isScram and 0 or 3
 	oapi.edit_meshgroup(hMesh, GRP_VC.PROPELLANT_STATUS_SCRAM, ges)
 
-	self.grpId = isScram and GRP_VC.PROPELLANT_STATUS_SCRAM or GRP_VC.PROPELLANT_STATUS_NOSCRAM
+	self.grpId = self.isScram and GRP_VC.PROPELLANT_STATUS_SCRAM or GRP_VC.PROPELLANT_STATUS_NOSCRAM
 	if oapi.get_meshgroup(hMesh, self.grpId, self.vc_grp) ~= 0 then -- problems
 		self.vc_grp.Vtx = nil
 	else 
@@ -109,7 +120,7 @@ function FuelMFD:ResetVC (hMesh)
 
 	self.Mmain = dg:get_propellantmass(dg.ph_main)
 	self.Mrcs = dg:get_propellantmass(dg.ph_rcs)
-	if isScram then
+	if self.isScram then
 		self.Mscram = dg:SubsysScram():GetPropellantMass()
 	end
 end
@@ -182,7 +193,7 @@ function FuelMFD:Redraw (Vtx, surf, crd)
 		-- scram level
 		m = dg:SubsysScram():GetPropellantMass ()
 		lvl = m / math.max (1.0, dg:SubsysScram():GetPropellantMaxMass())
-		isp = dg:SubsysScram():GetThrusterIsp (0)
+		isp = dg:SubsysScram():GetThrusterIsp (1)
 		dv = isp * math.log(m0/(m0-m))
 		y = crd[1] + lvl*(crd[2]-crd[1])
 		z = crd[3] + lvl*(crd[4]-crd[3])

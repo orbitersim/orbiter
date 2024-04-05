@@ -3,7 +3,7 @@
 -- Licensed under the MIT License
 
 -- ==============================================================
---               ORBITER MODULE: DeltaGlider.lua
+--               ORBITER MODULE: PHoverCtrl.lua
 --                  Part of the ORBITER SDK
 --
 -- Original Delta glider rewritten in lua

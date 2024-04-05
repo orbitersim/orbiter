@@ -3,7 +3,7 @@
 -- Licensed under the MIT License
 
 -- ==============================================================
---               ORBITER MODULE: DeltaGlider.lua
+--               ORBITER MODULE: AirebrakeLever.lua
 --                  Part of the ORBITER SDK
 --
 -- Original Delta glider rewritten in lua
