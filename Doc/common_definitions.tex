@@ -26,6 +26,7 @@
 \usepackage{wrapfig}
 \usepackage{multicol}
 \usepackage{enumitem}
+\usepackage{starfont}
 \usepackage[export]{adjustbox}
 
 
@@ -85,3 +86,8 @@
   {\hbox to 0pt{\hbox to \@tempdimb{\hss\unhbox\suse@key\hss}\hss}}
   {}{\PatchFailed}
 \makeatother
+
+%fix gap in index between 10.10 and text
+\advance\cftsecnumwidth 0.5em\relax
+\advance\cftsubsecindent 0.5em\relax
+\advance\cftsubsecnumwidth 0.5em\relax
