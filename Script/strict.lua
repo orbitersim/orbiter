@@ -42,3 +42,5 @@ end
 function strictmode_add_global(name)
 	mt.__declared[name] = true
 end
+-- Global used for aborting coroutines
+wait_exit = nil

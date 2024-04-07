@@ -389,6 +389,7 @@ protected:
 	static int oapiOpenHelp (lua_State *L);
 	static int oapiOpenInputBox (lua_State *L);
 	static int oapiReceiveInput (lua_State *L);
+	static int oapi_open_inputboxex (lua_State *L);
 	static int oapi_global_to_equ(lua_State* L);
 	static int oapi_global_to_local(lua_State* L);
 	static int oapi_local_to_equ(lua_State* L);
