@@ -788,6 +788,7 @@ void Interpreter::LoadAPI ()
 		{"exit", oapiExit},
 		{"open_inputbox", oapiOpenInputBox},
 		{"receive_input", oapiReceiveInput},
+		{"open_inputboxex", oapi_open_inputboxex},
 		{"del_vessel", oapi_del_vessel},
 		{"create_vessel", oapi_create_vessel},
 		{"set_focusobject", oapi_set_focusobject},
@@ -1294,6 +1295,10 @@ void Interpreter::LoadAPI ()
 	lua_pushnumber (L, OBJTP_VESSEL); lua_setfield (L, -2, "VESSEL");
 	lua_pushnumber (L, OBJTP_SURFBASE); lua_setfield (L, -2, "SURFBASE");
 	lua_setglobal (L, "OBJTP");
+
+	lua_createtable (L, 0, 1);
+	lua_pushnumber (L, USRINPUT_NEEDANSWER); lua_setfield (L, -2, "NEEDANSWER");
+	lua_setglobal (L, "USRINPUT");
 
 }
 
@@ -2976,6 +2981,85 @@ int Interpreter::oapiReceiveInput (lua_State *L)
 	return 1;
 }
 
+typedef struct {
+	int ref_enter;
+	int ref_cancel;
+	int usr_data;
+	lua_State *L;
+} lua_inputbox_ctx;
+
+static bool Clbk_enter(void *id, char *str, void *ctx)
+{
+	lua_inputbox_ctx *ibctx = (lua_inputbox_ctx *)ctx;
+	lua_rawgeti(ibctx->L, LUA_REGISTRYINDEX, ibctx->ref_enter);   // push the callback function
+	lua_pushstring (ibctx->L, str);
+	lua_rawgeti(ibctx->L, LUA_REGISTRYINDEX, ibctx->usr_data);   // push the usr_data
+	lua_call (ibctx->L, 2, 1);
+	bool ret = lua_toboolean(ibctx->L, -1);
+	if(ret) {
+		luaL_unref(ibctx->L, LUA_REGISTRYINDEX, ibctx->ref_enter);
+		luaL_unref(ibctx->L, LUA_REGISTRYINDEX, ibctx->ref_cancel);
+		luaL_unref(ibctx->L, LUA_REGISTRYINDEX, ibctx->usr_data);
+		delete ibctx;
+	}
+	return ret;
+}
+
+static bool Clbk_cancel(void *id, char *str, void *ctx)
+{
+	lua_inputbox_ctx *ibctx = (lua_inputbox_ctx *)ctx;
+	if(ibctx->ref_cancel != LUA_REFNIL) {
+		lua_rawgeti(ibctx->L, LUA_REGISTRYINDEX, ibctx->ref_cancel); // push the callback function
+		lua_pushstring (ibctx->L, str);
+		lua_rawgeti(ibctx->L, LUA_REGISTRYINDEX, ibctx->usr_data);   // push the usr_data
+		lua_call (ibctx->L, 2, 0);
+	}
+	luaL_unref(ibctx->L, LUA_REGISTRYINDEX, ibctx->ref_enter);
+	luaL_unref(ibctx->L, LUA_REGISTRYINDEX, ibctx->ref_cancel);
+	luaL_unref(ibctx->L, LUA_REGISTRYINDEX, ibctx->usr_data);
+	delete ibctx;
+	return true;
+}
+
+int Interpreter::oapi_open_inputboxex (lua_State *L)
+{
+	const char *title = luaL_checkstring(L, 1);
+	int ref_enter = LUA_REFNIL;
+	int ref_cancel = LUA_REFNIL;
+	int usr_data = LUA_REFNIL;
+	char *buf = NULL;
+	int vislen = 20;
+	int flags = 0;
+	if (lua_isfunction(L, 2)) {
+		lua_pushvalue(L, 2);
+		ref_enter = luaL_ref(L, LUA_REGISTRYINDEX);
+	} else {
+		luaL_error(L, "Argument 2 must be a function");
+	}
+	if (lua_isfunction(L, 3)) {
+		lua_pushvalue(L, 3);
+		ref_cancel = luaL_ref(L, LUA_REGISTRYINDEX);
+	}
+	if (lua_isstring(L, 4)) {
+		buf = const_cast<char *>(lua_tostring(L, 4));
+	}
+	if (lua_isnumber(L, 5)) {
+		vislen = lua_tointeger(L, 5);
+	}
+	lua_pushvalue(L, 6);
+	usr_data = luaL_ref(L, LUA_REGISTRYINDEX);
+	if (lua_isnumber(L, 7)) {
+		flags = lua_tointeger(L, 7);
+	}
+	lua_inputbox_ctx *ctx = new lua_inputbox_ctx();
+	ctx->ref_enter = ref_enter;
+	ctx->ref_cancel = ref_cancel;
+	ctx->usr_data = usr_data;
+	ctx->L = L;
+
+	oapiOpenInputBoxEx (title, Clbk_enter, Clbk_cancel, buf, vislen, ctx, flags);
+	return 0;
+}
 int Interpreter::oapi_global_to_equ(lua_State* L)
 {
 	OBJHANDLE hObj;
