@@ -55,7 +55,612 @@ Apart from the standard implementation of the PB vessel class, Orbiter also come
 
 
 \subsection{Dragonfly}
-% TODO
+The Dragonfly is a space tug designed for moving payload in orbit. It may be used to bring satellites delivered by the Space Shuttle into higher orbits, or to help in the assembly of large orbital structures.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\hsize]{dragonfly.png}
+  \caption{Dragonfly original design: Martin Schweiger. Model improvements and textures: Roger Long. Systems simulation and instrument panels: Radu Poenaru.}
+\end{figure}
+
+\noindent
+The Dragonfly has no dedicated main engines, but a versatile and adjustable reaction control system for manoeuvring. It is not designed for atmospheric descent or surface landing.\\
+The cockpit layout consists of a set of 2D panels that include MFD instruments, an ADI ball and radar display. The Dragonfly incorporates a detailed electrical and environmental systems simulation, contributed by Radu Poenaru.
+
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.25\textwidth}|p{0.15\textwidth}|p{0.05\textwidth}|p{0.45\textwidth}| }
+	\hline\rule{0pt}{2ex}
+	Mass & 7.0 $\cdot$ 10$^{3}$ & kg & (empty)\\
+	\hline\rule{0pt}{2ex}
+	& 4.0 $\cdot$ 10$^{3}$ & kg & (fuel capacity)\\
+	\hline\rule{0pt}{2ex}
+	& 11.0 $\cdot$ 10$^{3}$ & kg & (total)\\
+	\hline\rule{0pt}{2ex}
+	Dimensions & 14.8 x 7.2 x 7.4 & m & (L x W x H)\\
+	\hline
+	\multicolumn{4}{|c|}{\rule{0pt}{2ex}Propulsion system: RCS with thrusters mounted in 3 pods (left, right, aft)}\\
+	\hline\rule{0pt}{2ex}
+	Thrust & 1.0 & kN & (per RCS engine)\\
+	\hline\rule{0pt}{2ex}
+	Acceleration & 0.18 & m/s2 & (linear RCS engine pair thrust, at full load)\\
+	\hline\rule{0pt}{2ex}
+	Isp & 4.0 $\cdot$ 10$^{3}$ & m/s & (vacuum)\\
+	\hline\rule{0pt}{2ex}
+	Prop. flow rate & 0.50 & kg/s & (RCS engine pair in single axis)\\
+	\hline
+	\caption{Technical specifications}
+	\end{longtable}
+%\end{table}
+
+
+\subsubsection{Electrical Power System}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\hsize]{dragonfly_electricalsystem.png}
+  \caption{Electrical Power System}
+\end{figure}
+
+\noindent
+The electrical power system (EPS) consists of the equipment and reactants that produce electrical power for distribution throughout the space vehicle, and fulfill all power requirements of the vessel. The EPS operates during all flight phases. For nominal operations, very little flight crew interaction is required by the EPS. The vessel has no primary hydraulic system, and thus all operating and motor power is electrical-based.\\
+The EPS is functionally divided into three subsystems: power reactants storage and distribution (PRSD), two fuel cell power plants (fuel cells) + one battery, and electrical power distribution and control (EPDC).\\
+The two fuel cells generate all 28-volt direct-current electrical power for the vehicle through an electrochemical reaction of hydrogen and oxygen. At the hydrogen electrode (anode), hydrogen is oxidized according to the following reaction:
+
+\begin{align*}
+\ce{2H_{2} + 4OH^{-} -> 4H_{2}O + 4e^{-}}
+\end{align*}
+
+\noindent
+forming water and releasing electrons. At the oxygen electrode (cathode), oxygen is reduced in the presence of water. It forms hydroxyl ions according to the following relationship:
+
+\begin{align*}
+\ce{O_{2} + 2H_{2}O -> 4OH^{-}}
+\end{align*}
+
+\noindent
+The net reaction consumes one oxygen molecule and two hydrogen atoms in the production of two water molecules, with electricity and heat formed as by-products of the reaction.\\
+The power reactants storage and distribution system stores the reactants (cryogenic hydrogen and oxygen) and supplies them to the two fuel cells that generate all the electrical power for the vehicle during all mission phases. In addition, the subsystem supplies cryogenic oxygen to the environmental control and life support system (ECLSS) for crew cabin pressurization. The hydrogen and oxygen are stored in three tanks each at cryogenic temperatures (170 K for liquid oxygen and 70 K for liquid hydrogen) and supercritical pressures (above 1400 kPa for oxygen and above 2000 kPa for hydrogen).\\
+The system stores the reactant hydrogen and oxygen in double-walled, thermally insulated spherical tanks with a vacuum annulus between the inner pressure vessel and outer tank shell. Each tank has heaters to add energy to the reactants during depletion to control pressure. Each tank is capable of measuring quantity remaining.
+
+
+\paragraph{Power Reactants Storage and Distribution (PRSD)}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\hsize]{dragonfly_diagram_prsd.png}
+\end{figure}
+
+\noindent
+PRSD is controlled by switches located in the upper-left corner and lower-left corner of panel L1 (main electrical panel). The switches can direct the flow of cryogenic reactants and isolate parts of PRSD in case of leaks.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\hsize]{dragonfly_prsd_1.png}
+\end{figure}
+
+\noindent
+The top row of switches control isolation valves for each of the three oxygen and hydrogen tanks (TK ISOL VLV). When set to close (down pos.) a DC powered engine will mechanically close reactant access to PRDS. Typical setting is tanks 1 and 2 open, tank 3 isolated. Isolation motor operation is indicated by a TB (talk-back) indicator above each switch. TB will show white when isol. motor is stopped and barberpole when motor is operating or is damaged.\\
+Typical closing time for an isol. valve is about 3 seconds. Given that isol. valves operation is necessary in certain circumstances to start/restart the fuel cells, the power needed for motor operation is provided directly by the battery rather than from a DC bus. Care must be taken that a minimum power capacity is stored in the battery to assure isol. valve functioning in case of fuel-cell shutdown.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\hsize]{dragonfly_prsd_2.png}
+\end{figure}
+
+\noindent
+Second row of switches controls cross-feed valves in the cryogenic manifold (XFEED). Normal piping configuration is tank 1 supplying reactant to FC1, tank 2 supplying reactant to FC2 and tank 3 functioning as back-up and ECLSS supply. By positioning the XFEED switch 1 to open, tanks 1and 3 will supply reactants to both FC1 and ECLSS.\\
+Positioning the XFEED switch 2 to open, tanks 2 and 3 supply reactants to FC2 and ECLSS. Opening both XFEED valves, tanks 1, 2 and 3 supply reactants to FC1, FC2 and ECLSS.\\
+Last two switches on the last row (REAC VLV) control the reactant valves to the respective fuel cells. Same operating procedures apply as for the tank isolation valves, with a closing time of $\sim$3
+seconds and a power supply from the ships' battery.\\
+Lower on the panel, two switches (CRYO ISOL VLV) control isolation valves that separate PRSD manifolds from external vent valves. Additionally in the case of O2 it separates flow from the cryogenic O2 manifold to the ECLSS systems.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\hsize]{dragonfly_prsd_3.png}
+\end{figure}
+
+\noindent
+OVB DUMP valves represent a high capacity (up to 450gr/sec) overboard vent valve, for quick discharge of reactants in case of emergency. OVB VENT valves are safety overpressure valves, that pneumatically open when reactant pressure exceed certain safety limits. In the case of O2, the safety overpressure valve will open at 1500 kPa and re-settle at 1450 kPa. For H2 the overpressure valve will open at 2500 kPa and re-settle at 2450kPa. For the H2O waste tank, the valve will open at 1000kPa and re-settle at 900kPa. The two H2O vent valves are non-propulsive, in that it will not affect the state vector of the ship. H2 and O2 valves, both DUMP and OVP will impact a small propulsive (-y axis) force when discharging. The high-capacity DUMP valves might take up to 10 second for opening/closing. A TB will indicate when the motor is operating. Additionally a OP/CL indicator will permanently indicate the respective position of the DUMP valve. Power for the high-capacity DUMP valve motor is also supplied by the battery and is not selectable by the crew.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.25\hsize]{dragonfly_prsd_4.png}
+\end{figure}
+
+\noindent
+TK HEATERS switches control electrical heaters that are located inside each cryogenic tank. Middle position (AUTO) will automatically turn the heaters on/off to maintain reactant pressure within operational limits.\\
+When the heaters are at to AUTO position, the heaters will automatically be turned on for every tank that reaches a minimum operational pressure of 450kPa, for both O2 and H2 tanks, then turned off when the pressure reaches again 470kPa.As the tanks are depleted, the TK HEATERS should be turned to the off position to save electrical power and to prevent an overheating of the reactants. Basic FC operation is based on supercold reactants flowing throughout the FC stack for cooling purposes. Excessive heating of the reactants in order to maintain pressure means warmer reactants will enter the FC stack, which might lead to a FC overheating. An overheated FC will also produce warmer H2O as a byproduct, which in turn is used a a general coolant throughout the ship to maintain a thermal balance. A higher H2O temperature in the H2O tank means warmer water will flow through the coolant loops, leading to a large number of problems. Tank heaters are powered by their own DC bus, HTRS bus, linked to DC1.
+
+\paragraph{Fuel Cells \& Battery}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.25\hsize]{dragonfly_fc.png}
+\end{figure}
+
+\noindent
+In normal operation mode, only one fuel cell (FC1) is active, running on reactants supplied by tanks 1 and 2. In case of exceeding power loads only, or as a back-up, FC2 might be started also. The two TB indicators monitor proper reactant flow into the respective FC. The TB will indicate white at nominal flow and barberpole if flow is less than nominal. The START/STOP switch controls power from the battery to the reactant pumps that direct O2 and H2 flow to the respective reaction plates inside the FC stack. The START switch must be held in the START momentary position for approximately 15-20 seconds until FC chemical reactions can supply enough power to the fuel pumps for self-sustainability, which is indicated by the two reactant TB turning white. The second PURGE/NORM switch will trigger the automatic purge sequence for the respective fuel cell. When set to purge, the pumps will direct as much as 900gr/min of reactants to the FC, for the high volume of reactants to clean the FC stack from diverse chemicals and residuals accumulated inside the FC stack during operation. FC purging can be confirmed by the high-flow indicated on the REACTANT FLOW indicator at the bottom-right part of the panel. Another indicator for FC purging is the FUEL PH monitor, located at the center of the panel. dPH should never exceed 1.5 for normal FC operation. As the dPH rises, FC performance is seriously affected and more reactants will be used to produce power until eventually the chain reaction will collapse. Because a small reactant flow rate will not clean any of the residuals and impurities inside the FC, running the FC at idle load will need a purge at smaller intervals than running the FC at normal power loads.\\
+The resulting water from the FC chemical reaction will run to a H2O waste tank. Pressure in this tank can be monitored on the H2O WST TK indicator. The H2O OVP VENT should always be set to on during a FC purge sequence, to prevent damage from overpressuring the tank, or to prevent water from the tank, running up the piping back to the FC where it can kill the chemical reaction.\\
+The last row of switches control battery reloading from power supplied by either FC1 or FC2. Note that the CB (circuit breaker) BT LOAD must be in the push (close) position (by default opened) for loading to occur. The TB indicator will show barberpole if power is being sent to the battery.
+
+\paragraph{Electrical Power Distribution and Control (EPDC)}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\hsize]{dragonfly_diagram_epdc.png}
+\end{figure}
+
+\noindent
+Electrical power inside the ship is provided trough two main Direct Current busses (DC1 and DC2) and one main Alternative Current bus (AC1). While most essential equipment is connected to DC1, it is possible to route power to these equipments using the back-up DC2 in case of a problem with DC1. AC power, trough AC1, is needed for radar antennas operations and radar antennas electrical pitch and yaw motors.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.25\hsize]{dragonfly_epdc_1.png}
+\end{figure}
+
+\noindent
+The three POWER ROUTING switches are used to direct DC and AC loads to respective FCs or battery. From left to right, setting whether
+
+\begin{itemize}
+\item DC1 bus is linked to FC1 (down), the battery (middle) or FC2 (up)
+\item DC2 bus is linked to FC2 (down), the battery (middle) or FC2 (up)
+\item AC1 bus is linked to the DC1 bus (down), directly to the battery (middle) or to the DC2 bus (up)
+\end{itemize}
+
+\noindent
+Note that the AC1 bus cannot be directly tied to a FC cell, as power must be converted by a static inverter into AC current. These static inverters exist only for DC1, DC2 and battery. Amperage and volts of the respective busses, battery and fuel cells can be monitored by the indicators located just above these switches.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.35\hsize]{dragonfly_epdc_2.png}
+\end{figure}
+
+\noindent
+Once linked to a power source, the respective DC and AC busses need to be re-mounted (turned on) for them to provide power. The respective CB (circuit breakers) need to be positioned in the pushed (close) position and the respective BUS SNS TRP switch must be brought to the momentary -RESET/TEST- position. If there is a problem within the bus, pressing this switch will cause an automatic disconnect of the bus from the power source, indicated by the respective CB popping back to the open position.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.35\hsize]{dragonfly_epdc_3.png}
+\end{figure}
+
+\noindent
+CB indicators are located in the upper-right part of the panel. If the voltage and amperage are within operating limits, the CB indicator will remain in the pushed position and power will be routed trough that respective bus.\\
+Pressing the same switch to its momentary -TRIP- position will automatically trip the respective bus.\\
+NOTE. A bus should never be set to -TRIP - position, under normal circumstances, if connected to a FC load, much like an electrical instrument should not be instantly unplugged. Rather, that bus should be switched to battery or a non started FC and wait for the AUTO TRIP to automatically and safely shut down the respective bus.\\
+The second row of switches (AUTO TRIP) if set to ON will automatically trip the respective bus if an out-of-limits situation occurs, such as low or high voltage, preventing equipment damage. The AUTO TRIP switch must be in it's ON position during a bus re-start to ensure a safe auto-shutdown of the bus.
+
+\paragraph{Caution and Warning}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\hsize]{dragonfly_cw.png}
+\end{figure}
+
+Caution and warning displays on the electrical panel are located on the lower-left side. They present the crew with non-critical out-of-limits situations, making it easier to identify a problem.\\
+The respective C/W will trigger under the following circumstances:
+
+\begin{itemize}
+\item BAT - Battery load. Less than 10kWh left in the battery, or battery overcharged.
+\item DC V - Direct Current Voltage. One of the main DC busses (DC1 or DC2) has a voltage higher than 30 volts or lower than 27 volts.
+\item AC V - Alternative Current Voltage. The main AC bus (AC1) has a voltage that exceeds 38 V or lower than 35 V
+\item AV OVC - AC bus Overload. More than 100 A of load onto AC1
+\item H2 PRS / O2 PRS - Cryogenic pressure is less than 200 kPa
+\item FC TMP - FC 1 or 2 temp stack is larger than 350 K
+\item FC1 LD - Fuel Cell 1 Load. Fuel cell 1 is either overloaded (> 200 A) or under-loaded (< 20 A)
+\item FC FLW - Fuel Cell Flow. Reactant flow inside FC1 or FC2 is larger than the nominal 7.5 kg/h
+\end{itemize}
+
+
+\paragraph{EPS Procedures \& Checklists}
+A. Normal operation switch positions:
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ p{\textwidth} }
+	O2 TK1 ISOL VLV - OPEN\\
+	O2 TK2 ISOL VLV - OPEN\\
+	O2 TK3 ISOL VLV - CLOSE\\
+	O2 XFEED 1 - OPEN\\
+	O2 XFEED 2 - OPEN\\
+	O2 REAC VLV FC1 - OPEN\\
+	O2 REAC VLV FC2 - OPEN\\
+	FC1 PURGE - NORM\\
+	FC2 PURGE - NORM\\
+	BAT LOAD - FC1, NORM\\
+	H2 TK1 ISOL VLV - OPEN\\
+	H2 TK2 ISOL VLV - OPEN\\
+	H2 TK3 ISOL VLV - CLOSE\\
+	H2 XFEED 1 - OPEN\\
+	H2 XFEED 2 - OPEN\\
+	H2 REAC VLV FC1 - OPEN\\
+	H2 REAC VLV FC2 - OPEN\\
+	TK HEATERS - ALL AUTO\\
+	O2 ISOL VLV - OPEN\\
+	H2 ISOL VLV - OPEN\\
+	O2 OVB DUMP - CL\\
+	H2 OVB DUMP - CL\\
+	O2 OVP VENT - CL\\
+	H2 OVP VENT - CL\\
+	H2O OVP VENT - CL BOTH\\
+	BUS SNS TRP AUTO TRIP - ALL ON\\
+	\\
+	CB BT LD - OPEN\\
+	CB - ALL OTHER CLOSED\\
+	\\
+	POWER ROUTING\\
+	\quad DC1 - FC1\\
+	\quad DC2 - FC2\\
+	\quad AC1 - DC2\\
+	\end{longtable}
+%\end{table}
+
+\noindent
+B. FC1 START:
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ p{\textwidth} }
+	O2 TK1 ISOL VLV - OPEN\\
+	H2 TK1 ISOL VLV - OPEN\\
+	O2 REAC VLV FC1 - OPEN\\
+	H2 REAC VLV FC1 - OPEN\\
+	FC1 PURGE - NORM\\
+	H2O OVP VENT - CL BOTH\\
+	BAT LOAD - NORM\\
+	FC1 START - HELD UNTIL TB TURN WHITE\\
+	H2O OVP VENT - OP BOTH
+	\end{longtable}
+%\end{table}
+
+\noindent
+C. FC2 START (OPTIONAL)
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ p{\textwidth} }
+	O2 TK1 ISOL VLV - OPEN\\
+	O2 TK2 ISOL VLV - OPEN\\
+	H2 TK1 ISOL VLV - OPEN\\
+	H2 TK2 ISOL VLV - OPEN\\
+	O2 XFEED 1 - OPEN\\
+	O2 XFEED 2 - OPEN\\
+	H2 XFEED 1 - OPEN\\
+	H2 XFEED 2 - OPEN\\
+	O2 REAC VLV FC2 - OPEN\\
+	H2 REAC VLV FC2 - OPEN\\
+	FC2 PURGE - NORM\\
+	H2O OVP VENT - CL BOTH\\
+	BAT LOAD - NORM\\
+	FC2 START - HELD UNTIL TB TURN WHITE\\
+	H2O OVP VENT - OP BOTH
+	\end{longtable}
+%\end{table}
+
+\noindent
+C. DC1 START
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ p{\textwidth} }
+	POWER ROUTING DC1 - FC1 / FC2 / BAT - as req.'\\
+	CB MN1 - PUSH CLOSED\\
+	BUS SNS TRP AUTO TRIP DC1 - ON\\
+	BUS SNS TRP DC1 - RESET / TEST
+	\end{longtable}
+%\end{table}
+
+\noindent
+D. DC2 START
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ p{\textwidth} }
+	POWER ROUTING DC2 - FC1 / FC2 / BAT - as req.'\\
+	CB MN2 - PUSH CLOSED\\
+	BUS SNS TRP AUTO TRIP DC2 - ON\\
+	BUS SNS TRP DC2 - RESET / TEST
+	\end{longtable}
+%\end{table}
+
+\noindent
+D. AC1 START
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ p{\textwidth} }
+	POWER ROUTING AC1 - DC1 / DC2 / BAT - as req.'\\
+	CB AC1 - PUSH CLOSED\\
+	BUS SNS TRP AUTO TRIP AC1 - ON\\
+	BUS SNS TRP AC1 - RESET / TEST
+	\end{longtable}
+%\end{table}
+
+\noindent
+E. HTRS / FAN BUS START
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ p{\textwidth} }
+	CB HTRS - PUSH CLOSED\\
+	CB FAN - PUSH CLOSED\\
+	BUS SNS TRP AUTO TRIP HTRS - ON\\
+	BUS SNS TRP HTRS - RESET / TEST\\
+	BUS SNS TRP AUTO TRIP FAN - ON\\
+	BUS SNS TRP FAN - RESET / TEST
+	\end{longtable}
+%\end{table}
+
+\noindent
+F. EPS START - UP
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ p{\textwidth} }
+	POWER ROUTING DC1 - BAT\\
+	POWER ROUTING AC1 - BAT\\
+	C.DC1 START\\
+	D.AC1 START\\
+	CB BT LD - CLOSE\\
+	BAT LOAD - FC2, LOAD\\
+	B.FC1 START\\
+	BAT LOAD - FC1, LOAD\\
+	POWER ROUTING DC1 - FC1\\
+	POWER ROUTING AC1 - DC1\\
+	E. HTRS / FAN BUS START\\
+	-WHEN BATTERY IS RECHARGED:\\
+	\quad BAT LOAD - FC1, NORM\\
+	\quad CB BT LD - OPEN
+	\end{longtable}
+%\end{table}
+
+\noindent
+G. EPS POWER-DOWN
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ p{\textwidth} }
+	POWER ROUTING AC1 - DC1\\
+	POWER ROUTING DC2 - BAT\\
+	POWER ROUTING DC1 - BAT\\
+	FC1 PURGE - NORM\\
+	FC2 PURGE - NORM\\
+	FC1 START - STOP\\
+	FC2 START - STOP\\
+	O2 TK ISOL VLV - ALL CLOSE (3)\\
+	H2 TK ISOL VLV - ALL CLOSE (3)\\
+	O2 ISOL VLV - CLOSE\\
+	H2 ISOL VLV - CLOSE\\
+	H2O OVP VENT - OPEN BOTH\\
+	BUS SNS TRIP FAN - TRIP\\
+	BUS SNS TRIP HTRS - TRIP\\
+	BUS SNS TRIP AC1 - TRIP\\
+	BUS SNS TRIP DC2 - TRIP\\
+	BUS SNS TRIP DC1 - TRIP\\
+	BUS SNS TRP AUTO TRIP - ALL OFF (5)
+	\end{longtable}
+%\end{table}
+
+\noindent
+H. FC PURGE
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ p{\textwidth} }
+	H2O OVP VENT - OPEN BOTH\\
+	O2 ISOL VLV - CLOSE\\
+	H2 ISOL VLV - CLOSE\\
+	POWER ROUTING - NO LOAD ON FC\\
+	FC (1 / 2) PURGE - PURGE\\
+	WAIT 0.3 < dPH < 0.7\\
+	FC (1 / 2) PURGE - NORM\\
+	POWER ROUTING - as req.'\\
+	O2 ISOL VLV - as req.'\\
+	H2 ISOL VLV - as req.'\\
+	H2O OVP VENT - as req.'
+	\end{longtable}
+%\end{table}
+
+
+\subsubsection{Environmental Control And Life Support System (ECLSS)}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\hsize]{dragonfly_diagram_eclss.png}
+\end{figure}
+
+\paragraph{Description}
+The ECLSS maintains the spacecraft's thermal stability and provides a pressurized, habitable environment for the crew and onboard avionics. The ECLSS also manages the storage and disposal of water and crew waste. ECLSS is functionally divided into three systems:
+
+\begin{itemize}
+\item \textbf{Pressure control system}, which maintains the crew compartment at 103kPa with a breathable mixture of oxygen and nitrogen. Nitrogen is also used to pressurize the supply and wastewater tanks.
+\item \textbf{Atmospheric revitalization system}, which uses air circulation and water coolant loops to remove heat, control humidity, and clean and purify cabin air.
+\item \textbf{Active thermal control system}, (not implemented) which consists of two Freon loops that collect waste heat from orbiter systems and transfer the heat overboard, either trough radiators or ammonia boilers.
+\end{itemize}
+
+\noindent
+As Dragonfly has not yet been equipped with active thermal control systems, most cooling and heating operations are done by passive control systems, whereas supercold cryogenic reactants are heated prior to entering the FC stack, thus cooling electrical equipment. The same is done with the wastewater, which is circulated throughout the vessel. As the water in the wastewater tank overheats, any boiling excess will be vented trough two non-propulsive vent valves. The only unbalanced thermal reaction is that of the FC, which, in the absence of active cooling equipment will overheat within 5-8 hours. The only cooling possibility for a FC is either shutting down (alternatively using FC1 / FC2) or purging.
+
+\paragraph{Pressure control system}
+The pressure control system normally pressurizes the crew cabin to 103 $\pm$ 10 kPa. It maintains the cabin at an average 70-percent nitrogen (27 kg) and 30-percent oxygen (9 kg) mixture that closely resembles the atmosphere at sea level on Earth. The system also provides the cabin atmosphere necessary to cool cabin-air-cooled equipment. Oxygen partial pressure is maintained automatically between 20 and 23 kPa, with sufficient nitrogen pressure of 78.3 kPa added to achieve the cabin total pressure of 103 $\pm$ 10 kPa. Positive and negative pressure relief valves protect the structural integrity of the cabin from over- and under-pressurization respectively. The pressure control system nitrogen is also used to pressurize the supply and wastewater tanks.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.35\hsize]{dragonfly_pcs_1.png}
+\end{figure}
+
+\noindent
+Nitrogen is stored into two, identical, 3-liter tanks, serviced at a temperature of 288 K, that contain up to 20kg of N2 each. The provided nitrogen is enough to re-pressurize the cabin and docking hatch for up to 6 docking hatch re-pressurizations (EVAs). The two N2 TK1 and N2 TK2 switches, located on panel O1 (main ECLSS panel), control isolation valves to each of the two N2 tanks. When closed, N2 from that tank is not provided to either the pressure control system or as pressurizer for the wastewater-cooling loop. A second set of ISOL VLV control N2 flow from the tanks to the pressure control system. Note that N2 will continue to pressurize the wastewater tank, even with both of the ISOL VLV closed if any of the N2 TK valves are open.\\
+The N2 SPLY switch will close the N2 from the pressure control system to be vented into the cabin, though N2 from the tanks, might continue to flow, either as pressurizer for the wastewater tanks, either to the over-pressure vent valves. N2 pressure is regulated at the N2 SPLY valve to a nominal pressure of 78-80kPa. The XFEED switched must be in its open position for tank 2 to provide N2 pressurization to the cabin. During normal operations only N2 tank 1 will be used for cabin pressurization and N2 tank 2 for wastewater cooling loop pressurization. A set of 2 (one for each tank) high-capacity N2 OVB DUMP valves will quickly discharge over-pressurized N2 from the N2 pressure control system.\\
+Though the N2 tanks have no heaters to raise tank pressure, it is possible for excess heat from the wastewater cooling loop to transfer to the N2, thus overheating and over-pressurizing the N2 tanks. To avoid damage to the tanks, the two valves can be used to quickly discharge the overheated N2 and bring the tank pressure to a safer value.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\hsize]{dragonfly_pcs_2.png}
+\end{figure}
+
+\noindent
+Oxygen from the power reactant storage and distribution system (cryogenic oxygen supply system) is routed to the pressure control oxygen system, first to a pressure regulator (O2 R1) that reduces oxygen pressure to a lower 280-290 kPa. At this pressure an electrical boiling plate (BLR) can transform the cryogenic oxygen to its gaseous form by heating it to a service temperature of 295 K (22°C). The pressure gas from the boiler plate is then passed trough a second pressure regulator (O2 R2) that releases oxygen into the O2 pressure control system at 23-25 kPa and at an ambient temperature of 22°C. The same O2 SPLY valve as for N2, controls O2 discharge into the cabin circuit. Note that the boiler plate that heats oxygen from cryogenic to room temperature is powered not by the battery because of the rather large power consumption of the boiling plate. Instead, DC1 is used . Without DC power on the DC1 bus, the boiling plate will not be functional and no gaseous oxygen can be produces. Monitor the R1 TEMP R2 indicators to get a readout of the boiling plate functionality. Temperature for the R1 regulator, usually around the serviced 170 K is the temperature directly from the Cyro O2 PRSD manifold. Temperature of the second pressure regulator must be around 295 K which, at the serviced pressure of 1atm renders the oxygen to it's gaseous form. If the two temperatures are identical,the boiling plate is either unpowered, has been shut down or is damaged. At the cryogenic temperature of 170 K oxygen will remain in it's liquid form and will not be discarded into cabin atmosphere. Monitor the O2 FLOW indicator to get a reading of the amount of oxygen passing through the oxygen revitalization system.
+
+\paragraph{Atmospheric revitalization system}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.2\hsize]{dragonfly_ars_1.png}
+\end{figure}
+
+\noindent
+Two electrical fans provide the continuous air circulation needed in the cabin. Air from the cabin is directed into an air revitalization circuit, whereas CO2 is removed by LiOH canisters and humidity is controlled by a DC-powered humidity separator. Both fans function on an independent bus (DC FAN) that can be connected to either DC1 or DC2 main busses, or directly to the battery. From the LiOH and HUM SP the air piping then interleaves with cryogenic H2 passing from the H2 cryo tanks to FC1, thus cooling the air to a lower 22-25 C before returning it to the cabin. Before actually reaching the cabin the air is mixed with oxygen provided by R2 regulator, bringing fresh oxygen from the PRSD supply, if the R2 pressure valve switch is open.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\hsize]{dragonfly_ars_2.png}
+\end{figure}
+
+\noindent
+Most of the cabin air properties can be monitored on the top indicators on panel O1. O2 partial pressure, N2 partial pressure, CO2 partial pressure and total ambient pressure. Left indicators show cabin atmosphere status, while right indicators show docking hatch atm. status.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\hsize]{dragonfly_ars_3.png}
+\end{figure}
+
+\noindent
+Ambient temperature can also be monitored on this part of the panel. Ambient delta Pressure / delta Temperature can also be monitored to indicate eventual cabin leaks or depressurizations. A third indicator monitors the pressure difference between cabin air and atmospheric rev. system. A 0 delta pressure indicates an improper functioning of the two circulating fans, and that air is not circulated.
+
+\paragraph{ECLSS Procedures \& Checklists}
+A. Normal operation switch positions:
+
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ p{\textwidth} }
+	N2 TK1 - OPEN\\
+	N2 TK2 - OPEN\\
+	N2 PRESS ISOL VLS - BOTH OPEN\\
+	N2 PRESS XFEED - CLOSED\\
+	N2 SPLY - OPEN\\
+	N2 OVB VENT - BOTH CLOSED\\
+	\\
+	O2 PRESS R2 - CLOSED\\
+	O2 PRESS BLR - OPEN\\
+	O2 PRESS R1 - OPEN\\
+	O2 SPLY -OPEN\\
+	O2 LiOH - OPEN\\
+	O2 HUM SP - OPEN\\
+	\\
+	CAB FAN 1, 2 - OP
+	\end{longtable}
+%\end{table}
+
+
+\subsubsection{Communications}
+TODO
+
+\subsubsection{Radar And Docking Systems}
+\paragraph{Description}
+Being designed as a space tug, Dragonfly's primary mission is space components retrieval and handling, which will necessitate a large amount of docking operations. A large part of Dragonfly's systems, therefore, have been designed as to facilitate and automate docking operations. It features a Vicinity Awareness System (VAWS), two Doppler range and range-rate radar antennas, a visual docking sensor and two NAV radios.
+
+
+\paragraph{Vicinity Awareness System (VAWS)}
+VAWS provides the pilot with the situation awareness of the spacecrafts / spaceparts around his ship. It is composed by a number of 8 optical pairs of emitters/receptors positioned throughout the ship that give the VAWS a total operational range of 360° / 360° around the ship. Each of the 8 optical emmiters have a maximal optical resolution of ~0.11°, and are capable to detect (at max. range of 500m) objects as large as 1m.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\hsize]{dragonfly_vaws.png}
+\end{figure}
+
+\noindent
+The VAWS display consists of two radar projections, a top-down view on the left display and a right-left view on the right display. Both displays together can provide the user with a 3D description of the vessel parts around his craft.\\
+Range can be selected in 50m increments up to the maximum range of 500m. The lower button on the left (VS) allows cycling trough all the detected signals. Pitch and azimuth bearings for the selected signal will be provided to the two Doppler range antennas for more accurate positional data. Antenna azimuth bearing is also displayed on the left display (top-down) as a dark-green 30° signal band.\\
+Each of the two displays provides 4 light-green bands of 15°, marking the left/right, up/down, front/back areas where RCS firing could cause damage to proximity vessels. Use of RCS when a signal is detected in the light-green areas should be used very carefully, as to avoid RCS firing towards the signal. Note that most OVB dump valves and over-pressure valves are located as to fire on the +z axis (right). Special care must be taken that no signal enters the right-bound green stripe if danger of a overboard vent exists.
+
+
+\paragraph{Doppler range and range-rate antennas}
+The Dragonfly is equipped with a pair of long-range Doppler antennas capable of accurate measurements (0.01m/sec) of signal velocities. One antenna is mounted on the upper dome of the crew habitat, and one on the bottom, each one covering it's hemisphere. Each antenna has a movement capability of +/- 150° in yaw, for a total azimuth coverage of 300°, with a blackband of 60 deg in the rear of the vessel; and a total 75° pitch, with a blackband cone of 15 deg at the upper and lower poles of the vessel. Control for the antennas is located on panel R1.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.2\hsize]{dragonfly_antenna_1.png}
+\end{figure}
+
+\noindent
+There are two switches allowing movement control for each antenna. Y//R(L) and P//U(D) switches for yaw respectively pitch of the antenna dish. A third switch controls the antennas major operation mode. CNT (center) is used for parking the antennas at it's 0° pitch / 150° yaw position when the Doppler antennas are not used. Middle position sets the antennas in manual mode, where position can be controlled by the two upper switches. The third AQ\&TRK (Acquire and Track) mode will automatically direct the antennas to the yaw/pitch bearings of the signal selected in the VAWS.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\hsize]{dragonfly_antenna_2.png}
+\end{figure}
+
+\noindent
+Each of the antennae positions are indicated on the ANT YAW / ANT PITCH indicators. A third indicator (SGN) indicates signal strength on the Doppler antenna. Note that a minimum signal of 85\% is needed for the Doppler to accurately compute range and range-rate values.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\hsize]{dragonfly_antenna_3.png}
+\end{figure}
+
+\noindent
+On the front panel, data from the Doppler signal is interpreted and displayed to the user in an understandable and useful form. RADAR DIST - total distance to signal RADAR CLRS - closure rate, total relative velocity between Dragonfly and the signal on the bottom row, the relative velocity is split on each of the Dragonfly's three axes, respectively: lateral velocity (left-right), vertical velocity (up-down), forward velocity (front-back).\\
+A RAD SGN (radar signal) TB indicator will indicate barber-pole when signal from the Doppler exists. All range and range-rate indicated when RAD SGN indicates white, are false or non-reliable at best.
+
+\subsubsection{Front Panel Instruments}
+\paragraph{Reaction Control System (RCS) modes}
+The diferent available RCS modes can be controlled by the switches located in the lower/left part of the front panel.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\hsize]{dragonfly_rcs.png}
+\end{figure}
+
+\noindent
+Selectable RCS modes are:
+
+\begin{itemize}
+\item Linear / Rotation / Disabled
+\item Normal / Vernier
+\item Normal / Pulse / Rate
+\item Kill Rot
+\end{itemize}
+
+\noindent
+%TODO chech "by 1/10th" vs "to 1/10th"
+The first switch in the left selects either linear or rotational major modes of the RCS. The second and third switch in the row select the RCS minor operational modes. Any combination of the settings can be used.\\
+VERN minor mode will reduce thruster capacity by 1/10$^{th}$.\\
+When PULSE minor rate is selected the RCS will fire short bursts (0.02 seconds) of thrust for each thrust command. The joystick controller will have to be re-centered until another command can be issued. For keyboard commands, the key must be released until another command is accepted.\\
+When RATE minor mode is selected, each thrusting command will add 10\% of thrust (or 1\% if Vernier) to the respective thruster group. The joystick must be recentered, or the keyboard key released, until a new command is accepted. For example striking \keystroke{8}$_{Num}$ 3 times in \textit{linear non-vernier} mode, will engage the 'up' linear thrusters at 30\% of their capacity. Striking \keystroke{8}$_{Num}$ 6 times in \textit{rotational vernier} mode will engage the "pitch up" rotational thrusters at 6\% of their capacity. At any time hitting the reverse command (\keystroke{2}$_{Num}$ in this case) will close the RCS valves completely, regardless of their power setting.\\
+The fourth CB controls the automatic rotational rate nullifier, ie. the KillRot. Note that this function is only available when major mode \textit{rotational, non-vernier, normal rate} is selected. Hitting \keystroke{5}$_{Num}$ at any other time will not engage the killrot command. Hitting the KILLROT CB on the front panel however will temporarily switch to major mode \textit{rotational, non-vernier, normal rate} then engage the killrot command. After the killrot program has completed, the previous RCS settings are restored.
+
+\paragraph{Docking port management}
+Because of the large number of docking operations, it is very important for a Dragonfly pilot to properly understand the management of Docking ports, which is provided by the instruments located at the center of the front panel.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.3\hsize]{dragonfly_dock.png}
+\end{figure}
+
+\noindent
+"Docking Sensor Input" allows the pilot to select which docking port is to be used as a \textit{source} by the Dock MFD.\\
+For selecting the \textit{target} docking port, use normal Orbiter operations: either tune to the appropriate NAV frequency, or use the visual docking camera. The two buttons "VESSEL" and "PORT" will cycle trough all the vessels currently docked to the Dragonfly, respectively through all the docking ports of that vessel. "LOCAL PORT 0" is indicated when Dragonfly's own docking port is selected. Note that the RELASE DOCK switch (located just above) will undock the currently selected source docking port, and not necessarily Dragonfly's own docking port. This makes it possible for the pilot to trigger remote undocks for all the vessels currently docked together.\\
+"CG Balance Offset" instructs the RCS system, as to where the center of gravity of the docked vessels is located. The RCS computer will then appropriately trigger the responsible thruster valves in such a manner as to produce only linear or rotational momentum, depending on the major RCS mode set. This is very important, as it allows the RCS to function properly even with large masses docked in front of the ship.
+
+\paragraph{ADI ball}
+The ADI ball is responsible with providing the 3D orientation of the vessel to the pilot. It is composed of a 6-degrees of freedom sphere, with unwinding engines (meaning it can rotate indefinitely in each direction). The ADI sphere, when powered (by main bus DC1), will maintain a fixed orientation in space, thus providing heading, pitch and roll indications of the current position of the ship.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\hsize]{dragonfly_adi.png}
+\end{figure}
+
+\noindent
+The ADI sphere is marked with concentric parallel rings at +30, +60, -30 and -60 degrees of pitch, with thin longitudinal marks for every 10° of yaw and thick longitudinal marks for every 30° of yaw. All numbers indicated on the sphere are 10's of degrees.\\
+The ADI ball can provide attitude data in three modes, with respect to three different systems of reference, each selectable by the left-most switch located just to the right of the ADI sphere:
+
+\begin{itemize}
+\item HOR(izon) mode provides heading, pitch and roll information with respect to the local horizon.\\
+Heading of 0 is calibrated as the geographical north. Pitch and roll are determined from the local horizontal plane. Heading information is local geographical azimuth.
+\item GDC(guidange) mode provides yaw, pitch and roll information that is stored in Dragonfly's navigational computed. One of two guidance modes can be chosen from the middle switch:
+
+\begin{itemize}
+\item ECL(iptic) mode considers the vernal point at MJD 2000 as the 0° heading (+x axis), the ecliptic north as the +90° pitch (+y axis) and their cross-product as the 90° heading (+z axis). Yaw information is therefore ecliptic hour of ascension, pitch information is ecliptic declination. This mode can be mainly used for platform alignment and star tracking.
+\item ORB(ital) mode considers the orbital prograde point as the 0° heading (+x axis), the normal to the orbital plane as the +90° pitch (+y axis) and their cross-product as the 90° heading (+z axis). This mode can be mainly used for orbital operations.
+\end{itemize}
+
+\item REF(erence) will display attitude data with respect to a pre-set system of axes. When the third switch (right-most) is put to the momentarily position MARK, the current ship attitude is stored. REF mode will further indicate the changes in pitch, roll and yaw since the last stored attitude.
+\end{itemize}
+
+\noindent
+The motors driving the ADI sphere operate with a maximum speed of 25°/sec. If rotational rates ever exceed the ADI operational limits, the TB indicator located on the upper-right corner will indicate an over-drive, meaning the ball has reached it's maximum operational speed. The information indicated by the sphere while the TB indicator is barberpole is not reliable.\\
+The TB indicator will also turn barberpole when the sphere is being moved from one reference mode to another. This is normal.
 
 
 \subsection{Space Shuttle Atlantis}
