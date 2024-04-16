@@ -11,7 +11,219 @@ The spacecraft included in the basic Orbiter distribution will get you started, 
 
 
 \subsection{Shuttle-A}
-% TODO
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\hsize]{shuttlea.png}
+  \caption{Shuttle-A model design: Roger Long. Instrument panels and module code: Martin Schweiger. Virtual cockpit, payload management extensions: Radu Poenaru.}
+\end{figure}
+
+\noindent
+The Shuttle-A class is a cargo vessel designed for a low gravity/low pressure operational environment. Its primary area of deployment is for transport duty between LEO (low Earth orbit), the Moon, Mars and and potentially moons in the outer solar system. In its current configuration it is also capable of achieving orbit from Earth's surface, but this requires a precise ascent profile.\\
+The engine layout consists of a set of two main engines, two hover engines, and two engines in central side pods which can be rotated around 180° for retro thrust or to assist the main or hover engines.\\
+The Shuttle-A contains a docking port and airlock below the habitat module which is protected by a hatch during atmospheric flight.\\
+The avionics systems include, besides two standard MFD instruments, also a configurable attitude director indicator (ADI) for navigation.
+
+\subsubsection{Instrument panels}
+Cockpit views can be cycled with \keystroke{F8} between generic glass cockpit, 2-D panel and virtual cockpit modes. The virtual cockpit implementation for the Shuttle-A is currently quite rudimentary. The main avionics interface is provided with the 2-D cockpit mode.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\hsize]{shuttlea_panel1.png}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\hsize]{shuttlea_panel0.png}
+\end{figure}
+
+\paragraph{Main panel}
+%TODO add section link
+The 2-D cockpit view consists of main and overhead panels. They can be switched between with \Ctrl\UArrow and \Ctrl\DArrow. The main panel contains the primary avionics instruments – left and right MFD (see TODO for standard MFD modes), ADI ball and controls (see TODO) and speed, altitude and vertical speed readouts.\\
+The engine block is located in the bottom centre of the panel. Main, hover and auxiliary thrusters can be operated individually, by engaging the throttle controls separately, or in pairs, by clicking and dragging between throttle sliders.\\
+%TODO add section link
+Left of the throttle block is the auxiliary pod control panel which can be used to rotate the pods and has readouts for current orientation (see TODO).\\
+Above the throttle block are readouts for tank and engine status, including fuel mass, delta-V estimates, thrust force and acceleration, and fuel flow rates.\\
+At the top centre of the panel are located tape indicators for speed, vertical speed and altitude. At the left are the controls for RCS mode and programs, at the right is the HUD mode selector.
+
+\paragraph{Attitude reference and ADI}
+The attitude director indicator (ADI) provides feedback to the pilot about the spacecraft orientation with respect to a given frame of reference. It consists of a ball that can rotate and is always aligned with the reference frame, and a direction index representing the orientation of the spacecraft (given its pitch, yaw and roll angles) relative to the frame.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\hsize]{shuttlea_adi_ball.png}
+\end{figure}
+
+\noindent
+The parameters of the attitude reference, as well as the operation mode of the ADI, can be controlled by the panel below the ADI.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\hsize]{shuttlea_adi_ctrl.png}
+\end{figure}
+
+\noindent
+\textbf{Attitude frame}\\
+The frame selection dial sets the reference frame represented by the ADI. In practice, the most useful reference frame will depend on the current task or journey segment.
+
+\begin{itemize} 
+\item \textbf{Ecliptic (ECL).} Reference frame is the ecliptic and equinox of epoch J2000.0. Direction (P=0, Y=0) is aligned with the vernal point. Direction (P=+90) points to the ecliptic north pole. This inertial frame is most useful for interplanetary trips.
+\item \textbf{Equator (EQU).} Reference frame is the equator of the body currently being orbited. Direction (P=0, Y=0) points to the ascending node of the ecliptic w.r.t. the planet’s equator. Direction (P=+90) points in the positive direction of the planet’s rotation axis. This is a (nearly) inertial frame (subject to the planet’s axis precession), and most useful for orbital operations.
+\item \textbf{Orbital velocity/Orbital momentum vector (OV/OM).} This is a rotating frame. The axis (P=0, Y=0) is aligned with the vessel’s current orbital velocity vector relative to the orbit reference body. The (P=+90) axis is aligned with the orbital momentum vector (i.e. perpendicular to the orbital plane). This reference frame is equivalent to that used by the Orbit HUD mode, but rotated by 90° in roll.
+\item \textbf{Local horizon/Local north (LH/LN).} This is a rotating frame. The axis (P=0, Y=0) is aligned with the local heading = 0 direction in the local horizon plane. Axis (P=+90) is aligned with the normal of the local horizon plane. This reference frame is equivalent to that used by the Surface HUD mode.
+\item \textbf{Link to NAV radio source (NAV 1/2).} The reference frame can be selected implicitly by feeding data from one of the NAV radio receivers to the ADI. The orientation of the frame depends on the NAV signal type. Currently supported is IDS (instrument docking system) input, which aligns the ADI reference with the docking port orientation: Direction (P=0, Y=0) is aligned with the approach direction; (P=+90) is aligned with the "Up" direction for longitudinal rotation alignment.
+\end{itemize}
+
+\noindent
+A user-defined offset can be added to any of the predefined reference frames. To do this, set the selector toggle in the "Offset" group to "Frm", and then use the "R" (roll), "P" (pitch) and "Y" (yaw) switches to add an offset to any of the three Euler angles. The "Reset" button resets the offsets to zero.\\
+\\
+\textbf{Target}\\
+The ADI contains two error needles designating the direction of a target on top of the ADI ball. The needles form a cross-hair marking a particular point on the ADI ball (within the limit of about +/- 40° in pitch and yaw from the current vessel orientation). The type of target can be selected with the "Target" dial on the control panel.
+
+
+\begin{itemize} 
+\item \textbf{None (no target).} The error needles are deactivated and return to the centered position. Target indicator on the ADI instrument shows "OFF".
+\item \textbf{Fixed (fixed location relative to reference frame).} In this mode, the error needles mark a fixed point on the ADI ball. By default, this is the point (P=0, Y=0), but any pitch/yaw direction can be selected by specifying target offsets (see below).
+\item \textbf{N. Brg (NAV transmitter bearing).} If the reference frame is set to NAV 1 or 2, and the specified NAV receiver is currently tuned to a transmitter in range, the error needles point to the bearing of the transmitter in the current frame. Otherwise the error needles are deactivated.
+\item \textbf{N. Vel (NAV transmitter velocity).} If the reference frame is set to NAV 1 or 2, and the specified NAV receiver is currently tuned to a transmitter in range, the error needles point to the velocity of the transmitter relative to the spacecraft. Otherwise the error needles are deactivated.
+\end{itemize}
+
+\noindent
+Note that in all modes, the error needles mark the direction 180° away from the target as well as the direction towards the target. To distinguish between the two, the ADI ball shows "TO" and "FROM" in the target indicator box. For example, if the target is set to N. Brg, the needles are centered, and the target indicator shows "FROM", the target is located exactly behind the spacecraft.\\
+Similar to the reference frame, an offset can be added to the target direction. To do this, set the selector toggle in the Offset group to "TGT" and use the "P" (pitch) and "Y" (yaw) switches to define an offset. Note that the "R" (roll) switch is not used for target offsets. The "Reset" button resets the target offsets to zero.\\
+\\
+\textbf{Attitude rates}\\
+The rates of change in pitch, yaw and roll are displayed by indicators at the left, bottom and top edge of the instrument, respectively. The indicator ranges are -10°/s to +10°/s for all three angles, with tick marks spaced at 2°/s. The rates can be displayed either in the local vessel frame or the reference frame. Use the "TGT/RTE" switch to select the mode.\\
+\\
+\textbf{ADI layout}\\
+The ADI ball is available in two layouts:
+
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.15\textwidth}|p{0.25\textwidth}|p{0.25\textwidth}|p{0.25\textwidth}| }
+	\hline\rule{0pt}{2ex}
+	\textbf{Layout} & \textbf{Pitch range} & \textbf{Yaw range} & \textbf{Poles}\\
+	\hline\rule{0pt}{2ex}
+	0 & -90° – +90° & 0° – 360° & at pitch = -90° and +90°\\
+	\hline\rule{0pt}{2ex}
+	1 & 0° – 360° & -90° – +90° & at yaw = -90° and +90°\\
+	\hline
+	\end{longtable}
+%\end{table}
+
+\noindent
+The layout can be selected on a per vessel/per scenario basis by adding an ADI\_LAYOUT item with value 0 or 1 to the Shuttle’s scenario entry. If this item is not present, the value in the ShuttleA configuration file (.\textbackslash Config\textbackslash Vessels\textbackslash ShuttleA.cfg) is used. If this entry is also not present, layout 0 is assumed. The layout can be switched interactively in the running simulation from a console with the command
+
+\begin{lstlisting}[language=OSFS]
+v:set_adilayout(layout)
+\end{lstlisting}
+
+\noindent
+where v is an interface instance to Shuttle-A vessel and \textit{layout} is 0 or 1.\\
+Note that the two layouts don’t alter the behaviour of the ADI ball, just the markings painted on it. They do however represent different attitude angle interpretations, i.e. the Euler angles differ between the two layouts.
+The Tutorials\textbackslash ADI training scenario is an interactive tutorial that demonstrates the ADI concept and operation directly in Orbiter. Try it!
+
+
+\paragraph{Auxiliary pod control}
+The two auxiliary engine pods mounted at the central rib of the Shuttle-A's payload spine can be rotated  around the transversal axis by 180° to point the installed engines either aft (to assist with main thrust), downward (to assist with hover thrust), forward (to provide retro thrust) or at any intermediate position. The pod rotation controls are located left of the throttle block.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\hsize]{shuttlea_pod_ctrl.png}
+\end{figure}
+
+\noindent
+The two displays at the top show the left and right pods' current positions (green hands) and commanded target positions (yellow bugs). The pods' rotation speed is finite (approximately 23°/s), so the actual position will lag behind the commanded values. The R-0 position represents the engines pointing forward (retro thrust); the F-0 position represents the engines point aft (forward thrust), and the H-90 position represents the engines pointing downward (hover thrust).\\
+The AUX POD TILT CTRL block below the displays contains the controls for rotating the pods. The three buttons to the left command presets for the R-0 position (RETRO), H-90 (HVR) and F-0 (FWD) for both pods. The two toggle switches to the right enable manual adjustments towards the forward thrust (FWD) or retro thrust direction (RETRO). The commands can either be issued to a single pod by activating only one of the toggles, or to both pods simultaneously by clicking between the toggles.\\
+When launching a fully loaded Shuttle-A from Earth's surface, the auxiliary pods must be engaged in hover position together with the regular hover engines to achieve lift-off. As the vessel gains altitude, the main engines are engaged and the ship pitches up using RCS. The auxiliary pods will be gradually rotated backward toward the F-0 position to provide additional main thrust, while the hover engines are throttled down.
+
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\hsize]{shuttlea_auxpods.png}
+  \caption{Shuttle-A at launch with auxiliary pods transitioning from hover to aft position.}
+\end{figure}
+
+\paragraph{Overhead panel}
+The overhead panel contains a display for tank and engine status. It has readouts for current tank fill status and mass flow rates for the main fuel pumps.~\\
+The panel also contains controls for operating the docking covers, gear struts and outer/inner airlock hatches.\\
+Located on the right side of the panel are the controls for releasing the six cargo containers the Shuttle-A can carry. To release a cargo container, first arm the release mechanism (main control switch from SAFE to ARM). Then click on a container position (L/R 1-3) to release it. Empty payload positions are marked with a red border. When done, return the main control switch back to SAFE.\\
+Containers can be released on the ground or during flight. On the ground, make sure to move the landing gear struts to "squatting" position to set the containers down gently. You can drop containers while in low-level flight over a planetary surface (don't drop them from high altitude or at high speed to avoid damaging them or your ship), or during orbital operations. If releasing in weightless conditions (in orbit), use RCS to move away from the released container (up or down in linear RCS mode).
+
+\subsubsection{Keyboard controls}
+In addition to the generic Orbiter vessel control keys, the Shuttle-A supports the following vessel-specific key controls:
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.2\textwidth}|p{0.7\textwidth}| }
+	\hline\rule{0pt}{2ex}
+	\textbf{Shortcut} & \textbf{Action}\\
+	\hline\rule{0pt}{2ex}
+	\keystroke{G} & Operate landing gear struts between "stretch" and "squat" positions.\\
+	\hline\rule{0pt}{2ex}
+	\keystroke{K} & Operate the docking cover mechanism.\\
+	\hline\rule{0pt}{2ex}
+	\keystroke{O} & Operate the outer airlock hatch.\\
+	\hline\rule{0pt}{2ex}
+	\Ctrl\keystroke{O} & Operate the inner airlock hatch.\\
+	\hline\rule{0pt}{2ex}
+	\Ctrl\keystroke{0}$_{Num}$ & Increase auxiliary pod engine thrust.\\
+	\hline\rule{0pt}{2ex}
+	\Ctrl\keystroke{.}$_{Num}$ & Decrease auxiliary pod engine thrust.\\
+	\hline
+	\end{longtable}
+%\end{table}
+
+\subsubsection{Technical specifications}
+Some design and operational parameters of the Shuttle-A spacecraft class:
+
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.45\textwidth}|p{0.3\textwidth}|p{0.15\textwidth}| }
+	\hline\rule{0pt}{2ex}
+	Mass (empty) & 13.0 $\cdot$ 10$^{3}$ & kg\\
+	\hline\rule{0pt}{2ex}
+	Main tank capacity & 71.5 $\cdot$ 10$^{3}$ & kg\\
+	\hline\rule{0pt}{2ex}
+	RCS tank capacity & 2.7 $\cdot$ 10$^{3}$ & kg\\
+	\hline\rule{0pt}{2ex}
+	Mass (payload, max.) & 6 x 20.0 $\cdot$ 10$^{3}$ & kg\\
+	\hline\rule{0pt}{2ex}
+	Mass (total, max.) & 207.2 $\cdot$ 10$^{3}$ & kg\\
+	\hline\rule{0pt}{2ex}
+	Thrust (main) & 2 x 1064.4 & kN\\
+	\hline\rule{0pt}{2ex}
+	Thrust (hover) & 2 x 745.0 & kN\\
+	\hline\rule{0pt}{2ex}
+	Thrust (aux. pods) & 2 x 385.0 & kN\\
+	\hline\rule{0pt}{2ex}
+	Thrust (RCS, linear mode) & 2 x 4.5 & kN\\
+	\hline\rule{0pt}{2ex}
+	Torque (RCS pitch, yaw) & 2 x 67.5 & kNm\\
+	\hline\rule{0pt}{2ex}
+	Torque (RCS roll) & 2 x 27.1 & kNm\\
+	\hline\rule{0pt}{2ex}
+	Acceleration (main + aux, max. load) & 14.0 & m/s$^{2}$\\
+	\hline\rule{0pt}{2ex}
+	Acceleration (hover + aux, max. load) & 10.9 & m/s$^{2}$\\
+	\hline\rule{0pt}{2ex}
+	Isp (main, vacuum) & 3.3 $\cdot$ 10$^{4}$ & m/s\\
+	\hline\rule{0pt}{2ex}
+	Prop. flow rate (main, max.) & 2 x 32.3 & kg/s\\
+	\hline\rule{0pt}{2ex}
+	Dimensions (L x W x H) & 35.0 x 15.4 x 6.9 & m\\
+	\hline\rule{0pt}{2ex}
+	Inertia (PMI, mass-normalised) & 86.6 (xx), 89.8 (yy), 5.5 (zz) & m$^{2}$\\
+	\hline\rule{0pt}{2ex}
+	Docking port, reference position & (0, 0, 18.7) & m\\
+	\hline\rule{0pt}{2ex}
+	Docking port, approach direction & (0, 0, 1) & \\
+	\hline
+	\end{longtable}
+%\end{table}
+
+
+\subsubsection{Credits}
+Special thanks to Roger "Frying Tiger" Long for his excellent model of the Shuttle-A, and to Radu Poenaru for the virtual cockpit implementation and code extensions, including cargo management and landing gear.
 
 
 \subsection{Shuttle PB (PTV)}
