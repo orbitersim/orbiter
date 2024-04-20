@@ -7,7 +7,516 @@ The spacecraft included in the basic Orbiter distribution will get you started, 
 
 
 \subsection{Delta-glider}
-% TODO
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\hsize]{dg.png}
+  \caption{Delta-glider model and textures by Roger "Frying Tiger" Long. Instrument panels by Martin Schweiger.}
+\end{figure}
+
+\noindent
+The Delta-glider (DG) is the ideal ship for the novice pilot to get space-borne. Its futuristic design concept, high thrust and extremely low fuel consumption make it easy to achieve orbit, and it can even be used for interplanetary travel. The winged body provides aircraft-like handling in the lower atmosphere, while the vertically mounted hover thrusters allow vertical lift-offs and landings independent of atmospheric conditions and runways.\\
+Two versions are available: The standard DG is equipped with main, retro and hover engines. The scramjet version (DG-S) has in addition two air-breathing scramjet engines fitted, which can be used during supersonic atmospheric flight. The scramjets have an operational airspeed range of Mach 3-8.\\
+The DG supports 2-D instrument panels and a virtual cockpit in addition to the standard "glass cockpit" camera mode.\\
+The glider comes with operational landing gear, nose cone docking port, airlock door, deployable radiator and animated aerodynamic control surfaces.
+
+
+\subsubsection{Cockpit camera modes}
+Apart from the generic "glass cockpit" camera mode which supports a head-up display (HUD), up to two multi-functional displays (MFD) and some of the most essential control and display components, the DG also provides a set of 2-D instrument panels, and a virtual 3-D cockpit (VC), all of which can be operated with the mouse. You can switch between the different cockpit modes by pressing \keystroke{F8}.
+
+\paragraph{2-D instrument panels}
+The glider supports a 2-D panel mode consisting of main and overhead instrument panel which can be selected with \Ctrl\UArrow and \Ctrl\DArrow. The panels can be scrolled up and down with \UArrow and \DArrow. Active panel elements, such as buttons, switches and dials can be operated with the left mouse button. Pressing the right mouse button and dragging the mouse rotates the camera. The camera can be reset to the default forward direction with the \Home key.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\hsize]{dg_panel1.png}
+%\end{figure}
+%\begin{figure}[H]
+%  \centering
+  \includegraphics[width=\hsize]{dg_panel0.png}
+  \caption{Delta-glider 2D overhead and main panels.}
+\end{figure}
+
+\paragraph{Virtual cockpit}
+The Delta-glider provides a 3-D virtual cockpit (VC) mode in addition to the 2-D panel mode. The VC puts you in the pilot's seat, with the head-up display in front of you, and all avionics controls and displays within easy reach. You can operate switches and levers with the mouse. Look around you by pressing the right mouse button and dragging the mouse, by using \Alt\UArrow\DArrow\LArrow\RArrow, or with the coolie hat on your joystick. You can also lean left, right and forward with \Ctrl\Alt\UArrow\DArrow\LArrow\RArrow, to get a better view of your surroundings.\\
+The field of view can be adjusted with the mouse wheel or with the \keystroke{Z} and \keystroke{X} buttons. This is useful for zooming in on specific instruments. Cockpit and external field of view settings are adjusted independently.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\hsize]{dg_VC1.png}
+%\end{figure}
+%\begin{figure}[H]
+%  \centering
+  \includegraphics[width=\hsize]{dg_VC0.png}
+  \caption{Delta-glider virtual cockpit: overhead and main panels.}
+\end{figure}
+
+\noindent
+\textbf{Moving between VC positions}\\
+The default virtual cockpit position places you in the pilot's seat, behind the pane of the head-up display and with access to all instruments and flight controls. You can however also switch your position to any of the 4 passenger seats in the cabin, for example to experience the replay of a recorded flight from a passenger's perspective.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\hsize]{dg_vc_pos.png}
+  \caption{Transition paths between VC positions.}
+\end{figure}
+
+\noindent
+To switch to a different VC position, use \Ctrl\UArrow\DArrow\LArrow\RArrow key combinations. The picture illustrates the different jump paths.
+
+
+\subsubsection{Propulsion}
+\paragraph{Main engines}
+The Delta-glider's main propulsion is provided by two rear-mounted engines generating a maximum thrust of 160 kN each in vacuum. At maximum thrust, the main engines accelerate a fully loaded vessel at 12.9 m/s$^{2}$. The trust level can be adjusted continuously between zero and maximum (keyboard shortcuts \Ctrl\keystroke{+}$_{Num}$ and \Ctrl\keystroke{-}$_{Num}$) or with the throttle sliders in the 2-D panel or virtual cockpit. The sliders also allow to set the thrust levels individually for both engines. Differential engine thrust will however result in a yaw moment unless compensated for with the appropriate gimbal setting (see below).\\
+The main engines are fuelled from the Delta-glider's main fuel tank, with a capacity of 12900 kg (propellant + oxidiser) for the DG and 10400 kg for the DG-S. At a vacuum specific impulse of Isp = 4 x 10$^{4}$ m/s this leads to a maximum burn time of 1612 s (DG) and 1300 s (DG-S), and a maximum delta-v budget of $\Delta$v = 2.93 x 10$^{4}$ m/s (DG) and $\Delta$v = 1.96 x 10$^{4}$ m/s (DG-S). The DG-S value rises to $\Delta$v = 2.23 x 10$^{4}$ m/s for an empty scramjet propellant tank. Note however that the DG and DG-S main tank also feeds the retro and hover engines, affecting the maximum $\Delta$v attainable from the main engines in practice.\\
+\\
+\textbf{Main engine gimbal control}\\
+Each main engine is mounted on a gimbal platform with a rotation range of $\pm$5.0° in pitch and $\pm$7.4° in yaw, providing thrust vector capability. Engine gimbal configuration can be used to provide angular momentum in pitch, yaw and roll during main engine burns. The torque generated by thrust vectoring at maximum deflection and maximum main engine thrust is 215 kNm (pitch), 317 kNm (yaw) and 27.9 kNm (roll) - all values for a fully loaded DG. The roll torque is relatively small because the main engines are mounted close to the vessel centreline.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\hsize]{dg_main.png}
+  \caption{Main engine gimbal controls and gimbal position indicators.}
+\end{figure}
+
+\noindent
+Engine gimbal in the yaw axis can provide compensation for the torque induced by thrust differentials in the two main engines. The yaw gimbal range is designed so as to compensate for torque generated by a single main engine burn in case of one of the engines failing. However, remember that while cancelling the induced torque, yaw gimbaling will add lateral linear momentum, resulting in a non-zero slip angle.\\
+The gimbal controls are located at the lower left main panel (GIMBAL CTRL). The mode selector dial has three settings: OFF - engines are centered; AUTO - gimbal settings are commanded from pilot control input, and yaw gimbal automatically compensates for main engine thrust differential; MAN - gimbal settings are adjusted manually.\\
+In MAN mode, the gimbal settings for pitch and yaw can be set manually with the rocker switches right of the selector dial. The left and right engines can be gimbaled individually. To tilt both engines simultaneously, click between a switch pair.\\
+In AUTO mode, the gimbal settings follow the pilot's pitch, yaw and roll commands from joystick or keyboard controls. They provide automatic thrust vectoring for additional angular acceleration during main engine burns. Thrust vectoring can be used in conjunction with aerodynamic control surfaces or RCS attitude control, or on its own.\\
+The display below the selector dial shows the commanded (outer cross-hair) and current pitch and yaw gimbal positions (inner cross-hair) for both engines. The outer box represents maximum gimbal deflection, the inner box half that value. Note that the gimbal mounts rotate at a rate of 3.4°/s, so there can be a delay until the commanded deflection is achieved.
+
+\paragraph{Retro engines}
+The DG is equipped with a pair of small forward-facing engines installed in the leading wing edges for providing reverse thrust. The retro engines are protected by covers during high airspeed atmospheric flight. Once free of the atmosphere or at low airspeed (e.g. during a vertical landing approach), the covers must be opened before activating the thrusters. The covers are opened and closed with the "Retro doors" switch in the lower right panel of the VC and 2-D cockpit view. Do not forget to close the covers before reentry! The retro engines are useful to decelerate the DG without the need to turn the vessel to engage its main engines, e.g. to cancel forward motion when aligning the position above a landing pad.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\hsize]{dg_retro.png}
+  \caption{Retro cover activation switch and retro warning light in the VC.}
+\end{figure}
+
+\noindent
+The retro engines are activated by moving the main engine throttles below the zero position into the red "RET" area. Keyboard shortcut: \Ctrl\keystroke{-}$_{Num}$. If the main engines are active, they must be cut before the retro engines can be activated. To cut either active main or retro engines and return the throttles to the zero position, press \keystroke{*}$_{Num}$.\\
+Each retro engine produces a vacuum thrust of 34 kN. At maximum thrust, the retro engines accelerate a fully loaded DG by 2.7 m/s$^{2}$ in backward direction. Note that you can also use the RCS (see below) in translational mode for providing backward thrust, but the retro engines produce significantly higher thrust.
+
+\paragraph{Hover engines}
+Three downward-facing engines are mounted in the lower part of the fuselage, providing limited vertical take-off and landing capability. The forward positioned engine generates a thrust of 110 kN, and each of the two rear engines generates 36.3 kN, leading to an upward thrust balanced at the centre of gravity. For a fully loaded DG, the resulting acceleration at full thrust is 7.35 m/s$^{2}$ in vacuum (less in an atmosphere), too little to overcome Earth surface gravitational acceleration, but sufficient on the Moon and Mars. To lift off on hover engines from Earth at sea level, the total vessel mass must be lower than 14880 kg by reducing the amount of fuel carried.\\
+\\
+\textbf{Hover attitude control}\\
+The relative thrust generated by the three hover engines can be modulated within small margins to produce a force differential that induces a pitch or bank moment and can be used to change the vessel attitude during hover operation. The controls for hover attitude modulation are located in the lower left panel (HOVER ATT CTRL) to the right of the main engine gimbal controls.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\hsize]{dg_hover.jpg}
+  \caption{Hover attitude modulation controls.}
+\end{figure}
+
+\noindent
+The selector dial has three positions: OFF - attitude control disabled, all thrusters engage at balanced level; AUTO - automatic attitude balancing mode commanded by user input; MAN - manual pitch and bank modulation.\\
+In AUTO mode, the target attitude is commanded by the manual input controls (keyboard or joystick). With controls in neutral position, the differential hover thrust is set to keep the vessel level with the local horizon. Engaging pitch and bank controls commands a target pitch or bank attitude, maintained by differential hover thrust. This change in attitude creates a horizontal component of thrust from the hover engines, resulting in a horizontal acceleration. Centering the stick again zeros the horizontal acceleration, maintaining the current horizontal velocity (in the absence of an atmosphere). This mode is useful for adjusting the vessel position over a target touchdown point during VTOL operations.\\
+The automatic hover attitude mode should generally be used in conjunction with the hover hold altitude/vertical speed mode, because the vertical component of hover thrust is affected by vessel attitude, resulting in a change in vertical speed. The hover hold altitude/vertical speed mode automatically adjusts for this.\\
+Note that the automatic hover attitude mode is only operational for vessel pitch and bank angles < 30°. At higher angles, the automatic mode disengages.\\
+The hover attitude control system modulates the differential thrust of the hover engines so that the total thrust from the three engines is maintained. This means that a thrust reserve beyond the commanded mean hover level is required to service the modulation requests. If the mean hover level is set too close to full or zero thrust to provide the required reserves, attitude control is disabled.\\
+RCS rotational attitude control programs should be disengaged before activating hover attitude control to avoid conflicts between the two attitude control loops.\\
+In MAN mode, the commanded pitch and roll angles are set directly with the two rocker switches to the right of the selector dial.\\
+The display below the dial shows the current and commanded hover pitch and bank attitudes. The inner and outer box shown in the display indicate an attitude angle of 5° and 10°, respectively.\\
+\\
+\textbf{Hover hold altitude/vertical speed control}\\
+The hover hold altitude/vspeed program allows to automatically adjust hover engine thrust for maintaining a specified altitude or vertical speed. The controls for activating the program and setting the parameters (HOVER ALT) is located in the lower left panel, right of the hover attitude controls.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.2\hsize]{dg_hover_alt.jpg}
+  \caption{Hover hold altitude/vspeed panel.}
+\end{figure}
+
+\noindent
+Switch between altitude or vertical speed modes with the ALT/VS buttons at the bottom of the panel. The display shows the current target setting of the selected parameter in meters above ground (ALT) or in m/s (VSPD). The value can be adjusted with the SET +/- rocker switch. In ALT mode, the RST button sets the target altitude to the current vessel altitude. In VSPD mode, the RST button sets the target vertical velocity to 0.\\
+Press the HOLD button to activate the selected hover program. Pressing the button again disengages the program. The vessel will maintain the hover thrust setting at that point.\\
+When switching directly from an active ALT mode to VS mode, the target vertical speed is set to the current vertical speed. Likewise, switching from active VS to ALT mode sets the target to the current altitude.\\
+The hold altitude/vertical speed mode requires the vessel to be approximately level with the local horizon. It is advisable to use it in combination with the automatic hover balance mode. At significant pitch or bank angles the available hover thrust may not be sufficient to maintain the commanded value.\\
+The hover hold altitude/vertical speed mode is most useful in surface proximity of a planetary body without an atmosphere, where vertical take-off and landing is required. The vertical speed mode can be used for controlled launches and soft touchdowns.
+
+\paragraph{Scramjet engines (DG-S only)}
+The DG-S version of the Delta-glider is equipped with a pair of air-breathing scram engines mounted underneath the fuselage, in addition to its rocket engines. They can provide efficient propulsion in Earth's atmosphere in a limited pressure and airspeed regime.\\
+Scramjets are a variant of ramjet engines. A ramjet has no moving parts - unlike standard turbojet engines, the compression of the incoming air prior to combustion is achieved purely from the vessel's airspeed. In ramjets, the air is decelerated to subsonic speeds before combustion, while in scramjets combustion occurs at supersonic speeds.\\
+This design means that scramjets (and to a lesser degree, ramjets) can only operate at high airspeeds. They can't be used to take off from the ground, so additional propulsion is required at low speeds until the scramjets can take over. For the DG-S, the operational speed for the scramjet engines is approximately Mach 3-8. At the lower limit the scramjets lose efficiency due to low air compression. At the upper airspeed limit, the limiting factor is the engine temperature, which must be kept within material constraints by reducing the ingoing airflow.\\
+At optimal conditions, each scramjet engine generates approximately 325 kN of thrust, roughly twice the power of the rocket main engines. The scramjets are significantly more fuel-efficient than the main engines, because they don't require oxidizer to be carried along. This is reflected in a value of specific impulse of approximately Isp = 1 x 10$^{5}$ m/s at optimal operational parameters. The maximum fuel mass flow rate per engine supported by the fuel pumps is 3.0 kg/s.
+
+\paragraph{Reaction control system}
+The Reaction Control System (RCS) consists of set of 16 small thrusters arranged to provide attitude and linear control during orbital operations. RCS thrusters are engaged in pairs, either in rotational mode to induce an angular moment around one of the vessel principal axes, or in translational mode to provide a linear moment in the direction of one of the axes. Each thruster generates 3.5 kN of thrust. In linear mode, this results in an acceleration of 0.25 m/s$^{2}$ from a thruster pair for a fully loaded DG. In rotational mode, the generated torque ranges from 30 kNm (yaw and roll) to 40 kNm (pitch), resulting in an angular acceleration of 3°/s$^{2}$ (yaw), 9°/s$^{2}$ (roll) and 6°/s$^{2}$ (pitch) for a fully loaded DG.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.6\hsize]{dg_rcs.png}
+  \caption{RCS mode selector dial and attitude program switches in the VC.}
+\end{figure}
+
+\noindent
+%TODO add section link
+The RCS mode is switched between rotational and linear modes with the RCS MODE selector dial (keyboard shortcut \keystroke{/}$_{Num}$). The keyboard and joystick commands for engaging RCS along specific axes can be found in TODO. RCS thrusters are engaged either at full power, or at 10\% of full power for fine adjustments, using keyboard commands in combination with \Ctrl.\\
+%TODO add section link
+The DG supports the full range of default RCS attitude programs (prograde/retrograde, normal/antinormal to the orbital plane, level with respect to local horizon, and kill rotation). See TODO for an overview of the attitude programs and how to engage them.
+
+\paragraph{Propellant management}
+The propellant management display is located on the lower left of the front panel (PROPELLANT STATUS). It shows the fill level fuel mass of the installed propellant tanks (main, RCS, and scram for the DG-S). It also shows the $\Delta$v equivalent of the remaining fuel resources, and the current mass flow rate from each tank.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\hsize]{dg_prop_mgmt.png}
+  \caption{DG-S propellant management display.}
+\end{figure}
+
+\subsubsection{Avionics}
+%TODO add section link
+Avionics displays and controls are located on the DG main panel. The primary avionics interfaces are the two multifunctional displays (MFDs). For a description of the available MFD modes and operation see TODO. In addition to the MFDs, the DG provides some secondary avionics instruments.
+
+\paragraph{Head-up display}
+%TODO add section link
+The DG's head-up display (HUD) consists of a glass pane in the pilot's forward line of sight, suspended from the overhead panel, and a projector located above the pilot position. The HUD supports Orbiter's standard display modes (\textit{Surface}, \textit{Orbit} and \textit{Docking} - see TODO). The mode can be selected with the three HUD MODE buttons in the centre of the front panel (keyboard shortcut: h). When not required, the HUD can be retracted with the HUD RET/EXT switch in the overhead panel (keyboard shortcut: \Ctrl\keystroke{H}). This also turns off the projector.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\hsize]{dg_hudpane.png}
+  \caption{DG HUD pane in the VC.}
+\end{figure}
+
+\noindent
+Below the HUD mode selector buttons is a dial for adjusting the projector brightness and a toggle to cycle through the available display colours (keyboard shortcut: \Alt\keystroke{H}). Switching colours may improve visibility under different viewing conditions.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.25\hsize]{dg_hudmode.png}
+  \caption{HUD mode selector and brightness/colour controls on the front panel.}
+\end{figure}
+
+%TODO img side-by-side?
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\hsize]{dg_hudctrl.png}
+  \caption{HUD projector and HUD extend/retract control on the overhead panel.}
+\end{figure}
+
+
+\paragraph{Attitude indicator}
+The \textit{attitude indicator} is located in the top centre of the main panel. It shows pitch and roll attitude relative to the local horizon, as well as heading, altitude and airspeed readouts. The attitude indicator replicates the attitude display of the \textit{Surface} MFD mode. This potentially frees up an MFD instrument for displaying a different mode.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\hsize]{dg_att_ind.png}
+\end{figure}
+
+\paragraph{Horizontal situation indicator}
+The \textit{horizontal situation indicator} (HSI) is located in the bottom centre of the main panel. It shows a compass rose with the current heading indicated with a marker at the 12 o'clock position. The HSI receives input from the NAV1 nav-radio receiver and can display course information from VOR transmitters or approach data from ILS transmitters.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\hsize]{dg_hsi.png}
+\end{figure}
+
+\noindent
+When a transmitter signal is received, the orange \textit{source bearing} bug indicates the bearing to the transmitter source.\\
+%TODO add section link
+The green \textit{course} and \textit{deviation} indicator needle can be used to display a target heading or the ship's position relative to a VOR radial. It is used in conjunction with the DG's atmospheric autopilot (AAP) - see TODO\\
+When the AAP \textit{heading} mode is activated, the course indicator represents the target heading. It can be rotated with the rocker switch in the AAP controls below to the HDG/CRS readout. The autopilot will try to keep the vessel's heading aligned with this target heading, i.e. will keep the course needle pointing to 12 o'clock. This mode is independent of a VOR transmitter and also works if no VOR signal is received.\\
+When the AAP heading mode is disengaged, the course indicator can still be rotated with the AAP rocker switch, but it will not activate a heading response. If a VOR signal is received, the indicator represents a radial to or from the VOR signal source, and the deviation indicator shows the ship's position relative to the radial. As the ship approaches the radial, the deviation indicator moves towards the centre of the display. If the AAP heading mode is activated on intercept, the vessel will turn into the selected radial and keep the deviation indicator centered.\\
+If NAV1 is tuned to an ILS transmitter, the course indicator is fixed to the runway approach path direction and cannot be rotated with the AAP heading target. The deviation marker shows the direction of the localiser plane (the vertical plane aligned with the runway centreline) relative to the ship's position. In addition, the glideslope indicator becomes active and shows the glideslope plane relative to the ship's vertical position. The glideslope needle below the centre position indicates too high an approach, the needle above centre position indicates a low approach.
+
+
+\paragraph{Angle of attack and vertical speed indicator}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.3\hsize]{dg_tapes.png}
+  \caption{AOA tape with wing load indicator and vertical speed tape.}
+\end{figure}
+
+\noindent
+\textbf{AOA tape}\\
+Below the attitude indicator are the angle of attack (AOA) and vertical speed (VS) tapes. AOA is the vertical component of the angle between the ship's centre line (forward direction, +z axis in the local vessel frame) and its flight path through the atmosphere (relative wind). It represents the angle at which the DG's wing hits the oncoming air and is an important indicator for estimating lift and drag. Higher AOA values generate higher lift and drag forces up to a limit (critical AOA), after which the airflow starts to separate from the upper wing surface, rapidly decreasing the generated lift. The AOA tape has a range of $\pm$40° (with higher resolution within $\pm$5°) but the digital readout works beyond that limit.\\
+\\
+\textbf{Wing load indicator}\\
+The AOA tape also includes a wing load indicator (currently only available in the 2-D panel version). Wing load in this context is to be understood as lift force divided by wing area. Wing load can reach high values during high-AOA manoeuvres at high airspeeds. Exceeding the DG's structural limits can lead to airframe damage. The wing load indicator consists of a line of coloured LEDs, where green = within limits, yellow = approaching limit, red = exceeding limits. Note that the magnitude of the negative wing load limit (at negative AOA) is lower than that of positive wing load.\\
+\\
+\textbf{Vertical speed tape}\\
+Located next to the AOA tape is the vertical speed tape and readout. Vertical speed is displayed in m/s up to a range of $\pm$10$^{4}$ m/s. Beyond that, the readout shows vertical speed in km/s, while the tape displays the fractional m/s remainder. Vertical speed is measured relative to the surface; it does not depend on an atmosphere.\\
+Both AOA and vertical speed readouts are also available in the MFD \textit{Surface} mode.
+
+
+\paragraph{Atmospheric autopilot}
+The atmospheric autopilot (AAP) engages main thrusters and aerodynamic control surfaces to maintain commanded airspeed, altitude and/or heading in an atmosphere. The AAP control interface is located in the top left of the main panel. The digital readouts show the commanded values for altitude, speed and heading. They can be adjusted with the rocker switches below each display. The toggle switches left of the readouts activate and deactivate the corresponding autopilot component.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.25\hsize]{dg_aap.png}
+  \caption{AAP interface.}
+\end{figure}
+
+\noindent
+Note that not all commanded settings result in a stable flight condition. For example, if the commanded airspeed is too low, the generated lift may not be sufficient to maintain the commanded altitude.\\
+%TODO add section link
+An alternative way to access the AAP is via the script interface on the \textit{Console} MFD mode (see TODO). Note however that the console invokes a separate instance of the AAP, so both methods should not be used simultaneously to avoid conflicts.
+
+\subsubsection{Thermal management}
+During orbital operations the DG can unfold a pair of radiator panels to emit excess heat. A coolant loop collects thermal energy from the cabin and onboard electrical systems and transports it to the radiators. When the radiators are stowed, a limited amount of heat can also be deposited in the propellant stores. A display in the overhead panel shows the operation of the coolant system, including the temperatures at different positions in the loop. Controls consist of a switch to turn the coolant pump on and off, a dial to set the pump rate, and a dial to set the target reference temperature. To maintain the target temperature, the control system adjusts the radiator/bypass ratio of the coolant flow. The radiator is extended/retracted with a switch below the thermal control display. The efficiency of the radiators is reduced if they are irradiated directly by sunlight. Likewise, heat absorption by the DG's fuselage from solar irradiation depends on the irradiated cross section. This should be taken into account when setting the ship's attitude relative to the sun during orbital operations.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\hsize]{dg_temp_mgmt.png}
+\end{figure}
+
+\subsubsection{Life support system}
+The life support system regulates atmospheric pressure in the cabin and the airlock from two nitrogen/oxygen (N$_{2}$/O$_{2}$) tanks. Two valves open and close the air supply from the tanks. In addition, there are three pressure relief valves (V1, V2, V3) which equalise pressure between cabin and airlock (V2), between cabin and environment (V1), and between airlock and environment (V3). V2 should be open before opening the inner airlock. V1 should be open before opening the cabin hatch, and V3 should be open before opening the outer airlock. The N$_{2}$/O$_{2}$ tanks should be cut off before opening the hatch or the airlock doors.\\
+Pressure readouts for cabin, airlock and environment are provided on the left of the overhead panel. The panel also provides controls for the N2/O2 tanks and the relief valves. The cabin hatch and inner/outer airlock doors are controlled from this panel as well.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\hsize]{dg_life_supp.png}
+\end{figure}
+
+\subsubsection{Cockpit and external lighting}
+The lighting controls are located in the overhead panels. On the left are the instrument light controls (on/off, brightness) and floodlight controls (white/red). On the right are the external light and navigation beacon controls.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\hsize]{dg_light_int.png}
+  \caption{Instrument light on/off and brightness, cockpit floodlight on/off and brightness (left overhead panel).}
+\end{figure}
+
+\noindent
+A spotlight mounted beneath the nosecone can be configured as a landing light ("LAND" - angled downward) or docking light ("DOCK" - pointing forward). The DG also has a set of navigation lights (green - starboard, red - port, white - stern) and strobes.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\hsize]{dg_light_ext.png}
+  \caption{Docking/landing lights, strobes and navigation lights (right overhead panel).}
+\end{figure}
+
+\noindent
+Note that for the cockpit floodlights and eternal landing/docking lights to work, \textit{local light source} support must be enabled on the \textit{Visual effects} tab of the Orbiter Launchpad dialog.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\hsize]{dg_light_land.png}
+  \caption{DG with landing lights.}
+\end{figure}
+
+
+\subsubsection{Script interface}
+%TODO html doc link?
+The DG has access to the standard functions provided by the Orbiter-Lua script interface (see .\textbackslash Html\textbackslash orbiter.chm, chapter \textit{Orbiter Scripting} for an overview of the script interface and .\textbackslash Orbitersdk\textbackslash doc\textbackslash orbiter\_lua.chm for details of the API). The vessel-related functions can be used to query flight parameters and to control spacecraft operations.\\
+The script interface can be accessed in two ways:
+
+\begin{itemize}
+%TODO check keys are correct
+\item via the \textit{Terminal} MFD mode. Make sure that the \textit{LuaMFD} plugin module is activated in the \textit{Modules} tab of the Orbiter Launchpad. This will add the Terminal mode to the list of available MFD modes (open with keyboard shortcut: \Shift\keystroke{F4} + \Shift\keystroke{T}). Script commands can be entered with the INP button (keyboard shortcut: \Shift\keystroke{I}). For vessel-based methods, the terminal provides object "V" to represent the active vessel (equivalent to command V = vessel.get\_focusinterface() ). You can use this object to access the DG, for example
+
+\begin{lstlisting}[language=OSFS]
+term.out(V:get_mass())
+\end{lstlisting}
+
+\item via the Console window. Make sure that the LuaConsole plugin module is activated in the Modules tab of the Orbiter Launchpad. During a simulation session, open the console with Lua console window from the Custom functions list (\Ctrl\keystroke{F4}). To access your DG, you first have to create an interface object, and then use it to access vessel functionality, e.g.
+
+\begin{lstlisting}[language=OSFS]
+dg = vessel.get_focusinterface()
+term.out(dg:get_mass())
+\end{lstlisting}
+
+\noindent
+Of course you can create an interface to any other vessel in the simulation as well, using
+
+\begin{lstlisting}[language=OSFS]
+v = vessel.get_interface(<name>)
+\end{lstlisting}
+
+\end{itemize}
+
+\paragraph{Atmospheric autopilot (script version)}
+%TODO add section link
+The DG provides a vessel-specific script API extension that implements the atmospheric autopilot discussed in TODO). This script extension is loaded automatically when opening a Terminal MFD in the DG, but must be loaded explicitly in the Console window and connected with the correct vessel:
+
+\begin{lstlisting}[language=OSFS]
+run('dg/aap')
+setvessel(vessel.get_focusinterface())
+\end{lstlisting}
+
+\noindent
+There is nothing to stop you from trying to invoke the AAP for a different vessel type, but the parameters are tuned to the DG mass, inertia and aerodynamic properties, so it is unlikely to work well on a different spacecraft without modification.\\
+The code for the autopilot functions is located in file .\textbackslash Script\textbackslash DG\textbackslash aap.lua. Feel free to edit the code to modify the behaviour of the autopilot. The script interface makes it easy to change things and test them directly in Orbiter.\\
+Note that the script interface creates a new instance of the autopilot that is independent of the version accessed via the DG instrument panel. Avoid having both active simultaneously to avoid conflicts.\\
+\\
+\textbf{Altitude module}\\
+The altitude sub-module of the AAP is engaged with
+
+\begin{lstlisting}[language=OSFS]
+aap.alt(<tgtalt>)
+\end{lstlisting}
+
+\noindent
+where \textit{<tgtalt>} is the target altitude [m] the autopilot is commanded to reach and maintain. The target altitude can be modified either by calling the aap.alt function again with a different value, or by overwriting the aap.tgtalt parameter:
+
+\begin{lstlisting}[language=OSFS]
+aap.tgtalt = <newalt>
+\end{lstlisting}
+
+\noindent
+The altitude autopilot can be disengaged by omitting the altitude argument:
+
+\begin{lstlisting}[language=OSFS]
+aap.alt()
+\end{lstlisting}
+
+\noindent
+\textbf{Airspeed module}\\
+The airspeed autopilot uses a similar mechanism. It can be engaged, modified and disengaged with the following syntax:
+
+\begin{lstlisting}[language=OSFS]
+aap.spd(<tgtspeed>)
+aap.tgtspd = <newspeed>
+aap.spd()
+\end{lstlisting}
+
+\noindent
+The altitude and airspeed autopilots can be activated simultaneously.\\
+The altitude autopilot acts on elevator position only. The airspeed autopilot acts on the main throttle setting only. Certain combinations of target settings may not result in a stable condition. For example, a low speed and high altitude setting cannot be sustained simultaneously. In this case, the AAP will maintain the target airspeed and move the elevators to full up position, but the vessel will descend to an altitude below the target altitude until sufficient lift is generated to compensate for gravitational force.\\
+\\
+\textbf{Bank module}\\
+The bank function sets the DG to a defined bank angle:
+
+\begin{lstlisting}[language=OSFS]
+aap.bank(<tgtbank>)
+aap.tgtbnk = <newbank>
+aap.bank()
+\end{lstlisting}
+
+\noindent
+where the bank angle is given in degrees. Positive angles indicate a left bank, negative angles a right bank.\\
+\\
+\textbf{Heading module}\\
+The heading autopilot turns the DG to a specified heading:
+
+\begin{lstlisting}[language=OSFS]
+aap.hdg(<tgtheading>)
+aap.tgthdg = <newheading>
+aap.hdg()
+\end{lstlisting}
+
+\noindent
+where the heading argument is given in degrees in the range 0 $\leq$ \textit{heading} < 360. The heading autopilot internally launches the bank module in a sub-process to achieve the target heading. Bank and heading modules should not be activated simultaneously by the user.
+
+
+\subsubsection{Keyboard controls}
+In addition to the generic Orbiter vessel control keys, the DG supports the following vessel-specific key controls:
+
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.2\textwidth}|p{0.7\textwidth}| }
+	\hline\rule{0pt}{2ex}
+	\textbf{Shortcut} & \textbf{Action}\\
+	\hline\rule{0pt}{2ex}
+	\keystroke{G} & Operate landing gear\\
+	\hline\rule{0pt}{2ex}
+	\keystroke{K} & Operate nose-cone to expose docking mechanism\\
+	\hline\rule{0pt}{2ex}
+	\keystroke{O} & Open/close outer airlock door\\
+	\hline\rule{0pt}{2ex}
+	\Ctrl\keystroke{O} & Open/close inner airlock door\\
+	\hline\rule{0pt}{2ex}
+	\keystroke{U} & Open/close top hatch\\
+	\hline\rule{0pt}{2ex}
+	\keystroke{B} & Deploy airbrakes by one step\\
+	\hline\rule{0pt}{2ex}
+	\Ctrl\keystroke{B} & Retract airbrakes by one step\\
+	\hline\rule{0pt}{2ex}
+	\keystroke{D} & Deploy/retract radiators\\
+	\hline\rule{0pt}{2ex}
+	\keystroke{H} & Cycle HUD modes\\
+	\hline\rule{0pt}{2ex}
+	\Ctrl\keystroke{H} & Deploy/retract HUD pane\\
+	\hline\rule{0pt}{2ex}
+	\Ctrl\Spacebar & Open animation control dialog box\\
+	\hline
+	\end{longtable}
+%\end{table}
+
+\subsubsection{Scenario editor extensions}
+%TODO doc link or include?
+DG and DG-S spacecraft can be created, edited and deleted from the scenario editor plugin (see document .\textbackslash Doc\textbackslash ScenarioEditor.pdf). In addition to the standard vessel editing functions provided by the scenario editor, DG and DG-S type vessels add two additional editor pages that can be accessed from the main \textit{Edit} page:\\
+\\
+\textbf{Animations}\\
+This page provides a set of controls to directly configure some of the DG's states and associated animations:
+
+\begin{itemize} 
+\item Landing gear up/down (Note that this doesn't work for a DG with raised landing gears sitting on a planetary surface, e.g. after a belly landing, because there is no space for extending the gear.)
+\item Retro engine covers open/close
+\item Nose cone open/close
+\item Outer and inner airlock doors open/close
+\item Escape ladder extend/stow (only works if nose cone is open)
+\item Radiator extend/stow
+\end{itemize}
+
+\noindent
+\textbf{Passengers}\\
+This page allows to add and remove passengers to/from the four seats in the cabin. Note that passengers and their life support systems increase the total mass of the spacecraft. The resulting mass is displayed on the page. 
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\hsize]{dg_scneditor.png}
+  \caption{DG animation control page (left) and passenger management page (right).}
+\end{figure}
+
+
+\subsubsection{Technical specifications}
+Some design and operational parameters of the DG and DG-S spacecraft classes:
+
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.4\textwidth}|p{0.2\textwidth}|p{0.2\textwidth}|p{0.05\textwidth}| }
+	\hline\rule{0pt}{2ex}
+	& \textbf{DG} & \textbf{DG-S} &\\
+	\hline\rule{0pt}{2ex}
+	Mass (empty) & 11.0 x 10$^{3}$ & 13.0 x 10$^{3}$ & kg\\
+	\hline\rule{0pt}{2ex}
+	Main tank capacity & 12.9 x 10$^{3}$ & 10.4 x 10$^{3}$ & kg\\
+	\hline\rule{0pt}{2ex}
+	Scram tank capacity & - & 2.5 x 10$^{3}$ & kg\\
+	\hline\rule{0pt}{2ex}
+	RCS tank capacity & 0.6 x 10$^{3}$ & 0.6 x 10$^{3}$ & kg\\
+	\hline\rule{0pt}{2ex}
+	Mass (payload) & 340 & 340 & kg\\
+	\hline\rule{0pt}{2ex}
+	Mass (total) & 24.84 x 10$^{3}$ & 26.84 x 10$^{3}$ & kg\\
+	\hline\rule{0pt}{2ex}
+	Thrust (main) & 2 x 160 & 2 x 160 & kN\\
+	\hline\rule{0pt}{2ex}
+	Thrust (retro) & 2 x 34 & 2 x 34 & kN\\
+	\hline\rule{0pt}{2ex}
+	Thrust (hover) & 110 + 2 x 36.3 & 110 + 2 x 36.3 & kN\\
+	\hline\rule{0pt}{2ex}
+	Thrust (scram, max) & - & 2 x 325 & kN\\
+	\hline\rule{0pt}{2ex}
+	Acceleration (main, max load) & 12.9 & 11.9 & m/s$^{2}$\\
+	\hline\rule{0pt}{2ex}
+	Acceleration (scram, max load) & - & 24.2 & m/s$^{2}$\\
+	\hline\rule{0pt}{2ex}
+	Isp (main, vacuum) & 4.0 x 10$^{4}$ & 4.0 x 10$^{4}$ & m/s\\
+	\hline\rule{0pt}{2ex}
+	Prop. flow rate (main, max) & 2 x 4.0 & 2 x 4.0 & kg/s\\
+	\hline\rule{0pt}{2ex}
+	Prop. flow rate (scram, max) & - & 2 x 3.0 & kg/s\\
+	\hline\rule{0pt}{2ex}
+	Dimensions (L x W x H) & 18.7 x 17.9 x 4.9 & 18.7 x 17.9 x 4.9 & m\\
+	\hline\rule{0pt}{2ex}
+	Inertia (PMI, mass-normalised, x, y, z) & 15.5, 22.1, 7.7 & 15.5, 22.1, 7.7 & m$^{2}$\\
+	\hline\rule{0pt}{2ex}
+	Stall C$_{L}$ & 1.0 & 1.0 &\\
+	\hline\rule{0pt}{2ex}
+	Stall AOA & 20 & 20 & deg\\
+	\hline
+	\end{longtable}
+%\end{table}
+
 
 
 \subsection{Shuttle-A}
@@ -39,7 +548,7 @@ Cockpit views can be cycled with \keystroke{F8} between generic glass cockpit, 2
 
 \paragraph{Main panel}
 %TODO add section link
-The 2-D cockpit view consists of main and overhead panels. They can be switched between with \Ctrl\UArrow and \Ctrl\DArrow. The main panel contains the primary avionics instruments – left and right MFD (see TODO for standard MFD modes), ADI ball and controls (see TODO) and speed, altitude and vertical speed readouts.\\
+The 2-D cockpit view consists of main and overhead panels. They can be switched between with \Ctrl\UArrow and \Ctrl\DArrow. The main panel contains the primary avionics instruments - left and right MFD (see TODO for standard MFD modes), ADI ball and controls (see TODO) and speed, altitude and vertical speed readouts.\\
 The engine block is located in the bottom centre of the panel. Main, hover and auxiliary thrusters can be operated individually, by engaging the throttle controls separately, or in pairs, by clicking and dragging between throttle sliders.\\
 %TODO add section link
 Left of the throttle block is the auxiliary pod control panel which can be used to rotate the pods and has readouts for current orientation (see TODO).\\
@@ -68,8 +577,8 @@ The frame selection dial sets the reference frame represented by the ADI. In pra
 
 \begin{itemize} 
 \item \textbf{Ecliptic (ECL).} Reference frame is the ecliptic and equinox of epoch J2000.0. Direction (P=0, Y=0) is aligned with the vernal point. Direction (P=+90) points to the ecliptic north pole. This inertial frame is most useful for interplanetary trips.
-\item \textbf{Equator (EQU).} Reference frame is the equator of the body currently being orbited. Direction (P=0, Y=0) points to the ascending node of the ecliptic w.r.t. the planet’s equator. Direction (P=+90) points in the positive direction of the planet’s rotation axis. This is a (nearly) inertial frame (subject to the planet’s axis precession), and most useful for orbital operations.
-\item \textbf{Orbital velocity/Orbital momentum vector (OV/OM).} This is a rotating frame. The axis (P=0, Y=0) is aligned with the vessel’s current orbital velocity vector relative to the orbit reference body. The (P=+90) axis is aligned with the orbital momentum vector (i.e. perpendicular to the orbital plane). This reference frame is equivalent to that used by the Orbit HUD mode, but rotated by 90° in roll.
+\item \textbf{Equator (EQU).} Reference frame is the equator of the body currently being orbited. Direction (P=0, Y=0) points to the ascending node of the ecliptic w.r.t. the planet's equator. Direction (P=+90) points in the positive direction of the planet's rotation axis. This is a (nearly) inertial frame (subject to the planet's axis precession), and most useful for orbital operations.
+\item \textbf{Orbital velocity/Orbital momentum vector (OV/OM).} This is a rotating frame. The axis (P=0, Y=0) is aligned with the vessel's current orbital velocity vector relative to the orbit reference body. The (P=+90) axis is aligned with the orbital momentum vector (i.e. perpendicular to the orbital plane). This reference frame is equivalent to that used by the Orbit HUD mode, but rotated by 90° in roll.
 \item \textbf{Local horizon/Local north (LH/LN).} This is a rotating frame. The axis (P=0, Y=0) is aligned with the local heading = 0 direction in the local horizon plane. Axis (P=+90) is aligned with the normal of the local horizon plane. This reference frame is equivalent to that used by the Surface HUD mode.
 \item \textbf{Link to NAV radio source (NAV 1/2).} The reference frame can be selected implicitly by feeding data from one of the NAV radio receivers to the ADI. The orientation of the frame depends on the NAV signal type. Currently supported is IDS (instrument docking system) input, which aligns the ADI reference with the docking port orientation: Direction (P=0, Y=0) is aligned with the approach direction; (P=+90) is aligned with the "Up" direction for longitudinal rotation alignment.
 \end{itemize}
@@ -104,15 +613,15 @@ The ADI ball is available in two layouts:
 	\hline\rule{0pt}{2ex}
 	\textbf{Layout} & \textbf{Pitch range} & \textbf{Yaw range} & \textbf{Poles}\\
 	\hline\rule{0pt}{2ex}
-	0 & -90° – +90° & 0° – 360° & at pitch = -90° and +90°\\
+	0 & -90° - +90° & 0° - 360° & at pitch = -90° and +90°\\
 	\hline\rule{0pt}{2ex}
-	1 & 0° – 360° & -90° – +90° & at yaw = -90° and +90°\\
+	1 & 0° - 360° & -90° - +90° & at yaw = -90° and +90°\\
 	\hline
 	\end{longtable}
 %\end{table}
 
 \noindent
-The layout can be selected on a per vessel/per scenario basis by adding an ADI\_LAYOUT item with value 0 or 1 to the Shuttle’s scenario entry. If this item is not present, the value in the ShuttleA configuration file (.\textbackslash Config\textbackslash Vessels\textbackslash ShuttleA.cfg) is used. If this entry is also not present, layout 0 is assumed. The layout can be switched interactively in the running simulation from a console with the command
+The layout can be selected on a per vessel/per scenario basis by adding an ADI\_LAYOUT item with value 0 or 1 to the Shuttle's scenario entry. If this item is not present, the value in the ShuttleA configuration file (.\textbackslash Config\textbackslash Vessels\textbackslash ShuttleA.cfg) is used. If this entry is also not present, layout 0 is assumed. The layout can be switched interactively in the running simulation from a console with the command
 
 \begin{lstlisting}[language=OSFS]
 v:set_adilayout(layout)
@@ -120,7 +629,7 @@ v:set_adilayout(layout)
 
 \noindent
 where v is an interface instance to Shuttle-A vessel and \textit{layout} is 0 or 1.\\
-Note that the two layouts don’t alter the behaviour of the ADI ball, just the markings painted on it. They do however represent different attitude angle interpretations, i.e. the Euler angles differ between the two layouts.
+Note that the two layouts don't alter the behaviour of the ADI ball, just the markings painted on it. They do however represent different attitude angle interpretations, i.e. the Euler angles differ between the two layouts.
 The Tutorials\textbackslash ADI training scenario is an interactive tutorial that demonstrates the ADI concept and operation directly in Orbiter. Try it!
 
 
