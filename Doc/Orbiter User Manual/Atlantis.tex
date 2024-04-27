@@ -2,6 +2,7 @@
 \begin{document}
 
 \subsection{Space Shuttle Atlantis}
+\label{ssec:atlantis}
 Space Shuttle Atlantis, comprising the complete launch stack of orbiter, external tank and solid rocket boosters, represents the only "real" spacecraft in the basic Orbiter distribution - but there are many more available as add-ons. Its flight characteristics and fuel management are less forgiving than fictional models like the Delta-glider, and much of it (esp. the launch phase) is automated to ease pilot workload.
 
 \alertbox{Make sure to activate \textit{Limited fuel} in the Parameters tab of the Launchpad dialog before flying the Space Shuttle. Without consuming fuel, Atlantis is too heavy to reach orbit.}
@@ -141,6 +142,7 @@ The bay doors, radiators and Ku-band antenna operation closely follows the real 
 \end{center}
 
 \paragraph{Bay door operation}
+\label{para:atlantis_baydoor}
 
 \textbf{Bay door opening sequence:}
 \begin{itemize}
@@ -163,7 +165,6 @@ The bay doors, radiators and Ku-band antenna operation closely follows the real 
 \item Set the PL BAY DOOR switch to STOP.
 \item Set the PL BAY DOOR SYS 1 and SYS 2 switches to DISABLE.
 \end{itemize}
-%TODO (Ref: Operations Manual Sec. 2.17)
 
 \paragraph{Radiator operation}
 The Space Shuttle has four radiators to dissipate heat from the coolant loops - two on the inside of each of the payload bay doors. The forward radiator panels on each side can be deployed when the doors are open; the aft panels are fixed. The radiator deployment is also controlled from panel R13L.\\
@@ -190,9 +191,9 @@ The Space Shuttle has four radiators to dissipate heat from the coolant loops - 
 \item After 30 seconds, set both latch control switches back to OFF.
 \item Set both PL BAY MECH PWR switches back to OFF.
 \end{itemize}
-%TODO (Ref: Operations Manual Sec. 2.9)
 
 \paragraph{Ku-band antenna operation}
+\label{para:atlantis_antenna}
 The Ku-band antenna is carried on the starboard sill longeron inside the orbiter's cargo bay and can be deployed once the payload bay doors are open. The antenna is used for communication with ground stations. Alternatively, it can also be used as a radar system for tracking objects in space. The controls for deployment and stowage of the Ku-band system are located on panel R13L. Jettisoning the assembly, and the actual functionality of the Ku-band system are not currently implemented in this version.\\
 
 \noindent
@@ -212,7 +213,6 @@ The Ku-band antenna is carried on the starboard sill longeron inside the orbiter
 \item When the talkback indicator shows STO, set the KU ANTENNA switch back to GND.
 \item If the assembly does not respond to the normal stowing operation, set the KU ANTENNA DIRECT STOW switch to ON. This bypasses the normal stow control sequences and causes the assembly to be driven inside the payload bay.
 \end{itemize}
-%TODO (Ref: Operations Manual Sec. 2.4)
 
 \subsubsection{SRMS operation and grappling}
 
@@ -255,13 +255,11 @@ In addition to the generic Orbiter vessel control keys, Atlantis supports the fo
 	\hline\rule{0pt}{2ex}
 	\keystroke{J} & Jettison: separate SRBs or ET\\
 	\hline\rule{0pt}{2ex}
-%TODO add section link
-	\keystroke{K} & Operate cargo bay doors (shortcut - for the full procedure see TODO)\\
+	\keystroke{K} & Operate cargo bay doors (shortcut - for the full procedure see \ref{para:atlantis_baydoor})\\
 	\hline\rule{0pt}{2ex}
 	\keystroke{Ctrl}\keystroke{B} & Operate split-rudder brake\\
 	\hline\rule{0pt}{2ex}
-%TODO add section link
-	\keystroke{Ctrl}\keystroke{U} & Deploy/retract Ku-band antenna (shortcut - for the full procedure see TODO)\\
+	\keystroke{Ctrl}\keystroke{U} & Deploy/retract Ku-band antenna (shortcut - for the full procedure see \ref{para:atlantis_antenna})\\
 	\hline\rule{0pt}{2ex}
 	\keystroke{Ctrl}\keystroke{Space} & Open control box for access to payload bay and SRMS control dialogs.\\
 	\hline

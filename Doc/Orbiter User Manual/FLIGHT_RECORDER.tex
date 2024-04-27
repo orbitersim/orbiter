@@ -2,6 +2,7 @@
 \begin{document}
 
 \section{Flight recorder}
+\label{sec:flight_rec}
 You can record and play back your Orbiter simulation sessions with the built-in flight recorder feature. To open the recorder during a simulation, click record in the main menu (shortcut: \Ctrl\keystroke{F5}). Click the REC button to start the recording. Click STOP to turn the recorder off. A keyboard shortcut for starting and stopping the recording without opening the dialog is \Ctrl\keystroke{C}. Recording sessions are stored as new scenarios in the \textit{Playback} scenario folder. By default, they have the same name as the original scenario, but a different name can be specified in the dialog before starting the recorder. After a recording has been stopped, restarting the recorder will overwrite the earlier segment, unless a different name is chosen.\\
 A running recording session is indicated by a blinking REC light in the top right corner.\\
 
@@ -53,8 +54,7 @@ The data for recorded simulation sessions are stored under the Flights subdirect
 \end{itemize}
 
 \noindent
-%TODO add section link
-The recording folder also contains a system.dat file that holds global (non-vessel specific) events such as camera settings, time acceleration events and on-screen annotations and their timings. This system file can be modified and extended in post-processing with the \textit{Playback event editor} (see TODO).\\
+The recording folder also contains a system.dat file that holds global (non-vessel specific) events such as camera settings, time acceleration events and on-screen annotations and their timings. This system file can be modified and extended in post-processing with the \textit{Playback event editor} (see \ref{sec:flight_playbackedit}).\\
 A complete recording session consists of the playback scenario in the Scenarios\textbackslash playback folder, and the corresponding flight data folder under the Flights directory. To share a playback with other Orbiter users, these files must be copied. Note that the scenario file can be moved to a different Scenario folder, but no two playback scenarios can have the same name.\\
 Be aware that long simulation sessions (in particular during time acceleration) may lead to very large data files, if \textit{Sampling in system time steps} is disabled.\\
 Not all 3$^{rd}$ party spacecraft add-ons may fully support the recorder/playback tool, if they implement non-standard features but do not support parsing these to/from the articulation stream.\\
@@ -63,6 +63,7 @@ Implementation details and flight recorder file format specifications can be fou
 
 
 \subsection{Playback event editor}
+\label{sec:flight_playbackedit}
 After recording a flight you have the option to enhance the playback with the use of the \textit{Playback editor}. You can
 
 \begin{itemize}

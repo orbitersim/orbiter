@@ -2,6 +2,7 @@
 \begin{document}
 
 \section{Cockpit views}
+\label{sec:cockpit_views}
 Orbiter can represent a spacecraft cockpit in different ways:
 
 \begin{itemize}
@@ -21,6 +22,7 @@ The modes can be cycled with \keystroke{F8}. Not all spacecraft may support all 
 
 
 \subsection{Glass cockpit}
+\label{ssec:glass_cockpit}
 The generic glass cockpit mode represents a head-up display (HUD) that projects various avionics data directly onto the pilot's forward view. This mode is available for all spacecraft types and provides access to some essential avionics data, MFD instruments and basic flight controls sufficient for basic vessel control in most situations. It does not provide spacecraft-specific instruments and interfaces. For access to these, the 2-D panel or 3-D virtual cockpit view should be used.
 
 \begin{figure}[H]
@@ -38,8 +40,7 @@ This display block in the top left corner of the glass cockpit shows the current
 \item \textbf{Fuel status:} Shows the propellant remaining in the main fuel tank. The numeric readout is fuel mass [kg]. Note that the vessel may have additional fuel tanks not shown in the generic glass cockpit view. Use vessel-specific 2-D or 3-D cockpit view for detailed fuel information.
 \item \textbf{Main engine:} The main engine bar shows the current main/retro engine thrust as a fraction of max. thrust. Green indicates main thrusters active, red indicates retro thrusters active (where applicable). The numerical readout is the thrust force generated [N]. 
 \item \textbf{Hover engine:} If the vessel is fitted with hover engines, this bar shows the current hover engine thrust as a fraction of main thrust. Hover engines generate vertical (up) thrust to assist in vertical take-offs and landings, in particular on planetary bodies without atmospheres. The numerical readout is the thrust force generated [N].
-%TODO add section link
-\item \textbf{RCS mode indicators:} Shows the current setting of the RCS (reaction control system). The RCS can be OFF, ROT (rotational mode) or LIN (linear mode). See TODO for details on attitude control. The indicator buttons can be clicked with the mouse to set the mode.
+\item \textbf{RCS mode indicators:} Shows the current setting of the RCS (reaction control system). The RCS can be OFF, ROT (rotational mode) or LIN (linear mode). See \ref{ssec:control_att} for details on attitude control. The indicator buttons can be clicked with the mouse to set the mode.
 \item \textbf{Trim control:} The vertical bar shows the current pitch trim settings for the vessel's aerodynamic control surfaces, if present. The trim setting can be adjusted with the three buttons next to the bar. (top button: nose up, bottom button: nose down, centre button: trim neutral).
 
 \end{itemize}
@@ -96,8 +97,7 @@ The PROGRD and RETRGRD modes turn the vessel to align with the orbital velocity 
 The HOLDALT mode engages the vessel's hover thrusters (if available) to maintain the current altitude. This mode works best with a level flight attitude and is therefore often combined with HORZLVL.\\
 \\
 \textbf{Pitch ladder, compass ribbon, flight path indicator}\\
-%TODO add section link
-These are part of the standard HUD display in \textit{Surface} mode. Standard HUD elements are available in all cockpit views. The available HUD modes are described in TODO.
+These are part of the standard HUD display in \textit{Surface} mode. Standard HUD elements are available in all cockpit views. The available HUD modes are described in \ref{ssec:hud_modes}.
 
 
 \subsection{2-D panel view}
@@ -119,14 +119,11 @@ On opening panel view by cycling the cockpit modes with \keystroke{F8}, you are 
 \end{figure}
 
 \noindent
-%TODO add section link
-Most panels can be scrolled out of the way to get a better view of the surroundings. For example, press \DArrow$_{Cur}$ to scroll the Delta-glider's main panel down. The overhead panel can be scrolled up with \UArrow$_{Cur}$. The scroll speed can be adjusted with the Panel scroll speed option in the \textit{Parameters} tab of the Orbiter launchpad (see TODO).\\
+Most panels can be scrolled out of the way to get a better view of the surroundings. For example, press \DArrow$_{Cur}$ to scroll the Delta-glider's main panel down. The overhead panel can be scrolled up with \UArrow$_{Cur}$. The scroll speed can be adjusted with the Panel scroll speed option in the \textit{Parameters} tab of the Orbiter launchpad (see \ref{ssec:parameters_tab}).\\
 For most vessel types, panels are automatically scaled to fit the simulation window size. If a panel's natural size is larger than the simulation window size and resolution, the panel will be shrunk to fit. In that case, you can zoom into a panel section under the mouse with \Ctrl + mouse wheel.\\
-%TODO add section link
-Note that not all vessel implementations may support this feature. Older add-ons use a legacy panel interface which doesn't automatically scale to fit. For such vessels, you can use the Panel scale option in the \textit{Parameters} tab of the Orbiter launchpad to rescale panels globally (see TODO).\\
+Note that not all vessel implementations may support this feature. Older add-ons use a legacy panel interface which doesn't automatically scale to fit. For such vessels, you can use the Panel scale option in the \textit{Parameters} tab of the Orbiter launchpad to rescale panels globally (see \ref{ssec:parameters_tab}).\\
 Panel controls can be operated with the mouse. For details on the panel components of a spacecraft and how to use them, consult the separate documents that come with that vessel.\\
-%TODO add section link
-A standard HUD display is superimposed on the panel view. It works the same way as in glass cockpit view. The available HUD modes are described in TODO.\\
+A standard HUD display is superimposed on the panel view. It works the same way as in glass cockpit view. The available HUD modes are described in \ref{ssec:hud_modes}.\\
 The camera view of the outside world can be rotated by right-clicking and dragging the mouse. The field of view can be changed with the mouse wheel. This has no effect on the panel display. The HUD is only visible when looking straight ahead. To return to forward view, press \Home$_{Cur}$.
 
 
@@ -151,13 +148,13 @@ The virtual cockpit mode may define multiple operator positions. For example, th
 
 
 \subsection{HUD modes}
+\label{ssec:hud_modes}
 The head-up-display projects flight data into the pilot's line of view without the need to look down at the instruments. In Orbiter, the pilot can set the HUD into different display modes to adjust the projected data to the current flight phase: \textit{surface} (during low-level flight), \textit{orbit} (for orbital manoeuvres) and \textit{docking} (for docking approaches). The HUD mode can be cycled by pressing h. The HUD can be turned on and off with \Ctrl\keystroke{H}.\\
 The projection colour can be cycled with \Alt\keystroke{H} to improve display contrast against different backgrounds.\\
 All modes display a centre line marker to represent the spacecraft's longitudinal axis (forward direction).\\
 \\
 \textbf{Surface mode}\\
-%TODO add section link
-In \textit{Surface} mode, the HUD provides attitude information relative to the local horizon. At the top, the compass ribbon shows the current heading with regard to true north. If a surface base has been targeted in the Map MFD (see TODO), its bearing is indicated with a marker in the compass ribbon. The pitch ladder shows the current pitch and bank angles. The readout left of the compass ribbon shows true airspeed (TAS) [m/s] if atmospheric density is sufficiently high to measure it, or ground-speed (GS) otherwise. The readout right of the ribbon shows altitude [m] above the mean planet radius (at high altitude) or radar altitude above the surface (at low altitude), indicated by R.\\
+In \textit{Surface} mode, the HUD provides attitude information relative to the local horizon. At the top, the compass ribbon shows the current heading with regard to true north. If a surface base has been targeted in the Map MFD (see \ref{ssec:mfd_map}), its bearing is indicated with a marker in the compass ribbon. The pitch ladder shows the current pitch and bank angles. The readout left of the compass ribbon shows true airspeed (TAS) [m/s] if atmospheric density is sufficiently high to measure it, or ground-speed (GS) otherwise. The readout right of the ribbon shows altitude [m] above the mean planet radius (at high altitude) or radar altitude above the surface (at low altitude), indicated by R.\\
 The flight path indicator ($\oplus$) represents the current flight direction (the velocity vector in the local horizon frame). A flight path marker located below the centre marker indicates a positive AOA (angle of attack).
 
 \begin{figure}[H]
@@ -169,8 +166,7 @@ The flight path indicator ($\oplus$) represents the current flight direction (th
 \noindent
 \\
 \textbf{Orbit mode}\\
-%TODO add section link
-\textit{Orbit} mode is indicated by Orbit \textit{Ref} at the top of the screen, where \textit{Ref} is the name of the reference body being orbited. Orbiter by default selects the main gravitational source as the reference body. This can be manually adjusted with \Ctrl\keystroke{R}, or by selecting a reference body in the \textit{Orbit} MFD (see TODO), and pressing the HUD button to copy the choice to the HUD display.\\
+\textit{Orbit} mode is indicated by Orbit \textit{Ref} at the top of the screen, where \textit{Ref} is the name of the reference body being orbited. Orbiter by default selects the main gravitational source as the reference body. This can be manually adjusted with \Ctrl\keystroke{R}, or by selecting a reference body in the \textit{Orbit} MFD (see \ref{ssec:mfd_orbit}), and pressing the HUD button to copy the choice to the HUD display.\\
 The HUD displays a pitch ladder displaying the bank and pitch angles of the spacecraft relative to the orbital plane, where the 0° line represents the orbital plane. A direction ribbon across the centre of the HUD indicates the vessel's yaw deviation from the orbital prograde direction, where 0° and 180° are the prograde and retrograde directions, respectively.\\
 The flight path marker ($\oplus$) in Orbit mode represents the orbital velocity vector in the non-rotating reference body frame, i.e. the prograde direction. The retrograde direction is indicated with another marker ($\odot$). If neither the prograde or retrograde direction are within view of the HUD area, the direction of the $\oplus$ marker is indicated with a pointer labelled PG (prograde).
 
@@ -183,7 +179,7 @@ The flight path marker ($\oplus$) in Orbit mode represents the orbital velocity 
 \noindent
 \\
 \textbf{Docking mode}\\
-The \textit{Docking} HUD mode assists in approaching and docking with an orbital target, such as a space station. To allow it to display its visual cues it requires target position and velocity data. These are obtained by tuning one of the vessel's NAV radio receivers to either a long-range transponder signal (XPDR) or short-range instrument docking system (IDS) frequencies of one of the target's docking ports. See TODO on how to find target transmitter frequencies. See TODO on tuning NAV frequencies. Once the NAV receiver has been tuned and is within range of the transmitter, the \textit{Docking} HUD can make use of the target data. Use \Ctrl\keystroke{R} to cycle through the NAV receiver stack. Alternatively, you can pick a receiver in the \textit{Docking} MFD mode and copy it to the HUD by pressing the HUD button. NAV and target signal designations are shown in the top of the HUD area.\\
+The \textit{Docking} HUD mode assists in approaching and docking with an orbital target, such as a space station. To allow it to display its visual cues it requires target position and velocity data. These are obtained by tuning one of the vessel's NAV radio receivers to either a long-range transponder signal (XPDR) or short-range instrument docking system (IDS) frequencies of one of the target's docking ports. See \ref{ssec:menu_info} on how to find target transmitter frequencies. See \ref{ssec:mfd_comnav} on tuning NAV frequencies. Once the NAV receiver has been tuned and is within range of the transmitter, the \textit{Docking} HUD can make use of the target data. Use \Ctrl\keystroke{R} to cycle through the NAV receiver stack. Alternatively, you can pick a receiver in the \textit{Docking} MFD mode and copy it to the HUD by pressing the HUD button. NAV and target signal designations are shown in the top of the HUD area.\\
 Alternatively, you can bypass the NAV receiver data acquisition and target an object or docking port directly by pressing \Ctrl\Alt\keystroke{R}. If you are close to a docking port, you can also press the VIS button on the Docking MFD for visual docking approach acquisition, followed by HUD to copy the data to the HUD display.\\
 The position of the target object is marked with a square box, labelled with the object name and distance [m]. If the target object is not visible in the area covered by the HUD, its direction is indicated with a pointer.\\
 The vessel's velocity vector relative to the target object is indicated with the flight path indicator ($\oplus$). It is labelled with the magnitude of the relative velocity [m/s]. The opposite direction (or the velocity vector of the target relative to your ship) is indicated with $\odot$ and a negative velocity label. If neither velocity marker is visible in the HUD, the direction of the $\oplus$ marker is indicated with a pointer.\\
