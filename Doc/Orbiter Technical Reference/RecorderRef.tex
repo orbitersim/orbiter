@@ -1,0 +1,60 @@
+\documentclass[Orbiter Technical Reference.tex]{subfiles}
+\begin{document}
+
+\section{Orbiter Flight Recorder and Playback}
+
+\subsection{Introduction}
+The purpose of this project is the extension of the standard Orbiter functionality to allow the recording and playback of spacecraft trajectories. The format of the recording streams is public so that external applications such as trajectory optimisation programs can be used to generate the data streams, and to use Orbiter as a visualisation tool for these pre-computed trajectories.\\
+The recorded data include position and velocity samples, attitude data samples, and articulation data which mark events such as engine levels, booster separation, animations, etc. Different data formats (e.g. different frames of reference) are supported to simplify the interfacing with external applications.\\
+Additions to the Orbiter Programming Interface for recording and reading vessel-specific articulation data are provided to enable addon developers to add specific event types in the vessel module code.
+
+
+\subsection{Sequence recording}
+Flight sequences can be recorded and played back later. Currently, recorded data for include for each spacecraft:
+
+\begin{itemize}
+\item \textbf{Position and velocity.} At the moment, these data are recorded relative to the reference planet, either in a non-rotating reference system (ecliptic and equinox of J2000), or a rotating equatorial reference system. As a result, trajectories are currently recorded in an absolute time frame. Samples are written in regular intervals (currently 4 seconds) or if the velocity vector rotates by more than 5 degrees.
+\item \textbf{Attitude.} Attitude data are saved in terms of the Euler angles of the spacecraft with respect to the ecliptic reference frame or local horizon frame. Samples are written whenever one of the angles has changed by more than a predefined threshold limit.
+\item \textbf{Articulation data.} These include changes in thrust level of individual spacecraft engines, and custom events recorded by individual spacecraft modules, such as animations.
+\end{itemize}
+
+\noindent
+In addition, global simulation events, such as changes in the recording speed or onscreen annotations, are stored separately.\\
+To start recording a flight sequence, launch an Orbiter scenario and start the recorder by pressing \Ctrl\keystroke{C}, or from the recorder dialog box (\Ctrl\keystroke{F5}). The recording can be stopped by pressing \Ctrl\keystroke{C} again or by terminating the simulation. Currently, all spacecraft in the scenario are recorded. Selective recording will be implemented later.
+
+
+\subsection{Sequence playback}
+Each recording generates a new scenario under the "Scenarios\textbackslash Playback" subdirectory, with the same name as the original scenario. The playback scenario defines the simulation state at the moment when the recording was started. The only difference between standard and playback scenarios is an additional entry "FLIGHTDATA" in each of the recorded spacecraft sections.\\
+Playback scenarios are launched like standard scenarios. On launch, a "Playback" indicator is displayed at the bottom of the simulation window. All spacecraft follow their recorded trajectories until the end of the recording sequence is reached or until playback is terminated by the user with \Ctrl\keystroke{C}. At that point, Orbiter’s own time propagation mechanism takes over again, and spacecraft return to user control.\\
+Position and attitude data are interpolated between the recorded samples during playback. The recorded articulation events are effective instantaneously.\\
+During playpack, the user can manipulate the camera views, switch between camera targets, and operate cockpit instruments such as the MFD displays.\\
+The playback speed (time compression) can either be controlled manually by the user, or set automatically from data tags in the articulation stream.
+
+
+\subsection{File formats}
+All flight data are recorded under the “Flights” subdirectory. Each recording generates a new subdirectory with the name of the scenario. If the directory already exists, it is overwritten.\\
+Global simulation events, such as changes in time acceleration or camera view mode, or onscreen annotations, are recorded in file \textit{system.dat}. In addition, each recorded object generates three files, where <object> is the name of the vessel as defined in the scenario file:
+
+\subsubsection{Position and velocity data}
+\subsubsection{Attitude data}
+\subsubsection{Articulation data}
+\subsubsection{Global events}
+\subsection{Recording and playback of vessel-specific events}
+\subsection{Technical information}
+\subsubsection{State interpolation}
+\subsubsection{Attitude interpolation}
+Currently, spacecraft orientations are interpolated linearly between attitude samples, resulting in piecewise constant angular velocities. The interpolation is implemented by transforming the recorded Euler angle data into a quaternion representation, and performing a spherical interpolation between pairs of quaternion samples.\
+The attitude data stream should provide sufficiently dense sampling so that noticeable jumps in angular velocity are avoided.\\
+Orbiter’s built-in recording module writes a sample to the attitude stream
+
+\begin{itemize}
+\item when the orientation has changed by more than 0.06 rad since the last sample, or
+\item when the orientation has changed by more than 0.001 rad and no sample has been written for more than 0.5 seconds.
+\end{itemize}
+
+
+\subsection{Examples}
+\subsection{Orbiter reference frames}
+\subsection{Cartesian and polar coordinates}
+
+\end{document}
