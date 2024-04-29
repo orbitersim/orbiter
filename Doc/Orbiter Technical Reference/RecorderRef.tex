@@ -33,10 +33,10 @@ The playback speed (time compression) can either be controlled manually by the u
 
 \subsection{File formats}
 All flight data are recorded under the "Flights" subdirectory. Each recording generates a new subdirectory with the name of the scenario. If the directory already exists, it is overwritten.\\
-Global simulation events, such as changes in time acceleration or camera view mode, or onscreen annotations, are recorded in file \textit{system.dat}. In addition, each recorded object generates three files, where <object> is the name of the vessel as defined in the scenario file:
+Global simulation events, such as changes in time acceleration or camera view mode, or onscreen annotations, are recorded in file \textit{system.dat}. In addition, each recorded object generates three files, where <\textit{object}> is the name of the vessel as defined in the scenario file:
 
 \subsubsection{Position and velocity data}
-\textbf{<object>.pos}\\
+\textbf{<\textit{object}>.pos}\\
 Position and velocity data relative to a reference body. Each line contains either a data sample, or a format directive. The following directives are currently supported:
 
 \begin{itemize}
@@ -44,7 +44,7 @@ Position and velocity data relative to a reference body. Each line contains eith
 \item REF <\textit{reference}> $\Rightarrow$ Defines the reference object (planet, moon, sun) relative to which the following data samples are calculated. Whenever the trajectory enters the sphere of influence of a different object, another "REF" line should be added, and the following data samples computed with respect to the new object. <\textit{reference}> must correspond to a celestial object defined in the Orbiter planetary system. There is no default object, therefore a REF directive must appear at the beginning of the file before any data samples.
 \item FRM [ECLIPTIC | EQUATORIAL] $\Rightarrow$ Orientation of the reference frame for all following data samples. This can be either the ecliptic of the J2000 epoch, or the (rotating) equatorial frame of the reference body. The default setting is "ECLIPTIC".
 %TODO add section link
-\item CRD [CARTESIAN | POLAR] $\Rightarrow$ Coordinate and velocity data format for all following data samples. This can be either in rectangular cartesian format ($x$,$y$,$z$) [m] and ($\dot{x}$,$\dot{y}$,$\dot{z}$) [m/s], respectively, or in spherical polar coordinates ($r$,$\phi$,$\theta$) [m,rad,rad] and ($\dot{r}$,$\dot{\phi}$,$\dot{\theta}$) [m/s,rad/s,rad/s], respectively, with radial distance $r$, polar angle $\phi$ and azimuth angle $\theta$. If an equatorial frame is selected, $\phi$ and $\theta$ define equatorial longitude and latitude. See TODO for transformation conventions. The default setting is "CARTESIAN".
+\item CRD [CARTESIAN | POLAR] $\Rightarrow$ Coordinate and velocity data format for all following data samples. This can be either in rectangular cartesian format ($x$, $y$, $z$) [m] and ($\dot{x}$, $\dot{y}$, $\dot{z}$) [m/s], respectively, or in spherical polar coordinates ($r$, $\phi$, $\theta$) [m, rad, rad] and ($\dot{r}$, $\dot{\phi}$, $\dot{\theta}$) [m/s, rad/s, rad/s], respectively, with radial distance $r$, polar angle $\phi$ and azimuth angle $\theta$. If an equatorial frame is selected, $\phi$ and $\theta$ define equatorial longitude and latitude. See TODO for transformation conventions. The default setting is "CARTESIAN".
 \end{itemize}
 
 \noindent
@@ -64,11 +64,11 @@ where:
 \end{itemize}
 
 \subsubsection{Attitude data}
-\textbf{<object>.att}\\
+\textbf{<\textit{object}>.att}\\
 Attitude data. Each line contains either a data sample, or a format directive. The following directive is currently supported:
 
 \begin{itemize}
-\item STARTMJD <\textit{mjd}> $\Rightarrow$ Defines an absolute time reference for the simulation start time. <mjd> is a floating point number defining the start date in MJD (Modified Julian Date) format. Only a single STARTMJD tag should be provided at the beginning of the stream. Note that this value is currently not used by the simulator, because the simulation start date is read from the corresponding scenario file.
+\item STARTMJD <\textit{mjd}> $\Rightarrow$ Defines an absolute time reference for the simulation start time. <\textit{mjd}> is a floating point number defining the start date in MJD (Modified Julian Date) format. Only a single STARTMJD tag should be provided at the beginning of the stream. Note that this value is currently not used by the simulator, because the simulation start date is read from the corresponding scenario file.
 \item FRM [ECLIPTIC | HORIZON] $\Rightarrow$ Orientation of the reference frame for all following attitude data samples. This can either be the ecliptic of the J2000 epoch, or the local horizon of the current vessel position. The default setting is "ECLIPTIC".
 \item REF <\textit{reference}> $\Rightarrow$ Defines the reference object (planet, moon, sun) relative to which the following data samples are calculated. Note that a REF tag is required after each FRM HORIZON tag, to define the reference object for local horizon calculations, but is optional after a FRM ECLIPTIC tag, because the reference frame is globally fixed.
 When using FRM HORIZON, the reference should usually be switched by inserting a new REF tag whenever the trajectory enters the sphere of influence of a different object.
@@ -104,12 +104,12 @@ r_{31} & r_{32} & r_{33}
 be the rotation matrix that transforms from vessel frame to the reference frame (ecliptic or local horizon).\\
 For the ecliptic frame, Orbiter uses the following set of Euler angles:
 
-\[ \alpha = arctan\frac{r_{23}}{r_{33}}, \quad \beta = -arcsin r_{13}, \quad \gamma = arctan\frac{r_{12}}{r_{11}} \]
+\[ \alpha = \arctan\frac{r_{23}}{r_{33}}, \quad \beta = -\arcsin r_{13}, \quad \gamma = \arctan\frac{r_{12}}{r_{11}} \]
 
 \noindent
 For the local horizon frame, Orbiter uses a different set of Euler angles:
 
-\[ \alpha = arctan\frac{r_{12}}{r_{22}}, \quad \beta = arcsin r_{32}, \quad \gamma = arctan\frac{r_{31}}{r_{33}} \]
+\[ \alpha = \arctan\frac{r_{12}}{r_{22}}, \quad \beta = \arcsin r_{32}, \quad \gamma = \arctan\frac{r_{31}}{r_{33}} \]
 
 \noindent
 so that the Euler angles can be directly defined with the bank, pitch and yaw angles of the vessel in the local horizon frame:
@@ -123,7 +123,7 @@ so that the Euler angles can be directly defined with the bank, pitch and yaw an
 
  
 \subsubsection{Articulation data}
-\textbf{<object>.atc}\\
+\textbf{<\textit{object}>.atc}\\
 Articulation data. Each line contains a sample as follows:
 
 \begin{lstlisting}[language=OSFS]
@@ -134,9 +134,9 @@ Articulation data. Each line contains a sample as follows:
 where:
 
 \begin{itemize}
-\item <simt> $\Rightarrow$ is the time since scenario start (seconds)
-\item <tag> $\Rightarrow$ identifies the event type. The generic event types currently supported by Orbiter are listed below. In addition, vessel-specific event types can be directly implemented by the vessel module.
-\item <data> $\Rightarrow$ Event-type specific data. Not all event types may require additional paramters.
+\item <\textit{simt}> $\Rightarrow$ is the time since scenario start (seconds)
+\item <\textit{tag}> $\Rightarrow$ identifies the event type. The generic event types currently supported by Orbiter are listed below. In addition, vessel-specific event types can be directly implemented by the vessel module.
+\item <\textit{data}> $\Rightarrow$ Event-type specific data. Not all event types may require additional paramters.
 \end{itemize}
 
 \noindent
@@ -192,7 +192,7 @@ The following default event tags in the articulation stream are currently recogn
 	\hline\rule{0pt}{2ex}
 	ATTACH <\textit{vessel}> <\textit{pidx}> <\textit{cidx}> [LOOSE] & Attach <\textit{vessel}> as a child object. This event is written to the parent object's ATC stream. <\textit{pidx}> is the attachment index on the parent, <\textit{cidx}> the attachment index on the child. If flag LOOSE is specified, the objects are attached at their current relative orientation. Otherwise, the predefined attachment orientation is enforced.\\
 	\hline\rule{0pt}{2ex}
-	DETACH <\textit{pidx}> [<\textit{vel}>] & Detach the child object currently attached at attachment point <pidx>. This event is written to the parent object's ATC stream. An optional detachment velocity <\textit{vel}> can be specified. By default, <\textit{vel}> = 0.\\
+	DETACH <\textit{pidx}> [<\textit{vel}>] & Detach the child object currently attached at attachment point <\textit{pidx}>. This event is written to the parent object's ATC stream. An optional detachment velocity <\textit{vel}> can be specified. By default, <\textit{vel}> = 0.\\
 	\hline
 	\end{longtable}
 %\end{table}
@@ -244,7 +244,7 @@ The following global event tags are currently supported by Orbiter, and written 
 	\hline\rule{0pt}{2ex}
 	CAMERA PRESET <\textit{n}> & Switch to camera preset position <\textit{n}>, where <\textit{n}> is the zero-based index of a camera preset mode stored in the scenario.\\
 	\hline\rule{0pt}{2ex}
-	CAMERA SET <\textit{param}> & Switch camera to a mode defined by <\textit{param}>. This tag allows inline camera mode definitions without the need for storing preset data in the scenario. The contents of <param> depend on the specific camera mode.\\
+	CAMERA SET <\textit{param}> & Switch camera to a mode defined by <\textit{param}>. This tag allows inline camera mode definitions without the need for storing preset data in the scenario. The contents of <\textit{param}> depend on the specific camera mode.\\
 	\hline
 	\end{tabularx}
 \end{table}
@@ -280,7 +280,7 @@ Annotations can be added by inserting NOTE tags manually into the articulation s
 \end{lstlisting}
 
 \noindent
-where <text> is the text of the note. The text must be entered as a single line, but will be displayed in multiple lines on screen as required. The notes must be sorted appropriately into the stream, so that all <\textit{simt}> tags appear in increasing order. The text remains visible until it is replaced by a new note, or until it is explicitly removed with
+where <\textit{text}> is the text of the note. The text must be entered as a single line, but will be displayed in multiple lines on screen as required. The notes must be sorted appropriately into the stream, so that all <\textit{simt}> tags appear in increasing order. The text remains visible until it is replaced by a new note, or until it is explicitly removed with
 
 \begin{lstlisting}[language=OSFS]
 <simt> NOTEOFF
@@ -341,7 +341,33 @@ Examples for vessel-specific custom articuation stream commands can be found in 
 
 \subsection{Technical information}
 \subsubsection{State interpolation}
-TODO
+Orbiter interpolates position and velocity vectors assuming piecewise linear acceleration. Let $t_{0}$ and $t_{1}$ be two consecutive samples, with recorded state vectors
+
+\[ r(t_{0}) = r_{0} \]
+\[ r(t_{1}) = r_{1} \]
+\[ v(t_{0}) = v_{0} \]
+\[ v(t_{1}) = v_{1} \]
+
+\noindent
+To find the interpolated state at time $t$ with $t_{0} \leq t \leq t_{1}$, assume linear acceleration between $t_{0}$ and $t_{1}$:
+
+\[ a(t) = a_{0} + b\Delta t \]
+
+\noindent
+where $\Delta t = t - t_{0}$. To find $a_{0}$ and $b$ which satisfy the boundary conditions, we integrate the state vectors:
+
+\[ v(t) = \int_{0}^{\Delta t} a(t') \,dt' = v_{0} + a_{0} \Delta t + \frac{1}{2}b \Delta t^{2} \]
+\[ r(t) = \int_{0}^{\Delta t} v(t') \,dt' = r_{0} + v_{0} \Delta t + \frac{1}{2} a_{0} \Delta t^{2} + \frac{1}{6} b \Delta t^{3} \]
+
+\noindent
+Substituting the boundary conditions at $t_{1}$ and solving for $a_{0}$ and $b$ gives
+
+\[ a_{0} = \frac{2(3(r_{1} - r_{0}) - \Delta T(2 v_{0} + v_{1}))}{\Delta T^{2}} \]
+\[ b_{0} = \frac{6(2(r_{0} - r_{1}) + \Delta T(v_{0} + v_{1}))}{\Delta T^{3}} \]
+
+\noindent
+with $\Delta T = t_{1} - t_{0}$.
+
 
 \subsubsection{Attitude interpolation}
 Currently, spacecraft orientations are interpolated linearly between attitude samples, resulting in piecewise constant angular velocities. The interpolation is implemented by transforming the recorded Euler angle data into a quaternion representation, and performing a spherical interpolation between pairs of quaternion samples.\
@@ -461,7 +487,7 @@ Some recorded examples are provided to demonstrate the playback features in orbi
 
 
 \subsection{Orbiter reference frames}
-Orbiter uses left-handed coordinate systems throughout.\\
+Orbiter uses \textit{left-handed} coordinate systems throughout.\\
 \\
 \textbf{The global frame.}\\
 The global frame of reference is the barycentric ecliptic frame for ecliptic and equinox of epoch J2000, where
@@ -539,8 +565,8 @@ $
 \left\{
 \begin{array}{l}
 r = \sqrt{ x^{2} + y^{2} + z^{2} } \\\\
-\phi = arctan \frac{z}{x} \\\\
-\theta = arcsin \frac{y}{r} \\
+\phi = \arctan \frac{z}{x} \\\\
+\theta = \arcsin \frac{y}{r} \\
 \end{array} 
 \right .
 $
