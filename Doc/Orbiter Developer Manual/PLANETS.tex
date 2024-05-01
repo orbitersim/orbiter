@@ -31,10 +31,20 @@ The legacy texture mapping used in previous Orbiter releases is still supported 
 \\
 To configure a planet for use of the new surface texture format, its configuration file\\
 \indent Config\textbackslash <\textit{planet name}>.cfg\\
-must contain the following line:\\
-\indent TileFormat = 2\\
-If missing, the legacy format is assumed. Likewise, if a cloud layer is present and is defined in the new format, the configuration file must contain\\
-\indent CloudFormat = 2\\
+must contain the following line:
+
+\begin{lstlisting}[language=OSFS]
+TileFormat = 2
+\end{lstlisting}
+
+\noindent
+If missing, the legacy format is assumed. Likewise, if a cloud layer is present and is defined in the new format, the configuration file must contain
+
+\begin{lstlisting}[language=OSFS]
+CloudFormat = 2
+\end{lstlisting}
+
+\noindent
 otherwise a cloud layer defined in the legacy format is assumed.\\
 The MaxPatchResolution tag can be used to specify the maximum resolution level Orbiter will use for rendering the planet surface. This can be higher than than the maximum resolution defined in the texture quadtree, in which case Orbiter interpolates the missing high-resolution tile from the highest available resolution ancestor tile. This can be useful for providing a smoother surface representation (in particular for elevation data). The maximum supported value is 19. If the MaxPatchResolution value is set to less than the highest resolution level supported by quadtree nodes, then the higher resolution tiles are not used for rendering.\\
 Likewise, the MaxCloudResolution tag can be used to specify the maximum resolution level for cloud tiles (the MinCloudResolution tag should always be set to 1).
@@ -245,7 +255,7 @@ You can undo all modifications to an elevation tile by deleting the correspondin
 \textbf{plsplit}\\
 Utils\textbackslash plsplit.exe is an interactive command line utility that allows a planetary surface bitmap to be split into individual tile files at a specific resolution level.\\
 The user must provide the surface bitmap in BMP (24-bit) format at the correct resolution. To generate multiple resolution levels, plsplit must be run multiple times with surface bitmaps at the corresponding resolutions.\\
-The source bitmap must represent the global planet surface or a rectangular sub-area in cylindrical projection (longitude along horizontal axis, latitude along vertical axis). If the entire planet surface is to be processed from a single bitmap, the bitmap must cover longitude from -180$^{\circ}$ (left edge) to +180$^{\circ}$ (right edge) and latitude from -90$^{\circ}$ (bottom edge) to +90$^{\circ}$ (top edge).\\
+The source bitmap must represent the global planet surface or a rectangular sub-area in cylindrical projection (longitude along horizontal axis, latitude along vertical axis). If the entire planet surface is to be processed from a single bitmap, the bitmap must cover longitude from -180° (left edge) to +180° (right edge) and latitude from -90° (bottom edge) to +90° (top edge).\\
 To create a level-4 tile set, the source bitmap for global coverage must be 1024x512 pixels in size. For each subsequent resolution level, the bitmap must double in size both horizontally and vertically.\\
 In practice, start with the highest resolution supported by your source map. If the size of the map is not a power of 2, use an image editing tool to interpolate to the closest power of 2. Then repeat reducing the size of the bitmap by a factor of 2 using an image editing tool to create the next lower level all the way to level 4 (1024x512). Levels 3, 2 and 1 must be created from source maps 512x512, 256x256 and 128x128, respectively.\\
 If the planet surface contains water areas with specular reflections or night lights, the corresponding source bitmaps for these must also be provided to plsplit in the same sizes as the surface map.\\
@@ -333,22 +343,37 @@ Note that the 259x259 grid elevation tile resolution is higher than the mesh pat
 \label{sssec:label_tile_format}
 Files in the Label quadtree layer are text files in UTF-8 format and have file extension .lab.\\
 Each label file contains the position and labels of surface features within the confines of the corresponding tile to be displayed at a given resolution level when the user enables surface labels in Planetarium mode (\Ctrl+\keystroke{F9}) in Orbiter.\\
-Each line in the file describes one label. The format for each label entry is\\
-\indent <\textit{type-id}> <\textit{latitude}> <\textit{longitude}> <\textit{elevation}> <\textit{label}>\\
+Each line in the file describes one label. The format for each label entry is
+
+\begin{lstlisting}[language=OSFS]
+<type-id> <latitude> <longitude> <elevation> <label>
+\end{lstlisting}
+
+\noindent
 where <\textit{type-id}> is a character defining the feature type, <\textit{latitude}> and <\textit{longitude}> are the feature's centre coordinates in degrees, <\textit{elevation}> is the feature's elevation relative to the planet reference radius in metres, and <\textit{label}> is a string describing the feature.\\
 <\textit{elevation}> can be set to NaN, in which case Orbiter computes the elevation from its terrain elevation data. This should be avoided if possible to reduce computational cost.\\
 The resolution level at which a label appears in the quadtree determines the camera distance at which it appears in the Orbiter render window. By moving a label to a lower resolution level it becomes visible at a greater distance. For example, large cities should be entered at a lower resolution level than small villages.\\
 Note that in order to reduce the number of quadtree nodes, Orbiter shifts the resolution visibility by four levels. That is, a label entered in a level-2 tile will become visible when the corresponding level-6 tile is rendered.\\
 A label tile file should only contain labels at positions covered by the tile. For example, file\\
 \indent Label\textbackslash 05\textbackslash 000000\textbackslash 000001.lab\\
-should only contain features with positions 0$^{\circ}$ $\leq$ lat $\leq$ 90$^{\circ}$ and -90$^{\circ}$ $\leq$ lng $\leq$ 0$^{\circ}$.\\
-To enable the Label layer, the planet's configuration file (Config\textbackslash <\textit{planet-name}>.cfg) must contain the line\\
-\indent LabelFormat = 2\\
+should only contain features with positions 0° $\leq$ lat $\leq$ 90° and -90° $\leq$ lng $\leq$ 0°.\\
+To enable the Label layer, the planet's configuration file (Config\textbackslash <\textit{planet-name}>.cfg) must contain the line
+
+\begin{lstlisting}[language=OSFS]
+LabelFormat = 2
+\end{lstlisting}
+
+\noindent
 otherwise the legacy label format is assumed.\\
 A label layer for a planet must be accompanied by a label legend file\\
 \indent Config\textbackslash <\textit{planet-name}>\textbackslash Label.cfg\\
-in UTF-8 format. Each line in the legend file describes a label type, with the format\\
-\indent <\textit{type-id}> <\textit{default-visible}> <\textit{marker-id}> <\textit{r}> <\textit{g}> <\textit{b}> <\textit{type-name}>\\
+in UTF-8 format. Each line in the legend file describes a label type, with the format
+
+\begin{lstlisting}[language=OSFS]
+<type-id> <default-visible> <marker-id> <r> <g> <b> <type-name>
+\end{lstlisting}
+
+\noindent
 where <\textit{type-id}> is a character defining the feature type, corresponding to the IDs in the quadtree label files, <\textit{default-visible}> is one of the characters 'x' (visible by default) or 'o' (not visible by default), <\textit{marker-id}> is a character defining the marker shape: 'S' (square, $\Box$), 'O' (circle, $\bigcirc$), 'D' (Delta, $\Delta$) or 'N' (Nabla, $\nabla$). <\textit{r}>, <\textit{g}> and <\textit{b}> are the red, green and blue components (0-255) of the label display colour, and <\textit{type-name}> is a string describing the label type.\\
 The user can activate and deactivate the display of specific label types by opening the Planetarium dialog (\Ctrl+\keystroke{F9}) in Orbiter, enabling \textit{Surface Markers}, and opening the \textit{Surface Marker Config} list to select label types.\\
 Note that Surface base and Navaid markers are currently not included in the quadtree Label layer. They are generated automatically from parsed Base configuration files and the navaid list in the planet's configuration file.
@@ -363,9 +388,9 @@ where <\textit{res}> defines the base tile resolution m ($\geq$ 1), <\textit{lng
 \indent Earth\_2\_W0462\_N0161.dds\\
 The relationship between the base tile resolution designation m and the quadtree resolution level n is given by\\
 \indent \textit{n} = \textit{m} + 12\\
-At base tile resolution level m, the global planet surface map can be considered to be divided into a grid of 2$^{m+9}$ longitude strips and 2$^{m+8}$ latitude strips, with longitude ID strings (from 180$^{\circ}$ W to 180$^{\circ}$ E)\\
+At base tile resolution level m, the global planet surface map can be considered to be divided into a grid of 2$^{m+9}$ longitude strips and 2$^{m+8}$ latitude strips, with longitude ID strings (from 180° W to 180° E)\\
 \indent [W2$^{m+8}$, ... , W0001, E0000, E2$^{m+8}$-1]\\
-and latitude ID strings (from 90$^{\circ}$ S to 90$^{\circ}$ N)\\
+and latitude ID strings (from 90° S to 90° N)\\
 \indent [S2$^{m+7}$, ... , S0001, N0000, N2$^{m+7}$-1]\\
 (Note that there are no base tile designations W0000 or S0000). Therefore, mapping base tile longitude designations to quadtree longitude indices is given by:\\
 \indent Western hemisphere: W\textit{x} $\rightarrow$ 2$^{m+8}$ - \textit{x}\\
@@ -382,7 +407,7 @@ Note that the surface tiles in the quadtree are expected to be size 512x512. The
 \indent Earth\textbackslash Surf\textbackslash 15\textbackslash 000701\textbackslash 001125.dds\\
 (A version of the original tile downsized to 512x512 should also be added as Earth\textbackslash Surf\textbackslash 14\textbackslash 000350\textbackslash 000562.dds).\\
 If Earth\_2\_W0462\_N0161.dds is a 256x256 texture, it can't be directly converted into a quadtree tile. The following options are available:\\
-a) If the appropriate neighbour base tiles are available – in this case,\\
+a) If the appropriate neighbour base tiles are available - in this case,\\
 \indent Earth\_2\_W0463\_N0161.dds,\\
 \indent Earth\_2\_W0462\_N0160.dds,\\
 \indent Earth\_2\_W0463\_N0160.dds,\\

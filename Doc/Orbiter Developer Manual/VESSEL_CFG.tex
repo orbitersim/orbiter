@@ -20,7 +20,7 @@ Below is a description of the default vessel configuration options recognised by
 	\hline\rule{0pt}{2ex}
 	Script & String & For script-based vessels (Module = ScriptVessel) only. Defines the vessel script file (can be the same as the configuration file). See .\textbackslash Config\textbackslash Vessels\textbackslash ScriptPB.cfg for an example.\\
 	\hline\rule{0pt}{2ex}
-	Help & String, String & Optional: name of help file to be used for vessel class-specific help when the user presses the “Vessel” button in the Help dialog. The help file must be a compiled html file (.chm) and located in directory .\textbackslash Html\textbackslash Vessels. The entry contains the file name without path and extension and (separated by comma) the name of the first page to be displayed (without extension). Default: no vessel-specific help\\
+	Help & String, String & Optional: name of help file to be used for vessel class-specific help when the user presses the "Vessel" button in the Help dialog. The help file must be a compiled html file (.chm) and located in directory .\textbackslash Html\textbackslash Vessels. The entry contains the file name without path and extension and (separated by comma) the name of the first page to be displayed (without extension). Default: no vessel-specific help\\
 	\hline\rule{0pt}{2ex}
 	EditorCreate & Bool & If FALSE, the vessel type does not appear in the list of the vessel creation page of the scenario editor. Default: TRUE\\
 	\hline\rule{0pt}{2ex}
@@ -46,9 +46,9 @@ Below is a description of the default vessel configuration options recognised by
 	\hline\rule{0pt}{2ex}
 	MaxHoverThrust & Float & Max. thrust force of hover thruster(s) in vacuum [N]\\
 	\hline\rule{0pt}{2ex}
-	MaxAttitudeThrust & Float & If provided, this creates a complete set of thrusters for a reaction control system (RCS) to control the vessel’s attitude. The value defines the vacuum thrust [N] of each individual RCS thruster. All thrusters are assumed to have an offset of 1 m from the vessel’s centre of mass, so the thrust value must be scaled accordingly to provide a given target torque.\\
+	MaxAttitudeThrust & Float & If provided, this creates a complete set of thrusters for a reaction control system (RCS) to control the vessel's attitude. The value defines the vacuum thrust [N] of each individual RCS thruster. All thrusters are assumed to have an offset of 1 m from the vessel's centre of mass, so the thrust value must be scaled accordingly to provide a given target torque.\\
 	\hline\rule{0pt}{2ex}
-	TouchdownPoints & Vec3 × 3 & 3 surface contact points in local vessel coordinates. For aircraft-like configurations these are: nose wheel, left main wheel, right main wheel (the order is important to define the ‘up’ direction). Other spacecraft types may interpret the points differently.\\
+	TouchdownPoints & Vec3 × 3 & 3 surface contact points in local vessel coordinates. For aircraft-like configurations these are: nose wheel, left main wheel, right main wheel (the order is important to define the 'up' direction). Other spacecraft types may interpret the points differently.\\
 	\hline\rule{0pt}{2ex}
 	CameraOffset & Vec3 & Camera position inside the vessel for cockpit view\\
 	\hline\rule{0pt}{2ex}
@@ -100,7 +100,7 @@ Below is a description of the default vessel configuration options recognised by
 
 \begin{itemize}
 \item A vessel class can be derived from a different vessel class, by defining the BaseClass entry. All properties not defined in the new class configuration file are taken from the base class.
-\item The mesh name (MeshName value) should not contain the file extension (.msh assumed) or directory path (Orbiter’s mesh directory assumed, by default .\textbackslash Meshes).
+\item The mesh name (MeshName value) should not contain the file extension (.msh assumed) or directory path (Orbiter's mesh directory assumed, by default .\textbackslash Meshes).
 \item The MaxFuel entry has been replaced by PropellantResource, which allows the definition of multiple propellant resources (fuel tanks).
 \item The DockRef, DockDir, DockRot entries have been replaced with the more versatile Docklist, which allows the configuration of multiple docking ports and IDS (instrument docking system) frequencies.
 
@@ -120,7 +120,7 @@ where each <\textit{Dock-spec i}> has the format
 \end{lstlisting}
 
 \noindent
-<x$_{i}$> <y$_{i}$> <z$_{i}$> is the reference position of the docking port in the vessel’s local coordinates. <dx$_{i}$> <dy$_{i}$> <dz$_{i}$> is the direction in which a ship approaches the docking port. <rx$_{i}$> <ry$_{i}$> <rz$_{i}$> is a reference direction perpendicular to the approach direction used for aligning an approaching ship’s rotation along its longitudinal axis. <\textit{ids-channel}$_{i}$> is an optional parameter which allows to define the channel ($\geq$ 0) for an IDS transmitter that allows instrument-aided docking approach. IDS frequencies start at 108.0 MHz (channel 0) and increase by 0.05 MHz per channel.\\
+<x$_{i}$> <y$_{i}$> <z$_{i}$> is the reference position of the docking port in the vessel's local coordinates. <dx$_{i}$> <dy$_{i}$> <dz$_{i}$> is the direction in which a ship approaches the docking port. <rx$_{i}$> <ry$_{i}$> <rz$_{i}$> is a reference direction perpendicular to the approach direction used for aligning an approaching ship's rotation along its longitudinal axis. <\textit{ids-channel}$_{i}$> is an optional parameter which allows to define the channel ($\geq$ 0) for an IDS transmitter that allows instrument-aided docking approach. IDS frequencies start at 108.0 MHz (channel 0) and increase by 0.05 MHz per channel.\\
 The IDS setting can be overridden for individual vessels by using the IDS tag in the scenario file. Defining the IDS channel in the configuration file is only useful for objects with a single instance, e.g. space stations.
 
 %TODO fix reference
@@ -142,9 +142,9 @@ where each <\textit{Attach-spec i}> has the format
 \end{lstlisting}
 
 \noindent
-<\textit{type}$_{i}$> is a single character: ‘P’ (attach to parent) or ‘C’ (attach to child). The next 9 entries define the attachment position and direction in the same way as docking ports. <\textit{id}$_{i}$> is a string of up to 8 characters used for defining compatibility between attachment points.
+<\textit{type}$_{i}$> is a single character: 'P' (attach to parent) or 'C' (attach to child). The next 9 entries define the attachment position and direction in the same way as docking ports. <\textit{id}$_{i}$> is a string of up to 8 characters used for defining compatibility between attachment points.
 
-\item The 3 values of the Inertia tag are the \textit{principal moments of inertia}, defined as the diagonal elements ($J_{xx}$, $J_{yy}$, $J_{zz}$) of the mass-normalised inertia tensor \textbf{J} in the vessel’s principal frame, where \textbf{J} is diagonal. \textbf{J} in an arbitrary frame is given by
+\item The 3 values of the Inertia tag are the \textit{principal moments of inertia}, defined as the diagonal elements ($J_{xx}$, $J_{yy}$, $J_{zz}$) of the mass-normalised inertia tensor \textbf{J} in the vessel's principal frame, where \textbf{J} is diagonal. \textbf{J} in an arbitrary frame is given by
 \[ J = \frac{1}{M} \int_{V} m(r)  
 \begin{pmatrix}
 y^{2} + z^{2} & xy & xz\\
@@ -155,13 +155,13 @@ dr
 \]
 
 \noindent
-The Orbitersdk\textbackslash Utils folder contains a simple tool (shipedit.exe) to calculate the inertia tensor of an object from its mesh file. The tool requires “well-behaved” mesh files (composed of closed compact surfaces) and assumes a homogeneous density distribution inside the mesh (\textit{m(r)} = const). The latter is not very realistic, so the results must be interpreted realistically. They should still serve as a good starting point for experimentation.
+The Orbitersdk\textbackslash Utils folder contains a simple tool (shipedit.exe) to calculate the inertia tensor of an object from its mesh file. The tool requires "well-behaved" mesh files (composed of closed compact surfaces) and assumes a homogeneous density distribution inside the mesh (\textit{m(r)} = const). The latter is not very realistic, so the results must be interpreted realistically. They should still serve as a good starting point for experimentation.
 
 \end{itemize}
 
 
 \subsection{Configuration files for individual vessels}
-A vessel only requires an individual definition file if it is not an instance of a vessel class. In this case the format for the vessel’s .cfg file is identical to the vessel class .cfg files described above.
+A vessel only requires an individual definition file if it is not an instance of a vessel class. In this case the format for the vessel's .cfg file is identical to the vessel class .cfg files described above.
 
 
 \end{document}

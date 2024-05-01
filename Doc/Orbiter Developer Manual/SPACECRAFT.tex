@@ -2,13 +2,13 @@
 \begin{document}
 
 \section{Spacecraft design}
-This section describes how to create a new \textit{vessel class} for Orbiter by writing a \textit{vessel DLL module}. Although it is possible to create simple vessel classes by writing a vessel configuration file without a custom module, the full potential of Orbiter’s custom spacecraft design capabilities can only be realised with a specialised module.\\
+This section describes how to create a new \textit{vessel class} for Orbiter by writing a \textit{vessel DLL module}. Although it is possible to create simple vessel classes by writing a vessel configuration file without a custom module, the full potential of Orbiter's custom spacecraft design capabilities can only be realised with a specialised module.\\
 
 \alertbox{All vessels of a given class share the same DLL module. Orbiter only loads a single instance of the DLL. This means that global variables are shared between all vessels of that class. Do not store data which are specific to individual vessels in global or static variables, because they can be overwritten by another vessel.}
 
 
 \subsection{Module initialisation}
-When the user launches the simulation by picking a scenario from the Orbiter Launchpad dialog and pressing the “Launch Orbiter” button, Orbiter will load the vessel DLL module for each spacecraft type used in the simulation, and call its \textit{InitModule} function. This function is called only once per Orbiter session, no matter how many spacecraft of that type appear in the simulation. It will not be called again if the user exits the simulation to the Launchpad, and reloads another simulation scenario. You can use it to initialise global (non-instance specific and non-session specific) parameters.
+When the user launches the simulation by picking a scenario from the Orbiter Launchpad dialog and pressing the "Launch Orbiter" button, Orbiter will load the vessel DLL module for each spacecraft type used in the simulation, and call its \textit{InitModule} function. This function is called only once per Orbiter session, no matter how many spacecraft of that type appear in the simulation. It will not be called again if the user exits the simulation to the Launchpad, and reloads another simulation scenario. You can use it to initialise global (non-instance specific and non-session specific) parameters.
 
 \begin{lstlisting}
 #define ORBITER_MODULE
@@ -43,7 +43,7 @@ If you performed any dynamic memory allocation in \textit{InitModule}, this is a
 \label{ssec:vessel_init}
 To allow initialisation of individual spacecraft, Orbiter will call the ovcInit function each time a scenario is loaded, for each vessel of that type listed in the scenario file. Orbiter will also call \textit{ovcInit} during the simulation if a new vessel of this type is created. The main purpose of ovcInit is to create an instance of a \textit{VESSEL}-derived interface class. \textit{VESSEL} is a class defined in the Orbiter API which is the primary means of communication between Orbiter and your own spacecraft class. In order to make use of the interface, you should derive your own vessel class derived from \textit{VESSEL}. In \textit{ovcInit}, you then create an instance of that class and return it back to Orbiter. Note that in the latest Orbiter version, the new \textit{VESSEL2} class has been introduced which inherits all the methods of \textit{VESSEL}, and introduces a number of new callback functions which replace the previous method of event notification. You should derive your vessel class from \textit{VESSEL2} to make use of this latest interface.\\
 \\
-As an example, let’s create a new class called \textit{MyVessel}, and create an instance in \textit{ovcInit}:
+As an example, let's create a new class called \textit{MyVessel}, and create an instance in \textit{ovcInit}:
 
 \begin{lstlisting}
 class MyVessel: public VESSEL2
@@ -61,7 +61,7 @@ DLLCLBK VESSEL* ovcInit( OBJHANDLE hvessel, int flightmodel )
 \end{lstlisting}
 
 \noindent
-\textit{ovcInit} passes two parameters to your module: a handle to the vessel for which you are about to create an interface, and a flag for the type of flight model requested by the user. Both parameters are passed on to the vessel constructor. The vessel handle is required to identify your vessel when requesting information from Orbiter. The \textit{flightmodel} flag can be used to implement different behaviour in your module, for example to define an “easy” and a “complex” flight model, which can then be selected by the user. You don’t need to store these parameters in your module, because you can retrieve them with the \textit{GetHandle} and \textit{GetFlightModel} methods of the \textit{VESSEL} class.\\
+\textit{ovcInit} passes two parameters to your module: a handle to the vessel for which you are about to create an interface, and a flag for the type of flight model requested by the user. Both parameters are passed on to the vessel constructor. The vessel handle is required to identify your vessel when requesting information from Orbiter. The \textit{flightmodel} flag can be used to implement different behaviour in your module, for example to define an "easy" and a "complex" flight model, which can then be selected by the user. You don't need to store these parameters in your module, because you can retrieve them with the \textit{GetHandle} and \textit{GetFlightModel} methods of the \textit{VESSEL} class.\\
 \\
 To ensure proper cleanup at the end of a simulation session, you must implement the \textit{ovcExit} function to delete your vessel:
 
@@ -135,7 +135,7 @@ void MyVessel::clbkSetClassCaps( FILEHANDLE cfg )
 \noindent
 In the above example, we define a few essential parameters (empty mass and mean radius), and load a mesh to provide a visual representation for our new spacecraft class. In practical applications, many more parameters may have to be defined here. Note that the file handle passed to the function points to the configuration file (.cfg) of the vessel. This can be used to read parameters from the file, thereby allowing the user to overwrite parameters by editing the configuration file.\\
 \\
-We now have a “skeleton implementation” for our new spacecraft class. To make it interesting, many more properties need to be defined, such as rocket engines (or air-breathing engines), aerodynamic properties, animations, etc. Some of these aspects are described in the rest of this chapter. For a complete (and sometimes quite complex) vessel implementations, see the sample projects in the \textit{Orbitersdk\textbackslash samples} subdirectory.
+We now have a "skeleton implementation" for our new spacecraft class. To make it interesting, many more properties need to be defined, such as rocket engines (or air-breathing engines), aerodynamic properties, animations, etc. Some of these aspects are described in the rest of this chapter. For a complete (and sometimes quite complex) vessel implementations, see the sample projects in the \textit{Orbitersdk\textbackslash samples} subdirectory.
 
 
 
@@ -204,7 +204,7 @@ In reality, thrusters can often only be driven at maximum, or within a limited r
 \textbf{Thruster placement and thrust direction}\\
 \\
 The effect of a thruster depends on its placement on the vessel, and the direction in which the thrust force is generated. In the most general case, a thruster will produce both a linear acceleration (due to a force) and an angular acceleration (do to torque).\\
-Torque is generated if the force vector does not pass through the vessel’s centre of gravity (CG)
+Torque is generated if the force vector does not pass through the vessel's centre of gravity (CG)
 
 \begin{figure}[H]
   \centering
@@ -217,7 +217,7 @@ The torque is then given by the cross product
 \[ \vec{M} = \vec{F} \times \vec{r} \]
 
 \noindent
-(remember that Orbiter uses a left-handed coordinate system!) To avoid uncontrollable spin you should design your ship’s main engines so that their force vector passes through the CG. Vessel coordinates are always defined so that the CG is at the origin (0,0,0). Therefore, a thruster located at (0,0,-10) and generating thrust in direction (0,0,1) would not generate torque.\\
+(remember that Orbiter uses a left-handed coordinate system!) To avoid uncontrollable spin you should design your ship's main engines so that their force vector passes through the CG. Vessel coordinates are always defined so that the CG is at the origin (0,0,0). Therefore, a thruster located at (0,0,-10) and generating thrust in direction (0,0,1) would not generate torque.\\
 \\
 \textbf{Attitude thrusters: Rotation}\\
 \\
@@ -231,7 +231,7 @@ Sometimes generating torque is desired in order to rotate the spacecraft. For co
 \noindent
 \textbf{Attitude thrusters: Translation}\\
 \\
-In order to provide small linear accelerations in various directions (for example, to line the ship up with the docking port of a space station), thrusters must be driven single or in groups so that they don’t generate torque. Sometimes it is possible to re-use the rotational attitude thrusters for this task, but it is equally possible to add separate linear thrusters.\\
+In order to provide small linear accelerations in various directions (for example, to line the ship up with the docking port of a space station), thrusters must be driven single or in groups so that they don't generate torque. Sometimes it is possible to re-use the rotational attitude thrusters for this task, but it is equally possible to add separate linear thrusters.\\
 
 \begin{figure}[H]
   \centering
@@ -247,7 +247,7 @@ Another way to change the thrust direction is by inserting deflector plates into
 \\
 \textbf{Torque, angular momentum and angular velocity}\\
 \\
-The relationship between torque M and angular velocity is given by Euler’s equations for a rotating rigid body:
+The relationship between torque M and angular velocity is given by Euler's equations for a rotating rigid body:
 % TODO fix spacing between equations (2 and 3 show closer to each other than 1 and 2)
 \[ J_{x}\dot{\omega}_{x} = M_{x} - (J_{z} - J_{y})\omega_{y}\omega_{z} \]
 \[ J_{y}\dot{\omega}_{y} = M_{y} - (J_{x} - J_{z})\omega_{z}\omega_{x} \]
@@ -347,7 +347,7 @@ Although it is possible to address thrusters individually in your module, it is 
 % TODO fix overflow in following line
 Orbiter has a number of standard thruster groups, such as \textit{THGROUP\_MAIN}, \textit{THGROUP\_RETRO}, \textit{THGROUP\_HOVER}, and a full set of attitude thruster groups. For a full listing, see \textit{VESSEL::CreateThrusterGroup} in the Reference Manual.\\
 \\
-It is the responsibility of the vessel designer to make sure that thrusters are grouped in a sensible way. For example, whenever the user presses the “+” key on the numerical keypad, all thrusters in \textit{THGROUP\_MAIN} will fire. If the thrusters grouped in \textit{THGROUP\_MAIN} behave in an unexpected or non-intuitive way it will be confusing to the user. Furthermore, if attitude thrusters are not appropriately grouped, some or all of the navigation modes may fail.\\
+It is the responsibility of the vessel designer to make sure that thrusters are grouped in a sensible way. For example, whenever the user presses the "+" key on the numerical keypad, all thrusters in \textit{THGROUP\_MAIN} will fire. If the thrusters grouped in \textit{THGROUP\_MAIN} behave in an unexpected or non-intuitive way it will be confusing to the user. Furthermore, if attitude thrusters are not appropriately grouped, some or all of the navigation modes may fail.\\
 \\
 To group thrusters, use the \textit{CreateThrusterGroup} command:
 
@@ -380,7 +380,7 @@ Both versions require a handle to the logical thruster they are linked to, and t
 \\
 Here is an example demonstrating how you would use the second version of \textit{AddExhaust}:\\
 \\
-Let’s assume you build a rocket propelled by 4 main engines arranged in a regular square pattern. The engines have fixed orientation (no individual gimbal mode) and all thrust force vectors are parallel. In addition, the engines produce identical thrust magnitudes at all times.\\
+Let's assume you build a rocket propelled by 4 main engines arranged in a regular square pattern. The engines have fixed orientation (no individual gimbal mode) and all thrust force vectors are parallel. In addition, the engines produce identical thrust magnitudes at all times.\\
 \\
 Then the 4 engines can be represented by a single logical thruster, whose magnitude is the sum of the 4 actual engines, and positioned in the geometric centre. This simplifies the code, and is more efficient, because Orbiter does not need to add up 4 individual force vectors.\\
 \\
@@ -400,13 +400,13 @@ AddExhaust( th_main, 10, 2, tex );
 \end{lstlisting}
 
 \noindent
-The texture file must be stored in DDS format in Orbiter’s default texture directory. Note that \textit{oapiRegisterExhaustTexture} can be safely called multiple times with the same texture.
+The texture file must be stored in DDS format in Orbiter's default texture directory. Note that \textit{oapiRegisterExhaustTexture} can be safely called multiple times with the same texture.
 
 
 \subsection{Air-breathing engines}
 Orbiter is not limited to rocket engines. Other devices for generating thrust can be implemented as well, from turbojet engines to solar sails or some hypothetical future technology. Unlike conventional rocket engines, which are natively supported by the Orbiter core, custom designs require a bit more work from the developer. As an example, I will here discuss the (tentative) scramjet engine implementation used by the delta-glider.\\
 \\
-A ramjet engine is a type of a jet engine which compresses the air for combustion not by any mechanical rotating machinery, but simply by “ramming” through the atmosphere, i.e. by using the aircraft’s velocity in the airstream. This is an efficient way of generating thrust at supersonic speeds, but does not work at very low speed. (A scramjet is a variant where the air is not slowed down to subsonic speeds in the combustor and therefore avoids excessive heating at extreme velocities).\\
+A ramjet engine is a type of a jet engine which compresses the air for combustion not by any mechanical rotating machinery, but simply by "ramming" through the atmosphere, i.e. by using the aircraft's velocity in the airstream. This is an efficient way of generating thrust at supersonic speeds, but does not work at very low speed. (A scramjet is a variant where the air is not slowed down to subsonic speeds in the combustor and therefore avoids excessive heating at extreme velocities).\\
 \\
 A typical ramjet engine is composed of 3 sections:
 
@@ -489,12 +489,12 @@ We now have all the components to calculate the thrust \textit{F} generated by t
 
 
 \subsection{Rendering re-entry flames}
-To visualise the friction heat dissipation during atmospheric reentry, Orbiter supports the rendering of “re-entry flames”. To calculate the amount of heat generated per surface area and time (and to scale the exhaust flames) Orbiter uses this formula:
+To visualise the friction heat dissipation during atmospheric reentry, Orbiter supports the rendering of "re-entry flames". To calculate the amount of heat generated per surface area and time (and to scale the exhaust flames) Orbiter uses this formula:
 
 \[ P = \frac{1}{2} \rho v^{3} \]
 
 \noindent
-where $\rho$ is the atmospheric density, and \textit{v} is the vessel’s airspeed. Orbiter renders exhaust flames if $P > P_{0}$ where $P_{0}$ is a user defined limit. The size and opacity of the reentry flames is scaled by
+where $\rho$ is the atmospheric density, and \textit{v} is the vessel's airspeed. Orbiter renders exhaust flames if $P > P_{0}$ where $P_{0}$ is a user defined limit. The size and opacity of the reentry flames is scaled by
 
 \[ s = min\left(1,\frac{P - P_{0}}{5P_{0}}\right) \]
 
@@ -534,7 +534,7 @@ SetReentryTexture( NULL );
 
 
 \subsection{Adding particle streams for exhaust and reentry effects}
-Orbiter supports particle streams for rendering contrails, exhaust gases, reentry plasma trails etc. Particle streams consist of a series of textured “billboard” objects which always face the camera. The streams can be customised with a set of parameters and allow the simulation of a variety of effects.\\
+Orbiter supports particle streams for rendering contrails, exhaust gases, reentry plasma trails etc. Particle streams consist of a series of textured "billboard" objects which always face the camera. The streams can be customised with a set of parameters and allow the simulation of a variety of effects.\\
 \\
 \textbf{The PARTICLESTREAMSPEC structure}\\
 \\
@@ -618,7 +618,7 @@ Defines the mapping between the level parameter $L$ (e.g. thruster level) and th
 \noindent
 \textit{lmin, lmax}
 \begin{adjustwidth}{1cm}{0cm}
-Defines min and max levels for alpha mapping. Only used if \textit{levelmap} is \textit{CONST}, \textit{PLIN} or \textit{PSQRT} (see above). For \textit{CONST}, only $lmin$ is used. For \textit{PLIN} and \textit{PSQRT}, $lmin < lmax$ is required. Note that $lmin < 0$ is valid – this will cause the stream to produce particles even when the reference level is 0. Likewise, $lmax > 1$ is valid – this will cause the alpha value of the particles to remain < 1 even at reference level 1.
+Defines min and max levels for alpha mapping. Only used if \textit{levelmap} is \textit{CONST}, \textit{PLIN} or \textit{PSQRT} (see above). For \textit{CONST}, only $lmin$ is used. For \textit{PLIN} and \textit{PSQRT}, $lmin < lmax$ is required. Note that $lmin < 0$ is valid - this will cause the stream to produce particles even when the reference level is 0. Likewise, $lmax > 1$ is valid - this will cause the alpha value of the particles to remain < 1 even at reference level 1.
 \\
 \end{adjustwidth}
 
@@ -661,7 +661,7 @@ Defines min and max atmospheric parameter (ambient density or friction power) fo
 	\centering
 	\subfigure{\includegraphics[width=0.49\textwidth]{particle_level.png}}
 	\subfigure{\includegraphics[width=0.49\textwidth]{particle_atmosphere.png}}
-	\caption{The particle alpha value as a function of reference level (left) and atmospheric parameter (right) for different ‘levelmap’ and ‘atmsmap’ modes.}
+	\caption{The particle alpha value as a function of reference level (left) and atmospheric parameter (right) for different 'levelmap' and 'atmsmap' modes.}
 \end{figure}
 \end{adjustwidth}
 
@@ -717,14 +717,14 @@ When implementing an airfoil in Orbiter, the user must supply a function which c
 
 
 \subsubsection{Angular drag}
-Similar to (linear) drag which produces a force acting against a vessel’s airspeed vector, a rotating vessel will experience angular drag which acts against the angular velocity, thus slowing the rotation. Orbiter uses the following formulae to calculate angular damping:
+Similar to (linear) drag which produces a force acting against a vessel's airspeed vector, a rotating vessel will experience angular drag which acts against the angular velocity, thus slowing the rotation. Orbiter uses the following formulae to calculate angular damping:
 
 \[ dM_{x} = -q'S_{y}c_{\alpha,x}\omega_{x} \]
 \[ dM_{y} = -q'S_{y}c_{\alpha,y}\omega_{y} \]
 \[ dM_{z} = -q'S_{y}c_{\alpha,z}\omega_{z} \]
 
 \noindent
-where $q' = 1/2 \rho_{\infty}(V_{\infty} + V_{0})^{2}$ is a modified dynamic pressure which ensures that angular drag also occurs at low airspeeds (Orbiter currently uses a fixed $V_{0}$ = 30 m/s). $S_{y}$ is the vessel’s cross section projected along the vertical (y) axis, used as a reference area. $S_{y}$ is the y-component of the vector passed to \textit{VESSEL::SetCrossSections()}. $c_{\alpha,x}$, $c_{\alpha,y}$ and $c_{\alpha,z}$ are the drag coefficients for rotations around the $x$, $y$, and $z$ vessel axes as defined by \textit{VESSEL::SetRotDrag()}. $\omega_{x}$, $\omega_{y}$ and $\omega_{z}$ are the angular velocities around the vessel axes, and $dM_{x}$, $dM_{y}$ and $dM_{z}$ are the changes in torque due to damping.\\
+where $q' = 1/2 \rho_{\infty}(V_{\infty} + V_{0})^{2}$ is a modified dynamic pressure which ensures that angular drag also occurs at low airspeeds (Orbiter currently uses a fixed $V_{0}$ = 30 m/s). $S_{y}$ is the vessel's cross section projected along the vertical (y) axis, used as a reference area. $S_{y}$ is the y-component of the vector passed to \textit{VESSEL::SetCrossSections()}. $c_{\alpha,x}$, $c_{\alpha,y}$ and $c_{\alpha,z}$ are the drag coefficients for rotations around the $x$, $y$, and $z$ vessel axes as defined by \textit{VESSEL::SetRotDrag()}. $\omega_{x}$, $\omega_{y}$ and $\omega_{z}$ are the angular velocities around the vessel axes, and $dM_{x}$, $dM_{y}$ and $dM_{z}$ are the changes in torque due to damping.\\
 \\
 Angular drag is determined by the vessel shape. Developers can adjust the effect of angular damping in the atmosphere by adjusting the coefficients passed to \textit{VESSEL::SetRotDrag()}. Higher coefficients make a vessel less responsive to control input, and reduce oscillations around equilibrium orientation.
 
@@ -734,7 +734,7 @@ Angular drag is determined by the vessel shape. Developers can adjust the effect
 % TODO text overflow
 To define the lift and drag characteristics for a spacecraft in the DLL module, use the \textit{VESSEL::CreateAirfoil} method. An airfoil is defined as a cross section through a wing. In Orbiter, we use the term airfoil for any components of the vessel which produce lift and/or drag forces. Multiple airfoils can be defined for a single vessel (for example for the left and right wing, the body, the horizontal and vertical stabilizers in the tail, etc.). It is usually best to keep the number of airfoils low to keep the flight model predictable and to improve simulation performance.\\
 \\
-Orbiter distinguishes two different types of airfoil orientations: airfoils which create vertical lift (e.g. wings) and airfoils which create horizontal “lift”, e.g. vertical stabilisers. Even vessels without any wings or other aerodynamic surfaces should define at least one horizontal and one vertical airfoil to define their atmospheric drag behaviour (even blunt objects such as reentry capsules which have no similarity to an aircraft produce drag and lift forces).\\
+Orbiter distinguishes two different types of airfoil orientations: airfoils which create vertical lift (e.g. wings) and airfoils which create horizontal "lift", e.g. vertical stabilisers. Even vessels without any wings or other aerodynamic surfaces should define at least one horizontal and one vertical airfoil to define their atmospheric drag behaviour (even blunt objects such as reentry capsules which have no similarity to an aircraft produce drag and lift forces).\\
 \\
 When calling the \textit{CreateAirfoil} method, the user must provide
 \begin{itemize}
@@ -779,13 +779,13 @@ we find the following relations between $\alpha$ or $\beta$ and the direction of
 	\hline\rule{0pt}{2ex}
 	\textbf{$\alpha$} & \textbf{lift direction} \\
 	\hline\rule{0pt}{2ex}
-	0º & up (+y)\\
+	0° & up (+y)\\
 	\hline\rule{0pt}{2ex}
-	90º & forward (+z)\\
+	90° & forward (+z)\\
 	\hline\rule{0pt}{2ex}
-	180º & down (-y)\\
+	180° & down (-y)\\
 	\hline\rule{0pt}{2ex}
-	270º & backward (-z)\\
+	270° & backward (-z)\\
 	\hline
 	\end{tabular}
 \end{table}
@@ -796,13 +796,13 @@ we find the following relations between $\alpha$ or $\beta$ and the direction of
 	\hline\rule{0pt}{2ex}
 	\textbf{$\beta$} & \textbf{lift direction} \\
 	\hline\rule{0pt}{2ex}
-	0º & right (+x)\\
+	0° & right (+x)\\
 	\hline\rule{0pt}{2ex}
-	90º & forward (+z)\\
+	90° & forward (+z)\\
 	\hline\rule{0pt}{2ex}
-	180º & left (-x)\\
+	180° & left (-x)\\
 	\hline\rule{0pt}{2ex}
-	270º & backward (-z)\\
+	270° & backward (-z)\\
 	\hline
 	\end{tabular}
 \end{table}
@@ -859,7 +859,7 @@ void MyVessel::DefineAnimations()
 \end{lstlisting}
 
 \noindent
-You first need to determine which mesh groups take part in the animation. In this case, the nose wheel consists of the four groups 5, 6, 10 and 11, and these are listed in the “groups” array.\\
+You first need to determine which mesh groups take part in the animation. In this case, the nose wheel consists of the four groups 5, 6, 10 and 11, and these are listed in the "groups" array.\\
 \\
 Next, you must define the parameters of the rotation. This is done by creating a \textit{MGROUP\_ROTATE} instance. Besides the mesh index and group indices, this also requires the rotation reference point (i.e. the point around which the mesh groups are rotated), the axis of rotation, and the rotation range.\\
 \\
@@ -867,7 +867,7 @@ A new animation is created by calling \textit{CreateAnimation}. The parameter pa
 \\
 Finally, the rotation of the nose wheel is added to the animation by calling \textit{AddAnimationComponent}. The parameter are the animation identifier, the cutoff states of the component, and the transformation. The cutoff states define over which part of the animation the component transformation is applied. In this example, the cutoff states are 0 and 1, that is, the rotation of the nose wheel occurs over the full duration of the animation.\\
 \\
-Now let’s consider a slightly more complicated example, where the animation consists of two components: (a) opening the wheel well cover, and (b) deploying the gear.
+Now let's consider a slightly more complicated example, where the animation consists of two components: (a) opening the wheel well cover, and (b) deploying the gear.
 
 \begin{lstlisting}
 void MyVessel::DefineAnimations()
@@ -915,7 +915,7 @@ void MyVessel::DefineAnimations()
 \end{lstlisting}
 
 \noindent
-The gear and wheel rotations are defined by the \textit{MGROUP\_ROTATE} variables “gear” and “wheel”. Note that in this case “wheel” is not defined static, since reference point and axis will be modified by the parent. Therefore, “wheel” must be defined as a data member of the \textit{MyVessel} class. Since “wheel” is allocated dynamically, don’t forget to de-allocate it with
+The gear and wheel rotations are defined by the \textit{MGROUP\_ROTATE} variables "gear" and "wheel". Note that in this case "wheel" is not defined static, since reference point and axis will be modified by the parent. Therefore, "wheel" must be defined as a data member of the \textit{MyVessel} class. Since "wheel" is allocated dynamically, don't forget to de-allocate it with
 
 \begin{lstlisting}
 MyVessel::~MyVessel()
@@ -981,7 +981,7 @@ The DeltaGlider sample module (\textit{Orbitersdk\textbackslash samples\textback
 \subsubsection{Manual animation}
 As an alternative to the (semi-)automatic animation concept described in the previous section, Orbiter also allows manual animation. This can be more versatile, but requires more effort from the module developer, because the complete animation sequence must be implemented explicitly.\\
 \\
-A manual animation sequence is created by the functions \textit{VESSEL::RegisterAnimation()} and \textit{VESSEL::UnregisterAnimation()}. A call to \textit{RegisterAnimation} causes Orbiter to call the module’s \textit{ovcAnimate} callback function at each frame, provided the vessel’s visual exists. \textit{UnregisterAnimation} cancels the request.\\
+A manual animation sequence is created by the functions \textit{VESSEL::RegisterAnimation()} and \textit{VESSEL::UnregisterAnimation()}. A call to \textit{RegisterAnimation} causes Orbiter to call the module's \textit{ovcAnimate} callback function at each frame, provided the vessel's visual exists. \textit{UnregisterAnimation} cancels the request.\\
 \\
 Note that \textit{RegisterAnimation/UnregisterAnimation} pairs can be nested. Each call to \textit{RegisterAnimation} increments a reference counter, each call to \textit{UnregisterAnimation} decrements the counter. Orbiter will call \textit{ovcAnimate} as long as the counter is > 0.\\
 \\
@@ -1030,7 +1030,7 @@ Now we need to implement the \textit{DefineMainPanel} function which defines the
 \\
 The mesh coordinate system to which the mesh vertex coordinates refer can be freely chosen by the developer. A convenient convention is to set the bottom left corner of the mesh to coordinates (0,0), and the top right corner to coordinates (\textit{px},\textit{py}), where \textit{px} and \textit{py} are the width and height of the panel background texture in pixels. With this convention, mesh coordinates correspond to the pixel positions of the background texture.\\
 \\
-As a first example, let’s start with a simple rectangular panel, which can be defined with 4 vertices and 2 triangles. If we plan for a panel texture of dimension 1280x400, then the mesh would look like this:
+As a first example, let's start with a simple rectangular panel, which can be defined with 4 vertices and 2 triangles. If we plan for a panel texture of dimension 1280x400, then the mesh would look like this:
 \begin{itemize}
 \item Vertex coordinate list: (0,0,0), (0,400,0), (1280,400,0), (1280,0,0)
 \item Triangle index list: (0,2,1), (2,0,3)
@@ -1097,7 +1097,7 @@ The \textit{SetPanelBackground} call in our \textit{DefineMainPanel} function re
 
 \begin{itemize}
 \item The panel handle, as provided by \textit{clbkLoadPanel2D}
-\item A list of textures, and the number of textures in the list (set to 0 for now – we’ll come back to those later)
+\item A list of textures, and the number of textures in the list (set to 0 for now - we'll come back to those later)
 \item The panel mesh handle
 \item The width and height of the panel in mesh units
 \item The panel base line
@@ -1205,7 +1205,7 @@ void MyVessel::DefineMainPanel( PANELHANDLE hPanel )
 \noindent
 The texture coordinates for the mesh vertices have now been defined (where I am assuming that the main panel image is located in the lower left corner of the texture. The call to \textit{SetPanelBackground} contains a pointer to the texture handle, and the number of textures (1). If your panel mesh references more than one texture, put them in a list, pass the list as the second parameter of \textit{SetPanelBackground}, and the number of textures in the list as the third parameter.\\
 \\
-At this point, you can compile your vessel code and run it in Orbiter. It isn’t very exciting yet (a static panel background texture covering the lower half of the screen), but it is the basis for the next steps. You should be able to scroll the panel up and down with the cursor keys.
+At this point, you can compile your vessel code and run it in Orbiter. It isn't very exciting yet (a static panel background texture covering the lower half of the screen), but it is the basis for the next steps. You should be able to scroll the panel up and down with the cursor keys.
 
 
 \subsection{Designing instrument panels (legacy style)}
@@ -1600,9 +1600,9 @@ bool MyVessel::clbkLoadPanel( int id )
 \noindent
 Each panel must register its own background bitmap via the \textit{oapiRegisterPanelBackground} function.\\
 \\
-In a vessel that defines multiple panels, the user can switch between them by using \Ctrl\DArrow\UArrow\RArrow\LArrow keys. Orbiter must know the relative location of bitmaps to each other, so that the correct panel can be loaded. This connectivity is provided by the \textit{oapiSetPanelNeighbours} function. This function tells Orbiter which panels are to the left, right, top and bottom of the current panel. A value of –1 indicates that no panel is located at that side.\\
+In a vessel that defines multiple panels, the user can switch between them by using \Ctrl\DArrow\UArrow\RArrow\LArrow keys. Orbiter must know the relative location of bitmaps to each other, so that the correct panel can be loaded. This connectivity is provided by the \textit{oapiSetPanelNeighbours} function. This function tells Orbiter which panels are to the left, right, top and bottom of the current panel. A value of -1 indicates that no panel is located at that side.\\
 \\
-\textbf{Important}: All the panel id’s defined during \textit{oapiSetPanelNeighbours} must be supported by \textit{clbkLoadPanel}. For example, if panel 0 calls \textit{oapiSetPanelNeighbours( 2, -1, 1, -1 )}, then panels 1 and 2 must be handled by \textit{clbkLoadPanel}.\\
+\textbf{Important}: All the panel id's defined during \textit{oapiSetPanelNeighbours} must be supported by \textit{clbkLoadPanel}. For example, if panel 0 calls \textit{oapiSetPanelNeighbours( 2, -1, 1, -1 )}, then panels 1 and 2 must be handled by \textit{clbkLoadPanel}.\\
 \\
 All panels must call the \textit{oapiSetPanelNeighbours} function, otherwise there is no way for the user to switch back to a different panel. Panel connectivities should usually be reciprocal, i.e. if panel 0 defines panel 1 as its top neighbour, then panel 1 should define panel 0 as its bottom neighbour. If only a single panel (panel 0) is supported, calling \textit{oapiSetPanelNeighbours} is not necessary.
 

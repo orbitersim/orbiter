@@ -8,8 +8,7 @@ Scenarios are simulation startup definitions which contain all parameters requir
 %TODO change doc ref to section link
 Scenario files are text files that can be created or modified manually. An easier way to edit scenarios is with the \textit{Scenario Editor} plugin, which can be used to modify and save a running simulation. The Scenario Editor is described in TODO.\\
 \\
-%TODO add section link
-Scenario files are located in a subdirectory tree specified by the ScenarioDir entry in the main configuration file (see Chapter TODO), usually .\textbackslash Scenarios. They have file extension .scn.
+Scenario files are located in a subdirectory tree specified by the ScenarioDir entry in the main configuration file (see \ref{ssec:main_cfg}), usually .\textbackslash Scenarios. They have file extension .scn.
 
 
 \subsection*{Format}
@@ -30,7 +29,7 @@ Scenario files consist of a series of category blocks describing different aspec
 
 
 \subsection*{Description block (optional):}
-Contains a short description of the scenario which is presented to the user in Orbiter’s Launchpad dialog window on highlighting the scenario. There are two versions of the description block available:
+Contains a short description of the scenario which is presented to the user in Orbiter's Launchpad dialog window on highlighting the scenario. There are two versions of the description block available:
 
 \begin{lstlisting}[language=OSFS]
 BEGIN_DESC
@@ -101,7 +100,7 @@ The following environment parameters are supported:
 	\hline\rule{0pt}{2ex}
 	CONTEXT & String & Optional context string. This can be used to fine-tune the setup of a planetary system, e.g. by selective loading of surface bases (see section \ref{ssec:surface_bases}).\\
 	\hline\rule{0pt}{2ex}
-	SCRIPT & String & A script file to launch at the scenario start. The string should include any path relative to the “Script” subdirectory, but no file extension (.lua is assumed). Default: no script\\
+	SCRIPT & String & A script file to launch at the scenario start. The string should include any path relative to the "Script" subdirectory, but no file extension (.lua is assumed). Default: no script\\
 	\hline
 	\end{tabularx}
 \end{table}
@@ -316,11 +315,11 @@ The following generic parameters are supported:
 	\hline\rule{0pt}{2ex}
 	VROT & Vec3 & Angular velocity [deg/s] (only for status Orbiting)\\
 	\hline\rule{0pt}{2ex}
-	FUEL & Float & Fuel level (0–1). This tag sets the level of all propellant resources to the same level. For individual settings use PRPLEVEL instead.\\
+	FUEL & Float & Fuel level (0-1). This tag sets the level of all propellant resources to the same level. For individual settings use PRPLEVEL instead.\\
 	\hline\rule{0pt}{2ex}
-	PRPLEVEL & List & List of propellant resource levels. Each entry is of the form <\textit{id}>:<\textit{level}>, where <\textit{id}> is the resource identifier (Int $\geq$ 0) and <\textit{level}> is the propellant resource level (Float, 0–1)\\
+	PRPLEVEL & List & List of propellant resource levels. Each entry is of the form <\textit{id}>:<\textit{level}>, where <\textit{id}> is the resource identifier (Int $\geq$ 0) and <\textit{level}> is the propellant resource level (Float, 0-1)\\
 	\hline\rule{0pt}{2ex}
-	THLEVEL & List & List of thruster settings. Each entry is of the form <\textit{id}>:<\textit{level}>, where <\textit{id}> is the thruster identifier (Int $\geq$ 0) in the order of thruster definition and <\textit{level}> is the thrust level (Float, 0–1). Thrusters with level 0 can be omitted.\\
+	THLEVEL & List & List of thruster settings. Each entry is of the form <\textit{id}>:<\textit{level}>, where <\textit{id}> is the thruster identifier (Int $\geq$ 0) in the order of thruster definition and <\textit{level}> is the thrust level (Float, 0-1). Thrusters with level 0 can be omitted.\\
 	\hline\rule{0pt}{2ex}
 	DOCKINFO & List & Docking status list. This contains information about all docked vessels. Each entry is of the form <\textit{id}>:<\textit{rid}> <\textit{rvessel}>, where <\textit{id}> is the docking port identifier (Int $\geq$ 0), <\textit{rid}> is the docking port identifier of the docked vessel, and <\textit{rvessel}> is the docked vessel. Only engaged docking ports are listed. See notes below.\\
 	\hline

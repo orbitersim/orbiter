@@ -3,10 +3,9 @@
 
 \section{The mesh file}
 \label{sec:mesh_file}
-%TODO add section link
-Orbiter uses a custom mesh file format. Mesh files are ASCII text files, and are by default located in the .\textbackslash Meshes subdirectory, unless the MeshDir entry in the main configuration file points to a different location (see section TODO). Some objects (e.g. Vessel classes) may place their meshes into their own subdirectory below .\textbackslash Meshes to keep them grouped together.\\
+Orbiter uses a custom mesh file format. Mesh files are ASCII text files, and are by default located in the .\textbackslash Meshes subdirectory, unless the MeshDir entry in the main configuration file points to a different location (see \ref{ssec:main_cfg}). Some objects (e.g. Vessel classes) may place their meshes into their own subdirectory below .\textbackslash Meshes to keep them grouped together.\\
 \\
-Vertex coordinates are defined in the object’s local coordinate system. Remember that Orbiter uses a left-handed coordinate system, where +x = right axis, +y = up axis, +z = forward axis. To conform with Orbiter’s default vessel orientation conventions, vessel meshes should be aligned so that the main thrust direction points to the positive z-direction, the positive x-axis points right, and the positive y-axis points up.\\
+Vertex coordinates are defined in the object's local coordinate system. Remember that Orbiter uses a left-handed coordinate system, where +x = right axis, +y = up axis, +z = forward axis. To conform with Orbiter's default vessel orientation conventions, vessel meshes should be aligned so that the main thrust direction points to the positive z-direction, the positive x-axis points right, and the positive y-axis points up.\\
 \\
 Vertex coordinate values are in units of meters [m].\\
 \\
@@ -68,10 +67,10 @@ Group components:
 
 \begin{itemize}
 \item A group can be assigned an optional label (tag LABEL) to make it easier to address from within the vessel module code (e.g. for coding an animation sequence). The label must be a single word without white space. A separate tool (.\textbackslash Orbitersdk\textbackslash Utils\textbackslash meshc.exe) can be used to scan a mesh file and write out a C++ header file containing the group labels and their integer indices. This header file can then be included in the vessel module code. Make sure to re-run meshc whenever the mesh group structure changes, to keep the associations up to date.
-\item A material index can be used to assign a material to the group. Indices $\geq$ 1 assign a material from the mesh material list. Index 0 refers to the default material (white, diffuse and opaque). If the group doesn’t specify a material index, it inherits the previous group’s material. If the first mesh group does not specify a material index, index 0 is implied.
-\item A texture index can be used to assign a texture map to the group. Indices $\geq$ 1 assign a texture from the mesh texture list. Index 0 indicates "no texture". If the group doesn’t specify a texture index, it inherits the previous group’s texture. If the first mesh group does not specify a texture index, index 0 is implied.
+\item A material index can be used to assign a material to the group. Indices $\geq$ 1 assign a material from the mesh material list. Index 0 refers to the default material (white, diffuse and opaque). If the group doesn't specify a material index, it inherits the previous group's material. If the first mesh group does not specify a material index, index 0 is implied.
+\item A texture index can be used to assign a texture map to the group. Indices $\geq$ 1 assign a texture from the mesh texture list. Index 0 indicates "no texture". If the group doesn't specify a texture index, it inherits the previous group's texture. If the first mesh group does not specify a texture index, index 0 is implied.
 \item The optional TEXWRAP flag defines how textures wrap around the object. "U" causes textures to wrap in the u-coordinate direction in texel space, "V" wraps in v-coordinate direction, and "UV" wraps in both directions. Default is no wrapping.
-\item The optional NONORMAL flag indicates that vertex definitions in this group don’t contain normal information, meaning that the first two numbers after the vertex coordinate (x,y,z) triplet are interpreted as texture coordinate (u,v) pair.
+\item The optional NONORMAL flag indicates that vertex definitions in this group don't contain normal information, meaning that the first two numbers after the vertex coordinate (x,y,z) triplet are interpreted as texture coordinate (u,v) pair.
 \item The optional FLAG tag allows to specify a user-defined 32-bit flag whose interpretation is context-dependent. Below is a list of bit settings currently recognized by Orbiter:
 
 \begin{table}[H]
@@ -108,7 +107,7 @@ Each line in the list defines a vertex and contains up to 8 floating point numbe
 \indent <\textit{x}> <\textit{y}> <\textit{z}> [<\textit{nx}> <\textit{ny}> <\textit{nz}>] [<\textit{tu}> <\textit{tv}>]
 
 \begin{itemize}
-\item The first 3 numbers contain the Cartesian vertex coordinates (\textit{x}, \textit{y}, \textit{z}) in the object’s local frame of reference. Units are meters [m].
+\item The first 3 numbers contain the Cartesian vertex coordinates (\textit{x}, \textit{y}, \textit{z}) in the object's local frame of reference. Units are meters [m].
 \item The next 3 numbers (if present) contain the surface normal direction at the vertex location (\textit{nx}, \textit{ny}, \textit{nz}), unless the group has the NONORMAL flag set. Orbiter needs the normal direction for lighting calculations. If no normal specification is available (or if the NONORMAL flag is present), Orbiter guesses the normal direction as the average of the normals of the adjacent triangles. This works well for smooth surfaces, but should be avoided for surfaces that contain sharp edges. Vertices located on edges require two vertex entries with different normals, referenced by the appropriate triangles. Normal definitions should be normalised: $\sqrt{nx^{2}+ny^{2}+nz^{2}} = 1$.
 \item The next 2 numbers (if present) contain the vertex texture coordinates (\textit{u}, \textit{v}). Texture coordinates are only required if the group uses a texture (has texture index $\geq$ 1). Texture coordinates define how a rectangular 2D texture is mapped onto the object surface. Texture coordinate (0, 0) refers to the lower left corner of the texture, (1, 1) refers to the upper right corner. Coordinates > 1 and < 0 are allowed and cause textures to repeat periodically.
 \end{itemize}
@@ -116,13 +115,13 @@ Each line in the list defines a vertex and contains up to 8 floating point numbe
 
 \noindent
 \textbf{Triangle list}\\
-The group’s triangle list follows immediately below the vertex list. It defines the triangles which compose the group’s polygonal (piecewise flat) surface.
+The group's triangle list follows immediately below the vertex list. It defines the triangles which compose the group's polygonal (piecewise flat) surface.
 
 \begin{itemize}
 \item Each line in the list defines a triangle and consists of 3 integer numbers (\textit{i}, \textit{j}, \textit{k}). Each is an index referencing a vertex in the vertex list (starting from 0).
-\item Only the “clockwise” (CW) side of the triangle is rendered: the side which, when looked at, has the vertices arranged in a clockwise order. The opposite, “counterclockwise” (CCW) side is invisible.
+\item Only the "clockwise" (CW) side of the triangle is rendered: the side which, when looked at, has the vertices arranged in a clockwise order. The opposite, "counterclockwise" (CCW) side is invisible.
 \item If both sides of the triangle must be rendered (e.g. if representing part of a thin plate), two triangles must be defined, one for each side.
-\item To flip the rendered side of a triangle (e.g. to correct for “inside out” artefacts), the vertex index order must be rearranged: (\textit{i},\textit{j},\textit{k}) $\rightarrow$ (\textit{i},\textit{k},\textit{j})
+\item To flip the rendered side of a triangle (e.g. to correct for "inside out" artefacts), the vertex index order must be rearranged: (\textit{i},\textit{j},\textit{k}) $\rightarrow$ (\textit{i},\textit{k},\textit{j})
 \end{itemize}
 
 

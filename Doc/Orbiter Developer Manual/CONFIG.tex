@@ -11,12 +11,11 @@ Each line contains an item and its value, using the format
 
 \noindent
 A semicolon starts a comment, continuing to the end of the line.\\
-%TODO add section link
-All configuration files except the main configuration file (see TODO) are located in a subdirectory tree defined by the ConfigDir entry in the main file, usually ".\textbackslash Config".
+All configuration files, except the main configuration file (see \ref{ssec:main_cfg}), are located in a subdirectory tree defined by the ConfigDir entry in the main file, usually ".\textbackslash Config".
 
 \subsection{Planetary systems}
 \label{ssec:planetery_sys}
-Planetary systems contain stars, planets and moons. Each planetary system requires at least one star. Stars, planets and moons are defined in the planetary system’s configuration file\\
+Planetary systems contain stars, planets and moons. Each planetary system requires at least one star. Stars, planets and moons are defined in the planetary system's configuration file\\
 \indent .\textbackslash Config\textbackslash <\textit{Solsys-name}>.cfg\\
 Orbiter can support multiple planetary systems, but only one per scenario. The planetary system to be used by a scenario is referenced in the scenario file (see section \ref{sec:scn_files}).
 
@@ -257,7 +256,7 @@ Only required if the planet defines a cloud layer.
 	\hline\rule{0pt}{2ex}
 	CloudAlt & Float & Altitude of cloud layer [m]\\
 	\hline\rule{0pt}{2ex}
-	CloudShadowDepth & Float & Depth ("blackness") of cloud shadows on the ground (0-1, where 0 = black, 1 = don’t render shadows). Default: 1\\
+	CloudShadowDepth & Float & Depth ("blackness") of cloud shadows on the ground (0-1, where 0 = black, 1 = don't render shadows). Default: 1\\
 	\hline\rule{0pt}{2ex}
 	CloudRotPeriod & Float & Rotation period of cloud layer against surface [s]. Default: 0 (static cloud layer)\\
 	\hline\rule{0pt}{2ex}
@@ -430,12 +429,12 @@ END_SURFTILELIST
 where
 
 \begin{itemize}
-\item BASE-V2.0 $\Rightarrow$ Format identifier (must be placed in the first line of the file). This item is optional if the base is defined directly in the planet’s base list.
-\item NAME = <\textit{Base-name}> $\Rightarrow$ Logical name of the base as it will be displayed by Orbiter. Doesn’t need correspond to the base file name.
-\item LOCATION = <\textit{lng}> <\textit{lat}> $\Rightarrow$ The position of the base reference point on the planet surface, where <\textit{lng}> [deg] is longitude (< 0 for west, >0 for east), and <\textit{lat}> [deg] is latitude (< 0 for south, > 0 for north). This item is optional if the base is defined directly in the planet’s base list.
-\item SIZE = <\textit{size}> $\Rightarrow$ Specifies the size of the base’s footprint on the planet surface (defined as its mean radius [m]. This parameter determines the camera distance at which Orbiter will start rendering the base.
+\item BASE-V2.0 $\Rightarrow$ Format identifier (must be placed in the first line of the file). This item is optional if the base is defined directly in the planet's base list.
+\item NAME = <\textit{Base-name}> $\Rightarrow$ Logical name of the base as it will be displayed by Orbiter. Doesn't need correspond to the base file name.
+\item LOCATION = <\textit{lng}> <\textit{lat}> $\Rightarrow$ The position of the base reference point on the planet surface, where <\textit{lng}> [deg] is longitude (< 0 for west, >0 for east), and <\textit{lat}> [deg] is latitude (< 0 for south, > 0 for north). This item is optional if the base is defined directly in the planet's base list.
+\item SIZE = <\textit{size}> $\Rightarrow$ Specifies the size of the base's footprint on the planet surface (defined as its mean radius [m]. This parameter determines the camera distance at which Orbiter will start rendering the base.
 \item OBJECTSIZE = <\textit{osize}> $\Rightarrow$ Defines the "typical" size of individual base objects (buildings, etc.). In addition to the SIZE parameter, this value is used by Orbiter to fine-tune the rendering of base objects. Objects will not be rendered if the apparent size of an object of size <\textit{osize}> located at the base reference point, would be smaller than 1 pixel. The default value for <\textit{osize}> is 100.0.
-\item MAPOBJECTSTOSPHERE = [TRUE|FALSE] $\Rightarrow$ If TRUE, the altitude of objects in the object list will be adjusted automatically to map them from a flat plane onto a spherical planet surface. So for example, a building defined with altitude 0 will be rendered at altitude 0 relative to the planet’s reference sphere. If FALSE, elevation 0 maps onto the flat plane tangential to the base reference point (and therefore to a point above the reference sphere for any objects not located at the reference point). Default: FALSE\\
+\item MAPOBJECTSTOSPHERE = [TRUE|FALSE] $\Rightarrow$ If TRUE, the altitude of objects in the object list will be adjusted automatically to map them from a flat plane onto a spherical planet surface. So for example, a building defined with altitude 0 will be rendered at altitude 0 relative to the planet's reference sphere. If FALSE, elevation 0 maps onto the flat plane tangential to the base reference point (and therefore to a point above the reference sphere for any objects not located at the reference point). Default: FALSE\\
 Note: Currently this function is only implemented for a limited number of base object types.
 \item <\textit{NAV list}> $\Rightarrow$ Contains a list of navigation radio transmitters associated with the base. The format of the list is identical to the <\textit{NAV list}> in the planet configuration file (see section \ref{ssec:planets}).
 \item <\textit{Object list}> $\Rightarrow$ Contains a list of objects which make up the visual elements of the base. See next section for details.
@@ -447,8 +446,8 @@ Note: Currently this function is only implemented for a limited number of base o
 After creating the base configuration file, it must be referenced by a planet to instantiate the base. There are several ways to make Orbiter read a surface base definition:
 
 \begin{itemize}
-\item Place the base configuration file in the default base configuration folder for the planet. By default, Orbiter scans the folder .\textbackslash Config\textbackslash <\textit{Planet-name}>\textbackslash Base for base definitions. The default folder is scanned only if the planet doesn’t explicitly define a base list (see below).
-\item To make Orbiter scan different folders, create a surface base list in the planet’s configuration file, enclosed by BEGIN\_SURFBASE and END\_SURFBASE tags (see section \ref{ssec:planets}). In this list, specify the new surface base directory with the line ‘DIR <\textit{folder}>’, where <\textit{folder}> is the path to the folder containing the base configurations (relative to the Config folder). Multiple folders can be specified. If the same base is defined in more than one of the scanned folders, only the first is used. This allows to replace base definitions without having to delete the original configuration file. Example:
+\item Place the base configuration file in the default base configuration folder for the planet. By default, Orbiter scans the folder .\textbackslash Config\textbackslash <\textit{Planet-name}>\textbackslash Base for base definitions. The default folder is scanned only if the planet doesn't explicitly define a base list (see below).
+\item To make Orbiter scan different folders, create a surface base list in the planet's configuration file, enclosed by BEGIN\_SURFBASE and END\_SURFBASE tags (see section \ref{ssec:planets}). In this list, specify the new surface base directory with the line 'DIR <\textit{folder}>', where <\textit{folder}> is the path to the folder containing the base configurations (relative to the Config folder). Multiple folders can be specified. If the same base is defined in more than one of the scanned folders, only the first is used. This allows to replace base definitions without having to delete the original configuration file. Example:
 
 \begin{lstlisting}[language=OSFS]
 BEGIN_SURFBASE
@@ -458,7 +457,7 @@ END_SURFBASE
 \end{lstlisting}
 
 \noindent
-If the surface base list exists in a planet’s configuration file, the default base configuration folder is not scanned, unless it is explicitly listed.
+If the surface base list exists in a planet's configuration file, the default base configuration folder is not scanned, unless it is explicitly listed.
 \item Base references can be placed directly into the base list, using the following format:\\
 
 \begin{lstlisting}[language=OSFS]
@@ -481,7 +480,7 @@ DIR <folder> PERIOD <MJD0> <MJD1>
 \end{lstlisting}
 
 \noindent
-where <\textit{MJD0}> and <\textit{MJD1}> are the start and end dates of the period over which the base folder is scanned, in MJD (Modified Julian Date) format [days]. Either can be set to ‘-’ to disable the limit at one end.
+where <\textit{MJD0}> and <\textit{MJD1}> are the start and end dates of the period over which the base folder is scanned, in MJD (Modified Julian Date) format [days]. Either can be set to '-' to disable the limit at one end.
 \item Specify a scenario context with the CONTEXT parameter. The corresponding directory is scanned only if the scenario specifies the same context string in its environment context entry (see section \ref{sec:scn_files}). This allows to add or replace bases only within a defined set of scenarios. Syntax:
 
 \begin{lstlisting}[language=OSFS]
@@ -540,7 +539,7 @@ A 5-sided "brick" (without a floor) which can be used as a simple generic buildi
 	\hline\rule{0pt}{2ex}
 	\textbf{Parameter} & \textbf{Type} & \textbf{Description}\\
 	\hline\rule{0pt}{2ex}
-	POS & Vector & Centre of the block’s base rectangle (in local base coordinates) The y-coordinate is the elevation above ground. Default: 0 0 0\\
+	POS & Vector & Centre of the block's base rectangle (in local base coordinates) The y-coordinate is the elevation above ground. Default: 0 0 0\\
 	\hline\rule{0pt}{2ex}
 	SCALE & Vector & Object size in the three coordinate axes. Default: 1 1 1\\
 	\hline\rule{0pt}{2ex}
@@ -566,7 +565,7 @@ A hangar-type building with a barrel-shaped roof. The following parameters are s
 	\hline\rule{0pt}{2ex}
 	\textbf{Parameter} & \textbf{Type} & \textbf{Description}\\
 	\hline\rule{0pt}{2ex}
-	POS & Vector & Centre of the object’s base rectangle (in local base coordinates) The y-coordinate is the elevation above ground. Default: 0 0 0\\
+	POS & Vector & Centre of the object's base rectangle (in local base coordinates) The y-coordinate is the elevation above ground. Default: 0 0 0\\
 	\hline\rule{0pt}{2ex}
 	SCALE & Vector & Object size in the three coordinate axes. Default: 1 1 1\\
 	\hline\rule{0pt}{2ex}
@@ -591,7 +590,7 @@ A hangar-type building with a tent-shaped roof. The following parameters are sup
 	\hline\rule{0pt}{2ex}
 	\textbf{Parameter} & \textbf{Type} & \textbf{Description}\\
 	\hline\rule{0pt}{2ex}
-	POS & Vector & Centre of the object’s base rectangle (in local base coordinates) The y-coordinate is the elevation above ground. Default: 0 0 0\\
+	POS & Vector & Centre of the object's base rectangle (in local base coordinates) The y-coordinate is the elevation above ground. Default: 0 0 0\\
 	\hline\rule{0pt}{2ex}
 	SCALE & Vector & Object size in the three coordinate axes. Default: 1 1 1\\
 	\hline\rule{0pt}{2ex}
@@ -618,7 +617,7 @@ A hangar-type building with a barrel-shaped roof reaching to the ground. The fol
 	\hline\rule{0pt}{2ex}
 	\textbf{Parameter} & \textbf{Type} & \textbf{Description}\\
 	\hline\rule{0pt}{2ex}
-	POS & Vector & Centre of the object’s base rectangle (in local base coordinates) The y-coordinate is the elevation above ground. Default: 0 0 0\\
+	POS & Vector & Centre of the object's base rectangle (in local base coordinates) The y-coordinate is the elevation above ground. Default: 0 0 0\\
 	\hline\rule{0pt}{2ex}
 	SCALE & Vector & Object size in the three coordinate axes. Default: 1 1 1\\
 	\hline\rule{0pt}{2ex}
@@ -643,7 +642,7 @@ A fuel tank-like upright cylinder with a flat top. The following parameters are 
 	\hline\rule{0pt}{2ex}
 	\textbf{Parameter} & \textbf{Type} & \textbf{Description}\\
 	\hline\rule{0pt}{2ex}
-	POS & Vector & Centre of the object’s base circle (in local base coordinates) The y-coordinate is the elevation above ground. Default: 0 0 0\\
+	POS & Vector & Centre of the object's base circle (in local base coordinates) The y-coordinate is the elevation above ground. Default: 0 0 0\\
 	\hline\rule{0pt}{2ex}
 	SCALE & Vector & Cylinder radii in x and z, and height in y. Default: 1 1 1\\
 	\hline\rule{0pt}{2ex}
@@ -928,7 +927,7 @@ Labels can be defined to mark objects on the celestial sphere (e.g. bright stars
 The user can display these markers during the simulation with the Visual helpers option (\keystroke{F9} or \Ctrl\keystroke{F9}).\\
 By default, all files for celestial and planetary surface markers are placed in a subdirectory\\
 \indent .\textbackslash Config\textbackslash <\textit{name}>\textbackslash Marker\\
-where <\textit{name}> is the name of the planetary system (for celestial markers) or the celestial body (for surface markers) they are referring to. A different location for marker files can be specified with the MarkerPath option in the planet’s or planetary system’s configuration file (see sections \ref{ssec:planetery_sys} and \ref{ssec:planets}). Marker files are text files with extension .mkr. Multiple files can be defined for a single planet or planetary system, which the user can turn on and off individually. The format is
+where <\textit{name}> is the name of the planetary system (for celestial markers) or the celestial body (for surface markers) they are referring to. A different location for marker files can be specified with the MarkerPath option in the planet's or planetary system's configuration file (see sections \ref{ssec:planetery_sys} and \ref{ssec:planets}). Marker files are text files with extension .mkr. Multiple files can be defined for a single planet or planetary system, which the user can turn on and off individually. The format is
 
 \begin{lstlisting}[language=OSFS]
 BEGIN_HEADER

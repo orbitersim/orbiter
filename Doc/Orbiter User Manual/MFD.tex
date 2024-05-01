@@ -744,7 +744,7 @@ Closing speed should be reduced as the ship approaches the dock (using RCS in li
 
 \subsection{RCS Attitude}
 The \textit{Attitude} MFD mode provides advanced functions for orbital attitude control beyond the built-in attitude modes (pro-/retrograde, normal/anti-normal). This MFD mode is an example for a script-driven MFD definition. To make it available, the \textit{ScriptMFD} module must be activated in the Launchpad Modules tab.\\
-The attitude MFD mode operates by taking control of the vessel’s RCS thrusters to orient it in the commanded attitude. This only works for vessels with a full RCS that allows alignment in all three vessel axes.\\
+The attitude MFD mode operates by taking control of the vessel's RCS thrusters to orient it in the commanded attitude. This only works for vessels with a full RCS that allows alignment in all three vessel axes.\\
 A new attitude mode is defined by first selecting a \textit{Base} mode and then adding additional rotations to it. Press SET to open the mode definition page. If an attitude mode is currently active, the definition page initially displays the parameters of this mode. Otherwise, a default prograde mode is shown. You can use the BAS button to cycle through the available base modes: \textit{prograde}, \textit{normal}, \textit{perpendicular} and \textit{radial}. Each mode can be inverted by pressing the INV button, e.g. prograde $\rightarrow$ retrograde, or normal $\rightarrow$ anti-normal, etc. The following table shows the orientation of each base mode from two principal vessel axes (forward, +\textbf{z}, and up, +\textbf{y}), relative to the orbital velocity vector (\textbf{v}), radius vector (\textbf{r}) and orbital plane normal (\textbf{n} = \textbf{r} $\times$ \textbf{v}).
 
 %\begin{table}[H]
@@ -875,10 +875,10 @@ When the mode definition is complete, press the GO button to activate it. You ca
 \textbf{Rotational docking alignment}\\
 The Attitude MFD can also align the vessel with the target docking port orientation. From the main page, press the DCK button. This opens the Dock alignment page. Docking alignment is performed with data from an IDS (instrument docking system) transmitter. Make sure that one of your NAV radios is tuned to the IDS of the target dock. Use the NAV button to select the appropriate receiver from the stack. Docking alignment can only be activated once an IDS signal is received. Press ACT to activate the alignment mode. You can then return to the main page with RTN.\\
 Docking alignment mode is cancelled if the IDS transmitter goes out of range, or if the NAV receiver is re-tuned.\\
-Docking alignment also works for docking ports not oriented in the vessel’s forward (+z) axis.\\
+Docking alignment also works for docking ports not oriented in the vessel's forward (+z) axis.\\
 \\
 \textbf{Pre-multiplying an angular offset}\\
-Sometimes it is useful to apply an angular offset to all attitude modes. For example, the Space Shuttle’s OMS engines are tilted by 15° against the longitudinal axis. The resulting thrust vector therefore points to -15° pitch. For a prograde OMS burn, the Shuttle needs to pitch up by 15° against the orbital velocity vector. This constant offset due to engine arrangement can be taken into account with the Attitude MFD.\\
+Sometimes it is useful to apply an angular offset to all attitude modes. For example, the Space Shuttle's OMS engines are tilted by 15° against the longitudinal axis. The resulting thrust vector therefore points to -15° pitch. For a prograde OMS burn, the Shuttle needs to pitch up by 15° against the orbital velocity vector. This constant offset due to engine arrangement can be taken into account with the Attitude MFD.\\
 Open the Configuration page by pressing CFG from the main page. You can now add angular offsets by pressing the ADD button. You can then set the rotation axis and angle similar to the attitude mode setup. For example for the Shuttle, add a pitch rotation of +15°. When done, press RTN to return to the main page. The additional offset will be added to all attitude modes, except for the docking alignment mode.
 
 

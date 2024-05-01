@@ -12,7 +12,7 @@ EditorModule = <$editor-module$>
 \end{lstlisting}
 
 \noindent
-where <editor-module> is the name of the DLL containing the editor elements. If you are using the vessel DLL for this, the EditorModule value is identical to the Module value. If the configuration file does not contain an EditorModule entry, the editor still allows to configure the vessel’s generic parameters, but won’t provide any vessel-specific options.\\
+where <editor-module> is the name of the DLL containing the editor elements. If you are using the vessel DLL for this, the EditorModule value is identical to the Module value. If the configuration file does not contain an EditorModule entry, the editor still allows to configure the vessel's generic parameters, but won't provide any vessel-specific options.\\
 The editor extension DLL must contain a secInit callback function (sec = scenario editor callback) with the following format:
 
 \begin{lstlisting}
