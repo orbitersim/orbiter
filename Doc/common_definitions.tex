@@ -4,7 +4,7 @@
 \usepackage[noindentafter]{titlesec}
 \usepackage[T1]{fontenc}
 \usepackage[scaled]{helvet}
-\usepackage[pdftex]{graphicx}
+%\usepackage[pdftex]{graphicx}
 \usepackage{subfigure}
 \usepackage[subfigure]{tocloft}
 \usepackage{etoc}
@@ -34,25 +34,22 @@
 \usepackage{cite}
 \usepackage{setspace}
 \usepackage{times}
-%\usepackage[dvips]{graphicx}
-\usepackage{epstopdf}
+\usepackage{wasysym}
 
+%\usepackage{graphicx}
+%\usepackage[dvips]{graphics}
+%\usepackage{epstopdf}
 
-
-%\newcommand\mat[1]{\mathsf{#1}}
 
 \newcommand{\vR}[1]{\ensuremath{\vec{R}_{#1}}}
 \newcommand{\nR}[1]{\ensuremath{|\vR{#1}|}}
 \newcommand{\mat}[1]{\ensuremath{\mathsf{#1}}}
+\renewcommand{\vec}[1]{\ensuremath \mathbf{#1}}
 
 \newcommand{\ACC}{\ensuremath\mathrm{A}}
 \newcommand{\AACC}{\ensuremath\mathrm{T}}
 \newcommand{\Euler}{\ensuremath\mathrm{E}}
-
-%\renewcommand{\vec}[1]{\ensuremath{\mathbf{#1}}}
-
-
-
+\newcommand{\Kelvin}{\ensuremath{\mathrm{K}}}
 
 
 \newcommand{\alertbox}[1]{\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=Alert]#1\end{tcolorbox}}
