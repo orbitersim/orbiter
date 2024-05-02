@@ -43,8 +43,7 @@ Position and velocity data relative to a reference body. Each line contains eith
 \item STARTMJD <\textit{mjd}> $\Rightarrow$ Defines an absolute time reference for the simulation start time. <\textit{mjd}> is a floating point number defining the start date in MJD (Modified Julian Date) format. Only a single STARTMJD tag should be provided at the beginning of the stream. Note that this value is currently not used by the simulator, because the simulation start date is read from the corresponding scenario file.
 \item REF <\textit{reference}> $\Rightarrow$ Defines the reference object (planet, moon, sun) relative to which the following data samples are calculated. Whenever the trajectory enters the sphere of influence of a different object, another "REF" line should be added, and the following data samples computed with respect to the new object. <\textit{reference}> must correspond to a celestial object defined in the Orbiter planetary system. There is no default object, therefore a REF directive must appear at the beginning of the file before any data samples.
 \item FRM [ECLIPTIC | EQUATORIAL] $\Rightarrow$ Orientation of the reference frame for all following data samples. This can be either the ecliptic of the J2000 epoch, or the (rotating) equatorial frame of the reference body. The default setting is "ECLIPTIC".
-%TODO add section link
-\item CRD [CARTESIAN | POLAR] $\Rightarrow$ Coordinate and velocity data format for all following data samples. This can be either in rectangular cartesian format ($x$, $y$, $z$) [m] and ($\dot{x}$, $\dot{y}$, $\dot{z}$) [m/s], respectively, or in spherical polar coordinates ($r$, $\phi$, $\theta$) [m, rad, rad] and ($\dot{r}$, $\dot{\phi}$, $\dot{\theta}$) [m/s, rad/s, rad/s], respectively, with radial distance $r$, polar angle $\phi$ and azimuth angle $\theta$. If an equatorial frame is selected, $\phi$ and $\theta$ define equatorial longitude and latitude. See TODO for transformation conventions. The default setting is "CARTESIAN".
+\item CRD [CARTESIAN | POLAR] $\Rightarrow$ Coordinate and velocity data format for all following data samples. This can be either in rectangular cartesian format ($x$, $y$, $z$) [m] and ($\dot{x}$, $\dot{y}$, $\dot{z}$) [m/s], respectively, or in spherical polar coordinates ($r$, $\phi$, $\theta$) [m, rad, rad] and ($\dot{r}$, $\dot{\phi}$, $\dot{\theta}$) [m/s, rad/s, rad/s], respectively, with radial distance $r$, polar angle $\phi$ and azimuth angle $\theta$. If an equatorial frame is selected, $\phi$ and $\theta$ define equatorial longitude and latitude. See \ref{ssec:cartpol_coord} for transformation conventions. The default setting is "CARTESIAN".
 \end{itemize}
 
 \noindent
@@ -114,7 +113,7 @@ For the local horizon frame, Orbiter uses a different set of Euler angles:
 \noindent
 so that the Euler angles can be directly defined with the bank, pitch and yaw angles of the vessel in the local horizon frame:
 
-%TODO confirm alpha/beta are correct or they should match "aero tradition"
+%TODO confirm alpha/beta are correct or they should match "aero tradition"?
 \begin{itemize}
 \item \textbf{Bank angle $\alpha$:} angle between the projection of the horizon normal into the vessel xy-plane, and the vessel "up" direction (0,1,0).
 \item \textbf{Pitch angle $\beta$:} angle between the projection of the horizon normal into the vessel yz-plane, and the vessel "up" direction (0,1,0).
@@ -531,6 +530,7 @@ The orientation of the spacecraft frame is largely up to the designer. By conven
 \noindent
 
 \subsection{Cartesian and polar coordinates}
+\label{ssec:cartpol_coord}
 Given Orbiter's left-handed coordinate system, the transformation between cartesian positions ($x$, $y$, $z$) and velocities ($\dot{x}$, $\dot{y}$, $\dot{z}$) and spherical polar coordinates ($r$, $\phi$, $\theta$) and velocities ($\dot{r}$, $\dot{\phi}$, $\dot{\theta}$) is defined as\\
 
 $
