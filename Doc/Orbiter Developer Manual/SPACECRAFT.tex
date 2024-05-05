@@ -248,7 +248,6 @@ Another way to change the thrust direction is by inserting deflector plates into
 \textbf{Torque, angular momentum and angular velocity}\\
 \\
 The relationship between torque M and angular velocity is given by Euler's equations for a rotating rigid body:
-% TODO fix spacing between equations (2 and 3 show closer to each other than 1 and 2)
 \[ J_{x}\dot{\omega}_{x} = M_{x} - (J_{z} - J_{y})\omega_{y}\omega_{z} \]
 \[ J_{y}\dot{\omega}_{y} = M_{y} - (J_{x} - J_{z})\omega_{z}\omega_{x} \]
 \[ J_{z}\dot{\omega}_{z} = M_{z} - (J_{y} - J_{x})\omega_{x}\omega_{y} \]
@@ -344,10 +343,10 @@ If you descend into a very dense planetary atmosphere, Orbiter will extrapolate 
 \\
 Although it is possible to address thrusters individually in your module, it is often easier to engage them in groups. Groups are also required to activate manual user thruster control via the keyboard or joystick, and the automatic navigation modes such as \textit{killrot}.\\
 \\
-% TODO fix overflow in following line
-Orbiter has a number of standard thruster groups, such as \textit{THGROUP\_MAIN}, \textit{THGROUP\_RETRO}, \textit{THGROUP\_HOVER}, and a full set of attitude thruster groups. For a full listing, see \textit{VESSEL::CreateThrusterGroup} in the Reference Manual.\\
+% TODO handle API doc reference
+Orbiter has a number of standard thruster groups, such as \textit{THGROUP\_MAIN}, \textit{THGROUP\_RETRO}, \textit{THGROUP\_HOVER}, and a full set of attitude thruster groups. For a full listing, see \textit{VESSEL::\-Create\-Thruster\-Group} in the API Reference Manual.\\
 \\
-It is the responsibility of the vessel designer to make sure that thrusters are grouped in a sensible way. For example, whenever the user presses the "+" key on the numerical keypad, all thrusters in \textit{THGROUP\_MAIN} will fire. If the thrusters grouped in \textit{THGROUP\_MAIN} behave in an unexpected or non-intuitive way it will be confusing to the user. Furthermore, if attitude thrusters are not appropriately grouped, some or all of the navigation modes may fail.\\
+It is the responsibility of the vessel designer to make sure that thrusters are grouped in a sensible way. For example, whenever the user presses \keystroke{+}$_{Num}$, all thrusters in \textit{THGROUP\_MAIN} will fire. If the thrusters grouped in \textit{THGROUP\_MAIN} behave in an unexpected or non-intuitive way it will be confusing to the user. Furthermore, if attitude thrusters are not appropriately grouped, some or all of the navigation modes may fail.\\
 \\
 To group thrusters, use the \textit{CreateThrusterGroup} command:
 
@@ -419,13 +418,9 @@ A typical ramjet engine is composed of 3 sections:
 \noindent
 The temperatures and pressures in the three parts of the engine (diffuser, burner and exhaust) can be calculated in the following form:
 
-%TODO place equations into columns
-\[ T_{d} = T_{\infty}\left(1 + \frac{\gamma - 1}{2} M_{\infty}^{2}\right) \]
-\[ T_{b} = max(T_{b0},T_{d}) \]
-\[ T_{e} = T_{b}\left(\frac{p_{e}}{p_{b}}\right)^{(\gamma - 1) / \gamma} \]
-\[ p_{d} = p_{\infty}\left(\frac{T_{d}}{T_{\infty}}\right)^{\gamma / (\gamma - 1)} \]
-\[ p_{b} = p_{d} \]
-\[ p_{e} = p_{\infty} \]
+\[ T_{d} = T_{\infty}\left(1 + \frac{\gamma - 1}{2} M_{\infty}^{2}\right) \qquad p_{d} = p_{\infty}\left(\frac{T_{d}}{T_{\infty}}\right)^{\gamma / (\gamma - 1)} \]
+\[ T_{b} = max(T_{b0},T_{d}) \qquad p_{b} = p_{d} \]
+\[ T_{e} = T_{b}\left(\frac{p_{e}}{p_{b}}\right)^{(\gamma - 1) / \gamma} \qquad p_{e} = p_{\infty} \]
 
 \noindent
 where $M_{\infty}$ is the freestream Mach number, $\gamma$ is the ratio of specific heats, and $T_{b0}$ is the burner temperature limit, an engine design parameter defined by the heat resistance of the combustion chamber material. Note that if at high velocities $T_{d} > T_{b0}$, the engine will start to overheat purely from the isentropic compression in the diffuser, without any combustion taking place! The figure below shows an example for the temperature distribution in the engine compartments as a function of freestream Mach number. The example assumes a burner temperature limit of $T_{b0}$ = 3200 K. In this case, the limiting velocity is $v$ = Mach 8.2.
@@ -731,8 +726,7 @@ Angular drag is determined by the vessel shape. Developers can adjust the effect
 
 
 \subsubsection{API interface for airfoil definition}
-% TODO text overflow
-To define the lift and drag characteristics for a spacecraft in the DLL module, use the \textit{VESSEL::CreateAirfoil} method. An airfoil is defined as a cross section through a wing. In Orbiter, we use the term airfoil for any components of the vessel which produce lift and/or drag forces. Multiple airfoils can be defined for a single vessel (for example for the left and right wing, the body, the horizontal and vertical stabilizers in the tail, etc.). It is usually best to keep the number of airfoils low to keep the flight model predictable and to improve simulation performance.\\
+To define the lift and drag characteristics for a spacecraft in the DLL module, use the \textit{VESSEL::\-CreateAirfoil} method. An airfoil is defined as a cross section through a wing. In Orbiter, we use the term airfoil for any components of the vessel which produce lift and/or drag forces. Multiple airfoils can be defined for a single vessel (for example for the left and right wing, the body, the horizontal and vertical stabilizers in the tail, etc.). It is usually best to keep the number of airfoils low to keep the flight model predictable and to improve simulation performance.\\
 \\
 Orbiter distinguishes two different types of airfoil orientations: airfoils which create vertical lift (e.g. wings) and airfoils which create horizontal "lift", e.g. vertical stabilisers. Even vessels without any wings or other aerodynamic surfaces should define at least one horizontal and one vertical airfoil to define their atmospheric drag behaviour (even blunt objects such as reentry capsules which have no similarity to an aircraft produce drag and lift forces).\\
 \\
@@ -1485,8 +1479,7 @@ bool MyVessel::clbkLoadPanel( int id )
 \end{lstlisting}
 
 \noindent
-% TODO fix text overflow
-The button areas have been defined with the \textit{PANEL\_MOUSE\_LBPRESSED} flag in addition to \textit{PANEL\_MOUSE\_LBDOWN}, so that continued mouse presses can be recorded when required.\\
+The button areas have been defined with the \textit{PANEL\_MOUSE\_LBPRESSED} flag in addition to \textit{PANEL\-\_MOUSE\_LBDOWN}, so that continued mouse presses can be recorded when required.\\
 \\
 Mouse button events now need to be processed in the mouse event handler:
 

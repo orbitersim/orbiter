@@ -666,8 +666,7 @@ bool MyAtmosphere::clbkParams( const PRM_IN* prm_in, PRM_OUT* prm_out )
 \end{lstlisting}
 
 \noindent
-%TODO add tech note earth atm link
-The above example serves only as an illustration. The actual atmosphere models provided with the Orbiter distribution are more complex. For some background on the supported Earth atmosphere models, see the technical note in TODO.\\
+The above example serves only as an illustration. The actual atmosphere models provided with the Orbiter distribution are more complex. For some background on the supported Earth atmosphere models, see "Earth Atmosphere Model" in Orbiter Technical Reference.\\
 Now we need to link the atmosphere model into the celestial body interface. This can be done with the \textit{SetAtmosphere} function of the \textit{CELBODY2} class. Add the following statement to the \textit{clbkInit} method of your \textit{MyPlanet} definition:
 
 \begin{lstlisting}
@@ -782,8 +781,7 @@ Of course, replicating an atmosphere should be regarded as a quick and dirty tri
 
 
 \subsubsection{Earth default atmosphere models}
-%TODO add tech note earth atm link
-The Orbiter distribution contains three Earth atmosphere models that can be selected by the user from the Extra tab in the Launchpad dialog. See TODO for further details on the different models.\\
+The Orbiter distribution contains three Earth atmosphere models that can be selected by the user from the Extra tab in the Launchpad dialog. See "Earth Atmosphere Model" in Orbiter Technical Reference for further details on the different models.\\
 \textbf{Jacchia71-Gill Atmosphere Model.} This is an implementation of the Jacchia-71 (J71) model\cite{jacchia71}, using a polynomial series approximation by Gill\cite{gill96}. It uses a static US Standard Atmosphere model below 90km, and a diffusion-equilibrium solution be­tween 90 and 2500km altitude. The only model parameter is the exospheric temperature.\\
 \textbf{NRLMSISE-00 Atmosphere Model.} This model is based on the MSISE90 model, with the addition of further corrections based on observation data. MSISE90 provides the neutral temperature and density from ground level to thermospheric altitudes. Unlike the Jacchia models, the low-altitude data are not static, but vary with location.\\
 \textbf{Orbiter 2006 Legacy model.} This is the model that was used in the Orbiter 2006 Edition. It is based on a static standard model\cite{anderson2000} below 105km, and assumes constant temperature and exponentially decaying density and pressure between 105 and 200km. This model underestimates density and pressure above $\sim$120km, which reduces the orbit decay of object in low Earth orbit.\\
