@@ -1,4 +1,4 @@
-\documentclass[Orbiter Developer Manual.tex]{subfiles}
+\documentclass[Orbiter User Manual.tex]{subfiles}
 \begin{document}
 
 \section{Advanced Configuration}
@@ -6,7 +6,6 @@ A more advanced configuration is available by editing Orbiter's configuration fi
 
 
 \subsection{Main configuration file}
-\label{ssec:main_cfg}
 The main configuration file Orbiter.cfg is located in the Orbiter main directory. It contains general settings for graphics modes, subdirectory locations, simulation parameters, etc. Most of the options in this file are accessible via the Orbiter Launchpad dialog, and manual editing of the file should rarely be necessary.\\
 Orbiter overwrites the main configuration file at the start and end of each simulation session, to store any changes made by the user in the Launchpad dialog.\\
 Normally, only entries whose values differ from their default setting are written to Orbiter.cfg. To force Orbiter to write out all values (useful for debugging or manually editing the file), open Orbiter.cfg in a text editor, change the value of EchoAllParams to TRUE, and save. Subsequently, Orbiter will write all configuration entries to the file.
