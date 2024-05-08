@@ -33,7 +33,6 @@ add_dependencies(Orbitersdk
 )
 
 if(ORBITER_MAKE_DOC)
-	add_subdirectory(doc)
 	if(Doxygen_FOUND)
 		add_subdirectory(doxygen)
 	endif()
