@@ -2,11 +2,12 @@ set(name "Orbiter Developer Manual")
 
 set(src_path ${CMAKE_CURRENT_SOURCE_DIR}/${name}.tex)
 set(out_path ${CMAKE_CURRENT_BINARY_DIR}/${name}.pdf)
-set(pdflatex_cmd ${PDFLATEX_COMPILER} -output-directory=${CMAKE_CURRENT_BINARY_DIR} ${src_path})
+set(pdflatex_cmd ${PDFLATEX_COMPILER} --synctex=1 -output-directory=${CMAKE_CURRENT_BINARY_DIR} ${src_path})
 set(bibtex_cmd ${BIBTEX_COMPILER} ${CMAKE_CURRENT_BINARY_DIR}/${name})
 
 add_custom_command(
 	OUTPUT ${out_path}
+	COMMAND ${pdflatex_cmd}
 	COMMAND ${bibtex_cmd}
 	COMMAND ${pdflatex_cmd}
 	DEPENDS ${src_path}
