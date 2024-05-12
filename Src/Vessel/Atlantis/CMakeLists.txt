@@ -25,7 +25,6 @@ set(Exclude
 install(FILES Common.cpp DESTINATION ${ORBITER_SMAPLES}/Atlantis)
 install(DIRECTORY Bitmaps DESTINATION ${ORBITER_SMAPLES}/Atlantis ${Exclude})
 install(DIRECTORY Data DESTINATION ${ORBITER_SMAPLES}/Atlantis ${Exclude})
-install(DIRECTORY Doc DESTINATION ${ORBITER_SMAPLES}/Atlantis ${Exclude})
 install(DIRECTORY Help DESTINATION ${ORBITER_SMAPLES}/Atlantis ${Exclude})
 
 set(IgnoreFiles
