@@ -1025,13 +1025,13 @@ float Scene::ComputeNearClipPlane()
 // - Setup local light sources
 // ===========================================================================================
 
-void Scene::UpdateCamVis()
+bool Scene::UpdateCamVis()
 {
 
 	// Update camera parameters --------------------------------------
 	// and call vObject::Update() for all visuals
 	//
-	UpdateCameraFromOrbiter(RENDERPASS_MAINSCENE);
+	bool bRet = UpdateCameraFromOrbiter(RENDERPASS_MAINSCENE);
 
 	if (Camera.hObj_proxy) D3D9Effect::UpdateEffectCamera(Camera.hObj_proxy);
 
@@ -1103,6 +1103,8 @@ void Scene::UpdateCamVis()
 	int distcomp(const void *arg1, const void *arg2);
 
 	qsort((void*)plist, nplanets, sizeof(PList), distcomp);
+
+	return bRet && (vFocus != nullptr);
 }
 
 // ===========================================================================================
@@ -1242,7 +1244,13 @@ void Scene::RenderMainScene()
 	double scene_time = D3D9GetTime();
 	D3D9SetTime(D3D9Stats.Timer.CamVis, scene_time);
 
-	UpdateCamVis();
+	if (!UpdateCamVis()) {
+		if (SUCCEEDED(gc->BeginScene())) {
+			HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0L));
+			gc->EndScene();
+		}
+		return; // Scene not yet properly inilialized, return
+	}
 
 
 	// Update Vessel Animations
@@ -1772,8 +1780,7 @@ void Scene::RenderMainScene()
 	D3D9Effect::UpdateEffectCamera(Camera.hObj_proxy);
 
 
-	D3D9Pad* pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
-	m_celSphere->EnsureMarkerDrawingContext((oapi::Sketchpad**)&pSketch, 0, m_celSphere->MarkerColor(0), m_celSphere->MarkerPen(0));
+	auto RenderMarkers = RenderList;
 
 	// Render the vessels inside the shadows
 	//
@@ -1794,7 +1801,6 @@ void Scene::RenderMainScene()
 			while (it != RenderList.end()) {
 				if ((*it)->IsInsideShadows()) {
 					(*it)->Render(pDevice);
-					RenderVesselMarker((*it), pSketch);
 					it = RenderList.erase(it);
 				}
 				else ++it;
@@ -1841,7 +1847,6 @@ void Scene::RenderMainScene()
 				while (it != RenderList.end()) {
 					if ((*it)->IsInsideShadows()) {
 						(*it)->Render(pDevice);
-						RenderVesselMarker((*it), pSketch);
 						Intersect.remove((*it));
 						it = RenderList.erase(it);
 					}
@@ -1858,11 +1863,15 @@ void Scene::RenderMainScene()
 
 	while (RenderList.empty()==false) {
 		RenderList.front()->Render(pDevice);
-		RenderVesselMarker(RenderList.front(), pSketch);
 		RenderList.pop_front();
 	}
 
-	pSketch->EndDrawing();	// SKETCHPAD_LABELS
+	D3D9Pad* pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
+	if (pSketch) {
+		m_celSphere->EnsureMarkerDrawingContext((oapi::Sketchpad**)&pSketch, 0, m_celSphere->MarkerColor(0), m_celSphere->MarkerPen(0));
+		for (auto x : RenderMarkers) RenderVesselMarker(x, pSketch);
+		pSketch->EndDrawing();	// SKETCHPAD_LABELS
+	}
 
 
 
@@ -3367,7 +3376,7 @@ bool Scene::CameraPan(VECTOR3 pan, double speed)
 
 // ===========================================================================================
 //
-void Scene::UpdateCameraFromOrbiter(DWORD dwPass)
+bool Scene::UpdateCameraFromOrbiter(DWORD dwPass)
 {
 	MATRIX3 grot;
 	VECTOR3 pos;
@@ -3410,14 +3419,14 @@ void Scene::UpdateCameraFromOrbiter(DWORD dwPass)
 
 	for (VOBJREC *pv = vobjFirst; pv; pv = pv->next) pv->vobj->Update(true);
 
-	SetupInternalCamera(&Camera.mView, NULL, oapiCameraAperture(), double(viewH)/double(viewW));
+	return SetupInternalCamera(&Camera.mView, NULL, oapiCameraAperture(), double(viewH)/double(viewW));
 }
 
 
 
 // ===========================================================================================
 //
-void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, double asp)
+bool Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, double asp)
 {
 
 	// Update camera orientation if a new matrix is provided
@@ -3485,7 +3494,12 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 
 	
 	// Something is very wrong... abort...
-	if (Camera.hObj_proxy == NULL || Camera.hObj_proxy == NULL || Camera.hNear == NULL) return;
+	if (Camera.hGravRef == NULL || Camera.hObj_proxy == NULL || Camera.hNear == NULL) {
+		assert(false); return false;
+	}
+	if (Camera.vGravRef == NULL || Camera.vProxy == NULL || Camera.vNear == NULL) {
+		return false;
+	}
 
 	// Camera altitude over the proxy
 	VECTOR3 pos; MATRIX3 grot; double rad;
@@ -3496,10 +3510,9 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 
 	Camera.alt_proxy = dist(Camera.pos, pos) - oapiGetSize(Camera.hObj_proxy);
 
-	if (Camera.vProxy) {
-		if (Camera.vProxy->Type() == OBJTP_PLANET) Camera.vProxy->GetElevation(Camera.lng, Camera.lat, &rad);
-	}
-
+	if (Camera.vProxy->Type() == OBJTP_PLANET) 
+		rad = oapiSurfaceElevation(Camera.hObj_proxy, Camera.lng, Camera.lat);
+	
 	Camera.elev = Camera.alt_proxy - rad;
 
 	// Camera altitude over the proxy
@@ -3512,6 +3525,8 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 	// Finally update world matrices from all visuals
 	//
 	if (gpos) for (VOBJREC *pv = vobjFirst; pv; pv = pv->next) pv->vobj->ReOrigin(Camera.pos);
+
+	return true;
 }
 
 

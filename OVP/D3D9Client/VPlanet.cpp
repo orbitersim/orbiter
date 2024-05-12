@@ -515,15 +515,15 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene) :
 	// Check texture directory
 	GetClient()->PlanetTexturePath(GetName(), path);
 	auto x = filesystem::status(path);
-	bool bExists = filesystem::is_directory(x);
+	bHasTextures = filesystem::is_directory(x);
 
 	// Check *.tex file
 	string tf = string(GetName()) + ".tex";
 	GetClient()->PlanetTexturePath(tf.c_str(), path);
 	auto y = filesystem::status(path);
-	bExists |= filesystem::exists(y);
+	bHasTextures |= filesystem::exists(y);
 	
-	if (!bExists) {
+	if (!bHasTextures) {
 		VESSEL* vss = oapiGetFocusInterface();
 		sprintf_s(msg, sizeof(msg), "[WARNING] Surface textures are missing for %s", GetName());
 		if (vss && (vss->GetGravityRef() == hObj)) {
@@ -571,6 +571,16 @@ vPlanet::~vPlanet ()
 }
 
 
+// ===========================================================================================
+//
+void vPlanet::Activate(bool isactive)
+{
+	vObject::Activate(isactive);
+	if (!isactive) {
+		if (surfmgr2) surfmgr2->Unload(1);
+		if (cloudmgr2) cloudmgr2->Unload(1);
+	}
+}
 
 
 
@@ -746,10 +756,6 @@ bool vPlanet::Update (bool bMainScene)
 
 	vObject::Update(bMainScene);
 
-	// Update Atmospheric Scattering Tables
-	UpdateScatter();
-
-	
 	if (patchres==0) return true;
 
 	int i, j;
@@ -982,6 +988,8 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 		prm.SunDir		= _D3DXVECTOR3(SunDirection());
 
 		SetupEclipse();
+
+		if (surfmgr2 && scn->GetRenderPass() == RENDERPASS_MAINSCENE) UpdateScatter();
 
 		if (ringmgr) {
 			ringmgr->Render(dev, mWorld, false);
@@ -1331,8 +1339,8 @@ void vPlanet::SetupEclipse()
 		float s = sunsize / 1e6f;
 		float p = plnsize / 1e6f;
 
-		D3D9DebugLog("Eclipse of %s by %s Sun(%1.1fGm) %s(%1.1fGm)",
-			GetName(), vE->GetName(), s, vE->GetName(), p);
+		//D3D9DebugLog("Eclipse of %s by %s Sun(%1.1fGm) %s(%1.1fGm)",
+		//	GetName(), vE->GetName(), s, vE->GetName(), p);
 	}
 	else {
 		Eclipse.bEnable = false;

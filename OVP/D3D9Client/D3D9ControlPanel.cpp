@@ -15,6 +15,8 @@
 #include "Mesh.h"
 #include "psapi.h"
 #include "DebugControls.h"
+#include <sstream>
+#include <string>
 
 using namespace oapi;
 
@@ -90,10 +92,9 @@ void D3D9Client::DrawTimeBar(double t, double s, double f, DWORD color, const ch
 
 void D3D9Client::RenderControlPanel()
 {
+	static std::map<DWORD, DWORD> TileBuf;
 	static const char *OnOff[]={"Off","On"};
 	static const char *SkpU[]={"Auto","GDI"};
-
-//	static double sim_time  = 0.0;
 
 	LPDIRECT3DDEVICE9 dev = pDevice;
 
@@ -166,30 +167,30 @@ void D3D9Client::RenderControlPanel()
 	Label("Render Textures......: %u (%u MB)", rttex_count, rttex_size>>20);
 	Label("Dual Layer Surfaces..: %u (%u MB)", duall_count, duall_size>>20);
 	Label("Plain Textures.......: %u (%u MB)", textr_count, textr_size>>20);
-
-	size_t mesh_count = MeshCatalog.size();
-	size_t tile_count = TileCatalog->CountEntries();
-	DWORD tile_size = 0;
-	DWORD tile_render_countA = 0;
-	DWORD tile_render_countB = 0;
 	
-	for (auto it = TileCatalog->cbegin(); it != TileCatalog->cend(); ++it) {
-		if (*it) tile_size += TextureSizeInBytes(*it);
-	}
-
-	for (DWORD i = 0; i<32; i++) {
-		tile_render_countA += D3D9Stats.Old.Tiles[i];
-		tile_render_countB += D3D9Stats.Surf.Tiles[i];
-	}
-		
 	LabelPos += 22;
-	Label("Tile Textures Loaded.: %u (%u MB)", tile_count, tile_size>>20); 
-	Label("Tiles Rendered (Old).: %u (%u kVtx)", tile_render_countA, D3D9Stats.Old.Verts>>10);
-	Label("Tiles Rendered (New).: %u (%u kVtx)", tile_render_countB, D3D9Stats.Surf.Verts>>10);
-	Label("Tiles Allocated (New): %u", D3D9Stats.TilesAllocated);
-	Label("Tile Vertex Cache....: %u (%u MB)", D3D9Stats.TilesCached, D3D9Stats.TilesCachedMB>>20);
 
+	size_t tt_c = g_pTexmgr_tt->UsedSize() + g_pTexmgr_tt->FreeSize();
+	size_t tv_c = g_pVtxmgr_vb->UsedSize() + g_pVtxmgr_vb->FreeSize();
 
+	std::stringstream tiles{};
+
+	for (auto& x : D3D9Stats.TilesRendered) {
+		if (x.second != 0) TileBuf[x.first] = x.second;
+		x.second = 0;
+	}
+
+	if (D3D9Stats.TilesRendered.size()) {
+		if (TileBuf.count(RENDERPASS_MAINSCENE)) tiles << "Main[" << TileBuf[RENDERPASS_MAINSCENE] << "] ";
+		if (TileBuf.count(RENDERPASS_CUSTOMCAM)) tiles << "Cams[" << TileBuf[RENDERPASS_CUSTOMCAM] << "] ";
+		if (TileBuf.count(RENDERPASS_ENVCAM)) tiles << "Env[" << TileBuf[RENDERPASS_ENVCAM] << "] ";
+	}
+
+	Label("Tile Texture Cache...: Used[%u] Free[%u] Capacity (%u MB)", g_pTexmgr_tt->UsedCount(), g_pTexmgr_tt->FreeCount(), tt_c >> 20);
+	Label("Tile Vertex Cache....: Used[%u] Free[%u] Capacity (%u MB)", g_pVtxmgr_vb->UsedCount(), g_pVtxmgr_vb->FreeCount(), tv_c >> 20);
+	Label("Tiles Allocated......: %u", D3D9Stats.TilesAllocated);
+	Label("Tiles Renderred......: %s", tiles.str().c_str());
+	
 	DWORD tot_verts = 0;
 	DWORD tot_trans = 0;
 	DWORD tot_group = 0;
@@ -209,8 +210,7 @@ void D3D9Client::RenderControlPanel()
 	static double LockPeak = 0.0;
 
 	LabelPos += 22;
-	Label("Meshes Loaded........: %u ", mesh_count);
-	Label("Vertices Allocated...: %u (%u MB)", tot_verts, (tot_verts*sizeof(NMVERTEX))>>20); 
+	Label("Mesh Vtx Allocated...: %u (%u MB)", tot_verts, (tot_verts*sizeof(NMVERTEX))>>20); 
 	Label("Groups Allocated.....: %u", tot_group);
 	Label("Group Tarnsforms.....: %u", tot_trans); 
 	Label("Mesh vertices render.: %u", verts);
@@ -290,24 +290,6 @@ void D3D9Client::RenderControlPanel()
 		outside = total - (scene + update + display + lock + blit + getdc);
 
 		scale   = double(viewW - 16) / total;
-
-		// SCENE --------------------------------
-//		prt_cam = D3D9Stats.Timer.CustCams.time;
-//		prt_env = D3D9Stats.Timer.EnvMap.time;
-//		prt_blr = D3D9Stats.Timer.EnvBlur.time;
-		// -------------------------------------
-//		pln_srf = D3D9Stats.Timer.Surface.time;
-//		pln_cld = D3D9Stats.Timer.Clouds.time;
-		// -------------------------------------
-//		scn_cam = D3D9Stats.Timer.CamVis.time;
-//		scn_pst = D3D9Stats.Timer.PostProcess.time;
-//		scn_ves = D3D9Stats.Timer.Vessels.time;
-//		scn_vc  = D3D9Stats.Timer.VirtualCP.time;
-//		scn_hud = D3D9Stats.Timer.HUDOverlay.time;
-
-		// -------------------------------------
-		//scene -= prt_cam + prt_env + prt_blr + pln_srf + pln_cld + scn_cam + scn_pst + scn_ves + scn_vc + scn_hud;
-		// At this point scene contains a time spend in unmeasured sections
 
 		// -------------------------------------
 		Reset(D3D9Stats.Timer.CamVis);

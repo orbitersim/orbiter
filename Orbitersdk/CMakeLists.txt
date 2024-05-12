@@ -2,6 +2,7 @@
 # Licensed under the MIT License
 
 add_subdirectory(samples)
+add_subdirectory(sample_build)
 
 file(GLOB_RECURSE includes
 	RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
@@ -41,3 +42,9 @@ endif()
 install(DIRECTORY html include
 	DESTINATION ${ORBITER_INSTALL_SDK_DIR}
 )
+
+# Copy Prebuild PDFs ------------------------------------------------------
+
+install(FILES doc/Orbiter2DGraphics.pdf DESTINATION ${ORBITER_INSTALL_SDK_DIR}/doc)
+install(FILES doc/BuildingSamples.pdf DESTINATION ${ORBITER_INSTALL_SDK_DIR}/doc)
+

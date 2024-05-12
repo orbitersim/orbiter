@@ -585,7 +585,10 @@ INT_PTR CALLBACK TabTarget::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 			GetWindowText (GetDlgItem (hWnd, IDC_CAM_TGT_INPUT), cbuf, 256);
 			Body *obj = g_psys->GetObj (cbuf, true);
 			if (!obj) obj = g_psys->GetBase (cbuf, true);
-			if ( obj) g_pOrbiter->SetView (obj, 1);
+			if (obj) {
+				g_camera->SetDistance(2.0);
+				g_pOrbiter->SetView(obj, 1);
+			}
 			else {
 				SetWindowText (GetDlgItem (hWnd, IDC_CAM_TGT_INPUT), g_camera->Target()->Name());
 				MessageBeep (MB_ICONEXCLAMATION);
@@ -593,12 +596,14 @@ INT_PTR CALLBACK TabTarget::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 			} return TRUE;
 		case IDC_CAM_TGT_FCOCKPIT:
 			if (HIWORD(wParam) == BN_CLICKED) {
+				g_camera->SetDistance(2.0);
 				g_pOrbiter->SetView (g_focusobj, 0);
 				return TRUE;
 			}
 			break;
 		case IDC_CAM_TGT_FEXTERN:
 			if (HIWORD(wParam) == BN_CLICKED) {
+				g_camera->SetDistance(2.0);
 				g_pOrbiter->SetView (g_focusobj, 1);
 				return TRUE;
 			}

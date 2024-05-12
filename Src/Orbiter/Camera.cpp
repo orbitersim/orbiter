@@ -86,7 +86,7 @@ Camera::Camera (double _nearplane, double _farplane)
 	VMAT_identity (view_mat);
 	SetFrustumLimits (nearplane, farplane);
 	ECC = 0;
-	etile.resize(2);
+	etile.resize(8);
 }
 
 Camera::~Camera ()
@@ -526,7 +526,7 @@ void Camera::ShiftDist (double shift)
 {
 	double fact;
 	if (external_view && extmode != CAMERA_GROUNDOBSERVER) {
-		double scale = max (1e-6, (rdist-1.0)/rdist); // slow down when approaching target radius
+		double scale = max (1e-4, (rdist-1.0)/rdist); // slow down when approaching target radius
 		scale = max(scale, 1.0/target->Size());       // move at least 1m/s
 		shift *= scale;
 	}
@@ -637,6 +637,11 @@ void Camera::SetCockpitDir (double ph, double th)
 	}
 	eyeofs = mul (rrot, Vector (0,0.1,0.08)) - eyeofs0;
 	if (!isStdDir) eyeofs = mul (rrot0, eyeofs);
+}
+
+void Camera::SetDistance(double rd)
+{
+	rdist = rd;
 }
 
 void Camera::ResetCockpitDir (bool smooth)

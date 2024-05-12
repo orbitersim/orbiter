@@ -32,31 +32,46 @@ CloudTile::CloudTile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 
 CloudTile::~CloudTile ()
 {
+	if (tex && owntex) g_pTexmgr_tt->Free(tex);
 }
 
 // -----------------------------------------------------------------------
 
 void CloudTile::PreLoad()
 {
+	assert(tex == nullptr);
 
 	// Configure microtexture range for "Water texture" and "Cloud microtexture".
 	GetParentMicroTexRange(&microrange);
 	
-	bool ok = false;
+	LPDIRECT3DDEVICE9  pDev = mgr->Dev();
+	LPDIRECT3DTEXTURE9 pSysSrf = nullptr;
 
 	if (cmgr->DoLoadIndividualFiles(0)) { // try loading from individual tile file
 		char path[MAX_PATH];
 		sprintf_s (path, MAX_PATH, "%s\\Cloud\\%02d\\%06d\\%06d.dds", mgr->DataRootDir().c_str(), lvl+4, ilat, ilng);
-		ok = LoadTextureFile(path, &pPreSrf, false);
+		LoadTextureFile(path, &pSysSrf);
 	}
-	if (!ok && cmgr->ZTreeManager(0)) { // try loading from compressed archive
+	if (!pSysSrf && cmgr->ZTreeManager(0)) { // try loading from compressed archive
 		BYTE *buf;
 		DWORD ndata = cmgr->ZTreeManager(0)->ReadData(lvl+4, ilat, ilng, &buf);
 		if (ndata) {
-			LoadTextureFromMemory(buf, ndata, &pPreSrf, false);
+			LoadTextureFromMemory(buf, ndata, &pSysSrf);
 			cmgr->ZTreeManager(0)->ReleaseData(buf);
 		}
 	}
+
+	owntex = true;
+
+	if (CreateTexture(pDev, pSysSrf, &tex) != true) {
+		if (GetParentSubTexRange(&texrange)) {
+			tex = getParent()->Tex();
+			owntex = false;
+		}
+		else tex = nullptr;
+	}
+	
+	SAFE_RELEASE(pSysSrf);
 }
 
 
@@ -65,17 +80,6 @@ void CloudTile::PreLoad()
 void CloudTile::Load ()
 {
 	
-	LPDIRECT3DDEVICE9 pDev = mgr->Dev();
-
-	owntex = true;
-
-	if (CreateTexture(pDev, pPreSrf, &tex) != true) {
-		if (GetParentSubTexRange (&texrange)) {
-			tex = getParent()->Tex();
-			owntex = false;
-		} else tex = 0;
-	} else TileCatalog->Add(tex);
-
 	bool shift_origin = (lvl >= 4);
 	int res = mgr->GridRes();
 
@@ -95,6 +99,8 @@ void CloudTile::Load ()
 
 void CloudTile::Render()
 {
+	Tile::Render();
+
 	LPDIRECT3DDEVICE9 pDev = mgr->Dev();
 	vPlanet* vPlanet = mgr->GetPlanet();
 	PlanetShader* pShader = mgr->GetShader();
@@ -106,25 +112,31 @@ void CloudTile::Render()
 	// Feed tile specific data to shaders
 	//
 	// ----------------------------------------------------------------------
-	pShader->SetTexture(pShader->tDiff, tex, IPF_ANISOTROPIC | IPF_CLAMP, Config->Anisotrophy);
 
-	sp->vCloudOff = GetTexRangeDX(&texrange);
-	sp->vMicroOff = GetTexRangeDX(&microrange);
-	sp->fAlpha = 1.0f;
-	sp->fBeta = 1.0f;
-	sp->mWorld = mWorld;
+	bool bTexture = (tex && vPlanet->HasTextures());
 
-	// -------------------------------------------------------------------
-	// render surface mesh
-	
-	pShader->SetPSConstants(pShader->Prm, sp, sizeof(ShaderParams));
-	pShader->SetVSConstants(pShader->PrmVS, sp, sizeof(ShaderParams));
+	if (bTexture)
+	{
+		pShader->SetTexture(pShader->tDiff, tex, IPF_ANISOTROPIC | IPF_CLAMP, Config->Anisotrophy);
 
-	pShader->UpdateTextures();
+		sp->vCloudOff = GetTexRangeDX(&texrange);
+		sp->vMicroOff = GetTexRangeDX(&microrange);
+		sp->fAlpha = 1.0f;
+		sp->fBeta = 1.0f;
+		sp->mWorld = mWorld;
 
-	pDev->SetStreamSource(0, mesh->pVB, 0, sizeof(VERTEX_2TEX));
-	pDev->SetIndices(mesh->pIB);
-	pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mesh->nv, 0, mesh->nf);
+		// -------------------------------------------------------------------
+		// render surface mesh
+
+		pShader->SetPSConstants(pShader->Prm, sp, sizeof(ShaderParams));
+		pShader->SetVSConstants(pShader->PrmVS, sp, sizeof(ShaderParams));
+
+		pShader->UpdateTextures();
+
+		pDev->SetStreamSource(0, mesh->pVB, 0, sizeof(VERTEX_2TEX));
+		pDev->SetIndices(mesh->pIB);
+		pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mesh->nv, 0, mesh->nf);
+	}
 }
 
 
@@ -180,8 +192,8 @@ void TileManager2<CloudTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlan
 	// Select cloud layer shader
 	pShader = (cfg == PLT_GIANT ? vp->GetShader(PLT_G_CLOUDS) : vp->GetShader(PLT_CLOUDS));
 	
-	pShader->ClearTextures();
 	pShader->Setup(pPatchVertexDecl, false, 1);
+	pShader->ClearTextures();
 
 
 	// Check Eclipse conditions -------------------------------------------
@@ -276,4 +288,13 @@ Tile * TileManager2<CloudTile>::SearchTile (double lng, double lat, int maxlvl, 
 {
 	if (lng<0) return SearchTileSub(&tiletree[0], lng, lat, maxlvl, bOwntex);
 	else	   return SearchTileSub(&tiletree[1], lng, lat, maxlvl, bOwntex);
+}
+
+// -----------------------------------------------------------------------
+
+template<>
+void TileManager2<CloudTile>::Unload(int lvl)
+{
+	tiletree[0].DelAbove(lvl);
+	tiletree[1].DelAbove(lvl);
 }

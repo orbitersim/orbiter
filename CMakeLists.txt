@@ -261,11 +261,6 @@ option(ORBITER_MAKE_TESTS
 	ON
 )
 
-option(ORBITER_MAKE_SDK_SAMPLES
-	"Build the SDK sample projects"
-	OFF
-)
-
 option(ORBITER_SANITIZER
 	"Build binaries with Address Sanitizer"
 	OFF

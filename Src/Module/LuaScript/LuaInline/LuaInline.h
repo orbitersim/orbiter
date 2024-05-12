@@ -47,6 +47,7 @@ public:
 
 	void clbkSimulationEnd ();
 	void clbkPostStep (double simt, double simdt, double mjd);
+	void clbkSimulationStart (RenderMode mode);
 
 	Environment *AddInterpreter ();
 	int DelInterpreter (Environment *env);

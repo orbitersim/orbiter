@@ -698,6 +698,11 @@ void vPlanet::UpdateScatter()
 	cp.TW_Terrain = float(atmo->tw_bri);
 	cp.TW_Dst = float(atmo->tw_dst);
 
+	cp.wNrmStr = 1.0f / float(atmo->wnrml);
+	cp.wSpec = float(atmo->wspec);
+	cp.wBrightness = float(atmo->wtrans);
+	cp.wBoost = float(atmo->wboost);
+
 	if (cp.CamAlt < prm.cloudalt) {
 		float SMi = cp.CloudAlt;
 		float SMa = min(100e3f, cp.HrzDst); // Semi-major axis
@@ -906,7 +911,6 @@ ScatterParams* vPlanet::GetAtmoParams(int mode)
 		CPrm.trb = lerp(SPrm.trb, OPrm.trb, alt);
 		CPrm.mie = lerp(SPrm.mie, OPrm.mie, alt);
 		CPrm.mphase = lerp(SPrm.mphase, OPrm.mphase, alt);
-		//CPrm.hazei = lerp(SPrm.hazei, OPrm.hazei, alt);
 		CPrm.mpow = lerp(SPrm.mpow, OPrm.mpow, alt);
 		CPrm.rayrat = lerp(SPrm.rayrat, OPrm.rayrat, alt);
 		CPrm.ray = lerp(SPrm.ray, OPrm.ray, alt);
@@ -919,6 +923,11 @@ ScatterParams* vPlanet::GetAtmoParams(int mode)
 		CPrm.tw_bri = lerp(SPrm.tw_bri, OPrm.tw_bri, alt);
 		CPrm.green = lerp(SPrm.green, OPrm.green, alt);
 		CPrm.tw_dst = lerp(SPrm.tw_dst, OPrm.tw_dst, alt);
+		// ----------------------------------------------------
+		CPrm.wnrml = lerp(SPrm.wnrml, OPrm.wnrml, alt);
+		CPrm.wspec = lerp(SPrm.wspec, OPrm.wspec, alt);
+		CPrm.wtrans = lerp(SPrm.wtrans, OPrm.wtrans, alt);
+		CPrm.wboost = lerp(SPrm.wboost, OPrm.wboost, alt);
 	}
 	else {
 		alt = 1.0 - halt;
@@ -931,7 +940,6 @@ ScatterParams* vPlanet::GetAtmoParams(int mode)
 		CPrm.trb = lerp(HPrm.trb, OPrm.trb, alt);
 		CPrm.mie = lerp(HPrm.mie, OPrm.mie, alt);
 		CPrm.mphase = lerp(HPrm.mphase, OPrm.mphase, alt);
-		//CPrm.hazei = lerp(HPrm.hazei, OPrm.hazei, alt);
 		CPrm.mpow = lerp(HPrm.mpow, OPrm.mpow, alt);
 		CPrm.rayrat = lerp(HPrm.rayrat, OPrm.rayrat, alt);
 		CPrm.ray = lerp(HPrm.ray, OPrm.ray, alt);
@@ -944,6 +952,11 @@ ScatterParams* vPlanet::GetAtmoParams(int mode)
 		CPrm.tw_bri = lerp(HPrm.tw_bri, OPrm.tw_bri, alt);
 		CPrm.green = lerp(HPrm.green, OPrm.green, alt);
 		CPrm.tw_dst = lerp(HPrm.tw_dst, OPrm.tw_dst, alt);
+		// ----------------------------------------------------
+		CPrm.wnrml = lerp(HPrm.wnrml, OPrm.wnrml, alt);
+		CPrm.wspec = lerp(HPrm.wspec, OPrm.wspec, alt);
+		CPrm.wtrans = lerp(HPrm.wtrans, OPrm.wtrans, alt);
+		CPrm.wboost = lerp(HPrm.wboost, OPrm.wboost, alt);
 	}
 
 	bool bBelow = cp.CamAlt < prm.cloudalt;
@@ -1024,6 +1037,11 @@ void vPlanet::SaveStruct(FILEHANDLE hFile, ScatterParams* prm, int iCnf)
 	oapiWriteItem_float(hFile, Label("TGamma"), prm->tgamma);
 	oapiWriteItem_float(hFile, Label("Tr3D"), prm->tr3D);
 	// -----------------------------------------------------------------
+	oapiWriteItem_float(hFile, Label("WNrml"), prm->wnrml);
+	oapiWriteItem_float(hFile, Label("WSpec"), prm->wspec);
+	oapiWriteItem_float(hFile, Label("WTrsn"), prm->wtrans);
+	oapiWriteItem_float(hFile, Label("WBoost"), prm->wboost);
+	// -----------------------------------------------------------------
 	oapiWriteItem_float(hFile, Label("TWDst"), prm->tw_dst);
 	oapiWriteItem_float(hFile, Label("Green"), prm->green);
 	oapiWriteItem_float(hFile, Label("TWBri"), prm->tw_bri);
@@ -1068,6 +1086,11 @@ void vPlanet::LoadStruct(FILEHANDLE hFile, ScatterParams* prm, int iCnf)
 	oapiReadItem_float(hFile, Label("Expo"), prm->trb);
 	oapiReadItem_float(hFile, Label("TGamma"), prm->tgamma);
 	if (!oapiReadItem_float(hFile, Label("Tr3D"), prm->tr3D)) prm->tr3D = 1.0;
+	// -----------------------------------------------------------------
+	if (!oapiReadItem_float(hFile, Label("WNrml"), prm->wnrml)) prm->wnrml = 1.0;
+	if (!oapiReadItem_float(hFile, Label("WSpec"), prm->wspec)) prm->wspec = 0.8;
+	if (!oapiReadItem_float(hFile, Label("WTrsn"), prm->wtrans)) prm->wtrans = 0.1;
+	if (!oapiReadItem_float(hFile, Label("WBoost"), prm->wboost)) prm->wboost = 0.0;
 	// -----------------------------------------------------------------
 	oapiReadItem_float(hFile, Label("TWDst"), prm->tw_dst);
 	oapiReadItem_float(hFile, Label("Green"), prm->green);

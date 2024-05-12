@@ -12,6 +12,22 @@
 using std::min;
 using std::max;
 
+typedef struct {
+	NTVERTEX *vtx;  // vertex array
+	int nVtx;       // number of vertices in the array
+	int nVtxUsed;
+	bool owning;    // do we need to handle vtx memory
+} ntv_data;
+
+typedef struct {
+	WORD *idx;  // vertex array
+	int nIdx;       // number of vertices in the array
+	int nIdxUsed;
+	bool owning;    // do we need to handle vtx memory
+} index_data;
+
+
+
 /***
 Module oapi: General Orbiter API interface functions
 @module oapi
@@ -66,6 +82,39 @@ Interpreter::Interpreter ()
 	hWaitMutex = CreateMutex (NULL, FALSE, NULL);
 }
 
+static int traceback(lua_State *L) {
+    lua_getfield(L, LUA_GLOBALSINDEX, "debug");
+    lua_getfield(L, -1, "traceback");
+    lua_pushvalue(L, 1);
+    lua_pushinteger(L, 2);
+    lua_call(L, 2, 1);
+    return 1;
+}
+
+int Interpreter::LuaCall(lua_State *L, int narg, int nres)
+{
+	int base = lua_gettop(L) - narg;
+	lua_pushcfunction(L, traceback);
+	lua_insert(L, base);
+	int res = lua_pcall(L, narg, nres, base);
+	lua_remove(L, base);
+	if(res != 0) {
+		oapiWriteLogError("%s", lua_tostring(L, -1));
+		oapiAnnotationSetText(errorbox, const_cast<char *>(lua_tostring(L, -1)));
+	}
+	return res;
+}
+/*
+int Interpreter::LuaCall(lua_State *L, int nargs, int nres)
+{
+	int res = lua_pcall(L, nargs, nres, 0);
+	if(res != 0) {
+		::oapiAnnotationSetText(errorbox, const_cast<char *>(lua_tostring(L, -1)));
+		oapiWriteLogError("%s", lua_tostring(L, -1));
+	}
+	return res;
+}
+*/
 Interpreter::~Interpreter ()
 {
 	lua_close (L);
@@ -80,9 +129,13 @@ void Interpreter::Initialise ()
 	LoadAPI ();           // load default set of API interface functions
 	LoadVesselAPI ();     // load vessel-specific part of API
 	LoadLightEmitterMethods (); // load light source methods
+	LoadBeaconMethods ();
 	LoadMFDAPI ();        // load MFD methods
+	LoadNTVERTEXAPI();
+	LoadBitAPI();         // load bit library
 	LoadSketchpadAPI ();  // load Sketchpad methods
 	LoadAnnotationAPI (); // load screen annotation methods
+	LoadVesselStatusAPI ();
 	LoadStartupScript (); // load default initialisation script
 }
 
@@ -456,6 +509,15 @@ COLOUR4 Interpreter::lua_torgba (lua_State *L, int idx)
 	return col;
 }
 
+void Interpreter::lua_pushrgba(lua_State* L, const COLOUR4& col)
+{
+	lua_createtable(L, 0, 4);
+	lua_pushnumber(L, col.r);  lua_setfield(L, -2, "r");
+	lua_pushnumber(L, col.g);  lua_setfield(L, -2, "g");
+	lua_pushnumber(L, col.b);  lua_setfield(L, -2, "b");
+	lua_pushnumber(L, col.a);  lua_setfield(L, -2, "a");
+}
+
 void Interpreter::lua_pushvessel (lua_State *L, VESSEL *v)
 {
 	lua_pushlightuserdata(L,v);         // use object pointer as key
@@ -523,6 +585,38 @@ void Interpreter::lua_pushlightemitter (lua_State *L, const LightEmitter *le)
 		lua_settable (L,LUA_REGISTRYINDEX); // and store in registry
 		// note that now the object is on top of the stack
 	}
+}
+
+static int numberref_get(lua_State* L)
+{
+	lua_Number* inst = (lua_Number*)luaL_checkudata(L, 1, "numberref");
+	lua_pushnumber(L, *inst);
+	return 1;
+}
+
+static int numberref_set(lua_State* L)
+{
+	lua_Number* inst = (lua_Number*)luaL_checkudata(L, 1, "numberref");
+	*inst = luaL_checknumber(L, 2);
+	return 0;
+}
+int Interpreter::lua_pushnumberref(lua_State* L)
+{
+		lua_Number* ref = (lua_Number*)lua_newuserdata(L, sizeof(lua_Number));
+		*ref = 0.0;
+		if (luaL_newmetatable(L, "numberref")) {
+			lua_pushstring(L, "__index");
+			lua_pushvalue(L, -2); // push metatable
+			lua_settable(L, -3);  // metatable.__index = metatable
+			lua_pushcfunction(L, numberref_set);
+			lua_setfield(L, -2, "set");
+			lua_pushcfunction(L, numberref_get);
+			lua_setfield(L, -2, "get");
+			lua_pushstring(L, "numberref");
+			lua_setfield(L, -2, "__metatable");
+		}
+		lua_setmetatable(L, -2);
+		return 1;
 }
 
 LightEmitter *Interpreter::lua_tolightemitter (lua_State *L, int idx)
@@ -596,7 +690,7 @@ int Interpreter::RunChunk (const char *chunk, int n)
 		is_busy = true;
 		// run command
 		luaL_loadbuffer (L, chunk, n, "line");
-		res = lua_pcall (L, 0, 0, 0);
+		res = LuaCall (L, 0, 0);
 		if (res) {
 			auto error = lua_tostring(L, -1);
 			if (error) { // can be nullptr
@@ -604,23 +698,20 @@ int Interpreter::RunChunk (const char *chunk, int n)
 					// term_strout ("Execution error.");
 					term_strout(error, true);
 				}
-				else {
-					oapiWriteLogError(error);
-				}
 				is_busy = false;
 				return res;
 			}
 		}
 		// check for leftover background jobs
 		lua_getfield (L, LUA_GLOBALSINDEX, "_nbranch");
-		lua_call (L, 0, 1);
+		LuaCall (L, 0, 1);
 		jobs = lua_tointeger (L, -1);
 		lua_pop (L, 1);
 		is_busy = false;
 	} else {
 		// idle loop: execute background jobs
 		lua_getfield (L, LUA_GLOBALSINDEX, "_idle");
-		lua_call (L, 0, 1);
+		LuaCall (L, 0, 1);
 		jobs = lua_tointeger (L, -1);
 		lua_pop (L, 1);
 		res = -1;
@@ -668,6 +759,7 @@ void Interpreter::LoadAPI ()
 		{"mul", mat_mul},
 		{"tmul", mat_tmul},
 		{"mmul", mat_mmul},
+		{"rotm", mat_rotm},
 		{NULL, NULL}
 	};
 	luaL_openlib (L, "mat", matLib, 0);
@@ -696,7 +788,44 @@ void Interpreter::LoadAPI ()
 		{"exit", oapiExit},
 		{"open_inputbox", oapiOpenInputBox},
 		{"receive_input", oapiReceiveInput},
+		{"open_inputboxex", oapi_open_inputboxex},
 		{"del_vessel", oapi_del_vessel},
+		{"create_vessel", oapi_create_vessel},
+		{"set_focusobject", oapi_set_focusobject},
+
+		{"get_rotationmatrix", oapi_get_rotationmatrix},
+
+		// textures
+		{"register_exhausttexture", oapi_register_exhausttexture},
+		{"register_reentrytexture", oapi_register_reentrytexture},
+		{"register_particletexture", oapi_register_particletexture},
+		{"get_texturehandle", oapi_get_texturehandle},
+		{"load_texture", oapi_load_texture},
+		{"release_texture", oapi_release_texture},
+		{"set_texture", oapi_set_texture},
+		{"create_surface", oapi_create_surface},
+		{"destroy_surface", oapi_destroy_surface},
+		{"save_surface", oapi_save_surface},
+		
+		// GC
+		{"set_materialex", oapi_set_materialex},
+		{"set_material", oapi_set_material},
+
+		// VC
+		{"VC_trigger_redrawarea", oapi_VC_trigger_redrawarea},
+		{"VC_set_areaclickmode_quadrilateral", oapi_VC_set_areaclickmode_quadrilateral},
+		{"VC_set_areaclickmode_spherical", oapi_VC_set_areaclickmode_spherical},
+		{"VC_register_area", oapi_VC_register_area},
+		{"VC_set_neighbours", oapi_VC_set_neighbours},
+		{"VC_registerHUD", oapi_VC_registerHUD},
+		{"VC_registermfd", oapi_VC_registermfd},
+		{"cockpit_mode", oapi_cockpit_mode},
+		{"render_hud", oapi_render_hud},
+		{"get_hudintensity", oapi_get_hudintensity},
+		{"set_hudintensity", oapi_set_hudintensity},
+		{"inc_hudintensity", oapi_inc_hudintensity},
+		{"dec_hudintensity", oapi_dec_hudintensity},
+		{"toggle_hudcolour", oapi_toggle_hudcolour},
 
 		// time functions
 		{"get_simtime", oapi_get_simtime},
@@ -720,6 +849,8 @@ void Interpreter::LoadAPI ()
 
 		// coordinate transformations
 		{"global_to_equ", oapi_global_to_equ},
+		{"global_to_local", oapi_global_to_local},
+		{"local_to_equ", oapi_local_to_equ},
 		{"equ_to_global", oapi_equ_to_global},
 		{"orthodome", oapi_orthodome},
 
@@ -730,6 +861,13 @@ void Interpreter::LoadAPI ()
 		{"get_globalvel", oapi_get_globalvel},
 		{"get_relativepos", oapi_get_relativepos},
 		{"get_relativevel", oapi_get_relativevel},
+
+		// planet functions
+		{"get_planetperiod", oapi_get_planetperiod},
+		{"get_objecttype", oapi_get_objecttype},
+		{"get_gbody", oapi_get_gbody},
+		{"get_gbodyparent", oapi_get_gbodyparent},
+		{"get_planetatmconstants", oapi_get_planetatmconstants},
 
 		// vessel functions
 		{"get_propellanthandle", oapi_get_propellanthandle},
@@ -752,6 +890,13 @@ void Interpreter::LoadAPI ()
 		{"get_atm", oapi_get_atm},
 		{"get_induceddrag", oapi_get_induceddrag},
 		{"get_wavedrag", oapi_get_wavedrag},
+		{"particle_getlevelref", oapi_particle_getlevelref},
+
+		// Docking
+		{"get_dockhandle", oapi_get_dockhandle},
+		{"get_dockstatus", oapi_get_dockstatus},
+		{"get_dockowner", oapi_get_dockowner},
+		{"set_autocapture", oapi_set_autocapture},
 
 		// Navigation radio transmitter functions
 		{"get_navpos", oapi_get_navpos},
@@ -770,7 +915,8 @@ void Interpreter::LoadAPI ()
 		{"get_cameraglobalpos", oapi_get_cameraglobalpos},
 		{"get_cameraglobaldir", oapi_get_cameraglobaldir},
 		{"move_groundcamera", oapi_move_groundcamera},
-
+		{"set_cameracockpitdir", oapi_set_cameracockpitdir},
+			
 		// animation functions
 		{"create_animationcomponent", oapi_create_animationcomponent},
 		{"del_animationcomponent", oapi_del_animationcomponent},
@@ -778,14 +924,26 @@ void Interpreter::LoadAPI ()
 		// instrument panel functions
 		{"open_mfd", oapi_open_mfd},
 		{"set_hudmode", oapi_set_hudmode},
-		{"set_panelblink", oapi_set_panelblink},
-
+		{"get_hudmode", oapi_get_hudmode},
+		{"set_panelblink", oapi_set_panelblink },
+		{"get_mfdmode", oapi_get_mfdmode },
+		{"mfd_buttonlabel", oapi_mfd_buttonlabel },
+		{"disable_mfdmode", oapi_disable_mfdmode },
+		{"register_mfd", oapi_register_mfd },
+		{"process_mfdbutton", oapi_process_mfdbutton },
+		{"send_mfdkey", oapi_send_mfdkey },
+		{"refresh_mfdbuttons", oapi_refresh_mfdbuttons },
+		{"toggle_mfdon", oapi_toggle_mfdon },
+		{"set_defnavdisplay", oapi_set_defnavdisplay },
+		{"set_defrcsdisplay", oapi_set_defrcsdisplay },
+			
 		// user i/o functions
 		{"keydown", oapi_keydown},
 		{"resetkey", oapi_resetkey},
 		{"simulatebufferedkey", oapi_simulatebufferedkey},
 		{"simulateimmediatekey", oapi_simulateimmediatekey},
-
+		{"acceptdelayedkey", oapi_acceptdelayedkey},
+			
 		// file i/o functions
 		{"openfile", oapi_openfile},
 		{"closefile", oapi_closefile},
@@ -816,6 +974,40 @@ void Interpreter::LoadAPI ()
 		{"get_color", oapi_get_color},
 		{"formatvalue", oapi_formatvalue},
 
+		// sketchpad
+		{"get_sketchpad", oapi_get_sketchpad },
+		{"release_sketchpad", oapi_release_sketchpad },
+		{"create_font", oapi_create_font },
+		{"create_pen", oapi_create_pen },
+		{"create_brush", oapi_create_brush },
+		{"release_font", oapi_release_font },
+		{"release_pen", oapi_release_pen },
+		{"release_brush", oapi_release_brush },
+
+		// Blt
+		{"blt", oapi_blt },
+		{"blt_panelareabackground", oapi_blt_panelareabackground },
+
+		// Panel
+		{"set_panelneighbours", oapi_set_panelneighbours },
+		
+		// mesh
+		{"load_mesh_global", oapi_load_mesh_global },
+		{"mesh_group", oapi_mesh_group },
+		{"create_mesh", oapi_create_mesh },
+		{"delete_mesh", oapi_delete_mesh },
+		{"add_meshgroupblock", oapi_add_meshgroupblock },
+		{"edit_meshgroup", oapi_edit_meshgroup },
+		{"get_meshgroup", oapi_get_meshgroup },
+			
+		{"create_ntvertexarray", oapi_create_ntvertexarray },
+		{"del_ntvertexarray", oapi_del_ntvertexarray },
+		{"create_indexarray", oapi_create_indexarray },
+		{"del_indexarray", oapi_del_indexarray },
+
+		{"create_beacon", oapi_create_beacon },
+
+
 		{NULL, NULL}
 	};
 	luaL_openlib (L, "oapi", oapiLib, 0);
@@ -842,6 +1034,17 @@ void Interpreter::LoadAPI ()
 	lua_pushnumber (L, OAPI_KEY_8);           lua_setfield (L, -2, "8");
 	lua_pushnumber (L, OAPI_KEY_9);           lua_setfield (L, -2, "9");
 	lua_pushnumber (L, OAPI_KEY_0);           lua_setfield (L, -2, "0");
+	// Duplicate numbers to have dot notation (OAPI_KEY.KEY1 instead of OAPI_KEY["1"])
+	lua_pushnumber (L, OAPI_KEY_1);           lua_setfield (L, -2, "KEY1");
+	lua_pushnumber (L, OAPI_KEY_2);           lua_setfield (L, -2, "KEY2");
+	lua_pushnumber (L, OAPI_KEY_3);           lua_setfield (L, -2, "KEY3");
+	lua_pushnumber (L, OAPI_KEY_4);           lua_setfield (L, -2, "KEY4");
+	lua_pushnumber (L, OAPI_KEY_5);           lua_setfield (L, -2, "KEY5");
+	lua_pushnumber (L, OAPI_KEY_6);           lua_setfield (L, -2, "KEY6");
+	lua_pushnumber (L, OAPI_KEY_7);           lua_setfield (L, -2, "KEY7");
+	lua_pushnumber (L, OAPI_KEY_8);           lua_setfield (L, -2, "KEY8");
+	lua_pushnumber (L, OAPI_KEY_9);           lua_setfield (L, -2, "KEY9");
+	lua_pushnumber (L, OAPI_KEY_0);           lua_setfield (L, -2, "KEY0");
 	lua_pushnumber (L, OAPI_KEY_MINUS);       lua_setfield (L, -2, "MINUS");
 	lua_pushnumber (L, OAPI_KEY_EQUALS);      lua_setfield (L, -2, "EQUALS");
 	lua_pushnumber (L, OAPI_KEY_BACK);        lua_setfield (L, -2, "BACK");
@@ -948,6 +1151,37 @@ void Interpreter::LoadAPI ()
 	lua_pushnumber (L, PANEL_MOUSE_ONREPLAY); lua_setfield (L, -2, "ONREPLAY");
 	lua_setglobal (L, "PANEL_MOUSE");
 
+	lua_createtable(L, 0, 6);
+	lua_pushnumber(L, PANEL_REDRAW_NEVER);     lua_setfield(L, -2, "NEVER");
+	lua_pushnumber(L, PANEL_REDRAW_ALWAYS);    lua_setfield(L, -2, "ALWAYS");
+	lua_pushnumber(L, PANEL_REDRAW_MOUSE);     lua_setfield(L, -2, "MOUSE");
+	lua_pushnumber(L, PANEL_REDRAW_INIT);      lua_setfield(L, -2, "INIT");
+	lua_pushnumber(L, PANEL_REDRAW_USER);      lua_setfield(L, -2, "USER");
+	lua_pushnumber(L, PANEL_REDRAW_SKETCHPAD); lua_setfield(L, -2, "SKETCHPAD");
+	lua_setglobal(L, "PANEL_REDRAW");
+
+	lua_createtable(L, 0, 5);
+	lua_pushnumber(L, PANEL_MAP_NONE);         lua_setfield(L, -2, "NONE");
+	lua_pushnumber(L, PANEL_MAP_BACKGROUND);   lua_setfield(L, -2, "BACKGROUND");
+	lua_pushnumber(L, PANEL_MAP_CURRENT);      lua_setfield(L, -2, "CURRENT");
+	lua_pushnumber(L, PANEL_MAP_BGONREQUEST);  lua_setfield(L, -2, "BGONREQUEST");
+	lua_pushnumber(L, PANEL_MAP_DIRECT);       lua_setfield(L, -2, "DIRECT");
+	lua_setglobal(L, "PANEL_MAP");
+
+	lua_createtable(L, 0, 3);
+	lua_pushnumber(L, COCKPIT_GENERIC);        lua_setfield(L, -2, "GENERIC");
+	lua_pushnumber(L, COCKPIT_PANELS);         lua_setfield(L, -2, "PANELS");
+	lua_pushnumber(L, COCKPIT_VIRTUAL);        lua_setfield(L, -2, "VIRTUAL");
+	lua_setglobal(L, "COCKPIT");
+
+	// HUD mode
+	lua_createtable (L, 0, 4);
+	lua_pushnumber (L, HUD_NONE);    lua_setfield (L, -2, "NONE");
+	lua_pushnumber (L, HUD_ORBIT);   lua_setfield (L, -2, "ORBIT");
+	lua_pushnumber (L, HUD_SURFACE); lua_setfield (L, -2, "SURFACE");
+	lua_pushnumber (L, HUD_DOCKING); lua_setfield (L, -2, "DOCKING");
+	lua_setglobal (L, "HUD");
+
 	// frame of reference identifiers
 	lua_createtable (L, 0, 4);
 	lua_pushnumber (L, FRAME_GLOBAL);   lua_setfield (L, -2, "GLOBAL");
@@ -980,6 +1214,92 @@ void Interpreter::LoadAPI ()
 	lua_pushnumber(L, PathRoot::MESHES);    lua_setfield(L, -2, "MESHES");
 	lua_pushnumber(L, PathRoot::MODULES);   lua_setfield(L, -2, "MODULES");
 	lua_setglobal(L, "PATH_ROOT");
+
+	// metatables for userdata checks
+	luaL_newmetatable(L, "DEVMESHHANDLE"); lua_pop(L, 1);
+	luaL_newmetatable(L, "MESHHANDLE"); lua_pop(L, 1);
+
+	// Fonts
+	lua_createtable (L, 0, 7);
+	lua_pushnumber (L, FONT_NORMAL);    lua_setfield (L, -2, "NORMAL");
+	lua_pushnumber (L, FONT_BOLD);      lua_setfield (L, -2, "BOLD");
+	lua_pushnumber (L, FONT_ITALIC);    lua_setfield (L, -2, "ITALIC");
+	lua_pushnumber (L, FONT_UNDERLINE); lua_setfield (L, -2, "UNDERLINE");
+	lua_pushnumber (L, FONT_STRIKEOUT); lua_setfield (L, -2, "STRIKEOUT");
+	lua_pushnumber (L, FONT_CRISP);     lua_setfield (L, -2, "CRISP");
+	lua_pushnumber (L, FONT_ANTIALIAS); lua_setfield (L, -2, "ANTIALIAS");
+	lua_setglobal (L, "FONT");
+
+	// Surface
+	lua_createtable (L, 0, 12);
+	lua_pushnumber (L, OAPISURFACE_TEXTURE     ); lua_setfield (L, -2, "TEXTURE");
+	lua_pushnumber (L, OAPISURFACE_RENDERTARGET); lua_setfield (L, -2, "RENDERTARGET");
+	lua_pushnumber (L, OAPISURFACE_SKETCHPAD   ); lua_setfield (L, -2, "SKETCHPAD");
+	lua_pushnumber (L, OAPISURFACE_MIPMAPS     ); lua_setfield (L, -2, "MIPMAPS");
+	lua_pushnumber (L, OAPISURFACE_NOMIPMAPS   ); lua_setfield (L, -2, "NOMIPMAPS");
+	lua_pushnumber (L, OAPISURFACE_ALPHA       ); lua_setfield (L, -2, "ALPHA");
+	lua_pushnumber (L, OAPISURFACE_NOALPHA     ); lua_setfield (L, -2, "NOALPHA");
+	lua_pushnumber (L, OAPISURFACE_UNCOMPRESS  ); lua_setfield (L, -2, "UNCOMPRESS");
+	lua_pushnumber (L, OAPISURFACE_SYSMEM      ); lua_setfield (L, -2, "SYSMEM");
+	lua_pushnumber (L, OAPISURFACE_RENDER3D    ); lua_setfield (L, -2, "RENDER3D");
+	lua_pushnumber (L, OAPISURFACE_ANTIALIAS   ); lua_setfield (L, -2, "ANTIALIAS");
+	lua_pushnumber (L, OAPISURFACE_SHARED      ); lua_setfield (L, -2, "SHARED");
+	lua_setglobal (L, "OAPISURFACE");
+
+	// GROUP EDIT
+	lua_createtable (L, 0, 28);
+	lua_pushnumber (L, GRPEDIT_SETUSERFLAG); lua_setfield (L, -2, "SETUSERFLAG");
+	lua_pushnumber (L, GRPEDIT_ADDUSERFLAG); lua_setfield (L, -2, "ADDUSERFLAG");
+	lua_pushnumber (L, GRPEDIT_DELUSERFLAG); lua_setfield (L, -2, "DELUSERFLAG");
+	lua_pushnumber (L, GRPEDIT_VTXCRDX    ); lua_setfield (L, -2, "VTXCRDX");
+	lua_pushnumber (L, GRPEDIT_VTXCRDY    ); lua_setfield (L, -2, "VTXCRDY");
+	lua_pushnumber (L, GRPEDIT_VTXCRDZ    ); lua_setfield (L, -2, "VTXCRDZ");
+	lua_pushnumber (L, GRPEDIT_VTXCRD     ); lua_setfield (L, -2, "VTXCRD");
+	lua_pushnumber (L, GRPEDIT_VTXNMLX    ); lua_setfield (L, -2, "VTXNMLX");
+	lua_pushnumber (L, GRPEDIT_VTXNMLY    ); lua_setfield (L, -2, "VTXNMLY");
+	lua_pushnumber (L, GRPEDIT_VTXNMLZ    ); lua_setfield (L, -2, "VTXNMLZ");
+	lua_pushnumber (L, GRPEDIT_VTXNML     ); lua_setfield (L, -2, "VTXNML");
+	lua_pushnumber (L, GRPEDIT_VTXTEXU    ); lua_setfield (L, -2, "VTXTEXU");
+	lua_pushnumber (L, GRPEDIT_VTXTEXV    ); lua_setfield (L, -2, "VTXTEXV");
+	lua_pushnumber (L, GRPEDIT_VTXTEX     ); lua_setfield (L, -2, "VTXTEX");
+	lua_pushnumber (L, GRPEDIT_VTX        ); lua_setfield (L, -2, "VTX");
+	lua_pushnumber (L, GRPEDIT_VTXCRDADDX ); lua_setfield (L, -2, "VTXCRDADDX");
+	lua_pushnumber (L, GRPEDIT_VTXCRDADDY ); lua_setfield (L, -2, "VTXCRDADDY");
+	lua_pushnumber (L, GRPEDIT_VTXCRDADDZ ); lua_setfield (L, -2, "VTXCRDADDZ");
+	lua_pushnumber (L, GRPEDIT_VTXCRDADD  ); lua_setfield (L, -2, "VTXCRDADD");
+	lua_pushnumber (L, GRPEDIT_VTXNMLADDX ); lua_setfield (L, -2, "VTXNMLADDX");
+	lua_pushnumber (L, GRPEDIT_VTXNMLADDY ); lua_setfield (L, -2, "VTXNMLADDY");
+	lua_pushnumber (L, GRPEDIT_VTXNMLADDZ ); lua_setfield (L, -2, "VTXNMLADDZ");
+	lua_pushnumber (L, GRPEDIT_VTXNMLADD  ); lua_setfield (L, -2, "VTXNMLADD");
+	lua_pushnumber (L, GRPEDIT_VTXTEXADDU ); lua_setfield (L, -2, "VTXTEXADDU");
+	lua_pushnumber (L, GRPEDIT_VTXTEXADDV ); lua_setfield (L, -2, "VTXTEXADDV");
+	lua_pushnumber (L, GRPEDIT_VTXTEXADD  ); lua_setfield (L, -2, "VTXTEXADD");
+	lua_pushnumber (L, GRPEDIT_VTXADD     ); lua_setfield (L, -2, "VTXADD");
+	lua_pushnumber (L, GRPEDIT_VTXMOD     ); lua_setfield (L, -2, "VTXMOD");
+	lua_setglobal (L, "GRPEDIT");
+
+	lua_createtable (L, 0, 5);
+	lua_pushnumber (L, oapi::ImageFileFormat::IMAGE_BMP); lua_setfield (L, -2, "BMP");
+	lua_pushnumber (L, oapi::ImageFileFormat::IMAGE_PNG); lua_setfield (L, -2, "PNG");
+	lua_pushnumber (L, oapi::ImageFileFormat::IMAGE_JPG); lua_setfield (L, -2, "JPG");
+	lua_pushnumber (L, oapi::ImageFileFormat::IMAGE_TIF); lua_setfield (L, -2, "TIF");
+	lua_pushnumber (L, oapi::ImageFileFormat::IMAGE_DDS); lua_setfield (L, -2, "DDS");
+	lua_setglobal (L, "IMAGEFORMAT");
+
+	lua_createtable (L, 0, 7);
+	lua_pushnumber (L, OBJTP_INVALID); lua_setfield (L, -2, "INVALID");
+	lua_pushnumber (L, OBJTP_GENERIC); lua_setfield (L, -2, "GENERIC");
+	lua_pushnumber (L, OBJTP_CBODY); lua_setfield (L, -2, "CBODY");
+	lua_pushnumber (L, OBJTP_STAR); lua_setfield (L, -2, "STAR");
+	lua_pushnumber (L, OBJTP_PLANET); lua_setfield (L, -2, "PLANET");
+	lua_pushnumber (L, OBJTP_VESSEL); lua_setfield (L, -2, "VESSEL");
+	lua_pushnumber (L, OBJTP_SURFBASE); lua_setfield (L, -2, "SURFBASE");
+	lua_setglobal (L, "OBJTP");
+
+	lua_createtable (L, 0, 1);
+	lua_pushnumber (L, USRINPUT_NEEDANSWER); lua_setfield (L, -2, "NEEDANSWER");
+	lua_setglobal (L, "USRINPUT");
+
 }
 
 void Interpreter::LoadMFDAPI ()
@@ -1001,6 +1321,93 @@ void Interpreter::LoadMFDAPI ()
 	luaL_openlib (L, NULL, mfdLib, 0);
 }
 
+void Interpreter::LoadNTVERTEXAPI ()
+{
+	static const struct luaL_reg ntvLib[] = {
+		{"size", ntv_size},
+		{"extract", ntv_extract},
+		{"reset", ntv_reset},
+		{"zeroize", ntv_zeroize},
+		{"append", ntv_append},
+		{"copy", ntv_copy},
+		{"write", ntv_write},
+		{"view", ntv_view},
+		{"__gc", ntv_collect},
+		{"__index", ntv_get},
+		{"__newindex", ntv_set},
+		{"__len", ntv_size},
+		{NULL, NULL}
+	};
+
+	luaL_newmetatable (L, "NTV.vtable");
+	lua_pushstring (L, "__index");
+	lua_pushvalue (L, -2); // push metatable
+	lua_settable (L, -3);  // metatable.__index = metatable
+	luaL_openlib (L, NULL, ntvLib, 0);
+
+      /* now the stack has the metatable at index 1 and
+         `array' at index 2 */
+#if 0
+      lua_pushstring(L, "__index");
+      lua_pushstring(L, "get");
+      lua_gettable(L, 2);  /* get array.get */
+      lua_settable(L, 1);  /* metatable.__index = array.get */
+    
+      lua_pushstring(L, "__newindex");
+      lua_pushstring(L, "set");
+      lua_gettable(L, 2); /* get array.set */
+      lua_settable(L, 1); /* metatable.__newindex = array.set */
+
+      lua_pushstring(L, "__len");
+      lua_pushstring(L, "size");
+      lua_gettable(L, 2); /* get array.set */
+      lua_settable(L, 1); /* metatable.__newindex = array.set */
+#endif
+	
+	luaL_newmetatable(L, "NTVPROXY.vtable");
+	lua_pushcfunction(L, ntvproxy_set);
+	lua_setfield(L, -2, "__newindex");
+	lua_pushcfunction(L, ntvproxy_get);
+	lua_setfield(L, -2, "__index");
+	lua_pushstring(L, "NTVPROXY.vtable");
+	lua_setfield(L, -2, "__metatable");
+	lua_pop(L, 1);
+	
+	static const struct luaL_reg idxLib[] = {
+		{"size", idx_size},
+		{"reset", idx_reset},
+		{"append", idx_append},
+		{"set", idx_set},
+		{"get", idx_get},
+		{"__gc", idx_collect},
+		{"__index", idx_get},
+		{"__newindex", idx_set},
+		{"__len", idx_size},
+		{NULL, NULL}
+	};
+
+	luaL_newmetatable (L, "Index.vtable");
+	lua_pushstring (L, "__index");
+	lua_pushvalue (L, -2); // push metatable
+	lua_settable (L, -3);  // metatable.__index = metatable
+	luaL_openlib (L, NULL, idxLib, 0);
+}
+
+void Interpreter::LoadBitAPI()
+{
+	// Load the bit library
+	static const struct luaL_reg bitLib[] = {
+		{"anyset", bit_anyset},
+		{"allset", bit_allset},
+		{"band", bit_and},
+		{"bor", bit_or},
+		{"bnot", bit_not},
+		{"mask", bit_mask},
+		{NULL, NULL}
+	};
+	luaL_openlib(L, "bit", bitLib, 0);
+}
+
 void Interpreter::LoadLightEmitterMethods ()
 {
 	static const struct luaL_reg methodLib[] = {
@@ -1018,6 +1425,8 @@ void Interpreter::LoadLightEmitterMethods ()
 		{"set_spotaperture", le_set_spotaperture},
 		{"activate", le_activate},
 		{"is_active", le_is_active},
+		{"get_visibility", le_get_visibility},
+		{"set_visibility", le_set_visibility},
 		{NULL, NULL}
 	};
 
@@ -1026,6 +1435,34 @@ void Interpreter::LoadLightEmitterMethods ()
 	lua_pushvalue (L, -2); // push metatable
 	lua_settable (L, -3); // metatable.__index = metatable
 	luaL_openlib (L, NULL, methodLib, 0);
+
+	lua_createtable(L, 0, 3);
+	lua_pushnumber(L, LightEmitter::VIS_EXTERNAL); lua_setfield(L, -2, "EXTERNAL");
+	lua_pushnumber(L, LightEmitter::VIS_COCKPIT);  lua_setfield(L, -2, "COCKPIT");
+	lua_pushnumber(L, LightEmitter::VIS_ALWAYS);lua_setfield(L, -2, "ALWAYS");
+	lua_setglobal(L, "VIS");
+}
+
+void Interpreter::LoadBeaconMethods ()
+{
+	static const struct luaL_reg beaconLib[] = {
+		{"__gc", beacon_collect},
+		{"__index", beacon_get},
+		{"__newindex", beacon_set},
+		{NULL, NULL}
+	};
+
+	luaL_newmetatable (L, "Beacon.vtable");
+	lua_pushstring (L, "__index");
+	lua_pushvalue (L, -2); // push metatable
+	lua_settable (L, -3);  // metatable.__index = metatable
+	luaL_openlib (L, NULL, beaconLib, 0);
+
+	lua_createtable(L, 0, 3);
+	lua_pushnumber(L, BEACONSHAPE_COMPACT); lua_setfield(L, -2, "COMPACT");
+	lua_pushnumber(L, BEACONSHAPE_DIFFUSE); lua_setfield(L, -2, "DIFFUSE");
+	lua_pushnumber(L, BEACONSHAPE_STAR);	lua_setfield(L, -2, "STAR");
+	lua_setglobal(L, "BEACONSHAPE");
 }
 
 void Interpreter::LoadSketchpadAPI ()
@@ -1046,6 +1483,7 @@ void Interpreter::LoadSketchpadAPI ()
 		{"set_backgroundmode", skp_set_backgroundmode},
 		{"set_pen", skp_set_pen},
 		{"set_font", skp_set_font},
+		{"set_brush", skp_set_brush},
 		{"get_charsize", skp_get_charsize},
 		{"get_textwidth", skp_get_textwidth},
 		{NULL, NULL}
@@ -1085,9 +1523,34 @@ void Interpreter::LoadAnnotationAPI ()
 	luaL_openlib (L, NULL, noteMtd, 0);
 }
 
+void Interpreter::LoadVesselStatusAPI()
+{
+	static const struct luaL_reg vs[] = {
+		{"get", vsget},
+		{"set", vsset},
+		{NULL, NULL}
+	};
+	luaL_newmetatable(L, "VESSELSTATUS.table");
+	lua_pushstring(L, "__index");
+	lua_pushvalue(L, -2); // push metatable
+	lua_settable(L, -3);  // metatable.__index = metatable
+	luaL_openlib(L, NULL, vs, 0);
+
+	static const struct luaL_reg vs2[] = {
+		{"get", vs2get},
+		{"set", vs2set},
+		{NULL, NULL}
+	};
+	luaL_newmetatable(L, "VESSELSTATUS2.table");
+	lua_pushstring(L, "__index");
+	lua_pushvalue(L, -2); // push metatable
+	lua_settable(L, -3);  // metatable.__index = metatable
+	luaL_openlib(L, NULL, vs2, 0);
+}
+
 void Interpreter::LoadStartupScript ()
 {
-	luaL_dofile (L, ".\\Script\\oapi_init.lua");
+	luaL_dofile (L, "./Script/oapi_init.lua");
 }
 
 bool Interpreter::InitialiseVessel (lua_State *L, VESSEL *v)
@@ -1120,6 +1583,7 @@ void Interpreter::term_echo (lua_State *L, int level)
 void Interpreter::term_strout (lua_State *L, const char *str, bool iserr)
 {
 	Interpreter *interp = GetInterpreter(L);
+	fprintf(stderr, "%s\n", str);
 	interp->term_strout (str, iserr);
 }
 
@@ -1135,12 +1599,10 @@ void Interpreter::warn_obsolete(lua_State *L, const char *funcname)
 int Interpreter::AssertPrmtp(lua_State *L, const char *fname, int idx, int prm, int tp)
 {
 	char *tpname = (char*)"";
-	char cbuf[1024];
 	int res = 1;
 
 	if (lua_gettop(L) < idx) {
-		sprintf (cbuf, "%s: too few arguments", fname);
-		term_strout(L, cbuf, true);
+		luaL_error(L, "%s: too few arguments", fname);
 		return 0;
 	}
 
@@ -1173,10 +1635,14 @@ int Interpreter::AssertPrmtp(lua_State *L, const char *fname, int idx, int prm, 
 		tpname = (char*)"matrix";
 		res = lua_ismatrix(L, idx);
 		break;
+	case PRMTP_USERDATA:
+		tpname = (char*)"userdata";
+		res = lua_isuserdata(L, idx);
+		break;
+
 	}
 	if (!res) {
-		sprintf (cbuf, "%s: argument %d: invalid type (expected %s)", fname, prm, tpname);
-		term_strout(L, cbuf, true);
+		luaL_error(L, "%s: argument %d: invalid type (expected %s)", fname, prm, tpname);
 	}
 	return res;
 }
@@ -1186,9 +1652,7 @@ int Interpreter::AssertMtdMinPrmCount(lua_State *L, int n, const char *funcname)
 	if (lua_gettop(L) >= n) {
 		return 1;
 	} else {
-		char cbuf[1024];
-		sprintf(cbuf, "%s: too few arguments (expected %d)", funcname, n-1);
-		term_strout(L, cbuf);
+		luaL_error(L, "%s: too few arguments (expected %d)", funcname, n - 1);
 		return 0;
 	}
 }
@@ -1223,6 +1687,10 @@ int Interpreter::AssertPrmType(lua_State *L, int idx, int prmno, int tp, const c
 		if (lua_isvector(L, idx))
 			return 1;
 
+	if (tp & PRMTP_USERDATA)
+		if (lua_isuserdata(L, idx))
+			return 1;
+
 	char cbuf[1024];
 	if (fieldname)
 		sprintf(cbuf, "%s: argument %d: field %s: invalid type (expected", funcname, prmno, fieldname);
@@ -1242,9 +1710,18 @@ int Interpreter::AssertPrmType(lua_State *L, int idx, int prmno, int tp, const c
 		strcat(cbuf, " table or");
 	if (tp & PRMTP_VECTOR)
 		strcat(cbuf, " vector or");
+	if (tp & PRMTP_USERDATA)
+		strcat(cbuf, " userdata or");
+
 	cbuf[strlen(cbuf)-3] = ')';
-	cbuf[strlen(cbuf)-2] = '\0';
-	term_strout(L, cbuf);
+	cbuf[strlen(cbuf)-2] = ' ';
+	cbuf[strlen(cbuf)-1] = '\0';
+
+	strcat(cbuf, lua_typename(L, lua_type(L, idx)));
+	strcat(cbuf, " given");
+
+	luaL_error(L, cbuf);
+
 	return 0;
 }
 
@@ -1263,8 +1740,8 @@ int Interpreter::AssertMtdNumber(lua_State *L, int idx, const char *funcname)
 	if (lua_isnumber(L, idx)) {
 		return 1;
 	} else {
-		char cbuf[1024];
-		sprintf(cbuf, "%s: argument %d: invalid type (expected number)", funcname, idx-1);
+		luaL_error(L, "%s: argument %d: invalid type (expected number)", funcname, idx - 1);
+
 		return 0;
 	}
 }
@@ -1274,8 +1751,7 @@ int Interpreter::AssertMtdHandle(lua_State *L, int idx, const char *funcname)
 	if (lua_islightuserdata(L, 2)) { // necessary but not sufficient
 		return 1;
 	} else {
-		char cbuf[1024];
-		sprintf(cbuf, "%s: argument %d: invalid type (expected handle)", funcname, idx-1);
+		luaL_error(L, "%s: argument %d: invalid type (expected handle)", funcname, idx - 1);
 		return 0;
 	}
 }
@@ -1357,9 +1833,75 @@ int Interpreter::help_api (lua_State *L)
 	lua_getglobal (L, "oapi");
 	lua_getfield (L, -1, "open_help");
 	lua_pushstring (L, "Html/Script/API/Reference.chm");
-	lua_pcall (L, 1, 0, 0);
+	LuaCall (L, 1, 0);
 	return 0;
 }
+
+
+
+// bit manipulations
+int Interpreter::bit_anyset(lua_State* L)
+{
+	ASSERT_SYNTAX(lua_isnumber(L, 1), "Argument 1: expected number");
+	uint32_t v = (uint32_t)lua_tonumber(L, 1);
+	ASSERT_SYNTAX(lua_isnumber(L, 2), "Argument 2: expected number");
+	uint32_t mask = lua_tonumber(L, 2);
+	lua_pushboolean(L, (v & mask) != 0);
+	return 1;
+}
+
+int Interpreter::bit_allset(lua_State* L)
+{
+	ASSERT_SYNTAX(lua_isnumber(L, 1), "Argument 1: expected number");
+	uint32_t v = (uint32_t)lua_tonumber(L, 1);
+	ASSERT_SYNTAX(lua_isnumber(L, 2), "Argument 2: expected number");
+	uint32_t mask = lua_tonumber(L, 2);
+	lua_pushboolean(L, (v & mask) == mask);
+	return 1;
+}
+
+int Interpreter::bit_and(lua_State* L)
+{
+	ASSERT_SYNTAX(lua_isnumber(L, 1), "Argument 1: expected number");
+	uint32_t a = (uint32_t)lua_tonumber(L, 1);
+	ASSERT_SYNTAX(lua_isnumber(L, 2), "Argument 2: expected number");
+	uint32_t b = lua_tonumber(L, 2);
+	lua_pushnumber(L, a & b);
+	return 1;
+}
+
+int Interpreter::bit_or(lua_State* L)
+{
+	ASSERT_SYNTAX(lua_isnumber(L, 1), "Argument 1: expected number");
+	uint32_t ret = (uint32_t)lua_tonumber(L, 1);
+	int nb_extras = lua_gettop(L) - 1;
+	for (int i = 0; i < nb_extras; i++) {
+		ASSERT_SYNTAX(lua_isnumber(L, i + 2), "Argument : expected number");
+		ret |= (uint32_t)lua_tonumber(L, i + 2);
+	}
+
+	lua_pushnumber(L, ret);
+	return 1;
+}
+
+int Interpreter::bit_not(lua_State* L)
+{
+	ASSERT_SYNTAX(lua_isnumber(L, 1), "Argument 1: expected number");
+	uint32_t notv = ~(uint32_t)lua_tonumber(L, 1);
+	lua_pushnumber(L, notv);
+	return 1;
+}
+
+int Interpreter::bit_mask(lua_State* L)
+{
+	ASSERT_SYNTAX(lua_isnumber(L, 1), "Argument 1: expected number");
+	uint32_t val = (uint32_t)lua_tonumber(L, 1);
+	ASSERT_SYNTAX(lua_isnumber(L, 2), "Argument 2: expected number");
+	uint32_t mask = lua_tonumber(L, 2);
+	lua_pushnumber(L, val & ~mask);
+	return 1;
+}
+
 
 // ============================================================================
 // vector library functions
@@ -1576,6 +2118,28 @@ int Interpreter::mat_mmul (lua_State *L)
 	ASSERT_SYNTAX(lua_ismatrix(L,1), "Argument 1: expected matrix");
 	ASSERT_SYNTAX(lua_ismatrix(L,2), "Argument 2: expected matrix");
 	lua_pushmatrix (L, mul(lua_tomatrix(L,1), lua_tomatrix(L,2)));
+	return 1;
+}
+/**
+ * \ingroup vec
+ * \brief Construct a rotation matrix from an axis and an angle
+ * \param axis rotation axis direction (must be normalised)
+ * \param angle rotation angle [rad]
+ * \return rotation matrix
+ */
+
+int Interpreter::mat_rotm (lua_State *L) {
+	ASSERT_SYNTAX(lua_isvector(L,1), "Argument 1: expected vector");
+	ASSERT_SYNTAX(lua_isnumber(L,2), "Argument 2: expected number");
+	VECTOR3 axis = lua_tovector(L, 1);
+	double angle = lua_tonumber(L, 2);
+	double c = cos(angle), s = sin(angle);
+	double t = 1-c, x = axis.x, y = axis.y, z = axis.z;
+
+	MATRIX3 rot = _M(t*x*x+c, t*x*y-z*s, t*x*z+y*s,
+		      t*x*y+z*s, t*y*y+c, t*y*z-x*s,
+			  t*x*z-y*s, t*y*z+x*s, t*z*z+c);
+	lua_pushmatrix(L, rot);
 	return 1;
 }
 
@@ -1904,7 +2468,400 @@ int Interpreter::oapi_del_vessel (lua_State *L)
 	return 0;
 }
 
-int Interpreter::oapi_get_mainmenuvisibilitymode (lua_State *L)
+int Interpreter::oapi_create_vessel(lua_State* L)
+{
+	const char* name = lua_tostring(L, 1);
+	const char* classname = lua_tostring(L, 2);
+	VESSELSTATUS *vs = (VESSELSTATUS*)lua_touserdata(L, 3);
+	OBJHANDLE hObj = oapiCreateVessel(name, classname, *vs);
+	if (hObj) lua_pushlightuserdata(L, hObj);
+	else lua_pushnil(L);
+	return 1;
+}
+
+int Interpreter::oapi_set_focusobject(lua_State* L)
+{
+	OBJHANDLE hObj = 0;
+	if (lua_islightuserdata(L, 1)) { // select by handle
+		hObj = lua_toObject(L, 1);
+	}
+	else if (lua_isnumber(L, 1)) { // select by index
+		int idx = (int)lua_tointeger(L, 1);
+		hObj = oapiGetVesselByIndex(idx);
+	}
+	else if (lua_isstring(L, 1)) {  // select by name
+		const char* name = lua_tostring(L, 1);
+		if (name)
+			hObj = oapiGetVesselByName((char*)name);
+	}
+
+	if (hObj) {
+		OBJHANDLE prev = oapiSetFocusObject(hObj);
+		if(prev)
+			lua_pushlightuserdata(L, prev);
+		else
+			lua_pushnil(L);
+	}
+	else {
+		lua_pushnil(L);
+		lua_pushstring(L, "Invalid argument for vessel.set_focus, expected handle, string or index number");
+		return 2;
+	}
+
+	return 1;
+}
+
+
+int Interpreter::oapi_get_rotationmatrix(lua_State* L)
+{
+	OBJHANDLE hObj;
+	if (lua_islightuserdata(L, 1) && (hObj = lua_toObject(L, 1))) {
+		MATRIX3 mat;
+		oapiGetRotationMatrix(hObj, &mat);
+		lua_pushmatrix(L, mat);
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int Interpreter::oapi_register_exhausttexture(lua_State* L)
+{
+	const char* name = lua_tostring(L, 1);
+	SURFHANDLE surf = oapiRegisterExhaustTexture(const_cast<char*>(name));
+	if (surf)
+		lua_pushlightuserdata(L, surf);
+	else
+		lua_pushnil(L);
+	return 1;
+}
+
+int Interpreter::oapi_register_reentrytexture(lua_State* L)
+{
+	const char* name = lua_tostring(L, 1);
+	SURFHANDLE surf = oapiRegisterReentryTexture(const_cast<char*>(name));
+	if (surf)
+		lua_pushlightuserdata(L, surf);
+	else
+		lua_pushnil(L);
+	return 1;
+}
+
+int Interpreter::oapi_register_particletexture(lua_State* L)
+{
+	const char* name = lua_tostring(L, 1);
+	SURFHANDLE surf = oapiRegisterParticleTexture(const_cast<char*>(name));
+	if (surf)
+		lua_pushlightuserdata(L, surf);
+	else
+		lua_pushnil(L);
+	return 1;
+}
+
+int Interpreter::oapi_get_texturehandle(lua_State* L)
+{
+	MESHHANDLE hMesh = lua_tomeshhandle(L, 1);
+	DWORD idx = lua_tonumber(L, 2);
+	SURFHANDLE surf = oapiGetTextureHandle(hMesh, idx);
+	if (surf)
+		lua_pushlightuserdata(L, surf);
+	else
+		lua_pushnil(L);
+	return 1;
+}
+
+int Interpreter::oapi_load_texture(lua_State* L)
+{
+	const char *file = lua_tostring(L, 1);
+	bool dynamic = false;
+	if(lua_gettop(L) > 1)
+		dynamic = lua_toboolean(L, 2);
+
+	SURFHANDLE surf = oapiLoadTexture(file, dynamic);
+	if (surf)
+		lua_pushlightuserdata(L, surf);
+	else
+		lua_pushnil(L);
+	return 1;
+}
+
+int Interpreter::oapi_release_texture(lua_State* L)
+{
+	SURFHANDLE surf = (SURFHANDLE)lua_touserdata(L, 1);
+	oapiReleaseTexture(surf);
+	return 0;
+}
+
+int Interpreter::oapi_create_surface(lua_State* L)
+{
+	int w = luaL_checknumber(L, 1);
+	int h = luaL_checknumber(L, 2);
+	SURFHANDLE surf;
+	if(lua_gettop(L) >= 3) {
+		int attrib = luaL_checknumber(L, 3);
+		surf = oapiCreateSurfaceEx(w, h, attrib);
+	} else {
+		surf = oapiCreateSurface(w, h);
+	}
+
+	if(surf)
+		lua_pushlightuserdata(L, surf);
+	else
+		lua_pushnil(L);
+	return 1;
+}
+
+
+int Interpreter::oapi_destroy_surface(lua_State* L)
+{
+	SURFHANDLE surf = (SURFHANDLE)lua_touserdata(L, 1);
+	oapiDestroySurface(surf);
+	return 0;
+}
+
+int Interpreter::oapi_save_surface(lua_State* L)
+{
+	const char *name = luaL_checkstring(L, 1);
+	SURFHANDLE surf = (SURFHANDLE)lua_touserdata(L, 2);
+	oapi::ImageFileFormat format = (oapi::ImageFileFormat)luaL_checkinteger(L, 3);
+	float quality = 0.7;
+	if(lua_gettop(L)>=4)
+		quality = luaL_checknumber(L, 4);
+
+	bool ret = oapiSaveSurface(name, surf, format, quality);
+	lua_pushboolean(L, ret);
+	return 1;
+}
+
+int Interpreter::oapi_set_texture(lua_State* L)
+{
+	DWORD texid = luaL_checknumber(L, 2);
+	SURFHANDLE surf = (SURFHANDLE)lua_touserdata(L, 3);
+	MESHHANDLE *hMesh = (MESHHANDLE *)luaL_tryudata(L, 1, "MESHHANDLE");
+	if(hMesh) {
+		bool ret = oapiSetTexture(*hMesh, texid, surf);
+		lua_pushboolean(L, ret);
+		return 1;
+	}
+	DEVMESHHANDLE hDevMesh = lua_todevmeshhandle(L, 1);
+	bool ret = oapiSetTexture(hDevMesh, texid, surf);
+	lua_pushboolean(L, ret);
+	return 1;
+}
+
+int Interpreter::oapi_set_materialex(lua_State* L)
+{
+	DEVMESHHANDLE hMesh = lua_todevmeshhandle(L, 1);
+	int idx = (int)lua_tointeger(L, 2);
+	MatProp prp = (MatProp)lua_tointeger(L, 3);
+	COLOUR4 col = lua_torgba(L, 4);
+	oapi::FVECTOR4 mat(col);
+	int err = oapiSetMaterialEx(hMesh, idx, prp, &mat);
+	if (err) {
+		lua_pushnil(L);
+		lua_pushfstring(L, "oapiSetMaterialEx failed with error %d", err);
+		return 2;
+	}
+	else {
+		lua_pushboolean(L, 1);
+		return 1;
+	}
+}
+
+int Interpreter::oapi_set_material(lua_State* L)
+{
+	DEVMESHHANDLE hMesh = lua_todevmeshhandle(L, 1);
+	int idx = (int)lua_tointeger(L, 2);
+	MATERIAL mat;
+
+	lua_getfield(L, 3, "diffuse");
+	mat.diffuse = lua_torgba(L, -1);
+	lua_pop(L, 1);
+
+	lua_getfield(L, 3, "ambient");
+	mat.ambient = lua_torgba(L, -1);
+	lua_pop(L, 1);
+
+	lua_getfield(L, 3, "specular");
+	mat.specular = lua_torgba(L, -1);
+	lua_pop(L, 1);
+
+	lua_getfield(L, 3, "emissive");
+	mat.emissive = lua_torgba(L, -1);
+	lua_pop(L, 1);
+
+	lua_getfield(L, 3, "power");
+	mat.power = lua_tonumber(L, -1);
+	lua_pop(L, 1);
+
+
+	int err = oapiSetMaterial(hMesh, idx, &mat);
+	if (err) {
+		lua_pushnil(L);
+		lua_pushfstring(L, "oapiSetMaterial failed with error %d", err);
+		return 2;
+	}
+	else {
+		lua_pushboolean(L, 1);
+		return 1;
+	}
+}
+
+int Interpreter::oapi_VC_trigger_redrawarea(lua_State* L)
+{
+	int vc_id = (int)lua_tointeger(L, 1);
+	int area_id = (int)lua_tointeger(L, 2);
+	oapiVCTriggerRedrawArea(vc_id, area_id);
+	return 0;
+}
+
+int Interpreter::oapi_VC_set_areaclickmode_quadrilateral(lua_State* L)
+{
+	int id = (int)lua_tointeger(L, 1);
+	if(lua_isvector(L, 2)) {
+		VECTOR3 p1 = lua_tovector(L, 2);
+		VECTOR3 p2 = lua_tovector(L, 3);
+		VECTOR3 p3 = lua_tovector(L, 4);
+		VECTOR3 p4 = lua_tovector(L, 5);
+		oapiVCSetAreaClickmode_Quadrilateral(id, p1, p2, p3, p4);
+	} else {
+		lua_rawgeti(L, 2, 1);
+		VECTOR3 p1 = lua_tovector(L, -1); lua_pop(L, 1);
+		lua_rawgeti(L, 2, 2);
+		VECTOR3 p2 = lua_tovector(L, -1); lua_pop(L, 1);
+		lua_rawgeti(L, 2, 3);
+		VECTOR3 p3 = lua_tovector(L, -1); lua_pop(L, 1);
+		lua_rawgeti(L, 2, 4);
+		VECTOR3 p4 = lua_tovector(L, -1); lua_pop(L, 1);
+		oapiVCSetAreaClickmode_Quadrilateral(id, p1, p2, p3, p4);
+	}
+	return 0;
+}
+
+int Interpreter::oapi_VC_set_areaclickmode_spherical(lua_State* L)
+{
+	int id = (int)lua_tointeger(L, 1);
+	VECTOR3 cnt = lua_tovector(L, 2);
+	double radius = lua_tonumber(L, 3);
+	oapiVCSetAreaClickmode_Spherical(id,cnt, radius);
+	return 0;
+}
+
+int Interpreter::oapi_VC_register_area(lua_State* L)
+{
+	int id = (int)lua_tointeger(L, 1);
+	if (lua_isnumber(L, 2)) {
+		int draw_event = (int)lua_tointeger(L, 2);
+		int mouse_event = (int)lua_tointeger(L, 3);
+		oapiVCRegisterArea(id, draw_event, mouse_event);
+	} else {
+		RECT tgtrect = lua_torect(L, 2);
+		int draw_event = (int)lua_tointeger(L, 3);
+		int mouse_event = (int)lua_tointeger(L, 4);
+		int bkmode = (int)lua_tointeger(L, 5);
+		SURFHANDLE tgt = (SURFHANDLE)lua_touserdata(L, 6);
+		oapiVCRegisterArea(id, tgtrect, draw_event, mouse_event, bkmode, tgt);
+	}
+	return 0;
+}
+
+int Interpreter::oapi_VC_set_neighbours(lua_State* L)
+{
+	int left = luaL_checkinteger(L, 1);
+	int right = luaL_checkinteger(L, 2);
+	int top = luaL_checkinteger(L, 3);
+	int bottom = luaL_checkinteger(L, 4);
+	oapiVCSetNeighbours(left, right, top, bottom);
+	return 0;
+}
+
+int Interpreter::oapi_VC_registerHUD(lua_State* L)
+{
+	VCHUDSPEC hs;
+	lua_getfield(L, 1, "nmesh"); ASSERT_SYNTAX(lua_isnumber(L, -1), "Argument : missing field 'nmesh'");
+	hs.nmesh = lua_tointeger(L, -1); lua_pop(L, 1);
+	lua_getfield(L, 1, "ngroup"); ASSERT_SYNTAX(lua_isnumber(L, -1), "Argument : missing field 'ngroup'");
+	hs.ngroup = lua_tointeger(L, -1); lua_pop(L, 1);
+	lua_getfield(L, 1, "hudcnt"); ASSERT_SYNTAX(lua_isvector(L, -1), "Argument : missing field 'hudcnt'");
+	hs.hudcnt = lua_tovector(L, -1); lua_pop(L, 1);
+	lua_getfield(L, 1, "size"); ASSERT_SYNTAX(lua_isnumber(L, -1), "Argument : missing field 'size'");
+	hs.size = lua_tonumber(L, -1); lua_pop(L, 1);
+
+	oapiVCRegisterHUD(&hs);
+	return 0;
+}
+
+int Interpreter::oapi_VC_registermfd(lua_State* L)
+{
+	VCMFDSPEC spec;
+	int mfd = luaL_checkinteger(L, 1);
+	lua_getfield(L, 2, "nmesh"); ASSERT_SYNTAX(lua_isnumber(L, -1), "Argument : missing field 'nmesh'");
+	spec.nmesh = luaL_checkinteger(L, -1); lua_pop(L, 1);
+	lua_getfield(L, 2, "ngroup"); ASSERT_SYNTAX(lua_isnumber(L, -1), "Argument : missing field 'ngroup'");
+	spec.ngroup = luaL_checkinteger(L, -1); lua_pop(L, 1);
+
+	oapiVCRegisterMFD(mfd, &spec);
+	return 0;
+}
+
+int Interpreter::oapi_cockpit_mode(lua_State* L)
+{
+	lua_pushnumber(L, oapiCockpitMode());
+	return 1;
+}
+
+int Interpreter::oapi_render_hud(lua_State* L)
+{
+	MESHHANDLE hMesh = lua_tomeshhandle(L, 1);
+	int nSurf = lua_objlen(L, 2);
+	SURFHANDLE *hSurf = new SURFHANDLE[nSurf];
+
+	for ( int i=1 ; i <= nSurf; i++ ) {
+		lua_rawgeti(L,2,i);
+		if ( lua_isnil(L,-1) ) {
+			return luaL_error(L, "Error iterating over surfaces array");
+		}
+		hSurf[i-1] = (SURFHANDLE)lua_touserdata(L, -1);
+		lua_pop(L,1);
+	}
+
+	oapiRenderHUD(hMesh, hSurf);
+	delete []hSurf;
+	return 0;
+}
+
+int Interpreter::oapi_get_hudintensity(lua_State* L)
+{
+	double val = oapiGetHUDIntensity ();
+	lua_pushnumber(L, val);
+	return 1;
+}
+
+int Interpreter::oapi_set_hudintensity(lua_State* L)
+{
+	double val = luaL_checknumber(L, 1);
+	oapiSetHUDIntensity(val);
+	return 0;
+}
+
+int Interpreter::oapi_inc_hudintensity(lua_State* L)
+{
+	oapiIncHUDIntensity();
+	return 0;
+}
+int Interpreter::oapi_dec_hudintensity(lua_State* L)
+{
+	oapiDecHUDIntensity();
+	return 0;
+}
+
+int Interpreter::oapi_toggle_hudcolour(lua_State* L)
+{
+	oapiToggleHUDColour();
+	return 0;
+}
+
+int Interpreter::oapi_get_mainmenuvisibilitymode(lua_State* L)
 {
 	lua_pushnumber (L, oapiGetMainMenuVisibilityMode());
 	return 1;
@@ -2024,23 +2981,135 @@ int Interpreter::oapiReceiveInput (lua_State *L)
 	return 1;
 }
 
-int Interpreter::oapi_global_to_equ (lua_State *L)
+typedef struct {
+	int ref_enter;
+	int ref_cancel;
+	int usr_data;
+	lua_State *L;
+} lua_inputbox_ctx;
+
+static bool Clbk_enter(void *id, char *str, void *ctx)
+{
+	lua_inputbox_ctx *ibctx = (lua_inputbox_ctx *)ctx;
+	lua_rawgeti(ibctx->L, LUA_REGISTRYINDEX, ibctx->ref_enter);   // push the callback function
+	lua_pushstring (ibctx->L, str);
+	lua_rawgeti(ibctx->L, LUA_REGISTRYINDEX, ibctx->usr_data);   // push the usr_data
+	lua_call (ibctx->L, 2, 1);
+	bool ret = lua_toboolean(ibctx->L, -1);
+	if(ret) {
+		luaL_unref(ibctx->L, LUA_REGISTRYINDEX, ibctx->ref_enter);
+		luaL_unref(ibctx->L, LUA_REGISTRYINDEX, ibctx->ref_cancel);
+		luaL_unref(ibctx->L, LUA_REGISTRYINDEX, ibctx->usr_data);
+		delete ibctx;
+	}
+	return ret;
+}
+
+static bool Clbk_cancel(void *id, char *str, void *ctx)
+{
+	lua_inputbox_ctx *ibctx = (lua_inputbox_ctx *)ctx;
+	if(ibctx->ref_cancel != LUA_REFNIL) {
+		lua_rawgeti(ibctx->L, LUA_REGISTRYINDEX, ibctx->ref_cancel); // push the callback function
+		lua_pushstring (ibctx->L, str);
+		lua_rawgeti(ibctx->L, LUA_REGISTRYINDEX, ibctx->usr_data);   // push the usr_data
+		lua_call (ibctx->L, 2, 0);
+	}
+	luaL_unref(ibctx->L, LUA_REGISTRYINDEX, ibctx->ref_enter);
+	luaL_unref(ibctx->L, LUA_REGISTRYINDEX, ibctx->ref_cancel);
+	luaL_unref(ibctx->L, LUA_REGISTRYINDEX, ibctx->usr_data);
+	delete ibctx;
+	return true;
+}
+
+int Interpreter::oapi_open_inputboxex (lua_State *L)
+{
+	const char *title = luaL_checkstring(L, 1);
+	int ref_enter = LUA_REFNIL;
+	int ref_cancel = LUA_REFNIL;
+	int usr_data = LUA_REFNIL;
+	char *buf = NULL;
+	int vislen = 20;
+	int flags = 0;
+	if (lua_isfunction(L, 2)) {
+		lua_pushvalue(L, 2);
+		ref_enter = luaL_ref(L, LUA_REGISTRYINDEX);
+	} else {
+		luaL_error(L, "Argument 2 must be a function");
+	}
+	if (lua_isfunction(L, 3)) {
+		lua_pushvalue(L, 3);
+		ref_cancel = luaL_ref(L, LUA_REGISTRYINDEX);
+	}
+	if (lua_isstring(L, 4)) {
+		buf = const_cast<char *>(lua_tostring(L, 4));
+	}
+	if (lua_isnumber(L, 5)) {
+		vislen = lua_tointeger(L, 5);
+	}
+	lua_pushvalue(L, 6);
+	usr_data = luaL_ref(L, LUA_REGISTRYINDEX);
+	if (lua_isnumber(L, 7)) {
+		flags = lua_tointeger(L, 7);
+	}
+	lua_inputbox_ctx *ctx = new lua_inputbox_ctx();
+	ctx->ref_enter = ref_enter;
+	ctx->ref_cancel = ref_cancel;
+	ctx->usr_data = usr_data;
+	ctx->L = L;
+
+	oapiOpenInputBoxEx (title, Clbk_enter, Clbk_cancel, buf, vislen, ctx, flags);
+	return 0;
+}
+int Interpreter::oapi_global_to_equ(lua_State* L)
 {
 	OBJHANDLE hObj;
-	if (lua_islightuserdata (L,1) && (hObj = lua_toObject (L,1))) {
-		VECTOR3 glob = lua_tovector(L,2);
+	if (lua_islightuserdata(L, 1) && (hObj = lua_toObject(L, 1))) {
+		VECTOR3 glob = lua_tovector(L, 2);
 		double lng, lat, rad;
-		oapiGlobalToEqu (hObj, glob, &lng, &lat, &rad);
-		lua_createtable (L, 0, 3);
-		lua_pushnumber (L, lng);
-		lua_setfield (L, -2, "lng");
-		lua_pushnumber (L, lat);
-		lua_setfield (L, -2, "lat");
-		lua_pushnumber (L, rad);
-		lua_setfield (L, -2, "rad");
-	} else lua_pushnil (L);
+		oapiGlobalToEqu(hObj, glob, &lng, &lat, &rad);
+		lua_createtable(L, 0, 3);
+		lua_pushnumber(L, lng);
+		lua_setfield(L, -2, "lng");
+		lua_pushnumber(L, lat);
+		lua_setfield(L, -2, "lat");
+		lua_pushnumber(L, rad);
+		lua_setfield(L, -2, "rad");
+	}
+	else lua_pushnil(L);
 	return 1;
 }
+int Interpreter::oapi_global_to_local(lua_State* L)
+{
+	OBJHANDLE hObj;
+	if (lua_islightuserdata(L, 1) && (hObj = lua_toObject(L, 1))) {
+		VECTOR3 glob = lua_tovector(L, 2);
+		VECTOR3 loc;
+		oapiGlobalToLocal(hObj, &glob, &loc);
+		lua_pushvector(L, loc);
+	}
+	else lua_pushnil(L);
+	return 1;
+}
+
+int Interpreter::oapi_local_to_equ(lua_State* L) {
+	OBJHANDLE hObj;
+	if (lua_islightuserdata(L, 1) && (hObj = lua_toObject(L, 1))) {
+		VECTOR3 loc = lua_tovector(L, 2);
+		double lng, lat, rad;
+		oapiLocalToEqu(hObj, loc, &lng, &lat, &rad);
+		lua_createtable(L, 0, 3);
+		lua_pushnumber(L, lng);
+		lua_setfield(L, -2, "lng");
+		lua_pushnumber(L, lat);
+		lua_setfield(L, -2, "lat");
+		lua_pushnumber(L, rad);
+		lua_setfield(L, -2, "rad");
+	}
+	else lua_pushnil(L);
+	return 1;
+	
+}
+
 
 int Interpreter::oapi_equ_to_global (lua_State *L)
 {
@@ -2174,6 +3243,95 @@ int Interpreter::oapi_get_relativevel (lua_State *L)
 		oapiGetFocusRelativeVel (hRef, &vel);
 	}
 	lua_pushvector (L, vel);
+	return 1;
+}
+
+int Interpreter::oapi_get_planetperiod(lua_State* L)
+{
+	OBJHANDLE hRef;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 2: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 2: invalid object");
+	double T = oapiGetPlanetPeriod(hRef);
+
+	lua_pushnumber(L, T);
+	return 1;
+}
+
+int Interpreter::oapi_get_planetatmconstants(lua_State* L)
+{
+	OBJHANDLE hRef;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 2: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 2: invalid object");
+	const ATMCONST *c = oapiGetPlanetAtmConstants(hRef);
+
+	if(c) {
+		lua_createtable (L, 0, 10);
+		lua_pushnumber (L, c->p0);
+		lua_setfield (L, -2, "p0");
+		lua_pushnumber (L, c->rho0);
+		lua_setfield (L, -2, "rho0");
+		lua_pushnumber (L, c->R);
+		lua_setfield (L, -2, "R");
+		lua_pushnumber (L, c->gamma);
+		lua_setfield (L, -2, "gamma");
+		lua_pushnumber (L, c->C);
+		lua_setfield (L, -2, "C");
+		lua_pushnumber (L, c->O2pp);
+		lua_setfield (L, -2, "O2pp");
+		lua_pushnumber (L, c->altlimit);
+		lua_setfield (L, -2, "altlimit");
+		lua_pushnumber (L, c->radlimit);
+		lua_setfield (L, -2, "radlimit");
+		lua_pushnumber (L, c->horizonalt);
+		lua_setfield (L, -2, "horizonalt");
+		lua_pushvector (L, c->color0);
+		lua_setfield (L, -2, "color0");
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+int Interpreter::oapi_get_objecttype(lua_State* L)
+{
+	OBJHANDLE hRef;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 1: invalid object");
+	int type = oapiGetObjectType(hRef);
+
+	lua_pushnumber(L, type);
+	return 1;
+}
+int Interpreter::oapi_get_gbodyparent(lua_State* L)
+{
+	OBJHANDLE hRef;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 1: invalid object");
+	OBJHANDLE hObj = oapiGetGbodyParent(hRef);
+
+	if(hObj)
+		lua_pushlightuserdata(L, hObj);
+	else
+		lua_pushnil(L);
+	return 1;
+}
+	
+int Interpreter::oapi_get_gbody(lua_State* L)
+{
+	OBJHANDLE hObj = NULL;
+	if(lua_isnumber(L, 1)) {
+		int idx = lua_tointeger(L, 1);
+		hObj = oapiGetGbodyByIndex(idx);
+	} else if(lua_isstring(L, 1)) {
+		char *name = const_cast<char *>(lua_tostring(L, 1));
+		hObj = oapiGetGbodyByName(name);
+	} else {
+		ASSERT_SYNTAX(false, "Argument 1: name(string) or index(number) required");
+	}
+	
+	if(hObj)
+		lua_pushlightuserdata(L, hObj);
+	else
+		lua_pushnil(L);
 	return 1;
 }
 
@@ -2423,6 +3581,19 @@ int Interpreter::oapi_get_shipairspeedvector (lua_State *L)
 	return 1;
 }
 
+int Interpreter::oapi_particle_getlevelref(lua_State* L)
+{
+	static const char* funcname = "particle_getlevelref";
+	ASSERT_SYNTAX (lua_islightuserdata (L,1), "Argument 1: invalid type (expected handle)");
+	PSTREAM_HANDLE ph = (PSTREAM_HANDLE)lua_touserdata (L, 1);
+	ASSERT_SYNTAX(ph, "Argument 1: invalid object");
+	lua_pushnumberref(L);
+	double *lvl = (double *)lua_touserdata(L, -1);
+
+	oapiParticleSetLevelRef(ph, lvl);
+	return 1;
+}
+
 int Interpreter::oapi_get_equpos (lua_State *L)
 {
 	OBJHANDLE hObj;
@@ -2495,6 +3666,60 @@ int Interpreter::oapi_get_wavedrag (lua_State *L)
 	lua_pushnumber(L,oapiGetWaveDrag(M,M1,M2,M3,cmax));
 	return 1;
 }
+
+int Interpreter::oapi_get_dockhandle(lua_State* L)
+{
+	OBJHANDLE hObj;
+	double lng, lat, rad;
+	if (lua_gettop(L) < 1) {
+		hObj = oapiGetFocusObject();
+	}
+	else {
+		ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+		ASSERT_SYNTAX(hObj = lua_toObject(L, 1), "Argument 1: invalid object");
+	}
+	ASSERT_SYNTAX(lua_isnumber(L, 2), "Argument 2: invalid type (expected number)");
+	double n = lua_tonumber(L, 2);
+
+	DOCKHANDLE hDock = oapiGetDockHandle(hObj, n);
+	lua_pushlightuserdata(L, hDock);
+	return 1;
+}
+int Interpreter::oapi_get_dockstatus(lua_State* L)
+{
+	DOCKHANDLE hDock = (DOCKHANDLE)lua_tolightuserdata_safe(L, 1, "get_dockstatus");
+	OBJHANDLE hDockedVessel = oapiGetDockStatus(hDock);
+	if (hDockedVessel) {
+		lua_pushlightuserdata(L, hDockedVessel);
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int Interpreter::oapi_set_autocapture(lua_State* L)
+{
+	DOCKHANDLE hDock = (DOCKHANDLE)lua_tolightuserdata_safe(L, 1, "set_autocapture");
+	if(!lua_isboolean(L, 2)) {
+		return luaL_error(L, "Argument 2: set_autocapture expects a boolean");
+	}
+	bool enable = lua_toboolean(L, 2);
+	oapiSetAutoCapture(hDock, enable);
+	return 0;
+}
+
+int Interpreter::oapi_get_dockowner(lua_State* L)
+{
+	DOCKHANDLE hDock = (DOCKHANDLE)lua_tolightuserdata_safe(L, 1, "get_dockowner");
+	OBJHANDLE hOwner = oapiGetDockOwner(hDock);
+	if (hOwner) {
+		lua_pushlightuserdata(L, hOwner);
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
 
 int Interpreter::oapi_get_navpos (lua_State *L)
 {
@@ -2795,6 +4020,18 @@ int Interpreter::oapi_move_groundcamera (lua_State *L)
 	return 0;
 }
 
+int Interpreter::oapi_set_cameracockpitdir(lua_State *L)
+{
+	double polar = luaL_checknumber(L, 1);
+	double azimuth = luaL_checknumber(L, 2);
+	bool transition = false;
+	if(lua_gettop(L)>=3) {
+		transition = lua_toboolean(L, 3);
+	}
+	oapiCameraSetCockpitDir(polar, azimuth, transition);
+	return 0;
+}
+
 int Interpreter::oapi_create_animationcomponent (lua_State *L)
 {
 	MGROUP_TRANSFORM *trans;
@@ -2897,6 +4134,13 @@ int Interpreter::oapi_set_hudmode (lua_State *L)
 	return 0;
 }
 
+int Interpreter::oapi_get_hudmode (lua_State *L)
+{
+	int mode = oapiGetHUDMode();
+	lua_pushnumber(L, mode);
+	return 1;
+}
+
 int Interpreter::oapi_set_panelblink (lua_State *L)
 {
 	int i;
@@ -2911,6 +4155,115 @@ int Interpreter::oapi_set_panelblink (lua_State *L)
 		oapiSetPanelBlink (v);
 	}
 	return 0;
+}
+
+int Interpreter::oapi_get_mfdmode(lua_State* L)
+{
+	ASSERT_NUMBER(L, 1);
+	int mfd = lua_tointeger(L, 1);
+	int mode = oapiGetMFDMode(mfd);
+	lua_pushnumber(L, mode);
+	return 1;
+}
+
+int Interpreter::oapi_disable_mfdmode(lua_State* L)
+{
+	ASSERT_NUMBER(L, 1);
+	int mode = lua_tointeger(L, 1);
+	oapiDisableMFDMode(mode);
+	return 0;
+}
+
+int Interpreter::oapi_register_mfd(lua_State* L)
+{
+	EXTMFDSPEC spec;
+	int mfd = lua_tointeger(L, 1);
+	lua_getfield(L, 2, "pos"); ASSERT_SYNTAX(lua_istable(L, -1), "Argument : missing field 'pos'");
+	spec.pos = lua_torect(L, -1); lua_pop(L, 1);
+	lua_getfield(L, 2, "nmesh"); ASSERT_SYNTAX(lua_isnumber(L, -1), "Argument : missing field 'nmesh'");
+	spec.nmesh = lua_tointeger(L, -1); lua_pop(L, 1);
+	lua_getfield(L, 2, "ngroup"); ASSERT_SYNTAX(lua_isnumber(L, -1), "Argument : missing field 'ngroup'");
+	spec.ngroup = lua_tointeger(L, -1); lua_pop(L, 1);
+	lua_getfield(L, 2, "flag"); ASSERT_SYNTAX(lua_isnumber(L, -1), "Argument : missing field 'flag'");
+	spec.flag = lua_tointeger(L, -1); lua_pop(L, 1);
+	lua_getfield(L, 2, "nbt1"); ASSERT_SYNTAX(lua_isnumber(L, -1), "Argument : missing field 'nbt1'");
+	spec.nbt1 = lua_tointeger(L, -1); lua_pop(L, 1);
+	lua_getfield(L, 2, "nbt2"); ASSERT_SYNTAX(lua_isnumber(L, -1), "Argument : missing field 'nbt2'");
+	spec.nbt2 = lua_tointeger(L, -1); lua_pop(L, 1);
+	lua_getfield(L, 2, "bt_yofs"); ASSERT_SYNTAX(lua_isnumber(L, -1), "Argument : missing field 'bt_yofs'");
+	spec.bt_yofs = lua_tointeger(L, -1); lua_pop(L, 1);
+	lua_getfield(L, 2, "bt_ydist"); ASSERT_SYNTAX(lua_isnumber(L, -1), "Argument : missing field 'bt_ydist'");
+	spec.bt_ydist = lua_tointeger(L, -1); lua_pop(L, 1);
+
+	oapiRegisterMFD(mfd, &spec);
+	return 0;
+}
+
+int Interpreter::oapi_process_mfdbutton(lua_State* L)
+{
+	ASSERT_NUMBER(L, 1);
+	int mfd = lua_tointeger(L, 1);
+	ASSERT_NUMBER(L, 2);
+	int bt = lua_tointeger(L, 2);
+	ASSERT_NUMBER(L, 3);
+	int event = lua_tointeger(L, 3);
+	bool ret = oapiProcessMFDButton(mfd, bt, event);
+	lua_pushboolean(L, ret);
+	return 1;
+}
+
+int Interpreter::oapi_send_mfdkey(lua_State* L)
+{
+	ASSERT_NUMBER(L, 1);
+	int mfd = lua_tointeger(L, 1);
+	ASSERT_NUMBER(L, 2);
+	int key = lua_tointeger(L, 2);
+	int ret = oapiSendMFDKey(mfd, key);
+	lua_pushboolean(L, ret);
+	return 1;
+}
+
+int Interpreter::oapi_refresh_mfdbuttons(lua_State* L)
+{
+	ASSERT_NUMBER(L, 1);
+	int mfd = lua_tointeger(L, 1);
+	ASSERT_LIGHTUSERDATA(L,2);
+	OBJHANDLE hObj = lua_toObject (L, 2);
+	oapiRefreshMFDButtons (mfd, hObj);
+	return 0;
+}
+
+int Interpreter::oapi_toggle_mfdon(lua_State* L)
+{
+	int mfd = luaL_checkinteger(L, 1);
+	oapiToggleMFD_on(mfd);
+	return 0;
+}
+
+int Interpreter::oapi_set_defnavdisplay(lua_State* L)
+{
+	ASSERT_NUMBER(L, 1);
+	int mode = lua_tointeger(L, 1);
+	oapiSetDefNavDisplay (mode);
+	return 0;
+}
+int Interpreter::oapi_set_defrcsdisplay(lua_State* L)
+{
+	ASSERT_NUMBER(L, 1);
+	int mode = lua_tointeger(L, 1);
+	oapiSetDefRCSDisplay (mode);
+	return 0;
+}
+
+int Interpreter::oapi_mfd_buttonlabel(lua_State* L)
+{
+	ASSERT_NUMBER(L, 1);
+	int mfd = lua_tointeger(L, 1);
+	ASSERT_NUMBER(L, 2);
+	int bt = lua_tointeger(L, 2);
+	const char *label = oapiMFDButtonLabel(mfd, bt);
+	lua_pushstring(L, label);
+	return 1;
 }
 
 int Interpreter::oapi_keydown (lua_State *L)
@@ -2959,6 +4312,17 @@ int Interpreter::oapi_simulateimmediatekey (lua_State *L)
 	}
 	oapiSimulateImmediateKey ((char*)kstate);
 	return 0;
+}
+
+int Interpreter::oapi_acceptdelayedkey (lua_State *L)
+{
+	ASSERT_NUMBER(L,1);
+	ASSERT_NUMBER(L,2);
+	char key = lua_tointeger(L, 1);
+	double interval = lua_tonumber(L, 2);
+	bool ret = oapiAcceptDelayedKey (key, interval);
+	lua_pushboolean(L, ret);
+	return 1;
 }
 
 // ============================================================================
@@ -3036,8 +4400,12 @@ Note: Use this function on files opened with oapiOpenFile after finishing with i
 */
 int Interpreter::oapi_closefile (lua_State* L)
 {
+	// oapiCloseFile noops on NULLs so we return early to prevent failed ASSERTS later
+	if(lua_isnil(L, 1)) {
+		return 0;
+	}
 	FILEHANDLE file;
-	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle or nil)");
 	ASSERT_SYNTAX(file = lua_toObject(L, 1), "Argument 1: invalid object");
 
 	ASSERT_NUMBER(L, 2);
@@ -3051,7 +4419,7 @@ int Interpreter::oapi_closefile (lua_State* L)
 Writes the current simulation state to a scenario file.
 
 Note: The file name is always calculated relative from the default orbiter scenario
-   folder (usually Orbiter\\Scenarios). The file name can contain a relative path
+   folder (usually Orbiter/Scenarios). The file name can contain a relative path
    starting from that directory, but the subdirectories must already exist. The
    function will not create new directories. The file name should not contain an
    absolute path.
@@ -3105,7 +4473,7 @@ Writes a string-valued item to a scenario file.
 @tparam string item item id
 @tparam  string string to be written (zero-terminated)
 */
-int Interpreter:: oapi_writescenario_string (lua_State* L)
+int Interpreter::oapi_writescenario_string (lua_State* L)
 {
 	FILEHANDLE scn;
 	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
@@ -3649,6 +5017,341 @@ int Interpreter::oapi_formatvalue (lua_State* L)
 }
 
 
+int Interpreter::oapi_get_sketchpad(lua_State* L)
+{
+	ASSERT_LIGHTUSERDATA(L, 1);
+	SURFHANDLE surf = (SURFHANDLE)lua_touserdata(L, 1);
+	oapi::Sketchpad *skp = oapiGetSketchpad(surf);
+	lua_pushsketchpad(L, skp);
+	return 1;
+}
+
+int Interpreter::oapi_release_sketchpad(lua_State* L)
+{
+	oapi::Sketchpad* skp = lua_tosketchpad(L, 1);
+	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
+	oapiReleaseSketchpad(skp);
+	return 0;
+}
+
+int Interpreter::oapi_create_font(lua_State* L)
+{
+	ASSERT_NUMBER(L, 1);
+	int height = lua_tonumber(L, 1);
+	ASSERT_BOOLEAN(L, 2);
+	bool prop = lua_toboolean(L, 2);
+	ASSERT_STRING(L, 3);
+	const char* face = lua_tostring(L, 3);
+
+	FontStyle style = FONT_NORMAL;
+	if(lua_gettop(L) >=4)
+		style = (FontStyle)luaL_checkinteger(L, 4);
+
+	oapi::Font* font = oapiCreateFont(height, prop, const_cast<char*>(face), style);
+
+	if (font) lua_pushlightuserdata(L, font);
+	else     lua_pushnil(L);
+	return 1;
+}
+
+int Interpreter::oapi_release_font(lua_State* L)
+{
+	ASSERT_LIGHTUSERDATA(L, 1);
+	oapi::Font* font = (oapi::Font*)lua_touserdata(L, 1);
+
+	oapiReleaseFont(font);
+
+	return 0;
+}
+
+int Interpreter::oapi_create_pen(lua_State* L)
+{
+	ASSERT_NUMBER(L, 3);
+	int style = lua_tonumber(L, 1);
+	int width = lua_tonumber(L, 2);
+	DWORD col = lua_tonumber(L, 3);
+
+	oapi::Pen* pen = oapiCreatePen(style, width, col);
+	if (pen) lua_pushlightuserdata(L, pen);
+	else     lua_pushnil(L);
+	return 1;
+}
+
+int Interpreter::oapi_release_pen(lua_State* L)
+{
+	ASSERT_LIGHTUSERDATA(L, 1);
+	oapi::Pen* pen = (oapi::Pen*)lua_touserdata(L, 1);
+
+	oapiReleasePen(pen);
+
+	return 0;
+}
+
+
+int Interpreter::oapi_create_brush(lua_State* L)
+{
+	ASSERT_NUMBER(L, 1);
+	DWORD col = lua_tonumber(L, 1);
+
+	oapi::Brush* brush = oapiCreateBrush(col);
+	if (brush) lua_pushlightuserdata(L, brush);
+	else     lua_pushnil(L);
+	return 1;
+}
+
+int Interpreter::oapi_release_brush(lua_State* L)
+{
+	ASSERT_LIGHTUSERDATA(L, 1);
+	oapi::Brush* brush = (oapi::Brush*)lua_touserdata(L, 1);
+
+	oapiReleaseBrush(brush);
+
+	return 0;
+}
+
+int Interpreter::oapi_blt(lua_State* L)
+{
+	SURFHANDLE tgt = (SURFHANDLE)lua_touserdata(L, 1);
+	SURFHANDLE src = (SURFHANDLE)lua_touserdata(L, 2);
+	int tgtx = lua_tonumber(L, 3);
+	int tgty = lua_tonumber(L, 4);
+	int srcx = lua_tonumber(L, 5);
+	int srcy = lua_tonumber(L, 6);
+	int w = lua_tonumber(L, 7);
+	int h = lua_tonumber(L, 8);
+
+	oapiBlt(tgt, src, tgtx, tgty, srcx, srcy, w, h);
+	return 0;
+}
+
+int Interpreter::oapi_blt_panelareabackground(lua_State* L)
+{
+	int area_id = luaL_checkinteger(L, 1);
+	SURFHANDLE surf = (SURFHANDLE)lua_touserdata(L, 2);
+	bool ret = oapiBltPanelAreaBackground(area_id, surf);
+	lua_pushboolean(L, ret);
+	return 1;
+}
+
+int Interpreter::oapi_set_panelneighbours(lua_State* L)
+{
+	int left   = luaL_checkinteger(L, 1);
+	int right  = luaL_checkinteger(L, 2);
+	int top    = luaL_checkinteger(L, 3);
+	int bottom = luaL_checkinteger(L, 4);
+	oapiSetPanelNeighbours(left, right, top, bottom);
+	return 0;
+}
+
+int Interpreter::oapi_load_mesh_global(lua_State* L)
+{
+	ASSERT_STRING(L, 1);
+	const char* fname = lua_tostring(L, 1);
+	MESHHANDLE hMesh = oapiLoadMeshGlobal(fname);
+	if (hMesh) {
+		lua_pushmeshhandle(L, hMesh);
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int Interpreter::oapi_delete_mesh(lua_State* L)
+{
+	MESHHANDLE hMesh = lua_tomeshhandle(L, 1);
+	oapiDeleteMesh(hMesh);
+	return 0;
+}
+
+int Interpreter::oapi_mesh_group(lua_State* L)
+{
+	MESHHANDLE hMesh = lua_tomeshhandle(L, 1);
+	int idx = lua_tointeger(L, 2);
+
+	MESHGROUP *mg = oapiMeshGroup(hMesh, idx);
+	if (mg) {
+		lua_newtable (L);
+		push_ntvertexarray(L, mg->Vtx, mg->nVtx);
+		lua_setfield (L, -2, "Vtx");
+		push_indexarray(L, mg->Idx, mg->nIdx);
+		lua_setfield (L, -2, "Idx");
+		lua_pushnumber (L, mg->MtrlIdx);
+		lua_setfield (L, -2, "MtrlIdx");
+		lua_pushnumber (L, mg->TexIdx);
+		lua_setfield (L, -2, "TexIdx");
+		lua_pushnumber (L, mg->UsrFlag);
+		lua_setfield (L, -2, "UsrFlag");
+		lua_pushnumber (L, mg->zBias);
+		lua_setfield (L, -2, "zBias");
+		lua_pushnumber (L, mg->Flags);
+		lua_setfield (L, -2, "Flags");
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int Interpreter::oapi_create_mesh(lua_State *L)
+{
+	int nGrp = lua_objlen(L, 1);
+	MESHGROUP *grp = new MESHGROUP[nGrp];
+
+	lua_pushnil(L);
+	int i = 0;
+	while (lua_next(L, 1) != 0) {
+		MESHGROUP *g = &grp[i];
+		memset(g, 0, sizeof(*g));
+		i++;
+		lua_getfield(L, -1, "Vtx");
+		if(!lua_isnil(L, -1)) {
+			ntv_data* inst = (ntv_data*)luaL_checkudata(L, lua_gettop(L), "NTV.vtable");
+			g->Vtx = inst->vtx;
+			g->nVtx = inst->nVtxUsed;
+		}
+		lua_pop(L, 1);
+		lua_getfield(L, -1, "Idx");
+		if(!lua_isnil(L, -1)) {
+			index_data* inst = (index_data*)luaL_checkudata(L, lua_gettop(L), "Index.vtable");
+			g->Idx = inst->idx;
+			g->nIdx = inst->nIdxUsed;
+		}
+		lua_pop(L, 2);
+	}
+	lua_pop(L, 1);
+
+	MESHHANDLE hMesh = oapiCreateMesh(nGrp, grp);
+	delete []grp;
+	lua_pushmeshhandle(L, hMesh);
+	return 1;
+}
+
+int Interpreter::oapi_add_meshgroupblock(lua_State* L)
+{
+	MESHHANDLE hMesh = lua_tomeshhandle(L, 1);
+	int grpidx = luaL_checkint(L, 2);
+	ntv_data *ntv = (ntv_data *)luaL_checkudata(L, 3, "NTV.vtable");
+	index_data *idx = (index_data *)luaL_checkudata(L, 4, "Index.vtable");
+
+	bool ret = oapiAddMeshGroupBlock(hMesh, grpidx, ntv->vtx, ntv->nVtxUsed, idx->idx, idx->nIdxUsed);
+	lua_pushboolean(L, ret);
+	return 1;
+}
+
+int Interpreter::oapi_edit_meshgroup(lua_State* L)
+{
+	DWORD grpidx = luaL_checkinteger(L, 2);
+	GROUPEDITSPEC ges;
+	memset(&ges, 0, sizeof(ges));
+
+	lua_getfield (L, 3, "flags");
+	if(lua_isnil(L, -1)) {
+		luaL_error(L, "Missing flags member in GROUPEDITSPEC");
+	}
+	ges.flags = luaL_checkinteger(L, -1);  lua_pop (L, 1);
+	lua_getfield (L, 3, "UsrFlag");
+	if(!lua_isnil(L, -1)) {
+		ges.UsrFlag = luaL_checkinteger(L, -1);
+	}
+	lua_pop (L, 1);
+	lua_getfield (L, 3, "Vtx");
+	if(!lua_isnil(L, -1)) {
+		ntv_data* inst = (ntv_data*)luaL_checkudata(L, lua_gettop(L), "NTV.vtable");
+		ges.Vtx = inst->vtx;
+		ges.nVtx = inst->nVtxUsed;
+		lua_getfield (L, 3, "nVtx");
+		if(!lua_isnil(L, -1)) {
+			ges.nVtx = luaL_checkinteger(L, -1);
+			if(ges.nVtx > inst->nVtxUsed) {
+				luaL_error(L, "nVtx to big for current ntvertexarray");
+			}
+		}
+		lua_pop (L, 1);
+	}
+	lua_pop (L, 1);
+	lua_getfield (L, 3, "vIdx");
+	if(!lua_isnil(L, -1)) {
+		index_data* inst = (index_data*)luaL_checkudata(L, lua_gettop(L), "Index.vtable");
+		ges.vIdx = inst->idx;
+	}
+	lua_pop (L, 1);
+
+
+	MESHHANDLE *hMesh = (MESHHANDLE *)luaL_tryudata(L, 1, "MESHHANDLE");
+	if(hMesh) {
+		int ret = oapiEditMeshGroup(*hMesh, grpidx, &ges);
+		lua_pushinteger(L, ret);
+		return 1;
+	}
+	DEVMESHHANDLE hDevMesh = lua_todevmeshhandle(L, 1);
+	int ret = oapiEditMeshGroup(hDevMesh, grpidx, &ges);
+	lua_pushinteger(L, ret);
+
+	return 1;
+}
+
+int Interpreter::oapi_get_meshgroup(lua_State* L)
+{
+	DEVMESHHANDLE hDevMesh = lua_todevmeshhandle(L, 1);
+	DWORD grpidx = luaL_checkinteger(L, 2);
+	GROUPREQUESTSPEC grs;
+	memset(&grs, 0, sizeof(grs));
+
+	lua_getfield (L, 3, "Vtx");
+	if(!lua_isnil(L, -1)) {
+		ntv_data* inst = (ntv_data*)luaL_checkudata(L, lua_gettop(L), "NTV.vtable");
+		grs.Vtx = inst->vtx;
+		grs.nVtx = inst->nVtxUsed;
+		lua_getfield (L, 3, "nVtx");
+		if(!lua_isnil(L, -1)) {
+			grs.nVtx = luaL_checkinteger(L, -1);
+			if(grs.nVtx > inst->nVtxUsed) {
+				luaL_error(L, "nVtx to big for current ntvertexarray");
+			}
+		}
+		lua_pop (L, 1);
+	}
+	lua_pop (L, 1);
+	lua_getfield (L, 3, "VtxPerm");
+	if(!lua_isnil(L, -1)) {
+		index_data* inst = (index_data*)luaL_checkudata(L, lua_gettop(L), "Index.vtable");
+		grs.VtxPerm = inst->idx;
+	}
+	lua_pop (L, 1);
+	lua_getfield (L, 3, "Idx");
+	if(!lua_isnil(L, -1)) {
+		index_data* inst = (index_data*)luaL_checkudata(L, lua_gettop(L), "Index.vtable");
+		grs.Idx = inst->idx;
+		grs.nIdx = inst->nIdxUsed;
+		lua_getfield (L, 3, "nIdx");
+		if(!lua_isnil(L, -1)) {
+			grs.nIdx = luaL_checkinteger(L, -1);
+			if(grs.nIdx > inst->nIdxUsed) {
+				luaL_error(L, "nIdx to big for current indexarray");
+			}
+		}
+		lua_pop (L, 1);
+	}
+	lua_pop (L, 1);
+	lua_getfield (L, 3, "IdxPerm");
+	if(!lua_isnil(L, -1)) {
+		index_data* inst = (index_data*)luaL_checkudata(L, lua_gettop(L), "Index.vtable");
+		grs.IdxPerm = inst->idx;
+	}
+	lua_pop (L, 1);
+
+	int ret = oapiGetMeshGroup(hDevMesh, grpidx, &grs);
+
+	lua_pushinteger(L, grs.MtrlIdx);
+	lua_setfield(L, 3, "MtrlIdx");
+	lua_pushinteger(L, grs.TexIdx);
+	lua_setfield(L, 3, "TexIdx");
+
+	lua_pushinteger(L, ret);
+
+	return 1;
+}
+
+
 // ============================================================================
 // terminal library functions
 
@@ -3704,6 +5407,21 @@ int Interpreter::noteSetColour (lua_State *L)
 	col.z = lua_tonumber (L, -1);  lua_pop (L, 1);
 	oapiAnnotationSetColour (*pnote, col);
 	return 0;
+}
+
+
+RECT Interpreter::lua_torect(lua_State* L, int idx)
+{
+	RECT r;
+	lua_getfield(L, idx, "left");
+	r.left = lua_tointeger(L, -1); lua_pop(L, 1);
+	lua_getfield(L, idx, "top");
+	r.top = lua_tointeger(L, -1); lua_pop(L, 1);
+	lua_getfield(L, idx, "right");
+	r.right = lua_tointeger(L, -1); lua_pop(L, 1);
+	lua_getfield(L, idx, "bottom");
+	r.bottom = lua_tointeger(L, -1); lua_pop(L, 1);
+	return r;
 }
 
 // ============================================================================
@@ -3781,12 +5499,12 @@ int Interpreter::vesselGetCount (lua_State *L)
 // ============================================================================
 // MFD methods
 
-int Interpreter::mfd_get_size (lua_State *L)
+int Interpreter::mfd_get_size(lua_State* L)
 {
-	MFD2 *mfd = lua_tomfd(L,1);
+	MFD2* mfd = lua_tomfd(L, 1);
 	ASSERT_SYNTAX(mfd, "Invalid MFD object");
-	lua_pushnumber (L, mfd->GetWidth());
-	lua_pushnumber (L, mfd->GetHeight());
+	lua_pushnumber(L, mfd->GetWidth());
+	lua_pushnumber(L, mfd->GetHeight());
 	return 2;
 }
 
@@ -3869,6 +5587,24 @@ int Interpreter::le_set_position (lua_State *L)
 	ASSERT_MTDVECTOR(L,2);
 	VECTOR3 pos = lua_tovector(L,2);
 	le->SetPosition (pos);
+	return 0;
+}
+
+int Interpreter::le_get_visibility (lua_State *L)
+{
+	LightEmitter *le = lua_tolightemitter(L,1);
+	ASSERT_SYNTAX(le, "Invalid emitter object");
+	LightEmitter::VISIBILITY visibility = le->GetVisibility();
+	lua_pushinteger (L,visibility);
+	return 1;
+}
+
+int Interpreter::le_set_visibility (lua_State *L)
+{
+	LightEmitter *le = lua_tolightemitter(L,1);
+	ASSERT_SYNTAX(le, "Invalid emitter object");
+	LightEmitter::VISIBILITY visibility = (LightEmitter::VISIBILITY)luaL_checkinteger(L,2);
+	le->SetVisibility (visibility);
 	return 0;
 }
 
@@ -4033,8 +5769,12 @@ int Interpreter::skp_text (lua_State *L)
 	y = (int)lua_tointeger(L,3);
 	ASSERT_MTDSTRING(L,4);
 	const char *str = lua_tostring(L,4);
-	ASSERT_MTDNUMBER(L,5);
-	len = (int)lua_tointeger(L,5);
+	if (lua_gettop(L) == 5) {
+		ASSERT_MTDNUMBER(L, 5);
+		len = (int)lua_tointeger(L, 5);
+	} else {
+		len = strlen(str);
+	}
 	bool ok = skp->Text (x, y, str, len);
 	lua_pushboolean (L, ok ? 1:0);
 	return 1;
@@ -4248,14 +5988,30 @@ int Interpreter::skp_set_backgroundmode (lua_State *L)
 	return 0;
 }
 
-int Interpreter::skp_set_pen (lua_State *L)
+int Interpreter::skp_set_pen(lua_State* L)
 {
-	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
+	oapi::Sketchpad* skp = lua_tosketchpad(L, 1);
 	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
-	ASSERT_MTDLIGHTUSERDATA(L,2);
-	oapi::Pen *pen = (oapi::Pen*)lua_touserdata(L,2);
-	oapi::Pen *ppen = skp->SetPen (pen);
-	if (ppen) lua_pushlightuserdata(L,ppen);
+	oapi::Pen* pen = NULL;
+	
+	if (!lua_isnil(L, 2)) {
+		ASSERT_MTDLIGHTUSERDATA(L, 2);
+		pen = (oapi::Pen*)lua_touserdata(L, 2);
+	}
+	oapi::Pen* ppen = skp->SetPen(pen);
+	if (ppen) lua_pushlightuserdata(L, ppen);
+	else      lua_pushnil(L);
+	return 1;
+}
+
+int Interpreter::skp_set_brush(lua_State* L)
+{
+	oapi::Sketchpad* skp = lua_tosketchpad(L, 1);
+	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
+	ASSERT_MTDLIGHTUSERDATA(L, 2);
+	oapi::Brush* brush = (oapi::Brush*)lua_touserdata(L, 2);
+	oapi::Brush* pbrush = skp->SetBrush(brush);
+	if (pbrush) lua_pushlightuserdata(L, pbrush);
 	else      lua_pushnil(L);
 	return 1;
 }
@@ -4292,6 +6048,684 @@ int Interpreter::skp_get_textwidth (lua_State *L)
 	lua_pushnumber (L,w);
 	return 1;
 }
+
+
+void Interpreter::ntvproxy_create(lua_State *L, NTVERTEX *vtx)
+{
+	NTVERTEX **proxy = (NTVERTEX **)lua_newuserdata(L, sizeof(NTVERTEX *));
+    *proxy = vtx;
+	luaL_getmetatable(L, "NTVPROXY.vtable");
+	lua_setmetatable(L, -2);
+}
+int Interpreter::ntvproxy_get(lua_State *L)
+{
+	NTVERTEX ** vtx = (NTVERTEX **)luaL_checkudata(L, 1, "NTVPROXY.vtable");
+    const char *member = luaL_checkstring(L, 2);
+	if(!strcmp(member, "x"))
+		lua_pushnumber(L, (*vtx)->x);
+	else if(!strcmp(member, "y"))
+		lua_pushnumber(L, (*vtx)->y);
+	else if(!strcmp(member, "z"))
+		lua_pushnumber(L, (*vtx)->z);
+	else if(!strcmp(member, "pos")) {
+		VECTOR3 pos;
+		pos.x = (*vtx)->x;
+		pos.y = (*vtx)->y;
+		pos.z = (*vtx)->z;
+		lua_pushvector(L, pos);
+	} else if(!strcmp(member, "tu"))
+		lua_pushnumber(L, (*vtx)->tu);
+	else if(!strcmp(member, "tv"))
+		lua_pushnumber(L, (*vtx)->tv);
+	else if(!strcmp(member, "nx"))
+		lua_pushnumber(L, (*vtx)->nx);
+	else if(!strcmp(member, "ny"))
+		lua_pushnumber(L, (*vtx)->ny);
+	else if(!strcmp(member, "nz"))
+		lua_pushnumber(L, (*vtx)->nz);
+	else if(!strcmp(member, "normal")) {
+		VECTOR3 normal;
+		normal.x = (*vtx)->nx;
+		normal.y = (*vtx)->ny;
+		normal.z = (*vtx)->nz;
+		lua_pushvector(L, normal);
+	} else
+		luaL_error(L, "Invalid member access for vertex: %s", member);
+
+	return 1;
+}
+int Interpreter::ntvproxy_set(lua_State *L)
+{
+	NTVERTEX ** vtx = (NTVERTEX **)luaL_checkudata(L, 1, "NTVPROXY.vtable");
+    const char *member = luaL_checkstring(L, 2);
+	
+	if(!strcmp(member, "x"))
+		(*vtx)->x = luaL_checknumber(L, 3);
+	else if(!strcmp(member, "y"))
+		(*vtx)->y = luaL_checknumber(L, 3);
+	else if(!strcmp(member, "z"))
+		(*vtx)->z = luaL_checknumber(L, 3);
+	else if(!strcmp(member, "pos")) {
+		VECTOR3 pos = lua_tovector(L, 3);
+		(*vtx)->x = pos.x;
+		(*vtx)->y = pos.y;
+		(*vtx)->z = pos.z;
+	} else if(!strcmp(member, "tu"))
+		(*vtx)->tu = luaL_checknumber(L, 3);
+	else if(!strcmp(member, "tv"))
+		(*vtx)->tv = luaL_checknumber(L, 3);
+	else if(!strcmp(member, "nx"))
+		(*vtx)->nx = luaL_checknumber(L, 3);
+	else if(!strcmp(member, "ny"))
+		(*vtx)->ny = luaL_checknumber(L, 3);
+	else if(!strcmp(member, "nz"))
+		(*vtx)->nz = luaL_checknumber(L, 3);
+	else if(!strcmp(member, "normal")) {
+		VECTOR3 normal = lua_tovector(L, 3);
+		(*vtx)->nx = normal.x;
+		(*vtx)->ny = normal.y;
+		(*vtx)->nz = normal.z;
+	} else
+		luaL_error(L, "Invalid member access for vertex: %s", member);
+
+	return 0;
+}
+
+NTVERTEX lua_tontvertex(lua_State *L, int idx)
+{
+	int type = lua_type(L, idx);
+	if(type != LUA_TTABLE || lua_objlen(L, idx) != 8) {
+		luaL_error(L, "invalid argument for ntvertex creation");
+	}
+	NTVERTEX ret;
+	lua_rawgeti(L, 1, idx);
+	ret.x = luaL_checknumber(L, -1); lua_pop(L, 1);
+	lua_rawgeti(L, 2, idx);
+	ret.y = luaL_checknumber(L, -1); lua_pop(L, 1);
+	lua_rawgeti(L, 3, idx);
+	ret.z = luaL_checknumber(L, -1); lua_pop(L, 1);
+	lua_rawgeti(L, 4, idx);
+	ret.nx = luaL_checknumber(L, -1); lua_pop(L, 1);
+	lua_rawgeti(L, 5, idx);
+	ret.ny = luaL_checknumber(L, -1); lua_pop(L, 1);
+	lua_rawgeti(L, 6, idx);
+	ret.nz = luaL_checknumber(L, -1); lua_pop(L, 1);
+	lua_rawgeti(L, 7, idx);
+	ret.tu = luaL_checknumber(L, -1); lua_pop(L, 1);
+	lua_rawgeti(L, 8, idx);
+	ret.tv = luaL_checknumber(L, -1); lua_pop(L, 1);
+	return ret;
+}
+
+// ============================================================================
+// NTVERTEX array methods
+int Interpreter::oapi_create_ntvertexarray(lua_State *L)
+{
+	int type = lua_type(L, 1);
+	int nVtx;
+	if(type == LUA_TTABLE) {
+		nVtx = lua_objlen(L,1);
+	} else if (type == LUA_TNUMBER) {
+		nVtx = lua_tointeger(L, 1);
+	} else {
+		return luaL_error(L, "Invalid type for create_ntvertexarray, number or table expected");
+	}
+
+	ntv_data *array = (ntv_data *)lua_newuserdata(L, sizeof(ntv_data));
+    
+	luaL_getmetatable(L, "NTV.vtable");
+	lua_setmetatable(L, -2);
+    
+	array->nVtx = nVtx;
+	array->nVtxUsed = nVtx;
+	array->vtx = new NTVERTEX[nVtx];
+	array->owning = true;
+
+	if(type == LUA_TTABLE) {
+		lua_pushnil(L);
+		int i = 0;
+		while (lua_next(L, 1) != 0) {
+			array->vtx[i] = lua_tontvertex(L, -1);
+			lua_pop(L, 1);
+			i++;
+		}
+	}
+
+
+	return 1;
+}
+
+void Interpreter::push_ntvertexarray(lua_State *L, NTVERTEX *vtx, int nVtx)
+{
+	ntv_data *array = (ntv_data *)lua_newuserdata(L, sizeof(ntv_data));
+    
+	luaL_getmetatable(L, "NTV.vtable");
+	lua_setmetatable(L, -2);
+    
+	array->nVtx = nVtx;
+	array->nVtxUsed = nVtx;
+	array->vtx = vtx;
+	array->owning = false;
+}
+
+int Interpreter::oapi_del_ntvertexarray(lua_State *L)
+{
+	ntv_data* inst = (ntv_data*)luaL_checkudata(L, 1, "NTV.vtable");
+	if(inst->owning) {
+		delete []inst->vtx;
+		inst->owning = false;
+	}
+	inst->vtx = nullptr;
+	return 0;
+}
+
+int Interpreter::ntv_collect(lua_State *L)
+{
+	ntv_data* inst = (ntv_data*)luaL_checkudata(L, 1, "NTV.vtable");
+	if(inst->owning && inst->vtx)
+		delete []inst->vtx;
+
+	return 0;
+}
+
+int Interpreter::ntv_size (lua_State *L) {
+	ntv_data* inst = (ntv_data*)luaL_checkudata(L, 1, "NTV.vtable");
+    lua_pushnumber(L, inst->nVtxUsed);
+    return 1;
+}
+
+int Interpreter::ntv_get(lua_State *L) {
+	ntv_data* inst = (ntv_data*)luaL_checkudata(L, 1, "NTV.vtable");
+	if(lua_isnumber(L, 2)) { // return proxy object for vertex
+		int index = luaL_checkint(L, 2);
+		char cbuf[256];
+		if(!(1 <= index && index <= inst->nVtxUsed)) {
+			sprintf(cbuf, "index out of range (%d/%d)", index, inst->nVtxUsed);
+			luaL_argcheck(L, false, 2, cbuf);
+		}
+		/* return element address */
+		NTVERTEX *vtx = &inst->vtx[index - 1];
+		ntvproxy_create(L, vtx);
+		return 1;
+	} else {
+		const char *method = luaL_checkstring(L, 2);
+		if(!strcmp(method, "zeroize")) {
+			lua_pushcfunction(L, ntv_zeroize);
+			return 1;
+		}
+		if(!strcmp(method, "reset")) {
+			lua_pushcfunction(L, ntv_reset);
+			return 1;
+		}
+		if(!strcmp(method, "size")) {
+			lua_pushcfunction(L, ntv_size);
+			return 1;
+		}
+		if(!strcmp(method, "extract")) {
+			lua_pushcfunction(L, ntv_extract);
+			return 1;
+		}
+		if(!strcmp(method, "append")) {
+			lua_pushcfunction(L, ntv_append);
+			return 1;
+		}
+		if(!strcmp(method, "copy")) {
+			lua_pushcfunction(L, ntv_copy);
+			return 1;
+		}
+		if(!strcmp(method, "view")) {
+			lua_pushcfunction(L, ntv_view);
+			return 1;
+		}
+		if(!strcmp(method, "write")) {
+			lua_pushcfunction(L, ntv_write);
+			return 1;
+		}
+		
+		return luaL_error(L, "invalid ntvertex method %s", method);
+	}
+}
+
+int Interpreter::ntv_extract(lua_State *L) {
+	ntv_data* inst = (ntv_data*)luaL_checkudata(L, 1, "NTV.vtable");
+    int index = luaL_checkint(L, 2);
+    luaL_argcheck(L, 1 <= index && index <= inst->nVtxUsed, 2, "index out of range");
+    
+    /* return element address */
+    NTVERTEX *vtx = &inst->vtx[index - 1];
+	lua_newtable(L);
+	lua_pushnumber (L, vtx->x);
+	lua_setfield (L, -2, "x");
+	lua_pushnumber (L, vtx->y);
+	lua_setfield (L, -2, "y");
+	lua_pushnumber (L, vtx->z);
+	lua_setfield (L, -2, "z");
+
+	lua_pushnumber (L, vtx->nx);
+	lua_setfield (L, -2, "nx");
+	lua_pushnumber (L, vtx->ny);
+	lua_setfield (L, -2, "ny");
+	lua_pushnumber (L, vtx->nz);
+	lua_setfield (L, -2, "nz");
+
+	lua_pushnumber (L, vtx->tu);
+	lua_setfield (L, -2, "tu");
+	lua_pushnumber (L, vtx->tv);
+	lua_setfield (L, -2, "tv");
+	return 1;
+}
+
+int Interpreter::ntv_reset(lua_State *L) {
+	ntv_data* inst = (ntv_data*)luaL_checkudata(L, 1, "NTV.vtable");
+	inst->nVtxUsed = 0;
+	return 0;
+}
+
+int Interpreter::ntv_zeroize(lua_State *L) {
+	ntv_data* inst = (ntv_data*)luaL_checkudata(L, 1, "NTV.vtable");
+	memset(inst->vtx, 0, inst->nVtx * sizeof(NTVERTEX));
+	return 0;
+}
+
+int Interpreter::ntv_append(lua_State *L) {
+	ntv_data* dst = (ntv_data*)luaL_checkudata(L, 1, "NTV.vtable");
+	ntv_data* src = (ntv_data*)luaL_checkudata(L, 2, "NTV.vtable");
+
+	if(dst->nVtxUsed + src->nVtxUsed > dst->nVtx)
+		return luaL_error(L, "Cannot append ntvertexarray, not enough room");
+
+	memcpy(dst->vtx + dst->nVtxUsed, src->vtx, sizeof(NTVERTEX) * src->nVtxUsed);
+	dst->nVtxUsed += src->nVtxUsed;
+	return 0;
+}
+
+int Interpreter::ntv_write(lua_State *L) {
+	ntv_data* self = (ntv_data*)luaL_checkudata(L, 1, "NTV.vtable");
+	ntv_data* from = (ntv_data*)luaL_checkudata(L, 2, "NTV.vtable");
+	int size = from->nVtxUsed;
+	int start = 0;
+
+	if(lua_gettop(L)>=3) {
+		start = luaL_checkinteger(L,3) - 1;
+		if(start < 0) {
+			luaL_error(L, "Invalid write offset (%d)", start+1);
+		}
+		if(start > self->nVtx) {
+			luaL_error(L, "Write out of bound (%d/%d)", start+1,self->nVtx);
+		}
+	}
+	if(lua_gettop(L)>=4) {
+		size = luaL_checkinteger(L,4);
+		if(size+start > self->nVtx) {
+			luaL_error(L, "Write out of bound (%d/%d)", start+size,self->nVtx);
+		}
+	}
+	memcpy(self->vtx + start, from->vtx, size*sizeof(NTVERTEX));
+	self->nVtxUsed = std::max(self->nVtxUsed, start + size);
+	return 0;
+}
+
+int Interpreter::ntv_copy(lua_State *L) {
+	ntv_data* from = (ntv_data*)luaL_checkudata(L, 1, "NTV.vtable");
+
+	int start = 0;
+	int size = from->nVtx;
+	if(lua_gettop(L) >= 2) {
+		start = luaL_checkinteger(L, 2) - 1; // 1 based
+		if(start < 0) {
+			return luaL_error(L, "Invalid start offset (%d)", start + 1);
+		}
+		if(start > from->nVtx) {
+			return luaL_error(L, "Start offset outside of vertex array (%d/%d)", start + 1, from->nVtx);
+		}
+		size -= start;
+	}
+	if(lua_gettop(L) >= 3) {
+		size = luaL_checkinteger(L, 3);
+		if(size <= 0) {
+			return luaL_error(L, "Invalid size (%d)", size);
+		}
+		if(start + size > from->nVtx) {
+			return luaL_error(L, "Trying to copy outside of vertex array (%d/%d)", start + size, from->nVtx);
+		}
+	}
+
+	ntv_data *copy = (ntv_data *)lua_newuserdata(L, sizeof(ntv_data));
+
+	luaL_getmetatable(L, "NTV.vtable");
+	lua_setmetatable(L, -2);
+    
+	copy->nVtx = size;
+	copy->nVtxUsed = size;
+	copy->vtx = new NTVERTEX[size];
+	memcpy(copy->vtx, from->vtx + start, size*sizeof(NTVERTEX));
+	copy->owning = true;
+	return 1;
+}
+
+int Interpreter::ntv_view(lua_State *L) {
+	ntv_data* from = (ntv_data*)luaL_checkudata(L, 1, "NTV.vtable");
+	int start = lua_tointeger(L, 2) - 1;  // 1 based indexing
+	int size = lua_tointeger(L, 3);
+
+	if(size < 0) {
+		return luaL_error(L, "Invalid view size (%d)", size);
+	}
+
+	// if size is 0 or not specified then create a view to the end
+	if(size == 0)
+		size = from->nVtxUsed - start;
+
+	if( start+size > from->nVtx) {
+		return luaL_error(L, "Cannot create a view out the the array (%d>%d)", start+size > from->nVtx);
+	}
+
+	ntv_data *view = (ntv_data *)lua_newuserdata(L, sizeof(ntv_data));
+	luaL_getmetatable(L, "NTV.vtable");
+	lua_setmetatable(L, -2);
+    
+	view->nVtx = size;
+	view->nVtxUsed = size;
+	view->vtx = from->vtx + start;
+	view->owning = false;
+	return 1;
+}
+
+int Interpreter::ntv_set(lua_State *L) {
+	ntv_data* inst = (ntv_data*)luaL_checkudata(L, 1, "NTV.vtable");
+    int index = luaL_checkint(L, 2);
+    luaL_argcheck(L, 1 <= index && index <= inst->nVtxUsed, 2, "index out of range");
+    
+    /* return element address */
+    NTVERTEX *vtx = &inst->vtx[index - 1];
+
+	lua_getfield(L, 3, "x"); vtx->x = luaL_checknumber(L, -1); lua_pop (L,1);
+	lua_getfield(L, 3, "y"); vtx->y = luaL_checknumber(L, -1); lua_pop (L,1);
+	lua_getfield(L, 3, "z"); vtx->z = luaL_checknumber(L, -1); lua_pop (L,1);
+
+	lua_getfield(L, 3, "nx"); vtx->nx = luaL_checknumber(L, -1); lua_pop (L,1);
+	lua_getfield(L, 3, "ny"); vtx->ny = luaL_checknumber(L, -1); lua_pop (L,1);
+	lua_getfield(L, 3, "nz"); vtx->nz = luaL_checknumber(L, -1); lua_pop (L,1);
+
+	lua_getfield(L, 3, "tu"); vtx->tu = luaL_checknumber(L, -1); lua_pop (L,1);
+	lua_getfield(L, 3, "tv"); vtx->tv = luaL_checknumber(L, -1); lua_pop (L,1);
+
+	return 0;
+}
+
+// ============================================================================
+// Index array methods
+int Interpreter::oapi_create_indexarray(lua_State *L)
+{
+	int type = lua_type(L, 1);
+	int nIdx;
+	if(type == LUA_TTABLE) {
+		nIdx = lua_objlen(L,1);
+	} else if (type == LUA_TNUMBER) {
+		nIdx = lua_tointeger(L, 1);
+	} else {
+		return luaL_error(L, "Invalid type for create_indexarray, number or table expected");
+	}
+
+	index_data *array = (index_data *)lua_newuserdata(L, sizeof(index_data));
+    
+	luaL_getmetatable(L, "Index.vtable");
+	lua_setmetatable(L, -2);
+    
+	array->nIdx = nIdx;
+	array->nIdxUsed = nIdx;
+	array->idx = new WORD[nIdx];
+	array->owning = true;
+
+	if(type == LUA_TTABLE) {
+		lua_pushnil(L);
+		int i = 0;
+		while (lua_next(L, 1) != 0) {
+			array->idx[i] = luaL_checkint(L, -1);
+			lua_pop(L, 1);
+			i++;
+		}
+	}
+
+	return 1;
+}
+
+void Interpreter::push_indexarray(lua_State *L, WORD *idx, int nIdx)
+{
+	index_data *array = (index_data *)lua_newuserdata(L, sizeof(index_data));
+    
+	luaL_getmetatable(L, "Index.vtable");
+	lua_setmetatable(L, -2);
+    
+	array->nIdx = nIdx;
+	array->nIdxUsed = nIdx;
+	array->idx = idx;
+	array->owning = false;
+}
+
+int Interpreter::oapi_del_indexarray(lua_State *L)
+{
+	index_data* inst = (index_data*)luaL_checkudata(L, 1, "Index.vtable");
+	if(inst->owning) {
+		delete []inst->idx;
+		inst->owning = false;
+	}
+	inst->idx = nullptr;
+	return 0;
+}
+
+int Interpreter::idx_collect(lua_State *L)
+{
+	index_data* inst = (index_data*)luaL_checkudata(L, 1, "Index.vtable");
+	if(inst->owning && inst->idx)
+		delete []inst->idx;
+
+	return 0;
+}
+
+int Interpreter::idx_size (lua_State *L) {
+	index_data* inst = (index_data*)luaL_checkudata(L, 1, "Index.vtable");
+    lua_pushnumber(L, inst->nIdxUsed);
+    return 1;
+}
+
+int Interpreter::idx_reset (lua_State *L) {
+	index_data* inst = (index_data*)luaL_checkudata(L, 1, "Index.vtable");
+	inst->nIdxUsed = 0;
+	return 0;
+}
+
+int Interpreter::idx_append (lua_State *L) {
+	index_data* dst = (index_data*)luaL_checkudata(L, 1, "Index.vtable");
+	index_data* src = (index_data*)luaL_checkudata(L, 2, "Index.vtable");
+
+	int offset = lua_tointeger(L, 3);
+
+	if(dst->nIdxUsed + src->nIdxUsed > dst->nIdx)
+		luaL_error(L, "Cannot append ntvertexarray, not enough room");
+
+	for(int i=0; i<src->nIdxUsed;i++) {
+		dst->idx[dst->nIdxUsed + i] = src->idx[i] + offset;
+	}
+
+	dst->nIdxUsed += src->nIdxUsed;
+	return 0;
+}
+
+int Interpreter::idx_get(lua_State *L) {
+	index_data* inst = (index_data*)luaL_checkudata(L, 1, "Index.vtable");
+	if(lua_isnumber(L, 2)) { // return proxy object for vertex
+		int index = luaL_checkint(L, 2);
+		luaL_argcheck(L, 1 <= index && index <= inst->nIdxUsed, 2, "index out of range");
+    
+		/* return element address */
+		lua_pushnumber(L, inst->idx[index - 1]);
+		return 1;
+	} else {
+		const char *method = luaL_checkstring(L, 2);
+		if(!strcmp(method, "reset")) {
+			lua_pushcfunction(L, idx_reset);
+			return 1;
+		}
+		if(!strcmp(method, "size")) {
+			lua_pushcfunction(L, idx_size);
+			return 1;
+		}
+		if(!strcmp(method, "append")) {
+			lua_pushcfunction(L, idx_append);
+			return 1;
+		}
+		return luaL_error(L, "invalid indexarray method %s", method);	}
+}
+
+int Interpreter::idx_set(lua_State *L) {
+	index_data* inst = (index_data*)luaL_checkudata(L, 1, "Index.vtable");
+    int index = luaL_checkint(L, 2);
+    luaL_argcheck(L, 1 <= index && index <= inst->nIdxUsed, 2, "index out of range");
+    WORD value = luaL_checkint(L, 3);
+
+	inst->idx[index - 1] = value;
+	return 0;
+}
+
+
+void *Interpreter::luaL_tryudata (lua_State *L, int ud, const char *tname) {
+  void *p = lua_touserdata(L, ud);
+  if(p == NULL) return NULL;
+  if(!lua_getmetatable(L, ud)) return NULL;
+
+  lua_getfield(L, LUA_REGISTRYINDEX, tname);
+  
+  if(!lua_rawequal(L, -1, -2)) {
+	p = NULL;
+  }
+  lua_pop(L, 2);
+  return p;
+}
+
+void Interpreter::lua_pushmeshhandle(lua_State *L, MESHHANDLE hMesh)
+{
+	MESHHANDLE *h = (MESHHANDLE *)lua_newuserdata(L, sizeof(MESHHANDLE));
+	*h = hMesh;
+	luaL_getmetatable(L, "MESHHANDLE");
+	lua_setmetatable(L, -2);
+}
+
+MESHHANDLE Interpreter::lua_tomeshhandle(lua_State *L, int idx)
+{
+	return (MESHHANDLE)*(MESHHANDLE *)luaL_checkudata (L, idx, "MESHHANDLE");
+}
+int Interpreter::lua_ismeshhandle(lua_State *L, int idx)
+{
+	return luaL_tryudata(L, idx, "MESHHANDLE") != NULL;
+}
+
+
+void Interpreter::lua_pushdevmeshhandle(lua_State *L, DEVMESHHANDLE hMesh)
+{
+	DEVMESHHANDLE *h = (DEVMESHHANDLE *)lua_newuserdata(L, sizeof(DEVMESHHANDLE));
+	*h = hMesh;
+	luaL_getmetatable(L, "DEVMESHHANDLE");
+	lua_setmetatable(L, -2);
+}
+
+DEVMESHHANDLE Interpreter::lua_todevmeshhandle(lua_State *L, int idx)
+{
+	return (DEVMESHHANDLE)*(DEVMESHHANDLE *)luaL_checkudata (L, idx, "DEVMESHHANDLE");
+}
+int Interpreter::lua_isdevmeshhandle(lua_State *L, int idx)
+{
+	return luaL_tryudata(L, idx, "DEVMESHHANDLE") != NULL;
+}
+
+int Interpreter::oapi_create_beacon(lua_State *L)
+{
+	BEACONLIGHTSPEC_Lua *beacon = (BEACONLIGHTSPEC_Lua *)lua_newuserdata(L, sizeof(BEACONLIGHTSPEC_Lua));
+	beacon->bs.pos = &beacon->pos;
+	beacon->bs.col = &beacon->col;
+	beacon->vessel = nullptr;
+	luaL_getmetatable(L, "Beacon.vtable");
+	lua_setmetatable(L, -2);
+
+	lua_getfield (L, 1, "shape");  beacon->bs.shape = luaL_checkinteger (L, -1);  lua_pop (L,1);
+	lua_getfield (L, 1, "pos");  beacon->pos = lua_tovector_safe (L, -1, "create_beacon");  lua_pop (L,1);
+	lua_getfield (L, 1, "col");  beacon->col = lua_tovector_safe (L, -1, "create_beacon");  lua_pop (L,1);
+	lua_getfield (L, 1, "size");  beacon->bs.size = luaL_checknumber (L, -1);  lua_pop (L,1);
+	lua_getfield (L, 1, "falloff");  beacon->bs.falloff = luaL_checknumber (L, -1);  lua_pop (L,1);
+	lua_getfield (L, 1, "period");  beacon->bs.period = luaL_checknumber (L, -1);  lua_pop (L,1);
+	lua_getfield (L, 1, "duration");  beacon->bs.duration = luaL_checknumber (L, -1);  lua_pop (L,1);
+	lua_getfield (L, 1, "tofs");  beacon->bs.tofs = luaL_checknumber (L, -1);  lua_pop (L,1);
+	lua_getfield (L, 1, "active");  beacon->bs.active = lua_toboolean (L, -1);  lua_pop (L,1);
+	
+	return 1;
+}
+
+int Interpreter::beacon_collect(lua_State *L)
+{
+	BEACONLIGHTSPEC_Lua* beacon = (BEACONLIGHTSPEC_Lua*)luaL_checkudata(L, 1, "Beacon.vtable");
+	if(beacon->vessel) {
+		// Remove the association in case the reference is lost to prevent potential use after free bugs
+		beacon->vessel->DelBeacon(&beacon->bs);
+	}
+
+	return 1;
+}
+
+int Interpreter::beacon_get(lua_State *L)
+{
+	BEACONLIGHTSPEC_Lua *beacon = (BEACONLIGHTSPEC_Lua *)luaL_checkudata(L, 1, "Beacon.vtable");
+    const char *member = luaL_checkstring(L, 2);
+	if(!strcmp(member, "shape"))
+		lua_pushinteger(L, beacon->bs.shape);
+	else if(!strcmp(member, "pos"))
+		lua_pushvector(L, beacon->pos);
+	else if(!strcmp(member, "col"))
+		lua_pushvector(L, beacon->col);
+	else if(!strcmp(member, "size"))
+		lua_pushnumber(L, beacon->bs.size);
+	else if(!strcmp(member, "falloff"))
+		lua_pushnumber(L, beacon->bs.falloff);
+	else if(!strcmp(member, "period"))
+		lua_pushnumber(L, beacon->bs.period);
+	else if(!strcmp(member, "duration"))
+		lua_pushnumber(L, beacon->bs.duration);
+	else if(!strcmp(member, "tofs"))
+		lua_pushnumber(L, beacon->bs.tofs);
+	else if(!strcmp(member, "active"))
+		lua_pushboolean(L, beacon->bs.active);
+	else
+		luaL_error(L, "Trying to access unknown beacon field '%s'", member);
+
+	return 1;
+}
+
+int Interpreter::beacon_set (lua_State *L)
+{
+	BEACONLIGHTSPEC_Lua *beacon = (BEACONLIGHTSPEC_Lua *)luaL_checkudata(L, 1, "Beacon.vtable");
+    const char *member = luaL_checkstring(L, 2);
+
+	if(!strcmp(member, "shape"))
+		beacon->bs.shape = luaL_checkinteger(L, 3);
+	else if(!strcmp(member, "pos"))
+		beacon->pos = lua_tovector_safe(L, 3, "beacon_set");
+	else if(!strcmp(member, "col"))
+		beacon->col = lua_tovector_safe(L, 3, "beacon_set");
+	else if(!strcmp(member, "size"))
+		beacon->bs.size = luaL_checknumber(L, 3);
+	else if(!strcmp(member, "falloff"))
+		beacon->bs.falloff = luaL_checknumber(L, 3);
+	else if(!strcmp(member, "period"))
+		beacon->bs.period = luaL_checknumber(L, 3);
+	else if(!strcmp(member, "duration"))
+		beacon->bs.duration = luaL_checknumber(L, 3);
+	else if(!strcmp(member, "tofs"))
+		beacon->bs.tofs = luaL_checknumber(L, 3);
+	else if(!strcmp(member, "active"))
+		beacon->bs.active = lua_toboolean(L, 3);
+		
+	return 0;
+}
+
 
 // ============================================================================
 // core thread functions

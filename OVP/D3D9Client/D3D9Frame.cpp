@@ -73,7 +73,6 @@ void CD3DFramework9::Clear()
 	SWVert			  = false;
 	Pure			  = true;
 	DDM				  = false;
-	bGDIBB			  = false;
 	nvPerfHud		  = false;
 	dwRenderWidth	  = 0;
 	dwRenderHeight	  = 0;
@@ -120,10 +119,12 @@ HRESULT CD3DFramework9::DestroyObjects ()
 	SAFE_RELEASE(pSketchpadDecl);
 	SAFE_RELEASE(pLocalLightsDecl);
 
+	HR(pDevice->EvictManagedResources());
+
 	Sleep(200);
 
 	if (pDevice->Reset(&d3dPP)==S_OK)	LogAlw("[DirectX Device Reset Succesfull]");
-	else								LogWrn("[Failed to Reset DirectX Device] (Likely blocked by undeleted resources)");
+	else								LogAlw("[Failed to Reset DirectX Device] (Likely blocked by undeleted resources)");
 
 	SAFE_RELEASE(pDevice);
 
@@ -157,7 +158,6 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	bIsFullscreen = vData->fullscreen;
 	bNoVSync      = vData->novsync;
 	dwFSMode	  = vData->style;
-	bGDIBB		  = vData->trystencil;
 	Adapter		  = vData->deviceidx;
 	Mode		  = vData->modeidx;
 
@@ -221,6 +221,8 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 		dwDisplayMode = 2;
 		LONG x = GetWindowLongA(hWnd, GWL_STYLE);
 		SetWindowLongA(hWnd, GWL_STYLE, x | WS_CLIPCHILDREN | WS_VISIBLE);
+		if (vData->trystencil)
+			SetWindowPos(hWnd, 0, 0, 0, vData->winw, vData->winh, SWP_SHOWWINDOW | SWP_NOSENDCHANGING);
 	}
 
 	// Hardware CAPS Checks --------------------------------------------------
@@ -241,7 +243,6 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 
 	MultiSample = min(aamax, DWORD(Config->SceneAntialias));
 
-	if (bGDIBB) MultiSample=0, bNoVSync = true;
 	if (MultiSample==1) MultiSample = 0;
 
 	LogAlw("MaxTextureBlendStages... : %u",caps.MaxTextureBlendStages);
@@ -589,8 +590,6 @@ HRESULT CD3DFramework9::CreateWindowedMode()
 		d3dPP.Flags                      = 0;
 		d3dPP.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
 	}
-
-	if (bGDIBB) d3dPP.Flags |= D3DPRESENTFLAG_LOCKABLE_BACKBUFFER;
 
 	if (bNoVSync) d3dPP.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
 	else		  d3dPP.PresentationInterval = D3DPRESENT_INTERVAL_ONE;

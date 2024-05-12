@@ -78,6 +78,10 @@ object to allow the script to update the MFD display.</p>
 <td>Selects a new font into the drawing context.</td>
 </tr>
 <tr>
+<td><a href="#set_brush">skp:set_brush</a></td>
+<td>Selects a new brush into the drawing context.</td>
+</tr>
+<tr>
 <td><a href="#get_charsize">skp:get_charsize</a></td>
 <td>Return height and (average) width of a character in the currently selected font.</td>
 </tr>
@@ -429,6 +433,22 @@ col = B*65536 + G*256 + R
 <h4>Return values:</h4>
 <table>
 <tr><td>pfont&nbsp;(handle):</td><td>previous font object</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="set_brush"></a>
+<h3>pbrush = skp:set_brush(brush)</h3>
+<p>Selects a new brush into the drawing context.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>brush&nbsp;(handle):</td><td>new brush object</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>pbrush&nbsp;(handle):</td><td>previous brush object</td></tr>
 </table>
 </div>
 

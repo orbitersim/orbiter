@@ -1,0 +1,109 @@
+# Copyright (c) Martin Schweiger
+# Licensed under the MIT License
+
+cmake_minimum_required(VERSION 3.19)
+
+# Set the project name
+project (OrbiterSamples VERSION 21.7.24)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED OFF)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+set(CMAKE_SUPPRESS_REGENERATION TRUE)
+set_property(GLOBAL PROPERTY USE_FOLDERS TRUE)
+
+# Some functions to simplify debugging CMake scripts
+include(CMakePrintHelpers)
+
+# Locally defined cmake modules
+set(CMAKE_MODULE_PATH
+	${CMAKE_SOURCE_DIR}/cmake
+	${CMAKE_MODULE_PATH}
+)
+
+if(CMAKE_SIZEOF_VOID_P EQUAL 8) # 64-bit build?
+	set(BUILD64 1)
+	set(ARCH "x64")
+	set(PLATFORM_STRING "x64")
+else()
+	set(BUILD64 0)
+	set(ARCH "x86")
+	set(PLATFORM_STRING "Win32")
+endif()
+
+add_compile_options(/MP)
+
+# Define directories and file paths for some common binaries
+set(ROOT_DIR ${CMAKE_SOURCE_DIR})
+set(SDK_DIR ${ROOT_DIR}/Orbitersdk)
+set(SAMPLES_SRC_DIR ${SDK_DIR}/samples)
+set(MODULE_DIR ${ROOT_DIR}/Modules)
+set(PLUGIN_DIR ${ROOT_DIR}/Modules/Plugin)
+set(STARTUP_DIR ${ROOT_DIR}/Modules/Startup)
+set(INCLUDE_DIR ${SDK_DIR}/include)
+
+set(ORBITER_TOOL_MESHC ${SDK_DIR}/Utils/meshc)
+
+# Default Link Libraries 
+set(DebugLib 
+	#Orbiterd 
+	#Orbitersdkd 
+	#DlgCtrld
+	#Lua/luad 
+	#Lua/LuaInterpreterd
+	Orbiter
+	Orbitersdk
+	DlgCtrl
+	Lua/lua
+	Lua/LuaInterpreter
+	UxTheme
+)
+
+set(ReleaseLib 
+	Orbiter 
+	Orbitersdk 
+	DlgCtrl
+	Lua/lua
+	Lua/LuaInterpreter
+	UxTheme
+)
+
+set(APIHeaders
+    ${INCLUDE_DIR}/OrbiterAPI.h
+	${INCLUDE_DIR}/DrawAPI.h
+	${INCLUDE_DIR}/VesselAPI.h
+	${INCLUDE_DIR}/MFDAPI.h
+	${INCLUDE_DIR}/CelBodyAPI.h
+	${INCLUDE_DIR}/ModuleAPI.h
+	${INCLUDE_DIR}/CamAPI.h
+)
+
+set(IncludeDirs
+	${SAMPLES_SRC_DIR}/Atlantis/Atlantis
+	${SAMPLES_SRC_DIR}/LuaInterpreter
+	${SAMPLES_SRC_DIR}
+)
+
+link_directories(${SDK_DIR}/lib)
+include_directories(${INCLUDE_DIR} ${IncludeDirs})
+
+
+# Add Projects
+add_subdirectory(${SAMPLES_SRC_DIR}/Atlantis)
+add_subdirectory(${SAMPLES_SRC_DIR}/DeltaGlider)
+add_subdirectory(${SAMPLES_SRC_DIR}/AscentMFD)
+add_subdirectory(${SAMPLES_SRC_DIR}/DialogTemplate)
+add_subdirectory(${SAMPLES_SRC_DIR}/DrawOrbits)
+add_subdirectory(${SAMPLES_SRC_DIR}/DX9ExtMFD)
+add_subdirectory(${SAMPLES_SRC_DIR}/GenericCamera)
+add_subdirectory(${SAMPLES_SRC_DIR}/HST)
+add_subdirectory(${SAMPLES_SRC_DIR}/LaunchpadParamTemplate)
+add_subdirectory(${SAMPLES_SRC_DIR}/MFDTemplate)
+add_subdirectory(${SAMPLES_SRC_DIR}/Quadcopter)
+add_subdirectory(${SAMPLES_SRC_DIR}/LuaConsole)
+add_subdirectory(${SAMPLES_SRC_DIR}/LuaMFD)
+add_subdirectory(${SAMPLES_SRC_DIR}/ScriptMFD)
+add_subdirectory(${SAMPLES_SRC_DIR}/ScriptVessel)
+add_subdirectory(${SAMPLES_SRC_DIR}/Solarsail)
+add_subdirectory(${SAMPLES_SRC_DIR}/TransX)
