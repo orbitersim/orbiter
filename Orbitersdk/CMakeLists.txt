@@ -45,6 +45,5 @@ install(DIRECTORY html include
 
 # Copy Prebuild PDFs ------------------------------------------------------
 
-install(FILES doc/Orbiter2DGraphics.pdf DESTINATION ${ORBITER_INSTALL_SDK_DIR}/doc)
 install(FILES doc/BuildingSamples.pdf DESTINATION ${ORBITER_INSTALL_SDK_DIR}/doc)
 
