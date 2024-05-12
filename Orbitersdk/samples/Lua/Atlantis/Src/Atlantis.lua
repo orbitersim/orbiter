@@ -1212,9 +1212,9 @@ end
 
 function load_meshes()
 	-- Retrieve mesh handles
-	hOrbiterMesh        = oapi.load_mesh_global("Atlantis/Atlantis")
-	hOrbiterCockpitMesh = oapi.load_mesh_global("Atlantis/AtlantisCockpit")
-	hOrbiterVCMesh      = oapi.load_mesh_global("Atlantis/AtlantisVC")
+	hOrbiterMesh        = oapi.load_meshglobal("Atlantis/Atlantis")
+	hOrbiterCockpitMesh = oapi.load_meshglobal("Atlantis/AtlantisCockpit")
+	hOrbiterVCMesh      = oapi.load_meshglobal("Atlantis/AtlantisVC")
 	
 	-- Load meshes
 	mesh_cockpit = vi:add_mesh(hOrbiterCockpitMesh)

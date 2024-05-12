@@ -128,7 +128,7 @@ tdvtx = {
 
 function create_vessel()
 	-- preload mesh
-	hSRBMesh = oapi.load_mesh_global("Atlantis/Atlantis_srb")
+	hSRBMesh = oapi.load_meshglobal("Atlantis/Atlantis_srb")
 end
 
 function set_launch_elevation(elev)

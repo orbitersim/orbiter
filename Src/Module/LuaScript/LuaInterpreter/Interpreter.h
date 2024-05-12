@@ -365,8 +365,14 @@ protected:
 	static int bit_allset(lua_State* L);
 	static int bit_and(lua_State* L);
 	static int bit_or(lua_State* L);
+	static int bit_xor(lua_State* L);
 	static int bit_not(lua_State* L);
 	static int bit_mask(lua_State* L);
+	static int bit_lshift(lua_State* L);
+	static int bit_rshift(lua_State* L);
+	static int bit_arshift(lua_State* L);
+	static int bit_rol(lua_State* L);
+	static int bit_ror(lua_State* L);
 
 	// process library functions
 	static int procFrameskip (lua_State *L);
@@ -466,6 +472,7 @@ protected:
 	static int oapi_get_objecttype(lua_State* L);
 	static int oapi_get_gbodyparent(lua_State* L);
 	static int oapi_get_gbody(lua_State* L);
+	static int oapi_get_gbodycount(lua_State* L);
 	static int oapi_get_planetatmconstants(lua_State* L);
 
 	// Vessel functions
@@ -532,6 +539,7 @@ protected:
 	static int oapi_send_mfdkey(lua_State* L);
 	static int oapi_refresh_mfdbuttons(lua_State* L);
 	static int oapi_toggle_mfdon(lua_State* L);
+	static int oapi_get_mfdmodespec(lua_State* L);
 
 	static int oapi_set_defnavdisplay(lua_State* L);
 	static int oapi_set_defrcsdisplay(lua_State* L);
@@ -591,7 +599,7 @@ protected:
 	static int oapi_set_panelneighbours(lua_State* L);
 
 	// Mesh
-	static int oapi_load_mesh_global(lua_State* L);
+	static int oapi_load_meshglobal(lua_State* L);
 	static int oapi_mesh_group(lua_State* L);
 	static int oapi_create_mesh(lua_State* L);
 	static int oapi_delete_mesh(lua_State* L);

@@ -2995,7 +2995,7 @@ OAPIFUNC DOCKHANDLE oapiGetDockHandle (OBJHANDLE hVessel, UINT n);
 OAPIFUNC OBJHANDLE oapiGetDockStatus (DOCKHANDLE dock);
 
 /**
-* \brief Set a docking port to auto capture when in close proximity with some other dicking port.
+* \brief Set a docking port to auto capture when in close proximity with some other docking port.
 * \param hDock docking port handle
 * \param enable Enable or disable auto capture
 * \note Auto capture is enabled by default.

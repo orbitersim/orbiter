@@ -1184,12 +1184,12 @@ function DeltaGlider:clbkSetClassCaps (cfg)
 		self.beacon[5].pos = beaconpos_scram
 	end
 
-	self.exmesh_tpl = oapi.load_mesh_global(self:ScramVersion() and "DG/deltaglider" or "DG/deltaglider_ns")
+	self.exmesh_tpl = oapi.load_meshglobal(self:ScramVersion() and "DG/deltaglider" or "DG/deltaglider_ns")
 	self:set_mesh_visibility_mode (self:add_mesh (self.exmesh_tpl), MESHVIS.EXTERNAL)
-	self.panelmesh0 = oapi.load_mesh_global ("DG/dg_2dpanel0")
-	self.panelmesh1 = oapi.load_mesh_global ("DG/dg_2dpanel1")
+	self.panelmesh0 = oapi.load_meshglobal ("DG/dg_2dpanel0")
+	self.panelmesh1 = oapi.load_meshglobal ("DG/dg_2dpanel1")
 
-	self.vcmesh_tpl = oapi.load_mesh_global ("DG/deltaglider_vc")
+	self.vcmesh_tpl = oapi.load_meshglobal ("DG/deltaglider_vc")
 	self:set_mesh_visibility_mode (self:add_mesh (self.vcmesh_tpl), MESHVIS.VC)
 
 	-- **************** vessel-specific insignia ****************
