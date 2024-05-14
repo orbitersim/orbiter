@@ -442,8 +442,6 @@ WindowManager::WindowManager(HWND hAppMainWindow, HINSTANCE _hInst, bool bWindow
 	sbDragSrc = NULL;
 	sbDest = NULL;
 	bWin = bWindowed;
-	sbLeft = NULL;
-	sbRight = NULL;
 
 	hIcons = hTitle = hSub = NULL;
 
@@ -591,14 +589,6 @@ WindowManager::WindowManager(HWND hAppMainWindow, HINSTANCE _hInst, bool bWindow
 
 	DestroyWindow(hDlg);
 
-
-	if (Config->gcGUIMode == 1) {
-		sbLeft = new SideBar(this, gcGUI::DS_LEFT);
-		sbRight = new SideBar(this, gcGUI::DS_RIGHT);
-		sbList.push_back(sbLeft);
-		sbList.push_back(sbRight);
-	}
-
 	/*
 	if (Config->gcGUIMode == 2) {
 		Cmd = oapiRegisterCustomCmd("gcGUI Test", "gcGUI Test Program", OpenTestClbk, this);
@@ -684,8 +674,6 @@ HNODE WindowManager::RegisterApplication(gcGUIApp *pPtr, const char *label, HWND
 	// Always "Float" in this mode
 	if (Config->gcGUIMode >= 2) docked = gcGUI::DS_FLOAT;
 
-	if (docked == gcGUI::DS_LEFT) pSB = sbLeft;
-	if (docked == gcGUI::DS_RIGHT) pSB = sbRight;
 	if (docked == gcGUI::DS_FLOAT) pSB = NewSideBar(NULL);
 	
 	if (Config->gcGUIMode == 3) {
@@ -1024,10 +1012,6 @@ void WindowManager::MouseMoved(int x, int y)
 	int w = r.right - r.left;
 	int h = r.bottom - r.top;
 	int q = (width * 3) / 2;
-	if (x < 5) sbLeft->Open(true);
-	if (x > q) sbLeft->Open(false);
-	if (x < (w - q)) sbRight->Open(false);
-	if (x >(w - 5)) sbRight->Open(true);
 }
 
 
@@ -1088,16 +1072,6 @@ bool WindowManager::MainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 	case WM_KEYDOWN:
 	{
-		if ((GetKeyState(VK_LSHIFT) & 0x8000) && (GetKeyState(VK_LCONTROL) & 0x8000)) {
-			if (wParam == VK_LEFT) { sbLeft->ToggleLock(); MouseMoved(xpos, ypos); return true;	}
-			if (wParam == VK_RIGHT) { sbRight->ToggleLock(); MouseMoved(xpos, ypos); return true; }
-			if (wParam == VK_DOWN) {
-				sbLeft->ToggleLock();
-				sbRight->ToggleLock();
-				MouseMoved(xpos, ypos);
-				return true;
-			}
-		}
 		return false;
 	}
 
