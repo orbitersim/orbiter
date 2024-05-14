@@ -1,0 +1,17 @@
+name: Lua LDoc
+description: LDoc
+inputs:
+  args:
+    description: Arguments passed to LDoc
+    required: false
+    default: "."
+runs:
+  using: docker
+  image: docker://ghcr.io/lunarmodules/ldoc:v1.5.0
+  entrypoint: sh
+  args:
+    - -c
+    - ldoc ${{ inputs.args }}
+branding:
+  icon: file-text
+  color: orange

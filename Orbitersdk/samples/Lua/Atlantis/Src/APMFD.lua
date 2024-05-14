@@ -19,14 +19,14 @@
 -- class AscentApMfd: MFD interface for ascent autopilot
 -- ==============================================================
 
-local AscentApMfd = {}
+local AscentApMfd = Class()
 
 -- ==============================================================
 -- init: called automatically when the MFD instance is created.
 --        This is your one chance to save the vessel handle
 --        and the MFD width and height
 -- ==============================================================
-function AscentApMfd:init(mfd, w, h, vessel)
+function AscentApMfd:new(mfd, w, h, vessel)
 	self.vessel = vessel
 	self.w = w
 	self.h = h

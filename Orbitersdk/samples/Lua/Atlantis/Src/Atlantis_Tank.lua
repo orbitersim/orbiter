@@ -50,7 +50,7 @@ tdvtx = {
 -- Constructor
 function create_vessel()
 	-- preload mesh
-	hTankMesh = oapi.load_mesh_global("Atlantis/Atlantis_tank")
+	hTankMesh = oapi.load_meshglobal("Atlantis/Atlantis_tank")
 
 	-- The fuel tank. Note that this is accessed remotely by the orbiter
 	-- while it is connected

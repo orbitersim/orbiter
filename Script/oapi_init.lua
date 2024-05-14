@@ -343,7 +343,7 @@ end
 --
 -- The method links the C++ MFD (userdata containing a VesselMFD *)
 -- with the Lua object using __orbiter_extend_userdata then
--- calls the "init" method
+-- calls the "new" method
 -- This hides the userdata part from the MFD implementation
 -- ==============================================================
 function MFDModule(impl)
@@ -352,7 +352,7 @@ function MFDModule(impl)
 	setmetatable(module, module)
 	function module.__call(_, mfd, w, h, vessel, userdata)
 		local mfd = __orbiter_extend_userdata(impl, userdata)
-		mfd:init(mfd, w, h, vessel)
+		mfd:new(mfd, w, h, vessel)
 		return mfd
 	end
 	return module
