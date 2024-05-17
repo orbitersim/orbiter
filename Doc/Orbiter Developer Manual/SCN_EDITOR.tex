@@ -1,0 +1,124 @@
+\documentclass[Orbiter Developer Manual.tex]{subfiles}
+\begin{document}
+
+\section{Scenario Editor}
+%TODO mention (again) EditorCreate param, or leave this section just for ScnEditor customization?
+Vessel add-on developers can include editor pages in their vessel projects to allow users to configure vessel-specific options from within the scenario editor. These may include animation settings, payload management, launch stack configuration, etc.\\
+To configure editor pages for your vessel class, you need to compile a DLL which contains the dialog page templates and the code that responds to user input. If your vessel is already controlled by a DLL, you can add the editor elements to that. Alternatively, you can put the editor elements into a separate DLL. This is particularly useful if your vessel is managed by a script-driven wrapper DLL such as spacecraft.dll or ScriptVessel.dll.\\
+To tell Orbiter where to find the editor extensions, the vessel configuration file (.cfg) must contain the line
+
+\begin{lstlisting}[language=OSFS,mathescape=true]
+EditorModule = <$editor-module$>
+\end{lstlisting}
+
+\noindent
+where <editor-module> is the name of the DLL containing the editor elements. If you are using the vessel DLL for this, the EditorModule value is identical to the Module value. If the configuration file does not contain an EditorModule entry, the editor still allows to configure the vessel's generic parameters, but won't provide any vessel-specific options.\\
+The editor extension DLL must contain a secInit callback function (sec = scenario editor callback) with the following format:
+
+\begin{lstlisting}
+DLLCLBK void secInit( HWND hEditor, OBJHANDLE hVessel )
+\end{lstlisting}
+
+\noindent
+where hEditor is the editor window handle, and hVessel is the vessel instance handle.\\
+Vessel-specific options in the scenario editor are accessed by creating additional buttons in the Vessel configuration page (see "Extra functionality" in Orbiter User Manual). Up to 6 custom buttons can be added. You can create a button in the body of the secInit function in two ways:
+
+\paragraph{Creating an embedded editor page}
+To create a button that opens a custom page inside the editor dialog box, add code of the following form in the body of secInit:
+
+\begin{lstlisting}
+EditorPageSpec eps = {"Animations", hDLL, IDD_EDITOR_PG, EdPgProc};
+SendMessage( hEditor, WM_SCNEDITOR, SE_ADDPAGEBUTTON, (LPARAM)&eps );
+\end{lstlisting}
+
+\noindent
+EditorPageSpec is a structure that contains the parameters for the custom editor function. It has the format
+
+\begin{lstlisting}
+typedef struct
+{
+	char btnlabel[32];
+	HINSTANCE hDLL;
+	WORD ResId;
+	DLGPROC TabProc;
+} EditorPageSpec;
+\end{lstlisting}
+
+\noindent
+where
+
+\begin{itemize}
+\item btnlabel $\Rightarrow$ label displayed on the new button in the configuration page
+\item hDLL $\Rightarrow$ module instance handle
+\item ResId $\Rightarrow$ resource identifier for the embedded dialog page
+\item TabProc $\Rightarrow$ dialog page window procedure
+\end{itemize}
+
+\noindent
+%TODO fix path to file
+ResId is the identifier for a dialog resource defined in the DLL. Its size and layout should conform to the standard dialog pages of the scenario editor. The simplest way to create a conforming dialog page is by copying one of the standard pages from the scenario editor resource file (.\textbackslash Src\textbackslash Plugin\textbackslash ScnEditor\textbackslash ScnEditor.rc), and then modifying the page in a resource editor.\\
+TabProc must be implemented in the DLL as a standard Windows dialog message procedure, i.e. with the interface
+
+\begin{lstlisting}
+BOOL CALLBACK TabProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
+\end{lstlisting}
+
+\noindent
+This function receives all user input to the custom page like an ordinary dialog message procedure. The module can use the messages sent to the message procedure to set or display vessel parameters. To obtain a handle to the vessel inside the message procedure, use
+
+\begin{lstlisting}
+OBJHANDLE hVessel = (OBJHANDLE)lParam;
+\end{lstlisting}
+
+\noindent
+when processing the WM\_INITDIALOG message, and
+
+\begin{lstlisting}
+OBJHANDLE hVessel;
+SendMessage( hDlg, WM_SCNEDITOR, SE_GETVESSEL, (LPARAM)&hVessel );
+\end{lstlisting}
+
+\noindent
+when processing any other messages.
+
+\paragraph{Creating a callback function}
+Instead of creating an embedded dialog page, you can simply request the editor to notify your module whenever a custom button is pressed. This gives more freedom over the custom functionality you are adding. For example, you can open a separate dialog box, or perform some other action.\\
+To create a button that calls a notification function in your module, add the following code in the body of secInit:
+
+\begin{lstlisting}
+EditorFuncSpec efs = {"Payload", EditorFunc};
+SendMessage( hEditor, WM_SCNEDITOR, SE_ADDFUNCBUTTON, (LPARAM)&efs );
+\end{lstlisting}
+
+\noindent
+EditorFuncSpec is a structure that contains the parameters for the custom button. It has the format
+
+\begin{lstlisting}
+typedef struct
+{
+	char btnlabel[32];
+	CustomButtonFunc func;
+} EditorFuncSpec;
+\end{lstlisting}
+
+\noindent
+where
+
+\begin{itemize}
+\item btnlabel $\Rightarrow$ label displayed on the new button in the configuration page
+\item func $\Rightarrow$ callback function in the module to be called after the button in pressed
+\end{itemize}
+
+\noindent
+The CustomButtonFunc must be defined in the module with the following format:
+
+\begin{lstlisting}
+void EditorFunc( OBJHANDLE hVessel )
+\end{lstlisting}
+
+\noindent
+It receives the vessel handle as an input parameter.\\
+%TODO fix path to file
+An example for the implementation of vessel-specific editor pages can be found in the DeltaGlider vessel module that comes with the Orbiter source code (.\textbackslash Src\textbackslash Vessel\textbackslash DeltaGlider).
+
+\end{document}

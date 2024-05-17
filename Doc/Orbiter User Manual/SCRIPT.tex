@@ -1,0 +1,40 @@
+\documentclass[Orbiter User Manual.tex]{subfiles}
+\begin{document}
+
+\section{Script interface}
+\label{sec:script}
+The Orbiter application contains an embedded script interpreter that allows users and developers to control a variety of simulation tasks with the help of scripts and commands. Scripts can be used to implement autopilot and MFD functions, interactive tutorials and flight instructors, mission control, and many others.\\
+The script engine is based on the Lua scripting language (\url{www.lua.org}). A large number of functions and methods have been added to the default Lua command set to provide an interface to the Orbiter simulation environment. To a large extent the Lua-Orbiter interface replicates the Orbiter C++ API interface.\\
+%TODO does this manual below exist?
+For script examples and a list of available functions, see the \textit{Orbiter Scripting User Manual} section of the Orbiter inline help pages, available from the \textit{Help} button in the Orbiter Launchpad or with \Alt\keystroke{H} during a running simulation session. From a terminal (console window or Terminal MFD) the scripting documentation can be opened by typing help(api).\\
+There are several methods available for accessing the script engine.\\
+\\
+\textbf{Console window}\\
+The console window can be opened during a running simulation to enter command or launch scripts controlling various aspects of spacecraft behaviour (see \ref{ssec:lua_console}). Make sure that the \textit{LuaConsole} module is activated in the \textit{Modules} tab of the Orbiter Launchpad. Open the console with the \textit{Lua console window} option from the function list (\Ctrl\keystroke{F4}).\\
+The console is a simple text terminal. User input is shown in black, program responses are shown in green. The window can be resized. The font size can be adjusted under the \textit{Console configuration} option in the \textit{Extras} tab of the Orbiter Launchpad. The console allows simple command line editing and scrolling through the command history with the \UArrow key.\\
+\\
+\textbf{Terminal MFD}\\
+If the \textit{LuaMFD} module has been activated in the Modules tab of the Orbiter Launchpad, an additional \textit{Terminal MFD} mode is available in every spacecraft.\\
+Commands can be entered by pressing the INP (input) button (\Shift\keystroke{I}), typing the command, and pressing \Enter.\\
+The MFD allows to open multiple command interpreters simultaneously. To open a new terminal page, press NEW (\Shift\keystroke{N}). To switch between pages, press PG> (\Shift\keystroke{.}) or <PG (\Shift\keystroke{,}). To close a terminal page, press DEL (\Shift\keystroke{D}).\\
+\\
+\textbf{Run a script on scenario launch}\\
+To run a script automatically when a scenario starts, the scenario file must contain the following line inside the ENVIRONMENT block:
+
+\begin{lstlisting}[language=OSFS]
+SCRIPT <path>
+\end{lstlisting}
+
+\noindent
+where <\textit{path}> is the path to the script file, relative to the Script subdirectory. Script files are text files. The file name should have the extension .lua, but the extension should not be added to the path specification. For example, if the script is located in file tutorial1.lua in directory Script\textbackslash MyScripts under the Orbiter main directory, the entry in the scenario file would be
+
+\begin{lstlisting}[language=OSFS]
+SCRIPT MyScripts/tutorials
+\end{lstlisting}
+
+\noindent
+\textbf{Execute a command or script programmatically}\\
+For developers who want to access the script engine from within the C++ code of their plug-in module, an interpreter instance must be created with the oapiCreateInterpreter function. This returns a handle which can subsequently be used to issue commands with the oapiExecScriptCmd function. It is possible to execute individual commands or entire scripts via the run command.
+
+
+\end{document}
