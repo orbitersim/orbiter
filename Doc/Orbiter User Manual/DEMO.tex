@@ -1,0 +1,34 @@
+\documentclass[Orbiter User Manual.tex]{subfiles}
+\begin{document}
+
+\section{Demo mode}
+\label{sec:demo}
+Orbiter can be run in "demo" or "kiosk" mode to facilitate its use in public environments such as exhibitions and museums.\\
+Demo mode can be configured by manually editing the Orbiter.cfg configuration file in the main Orbiter directory. The following options are available:
+
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.25\textwidth}|p{0.05\textwidth}|p{0.6\textwidth}| }
+	\hline\rule{0pt}{2ex}
+	\textbf{Flag} & \textbf{Type} & \textbf{Description}\\
+	\hline\rule{0pt}{2ex}
+	DemoMode & bool & Set to TRUE to enable demo mode. (default: FALSE)\\
+	\hline\rule{0pt}{2ex}
+	BackgroundImage & bool & Set to TRUE to cover the desktop with a static image. (default: FALSE)\\
+	\hline\rule{0pt}{2ex}
+	BlockExit & bool & Set to TRUE to disable the Exit function in Orbiter's Launchpad dialog. If this option is enabled, Orbiter can only be terminated via the task manager. (default: FALSE)\\
+	\hline\rule{0pt}{2ex}
+	MaxDemoTime & float & Maximum runtime for a simulation session [s]. Orbiter automatically returns to the Launchpad when the time has expired.\\
+	\hline\rule{0pt}{2ex}
+	MaxLaunchpadIdleTime & float & Maximum time spent in the Launchpad without user input before Orbiter auto-launches a demo scenario [s].\\
+	\hline
+	\end{longtable}
+%\end{table}
+
+\noindent
+In Demo mode, only the Scenario tab is accessible in the Launchpad dialog, to prevent users from modifying simulation configuration features such as screen resolution or plug-in modules. Orbiter should be configured as required before launching into demo mode.\\
+To use the auto-launch feature in demo mode, a folder Demo must be created in the main scenario folder. Orbiter randomly picks a scenario from this folder to launch.\\
+\textbf{Note:} When using Orbiter in Demo mode, it is recommended that the simulation is run in a window, or in a fullscreen mode that matches the native screen resolution, to avoid excessive switching between video display modes.
+
+
+\end{document}

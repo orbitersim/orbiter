@@ -1,0 +1,587 @@
+\documentclass[Orbiter Technical Reference.tex]{subfiles}
+\begin{document}
+
+\section{Orbiter Flight Recorder and Playback}
+
+\subsection{Introduction}
+The purpose of this project is the extension of the standard Orbiter functionality to allow the recording and playback of spacecraft trajectories. The format of the recording streams is public so that external applications such as trajectory optimisation programs can be used to generate the data streams, and to use Orbiter as a visualisation tool for these pre-computed trajectories.\\
+The recorded data include position and velocity samples, attitude data samples, and articulation data which mark events such as engine levels, booster separation, animations, etc. Different data formats (e.g. different frames of reference) are supported to simplify the interfacing with external applications.\\
+Additions to the Orbiter Programming Interface for recording and reading vessel-specific articulation data are provided to enable addon developers to add specific event types in the vessel module code.
+
+
+\subsection{Sequence recording}
+Flight sequences can be recorded and played back later. Currently, recorded data for include for each spacecraft:
+
+\begin{itemize}
+\item \textbf{Position and velocity.} At the moment, these data are recorded relative to the reference planet, either in a non-rotating reference system (ecliptic and equinox of J2000), or a rotating equatorial reference system. As a result, trajectories are currently recorded in an absolute time frame. Samples are written in regular intervals (currently 4 seconds) or if the velocity vector rotates by more than 5 degrees.
+\item \textbf{Attitude.} Attitude data are saved in terms of the Euler angles of the spacecraft with respect to the ecliptic reference frame or local horizon frame. Samples are written whenever one of the angles has changed by more than a predefined threshold limit.
+\item \textbf{Articulation data.} These include changes in thrust level of individual spacecraft engines, and custom events recorded by individual spacecraft modules, such as animations.
+\end{itemize}
+
+\noindent
+In addition, global simulation events, such as changes in the recording speed or onscreen annotations, are stored separately.\\
+To start recording a flight sequence, launch an Orbiter scenario and start the recorder by pressing \Ctrl\keystroke{C}, or from the recorder dialog box (\Ctrl\keystroke{F5}). The recording can be stopped by pressing \Ctrl\keystroke{C} again or by terminating the simulation. Currently, all spacecraft in the scenario are recorded. Selective recording will be implemented later.
+
+
+\subsection{Sequence playback}
+Each recording generates a new scenario under the "Scenarios\textbackslash Playback" subdirectory, with the same name as the original scenario. The playback scenario defines the simulation state at the moment when the recording was started. The only difference between standard and playback scenarios is an additional entry "FLIGHTDATA" in each of the recorded spacecraft sections.\\
+Playback scenarios are launched like standard scenarios. On launch, a "Playback" indicator is displayed at the bottom of the simulation window. All spacecraft follow their recorded trajectories until the end of the recording sequence is reached or until playback is terminated by the user with \Ctrl\keystroke{C}. At that point, Orbiter's own time propagation mechanism takes over again, and spacecraft return to user control.\\
+Position and attitude data are interpolated between the recorded samples during playback. The recorded articulation events are effective instantaneously.\\
+During playpack, the user can manipulate the camera views, switch between camera targets, and operate cockpit instruments such as the MFD displays.\\
+The playback speed (time compression) can either be controlled manually by the user, or set automatically from data tags in the articulation stream.
+
+
+\subsection{File formats}
+All flight data are recorded under the "Flights" subdirectory. Each recording generates a new subdirectory with the name of the scenario. If the directory already exists, it is overwritten.\\
+Global simulation events, such as changes in time acceleration or camera view mode, or onscreen annotations, are recorded in file \textit{system.dat}. In addition, each recorded object generates three files, where <\textit{object}> is the name of the vessel as defined in the scenario file:
+
+\subsubsection{Position and velocity data}
+\textbf{<\textit{object}>.pos}\\
+Position and velocity data relative to a reference body. Each line contains either a data sample, or a format directive. The following directives are currently supported:
+
+\begin{itemize}
+\item STARTMJD <\textit{mjd}> $\Rightarrow$ Defines an absolute time reference for the simulation start time. <\textit{mjd}> is a floating point number defining the start date in MJD (Modified Julian Date) format. Only a single STARTMJD tag should be provided at the beginning of the stream. Note that this value is currently not used by the simulator, because the simulation start date is read from the corresponding scenario file.
+\item REF <\textit{reference}> $\Rightarrow$ Defines the reference object (planet, moon, sun) relative to which the following data samples are calculated. Whenever the trajectory enters the sphere of influence of a different object, another "REF" line should be added, and the following data samples computed with respect to the new object. <\textit{reference}> must correspond to a celestial object defined in the Orbiter planetary system. There is no default object, therefore a REF directive must appear at the beginning of the file before any data samples.
+\item FRM [ECLIPTIC | EQUATORIAL] $\Rightarrow$ Orientation of the reference frame for all following data samples. This can be either the ecliptic of the J2000 epoch, or the (rotating) equatorial frame of the reference body. The default setting is "ECLIPTIC".
+\item CRD [CARTESIAN | POLAR] $\Rightarrow$ Coordinate and velocity data format for all following data samples. This can be either in rectangular cartesian format ($x$, $y$, $z$) [m] and ($\dot{x}$, $\dot{y}$, $\dot{z}$) [m/s], respectively, or in spherical polar coordinates ($r$, $\phi$, $\theta$) [m, rad, rad] and ($\dot{r}$, $\dot{\phi}$, $\dot{\theta}$) [m/s, rad/s, rad/s], respectively, with radial distance $r$, polar angle $\phi$ and azimuth angle $\theta$. If an equatorial frame is selected, $\phi$ and $\theta$ define equatorial longitude and latitude. See \ref{ssec:cartpol_coord} for transformation conventions. The default setting is "CARTESIAN".
+\end{itemize}
+
+\noindent
+Any lines not containing one of the above directives are assumed to contain data samples, in the following format:
+
+\begin{lstlisting}[language=OSFS]
+<simt> <position> <velocity>
+\end{lstlisting}
+
+\noindent
+where:
+
+\begin{itemize}
+\item <\textit{simt}> $\Rightarrow$ is the time since scenario start [s]
+\item <\textit{position}> $\Rightarrow$ is the object position w.r.t. the current reference object. Depending on the current "CRD" setting, this is a triplet of <\textit{x}> <\textit{y}> <\textit{z}> cartesian coordinates [m], or a triplet of <\textit{radius}> [m]  <\textit{longitude}> <\textit{latitude}> [rad], in either ecliptic or equatorial reference frame.
+\item <\textit{velocity}> $\Rightarrow$ is the object velocity w.r.t. the current reference object. Depending on the current "CRD" setting, this is a triplet of <\textit{vx}> <\textit{vy}> <\textit{vz}> rates in cartesian coordinates [m/s], or a triplet of <\textit{radial velocity}> [m/s] <\textit{longitude rate}> <\textit{latitude rate}> [rad/s], in either ecliptic or equatorial reference frame.
+\end{itemize}
+
+\subsubsection{Attitude data}
+\textbf{<\textit{object}>.att}\\
+Attitude data. Each line contains either a data sample, or a format directive. The following directive is currently supported:
+
+\begin{itemize}
+\item STARTMJD <\textit{mjd}> $\Rightarrow$ Defines an absolute time reference for the simulation start time. <\textit{mjd}> is a floating point number defining the start date in MJD (Modified Julian Date) format. Only a single STARTMJD tag should be provided at the beginning of the stream. Note that this value is currently not used by the simulator, because the simulation start date is read from the corresponding scenario file.
+\item FRM [ECLIPTIC | HORIZON] $\Rightarrow$ Orientation of the reference frame for all following attitude data samples. This can either be the ecliptic of the J2000 epoch, or the local horizon of the current vessel position. The default setting is "ECLIPTIC".
+\item REF <\textit{reference}> $\Rightarrow$ Defines the reference object (planet, moon, sun) relative to which the following data samples are calculated. Note that a REF tag is required after each FRM HORIZON tag, to define the reference object for local horizon calculations, but is optional after a FRM ECLIPTIC tag, because the reference frame is globally fixed.
+When using FRM HORIZON, the reference should usually be switched by inserting a new REF tag whenever the trajectory enters the sphere of influence of a different object.
+\end{itemize}
+
+\noindent
+Any lines not containing a directive are assumed to contain samples, in the following format:
+
+\begin{lstlisting}[language=OSFS,mathescape=true]
+<simt> <$\alpha$> <$\beta$> <$\gamma$>
+\end{lstlisting}
+
+\noindent
+where:
+
+\begin{itemize}
+\item <\textit{simt}> $\Rightarrow$ is the time since scenario start (seconds)
+\item <$\alpha$> <$\beta$> <$\gamma$> $\Rightarrow$ are the Euler angles of the local spacecraft frame with respect to the orientation of the reference frame.
+\end{itemize}
+
+\noindent
+Definition: Let
+
+\[ R = 
+\begin{bmatrix}
+r_{11} & r_{12} & r_{13}\\
+r_{21} & r_{22} & r_{23}\\
+r_{31} & r_{32} & r_{33}
+\end{bmatrix}
+\]
+
+\noindent
+be the rotation matrix that transforms from vessel frame to the reference frame (ecliptic or local horizon).\\
+For the ecliptic frame, Orbiter uses the following set of Euler angles:
+
+\[ \alpha = \arctan\frac{r_{23}}{r_{33}}, \quad \beta = -\arcsin r_{13}, \quad \gamma = \arctan\frac{r_{12}}{r_{11}} \]
+
+\noindent
+For the local horizon frame, Orbiter uses a different set of Euler angles:
+
+\[ \alpha = \arctan\frac{r_{12}}{r_{22}}, \quad \beta = \arcsin r_{32}, \quad \gamma = \arctan\frac{r_{31}}{r_{33}} \]
+
+\noindent
+so that the Euler angles can be directly defined with the bank, pitch and yaw angles of the vessel in the local horizon frame:
+
+%TODO confirm alpha/beta are correct or they should match "aero tradition"?
+\begin{itemize}
+\item \textbf{Bank angle $\alpha$:} angle between the projection of the horizon normal into the vessel xy-plane, and the vessel "up" direction (0,1,0).
+\item \textbf{Pitch angle $\beta$:} angle between the projection of the horizon normal into the vessel yz-plane, and the vessel "up" direction (0,1,0).
+\item \textbf{Yaw angle $\gamma$:} angle between the projection of the vessel "forward" direction (0,0,1) into the local horizon plane, and the horizon "north" direction.
+\end{itemize}
+
+ 
+\subsubsection{Articulation data}
+\textbf{<\textit{object}>.atc}\\
+Articulation data. Each line contains a sample as follows:
+
+\begin{lstlisting}[language=OSFS]
+<simt> <tag> [<data>]
+\end{lstlisting}
+
+\noindent
+where:
+
+\begin{itemize}
+\item <\textit{simt}> $\Rightarrow$ is the time since scenario start (seconds)
+\item <\textit{tag}> $\Rightarrow$ identifies the event type. The generic event types currently supported by Orbiter are listed below. In addition, vessel-specific event types can be directly implemented by the vessel module.
+\item <\textit{data}> $\Rightarrow$ Event-type specific data. Not all event types may require additional paramters.
+\end{itemize}
+
+\noindent
+\\
+\textbf{Engine events}\\
+Engine events are recorded with the "ENG" tag in the articulation stream. Engine event data consist of
+
+\begin{lstlisting}[language=OSFS]
+<engine id>:<level>
+\end{lstlisting}
+
+\noindent
+pairs, where <\textit{engine id}> is either a zero-based integer index identifying the engine, or an engine group identifier string. <\textit{level}> is the thrust level (range: 0-1). Integer engine identifiers can usually be obtained from the spacecraft DLL implementation. If groups of engines must be operated simultaneously, it is often more convenient to use group identifiers. The following group labels are supported:
+
+\begin{itemize}
+\item MAIN
+\item RETRO
+\item HOVER
+\item RCS\_PITCHUP
+\item RCS\_PITCHDOWN
+\item RCS\_YAWLEFT
+\item RCS\_YAWRIGHT
+\item RCS\_BANKLEFT
+\item RCS\_BANKRIGHT
+\item RCS\_RIGHT
+\item RCS\_LEFT
+\item RCS\_UP
+\item RCS\_DOWN
+\item RCS\_FORWARD
+\item RCS\_BACK
+\end{itemize}
+
+\noindent
+How the engines are assembled in these groups depends on the vessel module code. Note that not all vessel types may support all of the logical groups listed above. Further, some engines may not be members of any group and therefore must be addressed by their individual integer id's.\\
+Not all engine levels need to be recorded with each sample, but the first and last entries of the file should contain all engines, to provide a fully defined initial and final state.\\
+\\
+\textbf{Other generic events}\\
+The following default event tags in the articulation stream are currently recognised by vessels in Orbiter, and written to the atc stream during recording:
+
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.3\textwidth}|p{0.65\textwidth}| }
+	\hline\rule{0pt}{2ex}
+	RCSMODE <\textit{mode}> & Switch Reaction Control System mode to <\textit{mode}>, where <\textit{mode}> is an integer in the range 0...2. See the RCS\_xxx constants defined in Orbitersdk\textbackslash include\textbackslash OrbiterAPI.h for a list of supported RCS modes.\\
+	\hline\rule{0pt}{2ex}
+	ADCMODE <\textit{mode}> & Switch aerodynamic control mode to <\textit{mode}>\\
+	\hline\rule{0pt}{2ex}
+	NAVMODE <\textit{mode}> & Switch autonav mode to <\textit{mode}>, where <\textit{mode}> is an integer in the range 1...7. See the NAVMODE\_xxx constants defined in Orbitersdk\textbackslash include\textbackslash OrbiterAPI.h for a list of supported nav modes. Note that some modes are exclusive, i.e. setting one may implicitly clear another mode.\\
+	\hline\rule{0pt}{2ex}
+	NAVMODECLR <\textit{mode}> & Explicitly clear autonav mode <\textit{mode}>.\\
+	\hline\rule{0pt}{2ex}
+	UNDOCK <\textit{dock}> & Undock vessel attached at port <\textit{dock}>\\
+	\hline\rule{0pt}{2ex}
+	ATTACH <\textit{vessel}> <\textit{pidx}> <\textit{cidx}> [LOOSE] & Attach <\textit{vessel}> as a child object. This event is written to the parent object's ATC stream. <\textit{pidx}> is the attachment index on the parent, <\textit{cidx}> the attachment index on the child. If flag LOOSE is specified, the objects are attached at their current relative orientation. Otherwise, the predefined attachment orientation is enforced.\\
+	\hline\rule{0pt}{2ex}
+	DETACH <\textit{pidx}> [<\textit{vel}>] & Detach the child object currently attached at attachment point <\textit{pidx}>. This event is written to the parent object's ATC stream. An optional detachment velocity <\textit{vel}> can be specified. By default, <\textit{vel}> = 0.\\
+	\hline
+	\end{longtable}
+%\end{table}
+
+
+\subsubsection{Global events}
+Simulation events which do not refer to a specific spacecraft are recorded in a separate file, \textit{system.dat}. The format is the same as for vessel .atc files:
+
+\begin{lstlisting}[language=OSFS]
+<simt> <tag> [<data>]
+\end{lstlisting}
+
+\noindent
+The following global event tags are currently supported by Orbiter, and written to \textit{system.dat} during recording:\\
+\\
+\textbf{Time acceleration events}
+
+\begin{table}[H]
+	\centering
+	\begin{tabularx}{\textwidth}{ |l|X| }
+	\hline\rule{0pt}{2ex}
+	TACC <\textit{acc}> [<\textit{delay}>] & Set time acceleration factor to <\textit{acc}>. This tag is only written if  the "Record time acceleration" option is enabled in the recorder dialog (\Ctrl\keystroke{F5}). If the optional <\textit{delay}> value is provided, the change in time acceleration is non-instantaneous. Instead, time acceleration changes by one order of magnitude per <\textit{delay}> seconds.\\
+	\hline
+	\end{tabularx}
+\end{table}
+
+\noindent
+\\
+\textbf{Input focus events}
+
+\begin{table}[H]
+	\centering
+	\begin{tabularx}{\textwidth}{ |l|X| }
+	\hline\rule{0pt}{2ex}
+	FOCUS <\textit{object}> & Switch input focus to vessel <\textit{object}>. Although manual control of spacecraft is largely disabled during playback, resetting the focus object does affect the playback behaviour (for example, only the focus object supports cockpit camera modes).\newline
+	This tag is only written if the "Record focus events" option is enabled in the recorder dialog.\newline
+	Recorded focus events are only used during playback if the "Use recorded focus events" option is enabled in the playback dialog.\\
+	\hline
+	\end{tabularx}
+\end{table}
+
+\noindent
+\\
+\textbf{Camera events}
+
+\begin{table}[H]
+	\centering
+	\begin{tabularx}{\textwidth}{ |l|X| }
+	\hline\rule{0pt}{2ex}
+	CAMERA PRESET <\textit{n}> & Switch to camera preset position <\textit{n}>, where <\textit{n}> is the zero-based index of a camera preset mode stored in the scenario.\\
+	\hline\rule{0pt}{2ex}
+	CAMERA SET <\textit{param}> & Switch camera to a mode defined by <\textit{param}>. This tag allows inline camera mode definitions without the need for storing preset data in the scenario. The contents of <\textit{param}> depend on the specific camera mode.\\
+	\hline
+	\end{tabularx}
+\end{table}
+
+\noindent
+\\
+\textbf{Onscreen annotation events}\\
+Playback sequences can be annotated with onscreen messages. The messages appear on top of the render window at the time defined in the playback stream. Some basic formatting (position, size and colour) are available.
+
+\begin{table}[H]
+	\centering
+	\begin{tabularx}{\textwidth}{ |l|X| }
+	\hline\rule{0pt}{2ex}
+	NOTE <\textit{text}> & Display <\textit{text}> as an onscreen annotation.\\
+	\hline\rule{0pt}{2ex}
+	NOTEOFF & Remove the current annotation.\\
+	\hline\rule{0pt}{2ex}
+	NOTEPOS <\textit{x1}> <\textit{y1}> <\textit{x2}> <\textit{y2}> & Define the bounding box of the annotation area in units of the simulation window size:\newline
+0 $\leq$ \textit{x1} < \textit{x2} $\leq$ 1 and 0 $\leq$ \textit{y1} < \textit{y2} $\leq$ 1.\\
+	\hline\rule{0pt}{2ex}
+	NOTESIZE <\textit{scale}> & Reset the annotation font size (\textit{scale} > 0, where \textit{scale} = 1 is the default size).\\
+	\hline\rule{0pt}{2ex}
+	NOTECOL <\textit{r}> <\textit{g}> <\textit{b}> &\\
+	\hline
+	\end{tabularx}
+\end{table}
+
+\noindent
+Annotations can be added by inserting NOTE tags manually into the articulation stream after the recording has been completed. The format is
+
+\begin{lstlisting}[language=OSFS]
+<simt> NOTE <text>
+\end{lstlisting}
+
+\noindent
+where <\textit{text}> is the text of the note. The text must be entered as a single line, but will be displayed in multiple lines on screen as required. The notes must be sorted appropriately into the stream, so that all <\textit{simt}> tags appear in increasing order. The text remains visible until it is replaced by a new note, or until it is explicitly removed with
+
+\begin{lstlisting}[language=OSFS]
+<simt> NOTEOFF
+\end{lstlisting}
+
+\noindent
+or until the end of the replay sequence. Note that annotations can be displayed by all vessels in the playback scenario. However, in general notes should only be generated by the focus vessel to avoid confusion.\\
+The following formatting tags are available:
+
+\begin{lstlisting}[language=OSFS]
+<simt> NOTEPOS <x1> <y1> <x2> <y2>
+\end{lstlisting}
+
+\noindent
+defines the position of the rectangle where the note appears. All values are fractions of the simulation window size, in the range 0...1. <\textit{x1}> and <\textit{x2}> are the left and right edges of the note rectangle, <\textit{y1}> and <\textit{y2}> are the top and bottom edges. \textit{x1} < \textit{x2} and \textit{y1} < \textit{y2} are required. If the rectangle is set too small, part of the note may not be displayed.
+
+\begin{lstlisting}[language=OSFS]
+<simt> NOTESIZE <scale>
+\end{lstlisting}
+
+\noindent
+defines the size scale for the note text, where 1 denotes the default size. The actual text size is scaled with the simulation window size.
+
+\begin{lstlisting}[language=OSFS]
+<simt> NOTECOL <r> <g> <b>
+\end{lstlisting}
+
+\noindent
+defines the colour of the note text, where <\textit{r}> <\textit{g}> <\textit{b}> are the red, green and blue components, respectively. Values must be in the range 0...1.
+
+
+\subsection{Recording and playback of vessel-specific events}
+Using Orbiter's Application Programming Interface (API) it is possible to record and play back events that are not recognised by the Orbiter core. These may include animations like lowering or retracting landing gear, opening cargo bay doors, separating booster rockets, etc. 
+The API interface for recording and playback consists of two functions:
+
+\begin{lstlisting}
+void VESSEL::RecordEvent( const char* event_type, const char* event ) const
+\end{lstlisting}
+
+\noindent
+The vessel calls this function to record an event to the articulation stream. The record consists of an event type identifier (\textit{event\_type}) and the event itself (\textit{event}). \textit{event\_type} must be a single word (no whitespace), while \textit{event} can contain multiple items separated by spaces. Orbiter only writes the event if a recording session is active. Otherwise the function call is ignored. The event appears in the stream in the format
+
+\begin{lstlisting}[language=OSFS]
+<simt> <event_type> <event>
+\end{lstlisting}
+
+\noindent
+During a playback session, any events that are read from the articulation stream but contain an identifier not recognised by the Orbiter core, are passed on to the vessel module via the callback function
+
+\begin{lstlisting}
+virtual bool VESSEL2::clbkPlaybackEvent( double simt, double event_t,
+					const char* event_type, const char* event )
+\end{lstlisting}
+
+\noindent
+where \textit{simt} is the current simulation time, \textit{event\_t} is the time recorded with the event, \textit{event\_type} is the identifier for the event, and \textit{event} is the recorded event data. An event is processed whenever the simulation time has moved past the recorded time stamp, therefore simt $\geq$ event\_t.\\
+Examples for vessel-specific custom articuation stream commands can be found in the source code of the "Delta-glider": Orbitersdk\textbackslash samples\textbackslash DeltaGlider\textbackslash DeltaGlider.cpp
+
+\subsection{Technical information}
+\subsubsection{State interpolation}
+Orbiter interpolates position and velocity vectors assuming piecewise linear acceleration. Let $t_{0}$ and $t_{1}$ be two consecutive samples, with recorded state vectors
+
+\[ r(t_{0}) = r_{0} \]
+\[ r(t_{1}) = r_{1} \]
+\[ v(t_{0}) = v_{0} \]
+\[ v(t_{1}) = v_{1} \]
+
+\noindent
+To find the interpolated state at time $t$ with $t_{0} \leq t \leq t_{1}$, assume linear acceleration between $t_{0}$ and $t_{1}$:
+
+\[ a(t) = a_{0} + b\Delta t \]
+
+\noindent
+where $\Delta t = t - t_{0}$. To find $a_{0}$ and $b$ which satisfy the boundary conditions, we integrate the state vectors:
+
+\[ v(t) = \int_{0}^{\Delta t} a(t') \,dt' = v_{0} + a_{0} \Delta t + \frac{1}{2}b \Delta t^{2} \]
+\[ r(t) = \int_{0}^{\Delta t} v(t') \,dt' = r_{0} + v_{0} \Delta t + \frac{1}{2} a_{0} \Delta t^{2} + \frac{1}{6} b \Delta t^{3} \]
+
+\noindent
+Substituting the boundary conditions at $t_{1}$ and solving for $a_{0}$ and $b$ gives
+
+\[ a_{0} = \frac{2(3(r_{1} - r_{0}) - \Delta T(2 v_{0} + v_{1}))}{\Delta T^{2}} \]
+\[ b_{0} = \frac{6(2(r_{0} - r_{1}) + \Delta T(v_{0} + v_{1}))}{\Delta T^{3}} \]
+
+\noindent
+with $\Delta T = t_{1} - t_{0}$.
+
+
+\subsubsection{Attitude interpolation}
+Currently, spacecraft orientations are interpolated linearly between attitude samples, resulting in piecewise constant angular velocities. The interpolation is implemented by transforming the recorded Euler angle data into a quaternion representation, and performing a spherical interpolation between pairs of quaternion samples.\
+The attitude data stream should provide sufficiently dense sampling so that noticeable jumps in angular velocity are avoided.\\
+Orbiter's built-in recording module writes a sample to the attitude stream
+
+\begin{itemize}
+\item when the orientation has changed by more than 0.06 rad since the last sample, or
+\item when the orientation has changed by more than 0.001 rad and no sample has been written for more than 0.5 seconds.
+\end{itemize}
+
+
+\subsection{Examples}
+Some recorded examples are provided to demonstrate the playback features in orbiter, and the data stream formats. The examples can be found in the Playback scenario folder, and are executed by running Orbiter with the appropriate scenario. The corresponding data streams can be found under the Flights folder.\\
+\\
+\textbf{Glider launch 1:}
+\begin{table}[H]
+	\centering
+	\begin{tabularx}{\textwidth}{ l X }
+	Scenario: & Glider takeoff and landing.\\
+	Attitude stream: & Ecliptic frame of reference\\
+	Pos/vel stream: & Geocentric cartesian coordinates in ecliptic frame of reference\\
+	Articulation stream: & Exhaust rendering, animations (landing gear, airbrakes)\\
+	\end{tabularx}
+\end{table}
+
+\noindent
+\textbf{Glider launch 2:}
+\begin{table}[H]
+	\centering
+	\begin{tabularx}{\textwidth}{ l X }
+	Scenario: & Glider takeoff and landing.\\
+	Attitude stream: & Local horizon frame of reference.\\
+	Pos/vel stream: & Geocentric polar coordinates in equatorial frame of reference\\
+	Articulation stream: & Exhaust rendering, animations (landing gear, airbrakes)\\
+	Notes: & Demonstrates use of horizon frame of reference, where attitude data are provided in terms of bank, pitch and yaw angle of local horizon plane.\\
+	\end{tabularx}
+\end{table}
+
+\noindent
+\textbf{Glider in orbit 1:}
+\begin{table}[H]
+	\centering
+	\begin{tabularx}{\textwidth}{ l X }
+	Scenario: & Glider attitude control in orbit\\
+	Attitude stream: & Ecliptic frame of reference\\
+	Pos/vel stream: & Geocentric cartesian coordinates in ecliptic frame of reference\\
+	Articulation stream: & Exhaust rendering of reaction control thrusters\\
+	Notes: & Demonstrates use of attitude stream for object rotation, including visual cues (RCS thruster rendering).\\
+	\end{tabularx}
+\end{table}
+
+\noindent
+\textbf{Glider in orbit 2:}
+\begin{table}[H]
+	\centering
+	\begin{tabularx}{\textwidth}{ l X }
+	Scenario: & Glider in orbit: demonstration of custom animations\\
+	Attitude stream: & Local horizon frame of reference\\
+	Pos/vel stream: & Geocentric polar coordinates in equatorial frame of reference\\
+	Articulation stream: & Custom animation sequences\\
+	Notes: & This example shows the use of custom animation commands (defined in the vessel plugin module) read from the articulation stream. The glider defines animation commands for various mesh elements (landing gear, airbrakes, airloccks and hatches, radiator deployment, etc.)\\
+	\end{tabularx}
+\end{table}
+
+\noindent
+\textbf{Atlantis launch:}
+\begin{table}[H]
+	\centering
+	\begin{tabularx}{\textwidth}{ l X }
+	Scenario: & Space Shuttle launch and orbit insertion.\\
+	Attitude stream: & Ecliptic frame of reference\\
+	Pos/vel stream: & Geocentric polar coordinates in equatorial frame of reference\\
+	Articulation stream: & SRB booster/SSME and RCS thruster exhaust animation, SRB and ET jettison commands\\
+	Notes: & Shows the use of custom-defined jettison commands for animation control purposes. Articulation stream also has examples for addressing thruster groups with symbolic labels ("ENG MAIN").\\
+	\end{tabularx}
+\end{table}
+
+\noindent
+\textbf{Atlantis undocking:}
+\begin{table}[H]
+	\centering
+	\begin{tabularx}{\textwidth}{ l X }
+	Scenario: & Space Shuttle moving away from International Space Station, cargo doors closing.\\
+	Attitude stream: & Local horizon frame of reference\\
+	Pos/vel stream: & Geocentric polar coordinates in equatorial frame of reference\\
+	Articulation stream: & RCS thruster control, cargo bay animation\\
+	Notes: & Shows custom animation commands defined in plugin module (Atlantis.dll): Radiator and payload bay closing.\\
+	\end{tabularx}
+\end{table}
+
+\noindent
+\textbf{Atlantis final approach:}
+\begin{table}[H]
+	\centering
+	\begin{tabularx}{\textwidth}{ l X }
+	Scenario: & Space Shuttle touchdown sequence.\\
+	Attitude stream: & Ecliptic frame of reference\\
+	Pos/vel stream: & Geocentric polar coordinates in equatorial frame of reference\\
+	Articulation stream: & Custom animation sequences\\
+	Notes: & Shows custom animation commands defined in plugin module (Atlantis.dll): Split rudder brake deployment and landing gear animation. Demonstrates onscreen annotation.\\
+	\end{tabularx}
+\end{table}
+
+\noindent
+\textbf{Lunar transfer:}
+\begin{table}[H]
+	\centering
+	\begin{tabularx}{\textwidth}{ l X }
+	Scenario: & Complete transfer simulation from Earth surface (KSC) to landing on the Moon's surface.\\
+	Attitude stream: & Ecliptic frame of reference\\
+	Pos/vel stream: & Equatorial frame of reference Earth/Sun/Moon\\
+	Articulation stream: & Engine events, custom animation, annotations and time acceleration\\
+	Notes: & Demonstrates sampling density variations by changing the simulation speed during recording, playback time acceleration and onscreen annotation features. Shows transition of reference object in the .pos stream. Demonstrates ability of long playback sequences ($\sim$1 hour at recording speed).\\
+	\end{tabularx}
+\end{table}
+
+
+\subsection{Orbiter reference frames}
+Orbiter uses \textit{left-handed} coordinate systems throughout.\\
+\\
+\textbf{The global frame.}\\
+The global frame of reference is the barycentric ecliptic frame for ecliptic and equinox of epoch J2000, where
+
+\begin{itemize}
+\item +x points to the vernal equinox
+\item +y points to ecliptic zenith
+\item $\hat{z} = \hat{y} \times \hat{x}$
+\end{itemize}
+
+\noindent
+\textbf{Rotating planet frames.}\\
+Planet frames are fixed to rotating planets, where
+
+\begin{itemize}
+\item +x points from the planet centre to surface point latitude 0, longitude 0.
+\item +y points from the planet centre to the north pole
+\item $\hat{z} = \hat{y} \times \hat{x}$
+\end{itemize}
+
+\noindent
+\textbf{Local horizon frames.}\\
+Given planetocentric equatorial longitude and latitude ($\phi$,$\theta$), the local horizon frame is given by the tangent plane to the (spherical) planet surface, where
+
+\begin{itemize}
+\item +x points east
+\item +y points up
+\item +z points north
+\end{itemize}
+
+\noindent
+\textbf{Local spacecraft frames.}\\
+The orientation of the spacecraft frame is largely up to the designer. By convention, the following is usually adopted:
+
+\begin{itemize}
+\item +x points "right"
+\item +y points "up"
+\item +z points "forward" (in the direction of the thrust vector of the main engines)
+\end{itemize}
+
+\noindent
+
+\subsection{Cartesian and polar coordinates}
+\label{ssec:cartpol_coord}
+Given Orbiter's left-handed coordinate system, the transformation between cartesian positions ($x$, $y$, $z$) and velocities ($\dot{x}$, $\dot{y}$, $\dot{z}$) and spherical polar coordinates ($r$, $\phi$, $\theta$) and velocities ($\dot{r}$, $\dot{\phi}$, $\dot{\theta}$) is defined as\\
+
+$
+\left\{
+\begin{array}{l}
+x = r \cos\phi \cos\theta \\\\
+y = r \sin\theta \\\\
+z = r \sin\phi \sin\theta \\
+\end{array} 
+\right .
+$
+\\
+\\
+\\
+\indent
+$
+\left\{
+\begin{array}{l}
+\dot{x} = \dot{r} \cos\phi \cos\theta - r \dot{\phi} \sin\phi\cos\theta - r \dot{\theta} \cos\phi\sin\theta \\\\
+\dot{y} = \dot{r} \sin\theta + r \dot{\theta} \cos\theta \\\\
+\dot{z} = \dot{r} \sin\phi \cos\theta + r \dot{\phi} \cos\phi\cos\theta - r \dot{\theta} \sin\phi\sin\theta \\
+\end{array} 
+\right .
+$
+
+
+\noindent
+\\
+and\\
+
+$
+\left\{
+\begin{array}{l}
+r = \sqrt{ x^{2} + y^{2} + z^{2} } \\\\
+\phi = \arctan \frac{z}{x} \\\\
+\theta = \arcsin \frac{y}{r} \\
+\end{array} 
+\right .
+$
+\\
+\\
+\\
+\indent
+$
+\left\{
+\begin{array}{l}
+\dot{r} = \dot{y} \sin\theta + \cos\theta(\dot{x} \cos\phi + \dot{z} \sin\phi) \\\\
+\dot{\phi} = \frac{\dot{z} \cos\phi - \dot{x} \sin\phi}{r \cos\theta} \\\\
+\dot{\theta} = \frac{\dot{y} \cos\theta - \sin\theta(\dot{x} \cos\phi + \dot{z} \sin\phi)}{r} \\
+\end{array} 
+\right .
+$
+
+\end{document}

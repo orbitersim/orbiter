@@ -1,0 +1,531 @@
+\documentclass[Orbiter User Manual.tex]{subfiles}
+\begin{document}
+
+\section{Advanced Configuration}
+A more advanced configuration is available by editing Orbiter's configuration files. Configuration files (.cfg) are text files and can be edited with any editor capable of writing plain ASCII text files.
+
+
+\subsection{Main configuration file}
+The main configuration file Orbiter.cfg is located in the Orbiter main directory. It contains general settings for graphics modes, subdirectory locations, simulation parameters, etc. Most of the options in this file are accessible via the Orbiter Launchpad dialog, and manual editing of the file should rarely be necessary.\\
+Orbiter overwrites the main configuration file at the start and end of each simulation session, to store any changes made by the user in the Launchpad dialog.\\
+Normally, only entries whose values differ from their default setting are written to Orbiter.cfg. To force Orbiter to write out all values (useful for debugging or manually editing the file), open Orbiter.cfg in a text editor, change the value of EchoAllParams to TRUE, and save. Subsequently, Orbiter will write all configuration entries to the file.
+
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.31\textwidth}|p{0.06\textwidth}|p{0.55\textwidth}| }
+	\hline\rule{0pt}{2ex}
+	\textbf{Item} & \textbf{Type} & \textbf{Description}\\
+	\hline\rule{0pt}{2ex}
+	EchoAllParams & Bool & If TRUE, Orbiter writes all configuration parameters to Orbiter.cfg, including defaults. Default: FALSE\\
+	\hline\rule{0pt}{2ex}
+	LPadRect & Rect & Screen position of the launchpad dialog window (pixels)\\
+	\hline
+	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Subdirectory locations}}}\\
+	\hline\rule{0pt}{2ex}
+	ConfigDir & String & Subdirectory for configuration files. Default: .\textbackslash Config\textbackslash\\
+	\hline\rule{0pt}{2ex}
+	MeshDir & String & Subdirectory for mesh files. Default: .\textbackslash Meshes\textbackslash\\
+	\hline\rule{0pt}{2ex}
+	TextureDir & String & Subdirectory for textures. Default: .\textbackslash Textures\textbackslash\\
+	\hline\rule{0pt}{2ex}
+	HightexDir & String & Subdirectory for alternative high-resolution planetary textures. Default: .\textbackslash Textures2\textbackslash\\
+	\hline\rule{0pt}{2ex}
+	ScenarioDir & String & Subdirectory for scenarios. Default: .\textbackslash Scenarios\textbackslash\\
+	\hline
+	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Logical parameters}}}\\
+	\hline\rule{0pt}{2ex}
+	StartPaused & Bool & Suspend simulation on launch. Default: FALSE\\
+	\hline\rule{0pt}{2ex}
+	FlightModel & Int & Flight model realism level. Currently supported: 0 (simple) and 1 (complex). Default: 1\\
+	\hline\rule{0pt}{2ex}
+	DamageModel & Int & Damage realism level. Currently supported: 0 (no damage) and 1 (damage modelling enabled). Default: 0\\
+	\hline\rule{0pt}{2ex}
+	UnlimitedFuel & Bool & Ignore spacecraft fuel consumption. Default: FALSE\\
+	\hline\rule{0pt}{2ex}
+	RefuelOnPad & Bool & Auto-refuel spacecraft parked on a landing pad. Default: TRUE\\
+	\hline\rule{0pt}{2ex}
+	MFDTransparent & Bool & Make multifunctional displays transparent in "glass cockpit" mode. Default: FALSE\\
+	\hline\rule{0pt}{2ex}
+	CompactGlasspit & Bool & On widescreen formats, keep MFD displays in the screen centre. Default: TRUE\\
+	\hline\rule{0pt}{2ex}
+	GenericMFDSize & Int & Scaling factor for MFD displays in "glass cockpit" mode. Supported values: 1-10. Default: 6\\
+	\hline\rule{0pt}{2ex}
+	MFDMapVersion & Int & Display style for Map MFD mode (0 = old, 1 = new). Default: 1\\
+	\hline\rule{0pt}{2ex}
+	InstrumentUpdate­Interval & Float & Interval between MFD display updates [s]. Default: 1.0\\
+	\hline\rule{0pt}{2ex}
+	PanelScale & Float & Scaling factor for instrument panel display. Default: 1.0\\
+	\hline\rule{0pt}{2ex}
+	PanelScrollSpeed & Float & Speed factor for panel scrolling [pixels/s]. Default: 300.0\\
+	\hline
+	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{User interface parameters}}}\\
+	\hline\rule{0pt}{2ex}
+	FocusFollowsMouse & Bool & If TRUE, dialog windows receive input focus when the mouse moves over them. Default: TRUE\\
+	\hline\rule{0pt}{2ex}
+	MenubarMode & Int & Main menu mode (0 = on, 1 = off, 2 = auto-hide). Default: 2\\
+	\hline\rule{0pt}{2ex}
+	MenuLabelOnly & Bool & Disable main menu icon display. Default: FALSE\\
+	\hline\rule{0pt}{2ex}
+	ShowWarpAlways & Bool & Display time acceleration even if menubar is hidden. Default: TRUE\\
+	\hline\rule{0pt}{2ex}
+	ShowWarpScientific & Bool & Display time acceleration in scientific mode. Default: FALSE\\
+	\hline\rule{0pt}{2ex}
+	InfobarMode & Int & Info bar mode (0 = on, 1 = off, 2 = auto-hide). Default: 0\\
+	\hline\rule{0pt}{2ex}
+	InfoAuxIdx & Int Int & Auxiliary info box modes left/right. Default: 0 0\\
+	\hline\rule{0pt}{2ex}
+	MenubarOpacity & Int & Main menu opacity (0-10). Default: 4\\
+	\hline\rule{0pt}{2ex}
+	InfobarOpacity & Int & Info bar opacity (0-10). Default: 4\\
+	\hline\rule{0pt}{2ex}
+	MenubarSpeed & Int & Menu/info bar scroll speed (1-20). Default: 10\\
+	\hline
+	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Visual parameters}}}\\
+	\hline\rule{0pt}{2ex}
+	EnableShadows & Bool & Enable object shadows on planet surfaces. Default: TRUE\\
+	\hline\rule{0pt}{2ex}
+	EnableVesselShadows & Bool & Enable vessel shadows on planet surfaces. Default: TRUE\\
+	\hline\rule{0pt}{2ex}
+	EnableClouds & Bool & Enable rendering of planetary cloud layers. Default: TRUE\\
+	\hline\rule{0pt}{2ex}
+	EnableCloudShadows & Bool & Enable rendering of cloud shadows on the ground (also requires CloudShadowDepth < 1 in individual planet config files). Default: FALSE\\
+	\hline\rule{0pt}{2ex}
+	EnableNightlights & Bool & Enable rendering of night lighting effects on planetary surfaces. Default: TRUE\\
+	\hline\rule{0pt}{2ex}
+	EnableWaterReflection & Bool & Enable rendering of specular reflections from water surfaces. Default: TRUE\\
+	\hline\rule{0pt}{2ex}
+	EnableSpecularRipples & Bool & Enable microtextures on water surfaces for ripple effects. Default: FALSE\\
+	\hline\rule{0pt}{2ex}
+	EnableHorizonHaze & Bool & Enable rendering of atmospheric effects at the horizon. Default: TRUE\\
+	\hline\rule{0pt}{2ex}
+	EnableDistanceFog & Bool & Enable distance-dependent fog effects. Default: TRUE\\
+	\hline\rule{0pt}{2ex}
+	EnableSpecular­Reflection & Bool & Enable specular reflection effects from polished surfaces Default: TRUE\\
+	\hline\rule{0pt}{2ex}
+	EnableReentryFlames & Bool & Enable shockwave effects during reentry. Default: TRUE\\
+	\hline\rule{0pt}{2ex}
+	EnableParticleStreams & Bool & Enable particle generation for exhaust and reentry effects. Default: TRUE\\
+	\hline\rule{0pt}{2ex}
+	EnableLocalLights & Bool & Enable localised point and spot light emitters. Default: FALSE\\
+	\hline\rule{0pt}{2ex}
+	MaxLights & Int & Max. simultaneously active lights (0 = query device). Default: 0\\
+	\hline\rule{0pt}{2ex}
+	AmbientLevel & Int & Ambient light level (brightness of not directly lit surfaces). (0-255). Default: 10\\
+	\hline\rule{0pt}{2ex}
+	PlanetMaxPatchLevel & Int & Max. texture resolution for planetary surfaces (1-14). Default: 14\\
+	\hline\rule{0pt}{2ex}
+	PlanetPatchRes & Float & Texture resolution bias for planet surfaces (0.1-10.0). Higher values result in higher render resolution at a given apparent radius, but reduce performance. Default: 1.0\\
+	\hline\rule{0pt}{2ex}
+	NightlightBrightness & Float & Brightness level of night lighting effects (0.0-1.0). Default: 0.5\\
+	\hline\rule{0pt}{2ex}
+	StarPrm & List & Brightness and scaling parameters for stars rendered as pixels. Values: app. mag. limit for brightest stars / app. mag. limit for faintest stars / render brightness for faintest stars / lin-log scaling flag. Default: [0.0 7.0 0.1 0]\\
+	\hline\rule{0pt}{2ex}
+	CSphereBgImage & String & File name for celestial sphere background image. Default: <none>\\
+	\hline\rule{0pt}{2ex}
+	CSphereBgPath & String & File path to celestial sphere background image.\\
+	\hline\rule{0pt}{2ex}
+	CSphereBgIntensity & Float & Brightness of background image (0.0-1.0). Default: 0.5\\
+	\hline
+	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Screen capture parameters}}}\\
+	\hline\rule{0pt}{2ex}
+	CaptureTarget & Int & 0 = clipboard, 1 = file. Default: 0\\
+	\hline\rule{0pt}{2ex}
+	CaptureFile & String & File name for next screen capture\\
+	\hline\rule{0pt}{2ex}
+	CaptureSequenceDir & String & Directory name for next screen capture sequence\\
+	\hline\rule{0pt}{2ex}
+	CaptureImageFormat & Int & 0 = BMP, 1 = PNG, 2 = JPG, 3 = TIFF\\
+	\hline\rule{0pt}{2ex}
+	CaptureImageQuality & Int & 1-10\\
+	\hline\rule{0pt}{2ex}
+	CaptureSequenceStart & Int & Number of next file in sequence\\
+	\hline\rule{0pt}{2ex}
+	CaptureSequenceSkip & Int & Number of frames to skip in sequence recording\\
+	\hline
+	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Instrument parameters}}}\\
+	\hline\rule{0pt}{2ex}
+	ForceMfdPow2 & String & TRUE = MFD sizes are set to powers of 2; FALSE = sizes can be arbitrary; AUTO = Orbiter guesses from display caps.\\
+	\hline\rule{0pt}{2ex}
+	MfdHiresThreshold & Int & MFD threshold size for switching from 256x256 to 512x512 pixels (only used if Pow2 size is active)\\
+	\hline
+	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Visual helper parameters}}}\\
+	\hline\rule{0pt}{2ex}
+	Planetarium & Int & Bit flags for display elements in "Planetarium" mode (\keystroke{F9}). Default: 4330.\\
+	\hline\rule{0pt}{2ex}
+	BodyForces & List & Display parameters for force vector visualisation. Values: bit flags for force types / vector scale factor / opacity. Default: [60 1.0 1.0]\\
+	\hline\rule{0pt}{2ex}
+	CoordinateAxes & List & Display parameters for object axis visualisation. Values: bit flags for object types / axis scale factor / opacity. Default: [4 1.0 1.0]\\
+	\hline
+	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Debugging options}}}\\
+	\hline\rule{0pt}{2ex}
+	ShutdownMode & Int & Simulation shutdown method (0 = dealloc memory, 1 = respawn, 2 = terminate). Default: 0\\
+	\hline\rule{0pt}{2ex}
+	FixedStep & Float & Fixed time interval per frame [s]. Default: 0 (disable fixed frame intervals)\\
+	\hline\rule{0pt}{2ex}
+	TimerMode & Int & Simulation timer mode (0 = auto, 1 = hires hardware timer, 2 = lores software timer). Default: 0\\
+	\hline\rule{0pt}{2ex}
+	DisableFontSmoothing & Bool & Turn off font smoothing while running Orbiter to improve performance. Default: TRUE\\
+	\hline\rule{0pt}{2ex}
+	ForceReenableFont­Smoothing & Bool & Re-enable font smoothing on closing Orbiter even if it was not active at program start. Default: FALSE\\
+	\hline\rule{0pt}{2ex}
+	HtmlScnDesc & Int & Use inline Html viewer for Launchpad scenario descriptions. 0 = no, 1 = yes, 2 = auto (off for Linux/Wine)\\
+	\hline\rule{0pt}{2ex}
+	SaveExitScreen & Bool & Take screenshot on session exit to display in scenario description. Default: TRUE\\
+	\hline
+	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Physics engine}}}\\
+	\hline\rule{0pt}{2ex}
+	DistributedVesselMass & Bool & Enable gravity gradient torque effects as result of anisotropic inertia tensor. Default: FALSE\\
+	\hline\rule{0pt}{2ex}
+	NonsphericalGravity­Sources & Bool & Enable orbit perturbations due to nonspherical gravitational potentials. Default: FALSE\\
+	\hline\rule{0pt}{2ex}
+	RadiationPressure & Bool & Enable orbit perturbations due to radiation pressure. Default: FALSE\\
+	\hline\rule{0pt}{2ex}
+	StabiliseOrbits & Bool & Use Encke's method for improved state propagation stability at large time steps. Default: TRUE\\
+	\hline\rule{0pt}{2ex}
+	StabilisePLimit & Float & Field perturbation limit for orbit stabilisation. Default: 0.05\\
+	\hline\rule{0pt}{2ex}
+	StabiliseSLimit & Float & Fractional orbit step limit for orbit stabilisation. Default: 0.01\\
+	\hline\rule{0pt}{2ex}
+	PertPropSubsampling & List & Orbit stabilisation subsampling parameters. Values: max. steps / fractional orbit step limit. Default: [10 0.02]\\
+	\hline\rule{0pt}{2ex}
+	PertPropNonspherical­Limit & Float & Fractional orbit step beyond which nonspherical gravity effects are ignored. Default: 0.05\\
+	\hline\rule{0pt}{2ex}
+	PropStages & Int & Number of integrator stages for vessel propagation (1-5). Default: 4\\
+	\hline\rule{0pt}{2ex}
+	PropStage<i> & List & Integrator parameters for propagator stage <i> (0-4). Values: integrator index / time step limit. Default: i = 0: [2 0.5], i = 1: [4 20.0], i = 2: [6 100.0], i = 3: [8 N/A]\\
+	\hline\rule{0pt}{2ex}
+	PropSubsampling & Int & Max. subsampling steps. Default: 100\\
+	\hline\rule{0pt}{2ex}
+	PlanetPreloadMode & Int & Planetary texture load mode. 0 = load on demand, 1 = preload at simulation start. Default: 0\\
+	\hline\rule{0pt}{2ex}
+	PlanetTexLoadFreq & Float & Texture patch loading frequency [Hz]. Default: 20\\
+	\hline\rule{0pt}{2ex}
+	PlanetAnisoMode & Int & Planet anisotropic filter level (1 = none). Default: 1\\
+	\hline\rule{0pt}{2ex}
+	PlanetMipmapMode & Int & Planet texture mipmap mode (0 = none, 1 = point sampling, 2 = linear interpolation). Default: 1\\
+	\hline\rule{0pt}{2ex}
+	PlanetMipmapBias & Float & Mipmap level bias (-1.0 - +1.0), where < 0 is sharper, > 0 is smoother. Default: 0\\
+	\hline
+	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Map dialog parameters}}}\\
+	\hline\rule{0pt}{2ex}
+	MapDlgFlag & Int & Bitflags for map dialog parameter settings\\
+	\hline
+	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Camera parameters}}}\\
+	\hline\rule{0pt}{2ex}
+	CameraPanspeed & Float & Camera speed in ground observer mode. Default: 100\\
+	\hline\rule{0pt}{2ex}
+	HUDColIdx & Int & HUD colour index. Default: 0 (green)\\
+	\hline
+	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Device settings}}}\\
+	\hline\rule{0pt}{2ex}
+	DeviceIndex & Int & Enumeration index for current 3D device (do not edit manually)\\
+	\hline\rule{0pt}{2ex}
+	ModeIndex & Int & Screen mode index (do not edit manually)\\
+	\hline\rule{0pt}{2ex}
+	DeviceForceEnum & Bool & If TRUE, enumerate 3D devices at each start. Default: TRUE\\
+	\hline\rule{0pt}{2ex}
+	Fullscreen & Bool & TRUE for fullscreen mode, FALSE for windowed mode. Default: FALSE\\
+	\hline\rule{0pt}{2ex}
+	Stereo & Bool & Currently not used\\
+	\hline\rule{0pt}{2ex}
+	NoVSync & Bool & Disable vertical refresh synchronisation. Default: FALSE\\
+	\hline\rule{0pt}{2ex}
+	StencilBuffer & Bool & Use stencil buffering for semi-opaque shadows, if supported. Default: FALSE\\
+	\hline\rule{0pt}{2ex}
+	FullscreenPageflip & Bool & Enable hardware page-flipping in fullscreen mode. Default: TRUE\\
+	\hline\rule{0pt}{2ex}
+	WindowWidth & Int & Horizontal window size for windowed modes [pixel]\\
+	\hline\rule{0pt}{2ex}
+	WindowHeight & Int & Vertical window size for windowed modes [pixel]\\
+	\hline
+	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Joystick parameters}}}\\
+	\hline\rule{0pt}{2ex}
+	JoystickIndex & Int & Enumeration index for current joystick (0 = none). Default: 0\\
+	\hline\rule{0pt}{2ex}
+	JoystickThrottleAxis & Int & Axis index for joystick throttle (0 = Z, 1 = slider 0, 2 = slider 1). Default: 1\\
+	\hline\rule{0pt}{2ex}
+	JoystickThrottle­Saturation & Int & Saturation zone for joystick throttle control (0-10000). A setting of 9000 means that the throttle will saturate over the last 10\% of its range at either end. Default: 9500\\
+	\hline\rule{0pt}{2ex}
+	JoystickDeadzone & Int & Deadzone at joystick axis centres (0-10000). A setting of 2000 means that the joystick is considered neutral within 20\% from the central position. Default: 2500\\
+	\hline\rule{0pt}{2ex}
+	IgnoreThrottleOnStart & Bool & Ignore throttle at simulation start until moved. Default: TRUE\\
+	\hline
+	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Demo parameters}}}\\
+	\hline\rule{0pt}{2ex}
+	DemoMode & Bool & Start Orbiter in demo mode (auto-launch scenarios). Default: FALSE\\
+	\hline\rule{0pt}{2ex}
+	BackgroundImage & Bool & Cover screen background with an image in demo mode. Default: FALSE\\
+	\hline\rule{0pt}{2ex}
+	BlockExit & Bool & Don't allow users to exit Orbiter in demo mode. Default: FALSE\\
+	\hline\rule{0pt}{2ex}
+	MaxDemoTime & Float & Max simulation runtime in demo mode [s]. Default: 300\\
+	\hline\rule{0pt}{2ex}
+	MaxLaunchpadIdleTime & Float & Max. time for launchpad to be open before auto-launching a scenario [s]. Default: 15\\
+	\hline
+	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Record/play parameters}}}\\
+	\hline\rule{0pt}{2ex}
+	RecordPosFrame & Int & Flight recorder: reference frame for position data (0 = ecliptic, 1 = equatorial). Default: 1\\
+	\hline\rule{0pt}{2ex}
+	RecordAttFrame & Int & Flight recorder: reference frame for attitude data (0 = ecliptic, 1 = equatorial). Default: 1\\
+	\hline\rule{0pt}{2ex}
+	RecordTimeWarp & Bool & Save time acceleration events in recording stream. Default: TRUE\\
+	\hline\rule{0pt}{2ex}
+	RecordFocusEvent & Bool & Save vessel focus changes in recording stream. Default: TRUE\\
+	\hline\rule{0pt}{2ex}
+	ReplayTimeWarp & Bool & Set time acceleration during playback from stream data. Default: TRUE\\
+	\hline\rule{0pt}{2ex}
+	ReplayFocusEvent & Bool & Set vessel focus during playback from stream data. Default: TRUE\\
+	\hline\rule{0pt}{2ex}
+	ReplayCameraEvent & Bool & Set camera parameters during playback from stream data. Default: TRUE\\
+	\hline\rule{0pt}{2ex}
+	SystimeSampling & Bool & Use system time (rather than simulation time) for recording sample intervals. Default: TRUE\\
+	\hline\rule{0pt}{2ex}
+	PlaybackNotes & Bool & Display onscreen annotations from stream during playback. Default: TRUE\\
+	\hline
+	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Font parameters}}}\\
+	\hline\rule{0pt}{2ex}
+	DialogFont\_Scale & Float & Scaling factor for dialog font size. Default: 1.0\\
+	\hline\rule{0pt}{2ex}
+	DialogFont1\_Face & String & Standard dialog font face. Default: Arial\\
+	\hline
+	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Window positions}}}\\
+	\hline\rule{0pt}{2ex}
+	DlgXXXPos & Rect & Screen positions of dialog windows\\
+	\hline\rule{0pt}{2ex}
+	LpadXXXListWidth & Int & Width of Launchpad splitter lists\\
+	\hline
+	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Modules list}}}\\
+	\hline\rule{0pt}{2ex}
+	ActiveModules & List & List of active plugin modules\\
+	\hline
+	\end{longtable}
+%\end{table}
+
+
+\subsection{Key mapping file}
+The keymap.cfg file in the Orbiter root directory contains the key mapping definitions for the default Orbiter functions. Individual vessel classes and other plugins may define additional key functions.\\
+Each line contains a key definition in the format\\
+\indent <\textit{function}> = <\textit{key}>\\
+where <function> is one of the function identifiers listed in the table below, and <\textit{key}> is a key identifier, optionally followed by one or more modifier keys.\\
+%TODO handle API doc reference
+For supported key identifiers, see Chapter Keyboard key identifiers in document Orbitersdk\textbackslash doc\textbackslash API\_Reference.chm. The key identifiers in the format required by keymap.cfg are as defined in the list, minus the OAPI\_KEY\_ prefix.\\
+Supported modifier keys are LSHIFT, RSHIFT, LCTRL, RCTRL, CTRL, LALT, RALT, ALT.\\
+Missing entries in keymap.cfg are substituted by their default values. To revert to the original key mapping, simply delete keymap.cfg. Orbiter will create a new one the next time it is run.
+
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.27\textwidth}|p{0.19\textwidth}|p{0.46\textwidth}| }
+	\hline\rule{0pt}{2ex}
+	\textbf{Function} & \textbf{Default value} & \textbf{Description}\\
+	\hline\rule{0pt}{2ex}
+	CockpitCamRotateLeft & LEFT ALT & Rotate camera left in cockpit mode\\
+	\hline\rule{0pt}{2ex}
+	CockpitCamRotateRight & RIGHT ALT & Rotate camera right in cockpit mode\\
+	\hline\rule{0pt}{2ex}
+	CockpitCamRotateUp & UP ALT & Rotate camera up in cockpit mode\\
+	\hline\rule{0pt}{2ex}
+	CockpitCamRotateDown & DOWN ALT & Rotate camera down in cockpit mode\\
+	\hline\rule{0pt}{2ex}
+	CockpitCamDontLean & DOWN CTRL ALT & Return camera to default position in VC mode\\
+	\hline\rule{0pt}{2ex}
+	CockpitCamLeanForward & UP CTRL ALT & Lean forward in VC mode\\
+	\hline\rule{0pt}{2ex}
+	CockpitCamLeanLeft & LEFT CTRL ALT & Lean left in VC mode\\
+	\hline\rule{0pt}{2ex}
+	CockpitCamLeanRight & RIGHT CTRL ALT & Lean right in VC mode\\
+	\hline\rule{0pt}{2ex}
+	CockpitResetCam & HOME & Return to default cockpit camera direction\\
+	\hline\rule{0pt}{2ex}
+	PanelShiftLeft & LEFT & Scroll 2D panel left\\
+	\hline\rule{0pt}{2ex}
+	PanelShiftRight & RIGHT & Scroll 2D panel right\\
+	\hline\rule{0pt}{2ex}
+	PanelShiftUp & UP & Scroll 2D panel up\\
+	\hline\rule{0pt}{2ex}
+	PanelShiftDown & DOWN & Scroll 2D panel down\\
+	\hline\rule{0pt}{2ex}
+	PanelSwitchLeft & LEFT CTRL & Switch to left neighbour panel\\
+	\hline\rule{0pt}{2ex}
+	PanelSwitchRight & RIGHT CTRL & Switch to right neighbour panel\\
+	\hline\rule{0pt}{2ex}
+	PanelSwitchUp & UP CTRL & Switch to upper neighbour panel\\
+	\hline\rule{0pt}{2ex}
+	PanelSwitchDown & DOWN CTRL & Switch to lower neighbour panel\\
+	\hline\rule{0pt}{2ex}
+	TrackCamRotateLeft & LEFT CTRL & Rotate camera left in external track mode\\
+	\hline\rule{0pt}{2ex}
+	TrackCamRotateRight & RIGHT CTRL & Rotate camera right in external track mode\\
+	\hline\rule{0pt}{2ex}
+	TrackCamRotateUp & UP CTRL & Rotate camera up in external track mode\\
+	\hline\rule{0pt}{2ex}
+	TrackCamRotateDown & DOWN CTRL & Rotate camera down in external track mode\\
+	\hline\rule{0pt}{2ex}
+	TrackCamAdvance & PGDOWN & Move camera closer in external track mode\\
+	\hline\rule{0pt}{2ex}
+	TrackCamRetreat & PGUP & Move camera away in external track mode\\
+	\hline\rule{0pt}{2ex}
+	GroundCamTiltLeft & LEFT & Tilt camera left in ground observer mode\\
+	\hline\rule{0pt}{2ex}
+	GroundCamTiltRight & RIGHT & Tilt camera right in ground observer mode\\
+	\hline\rule{0pt}{2ex}
+	GroundCamTiltUp & UP & Tilt camera up in ground observer mode\\
+	\hline\rule{0pt}{2ex}
+	GroundCamTiltDown & DOWN & Tilt camera down in ground observer mode\\
+	\hline\rule{0pt}{2ex}
+	IncMainThrust & ADD CTRL & Increment main thrust level\\
+	\hline\rule{0pt}{2ex}
+	DecMainThrust & SUBTRACT CTRL & Decrement main thrust level\\
+	\hline\rule{0pt}{2ex}
+	KillMainRetroThrust & MULTIPLY & Kill main and retro thrusters\\
+	\hline\rule{0pt}{2ex}
+	OverrideFullMainThrust & ADD & Temporarily set full main thrust\\
+	\hline\rule{0pt}{2ex}
+	OverrideFullRetroThrust & SUBTRACT & Temporarily set full retro thrust\\
+	\hline\rule{0pt}{2ex}
+	IncHoverThrust & NUMPAD0 & Increment hover thrust level\\
+	\hline\rule{0pt}{2ex}
+	DecHoverThrust & DECIMAL & Decrement hover thrust level\\
+	\hline\rule{0pt}{2ex}
+	RCSEnable & DIV CTRL & Enable/disable RCS\\
+	\hline\rule{0pt}{2ex}
+	RCSMode & DIVIDE & Rotational/translational RCS mode\\
+	\hline\rule{0pt}{2ex}
+	RCSPitchUp & NUMPAD2 & RCS pitch up\\
+	\hline\rule{0pt}{2ex}
+	RCSPitchDown & NUMPAD8 & RCS pitch down\\
+	\hline\rule{0pt}{2ex}
+	RCSYawLeft & NUMPAD1 & RCS yaw left\\
+	\hline\rule{0pt}{2ex}
+	RCSYawRight & NUMPAD3 & RCS yaw right\\
+	\hline\rule{0pt}{2ex}
+	RCSBankLeft & NUMPAD4 & RCS bank left\\
+	\hline\rule{0pt}{2ex}
+	RCSBankRight & NUMPAD6 & RCS bank right\\
+	\hline\rule{0pt}{2ex}
+	RCSUp & NUMPAD2 & RCS translate up\\
+	\hline\rule{0pt}{2ex}
+	RCSDown & NUMPAD8 & RCS translate down\\
+	\hline\rule{0pt}{2ex}
+	RCSLeft & NUMPAD1 & RCS translate left\\
+	\hline\rule{0pt}{2ex}
+	RCSRight & NUMPAD3 & RCS translate right\\
+	\hline\rule{0pt}{2ex}
+	RCSForward & NUMPAD6 & RCS translate forward\\
+	\hline\rule{0pt}{2ex}
+	RCSBack & NUMPAD9 & RCS translate backward\\
+	\hline\rule{0pt}{2ex}
+	LPRCSPitchUp & NUMPAD2 CTRL & low power RCS pitch up\\
+	\hline\rule{0pt}{2ex}
+	LPRCSPitchDown & NUMPAD8 CTRL & low power RCS pitch down\\
+	\hline\rule{0pt}{2ex}
+	LPRCSYawLeft & NUMPAD1 CTRL & low power RCS yaw left\\
+	\hline\rule{0pt}{2ex}
+	LPRCSYawRight & NUMPAD3 CTRL & low power RCS yaw right\\
+	\hline\rule{0pt}{2ex}
+	LPRCSBankLeft & NUMPAD4 CTRL & low power RCS bank left\\
+	\hline\rule{0pt}{2ex}
+	LPRCSBankRight & NUMPAD6 CTRL & low power RCS bank right\\
+	\hline\rule{0pt}{2ex}
+	LPRCSUp & NUMPAD2 CTRL & low power RCS translate up\\
+	\hline\rule{0pt}{2ex}
+	LPRCSDown & NUMPAD8 CTRL & low power RCS translate down\\
+	\hline\rule{0pt}{2ex}
+	LPRCSLeft & NUMPAD1 CTRL & low power RCS translate left\\
+	\hline\rule{0pt}{2ex}
+	LPRCSRight & NUMPAD3 CTRL & low power RCS translate right\\
+	\hline\rule{0pt}{2ex}
+	LPRCSForward & NUMPAD6 CTRL & low power RCS translate forward\\
+	\hline\rule{0pt}{2ex}
+	LPRCSBack & NUMPAD9 CTRL & low power RCS translate backward\\
+	\hline\rule{0pt}{2ex}
+	NMHoldAltitude & A & navmode hold altitude\\
+	\hline\rule{0pt}{2ex}
+	NMHLevel & L & navmode wings level\\
+	\hline\rule{0pt}{2ex}
+	NMPrograde & LBRACKET & navmode prograde\\
+	\hline\rule{0pt}{2ex}
+	NMRetrograde & RBRACKET & navmode retrograde\\
+	\hline\rule{0pt}{2ex}
+	NMNormal & SEMICOLON & navmode orbit-normal\\
+	\hline\rule{0pt}{2ex}
+	NMAntinormal & APOSTROPHE & navmode orbit-antinormal\\
+	\hline\rule{0pt}{2ex}
+	NMKillrot & NUMPAD5 & navmode kill rotation\\
+	\hline\rule{0pt}{2ex}
+	Undock & D CTRL & disengage main docking port\\
+	\hline\rule{0pt}{2ex}
+	IncElevatorTrim & DELETE & Increment elevator trim setting\\
+	\hline\rule{0pt}{2ex}
+	DecElevatorTrim & INSERT & Decrement elevator trim setting\\
+	\hline\rule{0pt}{2ex}
+	WheelbrakeLeft & COMMA & Apply wheel brake at left main gear\\
+	\hline\rule{0pt}{2ex}
+	WheelbrakeRight & PERIOD & Apply wheel brake at right main gear\\
+	\hline\rule{0pt}{2ex}
+	HUD & H CTRL & Switch HUD on/off\\
+	\hline\rule{0pt}{2ex}
+	HUDMode & H & Cycle to next HUD mode\\
+	\hline\rule{0pt}{2ex}
+	HUDReference & R CTRL & Select HUD reference body\\
+	\hline\rule{0pt}{2ex}
+	HUDTarget & R CTRL ALT & Select HUD target object\\
+	\hline\rule{0pt}{2ex}
+	HUDColour & H ALT & Cycle to next HUD colour\\
+	\hline\rule{0pt}{2ex}
+	IncSimSpeed & T & Increment simulation speed x10\\
+	\hline\rule{0pt}{2ex}
+	DecSimSpeed & R & Decrement simulation speed /10\\
+	\hline\rule{0pt}{2ex}
+	IncFOV & X & Zoom camera out\\
+	\hline\rule{0pt}{2ex}
+	DecFOV & Z & Zoom camera in\\
+	\hline\rule{0pt}{2ex}
+	StepIncFOV & X CTRL & Zoom camera out to next 10° step\\
+	\hline\rule{0pt}{2ex}
+	StepDecFOV & Z CTRL & Zoom camera in to next 10° step\\
+	\hline\rule{0pt}{2ex}
+	MainMenu & F4 & Show/hide main menu\\
+	\hline\rule{0pt}{2ex}
+	DlgHelp & F1 ALT & Open help window\\
+	\hline\rule{0pt}{2ex}
+	DlgCamera & F1 CTRL & Open camera dialog\\
+	\hline\rule{0pt}{2ex}
+	DlgSimSpeed & F2 CTRL & Open time acceleration dialog\\
+	\hline\rule{0pt}{2ex}
+	DlgCustomCmd & F4 CTRL & Open custom function dialog\\
+	\hline\rule{0pt}{2ex}
+	DlgVisualHelpers & F9 CTRL & Open visual helpers dialog\\
+	\hline\rule{0pt}{2ex}
+	DlgRecorder & F5 CTRL & Open record/playback control dialog\\
+	\hline\rule{0pt}{2ex}
+	DlgInfo & I CTRL & Open object info window\\
+	\hline\rule{0pt}{2ex}
+	DlgMap & M CTRL & Open map window\\
+	\hline\rule{0pt}{2ex}
+	DlgSelectVessel & F3 & Open vessel selection dialog\\
+	\hline\rule{0pt}{2ex}
+	SelectPrevVessel & F3 CTRL & Switch to previous focus vessel\\
+	\hline\rule{0pt}{2ex}
+	ToggleCamInternal & F1 & Switch cockpit/external view\\
+	\hline\rule{0pt}{2ex}
+	ToggleTrackMode & F2 & Cycle to next external track mode\\
+	\hline\rule{0pt}{2ex}
+	TogglePanelMode & F8 & Cycle to next cockpit mode\\
+	\hline\rule{0pt}{2ex}
+	TogglePlanetarium & F9 & Switch planetarium mode on/off\\
+	\hline\rule{0pt}{2ex}
+	ToggleRecPlay & C CTRL & Switch recorder/playback on/off\\
+	\hline\rule{0pt}{2ex}
+	Pause & P CTRL & Pause/resume simulation\\
+	\hline\rule{0pt}{2ex}
+	Quicksave & S CTRL & Save current simulation state\\
+	\hline\rule{0pt}{2ex}
+	DlgCapture & SYSRQ CTRL & Open screen capture control dialog\\
+	\hline\rule{0pt}{2ex}
+	Quit & Q CTRL & Quit simulation session\\
+	\hline
+	\end{longtable}
+%\end{table}
+
+
+\end{document}

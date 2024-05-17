@@ -1,0 +1,41 @@
+\documentclass[Orbiter User Manual.tex]{subfiles}
+\begin{document}
+
+\section{Command line interface}
+When starting Orbiter (orbiter.exe) or the Orbiter graphics server (orbiter\_ng.exe) from the command line, optional parameters can be provided to modify the behaviour of the simulation.\\
+orbiter.exe [options]\\
+Below is a list of the supported options. Options are separated with space. Most options can be specified with a long notation (with prefix -{}-) or short notation (with prefix -). If the option requires an argument, it must be separated from the option key with = (for the long version) or with a space (for the short version). If an argument contains spaces, it should be enclosed in double quotes (").
+
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.2\textwidth}|p{0.1\textwidth}|p{0.6\textwidth}| }
+	\hline\rule{0pt}{2ex}
+	\textbf{Long} & \textbf{Short} & \textbf{Effect}\\
+	\hline\rule{0pt}{2ex}
+	-{}-help & -h & Display usage and list of options, then exit.\\
+	\hline\rule{0pt}{2ex}
+	-{}-fastexit & -x & Terminate Orbiter at the end of the session. Don't return to the Launchpad dialog.\\
+	\hline\rule{0pt}{2ex}
+	-{}-scenario=<scn> & -S <scn> & Directly launch scenario <scn>. Bypass the Launchpad dialog. <scn> should contain the path to the scenario file relative to .\textbackslash Scenarios. The file extension (.scn) should be omitted.\\
+	\hline\rule{0pt}{2ex}
+	-{}-scenariox=<scn> & -s <scn> & Shortcut for -x -S <scn>. Launch scenario directly and terminate on session end.\\
+	\hline\rule{0pt}{2ex}
+	-{}-openvideotab & -v & Open Launchpad dialog on video tab instead of scenarios.\\
+	\hline\rule{0pt}{2ex}
+	-{}-keeplog & -l & Append log output to Orbiter.log instead of overwriting the previous log data.\\
+	\hline\rule{0pt}{2ex}
+	-{}-fixedstep=<s> & -f <s> & Set a fixed simulation time step of <s> seconds for each frame, independent of how long the frame takes to render in real time.\\
+	\hline\rule{0pt}{2ex}
+	-{}-maxsystime=<t> & -T <t> & Terminate the simulation session after <t> seconds.\\
+	\hline\rule{0pt}{2ex}
+	-{}-maxsimtime=<t> & -t <t> & Terminate the simulation session at simulation time <t>.\\
+	\hline\rule{0pt}{2ex}
+	-{}-maxframes=<f> & & Terminate the simulation session after <f> time frames.\\
+	\hline\rule{0pt}{2ex}
+	-{}-plugin=<pg> & -p <pg> & Enforce loading of plugin <pg>. Any path provided must be relative to .\textbackslash Modules\textbackslash Plugin. The extension (.dll) should be omitted. Multiple -plugin options can be provided. Any plug-ins requested on the command line cannot be unloaded interactively.\\
+	\hline
+	\end{longtable}
+%\end{table}
+
+
+\end{document}

@@ -1,0 +1,45 @@
+\documentclass[Orbiter Developer Manual.tex]{subfiles}
+\begin{document}
+
+\section{Publishing addons}
+%TODO mention licensing
+Now that you have created and tested your new ship, you want to share it with the rest of the Orbiter community. Here is how to do it:
+
+\subsection{Function over style}
+It may be tempting to create an extremely detailed 3D model with tens of thousands of mesh vertices, and megabytes of textures - but don't. Remember that many people may have lower-powered computers than you, and that the sexiest spacecraft is worthless if it degrades framerate to un-playability. Also, your model may compete with tens or hundreds of other objects for processor cycles.\\
+Therefore, aim for \textit{low polygon count}. Creating good-looking objects with low-resolution meshes is the high art of 3D modelling for real-time applications. If you are importing an existing model into Orbiter, see whether your 3D editor has an option to reduce the polygon count (sometimes called \textit{optimisation} or \textit{decimation}) before converting to the Orbiter mesh format. As a rough guideline, I would suggest to keep the vertex count below 100 000 vertices for each spacecraft.\\
+\\
+Likewise, try to limit the textures used by your object. Graphics cards have limited texture memory, and your ship will share this space with lots of other objects. Therefore I suggest
+
+\begin{itemize}
+\item a small number of texture maps, at dimension 1024x1024 or smaller.
+\item The use of generic texture maps (e.g. textures for solar panels etc.) which can be re-used by other models, helps reduce texture memory requirements. Have a look at the Orbiter Textures directory, to see whether an existing standard Orbiter texture is usable for your model.
+\item Remember that some older graphics cards do not support textures larger than 2048x2048. Avoid anything larger if you want to ensure compatibility.
+\end{itemize}
+
+\noindent
+These limits are mere suggestions for published addons to ensure reasonable performance on low end computers - you are free to ignore them. You should however mention the complexity of your model (i.e. the vertex count) and possible incompatibilities in the readme file accompanying the addon, to help users decide if they can use your addon.\\
+\\
+Of course there are no limitations for models created for your private use.
+
+
+\subsection{Creating an addon package}
+Create a zip file containing all the components of your new model (readme file, configuration file, mesh, textures, scenario). The zip file should contain directory information of the files, so that everything ends up in the right place when the user unpacks the archive in the Orbiter home directory.\\
+Do NOT include modified versions of standard Orbiter files (like planet configuration files or solar system configuration files) which may overwrite existing files. If your package needs to modify standard files this should be described in the readme file.\\
+Test that the package unzips and runs ok before publishing it (ideally in a fresh Orbiter installation)\\
+\\
+Make sure your package contains a readme file with at least the following information:
+
+\begin{itemize}
+\item Your name and email
+\item The Orbiter version for which the package was written
+\item A description of the package (what kind of ship, etc.)
+\item A list of files in the package
+\item Installation instructions, including required changes to standard Orbiter configuration files.
+\item An (approximate) vertex count so that users can estimate the performance impact
+\end{itemize}
+
+\subsection{Putting it on the web}
+Put your new package on a web site (with a short description and an optional screen shot) and tell others about it! If you haven't got web space, submit it to one of the Orbiter repositories set up by Orbiter users. The "Related sites" page on the Orbiter home site has a list of Orbiter addon repositories. One of the most popular Orbiter archives can be found at AVSIM (\url{www.avsim.com}). For widest publicity, you should put a note with link in the Orbiter addon forum, or email the Orbiter mailing list. Finally, you may want to consider submitting a screenshot of your addon to be published on the official Orbiter web site. Check the Orbiter gallery page for a link to submission guidelines.
+
+\end{document}
