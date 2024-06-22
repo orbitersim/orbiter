@@ -114,6 +114,7 @@ void Interpreter::Initialise ()
 	LoadSketchpadAPI ();  // load Sketchpad methods
 	LoadAnnotationAPI (); // load screen annotation methods
 	LoadVesselStatusAPI ();
+	LoadXRSoundAPI ();
 	LoadStartupScript (); // load default initialisation script
 }
 
@@ -366,11 +367,17 @@ const char *Interpreter::lua_tostringex (lua_State *L, int idx, char *cbuf)
 			/* uses 'key' (at index -2) and 'value' (at index -1) */
 			char fieldstr[256] = "\0";
 			if (lua_isstring(L,-2)) sprintf (fieldstr, "%s=", lua_tostring(L,-2));
-			strcat (fieldstr, lua_tostringex (L,-1));
+			if(lua_istable(L, -1)) // cut the tree to prevent stack overflow with recursive table
+				strcat (fieldstr, "[table]");
+			else
+				strcat (fieldstr, lua_tostringex (L,-1));
 			strcat (tbuf, fieldstr); strcat (tbuf, "\n");
 			lua_pop(L, 1);
 		}
 		return tbuf;
+	} else if (lua_isfunction (L, idx)) {
+		strcpy (cbuf, "[function]");
+		return cbuf;
 	} else {
 		cbuf[0] = '\0';
 		return cbuf;
@@ -504,6 +511,7 @@ void Interpreter::lua_pushvessel (lua_State *L, VESSEL *v)
 		lua_pop(L,1);                   // pop nil
 		VESSEL **pv = (VESSEL**)lua_newuserdata(L,sizeof(VESSEL*));
 		*pv = v;
+		knownVessels.insert(pv);
 		luaL_getmetatable (L, "VESSEL.vtable"); // retrieve metatable
 		lua_setmetatable (L,-2);             // and attach to new object
 		LoadVesselExtensions(L,v);           // vessel environment
@@ -512,6 +520,17 @@ void Interpreter::lua_pushvessel (lua_State *L, VESSEL *v)
 		lua_settable(L,LUA_REGISTRYINDEX);   // and store in registry
 		// note that now the object is on top of the stack
 	}
+}
+int Interpreter::lua_isvessel(lua_State *L, int idx)
+{
+	if(lua_isuserdata(L, idx)) {
+		void *ud = lua_touserdata(L, idx);
+		if(knownVessels.find(ud)!=knownVessels.end()) {
+			return true;
+		}
+	}
+	luaL_error(L, "Invalid parameter %d, vessel expected", idx);
+	return false;
 }
 
 void Interpreter::lua_pushmfd (lua_State *L, MFD2 *mfd)
@@ -1020,6 +1039,13 @@ void Interpreter::LoadAPI ()
 		{NULL, NULL}
 	};
 	luaL_openlib (L, "term", termLib, 0);
+
+	// Load XRSound library
+	static const struct luaL_reg XRSoundLib[] = {
+		{"create_instance", xrsound_create_instance},
+		{NULL, NULL}
+	};
+	luaL_openlib (L, "xrsound", XRSoundLib, 0);
 
 	// Set up global tables of constants
 
