@@ -15,7 +15,7 @@ class VesselMFD : public MFD2
 {
 public:
 	VesselMFD(DWORD w, DWORD h, VESSEL* vessel, VesselMFDContext* ctx);
-	virtual ~VesselMFD() {}
+	virtual ~VesselMFD();
 	bool ConsumeButton(int bt, int event) override;
 	bool ConsumeKeyBuffered(DWORD key) override;
 	bool ConsumeKeyImmediate(char* kstate) override;
@@ -3531,7 +3531,7 @@ void AirfoilFunc (VESSEL *v, double aoa, double M, double Re,
 	lua_pushnumber (L, Re);                     // Reynolds number
 
 	// call the script callback function
-	lua_call (L, 4, 3); // 4 arguments, 3 results
+	Interpreter::LuaCall(L, 4, 3);
 
 	// retrieve results
 	*cl = lua_tonumber (L,-3);
@@ -9753,6 +9753,15 @@ VesselMFD::VesselMFD(DWORD w, DWORD h, VESSEL* vessel, VesselMFDContext* ctx) : 
 	mfd_ref = LUA_REFNIL;
 }
 
+VesselMFD::~VesselMFD() {
+	lua_rawgeti(L, LUA_REGISTRYINDEX, mfd_ref);
+	lua_getfield(L, -1, "destroy");
+	if (lua_isfunction(L, -1)) {
+		lua_pushvalue(L, -2); //self
+		Interpreter::LuaCall(L, 1, 0);
+	}
+}
+
 bool VesselMFD::ConsumeButton(int bt, int event) {
 	lua_rawgeti(L, LUA_REGISTRYINDEX, mfd_ref);
 	lua_getfield(L, -1, "consumebutton");
@@ -9761,7 +9770,7 @@ bool VesselMFD::ConsumeButton(int bt, int event) {
 		lua_pushvalue(L, -2); //self
 		lua_pushnumber(L, bt);
 		lua_pushnumber(L, event);
-		lua_call(L, 3, 1);
+		Interpreter::LuaCall(L, 3, 1);
 		consumed = (lua_toboolean(L, -1) ? true : false);
 	}
 	else {
@@ -9777,7 +9786,7 @@ bool VesselMFD::ConsumeKeyBuffered(DWORD key) {
 	if (lua_isfunction(L, -1)) {
 		lua_pushvalue(L, -2); //self
 		lua_pushnumber(L, key);
-		lua_call(L, 2, 1);
+		Interpreter::LuaCall(L, 2, 1);
 		consumed = (lua_toboolean(L, -1) ? true : false);
 	}
 	else {
@@ -9793,7 +9802,7 @@ bool VesselMFD::ConsumeKeyImmediate(char* kstate) {
 	if (lua_isfunction(L, -1)) {
 		lua_pushvalue(L, -2); //self
 		lua_pushlightuserdata(L, kstate);
-		lua_call(L, 2, 1);
+		Interpreter::LuaCall(L, 2, 1);
 		consumed = (lua_toboolean(L, -1) ? true : false);
 	}
 	else {
@@ -9809,7 +9818,7 @@ char* VesselMFD::ButtonLabel(int bt) {
 	if (lua_isfunction(L, -1)) {
 		lua_pushvalue(L, -2); //self
 		lua_pushnumber(L, bt);
-		lua_call(L, 2, 1);
+		Interpreter::LuaCall(L, 2, 1);
 		if (lua_isstring(L, -1)) {
 			label = (char*)lua_tostring(L, -1);
 		}
@@ -9828,7 +9837,7 @@ int VesselMFD::ButtonMenu(const MFDBUTTONMENU** menu) const {
 		static MFDBUTTONMENU* mnu = 0;
 		static int nmnu = 0;
 		lua_pushvalue(L, -2); //self
-		lua_call(L, 1, 2);
+		Interpreter::LuaCall(L, 1, 2);
 		if (lua_isnumber(L, -1)) {
 			nbt = lua_tointeger(L, -1);
 			if (menu) {
@@ -9897,7 +9906,7 @@ bool VesselMFD::Update(oapi::Sketchpad* skp) {
 	if (lua_isfunction(L, -1)) {
 		lua_pushvalue(L, -2); //self
 		Interpreter::lua_pushsketchpad(L, skp);
-		lua_call(L, 2, 1);
+		Interpreter::LuaCall(L, 2, 1);
 		bool consumed = (lua_toboolean(L, -1) ? true : false);
 		lua_pop(L, 1);
 		return true; //consumed;
@@ -9911,7 +9920,7 @@ void VesselMFD::StoreStatus() const {
 
 	if (lua_isfunction(L, -1)) {
 		lua_pushvalue(L, -2); //self
-		lua_call(L, 1, 0);
+		Interpreter::LuaCall(L, 1, 0);
 	}
 	lua_pop(L, 1);
 }
@@ -9921,7 +9930,7 @@ void VesselMFD::RecallStatus() {
 
 	if (lua_isfunction(L, -1)) {
 		lua_pushvalue(L, -2); //self
-		lua_call(L, 1, 0);
+		Interpreter::LuaCall(L, 1, 0);
 	}
 	lua_pop(L, 1);
 }
@@ -9932,7 +9941,7 @@ void VesselMFD::WriteStatus(FILEHANDLE scn) const {
 	if (lua_isfunction(L, -1)) {
 		lua_pushvalue(L, -2); //self
 		lua_pushlightuserdata(L, scn);
-		lua_call(L, 2, 0);
+		Interpreter::LuaCall(L, 2, 0);
 	}
 	lua_pop(L, 1);
 }
@@ -9943,7 +9952,7 @@ void VesselMFD::ReadStatus(FILEHANDLE scn) {
 	if (lua_isfunction(L, -1)) {
 		lua_pushvalue(L, -2); //self
 		lua_pushlightuserdata(L, scn);
-		lua_call(L, 2, 0);
+		Interpreter::LuaCall(L, 2, 0);
 	}
 	lua_pop(L, 1);
 }

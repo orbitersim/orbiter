@@ -13,6 +13,8 @@ extern "C" {
 #include "OrbiterAPI.h"
 #include "VesselAPI.h" // for TOUCHDOWNVTX
 
+class gcCore;
+
 #define PRMTP_NIL           0x01
 #define PRMTP_NUMBER        0x02
 #define PRMTP_BOOLEAN       0x04
@@ -162,6 +164,8 @@ public:
 	virtual void LoadLightEmitterMethods ();
 
 	virtual void LoadBeaconMethods ();
+
+	virtual void LoadCustomCameraMethods ();
 
 	virtual void LoadSketchpadAPI ();
 
@@ -418,6 +422,7 @@ protected:
 	static int oapi_create_surface(lua_State* L);
 	static int oapi_destroy_surface(lua_State* L);
 	static int oapi_save_surface(lua_State* L);
+	static int oapi_clear_surface(lua_State* L);
 
 	// GC
 	static int oapi_set_materialex(lua_State* L);
@@ -521,6 +526,15 @@ protected:
 	static int oapi_get_cameraglobaldir (lua_State *L);
 	static int oapi_move_groundcamera (lua_State *L);
 	static int oapi_set_cameracockpitdir (lua_State *L);
+
+	// Custom camera
+	static int oapi_delete_customcamera (lua_State *L);
+	static int oapi_setup_customcamera (lua_State *L);
+	static int oapi_customcamera_overlay (lua_State *L);
+	static int oapi_customcamera_onoff (lua_State *L);
+	static void customcamera_clbk(oapi::Sketchpad *pSkp, void *pParam);
+	static int customcamera_collect (lua_State *L);
+
 
 	// animation functions
 	static int oapi_create_animationcomponent (lua_State *L);
@@ -1033,6 +1047,15 @@ protected:
 	static int skp_set_brush(lua_State* L);
 	static int skp_get_charsize (lua_State *L);
 	static int skp_get_textwidth (lua_State *L);
+	static int skp_copy_rect (lua_State *L);
+	static int skp_stretch_rect (lua_State *L);
+	static int skp_rotate_rect (lua_State *L);
+	static int skp_quick_pen (lua_State *L);
+	static int skp_quick_brush (lua_State *L);
+	static int skp_get_surface (lua_State *L);
+	static int skp_set_brightness (lua_State *L);
+	static int skp_set_renderparam (lua_State *L);
+	static int skp_set_worldtransform2d (lua_State *L);
 
 	// -------------------------------------------
 	// NTVERTEX methods
@@ -1077,6 +1100,10 @@ protected:
 private:
 	HANDLE hExecMutex; // flow control synchronisation
 	HANDLE hWaitMutex;
+	static inline gcCore *pCore;
+	static inline bool gcCoreInitialized = false;
+
+	static void LazyInitGCCore();
 
 	bool bExecLocal;   // flag for locally created mutexes
 	bool bWaitLocal;
