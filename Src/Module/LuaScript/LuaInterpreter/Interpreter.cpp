@@ -7,6 +7,7 @@
 #include "VesselAPI.h"
 #include "MFDAPI.h"
 #include "DrawAPI.h"
+#include "gcCoreAPI.h"
 #include <list>
 
 using std::min;
@@ -68,6 +69,13 @@ Interpreter::Interpreter ()
 
 	hExecMutex = CreateMutex (NULL, TRUE, NULL);
 	hWaitMutex = CreateMutex (NULL, FALSE, NULL);
+
+}
+
+void Interpreter::LazyInitGCCore() {
+	if(gcCoreInitialized) return;
+	gcCoreInitialized = true;
+	pCore = gcGetCoreInterface();
 }
 
 static int traceback(lua_State *L) {
@@ -108,6 +116,7 @@ void Interpreter::Initialise ()
 	LoadVesselAPI ();     // load vessel-specific part of API
 	LoadLightEmitterMethods (); // load light source methods
 	LoadBeaconMethods ();
+	LoadCustomCameraMethods ();
 	LoadMFDAPI ();        // load MFD methods
 	LoadNTVERTEXAPI();
 	LoadBitAPI();         // load bit library
@@ -806,6 +815,7 @@ void Interpreter::LoadAPI ()
 		{"create_surface", oapi_create_surface},
 		{"destroy_surface", oapi_destroy_surface},
 		{"save_surface", oapi_save_surface},
+		{"clear_surface", oapi_clear_surface},
 		
 		// GC
 		{"set_materialex", oapi_set_materialex},
@@ -918,6 +928,12 @@ void Interpreter::LoadAPI ()
 		{"move_groundcamera", oapi_move_groundcamera},
 		{"set_cameracockpitdir", oapi_set_cameracockpitdir},
 			
+		// Custom camera
+		{"setup_customcamera", oapi_setup_customcamera},
+		{"delete_customcamera", oapi_delete_customcamera},
+		{"customcamera_overlay", oapi_customcamera_overlay},
+		{"customcamera_onoff", oapi_customcamera_onoff},
+
 		// animation functions
 		{"create_animationcomponent", oapi_create_animationcomponent},
 		{"del_animationcomponent", oapi_del_animationcomponent},
@@ -1471,6 +1487,22 @@ void Interpreter::LoadBeaconMethods ()
 	lua_setglobal(L, "BEACONSHAPE");
 }
 
+
+void Interpreter::LoadCustomCameraMethods ()
+{
+	static const struct luaL_reg CustomCameraLib[] = {
+		{"__gc", customcamera_collect},
+		{NULL, NULL}
+	};
+
+	luaL_newmetatable (L, "CustomCamera.vtable");
+	lua_pushstring (L, "__index");
+	lua_pushvalue (L, -2); // push metatable
+	lua_settable (L, -3);  // metatable.__index = metatable
+	luaL_openlib (L, NULL, CustomCameraLib, 0);
+}
+
+
 void Interpreter::LoadSketchpadAPI ()
 {
 	static const struct luaL_reg skpLib[] = {
@@ -1492,6 +1524,15 @@ void Interpreter::LoadSketchpadAPI ()
 		{"set_brush", skp_set_brush},
 		{"get_charsize", skp_get_charsize},
 		{"get_textwidth", skp_get_textwidth},
+		{"copy_rect", skp_copy_rect},
+		{"stretch_rect", skp_stretch_rect},
+		{"rotate_rect", skp_rotate_rect},
+		{"quick_pen", skp_quick_pen},
+		{"quick_brush", skp_quick_brush},
+		{"get_surface", skp_get_surface},
+		{"set_brightness", skp_set_brightness},
+		{"set_renderparam", skp_set_renderparam},
+		{"set_worldtransform2d", skp_set_worldtransform2d},
 		{NULL, NULL}
 	};
 
@@ -1511,6 +1552,11 @@ void Interpreter::LoadSketchpadAPI ()
 	lua_pushnumber (L, oapi::Sketchpad::BASELINE);       lua_setfield (L, -2, "BASELINE");
 	lua_pushnumber (L, oapi::Sketchpad::BOTTOM);         lua_setfield (L, -2, "BOTTOM");
 	lua_setglobal (L, "SKP");
+
+	lua_createtable (L, 0, 2);
+	lua_pushnumber (L, oapi::Sketchpad::PRM_GAMMA);      lua_setfield (L, -2, "GAMMA");
+	lua_pushnumber (L, oapi::Sketchpad::PRM_NOISE);      lua_setfield (L, -2, "NOISE");
+	lua_setglobal (L, "PRM");
 }
 
 void Interpreter::LoadAnnotationAPI ()
@@ -3017,6 +3063,18 @@ int Interpreter::oapi_destroy_surface(lua_State* L)
 }
 
 /***
+Clear a surface.
+@function clear_surface
+@tparam handle hSurf surface handle
+*/
+int Interpreter::oapi_clear_surface(lua_State* L)
+{
+	SURFHANDLE surf = (SURFHANDLE)lua_touserdata(L, 1);
+	oapiClearSurface(surf);
+	return 0;
+}
+
+/***
 Save a surface to a file.
 @function save_surface
 @tparam string fname file name for the saved surface (excluding file extension)
@@ -3787,7 +3845,7 @@ static bool Clbk_enter(void *id, char *str, void *ctx)
 	lua_rawgeti(ibctx->L, LUA_REGISTRYINDEX, ibctx->ref_enter);   // push the callback function
 	lua_pushstring (ibctx->L, str);
 	lua_rawgeti(ibctx->L, LUA_REGISTRYINDEX, ibctx->usr_data);   // push the usr_data
-	lua_call (ibctx->L, 2, 1);
+	Interpreter::LuaCall (ibctx->L, 2, 1);
 	bool ret = lua_toboolean(ibctx->L, -1);
 	if(ret) {
 		luaL_unref(ibctx->L, LUA_REGISTRYINDEX, ibctx->ref_enter);
@@ -3805,7 +3863,7 @@ static bool Clbk_cancel(void *id, char *str, void *ctx)
 		lua_rawgeti(ibctx->L, LUA_REGISTRYINDEX, ibctx->ref_cancel); // push the callback function
 		lua_pushstring (ibctx->L, str);
 		lua_rawgeti(ibctx->L, LUA_REGISTRYINDEX, ibctx->usr_data);   // push the usr_data
-		lua_call (ibctx->L, 2, 0);
+		Interpreter::LuaCall (ibctx->L, 2, 0);
 	}
 	luaL_unref(ibctx->L, LUA_REGISTRYINDEX, ibctx->ref_enter);
 	luaL_unref(ibctx->L, LUA_REGISTRYINDEX, ibctx->ref_cancel);
@@ -5633,6 +5691,178 @@ int Interpreter::oapi_set_cameracockpitdir(lua_State *L)
 		transition = lua_toboolean(L, 3);
 	}
 	oapiCameraSetCockpitDir(polar, azimuth, transition);
+	return 0;
+}
+
+/***
+Create/Update custom camera.
+
+Create a new custom camera that can be used to render views into a surfaces and textures.
+
+Note: Camera count is unlimited.
+
+Note: Only cameras attached to currently active vessel are operational and recording.
+
+Note: Having multiple cameras active at the same time doesn't impact in a frame rate, however, camera refresh rates are reduced.
+
+@function setup_customcamera
+@tparam handle hCam camera handle to modify an existing camera or, nil to create a new one
+@tparam handle hVessel handle to a vessel where the camera is attached to.
+@tparam vector vPos camera position in vessel's local coordinate system
+@tparam vector vDir camera direction in vessel's local coordinate system. [Unit Vector]
+@tparam vector vUp camera up vector. Must be perpendicular to vDir. [Unit Vector]
+@tparam number dFow camera field of view in radians
+@tparam handle hSurf rendering surface. Must be created at least with OAPISURFACE.RENDER3D and OAPISURFACE.RENDERTARGET. Multiple cameras can share the same surface.
+@tparam number flags Flags to controls what is drawn and what is not.
+@treturn handle Camera handle, or nil if an error occurred or if the custom camera interface is disabled.
+*/
+
+typedef struct {
+	lua_State *L;
+	int clbk;
+	CAMERAHANDLE hCam;
+} CustomCamera_Lua;
+
+
+int Interpreter::customcamera_collect(lua_State *L)
+{
+	CustomCamera_Lua *cc = (CustomCamera_Lua *)luaL_checkudata(L, 1, "CustomCamera.vtable");
+	luaL_unref(L, LUA_REGISTRYINDEX, cc->clbk);
+	LazyInitGCCore();
+	if(cc->hCam && pCore) { // in case the script did not delete the camera
+		pCore->DeleteCustomCamera(cc->hCam);
+	}
+	return 0;
+}
+
+static void lua_pushcustomcamera(lua_State *L, CAMERAHANDLE hCam)
+{
+	CustomCamera_Lua *cc = (CustomCamera_Lua *)lua_newuserdata(L, sizeof(CustomCamera_Lua));
+	cc->L = L;
+	cc->hCam = hCam;
+	cc->clbk = LUA_REFNIL;
+
+	luaL_getmetatable(L, "CustomCamera.vtable");
+	lua_setmetatable(L, -2);
+}
+
+int Interpreter::oapi_setup_customcamera(lua_State *L)
+{
+	LazyInitGCCore();
+	if(pCore) {
+		CAMERAHANDLE hCam = nullptr;
+		CustomCamera_Lua *cc = nullptr;
+		if(!lua_isnil(L,1)) {
+			cc = (CustomCamera_Lua *)luaL_checkudata(L, 1, "CustomCamera.vtable");
+			hCam = cc->hCam;
+		}
+		VESSEL *hVessel = (VESSEL *)lua_touserdata(L,2); //FIXME: use lua_tovessel when merging with xrsound branch
+		VECTOR3 pos = lua_tovector(L, 3);
+		VECTOR3 dir = lua_tovector(L, 4);
+		VECTOR3 up = lua_tovector(L, 5);
+		double fov = luaL_checknumber(L, 6);
+		SURFHANDLE hSurf = (SURFHANDLE)lua_touserdata(L,7);
+		DWORD flags = 255;
+		if(lua_gettop(L)>=8) {
+			flags = luaL_checkinteger(L, 8);
+		}
+		hCam = pCore->SetupCustomCamera(hCam, hVessel, pos, dir, up, fov, hSurf, flags);
+		if(cc) {
+			cc->hCam = hCam;
+			lua_pushvalue(L, 1);
+		} else {
+			lua_pushcustomcamera(L, hCam);
+		}
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+
+/***
+Delete/Release a custom camera.
+
+Note : Always delete all cameras bound to a render surface before releasing the rendering surface it-self.
+
+@function delete_customcamera
+@tparam handle hCam camera handle to delete.
+@treturn number zero or an error code if the camara didn't work properly. (-1 if graphics client does not support custom cameras)
+*/
+int Interpreter::oapi_delete_customcamera(lua_State *L)
+{
+	LazyInitGCCore();
+	if(pCore) {
+		CustomCamera_Lua *cc = (CustomCamera_Lua *)luaL_checkudata(L, 1, "CustomCamera.vtable");
+		lua_pushnumber(L, pCore->DeleteCustomCamera(cc->hCam));
+		cc->hCam = nullptr;
+		// The object will be garbage collected later, but unref potential callback here
+		luaL_unref(L, LUA_REGISTRYINDEX, cc->clbk);
+		cc->clbk = LUA_REFNIL;
+	} else {
+		lua_pushnumber(L, -1);
+	}
+	return 1;
+}
+
+/***
+Toggle camera on and off.
+
+Note : If multiple cameras are sharing the same rendering surface. Flickering will occur if more than one camera is turned on.
+
+@function customcamera_onoff
+@tparam handle hCam camera handle to toggle.
+@tparam boolean bOn true to turn on the camera.
+*/
+int Interpreter::oapi_customcamera_onoff(lua_State *L)
+{
+	LazyInitGCCore();
+	if(pCore) {
+		CustomCamera_Lua *cc = (CustomCamera_Lua *)luaL_checkudata(L, 1, "CustomCamera.vtable");
+		bool bOn = lua_toboolean(L, 2);
+		pCore->CustomCameraOnOff(cc->hCam, bOn);
+	}
+	return 0;
+}
+
+void Interpreter::customcamera_clbk(oapi::Sketchpad *skp, void *pParam)
+{
+	CustomCamera_Lua *cc = (CustomCamera_Lua *)pParam;
+
+	if(cc->clbk != LUA_REFNIL) {
+		lua_rawgeti(cc->L, LUA_REGISTRYINDEX, cc->clbk); // push the callback function
+		lua_pushsketchpad(cc->L, skp);
+		LuaCall (cc->L, 1, 0);
+	}
+}
+
+/***
+Camera overlay.
+
+Setup a custom camera overlay drawing callback.
+
+@function customcamera_overlay
+@tparam handle hCam camera handle to toggle.
+@tparam function clbk pointer to a function to be called after each frame.
+*/
+int Interpreter::oapi_customcamera_overlay(lua_State *L)
+{
+	LazyInitGCCore();
+	if(pCore) {
+		CustomCamera_Lua *cc = (CustomCamera_Lua *)luaL_checkudata(L, 1, "CustomCamera.vtable");
+		// unref previous callback if any
+		luaL_unref(L, LUA_REGISTRYINDEX, cc->clbk);
+		cc->clbk = LUA_REFNIL;
+
+		if (lua_isfunction(L, 2)) {
+			lua_pushvalue(L, 2);
+			cc->clbk = luaL_ref(L, LUA_REGISTRYINDEX);
+		} else {
+			luaL_error(L, "Argument 2: function expected");
+		}
+
+		pCore->CustomCameraOverlay(cc->hCam, customcamera_clbk, cc);
+	}
 	return 0;
 }
 
@@ -9155,6 +9385,267 @@ int Interpreter::skp_get_textwidth (lua_State *L)
 	lua_pushnumber (L,w);
 	return 1;
 }
+
+/***
+[DX9] Copy 'Blit' a rectangle.
+
+Note : Can alpha-blend and mirror by a use of negative width/height in source rectangle
+
+@function copy_rect
+@tparam handle hSrc Source surface handle
+@tparam table src Source rectangle, (or nil for whole surface)
+@tparam number tx Target x-coordinate
+@tparam number ty Target y-coordinate
+*/
+int Interpreter::skp_copy_rect (lua_State *L)
+{
+	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
+	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
+	SURFHANDLE hSrc = (SURFHANDLE)lua_touserdata(L, 2);
+	RECT *src = nullptr;
+	RECT r;
+	if(!lua_isnil(L, 3)) {
+		r = lua_torect(L, 3);
+		src = &r;
+	}
+	int tx = luaL_checkinteger(L, 4);
+	int ty = luaL_checkinteger(L, 5);
+
+	skp->CopyRect(hSrc, src, tx, ty);
+	return 0;
+}
+
+/***
+[DX9] Copy 'Blit' a rectangle
+
+Note : Can alpha-blend and mirror by a use of negative width/height in source rectangle
+
+@function stretch_rect
+@tparam handle hSrc Source surface handle
+@tparam table src Source rectangle, (or nil for whole surface)
+@tparam table tgt Target rectangle, (or nil for whole surface)
+*/
+int Interpreter::skp_stretch_rect (lua_State *L)
+{
+	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
+	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
+	SURFHANDLE hSrc = (SURFHANDLE)lua_touserdata(L, 2);
+	RECT *src = nullptr;
+	RECT r;
+	if(!lua_isnil(L, 3)) {
+		r = lua_torect(L, 3);
+		src = &r;
+	}
+
+	RECT *tgt = nullptr;
+	RECT t;
+	if(!lua_isnil(L, 4)) {
+		t = lua_torect(L, 4);
+		tgt = &t;
+	}
+
+	skp->StretchRect(hSrc, src, tgt);
+	return 0;
+}
+
+/***
+[DX9] Copy 'Blit' a rectangle with rotation and scaling
+
+Note : Can alpha-blend and mirror by a use of negative width/height in source rectangle
+
+@function rotate_rect
+@tparam handle hSrc Source surface handle
+@tparam table src Source rectangle, (or nil for whole surface)
+@tparam number cx Target center x-coordinate
+@tparam number cy Target center y-coordinate
+@tparam number angle Rotation angle in radians
+@tparam number sw Width scale factor
+@tparam number sh Height scale factor
+*/
+int Interpreter::skp_rotate_rect (lua_State *L)
+{
+	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
+	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
+	SURFHANDLE hSrc = (SURFHANDLE)lua_touserdata(L, 2);
+	RECT *src = nullptr;
+	RECT r;
+	if(!lua_isnil(L, 3)) {
+		r = lua_torect(L, 3);
+		src = &r;
+	}
+	int cx = luaL_checkinteger(L, 4);
+	int cy = luaL_checkinteger(L, 5);
+	float angle = 0.0f;
+	float sw = 1.0f;
+	float sh = 1.0f;
+
+	if(lua_gettop(L)>=6)
+		angle = luaL_checknumber(L, 6);
+	if(lua_gettop(L)>=7)
+		sw = luaL_checknumber(L, 7);
+	if(lua_gettop(L)>=8)
+		sh = luaL_checknumber(L, 8);
+
+
+	skp->RotateRect(hSrc, src, cx, cy, angle, sw, sh);
+	return 0;
+}
+
+/***
+[DX9] Setup a quick pen, removes any other pen from use. Set to zero to disable a pen from use.
+
+@function quick_pen
+@tparam number color Pen color in 0xAABBGGRR
+@tparam number width Pen width in pixels
+@tparam number style 0 = Disabled, 1 = Solid, 2 = Dashed
+*/
+int Interpreter::skp_quick_pen (lua_State *L)
+{
+	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
+	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
+	DWORD color = luaL_checkinteger(L, 2);
+	float width = 1.0;
+	if(lua_gettop(L)>=3)
+		width = luaL_checknumber(L, 3);
+	DWORD style = 1UL;
+	if(lua_gettop(L)>=4)
+		style = luaL_checkinteger(L, 4);
+	skp->QuickPen(color, width, style);
+	return 0;
+}
+
+/***
+[DX9] Setup a quick brush, removes any other brush from use. Set to zero to disable a brush from use.
+
+@function quick_brush
+@tparam number color Brush color in 0xAABBGGRR
+*/
+int Interpreter::skp_quick_brush (lua_State *L)
+{
+	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
+	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
+	DWORD color = luaL_checkinteger(L, 2);
+	skp->QuickBrush(color);
+	return 0;
+}
+
+/***
+Returns the surface associated with the drawing object.
+
+@function get_surface
+@treturn handle Surface handle
+*/
+int Interpreter::skp_get_surface (lua_State *L)
+{
+	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
+	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
+	SURFHANDLE surf = skp->GetSurface();
+	if (surf)
+		lua_pushlightuserdata(L, surf);
+	else
+		lua_pushnil(L);
+
+	return 1;
+}
+
+/***
+[DX9] Automatically set a ColorMatrix for brightness control. nil to restore default settings.
+
+@function set_brightness
+@tparam colour brightness value
+*/
+int Interpreter::skp_set_brightness (lua_State *L)
+{
+	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
+	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
+	if(lua_gettop(L)>=2 && !lua_isnil(L, 2)) {
+		COLOUR4 col = lua_torgba(L, 2);
+		FVECTOR4 c = {col.r, col.g, col.b, col.a};
+		skp->SetBrightness(&c);
+	} else {
+		skp->SetBrightness();
+	}
+	return 0;
+}
+
+/***
+Set a render configuration paramater or "effect".
+
+@function set_renderparam
+@tparam number A setting ID to set [PRM.GAMMA or PRM.NOISE]
+@tparam colour|nil setting value or nil to disable the effect
+*/
+int Interpreter::skp_set_renderparam (lua_State *L)
+{
+	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
+	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
+
+	Sketchpad::RenderParam rp = (Sketchpad::RenderParam)luaL_checkinteger(L, 2);
+
+	if(lua_gettop(L)>=3 && !lua_isnil(L, 3)) {
+		COLOUR4 col = lua_torgba(L, 3);
+		FVECTOR4 c = {col.r, col.g, col.b, col.a};
+		skp->SetRenderParam(rp, &c);
+	} else {
+		skp->SetRenderParam(rp);
+	}
+
+	return 0;
+}
+
+/***
+[DX9] Set up a global world transformation matrix.
+
+Note : This function will conflict and resets any settings set by SetOrigin(). Setting to nil does not restore set_origin().
+
+Note : Everything is transformed including copy_rect() and text().
+
+Warning : Graphics results from a copy_rect() and text() can be blurry when non-default transform is in use
+due to source-target pixels miss aligments.
+
+@function set_worldtransform2d
+@tparam number[opt=1] scale Graphics scale factor.
+@tparam number[opt=1] rot Rotation angle [rad]
+@tparam table[opt=nil] ctr table containing a rotation center (x,y fields) or nil for origin.
+@tparam table[opt=nil] trl table containing a translation (x,y fields) or nil.
+*/
+int Interpreter::skp_set_worldtransform2d (lua_State *L)
+{
+	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
+	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
+	float scale = 1.0f;
+	float rot = 0.0f;
+	IVECTOR2 ctr;
+	IVECTOR2 *pctr = nullptr;
+	IVECTOR2 trl;
+	IVECTOR2 *ptrl = nullptr;
+
+	if(lua_gettop(L)>=2) {
+		scale = luaL_checknumber(L,2);
+	}
+	if(lua_gettop(L)>=3) {
+		rot = luaL_checknumber(L,3);
+	}
+	if(lua_gettop(L)>=4 && !lua_isnil(L,4)) {
+		lua_getfield (L, 4, "x");
+		ctr.x = lua_tonumber (L, -1); lua_pop (L,1);
+		lua_getfield (L, 4, "y");
+		ctr.y = lua_tonumber (L, -1); lua_pop (L,1);
+		pctr = &ctr;
+	}
+
+	if(lua_gettop(L)>=5 && !lua_isnil(L,5)) {
+		lua_getfield (L, 5, "x");
+		trl.x = lua_tonumber (L, -1); lua_pop (L,1);
+		lua_getfield (L, 5, "y");
+		trl.y = lua_tonumber (L, -1); lua_pop (L,1);
+		ptrl = &trl;
+	}
+
+	skp->SetWorldTransform2D(scale, rot, pctr, ptrl);
+	return 0;
+}
+
 
 /***
 This type provides an encapsulation of C++ NTVERTEX buffers that

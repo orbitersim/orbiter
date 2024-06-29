@@ -22,6 +22,7 @@ local GRP = meshres.GRP
 local meshres_vc = require("meshres_vc")
 local GRP_VC = meshres_vc.GRP
 APMFD = require("APMFD")
+local CameraMFD = require("CameraMFD")
 
 
 MFD_SHOWMODELABELS = 1
@@ -78,9 +79,24 @@ function register_APMFD()
 	return vi:register_mfdmode(spec)
 end
 
+function register_CameraMFD()
+	local spec = {
+		name = "CameraMFD",
+		key = OAPI_KEY.C,
+		msgproc =	function(msg, ...)
+						if msg == OAPI_MSG.MFD_OPENEDEX then
+							return CameraMFD(...)
+						end
+						return 0
+					end
+	}
+	return vi:register_mfdmode(spec)
+end
+
 -- Vessel constuction
 function clbk_new()
 	ascapMfdId = register_APMFD()
+	cameraMfdId = register_CameraMFD()
 	gfont = oapi.create_font(-11, false, "Arial")
 	gbrush = oapi.create_brush(_RGB(0,0,0))
 
@@ -190,6 +206,7 @@ end
 
 function clbk_destroy()
 	vi:unregister_mfdmode(ascapMfdId)
+	vi:unregister_mfdmode(cameraMfdId)
 	oapi.release_font(gfont)
 	oapi.release_brush(gbrush)
 end
