@@ -333,6 +333,7 @@ void Interpreter::LoadVesselAPI ()
 		// vessel status
 		{"is_landed", v_is_landed},
 		{"get_groundcontact", v_get_groundcontact},
+		{"get_groundcontactinfo", v_get_groundcontactinfo},
 
 		// fuel management
 		{"create_propellantresource", v_create_propellantresource },
@@ -2384,6 +2385,31 @@ int Interpreter::v_get_groundcontact (lua_State *L)
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushboolean (L, v->GroundContact() ? 1:0);
+	return 1;
+}
+
+int Interpreter::v_get_groundcontactinfo (lua_State *L)
+{
+	static const char *funcname = "v_get_groundcontactpenetration";
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+		if (v->Version() < 3) {
+		lua_pushnil(L);
+		lua_pushstring(L, "Invalid vessel version in register_panelarea");
+		return 2;
+	}
+	VESSEL4* v4 = (VESSEL4*)v;
+	int idx = luaL_checkinteger(L, 2);
+
+	CONTACTINFO info;
+	bool ret = v4->GetGroundContactInfo(&info, idx);
+	if(!ret) return luaL_error(L, "Index out of range (%d/%d)", idx, v4->GetTouchdownPointCount());
+
+	lua_newtable (L);
+	lua_pushnumber (L, info.depth);
+	lua_setfield (L, -2, "depth");
+	lua_pushvector(L, info.normal);
+	lua_setfield (L, -2, "normal");
+
 	return 1;
 }
 

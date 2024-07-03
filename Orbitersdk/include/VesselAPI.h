@@ -40,6 +40,12 @@ typedef struct {
 	double mu_lng;    ///< longitudinal friction coefficient (only used for first 3 points)
 } TOUCHDOWNVTX;
 
+struct CONTACTINFO {
+	double depth;
+	VECTOR3 normal;
+};
+
+
 //  ======================================================================
 /**
  * \brief Base class for objects of vessel type (spacecraft and similar)
@@ -6464,6 +6470,8 @@ public:
 	 *   VESSEL::ActivateNavmode, VESSEL::DeactivateNavmode, VESSEL::ToggleNavmode
 	 */
 	virtual int clbkNavProcess (int mode);
+	
+	bool GetGroundContactInfo(CONTACTINFO *, DWORD idx);
 };
 
 // ======================================================================

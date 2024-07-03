@@ -3661,7 +3661,7 @@ module or by multiple modules) the last state before rendering will be displayed
 int Interpreter::oapiDbgOut (lua_State *L)
 {
 	const char *str = lua_tostringex (L, 1);
-	strcpy (oapiDebugString(), str);
+	strncpy (oapiDebugString(), str, 256);
 	return 0;
 }
 
