@@ -12,6 +12,7 @@ add_library(LuaInterpreter SHARED
 
 target_include_directories(LuaInterpreter
 	PUBLIC ${ORBITER_SOURCE_SDK_INCLUDE_DIR}
+	PUBLIC ${ORBITER_BINARY_SDK_DIR}/include
 )
 
 target_link_libraries(LuaInterpreter
@@ -23,6 +24,8 @@ target_link_libraries(LuaInterpreter
 add_dependencies(LuaInterpreter
 	${OrbiterTgt}
 	Orbitersdk
+	D3D9Client
+	D3D9Client_Interface
 )
 
 set_target_properties(LuaInterpreter

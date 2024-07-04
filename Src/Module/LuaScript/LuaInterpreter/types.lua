@@ -289,3 +289,8 @@
 -- @field COCKPIT Only visible in cockpit view
 -- @field ALWAYS Always visible
 -- @table VIS
+
+--- Render params
+-- @field GAMMA Enable/Setup Gamma correction
+-- @field NOISE Enable/Setup Noise generation
+-- @table PRM
