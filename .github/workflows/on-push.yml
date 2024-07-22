@@ -1,0 +1,24 @@
+name: On Push
+
+on:  
+  push:
+    branches:
+      - main
+    paths-ignore: [ 'Doc/**', 'Flights/**', 'Html/**', 'Images/**', 'Localdoc/**', 'Scenarios/**', 'Textures/**', 'Textures2/**']
+  pull_request:
+    branches:
+      - main
+    paths-ignore: [ 'Doc/**', 'Flights/**', 'Html/**', 'Images/**', 'Localdoc/**', 'Scenarios/**', 'Textures/**', 'Textures2/**']
+
+jobs:
+  build:
+    name: Push
+    strategy:
+      fail-fast: false
+      matrix:
+        architecture: [x64, x86]
+        os: [windows-2019, windows-2022] # Why do we need multiple Windows versions?
+    uses: ./.github/workflows/reusable-build.yml
+    with:
+      os: ${{ matrix.os }}
+      architecture: ${{ matrix.architecture }}
