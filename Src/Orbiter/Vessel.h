@@ -1283,6 +1283,15 @@ public:
 	void Write (std::ostream &ofs) const;
 	// read/write vessel status from/to stream
 
+	bool GetGroundContactInfo(CONTACTINFO *tdi, DWORD idx) {
+		if(idx < touchdown_contact_info.size()) {
+			*tdi = touchdown_contact_info[idx];
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 protected:
 	bool OpenConfigFile (std::ifstream &cfgfile) const;
 	// returns configuration file for the vessel
@@ -1442,7 +1451,6 @@ protected:
 
 	TOUCHDOWN_VTX *HullvtxFirst ();
 	TOUCHDOWN_VTX *HullvtxNext ();
-
 private:
 	void UpdateMass ();
 	// update vessel mass (empty + sum of all fuel resources)
@@ -1650,6 +1658,7 @@ private:
 	Vector touchdown_nm;   // upward normal of touchdown plane (vessel frame)
 	Vector touchdown_cg;   // projection of CG onto touchdown plane
 	TOUCHDOWN_VTX *touchdown_vtx;
+	mutable std::vector<CONTACTINFO> touchdown_contact_info;
 	DWORD ntouchdown_vtx;    // number of touchdown vertices
 	DWORD next_hullvtx;      // used by hull vertex iterator
 

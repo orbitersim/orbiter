@@ -661,6 +661,7 @@ protected:
 	static int v_send_bufferedkey (lua_State *L);
 	static int v_is_landed (lua_State *L);
 	static int v_get_groundcontact (lua_State *L);
+	static int v_get_groundcontactinfo (lua_State *L);
 
 	// general vessel properties
 	static int v_get_name (lua_State *L);

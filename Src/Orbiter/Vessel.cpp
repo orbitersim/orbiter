@@ -1144,8 +1144,11 @@ bool Vessel::SetTouchdownPoints (const TOUCHDOWNVTX *tdvtx, DWORD ntp)
 	double a, b, c, d, e, f;
 
 	if (ntp != ntouchdown_vtx) {
-		if (ntouchdown_vtx) delete []touchdown_vtx;
+		if (ntouchdown_vtx) {
+			delete []touchdown_vtx;
+		}
 		touchdown_vtx = new TOUCHDOWN_VTX[ntouchdown_vtx = ntp];
+		touchdown_contact_info.resize(ntouchdown_vtx, {0,{0,1,0}});
 	}
 	for (i = 0; i < ntp; i++) {
 		touchdown_vtx[i].pos.Set (MakeVector(tdvtx[i].pos));
@@ -1214,6 +1217,7 @@ void Vessel::ClearTouchdownPoints ()
 	if (ntouchdown_vtx) {
 		delete []touchdown_vtx;
 		ntouchdown_vtx = 0;
+		touchdown_contact_info.resize(0);
 	}
 }
 
@@ -4293,7 +4297,6 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 	int i, j;
 	double alt = 0, tdymin = 0;
 	static int *tidx = new int[3];
-	static double *tdy = new double[3];
 	static double *fn = new double[3];
 	static double *flng = new double[3];
 	static double *flat = new double[3];
@@ -4334,8 +4337,6 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 		ntdy = ntouchdown_vtx;
 		delete []tidx;
 		tidx = new int[ntdy];
-		delete []tdy;
-		tdy = new double[ntdy];
 		delete []fn;
 		fn = new double[ntdy];
 		delete []flng;
@@ -4352,12 +4353,19 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 	for (i = 0; i < ntouchdown_vtx; i++) {
 		Vector p (mul (T, touchdown_vtx[i].pos) + shift);
 		double lng, lat, rad, elev = 0.0;
+		VECTOR3 normal = _V(0,1,0);
 		proxybody->LocalToEquatorial (p, lng, lat, rad);
-		if (emgr)
-			elev = emgr->Elevation (lat, lng, reslvl, &etile);
-		tdy[i] = rad - elev - proxybody->Size();
-		if (!i || tdy[i] < tdymin) {
-			tdymin = tdy[i];
+		if (emgr) {
+			Vector n;
+			elev = emgr->Elevation (lat, lng, reslvl, &etile, &n);
+			normal.x = n.x;
+			normal.y = n.y;
+			normal.z = n.z;
+		}
+		touchdown_contact_info[i].depth = rad - elev - proxybody->Size();
+		touchdown_contact_info[i].normal = normal;
+		if (!i || touchdown_contact_info[i].depth < tdymin) {
+			tdymin = touchdown_contact_info[i].depth;
 		}
 	}
 
@@ -4466,16 +4474,16 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 
 		DWORD ntouch = 0;
 		for (i = 0; i < ntouchdown_vtx; i++) {
-			if (tdy[i] < 0.0) { // ground contact on point i!
-				tdy[i] = max(tdy[i], -1.0); // DEBUG
+			if (touchdown_contact_info[i].depth < 0.0) { // ground contact on point i!
+				touchdown_contact_info[i].depth = max(touchdown_contact_info[i].depth, -1.0); // DEBUG
 				tidx[ntouch++] = i;
 				Vector gv (surfp.groundvel_ship + crossp(touchdown_vtx[i].pos,s->omega)); // ground velocity of touchdown point in vessel frame
 				gv_n   = dotp (gv, hn);                                             // gv projected on horizon normal in vessel frame
 				gv_lon = dotp (gv, d1h);											// longitudinal speed component for touchdown point i
 				gv_lat = dotp (gv, d2h);											// lateral speed component
 
-				fn[i] = -tdy[i]*touchdown_vtx[i].stiffness; 						// horizon-normal force component: gear compression forces
-				double maxpress = min (-tdy[i], 0.1)*touchdown_vtx[i].stiffness;
+				fn[i] = -touchdown_contact_info[i].depth*touchdown_vtx[i].stiffness; 						// horizon-normal force component: gear compression forces
+				double maxpress = min (-touchdown_contact_info[i].depth, 0.1)*touchdown_vtx[i].stiffness;
 
 				if (i < 3) {
 					mu = touchdown_vtx[i].mu_lng;
@@ -4497,7 +4505,7 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 				if (gv_lat > 0.0) flat[i] = -flat[i];
 				flat_tot += flat[i];
 
-				E_comp -= fn[i]*tdy[i]*0.5; // compression energy
+				E_comp -= fn[i]*touchdown_contact_info[i].depth*0.5; // compression energy
 				fn_tot_undamped += fn[i];
 				fn[i] -= gv_n*touchdown_vtx[i].damping;
 				fn_tot += fn[i];
@@ -4619,7 +4627,7 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 	} else {
 		double v1, v2;
 		for (i = 0; i < 3; i++) {
-			if (tdy[i] < 0.0) {
+			if (touchdown_contact_info[i].depth < 0.0) {
 				Vector gv (surfp.groundvel_ship + crossp(touchdown_vtx[i].pos,s->omega)); // ground velocity of touchdown point in vessel frame
 				v1 = dotp (gv, d1h); // longitudinal speed component for touchdown point i
 				v2 = dotp (gv, d2h); // lateral speed component
@@ -4665,7 +4673,7 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 
 		// apply angular forces
 		for (i = 0; i < 3; i++) {
-			if (tdy[i] < 0.0) {
+			if (touchdown_contact_info[i].depth < 0.0) {
 				Vector f_attack(touchdown_vtx[i].pos);
 				//f_attack.y = 0.0; // hack to avoid nicking
 				Vector F(d1h*flng[i] + d2h*flat[i]);
@@ -9043,4 +9051,9 @@ bool VESSEL4::UnregisterMFDMode (int mode)
 int VESSEL4::clbkNavProcess (int mode)
 {
 	return mode;
+}
+
+bool VESSEL4::GetGroundContactInfo(CONTACTINFO *info, DWORD idx)
+{
+	return vessel->GetGroundContactInfo(info, idx);
 }

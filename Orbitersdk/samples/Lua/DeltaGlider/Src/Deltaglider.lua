@@ -1412,6 +1412,19 @@ function DeltaGlider:clbkPostStep (simt, simdt, mjd)
 	end
 
 	ComponentVessel.clbkPostStep (self, simt, simdt, mjd)
+
+	if self.bGearIsDown and self:get_groundcontact() then
+		local str = ""
+		for i = 0,12 do
+			local tdinfo = self:get_groundcontactinfo(i)
+			if tdinfo and tdinfo.depth <= 0 then
+				str = str..string.format("td%d %.02f V(%.02f,%.02f,%.02f) ", i, tdinfo.depth, tdinfo.normal.x, tdinfo.normal.y, tdinfo.normal.z)
+			end
+		end
+		oapi.dbg_out(str)
+	else
+		oapi.dbg_out("")
+	end
 end
 
 function DeltaGlider:clbkLoadGenericCockpit ()
