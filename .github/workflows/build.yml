@@ -74,7 +74,7 @@ jobs:
       run: cmake --build --preset windows-${{ matrix.architecture }}-release --jobs 2
 
     - name: Test
-      run: ctest --preset windows-${{ matrix.architecture }}-release --jobs 2
+      run: ctest --preset windows-${{ matrix.architecture }}-release --parallel 2
 
     - name: Install
       working-directory: ${{ github.workspace }}/out/build/windows-${{ matrix.architecture }}-release
