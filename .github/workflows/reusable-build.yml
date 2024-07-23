@@ -1,0 +1,123 @@
+name: Build
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        default: windows-2019
+        type: string
+      architecture:
+        description: 'Build Architecture'
+        default: x86
+        type: string
+      upload:
+        description: Upload resulting artifact?
+        type: boolean
+        default: false
+
+run-name: Build ${{ inputs.architecture }} on ${{ inputs.os }}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build
+    runs-on: ${{ inputs.os }}
+    
+    env:
+      DXSDK_DIR: "${{ github.workspace }}\\DXSDK"
+      
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        submodules: true
+      
+    - name: Setup Problem Matcher
+      uses: ammaraskar/msvc-problem-matcher@master
+      
+    - name: Setup MSVC Console
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: ${{ inputs.architecture }}
+
+    - name: Create directories
+      run: |
+        mkdir out\build
+        mkdir out\install
+    
+    - name: Cache irrKlang package
+      uses: actions/cache@v4
+      with:
+        path: ${{ github.workspace }}/Extern/irrKlang/${{ inputs.architecture }}
+        key: irrKlang-${{ inputs.architecture }}
+        
+    - name: Cache DirectX SDK
+      id:   cache
+      uses: actions/cache@v4
+      with:
+        path: "${{ github.workspace }}\\DXSDK"
+        key:  dxsdk_jun10
+
+    - name: Download DirectX SDK
+      if:   steps.cache.outputs.cache-hit != 'true'
+      shell: cmd
+      run: |
+         curl -L https://download.microsoft.com/download/a/e/7/ae743f1f-632b-4809-87a9-aa1bb3458e31/DXSDK_Jun10.exe -o DXSDK_Jun10.exe
+         7z x DXSDK_Jun10.exe DXSDK/Include
+         7z x DXSDK_Jun10.exe DXSDK/Lib
+         del DXSDK_Jun10.exe
+         dir /S /B DXSDK
+
+    - name: Configure
+      run: cmake . --preset windows-${{ inputs.architecture }}-release -DORBITER_MAKE_DOC=OFF -DDXSDK_DIR:PATH="${{ github.workspace }}\\DXSDK"
+
+    - name: Build
+      run: cmake --build --preset windows-${{ inputs.architecture }}-release --jobs 2
+
+    - name: Test
+      run: ctest --preset windows-${{ inputs.architecture }}-release --parallel 2
+
+    - name: Install
+      working-directory: ${{ github.workspace }}/out/build/windows-${{ inputs.architecture }}-release
+      run: cmake --install . --prefix ${{ github.workspace }}/out/install
+      
+    - name: List exports
+      working-directory: ${{ github.workspace }}/out/install/Orbiter
+      shell: cmd
+      run: |
+        dumpbin /EXPORTS Modules\Server\Orbiter.exe /OUT:exports_tmp0.txt
+        type exports_tmp0.txt | find " ?" > exports_tmp1.txt
+        for /F "tokens=4" %%F in (exports_tmp1.txt) do @echo %%F >> exports_tmp2.txt
+        undname exports_tmp2.txt | sort > exports.txt
+        del /Q exports_tmp*.txt
+
+    - name: Diff exports with Orbiter 2016
+      if: ${{ inputs.architecture == 'x86' }}
+      shell: cmd
+      continue-on-error: true
+      run: git diff -U0 --ignore-cr-at-eol --ignore-space-at-eol --no-index exports.2016.txt out/install/Orbiter/exports.txt
+
+    - name: Pack
+      if: ${{ github.ref == 'refs/heads/main' }}
+      working-directory: ${{ github.workspace }}/out/install/Orbiter
+      shell: cmd
+      run: '7z a "${{ github.workspace }}/out/Orbiter.zip" .'
+
+    - name: Upload exports
+      if: inputs.upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: exports-${{ inputs.architecture }}
+        path: ${{ github.workspace }}/out/install/Orbiter/exports.txt
+        retention-days: 1
+    
+    - name: Upload Build Artifact
+      uses: actions/upload-artifact@v4
+      if: inputs.upload
+      with:
+        name: Orbiter-${{ inputs.architecture }}
+        # A file, directory or wildcard pattern that describes what to upload
+        path: ${{ github.workspace }}/out/Orbiter.zip
+        retention-days: 1

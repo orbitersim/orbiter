@@ -1,0 +1,49 @@
+name: Nightly
+
+on: 
+  workflow_dispatch:
+  schedule:
+    - cron: "13 01 * * *"
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  build:
+    name: Build
+    uses: ./.github/workflows/reusable-build.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        architecture: [x64, x86]
+    with:
+      architecture: ${{ matrix.architecture }}
+      upload: true
+        
+  publish:
+    name: Package
+    needs: [build, build]
+    runs-on: windows-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Re-arrange artifacts
+        shell: cmd
+        run: |
+          dir /S /B
+          move Orbiter-x64\Orbiter.zip Orbiter-x64.zip
+          move Orbiter-x86\Orbiter.zip Orbiter-x86.zip
+          dir /S /B
+
+      - name: "Create nightly release"
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ github.token }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "Orbiter development build"
+          files: |
+            Orbiter-x86.zip
+            Orbiter-x64.zip
