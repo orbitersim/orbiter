@@ -55,7 +55,7 @@ jobs:
     - name: "Create nightly release"
       uses: softprops/action-gh-release@v2
       with:
-        body: https://orbiter.voron.software/downloads/Orbiter-${{ inputs.version }}.zip
+        body: https://cdn.openorbiter.space/orbiter-releases/Orbiter-${{ inputs.version }}.zip
         tag_name: ${{ inputs.version }}
         prerelease: false
         make_latest: true
