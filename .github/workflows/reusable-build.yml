@@ -31,8 +31,6 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-      with:
-        submodules: true
       
     - name: Setup Problem Matcher
       uses: ammaraskar/msvc-problem-matcher@master
