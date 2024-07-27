@@ -7,11 +7,33 @@ on:
 
 permissions:
   contents: write
-  actions: read
+  actions: write
 
 jobs:
+  check:
+    name: Pre-check
+    runs-on: 'ubuntu-latest'
+    steps:
+    - uses: octokit/request-action@v2.x
+      id: check_last_run
+      with:
+        route: GET /repos/${{github.repository}}/actions/workflows/nightly.yml/runs?per_page=1&status=completed
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - run: |
+        echo Last nightly commit: ${{ fromJson(steps.check_last_run.outputs.data).workflow_runs[0].head_sha }}
+        echo Current run commit:  ${{ github.sha }}
+        echo Should run: ${{ fromJson(steps.check_last_run.outputs.data).workflow_runs[0].head_sha != github.sha }}
+
+    - if: ${{ fromJson(steps.check_last_run.outputs.data).workflow_runs[0].head_sha == github.sha }}
+      run: gh run cancel ${{ github.run_id }} --repo ${{ github.repository }}
+      env:
+        GH_TOKEN: ${{ github.token }}
+
   build:
     name: Build
+    needs: [check]
     uses: ./.github/workflows/reusable-build.yml
     strategy:
       fail-fast: false
@@ -23,7 +45,7 @@ jobs:
         
   publish:
     name: Package
-    needs: [build, build]
+    needs: [build]
     runs-on: windows-latest
     steps:
       - name: Download artifacts
