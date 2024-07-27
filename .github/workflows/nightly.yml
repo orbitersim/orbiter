@@ -26,12 +26,12 @@ jobs:
         echo Current run commit:  ${{ github.sha }}
 
     outputs:
-      last_sha: ${{ fromJson(steps.check_last_run.outputs.data).workflow_runs[0].head_sha }}
+      should_run: ${{ fromJson(steps.check_last_run.outputs.data).workflow_runs[0].head_sha != github.sha }}
       
   build:
     name: Build
     needs: [check]
-    if: needs.check.outputs.last_sha != github.sha
+    if: needs.check.outputs.should_run
     uses: ./.github/workflows/reusable-build.yml
     strategy:
       fail-fast: false
