@@ -10,8 +10,25 @@ permissions:
   actions: read
 
 jobs:
+  check:
+    runs-on: 'ubuntu-latest'
+    steps:
+    - uses: octokit/request-action@v2.x
+      id: check_last_run
+      with:
+        route: GET /repos/${{github.repository}}/actions/workflows/nightly.yml/runs?per_page=1&status=completed
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - run: "echo Last nightly build: ${{ fromJson(steps.check_last_run.outputs.data).workflow_runs[0].head_sha }}"
+
+    outputs:
+      last_sha: ${{ fromJson(steps.check_last_run.outputs.data).workflow_runs[0].head_sha }}
+      
   build:
     name: Build
+    needs: [check]
+    if: needs.check.outputs.last_sha != github.sha
     uses: ./.github/workflows/reusable-build.yml
     strategy:
       fail-fast: false
@@ -23,7 +40,7 @@ jobs:
         
   publish:
     name: Package
-    needs: [build, build]
+    needs: [build]
     runs-on: windows-latest
     steps:
       - name: Download artifacts
