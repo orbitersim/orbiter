@@ -34,7 +34,6 @@ add_dependencies(Orbitersdk
 )
 
 if(ORBITER_MAKE_DOC)
-	add_subdirectory(doc)
 	if(Doxygen_FOUND)
 		add_subdirectory(doxygen)
 	endif()
@@ -46,6 +45,5 @@ install(DIRECTORY html include
 
 # Copy Prebuild PDFs ------------------------------------------------------
 
-install(FILES doc/Orbiter2DGraphics.pdf DESTINATION ${ORBITER_INSTALL_SDK_DIR}/doc)
 install(FILES doc/BuildingSamples.pdf DESTINATION ${ORBITER_INSTALL_SDK_DIR}/doc)
 

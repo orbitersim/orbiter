@@ -66,7 +66,3 @@ install(DIRECTORY ${TEXTURE_SOURCE_DIR}/
 install(DIRECTORY ${THUMBNAIL_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Images/Vessels/Default
 )
-
-if(ORBITER_MAKE_DOC)
-	add_subdirectory(Doc)
-endif()

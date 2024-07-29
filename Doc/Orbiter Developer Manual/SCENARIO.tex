@@ -1,0 +1,344 @@
+\documentclass[Orbiter Developer Manual.tex]{subfiles}
+\begin{document}
+
+\section{Scenario files}
+\label{sec:scn_files}
+Scenarios are simulation startup definitions which contain all parameters required to set up the starting conditions of the simulation at a particular time. They are used for loading and saving simulation states. A scenario file is generated during the simulation when the user saves a state, or automatically at the simulation termination so it can be picked up later.\\
+\\
+Scenario files are text files that can be created or modified manually. An easier way to edit scenarios is with the \textit{Scenario Editor} plugin, which can be used to modify and save a running simulation. The Scenario Editor is described in section "Extra functionality" in Orbiter User Manual.\\
+\\
+Scenario files are located in a subdirectory tree specified by the ScenarioDir entry in the main configuration file (see "Main configuration file" in Orbiter User Manual), usually .\textbackslash Scenarios. They have file extension .scn.
+
+
+\subsection*{Format}
+Scenario files consist of a series of category blocks describing different aspects of the simulation state:
+
+\begin{lstlisting}[language=OSFS]
+<Description block>
+<Environment block>
+<Focus block>
+<Camera block>
+<Panel block>
+<VC block>
+<HUD block>
+<Left MFD block>
+<Right MFD block>
+<Vessel list>
+\end{lstlisting}
+
+
+\subsection*{Description block (optional):}
+Contains a short description of the scenario which is presented to the user in Orbiter's Launchpad dialog window on highlighting the scenario. There are two versions of the description block available:
+
+\begin{lstlisting}[language=OSFS]
+BEGIN_DESC
+	<Text-description>
+END_DESC
+\end{lstlisting}
+
+\noindent
+where <\textit{Text-description}> contains a scenario description in plain text format. The description can span multiple lines. An empty line is converted into a new line on display. More powerful formatting options are available with the alternative
+
+\begin{lstlisting}[language=OSFS]
+BEGIN_HYPERDESC
+	<HTML-description>
+END_HYPERDESC
+\end{lstlisting}
+
+\noindent
+where <\textit{HTML-description}> is passed to an HTML parser for rendering in the Launchpad window and can contain HTML formatting tags such as <h1></h1>, <b></b>, <br>, etc. However, references to external objects, such as images or links, are not allowed.
+Finally, the description can also be served from an external HTML or CHM (compiled multi-page HTML) file, using the format
+
+\begin{lstlisting}[language=OSFS]
+BEGIN_URLDESC
+	<URL>
+END_URLDESC
+\end{lstlisting}
+
+\noindent
+where <\textit{URL}> is a reference to a local HTML or CHM file containing the scenario description. The file is expected to be located in the HTML\textbackslash Scenarios directory. It can also be in a subdirectory of that directory, but the path relative to HTML\textbackslash Scenarios must then be added to the <\textit{URL}> reference. The file extension must not be included in the URL specification. For HTML files, file extension htm is expected. For CHM files, extension chm is expected. CHM references also must specify the page to display, separated by comma. For example,
+
+\begin{lstlisting}[language=OSFS]
+BEGIN_URLDESC
+	MyScenarios\MyScenarioDescription,TitlePage
+END_URLDESC
+\end{lstlisting}
+
+\noindent
+parses the description from file .\textbackslash Html\textbackslash Scenarios\textbackslash MyScenarios\textbackslash MyScenarioDescription.chm, reading page TitlePage.htm from the CHM file. CHM files can contain multiple documents, such as additional pages or images. The scenario description URL can be the same as the Help URL used for inline scenario help (see Help tag in the environment block).\\
+Note that when running Orbiter in some environments (e.g. in Linux under WINE), the HTML render function may not be available. For this case you can provide a DESC block in addition to the URLDESC or HYPERDESC block, to use as a fallback option. If no DESC block is found, Orbiter will try to convert a HYPERDESC block to plain text, but scenarios with only a URLDESC block will just show an empty description box.
+
+
+\subsection*{Environment block (optional):}
+Contains the simulation environment. Format:
+
+\begin{lstlisting}[language=OSFS]
+BEGIN_ENVIRONMENT
+	<Environment parameters>
+END_ENVIRONMENT
+\end{lstlisting}
+
+\noindent
+The following environment parameters are supported:
+
+\begin{table}[H]
+	\centering
+	\begin{tabularx}{\textwidth}{ |l|l|X| }
+	\hline\rule{0pt}{2ex}
+	\textbf{Item} & \textbf{Type} & \textbf{Description}\\
+	\hline\rule{0pt}{2ex}
+	SYSTEM & String & Name of the planetary system. A configuration file for this system must exist (see section \ref{ssec:planetery_sys}). Default: "Sol"\\
+	\hline\rule{0pt}{2ex}
+	DATE &   & Contains the simulation start time. Allowed formats are:\newline
+	MJD <mjd> (Modified Julian date [days])\newline
+	JD <jd> (Julian date)\newline
+	JE <je> (Julian epoch)\newline
+	Default is current system time, but this should be avoided if the scenario contains objects defined by position/velocity  state vectors at a fixed time, which cannot easily be propagated\\
+	\hline\rule{0pt}{2ex}
+	HELP & String [,String] & Scenario help file (in HTML or compressed CHM format). For a HTML page, specify the location of the page relative to the Html\textbackslash Scenarios folder and without extension (.htm is assumed). For a page in a CHM file, specify the location of the file relative to the Html\textbackslash Scenarios folder without extension (.chm is assumed), followed by a comma and the name of the page inside the file without extension (.htm is assumed). Scenario help files can be opened during the simulation with Alt+F1. Default: no help file\\
+	\hline\rule{0pt}{2ex}
+	CONTEXT & String & Optional context string. This can be used to fine-tune the setup of a planetary system, e.g. by selective loading of surface bases (see section \ref{ssec:surface_bases}).\\
+	\hline\rule{0pt}{2ex}
+	SCRIPT & String & A script file to launch at the scenario start. The string should include any path relative to the "Script" subdirectory, but no file extension (.lua is assumed). Default: no script\\
+	\hline
+	\end{tabularx}
+\end{table}
+
+\noindent
+\underline{Notes:}
+
+\begin{itemize}
+\item If the DATE entry is not present, Orbiter reads the computer system clock, adds the time zone offset to convert to Universal Time (UTC) and adds another offset of 66.184 seconds to map from UTC to Barycentric Dynamical Time (TDB).
+\item If the HELP entry is present, the description block is ignored.
+\item The script launched with the SCRIPT entry can be used for demos, interactive tutorials, etc. For Lua scripting in Orbiter, see .\textbackslash Orbitersdk\textbackslash doc\textbackslash orbiter\_lua.chm.
+\end{itemize}
+
+
+\subsection*{Focus block:}
+Contains parameters for the user-controlled spacecraft. Format:
+
+\begin{lstlisting}[language=OSFS]
+BEGIN_FOCUS
+	<Focus parameters>
+END_FOCUS
+\end{lstlisting}
+
+\noindent
+with the following parameters supported:
+
+\begin{table}[H]
+	\centering
+	\begin{tabularx}{\textwidth}{ |l|l|X| }
+	\hline\rule{0pt}{2ex}
+	\textbf{Item} & \textbf{Type} & \textbf{Description}\\
+	\hline\rule{0pt}{2ex}
+	SHIP & String & Name of the user-controlled ship. The ship must be listed in the ship list (see below).\\
+	\hline
+	\end{tabularx}
+\end{table}
+
+\subsection*{Camera block (optional):}
+
+Camera mode and parameters. If the camera block is missing, the camera is set to cockpit view in the current focus object. Format:
+
+\begin{lstlisting}[language=OSFS]
+BEGIN_CAMERA
+	<Camera parameters>
+END_CAMERA
+\end{lstlisting}
+
+\noindent
+with supported parameters
+
+\begin{table}[H]
+	\centering
+	\begin{tabularx}{\textwidth}{ |l|l|X| }
+	\hline\rule{0pt}{2ex}
+	\textbf{Item} & \textbf{Type} & \textbf{Description}\\
+	\hline\rule{0pt}{2ex}
+	MODE & Flag & Extern | Cockpit (selects external or cockpit camera mode)\\
+	\hline\rule{0pt}{2ex}
+	TARGET & String & Camera view target object (external modes only, cockpit mode always refers to the current focus object)\\
+	\hline\rule{0pt}{2ex}
+	POS & Vec3 & Camera position relative to target (external modes only)\\
+	\hline\rule{0pt}{2ex}
+	TRACKMODE & Flag [+String] & TargetRelative | AbsoluteDirection | GlobalFrame | TargetTo \textit{<ref>} | TargetFrom \textit{<ref>} | Ground \textit{<ref>} (external modes only)\\
+	\hline\rule{0pt}{2ex}
+	GROUNDLOCATION & Vec3 & longitude [deg], latitude [deg] and altitude [m] of ground observer (\textit{Ground} trackmode only)\\
+	\hline\rule{0pt}{2ex}
+	GROUNDDIRECTION & Float Float & polar coordinates of ground observer orientation (\textit{free Ground} trackmode only)\\
+	\hline\rule{0pt}{2ex}
+	FOV & Float & Field of view (angular aperture from from top to bottom of view window) [deg]\\
+	\hline
+	\end{tabularx}
+\end{table}
+
+\subsection*{Panel block (optional):}
+2D instrument panel parameters. If neither this nor the VC block is present, Orbiter initially displays the generic glass cockpit view in internal (cockpit) modes. If both are present, the 2D panel view takes precedence. Format:
+
+\begin{lstlisting}[language=OSFS]
+BEGIN_PANEL
+	<Panel parameters>
+END_PANEL
+\end{lstlisting}
+
+\noindent
+Currently no panel parameters are supported, but the presence of the panel block indicates a preference for 2D panel modes on startup, if supported by the focus vessel.
+
+
+\subsection*{VC block (optional):}
+Virtual cockpit parameters. If neither this nor the panel block is present, Orbiter initially displays the generic glass cockpit view in internal (cockpit) modes. Format:
+
+\begin{lstlisting}[language=OSFS]
+BEGIN_VC
+	<VC parameters>
+END_VC
+\end{lstlisting}
+
+\noindent
+Currently VC parameters are supported, but the presence of the VC block indicates a preference for virtual cockpit modes on startup, if supported by the focus vessel.
+
+
+\subsection*{HUD block (optional):}
+HUD (head up display) mode and parameters for cockpit views. If the HUD block is missing, no HUD is displayed at simulation start. Format:
+
+\begin{lstlisting}[language=OSFS]
+BEGIN_HUD
+	<HUD parameters>
+END_HUD
+\end{lstlisting}
+
+\noindent
+with supported parameters
+
+\begin{table}[H]
+	\centering
+	\begin{tabularx}{\textwidth}{ |l|l|X| }
+	\hline\rule{0pt}{2ex}
+	\textbf{Item} & \textbf{Type} & \textbf{Description}\\
+	\hline\rule{0pt}{2ex}
+	TYPE & Flag & Orbit | Surface | Docking\\
+	\hline
+	\end{tabularx}
+\end{table}
+
+\subsection*{Left/right MFD blocks (optional):}
+Left and right MFD (multifunctional display) mode and parameters. If an MFD block is missing, the corresponding MFD is switched off. Note that custom MFD modes can define their own set of parameters. If the current cockpit mode supports more than two MFD instruments, only the parameters for the first to are preserved. Format:
+
+\begin{lstlisting}[language=OSFS]
+BEGIN_MFD [Left | Right]
+	<MFD parameters>
+END_MFD
+\end{lstlisting}
+
+\noindent
+The following parameters are supported (most of which are relevant only for specific MFD modes):
+
+\begin{table}[H]
+	\centering
+	\begin{tabularx}{\textwidth}{ |l|l|X| }
+	\hline\rule{0pt}{2ex}
+	\textbf{Item} & \textbf{Type} & \textbf{Description}\\
+	\hline\rule{0pt}{2ex}
+	TYPE & Flag & MFD mode: Orbit | Surface | Map | Launch | Docking | OAlign | OSync | Transfer\\
+	\hline\rule{0pt}{2ex}
+	REF & String & Reference object (Orbit and Map modes only)\\
+	\hline\rule{0pt}{2ex}
+	TARGET & String & Target object (Orbit, OAlign, OSync modes only)\\
+	\hline\rule{0pt}{2ex}
+	BTARGET & String & Base target (Map mode only)\\
+	\hline\rule{0pt}{2ex}
+	OTARGET & String & Orbit target (Map mode only)\\
+	\hline\rule{0pt}{2ex}
+	PROJ & Flag & Ecliptic | Ship | Target (Orbit mode only)\\
+	\hline\rule{0pt}{2ex}
+	MODE & Flag & Intersect 1 | Intersect 2 | Sh periapsis | Sh apoapsis | Tg periapsis | Tg apoapsis | Manual axis (OSync mode only)\\
+	\hline\rule{0pt}{2ex}
+	MANUALREF & Float & Reference axis position [deg] (OSync mode in manual axis setting only)\\
+	\hline\rule{0pt}{2ex}
+	LISTLEN & Int & Length or orbit list (OSync mode only)\\
+	\hline
+	\end{tabularx}
+\end{table}
+
+\subsection*{Ship list:}
+A list of all spacecraft in the simulation and their state parameters. The list must contain at least one vessel referenced by the Focus block. Format:
+
+\begin{lstlisting}[language=OSFS]
+BEGIN_SHIPS
+	<Ship 0>
+	<Ship 1>
+	...
+END_SHIPS
+\end{lstlisting}
+
+\noindent
+where the entry format for each ship is given by
+
+\begin{lstlisting}[language=OSFS]
+<Vessel name>[: <Class name>]
+	<Vessel parameters>
+END
+\end{lstlisting}
+
+\noindent
+If both the vessel and class names are present, the vessel is created as an instance of the vessel class, and a configuration file for the vessel class, <\textit{Class name}>.cfg must exist. If only the vessel name is present, it is assumed to be a soliton (the only representative of its class) and the vessel class is assumed to coincide with its name.
+The following generic parameters are supported:
+
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.25\textwidth}|p{0.09\textwidth}|p{0.58\textwidth}| }
+	\hline\rule{0pt}{2ex}
+	\textbf{Item} & \textbf{Type} & \textbf{Description}\\
+	\hline\rule{0pt}{2ex}
+	STATUS & Flag & Landed <\textit{planet}> | Orbiting <\textit{planet}>\\
+	\hline\rule{0pt}{2ex}
+	BASE &  & <\textit{base}>:<\textit{lpad}> (only for status \textit{Landed})\\
+	\hline\rule{0pt}{2ex}
+	HEADING & Float & Orientation (only for status \textit{Landed})\\
+	\hline\rule{0pt}{2ex}
+	RPOS & Vec3 & Position relative to reference body (only for status \textit{Orbiting})\\
+	\hline\rule{0pt}{2ex}
+	RVEL & Vec3 & Velocity relative to reference body (only for status \textit{Orbiting})\\
+	\hline\rule{0pt}{2ex}
+	ELEMENTS & List & Osculating orbital elements. This is an alternative to the state vector specification (RPOS and RVEL) for vessels with status \textit{Orbiting}. The list contains 7 entries:\newline
+	semi-major axis \textit{a} [m],\newline
+	eccentricity \textit{e},\newline
+	inclination \textit{i} [deg],\newline
+	longitude of ascending node $\Omega$ [deg],\newline
+	longitude of periapsis $\overline{\omega}$ [deg],\newline
+	mean longitude at epoch \textit{l} [deg]\newline
+	epoch \textit{t} [MJD]\\
+	\hline\rule{0pt}{2ex}
+	AROT & Vec3 & Orientation: rotation angles of object frame (only for status \textit{Orbiting})\\
+	\hline\rule{0pt}{2ex}
+	VROT & Vec3 & Angular velocity [deg/s] (only for status Orbiting)\\
+	\hline\rule{0pt}{2ex}
+	FUEL & Float & Fuel level (0-1). This tag sets the level of all propellant resources to the same level. For individual settings use PRPLEVEL instead.\\
+	\hline\rule{0pt}{2ex}
+	PRPLEVEL & List & List of propellant resource levels. Each entry is of the form <\textit{id}>:<\textit{level}>, where <\textit{id}> is the resource identifier (Int $\geq$ 0) and <\textit{level}> is the propellant resource level (Float, 0-1)\\
+	\hline\rule{0pt}{2ex}
+	THLEVEL & List & List of thruster settings. Each entry is of the form <\textit{id}>:<\textit{level}>, where <\textit{id}> is the thruster identifier (Int $\geq$ 0) in the order of thruster definition and <\textit{level}> is the thrust level (Float, 0-1). Thrusters with level 0 can be omitted.\\
+	\hline\rule{0pt}{2ex}
+	DOCKINFO & List & Docking status list. This contains information about all docked vessels. Each entry is of the form <\textit{id}>:<\textit{rid}> <\textit{rvessel}>, where <\textit{id}> is the docking port identifier (Int $\geq$ 0), <\textit{rid}> is the docking port identifier of the docked vessel, and <\textit{rvessel}> is the docked vessel. Only engaged docking ports are listed. See notes below.\\
+	\hline
+	\end{longtable}
+%\end{table}
+
+\noindent
+In addition to these generic parameters, individual vessel classes may define class-specific parameters.\\
+\\
+\underline{Defining docked assemblies:}\\
+There are two ways to define vessels as being assembled into a superstructure by docking them together:
+
+\begin{itemize}
+\item Place the vessels so that their docking point locations coincide (by using the appropriate RPOS, RVEL, AROT and VROT parameters for both). Orbiter will dock two vessels au-tomatically if their docking ports are close enough.
+\item Define the DOCKINFO lists for both vessels so that they reference each other. Orbiter then attaches the vessels accordingly even if their position parameters are not aligned. In that case, the position of the first vessel in the superstructure list defines the position of the assembly. The position parameters of all subsequent vessels in the list are ignored.
+\end{itemize}
+
+\noindent
+In general it is easier to set up vessel states within the simulation by using the ScenarioEditor plugin and writing out the resulting scenario file than manually editing the file.
+
+
+\end{document}
+

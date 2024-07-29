@@ -1,0 +1,25 @@
+\documentclass[Orbiter Developer Manual.tex]{subfiles}
+\begin{document}
+
+\section{How to create a new spacecraft class}
+To add a new spacecraft class to ORBITER, the following steps must be performed:
+
+\begin{itemize}
+\item Define the physical parameters of the new spacecraft class in a configuration file in the Config subdirectory.
+\item Create a surface mesh which defines the ship's visual appearance, in the Meshes subdirectory.
+\item Optionally, add any textures used by the vessel, to the Textures subdirectory.
+\item Add a scenario which includes one or more spacecraft of the new class in the Scenarios subdirectory.
+\end{itemize}
+
+\noindent
+The above steps allow you to create a basic ship with generic parameters. To fully customize your new spacecraft one more step is required:
+
+\begin{itemize}
+\item Add a DLL module for the new vessel class which customises its behaviour (moving parts, custom cockpit panels, custom flight model, etc.) in the Modules subdirectory.
+\end{itemize}
+
+Refer to the OrbiterAPI document for information on writing vessel modules for Orbiter. A number of sample modules with source code is contained in the Orbitersdk\textbackslash samples folder.\\
+\\
+Note that every spacecraft class \textit{must} have a configuration file, even if all its parameters are defined in a DLL module. (In this case, the only entry in the configuration file may be the module name.)
+
+\end{document}
