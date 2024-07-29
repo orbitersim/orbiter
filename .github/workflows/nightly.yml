@@ -7,11 +7,33 @@ on:
 
 permissions:
   contents: write
-  actions: read
+  actions: write
 
 jobs:
+  check:
+    name: Pre-check
+    runs-on: 'ubuntu-latest'
+    steps:
+    - name: Get last run SHA
+      run: gh run list --limit 1 --workflow nightly.yml --json headSha --template "{{range .}}SHA={{.headSha}}{{end}}" --status completed --repo ${{ github.repository }} >> "$GITHUB_OUTPUT"
+      id: last_run
+      env:
+        GH_TOKEN: ${{ github.token }}
+
+    - name: Print
+      run: |
+        echo Last sha: ${{ steps.last_run.outputs.sha }}
+        echo Current:  ${{ github.sha }}
+        echo Should cancel: ${{ steps.last_run.outputs.sha == github.sha }}
+
+    - if: ${{ steps.last_run.outputs.sha == github.sha }}
+      run: gh run cancel ${{ github.run_id }} --repo ${{ github.repository }}
+      env:
+        GH_TOKEN: ${{ github.token }}
+
   build:
     name: Build
+    needs: [check]
     uses: ./.github/workflows/reusable-build.yml
     strategy:
       fail-fast: false
@@ -23,7 +45,7 @@ jobs:
         
   publish:
     name: Package
-    needs: [build, build]
+    needs: [build]
     runs-on: windows-latest
     steps:
       - name: Download artifacts
