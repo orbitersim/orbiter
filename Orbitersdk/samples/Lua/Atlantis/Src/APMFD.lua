@@ -21,6 +21,10 @@
 
 local AscentApMfd = Class()
 
+local snd = xrsound.create_instance("Atlantis.lua")
+snd:load_wav(1, "XRSound/Default/Autopilot On.wav",  PlaybackType.InternalOnly)
+snd:load_wav(2, "XRSound/Default/Autopilot Off.wav", PlaybackType.InternalOnly)
+
 -- ==============================================================
 -- init: called automatically when the MFD instance is created.
 --        This is your one chance to save the vessel handle
@@ -332,6 +336,7 @@ end
 function AscentApMfd:on_launch()
 	if not self.ap.active() then
 		if self.vessel.get_status() == 0 then
+			snd:play_wav(1)
 			self.ap.launch()
 			self:invalidate_buttons()
 		end
@@ -345,6 +350,7 @@ end
 -- ==============================================================
 function AscentApMfd:on_engage()
 	if not self.ap.active() then
+		snd:play_wav(1)
 		self.ap.engage()
 		self:invalidate_buttons()
 	end
@@ -357,6 +363,7 @@ end
 -- ==============================================================
 function AscentApMfd:on_disengage()
 	if self.ap.active() then
+		snd:play_wav(2)
 		self.ap.disengage()
 		self:invalidate_buttons()
 	end
