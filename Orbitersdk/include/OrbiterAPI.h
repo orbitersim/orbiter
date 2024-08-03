@@ -34,7 +34,7 @@
 #endif
 
 extern "C" {
-#include "Lua/lua.h"
+#include <lua/lua.h>
 }
 
 // Assumes MS VC++ compiler. Modify these statements for other compilers

@@ -7,6 +7,7 @@ on:
         required: true
         type: string
         default: 2024.1.0
+        description: Release tag. Recommended format year.month.version
 
 run-name: Release ${{ inputs.version }}
 
