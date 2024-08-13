@@ -989,7 +989,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 
 		SetupEclipse();
 
-		if (surfmgr2 && scn->GetRenderPass() == RENDERPASS_MAINSCENE) UpdateScatter();
+		if (scn->GetRenderPass() == RENDERPASS_MAINSCENE) UpdateScatter();
 
 		if (ringmgr) {
 			ringmgr->Render(dev, mWorld, false);
