@@ -68,8 +68,13 @@ jobs:
          del DXSDK_Jun10.exe
          dir /S /B DXSDK
 
+    - uses: zauguin/install-texlive@v3
+      with:
+        packages: >
+          l3build latex latex-bin luatex
+
     - name: Configure
-      run: cmake . --preset windows-${{ inputs.architecture }}-release -DORBITER_MAKE_DOC=OFF -DDXSDK_DIR:PATH="${{ github.workspace }}\\DXSDK"
+      run: cmake . --preset windows-${{ inputs.architecture }}-release -DORBITER_MAKE_DOC=ON -DDXSDK_DIR:PATH="${{ github.workspace }}\\DXSDK"
 
     - name: Build
       run: cmake --build --preset windows-${{ inputs.architecture }}-release --jobs 2
