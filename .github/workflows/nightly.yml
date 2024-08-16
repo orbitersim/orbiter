@@ -42,6 +42,7 @@ jobs:
     with:
       architecture: ${{ matrix.architecture }}
       upload: true
+      docs: true
         
   publish:
     name: Package
