@@ -14,6 +14,10 @@ on:
         description: Upload resulting artifact?
         type: boolean
         default: false
+      docs:
+        description: Build documentation?
+        type: boolean
+        default: false
 
 run-name: Build ${{ inputs.architecture }} on ${{ inputs.os }}
 
@@ -41,6 +45,21 @@ jobs:
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: ${{ inputs.architecture }}
+
+    - name: Install documentation prerequisites 
+      if: ${{ inputs.docs }}
+      shell: pwsh
+      run: |
+        choco install --no-progress miktex
+        choco install --no-progress doxygen.install
+        choco install --no-progress libreoffice-fresh
+        Add-Content $env:GITHUB_PATH "C:\Program Files\MiKTeX\miktex\bin\x64\"
+
+    - name: Print diagnostic information
+      shell: cmd
+      run: |
+        dir /S /B "C:\Program Files\LibreOffice\program"
+        dir /S /B "C:\Program Files\MiKTeX"
 
     - name: Create directories
       run: |
@@ -71,7 +90,9 @@ jobs:
          dir /S /B DXSDK
 
     - name: Configure
-      run: cmake . --preset windows-${{ inputs.architecture }}-release -DORBITER_MAKE_DOC=OFF -DDXSDK_DIR:PATH="${{ github.workspace }}\\DXSDK"
+      run: cmake . --preset windows-${{ inputs.architecture }}-release
+        -DORBITER_MAKE_DOC=${{ inputs.docs && 'ON' || 'OFF' }} 
+        -DDXSDK_DIR:PATH="${{ github.workspace }}\\DXSDK"
 
     - name: Build
       run: cmake --build --preset windows-${{ inputs.architecture }}-release --jobs 2

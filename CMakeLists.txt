@@ -104,7 +104,6 @@ set(ldoc $<TARGET_FILE:lua_bin> ${ORBITER_BINARY_ROOT_DIR}/packages/LDoc/ldoc.lu
 
 find_package(OpenGL QUIET)
 find_package(HTMLHelp)
-find_package(Doxygen)
 find_package(LATEX)		
 find_package(MFC)
 
@@ -284,10 +283,10 @@ if(ORBITER_BUILD_D3D9CLIENT)
 endif()
 
 if (ORBITER_MAKE_DOC)
-
 	find_program(ODT_TO_PDF_COMPILER
-		soffice
-		HINTS "/Program Files/LibreOffice/program"
+		NAMES soffice libreoffice
+		HINTS "C:/Program Files/LibreOffice/program"
+		REQUIRED
 	)
 
 	set(ODT_TO_PDF_FLAGS
@@ -298,8 +297,9 @@ if (ORBITER_MAKE_DOC)
 	)
 
 	find_program(DOC_TO_PDF_COMPILER
-		soffice
-		HINTS "/Program Files/LibreOffice/program"
+		NAMES soffice libreoffice
+		HINTS "C:/Program Files/LibreOffice/program"
+		REQUIRED
 	)
 
 	set(DOC_TO_PDF_FLAGS
@@ -308,7 +308,8 @@ if (ORBITER_MAKE_DOC)
 		STRING
 		"Compiler options for the DocToPdfCompiler"
 	)
-
+	
+	find_package(Doxygen REQUIRED)
 endif()
 
 # Enable Address SANitizer
