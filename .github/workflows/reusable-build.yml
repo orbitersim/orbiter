@@ -46,7 +46,7 @@ jobs:
       with:
         arch: ${{ inputs.architecture }}
 
-    - name: Install documentation prerequisites 
+    - name: Install documentation prerequisites
       if: ${{ inputs.docs }}
       shell: pwsh
       run: |
@@ -54,12 +54,6 @@ jobs:
         choco install --no-progress doxygen.install
         choco install --no-progress libreoffice-fresh
         Add-Content $env:GITHUB_PATH "C:\Program Files\MiKTeX\miktex\bin\x64\"
-
-    - name: Print diagnostic information
-      shell: cmd
-      run: |
-        dir /S /B "C:\Program Files\LibreOffice\program"
-        dir /S /B "C:\Program Files\MiKTeX"
 
     - name: Create directories
       run: |
