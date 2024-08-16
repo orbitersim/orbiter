@@ -575,7 +575,7 @@ void vPlanet::UpdateScatter()
 
 	dwSctFrame = scn->GetFrameId();
 
-	if (HasAtmosphere())
+	if (HasAtmosphere() && surfmgr2)
 	{
 		if (!pSunColor) D3DXCreateTexture(pDev, 4*Qc, Qc/2, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pSunColor);
 		if (!pRaySkyView) D3DXCreateTexture(pDev, Qc * 2, Qc, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pRaySkyView);
