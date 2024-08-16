@@ -1927,9 +1927,20 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 			pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 		}
 
+		DWORD dwMSAA;
+
+		if (bOIT) {
+			pDev->GetRenderState(D3DRS_MULTISAMPLEANTIALIAS, &dwMSAA);
+			pDev->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, 0);
+		}
+
 		pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Grp[g].VertOff,  0, Grp[g].nVert,  Grp[g].IdexOff, Grp[g].nFace);
 
 		Grp[g].bRendered = true;
+
+		if (bOIT && dwMSAA) {
+			pDev->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, dwMSAA);
+		}
 
 		if (Grp[g].bDualSided) {
 			pDev->SetRenderState(D3DRS_ZWRITEENABLE, 1);
@@ -2189,8 +2200,20 @@ void D3D9Mesh::RenderSimplified(const LPD3DXMATRIX pW, LPDIRECT3DCUBETEXTURE9 *p
 		// Start rendering -------------------------------------------------------------------------------------------
 		//
 		FX->CommitChanges();
+
+		DWORD dwMSAA = 0;
+
+		if (bOIT) {
+			pDev->GetRenderState(D3DRS_MULTISAMPLEANTIALIAS, &dwMSAA);
+			pDev->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, 0);
+		}
+
 		pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Grp[g].VertOff, 0, Grp[g].nVert, Grp[g].IdexOff, Grp[g].nFace);
 		Grp[g].bRendered = true;
+
+		if (bOIT && dwMSAA) {
+			pDev->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, dwMSAA);		
+		}
 	}
 
 	if (CurrentShader != 0xFFFF) HR(FX->EndPass());

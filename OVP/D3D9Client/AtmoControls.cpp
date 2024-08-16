@@ -60,7 +60,8 @@ ScatterParams::ScatterParams() :
 	wboost	 ( 0.0 ),
 	zcolor	 (1.0f, 1.0f, 0.9f),
 	hcolor	 (1.0f, 0.7f, 0.0f),
-	acolor	 (0.9f, 0.9f, 1.0f)
+	acolor	 (0.9f, 0.9f, 1.0f),
+	suni	 (1.0)
 {
 }
 

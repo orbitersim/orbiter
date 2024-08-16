@@ -49,7 +49,7 @@ D3D9Text::D3D9Text(LPDIRECT3DDEVICE9 pDevice) :
 	rotation   (),
 	scaling    (1.0f),
 	charset    (ANSI_CHARSET),
-	first      (32),
+	first      (0),
 	halign     (),
 	valign     (),
 	pDev       (pDevice),
