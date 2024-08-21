@@ -430,6 +430,7 @@ protected:
 	// GC
 	static int oapi_set_materialex(lua_State* L);
 	static int oapi_set_material(lua_State* L);
+	static int oapi_set_meshproperty(lua_State* L);
 
 	// VC
 	static int oapi_VC_trigger_redrawarea(lua_State* L);

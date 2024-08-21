@@ -839,6 +839,7 @@ void Interpreter::LoadAPI ()
 		// GC
 		{"set_materialex", oapi_set_materialex},
 		{"set_material", oapi_set_material},
+		{"set_meshproperty", oapi_set_meshproperty},
 
 		// VC
 		{"VC_trigger_redrawarea", oapi_VC_trigger_redrawarea},
@@ -1342,6 +1343,9 @@ void Interpreter::LoadAPI ()
 	lua_pushnumber (L, USRINPUT_NEEDANSWER); lua_setfield (L, -2, "NEEDANSWER");
 	lua_setglobal (L, "USRINPUT");
 
+	lua_createtable (L, 0, 1);
+	lua_pushnumber (L, MESHPROPERTY_MODULATEMATALPHA); lua_setfield (L, -2, "MODULATEMATALPHA");
+	lua_setglobal (L, "MESHPROPERTY");
 }
 
 void Interpreter::LoadMFDAPI ()
@@ -3229,6 +3233,38 @@ int Interpreter::oapi_set_material(lua_State* L)
 		lua_pushboolean(L, 1);
 		return 1;
 	}
+}
+
+/***
+Set custom properties for a mesh.
+
+Note : Currently only a single mesh property is recognised, but this may be extended in future versions:
+
+- MESHPROPERTY.MODULATEMATALPHA:
+	if value==0 (default) disable material alpha information in textured mesh groups (only use texture alpha channel).\n
+	if value<>0 modulate (mix) material alpha values with texture alpha maps.
+
+
+@function set_meshproperty
+@tparam handle hMesh mesh handle
+@tparam number property property tag
+@tparam number value new mesh property value
+@treturn boolean  true if the property tag was recognised and the request could be executed, false otherwise.
+*/
+int Interpreter::oapi_set_meshproperty(lua_State* L)
+{
+	DWORD property = luaL_checknumber(L, 2);
+	DWORD value = luaL_checknumber(L, 3);
+	MESHHANDLE *hMesh = (MESHHANDLE *)luaL_tryudata(L, 1, "MESHHANDLE");
+	if(hMesh) {
+		bool ret = oapiSetMeshProperty(*hMesh, property, value);
+		lua_pushboolean(L, ret);
+		return 1;
+	}
+	DEVMESHHANDLE hDevMesh = lua_todevmeshhandle(L, 1);
+	bool ret = oapiSetMeshProperty(hDevMesh, property, value);
+	lua_pushboolean(L, ret);
+	return 1;
 }
 
 /***

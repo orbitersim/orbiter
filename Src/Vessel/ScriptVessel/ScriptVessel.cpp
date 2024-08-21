@@ -59,6 +59,7 @@ enum {
 	NAVPROCESS,
 	LOADPANEL2D,
 	RENDERHUD,
+	GETRADIATIONFORCE,
 	NCLBK // must be last to represent the number of available callbacks
 };
 
@@ -92,6 +93,7 @@ const char *CLBKNAME[NCLBK] = {
 	"navprocess",
 	"loadpanel2d",
 	"renderHUD",
+	"getradiationforce"
 };
 
 static NOTEHANDLE errorbox;
@@ -197,6 +199,7 @@ public:
 	int clbkGeneric(int msgid, int prm, void* context) override;
 	bool clbkDrawHUD(int mode, const HUDPAINTSPEC* hps, oapi::Sketchpad* skp) override;
 	void clbkRenderHUD (int mode, const HUDPAINTSPEC *hps, SURFHANDLE hTex) override;
+	void clbkGetRadiationForce (const VECTOR3 &mflux, VECTOR3 &F, VECTOR3 &pos) override;
 
 	// VESSEL4
 	int clbkNavProcess (int mode) override;
@@ -1005,6 +1008,27 @@ void ScriptVessel::clbkRenderHUD (int mode, const HUDPAINTSPEC *hps, SURFHANDLE 
 		LuaCall(L, 3, 0);
 	}
 }
+
+void ScriptVessel::clbkGetRadiationForce (const VECTOR3 &mflux, VECTOR3 &F, VECTOR3 &pos)
+{
+	if (bclbk[GETRADIATIONFORCE]) {
+		strcpy(func + 5, "getradiationforce");
+		lua_getfield(L, LUA_GLOBALSINDEX, func);
+		lua_pushvector(L, mflux);
+		if(LuaCall(L, 1, 2) != 0) {
+			lua_settop(L, 0);
+			F={0,0,0};
+			pos={0,0,0};
+		} else {
+			F = lua_tovector(L, -2);
+			pos = lua_tovector(L, -1);
+			lua_pop(L, 2);
+		}
+	} else {
+		VESSEL3::clbkGetRadiationForce(mflux, F, pos);
+	}
+}
+
 
 int ScriptVessel::clbkNavProcess(int mode)
 {
