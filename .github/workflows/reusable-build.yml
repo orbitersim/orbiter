@@ -57,8 +57,8 @@ jobs:
       if: ${{ inputs.docs }}
       shell: pwsh
       run: |
-        function Winstall { winget install --silent --location UK --accept-source-agreements --exact --id $args }
-        winstall TheDocumentFoundation.LibreOffice.LTS
+        function Winstall { winget install --silent --location=UK --accept-source-agreements --exact --id=$args }
+        winstall TheDocumentFoundation.LibreOffice
         winstall MiKTeX.MiKTeX
         winstall DimitriVanHeesch.Doxygen
 
