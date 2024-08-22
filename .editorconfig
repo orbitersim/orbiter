@@ -17,4 +17,6 @@ indent_style = space
 
 [*.{c,h,cpp,hpp}]
 indent_size = 4
-indent_style = space
+indent_style = tab # TODO: switch to space
+cpp_new_line_before_else = false
+cpp_space_pointer_reference_alignment = ignore # TODO: decide
