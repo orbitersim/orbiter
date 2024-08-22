@@ -12,6 +12,7 @@ extern "C" {
 
 #include "OrbiterAPI.h"
 #include "VesselAPI.h" // for TOUCHDOWNVTX
+#include <unordered_set>
 
 class gcCore;
 
@@ -57,6 +58,7 @@ class gcCore;
 
 class VESSEL;
 class MFD2;
+class XRSound;
 
 struct AirfoilContext {
 	lua_State *L;
@@ -307,6 +309,7 @@ protected:
 
 	// type extraction with checks
 	static VESSEL *lua_tovessel_safe (lua_State *L, int idx, const char *funcname);
+	static int lua_isvessel(lua_State *L, int idx);
 
 	static int lua_tointeger_safe (lua_State *L, int idx, const char *funcname);
 	static double lua_tonumber_safe (lua_State *L, int idx, const char *funcname);
@@ -1097,6 +1100,33 @@ protected:
 	
 	friend int OpenHelp (void *context);
 
+	// -------------------------------------------
+	// XRSound
+	// -------------------------------------------
+	virtual void LoadXRSoundAPI ();
+	static int lua_isxrsound(lua_State *L, int idx);
+	static XRSound *lua_toxrsound(lua_State *L, int idx);
+	static int xrsound_create_instance(lua_State *L);
+	static int xrsound_is_present(lua_State *L);
+	static int xrsound_get_version(lua_State *L);
+	static int xrsound_load_wav(lua_State *L);
+	static int xrsound_play_wav(lua_State *L);
+	static int xrsound_stop_wav(lua_State *L);
+	static int xrsound_is_wavplaying(lua_State *L);
+	static int xrsound_set_paused(lua_State *L);
+	static int xrsound_is_paused(lua_State *L);
+	static int xrsound_set_defaultsoundenabled(lua_State *L);
+	static int xrsound_get_defaultsoundenabled(lua_State *L);
+	static int xrsound_set_defaultsoundgroupfolder(lua_State *L);
+	static int xrsound_get_defaultsoundgroupfolder(lua_State *L);
+	static int xrsound_set_pan(lua_State *L);
+	static int xrsound_get_pan(lua_State *L);
+	static int xrsound_set_playbackspeed(lua_State *L);
+	static int xrsound_get_playbackspeed(lua_State *L);
+	static int xrsound_set_playposition(lua_State *L);
+	static int xrsound_get_playposition(lua_State *L);
+	static int xrsound_collect(lua_State *L);
+
 private:
 	HANDLE hExecMutex; // flow control synchronisation
 	HANDLE hWaitMutex;
@@ -1113,6 +1143,9 @@ private:
 	int jobs;                // number of background jobs left over after command terminates
 	int (*postfunc)(void*);
 	void *postcontext;
+
+	static inline std::unordered_set<void *>knownVessels; // for lua_isvessel
+
 
 	static int lua_tointeger_safe (lua_State *L, int idx, int prmno, const char *funcname);
 	static double lua_tonumber_safe (lua_State *L, int idx, int prmno, const char *funcname);
