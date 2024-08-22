@@ -56,9 +56,10 @@ jobs:
       if: ${{ inputs.docs }}
       shell: pwsh
       run: |
-        winget install -e --id TheDocumentFoundation.LibreOffice.LTS
-        winget install -e --id MiKTeX.MiKTeX
-        winget install -e --id DimitriVanHeesch.Doxygen
+        function Winstall { winget install --silent --location UK --accept-source-agreements --exact --id $args }
+        winstall TheDocumentFoundation.LibreOffice.LTS
+        winstall MiKTeX.MiKTeX
+        winstall DimitriVanHeesch.Doxygen
 
     - name: Create directories
       run: |
