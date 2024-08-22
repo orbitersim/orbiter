@@ -20,7 +20,6 @@
 #include "Celbody.h"
 #include "Nav.h"
 #include "GraphicsAPI.h"
-#include "VObject.h" // temporary
 #include "Orbiter.h"
 #include <functional>
 #include <filesystem>

@@ -121,33 +121,6 @@ set(common_src
 	Orbiter.ico
 )
 
-# Sources for DX7 built-in graphics version only
-set(graphics_src
-# DX7 inline graphics
-	CelSphere.cpp
-	cloudmgr2.cpp
-	CSphereMgr.cpp
-	cspheremgr2.cpp
-	D3d7enum.cpp
-	D3d7frame.cpp
-	ExtraRender.cpp
-	OGraphics.cpp
-	Particle.cpp
-	Scene.cpp
-	ScreenNote.cpp
-	Spherepatch.cpp
-	surfmgr2.cpp
-	Texture.cpp
-	tilelabel.cpp
-	TileMgr.cpp
-	tilemgr2.cpp
-	VBase.cpp
-	Vobject.cpp
-	VPlanet.cpp
-	Vstar.cpp
-	Vvessel.cpp
-)
-
 set(Orbiter_includes
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_SOURCE_DIR}/Orbitersdk/include
@@ -167,13 +140,7 @@ set(Orbiter_common_libs
 	$<TARGET_FILE:Orbitersdk>
 	$<TARGET_FILE:DlgCtrl>
 )
-set(Orbiter_dx7_libs
-	dxguid.lib
-	dinput8.lib
-	${DX7SDK_LIB_DIR}/d3dim.lib
-	${DX7SDK_LIB_DIR}/ddraw.lib
-)
-set(Orbiter_server_libs
+set(Orbiter_libs
 	dxguid.lib
 	dinput8.lib
 )
@@ -183,117 +150,36 @@ set(Orbiter_depends
 	DlgCtrl
 )
 
-# Orbiter executable (DX7 inline graphics version)
-if(BUILD_ORBITER_DX7)
-
-	add_executable(Orbiter
-		${common_src}
-		${graphics_src}
-	)
-
-	set_target_properties(Orbiter
-		PROPERTIES
-		LINK_FLAGS "/SUBSYSTEM:WINDOWS"
-		RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}
-		COMPILE_DEFINITIONS "INLINEGRAPHICS;DIRECTINPUT_VERSION=0x0800"
-		ENABLE_EXPORTS 1
-		FOLDER Core
-	)
-
-	target_include_directories(Orbiter PUBLIC
-		${Orbiter_includes}
-	)
-	
-	target_link_libraries(Orbiter
-		${Orbiter_common_libs}
-		${Orbiter_dx7_libs}
-	)
-
-	add_dependencies(Orbiter
-		${Orbiter_depends}
-	)
-
-	# Installation: Orbiter executable (standalone graphics version)
-	install(TARGETS
-		Orbiter
-		RUNTIME
-		DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
-	)
-
-	# Installation: Orbiter SDK interface library to SDK folder to be included by addons
-	install(FILES $<TARGET_LINKER_FILE:Orbiter>
-		DESTINATION ${ORBITER_INSTALL_SDK_DIR}/lib
-	)
-	
-	if(BUILD_ORBITER_SERVER)
-		add_dependencies(Orbiter
-			Orbiter_server
-		)
-		add_custom_command(TARGET Orbiter
-			PRE_LINK
-			COMMAND del Orbiter.lib Orbiter.exp
-		)
-	endif()
-endif()
-
 # Orbiter executable (graphics server version)
-if(BUILD_ORBITER_SERVER)
+add_executable(Orbiter ${common_src})
 
-	add_executable(Orbiter_server
-		${common_src}
-	 )
+set_target_properties(Orbiter
+	PROPERTIES
+	LINK_FLAGS "/SUBSYSTEM:CONSOLE /ENTRY:WinMainCRTStartup"
+	RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}
+	OUTPUT_NAME Orbiter
+	VS_DEBUGGER_WORKING_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}
+	COMPILE_DEFINITIONS "NOGRAPHICS;DIRECTINPUT_VERSION=0x0800"
+	FOLDER Core
+)
 
-	set_target_properties(Orbiter_server
-		PROPERTIES
-		LINK_FLAGS "/SUBSYSTEM:CONSOLE /ENTRY:WinMainCRTStartup"
-		RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_MODULE_DIR}/Server
-		OUTPUT_NAME Orbiter
-		VS_DEBUGGER_WORKING_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}
-		COMPILE_DEFINITIONS "NOGRAPHICS;DIRECTINPUT_VERSION=0x0800"
-		FOLDER Core
-	)
+target_include_directories(Orbiter PUBLIC ${Orbiter_includes})
 
-	target_include_directories(Orbiter_server PUBLIC
-		${Orbiter_includes}
-	)
+target_link_libraries(Orbiter ${Orbiter_common_libs} ${Orbiter_libs})
 
-	target_link_libraries(Orbiter_server
-		${Orbiter_common_libs}
-		${Orbiter_server_libs}
-	)
+add_dependencies(Orbiter ${Orbiter_depends})
 
-	add_dependencies(Orbiter_server
-		${Orbiter_depends}
-	)
+# Installation: Orbiter executable (graphics-server versions)
+install(TARGETS Orbiter	RUNTIME DESTINATION ${ORBITER_INSTALL_ROOT_DIR})
 
-	# Installation: Orbiter executable (graphics-server versions)
-	install(TARGETS
-		Orbiter_server
-		RUNTIME
-		DESTINATION ${ORBITER_INSTALL_MODULE_DIR}/Server
-	)
-	# If the standard Orbiter executable is not built...
-	if(NOT BUILD_ORBITER_DX7)
-		set_target_properties(Orbiter_server
-			PROPERTIES
-			ENABLE_EXPORTS 1
-		)
-		# ...we have to use the NG version to export the API links
-		install(FILES $<TARGET_LINKER_FILE:Orbiter_server>
-			DESTINATION ${ORBITER_INSTALL_SDK_DIR}/lib
-		)
-		# ...and copy Orbiter.exe into build dir (not install dir) so that tests work
-		add_custom_command(TARGET Orbiter_server
-			POST_BUILD
-			COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:Orbiter_server> ${ORBITER_BINARY_ROOT_DIR}
-		)
-	endif()
-	
-endif()
+# If the standard Orbiter executable is not built...
+set_target_properties(Orbiter PROPERTIES ENABLE_EXPORTS 1)
+
+# ...we have to use the NG version to export the API links
+install(FILES $<TARGET_LINKER_FILE:Orbiter>	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/lib)
 
 # Copy library to its Orbitersdk/lib location so that external project integrated into the build can find it
-add_custom_command(TARGET ${OrbiterTgt}
-	POST_BUILD
+add_custom_command(TARGET ${OrbiterTgt}	POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E make_directory ${ORBITER_BINARY_SDK_DIR}/lib
 	COMMAND ${CMAKE_COMMAND} -E copy ${ORBITER_LIB} ${ORBITER_BINARY_SDK_DIR}/lib/ 
 )

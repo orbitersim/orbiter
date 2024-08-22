@@ -26,10 +26,6 @@
 #include <zlib.h>
 #include "DrawAPI.h"
 
-#ifdef INLINEGRAPHICS  // should be temporary
-#include "OGraphics.h"
-#endif // INLINEGRAPHICS
-
 #include "Orbitersdk.h"
 
 using namespace std;
@@ -2056,16 +2052,11 @@ DLLEXPORT void oapiBlt (SURFHANDLE tgt, SURFHANDLE src, int tgtx, int tgty, int 
 	if (gc) {
 
 		if (ck != SURF_NO_CK) {
-#ifdef INLINEGRAPHICS // TEMPORARY: colour-keys only supported by inline client
-			((OrbiterGraphics*)gc)->clbkBltCK (tgt, tgtx, tgty, src, srcx, srcy, w, h, ck);
-			return;
-#else
 			static bool bWarnCK = true;
 			if (bWarnCK) {
 				LogOut_Obsolete (__FUNCTION__, "Colour key argument not supported by graphics client");
 				bWarnCK = false;
 			}
-#endif
 		}
 
 		dASSERT (gc->clbkBlt (tgt, tgtx, tgty, src, srcx, srcy, w, h), "GraphicsClient::clbkBlt failed");
@@ -2086,17 +2077,11 @@ DLLEXPORT void oapiBlt (SURFHANDLE tgt, SURFHANDLE src, RECT *tgtr, RECT *srcr, 
 		}
 
 		if (ck != SURF_NO_CK) {
-#ifdef INLINEGRAPHICS // TEMPORARY: colour-keys only supported by inline client
-			((OrbiterGraphics*)gc)->clbkScaleBltCK (tgt, tgtr->left, tgtr->top, tgtr->right-tgtr->left, tgtr->bottom-tgtr->top,
-				src, srcr->left, srcr->top, srcr->right-srcr->left, srcr->bottom-srcr->top, ck);
-			return;
-#else
 			static bool bWarnCK = true;
 			if (bWarnCK) {
 				LogOut_Obsolete (__FUNCTION__, "Colour key argument not supported by graphics client");
 				bWarnCK = false;
 			}
-#endif
 		}
 		gc->clbkScaleBlt (tgt, tgtr->left, tgtr->top, tgtr->right-tgtr->left, tgtr->bottom-tgtr->top,
 			src, srcr->left, srcr->top, srcr->right-srcr->left, srcr->bottom-srcr->top);
@@ -2521,10 +2506,8 @@ DLLEXPORT char *oapiDebugString ()
 
 DLLEXPORT void oapiDebugString(const char* str)
 {
-#ifndef INLINEGRAPHICS
 	oapi::GraphicsClient* gc = g_pOrbiter->GetGraphicsClient();
 	if (gc) gc->clbkDebugString(str);
-#endif // !INLINEGRAPHICS
 }
 
 DLLEXPORT double oapiRand ()

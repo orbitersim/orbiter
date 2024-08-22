@@ -440,22 +440,14 @@ private:
 	friend class DlgFunction;
 
 public:
-#ifndef INLINEGRAPHICS
 	// external graphics client
 	bool AttachGraphicsClient (oapi::GraphicsClient *gc);
 	bool RemoveGraphicsClient (oapi::GraphicsClient *gc);
-#endif // !INLINEGRAPHICS
 	inline oapi::GraphicsClient *GetGraphicsClient () { return gclient; }
 
 private:
 	oapi::GraphicsClient *gclient;       // external graphics client (renderer)
 	OrbiterGraphics *oclient;            // inline graphics client
-
-public:
-	inline OrbiterGraphics *GetInlineGraphicsClient() { return oclient; }
-	// (to access special inline graphics features. Eventually this should no longer
-	// be necessary)
-
 };
 
 #endif // !ORBITER_H
