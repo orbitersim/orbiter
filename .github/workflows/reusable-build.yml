@@ -46,6 +46,11 @@ jobs:
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: ${{ inputs.architecture }}
+        
+    - name: Install winget
+      uses: Cyberboss/install-winget@v1
+      with:
+        GITHUB_TOKEN: ${{ github.token }}
 
     - name: Install documentation prerequisites
       if: ${{ inputs.docs }}
