@@ -48,6 +48,7 @@ jobs:
         arch: ${{ inputs.architecture }}
         
     - name: Install winget
+      if: ${{ inputs.docs }}
       uses: Cyberboss/install-winget@v1
       with:
         GITHUB_TOKEN: ${{ github.token }}
