@@ -1,0 +1,20 @@
+# See https://learn.microsoft.com/en-us/visualstudio/ide/cpp-editorconfig-properties?view=vs-2019 for full list of properties
+
+root = true
+
+[*]
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+# Tab indentation (no size specified)
+[Makefile]
+indent_style = tab
+
+[{CMakeLists.txt,*.cmake,*.rst}]
+indent_size = 2
+indent_style = space
+
+[*.{c,h,cpp,hpp}]
+indent_size = 4
+indent_style = space
