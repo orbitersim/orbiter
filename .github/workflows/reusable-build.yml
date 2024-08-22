@@ -51,10 +51,9 @@ jobs:
       if: ${{ inputs.docs }}
       shell: pwsh
       run: |
-        choco install --no-progress miktex
-        choco install --no-progress doxygen.install
-        choco install --no-progress libreoffice-fresh
-        Add-Content $env:GITHUB_PATH "C:\Program Files\MiKTeX\miktex\bin\x64\"
+        winget install -e --id TheDocumentFoundation.LibreOffice.LTS
+        winget install -e --id MiKTeX.MiKTeX
+        winget install -e --id DimitriVanHeesch.Doxygen
 
     - name: Create directories
       run: |
