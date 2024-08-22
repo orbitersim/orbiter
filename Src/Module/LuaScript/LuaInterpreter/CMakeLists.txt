@@ -47,11 +47,10 @@ add_custom_command(TARGET LuaInterpreter
 )
 
 if(ORBITER_MAKE_DOC)
-	set(ldoc $<TARGET_FILE:lua::exe> ${lua_module_ldoc_SOURCE_DIR}/ldoc.lua -v --multimodule)
 	file(GLOB lua_in *.h *.cpp *.ld *.md *.lua)
 	add_custom_command(
 		POST_BUILD
-		DEPENDS ${lua_in} lfs
+		DEPENDS ${lua_in} lfs CopyLDoc
 		OUTPUT ${BUILD_OUT_DIR}/index.html
 		COMMAND ${CMAKE_COMMAND} -E copy ${lua_in} ${CMAKE_CURRENT_BINARY_DIR}
 		COMMAND ${ldoc} .
