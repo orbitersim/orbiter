@@ -17,7 +17,7 @@ on:
       docs:
         description: Build documentation?
         type: boolean
-        default: true # for testing, TODO: disable again
+        default: false
 
 run-name: Build ${{ inputs.architecture }} on ${{ inputs.os }}
 
