@@ -1,0 +1,24 @@
+name: On Push
+
+on:  
+  push:
+    branches:
+      - linux
+    paths-ignore: [ 'Doc/**', 'Flights/**', 'Html/**', 'Images/**', 'Localdoc/**', 'Scenarios/**', 'Textures/**', 'Textures2/**']
+  pull_request:
+    branches:
+      - linux
+    paths-ignore: [ 'Doc/**', 'Flights/**', 'Html/**', 'Images/**', 'Localdoc/**', 'Scenarios/**', 'Textures/**', 'Textures2/**']
+
+jobs:
+  build:
+    name: Push
+    strategy:
+      fail-fast: false
+      matrix:
+        architecture: [x64]
+        os: [ubuntu-latest]
+    uses: ./.github/workflows/reusable-build.yml
+    with:
+      os: ${{ matrix.os }}
+      architecture: ${{ matrix.architecture }}
