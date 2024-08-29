@@ -18,6 +18,8 @@ jobs:
           ref: linux
       - name: Update branch
         run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
           git checkout linux
           git merge origin/main --no-edit -m "Merged main branch on $(date +%F)"
           git push origin linux
