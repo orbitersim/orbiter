@@ -71,9 +71,9 @@ void SolarSail::GlobalSetup()
 // --------------------------------------------------------------
 // Set up the dynamic elastic sail deformation code
 // --------------------------------------------------------------
-void SolarSail::SetupElasticity (MESHHANDLE hMesh)
+void SolarSail::SetupElasticity (MESHHANDLE hMeshTemplate)
 {
-	MESHGROUP *sail = oapiMeshGroup (hMesh, GRP_sail1);
+	MESHGROUP *sail = oapiMeshGroup (hMeshTemplate, GRP_sail1);
 	// all sail segments have the same mesh structure, so segment 1 represents all 4
 	DWORD nvtx = sail->nVtx/2; // scan front side only
 	DWORD nidx = sail->nIdx/2; // scan front side only
@@ -113,6 +113,12 @@ void SolarSail::SetupElasticity (MESHHANDLE hMesh)
 	}
 	sail_nvtx = nvtx;
 	sail_ntri = ntri;
+
+	for (i = 0; i < 4; i++) {
+		MESHGROUP *mg = oapiMeshGroup (hMeshTemplate, i);
+		sail_idx[i] = new WORD[mg->nIdx];
+		memcpy(sail_idx[i], mg->Idx, mg->nIdx*sizeof(WORD));
+	}
 }
 
 // --------------------------------------------------------------
@@ -126,8 +132,20 @@ SolarSail::SolarSail (OBJHANDLE hVessel, int flightmodel)
 	hMesh = NULL;
 	mf = _V(0,0,0);
 	DefineAnimations();
-	for (i = 0; i < 4; i++)
+	MESHHANDLE hMesh = oapiLoadMeshGlobal ("SolarSail");
+	for (i = 0; i < 4; i++) {
 		paddle_rot[i] = paddle_vis[i] = 0.5;
+		MESHGROUP *sail = oapiMeshGroup (hMesh, i);
+		sail_vtx[i] = new NTVERTEX[sail->nVtx];
+		memcpy(sail_vtx[i], sail->Vtx, sail->nVtx*sizeof(NTVERTEX));
+	}
+}
+
+SolarSail::~SolarSail()
+{
+	for (int i = 0; i < 4; i++) {
+		delete []sail_vtx[i];
+	}
 }
 
 // --------------------------------------------------------------
@@ -172,21 +190,22 @@ void SolarSail::UpdateSail (const VECTOR3 *rpressure)
 	double dst;
 
 	sailidx = ++sailidx % 4;
-	MESHGROUP *sail = oapiMeshGroup (hMesh, sailidx);
+	NTVERTEX *Vtx = sail_vtx[sailidx];
+	WORD *Idx = sail_idx[sailidx];
 
 	for (i = 0; i < sail_nvtx; i++) {
 		F = _V(0,0,rpressure->z*pscale); // note - should be calculated for LOCAL normal
-		vi = sail->Vtx+i;
+		vi = Vtx+i;
 		nb = nbhr+i;
 		if (nb->fix) {
 			sail_vbuf[i] = _V(0,0,0);
 			continue;
 		}
 		for (j = 0; j < nb->nnd; j++) {
-			vj = sail->Vtx+nb->nd[j];
-			dv.x = vj->x - vi->x;
-			dv.y = vj->y - vi->y;
-			dv.z = vj->z - vi->z;
+			vj = Vtx+nb->nd[j];
+			dv.x = (float)(vj->x - vi->x);
+			dv.y = (float)(vj->y - vi->y);
+			dv.z = (float)(vj->z - vi->z);
 			dst = length(dv);
 			if (dst > nb->dst0[j]) { // is stretched
 				F += dv*(elast/nb->dst0[j]);
@@ -194,17 +213,20 @@ void SolarSail::UpdateSail (const VECTOR3 *rpressure)
 		}
 		sail_vbuf[i] = F;
 	}
-	for (i = 0; i < sail_nvtx; i++) {
-		sail->Vtx[i].x += (float)sail_vbuf[i].x;
-		sail->Vtx[i].y += (float)sail_vbuf[i].y;
-		sail->Vtx[i].z += (float)sail_vbuf[i].z;
-	}
-	for (i = 0; i < sail_nvtx; i++) {
-		sail->Vtx[i+sail_nvtx].x += (float)sail_vbuf[i].x;
-		sail->Vtx[i+sail_nvtx].y += (float)sail_vbuf[i].y;
-		sail->Vtx[i+sail_nvtx].z += (float)sail_vbuf[i].z;
-	}
 
+	// Front face
+	for (i = 0; i < sail_nvtx; i++) {
+		Vtx[i].x += (float)sail_vbuf[i].x;
+		Vtx[i].y += (float)sail_vbuf[i].y;
+		Vtx[i].z += (float)sail_vbuf[i].z;
+	}
+	// Back face
+	for (i = 0; i < sail_nvtx; i++) {
+		Vtx[i+sail_nvtx].x += (float)sail_vbuf[i].x;
+		Vtx[i+sail_nvtx].y += (float)sail_vbuf[i].y;
+		Vtx[i+sail_nvtx].z += (float)sail_vbuf[i].z;
+	}
+	
 	// calculate smooth normals - surely this could be done more efficiently!
 	if (!nml) {
 		nml = new VECTOR3[sail_nvtx];
@@ -213,23 +235,28 @@ void SolarSail::UpdateSail (const VECTOR3 *rpressure)
 	memset (nml, 0, sail_nvtx*sizeof(VECTOR3));
 	memset (nsd, 0, sail_nvtx*sizeof(DWORD));
 	for (i = 0; i < sail_ntri; i++) {
-		WORD *idx = sail->Idx + i*3;
-		nm = Nml(sail->Vtx + *idx, sail->Vtx + *(idx+1), sail->Vtx + *(idx+2));
+		WORD *idx = Idx + (WORD)i*3;
+		nm = Nml(Vtx + *idx, Vtx + *(idx+1), Vtx + *(idx+2));
 		for (j = 0; j < 3; j++) {
 			nml[*(idx+j)] += unit(nm);
 			nsd[*(idx+j)]++;
 		}
 	}
+
+	// Front face
 	for (i = 0; i < sail_nvtx; i++) {
-		sail->Vtx[i].nx = (float)nml[i].x/nsd[i];
-		sail->Vtx[i].ny = (float)nml[i].y/nsd[i];
-		sail->Vtx[i].nz = (float)nml[i].z/nsd[i];
+		Vtx[i].nx = (float)nml[i].x/nsd[i];
+		Vtx[i].ny = (float)nml[i].y/nsd[i];
+		Vtx[i].nz = (float)nml[i].z/nsd[i];
 	}
+	// Back face
 	for (i = 0; i < sail_nvtx; i++) {
-		sail->Vtx[i+sail_nvtx].nx = -(float)nml[i].x/nsd[i];
-		sail->Vtx[i+sail_nvtx].ny = -(float)nml[i].y/nsd[i];
-		sail->Vtx[i+sail_nvtx].nz = -(float)nml[i].z/nsd[i];
+		Vtx[i+sail_nvtx].nx = -(float)nml[i].x/nsd[i];
+		Vtx[i+sail_nvtx].ny = -(float)nml[i].y/nsd[i];
+		Vtx[i+sail_nvtx].nz = -(float)nml[i].z/nsd[i];
 	}
+	GROUPEDITSPEC ges = {GRPEDIT_VTXCRD|GRPEDIT_VTXNML, 0, Vtx, sail_nvtx*2, NULL};
+	oapiEditMeshGroup (hMesh, sailidx, &ges);
 }
 
 // --------------------------------------------------------------
@@ -337,7 +364,7 @@ void SolarSail::clbkGetRadiationForce (const VECTOR3 &mflux, VECTOR3 &F, VECTOR3
 // --------------------------------------------------------------
 void SolarSail::clbkVisualCreated (VISHANDLE vis, int refcount)
 {
-	hMesh = GetMesh (vis, 0);
+	hMesh = GetDevMesh (vis, 0);
 }
 
 // --------------------------------------------------------------
@@ -371,6 +398,7 @@ VECTOR3 *SolarSail::sail_vbuf = NULL;
 DWORD SolarSail::sail_nvtx = 0;
 DWORD SolarSail::sail_ntri = 0;
 
+
 // ==============================================================
 // API callback interface
 // ==============================================================
@@ -382,6 +410,13 @@ DWORD SolarSail::sail_ntri = 0;
 DLLCLBK void InitModule (HINSTANCE hModule)
 {
 	SolarSail::GlobalSetup();
+}
+
+DLLCLBK void ExitModule (HINSTANCE hModule)
+{
+	for (int i = 0; i < 4; i++) {
+		delete []SolarSail::sail_idx[i];
+	}
 }
 
 // --------------------------------------------------------------
