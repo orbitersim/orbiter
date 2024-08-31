@@ -334,7 +334,7 @@ public:
 	 * \default, None, returns 2 ("client does not support operation").
 	 */
 	int clbkSetMeshMaterial(DEVMESHHANDLE hMesh, DWORD matidx, const MATERIAL* mat);
-	int clbkSetMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp mat, const oapi::FVECTOR4* in);
+	int clbkSetMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp mat, const oapi::FVECTOR4* in);
 
 	/**
 	* \brief Retrieve the properties of one of the mesh materials.
