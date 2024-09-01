@@ -7920,7 +7920,7 @@ int Interpreter::oapi_delete_mesh(lua_State* L)
 /***
 Get group specification of a mesh group.
 
-This method can be used to edit the a mesh group directly (for geometry
+This method can be used to edit a mesh group directly (for geometry
 animation, texture animation, etc.)
 
 This function should only be applied to device-independent meshes,
