@@ -1171,7 +1171,12 @@ void Orbiter::UpdateServerWnd (HWND hWnd)
 void Orbiter::InitRotationMode ()
 {
 	bKeepFocus = true;
-	ShowCursor (FALSE);
+	bool cursorShown = ShowCursor (FALSE);
+
+	if (cursorShown < 0) {
+		ShowCursor (FALSE);
+	}
+
 	SetCapture (hRenderWnd);
 
 	// Limit cursor to render window confines, so we don't miss the button up event
@@ -1191,7 +1196,11 @@ void Orbiter::ExitRotationMode ()
 {
 	bKeepFocus = false;
 	ReleaseCapture ();
-	ShowCursor (TRUE);
+	bool cursorShown = ShowCursor(TRUE);
+
+	if (cursorShown > 0) {
+		ShowCursor(TRUE);
+	}
 
 	// Release cursor from render window confines
 	if (!bFullscreen && hRenderWnd) {
