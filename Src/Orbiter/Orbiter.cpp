@@ -99,6 +99,7 @@ const double    MinWarpLimit     = 0.1;  // make variable
 const double    MaxWarpLimit     = 1e5;  // make variable
 DWORD           g_qsaveid        = 0;
 DWORD           g_customcmdid    = 0;
+int g_iCursorShowCount;
 
 // 2D info output flags
 BOOL g_bOutputTime  = TRUE;
@@ -1171,10 +1172,10 @@ void Orbiter::UpdateServerWnd (HWND hWnd)
 void Orbiter::InitRotationMode ()
 {
 	bKeepFocus = true;
-	bool cursorShown = ShowCursor (FALSE);
 
-	if (cursorShown < 0) {
-		ShowCursor (FALSE);
+	// Checks if the cursor is already hidden
+	if (g_iCursorShowCount == 0) {
+		g_iCursorShowCount = ShowCursor(FALSE);
 	}
 
 	SetCapture (hRenderWnd);
@@ -1196,10 +1197,10 @@ void Orbiter::ExitRotationMode ()
 {
 	bKeepFocus = false;
 	ReleaseCapture ();
-	bool cursorShown = ShowCursor(TRUE);
 
-	if (cursorShown > 0) {
-		ShowCursor(TRUE);
+	// Checks if the cursor is already hidden
+	if (g_iCursorShowCount < 0) {
+		g_iCursorShowCount = ShowCursor (TRUE);
 	}
 
 	// Release cursor from render window confines
