@@ -2639,6 +2639,12 @@ void Orbiter::UserJoyInput_OnRunning (DIJOYSTATE2 *js)
 
 bool Orbiter::MouseEvent (UINT event, DWORD state, DWORD x, DWORD y)
 {
+	// Prioritizes mouse handling while in rotation mode
+	if (g_pOrbiter->StickyFocus()) {
+		if (event == WM_MOUSEMOVE) return false; // may be lifted later
+		if (g_camera->ProcessMouse(event, state, x, y, simkstate)) return true;
+	}
+
 	if (g_pane->MIBar() && g_pane->MIBar()->ProcessMouse (event, state, x, y)) return true;
 	if (BroadcastMouseEvent (event, state, x, y)) return true;
 	if (event == WM_MOUSEMOVE) return false; // may be lifted later
