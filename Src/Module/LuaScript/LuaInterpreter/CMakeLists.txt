@@ -20,7 +20,7 @@ target_include_directories(LuaInterpreter
 target_link_libraries(LuaInterpreter
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
-	lua
+	lua::lib
 	XRSound_lib
 )
 

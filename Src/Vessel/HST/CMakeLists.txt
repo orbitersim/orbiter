@@ -35,7 +35,7 @@ add_dependencies(HST
 
 if(ADD_SCRIPT_SUPPORT)
 	add_definitions(-DSCRIPTSUPPORT)
-	target_link_libraries(HST lua)
+	target_link_libraries(HST lua::lib)
 endif()
 
 add_custom_command(
