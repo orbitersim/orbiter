@@ -99,7 +99,7 @@ const double    MinWarpLimit     = 0.1;  // make variable
 const double    MaxWarpLimit     = 1e5;  // make variable
 DWORD           g_qsaveid        = 0;
 DWORD           g_customcmdid    = 0;
-int g_iCursorShowCount;
+int				g_iCursorShowCount = 0;
 
 // 2D info output flags
 BOOL g_bOutputTime  = TRUE;
