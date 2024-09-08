@@ -26,7 +26,7 @@ target_include_directories(Quadcopter
 target_link_libraries(Quadcopter
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
-	lua::lib
+	libluajit
 )
 
 add_dependencies(Quadcopter

@@ -23,7 +23,7 @@ target_include_directories(Solarsail
 target_link_libraries(Solarsail
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
-	lua::lib
+	libluajit
 )
 
 add_custom_command(

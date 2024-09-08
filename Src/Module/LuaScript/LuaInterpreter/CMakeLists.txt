@@ -20,7 +20,7 @@ target_include_directories(LuaInterpreter
 target_link_libraries(LuaInterpreter
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
-	lua::lib
+	libluajit
 	XRSound_lib
 )
 
@@ -46,7 +46,7 @@ add_custom_command(TARGET LuaInterpreter
 	COMMAND ${CMAKE_COMMAND} -E copy ${LUAINTERPRETER_LIB} ${ORBITER_BINARY_SDK_DIR}/lib/Lua/
 )
 
-if(ORBITER_MAKE_DOC)
+#if(ORBITER_MAKE_DOC)
 	file(GLOB lua_in *.h *.cpp *.ld *.md *.lua)
 	add_custom_command(
 		POST_BUILD
@@ -77,7 +77,7 @@ if(ORBITER_MAKE_DOC)
 	install(FILES ${ORBITER_BINARY_SDK_DIR}/doc/orbiter_lua.chm
 		DESTINATION ${ORBITER_INSTALL_SDK_DIR}/doc
 	)
-endif()
+#endif()
 
 # Installation
 install(TARGETS LuaInterpreter

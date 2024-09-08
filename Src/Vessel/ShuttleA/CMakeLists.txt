@@ -47,7 +47,7 @@ target_link_libraries(ShuttleA
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
 	${ORBITER_DLGCTRL_LIB}
-	lua::lib
+	libluajit
 )
 
 # scan mesh files for labels and output to header file

@@ -17,7 +17,7 @@ target_link_libraries(LuaInline
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
 	LuaInterpreter
-	lua::lib
+	libluajit
 )
 
 add_dependencies(LuaInline
