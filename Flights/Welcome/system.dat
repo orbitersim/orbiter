@@ -1,7 +1,7 @@
 0 NOTECOL 1 0.7 0
 0 NOTESIZE 2
 0 NOTEPOS 0.25 0.1 0.9 0.9
-0 NOTE Welcome to Orbiter 2010!
+0 NOTE Welcome to Orbiter 2024!
 5 NOTEPOS 0.25 0.05 0.7 0.9
 5 NOTESIZE 1.4
 5 NOTE Orbiter is a free and realistic space flight simulator ...
@@ -80,13 +80,13 @@
 233.053 CAMERA SET Track:STS-104:40.00:GLOBAL 1.350 2.548 0.547
 238 NOTE Hard dock with the ISS!
 242 CAMERA SET Track:STS-104:40.00:GLOBAL 8.276 2.298 -0.003
-242 NOTE Now it's over to you. Have fun with Orbiter 2010!
+242 NOTE Now it's over to you. Have fun with Orbiter 2024!
 248 CAMERA SET Track:STS-104:40.00:GLOBAL 32.243 2.050 -0.016
 248 NOTE If you just installed Orbiter, take a moment to configure the video options and simulation parameters.
 254 CAMERA SET Track:STS-104:40.00:GLOBAL 25840.373 2.050 -0.016
 254 NOTE Have a look at the manual in Doc\Orbiter.pdf.
 260 CAMERA SET Track:STS-104:40.00:GLOBAL 249263.812 1.755 -0.164
 260 NOTE Orbiter can be expanded with hundreds of addons - from new spacecraft, to instrumentation, bases, planets and moons, and high resolution textures.
-270 NOTE Visit the online forum at www.orbiter-forum.com, and the addon repository at www.orbithangar.com.
+270 NOTE Visit the online forum at www.orbiter-forum.com, and the addon repository at www.orbiter-forum.com/resources.
 280 NOTE Orbiter - orbit.medphys.ucl.ac.uk
 290 ENDSESSION
