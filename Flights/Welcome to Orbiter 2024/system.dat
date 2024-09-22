@@ -1,0 +1,12 @@
+0 NOTE WELCOME TO ORBITER 2024!
+0 NOTECOL 0 1 1
+0 NOTESIZE 2
+0 CAMERA SET Track:GL-NT:50.00:GLOBAL 6.068 1.722 0.613
+0 CAMERA SET Track:GL-NT:50.00:GLOBAL 6.068 1.722 0.613
+10 NOTESIZE 1
+10 NOTE 
+12 NOTE This version represents the first release of OpenOrbiter, brought to you by the Orbiter community.
+24 NOTE 
+25 NOTE For a full list of new features, please check the release notes.
+35 NOTE 
+36 NOTE Special thanks to Dr. Martin Schweiger for developing and maintaining Orbiter for over 25 years, and for releasing the source code, making Orbiter an open source program.
