@@ -46,38 +46,36 @@ add_custom_command(TARGET LuaInterpreter
 	COMMAND ${CMAKE_COMMAND} -E copy ${LUAINTERPRETER_LIB} ${ORBITER_BINARY_SDK_DIR}/lib/Lua/
 )
 
-if(ORBITER_MAKE_DOC)
-	file(GLOB lua_in *.h *.cpp *.ld *.md *.lua)
-	add_custom_command(
-		POST_BUILD
-		DEPENDS ${lua_in} lfs CopyLDoc
-		OUTPUT ${BUILD_OUT_DIR}/index.html
-		COMMAND ${CMAKE_COMMAND} -E copy ${lua_in} ${CMAKE_CURRENT_BINARY_DIR}
-		COMMAND ${ldoc} .
-		COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/interpreter.hhp ${BUILD_OUT_DIR}
-		JOB_POOL htmlhelp
-	)
-	
-	add_custom_command(
-		POST_BUILD
-		OUTPUT ${ORBITER_BINARY_SDK_DIR}/doc/orbiter_lua.chm
-		DEPENDS ${BUILD_OUT_DIR}/index.html
-		WORKING_DIRECTORY ${BUILD_OUT_DIR}
-		COMMAND ${HHC_CMD} interpreter.hhp
-		COMMAND ${CMAKE_COMMAND} -E copy_if_different ./interpreter.chm ${ORBITER_BINARY_SDK_DIR}/doc/orbiter_lua.chm
-		JOB_POOL htmlhelp
+file(GLOB lua_in *.h *.cpp *.ld *.md *.lua)
+add_custom_command(
+	POST_BUILD
+	DEPENDS ${lua_in} lfs CopyLDoc
+	OUTPUT ${BUILD_OUT_DIR}/index.html
+	COMMAND ${CMAKE_COMMAND} -E copy ${lua_in} ${CMAKE_CURRENT_BINARY_DIR}
+	COMMAND ${ldoc} .
+	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/interpreter.hhp ${BUILD_OUT_DIR}
+	JOB_POOL htmlhelp
 )
-	add_custom_target(orbiter_lua
-		DEPENDS ${ORBITER_BINARY_SDK_DIR}/doc/orbiter_lua.chm
-	)
-	add_dependencies(${OrbiterTgt}
-		orbiter_lua
-	)
+	
+add_custom_command(
+	POST_BUILD
+	OUTPUT ${ORBITER_BINARY_SDK_DIR}/doc/orbiter_lua.chm
+	DEPENDS ${BUILD_OUT_DIR}/index.html
+	WORKING_DIRECTORY ${BUILD_OUT_DIR}
+	COMMAND ${HHC_CMD} interpreter.hhp
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different ./interpreter.chm ${ORBITER_BINARY_SDK_DIR}/doc/orbiter_lua.chm
+	JOB_POOL htmlhelp
+)
+add_custom_target(orbiter_lua
+	DEPENDS ${ORBITER_BINARY_SDK_DIR}/doc/orbiter_lua.chm
+)
+add_dependencies(${OrbiterTgt}
+	orbiter_lua
+)
 
-	install(FILES ${ORBITER_BINARY_SDK_DIR}/doc/orbiter_lua.chm
-		DESTINATION ${ORBITER_INSTALL_SDK_DIR}/doc
-	)
-endif()
+install(FILES ${ORBITER_BINARY_SDK_DIR}/doc/orbiter_lua.chm
+	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/doc
+)
 
 # Installation
 install(TARGETS LuaInterpreter

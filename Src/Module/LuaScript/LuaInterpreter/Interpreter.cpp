@@ -3818,7 +3818,6 @@ This function is primarily used internally, you should prefer using open_inputbo
 @function open_inputbox
 @tparam string title input box title
 @see open_inputboxex
-@see proc.wait_input
 @usage oapi.open_inputbox(title)
  -- elsewhere
  local ans = oapi.receive_input ()
@@ -7225,8 +7224,8 @@ int Interpreter::oapi_inflate (lua_State *L)
 Return a colour value adapted to the current screen colour depth for given
 red, green and blue components.
 
-Colour values are required for some surface functions like @{clear_surface}
-   or @{set_surfacecolourkey}. The colour key for a given RGB triplet depends
+Colour values are required for some surface functions like @{clear_surface}.
+   The colour key for a given RGB triplet depends
    on the screen colour depth. This function returns the colour value for the
    closest colour match which can be displayed in the current screen mode.
 

@@ -2875,7 +2875,7 @@ orbit ellipse.
 @treturn number semi-minor axis [m]
 @treturn handle Handle of reference object, relative to which the orbit is
    calculated. _nil_ indicates failure (no orbit information available)
-@see orbit, ELEMENTS, types.ORBITPARAMS, get_elements
+@see types.ELEMENTS, types.ORBITPARAMS, get_elements
 */
 int Interpreter::v_get_smi (lua_State *L)
 {
@@ -2906,7 +2906,7 @@ ascending node.
 @treturn number argument of periapsis for current orbit [rad]
 @treturn handle Handle of reference body, relative to which the orbit is
    calculated. nil indicates failure (no orbit information available)
-@see orbit, ELEMENTS, ORBITPARAM, get_pedist, get_apdist, get_elements
+@see types.ELEMENTS, types.ORBITPARAMS, get_pedist, get_apdist, get_elements
 */
 int Interpreter::v_get_argper (lua_State *L)
 {
@@ -2937,7 +2937,7 @@ The periapsis distance is the smallest radius of the orbit (see
 @treturn number periapsis distance [m]
 @treturn handle Handle of reference body, relative to which the orbit is
    calculated. NULL indicates failure (no orbit information available)
-@see orbit, ELEMENTS, ORBITPARAM, get_apdist, get_argper, get_elements
+@see types.ELEMENTS, types.ORBITPARAMS, get_apdist, get_argper, get_elements
 */
 int Interpreter::v_get_pedist (lua_State *L)
 {
@@ -2968,7 +2968,7 @@ The apoapsis distance is the largest radius of the orbit (see
 @treturn number apoapsis distance [m]
 @treturn handle Handle of reference body, relative to which the orbit is
    calculated. NULL indicates failure (no orbit information available)
-@see orbit, ELEMENTS, ORBITPARAM, get_pedist, get_argper, get_elements
+@see types.ELEMENTS, types.ORBITPARAMS, get_pedist, get_argper, get_elements
 */
 int Interpreter::v_get_apdist(lua_State* L)
 {
@@ -7483,7 +7483,7 @@ within visual range of the observer camera).
 @tparam ?string|handle mesh mesh file name (meshName) or handle of template mesh (hMesh)
 @param[opt] ofs (<i><b>@{types.vector|vector}</b></i>) vector defining the offset of mesh origin from vessel origin [<b>m</b>]
 @treturn int idx mesh index (&ge; 0)
-@see vessel:del_mesh, vessel:insert_mesh, oapi.loadmesh_global
+@see vessel:del_mesh, vessel:insert_mesh, oapi.load_meshglobal
 */
 int Interpreter::v_add_mesh (lua_State *L)
 {
@@ -7534,7 +7534,7 @@ The return value is always equal to _idx_.
 @tparam int idx mesh index (&ge; 0)
 @param[opt] ofs (<i><b>@{types.vector|vector}</b></i>) vector defining the offset of mesh origin from vessel origin [<b>m</b>]
 @treturn int mesh index (&ge; 0)
-@see vessel:del_mesh, vessel:add_mesh, oapi.loadmesh_global
+@see vessel:del_mesh, vessel:add_mesh, oapi.load_meshglobal
 */
 int Interpreter::v_insert_mesh (lua_State *L)
 {
@@ -7983,7 +7983,7 @@ mechanism is an alternative way to define animations where the
 transformations are managed by the Orbiter core.
 
 @function register_animation
-@see clbk_animate, unregister_animation, create_animation, add_animationcomponent
+@see unregister_animation, create_animation, add_animationcomponent
 */
 int Interpreter::v_register_animation (lua_State *L)
 {
@@ -8005,7 +8005,7 @@ The call to UnregisterAnimation should not be placed in the body of
    doesn't exist.
 
 @function unregister_animation
-@see register_animation, clbk_animate
+@see register_animation
 */
 int Interpreter::v_unregister_animation (lua_State *L)
 {
