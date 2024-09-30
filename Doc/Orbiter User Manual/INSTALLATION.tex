@@ -13,23 +13,17 @@ Orbiter supports an optional joystick.\\
 The TrackIR head tracker is supported via a plug-in module included in the basic installation.
 
 \subsection{Download}
+%TODO update homepage?
+%TODO add github download
 The Orbiter distribution can be obtained from one of several Orbiter mirror sites on the internet. You can find links to these mirrors at the Download page of the Orbiter site, \url{https://orbit.medphys.ucl.ac.uk}. The downloads are provided as torrents for fast and reliable transfer. If you can't handle torrent downloads, alternative http download links are also provided.
 
 \subsection{Installation}
 \begin{itemize}
-%TODO MSI still used?
-\item The Orbiter installation package comes in two flavours: an MSI (Microsoft installation) package, and a ZIP package.
-\item The MSI package allows to install Orbiter like a standard Windows software package. It guides the user through the installation process with a wizard dialog, and provides a desktop icon and uninstall option. This method is recommended for general users.
-\item The ZIP package requires manual extraction of the contents into a new folder. This method allows multiple Orbiter installations on a single computer and is non-intrusive (it doesn't modify the registry and doesn't install anything outside the Orbiter directory). However, the user is responsible for providing the runtime environment, including required system libraries. This method is recommended for advanced users. For the ZIP installation,
-
-\begin{itemize}
-%TODO update example folder name (no year?)
-\item Create a new folder for the Orbiter installation, e.g. C:\textbackslash Orbiter2016 or \%HOMEPATH\%\textbackslash Orbiter2016. Note that creating an Orbiter folder in Program files or Program files (x86) is not recommended, because Windows puts some restrictions on these locations.
+\item Create a new folder for the Orbiter installation, e.g. C:\textbackslash Orbiter or \%HOMEPATH\%\textbackslash Orbiter. Note that creating an Orbiter folder in Program files or Program files (x86) is not recommended, because Windows puts some restrictions on these locations.
 \item If a previous version of Orbiter is already installed on your computer, you should not install the new version into the same folder, because this could lead to file conflicts. You may want to keep your old installation until you have made sure that the latest version works without problems. Multiple Orbiter installations can exist on the same computer.
 \item Unzip the Orbiter ZIP installation package into the new folder, using either the default Windows unzip function, or an external tool like 7-zip or WinZip. Important: Take care to preserve the directory structure of the package (for example, in WinZip this requires to activate the "Use Folder Names" option).
 \item After unzipping the package, make sure your Orbiter folder contains the executable (orbiter.exe) and, among other files, the Config, Meshes, Scenarios and Textures subfolders.
-\end{itemize}
-
+%TODO handle redist dependencies
 %TODO mention orbiter_ng?
 \item Run orbiter.exe. This will bring up the Orbiter "Launchpad" dialog, where you can select video options and simulation parameters.
 \item You are now ready to start Orbiter. Select a scenario from the Launchpad dialog and click the \textit{Launch Orbiter} button!
@@ -39,7 +33,6 @@ The Orbiter distribution can be obtained from one of several Orbiter mirror site
 \alertbox{If Orbiter does not show any scenarios in the Scenario tab, or if planets appear plain white without any textures when running the simulation, the most likely reason is that the installation packages were not properly unpacked. Make sure your Orbiter folder contains the subfolders as described above. If necessary, you may have to repeat the installation process.}
 
 \subsection{Uninstall}
-If you installed Orbiter via the MSI package, simply use the standard Windows method for uninstalling a software package. Note that this will only remove the files of the original installation package. Texture packs and add-ons installed later may need to be deleted manually from the Orbiter folder.\\
-If you installed the ZIP package, simply remove the Orbiter folders with all contents and subdirectories. This will completely remove Orbiter from your hard drive.
+Simply remove the Orbiter folders with all contents and subdirectories. This will completely remove Orbiter from your hard drive.
 
 \end{document}
