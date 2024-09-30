@@ -29,14 +29,10 @@ Orbiter can support multiple planetary systems, but only one per scenario. The p
 	\hline\rule{0pt}{2ex}
 	Name & String & A name for the planetary system\\
 	\hline\rule{0pt}{2ex}
-	MarkerPath & String & Directory path containing celestial marker lists for the planetary system. Default: .\textbackslash Config\textbackslash <\textit{Solsys-name}>\textbackslash Marker\textbackslash \\
+	MarkerPath & String & Directory path containing celestial marker lists for the planetary system (see section \ref{ssec:custom_markers}). Default: .\textbackslash Config\textbackslash <\textit{Solsys-name}>\textbackslash Marker\textbackslash \\
 	\hline
 	\end{longtable}
 %\end{table}
-
-\noindent
-%TODO handle legacy model link? or just mention it and don't detail it? or mention old documentation?
-The MarkerPath entry is used only for legacy-style marker definitions (see Chapter TODO). For new quadtree-based markers, see section \ref{sssec:label_tile_format}.
 
 \subsubsection*{Object list}
 The object list defines the celestial bodies populating the planetary system and their hierarchy.\\
@@ -293,7 +289,7 @@ Only required if the planet defines a cloud layer.
 %\end{table}
 
 
-\subsubsection*{Surface marker parameters (optional)}
+\subsubsection*{Surface marker parameters (legacy)}
 %\begin{table}[H]
 	%\centering
 	\begin{longtable}{ |p{0.25\textwidth}|p{0.09\textwidth}|p{0.58\textwidth}| }
@@ -306,8 +302,7 @@ Only required if the planet defines a cloud layer.
 %\end{table}
 
 \noindent
-%TODO handle legacy model link? or just mention it and don't detail it? or mention old documentation?
-This entry refers to legacy surface markers (see Chapter TODO). For new quadtree-based marker definitions, see section \ref{sssec:label_tile_format}.
+This entry refers to legacy surface markers (see section \ref{ssec:custom_markers}). For new quadtree-based marker definitions, see section \ref{sssec:label_tile_format}.
 
 
 \subsubsection*{Surface bases (optional)}
@@ -918,15 +913,16 @@ Notes:
 \end{itemize}
 
 
-\subsection{Custom markers (legacy)}
-\alertbox{As regards markers for planetary surface featues, this section contains information for old-style (pre-Orbiter 2016) marker definitions. These are retained for backward compatibility. For new, quadtree-based marker definitions, see section \ref{sssec:label_tile_format}.}
+\subsection{Custom markers}
+\label{ssec:custom_markers}
+\alertbox{As regards markers for planetary surface features, this section contains information for old-style (pre-Orbiter 2016) marker definitions. These are retained for backward compatibility. For new, quadtree-based marker definitions, see section \ref{sssec:label_tile_format}.}
 
 \noindent
-Labels can be defined to mark objects on the celestial sphere (e.g. bright stars, navigation stars, nebulae, etc.) or on planetary surfaces to locate natural landmarks, points of interest, historic landing sites, navigational aids, etc.\\
-The user can display these markers during the simulation with the Visual helpers option (\keystroke{F9} or \Ctrl\keystroke{F9}).\\
+Labels can be defined to mark objects on the celestial sphere (e.g. bright stars, navigation stars, nebulae, etc.) or on planetary surfaces (legacy) to locate natural landmarks, points of interest, historic landing sites, navigational aids, etc.\\
+The user can display these markers during the simulation with the Visual helpers option (\keystroke{F9} or \Alt\keystroke{F9}).\\
 By default, all files for celestial and planetary surface markers are placed in a subdirectory\\
 \indent .\textbackslash Config\textbackslash <\textit{name}>\textbackslash Marker\\
-where <\textit{name}> is the name of the planetary system (for celestial markers) or the celestial body (for surface markers) they are referring to. A different location for marker files can be specified with the MarkerPath option in the planet's or planetary system's configuration file (see sections \ref{ssec:planetery_sys} and \ref{ssec:planets}). Marker files are text files with extension .mkr. Multiple files can be defined for a single planet or planetary system, which the user can turn on and off individually. The format is
+where <\textit{name}> is the name of the planetary system (for celestial markers) or the celestial body (for legacy surface markers) they are referring to. A different location for marker files can be specified with the MarkerPath option in the planetary system's or planet's configuration file (see sections \ref{ssec:planetery_sys} and \ref{ssec:planets}). Marker files are text files with extension .mkr. Multiple files can be defined for a single planet or planetary system, which the user can turn on and off individually. The format is
 
 \begin{lstlisting}[language=OSFS]
 BEGIN_HEADER
@@ -977,18 +973,17 @@ The header section contains some configuration options:
 	%\centering
 	\begin{longtable}{ |p{0.04\textwidth}|p{0.04\textwidth}|p{0.2\textwidth}| }
 	\hline\rule{0pt}{2ex}
-%TODO check code for actual colors
-	0 & \cellcolor{yellow!100} & yellow\\
+	0 & \cellcolor[HTML]{FFFF00} & yellow\\
 	\hline\rule{0pt}{2ex}
-	1 & \cellcolor{cyan!50} & cyan (default)\\
+	1 & \cellcolor[HTML]{00FFFF} & cyan (default)\\
 	\hline\rule{0pt}{2ex}
-	2 & \cellcolor{red!100} & red\\
+	2 & \cellcolor[HTML]{FF3F3F} & red\\
 	\hline\rule{0pt}{2ex}
-	3 & \cellcolor{purple!50} & purple\\
+	3 & \cellcolor[HTML]{FF00FF} & purple\\
 	\hline\rule{0pt}{2ex}
-	4 & \cellcolor{green!100} & green\\
+	4 & \cellcolor[HTML]{3FFF3F} & green\\
 	\hline\rule{0pt}{2ex}
-	5 & \cellcolor{blue!50} & blue\\
+	5 & \cellcolor[HTML]{007FFF} & blue\\
 	\hline
 	\end{longtable}
 %\end{table}
