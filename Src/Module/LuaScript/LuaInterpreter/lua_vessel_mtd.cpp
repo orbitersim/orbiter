@@ -1656,7 +1656,6 @@ int Interpreter::v_get_COG_elev (lua_State *L)
 	return 1;
 }
 
-
 /***
 Vessel state
 @section vessel_mtd_state
@@ -7724,7 +7723,7 @@ as the handle returned by get_mesh .
 @function get_devmesh
 @tparam handle vis identifies the visual for which the mesh was created.
 @tparam number idx mesh index (0 <= idx < get_meshcount())
-@return device mesh handle
+@return handle device mesh handle
 */
 int Interpreter::v_get_devmesh(lua_State* L)
 {
@@ -7782,7 +7781,6 @@ int Interpreter::v_set_mesh_visibility_mode(lua_State* L)
 	v->SetMeshVisibilityMode(idx, mode);
 	return 0;
 }
-
 
 /***
 Animations
