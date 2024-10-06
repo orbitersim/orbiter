@@ -948,9 +948,9 @@ static void lua_pushsketchpad(lua_State* L, oapi::Sketchpad* skp)
 
 bool ScriptVessel::clbkDrawHUD(int mode, const HUDPAINTSPEC* hps, oapi::Sketchpad* skp)
 {
+	// draw the default HUD
+	VESSEL3::clbkDrawHUD(mode, hps, skp);
 	if (bclbk[DRAWHUD]) {
-		// draw the default HUD
-		VESSEL3::clbkDrawHUD(mode, hps, skp);
 
 		strcpy(func + 5, "drawHUD");
 		lua_getfield(L, LUA_GLOBALSINDEX, func);
