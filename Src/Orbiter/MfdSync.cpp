@@ -309,8 +309,8 @@ int Instrument_OSync::BtnMenu (const MFDBUTTONMENU **menu) const
 		{"Select target", 0, 'T'},
 		{"Toggle intersect", "mode", 'M'},
 		{"Select # transit", "times", 'N'},
-		{"Rot. manual axis", 0, '<'},
-		{"Rot. manual axis", 0, '>'}
+		{"Rot. manual axis", 0, ','},
+		{"Rot. manual axis", 0, '.'}
 	};
 	if (menu) *menu = mnu;
 	return 5;
