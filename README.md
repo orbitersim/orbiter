@@ -23,11 +23,12 @@ Orbiter is now published as an Open Source project under the MIT License (see
 D3D9Client graphics engine is licensed under LGPL, see [LGPL](./OVP/D3D9Client/LGPL.txt)
 
 ## Installation
+Hardware requirements needed by Orbiter:
 |  | Minimum requirements | Recommended requirements |
 | ---- | ---- | ---- |
-| RAM: | 4GB | 8GB |
+| RAM: | 500MB | 2GB |
 | CPU: | Dual Core |  |
-| GPU: | 200 GFlops | 500 GFlops |
+| GPU: | 100 GFlops | 200 GFlops |
 | Disk: | 5GB of free space | 10GB of free space (80GB if you want hi-res textures) |
 
 Get the Orbiter source repository from github
