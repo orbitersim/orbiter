@@ -1340,7 +1340,7 @@ function clbk_loadstateex(scn, vs2)
 				vs.arot.x =  math.atan2(slat, clat*slng)
 				vs.arot.y = -math.asin(clng*clat)
 				vs.arot.z =  math.atan2(clng*slat*cdir+slng*sdir, clng*slat*sdir-slng*cdir)
-				vs2.set(vs)
+				vs2:set(vs)
 			end
 		else
 			local rad = vec.length(vs.rpos)

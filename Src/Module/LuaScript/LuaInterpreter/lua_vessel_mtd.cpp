@@ -1864,7 +1864,7 @@ Returns the vessel's current status parameters as an object.
 */
 int Interpreter::v_get_rawstatus(lua_State* L)
 {
-	static const char* funcname = "get_status";
+	static const char* funcname = "get_rawstatus";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
 
@@ -1875,16 +1875,17 @@ int Interpreter::v_get_rawstatus(lua_State* L)
 	if (version == 1)
 	{
 		VESSELSTATUS *status = (VESSELSTATUS *)lua_newuserdata(L, sizeof(VESSELSTATUS));
+		memset(status, 0, sizeof(VESSELSTATUS));
 		luaL_getmetatable(L, "VESSELSTATUS.table");   // push metatable
 		lua_setmetatable(L, -2);              // set metatable for annotation objects
 
 		v->GetStatus(*status);
-		lua_pushlightuserdata(L, status);
 		return 1;
 	}
 	else if (version == 2)
 	{
 		VESSELSTATUS2* status = (VESSELSTATUS2*)lua_newuserdata(L, sizeof(VESSELSTATUS2));
+		memset(status, 0, sizeof(VESSELSTATUS2));
 		luaL_getmetatable(L, "VESSELSTATUS2.table");   // push metatable
 		lua_setmetatable(L, -2);              // set metatable for annotation objects
 		status->version = 2;
@@ -1893,7 +1894,6 @@ int Interpreter::v_get_rawstatus(lua_State* L)
 		//status.fuel = new VESSELSTATUS2::FUELSPEC[256]();
 
 		v->GetStatusEx(status);
-		lua_pushlightuserdata(L, status);
 
 		// Who frees these resources?
 		//if (status.fuel) delete[] status.fuel;
