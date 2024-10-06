@@ -396,11 +396,10 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
 )
 
-# Package required runtime libraries as an optional component
+# Package required runtime libraries
 INSTALL(FILES ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
 	COMPONENT RuntimeLibraries
-	EXCLUDE_FROM_ALL
 )
 
 # Sub-projects
