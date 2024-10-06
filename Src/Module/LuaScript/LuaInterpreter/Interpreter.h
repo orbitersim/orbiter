@@ -483,6 +483,16 @@ protected:
 	static int oapi_get_gbody(lua_State* L);
 	static int oapi_get_gbodycount(lua_State* L);
 	static int oapi_get_planetatmconstants(lua_State* L);
+	static int oapi_get_planetobliquity(lua_State* L);
+	static int oapi_get_planettheta(lua_State* L);
+	static int oapi_get_planetobliquitymatrix(lua_State* L);
+	static int oapi_get_planetcurrentrotation(lua_State* L);
+	static int oapi_planet_hasatmosphere(lua_State* L);
+	static int oapi_get_planetatmparams(lua_State* L);
+	static int oapi_get_groundvector(lua_State* L);
+	static int oapi_get_windvector(lua_State* L);
+	static int oapi_get_planetjcoeffcount(lua_State* L);
+	static int oapi_get_planetjcoeff(lua_State* L);
 
 	// Vessel functions
 	static int oapi_get_propellanthandle (lua_State *L);
