@@ -5,10 +5,6 @@
 \textbf{Martin Schweiger}
 
 
-\subsection{Introduction}
-%TODO introduction
-blah
-
 \subsection{Equilibrium landing gear compression}\label{ssec:equi_comp}
 For seamless transition between dynamic and deterministic state updates for vessels resting on a planetary surface, we must be able to calculate the compression of landing gear at equilibrium, given the magnitude of gravitational acceleration $g$ on the surface, the vessel mass $m$, and the positions $\vec{r}_i = \lbrace x_i, y_i, z_i\rbrace$ and suspension constants $\alpha_i$ of the individual landing gear components (or equivalent) $i$. The compression has to be included in the touchdown position calculation for the deterministic model, to avoid vertical jumps when switching between update models. Orbiter currently uses 3 touchdown points to define a vessel's surface interaction, but the approach is valid for an arbitrary number of points.
 
