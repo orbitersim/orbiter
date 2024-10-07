@@ -8,13 +8,6 @@
 #include "Log.h"
 #include "Util.h"
 
-#ifdef INLINEGRAPHICS
-#include "OGraphics.h"
-#include "Texture.h"
-#include "Scene.h"
-extern TextureManager *g_texmanager;
-#endif // INLINEGRAPHICS
-
 using namespace std;
 
 extern Orbiter *g_pOrbiter;
@@ -115,10 +108,6 @@ void Mesh::Set (const Mesh &mesh)
 	if (nTex = mesh.nTex) {
 		Tex = new SURFHANDLE[nTex]; TRACENEW
 		memcpy (Tex, mesh.Tex, nTex*sizeof(SURFHANDLE));
-#ifdef INLINEGRAPHICS
-		for (i = 0; i < nTex; i++)
-			g_texmanager->IncRefCount ((LPDIRECTDRAWSURFACE7)Tex[i]);
-#endif
 	}
 	if (GrpSetup = mesh.GrpSetup) {
 		GrpCnt = new D3DVECTOR[nGrp]; TRACENEW
@@ -284,25 +273,7 @@ bool Mesh::AddGroupBlock (DWORD grp, const NTVERTEX *vtx, DWORD nvtx, const WORD
 
 bool Mesh::MakeGroupVertexBuffer (DWORD grp)
 {
-#ifdef INLINEGRAPHICS
-	GroupSpec &g = Grp[grp];
-	if (g.VtxBuf) return false; // buffer already exists
-	if (!g_pOrbiter->GetInlineGraphicsClient()->GetFramework()->IsTLDevice()) return false; // no T&L capability
-
-	LPDIRECT3D7 d3d = g_pOrbiter->GetInlineGraphicsClient()->GetDirect3D7();
-	LPDIRECT3DDEVICE7 dev = g_pOrbiter->GetInlineGraphicsClient()->GetDevice();
-	LPVOID data;
-	D3DVERTEXBUFFERDESC vbd = 
-		{ sizeof(D3DVERTEXBUFFERDESC), D3DVBCAPS_WRITEONLY, D3DFVF_VERTEX, g.nVtx };
-	if (d3d->CreateVertexBuffer (&vbd, &g.VtxBuf, 0) != D3D_OK) return false;
-	LOGOUT_DDERR (g.VtxBuf->Lock (DDLOCK_WAIT | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&data, NULL));
-	memcpy (data, g.Vtx, g.nVtx*sizeof(NTVERTEX));
-	LOGOUT_DDERR (g.VtxBuf->Unlock());
-	LOGOUT_DDERR (g.VtxBuf->Optimize (dev, 0));
-	return true;
-#else
 	return false;
-#endif
 }
 
 void Mesh::AddMesh (Mesh &mesh)
@@ -773,12 +744,8 @@ bool Mesh::SetTexture (DWORD texidx, SURFHANDLE tex, bool release_old)
 {
 	if (texidx >= nTex) return false;  // index out of range
 	if (Tex[texidx] && release_old) {
-#ifdef INLINEGRAPHICS
-		g_texmanager->ReleaseTexture ((LPDIRECTDRAWSURFACE7)Tex[texidx]);
-#else
 		if (g_pOrbiter->GetGraphicsClient())
 			g_pOrbiter->GetGraphicsClient()->clbkReleaseTexture (Tex[texidx]);
-#endif // INLINEGRAPHICS
 	}
 	Tex[texidx] = tex;
 	return true;
@@ -789,12 +756,8 @@ void Mesh::ReleaseTextures ()
 	if (nTex) {
 		for (DWORD i = 0; i < nTex; i++)
 			if (Tex[i]) {
-#ifdef INLINEGRAPHICS
-				g_texmanager->ReleaseTexture ((LPDIRECTDRAWSURFACE7)Tex[i]);
-#else
 				if (g_pOrbiter->GetGraphicsClient())
 					g_pOrbiter->GetGraphicsClient()->clbkReleaseTexture (Tex[i]);
-#endif // INLINEGRAPHICS
 			}
 		delete []Tex;
 		Tex = NULL;
@@ -843,177 +806,11 @@ void Mesh::SetName(const char* n)
 
 DWORD Mesh::Render (LPDIRECT3DDEVICE7 dev)
 {
-#ifndef NOGRAPHICS
-	if (bModulateMatAlpha) // use material alpha values in textured groups
-		dev->SetTextureStageState (0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-
-	DWORD i, j, n, mi, pmi = SPEC_DEFAULT, ti, pti = SPEC_DEFAULT, zb = 0, gcount = 0, wrap, owrap = 0;
-	DWORD uflag;
-	bool skipped = false;
-	bool texstage[MAXTEX] = {false};
-	BOOL specular = FALSE;
-	BOOL lighting = TRUE;
-
-	if (!GrpSetup) Setup();
-	dev->ComputeSphereVisibility (GrpCnt, GrpRad, nGrp, 0, GrpVis);
-	LPDIRECTDRAWSURFACE7 ptex = 0;
-
-	for (i = 0; i < nGrp; i++) {
-
-		uflag = Grp[i].UsrFlag;
-		if (uflag & 2) { // user skip
-			skipped = true;
-			continue;
-		}
-		if (GrpVis[i] & D3DSTATUS_DEFAULT) {  // group outside frustrum
-			skipped = true;
-			continue;
-		}
-
-		// set material
-		if ((mi = Grp[i].MtrlIdx) == SPEC_INHERIT && skipped) // find last valid material
-			for (j = i-1; j >= 0; j--)
-				if ((mi = Grp[j].MtrlIdx) != SPEC_INHERIT) break;
-		if (mi != SPEC_INHERIT && (!i || mi != pmi)) {
-			LPD3DMATERIAL7 mat = (mi != SPEC_DEFAULT ? Mtrl+mi : &defmat);
-			dev->SetMaterial (mat);
-			if (bEnableSpecular) {
-				if (mat->power) {
-					if (!specular) dev->SetRenderState (D3DRENDERSTATE_SPECULARENABLE, specular = TRUE);
-				} else {
-					if (specular) dev->SetRenderState (D3DRENDERSTATE_SPECULARENABLE, specular = FALSE);
-				}
-			}
-			pmi = mi;
-		}
-
-		// set primary texture
-		if ((ti = Grp[i].TexIdx) == SPEC_INHERIT && skipped) // find last valid texture
-			for (j = i-1; j >= 0; j--)
-				if ((ti = Grp[j].TexIdx) != SPEC_INHERIT) break;
-		if (ti != SPEC_INHERIT && (!i || (ti != pti))) {
-			LPDIRECTDRAWSURFACE7 tx = 0;
-			if (ti != SPEC_DEFAULT) {
-				if (ti < TEXIDX_MFD0) tx = (LPDIRECTDRAWSURFACE7)Tex[ti];
-				else                  tx = (LPDIRECTDRAWSURFACE7)g_pOrbiter->GetGraphicsClient()->GetMFDSurface(ti-TEXIDX_MFD0);
-			}
-			dev->SetTexture (0, tx);
-			pti = ti;
-		}
-
-		// set additional textures
-		for (n = 0; n < MAXTEX; n++) {
-			if (Grp[i].TexMixEx[n] && (ti = Grp[i].TexIdxEx[n]) != SPEC_DEFAULT) {
-				dev->SetTexture (n+1, (LPDIRECTDRAWSURFACE7)Tex[ti]);
-				dev->SetTextureStageState (n+1, D3DTSS_COLOROP, D3DTOP_ADD);
-				texstage[n] = true;
-			} else if (texstage[n]) {
-				dev->SetTextureStageState (n+1, D3DTSS_COLOROP, D3DTOP_DISABLE);
-				texstage[n] = false;
-			}
-		}
-
-		if (zb != Grp[i].zBias)
-			dev->SetRenderState (D3DRENDERSTATE_ZBIAS, zb = Grp[i].zBias);
-
-		wrap = 0;
-		if (Grp[i].Flags & 0x03) { // wrap flag
-			if (Grp[i].Flags & 0x01) wrap |= D3DWRAP_U;
-			if (Grp[i].Flags & 0x02) wrap |= D3DWRAP_V;
-		}
-		if (wrap != owrap)
-			dev->SetRenderState (D3DRENDERSTATE_WRAP0, owrap = wrap);
-
-		if (!(uflag & 0x4) != lighting)
-			dev->SetRenderState (D3DRENDERSTATE_LIGHTING, lighting = !lighting);
-
-		if (uflag & 0x8) { // brighten
-			dev->SetRenderState (D3DRENDERSTATE_SRCBLEND, D3DBLEND_SRCALPHA);
-			dev->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_ONE);
-		}
-
-		if (uflag &0x10) { // skip texture color information
-			dev->SetTextureStageState (0, D3DTSS_COLOROP, D3DTOP_SELECTARG2);
-		}
-
-		if (Grp[i].nVtx && Grp[i].nIdx) {
-			if (!Grp[i].VtxBuf) {
-				dVERIFY(dev->DrawIndexedPrimitive (
-					D3DPT_TRIANGLELIST, D3DFVF_VERTEX,
-					Grp[i].Vtx, Grp[i].nVtx, Grp[i].Idx, Grp[i].nIdx, 0), "LPDIRECT3DDEVICE7::DrawIndexedPrimitive failed");
-			} else {
-				dev->DrawIndexedPrimitiveVB (
-					D3DPT_TRIANGLELIST,
-					Grp[i].VtxBuf, 0, Grp[i].nVtx, Grp[i].Idx, Grp[i].nIdx, 0);
-			}
-			g_vtxcount += Grp[i].nVtx;
-		}
-
-		if (uflag & 0x8) { // reset brighten
-			dev->SetRenderState (D3DRENDERSTATE_SRCBLEND, D3DBLEND_SRCALPHA);
-			dev->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_INVSRCALPHA);
-		}
-
-		if (uflag & 0x10) {
-			dev->SetTextureStageState (0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-		}
-
-		skipped = false;
-		gcount++;
-	}
-
-	if (nGrp > 1 || Grp[0].MtrlIdx != SPEC_INHERIT)
-		g_pOrbiter->GetInlineGraphicsClient()->GetScene()->SetDefaultMaterial();
-	if (zb)        dev->SetRenderState (D3DRENDERSTATE_ZBIAS, 0);
-	if (owrap)     dev->SetRenderState (D3DRENDERSTATE_WRAP0, 0);
-	if (specular)  dev->SetRenderState (D3DRENDERSTATE_SPECULARENABLE, FALSE);
-	if (!lighting) dev->SetRenderState (D3DRENDERSTATE_LIGHTING, TRUE);
-	for (n = 0; n < MAXTEX; n++) {
-		if (texstage[n]) 
-			dev->SetTextureStageState (n+1, D3DTSS_COLOROP, D3DTOP_DISABLE);
-	}
-	if (bModulateMatAlpha)
-		dev->SetTextureStageState (0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-	return gcount;
-#else
 	return 0;
-#endif // !NOGRAPHICS
 }
 
 void Mesh::RenderGroup (LPDIRECT3DDEVICE7 dev, DWORD grp, bool setstate) const
 {
-#ifdef INLINEGRAPHICS
-	if (grp >= nGrp) return;
-
-	BOOL specular = FALSE;
-	BOOL lighting = TRUE;
-
-	if (setstate) {
-		int j, mi;
-		for (j = grp; j >= 0 && (mi = Grp[j].MtrlIdx) == SPEC_INHERIT; j--);
-		LPD3DMATERIAL7 mat = (j >= 0 && mi != SPEC_DEFAULT ? Mtrl+mi : &defmat);
-		dev->SetMaterial (mat);
-		if (Grp[grp].UsrFlag & 0x4)
-			dev->SetRenderState (D3DRENDERSTATE_LIGHTING, lighting = FALSE);
-
-		if (bEnableSpecular && mat->power)
-			dev->SetRenderState (D3DRENDERSTATE_SPECULARENABLE, specular = TRUE);
-		for (j = grp; j >= 0 && Grp[j].TexIdx == SPEC_INHERIT; j--);
-		//dev->SetTexture (0, j >= 0 ? Tex[Grp[j].TexIdx] : 0);
-	}
-			
-	if (Grp[grp].nVtx && Grp[grp].nIdx) {
-		dev->DrawIndexedPrimitive (
-			D3DPT_TRIANGLELIST, D3DFVF_VERTEX,
-			Grp[grp].Vtx, Grp[grp].nVtx, Grp[grp].Idx, Grp[grp].nIdx, 0);
-	}
-
-	if (setstate) {
-		g_pOrbiter->GetInlineGraphicsClient()->GetScene()->SetDefaultMaterial();
-		if (specular) dev->SetRenderState (D3DRENDERSTATE_SPECULARENABLE, FALSE);
-		if (!lighting) dev->SetRenderState (D3DRENDERSTATE_LIGHTING, TRUE);
-	}
-#endif // INLINEGRAPHICS
 }
 
 istream &operator>> (istream &is, Mesh &mesh)
@@ -1173,12 +970,8 @@ istream &operator>> (istream &is, Mesh &mesh)
 			mesh.Tex[i] = 0;
 			if (texname[0] != '0' || texname[1] != '\0') {
 				bool uncompress = (toupper(flagstr[0]) == 'D');
-#ifdef INLINEGRAPHICS
-				mesh.Tex[i] = g_texmanager->AcquireTexture (texname, uncompress);
-#else
 				if (g_pOrbiter->GetGraphicsClient())
 					mesh.Tex[i] = g_pOrbiter->GetGraphicsClient()->clbkLoadTexture (texname, 8 | (uncompress ? 2:0));
-#endif // INLINEGRAPHICS
 			}
 		}
 	}

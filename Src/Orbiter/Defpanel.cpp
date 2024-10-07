@@ -390,11 +390,6 @@ void DefaultPanel::InitDeviceObjects ()
 void DefaultPanel::RestoreDeviceObjects (LPDIRECT3D7 d3d, LPDIRECT3DDEVICE7 dev)
 {
 	// This method is currently only supported by the inline client
-#ifdef INLINEGRAPHICS
-	int i;
-	InitDeviceObjects();
-	for (i = 0; i < 2; i++) RepaintMFDButtons (i);
-#endif
 	rcsmode = -1;
 }
 

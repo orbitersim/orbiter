@@ -43,10 +43,6 @@
 #include <stdlib.h>
 #include <string>
 
-#ifdef INLINEGRAPHICS
-#include "VVessel.h"
-#endif // INLINEGRAPHICS
-
 using namespace std;
 
 extern Orbiter *g_pOrbiter;
@@ -5173,18 +5169,6 @@ void Vessel::DrawHUD (HUD *hud, oapi::Sketchpad *skp)
 		if (modIntf.v->Version() >= 2) {
 			drawn = ((VESSEL3*)modIntf.v)->clbkDrawHUD (hud->Mode(), hud->PaintSpec(), skp);
 		}
-		if (!drawn) {
-#ifdef INLINEGRAPHICS
-			HDC hDC = skp->GetDC();
-			if (hDC) {
-				hudskp = skp; // need to store the sketchpad instance for the callback
-				((VESSEL2*)modIntf.v)->clbkDrawHUD (hud->Mode(), hud->PaintSpec(), hDC);
-				hudskp = NULL;
-			}
-#else
-			// If this is really required then need to figure out a work-a-round.
-#endif // INLINEGRAPHICS
-		}
 	} else
 		hud->DrawDefault (skp);
 }
@@ -7697,11 +7681,7 @@ UINT VESSEL::GetMeshCount () const
 
 MESHHANDLE VESSEL::GetMesh (VISHANDLE vis, UINT idx) const
 {
-#ifdef INLINEGRAPHICS
-	return g_pOrbiter->GetGraphicsClient()->clbkGetMesh (vis, idx);
-#else
 	return NULL;
-#endif
 }
 
 DEVMESHHANDLE VESSEL::GetDevMesh (VISHANDLE vis, UINT idx) const
@@ -8779,11 +8759,7 @@ bool VESSEL::GetEditorModule (char *fname) const
 
 bool VESSEL::MeshgroupTransform (VISHANDLE vis, const MESHGROUP_TRANSFORM &mt) const
 {
-#ifdef INLINEGRAPHICS
-	return ((VVessel*)vis)->MeshgroupTransform (mt);
-#else
 	return false; // not supported yet
-#endif
 }
 
 // ==============================================================
