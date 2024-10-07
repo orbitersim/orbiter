@@ -304,8 +304,7 @@ The DG has access to the standard functions provided by the Orbiter-Lua script i
 The script interface can be accessed in two ways:
 
 \begin{itemize}
-%TODO check keys are correct
-\item via the \textit{Terminal} MFD mode. Make sure that the \textit{LuaMFD} plugin module is activated in the \textit{Modules} tab of the Orbiter Launchpad. This will add the Terminal mode to the list of available MFD modes (open with keyboard shortcut: \Shift\keystroke{F4} + \Shift\keystroke{T}). Script commands can be entered with the INP button (keyboard shortcut: \Shift\keystroke{I}). For vessel-based methods, the terminal provides object "V" to represent the active vessel (equivalent to command V = vessel.get\_focusinterface() ). You can use this object to access the DG, for example
+\item via the \textit{Terminal} MFD mode. Make sure that the \textit{LuaMFD} plugin module is activated in the \textit{Modules} tab of the Orbiter Launchpad. This will add the Terminal mode to the list of available MFD modes (open with keyboard shortcut: \Shift\keystroke{F1} + \Shift\keystroke{1}). Script commands can be entered with the INP button (keyboard shortcut: \Shift\keystroke{I}). For vessel-based methods, the terminal provides object "V" to represent the active vessel (equivalent to command V = vessel.get\_focusinterface() ). You can use this object to access the DG, for example
 
 \begin{lstlisting}[language=OSFS]
 term.out(V:get_mass())
@@ -1327,9 +1326,8 @@ Selectable RCS modes are:
 \end{itemize}
 
 \noindent
-%TODO check "by 1/10th" vs "to 1/10th"
 The first switch in the left selects either linear or rotational major modes of the RCS. The second and third switch in the row select the RCS minor operational modes. Any combination of the settings can be used.\\
-VERN minor mode will reduce thruster capacity by 1/10$^{th}$.\\
+VERN minor mode will reduce thruster capacity to 1/10$^{th}$.\\
 When PULSE minor rate is selected the RCS will fire short bursts (0.02 seconds) of thrust for each thrust command. The joystick controller will have to be re-centered until another command can be issued. For keyboard commands, the key must be released until another command is accepted.\\
 When RATE minor mode is selected, each thrusting command will add 10\% of thrust (or 1\% if Vernier) to the respective thruster group. The joystick must be recentered, or the keyboard key released, until a new command is accepted. For example striking \keystroke{8}$_{Num}$ 3 times in \textit{linear non-vernier} mode, will engage the 'up' linear thrusters at 30\% of their capacity. Striking \keystroke{8}$_{Num}$ 6 times in \textit{rotational vernier} mode will engage the "pitch up" rotational thrusters at 6\% of their capacity. At any time hitting the reverse command (\keystroke{2}$_{Num}$ in this case) will close the RCS valves completely, regardless of their power setting.\\
 The fourth CB controls the automatic rotational rate nullifier, ie. the KillRot. Note that this function is only available when major mode \textit{rotational, non-vernier, normal rate} is selected. Hitting \keystroke{5}$_{Num}$ at any other time will not engage the killrot command. Hitting the KILLROT CB on the front panel however will temporarily switch to major mode \textit{rotational, non-vernier, normal rate} then engage the killrot command. After the killrot program has completed, the previous RCS settings are restored.
