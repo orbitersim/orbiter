@@ -28,7 +28,7 @@ Hardware requirements needed by Orbiter:
 | ---- | ---- | ---- |
 | RAM: | 500MB | 2GB |
 | CPU: | Dual Core |  |
-| GPU: | 100 GFlops | 200 GFlops |
+| GPU: | 50 GFlops | 100 GFlops |
 | Disk: | 5GB of free space | 10GB of free space (80GB if you want hi-res textures) |
 
 Get the Orbiter source repository from github

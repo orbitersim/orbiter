@@ -19,7 +19,7 @@ The following table lists the hardware requirements needed by Orbiter.
 	\hline\rule{0pt}{2ex}
 	CPU & Dual Core &\\
 	\hline\rule{0pt}{2ex}
-	GPU & 100 GFlops & 200 GFlops\\
+	GPU & 50 GFlops & 100 GFlops\\
 	\hline\rule{0pt}{2ex}
 	Disk & 5GB of free space & 10GB of free space (80GB if you want hi-res textures)\\
 	\hline
@@ -39,11 +39,12 @@ If desired, high-resolution texture packs are available for Mercury, Earth, Moon
 \item Create a new folder for the Orbiter installation, e.g. C:\textbackslash Orbiter or \%HOMEPATH\%\textbackslash Orbiter. Note that creating an Orbiter folder in Program files or Program files (x86) is not recommended, because Windows puts some restrictions on these locations.
 \item If a previous version of Orbiter is already installed on your computer, you should not install the new version into the same folder, because this could lead to file conflicts. You may want to keep your old installation until you have made sure that the latest version works without problems. Multiple Orbiter installations can exist on the same computer.
 \item Unzip the Orbiter ZIP installation package into the new folder, using either the default Windows unzip function, or an external tool like 7-zip or WinZip. Important: Take care to preserve the directory structure of the package (for example, in WinZip this requires to activate the "Use Folder Names" option).
-\item After unzipping the package, make sure your Orbiter folder contains the executable (orbiter.exe) and, among other files, the Config, Meshes, Scenarios and Textures subfolders.
-%TODO handle redist dependencies
-%TODO mention orbiter_ng?
-\item Run orbiter.exe. This will bring up the Orbiter "Launchpad" dialog, where you can select video options and simulation parameters.
-\item You are now ready to start Orbiter. Select a scenario from the Launchpad dialog and click the \textit{Launch Orbiter} button!
+\item After unzipping the package, make sure your Orbiter folder contains the executables (orbiter.exe and orbiter\_ng.exe) and, among other files, the Config, Meshes, Scenarios and Textures subfolders.
+
+%TODO handle redist dependencies "Microsoft Visual C++ 2015 - 2022 Redistributable"
+
+\item The Orbiter simulator can be launched either with a built-in graphics engine (orbiter.exe, with the red "Delta-glider" icon), or with an external graphics interface (orbiter\_ng.exe, with the blue "Delta-glider" icon). The second option allows to connect to external graphics engines with enhanced features and performance. This requires downloading and installing 3rd party Orbiter graphics engines, or using the included D3D9Client plugin. Once running, Orbiter will show you the "Launchpad" dialog, where you can select video options and simulation parameters.
+\item You are now ready to start, select a scenario from the Launchpad dialog and click the \textit{Launch Orbiter} button!
 \end{itemize}
 
 \noindent
