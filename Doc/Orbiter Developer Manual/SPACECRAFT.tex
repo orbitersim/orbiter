@@ -704,10 +704,12 @@ When implementing an airfoil in Orbiter, the user must supply a function which c
 
 
 \subsubsection{Lift and drag in transonic and supersonic flight}
+% TODO fill section "lift and drag in transonic and supersonic flight"
 (to be completed)
 
 
 \subsubsection{Angular moments and vessel stability}
+% TODO fill section "angular moments and vessel stability"
 (to be completed)
 
 
@@ -1325,10 +1327,10 @@ bool MyVessel::clbkPanelMouseEvent( int id, int event, int mx, int my )
 \end{lstlisting}
 
 \noindent
-where \textit{id} is the identifier of the panel area for which the event was generated (e.g. \textit{AID\_BUTTON} in our example), \textit{event} specifies the mouse event type, and \textit{mx},\textit{my} are the panel coordinates at which the event occurred.\\
-\\
-\textbf{Important}: A button-up event is always generated for the instrument which produced the preceding button-down event, even if the mouse has been dragged out of the panel area in the mean time.\\
-\\
+where \textit{id} is the identifier of the panel area for which the event was generated (e.g. \textit{AID\_BUTTON} in our example), \textit{event} specifies the mouse event type, and \textit{mx},\textit{my} are the panel coordinates at which the event occurred.
+
+\infobox{Important: A button-up event is always generated for the instrument which produced the preceding button-down event, even if the mouse has been dragged out of the panel area in the mean time.}
+
 The following mouse events are available:\\
 \textit{PANEL\_MOUSE\_LBDOWN} - Left mouse button pressed down.\\
 \textit{PANEL\_MOUSE\_RBDOWN} - Right mouse button pressed down.\\
@@ -1593,10 +1595,10 @@ bool MyVessel::clbkLoadPanel( int id )
 \noindent
 Each panel must register its own background bitmap via the \textit{oapiRegisterPanelBackground} function.\\
 \\
-In a vessel that defines multiple panels, the user can switch between them by using \Ctrl\DArrow\UArrow\RArrow\LArrow keys. Orbiter must know the relative location of bitmaps to each other, so that the correct panel can be loaded. This connectivity is provided by the \textit{oapiSetPanelNeighbours} function. This function tells Orbiter which panels are to the left, right, top and bottom of the current panel. A value of -1 indicates that no panel is located at that side.\\
-\\
-\textbf{Important}: All the panel id's defined during \textit{oapiSetPanelNeighbours} must be supported by \textit{clbkLoadPanel}. For example, if panel 0 calls \textit{oapiSetPanelNeighbours( 2, -1, 1, -1 )}, then panels 1 and 2 must be handled by \textit{clbkLoadPanel}.\\
-\\
+In a vessel that defines multiple panels, the user can switch between them by using \Ctrl\DArrow\UArrow\RArrow\LArrow keys. Orbiter must know the relative location of bitmaps to each other, so that the correct panel can be loaded. This connectivity is provided by the \textit{oapiSetPanelNeighbours} function. This function tells Orbiter which panels are to the left, right, top and bottom of the current panel. A value of -1 indicates that no panel is located at that side.
+
+\infobox{Important: All the panel id's defined during \textit{oapiSetPanelNeighbours} must be supported by \textit{clbkLoadPanel}. For example, if panel 0 calls \textit{oapiSetPanelNeighbours( 2, -1, 1, -1 )}, then panels 1 and 2 must be handled by \textit{clbkLoadPanel}.}
+
 All panels must call the \textit{oapiSetPanelNeighbours} function, otherwise there is no way for the user to switch back to a different panel. Panel connectivities should usually be reciprocal, i.e. if panel 0 defines panel 1 as its top neighbour, then panel 1 should define panel 0 as its bottom neighbour. If only a single panel (panel 0) is supported, calling \textit{oapiSetPanelNeighbours} is not necessary.
 
 
@@ -1857,7 +1859,48 @@ void MyVessel::MFDMode( int mfd, int mode )
 
 
 \subsubsection{Defining the HUD in the virtual cockpit}
-< to be completed >
+%TODO fill section "defining the hud in the virtual cockpit"
+(to be completed)
 
+
+\subsection{Vessel module concepts}
+
+\subsubsection{Docking port management}
+
+Docking ports allow individual vessel objects to connect with each other, forming a superstructure. Orbiter automatically calculates the physical properties of the superstructure from the properties of the individual constituents. In particular, the following properties are managed by Orbiter:
+\begin{itemize}
+\item total mass: The mass of the superstructure is the sum of masses of the individual vessels
+\item centre of mass: The centre of mass of the superstructure is calculated from the individual vessel masses and their relative position
+\item inertia tensor: A simplified rigid-body model is applied to calculate an inertia tensor for the superstructure
+\item effects of forces: any forces acting on individual vessels (thrust, drag, lift, etc.) are transformed into the superstructure frame and applied
+\end{itemize}
+
+\noindent
+The superstructure model allows to apply the effect of forces calculated for individual vessels onto the superstructure. For example, a thrust force that acts along the centre of gravity of an individual vessel may induce a torque on the superstructure, depending on the relative position of the vessel with respect to the superstructure centre of mass.\\
+Currently, superstructures are only supported in free flight, not when landed on a planetary surface. The reason is the difficulty of calculating the interaction of the composite structure with the surface. This may be addressed in the future.
+
+
+\subsubsection{ Attachment management}
+Similar to docking ports, attachment points allow to connect two or more vessel objects. There are a few important differences:
+\begin{itemize}
+\item Docking ports establish peer connections, attachments establish parent-child hierarchies: A parent vessel can have multiple attached children, but each child can only be attached to a single parent.
+\item Attachments use a simplified physics engine: the root parent alone defines the object's trajectory (both for freespace and atmospheric flight). The children are assumed to have no influence on flight behaviour.
+\item Orbiter establishes docking connections automatically if the docking ports of two vessels are brought close to each other. Attachment connections are only established by API calls.
+\item Currently, docking connections only work in freeflight. Attachments also work for landed vessels.
+\end{itemize}
+
+\noindent
+Attachment connections are useful for attaching small objects to larger vessels. For example, Orbiter uses attachments to connect payload items to the Space Shuttle's cargo bay or the tip of the RMS manipulator arm (see Orbitersdk\textbackslash samples\textbackslash Atlantis).\\
+Attachment points use an identifier string (up to 8 characters) which can provide a method to establish compatibility. For example, the Atlantis RMS arm tip will only connect to attachment points with an id string that contains "GS" in the first 2 characters (it ignores the last 6 characters).\\
+Now let's assume somebody creates another Shuttle (say a Buran) with its own RMS arm. He could then allow it to
+\begin{itemize}
+\item grapple exactly the same objects as Atlantis, by checking for "GS"
+\item grapple a subset of objects grapplable by Atlantis, by checking additional characters, for example "GSX"
+\item grapple all objects grapplable by Atlantis, plus additional objects, for example by checking for "GS" or "GX"
+\item grapple entirely different objects, for example by checking for "GX"
+\end{itemize}
+
+\noindent
+To connect a satellite into the payload bay, Atlantis uses the id "XS" (This means that the payload bay connection can not be used for grappling. To allow a satellite to be grappled and stored in the payload bay, it must define both a "GS" and an "XS" attachment point).
 
 \end{document}
