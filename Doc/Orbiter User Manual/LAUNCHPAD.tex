@@ -2,7 +2,6 @@
 \begin{document}
 
 %TODO update launchpad images
-%TODO update sections
 \section{Before you start: The Launchpad}
 \label{sec:launchpad}
 Starting orbiter.exe brings up the \textit{Orbiter Launchpad} dialog box. The launchpad is your gateway to Orbiter. From here, you can
@@ -63,58 +62,23 @@ After exiting a simulation session, click the \textit{Save current} button to sa
 Click the \textit{Clear quicksaves} button to delete all scenarios stored in the Quicksave folder.
 
 
-\subsection{Parameters tab}
-\label{ssec:parameters_tab}
-The \textit{Parameters} tab contains various options to customise the simulation behaviour, including realism and difficulty settings, background star rendering, instrument display settings and the focus behaviour for dialog boxes.
+\subsection{Options tab}
+\label{ssec:options_tab}
+The \textit{Options} tab contains various pages to customise the simulation behaviour, including realism and difficulty settings, background star rendering, instrument display settings and the focus behaviour for dialog boxes.
 
 \begin{figure}[H]
 	\centering
 	\subfigure{\includegraphics[width=0.65\textwidth]{launchpad_param.png}}
 \end{figure}
 
-\noindent
-\textbf{Realism}
+\subsubsection{Visual settings}
+The \textit{Visual effects} page provides options for tuning the rendering parameters and graphic detail. These options will improve the visual appearance and realism of the simulator, but most of them can have an adverse effect on simulation performance (frame rates) when enabled, and may increase video and main memory demands, so they should be used with care, in particular on less powerful computers. As a first step in troubleshooting Orbiter problems it is often a good idea to turn off all visual effects.\\
+Note that some advanced rendering options can also be found in the \textit{Extra} tab, under \textit{Visualisation parameters}. This includes mip­map and anisotropic filtering options as well as texture and elevation resolution bias settings.
 
-\begin{itemize}
-\item \textbf{Complex flight model:} Select the realism level of the flight model for the spacecraft. Tick this box to enable the most realistic flight parameters available for all vessel types. Disabling this option may activate simplified flight parameters which make spacecraft easier to control for newcomers. Not all vessel types may support this option.
-\item \textbf{Damage and failure simulation:} Spacecraft can sustain damage and system failure, for example if operational limits are exceeded. Not all vessel types may support this option.
-\item \textbf{Limited fuel:} Untick this box to ignore fuel consumption of your spacecraft.
-\alertbox{Some of the more "realistic" spacecraft, such as the Space Shuttle, may not work properly if "Limited fuel" is not selected, because they rely on the reduction of mass during lift-off as a consequence of fuel consumption.}
-\item \textbf{Nonspherical gravity sources:} This option activates a more complex gravity force calculation which can take into account perturbations in the gravitational potential due to non spherical celestial body shapes, thus allowing more accurate orbit predictions. Note that this option can make orbital calculations more difficult, and may reduce the reliability of instruments that don't take this effect into account. For a planet to make use of the perturbation code, its configuration file must supply shape parameters via the \textit{JCoeff} entry. For background and technical implementation details please refer to "Nonspherical gravitational field perturbations" in Orbiter Technical Reference.
-\item \textbf{Gravity-gradient torque:} If this option is enabled, vessels can experience an angular moment in the presence of a gravitational field gradient. This will be noticeable in particular in low orbits and can lead to attitude oscillations around the equilibrium or attitude-locked orbits. For background and technical implementation details please refer to "Distributed Vessel Mass" in Orbiter Technical Reference.
-\end{itemize}
+\alertbox{Some graphics clients may ignore, override or extend some of these settings.}
 
 \noindent
-\textbf{Window focus mode}
-
-\begin{itemize}
-\item Focus follows mouse: If this option is ticked, the input focus is automatically switched to the window under the mouse pointer. If unticked, the focus is switched in normal Windows style by clicking the window.
-\end{itemize}
-
-\noindent
-\textbf{Instruments}
-
-\begin{itemize}
-\item \textbf{Transparent MFD:} Make the multifunctional displays in glass cockpit mode (see \ref{ssec:glass_cockpit}) transparent. This provides a better view of the 3-D environment, but makes it more difficult to read the instruments.
-\item \textbf{MFD refresh:} Time (in seconds) between MFD updates. Shorter intervals provide smoother updates, but may degrade performance. Some built-in MFD modes, such as the Surface and HSI modes, override the user-defined update frequency.
-\item \textbf{Panel scale:} Sizing factor for instrument panels. Scale 1 provides optimal visual quality, but other values may be used to adapt the panel size at low or high screen resolutions.
-\item \textbf{Panel scroll speed:} Determines how fast the panel can be scrolled across the screen [pixels/second]. Negative values invert the panel scroll directions.
-\end{itemize}
-
-
-\subsection{Visual effects tab}
-The \textit{Visual effects} tab provides options for tuning the rendering parameters and graphic detail. These options will improve the visual appearance and realism of the simulator, but most of them can have an adverse effect on simulation performance (frame rates) when enabled, and may increase video and main memory demands, so they should be used with care, in particular on less powerful computers. As a first step in troubleshooting Orbiter problems it is often a good idea to turn off all visual effects.
-
-\begin{figure}[H]
-	\centering
-	\subfigure{\includegraphics[width=0.65\textwidth]{launchpad_visual.png}}
-\end{figure}
-
-\noindent
-Note that some advanced rendering options can also be found in the \textit{Extra} tab, under \textit{Visualisation parameters}. This includes mip­map and anisotropic filtering options as well as texture and elevation resolution bias settings.\\
-\\
 \textbf{Planetary effects}
-
 \begin{itemize}
 \item \textbf{Cloud layers:} Add a cloud layer above the surface for planets which support it.
 
@@ -173,7 +137,7 @@ Note that some advanced rendering options can also be found in the \textit{Extra
 \end{figure}
 
 \item \textbf{Night light level:} Defines the brightness of night city lights. Valid range is 0 to 1 (ignored if planet night lights are disabled).
-\item \textbf{Surface elevation:} Enable or disable modelling of ground elevation on planetary surfaces. When enabled, select between linear and cubic (smoother) interpolation of elevation data.
+\item \textbf{Surface elevation:} Enable or disable modelling of ground elevation on planetary surfaces.
 
 \begin{figure}[H]
 	\centering
@@ -181,39 +145,312 @@ Note that some advanced rendering options can also be found in the \textit{Extra
 	\caption{Planet surface elevation disabled (left) and enabled (right).}
 \end{figure}
 
-\item \textbf{Max. resolution level:} The maximum resolution at which planetary surfaces can be rendered. Supported values are 1 to 19. Higher values provide better visual appearance of planets that support high texture resolutions, but also significantly increase the demand on computing resources (graphics processor and memory). Note that the actual resolution level supported by any planetary body may be lower than this value, depending on the texture set available. Higher resolution textures for many bodies may be downloaded from the Orbiter website or add-on repositories. The highest resolution levels are usually only supported in selected areas on the surface (e.g. around spaceports).
+\item \textbf{Surface elevation interpolation:} Select between linear and cubic (smoother) interpolation of elevation data (ignored if surface elevation is disabled).
+\item \textbf{Max. resolution level:} The maximum resolution at which planetary surfaces can be rendered. Supported values are 1 to 21. Higher values provide better visual appearance of planets that support high texture resolutions, but also significantly increase the demand on computing resources (graphics processor and memory). Note that the actual resolution level supported by any planetary body may be lower than this value, depending on the texture set available. Higher resolution textures for many bodies may be downloaded from the Orbiter website or add-on repositories. The highest resolution levels are usually only supported in selected areas on the surface (e.g. around spaceports).
 
 \begin{figure}[H]
 	\centering
 	\subfigure{\includegraphics[width=0.95\textwidth]{planet_tile_res.jpg}}
 	\caption{Kennedy Space Center at resolution level 12 (left) and 19 (right)}
 \end{figure}
-
 \end{itemize}
 
 \noindent
 \\
 \textbf{General effects}
-
 \begin{itemize}
 \item \textbf{Vessel shadows:} Enable shadows cast by spacecraft on planet surfaces.
-\item \textbf{Object shadows:} Enable dynamic shadows of ground-based objects such as buildings.
-\item \textbf{Specular reflection from objects:} Render reflective surfaces like solar panels, window panes and metallic surfaces. May degrade performance.
 \item \textbf{Reentry flames:} Render a glowing plasma hull during reentry.
+\item \textbf{Object shadows:} Enable dynamic shadows of ground-based objects such as buildings.
 \item \textbf{Particle streams:} Render ionised exhaust gases and vapour trails with particle effects.
+\item \textbf{Specular object reflection:} Render reflective surfaces like solar panels, window panes and metallic surfaces. May degrade performance.
 \item \textbf{Local light sources:} Enable localised light sources, e.g. from engines, landing lights, floodlights etc. This option can have a significant influence on frame rates.
 \item \textbf{Ambient light level:} Defines the brightness of the unlit side of planets and moons. Ambient level 0 is the most realistic, but makes it difficult to spot objects in the dark. Level 255 is uniform lighting (no darkness).
+\end{itemize}
+
+\subsubsection{Physics settings}
+\begin{figure}[H]
+	\centering
+	\subfigure{\includegraphics[width=0.25\textwidth]{launchpad_physics.png}}
+\end{figure}
+
+\textbf{Perturbations}
+\begin{itemize}
+\item \textbf{Nonspherical gravity sources:} This option activates a more complex gravity force calculation which can take into account perturbations in the gravitational potential due to non spherical celestial body shapes, thus allowing more accurate orbit predictions. Note that this option can make orbital calculations more difficult, and may reduce the reliability of instruments that don't take this effect into account. For a planet to make use of the perturbation code, its configuration file must supply shape parameters via the \textit{JCoeff} entry. For background and technical implementation details please refer to "Nonspherical gravitational field perturbations" in Orbiter Technical Reference.
+\item \textbf{Radiation pressure:} Enables solar radiation pressure on vessels. Solar sails require this feature to be enabled.
+\item \textbf{Gravity-gradient torque:} If this option is enabled, vessels can experience an angular moment in the presence of a gravitational field gradient. This will be noticeable in particular in low orbits and can lead to attitude oscillations around the equilibrium or attitude-locked orbits. For background and technical implementation details please refer to "Distributed Vessel Mass" in Orbiter Technical Reference.
+\item \textbf{Atmospheric wind effects:} Enables wind effects on vessels flying inside atmospheres.
+\end{itemize}
+
+\subsubsection{Instruments \& panels}
+\begin{figure}[H]
+	\centering
+	\subfigure{\includegraphics[width=0.3\textwidth]{launchpad_instrumentspanels.png}}
+\end{figure}
+
+\textbf{Multi-functional displays}
+\begin{itemize}
+\item \textbf{MFD refresh interval (s):} Time (in seconds) between MFD updates. Shorter intervals provide smoother updates, but may degrade performance. Some built-in MFD modes, such as the Surface and HSI modes, override the user-defined update frequency.
+\item \textbf{Glass cockpit MFD size:} Size factor for MFD displays in (generic) glass cockpit mode (1..10).
+\item \textbf{Transparent MFD:} Make the multifunctional displays in glass cockpit mode (see \ref{ssec:glass_cockpit}) transparent. This provides a better view of the 3-D environment, but makes it more difficult to read the instruments.
+\item \textbf{Virtual cockpit MFD texture size:} Sets the MFD pixel resolution: 256x256, 512x512 or 1024x1024.
+\end{itemize}
+\noindent
+\\
+\textbf{Instrument panels}
+\begin{itemize}
+\item \textbf{Panel scroll speed:} Determines how fast the panel can be scrolled across the screen [pixels/second]. Negative values invert the panel scroll directions.
+\item \textbf{2D panel scale:} Sizing factor for instrument panels. Scale 1 provides optimal visual quality, but other values may be used to adapt the panel size at low or high screen resolutions.
+\end{itemize}
+
+\subsubsection{Vessel settings}
+\begin{figure}[H]
+	\centering
+	\subfigure{\includegraphics[width=0.25\textwidth]{launchpad_vessel.png}}
+\end{figure}
+
+\begin{itemize}
+\item \textbf{Limited fuel:} Untick this box to ignore fuel consumption of your spacecraft.
+\alertbox{Some of the more "realistic" spacecraft, such as the Space Shuttle, may not work properly if "Limited fuel" is not selected, because they rely on the reduction of mass during lift-off as a consequence of fuel consumption.}
+\item \textbf{Auto-refuel on pad:} If enabled, vessels will be refueled when landed in surface base pads.
+\item \textbf{Complex flight model:} Select the realism level of the flight model for the spacecraft. Tick this box to enable the most realistic flight parameters available for all vessel types. Disabling this option may activate simplified flight parameters which make spacecraft easier to control for newcomers. Not all vessel types may support this option.
+\item \textbf{Damage and failure simulation:} Spacecraft can sustain damage and system failure, for example if operational limits are exceeded. Not all vessel types may support this option.
+\end{itemize}
+
+\subsubsection{User Interface}
+
+\begin{figure}[H]
+	\centering
+	\subfigure{\includegraphics[width=0.4\textwidth]{launchpad_userinterface.png}}
+\end{figure}
+
+\textbf{Mouse focus behaviour}
+\begin{itemize}
+\item \textbf{Focus requires click:} the focus is switched in normal Windows style by clicking the window.
+\item \textbf{Hybrid: Click required only for child windows:} similar to the option above, but only for child windows.
+\item \textbf{Focus follows mouse:} the input focus is automatically switched to the window under the mouse pointer.
+\end{itemize}
+
+\paragraph{Joystick}
+The \textit{Joystick} page allows selection and configuration of your joystick device, if present.
+
+\begin{figure}[H]
+	\centering
+	\subfigure{\includegraphics[width=0.4\textwidth]{launchpad_joystick.png}}
+\end{figure}
+
+\noindent
+\textbf{Joystick device}\\
+Lists all attached joysticks.\\
+\\
+\noindent
+\textbf{Main engine control}
+\begin{itemize}
+\item \textbf{Main engine control:} Define the joystick axis which controls the main thrusters. Try different options if the throttle control on your joystick doesn't work in Orbiter.
+\item \textbf{Ignore throttle setting on launch:} If ticked, the joystick throttle will be ignored at the launch of a scenario until the user manipulates it. Otherwise, the throttle setting is used immediately.
+\end{itemize}
+
+\noindent
+\textbf{Calibration}
+\begin{itemize}
+\item \textbf{Throttle saturation:} Defines the tolerance zone at the minimum and maximum range of the throttle control at which the joystick reports zero and maximum throttle, respectively. Reduce if main engines do not cut out completely at minimum throttle setting. (Applies only to joysticks with throttle control).
+\item \textbf{Deadzone:} Use this to define how soon the joystick will respond when moved out of its centre position. Smaller values make it respond sooner. Increase if attitude thrusters do not cut out completely in neutral position.
+\end{itemize}
+
+\noindent
+If further calibration is required you should use the appropriate tools in the Windows Control Panel.
+
+\subsubsection{Celestial sphere}
+The parameters on this page define how the background stars are displayed on the celestial sphere, and allows to optionally display an additional background image, for example the results of all-sky surveys at specific wavelengths.
+
+\begin{figure}[H]
+	\centering
+	\subfigure{\includegraphics[width=0.4\textwidth]{launchpad_celestial.png}}
+\end{figure}
+
+\noindent
+\infobox{
+\textbf{Apparent magnitude}\\
+The apparent magnitude is a logarithmic scale describing the brightness of a star as seen from Earth. The brightest star (except for the sun), Sirius, has an apparent magnitude of m$_{v}$ = -1.5. The faintest stars visible without instruments are approximately of magnitude m$_{v}$ = 6.
+}
+
+\begin{itemize}
+\item \textbf{Background stars: show as pixels:} The parameters in this group adjust the number and brightness of background stars displayed on the celestial sphere. Orbiter uses the Hipparcos star catalogue with more than 10$^{5}$ entries.\\
+Using a higher magnitude value for the max. brightness setting will render stars brighter. Using a higher magnitude for the min. brightness setting will increase the number of faint stars rendered. Increasing the min. brightness level will make faint stars look brighter. The magnitude-brightness mapping should be set to "exponential" for most realistic contrast range.
+\item \textbf{Background stars: show as image:} In addition to rendering background stars as single pixels, Orbiter provides a background image for bright stars from synthetically generated from Hipparcos and Tycho mission data. which can improve the dynamic range of the single-pixel star display. Credit: Starmap 2020, NASA/Goddard Space Flight Center Scientific Visualization Studio. Gaia DR2: ESA/Gaia/DPAC.
+\item \textbf{Background map:} An additional global background image can be projected onto the celestial sphere. By default, Orbiter uses a synthetic image of faint stars created from the ESA Gaia mission to provide a Milky Way background. (Credit: Starmap 2020, see above). Alternatively, a number of different all-sky surveys at specific wavelengths from infrared to gamma-ray can be shown for special effects. The brightness slider allows to adjust the intensity of the background map.
+\end{itemize}
+
+
+\subsubsection{Visual helpers}
+Orbiter has the ability to show a number of visual cues in the simulation window to provide additional information to the user.
+
+\begin{figure}[H]
+	\centering
+	\subfigure{\includegraphics[width=0.99\textwidth]{planetarium.png}}
+	\caption{Planetarium mode with celestial grids and markers, and surface labels for cities, spaceports and VOR beacons active.}
+\end{figure}
+
+\noindent
+This page has options for displaying markers and gridlines on the celestial sphere, labels for planetary surface features, as well as coordinate axes and force vectors. The options in this page are also available during the simulation (shortcut: \Ctrl\keystroke{F9}).
+
+\begin{figure}[H]
+	\centering
+	\subfigure{\includegraphics[width=0.4\textwidth]{launchpad_visual.png}}
+\end{figure}
+
+\paragraph{Planetarium}
+Lost in space? If you lose your bearings in the middle of an interplanetary flight, or need the location of a set of reference stars to determine your orientation, Orbiter offers guidance in the form of an in-flight "planetarium" with grids, constellations and object markers projected onto the celestial sphere. Planetarium mode can be switched on and off with the Planetarium mode box in the \textit{Planetarium} page (shortcut: \keystroke{F9}).
+
+
+\begin{figure}[H]
+	\centering
+	\subfigure{\includegraphics[width=0.4\textwidth]{launchpad_planetarium.png}}
+\end{figure}
+
+\noindent
+\textbf{Grids and circles}
+\begin{itemize}
+\item \textbf{Local horizon grid:} grid lines generating an artificial horizon projected onto the celestial sphere.
+\item \textbf{Celestial grid:} grid lines aligned with Earth's equatorial frame projected to the celestial sphere.
+\item \textbf{Ecliptic grid:} grid lines aligned with the ecliptic frame (aligned with the Earth's orbital plane at the J2000.0 epoch) projected to the celestial sphere.
+\item \textbf{Galactic grid:} grid lines aligned with the galactic frame (reference plane is the central plane of the galactic disc).
+\item \textbf{Target equator:} equatorial plane of the currently active reference body (not necessarily Earth) projected to the celestial sphere.
+\end{itemize}
+
+\noindent
+\textbf{Constellations}
+\begin{itemize}
+\item \textbf{Labels:} prints the names of the constellations (in full or abbreviated) on the celestial sphere.
+\item \textbf{Boundaries:} shows the IAU constellation borders.
+\item \textbf{Patterns:} displays constellation lines on the celestial sphere.
+\end{itemize}
+
+\noindent
+\textbf{Celestial markers}
+\begin{itemize}
+\item \textbf{Show markers:} display a set of configurable markers on the celestial sphere. Options, available only during the simulation (see \ref{ssec:menu_options}), include the common names of prominent stars, Messier objects, the galactic reference axis and the Apollo AGC reference stars with their celestial coordinates.
+\end{itemize}
+
+\paragraph{Labels}
+This page allows to attach labels to simulation objects and planetary surface features.
+
+\begin{figure}[H]
+	\centering
+	\subfigure{\includegraphics[width=0.4\textwidth]{launchpad_labels.png}}
+\end{figure}
+
+\textbf{Object markers}
+\begin{itemize}
+\item \textbf{Vessel:} indicate the location of spacecraft.
+\item \textbf{Celestial bodies:} indicate the position of solar system bodies.
+\item \textbf{Surface bases:} indicate the position of registered bases on planetary surfaces.
+\item \textbf{VOR transmitters:} indicate the position and frequency settings of omnidirectional navigation beacons.
+\end{itemize}
+
+\noindent
+\textbf{Surface features}
+\begin{itemize}
+\item \textbf{Features:} configurable display of planetary surface landmarks (e.g. cities on Earth or geological features on other planets), available only during the simulation (see \ref{ssec:menu_options}).
+\end{itemize}
+
+\paragraph{Body forces}
+Orbiter can provide a graphical display of the force vectors currently acting on a spacecraft. This option is particularly useful for educational applications, to provide direct feedback of the effects of environmental parameters (gravity, atmosphere) and user input (e.g. change of lift as a function of changing angle of attack).
+
+\begin{figure}[H]
+	\centering
+	\subfigure{\includegraphics[width=0.75\textwidth]{atlantis_vectors_sep.png}}
+	\caption{Dynamics in action: forces and torques on the components of the Shuttle launch stack during booster separation.}
+\end{figure}
+
+\noindent
+The display can be activated and configured in this page.
+
+\begin{figure}[H]
+	\centering
+	\subfigure{\includegraphics[width=0.4\textwidth]{launchpad_bodyforces.png}}
+\end{figure}
+
+\noindent
+\textbf{Linear forces}\\
+Orbiter can show a number of separate linear force components and the resulting total force:
+
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.1\textwidth}|p{0.1\textwidth}|p{0.55\textwidth}| }
+	\hline\rule{0pt}{2ex}
+	Weight & G (yellow) & Force due to gravitational potential\\
+	\hline\rule{0pt}{2ex}
+	Thrust & T (blue) & Force generated by the vessel's propulsion system\\
+	\hline\rule{0pt}{2ex}
+	Lift & L (green) & Lift force generated by lifting airfoils in the atmosphere\\
+	\hline\rule{0pt}{2ex}
+	Drag & D (red) & Drag force generated by friction in the atmosphere\\
+	\hline\rule{0pt}{2ex}
+	Side & SF (jade) & Side force generated by friction in the atmosphere\\
+	\hline\rule{0pt}{2ex}
+	Total & F (white) & Total force acting on the vessel\\
+	\hline
+	\end{longtable}
+%\end{table}
+
+\noindent
+Note that the total force shown may not be equal to the sum of the five component forces, because additional forces may be acting on the vessel (e.g. custom user-defined forces).\\
+Linear forces are shown graphically as vector arrows originating at the vessels centre of gravity. The vector lengths are proportional to the magnitude of the force. In addition, the magnitudes are also shown numerically [N] with the vectors.\\
+
+\noindent
+\textbf{Angular moments}\\
+In addition to the linear forces, Orbiter can also display the acting total torque
+
+\[ M = \sum_{i} M_{i}= \sum_{i} F_{i} \times r_{i} \]
+
+\noindent
+The torque vector is shown with respect to the centre of gravity of the vessel. The numerical value [Nm] is also displayed.\\
+Note that for forces that are not generated at the vessel's centre of gravity (e.g. the lift vector), the total force displayed is split into a linear component originating at the centre of gravity and a corresponding torque.\\
+
+\noindent
+\textbf{Display}\\
+\begin{itemize}
+\item \textbf{Scale:} Selects between linear and logarithmic scale for the force vectors, and controls their length with the slider.
+\item \textbf{Opacity:} Controls the opacity of the vector display.
+\end{itemize}
+
+
+\paragraph{Object axes}
+The orientation of the coordinate axes for the local frames of vessels, celestial bodies and spaceports can be displayed from this page. Coordinate frames can be useful for add-on designers who want to make sure that the orientation of their spacecraft design within the simulator is correct.
+
+\begin{figure}[H]
+	\centering
+	\subfigure{\includegraphics[width=0.4\textwidth]{launchpad_objectaxes.png}}
+\end{figure}
+
+\noindent
+\textbf{Objects}
+\begin{itemize}
+\item \textbf{Vessels:} enables axis for vessel.
+\item \textbf{Celestial bodies:} enables axis for celestial bodies (planets, moons).
+\item \textbf{Surface bases:} enables axis for surface bases.
+\end{itemize}
+
+\noindent
+\textbf{Display}
+\begin{itemize}
+\item \textbf{Show negative axes:} in addition to the positive x, y and z axes, the negative axis are also displayed.
+\item \textbf{Scale:} controls the scale of the displayed axis.
+\item \textbf{Opacity:} controls the opacity of the displayed axis.
 \end{itemize}
 
 
 \subsection{Modules tab}
 \label{ssec:launchpad_modules}
-The \textit{Modules} tab allows the activation and deactivation of plug-in modules for Orbiter which can extend the functionality of the core simulator. Plug-ins can contain additional instruments, dialogs, interfaces to external programs etc. Make sure you only activate modules you actually want to use, because modules can take up some processing time even if they run in the background, and thus affect Orbiter's performance.
+The \textit{Modules} tab allows the activation and deactivation of plug-in modules for Orbiter which can extend the functionality of the core simulator. Plug-ins can contain additional instruments, dialogs, interfaces to external programs etc.
 
 \begin{figure}[H]
 	\centering
 	\subfigure{\includegraphics[width=0.65\textwidth]{launchpad_modules.png}}
 \end{figure}
+
+\alertbox{Make sure you only activate modules you actually want to use, because modules can take up some processing time even if they run in the background, and thus affect Orbiter's performance.}
 
 \noindent
 To activate a module, click the tick box next to its entry in the list. By clicking on the entry itself, many modules provide a short description about their function and user interface in the right panel. Entries are grouped in categories. You can expand or collapse categories by double-clicking the category header. The buttons at the bottom of the tab allow expanding or collapsing the entire list, and quick deactivation of all modules.\\
@@ -221,13 +458,14 @@ The modules provided with the standard Orbiter distribution are demos from the S
 Some of the standard modules distributed with Orbiter are:
 
 \begin{itemize}
+\item \textbf{XRSound:} The XRSound plug-in, which adds sounds to Orbiter.
 \item \textbf{ScnEditor:} A versatile scenario editor that allows adding, editing and deleting spacecraft in a running simulation. See \ref{ssec:scn_editor} for more details.
 \item \textbf{ExtMFD:} This module allows to open additional multifunctional displays in external dialog boxes. Useful if you need more information than a vessel's built-in MFD displays provide, or if you want to track flight data in external camera views.
 \item \textbf{CustomMFD:} This module provides an additional Ascent MFD mode for the multifunctional displays, which can be selected via \Shift\keystroke{F1}-\Shift\keystroke{P}. The sources for this module are a good starting point for developers who want to create their own MFD modes.
-\item \textbf{Rcontrol:} Remote control of ship engines. This allows to manipulate vessels even if they don't have input focus. If this module is active, the remote control window can be selected from the Custom Functions list (\Ctrl\keystroke{F4}).
+\item \textbf{Rcontrol:} Remote control of ship engines. This allows to manipulate vessels even if they don't have input focus. If this module is active, the remote control window can be selected from the \textit{Custom Functions} list (\Ctrl\keystroke{F4}).
 \item \textbf{FlightData:} Real-time atmospheric flight data telemetry. If this module is active, the flight data window can be selected from the \textit{Custom Functions} list (\Ctrl\keystroke{F4}).
 \item \textbf{Framerate:} A graphical simulation frame rate (FPS) display. If this module is active, the frame rate window can be selected from the \textit{Custom Functions} list (\Ctrl\keystroke{F4}).
-\item \textbf{LuaConsole:} Provides a console window for interactive processing of script commands. Can be opened via the \textit{Custom Functions} list.
+\item \textbf{LuaConsole:} Provides a console window for interactive processing of script commands. Can be opened via the \textit{Custom Functions} list (\Ctrl\keystroke{F4}).
 \item \textbf{LuaMFD:} Adds a new MFD mode for script input via a console MFD.
 \end{itemize}
 
@@ -238,10 +476,12 @@ The \textit{Video} tab provides options to select the rendering device, switch b
 
 \begin{figure}[H]
 	\centering
-	\subfigure{\includegraphics[width=0.65\textwidth]{launchpad_video.png}}
+	\subfigure{\includegraphics[width=0.55\textwidth]{launchpad_video.png}}
 \end{figure}
 
 \noindent
+\textbf{Graphics engine:}
+Selects the graphics engine to be used. When using \textit{orbiter.exe} (red DeltaGlider icon) only the base D3D7 graphics engine is available, but if the \textit{orbiter\_NG.exe} (blue DeltaGlider icon) is used, other graphics engines can be used, such as the D3D9 graphics client, which is now included in Orbiter.
 
 \begin{itemize}
 \item \textbf{3D Device:} Lists the available hardware and software devices for 3-D rendering. Select a hardware device with transform and lighting capabilities when possible, such as \textit{Direct3D T\&L HAL} or similar. (On some systems, the hardware devices might be listed with the name of your graphics card). Software devices such as \textit{RGB Emulation} will provide poor performance or not run at all. Note that some older hardware devices do not support window mode.
@@ -255,34 +495,12 @@ On some systems the hardware frame buffer switching may cause the screen occasio
 \end{itemize}
 
 
-\subsection{Joystick tab}
-The \textit{Joystick} tab allows selection and configuration of your joystick device, if present.
-
-\begin{figure}[H]
-	\centering
-	\subfigure{\includegraphics[width=0.65\textwidth]{launchpad_joystick.png}}
-\end{figure}
-
-\noindent
-
-\begin{itemize}
-\item \textbf{Joystick device:} Lists all attached joysticks.
-\item \textbf{Main engine control:} Define the joystick axis which controls the main thrusters. Try different options if the throttle control on your joystick doesn't work in Orbiter.\newline
-Ignore throttle setting on launch: If ticked, the joystick throttle will be ignored at the launch of a scenario until the user manipulates it. Otherwise, the throttle setting is used immediately.
-\item \textbf{Deadzone:} Use this to define how soon the joystick will respond when moved out of its centre position. Smaller values make it respond sooner. Increase if attitude thrusters do not cut out completely in neutral position.
-\item \textbf{Throttle saturation:} Defines the tolerance zone at the minimum and maximum range of the throttle control at which the joystick reports zero and maximum throttle, respectively. Reduce if main engines do not cut out completely at minimum throttle setting. (Applies only to joysticks with throttle control).
-\end{itemize}
-
-\noindent
-If further calibration is required you should use the appropriate tools in the Windows Control Panel.
-
-
 \subsection{Extra tab}
 The \textit{Extra} tab contains a list of more advanced and specialised settings and configuration parameters, including details about Orbiter's dynamic state propagation, vessel configuration and debugging options. Add-on plug-ins may add their own configuration entries to the list when activated.
 
 \begin{figure}[H]
 	\centering
-	\subfigure{\includegraphics[width=0.65\textwidth]{launchpad_extra.png}}
+	\subfigure{\includegraphics[width=0.55\textwidth]{launchpad_extra.png}}
 \end{figure}
 
 \noindent
@@ -291,10 +509,11 @@ Click on an item to see a short description of its purpose to the right of the l
 
 \begin{itemize}
 \item \textbf{Time propagation:} defines the parameters for dynamic update of linear (position and velocity) and angular vessel states (orientation and angular velocity). Users can select the integration methods as a function of step interval. The \textit{Orbit stabilisation} entry allows to configure the conditions under which Orbiter switches from dynamic to orbit perturbation updates. For technical details on the dynamic propagation schemes available in Orbiter, refer to "Dynamic state vector propagation" in Orbiter Technical Reference.
+\item \textbf{Instruments and panels:} Select general configuration parameters for spacecraft instruments, MFD displays and instrument panels.
 \item \textbf{Vessel configuration:} Different spacecraft types may provide options for defining visual and physical behaviour under this section.
 \item \textbf{Celestial body configuration:} Parameters to define particular characteristics of planetary bodies. Currently this section contains configuration options for the atmospheric models of some planets.
 \item \textbf{Debugging options:} Miscellaneous settings, including the way Orbiter shuts down a simulation session and the option to enforce fixed time steps, which can be useful for debugging or trajectory generation.
-\item \textbf{Visual parameters:} This section contains advanced rendering and texture load options for planetary bodies.
+\item \textbf{Visualisation parameters:} This section contains advanced rendering and texture load options for planetary bodies.
 \end{itemize}
 
 

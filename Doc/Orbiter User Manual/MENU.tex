@@ -23,7 +23,7 @@ The behaviour of the menu and info panels can be defined via the menu configurat
 \item \textbf{pause:} pause/resume the simulation. Keyboard shortcut: \Ctrl\keystroke{P}.
 \item \textbf{info:} Open the Object info dialog which displays live information for all simulation objects (see \ref{ssec:menu_info}). Keyboard shortcut: \Ctrl\keystroke{I}.
 \item \textbf{function:} Open the Custom function dialog which lists all accessible functions provided by active external modules, if available (see \ref{ssec:menu_cust_func}). Keyboard shortcut: \Ctrl\keystroke{F4}.
-\item \textbf{options:} Open the Options dialog which allows to configure functional and visual simulation parameters such as celestial sphere background rendering settings, or "visual helpers", such as grid and constellation lines on the celestial sphere (planetarium mode), planetary surface feature labels or vessel force vector displays (see \ref{ssec:menu_options}). Keyboard shortcut: \Ctrl\keystroke{F9}.
+\item \textbf{options:} Open the Options dialog which allows to configure functional and visual simulation parameters, such as MFD parameters, joystick settings, celestial sphere background rendering settings, or "Visual helpers" (see \ref{ssec:menu_options}). Keyboard shortcut: \keystroke{F6}.
 \item \textbf{map:} Open the Map window for a planetary body, including day/night terminator lines, orbital planes or ground tracks and planetary surface markers (see \ref{ssec:menu_map}). Keyboard shortcut: \Ctrl\keystroke{M}.
 \item \textbf{record:} Open the Record/playback dialog which allows to record a simulation session, or configure the playback parameters during a replay (see \ref{sec:flight_rec}). Keyboard shortcut: \Ctrl\keystroke{F5}.
 \item \textbf{help:} Open the inline Help dialog window (see \ref{ssec:menu_help}). Keyboard shortcut: \Alt\keystroke{F1}.
@@ -267,7 +267,7 @@ The \textit{Map} window shows a planetary surface represented by coastlines and 
 
 \begin{figure}[H]
 	\centering
-	\subfigure{\includegraphics[width=0.3\textwidth]{map_options.png}}
+	\subfigure{\includegraphics[width=0.35\textwidth]{map_options.png}}
 \end{figure}
 
 \begin{itemize}
@@ -280,138 +280,16 @@ The \textit{Map} window shows a planetary surface represented by coastlines and 
 
 \subsection{Options}
 \label{ssec:menu_options}
-In addition to global simulation parameters which must be defined before launching an Orbiter session (see Launchpad dialog, \ref{sec:launchpad}), some aspects of the simulation can be configured during a running simulation from the \textit{Options} dialog, which can be accessed via the \textit{options} button on the main menu (keyboard shortcut: \keystroke{F6}).\\
-\\
-\textbf{Celestial sphere}\\
-The parameters on this page define how the background stars are displayed on the celestial sphere, and allows to optionally display an additional background image, for example the results of all-sky surveys at specific wavelengths.
+In addition to global simulation parameters which must be defined before launching an Orbiter session (see Launchpad dialog, \ref{sec:launchpad}), some aspects of the simulation can be configured during a running simulation from the \textit{Options} dialog, which can be accessed via the \textit{options} button on the main menu (keyboard shortcut: \keystroke{F6}).
 
 \begin{figure}[H]
 	\centering
-	\subfigure{\includegraphics[width=0.5\textwidth]{options_celestial.png}}
+	\subfigure{\includegraphics[width=0.5\textwidth]{options.png}}
 \end{figure}
 
 \noindent
-\infobox{
-\textbf{Apparent magnitude}\\
-The apparent magnitude is a logarithmic scale describing the brightness of a star as seen from Earth. The brightest star (except for the sun), Sirius, has an apparent magnitude of m$_{v}$ = -1.5. The faintest stars visible without instruments are approximately of magnitude m$_{v}$ = 6.
-}
-
-\begin{itemize}
-\item \textbf{Stars: show as pixels} The parameters in this group adjust the number and brightness of background stars displayed on the celestial sphere. Orbiter uses the Hipparcos star catalogue with more than 10$^{5}$ entries.\\
-Using a higher magnitude value for the max. brightness setting will render stars brighter. Using a higher magnitude for the min. brightness setting will increase the number of faint stars rendered. Increasing the min. brightness level will make faint stars look brighter. The magnitude-brightness mapping should be set to "exponential" for most realistic contrast range.
-\item \textbf{Stars: show as image} In addition to rendering background stars as single pixels, Orbiter provides a background image for bright stars from synthetically generated from Hipparcos and Tycho mission data. which can improve the dynamic range of the single-pixel star display. Credit: Starmap 2020, NASA/Goddard Space Flight Center Scientific Visualization Studio. Gaia DR2: ESA/Gaia/DPAC.
-\item \textbf{Background map} An additional global background image can be projected onto the celestial sphere. By default, Orbiter uses a synthetic image of faint stars created from the ESA Gaia mission to provide a Milky Way background. (Credit: Starmap 2020, see above). Alternatively, a number of different all-sky surveys at specific wavelengths from infrared to gamma-ray can be shown for special effects. The brightness slider allows to adjust the intensity of the background map.
-\end{itemize}
-
-\noindent
-\\
-\textbf{Visual helpers}\\
-Orbiter has the ability to show a number of visual cues in the simulation window to provide additional information to the user. The \textit{Visual helpers} pages of the Options dialog control the display of these elements (shortcut: \Ctrl\keystroke{F9}).\\
-\\
-\textbf{Planetarium}
-
-\begin{figure}[H]
-	\centering
-	\subfigure{\includegraphics[width=0.99\textwidth]{planetarium.png}}
-	\caption{Planetarium mode with celestial grids and markers, and surface labels for cities, spaceports and VOR beacons active.}
-\end{figure}
-
-\noindent
-Lost in space? If you lose your bearings in the middle of an interplanetary flight, or need the location of a set of reference stars to determine your orientation, Orbiter offers guidance in the form of an in-flight "planetarium" with grids, constellations and object markers projected onto the celestial sphere. Planetarium mode can be switched on and off with the Planetarium mode box in the \textit{Planetarium} page (shortcut: \keystroke{F9}).
-
-
-\begin{figure}[H]
-	\centering
-	\subfigure{\includegraphics[width=0.5\textwidth]{options_planetarium.png}}
-\end{figure}
-
-\begin{itemize}
-\item \textbf{Celestial grid:} grid lines aligned with Earth's equatorial frame projected to the celestial sphere.
-\item \textbf{Ecliptic grid:} grid lines aligned with the ecliptic frame (aligned with the Earth's orbital plane at the J2000.0 epoch) projected to the celestial sphere.
-\item \textbf{Galactic grid:} grid lines aligned with the galactic frame (reference plane is the central plane of the galactic disc).
-\item \textbf{Target equator:} equatorial plane of the currently active reference body (not necessarily Earth) projected to the celestial sphere.
-\item \textbf{Constellation labels:} prints the names of the constellations (in full or abbreviated) on the celestial sphere.
-\item \textbf{Constellation boundaries:} shows the IAU constellation borders.
-\item \textbf{Constellation patterns:} displays constellation lines on the celestial sphere.
-\item \textbf{Celestial markers:} display a set of configurable markers on the celestial sphere. Options include the common names of prominent stars, Messier objects, the galactic reference axis and the Apollo AGC reference stars with their celestial coordinates.
-\end{itemize}
-
-\noindent
-\textbf{Labels}\\
-This page allows to attach labels to simulation objects and planetary surface features.
-
-\begin{figure}[H]
-	\centering
-	\subfigure{\includegraphics[width=0.5\textwidth]{options_labels.png}}
-\end{figure}
-
-\begin{itemize}
-\item \textbf{Vessel markers:} indicate the location of spacecraft.
-\item \textbf{Celestial bodies:} indicate the position of solar system bodies.
-\item \textbf{Surface bases:} indicate the position of registered bases on planetary surfaces.
-\item \textbf{VOR transmitters:} indicate the position and frequency settings of omnidirectional navigation beacons.
-\item \textbf{Surface features:} configurable display of planetary surface landmarks (e.g. cities on Earth or geological features on other planets).
-\end{itemize}
-
-\noindent
-\textbf{Forces}\\
-Orbiter can provide a graphical display of the force vectors currently acting on a spacecraft. This option is particularly useful for educational applications, to provide direct feedback of the effects of environmental parameters (gravity, atmosphere) and user input (e.g. change of lift as a function of changing angle of attack).\\
-The display can be activated and configured in the Body forces page of the Options dialog.\\
-
-\begin{figure}[H]
-	\centering
-	\subfigure{\includegraphics[width=0.5\textwidth]{options_bodyforces.png}}
-\end{figure}
-
-\noindent
-Orbiter can show a number of separate linear force components and the resulting total force:
-
-%\begin{table}[H]
-	%\centering
-	\begin{longtable}{ |p{0.1\textwidth}|p{0.1\textwidth}|p{0.55\textwidth}| }
-	\hline\rule{0pt}{2ex}
-	Weight & G (yellow) & Force due to gravitational potential\\
-	\hline\rule{0pt}{2ex}
-	Thrust & T (blue) & Force generated by the vessel's propulsion system\\
-	\hline\rule{0pt}{2ex}
-	Lift & L (green) & Lift force generated by lifting airfoils in the atmosphere\\
-	\hline\rule{0pt}{2ex}
-	Drag & D (red) & Drag force generated by friction in the atmosphere\\
-	\hline\rule{0pt}{2ex}
-	Total & F (white) & Total force acting on the vessel\\
-	\hline
-	\end{longtable}
-%\end{table}
-
-\noindent
-Note that the total force shown may not be equal to the sum of the four component forces, because additional forces may be acting on the vessel (e.g. custom user-defined forces).\\
-Linear forces are shown graphically as vector arrows originating at the vessels centre of gravity. The vector lengths are proportional to the magnitude of the force (in linear or logarithmic scale, depending on the Scale setting). The lengths can be rescaled with the slider. In addition, the magnitudes are also shown numerically [N] with the vectors. The opacity of the vector display can be adjusted with a second slider.\\
-In addition to the linear forces, Orbiter can also display the acting total torque
-
-\[ M = \sum_{i} M_{i}= \sum_{i} F_{i} \times r_{i} \]
-
-\noindent
-The torque vector is shown with respect to the centre of gravity of the vessel. The numerical value [Nm] is also displayed.\\
-Note that for forces that are not generated at the vessel's centre of gravity (e.g. the lift vector), the total force displayed is split into a linear component originating at the centre of gravity and a corresponding torque.
-
-\begin{figure}[H]
-	\centering
-	\subfigure{\includegraphics[width=0.75\textwidth]{atlantis_vectors_sep.png}}
-	\caption{Dynamics in action: forces and torques on the components of the Shuttle launch stack during booster separation.}
-\end{figure}
-
-\noindent
-\textbf{Object axes}\\
-The orientation of the coordinate axes for the local frames of vessels, celestial bodies and spaceports can be displayed with the Axes tab of the visual helpers dialog. Coordinate frames can be useful for add-on designers who want to make sure that the orientation of their spacecraft design within the simulator is correct.
-
-\begin{figure}[H]
-	\centering
-	\subfigure{\includegraphics[width=0.5\textwidth]{options_objectaxis.png}}
-\end{figure}
-
-\noindent
-Unless the Show negative axes box is ticked, only the positive x, y and z axes are displayed.\\
-The length and opacity of the axis vectors can be adjusted with the provided sliders.
+The "Visual helpers" page can be accessed directly via keys \Ctrl\keystroke{F9}.\\
+The parameters in these option pages are explained in the Launchpad Options subsection (see \ref{ssec:options_tab}).
 
 
 \subsection{Inline help}
