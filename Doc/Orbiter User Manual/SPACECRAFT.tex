@@ -154,8 +154,8 @@ The Reaction Control System (RCS) consists of set of 16 small thrusters arranged
 \end{figure}
 
 \noindent
-The RCS mode is switched between rotational and linear modes with the RCS MODE selector dial (keyboard shortcut \keystroke{/}$_{Num}$). The keyboard and joystick commands for engaging RCS along specific axes can be found in \ref{sec:controls}. RCS thrusters are engaged either at full power, or at 10\% of full power for fine adjustments, using keyboard commands in combination with \Ctrl.\\
-The DG supports the full range of default RCS attitude programs (prograde/retrograde, normal/antinormal to the orbital plane, level with respect to local horizon, and kill rotation). See \ref{ssec:glass_cockpit} for an overview of the attitude programs and how to engage them.
+The RCS mode is switched between rotational and linear modes with the RCS MODE selector dial (keyboard shortcut \keystroke{/}$_{Num}$). The keyboard and joystick commands for engaging RCS along specific axes can be found in section \ref{sec:controls}. RCS thrusters are engaged either at full power, or at 10\% of full power for fine adjustments, using keyboard commands in combination with \Ctrl.\\
+The DG supports the full range of default RCS attitude programs (prograde/retrograde, normal/antinormal to the orbital plane, level with respect to local horizon, and kill rotation). See section \ref{ssec:glass_cockpit} for an overview of the attitude programs and how to engage them.
 
 \paragraph{Propellant management}
 The propellant management display is located on the lower left of the front panel (PROPELLANT STATUS). It shows the fill level fuel mass of the installed propellant tanks (main, RCS, and scram for the DG-S). It also shows the $\Delta$v equivalent of the remaining fuel resources, and the current mass flow rate from each tank.
@@ -167,10 +167,10 @@ The propellant management display is located on the lower left of the front pane
 \end{figure}
 
 \subsubsection{Avionics}
-Avionics displays and controls are located on the DG main panel. The primary avionics interfaces are the two multifunctional displays (MFDs). For a description of the available MFD modes and operation see \ref{sec:mfd}. In addition to the MFDs, the DG provides some secondary avionics instruments.
+Avionics displays and controls are located on the DG main panel. The primary avionics interfaces are the two multifunctional displays (MFDs). For a description of the available MFD modes and operation see section \ref{sec:mfd}. In addition to the MFDs, the DG provides some secondary avionics instruments.
 
 \paragraph{Head-up display}
-The DG's head-up display (HUD) consists of a glass pane in the pilot's forward line of sight, suspended from the overhead panel, and a projector located above the pilot position. The HUD supports Orbiter's standard display modes (\textit{Surface}, \textit{Orbit} and \textit{Docking} - see \ref{ssec:hud_modes}). The mode can be selected with the three HUD MODE buttons in the centre of the front panel (keyboard shortcut: h). When not required, the HUD can be retracted with the HUD RET/EXT switch in the overhead panel (keyboard shortcut: \Ctrl\keystroke{H}). This also turns off the projector.
+The DG's head-up display (HUD) consists of a glass pane in the pilot's forward line of sight, suspended from the overhead panel, and a projector located above the pilot position. The HUD supports Orbiter's standard display modes (\textit{Surface}, \textit{Orbit} and \textit{Docking} - see section \ref{ssec:hud_modes}). The mode can be selected with the three HUD MODE buttons in the centre of the front panel (keyboard shortcut: h). When not required, the HUD can be retracted with the HUD RET/EXT switch in the overhead panel (keyboard shortcut: \Ctrl\keystroke{H}). This also turns off the projector.
 
 \begin{figure}[H]
   \centering
@@ -212,7 +212,7 @@ The \textit{horizontal situation indicator} (HSI) is located in the bottom centr
 
 \noindent
 When a transmitter signal is received, the orange \textit{source bearing} bug indicates the bearing to the transmitter source.\\
-The green \textit{course} and \textit{deviation} indicator needle can be used to display a target heading or the ship's position relative to a VOR radial. It is used in conjunction with the DG's atmospheric autopilot (AAP) - see \ref{para:dg_aap}.\\
+The green \textit{course} and \textit{deviation} indicator needle can be used to display a target heading or the ship's position relative to a VOR radial. It is used in conjunction with the DG's atmospheric autopilot (AAP) - see section \ref{para:dg_aap}.\\
 When the AAP \textit{heading} mode is activated, the course indicator represents the target heading. It can be rotated with the rocker switch in the AAP controls below to the HDG/CRS readout. The autopilot will try to keep the vessel's heading aligned with this target heading, i.e. will keep the course needle pointing to 12 o'clock. This mode is independent of a VOR transmitter and also works if no VOR signal is received.\\
 When the AAP heading mode is disengaged, the course indicator can still be rotated with the AAP rocker switch, but it will not activate a heading response. If a VOR signal is received, the indicator represents a radial to or from the VOR signal source, and the deviation indicator shows the ship's position relative to the radial. As the ship approaches the radial, the deviation indicator moves towards the centre of the display. If the AAP heading mode is activated on intercept, the vessel will turn into the selected radial and keep the deviation indicator centered.\\
 If NAV1 is tuned to an ILS transmitter, the course indicator is fixed to the runway approach path direction and cannot be rotated with the AAP heading target. The deviation marker shows the direction of the localiser plane (the vertical plane aligned with the runway centreline) relative to the ship's position. In addition, the glideslope indicator becomes active and shows the glideslope plane relative to the ship's vertical position. The glideslope needle below the centre position indicates too high an approach, the needle above centre position indicates a low approach.
@@ -327,7 +327,7 @@ v = vessel.get_interface(<name>)
 \end{itemize}
 
 \paragraph{Atmospheric autopilot (script version)}
-The DG provides a vessel-specific script API extension that implements the atmospheric autopilot discussed in \ref{para:dg_aap}). This script extension is loaded automatically when opening a Terminal MFD in the DG, but must be loaded explicitly in the Console window and connected with the correct vessel:
+The DG provides a vessel-specific script API extension that implements the atmospheric autopilot discussed in section \ref{para:dg_aap}). This script extension is loaded automatically when opening a Terminal MFD in the DG, but must be loaded explicitly in the Console window and connected with the correct vessel:
 
 \begin{lstlisting}[language=OSFS]
 run('dg/aap')
@@ -434,7 +434,7 @@ In addition to the generic Orbiter vessel control keys, the DG supports the foll
 %\end{table}
 
 \subsubsection{Scenario editor extensions}
-DG and DG-S spacecraft can be created, edited and deleted from the scenario editor plugin (see \ref{ssec:scn_editor}). In addition to the standard vessel editing functions provided by the scenario editor, DG and DG-S type vessels add two additional editor pages that can be accessed from the main \textit{Edit} page:\\
+DG and DG-S spacecraft can be created, edited and deleted from the scenario editor plugin (see section \ref{ssec:scn_editor}). In addition to the standard vessel editing functions provided by the scenario editor, DG and DG-S type vessels add two additional editor pages that can be accessed from the main \textit{Edit} page:\\
 \\
 \textbf{Animations}\\
 This page provides a set of controls to directly configure some of the DG's states and associated animations:
@@ -539,9 +539,9 @@ Cockpit views can be cycled with \keystroke{F8} between generic glass cockpit, 2
 \end{figure}
 
 \paragraph{Main panel}
-The 2-D cockpit view consists of main and overhead panels. They can be switched between with \Ctrl\UArrow and \Ctrl\DArrow. The main panel contains the primary avionics instruments - left and right MFD (see \ref{sec:mfd} for standard MFD modes), ADI ball and controls (see \ref{para:shuttlea_adi}) and speed, altitude and vertical speed readouts.\\
+The 2-D cockpit view consists of main and overhead panels. They can be switched between with \Ctrl\UArrow and \Ctrl\DArrow. The main panel contains the primary avionics instruments - left and right MFD (see section \ref{sec:mfd} for standard MFD modes), ADI ball and controls (see section \ref{para:shuttlea_adi}) and speed, altitude and vertical speed readouts.\\
 The engine block is located in the bottom centre of the panel. Main, hover and auxiliary thrusters can be operated individually, by engaging the throttle controls separately, or in pairs, by clicking and dragging between throttle sliders.\\
-Left of the throttle block is the auxiliary pod control panel which can be used to rotate the pods and has readouts for current orientation (see \ref{para:shuttlea_auxpod}).\\
+Left of the throttle block is the auxiliary pod control panel which can be used to rotate the pods and has readouts for current orientation (see section \ref{para:shuttlea_auxpod}).\\
 Above the throttle block are readouts for tank and engine status, including fuel mass, delta-V estimates, thrust force and acceleration, and fuel flow rates.\\
 At the top centre of the panel are located tape indicators for speed, vertical speed and altitude. At the left are the controls for RCS mode and programs, at the right is the HUD mode selector.
 
@@ -737,7 +737,7 @@ The PB is a very agile single-seat spacecraft. It has a main engine and uses hov
 \end{figure}
 
 \noindent
-Apart from the standard implementation of the PB vessel class, Orbiter also comes with a script version of this spacecraft type (\textit{ScriptPB}). This looks and behaves identical to the original Shuttle PB, but is completely implemented as a Lua script (see \ref{sec:script}) and can therefore easily be modified. This is a good way for newcomers to get into spacecraft design. The code can be found in Config\textbackslash ScriptPB.cfg.\\
+Apart from the standard implementation of the PB vessel class, Orbiter also comes with a script version of this spacecraft type (\textit{ScriptPB}). This looks and behaves identical to the original Shuttle PB, but is completely implemented as a Lua script (see section \ref{sec:script}) and can therefore easily be modified. This is a good way for newcomers to get into spacecraft design. The code can be found in Config\textbackslash ScriptPB.cfg.\\
 \\
 \textbf{Technical specifications:}
 
@@ -1449,7 +1449,7 @@ This is a large fictional space station in orbit around the Moon. It consists of
 \end{figure}
 
 \noindent
-The main problem the station poses to an approaching spacecraft is the rotational alignment in preparation for docking. Docking with a rotating target is only possible along the rotation axis. The station has two docking ports in the central hub, with approach directions along the axis from either side. Before docking, the approaching vessel must synchronise its own rotation around its longitudinal axis with that of the station. This should happen as late as possible (within 10 m separation), because corrections in the lateral position become very difficult once the spacecraft is rotating. For docking procedures, see Chapter \ref{ssec:basic_docking}.\\
+The main problem the station poses to an approaching spacecraft is the rotational alignment in preparation for docking. Docking with a rotating target is only possible along the rotation axis. The station has two docking ports in the central hub, with approach directions along the axis from either side. Before docking, the approaching vessel must synchronise its own rotation around its longitudinal axis with that of the station. This should happen as late as possible (within 10 m separation), because corrections in the lateral position become very difficult once the spacecraft is rotating. For docking procedures, see section \ref{ssec:basic_docking}.\\
 
 \alertbox{Currently, Orbiter's docking alignment instrumentation works with rotating docking targets only if the ship's docking port is aligned with its longitudinal axis of rotation. This is the case for Shuttle-A and Dragonfly, but not for the Delta-glider. And should you somehow get the Space Shuttle into a lunar orbit, don't even try to dock at the Wheel.}
 
@@ -1480,7 +1480,7 @@ The Hubble Space Telescope (HST) was launched into low Earth orbit by Space Shut
 
 \noindent
 Hubble mainly operates in the visible frequency range (from near-infrared to ultraviolet). As a space-based telescope, it avoids image degradation from atmospheric effects, and during its long service life it provided images of unprecedented quality that significantly contributed to advance our understanding of the universe. Its observations range from solar system objects and events, such as the impact of comet Shoemaker-Levy on Jupiter, to deep-field images of the faintest and most distant objects yet observed in the visible band. Notable discoveries to which Hubble data contributed include the accelerated expansion of the universe, the prevalence of supermassive black holes in the centres of galaxies, detection of exosolar planets and evidence of star formation.\\
-Orbiter provides several Space Shuttle\textbackslash HST missions for both deployment and recapture operations. For Shuttle payload manipulation, see \ref{ssec:atlantis}.\\
+Orbiter provides several Space Shuttle\textbackslash HST missions for both deployment and recapture operations. For Shuttle payload manipulation, see section \ref{ssec:atlantis}.\\
 \\
 \textbf{Vessel-specific key controls:}
 

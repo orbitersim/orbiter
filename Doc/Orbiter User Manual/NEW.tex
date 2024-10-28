@@ -83,8 +83,8 @@ $\blacktriangleright$ Launchpad "Parameters" and "Visual effects" tabs merged in
 
 
 \subsection{Bug fixes}
-$\blacktriangleright$ VESSEL::GetStatus and VESSEL::GetStatusEx now respect the modified meaning of the arot and vrot vessel parameters for landed vessels (arot: rotation angles relative to planet frame, vrot.x: vessel CoG altitude above elevated ground). Should fix this problem.\\
-$\blacktriangleright$ Log error message DDERR\_BLTFASTCANTCLIP resolved. Should fix this problem.\\
+$\blacktriangleright$ VESSEL::GetStatus and VESSEL::GetStatusEx now respect the modified meaning of the arot and vrot vessel parameters for landed vessels (arot: rotation angles relative to planet frame, vrot.x: vessel CoG altitude above elevated ground).\\
+$\blacktriangleright$ Log error message DDERR\_BLTFASTCANTCLIP resolved.\\
 $\blacktriangleright$ Atlantis:\\
 $\circ$ AscentAP: turn off RCS thrusters on AP disengage [issue \#1238]\\
 $\circ$ modified mass and thrust parameters [issue \#1300]\\
@@ -122,7 +122,7 @@ $\circ$ oapiWriteLogV: all output now prepends timestamp (issue \#1339)\\
 $\circ$ new function oapiWriteLogError() for consistent error output to log file\\
 $\circ$ General cleanup of force vector and object axis rendering code in inline client.\\
 $\blacktriangleright$ D3D9Client: apply tgt\_res to the rescale and offset values of elevation mod tiles.\\
-$\blacktriangleright$ visual artefact with rendered horizon haze on Mars (lower edge visible from hellas plantita). Should fix this problem.\\
+$\blacktriangleright$ visual artefact with rendered horizon haze on Mars (lower edge visible from hellas plantita).\\
 $\blacktriangleright$ time acceleration keyboard commands (R, T) are now copied to the Time acceleration dialog if open.\\
 $\blacktriangleright$ SetAttitudeRotLevel: would have no effect in some circumstances [issue \#1271]\\
 $\blacktriangleright$ Scenario editor: editing state vectors for landed vessel caused spurious orientation and angular velocity\\

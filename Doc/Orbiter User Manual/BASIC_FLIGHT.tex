@@ -58,7 +58,7 @@ A common task is the raising or lowering of apoapsis (highest point of the orbit
 \end{itemize}
 
 \noindent
-The \textit{Orbit} MFD mode (see \ref{ssec:mfd_orbit}) can be used to monitor the time to apoapsis and periapsis.  Prograde and retrograde orbit directions can be visualised on the HUD in Orbit mode (see \ref{ssec:hud_modes}). The vessel can be automatically oriented in prograde or retrograde attitude in preparation for the orbit change burn by using the corresponding RCS attitude modes (see \ref{ssec:glass_cockpit}).\\
+The \textit{Orbit} MFD mode (see \ref{ssec:mfd_orbit}) can be used to monitor the time to apoapsis and periapsis.  Prograde and retrograde orbit directions can be visualised on the HUD in Orbit mode (see section \ref{ssec:hud_modes}). The vessel can be automatically oriented in prograde or retrograde attitude in preparation for the orbit change burn by using the corresponding RCS attitude modes (see section \ref{ssec:glass_cockpit}).\\
 \\
 \textbf{Task: Increasing/decreasing the radius of a circular orbit}\\
 The manoeuvres in the previous task can be combined to change the radius of a circular orbit. This is achieved by two separate engine burns: the first enters an intermediate elliptic orbit whose apoapsis (or periapsis) distance coincides with the desired orbit radius. The second burn re-circularises the orbit.\\
@@ -99,8 +99,8 @@ Note that the described approach is simple to perform, but may neither be fastes
 \subsection{Rotating the orbital plane}
 \label{ssec:basic_plane}
 When trying to rendezvous with another object in orbit, the required orbit changes can be split into two separate phases: a plane change that rotates the plane of the current orbit into that of the target, and further in-plane operations that only require the application of thrust in the plane of the orbit (see previous chapter). Once the orbit planes have been aligned, the remaining operations become essentially two-dimensional, which makes them significantly easier to plan and execute (but possibly less efficient in time and fuel requirements).\\
-In terms of the orbital elements, aligning the plane of the orbit with the target plane means to match the two elements which define the orientation of the orbit in space (see \ref{ssec:sol_orb_mech}): inclination (\textit{i}) and longitude of the ascending node ($\Omega$).\\
-It should be noted that substantial plane changes can require large $\Delta v$ budgets. It is therefore important to minimise the need for plane changes where possible, for example by carefully planning launch and ascent (launch window and azimuth, see \ref{ssec:basic_launch}).\\
+In terms of the orbital elements, aligning the plane of the orbit with the target plane means to match the two elements which define the orientation of the orbit in space (see section \ref{ssec:sol_orb_mech}): inclination (\textit{i}) and longitude of the ascending node ($\Omega$).\\
+It should be noted that substantial plane changes can require large $\Delta v$ budgets. It is therefore important to minimise the need for plane changes where possible, for example by carefully planning launch and ascent (launch window and azimuth, see section \ref{ssec:basic_launch}).\\
 The rotation of the orbital plane requires the application of out-of-plane thrust, in a direction normal to the current plane. The engine burn takes place in one of the nodes (the points where the orbit crosses the intersection of the current and target planes). This rotates the orbital plane around an axis defined by the current radius vector (which at this point coincides with the line of nodes).
 
 \begin{figure}[H]
@@ -137,7 +137,7 @@ for radius vector $\textbf{r}_{s}$ and velocity vector $\textbf{v}_{s}$, then th
 \textbf{In practice:}
 
 \begin{itemize}
-\item The \textit{Align orbital plane} MFD mode (see \ref{ssec:mfd_align}) is designed to aid in plane alignment. Make sure the display is in Orbit mode (\Shift\keystroke{M}) and select the target object (\Shift\keystroke{T}).
+\item The \textit{Align orbital plane} MFD mode (see section \ref{ssec:mfd_align}) is designed to aid in plane alignment. Make sure the display is in Orbit mode (\Shift\keystroke{M}) and select the target object (\Shift\keystroke{T}).
 \item The HUD should be in \textit{Orbit} mode. As the ship approaches a node (intersection with the target plane), use the appropriate RCS attitude mode to rotate to a normal (\keystroke{;}) at DN or anti-normal (\keystroke{'}) orientation to the orbital plane at AN. Use the HUD Orbit inclination ladder to monitor progress.
 \item As soon as the time-to-burn (TtB) counter reaches 0 for the targeted node and the burn indicator ([BURN]) is shown, engage full main engines. This will happen when the time to node (TtN) counter reaches half the estimated burn time (BT).
 \item Make sure that the relative inclination (RInc) decreases, i.e. that the rate (R) is negative, otherwise you may be pointing in the wrong direction.
@@ -159,7 +159,7 @@ for radius vector $\textbf{r}_{s}$ and velocity vector $\textbf{v}_{s}$, then th
 \subsection{Synchronising orbits}
 \label{ssec:basic_sync}
 The next step in a rendezvous manoeuvre after aligning the orbital planes (see previous chapter) is to modify the orbit in-plane such that it intercepts the target's orbit and both ship and target arrive simultaneously at the interception point. Use the \textit{Synchronise Orbit} MFD mode to calculate the appropriate orbit changes.\\
-For simplicity we first assume that the ship and target are in a circular orbit with the same orbital radius (for modifying orbital radii see \ref{ssec:basic_changeorbit}), i.e. both objects have the same orbital elements except for the mean anomaly. The method for intercepting the target is then as follows:
+For simplicity we first assume that the ship and target are in a circular orbit with the same orbital radius (for modifying orbital radii see section \ref{ssec:basic_changeorbit}), i.e. both objects have the same orbital elements except for the mean anomaly. The method for intercepting the target is then as follows:
 
 \begin{itemize}
 \item Switch the reference mode of the Synchronise Orbit MFD to \textit{Manual} and rotate the axis to your current position.
@@ -261,7 +261,7 @@ A spaceflight from Earth to the Moon or a planet is generally performed in sever
 The Moon and the planets orbit in planes close to the ecliptic (the plane of Earth's orbit). It therefore simplifies mission planning if the spacecraft's initial Earth orbit is also aligned with the plane of the ecliptic. This avoids the need for out-of-plane manoeuvres.\\
 \\
 \textbf{Hohmann transfer}\\
-A common type of interplanetary transfer is the Hohmann orbit, an elliptic orbit with periapsis at the initial (circular) Earth orbit, and apoapsis at the target planet's distance from Earth. This requires a prograde orbit ejection burn at the appropriate time, similar to the orbit change manoeuvre described in \ref{ssec:basic_changeorbit}. The launch window is restricted by the requirement that the spacecraft and target body arrive at the transfer orbit's apoapsis location at the same time. Within that window, the transfer orbit ejection burn takes place at the spacecraft's appropriate position in its Earth orbit, to make use of its orbital velocity. In Orbiter, the Transfer MFD mode (see \ref{ssec:mfd_transfer}) assists with simple transfer planning. For more complex missions, the TransX MFD (see \ref{ssec:mfd_transx}) is also included in Orbiter.
+A common type of interplanetary transfer is the Hohmann orbit, an elliptic orbit with periapsis at the initial (circular) Earth orbit, and apoapsis at the target planet's distance from Earth. This requires a prograde orbit ejection burn at the appropriate time, similar to the orbit change manoeuvre described in section \ref{ssec:basic_changeorbit}. The launch window is restricted by the requirement that the spacecraft and target body arrive at the transfer orbit's apoapsis location at the same time. Within that window, the transfer orbit ejection burn takes place at the spacecraft's appropriate position in its Earth orbit, to make use of its orbital velocity. In Orbiter, the Transfer MFD mode (see section \ref{ssec:mfd_transfer}) assists with simple transfer planning. For more complex missions, the TransX MFD (see section \ref{ssec:mfd_transx}) is also included in Orbiter.
 
 
 \begin{figure}[H]
@@ -328,7 +328,7 @@ The visual approach aids at SLF are designed for Shuttle landings. They include 
 
 \noindent
 \textbf{Instrument landing system (ILS)}\\
-Runways equipped with ILS transmit a radio signal that provides alignment data to an approaching spacecraft. This information can be presented to the pilot in the HSI MFD mode (see \ref{ssec:mfd_hsi}) or in dedicated instruments such as the Delta-glider's VOR indicator instrument. To get ILS data, tune one of the NAV receivers to the desired ILS frequency and switch the HSI feed to that receiver. ILS frequencies can be found in the surface base info pages (\Ctrl\keystroke{I}).
+Runways equipped with ILS transmit a radio signal that provides alignment data to an approaching spacecraft. This information can be presented to the pilot in the HSI MFD mode (see section \ref{ssec:mfd_hsi}) or in dedicated instruments such as the Delta-glider's VOR indicator instrument. To get ILS data, tune one of the NAV receivers to the desired ILS frequency and switch the HSI feed to that receiver. ILS frequencies can be found in the surface base info pages (\Ctrl\keystroke{I}).
 
 \begin{figure}[H]
 	\centering

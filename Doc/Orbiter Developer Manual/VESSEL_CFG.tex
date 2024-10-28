@@ -123,8 +123,7 @@ where each <\textit{Dock-spec i}> has the format
 <x$_{i}$> <y$_{i}$> <z$_{i}$> is the reference position of the docking port in the vessel's local coordinates. <dx$_{i}$> <dy$_{i}$> <dz$_{i}$> is the direction in which a ship approaches the docking port. <rx$_{i}$> <ry$_{i}$> <rz$_{i}$> is a reference direction perpendicular to the approach direction used for aligning an approaching ship's rotation along its longitudinal axis. <\textit{ids-channel}$_{i}$> is an optional parameter which allows to define the channel ($\geq$ 0) for an IDS transmitter that allows instrument-aided docking approach. IDS frequencies start at 108.0 MHz (channel 0) and increase by 0.05 MHz per channel.\\
 The IDS setting can be overridden for individual vessels by using the IDS tag in the scenario file. Defining the IDS channel in the configuration file is only useful for objects with a single instance, e.g. space stations.
 
-%TODO handle API doc reference or explain here?
-\item The attachment list is similar to the docklist: It allows to specify points at which vessels can be connected to each other. Unlike peer-to-peer docking ports, attachment points define parent-child hierarchies, and each attachment point is either a parent or a child port. For more details see the Vessel attachment management section in the API reference manual.
+\item The attachment list is similar to the docklist: It allows to specify points at which vessels can be connected to each other. Unlike peer-to-peer docking ports, attachment points define parent-child hierarchies, and each attachment point is either a parent or a child port. For more details see the Attachment management section (\ref{sssec:attach_mgmt}).
 
 \begin{lstlisting}[language=OSFS]
 BEGIN_ATTACHMENT

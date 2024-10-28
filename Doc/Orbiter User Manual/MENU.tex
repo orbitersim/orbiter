@@ -17,16 +17,16 @@ The behaviour of the menu and info panels can be defined via the menu configurat
 \textbf{Menu options:}
 
 \begin{itemize}
-\item \textbf{ship:} Open the Vessel selection dialog which allows to switch input focus to a different spacecraft in the simulation (see \ref{ssec:menu_vessel_sel}). Keyboard shortcut: \keystroke{F3}.
-\item \textbf{camera:} Open the Camera dialog which allows to configure the observer camera, including camera target selection, positioning, field of view and track mode (see \ref{ssec:menu_camera}). Keyboard shortcut: \Ctrl\keystroke{F1}.
-\item \textbf{speed:} Open the Simulation speed dialog, which provides access to time acceleration settings, and allows pausing/resuming the simulation (see \ref{ssec:menu_time}). Keyboard shortcut: \Ctrl\keystroke{F2}.
+\item \textbf{ship:} Open the Vessel selection dialog which allows to switch input focus to a different spacecraft in the simulation (see section \ref{ssec:menu_vessel_sel}). Keyboard shortcut: \keystroke{F3}.
+\item \textbf{camera:} Open the Camera dialog which allows to configure the observer camera, including camera target selection, positioning, field of view and track mode (see section \ref{ssec:menu_camera}). Keyboard shortcut: \Ctrl\keystroke{F1}.
+\item \textbf{speed:} Open the Simulation speed dialog, which provides access to time acceleration settings, and allows pausing/resuming the simulation (see section \ref{ssec:menu_time}). Keyboard shortcut: \Ctrl\keystroke{F2}.
 \item \textbf{pause:} pause/resume the simulation. Keyboard shortcut: \Ctrl\keystroke{P}.
-\item \textbf{info:} Open the Object info dialog which displays live information for all simulation objects (see \ref{ssec:menu_info}). Keyboard shortcut: \Ctrl\keystroke{I}.
-\item \textbf{function:} Open the Custom function dialog which lists all accessible functions provided by active external modules, if available (see \ref{ssec:menu_cust_func}). Keyboard shortcut: \Ctrl\keystroke{F4}.
-\item \textbf{options:} Open the Options dialog which allows to configure functional and visual simulation parameters, such as MFD parameters, joystick settings, celestial sphere background rendering settings, or "Visual helpers" (see \ref{ssec:menu_options}). Keyboard shortcut: \keystroke{F6}.
-\item \textbf{map:} Open the Map window for a planetary body, including day/night terminator lines, orbital planes or ground tracks and planetary surface markers (see \ref{ssec:menu_map}). Keyboard shortcut: \Ctrl\keystroke{M}.
-\item \textbf{record:} Open the Record/playback dialog which allows to record a simulation session, or configure the playback parameters during a replay (see \ref{sec:flight_rec}). Keyboard shortcut: \Ctrl\keystroke{F5}.
-\item \textbf{help:} Open the inline Help dialog window (see \ref{ssec:menu_help}). Keyboard shortcut: \Alt\keystroke{F1}.
+\item \textbf{info:} Open the Object info dialog which displays live information for all simulation objects (see section \ref{ssec:menu_info}). Keyboard shortcut: \Ctrl\keystroke{I}.
+\item \textbf{function:} Open the Custom function dialog which lists all accessible functions provided by active external modules, if available (see section \ref{ssec:menu_cust_func}). Keyboard shortcut: \Ctrl\keystroke{F4}.
+\item \textbf{options:} Open the Options dialog which allows to configure functional and visual simulation parameters, such as MFD parameters, joystick settings, celestial sphere background rendering settings, or "Visual helpers" (see section \ref{ssec:menu_options}). Keyboard shortcut: \keystroke{F6}.
+\item \textbf{map:} Open the Map window for a planetary body, including day/night terminator lines, orbital planes or ground tracks and planetary surface markers (see section \ref{ssec:menu_map}). Keyboard shortcut: \Ctrl\keystroke{M}.
+\item \textbf{record:} Open the Record/playback dialog which allows to record a simulation session, or configure the playback parameters during a replay (see section \ref{sec:flight_rec}). Keyboard shortcut: \Ctrl\keystroke{F5}.
+\item \textbf{help:} Open the inline Help dialog window (see section \ref{ssec:menu_help}). Keyboard shortcut: \Alt\keystroke{F1}.
 \item \textbf{save:} Saves the current simulation state to the Quicksave scenario folder. Keyboard shortcut: \Ctrl\keystroke{S}.
 \item \textbf{exit:} Quit the simulation session and return to the Launchpad dialog. Keyboard shortcuts: \Ctrl\keystroke{Q} or \Alt\keystroke{F4}.
 \end{itemize}
@@ -37,7 +37,7 @@ The behaviour of the menu and info panels can be defined via the menu configurat
 \begin{itemize}
 \item The panel in the top left corner of the simulation window contains the name of the camera target (Tgt), the camera mode (Cam) and the field of view angle (FoV).
 \item The panel in the top right corner contains the date in Ephemeris Time (ET) and in Modified Julian Day (MJD) format, the simulation elapsed time (Sim) in seconds, as well as indicators for pause, time acceleration and record/playback if applicable.
-\item Note that Orbiter provides a date conversion utility (date.exe) in the \textit{Utils} subdirectory. The \textit{Scenario Editor} (see \ref{ssec:scn_editor}) allows to manipulate the date of a running simulation.
+\item Note that Orbiter provides a date conversion utility (date.exe) in the \textit{Utils} subdirectory. The \textit{Scenario Editor} (see section \ref{ssec:scn_editor}) allows to manipulate the date of a running simulation.
 \item Optionally, two more info panels can be displayed by user selection from the menu configuration dialog, including a frame rate display, a render statistics display showing the graphics engine load, or a viewport info display.
 \end{itemize}
 
@@ -86,7 +86,7 @@ In ground-based views, the camera can be tilted (shortcuts \DArrow\UArrow\RArrow
 The Sensitivity slider can be used to adjust the speed of movement.\\
 \\
 \textbf{Target tab:}\\
-This tab provides a list of potential camera targets (vessels, celestial bodies, spaceports). Click on an object in the list and Apply to set a new camera target. Note that setting a new vessel target does not automatically switch the input focus. To do that, use the \textit{Vessel selection} dialog (see \ref{ssec:menu_vessel_sel}). You can switch the camera back to the vessel you are controlling by pressing the Focus cockpit or Focus extern buttons (shortcut \keystroke{F1}).\\
+This tab provides a list of potential camera targets (vessels, celestial bodies, spaceports). Click on an object in the list and Apply to set a new camera target. Note that setting a new vessel target does not automatically switch the input focus. To do that, use the \textit{Vessel selection} dialog (see section \ref{ssec:menu_vessel_sel}). You can switch the camera back to the vessel you are controlling by pressing the Focus cockpit or Focus extern buttons (shortcut \keystroke{F1}).\\
 
 \begin{figure}[H]
 	\centering
@@ -177,7 +177,7 @@ The dialog also provides a button for pausing/resuming the simulation (shortcut:
 \label{ssec:menu_info}
 The \textit{Object info} window displays data about spacecraft, celestial bodies and spaceports. It can be opened with the \textit{info} button on the main menu (keyboard shortcut \Ctrl\keystroke{I}).\\
 After opening, the window shows data for the focus vessel currently controlled by the user. Different objects can be selected from the drop-down lists at the top of the window. The information presented depends on the object type. Data are grouped into categories. Categories can be expanded or collapsed individually, or collectively with the controls at the bottom of the window.\\
-The Map button opens the \textit{Map} window (see \ref{ssec:menu_map}) automatically focussed on the selected target.\\
+The Map button opens the \textit{Map} window (see section \ref{ssec:menu_map}) automatically focussed on the selected target.\\
 \\
 \textbf{Vessel info}\\
 For vessel objects, the info panel shows information categories
@@ -257,7 +257,7 @@ The \textit{Map} window shows a planetary surface represented by coastlines and 
 \item \textbf{Body:} Change the map to a different planetary body. The list is hierarchical. It lists the current body, its children and parent. To select a sibling body (e.g. go from one planet to another) you first have to pick their parent (e.g. the sun).
 \item \textbf{Find:} Select an object by type and name. Typing the first few characters opens a drop-down list to pick from.
 \item \textbf{Auto-center selection:} Keep the map centred on the currently selected object.
-\item \textbf{Info:} Open the Object info window for the currently selected object (see \ref{ssec:menu_info}).
+\item \textbf{Info:} Open the Object info window for the currently selected object (see section \ref{ssec:menu_info}).
 \item \textbf{Options:} Open the map configuration dialog.
 \end{itemize}
 
@@ -280,7 +280,7 @@ The \textit{Map} window shows a planetary surface represented by coastlines and 
 
 \subsection{Options}
 \label{ssec:menu_options}
-In addition to global simulation parameters which must be defined before launching an Orbiter session (see Launchpad dialog, \ref{sec:launchpad}), some aspects of the simulation can be configured during a running simulation from the \textit{Options} dialog, which can be accessed via the \textit{options} button on the main menu (keyboard shortcut: \keystroke{F6}).
+In addition to global simulation parameters which must be defined before launching an Orbiter session (see Launchpad dialog, section \ref{sec:launchpad}), some aspects of the simulation can be configured during a running simulation from the \textit{Options} dialog, which can be accessed via the \textit{options} button on the main menu (keyboard shortcut: \keystroke{F6}).
 
 \begin{figure}[H]
 	\centering
@@ -289,7 +289,7 @@ In addition to global simulation parameters which must be defined before launchi
 
 \noindent
 The "Visual helpers" page can be accessed directly via keys \Ctrl\keystroke{F9}.\\
-The parameters in these option pages are explained in the Launchpad Options subsection (see \ref{ssec:options_tab}).
+The parameters in these option pages are explained in the Launchpad Options subsection (see section \ref{ssec:options_tab}).
 
 
 \subsection{Inline help}
@@ -328,8 +328,8 @@ Plug-in modules (either included in the basic orbiter distribution or downloadab
 
 \noindent
 Clicking on an entry shows a short description of the plug-in below the list. Double-clicking or the OK button opens the corresponding dialog.\\
-A module must be \textit{activated} before it will be shown in the Custom functions dialog. See \ref{ssec:launchpad_modules} on how to activate modules. Not all active modules may create an entry in the list. Some don't require user interaction and take effect as soon as they are activated.\\
-See \ref{sec:extra} for a description of some of the plug-in modules included in the Orbiter installation.
+A module must be \textit{activated} before it will be shown in the Custom functions dialog. See section \ref{ssec:launchpad_modules} on how to activate modules. Not all active modules may create an entry in the list. Some don't require user interaction and take effect as soon as they are activated.\\
+See section \ref{sec:extra} for a description of some of the plug-in modules included in the Orbiter installation.
 
 
 \end{document}

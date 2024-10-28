@@ -3,10 +3,10 @@
 
 \section{Extra functionality}
 \label{sec:extra}
-The standard Orbiter installation comes with a set of optional plug-in modules which can be used to enhance the core functionality of the simulator. To enable these additional functions, the appropriate modules must be loaded in the \textit{Modules} tab of the Orbiter Launchpad dialog (see \ref{ssec:launchpad_modules} on how to activate plug-in modules).\\
+The standard Orbiter installation comes with a set of optional plug-in modules which can be used to enhance the core functionality of the simulator. To enable these additional functions, the appropriate modules must be loaded in the \textit{Modules} tab of the Orbiter Launchpad dialog (see section \ref{ssec:launchpad_modules} on how to activate plug-in modules).\\
 Many more plug-ins are available from 3$^{rd}$ party add-on developers. Check out the Orbiter repositories on the web to find more.\\
 You should only activate modules you want to use during your simulation session, because many plug-ins may consume CPU cycles even if they are running in the background. Too many active modules can degrade the simulation performance.\\
-When activated, some plug-ins, such as custom MFD modes, take effect automatically whenever the simulation is started. Others are accessible via the \textit{Custom functions} dialog (see \ref{ssec:menu_cust_func}).
+When activated, some plug-ins, such as custom MFD modes, take effect automatically whenever the simulation is started. Others are accessible via the \textit{Custom functions} dialog (see section \ref{ssec:menu_cust_func}).
 
 
 \subsection{Scenario editor}
@@ -20,7 +20,7 @@ Orbiter's \textit{Scenario Editor} can be used to create, configure and delete v
 
 \noindent
 Vessel states can be edited by applying orbital elements, state vectors, surface location, fuel states, docking connections or vessel-specific parameters. The resulting configuration can be saved as a scenario and used to launch a simulation session later.\\
-The editor is provided as a plug-in module that comes with the default Orbiter installation. To make it available in Orbiter, make sure that the ScnEditor module is loaded from the \textit{Modules} tab of the Orbiter Launchpad dialog (see \ref{ssec:launchpad_modules}).\\
+The editor is provided as a plug-in module that comes with the default Orbiter installation. To make it available in Orbiter, make sure that the ScnEditor module is loaded from the \textit{Modules} tab of the Orbiter Launchpad dialog (see section \ref{ssec:launchpad_modules}).\\
 During the simulation, the scenario editor can be opened from the list in the \textit{Custom Functions} dialog (\Ctrl\keystroke{F4}). This brings up the editor's main page, containing a list of all vessels in the current simulation session. Each entry displays the vessel name, class and reference celestial body. When a vessel is selected from the list, the camera automatically jumps to that vessel if the \textit{Track} box is ticked.\\
 From the main page, the user has the option to
 
@@ -70,7 +70,7 @@ First select the reference body (planet, moon or sun) around which the vessel is
 Next, in the \textit{Frame} box below, select the coordinate frame in which the elements are expressed. The choices are \textit{ecliptic} and \textit{ref. equator}. The ecliptic frame is defined by the plane of Earth's orbit and the direction of the vernal equinox (at epoch J2000.0). This frame is useful for example to place the vessel into an orbit for an interplanetary transfer. The equatorial frame is defined by the equatorial plane of the reference body. It is useful if you want to place the vessel into a specific orbit with respect to the planet surface, e.g. geostationary or polar.\\
 Finally, set the \textit{reference epoch} for the elements. This is the date to which the \textit{mean longitude} parameter of the orbital elements refers (see below). When setting this to \textit{current}, the longitude value refers to the current simulation time. Otherwise, the value refers to the longitude at the specified MJD (Modified Julian Date). The latter option is more useful when editing a scenario without pausing, because a vessel's mean longitude is continuously changing along its orbit.\\
 Now everything is ready to set the elements in the left column. The six elements completely describe a Keplerian (2-body) orbit of an object in the form of a conic section, either periodic (elliptic) or non-periodic (hyperbolic). Under the influence of gravitational perturbations the  elements change over time. In this case, the specified values define the current osculating orbit, i. e. the hypothetical unperturbed orbit that would produce the vessel's state vectors (position and velocity) at the current time.\\
-Below is a short description of the 6 orbital elements. See \ref{ssec:sol_orb_mech}.
+Below is a short description of the 6 orbital elements. See section \ref{ssec:sol_orb_mech}.
 
 \paragraph{Semi-major axis [SMa]}
 For elliptical orbits, this is the largest semi-diameter of the orbital trajectory. For hyperbolic orbits, SMa is negative and its absolute value represents the distance between the origin (the point where the asymptotes of the hyperbola intersect) and the orbit periapsis.
@@ -223,7 +223,7 @@ Before executing the docking operation, it is also possible to select how the tw
 \end{figure}
 
 \noindent
-Docking vessels while landed on a planetary surface can sometimes lead to stability problems, in particular if the resulting configuration buries one of the vessels below the surface. See \ref{sssec:scneditor_surface} for a workaround.
+Docking vessels while landed on a planetary surface can sometimes lead to stability problems, in particular if the resulting configuration buries one of the vessels below the surface. See section \ref{sssec:scneditor_surface} for a workaround.
 
 \subsubsection{Deleting a vessel}
 Clicking the Delete button in the editor's main page deletes the selected vessel. Input focus and camera automatically switch to a different vessel if necessary.\\
@@ -294,7 +294,7 @@ If the multifunctional displays (MFD) integrated in the vessel instrument panels
 
 \noindent
 To open external MFDs, the \textit{ExtMFD} module must be activated in the Orbiter Launchpad dialog. You can then open any number of MFD windows by clicking \textit{External MFD} from the Custom functions dialog (\Ctrl\keystroke{F4}).\\
-External MFDs behave in the same way as built-in MFDs. They can be controlled by pressing the buttons around the left, right and bottom edges. See \ref{sec:mfd} for a description of the available MFD modes and controls.\\
+External MFDs behave in the same way as built-in MFDs. They can be controlled by pressing the buttons around the left, right and bottom edges. See section \ref{sec:mfd} for a description of the available MFD modes and controls.\\
 Unlike built-in MFD displays, the window MFDs can be resized. They are available in external view as well as cockpit view, and they can be configured to either automatically follow the focus vessel, or remain attached to a specific vessel, even if the focus is switched to a different vessel.
 
 
@@ -359,7 +359,7 @@ For each parameter category selected in the list, a graph display is opened belo
 
 \subsection{Lua Console}
 \label{ssec:lua_console}
-The \textit{Lua Console} window is available from the Custom functions list (\Ctrl\keystroke{F4}) if the \textit{LuaConsole} module has been activated. The console provides an interactive script interface which allows script execution (tutorials, autopilots, etc.) and reading/writing of simulation and spacecraft parameters and states. The script interface and Orbiter Lua extensions are described in more detail in \ref{sec:script}.
+The \textit{Lua Console} window is available from the Custom functions list (\Ctrl\keystroke{F4}) if the \textit{LuaConsole} module has been activated. The console provides an interactive script interface which allows script execution (tutorials, autopilots, etc.) and reading/writing of simulation and spacecraft parameters and states. The script interface and Orbiter Lua extensions are described in more detail in section \ref{sec:script}.
 
 \begin{figure}[H]
 	\centering
