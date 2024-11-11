@@ -1,0 +1,59 @@
+\documentclass[Orbiter Developer Manual.tex]{subfiles}
+\begin{document}
+
+\section{Orbiter Source Code}
+
+\subsection{Introduction}
+As Orbiter is open-source, you can contribute to its development!
+Below are instructions on how to download and setup and environment to build Orbiter by yourself.
+
+
+\subsection{Setup}
+Get the Orbiter source repository from GitHub (\url{https://github.com/orbitersim/orbiter})
+
+\begin{lstlisting}
+git clone --recursive git@github.com:orbitersim/orbiter.git
+\end{lstlisting}
+
+\noindent
+or
+
+\begin{lstlisting}
+git clone --recursive https://github.com/orbitersim/orbiter.git
+\end{lstlisting}
+
+\noindent
+To configure and generate the makefiles, you need a recent CMake.\\
+To compile Orbiter from its sources, you need Microsoft Visual Studio. Orbiter has been successfully built with VS Community 2019, but other versions should also work. Note that VS2019 comes with built-in CMake support, so you don't need a separate CMake installation.\\
+Some configuration caveats:
+
+\begin{itemize}
+\item If you are using the Ninja generator (default for the VS built-in CMake), you may also need vspkg to configure the VS toolset.
+\item If you are using the VS2019 generator, you may need to set up Visual Studio to use only a single thread for the build. This is because some of the build tools (especially those for generating the Orbiter documentation) are not threadsafe, and the VS2019 generator doesn't understand the CMake JOB\_POOL directive.
+\end{itemize}
+
+\noindent
+Orbiter is a 32-bit application. Be sure to configure vspkg and CMake accordingly.\\
+If you want to build the documentation, you need a few additional tools:
+
+\begin{itemize}
+\item a filter to convert ODT and DOC sources to PDF, such as LibreOffice.%TODO still?
+\item a LaTeX compiler suite such as MiKTeX.
+\item Doxygen for building the source-level documentation for developers.
+\end{itemize}
+
+\noindent
+By default, the build is configured to create both graphics flavours of the Orbiter executable (although this can be configured with the ORBITER\_GRAPHICS CMake flag):
+
+\begin{itemize}
+\item orbiter.exe is the standalone Orbiter application with built-in DX7 graphics.
+\item orbiter\_ng.exe is a launcher for ./Modules/Server/orbiter.exe which is the graphics server version of Orbiter. It requires an external graphics client plugin to be loaded via the Modules tab of the Orbiter Launchpad dialog. The reference D3D7Client is included with the build with essentially the same functionality as the built-in graphics version. Use 3rd party client implementations to make use of more modern graphics engines.
+\end{itemize}
+
+
+\subsection{Contribute}
+You can contribute to the development of Orbiter, either by fixing a bug or by adding a new feature. You'll need to create your own fork of Orbiter in GitHub, put your changes in a branch, and then create a "Pull Request" (PR) so that you changes can be analysed by others, before they are merged into Orbiter.\\
+If you find an issue in Orbiter, but you don't know how to fix it, you can open a ticket (\url{https://github.com/orbitersim/orbiter/issues}) to allow others to fix it.
+
+
+\end{document}

@@ -16,8 +16,8 @@ Orbiter allows to create new planets or planetary systems in a few simple steps.
 
 \subsection{Planetary textures}
 \label{ssec:planetery_tex}
-This section describes the format Orbiter 2016 uses to define the surface textures, surface elevations and cloud layers for planetary bodies (planets, moons, asteroids, etc.)\\
-Orbiter 2016 introduces a more powerful planetary texturing mechanism than previous releases that provides
+This section describes the format introduced in Orbiter 2016 to define the surface textures, surface elevations and cloud layers for planetary bodies (planets, moons, asteroids, etc.)\\
+This is a more powerful planetary texturing mechanism than previous releases that provides
 
 \begin{itemize}
 \item higher resolution levels
@@ -26,8 +26,7 @@ Orbiter 2016 introduces a more powerful planetary texturing mechanism than previ
 \end{itemize}
 
 \noindent
-%TODO handle legacy model link? or just mention it and don't detail it? or mention old documentation?
-The legacy texture mapping used in previous Orbiter releases is still supported by Orbiter 2016 for backward compatibility, but its use in new planet texture projects is discouraged. The legacy model is described in TODO.\\
+The legacy texture mapping used in pre-Orbiter 2016 releases is still supported by Orbiter for backward compatibility, but its use in new planet texture projects is discouraged.
 \\
 To configure a planet for use of the new surface texture format, its configuration file\\
 \indent Config\textbackslash <\textit{planet name}>.cfg\\
@@ -512,7 +511,6 @@ The functions should indicate the fields actually calculated via the return valu
 \subsubsection{The API interface}
 Next, we need to define the API interface that will allow Orbiter to load an instance of the celestial body interface. This is done by implementing the \textit{InitInstance} and \textit{ExitInstance} functions in \textit{MyPlanet.cpp}:
 
-%TODO shouldn't this be CELBODY2?
 \begin{lstlisting}
 DLLCKBK CELBODY* InitInstance( OBJHANDLE hBody )
 {
