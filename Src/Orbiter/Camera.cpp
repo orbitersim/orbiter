@@ -23,12 +23,8 @@
 #include "Util.h"
 #include "Log.h"
 #include "OrbiterAPI.h"
+#include "Vobject.h"
 #include <zmouse.h>
-
-#ifdef INLINEGRAPHICS
-#include "OGraphics.h"
-#include "Scene.h"
-#endif // INLINEGRAPHICS
 
 using namespace std;
 
@@ -1019,11 +1015,7 @@ void Camera::Update ()
 	VObject **vobj, *vo;
 	const Body *bd;
 	int i, nobj;
-#ifdef INLINEGRAPHICS
-	nobj = g_pOrbiter->GetInlineGraphicsClient()->GetScene()->GetObjects (&vobj);
-#else
 	nobj = 0; vobj = 0;
-#endif // INLINEGRAPHICS
 	for (i = 0; i < nobj; i++) {
 		bd = (vo = vobj[i])->GetBody();
 		if (!external_view && bd == (Body*)g_focusobj &&
@@ -1042,10 +1034,6 @@ void Camera::Update ()
 		}
 		if (dist < dist_proxy) dist_proxy = dist;
 	}
-#ifdef INLINEGRAPHICS
-	if (dist_proxy > 0.0)
-		dist_proxy = min(dist_proxy, g_pOrbiter->GetInlineGraphicsClient()->GetScene()->MinParticleCameraDist());
-#endif
 
 	// find the largest apparent planet
 	double ralt_proxy = 1e100;
@@ -1335,11 +1323,6 @@ void Camera::UpdateProjectionMatrix ()
 		proj_mat._43 = (proj_mat._33 = farplane / (farplane-nearplane)) * (-nearplane);
 	}
 	proj_mat._34 = 1.0f;
-
-#ifdef INLINEGRAPHICS
-	OrbiterGraphics *og = g_pOrbiter->GetInlineGraphicsClient();
-	if (og) og->clbkSetCamera (aspect, tan_ap, nearplane, farplane);
-#endif
 
 	// register new projection matrix with device
     //pDev->SetTransform (D3DTRANSFORMSTATE_PROJECTION, &proj_mat);

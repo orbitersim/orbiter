@@ -107,11 +107,9 @@ bool GraphicsClient::clbkInitialise ()
 	VideoData.winw       = (int)cfg->CfgDevPrm.WinW;
 	VideoData.winh       = (int)cfg->CfgDevPrm.WinH;
 
-#ifndef INLINEGRAPHICS
 	char fname[256];
 	GetModuleFileName(hModule, fname, 256);
 	((orbiter::DefVideoTab*)g_pOrbiter->Launchpad()->GetTab(PG_VID))->OnGraphicsClientLoaded(this, fname);
-#endif
 
 	return true;
 }
@@ -911,21 +909,10 @@ DLLEXPORT INT_PTR CALLBACK LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM w
 
 DLLEXPORT bool oapiRegisterGraphicsClient (GraphicsClient *gc)
 {
-#ifndef INLINEGRAPHICS
 	return g_pOrbiter->AttachGraphicsClient (gc);
-#else
-	MessageBox(NULL, "Warning: You are trying to load an external graphics client into Orbiter.\r\nExternal graphics clients can only be used with the Orbiter Server application (orbiter_ng.exe).\r\n\r\nPlease deactivate the graphics module in the Modules tab.",
-		"Orbiter: Graphics module activated", MB_ICONWARNING|MB_OK);
-	LOGOUT_ERR("Graphics module activated in orbiter.exe");
-	return false;
-#endif // !INLINEGRAPHICS
 }
 
 DLLEXPORT bool oapiUnregisterGraphicsClient (GraphicsClient *gc)
 {
-#ifndef INLINEGRAPHICS
 	return g_pOrbiter->RemoveGraphicsClient (gc);
-#else
-	return false;
-#endif // !INLINEGRAPHICS
 }

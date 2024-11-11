@@ -20,16 +20,6 @@
 #include "Log.h"
 #include "Util.h"
 
-#ifdef INLINEGRAPHICS
-#include "Texture.h"
-#include "Vplanet.h"
-#include "Spherepatch.h"
-#include "TileMgr.h"
-#include "surfmgr2.h"
-#include "cloudmgr2.h"
-extern TextureManager2 *g_texmanager2;
-#endif // INLINEGRAPHICS
-
 #define UPDMODE_ANALYTIC 0
 #define UPDMODE_DYNAMIC  1
 #define UPDMODE_CUSTOM   2
@@ -660,12 +650,6 @@ void Planet::ScanLabelLegend()
 
 void Planet::ActivateLabels(bool activate)
 {
-#ifdef INLINEGRAPHICS
-	if (smgr2 && label_version == 2) {
-		if (activate) smgr2->CreateLabels();
-		else smgr2->DeleteLabels();
-	}
-#endif
 }
 
 void Planet::Setup ()
@@ -680,20 +664,6 @@ void Planet::Setup ()
 	bEnableWind = g_pOrbiter->Cfg()->CfgPhysicsPrm.bAtmWind;
 	// should be done only once rather than for every planet
 
-#ifdef INLINEGRAPHICS
-	// load all textures for the visual
-	InitDeviceObjects ();
-
-	if (tmgr_version == 2) {
-		int patchlvl = 2 << g_pOrbiter->Cfg()->CfgPRenderPrm.PatchRes;
-		smgr2 = new TileManager2<SurfTile> (this, max_patch_level, patchlvl);
-	} else {
-		tmgr = new TileManager (this); TRACENEW
-	}
-	if (cmgr_version == 2)
-		cmgr2 = new TileManager2<CloudTile> (this, max_cloud_level, 32);
-	// otherwise the cloud manager is handled by the VPlanet object
-#endif // INLINEGRAPHICS
 	if (tmgr_version == 2)
 		emgr = new ElevationManager(this);
 	for (DWORD i = 0; i < nbase; i++)
@@ -769,75 +739,10 @@ const void *Planet::GetParam (DWORD paramtype) const
 
 void Planet::InitDeviceObjects ()
 {
-	//char cbuf[256];
-	//strcpy (cbuf, name); strcat (cbuf, ": Textures");
-	//g_pOrbiter->OutputLoadStatus (cbuf, 0);
-
-#ifdef INLINEGRAPHICS
-	FILE *file = 0;
-
-	if (bHasCloudlayer && cmgr_version == 1) { // create cloud texture array for old cloud implementation
-		ncloudtex = patchidx[max_cloud_level] - patchidx[min_cloud_level-1];
-		cloudtex = new LPDIRECTDRAWSURFACE7[ncloudtex]; TRACENEW
-		if (ncloudtex = g_texmanager2->OpenTextures (name.c_str(), "_cloud.tex", cloudtex, ncloudtex)) {
-			while (ncloudtex < patchidx[max_cloud_level] - patchidx[min_cloud_level-1]) max_cloud_level--;
-			while (ncloudtex > patchidx[max_cloud_level] - patchidx[min_cloud_level-1]) cloudtex[--ncloudtex]->Release();
-		}
-		if (!ncloudtex) {
-			delete []cloudtex;
-			cloudtex = 0;
-			bHasCloudlayer = false;
-		}
-	} else {
-		ncloudtex = 0;
-		cloudtex = 0;
-	}
-
-	if (bHasRings) { // load ring textures
-		string tex_name = name + "_ring";
-		if (file = fopen (g_pOrbiter->TexPath (tex_name.c_str(), ".tex"), "rb")) {
-			ringtex = new LPDIRECTDRAWSURFACE7[3]; TRACENEW
-			nringtex = g_texmanager2->ReadTextures (file, ringtex, 3);
-			fclose (file);
-			if (!nringtex) {
-				delete []ringtex;
-				ringtex = NULL;
-			}
-		}
-	}
-#endif
 }
 
 void Planet::DestroyDeviceObjects ()
 {
-#ifdef INLINEGRAPHICS
-	int i;
-
-	if (ncloudtex) {
-		for (i = 0; i < ncloudtex; i++) cloudtex[i]->Release();
-		delete []cloudtex;
-		cloudtex  = 0;
-		ncloudtex = 0;
-	}
-	if (nringtex) {
-		for (i = 0; i < nringtex; i++) ringtex[i]->Release();
-		delete []ringtex;
-		ringtex = 0;
-		nringtex = 0;
-	}
-	if (tmgr) {
-		delete tmgr;
-		tmgr = 0;
-	}
-	if (smgr2) {
-		delete smgr2;
-		smgr2 = 0;
-	}
-	if (cmgr2) {
-		delete cmgr2;
-		cmgr2 = 0;
-	}
-#endif
 	for (DWORD i = 0; i < nbase; i++)
 		baselist[i]->DestroyDeviceObjects ();
 	CelestialBody::DestroyDeviceObjects ();

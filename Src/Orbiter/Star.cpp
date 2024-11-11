@@ -11,15 +11,6 @@
 #include "Camera.h"
 #include "Log.h"
 
-#ifdef INLINEGRAPHICS
-#include "OGraphics.h"
-#include "Texture.h"
-#include "Scene.h"
-#include "Vstar.h"
-extern TextureManager2 *g_texmanager2;
-static int texrefcount = 0;
-#endif // INLINEGRAPHICS
-
 using namespace std;
 
 extern Orbiter *g_pOrbiter;
@@ -41,9 +32,6 @@ Star::Star (char *fname)
 	bDynamicPosVel = false;
 	// read star-specific parameters here
 	InitDeviceObjects ();
-#ifdef INLINEGRAPHICS
-	g_pOrbiter->GetInlineGraphicsClient()->GetScene()->AddStarlight (this);
-#endif // INLINEGRAPHICS
 	Setup ();
 }
 
@@ -76,27 +64,3 @@ Vector4 Star::GetLightColor ()
 {
 	return {1,1,1,1};
 }
-
-#ifdef INLINEGRAPHICS
-void Star::InitDeviceObjects ()
-{
-	if (!texrefcount) { // not loaded yet
-		FILE *file;
-		if (file = fopen (g_pOrbiter->TexPath ("Star"), "rb")) {
-			if (FAILED (g_texmanager2->ReadTexture (file, &tex)))
-				LOGOUT_ERR (g_pOrbiter->TexPath ("Star"));
-			fclose (file);
-		} else {
-			tex = 0;
-		}
-	}
-	texrefcount++;
-}
-
-void Star::DestroyDeviceObjects ()
-{
-	if (!texrefcount) return; // oops
-	if (--texrefcount == 0)   // need to release
-		tex->Release();
-}
-#endif //INLINEGRAPHICS

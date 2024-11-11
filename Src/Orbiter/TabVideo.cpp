@@ -14,11 +14,7 @@
 
 using namespace std;
 
-#ifdef INLINEGRAPHICS
-static PCSTR strInfo_Default = "The built-in DX7 graphics engine.";
-#else
 static PCSTR strInfo_Default = "No graphics engine has been selected. Orbiter will run in console mode.";
-#endif
 
 //-----------------------------------------------------------------------------
 // DefVideoTab class
@@ -57,10 +53,7 @@ void orbiter::DefVideoTab::ShowInterface(HWND hTab, bool show)
 		IDC_VID_DEVICE, IDC_VID_ENUM, IDC_VID_STENCIL,
 		IDC_VID_FULL, IDC_VID_WINDOW, IDC_VID_MODE, IDC_VID_BPP, IDC_VID_VSYNC,
 		IDC_VID_PAGEFLIP, IDC_VID_WIDTH, IDC_VID_HEIGHT, IDC_VID_ASPECT,
-		IDC_VID_4X3, IDC_VID_16X10, IDC_VID_16X9
-#ifndef INLINEGRAPHICS
-		, IDC_VID_INFO
-#endif
+		IDC_VID_4X3, IDC_VID_16X10, IDC_VID_16X9, IDC_VID_INFO
 	};
 	for (int i = 0; i < ARRAYSIZE(item); i++) {
 		ShowWindow(GetDlgItem(hTab, item[i]), show ? SW_SHOW : SW_HIDE);
@@ -71,11 +64,7 @@ void orbiter::DefVideoTab::ShowInterface(HWND hTab, bool show)
 
 BOOL orbiter::DefVideoTab::OnInitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
-#ifdef INLINEGRAPHICS
-	ShowInterface(hWnd, true);
-#else
 	ShowInterface(hWnd, false);
-#endif
 	EnumerateClients(hWnd);
 	return TRUE;
 }
@@ -157,14 +146,9 @@ bool orbiter::DefVideoTab::OpenHelp ()
 void orbiter::DefVideoTab::EnumerateClients(HWND hTab)
 {
 	SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_RESETCONTENT, 0, 0);
-#ifdef INLINEGRAPHICS
-	PCSTR strGraphics = "Built-in graphics engine";
-	SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_ADDSTRING, 0, (LPARAM)strGraphics);
-#else
 	PCSTR strConsole = "Console mode (no engine loaded)";
 	SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_ADDSTRING, 0, (LPARAM)strConsole);
 	ScanDir(hTab, "Modules\\Plugin");
-#endif
 	SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_SETCURSEL, 0, 0);
 }
 

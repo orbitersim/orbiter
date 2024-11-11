@@ -3,10 +3,6 @@
 
 // Star - logical interface
 
-#ifdef INLINEGRAPHICS
-#include <d3dtypes.h>
-#endif
-
 #ifndef __STAR_H
 #define __STAR_H
 
@@ -33,14 +29,6 @@ public:
 	Vector Pos2Barycentre (Vector &pos);
 
 	Vector4 GetLightColor();
-
-#ifdef INLINEGRAPHICS
-	void InitDeviceObjects ();
-	void DestroyDeviceObjects ();
-
-private:
-	LPDIRECTDRAWSURFACE7 tex;     // billboard star texture
-#endif //INLINEGRAPHICS
 };
 
 #endif // !__STAR_H
