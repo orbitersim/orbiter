@@ -98,10 +98,9 @@ jobs:
       run: cmake --install . --prefix ${{ github.workspace }}/out/install
       
     - name: List exports
-      working-directory: ${{ github.workspace }}/out/install/Orbiter
       shell: cmd
       run: |
-        dumpbin /EXPORTS Modules\Server\Orbiter.exe /OUT:exports_tmp0.txt
+        dumpbin /EXPORTS ${{ github.workspace }}\out\install\Orbiter\Modules\Server\Orbiter.exe /OUT:exports_tmp0.txt
         type exports_tmp0.txt | find " ?" > exports_tmp1.txt
         for /F "tokens=4" %%F in (exports_tmp1.txt) do @echo %%F >> exports_tmp2.txt
         undname exports_tmp2.txt | sort > exports.txt
@@ -111,7 +110,7 @@ jobs:
       if: ${{ inputs.architecture == 'x86' }}
       shell: cmd
       continue-on-error: true
-      run: git diff -U0 --ignore-cr-at-eol --ignore-space-at-eol --no-index exports.2016.txt out/install/Orbiter/exports.txt
+      run: git diff -U0 --ignore-cr-at-eol --ignore-space-at-eol --no-index exports.2016.txt exports.txt
 
     - name: Pack
       if: ${{ github.ref == 'refs/heads/main' }}
@@ -124,7 +123,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: exports-${{ inputs.architecture }}
-        path: ${{ github.workspace }}/out/install/Orbiter/exports.txt
+        path: ${{ github.workspace }}/exports.txt
         retention-days: 1
     
     - name: Upload Build Artifact
