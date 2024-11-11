@@ -7,7 +7,7 @@ This section describes the keyboard, mouse and joystick interfaces for controlli
 
 
 \subsection{Keyboard interface}
-This section describes the \textit{default} Orbiter keyboard assignments. Please note that the assignments are customisable by editing the keymap.dat file in the Orbiter directory, and that therefore the keyboard controls for your Orbiter installation may be different.\\
+This section describes the \textit{default} Orbiter keyboard assignments. Please note that the assignments are customisable by editing the "keymap.cfg" file in the Orbiter directory, and that therefore the keyboard controls for your Orbiter installation may be different.\\
 The key assignments referenced in this section and the rest of the manual refer to the keyboard layout shown in the figure below. For other layouts (e.g. language-specific) the key labels may be different. The relevant criterion for key functions in Orbiter is the \textit{position of the key} on the keyboard, not the label. For example, on the German keyboard the keys for the "turn orbit-normal" (\keystroke{;}) and "turn orbit-antinormal" (\keystroke{'}) functions will be \keystroke{Ö} and \keystroke{Ä}.
 
 \begin{figure}[H]
@@ -18,7 +18,11 @@ The key assignments referenced in this section and the rest of the manual refer 
 
 \noindent
 Note that certain spacecraft may define additional keyboard functions. Check individual documentation for a detailed description of spacecraft controls and functionality.\\
-\\
+
+\infobox{This document uses a key graphics (e.g. \keystroke{A}) to indicate keyboard keys. When the subscript \textit{Num} is used following a key, it refers to a key in the "Numpad" group, and the subscript \textit{Cur} refers to the "Cursor pad" group.}
+
+\leavevmode\\
+\noindent
 \textbf{General}
 
 %\begin{table}[H]
@@ -73,7 +77,7 @@ Note that certain spacecraft may define additional keyboard functions. Check ind
 	\hline\rule{0pt}{2ex}
 	\keystroke{F9} & Toggle planetarium mode on/off (see section \ref{ssec:menu_options}).\\
 	\hline\rule{0pt}{2ex}
-	\Ctrl\keystroke{F9} & Open the Visual helpers dialog for planetarium, force and axis display options (see section \ref{ssec:menu_options}).\\
+	\Ctrl\keystroke{F9} & Open the Visual helpers dialog for planetarium, surface/object labels, force and axis display options (see section \ref{ssec:menu_options}).\\
 	\hline
 	\end{longtable}
 %\end{table}
@@ -153,10 +157,10 @@ These keys allow manual manoeuvring of the user-controlled spacecraft. See also 
 	\end{longtable}
 %\end{table}
 
+\infobox{In combination with \Ctrl, thrusters are engaged at 10\% max. thrust for fine control.}
+
+\leavevmode\\
 \noindent
-\\
-Note: In combination with \Ctrl, thrusters are engaged at 10\% max. thrust for fine control.\\
-\\
 \underline{Other controls:}
 
 %\begin{table}[H]
@@ -266,7 +270,7 @@ Note: In combination with \Ctrl, thrusters are engaged at 10\% max. thrust for f
 \noindent
 \\
 \textbf{MFD control}\\
-MFD functions are generally executed with \Shift-key combinations, where the left and right \Shift keys address the left and right standard MFD instruments, respectively.
+MFD functions are generally executed with \Shift + key combinations, where the left and right \Shift keys address the left and right standard MFD instruments, respectively.
 
 %\begin{table}[H]
 	%\centering

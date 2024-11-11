@@ -992,5 +992,186 @@ Using the Transfer MFD for Earth to Moon orbits should be straightforward. For i
 \subsection{TransX}
 \label{ssec:mfd_transx}
 % TODO transx
+The TransX MFD mode allows for the planning and execution of plan of maneuvers, designed to get a vessel to a target, either directly or via "gravity-assist" fly-by of celestial bodies.\\
+You can define which key is used to call up TransX, by writing in the "Config\textbackslash transx.cfg" the ASCII code (between 65 and 90) corresponding to the desired key.\\
+
+\infobox{The TransX MFD must be enabled in the Launchpad (see section \ref{sec:launchpad})}
+
+\noindent
+\\
+\textbf{Key options:}
+
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.15\textwidth}|p{0.15\textwidth}|p{0.6\textwidth}| }
+	\hline\rule{0pt}{2ex}
+	\textbf{Button} & \textbf{Shortcut} & \textbf{Action}\\
+	\hline\rule{0pt}{2ex}
+	HLP & \Shift\keystroke{H} & Shows a help screen\\
+	\hline\rule{0pt}{2ex}
+	FWD & \Shift\keystroke{F} & Move to next stage (also creates a new stage if a target has been set in a previous stage)\\
+	\hline\rule{0pt}{2ex}
+	BCK & \Shift\keystroke{R} & Move to previous stage\\
+	\hline\rule{0pt}{2ex}
+	VW & \Shift\keystroke{W} & Cycle between views (Setup -> Manoeuvre -> Target)\\
+	\hline\rule{0pt}{2ex}
+	VAR & \Shift\keystroke{.} & Move up through list of variables\\
+	\hline\rule{0pt}{2ex}
+	-VR & \Shift\keystroke{,} & Move down through list of variables\\
+	\hline\rule{0pt}{2ex}
+	ADJ & \Shift\keystroke{\{} & Increase the sensitivity of the ++ and -- commands (course - medium - fine - super - ultra)\\
+	\hline\rule{0pt}{2ex}
+	AJ- & \Shift\keystroke{\}} & Decrease the sensitivity of the ++ and -- commands\\
+	\hline\rule{0pt}{2ex}
+	++ & \Shift\keystroke{=} & Increase the value of the variables\\
+	\hline\rule{0pt}{2ex}
+	-- & \Shift\keystroke{-} & Decrease the value of the variables\\
+	\hline\rule{0pt}{2ex}
+	EXE & \Shift\keystroke{X} & Execute command\\
+	\hline\rule{0pt}{2ex}
+	ENT & \Shift\keystroke{E} & Enter variable\\
+	\hline
+	\end{longtable}
+%\end{table}
+
+
+\noindent
+\textbf{MFD control layout:}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.99\hsize]{transx_input.png}
+\end{figure}
+
+\noindent
+\textbf{MFD display components:}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.99\hsize]{transx_layout_1.png}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.99\hsize]{transx_layout_2.png}
+\end{figure}
+
+
+\noindent
+\subsubsection{Concepts}
+TransX divides all flights into stages, in which different central bodies are dominant. If you start up TransX for the first time, it will show your current trajectory around the body that's currently dominant for your spacecraft. The best time to plan a flight is before you take off. Very often, there's a need to find a launch window in the early stages.\\
+
+\paragraph{Color usage}
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.1\textwidth}|p{0.85\textwidth}| }
+	\hline\rule{0pt}{2ex}
+	Green & Vessel's orbit or the trajectory passed from the previous stage (= "focus orbit")\\
+	\hline\rule{0pt}{2ex}
+	Blue & Orbits of the planets\\
+	\hline\rule{0pt}{2ex}
+	Yellow & Hypothetical orbit resulting from the plan or manoevre being set up\\
+	\hline\rule{0pt}{2ex}
+	Gray & Surface of a planet; Line showing the intersection between two orbital planes\\
+	\hline
+	\end{longtable}
+%\end{table}
+
+
+\noindent
+\paragraph{Glossary}
+\textbf{Stage:} Part of the flight (centered on Earth, Sun, Mars, etc). Switch between stages with FWD and BCK commands. A new stage can be created with the FWD command after a target was set in a previous stage.\\
+\\
+\textbf{View:} Each stage has 3 (TODO 8?) views; switch between views with the VW command.
+\begin{itemize}
+\item Setup: Here the target is defined.
+\item Manoevre: Here the manoevering data are entered. Note: To do so, set the variable "Manoevre" to "ON".
+\item Target: A "bullseye" to setup the vessel's axis before the burn. Note: this view is only available once the manoevering data have been entered.
+
+\item Slingshot: TODO
+\item Encounter: Used to show information about the arrival planet. It has no function other than to show extra information on a planet, including surface base.
+\item Sling Direct: TODO
+\item Eject Plan: Used to leave SOI of this planet/moon for another, e.g. Earth to Mars. Best to plan before you take off.
+\item Escape Plan: Used to leave SOI of this planet/moon for another, e.g. Earth to Mars. Best to plan before you take off.
+\end{itemize}
+
+\noindent
+\paragraph{Variables}
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.19\textwidth}|p{0.5\textwidth}|p{0.22\textwidth}| }
+	\hline\rule{0pt}{2ex}
+	\textbf{Variable} & \textbf{Description} & \textbf{Options}\\
+	\hline\rule{0pt}{2ex}
+	Select Target & Select where you're going & Celestial body or "Escape"\\%TODO planets/moons or ships
+	\hline\rule{0pt}{2ex}
+	Autoplan & Automatically sets plan types & "On", "Off"\\
+	\hline\rule{0pt}{2ex}
+	Intercept with & Intercept info shown for whatever you select here & "Auto", "Plan", "Manoeuvre", "Focus"\\
+	\hline\rule{0pt}{2ex}
+	Orbits to Icept & The number of orbits ahead to look for an intercept with target & Number\\
+	\hline\rule{0pt}{2ex}
+	Graph projection & Adjusts the way MFD displays orbit & "Ecliptic", "Focus", "Manoeuvre", "Plan", "Edge On"\\
+	\hline\rule{0pt}{2ex}
+	Scale to view & Set to "Target" to obtain better view when target is small & "All", "Target", "Craft"\\
+	\hline\rule{0pt}{2ex}
+	Advanced & Enable advanced settings & "Off", "On"\\
+	\hline\rule{0pt}{2ex}
+	Manoeuvre mode & Enable manoeuvre settings & "Off", "On"\\
+	\hline\rule{0pt}{2ex}
+	Base Orbit & Orbit on which manoeuvres are based, ++ sets to focus orbit & "++ Updates", "Updating"\\
+	\hline\rule{0pt}{2ex}
+	Prograde vel. & Positive numbers to outer planets, negative numbers to inner planets & Number [m/s]\\
+	\hline\rule{0pt}{2ex}
+	Man. date & Your planned launch date/time & Number [MJD]\\
+	\hline\rule{0pt}{2ex}
+	Outward vel. & Add velocity outwards/inwards & Number [m/s]\\
+	\hline\rule{0pt}{2ex}
+	Ch. plane vel. & Use to swing grey plane intersection line towards intercept point & Number [m/s]\\
+	\hline\rule{0pt}{2ex}
+	Plan type (Advanced mode) & Select type of plan you want to follow & "Initial", "Through point", "Cruise plan"\\
+	\hline\rule{0pt}{2ex}
+	Select Minor (Advanced mode) & Set minor body & Celestial body or "Escape"\\
+	\hline\rule{0pt}{2ex}
+	Plan (Orbiting body) & None for simple trips. Escape when leaving SOI & "None", "Escape"\\
+	\hline\rule{0pt}{2ex}
+	Plan (Hyperbolic approach to body) & Choose what to do at this planet & "None", "Slingshot", "Encounter"\\
+	\hline\rule{0pt}{2ex}
+	Plan (Minor body defined) & None for simple trips. Escape when leaving SOI & "None", "Eject", "Sling Direct"\\
+	\hline\rule{0pt}{2ex}
+	Equatorial view (Escape Plan view) & Show orbit in equatorial view, or in polar view, from the North & "No", "Yes"\\
+	\hline\rule{0pt}{2ex}
+	Pe Distance (Escape Plan view) & Periapsis of planned orbit & TODO\\
+	\hline\rule{0pt}{2ex}
+	Ej Orientation (Escape Plan view) & Use to rotate planned orbit around axis of departure direction & TODO\\
+	\hline\rule{0pt}{2ex}
+	Draw Base (Encounter view) & Choose to draw the base & "Off", "On"\\
+	\hline\rule{0pt}{2ex}
+	View Orbit (Slingshot view) & Choose to view approach or departure orbit & "Approach", "Depart"\\
+	\hline
+	\end{longtable}
+%\end{table}
+
+
+\subsubsection{Use cases}
+These following paragraphs provide practical use cases of TransX, as a way to describe its functionalities, from simple to advanced plans for interplanetary travel.\\
+
+\paragraph{Earth orbit to Lunar orbit}
+This section will guide the user to setup and perform a simple maneuver to establish an Hohmann transfer orbit, as a means to send a vessel from Low-Earth orbit to the Moon, and then entering lunar orbit.\\
+Start the scenario "Navigation\textbackslash Transx\textbackslash Earth to Moon", open the TransX MFD (\Shift\keystroke{J}) and the view "Setup" will be presented, showing the current orbit of the vessel around Earth.\\
+The variable "Select Target" is already selected, so we can change it with the button "++" or \Shift\keystroke{=}, and select "Moon" as the target. At his point, the display changes to also show the Moon's orbit.\\
+Now, a second stage is available (button "FWD" or \Shift\keystroke{F}), which initially will only show the Moon. Later, when a plan exists that will bring the vessel close to the Moon, its trajectory will also be shown.\\
+Back to stage 1 (button "BCK" or \Shift\keystroke{R}), so the maneuver can be configured. Switch to view "Manoevre" (button "VW" or \Shift\keystroke{W}), and set the variable "Manoeuvre mode" to "On". This will enable the maneuver variables, so they can be edited.\\
+Select the variable "Prograde vel.", and increment its value to around 3.14K (3.14 Km/s). When setting a numerical variable, the rate of change is controlled with the buttons "ADJ" (\Shift\keystroke{\{}) and "AJ-" (\Shift\keystroke{\}}). This velocity increment will raise the altitude of the vessel's apoapsis close to the lunar orbit, setting up a Hohmann transfer orbit, so an encounter can take place.\\
+The time of the maneuver needs to be set, which is done by editing the variable "Man. date". Initially it holds the current time, but it should be set to a time in the future, where the 2 yellow dashed lines (vessel and Moon positions at the encounter) are together and over the gray line (intersection of the vessel and Moon orbital planes). A value close to 60568.09 MJD should be good. As the 2 yellow lines converge, the estimate for closest approach distance ("Cl. App") will decrease. Further fine-tuning of this distance can done with variable "Prograde vel.", and also with "Ch. plane vel.", which will move the orbital plane intersection line.\\
+Opening a new instance of TransX in another MFD, and switching to Stage 2, "Encounter" view, will display the estimated trajectory of the vessel around the Moon. Of interest on that display is the information on minimum altitude, periapsis velocity, and $\Delta$v required for capture and for circular orbit at closest approach. Back in Stage 1, you can tune the closest approach distance to be a certain altitude above the surface if an orbital insertion is desired, or if a (direct) landing or collision is intended, the trajectory can be made to intersect the lunar surface. When this is the case, the impact latitude and longitude will be displayed. Setup the maneuver such that the lunar periapsis is about 500km above the surface, to provide some margin against burn errors, but also because it should decrease as the vessel approaches the Moon and gets pulled in. Use the "Focus PeD" (radius) or the "Min Alt" (altitude) value in Stage 2, view "Encounter", as it provides a more precise estimate.\\
+With the maneuver data defined, go to the "Target" view in Stage 1. On the lower left of the display, 3 values are displayed: "Delta V" velocity change remaining in the burn, "T to Mnvre" time to an instantaneous burn, and "Begin Burn" time to ignite the vessel's main thrusters to best perform the burn. This last value is what should be used, and to reduce the waiting we can time-warp to about 5 minutes before ignition.\\
+A quick fine-tuning of the maneuver parameters should be done now, to ensure the best maneuver solution. Once, that is done, it is time to point the vessel in the correct direction. The "Target" view display shows the offset between the current vessel direction and the calculated thrust direction for the maneuver: turn the vessel in the direction of the green "x", until it is centered, so the vessel is pointed correctly for the burn.\\
+Once "Begin Burn" reaches 0 you should fire the main engines, and then monitor the decreasing value of "Delta V". Shut the engines down when "Delta V" reaches 0, or starts increasing.\\
+The vessel is now in its way to the Moon. As you leave Earth behind, Stage 1 will disappear and be replaced with what was previously Stage 2.\\
+A mid-course correction might be needed to correct the vessel's periapsis distance at the Moon. To do so, just setup a maneuver as previously described, but this time editing the "Outward vel." variable is likely the most effective way to change the trajectory. Now you can more precisely target a closest approach distance. After the burn, set the variable "Manoeuvre mode" to "Off".\\
+As the vessel approaches the lunar periapsis, a burn needs to be performed, to slow the vessel into lunar orbit. Setup a maneuver, the time should be the periapsis time, and set the variable "Prograde vel." to the negative of the value indicated in the "Circ Delta" (negative because the vessel needs to slow down). The yellow dashed line of the estimated trajectory should show a roughly circular orbit around the Moon.\\
+Perform the burn, and once that is complete, the vessel should be in circular Lunar orbit!
+
 
 \end{document}

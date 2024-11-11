@@ -37,7 +37,9 @@ The behaviour of the menu and info panels can be defined via the menu configurat
 \begin{itemize}
 \item The panel in the top left corner of the simulation window contains the name of the camera target (Tgt), the camera mode (Cam) and the field of view angle (FoV).
 \item The panel in the top right corner contains the date in Ephemeris Time (ET) and in Modified Julian Day (MJD) format, the simulation elapsed time (Sim) in seconds, as well as indicators for pause, time acceleration and record/playback if applicable.
-\item Note that Orbiter provides a date conversion utility (date.exe) in the \textit{Utils} subdirectory. The \textit{Scenario Editor} (see section \ref{ssec:scn_editor}) allows to manipulate the date of a running simulation.
+
+\infobox{Orbiter provides a date conversion utility (date.exe) in the \textit{Utils} subdirectory. The \textit{Scenario Editor} (see section \ref{ssec:scn_editor}) allows to manipulate the date of a running simulation.}
+
 \item Optionally, two more info panels can be displayed by user selection from the menu configuration dialog, including a frame rate display, a render statistics display showing the graphics engine load, or a viewport info display.
 \end{itemize}
 
@@ -126,9 +128,11 @@ This page allows setting the camera into a surface-relative position and orienta
 \end{figure}
 
 \noindent
-You can either manually set the surface location (latitude/longitude) and altitude on a reference planet and press Apply, or just press Current to put the camera into ground mode at its current location relative to the reference planet.\\
-Note: when the camera is in free ground mode, it is no longer linked to a target object, so picking targets in the \textit{Target} tab will not have an effect in this mode, but the new target will be used when switching back to a target-tracking mode.\\
-\\
+You can either manually set the surface location (latitude/longitude) and altitude on a reference planet and press Apply, or just press Current to put the camera into ground mode at its current location relative to the reference planet.
+
+\infobox{When the camera is in free ground mode, it is no longer linked to a target object, so picking targets in the \textit{Target} tab will not have an effect in this mode, but the new target will be used when switching back to a target-tracking mode.}
+
+\noindent
 \textbf{FoV tab:}\\
 This page allows adjustment of the camera field of view (FoV), i.e. the camera zoom setting. The FoV can be set in discrete steps by clicking the buttons (30°-70°) or continuously by moving the slider, in the range 10°-90°. The FoV is measured between the top and bottom edges of the view window.
 
@@ -138,9 +142,11 @@ This page allows adjustment of the camera field of view (FoV), i.e. the camera z
 \end{figure}
 
 \noindent
-Keyboard shortcuts: \keystroke{Z}/\keystroke{X} for continuous FoV adjustment, or \Ctrl+\keystroke{Z}/\keystroke{X} for discrete adjustments in steps of 10°.\\
-Note that separate FoV settings are used for internal (cockpit) and external views, and adjusting one will not affect the other. Jumping between internal and external views will switch the FoV values to their respective settings.\\
-\\
+Keyboard shortcuts: \keystroke{Z}/\keystroke{X} for continuous FoV adjustment, or \Ctrl+\keystroke{Z}/\keystroke{X} for discrete adjustments in steps of 10°.
+
+\infobox{Separate FoV settings are used for internal (cockpit) and external views, and adjusting one will not affect the other. Jumping between internal and external views will switch the FoV values to their respective settings.}
+
+\noindent
 \textbf{Preset tab:}\\
 Orbiter provides an easy method to store and recall camera modes in a preset list. Click on the \textit{Preset} tab in the camera dialog. Any available modes are listed here. To activate a mode, double-click it in the list, or select the mode and click Recall.
 
@@ -271,9 +277,9 @@ The \textit{Map} window shows a planetary surface represented by coastlines and 
 \end{figure}
 
 \begin{itemize}
-\item \textbf{Vessels:} All (show all spacecraft currently landed on/orbiting this celestial body), Focus only (show only the user-controlled vessel, if it is landed on or orbiting the body), None (disable vessel objects)
+\item \textbf{Vessels:} \textit{All} (show all spacecraft currently landed on/orbiting this celestial body), \textit{Focus only} (show only the user-controlled vessel, if it is landed on or orbiting the body), \textit{None} (disable vessel objects)
 \item \textbf{Orbit display:} show orbit representations for the current focus vessel (the user-controlled vessel) and/or target vessel (the vessel selected in the map, if any). The map can display either the orbit plane (the intersection of the current orbital plane with the celestial body surface) for these orbits, or the predicted ground track for the next few orbits (assuming that the orbital elements don't change). The horizon line for those vessels can also be displayed (the extent of the planet surface visible from the current vessel position and altitude).
-\item \textbf{Surface markers:} Show or hide various types of terrain data and surface objects: Grid lines (30° latitude/longitude lines), coastlines (if applicable), contour lines (if available), surface bases (the registered spaceports located on the planet), VOR transmitters (omnidirectional navigation beacons), and landmarks (currently not implemented).
+\item \textbf{Surface markers:} Show or hide various types of terrain data and surface objects: Grid lines (30° latitude/longitude lines), coastlines (if applicable), contour lines (if available), surface bases (the registered spaceports located on the planet), VOR transmitters (omnidirectional navigation beacons), and landmarks.
 \item \textbf{Other:} Natural satellites: show or hide the location above the surface of any moons orbiting the planet.
 \end{itemize}
 
@@ -311,6 +317,7 @@ The inline \textit{help} pages contain a subset of the topics covered in this ma
 \end{itemize}
 
 \noindent
+% TODO path (no more Orbitersdk\doc)
 In addition, the inline help contains a chapter on Lua scripting and the Orbiter Lua extensions. Orbiter supports the Lua script language for a variety of tasks, including vessel control (via the Terminal MFD mode), autopilots, unsupervised vessel operation, mission design and tutorials. For a more detailed introduction to Lua scripting in Orbiter, see the Orbiter Lua Reference in Orbitersdk\textbackslash doc\textbackslash orbiter\_lua.chm.\\
 Various dialogs in Orbiter have a Help button which provide context-sensitive help by jumping to the appropriate page in the inline help system.\\
 Some vessel classes, as well as specific scenarios, come with their own sections for the inline help system. You can call these up with the Scenario and Vessel buttons at the top of the help window.\\
