@@ -30,6 +30,7 @@ add_dependencies(LuaInterpreter
 	D3D9Client
 	D3D9Client_Interface
 	XRSound_lib
+	XRSound_assets
 )
 
 set_target_properties(LuaInterpreter

@@ -86,7 +86,7 @@ const char *CLBKNAME[NCLBK] = {
 	"panelredrawevent",
 	"loadVC",
 	"visualcreated",
-	"visualdestroyes",
+	"visualdestroyed",
 	"VCmouseevent",
 	"VCredrawevent",
 	"drawHUD",
