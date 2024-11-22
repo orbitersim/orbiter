@@ -36,6 +36,12 @@ The camera direction can be changed by right-clicking and dragging the mouse. Ho
 \textbf{Engine and RCS display}\\
 This display block in the top left corner of the glass cockpit shows the current engine status and provides controls for RCS mode and pitch trim.
 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\hsize]{cockpit_glass_disp.png}
+  \caption{Glass cockpit engine and RCS display block}
+\end{figure}
+
 \begin{itemize}
 \item \textbf{Fuel status:} Shows the propellant remaining in the main fuel tank. The numeric readout is fuel mass [kg]. Note that the vessel may have additional fuel tanks not shown in the generic glass cockpit view. Use vessel-specific 2-D or 3-D cockpit view for detailed fuel information.
 \item \textbf{Main engine:} The main engine bar shows the current main/retro engine thrust as a fraction of max. thrust. Green indicates main thrusters active, red indicates retro thrusters active (where applicable). The numerical readout is the thrust force generated [N]. 
@@ -45,12 +51,6 @@ This display block in the top left corner of the glass cockpit shows the current
 
 \end{itemize}
 
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.5\hsize]{cockpit_glass_disp.png}
-  \caption{Glass cockpit engine and RCS display block}
-\end{figure}
 
 \noindent
 \\
@@ -119,10 +119,10 @@ On opening panel view by cycling the cockpit modes with \keystroke{F8}, you are 
 \end{figure}
 
 \noindent
-Most panels can be scrolled out of the way to get a better view of the surroundings. For example, press \DArrow$_{Cur}$ to scroll the Delta-glider's main panel down. The overhead panel can be scrolled up with \UArrow$_{Cur}$. The scroll speed can be adjusted with the Panel scroll speed option in the \textit{Options} tab of the Orbiter launchpad (see section \ref{ssec:options_tab}).\\
+Most panels can be scrolled out of the way to get a better view of the surroundings. For example, press \DArrow$_{Cur}$ to scroll the Delta-glider's main panel down. The overhead panel can be scrolled up with \UArrow$_{Cur}$. The scroll speed can be adjusted with the Panel scroll speed option in the \textit{Options} tab of the Orbiter launchpad (see section \ref{sssec:launchpad_instr_panels}).\\
 For most vessel types, panels are automatically scaled to fit the simulation window size. If a panel's natural size is larger than the simulation window size and resolution, the panel will be shrunk to fit. In that case, you can zoom into a panel section under the mouse with \Ctrl + mouse wheel.\\
-Note that not all vessel implementations may support this feature. Older add-ons use a legacy panel interface which doesn't automatically scale to fit. For such vessels, you can use the Panel scale option in the \textit{Options} tab of the Orbiter launchpad to rescale panels globally (see section \ref{ssec:options_tab}).\\
-Panel controls can be operated with the mouse. For details on the panel components of a spacecraft and how to use them, consult the separate documents that come with that vessel.\\
+Note that not all vessel implementations may support this feature. Older add-ons use a legacy panel interface which doesn't automatically scale to fit. For such vessels, you can use the Panel scale option in the \textit{Options} tab of the Orbiter launchpad to rescale panels globally (see section \ref{sssec:launchpad_instr_panels}).\\
+Panel controls can be operated with the mouse. For details on the panel components of a spacecraft and how to use them, consult the documentation that comes with that vessel.\\
 A standard HUD display is superimposed on the panel view. It works the same way as in glass cockpit view. The available HUD modes are described in section \ref{ssec:hud_modes}.\\
 The camera view of the outside world can be rotated by right-clicking and dragging the mouse. The field of view can be changed with the mouse wheel. This has no effect on the panel display. The HUD is only visible when looking straight ahead. To return to forward view, press \Home$_{Cur}$.
 
@@ -154,7 +154,7 @@ The projection colour can be cycled with \Alt\keystroke{H} to improve display co
 All modes display a centre line marker to represent the spacecraft's longitudinal axis (forward direction).\\
 \\
 \textbf{Surface mode}\\
-In \textit{Surface} mode, the HUD provides attitude information relative to the local horizon. At the top, the compass ribbon shows the current heading with regard to true north. If a surface base has been targeted in the Map MFD (see section \ref{ssec:mfd_map}), its bearing is indicated with a marker in the compass ribbon. The pitch ladder shows the current pitch and bank angles. The readout left of the compass ribbon shows true airspeed (TAS) [m/s] if atmospheric density is sufficiently high to measure it, or ground-speed (GS) otherwise. The readout right of the ribbon shows altitude [m] above the mean planet radius (at high altitude) or radar altitude above the surface (at low altitude), indicated by R.\\
+In \textit{Surface} mode, the HUD provides attitude information relative to the local horizon. At the top, the compass ribbon shows the current heading with regard to true north. If a surface base has been targeted in the Map MFD (see section \ref{ssec:mfd_map}), its bearing is indicated with a marker in the compass ribbon. The pitch ladder shows the current pitch and bank angles. The readout left of the compass ribbon shows true airspeed (TAS) [m/s] if atmospheric density is sufficiently high to measure it, or ground-speed (GS) otherwise. The readout right of the ribbon shows altitude [m] above the mean planet radius (at high altitude) or radar altitude above the surface (at low altitude), indicated by "R" next to the altitude number.\\
 The flight path indicator ($\oplus$) represents the current flight direction (the velocity vector in the local horizon frame). A flight path marker located below the centre marker indicates a positive AOA (angle of attack).
 
 \begin{figure}[H]

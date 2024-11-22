@@ -20,8 +20,8 @@ The MFDs can be operated either by left-clicking the buttons with the mouse, or 
 The PWR button activates and deactivates the MFD display (keyboard shortcut: \Shift\keystroke{Esc}). In glass cockpit mode, turning off the MFD also hides the buttons (except the power button, so it can be turned on again).\\
 \\
 \textbf{Mode selection}\\
-The SEL button activates the \textit{mode selection screen} (keyboard shortcut: \Ctrl\keystroke{F1}). Each MFD mode provides information for a different navigation or avionics situation (orbital parameters, surface parameters, docking and landing aids, etc.) The default modes are described below in this section. Many additional modes are available via 3$^{rd}$ party add-ons.\\
-The mode selection screen shows the available modes in the display area, one mode next to each function button. To select a mode, simply click the corresponding button. For selection with the keyboard, press the \Ctrl key together with the mode selection key displayed in grey with each of the listed modes (for example, \Ctrl\keystroke{O} for Orbit mode).
+The SEL button activates the \textit{mode selection screen} (keyboard shortcut: \Shift\keystroke{F1}). Each MFD mode provides information for a different navigation or avionics situation (orbital parameters, surface parameters, docking and landing aids, etc.) The default modes are described below in this section. Many additional modes are available via 3$^{rd}$ party add-ons.\\
+The mode selection screen shows the available modes in the display area, one mode next to each function button. To select a mode, simply click the corresponding button. For selection with the keyboard, press the \Shift key together with the mode selection key displayed in grey with each of the listed modes (for example, \Shift\keystroke{O} for Orbit mode).
 
 \begin{figure}[H]
   \centering
@@ -29,7 +29,7 @@ The mode selection screen shows the available modes in the display area, one mod
 \end{figure}
 
 \noindent
-If there are more modes than can be displayed in a single page, pressing SEL (or \Ctrl\keystroke{F1}) repeatedly cycles through all mode pages. Pressing SEL on the last mode page returns to the previously selected MFD mode. Note that mode selection with keyboard shortcuts works from any of the mode selection pages, even if the requested mode is not displayed on the current page.\\
+If there are more modes than can be displayed in a single page, pressing SEL (or \Shift\keystroke{F1}) repeatedly cycles through all mode pages. Pressing SEL on the last mode page returns to the previously selected MFD mode. Note that mode selection with keyboard shortcuts works from any of the mode selection pages, even if the requested mode is not displayed on the current page.\\
 \\
 \textbf{Function buttons}\\
 The function of the buttons to the left and right of the display depends on the current MFD mode, and their labels change accordingly. Functions and user interface for the standard MFD modes are described below. For modes provided by 3$^{rd}$ party add-ons, consult the accompanying documentation. In some cases the buttons may act as switches, where each press executes a discrete operation. In other cases it may be necessary to press down a button continuously to adjust a parameter.
@@ -40,7 +40,7 @@ The function of the buttons to the left and right of the display depends on the 
 \end{figure}
 
 \noindent
-Function buttons for the two main MFD instruments can also be activated with \Ctrl-key combinations. On pressing the MNU button below the bottom edge of the screen (keyboard shortcut: \Ctrl\keystroke{`}) a short description of all function buttons for this mode is displayed, together with the keyboard shortcuts to activate them. Pressing MNU again, or pressing a function button, restores the display.\\
+Function buttons for the two main MFD instruments can also be activated with \Shift-key combinations. On pressing the MNU button below the bottom edge of the screen (keyboard shortcut: \Shift\keystroke{`}) a short description of all function buttons for this mode is displayed, together with the keyboard shortcuts to activate them. Pressing MNU again, or pressing a function button, restores the display.\\
 In glass cockpit view, and in most instrument panels in Orbiter, each MFD has 12 function buttons, but individual spacecraft can adopt a different layout in their panels. If an MFD mode assigns more function buttons than are physically present, pressing MNU repeatedly cycles through the available function pages.\\
 \\
 \textbf{Colour customisation}\\
@@ -49,7 +49,7 @@ The default colour schemes for MFD displays can be modified by editing the Confi
 
 \subsection{NAV receiver/transmitter setup}
 \label{ssec:mfd_comnav}
-The \textit{COM/NAV setup} MFD mode provides an interface to the ship's navigation radio receivers which feed data into the navigation instruments. It also allows to select the frequency of the ship's long-range transponder which sends a signal identifying the vessel and its position. The mode is activated via the COM/NAV entry from the MFD mode selection page (shortcut: \Ctrl\keystroke{,} + \Ctrl\keystroke{.}).\\
+The \textit{COM/NAV setup} MFD mode provides an interface to the ship's navigation radio receivers which feed data into the navigation instruments. It also allows to select the frequency of the ship's long-range transponder which sends a signal identifying the vessel and its position. The mode is activated via the COM/NAV entry from the MFD mode selection page (shortcut: \Shift\keystroke{,} + \Shift\keystroke{.}).\\
 \\
 \textbf{Key options:}
 
@@ -150,7 +150,8 @@ The display contains an attitude indicator (AI) with horizon line and pitch ladd
 \begin{itemize}
 \item TAS (true airspeed): The speed of the spacecraft relative to the surrounding atmosphere. Airspeed is usually measured with a pitot tube in the airstream recording the difference between free-stream and stagnation point pressure. The TAS mode is only available if the free-stream pressure $p_{1}$ > 10$^{-3}$ Pa (on Earth, this corresponds to approx. 140 km altitude). If TAS cannot be measured, the speed tape is reset to 0 and the readout shows "-{}-{}-{}-".
 \item IAS (indicated airspeed): Commonly used in conventional aircraft. IAS is calibrated to atmospheric density and speed of sound at sea level. IAS and TAS are similar at low altitude, but start to diverge at higher altitudes, with IAS < TAS. The limit $p_{1}$ > 10$^{-3}$ Pa also applies to IAS availability.
-\item GS (ground-relative speed): The magnitude of the vessel's velocity vector in the rotating planet reference frame. This is similar to TAS at lower altitudes, but diverges at higher altitudes. Usually, TAS is no longer available where the differences would become significant. \textit{Note:} for an object in geostationary orbit, GS would be zero since it is stationary relative to the rotating planet frame.
+\item GS (ground-relative speed): The magnitude of the vessel's velocity vector in the rotating planet reference frame. This is similar to TAS at lower altitudes, but diverges at higher altitudes. Usually, TAS is no longer available where the differences would become significant.
+\infobox{For an object in geostationary orbit, GS would be zero since it is stationary relative to the rotating planet frame.}
 \item OS (orbital speed): The magnitude of the vessel's velocity relative to the planet's centre in a non-rotating frame. This is identical to the Vel readout in the \textit{Orbit} MFD. Note: OS is usually non-zero for a vessel at rest on the planet surface, because the planet itself is rotating.
 \end{itemize}
 
@@ -263,7 +264,7 @@ Display options can be selected from the configuration page (DSP, \Shift\keystro
 
 
 \subsection{VOR/VTOL}
-The VOR/VTOL MFD mode is a navigational aid that provides position information with respect to a signal transmitter (VOR) or a landing pad for vertical take-off and landing. (see also section \ref{ssec:mfd_hsi} on HSI mode). The circular display on the left shows a top-down view of the transmitter location and bearing relative to the current vessel position in the centre of the display. The two bars to the right show vessel altitude and vertical speed.\\
+The VOR/VTOL MFD mode is a navigational aid that provides position information with respect to a signal transmitter (VOR) or a landing pad for vertical take-off and landing (see also section \ref{ssec:mfd_hsi} on HSI mode). The circular display on the left shows a top-down view of the transmitter location and bearing relative to the current vessel position in the centre of the display. The two bars to the right show vessel altitude and vertical speed.\\
 This MFD mode can be linked to one of the ship's NAV receivers. The current receiver and frequency are shown in the upper right corner of the display. If a signal is received, the transmitter ID is displayed in the second line. If the ship is equipped with more than a single NAV receiver, the receiver stack can be cycled with \Shift\keystroke{N}. To set the receiver frequencies, use the COM/NAV MFD mode (see section \ref{ssec:mfd_comnav}).\\
 \\
 \textbf{Key options:}
@@ -368,7 +369,7 @@ The refresh rate for the HSI MFD mode is 4 Hz or the user selection in the Launc
 \textbf{To use the HSI for instrument landing:}
 
 \begin{itemize}
-\item Make sure the runway is equipped with ILS (use he spaceport info dialog, \Ctrl\keystroke{I}), and tune one of your NAV receivers to the appropriate frequency.
+\item Make sure the runway is equipped with ILS (use the spaceport info dialog, \Ctrl\keystroke{I}), and tune one of your NAV receivers to the appropriate frequency.
 \item As soon as the ILS transmitter is in range, the OBS indicator turns to the approach direction and can be used as a localiser indicator for longitudinal alignment with the runway centreline.
 \item At the same time, the glideslope indicator will become active. When both indicators are centred to form a cross-hair, you are on course and on glideslope to the runway.
 \end{itemize}
@@ -1090,7 +1091,7 @@ TransX divides all flights into stages, in which different central bodies are do
 
 \item Slingshot: TODO
 \item Encounter: Used to show information about the arrival planet. It has no function other than to show extra information on a planet, including surface base.
-\item Sling Direct: TODO
+\item Sling Direct: TODO after slingshot?
 \item Eject Plan: Used to leave SOI of this planet/moon for another, e.g. Earth to Mars. Best to plan before you take off.
 \item Escape Plan: Used to leave SOI of this planet/moon for another, e.g. Earth to Mars. Best to plan before you take off.
 \end{itemize}
@@ -1103,7 +1104,7 @@ TransX divides all flights into stages, in which different central bodies are do
 	\hline\rule{0pt}{2ex}
 	\textbf{Variable} & \textbf{Description} & \textbf{Options}\\
 	\hline\rule{0pt}{2ex}
-	Select Target & Select where you're going & Celestial body or "Escape"\\%TODO planets/moons or ships
+	Select Target & Select where you're going & Celestial body or "Escape", or vessels\\
 	\hline\rule{0pt}{2ex}
 	Autoplan & Automatically sets plan types & "On", "Off"\\
 	\hline\rule{0pt}{2ex}
@@ -1141,9 +1142,9 @@ TransX divides all flights into stages, in which different central bodies are do
 	\hline\rule{0pt}{2ex}
 	Equatorial view (Escape Plan view) & Show orbit in equatorial view, or in polar view, from the North & "No", "Yes"\\
 	\hline\rule{0pt}{2ex}
-	Pe Distance (Escape Plan view) & Periapsis of planned orbit & TODO\\
+	Pe Distance (Escape Plan view) & Periapsis of planned orbit & Number [m]\\
 	\hline\rule{0pt}{2ex}
-	Ej Orientation (Escape Plan view) & Use to rotate planned orbit around axis of departure direction & TODO\\
+	Ej Orientation (Escape Plan view) & Use to rotate planned orbit around axis of departure direction & Number [°]\\
 	\hline\rule{0pt}{2ex}
 	Draw Base (Encounter view) & Choose to draw the base & "Off", "On"\\
 	\hline\rule{0pt}{2ex}
@@ -1171,7 +1172,31 @@ Once "Begin Burn" reaches 0 you should fire the main engines, and then monitor t
 The vessel is now in its way to the Moon. As you leave Earth behind, Stage 1 will disappear and be replaced with what was previously Stage 2.\\
 A mid-course correction might be needed to correct the vessel's periapsis distance at the Moon. To do so, just setup a maneuver as previously described, but this time editing the "Outward vel." variable is likely the most effective way to change the trajectory. Now you can more precisely target a closest approach distance. After the burn, set the variable "Manoeuvre mode" to "Off".\\
 As the vessel approaches the lunar periapsis, a burn needs to be performed, to slow the vessel into lunar orbit. Setup a maneuver, the time should be the periapsis time, and set the variable "Prograde vel." to the negative of the value indicated in the "Circ Delta" (negative because the vessel needs to slow down). The yellow dashed line of the estimated trajectory should show a roughly circular orbit around the Moon.\\
-Perform the burn, and once that is complete, the vessel should be in circular Lunar orbit!
+Perform the burn, and once that is complete, the vessel should be in circular Lunar orbit!\\
+
+
+\paragraph{Earth surface to Mars}
+For a mid-difficulty TransX flight: a flight from the surface of the Earth all the way to the surface of Mars.\\
+This flight will require 3 stages: first an Earth-centered stage to leave Earth, second a Sun-centered stage for the Hohmann transfer orbit between Earth and Mars, and a third stage for the arrival at Mars.\\
+Load the scenario "Navigation\textbackslash Transx\textbackslash Earth to Mars", open TransX, which will display the now familiar "Setup" view in Stage 1. Set the variable "Select Target" to "Escape", and then press FWD (\Shift\keystroke{F}) to create Stage 2, centered on the Sun. In this stage, the variable "Select Target" now has a list of planets to choose from. Using "++" (\Shift\keystroke{=}) or "--" (\Shift\keystroke{-}) select "Mars", and you can then press FWD again to create a Mars-centered stage.\\
+With the stages determined, we need to define the Earth/Mars Hohmann transfer orbit, which is done in Stage 2. Switch to "Eject Plan" view ("VW" or \Shift\keystroke{W}), and increase the value of the "Prograde vel." variable until the apoapsis is near the orbit of Mars. Then, increase the "Man. date" variable until the intersection of the orbits is at the plane intersection (gray line). Fine-tuning these 2 variables should provide a fairly close approach (the buttons "ADJ" (\Shift\keystroke{\{}) and "AJ-" (\Shift\keystroke{\}}) control the rate of change of the variables). Some out-of-plane $\Delta$v might be needed, in the "Ch. plane vel." variable, but it should be small. On the lower-right corner of the display, the Time-Of-Flight (TOF) and Total DeltaV for the Hohmann transfer orbit are shown.\\
+You can of course choose the encounter to occur at another place in the orbit besides the Earth/Mars plane intersection, by adding velocity to the variable "Ch. plane vel.", but that will naturally cost more $\Delta$v.\\
+Another option available is to use the "Outward vel." variable. With positive values, the departure trajectory will be forced a bit outward, allowing for a later departure time than the optimum. With negative values, earlier departures times than the optimum will be possible, as the trajectory is forced a bit inward. This allows flexibility in the departure time, but again, it will cost more $\Delta$v.\\
+The process above establishes the Earth departure trajectory, which is shown in Stage 1 as the yellow dashed hyperbola line, with the yellow straight line indicating the periapsis. In blue is the circular parking orbit, that gives access to the planned departure trajectory. In green is the current vessel position and orbit. We now need to determine a parking orbit that allows access to the departure trajectory.\\
+Switch to "Escape Plan" view, to access variables that control that display and the departure trajectory. The display is controlled with variable "Equatorial view", which determines if an equatorial (North pole at the top) or polar view (from the North pole) of the Earth will be presented.\\
+The final control over the departure trajectory is provided in 2 ways: (1) periapsis distance and (2) the orientation of the departure trajectory.\\
+For best performance, the periapsis ("Pe Distance") should be a low value (still outside the atmosphere), so 200km altitude is a good value. This is also the altitude of the parking orbit.\\
+The "Ej Orientation" variable controls the rotation of the departure hyperbola plane around the departure vector. You can launch at any time by rotating the departure plane such that it intersects with the launch site, and the required launch azimuth to the parking orbit is shown in "Heading", on the lower left of the display. In theory, the departure plane can be rotated such that it requires the vessel to be launched into a polar orbit, but in practice, the launch azimuth should be close to 90°, which is the most efficient azimuth to launch.\\
+The best time to launch is just before the "Man. date", set back in the "Eject Plan" view in Stage 2. Find a time and an "Ej Orientation" angle that results in a "Heading" close to 90° (a value between 80° and 100° should be good enough). Also, the launch site should be co-planar with the departure plane, which occurs when the vessel (green line) is over the gray line. Once these conditions are met, you are go for launch!\\
+Take-off, and turn to the indicated heading. Note that once airborne, "Heading" parameter is replaced with "Rel Inc", showing the angle between the vessel and departure planes. Try to minimize this value as you make your way to orbit. Once in orbit, the plane error can be nulled by thrusting normal to the orbit, when the vessel is crossing the departure plane (gray line).\\
+The departure burn is mostly performed in a prograde direction, so the usual "Target" view is not used, instead continue using the "Escape Plan" view. As in the "Target" view, time to ignition (both instantaneous and factoring main engine performance) is shown. This is updated every orbit to allow for more departure opportunities. Also in the same way as the "Target" view, shut the engines down when "Delta V" decreases to zero (or a very small value).\\
+Some active manual control will be needed during the burn, to achieve the planned departure trajectory. Soon after the burn starts, the parameter "S.maj diff" will be displayed on the bottom left of the display, indicating the angular difference between the semi-major axes of the departure hyperbola and the vessel. Carefully pitch up or down (in-plane) during the burn to make this error as small as possible. Another parameter which should be a minimal as possible is the "Rel Inc". Control this by carefully pointing the vessel out-of-plane.\\
+The Earth-departure burn will almost certainly have errors, so target a mid-course correction maneuver for about 2-4 weeks after leaving Earth. By this point, the original Earth-centered Stage 1 should already have replaced with the Sun-centered stage, so go to "Manoevre" view in this "new" Stage 1, and setup a maneuver to reduce the encounter distance. After that, enjoy the next few months of interplanetary travel... or use time acceleration to skip that part.\\
+About one month before arrival is a good time to adjust the trajectory again, not only to take out errors but also to start targeting the Olympus surface base. Perform another mid-course correction maneuver, targeting a surface impact at around 12.74° North latitude, which is the latitude of the Olympus base. Because Mars has an atmosphere, a shallow approach trajectory (periapsis not that far below the surface) is recommended. Targeting the correct longitude (135.43° West, shown as a negative value in TransX) is a bit more tricky, but some adjustments to the arrival time will put the surface base close to the our trajectory, as it rotates around Mars.\\
+More similar corrections might be needed as the vessel approaches Mars, and the trajectory estimate gets more accurate. A few hours before landing open MapMFD, and select Olympus surface base, so TransX will use it as a target and replace the impact coordinates with the parameter "L.site dist to Base", displaying the distance between the base and the vessel surface impact. This selection process might have to be repeated, as the target base is "forgotten" when the vessel is closer to another body (e.g., a moon) than to the target body. You can then use the RCS to make small trajectory changes and get closer to Olympus.\\
+Trajectory changes get more expensive as the vessel approaches Mars, so eventually whatever errors exist will remain. Better prepare for atmospheric entry, and then landing at the Olympus base!\\
+Can you now get back to Earth?\\
+
 
 
 \end{document}

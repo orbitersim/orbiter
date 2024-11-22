@@ -289,14 +289,13 @@ A spotlight mounted beneath the nosecone can be configured as a landing light ("
   \caption{Docking/landing lights, strobes and navigation lights (right overhead panel).}
 \end{figure}
 
-\noindent
-Note that for the cockpit floodlights and eternal landing/docking lights to work, \textit{local light source} support must be enabled on the \textit{Visual effects} tab of the Orbiter Launchpad dialog.
-
 \begin{figure}[H]
   \centering
   \includegraphics[width=\hsize]{dg_light_land.png}
   \caption{DG with landing lights.}
 \end{figure}
+
+\alertbox{For the cockpit floodlights and external landing/docking lights to work, \textit{local light source} support must be enabled on the \textit{Visual effects} tab of the Orbiter Launchpad dialog.}
 
 
 \subsubsection{Script interface}
@@ -441,7 +440,8 @@ DG and DG-S spacecraft can be created, edited and deleted from the scenario edit
 This page provides a set of controls to directly configure some of the DG's states and associated animations:
 
 \begin{itemize} 
-\item Landing gear up/down (Note that this doesn't work for a DG with raised landing gears sitting on a planetary surface, e.g. after a belly landing, because there is no space for extending the gear.)
+\item Landing gear up/down
+\alertbox{A DG with raised landing gears sitting on a planetary surface, e.g. after a belly landing, can't extend the gears because there is no space for them.}
 \item Retro engine covers open/close
 \item Nose cone open/close
 \item Outer and inner airlock doors open/close
@@ -521,7 +521,7 @@ Some design and operational parameters of the DG and DG-S spacecraft classes:
 \end{figure}
 
 \noindent
-The Shuttle-A class is a cargo vessel designed for a low gravity/low pressure operational environment. Its primary area of deployment is for transport duty between LEO (low Earth orbit), the Moon, Mars and and potentially moons in the outer solar system. In its current configuration it is also capable of achieving orbit from Earth's surface, but this requires a precise ascent profile.\\
+The Shuttle-A class is a cargo vessel designed for a low gravity/low pressure operational environment. With up to 6 cargo containers, its primary area of deployment is for transport duty between LEO (low Earth orbit), the Moon, Mars and and potentially moons in the outer solar system. In its current configuration it is also capable of achieving orbit from Earth's surface, but this requires a precise ascent profile.\\
 The engine layout consists of a set of two main engines, two hover engines, and two engines in central side pods which can be rotated around 180° for retro thrust or to assist the main or hover engines.\\
 The Shuttle-A contains a docking port and airlock below the habitat module which is protected by a hatch during atmospheric flight.\\
 The avionics systems include, besides two standard MFD instruments, also a configurable attitude director indicator (ADI) for navigation.
@@ -540,14 +540,13 @@ Cockpit views can be cycled with \keystroke{F8} between generic glass cockpit, 2
 \end{figure}
 
 \paragraph{Main panel}
-The 2-D cockpit view consists of main and overhead panels. They can be switched between with \Ctrl\UArrow and \Ctrl\DArrow. The main panel contains the primary avionics instruments - left and right MFD (see section \ref{sec:mfd} for standard MFD modes), ADI ball and controls (see section \ref{para:shuttlea_adi}) and speed, altitude and vertical speed readouts.\\
+The 2-D cockpit view consists of main and overhead panels. They can be switched between with \Ctrl\UArrow and \Ctrl\DArrow. The main panel contains the primary avionics instruments - left and right MFD (see section \ref{sec:mfd} for standard MFD modes), ADI ball and controls and speed, altitude and vertical speed readouts.\\
 The engine block is located in the bottom centre of the panel. Main, hover and auxiliary thrusters can be operated individually, by engaging the throttle controls separately, or in pairs, by clicking and dragging between throttle sliders.\\
-Left of the throttle block is the auxiliary pod control panel which can be used to rotate the pods and has readouts for current orientation (see section \ref{para:shuttlea_auxpod}).\\
+Left of the throttle block is the auxiliary pod control panel which can be used to rotate the pods and has readouts for current orientation.\\
 Above the throttle block are readouts for tank and engine status, including fuel mass, delta-V estimates, thrust force and acceleration, and fuel flow rates.\\
 At the top centre of the panel are located tape indicators for speed, vertical speed and altitude. At the left are the controls for RCS mode and programs, at the right is the HUD mode selector.
 
 \paragraph{Attitude reference and ADI}
-\label{para:shuttlea_adi}
 The attitude director indicator (ADI) provides feedback to the pilot about the spacecraft orientation with respect to a given frame of reference. It consists of a ball that can rotate and is always aligned with the reference frame, and a direction index representing the orientation of the spacecraft (given its pitch, yaw and roll angles) relative to the frame.
 
 \begin{figure}[H]
@@ -622,11 +621,10 @@ v:set_adilayout(layout)
 \noindent
 where v is an interface instance to Shuttle-A vessel and \textit{layout} is 0 or 1.\\
 Note that the two layouts don't alter the behaviour of the ADI ball, just the markings painted on it. They do however represent different attitude angle interpretations, i.e. the Euler angles differ between the two layouts.
-The Tutorials\textbackslash ADI training scenario is an interactive tutorial that demonstrates the ADI concept and operation directly in Orbiter. Try it!
+The "Tutorials\textbackslash ADI training" scenario is an interactive tutorial that demonstrates the ADI concept and operation directly in Orbiter. Try it!
 
 
 \paragraph{Auxiliary pod control}
-\label{para:shuttlea_auxpod}
 The two auxiliary engine pods mounted at the central rib of the Shuttle-A's payload spine can be rotated  around the transversal axis by 180° to point the installed engines either aft (to assist with main thrust), downward (to assist with hover thrust), forward (to provide retro thrust) or at any intermediate position. The pod rotation controls are located left of the throttle block.
 
 \begin{figure}[H]
@@ -649,8 +647,7 @@ When launching a fully loaded Shuttle-A from Earth's surface, the auxiliary pods
 \paragraph{Overhead panel}
 The overhead panel contains a display for tank and engine status. It has readouts for current tank fill status and mass flow rates for the main fuel pumps.~\\
 The panel also contains controls for operating the docking covers, gear struts and outer/inner airlock hatches.\\
-Located on the right side of the panel are the controls for releasing the six cargo containers the Shuttle-A can carry. To release a cargo container, first arm the release mechanism (main control switch from SAFE to ARM). Then click on a container position (L/R 1-3) to release it. Empty payload positions are marked with a red border. When done, return the main control switch back to SAFE.\\
-Containers can be released on the ground or during flight. On the ground, make sure to move the landing gear struts to "squatting" position to set the containers down gently. You can drop containers while in low-level flight over a planetary surface (don't drop them from high altitude or at high speed to avoid damaging them or your ship), or during orbital operations. If releasing in weightless conditions (in orbit), use RCS to move away from the released container (up or down in linear RCS mode).
+Located on the right side of the panel are the controls for releasing the six cargo containers the Shuttle-A can carry. See section \ref{sssec:shuttlea_cargo} for information on the cargo containers.
 
 \subsubsection{Keyboard controls}
 In addition to the generic Orbiter vessel control keys, the Shuttle-A supports the following vessel-specific key controls:
@@ -674,6 +671,15 @@ In addition to the generic Orbiter vessel control keys, the Shuttle-A supports t
 	\hline
 	\end{longtable}
 %\end{table}
+
+
+\subsubsection{Cargo containers}
+\label{sssec:shuttlea_cargo}
+The Shuttle-A can carry up to 6 cargo containers, each with a mass of 20.0 $\cdot$ 10$^{3}$ kg. The cargo container controls are located in the overhead cockpit panel.\\
+To release a cargo container, first arm the release mechanism (main control switch from SAFE to ARM). Then click on a container position (L/R 1-3) to release it. Empty payload positions are marked with a red border. When done, return the main control switch back to SAFE.\\
+Containers can be released on the ground or during flight. On the ground, make sure to move the landing gear struts to "squatting" position to set the containers down gently. You can drop containers while in low-level flight over a planetary surface (don't drop them from high altitude or at high speed to avoid damaging them or your ship), or during orbital operations. When cargo containers are released in the atmosphere, parachutes will deploy to slow down their descent. If releasing in weightless conditions (in orbit), use RCS to move away from the released container (up or down in linear RCS mode).\\
+To retrieve a cargo container, the Shuttle-A must be landed such that the cargo container is in the intended bay, and must have the gear in "squat". Set the main control switch from SAFE to ARM, and click on the desired container position button to attach the cargo container.
+
 
 \subsubsection{Technical specifications}
 Some design and operational parameters of the Shuttle-A spacecraft class:
@@ -796,7 +802,7 @@ The cockpit layout consists of a set of 2D panels that include MFD instruments, 
 	\hline\rule{0pt}{2ex}
 	Thrust & 1.0 & kN & (per RCS engine)\\
 	\hline\rule{0pt}{2ex}
-	Acceleration & 0.18 & m/s2 & (linear RCS engine pair thrust, at full load)\\
+	Acceleration & 0.18 & m/s$^{2}$ & (linear RCS engine pair thrust, at full load)\\
 	\hline\rule{0pt}{2ex}
 	Isp & 4.0 $\cdot$ 10$^{3}$ & m/s & (vacuum)\\
 	\hline\rule{0pt}{2ex}
@@ -862,7 +868,7 @@ Typical closing time for an isol. valve is about 3 seconds. Given that isol. val
 \end{figure}
 
 \noindent
-Second row of switches controls cross-feed valves in the cryogenic manifold (XFEED). Normal piping configuration is tank 1 supplying reactant to FC1, tank 2 supplying reactant to FC2 and tank 3 functioning as back-up and ECLSS supply. By positioning the XFEED switch 1 to open, tanks 1and 3 will supply reactants to both FC1 and ECLSS.\\
+Second row of switches controls cross-feed valves in the cryogenic manifold (XFEED). Normal piping configuration is tank 1 supplying reactant to FC1, tank 2 supplying reactant to FC2 and tank 3 functioning as back-up and ECLSS supply. By positioning the XFEED switch 1 to open, tanks 1 and 3 will supply reactants to both FC1 and ECLSS.\\
 Positioning the XFEED switch 2 to open, tanks 2 and 3 supply reactants to FC2 and ECLSS. Opening both XFEED valves, tanks 1, 2 and 3 supply reactants to FC1, FC2 and ECLSS.\\
 Last two switches on the last row (REAC VLV) control the reactant valves to the respective fuel cells. Same operating procedures apply as for the tank isolation valves, with a closing time of $\sim$3
 seconds and a power supply from the ships' battery.\\
@@ -874,7 +880,7 @@ Lower on the panel, two switches (CRYO ISOL VLV) control isolation valves that s
 \end{figure}
 
 \noindent
-OVB DUMP valves represent a high capacity (up to 450gr/sec) overboard vent valve, for quick discharge of reactants in case of emergency. OVB VENT valves are safety overpressure valves, that pneumatically open when reactant pressure exceed certain safety limits. In the case of O2, the safety overpressure valve will open at 1500 kPa and re-settle at 1450 kPa. For H2 the overpressure valve will open at 2500 kPa and re-settle at 2450kPa. For the H2O waste tank, the valve will open at 1000kPa and re-settle at 900kPa. The two H2O vent valves are non-propulsive, in that it will not affect the state vector of the ship. H2 and O2 valves, both DUMP and OVP will impact a small propulsive (-y axis) force when discharging. The high-capacity DUMP valves might take up to 10 second for opening/closing. A TB will indicate when the motor is operating. Additionally a OP/CL indicator will permanently indicate the respective position of the DUMP valve. Power for the high-capacity DUMP valve motor is also supplied by the battery and is not selectable by the crew.
+OVB DUMP valves represent a high capacity (up to 450 gr/sec) overboard vent valve, for quick discharge of reactants in case of emergency. OVB VENT valves are safety overpressure valves, that pneumatically open when reactant pressure exceed certain safety limits. In the case of O2, the safety overpressure valve will open at 1500 kPa and re-settle at 1450 kPa. For H2 the overpressure valve will open at 2500 kPa and re-settle at 2450 kPa. For the H2O waste tank, the valve will open at 1000 kPa and re-settle at 900 kPa. The two H2O vent valves are non-propulsive, in that it will not affect the state vector of the ship. H2 and O2 valves, both DUMP and OVP will impact a small propulsive (-y axis) force when discharging. The high-capacity DUMP valves might take up to 10 second for opening/closing. A TB will indicate when the motor is operating. Additionally a OP/CL indicator will permanently indicate the respective position of the DUMP valve. Power for the high-capacity DUMP valve motor is also supplied by the battery and is not selectable by the crew.
 
 \begin{figure}[H]
   \centering
@@ -883,7 +889,7 @@ OVB DUMP valves represent a high capacity (up to 450gr/sec) overboard vent valve
 
 \noindent
 TK HEATERS switches control electrical heaters that are located inside each cryogenic tank. Middle position (AUTO) will automatically turn the heaters on/off to maintain reactant pressure within operational limits.\\
-When the heaters are at to AUTO position, the heaters will automatically be turned on for every tank that reaches a minimum operational pressure of 450kPa, for both O2 and H2 tanks, then turned off when the pressure reaches again 470kPa.As the tanks are depleted, the TK HEATERS should be turned to the off position to save electrical power and to prevent an overheating of the reactants. Basic FC operation is based on supercold reactants flowing throughout the FC stack for cooling purposes. Excessive heating of the reactants in order to maintain pressure means warmer reactants will enter the FC stack, which might lead to a FC overheating. An overheated FC will also produce warmer H2O as a byproduct, which in turn is used a a general coolant throughout the ship to maintain a thermal balance. A higher H2O temperature in the H2O tank means warmer water will flow through the coolant loops, leading to a large number of problems. Tank heaters are powered by their own DC bus, HTRS bus, linked to DC1.
+When the heaters are at to AUTO position, the heaters will automatically be turned on for every tank that reaches a minimum operational pressure of 450 kPa, for both O2 and H2 tanks, then turned off when the pressure reaches again 470 kPa.As the tanks are depleted, the TK HEATERS should be turned to the off position to save electrical power and to prevent an overheating of the reactants. Basic FC operation is based on supercold reactants flowing throughout the FC stack for cooling purposes. Excessive heating of the reactants in order to maintain pressure means warmer reactants will enter the FC stack, which might lead to a FC overheating. An overheated FC will also produce warmer H2O as a byproduct, which in turn is used a a general coolant throughout the ship to maintain a thermal balance. A higher H2O temperature in the H2O tank means warmer water will flow through the coolant loops, leading to a large number of problems. Tank heaters are powered by their own DC bus, HTRS bus, linked to DC1.
 
 \paragraph{Fuel Cells \& Battery}
 
@@ -1176,7 +1182,7 @@ H. FC PURGE
 The ECLSS maintains the spacecraft's thermal stability and provides a pressurized, habitable environment for the crew and onboard avionics. The ECLSS also manages the storage and disposal of water and crew waste. ECLSS is functionally divided into three systems:
 
 \begin{itemize}
-\item \textbf{Pressure control system}, which maintains the crew compartment at 103kPa with a breathable mixture of oxygen and nitrogen. Nitrogen is also used to pressurize the supply and wastewater tanks.
+\item \textbf{Pressure control system}, which maintains the crew compartment at 103 kPa with a breathable mixture of oxygen and nitrogen. Nitrogen is also used to pressurize the supply and wastewater tanks.
 \item \textbf{Atmospheric revitalization system}, which uses air circulation and water coolant loops to remove heat, control humidity, and clean and purify cabin air.
 \item \textbf{Active thermal control system}, (not implemented) which consists of two Freon loops that collect waste heat from orbiter systems and transfer the heat overboard, either trough radiators or ammonia boilers.
 \end{itemize}
@@ -1185,7 +1191,7 @@ The ECLSS maintains the spacecraft's thermal stability and provides a pressurize
 As Dragonfly has not yet been equipped with active thermal control systems, most cooling and heating operations are done by passive control systems, whereas supercold cryogenic reactants are heated prior to entering the FC stack, thus cooling electrical equipment. The same is done with the wastewater, which is circulated throughout the vessel. As the water in the wastewater tank overheats, any boiling excess will be vented trough two non-propulsive vent valves. The only unbalanced thermal reaction is that of the FC, which, in the absence of active cooling equipment will overheat within 5-8 hours. The only cooling possibility for a FC is either shutting down (alternatively using FC1 / FC2) or purging.
 
 \paragraph{Pressure control system}
-The pressure control system normally pressurizes the crew cabin to 103 $\pm$ 10 kPa. It maintains the cabin at an average 70-percent nitrogen (27 kg) and 30-percent oxygen (9 kg) mixture that closely resembles the atmosphere at sea level on Earth. The system also provides the cabin atmosphere necessary to cool cabin-air-cooled equipment. Oxygen partial pressure is maintained automatically between 20 and 23 kPa, with sufficient nitrogen pressure of 78.3 kPa added to achieve the cabin total pressure of 103 $\pm$ 10 kPa. Positive and negative pressure relief valves protect the structural integrity of the cabin from over- and under-pressurization respectively. The pressure control system nitrogen is also used to pressurize the supply and wastewater tanks.
+The pressure control system normally pressurizes the crew cabin to 103 $\pm$ 10 kPa. It maintains the cabin at an average 70\% nitrogen (27 kg) and 30\% oxygen (9 kg) mixture that closely resembles the atmosphere at sea level on Earth. The system also provides the cabin atmosphere necessary to cool cabin-air-cooled equipment. Oxygen partial pressure is maintained automatically between 20 and 23 kPa, with sufficient nitrogen pressure of 78.3 kPa added to achieve the cabin total pressure of 103 $\pm$ 10 kPa. Positive and negative pressure relief valves protect the structural integrity of the cabin from over- and under-pressurization respectively. The pressure control system nitrogen is also used to pressurize the supply and wastewater tanks.
 
 \begin{figure}[H]
   \centering
@@ -1194,7 +1200,7 @@ The pressure control system normally pressurizes the crew cabin to 103 $\pm$ 10 
 
 \noindent
 Nitrogen is stored into two, identical, 3-liter tanks, serviced at a temperature of 288 K, that contain up to 20kg of N2 each. The provided nitrogen is enough to re-pressurize the cabin and docking hatch for up to 6 docking hatch re-pressurizations (EVAs). The two N2 TK1 and N2 TK2 switches, located on panel O1 (main ECLSS panel), control isolation valves to each of the two N2 tanks. When closed, N2 from that tank is not provided to either the pressure control system or as pressurizer for the wastewater-cooling loop. A second set of ISOL VLV control N2 flow from the tanks to the pressure control system. Note that N2 will continue to pressurize the wastewater tank, even with both of the ISOL VLV closed if any of the N2 TK valves are open.\\
-The N2 SPLY switch will close the N2 from the pressure control system to be vented into the cabin, though N2 from the tanks, might continue to flow, either as pressurizer for the wastewater tanks, either to the over-pressure vent valves. N2 pressure is regulated at the N2 SPLY valve to a nominal pressure of 78-80kPa. The XFEED switched must be in its open position for tank 2 to provide N2 pressurization to the cabin. During normal operations only N2 tank 1 will be used for cabin pressurization and N2 tank 2 for wastewater cooling loop pressurization. A set of 2 (one for each tank) high-capacity N2 OVB DUMP valves will quickly discharge over-pressurized N2 from the N2 pressure control system.\\
+The N2 SPLY switch will close the N2 from the pressure control system to be vented into the cabin, though N2 from the tanks, might continue to flow, either as pressurizer for the wastewater tanks, either to the over-pressure vent valves. N2 pressure is regulated at the N2 SPLY valve to a nominal pressure of 78-80 kPa. The XFEED switched must be in its open position for tank 2 to provide N2 pressurization to the cabin. During normal operations only N2 tank 1 will be used for cabin pressurization and N2 tank 2 for wastewater cooling loop pressurization. A set of 2 (one for each tank) high-capacity N2 OVB DUMP valves will quickly discharge over-pressurized N2 from the N2 pressure control system.\\
 Though the N2 tanks have no heaters to raise tank pressure, it is possible for excess heat from the wastewater cooling loop to transfer to the N2, thus overheating and over-pressurizing the N2 tanks. To avoid damage to the tanks, the two valves can be used to quickly discharge the overheated N2 and bring the tank pressure to a safer value.
 
 \begin{figure}[H]
@@ -1247,7 +1253,7 @@ A. Normal operation switch positions:
 	O2 PRESS R2 - CLOSED\\
 	O2 PRESS BLR - OPEN\\
 	O2 PRESS R1 - OPEN\\
-	O2 SPLY -OPEN\\
+	O2 SPLY - OPEN\\
 	O2 LiOH - OPEN\\
 	O2 HUM SP - OPEN\\
 	\\
@@ -1258,7 +1264,7 @@ A. Normal operation switch positions:
 
 \subsubsection{Communications}
 %TODO dragonfly communications section
-TODO
+TODO be implemented
 
 \subsubsection{Radar And Docking Systems}
 \paragraph{Description}
@@ -1471,7 +1477,7 @@ The Wheel station emits a transponder signal at frequency 132.70 MHz. The defaul
 
 
 \subsection{Hubble Space Telescope}
-The Hubble Space Telescope (HST) was launched into low Earth orbit by Space Shuttle Discovery during mission STS-31 in 1990 and is still in operation as of 2022. Several on-orbit service missions have been carried out until the retirement of the Space Shuttle program, one of which was to install corrective optics to compensate for a shape error of the primary mirror which was discovered after the telescope had been launched.
+The Hubble Space Telescope (HST) was launched into low Earth orbit by Space Shuttle Discovery during mission STS-31 in 1990 and is still in operation as of late 2024. Several on-orbit service missions have been carried out until the retirement of the Space Shuttle program, one of which was to install corrective optics to compensate for a shape error of the primary mirror which was discovered after the telescope had been launched.
 
 \begin{figure}[H]
   \centering
@@ -1480,8 +1486,8 @@ The Hubble Space Telescope (HST) was launched into low Earth orbit by Space Shut
 \end{figure}
 
 \noindent
-Hubble mainly operates in the visible frequency range (from near-infrared to ultraviolet). As a space-based telescope, it avoids image degradation from atmospheric effects, and during its long service life it provided images of unprecedented quality that significantly contributed to advance our understanding of the universe. Its observations range from solar system objects and events, such as the impact of comet Shoemaker-Levy on Jupiter, to deep-field images of the faintest and most distant objects yet observed in the visible band. Notable discoveries to which Hubble data contributed include the accelerated expansion of the universe, the prevalence of supermassive black holes in the centres of galaxies, detection of exosolar planets and evidence of star formation.\\
-Orbiter provides several Space Shuttle\textbackslash HST missions for both deployment and recapture operations. For Shuttle payload manipulation, see section \ref{ssec:atlantis}.\\
+Hubble mainly operates in the visible frequency range (from near-infrared to ultraviolet). As a space-based telescope, it avoids image degradation from atmospheric effects, and during its long service life it provided images of unprecedented quality that significantly contributed to advance our understanding of the universe. Its observations range from solar system objects and events, such as the impact of comet Shoemaker-Levy 9 on Jupiter, to deep-field images of the faintest and most distant objects yet observed in the visible band. Notable discoveries to which Hubble data contributed include the accelerated expansion of the universe, the prevalence of supermassive black holes in the centres of galaxies, detection of exosolar planets and evidence of star formation.\\
+Orbiter provides several Space Shuttle\textbackslash HST missions for both deployment and recapture operations. For Shuttle payload manipulation, see section \ref{sssec:atlantis_rms}.\\
 \\
 \textbf{Vessel-specific key controls:}
 
