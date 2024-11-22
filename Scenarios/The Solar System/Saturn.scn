@@ -57,7 +57,6 @@ END
 GL-02:DeltaGlider
   STATUS Landed Mars
   BASE Olympus:3
-  POS -135.4300000 12.7366196
   HEADING 0.00
   FUEL 1.000
   NAVFREQ 0 0
@@ -68,7 +67,6 @@ END
 SH-01:ShuttleA
   STATUS Landed Moon
   BASE Brighton Beach:1
-  POS -33.4375000 41.1184067
   HEADING 0.00
   FUEL 1.000
   NAVFREQ 0 0

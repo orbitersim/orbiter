@@ -39,7 +39,6 @@ END
 GL-01:DeltaGlider
   STATUS Landed Earth
   BASE Habana
-  POS -82.3982780 22.9971200
   HEADING 104.02
   FUEL 1.000
   NAVFREQ 0 0
@@ -50,7 +49,6 @@ END
 GL-02:DeltaGlider
   STATUS Landed Mars
   BASE Olympus:3
-  POS -135.4300000 12.7366196
   HEADING 0.00
   FUEL 1.000
   NAVFREQ 0 0
