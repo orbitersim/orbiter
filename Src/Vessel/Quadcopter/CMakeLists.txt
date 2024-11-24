@@ -41,7 +41,7 @@ add_custom_command(
 
 add_custom_command(
 	TARGET Quadcopter PRE_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${MESH_SOURCE_DIR}/ ${CMAKE_BINARY_DIR}/Meshes
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${MESH_SOURCE_DIR}/ ${CMAKE_BINARY_DIR}/Meshes/Quadcopter
 )
 
 #add_custom_command(
@@ -58,7 +58,7 @@ install(DIRECTORY ${CONFIG_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Config/Vessels
 )
 install(DIRECTORY ${MESH_SOURCE_DIR}/
-	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Meshes
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Meshes/Quadcopter
 )
 #install(DIRECTORY ${TEXTURE_SOURCE_DIR}/
 #	DESTINATION ${ORBITER_INSTALL_TEXTURES_DIR}
