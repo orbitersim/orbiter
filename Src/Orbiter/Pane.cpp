@@ -15,10 +15,6 @@
 #include "Log.h"
 #include <assert.h>
 
-#ifdef INLINEGRAPHICS
-#include "OGraphics.h"
-#endif // INLINEGRAPHICS
-
 using namespace std;
 
 extern Orbiter *g_pOrbiter;

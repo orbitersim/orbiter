@@ -10,10 +10,6 @@
 #include "Util.h"
 #include "Log.h"
 
-#ifdef INLINEGRAPHICS
-#include "Texture.h"
-#endif // INLINEGRAPHICS
-
 using namespace std;
 
 extern Orbiter *g_pOrbiter;

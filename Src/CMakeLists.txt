@@ -9,11 +9,6 @@ add_subdirectory(Vessel)
 add_subdirectory(Module)
 add_subdirectory(Plugin)
 
-if(BUILD_ORBITER_SERVER)
-	add_subdirectory(Orbiter_ng)
-endif()
-
-
 # ==========================================================================
 # SDK Sample Installation
 # ==========================================================================
