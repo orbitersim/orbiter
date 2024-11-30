@@ -71,9 +71,9 @@ const double POD_ROT_SPEED = 0.2;
 
 const int nsurf = 6; // number of bitmap handles
 
-const double MAX_GRAPPLING_DIST = 0.5f;
+const double MAX_GRAPPLING_DIST = 0.6f;
 const double MAX_GRAPPLING_ANG  = 0.9f; //(cos(angle)>0.9f)
-//distance for payload grappling.. being a bit generous here
+
 
 const DWORD PANEL2D_TEXW  = 2048;
 const DWORD PANEL2D_TEXH  = 1024;
@@ -122,9 +122,6 @@ public:
 
 	void RedrawPanel_MFDButton (SURFHANDLE surf, int mfd, int side);
 	void RedrawPanel_Navmode (SURFHANDLE surf);
-	bool RedrawPanel_Throttle (SURFHANDLE surf);
-	bool RedrawPanel_Hover (SURFHANDLE surf);
-	bool RedrawPanel_Podlevel (SURFHANDLE surf);
 	bool RedrawPanel_EngineIndicator (SURFHANDLE surf);
 	bool RedrawPanel_PodangleIndicator (SURFHANDLE surf);
 	void RedrawPanel_Fuelstatus (SURFHANDLE surf, int part);
