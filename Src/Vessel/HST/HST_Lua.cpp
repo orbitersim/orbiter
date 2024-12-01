@@ -43,7 +43,7 @@ int HST::Lua_InitInstance(void *context)
 {
 	lua_State *L = (lua_State*)context;
 
-	// check if interpreter has DG table loaded already
+	// check if interpreter has HST table loaded already
 	luaL_getmetatable (L, "VESSEL.HST");
 
 	if (lua_isnil (L, -1)) { // register new functions
@@ -98,7 +98,7 @@ To check the class of a vessel object, use the vessel:get_classname() method.
 
 HST *lua_toHST (lua_State *L, int idx)
 {
-	VESSEL **pv = (VESSEL**)lua_touserdata (L, idx);
+	VESSEL **pv = (VESSEL **)luaL_checkudata(L, idx, "HST.vtable");
 	HST *hst = (HST*)*pv;
 	return hst;
 }

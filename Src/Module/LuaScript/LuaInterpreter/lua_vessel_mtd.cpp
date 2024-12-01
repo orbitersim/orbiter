@@ -44,18 +44,24 @@ VESSEL *vfocus = (VESSEL*)0x1;
 VESSEL *Interpreter::lua_tovessel (lua_State *L, int idx)
 {
 	VESSEL **pv = (VESSEL**)lua_touserdata (L, idx);
-	if (pv && *pv == vfocus) // replace flag with actual focus vessel pointer
-		*pv = oapiGetFocusInterface();
-	return pv ? *pv : NULL;
+	if(pv) {
+		if (*pv == vfocus) { // returns current focused vessel when using the pseudo vessel "focus"
+			VESSEL *v = oapiGetFocusInterface();
+			knownVessels.insert(v);
+			return v;
+		} else if(knownVessels.find(*pv) == knownVessels.end()) {
+			return NULL;
+		}
+		return *pv;
+	}
+	return NULL;
 }
 
 VESSEL *Interpreter::lua_tovessel_safe(lua_State *L, int idx, const char *funcname)
 {
 	VESSEL *v = lua_tovessel(L,idx);
 	if (!v) {
-		char cbuf[1024];
-		sprintf(cbuf, "%s: invalid vessel object for self", funcname);
-		term_strout(L, cbuf);
+		luaL_error(L, "Invalid vessel object for self");
 	}
 	return v;
 }
@@ -566,7 +572,7 @@ void Interpreter::LoadVesselAPI ()
 	luaL_openlib (L, "vessel", vesselAcc, 0);
 
 	// create pseudo-instance "focus"
-	lua_pushlightuserdata (L, vfocus);
+	lua_pushlightuserdata (L, &vfocus);
 	luaL_getmetatable (L, "VESSEL.vtable");  // push metatable
 	lua_setmetatable (L, -2);               // set metatable for user data
 	lua_setglobal (L, "focus");
@@ -8610,7 +8616,7 @@ int Interpreter::v_register_panelarea(lua_State* L)
 {
 	static const char* funcname = "register_panelarea";
 	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
-		if (v->Version() < 3) {
+	if (v->Version() < 3) {
 		lua_pushnil(L);
 		lua_pushstring(L, "Invalid vessel version in register_panelarea");
 		return 2;
@@ -8685,7 +8691,7 @@ int Interpreter::v_register_panelmfdgeometry (lua_State *L)
 {
 	static const char* funcname = "register_panelmfdgeometry";
 	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
-		if (v->Version() < 2) {
+	if (v->Version() < 2) {
 		lua_pushnil(L);
 		lua_pushstring(L, "Invalid vessel version in register_panelmfdgeometry");
 		return 2;

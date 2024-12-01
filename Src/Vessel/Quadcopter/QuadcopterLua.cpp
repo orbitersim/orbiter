@@ -26,7 +26,7 @@ int LuaInterface::InitInstance(void *context)
 {
 	lua_State *L = (lua_State*)context;
 
-	// check if interpreter has DG table loaded already
+	// check if interpreter has QC table loaded already
 	luaL_getmetatable(L, "VESSEL.QC");
 
 	if (lua_isnil(L, -1)) { // register new functions
@@ -85,7 +85,7 @@ To check the class of a vessel object, use the vessel:get_classname() method.
 
 Quadcopter *LuaInterface::lua_toQC(lua_State *L, int idx)
 {
-	VESSEL **pv = (VESSEL**)lua_touserdata(L, idx);
+	VESSEL **pv = (VESSEL **)luaL_checkudata(L, idx, "QC.vtable");
 	Quadcopter *qc = (Quadcopter*)*pv;
 	return qc;
 }
