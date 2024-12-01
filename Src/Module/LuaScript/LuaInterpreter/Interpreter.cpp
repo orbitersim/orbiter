@@ -520,7 +520,7 @@ void Interpreter::lua_pushvessel (lua_State *L, VESSEL *v)
 		lua_pop(L,1);                   // pop nil
 		VESSEL **pv = (VESSEL**)lua_newuserdata(L,sizeof(VESSEL*));
 		*pv = v;
-		knownVessels.insert(pv);
+		knownVessels.insert(v);
 		luaL_getmetatable (L, "VESSEL.vtable"); // retrieve metatable
 		lua_setmetatable (L,-2);             // and attach to new object
 		LoadVesselExtensions(L,v);           // vessel environment
@@ -529,17 +529,6 @@ void Interpreter::lua_pushvessel (lua_State *L, VESSEL *v)
 		lua_settable(L,LUA_REGISTRYINDEX);   // and store in registry
 		// note that now the object is on top of the stack
 	}
-}
-int Interpreter::lua_isvessel(lua_State *L, int idx)
-{
-	if(lua_isuserdata(L, idx)) {
-		void *ud = lua_touserdata(L, idx);
-		if(knownVessels.find(ud)!=knownVessels.end()) {
-			return true;
-		}
-	}
-	luaL_error(L, "Invalid parameter %d, vessel expected", idx);
-	return false;
 }
 
 void Interpreter::lua_pushmfd (lua_State *L, MFD2 *mfd)
@@ -1656,6 +1645,12 @@ bool Interpreter::LoadVesselExtensions (lua_State *L, VESSEL *v)
 	if (v->Version() < 2) return false;
 	VESSEL3 *v3 = (VESSEL3*)v;
 	return (v3->clbkGeneric (VMSG_LUAINSTANCE, 0, (void*)L) != 0);
+}
+
+void Interpreter::DeleteVessel (OBJHANDLE hVessel)
+{
+	VESSEL *v = oapiGetVesselInterface(hVessel);
+	knownVessels.erase(v);
 }
 
 Interpreter *Interpreter::GetInterpreter (lua_State *L)
@@ -6119,8 +6114,7 @@ int Interpreter::oapi_setup_customcamera(lua_State *L)
 		void *ud = lua_touserdata(L,2);
 		if(oapiIsVessel(ud)) {
 			hVessel = (OBJHANDLE)ud;
-		} else if(lua_isvessel(L, 2)) {
-			VESSEL *v = (VESSEL *)lua_tovessel(L, 2);
+		} else if(VESSEL *v = lua_tovessel(L, 2)) {
 			hVessel = v->GetHandle();
 		} else {
 			luaL_error(L, "vessel of vessel handle expected");
