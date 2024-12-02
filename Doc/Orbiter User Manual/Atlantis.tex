@@ -14,7 +14,7 @@ Space Shuttle Atlantis, comprising the complete launch stack of orbiter, externa
 \end{figure}
 
 \noindent
-The Atlantis orbiter features a virtual cockpit with working MFD instruments and head-up display, and an operational payload bay with remote manipulator arm ("Canadarm"), so the deployment or even recapture of satellites can be simulated, as well as the shipment of resupplies to the International Space Station. Also included is MMU (manned manoeuvring unit) support for extravehicular activities.
+The Atlantis orbiter features a virtual cockpit with working MFD instruments and head-up display, and an operational payload bay with remote manipulator arm ("Canadarm"), so the deployment or even recapture of satellites can be simulated, as well as the shipment of resupplies to the International Space Station. Also included is MMU (Manned Maneuvering Unit) support for extravehicular activities.
 
 
 \subsubsection{Virtual cockpit}
@@ -243,6 +243,24 @@ The SRMS arm can be stowed in its transport position by pressing the SRMS "Stow"
 \captionof{figure}{View into the payload bay from the payload operator position.}
 \end{center}
 
+
+\subsubsection{Extravehicular Activity and the Manned Maneuvering Unit}
+When you fly the Space Shuttle Atlantis, you are not restricted to the inside of the spacecraft, and can go outside to perform an Extravehicular Activity (EVA) using the Manned Maneuvering Unit (MMU) vessel.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.75\hsize]{atlantis_mmu.png}
+	\caption{An astronaut inspects the Carina satellite using a Manned Maneuvering Unit.}
+\end{figure}
+
+\noindent
+The MMU was a NASA developed mini-spacecraft that suited astronauts would wear like a backpack, containing thrusters, propellant supply and control electronics, allowing them to maneuver free from the Space Shuttle.
+
+\paragraph{Operations}
+If Atlantis isn't docked, pressing \keystroke{E} will create a MMU vessel at the docking port, and you will automatically switch to it. Now undock the MMU from Atlantis, by pressing \Ctrl\keystroke{D}, and you can now fly free. The MMU is controlled using the normal RCS controls, which fire small thrusters, allowing for attitude changes and translation. The MMU propellant supply is limited, so keep an eye on the propellant level. \\
+To terminate the EVA, return the MMU to the docking port of Atlantis, press \keystroke{E} to delete the MMU vessel and you will return to Atlantis.
+
+
 \subsubsection{Keyboard controls}
 In addition to the generic Orbiter vessel control keys, Atlantis supports the following vessel-specific key controls:
 
@@ -257,6 +275,12 @@ In addition to the generic Orbiter vessel control keys, Atlantis supports the fo
 	\keystroke{J} & Jettison: separate SRBs or ET\\
 	\hline\rule{0pt}{2ex}
 	\keystroke{K} & Operate cargo bay doors (shortcut - for the full procedure see section \ref{para:atlantis_baydoor})\\
+	\hline\rule{0pt}{2ex}
+	\keystroke{E} & Perform an Extravehicular Activity using the Manned Maneuvering Unit.\\
+	\hline\rule{0pt}{2ex}
+	\keystroke{8} & Grapple or release a satellite from the Remote Manipulator System.\\
+	\hline\rule{0pt}{2ex}
+	\keystroke{9} & Automatically stow the Remote Manipulator System.\\
 	\hline\rule{0pt}{2ex}
 	\keystroke{Ctrl}\keystroke{B} & Operate split-rudder brake\\
 	\hline\rule{0pt}{2ex}

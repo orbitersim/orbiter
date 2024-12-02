@@ -30,7 +30,7 @@ Launching from a planetary surface into a low orbit is one of the most basic pro
 \item The engines may be cut once the highest point of the projected trajectory (\textit{apoapsis}) coincides with the target orbit altitude.
 \item Once that point is reached, the engines are engaged again in a \textit{prograde} vessel orientation (aligned with the trajectory direction) for orbital insertion (lifting the lowest part of the orbit above the planet surface and sufficiently high above the atmosphere layer to enter a stable orbit).
 \item For efficiency reasons, launch direction should be prograde (in the direction of the planetary rotation, i.e. eastward on Earth) to get the surface velocity component for free. For the same reason, a launch site closer to the equator will be more efficient. (On Earth, a prograde equatorial launch saves $\Delta$v = 930 m/s compared to a retrograde launch).
-\item If a specific target orbit must be achieved (e.g. for rendezvous with an orbital station), this will determine a \textit{launch window} (time) and \textit{launch azimuth} (heading). The launch should take place when the launch site passes through the target orbital plane, and the azimuth is given by the inclination of the target plane at the launch latitude. This will minimise the requirement for later expensive orbital pane changes. The \textit{Map} and \textit{Align orbital plane} MFD modes help with picking launch window and azimuth.
+\item If a specific target orbit must be achieved (e.g. for rendezvous with an orbital station), this will determine a \textit{launch window} (time) and \textit{launch azimuth} (heading). The launch should take place when the launch site passes through the target orbital plane, and the azimuth is given by the inclination of the target plane at the launch latitude. This will minimise the requirement for later expensive orbital pane changes. The \textit{Map} and \textit{Align orbital plane} MFD modes (see sections \ref{ssec:mfd_orbit} and \ref{ssec:mfd_align} respectively) help with picking launch window and azimuth.
 \end{itemize}
 
 \noindent
@@ -58,7 +58,7 @@ A common task is the raising or lowering of apoapsis (highest point of the orbit
 \end{itemize}
 
 \noindent
-The \textit{Orbit} MFD mode (see \ref{ssec:mfd_orbit}) can be used to monitor the time to apoapsis and periapsis.  Prograde and retrograde orbit directions can be visualised on the HUD in Orbit mode (see section \ref{ssec:hud_modes}). The vessel can be automatically oriented in prograde or retrograde attitude in preparation for the orbit change burn by using the corresponding RCS attitude modes (see section \ref{ssec:glass_cockpit}).\\
+The \textit{Orbit} MFD mode (see section \ref{ssec:mfd_orbit}) can be used to monitor the time to apoapsis and periapsis.  Prograde and retrograde orbit directions can be visualised on the HUD in Orbit mode (see section \ref{ssec:hud_modes}). The vessel can be automatically oriented in prograde or retrograde attitude in preparation for the orbit change burn by using the corresponding RCS attitude modes (see section \ref{ssec:glass_cockpit}).\\
 \\
 \textbf{Task: Increasing/decreasing the radius of a circular orbit}\\
 The manoeuvres in the previous task can be combined to change the radius of a circular orbit. This is achieved by two separate engine burns: the first enters an intermediate elliptic orbit whose apoapsis (or periapsis) distance coincides with the desired orbit radius. The second burn re-circularises the orbit.\\
@@ -285,7 +285,7 @@ Some of Orbiter's spacecraft support powered or unpowered runway approaches, sim
 \textbf{Visual approach indicators}\\
 The visual approach aids at SLF are designed for Shuttle landings. They include a Precision Approach Path Indicator (PAPI) for long-range glide slope alignment, and a Visual Approach Slope Indicator (VASI) for short-range alignment. The PAPI is set up for a glide slope of 20° (about 6 times as steep as standard aircraft approach slopes!). The VASI is set up for a 1.5° slope during the final flare up prior to touchdown.\\
 \\
-\textbf{Precision Approach Path Indicator:} The PAPI consists of an array of 4 lights, which appear white or red to the pilot depending on the approaching vessel's position above or below the glide slope. At the correct slope there will be 2 white and 2 red lights (see figure). In Orbiter there are 2 PAPI units per approach direction at the SLF, located about 2000 m in front of the runway threshold.
+\textbf{Precision Approach Path Indicator:} The PAPI consists of an array of 4 lights, which appear white or red to the pilot depending on the approaching vessel's position above or below the glide slope. At the correct slope there will be 2 white and 2 red lights (see figure below). In Orbiter there are 2 PAPI units per approach direction at the SLF, located about 2000 m in front of the runway threshold.
 
 %\begin{table}[H]
 	%\centering
@@ -305,7 +305,7 @@ The visual approach aids at SLF are designed for Shuttle landings. They include 
 %\end{table}
 
 \noindent
-\textbf{Visual Approach Slope Indicator:} The VASI consists of a red bar of lights and a set of white lights in front of it. At the correct slope, the white lights are aligned with the red bard (see figure). At the SLF, the VASI is located 670 m behind the runway threshold.
+\textbf{Visual Approach Slope Indicator:} The VASI consists of a red bar of lights and a set of white lights in front of it. At the correct slope, the white lights are aligned with the red bar (see figure below). At the SLF, the VASI is located 670 m behind the runway threshold.
 
 %\begin{table}[H]
 	%\centering
