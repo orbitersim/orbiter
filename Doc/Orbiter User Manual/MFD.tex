@@ -1122,13 +1122,13 @@ TransX divides all flights into stages, in which different central bodies are do
 	\hline\rule{0pt}{2ex}
 	Base Orbit & Orbit on which manoeuvres are based, ++ sets to focus orbit & "++ Updates", "Updating"\\
 	\hline\rule{0pt}{2ex}
-	Prograde vel. & Positive numbers to outer planets, negative numbers to inner planets & Number [m/s]\\
+	Prograde vel. & Velocity increment in the direction of travel & Number [m/s]\\
 	\hline\rule{0pt}{2ex}
-	Man. date & Your planned launch date/time & Number [MJD]\\
+	Man. date & The planned maneuver/time & Number [MJD]\\
 	\hline\rule{0pt}{2ex}
-	Outward vel. & Add velocity outwards/inwards & Number [m/s]\\
+	Outward vel. & Velocity outwards/inwards the orbited body & Number [m/s]\\
 	\hline\rule{0pt}{2ex}
-	Ch. plane vel. & Use to swing grey plane intersection line towards intercept point & Number [m/s]\\
+	Ch. plane vel. & Velocity normal to the orbital plane & Number [m/s]\\
 	\hline\rule{0pt}{2ex}
 	Plan type (Advanced mode) & Select type of plan you want to follow & "Initial", "Through point", "Cruise plan"\\
 	\hline\rule{0pt}{2ex}
@@ -1146,7 +1146,7 @@ TransX divides all flights into stages, in which different central bodies are do
 	\hline\rule{0pt}{2ex}
 	Ej Orientation (Escape Plan view) & Use to rotate planned orbit around axis of departure direction & Number [°]\\
 	\hline\rule{0pt}{2ex}
-	Draw Base (Encounter view) & Choose to draw the base & "Off", "On"\\
+	Draw Base (Encounter view) & Choose to draw the base and show miss distance & "Off", "On"\\
 	\hline\rule{0pt}{2ex}
 	View Orbit (Slingshot view) & Choose to view approach or departure orbit & "Approach", "Depart"\\
 	\hline
@@ -1156,6 +1156,7 @@ TransX divides all flights into stages, in which different central bodies are do
 
 \subsubsection{Use cases}
 These following paragraphs provide practical use cases of TransX, as a way to describe its functionalities, from simple to advanced plans for interplanetary travel.\\
+You should fly each scenario several times before advancing to the next one.\\
 
 \paragraph{Earth orbit to Lunar orbit}
 This section will guide the user to setup and perform a simple plan to establish an Hohmann transfer orbit, as a means to send a vessel from Low-Earth orbit to the Moon, and then entering lunar orbit.\\

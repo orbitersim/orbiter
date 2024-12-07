@@ -2,8 +2,13 @@
 \begin{document}
 
 \section{Command line interface}
-When starting Orbiter (orbiter.exe) or the Orbiter graphics server (orbiter\_ng.exe) from the command line, optional parameters can be provided to modify the behaviour of the simulation.\\
-orbiter.exe [options]\\
+When starting Orbiter (orbiter.exe) or the Orbiter graphics server (orbiter\_ng.exe) from the command line, optional parameters can be provided to modify the behaviour of the simulation.
+
+\begin{lstlisting}[language=OSFS]
+orbiter.exe [options]
+\end{lstlisting}
+
+\noindent
 Below is a list of the supported options. Options are separated with space. Most options can be specified with a long notation (with prefix -{}-) or short notation (with prefix -). If the option requires an argument, it must be separated from the option key with = (for the long version) or with a space (for the short version). If an argument contains spaces, it should be enclosed in double quotes (").
 
 %\begin{table}[H]
@@ -32,7 +37,7 @@ Below is a list of the supported options. Options are separated with space. Most
 	\hline\rule{0pt}{2ex}
 	-{}-maxframes=<f> & & Terminate the simulation session after <f> time frames.\\
 	\hline\rule{0pt}{2ex}
-	-{}-plugin=<pg> & -p <pg> & Enforce loading of plugin <pg>. Any path provided must be relative to .\textbackslash Modules\textbackslash Plugin. The extension (.dll) should be omitted. Multiple -plugin options can be provided. Any plug-ins requested on the command line cannot be unloaded interactively.\\
+	-{}-plugin=<pg> & -p <pg> & Enforce loading of plugin <pg>. Any path provided must be relative to .\textbackslash Modules\textbackslash Plugin. The extension (.dll) should be omitted. Multiple -{}-plugin options can be provided. Any plug-ins requested on the command line cannot be unloaded interactively.\\
 	\hline
 	\end{longtable}
 %\end{table}

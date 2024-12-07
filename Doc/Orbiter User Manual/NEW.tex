@@ -115,6 +115,11 @@ $\circ$ corrected position of docking port, pod attachments and thrusters\\
 $\circ$ mesh is now scanned with meshc to extract labeled mesh group indices\\
 $\circ$ now deletes sketchpad resources on exit (omission caused log file warnings).\\
 $\circ$ replaced all remaining GDI drawing calls with Sketchpad versions and removed GDI resources.\\
+$\circ$ fixed propellant display drawing\\
+$\circ$ fixed payload attachment not working from 2D panel\\
+$\circ$ increased max payload attach distance (to handle terrain)\\
+$\circ$ fixed scenario with dock open in atmospheric flight\\
+$\circ$ deleted unused code\\
 $\blacktriangleright$ config texture dir now respected by new-style planetary texture and elevation maps. Addresses this problem, although the HTexDir value is still not being used.\\
 $\blacktriangleright$ API:\\
 $\circ$ New flag recognised by oapiGetObjectParam: OBJPRM\_PLANET\_MINELEVATION (exposes new MinElevation config tag)\\
@@ -125,7 +130,9 @@ $\blacktriangleright$ D3D9Client: apply tgt\_res to the rescale and offset value
 $\blacktriangleright$ visual artefact with rendered horizon haze on Mars (lower edge visible from hellas plantita).\\
 $\blacktriangleright$ time acceleration keyboard commands (R, T) are now copied to the Time acceleration dialog if open.\\
 $\blacktriangleright$ SetAttitudeRotLevel: would have no effect in some circumstances [issue \#1271]\\
-$\blacktriangleright$ Scenario editor: editing state vectors for landed vessel caused spurious orientation and angular velocity\\
+$\blacktriangleright$ Scenario Editor:\\
+$\circ$ Editing state vectors for landed vessel caused spurious orientation and angular velocity\\
+$\circ$ Prevent deletion of the last focusable vessel\\
 $\blacktriangleright$ SurfTile: rescaling bug for elevation mod tiles with scale factor != 1\\
 $\blacktriangleright$ Vessel: transient thruster level was reset erroneously on IncThrusterGroupLevel\\
 $\blacktriangleright$ Surface MFD: now uses airspeed instead of groundspeed vector for AOA calculation\\
@@ -149,5 +156,23 @@ $\blacktriangleright$ Added warning for missing planetary textures. Popup window
 $\blacktriangleright$ Fixed sun-glare visibility near sun.\\
 $\blacktriangleright$ Fixed sunlight occlusion by body other than the closest one\\
 $\blacktriangleright$ Fixed a problem of moon being lit in a shadow of a planet by adding (accurate) support for eclipses.\\
+$\blacktriangleright$ Fixed Shift+Ctrl+Arrow crash\\
+$\blacktriangleright$ Fix hover status on default HUD\\
+$\blacktriangleright$ Enabled first 32 charters to support special fonts.\\
+$\blacktriangleright$ Disabled MSAA if mesh flag 0x20 in use to avoid "edge glow".\\
+$\blacktriangleright$ Fixed Neptune lighting issue.\\
 $\blacktriangleright$ Made a tile name appear on red in TerrainToolKit if the tile doesn't exists.\\
+$\blacktriangleright$ Fix SolarSail dynamic geometry with DX9\\
+$\blacktriangleright$ Rotation mode now takes mouse priority over panel buttons\\
+$\blacktriangleright$ Alt-Tab mouse disappearing fix\\
+$\blacktriangleright$ Corrected key labels in Sync and Transfer MFDs\\
+$\blacktriangleright$ Fix unchecked thruster level\\
+$\blacktriangleright$ Corrected normals and materials of Mir model\\
+$\blacktriangleright$ Scenarios: removed other position parameters from vessel entries which specify surface base pad\\
+$\blacktriangleright$ Replaced non-existing Galileo vessel with Delta-Glider in Jupiter flybys scenarios\\
+$\blacktriangleright$ Quadcopter:\\
+$\circ$ corrected install path for mesh\\
+$\circ$ added scenario\\
+$\circ$ small mesh improvement in legs\\
+$\blacktriangleright$ Converted (most of) the scattered documentation into LaTex format and organized it into 3 pdf files: "Orbiter User Manual", "Orbiter Developer Manual" and "Orbiter Technical Reference".\\
 \end{document}

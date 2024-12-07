@@ -5,7 +5,10 @@
 \label{sec:extra}
 The standard Orbiter installation comes with a set of optional plug-in modules which can be used to enhance the core functionality of the simulator. To enable these additional functions, the appropriate modules must be loaded in the \textit{Modules} tab of the Orbiter Launchpad dialog (see section \ref{ssec:launchpad_modules} on how to activate plug-in modules).\\
 Many more plug-ins are available from 3$^{rd}$ party add-on developers. Check out the Orbiter repositories on the web to find more.\\
-You should only activate modules you want to use during your simulation session, because many plug-ins may consume CPU cycles even if they are running in the background. Too many active modules can degrade the simulation performance.\\
+
+\alertbox{You should only activate modules you want to use during your simulation session, because many plug-ins may consume CPU cycles even if they are running in the background. Too many active modules can degrade the simulation performance.}
+
+\noindent
 When activated, some plug-ins, such as custom MFD modes, take effect automatically whenever the simulation is started. Others are accessible via the \textit{Custom functions} dialog (see section \ref{ssec:menu_cust_func}).
 
 
@@ -50,7 +53,8 @@ The editor now switches to Configuration mode. From here, the position, orientat
 
 \subsubsection{Configuring a vessel}
 After clicking the Edit button on the main page, or after creating a new vessel, the scenario editor displays the vessel configuration page for the selected vessel. From here, various aspects of the vessel state can be adjusted, such as its position, velocity and orientation. It can also be refuelled or docked to another vessel. Some vessel types may also allow control of class-specific parameters from here (see "Scenario Editor" in Orbiter Developer Manual).\\
-\textbf{Note:} Although not strictly necessary, it is sometimes useful to pause the simulation (\Ctrl\keystroke{P}) before editing a vessel. Otherwise the continuously changing state values may make a precise configuration tricky.
+
+\infobox{Although not strictly necessary, it is sometimes useful to pause the simulation (\Ctrl\keystroke{P}) before editing a vessel. Otherwise the continuously changing state values may make a precise configuration tricky.}
 
 \begin{figure}[H]
 	\centering
@@ -70,7 +74,7 @@ First select the reference body (planet, moon or sun) around which the vessel is
 Next, in the \textit{Frame} box below, select the coordinate frame in which the elements are expressed. The choices are \textit{ecliptic} and \textit{ref. equator}. The ecliptic frame is defined by the plane of Earth's orbit and the direction of the vernal equinox (at epoch J2000.0). This frame is useful for example to place the vessel into an orbit for an interplanetary transfer. The equatorial frame is defined by the equatorial plane of the reference body. It is useful if you want to place the vessel into a specific orbit with respect to the planet surface, e.g. geostationary or polar.\\
 Finally, set the \textit{reference epoch} for the elements. This is the date to which the \textit{mean longitude} parameter of the orbital elements refers (see below). When setting this to \textit{current}, the longitude value refers to the current simulation time. Otherwise, the value refers to the longitude at the specified MJD (Modified Julian Date). The latter option is more useful when editing a scenario without pausing, because a vessel's mean longitude is continuously changing along its orbit.\\
 Now everything is ready to set the elements in the left column. The six elements completely describe a Keplerian (2-body) orbit of an object in the form of a conic section, either periodic (elliptic) or non-periodic (hyperbolic). Under the influence of gravitational perturbations the  elements change over time. In this case, the specified values define the current osculating orbit, i. e. the hypothetical unperturbed orbit that would produce the vessel's state vectors (position and velocity) at the current time.\\
-Below is a short description of the 6 orbital elements. See section \ref{ssec:sol_orb_mech}.
+Below is a short description of the 6 orbital elements. See section \ref{ssec:sol_orb_mech} for an orbital mechanics primer.
 
 \paragraph{Semi-major axis [SMa]}
 For elliptical orbits, this is the largest semi-diameter of the orbital trajectory. For hyperbolic orbits, SMa is negative and its absolute value represents the distance between the origin (the point where the asymptotes of the hyperbola intersect) and the orbit periapsis.
@@ -79,10 +83,10 @@ For elliptical orbits, this is the largest semi-diameter of the orbital trajecto
 The eccentricity \textit{e} defines the shape of the orbit.
 
 \begin{itemize}
-\item e = 0: circular orbit
-\item 0 < e < 1: elliptic orbit
-\item e = 1: parabolic orbit
-\item e > 1: hyperbolic orbit
+\item \textit{e} = 0: circular orbit
+\item 0 < \textit{e} < 1: elliptic orbit
+\item \textit{e} = 1: parabolic orbit
+\item \textit{e} > 1: hyperbolic orbit
 \end{itemize}
 
 \paragraph{Inclination [Inc]}
@@ -227,7 +231,11 @@ Docking vessels while landed on a planetary surface can sometimes lead to stabil
 
 \subsubsection{Deleting a vessel}
 Clicking the Delete button in the editor's main page deletes the selected vessel. Input focus and camera automatically switch to a different vessel if necessary.\\
-You are not allowed to delete all vessels from the simulation: Orbiter requires at least one vessel that accepts control input in a running simulation. Deleting the last vessel leads to undefined behaviour. (Note that some vessels may have been designed not to receive input focus).\\
+You are not allowed to delete all vessels from the simulation: Orbiter requires at least one vessel that accepts control input in a running simulation.\\
+
+\infobox{Some vessels may have been designed not to receive input focus, like the Mir or the Lunar Wheel stations.}
+
+\noindent
 If the deleted vessel was part of a docked composite structure, the remaining parts of the superstructure will persist in the simulation. If the structure was landed on a planetary surface, the resulting remnant may become instable (try deleting an SRB from a Space Shuttle launch stack!).
 
 \subsubsection{Changing the simulation date and time}
@@ -382,13 +390,19 @@ Listed at each apsis is the time to reach it and altitude above surface, and sho
 \end{figure}
 
 \noindent
-The orbits of the celestial bodies are also drawn, ilustrating the different orbits of the moons around planets.
+The orbits of the celestial bodies are also drawn, illustrating the different orbits of the moons around planets.
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.99\hsize]{draworbits_bodies.png}
 	\caption{Visualisation of the orbits of 3 moons around Neptune.}
 \end{figure}
+
+
+\subsection{TrackIR}
+\label{ssec:trackir}
+The TrackIR plugin module adds support in Orbiter for Natural Point TrackIR head tracking devices, to pan the camera view during the simulation.\\
+To use TrackIR, go to the Modules tab in the Launchpad and enable "TrackIR". After activating the module, tracking parameters can be set in the "Extra" tab of the launchpad, under "TrackIR configuration".
 
 
 \end{document}
