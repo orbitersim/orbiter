@@ -3049,7 +3049,11 @@ int Interpreter::v_get_surfaceref (lua_State *L)
 	static const char *funcname = "get_surfaceref";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	lua_pushlightuserdata (L, v->GetSurfaceRef());
+	OBJHANDLE hRef = v->GetSurfaceRef();
+	if(hRef)
+		lua_pushlightuserdata (L, hRef);
+	else
+		lua_pushnil(L);
 	return 1;
 }
 
@@ -7925,7 +7929,10 @@ int Interpreter::v_add_animationcomponent (lua_State *L)
 		hparent = (ANIMATIONCOMPONENT_HANDLE)luamtd_tolightuserdata_safe(L, 6, funcname);
 	ANIMATIONCOMPONENT_HANDLE hanimcomp =
 		v->AddAnimationComponent (anim, state0, state1, trans, hparent);
-	lua_pushlightuserdata (L,hanimcomp);
+	if(hanimcomp)
+		lua_pushlightuserdata (L,hanimcomp);
+	else
+		lua_pushnil(L);
 	return 1;
 }
 
@@ -8932,7 +8939,10 @@ int Interpreter::v_add_exhauststream(lua_State* L)
 	PSTREAM_HANDLE hp;
 	if (do_pos) hp = v->AddExhaustStream(ht, pos, &pss);
 	else        hp = v->AddExhaustStream(ht, &pss);
-	lua_pushlightuserdata(L, hp);
+	if(hp) 
+		lua_pushlightuserdata(L, hp);
+	else
+		lua_pushnil(L);
 	return 1;
 }
 
@@ -9051,7 +9061,11 @@ int Interpreter::v_add_reentrystream(lua_State* L)
 
 	PSTREAM_HANDLE hp;
 	hp = v->AddReentryStream(&pss);
-	lua_pushlightuserdata(L, hp);
+	if(hp)
+		lua_pushlightuserdata(L, hp);
+	else
+		lua_pushnil(L);
+
 	return 1;
 }
 
@@ -9164,6 +9178,10 @@ int Interpreter::v_add_particlestream(lua_State* L)
 	*lvl = lua_tonumber(L, 5);
 
 	PSTREAM_HANDLE hp = v->AddParticleStream(&pss, pos, dir , lvl);
+	if(!hp) {
+		lua_pushnil(L);
+		return 1;
+	}
 
 	// Add the numberref in the registry to prevent its collection if the script does not recover it
 	// Use the PSTREAM_HANDLE as the key so we can remove it when deleting the stream
