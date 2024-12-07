@@ -43,7 +43,7 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 	spec.context = NULL;
 	//Code contributed by Dave Robotham
 	ifstream kstream;
-	kstream.open("config\\transx.cfg",NULL);	// this could be any file really.
+	kstream.open("Config\\MFD\\TransX.cfg",NULL);
 	if( kstream )
 	{
 		try
