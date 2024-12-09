@@ -992,7 +992,6 @@ Using the Transfer MFD for Earth to Moon orbits should be straightforward. For i
 
 \subsection{TransX}
 \label{ssec:mfd_transx}
-% TODO transx
 The TransX MFD mode allows for the planning and execution of plan of maneuvers, designed to get a vessel to a target, either directly or via a "gravity-assist" fly-by of celestial bodies.\\
 The TransX MFD is called up by pressing \Shift\keystroke{J}, but you can define another key, by writing in file "Config\textbackslash MFD\textbackslash TransX.cfg" the ASCII code (between 65 and 90) corresponding to the desired key.\\
 
@@ -1083,15 +1082,14 @@ TransX divides all flights into stages, in which different central bodies are do
 \paragraph{Glossary}
 \textbf{Stage:} Part of the flight (centered on Earth, Sun, Mars, etc). Switch between stages with FWD and BCK commands. A new stage can be created with the FWD command after a target was set in a previous stage.\\
 \\
-\textbf{View:} Each stage has 3 (TODO 8?) views; switch between views with the VW command.
+\textbf{View:} Each stage has 8 views; switch between views with the VW command.
 \begin{itemize}
 \item Setup: Here the target is defined.
 \item Manoevre: Here the manoevering data are entered. Note: To do so, set the variable "Manoevre" to "ON".
 \item Target: A "bullseye" to setup the vessel's axis before the burn. Note: this view is only available once the manoevering data have been entered.
-
-\item Slingshot: TODO
 \item Encounter: Used to show information about the arrival planet. It has no function other than to show extra information on a planet, including surface base.
-\item Sling Direct: TODO after slingshot?
+\item Slingshot: Shows gravity assist trajectory requirement on a celestial body, as dictated by the following stage.
+\item Sling Direct: Used to set the gravity assist parameters and displays resulting trajectory towards a target.
 \item Eject Plan: Used to leave the Sphere-of-Influence (SOI) of this planet/moon for another, e.g. Earth to Mars. Best to plan before you take off.
 \item Escape Plan: Used to leave SOI of this planet/moon for another, e.g. Earth to Mars. Best to plan before you take off.
 \end{itemize}
@@ -1153,6 +1151,7 @@ TransX divides all flights into stages, in which different central bodies are do
 	\end{longtable}
 %\end{table}
 
+\alertbox{The trajectory and data shown in the "later" stages of a plan is not be (fully) updated unless the previous stage is shown temporarily (for the computation to be performed), or loaded in another TransX instance.}
 
 \subsubsection{Use cases}
 These following paragraphs provide practical use cases of TransX, as a way to describe its functionalities, from simple to advanced plans for interplanetary travel.\\
@@ -1165,7 +1164,7 @@ The variable "Select Target" is already selected, so we can change it with the b
 Now, a second stage is available (button "FWD" or \Shift\keystroke{F}), which initially will only show the Moon. Later, when a plan exists that will bring the vessel close to the Moon, its trajectory will also be shown.\\
 Return to stage 1 (button "BCK" or \Shift\keystroke{R}), so a maneuver can be configured. Switch to view "Manoevre" (button "VW" or \Shift\keystroke{W}), and set the variable "Manoeuvre mode" to "On". This will enable the maneuver variables, so they can be edited.\\
 Select the variable "Prograde vel.", and increment its value to around 3.14K (3.14 Km/s). When setting a numerical variable, the rate of change is controlled with the buttons "ADJ" (\Shift\keystroke{\{}) and "AJ-" (\Shift\keystroke{\}}). This velocity increment will raise the altitude of the vessel's apoapsis close to the lunar orbit, setting up a Hohmann transfer orbit, so an encounter can take place.\\
-The time of the maneuver needs to be set, which is done by editing the variable "Man. date". Initially it holds the current time, but it should be set to a time in the future, where the 2 yellow dashed lines (vessel and Moon positions at the encounter) are together and over the gray line (intersection of the vessel and Moon orbital planes). A value close to 60568.09 MJD should be good. As the 2 yellow lines converge, the estimate for closest approach distance ("Cl. App") will decrease. Further fine-tuning of this distance can done with variable "Prograde vel.", and also with "Ch. plane vel.", which will move the orbital plane intersection line.\\
+The time of the maneuver needs to be set, which is done by editing the variable "Man. date". Initially it holds the current time, but it should be set to a time in the future, where the 2 yellow dashed lines (vessel and Moon positions at the encounter) are together and over the gray line (intersection of the vessel and Moon orbital planes). A value close to 60568.09 MJD should be good. As the 2 yellow lines converge, the estimate for closest approach distance ("Cl. App") will decrease. Note that this is an estimate that does not take into account the target's mass, so in reality the vessel will be pulled in (if the target is a celestial body) and have a closer approach. For a more accurate value use "Focus PeD" in the following stage. Further fine-tuning of this distance can done with the variable "Prograde vel.", and also with "Ch. plane vel.", which will move the orbital plane intersection line.\\
 Opening a new instance of TransX in another MFD, and switching to Stage 2, "Encounter" view, will display the estimated trajectory of the vessel around the Moon. Of interest on that display is the information on minimum altitude, periapsis velocity, and $\Delta$v required for capture and for circular orbit at closest approach. Back in Stage 1, you can tune the closest approach distance to be a certain altitude above the surface if an orbital insertion is desired, or if a (direct) landing or collision is intended, the trajectory can be made to intersect the lunar surface. When this is the case, the impact latitude and longitude will be displayed. Setup the maneuver such that the lunar periapsis is about 500km above the surface, to provide some margin against burn errors, but also because it should decrease as the vessel approaches the Moon and gets pulled in. Use the "Focus PeD" (radius) or the "Min Alt" (altitude) value in Stage 2, view "Encounter", as it provides a more precise estimate.\\
 With the maneuver data defined, go to the "Target" view in Stage 1. On the lower left of the display, 3 values are displayed: "Delta V" velocity change remaining in the burn, "T to Mnvre" time to an instantaneous burn, and "Begin Burn" time to ignite the vessel's main thrusters to best perform the burn. This last value is what should be used, and to reduce the waiting we can time-warp to about 5 minutes before ignition.\\
 A quick fine-tuning of the maneuver parameters should be done now, to ensure the best maneuver solution. Once, that is done, it is time to point the vessel in the correct direction. The "Target" view display shows the offset between the current vessel direction and the calculated thrust direction for the maneuver: turn the vessel in the direction of the green "x", until it is centered, so the vessel is pointed correctly for the burn.\\
@@ -1199,5 +1198,28 @@ Trajectory changes get more expensive as the vessel approaches Mars, so eventual
 Can you now get back to Earth?\\
 
 
+\paragraph{Voyager trajectory to Jupiter and Saturn}
+This flight presents a complex plan that mimics the Voyager spacecraft's "Grand Tour" trajectory to Jupiter and then Saturn. This plan makes use of the "gravity assist" technique, to change the velocity and direction of travel of a spacecraft as it flies past a planet. This is used at Jupiter, to accelerate and direct the spacecraft to Saturn.\\
+Your task is to perform correction maneuvers during the flight, so the plan is carried out, and encounters occur as expected. For convenience, the number and date of the correction maneuvers will usually follow the Voyager-2 flight, on which this plan is based. After flying this plan a few times, you should be able to apply the knowledge obtained to extend the plan and continue on to encounter Uranus and then Neptune, even if without historical accuracy.\\
+Load the scenario "Navigation\textbackslash Transx\textbackslash Voyager Grand Tour", and you'll find TransX already open and loaded with a 5-stage plan that approximately follows the Voyager 2 trajectory, up to Saturn.\\
+Stage 1 is Earth-centered, and handles launch and eject maneuver, similarly to what was used in the "Earth surface to Mars" section.\\
+Stage 2 is Sun-centered, and is where the flight from Earth to Jupiter is defined, again similar to what was used before in the previous section.\\
+Stage 3 is Jupiter-centered, slingshots the vessel on to Saturn. Of note is the "Slingshot" view, which helps targeting the vessel for the slingshot. The yellow dashed line links the center of the planet to the target periapsis for the flyby, and the green solid line goes from the center of the planet to the current vessel periapsis. On the bottom left, the parameters "R. Inc" and "Pe Ratio" are shown, indicating respectively the angular difference and normalized length difference between the 2 lines. When the vessel is on target, those 2 parameters should be 0 and 1, respectively.\\
+Stage 4 is again Sun-centered, and covers the flight from the Jupiter slingshot to Saturn. The "Sling Direct" view has variables that control the required slingshot in the previous stage. "Eject date" is the slingshot date, or the periapsis date from the previous stage. "Outward angle" controls how much the trajectory is going to be bent. "Inc. angle" is the inclination change, usually a small angle as the orbital plane of planets are close to each other.\\
+Stage 5 is Saturn-centered encounter, similar to what was used before in previous sections.\\
+The scenario starts about 2 days before the planned launch time, so you can take your time reviewing the plan. You'll notice that the Jupiter aim isn't as good as it could be, but in fact it is just targeted for the actual launch time.\\
+Once you are done, fast-forward to the time of launch. Switch to "Eject Plan" view in stage 1, and launch on 1977/08/20 at 14:29 (MJD 43375.603472), and turn to a heading of 123° and get into a circular orbit of 200km. During ascent and in orbit, take care to null the plane error, so there you don't have to worry too much about it during the ejection burn. Perform the ejection burn on the first orbit, about 1 hour after launch.\\
+As you fly away from Earth, stage 1 will eventually be deleted, and then at about October 1977 perform a correction burn to correct for ejection burn errors. Open a second TransX instance, set up a maneuver in stage 1 in one MFD, and in the second MFD go to stage 2, to use the information displayed in views "Setup" and "Slingshot" to correct the trajectory. The parameters of interest are "Pe MJD" in the "Setup" view, and "R. Inc" and "Pe Ratio" in the "Slingshot" view. Drive "Pe MJD" to about MJD 44063.936806, "R. Inc" to a value near 0 and "Pe Ratio" close to 1. The target is still far away, which means the trajectory will be perturbed for a long time, thus absolute accuracy isn't required. To aid in nulling the errors in the mentioned variables: the main velocity component driver for parameter "R. Inc" (Slingshot view) is "Ch. plane vel.", variable "Outward vel." drives mostly "Pe Ratio" (Slingshot view) and "Focus PeD" (Setup view), and finally variable "Prograde vel." has the greatest effect on "Pe MJD" (Setup view). There is coupling between all those parameters, so several "passes" will be needed adjusting them.\\
+In May 1978 perform another course correction burn, using the same setup as previously.\\
+You can make the following course correction burn a year later, in late May 1979. By then, the vessel is close enough to Jupiter that the Sun-centered stage 1 has been deleted. This time, a "manual" correction will be performed: set the HUD reference (\Ctrl\keystroke{R}) to Jupiter, point the vessel prograde and use the RCS to null the trajectory errors.
+%TODO what is displayed there?
+As before, there is some coupling between the variables, but for the most part, to change "Pe MJD" thrust forward or back, "R. Inc" is up or down, and "Pe Ratio" is left or right.\\
+In June make the final manual adjustment to the trajectory, and you are set for the encounter.\\
+In early July, watch the Jovian satellites pass by, as the vessel encounters Jupiter and the its trajectory is turned towards Saturn.\\
+We'll perform the next course correction maneuver in late November 1979, after the Jupiter stage is deleted. A very coarse maneuver is enough, as Jupiter is still pulling the vessel and so the trajectory will still drift. If the "Focus PeD" distance in view Setup of stage 2 is below 1 G (1 million Km) and decreasing, you can probably ignore this correction maneuver opportunity. Otherwise, the target is a "Focus PeD" of 161 M. You may also correct the encounter time ("Pe MJD" to 44842.141725), which will likely require a large burn.\\
+The next correction burn should be in February 1981.\\
+The vessel is now getting close to Saturn, and the Sun-centered stage will be deleted, and in late July 1981 you can perform another correction maneuver, followed by a last one in mid August 1981. The error should be small enough to allow a manual correction, without setting up a maneuver.\\
+By late August, you should be flying by Saturn and its moons, congratulations!\\
+Can you now change this plan, to have a gravity assist at Saturn to reach Uranus and then Neptune?
 
 \end{document}
