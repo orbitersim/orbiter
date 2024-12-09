@@ -2,7 +2,7 @@
 \begin{document}
 
 \section{Advanced Configuration}
-A more advanced configuration is available by editing Orbiter's configuration files. Configuration files (.cfg) are text files and can be edited with any editor capable of writing plain ASCII text files.
+In addition to the parameters in the Launchpad (see section \ref{sec:launchpad}), a more advanced configuration is available by editing Orbiter's configuration files. Configuration files (.cfg) are text files and can be edited with any editor capable of writing plain ASCII text files.
 
 
 \subsection{Main configuration file}
@@ -30,6 +30,8 @@ Normally, only entries whose values differ from their default setting are writte
 	\hline\rule{0pt}{2ex}
 	HightexDir & String & Subdirectory for alternative high-resolution planetary textures. Default: .\textbackslash Textures2\textbackslash\\
 	\hline\rule{0pt}{2ex}
+	PlanetTexDir & String & Subdirectory for planetary textures. Default: .\textbackslash Textures\textbackslash\\
+	\hline\rule{0pt}{2ex}
 	ScenarioDir & String & Subdirectory for scenarios. Default: .\textbackslash Scenarios\textbackslash\\
 	\hline
 	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Logical parameters}}}\\
@@ -52,33 +54,11 @@ Normally, only entries whose values differ from their default setting are writte
 	\hline\rule{0pt}{2ex}
 	MFDMapVersion & Int & Display style for Map MFD mode (0 = old, 1 = new). Default: 1\\
 	\hline\rule{0pt}{2ex}
-	InstrumentUpdate­Interval & Float & Interval between MFD display updates [s]. Default: 1.0\\
+	InstrumentUpdateInterval & Float & Interval between MFD display updates [s]. Default: 0.5\\
 	\hline\rule{0pt}{2ex}
 	PanelScale & Float & Scaling factor for instrument panel display. Default: 1.0\\
 	\hline\rule{0pt}{2ex}
 	PanelScrollSpeed & Float & Speed factor for panel scrolling [pixels/s]. Default: 300.0\\
-	\hline
-	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{User interface parameters}}}\\
-	\hline\rule{0pt}{2ex}
-	FocusFollowsMouse & Bool & If TRUE, dialog windows receive input focus when the mouse moves over them. Default: TRUE\\
-	\hline\rule{0pt}{2ex}
-	MenubarMode & Int & Main menu mode (0 = on, 1 = off, 2 = auto-hide). Default: 2\\
-	\hline\rule{0pt}{2ex}
-	MenuLabelOnly & Bool & Disable main menu icon display. Default: FALSE\\
-	\hline\rule{0pt}{2ex}
-	ShowWarpAlways & Bool & Display time acceleration even if menubar is hidden. Default: TRUE\\
-	\hline\rule{0pt}{2ex}
-	ShowWarpScientific & Bool & Display time acceleration in scientific mode. Default: FALSE\\
-	\hline\rule{0pt}{2ex}
-	InfobarMode & Int & Info bar mode (0 = on, 1 = off, 2 = auto-hide). Default: 0\\
-	\hline\rule{0pt}{2ex}
-	InfoAuxIdx & Int Int & Auxiliary info box modes left/right. Default: 0 0\\
-	\hline\rule{0pt}{2ex}
-	MenubarOpacity & Int & Main menu opacity (0-10). Default: 4\\
-	\hline\rule{0pt}{2ex}
-	InfobarOpacity & Int & Info bar opacity (0-10). Default: 4\\
-	\hline\rule{0pt}{2ex}
-	MenubarSpeed & Int & Menu/info bar scroll speed (1-20). Default: 10\\
 	\hline
 	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Visual parameters}}}\\
 	\hline\rule{0pt}{2ex}
@@ -108,49 +88,63 @@ Normally, only entries whose values differ from their default setting are writte
 	\hline\rule{0pt}{2ex}
 	EnableLocalLights & Bool & Enable localised point and spot light emitters. Default: FALSE\\
 	\hline\rule{0pt}{2ex}
-	MaxLights & Int & Max. simultaneously active lights (0 = query device). Default: 0\\
+	MaxLights & Int & Max. simultaneously active lights (0 = query device). Default: 32\\
 	\hline\rule{0pt}{2ex}
-	AmbientLevel & Int & Ambient light level (brightness of not directly lit surfaces). (0-255). Default: 10\\
+	AmbientLevel & Int & Ambient light level (brightness of not directly lit surfaces). (0-255). Default: 2\\
 	\hline\rule{0pt}{2ex}
-	PlanetMaxPatchLevel & Int & Max. texture resolution for planetary surfaces (1-14). Default: 14\\
+	PlanetMaxPatchLevel & Int & Max. texture resolution for planetary surfaces (1-21). Default: 21\\
 	\hline\rule{0pt}{2ex}
 	PlanetPatchRes & Float & Texture resolution bias for planet surfaces (0.1-10.0). Higher values result in higher render resolution at a given apparent radius, but reduce performance. Default: 1.0\\
 	\hline\rule{0pt}{2ex}
 	NightlightBrightness & Float & Brightness level of night lighting effects (0.0-1.0). Default: 0.5\\
 	\hline\rule{0pt}{2ex}
-	StarPrm & List & Brightness and scaling parameters for stars rendered as pixels. Values: app. mag. limit for brightest stars / app. mag. limit for faintest stars / render brightness for faintest stars / lin-log scaling flag. Default: [0.0 7.0 0.1 0]\\
+	EnableBackgroundStars & Bool & Render background stars as pixels. Default: TRUE\\
 	\hline\rule{0pt}{2ex}
-	CSphereBgImage & String & File name for celestial sphere background image. Default: <none>\\
+	StarPrm & List & Brightness and scaling parameters for stars rendered as pixels. Values: app. mag. limit for brightest stars / app. mag. limit for faintest stars / render brightness for faintest stars / lin-log scaling flag. Default: [2.0 8.0 0.1 1]\\
 	\hline\rule{0pt}{2ex}
-	CSphereBgPath & String & File path to celestial sphere background image.\\
+	EnableBackgroundStarmap & Bool & Render background star from image. Default: TRUE\\
 	\hline\rule{0pt}{2ex}
-	CSphereBgIntensity & Float & Brightness of background image (0.0-1.0). Default: 0.5\\
+	CSphereStarPath & String & Path to star background image. Default: "csphere\textbackslash hiptyc\_2020"\\
+	\hline\rule{0pt}{2ex}
+	EnableBackgroundImage & Bool & Render celestial sphere background image. Default: TRUE\\
+	\hline\rule{0pt}{2ex}
+	CSphereBgPath & String & File path to celestial sphere background image. Default: "csphere\textbackslash milkyway\_2020"\\
+	\hline\rule{0pt}{2ex}
+	CSphereBgIntensity & Float & Brightness of background image (0.0-1.0). Default: 0.3\\
+	\hline\rule{0pt}{2ex}
+	ElevationMode & Int & Elevation mode (0 = none, 1 = linear, 2 = cubic spline). Default: 2\\
 	\hline
 	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Screen capture parameters}}}\\
 	\hline\rule{0pt}{2ex}
 	CaptureTarget & Int & 0 = clipboard, 1 = file. Default: 0\\
 	\hline\rule{0pt}{2ex}
-	CaptureFile & String & File name for next screen capture\\
+	CaptureFile & String & File name for next screen capture. Default: "capture\textbackslash images\textbackslash 0000"\\
 	\hline\rule{0pt}{2ex}
-	CaptureSequenceDir & String & Directory name for next screen capture sequence\\
+	CaptureSequenceDir & String & Directory name for next screen capture sequence. Default: "capture\textbackslash frames"\\
 	\hline\rule{0pt}{2ex}
-	CaptureImageFormat & Int & 0 = BMP, 1 = PNG, 2 = JPG, 3 = TIFF\\
+	CaptureImageFormat & Int & 0 = BMP, 1 = PNG, 2 = JPG, 3 = TIFF. Default: 2\\
 	\hline\rule{0pt}{2ex}
-	CaptureImageQuality & Int & 1-10\\
+	CaptureImageQuality & Int & 1-10. Default: 7\\
 	\hline\rule{0pt}{2ex}
-	CaptureSequenceStart & Int & Number of next file in sequence\\
+	CaptureSequenceStart & Int & Number of next file in sequence. Default: 0\\
 	\hline\rule{0pt}{2ex}
-	CaptureSequenceSkip & Int & Number of frames to skip in sequence recording\\
+	CaptureSequenceSkip & Int & Number of frames to skip in sequence recording. Default: 0\\
 	\hline
 	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Instrument parameters}}}\\
 	\hline\rule{0pt}{2ex}
-	ForceMfdPow2 & String & TRUE = MFD sizes are set to powers of 2; FALSE = sizes can be arbitrary; AUTO = Orbiter guesses from display caps.\\
+	ForceMfdPow2 & String & Force MFD display textures to size power of 2 (TRUE = MFD sizes are set to powers of 2, FALSE = sizes can be arbitrary; AUTO = Orbiter guesses from display caps). Default: AUTO\\
 	\hline\rule{0pt}{2ex}
-	MfdHiresThreshold & Int & MFD threshold size for switching from 256x256 to 512x512 pixels (only used if Pow2 size is active)\\
+	MfdHiresThreshold & Int & MFD threshold size for switching from 256x256 to 512x512 pixels (only used if Pow2 size is active. Default: 384\\
+	\hline\rule{0pt}{2ex}
+	PanelMfdHudSize & Int & HUD texture size (256 or 512). Default: 512\\
+	\hline\rule{0pt}{2ex}
+	VCMfdSize & Int & MFD texture size for virtual cockpits (256/512/1024). Default: 512\\
 	\hline
 	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Visual helper parameters}}}\\
 	\hline\rule{0pt}{2ex}
-	Planetarium & Int & Bit flags for display elements in "Planetarium" mode (\keystroke{F9}). Default: 4330.\\
+	Planetarium & Int & Bit flags for display elements in "Planetarium" mode: bit 0 = enable planetarium mode, bit 1 = celestial grid, bit 2 = ecliptic grid, bit 3 = galactic grid, bit 4 = equator of current target, bit 5 = constellation patterns, bit 6 = constellation labels, bit 7 = long constellation names, bit 8 = constellation boundaries, bit 9 = celestial sphere feature markers. Default: 450.\\
+	\hline\rule{0pt}{2ex}
+	SurfMarkers & Int & Bitflags for surface and object marker display: bit 0 = enable markers,  bit 1 = solar system bodies, bit 2 = vessels , bit 3 = surface bases, bit 4 = VOR transmitters, bit 5 = surface features. Default: 2.\\
 	\hline\rule{0pt}{2ex}
 	BodyForces & List & Display parameters for force vector visualisation. Values: bit flags for force types / vector scale factor / opacity. Default: [60 1.0 1.0]\\
 	\hline\rule{0pt}{2ex}
@@ -164,21 +158,29 @@ Normally, only entries whose values differ from their default setting are writte
 	\hline\rule{0pt}{2ex}
 	TimerMode & Int & Simulation timer mode (0 = auto, 1 = hires hardware timer, 2 = lores software timer). Default: 0\\
 	\hline\rule{0pt}{2ex}
-	DisableFontSmoothing & Bool & Turn off font smoothing while running Orbiter to improve performance. Default: TRUE\\
+	DisableFontSmoothing & Bool & Turn off font smoothing while running Orbiter to improve performance. Default: FALSE\\
 	\hline\rule{0pt}{2ex}
-	ForceReenableFont­Smoothing & Bool & Re-enable font smoothing on closing Orbiter even if it was not active at program start. Default: FALSE\\
+	ForceReenableFontSmoothing & Bool & Re-enable font smoothing on closing Orbiter even if it was not active at program start. Default: FALSE\\
 	\hline\rule{0pt}{2ex}
-	HtmlScnDesc & Int & Use inline Html viewer for Launchpad scenario descriptions. 0 = no, 1 = yes, 2 = auto (off for Linux/Wine)\\
+	HtmlScnDesc & Int & Use inline Html viewer for Launchpad scenario descriptions. 0 = no, 1 = yes, 2 = auto (off for Linux/Wine). Default: 2\\
 	\hline\rule{0pt}{2ex}
 	SaveExitScreen & Bool & Take screenshot on session exit to display in scenario description. Default: TRUE\\
+	\hline\rule{0pt}{2ex}
+	WireframeMode & Bool & Set renderer to wireframe mode. Default: FALSE\\
+	\hline\rule{0pt}{2ex}
+	NormaliseNormals & Bool & Force auto-normalisation of all normals. Default: FALSE\\
+	\hline\rule{0pt}{2ex}
+	VerboseLog & Bool & Verbose log output. Default: FALSE\\
 	\hline
 	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Physics engine}}}\\
 	\hline\rule{0pt}{2ex}
 	DistributedVesselMass & Bool & Enable gravity gradient torque effects as result of anisotropic inertia tensor. Default: FALSE\\
 	\hline\rule{0pt}{2ex}
-	NonsphericalGravity­Sources & Bool & Enable orbit perturbations due to nonspherical gravitational potentials. Default: FALSE\\
+	NonsphericalGravitySources & Bool & Enable orbit perturbations due to nonspherical gravitational potentials. Default: FALSE\\
 	\hline\rule{0pt}{2ex}
 	RadiationPressure & Bool & Enable orbit perturbations due to radiation pressure. Default: FALSE\\
+	\hline\rule{0pt}{2ex}
+	AtmosphericWind & Bool & Enable wind effects. Default: FALSE\\
 	\hline\rule{0pt}{2ex}
 	StabiliseOrbits & Bool & Use Encke's method for improved state propagation stability at large time steps. Default: TRUE\\
 	\hline\rule{0pt}{2ex}
@@ -188,23 +190,35 @@ Normally, only entries whose values differ from their default setting are writte
 	\hline\rule{0pt}{2ex}
 	PertPropSubsampling & List & Orbit stabilisation subsampling parameters. Values: max. steps / fractional orbit step limit. Default: [10 0.02]\\
 	\hline\rule{0pt}{2ex}
-	PertPropNonspherical­Limit & Float & Fractional orbit step beyond which nonspherical gravity effects are ignored. Default: 0.05\\
+	PertPropNonsphericalLimit & Float & Fractional orbit step beyond which nonspherical gravity effects are ignored. Default: 0.05\\
 	\hline\rule{0pt}{2ex}
 	PropStages & Int & Number of integrator stages for vessel propagation (1-5). Default: 4\\
 	\hline\rule{0pt}{2ex}
-	PropStage<i> & List & Integrator parameters for propagator stage <i> (0-4). Values: integrator index / time step limit. Default: i = 0: [2 0.5], i = 1: [4 20.0], i = 2: [6 100.0], i = 3: [8 N/A]\\
+	PropStage<i> & List & Integrator parameters for propagator stage <i> (0-4). Values: integrator index / time step limit. Default: i = 0: [0 0.1 0.00349066 0.5 0.0174533], i = 1: [1 2 0.0349066 10 0.0698132], i = 2: [3 20 0.0872665 100 0.174533], i = 3: [5 200 0.349066], i = 4: [5 500 0.872665]\\
 	\hline\rule{0pt}{2ex}
-	PropSubsampling & Int & Max. subsampling steps. Default: 100\\
+	PropSubsampling & Int & Max. subsampling steps. Default: 10\\
+	\hline
+	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Planet rendering parameters}}}\\
 	\hline\rule{0pt}{2ex}
 	PlanetPreloadMode & Int & Planetary texture load mode. 0 = load on demand, 1 = preload at simulation start. Default: 0\\
 	\hline\rule{0pt}{2ex}
-	PlanetTexLoadFreq & Float & Texture patch loading frequency [Hz]. Default: 20\\
+	TileCacheSize & Int & Number of tiles to cache. Default: 40\\
 	\hline\rule{0pt}{2ex}
-	PlanetAnisoMode & Int & Planet anisotropic filter level (1 = none). Default: 1\\
+	TileLoadThread & Bool & Load tiles in separate thread. Default: TRUE\\
+	\hline\rule{0pt}{2ex}
+	PlanetTexLoadFreq & Int & Texture patch loading frequency [Hz]. Default: 50\\
+	\hline\rule{0pt}{2ex}
+	PlanetAnisoMode & Int & Planet anisotropic filter level (1 - 16) (1 = none). Default: 3\\
 	\hline\rule{0pt}{2ex}
 	PlanetMipmapMode & Int & Planet texture mipmap mode (0 = none, 1 = point sampling, 2 = linear interpolation). Default: 1\\
 	\hline\rule{0pt}{2ex}
 	PlanetMipmapBias & Float & Mipmap level bias (-1.0 - +1.0), where < 0 is sharper, > 0 is smoother. Default: 0\\
+	\hline\rule{0pt}{2ex}
+	PlanetPatchGrid & Int & Patch mesh resolution power (4 - 6). Default: 5\\
+	\hline\rule{0pt}{2ex}
+	PlanetResolutionBias & Float & Resolution bias (-2.0 - +2.0). Default: 0\\
+	\hline\rule{0pt}{2ex}
+	TileLoadFlags & Int & Flags for planetary tile load mechanism (0x1 = load tiles from directory tree, 0x2 = load tiles from compressed archive, 0x3 = both: try directory tree first, then archive). Default: 3\\
 	\hline
 	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Map dialog parameters}}}\\
 	\hline\rule{0pt}{2ex}
@@ -214,13 +228,19 @@ Normally, only entries whose values differ from their default setting are writte
 	\hline\rule{0pt}{2ex}
 	CameraPanspeed & Float & Camera speed in ground observer mode. Default: 100\\
 	\hline\rule{0pt}{2ex}
-	HUDColIdx & Int & HUD colour index. Default: 0 (green)\\
+	CameraTerrainLimit & Float & Altitude limit for terrain-following mode [m]. Default: 50\\
+	\hline\rule{0pt}{2ex}
+	HUDColIdx & Int & HUD colour index (0 = green, 1 = cobalt, 2 = electric blue, 3 = gamboge). Default: 0\\
 	\hline
 	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Device settings}}}\\
 	\hline\rule{0pt}{2ex}
 	DeviceIndex & Int & Enumeration index for current 3D device (do not edit manually)\\
 	\hline\rule{0pt}{2ex}
 	ModeIndex & Int & Screen mode index (do not edit manually)\\
+	\hline\rule{0pt}{2ex}
+	OutputIndex & Int & Device output (do not edit manually)\\
+	\hline\rule{0pt}{2ex}
+	Style & Int & Rendering layout (do not edit manually)\\
 	\hline\rule{0pt}{2ex}
 	DeviceForceEnum & Bool & If TRUE, enumerate 3D devices at each start. Default: TRUE\\
 	\hline\rule{0pt}{2ex}
@@ -244,11 +264,41 @@ Normally, only entries whose values differ from their default setting are writte
 	\hline\rule{0pt}{2ex}
 	JoystickThrottleAxis & Int & Axis index for joystick throttle (0 = Z, 1 = slider 0, 2 = slider 1). Default: 1\\
 	\hline\rule{0pt}{2ex}
-	JoystickThrottle­Saturation & Int & Saturation zone for joystick throttle control (0-10000). A setting of 9000 means that the throttle will saturate over the last 10\% of its range at either end. Default: 9500\\
+	JoystickThrottleSaturation & Int & Saturation zone for joystick throttle control (0-10000). A setting of 9000 means that the throttle will saturate over the last 10\% of its range at either end. Default: 9500\\
 	\hline\rule{0pt}{2ex}
 	JoystickDeadzone & Int & Deadzone at joystick axis centres (0-10000). A setting of 2000 means that the joystick is considered neutral within 20\% from the central position. Default: 2500\\
 	\hline\rule{0pt}{2ex}
 	IgnoreThrottleOnStart & Bool & Ignore throttle at simulation start until moved. Default: TRUE\\
+	\hline
+	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{User interface parameters}}}\\
+	\hline\rule{0pt}{2ex}
+	MouseFocusMode & Int & Window focus behaviour: (0 = focus requires click, 1 = focus requires click for child windows only, 2 = focus follow mouse) Default: 1\\
+	\hline\rule{0pt}{2ex}
+	MenubarMode & Int & Main menu mode (0 = on, 1 = off, 2 = auto-hide). Default: 2\\
+	\hline\rule{0pt}{2ex}
+	MenubarLabelOnly & Bool & Disable main menu icon display. Default: FALSE\\
+	\hline\rule{0pt}{2ex}
+	ShowWarpAlways & Bool & Display time acceleration even if menubar is hidden. Default: TRUE\\
+	\hline\rule{0pt}{2ex}
+	ShowWarpScientific & Bool & Display time acceleration in scientific mode. Default: FALSE\\
+	\hline\rule{0pt}{2ex}
+	InfobarMode & Int & Info bar mode (0 = on, 1 = off, 2 = auto-hide). Default: 0\\
+	\hline\rule{0pt}{2ex}
+	InfoAuxIdx & Int Int & Auxiliary info box modes left/right. Default: 0 0\\
+	\hline\rule{0pt}{2ex}
+	MenubarOpacity & Int & Main menu opacity (0-10). Default: 2\\
+	\hline\rule{0pt}{2ex}
+	InfobarOpacity & Int & Info bar opacity (0-10). Default: 2\\
+	\hline\rule{0pt}{2ex}
+	MenubarSpeed & Int & Menu/info bar scroll speed (1-20). Default: 10\\
+	\hline\rule{0pt}{2ex}
+	PauseIndicatorMode & Int & Pause/resume indication (0 = flash on pause/resume, 1 = show on pause, 2 = don't show). Default: 0\\
+	\hline\rule{0pt}{2ex}
+	SelVesselTab & Int & Tab to open in vessel selection dialog. Default: 0\\
+	\hline\rule{0pt}{2ex}
+	SelVesselRange & Int & "nearby" range for vessel selection dialog. Default: 4\\
+	\hline\rule{0pt}{2ex}
+	SelVesselFlat & Bool & Flat assemblies in vessel selection dialog. Default: FALSE\\
 	\hline
 	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Demo parameters}}}\\
 	\hline\rule{0pt}{2ex}
@@ -290,9 +340,9 @@ Normally, only entries whose values differ from their default setting are writte
 	\hline
 	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Window positions}}}\\
 	\hline\rule{0pt}{2ex}
-	DlgXXXPos & Rect & Screen positions of dialog windows\\
+	Dlg<XXX>Pos & Rect & Screen positions of dialog windows\\
 	\hline\rule{0pt}{2ex}
-	LpadXXXListWidth & Int & Width of Launchpad splitter lists\\
+	Lpad<XXX>ListWidth & Int & Width of Launchpad splitter lists\\
 	\hline
 	\multicolumn{3}{|c|}{\rule{0pt}{2ex}\textbf{\textit{Modules list}}}\\
 	\hline\rule{0pt}{2ex}
@@ -304,11 +354,20 @@ Normally, only entries whose values differ from their default setting are writte
 
 \subsection{Key mapping file}
 The keymap.cfg file in the Orbiter root directory contains the key mapping definitions for the default Orbiter functions. Individual vessel classes and other plugins may define additional key functions.\\
-Each line contains a key definition in the format\\
-\indent <\textit{function}> = <\textit{key}>\\
-where <function> is one of the function identifiers listed in the table below, and <\textit{key}> is a key identifier, optionally followed by one or more modifier keys.\\
+Each line contains a key definition in the format
+
+\begin{lstlisting}[language=OSFS]
+<function> = <key>
+\end{lstlisting}
+
+\noindent
+where <function> is one of the function identifiers listed in the table below, and <\textit{key}> is a key identifier, optionally followed by one or more modifier keys.
+\begin{sloppypar}% for large words
+\noindent
 %TODO handle API doc reference
-For supported key identifiers, see Chapter Keyboard key identifiers in document Orbitersdk\textbackslash doc\textbackslash API\_Reference.chm. The key identifiers in the format required by keymap.cfg are as defined in the list, minus the OAPI\_KEY\_ prefix.\\
+For supported key identifiers, see Chapter Keyboard key identifiers in document Orbitersdk\textbackslash doc\textbackslash API\_Reference.chm. The key identifiers in the format required by keymap.cfg are as defined in the list, minus the \textit{OAPI\_KEY\_} prefix.
+\end{sloppypar}
+\noindent
 Supported modifier keys are LSHIFT, RSHIFT, LCTRL, RCTRL, CTRL, LALT, RALT, ALT.\\
 Missing entries in keymap.cfg are substituted by their default values. To revert to the original key mapping, simply delete keymap.cfg. Orbiter will create a new one the next time it is run.
 
@@ -502,10 +561,6 @@ Missing entries in keymap.cfg are substituted by their default values. To revert
 	\hline\rule{0pt}{2ex}
 	DlgMap & M CTRL & Open map window\\
 	\hline\rule{0pt}{2ex}
-	DlgSelectVessel & F3 & Open vessel selection dialog\\
-	\hline\rule{0pt}{2ex}
-	SelectPrevVessel & F3 CTRL & Switch to previous focus vessel\\
-	\hline\rule{0pt}{2ex}
 	ToggleCamInternal & F1 & Switch cockpit/external view\\
 	\hline\rule{0pt}{2ex}
 	ToggleTrackMode & F2 & Cycle to next external track mode\\
@@ -520,9 +575,13 @@ Missing entries in keymap.cfg are substituted by their default values. To revert
 	\hline\rule{0pt}{2ex}
 	Quicksave & S CTRL & Save current simulation state\\
 	\hline\rule{0pt}{2ex}
-	DlgCapture & SYSRQ CTRL & Open screen capture control dialog\\
-	\hline\rule{0pt}{2ex}
 	Quit & Q CTRL & Quit simulation session\\
+	\hline\rule{0pt}{2ex}
+	DlgSelectVessel & F3 & Open vessel selection dialog\\
+	\hline\rule{0pt}{2ex}
+	SelectPrevVessel & F3 CTRL & Switch to previous focus vessel\\
+	\hline\rule{0pt}{2ex}
+	DlgCapture & SYSRQ CTRL & Open screen capture control dialog\\
 	\hline
 	\end{longtable}
 %\end{table}

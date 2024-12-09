@@ -128,10 +128,9 @@ Column	&Parameter                        				&Units      			& Notes     \\\hline
 
 
 An example of a header line from the LP165 model is shown below.
-%TODO line too long
 \begin{tiny}
 \begin{verbatim}
-  .1738000000000000E+04,  .4902801056000000E+04,  .2170000000000000E-03,  165,  165,    1,  .0000000000000000E+00,  .0000000000000000E+00   
+  .17380000000000E+04,  .49028010560000E+04,  .21700000000000E-03,  165,  165,    1,  .00000000000000E+00,  .00000000000000E+00   
 \end{verbatim}
 \end{tiny}
 
@@ -168,11 +167,10 @@ An example of lines defining the harmonic coefficients are shown below.
 \end{verbatim}
 \end{tiny}
 New gravity models must be added to the folder \emph{./GravityModels}, the corresponding body configuration file must be edited to include the following lines:
-%TODO update file content below
 \begin{tiny}
 \begin{verbatim}
 ; === Gravity Models ===
-; ref: see Doc/Technotes/gravity.pdf for details on implementation and usage
+; ref: see Doc/Orbiter Technical Reference.pdf for details on implementation and usage
 GravModelPath = jgl165p1.sha       ; the name of the gravity model file to load, located in /GravityModels
 GravCoeffCutoff = 10               ; the maximum number of terms to load.
 \end{verbatim}
@@ -188,9 +186,9 @@ Body    	& Model                 					& Maximum Degree/Order 		& Default Degree/
 Mercury 	& \emph{jgmess\_160a\_sha.tab} 		& 160                  			& 10                   \\
 Venus   	& \emph{mod\_shgj120p.a01}     		& 120                  			& 10                   \\
 Earth   	& \emph{egm96\_to360.tab}     			& 360                 			& 10                   \\
-Luna    	&\emph{ jgl165p1.sha}				& 165                  			& 10                   \\
-Mars    	&\emph{ jgmro\_120f\_sha.tab}  		& 120                  			& 10		     \\
-Vesta    	&\emph{ JGDWN\_VES20H\_SHA.TAB}		& 20                  			& 10
+Luna    	& \emph{jgl165p1.sha}				& 165                  			& 10                   \\
+Mars    	& \emph{jgmro\_120f\_sha.tab}  		& 120                  			& 10		     \\
+Vesta    	& \emph{JGDWN\_VES20H\_SHA.TAB}		& 20                  			& 10
 \end{tabular}
 \caption{Gravity models included with Orbiter}
 \label{tab:models}
