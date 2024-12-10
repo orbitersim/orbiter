@@ -4,6 +4,9 @@ inputs:
   architecture:
     description: "Build Architecture"
     default: x86
+  docs:
+    description: Build documentation?
+    default: OFF
 
 outputs:
   random-number:
@@ -23,7 +26,7 @@ runs:
         arch: ${{ inputs.architecture }}
 
     - name: Install documentation prerequisites
-      if: ${{ inputs.docs }}
+      if: ${{ inputs.docs == 'ON' }}
       shell: pwsh
       run: |
         choco install --no-progress miktex
@@ -32,6 +35,7 @@ runs:
         Add-Content $env:GITHUB_PATH "C:\Program Files\MiKTeX\miktex\bin\x64\"
 
     - name: Create directories
+      shell: cmd
       run: |
         mkdir out\build
         mkdir out\install
@@ -60,9 +64,11 @@ runs:
         dir /S /B DXSDK
 
     - name: Configure
+      shell: cmd
       run: cmake . --preset windows-${{ inputs.architecture }}-release
-        -DORBITER_MAKE_DOC=${{ inputs.docs && 'ON' || 'OFF' }}
+        -DORBITER_MAKE_DOC=${{ inputs.docs }}
         -DDXSDK_DIR:PATH="${{ github.workspace }}\\DXSDK"
 
     - name: Build
+      shell: cmd
       run: cmake --build --preset windows-${{ inputs.architecture }}-release --jobs 2
