@@ -1,0 +1,75 @@
+name: "Hello World"
+description: "Greet someone"
+inputs:
+  architecture:
+    description: "Build Architecture"
+    default: x86
+    type: string
+
+outputs:
+  random-number:
+    description: "Random number"
+    value: ${{ steps.random-number-generator.outputs.random-number }}
+
+runs:
+  using: "composite"
+  timeout-minutes: 60
+  env:
+    DXSDK_DIR: "${{ github.workspace }}\\DXSDK"
+
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Problem Matcher
+      uses: ammaraskar/msvc-problem-matcher@master
+
+    - name: Setup MSVC Console
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: ${{ inputs.architecture }}
+
+    - name: Install documentation prerequisites
+      if: ${{ inputs.docs }}
+      shell: pwsh
+      run: |
+        choco install --no-progress miktex
+        choco install --no-progress doxygen.install
+        choco install --no-progress libreoffice-fresh
+        Add-Content $env:GITHUB_PATH "C:\Program Files\MiKTeX\miktex\bin\x64\"
+
+    - name: Create directories
+      run: |
+        mkdir out\build
+        mkdir out\install
+
+    - name: Cache irrKlang package
+      uses: actions/cache@v4
+      with:
+        path: ${{ github.workspace }}/Extern/irrKlang/${{ inputs.architecture }}
+        key: irrKlang-${{ inputs.architecture }}
+
+    - name: Cache DirectX SDK
+      id: cache
+      uses: actions/cache@v4
+      with:
+        path: "${{ github.workspace }}\\DXSDK"
+        key: dxsdk_jun10
+
+    - name: Download DirectX SDK
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: cmd
+      run: |
+        curl -L https://download.microsoft.com/download/a/e/7/ae743f1f-632b-4809-87a9-aa1bb3458e31/DXSDK_Jun10.exe -o DXSDK_Jun10.exe
+        7z x DXSDK_Jun10.exe DXSDK/Include
+        7z x DXSDK_Jun10.exe DXSDK/Lib
+        del DXSDK_Jun10.exe
+        dir /S /B DXSDK
+
+    - name: Configure
+      run: cmake . --preset windows-${{ inputs.architecture }}-release
+        -DORBITER_MAKE_DOC=${{ inputs.docs && 'ON' || 'OFF' }}
+        -DDXSDK_DIR:PATH="${{ github.workspace }}\\DXSDK"
+
+    - name: Build
+      run: cmake --build --preset windows-${{ inputs.architecture }}-release --jobs 2

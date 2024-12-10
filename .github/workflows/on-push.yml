@@ -18,7 +18,9 @@ jobs:
       matrix:
         architecture: [x64, x86]
         os: [windows-2022]
-    uses: ./.github/workflows/reusable-build.yml
-    with:
-      os: ${{ matrix.os }}
-      architecture: ${{ matrix.architecture }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: orbitersim/orbiter/.github/actions/build@main
+        with:
+          architecture: ${{ matrix.architecture }}
