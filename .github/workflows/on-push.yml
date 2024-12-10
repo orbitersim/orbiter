@@ -23,7 +23,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         
-      - run: ls ./.github/actions/build
+      - run: dir /S /B
 
       - name: Build
         uses: ./.github/actions/build
