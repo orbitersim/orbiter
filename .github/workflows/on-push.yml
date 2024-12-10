@@ -27,7 +27,7 @@ jobs:
         shell: cmd
 
       - name: Build
-        uses: ./.actions/build
+        uses: ./.github/actions/build
         timeout-minutes: 60
         with:
           architecture: ${{ matrix.architecture }}
