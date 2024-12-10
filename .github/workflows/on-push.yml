@@ -24,6 +24,7 @@ jobs:
         uses: actions/checkout@v4
         
       - run: dir /S /B
+        shell: cmd
 
       - name: Build
         uses: ./.github/actions/build
