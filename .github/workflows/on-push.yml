@@ -20,7 +20,11 @@ jobs:
         os: [windows-2022]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: orbitersim/orbiter/.github/actions/build@main
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Build
+        uses: orbitersim/orbiter/.github/actions/build@main
+        timeout-minutes: 60
         with:
           architecture: ${{ matrix.architecture }}
