@@ -87,19 +87,21 @@ The following environment parameters are supported:
 	\hline\rule{0pt}{2ex}
 	\textbf{Item} & \textbf{Type} & \textbf{Description}\\
 	\hline\rule{0pt}{2ex}
-	SYSTEM & String & Name of the planetary system. A configuration file for this system must exist (see section \ref{ssec:planetery_sys}). Default: "Sol"\\
+	System & String & Name of the planetary system. A configuration file for this system must exist (see section \ref{ssec:planetery_sys}). Default: "Sol"\\
 	\hline\rule{0pt}{2ex}
-	DATE &   & Contains the simulation start time. Allowed formats are:\newline
+	Date &   & Contains the simulation start time. Allowed formats are:\newline
 	MJD <mjd> (Modified Julian date [days])\newline
 	JD <jd> (Julian date)\newline
 	JE <je> (Julian epoch)\newline
 	Default is current system time, but this should be avoided if the scenario contains objects defined by position/velocity  state vectors at a fixed time, which cannot easily be propagated\\
 	\hline\rule{0pt}{2ex}
-	HELP & String [,String] & Scenario help file (in HTML or compressed CHM format). For a HTML page, specify the location of the page relative to the Html\textbackslash Scenarios folder and without extension (.htm is assumed). For a page in a CHM file, specify the location of the file relative to the Html\textbackslash Scenarios folder without extension (.chm is assumed), followed by a comma and the name of the page inside the file without extension (.htm is assumed). Scenario help files can be opened during the simulation with Alt+F1. Default: no help file\\
+	Context & String & Optional context string. This can be used to fine-tune the setup of a planetary system, e.g. by selective loading of surface bases (see section \ref{ssec:surface_bases}).\\
 	\hline\rule{0pt}{2ex}
-	CONTEXT & String & Optional context string. This can be used to fine-tune the setup of a planetary system, e.g. by selective loading of surface bases (see section \ref{ssec:surface_bases}).\\
+	Script & String & A script file to launch at the scenario start. The string should include any path relative to the "Script" subdirectory, but no file extension (.lua is assumed). Default: no script\\
 	\hline\rule{0pt}{2ex}
-	SCRIPT & String & A script file to launch at the scenario start. The string should include any path relative to the "Script" subdirectory, but no file extension (.lua is assumed). Default: no script\\
+	Help & String [,String] & Scenario help file (in HTML or compressed CHM format). For a HTML page, specify the location of the page relative to the Html\textbackslash Scenarios folder and without extension (.htm is assumed). For a page in a CHM file, specify the location of the file relative to the Html\textbackslash Scenarios folder without extension (.chm is assumed), followed by a comma and the name of the page inside the file without extension (.htm is assumed). Scenario help files can be opened during the simulation with Alt+F1. Default: no help file\\
+	\hline\rule{0pt}{2ex}
+	Playback & String & Folder containing playback data, relative to "Flights" subdirectory. Default: no playback\\
 	\hline
 	\end{tabularx}
 \end{table}
@@ -108,9 +110,10 @@ The following environment parameters are supported:
 \underline{Notes:}
 
 \begin{itemize}
-\item If the DATE entry is not present, Orbiter reads the computer system clock, adds the time zone offset to convert to Universal Time (UTC) and adds another offset of 66.184 seconds to map from UTC to Barycentric Dynamical Time (TDB).
-\item If the HELP entry is present, the description block is ignored.
-\item The script launched with the SCRIPT entry can be used for demos, interactive tutorials, etc. For Lua scripting in Orbiter, see .\textbackslash Orbitersdk\textbackslash doc\textbackslash orbiter\_lua.chm.
+\item If the "Date" entry is not present, Orbiter reads the computer system clock, adds the time zone offset to convert to Universal Time (UTC) and adds another offset of 66.184 seconds to map from UTC to Barycentric Dynamical Time (TDB).
+\item If the "Help" entry is present, the description block is ignored.
+%TODO lua doc path
+\item The script launched with the "Script" entry can be used for demos, interactive tutorials, etc. For Lua scripting in Orbiter, see .\textbackslash Orbitersdk\textbackslash doc\textbackslash orbiter\_lua.chm.
 \end{itemize}
 
 
@@ -132,7 +135,7 @@ with the following parameters supported:
 	\hline\rule{0pt}{2ex}
 	\textbf{Item} & \textbf{Type} & \textbf{Description}\\
 	\hline\rule{0pt}{2ex}
-	SHIP & String & Name of the user-controlled ship. The ship must be listed in the ship list (see below).\\
+	Ship & String & Name of the user-controlled ship. The ship must be listed in the ship list (see below).\\
 	\hline
 	\end{tabularx}
 \end{table}
@@ -156,9 +159,9 @@ with supported parameters
 	\hline\rule{0pt}{2ex}
 	\textbf{Item} & \textbf{Type} & \textbf{Description}\\
 	\hline\rule{0pt}{2ex}
-	MODE & Flag & Extern | Cockpit (selects external or cockpit camera mode)\\
-	\hline\rule{0pt}{2ex}
 	TARGET & String & Camera view target object (external modes only, cockpit mode always refers to the current focus object)\\
+	\hline\rule{0pt}{2ex}
+	MODE & Flag & Extern | Cockpit (selects external or cockpit camera mode)\\
 	\hline\rule{0pt}{2ex}
 	POS & Vec3 & Camera position relative to target (external modes only)\\
 	\hline\rule{0pt}{2ex}

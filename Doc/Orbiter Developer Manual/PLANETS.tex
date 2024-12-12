@@ -45,7 +45,7 @@ CloudFormat = 2
 
 \noindent
 otherwise a cloud layer defined in the legacy format is assumed.\\
-The MaxPatchResolution tag can be used to specify the maximum resolution level Orbiter will use for rendering the planet surface. This can be higher than than the maximum resolution defined in the texture quadtree, in which case Orbiter interpolates the missing high-resolution tile from the highest available resolution ancestor tile. This can be useful for providing a smoother surface representation (in particular for elevation data). The maximum supported value is 19. If the MaxPatchResolution value is set to less than the highest resolution level supported by quadtree nodes, then the higher resolution tiles are not used for rendering.\\
+The MaxPatchResolution tag can be used to specify the maximum resolution level Orbiter will use for rendering the planet surface. This can be higher than than the maximum resolution defined in the texture quadtree, in which case Orbiter interpolates the missing high-resolution tile from the highest available resolution ancestor tile. This can be useful for providing a smoother surface representation (in particular for elevation data). The maximum supported value is 21. If the MaxPatchResolution value is set to less than the highest resolution level supported by quadtree nodes, then the higher resolution tiles are not used for rendering.\\
 Likewise, the MaxCloudResolution tag can be used to specify the maximum resolution level for cloud tiles (the MinCloudResolution tag should always be set to 1).
 
 
@@ -68,7 +68,7 @@ The folder for each celestial body contains one or several sub-folders for vario
 \noindent
 Only the Surf layer is required. All other layers are optional.\\
 The files for each layer are arranged in a hierarchical quad-tree that is reflected by the folder structure within each layer.\\
-Each layer can be represented by multiple resolution levels ($\geq$ 1) up to a maximum level of currently 19. The different resolution levels are split into subdirectories represented by 2-digit folder names. For example,\\
+Each layer can be represented by multiple resolution levels ($\geq$ 1) up to a maximum level of currently 21. The different resolution levels are split into subdirectories represented by 2-digit folder names. For example,\\
 \indent Textures\textbackslash Earth\textbackslash Surf\textbackslash 08\\
 contains the level-8 surface textures for Earth.\\
 Each resolution level is further subdivided into latitude bands ($\geq$ 0), represented by 6-digit subdirectories, e.g.\\
@@ -120,7 +120,7 @@ Resolution levels 1, 2 and 3 are not part of the quadtree. They cover the entire
 
 \noindent
 The quadtree doesn't need to be populated completely. Missing tiles are interpolated by Orbiter from a sub-area of an ancestor tile. The quadtree is also allowed to contain gaps, that is, it can contain high-resolution tiles of an area (e.g. a surface base) even if some of the ancestor tiles are missing from the tree, so that there is no unbroken chain to the quadtree root.\\
-The minimum requirement is the presence of all tiles for resolution levels 1 to 4 for a given layer, i.e. the global tiles (level 1-3) and the quadtree root (level 4) must be present. All higher resolution quadtree tiles are optional. The maximum currently supported resolution level is 17 for elevation layers (Elev and Elev\_mod), and level 19 for all other layers.
+The minimum requirement is the presence of all tiles for resolution levels 1 to 4 for a given layer, i.e. the global tiles (level 1-3) and the quadtree root (level 4) must be present. All higher resolution quadtree tiles are optional. The maximum currently supported resolution level is 17 for elevation layers (Elev and Elev\_mod), and level 21 for all other layers.
 
 
 

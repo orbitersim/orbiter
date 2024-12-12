@@ -1607,4 +1607,81 @@ Example: to set the altitude to 20 m, use the following command:
 qc:set_alt(20)
 \end{lstlisting}
 
+
+\subsection{Solar Sail}
+The Solar Sail vessel demonstrates the concept of spacecraft propelled by solar radiation.\\
+
+\alertbox{The "Radiation pressure" option must be enabled in the Launchpad (see \ref{ssec:options_tab}), so the Solar Sail operates as intended.}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\hsize]{solarsail.png}
+  \caption{Solar Sail orbiting Earth.}
+\end{figure}
+
+\noindent
+The Solar Sail vessel has a mass of 1000 Kg, and consists mainly of a square sail with a width of about 700 m.\\
+3-axis attitude control is achieved by operating control paddles, located at each corner of the sail. They are manually controlled by a lua command available via the Console window. Make sure that the LuaConsole plugin module is activated in the Modules tab of the Orbiter Launchpad. During a simulation session, open the console with Lua console window from the Custom functions list (\Ctrl\keystroke{F4}). To access your Solar Sail, you first have to create an interface object, and then use it to access vessel functionality, e.g.
+
+\begin{lstlisting}[language=OSFS]
+ss = vessel.get_focusinterface()
+\end{lstlisting}
+
+\noindent
+The position of each paddle is commanded with the function
+
+\begin{lstlisting}[language=OSFS]
+ss:set_paddle(<p>,<pos>)
+\end{lstlisting}
+
+\noindent
+where argument <p> is the paddle index, valid from 1 to 4, and argument <pos> is the paddle position, from -1 to +1.\\
+The location of the paddles in the axes of the Solar Sail is listed in the following table.
+
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.1\textwidth}|p{0.1\textwidth}| }
+	\hline\rule{0pt}{2ex}
+	\textbf{Paddle} & \textbf{Location}\\
+	\hline\rule{0pt}{2ex}
+	1 & -Y\\
+	\hline\rule{0pt}{2ex}
+	2 & -X\\
+	\hline\rule{0pt}{2ex}
+	3 & +Y\\
+	\hline\rule{0pt}{2ex}
+	4 & +X\\
+	\hline
+	\end{longtable}
+%\end{table}
+
+\noindent
+When paddles are at position 0, they are flat with the sail, and as the position goes from 0 to +1, or -1, the paddles rotate one way, or the other, until a maximum of 90°.
+
+
+\subsection{Carina}
+The Carina vessel is a simple fictional vessel, weighting 5000 Kg, which makes it an useful payload for, e.g., Space Shuttle Atlantis.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\hsize]{carina.png}
+  \caption{Carina being deployed from Space Shuttle Atlantis.}
+\end{figure}
+
+\noindent
+It has 2 attachments, one for the payload bay and another for a robotic arm, so it can be deployed and retrieved.
+
+
+\subsection{Leonardo}
+The Leonardo Multipurpose Logistics Module is a module flown in the Space Shuttle and used to resupply the ISS.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\hsize]{leonardo.png}
+  \caption{Leonardo docked to the ISS during a Space Shuttle Atlantis mission.}
+\end{figure}
+
+\noindent
+The 1800 kg vessel has an attachment to the payload bay, another for the robotic arm, and it also has a docking port. This allows the Leonardo to be launched by Space Shuttle Atlantis, deployed from the payload bay using the arm and docked to the ISS, and then retrieved from the ISS and placed in the payload bay for the journey back to Earth.
+
 \end{document}
