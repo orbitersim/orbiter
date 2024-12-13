@@ -68,8 +68,47 @@ Code based on: Laskar and Jacobson, Astron. Astrophys. 188, 212 (1987)\\
 Carl Romanik ("Chode")\\
 Code based on: Jacobson et al., Astron. Astrophys. 247, 565 (1991)\\
 "This also appears to be what Horizons use, and the DLL agrees within about 1000km."
+\\
+\subsubsection{Harmonic Gravity Models}
+\textbf{Mercury Harmonic Gravity Model}\\
+MESS160A	\textit{jgmess\_160a\_sha.tab}\\
+160x160 spherical harmonic gravity model produced from Magellan radio tracking data.\\
+NASA JPL\\
+PDS Geosciences Node, Washington University in St. Louis\\
+\url{https://pds-geosciences.wustl.edu/dataserv/gravity_models.htm}\\
+\\
+\textbf{Venus Harmonic Gravity Model}\\
+\textit{mod\_shgj120p.a01}\\
+120x120 Spherical harmonic gravity model produced from Magellan radio tracking data, modified with initial C(1,0), S(1,0), C(1,1), S(1,1), coefficients padded with zeros for used with Orbiter parser.\\
+NASA JPL\\
+PDS Geosciences Node, Washington University in St. Louis\\
+\url{https://pds-geosciences.wustl.edu/dataserv/gravity_models.htm}\\
+\\
+\textbf{Earth Harmonic Gravity Model}\\
+\textit{egm96\_to360.tab}\\
+Modified by Ajaja for use with Orbiter parser.\\
+The Development of the Joint NASA GSFC and the National Imagery and Mapping Agency (NIMA) Geopotential Model EGM96, F.G. Lemoine et al, Goddard Space Flight Center, Greenbelt, Maryland, July 1998.\\
+\\
+\textbf{Moon Harmonic Gravity Model}\\
+165x165 Spherical harmonic gravity model produced from radio tracking of the Lunar Orbiters 1‒5, Apollo 15 and 16 subsatellites, Clementine, and the Lunar Prospector spacecraft.\\
+NASA JPL\\
+PDS Geosciences Node, Washington University in St. Louis\\
+\url{https://pds-geosciences.wustl.edu/dataserv/gravity_models.htm}\\
+\\
+\textbf{Mars Harmonic Gravity Model}\\
+MRO120F	\textit{jgmro\_120f\_sha.tab}\\
+120x120 Spherical harmonic gravity model, produced from Mars Reconnaissance Orbiter radio tracking data.\\
+NASA JPL\\
+PDS Geosciences Node, Washington University in St. Louis\\
+\url{https://pds-geosciences.wustl.edu/dataserv/gravity_models.htm}\\
+\\
+\textbf{Vesta Harmonic Gravity Model}\\
+"Konopliv, A.S., Park, R.S., Asmar, S.W., and Buccino, D.R., Dawn Vesta Derived Gravity Data, NASA Planetary Data System, DAWN-A-RSS-5-VEGR-V2.0, 2017."\\
+NASA JPL\\
+\url{https://sbn.psi.edu/pds/resource/dawn/dwnvgravL2.html?refUrl=https\%3A\%2F\%2Fsbn.psi.edu\%2Fpds\%2Farchive\%2Fgravity.html&refName=Gravity&type=Data+Type&typeUrl=https\%3A\%2F\%2Fsbn.psi.edu\%2Fpds\%2Farchive\%2Fdata-types.html}\\
+\\
 
-%TODO gravity model entries should be moved to previous section?
+
 \subsection{Data sources planetary textures}
 \textbf{Mercury}\\
 Mosaics created using MESSENGER orbital images released by NASA's Planetary Data System (PDS) (\url{http://pds-geosciences.wustl.edu/missions/messenger/index.htm}) on September 7, 2012.\\
@@ -83,13 +122,6 @@ Planetary Geomatics Group\\
 Gazetteer of Planetary Nomenclature\\
 \url{http://planetarynames.wr.usgs.gov/}\\
 \\
-\textbf{Mercury Harmonic Gravity Model}\\
-MESS160A	\textit{jgmess\_160a\_sha.tab}\\
-160x160 spherical harmonic gravity model produced from Magellan radio tracking data.\\
-NASA JPL\\
-PDS Geosciences Node, Washington University in St. Louis\\
-\url{https://pds-geosciences.wustl.edu/dataserv/gravity_models.htm}\\
-\\
 \textbf{Venus surface}\\
 Composite of Magellan synthetic aperture radar mosaics.\\
 Jet Propulsion Laboratory Multimission Image Processing Laboratory\\
@@ -99,13 +131,6 @@ p45187.tif (5120x2560)\\
 \textbf{Venus clouds}\\
 Björn Jónsson\\
 \url{http://www.mmedia.is/~bjj}\\
-\\
-\textbf{Venus Harmonic Gravity Model}\\
-\textit{mod\_shgj120p.a01}\\
-120x120 Spherical harmonic gravity model produced from Magellan radio tracking data, modified with initial C(1,0), S(1,0), C(1,1), S(1,1), coefficients padded with zeros for used with Orbiter parser.\\
-NASA JPL\\
-PDS Geosciences Node, Washington University in St. Louis\\
-\url{https://pds-geosciences.wustl.edu/dataserv/gravity_models.htm}\\
 \\
 \textbf{Earth land surface}\\
 Custom processed from Landsat 7 ETM orthorectified imagery.\\
@@ -132,11 +157,6 @@ NASA Visible Earth Blue Marble maps\\
 SRTM 90m Digital Elevation Data by NASA, released by USGS\\
 CGIAR-CSI version 4 Processed for void removal by International Centre for Tropical Agriculture (CIAT)\\
 \\
-\textbf{Earth Harmonic Gravity Model}\\
-\textit{egm96\_to360.tab}\\
-Modified by Ajaja for use with Orbiter parser.\\
-The Development of the Joint NASA GSFC and the National Imagery and Mapping Agency (NIMA) Geopotential Model EGM96, F.G. Lemoine et al, Goddard Space Flight Center, Greenbelt, Maryland, July 1998.\\
-\\
 \textbf{Moon surface}\\
 LRO LROC-WAC Global Mosaic 100m June2013\\
 Arizona State University\\
@@ -145,12 +165,6 @@ Astrogeology Science Center\\
 \textbf{Moon elevation}\\
 LOLA-GDR/Cylindrical\\
 \url{http://imbrium.mit.edu/DATA/LOLA_GDR/CYLINDRICAL/IMG/}\\
-\\
-\textbf{Moon Harmonic Gravity Model}\\
-165x165 Spherical harmonic gravity model produced from radio tracking of the Lunar Orbiters 1‒5, Apollo 15 and 16 subsatellites, Clementine, and the Lunar Prospector spacecraft.\\
-NASA JPL\\
-PDS Geosciences Node, Washington University in St. Louis\\
-\url{https://pds-geosciences.wustl.edu/dataserv/gravity_models.htm}\\
 \\
 \textbf{Mars surface}\\
 Custom processed, based on NASA MGS/MOC. 256 ppd/230m Mars Odyssey THEMIS-IR Day Global Mosaic 100m v12\\
@@ -169,13 +183,6 @@ Planetary Geomatics Group\\
 Gazetteer of Planetary Nomenclature\\
 \url{http://planetarynames.wr.usgs.gov/}\\
 \\
-\textbf{Mars Harmonic Gravity Model}\\
-MRO120F	\textit{jgmro\_120f\_sha.tab}\\
-120x120 Spherical harmonic gravity model, produced from Mars Reconnaissance Orbiter radio tracking data.\\
-NASA JPL\\
-PDS Geosciences Node, Washington University in St. Louis\\
-\url{https://pds-geosciences.wustl.edu/dataserv/gravity_models.htm}\\
-\\
 \textbf{Vesta surface}\\
 Dawn FC HAMO Global Mosaic 60mp\\
 \url{http://astrogeology.usgs.gov/search/details/Vesta/Dawn/DLR/HAMO/Vesta_Dawn_FC_HAMO_Mosaic_Global_74ppd/cub}\\
@@ -183,11 +190,6 @@ Dawn FC HAMO Global Mosaic 60mp\\
 \textbf{Vesta elevation}\\
 Dawn HAMO DTM Global 93mp\\
 \url{http://astrogeology.usgs.gov/search/details/Vesta/Dawn/DLR/HAMO/Vesta_Dawn_HAMO_DTM_DLR_Global_48ppd/cub}\\
-\\
-\textbf{Vesta Harmonic Gravity Model}\\
-"Konopliv, A.S., Park, R.S., Asmar, S.W., and Buccino, D.R., Dawn Vesta Derived Gravity Data, NASA Planetary Data System, DAWN-A-RSS-5-VEGR-V2.0, 2017."\\
-NASA JPL\\
-\url{https://sbn.psi.edu/pds/resource/dawn/dwnvgravL2.html?refUrl=https\%3A\%2F\%2Fsbn.psi.edu\%2Fpds\%2Farchive\%2Fgravity.html&refName=Gravity&type=Data+Type&typeUrl=https\%3A\%2F\%2Fsbn.psi.edu\%2Fpds\%2Farchive\%2Fdata-types.html}\\
 \\
 \textbf{Jupiter}\\
 "Cassini's best map of Jupiter"\\
