@@ -235,6 +235,7 @@ public:
 
 	static int LuaCall(lua_State *L, int nargs, int nres);
 	void SetErrorBox(NOTEHANDLE eb) { errorbox = eb; }
+	static void DeleteVessel (OBJHANDLE hVessel);
 protected:
 	static inline NOTEHANDLE errorbox;
 	lua_State *L;         // Lua main context
@@ -304,12 +305,11 @@ protected:
 
 	// Pops a VESSEL interface from the stack and returns it.
 	// A NULL return indicates an invalid data type at the specified stack position,
-	// but a nonzero return does not guarantee a valid vessel pointer
+	// a nonzero return guarantees a valid vessel pointer
 	static VESSEL *lua_tovessel (lua_State *L, int idx=-1);
 
 	// type extraction with checks
 	static VESSEL *lua_tovessel_safe (lua_State *L, int idx, const char *funcname);
-	static int lua_isvessel(lua_State *L, int idx);
 
 	static int lua_tointeger_safe (lua_State *L, int idx, const char *funcname);
 	static double lua_tonumber_safe (lua_State *L, int idx, const char *funcname);
@@ -1155,7 +1155,7 @@ private:
 	int (*postfunc)(void*);
 	void *postcontext;
 
-	static inline std::unordered_set<void *>knownVessels; // for lua_isvessel
+	static inline std::unordered_set<VESSEL *>knownVessels; // for lua_isvessel
 
 
 	static int lua_tointeger_safe (lua_State *L, int idx, int prmno, const char *funcname);

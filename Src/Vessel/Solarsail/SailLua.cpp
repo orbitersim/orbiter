@@ -35,8 +35,8 @@ int SolarSail::Lua_InitInstance (void *context)
 {
 	lua_State *L = (lua_State*)context;
 
-	// check if interpreter has DG table loaded already
-	luaL_getmetatable (L, "VESSEL.DG");
+	// check if interpreter has SSail table loaded already
+	luaL_getmetatable (L, "VESSEL.SSail");
 
 	if (lua_isnil (L, -1)) { // register new functions
 		lua_pop (L, 1);
@@ -88,7 +88,7 @@ To check the class of a vessel object, use the vessel:get_classname() method.
 
 SolarSail *lua_toSSail (lua_State *L, int idx)
 {
-	VESSEL **pv = (VESSEL**)lua_touserdata (L, idx);
+	VESSEL **pv = (VESSEL **)luaL_checkudata(L, idx, "SSail.vtable");
 	SolarSail *sail = (SolarSail*)*pv;
 	return sail;
 }

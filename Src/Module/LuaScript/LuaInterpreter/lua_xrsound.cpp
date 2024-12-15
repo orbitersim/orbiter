@@ -141,8 +141,7 @@ int Interpreter::xrsound_create_instance (lua_State *L)
 	if(lua_isstring(L, 1)) {
 		const char *moduleName = lua_tostring(L, 1);
 		snd = XRSound::CreateInstance(moduleName);
-	} else if (lua_isvessel(L, 1)) {
-		VESSEL *v = lua_tovessel(L, 1);
+	} else if (VESSEL *v = lua_tovessel(L, 1)) {
 		snd = XRSound::CreateInstance(v);
 	} else {
 		return luaL_error(L, "Invalid parameter to xrsound.create_instance, string or vessel handle needed");
