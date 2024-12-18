@@ -6,7 +6,7 @@ Mission 1: Delta-glider to ISS
 
 
 In this mission we launch the Delta-glider into orbit from runway 33 of the Shuttle
-Landing Fa­cility (SLF) at the Kennedy Space Center, and perform a rendezvous and
+Landing Facility (SLF) at the Kennedy Space Center, and perform a rendezvous and
 docking manoeuvre with the International Space Station. 
 
 
@@ -40,7 +40,7 @@ END_MFD
 BEGIN_MFD Right
   TYPE Map
   REF Earth
-  OTARGET ISS
+  TARGET ISS
   DISP 62639
 END_MFD
 

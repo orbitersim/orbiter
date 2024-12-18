@@ -36,9 +36,7 @@ END_MFD
 BEGIN_MFD Right
   TYPE Map
   REF Mars
-  BTARGET Olympus
-  OTARGET Phobos
-  TRACK ON
+  TARGET Phobos
 END_MFD
 
 

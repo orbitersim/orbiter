@@ -41,8 +41,7 @@ END_MFD
 BEGIN_MFD Right
   TYPE Map
   REF Earth
-  BTARGET Habana
-  OTARGET ISS
+  TARGET ISS
   ZOOM 2
 END_MFD
 

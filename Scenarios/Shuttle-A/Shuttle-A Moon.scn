@@ -33,7 +33,7 @@ END_MFD
 BEGIN_MFD Right
   TYPE Map
   REF Moon 
-  BTARGET Brighton Beach
+  TARGET Brighton Beach
 END_MFD
 
 BEGIN_PANEL
