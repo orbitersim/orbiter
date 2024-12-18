@@ -2,7 +2,6 @@
 \begin{document}
 
 \section{Scenario Editor}
-%TODO mention (again) EditorCreate param, or leave this section just for ScnEditor customization?
 Vessel add-on developers can include editor pages in their vessel projects to allow users to configure vessel-specific options from within the scenario editor. These may include animation settings, payload management, launch stack configuration, etc.\\
 To configure editor pages for your vessel class, you need to compile a DLL which contains the dialog page templates and the code that responds to user input. If your vessel is already controlled by a DLL, you can add the editor elements to that. Alternatively, you can put the editor elements into a separate DLL. This is particularly useful if your vessel is managed by a script-driven wrapper DLL such as spacecraft.dll or ScriptVessel.dll.\\
 To tell Orbiter where to find the editor extensions, the vessel configuration file (.cfg) must contain the line
@@ -55,7 +54,6 @@ where
 \end{itemize}
 
 \noindent
-%TODO fix path to file
 ResId is the identifier for a dialog resource defined in the DLL. Its size and layout should conform to the standard dialog pages of the scenario editor. The simplest way to create a conforming dialog page is by copying one of the standard pages from the scenario editor resource file (.\textbackslash Src\textbackslash Plugin\textbackslash ScnEditor\textbackslash ScnEditor.rc), and then modifying the page in a resource editor.\\
 TabProc must be implemented in the DLL as a standard Windows dialog message procedure, i.e. with the interface
 
@@ -118,7 +116,6 @@ void EditorFunc( OBJHANDLE hVessel )
 
 \noindent
 It receives the vessel handle as an input parameter.\\
-%TODO fix path to file
 An example for the implementation of vessel-specific editor pages can be found in the DeltaGlider vessel module that comes with the Orbiter source code (.\textbackslash Src\textbackslash Vessel\textbackslash DeltaGlider).
 
 \end{document}

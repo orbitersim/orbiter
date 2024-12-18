@@ -127,5 +127,5 @@ DLLCLBK char *ModelName ()
 
 DLLCLBK char *ModelDesc ()
 {
-	return (char*)"An empirical atmosphere model developed by Mike Picone, Alan Hedin, and Doug Drob based on the MSISE90 model. The MSISE90 model describes the neutral temperature and densities in Earth's atmosphere from ground to thermospheric heights.\r\n\r\nSee Doc\\Technotes\\earth_atm.pdf for details.";
+	return (char*)"An empirical atmosphere model developed by Mike Picone, Alan Hedin, and Doug Drob based on the MSISE90 model. The MSISE90 model describes the neutral temperature and densities in Earth's atmosphere from ground to thermospheric heights.\r\n\r\nSee \"Earth Atmosphere Model\" in \"Orbiter Technical Reference\" for details.";
 }

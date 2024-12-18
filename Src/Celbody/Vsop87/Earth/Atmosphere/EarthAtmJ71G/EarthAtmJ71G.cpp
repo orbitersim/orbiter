@@ -53,7 +53,8 @@ bool EarthAtmosphere_J71G::clbkConstants (ATMCONST *atmc) const
 }
 
 // ===========================================================================
-// Implementation of Jacchia-71 atmospheric model (see Technotes)
+// Implementation of Jacchia-71 atmospheric model (see "Earth Atmosphere Model"
+// in "Orbiter Technical Reference")
 
 bool EarthAtmosphere_J71G::clbkParams (const PRM_IN *prm_in, PRM_OUT *prm)
 {
@@ -837,5 +838,5 @@ DLLCLBK char *ModelName ()
 
 DLLCLBK char *ModelDesc ()
 {
-	return (char*)"An implementation of the Jacchia71-Gill (J71C) atmospheric model. This uses a static US Standard Atmosphere model up to 90km, and a diffusion-equilibrium solution from 90 to 2500km altitude.\r\n\r\nSee Doc\\Technotes\\earth_atm.pdf for details.";
+	return (char*)"An implementation of the Jacchia71-Gill (J71C) atmospheric model. This uses a static US Standard Atmosphere model up to 90km, and a diffusion-equilibrium solution from 90 to 2500km altitude.\r\n\r\nSee \"Earth Atmosphere Model\" in \"Orbiter Technical Reference\" for details.";
 }

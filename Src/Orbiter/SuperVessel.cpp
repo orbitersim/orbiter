@@ -1058,7 +1058,8 @@ void SuperVessel::ResetMassAndCG ()
 void SuperVessel::CalcPMI ()
 {
 	// Calculates the PMI values for the supervessel from the layout and component PMI
-	// values. For details see Doc/Technotes/composite.pdf.
+	// values. For details see "Inertia calculations for composite vessels" in "Orbiter
+	// Technical Reference".
 
 	DWORD i, j;
 	Vector r0[6], rt;
