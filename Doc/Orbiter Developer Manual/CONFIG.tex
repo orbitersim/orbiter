@@ -87,13 +87,12 @@ Adding a new celestial body (planet or moon) to a planetary system requires the 
 \item Create a configuration file for the planet, defining its orbital, physical and visual parameters, located in .\textbackslash Config\textbackslash <\textit{Planet-name}>.cfg, for example, Config\textbackslash Earth.cfg. The configuration entries are described below.
 \item Create the required surface texture maps, and optionally elevation, night light, water mask, cloud layer and feature label maps. See section \ref{ssec:planetery_tex} for details.
 \item Optionally, create configuration files for surface bases in .\textbackslash Config\textbackslash <\textit{Planet-name}>\textbackslash Base and reference them in the planet configuration file. See section \ref{ssec:surface_bases} for details on surface base definitions.
-\item Optionally, compile a DLL module for the planet for ephemeris calculations and atmospheric parameter computation. See the Orbiter sources for examples, e.g. the Src\textbackslash Celbody\textbackslash Vsop87 project.
+\item Optionally, compile a DLL module for the planet for ephemeris calculations and atmospheric parameter computation. See the Orbiter sources for examples, e.g., the Src\textbackslash Celbody\textbackslash Vsop87 project.
 \item Optionally, create polyline definitions for coastlines (.\textbackslash Config\textbackslash <\textit{Planet-name}>\textbackslash Data\textbackslash coast.vec) and/or topography (.\textbackslash Config\textbackslash <\textit{Planet-name}>\textbackslash Data\textbackslash contour.vec) to be used in scalable map displays. See .\textbackslash Config\textbackslash Earth\textbackslash Data\textbackslash coast.vec for an example.
 \end{itemize}
 
 \noindent
 The components of the planet configuration file are listed below. An example for a configuration file can be found in .\textbackslash Config\textbackslash Earth.cfg.
-
 
 \subsubsection*{General parameters}
 %\begin{table}[H]
@@ -111,6 +110,10 @@ The components of the planet configuration file are listed below. An example for
 	EllipticOrbit & Bool & If TRUE, use analytic 2-body solution for planet position/velocity calculation, otherwise update dynamically (ignored if module supports position/velocity calculation)\\
 	\hline\rule{0pt}{2ex}
 	HasElements & Bool & If TRUE, the initial position/velocity is calculated from the provided set of orbital elements, otherwise from an explicit position/velocity pair (ignored if the module supports position/velocity calculation)\\
+	\hline\rule{0pt}{2ex}
+	InitPos & Vec3 & TODO (legacy?)\\
+	\hline\rule{0pt}{2ex}
+	InitVel & Vec3 & TODO (legacy?)\\
 	\hline
 	\end{longtable}
 %\end{table}
@@ -159,6 +162,8 @@ Ignored if a module is active that supports position/velocity calculation or if 
 	Mass & Float & Planet mass [kg]\\
 	\hline\rule{0pt}{2ex}
 	Size & Float & Mean planet radius [m]\\
+	\hline\rule{0pt}{2ex}
+	JCoeff & List & Coefficients Jn of the harmonic expansion of planet ellipsoid shape, starting with J2\\
 	\hline
 	\end{longtable}
 %\end{table}
@@ -188,6 +193,46 @@ See also "Planetary axis precession" in Orbiter Technical Reference.
 	PrecessionObliquity & Float & Obliquity of precession reference axis with respect to ecliptic north pole at J2000 [rad]. Default: 0\\
 	\hline\rule{0pt}{2ex}
 	PrecessionLAN & Float & Longitude of ascending node of precession reference plane [rad]. Default: 0\\
+	\hline
+	\end{longtable}
+%\end{table}
+
+
+\subsubsection*{Gravity model parameters}
+Gravity model only used it all parameters are present. See also "Nonspherical gravitational field perturbations" in Orbiter Technical Reference.
+
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.25\textwidth}|p{0.09\textwidth}|p{0.58\textwidth}| }
+	\hline\rule{0pt}{2ex}
+	\textbf{Item} & \textbf{Type} & \textbf{Description}\\
+	\hline\rule{0pt}{2ex}
+	GravModelPath & String & Gravity model file name (with extension), relative to ".\textbackslash GravityModels" folder.\\
+	\hline\rule{0pt}{2ex}
+	GravCoeffCutoff & Int & Gravity model coefficient cutoff.\\
+	\hline
+	\end{longtable}
+%\end{table}
+
+
+\subsubsection*{Terrain parameters}
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.25\textwidth}|p{0.09\textwidth}|p{0.58\textwidth}| }
+	\hline\rule{0pt}{2ex}
+	\textbf{Item} & \textbf{Type} & \textbf{Description}\\
+	\hline\rule{0pt}{2ex}
+	TileFormat & Int & 1 = legacy, 2 = 2016 format. Default: 1\\
+	\hline\rule{0pt}{2ex}
+	MaxPatchResolution & Int & Max. resolution level for surface texture maps (1-21)\\
+	\hline\rule{0pt}{2ex}
+	MaxElevation & Float & Max. surface elevation rel. to planet mean radius [m].\\
+	\hline\rule{0pt}{2ex}
+	MinElevation & Float & Min. surface elevation rel. to planet mean radius [m]. Used to adjust lower edge of rendered horizon.\\
+	\hline\rule{0pt}{2ex}
+	ElevationResolution & Float & Target resolution of elevation data [m].\\
+	\hline\rule{0pt}{2ex}
+	HorizonExcess & Float & Specifies how far beyond the sphere-based horizon to render tiles (to avoid mountains to disappear) [planet radius]. Default: 0.002\\
 	\hline
 	\end{longtable}
 %\end{table}
@@ -230,6 +275,8 @@ Only required if the planet defines an atmosphere.
 	\hline\rule{0pt}{2ex}
 	AtmTintColor & Vec3 & RGB triplet for additive colour component (0-1 each) added to surface rendering at high altitude\\
 	\hline\rule{0pt}{2ex}
+	AtmAttenuationAlt & Float & Altitude limit for calculation of light attenuation on vessels [m].\\
+	\hline\rule{0pt}{2ex}
 	AtmHorizonAlt & Float & Altitude scale for horizon haze rendering [m]. Default: 0.01 of planet radius.\\
 	\hline\rule{0pt}{2ex}
 	ShadowDepth & Float & Depth ("blackness") of object shadows (0-1, where 0 = black, 1 = no shadows). Default: exp(-$\rho_{0}$/2), where $\rho_{0}$ is atmospheric density at the surface. This option is only used when stencil buffering is enabled, otherwise shadows are always black.\\
@@ -248,6 +295,10 @@ Only required if the planet defines a cloud layer.
 	\textbf{Item} & \textbf{Type} & \textbf{Description}\\
 	\hline\rule{0pt}{2ex}
 	CloudFormat & Int & 1 = legacy, 2 = 2016 format. Default: 1\\
+	\hline\rule{0pt}{2ex}
+	MinCloudResolution & Int & Min. resolution at which clouds are rendered as a separate layer (1-8)\\
+	\hline\rule{0pt}{2ex}
+	MaxCloudResolution & Int & Max. cloud resolution level (MinCloudResolution - 19)\\
 	\hline\rule{0pt}{2ex}
 	CloudAlt & Float & Altitude of cloud layer [m]\\
 	\hline\rule{0pt}{2ex}
@@ -273,36 +324,46 @@ Only required if the planet defines a cloud layer.
 	\hline\rule{0pt}{2ex}
 	\textbf{Item} & \textbf{Type} & \textbf{Description}\\
 	\hline\rule{0pt}{2ex}
-	TileFormat & Int & 1 = legacy, 2 = 2016 format. Default: 1\\
-	\hline\rule{0pt}{2ex}
-	MaxPatchResolution & Int & Max. resolution level for surface texture maps (1-19)\\
-	\hline\rule{0pt}{2ex}
-	MinCloudResolution & Int & Min. resolution at which clouds are rendered as a separate layer (1-8)\\
-	\hline\rule{0pt}{2ex}
-	MaxCloudResolution & Int & Max. cloud resolution level (MinCloudResolution - 19)\\
-	\hline\rule{0pt}{2ex}
-	MinElevation & Float & Min. surface elevation rel. to planet mean radius [m]. Used to adjust lower edge of rendered horizon.\\
-	\hline\rule{0pt}{2ex}
 	SpecularRipple & Bool & If TRUE, and if "Specular ripples" option is enabled in the Launchpad dialog, specularly reflecting surfaces use a "water ripple" microtexture. Default: FALSE\\
+	\hline\rule{0pt}{2ex}
+	AlbedoRGB & Vec3 & Albedo for dot representation (when far away). Default: (1, 1, 1)\\
+	\hline\rule{0pt}{2ex}
+	BBExcess & Float & Specifies how much to inflate the bounding box (1 = double each side)\\
 	\hline
 	\end{longtable}
 %\end{table}
 
 
-\subsubsection*{Surface marker parameters (legacy)}
+\subsubsection*{Planetary ring parameters}
+Only required if the planet defines a ring system. All parameters needed.
+
 %\begin{table}[H]
 	%\centering
 	\begin{longtable}{ |p{0.25\textwidth}|p{0.09\textwidth}|p{0.58\textwidth}| }
 	\hline\rule{0pt}{2ex}
 	\textbf{Item} & \textbf{Type} & \textbf{Description}\\
 	\hline\rule{0pt}{2ex}
-	MarkerPath & String & Directory path to surface marker files for the planet. Default: .\textbackslash Config\textbackslash <\textit{Planet-name}>\textbackslash Marker\textbackslash \\
+	RingMaxRadius & Float & Max. ring diamenter [planet radius].\\
+	\hline\rule{0pt}{2ex}
+	RingMinRadius & Float & Min. ring diamenter [planet radius].\\
 	\hline
 	\end{longtable}
 %\end{table}
 
-\noindent
-This entry refers to legacy surface markers (see section \ref{ssec:custom_markers}). For new quadtree-based marker definitions, see section \ref{sssec:label_tile_format}.
+
+\subsubsection*{Surface marker parameters}
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.25\textwidth}|p{0.09\textwidth}|p{0.58\textwidth}| }
+	\hline\rule{0pt}{2ex}
+	\textbf{Item} & \textbf{Type} & \textbf{Description}\\
+	\hline\rule{0pt}{2ex}
+	LabelFormat & Int & 1 = legacy surface markers (see section \ref{ssec:custom_markers}), 2 = quadtree-based marker definitions, see section \ref{sssec:label_tile_format}, uses tiles. Default: 1\\
+	\hline\rule{0pt}{2ex}
+	MarkerPath & String & Directory path to the legacy surface marker files for the planet. Default: .\textbackslash Config\textbackslash <\textit{Planet-name}>\textbackslash Marker\textbackslash \\
+	\hline
+	\end{longtable}
+%\end{table}
 
 
 \subsubsection*{Surface bases (optional)}
@@ -390,7 +451,7 @@ where
 
 \subsection{Surface bases}
 \label{ssec:surface_bases}
-Surface bases (or "spaceports") are launch and landing sites on the surface of planets or moons, usually equipped with launchpads or runways, for vertical and horizontal take-off and/or landing. Each surface base is defined in its own configuration file. When Orbiter loads a planet configuration, it scans all surface base definitions and creates the corresponding bases.
+Surface bases (or "spaceports") are launch and landing sites on the surface of planets or moons, usually equipped with launchpads and/or runways, for vertical and horizontal take-off and/or landing. Each surface base is defined in its own configuration file. When Orbiter loads a planet configuration, it scans all surface base definitions and creates the corresponding bases.
 
 \subsubsection*{Base definition file}
 Each surface base must be defined with a base configuration file. By default, this will be located in\\
@@ -425,7 +486,7 @@ where
 \begin{itemize}
 \item BASE-V2.0 $\Rightarrow$ Format identifier (must be placed in the first line of the file). This item is optional if the base is defined directly in the planet's base list.
 \item NAME = <\textit{Base-name}> $\Rightarrow$ Logical name of the base as it will be displayed by Orbiter. Doesn't need correspond to the base file name.
-\item LOCATION = <\textit{lng}> <\textit{lat}> $\Rightarrow$ The position of the base reference point on the planet surface, where <\textit{lng}> [deg] is longitude (< 0 for west, >0 for east), and <\textit{lat}> [deg] is latitude (< 0 for south, > 0 for north). This item is optional if the base is defined directly in the planet's base list.
+\item LOCATION = <\textit{lng}> <\textit{lat}> $\Rightarrow$ The position of the base reference point on the planet surface, where <\textit{lng}> [deg] is longitude (< 0 for west, > 0 for east), and <\textit{lat}> [deg] is latitude (< 0 for south, > 0 for north). This item is optional if the base is defined directly in the planet's base list.
 \item SIZE = <\textit{size}> $\Rightarrow$ Specifies the size of the base's footprint on the planet surface (defined as its mean radius [m]. This parameter determines the camera distance at which Orbiter will start rendering the base.
 \item OBJECTSIZE = <\textit{osize}> $\Rightarrow$ Defines the "typical" size of individual base objects (buildings, etc.). In addition to the SIZE parameter, this value is used by Orbiter to fine-tune the rendering of base objects. Objects will not be rendered if the apparent size of an object of size <\textit{osize}> located at the base reference point, would be smaller than 1 pixel. The default value for <\textit{osize}> is 100.0.
 \item MAPOBJECTSTOSPHERE = [TRUE|FALSE] $\Rightarrow$ If TRUE, the altitude of objects in the object list will be adjusted automatically to map them from a flat plane onto a spherical planet surface. So for example, a building defined with altitude 0 will be rendered at altitude 0 relative to the planet's reference sphere. If FALSE, elevation 0 maps onto the flat plane tangential to the base reference point (and therefore to a point above the reference sphere for any objects not located at the reference point). Default: FALSE\\
@@ -533,9 +594,9 @@ A 5-sided "brick" (without a floor) which can be used as a simple generic buildi
 	\hline\rule{0pt}{2ex}
 	\textbf{Parameter} & \textbf{Type} & \textbf{Description}\\
 	\hline\rule{0pt}{2ex}
-	POS & Vector & Centre of the block's base rectangle (in local base coordinates) The y-coordinate is the elevation above ground. Default: 0 0 0\\
+	POS & Vector & Centre of the block's base rectangle (in local base coordinates) [m]. The y-coordinate is the elevation above ground. Default: 0 0 0\\
 	\hline\rule{0pt}{2ex}
-	SCALE & Vector & Object size in the three coordinate axes. Default: 1 1 1\\
+	SCALE & Vector & Object size in the three coordinate axes [m]. Default: 1 1 1\\
 	\hline\rule{0pt}{2ex}
 	ROT & Float & Rotation around vertical axis [deg]. Default: 0\\
 	\hline\rule{0pt}{2ex}
@@ -559,9 +620,9 @@ A hangar-type building with a barrel-shaped roof. The following parameters are s
 	\hline\rule{0pt}{2ex}
 	\textbf{Parameter} & \textbf{Type} & \textbf{Description}\\
 	\hline\rule{0pt}{2ex}
-	POS & Vector & Centre of the object's base rectangle (in local base coordinates) The y-coordinate is the elevation above ground. Default: 0 0 0\\
+	POS & Vector & Centre of the object's base rectangle (in local base coordinates) [m]. The y-coordinate is the elevation above ground. Default: 0 0 0\\
 	\hline\rule{0pt}{2ex}
-	SCALE & Vector & Object size in the three coordinate axes. Default: 1 1 1\\
+	SCALE & Vector & Object size in the three coordinate axes [m]. Default: 1 1 1\\
 	\hline\rule{0pt}{2ex}
 	ROT & Float & Rotation around vertical axis [deg]. Default: 0\\
 	\hline\rule{0pt}{2ex}
@@ -584,9 +645,9 @@ A hangar-type building with a tent-shaped roof. The following parameters are sup
 	\hline\rule{0pt}{2ex}
 	\textbf{Parameter} & \textbf{Type} & \textbf{Description}\\
 	\hline\rule{0pt}{2ex}
-	POS & Vector & Centre of the object's base rectangle (in local base coordinates) The y-coordinate is the elevation above ground. Default: 0 0 0\\
+	POS & Vector & Centre of the object's base rectangle (in local base coordinates) [m]. The y-coordinate is the elevation above ground. Default: 0 0 0\\
 	\hline\rule{0pt}{2ex}
-	SCALE & Vector & Object size in the three coordinate axes. Default: 1 1 1\\
+	SCALE & Vector & Object size in the three coordinate axes [m]. Default: 1 1 1\\
 	\hline\rule{0pt}{2ex}
 	ROT & Float & Rotation around vertical axis [deg]. Default: 0\\
 	\hline\rule{0pt}{2ex}
@@ -611,9 +672,9 @@ A hangar-type building with a barrel-shaped roof reaching to the ground. The fol
 	\hline\rule{0pt}{2ex}
 	\textbf{Parameter} & \textbf{Type} & \textbf{Description}\\
 	\hline\rule{0pt}{2ex}
-	POS & Vector & Centre of the object's base rectangle (in local base coordinates) The y-coordinate is the elevation above ground. Default: 0 0 0\\
+	POS & Vector & Centre of the object's base rectangle (in local base coordinates) [m]. The y-coordinate is the elevation above ground. Default: 0 0 0\\
 	\hline\rule{0pt}{2ex}
-	SCALE & Vector & Object size in the three coordinate axes. Default: 1 1 1\\
+	SCALE & Vector & Object size in the three coordinate axes [m]. Default: 1 1 1\\
 	\hline\rule{0pt}{2ex}
 	ROT & Float & Rotation around vertical axis [deg]. Default: 0\\
 	\hline\rule{0pt}{2ex}
@@ -636,13 +697,13 @@ A fuel tank-like upright cylinder with a flat top. The following parameters are 
 	\hline\rule{0pt}{2ex}
 	\textbf{Parameter} & \textbf{Type} & \textbf{Description}\\
 	\hline\rule{0pt}{2ex}
-	POS & Vector & Centre of the object's base circle (in local base coordinates) The y-coordinate is the elevation above ground. Default: 0 0 0\\
+	POS & Vector & Centre of the object's base circle (in local base coordinates) [m]. The y-coordinate is the elevation above ground. Default: 0 0 0\\
 	\hline\rule{0pt}{2ex}
-	SCALE & Vector & Cylinder radii in x and z, and height in y. Default: 1 1 1\\
+	SCALE & Vector & Cylinder radii in x and z, and height in y [m]. Default: 1 1 1\\
 	\hline\rule{0pt}{2ex}
 	ROT & Float & Rotation around vertical axis [deg]. Default: 0\\
 	\hline\rule{0pt}{2ex}
-	NSTEP & Integer & Number of segments to approximate circle. Default: 12\\
+	NSTEP & Integer & Number of segments to approximate circle ($\geq$ 3). Default: 12\\
 	\hline\rule{0pt}{2ex}
 	TEX1 & String Float Float & Texture name and u, v scaling factors for mantle. Default: no texture\\
 	\hline\rule{0pt}{2ex}
@@ -661,15 +722,15 @@ Texturing for a runway. The texture mapping can be split into segments, to allow
 	\hline\rule{0pt}{2ex}
 	\textbf{Parameter} & \textbf{Type} & \textbf{Description}\\
 	\hline\rule{0pt}{2ex}
-	END1 & Vector & First end point of the runway (centre line), including any overruns to be textured.\\
+	END1 & Vector & First end point of the runway (centre line), including any overruns to be textured [m].\\
 	\hline\rule{0pt}{2ex}
-	END2 & Vector & Second end point of the runway centre line.\\
+	END2 & Vector & Second end point of the runway centre line [m].\\
 	\hline\rule{0pt}{2ex}
 	WIDTH & Float & Runway width [m]\\
 	\hline\rule{0pt}{2ex}
 	ILS1 & Float & Localiser frequency for approach towards END1 [MHz]. Range: 108.00-139.95. Default: no ILS support\\
 	\hline\rule{0pt}{2ex}
-	ILS2 & Float & Localiser frequency for approach towards END2. Can be the same frequency as ILS1. Default: no ILS support\\
+	ILS2 & Float & Localiser frequency for approach towards END2 [MHz]. Can be the same frequency as ILS1. Default: no ILS support\\
 	\hline\rule{0pt}{2ex}
 	NRWSEG & Integer & Number of texture segments\\
 	\hline\rule{0pt}{2ex}
@@ -697,9 +758,9 @@ Complete lighting for a single runway, including optional Precision Approach Pat
 	\hline\rule{0pt}{2ex}
 	\textbf{Parameter} & \textbf{Type} & \textbf{Description}\\
 	\hline\rule{0pt}{2ex}
-	END1 & Vector & First end point of the runway (centre line).\\
+	END1 & Vector & First end point of the runway (centre line) [m].\\
 	\hline\rule{0pt}{2ex}
-	END2 & Vector & Second end point of the runway centre line.\\
+	END2 & Vector & Second end point of the runway centre line [m].\\
 	\hline\rule{0pt}{2ex}
 	WIDTH & Float & Runway width [m]\\
 	\hline\rule{0pt}{2ex}
@@ -721,6 +782,56 @@ Complete lighting for a single runway, including optional Precision Approach Pat
 %\end{table}
 
 \noindent
+For the D3D9 graphics client, the following parameters are also available, and existing ones are extended.
+
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.22\textwidth}|p{0.09\textwidth}|p{0.61\textwidth}| }
+	\hline\rule{0pt}{2ex}
+	\textbf{Parameter} & \textbf{Type} & \textbf{Description}\\
+	\hline\rule{0pt}{2ex}
+	PAPI & Float Float Float Int Int & Precision Approach Path Indicator (PAPI). Default: no PAPI\newline
+	Parameters:\newline
+	Designated approach descent angle [deg]\newline
+	Approach cone aperture [deg]\newline
+	Offset of PAPI location from runway endpoints [m]\newline
+	PAPI Mode (Int: 0-3) (this is optional parameter). PAPI Modes: 0: On center line, 1: On left side, 2: On right side, 3 or none: On both sides\newline
+	PAPI runway end point (Int: 0-1) (if this parameter is not defined then PAPI is added in both ends)\\
+	\hline\rule{0pt}{2ex}
+	VASI & Float Float Float Int & Visual Approach Slope Indicator (VASI). Default: no VASI\newline
+	Parameters:\newline
+	Designated approach descent angle [deg]\newline
+	Distance between white and red indicator lights [m]\newline
+	Offset of VASI (red bar) location from runway endpoints [m]\newline
+	VASI runway end point (Int: 0-1) (if not defined then VASI is added in both ends)\\
+	\hline\rule{0pt}{2ex}
+	TD\_DISP & Float & Touch Down displacement. Displacement between runway endpoint and the green line. [m] Default: 0\\
+	\hline\rule{0pt}{2ex}
+	TD\_DISP2 & Float & Touch Down displacement for the other end of the runway. Displacement between runway endpoint and the green line. If this value isn't specified then TD\_DISP is used for both ends of the runway. [m] Default: 0\\
+	\hline\rule{0pt}{2ex}
+	TD\_LENGTH & Float & Length of the Touchdown zone. Two columns of lights on a runway each containing 3 parallel lights. [m] Default: 600\\
+	\hline\rule{0pt}{2ex}
+	DECISION\_DIST & Float & Length of the "red lights" zone. This zone contains 2 x 3 x 9 red lights and the spacing between lights will depend about the length of the zone. The touchdown zone will use the same spacing about 30m. [m] Default: 257\\
+	\hline\rule{0pt}{2ex}
+	APPROACH\_START & Float & Length of the approach lights from the green line. It's the long column of 5 parallel lights. [m] Default: 900\\
+	\hline\rule{0pt}{2ex}
+	SINGLEENDED & Flag & If the single-ended keyword is defined then the lights are only rendered when approaching a runway from END1 towards END2. If you want a asymmetric runwaylights then you need two runwaylight sections in a base configuration file.\\
+	\hline\rule{0pt}{2ex}
+	CATEGORY & Int & Defines the category of runway lights. 1 = SSALR, 2 = ALSF-II, If this value isn't specified then the category is automatically selected based on a runway width. ALSF-II is used if the width is greater than 59m.\\
+	\hline
+	\end{longtable}
+%\end{table}
+
+\noindent
+Note: Runwaylights can have 12 PAPI lights. Orbiter's inline engine will ignore the last parameter. If more than one PAPI entries exists in the runwaylights the inline engine will only use the last one.
+
+\begin{figure}[H]
+	\centering
+	\subfigure{\includegraphics[width=0.5\textwidth]{rwylights.png}}
+	\caption{D3D9 runway light parameters}
+\end{figure}
+
+\noindent
 \textbf{BEACONARRAY}\\
 A linear array of illuminated beacons, usable e.g. for taxiway night lighting.
 
@@ -730,9 +841,9 @@ A linear array of illuminated beacons, usable e.g. for taxiway night lighting.
 	\hline\rule{0pt}{2ex}
 	\textbf{Parameter} & \textbf{Type} & \textbf{Description}\\
 	\hline\rule{0pt}{2ex}
-	END1 & Vector & First end point of beacon array in local base coordinates. y-coordinate is elevation above ground.\\
+	END1 & Vector & First end point of beacon array in local base coordinates [m]. y-coordinate is elevation above ground.\\
 	\hline\rule{0pt}{2ex}
-	END2 & Vector & Second end point of beacon array.\\
+	END2 & Vector & Second end point of beacon array [m].\\
 	\hline\rule{0pt}{2ex}
 	COUNT & Integer & Number of beacons in the array ($\geq$ 2). Default: 10\\
 	\hline\rule{0pt}{2ex}
@@ -753,13 +864,13 @@ A grid of ground-mounted solar panels, smart enough to align themselves with the
 	\hline\rule{0pt}{2ex}
 	\textbf{Parameter} & \textbf{Type} & \textbf{Description}\\
 	\hline\rule{0pt}{2ex}
-	POS & Vector & Centre position of the panel grid. Default: 0 0 0\\
+	POS & Vector & Centre position of the panel grid [m]. Default: 0 0 0\\
 	\hline\rule{0pt}{2ex}
-	SCALE & Vector & Scaling factor for each panel. Default: 1.0\\
+	SCALE & Vector & Scaling factor for each panel [m]. Default: 1.0\\
 	\hline\rule{0pt}{2ex}
 	SPACING & Float Float & Distance between panels in x and z directions [m]. Default: 40 40\\
 	\hline\rule{0pt}{2ex}
-	GRID & Integer Integer & Grid dimensions in x and z directions. Default: 2 2\\
+	GRID & Integer Integer & Grid dimensions in x and z directions [m]. Default: 2 2\\
 	\hline\rule{0pt}{2ex}
 	ROT & Float & Rotation of plant around vertical axis [deg]. Default: 0\\
 	\hline\rule{0pt}{2ex}
@@ -778,9 +889,9 @@ A monorail-type train on a straight track. The following parameters are supporte
 	\hline\rule{0pt}{2ex}
 	\textbf{Parameter} & \textbf{Type} & \textbf{Description}\\
 	\hline\rule{0pt}{2ex}
-	END1 & Vector & First end point of track\\
+	END1 & Vector & First end point of track [m].\\
 	\hline\rule{0pt}{2ex}
-	END2 & Vector & Second end point of track\\
+	END2 & Vector & Second end point of track [m].\\
 	\hline\rule{0pt}{2ex}
 	MAXSPEED & Float & Maximum speed of train [m/s]. Default: 30\\
 	\hline\rule{0pt}{2ex}
@@ -801,9 +912,9 @@ Suspended train on elevated straight track. The following parameters are support
 	\hline\rule{0pt}{2ex}
 	\textbf{Parameter} & \textbf{Type} & \textbf{Description}\\
 	\hline\rule{0pt}{2ex}
-	END1 & Vector & First end point of track\\
+	END1 & Vector & First end point of track [m].\\
 	\hline\rule{0pt}{2ex}
-	END2 & Vector & Second end point of track\\
+	END2 & Vector & Second end point of track [m].\\
 	\hline\rule{0pt}{2ex}
 	HEIGHT & Float & Elevation of suspension track over ground [m]. Default: 11\\
 	\hline\rule{0pt}{2ex}
@@ -826,7 +937,7 @@ An octagonal bordered landing pad. Default diameter 80 m (at scale 1). Landing p
 	\hline\rule{0pt}{2ex}
 	\textbf{Parameter} & \textbf{Type} & \textbf{Description}\\
 	\hline\rule{0pt}{2ex}
-	POS & Vector & Pad centre coordinates in local base frame.\\
+	POS & Vector & Pad centre coordinates in local base frame [m].\\
 	\hline\rule{0pt}{2ex}
 	SCALE & Float & Scaling factor. Default: 1\\
 	\hline\rule{0pt}{2ex}
@@ -849,7 +960,7 @@ A square landing pad. Default size 80 m (at scale 1). Landing pads are numbered 
 	\hline\rule{0pt}{2ex}
 	\textbf{Parameter} & \textbf{Type} & \textbf{Description}\\
 	\hline\rule{0pt}{2ex}
-	POS & Vector & Pad centre coordinates in local base frame.\\
+	POS & Vector & Pad centre coordinates in local base frame [m].\\
 	\hline\rule{0pt}{2ex}
 	SCALE & Float & Scaling factor. Default: 1\\
 	\hline\rule{0pt}{2ex}
@@ -879,7 +990,7 @@ Generic mesh for custom objects. Mesh files must be in Orbiter mesh file format 
 	\hline\rule{0pt}{2ex}
 	FILE & Float & Mesh file name (without path and extension). Mesh files must be located in the mesh subdirectory (as defined in the main config file)\\
 	\hline\rule{0pt}{2ex}
-	POS & Float & Position of the mesh origin in local base coordinates\\
+	POS & Float & Position of the mesh origin in local base coordinates [m]\\
 	\hline\rule{0pt}{2ex}
 	SCALE & Float & Scaling factors in along the 3 axes (height in y). Default: 1 1 1\\
 	\hline\rule{0pt}{2ex}

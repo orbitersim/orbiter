@@ -40,6 +40,8 @@ Below is a description of the default vessel configuration options recognised by
 	\hline\rule{0pt}{2ex}
 	ClipRadius & Float & Vessel clip radius [m]. Radius of a sphere enclosing the vessel mesh to avoid visual clipping. Set this to > Size if visual artefacts (clipping) occur when the camera moves close to the vessel. Default: same as Size.\\
 	\hline\rule{0pt}{2ex}
+	AlbedoRGB & Vec3 & Albedo for dot representation (when far away). Default: (1, 1, 1)\\
+	\hline\rule{0pt}{2ex}
 	MaxMainThrust & Float & Max. thrust force of main thruster(s) in vacuum [N]\\
 	\hline\rule{0pt}{2ex}
 	MaxRetroTrust & Float & Max. thrust force of retro thuster(s) in vacuum [N]\\
@@ -49,6 +51,8 @@ Below is a description of the default vessel configuration options recognised by
 	MaxAttitudeThrust & Float & If provided, this creates a complete set of thrusters for a reaction control system (RCS) to control the vessel's attitude. The value defines the vacuum thrust [N] of each individual RCS thruster. All thrusters are assumed to have an offset of 1 m from the vessel's centre of mass, so the thrust value must be scaled accordingly to provide a given target torque.\\
 	\hline\rule{0pt}{2ex}
 	TouchdownPoints & Vec3 × 3 & 3 surface contact points in local vessel coordinates. For aircraft-like configurations these are: nose wheel, left main wheel, right main wheel (the order is important to define the 'up' direction). Other spacecraft types may interpret the points differently.\\
+	\hline\rule{0pt}{2ex}
+	COG\_OverGround & Float & Elevation of centre of gravity over ground when landed [m]. Obsolete.\\
 	\hline\rule{0pt}{2ex}
 	CameraOffset & Vec3 & Camera position inside the vessel for cockpit view\\
 	\hline\rule{0pt}{2ex}
@@ -88,9 +92,11 @@ Below is a description of the default vessel configuration options recognised by
 	\hline\rule{0pt}{2ex}
 	DockRot & Vec3 & Longitudinal alignment direction (normal to DockDir) for first docking port (obsolete)\\
 	\hline\rule{0pt}{2ex}
-	<\textit{<Docklist}> & List & List of positions and approach directions for docking ports (see below)\\
+	<\textit{Docklist}> & List & List of positions and approach directions for docking ports (see below)\\
 	\hline\rule{0pt}{2ex}
-	<\textit{<Attachment list}> & List & List of positions and approach directions for attachment points (see below)\\
+	<\textit{Attachment list}> & List & List of positions and approach directions for attachment points (see below)\\
+	\hline\rule{0pt}{2ex}
+	CollisionHull & String & Path to touchdown point definition file, relative to the Config folder. This file must have "dat" extension. See Notes below for file format information.\\
 	\hline
 	\end{longtable}
 %\end{table}
@@ -155,6 +161,14 @@ dr
 
 \noindent
 The Orbitersdk\textbackslash Utils folder contains a simple tool (shipedit.exe) to calculate the inertia tensor of an object from its mesh file. The tool requires "well-behaved" mesh files (composed of closed compact surfaces) and assumes a homogeneous density distribution inside the mesh (\textit{m(r)} = const). The latter is not very realistic, so the results must be interpreted realistically. They should still serve as a good starting point for experimentation.
+
+\item The touchdown point definition file has the following format:
+\begin{lstlisting}[language=OSFS]
+<n>
+<x[1]> <y[1]> <z[1]> <stiffness[1]> <damping[1]> <mu[1]> <mu_lng[1]>
+...
+<x[n]> <y[n]> <z[n]> <stiffness[n]> <damping[n]> <mu[n]> <mu_lng[n]>
+\end{lstlisting}
 
 \end{itemize}
 

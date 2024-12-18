@@ -172,9 +172,114 @@ with supported parameters
 	GROUNDDIRECTION & Float Float & polar coordinates of ground observer orientation (\textit{free Ground} trackmode only)\\
 	\hline\rule{0pt}{2ex}
 	FOV & Float & Field of view (angular aperture from from top to bottom of view window) [deg]\\
+	\hline\rule{0pt}{2ex}
+	PRESET & Block & Camera preset block.\\
 	\hline
 	\end{tabularx}
 \end{table}
+
+
+\subsubsection*{Camera preset block (optional):}
+Camera preset modes and parameters, located inside the Camera block.
+
+\begin{lstlisting}[language=OSFS]
+BEGIN_PRESET
+	<Camera preset parameters>
+END_PRESET
+\end{lstlisting}
+
+\noindent
+with supported parameters: Cockpit, Track and Ground.
+
+\paragraph{Cockpit}
+\begin{lstlisting}[language=OSFS]
+Cockpit:<target>:<fov>
+\end{lstlisting}
+
+\noindent
+with parameters
+
+\begin{table}[H]
+	\centering
+	\begin{tabularx}{\textwidth}{ |l|l|X| }
+	\hline\rule{0pt}{2ex}
+	\textbf{Item} & \textbf{Type} & \textbf{Description}\\
+	\hline\rule{0pt}{2ex}
+	<target> & String & name of vessel\\
+	\hline\rule{0pt}{2ex}
+	<fov> & Float & field-of-view [deg]\\
+	\hline
+	\end{tabularx}
+\end{table}
+
+\paragraph{Track}
+\begin{lstlisting}[language=OSFS]
+Track:<target>:<fov>:<mode> <rel dist> <phi> <theta> [<ref tgt>]
+\end{lstlisting}
+
+\noindent
+with parameters
+
+\begin{table}[H]
+	\centering
+	\begin{tabularx}{\textwidth}{ |l|l|X| }
+	\hline\rule{0pt}{2ex}
+	\textbf{Item} & \textbf{Type} & \textbf{Description}\\
+	\hline\rule{0pt}{2ex}
+	<target> & String & name of vessel, celestial body or surface base\\
+	\hline\rule{0pt}{2ex}
+	<fov> & Float & field-of-view [deg]\\
+	\hline\rule{0pt}{2ex}
+	<mode> & Flag & CURRENT | RELATIVE | ABSDIR | GLOBAL | TARGETTOREF | TARGETFROMREF\\
+	\hline\rule{0pt}{2ex}
+	<rel dist> & Float & distance factor in relation to the target's size\\
+	\hline\rule{0pt}{2ex}
+	<phi> & Float & azimuth angle of camera relative to target [deg]\\
+	\hline\rule{0pt}{2ex}
+	<theta> & Float & polar angle of camera relative to target [deg]\\
+	\hline\rule{0pt}{2ex}
+	<ref tgt> & String & name of vessel, celestial body or surface base (only when <mode> = TARGETTOREF | TARGETFROMREF)\\
+	\hline
+	\end{tabularx}
+\end{table}
+
+\paragraph{Ground}
+\begin{lstlisting}[language=OSFS]
+Ground:<target>:<fov>:<ref> <long> <lat> <alt> [<alt flag>] [<phi> <theta>]
+\end{lstlisting}
+
+\noindent
+with parameters
+
+\begin{table}[H]
+	\centering
+	\begin{tabularx}{\textwidth}{ |l|l|X| }
+	\hline\rule{0pt}{2ex}
+	\textbf{Item} & \textbf{Type} & \textbf{Description}\\
+	\hline\rule{0pt}{2ex}
+	<target> & String & name of vessel\\
+	\hline\rule{0pt}{2ex}
+	<fov> & Float &field-of-view [deg]\\
+	\hline\rule{0pt}{2ex}
+	<ref> & String & name of celestial body\\
+	\hline\rule{0pt}{2ex}
+	<long> & Float & longitude [deg]\\
+	\hline\rule{0pt}{2ex}
+	<lat> & Float & latitude [deg]\\
+	\hline\rule{0pt}{2ex}
+	<alt> & Float & altitude above ground [m]\\
+	\hline\rule{0pt}{2ex}
+	<alt flag> & Flag & "M" if <alt> measured from mean radius, or if not present, measure <alt> from elevated ground\\
+	\hline\rule{0pt}{2ex}
+	<phi> & Float & azimuth angle of camera relative to target [deg] (only when target track is disabled)\\
+	\hline\rule{0pt}{2ex}
+	<theta> & Float & polar angle of camera relative to target [deg] (only when target track is disabled)\\
+	\hline
+	\end{tabularx}
+\end{table}
+
+
+
 
 \subsection*{Panel block (optional):}
 2D instrument panel parameters. If neither this nor the VC block is present, Orbiter initially displays the generic glass cockpit view in internal (cockpit) modes. If both are present, the 2D panel view takes precedence. Format:
@@ -199,11 +304,11 @@ END_VC
 \end{lstlisting}
 
 \noindent
-Currently VC parameters are supported, but the presence of the VC block indicates a preference for virtual cockpit modes on startup, if supported by the focus vessel.
+Currently no VC parameters are supported, but the presence of the VC block indicates a preference for virtual cockpit modes on startup, if supported by the focus vessel.
 
 
 \subsection*{HUD block (optional):}
-HUD (head up display) mode and parameters for cockpit views. If the HUD block is missing, no HUD is displayed at simulation start. Format:
+HUD (head-up display) mode and parameters for cockpit views. If the HUD block is missing, no HUD is displayed at simulation start. Format:
 
 \begin{lstlisting}[language=OSFS]
 BEGIN_HUD
@@ -243,15 +348,15 @@ The following parameters are supported (most of which are relevant only for spec
 	\hline\rule{0pt}{2ex}
 	\textbf{Item} & \textbf{Type} & \textbf{Description}\\
 	\hline\rule{0pt}{2ex}
-	TYPE & Flag & MFD mode: Orbit | Surface | Map | Launch | Docking | OAlign | OSync | Transfer\\
+	TYPE & Flag & MFD mode: Orbit | Surface | Map | HSI | Launch | Docking | OAlign | OSync | Transfer | COM/NAV | User\\
 	\hline\rule{0pt}{2ex}
 	REF & String & Reference object (Orbit and Map modes only)\\
 	\hline\rule{0pt}{2ex}
 	TARGET & String & Target object (Orbit, OAlign, OSync modes only)\\
 	\hline\rule{0pt}{2ex}
-	BTARGET & String & Base target (Map mode only)\\
+	BTARGET & String & Base target (Map mode only, legacy)\\
 	\hline\rule{0pt}{2ex}
-	OTARGET & String & Orbit target (Map mode only)\\
+	OTARGET & String & Orbit target (Map mode only, legacy)\\
 	\hline\rule{0pt}{2ex}
 	PROJ & Flag & Ecliptic | Ship | Target (Orbit mode only)\\
 	\hline\rule{0pt}{2ex}
@@ -298,7 +403,11 @@ The following generic parameters are supported:
 	\hline\rule{0pt}{2ex}
 	BASE &  & <\textit{base}>:<\textit{lpad}> (only for status \textit{Landed})\\
 	\hline\rule{0pt}{2ex}
+	POS &  & <\textit{longitude}> <\textit{latitude}> [deg] (only for status \textit{Landed})\\
+	\hline\rule{0pt}{2ex}
 	HEADING & Float & Orientation (only for status \textit{Landed})\\
+	\hline\rule{0pt}{2ex}
+	ALT & Float & altitude of vessel center (only for status \textit{Landed})\\
 	\hline\rule{0pt}{2ex}
 	RPOS & Vec3 & Position relative to reference body (only for status \textit{Orbiting})\\
 	\hline\rule{0pt}{2ex}
@@ -313,29 +422,47 @@ The following generic parameters are supported:
 	mean longitude at epoch \textit{l} [deg]\newline
 	epoch \textit{t} [MJD]\\
 	\hline\rule{0pt}{2ex}
-	AROT & Vec3 & Orientation: rotation angles of object frame (only for status \textit{Orbiting})\\
+	AROT & Vec3 & Orientation: rotation angles of object frame (for status \textit{Orbiting}), or Euler angles of horizon-local rotation matrix (for status \textit{Landed}) [deg]\\
 	\hline\rule{0pt}{2ex}
-	VROT & Vec3 & Angular velocity [deg/s] (only for status Orbiting)\\
+	VROT & Vec3 & Angular velocity [deg/s] (only for status \textit{Orbiting})\\
 	\hline\rule{0pt}{2ex}
-	FUEL & Float & Fuel level (0-1). This tag sets the level of all propellant resources to the same level. For individual settings use PRPLEVEL instead.\\
+	ATTACHED & List & Indicates vessel is attached, as child, to another (parent) vessel. Format: <id>:<pid><pname>, where <id> is the attachment id of the vessel, <pid> and <pname> are respectively the attachment id and name of the parent vessel.\\
+	\hline\rule{0pt}{2ex}
+	RCSMODE & Int & RCS mode: 0 = disabled, 1 = rotational, 2 = translation\\
+	\hline\rule{0pt}{2ex}
+	AFCMODE & Int & Bit flags for airfoil control surfaces: bit 0 = elevator, bit 1 = rudder, bit 2 = aileron\\
+	\hline\rule{0pt}{2ex}
+	FUEL & Float & Fuel level (0-1). This tag sets the level of all propellant resources to the same level. Legacy, for individual settings use PRPLEVEL instead.\\
 	\hline\rule{0pt}{2ex}
 	PRPLEVEL & List & List of propellant resource levels. Each entry is of the form <\textit{id}>:<\textit{level}>, where <\textit{id}> is the resource identifier (Int $\geq$ 0) and <\textit{level}> is the propellant resource level (Float, 0-1)\\
 	\hline\rule{0pt}{2ex}
 	THLEVEL & List & List of thruster settings. Each entry is of the form <\textit{id}>:<\textit{level}>, where <\textit{id}> is the thruster identifier (Int $\geq$ 0) in the order of thruster definition and <\textit{level}> is the thrust level (Float, 0-1). Thrusters with level 0 can be omitted.\\
 	\hline\rule{0pt}{2ex}
 	DOCKINFO & List & Docking status list. This contains information about all docked vessels. Each entry is of the form <\textit{id}>:<\textit{rid}> <\textit{rvessel}>, where <\textit{id}> is the docking port identifier (Int $\geq$ 0), <\textit{rid}> is the docking port identifier of the docked vessel, and <\textit{rvessel}> is the docked vessel. Only engaged docking ports are listed. See notes below.\\
+	\hline\rule{0pt}{2ex}
+	IDS & List & Docking IDS list. This contains information about the IDS of the docking ports. Each entry is of the form <\textit{id}>:<\textit{ids}> <\textit{range}>, where <\textit{id}> is the docking port identifier (Int $\geq$ 0), <\textit{ids}> is the IDS frequency offset factor, in 0.05 MHz steps, from 108.0 MHz base (Int), and <\textit{range}> is the IDS range (Int) [Km]\\
+	\hline\rule{0pt}{2ex}
+	NAVFREQ & List & List of nav radio frequency offset factors, in 0.05 MHz steps, from 108.0 MHz base\\
+	\hline\rule{0pt}{2ex}
+	XPDR & Int & Transponder frequency offset factor, in 0.05 MHz steps, from 108.0 MHz base\\
+	\hline\rule{0pt}{2ex}
+	FLIGHTDATA & Flag & Indicates vessel is currently recording its flight data\\
+	\hline\rule{0pt}{2ex}
+	ENGINE\_MAIN & Float & Sets main engine (if > 0) or retro engine level (if < 0) (legacy)\\
+	\hline\rule{0pt}{2ex}
+	ENGINE\_HOVR & Float & Set hover engine level (legacy)\\
 	\hline
 	\end{longtable}
 %\end{table}
 
 \noindent
-In addition to these generic parameters, individual vessel classes may define class-specific parameters.\\
+In addition to these generic parameters, individual vessel classes may define class-specific parameters (animation position, system status, etc).\\
 \\
 \underline{Defining docked assemblies:}\\
 There are two ways to define vessels as being assembled into a superstructure by docking them together:
 
 \begin{itemize}
-\item Place the vessels so that their docking point locations coincide (by using the appropriate RPOS, RVEL, AROT and VROT parameters for both). Orbiter will dock two vessels au-tomatically if their docking ports are close enough.
+\item Place the vessels so that their docking point locations coincide (by using the appropriate RPOS, RVEL, AROT and VROT parameters for both). Orbiter will dock two vessels automatically if their docking ports are close enough.
 \item Define the DOCKINFO lists for both vessels so that they reference each other. Orbiter then attaches the vessels accordingly even if their position parameters are not aligned. In that case, the position of the first vessel in the superstructure list defines the position of the assembly. The position parameters of all subsequent vessels in the list are ignored.
 \end{itemize}
 
