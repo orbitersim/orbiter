@@ -42,7 +42,7 @@ END_MFD
 BEGIN_MFD Right
   TYPE Map
   REF Earth
-  BTARGET Cape Canaveral
+  TARGET Cape Canaveral
 END_MFD
 
 BEGIN_PANEL
