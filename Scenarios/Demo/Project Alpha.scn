@@ -64,10 +64,12 @@ STS-101:Atlantis
   ARM_WR_P 0.000
   ARM_WR_Y 0.000
   ARM_WR_R 0.000
-  SAT_JETTISONED 0
-  SAT_NAME Leonardo_mplm
-  SAT_MESH Leonardo_mplm
-  SAT_GRAPPLE 0.000 2.341 0.182
-  SAT_GRAPPLED 0
+END
+Leonardo:Leonardo_mplm
+  STATUS Orbiting Earth
+  ATTACHED 0:0,STS-101
+  AFCMODE 7
+  NAVFREQ 0 0
+  XPDR 477
 END
 END_SHIPS

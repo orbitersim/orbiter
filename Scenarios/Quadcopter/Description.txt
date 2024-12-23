@@ -1,0 +1,4 @@
+BEGIN_HYPERDESC
+<h1>Quadcopter scenarios</h1>
+<p>This folder contains scenarios with the Quadcopter vessel.</p>
+END_HYPERDESC

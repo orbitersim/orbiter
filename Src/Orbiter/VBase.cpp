@@ -22,14 +22,9 @@ using std::max;
 
 extern Orbiter *g_pOrbiter;
 extern PlanetarySystem *g_psys;
-extern Camera *g_camera;
-extern TextureManager2 *g_texmanager2;
 extern DWORD g_vtxcount;
 extern TimeData td;
-extern char DBG_MSG[256];
 
-static Mesh mshSurf1;
-const double CheckLightDT = 2.0;
 bool VBase::interpolate_textures = true;
 
 VBase::VBase (const Base *_base): VObject (_base), base(_base)

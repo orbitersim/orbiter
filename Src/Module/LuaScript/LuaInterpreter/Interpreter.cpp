@@ -520,7 +520,7 @@ void Interpreter::lua_pushvessel (lua_State *L, VESSEL *v)
 		lua_pop(L,1);                   // pop nil
 		VESSEL **pv = (VESSEL**)lua_newuserdata(L,sizeof(VESSEL*));
 		*pv = v;
-		knownVessels.insert(pv);
+		knownVessels.insert(v);
 		luaL_getmetatable (L, "VESSEL.vtable"); // retrieve metatable
 		lua_setmetatable (L,-2);             // and attach to new object
 		LoadVesselExtensions(L,v);           // vessel environment
@@ -529,17 +529,6 @@ void Interpreter::lua_pushvessel (lua_State *L, VESSEL *v)
 		lua_settable(L,LUA_REGISTRYINDEX);   // and store in registry
 		// note that now the object is on top of the stack
 	}
-}
-int Interpreter::lua_isvessel(lua_State *L, int idx)
-{
-	if(lua_isuserdata(L, idx)) {
-		void *ud = lua_touserdata(L, idx);
-		if(knownVessels.find(ud)!=knownVessels.end()) {
-			return true;
-		}
-	}
-	luaL_error(L, "Invalid parameter %d, vessel expected", idx);
-	return false;
 }
 
 void Interpreter::lua_pushmfd (lua_State *L, MFD2 *mfd)
@@ -839,6 +828,7 @@ void Interpreter::LoadAPI ()
 		// GC
 		{"set_materialex", oapi_set_materialex},
 		{"set_material", oapi_set_material},
+		{"set_meshproperty", oapi_set_meshproperty},
 
 		// VC
 		{"VC_trigger_redrawarea", oapi_VC_trigger_redrawarea},
@@ -897,7 +887,16 @@ void Interpreter::LoadAPI ()
 		{"get_gbody", oapi_get_gbody},
 		{"get_gbodycount", oapi_get_gbodycount},
 		{"get_gbodyparent", oapi_get_gbodyparent},
-		{"get_planetatmconstants", oapi_get_planetatmconstants},
+		{"get_planetobliquity", oapi_get_planetobliquity},
+		{"get_planettheta", oapi_get_planettheta},
+		{"get_planetobliquitymatrix", oapi_get_planetobliquitymatrix},
+		{"get_planetcurrentrotation", oapi_get_planetcurrentrotation},
+		{"planet_hasatmosphere", oapi_planet_hasatmosphere},
+		{"get_planetatmparams", oapi_get_planetatmparams},
+		{"get_groundvector", oapi_get_groundvector},
+		{"get_windvector", oapi_get_windvector},
+		{"get_planetjcoeffcount", oapi_get_planetjcoeffcount},
+		{"get_planetjcoeff", oapi_get_planetjcoeff},
 
 		// vessel functions
 		{"get_propellanthandle", oapi_get_propellanthandle},
@@ -1342,6 +1341,9 @@ void Interpreter::LoadAPI ()
 	lua_pushnumber (L, USRINPUT_NEEDANSWER); lua_setfield (L, -2, "NEEDANSWER");
 	lua_setglobal (L, "USRINPUT");
 
+	lua_createtable (L, 0, 1);
+	lua_pushnumber (L, MESHPROPERTY_MODULATEMATALPHA); lua_setfield (L, -2, "MODULATEMATALPHA");
+	lua_setglobal (L, "MESHPROPERTY");
 }
 
 void Interpreter::LoadMFDAPI ()
@@ -1643,6 +1645,12 @@ bool Interpreter::LoadVesselExtensions (lua_State *L, VESSEL *v)
 	if (v->Version() < 2) return false;
 	VESSEL3 *v3 = (VESSEL3*)v;
 	return (v3->clbkGeneric (VMSG_LUAINSTANCE, 0, (void*)L) != 0);
+}
+
+void Interpreter::DeleteVessel (OBJHANDLE hVessel)
+{
+	VESSEL *v = oapiGetVesselInterface(hVessel);
+	knownVessels.erase(v);
 }
 
 Interpreter *Interpreter::GetInterpreter (lua_State *L)
@@ -3232,6 +3240,38 @@ int Interpreter::oapi_set_material(lua_State* L)
 }
 
 /***
+Set custom properties for a mesh.
+
+Note : Currently only a single mesh property is recognised, but this may be extended in future versions:
+
+- MESHPROPERTY.MODULATEMATALPHA:
+	if value==0 (default) disable material alpha information in textured mesh groups (only use texture alpha channel).\n
+	if value<>0 modulate (mix) material alpha values with texture alpha maps.
+
+
+@function set_meshproperty
+@tparam handle hMesh mesh handle
+@tparam number property property tag
+@tparam number value new mesh property value
+@treturn boolean  true if the property tag was recognised and the request could be executed, false otherwise.
+*/
+int Interpreter::oapi_set_meshproperty(lua_State* L)
+{
+	DWORD property = luaL_checknumber(L, 2);
+	DWORD value = luaL_checknumber(L, 3);
+	MESHHANDLE *hMesh = (MESHHANDLE *)luaL_tryudata(L, 1, "MESHHANDLE");
+	if(hMesh) {
+		bool ret = oapiSetMeshProperty(*hMesh, property, value);
+		lua_pushboolean(L, ret);
+		return 1;
+	}
+	DEVMESHHANDLE hDevMesh = lua_todevmeshhandle(L, 1);
+	bool ret = oapiSetMeshProperty(hDevMesh, property, value);
+	lua_pushboolean(L, ret);
+	return 1;
+}
+
+/***
 Trigger a redraw notification for a virtual cockpit area.
 
 This function triggers a call to the clbk_VCredrawevent callback function in the vessel module.
@@ -3818,7 +3858,6 @@ This function is primarily used internally, you should prefer using open_inputbo
 @function open_inputbox
 @tparam string title input box title
 @see open_inputboxex
-@see proc.wait_input
 @usage oapi.open_inputbox(title)
  -- elsewhere
  local ans = oapi.receive_input ()
@@ -4299,8 +4338,8 @@ Return the rotation period (the length of a siderial day) of a planet.
 int Interpreter::oapi_get_planetperiod(lua_State* L)
 {
 	OBJHANDLE hRef;
-	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 2: invalid type (expected handle)");
-	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 2: invalid object");
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 1: invalid object");
 	double T = oapiGetPlanetPeriod(hRef);
 
 	lua_pushnumber(L, T);
@@ -4450,6 +4489,295 @@ int Interpreter::oapi_get_gbodycount(lua_State *L)
 	lua_pushnumber(L, nBody);
 	return 1;
 }
+
+/***
+Returns the obliquity of the planet's rotation axis (the angle between the rotation axis
+and the ecliptic zenith).
+
+In Orbiter, the ecliptic zenith (at epoch J2000) is the positive y-axis of the
+global frame of reference.
+
+@function get_planetobliquity
+@tparam handle hPlanet planet handle
+@treturn number obliquity [rad]
+*/
+int Interpreter::oapi_get_planetobliquity(lua_State *L)
+{
+	OBJHANDLE hRef;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 1: invalid object");
+	double ob = oapiGetPlanetObliquity(hRef);
+	lua_pushnumber(L, ob);
+	return 1;
+}
+
+/***
+Returns the longitude of the ascending node.
+
+Returns the longitude of the ascending node of the equatorial plane,
+that is, the angle between the vernal equinox and the ascending node of the equator w.r.t. the ecliptic.
+
+For Earth, this function will return 0. (The ascending node of Earth's
+equatorial plane is the definition of the vernal equinox).
+
+@function get_planettheta
+@tparam handle hPlanet planet handle
+@treturn number longitude of ascending node of the equator [rad]
+*/
+int Interpreter::oapi_get_planettheta(lua_State *L)
+{
+	OBJHANDLE hRef;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 1: invalid object");
+	double theta = oapiGetPlanetTheta(hRef);
+	lua_pushnumber(L, theta);
+	return 1;
+}
+
+/***
+Returns a rotation matrix which performs the transformation from the planet's tilted
+coordinates into global coordinates.
+
+@function get_planetobliquitymatrix
+@tparam handle hPlanet planet handle
+@treturn matrix rotation data
+*/
+int Interpreter::oapi_get_planetobliquitymatrix(lua_State *L)
+{
+	OBJHANDLE hRef;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 1: invalid object");
+	MATRIX3 ob;
+	oapiGetPlanetObliquityMatrix(hRef, &ob);
+	lua_pushmatrix(L, ob);
+	return 1;
+}
+
+/***
+Returns the current rotation angle of the planet around its axis.
+
+@function get_planetcurrentrotation
+@tparam handle hPlanet planet handle
+@treturn matrix Rotation angle [rad]
+*/
+int Interpreter::oapi_get_planetcurrentrotation(lua_State *L)
+{
+	OBJHANDLE hRef;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 1: invalid object");
+	double rot = oapiGetPlanetCurrentRotation(hRef);
+	lua_pushnumber(L, rot);
+	return 1;
+}
+
+/***
+Test for existence of planetary atmosphere.
+
+@function planet_hasatmosphere
+@tparam handle hPlanet planet handle
+@treturn boolean true if an atmosphere has been defined for the planet, false otherwise.
+*/
+int Interpreter::oapi_planet_hasatmosphere(lua_State *L)
+{
+	OBJHANDLE hRef;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 1: invalid object");
+	bool atm = oapiPlanetHasAtmosphere(hRef);
+	lua_pushboolean(L, atm);
+	return 1;
+}
+
+/***
+Returns atmospheric parameters as a function of distance from the planet centre.
+
+If the planet has no atmosphere, or if the defined radius is beyond the
+defined upper atmosphere limit, all parameters are set to 0.
+
+If the atmosphere model is position- as well as altitude-dependent, this
+function assumes longitude=0 and latitude=0.
+
+The returned table has the following fields:
+
+- T: number (temperature [K])
+- p: number (pressure [Pa])
+- rho: number (density [kg/m^3])
+
+@function get_planetatmparams
+@tparam handle hPlanet planet handle
+@tparam number rad radius from planet centre [m]
+@treturn table atmosphere parameters
+*/
+/***
+Returns atmospheric parameters of a planet as a function of altitude
+and geographic position.
+
+The returned table has the following fields:
+
+- T: number (temperature [K])
+- p: number (pressure [Pa])
+- rho: number (density [kg/m^3])
+
+@function get_planetatmparams
+@tparam handle hPlanet planet handle
+@tparam number alt altitude above planet mean radius [m]
+@tparam number lng longitude [rad]
+@tparam number lat latitude [rad]
+@treturn table atmospehere parameters
+*/
+int Interpreter::oapi_get_planetatmparams(lua_State* L)
+{
+	OBJHANDLE hRef;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 1: invalid object");
+	ATMPARAM ap;
+
+	if (lua_gettop(L) == 2) {
+		double rad = luaL_checknumber(L, 2);
+		oapiGetPlanetAtmParams(hRef, rad, &ap);
+	} else {
+		double alt = luaL_checknumber(L, 2);
+		double lng = luaL_checknumber(L, 3);
+		double lat = luaL_checknumber(L, 4);
+		oapiGetPlanetAtmParams(hRef, alt, lng, lat, &ap);
+	}
+	lua_createtable (L, 0, 3);
+	lua_pushnumber (L, ap.T);
+	lua_setfield (L, -2, "T");
+	lua_pushnumber (L, ap.p);
+	lua_setfield (L, -2, "p");
+	lua_pushnumber (L, ap.rho);
+	lua_setfield (L, -2, "rho");
+
+	return 1;
+}
+
+/***
+Returns the velocity vector of a surface point.
+
+The frame flag can be used to specify the reference frame to which the
+returned vector refers. The following values are supported:
+
+- 0: surface-relative (relative to local horizon)
+- 1: planet-local (relative to local planet frame)
+- 2: planet-local non-rotating
+- 3: global (maps to global frame and adds planet velocity)
+
+@function get_groundvector
+@tparam handle hPlanet planet handle
+@tparam number lng longitude [rad]
+@tparam number lat latitude [rad]
+@tparam number frame reference frame flag
+@treturn vector surface velocity [m]
+*/
+int Interpreter::oapi_get_groundvector(lua_State *L)
+{
+	OBJHANDLE hRef;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 1: invalid object");
+	double lng = luaL_checknumber(L, 2);
+	double lat = luaL_checknumber(L, 3);
+	int frame = luaL_checkinteger(L, 4);
+	VECTOR3 gv = oapiGetGroundVector(hRef, lng, lat, frame);
+	lua_pushvector(L, gv);
+	return 1;
+}
+
+/***
+Returns the wind velocity at a given position in a planet's atmosphere.
+
+The frame flag can be used to specify the reference frame to which the
+returned vector refers. The following values are supported:
+
+- 0: surface-relative (relative to local horizon)
+- 1: planet-local (relative to local planet frame)
+- 2: planet-local non-rotating (as 1, but adds the surface velocity, see \ref oapiGetGroundVector)
+- 3: global (maps to global frame and adds planet velocity)
+
+Warning: Local wind velocities are not currently implemented. The surface-relative
+wind velocity is always (0,0,0). To ensure forward compatibility, plugins
+should not rely on this limitation, but use this function instead.
+
+@function get_windvector
+@tparam handle hPlanet planet handle
+@tparam number lng longitude [rad]
+@tparam number lat latitude [rad]
+@tparam number altitude above mean planet radius [m]
+@tparam number frame reference frame flag
+@treturn vector wind velocity vector relative to surface [m]
+@treturn number wind speed magnitude in the local horizon frame, independent of the frame selected [m/s]
+*/
+int Interpreter::oapi_get_windvector(lua_State *L)
+{
+	OBJHANDLE hRef;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 1: invalid object");
+	double lng = luaL_checknumber(L, 2);
+	double lat = luaL_checknumber(L, 3);
+	double alt = luaL_checknumber(L, 4);
+	int frame = luaL_checkinteger(L, 5);
+	double windspeed;
+	VECTOR3 gv = oapiGetWindVector(hRef, lng, lat, alt, frame, &windspeed);
+	lua_pushvector(L, gv);
+	lua_pushnumber(L, windspeed);
+	return 1;
+}
+
+/***
+Returns the number of perturbation coefficients defined for a planet.
+
+Returns the number of perturbation coefficients defined for a planet to describe the
+latitude-dependent perturbation of its gaviational potential. A return value of 0 indicates
+that the planet is considered to have a spherically symmetric gravity field.
+
+Note: even if a planet defines perturbation coefficients, its gravity perturbation may
+be ignored, if the user disabled nonspherical gravity sources, or if orbit
+stabilisation is active at a given time step. Use the
+vessel.is_nonsphericalgravityenabled() function to check if a vessel uses the
+perturbation terms in the update of its state vectors.
+
+Note: depending on the distance to the planet, Orbiter may use fewer perturbation
+terms than defined, if their contribution is negligible.
+
+@function get_planetjcoeffcount
+@tparam handle hPlanet planet handle
+@treturn number Number of perturbation coefficients
+*/
+int Interpreter::oapi_get_planetjcoeffcount(lua_State *L)
+{
+	OBJHANDLE hRef;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 1: invalid object");
+	DWORD n = oapiGetPlanetJCoeffCount(hRef);
+	lua_pushnumber(L, n);
+	return 1;
+}
+
+/***
+Returns a perturbation coefficient for the calculation of a planet's gravitational potential.
+
+Note: Orbiter currently considers perturbations to be only a function of latitude
+(polar), not of longitude.
+
+Note: The first coefficient, n = 0, returns J2, which accounts for the ellipsoid shape
+of a planet (flattening). Higher perturbation terms are usually small compared
+to J2 (and not known for most planets).
+
+@function get_planetjcoeff
+@tparam handle hPlanet planet handle
+@tparam number n coefficient index
+@treturn number Perturbation coefficient
+*/
+int Interpreter::oapi_get_planetjcoeff(lua_State *L)
+{
+	OBJHANDLE hRef;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 1: invalid object");
+	DWORD n = luaL_checkinteger(L, 2);
+	double coeff = oapiGetPlanetJCoeff(hRef, n);
+	lua_pushnumber(L, coeff);
+	return 1;
+}
+
 
 /***
 Return an identifier of a vessel's propellant resource.
@@ -5786,8 +6114,7 @@ int Interpreter::oapi_setup_customcamera(lua_State *L)
 		void *ud = lua_touserdata(L,2);
 		if(oapiIsVessel(ud)) {
 			hVessel = (OBJHANDLE)ud;
-		} else if(lua_isvessel(L, 2)) {
-			VESSEL *v = (VESSEL *)lua_tovessel(L, 2);
+		} else if(VESSEL *v = lua_tovessel(L, 2)) {
 			hVessel = v->GetHandle();
 		} else {
 			luaL_error(L, "vessel of vessel handle expected");
@@ -7225,8 +7552,8 @@ int Interpreter::oapi_inflate (lua_State *L)
 Return a colour value adapted to the current screen colour depth for given
 red, green and blue components.
 
-Colour values are required for some surface functions like @{clear_surface}
-   or @{set_surfacecolourkey}. The colour key for a given RGB triplet depends
+Colour values are required for some surface functions like @{clear_surface}.
+   The colour key for a given RGB triplet depends
    on the screen colour depth. This function returns the colour value for the
    closest colour match which can be displayed in the current screen mode.
 
@@ -7884,7 +8211,7 @@ int Interpreter::oapi_delete_mesh(lua_State* L)
 /***
 Get group specification of a mesh group.
 
-This method can be used to edit the a mesh group directly (for geometry
+This method can be used to edit a mesh group directly (for geometry
 animation, texture animation, etc.)
 
 This function should only be applied to device-independent meshes,

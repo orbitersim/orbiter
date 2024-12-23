@@ -21,9 +21,9 @@
 #include <set>
 #include <vector>
 extern "C" {
-#include "Lua/lua.h"
-#include "Lua/lualib.h"
-#include "Lua/lauxlib.h"
+#include <lua/lua.h>
+#include <lua/lualib.h>
+#include <lua/lauxlib.h>
 }
 #include "orbitersdk.h"
 #include <filesystem>
@@ -59,6 +59,7 @@ enum {
 	NAVPROCESS,
 	LOADPANEL2D,
 	RENDERHUD,
+	GETRADIATIONFORCE,
 	NCLBK // must be last to represent the number of available callbacks
 };
 
@@ -85,13 +86,14 @@ const char *CLBKNAME[NCLBK] = {
 	"panelredrawevent",
 	"loadVC",
 	"visualcreated",
-	"visualdestroyes",
+	"visualdestroyed",
 	"VCmouseevent",
 	"VCredrawevent",
 	"drawHUD",
 	"navprocess",
 	"loadpanel2d",
 	"renderHUD",
+	"getradiationforce"
 };
 
 static NOTEHANDLE errorbox;
@@ -197,6 +199,7 @@ public:
 	int clbkGeneric(int msgid, int prm, void* context) override;
 	bool clbkDrawHUD(int mode, const HUDPAINTSPEC* hps, oapi::Sketchpad* skp) override;
 	void clbkRenderHUD (int mode, const HUDPAINTSPEC *hps, SURFHANDLE hTex) override;
+	void clbkGetRadiationForce (const VECTOR3 &mflux, VECTOR3 &F, VECTOR3 &pos) override;
 
 	// VESSEL4
 	int clbkNavProcess (int mode) override;
@@ -948,9 +951,9 @@ static void lua_pushsketchpad(lua_State* L, oapi::Sketchpad* skp)
 
 bool ScriptVessel::clbkDrawHUD(int mode, const HUDPAINTSPEC* hps, oapi::Sketchpad* skp)
 {
+	// draw the default HUD
+	VESSEL3::clbkDrawHUD(mode, hps, skp);
 	if (bclbk[DRAWHUD]) {
-		// draw the default HUD
-		VESSEL3::clbkDrawHUD(mode, hps, skp);
 
 		strcpy(func + 5, "drawHUD");
 		lua_getfield(L, LUA_GLOBALSINDEX, func);
@@ -1005,6 +1008,27 @@ void ScriptVessel::clbkRenderHUD (int mode, const HUDPAINTSPEC *hps, SURFHANDLE 
 		LuaCall(L, 3, 0);
 	}
 }
+
+void ScriptVessel::clbkGetRadiationForce (const VECTOR3 &mflux, VECTOR3 &F, VECTOR3 &pos)
+{
+	if (bclbk[GETRADIATIONFORCE]) {
+		strcpy(func + 5, "getradiationforce");
+		lua_getfield(L, LUA_GLOBALSINDEX, func);
+		lua_pushvector(L, mflux);
+		if(LuaCall(L, 1, 2) != 0) {
+			lua_settop(L, 0);
+			F={0,0,0};
+			pos={0,0,0};
+		} else {
+			F = lua_tovector(L, -2);
+			pos = lua_tovector(L, -1);
+			lua_pop(L, 2);
+		}
+	} else {
+		VESSEL3::clbkGetRadiationForce(mflux, F, pos);
+	}
+}
+
 
 int ScriptVessel::clbkNavProcess(int mode)
 {

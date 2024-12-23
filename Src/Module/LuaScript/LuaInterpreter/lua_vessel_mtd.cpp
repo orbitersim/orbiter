@@ -44,18 +44,24 @@ VESSEL *vfocus = (VESSEL*)0x1;
 VESSEL *Interpreter::lua_tovessel (lua_State *L, int idx)
 {
 	VESSEL **pv = (VESSEL**)lua_touserdata (L, idx);
-	if (pv && *pv == vfocus) // replace flag with actual focus vessel pointer
-		*pv = oapiGetFocusInterface();
-	return pv ? *pv : NULL;
+	if(pv) {
+		if (*pv == vfocus) { // returns current focused vessel when using the pseudo vessel "focus"
+			VESSEL *v = oapiGetFocusInterface();
+			knownVessels.insert(v);
+			return v;
+		} else if(knownVessels.find(*pv) == knownVessels.end()) {
+			return NULL;
+		}
+		return *pv;
+	}
+	return NULL;
 }
 
 VESSEL *Interpreter::lua_tovessel_safe(lua_State *L, int idx, const char *funcname)
 {
 	VESSEL *v = lua_tovessel(L,idx);
 	if (!v) {
-		char cbuf[1024];
-		sprintf(cbuf, "%s: invalid vessel object for self", funcname);
-		term_strout(L, cbuf);
+		luaL_error(L, "Invalid vessel object for self");
 	}
 	return v;
 }
@@ -566,7 +572,7 @@ void Interpreter::LoadVesselAPI ()
 	luaL_openlib (L, "vessel", vesselAcc, 0);
 
 	// create pseudo-instance "focus"
-	lua_pushlightuserdata (L, vfocus);
+	lua_pushlightuserdata (L, &vfocus);
 	luaL_getmetatable (L, "VESSEL.vtable");  // push metatable
 	lua_setmetatable (L, -2);               // set metatable for user data
 	lua_setglobal (L, "focus");
@@ -1656,7 +1662,6 @@ int Interpreter::v_get_COG_elev (lua_State *L)
 	return 1;
 }
 
-
 /***
 Vessel state
 @section vessel_mtd_state
@@ -1864,7 +1869,7 @@ Returns the vessel's current status parameters as an object.
 */
 int Interpreter::v_get_rawstatus(lua_State* L)
 {
-	static const char* funcname = "get_status";
+	static const char* funcname = "get_rawstatus";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
 
@@ -1875,16 +1880,17 @@ int Interpreter::v_get_rawstatus(lua_State* L)
 	if (version == 1)
 	{
 		VESSELSTATUS *status = (VESSELSTATUS *)lua_newuserdata(L, sizeof(VESSELSTATUS));
+		memset(status, 0, sizeof(VESSELSTATUS));
 		luaL_getmetatable(L, "VESSELSTATUS.table");   // push metatable
 		lua_setmetatable(L, -2);              // set metatable for annotation objects
 
 		v->GetStatus(*status);
-		lua_pushlightuserdata(L, status);
 		return 1;
 	}
 	else if (version == 2)
 	{
 		VESSELSTATUS2* status = (VESSELSTATUS2*)lua_newuserdata(L, sizeof(VESSELSTATUS2));
+		memset(status, 0, sizeof(VESSELSTATUS2));
 		luaL_getmetatable(L, "VESSELSTATUS2.table");   // push metatable
 		lua_setmetatable(L, -2);              // set metatable for annotation objects
 		status->version = 2;
@@ -1893,7 +1899,6 @@ int Interpreter::v_get_rawstatus(lua_State* L)
 		//status.fuel = new VESSELSTATUS2::FUELSPEC[256]();
 
 		v->GetStatusEx(status);
-		lua_pushlightuserdata(L, status);
 
 		// Who frees these resources?
 		//if (status.fuel) delete[] status.fuel;
@@ -2875,7 +2880,7 @@ orbit ellipse.
 @treturn number semi-minor axis [m]
 @treturn handle Handle of reference object, relative to which the orbit is
    calculated. _nil_ indicates failure (no orbit information available)
-@see orbit, ELEMENTS, types.ORBITPARAMS, get_elements
+@see types.ELEMENTS, types.ORBITPARAMS, get_elements
 */
 int Interpreter::v_get_smi (lua_State *L)
 {
@@ -2906,7 +2911,7 @@ ascending node.
 @treturn number argument of periapsis for current orbit [rad]
 @treturn handle Handle of reference body, relative to which the orbit is
    calculated. nil indicates failure (no orbit information available)
-@see orbit, ELEMENTS, ORBITPARAM, get_pedist, get_apdist, get_elements
+@see types.ELEMENTS, types.ORBITPARAMS, get_pedist, get_apdist, get_elements
 */
 int Interpreter::v_get_argper (lua_State *L)
 {
@@ -2937,7 +2942,7 @@ The periapsis distance is the smallest radius of the orbit (see
 @treturn number periapsis distance [m]
 @treturn handle Handle of reference body, relative to which the orbit is
    calculated. NULL indicates failure (no orbit information available)
-@see orbit, ELEMENTS, ORBITPARAM, get_apdist, get_argper, get_elements
+@see types.ELEMENTS, types.ORBITPARAMS, get_apdist, get_argper, get_elements
 */
 int Interpreter::v_get_pedist (lua_State *L)
 {
@@ -2968,7 +2973,7 @@ The apoapsis distance is the largest radius of the orbit (see
 @treturn number apoapsis distance [m]
 @treturn handle Handle of reference body, relative to which the orbit is
    calculated. NULL indicates failure (no orbit information available)
-@see orbit, ELEMENTS, ORBITPARAM, get_pedist, get_argper, get_elements
+@see types.ELEMENTS, types.ORBITPARAMS, get_pedist, get_argper, get_elements
 */
 int Interpreter::v_get_apdist(lua_State* L)
 {
@@ -3050,7 +3055,11 @@ int Interpreter::v_get_surfaceref (lua_State *L)
 	static const char *funcname = "get_surfaceref";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	lua_pushlightuserdata (L, v->GetSurfaceRef());
+	OBJHANDLE hRef = v->GetSurfaceRef();
+	if(hRef)
+		lua_pushlightuserdata (L, hRef);
+	else
+		lua_pushnil(L);
 	return 1;
 }
 
@@ -7483,7 +7492,7 @@ within visual range of the observer camera).
 @tparam ?string|handle mesh mesh file name (meshName) or handle of template mesh (hMesh)
 @param[opt] ofs (<i><b>@{types.vector|vector}</b></i>) vector defining the offset of mesh origin from vessel origin [<b>m</b>]
 @treturn int idx mesh index (&ge; 0)
-@see vessel:del_mesh, vessel:insert_mesh, oapi.loadmesh_global
+@see vessel:del_mesh, vessel:insert_mesh, oapi.load_meshglobal
 */
 int Interpreter::v_add_mesh (lua_State *L)
 {
@@ -7534,7 +7543,7 @@ The return value is always equal to _idx_.
 @tparam int idx mesh index (&ge; 0)
 @param[opt] ofs (<i><b>@{types.vector|vector}</b></i>) vector defining the offset of mesh origin from vessel origin [<b>m</b>]
 @treturn int mesh index (&ge; 0)
-@see vessel:del_mesh, vessel:add_mesh, oapi.loadmesh_global
+@see vessel:del_mesh, vessel:add_mesh, oapi.load_meshglobal
 */
 int Interpreter::v_insert_mesh (lua_State *L)
 {
@@ -7724,7 +7733,7 @@ as the handle returned by get_mesh .
 @function get_devmesh
 @tparam handle vis identifies the visual for which the mesh was created.
 @tparam number idx mesh index (0 <= idx < get_meshcount())
-@return device mesh handle
+@return handle device mesh handle
 */
 int Interpreter::v_get_devmesh(lua_State* L)
 {
@@ -7782,7 +7791,6 @@ int Interpreter::v_set_mesh_visibility_mode(lua_State* L)
 	v->SetMeshVisibilityMode(idx, mode);
 	return 0;
 }
-
 
 /***
 Animations
@@ -7927,7 +7935,10 @@ int Interpreter::v_add_animationcomponent (lua_State *L)
 		hparent = (ANIMATIONCOMPONENT_HANDLE)luamtd_tolightuserdata_safe(L, 6, funcname);
 	ANIMATIONCOMPONENT_HANDLE hanimcomp =
 		v->AddAnimationComponent (anim, state0, state1, trans, hparent);
-	lua_pushlightuserdata (L,hanimcomp);
+	if(hanimcomp)
+		lua_pushlightuserdata (L,hanimcomp);
+	else
+		lua_pushnil(L);
 	return 1;
 }
 
@@ -7983,7 +7994,7 @@ mechanism is an alternative way to define animations where the
 transformations are managed by the Orbiter core.
 
 @function register_animation
-@see clbk_animate, unregister_animation, create_animation, add_animationcomponent
+@see unregister_animation, create_animation, add_animationcomponent
 */
 int Interpreter::v_register_animation (lua_State *L)
 {
@@ -8005,7 +8016,7 @@ The call to UnregisterAnimation should not be placed in the body of
    doesn't exist.
 
 @function unregister_animation
-@see register_animation, clbk_animate
+@see register_animation
 */
 int Interpreter::v_unregister_animation (lua_State *L)
 {
@@ -8612,7 +8623,7 @@ int Interpreter::v_register_panelarea(lua_State* L)
 {
 	static const char* funcname = "register_panelarea";
 	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
-		if (v->Version() < 3) {
+	if (v->Version() < 3) {
 		lua_pushnil(L);
 		lua_pushstring(L, "Invalid vessel version in register_panelarea");
 		return 2;
@@ -8687,7 +8698,7 @@ int Interpreter::v_register_panelmfdgeometry (lua_State *L)
 {
 	static const char* funcname = "register_panelmfdgeometry";
 	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
-		if (v->Version() < 2) {
+	if (v->Version() < 2) {
 		lua_pushnil(L);
 		lua_pushstring(L, "Invalid vessel version in register_panelmfdgeometry");
 		return 2;
@@ -8934,7 +8945,10 @@ int Interpreter::v_add_exhauststream(lua_State* L)
 	PSTREAM_HANDLE hp;
 	if (do_pos) hp = v->AddExhaustStream(ht, pos, &pss);
 	else        hp = v->AddExhaustStream(ht, &pss);
-	lua_pushlightuserdata(L, hp);
+	if(hp) 
+		lua_pushlightuserdata(L, hp);
+	else
+		lua_pushnil(L);
 	return 1;
 }
 
@@ -9053,7 +9067,11 @@ int Interpreter::v_add_reentrystream(lua_State* L)
 
 	PSTREAM_HANDLE hp;
 	hp = v->AddReentryStream(&pss);
-	lua_pushlightuserdata(L, hp);
+	if(hp)
+		lua_pushlightuserdata(L, hp);
+	else
+		lua_pushnil(L);
+
 	return 1;
 }
 
@@ -9166,6 +9184,10 @@ int Interpreter::v_add_particlestream(lua_State* L)
 	*lvl = lua_tonumber(L, 5);
 
 	PSTREAM_HANDLE hp = v->AddParticleStream(&pss, pos, dir , lvl);
+	if(!hp) {
+		lua_pushnil(L);
+		return 1;
+	}
 
 	// Add the numberref in the registry to prevent its collection if the script does not recover it
 	// Use the PSTREAM_HANDLE as the key so we can remove it when deleting the stream

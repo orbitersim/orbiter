@@ -5,9 +5,9 @@
 #define __INTERPRETER_H
 
 extern "C" {
-#include "Lua/lua.h"
-#include "Lua/lualib.h"
-#include "Lua/lauxlib.h"
+#include <lua/lua.h>
+#include <lua/lualib.h>
+#include <lua/lauxlib.h>
 }
 
 #include "OrbiterAPI.h"
@@ -235,6 +235,7 @@ public:
 
 	static int LuaCall(lua_State *L, int nargs, int nres);
 	void SetErrorBox(NOTEHANDLE eb) { errorbox = eb; }
+	static void DeleteVessel (OBJHANDLE hVessel);
 protected:
 	static inline NOTEHANDLE errorbox;
 	lua_State *L;         // Lua main context
@@ -304,12 +305,11 @@ protected:
 
 	// Pops a VESSEL interface from the stack and returns it.
 	// A NULL return indicates an invalid data type at the specified stack position,
-	// but a nonzero return does not guarantee a valid vessel pointer
+	// a nonzero return guarantees a valid vessel pointer
 	static VESSEL *lua_tovessel (lua_State *L, int idx=-1);
 
 	// type extraction with checks
 	static VESSEL *lua_tovessel_safe (lua_State *L, int idx, const char *funcname);
-	static int lua_isvessel(lua_State *L, int idx);
 
 	static int lua_tointeger_safe (lua_State *L, int idx, const char *funcname);
 	static double lua_tonumber_safe (lua_State *L, int idx, const char *funcname);
@@ -430,6 +430,7 @@ protected:
 	// GC
 	static int oapi_set_materialex(lua_State* L);
 	static int oapi_set_material(lua_State* L);
+	static int oapi_set_meshproperty(lua_State* L);
 
 	// VC
 	static int oapi_VC_trigger_redrawarea(lua_State* L);
@@ -482,6 +483,16 @@ protected:
 	static int oapi_get_gbody(lua_State* L);
 	static int oapi_get_gbodycount(lua_State* L);
 	static int oapi_get_planetatmconstants(lua_State* L);
+	static int oapi_get_planetobliquity(lua_State* L);
+	static int oapi_get_planettheta(lua_State* L);
+	static int oapi_get_planetobliquitymatrix(lua_State* L);
+	static int oapi_get_planetcurrentrotation(lua_State* L);
+	static int oapi_planet_hasatmosphere(lua_State* L);
+	static int oapi_get_planetatmparams(lua_State* L);
+	static int oapi_get_groundvector(lua_State* L);
+	static int oapi_get_windvector(lua_State* L);
+	static int oapi_get_planetjcoeffcount(lua_State* L);
+	static int oapi_get_planetjcoeff(lua_State* L);
 
 	// Vessel functions
 	static int oapi_get_propellanthandle (lua_State *L);
@@ -1144,7 +1155,7 @@ private:
 	int (*postfunc)(void*);
 	void *postcontext;
 
-	static inline std::unordered_set<void *>knownVessels; // for lua_isvessel
+	static inline std::unordered_set<VESSEL *>knownVessels; // for lua_isvessel
 
 
 	static int lua_tointeger_safe (lua_State *L, int idx, int prmno, const char *funcname);

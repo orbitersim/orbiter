@@ -135,6 +135,10 @@ void InterpreterList::clbkPostStep (double simt, double simdt, double mjd)
 	}
 }
 
+void InterpreterList::clbkDeleteVessel (OBJHANDLE hVessel)
+{
+	Interpreter::DeleteVessel(hVessel);
+}
 
 InterpreterList::Environment *InterpreterList::AddInterpreter ()
 {

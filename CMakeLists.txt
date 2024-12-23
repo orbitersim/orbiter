@@ -100,7 +100,7 @@ set(HTMLHELP_LIB_DIR ${HTMLHELP_DIR}/lib-${ARCH})
 set(HTMLHELP_LIB ${HTMLHELP_LIB_DIR}/Htmlhelp.lib)
 
 set(ORBITER_TOOL_MESHC "$<TARGET_FILE:meshc>")
-set(ldoc $<TARGET_FILE:lua_bin> ${ORBITER_BINARY_ROOT_DIR}/packages/LDoc/ldoc.lua -v --multimodule)
+set(ldoc $<TARGET_FILE:lua::exe> ${ORBITER_BINARY_ROOT_DIR}/packages/LDoc/ldoc.lua -v --multimodule)
 
 find_package(OpenGL QUIET)
 find_package(HTMLHelp)
@@ -390,20 +390,16 @@ endfunction()
 install(DIRECTORY Scenarios Textures Meshes Config GravityModels Script Flights BinAssets/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
 )
-#install(FILES ${LUA_DLL_DIR}/lua5.1.lib
-#	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/lib/Lua
-#)
 
 set(CMAKE_MODULE_PATH
 	${ORBITER_BINARY_ROOT_DIR}
     ${CMAKE_MODULE_PATH}
 )
 
-# Package required runtime libraries as an optional component
+# Package required runtime libraries
 INSTALL(FILES ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
 	COMPONENT RuntimeLibraries
-	EXCLUDE_FROM_ALL
 )
 
 # Sub-projects

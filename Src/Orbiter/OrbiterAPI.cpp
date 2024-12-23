@@ -23,7 +23,7 @@
 #include "resource.h"
 #include "Mesh.h"
 #include "MenuInfoBar.h"
-#include "zlib.h"
+#include <zlib.h>
 #include "DrawAPI.h"
 
 #ifdef INLINEGRAPHICS  // should be temporary

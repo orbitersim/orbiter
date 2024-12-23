@@ -443,6 +443,7 @@ public:
 	{
 		if (!bFRplayback) {
 			ts->level_permanent += dlevel;
+			ts->level_permanent = std::max(0.0, std::min(1.0, ts->level_permanent));
 			if (ts->tank && ts->tank->mass)
 				ts->level = std::max(0.0, std::min(1.0, ts->level+dlevel));
 		}

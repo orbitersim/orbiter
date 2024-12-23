@@ -11,9 +11,9 @@
 #include <stdio.h>
 
 extern "C" {
-#include "Lua/lua.h"
-#include "Lua/lualib.h"
-#include "Lua/lauxlib.h"
+#include <lua/lua.h>
+#include <lua/lualib.h>
+#include <lua/lauxlib.h>
 }
 
 // ==========================================================================
@@ -105,7 +105,7 @@ these methods for other vessel types will generally result in an error. To check
 
 DeltaGlider *lua_toDG (lua_State *L, int idx)
 {
-	VESSEL **pv = (VESSEL**)lua_touserdata (L, idx);
+	VESSEL **pv = (VESSEL **)luaL_checkudata(L, idx, "DG.vtable");
 	DeltaGlider *dg = (DeltaGlider*)*pv;
 	return dg;
 }

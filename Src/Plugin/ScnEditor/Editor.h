@@ -120,6 +120,7 @@ public:
 protected:
 	void ScanVesselList ();
 	bool DeleteVessel ();
+	bool CanDelete (OBJHANDLE hVessel);
 };
 
 

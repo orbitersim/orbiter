@@ -1507,7 +1507,7 @@ int D3D9Client::clbkMeshMaterial (DEVMESHHANDLE hMesh, DWORD matidx, MATERIAL *m
 
 // ==============================================================
 
-int D3D9Client::clbkSetMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp mat, const oapi::FVECTOR4* in)
+int D3D9Client::clbkSetMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp mat, const oapi::FVECTOR4* in)
 {
 	if (!hMesh) return 3;
 	D3D9Mesh* mesh = (D3D9Mesh*)hMesh;

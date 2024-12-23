@@ -613,12 +613,13 @@ bool ShuttleA::SetAtttgtFrameMode (int mode)
 // --------------------------------------------------------------
 bool ShuttleA::ToggleGrapple (int grapple)
 {
-	OBJHANDLE hV = GetAttachmentStatus (payload_attachment[grapple]);
+	if (cargo_arm_status == 0)  return false;// payload logic is not armed
+
+	OBJHANDLE hVpl = GetAttachmentStatus (payload_attachment[grapple]);
 	char cbuf[256];
 	sprintf (cbuf, "GRAPPLE %d", grapple);
 
-	if (hV) {  // release payload
-		if (cargo_arm_status == 0)  return false; //jettison is not armed
+	if (hVpl) {  // release payload
 		DetachChild (payload_attachment[grapple]);
 		ComputePayloadMass();
 		//RecordEvent ("CARGO", cbuf);
@@ -720,66 +721,6 @@ void ShuttleA::RedrawPanel_Navmode (SURFHANDLE surf)
 	for (DWORD i = NAVMODE_KILLROT; i < NAVMODE_HOLDALT; i++)
 		if (GetNavmodeState (i))
 			oapiBlt (surf, srf[2], (6-i)*44, 0, (i-1)*42, 0, 42, 31);
-}
-
-// --------------------------------------------------------------
-// 
-// --------------------------------------------------------------
-bool ShuttleA::RedrawPanel_Throttle (SURFHANDLE surf)
-{
-	UINT i, pos;
-	bool redraw = false;
-
-	for (i = 0; i < 2; i++) {
-		double level = GetThrusterLevel (th_main[i]);
-		pos = (UINT)((1.0-level)*180.0);
-		if (pos != sliderpos_main[i])
-			sliderpos_main[i] = pos, redraw = true;
-	}
-	if (redraw)
-		for (i = 0; i < 2; i++)
-			oapiBlt (surf, srf[0], i*30, sliderpos_main[i], 0, 0, 23, 19);
-	return redraw;
-}
-
-// --------------------------------------------------------------
-// 
-// --------------------------------------------------------------
-bool ShuttleA::RedrawPanel_Hover (SURFHANDLE surf)
-{
-	UINT i, pos;
-	bool redraw = false;
-
-	for (i = 0; i < 2; i++) {
-		double level = GetThrusterLevel (th_hover[i]);
-		pos = (UINT)((1.0-level)*180.0);
-		if (pos != sliderpos_hovr[i])
-			sliderpos_hovr[i] = pos, redraw = true;
-	}
-	if (redraw)
-		for (i = 0; i < 2; i++)
-			oapiBlt (surf, srf[0], i*30, sliderpos_hovr[i], 0, 0, 23, 19);
-	return redraw;
-}
-
-// --------------------------------------------------------------
-// 
-// --------------------------------------------------------------
-bool ShuttleA::RedrawPanel_Podlevel (SURFHANDLE surf)
-{
-	UINT i, pos;
-	bool redraw = false;
-
-	for (i = 0; i < 2; i++) {
-		double level = GetThrusterLevel (th_pod[i]);
-		pos = (UINT)((1.0-level)*90.0);
-		if (pos != sliderpos_pod[i])
-			sliderpos_pod[i] = pos, redraw = true;
-	}
-	if (redraw)
-		for (i = 0; i < 2; i++)
-			oapiBlt (surf, srf[0], i*30, sliderpos_pod[i], 0, 0, 23, 19);
-	return redraw;
 }
 
 // --------------------------------------------------------------
@@ -920,7 +861,7 @@ void ShuttleA::RedrawPanel_Fuelstatus (SURFHANDLE surf, int part)
 	pSkp->SetTextAlign(Sketchpad::RIGHT, Sketchpad::TOP);
 
 	switch (part) {
-	case 0:
+	case 0:// engine thrust levels
 		sprintf (cbuf, "%0.1f", GetThrusterLevel (th_hover[0]) * MAX_HOVER_THRUST / ISP);
 		pSkp->Rectangle (0, 2, 20, 11); pSkp->Text(21, 0, cbuf, strlen(cbuf));
 		sprintf (cbuf, "%0.1f", GetThrusterLevel (th_hover[1]) * MAX_HOVER_THRUST / ISP);
@@ -934,29 +875,42 @@ void ShuttleA::RedrawPanel_Fuelstatus (SURFHANDLE surf, int part)
 		sprintf (cbuf, "%0.1f", GetThrusterLevel (th_main[1]) * MAX_MAIN_THRUST / ISP);
 		pSkp->Rectangle (0, 147, 20, 156); pSkp->Text (21, 145, cbuf, strlen(cbuf));
 		break;
-	case 1:
-		pSkp->SetBrush(g_Param.pBrush[0]);
+	case 1:// main prop tanks levels and flow rates
+		// paint black background (clear previous green prop level and text)
+		pSkp->Rectangle( 0, 0, 32, 50 );
+		pSkp->Rectangle( 40, 0, 72, 50 );
+
+		// paint green prop level
 		m = GetPropellantMass (ph_main);
 		if (m > MAX_MAIN_FUEL*0.2) {
 			rate = GetPropellantFlowrate (ph_main);
 			lvl = m*1.25/MAX_MAIN_FUEL - 0.25;
+			pSkp->SetBrush(g_Param.pBrush[0]);
 			pSkp->Rectangle (0, 50, 32, (int)((1.0-lvl)*50.0));
 			pSkp->Rectangle (40, 50, 72, (int)((1.0-lvl)*50.0));
 			m0 = 0.5 * (m - MAX_MAIN_FUEL*0.2);
 		} else {
 			rate = lvl = m0 = 0;
 		}
+
+		// write prop levels
 		sprintf (cbuf, "%0.0f", m0);
 		pSkp->SetTextAlign (Sketchpad::CENTER, Sketchpad::TOP);
 		pSkp->Text (16, 20, cbuf, strlen (cbuf));
 		pSkp->Text (56, 20, cbuf, strlen (cbuf));
+
+		// write prop flow rates (and clear previous)
 		sprintf (cbuf, "%0.1f", 0.5*rate);
 		pSkp->SetTextAlign (Sketchpad::RIGHT, Sketchpad::TOP);
 		pSkp->SetBrush (g_Param.pBrush[1]);
 		pSkp->Rectangle (21, 57, 42, 66); pSkp->Text (42, 55, cbuf, strlen(cbuf));
 		pSkp->Rectangle (61, 57, 82, 66); pSkp->Text (82, 55, cbuf, strlen(cbuf));
 		break;
-	case 2:
+	case 2:// aux prop tank level and flow rate
+		// paint black background (clear previous green prop level and text)
+		pSkp->Rectangle( 0, 19, 32, 57 );
+
+		// paint green prop level
 		m = GetPropellantMass (ph_main);
 		if (m < MAX_MAIN_FUEL*0.2) {
 			rate = GetPropellantFlowrate (ph_main);
@@ -970,26 +924,38 @@ void ShuttleA::RedrawPanel_Fuelstatus (SURFHANDLE surf, int part)
 			pSkp->SetBrush(g_Param.pBrush[0]);
 			pSkp->Rectangle (0, 57, 32, 19+(int)((1.0-lvl)*38.0));
 		}
+
+		// write prop level
 		sprintf (cbuf, "%0.0f", m);
 		pSkp->SetTextAlign(Sketchpad::CENTER, Sketchpad::TOP);
 		pSkp->Text (16, 33, cbuf, strlen (cbuf));
+
+		// write prop flow rate (and clear previous)
 		sprintf (cbuf, "%0.1f", rate);
 		pSkp->SetTextAlign(Sketchpad::RIGHT, Sketchpad::TOP);
 		pSkp->SetBrush(g_Param.pBrush[1]);
 		pSkp->Rectangle (21, 2, 42, 11); pSkp->Text (42, 0, cbuf, strlen(cbuf));
 		break;
-	case 3:
+	case 3:// rcs prop tank level and flowrate
+		// paint black background (clear previous green prop level and text)
+		pSkp->Rectangle( 0, 0, 32, 25 );
+
+		// paint green prop level
 		m = GetPropellantMass (ph_rcs);
 		if (m > 0) {
 			pSkp->SetBrush(g_Param.pBrush[0]);
 			pSkp->Rectangle (0, 25, 32, (int)((1.0-m/MAX_RCS_FUEL)*25.0));
 		}
-		pSkp->SetTextAlign(Sketchpad::CENTER, Sketchpad::TOP);
+
+		// write prop level
 		sprintf (cbuf, "%0.0f", m);
+		pSkp->SetTextAlign(Sketchpad::CENTER, Sketchpad::TOP);
 		pSkp->Text (16, 7, cbuf, strlen(cbuf));
+
+		// write prop flow rate (and clear previous)
+		sprintf (cbuf, "%0.2f", GetPropellantFlowrate (ph_rcs));
 		pSkp->SetTextAlign(Sketchpad::RIGHT, Sketchpad::TOP);
 		pSkp->SetBrush(g_Param.pBrush[1]);
-		sprintf (cbuf, "%0.2f", GetPropellantFlowrate (ph_rcs));
 		pSkp->Rectangle (21, 30, 42, 39); pSkp->Text (42, 28, cbuf, strlen(cbuf));
 		break;
 	} 
@@ -2306,7 +2272,7 @@ bool ShuttleA::clbkVCMouseEvent (int id, int event, VECTOR3 &p)
 		mode =(mx >45?0:3);
 		mode +=	(my / 44);
 		if (ToggleGrapple(mode))
-			cargo_open[mode]=!cargo_open[mode];		
+			cargo_open[mode]=!cargo_open[mode];
 		return true;
 	case AID_GARGOARMSWITCH:
 		ActivateCargo(p.y>0.5? 1:0);
@@ -2436,7 +2402,7 @@ void ShuttleA::ApplySkin ( DEVMESHHANDLE exmesh )
 // --------------------------------------------------------------
 void ShuttleA::PaintMarkings (SURFHANDLE tex)
 {
-	oapi::Sketchpad *skp = oapiGetSketchpad (main_tex);
+	oapi::Sketchpad *skp = oapiGetSketchpad (tex);
 	if (skp)
 	{
 		oapi::Font *font1 = oapiCreateFont(22, true, (char*)"Impact", FONT_BOLD);
