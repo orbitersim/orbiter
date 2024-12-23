@@ -89,7 +89,7 @@ const char *AngleToText(double deg, int digits)
 	if (f >= 360.0) f = 0.0;
 	if (deg<0) f = -f;
 
-	sprintf_s(ValueToText_Str, 30, "%1.*f°", digits, f);
+	sprintf_s(ValueToText_Str, 30, "%1.*f\xB0", digits, f);
 
 	return ValueToText_Str;
 }
