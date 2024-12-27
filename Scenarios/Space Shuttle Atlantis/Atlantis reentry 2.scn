@@ -25,8 +25,7 @@ END_HUD
 BEGIN_MFD Left
   TYPE Map
   REF Earth
-  BTARGET Cape Canaveral
-  OTARGET ISS
+  TARGET Cape Canaveral
 END_MFD
 
 BEGIN_MFD Right
