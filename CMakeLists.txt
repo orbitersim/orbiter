@@ -100,11 +100,10 @@ set(HTMLHELP_LIB_DIR ${HTMLHELP_DIR}/lib-${ARCH})
 set(HTMLHELP_LIB ${HTMLHELP_LIB_DIR}/Htmlhelp.lib)
 
 set(ORBITER_TOOL_MESHC "$<TARGET_FILE:meshc>")
-set(ldoc $<TARGET_FILE:lua_bin> ${ORBITER_BINARY_ROOT_DIR}/packages/LDoc/ldoc.lua -v --multimodule)
+set(ldoc $<TARGET_FILE:lua::exe> ${ORBITER_BINARY_ROOT_DIR}/packages/LDoc/ldoc.lua -v --multimodule)
 
 find_package(OpenGL QUIET)
 find_package(HTMLHelp)
-find_package(Doxygen)
 find_package(LATEX)		
 find_package(MFC)
 
@@ -283,6 +282,36 @@ if(ORBITER_BUILD_D3D9CLIENT)
 	endif()
 endif()
 
+if (ORBITER_MAKE_DOC)
+	find_program(ODT_TO_PDF_COMPILER
+		NAMES soffice libreoffice
+		HINTS "C:/Program Files/LibreOffice/program"
+		REQUIRED
+	)
+
+	set(ODT_TO_PDF_FLAGS
+		"--headless --convert-to pdf --outdir <outdir> <infile>"
+		CACHE
+		STRING
+		"Compiler options for the OdtToPdfCompiler"
+	)
+
+	find_program(DOC_TO_PDF_COMPILER
+		NAMES soffice libreoffice
+		HINTS "C:/Program Files/LibreOffice/program"
+		REQUIRED
+	)
+
+	set(DOC_TO_PDF_FLAGS
+		"--headless --convert-to pdf --outdir <outdir> <infile>"
+		CACHE
+		STRING
+		"Compiler options for the DocToPdfCompiler"
+	)
+	
+	find_package(Doxygen REQUIRED)
+endif()
+
 # Enable Address SANitizer
 include(cmake/sanitizer.cmake)
 if (ORBITER_SANITIZER AND MSVC)
@@ -313,20 +342,16 @@ endfunction()
 install(DIRECTORY Scenarios Textures Meshes Config GravityModels Script Flights BinAssets/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
 )
-#install(FILES ${LUA_DLL_DIR}/lua5.1.lib
-#	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/lib/Lua
-#)
 
 set(CMAKE_MODULE_PATH
 	${ORBITER_BINARY_ROOT_DIR}
     ${CMAKE_MODULE_PATH}
 )
 
-# Package required runtime libraries as an optional component
+# Package required runtime libraries
 INSTALL(FILES ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
 	COMPONENT RuntimeLibraries
-	EXCLUDE_FROM_ALL
 )
 
 # Sub-projects

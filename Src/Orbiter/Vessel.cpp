@@ -8297,6 +8297,7 @@ void VESSEL::IncThrusterLevel (THRUSTER_HANDLE th, double dlevel) const
 	if (vessel->bFRplayback) return;
 	ThrustSpec *ts = (ThrustSpec*)th;
 	ts->level_permanent += dlevel;
+	ts->level_permanent = max (0.0, min (1.0, ts->level_permanent));
 	if (ts->tank && ts->tank->mass)
 		ts->level = max (0.0, min (1.0, ts->level_permanent + ts->level_override));
 }

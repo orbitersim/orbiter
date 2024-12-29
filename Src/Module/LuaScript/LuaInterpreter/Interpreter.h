@@ -5,13 +5,16 @@
 #define __INTERPRETER_H
 
 extern "C" {
-#include "Lua/lua.h"
-#include "Lua/lualib.h"
-#include "Lua/lauxlib.h"
+#include <lua/lua.h>
+#include <lua/lualib.h>
+#include <lua/lauxlib.h>
 }
 
 #include "OrbiterAPI.h"
 #include "VesselAPI.h" // for TOUCHDOWNVTX
+#include <unordered_set>
+
+class gcCore;
 
 #define PRMTP_NIL           0x01
 #define PRMTP_NUMBER        0x02
@@ -55,6 +58,7 @@ extern "C" {
 
 class VESSEL;
 class MFD2;
+class XRSound;
 
 struct AirfoilContext {
 	lua_State *L;
@@ -163,6 +167,8 @@ public:
 
 	virtual void LoadBeaconMethods ();
 
+	virtual void LoadCustomCameraMethods ();
+
 	virtual void LoadSketchpadAPI ();
 
 	virtual void LoadBitAPI();
@@ -229,6 +235,7 @@ public:
 
 	static int LuaCall(lua_State *L, int nargs, int nres);
 	void SetErrorBox(NOTEHANDLE eb) { errorbox = eb; }
+	static void DeleteVessel (OBJHANDLE hVessel);
 protected:
 	static inline NOTEHANDLE errorbox;
 	lua_State *L;         // Lua main context
@@ -298,7 +305,7 @@ protected:
 
 	// Pops a VESSEL interface from the stack and returns it.
 	// A NULL return indicates an invalid data type at the specified stack position,
-	// but a nonzero return does not guarantee a valid vessel pointer
+	// a nonzero return guarantees a valid vessel pointer
 	static VESSEL *lua_tovessel (lua_State *L, int idx=-1);
 
 	// type extraction with checks
@@ -418,10 +425,12 @@ protected:
 	static int oapi_create_surface(lua_State* L);
 	static int oapi_destroy_surface(lua_State* L);
 	static int oapi_save_surface(lua_State* L);
+	static int oapi_clear_surface(lua_State* L);
 
 	// GC
 	static int oapi_set_materialex(lua_State* L);
 	static int oapi_set_material(lua_State* L);
+	static int oapi_set_meshproperty(lua_State* L);
 
 	// VC
 	static int oapi_VC_trigger_redrawarea(lua_State* L);
@@ -474,6 +483,16 @@ protected:
 	static int oapi_get_gbody(lua_State* L);
 	static int oapi_get_gbodycount(lua_State* L);
 	static int oapi_get_planetatmconstants(lua_State* L);
+	static int oapi_get_planetobliquity(lua_State* L);
+	static int oapi_get_planettheta(lua_State* L);
+	static int oapi_get_planetobliquitymatrix(lua_State* L);
+	static int oapi_get_planetcurrentrotation(lua_State* L);
+	static int oapi_planet_hasatmosphere(lua_State* L);
+	static int oapi_get_planetatmparams(lua_State* L);
+	static int oapi_get_groundvector(lua_State* L);
+	static int oapi_get_windvector(lua_State* L);
+	static int oapi_get_planetjcoeffcount(lua_State* L);
+	static int oapi_get_planetjcoeff(lua_State* L);
 
 	// Vessel functions
 	static int oapi_get_propellanthandle (lua_State *L);
@@ -521,6 +540,15 @@ protected:
 	static int oapi_get_cameraglobaldir (lua_State *L);
 	static int oapi_move_groundcamera (lua_State *L);
 	static int oapi_set_cameracockpitdir (lua_State *L);
+
+	// Custom camera
+	static int oapi_delete_customcamera (lua_State *L);
+	static int oapi_setup_customcamera (lua_State *L);
+	static int oapi_customcamera_overlay (lua_State *L);
+	static int oapi_customcamera_onoff (lua_State *L);
+	static void customcamera_clbk(oapi::Sketchpad *pSkp, void *pParam);
+	static int customcamera_collect (lua_State *L);
+
 
 	// animation functions
 	static int oapi_create_animationcomponent (lua_State *L);
@@ -1033,6 +1061,15 @@ protected:
 	static int skp_set_brush(lua_State* L);
 	static int skp_get_charsize (lua_State *L);
 	static int skp_get_textwidth (lua_State *L);
+	static int skp_copy_rect (lua_State *L);
+	static int skp_stretch_rect (lua_State *L);
+	static int skp_rotate_rect (lua_State *L);
+	static int skp_quick_pen (lua_State *L);
+	static int skp_quick_brush (lua_State *L);
+	static int skp_get_surface (lua_State *L);
+	static int skp_set_brightness (lua_State *L);
+	static int skp_set_renderparam (lua_State *L);
+	static int skp_set_worldtransform2d (lua_State *L);
 
 	// -------------------------------------------
 	// NTVERTEX methods
@@ -1074,9 +1111,40 @@ protected:
 	
 	friend int OpenHelp (void *context);
 
+	// -------------------------------------------
+	// XRSound
+	// -------------------------------------------
+	virtual void LoadXRSoundAPI ();
+	static int lua_isxrsound(lua_State *L, int idx);
+	static XRSound *lua_toxrsound(lua_State *L, int idx);
+	static int xrsound_create_instance(lua_State *L);
+	static int xrsound_is_present(lua_State *L);
+	static int xrsound_get_version(lua_State *L);
+	static int xrsound_load_wav(lua_State *L);
+	static int xrsound_play_wav(lua_State *L);
+	static int xrsound_stop_wav(lua_State *L);
+	static int xrsound_is_wavplaying(lua_State *L);
+	static int xrsound_set_paused(lua_State *L);
+	static int xrsound_is_paused(lua_State *L);
+	static int xrsound_set_defaultsoundenabled(lua_State *L);
+	static int xrsound_get_defaultsoundenabled(lua_State *L);
+	static int xrsound_set_defaultsoundgroupfolder(lua_State *L);
+	static int xrsound_get_defaultsoundgroupfolder(lua_State *L);
+	static int xrsound_set_pan(lua_State *L);
+	static int xrsound_get_pan(lua_State *L);
+	static int xrsound_set_playbackspeed(lua_State *L);
+	static int xrsound_get_playbackspeed(lua_State *L);
+	static int xrsound_set_playposition(lua_State *L);
+	static int xrsound_get_playposition(lua_State *L);
+	static int xrsound_collect(lua_State *L);
+
 private:
 	HANDLE hExecMutex; // flow control synchronisation
 	HANDLE hWaitMutex;
+	static inline gcCore *pCore;
+	static inline bool gcCoreInitialized = false;
+
+	static void LazyInitGCCore();
 
 	bool bExecLocal;   // flag for locally created mutexes
 	bool bWaitLocal;
@@ -1086,6 +1154,9 @@ private:
 	int jobs;                // number of background jobs left over after command terminates
 	int (*postfunc)(void*);
 	void *postcontext;
+
+	static inline std::unordered_set<VESSEL *>knownVessels; // for lua_isvessel
+
 
 	static int lua_tointeger_safe (lua_State *L, int idx, int prmno, const char *funcname);
 	static double lua_tonumber_safe (lua_State *L, int idx, int prmno, const char *funcname);

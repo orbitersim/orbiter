@@ -7,6 +7,7 @@
 #include "VesselAPI.h"
 #include "MFDAPI.h"
 #include "DrawAPI.h"
+#include "gcCoreAPI.h"
 #include <list>
 
 using std::min;
@@ -68,6 +69,13 @@ Interpreter::Interpreter ()
 
 	hExecMutex = CreateMutex (NULL, TRUE, NULL);
 	hWaitMutex = CreateMutex (NULL, FALSE, NULL);
+
+}
+
+void Interpreter::LazyInitGCCore() {
+	if(gcCoreInitialized) return;
+	gcCoreInitialized = true;
+	pCore = gcGetCoreInterface();
 }
 
 static int traceback(lua_State *L) {
@@ -108,12 +116,14 @@ void Interpreter::Initialise ()
 	LoadVesselAPI ();     // load vessel-specific part of API
 	LoadLightEmitterMethods (); // load light source methods
 	LoadBeaconMethods ();
+	LoadCustomCameraMethods ();
 	LoadMFDAPI ();        // load MFD methods
 	LoadNTVERTEXAPI();
 	LoadBitAPI();         // load bit library
 	LoadSketchpadAPI ();  // load Sketchpad methods
 	LoadAnnotationAPI (); // load screen annotation methods
 	LoadVesselStatusAPI ();
+	LoadXRSoundAPI ();
 	LoadStartupScript (); // load default initialisation script
 }
 
@@ -366,11 +376,17 @@ const char *Interpreter::lua_tostringex (lua_State *L, int idx, char *cbuf)
 			/* uses 'key' (at index -2) and 'value' (at index -1) */
 			char fieldstr[256] = "\0";
 			if (lua_isstring(L,-2)) sprintf (fieldstr, "%s=", lua_tostring(L,-2));
-			strcat (fieldstr, lua_tostringex (L,-1));
+			if(lua_istable(L, -1)) // cut the tree to prevent stack overflow with recursive table
+				strcat (fieldstr, "[table]");
+			else
+				strcat (fieldstr, lua_tostringex (L,-1));
 			strcat (tbuf, fieldstr); strcat (tbuf, "\n");
 			lua_pop(L, 1);
 		}
 		return tbuf;
+	} else if (lua_isfunction (L, idx)) {
+		strcpy (cbuf, "[function]");
+		return cbuf;
 	} else {
 		cbuf[0] = '\0';
 		return cbuf;
@@ -504,6 +520,7 @@ void Interpreter::lua_pushvessel (lua_State *L, VESSEL *v)
 		lua_pop(L,1);                   // pop nil
 		VESSEL **pv = (VESSEL**)lua_newuserdata(L,sizeof(VESSEL*));
 		*pv = v;
+		knownVessels.insert(v);
 		luaL_getmetatable (L, "VESSEL.vtable"); // retrieve metatable
 		lua_setmetatable (L,-2);             // and attach to new object
 		LoadVesselExtensions(L,v);           // vessel environment
@@ -806,10 +823,12 @@ void Interpreter::LoadAPI ()
 		{"create_surface", oapi_create_surface},
 		{"destroy_surface", oapi_destroy_surface},
 		{"save_surface", oapi_save_surface},
+		{"clear_surface", oapi_clear_surface},
 		
 		// GC
 		{"set_materialex", oapi_set_materialex},
 		{"set_material", oapi_set_material},
+		{"set_meshproperty", oapi_set_meshproperty},
 
 		// VC
 		{"VC_trigger_redrawarea", oapi_VC_trigger_redrawarea},
@@ -868,7 +887,16 @@ void Interpreter::LoadAPI ()
 		{"get_gbody", oapi_get_gbody},
 		{"get_gbodycount", oapi_get_gbodycount},
 		{"get_gbodyparent", oapi_get_gbodyparent},
-		{"get_planetatmconstants", oapi_get_planetatmconstants},
+		{"get_planetobliquity", oapi_get_planetobliquity},
+		{"get_planettheta", oapi_get_planettheta},
+		{"get_planetobliquitymatrix", oapi_get_planetobliquitymatrix},
+		{"get_planetcurrentrotation", oapi_get_planetcurrentrotation},
+		{"planet_hasatmosphere", oapi_planet_hasatmosphere},
+		{"get_planetatmparams", oapi_get_planetatmparams},
+		{"get_groundvector", oapi_get_groundvector},
+		{"get_windvector", oapi_get_windvector},
+		{"get_planetjcoeffcount", oapi_get_planetjcoeffcount},
+		{"get_planetjcoeff", oapi_get_planetjcoeff},
 
 		// vessel functions
 		{"get_propellanthandle", oapi_get_propellanthandle},
@@ -918,6 +946,12 @@ void Interpreter::LoadAPI ()
 		{"move_groundcamera", oapi_move_groundcamera},
 		{"set_cameracockpitdir", oapi_set_cameracockpitdir},
 			
+		// Custom camera
+		{"setup_customcamera", oapi_setup_customcamera},
+		{"delete_customcamera", oapi_delete_customcamera},
+		{"customcamera_overlay", oapi_customcamera_overlay},
+		{"customcamera_onoff", oapi_customcamera_onoff},
+
 		// animation functions
 		{"create_animationcomponent", oapi_create_animationcomponent},
 		{"del_animationcomponent", oapi_del_animationcomponent},
@@ -1020,6 +1054,13 @@ void Interpreter::LoadAPI ()
 		{NULL, NULL}
 	};
 	luaL_openlib (L, "term", termLib, 0);
+
+	// Load XRSound library
+	static const struct luaL_reg XRSoundLib[] = {
+		{"create_instance", xrsound_create_instance},
+		{NULL, NULL}
+	};
+	luaL_openlib (L, "xrsound", XRSoundLib, 0);
 
 	// Set up global tables of constants
 
@@ -1300,6 +1341,9 @@ void Interpreter::LoadAPI ()
 	lua_pushnumber (L, USRINPUT_NEEDANSWER); lua_setfield (L, -2, "NEEDANSWER");
 	lua_setglobal (L, "USRINPUT");
 
+	lua_createtable (L, 0, 1);
+	lua_pushnumber (L, MESHPROPERTY_MODULATEMATALPHA); lua_setfield (L, -2, "MODULATEMATALPHA");
+	lua_setglobal (L, "MESHPROPERTY");
 }
 
 void Interpreter::LoadMFDAPI ()
@@ -1471,6 +1515,22 @@ void Interpreter::LoadBeaconMethods ()
 	lua_setglobal(L, "BEACONSHAPE");
 }
 
+
+void Interpreter::LoadCustomCameraMethods ()
+{
+	static const struct luaL_reg CustomCameraLib[] = {
+		{"__gc", customcamera_collect},
+		{NULL, NULL}
+	};
+
+	luaL_newmetatable (L, "CustomCamera.vtable");
+	lua_pushstring (L, "__index");
+	lua_pushvalue (L, -2); // push metatable
+	lua_settable (L, -3);  // metatable.__index = metatable
+	luaL_openlib (L, NULL, CustomCameraLib, 0);
+}
+
+
 void Interpreter::LoadSketchpadAPI ()
 {
 	static const struct luaL_reg skpLib[] = {
@@ -1492,6 +1552,15 @@ void Interpreter::LoadSketchpadAPI ()
 		{"set_brush", skp_set_brush},
 		{"get_charsize", skp_get_charsize},
 		{"get_textwidth", skp_get_textwidth},
+		{"copy_rect", skp_copy_rect},
+		{"stretch_rect", skp_stretch_rect},
+		{"rotate_rect", skp_rotate_rect},
+		{"quick_pen", skp_quick_pen},
+		{"quick_brush", skp_quick_brush},
+		{"get_surface", skp_get_surface},
+		{"set_brightness", skp_set_brightness},
+		{"set_renderparam", skp_set_renderparam},
+		{"set_worldtransform2d", skp_set_worldtransform2d},
 		{NULL, NULL}
 	};
 
@@ -1511,6 +1580,11 @@ void Interpreter::LoadSketchpadAPI ()
 	lua_pushnumber (L, oapi::Sketchpad::BASELINE);       lua_setfield (L, -2, "BASELINE");
 	lua_pushnumber (L, oapi::Sketchpad::BOTTOM);         lua_setfield (L, -2, "BOTTOM");
 	lua_setglobal (L, "SKP");
+
+	lua_createtable (L, 0, 2);
+	lua_pushnumber (L, oapi::Sketchpad::PRM_GAMMA);      lua_setfield (L, -2, "GAMMA");
+	lua_pushnumber (L, oapi::Sketchpad::PRM_NOISE);      lua_setfield (L, -2, "NOISE");
+	lua_setglobal (L, "PRM");
 }
 
 void Interpreter::LoadAnnotationAPI ()
@@ -1571,6 +1645,12 @@ bool Interpreter::LoadVesselExtensions (lua_State *L, VESSEL *v)
 	if (v->Version() < 2) return false;
 	VESSEL3 *v3 = (VESSEL3*)v;
 	return (v3->clbkGeneric (VMSG_LUAINSTANCE, 0, (void*)L) != 0);
+}
+
+void Interpreter::DeleteVessel (OBJHANDLE hVessel)
+{
+	VESSEL *v = oapiGetVesselInterface(hVessel);
+	knownVessels.erase(v);
 }
 
 Interpreter *Interpreter::GetInterpreter (lua_State *L)
@@ -3017,6 +3097,18 @@ int Interpreter::oapi_destroy_surface(lua_State* L)
 }
 
 /***
+Clear a surface.
+@function clear_surface
+@tparam handle hSurf surface handle
+*/
+int Interpreter::oapi_clear_surface(lua_State* L)
+{
+	SURFHANDLE surf = (SURFHANDLE)lua_touserdata(L, 1);
+	oapiClearSurface(surf);
+	return 0;
+}
+
+/***
 Save a surface to a file.
 @function save_surface
 @tparam string fname file name for the saved surface (excluding file extension)
@@ -3145,6 +3237,38 @@ int Interpreter::oapi_set_material(lua_State* L)
 		lua_pushboolean(L, 1);
 		return 1;
 	}
+}
+
+/***
+Set custom properties for a mesh.
+
+Note : Currently only a single mesh property is recognised, but this may be extended in future versions:
+
+- MESHPROPERTY.MODULATEMATALPHA:
+	if value==0 (default) disable material alpha information in textured mesh groups (only use texture alpha channel).\n
+	if value<>0 modulate (mix) material alpha values with texture alpha maps.
+
+
+@function set_meshproperty
+@tparam handle hMesh mesh handle
+@tparam number property property tag
+@tparam number value new mesh property value
+@treturn boolean  true if the property tag was recognised and the request could be executed, false otherwise.
+*/
+int Interpreter::oapi_set_meshproperty(lua_State* L)
+{
+	DWORD property = luaL_checknumber(L, 2);
+	DWORD value = luaL_checknumber(L, 3);
+	MESHHANDLE *hMesh = (MESHHANDLE *)luaL_tryudata(L, 1, "MESHHANDLE");
+	if(hMesh) {
+		bool ret = oapiSetMeshProperty(*hMesh, property, value);
+		lua_pushboolean(L, ret);
+		return 1;
+	}
+	DEVMESHHANDLE hDevMesh = lua_todevmeshhandle(L, 1);
+	bool ret = oapiSetMeshProperty(hDevMesh, property, value);
+	lua_pushboolean(L, ret);
+	return 1;
 }
 
 /***
@@ -3734,7 +3858,6 @@ This function is primarily used internally, you should prefer using open_inputbo
 @function open_inputbox
 @tparam string title input box title
 @see open_inputboxex
-@see proc.wait_input
 @usage oapi.open_inputbox(title)
  -- elsewhere
  local ans = oapi.receive_input ()
@@ -3787,7 +3910,7 @@ static bool Clbk_enter(void *id, char *str, void *ctx)
 	lua_rawgeti(ibctx->L, LUA_REGISTRYINDEX, ibctx->ref_enter);   // push the callback function
 	lua_pushstring (ibctx->L, str);
 	lua_rawgeti(ibctx->L, LUA_REGISTRYINDEX, ibctx->usr_data);   // push the usr_data
-	lua_call (ibctx->L, 2, 1);
+	Interpreter::LuaCall (ibctx->L, 2, 1);
 	bool ret = lua_toboolean(ibctx->L, -1);
 	if(ret) {
 		luaL_unref(ibctx->L, LUA_REGISTRYINDEX, ibctx->ref_enter);
@@ -3805,7 +3928,7 @@ static bool Clbk_cancel(void *id, char *str, void *ctx)
 		lua_rawgeti(ibctx->L, LUA_REGISTRYINDEX, ibctx->ref_cancel); // push the callback function
 		lua_pushstring (ibctx->L, str);
 		lua_rawgeti(ibctx->L, LUA_REGISTRYINDEX, ibctx->usr_data);   // push the usr_data
-		lua_call (ibctx->L, 2, 0);
+		Interpreter::LuaCall (ibctx->L, 2, 0);
 	}
 	luaL_unref(ibctx->L, LUA_REGISTRYINDEX, ibctx->ref_enter);
 	luaL_unref(ibctx->L, LUA_REGISTRYINDEX, ibctx->ref_cancel);
@@ -4215,8 +4338,8 @@ Return the rotation period (the length of a siderial day) of a planet.
 int Interpreter::oapi_get_planetperiod(lua_State* L)
 {
 	OBJHANDLE hRef;
-	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 2: invalid type (expected handle)");
-	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 2: invalid object");
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 1: invalid object");
 	double T = oapiGetPlanetPeriod(hRef);
 
 	lua_pushnumber(L, T);
@@ -4366,6 +4489,295 @@ int Interpreter::oapi_get_gbodycount(lua_State *L)
 	lua_pushnumber(L, nBody);
 	return 1;
 }
+
+/***
+Returns the obliquity of the planet's rotation axis (the angle between the rotation axis
+and the ecliptic zenith).
+
+In Orbiter, the ecliptic zenith (at epoch J2000) is the positive y-axis of the
+global frame of reference.
+
+@function get_planetobliquity
+@tparam handle hPlanet planet handle
+@treturn number obliquity [rad]
+*/
+int Interpreter::oapi_get_planetobliquity(lua_State *L)
+{
+	OBJHANDLE hRef;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 1: invalid object");
+	double ob = oapiGetPlanetObliquity(hRef);
+	lua_pushnumber(L, ob);
+	return 1;
+}
+
+/***
+Returns the longitude of the ascending node.
+
+Returns the longitude of the ascending node of the equatorial plane,
+that is, the angle between the vernal equinox and the ascending node of the equator w.r.t. the ecliptic.
+
+For Earth, this function will return 0. (The ascending node of Earth's
+equatorial plane is the definition of the vernal equinox).
+
+@function get_planettheta
+@tparam handle hPlanet planet handle
+@treturn number longitude of ascending node of the equator [rad]
+*/
+int Interpreter::oapi_get_planettheta(lua_State *L)
+{
+	OBJHANDLE hRef;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 1: invalid object");
+	double theta = oapiGetPlanetTheta(hRef);
+	lua_pushnumber(L, theta);
+	return 1;
+}
+
+/***
+Returns a rotation matrix which performs the transformation from the planet's tilted
+coordinates into global coordinates.
+
+@function get_planetobliquitymatrix
+@tparam handle hPlanet planet handle
+@treturn matrix rotation data
+*/
+int Interpreter::oapi_get_planetobliquitymatrix(lua_State *L)
+{
+	OBJHANDLE hRef;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 1: invalid object");
+	MATRIX3 ob;
+	oapiGetPlanetObliquityMatrix(hRef, &ob);
+	lua_pushmatrix(L, ob);
+	return 1;
+}
+
+/***
+Returns the current rotation angle of the planet around its axis.
+
+@function get_planetcurrentrotation
+@tparam handle hPlanet planet handle
+@treturn matrix Rotation angle [rad]
+*/
+int Interpreter::oapi_get_planetcurrentrotation(lua_State *L)
+{
+	OBJHANDLE hRef;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 1: invalid object");
+	double rot = oapiGetPlanetCurrentRotation(hRef);
+	lua_pushnumber(L, rot);
+	return 1;
+}
+
+/***
+Test for existence of planetary atmosphere.
+
+@function planet_hasatmosphere
+@tparam handle hPlanet planet handle
+@treturn boolean true if an atmosphere has been defined for the planet, false otherwise.
+*/
+int Interpreter::oapi_planet_hasatmosphere(lua_State *L)
+{
+	OBJHANDLE hRef;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 1: invalid object");
+	bool atm = oapiPlanetHasAtmosphere(hRef);
+	lua_pushboolean(L, atm);
+	return 1;
+}
+
+/***
+Returns atmospheric parameters as a function of distance from the planet centre.
+
+If the planet has no atmosphere, or if the defined radius is beyond the
+defined upper atmosphere limit, all parameters are set to 0.
+
+If the atmosphere model is position- as well as altitude-dependent, this
+function assumes longitude=0 and latitude=0.
+
+The returned table has the following fields:
+
+- T: number (temperature [K])
+- p: number (pressure [Pa])
+- rho: number (density [kg/m^3])
+
+@function get_planetatmparams
+@tparam handle hPlanet planet handle
+@tparam number rad radius from planet centre [m]
+@treturn table atmosphere parameters
+*/
+/***
+Returns atmospheric parameters of a planet as a function of altitude
+and geographic position.
+
+The returned table has the following fields:
+
+- T: number (temperature [K])
+- p: number (pressure [Pa])
+- rho: number (density [kg/m^3])
+
+@function get_planetatmparams
+@tparam handle hPlanet planet handle
+@tparam number alt altitude above planet mean radius [m]
+@tparam number lng longitude [rad]
+@tparam number lat latitude [rad]
+@treturn table atmospehere parameters
+*/
+int Interpreter::oapi_get_planetatmparams(lua_State* L)
+{
+	OBJHANDLE hRef;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 1: invalid object");
+	ATMPARAM ap;
+
+	if (lua_gettop(L) == 2) {
+		double rad = luaL_checknumber(L, 2);
+		oapiGetPlanetAtmParams(hRef, rad, &ap);
+	} else {
+		double alt = luaL_checknumber(L, 2);
+		double lng = luaL_checknumber(L, 3);
+		double lat = luaL_checknumber(L, 4);
+		oapiGetPlanetAtmParams(hRef, alt, lng, lat, &ap);
+	}
+	lua_createtable (L, 0, 3);
+	lua_pushnumber (L, ap.T);
+	lua_setfield (L, -2, "T");
+	lua_pushnumber (L, ap.p);
+	lua_setfield (L, -2, "p");
+	lua_pushnumber (L, ap.rho);
+	lua_setfield (L, -2, "rho");
+
+	return 1;
+}
+
+/***
+Returns the velocity vector of a surface point.
+
+The frame flag can be used to specify the reference frame to which the
+returned vector refers. The following values are supported:
+
+- 0: surface-relative (relative to local horizon)
+- 1: planet-local (relative to local planet frame)
+- 2: planet-local non-rotating
+- 3: global (maps to global frame and adds planet velocity)
+
+@function get_groundvector
+@tparam handle hPlanet planet handle
+@tparam number lng longitude [rad]
+@tparam number lat latitude [rad]
+@tparam number frame reference frame flag
+@treturn vector surface velocity [m]
+*/
+int Interpreter::oapi_get_groundvector(lua_State *L)
+{
+	OBJHANDLE hRef;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 1: invalid object");
+	double lng = luaL_checknumber(L, 2);
+	double lat = luaL_checknumber(L, 3);
+	int frame = luaL_checkinteger(L, 4);
+	VECTOR3 gv = oapiGetGroundVector(hRef, lng, lat, frame);
+	lua_pushvector(L, gv);
+	return 1;
+}
+
+/***
+Returns the wind velocity at a given position in a planet's atmosphere.
+
+The frame flag can be used to specify the reference frame to which the
+returned vector refers. The following values are supported:
+
+- 0: surface-relative (relative to local horizon)
+- 1: planet-local (relative to local planet frame)
+- 2: planet-local non-rotating (as 1, but adds the surface velocity, see \ref oapiGetGroundVector)
+- 3: global (maps to global frame and adds planet velocity)
+
+Warning: Local wind velocities are not currently implemented. The surface-relative
+wind velocity is always (0,0,0). To ensure forward compatibility, plugins
+should not rely on this limitation, but use this function instead.
+
+@function get_windvector
+@tparam handle hPlanet planet handle
+@tparam number lng longitude [rad]
+@tparam number lat latitude [rad]
+@tparam number altitude above mean planet radius [m]
+@tparam number frame reference frame flag
+@treturn vector wind velocity vector relative to surface [m]
+@treturn number wind speed magnitude in the local horizon frame, independent of the frame selected [m/s]
+*/
+int Interpreter::oapi_get_windvector(lua_State *L)
+{
+	OBJHANDLE hRef;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 1: invalid object");
+	double lng = luaL_checknumber(L, 2);
+	double lat = luaL_checknumber(L, 3);
+	double alt = luaL_checknumber(L, 4);
+	int frame = luaL_checkinteger(L, 5);
+	double windspeed;
+	VECTOR3 gv = oapiGetWindVector(hRef, lng, lat, alt, frame, &windspeed);
+	lua_pushvector(L, gv);
+	lua_pushnumber(L, windspeed);
+	return 1;
+}
+
+/***
+Returns the number of perturbation coefficients defined for a planet.
+
+Returns the number of perturbation coefficients defined for a planet to describe the
+latitude-dependent perturbation of its gaviational potential. A return value of 0 indicates
+that the planet is considered to have a spherically symmetric gravity field.
+
+Note: even if a planet defines perturbation coefficients, its gravity perturbation may
+be ignored, if the user disabled nonspherical gravity sources, or if orbit
+stabilisation is active at a given time step. Use the
+vessel.is_nonsphericalgravityenabled() function to check if a vessel uses the
+perturbation terms in the update of its state vectors.
+
+Note: depending on the distance to the planet, Orbiter may use fewer perturbation
+terms than defined, if their contribution is negligible.
+
+@function get_planetjcoeffcount
+@tparam handle hPlanet planet handle
+@treturn number Number of perturbation coefficients
+*/
+int Interpreter::oapi_get_planetjcoeffcount(lua_State *L)
+{
+	OBJHANDLE hRef;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 1: invalid object");
+	DWORD n = oapiGetPlanetJCoeffCount(hRef);
+	lua_pushnumber(L, n);
+	return 1;
+}
+
+/***
+Returns a perturbation coefficient for the calculation of a planet's gravitational potential.
+
+Note: Orbiter currently considers perturbations to be only a function of latitude
+(polar), not of longitude.
+
+Note: The first coefficient, n = 0, returns J2, which accounts for the ellipsoid shape
+of a planet (flattening). Higher perturbation terms are usually small compared
+to J2 (and not known for most planets).
+
+@function get_planetjcoeff
+@tparam handle hPlanet planet handle
+@tparam number n coefficient index
+@treturn number Perturbation coefficient
+*/
+int Interpreter::oapi_get_planetjcoeff(lua_State *L)
+{
+	OBJHANDLE hRef;
+	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
+	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 1: invalid object");
+	DWORD n = luaL_checkinteger(L, 2);
+	double coeff = oapiGetPlanetJCoeff(hRef, n);
+	lua_pushnumber(L, coeff);
+	return 1;
+}
+
 
 /***
 Return an identifier of a vessel's propellant resource.
@@ -5633,6 +6045,187 @@ int Interpreter::oapi_set_cameracockpitdir(lua_State *L)
 		transition = lua_toboolean(L, 3);
 	}
 	oapiCameraSetCockpitDir(polar, azimuth, transition);
+	return 0;
+}
+
+/***
+Create/Update custom camera.
+
+Create a new custom camera that can be used to render views into a surfaces and textures.
+
+Note: Camera count is unlimited.
+
+Note: Only cameras attached to currently active vessel are operational and recording.
+
+Note: Having multiple cameras active at the same time doesn't impact in a frame rate, however, camera refresh rates are reduced.
+
+@function setup_customcamera
+@tparam handle hCam camera handle to modify an existing camera or, nil to create a new one
+@tparam handle hVessel handle to a vessel where the camera is attached to.
+@tparam vector vPos camera position in vessel's local coordinate system
+@tparam vector vDir camera direction in vessel's local coordinate system. [Unit Vector]
+@tparam vector vUp camera up vector. Must be perpendicular to vDir. [Unit Vector]
+@tparam number dFow camera field of view in radians
+@tparam handle hSurf rendering surface. Must be created at least with OAPISURFACE.RENDER3D and OAPISURFACE.RENDERTARGET. Multiple cameras can share the same surface.
+@tparam number flags Flags to controls what is drawn and what is not.
+@treturn handle Camera handle, or nil if an error occurred or if the custom camera interface is disabled.
+*/
+
+typedef struct {
+	lua_State *L;
+	int clbk;
+	CAMERAHANDLE hCam;
+} CustomCamera_Lua;
+
+
+int Interpreter::customcamera_collect(lua_State *L)
+{
+	CustomCamera_Lua *cc = (CustomCamera_Lua *)luaL_checkudata(L, 1, "CustomCamera.vtable");
+	luaL_unref(L, LUA_REGISTRYINDEX, cc->clbk);
+	LazyInitGCCore();
+	if(cc->hCam && pCore) { // in case the script did not delete the camera
+		pCore->DeleteCustomCamera(cc->hCam);
+	}
+	return 0;
+}
+
+static void lua_pushcustomcamera(lua_State *L, CAMERAHANDLE hCam)
+{
+	CustomCamera_Lua *cc = (CustomCamera_Lua *)lua_newuserdata(L, sizeof(CustomCamera_Lua));
+	cc->L = L;
+	cc->hCam = hCam;
+	cc->clbk = LUA_REFNIL;
+
+	luaL_getmetatable(L, "CustomCamera.vtable");
+	lua_setmetatable(L, -2);
+}
+
+int Interpreter::oapi_setup_customcamera(lua_State *L)
+{
+	LazyInitGCCore();
+	if(pCore) {
+		CAMERAHANDLE hCam = nullptr;
+		CustomCamera_Lua *cc = nullptr;
+		if(!lua_isnil(L,1)) {
+			cc = (CustomCamera_Lua *)luaL_checkudata(L, 1, "CustomCamera.vtable");
+			hCam = cc->hCam;
+		}
+		OBJHANDLE hVessel = nullptr;
+		void *ud = lua_touserdata(L,2);
+		if(oapiIsVessel(ud)) {
+			hVessel = (OBJHANDLE)ud;
+		} else if(VESSEL *v = lua_tovessel(L, 2)) {
+			hVessel = v->GetHandle();
+		} else {
+			luaL_error(L, "vessel of vessel handle expected");
+		}
+
+		VECTOR3 pos = lua_tovector(L, 3);
+		VECTOR3 dir = lua_tovector(L, 4);
+		VECTOR3 up = lua_tovector(L, 5);
+		double fov = luaL_checknumber(L, 6);
+		SURFHANDLE hSurf = (SURFHANDLE)lua_touserdata(L,7);
+		DWORD flags = 255;
+		if(lua_gettop(L)>=8) {
+			flags = luaL_checkinteger(L, 8);
+		}
+		hCam = pCore->SetupCustomCamera(hCam, hVessel, pos, dir, up, fov, hSurf, flags);
+		if(cc) {
+			cc->hCam = hCam;
+			lua_pushvalue(L, 1);
+		} else {
+			lua_pushcustomcamera(L, hCam);
+		}
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+
+/***
+Delete/Release a custom camera.
+
+Note : Always delete all cameras bound to a render surface before releasing the rendering surface it-self.
+
+@function delete_customcamera
+@tparam handle hCam camera handle to delete.
+@treturn number zero or an error code if the camara didn't work properly. (-1 if graphics client does not support custom cameras)
+*/
+int Interpreter::oapi_delete_customcamera(lua_State *L)
+{
+	LazyInitGCCore();
+	if(pCore) {
+		CustomCamera_Lua *cc = (CustomCamera_Lua *)luaL_checkudata(L, 1, "CustomCamera.vtable");
+		lua_pushnumber(L, pCore->DeleteCustomCamera(cc->hCam));
+		cc->hCam = nullptr;
+		// The object will be garbage collected later, but unref potential callback here
+		luaL_unref(L, LUA_REGISTRYINDEX, cc->clbk);
+		cc->clbk = LUA_REFNIL;
+	} else {
+		lua_pushnumber(L, -1);
+	}
+	return 1;
+}
+
+/***
+Toggle camera on and off.
+
+Note : If multiple cameras are sharing the same rendering surface. Flickering will occur if more than one camera is turned on.
+
+@function customcamera_onoff
+@tparam handle hCam camera handle to toggle.
+@tparam boolean bOn true to turn on the camera.
+*/
+int Interpreter::oapi_customcamera_onoff(lua_State *L)
+{
+	LazyInitGCCore();
+	if(pCore) {
+		CustomCamera_Lua *cc = (CustomCamera_Lua *)luaL_checkudata(L, 1, "CustomCamera.vtable");
+		bool bOn = lua_toboolean(L, 2);
+		pCore->CustomCameraOnOff(cc->hCam, bOn);
+	}
+	return 0;
+}
+
+void Interpreter::customcamera_clbk(oapi::Sketchpad *skp, void *pParam)
+{
+	CustomCamera_Lua *cc = (CustomCamera_Lua *)pParam;
+
+	if(cc->clbk != LUA_REFNIL) {
+		lua_rawgeti(cc->L, LUA_REGISTRYINDEX, cc->clbk); // push the callback function
+		lua_pushsketchpad(cc->L, skp);
+		LuaCall (cc->L, 1, 0);
+	}
+}
+
+/***
+Camera overlay.
+
+Setup a custom camera overlay drawing callback.
+
+@function customcamera_overlay
+@tparam handle hCam camera handle to toggle.
+@tparam function clbk pointer to a function to be called after each frame.
+*/
+int Interpreter::oapi_customcamera_overlay(lua_State *L)
+{
+	LazyInitGCCore();
+	if(pCore) {
+		CustomCamera_Lua *cc = (CustomCamera_Lua *)luaL_checkudata(L, 1, "CustomCamera.vtable");
+		// unref previous callback if any
+		luaL_unref(L, LUA_REGISTRYINDEX, cc->clbk);
+		cc->clbk = LUA_REFNIL;
+
+		if (lua_isfunction(L, 2)) {
+			lua_pushvalue(L, 2);
+			cc->clbk = luaL_ref(L, LUA_REGISTRYINDEX);
+		} else {
+			luaL_error(L, "Argument 2: function expected");
+		}
+
+		pCore->CustomCameraOverlay(cc->hCam, customcamera_clbk, cc);
+	}
 	return 0;
 }
 
@@ -6959,8 +7552,8 @@ int Interpreter::oapi_inflate (lua_State *L)
 Return a colour value adapted to the current screen colour depth for given
 red, green and blue components.
 
-Colour values are required for some surface functions like @{clear_surface}
-   or @{set_surfacecolourkey}. The colour key for a given RGB triplet depends
+Colour values are required for some surface functions like @{clear_surface}.
+   The colour key for a given RGB triplet depends
    on the screen colour depth. This function returns the colour value for the
    closest colour match which can be displayed in the current screen mode.
 
@@ -7618,7 +8211,7 @@ int Interpreter::oapi_delete_mesh(lua_State* L)
 /***
 Get group specification of a mesh group.
 
-This method can be used to edit the a mesh group directly (for geometry
+This method can be used to edit a mesh group directly (for geometry
 animation, texture animation, etc.)
 
 This function should only be applied to device-independent meshes,
@@ -9155,6 +9748,267 @@ int Interpreter::skp_get_textwidth (lua_State *L)
 	lua_pushnumber (L,w);
 	return 1;
 }
+
+/***
+[DX9] Copy 'Blit' a rectangle.
+
+Note : Can alpha-blend and mirror by a use of negative width/height in source rectangle
+
+@function copy_rect
+@tparam handle hSrc Source surface handle
+@tparam table src Source rectangle, (or nil for whole surface)
+@tparam number tx Target x-coordinate
+@tparam number ty Target y-coordinate
+*/
+int Interpreter::skp_copy_rect (lua_State *L)
+{
+	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
+	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
+	SURFHANDLE hSrc = (SURFHANDLE)lua_touserdata(L, 2);
+	RECT *src = nullptr;
+	RECT r;
+	if(!lua_isnil(L, 3)) {
+		r = lua_torect(L, 3);
+		src = &r;
+	}
+	int tx = luaL_checkinteger(L, 4);
+	int ty = luaL_checkinteger(L, 5);
+
+	skp->CopyRect(hSrc, src, tx, ty);
+	return 0;
+}
+
+/***
+[DX9] Copy 'Blit' a rectangle
+
+Note : Can alpha-blend and mirror by a use of negative width/height in source rectangle
+
+@function stretch_rect
+@tparam handle hSrc Source surface handle
+@tparam table src Source rectangle, (or nil for whole surface)
+@tparam table tgt Target rectangle, (or nil for whole surface)
+*/
+int Interpreter::skp_stretch_rect (lua_State *L)
+{
+	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
+	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
+	SURFHANDLE hSrc = (SURFHANDLE)lua_touserdata(L, 2);
+	RECT *src = nullptr;
+	RECT r;
+	if(!lua_isnil(L, 3)) {
+		r = lua_torect(L, 3);
+		src = &r;
+	}
+
+	RECT *tgt = nullptr;
+	RECT t;
+	if(!lua_isnil(L, 4)) {
+		t = lua_torect(L, 4);
+		tgt = &t;
+	}
+
+	skp->StretchRect(hSrc, src, tgt);
+	return 0;
+}
+
+/***
+[DX9] Copy 'Blit' a rectangle with rotation and scaling
+
+Note : Can alpha-blend and mirror by a use of negative width/height in source rectangle
+
+@function rotate_rect
+@tparam handle hSrc Source surface handle
+@tparam table src Source rectangle, (or nil for whole surface)
+@tparam number cx Target center x-coordinate
+@tparam number cy Target center y-coordinate
+@tparam number angle Rotation angle in radians
+@tparam number sw Width scale factor
+@tparam number sh Height scale factor
+*/
+int Interpreter::skp_rotate_rect (lua_State *L)
+{
+	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
+	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
+	SURFHANDLE hSrc = (SURFHANDLE)lua_touserdata(L, 2);
+	RECT *src = nullptr;
+	RECT r;
+	if(!lua_isnil(L, 3)) {
+		r = lua_torect(L, 3);
+		src = &r;
+	}
+	int cx = luaL_checkinteger(L, 4);
+	int cy = luaL_checkinteger(L, 5);
+	float angle = 0.0f;
+	float sw = 1.0f;
+	float sh = 1.0f;
+
+	if(lua_gettop(L)>=6)
+		angle = luaL_checknumber(L, 6);
+	if(lua_gettop(L)>=7)
+		sw = luaL_checknumber(L, 7);
+	if(lua_gettop(L)>=8)
+		sh = luaL_checknumber(L, 8);
+
+
+	skp->RotateRect(hSrc, src, cx, cy, angle, sw, sh);
+	return 0;
+}
+
+/***
+[DX9] Setup a quick pen, removes any other pen from use. Set to zero to disable a pen from use.
+
+@function quick_pen
+@tparam number color Pen color in 0xAABBGGRR
+@tparam number width Pen width in pixels
+@tparam number style 0 = Disabled, 1 = Solid, 2 = Dashed
+*/
+int Interpreter::skp_quick_pen (lua_State *L)
+{
+	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
+	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
+	DWORD color = luaL_checkinteger(L, 2);
+	float width = 1.0;
+	if(lua_gettop(L)>=3)
+		width = luaL_checknumber(L, 3);
+	DWORD style = 1UL;
+	if(lua_gettop(L)>=4)
+		style = luaL_checkinteger(L, 4);
+	skp->QuickPen(color, width, style);
+	return 0;
+}
+
+/***
+[DX9] Setup a quick brush, removes any other brush from use. Set to zero to disable a brush from use.
+
+@function quick_brush
+@tparam number color Brush color in 0xAABBGGRR
+*/
+int Interpreter::skp_quick_brush (lua_State *L)
+{
+	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
+	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
+	DWORD color = luaL_checkinteger(L, 2);
+	skp->QuickBrush(color);
+	return 0;
+}
+
+/***
+Returns the surface associated with the drawing object.
+
+@function get_surface
+@treturn handle Surface handle
+*/
+int Interpreter::skp_get_surface (lua_State *L)
+{
+	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
+	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
+	SURFHANDLE surf = skp->GetSurface();
+	if (surf)
+		lua_pushlightuserdata(L, surf);
+	else
+		lua_pushnil(L);
+
+	return 1;
+}
+
+/***
+[DX9] Automatically set a ColorMatrix for brightness control. nil to restore default settings.
+
+@function set_brightness
+@tparam colour brightness value
+*/
+int Interpreter::skp_set_brightness (lua_State *L)
+{
+	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
+	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
+	if(lua_gettop(L)>=2 && !lua_isnil(L, 2)) {
+		COLOUR4 col = lua_torgba(L, 2);
+		FVECTOR4 c = {col.r, col.g, col.b, col.a};
+		skp->SetBrightness(&c);
+	} else {
+		skp->SetBrightness();
+	}
+	return 0;
+}
+
+/***
+Set a render configuration paramater or "effect".
+
+@function set_renderparam
+@tparam number A setting ID to set [PRM.GAMMA or PRM.NOISE]
+@tparam colour|nil setting value or nil to disable the effect
+*/
+int Interpreter::skp_set_renderparam (lua_State *L)
+{
+	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
+	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
+
+	Sketchpad::RenderParam rp = (Sketchpad::RenderParam)luaL_checkinteger(L, 2);
+
+	if(lua_gettop(L)>=3 && !lua_isnil(L, 3)) {
+		COLOUR4 col = lua_torgba(L, 3);
+		FVECTOR4 c = {col.r, col.g, col.b, col.a};
+		skp->SetRenderParam(rp, &c);
+	} else {
+		skp->SetRenderParam(rp);
+	}
+
+	return 0;
+}
+
+/***
+[DX9] Set up a global world transformation matrix.
+
+Note : This function will conflict and resets any settings set by SetOrigin(). Setting to nil does not restore set_origin().
+
+Note : Everything is transformed including copy_rect() and text().
+
+Warning : Graphics results from a copy_rect() and text() can be blurry when non-default transform is in use
+due to source-target pixels miss aligments.
+
+@function set_worldtransform2d
+@tparam number[opt=1] scale Graphics scale factor.
+@tparam number[opt=1] rot Rotation angle [rad]
+@tparam table[opt=nil] ctr table containing a rotation center (x,y fields) or nil for origin.
+@tparam table[opt=nil] trl table containing a translation (x,y fields) or nil.
+*/
+int Interpreter::skp_set_worldtransform2d (lua_State *L)
+{
+	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
+	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
+	float scale = 1.0f;
+	float rot = 0.0f;
+	IVECTOR2 ctr;
+	IVECTOR2 *pctr = nullptr;
+	IVECTOR2 trl;
+	IVECTOR2 *ptrl = nullptr;
+
+	if(lua_gettop(L)>=2) {
+		scale = luaL_checknumber(L,2);
+	}
+	if(lua_gettop(L)>=3) {
+		rot = luaL_checknumber(L,3);
+	}
+	if(lua_gettop(L)>=4 && !lua_isnil(L,4)) {
+		lua_getfield (L, 4, "x");
+		ctr.x = lua_tonumber (L, -1); lua_pop (L,1);
+		lua_getfield (L, 4, "y");
+		ctr.y = lua_tonumber (L, -1); lua_pop (L,1);
+		pctr = &ctr;
+	}
+
+	if(lua_gettop(L)>=5 && !lua_isnil(L,5)) {
+		lua_getfield (L, 5, "x");
+		trl.x = lua_tonumber (L, -1); lua_pop (L,1);
+		lua_getfield (L, 5, "y");
+		trl.y = lua_tonumber (L, -1); lua_pop (L,1);
+		ptrl = &trl;
+	}
+
+	skp->SetWorldTransform2D(scale, rot, pctr, ptrl);
+	return 0;
+}
+
 
 /***
 This type provides an encapsulation of C++ NTVERTEX buffers that

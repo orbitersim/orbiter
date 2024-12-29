@@ -199,7 +199,7 @@ int	gcConst::MeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, int prop, FVECTOR4* va
 	if (prop == MESHM_METALNESS) mat = MatProp::Metal;
 	if (prop == MESHM_SPECIALFX) mat = MatProp::SpecialFX;
 
-	if (bSet) return g_client->clbkSetMaterialEx(hMesh, idx, mat, value);
+	if (bSet) return g_client->clbkSetMeshMaterialEx(hMesh, idx, mat, value);
 	return g_client->clbkMeshMaterialEx(hMesh, idx, mat, value);
 }
 

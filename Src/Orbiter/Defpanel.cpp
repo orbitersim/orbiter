@@ -504,7 +504,7 @@ void DefaultPanel::Render ()
 		th = g_focusobj->GetThrusterGroupLevel (THGROUP_HOVER);
 		if (th != enghovr) {
 			enghovr = th;
-			grp->Vtx[vofs+1].x = grp->Vtx[vofs+3].x = (float)((46.0+enghovr*94.0)*scale+gapw);
+			grp->Vtx[vofs+1].x = grp->Vtx[vofs+3].x = dx+(float)((46.0+enghovr*94.0)*scale);
 		}
 	}
 	// Update fuel readout

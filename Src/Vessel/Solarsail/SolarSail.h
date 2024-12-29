@@ -30,6 +30,7 @@ struct NBHR {            // node neigbourhood structure
 class SolarSail: public VESSEL3 {
 public:
 	SolarSail (OBJHANDLE hVessel, int flightmodel);
+	virtual ~SolarSail();
 
 	// one-time global setup across all instances
 	static void GlobalSetup();
@@ -46,12 +47,13 @@ public:
 	void UpdateSail (const VECTOR3 *rpressure);
 	void SetPaddle (int p, double pos);
 
+	static inline WORD *sail_idx[4]; // index cache for each sail group
 private:
-	MESHHANDLE hMesh;           // mesh instance handle
-	VECTOR3 mf;                 // radiation mass flux
-	UINT anim_paddle[4];        // steering paddle animation identifiers
-	double paddle_rot[4];       // paddle logical rotation state (0-1, 0.5=neutral)
-	double paddle_vis[4];       // paddle visual rotation state
+	DEVMESHHANDLE hMesh;           // mesh instance handle
+	VECTOR3 mf;                    // radiation mass flux
+	UINT anim_paddle[4];           // steering paddle animation identifiers
+	double paddle_rot[4];          // paddle logical rotation state (0-1, 0.5=neutral)
+	double paddle_vis[4];          // paddle visual rotation state
 
 	void DefineAnimations();
 
@@ -59,11 +61,13 @@ private:
 	int Lua_InitInterpreter (void *context);
 	int Lua_InitInstance (void *context);
 
-	static void SetupElasticity (MESHHANDLE hMesh);
+	static void SetupElasticity (MESHHANDLE hMeshTemplate);
 	static MESHHANDLE hMeshTpl; // global mesh template
 	static DWORD sail_nvtx, sail_ntri;
 	static NBHR *nbhr;
 	static VECTOR3 *sail_vbuf;   // vertex temporary buffer
+	NTVERTEX *sail_vtx[4];       // vertex cache for each sail group
+
 };
 
 #endif // !__SOLARSAIL_H

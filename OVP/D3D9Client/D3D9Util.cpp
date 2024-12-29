@@ -19,6 +19,7 @@
 #include <functional>
 #include <cctype>
 #include <unordered_map>
+#include <algorithm>
 
 extern D3D9Client* g_client;
 extern unordered_map<MESHHANDLE, class SketchMesh*> MeshMap;

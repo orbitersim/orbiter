@@ -613,6 +613,21 @@ void EditorTab_Vessel::VesselDeleted (OBJHANDLE hV)
 	}
 }
 
+// Orbiter closes when there is no focusable vessels in the scenario
+// Check if there's another focusable object present
+bool EditorTab_Vessel::CanDelete(OBJHANDLE hVessel)
+{
+	for(int i = 0; i < oapiGetVesselCount(); i++) {
+		OBJHANDLE obj = oapiGetVesselByIndex (i);
+		if(obj == hVessel)
+			continue;
+		VESSEL *v = oapiGetVesselInterface (obj);
+		if(v->GetEnableFocus())
+			return true;
+	}
+	return false;
+}
+
 bool EditorTab_Vessel::DeleteVessel ()
 {
 	char cbuf[256];
@@ -622,7 +637,12 @@ bool EditorTab_Vessel::DeleteVessel ()
 	OBJHANDLE hV = oapiGetVesselByName (ed->ExtractVesselName (cbuf));
 	if (!hV) return false;
 	//ed->hVessel = hV;
-	oapiDeleteVessel (hV);
+	if(CanDelete(hV)) {
+		oapiDeleteVessel (hV);
+	} else {
+		MessageBox(hTab, "Cannot delete the last focusable vessel in a scenario", NULL, MB_OK);
+		return false;
+	}
 	return true;
 }
 

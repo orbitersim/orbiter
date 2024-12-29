@@ -20,6 +20,17 @@ function pass()
 end
 
 
+-- float comparison
+function almost_equal(a,b)
+	if a==0 and b==0 then
+		return true
+	end
+	if b==0 then
+		return math.abs(a) < 0.000000001
+	end
+	return math.abs(a/b) < 1.0000000001 
+end
+
 -- ---------------------------------------------------
 -- "Constants"
 -- ---------------------------------------------------
@@ -345,6 +356,47 @@ pass()
 -- ---------------------------------------------------
 
 
+add_line("Test: planet status")
+
+earth = oapi.get_gbody("Earth")
+assert(almost_equal(oapi.get_planetperiod(earth), 86164.10132))
+assert(almost_equal(oapi.get_planetobliquity(earth)/math.pi*180,23.43929100097))
+assert(oapi.planet_hasatmosphere(earth))
+
+atm1 = oapi.get_planetatmparams(earth,oapi.get_size(earth))
+atm2 = oapi.get_planetatmparams(earth,0,0,0)
+
+assert(atm1.rho == atm2.rho)
+assert(atm1.T == atm2.T)
+assert(atm1.p == atm2.p)
+
+assert(almost_equal(atm1.rho,1.2247449178673))
+assert(almost_equal(atm1.T,288.15))
+assert(almost_equal(atm1.p,101329.1294913))
+-- by definition surface relative and planet local is (0,0,0)
+gv = oapi.get_groundvector(earth,0,0,0)
+assert(gv.x == 0)
+assert(gv.y == 0)
+assert(gv.z == 0)
+
+gv = oapi.get_groundvector(earth,0,0,1)
+assert(gv.x == 0)
+assert(gv.y == 0)
+assert(gv.z == 0)
+
+-- tangential speed at the equator
+gv = oapi.get_groundvector(earth,0,0,2)
+assert(gv.x == 0)
+assert(gv.y == 0)
+assert(almost_equal(gv.z, 464.58137217991))
+
+-- tangential speed at the pole
+gv = oapi.get_groundvector(earth,0,math.pi/2,2)
+assert(gv.x == 0)
+assert(gv.y == 0)
+assert(math.abs(gv.z) < 1e-13 )
+
+pass()
 
 -- ---------------------------------------------------
 -- FINAL RESULT

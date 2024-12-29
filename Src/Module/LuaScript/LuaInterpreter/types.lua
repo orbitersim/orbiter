@@ -289,3 +289,85 @@
 -- @field COCKPIT Only visible in cockpit view
 -- @field ALWAYS Always visible
 -- @table VIS
+
+--- Render params
+-- @field GAMMA Enable/Setup Gamma correction
+-- @field NOISE Enable/Setup Noise generation
+-- @table PRM
+
+--- PlaybackType.
+--
+-- Determines how a given sound will be played back (i.e., where it will be audible)
+--
+-- Note: if the `SilenceOfSpace` configuration setting is disabled via the user's XRSound.cfg, sounds will not be faded by pressure.
+--
+-- @field InternalOnly In cockpit view only, always full volume.  Implies the vessel has focus, as well.
+-- @field BothViewFar Full volume in internal view, faded (less) by distance and pressure in external view (this will be silent in vacuum).  Vessel does not need focus.
+-- @field BothViewMedium Full volume in internal view, faded (middle) by distance and pressure in external view (this will be silent in vacuum).  Vessel does not need focus.
+-- @field BothViewClose Full volume in internal view, faded (more) by distance and pressure in external view (this will be silent in vacuum).  Vessel does not need focus.
+-- @field Radio Full volume in both internal and external view; vessel must have focus.
+-- @field Wind External view only, faded by static pressure but not distance.
+-- @field Global Full volume in both internal and external views, not faded, and does *not* require focus.  This is designed for cross-vessel sounds like music playback; normally, vessels should not use this playback type.
+-- @table PlaybackType
+
+--- DefaultSoundID.
+--
+-- Defines vessel-unique sound IDs for each default sound; you can disable, enable, or change each of these default
+-- sounds either by editing your XRSound.cfg file or editing your vessel's XRSound-<vesselClass>.cfg file.
+-- You can also replace or disable/re-enable any default sound by calling set\_defaultsoundenabled(...) from your
+-- custom vessel code, and you can call load_wav with any default sound ID here to replace a default sound.
+--
+-- Refer to each sound ID's comments in $ORBITER_ROOT/XRSound/XRSound.cfg for details about each sound.
+--
+-- Note: when you are writing vessel code, do not use any custom sound IDs that are >= 10000 and < 12000; they are reserved for use (and future use) by XRSound's default sounds.
+-- @field AirConditioning
+-- @field LandedWind
+-- @field AudioGreeting
+-- @field MainEngines
+-- @field RetroEngines
+-- @field HoverEngines
+-- @field RCSSustain
+-- @field SwitchOn
+-- @field SwitchOff
+-- @field Rotation
+-- @field Translation
+-- @field Off
+-- @field CustomEngines
+-- @field AFPitch
+-- @field AFOn
+-- @field AFOff
+-- @field Crash
+-- @field MetalCrunch
+-- @field WheelChirp
+-- @field Touchdown
+-- @field WheelStop
+-- @field TiresRolling
+-- @field OneHundredKnots
+-- @field Liftoff
+-- @field WarningGearIsUp
+-- @field YouAreClearedToLand
+-- @field Docking
+-- @field DockingCallout
+-- @field Undocking
+-- @field UndockingCallout
+-- @field Wheekbrakes
+-- @field DockingRadarBeep
+-- @field FlightWind
+-- @field ReentryPlasma
+-- @field SonicBoom
+-- @field AutopilotOn
+-- @field AutopilotOff
+-- @field SubsonicCallout
+-- @field RCSAttackPlusX
+-- @field RCSAttackPlusY
+-- @field RCSAttackPlusZ
+-- @field RCSAttackMinusX
+-- @field RCSAttackMinusY
+-- @field RCSAttackMinusZ
+-- @field RadioATCGroup
+-- @field CabinAmbienceGroup
+-- @field MachCalloutsGroup
+-- @field AltitudeCalloutsGroup
+-- @field DockingDistanceCalloutsGroup
+-- @field MusicFolder this is a special, global (i.e., vessel-independent) sound ID.
+-- @table DefaultSoundID

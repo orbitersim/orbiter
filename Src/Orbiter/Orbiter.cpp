@@ -99,6 +99,7 @@ const double    MinWarpLimit     = 0.1;  // make variable
 const double    MaxWarpLimit     = 1e5;  // make variable
 DWORD           g_qsaveid        = 0;
 DWORD           g_customcmdid    = 0;
+int             g_iCursorShowCount = 0;
 
 // 2D info output flags
 BOOL g_bOutputTime  = TRUE;
@@ -1171,7 +1172,12 @@ void Orbiter::UpdateServerWnd (HWND hWnd)
 void Orbiter::InitRotationMode ()
 {
 	bKeepFocus = true;
-	ShowCursor (FALSE);
+
+	// Checks if the cursor is already hidden
+	if (g_iCursorShowCount == 0) {
+		g_iCursorShowCount = ShowCursor(FALSE);
+	}
+
 	SetCapture (hRenderWnd);
 
 	// Limit cursor to render window confines, so we don't miss the button up event
@@ -1191,7 +1197,11 @@ void Orbiter::ExitRotationMode ()
 {
 	bKeepFocus = false;
 	ReleaseCapture ();
-	ShowCursor (TRUE);
+
+	// Checks if the cursor is already hidden
+	if (g_iCursorShowCount < 0) {
+		g_iCursorShowCount = ShowCursor (TRUE);
+	}
 
 	// Release cursor from render window confines
 	if (!bFullscreen && hRenderWnd) {
@@ -2629,6 +2639,12 @@ void Orbiter::UserJoyInput_OnRunning (DIJOYSTATE2 *js)
 
 bool Orbiter::MouseEvent (UINT event, DWORD state, DWORD x, DWORD y)
 {
+	// Prioritizes mouse handling while in rotation mode
+	if (g_pOrbiter->StickyFocus()) {
+		if (event == WM_MOUSEMOVE) return false; // may be lifted later
+		if (g_camera->ProcessMouse(event, state, x, y, simkstate)) return true;
+	}
+
 	if (g_pane->MIBar() && g_pane->MIBar()->ProcessMouse (event, state, x, y)) return true;
 	if (BroadcastMouseEvent (event, state, x, y)) return true;
 	if (event == WM_MOUSEMOVE) return false; // may be lifted later
