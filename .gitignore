@@ -25,3 +25,7 @@ Sound/XRSound/**/Release-with-OrbiterRelease/
 [Bb]uild/
 
 Extern/irrKlang
+
+Doc/**/*.log
+Doc/**/*.pdf
+Doc/**/*.gz

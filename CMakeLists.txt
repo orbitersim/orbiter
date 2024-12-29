@@ -318,54 +318,6 @@ if (ORBITER_SANITIZER AND MSVC)
 	enable_sanitizer(${ORBITER_SANITIZER})
 endif()
 
-# For a given argument string template (odt_to_pdf_arglist) and source file name (infile)
-# return the explicit argument string (arglist), full source path (source_path) and full target path (target_path)
-# to invoke the ODT to PDF conversion tool
-
-function(odt_to_pdf_arglist infile arglist source_path target_path)
-	string(REPLACE
-		"<outdir>" "${CMAKE_CURRENT_BINARY_DIR}"
-		tmp1_string
-		${ODT_TO_PDF_FLAGS}
-	)
-	string(REPLACE
-		"<infile>" "${CMAKE_CURRENT_SOURCE_DIR}/${infile}.odt"
-		tmp2_string
-		${tmp1_string}
-	)
-	separate_arguments(odt_arg
-		WINDOWS_COMMAND
-		${tmp2_string}
-	)
-	set(${arglist} ${odt_arg} PARENT_SCOPE)
-	set(${source_path} "${CMAKE_CURRENT_SOURCE_DIR}/${infile}.odt" PARENT_SCOPE)
-	set(${target_path} "${CMAKE_CURRENT_BINARY_DIR}/${infile}.pdf" PARENT_SCOPE)
-endfunction()
-
-
-# For a given argument string template (odt_to_pdf_arglist) and source file name (infile)
-# return the explicit argument string (arglist), full source path (source_path) and full target path (target_path)
-# to invoke the DOC to PDF conversion tool
-
-function(doc_to_pdf_arglist infile arglist source_path target_path)
-	string(REPLACE
-		"<outdir>" "${CMAKE_CURRENT_BINARY_DIR}"
-		tmp1_string
-		${DOC_TO_PDF_FLAGS}
-	)
-	string(REPLACE
-		"<infile>" "${CMAKE_CURRENT_SOURCE_DIR}/${infile}.doc"
-		tmp2_string
-		${tmp1_string}
-	)
-	separate_arguments(doc_arg
-		WINDOWS_COMMAND
-		${tmp2_string}
-	)
-	set(${arglist} ${doc_arg} PARENT_SCOPE)
-	set(${source_path} "${CMAKE_CURRENT_SOURCE_DIR}/${infile}.doc" PARENT_SCOPE)
-	set(${target_path} "${CMAKE_CURRENT_BINARY_DIR}/${infile}.pdf" PARENT_SCOPE)
-endfunction()
 
 # Given a source directory (srcdir) and a target root directory (tgtroot),
 # generate a list of all files found in srcdir (srclist) and a list of output files

@@ -1184,7 +1184,7 @@ bool Vessel::SetTouchdownPoints (const TOUCHDOWNVTX *tdvtx, DWORD ntp)
 	Vector ez(crossp(ex,touchdown_nm));
 	Matrix R(ex.x,ex.y,ex.z,  touchdown_nm.x,touchdown_nm.y, touchdown_nm.z, ez.x,ez.y,ez.z);
 	// 2. Compute the compression factors (actual compression length is given by factor*mg)
-	// See Doc/Technotes/dynsurf.pdf for details
+	// See "Dynamic vessel-surface interaction" in "Orbiter Technical Reference" for details
 	Vector tr[3];
 	a = b = c = d = e = f = 0.0;
 	for (i = 0; i < 3; i++) {

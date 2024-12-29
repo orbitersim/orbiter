@@ -1,0 +1,320 @@
+BEGIN_DESC
+Use the TransX to fly the Voyager Grand Tour.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 43373.5262453242
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship GL-01
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET GL-01
+  MODE Cockpit
+  FOV 40.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Surface
+END_HUD
+
+BEGIN_MFD Left
+  TYPE Orbit
+  PROJ Ship
+  FRAME Equator
+  ALT
+  REF Earth
+END_MFD
+
+BEGIN_MFD Right
+  TYPE User
+  MODE TransX
+  Ship  GL-01
+  FNumber 5
+  Int 1
+  Orbit True
+  Vector  -1219094.12625 623298.145494 6222150.73599
+  Vector  -398.206067838 34.3768172262 -81.4634209733
+  Double  3.98600439969e+14
+  Double  43375.5954015
+  Handle Earth
+  Handle NULL
+  Handle NULL
+Select Target
+ 0 Escape
+Autoplan
+0 0
+Plan type
+0 0
+Plan
+0 1
+Plan
+0 0
+Plan
+0 0
+Select Minor
+ 0 None
+Manoeuvre mode
+0 0
+Base Orbit
+0 0
+Prograde vel.
+ 1  0
+Man. date
+ 1  43373.5263168
+Outward vel.
+ 1  0
+Ch. plane vel.
+ 1  0
+Intercept with
+0 0
+Orbits to Icept
+0 0
+Graph projection
+0 0
+Scale to view
+0 0
+Advanced
+0 0
+Pe Distance
+ 1  6571187.69231
+Ej Orientation
+ 1  0.36651914292
+Equatorial view
+0 0
+Finvars
+  Finish BaseFunction
+  Int 2
+  Orbit False
+  Handle Sun
+  Handle Earth
+  Handle Jupiter
+Select Target
+ 0 Jupiter
+Autoplan
+0 0
+Plan type
+0 2
+Plan
+0 0
+Plan
+0 0
+Plan
+0 1
+Select Minor
+ 0 None
+Manoeuvre mode
+0 0
+Base Orbit
+0 1
+Prograde vel.
+ 1  0
+Man. date
+ 1  43375.5954013
+Outward vel.
+ 1  0
+Ch. plane vel.
+ 1  0
+Intercept with
+0 0
+Orbits to Icept
+0 0
+Graph projection
+0 0
+Scale to view
+0 0
+Advanced
+0 0
+Prograde vel.
+ 7  9162.12941122
+Eject date
+ 1  43375.645972
+Outward vel.
+ 6  -2861.32646921
+Ch. plane vel.
+ 7  -3321.30717628
+Finvars
+  Finish BaseFunction
+  Int 4
+  Orbit True
+  Vector  30273885991.3 47596194861.7 -468422274690
+  Vector  -462.018466116 -775.905384244 7617.28085997
+  Double  1.26686534397e+17
+  Double  43364.5904961
+  Handle Jupiter
+  Handle NULL
+  Handle NULL
+Select Target
+ 0 Escape
+Autoplan
+0 0
+Plan type
+0 1
+Plan
+0 0
+Plan
+0 1
+Plan
+0 0
+Select Minor
+ 0 None
+Manoeuvre mode
+0 0
+Base Orbit
+0 0
+Prograde vel.
+ 1  0
+Man. date
+ 1  43375.5954013
+Outward vel.
+ 1  0
+Ch. plane vel.
+ 1  0
+Intercept with
+0 0
+Orbits to Icept
+0 0
+Graph projection
+0 0
+Scale to view
+0 0
+Advanced
+0 0
+View Orbit
+0 0
+Finvars
+  Finish BaseFunction
+  Int 3
+  Orbit True
+  Vector  -600319973869 11286761269.1 541527924871
+  Vector  -16424.8198224 871.256185202 -10579.3393873
+  Double  1.32839126489e+20
+  Double  44063.9368116
+  Handle Sun
+  Handle Jupiter
+  Handle Saturn
+Select Target
+ 0 Saturn
+Autoplan
+0 0
+Plan type
+0 2
+Plan
+0 0
+Plan
+0 0
+Plan
+0 2
+Select Minor
+ 0 None
+Manoeuvre mode
+0 0
+Base Orbit
+0 0
+Prograde vel.
+ 1  0
+Man. date
+ 1  43375.5951251
+Outward vel.
+ 1  0
+Ch. plane vel.
+ 1  0
+Intercept with
+0 0
+Orbits to Icept
+0 0
+Graph projection
+0 0
+Scale to view
+0 0
+Advanced
+0 0
+Velocity.
+ 1  0
+Outward angle
+ 6  0.587759438586
+Inc. angle
+ 4  -0.0602675280681
+Inherit Vel.
+0 0
+Eject date
+ 1  44063.9368116
+Finvars
+  Finish BaseFunction
+  Int 5
+  Orbit True
+  Vector  501082660238 -25062184398.2 154975363374
+  Vector  -10240.2551105 512.376030177 -3159.35701984
+  Double  3.79311866084e+16
+  Double  44273.157932
+  Handle Saturn
+  Handle NULL
+  Handle NULL
+Select Target
+ 0 None
+Autoplan
+0 0
+Plan type
+0 1
+Plan
+0 0
+Plan
+0 2
+Plan
+0 0
+Select Minor
+ 0 None
+Manoeuvre mode
+0 0
+Base Orbit
+0 0
+Prograde vel.
+ 1  0
+Man. date
+ 1  43375.5942055
+Outward vel.
+ 1  0
+Ch. plane vel.
+ 1  0
+Intercept with
+0 0
+Orbits to Icept
+0 0
+Graph projection
+0 0
+Scale to view
+0 0
+Advanced
+0 0
+Draw Base
+0 0
+Finvars
+  Finish BaseFunction
+END_MFD
+
+BEGIN_PANEL
+END_PANEL
+
+BEGIN_SHIPS
+GL-01:DeltaGlider
+  STATUS Landed Earth
+  POS -80.6829463 28.5974182
+  HEADING 330.07
+  ALT 2.469
+  AROT 67.187 33.943 10.177
+  AFCMODE 7
+  PRPLEVEL 0:1.000000 1:1.000000
+  NAVFREQ 94 524 84 114
+  XPDR 0
+  HOVERHOLD 0 1 0.0000e+00 0.0000e+00
+  GEAR 1.0000 0.0000
+  HUDMode 2
+  COMPARTMENT_TEMP 288.49 285.41 287.89 285.38 287.89 285.38 299.36 592.26 321.85 240.12 240.13 240.07 292.54
+  COOLANT_STATE 0 0.500 287.000
+  AAP 0:0 0:0 0:0
+  PSNGR 1 2 3 4
+END
+END_SHIPS

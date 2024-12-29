@@ -1,0 +1,117 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{fancyhdr}
+\usepackage[noindentafter]{titlesec}
+\usepackage[T1]{fontenc}
+\usepackage[scaled]{helvet}
+%\usepackage[pdftex]{graphicx}
+\usepackage{subfigure}
+\usepackage[subfigure]{tocloft}
+\usepackage{etoc}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{changepage}
+\usepackage{subfiles}
+\usepackage{tabularx}
+\usepackage{threeparttable}
+\usepackage{caption}
+\usepackage{longtable}
+\usepackage[table]{xcolor}
+\usepackage{tcolorbox}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{hyperref}
+\usepackage{xurl}
+\usepackage{keystroke}
+\usepackage{wrapfig}
+\usepackage{multicol}
+\usepackage{enumitem}
+\usepackage{starfont}
+\usepackage{mhchem}
+\usepackage[export]{adjustbox}
+\usepackage{amsfonts}
+\usepackage{cite}
+\usepackage{setspace}
+\usepackage{times}
+\usepackage{wasysym}
+
+%\usepackage{graphicx}
+%\usepackage[dvips]{graphics}
+%\usepackage{epstopdf}
+
+
+\newcommand{\vR}[1]{\ensuremath{\vec{R}_{#1}}}
+\newcommand{\nR}[1]{\ensuremath{|\vR{#1}|}}
+\newcommand{\mat}[1]{\ensuremath{\mathsf{#1}}}
+\renewcommand{\vec}[1]{\ensuremath \mathbf{#1}}
+
+\newcommand{\ACC}{\ensuremath\mathrm{A}}
+\newcommand{\AACC}{\ensuremath\mathrm{T}}
+\newcommand{\Euler}{\ensuremath\mathrm{E}}
+\newcommand{\Kelvin}{\ensuremath{\mathrm{K}}}
+
+
+\newcommand{\alertbox}[1]{\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=Alert]#1\end{tcolorbox}}
+
+\newcommand{\infobox}[1]{\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Information]#1\end{tcolorbox}}
+
+
+% code block
+\definecolor{darkorange}{rgb}{0.99,0.91,0.85}
+\definecolor{gray}{rgb}{0.6,0.6,0.6}
+\definecolor{darkgray}{rgb}{0.4,0.4,0.4}
+\definecolor{white}{rgb}{1,1,1}
+
+\lstset{
+	language=C++,
+	basicstyle=\fontfamily{NotoSansMono-TLF}\small,
+	frame=single,
+	showstringspaces=false,
+	numbers=none,
+	backgroundcolor=\color{darkorange},
+	commentstyle=\color{gray},
+	linewidth=1\linewidth,
+	aboveskip=12pt,
+	belowskip=12pt,
+	tabsize=4,
+	morekeywords={VESSEL, VESSEL2, VESSEL3, VESSEL4, HINSTANCE, OBJHANDLE, FILEHANDLE, PROPELLANT_HANDLE, THRUSTER_HANDLE,
+		SURFHANDLE, WORD, DWORD, UINT, HBITMAP, ANIMATIONCOMPONENT_HANDLE, MGROUP_ROTATE, MGROUP_TRANSLATE, MGROUP_SCALE,
+		PANELHANDLE, MESHGROUP, NTVERTEX, MFDSPEC, VCMFDSPEC, HWND, WPARAM, LPARAM, BOOL, EditorFuncSpec, EditorPageSpec,
+		CustomButtonFunc, DLGPROC}
+}
+
+\lstdefinelanguage{OSFS}{
+	basicstyle=\fontfamily{NotoSansMono-TLF}\small\color{white},
+	frame=single,
+	showstringspaces=false,
+	numbers=none,
+	backgroundcolor=\color{darkgray},
+	commentstyle=\color{darkorange},
+	morecomment = [l]{;},
+	linewidth=1\linewidth,
+	aboveskip=12pt,
+	belowskip=12pt,
+	tabsize=4,
+	keywords = {}
+}
+
+
+% HACK to center char in key box (https://tex.stackexchange.com/questions/634917/center-align-the-items-in-the-keystroke-package)
+\usepackage{xpatch}
+
+\makeatletter
+\xpatchcmd\suse@keystr@ke
+  {\hbox to 0pt{\unhbox\suse@key\hss}}
+  % \suse@key = \hbox{{\keystroke@font\strut#1}}
+  % \@tempdimb = max(\wd\suse@key, \dp\suse@key)
+  {\hbox to 0pt{\hbox to \@tempdimb{\hss\unhbox\suse@key\hss}\hss}}
+  {}{\PatchFailed}
+\makeatother
+
+%fix gap in index between 10.10.10 and text
+\advance\cftsecnumwidth 0.5em\relax
+\advance\cftsubsecindent 0.5em\relax
+\advance\cftsubsecnumwidth 0.5em\relax
+\advance\cftsubsubsecindent 0.5em\relax
+\advance\cftsubsubsecnumwidth 0.5em\relax

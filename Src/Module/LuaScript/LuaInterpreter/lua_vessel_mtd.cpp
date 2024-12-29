@@ -1170,7 +1170,7 @@ approximation when the vessel is sufficiently symmetric with respect to its
 coordinate frame. Otherwise, a diagonalisation by rotating the local frame may be
 required.
 
-For more details, see Doc\Technotes\composite.pdf.
+For more details, see "Inertia calculations for composite vessels" in "Orbiter Technical Reference".
 
 @function get_pmi
 @return (<i><b>@{types.vector|vector}</b></i>) diagonal elements of the mass-normalised inertia tensor [<b>m</b>&sup2;]
@@ -1195,7 +1195,7 @@ Set the vessel's mass-normalised principal moments of inertia (PMI).
 PMI are the diagonal elements of the inertia tensor, which describes the
 behaviour of a rigid body under angular acceleration.
 
-For more details, see Doc\Technotes\composite.pdf.
+For more details, see "Inertia calculations for composite vessels" in "Orbiter Technical Reference".
 
 @function set_pmi
 @param pmi (<i></b>@{types.vector|vector}</b></i>) pmi Diagonal elements of the vessel's mass-normalised inertia tensor [<b>m</b>&sup2;]
