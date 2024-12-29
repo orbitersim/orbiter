@@ -42,9 +42,11 @@ set_target_properties(TransX
 	FOLDER Modules
 )
 
+# copy only the needed txt files and leave the old pdf manuals and source doc
 add_custom_command(
     TARGET TransX PRE_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/Doc ${ORBITER_BINARY_DOC_DIR}/TransX
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/Doc/TransX\ Licence.txt ${ORBITER_BINARY_DOC_DIR}/TransX/TransX\ Licence.txt
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/Doc/TransX\ readme.txt ${ORBITER_BINARY_DOC_DIR}/TransX/TransX\ readme.txt
 )
 
 # Installation

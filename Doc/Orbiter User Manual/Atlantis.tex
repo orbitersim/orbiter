@@ -14,7 +14,7 @@ Space Shuttle Atlantis, comprising the complete launch stack of orbiter, externa
 \end{figure}
 
 \noindent
-The Atlantis orbiter features a virtual cockpit with working MFD instruments and head-up display, and an operational payload bay with remote manipulator arm ("Canadarm"), so the deployment or even recapture of satellites can be simulated, as well as the shipment of resupplies to the International Space Station. Also included is MMU (manned manoeuvring unit) support for extravehicular activities.
+The Atlantis orbiter features a virtual cockpit with working MFD instruments and head-up display, and an operational payload bay with remote manipulator arm ("Canadarm"), so the deployment or even recapture of satellites can be simulated, as well as the shipment of resupplies to the International Space Station. Also included is MMU (Manned Maneuvering Unit) support for extravehicular activities.
 
 
 \subsubsection{Virtual cockpit}
@@ -103,7 +103,7 @@ If the OMS-2 burn was disabled, the AP disengages at this point. Otherwise, the 
 You can disengage the AP at any point during the ascent by pressing the DA button on the MFD. This should only be done in an emergency!
 
 \paragraph{Manual launch}
-You are welcome to ignore the launch autopilot and try to fly the ascent profile manually (a challenge not offered to the real Shuttle pilots). To launch, engage the SSMEs at 100\% thrust (\keystroke{Num+} and \keystroke{R-Ctrl} to lock). The SRB engines ignite automatically, the hold-down bolts are blown off, and the launch stack will lift off from the pad. You can control the assembly's attitude with the normal maneuvering controls (joystick and keyboard, see \ref{sec:controls} for details). The pilot's attitude commands are translated to gimbal deflections of the SSMEs and SRB engines. You can monitor the gimbal positions on page 2 of the ascent autopilot (see previous section). The gimbal information on that page works even when the autopilot is not active. Make sure that the RCS is not activated during ascent. Attitude control during the early flight phase is by thrust-vectoring only.\\
+You are welcome to ignore the launch autopilot and try to fly the ascent profile manually (a challenge not offered to the real Shuttle pilots). To launch, engage the SSMEs at 100\% thrust (\keystroke{Num+} and \keystroke{R-Ctrl} to lock). The SRB engines ignite automatically, the hold-down bolts are blown off, and the launch stack will lift off from the pad. You can control the assembly's attitude with the normal maneuvering controls (joystick and keyboard, see section \ref{sec:controls} for details). The pilot's attitude commands are translated to gimbal deflections of the SSMEs and SRB engines. You can monitor the gimbal positions on page 2 of the ascent autopilot (see previous section). The gimbal information on that page works even when the autopilot is not active. Make sure that the RCS is not activated during ascent. Attitude control during the early flight phase is by thrust-vectoring only.\\
 
 At T + 2:06 minutes (126 seconds after ignition), the SRB fuel is spent and the SRBs detach automatically. In an emergency you can jettison the SRBs early \keystroke{J}, but in that case you probably also want to jettison the ET (\keystroke{J} again) and try to return the orbiter to the runway.\\
 
@@ -134,7 +134,7 @@ The payload bay operations in Orbiter's Atlantis implementation consist of
 \end{itemize}
 
 \noindent
-The bay doors, radiators and Ku-band antenna operation closely follows the real shuttle procedures, using panel R13L. This panel is accessible from the payload operator position of the VC (via \keystroke{Ctrl}\keystroke{Alt}\keystroke{$\leftarrow$}). Alternatively, a dialog representation of the panel is available by pressing \keystroke{Ctrl}\keystroke{Space} and selecting Payload door operation. The dialog is also available in external views.
+The bay doors, radiators and Ku-band antenna operation closely follows the real shuttle procedures, using panel R13L. This panel is accessible from the payload operator position of the VC (via \keystroke{Ctrl}\keystroke{Alt}\keystroke{$\leftarrow$}). Alternatively, a dialog representation of the panel is available by pressing \keystroke{Ctrl}\keystroke{Space} and selecting "Payload Door Operation". The dialog is also available in external views.
 
 \begin{center}
 \includegraphics[width=0.75\textwidth]{atlantis_r13l.png}
@@ -167,7 +167,7 @@ The bay doors, radiators and Ku-band antenna operation closely follows the real 
 \end{itemize}
 
 \paragraph{Radiator operation}
-The Space Shuttle has four radiators to dissipate heat from the coolant loops - two on the inside of each of the payload bay doors. The forward radiator panels on each side can be deployed when the doors are open; the aft panels are fixed. The radiator deployment is also controlled from panel R13L.\\
+The Space Shuttle has 8 radiators to dissipate heat from the coolant loops - 4 on the inside of each of the payload bay doors. The forward 2 radiator panels on each side can be deployed when the doors are open; the aft panels are fixed. The radiator deployment is also controlled from panel R13L.\\
 
 \noindent
 \textbf{Radiator deployment sequence:}
@@ -215,6 +215,7 @@ The Ku-band antenna is carried on the starboard sill longeron inside the orbiter
 \end{itemize}
 
 \subsubsection{SRMS operation and grappling}
+\label{sssec:atlantis_rms}
 
 \begin{figure}[H]
   \centering
@@ -242,6 +243,24 @@ The SRMS arm can be stowed in its transport position by pressing the SRMS "Stow"
 \captionof{figure}{View into the payload bay from the payload operator position.}
 \end{center}
 
+
+\subsubsection{Extravehicular Activity and the Manned Maneuvering Unit}
+When you fly the Space Shuttle Atlantis, you are not restricted to the inside of the spacecraft, and can go outside to perform an Extravehicular Activity (EVA) using the Manned Maneuvering Unit (MMU) vessel.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.75\hsize]{atlantis_mmu.png}
+	\caption{An astronaut inspects the Carina satellite using a Manned Maneuvering Unit.}
+\end{figure}
+
+\noindent
+The MMU was a NASA developed mini-spacecraft that suited astronauts would wear like a backpack, containing thrusters, propellant supply and control electronics, allowing them to maneuver free from the Space Shuttle.
+
+\paragraph{Operations}
+If Atlantis isn't docked, pressing \keystroke{E} will create a MMU vessel at the docking port, and you will automatically switch to it. Now undock the MMU from Atlantis, by pressing \Ctrl\keystroke{D}, and you can now fly free. The MMU is controlled using the normal RCS controls, which fire small thrusters, allowing for attitude changes and translation. The MMU propellant supply is limited, so keep an eye on the propellant level. \\
+To terminate the EVA, return the MMU to the docking port of Atlantis, press \keystroke{E} to delete the MMU vessel and you will return to Atlantis.
+
+
 \subsubsection{Keyboard controls}
 In addition to the generic Orbiter vessel control keys, Atlantis supports the following vessel-specific key controls:
 
@@ -255,11 +274,17 @@ In addition to the generic Orbiter vessel control keys, Atlantis supports the fo
 	\hline\rule{0pt}{2ex}
 	\keystroke{J} & Jettison: separate SRBs or ET\\
 	\hline\rule{0pt}{2ex}
-	\keystroke{K} & Operate cargo bay doors (shortcut - for the full procedure see \ref{para:atlantis_baydoor})\\
+	\keystroke{K} & Operate cargo bay doors (shortcut - for the full procedure see section \ref{para:atlantis_baydoor})\\
+	\hline\rule{0pt}{2ex}
+	\keystroke{E} & Perform an Extravehicular Activity using the Manned Maneuvering Unit.\\
+	\hline\rule{0pt}{2ex}
+	\keystroke{8} & Grapple or release a satellite from the Remote Manipulator System.\\
+	\hline\rule{0pt}{2ex}
+	\keystroke{9} & Automatically stow the Remote Manipulator System.\\
 	\hline\rule{0pt}{2ex}
 	\keystroke{Ctrl}\keystroke{B} & Operate split-rudder brake\\
 	\hline\rule{0pt}{2ex}
-	\keystroke{Ctrl}\keystroke{U} & Deploy/retract Ku-band antenna (shortcut - for the full procedure see \ref{para:atlantis_antenna})\\
+	\keystroke{Ctrl}\keystroke{U} & Deploy/retract Ku-band antenna (shortcut - for the full procedure see section \ref{para:atlantis_antenna})\\
 	\hline\rule{0pt}{2ex}
 	\keystroke{Ctrl}\keystroke{Space} & Open control box for access to payload bay and SRMS control dialogs.\\
 	\hline
@@ -278,7 +303,7 @@ The Space Shuttle model included with the Orbiter distribution contains very det
 On the Extra tab of the Orbiter Launchpad, double-click Vessel configuration, followed by Atlantis Configuration. Switch the Texture and Mesh resolution settings to Low. This will put less load on the graphics system of your computer, at the cost of some visual detail.
 
 \subsubsection{Implementation notes}
-This section contains details of the implementation of the Space Shuttle (Atlantis) vessel class in Orbiter. The C++ module code for the Shuttle orbiter, the external tank and the solid rocket boosters is available in the.$/Src/Vessel/Atlantis$ subdirectory of the Orbiter source distribution. The physical parameters discussed in this section are the values used by Orbiter, as collected from public sources or guessed from fitting flight parameters. They may in some cases deviate from the actual Space Shuttle specifications. Suggestions and corrections to the model are always welcome.
+This section contains details of the implementation of the Space Shuttle (Atlantis) vessel class in Orbiter. The C++ module code for the Shuttle orbiter, the external tank and the solid rocket boosters is available in the .\textbackslash Src\textbackslash Vessel\textbackslash Atlantis subdirectory of the Orbiter source distribution. The physical parameters discussed in this section are the values used by Orbiter, as collected from public sources or guessed from fitting flight parameters. They may in some cases deviate from the actual Space Shuttle specifications. Suggestions and corrections to the model are always welcome.
 
 \paragraph{Mesh-derived parameters}
 The following parameters were extracted from the surface meshes of the Shuttle components:
@@ -392,8 +417,8 @@ Propellant[\%]  & 100 & 98.768 & 13.365 & 4.250 & 0.185     & 0   \\
 \includegraphics[width=0.5\linewidth]{atlantis_srb_prop.png}
 
 The value derived from this table for specific impulse (Isp), i.e. the amount of thrust obtained from burning 1 kg of propellant per second, is
-$I_{sp} = 2859.74 m/s$
-The actual maximum thrust also depends on the ambient atmospheric pressure. The model assumes freespace thrust to be 1.25 × the thrust at liftoff at sea level, with an exponential pressure relationship of the following form:
+$I_{sp}$ = 2859.74 m/s.
+The actual maximum thrust also depends on the ambient atmospheric pressure. The model assumes freespace thrust to be 1.25 times the thrust at liftoff at sea level, with an exponential pressure relationship of the following form:
 \begin{center}
 \[F = F_\infty e^{-p\beta}\] with \[\beta = -\frac{1}{p_0\ln{(F_0/F_\infty)}}\]
 \end{center}
@@ -405,7 +430,7 @@ where $p_0$ is the pressure at liftoff altitude, $p$ is the current pressure, an
 Problems:
 \begin{itemize}
 \item The thrust curve during the burnout stage is not based on any data. In particular the amount of thrust produced at separation (t = 126s) is not known.
-\item According to sources, the SRBs reduce thrust by $1/3$ after 50s to keep acceleration within limits. This is not currently modelled.
+\item According to sources, the SRBs reduce thrust by 1/3 after 50s to keep acceleration within limits. This is not currently modelled.
 \item The pressure-thrust relationship is assumed, not backed by any data.
 \end{itemize}
 
@@ -423,11 +448,11 @@ The lift profile utilises a documented lift slope of 0.0437/deg. Everything else
 \centering
 \begin{tabular}{|l|l|}
 \hline
-Zero-lift drag & $c_{D,0}$ = $0.06$ \\ \hline
-Chord length & $c$ = $20 m$ \\ \hline
-Reference area & $S$ = $270 m^2$ \\ \hline
-Wing aspect ratio & $A$ = $2.266$ \\ \hline
-Oswald efficiency factor & $e_0$ = $0.6$ \\ \hline
+Zero-lift drag & $c_{D,0}$ = 0.06 \\ \hline
+Chord length & $c$ = 20 m \\ \hline
+Reference area & $S$ = 270 m$^2$ \\ \hline
+Wing aspect ratio & $A$ = 2.266 \\ \hline
+Oswald efficiency factor & $e_0$ = 0.6 \\ \hline
 \end{tabular}
 \end{table}
 
@@ -450,18 +475,18 @@ The horizontal lift profile is symmetric (symmetric airfoil). Other parameters:
 \centering
 \begin{tabular}{|l|l|}
 \hline
-Moment coefficient & $c_M$ = $0$ \\ \hline
-Zero-lift drag & $c_{D,0}$ = $0.02$ \\ \hline
-Chord length & $c$ = $20 m$ \\ \hline
-Reference area & $S$ = $50 m^2$ \\ \hline
-Wing aspect ratio & $A$ = $1.5$ \\ \hline
-Oswald efficiency factor & $e_0$ = $0.6$ \\ \hline
+Moment coefficient & $c_M$ = 0 \\ \hline
+Zero-lift drag & $c_{D,0}$ = 0.02 \\ \hline
+Chord length & $c$ = 20 m \\ \hline
+Reference area & $S$ = 50 m$^2$ \\ \hline
+Wing aspect ratio & $A$ = 1.5 \\ \hline
+Oswald efficiency factor & $e_0$ = 0.6 \\ \hline
 \end{tabular}
 \end{table}
 
 \textbf{\large Speed brake}\\
 
-The split-rudder speed brake is activated with \keystroke{Ctrl}\keystroke{B}. Deployment time is 4.93s. At full extent, the brake generates a subsonic drag force of 5.0m$^{2}$ $q_\infty$ ($q_\infty$: freestream dynamic pressure) in Orbiter. It also generates a pitch-up moment.
+The split-rudder speed brake is activated with \keystroke{Ctrl}\keystroke{B}. Deployment time is 4.93s. At full extent, the brake generates a subsonic drag force of 5.0 m$^{2}$ $q_\infty$ ($q_\infty$: freestream dynamic pressure) in Orbiter. It also generates a pitch-up moment.
 
 \subsubsection{Credits}
 The Atlantis orbiter 3-D model and virtual cockpit for the latest version of Orbiter has been kindly contributed by Michael Grosberg.\\

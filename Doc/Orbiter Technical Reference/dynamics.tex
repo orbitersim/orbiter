@@ -269,7 +269,6 @@ leading to updates
 Note that the formal sum operator for the orientation $\vec\rho$ represents a rotation. Its actual implementation depends on the representation of body orientation. Orbiter uses a quaternion representation. Other choices are rotation matrices, Euler angles or axis-angle representations.
 
 \subsection{Numerical simulations}\label{ssec:results}
-%TODO image pairs below overflow page, separate them and have captions and links for each, or just resize?
 Figure~\ref{fig:1day_err} shows the mean drift and standard deviation of the semi-major axis of a low Earth orbit (mean altitude 217\,km) over a 10-day period for the different integration schemes as a function of step interval. For these simulations, the interval lengths were kept constant (during an actual Orbiter simulation run, step lengths will normally vary as a function of scenery complexity and time compression).
 
 It can be seen that the standard deviations of all methods converge at approximately $5\cdot 10^{-3}$\,km, defined by the noise level due to rounding errors and ``true'' orbit perturbations. The step lengths up to which this maximum accuracy level is maintained vary widely between the different methods. Of the polynomial interpolation schemes described above, the quadratic scheme compares favourably to the Runge-Kutta methods, providing better accuracy than RK4, while requiring fewer function evaluations.
@@ -304,15 +303,15 @@ SY8 & 16 & 51.5
 \end{table}
 
 \begin{figure}[H]\centering
-\includegraphics[width=0.99\textwidth]{sma_dev}\\
-\includegraphics[width=0.99\textwidth]{sma_std}
+\includegraphics[width=0.85\textwidth]{sma_dev}
+\includegraphics[width=0.85\textwidth]{sma_std}
 \caption{Mean drift (top) and standard deviation (bottom) in semi-major axis for a low Earth orbit (mean altitude 217\,km) over a period of 10 days, as a function of time step length. Shown are the interpolation and Runge-Kutta families of integrators used in the Orbiter code.}
 \label{fig:1day_err}
 \end{figure}
 
 \begin{figure}[H]\centering
-\includegraphics[width=0.99\textwidth]{sma_symp_std}
-\includegraphics[width=0.99\textwidth]{pea_symp_std}
+\includegraphics[width=0.85\textwidth]{sma_symp_std}
+\includegraphics[width=0.85\textwidth]{pea_symp_std}
 \caption{Standard deviation in semi-major axis (top) and perigee altitude (bottom) for the 2nd, 4th, 6th and 8th order symplectic integrators available in Orbiter. For comparison, the 2nd, 4th, 6th and 8th order Runge-Kutta results are shown as dashed lines.}
 \label{fig:symp_err}
 \end{figure}
