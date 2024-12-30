@@ -54,6 +54,17 @@ jobs:
         choco install --no-progress libreoffice-fresh
         Add-Content $env:GITHUB_PATH "C:\Program Files\MiKTeX\miktex\bin\x64\"
 
+    - name: Set up Miktex with appropriate packages
+      if: ${{ inputs.docs }}
+      shell: pwsh
+      run: | 
+        miktex --admin --verbose packages update-package-database
+        miktex --admin --verbose packages update
+        miktex --admin --verbose packages install noto
+        miktex --verbose packages update
+        miktex --admin --verbose fndb refresh
+        updmap --admin
+
     - name: Create directories
       run: |
         mkdir out\build
