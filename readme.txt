@@ -1,8 +1,27 @@
 Orbiter 2024 Readme
 ===================
 
-1. Orbiter instalation
-----------------------
+
+Orbiter is now published as an Open Source project under the MIT
+License (see LICENSE file for details).
+
+
+1. Hardware requirements
+------------------------
+The minimum hardware requirements needed by Orbiter are:
+RAM: 500 MB
+CPU: Dual Core
+GPU: 50 GFlops
+Disk: 5 GB of free space
+
+The recommended hardware requirements are:
+RAM: 2 GB
+GPU: 100 GFlops
+Disk: 10 GB of free space (80 GB if you want hi-res textures)
+
+
+2. Orbiter installation
+-----------------------
 Create a new folder for the Orbiter installation, e.g. C:\Orbiter
 or \%HOMEPATH\%\Orbiter. Note that creating an Orbiter folder in
 Program files or Program files (x86) is not recommended, because
@@ -29,29 +48,6 @@ subfolders.
 To uninstall Orbiter, simply remove the Orbiter folders with
 all contents and subdirectories. This will completely remove
 Orbiter from your hard drive.
-
-
-2. Runtime libraries
->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> TODO
---------------------
-Note: Orbiter requires the VC2008 runtime libraries installed
-on the computer. On most systems, these libraries will already
-be installed.
-The zip file package does not
-install these libraries by default. If Orbiter fails to launch
-with an error message similar to
-
-"It wasn't possible to start this application because the
-configuration of the application is incorrect. The reinstallation
-of the application might correct this problem."
-
-then the runtime libraries may be missing. You can install them
-by executing the vcredist_x86.exe installer package in the Install
-folder, or by downloading from the Microsoft web site.
-
-Note that some 3rd party Orbiter addons may require additional
-runtime versions. Refer to the installation instructions of the
-addon.
 
 
 3. Launching Orbiter

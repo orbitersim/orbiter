@@ -283,32 +283,6 @@ if(ORBITER_BUILD_D3D9CLIENT)
 endif()
 
 if (ORBITER_MAKE_DOC)
-	find_program(ODT_TO_PDF_COMPILER
-		NAMES soffice libreoffice
-		HINTS "C:/Program Files/LibreOffice/program"
-		REQUIRED
-	)
-
-	set(ODT_TO_PDF_FLAGS
-		"--headless --convert-to pdf --outdir <outdir> <infile>"
-		CACHE
-		STRING
-		"Compiler options for the OdtToPdfCompiler"
-	)
-
-	find_program(DOC_TO_PDF_COMPILER
-		NAMES soffice libreoffice
-		HINTS "C:/Program Files/LibreOffice/program"
-		REQUIRED
-	)
-
-	set(DOC_TO_PDF_FLAGS
-		"--headless --convert-to pdf --outdir <outdir> <infile>"
-		CACHE
-		STRING
-		"Compiler options for the DocToPdfCompiler"
-	)
-	
 	find_package(Doxygen REQUIRED)
 endif()
 
@@ -353,6 +327,15 @@ INSTALL(FILES ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
 	COMPONENT RuntimeLibraries
 )
+
+# readme and license
+INSTALL(FILES readme.txt
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
+)
+INSTALL(FILES LICENSE
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
+)
+#COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/Doc/TransX\ readme.txt ${ORBITER_BINARY_DOC_DIR}/TransX/TransX\ readme.txt
 
 # Sub-projects
 add_subdirectory(Extern)
