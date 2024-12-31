@@ -8,7 +8,7 @@ set(BUILD_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/out)
 add_library(LuaInterpreter SHARED
 	Interpreter.cpp
 	lua_vessel_mtd.cpp
-	lua_xrsound.cpp
+  lua_xrsound.cpp
 )
 
 target_include_directories(LuaInterpreter
@@ -21,17 +21,21 @@ target_link_libraries(LuaInterpreter
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
 	lua::lib
-	XRSound_lib
 )
 
 add_dependencies(LuaInterpreter
 	${OrbiterTgt}
 	Orbitersdk
-	D3D9Client
-	D3D9Client_Interface
-	XRSound_lib
-	XRSound_assets
 )
+
+if(ORBITER_BUILD_D3D9CLIENT)
+  add_dependencies(LuaInterpreter	D3D9Client D3D9Client_Interface)
+endif()
+
+if(ORBITER_BUILD_XRSOUND)
+  add_dependencies(LuaInterpreter	XRSound_lib	XRSound_assets)
+  target_link_libraries(LuaInterpreter XRSound_lib)
+endif()
 
 set_target_properties(LuaInterpreter
 	PROPERTIES
