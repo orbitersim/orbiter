@@ -93,6 +93,9 @@ To configure Orbiter to use the texture installation, set the
 ORBITER_PLANET_TEXTURE_INSTALL_DIR entry in CMake. For example, if Orbiter
 was installed in `C:\Orbiter`, the CMake option should be set to
 `C:/Orbiter/Textures`.
+
+This path can also be set using ORBITER_PLANET_TEXTURE_INSTALL_DIR environment variable
+
 Alternatively, you can configure the texture directory after building Orbiter
 by setting the `PlanetTexDir` entry in `Orbiter.cfg`.
 
