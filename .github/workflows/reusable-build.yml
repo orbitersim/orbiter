@@ -6,6 +6,10 @@ on:
       os:
         default: windows-2019
         type: string
+      configuration:
+        description: 'Build configuration; release or debug'
+        default: release
+        type: string
       architecture:
         description: 'Build Architecture'
         default: x86
@@ -29,17 +33,17 @@ jobs:
     name: Build
     runs-on: ${{ inputs.os }}
     timeout-minutes: 60
-    
+
     env:
       DXSDK_DIR: "${{ github.workspace }}\\DXSDK"
-      
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-      
+
     - name: Setup Problem Matcher
       uses: ammaraskar/msvc-problem-matcher@master
-      
+
     - name: Setup MSVC Console
       uses: ilammy/msvc-dev-cmd@v1
       with:
@@ -57,7 +61,7 @@ jobs:
     - name: Set up Miktex with appropriate packages
       if: ${{ inputs.docs }}
       shell: pwsh
-      run: | 
+      run: |
         miktex --admin --verbose packages update-package-database
         miktex --admin --verbose packages update
         miktex --admin --verbose packages install noto
@@ -69,13 +73,13 @@ jobs:
       run: |
         mkdir out\build
         mkdir out\install
-    
+
     - name: Cache irrKlang package
       uses: actions/cache@v4
       with:
         path: ${{ github.workspace }}/Extern/irrKlang/${{ inputs.architecture }}
         key: irrKlang-${{ inputs.architecture }}
-        
+
     - name: Cache DirectX SDK
       id:   cache
       uses: actions/cache@v4
@@ -94,20 +98,20 @@ jobs:
          dir /S /B DXSDK
 
     - name: Configure
-      run: cmake . --preset windows-${{ inputs.architecture }}-release
-        -DORBITER_MAKE_DOC=${{ inputs.docs && 'ON' || 'OFF' }} 
+      run: cmake . --preset windows-${{ inputs.architecture }}-${{ inputs.configuration }}
+        -DORBITER_MAKE_DOC=${{ inputs.docs && 'ON' || 'OFF' }}
         -DDXSDK_DIR:PATH="${{ github.workspace }}\\DXSDK"
 
     - name: Build
-      run: cmake --build --preset windows-${{ inputs.architecture }}-release --jobs 2
+      run: cmake --build --preset windows-${{ inputs.architecture }}-${{ inputs.configuration }} --jobs 2
 
     - name: Test
-      run: ctest --preset windows-${{ inputs.architecture }}-release --parallel 2
+      run: ctest --preset windows-${{ inputs.architecture }}-${{ inputs.configuration }} --parallel 2
 
     - name: Install
-      working-directory: ${{ github.workspace }}/out/build/windows-${{ inputs.architecture }}-release
+      working-directory: ${{ github.workspace }}/out/build/windows-${{ inputs.architecture }}-${{ inputs.configuration }}
       run: cmake --install . --prefix ${{ github.workspace }}/out/install
-      
+
     - name: List exports
       shell: cmd
       run: |
@@ -136,7 +140,7 @@ jobs:
         name: exports-${{ inputs.architecture }}
         path: ${{ github.workspace }}/exports.txt
         retention-days: 1
-    
+
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v4
       if: inputs.upload
