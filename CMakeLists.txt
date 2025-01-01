@@ -124,6 +124,7 @@ if(MSVC)
   if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     # disable the implied default incremental linking for debug builds
     add_link_options("/INCREMENTAL:NO")
+  endif()
 endif()
 
 # Copy data and binary assets from source to binary tree to provide a working Orbiter environment
