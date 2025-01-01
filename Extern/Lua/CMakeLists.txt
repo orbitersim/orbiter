@@ -32,7 +32,13 @@ install(TARGETS lua-exe DESTINATION ${ORBITER_INSTALL_SDK_DIR}/Utils/)
 
 # Library - lua.dll
 add_library(lua SHARED ${LUA_SRC_FILES})
-target_compile_definitions(lua PUBLIC LUA_BUILD_AS_DLL)
+
+if(MSVC)
+  target_compile_definitions(lua PUBLIC LUA_BUILD_AS_DLL)
+else()
+  target_link_libraries(lua-exe PUBLIC m)
+  target_link_libraries(lua PUBLIC m)
+endif()
 
 set_target_properties(lua PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}
