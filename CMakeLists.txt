@@ -26,9 +26,6 @@ set_property(GLOBAL PROPERTY JOB_POOLS latex=1 soffice=1 htmlhelp=1)
 # Group projects in VS
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-# Set debug postfix to appropriately name debug libs
-set(CMAKE_DEBUG_POSTFIX "D")
-
 # Locally defined cmake modules
 set(CMAKE_MODULE_PATH
 	${CMAKE_SOURCE_DIR}/cmake
