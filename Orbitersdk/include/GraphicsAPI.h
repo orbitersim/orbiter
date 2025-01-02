@@ -1620,6 +1620,17 @@ protected:
 	virtual bool clbkSplashLoadMsg (const char *msg, int line) { return false; }
 
 	/**
+	 * \brief Change the default splash screen
+	 * 
+	 * Called before clbkCreateRenderWindow to override the default splash screen
+	 * image and text color.
+	 *
+	 * \param fname File containing the splashscreen (jpg/bmp)
+	 * \param textCol text color
+	 */
+	virtual void clbkSetSplashScreen(const char *fname, DWORD textCol) {}
+
+	/**
 	 * \brief Notifies Orbiter to to initiate rendering of the 2D scene overlay
 	 *
 	 * The 2D overlay is used to render 2D instrument panels, HUD, the info

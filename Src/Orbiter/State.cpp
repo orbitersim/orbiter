@@ -18,6 +18,7 @@
 #include "State.h"
 #include "Vessel.h"
 #include "Astro.h"
+#include "Util.h"
 
 using namespace std;
 
@@ -29,18 +30,13 @@ extern TimeData td;
 State::State ()
 {
 	mjd = mjd0 = MJD (time (NULL)); // default to current system time
-	strcpy (solsys, "Sol");         // default name
-	memset (scenario, 0, 256);
-	memset (context, 0, 64);
-	memset (scnhelp, 0, 128);       // no scenario help by default
-	memset (script, 0, 128);
-	memset (playback, 0, 128);
+	solsys = "Sol";         // default name
 }
 
 void State::Update ()
 {
 	mjd  = td.MJD1;
-	strcpy (focus, g_focusobj->Name());
+	focus = g_focusobj->Name();
 }
 
 bool State::Read (const char *fname)
@@ -49,7 +45,7 @@ bool State::Read (const char *fname)
 	if (!ifs) return false;
 
 	int i;
-	strncpy (scenario, fname, 255);
+	scenario = fname;
 	for (i = strlen(fname); i >= 0; i--)
 		if (fname[i] == '.') break;
 	if (i >= 0 && i < 256) scenario[i] = '\0';
@@ -59,12 +55,13 @@ bool State::Read (const char *fname)
 	mjd0 = MJD (time (NULL)); // default to current system time
 	mjd0 += UTC_CT_diff*day;  // map from UTC to CT (or TDB) time scales
 	mjd = mjd0;
-	memset (solsys, 0, 64);			// no scenario solsys by default
-	memset (context, 0, 64);		// no scenario context by default
-	memset (script, 0, 128);		// no scenario script by default
-	memset (scnhelp, 0, 128);		// no scenario help by default
-	memset (playback, 0, 128);		// no scenario playback by default
-	memset (focus, 0, 64);			// no scenario focus by default
+	solsys.clear();           // no scenario solsys by default
+	context.clear();          // no scenario context by default
+	splashscreen.clear();     // no scplashscreen by default
+	script.clear();           // no scenario script by default
+	scnhelp.clear();          // no scenario help by default
+	playback.clear();         // no scenario playback by default
+	focus.clear();            // no scenario focus by default
 
 	if (FindLine (ifs, "BEGIN_ENVIRONMENT")) {
 		for (;;) {
@@ -80,15 +77,22 @@ bool State::Read (const char *fname)
 				else if (!_strnicmp (pc, "JE", 2) && sscanf (pc+2, "%lf", &t) == 1)
 					mjd = mjd0 = Jepoch2MJD (t);
 			} else if (!_strnicmp (pc, "System", 6)) {
-				strcpy (solsys, trim_string (pc+6));
+				solsys = trim_string (pc+6);
 			} else if (!_strnicmp (pc, "Context", 7)) {
-				strcpy (context, trim_string (pc+7));
+				context = trim_string (pc+7);
+			} else if (!_strnicmp (pc, "SplashScreen", 12)) {
+				char color[256];
+				int nChar = 0;
+				if(sscanf(pc+12, "%255s %n", &color, &nChar)==1) {
+					splashcolor = GetCSSColor(color);
+					splashscreen = trim_string (pc+12+nChar);
+				}
 			} else if (!_strnicmp (pc, "Script", 6)) {
-				strcpy (script, trim_string (pc+6));
+				script = trim_string (pc+6);
 			} else if (!_strnicmp (pc, "Help", 4)) {
-				strncpy (scnhelp, trim_string (pc+4), 127);
+				scnhelp = trim_string (pc+4);
 			} else if (!_strnicmp (pc, "Playback", 8)) {
-				strncpy (playback, trim_string (pc+8), 127);
+				playback = trim_string (pc+8);
 			}
 		}
 	}
@@ -98,7 +102,7 @@ bool State::Read (const char *fname)
 			pc = trim_string (cbuf);
 			if (!_stricmp (pc, "END_FOCUS")) break;
 			if (!_strnicmp (pc, "Ship", 4)) {
-				strcpy (focus, trim_string (pc+4));
+				focus = trim_string (pc+4);
 			}
 		}
 	}
@@ -122,15 +126,17 @@ void State::Write (ostream &ofs, const char *desc, int desc_fmt, const char *hel
 	ofs << "BEGIN_ENVIRONMENT" << endl;
 	ofs << "  System " << solsys << endl;
 	ofs << "  Date MJD " << mjd << endl;
-	if (context[0])
+	if (context.length())
 		ofs << "  Context " << context << endl;
-	if (script[0])
+	if (splashscreen.length())
+		ofs << "  SplashScreen " << splashscreen << endl;
+	if (script.length())
 		ofs << "  Script " << script << endl;
-	if (scnhelp[0])
+	if (scnhelp.length())
 		ofs << "  Help " << scnhelp << endl;
 	else if (help)
 		ofs << "  Help " << help << endl;
-	if (playback[0])
+	if (playback.length())
 		ofs << "  Playback " << playback << endl;
 	ofs << "END_ENVIRONMENT" << endl << endl;
 
