@@ -93,12 +93,7 @@ IDB_CLOSEDOWN2          BITMAP                  "Bitmaps\\Closedown.bmp"
 
 IDB_ARROWS              BITMAP                  "Bitmaps\\arrows.bmp"
 
-#if defined(INLINEGRAPHICS)
 IDB_BANNER              BITMAP                  "Bitmaps\\banner.bmp"
-#else
-IDB_BANNER              BITMAP                  "Bitmaps\\banner_ng.bmp"
-#endif
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -416,11 +411,7 @@ END
 IDD_MAIN DIALOGEX 0, 0, LAUNCHPAD_WIN_WIDTH, 333
 STYLE DS_SETFONT | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_APPWINDOW
-#ifdef INLINEGRAPHICS
 CAPTION "OpenOrbiter Launchpad"
-#else
-CAPTION "OpenOrbiter Server Launchpad"
-#endif
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "&Launch Orbiter",IDLAUNCH,69,309,122,18,BS_MULTILINE

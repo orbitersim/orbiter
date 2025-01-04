@@ -12,7 +12,6 @@
 #include <winuser.h>
 #include "Launchpad.h"
 #include "TabExtra.h"
-#include "ExtraRender.h"
 #include "Orbiter.h"
 #include "Rigidbody.h"
 #include "Log.h"

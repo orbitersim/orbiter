@@ -5,6 +5,7 @@
 #define __LOG_H
 
 #include <stdio.h>
+#include <windows.h>
 
 // comment the following line to suppress log file output
 #define GENERATE_LOG
@@ -27,7 +28,6 @@ void LogOut_Obsolete(const char* func, const char* msg = 0);      // Write obsol
 void LogOut_LastError (const char *func, const char *file, int line);             // Write formatted string from GetLastError
 void LogOut_DDErr (HRESULT hr, const char *func, const char *file, int line);     // Write DirectDraw error to log file
 void LogOut_DIErr (HRESULT hr, const char *func, const char *file, int line);     // Write DirectInput error to log file
-void LogOut_DPErr (HRESULT hr, const char *func, const char *file, int line);     // Write DirectPlay error to log file
 
 // Message formatting components
 void LogOut_Error_Start();
