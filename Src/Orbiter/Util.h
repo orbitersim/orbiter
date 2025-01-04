@@ -88,4 +88,7 @@ struct FltFormat
 	FltFormatter operator() (double value) const;
 };
 
+// Convert a CSS color string to a DWORD (in 0xbbggrr format)
+DWORD GetCSSColor(const char *col);
+
 #endif //!__UTIL_H
