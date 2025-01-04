@@ -271,6 +271,8 @@ D3D9Client::D3D9Client (HINSTANCE hInstance) :
 	pWM			(NULL),
 	pBltSkp		(NULL),
 	pBltGrpTgt	(NULL),
+	pCustomSplashScreen(NULL),
+	pSplashTextColor(0xE0A0A0),
 	hRenderWnd(),
 	scene     (),
 	meshmgr   (),
@@ -860,6 +862,8 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 		if (x) x->DumpTextures();
 	} */
 	//GraphicsClient::clbkCloseSession(fastclose);
+	pCustomSplashScreen = NULL;
+	pSplashTextColor = 0xE0A0A0;
 
 	SAFE_DELETE(pWM);
 	LogAlw("================= Deleting Scene ================");
@@ -868,7 +872,7 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 	LogAlw("============== Deleting Mesh Manager ============");
 	SAFE_DELETE(meshmgr);
 	WriteLog("[Session Closed. Scene deleted.]");
-	
+
 }
 
 // ==============================================================
@@ -2865,7 +2869,7 @@ bool D3D9Client::OutputLoadStatus(const char *txt, int line)
 		HR(pTextScreen->GetDC(&hDC));
 
 		HFONT hO = (HFONT)SelectObject(hDC, hLblFont1);
-		SetTextColor(hDC, 0xE0A0A0);
+		SetTextColor(hDC, pSplashTextColor);
 		SetBkMode(hDC,TRANSPARENT);
 		SetTextAlign(hDC, TA_LEFT|TA_TOP);
 
@@ -2874,7 +2878,7 @@ bool D3D9Client::OutputLoadStatus(const char *txt, int line)
 		SelectObject(hDC, hLblFont2);
 		TextOut(hDC, 2, 36, pLoadItem, lstrlen(pLoadItem));
 
-		HPEN pen = CreatePen(PS_SOLID,1,0xE0A0A0);
+		HPEN pen = CreatePen(PS_SOLID,1,pSplashTextColor);
 		HPEN po = (HPEN)SelectObject(hDC, pen);
 
 		MoveToEx(hDC, 0, 32, NULL);
@@ -2904,6 +2908,11 @@ bool D3D9Client::OutputLoadStatus(const char *txt, int line)
 }
 
 // =======================================================================
+void D3D9Client::clbkSetSplashScreen(const char *filename, DWORD textCol)
+{
+	pCustomSplashScreen = filename;
+	pSplashTextColor = textCol;
+}
 
 void D3D9Client::SplashScreen()
 {
@@ -2925,28 +2934,50 @@ void D3D9Client::SplashScreen()
 	HR(pDevice->CreateOffscreenPlainSurface(loadd_w, loadd_h, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pTextScreen, NULL));
 	HR(pDevice->CreateOffscreenPlainSurface(viewW, viewH, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pSplashScreen, NULL));
 
-	D3DXIMAGE_INFO Info;
 
-	HMODULE hOrbiter =  GetModuleHandleA("orbiter.exe");
-	HRSRC hRes = FindResourceA(hOrbiter, MAKEINTRESOURCEA(292), "IMAGE");
-	HGLOBAL hImage = LoadResource(hOrbiter, hRes);
-	LPVOID pData = LockResource(hImage);
-	DWORD size = SizeofResource(hOrbiter, hRes);
+	if(pCustomSplashScreen != NULL) {
+		D3DXIMAGE_INFO info;
+		HR(D3DXGetImageInfoFromFile(pCustomSplashScreen, &info));
 
-	// Splash screen image is 1920 x 1200 pixel
-	double scale = min(viewW / 1920.0, viewH / 1200.0);
-	double _w = (1920.0 * scale);
-	double _h = (1200.0 * scale);
-	double _l = abs(viewW - _w)/2.0;
-	double _t = abs(viewH - _h)/2.0;
-	RECT imgRect = {
-		static_cast<LONG>( round(_l) ),
-		static_cast<LONG>( round(_t) ),
-		static_cast<LONG>( round(_w + _l) ),
-		static_cast<LONG>( round(_h + _t) )
-	};
-	HR(pDevice->ColorFill(pSplashScreen, NULL, D3DCOLOR_XRGB(0, 0, 0)));
-	HR(D3DXLoadSurfaceFromFileInMemory(pSplashScreen, NULL, &imgRect, pData, size, NULL, D3DX_FILTER_LINEAR, 0, &Info));
+		double imageW = info.Width;
+		double imageH = info.Height;
+
+		double scale = min(viewW / imageW, viewH / imageH);
+		double _w = (imageW * scale);
+		double _h = (imageH * scale);
+		double _l = abs(viewW - _w)/2.0;
+		double _t = abs(viewH - _h)/2.0;
+		RECT imgRect = {
+			static_cast<LONG>( round(_l) ),
+			static_cast<LONG>( round(_t) ),
+			static_cast<LONG>( round(_w + _l) ),
+			static_cast<LONG>( round(_h + _t) )
+		};
+		HR(pDevice->ColorFill(pSplashScreen, NULL, D3DCOLOR_XRGB(0, 0, 0)));
+		HR(D3DXLoadSurfaceFromFile(pSplashScreen, NULL, &imgRect, pCustomSplashScreen, NULL, D3DX_FILTER_LINEAR, 0, NULL));
+	} else {
+		D3DXIMAGE_INFO Info;
+		HMODULE hOrbiter =  GetModuleHandleA("orbiter.exe");
+		HRSRC hRes = FindResourceA(hOrbiter, MAKEINTRESOURCEA(292), "IMAGE");
+		HGLOBAL hImage = LoadResource(hOrbiter, hRes);
+		LPVOID pData = LockResource(hImage);
+		DWORD size = SizeofResource(hOrbiter, hRes);
+
+		// Splash screen image is 1920 x 1200 pixel
+		double scale = min(viewW / 1920.0, viewH / 1200.0);
+		double _w = (1920.0 * scale);
+		double _h = (1200.0 * scale);
+		double _l = abs(viewW - _w)/2.0;
+		double _t = abs(viewH - _h)/2.0;
+		RECT imgRect = {
+			static_cast<LONG>( round(_l) ),
+			static_cast<LONG>( round(_t) ),
+			static_cast<LONG>( round(_w + _l) ),
+			static_cast<LONG>( round(_h + _t) )
+		};
+		HR(pDevice->ColorFill(pSplashScreen, NULL, D3DCOLOR_XRGB(0, 0, 0)));
+		HR(D3DXLoadSurfaceFromFileInMemory(pSplashScreen, NULL, &imgRect, pData, size, NULL, D3DX_FILTER_LINEAR, 0, &Info));
+	}
 
 	HDC hDC;
 	HR(pSplashScreen->GetDC(&hDC));
@@ -2965,7 +2996,7 @@ void D3D9Client::SplashScreen()
 	HFONT hF = CreateFontIndirect(&fnt);
 
 	HFONT hO = (HFONT)SelectObject(hDC, hF);
-	SetTextColor(hDC, 0xE0A0A0);
+	SetTextColor(hDC, pSplashTextColor);
 	SetBkMode(hDC,TRANSPARENT);
 
 	const char *months[]={"???","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","???"};

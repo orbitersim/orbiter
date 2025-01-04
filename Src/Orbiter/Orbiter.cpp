@@ -683,6 +683,8 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 	m_pLaunchpad->Hide(); // hide launchpad dialog while the render window is visible
 	
 	if (gclient) {
+		if(pState->SplashScreen())
+			gclient->clbkSetSplashScreen(pState->SplashScreen(), pState->SplashColor());
 		hRenderWnd = gclient->InitRenderWnd (gclient->clbkCreateRenderWindow());
 		GetRenderParameters ();
 	} else {
