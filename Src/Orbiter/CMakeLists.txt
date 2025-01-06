@@ -127,7 +127,6 @@ set(Orbiter_includes
 	${CMAKE_SOURCE_DIR}/OVP
 	${CMAKE_CURRENT_BINARY_DIR}
 	${HTMLHELP_INCLUDE_DIR}
-	${DX7SDK_INCLUDE_DIR}
 )
 
 set(Orbiter_common_libs
