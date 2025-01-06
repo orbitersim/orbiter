@@ -5,9 +5,8 @@ To build Orbiter from its sources you need a C++ compiler able to create Windows
 Orbiter has been built successfully with Visual Studio 2019 Community
 https://visualstudio.microsoft.com/downloads/
 
-VS 2019 also has built-in support for CMake. If you use a different version or want to
-configure the Orbiter build separately, you also need to install CMake.
-https://cmake.org/download/
+To quickly install Visual Studio components required for development, launch installer and 
+import the [.vsconfig](./.vsconfig) file provided in the repository ([documentation](https://learn.microsoft.com/en-us/visualstudio/install/import-export-installation-configurations?view=vs-2022#import-a-configuration-using-the-visual-studio-installer))
 
 If you want to build the Orbiter documentation, you need LaTeX. Multiple LaTeX distros for
 Windows are available, for example MiKTeX.
@@ -53,11 +52,21 @@ PLANETARY TEXTURES
 The Orbiter git repository does not include the planetary texture files for most
 celestial bodies. You need to install these separately (e.g. by installing Orbiter
 2016 and optionally downloading high-res texture packs from the Orbiter website).
-During CMake configuration, specify the location of the texture files in the
-ORBITER_PLANET_TEXTURE_INSTALL_DIR entry. For example, if Orbiter 2016 is installed
-in c:\orbiter2016, the texture directory would be c:\orbiter2016\Textures.
 
-Alternatively, you can set the planetary texture directory after building
+Set environment variable ORBITER_PLANET_TEXTURE_INSTALL_DIR in your profile so that
+Orbiter build correctly configures the reference in configuration. 
+
+Assuming Orbiter 2016 is installed in c:\orbiter2016:
+
+```
+setx ORBITER_PLANET_TEXTURE_INSTALL_DIR c:\orbiter2016\Textures
+```
+
+Alternatively, you can specify the location of the texture files as CMake variable:
+```
+cmake --preset windows-x64-debug -DORBITER_PLANET_TEXTURE_INSTALL_DIR=c:\orbiter2016\Textures
+```
+You can also set the planetary texture directory after building
 Orbiter by setting the PlanetTexDir entry in Orbiter.cfg.
 
 
