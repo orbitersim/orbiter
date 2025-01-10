@@ -67,7 +67,7 @@ If you want to build the documentation, you need a few additional tools:
 - [Doxygen](https://www.doxygen.nl/index.html) for building the source-level
   documentation for developers.
 
-See [README.compile](./README.compile) for details on building Orbiter.
+See [COMPILE.md](./COMPILE.md) for details on building Orbiter.
 
 ## Planet textures
 
