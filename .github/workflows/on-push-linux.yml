@@ -1,0 +1,20 @@
+name: On Push (Linux)
+
+on:  
+  push:
+    branches:
+      - linux
+    paths-ignore: [ 'Doc/**', 'Flights/**', 'Html/**', 'Images/**', 'Localdoc/**', 'Scenarios/**', 'Textures/**', 'Textures2/**']
+  pull_request:
+    branches:
+      - linux
+    paths-ignore: [ 'Doc/**', 'Flights/**', 'Html/**', 'Images/**', 'Localdoc/**', 'Scenarios/**', 'Textures/**', 'Textures2/**']
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Push
+    runs-on: ubuntu-latest
+    steps: # Dummy workflow to later be replaced with actual
+    - name: Checkout
+      uses: actions/checkout@v4

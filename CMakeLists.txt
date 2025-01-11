@@ -32,18 +32,13 @@ set(CMAKE_MODULE_PATH
 	${CMAKE_MODULE_PATH}
 )
 
-if(CMAKE_SIZEOF_VOID_P EQUAL 8) # 64-bit build?
-	set(BUILD64 1)
-	set(ARCH "x64")
-	set(PLATFORM_STRING "x64")
-else()
+if(MSVC AND NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
 	set(BUILD64 0)
 	set(ARCH "x86")
-	set(PLATFORM_STRING "Win32")
-endif()
-
-if (NOT ${CMAKE_GENERATOR} STREQUAL "Ninja")
-	add_compile_options(/MP)
+  add_link_options("/LARGEADDRESSAWARE")
+else()
+	set(BUILD64 1)
+	set(ARCH "x64")
 endif()
 
 # Define directories and file paths for some common binaries
@@ -93,7 +88,7 @@ set(EXTERN_DIR "${CMAKE_SOURCE_DIR}/Extern")
 set(HTMLHELP_DIR "${EXTERN_DIR}/Htmlhelp")
 set(HTMLHELP_INCLUDE_DIR ${HTMLHELP_DIR}/include)
 set(HTMLHELP_LIB_DIR ${HTMLHELP_DIR}/lib-${ARCH})
-set(HTMLHELP_LIB ${HTMLHELP_LIB_DIR}/Htmlhelp.lib)
+set(HTMLHELP_LIB ${HTMLHELP_LIB_DIR}/Htmlhelp.Lib)
 
 set(ORBITER_TOOL_MESHC "$<TARGET_FILE:meshc>")
 set(ldoc ${ORBITER_BINARY_ROOT_DIR}/lua.exe ${ORBITER_BINARY_ROOT_DIR}/packages/LDoc/ldoc.lua -v --multimodule)
@@ -114,6 +109,8 @@ set(Qt5_x64_DIR
 if(MSVC)
   add_compile_options(/we4311 /DNOMINMAX)
   add_link_options("/NODEFAULTLIB:\"LIBCMTD\"")
+else()
+  set(CMAKE_BUILD_WITH_INSTALL_RPATH true)
 endif()
 
 # Copy data and binary assets from source to binary tree to provide a working Orbiter environment
