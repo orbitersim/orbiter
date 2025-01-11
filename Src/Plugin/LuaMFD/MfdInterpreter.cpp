@@ -36,9 +36,11 @@ void MFDInterpreter::LoadAPI ()
 		{"SetVerbosity", termSetVerbosity},
 		{NULL, NULL}
 	};
-	lua_newtable(L);
-	luaL_setfuncs(L, termLib, 0);
+	luaL_newlib(L, termLib);
 	lua_setglobal(L, "term");
+
+	// Put term back on stack (lua 5.4)
+	lua_getglobal(L, "term");
 
 	// also replace built-in print so it works as expected in the MFD
 	static const struct luaL_Reg printlib[] = {

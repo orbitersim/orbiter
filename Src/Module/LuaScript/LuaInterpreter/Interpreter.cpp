@@ -772,9 +772,9 @@ void Interpreter::LoadAPI ()
 		{"unit", vec_unit},
 		{NULL, NULL}
 	};
-	lua_newtable(L);
-	luaL_setfuncs(L, vecLib, 0);
+	luaL_newlib(L, vecLib);
 	lua_setglobal(L, "vec");
+	lua_getglobal(L, "vec");
 
 	static const struct luaL_Reg matLib[] = {
 		{"identity", mat_identity},
@@ -784,18 +784,18 @@ void Interpreter::LoadAPI ()
 		{"rotm", mat_rotm},
 		{NULL, NULL}
 	};
-	lua_newtable(L);
-	luaL_setfuncs(L, matLib, 0);
+	luaL_newlib(L, matLib);
 	lua_setglobal(L, "mat");
+	lua_getglobal(L, "mat");
 
 	// Load the process library
 	static const struct luaL_Reg procLib[] = {
 		{"Frameskip", procFrameskip},
 		{NULL, NULL}
 	};
-	lua_newtable(L);
-	luaL_setfuncs(L, procLib, 0);
+	luaL_newlib(L, procLib);
 	lua_setglobal(L, "proc");
+	lua_getglobal(L, "proc");
 
 	// Load the oapi library
 	static const struct luaL_Reg oapiLib[] = {
@@ -1055,27 +1055,27 @@ void Interpreter::LoadAPI ()
 
 		{NULL, NULL}
 	};
-	lua_newtable(L);
-	luaL_setfuncs(L, oapiLib, 0);
+	luaL_newlib(L, oapiLib);
 	lua_setglobal(L, "oapi");
+	lua_getglobal(L, "oapi");
 
 	// Load the (dummy) term library
 	static const struct luaL_Reg termLib[] = {
 		{"out", termOut},
 		{NULL, NULL}
 	};
-	lua_newtable(L);
-	luaL_setfuncs(L, termLib, 0);
+	luaL_newlib(L, termLib);
 	lua_setglobal(L, "term");
+	lua_getglobal(L, "term");
 
 	// Load XRSound library
 	static const struct luaL_Reg XRSoundLib[] = {
 		{"create_instance", xrsound_create_instance},
 		{NULL, NULL}
 	};
-	lua_newtable(L);
-	luaL_setfuncs(L, XRSoundLib, 0);
+	luaL_newlib(L, XRSoundLib);
 	lua_setglobal(L, "xrsound");
+	lua_getglobal(L, "xrsound");
 
 	// Set up global tables of constants
 
@@ -1377,7 +1377,6 @@ void Interpreter::LoadMFDAPI ()
 	lua_pushstring (L, "__index");
 	lua_pushvalue (L, -2); // push metatable
 	lua_settable (L, -3);  // metatable.__index = metatable
-	lua_newtable(L);
 	luaL_setfuncs(L, mfdLib, 0);
 }
 
@@ -1403,7 +1402,6 @@ void Interpreter::LoadNTVERTEXAPI ()
 	lua_pushstring (L, "__index");
 	lua_pushvalue (L, -2); // push metatable
 	lua_settable (L, -3);  // metatable.__index = metatable
-	lua_newtable(L);
 	luaL_setfuncs(L, ntvLib, 0);
 
       /* now the stack has the metatable at index 1 and
@@ -1451,7 +1449,6 @@ void Interpreter::LoadNTVERTEXAPI ()
 	lua_pushstring (L, "__index");
 	lua_pushvalue (L, -2); // push metatable
 	lua_settable (L, -3);  // metatable.__index = metatable
-	lua_newtable(L);
 	luaL_setfuncs(L, idxLib, 0);
 }
 
@@ -1473,9 +1470,9 @@ void Interpreter::LoadBitAPI()
 		{"ror", bit_ror},
 		{NULL, NULL}
 	};
-	lua_newtable(L);
-	luaL_setfuncs(L, bitLib, 0);
+	luaL_newlib(L, bitLib);
 	lua_setglobal(L, "bit");
+	lua_getglobal(L, "bit");
 }
 
 void Interpreter::LoadLightEmitterMethods ()
@@ -1504,7 +1501,6 @@ void Interpreter::LoadLightEmitterMethods ()
 	lua_pushstring (L, "__index");
 	lua_pushvalue (L, -2); // push metatable
 	lua_settable (L, -3); // metatable.__index = metatable
-	lua_newtable(L);
 	luaL_setfuncs(L, methodLib, 0);
 
 	lua_createtable(L, 0, 3);
@@ -1527,7 +1523,6 @@ void Interpreter::LoadBeaconMethods ()
 	lua_pushstring (L, "__index");
 	lua_pushvalue (L, -2); // push metatable
 	lua_settable (L, -3);  // metatable.__index = metatable
-	lua_newtable(L);
 	luaL_setfuncs(L, beaconLib, 0);
 
 	lua_createtable(L, 0, 3);
@@ -1549,7 +1544,6 @@ void Interpreter::LoadCustomCameraMethods ()
 	lua_pushstring (L, "__index");
 	lua_pushvalue (L, -2); // push metatable
 	lua_settable (L, -3);  // metatable.__index = metatable
-	lua_newtable(L);
 	luaL_setfuncs(L, CustomCameraLib, 0);
 }
 
@@ -1591,7 +1585,6 @@ void Interpreter::LoadSketchpadAPI ()
 	lua_pushstring (L, "__index");
 	lua_pushvalue (L, -2); // push metatable
 	lua_settable (L, -3); // metatable.__index = metatable
-	lua_newtable(L);
 	luaL_setfuncs(L, skpLib, 0);
 
 	lua_createtable (L, 0, 8);
@@ -1624,7 +1617,6 @@ void Interpreter::LoadAnnotationAPI ()
 	lua_pushstring (L, "__index");
 	lua_pushvalue (L, -2); // push metatable
 	lua_settable (L, -3);  // metatable.__index = metatable
-	lua_newtable(L);
 	luaL_setfuncs(L, noteMtd, 0);
 }
 
@@ -1639,7 +1631,6 @@ void Interpreter::LoadVesselStatusAPI()
 	lua_pushstring(L, "__index");
 	lua_pushvalue(L, -2); // push metatable
 	lua_settable(L, -3);  // metatable.__index = metatable
-	lua_newtable(L);
 	luaL_setfuncs(L, vs, 0);
 
 	static const struct luaL_Reg vs2[] = {
@@ -1651,7 +1642,6 @@ void Interpreter::LoadVesselStatusAPI()
 	lua_pushstring(L, "__index");
 	lua_pushvalue(L, -2); // push metatable
 	lua_settable(L, -3);  // metatable.__index = metatable
-	lua_newtable(L);
 	luaL_setfuncs(L, vs2, 0);
 }
 

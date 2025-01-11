@@ -571,11 +571,12 @@ void Interpreter::LoadVesselAPI ()
 	lua_pushvalue (L, -2); // push metatable
 	lua_settable (L, -3);  // metatable.__index = metatable
 
-	lua_newtable(L);
 	luaL_setfuncs(L, vesselLib, 0);
-	lua_newtable(L);
-	luaL_setfuncs(L, vesselAcc, 0);
+	luaL_newlib(L, vesselAcc);
 	lua_setglobal(L, "vessel");
+
+	// put vessel back on the stack after registering global (lua 5.4)
+	lua_getglobal(L, "vessel");
 
 	// create pseudo-instance "focus"
 	lua_pushlightuserdata (L, &vfocus);
