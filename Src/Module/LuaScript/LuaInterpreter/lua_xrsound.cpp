@@ -38,7 +38,8 @@ void Interpreter::LoadXRSoundAPI ()
 	lua_pushstring (L, "__index");
 	lua_pushvalue (L, -2); // push metatable
 	lua_settable (L, -3);  // metatable.__index = metatable
-	luaL_openlib (L, NULL, xrsoundLib, 0);
+	lua_newtable(L);
+	luaL_setfuncs(L, xrsoundLib, 0);
 
 	lua_createtable (L, 0, 7);
 	lua_pushnumber (L, (int)XRSound::PlaybackType::InternalOnly); lua_setfield (L, -2, "InternalOnly");

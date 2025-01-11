@@ -688,7 +688,7 @@ void Interpreter::frameskip (lua_State *L)
 {
 	if (status == 1) { // termination request
 		lua_pushboolean(L, 1);
-		lua_setfield (L, LUA_GLOBALSINDEX, "wait_exit");
+		lua_setglobal (L, "wait_exit");
 	} else {
 		EndExec();
 		WaitExec();
@@ -772,7 +772,9 @@ void Interpreter::LoadAPI ()
 		{"unit", vec_unit},
 		{NULL, NULL}
 	};
-	luaL_openlib (L, "vec", vecLib, 0);
+	lua_newtable(L);
+	luaL_setfuncs(L, vecLib, 0);
+	lua_setglobal(L, "vec");
 
 	static const struct luaL_Reg matLib[] = {
 		{"identity", mat_identity},
@@ -782,14 +784,18 @@ void Interpreter::LoadAPI ()
 		{"rotm", mat_rotm},
 		{NULL, NULL}
 	};
-	luaL_addgsub (L, "mat", matLib, 0);
+	lua_newtable(L);
+	luaL_setfuncs(L, matLib, 0);
+	lua_setglobal(L, "mat");
 
 	// Load the process library
 	static const struct luaL_Reg procLib[] = {
 		{"Frameskip", procFrameskip},
 		{NULL, NULL}
 	};
-	luaL_openlib (L, "proc", procLib, 0);
+	lua_newtable(L);
+	luaL_setfuncs(L, procLib, 0);
+	lua_setglobal(L, "proc");
 
 	// Load the oapi library
 	static const struct luaL_Reg oapiLib[] = {
@@ -1049,21 +1055,27 @@ void Interpreter::LoadAPI ()
 
 		{NULL, NULL}
 	};
-	luaL_openlib (L, "oapi", oapiLib, 0);
+	lua_newtable(L);
+	luaL_setfuncs(L, oapiLib, 0);
+	lua_setglobal(L, "oapi");
 
 	// Load the (dummy) term library
 	static const struct luaL_Reg termLib[] = {
 		{"out", termOut},
 		{NULL, NULL}
 	};
-	luaL_openlib (L, "term", termLib, 0);
+	lua_newtable(L);
+	luaL_setfuncs(L, termLib, 0);
+	lua_setglobal(L, "term");
 
 	// Load XRSound library
 	static const struct luaL_Reg XRSoundLib[] = {
 		{"create_instance", xrsound_create_instance},
 		{NULL, NULL}
 	};
-	luaL_openlib (L, "xrsound", XRSoundLib, 0);
+	lua_newtable(L);
+	luaL_setfuncs(L, XRSoundLib, 0);
+	lua_setglobal(L, "xrsound");
 
 	// Set up global tables of constants
 
@@ -1365,7 +1377,8 @@ void Interpreter::LoadMFDAPI ()
 	lua_pushstring (L, "__index");
 	lua_pushvalue (L, -2); // push metatable
 	lua_settable (L, -3);  // metatable.__index = metatable
-	luaL_openlib (L, NULL, mfdLib, 0);
+	lua_newtable(L);
+	luaL_setfuncs(L, mfdLib, 0);
 }
 
 void Interpreter::LoadNTVERTEXAPI ()
@@ -1390,7 +1403,8 @@ void Interpreter::LoadNTVERTEXAPI ()
 	lua_pushstring (L, "__index");
 	lua_pushvalue (L, -2); // push metatable
 	lua_settable (L, -3);  // metatable.__index = metatable
-	luaL_openlib (L, NULL, ntvLib, 0);
+	lua_newtable(L);
+	luaL_setfuncs(L, ntvLib, 0);
 
       /* now the stack has the metatable at index 1 and
          `array' at index 2 */
@@ -1437,7 +1451,8 @@ void Interpreter::LoadNTVERTEXAPI ()
 	lua_pushstring (L, "__index");
 	lua_pushvalue (L, -2); // push metatable
 	lua_settable (L, -3);  // metatable.__index = metatable
-	luaL_openlib (L, NULL, idxLib, 0);
+	lua_newtable(L);
+	luaL_setfuncs(L, idxLib, 0);
 }
 
 void Interpreter::LoadBitAPI()
@@ -1458,7 +1473,9 @@ void Interpreter::LoadBitAPI()
 		{"ror", bit_ror},
 		{NULL, NULL}
 	};
-	luaL_openlib(L, "bit", bitLib, 0);
+	lua_newtable(L);
+	luaL_setfuncs(L, bitLib, 0);
+	lua_setglobal(L, "bit");
 }
 
 void Interpreter::LoadLightEmitterMethods ()
@@ -1487,7 +1504,8 @@ void Interpreter::LoadLightEmitterMethods ()
 	lua_pushstring (L, "__index");
 	lua_pushvalue (L, -2); // push metatable
 	lua_settable (L, -3); // metatable.__index = metatable
-	luaL_openlib (L, NULL, methodLib, 0);
+	lua_newtable(L);
+	luaL_setfuncs(L, methodLib, 0);
 
 	lua_createtable(L, 0, 3);
 	lua_pushnumber(L, LightEmitter::VIS_EXTERNAL); lua_setfield(L, -2, "EXTERNAL");
@@ -1509,7 +1527,8 @@ void Interpreter::LoadBeaconMethods ()
 	lua_pushstring (L, "__index");
 	lua_pushvalue (L, -2); // push metatable
 	lua_settable (L, -3);  // metatable.__index = metatable
-	luaL_openlib (L, NULL, beaconLib, 0);
+	lua_newtable(L);
+	luaL_setfuncs(L, beaconLib, 0);
 
 	lua_createtable(L, 0, 3);
 	lua_pushnumber(L, BEACONSHAPE_COMPACT); lua_setfield(L, -2, "COMPACT");
@@ -1530,7 +1549,8 @@ void Interpreter::LoadCustomCameraMethods ()
 	lua_pushstring (L, "__index");
 	lua_pushvalue (L, -2); // push metatable
 	lua_settable (L, -3);  // metatable.__index = metatable
-	luaL_openlib (L, NULL, CustomCameraLib, 0);
+	lua_newtable(L);
+	luaL_setfuncs(L, CustomCameraLib, 0);
 }
 
 
@@ -1571,7 +1591,8 @@ void Interpreter::LoadSketchpadAPI ()
 	lua_pushstring (L, "__index");
 	lua_pushvalue (L, -2); // push metatable
 	lua_settable (L, -3); // metatable.__index = metatable
-	luaL_openlib (L, NULL, skpLib, 0);
+	lua_newtable(L);
+	luaL_setfuncs(L, skpLib, 0);
 
 	lua_createtable (L, 0, 8);
 	lua_pushnumber (L, oapi::Sketchpad::BK_OPAQUE);      lua_setfield (L, -2, "OPAQUE");
@@ -1603,7 +1624,8 @@ void Interpreter::LoadAnnotationAPI ()
 	lua_pushstring (L, "__index");
 	lua_pushvalue (L, -2); // push metatable
 	lua_settable (L, -3);  // metatable.__index = metatable
-	luaL_openlib (L, NULL, noteMtd, 0);
+	lua_newtable(L);
+	luaL_setfuncs(L, noteMtd, 0);
 }
 
 void Interpreter::LoadVesselStatusAPI()
@@ -1617,7 +1639,8 @@ void Interpreter::LoadVesselStatusAPI()
 	lua_pushstring(L, "__index");
 	lua_pushvalue(L, -2); // push metatable
 	lua_settable(L, -3);  // metatable.__index = metatable
-	luaL_openlib(L, NULL, vs, 0);
+	lua_newtable(L);
+	luaL_setfuncs(L, vs, 0);
 
 	static const struct luaL_Reg vs2[] = {
 		{"get", vs2get},
@@ -1628,7 +1651,8 @@ void Interpreter::LoadVesselStatusAPI()
 	lua_pushstring(L, "__index");
 	lua_pushvalue(L, -2); // push metatable
 	lua_settable(L, -3);  // metatable.__index = metatable
-	luaL_openlib(L, NULL, vs2, 0);
+	lua_newtable(L);
+	luaL_setfuncs(L, vs2, 0);
 }
 
 void Interpreter::LoadStartupScript ()
@@ -3581,7 +3605,7 @@ coordinates at each frame.
 int Interpreter::oapi_render_hud(lua_State* L)
 {
 	MESHHANDLE hMesh = lua_tomeshhandle(L, 1);
-	int nSurf = lua_len(L, 2);
+	int nSurf = lua_rawlen(L, 2);
 	SURFHANDLE *hSurf = new SURFHANDLE[nSurf];
 
 	for ( int i=1 ; i <= nSurf; i++ ) {
@@ -7498,7 +7522,7 @@ int Interpreter::oapi_deflate (lua_State *L)
 	ASSERT_STRING(L, 1);
 
 	const BYTE *ebuf = (BYTE*)lua_tostring(L, 1);
-	DWORD      nebuf = lua_len(L, 1);
+	DWORD      nebuf = lua_rawlen(L, 1);
 	BYTE       *zbuf = NULL;
 	DWORD      nzbuf = 0;
 
@@ -7534,7 +7558,7 @@ int Interpreter::oapi_inflate (lua_State *L)
 	ASSERT_STRING(L, 1);
 
 	const BYTE *zbuf = (BYTE*)lua_tostring(L, 1);
-	DWORD      nzbuf = lua_len(L, 1);
+	DWORD      nzbuf = lua_rawlen(L, 1);
 	BYTE       *ebuf = NULL;
 	DWORD      nebuf = 0;
 
@@ -7687,7 +7711,7 @@ Vertex arrays.
 NTVERTEX lua_tontvertex(lua_State *L, int idx)
 {
 	int type = lua_type(L, idx);
-	if(type != LUA_TTABLE || lua_len(L, idx) != 8) {
+	if(type != LUA_TTABLE || lua_rawlen(L, idx) != 8) {
 		luaL_error(L, "invalid argument for ntvertex creation");
 	}
 	NTVERTEX ret;
@@ -7747,7 +7771,7 @@ int Interpreter::oapi_create_ntvertexarray(lua_State *L)
 	int type = lua_type(L, 1);
 	int nVtx;
 	if(type == LUA_TTABLE) {
-		nVtx = lua_len(L,1);
+		nVtx = lua_rawlen(L,1);
 	} else if (type == LUA_TNUMBER) {
 		nVtx = lua_tointeger(L, 1);
 	} else {
@@ -7817,7 +7841,7 @@ int Interpreter::oapi_create_indexarray(lua_State *L)
 	int type = lua_type(L, 1);
 	int nIdx;
 	if(type == LUA_TTABLE) {
-		nIdx = lua_len(L,1);
+		nIdx = lua_rawlen(L,1);
 	} else if (type == LUA_TNUMBER) {
 		nIdx = lua_tointeger(L, 1);
 	} else {
@@ -8278,7 +8302,7 @@ Create a new mesh from a list of mesh group definitions.
 */
 int Interpreter::oapi_create_mesh(lua_State *L)
 {
-	int nGrp = lua_len(L, 1);
+	int nGrp = lua_rawlen(L, 1);
 	MESHGROUP *grp = new MESHGROUP[nGrp];
 
 	lua_pushnil(L);

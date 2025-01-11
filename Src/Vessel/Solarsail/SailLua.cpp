@@ -49,7 +49,9 @@ int SolarSail::Lua_InitInstance (void *context)
 		luaL_newmetatable (L, "SSail.vtable");
 
 		// create a table for the overloaded methods
-		luaL_openlib (L, "SSail.method", dgLib, 0);
+		lua_newtable(L);
+		luaL_setfuncs(L, dgLib, 0);
+		lua_setglobal(L, "SSail.method");
 
 		// create metatable for accessing inherited methods from VESSEL
 		luaL_newmetatable (L, "SSail.base");

@@ -59,7 +59,9 @@ int HST::Lua_InitInstance(void *context)
 		luaL_newmetatable (L, "HST.vtable");
 
 		// create a table for the overloaded methods
-		luaL_openlib (L, "HST.method", hstLib, 0);
+		lua_newtable(L);
+		luaL_setfuncs(L, hstLib, 0);
+		lua_setglobal(L, "HST.method");
 
 		// create metatable for accessing inherited methods from VESSEL
 		luaL_newmetatable (L, "HST.base");

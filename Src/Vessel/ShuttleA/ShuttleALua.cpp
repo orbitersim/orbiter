@@ -51,7 +51,9 @@ int ShuttleA::Lua_InitInstance (void *context)
 		luaL_newmetatable (L, "SHUTTLEA.vtable");
 
 		// create a table for the overloaded methods
-		luaL_openlib (L, "SHUTTLEA.method", shuttleaLib, 0);
+		lua_newtable(L);
+		luaL_setfuncs(L, shuttleaLib, 0);
+		lua_setglobal(L, "SHUTTLEA.method");
 
 		// create metatable for accessing inherited methods from VESSEL
 		luaL_newmetatable (L, "SHUTTLEA.base");

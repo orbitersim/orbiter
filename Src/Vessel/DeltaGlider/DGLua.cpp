@@ -67,7 +67,9 @@ int DeltaGlider::Lua_InitInstance (void *context)
 		luaL_newmetatable (L, "DG.vtable");
 
 		// create a table for the overloaded methods
-		luaL_openlib (L, "DG.method", dgLib, 0);
+		lua_newtable(L);
+		luaL_setfuncs(L, dgLib, 0);
+		lua_setglobal(L, "DG.method");
 
 		// create metatable for accessing inherited methods from VESSEL
 		luaL_newmetatable (L, "DG.base");

@@ -570,9 +570,12 @@ void Interpreter::LoadVesselAPI ()
 	lua_pushstring (L, "__index");
 	lua_pushvalue (L, -2); // push metatable
 	lua_settable (L, -3);  // metatable.__index = metatable
-	
-	luaL_openlib (L, NULL, vesselLib, 0);
-	luaL_openlib (L, "vessel", vesselAcc, 0);
+
+	lua_newtable(L);
+	luaL_setfuncs(L, vesselLib, 0);
+	lua_newtable(L);
+	luaL_setfuncs(L, vesselAcc, 0);
+	lua_setglobal(L, "vessel");
 
 	// create pseudo-instance "focus"
 	lua_pushlightuserdata (L, &vfocus);
@@ -793,15 +796,15 @@ void Interpreter::LoadVesselAPI ()
 	lua_setglobal (L, "PARTICLE");
 
 	// some useful global constants
-	lua_pushnumber (L, 0); lua_setfield (L, LUA_GLOBALSINDEX, "CLOSE");
-	lua_pushnumber (L, 1); lua_setfield (L, LUA_GLOBALSINDEX, "OPEN");
-	lua_pushnumber (L, 2); lua_setfield (L, LUA_GLOBALSINDEX, "UP");
-	lua_pushnumber (L, 3); lua_setfield (L, LUA_GLOBALSINDEX, "DOWN");
-	lua_pushnumber (L, ALLDOCKS); lua_setfield (L, LUA_GLOBALSINDEX, "ALLDOCKS");
+	lua_pushnumber (L, 0); lua_setglobal (L, "CLOSE");
+	lua_pushnumber (L, 1); lua_setglobal (L, "OPEN");
+	lua_pushnumber (L, 2); lua_setglobal (L, "UP");
+	lua_pushnumber (L, 3); lua_setglobal (L, "DOWN");
+	lua_pushnumber (L, ALLDOCKS); lua_setglobal (L, "ALLDOCKS");
 
 	// predefined help contexts
-	lua_pushstring (L, "intro.htm"); lua_setfield (L, LUA_GLOBALSINDEX, "orbiter");
-	lua_pushstring (L, "script/ScriptRef.htm"); lua_setfield (L, LUA_GLOBALSINDEX, "api");
+	lua_pushstring (L, "intro.htm"); lua_setglobal (L, "orbiter");
+	lua_pushstring (L, "script/ScriptRef.htm"); lua_setglobal (L, "api");
 
 	// Panels
 	lua_createtable(L, 0, 8);
@@ -2031,7 +2034,7 @@ int Interpreter::vs2set(lua_State* L)
 
 	lua_getfield(L, 2, "fuel");
 	if (lua_istable(L, -1)) {
-		int n = lua_len(L, -1);
+		int n = lua_rawlen(L, -1);
 		if (n) {
 			vs->fuel = new VESSELSTATUS2::FUELSPEC[n]();
 
@@ -2057,7 +2060,7 @@ int Interpreter::vs2set(lua_State* L)
 
 	lua_getfield(L, 2, "thruster");
 	if (lua_istable(L, -1)) {
-		int n = lua_len(L, -1);
+		int n = lua_rawlen(L, -1);
 		if (n) {
 			vs->thruster = new VESSELSTATUS2::THRUSTSPEC[n]();
 			lua_pushnil(L);
@@ -2080,7 +2083,7 @@ int Interpreter::vs2set(lua_State* L)
 
 	lua_getfield(L, 2, "dockinfo");
 	if (lua_istable(L, -1)) {
-		int n = lua_len(L, -1);
+		int n = lua_rawlen(L, -1);
 		if (n) {
 			vs->dockinfo = new VESSELSTATUS2::DOCKINFOSPEC[n]();
 			lua_pushnil(L);
@@ -2226,7 +2229,7 @@ int Interpreter::v_defset_status (lua_State *L)
 
 		lua_getfield(L, 2, "fuel");
 		if (lua_istable(L, -1)) {
-			int n = lua_len(L, -1);
+			int n = lua_rawlen(L, -1);
 			if (n) {
 				status.fuel = new VESSELSTATUS2::FUELSPEC[n]();
 
@@ -2252,7 +2255,7 @@ int Interpreter::v_defset_status (lua_State *L)
 
 		lua_getfield(L, 2, "thruster");
 		if (lua_istable(L, -1)) {
-			int n = lua_len(L, -1);
+			int n = lua_rawlen(L, -1);
 			if (n) {
 				status.thruster = new VESSELSTATUS2::THRUSTSPEC[n]();
 				lua_pushnil(L);
@@ -2275,7 +2278,7 @@ int Interpreter::v_defset_status (lua_State *L)
 
 		lua_getfield(L, 2, "dockinfo");
 		if (lua_istable(L, -1)) {
-			int n = lua_len(L, -1);
+			int n = lua_rawlen(L, -1);
 			if (n) {
 				status.dockinfo = new VESSELSTATUS2::DOCKINFOSPEC[n]();
 				lua_pushnil(L);

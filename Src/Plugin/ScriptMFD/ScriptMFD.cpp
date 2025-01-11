@@ -199,7 +199,7 @@ ScriptMFD::ScriptMFD (DWORD w, DWORD h, VESSEL *vessel, const SCRIPTMFDMODESPEC 
 					L = oapiGetLua (hInterp);
 					// redefine interpreter 'mfd' object with current MFD instance
 					Interpreter::lua_pushmfd (L, this);
-					lua_setfield (L, LUA_GLOBALSINDEX, "mfd");
+					lua_setglobal (L, "mfd");
 					break;
 				}
 			}
@@ -213,7 +213,7 @@ ScriptMFD::ScriptMFD (DWORD w, DWORD h, VESSEL *vessel, const SCRIPTMFDMODESPEC 
 
 		// define the MFD instance
 		Interpreter::lua_pushmfd (L, this);
-		lua_setfield (L, LUA_GLOBALSINDEX, "mfd");
+		lua_setglobal (L, "mfd");
 
 		// run the MFD script
 		sprintf (cmd, "run_global('Config/MFD/%s')", spec->script);

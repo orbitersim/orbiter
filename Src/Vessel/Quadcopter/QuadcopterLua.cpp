@@ -46,7 +46,9 @@ int LuaInterface::InitInstance(void *context)
 		luaL_newmetatable(L, "QC.vtable");
 
 		// create a table for the overloaded methods
-		luaL_openlib(L, "QC.method", qcLib, 0);
+		lua_newtable(L);
+		luaL_setfuncs(L, qcLib, 0);
+		lua_setglobal(L, "QC.method");
 
 		// create metatable for accessing inherited methods from VESSEL
 		luaL_newmetatable(L, "QC.base");
