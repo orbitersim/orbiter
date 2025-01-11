@@ -7,6 +7,9 @@
 #include "VesselAPI.h"
 #include "MfdApi.h"
 
+extern "C" {
+#include <lauxlib.h>
+}
 
 /*
 VesselMFD: Class instantiated for MFDs declared inside Lua Vessel modules
@@ -214,7 +217,7 @@ void Interpreter::lua_push_vessel_status (lua_State *L, const VESSELSTATUS2 &vs)
 
 void Interpreter::LoadVesselAPI ()
 {
-	static const struct luaL_reg vesselAcc[] = {
+	static const struct luaL_Reg vesselAcc[] = {
 		{"get_handle", vesselGetHandle},
 		{"get_focushandle", vesselGetFocusHandle},
 		{"get_interface", vesselGetInterface},
@@ -222,7 +225,7 @@ void Interpreter::LoadVesselAPI ()
 		{"get_count", vesselGetCount},
 		{NULL, NULL}
 	};
-	static const struct luaL_reg vesselLib[] = {
+	static const struct luaL_Reg vesselLib[] = {
 		{"version", v_version},
 		{"get_handle", v_get_handle},
 		{"send_bufferedkey", v_send_bufferedkey},
@@ -2028,7 +2031,7 @@ int Interpreter::vs2set(lua_State* L)
 
 	lua_getfield(L, 2, "fuel");
 	if (lua_istable(L, -1)) {
-		int n = lua_objlen(L, -1);
+		int n = lua_len(L, -1);
 		if (n) {
 			vs->fuel = new VESSELSTATUS2::FUELSPEC[n]();
 
@@ -2054,7 +2057,7 @@ int Interpreter::vs2set(lua_State* L)
 
 	lua_getfield(L, 2, "thruster");
 	if (lua_istable(L, -1)) {
-		int n = lua_objlen(L, -1);
+		int n = lua_len(L, -1);
 		if (n) {
 			vs->thruster = new VESSELSTATUS2::THRUSTSPEC[n]();
 			lua_pushnil(L);
@@ -2077,7 +2080,7 @@ int Interpreter::vs2set(lua_State* L)
 
 	lua_getfield(L, 2, "dockinfo");
 	if (lua_istable(L, -1)) {
-		int n = lua_objlen(L, -1);
+		int n = lua_len(L, -1);
 		if (n) {
 			vs->dockinfo = new VESSELSTATUS2::DOCKINFOSPEC[n]();
 			lua_pushnil(L);
@@ -2223,7 +2226,7 @@ int Interpreter::v_defset_status (lua_State *L)
 
 		lua_getfield(L, 2, "fuel");
 		if (lua_istable(L, -1)) {
-			int n = lua_objlen(L, -1);
+			int n = lua_len(L, -1);
 			if (n) {
 				status.fuel = new VESSELSTATUS2::FUELSPEC[n]();
 
@@ -2249,7 +2252,7 @@ int Interpreter::v_defset_status (lua_State *L)
 
 		lua_getfield(L, 2, "thruster");
 		if (lua_istable(L, -1)) {
-			int n = lua_objlen(L, -1);
+			int n = lua_len(L, -1);
 			if (n) {
 				status.thruster = new VESSELSTATUS2::THRUSTSPEC[n]();
 				lua_pushnil(L);
@@ -2272,7 +2275,7 @@ int Interpreter::v_defset_status (lua_State *L)
 
 		lua_getfield(L, 2, "dockinfo");
 		if (lua_istable(L, -1)) {
-			int n = lua_objlen(L, -1);
+			int n = lua_len(L, -1);
 			if (n) {
 				status.dockinfo = new VESSELSTATUS2::DOCKINFOSPEC[n]();
 				lua_pushnil(L);
@@ -3615,7 +3618,7 @@ int Interpreter::v_create_airfoil (lua_State *L)
 	int funcref;
 	if (lua_isstring(L, 4)) {
 		const char* fname = luamtd_tostring_safe(L, 4, funcname);
-		lua_getfield(L, LUA_GLOBALSINDEX, fname);
+		lua_getglobal(L, fname);
 		funcref = luaL_ref(L, LUA_REGISTRYINDEX);
 	} else if (lua_isfunction(L, 4)) {
 		lua_pushvalue(L, 4);
@@ -3680,7 +3683,7 @@ int Interpreter::v_edit_airfoil (lua_State *L)
 			int funcref;
 			if (lua_isstring(L, 5)) {
 				const char* fname = luamtd_tostring_safe(L, 5, funcname);
-				lua_getfield(L, LUA_GLOBALSINDEX, fname);
+				lua_getglobal(L, fname);
 				funcref = luaL_ref(L, LUA_REGISTRYINDEX);
 			}
 			else if (lua_isfunction(L, 5)) {

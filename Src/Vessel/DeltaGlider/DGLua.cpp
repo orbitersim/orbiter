@@ -11,9 +11,9 @@
 #include <stdio.h>
 
 extern "C" {
-#include <lua/lua.h>
-#include <lua/lualib.h>
-#include <lua/lauxlib.h>
+#include <lua.h>
+#include <lualib.h>
+#include <lauxlib.h>
 }
 
 // ==========================================================================
@@ -51,7 +51,7 @@ int DeltaGlider::Lua_InitInstance (void *context)
 
 	if (lua_isnil (L, -1)) { // register new functions
 		lua_pop (L, 1);
-		static const struct luaL_reg dgLib[] = {
+		static const struct luaL_Reg dgLib[] = {
 			{"Gear", dgGear},
 			{"Nosecone", dgNosecone},
 			{"Hatch", dgHatch},

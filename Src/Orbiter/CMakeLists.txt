@@ -137,6 +137,7 @@ set(Orbiter_common_libs
 	UxTheme.lib
 	${HTML_HELP_LIBRARY}
 	ZLIB::ZLIB
+	lua::lib
 	${HTMLHELP_LIB}
 	$<TARGET_FILE:Orbitersdk>
 	$<TARGET_FILE:DlgCtrl>

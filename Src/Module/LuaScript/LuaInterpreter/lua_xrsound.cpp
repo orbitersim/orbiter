@@ -6,9 +6,11 @@
 #include "Interpreter.h"
 #include "XRSound.h"
 
+#include "lua.h"
+
 void Interpreter::LoadXRSoundAPI ()
 {
-	static const struct luaL_reg xrsoundLib[] = {
+	static const struct luaL_Reg xrsoundLib[] = {
 		{"create_instance", xrsound_create_instance},
 		{"is_present", xrsound_is_present},
 		{"get_version", xrsound_get_version},

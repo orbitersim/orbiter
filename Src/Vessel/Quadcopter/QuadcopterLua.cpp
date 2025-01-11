@@ -31,7 +31,7 @@ int LuaInterface::InitInstance(void *context)
 
 	if (lua_isnil(L, -1)) { // register new functions
 		lua_pop(L, 1);
-		static const struct luaL_reg qcLib[] = {
+		static const struct luaL_Reg qcLib[] = {
 			{ "set_directmode", setDirectMode},
 			{ "set_autoheading", setAutoHeading},
 			{ "set_heading", setHeading},

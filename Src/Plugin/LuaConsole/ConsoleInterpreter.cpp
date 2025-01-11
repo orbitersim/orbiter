@@ -16,7 +16,7 @@ void ConsoleInterpreter::LoadAPI ()
 {
 	Interpreter::LoadAPI();
 
-	static const struct luaL_reg termLib [] = {
+	static const struct luaL_Reg termLib [] = {
 		{"out", termOut},
 		{"clear", termClear},
 		{"lineup", termLineUp},

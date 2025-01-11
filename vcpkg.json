@@ -1,5 +1,13 @@
 {
   "dependencies": [
-    "zlib"
+    {
+      "name": "lua",
+      "features": [
+        "tools"
+      ]
+    },
+    "luafilesystem",
+    "zlib",
+    "catch2"
   ]
 }

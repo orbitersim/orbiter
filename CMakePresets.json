@@ -36,8 +36,9 @@
       "cacheVariables": {
         "CMAKE_C_COMPILER": "winegcc",
         "CMAKE_CXX_COMPILER": "wineg++",
-        "ORBITER_MAKE_DOC": "OFF",
-        "ORBITER_BUILD_D3D9CLIENT": false
+        "ORBITER_MAKE_DOC": false,
+        "ORBITER_BUILD_D3D9CLIENT": false,
+        "ORBITER_BUILD_XRSOUND": false
       },
       "condition": {
         "type": "equals",
