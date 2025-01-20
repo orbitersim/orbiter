@@ -36,6 +36,7 @@ void LogOut_Warning_Start();
 void LogOut_Warning_End();
 void LogOut_Obsolete_Start();
 void LogOut_Location(const char* func, const char* file, int line);
+void PrintModules();
 
 #ifdef GENERATE_LOG
 #define INITLOG(x,app) InitLog(x,app)

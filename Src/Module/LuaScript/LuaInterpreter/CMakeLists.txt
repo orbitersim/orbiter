@@ -35,6 +35,7 @@ endif()
 if(ORBITER_BUILD_XRSOUND)
   add_dependencies(LuaInterpreter	XRSound_lib	XRSound_assets)
   target_link_libraries(LuaInterpreter XRSound_lib)
+  target_compile_definitions(LuaInterpreter PUBLIC XRSOUND)
 endif()
 
 set_target_properties(LuaInterpreter
@@ -51,6 +52,7 @@ add_custom_command(TARGET LuaInterpreter
 	COMMAND ${CMAKE_COMMAND} -E copy ${LUAINTERPRETER_LIB} ${ORBITER_BINARY_SDK_DIR}/lib/Lua/
 )
 
+if(ORBITER_MAKE_DOC)
 file(GLOB lua_in *.h *.cpp *.ld *.md *.lua)
 add_custom_command(
 	POST_BUILD
@@ -71,6 +73,8 @@ add_custom_command(
 	COMMAND ${CMAKE_COMMAND} -E copy_if_different ./interpreter.chm ${ORBITER_BINARY_SDK_DIR}/doc/orbiter_lua.chm
 	JOB_POOL htmlhelp
 )
+endif()
+
 add_custom_target(orbiter_lua
 	DEPENDS ${ORBITER_BINARY_SDK_DIR}/doc/orbiter_lua.chm
 )
@@ -78,9 +82,11 @@ add_dependencies(${OrbiterTgt}
 	orbiter_lua
 )
 
+if(ORBITER_MAKE_DOC)
 install(FILES ${ORBITER_BINARY_SDK_DIR}/doc/orbiter_lua.chm
 	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/doc
 )
+endif()
 
 # Installation
 install(TARGETS LuaInterpreter
