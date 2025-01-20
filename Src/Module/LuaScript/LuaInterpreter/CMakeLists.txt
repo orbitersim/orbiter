@@ -73,11 +73,12 @@ add_custom_command(
 	COMMAND ${CMAKE_COMMAND} -E copy_if_different ./interpreter.chm ${ORBITER_BINARY_SDK_DIR}/doc/orbiter_lua.chm
 	JOB_POOL htmlhelp
 )
-endif()
 
 add_custom_target(orbiter_lua
 	DEPENDS ${ORBITER_BINARY_SDK_DIR}/doc/orbiter_lua.chm
 )
+endif()
+
 add_dependencies(${OrbiterTgt}
 	orbiter_lua
 )
