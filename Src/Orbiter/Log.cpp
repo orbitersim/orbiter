@@ -383,6 +383,8 @@ void PrintModules()
 					unsigned short d = Info->dwFileVersionLS & 0xFFFF;
 					LogOut("Module linked [%s]  Version=%hu.%hu.%hu.%hu  Size=%u", szModName, a, b, c, d, mi.SizeOfImage);
 				}
+
+				delete[]Data;
 			}
 		}
 	}
