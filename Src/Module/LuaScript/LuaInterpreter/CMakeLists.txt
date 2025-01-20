@@ -77,11 +77,11 @@ add_custom_command(
 add_custom_target(orbiter_lua
 	DEPENDS ${ORBITER_BINARY_SDK_DIR}/doc/orbiter_lua.chm
 )
-endif()
 
 add_dependencies(${OrbiterTgt}
 	orbiter_lua
 )
+endif()
 
 if(ORBITER_MAKE_DOC)
 install(FILES ${ORBITER_BINARY_SDK_DIR}/doc/orbiter_lua.chm
