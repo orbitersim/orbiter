@@ -1,0 +1,15 @@
+# This file specifies reviewers which are automatically called in when PR contains specific files, based on file patterns
+# Being marked in this file does not imply sole ownership or permissions to merge PRs, but rather familiarity with the topic
+# Feel free to PR yourself in
+* @Xyon
+
+# Cross-area items
+**/CMakeLists.txt @DarkWanderer
+**/*.cmake @DarkWanderer
+cmake/ @DarkWanderer
+
+# Specific areas
+Doc/ @TheGondos
+OVP/ @jarmonik
+Sound/ @dbeachy1
+Tests/ @DarkWanderer
