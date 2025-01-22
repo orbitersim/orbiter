@@ -107,11 +107,13 @@ set(Qt5_x64_DIR
 )
 
 if(MSVC)
-  add_compile_options(/we4311 /DNOMINMAX)
+  add_compile_options(/we4311)
   add_link_options("/NODEFAULTLIB:\"LIBCMTD\"")
 else()
   set(CMAKE_BUILD_WITH_INSTALL_RPATH true)
 endif()
+
+add_compile_definitions(NOMINMAX)
 
 # Copy data and binary assets from source to binary tree to provide a working Orbiter environment
 add_custom_target(CopyData ALL

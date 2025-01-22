@@ -4,15 +4,17 @@ on:
   push:
     branches:
       - main
+      - linux
     paths-ignore: [ 'Doc/**', 'Flights/**', 'Html/**', 'Images/**', 'Localdoc/**', 'Scenarios/**', 'Textures/**', 'Textures2/**']
   pull_request:
     branches:
       - main
+      - linux
     paths-ignore: [ 'Doc/**', 'Flights/**', 'Html/**', 'Images/**', 'Localdoc/**', 'Scenarios/**', 'Textures/**', 'Textures2/**']
 
 jobs:
   build:
-    name: Push
+    name: Build
     strategy:
       fail-fast: false
       matrix:

@@ -36,6 +36,9 @@ int oapiGetSwitchState (HWND hCtrl);
 
 // ==================================================================================
 // ==================================================================================
+class PropertyGroup; // forward declaration
+class PropertyList; // forward declaration
+class PropertyItem; // forward declaration
 
 class PropertyItem {
 	friend class PropertyGroup;

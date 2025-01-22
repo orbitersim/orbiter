@@ -3,18 +3,29 @@ name: On Push (Linux)
 on:  
   push:
     branches:
+      - main
       - linux
     paths-ignore: [ 'Doc/**', 'Flights/**', 'Html/**', 'Images/**', 'Localdoc/**', 'Scenarios/**', 'Textures/**', 'Textures2/**']
   pull_request:
     branches:
+      - main
       - linux
     paths-ignore: [ 'Doc/**', 'Flights/**', 'Html/**', 'Images/**', 'Localdoc/**', 'Scenarios/**', 'Textures/**', 'Textures2/**']
   workflow_dispatch:
 
 jobs:
   build:
-    name: Push
+    name: Build
     runs-on: ubuntu-latest
-    steps: # Dummy workflow to later be replaced with actual
-    - name: Checkout
-      uses: actions/checkout@v4
+    steps:
+    - run: sudo apt install -y ninja-build wine64-tools lua5.1 liblua5.1-dev # Prerequisites
+
+    - uses: actions/checkout@v4
+    - uses: lukka/run-cmake@v10
+      with:
+        configurePreset: linux-x64-debug
+        buildPreset: linux-x64-debug
+        testPreset: linux-x64-debug
+
+    # TODO: possibly use cmake workflows and below problem matcher
+    # - uses: ammaraskar/gcc-problem-matcher@master
