@@ -133,6 +133,7 @@ set(Orbiter_common_libs
 	Winmm.dll
 	comctl32.lib
 	UxTheme.lib
+	version.lib
 	${HTML_HELP_LIBRARY}
 	zlib
 	${HTMLHELP_LIB}

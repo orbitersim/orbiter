@@ -135,6 +135,14 @@ function clbk_postcreation()
 	snd = xrsound.create_instance(vi)
 end
 */
+#ifndef XRSOUND
+int Interpreter::xrsound_create_instance(lua_State *L)
+{
+	// XRSound module not build. Can't call CreateInstance()
+	return luaL_error(L, "Application not build with XRSound support");
+}
+
+#else
 int Interpreter::xrsound_create_instance (lua_State *L)
 {
 	XRSound *snd = NULL;
@@ -154,6 +162,7 @@ int Interpreter::xrsound_create_instance (lua_State *L)
 
 	return 1;
 }
+#endif // !XRSOUND
 
 /***
 xrsound class: Lua access to XRSound objects

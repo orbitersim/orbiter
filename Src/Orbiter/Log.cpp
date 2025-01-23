@@ -5,6 +5,8 @@
 
 #include <string.h>
 #include <fstream>
+#include <Windows.h>
+#include <Psapi.h>
 #include "Log.h"
 #include "Orbiter.h"
 
@@ -323,6 +325,74 @@ void LogOut_Obsolete(const char* func, const char* msg)
 	}
 	LogOut_Warning_End();
 }
+
+
+void PrintModules()
+{
+	HMODULE hMods[4096];
+	HANDLE hProcess;
+	DWORD cbNeeded;
+	unsigned int i;
+
+	// Get a handle to the process.
+
+	hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, GetProcessId(GetCurrentProcess()));
+
+	if (NULL == hProcess) return;
+
+	if (EnumProcessModules(hProcess, hMods, sizeof(hMods), &cbNeeded))
+	{
+		for (i = 0; i < (cbNeeded / sizeof(HMODULE)); i++)
+		{
+			char szModName[MAX_PATH];
+
+			if (GetModuleFileNameExA(hProcess, hMods[i], szModName, sizeof(szModName)))
+			{
+				MODULEINFO mi;
+
+				GetModuleInformation(hProcess, hMods[i], &mi, sizeof(MODULEINFO));
+
+				DWORD vs = GetFileVersionInfoSize(szModName, NULL);
+
+				if (vs == 0) continue;
+
+				BYTE* Data = new BYTE[vs];
+
+				if (!GetFileVersionInfo(szModName, 0, vs, Data))
+				{
+					LogOut("GetFileVersionInfo Failed %u", GetLastError());
+					delete[]Data;
+					continue;
+				}
+
+				VS_FIXEDFILEINFO *Info = NULL;
+				UINT size = 0;
+
+				if (!VerQueryValueA(Data, TEXT("\\"), (void**)&Info, &size))
+				{
+					LogOut("VerQueryValueA Failed %u", GetLastError());
+					delete[]Data;
+					continue;
+				}
+
+				if (Info->dwSignature == 0xFEEF04BD)
+				{
+					unsigned short a = Info->dwFileVersionMS >> 16;
+					unsigned short b = Info->dwFileVersionMS & 0xFFFF;
+					unsigned short c = Info->dwFileVersionLS >> 16;
+					unsigned short d = Info->dwFileVersionLS & 0xFFFF;
+					LogOut("Module linked [%s]  Version=%hu.%hu.%hu.%hu  Size=%u", szModName, a, b, c, d, mi.SizeOfImage);
+				}
+
+				delete[]Data;
+			}
+		}
+	}
+	CloseHandle(hProcess);
+	return;
+}
+
+
 
 void tracenew (char *fname, int line)
 {
