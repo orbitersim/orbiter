@@ -17,11 +17,11 @@ consult a Lua manual.</p>
 <div class="code">
 oapi.get_simtime()
 </div></p>
-<p>Currently, three function lists are available: <i>proc</i> for process control functions, <i>oapi</i> for
-general interaction with the Orbiter API, and <i>vessel</i> for obtaining vessel handles and instances.</p>
+<p>Currently, five function lists are available: <i>proc</i> for process control functions, <i>oapi</i> for
+general interaction with the Orbiter API, <i>vessel</i> for obtaining vessel handles and instances, <i>vec</i> for doing mathematics on vectors and <i>bit</i> for managing bitfields (which are not available in Lua 5.1)</p>
 
-<p>In addition to the function lists, there are also class methods available for two classes: <i>vessel methods</i>
-for interaction with a specific vessel, and <i>annotation methods</i> for managing onscreen annotations.</p>
+<p>In addition to the function lists, there are also class methods available for four classes: <i>vessel methods</i>
+for interaction with a specific vessel, <i>annotation methods</i> for managing onscreen annotations, <i>mfd methods</i> for interaction with MFDs, and <i>sketchpad</i> for managing sketchpad objects.</p>
 <p>Class methods act upon a given class instance, and use a colon syntax, such as:
 <div class="code">
 v = vessel.get_focusinterface()  -- obtain vessel instance<br />
@@ -38,6 +38,7 @@ alt = v:get_altitude()  -- invoke class method
     <li><a href="api_proc.htm">proc (Script process control)</a>
     <li><a href="api_oapi.htm">oapi (General Orbiter API functions)</a>
     <li><a href="api_vessel.htm">vessel: Vessel access functions</a></li>
+    <li><a href="api_bit.htm">bit: bit manipulation library</a></li>
   </ul>
   <li>Class methods</li>
   <ul>

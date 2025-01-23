@@ -62,18 +62,11 @@ class FileParser;
 class OapiExtension;
 class D3D9Pad;
 
-extern DWORD g_uCurrentMesh;
-extern class vObject* g_pCurrentVisual;
-
 typedef char * LPCHAR;
 typedef void * CAMERAHANDLE;
 typedef class D3D9Mesh * HMESH;
 typedef class SurfNative* lpSurfNative;
 
-extern D3D9Catalog<LPDIRECT3DTEXTURE9>	*TileCatalog;
-extern set<D3D9Mesh*> MeshCatalog;
-extern set<SurfNative*>	SurfaceCatalog;
-extern IDirect3D9* g_pD3DObject;
 
 enum class EnvCamType { Undefined, Exterior, Interior, Mesh };
 enum class ShdPackage { None, Main, VC, Stage };
@@ -117,6 +110,13 @@ struct ENVCAMREC
  */
 struct _D3D9Stats {
 
+	_D3D9Stats()
+	{
+		memset(&Mesh, 0, sizeof(Mesh));
+		memset(&Timer, 0, sizeof(Timer));
+		TilesAllocated = 0;
+	}
+	
 	struct {
 		DWORD Vertices;		///< Number of vertices rendered
 		DWORD MeshGrps;		///< Number of mesh groups rendered
@@ -124,16 +124,6 @@ struct _D3D9Stats {
 		DWORD TexChanges;	///< Number of texture changes
 		DWORD MtrlChanges;	///< Number of material changes
 	} Mesh;					///< Mesh related statistics
-
-	struct {
-		DWORD Verts;		///< Number of vertices rendered
-		WORD  Tiles[32];	///< Number of tiles rendered (per level)
-	} Old;					///< Surface related statistics (old surface engine)
-
-	struct {
-		DWORD Verts;		///< Number of vertices rendered
-		WORD  Tiles[32];	///< Number of tiles rendered (per level)
-	} Surf;					///< Surface related statistics (new surface engine)
 
 	struct {
 		D3D9Time Update;		///< clbkUpdate
@@ -151,9 +141,8 @@ struct _D3D9Stats {
 		D3D9Time GetDC;			///<
 	} Timer;					///< Render timing related statistics
 
-	DWORD TilesCached;		///< Number of cached tiles
-	DWORD TilesCachedMB;	///< Total size of tile cache (MBytes)
 	DWORD TilesAllocated;	///< Number of allocated tiles
+	std::map<DWORD, DWORD> TilesRendered;	///< Number of rendered tiles
 };
 
 
@@ -232,6 +221,20 @@ struct LVLH {
 extern _D3D9Stats D3D9Stats;
 extern bool bFreeze;
 extern bool bFreezeEnable;
+extern bool bFreezeRenderAll;
+extern DWORD			uCurrentMesh;
+extern class vObject* pCurrentVisual;
+extern set<D3D9Mesh*> MeshCatalog;
+extern set<SurfNative*>	SurfaceCatalog;
+extern IDirect3D9* g_pD3DObject;
+extern Memgr<float>* g_pMemgr_f;
+extern Memgr<INT16>* g_pMemgr_i;
+extern Memgr<UINT8>* g_pMemgr_u;
+extern Memgr<WORD>* g_pMemgr_w;
+extern Memgr<VERTEX_2TEX>* g_pMemgr_vtx;
+extern Texmgr<LPDIRECT3DTEXTURE9>* g_pTexmgr_tt;
+extern Vtxmgr<LPDIRECT3DVERTEXBUFFER9>* g_pVtxmgr_vb;
+extern Idxmgr<LPDIRECT3DINDEXBUFFER9>* g_pIdxmgr_ib;
 
 
 namespace oapi {
@@ -438,7 +441,7 @@ public:
 	 * \default, None, returns 2 ("client does not support operation").
 	 */
 	int clbkSetMeshMaterial(DEVMESHHANDLE hMesh, DWORD matidx, const MATERIAL* mat);
-	int clbkSetMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp mat, const oapi::FVECTOR4* in);
+	int clbkSetMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp mat, const oapi::FVECTOR4* in);
 
 	/**
 	* \brief Retrieve the properties of one of the mesh materials.
@@ -1161,6 +1164,7 @@ public:
 	SURFHANDLE			GetBackBufferHandle() const;
 	LPDIRECT3DTEXTURE9  GetNoiseTex() const { return pNoiseTex; }
 	void 				SplashScreen();
+	inline bool			IsControlPanelOpen() const { return bControlPanel; }
 	inline bool 		IsRunning() const { return bRunning; }
 	inline bool			IsLimited() const { return ((pCaps->TextureCaps&D3DPTEXTURECAPS_POW2) && (pCaps->TextureCaps&D3DPTEXTURECAPS_NONPOW2CONDITIONAL)); }
 	const LPD3DXMATRIX 	GetIdentity() const { return (const LPD3DXMATRIX)&ident; }
@@ -1345,6 +1349,7 @@ protected:
 	 */
 	bool clbkSplashLoadMsg (const char *msg, int line);
 
+	void clbkSetSplashScreen(const char *filename, DWORD textCol) override;
 
 	/**
 	 * \brief Store a persistent mesh template
@@ -1419,6 +1424,8 @@ private:
 	std::string				scenarioName;
 	HANDLE					hMainThread;
 	WindowManager *			pWM;
+	const char *            pCustomSplashScreen;
+	DWORD                   pSplashTextColor;
 
 	HWND hRenderWnd;        // render window handle
 

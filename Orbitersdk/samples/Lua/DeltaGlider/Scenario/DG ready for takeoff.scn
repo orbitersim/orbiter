@@ -1,0 +1,71 @@
+BEGIN_HYPERDESC
+<h1>Delta-glider: Ready for takeoff</h1>
+<p>The Scramjet delta-glider (DG-S) is ready for takeoff from runway 33 of the
+Shuttle Landing Facility (SLF) at Kennedy Space Center.</p>
+<p>Take off using main engines and climb to 10km. Then try the air-breathing
+scramjet engines and test the performance for different speeds and altitudes.</p>
+END_HYPERDESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 51982.6685767396
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship GL-02
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET GL-02
+  MODE Extern
+  POS 33.48 -20.71 -17.22
+  TRACKMODE TargetRelative
+  FOV 50.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Surface
+END_HUD
+
+BEGIN_MFD Left
+  TYPE HSI
+  NAV 0 1
+  OBS 5.34 5.76
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Map
+  REF Earth
+  TARGET ISS
+END_MFD
+
+BEGIN_VC
+END_VC
+
+BEGIN_SHIPS
+ISS:ProjectAlpha_ISS
+  STATUS Orbiting Earth
+  RPOS 3905716.00 5029237.81 -2176232.41
+  RVEL 6106.986 -4686.841 139.471
+  AROT 110.00 -10.00 80.00
+  PRPLEVEL 0:1.000
+  NAVFREQ 0 0
+  XPDR 466
+END
+GL-02:DeltaGlider.lua
+  STATUS Landed Earth
+  POS -80.6825940 28.5969240
+  HEADING 330.01
+  TANKCONFIG 1
+  PRPLEVEL 0:0.995 1:1.000 2:1.0
+  NAVFREQ 524 94 84 114
+  XPDR 0
+  AFCMODE 7
+  NOSECONE 0 0.0000
+  GEAR 1 1.0000
+  AIRLOCK 0 0.0000
+  PSNGR 2 3 4
+  RCSMODE 0
+  PANELCOL 4
+END
+END_SHIPS

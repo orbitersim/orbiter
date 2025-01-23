@@ -1027,13 +1027,13 @@ float Scene::ComputeNearClipPlane()
 // - Setup local light sources
 // ===========================================================================================
 
-void Scene::UpdateCamVis()
+bool Scene::UpdateCamVis()
 {
 
 	// Update camera parameters --------------------------------------
 	// and call vObject::Update() for all visuals
 	//
-	UpdateCameraFromOrbiter(RENDERPASS_MAINSCENE);
+	bool bRet = UpdateCameraFromOrbiter(RENDERPASS_MAINSCENE);
 
 	if (Camera.hObj_proxy) D3D9Effect::UpdateEffectCamera(Camera.hObj_proxy);
 
@@ -1075,6 +1075,7 @@ void Scene::UpdateCamVis()
 	}
 
 	Planets.sort(sort_cdist);
+	return bRet && (vFocus != nullptr);
 }
 
 // ===========================================================================================
@@ -1310,7 +1311,14 @@ void Scene::clbkRenderMainScene()
 	double scene_time = D3D9GetTime();
 	D3D9SetTime(D3D9Stats.Timer.CamVis, scene_time);
 
-	UpdateCamVis();
+	if (!UpdateCamVis()) {
+		if (SUCCEEDED(gc->BeginScene())) {
+			HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0L));
+			gc->EndScene();
+		}
+		return; // Scene not yet properly inilialized, return
+	}
+		
 	ActivateAllLocalLights(false);
 
 	set<vVessel*> Active;
@@ -1820,9 +1828,10 @@ void Scene::clbkRenderMainScene()
 
 	D3D9Effect::UpdateEffectCamera(Camera.hObj_proxy);
 
-
-	D3D9Pad* pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
-	m_celSphere->EnsureMarkerDrawingContext((oapi::Sketchpad**)&pSketch, 0, m_celSphere->MarkerColor(0), m_celSphere->MarkerPen(0));
+	Resolve These
+    auto RenderMarkers = RenderList
+	//D3D9Pad* pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
+	//m_celSphere->EnsureMarkerDrawingContext((oapi::Sketchpad**)&pSketch, 0, m_celSphere->MarkerColor(0), m_celSphere->MarkerPen(0));
 
 
 	// Render the vessels inside the shadows  ( Phase 1 ) ================================
@@ -1873,11 +1882,15 @@ void Scene::clbkRenderMainScene()
 
 	while (RenderList.empty()==false) {
 		RenderList.front()->Render(pDevice);
-		RenderVesselMarker(RenderList.front(), pSketch);
 		RenderList.pop_front();
 	}
 
+	D3D9Pad* pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
+	if (pSketch) {
+		m_celSphere->EnsureMarkerDrawingContext((oapi::Sketchpad**)&pSketch, 0, m_celSphere->MarkerColor(0), m_celSphere->MarkerPen(0));
+		for (auto x : RenderMarkers) RenderVesselMarker(x, pSketch);
 	pSketch->EndDrawing();	// SKETCHPAD_LABELS
+	}
 
 
 
@@ -3876,7 +3889,7 @@ bool Scene::CameraPan(VECTOR3 pan, double speed)
 
 // ===========================================================================================
 //
-void Scene::UpdateCameraFromOrbiter(DWORD dwPass)
+bool Scene::UpdateCameraFromOrbiter(DWORD dwPass)
 {
 	MATRIX3 grot;
 	VECTOR3 pos;
@@ -3919,7 +3932,7 @@ void Scene::UpdateCameraFromOrbiter(DWORD dwPass)
 
 	for (auto pv : Visuals) pv->vobj->Update(true);
 
-	SetupInternalCamera(&Camera.mView, NULL, oapiCameraAperture(), double(viewH)/double(viewW));
+	return SetupInternalCamera(&Camera.mView, NULL, oapiCameraAperture(), double(viewH)/double(viewW));
 }
 
 
@@ -3946,7 +3959,7 @@ void Scene::CameraOffOrigin90(D3DXMATRIX *mView, FVECTOR3 pos)
 
 // ===========================================================================================
 //
-void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, double asp)
+bool Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, double asp)
 {
 
 	// Update camera orientation if a new matrix is provided
@@ -4013,8 +4026,12 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 	Camera.vGravRef = GetVisObject(Camera.hGravRef);
 
 
-	// Something is very wrong... abort...
-	if (Camera.hObj_proxy == NULL || Camera.hGravRef == NULL || Camera.hNear == NULL) return;
+	if (Camera.hGravRef == NULL || Camera.hObj_proxy == NULL || Camera.hNear == NULL) {
+		assert(false); return false;
+	}
+	if (Camera.vGravRef == NULL || Camera.vProxy == NULL || Camera.vNear == NULL) {
+		return false;
+	}
 
 	// Camera altitude over the proxy
 	VECTOR3 pos; MATRIX3 grot; double rad;
@@ -4025,9 +4042,8 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 
 	Camera.alt_proxy = dist(Camera.pos, pos) - oapiGetSize(Camera.hObj_proxy);
 
-	if (Camera.vProxy) {
-		if (Camera.vProxy->Type() == OBJTP_PLANET) Camera.vProxy->GetElevation(Camera.lng, Camera.lat, &rad);
-	}
+	if (Camera.vProxy->Type() == OBJTP_PLANET) 
+		rad = oapiSurfaceElevation(Camera.hObj_proxy, Camera.lng, Camera.lat);
 
 	Camera.elev = Camera.alt_proxy - rad;
 

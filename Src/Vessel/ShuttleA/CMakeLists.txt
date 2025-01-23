@@ -47,7 +47,7 @@ target_link_libraries(ShuttleA
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
 	${ORBITER_DLGCTRL_LIB}
-	lua
+	lua::lib
 )
 
 # scan mesh files for labels and output to header file
@@ -119,6 +119,5 @@ install(DIRECTORY ${THUMBNAIL_SOURCE_DIR}/
 )
 
 if(ORBITER_MAKE_DOC)
-	add_subdirectory(Doc)
 	add_subdirectory(Help)
 endif()

@@ -158,6 +158,9 @@ public:
 	// Set camera direction in (internal) cockpit mode
 	// ph and th are relative to default view direction
 
+	void SetDistance(double rd);
+	// Set camera distance in 'unit' radius
+
 	void ResetCockpitPos ();
 	// Reset cockpit camera to default position
 

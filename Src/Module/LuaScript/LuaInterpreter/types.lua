@@ -5,6 +5,15 @@
 -- @topic types
 
 --- A 3D cartesian vector.
+--
+-- Any 3-D vectors passed into or returned from Orbiter API script functions conform to the following convention:
+-- A vector is defined as a table containing three numerical fields with keys "x", "y" and "z". (Vectors passed as arguments to API functions can have additional fields, which are ignored by the interpreter).
+-- Vectors can be defined and initialised by normal Lua syntax, or with the _V(x, y, z) function to mimic C++ syntax.
+-- @usage
+-- V1 = {x=1,y=0,z=-1}
+-- V2 = {}; V2.x=0; V2.y=1.1; V2.z=-16
+-- V3 = {}; V3["x"]=15; V3["y"]=-3.145; V3["z"]=1e3
+-- V4 = _V(1, 0, -1)
 -- @field x x-component [m]
 -- @field y y-component [m]
 -- @field z z-component [m]
@@ -17,6 +26,29 @@
 --	m21 m22 m23
 --	m31 m32 m33
 --
+-- Any 3x3 matrices passed into or returned from Orbiter API script functions conform to the following convention:
+-- A matrix is defined as a table containing nine numerical fields with keys "m11", "m12", "m13",
+-- "m21", "m22", "m23", "m31", "m32", "m33".
+-- (Matrices passed as arguments to API functions can have additional fields, which are ignored by the interpreter).
+-- Matrices can be defined and initialised by normal Lua syntax, or with the _M(...) function to mimic C++ syntax.
+-- @usage
+-- M1 = {m11=1,m12=0,m13=0,m21=0,m22=1,m23=0,m31=0,m32=0,m33=1}
+-- M2 = {}
+-- M2.m11=1; M2.m12=0; M2.m13=0
+-- M2.m21=0; M2.m22=1; M2.m23=0
+-- M2.m31=0; M2.m32=0; M2.m33=1
+-- M3 = {}
+-- M3["m11"]=1; M3["m12"]=0; M3["m13"]=0
+-- M3["m21"]=0; M3["m22"]=1; M3["m23"]=0
+-- M3["m31"]=0; M3["m32"]=0; M3["m33"]=1
+--
+-- local sinc = math.sin(tgt.inc)
+-- local cinc = math.cos(tgt.inc)
+-- local slan = math.sin(tgt.lan)
+-- local clan = math.cos(tgt.lan)
+-- local R1 = _M(1,0,0, 0,cinc,sinc, 0,-sinc,cinc)
+-- local R2 = _M(clan,0,-slan, 0,1,0, slan,0,clan)
+--
 -- @field m11 matrix element m11
 -- @field m12 matrix element m12
 -- @field m13 matrix element m13
@@ -27,6 +59,20 @@
 -- @field m32 matrix element m32
 -- @field m33 matrix element m33
 -- @table matrix
+
+--- A color.
+-- @field r red component [0-1]
+-- @field g green component [0-1]
+-- @field b blue component [0-1]
+-- @field a alpha component [0-1]
+-- @table colour
+
+--- A rectangle.
+-- @field left left position of the rectangle
+-- @field top top position
+-- @field right right position
+-- @field bottom bottom position
+-- @table rectangle
 
 ---	Frame of reference identifiers.
 --The entries of the REFFRAME table contain the identifiers for different frames of reference used by various API functions.
@@ -174,3 +220,154 @@
 -- @field ATM_PLOG Logarithmic mapping between atm. density range and opacity (field: atmsmap)
 -- @table PARTICLE
 -- @see PARTICLESTREAMSPEC
+
+--- Rotation component
+-- @field type (string): "rotation"
+-- @field mesh (number): mesh index (>=0)
+-- @field grp (table): array of group indices
+-- @field ref (vector): rotation pivot point [m]
+-- @field axis (vector): rotation axis
+-- @field angle (number): rotation range [rad]
+-- @table rotationcomponent
+-- @see oapi.create_animationcomponent
+
+--- Translation component
+-- @field type (string): "translation"
+-- @field mesh (number): mesh index (>=0)
+-- @field grp (table): array of group indices
+-- @field shift (vector): translation vector [m]
+-- @table translationcomponent
+-- @see oapi.create_animationcomponent
+
+--- Scaling component
+-- @field type (string): "scaling"
+-- @field mesh (number): mesh index (>=0)
+-- @field grp (table): array of group indices
+-- @field ref (vector): scaling reference point [m]
+-- @field scale (vector): scaling factors in x, y and z [m]
+-- @table scalingcomponent
+-- @see oapi.create_animationcomponent
+
+--- RCS mode identifiers.
+-- The entries of the RCSMODE table are used to define the operation mode of the reaction control system (RCS) of a vessel.
+-- @field OFF RCS off 
+-- @field ROT Rotational mode 
+-- @field LIN Linear (translation) mode 
+-- @table RCSMODE
+
+--- Mesh group edit flags
+-- @field SETUSERFLAG replace the group's UsrFlag entry with the value in the GROUPEDITSPEC structure.
+-- @field ADDUSERFLAG Add the UsrFlag value to the group's UsrFlag entry
+-- @field DELUSERFLAG Remove the UsrFlag value from the group's UsrFlag entry
+-- @field VTXCRDX Replace vertex x-coordinates
+-- @field VTXCRDY Replace vertex y-coordinates
+-- @field VTXCRDZ Replace vertex z-coordinates
+-- @field VTXCRD Replace vertex coordinates
+-- @field VTXNMLX Replace vertex x-normals
+-- @field VTXNMLY Replace vertex y-normals
+-- @field VTXNMLZ Replace vertex z-normals
+-- @field VTXNML Replace vertex normals
+-- @field VTXTEXU Replace vertex texture u-coordinates
+-- @field VTXTEXV Replace vertex texture v-coordinates
+-- @field VTXTEX Replace vertex texture coordinates
+-- @field VTX Replace vertices
+-- @field VTXCRDADDX Add to vertex x-coordinates
+-- @field VTXCRDADDY Add to vertex y-coordinates
+-- @field VTXCRDADDZ Add to vertex z-coordinates
+-- @field VTXCRDADD Add to vertex coordinates
+-- @field VTXNMLADDX Add to vertex x-normals
+-- @field VTXNMLADDY Add to vertex y-normals
+-- @field VTXNMLADDZ Add to vertex z-normals
+-- @field VTXNMLADD Add to vertex normals
+-- @field VTXTEXADDU Add to vertex texture u-coordinates
+-- @field VTXTEXADDV Add to vertex texture v-coordinates
+-- @field VTXTEXADD Add to vertex texture coordinates
+-- @table GRP_EDIT
+
+--- Visibility mode
+-- @field EXTERNAL Only visible in external view
+-- @field COCKPIT Only visible in cockpit view
+-- @field ALWAYS Always visible
+-- @table VIS
+
+--- Render params
+-- @field GAMMA Enable/Setup Gamma correction
+-- @field NOISE Enable/Setup Noise generation
+-- @table PRM
+
+--- PlaybackType.
+--
+-- Determines how a given sound will be played back (i.e., where it will be audible)
+--
+-- Note: if the `SilenceOfSpace` configuration setting is disabled via the user's XRSound.cfg, sounds will not be faded by pressure.
+--
+-- @field InternalOnly In cockpit view only, always full volume.  Implies the vessel has focus, as well.
+-- @field BothViewFar Full volume in internal view, faded (less) by distance and pressure in external view (this will be silent in vacuum).  Vessel does not need focus.
+-- @field BothViewMedium Full volume in internal view, faded (middle) by distance and pressure in external view (this will be silent in vacuum).  Vessel does not need focus.
+-- @field BothViewClose Full volume in internal view, faded (more) by distance and pressure in external view (this will be silent in vacuum).  Vessel does not need focus.
+-- @field Radio Full volume in both internal and external view; vessel must have focus.
+-- @field Wind External view only, faded by static pressure but not distance.
+-- @field Global Full volume in both internal and external views, not faded, and does *not* require focus.  This is designed for cross-vessel sounds like music playback; normally, vessels should not use this playback type.
+-- @table PlaybackType
+
+--- DefaultSoundID.
+--
+-- Defines vessel-unique sound IDs for each default sound; you can disable, enable, or change each of these default
+-- sounds either by editing your XRSound.cfg file or editing your vessel's XRSound-<vesselClass>.cfg file.
+-- You can also replace or disable/re-enable any default sound by calling set\_defaultsoundenabled(...) from your
+-- custom vessel code, and you can call load_wav with any default sound ID here to replace a default sound.
+--
+-- Refer to each sound ID's comments in $ORBITER_ROOT/XRSound/XRSound.cfg for details about each sound.
+--
+-- Note: when you are writing vessel code, do not use any custom sound IDs that are >= 10000 and < 12000; they are reserved for use (and future use) by XRSound's default sounds.
+-- @field AirConditioning
+-- @field LandedWind
+-- @field AudioGreeting
+-- @field MainEngines
+-- @field RetroEngines
+-- @field HoverEngines
+-- @field RCSSustain
+-- @field SwitchOn
+-- @field SwitchOff
+-- @field Rotation
+-- @field Translation
+-- @field Off
+-- @field CustomEngines
+-- @field AFPitch
+-- @field AFOn
+-- @field AFOff
+-- @field Crash
+-- @field MetalCrunch
+-- @field WheelChirp
+-- @field Touchdown
+-- @field WheelStop
+-- @field TiresRolling
+-- @field OneHundredKnots
+-- @field Liftoff
+-- @field WarningGearIsUp
+-- @field YouAreClearedToLand
+-- @field Docking
+-- @field DockingCallout
+-- @field Undocking
+-- @field UndockingCallout
+-- @field Wheekbrakes
+-- @field DockingRadarBeep
+-- @field FlightWind
+-- @field ReentryPlasma
+-- @field SonicBoom
+-- @field AutopilotOn
+-- @field AutopilotOff
+-- @field SubsonicCallout
+-- @field RCSAttackPlusX
+-- @field RCSAttackPlusY
+-- @field RCSAttackPlusZ
+-- @field RCSAttackMinusX
+-- @field RCSAttackMinusY
+-- @field RCSAttackMinusZ
+-- @field RadioATCGroup
+-- @field CabinAmbienceGroup
+-- @field MachCalloutsGroup
+-- @field AltitudeCalloutsGroup
+-- @field DockingDistanceCalloutsGroup
+-- @field MusicFolder this is a special, global (i.e., vessel-independent) sound ID.
+-- @table DefaultSoundID

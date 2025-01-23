@@ -4,6 +4,4 @@ BEGIN_HYPERDESC
 MFD by Duncan Sharpe.</p>
 <p>Before launching one of these, make sure that the TransX plugin is activated under
 the Modules tab.</p>
-<p>Documentation for TransX can be found in the Doc folder:
-TransXmanualv3, TransX quickstart and deepspacemanual.</p>
 END_HYPERDESC

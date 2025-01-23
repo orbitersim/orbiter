@@ -4,7 +4,8 @@
 // =======================================================================
 // Class CelestialBody
 // Class for stars, planets, moons
-// Note: for precession and rotation calculations see Doc/Technotes/precession.pdf
+// Note: for precession and rotation calculations see "Planetary axis
+// precession" in "Orbiter Technical Reference"
 // =======================================================================
 
 #define OAPI_IMPLEMENTATION
@@ -492,7 +493,7 @@ void CelestialBody::Update (bool force)
 void CelestialBody::UpdatePrecession ()
 {
 	// Tilt of rotation axis, including precession
-	// See Doc/Technotes/precession.pdf for algorithm
+	// See "Planetary axis precession" in "Orbiter Technical Reference" for algorithm
 
 	Lrel = Lrel0 + prec_omega*(td.MJD1-mjd_rel);
 	double sinl = sin(Lrel), cosl = cos(Lrel);
@@ -520,7 +521,7 @@ void CelestialBody::UpdatePrecession ()
 void CelestialBody::UpdateRotation ()
 {
 	// Rotation of object around its local axis of rotation (y-axis)
-	// See Doc/Technotes/precession.pdf for algorithm
+	// See "Planetary axis precession" in "Orbiter Technical Reference" for algorithm
 
 	rotation = posangle (Dphi + td.SimT1*rot_omega - Lrel*cos_eps + rotation_off);
 	double cosr = cos(rotation), sinr = sin(rotation);

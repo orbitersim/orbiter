@@ -5,9 +5,9 @@
 #include "adiball.h"
 
 extern "C" {
-#include "Lua/lua.h"
-#include "Lua/lualib.h"
-#include "Lua/lauxlib.h"
+#include <lua/lua.h>
+#include <lua/lualib.h>
+#include <lua/lauxlib.h>
 }
 
 // ==========================================================================
@@ -102,7 +102,7 @@ VECTOR3 lua_tovector (lua_State *L, int idx)
 
 ShuttleA *lua_toShuttleA (lua_State *L, int idx)
 {
-	VESSEL **pv = (VESSEL**)lua_touserdata (L, idx);
+	VESSEL **pv = (VESSEL **)luaL_checkudata(L, idx, "SHUTTLEA.vtable");
 	ShuttleA *sh = (ShuttleA*)*pv;
 	return sh;
 }

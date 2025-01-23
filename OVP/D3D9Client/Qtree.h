@@ -50,6 +50,8 @@ public:
 	// Delete all children and their subtrees. False indicates that a node in the subtree
 	// was locked and not the entire subtree could be deleted.
 
+	void DelAbove(int lvl);
+
 private:
 	T *entry;
 	QuadTreeNode *parent;
@@ -135,6 +137,20 @@ bool QuadTreeNode<T>::DelChildren ()
 		}
 	}
 	return ok;
+}
+
+template<typename T>
+void QuadTreeNode<T>::DelAbove(int lvl)
+{
+	for (auto c : child) {
+		if (c) {
+			if (c->entry && c->entry->Level() >= lvl) {
+				c->DelChildren();
+				continue;		
+			}
+			c->DelAbove(lvl);
+		}
+	}
 }
 
 #endif // !__QTREE_H

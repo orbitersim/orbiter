@@ -23,12 +23,13 @@ Orbiter is now published as an Open Source project under the MIT License (see
 D3D9Client graphics engine is licensed under LGPL, see [LGPL](./OVP/D3D9Client/LGPL.txt)
 
 ## Installation
+Hardware requirements needed by Orbiter:
 |  | Minimum requirements | Recommended requirements |
 | ---- | ---- | ---- |
-| RAM: | 4GB | 8GB |
+| RAM: | 500 MB | 2 GB |
 | CPU: | Dual Core |  |
-| GPU: | 200 GFlops | 500 GFlops |
-| Disk: | 5GB of free space | 10GB of free space (80GB if you want hi-res textures) |
+| GPU: | 50 GFlops | 100 GFlops |
+| Disk: | 5 GB of free space | 10 GB of free space (80 GB if you want hi-res textures) |
 
 Get the Orbiter source repository from github
 ```bash
@@ -66,39 +67,32 @@ If you want to build the documentation, you need a few additional tools:
 - [Doxygen](https://www.doxygen.nl/index.html) for building the source-level
   documentation for developers.
 
-By default, the build is configured to create both graphics flavours of the
-Orbiter executable (although this can be configured with the ORBITER_GRAPHICS CMake flag):
-- ``orbiter.exe`` is the standalone Orbiter application with built-in DX7 graphics.
-- ``orbiter_ng.exe`` is a launcher for ``./Modules/Server/orbiter.exe`` which is the
-graphics server version of Orbiter. It requires an external graphics client
-plugin to be loaded via the Modules tab of the Orbiter Launchpad dialog.
-The reference D3D7Client is included with the build with essentially the same
-functionality as the built-in graphics version. Use 3rd party client
-implementations to make use of more modern graphics engines.
-
-See [README.compile](./README.compile) for details on building Orbiter.
+See [COMPILE.md](./COMPILE.md) for details on building Orbiter.
 
 ## Planet textures
 
 The Orbiter git repository does not include most of the planetary texture files
 required for running Orbiter.
 You need to install those separately. The easiest way to do so is by installing
-[Orbiter 2016](http://orbit.medphys.ucl.ac.uk/download.html). Optionally you can
-also install high-resolution versions of the textures from the Orbiter website.
-You should keep the Orbiter 2016 installation separate from your Orbiter git
+an [Orbiter](https://github.com/orbitersim/orbiter/releases) release. Optionally
+you can also install high-resolution versions of the textures from the Orbiter website.
+You should keep the Orbiter installation separate from your Orbiter git
 repository.
 
-To configure Orbiter to use the 2016 texture installation, set the
-ORBITER_PLANET_TEXTURE_INSTALL_DIR entry in CMake. For example, if Orbiter 2016
-was installed in `C:\Orbiter2016`, the CMake option should be set to
-`C:/Orbiter2016/Textures`.
+To configure Orbiter to use the texture installation, set the
+ORBITER_PLANET_TEXTURE_INSTALL_DIR entry in CMake. For example, if Orbiter
+was installed in `C:\Orbiter`, the CMake option should be set to
+`C:/Orbiter/Textures`.
+
+This path can also be set using ORBITER_PLANET_TEXTURE_INSTALL_DIR environment variable
+
 Alternatively, you can configure the texture directory after building Orbiter
 by setting the `PlanetTexDir` entry in `Orbiter.cfg`.
 
 ## Help
 
-Help files are located in the Doc subfolder (if you built them). Orbiter.pdf is the
-main Orbiter user manual.
+Help files are located in the Doc subfolder (if you built them).
+Orbiter User Manual.pdf is the main Orbiter user manual.
 
 The in-game help system can be opened via the "Help" button on
 the Orbiter Launchpad dialog, or with Alt-F1 while running

@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="../Orbiter.css" TYPE="TEXT/CSS" />
+<LINK REL="stylesheet" HREF="OrbiterAPI.css" TYPE="TEXT/CSS">
+<title>Script API: bit (Bit manipulation functions)</title>
+</HEAD>
+<BODY BGCOLOR=#FFFFFF TEXT=#000000>
+
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="ScriptRef.htm">Script</a> &gt; <a href="function.htm">Functions</a> &gt; bit</p>
+
+<h1>bit: Bit manipulation functions</h1>
+<p>The <i>bit</i> library contains some general functions to manipulate bits and bitfields.
+Bitfields are based on Lua numbers and are limited to 32 bits (constrained by the precision of Lua numbers defined as 64bit floating points)</p>
+
+<table class="summary" cols=2>
+<tr>
+<td><a href="#bit_anyset">bit.anyset</a></td>
+<td>Test if a bitfield contains at least one bit from a mask.</td>
+</tr>
+<tr>
+<td><a href="#bit_allset">bit.allset</a></td>
+<td>Test if a bitfield contains all bits from a mask.</td>
+</tr>
+<tr>
+<td><a href="#bit_and">bit.band</a></td>
+<td>Compute the logical and between two bitfields.</td>
+</tr>
+<tr>
+<td><a href="#bit_or">bit.bor</a></td>
+<td>Compute the logical or between two bitfields.</td>
+</tr>
+<tr>
+<td><a href="#bit_not">bit.bnot</a></td>
+<td>Compute the logical not of a bitfield.</td>
+</tr>
+<tr>
+<td><a href="#bit_mask">bit.mask</a></td>
+<td>Compute the value of a masked bitfield.</td>
+</tr>
+</table>
+<h4>Notes:</h4>
+<p>Since <i>and</i>, <i>or</i> and <i>not</i> are reserved keywords in Lua, the functions are named <i>band</i>, <i>bor</i> and <i>bnot</i></p>
+<p>The pseudocode in the following definitions is using C notation for logical operations</p>
+
+
+<div class="func_block">
+
+<div class="func"><a name="bit_anyset"></a>
+<h3>v = bit.anyset(value, mask)</h3>
+<p>Test if a bitfield contains at least one bit from a mask.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>value&nbsp;(number):</td><td>value to test</td></tr>
+<tr><td>mask&nbsp;(number):</td><td>mask</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>v&nbsp;(boolean):</td><td>(value & mask) != 0</td></tr>
+</table>
+
+</div>
+
+
+<div class="func"><a name="bit_allset"></a>
+<h3>v = bit.allset(value, mask)<br></h3>
+<p>Test if a bitfield contains all bits from a mask.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>value&nbsp;(number):</td><td>value to test</td></tr>
+<tr><td>mask&nbsp;(number):</td><td>mask</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>v&nbsp;(boolean):</td><td>(value & mask) == mask</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="bit_and"></a>
+<h3>v = bit.band(a,b)<br></h3>
+<p>Returns the logical and of two values.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>a&nbsp;(number):</td><td>first operand</td></tr>
+<tr><td>b&nbsp;(number):</td><td>second operand</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>v&nbsp;(number):</td><td>result of a & b</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="bit_or"></a>
+<h3>v = bit.bor(a,b, ...)<br></h3>
+<p>Returns the logical or of two or more values.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>a&nbsp;(number):</td><td>first operand</td></tr>
+<tr><td>b&nbsp;(number):</td><td>second operand</td></tr>
+<tr><td>...&nbsp;(numbers):</td><td>additional operands</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>v&nbsp;(number):</td><td>result of a | b | ...</td></tr>
+</table>
+<h4>Note:</h4>
+<p>If you know for certain that a and b have no overlapping bits set, you can use an addition to simulate an or operation<p>
+</div>
+
+
+<div class="func"><a name="bit_not"></a>
+<h3>v = bit.bnot(a)<br></h3>
+<p>Returns the logical not of a value.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>a&nbsp;(number):</td><td>operand</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>v&nbsp;(number):</td><td>result of ~a</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="bit_mask"></a>
+<h3>v = bit.mask(bitfield, mask)<br></h3>
+<p>Compute the value of a masked bitfield.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>bitfield&nbsp;(number):</td><td>bitfield to mask</td></tr>
+<tr><td>mask&nbsp;(number):</td><td>mask</td></tr>
+</table>
+
+<h4>Return value:</h4>
+<table>
+<tr><td>v&nbsp;(number):</td><td>result of bitfield & ~mask</td></tr>
+</table>
+</div>
+
+</div>
+</BODY>
+</HTML>

@@ -90,17 +90,16 @@ bool PayloadRelease::Redraw2D (SURFHANDLE surf)
 bool PayloadRelease::ProcessMouse2D (int event, int mx, int my)
 {
 	ShuttleA *sh = (ShuttleA*)vessel;
-	if (!sh->cargo_arm_status) return false;
 
 	int col = mx/53;
 	int row = my/46;
 	if (mx - col*53 > 42 || my - row*46 > 31) return false;
 	int i = row + (1-col)*3;
-	if (sh->GetAttachmentStatus(sh->payload_attachment[i])) {
-		sh->ToggleGrapple(i);
-		return true;
-	}
-	return false;
+
+	if (sh->ToggleGrapple(i))
+			sh->cargo_open[i]=!sh->cargo_open[i];
+
+	return true;
 }
 
 

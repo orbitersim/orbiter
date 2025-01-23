@@ -5,13 +5,16 @@
 #define __INTERPRETER_H
 
 extern "C" {
-#include "Lua/lua.h"
-#include "Lua/lualib.h"
-#include "Lua/lauxlib.h"
+#include <lua/lua.h>
+#include <lua/lualib.h>
+#include <lua/lauxlib.h>
 }
 
 #include "OrbiterAPI.h"
 #include "VesselAPI.h" // for TOUCHDOWNVTX
+#include <unordered_set>
+
+class gcCore;
 
 #define PRMTP_NIL           0x01
 #define PRMTP_NUMBER        0x02
@@ -21,8 +24,9 @@ extern "C" {
 #define PRMTP_TABLE         0x20
 #define PRMTP_VECTOR        0x40
 #define PRMTP_MATRIX        0x80
+#define PRMTP_USERDATA     0x100
 
-#define ASSERT_SYNTAX(cond,msg) { if(!(cond)) { char cbuf[1024]; sprintf (cbuf, "%s: %s", __FUNCTION__+13, msg); term_strout(L,cbuf,true); return 0; } }
+#define ASSERT_SYNTAX(cond,msg) { if(!(cond)) { luaL_error(L, "%s: %s", __FUNCTION__+13, msg); return 0; } }
 #define ASSERT_FUNCPRM(L,idx,tp) { if (!AssertPrmtp(L,__FUNCTION__,idx,idx,tp)) return 0; }
 
 #define ASSERT_PRM(L,idx,tp)     { if (!AssertPrmtp(L,__FUNCTION__,idx,idx,tp)) return 0; }
@@ -54,12 +58,24 @@ extern "C" {
 
 class VESSEL;
 class MFD2;
+class XRSound;
 
 struct AirfoilContext {
 	lua_State *L;
-	char funcname[128];
+	int funcref;
 };
 
+struct VesselMFDContext {
+	lua_State* L;
+	int msgproc;
+};
+
+typedef struct  {
+	BEACONLIGHTSPEC bs;
+	VECTOR3 pos;
+	VECTOR3 col;
+	VESSEL *vessel;
+} BEACONLIGHTSPEC_Lua;
 
 // ======================================================================
 // ======================================================================
@@ -145,10 +161,17 @@ public:
 
 	virtual void LoadMFDAPI ();
 
+	virtual void LoadNTVERTEXAPI ();
+
 	virtual void LoadLightEmitterMethods ();
+
+	virtual void LoadBeaconMethods ();
+
+	virtual void LoadCustomCameraMethods ();
 
 	virtual void LoadSketchpadAPI ();
 
+	virtual void LoadBitAPI();
 	/**
 	 * \brief Run the interpreter initialisation script
 	 */
@@ -205,15 +228,23 @@ public:
 	 */
 	static void lua_pushsketchpad (lua_State *L, oapi::Sketchpad *skp);
 
+	static int lua_pushnumberref(lua_State* L);
+
+
 	void term_setverbosity (int level) { term_verbose = level; }
 
+	static int LuaCall(lua_State *L, int nargs, int nres);
+	void SetErrorBox(NOTEHANDLE eb) { errorbox = eb; }
+	static void DeleteVessel (OBJHANDLE hVessel);
 protected:
+	static inline NOTEHANDLE errorbox;
 	lua_State *L;         // Lua main context
 
 	/**
 	 * \brief Load screen annotation methods.
 	 */
 	void LoadAnnotationAPI ();
+	void LoadVesselStatusAPI ();
 
 	static bool InitialiseVessel (lua_State *L, VESSEL *v);
 	static bool LoadVesselExtensions (lua_State *L, VESSEL *v);
@@ -262,16 +293,19 @@ protected:
 	static int lua_ismatrix (lua_State *L, int idx);
 
 	static COLOUR4 lua_torgba (lua_State *L, int idx);
+	static void lua_pushrgba(lua_State* L, const COLOUR4&);
 
 	// pops an OBJHANDLE from the stack
 	static OBJHANDLE lua_toObject (lua_State *L, int idx=-1);
+
+	static RECT lua_torect(lua_State* L, int idx);
 
 	// pushes a vessel object on the stack
 	static void lua_pushvessel (lua_State *L, VESSEL *v);
 
 	// Pops a VESSEL interface from the stack and returns it.
 	// A NULL return indicates an invalid data type at the specified stack position,
-	// but a nonzero return does not guarantee a valid vessel pointer
+	// a nonzero return guarantees a valid vessel pointer
 	static VESSEL *lua_tovessel (lua_State *L, int idx=-1);
 
 	// type extraction with checks
@@ -309,6 +343,9 @@ protected:
 	// pops a Sketchpad interface from the stack
 	static oapi::Sketchpad *lua_tosketchpad (lua_State *L, int idx=-1);
 
+
+	static void *luaL_tryudata (lua_State *L, int ud, const char *tname);
+
 	// global functions
 	static int help (lua_State *L);
 	static int help_api (lua_State *L);
@@ -328,6 +365,21 @@ protected:
 	static int mat_mul (lua_State *L);
 	static int mat_tmul (lua_State *L);
 	static int mat_mmul (lua_State *L);
+	static int mat_rotm (lua_State *L);
+
+	// bit manipulations
+	static int bit_anyset(lua_State* L);
+	static int bit_allset(lua_State* L);
+	static int bit_and(lua_State* L);
+	static int bit_or(lua_State* L);
+	static int bit_xor(lua_State* L);
+	static int bit_not(lua_State* L);
+	static int bit_mask(lua_State* L);
+	static int bit_lshift(lua_State* L);
+	static int bit_rshift(lua_State* L);
+	static int bit_arshift(lua_State* L);
+	static int bit_rol(lua_State* L);
+	static int bit_ror(lua_State* L);
 
 	// process library functions
 	static int procFrameskip (lua_State *L);
@@ -350,10 +402,51 @@ protected:
 	static int oapiOpenHelp (lua_State *L);
 	static int oapiOpenInputBox (lua_State *L);
 	static int oapiReceiveInput (lua_State *L);
-	static int oapi_global_to_equ (lua_State *L);
+	static int oapi_open_inputboxex (lua_State *L);
+	static int oapi_global_to_equ(lua_State* L);
+	static int oapi_global_to_local(lua_State* L);
+	static int oapi_local_to_equ(lua_State* L);
 	static int oapi_equ_to_global (lua_State *L);
 	static int oapi_orthodome (lua_State *L);
-	static int oapi_del_vessel (lua_State *L);
+	static int oapi_del_vessel(lua_State* L);
+	static int oapi_create_vessel(lua_State* L);
+	static int oapi_set_focusobject(lua_State* L);
+
+	static int oapi_get_rotationmatrix(lua_State* L);
+
+	// textures
+	static int oapi_register_exhausttexture(lua_State* L);
+	static int oapi_register_reentrytexture(lua_State* L);
+	static int oapi_register_particletexture(lua_State* L);
+	static int oapi_get_texturehandle(lua_State* L);
+	static int oapi_load_texture(lua_State* L);
+	static int oapi_release_texture(lua_State* L);
+	static int oapi_set_texture(lua_State* L);
+	static int oapi_create_surface(lua_State* L);
+	static int oapi_destroy_surface(lua_State* L);
+	static int oapi_save_surface(lua_State* L);
+	static int oapi_clear_surface(lua_State* L);
+
+	// GC
+	static int oapi_set_materialex(lua_State* L);
+	static int oapi_set_material(lua_State* L);
+	static int oapi_set_meshproperty(lua_State* L);
+
+	// VC
+	static int oapi_VC_trigger_redrawarea(lua_State* L);
+	static int oapi_VC_set_areaclickmode_quadrilateral(lua_State* L);
+	static int oapi_VC_set_areaclickmode_spherical(lua_State* L);
+	static int oapi_VC_register_area(lua_State* L);
+	static int oapi_VC_set_neighbours(lua_State* L);
+	static int oapi_VC_registerHUD(lua_State* L);
+	static int oapi_VC_registermfd(lua_State* L);
+	static int oapi_cockpit_mode(lua_State* L);
+	static int oapi_render_hud(lua_State* L);
+	static int oapi_get_hudintensity(lua_State* L);
+	static int oapi_set_hudintensity(lua_State* L);
+	static int oapi_inc_hudintensity(lua_State* L);
+	static int oapi_dec_hudintensity(lua_State* L);
+	static int oapi_toggle_hudcolour(lua_State* L);
 
 	// menu functions
 	static int oapi_get_mainmenuvisibilitymode (lua_State *L);
@@ -383,6 +476,24 @@ protected:
 	static int oapi_get_relativepos (lua_State *L);
 	static int oapi_get_relativevel (lua_State *L);
 
+	// Planets
+	static int oapi_get_planetperiod(lua_State* L);
+	static int oapi_get_objecttype(lua_State* L);
+	static int oapi_get_gbodyparent(lua_State* L);
+	static int oapi_get_gbody(lua_State* L);
+	static int oapi_get_gbodycount(lua_State* L);
+	static int oapi_get_planetatmconstants(lua_State* L);
+	static int oapi_get_planetobliquity(lua_State* L);
+	static int oapi_get_planettheta(lua_State* L);
+	static int oapi_get_planetobliquitymatrix(lua_State* L);
+	static int oapi_get_planetcurrentrotation(lua_State* L);
+	static int oapi_planet_hasatmosphere(lua_State* L);
+	static int oapi_get_planetatmparams(lua_State* L);
+	static int oapi_get_groundvector(lua_State* L);
+	static int oapi_get_windvector(lua_State* L);
+	static int oapi_get_planetjcoeffcount(lua_State* L);
+	static int oapi_get_planetjcoeff(lua_State* L);
+
 	// Vessel functions
 	static int oapi_get_propellanthandle (lua_State *L);
 	static int oapi_get_propellantmass (lua_State *L);
@@ -405,6 +516,12 @@ protected:
 	static int oapi_get_induceddrag (lua_State *L);
 	static int oapi_get_wavedrag (lua_State *L);
 
+	// docking
+	static int oapi_get_dockhandle(lua_State* L);
+	static int oapi_get_dockstatus(lua_State* L);
+	static int oapi_set_autocapture(lua_State* L);
+	static int oapi_get_dockowner(lua_State* L);
+
 	// Navigation radio transmitter functions
 	static int oapi_get_navpos (lua_State *L);
 	static int oapi_get_navchannel (lua_State *L);
@@ -422,6 +539,16 @@ protected:
 	static int oapi_get_cameraglobalpos (lua_State *L);
 	static int oapi_get_cameraglobaldir (lua_State *L);
 	static int oapi_move_groundcamera (lua_State *L);
+	static int oapi_set_cameracockpitdir (lua_State *L);
+
+	// Custom camera
+	static int oapi_delete_customcamera (lua_State *L);
+	static int oapi_setup_customcamera (lua_State *L);
+	static int oapi_customcamera_overlay (lua_State *L);
+	static int oapi_customcamera_onoff (lua_State *L);
+	static void customcamera_clbk(oapi::Sketchpad *pSkp, void *pParam);
+	static int customcamera_collect (lua_State *L);
+
 
 	// animation functions
 	static int oapi_create_animationcomponent (lua_State *L);
@@ -430,13 +557,27 @@ protected:
 	// instrument panel functions
 	static int oapi_open_mfd (lua_State *L);
 	static int oapi_set_hudmode (lua_State *L);
+	static int oapi_get_hudmode (lua_State *L);
 	static int oapi_set_panelblink (lua_State *L);
+	static int oapi_get_mfdmode(lua_State* L);
+	static int oapi_mfd_buttonlabel(lua_State* L);
+	static int oapi_disable_mfdmode(lua_State* L);
+	static int oapi_register_mfd(lua_State* L);
+	static int oapi_process_mfdbutton(lua_State* L);
+	static int oapi_send_mfdkey(lua_State* L);
+	static int oapi_refresh_mfdbuttons(lua_State* L);
+	static int oapi_toggle_mfdon(lua_State* L);
+	static int oapi_get_mfdmodespec(lua_State* L);
+
+	static int oapi_set_defnavdisplay(lua_State* L);
+	static int oapi_set_defrcsdisplay(lua_State* L);
 
 	// user i/o functions
 	static int oapi_keydown (lua_State *L);
 	static int oapi_resetkey (lua_State *L);
 	static int oapi_simulatebufferedkey (lua_State *L);
 	static int oapi_simulateimmediatekey (lua_State *L);
+	static int oapi_acceptdelayedkey (lua_State *L);
 
 	// file i/o functions
 	static int oapi_openfile (lua_State* L);
@@ -468,15 +609,54 @@ protected:
 	static int oapi_get_color (lua_State *L);
 	static int oapi_formatvalue (lua_State* L);
 
+	// sketchpad
+	static int oapi_get_sketchpad(lua_State* L);
+	static int oapi_release_sketchpad(lua_State* L);
+	static int oapi_create_font(lua_State* L);
+	static int oapi_create_pen(lua_State* L);
+	static int oapi_create_brush(lua_State* L);
+	static int oapi_release_font(lua_State* L);
+	static int oapi_release_pen(lua_State* L);
+	static int oapi_release_brush(lua_State* L);
+
+	// Blt
+	static int oapi_blt(lua_State* L);
+	static int oapi_blt_panelareabackground(lua_State* L);
+
+	// Panel
+	static int oapi_set_panelneighbours(lua_State* L);
+
+	// Mesh
+	static int oapi_load_meshglobal(lua_State* L);
+	static int oapi_mesh_group(lua_State* L);
+	static int oapi_create_mesh(lua_State* L);
+	static int oapi_delete_mesh(lua_State* L);
+	static int oapi_add_meshgroupblock(lua_State* L);
+	static int oapi_edit_meshgroup(lua_State* L);
+	static int oapi_get_meshgroup(lua_State* L);
+		
+	static void lua_pushmeshhandle(lua_State *L, MESHHANDLE);
+	static void lua_pushdevmeshhandle(lua_State *L, DEVMESHHANDLE);
+	static MESHHANDLE lua_tomeshhandle(lua_State *L, int idx);
+	static DEVMESHHANDLE lua_todevmeshhandle(lua_State *L, int idx);
+	static int lua_ismeshhandle(lua_State *L, int idx);
+	static int lua_isdevmeshhandle(lua_State *L, int idx);
+
 	// term library functions
 	static int termOut (lua_State *L);
 	static int termClear (lua_State *L);
 
 	// screen annotation library functions
-	static int noteSetText (lua_State *L);
-	static int noteSetPos (lua_State *L);
-	static int noteSetSize (lua_State *L);
-	static int noteSetColour (lua_State *L);
+	static int noteSetText(lua_State* L);
+	static int noteSetPos(lua_State* L);
+	static int noteSetSize(lua_State* L);
+	static int noteSetColour(lua_State* L);
+
+	// vesselstatus library functions
+	static int vsget(lua_State* L);
+	static int vsset(lua_State* L);
+	static int vs2get(lua_State* L);
+	static int vs2set(lua_State* L);
 
 	// -------------------------------------------
 	// vessel access functions
@@ -490,7 +670,7 @@ protected:
 	// -------------------------------------------
 	// vessel methods
 	// -------------------------------------------
-	static int v_version (lua_State *L);
+	static int v_version(lua_State* L);
 	static int v_get_handle (lua_State *L);
 	static int v_send_bufferedkey (lua_State *L);
 	static int v_is_landed (lua_State *L);
@@ -500,6 +680,7 @@ protected:
 	static int v_get_name (lua_State *L);
 	static int v_get_classname (lua_State *L);
 	static int v_get_flightmodel (lua_State *L);
+	static int v_get_flightstatus (lua_State *L);
 	static int v_get_damagemodel (lua_State *L);
 	static int v_get_enablefocus (lua_State *L);
 	static int v_set_enablefocus (lua_State *L);
@@ -530,7 +711,8 @@ protected:
 	static int v_get_relativepos (lua_State *L);
 	static int v_get_relativevel (lua_State *L);
 	static int v_get_rotationmatrix (lua_State *L);
-	static int v_get_status (lua_State *L);
+	static int v_get_status (lua_State* L);
+	static int v_get_rawstatus (lua_State* L);
 	static int v_defset_status (lua_State *L);
 	static int v_get_angvel (lua_State *L);
 	static int v_set_angvel (lua_State *L);
@@ -554,7 +736,8 @@ protected:
 	static int v_get_smi (lua_State *L);
 	static int v_get_argper (lua_State *L);
 	static int v_get_pedist (lua_State *L);
-	static int v_get_apdist (lua_State *L);
+	static int v_get_apdist(lua_State* L);
+	static int v_get_equpos(lua_State* L);
 
 	// surface-relative parameters
 	static int v_get_surfaceref (lua_State *L);
@@ -573,6 +756,7 @@ protected:
 
 	// propellant methods
 	static int v_create_propellantresource (lua_State *L);
+	static int v_set_default_propellantresource(lua_State* L);
 	static int v_del_propellantresource (lua_State *L);
 	static int v_clear_propellantresources (lua_State *L);
 	static int v_get_propellantcount (lua_State *L);
@@ -621,7 +805,8 @@ protected:
 	static int v_get_thrustergrouplevel (lua_State *L);
 	static int v_set_thrustergrouplevel (lua_State *L);
 	static int v_inc_thrustergrouplevel (lua_State *L);
-	static int v_inc_thrustergrouplevel_singlestep (lua_State *L);
+	static int v_inc_thrustergrouplevel_singlestep(lua_State* L);
+	static int v_get_manualcontrollevel(lua_State* L);
 
 	// reaction control system
 	static int v_get_navmode (lua_State *L);
@@ -649,6 +834,7 @@ protected:
 	static int v_edit_airfoil (lua_State *L);
 	static int v_del_airfoil (lua_State *L);
 	static int v_create_controlsurface (lua_State *L);
+	static int v_del_controlsurface (lua_State *L);
 	static int v_get_adcmode (lua_State *L);
 	static int v_set_adcmode (lua_State *L);
 	static int v_get_adclevel (lua_State *L);
@@ -678,6 +864,8 @@ protected:
 	static int v_get_forcevector (lua_State *L);
 	static int v_get_torquevector (lua_State *L);
 	static int v_add_force (lua_State *L);
+	static int v_create_variabledragelement(lua_State *L);
+	static int v_clear_variabledragelements(lua_State *L);
 
 	// docking port management
 	static int v_create_dock (lua_State *L);
@@ -689,7 +877,12 @@ protected:
 	static int v_get_dockhandle (lua_State *L);
 	static int v_get_dockstatus (lua_State *L);
 	static int v_dockingstatus (lua_State *L);
-	static int v_undock (lua_State *L);
+	static int v_undock(lua_State* L);
+	static int v_dock(lua_State* L);
+	static int v_get_proxydock(lua_State* L);
+	static int v_get_dockindex(lua_State* L);
+	static int v_get_targetdockalignment(lua_State* L);
+	static int v_move_dock(lua_State* L);
 
 	// attachment management
 	static int v_create_attachment (lua_State *L);
@@ -722,7 +915,11 @@ protected:
 	static int v_add_exhaust (lua_State *L);
 	static int v_del_exhaust (lua_State *L);
 	static int v_get_exhaustcount (lua_State *L);
-	static int v_add_exhauststream (lua_State *L);
+	static int v_add_exhauststream(lua_State* L);
+	static int v_add_reentrystream(lua_State* L);
+	static int v_add_particlestream(lua_State* L);
+	static int v_del_exhauststream(lua_State* L);
+	static int oapi_particle_getlevelref(lua_State* L);
 
 	// Nosewheel-steering and wheel brakes
 	static int v_set_nosewheelsteering (lua_State *L);
@@ -739,6 +936,15 @@ protected:
 	static int v_del_lightemitter (lua_State *L);
 	static int v_clear_lightemitters (lua_State *L);
 
+	// beacons
+	static int oapi_create_beacon (lua_State *L);
+	static int v_add_beacon (lua_State *L);
+	static int v_del_beacon (lua_State *L);
+	static int v_clear_beacons (lua_State *L);
+	static int beacon_collect (lua_State *L);
+	static int beacon_get (lua_State *L);
+	static int beacon_set (lua_State *L);
+
 	// camera management
 	static int v_get_cameraoffset (lua_State *L);
 	static int v_set_cameraoffset (lua_State *L);
@@ -753,6 +959,10 @@ protected:
 	static int v_trigger_panelredrawarea (lua_State *L);
 	static int v_trigger_redrawarea (lua_State *L);
 
+	// MFD
+	static int v_register_mfdmode(lua_State* L);
+	static int v_unregister_mfdmode(lua_State* L);
+
 	// mesh methods
 	static int v_add_mesh (lua_State *L);
 	static int v_insert_mesh (lua_State *L);
@@ -762,6 +972,8 @@ protected:
 	static int v_shift_mesh (lua_State *L);
 	static int v_shift_meshes (lua_State *L);
 	static int v_get_meshoffset (lua_State *L);
+	static int v_get_devmesh(lua_State* L);
+	static int v_set_mesh_visibility_mode(lua_State* L);
 
 	// animation methods
 	static int v_create_animation (lua_State *L);
@@ -785,10 +997,23 @@ protected:
 	static int v_global2local (lua_State *L);
 	static int v_local2rel (lua_State *L);
 
+	// File I/O
+	static int v_parse_scenario_line_ex(lua_State* L);
+
+	// Recording
+	static int v_record_event(lua_State* L);
+	static int v_playback(lua_State* L);
+
+	// Panel handling
+	static int v_register_panelarea(lua_State* L);
+	static int v_register_panelmfdgeometry(lua_State* L);
+	static int v_set_panelscaling(lua_State* L);
+	static int v_set_panelbackground(lua_State* L);
+
 	// -------------------------------------------
 	// MFD methods
 	// -------------------------------------------
-	static int mfd_get_size (lua_State *L);
+	static int mfd_get_size(lua_State* L);
 	static int mfd_set_title (lua_State *L);
 	static int mfd_get_defaultpen (lua_State *L);
 	static int mfd_get_defaultfont (lua_State *L);
@@ -812,6 +1037,8 @@ protected:
 	static int le_set_spotaperture (lua_State *L);
 	static int le_activate (lua_State *L);
 	static int le_is_active (lua_State *L);
+	static int le_get_visibility (lua_State *L);
+	static int le_set_visibility (lua_State *L);
 
 	// -------------------------------------------
 	// Sketchpad methods
@@ -830,15 +1057,94 @@ protected:
 	static int skp_set_backgroundcolor (lua_State *L);
 	static int skp_set_backgroundmode (lua_State *L);
 	static int skp_set_pen (lua_State *L);
-	static int skp_set_font (lua_State *L);
+	static int skp_set_font(lua_State* L);
+	static int skp_set_brush(lua_State* L);
 	static int skp_get_charsize (lua_State *L);
 	static int skp_get_textwidth (lua_State *L);
+	static int skp_copy_rect (lua_State *L);
+	static int skp_stretch_rect (lua_State *L);
+	static int skp_rotate_rect (lua_State *L);
+	static int skp_quick_pen (lua_State *L);
+	static int skp_quick_brush (lua_State *L);
+	static int skp_get_surface (lua_State *L);
+	static int skp_set_brightness (lua_State *L);
+	static int skp_set_renderparam (lua_State *L);
+	static int skp_set_worldtransform2d (lua_State *L);
 
+	// -------------------------------------------
+	// NTVERTEX methods
+	// -------------------------------------------
+	static int oapi_create_ntvertexarray(lua_State *L);
+	static int oapi_del_ntvertexarray (lua_State *L);
+	static int ntv_size(lua_State *L);
+	static int ntv_reset(lua_State *L);
+	static int ntv_zeroize(lua_State *L);
+	static int ntv_append(lua_State *L);
+	static int ntv_copy(lua_State *L);
+	static int ntv_write(lua_State *L);
+	static int ntv_extract(lua_State *L); // create a table containing the NTVERTEX data
+	static int ntv_set(lua_State *L);     // assignment operator array[i] = table/NTV proxy
+	static int ntv_get(lua_State *L);// proxy = array[i]
+	static int ntv_collect(lua_State *L);
+	static int ntv_view(lua_State *L); // create a temporary view similar to C++ string_views
+		
+	static void push_ntvertexarray(lua_State *L, NTVERTEX *, int);
+
+
+	static void ntvproxy_create(lua_State *L, NTVERTEX *);
+	static int ntvproxy_get(lua_State *L);  // val = proxy.x
+	static int ntvproxy_set(lua_State *L);  // proxy.x = val
+
+	// -------------------------------------------
+	// Index array methods
+	// -------------------------------------------
+	static int oapi_create_indexarray(lua_State *L);
+	static int oapi_del_indexarray (lua_State *L);
+	static int idx_size(lua_State *L);
+	static int idx_reset(lua_State *L);
+	static int idx_append(lua_State *L);
+	static int idx_get(lua_State *L);
+	static int idx_set(lua_State *L);
+	static int idx_collect(lua_State *L);
+	static void push_indexarray(lua_State *L, WORD *, int);
+
+	
 	friend int OpenHelp (void *context);
+
+	// -------------------------------------------
+	// XRSound
+	// -------------------------------------------
+	virtual void LoadXRSoundAPI ();
+	static int lua_isxrsound(lua_State *L, int idx);
+	static XRSound *lua_toxrsound(lua_State *L, int idx);
+	static int xrsound_create_instance(lua_State *L);
+	static int xrsound_is_present(lua_State *L);
+	static int xrsound_get_version(lua_State *L);
+	static int xrsound_load_wav(lua_State *L);
+	static int xrsound_play_wav(lua_State *L);
+	static int xrsound_stop_wav(lua_State *L);
+	static int xrsound_is_wavplaying(lua_State *L);
+	static int xrsound_set_paused(lua_State *L);
+	static int xrsound_is_paused(lua_State *L);
+	static int xrsound_set_defaultsoundenabled(lua_State *L);
+	static int xrsound_get_defaultsoundenabled(lua_State *L);
+	static int xrsound_set_defaultsoundgroupfolder(lua_State *L);
+	static int xrsound_get_defaultsoundgroupfolder(lua_State *L);
+	static int xrsound_set_pan(lua_State *L);
+	static int xrsound_get_pan(lua_State *L);
+	static int xrsound_set_playbackspeed(lua_State *L);
+	static int xrsound_get_playbackspeed(lua_State *L);
+	static int xrsound_set_playposition(lua_State *L);
+	static int xrsound_get_playposition(lua_State *L);
+	static int xrsound_collect(lua_State *L);
 
 private:
 	HANDLE hExecMutex; // flow control synchronisation
 	HANDLE hWaitMutex;
+	static inline gcCore *pCore;
+	static inline bool gcCoreInitialized = false;
+
+	static void LazyInitGCCore();
 
 	bool bExecLocal;   // flag for locally created mutexes
 	bool bWaitLocal;
@@ -848,6 +1154,9 @@ private:
 	int jobs;                // number of background jobs left over after command terminates
 	int (*postfunc)(void*);
 	void *postcontext;
+
+	static inline std::unordered_set<VESSEL *>knownVessels; // for lua_isvessel
+
 
 	static int lua_tointeger_safe (lua_State *L, int idx, int prmno, const char *funcname);
 	static double lua_tonumber_safe (lua_State *L, int idx, int prmno, const char *funcname);
@@ -872,17 +1181,18 @@ private:
 	// returns 1 if stack entry idx is a touchdown vertex, 0 otherwise
 	static int lua_istouchdownvtx (lua_State *L, int idx);
 
-
 	// Vessel Status ---------------------------------------------------------
 
 	// pushes VESSELSTATUS 'vs' into a table on top of the stack
 	static void lua_push_vessel_status (lua_State *L, const VESSELSTATUS &vs);
-
+	
 	// pushes VESSELSTATUS2 'vs' into a table on top of the stack
 	static void lua_push_vessel_status (lua_State *L, const VESSELSTATUS2 &vs);
 
 	// checks whether stack entry idx is a VESSELSTATUS or a VESSELSTATUS2
 	static int lua_get_vesselstatus_version (lua_State *L, int idx);
+
+	static OAPI_MSGTYPE MsgProcMFD(UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam);
 };
 
 #endif // !__INTERPRETER_H

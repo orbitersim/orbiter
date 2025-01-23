@@ -441,6 +441,8 @@ bool SuperVessel::RemoveEntry (const Vessel *v)
 	return found;
 }
 
+// =======================================================================
+
 void SuperVessel::TransferAllDocked (Vessel *v, SuperVessel *sv, const Vessel *exclude)
 {
 	DWORD n;
@@ -454,12 +456,97 @@ void SuperVessel::TransferAllDocked (Vessel *v, SuperVessel *sv, const Vessel *e
 	}
 }
 
+// =======================================================================
+
 bool SuperVessel::isComponent (const Vessel *v) const
 {
 	for (DWORD i = 0; i < nv; i++)
 		if (vlist[i].vessel == v) return true;
 	return false;
 }
+
+// =======================================================================
+
+void SuperVessel::SoftDockUpdate(Vessel* vessel2, PortSpec *pD)
+{
+	DWORD idx1;
+	DWORD idx2;
+
+	Vessel* vessel1 = pD->mate;
+	DWORD port1 = pD->matedock;
+
+	// make sure vessels are part of the same superstructure
+	if (!vessel2->supervessel) return;
+	if (vessel1->supervessel != vessel2->supervessel) return;
+
+	// find index numbers in a superstructure
+	for (idx1 = 0; idx1 < nv; idx1++) if (vessel1 == vlist[idx1].vessel) break;
+	for (idx2 = 0; idx2 < nv; idx2++) if (vessel2 == vlist[idx2].vessel) break;
+	
+	// calculate orientation of new vessel relative to superstructure
+	// 1. calc position of 2nd vessel relative to 1st
+	Vector as(pD->dir);
+	Vector bs(pD->rot);
+	Vector cs(crossp(as, bs));
+	Vector at(-vessel1->dock[port1]->dir);
+	Vector bt(vessel1->dock[port1]->rot);
+	Vector ct(crossp(at, bt));
+	double den = cs.x * (as.y * bs.z - as.z * bs.y) +
+				 cs.y * (as.z * bs.x - as.x * bs.z) +
+				 cs.z * (as.x * bs.y - as.y * bs.x);
+	vlist[idx2].rrot.m11 = (ct.x * (as.y * bs.z - as.z * bs.y) +
+		bt.x * (as.z * cs.y - as.y * cs.z) +
+		at.x * (bs.y * cs.z - bs.z * cs.y)) / den;
+	vlist[idx2].rrot.m12 = (ct.x * (as.z * bs.x - as.x * bs.z) +
+		bt.x * (as.x * cs.z - as.z * cs.x) +
+		at.x * (bs.z * cs.x - bs.x * cs.z)) / den;
+	vlist[idx2].rrot.m13 = (ct.x * (as.x * bs.y - as.y * bs.x) +
+		bt.x * (as.y * cs.x - as.x * cs.y) +
+		at.x * (bs.x * cs.y - bs.y * cs.x)) / den;
+	vlist[idx2].rrot.m21 = (ct.y * (as.y * bs.z - as.z * bs.y) +
+		bt.y * (as.z * cs.y - as.y * cs.z) +
+		at.y * (bs.y * cs.z - bs.z * cs.y)) / den;
+	vlist[idx2].rrot.m22 = (ct.y * (as.z * bs.x - as.x * bs.z) +
+		bt.y * (as.x * cs.z - as.z * cs.x) +
+		at.y * (bs.z * cs.x - bs.x * cs.z)) / den;
+	vlist[idx2].rrot.m23 = (ct.y * (as.x * bs.y - as.y * bs.x) +
+		bt.y * (as.y * cs.x - as.x * cs.y) +
+		at.y * (bs.x * cs.y - bs.y * cs.x)) / den;
+	vlist[idx2].rrot.m31 = (ct.z * (as.y * bs.z - as.z * bs.y) +
+		bt.z * (as.z * cs.y - as.y * cs.z) +
+		at.z * (bs.y * cs.z - bs.z * cs.y)) / den;
+	vlist[idx2].rrot.m32 = (ct.z * (as.z * bs.x - as.x * bs.z) +
+		bt.z * (as.x * cs.z - as.z * cs.x) +
+		at.z * (bs.z * cs.x - bs.x * cs.z)) / den;
+	vlist[idx2].rrot.m33 = (ct.z * (as.x * bs.y - as.y * bs.x) +
+		bt.z * (as.y * cs.x - as.x * cs.y) +
+		at.z * (bs.x * cs.y - bs.y * cs.x)) / den;
+
+	// 2. premultipy with vessel1's rotation matrix
+	vlist[idx2].rrot.premul(vlist[idx1].rrot);
+	vlist[idx2].rq.Set(vlist[idx2].rrot);
+
+	// position of vessel2 in superstructure
+	vlist[idx2].rpos.Set(vlist[idx1].rpos + mul(vlist[idx1].rrot, vessel1->dock[port1]->ref) - mul(vlist[idx2].rrot, pD->ref));
+
+	vessel2->SetSuperStruct(this);
+	// flush the state increments
+	vessel2->rpos_base = vessel2->s0->pos; vessel2->rpos_add.Set(0, 0, 0);
+	vessel2->rvel_base = vessel2->s0->vel; vessel2->rvel_add.Set(0, 0, 0);
+	vessel2->s0->Q.Set(s0->Q);
+	vessel2->s0->Q.postmul(vlist[idx2].rq);
+	vessel2->s0->R.Set(vessel2->s0->Q);
+
+	ResetMassAndCG();
+	ResetSize();
+	CalcPMI();
+	bOrbitStabilised = false;
+
+	vessel2->s0->omega.Set(tmul(vlist[idx2].rrot, s0->omega));
+	vessel2->UpdateSurfParams();
+}
+
+// =======================================================================
 
 bool SuperVessel::Add (Vessel *vessel1, int port1, Vessel *vessel2, int port2, bool mixmoments)
 {
@@ -557,6 +644,8 @@ bool SuperVessel::Add (Vessel *vessel1, int port1, Vessel *vessel2, int port2, b
 	return true;
 }
 
+// =======================================================================
+
 bool SuperVessel::Merge (Vessel *vessel1, int port1, Vessel *vessel2, int port2)
 {
 	DWORD i, idx1, idx2, nv2;
@@ -644,6 +733,8 @@ bool SuperVessel::Merge (Vessel *vessel1, int port1, Vessel *vessel2, int port2)
 	return true;
 }
 
+// =======================================================================
+
 bool SuperVessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, double tfrac, double dt) const
 {
 	bool impact = false;
@@ -659,6 +750,8 @@ bool SuperVessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s,
 	}
 	return impact;
 }
+
+// =======================================================================
 
 void SuperVessel::Update (bool force)
 {
@@ -733,6 +826,8 @@ void SuperVessel::Update (bool force)
 	cvel = s1->vel - cbody->s1->vel;
 }
 
+// =======================================================================
+
 void SuperVessel::PostUpdate ()
 {
 	VesselBase::PostUpdate ();
@@ -743,6 +838,8 @@ void SuperVessel::PostUpdate ()
 	}
 }
 
+// =======================================================================
+
 void SuperVessel::UpdateProxies ()
 {
 	VesselBase::UpdateProxies ();
@@ -751,6 +848,8 @@ void SuperVessel::UpdateProxies ()
 	double gfrac;
 	SetOrbitReference (g_psys->GetDominantGravitySource (s0->pos, gfrac));
 }
+
+// =======================================================================
 
 void SuperVessel::SetOrbitReference (CelestialBody *body)
 {
@@ -763,6 +862,8 @@ void SuperVessel::SetOrbitReference (CelestialBody *body)
 	}
 }
 
+// =======================================================================
+
 bool SuperVessel::CheckSurfaceContact () const
 {
 	for (DWORD comp = 0; comp < nv; comp++)
@@ -770,6 +871,8 @@ bool SuperVessel::CheckSurfaceContact () const
 			return true;
 	return false;
 }
+
+// =======================================================================
 
 void SuperVessel::InitLanded (Planet *planet, double lng, double lat, double dir, const Matrix *hrot, double cgelev, bool asComponent)
 {
@@ -808,11 +911,15 @@ void SuperVessel::InitLanded (Planet *planet, double lng, double lat, double dir
 	}
 }
 
+// =======================================================================
+
 void SuperVessel::Refuel ()
 {
 	for (DWORD comp = 0; comp < nv; comp++)
 		vlist[comp].vessel->Refuel();	
 }
+
+// =======================================================================
 
 bool SuperVessel::ThrustEngaged () const
 {
@@ -822,6 +929,8 @@ bool SuperVessel::ThrustEngaged () const
 	return false;
 }
 
+// =======================================================================
+
 void SuperVessel::ComponentStateVectors (const StateVectors *s, StateVectors *scomp, int comp) const
 {
 	scomp->vel.Set (s->vel + mul (s->R, crossp (vlist[comp].rpos-cg, s->omega)));
@@ -830,6 +939,8 @@ void SuperVessel::ComponentStateVectors (const StateVectors *s, StateVectors *sc
 	scomp->Q.Set (s->Q * vlist[comp].rq);
 	scomp->R.Set (scomp->Q);
 }
+
+// =======================================================================
 
 void SuperVessel::SetStateFromComponent (const StateVectors *scomp, int comp) const
 {
@@ -841,6 +952,8 @@ void SuperVessel::SetStateFromComponent (const StateVectors *scomp, int comp) co
 	s0->pos.Set (scomp->pos - mul (s0->R, vlist[comp].rpos-cg));
 }
 
+// =======================================================================
+
 void SuperVessel::AddComponentForceAndMoment (Vector *F, Vector *M,
 	const Vector *Fcomp, const Vector *Mcomp, int comp) const
 {
@@ -848,6 +961,8 @@ void SuperVessel::AddComponentForceAndMoment (Vector *F, Vector *M,
 	*F += Ftrans;
 	*M += mul (vlist[comp].rrot, *Mcomp) + crossp (Ftrans, vlist[comp].rpos-cg);
 }
+
+// =======================================================================
 
 void SuperVessel::NotifyShiftVesselOrigin (Vessel *vessel, const Vector &dr)
 {
@@ -859,6 +974,8 @@ void SuperVessel::NotifyShiftVesselOrigin (Vessel *vessel, const Vector &dr)
 	}
 }
 
+// =======================================================================
+
 bool SuperVessel::GetCG (const Vessel *vessel, Vector &vcg)
 {
 	for (DWORD i = 0; i < nv; i++) {
@@ -869,6 +986,8 @@ bool SuperVessel::GetCG (const Vessel *vessel, Vector &vcg)
 	}
 	return false;
 }
+
+// =======================================================================
 
 bool SuperVessel::GetPMI (const Vessel *vessel, Vector &vpmi)
 {
@@ -893,11 +1012,15 @@ bool SuperVessel::GetPMI (const Vessel *vessel, Vector &vpmi)
 	return false;
 }
 
+// =======================================================================
+
 void SuperVessel::SetFlightStatus (FlightStatus fstatus)
 {
 	for (DWORD i = 0; i < nv; i++)
 		vlist[i].vessel->fstatus = fstatus;
 }
+
+// =======================================================================
 
 void SuperVessel::ResetSize ()
 {
@@ -908,6 +1031,8 @@ void SuperVessel::ResetSize ()
 		if (r > size) size = r;
 	}
 }
+
+// =======================================================================
 
 void SuperVessel::ResetMassAndCG ()
 {
@@ -928,10 +1053,13 @@ void SuperVessel::ResetMassAndCG ()
 	cg = cg_new;
 }
 
+// =======================================================================
+
 void SuperVessel::CalcPMI ()
 {
 	// Calculates the PMI values for the supervessel from the layout and component PMI
-	// values. For details see Doc/Technotes/composite.pdf.
+	// values. For details see "Inertia calculations for composite vessels" in "Orbiter
+	// Technical Reference".
 
 	DWORD i, j;
 	Vector r0[6], rt;
@@ -975,6 +1103,8 @@ void SuperVessel::CalcPMI ()
 	tidaldamp /= mass;
 }
 
+// =======================================================================
+
 TOUCHDOWN_VTX *SuperVessel::HullvtxFirst ()
 {
 	next_hullvessel = 0;
@@ -986,6 +1116,8 @@ TOUCHDOWN_VTX *SuperVessel::HullvtxFirst ()
 	} else
 		return NULL;
 }
+
+// =======================================================================
 
 TOUCHDOWN_VTX *SuperVessel::HullvtxNext ()
 {

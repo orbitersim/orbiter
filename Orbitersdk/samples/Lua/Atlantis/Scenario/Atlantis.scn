@@ -1,0 +1,79 @@
+BEGIN_HYPERDESC
+<h1>Launch into sunrise</h1>
+<p>Prepare for an early morning launch with Space Shuttle Atlantis. The sun has
+not yet risen at the Cape, but you will catch the first rays of the morning
+sun on your way to orbit!</p>
+END_HYPERDESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 51983.4772490220
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship STS-101
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET STS-101
+  MODE Extern
+  POS 6.38 -0.80 -84.57
+  TRACKMODE TargetRelative
+  FOV 50.00
+  BEGIN_PRESET
+    Cockpit:STS-101:40.00
+    Ground:STS-101:40.00:Earth -80.62339 28.61960 110.00
+    Track:STS-101:50.00:RELATIVE 2.890 -0.009 -1.229
+    Ground:STS-101:10.00:Earth -80.65298 28.58028 20.00
+    Track:ISS:40.00:RELATIVE 1.983 -0.474 -0.522
+    Track:Earth:40.00:GLOBAL 2.896 2.132 -0.331
+  END_PRESET
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Surface
+END_HUD
+
+BEGIN_MFD Left
+  TYPE Surface
+  SPDMODE 1
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Orbit
+  PROJ Ship
+  FRAME Ecliptic
+  REF Earth
+END_MFD
+
+
+BEGIN_SHIPS
+ISS:ProjectAlpha_ISS
+  STATUS Orbiting Earth
+  RPOS -5244945.21 4232409.61 14786.88
+  RVEL 4524.929 5604.748 -2692.388
+  AROT -151.42 21.95 29.84
+  VROT 0.00 0.05 -0.15
+  PRPLEVEL 0:1.000
+  IDS 0:1 100 1:2 100 2:3 100 3:4 100 4:5 100
+  NAVFREQ 0 0
+  XPDR 466
+END
+STS-101:Atlantis.lua
+  STATUS Landed Earth
+  POS -80.6208630 28.6270927
+  HEADING 180.57
+  ALT 47.361
+  AROT 151.063 -8.225 4.515
+  PRPLEVEL 0:1.000 1:1.000 2:1.000
+  NAVFREQ 0 0
+  CONFIGURATION 0
+  CARGODOOR 0 0.0000
+  GEAR 0 0.0000
+  KUBAND 0 0.0000
+  ARM_STATUS 0.5000 0.0000 0.0000 0.5000 0.5000 0.5000
+  SAT_OFS_X 0.000
+  SAT_OFS_Y 0.000
+  SAT_OFS_Z 0.000
+END
+END_SHIPS

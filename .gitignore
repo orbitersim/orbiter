@@ -19,4 +19,13 @@ Sound/XRSound/**/dist/
 Sound/XRSound/**/Debug-with-OrbiterRelease/
 Sound/XRSound/**/Release-with-OrbiterRelease/
 
+# KDevelop-specific files
+*.kdev4
+.kdev/
+[Bb]uild/
+
 Extern/irrKlang
+
+Doc/**/*.log
+Doc/**/*.pdf
+Doc/**/*.gz

@@ -52,7 +52,6 @@ private:
     BOOL                   SWVert;
     BOOL                   Pure;
     BOOL                   DDM;
-    BOOL                   bGDIBB;
     BOOL                   nvPerfHud;
     DWORD                  dwRenderWidth;      // Dimensions of the render target
     DWORD                  dwRenderHeight;     // Dimensions of the render target
@@ -94,7 +93,6 @@ public:
     inline LPD3DXFONT          GetLargeFont() const             { return pLargeFont; }
     inline LPD3DXFONT          GetSmallFont() const             { return pSmallFont; }
     inline BOOL                IsFullscreen() const             { return bIsFullscreen; }
-    inline BOOL                IsGDIBB() const                  { return bGDIBB; }
     inline BOOL                IsAAEnabled() const              { return bAAEnabled; }
     inline const D3DCAPS9 *    GetCaps() const                  { return &caps; }
     inline BOOL                HasVertexTextureSup() const      { return bVertexTexture; }

@@ -1,0 +1,44 @@
+BEGIN_HYPERDESC
+<h1>Solar sail</h1>
+<p>Solar sail. Please enable solar radiation pressure to use this scenario</p>
+END_HYPERDESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 51983.0162227896
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship SolarSail
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET SolarSail
+  MODE Extern
+  POS 3.937361 139.845029 -9.722670
+  TRACKMODE TargetRelative
+  FOV 40.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Docking
+END_HUD
+
+BEGIN_MFD Left
+  TYPE Docking
+  NAV 0
+END_MFD
+
+
+BEGIN_SHIPS
+SolarSail:SolarSail.lua
+  STATUS Orbiting Earth
+  RPOS 39998090.51 8999310.36 -5240488.34
+  RVEL 5848.259 1613.167 4808.829
+  AROT 51.995 -61.674 47.681
+  NAVFREQ 0 0
+  ANT 3 0
+  HATCH 3 0
+  FOLD 3 0
+END
+END_SHIPS

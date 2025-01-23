@@ -1,11 +1,8 @@
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
-)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 
 set(out ${ORBITER_BINARY_SDK_DIR}/doc/API_Reference.chm)
 
-file(GLOB_RECURSE doxysrc
-	${ORBITER_SOURCE_SDK_DIR}/include/*
-)
+file(GLOB_RECURSE doxysrc ${ORBITER_SOURCE_SDK_DIR}/include/*)
 
 set(api_ref_out "")
 add_custom_command(
@@ -17,7 +14,7 @@ add_custom_command(
 )
 list(APPEND api_ref_out ${out})
 
-if(LATEX_FOUND)
+if(LATEX_FOUND)  # TODO: fail if not found
 	add_custom_command(
 		OUTPUT ${ORBITER_BINARY_SDK_DIR}/doc/API_Reference.pdf
 		DEPENDS ${out}

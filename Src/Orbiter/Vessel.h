@@ -136,9 +136,11 @@ typedef struct {      // docking port definition
 	Vector rot;             // longitudinal rotation alignment direction
 	Vessel *mate;           // vessel attached to port (NULL for none)
 	Vessel *pending;        // vessel being currently docked/undocked
+	Vessel *owner;			// vessel that's owns this docking port
 	int status;             // 0=normal (docked/free), 1=docking in progress, 2=undocking in progress
 	DWORD matedock;         // mate dock index
 	Nav_IDS *ids;           // instrument docking system specs (NULL if not available)
+	bool autodock;			// Use auto capture on docking
 } PortSpec;
 
 typedef struct tagAttachmentSpec { // parent/child attachment definition
@@ -441,6 +443,7 @@ public:
 	{
 		if (!bFRplayback) {
 			ts->level_permanent += dlevel;
+			ts->level_permanent = std::max(0.0, std::min(1.0, ts->level_permanent));
 			if (ts->tank && ts->tank->mass)
 				ts->level = std::max(0.0, std::min(1.0, ts->level+dlevel));
 		}
@@ -1004,6 +1007,10 @@ public:
 
 	void UnregisterDocking (DWORD did);
 	// Register an undocking event at dock 'did'
+
+	void MoveDock(PortSpec* dock, const Vector& pos, const Vector& dir, const Vector& rot);
+	PortSpec* GetProxyDock(PortSpec* pD);
+	bool GetTargetDockAlignment(PortSpec* pD, PortSpec* pT, Vector* ofs, Vector* dir, Vector* rot, Vector* rvel = nullptr);
 
 	int Dock (Vessel *target, DWORD mydid, DWORD tgtdid, DWORD mode = 0);
 	// Dock with 'target', using dock 'mydid' and attach to target dock 'tgtdid'

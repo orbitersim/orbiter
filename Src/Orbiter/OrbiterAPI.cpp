@@ -23,12 +23,8 @@
 #include "resource.h"
 #include "Mesh.h"
 #include "MenuInfoBar.h"
-#include "zlib.h"
+#include <zlib.h>
 #include "DrawAPI.h"
-
-#ifdef INLINEGRAPHICS  // should be temporary
-#include "OGraphics.h"
-#endif // INLINEGRAPHICS
 
 #include "Orbitersdk.h"
 
@@ -373,6 +369,16 @@ DLLEXPORT DOCKHANDLE oapiGetDockHandle (OBJHANDLE hVessel, UINT n)
 DLLEXPORT OBJHANDLE oapiGetDockStatus (DOCKHANDLE dock)
 {
 	return (OBJHANDLE)((PortSpec*)dock)->mate;
+}
+
+DLLEXPORT void oapiSetAutoCapture(DOCKHANDLE hDock, bool enable)
+{
+	((PortSpec*)hDock)->autodock = enable;
+}
+
+DLLEXPORT OBJHANDLE oapiGetDockOwner(DOCKHANDLE hDock)
+{
+	return (OBJHANDLE)((PortSpec*)hDock)->owner;
 }
 
 DLLEXPORT void oapiSetEmptyMass (OBJHANDLE hVessel, double mass)
@@ -1439,6 +1445,13 @@ DLLEXPORT SURFHANDLE oapiLoadSurfaceEx(const char* fname, DWORD attrib, bool bPa
 	else return NULL;
 }
 
+DLLEXPORT bool oapiSaveSurface(const char* fname, SURFHANDLE hSrf, oapi::ImageFileFormat fmt, float quality)
+{
+	oapi::GraphicsClient* gc = g_pOrbiter->GetGraphicsClient();
+	if (gc) return gc->clbkSaveSurfaceToImage(hSrf, fname, fmt, quality);
+	return false;
+}
+
 DLLEXPORT SURFHANDLE oapiLoadAdditionalTextureMaps(const char* diff, const char* maps, bool bPath, SURFHANDLE hOld, bool bAll)
 {
 	oapi::GraphicsClient* gc = g_pOrbiter->GetGraphicsClient();
@@ -2074,16 +2087,11 @@ DLLEXPORT void oapiBlt (SURFHANDLE tgt, SURFHANDLE src, int tgtx, int tgty, int 
 	if (gc) {
 
 		if (ck != SURF_NO_CK) {
-#ifdef INLINEGRAPHICS // TEMPORARY: colour-keys only supported by inline client
-			((OrbiterGraphics*)gc)->clbkBltCK (tgt, tgtx, tgty, src, srcx, srcy, w, h, ck);
-			return;
-#else
 			static bool bWarnCK = true;
 			if (bWarnCK) {
 				LogOut_Obsolete (__FUNCTION__, "Colour key argument not supported by graphics client");
 				bWarnCK = false;
 			}
-#endif
 		}
 
 		dASSERT (gc->clbkBlt (tgt, tgtx, tgty, src, srcx, srcy, w, h), "GraphicsClient::clbkBlt failed");
@@ -2104,17 +2112,11 @@ DLLEXPORT void oapiBlt (SURFHANDLE tgt, SURFHANDLE src, RECT *tgtr, RECT *srcr, 
 		}
 
 		if (ck != SURF_NO_CK) {
-#ifdef INLINEGRAPHICS // TEMPORARY: colour-keys only supported by inline client
-			((OrbiterGraphics*)gc)->clbkScaleBltCK (tgt, tgtr->left, tgtr->top, tgtr->right-tgtr->left, tgtr->bottom-tgtr->top,
-				src, srcr->left, srcr->top, srcr->right-srcr->left, srcr->bottom-srcr->top, ck);
-			return;
-#else
 			static bool bWarnCK = true;
 			if (bWarnCK) {
 				LogOut_Obsolete (__FUNCTION__, "Colour key argument not supported by graphics client");
 				bWarnCK = false;
 			}
-#endif
 		}
 		gc->clbkScaleBlt (tgt, tgtr->left, tgtr->top, tgtr->right-tgtr->left, tgtr->bottom-tgtr->top,
 			src, srcr->left, srcr->top, srcr->right-srcr->left, srcr->bottom-srcr->top);
@@ -2544,10 +2546,8 @@ DLLEXPORT char *oapiDebugString ()
 
 DLLEXPORT void oapiDebugString(const char* str)
 {
-#ifndef INLINEGRAPHICS
 	oapi::GraphicsClient* gc = g_pOrbiter->GetGraphicsClient();
 	if (gc) gc->clbkDebugString(str);
-#endif // !INLINEGRAPHICS
 }
 
 DLLEXPORT double oapiRand ()

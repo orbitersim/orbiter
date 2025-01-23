@@ -5,6 +5,31 @@
 
 #include "Interpreter.h"
 #include "VesselAPI.h"
+#include "MfdApi.h"
+
+
+/*
+VesselMFD: Class instantiated for MFDs declared inside Lua Vessel modules
+*/
+class VesselMFD : public MFD2
+{
+public:
+	VesselMFD(DWORD w, DWORD h, VESSEL* vessel, VesselMFDContext* ctx);
+	virtual ~VesselMFD();
+	bool ConsumeButton(int bt, int event) override;
+	bool ConsumeKeyBuffered(DWORD key) override;
+	bool ConsumeKeyImmediate(char* kstate) override;
+	char* ButtonLabel(int bt) override;
+	int ButtonMenu(const MFDBUTTONMENU** menu) const override;
+	bool Update(oapi::Sketchpad* skp) override;
+	void StoreStatus() const override;
+	void RecallStatus() override;
+	void WriteStatus(FILEHANDLE scn) const override;
+	void ReadStatus(FILEHANDLE scn) override;
+
+	lua_State* L;
+	int mfd_ref;
+};
 
 /***
 Vessel class: Lua access to VESSEL objects
@@ -19,18 +44,24 @@ VESSEL *vfocus = (VESSEL*)0x1;
 VESSEL *Interpreter::lua_tovessel (lua_State *L, int idx)
 {
 	VESSEL **pv = (VESSEL**)lua_touserdata (L, idx);
-	if (pv && *pv == vfocus) // replace flag with actual focus vessel pointer
-		*pv = oapiGetFocusInterface();
-	return pv ? *pv : NULL;
+	if(pv) {
+		if (*pv == vfocus) { // returns current focused vessel when using the pseudo vessel "focus"
+			VESSEL *v = oapiGetFocusInterface();
+			knownVessels.insert(v);
+			return v;
+		} else if(knownVessels.find(*pv) == knownVessels.end()) {
+			return NULL;
+		}
+		return *pv;
+	}
+	return NULL;
 }
 
 VESSEL *Interpreter::lua_tovessel_safe(lua_State *L, int idx, const char *funcname)
 {
 	VESSEL *v = lua_tovessel(L,idx);
 	if (!v) {
-		char cbuf[1024];
-		sprintf(cbuf, "%s: invalid vessel object for self", funcname);
-		term_strout(L, cbuf);
+		luaL_error(L, "Invalid vessel object for self");
 	}
 	return v;
 }
@@ -180,6 +211,7 @@ void Interpreter::lua_push_vessel_status (lua_State *L, const VESSELSTATUS2 &vs)
 	lua_setfield(L, -2, "dockinfo");
 }
 
+
 void Interpreter::LoadVesselAPI ()
 {
 	static const struct luaL_reg vesselAcc[] = {
@@ -195,10 +227,14 @@ void Interpreter::LoadVesselAPI ()
 		{"get_handle", v_get_handle},
 		{"send_bufferedkey", v_send_bufferedkey},
 
+		{"register_mfdmode", v_register_mfdmode},
+		{"unregister_mfdmode", v_unregister_mfdmode},
+
 		// General vessel properties
 		{"get_name", v_get_name},
 		{"get_classname", v_get_classname},
 		{"get_flightmodel", v_get_flightmodel},
+		{"get_flightstatus", v_get_flightstatus},
 		{"get_damagemodel", v_get_damagemodel},
 		{"get_enablefocus", v_get_enablefocus},
 		{"set_enablefocus", v_set_enablefocus},
@@ -229,6 +265,7 @@ void Interpreter::LoadVesselAPI ()
 		{"get_relativevel", v_get_relativevel},
 		{"get_rotationmatrix", v_get_rotationmatrix},
 		{"get_status", v_get_status},
+		{"get_rawstatus", v_get_rawstatus},
 		{"defset_status", v_defset_status},
 		{"get_angvel", v_get_angvel},
 		{"set_angvel", v_set_angvel},
@@ -270,6 +307,7 @@ void Interpreter::LoadVesselAPI ()
 		{"edit_airfoil", v_edit_airfoil},
 		{"del_airfoil", v_del_airfoil},
 		{"create_controlsurface", v_create_controlsurface},
+		{"del_controlsurface", v_del_controlsurface},
 		{"get_adcmode", v_get_adcmode},
 		{"set_adcmode", v_set_adcmode},
 		{"get_adclevel", v_get_adclevel},
@@ -303,7 +341,8 @@ void Interpreter::LoadVesselAPI ()
 		{"get_groundcontact", v_get_groundcontact},
 
 		// fuel management
-		{"create_propellantresource", v_create_propellantresource},
+		{"create_propellantresource", v_create_propellantresource },
+		{"set_default_propellantresource", v_set_default_propellantresource },
 		{"del_propellantresource", v_del_propellantresource},
 		{"clear_propellantresources", v_clear_propellantresources},
 		{"get_propellantcount", v_get_propellantcount},
@@ -353,6 +392,8 @@ void Interpreter::LoadVesselAPI ()
 		{"set_thrustergrouplevel", v_set_thrustergrouplevel},
 		{"inc_thrustergrouplevel", v_inc_thrustergrouplevel},
 		{"inc_thrustergrouplevel_singlestep", v_inc_thrustergrouplevel_singlestep},
+		{"get_manualcontrollevel", v_get_manualcontrollevel },
+			
 
 		// Reaction control system
 		{"get_navmode", v_get_navmode},
@@ -370,7 +411,12 @@ void Interpreter::LoadVesselAPI ()
 		{"get_dockhandle", v_get_dockhandle},
 		{"get_dockstatus", v_get_dockstatus},
 		{"dockingstatus", v_dockingstatus},
-		{"undock", v_undock},
+		{"undock", v_undock },
+		{"dock", v_dock },
+		{"get_proxydock", v_get_proxydock },
+		{"get_dockindex", v_get_dockindex },
+		{"get_targetdockalignment", v_get_targetdockalignment },
+		{"move_dock", v_move_dock },
 
 		// Attachment management
 		{"create_attachment", v_create_attachment},
@@ -403,8 +449,11 @@ void Interpreter::LoadVesselAPI ()
 		{"add_exhaust", v_add_exhaust},
 		{"del_exhaust", v_del_exhaust},
 		{"get_exhaustcount", v_get_exhaustcount},
-		{"add_exhauststream", v_add_exhauststream},
-
+		{"add_exhauststream", v_add_exhauststream },
+		{"add_reentrystream", v_add_reentrystream },
+		{"del_exhauststream", v_del_exhauststream },
+		{"add_particlestream", v_add_particlestream },
+			
 		// Nosewheel-steering and wheel brakes
 		{"set_nosewheelsteering", v_set_nosewheelsteering},
 		{"get_nosewheelsteering", v_get_nosewheelsteering},
@@ -419,6 +468,11 @@ void Interpreter::LoadVesselAPI ()
 		{"get_lightemittercount", v_get_lightemittercount},
 		{"del_lightemitter", v_del_lightemitter},
 		{"clear_lightemitters", v_clear_lightemitters},
+
+		// beacons
+		{"add_beacon", v_add_beacon},
+		{"del_beacon", v_del_beacon},
+		{"clear_beacons", v_clear_beacons},
 
 		// Camera management
 		{"get_cameraoffset", v_get_cameraoffset},
@@ -442,7 +496,9 @@ void Interpreter::LoadVesselAPI ()
 		{"get_meshcount", v_get_meshcount},
 		{"shift_mesh", v_shift_mesh},
 		{"shift_meshes", v_shift_meshes},
-		{"get_meshoffset", v_get_meshoffset},
+		{"get_meshoffset", v_get_meshoffset },
+		{"get_devmesh", v_get_devmesh },
+		{"set_mesh_visibility_mode", v_set_mesh_visibility_mode },
 
 		// animation methods
 		{"create_animation", v_create_animation},
@@ -477,11 +533,14 @@ void Interpreter::LoadVesselAPI ()
         {"get_smi", v_get_smi},
         {"get_argper", v_get_argper},
         {"get_pedist", v_get_pedist},
-        {"get_apdist", v_get_apdist},
+		{"get_apdist", v_get_apdist},
+		{"get_equpos", v_get_equpos},
         {"get_dragvector", v_get_dragvector},
         {"get_forcevector", v_get_forcevector},
         {"get_torquevector", v_get_torquevector},
         {"add_force", v_add_force},
+        {"create_variabledragelement", v_create_variabledragelement },
+        {"clear_variabledragelements", v_clear_variabledragelements },
         {"is_orbitstabilised", v_is_orbitstabilised},
         {"is_nonsphericalgravityenabled", v_is_nonsphericalgravityenabled},
         {"toggle_navmode", v_toggle_navmode},
@@ -489,21 +548,42 @@ void Interpreter::LoadVesselAPI ()
         {"set_hoverholdaltitude", v_set_hoverholdaltitude},
         {"toggle_RCSmode", v_toggle_RCSmode},
         {"get_COG_elev", v_get_COG_elev},
+		{"parse_scenario_line_ex", v_parse_scenario_line_ex},
 
+		// Recording
+		{"record_event", v_record_event},
+		{"playback", v_playback},
+
+		// Panels
+		{"register_panelarea", v_register_panelarea},
+		{"register_panelmfdgeometry", v_register_panelmfdgeometry},
+		{"set_panelscaling", v_set_panelscaling},
+		{"set_panelbackground", v_set_panelbackground},
+			
 		{NULL, NULL}
 	};
 	luaL_newmetatable (L, "VESSEL.vtable");
+
 	lua_pushstring (L, "__index");
 	lua_pushvalue (L, -2); // push metatable
 	lua_settable (L, -3);  // metatable.__index = metatable
+	
 	luaL_openlib (L, NULL, vesselLib, 0);
 	luaL_openlib (L, "vessel", vesselAcc, 0);
 
 	// create pseudo-instance "focus"
-	lua_pushlightuserdata (L, vfocus);
+	lua_pushlightuserdata (L, &vfocus);
 	luaL_getmetatable (L, "VESSEL.vtable");  // push metatable
 	lua_setmetatable (L, -2);               // set metatable for user data
 	lua_setglobal (L, "focus");
+
+	lua_createtable(L, 0, 4);
+	lua_pushnumber(L, OAPI_MSG_MFD_OPENED);     lua_setfield(L, -2, "MFD_OPENED");
+	lua_pushnumber(L, OAPI_MSG_MFD_CLOSED);     lua_setfield(L, -2, "MFD_CLOSED");
+	lua_pushnumber(L, OAPI_MSG_MFD_UPDATE);     lua_setfield(L, -2, "MFD_UPDATE");
+	lua_pushnumber(L, OAPI_MSG_MFD_OPENEDEX);   lua_setfield(L, -2, "MFD_OPENEDEX");
+	lua_setglobal(L, "OAPI_MSG");
+
 
 	// store thruster group identifiers in global "THGROUP" table
 	// C identifiers "THGROUP_xxx" become table entries "THGROUP.xxx"
@@ -543,6 +623,18 @@ void Interpreter::LoadVesselAPI ()
 	lua_pushnumber (L, RCS_LIN);               lua_setfield (L, -2, "LIN");
 	lua_setglobal (L, "RCSMODE");
 
+
+	lua_createtable(L, 0, 8);
+	lua_pushnumber(L, MANCTRL_ATTMODE);              lua_setfield(L, -2, "ATTMODE");
+	lua_pushnumber(L, MANCTRL_REVMODE);              lua_setfield(L, -2, "REVMODE");
+	lua_pushnumber(L, MANCTRL_ROTMODE);              lua_setfield(L, -2, "ROTMODE");
+	lua_pushnumber(L, MANCTRL_LINMODE);              lua_setfield(L, -2, "LINMODE");
+	lua_pushnumber(L, MANCTRL_ANYMODE);              lua_setfield(L, -2, "ANYMODE");
+	lua_pushnumber(L, MANCTRL_KEYBOARD);             lua_setfield(L, -2, "KEYBOARD");
+	lua_pushnumber(L, MANCTRL_JOYSTICK);             lua_setfield(L, -2, "JOYSTICK");
+	lua_pushnumber(L, MANCTRL_ANYDEVICE);            lua_setfield(L, -2, "ANYDEVICE");
+	lua_setglobal(L, "MANCTRL");
+
 	// store aerodynamic control surface mode identifiers in global ADCMODE table
 	lua_createtable (L, 0, 5);
 	lua_pushnumber (L, 0);                     lua_setfield (L, -2, "OFF");
@@ -576,6 +668,80 @@ void Interpreter::LoadVesselAPI ()
 	lua_pushnumber (L, LIFT_VERTICAL);         lua_setfield (L, -2, "VERTICAL");
 	lua_pushnumber (L, LIFT_HORIZONTAL);       lua_setfield (L, -2, "HORIZONTAL");
 	lua_setglobal (L, "LIFT");
+
+	// store HUD modes in global HUDMODE table
+	lua_createtable(L, 0, 4);
+	lua_pushnumber(L, HUD_NONE);               lua_setfield(L, -2, "NONE");
+	lua_pushnumber(L, HUD_ORBIT);              lua_setfield(L, -2, "ORBIT");
+	lua_pushnumber(L, HUD_SURFACE);            lua_setfield(L, -2, "SURFACE");
+	lua_pushnumber(L, HUD_DOCKING);            lua_setfield(L, -2, "DOCKING");
+	lua_setglobal(L, "HUDMODE");
+
+	// store MFD modes in global MFDMODE table
+	lua_createtable(L, 0, 13);
+	lua_pushnumber(L, MFD_REFRESHBUTTONS);     lua_setfield(L, -2, "REFRESHBUTTONS");
+	lua_pushnumber(L, MFD_NONE);               lua_setfield(L, -2, "NONE");
+	lua_pushnumber(L, MFD_ORBIT);              lua_setfield(L, -2, "ORBIT");
+	lua_pushnumber(L, MFD_SURFACE);            lua_setfield(L, -2, "SURFACE");
+	lua_pushnumber(L, MFD_MAP);                lua_setfield(L, -2, "MAP");
+	lua_pushnumber(L, MFD_HSI);                lua_setfield(L, -2, "HSI");
+	lua_pushnumber(L, MFD_LANDING);            lua_setfield(L, -2, "LANDING");
+	lua_pushnumber(L, MFD_DOCKING);            lua_setfield(L, -2, "DOCKING");
+	lua_pushnumber(L, MFD_OPLANEALIGN);        lua_setfield(L, -2, "OPLANEALIGN");
+	lua_pushnumber(L, MFD_OSYNC);              lua_setfield(L, -2, "OSYNC");
+	lua_pushnumber(L, MFD_TRANSFER);           lua_setfield(L, -2, "TRANSFER");
+	lua_pushnumber(L, MFD_COMMS);              lua_setfield(L, -2, "COMMS");
+	lua_pushnumber(L, MFD_USERTYPE);           lua_setfield(L, -2, "USERTYPE");
+	lua_setglobal(L, "MFDMODE");
+
+	// store MFD IDs in global MFDID table
+	lua_createtable(L, 0, 13);
+	lua_pushnumber(L, MFD_LEFT);               lua_setfield(L, -2, "LEFT");
+	lua_pushnumber(L, MFD_RIGHT);              lua_setfield(L, -2, "RIGHT");
+	lua_pushnumber(L, MFD_USER1);              lua_setfield(L, -2, "USER1");
+	lua_pushnumber(L, MFD_USER2);              lua_setfield(L, -2, "USER2");
+	lua_pushnumber(L, MFD_USER3);              lua_setfield(L, -2, "USER3");
+	lua_pushnumber(L, MFD_USER4);              lua_setfield(L, -2, "USER4");
+	lua_pushnumber(L, MFD_USER5);              lua_setfield(L, -2, "USER5");
+	lua_pushnumber(L, MFD_USER6);              lua_setfield(L, -2, "USER6");
+	lua_pushnumber(L, MFD_USER7);              lua_setfield(L, -2, "USER7");
+	lua_pushnumber(L, MFD_USER8);              lua_setfield(L, -2, "USER8");
+	lua_pushnumber(L, MFD_USER9);              lua_setfield(L, -2, "USER9");
+	lua_pushnumber(L, MFD_USER10);             lua_setfield(L, -2, "USER10");
+	lua_pushnumber(L, MAXMFD);                 lua_setfield(L, -2, "MAX");
+	lua_setglobal(L, "MFDID");
+
+	lua_createtable(L, 0, 2);
+	lua_pushnumber(L, MFD_SHOWMODELABELS);             lua_setfield(L, -2, "SHOWMODELABELS");
+	lua_pushnumber(L, MFD_TRANSPARENT_WHEN_OFF);       lua_setfield(L, -2, "TRANSPARENT_WHEN_OFF");
+	lua_setglobal(L, "MFDFLAG");
+
+
+	// store mesh visibility modes in global MESHVIS table
+	lua_createtable(L, 0, 6);
+	lua_pushnumber(L, MESHVIS_NEVER);           lua_setfield(L, -2, "NEVER");
+	lua_pushnumber(L, MESHVIS_EXTERNAL);        lua_setfield(L, -2, "EXTERNAL");
+	lua_pushnumber(L, MESHVIS_COCKPIT);         lua_setfield(L, -2, "COCKPIT");
+	lua_pushnumber(L, MESHVIS_EXTERNAL | MESHVIS_COCKPIT);  lua_setfield(L, -2, "ALWAYS");
+	lua_pushnumber(L, MESHVIS_VC);              lua_setfield(L, -2, "VC");
+	lua_pushnumber(L, MESHVIS_EXTPASS);         lua_setfield(L, -2, "EXTPASS");
+	lua_setglobal(L, "MESHVIS");
+
+
+	// store materian properties for oapiSetMaterialEx in MATPROP table
+	lua_createtable(L, 0, 10);
+	lua_pushnumber(L, MatProp::Diffuse);        lua_setfield(L, -2, "DIFFUSE");
+	lua_pushnumber(L, MatProp::Ambient);        lua_setfield(L, -2, "AMBIENT");
+	lua_pushnumber(L, MatProp::Specular);       lua_setfield(L, -2, "SPECULAR");
+	lua_pushnumber(L, MatProp::Light);          lua_setfield(L, -2, "LIGHT");
+	lua_pushnumber(L, MatProp::Emission);       lua_setfield(L, -2, "EMISSION");
+	lua_pushnumber(L, MatProp::Reflect);        lua_setfield(L, -2, "REFLECT");
+	lua_pushnumber(L, MatProp::Smooth);         lua_setfield(L, -2, "SMOOTH");
+	lua_pushnumber(L, MatProp::Metal);          lua_setfield(L, -2, "METAL");
+	lua_pushnumber(L, MatProp::Fresnel);        lua_setfield(L, -2, "FRESNEL");
+	lua_pushnumber(L, MatProp::SpecialFX);      lua_setfield(L, -2, "SPECIALFX");
+	lua_setglobal(L, "MATPROP");
+
 
 	// store vessel propagation modes in global PROP table
 	/***
@@ -633,6 +799,19 @@ void Interpreter::LoadVesselAPI ()
 	// predefined help contexts
 	lua_pushstring (L, "intro.htm"); lua_setfield (L, LUA_GLOBALSINDEX, "orbiter");
 	lua_pushstring (L, "script/ScriptRef.htm"); lua_setfield (L, LUA_GLOBALSINDEX, "api");
+
+	// Panels
+	lua_createtable(L, 0, 8);
+	lua_pushnumber (L, PANEL_ATTACH_BOTTOM   ); lua_setfield(L,-2, "ATTACH_BOTTOM"  );
+	lua_pushnumber (L, PANEL_ATTACH_TOP      ); lua_setfield(L,-2, "ATTACH_TOP"     );
+	lua_pushnumber (L, PANEL_ATTACH_LEFT     ); lua_setfield(L,-2, "ATTACH_LEFT"    );
+	lua_pushnumber (L, PANEL_ATTACH_RIGHT    ); lua_setfield(L,-2, "ATTACH_RIGHT"   );
+	lua_pushnumber (L, PANEL_MOVEOUT_BOTTOM  ); lua_setfield(L,-2, "MOVEOUT_BOTTOM" );
+	lua_pushnumber (L, PANEL_MOVEOUT_TOP     ); lua_setfield(L,-2, "MOVEOUT_TOP"    );
+	lua_pushnumber (L, PANEL_MOVEOUT_LEFT    ); lua_setfield(L,-2, "MOVEOUT_LEFT"   );
+	lua_pushnumber (L, PANEL_MOVEOUT_RIGHT   ); lua_setfield(L,-2, "MOVEOUT_RIGHT"  );
+	lua_setglobal (L, "PANEL");
+
 }
 
 /***
@@ -640,6 +819,19 @@ General properties
 @section vessel_mtd_props
 */
 
+/***
+Get vessel version.
+
+This function returns the underlying C++ vessel version used by the vessel :
+
+- 0: VESSEL
+- 1: VESSEL2
+- 2: VESSEL3
+- 3: VESSEL4
+
+@function version
+@treturn number vessel version
+*/
 int Interpreter::v_version (lua_State *L)
 {
 	static const char *funcname = "version";
@@ -650,7 +842,7 @@ int Interpreter::v_version (lua_State *L)
 }
 
 /***
-Returns a handle to the vessel object.
+Get vessel handle.
 
 @function get_handle
 @treturn handle vessel handle
@@ -667,7 +859,8 @@ int Interpreter::v_get_handle (lua_State *L)
 }
 
 /***
-Returns the vessel name.
+Get vessel name.
+
 Another way to obtain a vessel name is by using the oapi.get_objname function with
 the vessel handle. So you can use either
 
@@ -693,7 +886,7 @@ int Interpreter::v_get_name (lua_State *L)
 }
 
 /***
-Returns the vessel class name.
+Get vessel class name.
 The class name identifies the vessel type.
 
 @function get_classname
@@ -711,7 +904,8 @@ int Interpreter::v_get_classname (lua_State *L)
 }
 
 /***
-Returns the requested realism level for the flight model.
+Get flight model realism level.
+
 The following realism levels are currently supported:
 
 - 0: simplified
@@ -738,6 +932,36 @@ int Interpreter::v_get_flightmodel (lua_State *L)
 }
 
 /***
+Get flight status.
+
+Returns a bit flag defining the vessel's current flight status.
+
+The following flags are currently defined:
+
+- bit 0:
+
+      - 0 = vessel is active (in flight),
+      - 1 = vessel is inactive (landed)
+- bit 1:
+
+      - 0 = simple vessel (not docked to anything),
+      - 1 = part of superstructure, (docked to another vessel)
+
+@function get_flightstatus
+@treturn number flight status bitfield
+*/
+int Interpreter::v_get_flightstatus (lua_State *L)
+{
+	static const char *funcname = "get_flightstatus";
+	AssertMtdMinPrmCount(L, 1, funcname);
+	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
+	lua_pushnumber (L, v->GetFlightStatus());
+	return 1;
+}
+
+/***
+Get damage model.
+
 Returns the current user setting for damage and systems failure simulation.
 The following settings are currently supported:
 
@@ -768,6 +992,8 @@ int Interpreter::v_get_damagemodel (lua_State *L)
 }
 
 /***
+Get focus control status.
+
 Returns true if the vessel can receive the input focus, false otherwise.
 
 The vessel can be allowed or prohibited to receive the input focus by using the
@@ -798,6 +1024,8 @@ int Interpreter::v_get_enablefocus (lua_State *L)
 }
 
 /***
+Set focus on vessel.
+
 Enable or disable the vessel's ability to receive the input focus.
 
 The initial state is defined by the EnableFocus setting in the vessel's
@@ -829,6 +1057,8 @@ int Interpreter::v_set_enablefocus (lua_State *L)
 }
 
 /***
+Get vessel size.
+
 Returns the mean vessel radius.
 
 Provides an approximate measure of the vessel size.
@@ -848,6 +1078,8 @@ int Interpreter::v_get_size (lua_State *L)
 }
 
 /***
+Set vessel size.
+
 Set the vessel's mean radius.
 
 The size should correspond to the vessel's visual representation, for example the
@@ -875,6 +1107,8 @@ int Interpreter::v_set_size (lua_State *L)
 }
 
 /***
+Get dry mass.
+
 Returns the vessel's empty (dry) mass, excluding propellant mass.
 
 @function get_emptymass
@@ -892,6 +1126,8 @@ int Interpreter::v_get_emptymass (lua_State *L)
 }
 
 /***
+Set dry mass.
+
 Set the vessel's empty (dry) mass, excluding propellants.
 
 The empty mass combines all parts of the vessel except propellant resources
@@ -915,6 +1151,8 @@ int Interpreter::v_set_emptymass (lua_State *L)
 }
 
 /***
+Get vessel PMI.
+
 Returns the vessel's mass-normalised principal moments of inertia.
 
 The inertia tensor describes the behaviour of a rigid body under angular
@@ -932,7 +1170,7 @@ approximation when the vessel is sufficiently symmetric with respect to its
 coordinate frame. Otherwise, a diagonalisation by rotating the local frame may be
 required.
 
-For more details, see Doc\Technotes\composite.pdf.
+For more details, see "Inertia calculations for composite vessels" in "Orbiter Technical Reference".
 
 @function get_pmi
 @return (<i><b>@{types.vector|vector}</b></i>) diagonal elements of the mass-normalised inertia tensor [<b>m</b>&sup2;]
@@ -950,12 +1188,14 @@ int Interpreter::v_get_pmi (lua_State *L)
 }
 
 /***
+Set vessel PMI.
+
 Set the vessel's mass-normalised principal moments of inertia (PMI).
 
 PMI are the diagonal elements of the inertia tensor, which describes the
 behaviour of a rigid body under angular acceleration.
 
-For more details, see Doc\Technotes\composite.pdf.
+For more details, see "Inertia calculations for composite vessels" in "Orbiter Technical Reference".
 
 @function set_pmi
 @param pmi (<i></b>@{types.vector|vector}</b></i>) pmi Diagonal elements of the vessel's mass-normalised inertia tensor [<b>m</b>&sup2;]
@@ -972,6 +1212,8 @@ int Interpreter::v_set_pmi (lua_State *L)
 }
 
 /***
+Get vessel cross sections.
+
 Returns the vessel's cross sections projected in the direction of the vessel's principal axes.
 
 @function get_crosssections
@@ -990,6 +1232,8 @@ int Interpreter::v_get_crosssections (lua_State *L)
 }
 
 /***
+Set vessel cross sections.
+
 Defines the vessel's cross-sectional areas, projected in the directions of the vessel's principal axes.
 
 @function set_crosssections
@@ -1009,6 +1253,8 @@ int Interpreter::v_set_crosssections (lua_State *L)
 }
 
 /***
+Get gravity damping coefficient.
+
 Returns the vessel's damping coefficient for gravity field gradient-induced torque.
 
 A nonspherical object in an inhomogeneous gravitational field experiences a
@@ -1036,6 +1282,8 @@ int Interpreter::v_get_gravitygradientdamping (lua_State *L)
 }
 
 /***
+Set gravity damping coefficient.
+
 Sets the vessel's damping coefficient for gravity field gradient-induced torque.
 
 If gravity gradient torque has been disabled in the launchpad dialog, this
@@ -1058,6 +1306,8 @@ int Interpreter::v_set_gravitygradientdamping (lua_State *L)
 }
 
 /***
+Get number of touchdown points.
+
 Returns the number of touchdown points defining the impact hull of the vessel.
 
 @function get_touchdownpointcount
@@ -1073,6 +1323,8 @@ int Interpreter::v_get_touchdownpointcount (lua_State *L)
 }
 
 /***
+Get touchdown points.
+
 Returns the three points defining the vessel's ground contact plane.
 
 The function returns 3 reference points defining the vessel's surface contact
@@ -1114,6 +1366,8 @@ int Interpreter::v_get_touchdownpoints (lua_State *L)
 }
 
 /***
+Set touchdown points.
+
 Defines the three points defining the vessel's ground contact plane.
 
 The points are the positions at which the vessel's undercarriage (or equivalent)
@@ -1181,7 +1435,7 @@ int Interpreter::v_set_touchdownpoints (lua_State *L)
 }
 
 /***
-Defines the vessel's range of visibility.
+Set vessel's visibility range.
 
 This function can be used to define the distance up to which a vessel is visible,
 independent of screen resolution.
@@ -1230,7 +1484,7 @@ int Interpreter::v_set_visibilitylimit (lua_State *L)
 }
 
 /***
-Returns the radius of the vessel's circumscribing sphere.
+Get the radius of the vessel's circumscribing sphere.
 
 This parameter describes the radius of the sphere around the vessel that is
 protected from clipping at the observer camera's near clipping plane. (The
@@ -1408,14 +1662,13 @@ int Interpreter::v_get_COG_elev (lua_State *L)
 	return 1;
 }
 
-
 /***
 Vessel state
 @section vessel_mtd_state
 */
 
 /***
-Returns the vessel's current total mass.
+Get current total mass.
 
 @function get_mass
 @treturn number current total vessel mass [kg]
@@ -1431,7 +1684,7 @@ int Interpreter::v_get_mass (lua_State *L)
 }
 
 /***
-Returns the vessel's position vector in global coordinates.
+Get position vector in global coordinates.
 
 Orbiter's global reference frame is the solar system's barycentric
 ecliptic frame at epoch J2000.0.
@@ -1452,7 +1705,7 @@ int Interpreter::v_get_globalpos (lua_State *L)
 }
 
 /***
-Returns the vessel's velocity vector in global coordinates.
+Get velocity vector in global coordinates.
 
 Orbiter's global reference frame is the solar system's barycentric
 ecliptic frame at epoch J2000.0.
@@ -1473,7 +1726,7 @@ int Interpreter::v_get_globalvel (lua_State *L)
 }
 
 /***
-Returns the vessel's current position with respect to another object.
+Get current position with respect to another object.
 
 This function returns the vessel's position relative to the position of the
 object defined by handle `href`.
@@ -1498,7 +1751,7 @@ int Interpreter::v_get_relativepos (lua_State *L)
 }
 
 /***
-Returns the vessel's current velocity relative to another object.
+Get current velocity relative to another object.
 
 This function returns the vessel's velocity relative to the velocity of the
 object defined by handle `href`.
@@ -1523,7 +1776,7 @@ int Interpreter::v_get_relativevel (lua_State *L)
 }
 
 /***
-Returns the vessel's current rotation matrix in the global frame.
+Get current rotation matrix in the global frame.
 
 The returned matrix can be multiplied with a direction vector in the vessel's
 local frame to rotate it into the global frame.
@@ -1535,9 +1788,11 @@ Together with @{get_globalpos}, a point can be transformed from the vessel's
 local frame to the global frame and vice versa. Example:
 
 	vglob = v:get_globalpos
-	vR = v:get_rotationmatrix
-	ploc = {x=1,y=2,z=3} -- a point in the local vessel frame
-	pglob = vec.add(vglob, mat.mul(vR, ploc)) -- the point transformed to the global frame
+	vR = v:get_rotationmatrix()
+	-- a point in the local vessel frame
+	ploc = {x=1,y=2,z=3}
+	-- the point transformed to the global frame
+	pglob = vec.add(vglob, mat.mul(vR, ploc))
 
 The global frame is defined by the ecliptic and equinox of J2000.0, with
 origin at the solar system's barycentre.
@@ -1558,15 +1813,19 @@ int Interpreter::v_get_rotationmatrix (lua_State *L)
 }
 
 /***
-To be documented
+Get vessel status.
+
+Returns the vessel's current status parameters as a Lua table.
 
 @function get_status
+@tparam[opt=2] number status version
+@treturn table vessel status
 */
-int Interpreter::v_get_status (lua_State *L)
+int Interpreter::v_get_status(lua_State* L)
 {
-	static const char *funcname = "get_status";
+	static const char* funcname = "get_status";
 	AssertMtdMinPrmCount(L, 1, funcname);
-	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
 
 	// For version 2 (or greater) the caller has to set version number as 1st parameter
 	DWORD version = (lua_gettop(L) >= 2) ? lua_tointeger(L, 2) : 2; // default to version 2
@@ -1574,14 +1833,14 @@ int Interpreter::v_get_status (lua_State *L)
 
 	if (version == 1)
 	{
-		VESSELSTATUS status = {0};
+		VESSELSTATUS status = { 0 };
 		v->GetStatus(status);
 		lua_push_vessel_status(L, status);
 		return 1;
 	}
 	else if (version == 2)
 	{
-		VESSELSTATUS2 status = {0};
+		VESSELSTATUS2 status = { 0 };
 		status.version = 2;
 		// check additional flags...(currently not implemented)
 		status.flag |= VS_FUELLIST | VS_THRUSTLIST | VS_DOCKINFOLIST;
@@ -1600,9 +1859,259 @@ int Interpreter::v_get_status (lua_State *L)
 }
 
 /***
-To be documented
+Get vessel status.
+
+Returns the vessel's current status parameters as an object.
+
+@function get_status
+@tparam[opt=2] number v status version
+@treturn vesselstatus|vesselstatus2 vessel status
+*/
+int Interpreter::v_get_rawstatus(lua_State* L)
+{
+	static const char* funcname = "get_rawstatus";
+	AssertMtdMinPrmCount(L, 1, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+
+	// For version 2 (or greater) the caller has to set version number as 1st parameter
+	DWORD version = (lua_gettop(L) >= 2) ? lua_tointeger(L, 2) : 2; // default to version 2
+	ASSERT_SYNTAX((version > 0 && version <= 2), "Invalid version");
+
+	if (version == 1)
+	{
+		VESSELSTATUS *status = (VESSELSTATUS *)lua_newuserdata(L, sizeof(VESSELSTATUS));
+		memset(status, 0, sizeof(VESSELSTATUS));
+		luaL_getmetatable(L, "VESSELSTATUS.table");   // push metatable
+		lua_setmetatable(L, -2);              // set metatable for annotation objects
+
+		v->GetStatus(*status);
+		return 1;
+	}
+	else if (version == 2)
+	{
+		VESSELSTATUS2* status = (VESSELSTATUS2*)lua_newuserdata(L, sizeof(VESSELSTATUS2));
+		memset(status, 0, sizeof(VESSELSTATUS2));
+		luaL_getmetatable(L, "VESSELSTATUS2.table");   // push metatable
+		lua_setmetatable(L, -2);              // set metatable for annotation objects
+		status->version = 2;
+		// check additional flags...(currently not implemented)
+		status->flag |= VS_FUELLIST | VS_THRUSTLIST | VS_DOCKINFOLIST;
+		//status.fuel = new VESSELSTATUS2::FUELSPEC[256]();
+
+		v->GetStatusEx(status);
+
+		// Who frees these resources?
+		//if (status.fuel) delete[] status.fuel;
+		//if (status.thruster) delete[] status.thruster;
+		//if (status.dockinfo) delete[] status.dockinfo;
+		return 1;
+	}
+	return 0;
+}
+
+int Interpreter::vsget(lua_State* L)
+{
+	static const char* funcname = "vsget";
+	AssertMtdMinPrmCount(L, 1, funcname);
+	VESSELSTATUS* vs = (VESSELSTATUS*)lua_touserdata(L, 1);
+	lua_push_vessel_status(L, *vs);
+	return 1;
+}
+
+int Interpreter::vs2get(lua_State* L)
+{
+	static const char* funcname = "vs2get";
+	AssertMtdMinPrmCount(L, 1, funcname);
+	VESSELSTATUS2* vs = (VESSELSTATUS2*)lua_touserdata(L, 1);
+	lua_push_vessel_status(L, *vs);
+	return 1;
+}
+
+int Interpreter::vsset(lua_State* L)
+{
+	static const char* funcname = "vsset";
+	AssertMtdMinPrmCount(L, 2, funcname);
+	VESSELSTATUS* vs = (VESSELSTATUS*)lua_touserdata(L, 1);
+	// Extract known values from table
+	lua_getfield(L, 2, "rpos");
+
+	if (lua_isvector(L, -1)) vs->rpos = lua_tovector(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "rvel");
+	if (lua_isvector(L, -1)) vs->rvel = lua_tovector(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "vrot");
+	if (lua_isvector(L, -1)) vs->vrot = lua_tovector(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "arot");
+	if (lua_isvector(L, -1)) vs->arot = lua_tovector(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "fuel");
+	if (lua_isnumber(L, -1)) vs->fuel = lua_tonumber(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "eng_main");
+	if (lua_isnumber(L, -1)) vs->eng_main = lua_tonumber(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "eng_hovr");
+	if (lua_isnumber(L, -1)) vs->eng_hovr = lua_tonumber(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "rbody");
+	if (lua_islightuserdata(L, -1)) vs->rbody = lua_toObject(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "base");
+	if (lua_islightuserdata(L, -1)) vs->base = lua_toObject(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "port");
+	if (lua_isnumber(L, -1)) vs->port = lua_tointeger(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "status");
+	if (lua_isnumber(L, -1)) vs->status = lua_tointeger(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "vdata");
+	if (lua_isvector(L, -1)) vs->vdata[0] = lua_tovector(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "fdata");
+	if (lua_isnumber(L, -1)) vs->fdata[0] = lua_tonumber(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "flag");
+	if (lua_isnumber(L, -1)) vs->flag[0] = lua_tointeger(L, -1);
+	lua_pop(L, 1);
+	return 0;
+}
+
+int Interpreter::vs2set(lua_State* L)
+{
+	static const char* funcname = "vs2set";
+	AssertMtdMinPrmCount(L, 2, funcname);
+	VESSELSTATUS2* vs = (VESSELSTATUS2*)lua_touserdata(L, 1);
+
+	// Extract known values from table
+	lua_getfield(L, 2, "flags");
+	if (lua_isnumber(L, -1)) vs->flag = lua_tointeger(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "port");
+	if (lua_isnumber(L, -1)) vs->port = lua_tointeger(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "status");
+	if (lua_isnumber(L, -1)) vs->status = lua_tointeger(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "surf_lng");
+	if (lua_isnumber(L, -1)) vs->surf_lng = lua_tonumber(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "surf_lat");
+	if (lua_isnumber(L, -1)) vs->surf_lat = lua_tonumber(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "surf_hdg");
+	if (lua_isnumber(L, -1)) vs->surf_hdg = lua_tonumber(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "rpos");
+	if (lua_isvector(L, -1)) vs->rpos = lua_tovector(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "rvel");
+	if (lua_isvector(L, -1)) vs->rvel = lua_tovector(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "vrot");
+	if (lua_isvector(L, -1)) vs->vrot = lua_tovector(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "arot");
+	if (lua_isvector(L, -1)) vs->arot = lua_tovector(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "rbody");
+	if (lua_islightuserdata(L, -1)) vs->rbody = lua_toObject(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "base");
+	if (lua_islightuserdata(L, -1)) vs->base = lua_toObject(L, -1);
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "xpdr");
+	if (lua_isnumber(L, -1)) vs->xpdr = lua_tointeger(L, -1);
+	lua_pop(L, 1);
+
+	lua_getfield(L, 2, "fuel");
+	if (lua_istable(L, -1)) {
+		int n = lua_objlen(L, -1);
+		if (n) {
+			vs->fuel = new VESSELSTATUS2::FUELSPEC[n]();
+
+			lua_pushnil(L);
+			while (lua_next(L, -2)) {
+				// stack now contains: -1 => value; -2 => key; -3 => table (value is FUELSPEC)
+				if (lua_istable(L, -1)) // is_fuelspec() ?
+				{
+					size_t i = lua_tointeger(L, -2) - 1; //lua_next() does not always iteerate in order :(
+					lua_getfield(L, -1, "idx");
+					vs->fuel[i].idx = lua_tointeger(L, -1);
+					lua_pop(L, 1);
+					lua_getfield(L, -1, "level");
+					vs->fuel[i].level = lua_tonumber(L, -1);
+					lua_pop(L, 1);
+					vs->nfuel++;
+				}
+				lua_pop(L, 1);
+			}
+		}
+	}
+	lua_pop(L, 1);
+
+	lua_getfield(L, 2, "thruster");
+	if (lua_istable(L, -1)) {
+		int n = lua_objlen(L, -1);
+		if (n) {
+			vs->thruster = new VESSELSTATUS2::THRUSTSPEC[n]();
+			lua_pushnil(L);
+			while (lua_next(L, -2)) {
+				if (lua_istable(L, -1)) { // is_thrustspec()
+					size_t i = lua_tointeger(L, -2) - 1;
+					lua_getfield(L, -1, "idx");
+					vs->thruster[i].idx = lua_tointeger(L, -1);
+					lua_pop(L, 1);
+					lua_getfield(L, -1, "level");
+					vs->thruster[i].level = lua_tonumber(L, -1);
+					lua_pop(L, 1);
+					vs->nthruster++;
+				}
+				lua_pop(L, 1);
+			}
+		}
+	}
+	lua_pop(L, 1);
+
+	lua_getfield(L, 2, "dockinfo");
+	if (lua_istable(L, -1)) {
+		int n = lua_objlen(L, -1);
+		if (n) {
+			vs->dockinfo = new VESSELSTATUS2::DOCKINFOSPEC[n]();
+			lua_pushnil(L);
+			while (lua_next(L, -2)) {
+				if (lua_istable(L, -1)) { // is_dockinfospec()
+					size_t i = lua_tointeger(L, -2) - 1;
+					lua_getfield(L, -1, "idx");
+					vs->dockinfo[i].idx = lua_tointeger(L, -1);
+					lua_pop(L, 1);
+					lua_getfield(L, -1, "ridx");
+					vs->dockinfo[i].ridx = lua_tointeger(L, -1);
+					lua_pop(L, 1);
+					lua_getfield(L, -1, "rvessel");
+					vs->dockinfo[i].rvessel = lua_touserdata(L, -1);
+					lua_pop(L, 1);
+					vs->ndockinfo++;
+				}
+				lua_pop(L, 1);
+			}
+		}
+	}
+	lua_pop(L, 1);
+
+	
+
+	return 0;
+}
+
+/***
+Set default vessel status parameters.
 
 @function defset_status
+@tparam number v status version
+@tparam table status vessel status
 */
 int Interpreter::v_defset_status (lua_State *L)
 {
@@ -1799,6 +2308,8 @@ int Interpreter::v_defset_status (lua_State *L)
 }
 
 /***
+Get angular velocity.
+
 Returns the vessel's angular velocity components around its principal axes
 as a vector.
 
@@ -1818,6 +2329,8 @@ int Interpreter::v_get_angvel (lua_State *L)
 }
 
 /***
+Set angular velocity.
+
 Sets the vessel's angular velocity components around its principal axes.
 
 @function set_angvel
@@ -1835,7 +2348,7 @@ int Interpreter::v_set_angvel (lua_State *L)
 }
 
 /***
-Returns the vessel's landing status.
+Get landing status.
 
 If the vessel is inactive (landed on a planetary surfaces),
 this function returns the handle of the celestial body the vessel is landed on.
@@ -1859,6 +2372,8 @@ int Interpreter::v_is_landed (lua_State *L)
 }
 
 /***
+Planetary contct.
+
 Returns a flag indicating contact with a planetary surface.
 
 _true_ indicates ground contact (at least one of the vessel's touchdown
@@ -1878,6 +2393,8 @@ int Interpreter::v_get_groundcontact (lua_State *L)
 }
 
 /***
+Angular acceleration.
+
 Returns the vessel's current angular acceleration components around its
 principal axes.
 
@@ -1901,6 +2418,8 @@ int Interpreter::v_get_angularacc (lua_State *L)
 }
 
 /***
+Linear moment.
+
 Returns the linear force vector currently acting on the vessel.
 
 The returned vector is the vector sum of all forces (gravity,
@@ -1922,6 +2441,8 @@ int Interpreter::v_get_linearmoment (lua_State *L)
 }
 
 /***
+Angular moment.
+
 Returns the sum of angular moments currently acting on the vessel.
 
 Given all force components <b>F</b><sub>i</sub> acting on the vessel at
@@ -1946,24 +2467,9 @@ int Interpreter::v_get_angularmoment (lua_State *L)
 }
 
 /***
-Returns the Euler angles defining the vessel's orientation.
+Get global orientation.
 
-The components of the returned vector arot = \f$ (\alpha, \beta, \gamma) \f$
-   are the angles of rotation [rad] around the x,y,z axes in the
-   global (ecliptic) frame to produce the rotation matrix <b>R</b> for
-   mapping from the vessel's local frame of reference to the global
-   frame of reference:
-   \f[
-     \mathsf{R} = \left[ \begin{array}{ccc}
-     1 & 0 & 0 \\ 0 & \cos\alpha & \sin\alpha \\ 0 & -\sin\alpha & \cos\alpha
-     \end{array} \right]
-     \left[ \begin{array}{ccc}
-     \cos\beta & 0 & -\sin\beta \\ 0 & 1 & 0 \\ \sin\beta & 0 & \cos\beta
-     \end{array} \right]
-     \left[ \begin{array}{ccc}
-     \cos\gamma & \sin\gamma & 0 \\ -\sin\gamma & \cos\gamma & 0 \\ 0 & 0 & 1
-     \end{array} \right]
-   \f]
+Returns the Euler angles defining the vessel's orientation.
 
 @function get_globalorientation
 @return (<i><b>@{types.vector|vector}</b></i>) vector containing the three Euler angles [<b>rad</b>]
@@ -1983,15 +2489,6 @@ int Interpreter::v_get_globalorientation (lua_State *L)
 /***
 Sets the vessel's orientation via Euler angles.
 
-Given the rotation matrix <b>R</b> which transforms from the
-   local (vessel) frame to the global (ecliptic) reference frame,
-   the Euler angles expected by this method are defined as
-   \f{eqnarray*}
-    \alpha &=& \mathrm{atan2} (R_{23}, R_{33}) \\
-    \beta &=& -\mathrm{asin} (R_{13}) \\
-    \gamma &=& \mathrm{atan2} (R_{12}, R_{11})
-   \f}
-
 @function set_globalorientation
 @tparam vector arot vector containing the set of Euler angles [<b>rad</b>]
 @see get_globalorientation, set_rotationmatrix
@@ -2007,7 +2504,9 @@ int Interpreter::v_set_globalorientation (lua_State *L)
 }
 
 /***
-Flag indicating whether orbit stabilisation is used for the vessel at the
+Orbit stabilisation.
+
+Returns whether orbit stabilisation is used for the vessel at the
 current time step.
 
 A vessel switches to orbit stabilisation only if the user has
@@ -2035,7 +2534,8 @@ int Interpreter::v_is_orbitstabilised (lua_State *L)
 }
 
 /***
-Flag for nonspherical gravity perturbations.
+Nonspherical gravity perturbations.
+
 Indicates whether the vessel considers gravity field perturbations
 due to nonspherical planet shapes when updating its state vectors for
 the current time step.
@@ -2051,7 +2551,7 @@ If the user has enabled orbit stabilisation in the Launchpad,
 
 @function is_nonsphericalgravityenabled
 @treturn bool _true_ indicates that gravity perturbations due to nonspherical
-    planet shapes are taken into account.
+planet shapes are taken into account.
 @see get_weightvector
 */
 int Interpreter::v_is_nonsphericalgravityenabled (lua_State *L)
@@ -2064,7 +2564,7 @@ int Interpreter::v_is_nonsphericalgravityenabled (lua_State *L)
 }
 
 /***
-Toggles a navigation mode on/off.
+Toggle a navigation mode on/off.
 
 @function toggle_navmode
 @tparam int mode navigation mode identifier (see @{types.NAVMODE|Navmode identifiers})
@@ -2083,7 +2583,9 @@ int Interpreter::v_toggle_navmode (lua_State *L)
 }
 
 /***
-Returns the altitude that the holver hold altitude program tries to maintain.
+Get hover hold altitude.
+
+Returns the altitude that the hover hold altitude program tries to maintain.
 
 If the function returns false, the values pointed to by alt and
    terrainalt are unchanged.
@@ -2092,8 +2594,7 @@ If the function returns false, the values pointed to by alt and
 @treturn number target altitude [m]
 @treturn bool indicates true altitude (==_true_) or altitude
    relative to mean planet radius (==_false_)
-@treturn bool _true_: hold altitude program is active;
-              _false_: hold altitude program is not active
+@treturn bool _true_ if hold altitude program is active
 @see toggle_navmode, get_navmode
 */
 int Interpreter::v_get_hoverholdaltitude (lua_State *L)
@@ -2111,6 +2612,8 @@ int Interpreter::v_get_hoverholdaltitude (lua_State *L)
 }
 
 /***
+Set hover hold altitude.
+
 Set the target altitude for the hover hold altitude program and activate the
 program.
 
@@ -2118,12 +2621,12 @@ If the hold hover altiude program is already active, the target
    altitude is modified. Otherwise, the program is activated with the
    specified target altitude.
 
-This method is more versatile than ActivateNavmode(NAVMODE_HOLDALT), which
+This method is more versatile than ActivateNavmode(NAVMODE.HOLDALT), which
    sets the target altitude to the current altitude at activation, and always
    refers to mean planet radius.
 
 To deactivate the hover hold alt program, use
-   DeactivateNavmode(NAVMODE_HOLDALT)
+   DeactivateNavmode(NAVMODE.HOLDALT)
 
 @function set_hoverholdaltitude
 @tparam number alt target altiude [m]
@@ -2149,6 +2652,8 @@ Orbital parameters
 */
 
 /***
+Get gravity reference.
+
 Returns a handle to the main contributor of the gravity field at the
 vessel's current position.
 
@@ -2166,6 +2671,8 @@ int Interpreter::v_get_gravityref (lua_State *L)
 }
 
 /***
+Get osculating elements.
+
 Returns the osculating elements at the current time with respect to the
 dominant gravity sources.
 
@@ -2199,11 +2706,12 @@ int Interpreter::v_get_elements (lua_State *L)
 }
 
 /***
-Returns osculating orbital elements and additional orbital parameters.
+Get osculating orbital elements and additional orbital parameters.
 
 The returned mean longitude parameter (L) refers to the the current epoch.
 
 @function get_elementsex
+@tparam[opt] objhandle to query
 @treturn table list of orbital elements (see @{types.ELEMENTS|Elements table})
 @treturn table list of additional orbital parameters (see @{types.ORBITPARAMS|Orbital parameters})
 @see vessel:get_gravityref, vessel:get_elements, vessel:set_elements
@@ -2215,7 +2723,13 @@ int Interpreter::v_get_elementsex (lua_State *L)
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	ELEMENTS el;
 	ORBITPARAM prm;
-	v->GetElements (0, el, &prm);
+	OBJHANDLE hObj = 0;
+
+	if (lua_gettop(L) >= 2) {
+		hObj = lua_toObject(L, 2);
+	}
+
+	v->GetElements (hObj, el, &prm);
 	lua_createtable (L, 0, 6);
 	lua_pushnumber (L, el.a);
 	lua_setfield (L, -2, "a");
@@ -2258,6 +2772,8 @@ int Interpreter::v_get_elementsex (lua_State *L)
 }
 
 /***
+Set vessel state.
+
 Sets the vessel state (position and velocity) by means of a set of
 osculating orbital elements.
 
@@ -2277,13 +2793,11 @@ Default: 0.
 - frame (string): reference frame. Choices are 'ecl' (ecliptic frame) or
 'equ' (equatorial frame of the reference object). Default: 'ecl'.
 
-Example:
-
-	v:set_elements ({a=4000e3, e=0, i=0, theta=0, omegab=0, L=0}, {href=oapi.get_objhandle('moon'), mjd_ref=0, frame='equ'})
-
 @function set_elements
 @tparam table el set of osculating elements (see @{types.ELEMENTS|Elements})
 @tparam[opt] table prm additional parameters
+@usage v:set_elements({a=4000e3, e=0, i=0, theta=0, omegab=0, L=0},
+               {href=oapi.get_objhandle('moon'), mjd_ref=0, frame='equ'})
 @see vessel:get_gravityref, vessel:get_elements, vessel:get_elementsex
 */
 int Interpreter::v_set_elements (lua_State *L)
@@ -2326,6 +2840,8 @@ int Interpreter::v_set_elements (lua_State *L)
 }
 
 /***
+Get prograde direction.
+
 Returns the direction of the orbital velocity vector in vessel coordinates.
 
 The returned direction is a normalised vector in the direction of the
@@ -2353,16 +2869,18 @@ int Interpreter::v_get_progradedir (lua_State *L)
 }
 
 /***
+Get semi-minor axis.
+
 Returns the magnitude of the semi-minor axis of the current osculating orbit.
 
 The semi-minor axis is the smallest semi-diameter of the
-   orbit ellipse (see \ref orbit).
+orbit ellipse.
 
 @function get_smi
 @treturn number semi-minor axis [m]
 @treturn handle Handle of reference object, relative to which the orbit is
    calculated. _nil_ indicates failure (no orbit information available)
-@see orbit, ELEMENTS, ORBITPARAM, get_elements
+@see types.ELEMENTS, types.ORBITPARAMS, get_elements
 */
 int Interpreter::v_get_smi (lua_State *L)
 {
@@ -2382,16 +2900,18 @@ int Interpreter::v_get_smi (lua_State *L)
 }
 
 /***
+Get argument of periapsis.
+
 Returns argument of periapsis of the current osculating orbit.
 
 The argument of periapsis is the angle between periapsis and the
-   ascending node (see \ref orbit_2).
+ascending node.
 
 @function get_argper
 @treturn number argument of periapsis for current orbit [rad]
 @treturn handle Handle of reference body, relative to which the orbit is
-   calculated. NULL indicates failure (no orbit information available)
-@see orbit, ELEMENTS, ORBITPARAM, get_pedist, get_apdist, get_elements
+   calculated. nil indicates failure (no orbit information available)
+@see types.ELEMENTS, types.ORBITPARAMS, get_pedist, get_apdist, get_elements
 */
 int Interpreter::v_get_argper (lua_State *L)
 {
@@ -2411,6 +2931,8 @@ int Interpreter::v_get_argper (lua_State *L)
 }
 
 /***
+Get periapsis distance.
+
 Returns the periapsis distance of the current osculating orbit.
 
 The periapsis distance is the smallest radius of the orbit (see
@@ -2420,7 +2942,7 @@ The periapsis distance is the smallest radius of the orbit (see
 @treturn number periapsis distance [m]
 @treturn handle Handle of reference body, relative to which the orbit is
    calculated. NULL indicates failure (no orbit information available)
-@see orbit, ELEMENTS, ORBITPARAM, get_apdist, get_argper, get_elements
+@see types.ELEMENTS, types.ORBITPARAMS, get_apdist, get_argper, get_elements
 */
 int Interpreter::v_get_pedist (lua_State *L)
 {
@@ -2440,6 +2962,8 @@ int Interpreter::v_get_pedist (lua_State *L)
 }
 
 /***
+Get apoapsis distance.
+
 Returns the apoapsis distance of the current osculating orbit.
 
 The apoapsis distance is the largest radius of the orbit (see
@@ -2449,23 +2973,63 @@ The apoapsis distance is the largest radius of the orbit (see
 @treturn number apoapsis distance [m]
 @treturn handle Handle of reference body, relative to which the orbit is
    calculated. NULL indicates failure (no orbit information available)
-@see orbit, ELEMENTS, ORBITPARAM, get_pedist, get_argper, get_elements
+@see types.ELEMENTS, types.ORBITPARAMS, get_pedist, get_argper, get_elements
 */
-int Interpreter::v_get_apdist (lua_State *L)
+int Interpreter::v_get_apdist(lua_State* L)
 {
-	static const char *funcname = "get_apdist";
+	static const char* funcname = "get_apdist";
 	AssertMtdMinPrmCount(L, 1, funcname);
-	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
 	double apdist;
 	OBJHANDLE refbody = v->GetApDist(apdist);
 	if (refbody) {
 		lua_pushnumber(L, apdist);
 		lua_pushlightuserdata(L, refbody);
-	} else {
+	}
+	else {
 		lua_pushnil(L);
 		lua_pushnil(L);
 	}
 	return 2;
+}
+
+/***
+Get equatorial position.
+
+Returns vessel's current equatorial position with respect to the
+closest planet or moon.
+
+The position is given as a table with the following fields :
+
+- lng: number (longitude coordinate [rad])
+- lat: number (latitude coordinate [rad])
+- rad: number (distance from planet centre [m])
+
+@function get_equpos
+@treturn table position. nil indicates failure (no orbit information available)
+@treturn handle reference body to which the parameters refer.
+ */
+int Interpreter::v_get_equpos(lua_State* L)
+{
+	static const char* funcname = "get_equpos";
+	AssertMtdMinPrmCount(L, 1, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	double longitude, latitude, radius;
+	OBJHANDLE h = v->GetEquPos(longitude, latitude, radius);
+	if(h) {
+		lua_createtable(L, 0, 3);
+		lua_pushnumber(L, longitude);
+		lua_setfield(L, -2, "lng");
+		lua_pushnumber(L, latitude);
+		lua_setfield(L, -2, "lat");
+		lua_pushnumber(L, radius);
+		lua_setfield(L, -2, "rad");
+		lua_pushlightuserdata(L, h);
+		return 2;
+	} else {
+		lua_pushnil(L);
+		return 1;
+	}
 }
 
 
@@ -2475,6 +3039,8 @@ Surface-relative parameters
 */
 
 /***
+Get surface reference.
+
 Returns a handle to the surface reference object (planet or moon).
 
 A vessel's _surface reference object_ is the planet or moon whose surface is
@@ -2489,11 +3055,17 @@ int Interpreter::v_get_surfaceref (lua_State *L)
 	static const char *funcname = "get_surfaceref";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	lua_pushlightuserdata (L, v->GetSurfaceRef());
+	OBJHANDLE hRef = v->GetSurfaceRef();
+	if(hRef)
+		lua_pushlightuserdata (L, hRef);
+	else
+		lua_pushnil(L);
 	return 1;
 }
 
 /***
+Get altitude.
+
 Returns the current vessel altitude above the surface reference object.
 
 The mode parameter can be set to ALTMODE.MEANRAD (altitude relative to
@@ -2530,6 +3102,8 @@ int Interpreter::v_get_altitude (lua_State *L)
 }
 
 /***
+Get pitch.
+
 Returns the vessel's current pitch angle with respect to the local horizon.
 
 The pitch angle is defined as 90 degrees minus the angle between the
@@ -2550,6 +3124,8 @@ int Interpreter::v_get_pitch (lua_State *L)
 }
 
 /***
+Get bank.
+
 Returns the vessel's current bank angle with respect to the local horizon.
 
 The bank angle is defined as the angle between the vessel's positive y
@@ -2571,6 +3147,8 @@ int Interpreter::v_get_bank (lua_State *L)
 }
 
 /***
+Get yaw.
+
 Returns the vessel's current yaw angle with respect to the local horizon.
 
 The yaw angle is defined as the angle between the the projection of the
@@ -2592,6 +3170,8 @@ int Interpreter::v_get_yaw (lua_State *L)
 }
 
 /***
+Get surface elevation.
+
 Returns the elevation of the surface at the vessel's current longitude /
 latitude above the reference radius.
 
@@ -2608,6 +3188,8 @@ int Interpreter::v_get_surfaceelevation (lua_State *L)
 }
 
 /***
+Get surface normal.
+
 Returns the normal (in local horizon frame) of the surface below the vessel's
 current position.
 
@@ -2630,6 +3212,8 @@ Atmospheric parameters
 */
 
 /***
+Get atmospheric reference.
+
 Returns a handle to the reference body for atmospheric calculations.
 
 @function get_atmref
@@ -2648,6 +3232,8 @@ int Interpreter::v_get_atmref (lua_State *L)
 }
 
 /***
+Get atmospheric temperature.
+
 Returns ambient atmospheric temperature at current vessel position.
 
 This function returns 0 if the vessel is outside all planetary atmospheric hulls,
@@ -2668,6 +3254,8 @@ int Interpreter::v_get_atmtemperature (lua_State *L)
 }
 
 /***
+Get atmospheric density.
+
 Returns atmospheric density at current vessel position.
 
 This function returns 0 if the vessel is outside all planetary atmospheric hulls,
@@ -2688,6 +3276,8 @@ int Interpreter::v_get_atmdensity (lua_State *L)
 }
 
 /***
+Get atmospheric pressure.
+
 Returns static atmospheric pressure at current vessel position.
 
 This function returns 0 if the vessel is outside all planetary atmospheric hulls,
@@ -2713,6 +3303,8 @@ Aerodynamic state
 */
 
 /***
+Get dynamic pressure.
+
 Returns the current dynamic pressure for the vessel.
 
 The dynamic pressure is defined as q = 1/2 &rho; V&sup2; with density &rho; and
@@ -2732,7 +3324,7 @@ int Interpreter::v_get_dynpressure (lua_State *L)
 }
 
 /***
-Returns the vessel's current Mach number.
+Get current Mach number.
 
 The speed of sound depends on several parameters, e.g. atmospheric composition
 and temperature. The Mach number can therefore vary even if the airspeed is
@@ -2753,6 +3345,8 @@ int Interpreter::v_get_machnumber (lua_State *L)
 }
 
 /***
+Get ground speed.
+
 Returns magnitude of the vessel's current ground speed vector.
 
 The ground speed is defined as the vessel's velocity relative to a point at the
@@ -2768,11 +3362,13 @@ int Interpreter::v_get_groundspeed (lua_State *L)
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetGroundspeed ());
-	GetInterpreter(L)->term_echo(L);
+//	GetInterpreter(L)->term_echo(L);
 	return 1;
 }
 
 /***
+Get ground speed vector.
+
 Returns the ground speed vector in the requested frame of reference.
 
 Valid entries for frame are:
@@ -2800,6 +3396,8 @@ int Interpreter::v_get_groundspeedvector (lua_State *L)
 }
 
 /***
+Get airspeed.
+
 Returns magnitude of the vessel's current true airspeed vector.
 
 This function also works in the absence of an atmosphere. At low altitudes, the
@@ -2821,6 +3419,8 @@ int Interpreter::v_get_airspeed (lua_State *L)
 }
 
 /***
+Get airspeed vector.
+
 Returns the true airspeed vector in the requested frame of reference.
 
 Valid entries for frame are:
@@ -2874,6 +3474,8 @@ int Interpreter::v_get_horizonairspeedvector (lua_State *L)
 }
 
 /***
+Get angle of attack.
+
 Returns the current angle of attack (AOA).
 
 The AOA value is defined as the angle between the vessel's positive z axis and
@@ -2895,6 +3497,8 @@ int Interpreter::v_get_aoa (lua_State *L)
 }
 
 /***
+Get slip angle.
+
 Returns the current slip angle.
 
 The slip angle is defined as the lateral (yaw) angle between the velocity vector
@@ -2927,7 +3531,7 @@ void AirfoilFunc (VESSEL *v, double aoa, double M, double Re,
 
 	AirfoilContext *ac = (AirfoilContext*)context;
 	lua_State *L = ac->L;                             // interpreter instance
-	lua_getfield (L, LUA_GLOBALSINDEX, ac->funcname); // the callback function
+	lua_rawgeti(L, LUA_REGISTRYINDEX, ac->funcref);   // push the callback function
 
 	// push callback arguments
 	lua_pushlightuserdata (L, v->GetHandle());  // vessel handle
@@ -2936,7 +3540,7 @@ void AirfoilFunc (VESSEL *v, double aoa, double M, double Re,
 	lua_pushnumber (L, Re);                     // Reynolds number
 
 	// call the script callback function
-	lua_call (L, 4, 3); // 4 arguments, 3 results
+	Interpreter::LuaCall(L, 4, 3);
 
 	// retrieve results
 	*cl = lua_tonumber (L,-3);
@@ -2968,7 +3572,7 @@ following interface:
 
 	function <func_name>(hVessel,aoa,M,Re)
 	...
-	return cl,cm,cd
+	   return cl,cm,cd
 	end
 
 The function must return three values in the following order: the lift
@@ -2981,7 +3585,7 @@ yaw angle of attack (b).
 If the wing area S is set to 0, then Orbiter uses the projected vessel cross
 sections to define a reference area. Let (vx, vy, vz) be the unit vector of
 freestream air flow in vessel coordinates. Then the reference area is calculated
-as S = vz Cz + vy Cy for a LIFT.VERTICAL airfoil, and as S = vz Cz + vx Cx for a
+as S = vz * Cz + vy * Cy for a LIFT.VERTICAL airfoil, and as S = vz * Cz + vx * Cx for a
 LIFT.HORIZONTAL airfoil, where Cx, Cy, Cz are the vessel cross-sections in x, y
 and z direction, respectively.
 
@@ -2994,7 +3598,7 @@ not support lift forces.
 @function create_airfoil
 @tparam int orientation orientation of the lift vector (see @{types.LIFT|Airfoil orientation})
 @param ref (<i><b>@{types.vector|vector}</b></i>) centre of pressure in vessel coordinates [<b>m</b>]
-@tparam string coeff_func callback function name
+@tparam string|function coeff_func callback function (name or function reference)
 @tparam number c airfoil chord length [m]
 @tparam number S wing area [m&sup2;]
 @tparam number A wing aspect ratio
@@ -3008,18 +3612,53 @@ int Interpreter::v_create_airfoil (lua_State *L)
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	AIRFOIL_ORIENTATION ao = (AIRFOIL_ORIENTATION)(int)(luamtd_tointeger_safe(L, 2, funcname));
 	VECTOR3 ref = luamtd_tovector_safe(L, 3, funcname);
-	const char *fname = luamtd_tostring_safe(L, 4, funcname);
+	int funcref;
+	if (lua_isstring(L, 4)) {
+		const char* fname = luamtd_tostring_safe(L, 4, funcname);
+		lua_getfield(L, LUA_GLOBALSINDEX, fname);
+		funcref = luaL_ref(L, LUA_REGISTRYINDEX);
+	} else if (lua_isfunction(L, 4)) {
+		lua_pushvalue(L, 4);
+		funcref = luaL_ref(L, LUA_REGISTRYINDEX);
+	} else {
+		return luaL_error(L, "Invalid callback parameter, string or function expected");
+	}
 	double c = luamtd_tonumber_safe(L, 5, funcname);
 	double S = luamtd_tonumber_safe(L, 6, funcname);
 	double A = luamtd_tonumber_safe(L, 7, funcname);
 	AirfoilContext *ac = new AirfoilContext;
 	ac->L = L;
-	strncpy (ac->funcname, fname, 127);
+	ac->funcref = funcref;
+
 	AIRFOILHANDLE ha = v->CreateAirfoil3 (ao, ref, AirfoilFunc, ac, c, S, A);
 	lua_pushlightuserdata (L, ha);
 	return 1;
 }
 
+/***
+Edit airfoil.
+
+Resets the parameters of an existing airfoil definition.
+
+flag contains the bit flags defining which parameters will
+be modified. It can be any combination of the following:
+
+- 0x01: modify force attack point
+- 0x02: modify coefficient callback function
+- 0x04: modify chord length
+- 0x08: modify wing area
+- 0x10: modify wing aspect ratio
+
+@function edit_airfoil
+@tparam handle hAirfoil airfoil handle
+@tparam number flag bitflags to define which parameters to reset
+@tparam vector ref new centre of pressure
+@tparam string|function|nil cf new callback function for coefficient calculation
+@tparam number c new chord length [m]
+@tparam number S new wing area [m<sup>2</sup>]
+@tparam number A new wing aspect ratio
+@see vessel:create_airfoil
+*/
 int Interpreter::v_edit_airfoil (lua_State *L)
 {
 	static const char *funcname = "edit_airfoil";
@@ -3031,15 +3670,32 @@ int Interpreter::v_edit_airfoil (lua_State *L)
 	AIRFOILHANDLE hAirfoil = (AIRFOILHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
 	DWORD flag = luamtd_tointeger_safe(L, 3, funcname);
 	VECTOR3 ref = luamtd_tovector_safe(L, 4, funcname);
-	const char *fname = luamtd_tostring_safe(L, 5, funcname);
 	double c = luamtd_tonumber_safe(L, 6, funcname),
 	       S = luamtd_tonumber_safe(L, 7, funcname),
 	       A = luamtd_tonumber_safe(L, 8, funcname);
 
-	AirfoilContext *ac;
-	if (v->GetAirfoilParam(hAirfoil, NULL, NULL, (void**)&ac, NULL, NULL, NULL)) {
-		ac->L = L;
-		strncpy(ac->funcname, fname, 127);
+	if (flag & 0x02) { // only update the context if we want to change the callback
+		AirfoilContext* ac;
+		if (v->GetAirfoilParam(hAirfoil, NULL, NULL, (void**)&ac, NULL, NULL, NULL)) {
+			int funcref;
+			if (lua_isstring(L, 5)) {
+				const char* fname = luamtd_tostring_safe(L, 5, funcname);
+				lua_getfield(L, LUA_GLOBALSINDEX, fname);
+				funcref = luaL_ref(L, LUA_REGISTRYINDEX);
+			}
+			else if (lua_isfunction(L, 5)) {
+				lua_pushvalue(L, 5);
+				funcref = luaL_ref(L, LUA_REGISTRYINDEX);
+			}
+			else {
+				term_strout(L, "Invalid callback parameter in edit_airfoil, string or function expected", true);
+				return 0;
+			}
+
+			ac->L = L;
+			luaL_unref(L, LUA_REGISTRYINDEX, ac->funcref);
+			ac->funcref = funcref;
+		}
 	}
 
 	v->EditAirfoil(hAirfoil, flag, ref, (AirfoilCoeffFunc)AirfoilFunc, c, S, A);
@@ -3047,6 +3703,8 @@ int Interpreter::v_edit_airfoil (lua_State *L)
 }
 
 /***
+Delete airfoil.
+
 Deletes a previously defined airfoil.
 
 If all the vessel's airfoils are deleted without creating new ones, Orbiter reverts to
@@ -3065,7 +3723,10 @@ int Interpreter::v_del_airfoil (lua_State *L)
 	AIRFOILHANDLE ha = (AIRFOILHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
 	AirfoilContext *ac;
 	if (v->GetAirfoilParam (ha, 0, 0, (void**)&ac, 0, 0, 0)) {
-		if (ac) delete ac; // delete the context buffer before deleting the airfoil
+		if (ac) {
+			luaL_unref(L, LUA_REGISTRYINDEX, ac->funcref);
+			delete ac; // delete the context buffer before deleting the airfoil
+		}
 	}
 	bool ok = v->DelAirfoil (ha);
 	lua_pushboolean (L, ok?1:0);
@@ -3073,6 +3734,8 @@ int Interpreter::v_del_airfoil (lua_State *L)
 }
 
 /***
+Create control surface.
+
 Creates an aerodynamic control surface and returns a handle.
 
 Control surfaces include elevators, rudders, ailerons, flaps, etc. They can be used to
@@ -3080,6 +3743,7 @@ control the vessel during atmospheric flight.
 
 When selecting automatic axis control (axis=AIRCTRL_AXIS.AUTO), the following axes will
 be used for given control surfaces:
+
 - Elevator: XPOS
 - Rudder: YPOS
 - Aileron: XPOS if ref.x > 0, XNEG otherwise
@@ -3140,6 +3804,29 @@ int Interpreter::v_create_controlsurface (lua_State *L)
 }
 
 /***
+Delete control surface.
+
+Deletes a previously defined aerodynamic control surface.
+
+@function del_controlsurface
+@tparam handle hCtrlSurf control surface handle
+@treturn bool _false_ indicates failure (invalid handle)
+@see vessel:create_controlsurface
+*/
+int Interpreter::v_del_controlsurface (lua_State *L)
+{
+	static const char *funcname = "del_controlsurface";
+	AssertMtdMinPrmCount(L, 2, funcname);
+	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
+	CTRLSURFHANDLE hCtrl = (CTRLSURFHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
+	bool ret = v->DelControlSurface(hCtrl);
+	lua_pushboolean(L, ret);
+	return 1;
+}
+
+/***
+Get control surfaces mode.
+
 Returns aerodynamic control surfaces currently under manual control.
 
 The input mode defines which types of control surfaces can be manually
@@ -3172,6 +3859,8 @@ int Interpreter::v_get_adcmode (lua_State *L)
 }
 
 /***
+Set control surfaces mode.
+
 Configure manual input mode for aerodynamic control surfaces.
 
 The _mode_ contains bit flags interpreted as follows:
@@ -3199,6 +3888,8 @@ int Interpreter::v_set_adcmode (lua_State *L)
 }
 
 /***
+Get control surface position.
+
 Returns the current position of an aerodynamic control surface.
 
 This method returns the actual, not the target position. Due to finite
@@ -3222,6 +3913,8 @@ int Interpreter::v_get_adclevel (lua_State *L)
 }
 
 /***
+Set control surface position.
+
 Updates the position of an aerodynamic control surface.
 
 Parameter _lvl_ defines a target state for the surface. Control surfaces
@@ -3256,6 +3949,8 @@ Aerodynamics (legacy model)
 */
 
 /***
+Get wind resistance coefficients.
+
 Returns the vessel's wind resistance coefficients (legacy flight model only).
 
 The cw coefficients are only used by the legacy flight model (if no airfoils are
@@ -3287,6 +3982,8 @@ int Interpreter::v_get_cw (lua_State *L)
 }
 
 /***
+Set wind resistance coefficients.
+
 Set the vessel's wind resistance coefficients along its axis directions.
 
 The cw coefficients are only used by the legacy flight model (if no airfoils are
@@ -3311,7 +4008,7 @@ int Interpreter::v_set_cw (lua_State *L)
 	static const char *funcname = "set_cw";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	VECTOR3 cw = luamtd_tovector_safe(L, 2, funcname);
+	VECTOR3 cw = lua_tovector(L, 2);
 	lua_getfield(L, 2, "zn");
 	double zn = lua_tonumber(L,-1);
 	v->SetCW (cw.z, zn, cw.x, cw.y);
@@ -3319,7 +4016,7 @@ int Interpreter::v_set_cw (lua_State *L)
 }
 
 /***
-Returns the vessel's wing aspect ratio.
+Get wing aspect ratio.
 
 The aspect ratio returned by this function is only used by the legacy aerodynamic
 flight model. If the vessel uses the new flight model (i.e. defines at least one
@@ -3342,7 +4039,7 @@ int Interpreter::v_get_wingaspect (lua_State *L)
 }
 
 /***
-Set the wing aspect ratio.
+Set wing aspect ratio.
 
 This function defines the wing aspect ratio for the legacy flight model. If the vessel
 uses the new flight model (i.e. defines at least one airfoil), then this value is
@@ -3365,6 +4062,8 @@ int Interpreter::v_set_wingaspect (lua_State *L)
 }
 
 /***
+Get wing effectiveness.
+
 Returns the wing form factor used in aerodynamic calculations.
 
 The form factor returned by this function is only used by the legacy aerodynamic flight
@@ -3392,7 +4091,9 @@ int Interpreter::v_get_wingeffectiveness (lua_State *L)
 }
 
 /***
-Set the wing form factor for aerodynamic lift and drag calculations.
+Set wing effectiveness.
+
+Sets the wing form factor for aerodynamic lift and drag calculations.
 
 This function defines the wing form factor for the legacy flight model. If the vessel
 uses the new flight model (i.e. defines at least one airfoil), then this value is
@@ -3419,6 +4120,8 @@ int Interpreter::v_set_wingeffectiveness (lua_State *L)
 }
 
 /***
+Get atmospheric rotation drag.
+
 Returns the vessel's atmospheric rotation resistance coefficients.
 
 The returned vector contains the components x = dx, y = dy, z = dz of the drag
@@ -3446,6 +4149,8 @@ int Interpreter::v_get_rotdrag (lua_State *L)
 }
 
 /***
+Set atmospheric rotation drag.
+
 Sets the vessel's atmospheric rotation resistance coefficients.
 
 The input vector contains the components x = dx, y = dy, z = dz of the new drag
@@ -3472,7 +4177,7 @@ int Interpreter::v_set_rotdrag (lua_State *L)
 }
 
 /***
-Returns the scaling factor for the pitch moment.
+Get scaling factor for the pitch moment.
 
 The pitch moment is the angular moment around the vessel's lateral (x) axis occurring
 in atmospheric flight. It works toward reducing the pitch angle (angle of attack).
@@ -3497,7 +4202,7 @@ int Interpreter::v_get_pitchmomentscale (lua_State *L)
 }
 
 /***
-Sets the scaling factor for the pitch moment.
+Sets scaling factor for the pitch moment.
 
 The pitch moment is the angular moment around the vessel's lateral (x) axis occurring in
 atmospheric flight. It works toward reducing the pitch angle (angle of attack).
@@ -3524,7 +4229,7 @@ int Interpreter::v_set_pitchmomentscale (lua_State *L)
 }
 
 /***
-Returns the scaling factor for the yaw moment.
+Get scaling factor for the yaw moment.
 
 The yaw moment is the angular moment around the vessel's vertical (y) axis occurring in
 atmospheric flight. It works toward reducing the slip angle between the vessel's
@@ -3548,7 +4253,7 @@ int Interpreter::v_get_yawmomentscale (lua_State *L)
 }
 
 /***
-Sets the scaling factor for the yaw moment.
+Set scaling factor for the yaw moment.
 
 The yaw moment is the angular moment around the vessel's vertical (y) axis occurring in
 atmospheric flight. It works toward reducing the slip angle between the vessel's
@@ -3574,7 +4279,7 @@ int Interpreter::v_set_yawmomentscale (lua_State *L)
 }
 
 /***
-Returns the scaling factor for the pitch trim control.
+Get scaling factor for the pitch trim control.
 
 The pitch trim scale is a factor defining the effect of the pitch trim controls.
 
@@ -3595,7 +4300,7 @@ int Interpreter::v_get_trimscale (lua_State *L)
 }
 
 /***
-Sets the scaling factor for the pitch trim control.
+Set scaling factor for the pitch trim control.
 
 This method is used only in combination with the old flight model, that is, if the
 vessel doesn't define any airfoils. In the new flight model, this has been replaced by
@@ -3624,6 +4329,8 @@ Forces
 */
 
 /***
+Get lift magnitude.
+
 Returns magnitude of aerodynamic lift force vector.
 
 Return value is the sum of lift components from all airfoils.
@@ -3642,6 +4349,8 @@ int Interpreter::v_get_lift (lua_State *L)
 }
 
 /***
+Get drag magnitude.
+
 Returns magnitude of aerodynamic drag force vector.
 
 Return value is the sum of drag components from all airfoils.
@@ -3660,6 +4369,8 @@ int Interpreter::v_get_drag (lua_State *L)
 }
 
 /***
+Get weight vector.
+
 Returns the gravitational force vector in local vessel coordinates.
 
 When the vessel status is updated dynamically, G is composed of all
@@ -3688,6 +4399,8 @@ int Interpreter::v_get_weightvector (lua_State *L)
 }
 
 /***
+Get thrust vector.
+
 Returns the thrust force vector in local vessel coordinates.
 
 On return, T contains the vector sum of thrust components from all engines.
@@ -3711,6 +4424,8 @@ int Interpreter::v_get_thrustvector (lua_State *L)
 }
 
 /***
+Get lift vector.
+
 Returns the aerodynamic lift force vector in local vessel coordinates.
 
 Return value is the sum of lift components from all airfoils.
@@ -3734,6 +4449,8 @@ int Interpreter::v_get_liftvector (lua_State *L)
 }
 
 /***
+Get drag vector.
+
 Returns aerodynamic drag force vector in local vessel coordinates.
 
 On return, D contains the sum of drag components from all
@@ -3762,6 +4479,8 @@ int Interpreter::v_get_dragvector (lua_State *L)
 }
 
 /***
+Get total forces.
+
 Returns total force vector acting on the vessel in local vessel coordinates.
 
 On return, F contains the sum of all forces acting on the
@@ -3790,6 +4509,8 @@ int Interpreter::v_get_forcevector (lua_State *L)
 }
 
 /***
+Get total torque.
+
 Returns the total torque vector acting on the vessel in local vessel
 coordinates.
 
@@ -3826,7 +4547,7 @@ This function can be used to implement custom forces (braking
    and replace it by a user-defined model).
 
 The force is applied only for the next time step. add_force will
-   therefore usually be used inside the VESSEL2::clbkPreStep callback
+   therefore usually be used inside the clbk_prestep callback
    function.
 
 @function add_force
@@ -3845,6 +4566,61 @@ int Interpreter::v_add_force (lua_State *L)
 	return 0;
 }
 
+/***
+Create variable drag element.
+
+Attaches a modifyable drag component to the vessel.
+
+The variable drag can be changed by using the set method of the returned numberref.
+
+The value of the drag should be set to values between 0 (no drag) and 1 (full drag).
+Any changes to the numberref have immediate effect.
+
+Depending on the attack point, the applied drag force may create
+torque in addition to linear force.
+
+@function create_variabledragelement
+@tparam number factor drag magnitude scaling factor
+@tparam vector ref drag force attack point [<b>m</b>]
+@treturn numberref variable drag reference
+@usage
+-- vessel creation: create variable drag element
+spdb_drag = vi:create_variabledragelement(5, _V(0, 7.5, -14)) -- speedbrake drag
+
+-- in clbk_prestep: change the drag value according to the animation state
+spdb_drag:set(spdb_state.proc)
+*/
+int Interpreter::v_create_variabledragelement(lua_State* L)
+{
+	static const char* funcname = "create_variabledragelement";
+	AssertMtdMinPrmCount(L, 3, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	double factor = lua_tonumber(L, 2);
+	VECTOR3 ref = lua_tovector(L, 3);
+	lua_pushnumberref(L);
+	double* ptr = (double*)lua_touserdata(L, -1);
+	*ptr = 0.0;
+	v->CreateVariableDragElement((const double *)ptr, factor, ref);
+	return 1;
+}
+
+/***
+Clear variable drag elements.
+
+Removes all drag elements defined with create_variabledragelement.
+
+@function clear_variabledragelements
+@see create_variabledragelement
+*/
+int Interpreter::v_clear_variabledragelements(lua_State* L)
+{
+	static const char* funcname = "clear_variabledragelements";
+	AssertMtdMinPrmCount(L, 1, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	// numberrefs allocated in v_create_variabledragelement should be handled by Lua's GC when we stop referencing them
+	v->ClearVariableDragElements();
+	return 0;
+}
 
 /***
 Fuel management
@@ -3852,7 +4628,7 @@ Fuel management
 */
 
 /***
-Creates a new propellant resource.
+Create propellant resource.
 
 Orbiter doesn't distinguish between propellant and oxidant. A "propellant resource" is
 assumed to be a combination of fuel and oxidant resources.
@@ -3896,7 +4672,7 @@ int Interpreter::v_create_propellantresource (lua_State *L)
 }
 
 /***
-Removes a propellant resource.
+Remove propellant resource.
 
 If any thrusters were attached to this fuel resource, they are disabled until connected
 to a new fuel resource.
@@ -3905,18 +4681,41 @@ to a new fuel resource.
 @tparam handle hProp propellant resource handle
 @see vessel:create_propellantresource, vessel:clear_propellantresources
 */
-int Interpreter::v_del_propellantresource (lua_State *L)
+int Interpreter::v_del_propellantresource(lua_State* L)
 {
-	static const char *funcname = "del_propellantresource";
+	static const char* funcname = "del_propellantresource";
 	AssertMtdMinPrmCount(L, 2, funcname);
-	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
 	PROPELLANT_HANDLE hPrp = (PROPELLANT_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
-	v->DelPropellantResource (hPrp);
+	v->DelPropellantResource(hPrp);
 	return 0;
 }
 
 /***
-Removes all propellant resources for the vessel.
+Define a "default" propellant resource.
+
+This is used for the various legacy fuel-related API functions, and
+for the "Fuel" indicator in the generic panel-less HUD display.
+
+If this function is not called, the first propellant resource
+is used as default.
+
+@function set_default_propellantresource
+@tparam handle hProp propellant resource handle
+@see vessel:create_propellantresource, vessel:clear_propellantresources
+*/
+int Interpreter::v_set_default_propellantresource(lua_State* L)
+{
+	static const char* funcname = "set_default_propellantresource";
+	AssertMtdMinPrmCount(L, 2, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	PROPELLANT_HANDLE hPrp = (PROPELLANT_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
+	v->SetDefaultPropellantResource(hPrp);
+	return 0;
+}
+
+/***
+Remove all propellant resources for the vessel.
 
 After a call to this function, all the vessel's thrusters will be disabled until they
 are linked to new resources.
@@ -3934,7 +4733,9 @@ int Interpreter::v_clear_propellantresources (lua_State *L)
 }
 
 /***
-Returns the current number of vessel propellant resources.
+Number of propellant resources.
+
+Return the current number of vessel propellant resources.
 
 @function get_propellantcount
 @treturn int Number of propellant resources currently defined for the vessel
@@ -3951,7 +4752,7 @@ int Interpreter::v_get_propellantcount (lua_State *L)
 }
 
 /***
-Returns a handle of a propellant resource.
+Get handle of a propellant resource.
 
 The index must be in the range between 0 and @{get_propellantcount}-1. If the index is
 out of range, the returned handle is nil.
@@ -3977,7 +4778,7 @@ int Interpreter::v_get_propellanthandle (lua_State *L)
 }
 
 /***
-Returns the maximum capacity of a propellant resource.
+Get maximum capacity of a propellant resource.
 
 @function get_propellantmaxmass
 @tparam handle hProp propellant resource handle
@@ -3995,7 +4796,7 @@ int Interpreter::v_get_propellantmaxmass (lua_State *L)
 }
 
 /***
-Resets the maximum capacity of a fuel resource.
+Reset maximum capacity of a fuel resource.
 
 The actual fuel mass contained in the tank is not affected by this function, unless the
 new maximum propellant mass is less than the current fuel mass, in which case the fuel
@@ -4020,7 +4821,7 @@ int Interpreter::v_set_propellantmaxmass (lua_State *L)
 }
 
 /***
-Returns the current mass of a propellant resource.
+Get current mass of a propellant resource.
 
 @function get_propellantmass
 @tparam handle hProp propellant resource handle
@@ -4038,7 +4839,7 @@ int Interpreter::v_get_propellantmass (lua_State *L)
 }
 
 /***
-Resets the current mass of a propellant resource.
+Reset current mass of a propellant resource.
 
 0 &le; mass &le; maxmass is required, where maxmass is the maximum capacity of the
 propellant resource.
@@ -4065,7 +4866,7 @@ int Interpreter::v_set_propellantmass (lua_State *L)
 }
 
 /***
-Returns the vessel's current total propellant mass.
+Get current total propellant mass.
 
 @function get_totalpropellantmass
 @treturn number Sum of current masses of propellant resources defined for the vessel [kg]
@@ -4081,7 +4882,7 @@ int Interpreter::v_get_totalpropellantmass (lua_State *L)
 }
 
 /***
-Returns the efficiency factor of a propellant resource.
+Get efficiency factor of a propellant resource.
 
 The fuel efficiency rating, together witha thruster's Isp rating, determines how much
 fuel is consumed per second to obtain a given thrust value: R = F/(e Isp) with fuel rate
@@ -4103,7 +4904,7 @@ int Interpreter::v_get_propellantefficiency (lua_State *L)
 }
 
 /***
-Resets the efficiency factor of a propellant resource.
+Reset efficiency factor of a propellant resource.
 
 The fuel efficiency rating, together witha thruster's Isp rating, determines how much
 fuel is consumed per second to obtain a given thrust value: R = F/(e Isp) with fuel rate
@@ -4126,7 +4927,7 @@ int Interpreter::v_set_propellantefficiency (lua_State *L)
 }
 
 /***
-Resets the efficiency factor of a propellant resource.
+Reset efficiency factor of a propellant resource.
 
 The fuel efficiency rating, together witha thruster's Isp rating, determines how much
 fuel is consumed per second to obtain a given thrust value: R = F/(e Isp) with fuel rate
@@ -4149,6 +4950,8 @@ int Interpreter::v_get_propellantflowrate (lua_State *L)
 }
 
 /***
+Get total propellant flow rate.
+
 Returns the current total mass flow rate, summed over all propellant resources.
 
 @function get_totalpropellantflowrate
@@ -4171,6 +4974,8 @@ Thruster management
 */
 
 /***
+Create a thruster.
+
 Adds a logical thruster definition for the vessel.
 
 _spec_ is a table whose fields describe the thruster specifications. The following
@@ -4203,7 +5008,9 @@ Example:
 	ph = v:get_propellanthandle(0)
 	th_pos = {x=0, y=0, z=-5}
 	th_dir = {x=0, y=0, z=1}
-	th = v:create_thruster({pos=th_pos, dir=th_dir, maxth0=1e5, hprop=ph, isp0=3000, ispr=2500, pr=101.4e3})
+	th = v:create_thruster({pos=th_pos, dir=th_dir, maxth0=1e5,
+	                        hprop=ph, isp0=3000, ispr=2500,
+							pr=101.4e3})
 
 @function create_thruster
 @tparam table spec thruster specification (see Notes)
@@ -4247,7 +5054,7 @@ int Interpreter::v_create_thruster (lua_State *L)
 }
 
 /***
-Deletes a logical thruster definition.
+Delete thruster definition.
 
 Deleted thrusters will be automatically removed from all thruster groups they had been
 assigned to.
@@ -4271,7 +5078,7 @@ int Interpreter::v_del_thruster (lua_State *L)
 }
 
 /***
-Deletes all thruster and thruster group definitions.
+Delete all thrusters and thruster group definitions.
 
 This function removes all thruster definitions, as well as all the thruster group
 definitions.
@@ -4291,7 +5098,7 @@ int Interpreter::v_clear_thrusters (lua_State *L)
 }
 
 /***
-Returns the number of thrusters currently defined.
+Get number of thrusters currently defined.
 
 @function get_thrustercount
 @treturn int Number of logical thruster definitions
@@ -4308,7 +5115,7 @@ int Interpreter::v_get_thrustercount (lua_State *L)
 }
 
 /***
-Returns the handle of a thruster specified by its index.
+Get handle of a thruster specified by its index.
 
 The index must be in the range between 0 and nthruster-1, where nthruster is the
 thruster count returned by @{get_thrustercount}. If the index is out of range, the
@@ -4335,7 +5142,7 @@ int Interpreter::v_get_thrusterhandle (lua_State *L)
 }
 
 /***
-Returns a handle for the propellant resource feeding the thruster.
+Get handle for the propellant resource feeding the thruster.
 
 @function get_thrusterresource
 @tparam handle hThruster thruster handle
@@ -4380,7 +5187,7 @@ int Interpreter::v_set_thrusterresource (lua_State *L)
 }
 
 /***
-Returns the thrust force attack point of a thruster.
+Get thrust force attack point of a thruster.
 
 The returned point is the position at which the thrust force is applied, in the vessel
 frame of reference.
@@ -4403,7 +5210,7 @@ int Interpreter::v_get_thrusterpos (lua_State *L)
 }
 
 /***
-Resets the thrust force attack point of a thruster.
+Reset thrust force attack point of a thruster.
 
 _pos_ is specified in the vessel reference system.
 
@@ -4433,7 +5240,7 @@ int Interpreter::v_set_thrusterpos (lua_State *L)
 }
 
 /***
-Returns the force direction of a thruster.
+Get force direction of a thruster.
 
 @function get_thrusterdir
 @tparam handle hThruster thruster handle
@@ -4453,7 +5260,7 @@ int Interpreter::v_get_thrusterdir (lua_State *L)
 }
 
 /***
-Resets the force direction of a thruster.
+Reset force direction of a thruster.
 
 This method can be used to realise a tilt of the rocket motor (e.g. for implementing a
 thruster gimbal mechanism)
@@ -4475,7 +5282,7 @@ int Interpreter::v_set_thrusterdir (lua_State *L)
 }
 
 /***
-Returns the maximum vacuum thust rating of a thruster.
+Get maximum vacuum thust rating of a thruster.
 
 To retrieve the actual current maximum thrust rating (which may be lower in the
 presence of ambient atmospheric pressure), use @{get_thrustermax}.
@@ -4497,7 +5304,7 @@ int Interpreter::v_get_thrustermax0 (lua_State *L)
 }
 
 /***
-Resets the maximum vacuum thrust rating of a thruster.
+Reset maximum vacuum thrust rating of a thruster.
 
 The max. thrust rating in the presence of atmospheric ambient pressure may be lower
 than the vacuum thrust if a pressure-dependent Isp value has been defined.
@@ -4519,7 +5326,7 @@ int Interpreter::v_set_thrustermax0 (lua_State *L)
 }
 
 /***
-Returns the pressure-dependent maximum thrust rating of a thruster.
+Get pressure-dependent maximum thrust rating of a thruster.
 
 This method returns the pressure-corrected maximum thrust rating of a thruster.
 
@@ -4551,7 +5358,7 @@ int Interpreter::v_get_thrustermax (lua_State *L)
 }
 
 /***
-Returns the vacuum fuel-specific impulse (Isp) rating for a thruster.
+Get vacuum fuel-specific impulse (Isp) rating for a thruster.
 
 Equivalent to @{get_thrusterisp} (hThruster,0).
 
@@ -4570,7 +5377,7 @@ int Interpreter::v_get_thrusterisp0 (lua_State *L)
 }
 
 /***
-Returns the pressure-dependent fuel-specific impulse (Isp) rating for a thruster.
+Get pressure-dependent fuel-specific impulse (Isp) rating for a thruster.
 
 If the thruster has been defined with a pressure-dependent Isp rating, the value
 returned by this method will vary with pressure.
@@ -4603,7 +5410,7 @@ int Interpreter::v_get_thrusterisp (lua_State *L)
 }
 
 /***
-Resets the fuel-specific impulse (Isp) rating of a thruster.
+Reset fuel-specific impulse (Isp) rating of a thruster.
 
 This method can be used to define pressure-independent or pressure-dependent Isp
 ratings.
@@ -4618,8 +5425,8 @@ to Earth surface pressure.
 
 The Isp rating at arbitrary pressure p is then computed as
 
-	isp = isp0 (1-p &eta;)
-	&eta; = (isp0 - ispr) / (pr isp0)
+	isp = isp0 * (1 - p * e)
+	e = (isp0 - ispr) / (pr * isp0)
 
 @function set_thrusterisp
 @tparam handle hThruster thruster handle
@@ -4649,7 +5456,7 @@ int Interpreter::v_set_thrusterisp (lua_State *L)
 }
 
 /***
-Returns the current thrust level setting of a thruster.
+Get current thrust level setting of a thruster.
 
 To obtain the actual force [N] currently generated by the thruster, multiply the thrust
 level with the max. thrust rating returned by @{get_thrustermax}.
@@ -4670,7 +5477,7 @@ int Interpreter::v_get_thrusterlevel (lua_State *L)
 }
 
 /***
-Sets the thrust level for a thruster.
+Set thrust level for a thruster.
 
 At level 1, the thruster generates maximum force, as defined by its maxth parameter.
 
@@ -4695,7 +5502,7 @@ int Interpreter::v_set_thrusterlevel (lua_State *L)
 }
 
 /***
-Applies a change to the thrust level of a thruster.
+Apply a change to the thrust level of a thruster.
 
 The applied thrust level change is limited to give a resulting thrust level in the
 range [0..1].
@@ -4724,7 +5531,7 @@ At level 1 the thruster generates maximum force, as defined by
 
 This method overrides the thruster's permanent thrust level
    for the current time step only, so it should normally only be used
-   in the body of the VESSEL2::clbkPreStep() method.
+   in the body of the clbk_prestep() method.
 
 @function set_thrusterlevel_singlestep
 @tparam handle th thruster handle
@@ -4743,7 +5550,7 @@ int Interpreter::v_set_thrusterlevel_singlestep (lua_State *L)
 }
 
 /***
-Applies a change of the thruster level for the current frame only.
+Apply a change of the thruster level for the current frame only.
 
 Unlike @{inc_thrusterlevel}, which applies a permanent change in a thruster level, this
 method applies a level change only for the current frame. It is useful for continously
@@ -4775,21 +5582,20 @@ Thruster group management
 */
 
 /***
-Combines thrusters into a logical group.
+Combine thrusters into a logical group.
 
 If the _type_ parameter is omitted, THGROUP.USER is assumed.
 
-Example:
-
-	v = vessel.get_focusinterface()
-	h1 = v:create_thruster({pos={x=-1,y=0,z=0}, dir={x=0,y=0,z=1}, maxth0=1e5})
-	h2 = v:create_thruster({pos={x=1,y=0,z=0}, dir={x=0,y=0,z=1}, maxth0=1e5})
-	hmain = v:create_thrustergroup({h1,h2},THGROUP.MAIN)
 
 @function create_thrustergroup
 @tparam table hThrusterArray array of thruster handles
 @tparam int type thruster group identifier (see @{types.THGROUP|Thruster group identifiers})
 @treturn handle hThgrp thruster group handle
+@usage v = vessel.get_focusinterface()
+h1 = v:create_thruster({pos={x=-1,y=0,z=0}, dir={x=0,y=0,z=1}, maxth0=1e5})
+h2 = v:create_thruster({pos={x=1,y=0,z=0}, dir={x=0,y=0,z=1}, maxth0=1e5})
+hmain = v:create_thrustergroup({h1,h2},THGROUP.MAIN)
+
 @see vessel:del_thrustergroup
 */
 int Interpreter::v_create_thrustergroup (lua_State *L)
@@ -4829,7 +5635,7 @@ int Interpreter::v_create_thrustergroup (lua_State *L)
 }
 
 /***
-Deletes a thruster group.
+Delete a thruster group.
 
 This deletes only the logical group, not the individual thrusters associated with the
 group.
@@ -4869,7 +5675,7 @@ int Interpreter::v_del_thrustergroup (lua_State *L)
 }
 
 /***
-Returns the handle of a default thruster group.
+Get handle of a default thruster group.
 
 If the requested thruster group is not defined by the vessel, this method returns nil.
 
@@ -4893,7 +5699,7 @@ int Interpreter::v_get_thrustergrouphandle (lua_State *L)
 }
 
 /***
-Returns the handle of a user-defined (nonstandard) thruster group.
+Get handle of a user-defined (nonstandard) thruster group.
 
 Use this method only to retrieve handles for nonstandard thruster groups. For standard
 groups, use @{get_thrustergrouphandle} instead.
@@ -4916,7 +5722,7 @@ int Interpreter::v_get_thrustergrouphandlebyindex (lua_State *L)
 }
 
 /***
-Returns the number of thrusters assigned to a logical thruster group.
+Get number of thrusters assigned to a logical thruster group.
 
 This method can be called by providing either a thruster group handle, or an identifier for a
 default thruster group.
@@ -4949,7 +5755,7 @@ int Interpreter::v_get_groupthrustercount (lua_State *L)
 }
 
 /***
-Returns a handle for a thruster that belongs to a thruster group.
+Get handle for a thruster that belongs to a thruster group.
 
 If the specified group is not defined, or if the index is out of range, this function returns
 _nil_.
@@ -4982,7 +5788,7 @@ int Interpreter::v_get_groupthruster (lua_State *L)
 }
 
 /***
-Returns the mean thrust level for a thruster group.
+Get mean thrust level for a thruster group.
 
 For ease of use, the default thruster group idenfiers have been enumerated in the
 @{types.THGROUP|THGROUP} table. For example, THGROUP.MAIN identifies the main thruster group.
@@ -5014,7 +5820,7 @@ int Interpreter::v_get_thrustergrouplevel (lua_State *L)
 }
 
 /***
-Sets the thrust level for all thrusters in a group.
+Get thrust level for all thrusters in a group.
 
 @function set_thrustergrouplevel
 @tparam ?handle|int idThgroup thruster group identifier; either a thruster group handle, or @{types.THGROUP|THGROUP} entry
@@ -5039,7 +5845,7 @@ int Interpreter::v_set_thrustergrouplevel (lua_State *L)
 }
 
 /***
-Increments the thrust level for all thrusters in a group.
+Increment the thrust level for all thrusters in a group.
 
 The resulting thrust levels are automatically truncated to the range
 [0..1]. Use negative dlvl to decrement the thrust level.
@@ -5096,6 +5902,38 @@ int Interpreter::v_inc_thrustergrouplevel_singlestep (lua_State *L)
 	return 0;
 }
 
+/***
+Get manual control level.
+
+Returns the thrust level of an attitude thruster group set via keyboard or mouse input.
+
+If mode is not MANCTRL.ANYMODE, only thruster groups which
+are of the specified mode (linear or rotational) will return
+nonzero values.
+
+@function get_manualcontrollevel
+@tparam number id thruster group identifier (@{types.THGROUP|THGROUP})
+@tparam[opt=0] number mode attitude control mode
+@tparam[opt=2] number device  input device
+@treturn number manual thrust level [0..1]
+*/
+int Interpreter::v_get_manualcontrollevel(lua_State* L) {
+	static const char* funcname = "get_manualcontrollevel";
+	AssertMtdMinPrmCount(L, 3, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	THGROUP_TYPE thgt = (THGROUP_TYPE)lua_tointeger(L, 2);
+	int mode = 0;
+	if(lua_gettop(L)>=3)
+		mode = luaL_checkinteger(L, 3);
+	int device = 2;
+	if(lua_gettop(L)>=4)
+		device = luaL_checkinteger(L, 4);
+
+	double lvl = v->GetManualControlLevel(thgt, mode, device);
+	lua_pushnumber(L, lvl);
+	return 1;
+}
+
 
 /***
 Reaction control system
@@ -5103,6 +5941,8 @@ Reaction control system
 */
 
 /***
+Get RCS mode.
+
 Returns the current RCS (reaction control system) thruster mode.
 
 The reaction control system consists of a set of small thrusters arranged
@@ -5134,6 +5974,8 @@ int Interpreter::v_get_rcsmode (lua_State *L)
 }
 
 /***
+Set RCS mode.
+
 Sets the vessel's RCS (reaction control system) thruster mode.
 
 The reaction control system consists of a set of small thrusters arranged
@@ -5178,7 +6020,7 @@ int Interpreter::v_toggle_RCSmode (lua_State *L)
 }
 
 /***
-Returns the activation state of an automated orbital navigation mode.
+Get activation state of an automated orbital navigation mode.
 
 @function get_navmode
 @tparam int mode navigation mode identifier (see @{types.NAVMODE|Navmode identifiers})
@@ -5197,7 +6039,7 @@ int Interpreter::v_get_navmode (lua_State *L)
 }
 
 /***
-Activates or deactivates one of the automated orbital navigation modes.
+Activate or deactivate one of the automated orbital navigation modes.
 
 Navmodes are high-level navigation modes which involve e.g. the
 simultaneous and timed engagement of multiple attitude thrusters to get
@@ -5234,7 +6076,7 @@ Docking ports
 */
 
 /***
-Creates a new docking port.
+Create a new docking port.
 
 The _dir_ and _rot_ vectors should be normalised to length 1.
 
@@ -5265,7 +6107,7 @@ int Interpreter::v_create_dock (lua_State *L)
 }
 
 /***
-Deletes a previously defined docking port.
+Delete a previously defined docking port.
 
 Any object docked at the port will be undocked before the docking port is deleted.
 
@@ -5305,7 +6147,7 @@ int Interpreter::v_clear_dockdefinitions (lua_State *L)
 }
 
 /***
-Resets the parameters for a vessel docking port.
+Reset the parameters for a vessel docking port.
 
 If the _hDock_ handle is omitted, the parameters of the vessel's primary docking port
 are modified. In this case, if no docking port was previously defined, a new one is
@@ -5345,7 +6187,7 @@ int Interpreter::v_set_dockparams (lua_State *L)
 }
 
 /***
-Returns the paramters of a docking port.
+Get paramters of a docking port.
 
 @function get_dockparams
 @tparam handle hDock docking port handle
@@ -5369,7 +6211,7 @@ int Interpreter::v_get_dockparams (lua_State *L)
 }
 
 /***
-Returns the number of docking ports available on the vessel.
+Get number of docking ports available on the vessel.
 
 @function get_dockcount
 @treturn int number of docking ports (&ge; 0)
@@ -5385,7 +6227,7 @@ int Interpreter::v_get_dockcount (lua_State *L)
 }
 
 /***
-Returns a handle for a vessel docking port.
+Get handle for a vessel docking port.
 
 @function get_dockhandle
 @tparam int idx dock index (0 &le; idx &lt; @{get_dockcount})
@@ -5405,7 +6247,7 @@ int Interpreter::v_get_dockhandle (lua_State *L)
 }
 
 /***
-Returns the current status of a docking port.
+Get current status of a docking port.
 If the dock is engaged, the return value contains a handle for the docked object.
 Otherwise the function returns nil.
 
@@ -5427,7 +6269,7 @@ int Interpreter::v_get_dockstatus (lua_State *L)
 }
 
 /***
-Returns a status flag for a docking port.
+Get status flag for a docking port.
 
 This method has the same functionality as
    <code> (GetDockStatus (GetDockHandle(port)) ? 1:0) </code>
@@ -5448,7 +6290,7 @@ int Interpreter::v_dockingstatus (lua_State *L)
 }
 
 /***
-Undocks any vessel attached to a docking port.
+Undock any vessel attached to a docking port.
 
 If the index parameter is set to -1, all docked vessels are undocked
 simultaneously from all docking ports.
@@ -5456,15 +6298,214 @@ simultaneously from all docking ports.
 @function undock
 @tparam int idx docking port index (0 &le; idx &lt; @{get_dockcount}, or -1)
 */
-int Interpreter::v_undock (lua_State *L)
+int Interpreter::v_undock(lua_State* L)
 {
-	static const char *funcname = "undock";
+	static const char* funcname = "undock";
 	AssertMtdMinPrmCount(L, 2, funcname);
-	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
 	UINT idx = (UINT)luamtd_tointeger_safe(L, 2, funcname);
-	v->Undock (idx);
+	v->Undock(idx);
 	return 0;
 }
+
+/***
+Dock to another vessel.
+
+This function is useful for designing scenario editors and during
+startup configuration, but its use should be avoided during a
+running simulation, because it can lead to unphysical situations:
+it allows to dock two vessels regardless of their current
+separation, by teleporting one of them to the location of the other.
+
+During a simulation, Orbiter will dock two vessels automatically
+when their docking ports are brought into close proximity.
+
+The mode parameter determines how the vessels are connected. The
+following settings are supported:
+
+- 0: calculate the linear and angular moments of the superstructure
+     from the moments of the docking components. This should only be used
+     if the two vessels are already in close proximity and aligned for
+     docking.
+- 1: Keep this in place, and teleport the target vessel for docking
+- 2: Keep the target in place, and teleport this for docking.
+- 3: Softdock. Keep the target in place and match this vessel's docking port with
+     target port alignment (i.e Ref, Dir and Rot gets matched to target). Add-on side code must
+     bring the vessel to alignment and hard-dock using MoveDock.
+
+@function dock
+@tparam handle target handle of docking target vessel
+@tparam number n docking port index on vessel (>= 0)
+@tparam number tgtn docking port index on target (>= 0)
+@tparam number mode attachment mode
+@treturn number 0 if success, else error code :
+
+- 1: docking port n on the vessel already in use
+- 2: docking port tgtn on the target already in use
+- 3: target vessel already part of the vessel's superstructure
+ 
+*/
+/***
+Dock to another vessel.
+
+This function is useful for designing scenario editors and during
+startup configuration, but its use should be avoided during a
+running simulation, because it can lead to unphysical situations:
+it allows to dock two vessels regardless of their current
+separation, by teleporting one of them to the location of the other.
+
+During a simulation, Orbiter will dock two vessels automatically
+when their docking ports are brought into close proximity.
+
+The mode parameter determines how the vessels are connected. The
+following settings are supported:
+
+- 0: calculate the linear and angular moments of the superstructure
+     from the moments of the docking components. This should only be used
+     if the two vessels are already in close proximity and aligned for
+     docking.
+- 1: Keep this in place, and teleport the target vessel for docking
+- 2: Keep the target in place, and teleport this for docking.
+- 3: Softdock. Keep the target in place and match this vessel's docking port with
+     target port alignment (i.e Ref, Dir and Rot gets matched to target). Add-on side code must
+     bring the vessel to alignment and hard-dock using MoveDock.
+
+@function dock
+@tparam handle hSrc dock handle of source vessel
+@tparam handle hTgt dock handle of target vessel
+@tparam number mode attachment mode
+@treturn number 0 if success, else error code :
+
+- 1: docking port n on the vessel already in use
+- 2: docking port tgtn on the target already in use
+- 3: target vessel already part of the vessel's superstructure
+ 
+*/int Interpreter::v_dock(lua_State* L)
+{
+	static const char* funcname = "dock";
+	AssertMtdMinPrmCount(L, 4, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	int ret;
+	if(lua_isnumber(L, 3)) {
+		OBJHANDLE target = (OBJHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
+		UINT n = (UINT)luamtd_tointeger_safe(L, 3, funcname);
+		UINT tgtn = (UINT)luamtd_tointeger_safe(L, 4, funcname);
+		UINT mode = (UINT)luamtd_tointeger_safe(L, 5, funcname);
+		ret = v->Dock(target, n, tgtn, mode);
+	} else {
+		DOCKHANDLE source = (DOCKHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
+		DOCKHANDLE target = (DOCKHANDLE)luamtd_tolightuserdata_safe(L, 3, funcname);
+		UINT mode = (UINT)luamtd_tointeger_safe(L, 4, funcname);
+		ret = v->Dock(source, target, mode);
+	}
+	lua_pushinteger(L, ret);
+	return 1;
+}
+
+/***
+Get closest free docking port from an other vessel.
+
+@function get_proxydock
+@tparam handle hDock docking port handle
+@treturn handle docking port handle, nil if hDock is already occupied or nothing else founds.
+*/
+int Interpreter::v_get_proxydock(lua_State* L)
+{
+	static const char *funcname = "get_proxydock";
+	AssertMtdMinPrmCount(L, 2, funcname);
+	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
+	DOCKHANDLE hDock = (DOCKHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
+
+	DOCKHANDLE hProxy = v->GetProxyDock(hDock);
+
+	if(hProxy)
+		lua_pushlightuserdata(L, hProxy);
+	else
+		lua_pushnil(L);
+	return 1;
+}
+
+/***
+Get index of specified docking port.
+
+@function get_dockindex
+@tparam handle hDock docking port handle
+@treturn number dock index or -1 if hDock doesn't belong to a vessel.
+*/
+int Interpreter::v_get_dockindex(lua_State* L)
+{
+	static const char *funcname = "get_dockindex";
+	AssertMtdMinPrmCount(L, 2, funcname);
+	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
+	DOCKHANDLE hDock = (DOCKHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
+
+	int idx = v->GetDockIndex(hDock);
+
+	lua_pushinteger(L, idx);
+	return 1;
+}
+
+/***
+Get target docking port alignment relative to hDock in local vessel coords.
+
+The function returns nil in case of error.
+
+@function get_targetdockalignment
+@tparam handle hDock dock handle
+@tparam handle hTgt Target dock handle
+@treturn vector target position
+@treturn vector target direction
+@treturn vector target rotation
+@treturn vector target velocity between ports ECL frame
+*/
+int Interpreter::v_get_targetdockalignment(lua_State* L)
+{
+	static const char *funcname = "get_targetdockalignment";
+	AssertMtdMinPrmCount(L, 3, funcname);
+	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
+	DOCKHANDLE hDock = (DOCKHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
+	DOCKHANDLE hTgt = (DOCKHANDLE)luamtd_tolightuserdata_safe(L, 3, funcname);
+
+	VECTOR3 ref, dir, rot, vel;
+
+	bool ret = v->GetTargetDockAlignment(hDock, hTgt, &ref, &dir, &rot, &vel);
+
+	if(ret) {
+		lua_pushvector(L, ref);
+		lua_pushvector(L, dir);
+		lua_pushvector(L, rot);
+		lua_pushvector(L, vel);
+		return 4;
+	}
+	return 0;
+}
+
+/***
+Move a docking port while vessel is docked. 
+
+If no vessel is docked then does the same as set_dockparams.
+
+@function move_dock
+@tparam handle hDock dock handle
+@tparam vector pos new dock reference position [<b>m</b>]
+@tparam vector dir new approach direction
+@tparam vector rot new longitudinal rotation alignment vector
+*/
+int Interpreter::v_move_dock(lua_State* L)
+{
+	static const char *funcname = "move_dock";
+	AssertMtdMinPrmCount(L, 5, funcname);
+	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
+	DOCKHANDLE hDock = (DOCKHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
+
+	VECTOR3 pos = luamtd_tovector_safe(L, 3, funcname);
+	VECTOR3 dir = luamtd_tovector_safe(L, 4, funcname);
+	VECTOR3 rot = luamtd_tovector_safe(L, 5, funcname);
+
+	v->MoveDock(hDock, pos, dir, rot);
+	return 0;
+}
+
 
 /***
 Attachments
@@ -5472,7 +6513,7 @@ Attachments
 */
 
 /***
-Creates a new attachment point.
+Create a new attachment point.
 
 A vessel can define multiple parent and child attachment points, and can subsequently
 have multiple children attached, but it can only be attached to a single parent at any
@@ -5521,7 +6562,7 @@ int Interpreter::v_create_attachment (lua_State *L)
 }
 
 /***
-Deletes an attachment point.
+Delete an attachment point.
 
 The attachment handle can refer to either a child or parent attachment point.
 
@@ -5545,7 +6586,7 @@ int Interpreter::v_del_attachment (lua_State *L)
 }
 
 /***
-Deletes all attachment points defined for the vessel.
+Delete all attachment points defined for the vessel.
 
 Any attached parent or child vessels will be released.
 
@@ -5564,7 +6605,7 @@ int Interpreter::v_clear_attachments (lua_State *L)
 }
 
 /***
-Resets attachment position and orientation for an existing attachment point.
+Reset attachment position and orientation for an existing attachment point.
 
 If the parameters of an attachment point are changed while a vessel is attached to that
 point, the attached vessel will be shifted to the new position automatically.
@@ -5579,6 +6620,7 @@ orthogonal.
 @param rot (<i><b>@{types.vector|vector}</b></i>) longitudinal alignment vector in vessel coordinates
 @see vessel:create_attachment, vessel:get_attachmentparams, vessel:get_attachmenthandle
 */
+
 int Interpreter::v_set_attachmentparams (lua_State *L)
 {
 	static const char *funcname = "set_attachmentparams";
@@ -5593,7 +6635,7 @@ int Interpreter::v_set_attachmentparams (lua_State *L)
 }
 
 /***
-Retrieves the parameters of an attachment point.
+Retrieve parameters of an attachment point.
 
 @function get_attachmentparams
 @tparam handle hAttachment attachment point handle
@@ -5617,7 +6659,7 @@ int Interpreter::v_get_attachmentparams (lua_State *L)
 }
 
 /***
-Retrieves attachment identifier string.
+Retrieve attachment identifier string.
 
 @function get_attachmentid
 @tparam handle hAttachment attachment point handle
@@ -5636,7 +6678,7 @@ int Interpreter::v_get_attachmentid (lua_State *L)
 }
 
 /***
-Returns the current status of an attachment point.
+Get status of an attachment point.
 
 This function returns either the handle of the attached vessel, or nil if nothing is
 attached.
@@ -5659,7 +6701,7 @@ int Interpreter::v_get_attachmentstatus (lua_State *L)
 }
 
 /***
-Returns the number of child or parent attachment points defined for the vessel.
+Get number of child or parent attachment points defined for the vessel.
 
 @function get_attachmentcount
 @tparam bool toParent If _true_, return the number of attachment points to parents.
@@ -5678,7 +6720,7 @@ int Interpreter::v_get_attachmentcount (lua_State *L)
 }
 
 /***
-Returns the list index of the vessel's attachment point defined by its handle.
+Get list index of the vessel's attachment point defined by its handle.
 
 A vessel defines separate lists for child and parent attachment points. Therefore two
 different attachment points may return the same index.
@@ -5702,7 +6744,7 @@ int Interpreter::v_get_attachmentindex (lua_State *L)
 }
 
 /***
-Returns the handle of an attachment point identified by its list index.
+Get handle of an attachment point identified by its list index.
 
 @function get_attachmenthandle
 @tparam bool toParent If _true_, return a handle for an attachment point to a parent.
@@ -5725,7 +6767,7 @@ int Interpreter::v_get_attachmenthandle (lua_State *L)
 }
 
 /***
-Attaches a child vessel to an attachment point.
+Attache a child vessel to an attachment point.
 
 The hAttachment handle must refer to an attachment "to child" (i.e. created with
 _toParent_=_false_); the _hChildAttachment_ handle must refer to an attachment
@@ -5759,7 +6801,7 @@ int Interpreter::v_attach_child (lua_State *L)
 }
 
 /***
-Breaks an existing attachment to a child.
+Break an existing attachment to a child.
 
 @function detach_child
 @tparam handle hAttachment attachment point handle
@@ -5813,7 +6855,7 @@ int Interpreter::v_enable_transponder (lua_State *L)
 }
 
 /***
-Returns a handle of vessel transponder if available.
+Get handle of vessel transponder if available.
 
 This function returns _nil_ unless the transponder has been enabled by a
 call to @{enable_transponder} or by setting the EnableXPDR entry in the
@@ -5890,7 +6932,7 @@ int Interpreter::v_enable_ids (lua_State *L)
 }
 
 /***
-Returns handle of one of the vessel's instrument docking system (IDS) transmitters.
+Get handle of one of the vessel's instrument docking system (IDS) transmitters.
 
 This function returns _nil_ if hDock does not define an IDS transmitter.
 
@@ -5920,7 +6962,7 @@ int Interpreter::v_get_ids (lua_State *L)
 }
 
 /***
-Switches an IDS (Instrument Docking System) transmitter channel.
+Switche an IDS (Instrument Docking System) transmitter channel.
 
 This function allows to switch an IDS transmitter for one of the vessel's
 docking ports to a different channel.
@@ -5949,7 +6991,7 @@ int Interpreter::v_set_idschannel (lua_State *L)
 }
 
 /***
-Defines the number of navigation (NAV) radio receivers supported by the vessel.
+Set number of navigation (NAV) radio receivers supported by the vessel.
 
 A vessel requires NAV radio receivers to obtain instrument navigation aids
 such as ILS or docking approach information.
@@ -5975,7 +7017,7 @@ int Interpreter::v_init_navradios (lua_State *L)
 }
 
 /***
-Returns the number of NAV receivers.
+Get number of NAV receivers.
 
 @function get_navcount
 @treturn int number of NAV receivers (&ge; 0)
@@ -5991,7 +7033,7 @@ int Interpreter::v_get_navcount (lua_State *L)
 }
 
 /***
-Sets the channel of a NAV radio receiver.
+Set channel of a NAV radio receiver.
 
 NAV radios can be tuned from 108.00 to 139.95 MHz in steps of 0.05 MHz,
 corresponding to channels 0 to 639.
@@ -6014,7 +7056,7 @@ int Interpreter::v_set_navchannel (lua_State *L)
 }
 
 /***
-Returns the current channel setting of a NAV radio receiver.
+Get current channel setting of a NAV radio receiver.
 
 If the receiver index _navIdx_ is out of range, this function returns 0.
 
@@ -6035,7 +7077,7 @@ int Interpreter::v_get_navchannel (lua_State *L)
 }
 
 /***
-Returns handle of transmitter source currently received by one of the vessel's NAV receivers.
+Get handle of transmitter source currently received by one of the vessel's NAV receivers.
 
 This function returns the handle of the NAV transmitter currently received
 by radio n, or nil if the radio is not tuned to any transmitter, or if
@@ -6070,11 +7112,10 @@ Nosewheel-steering and wheel brakes
 */
 
 /***
-Returns the activation state of the nose-wheel steering system.
+Set activation state of the nose-wheel steering system.
 
 @function set_nosewheelsteering
-@treturn bool _true_ indicates nose-wheel steering is active,
-              _false_ indicates disabled.
+@treturn bool _true_ indicates nose-wheel steering is active.
 @see set_nosewheelsteering
 */
 int Interpreter::v_set_nosewheelsteering (lua_State *L)
@@ -6088,11 +7129,10 @@ int Interpreter::v_set_nosewheelsteering (lua_State *L)
 }
 
 /***
-Returns the activation state of the nose-wheel steering system.
+Get activation state of the nose-wheel steering system.
 
 @function get_nosewheelsteering
-@treturn bool _true_ indicates nose-wheel steering is active,
-              _false_ indicates disabled.
+@treturn bool _true_ indicates nose-wheel steering is active.
 @see set_nosewheelsteering
 */
 int Interpreter::v_get_nosewheelsteering (lua_State *L)
@@ -6105,7 +7145,7 @@ int Interpreter::v_get_nosewheelsteering (lua_State *L)
 }
 
 /***
-Define the maximum force which can be provided by the vessel's wheel brake
+Define maximum force which can be provided by the vessel's wheel brake
 system.
 
 @function set_maxwheelbrakeforce
@@ -6123,7 +7163,7 @@ int Interpreter::v_set_maxwheelbrakeforce (lua_State *L)
 }
 
 /***
-Apply the wheel brake.
+Apply wheel brake.
 
 @function set_wheelbrakelevel
 @tparam number level wheelbrake level [0..1]
@@ -6145,7 +7185,7 @@ int Interpreter::v_set_wheelbrakelevel (lua_State *L)
 }
 
 /***
-Returns the current wheel brake level.
+Get current wheel brake level.
 
 @function get_wheelbrakelevel
 @tparam int which 0 = average of both main gear levels, 1 = left, 2 = right
@@ -6169,7 +7209,7 @@ Light sources
 */
 
 /***
-Adds a new isotropic point light source to the vessel.
+Add new isotropic point light source to the vessel.
 
 The param table contains the geometric parameters of the light source. It
 can contain the following fields:
@@ -6195,10 +7235,6 @@ three colour tables are optional. If ambient is missing, it is substituted
 with {r=0,g=0,b=0}. If specular is missing, it is assumed to be the same as
 diffuse. If diffuse is also missing, it is substituted with {r=1,g=1,b=1}.
 
-Example:
-
-	light = v:add_pointlight({x=10,y=1,z=0},{range=200,att0=1e-3,att2=2e-3},{r=1,g=0.8,b=0.7})
-
 @function add_pointlight
 @param pos (<i><b>@{types.vector|vector}</b></i>) source position in vessel frame [<b>m</b>]
 @tparam[opt] table param geometric parameters (see notes)
@@ -6206,6 +7242,8 @@ Example:
 @tparam[opt] rgb-table specular source contribution to specular object colours
 @tparam[opt] rgb-table ambient source contribution to ambient object colours
 @treturn object the newly created light emitter object
+@usage l = v:add_pointlight({x=1,y=1,z=0},{range=90,att0=1e-3,att2=2e-3},{r=1,g=0.8,b=0})
+
 @see vessel:add_spotlight
 */
 int Interpreter::v_add_pointlight (lua_State *L)
@@ -6250,7 +7288,7 @@ int Interpreter::v_add_pointlight (lua_State *L)
 }
 
 /***
-Adds a new directed spot light source to the vessel.
+Add new directed spot light source to the vessel.
 
 The param table contains the geometric parameters of the light source. It
 can contain the following fields:
@@ -6283,8 +7321,6 @@ diffuse. If diffuse is also missing, it is substituted with {r=1,g=1,b=1}.
 
 Example:
 
-	light = v:add_spotlight({x=10,y=1,z=0},{x=0,y=0,z=1},{range=200,att0=1e-3,att1=0,att2=2e-3,umbra=0.3,penumbra=0.5},{r=1,g=0.8,b=0.7})
-
 @function add_spotlight
 @param pos (<i><b>@{types.vector|vector}</b></i>) source position in vessel frame [<b>m</b>]
 @param dir (<i><b>@{types.vector|vector}</b></i>) source direction in vessel frame
@@ -6293,6 +7329,10 @@ Example:
 @tparam[opt] rgb-table specular source contribution to specular object colours
 @tparam[opt] rgb-table ambient source contribution to ambient object colours
 @treturn object the newly created light emitter object
+@usage l=v:add_spotlight({x=10,y=1,z=0},{x=0,y=0,z=1},
+                {range=200,att0=1e-3,att1=0,att2=2e-3,umbra=0.3,penumbra=0.5},
+                {r=1,g=0.8,b=0.7})
+
 @see vessel:add_pointlight
 */
 int Interpreter::v_add_spotlight (lua_State *L)
@@ -6344,11 +7384,11 @@ int Interpreter::v_add_spotlight (lua_State *L)
 }
 
 /***
-Returns a pointer to a light source object identified by index.
+Get light source object identified by index.
 
 @function get_lightemitter
 @tparam int idx light source index (&ge; 0)
-@treturn object light source object, or nil if index out of range
+@treturn lightemitter light source object, or nil if index out of range
 @see vessel:add_pointlight, vessel:add_spotlight, vessel:get_lightemittercount
 */
 int Interpreter::v_get_lightemitter (lua_State *L)
@@ -6364,7 +7404,7 @@ int Interpreter::v_get_lightemitter (lua_State *L)
 }
 
 /***
-Returns the number of light sources defined for the vessel.
+Get number of light sources defined for the vessel.
 
 @function get_lightemittercount
 @treturn int number of light sources
@@ -6381,13 +7421,13 @@ int Interpreter::v_get_lightemittercount (lua_State *L)
 }
 
 /***
-Deletes one of the vessel's light sources.
+Delete one of the vessel's light sources.
 
 If the function returns _true_, the light source object was deallocated and should no longer
 be referenced.
 
 @function del_lightemitter
-@tparam object le light emitter object
+@tparam lightemitter le light emitter object
 @treturn bool _true_ if light source was successfully deleted, _false_ if the vessel didn't recognise the object.
 @see vessel:add_pointlight, vessel:add_spotlight, vessel:clear_lightemitters
 */
@@ -6403,7 +7443,7 @@ int Interpreter::v_del_lightemitter (lua_State *L)
 }
 
 /***
-Removes all light sources defined for the vessel.
+Remove all light sources defined for the vessel.
 
 @function clear_lightemitters
 @see vessel:add_pointlight, vessel:add_spotlight, vessel:del_lightemitter
@@ -6424,7 +7464,7 @@ Meshes
 */
 
 /***
-Loads a mesh definition for the vessel from a file or from a pre-loaded mesh template.
+Load mesh definition for the vessel from a file or from a pre-loaded mesh template.
 
 _meshName_ defines a path to an existing mesh file. The mesh must be in Orbiter's MSH format
 (see 3DModel.pdf).
@@ -6452,7 +7492,7 @@ within visual range of the observer camera).
 @tparam ?string|handle mesh mesh file name (meshName) or handle of template mesh (hMesh)
 @param[opt] ofs (<i><b>@{types.vector|vector}</b></i>) vector defining the offset of mesh origin from vessel origin [<b>m</b>]
 @treturn int idx mesh index (&ge; 0)
-@see vessel:del_mesh, vessel:insert_mesh, oapi.loadmesh_global
+@see vessel:del_mesh, vessel:insert_mesh, oapi.load_meshglobal
 */
 int Interpreter::v_add_mesh (lua_State *L)
 {
@@ -6465,12 +7505,12 @@ int Interpreter::v_add_mesh (lua_State *L)
 		ofs = luamtd_tovector_safe(L, 3, funcname);
 		pofs = &ofs;
 	}
-	AssertMtdPrmType(L, 2, PRMTP_STRING | PRMTP_LIGHTUSERDATA, funcname);
+	AssertMtdPrmType(L, 2, PRMTP_STRING | PRMTP_USERDATA, funcname);
 	if (lua_isstring(L, 2)) {
 		const char *str = lua_tostring(L,2);
 		midx = v->AddMesh (str, pofs);
 	} else {
-		MESHHANDLE hMesh = (MESHHANDLE)lua_touserdata(L, 2);
+		MESHHANDLE hMesh = lua_tomeshhandle(L, 2);
 		midx = v->AddMesh (hMesh, pofs);
 	}
 	lua_pushnumber (L, midx);
@@ -6478,7 +7518,7 @@ int Interpreter::v_add_mesh (lua_State *L)
 }
 
 /***
-Inserts or replaces a mesh at a specific index location of the vessel's mesh list.
+Insert or replace a mesh at a specific index location of the vessel's mesh list.
 
 _meshName_ defines a path to an existing mesh file. The mesh must be in Orbiter's MSH format
 (see 3DModel.pdf).
@@ -6486,7 +7526,7 @@ _meshName_ defines a path to an existing mesh file. The mesh must be in Orbiter'
 The file name (including optional directory path) is relative to Orbiter's mesh directory
 (usually ".\Meshes"). The file extension must not be specified (.msh is assumed.)
 
-_hMesh_ is a handle to a mesh previously loaded with @{oapi.load_meshglobal}.
+_hMesh_ is a handle to a mesh previously loaded with oapi.load_meshglobal.
 
 The global handle _hMesh_ represents a "mesh template". Whenever the vessel needs to create
 its visual representation (when moving within visual range of the observer camera), it
@@ -6503,7 +7543,7 @@ The return value is always equal to _idx_.
 @tparam int idx mesh index (&ge; 0)
 @param[opt] ofs (<i><b>@{types.vector|vector}</b></i>) vector defining the offset of mesh origin from vessel origin [<b>m</b>]
 @treturn int mesh index (&ge; 0)
-@see vessel:del_mesh, vessel:add_mesh, oapi.loadmesh_global
+@see vessel:del_mesh, vessel:add_mesh, oapi.load_meshglobal
 */
 int Interpreter::v_insert_mesh (lua_State *L)
 {
@@ -6516,12 +7556,12 @@ int Interpreter::v_insert_mesh (lua_State *L)
 		ofs = luamtd_tovector_safe(L, 4, funcname);
 		pofs = &ofs;
 	}
-	AssertMtdPrmType(L, 2, PRMTP_STRING | PRMTP_LIGHTUSERDATA, funcname);
+	AssertMtdPrmType(L, 2, PRMTP_STRING | PRMTP_USERDATA, funcname);
 	if (lua_isstring(L, 2)) {
 		const char *str = lua_tostring(L,2);
 		midx = v->InsertMesh (str, idx, pofs);
 	} else {
-		MESHHANDLE hMesh = (MESHHANDLE)lua_touserdata(L,2);
+		MESHHANDLE hMesh = lua_tomeshhandle(L,2);
 		midx = v->InsertMesh (hMesh, idx, pofs);
 	}
 	lua_pushnumber (L, midx);
@@ -6529,7 +7569,7 @@ int Interpreter::v_insert_mesh (lua_State *L)
 }
 
 /***
-Removes a mesh from the vessel's mesh list.
+Remove a mesh from the vessel's mesh list.
 
 After a mesh has been deleted, the mesh index is no longer valid, and should not be used
 any more in function calls (e.g. for animations).
@@ -6568,7 +7608,7 @@ int Interpreter::v_del_mesh (lua_State *L)
 }
 
 /***
-Removes all mesh definitions for the vessel.
+Remove all mesh definitions for the vessel.
 
 If _retainAnim_ is _false_, all animations defined for the vessel are deleted together
 with the meshes. If _true_, the animations stay behind. This is only useful if the same
@@ -6594,7 +7634,7 @@ int Interpreter::v_clear_meshes (lua_State *L)
 }
 
 /***
-Returns the number of meshes defined for the vessel.
+Get number of meshes defined for the vessel.
 
 @function get_meshcount
 @treturn int mesh count (&ge; 0)
@@ -6611,21 +7651,19 @@ int Interpreter::v_get_meshcount (lua_State *L)
 }
 
 /***
-Shifts the position of a mesh relative to the vessel's local coordinate system.
+Shift the position of a mesh relative to the vessel's local coordinate system.
 
 This function does not define an animation (i.e. gradual transition), but resets the mesh
 position instantly.
-
-Example:
-
-	v = vessel.get_focusinterface()
-	v:shift_mesh(0,{x=10,y=20,z=30})
-	term.out(v:get_meshoffset(0))
 
 @function shift_mesh
 @tparam int idx mesh index (&ge; 0)
 @param ofs (<i><b>@{types.vector|vector}</b></i>) translation vector [<b>m</b>]
 @treturn bool _true_ on success, _false_ indicates error (index out of range).
+@usage v = vessel.get_focusinterface()
+v:shift_mesh(0,{x=10,y=20,z=30})
+term.out(v:get_meshoffset(0))
+
 @see vessel:shift_meshes, vessel:get_meshoffset
 */
 int Interpreter::v_shift_mesh (lua_State *L)
@@ -6642,7 +7680,7 @@ int Interpreter::v_shift_mesh (lua_State *L)
 }
 
 /***
-Shifts the position of all meshes relative to the vessel's local coordinate system.
+Shift position of all meshes relative to the vessel's local coordinate system.
 
 This function is useful when resetting a vessel's centre of gravity, in combination with
 @{shift_centreofmass}.
@@ -6662,26 +7700,97 @@ int Interpreter::v_shift_meshes (lua_State *L)
 }
 
 /***
-Returns the mesh offset in the vessel frame.
+Get mesh offset in the vessel frame.
 
 @function get_meshoffset
 @tparam int idx mesh index (&ge; 0)
 @return (<i><b>@{types.vector|vector}</b></i>) mesh offset [<b>m</b>], or _nil_ if index out of range
 @see vessel:add_mesh, vessel:insert_mesh, vessel:shift_mesh, vessel:shift_meshes
 */
-int Interpreter::v_get_meshoffset (lua_State *L)
+int Interpreter::v_get_meshoffset(lua_State* L)
 {
-	static const char *funcname = "get_meshoffset";
+	static const char* funcname = "get_meshoffset";
 	AssertMtdMinPrmCount(L, 2, funcname);
-	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
 	UINT idx = (UINT)luamtd_tointeger_safe(L, 2, funcname);
 	VECTOR3 ofs;
-	bool ok = v->GetMeshOffset (idx, ofs);
-	if (ok) lua_pushvector (L, ofs);
-	else lua_pushnil (L);
+	bool ok = v->GetMeshOffset(idx, ofs);
+	if (ok) lua_pushvector(L, ofs);
+	else lua_pushnil(L);
 	return 1;
 }
 
+/***
+Get handle for a device-specific mesh instance
+
+For Orbiter_ng, this method returns a handle for a mesh instance managed
+by the external graphics client. Graphics clients may implement their own
+mesh formats, so the object pointed to by the handle is client-specific.
+
+For inline graphics version, the returned handle points to the same object
+as the handle returned by get_mesh .
+
+@function get_devmesh
+@tparam handle vis identifies the visual for which the mesh was created.
+@tparam number idx mesh index (0 <= idx < get_meshcount())
+@return handle device mesh handle
+*/
+int Interpreter::v_get_devmesh(lua_State* L)
+{
+	static const char* funcname = "get_devmesh";
+	AssertMtdMinPrmCount(L, 3, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	VISHANDLE h = (VISHANDLE)lua_tolightuserdata_safe(L, 2, funcname);
+	UINT idx = (UINT)luamtd_tointeger_safe(L, 3, funcname);
+	DEVMESHHANDLE hDM = v->GetDevMesh(h, idx);
+	if (hDM) lua_pushdevmeshhandle(L, hDM);
+	else lua_pushnil(L);
+	return 1;
+}
+
+/***
+Set the visibility flags for a vessel mesh.
+
+This method can be used to specify if a mesh is visible
+in particular camera modes. Some meshes may only be visible
+in external views, while others should only be visible in
+cockpit views.
+
+Turning off the unnecessary rendering of meshes can
+improve the performance of the simulator.
+
+mode can be a combination of the meshvis.
+
+The default mode after adding a mesh is MESHVIS.EXTERNAL.
+
+MESHVIS.EXTPASS can't be used on its own, but as a modifier to any of the
+other visibility modes. If specified, it forces the mesh to be rendered in
+Orbiter's external render pass, even if it is labelled as internal (e.g.
+MESHVIS.COCKPIT or MESHVIS.VC). The significance of the external render pass
+is that it allows the mesh to be obscured by other objects in front of it.
+However, objects in the external render pass are clipped at a camera distance
+of 2.5m. Meshes that are rendered during the internal pass always cover all
+other objects, and have a smaller clipping distance.
+
+Use the MESHVIS.EXTPASS modifier for parts of the vessel that are visible
+from the cockpit, but are not close to the camera and may be obscured by other
+objects. An example is the Shuttle payload bay, which can be covered by payload
+objects.
+
+@function set_mesh_visibility_mode
+@tparam number idx mesh index (>= 0)
+@tparam number mode visibility mode flags
+*/
+int Interpreter::v_set_mesh_visibility_mode(lua_State* L)
+{
+	static const char* funcname = "set_mesh_visibility_mode";
+	AssertMtdMinPrmCount(L, 3, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	UINT idx = (UINT)luamtd_tointeger_safe(L, 2, funcname);
+	UINT mode = (UINT)luamtd_tointeger_safe(L, 3, funcname);
+	v->SetMeshVisibilityMode(idx, mode);
+	return 0;
+}
 
 /***
 Animations
@@ -6689,7 +7798,7 @@ Animations
 */
 
 /***
-Creates a mesh animation object.
+Create a mesh animation object.
 
 After creating an animation, components can be added with @{add_animationcomponent}.
 
@@ -6717,7 +7826,7 @@ int Interpreter::v_create_animation (lua_State *L)
 }
 
 /***
-Deletes an existing mesh animation object.
+Delete an existing mesh animation object.
 
 The animation is deleted by removing all the components associated with it. Subsequently,
 any calls to SetAnimation using this animation index will not have any effect.
@@ -6744,7 +7853,7 @@ int Interpreter::v_del_animation (lua_State *L)
 }
 
 /***
-Sets the state of an animation.
+Set the state of an animation.
 
 Each animation is defined by its state, with extreme points state=0 and state=1. When
 setting a state between 0 and 1, Orbiter carries out the appropriate transformations to
@@ -6769,6 +7878,13 @@ int Interpreter::v_set_animation (lua_State *L)
 	return 1;
 }
 
+/***
+Get the current state of an animation
+
+@function set_animation
+@tparam number anim animation identifier
+@treturn number animation state [0..1]
+*/
 int Interpreter::v_get_animation (lua_State *L)
 {
 	static const char *funcname = "get_animation";
@@ -6780,7 +7896,7 @@ int Interpreter::v_get_animation (lua_State *L)
 }
 
 /***
-Adds a component (rotation, translation or scaling) to an animation.
+Add component (rotation, translation or scaling) to an animation.
 
 _state0_ and _state1_ (0..1) allow to define the temporal endpoints of the component's
 animation within the sequence. For example, _state0_=0 and _state1_=1 perform the
@@ -6819,12 +7935,15 @@ int Interpreter::v_add_animationcomponent (lua_State *L)
 		hparent = (ANIMATIONCOMPONENT_HANDLE)luamtd_tolightuserdata_safe(L, 6, funcname);
 	ANIMATIONCOMPONENT_HANDLE hanimcomp =
 		v->AddAnimationComponent (anim, state0, state1, trans, hparent);
-	lua_pushlightuserdata (L,hanimcomp);
+	if(hanimcomp)
+		lua_pushlightuserdata (L,hanimcomp);
+	else
+		lua_pushnil(L);
 	return 1;
 }
 
 /***
-Remove a component from an animation.
+Remove component from an animation.
 
 If the component has children belonging to the same animation,
    these will be deleted as well.
@@ -6851,33 +7970,31 @@ int Interpreter::v_del_animationcomponent (lua_State *L)
 }
 
 /***
-Logs a request for calls to \ref VESSEL2::clbkAnimate
+Log a request for calls to clbk_animate
 
 This function allows to implement animation sequences in combination
-   with the %VESSEL2::clbkAnimate callback function. After a call to
-   @{register_animation}, %VESSEL2::clbkAnimate is called at each time step
-   whenever the vessel's visual object exists.
+with the clbk_animate callback function. After a call to
+@{register_animation}, clbk_animate is called at each time step
+whenever the vessel's visual object exists.
 
-Use @{unregister_animation} to stop further calls to
-   %VESSEL2::clbkAnimate.
+Use @{unregister_animation} to stop further calls to clbk_animate
 
 Each call to @{register_animation} increments a reference counter, while
-   each call to @{unregister_animation} decrements the counter. Orbiter
-   continues calling %VESSEL2::clbkAnimate as long as the counter is greater
-   than 0.
+each call to @{unregister_animation} decrements the counter. Orbiter
+continues calling clbk_animate as long as the counter is greater
+than 0.
 
-If %VESSEL2::clbkAnimate is not overloaded by the module,
-   @{register_animation} has no effect.
+If clbk_animate is not overloaded by the module,
+@{register_animation} has no effect.
 
 The @{register_animation} mechanism leaves the actual implementation of
-   the animation (transformation of mesh groups, etc.) entirely to the
-   module. The @{create_animation} / @{add_animationcomponent}
-   mechanism is an alternative way to define animations where the
-   transformations are managed by the Orbiter core.
+the animation (transformation of mesh groups, etc.) entirely to the
+module. The @{create_animation} / @{add_animationcomponent}
+mechanism is an alternative way to define animations where the
+transformations are managed by the Orbiter core.
 
 @function register_animation
-@see VESSEL2::clbkAnimate, unregister_animation, create_animation,
-   add_animationcomponent
+@see unregister_animation, create_animation, add_animationcomponent
 */
 int Interpreter::v_register_animation (lua_State *L)
 {
@@ -6895,11 +8012,11 @@ This stops a request for animation callback calls from a previous
    @{register_animation}.
 
 The call to UnregisterAnimation should not be placed in the body of
-   \ref VESSEL2::clbkAnimate, since it may be lost if the vessel's visual
+   clbk_animate, since it may be lost if the vessel's visual
    doesn't exist.
 
 @function unregister_animation
-@see register_animation, VESSEL2::clbkAnimate
+@see register_animation
 */
 int Interpreter::v_unregister_animation (lua_State *L)
 {
@@ -6921,25 +8038,25 @@ Register a shift in the centre of mass after a structural change (e.g. stage
 separation).
 
 This function should be called after a vessel has undergone a
-   structural change which resulted in a shift of the vessel's centre of
-   gravity (CG). Note that in Orbiter, a vessel's CG coincides by definition
-   always with the origin (0,0,0) of its local reference frame.
-   Therefore, in order to achieve a shift of the CG by a vector <b>S</b>,
-   this function shifts the vessel's global position by +<b>S</b>.
-   This allows to shift the meshes by -<b>S</b>, thus retaining their
-   global position.
-   The net result is unchanged mesh positions in the global frame, but a
-   shift of the local frame of reference (and thus CG) of +<b>S</b>.
+structural change which resulted in a shift of the vessel's centre of
+gravity (CG). Note that in Orbiter, a vessel's CG coincides by definition
+always with the origin (0,0,0) of its local reference frame.
+Therefore, in order to achieve a shift of the CG by a vector <b>S</b>,
+this function shifts the vessel's global position by +<b>S</b>.
+This allows to shift the meshes by -<b>S</b>, thus retaining their
+global position.
+The net result is unchanged mesh positions in the global frame, but a
+shift of the local frame of reference (and thus CG) of +<b>S</b>.
 
 The camera position is shifted to take into account the new CG. An
-   external camera view performs a smooth transition.
+external camera view performs a smooth transition.
 
 The shift of meshes (and any other reference positions defined in
-   the local vessel frame, such as docking ports, etc.) is not performed
-   by this function but must be executed separately.
-   A more convenient way to implement a transition of the centre of
-   mass is the function @{shiftCG}, which automatically takes care of
-   translating meshes, docking ports, etc.
+the local vessel frame, such as docking ports, etc.) is not performed
+by this function but must be executed separately.
+A more convenient way to implement a transition of the centre of
+mass is the function @{shiftCG}, which automatically takes care of
+translating meshes, docking ports, etc.
 
 @function shift_centreofmass
 @tparam shift centre of mass displacement vector [<b>m</b>]
@@ -6959,24 +8076,26 @@ int Interpreter::v_shift_centreofmass (lua_State *L)
 Shift the centre of gravity of a vessel.
 
 This function should be called after a vessel has undergone a
-   structural change which resulted in a shift of the vessel's centre of
-   gravity (CG). Note that in Orbiter, a vessel's CG coincides by definition
-   always with the origin (0,0,0) of its local reference frame.
-   Therefore, in order to achieve a shift of the CG by \a shift,
-   this function performs the following actions:
-   - Calls @{shift_centreofmass} (+shift) to align the vessel's global
-     position with the new CG position.
-   - Calls @{shift_meshes} (-shift) to compensate the mesh positions
-   - Applies equivalent shift to all
-     - thruster positions,
-     - docking ports,
-     - attachment points,
-     - explicitly defined light source positions,
-     - and to the cockpit camera position
-   .
-   The net effect is a shift of the vessel frame of reference (and thus the
-   CG by +shift, while the mesh positions remain in place in the global
-   frame.
+structural change which resulted in a shift of the vessel's centre of
+gravity (CG). Note that in Orbiter, a vessel's CG coincides by definition
+always with the origin (0,0,0) of its local reference frame.
+Therefore, in order to achieve a shift of the CG by shift,
+this function performs the following actions:
+
+- Calls @{shift_centreofmass} (+shift) to align the vessel's global
+position with the new CG position.
+- Calls @{shift_meshes} (-shift) to compensate the mesh positions
+- Applies equivalent shift to all :
+
+  - thruster positions,
+  - docking ports,
+  - attachment points,
+  - explicitly defined light source positions,
+  - and to the cockpit camera position
+
+The net effect is a shift of the vessel frame of reference (and thus the
+CG by +shift, while the mesh positions remain in place in the global
+frame.
 
 @function shiftCG
 @tparam vector shift centre of gravity displacement vector [<b>m</b>]
@@ -6993,7 +8112,7 @@ int Interpreter::v_shiftCG (lua_State *L)
 }
 
 /***
-Returns the centre of gravity of the superstructure to which the vessel
+Get centre of gravity of the superstructure to which the vessel
 belongs, if applicable.
 
 The returned vector is the position of the superstructure centre
@@ -7021,7 +8140,7 @@ int Interpreter::v_get_superstructureCG (lua_State *L)
 }
 
 /***
-Applies a rotation by replacing the vessel's local to global rotation matrix.
+Apply a rotation by replacing the vessel's local to global rotation matrix.
 
 The rotation matrix maps from the orientation of the vessel's
    local frame of reference to the orientation of the global frame
@@ -7047,7 +8166,7 @@ int Interpreter::v_set_rotationmatrix (lua_State *L)
 }
 
 /***
-Performs a rotation of a direction from the local vessel frame to the global
+Perform a rotation of a direction from the local vessel frame to the global
 frame.
 
 This function is equivalent to multiplying rloc with the
@@ -7075,10 +8194,11 @@ int Interpreter::v_globalrot (lua_State *L)
 }
 
 /***
-Performs a rotation from the local vessel frame to the current local horizon
+Perform a rotation from the local vessel frame to the current local horizon
 frame.
 
 The local horizon frame is defined as follows:
+
    - y is "up" direction (planet centre to vessel centre)
    - z is "north" direction
    - x is "east" direction
@@ -7101,7 +8221,7 @@ int Interpreter::v_horizonrot (lua_State *L)
 }
 
 /***
-Performs a rotation of a direction from the current local horizon frame to the
+Perform a rotation of a direction from the current local horizon frame to the
 local vessel frame.
 
 This function performs the inverse operation of \ref
@@ -7125,7 +8245,7 @@ int Interpreter::v_horizoninvrot (lua_State *L)
 }
 
 /***
-Performs a transformation from local vessel coordinates to global coordinates.
+Perform a transformation from local vessel coordinates to global coordinates.
 
 This function maps a point from the vessel's local coordinate
    system (centered at the vessel CG) into the global ecliptic
@@ -7155,7 +8275,7 @@ int Interpreter::v_local2global (lua_State *L)
 }
 
 /***
-Performs a transformation from global to local vessel coordinates.
+Perform a transformation from global to local vessel coordinates.
 
 This is the inverse transform of @{local2global}. It maps
    a point from global ecliptic coordinates into the vessel's local
@@ -7185,24 +8305,17 @@ int Interpreter::v_global2local (lua_State *L)
 }
 
 /***
-Performs a transformation from local vessel coordinates to the ecliptic frame
+Perform a transformation from local vessel coordinates to the ecliptic frame
 centered at the vessel's reference body.
 
 This function maps a point from the vessel's local coordinate
-   system into an ecliptic system centered at the centre of mass of
-   the vessel's <i>gravity reference object</i> (the celestial body
-   that is currently being orbited).
+system into an ecliptic system centered at the centre of mass of
+the vessel's <i>gravity reference object</i> (the celestial body
+that is currently being orbited).
 
 A handle to the reference object can be obtained via
-   \ref GetGravityRef. The reference object may change if the vessel
-   enters a different object's sphere of influence.
-
-The transformation has the form
-   \f[ \vec{p}_r = \mathsf{R}_v \vec{p}_l + \vec{p}_v - \vec{p}_\mathrm{ref} \f]
-   where R<sub>v</sub> is the vessel's global rotation matrix (as given
-   by @{get_rotationmatrix}), \f$\vec{p}_v\f$ is the vessel's global
-   position, and \f$\vec{p}_\mathrm{ref}\f$ is the reference body's global
-   position.
+@{get_gravityref}. The reference object may change if the vessel
+enters a different object's sphere of influence.
 
 @function local2rel
 @tparam vector local point in local vessel coordinates [<b>m</b>]
@@ -7222,6 +8335,384 @@ int Interpreter::v_local2rel (lua_State *L)
 	return 1;
 }
 
+/***
+Pass a line read from a scenario file to Orbiter for default processing.
+
+This function should be used within the body of clbk_loadstateex.
+
+The parser clbk_loadstateex should forward all lines not recognised
+by the module to Orbiter via parse\_scenario\_line\_ex to allow processing of
+standard vessel settings.
+
+clbk\_loadstateex currently provides a VESSELSTATUS2 status definition.
+This may change in future versions, so status should not be used within
+clbk\_loadstateex other than passing it to parse\_scenario\_line\_ex.
+
+@function v_parse_scenario_line_ex
+@tparam line string obtain via oapi\_readscenario\_nextline
+@tparam status status obtained from the clbk\_loadstateex callback
+@usage
+function clbk_loadstateex(scn, vs)
+   for line in scenario_lines(scn) do
+      local met = line:match("MET (%S+)")
+      if met ~= nil then
+         ...
+      else
+         vi:parse_scenario_line_ex(line, vs)
+      end
+   end
+end
+
+*/
+int Interpreter::v_parse_scenario_line_ex(lua_State* L)
+{
+	static const char* funcname = "parse_scenario_line_ex";
+	AssertMtdMinPrmCount(L, 3, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	const char* line = lua_tostring_safe(L, 2, funcname);
+	void* status = lua_touserdata(L, 3);
+	v->ParseScenarioLineEx(const_cast<char*>(line), status);
+	return 0;
+}
+
+/***
+Record an event.
+
+Writes a custom tag to the vessel's articulation data stream during
+a running recording session.
+
+This function can be used to record custom vessel events (e.g.
+animations) to the articulation stream (.atc) of a vessel record.
+
+The function does nothing if no recording is active, so it is not
+necessary to check for a running recording before invoking RecordEvent.
+
+To read the recorded articulation tags during the playback of a
+recorded session, overload the clbk\_playbackevent callback
+function.
+
+@function record_event
+@tparam string event\_type event tag label
+@tparam string event event string
+*/
+int Interpreter::v_record_event(lua_State* L)
+{
+	static const char* funcname = "record_event";
+	AssertMtdMinPrmCount(L, 3, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	const char* event_type = lua_tostring_safe(L, 2, funcname);
+	const char* event = lua_tostring_safe(L, 3, funcname);
+	v->RecordEvent(event_type, event);
+	return 0;
+}
+
+/***
+Playback session.
+
+@function playback
+@treturn boolean if the current session is a playback of a recorded flight, false otherwise.
+*/
+int Interpreter::v_playback(lua_State* L)
+{
+	static const char* funcname = "playback";
+	AssertMtdMinPrmCount(L, 1, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	bool pb = v->Playback();
+	lua_pushboolean(L, pb);
+	return 1;
+}
+
+/***
+Panels
+@section 2dpanels
+*/
+
+/***
+Set scaling factors for 2-D instrument panel.
+
+The scaling factors define the scaling between mesh coordinates
+and screen pixels.
+
+defscale is the default factor, extscale is an additional scale
+which can be selected by the user via the mouse wheel.
+
+Examples: scale=1: one mesh unit corresponds to one screen pixel,
+scale=viewW/panelW: panel fits screen width
+
+@function set_panelscaling
+@tparam handle hPanel panel handle
+@tparam number defscale default scale factor
+@tparam number extscale additional scale factor
+*/
+int Interpreter::v_set_panelscaling(lua_State* L)
+{
+	static const char* funcname = "set_panelscaling";
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	if (v->Version() < 2) {
+		lua_pushnil(L);
+		lua_pushstring(L, "Invalid vessel version in set_panelscaling");
+		return 2;
+	}
+	VESSEL3* v3 = (VESSEL3*)v;
+
+	PANELHANDLE hPanel = lua_touserdata(L, 2);
+	double defscale = luaL_checknumber(L, 3);
+	double extscale = luaL_checknumber(L, 4);
+	
+	v3->SetPanelScaling(hPanel, defscale, extscale);
+	return 0;
+}
+
+/***
+Set the background surface for a 2-D instrument panel.
+
+This method should be applied in the body of clbk_loadpanel2d.
+
+The mesh defines the size and layout of the billboard mesh used for
+rendering the panel surface. Its vertex coordinates are interpreted as
+transformed, i.e. in terms of screen coordinates (pixels). The z-coordinate
+should be zero. Normals are ignored. Texture coordinates define which part
+of the surfaces are rendered.
+
+The groups are rendered in the order they appear in the mesh. Later
+groups cover earlier ones. Therefore the groups should be arranged from
+backmost to frontmost elements.
+
+In the simplest case, the mesh consists of a single rectangular area
+(4 nodes, 2 triangles) and a single surface, but can be more elaborate.
+
+The texture indices of the mesh groups (TexIdx) are interpreted as
+indices into the hSurf list (zero-based).
+
+This method increases the reference counters for the surfaces, so the
+caller should release them at some point.
+
+The surfaces can contain an alpha channel to handle transparency.
+
+@function set_panelbackground
+@tparam handle hPanel panel handle
+@tparam table  hSurf array of surface handles
+@tparam handle hMesh mesh handle defining the billboard geometry
+@tparam number width panel width [pixel]
+@tparam number height panel width [pixel]
+@tparam number baseline base line for edge attachment
+@tparam number scrollflag panel attachment and scrolling bitflags
+*/
+int Interpreter::v_set_panelbackground(lua_State* L)
+{
+	static const char* funcname = "set_panelbackground";
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	if (v->Version() < 2) {
+		lua_pushnil(L);
+		lua_pushstring(L, "Invalid vessel version in set_panelbackground");
+		return 2;
+	}
+	PANELHANDLE hPanel = lua_touserdata(L, 2);
+	SURFHANDLE *hSurf = NULL;  //FIXME: implement textures
+	int nsurf = 0;
+	if(!lua_isnil(L, 3)) {
+		luaL_error(L, "FIXME: texture not supported in set_panelbackground");
+	}
+	
+	MESHHANDLE hMesh = lua_tomeshhandle(L, 4);
+	DWORD width = luaL_checkinteger(L, 5);
+	DWORD height = luaL_checkinteger(L, 6);
+	DWORD baseline =  luaL_checkinteger(L, 7);
+	DWORD scrollflag =  luaL_checkinteger(L, 8);
+	VESSEL3* v3 = (VESSEL3*)v;
+	v3->SetPanelBackground(hPanel, hSurf, nsurf, hMesh, width, height, baseline, scrollflag);
+	return 0;
+}
+
+/***
+Register an area of the panel to receive mouse and redraw events.
+
+This version passes the provided surface handle directly to the redraw
+callback, rather making a copy of the area. This is useful if the area
+either doesn't need to modify any surfaces, or blits parts of the same
+surface (e.g. a texture that contains both the panel background and various
+elements (switches, dials, etc.) to be copied on top.
+
+Since the surface returned to the redraw function is not restricted to
+the registered area, it is the responsibility of the caller not to draw
+outside the area.
+
+The area boundaries defined in pos are only used for generating
+mouse events. If the area does not process mouse events (PANEL\_MOUSE.IGNORE),
+the pos parameter is ignored.
+
+The PANEL\_REDRAW.SKETCHPAD flags can not be used in
+the draw_event parameter. If Sketchpad access is required during
+redraw events, either the surface surf must have been created with the
+appropriate attributes, or another version of register_panelarea must be used.
+
+@function register_panelarea
+@tparam handle hPanel panel handle
+@tparam number id area identifier
+@tparam table pos area boundary coordinates (mesh coordinates, table with left, top, right and bottom fields)
+@tparam number draw_event event flags for redraw event triggers
+@tparam number mouse_event event flags for mouse event triggers
+@tparam handle surf surface handle passed to the redraw callback function
+@tparam object context user-defined data passed to the mouse and redraw callback functions
+*/
+/***
+Register an area of the panel to receive mouse and redraw events (deprecated).
+
+This method activates a rectangular area of the panel for receiving mouse
+and redraw events.
+
+pos specifies the borders of the area in 'logical' coordinates
+(0,0,width,height) as specified by set_panelbackground. Registered mouse
+events within this area will trigger a call to clbk_panelmouseevent.
+
+If the area needs to be able to update the panel texture, it should pass
+an appropriate redraw flag in draw_event, and specify the texture coordinates
+of the redraw area in texpos.
+
+If the panel contains multiple background textures, only the first texture
+can be redrawn with this function. To redraw other textures in the background
+texture array, use another version of register_panelarea instead.
+
+For backward compatibility, this method automatically adds the
+PANEL\_REDRAW.SKETCHPAD flags to draw_event. If Sketchpad access to the area drawing surface
+is not required, using another version of register_panelarea can improve graphics performance.
+
+@function register_panelarea
+@tparam handle hPanel panel handle
+@tparam number id area identifier
+@tparam table pos area boundary coordinates (mesh coordinates, table with left, top, right and bottom fields)
+@tparam table texpos area boundary (texture coordinates, table with left, top, right and bottom fields)
+@tparam number draw_event event flags for redraw event triggers
+@tparam number mouse_event event flags for mouse event triggers
+@tparam number bkmode flag for texture background provided to redraw callback function
+
+*/
+/***
+Register an area of the panel to receive mouse and redraw events.
+
+This method activates a rectangular area of the panel for receiving mouse
+and redraw events.
+
+pos specifies the borders of the area in 'logical' coordinates
+(0,0,width,height) as specified by set\_panelbackground. Registered mouse
+events within this area will trigger a call to clbk\_panelmouseevent.
+
+texidx is the index of the panel background texture the area texture should
+be copied into, in the order the textures were specified in the array passed to
+set_panelbackground. If only a single texture is used for the panel,
+texidx should be set to 0. If the area doesn't need to be redrawn
+(PANEL\_REDRAW.NEVER), this parameter is ignored.
+
+If the area texture should allow Sketchpad access during redraw
+events, the PANEL\_REDRAW.SKETCHPAD flags should be added
+to draw_event. If only blitting access is required, these flags should be omitted
+for improved performance.
+	 
+@function register_panelarea
+@tparam handle hPanel panel handle
+@tparam number id area identifier
+@tparam table pos area boundary coordinates (mesh coordinates, table with left, top, right and bottom fields)
+@tparam number texidx background texture index
+@tparam table texpos area boundary (texture coordinates, table with left, top, right and bottom fields)
+@tparam number draw_event event flags for redraw event triggers
+@tparam number mouse_event event flags for mouse event triggers
+@tparam number bkmode flag for texture background provided to redraw callback function
+
+*/
+int Interpreter::v_register_panelarea(lua_State* L)
+{
+	static const char* funcname = "register_panelarea";
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	if (v->Version() < 3) {
+		lua_pushnil(L);
+		lua_pushstring(L, "Invalid vessel version in register_panelarea");
+		return 2;
+	}
+	VESSEL4* v4 = (VESSEL4*)v;
+
+	PANELHANDLE hPanel = lua_touserdata(L, 2);
+	int id = luaL_checkinteger(L, 3);
+	RECT pos = lua_torect(L, 4);
+
+	if(lua_istable(L, 5)) {
+		//int RegisterPanelArea (PANELHANDLE hPanel, int id, const RECT &pos, const RECT &texpos, int draw_event, int mouse_event, int bkmode);
+		RECT texpos = lua_torect(L, 5);
+		int draw_event = luaL_checkinteger(L, 6);
+		int mouse_event = luaL_checkinteger(L, 7);
+		int bkmode = luaL_checkinteger(L, 8);
+		v4->RegisterPanelArea (hPanel, id, pos, texpos, draw_event, mouse_event, bkmode);
+	} else {
+		if(lua_istable(L, 6)) {
+			//int RegisterPanelArea (PANELHANDLE hPanel, int id, const RECT &pos, int texidx, const RECT &texpos, int draw_event, int mouse_event, int bkmode);
+			int texidx = luaL_checkinteger(L, 5);
+			RECT texpos = lua_torect(L, 6);
+			int draw_event = luaL_checkinteger(L, 7);
+			int mouse_event = luaL_checkinteger(L, 8);
+			int bkmode = luaL_checkinteger(L, 9);
+			v4->RegisterPanelArea(hPanel, id, pos, texidx, texpos, draw_event, mouse_event, bkmode);
+		} else {
+			//int RegisterPanelArea (PANELHANDLE hPanel, int id, const RECT &pos, int draw_event, int mouse_event, SURFHANDLE surf = NULL, void *context = NULL);
+			int draw_event = luaL_checkinteger(L, 5);
+			int mouse_event = luaL_checkinteger(L, 6);
+
+			SURFHANDLE surf = NULL;
+			if(lua_gettop(L) >= 7) {
+				surf = lua_touserdata(L, 7);
+			}
+			
+			void *context = NULL;
+			if(lua_gettop(L) >= 8) {
+				lua_pushvalue(L, 8);
+				context = (void *)(ptrdiff_t)(luaL_ref(L, LUA_REGISTRYINDEX));
+			}
+			v4->RegisterPanelArea(hPanel, id, pos, draw_event, mouse_event, surf, context);
+		}
+	}
+
+
+	lua_pushnumber(L, 0);
+	return 1;
+}
+
+/***
+Define an MFD display in the panel mesh.
+
+This method reserves a mesh group for rendering the contents of
+an MFD display. The group should define a square area (typically
+consisting of 4 nodes and 2 triangles) with appropriate texture
+coordinates. When rendering the panel, the texture for this group is
+set to the current contents of the MFD display.
+
+The order of mesh groups defines the rendering order. To render
+the MFD display on top of the panel, define it as the last group in
+the mesh. Alternatively, the MFD can be rendered first, if the panel
+texture contains a transparent area through which to view the MFD.
+
+@function register_panelmfdgeometry
+@tparam handle hPanel panel handle
+@tparam number MFD_id MFD identifier (>= 0)
+@tparam number nmesh panel mesh index (>= 0)
+@tparam number ngroup mesh group index (>= 0)
+*/
+int Interpreter::v_register_panelmfdgeometry (lua_State *L)
+{
+	static const char* funcname = "register_panelmfdgeometry";
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	if (v->Version() < 2) {
+		lua_pushnil(L);
+		lua_pushstring(L, "Invalid vessel version in register_panelmfdgeometry");
+		return 2;
+	}
+	VESSEL3* v3 = (VESSEL3*)v;
+
+	PANELHANDLE hPanel = lua_touserdata(L, 2);
+	int id = luaL_checkinteger(L, 3);
+	int nmesh = luaL_checkinteger(L, 4);
+	int ngroup = luaL_checkinteger(L, 5);
+
+	v3->RegisterPanelMFDGeometry(hPanel, id, nmesh, ngroup);
+	return 0;
+}
 
 /***
 Exhaust rendering
@@ -7229,7 +8720,7 @@ Exhaust rendering
 */
 
 /***
-Adds an exhaust render definition for a thruster (automatic position).
+Add an exhaust render definition for a thruster (automatic position).
 
 Thrusters defined with @{create_thruster} do not by default render exhaust effects,
 until an exhaust definition has been specified with add_exhaust.
@@ -7255,7 +8746,7 @@ If no explicit exhaust texture is specified, the default texture is used.
 @see vessel:create_thruster, vessel:set_thrusterpos, vessel:set_thrusterdir, vessel:set_thrusterlevel
 */
 /***
-Adds an exhaust render definition for a thruster (manual position).
+Add an exhaust render definition for a thruster (manual position).
 
 This version uses a user-defined position and direction for the exhaust.
 
@@ -7263,7 +8754,7 @@ This version uses a user-defined position and direction for the exhaust.
 @tparam handle hThrust thruster handle
 @tparam number lscale exhaust flame length [m]
 @tparam number wscale exhaust flame width [m]
-@param pos (<i><b>@{types.vector|vector}</b></i>) exaust source position in vessel frame [<b>m</b>]
+@param pos (<i><b>@{types.vector|vector}</b></i>) exhaust source position in vessel frame [<b>m</b>]
 @param dir (<i><b>@{types.vector|vector}</b></i>) exhaust direction in vessel frame
 @tparam[opt] handle hTex texture handle for custom exhaust flames
 @treturn int integer exhaust identifier (&ge; 0)
@@ -7308,7 +8799,7 @@ int Interpreter::v_add_exhaust (lua_State *L)
 }
 
 /***
-Removes an exhaust render definition.
+Remove an exhaust render definition.
 
 @function del_exhaust
 @tparam int idx exhaust identifier (&ge; 0)
@@ -7327,7 +8818,7 @@ int Interpreter::v_del_exhaust (lua_State *L)
 }
 
 /***
-Returns the number of exhaust render definitions for the vessel.
+Get number of exhaust render definitions for the vessel.
 
 @function get_exhaustcount
 @treturn int number of exhaust render definitions
@@ -7344,7 +8835,7 @@ int Interpreter::v_get_exhaustcount (lua_State *L)
 }
 
 /***
-Adds an exhaust particle stream to a vessel.
+Add an exhaust particle stream to a vessel.
 
 Exhaust streams can be emissive (to simulate "glowing" ionised gases)
 or diffuse (e.g. for simulating vapour trails).
@@ -7370,92 +8861,343 @@ function will return nil. The module must be able to cope with this case.
 @treturn handle particle stream handle
 @see vessel:add_exhaust
 */
-int Interpreter::v_add_exhauststream (lua_State *L)
+int Interpreter::v_add_exhauststream(lua_State* L)
 {
-	static const char *funcname = "add_exhauststream";
+	static const char* funcname = "add_exhauststream";
 	AssertMtdMinPrmCount(L, 3, funcname);
-	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
 	THRUSTER_HANDLE ht = (THRUSTER_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
-	PARTICLESTREAMSPEC pss;  memset (&pss, 0, sizeof(PARTICLESTREAMSPEC));
+	PARTICLESTREAMSPEC pss;  memset(&pss, 0, sizeof(PARTICLESTREAMSPEC));
 	VECTOR3 pos;
 	bool do_pos = false;
 	int idx = 3;
-	if (lua_isvector(L,idx)) {
+	if (lua_isvector(L, idx)) {
 		pos = lua_tovector(L, idx++);
 		do_pos = true;
 		AssertMtdMinPrmCount(L, idx, funcname);
 	}
 	AssertMtdPrmType(L, idx, PRMTP_TABLE, funcname);
 
-	lua_getfield(L,idx,"flags");
-	pss.flags = (lua_isnumber(L,-1) ? (DWORD)(lua_tonumber(L,-1)+0.5) : 0);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "flags");
+	pss.flags = (lua_isnumber(L, -1) ? (DWORD)(lua_tonumber(L, -1) + 0.5) : 0);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"srcsize");
-	pss.srcsize = (lua_isnumber(L,-1) ? lua_tonumber(L,-1) : 1.0);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "srcsize");
+	pss.srcsize = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 1.0);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"srcrate");
-	pss.srcrate = (lua_isnumber(L,-1) ? lua_tonumber(L,-1) : 1.0);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "srcrate");
+	pss.srcrate = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 1.0);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"v0");
-	pss.v0 = (lua_isnumber(L,-1) ? lua_tonumber(L,-1) : 0.0);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "v0");
+	pss.v0 = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"srcspread");
-	pss.srcspread = (lua_isnumber(L,-1) ? lua_tonumber(L,-1) : 0.0);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "srcspread");
+	pss.srcspread = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"lifetime");
-	pss.lifetime = (lua_isnumber(L,-1) ? lua_tonumber(L,-1) : 10.0);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "lifetime");
+	pss.lifetime = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 10.0);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"growthrate");
-	pss.growthrate = (lua_isnumber(L,-1) ? lua_tonumber(L,-1) : 0.0);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "growthrate");
+	pss.growthrate = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"atmslowdown");
-	pss.atmslowdown = (lua_isnumber(L,-1) ? lua_tonumber(L,-1) : 0.0);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "atmslowdown");
+	pss.atmslowdown = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"ltype");
-	pss.ltype = (lua_isnumber(L,-1) ? (PARTICLESTREAMSPEC::LTYPE)(int)(lua_tonumber(L,-1)+0.5) : PARTICLESTREAMSPEC::DIFFUSE);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "ltype");
+	pss.ltype = (lua_isnumber(L, -1) ? (PARTICLESTREAMSPEC::LTYPE)(int)(lua_tonumber(L, -1) + 0.5) : PARTICLESTREAMSPEC::DIFFUSE);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"levelmap");
-	pss.levelmap = (lua_isnumber(L,-1) ? (PARTICLESTREAMSPEC::LEVELMAP)(int)(lua_tonumber(L,-1)+0.5) : PARTICLESTREAMSPEC::LVL_LIN);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "levelmap");
+	pss.levelmap = (lua_isnumber(L, -1) ? (PARTICLESTREAMSPEC::LEVELMAP)(int)(lua_tonumber(L, -1) + 0.5) : PARTICLESTREAMSPEC::LVL_LIN);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"lmin");
-	pss.lmin = (lua_isnumber(L,-1) ? lua_tonumber(L,-1) : 0.0);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "lmin");
+	pss.lmin = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"lmax");
-	pss.lmax = (lua_isnumber(L,-1) ? lua_tonumber(L,-1) : 1.0);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "lmax");
+	pss.lmax = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 1.0);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"atmsmap");
-	pss.atmsmap = (lua_isnumber(L,-1) ? (PARTICLESTREAMSPEC::ATMSMAP)(int)(lua_tonumber(L,-1)+0.5) : PARTICLESTREAMSPEC::ATM_FLAT);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "atmsmap");
+	pss.atmsmap = (lua_isnumber(L, -1) ? (PARTICLESTREAMSPEC::ATMSMAP)(int)(lua_tonumber(L, -1) + 0.5) : PARTICLESTREAMSPEC::ATM_FLAT);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"amin");
-	pss.amin = (lua_isnumber(L,-1) ? lua_tonumber(L,-1) : 0.0);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "amin");
+	pss.amin = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"amax");
-	pss.amax = (lua_isnumber(L,-1) ? lua_tonumber(L,-1) : 1.0);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "amax");
+	pss.amax = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 1.0);
+	lua_pop(L, 1);
 
-	lua_getfield(L,idx,"tex");
-	pss.tex = (lua_islightuserdata(L,-1) ? (SURFHANDLE)lua_touserdata(L,-1) : NULL);
-	lua_pop(L,1);
+	lua_getfield(L, idx, "tex");
+	pss.tex = (lua_islightuserdata(L, -1) ? (SURFHANDLE)lua_touserdata(L, -1) : NULL);
+	lua_pop(L, 1);
 
 	PSTREAM_HANDLE hp;
-	if (do_pos) hp = v->AddExhaustStream (ht, pos, &pss);
-	else        hp = v->AddExhaustStream (ht, &pss);
-	lua_pushlightuserdata(L,hp);
+	if (do_pos) hp = v->AddExhaustStream(ht, pos, &pss);
+	else        hp = v->AddExhaustStream(ht, &pss);
+	if(hp) 
+		lua_pushlightuserdata(L, hp);
+	else
+		lua_pushnil(L);
 	return 1;
+}
+
+/***
+Delete an existing particle stream.
+
+If a thruster is deleted (with del_thruster), any attached
+particle streams are deleted automatically.
+
+A deleted particle stream will no longer emit particles, but
+existing particles persist until they expire.
+
+@function del_exhauststream
+@tparam handle ch particle stream handle
+@treturn boolean false indicates failure (particle stream not found)
+*/
+int Interpreter::v_del_exhauststream(lua_State* L)
+{
+	static const char* funcname = "del_exhauststream";
+	AssertMtdMinPrmCount(L, 2, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	PSTREAM_HANDLE hp = lua_tolightuserdata_safe(L, 2, "del_exhauststream");
+
+	// remove reference to numberref
+	lua_pushlightuserdata(L, hp);
+    lua_pushnil(L);
+    lua_settable(L, LUA_REGISTRYINDEX);
+
+	bool ret = v->DelExhaustStream(hp);
+	lua_pushboolean(L, ret);
+	return 1;
+}
+
+/***
+Add a reentry particle stream to a vessel.
+
+Vessels automatically define a default emissive particle stream,
+but you may want to add further stream to customise the appearance.
+
+@function add_reentrystream
+@tparam table pss particle stream specification (PARTICLESTREAMSPEC)
+@treturn handle particle stream handle
+*/
+int Interpreter::v_add_reentrystream(lua_State* L)
+{
+	static const char* funcname = "add_reentrystream";
+	AssertMtdMinPrmCount(L, 2, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	PARTICLESTREAMSPEC pss;  memset(&pss, 0, sizeof(PARTICLESTREAMSPEC));
+	int idx = 2;
+	AssertMtdPrmType(L, idx, PRMTP_TABLE, funcname);
+
+	lua_getfield(L, idx, "flags");
+	pss.flags = (lua_isnumber(L, -1) ? (DWORD)(lua_tonumber(L, -1) + 0.5) : 0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "srcsize");
+	pss.srcsize = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 1.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "srcrate");
+	pss.srcrate = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 1.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "v0");
+	pss.v0 = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "srcspread");
+	pss.srcspread = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "lifetime");
+	pss.lifetime = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 10.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "growthrate");
+	pss.growthrate = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "atmslowdown");
+	pss.atmslowdown = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "ltype");
+	pss.ltype = (lua_isnumber(L, -1) ? (PARTICLESTREAMSPEC::LTYPE)(int)(lua_tonumber(L, -1) + 0.5) : PARTICLESTREAMSPEC::DIFFUSE);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "levelmap");
+	pss.levelmap = (lua_isnumber(L, -1) ? (PARTICLESTREAMSPEC::LEVELMAP)(int)(lua_tonumber(L, -1) + 0.5) : PARTICLESTREAMSPEC::LVL_LIN);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "lmin");
+	pss.lmin = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "lmax");
+	pss.lmax = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 1.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "atmsmap");
+	pss.atmsmap = (lua_isnumber(L, -1) ? (PARTICLESTREAMSPEC::ATMSMAP)(int)(lua_tonumber(L, -1) + 0.5) : PARTICLESTREAMSPEC::ATM_FLAT);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "amin");
+	pss.amin = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "amax");
+	pss.amax = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 1.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "tex");
+	pss.tex = (lua_islightuserdata(L, -1) ? (SURFHANDLE)lua_touserdata(L, -1) : NULL);
+	lua_pop(L, 1);
+
+	PSTREAM_HANDLE hp;
+	hp = v->AddReentryStream(&pss);
+	if(hp)
+		lua_pushlightuserdata(L, hp);
+	else
+		lua_pushnil(L);
+
+	return 1;
+}
+
+/***
+Add custom particle stream to a vessel.
+
+This function can be used to add venting effects and similar.
+For engine-specific effects such as exhaust and contrails, use the
+add_exhauststream functions instead.
+
+The PARTICLESTREAMSPEC structure defined the properties of
+the particle stream.
+
+The position and direction variables are in vessel-relative
+coordinates. They cannot be redefined.
+
+The returned level factor numberref can be used to define the strength
+of the particle emission. Its value should be set in the range from 0
+(particle generation off) to 1 (emission at full strength). It can
+be changed continuously to modulate the particle generation.
+
+@function add_particlestream
+@tparam table pss particle stream specification (PARTICLESTREAMSPEC)
+@tparam vector pos particle source position in vessel coordinates [m]
+@tparam vector dir particle emission direction in vessel coordinates
+@treturn handle particle stream handle
+@treturn numberref particle level factor
+*/
+int Interpreter::v_add_particlestream(lua_State* L)
+{
+	static const char* funcname = "add_particlestream";
+	AssertMtdMinPrmCount(L, 2, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	PARTICLESTREAMSPEC pss;  memset(&pss, 0, sizeof(PARTICLESTREAMSPEC));
+	int idx = 2;
+	AssertMtdPrmType(L, idx, PRMTP_TABLE, funcname);
+
+	lua_getfield(L, idx, "flags");
+	pss.flags = (lua_isnumber(L, -1) ? (DWORD)(lua_tonumber(L, -1) + 0.5) : 0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "srcsize");
+	pss.srcsize = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 1.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "srcrate");
+	pss.srcrate = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 1.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "v0");
+	pss.v0 = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "srcspread");
+	pss.srcspread = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "lifetime");
+	pss.lifetime = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 10.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "growthrate");
+	pss.growthrate = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "atmslowdown");
+	pss.atmslowdown = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "ltype");
+	pss.ltype = (lua_isnumber(L, -1) ? (PARTICLESTREAMSPEC::LTYPE)(int)(lua_tonumber(L, -1) + 0.5) : PARTICLESTREAMSPEC::DIFFUSE);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "levelmap");
+	pss.levelmap = (lua_isnumber(L, -1) ? (PARTICLESTREAMSPEC::LEVELMAP)(int)(lua_tonumber(L, -1) + 0.5) : PARTICLESTREAMSPEC::LVL_LIN);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "lmin");
+	pss.lmin = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "lmax");
+	pss.lmax = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 1.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "atmsmap");
+	pss.atmsmap = (lua_isnumber(L, -1) ? (PARTICLESTREAMSPEC::ATMSMAP)(int)(lua_tonumber(L, -1) + 0.5) : PARTICLESTREAMSPEC::ATM_FLAT);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "amin");
+	pss.amin = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "amax");
+	pss.amax = (lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 1.0);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "tex");
+	pss.tex = (lua_islightuserdata(L, -1) ? (SURFHANDLE)lua_touserdata(L, -1) : NULL);
+	lua_pop(L, 1);
+
+	VECTOR3 pos = lua_tovector_safe(L, 3, "add_particlestream");
+	VECTOR3 dir = lua_tovector_safe(L, 4, "add_particlestream");
+
+	// AddParticleStream's last argument must be a pointer to a double whose lifetime must be compatible with the particle stream itself
+	// We create a "numberref" object to do that
+
+	lua_pushnumberref(L);
+	double* lvl = (double*)lua_touserdata(L, -1);
+	*lvl = lua_tonumber(L, 5);
+
+	PSTREAM_HANDLE hp = v->AddParticleStream(&pss, pos, dir , lvl);
+	if(!hp) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	// Add the numberref in the registry to prevent its collection if the script does not recover it
+	// Use the PSTREAM_HANDLE as the key so we can remove it when deleting the stream
+	lua_pushlightuserdata(L, hp);  /* push address */
+    lua_pushvalue(L, -2);
+    lua_settable(L, LUA_REGISTRYINDEX);
+
+	lua_pushlightuserdata(L, hp);
+	lua_insert(L, -2); // swap the 2 top elements (numberref & handle)
+	return 2;
 }
 
 
@@ -7465,7 +9207,7 @@ Camera functions
 */
 
 /***
-Returns the current camera position for internal (cockpit) view.
+Get current camera position for internal (cockpit) view.
 
 @function get_cameraoffset
 @return (<i><b>@{types.vector|vector}</b></i>) camera offset in vessel coordinates [<b>m</b>]
@@ -7483,7 +9225,7 @@ int Interpreter::v_get_cameraoffset (lua_State *L)
 }
 
 /***
-Sets the camera position for internal (cockpit) view.
+Set camera position for internal (cockpit) view.
 
 The camera offset can be used to define the pilot's eye position in the spacecraft.
 The default offset is (0,0,0).
@@ -7503,20 +9245,20 @@ int Interpreter::v_set_cameraoffset (lua_State *L)
 }
 
 /***
-Set the default camera direction and tilt angle for internal (cockpit) view.
+Set default camera direction and tilt angle for internal (cockpit) view.
 
 This function allows to set the camera tilt angle in addition to the default
-   direction.
+direction.
 
 By default, the default direction is (0,0,1), i.e. forward, and the tilt
-   angle is 0 (upright).
+angle is 0 (upright).
 
 The supplied direction vector must be normalised to length 1.
 
 The tilt angle should be in the range [-Pi,+Pi]
 
 Calling this function automatically sets the current actual view direction to
-   the default direction.
+the default direction.
 
 @function set_cameradefaultdirection
 @tparam vector cd new default direction in vessel coordinates
@@ -7524,27 +9266,27 @@ Calling this function automatically sets the current actual view direction to
 @see get_cameradefaultdirection
 */
 /***
-Set the default camera direction for internal (cockpit) view.
+Set default camera direction for internal (cockpit) view.
 
 By default, the default direction is (0,0,1), i.e. forward.
 
 The supplied direction vector must be normalised to length 1.
 
 Calling this function automatically sets the current actual view
-   direction to the default direction.
+direction to the default direction.
 
-This function can either be called during VESSEL2::clbkSetClassCaps,
-   to define the default camera direction globally for the vessel, or during
-   VESSEL2::clbkLoadGenericCockpit, VESSEL2::clbkLoadPanel and VESSEL2::clbkLoadVC,
-   to define different default directions for different instrument panels or
-   virtual cockpit positions.
+This function can either be called during clbk\_setclasscaps,
+to define the default camera direction globally for the vessel, or during
+clbk\_loadgenericcockpit, clbk\_loadpanel2d and clbk\_loadVC,
+to define different default directions for different instrument panels or
+virtual cockpit positions.
 
 In Orbiter, the user can return to the default direction by pressing the
-   \e Home key on the cursor key pad.
+Home key on the cursor key pad.
 
 @function set_cameradefaultdirection
 @tparam vector cd new default direction in vessel coordinates
-@see get_cameradefaultdirection, VESSEL2::clbkLoadGenericCockpit, VESSEL2::clbkLoadPanel, VESSEL2::clbkLoadVC
+@see get_cameradefaultdirection
 */
 int Interpreter::v_set_cameradefaultdirection (lua_State *L)
 {
@@ -7562,7 +9304,7 @@ int Interpreter::v_set_cameradefaultdirection (lua_State *L)
 }
 
 /***
-Returns the default camera direction for internal (cockpit) view.
+Get default camera direction for internal (cockpit) view.
 
 The default camera direction may change as a result of invoking
    SetCameraDefaultDirection, typically when the user selects a different
@@ -7586,7 +9328,7 @@ int Interpreter::v_get_cameradefaultdirection (lua_State *L)
 }
 
 /***
-Set the angle over which the cockpit camera auto-centers to default direction.
+Set angle over which the cockpit camera auto-centers to default direction.
 
 The cockpit camera auto-centers to its default ("forward") direction when
    it is close enough to this direction. This function can be used to specify the
@@ -7599,7 +9341,7 @@ The default catchment angle is 5 degrees (5.0*RAD).
 To reset the catchment angle globally for all cockpit views of the vessel,
    @{set_cameracatchangle} would typically used in VESSEL2::clbkSetClassCaps(). To reset
    the catchment angle for individual cockpit positions, the function would be used
-   for the appropriate cockpit modes in VESSEL2::clbkLoadPanel() and VESSEL2::clbkLoadVC().
+   for the appropriate cockpit modes in clbk_loadpanel2d() and clbk_loadVC().
 
 @function set_cameracatchangle
 @tparam number cangle auto-center catchment angle [rad]
@@ -7615,7 +9357,7 @@ int Interpreter::v_set_cameracatchangle (lua_State *L)
 }
 
 /**
-Sets the range over which the cockpit camera can be rotated from its default
+Set range over which the cockpit camera can be rotated from its default
 direction.
 
 The meaning of the "left", "right", "up" and "down" directions is given by the
@@ -7650,7 +9392,7 @@ int Interpreter::v_set_camerarotationrange (lua_State *L)
 }
 
 /**
-Set the linear movement range for the cockpit camera.
+Set linear movement range for the cockpit camera.
 
 Defining a linear movement allows the user to move the head forward or sideways, e.g. to
    get a better look out of a window, or a closer view of a virtual cockpit instrument
@@ -7667,7 +9409,7 @@ If a linear movement range is defined with this function, the user can 'lean'
    </table>
 
 The movement vectors are taken relative to the default cockpit position defined
-   via SetCameraOffset.
+   via set_cameraoffset.
 
 This function should be called when initialising a cockpit mode (e.g. in
    clbkLoadPanel or clbkLoadVC). By default, Orbiter resets the linear movement range
@@ -7675,7 +9417,7 @@ This function should be called when initialising a cockpit mode (e.g. in
 
 In addition to the linear movement, the camera also turns left when leaning left,
    turns right when leaning right, and returns to default direction when leaning forward.
-   For more control over camera rotation at the different positions, use SetCameraMovement
+   For more control over camera rotation at the different positions, use set_cameramovement
    instead.
 
 @function set_camerashiftrange
@@ -7750,7 +9492,7 @@ Instrument panel and virtual cockpit methods
 */
 
 /***
-Triggers a redraw notification for a panel area.
+Trigger redraw notification for a panel area.
 
 The redraw notification is ignored if the requested panel is not currently
    displayed or if the calling vessel does not have the input focus.
@@ -7772,12 +9514,12 @@ int Interpreter::v_trigger_panelredrawarea (lua_State *L)
 }
 
 /***
-Triggers a redraw notification to either a 2D panel or a virtual cockpit.
+Trigger redraw notification to either a 2D panel or a virtual cockpit.
 
 This function can be used to combine the functionality of the
-   TriggerPanelRedrawArea() and VCTriggerRedrawArea() methods.
+   trigger_panelredrawarea() and VC_trigger_redrawarea() methods.
    Depending on the current cockpit mode, Orbiter sends the redraw request to
-   either ovcPanelRedrawEvent() or ovcVCRedrawEvent().
+   either clbk_panelredrawevent() or clbk_VCredrawevent().
 
 This method can only be used if the panel and virtual cockpit areas share a
    common area identifier.
@@ -7803,6 +9545,199 @@ int Interpreter::v_trigger_redrawarea (lua_State *L)
 	return 0;
 }
 
+// We create a VesselMFD, the lua side is in charge of overloading the metatable,
+// then we save the lua object reference to be used when then core will call VesselMFD callbacks
+OAPI_MSGTYPE Interpreter::MsgProcMFD(UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam)
+{
+	switch (msg) {
+		case OAPI_MSG_MFD_OPENEDEX:
+		{
+			MFDMODEOPENSPEC* ospec = (MFDMODEOPENSPEC*)wparam;
+			DWORD w = ospec->w;
+			DWORD h = ospec->h;
+			VesselMFDContext* ctx = (VesselMFDContext*)ospec->spec->context;
+			VESSEL* vessel = (VESSEL*)lparam;
+			VesselMFD* vmfd = new VesselMFD(w, h, vessel, ctx);
+
+			lua_State* L = ctx->L;
+
+			lua_rawgeti(L, LUA_REGISTRYINDEX, ctx->msgproc);   // push the callback function
+			lua_pushnumber(L, msg);
+			lua_pushnumber(L, mfd);
+			lua_pushnumber(L, w);
+			lua_pushnumber(L, h);
+			lua_pushvessel(L, vessel);
+			lua_pushmfd(L, vmfd);
+
+			if (lua_pcall(L,  6, 1, 0) != 0) {
+				fprintf(stderr, "Error MsgProcMFD: %s\n", lua_tostring(L, -1));
+				//return 0;
+			} else {
+				vmfd->mfd_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+			}
+			return (OAPI_MSGTYPE)(vmfd);
+		}
+	}
+	return 0;
+}
+
+/***
+Register a user-defined MFD mode for the vessel.
+
+This method registers the MFD mode only for an individual vessel instance.
+This allows to create vessel-specific MFD modes directly in the vessel
+module. Typically this method would be called in the vessel constructor.
+
+spec is a table defining the parameters of the new mode:
+
+- name: string (name of the new mode)
+- key: number (mode selection key)
+- msgproc function (MFD message parser)
+
+The mode identifier retrieved by oapi.get_mfdmode() for MFD modes
+registered by this method starts with 1000 for the first registered mode
+and is incremented by 1 for each subsequently registered mode.
+
+@function register_mfdmode
+@tparam table spec MFD mode specifications
+@treturn number mode identifier
+@usage
+function msgproc(msg, ...)
+   if msg == OAPI_MSG.MFD_OPENEDEX then
+      return APMFD(...)
+   end
+   return 0
+end
+
+function register_APMFD()
+   local spec = {
+      name = "AscentAP",
+      key = OAPI_KEY.B,
+      msgproc = msgproc
+   }
+   return vi:register_mfdmode(spec)
+end
+
+*/
+int Interpreter::v_register_mfdmode(lua_State* L)
+{
+	static const char* funcname = "register_mfdmode";
+	AssertMtdMinPrmCount(L, 2, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	if (v->Version() < 3) {
+		lua_pushnil(L);
+		lua_pushstring(L, "Invalid vessel version in register_mfdmode");
+		return 2;
+	}
+	VESSEL4* v4 = (VESSEL4*)v;
+
+	MFDMODESPECEX spec;
+	spec.msgproc = MsgProcMFD;
+	lua_getfield(L, 2, "name");
+	spec.name = const_cast<char *>(lua_tostring(L, -1));
+	lua_getfield(L, 2, "key");
+	spec.key = lua_tonumber(L, -1);
+	lua_getfield(L, 2, "msgproc");
+	VesselMFDContext *ctx = new VesselMFDContext;
+	ctx->L = L;
+	ctx->msgproc = luaL_ref(L, LUA_REGISTRYINDEX);
+	spec.context = ctx;
+
+	int mode = v4->RegisterMFDMode(spec);
+	lua_pop(L, 2);
+	lua_pushnumber(L, mode);
+	return 1;
+}
+
+/***
+Unregister a previously registered vessel-specific MFD mode.
+
+@function unregister_mfdmode
+@tparam number mode mode identifier, as returned by vessel:register_mfdmode()
+@treturn boolean true on success (mode was successfully unregistered).
+*/
+int Interpreter::v_unregister_mfdmode(lua_State* L)
+{
+	static const char* funcname = "unregister_mfdmode";
+	AssertMtdMinPrmCount(L, 2, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	if (v->Version() < 3) {
+		lua_pushnil(L);
+		lua_pushstring(L, "Invalid vessel version in unregister_mfdmode");
+		return 2;
+	} else {
+		VESSEL4* v4 = (VESSEL4*)v;
+		int mode = luamtd_tointeger_safe(L, 2, funcname);
+		//FIXME: The mode gives us no way to retrieve the context so we leak 16 bytes per unregistered MFD
+		//       Should probably add a table in the lua_State indexed by mode to track the contexts
+		bool res = v4->UnregisterMFDMode(mode);
+		lua_pushboolean(L, res);
+		return 1;
+	}
+}
+
+/***
+Beacons.
+@section vessel_mtd_beacon
+*/
+
+/***
+Add light beacon definition to a vessel.
+
+@function add_beacon
+@tparam beacon b beacon created via oapi.create_beacon
+*/
+int Interpreter::v_add_beacon(lua_State *L)
+{
+	static const char* funcname = "add_beacon";
+	AssertMtdMinPrmCount(L, 2, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	BEACONLIGHTSPEC_Lua* beacon = (BEACONLIGHTSPEC_Lua*)luaL_checkudata(L, 2, "Beacon.vtable");
+
+	v->AddBeacon(&beacon->bs);
+	beacon->vessel = v;
+
+	return 0;
+}
+
+/***
+Remove beacon definition from the vessel.
+
+@function del_beacon
+@tparam beacon b beacon created via oapi.create_beacon
+*/
+int Interpreter::v_del_beacon(lua_State *L)
+{
+	static const char* funcname = "del_beacon";
+	AssertMtdMinPrmCount(L, 2, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	BEACONLIGHTSPEC_Lua* beacon = (BEACONLIGHTSPEC_Lua*)luaL_checkudata(L, 2, "Beacon.vtable");
+
+	bool ret = v->DelBeacon(&beacon->bs);
+	if(ret)
+		beacon->vessel = nullptr;
+
+	lua_pushboolean(L, ret);
+
+	return 1;
+}
+
+/***
+Remove all beacon definitions from the vessel.
+
+@function clear_beacons
+*/
+int Interpreter::v_clear_beacons(lua_State *L)
+{
+	static const char* funcname = "clear_beacons";
+	AssertMtdMinPrmCount(L, 1, funcname);
+	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
+	
+	v->ClearBeacons();
+
+	return 0;
+}
+
 
 /***
 User interface
@@ -7810,9 +9745,9 @@ User interface
 */
 
 /***
-Sends a keycode message to the vessel.
+Send keycode message to the vessel.
 
-The key codes correspond to the values for the OAPI_KEY_xxx constants defined in OrbiterAPI.h.
+The key codes correspond to the values for the OAPI\_KEY.xxx constants defined in OrbiterAPI.h.
 A convenient way to pick a keycode is via the _ktable_ table. For example, ktable.A has value 0x1E,
 which represents the keycode for A. Only a subset of keycodes is currently defined in the ktable
 table.
@@ -7832,4 +9767,214 @@ int Interpreter::v_send_bufferedkey (lua_State *L)
 	int res = v->SendBufferedKey (key);
 	lua_pushnumber (L, res);
 	return 1;
+}
+
+
+VesselMFD::VesselMFD(DWORD w, DWORD h, VESSEL* vessel, VesselMFDContext* ctx) : MFD2(w, h, vessel) {
+	L = ctx->L;
+	mfd_ref = LUA_REFNIL;
+}
+
+VesselMFD::~VesselMFD() {
+	lua_rawgeti(L, LUA_REGISTRYINDEX, mfd_ref);
+	lua_getfield(L, -1, "destroy");
+	if (lua_isfunction(L, -1)) {
+		lua_pushvalue(L, -2); //self
+		Interpreter::LuaCall(L, 1, 0);
+	}
+}
+
+bool VesselMFD::ConsumeButton(int bt, int event) {
+	lua_rawgeti(L, LUA_REGISTRYINDEX, mfd_ref);
+	lua_getfield(L, -1, "consumebutton");
+	bool consumed = false;
+	if (lua_isfunction(L, -1)) {
+		lua_pushvalue(L, -2); //self
+		lua_pushnumber(L, bt);
+		lua_pushnumber(L, event);
+		Interpreter::LuaCall(L, 3, 1);
+		consumed = (lua_toboolean(L, -1) ? true : false);
+	}
+	else {
+		lua_pop(L, 1);
+	}
+	lua_pop(L, 1);
+	return consumed;
+}
+bool VesselMFD::ConsumeKeyBuffered(DWORD key) {
+	lua_rawgeti(L, LUA_REGISTRYINDEX, mfd_ref);
+	lua_getfield(L, -1, "consumekeybuffered");
+	bool consumed = false;
+	if (lua_isfunction(L, -1)) {
+		lua_pushvalue(L, -2); //self
+		lua_pushnumber(L, key);
+		Interpreter::LuaCall(L, 2, 1);
+		consumed = (lua_toboolean(L, -1) ? true : false);
+	}
+	else {
+		lua_pop(L, 1);
+	}
+	lua_pop(L, 1);
+	return consumed;
+}
+bool VesselMFD::ConsumeKeyImmediate(char* kstate) {
+	lua_rawgeti(L, LUA_REGISTRYINDEX, mfd_ref);
+	lua_getfield(L, -1, "consumekeyimmediate");
+	bool consumed = false;
+	if (lua_isfunction(L, -1)) {
+		lua_pushvalue(L, -2); //self
+		lua_pushlightuserdata(L, kstate);
+		Interpreter::LuaCall(L, 2, 1);
+		consumed = (lua_toboolean(L, -1) ? true : false);
+	}
+	else {
+		lua_pop(L, 1);
+	}
+	lua_pop(L, 1);
+	return consumed;
+}
+char* VesselMFD::ButtonLabel(int bt) {
+	lua_rawgeti(L, LUA_REGISTRYINDEX, mfd_ref); //self
+	lua_getfield(L, -1, "buttonlabel");
+	char* label = NULL;
+	if (lua_isfunction(L, -1)) {
+		lua_pushvalue(L, -2); //self
+		lua_pushnumber(L, bt);
+		Interpreter::LuaCall(L, 2, 1);
+		if (lua_isstring(L, -1)) {
+			label = (char*)lua_tostring(L, -1);
+		}
+	}
+	else {
+		lua_pop(L, 1);
+	}
+	lua_pop(L, 1);
+	return label;
+}
+int VesselMFD::ButtonMenu(const MFDBUTTONMENU** menu) const {
+	int i, nbt = 0;
+	lua_rawgeti(L, LUA_REGISTRYINDEX, mfd_ref);
+	lua_getfield(L, -1, "buttonmenu");
+	if (lua_isfunction(L, -1)) {
+		static MFDBUTTONMENU* mnu = 0;
+		static int nmnu = 0;
+		lua_pushvalue(L, -2); //self
+		Interpreter::LuaCall(L, 1, 2);
+		if (lua_isnumber(L, -1)) {
+			nbt = lua_tointeger(L, -1);
+			if (menu) {
+				if (nmnu) {
+					for (i = 0; i < nmnu; i++) {
+						if (mnu[i].line1) delete[]mnu[i].line1;
+						if (mnu[i].line2) delete[]mnu[i].line2;
+					}
+					delete[]mnu;
+					nmnu = 0;
+				}
+				if (nbt) {
+					mnu = new MFDBUTTONMENU[nmnu = nbt];
+					for (i = 0; i < nbt; i++) {
+						mnu[i].line1 = 0;
+						mnu[i].line2 = 0;
+						mnu[i].selchar = 'x';
+					}
+					if (lua_istable(L, -2)) {
+						for (i = 0; i < nbt; i++) {
+							lua_pushnumber(L, i + 1);
+							lua_gettable(L, -3);
+							if (lua_istable(L, -1)) {
+								lua_getfield(L, -1, "l1");
+								if (lua_isstring(L, -1)) {
+									const char* line = lua_tostring(L, -1);
+									char* linebuf = new char[strlen(line) + 1];
+									strcpy(linebuf, line);
+									mnu[i].line1 = linebuf;
+								}
+								lua_pop(L, 1);
+								lua_getfield(L, -1, "l2");
+								if (lua_isstring(L, -1)) {
+									const char* line = lua_tostring(L, -1);
+									char* linebuf = new char[strlen(line) + 1];
+									strcpy(linebuf, line);
+									mnu[i].line2 = linebuf;
+								}
+								lua_pop(L, 1);
+								lua_getfield(L, -1, "sel");
+								if (lua_isstring(L, -1)) {
+									const char* line = lua_tostring(L, -1);
+									mnu[i].selchar = line[0];
+								}
+								lua_pop(L, 1);
+							}
+							lua_pop(L, 1);
+						}
+					}
+				}
+				*menu = mnu;
+			}
+		}
+		lua_pop(L, 2);
+	}
+	else {
+		lua_pop(L, 1);
+	}
+	lua_pop(L, 1);
+	return nbt;
+}
+bool VesselMFD::Update(oapi::Sketchpad* skp) {
+	lua_rawgeti(L, LUA_REGISTRYINDEX, mfd_ref);
+	lua_getfield(L, -1, "update");
+
+	if (lua_isfunction(L, -1)) {
+		lua_pushvalue(L, -2); //self
+		Interpreter::lua_pushsketchpad(L, skp);
+		Interpreter::LuaCall(L, 2, 1);
+		bool consumed = (lua_toboolean(L, -1) ? true : false);
+		lua_pop(L, 1);
+		return true; //consumed;
+	}
+	lua_pop(L, 1);
+	return false;
+}
+void VesselMFD::StoreStatus() const {
+	lua_rawgeti(L, LUA_REGISTRYINDEX, mfd_ref);
+	lua_getfield(L, -1, "storestatus");
+
+	if (lua_isfunction(L, -1)) {
+		lua_pushvalue(L, -2); //self
+		Interpreter::LuaCall(L, 1, 0);
+	}
+	lua_pop(L, 1);
+}
+void VesselMFD::RecallStatus() {
+	lua_rawgeti(L, LUA_REGISTRYINDEX, mfd_ref);
+	lua_getfield(L, -1, "recallstatus");
+
+	if (lua_isfunction(L, -1)) {
+		lua_pushvalue(L, -2); //self
+		Interpreter::LuaCall(L, 1, 0);
+	}
+	lua_pop(L, 1);
+}
+void VesselMFD::WriteStatus(FILEHANDLE scn) const {
+	lua_rawgeti(L, LUA_REGISTRYINDEX, mfd_ref);
+	lua_getfield(L, -1, "writestatus");
+
+	if (lua_isfunction(L, -1)) {
+		lua_pushvalue(L, -2); //self
+		lua_pushlightuserdata(L, scn);
+		Interpreter::LuaCall(L, 2, 0);
+	}
+	lua_pop(L, 1);
+}
+void VesselMFD::ReadStatus(FILEHANDLE scn) {
+	lua_rawgeti(L, LUA_REGISTRYINDEX, mfd_ref);
+	lua_getfield(L, -1, "readstatus");
+
+	if (lua_isfunction(L, -1)) {
+		lua_pushvalue(L, -2); //self
+		lua_pushlightuserdata(L, scn);
+		Interpreter::LuaCall(L, 2, 0);
+	}
+	lua_pop(L, 1);
 }

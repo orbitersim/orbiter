@@ -344,7 +344,7 @@ int gcCore::GetMeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, MatProp prop, FVECTO
 //
 int gcCore::SetMeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, MatProp prop, const FVECTOR4* value)
 {
-	return g_client->clbkSetMaterialEx(hMesh, idx, prop, value);
+	return g_client->clbkSetMeshMaterialEx(hMesh, idx, prop, value);
 }
 
 // ===============================================================================================

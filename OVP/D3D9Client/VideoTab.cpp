@@ -317,14 +317,14 @@ void VideoTab::SelectFullscreen(bool bFull)
 {
 
 	SetWindowText(GetDlgItem(hTab, IDC_VID_ENUM), "(unused)");
-	SetWindowText(GetDlgItem(hTab, IDC_VID_STENCIL), "(unused)");
+	SetWindowText(GetDlgItem(hTab, IDC_VID_STENCIL), "Force window size");
 	SetWindowText(GetDlgItem(hTab, IDC_VID_PAGEFLIP), "Multiple displays");
 
 	SendDlgItemMessage(hTab, IDC_VID_FULL, BM_SETCHECK, bFull ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hTab, IDC_VID_WINDOW, BM_SETCHECK, bFull ? BST_UNCHECKED : BST_CHECKED, 0);
 
 	EnableWindow(GetDlgItem(hTab, IDC_VID_ENUM), false);
-	EnableWindow(GetDlgItem(hTab, IDC_VID_STENCIL), false);
+	EnableWindow(GetDlgItem(hTab, IDC_VID_STENCIL), true);
 
 	if (bFull) {
 		EnableWindow(GetDlgItem(hTab, IDC_VID_ASPECT), false);
@@ -670,9 +670,8 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	// TILE MIPMAP POLICY -----------------------------------------
 
 	SendDlgItemMessage(hWnd, IDC_MIPMAPS, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessageA(hWnd, IDC_MIPMAPS, CB_ADDSTRING, 0, (LPARAM)"None");
-	SendDlgItemMessageA(hWnd, IDC_MIPMAPS, CB_ADDSTRING, 0, (LPARAM)"Low level only");
-	SendDlgItemMessageA(hWnd, IDC_MIPMAPS, CB_ADDSTRING, 0, (LPARAM)"All levels");
+	SendDlgItemMessageA(hWnd, IDC_MIPMAPS, CB_ADDSTRING, 0, (LPARAM)"Disabled");
+	SendDlgItemMessageA(hWnd, IDC_MIPMAPS, CB_ADDSTRING, 0, (LPARAM)"Enabled (slow2load)");
 	SendDlgItemMessage(hWnd, IDC_MIPMAPS, CB_SETCURSEL, 0, 0);
 
 	// ARCHIVE METHOD ------------------------------------------
@@ -724,6 +723,15 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessageA(hWnd, IDC_TERRAIN, CB_ADDSTRING, 0, (LPARAM)"Stencil");
 	SendDlgItemMessageA(hWnd, IDC_TERRAIN, CB_ADDSTRING, 0, (LPARAM)"Projected");
 
+	SendDlgItemMessage(hWnd, IDC_MESHRES, CB_RESETCONTENT, 0, 0);
+	SendDlgItemMessageA(hWnd, IDC_MESHRES, CB_ADDSTRING, 0, (LPARAM)"16");
+	SendDlgItemMessageA(hWnd, IDC_MESHRES, CB_ADDSTRING, 0, (LPARAM)"32");
+
+	SendDlgItemMessage(hWnd, IDC_TILECOUNT, CB_RESETCONTENT, 0, 0);
+	SendDlgItemMessageA(hWnd, IDC_TILECOUNT, CB_ADDSTRING, 0, (LPARAM)"600");
+	SendDlgItemMessageA(hWnd, IDC_TILECOUNT, CB_ADDSTRING, 0, (LPARAM)"1200");
+	SendDlgItemMessageA(hWnd, IDC_TILECOUNT, CB_ADDSTRING, 0, (LPARAM)"2400");
+
 	// gcGUI -----------------------------------------
 	if (Config->gcGUIMode == 1) Config->gcGUIMode = 0;
 	SendDlgItemMessage(hWnd, IDC_GUIMODE, CB_RESETCONTENT, 0, 0);
@@ -769,10 +777,6 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessage(hWnd, IDC_LODBIAS, TBM_SETRANGEMIN, 1, -10);
 	SendDlgItemMessage(hWnd, IDC_LODBIAS, TBM_SETTICFREQ, 1, 0);
 
-	SendDlgItemMessage(hWnd, IDC_MESHRES, TBM_SETRANGEMAX, 1, 1);
-	SendDlgItemMessage(hWnd, IDC_MESHRES, TBM_SETRANGEMIN, 1, 0);
-	SendDlgItemMessage(hWnd, IDC_MESHRES, TBM_SETTICFREQ, 1, 0);
-
 	SendDlgItemMessage(hWnd, IDC_MICROBIAS, TBM_SETRANGEMAX, 1, 10);
 	SendDlgItemMessage(hWnd, IDC_MICROBIAS, TBM_SETRANGEMIN, 1, 0);
 	SendDlgItemMessage(hWnd, IDC_MICROBIAS, TBM_SETTICFREQ, 1, 0);
@@ -787,10 +791,10 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessage(hWnd, IDC_CONVERGENCE, TBM_SETPOS, 1, int(Config->Convergence*100.0));
 	SendDlgItemMessage(hWnd, IDC_SEPARATION,  TBM_SETPOS, 1, int(Config->Separation));
 	SendDlgItemMessage(hWnd, IDC_LODBIAS,     TBM_SETPOS, 1, int(Config->LODBias*5.0));
-	SendDlgItemMessage(hWnd, IDC_MESHRES,     TBM_SETPOS, 1, int(Config->MeshRes));
 	SendDlgItemMessage(hWnd, IDC_MICROBIAS,   TBM_SETPOS, 1, int(Config->MicroBias));
 
-
+	SendDlgItemMessage(hWnd, IDC_TILECOUNT, CB_SETCURSEL, Config->MaxTiles, 0);
+	SendDlgItemMessage(hWnd, IDC_MESHRES, CB_SETCURSEL, Config->MeshRes, 0);
 	SendDlgItemMessage(hWnd, IDC_ARCHIVE, CB_SETCURSEL, Config->PlanetTileLoadFlags-1, 0);
 	SendDlgItemMessage(hWnd, IDC_BLENDMODE, CB_SETCURSEL, Config->BlendMode, 0);
 	SendDlgItemMessage(hWnd, IDC_MICROMODE, CB_SETCURSEL, Config->MicroMode, 0);
@@ -883,6 +887,9 @@ void VideoTab::SaveSetupState(HWND hWnd)
 	Config->TerrainShadowing = (int)SendDlgItemMessage(hWnd, IDC_TERRAIN, CB_GETCURSEL, 0, 0);
 	Config->gcGUIMode = (int)SendDlgItemMessage(hWnd, IDC_GUIMODE, CB_GETCURSEL, 0, 0);
 	Config->VCCascadeCount = (int)SendDlgItemMessage(hWnd, IDC_CASCOUNT, CB_GETCURSEL, 0, 0) + 1;
+	Config->MeshRes		  = int(SendDlgItemMessage(hWnd, IDC_MESHRES, CB_GETCURSEL, 0, 0));
+	Config->MaxTiles	  = int(SendDlgItemMessage(hWnd, IDC_TILECOUNT, CB_GETCURSEL, 0, 0));
+
 
 	if (Config->gcGUIMode == 1) Config->gcGUIMode = 0;
 
@@ -908,7 +915,6 @@ void VideoTab::SaveSetupState(HWND hWnd)
 	Config->Convergence   = double(SendDlgItemMessage(hWnd, IDC_CONVERGENCE, TBM_GETPOS, 0, 0)) * 0.01;
 	Config->Separation	  = double(SendDlgItemMessage(hWnd, IDC_SEPARATION,  TBM_GETPOS, 0, 0));
 	Config->LODBias       = 0.2 * double(SendDlgItemMessage(hWnd, IDC_LODBIAS,  TBM_GETPOS, 0, 0));
-	Config->MeshRes       = int(SendDlgItemMessage(hWnd, IDC_MESHRES,  TBM_GETPOS, 0, 0));
 	Config->MicroBias     = int(SendDlgItemMessage(hWnd, IDC_MICROBIAS,  TBM_GETPOS, 0, 0));
 
 	// Other things

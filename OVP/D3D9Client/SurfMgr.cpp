@@ -108,9 +108,6 @@ void SurfaceManager::RenderSimple(int level, int npatch, TILEDESC *tile, LPD3DXM
 
 		VBMESH &mesh = PATCH_TPL[level][idx]; // patch template
 
-		D3D9Stats.Old.Verts += mesh.nv;
-		D3D9Stats.Old.Tiles[level]++;
-		
 		bool purespec = ((tile[idx].flag & 3) == 2);
 		bool mixedspec = ((tile[idx].flag & 3) == 3);
 

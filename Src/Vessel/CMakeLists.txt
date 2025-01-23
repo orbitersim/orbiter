@@ -22,3 +22,36 @@ add_subdirectory(ScriptVessel)
 add_subdirectory(ShuttleA)
 add_subdirectory(ShuttlePB)
 add_subdirectory(Solarsail)
+
+
+
+# ==========================================================================
+# SDK Sample Installation
+# ==========================================================================
+
+set(Exclude
+	PATTERN CMakeLists.txt EXCLUDE
+)
+
+set(IgnoreFiles
+	${Exclude}
+	PATTERN Textures EXCLUDE
+	PATTERN Textures2 EXCLUDE
+	PATTERN Config EXCLUDE
+	PATTERN Meshes EXCLUDE
+	PATTERN Thumbnail EXCLUDE
+)
+
+install(DIRECTORY 
+	DeltaGlider 
+	HST 
+	Quadcopter 
+	ScriptVessel
+	Solarsail
+	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/samples ${IgnoreFiles}
+)
+
+install(DIRECTORY Common/ DESTINATION ${ORBITER_INSTALL_SDK_DIR}/samples/Common/Vessel/ ${IgnoreFiles})
+install(DIRECTORY Common/ DESTINATION ${ORBITER_INSTALL_SDK_DIR}/samples/Common/ ${IgnoreFiles})
+
+

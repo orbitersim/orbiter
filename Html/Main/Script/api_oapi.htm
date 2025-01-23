@@ -53,11 +53,19 @@ general simulation parameters.</p>
 </tr>
 <tr>
 <td><a href="#oapi_get_objname">oapi.get_objname</a></td>
-<td>Returns the number of objects in the current simulation.</td>
+<td>Returns the name of an object.</td>
 </tr>
 <tr>
 <td><a href="#oapi_del_vessel">oapi.del_vessel</a></td>
 <td>Delete a vessel.</td>
+</tr>
+<tr>
+<td><a href="#oapi_create_vessel">oapi.create_vessel</a></td>
+<td>Create a vessel.</td>
+</tr>
+<tr>
+<td><a href="#oapi_set_focusobject">oapi.set_focusobject</a></td>
+<td>Switches the input focus to a different vessel object.</td>
 </tr>
 
 <tr>
@@ -140,6 +148,14 @@ general simulation parameters.</p>
 <td>Converts a global position into equatorial coordiates in a local object frame.</td>
 </tr>
 <tr>
+<td><a href="#oapi_global_to_local">oapi.global_to_local</a></td>
+<td>Maps a point from the global frame to a local object frame.</td>
+</tr>
+<tr>
+<td><a href="#oapi_local_to_equ">oapi.local_to_equ</a></td>
+<td>Returns the equatorial coordinates of a point given in the local frame of an object.</td>
+</tr>
+<tr>
 <td><a href="#oapi_equ_to_global">oapi.equ_to_global</a></td>
 <td>Returns the global cartesian position of a point given in equatorial coordinates of an object</td>
 </tr>
@@ -174,6 +190,10 @@ general simulation parameters.</p>
 <tr>
 <td><a href="#oapi_get_relativevel">oapi.get_relativevel</a></td>
 <td>Returns the velocity of an object relative to a reference object in the ecliptic frame.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_rotationmatrix">oapi.get_rotationmatrix</a></td>
+<td>Returns the current rotation matrix of an object.</td>
 </tr>
 
 <tr>
@@ -359,6 +379,73 @@ general simulation parameters.</p>
 <td><a href="#oapi_simulateimmediatekey">oapi.simulateimmediatekey</a></td>
 <td>Send a simulated key state to Orbiter for processing.</td>
 </tr>
+
+<tr>
+<td colspan="2" class="group"><b>Textures</b></td>
+</tr>
+<tr>
+<td><a href="#oapi_register_exhausttexture">oapi.register_exhausttexture</a></td>
+<td>Request a custom texture for vessel exhaust rendering.</td>
+</tr>
+<tr>
+<td><a href="#oapi_register_reentrytexture">oapi.register_reentrytexture</a></td>
+<td>Request a custom texture for vessel reentry flame rendering.</td>
+</tr>
+<tr>
+<td><a href="#oapi_register_particletexture">oapi.register_particletexture</a></td>
+<td>Request a custom texture for vessel particle rendering.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_texturehandle">oapi.get_texturehandle</a></td>
+<td>Retrieve a surface handle for a mesh texture.</td>
+</tr>
+<tr>
+<td><a href="#oapi_load_texture">oapi.load_texture</a></td>
+<td>Load a texture from a file.</td>
+</tr>
+<tr>
+<td><a href="#oapi_release_texture">oapi.release_texture</a></td>
+<td>Release a texture.</td>
+</tr>
+
+
+<tr>
+<td colspan="2" class="group"><b>Sketchpad</b></td>
+</tr>
+<tr>
+<td><a href="#oapi_get_sketchpad">oapi.get_sketchpad</a></td>
+<td>Obtain a drawing context for a surface.</td>
+</tr>
+<tr>
+<td><a href="#oapi_release_sketchpad">oapi.release_sketchpad</a></td>
+<td>Release a drawing device context instance.</td>
+</tr>
+<tr>
+<td><a href="#oapi_create_font">oapi.create_font</a></td>
+<td>Creates a font resource for drawing text into surfaces.</td>
+</tr>
+<tr>
+<td><a href="#oapi_create_pen">oapi.create_pen</a></td>
+<td>Creates a pen resource for drawing lines and shape outlines.</td>
+</tr>
+<tr>
+<td><a href="#oapi_create_brush">oapi.create_brush</a></td>
+<td>Creates a brush resource for filling shapes.</td>
+</tr>
+<tr>
+<td><a href="#oapi_release_font">oapi.release_font</a></td>
+<td>Release a font resource.</td>
+</tr>
+<tr>
+<td><a href="#oapi_release_pen">oapi.release_pen</a></td>
+<td>Release a pen resource.</td>
+</tr>
+<tr>
+<td><a href="#oapi_release_brush">oapi.release_brush</a></td>
+<td>Release a brush resource.</td>
+</tr>
+
+
 </table>
 
 
@@ -377,7 +464,7 @@ general simulation parameters.</p>
 <p>Onscreen annotations can be used to display information about the current simulation state, to alert the user of a problem, etc.</p>
 <p>Once you have obtained a handle, you can output or format text by using the annotation class methods (see Section <a href="mtd_note.htm">Annotation methods</a>). A typical example might look like this:</p>
 <div class="code">
-n = oapi.create_annotation()
+n = oapi.create_annotation()</br>
 n:set_text('Hello, world!')
 </div>
 
@@ -567,6 +654,56 @@ oapi.del_vessel(hVessel)</h3>
 <p>This function removes a vessel from the simulation session.</p>
 </div>
 
+
+<div class="func"><a name="oapi_create_vessel"></a>
+<h3>hVessel = oapi.create_vessel(name, classname, vs)</h3>
+<p>Create a vessel.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>name&nbsp;(string):</td><td>vessel name</td></tr>
+<tr><td>classname&nbsp;(string):</td><td>vessel class</td></tr>
+<tr><td>vs&nbsp;(rawstatus):</td><td>initial vessel status (as a rawstatus object)</td></tr>
+</table>
+<h4>Return value:</h4>
+<table>
+<tr><td>hVessel&nbsp;(handle)</td><td>handle for the newly created vessel</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>You can get a rawstatus from another vessel with the get_rawstatus vessel method if you want e.g to spawn an MMU outside a vessel:
+
+<div class="code">
+	local vs = vi:get_rawstatus(1) -- 1 = VESSELSTATUS, 2 = VESSELSTATUS2<br/>
+	local hMMU = oapi.create_vessel(name, "Nasa_MMU", vs)<br/>
+	vi:dock(hMMU, 0, 0, 1)<br/>
+	oapi.set_focusobject(hMMU)<br/>
+</div>
+</p>
+<p>A configuration file for the specified vessel class must exist in the Config or Config/Vessels subdirectory.</p>
+</div>
+
+<div class="func"><a name="oapi_set_focusobject"></a>
+<h3>pVessel = oapi.set_focusobject(handle)<br/>
+pVessel = oapi.set_focusobject(name)<br/>
+pVessel = oapi.set_focusobject(index)<br/>
+</h3>
+<p>Switches the input focus to a different vessel object.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>handle&nbsp;(handle):</td><td>vessel handle</td></tr>
+<tr><td>name&nbsp;(string):</td><td>vessel name</td></tr>
+<tr><td>index&nbsp;(number):</td><td>vessel index</td></tr>
+</table>
+<h4>Return value:</h4>
+<table>
+<tr><td>pVessel&nbsp;(handle)</td><td>Handle of vessel losing focus, or nil if focus did not change.</td></tr>
+</table>
+
+<h4>Note:</h4>
+<p>handle must refer to a vessel object. Trying to set the focus to a different object type will fail.</p>
+</div>
 
 <div class="func"><a name="oapi_get_simtime"></a>
 <h3>simt = oapi.get_simtime()</h3>
@@ -873,6 +1010,43 @@ to simt.</td></tr>
 <p><a href="#oapi_equ_to_global">oapi.equ_to_global</a></p>
 </div>
 
+<div class="func"><a name="oapi_global_to_local"></a>
+<h3>local = oapi.global_to_local(hobj,glob)</h3>
+<p>Maps a point from the global frame to a local object frame.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hobj&nbsp;(handle):</td><td>object handle</td></tr>
+<tr><td>glob&nbsp;(vector):</td><td>position in global coordinates</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>local&nbsp;(vector):</td><td>point mapped into local coordinates</td></tr>
+</table>
+</div>
+
+<div class="func"><a name="oapi_local_to_equ"></a>
+<h3>equ = oapi.local_to_equ(hobj,glob)</h3>
+<p>Returns the equatorial coordinates of a point given in the local frame of an object.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hobj&nbsp;(handle):</td><td>object handle</td></tr>
+<tr><td>glob&nbsp;(vector):</td><td>position in global coordinates</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>equ&nbsp;(table):</td><td>equatorial coordinates in the local frame of hobj<br />
+<table>
+<tr><td>equ.lng</td><td>longitude [rad]</td></tr>
+<tr><td>equ.lat</td><td>latitude [rad]</td></tr>
+<tr><td>equ.rad</td><td>distance from object frame origin [m]</td></tr>
+</table>
+</td></tr>
+</table>
+</div>
 
 <div class="func"><a name="oapi_equ_to_global"></a>
 <h3>glob = oapi.equ_to_global(hobj,equ)</h3>
@@ -1073,6 +1247,25 @@ pos = vec.sub(oapi.get_globalpos(), oapi.get_globalpos(hp))
 </p>
 </div>
 
+<div class="func"><a name="oapi_get_rotationmatrix"></a>
+<h3>m = oapi.get_rotationmatrix(hObj)</h3>
+<p>Returns the current rotation matrix of an object.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hObj&nbsp;(handle):</td><td>object handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>m&nbsp;(matrix):</td><td>rotation matrix</td></tr>
+</table>
+
+<h4>Note:</h4>
+<p>The returned rotation matrix can be used to transform orientations from the
+ local frame of an object to Orbiter's global reference frame (ecliptic and equinox of J2000)
+ and vice versa.</p>
+</div>
 
 <div class="func"><a name="oapi_get_relativevel"></a>
 <h3>rvel = oapi.get_relativevel(hRef)<br />
@@ -2104,14 +2297,277 @@ continued key press, the function must be called for multiple frames</p>
 <table>
 <tr><td>key1, key2, ... (numbers):</td><td>list of keycodes for pressed keys</td></tr>
 </table>
-</div>
 
 <h4>Example:</h4>
 <div class="code">
 proc.wait_simdt(10, function() oapi.simulateimmediatekey(OAPI_KEY.Z) end)
 </div>
+</div>
+
+<div class="func">
+<h3><a name="oapi_register_exhausttexture"></a>texture = oapi.register_exhausttexture(fname)</h3>
+<p>Request a custom texture for vessel exhaust rendering.</p>
+
+<h4>Parameter:</h4>
+<table>
+<tr><td>fname(string):</td><td>exhaust texture file name (without path and extension)</td></tr>
+</table>
+
+<h4>Return value:</h4>
+<table>
+<tr><td>texture&nbsp;(handle):</td><td>texture handle</td></tr>
+</table>
+
+<h4>Example:</h4>
+<div class="code">
+	th_main = vi:create_thruster({pos=_V(0, 0, -21), dir=THRUSTGIMBAL_LAUNCH, maxth0=SRB_THRUST, hprop=ph_main, isp0=SRB_ISP0, ispr=SRB_ISP1})<br/>
+	tex = oapi.register_exhausttexture("Exhaust2")<br/>
+	vi:add_exhaust(th_main, 16.0, 2.0, tex)<br/>
+</div>
+</div>
+
+<div class="func">
+<h3><a name="oapi_register_reentrytexture"></a>texture = oapi.register_reentrytexture(fname)</h3>
+<p>Request a custom texture for vessel reentry flame rendering.</p>
+
+<h4>Parameter:</h4>
+<table>
+<tr><td>fname(string):</td><td>reentry flame texture file name (without path and extension)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>texture&nbsp;(handle):</td><td>texture handle</td></tr>
+</table>
+</div>
+
+<div class="func">
+<h3><a name="oapi_register_particletexture"></a>texture = oapi.register_particletexture(fname)</h3>
+<p>Request a custom texture for vessel particle rendering.</p>
+
+<h4>Parameter:</h4>
+<table>
+<tr><td>fname(string):</td><td>particle texture file name (without path and extension)</td></tr>
+</table>
+
+<h4>Return value:</h4>
+<table>
+<tr><td>texture&nbsp;(handle):</td><td>texture handle</td></tr>
+</table>
+</div>
+
+
+<div class="func">
+<h3><a name="oapi_get_texturehandle"></a>texture = oapi.get_texturehandle(hMesh, texid)</h3>
+<p>Retrieve a surface handle for a mesh texture.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hMesh(handle):</td><td>mesh handle</td></tr>
+<tr><td>texid(number):</td><td>texture index (>=1)</td></tr>
+</table>
+
+<h4>Return value:</h4>
+<table>
+<tr><td>texture&nbsp;(handle):</td><td>texture handle</td></tr>
+</table>
+<h4>Notes:</h4>
+<p>This function can be used for dynamically updating textures during the simulation.</p>
+<p>The texture index is given by the order in which the textures appear in the texture list at the end of the mesh file.</p>
+<p><b>Important:</b> Any textures which are to be dynamically modified should be
+listed with the "D" flag ("dynamic") in the mesh file. This causes Orbiter to
+decompress the texture when it is loaded. Blitting operations to compressed
+surfaces is very inefficient on most graphics hardware.</p>
+</div>
+
+
+<div class="func">
+<h3><a name="oapi_load_texture"></a>texture = oapi.load_texture(fname[, dynamic])</h3>
+<p>Load a texture from a file.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>fname(string):</td><td>texture file name</td></tr>
+<tr><td>dynamic(boolean):</td><td>allow dynamic modification (optional, default = false)</td></tr>
+</table>
+
+<h4>Return value:</h4>
+<table>
+<tr><td>texture&nbsp;(handle):</td><td>handle for the loaded texture, or nil if not found.</td></tr>
+</table>
+<h4>Notes:</h4>
+<p>Textures loaded by this function should be in DDS format and conform to the
+DirectX restrictions for texture surfaces, typically square bitmaps with
+dimensions of powers of 2 (128x128, 256x256, etc.).</p>
+<p>When using the D3D9Client, additional file formats (e.g. bmp) are supported, and power of 2 restrictions are lifted.</p>
+<p>File names can contain search paths. Orbiter searches for textures in the
+standard way, i.e. first searches the HitexDir directory (usually Textures2),
+then the TextureDir directory (usually Textures). All search paths are relative
+to the texture root directories. For example, oapi.load_texture("myvessel/mytex.dds") would first search for Textures2/myvessel/mytex.dds, 
+then for Textures/myvessel/mytex.dds.</p>
+</div>
+
+<div class="func">
+<h3><a name="oapi_release_texture"></a>oapi.release_texture(hTex)</h3>
+<p>Release a texture.</p>
+
+<h4>Parameter:</h4>
+<table>
+<tr><td>hTex(handle):</td><td>Texture surface handle.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>After the function returns, the surface handle is invalid and should no longer be used.</p>
+<p>Do not release textures that are referenced by a mesh. Mesh textures are released automatically.</p>
+</div>
+
+<div class="func">
+<h3><a name="oapi_get_sketchpad"></a>skp = oapi.get_sketchpad(surf)</h3>
+<p>Obtain a drawing context for a surface.</p>
+
+<h4>Parameter:</h4>
+<table>
+<tr><td>surf(handle):</td><td>surface handle</td></tr>
+</table>
+<h4>Return value:</h4>
+<table>
+<tr><td>skp&nbsp;(sketchpad):</td><td>drawing context instance, or nil if no graphics support</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function returns a valid context instance only when Orbiter
+ is attached to a graphics client which supports 2-D drawing into
+ surfaces. The caller should check the return value for nil.</p>
+<p>If a non-nil sketchpad instance was returned, it should be
+ released with oapi.release_sketchpad after drawing.</p>
+<p>Most graphics clients must lock the surface data buffer (and copy it
+ to main memory, if necessary) before drawing access can be provided. This
+ means that read/write access to the surface (e.g. for blitting) may be
+ disabled between oapi.get_sketchpad and oapi.release_sketchpad, and should
+ be avoided.</p>
+</div>
+
+
+<div class="func">
+<h3><a name="oapi_release_sketchpad"></a>oapi.release_sketchpad(skp)</h3>
+<p>Release a drawing device context instance.</p>
+
+<h4>Parameter:</h4>
+<table>
+<tr><td>skp(sketchpad):</td><td>drawing context instance</td></tr>
+</table>
+
+<h4>Note:</h4>
+<p>Use this function to release a device instance previously acquired with oapi.get_sketchpad</p>
+</div>
+
+
+<div class="func">
+<h3><a name="oapi_create_font"></a>font = oapi.create_font(height, prop, face)</h3>
+<p>Creates a font resource for drawing text into surfaces.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>height(number):</td><td>font height [pixel]</td></tr>
+<tr><td>prop(number):</td><td>flag for proportional/fixed pitch font</td></tr>
+<tr><td>face(string):</td><td>typeface name</td></tr>
+</table>
+<h4>Return value:</h4>
+<table>
+<tr><td>font&nbsp;(handle):</td><td>font resource handle.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The following generic typeface names should be understood
+by all graphics systems:
+<ul>
+<li>Fixed (fixed pitch font)</li>
+<li>Sans (sans-serif proportional font)</li>
+<li>Serif (serif proportional font)</li>
+</ul>
+</p><p>
+Other font names may not be recognised by all graphics clients.
+In that case, the default fixed or sans-serif font will be used,
+depending on the value of prop.</p>
+<p>After use, the font should be deallocated with oapi.release_font.</p>
+</div>
+
+
+<div class="func">
+<h3><a name="oapi_create_pen"></a>pen = oapi.create_pen(style, width, color)</h3>
+<p>Creates a pen resource for drawing lines and shape outlines.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>style(number):</td><td>line style (0=invisible, 1=solid, 2=dashed)</td></tr>
+<tr><td>width(number):</td><td>line width [pixel]</td></tr>
+<tr><td>color(number):</td><td>line colour (format: 0xBBGGRR)</td></tr>
+</table>
+<h4>Return value:</h4>
+<table>
+<tr><td>pen&nbsp;(handle):</td><td>pen resource handle.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>After use, the pen should be deallocated with oapi.release_pen.</p>
+<p>You can use the _RGB function to create the color.</p>
+<h4>Example:</h4>
+<div class="code">
+pen = oapi.create_pen(1, 1, _RGB(96, 96, 96))
+</div>
+</div>
+
+<div class="func">
+<h3><a name="oapi_create_brush"></a>brush = oapi.create_brush(color)</h3>
+<p>Creates a brush resource for filling shapes.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>color(number):</td><td>shape fill colour (format: 0xBBGGRR)</td></tr>
+</table>
+<h4>Return value:</h4>
+<table>
+<tr><td>brush&nbsp;(handle):</td><td>brush resource handle.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>After use, the brush should be deallocated with oapi.release_brush.</p>
+<p>You can use the _RGB function to create the color.</p>
+<h4>Example:</h4>
+<div class="code">
+brush = oapi.create_brush(_RGB(255, 0, 0))
+</div>
+</div>
+
+<div class="func">
+<h3><a name="oapi_release_font"></a>oapi.release_font(font)</h3>
+<p>Release a font resource.</p>
+<h4>Parameters:</h4>
+<table>
+<tr><td>font(handle):</td><td>handle to font resource</td></tr>
+</table>
+</div>
+
+<div class="func">
+<h3><a name="oapi_release_pen"></a>oapi.release_pen(pen)</h3>
+<p>Release a pen resource.</p>
+<h4>Parameters:</h4>
+<table>
+<tr><td>pen(handle):</td><td>handle to pen resource</td></tr>
+</table>
+</div>
+
+<div class="func">
+<h3><a name="oapi_release_brush"></a>oapi.release_brush(brush)</h3>
+<p>Release a brush resource.</p>
+<h4>Parameters:</h4>
+<table>
+<tr><td>brush(handle):</td><td>handle to brush resource</td></tr>
+</table>
+</div>
 
 </div>
+
 
 </body>
 </html>

@@ -1,5 +1,5 @@
 /** \mainpage Orbiter API Reference Manual
-  \image html banner2016.png
+  \image html banner.png
   <center>Orbiter Software and documentation Copyright (C) 2016 Martin Schweiger</center>
 
   The Orbiter SDK Package contains this document in compiled HTML format (CHM) and in

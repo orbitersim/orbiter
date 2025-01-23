@@ -23,7 +23,7 @@ add_dependencies(MFDTemplate
 	Orbitersdk
 )
 
-set_target_properties(LaunchpadParamTemplate
+set_target_properties(MFDTemplate
 	PROPERTIES
 	FOLDER SDKSamples
 )

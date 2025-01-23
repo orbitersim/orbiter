@@ -28,7 +28,6 @@ VBMESH::VBMESH (class TileManager2Base *pmgr)
 	, bBox(false)
 	, nv_cur(0)
 	, nf_cur(0)
-	, pMgr(pmgr)
 	, bsRad(0.0)
 {
 }
@@ -41,7 +40,6 @@ VBMESH::VBMESH ()
 	, nv(0)
 	, nf(0)
 	, bBox(false)
-	, pMgr(NULL)
 	, nv_cur(0)
 	, nf_cur(0)
 	, bsRad(0.0)
@@ -50,15 +48,10 @@ VBMESH::VBMESH ()
 
 VBMESH::~VBMESH ()
 {
-	if (pMgr) {
-		pMgr->RecycleVertexBuffer(0, &pVB);
-		pMgr->RecycleIndexBuffer(0, &pIB);
-	} else {
-		SAFE_RELEASE(pVB);
-		SAFE_RELEASE(pIB);
-	}
-	SAFE_DELETEA(vtx);
-	SAFE_DELETEA(idx);
+	if (pVB) g_pVtxmgr_vb->Free(pVB);
+	if (pIB) g_pIdxmgr_ib->Free(pIB);
+	if (vtx) g_pMemgr_vtx->Free(vtx);
+	if (idx) g_pMemgr_w->Free(idx);
 	nv_cur = 0;
 	nf_cur = 0;
 }
@@ -73,25 +66,11 @@ void VBMESH::ComputeSphere()
 void VBMESH::MapVertices(LPDIRECT3DDEVICE9 pDev, DWORD MemFlag)
 {
 	if (nv!=nv_cur && vtx) {
-		// Resize Vertex Buffer
-		if (pMgr) {
-			nv_cur = pMgr->RecycleVertexBuffer(nv, &pVB);
-		} else {
-			SAFE_RELEASE(pVB);
-			HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &pVB, NULL));
-			nv_cur = nv;
-		}
+		pVB = g_pVtxmgr_vb->New(nv); nv_cur = nv;
 	}
 
 	if (nf!=nf_cur && idx) {
-		// Resize Index Buffer
-		if (pMgr) {
-			nf_cur = pMgr->RecycleIndexBuffer(nf, &pIB);
-		} else {
-			SAFE_RELEASE(pIB);
-			HR(pDev->CreateIndexBuffer(nf*sizeof(WORD)*3, D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_DEFAULT, &pIB, NULL));
-			nf_cur = nf;
-		}
+		pIB = g_pIdxmgr_ib->New(nf); nf_cur = nf;
 	}
 
 	VERTEX_2TEX *pVBuffer;
@@ -139,8 +118,8 @@ void CreateSphere (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, DWORD nrings, bool hemi
 	// Allocate memory for the vertices and indices
 	DWORD       nVtx = hemisphere ? nrings*(nrings+1)+2 : nrings*(2*nrings+1)+2;
 	DWORD       nIdx = hemisphere ? 6*nrings*nrings : 12*nrings*nrings;
-	VERTEX_2TEX* Vtx = new VERTEX_2TEX[nVtx];
-	WORD*        Idx = new WORD[nIdx];
+	VERTEX_2TEX* Vtx = g_pMemgr_vtx->New(nVtx);
+	WORD*        Idx = g_pMemgr_w->New(nIdx);
 
 	// Counters
     WORD x, y, nvtx = 0, nidx = 0;
@@ -223,8 +202,8 @@ void CreateSphere (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, DWORD nrings, bool hemi
 	mesh.idx = Idx;
 	mesh.MapVertices(pDev);
 	
-	delete []Vtx;
-	delete []Idx;
+	if (Vtx) g_pMemgr_vtx->Free(Vtx);
+	if (Idx) g_pMemgr_w->Free(Idx);
 
 	Vtx = NULL;
 	Idx = NULL;
@@ -254,7 +233,7 @@ void CreateSpherePatch (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, int nlng, int nlat
 	// generate nodes
 	nVtx = (bseg+1)*(res+1);
 	if (reduce) nVtx -= ((res+1)*res)/2;
-	VERTEX_2TEX *Vtx = new VERTEX_2TEX[nVtx];
+	VERTEX_2TEX *Vtx = g_pMemgr_vtx->New(nVtx);
 
 	// create transformation for bounding box
 	// we define the local coordinates for the patch so that the x-axis points
@@ -320,7 +299,7 @@ void CreateSpherePatch (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, int nlng, int nlat
 
 	// generate faces
 	nIdx = (reduce ? res * (2*bseg-res) : 2*res*bseg) * 3;
-	WORD *Idx = new WORD[nIdx]();
+	WORD *Idx = g_pMemgr_w->New(nIdx);
 
 	for (i = n = nofs0 = 0; i < res; i++) {
 		nseg = (reduce ? bseg-i : bseg);
@@ -346,8 +325,8 @@ void CreateSpherePatch (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, int nlng, int nlat
 	mesh.idx = Idx;
 	mesh.MapVertices(pDev);
 
-	delete []Vtx;
-	delete []Idx;
+	if (Vtx) g_pMemgr_vtx->Free(Vtx);
+	if (Idx) g_pMemgr_w->Free(Idx);
 
 	Vtx = NULL;
 	Idx = NULL;
@@ -375,22 +354,19 @@ void CreateSpherePatch (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, int nlng, int nlat
 // ====================================================================
 // NOTE: This is used to delete a vertex buffers from a static VBMESH
 //
-void DestroyVBMesh (VBMESH &mesh)
+void ClearVBMesh (VBMESH &mesh)
 {
-	if (mesh.pMgr) {
-		mesh.pMgr->RecycleVertexBuffer(0, &mesh.pVB);
-		mesh.pMgr->RecycleIndexBuffer(0, &mesh.pIB);
-	} else {
-		SAFE_RELEASE(mesh.pVB);
-		SAFE_RELEASE(mesh.pIB);
-	}
-
-	SAFE_DELETEA(mesh.vtx);
-	SAFE_DELETEA(mesh.idx);
-
+	if (mesh.pVB) g_pVtxmgr_vb->Free(mesh.pVB);
+	if (mesh.pIB) g_pIdxmgr_ib->Free(mesh.pIB);
+	if (mesh.vtx) g_pMemgr_vtx->Free(mesh.vtx);
+	if (mesh.idx) g_pMemgr_w->Free(mesh.idx);
 	mesh.nv = 0;
 	mesh.nf = 0;
 	mesh.nv_cur = 0;
 	mesh.nf_cur = 0;
+	mesh.pVB = nullptr;
+	mesh.pIB = nullptr;
+	mesh.vtx = nullptr;
+	mesh.idx = nullptr;
 }
 

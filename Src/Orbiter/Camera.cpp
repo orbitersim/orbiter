@@ -23,12 +23,8 @@
 #include "Util.h"
 #include "Log.h"
 #include "OrbiterAPI.h"
+#include "Vobject.h"
 #include <zmouse.h>
-
-#ifdef INLINEGRAPHICS
-#include "OGraphics.h"
-#include "Scene.h"
-#endif // INLINEGRAPHICS
 
 using namespace std;
 
@@ -86,7 +82,7 @@ Camera::Camera (double _nearplane, double _farplane)
 	VMAT_identity (view_mat);
 	SetFrustumLimits (nearplane, farplane);
 	ECC = 0;
-	etile.resize(2);
+	etile.resize(8);
 }
 
 Camera::~Camera ()
@@ -526,7 +522,7 @@ void Camera::ShiftDist (double shift)
 {
 	double fact;
 	if (external_view && extmode != CAMERA_GROUNDOBSERVER) {
-		double scale = max (1e-6, (rdist-1.0)/rdist); // slow down when approaching target radius
+		double scale = max (1e-4, (rdist-1.0)/rdist); // slow down when approaching target radius
 		scale = max(scale, 1.0/target->Size());       // move at least 1m/s
 		shift *= scale;
 	}
@@ -637,6 +633,11 @@ void Camera::SetCockpitDir (double ph, double th)
 	}
 	eyeofs = mul (rrot, Vector (0,0.1,0.08)) - eyeofs0;
 	if (!isStdDir) eyeofs = mul (rrot0, eyeofs);
+}
+
+void Camera::SetDistance(double rd)
+{
+	rdist = rd;
 }
 
 void Camera::ResetCockpitDir (bool smooth)
@@ -1014,11 +1015,7 @@ void Camera::Update ()
 	VObject **vobj, *vo;
 	const Body *bd;
 	int i, nobj;
-#ifdef INLINEGRAPHICS
-	nobj = g_pOrbiter->GetInlineGraphicsClient()->GetScene()->GetObjects (&vobj);
-#else
 	nobj = 0; vobj = 0;
-#endif // INLINEGRAPHICS
 	for (i = 0; i < nobj; i++) {
 		bd = (vo = vobj[i])->GetBody();
 		if (!external_view && bd == (Body*)g_focusobj &&
@@ -1037,10 +1034,6 @@ void Camera::Update ()
 		}
 		if (dist < dist_proxy) dist_proxy = dist;
 	}
-#ifdef INLINEGRAPHICS
-	if (dist_proxy > 0.0)
-		dist_proxy = min(dist_proxy, g_pOrbiter->GetInlineGraphicsClient()->GetScene()->MinParticleCameraDist());
-#endif
 
 	// find the largest apparent planet
 	double ralt_proxy = 1e100;
@@ -1330,11 +1323,6 @@ void Camera::UpdateProjectionMatrix ()
 		proj_mat._43 = (proj_mat._33 = farplane / (farplane-nearplane)) * (-nearplane);
 	}
 	proj_mat._34 = 1.0f;
-
-#ifdef INLINEGRAPHICS
-	OrbiterGraphics *og = g_pOrbiter->GetInlineGraphicsClient();
-	if (og) og->clbkSetCamera (aspect, tan_ap, nearplane, farplane);
-#endif
 
 	// register new projection matrix with device
     //pDev->SetTransform (D3DTRANSFORMSTATE_PROJECTION, &proj_mat);

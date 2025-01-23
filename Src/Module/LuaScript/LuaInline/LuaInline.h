@@ -45,9 +45,11 @@ public:
 	InterpreterList (HINSTANCE hDLL);
 	~InterpreterList ();
 
-	void clbkSimulationEnd ();
-	void clbkPostStep (double simt, double simdt, double mjd);
-
+	void clbkSimulationEnd () override;
+	void clbkPostStep (double simt, double simdt, double mjd) override;
+	void clbkSimulationStart (RenderMode mode) override;
+	void clbkDeleteVessel (OBJHANDLE hVessel) override;
+	
 	Environment *AddInterpreter ();
 	int DelInterpreter (Environment *env);
 

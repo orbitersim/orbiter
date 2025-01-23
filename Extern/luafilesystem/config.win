@@ -1,0 +1,19 @@
+LUA_VERSION= 5.1
+
+# Installation directories
+# System's libraries directory (where binary libraries are installed)
+LUA_LIBDIR= "c:\lua$(LUA_VERSION)"
+
+# Lua includes directory
+LUA_INC= "c:\lua$(LUA_VERSION)\include"
+
+# Lua library
+LUA_LIB= "c:\lua$(LUA_VERSION)\lua$(LUA_VERSION).lib"
+
+# Compilation directives
+WARN= /O2
+INCS= /I$(LUA_INC)
+CFLAGS= /MD $(WARN) $(INCS)
+CC= cl
+
+# $Id: config.win,v 1.7 2008/03/25 17:39:29 mascarenhas Exp $

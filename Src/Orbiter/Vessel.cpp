@@ -43,10 +43,6 @@
 #include <stdlib.h>
 #include <string>
 
-#ifdef INLINEGRAPHICS
-#include "VVessel.h"
-#endif // INLINEGRAPHICS
-
 using namespace std;
 
 extern Orbiter *g_pOrbiter;
@@ -1184,7 +1180,7 @@ bool Vessel::SetTouchdownPoints (const TOUCHDOWNVTX *tdvtx, DWORD ntp)
 	Vector ez(crossp(ex,touchdown_nm));
 	Matrix R(ex.x,ex.y,ex.z,  touchdown_nm.x,touchdown_nm.y, touchdown_nm.z, ez.x,ez.y,ez.z);
 	// 2. Compute the compression factors (actual compression length is given by factor*mg)
-	// See Doc/Technotes/dynsurf.pdf for details
+	// See "Dynamic vessel-surface interaction" in "Orbiter Technical Reference" for details
 	Vector tr[3];
 	a = b = c = d = e = f = 0.0;
 	for (i = 0; i < 3; i++) {
@@ -2580,6 +2576,8 @@ PortSpec *Vessel::CreateDock (const Vector &pos, const Vector &dir, const Vector
 	dock[ndock]->ids  = 0;
 	dock[ndock]->pending = 0;
 	dock[ndock]->status = 0;
+	dock[ndock]->owner = this;
+	dock[ndock]->autodock = true;
 	return dock[ndock++];
 }
 
@@ -2692,6 +2690,65 @@ void Vessel::UnregisterDocking (DWORD did)
 
 // ==============================================================
 
+void Vessel::MoveDock(PortSpec* pD, const Vector& pos, const Vector& dir, const Vector& rot)
+{
+	pD->ref = pos;
+	pD->dir = dir;
+	pD->rot = rot;
+	if (pD->mate) if (supervessel) supervessel->SoftDockUpdate(this, pD);
+}
+
+// ==============================================================
+
+PortSpec* Vessel::GetProxyDock(PortSpec *pD)
+{
+	double maxd = 1e30;
+	PortSpec* pTgt = nullptr;
+	if (ndock == 0) return nullptr;
+	if (pD->mate) return nullptr;
+
+	assert(pD->owner == this);
+
+	Vector dofs = mul(s0->R, pD->ref);
+
+	for (auto v : g_psys->GetVessels())
+	{
+		if (v == this) continue;
+		if (v->proxybody != proxybody) continue;
+		if (v->ndock == 0) continue;
+		
+		double dst = s0->pos.dist(v->GPos());
+		if ((dst < 1.5 * (size + v->Size()) || (dst < size + v->Size() + 1e3))) { // valid candidate		
+			for (int k = 0; k < v->ndock; k++) { // loop over vessel's docks
+				if (v->dock[k]->mate) continue; // dock already busy
+				Vector dref = tmul(v->GRot(), dofs + s0->pos - v->GPos());
+				dref = dref - v->dock[k]->ref;
+				double d = dref.length();
+				if (d < maxd) {
+					maxd = d;
+					pTgt = v->dock[k];
+				}
+			}	
+		}
+	}
+	return pTgt;
+}
+
+// ==============================================================
+
+bool Vessel::GetTargetDockAlignment(PortSpec* pD, PortSpec* pT, Vector* ref, Vector* dir, Vector* rot, Vector* vel)
+{
+	Vessel* pVT = pT->owner;
+	if (pVT->proxybody != proxybody) return false;
+	if (ref) *ref = tmul(GRot(), mul(pVT->GRot(), pT->ref) + pVT->GPos() - GPos()) - pD->ref;
+	if (dir) *dir = tmul(GRot(), mul(pVT->GRot(), pT->dir));
+	if (rot) *rot = tmul(GRot(), mul(pVT->GRot(), pT->rot));
+	if (vel) *vel = mul(GRot(), crossp(pD->ref, s0->omega)) + s0->vel - pVT->s0->vel; // relvel ECL 
+	return true;
+}
+
+// ==============================================================
+
 int Vessel::Dock (Vessel *target, DWORD mydid, DWORD tgtdid, DWORD mode)
 {
 	if (dock[mydid]->mate) return 1;          // error: my dock already in use
@@ -2703,6 +2760,16 @@ int Vessel::Dock (Vessel *target, DWORD mydid, DWORD tgtdid, DWORD mode)
 	if (mode) {
 		Vector P;
 		Matrix R;
+		if (mode == 3) { // Soft-dock, continue with mode 0
+			Vector rf, dr, rt;
+			if (GetTargetDockAlignment(dock[mydid], target->dock[tgtdid], &rf, &dr, &rt)) {
+				dock[mydid]->ref = rf + dock[mydid]->ref;
+				dock[mydid]->dir = -dr;
+				dock[mydid]->rot = rt;
+			}
+			mode = 0;
+		}
+
 		if (mode == 1) { // drag target to our current position
 			RelDockingPos (target, mydid, tgtdid, P, R);
 			target->RPlace (s0->pos + mul(s0->R, P), s0->vel);
@@ -4999,7 +5066,8 @@ void Vessel::PostUpdate ()
 								dref.Set (tmul (v->GRot(), mul (s0->R, dock[j]->ref) + s0->pos - v->GPos()));
 								double d = dref.dist (v->dock[k]->ref);
 								if (d < MIN_DOCK_DIST) {
-									Dock (v, j, k);
+									if (dock[j]->autodock && v->dock[k]->autodock)
+										Dock (v, j, k);
 								}
 							}
 						} else { // new docking mode
@@ -5013,7 +5081,8 @@ void Vessel::PostUpdate ()
 									if (dotp (s0->vel - v->GVel(), vref-gref) >= 0) { // on approach
 										dock[j]->pending = v;
 									} else if (dock[j]->pending == v) {
-										Dock (v, j, k);
+										if (dock[j]->autodock && v->dock[k]->autodock)
+											Dock (v, j, k);
 									}
 								}
 							}
@@ -5153,18 +5222,6 @@ void Vessel::DrawHUD (HUD *hud, oapi::Sketchpad *skp)
 		bool drawn = false;
 		if (modIntf.v->Version() >= 2) {
 			drawn = ((VESSEL3*)modIntf.v)->clbkDrawHUD (hud->Mode(), hud->PaintSpec(), skp);
-		}
-		if (!drawn) {
-#ifdef INLINEGRAPHICS
-			HDC hDC = skp->GetDC();
-			if (hDC) {
-				hudskp = skp; // need to store the sketchpad instance for the callback
-				((VESSEL2*)modIntf.v)->clbkDrawHUD (hud->Mode(), hud->PaintSpec(), hDC);
-				hudskp = NULL;
-			}
-#else
-			// If this is really required then need to figure out a work-a-round.
-#endif // INLINEGRAPHICS
 		}
 	} else
 		hud->DrawDefault (skp);
@@ -7361,9 +7418,51 @@ UINT VESSEL::DockingStatus (UINT port) const
 	return (vessel->GetDockParams(port)->mate ? 1 : 0);
 }
 
+void VESSEL::MoveDock(DOCKHANDLE hDock, const VECTOR3& pos, const VECTOR3& dir, const VECTOR3& rot)
+{
+	vessel->MoveDock((PortSpec*)hDock, MakeVector(pos), MakeVector(dir), MakeVector(rot));
+}
+
+DOCKHANDLE VESSEL::GetProxyDock(DOCKHANDLE hDock) const
+{
+	return (DOCKHANDLE)vessel->GetProxyDock((PortSpec*)hDock);
+}
+
+int VESSEL::GetDockIndex(DOCKHANDLE hDock) const
+{
+	for (int i = 0; i < vessel->ndock; i++) if (vessel->dock[i] == hDock) return i;
+	return -1;
+}
+
+bool VESSEL::GetTargetDockAlignment(DOCKHANDLE pD, DOCKHANDLE pT, VECTOR3* ofs, VECTOR3* dir, VECTOR3* rot, VECTOR3* vel) const
+{
+	Vector o, d, r, v;
+	Vector* op = ofs ? &o : nullptr; Vector* dp = dir ? &d : nullptr;
+	Vector* rp = rot ? &r : nullptr; Vector* vp = vel ? &v : nullptr;
+	if (vessel->GetTargetDockAlignment((PortSpec*)pD, (PortSpec*)pT, op, dp, rp, vp)) {
+		if (ofs) { ofs->x = o.x; ofs->y = o.y; ofs->z = o.z; }
+		if (dir) { dir->x = d.x; dir->y = d.y; dir->z = d.z; }
+		if (rot) { rot->x = r.x; rot->y = r.y; rot->z = r.z; }
+		if (vel) { vel->x = v.x; vel->y = v.y; vel->z = v.z; }
+		return true;
+	}
+	return false;
+}
+
 int VESSEL::Dock (OBJHANDLE target, UINT n, UINT tgtn, UINT mode) const
 {
 	return vessel->Dock ((Vessel*)target, n, tgtn, mode);
+}
+
+int VESSEL::Dock(DOCKHANDLE hSrc, DOCKHANDLE hTgt, DWORD mode) const
+{
+	Vessel* pS = ((PortSpec*)hSrc)->owner;
+	Vessel* pT = ((PortSpec*)hTgt)->owner;
+	int n = -1, t = -1;
+	for (int i = 0; i < pS->ndock; i++) if (pS->dock[i] == ((PortSpec*)hSrc)) { n = i; break; }
+	for (int i = 0; i < pT->ndock; i++) if (pT->dock[i] == ((PortSpec*)hTgt)) { t = i; break; }
+	if (n >= 0 && t >= 0) return vessel->Dock(pT, n, t, mode);
+	return -4;
 }
 
 bool VESSEL::Undock (UINT n, const OBJHANDLE exclude) const
@@ -7641,11 +7740,7 @@ UINT VESSEL::GetMeshCount () const
 
 MESHHANDLE VESSEL::GetMesh (VISHANDLE vis, UINT idx) const
 {
-#ifdef INLINEGRAPHICS
-	return g_pOrbiter->GetGraphicsClient()->clbkGetMesh (vis, idx);
-#else
 	return NULL;
-#endif
 }
 
 DEVMESHHANDLE VESSEL::GetDevMesh (VISHANDLE vis, UINT idx) const
@@ -8247,6 +8342,7 @@ void VESSEL::IncThrusterLevel (THRUSTER_HANDLE th, double dlevel) const
 	if (vessel->bFRplayback) return;
 	ThrustSpec *ts = (ThrustSpec*)th;
 	ts->level_permanent += dlevel;
+	ts->level_permanent = max (0.0, min (1.0, ts->level_permanent));
 	if (ts->tank && ts->tank->mass)
 		ts->level = max (0.0, min (1.0, ts->level_permanent + ts->level_override));
 }
@@ -8729,11 +8825,7 @@ bool VESSEL::GetEditorModule (char *fname) const
 
 bool VESSEL::MeshgroupTransform (VISHANDLE vis, const MESHGROUP_TRANSFORM &mt) const
 {
-#ifdef INLINEGRAPHICS
-	return ((VVessel*)vis)->MeshgroupTransform (mt);
-#else
 	return false; // not supported yet
-#endif
 }
 
 // ==============================================================

@@ -46,18 +46,6 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
-#ifdef INLINEGRAPHICS
-#include "OGraphics.h"
-#include "Texture.h"
-#include "Scene.h"
-#include "TileMgr.h"
-#include "tilemgr2.h"
-#include "CSphereMgr.h"
-#include "VVessel.h"
-#include "ScreenNote.h"
-TextureManager* g_texmanager = 0;
-#endif // INLINEGRAPHICS
-
 using namespace std;
 using namespace oapi;
 
@@ -74,11 +62,7 @@ const int MAX_TEXTURE_BUFSIZE = 8000000;
 
 const TCHAR* g_strAppTitle = "OpenOrbiter";
 
-#ifdef INLINEGRAPHICS
 const TCHAR* MasterConfigFile = "Orbiter.cfg";
-#else
-const TCHAR* MasterConfigFile = "Orbiter_NG.cfg";
-#endif // INLINEGRAPHICS
 
 const TCHAR* CurrentScenario = "(Current state)";
 char ScenarioName[256] = "\0";
@@ -99,6 +83,7 @@ const double    MinWarpLimit     = 0.1;  // make variable
 const double    MaxWarpLimit     = 1e5;  // make variable
 DWORD           g_qsaveid        = 0;
 DWORD           g_customcmdid    = 0;
+int             g_iCursorShowCount = 0;
 
 // 2D info output flags
 BOOL g_bOutputTime  = TRUE;
@@ -185,7 +170,6 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdSh
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
-#ifndef INLINEGRAPHICS
 	// Verify working directory
 	char dir[1024];
 	GetCurrentDirectory(1024, dir);
@@ -193,17 +177,6 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdSh
 	// up to the Orbiter main directory
 	if (strlen(dir) >= 15 && !stricmp (dir+strlen(dir)-15, "\\Modules\\Server"))
 		SetCurrentDirectory("..\\..");
-#endif
-
-#ifdef INLINEGRAPHICS
-	// determine whether another instance already exists
-	hMutex = CreateMutex (NULL, TRUE, "Test");
-	if (GetLastError() == ERROR_ALREADY_EXISTS) {
-		MessageBox (NULL, "Another ORBITER application is already running.",
-			"ORBITER Error", MB_OK | MB_ICONEXCLAMATION);
-		return 0;
-	}
-#endif
 
     // If we're not running from actual console, hide the window
     if (ConsoleManager::IsConsoleExclusive())
@@ -330,9 +303,6 @@ Orbiter::Orbiter ()
 	m_pConsole      = NULL;
 	bFullscreen     = false;
 	viewW = viewH = viewBPP = 0;
-#ifdef INLINEGRAPHICS
-	oclient         = NULL;
-#endif
 	gclient         = NULL;
 	hRenderWnd      = NULL;
 	hBk             = NULL;
@@ -438,12 +408,6 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 	m_pLaunchpad = new orbiter::LaunchpadDialog (this); TRACENEW
 	m_pLaunchpad->Create (bStartVideoTab);
 
-#ifdef INLINEGRAPHICS
-	oclient = new OrbiterGraphics (this); TRACENEW
-	gclient = oclient;
-	gclient->clbkInitialise();
-#endif // INLINEGRAPHICS
-
 	Instrument::RegisterBuiltinModes();
 
 	script = new ScriptInterface(this); TRACENEW
@@ -494,14 +458,6 @@ VOID Orbiter::CloseApp (bool fast_shutdown)
 		DeactivateRoughType();
 
 	if (!fast_shutdown) {
-#ifdef INLINEGRAPHICS
-		if (oclient) {
-			oclient->clbkCleanup();
-			delete oclient;
-			oclient = 0;
-			gclient = 0;
-		}
-#endif
 		delete pDI;
 		if (memstat) delete memstat;
 		if (pConfig)  delete pConfig;
@@ -616,7 +572,6 @@ HINSTANCE Orbiter::LoadModule (const char *path, const char *name)
 		}
 	}
 
-#ifndef INLINEGRAPHICS
 	// Can't initialize DirectX in DllMain(), let's do it over here (jarmonik 28.12.2023) 
 	if (hDLL) {
 		if (register_module == gclient && gclient != NULL) {
@@ -630,7 +585,6 @@ HINSTANCE Orbiter::LoadModule (const char *path, const char *name)
 			}
 		}
 	}
-#endif
 
 	if (hDLL) {
 		DLLModule module = { hDLL, register_module ? register_module : new oapi::Module(hDLL), std::string(name), !register_module };
@@ -729,6 +683,8 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 	m_pLaunchpad->Hide(); // hide launchpad dialog while the render window is visible
 	
 	if (gclient) {
+		if(pState->SplashScreen())
+			gclient->clbkSetSplashScreen(pState->SplashScreen(), pState->SplashColor());
 		hRenderWnd = gclient->InitRenderWnd (gclient->clbkCreateRenderWindow());
 		GetRenderParameters ();
 	} else {
@@ -759,16 +715,6 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 	if (pCfg->CfgDebugPrm.TimerMode == 2) use_fine_counter = FALSE;
 
 	// Generate logical world objects
-#ifdef INLINEGRAPHICS
-	// these should be called from withing oclient
-	CreatePatchDeviceObjects (oclient->m_pD3D, oclient->m_pD3DDevice);
-	VObject::CreateDeviceObjects (oclient);
-	PatchManager::CreateDeviceObjects (oclient->m_pD3D, oclient->m_pD3DDevice);
-	TileManager::CreateDeviceObjects (oclient->m_pD3D, oclient->m_pD3DDevice);
-	TileManager2Base::CreateDeviceObjects (oclient->m_pD3D, oclient->m_pD3DDevice);
-	CSphereManager::CreateDeviceObjects (oclient->m_pD3D, oclient->m_pD3DDevice);
-	VVessel::CreateDeviceObjects (oclient->m_pD3DDevice);
-#endif // INLINEGRAPHICS
 	if (gclient) {
 		Base::CreateStaticDeviceObjects();
 	}
@@ -821,10 +767,6 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 	else {
 		pDlgMgr = new DialogManager(this, m_pConsole->WindowHandle());
 	}
-
-#ifdef INLINEGRAPHICS
-	//snote_playback = new ScreenNote (this, viewW, viewH);
-#endif // INLINEGRAPHICS
 
 	bSession = true;
 	bVisible = (hRenderWnd != NULL);
@@ -992,14 +934,7 @@ void Orbiter::CloseSession ()
 			exit (0); // just kill the process
 		} else {
 			LOGOUT("**** Respawning Orbiter process\r\n");
-#ifdef INLINEGRAPHICS
 			const char *name = "orbiter.exe";
-#else
-			const char *name = "modules\\server\\orbiter.exe";
-#endif
-#ifdef INLINEGRAPHICS
-			CloseHandle (hMutex);        // delete mutex so that we don't block the child
-#endif
 			_execl (name, name, "-l", NULL);   // respawn the process
 		}
 	}
@@ -1109,11 +1044,7 @@ INT Orbiter::Run ()
 		}
 
 		if (bSession) {
-#ifdef INLINEGRAPHICS
-			bCanRender = (oclient->m_pDD->TestCooperativeLevel() == DD_OK);
-#else
 			bCanRender = TRUE;
-#endif
 			if (bCanRender && !bpCanRender)
 				RestoreDeviceObjects ();
 			bpCanRender = bCanRender;
@@ -1171,7 +1102,12 @@ void Orbiter::UpdateServerWnd (HWND hWnd)
 void Orbiter::InitRotationMode ()
 {
 	bKeepFocus = true;
-	ShowCursor (FALSE);
+
+	// Checks if the cursor is already hidden
+	if (g_iCursorShowCount == 0) {
+		g_iCursorShowCount = ShowCursor(FALSE);
+	}
+
 	SetCapture (hRenderWnd);
 
 	// Limit cursor to render window confines, so we don't miss the button up event
@@ -1191,7 +1127,11 @@ void Orbiter::ExitRotationMode ()
 {
 	bKeepFocus = false;
 	ReleaseCapture ();
-	ShowCursor (TRUE);
+
+	// Checks if the cursor is already hidden
+	if (g_iCursorShowCount < 0) {
+		g_iCursorShowCount = ShowCursor (TRUE);
+	}
 
 	// Release cursor from render window confines
 	if (!bFullscreen && hRenderWnd) {
@@ -1288,14 +1228,11 @@ void Orbiter::InsertVessel (Vessel *vessel)
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++)
 		it->pModule->clbkNewVessel((OBJHANDLE)vessel);
 
-#ifdef INLINEGRAPHICS
-	oclient->clbkNewVessel((OBJHANDLE)vessel);
-#else
 	if (gclient) {
 		gclient->clbkNewVessel((OBJHANDLE)vessel);
 		gclient->clbkScenarioChanged((OBJHANDLE)vessel, ScnChgEvent::Added);
 	}
-#endif // INLINEGRAPHICS
+
 
 	if (pDlgMgr) pDlgMgr->BroadcastMessage (MSG_CREATEVESSEL, vessel);
 	//if (gclient) gclient->clbkDialogBroadcast (MSG_CREATEVESSEL, vessel);
@@ -1348,14 +1285,11 @@ bool Orbiter::KillVessels ()
 			for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++)
 				it->pModule->clbkDeleteVessel((OBJHANDLE)vessel);
 
-#ifdef INLINEGRAPHICS
-			oclient->clbkDeleteVessel((OBJHANDLE)vessel);
-#else
 			if (gclient) {
 				gclient->clbkDeleteVessel((OBJHANDLE)vessel);
 				gclient->clbkScenarioChanged((OBJHANDLE)vessel, ScnChgEvent::Deleted);
 			}
-#endif
+
 			// broadcast vessel destruction to all vessels
 			g_psys->BroadcastVessel (MSG_KILLVESSEL, vessel);
 			// broadcast vessel destruction to all MFDs
@@ -1385,12 +1319,8 @@ void Orbiter::NotifyObjectJump (const Body *obj, const Vector &shift)
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++)
 		it->pModule->clbkVesselJump((OBJHANDLE)obj);
 
-#ifdef INLINEGRAPHICS
-	oclient->GetScene()->Update (g_psys, &g_camera, 1, false/*m_bRunning*/, false);
-#else
 	if (gclient)
 		gclient->clbkVesselJump((OBJHANDLE)obj);
-#endif // INLINEGRAPHICS
 }
 
 void Orbiter::NotifyObjectSize (const Body *obj)
@@ -1723,50 +1653,6 @@ bool Orbiter::DeleteAnnotation (oapi::ScreenAnnotation *sn)
 //-----------------------------------------------------------------------------
 HRESULT Orbiter::InitDeviceObjects ()
 {
-	// All of this should be moved into the inline graphics client!
-#ifdef INLINEGRAPHICS
-    D3DVIEWPORT7 vp;
-    oclient->m_pD3DDevice->GetViewport(&vp);
-	// viewport-related code here
-
-    // Turn on lighting. Light will be set during FrameMove() call
-	oclient->m_pD3DDevice->SetRenderState (D3DRENDERSTATE_LIGHTING, bEnableLighting);
-	oclient->m_pD3DDevice->SetRenderState (D3DRENDERSTATE_AMBIENT, g_pOrbiter->Cfg()->AmbientColour);
-
-	//if (!pCWorld->LoadRRTextures(m_hWnd, "textures.dat"))
-	//	LOGOUT("LoadRRTextures failed");
-
-    // Set miscellaneous renderstates
-	oclient->m_pD3DDevice->SetRenderState (D3DRENDERSTATE_DITHERENABLE, TRUE);
-    oclient->m_pD3DDevice->SetRenderState (D3DRENDERSTATE_ZENABLE, TRUE);
-	oclient->m_pD3DDevice->SetRenderState (D3DRENDERSTATE_FILLMODE, pConfig->CfgDebugPrm.bWireframeMode ? D3DFILL_WIREFRAME : D3DFILL_SOLID);
-	oclient->m_pD3DDevice->SetRenderState (D3DRENDERSTATE_SHADEMODE, D3DSHADE_GOURAUD);
-	oclient->m_pD3DDevice->SetRenderState (D3DRENDERSTATE_SPECULARENABLE, FALSE);
-    oclient->m_pD3DDevice->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
-	oclient->m_pD3DDevice->SetRenderState (D3DRENDERSTATE_DESTBLEND, D3DBLEND_INVSRCALPHA);
-	oclient->m_pD3DDevice->SetRenderState (D3DRENDERSTATE_NORMALIZENORMALS, pConfig->CfgDebugPrm.bNormaliseNormals ? TRUE : FALSE);
-
-	// Set texture renderstates
-    //D3DTextr_RestoreAllTextures( pd3dDevice );
-    oclient->m_pD3DDevice->SetTextureStageState (0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-    oclient->m_pD3DDevice->SetTextureStageState (0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-    oclient->m_pD3DDevice->SetTextureStageState (0, D3DTSS_COLOROP,   D3DTOP_MODULATE);
-	oclient->m_pD3DDevice->SetTextureStageState (0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
-	oclient->m_pD3DDevice->SetTextureStageState (0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
-	oclient->m_pD3DDevice->SetTextureStageState (1, D3DTSS_MINFILTER, D3DTFN_LINEAR);
-	oclient->m_pD3DDevice->SetTextureStageState (1, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
-
-	viewW = oclient->viewW;
-	viewH = oclient->viewH;
-
-	g_texmanager = new TextureManager (oclient->m_pD3DDevice, MAX_TEXTURE_BUFSIZE); TRACENEW
-	g_texmanager->SetTexturePath (pConfig->CfgDirPrm.TextureDir);
-	//g_texmanager2 = new TextureManager2 (oclient->m_pd3dDevice); TRACENEW
-#endif // INLINEGRAPHICS
-
-	//InitializeGDIResources (hRenderWnd);
-
-	// Should InitialiseWorld code go here?
     return S_OK;
 }
 
@@ -1777,11 +1663,6 @@ HRESULT Orbiter::InitDeviceObjects ()
 
 HRESULT Orbiter::RestoreDeviceObjects ()
 {
-#ifdef INLINEGRAPHICS
-	RestorePatchDeviceObjects (oclient->m_pD3D, oclient->m_pD3DDevice);
-	PatchManager::RestoreDeviceObjects (oclient->m_pD3D, oclient->m_pD3DDevice);
-	g_pane->RestoreDeviceObjects (oclient->m_pD3D, oclient->m_pD3DDevice);
-#endif // INLINEGRAPHICS
 	return S_OK;
 }
 
@@ -1791,11 +1672,6 @@ HRESULT Orbiter::RestoreDeviceObjects ()
 //-----------------------------------------------------------------------------
 HRESULT Orbiter::DeleteDeviceObjects ()
 {
-#ifdef INLINEGRAPHICS
-	//ReleaseGDIResources ();
-	SAFE_DELETE (g_texmanager);
-	//SAFE_DELETE (g_texmanager2);
-#endif // INLINEGRAPHICS
 	return S_OK;
 }
 
@@ -1902,16 +1778,6 @@ VOID Orbiter::Output2DData ()
 		if (g_select->IsActive()) g_select->Display(0/*oclient->m_pddsRenderTarget*/);
 		if (g_input->IsActive()) g_input->Display(0/*oclient->m_pddsRenderTarget*/);
 	}
-
-#ifdef INLINEGRAPHICS
-#ifdef OUTPUT_DBG
-    HDC hDC;
-	if (SUCCEEDED (oclient->m_pddsRenderTarget->GetDC (&hDC))) {
-		ExtTextOut (hDC, 0, viewH-15, 0, NULL, DBG_MSG, strlen (DBG_MSG), NULL);
-		oclient->m_pddsRenderTarget->ReleaseDC (hDC);
-	}
-#endif
-#endif // INLINEGRAPHICS
 }
 
 //-----------------------------------------------------------------------------
@@ -2036,12 +1902,8 @@ bool Orbiter::Timejump (double _mjd, int pmode)
 	g_camera->Update ();
 	if (g_pane) g_pane->Timejump ();
 
-#ifdef INLINEGRAPHICS
-	if (oclient) oclient->clbkTimeJump (td.SimT0, tjump.dt, _mjd);
-#else
 	if (gclient)
 		gclient->clbkTimeJump(td.SimT0, tjump.dt, _mjd);
-#endif
 
 	// broadcast to modules
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++)
@@ -2633,6 +2495,12 @@ void Orbiter::UserJoyInput_OnRunning (DIJOYSTATE2 *js)
 
 bool Orbiter::MouseEvent (UINT event, DWORD state, DWORD x, DWORD y)
 {
+	// Prioritizes mouse handling while in rotation mode
+	if (g_pOrbiter->StickyFocus()) {
+		if (event == WM_MOUSEMOVE) return false; // may be lifted later
+		if (g_camera->ProcessMouse(event, state, x, y, simkstate)) return true;
+	}
+
 	if (g_pane->MIBar() && g_pane->MIBar()->ProcessMouse (event, state, x, y)) return true;
 	if (BroadcastMouseEvent (event, state, x, y)) return true;
 	if (event == WM_MOUSEMOVE) return false; // may be lifted later
@@ -2870,7 +2738,6 @@ bool Orbiter::DeactivateRoughType ()
 	} else return false;
 }
 
-#ifndef INLINEGRAPHICS
 //-----------------------------------------------------------------------------
 // Name: AttachGraphicsClient()
 // Desc: Link an external graphics render interface
@@ -2894,7 +2761,6 @@ bool Orbiter::RemoveGraphicsClient (oapi::GraphicsClient *gc)
 	gclient = NULL;
 	return true;
 }
-#endif // !INLINEGRAPHICS
 
 bool Orbiter::RegisterWindow (HINSTANCE hInstance, HWND hWnd, DWORD flag)
 {

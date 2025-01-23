@@ -1,0 +1,5 @@
+BEGIN_HYPERDESC
+<h1>Orbiter 2024 Edition</h1>
+<p>Orbiter 2024 is the latest edition of the popular space flight simulator.</p>
+<p>Here are a few scenarios highlighting some of the new features, including new textures for Earth and other planetary bodies, surface terrain support, new cockpit layout for various vessels, and more.</p>
+END_HYPERDESC

@@ -64,6 +64,46 @@ these identifiers have been grouped into tables and associated with field names.
 <td>Mouse event types</td>
 </tr>
 <tr>
+<td><a href="#panel_redraw">PANEL_REDRAW</a></td>
+<td>Panel redraw event types</td>
+</tr>
+<tr>
+<td><a href="#panel_map">PANEL_MAP</a></td>
+<td>Panel area texture mapping identifiers</td>
+</tr>
+<tr>
+<td><a href="#cockpit">COCKPIT</a></td>
+<td>Cockpit display mode identifiers</td>
+</tr>
+<tr>
+<td><a href="#hudmode">HUDMODE</a></td>
+<td>HUD mode identifiers</td>
+</tr>
+<tr>
+<td><a href="#mfdmode">MFDMODE</a></td>
+<td>MFD mode identifiers</td>
+</tr>
+<tr>
+<td><a href="#mfdid">MFDID</a></td>
+<td>MFD identifiers</td>
+</tr>
+<tr>
+<td><a href="#meshvis">MESHVIS</a></td>
+<td>Vessel mesh visibility flags</td>
+</tr>
+<tr>
+<td><a href="#matprop">MATPROP</a></td>
+<td>Material properties</td>
+</tr>
+<tr>
+<td><a href="#oapi_msg">OAPI_MSG</a></td>
+<td>Custom MFD message identifiers</td>
+</tr>
+<tr>
+<td><a href="#manctrl">MANCTRL</a></td>
+<td>Manual control mode/device identifiers</td>
+</tr>
+<tr>
 <td><a href="#oapi_key">OAPI_KEY</a></td>
 <td>Keyboard key codes</td>
 </tr>
@@ -315,6 +355,162 @@ definition of particle streams (see <a href="Datatypes.htm#particlestreamspec">P
 </table>
 </div>
 
+<div class="func"><a name="panel_redraw"></a>
+<h3>Constants for enumeration of panel redraw events</h3>
+<p>These constants are used to refer to cockpit area redraw event types
+during panel area registration and by the event handlers.</p>
+
+<table>
+<tr><td>PANEL_REDRAW.NEVER</td><td>Don't generate redraw events</td></tr>
+<tr><td>PANEL_REDRAW.ALWAYS</td><td>Generate event at each frame</td></tr>
+<tr><td>PANEL_REDRAW.MOUSE</td><td>Generate event on mouse event</td></tr>
+<tr><td>PANEL_REDRAW.INIT</td><td>Initialisation event</td></tr>
+<tr><td>PANEL_REDRAW.USER</td><td>User-generated event</td></tr>
+<tr><td>PANEL_REDRAW.SKETCHPAD</td><td>Allow Sketchpad access during redraw events</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="panel_map"></a>
+<h3>Constants for enumeration of panel area texture mapping identifiers</h3>
+<p>The constants are used during panel area instantiations for defining
+ how the panel area texture is presented to the redraw callback function.</p>
+
+<table>
+<tr><td>PANEL_MAP.NONE</td><td>area texture is undefined (i.e. should be completely redrawn)</td></tr>
+<tr><td>PANEL_MAP.BACKGROUND</td><td>area texture contains a copy of the panel background</td></tr>
+<tr><td>PANEL_MAP.CURRENT</td><td>area texture contains a copy of the current panel state</td></tr>
+<tr><td>PANEL_MAP.BGONREQUEST</td><td>area texture is undefined, but panel background can be requested</td></tr>
+<tr><td>PANEL_MAP.DIRECT</td><td> provide the entire input surface to redraw functions without clipping</td></tr>
+</table>
+<h4>Notes:</h4>
+<p>PANEL_MAP_NONE is the most efficient option if the area texture is completely redrawn at each redraw event.</p>
+<p>PANEL_MAP_BGONREQUEST is more efficient than PANEL_MAP_BACKGROUND if the area texture may not need to be updated at each redraw event.</p>
+</div>
+
+
+<div class="func"><a name="cockpit"></a>
+<h3>Constants for enumeration of the cockpit modes</h3>
+<table>
+<tr><td>COCKPIT.GENERIC</td><td>generic cockpit mode: left+right MFD and HUD</td></tr>
+<tr><td>COCKPIT.PANELS</td><td>2D panel mode</td></tr>
+<tr><td>COCKPIT.VIRTUAL</td><td>virtual cockpit mode</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="hudmode"></a>
+<h3>These constants are used to refer to the built-in HUD (head-up display) modes.</h3>
+<table>
+<tr><td>HUDMODE.NONE</td><td>No mode (turn HUD off)</td></tr>
+<tr><td>HUDMODE.ORBIT</td><td>Orbit HUD mode</td></tr>
+<tr><td>HUDMODE.SURFACE</td><td>Surface HUD mode</td></tr>
+<tr><td>HUDMODE.DOCKING</td><td>Docking HUD mode</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="mfdmode"></a>
+<h3>These constants are used to refer to the built-in MFD (multifunctional display) modes.</h3>
+<table>
+<tr><td>MFDMODE.REFRESHBUTTONS</td><td>Refresh MFD buttons</td></tr>
+<tr><td>MFDMODE.NONE</td><td>No mode (turn MFD off)</td></tr>
+<tr><td>MFDMODE.ORBIT</td><td>Orbit MFD mode</td></tr>
+<tr><td>MFDMODE.SURFACE</td><td>Surface MFD mode</td></tr>
+<tr><td>MFDMODE.MAP</td><td>Map MFD mode</td></tr>
+<tr><td>MFDMODE.HSI</td><td>HSI (horizontal situation indicator) MFD mode</td></tr>
+<tr><td>MFDMODE.LANDING</td><td>VTOL support MFD mode</td></tr>
+<tr><td>MFDMODE.DOCKING</td><td>Docking support MFD mode</td></tr>
+<tr><td>MFDMODE.OPLANEALIGN</td><td>Orbital plane alignment MFD mode</td></tr>
+<tr><td>MFDMODE.OSYNC</td><td>Orbit synchronisation MFD mode</td></tr>
+<tr><td>MFDMODE.TRANSFER</td><td>Transfer orbit MFD mode</td></tr>
+<tr><td>MFDMODE.COMMS</td><td>Communications MFD mode</td></tr>
+<tr><td>MFDMODE.USERTYPE</td><td>User-defined MFD mode</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="mfdid"></a>
+<h3>MFD identifiers</h3>
+<table>
+<tr><td>MFDID.MAXMFD</td><td>Max. number of MFD displays per panel</td></tr>
+<tr><td>MFDID.LEFT</td><td>Left default MFD display</td></tr>
+<tr><td>MFDID.RIGHT</td><td>Right default MFD display</td></tr>
+<tr><td>MFDID.USER1</td><td>User-defined MFD display 1</td></tr>
+<tr><td>MFDID.USER2</td><td>User-defined MFD display 2</td></tr>
+<tr><td>MFDID.USER3</td><td>User-defined MFD display 3</td></tr>
+<tr><td>MFDID.USER4</td><td>User-defined MFD display 4</td></tr>
+<tr><td>MFDID.USER5</td><td>User-defined MFD display 5</td></tr>
+<tr><td>MFDID.USER6</td><td>User-defined MFD display 6</td></tr>
+<tr><td>MFDID.USER7</td><td>User-defined MFD display 7</td></tr>
+<tr><td>MFDID.USER8</td><td>User-defined MFD display 8</td></tr>
+<tr><td>MFDID.USER9</td><td>User-defined MFD display 9</td></tr>
+<tr><td>MFDID.USER10</td><td>User-defined MFD display 10</td></tr>
+</table>
+</div>
+
+
+
+<div class="func"><a name="meshvis"></a>
+<h3> These constants determine the visibility of vessel meshes in specific camera modes.</h3>
+<table>
+
+<tr><td>MESHVIS.NEVER</td><td>Mesh is never visible</td></tr>
+<tr><td>MESHVIS.EXTERNAL</td><td>Mesh is visible in external views</td></tr>
+<tr><td>MESHVIS.COCKPIT</td><td>Mesh is visible in all internal (cockpit) views</td></tr>
+<tr><td>MESHVIS.ALWAYS</td><td>Mesh is always visible</td></tr>
+<tr><td>MESHVIS.VC</td><td>Mesh is only visible in virtual cockpit internal views</td></tr>
+<tr><td>MESHVIS.EXTPASS</td><td>Visibility modifier: render mesh during external pass, even for internal views</td></tr>
+<tr><td>MESHVIS.NONE</td><td>No mode (turn HUD off)</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="matprop"></a>
+<h3>These constants are used to refer to the built-in HUD (head-up display) modes.</h3>
+<table>
+<tr><td>MATPROP.DIFFUSE</td><td>Material Diffuse color or Albedo depending on shader used. [.rgba]</td></tr>
+<tr><td>MATPROP.AMBIENT</td><td>Ambient color or Ambien occlusion [.rgb]</td></tr>
+<tr><td>MATPROP.SPECULAR</td><td>Specular color [.rgb] power in [.a]</td></tr>
+<tr><td>MATPROP.LIGHT</td><td>DX7 Style emission (color is added in light that lits the diffuse texture) (i.e. light map) [.rgb]</td></tr>
+<tr><td>MATPROP.EMISSION</td><td>Still in a development currently: output = max(diffuse*light, emission) [.rgb]</td></tr>
+<tr><td>MATPROP.REFLECT</td><td>Reflectivity [.rgb]</td></tr>
+<tr><td>MATPROP.SMOOTH</td><td>Smoothness in [.r] (1 = smooth, 0 = rough)</td></tr>
+<tr><td>MATPROP.METAL</td><td>Metalness in [.r]  (1 = metal, 0 = non-metal)</td></tr>
+<tr><td>MATPROP.FRESNEL</td><td>Fresnel terms for fresnel effect. Used in older 2nd generation shader.</td></tr>
+<tr><td>MATPROP.SPECIALFX</td><td>Heat map effect control variable in [.r] (i.e. average part temperature)</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="oapi_msg"></a>
+<h3>Constants for enumeration of the custom MFD message identifiers</h3>
+<p>The constants are used to notify the creation of a custom MFD registered via the register_mfdmode vessel method</p>
+<table>
+<tr><td>OAPI_MSG.MFD_OPENED</td><td>Unused</td></tr>
+<tr><td>OAPI_MSG.MFD_CLOSED</td><td>Unused</td></tr>
+<tr><td>OAPI_MSG.MFD_UPDATE</td><td>Unused</td></tr>
+<tr><td>OAPI_MSG.MFD_OPENEDEX</td><td>New custom MFD opened</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="manctrl"></a>
+<h3>Constants used to identify attitude control modes for manual input and manual control device identifiers</h3>
+<table>
+<tr><td><h4>Manual control mode identifiers</h4></td></tr>
+<tr><td>MANCTRL.ATTMODE</td><td>current attitude mode</td></tr>
+<tr><td>MANCTRL.REVMODE</td><td>reverse of current attitude mode</td></tr>
+<tr><td>MANCTRL.ROTMODE</td><td>rotational attitude modes only</td></tr>
+<tr><td>MANCTRL.LINMODE</td><td>linear attitude modes only</td></tr>
+<tr><td>MANCTRL.ANYMODE</td><td>rotational and linear modes</td></tr>
+<tr><td><h4>Manual control device identifiers</h4></td></tr>
+<tr><td>MANCTRL.KEYBOARD</td><td>keyboard input</td></tr>
+<tr><td>MANCTRL.JOYSTICK</td><td>joystick input</td></tr>
+<tr><td>MANCTRL.ANYDEVICE</td><td>input from any device</td></tr>
+
+</table>
+</div>
 
 <div class="func"><a name="oapi_key"></a>
 <h3>Keyboard key codes</h3>
@@ -322,16 +518,16 @@ definition of particle streams (see <a href="Datatypes.htm#particlestreamspec">P
 
 <table>
 <tr><td>OAPI_KEY.ESCAPE</td><td>"Esc"</td></tr>
-<tr><td>OAPI_KEY.1</td><td>"1"</td></tr>
-<tr><td>OAPI_KEY.2</td><td>"2"</td></tr>
-<tr><td>OAPI_KEY.3</td><td>"3"</td></tr>
-<tr><td>OAPI_KEY.4</td><td>"4"</td></tr>
-<tr><td>OAPI_KEY.5</td><td>"5"</td></tr>
-<tr><td>OAPI_KEY.6</td><td>"6"</td></tr>
-<tr><td>OAPI_KEY.7</td><td>"7"</td></tr>
-<tr><td>OAPI_KEY.8</td><td>"8"</td></tr>
-<tr><td>OAPI_KEY.9</td><td>"9"</td></tr>
-<tr><td>OAPI_KEY.0</td><td>"0"</td></tr>
+<tr><td>OAPI_KEY.KEY1</td><td>"1"</td></tr>
+<tr><td>OAPI_KEY.KEY2</td><td>"2"</td></tr>
+<tr><td>OAPI_KEY.KEY3</td><td>"3"</td></tr>
+<tr><td>OAPI_KEY.KEY4</td><td>"4"</td></tr>
+<tr><td>OAPI_KEY.KEY5</td><td>"5"</td></tr>
+<tr><td>OAPI_KEY.KEY6</td><td>"6"</td></tr>
+<tr><td>OAPI_KEY.KEY7</td><td>"7"</td></tr>
+<tr><td>OAPI_KEY.KEY8</td><td>"8"</td></tr>
+<tr><td>OAPI_KEY.KEY9</td><td>"9"</td></tr>
+<tr><td>OAPI_KEY.KEY0</td><td>"0"</td></tr>
 <tr><td>OAPI_KEY.MINUS</td><td>"-" on main keypad</td></tr>
 <tr><td>OAPI_KEY.EQUALS</td><td>"=" on main keypad</td></tr>
 <tr><td>OAPI_KEY.BACK</td><td>Backspace</td></tr>

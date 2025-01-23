@@ -194,11 +194,23 @@ public:
 	void Set (const Vector &rot);
 	// Set from axis rotation vector
 
+	void SetRow(int r, Vector& v)
+	{
+		for (int i = 0; i < 3; i++) data[r * 3 + i] = v.data[i];
+	}
+
+	void SetCol(int c, Vector& v)
+	{
+		for (int i = 0; i < 3; i++) data[i * 3 + c] = v.data[i];
+	}
+	
 	inline double &operator() (int i, int j)
-	{ return data[i*4+j]; }
+	{ return data[i*3+j]; }
+	//{ return data[i*4+j]; } // WHAT !!!  jarmonik 14-Mar-2024
 
 	inline double operator() (int i, int j) const
-	{ return data[i*4+j]; }
+	{ return data[i*3+j]; }
+	//{ return data[i*4+j]; } // WHAT !!!  jarmonik 14-Mar-2024
 
 	Matrix &operator= (const Matrix &A);
 	Matrix operator* (const Matrix &A) const;

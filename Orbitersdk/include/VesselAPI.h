@@ -4432,6 +4432,44 @@ public:
 	UINT DockingStatus (UINT port) const;
 
 	/**
+	 * \brief Moves a docking port while vessel is docked. 
+	 * \param hDock dock handle
+	 * \param pos new dock reference position [<b>m</b>]
+	 * \param dir new approach direction
+	 * \param rot new longitudinal rotation alignment vector
+	 * \note If no vessel is docked then does the same as SetDockParams
+	 * \sa GetDockStatus, GetDockHandle
+	 */
+	void MoveDock(DOCKHANDLE hDock, const VECTOR3& pos, const VECTOR3& dir, const VECTOR3& rot);
+
+	/**
+	 * \brief Get closest free docking port from an other vessel
+	 * \param hDock dock handle
+	 * \return Docking port handle, NULL if hDock is already occupied or nothing else founds.
+	 * \sa GetDockStatus, GetDockHandle
+	 */
+	DOCKHANDLE GetProxyDock(DOCKHANDLE hDock) const;
+
+	/**
+	 * \brief Get index of specified docking port
+	 * \param hDock dock handle
+	 * \return Dock index or -1 if hDock doesn't belong to a vessel.
+	 */
+	int GetDockIndex(DOCKHANDLE hDock) const;
+
+	/**
+	 * \brief Get target docking port alignment relative to hDock in local vessel coords
+	 * \param hDock dock handle
+	 * \param hTgt Target dock handle
+	 * \param ref Target position, set to NULL if not needed.
+	 * \param dir Target direction, set to NULL if not needed.
+	 * \param rot Target rotation, set to NULL if not needed.
+	 * \param vel Relative velocity between ports ECL frame, set to NULL if not needed.
+	 * \sa GetDockStatus, GetDockHandle
+	 */
+	bool GetTargetDockAlignment(DOCKHANDLE hDock, DOCKHANDLE hTgt, VECTOR3* ref, VECTOR3* dir, VECTOR3* rot, VECTOR3* vel = nullptr) const;
+
+	/**
 	 * \brief Dock to another vessel.
 	 * \param target handle of docking target vessel
 	 * \param n docking port index on vessel (>= 0)
@@ -4457,9 +4495,13 @@ public:
 	 *     docking.
 	 *   - 1: Keep this in place, and teleport the target vessel for docking
 	 *   - 2: Keep the target in place, and teleport this for docking.
-	 * \sa Undock, GetDockHandle, GetDockStatus, DockCount
+	 *   - 3: Softdock. Keep the target in place and match this vessel's docking port with
+	 *	 target port alignment (i.e Ref, Dir and Rot gets matched to target). Add-on side code must
+	 *	 bring the vessel to alignment and hard-dock using MoveDock.
+	 * \sa Undock, GetDockHandle, GetDockStatus, DockCount, MoveDock
 	 */
 	int Dock (OBJHANDLE target, UINT n, UINT tgtn, UINT mode) const;
+	int Dock (DOCKHANDLE hSrc, DOCKHANDLE hTgt, DWORD mode) const;
 
 	/**
 	 * \brief Release a docked vessel from a docking port.

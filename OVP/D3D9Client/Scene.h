@@ -375,7 +375,7 @@ public:
 	void			ResetOrigin(VECTOR3 pos);
 
 					// Acquire camera information from the Orbiter and initialize internal camera setup
-	void			UpdateCameraFromOrbiter(DWORD dwPass);
+	bool			UpdateCameraFromOrbiter(DWORD dwPass);
 
 					// Manually initialize client's internal camera setup
 	void			SetupInternalCamera(D3DXMATRIX *mView, VECTOR3 *pos, double apr, double asp);

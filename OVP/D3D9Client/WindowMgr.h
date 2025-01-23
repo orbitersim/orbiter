@@ -237,8 +237,6 @@ private:
 	
 	tInsert		qInsert;
 	vector<SideBar*> sbList;
-	SideBar *   sbLeft;
-	SideBar *	sbRight;
 	SideBar *	sbDrag;
 	SideBar *	sbDragSrc;
 	SideBar *	sbDest;

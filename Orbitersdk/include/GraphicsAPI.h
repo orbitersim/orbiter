@@ -370,16 +370,6 @@ struct IWICImagingFactory;
 namespace oapi {
 
 /**
- * \brief Format specifiers for image files
- */
-enum ImageFileFormat {
-	IMAGE_BMP = 0,
-	IMAGE_PNG = 1,
-	IMAGE_JPG = 2,
-	IMAGE_TIF = 3
-};
-
-/**
  * \brief Structure for defining a raw image.
  */
 struct ImageData {
@@ -1644,6 +1634,17 @@ protected:
 	 * \default None, returns false.
 	 */
 	virtual bool clbkSplashLoadMsg (const char *msg, int line) { return false; }
+
+	/**
+	 * \brief Change the default splash screen
+	 * 
+	 * Called before clbkCreateRenderWindow to override the default splash screen
+	 * image and text color.
+	 *
+	 * \param fname File containing the splashscreen (jpg/bmp)
+	 * \param textCol text color
+	 */
+	virtual void clbkSetSplashScreen(const char *fname, DWORD textCol) {}
 
 	/**
 	 * \brief Notifies Orbiter to to initiate rendering of the 2D scene overlay

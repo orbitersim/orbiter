@@ -1,9 +1,0 @@
-[submodule "Extern/Lua"]
-	path = Extern/Lua
-	url = https://github.com/orbitersim/lua.git
-[submodule "Extern/zlib"]
-	path = Extern/zlib
-	url = https://github.com/orbitersim/zlib.git
-[submodule "Extern/Catch2"]
-	path = Extern/Catch2
-	url = https://github.com/orbitersim/Catch2.git

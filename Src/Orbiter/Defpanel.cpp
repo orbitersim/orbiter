@@ -390,11 +390,6 @@ void DefaultPanel::InitDeviceObjects ()
 void DefaultPanel::RestoreDeviceObjects (LPDIRECT3D7 d3d, LPDIRECT3DDEVICE7 dev)
 {
 	// This method is currently only supported by the inline client
-#ifdef INLINEGRAPHICS
-	int i;
-	InitDeviceObjects();
-	for (i = 0; i < 2; i++) RepaintMFDButtons (i);
-#endif
 	rcsmode = -1;
 }
 
@@ -504,7 +499,7 @@ void DefaultPanel::Render ()
 		th = g_focusobj->GetThrusterGroupLevel (THGROUP_HOVER);
 		if (th != enghovr) {
 			enghovr = th;
-			grp->Vtx[vofs+1].x = grp->Vtx[vofs+3].x = (float)((46.0+enghovr*94.0)*scale+gapw);
+			grp->Vtx[vofs+1].x = grp->Vtx[vofs+3].x = dx+(float)((46.0+enghovr*94.0)*scale);
 		}
 	}
 	// Update fuel readout

@@ -27,12 +27,14 @@
       }
     },
     {
-      "name": "linux-gcc-base",
+      "name": "linux-winegcc-base",
       "inherits": "ninja-base",
       "hidden": true,
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "gcc",
-        "CMAKE_CXX_COMPILER": "g++"
+        "CMAKE_C_COMPILER": "winegcc",
+        "CMAKE_CXX_COMPILER": "wineg++",
+        "ORBITER_MAKE_DOC": false,
+        "ORBITER_BUILD_D3D9CLIENT": false
       },
       "condition": {
         "type": "equals",
@@ -51,18 +53,9 @@
       }
     },
     {
-      "name": "linux-clang-base",
-      "inherits": "linux-gcc-base",
-      "hidden": true,
-      "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang",
-        "CMAKE_CXX_COMPILER": "clang++"
-      }
-    },
-    {
       "name": "linux-x64-debug",
       "displayName": "x64 Debug",
-      "inherits": "linux-clang-base",
+      "inherits": "linux-winegcc-base",
       "architecture": {
         "value": "x64",
         "strategy": "external"
@@ -74,7 +67,7 @@
     {
       "name": "linux-x64-release",
       "displayName": "x64 Release",
-      "inherits": "linux-clang-base",
+      "inherits": "linux-winegcc-base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }

@@ -1,0 +1,72 @@
+name: Nightly
+
+on: 
+  workflow_dispatch:
+  schedule:
+    - cron: "13 01 * * *"
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  check:
+    name: Pre-check
+    runs-on: 'ubuntu-latest'
+    steps:
+    - name: Get last run SHA
+      run: gh run list --limit 1 --workflow nightly.yml --json headSha --template "{{range .}}SHA={{.headSha}}{{end}}" --status completed --repo ${{ github.repository }} >> "$GITHUB_OUTPUT"
+      id: last_run
+      env:
+        GH_TOKEN: ${{ github.token }}
+
+    - name: Print
+      run: |
+        echo Last sha: ${{ steps.last_run.outputs.sha }}
+        echo Current:  ${{ github.sha }}
+        echo Should cancel: ${{ steps.last_run.outputs.sha == github.sha }}
+
+    - if: ${{ steps.last_run.outputs.sha == github.sha }}
+      run: gh run cancel ${{ github.run_id }} --repo ${{ github.repository }}
+      env:
+        GH_TOKEN: ${{ github.token }}
+
+  build:
+    name: Build
+    needs: [check]
+    uses: ./.github/workflows/reusable-build.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        architecture: [x64, x86]
+    with:
+      architecture: ${{ matrix.architecture }}
+      upload: true
+      docs: true
+        
+  publish:
+    name: Package
+    needs: [build]
+    runs-on: windows-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Re-arrange artifacts
+        shell: cmd
+        run: |
+          dir /S /B
+          move Orbiter-x64\Orbiter.zip Orbiter-x64.zip
+          move Orbiter-x86\Orbiter.zip Orbiter-x86.zip
+          dir /S /B
+
+      - name: "Create nightly release"
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ github.token }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "Orbiter development build"
+          files: |
+            Orbiter-x86.zip
+            Orbiter-x64.zip

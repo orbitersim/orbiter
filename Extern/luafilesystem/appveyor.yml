@@ -1,0 +1,53 @@
+version: 0.0.1.{build}-test
+
+shallow_clone: true
+
+matrix:
+  fast_finish: true
+
+environment:
+  matrix:
+  - LUAT: "lua"
+    LUAV: "5.1"
+  - LUAT: "lua"
+    LUAV: "5.2"
+    HEREROCKS_FLAGS: "--compat none"
+  - LUAT: "lua"
+    LUAV: "5.3"
+    HEREROCKS_FLAGS: "--compat none"
+  - LUAT: "lua"
+    LUAV: "5.4"
+    HEREROCKS_FLAGS: "--compat none"
+  - LUAT: "luajit"
+    LUAV: "2.1"
+
+# Abuse this section so we can have a matrix with different Compiler versions
+configuration:
+  - mingw
+  - vs_32
+  - vs_64
+
+before_build:
+  - set PATH=C:\MinGW\bin;%PATH%
+  - set PATH=C:\Python37;C:\Python37\Scripts;%PATH% # Add directory containing 'pip' to PATH
+  - IF NOT EXIST lua_install-%LUAV%\bin\activate.bat ( pip install --upgrade certifi )
+  - FOR /F "tokens=* USEBACKQ" %%F IN (`python -c "import certifi;print(certifi.where())"`) DO ( SET SSL_CERT_FILE=%%F )
+  - IF NOT EXIST lua_install-%LUAV%\bin\activate.bat ( pip install hererocks )
+  - IF NOT EXIST lua_install-%LUAV%\bin\activate.bat ( hererocks lua_install-%LUAV% --%LUAT% %LUAV% %HEREROCKS_FLAGS% --luarocks latest --target=%configuration% )
+  - call lua_install-%LUAV%\bin\activate
+
+build_script:
+- luarocks make
+
+before_test:
+
+test_script:
+- echo "Testing..."
+- lua tests/test.lua
+
+cache:
+  - lua_install-5.4
+  - lua_install-5.3
+  - lua_install-5.2
+  - lua_install-5.1
+  - lua_install-2.1

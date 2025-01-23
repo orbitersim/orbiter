@@ -35,7 +35,7 @@
 #endif
 
 extern "C" {
-#include "Lua/lua.h"
+#include <lua/lua.h>
 }
 
 // Assumes MS VC++ compiler. Modify these statements for other compilers
@@ -479,6 +479,19 @@ enum class MatProp {
 	Fresnel,			///< Fresnel terms for fresnel effect. Used in older 2nd generation shader. 
 	SpecialFX			///< Heat map effect control variable in [.r] (i.e. average part temperature)
 };
+
+/**
+ * \brief Format specifiers for image files
+ */
+namespace oapi {
+	enum ImageFileFormat {
+		IMAGE_BMP = 0,
+		IMAGE_PNG = 1,
+		IMAGE_JPG = 2,
+		IMAGE_TIF = 3,
+		IMAGE_DDS = 4	///< D3D9+ only
+	};
+}
 
 enum class ScnChgEvent {
 	Invalid = 0,		///< Unspecified event
@@ -3011,6 +3024,21 @@ OAPIFUNC DOCKHANDLE oapiGetDockHandle (OBJHANDLE hVessel, UINT n);
 OAPIFUNC OBJHANDLE oapiGetDockStatus (DOCKHANDLE dock);
 
 /**
+* \brief Set a docking port to auto capture when in close proximity with some other docking port.
+* \param hDock docking port handle
+* \param enable Enable or disable auto capture
+* \note Auto capture is enabled by default.
+*/
+OAPIFUNC void oapiSetAutoCapture(DOCKHANDLE hDock, bool enable);
+
+/**
+* \brief Get the vessel a docking port belongs to.
+* \param hDock dock handle
+* \return Vessel owning the docking port.
+*/
+OAPIFUNC OBJHANDLE oapiGetDockOwner(DOCKHANDLE hDock);
+
+/**
  * \brief Returns the position of the current focus object in the global reference frame.
  * \param pos pointer to vector receiving coordinates
  * \note The global reference frame is the heliocentric ecliptic system at ecliptic and
@@ -5538,6 +5566,17 @@ OAPIFUNC SURFHANDLE oapiCreateSurfaceEx (int width, int height, DWORD attrib);
 	* \return Surface handle for the loaded texture, or NULL if not found.
 	*/
 OAPIFUNC SURFHANDLE oapiLoadSurfaceEx(const char* fname, DWORD attrib, bool bPath = false);
+
+	/**
+	* \brief Save the contents of a surface to a formatted image file or to the clipboard
+	* \param hSrf surface handle (0 for primary render surface)
+	* \param fname image file path relative to orbiter root directory (excluding file extension), or NULL to save to clipboard
+	* \param fmt output file format
+	* \param quality quality request if the format supports it (0-1)
+	* \return Should return true on success
+	* \default Nothing, returns false
+	*/
+OAPIFUNC bool oapiSaveSurface(const char* fname, SURFHANDLE hSrf, oapi::ImageFileFormat fmt, float quality = 0.7f);
 
 	/**
 	* \brief Load a diffuse/albedo texture and additional texture maps from a separate sources 
