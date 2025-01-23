@@ -41,6 +41,11 @@ else()
 	set(ARCH "x64")
 endif()
 
+# This is important for building using vs generator (jarmonik)
+if (NOT ${CMAKE_GENERATOR} STREQUAL "Ninja")
+	add_compile_options(/MP)
+endif()
+
 # Define directories and file paths for some common binaries
 set(OVP_DIR "${CMAKE_SOURCE_DIR}/OVP")
 set(GDICLIENT_DIR "${OVP_DIR}/GDIClient")
