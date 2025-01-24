@@ -467,7 +467,7 @@ typedef struct {
 } MATERIAL;
 
 
-enum class MatProp {
+enum MatProp {
 	Diffuse,			///< Material Diffuse color or Albedo depending on shader used. [.rgba]
 	Ambient,			///< Ambient color or Ambien occlusion [.rgb]
 	Specular,			///< Specular color [.rgb] power in [.a]

@@ -7,6 +7,7 @@
 // ==============================================================
 
 #include <set>
+#include <algorithm>
 #include "VVessel.h"
 #include "VPlanet.h"
 #include "MeshMgr.h"
@@ -1700,7 +1701,7 @@ ENVCAMREC* vVessel::GetEnvCam(EnvCamType ec, int idx)
 		if (idx < 0) {
 			for (auto c : InteriorCams) if (c) return c; // Get any cam
 		}
-		else return InteriorCams[clamp(idx, 0, MAX_INTCAM - 1)];
+		else return InteriorCams[std::clamp(idx, 0, MAX_INTCAM - 1)];
 	}
 	if (ec == EnvCamType::Mesh) {
 		// TODO:
