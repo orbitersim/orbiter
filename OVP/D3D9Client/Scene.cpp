@@ -1828,10 +1828,9 @@ void Scene::clbkRenderMainScene()
 
 	D3D9Effect::UpdateEffectCamera(Camera.hObj_proxy);
 
-	Resolve These
-    auto RenderMarkers = RenderList
-	//D3D9Pad* pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
-	//m_celSphere->EnsureMarkerDrawingContext((oapi::Sketchpad**)&pSketch, 0, m_celSphere->MarkerColor(0), m_celSphere->MarkerPen(0));
+	auto RenderMarkers = RenderList;
+	D3D9Pad* pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
+	m_celSphere->EnsureMarkerDrawingContext((oapi::Sketchpad**)&pSketch, 0, m_celSphere->MarkerColor(0), m_celSphere->MarkerPen(0));
 
 
 	// Render the vessels inside the shadows  ( Phase 1 ) ================================
@@ -1885,11 +1884,10 @@ void Scene::clbkRenderMainScene()
 		RenderList.pop_front();
 	}
 
-	D3D9Pad* pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
 	if (pSketch) {
 		m_celSphere->EnsureMarkerDrawingContext((oapi::Sketchpad**)&pSketch, 0, m_celSphere->MarkerColor(0), m_celSphere->MarkerPen(0));
 		for (auto x : RenderMarkers) RenderVesselMarker(x, pSketch);
-	pSketch->EndDrawing();	// SKETCHPAD_LABELS
+		pSketch->EndDrawing();	// SKETCHPAD_LABELS
 	}
 
 
@@ -4042,8 +4040,10 @@ bool Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 
 	Camera.alt_proxy = dist(Camera.pos, pos) - oapiGetSize(Camera.hObj_proxy);
 
-	if (Camera.vProxy->Type() == OBJTP_PLANET) 
-		rad = oapiSurfaceElevation(Camera.hObj_proxy, Camera.lng, Camera.lat);
+	if (Camera.vProxy) {
+		if (Camera.vProxy->Type() == OBJTP_PLANET) 
+			rad = oapiSurfaceElevation(Camera.hObj_proxy, Camera.lng, Camera.lat);
+	}
 
 	Camera.elev = Camera.alt_proxy - rad;
 
@@ -4056,6 +4056,8 @@ bool Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 
 	// Finally update world matrices from all visuals
 	ResetOrigin(Camera.pos);
+
+	return true;
 }
 
 

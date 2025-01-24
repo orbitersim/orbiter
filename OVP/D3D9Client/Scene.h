@@ -267,7 +267,7 @@ public:
 	 */
 	inline const DWORD ViewH() const { return viewH; }
 
-	void UpdateCamVis();
+	bool UpdateCamVis();
 	
 
 	
@@ -378,7 +378,7 @@ public:
 	bool			UpdateCameraFromOrbiter(DWORD dwPass);
 
 					// Manually initialize client's internal camera setup
-	void			SetupInternalCamera(D3DXMATRIX *mView, VECTOR3 *pos, double apr, double asp);
+	bool			SetupInternalCamera(D3DXMATRIX *mView, VECTOR3 *pos, double apr, double asp);
 	void			CameraOffOrigin90(D3DXMATRIX* mView, FVECTOR3 pos);
 
 					// Pan Camera in a mesh debugger
