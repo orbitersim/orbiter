@@ -672,14 +672,17 @@ typedef struct {
  * \brief Base class for defining an ImGui dialog.
  */
 class OAPIFUNC ImGuiDialog {
-	const std::string name;
+	struct ImGuiDefaultSize {
+		float width;
+		float height;
+	};
 public:
 	/**
 	 * \brief Create an ImGui dialog object.
 	 * \param name Name of the dialog window
 	 * \note This class must by derived from in order to define a custom ImGui dialog
 	 */
-	ImGuiDialog(const char *n):name(n) {}
+	ImGuiDialog(const char *n, ImGuiDefaultSize ds = {350.0,280.0}):name(n),defaultSize(ds) {}
 	virtual ~ImGuiDialog();
 	bool IsActive() { return active; }
 	void Activate() { active = true; }
@@ -698,6 +701,9 @@ protected:
 	 */
 	virtual void OnDraw() = 0;
 	bool active = false;
+private:
+	const std::string name;
+	ImGuiDefaultSize defaultSize;
 };
 
 /**
@@ -7652,11 +7658,6 @@ inline VECTOR3 POINTERTOREF (VECTOR3 *p)
 	return v;
 }
 
-// ImGui extras
-namespace ImGui {
-	OAPIFUNC bool SliderFloatReset(const char* label, float* v, float v_min, float v_max, float v_default, const char* display_format = "%.3f");
-	OAPIFUNC void HelpMarker(const char* desc, bool sameline = true);
-};
 // ======================================================================
 // Internal data structures
 // ======================================================================
