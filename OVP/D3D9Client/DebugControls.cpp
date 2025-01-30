@@ -19,6 +19,7 @@
 #include "VectorHelpers.h"
 #include <stdio.h>
 #include <imgui.h>
+#include <imgui_extras.h>
 
 enum scale { LIN, SQRT, SQR };
 
