@@ -721,14 +721,14 @@ bool Config::Load(const char *fname)
 	GetBool (ifs, "ShowWarpAlways", CfgUIPrm.bWarpAlways);
 	GetBool (ifs, "ShowWarpScientific", CfgUIPrm.bWarpScientific);
 	if (GetInt (ifs, "InfobarMode", i) && i >= 0 && i <= 2)
-		CfgUIPrm.InfoMode = (DWORD)i;
+		CfgUIPrm.InfoMode = i;
 	if (GetString (ifs, "InfoAuxIdx", cbuf)) {
 		sscanf (cbuf, "%d%d", CfgUIPrm.InfoAuxIdx+0, CfgUIPrm.InfoAuxIdx+1);
 		for (i = 0; i < 2; i++)
 			if (CfgUIPrm.InfoAuxIdx[i] > 3) CfgUIPrm.InfoAuxIdx[i] = 0;
 	}
 	if (GetInt (ifs, "MenubarOpacity", i) && i >= 0 && i <= 10)
-		CfgUIPrm.MenuOpacity = (DWORD)i;
+		CfgUIPrm.MenuOpacity = i;
 	if (GetInt (ifs, "InfobarOpacity", i) && i >= 0 && i <= 10)
 		CfgUIPrm.InfoOpacity = (DWORD)i;
 	if (GetInt (ifs, "MenubarSpeed", i) && i >= 1 && i <= 20)

@@ -144,7 +144,7 @@ void DlgCamera::AddCbodyNode(const CelestialBody *cbody) {
 }
 
 void DlgCamera::DrawTarget() {
-    const ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar | ImGuiChildFlags_Border | ImGuiChildFlags_ResizeX;
+    const ImGuiWindowFlags window_flags = ImGuiChildFlags_Border | ImGuiChildFlags_ResizeX;
 
 	ImGui::BeginChild("ChildL", ImVec2(250, 0), window_flags);
         for (int i = 0; i < g_psys->nStar(); i++)
@@ -203,7 +203,7 @@ void DlgCamera::DrawTarget() {
     ImGui::EndChild();
 }
 void DlgCamera::DrawTrack() {
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar | ImGuiChildFlags_ResizeX;
+    ImGuiWindowFlags window_flags = ImGuiChildFlags_ResizeX;
     ImGui::BeginChild("ChildL", ImVec2(250, 0), window_flags);
     {
         ImGui::BeginGroupPanel("Moveable modes");
@@ -279,7 +279,7 @@ void DlgCamera::DrawTrack() {
     ImGui::EndChild();
 }
 void DlgCamera::DrawGround() {
-    const ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar | ImGuiChildFlags_ResizeX;;
+    const ImGuiWindowFlags window_flags = ImGuiChildFlags_ResizeX;;
     ImGui::BeginChild("ChildL", ImVec2(250, 0), window_flags);
     {
 		ImGui::BeginGroupPanel("Ground Location");
@@ -390,7 +390,7 @@ void DlgCamera::DrawFoV() {
     }
 }
 void DlgCamera::DrawPreset() {
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar | ImGuiChildFlags_ResizeX;;;
+    ImGuiWindowFlags window_flags = ImGuiChildFlags_ResizeX;;;
     static float sz1 = 0.0;
     float sz2;
    // ImGui::Splitter(true, 0.5f, 8.0f, &sz1, &sz2, 8, 8, ImGui::GetContentRegionAvail().y);

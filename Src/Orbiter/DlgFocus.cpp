@@ -44,7 +44,7 @@ void DlgFocus::OnDraw() {
 }
 
 void DlgFocus::DrawAll() {
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar | ImGuiChildFlags_ResizeX;
+    ImGuiWindowFlags window_flags =  ImGuiChildFlags_ResizeX;
     ImGui::Text("Spacecraft : %s", m_SelectedShip.c_str());
     ImGui::BeginChild("ChildL", ImVec2(150, 0), true, window_flags);
 
@@ -81,7 +81,7 @@ void DlgFocus::DrawAll() {
     ImGui::EndChild();
 }
 void DlgFocus::DrawNearby() {
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar | ImGuiChildFlags_ResizeX;
+    ImGuiWindowFlags window_flags = ImGuiChildFlags_ResizeX;
     ImGui::Text("Spacecraft : %s", m_SelectedShip.c_str());
     ImGui::BeginChild("ChildL", ImVec2(150, 0), true, window_flags);
 
@@ -138,7 +138,7 @@ void DlgFocus::DrawLocation() {
         }
     }
 
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar | ImGuiChildFlags_ResizeX;
+    ImGuiWindowFlags window_flags =  ImGuiChildFlags_ResizeX;
     ImGui::Text("Spacecraft : %s", m_SelectedShip.c_str());
     ImGui::BeginChild("ChildL", ImVec2(150,0), true, window_flags);
 
@@ -185,7 +185,7 @@ void DlgFocus::DrawClass() {
         }
     }
 
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar | ImGuiChildFlags_ResizeX;
+    ImGuiWindowFlags window_flags = ImGuiChildFlags_ResizeX;
     ImGui::Text("Spacecraft : %s", m_SelectedShip.c_str());
     ImGui::BeginChild("ChildL", ImVec2(150,0), true, window_flags);
 

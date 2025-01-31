@@ -874,7 +874,7 @@ void DlgInfo::DrawInfoBase(Base *base) {
 }
 
 void DlgInfo::OnDraw() {
-        ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar | ImGuiChildFlags_ResizeX;
+        ImGuiWindowFlags window_flags = ImGuiChildFlags_ResizeX;
         ImGui::BeginChild("ChildL", ImVec2(250, 0), true, window_flags);
         {
             ImVec2 button_sz(ImVec2(ImGui::GetContentRegionAvail().x/2, 20));
