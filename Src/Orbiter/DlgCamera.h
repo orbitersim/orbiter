@@ -16,7 +16,6 @@ class DlgCamera : public ImGuiDialog {
 public:
     DlgCamera();
     void OnDraw() override;
-    static const std::string etype;
 private:
     void DrawControl();
     void DrawTarget();

@@ -210,7 +210,7 @@ public:
 	std::ifstream *FRsys_stream; // system event playback file
 	double frec_sys_simt;        // system event timer
 	PlaybackEditor *FReditor;    // playback editor instance
-	void ToggleRecorder (bool force = false, bool append = false);
+	bool ToggleRecorder (bool force = false, bool append = false);
 	void EndPlayback ();
 	inline int RecorderStatus() const { return (bRecord ? 1 : bPlayback ? 2 : 0); }
 	inline bool IsPlayback() const { return bPlayback; }
