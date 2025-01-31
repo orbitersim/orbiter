@@ -1556,11 +1556,11 @@ const char *Orbiter::GetDefRecordName (void) const
 	return playbackdir+i;
 }
 
-void Orbiter::ToggleRecorder (bool force, bool append)
+bool Orbiter::ToggleRecorder (bool force, bool append)
 {
-	if (bPlayback) return; // don't allow recording during playback
+	if (bPlayback) return true; // don't allow recording during playback
 
-	DlgRecorder *pDlg = (pDlgMgr ? pDlgMgr->EntryExists<DlgRecorder> (hInst) : NULL);
+	DlgRecorder *pDlg = (pDlgMgr ? pDlgMgr->EntryExists<DlgRecorder> () : NULL);
 	int i, n = g_psys->nVessel();
 	const char *sname;
 	char cbuf[256];
@@ -1572,8 +1572,7 @@ void Orbiter::ToggleRecorder (bool force, bool append)
 		} else sname = GetDefRecordName();
 		if (!append && !FRecorder_PrepareDir (sname, force)) {
 			bStartRecorder = false;
-			OpenDialogEx (IDD_MSG_FRECORDER, (DLGPROC)FRecorderMsg_DlgProc, DLG_CAPTIONCLOSE);
-			return;
+			return false;
 		}
 	} else sname = 0;
 	FRecorder_Activate (bStartRecorder, sname, append);
@@ -1581,7 +1580,7 @@ void Orbiter::ToggleRecorder (bool force, bool append)
 		g_psys->GetVessel(i)->FRecorder_Activate (bStartRecorder, sname, append);
 	if (bStartRecorder)
 		SavePlaybackScn (sname);
-	if (pDlg) PostMessage (pDlg->GetHwnd(), WM_USER+1, 0, 0);
+	return true;
 }
 
 void Orbiter::EndPlayback ()
