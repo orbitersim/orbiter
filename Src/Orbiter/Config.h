@@ -227,16 +227,16 @@ struct CFG_JOYSTICKPRM {
 
 struct CFG_UIPRM {              // user interface options
 	DWORD  MouseFocusMode;	    // 0: focus requires click; 1: focus requires click for child windows only; 2: focus follow mouse
-	DWORD  MenuMode;            // 0=show, 1=hide, 2=auto-hide
+	int    MenuMode;            // 0=show, 1=hide, 2=auto-hide
 	bool   bMenuLabelOnly;      // display only menu labels?
 	bool   bWarpAlways;         // always display time acceleration != 1
 	bool   bWarpScientific;     // display time acceleration in scientific notation?
-	DWORD  InfoMode;            // 0=show, 1=hide, 2=auto-hide
-	DWORD  InfoAuxIdx[2];       // index for auxiliary info bars left/right (0=none)
-	DWORD  MenuOpacity;         // menubar opacity (0-10)
-	DWORD  InfoOpacity;         // infobar opacity (0-20)
-	DWORD  MenuScrollspeed;     // menubar scroll speed (1-20)
-	DWORD  PauseIndMode;        // 0=flash on pause/resume, 1=show on pause, 2=don't show
+	int    InfoMode;            // 0=show, 1=hide, 2=auto-hide
+	int    InfoAuxIdx[2];       // index for auxiliary info bars left/right (0=none)
+	int    MenuOpacity;         // menubar opacity (0-10)
+	int    InfoOpacity;         // infobar opacity (0-20)
+	int    MenuScrollspeed;     // menubar scroll speed (1-20)
+	int    PauseIndMode;        // 0=flash on pause/resume, 1=show on pause, 2=don't show
 	int    SelVesselTab;        // tab to open in vessel selection dialog
  	int    SelVesselRange;      // "nearby" range for vessel selection dialog
 	bool   bSelVesselFlat;      // flat assemblies for vessel selection dialog
