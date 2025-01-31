@@ -636,10 +636,6 @@ void DlgMap::OpenInfo ()
 	if (obj.type == DISP_BASE || obj.type == DISP_VESSEL || obj.type == DISP_MOON) {
 		DlgInfo *pInfo = g_pOrbiter->DlgMgr()->EnsureEntry<DlgInfo> ();
 		pInfo->SetBody ((Body*)obj.obj);
-
-		RECT r;
-		GetWindowRect (hWnd, &r);
-		SetWindowPos (pInfo->GetHwnd(), NULL, r.right, r.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 	}
 }
 

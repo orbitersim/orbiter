@@ -1,856 +1,673 @@
-// Copyright (c) Martin Schweiger
+癤�// Copyright (c) Martin Schweiger
 // Licensed under the MIT License
 
 // ======================================================================
 // Object info window
 // ======================================================================
-
-#define STRICT 1
-#define _WIN32_WINNT 0x0501
-#define OAPI_IMPLEMENTATION
-
-#include <windows.h>
 #include "DlgInfo.h"
-#include "Dialogs.h"
-#include "Resource.h"
-#include "DlgMgr.h" // to be removed
-#include "Orbiter.h"
-#include "Vessel.h"
-#include "Camera.h"
-#include "Psys.h"
 #include "Celbody.h"
-#include <windows.h>
-#include <commctrl.h>
-#include <Richedit.h>
+#include "Psys.h"
+#include "Astro.h"
 #include "Element.h"
+#include "imgui.h"
 
-extern Orbiter *g_pOrbiter;
-extern Vessel *g_focusobj;
-extern Camera *g_camera;
 extern PlanetarySystem *g_psys;
-extern TimeData td;
-extern HELPCONTEXT DefHelpContext;
-extern char DBG_MSG[256];
 
-const char *na = "N/A";
-
-// ======================================================================
-
-DlgInfo::DlgInfo (HINSTANCE hInstance, HWND hParent, void *context)
-: DialogWin (hInstance, hParent, IDD_OBJINFO, 0, 0, context)
-{
-	upd_t = 0.0;
-	upd_dt = 1.0;
-	body = NULL;
-	listmode = LIST_NONE;
-	pos = &g_pOrbiter->Cfg()->CfgWindowPos.DlgInfo;
-
-	// note: shared icon resources should probably be loaded globally by orbiter
-	hIcon_dd = LoadIcon (hInstance, MAKEINTRESOURCE(IDI_DDOWN));
-	hIcon_du = LoadIcon (hInstance, MAKEINTRESOURCE(IDI_DUP));
+DlgInfo::DlgInfo() : ImGuiDialog("Orbiter: Object info", {340, 290}) {
 }
 
-// ======================================================================
-
-void DlgInfo::Init (HWND hDlg)
-{
-	RECT r;
-	POINT pt;
-	PARAFORMAT2 pfmt;
-	pfmt.cbSize = sizeof(PARAFORMAT2);
-	pfmt.dwMask = PFM_TABSTOPS;
-	pfmt.cTabCount = 1;
-	pfmt.rgxTabs[0] = 200;
-	int objtp = 0;
-
-	SendDlgItemMessage (hDlg, IDC_INFO_TYPE, CB_ADDSTRING, 0, (LPARAM)"Focus vessel");
-	SendDlgItemMessage (hDlg, IDC_INFO_TYPE, CB_ADDSTRING, 0, (LPARAM)"Camera target");
-	SendDlgItemMessage (hDlg, IDC_INFO_TYPE, CB_ADDSTRING, 0, (LPARAM)"Vessel");
-	SendDlgItemMessage (hDlg, IDC_INFO_TYPE, CB_ADDSTRING, 0, (LPARAM)"Base");
-	SendDlgItemMessage (hDlg, IDC_INFO_TYPE, CB_ADDSTRING, 0, (LPARAM)"Celestial body");
-	if (body) {
-		switch (body->Type()) {
-		case OBJTP_VESSEL: objtp = 2; break;
-		case OBJTP_SURFBASE: objtp = 3; break;
-		case OBJTP_PLANET:
-		case OBJTP_STAR: objtp = 4; break;
-		}
-	}
-	SendDlgItemMessage (hDlg, IDC_INFO_TYPE, CB_SETCURSEL, objtp, 0);
-
-	SendDlgItemMessage (hDlg, IDC_INFO_DDN, BM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon_dd);
-	SendDlgItemMessage (hDlg, IDC_INFO_DUP, BM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon_du);
-
-	int res = SendDlgItemMessage (hDlg, IDC_INFOBOX, EM_SETPARAFORMAT, 0, (LPARAM)&pfmt);
-	GetClientRect (hDlg, &r);
-	client_w = r.right;
-	client_h = r.bottom;
-	GetWindowRect (GetDlgItem (hDlg, IDC_INFOLIST), &r);
-	list_w = r.right-r.left;
-	list_h = r.bottom-r.top;
-	pt.x = r.left;
-	pt.y = r.top;
-	ScreenToClient (hDlg, &pt);
-	list_top = pt.y;
-	pl.OnInitDialog (hDlg, IDC_INFOLIST);
-	pl.SetColWidth (0, 180);
-
-	Body *b = body;
-	if (!b) b = g_focusobj;
-	body = NULL;
-
-	SetBody (hDlg, b);
-	BuildObjectList (hDlg, b);
-	if (objtp) {
-		int idx = SendDlgItemMessage (hDlg, IDC_INFO_NAME, CB_FINDSTRINGEXACT, 0, (LPARAM)body->Name());
-		if (idx != CB_ERR)
-			SendDlgItemMessage (hDlg, IDC_INFO_NAME, CB_SETCURSEL, idx, 0);
-	}
+void DlgInfo::AddCbodyNode(const CelestialBody *cbody) {
+    ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+    const bool is_selected = m_SelectedTarget == cbody->Name();
+    if (is_selected)
+        node_flags |= ImGuiTreeNodeFlags_Selected;
+    if(cbody->nSecondary()) {
+        bool node_open = ImGui::TreeNodeEx(cbody->Name(), node_flags);
+        if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+            m_SelectedTarget = cbody->Name();
+        if(node_open) {
+            for (int i = 0; i < cbody->nSecondary(); i++) {
+                AddCbodyNode (cbody->Secondary(i));
+            }
+            ImGui::TreePop();
+        }
+    } else {
+        ImGui::TreeNodeEx(cbody->Name(), node_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+        if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+            m_SelectedTarget = cbody->Name();
+    }
 }
 
-// ======================================================================
+void DlgInfo::DrawTree() {
+    for (int i = 0; i < g_psys->nStar(); i++)
+        AddCbodyNode (g_psys->GetStar(i));
 
-void DlgInfo::SetBody (Body *bd)
-{
-	SetBody (hWnd, bd);
-	Init (hWnd);
-}
-
-// ======================================================================
-
-void DlgInfo::BuildObjectList (HWND hDlg, Body *b)
-{
-	Body *obj;
-	char cbuf[256];
-	int j;
-	DWORD k;
-	int idx = SendDlgItemMessage (hDlg, IDC_INFO_TYPE, CB_GETCURSEL, 0, 0);
-	SendDlgItemMessage (hDlg, IDC_INFO_NAME, CB_RESETCONTENT, 0, 0);
-
-	switch (idx) {
-	case 0: // focus vessel
-		strcpy (cbuf, g_focusobj->Name());
-		SendDlgItemMessage (hDlg, IDC_INFO_NAME, CB_ADDSTRING, 0, (LPARAM)cbuf);
-		break;
-	case 1: // camera target
-		strcpy (cbuf, g_camera->Target()->Name());
-		SendDlgItemMessage (hDlg, IDC_INFO_NAME, CB_ADDSTRING, 0, (LPARAM)cbuf);
-		break;
-	case 2: // vessels
-		for (k = 0; k < g_psys->nVessel(); k++) {
-			strcpy (cbuf, g_psys->GetVessel(k)->Name());
-			SendDlgItemMessage (hDlg, IDC_INFO_NAME, CB_ADDSTRING, 0, (LPARAM)cbuf);
-		}
-		break;
-	case 3: // spaceports
-		for (k = 0; k < g_psys->nGrav(); k++) {
-			obj = g_psys->GetGravObj (k);
-			if (obj->Type() != OBJTP_PLANET) continue;
-			Planet *planet = (Planet*)obj;
-			for (j = 0; j < g_psys->nBase(planet); j++) {
-				strcpy (cbuf, g_psys->GetBase (planet,j)->Name());
-				SendDlgItemMessage (hDlg, IDC_INFO_NAME, CB_ADDSTRING, 0, (LPARAM)cbuf);
-			}
-		}
-		break;
-	case 4: // celestial bodies
-		CBodySelectComboBox::BuildListFromNode (hDlg, IDC_INFO_NAME, (CelestialBody*)b);
-		return;
-	}
-	SendDlgItemMessage (hDlg, IDC_INFO_NAME, CB_SETCURSEL, 0, 0);
-	//Info_ShowData (hDlg);
-}
-
-// ======================================================================
-
-int DlgInfo::Size (DWORD width, DWORD height)
-{
-	int i, id;
-	RECT r;
-	POINT pt;
-	GetClientRect (hWnd, &r);
-	int dw = r.right-client_w;
-	int dh = r.bottom-client_h;
-	list_w += dw;
-	list_h += dh;
-	client_w = r.right;
-	client_h = r.bottom;
-	pl.Move (0, list_top, list_w, list_h);
-
-	const int nbtl = 2;
-	const int btlid[nbtl] = {IDC_INFO_DDN, IDC_INFO_DUP};
-	for (i = 0; i < nbtl; i++) {
-		id = btlid[i];
-		GetWindowRect (GetDlgItem (hWnd, id), &r);
-		pt.x = r.left;
-		pt.y = r.top;
-		ScreenToClient (hWnd, &pt);
-		MoveWindow (GetDlgItem (hWnd, id), pt.x, pt.y+dh, r.right-r.left, r.bottom-r.top, TRUE);
-	}
-	const int nbtr = 3;
-	const int btrid[nbtr] = {IDC_INFO_MAP, IDCANCEL, IDHELP};
-	for (i = 0; i < nbtr; i++) ShowWindow (GetDlgItem (hWnd, btrid[i]), SW_HIDE);
-	for (i = 0; i < nbtr; i++) {
-		id = btrid[i];
-		GetWindowRect (GetDlgItem (hWnd, id), &r);
-		pt.x = r.left;
-		pt.y = r.top;
-		ScreenToClient (hWnd, &pt);
-		MoveWindow (GetDlgItem (hWnd, id), pt.x+dw, pt.y+dh, r.right-r.left, r.bottom-r.top, TRUE);
-	}
-	for (i = 0; i < nbtr; i++) ShowWindow (GetDlgItem (hWnd, btrid[i]), SW_SHOW);
-	return 0;
-}
-
-// ======================================================================
-
-void DlgInfo::OpenMap ()
-{
-	if (body) {
-		DlgMap *pMap = g_pOrbiter->DlgMgr()->EnsureEntry<DlgMap> ();
-		pMap->SetSelection (body);
-	}
-}
-
-// ======================================================================
-
-void DlgInfo::ExpandAll (HWND hDlg)
-{
-	pl.ExpandAll (true);
-}
-
-// ======================================================================
-
-void DlgInfo::CollapseAll (HWND hDlg)
-{
-	pl.ExpandAll (false);
-}
-
-// ======================================================================
-
-void DlgInfo::Update ()
-{
-	if (td.SysT0 > upd_t + upd_dt || td.SysT0 < upd_t) {
-		switch (listmode) {
-		case LIST_VESSEL:
-			UpdateItems_vessel ();
-			break;
-		case LIST_CBODY:
-			UpdateItems_celbody ();
-			break;
-		case LIST_BASE:
-			UpdateItems_base ();
-			break;
-		}
-		pl.Update ();
-		upd_t = td.SysT0;
-	}
-}
-
-// ======================================================================
-
-void DlgInfo::SelectionChanged (HWND hDlg)
-{
-	char cbuf[256];
-	int i, j;
-
-	int tp = SendDlgItemMessage (hDlg, IDC_INFO_TYPE, CB_GETCURSEL, 0, 0);
-	GetWindowText (GetDlgItem (hDlg, IDC_INFO_NAME), cbuf, 256);
-
-	if (tp == 1) { // camera target
-		Body *b = g_psys->GetObj (cbuf);
-		if (!b) b = g_psys->GetBase (cbuf);
-		if (!b) return;
-		switch (b->Type()) {
-		case OBJTP_VESSEL:
-			tp = 2;
-			break;
-		case OBJTP_SURFBASE:
-			tp = 3;
-			break;
-		case OBJTP_STAR:
-		case OBJTP_PLANET:
-			tp = 4;
-			break;
-		}
-	}
-	switch (tp) {
-	case 0: // focus vessel
-		SetBody (hDlg, g_focusobj);
-		break;
-	case 2: // vessel
-		SetBody (hDlg, g_psys->GetVessel (cbuf));
-		break;
-	case 3: // surface base
-		for (i = 0; i < g_psys->nGrav(); i++) {
-			Body *obj;
-			obj = g_psys->GetGravObj (i);
-			if (obj->Type() != OBJTP_PLANET) continue;
-			Planet *planet = (Planet*)obj;
-			for (j = 0; j < g_psys->nBase(planet); j++) {
-				if (!_stricmp (g_psys->GetBase (planet,j)->Name(), cbuf)) {
-					SetBody (hDlg, g_psys->GetBase (planet,j));
-					break;
+    if (ImGui::TreeNode("Spaceports")) {
+        for (int i = 0; i < g_psys->nGrav(); i++) {
+            Body *obj = g_psys->GetGravObj (i);
+            if (obj->Type() != OBJTP_PLANET) continue;
+            Planet *planet = (Planet*)obj;
+            if (g_psys->nBase(planet) > 0) {
+				if(ImGui::TreeNode(planet->Name())) {
+					for (int j = 0; j < g_psys->nBase(planet); j++) {
+						const char *name = g_psys->GetBase (planet,j)->Name();
+						const bool is_selected = m_SelectedTarget == name;
+						ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+						if(is_selected) node_flags |= ImGuiTreeNodeFlags_Selected;
+						ImGui::TreeNodeEx(name, node_flags);
+						if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+							m_SelectedTarget = name;
+					}
+					ImGui::TreePop();
 				}
-			}
-		}
-		break;
-	case 4: { // celestial bodies
-		CelestialBody *cbody = CBodySelectComboBox::OnSelectionChanged (hDlg, IDC_INFO_NAME);
-		if (cbody) SetBody (hDlg, cbody);
-		} break;
-	}
+            }
+        }
+        ImGui::TreePop();
+    }
+    if (ImGui::TreeNode("Vessels")) {
+        for (int i = 0; i < g_psys->nVessel(); i++) {
+            const char *name = g_psys->GetVessel(i)->Name();
+            const bool is_selected = m_SelectedTarget == name;
+            ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+            if(is_selected) node_flags |= ImGuiTreeNodeFlags_Selected;
+            ImGui::TreeNodeEx(name, node_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+            if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+                m_SelectedTarget = name;
+        }
+        ImGui::TreePop();
+    }
 }
 
-// ======================================================================
-
-void DlgInfo::SetBody (HWND hDlg, Body *bd)
-{
-	if (bd == body) return; // nothing to do
-	body = bd;
-	switch (bd->Type()) {
-	case OBJTP_VESSEL:
-		listmode = LIST_VESSEL;
-		break;
-	case OBJTP_STAR:
-	case OBJTP_PLANET:
-		listmode = LIST_CBODY;
-		break;
-	case OBJTP_SURFBASE:
-		listmode = LIST_BASE;
-		break;
-	}
-	switch (listmode) {
-	case LIST_VESSEL:
-		InitItems_vessel (hDlg, (Vessel*)body);
-		UpdateItems_vessel ();
-		break;
-	case LIST_CBODY:
-		InitItems_celbody (hDlg, (CelestialBody*)body);
-		UpdateItems_celbody ();
-		break;
-	case LIST_BASE:
-		InitItems_base (hDlg, (Base*)body);
-		UpdateItems_base ();
-		break;
-	}
-	pl.Redraw();
+void DlgInfo::DrawInfo() {
+    Vessel *vessel = g_psys->GetVessel(m_SelectedTarget.c_str(), true);
+    if(vessel) {
+        DrawInfoVessel(vessel);
+        return;
+    }
+    CelestialBody *cb = g_psys->GetGravObj(m_SelectedTarget.c_str(), true);
+    if(cb) {
+        DrawInfoCelestialBody(cb);
+        return;
+    }
+    Base *base = g_psys->GetBase(m_SelectedTarget.c_str(), true);
+    if(base) {
+        DrawInfoBase(base);
+        return;
+    }
+    ImGui::Text("Select an object on the left panel");
 }
 
-// ======================================================================
+void DlgInfo::DrawInfoVessel(Vessel *vessel) {
+    ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg;
+    if(ImGui::CollapsingHeader("Designation", ImGuiTreeNodeFlags_DefaultOpen)) {
+        if (ImGui::BeginTable("table Designation", 2, flags))
+        {
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Name");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextUnformatted(vessel->Name());
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Class");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextUnformatted(vessel->ClassName());
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Transponder Frequency");
+                ImGui::TableSetColumnIndex(1);
+                float f;
+                if (vessel->GetXpdrFreq (f))
+                    ImGui::Text("%0.2fMHz", f);
+                else
+                    ImGui::TextUnformatted("N/A");
+            ImGui::EndTable();
+        }
+    }
+    if(ImGui::CollapsingHeader("Physical Parameters", ImGuiTreeNodeFlags_DefaultOpen)) {
+        // Total mass, dry mass, propellant mass, mean radius, P. moment of inertias
+        if (ImGui::BeginTable("table Physical Parameters", 2, flags))
+        {
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Total mass");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%g kg", vessel->Mass());
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Dry mass");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%g kg", vessel->EmptyMass());
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Propellant mass");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%g kg", vessel->FuelMass());
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Mean radius");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%s m", DistStr (vessel->Size())+1);
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("P. moments of inertia");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text(u8"(%4g, %4g, %4g) kg.m짼", vessel->PMI().x, vessel->PMI().y, vessel->PMI().z);
 
-void DlgInfo::InitItems_vessel (HWND hDlg, const Vessel *vessel)
-{
-	const int nlabel_des = 3;
-	const char *label_des[nlabel_des] = {
-		"Name",
-		"Class",
-		"Transponder frequency"
-	};
-	const int nlabel_prm = 5;
-	const char *label_prm[nlabel_prm] = {
-		"Total mass",
-		"Dry mass",
-		"Propellant mass",
-		"Mean radius",
-		"P. moments of inertia"
-	};
-	const int nlabel_thr = 3;
-	const char *label_thr[nlabel_thr] = {
-		"Main",
-		"Retro",
-		"Hover"
-	};
-	const int nlabel_els = 7;
-	const char *label_els[nlabel_els] = {
-		"Reference",
-		"Semi-major axis (a)",
-		"Eccentricity (e)",
-		"Inclination (i)",
-		"Longitude of asc. node",
-		"Longitude of periapsis",
-		"Mean longitude"
-	};
-	const int nlabel_srf = 8;
-	const char *label_srf[nlabel_srf] = {
-		"Reference",
-		"Position",
-		"Altitude",
-		"Ground speed",
-		"Vertical speed",
-		"Heading",
-		"Pitch",
-		"Bank"
-	};
-	const int nlabel_atm = 3;
-	const char *label_atm[nlabel_atm] = {
-		"Temperature",
-		"Density",
-		"Pressure"
-	};
-	const int nlabel_aer = 8;
-	const char *label_aer[nlabel_aer] = {
-		"Dynamic pressure",
-		"True airspeed",
-		"Mach number",
-		"Lift",
-		"Drag",
-		"Weight",
-		"Lift/drag ratio",
-		"Angle of attack"
-	};
-	const int nlabel_prp = 4;
-	const char *label_prp[nlabel_prp] = {
-		"Update mode",
-		"State propagator",
-		"Subsamples",
-		"Gravity sources"
-	};
+            ImGui::EndTable();
+        }
+    }
+    if(ImGui::CollapsingHeader("Thrusters Group Ratings (vacuum)", ImGuiTreeNodeFlags_DefaultOpen)) {
+        //Main, retro, hover   
+        const THGROUP_TYPE thgrp[3] = {THGROUP_MAIN, THGROUP_RETRO, THGROUP_HOVER};
+        const char *thrtype[] = {"Main", "Retro", "Hover"};
+        if (ImGui::BeginTable("table Thrusters Group Ratings", 2, flags))
+        {
+            for (int i = 0; i < 3; i++) {
+                ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::TextUnformatted(thrtype[i]);
+                    ImGui::TableSetColumnIndex(1);
+                    double th = vessel->GetThrusterGroupMaxth (thgrp[i]);
+                    if (th > 0.0) {
+                        ImGui::Text("%sN", FloatStr (th)+1);
+                    } else {
+                        ImGui::Text("N/A");
+                    }
+            }
+            ImGui::EndTable();
+        }
 
-	int i;
-	PropertyItem *item;
-	pl.ClearGroups();
+    }
 
-	vlist.des = pl.AppendGroup();
-	vlist.des->SetTitle ("Designation");
-	for (i = 0; i < nlabel_des; i++) {
-		item = pl.AppendItem (vlist.des);
-		item->SetLabel (label_des[i]);
-	}
+    const Body *ref = vessel->ElRef();
+    const Elements *el = vessel->Els();
+    if(el && ref && ImGui::CollapsingHeader("Osculating Elements (Ecliptic Frame)", ImGuiTreeNodeFlags_DefaultOpen)) {
+        //Reference, semi major axis, excentricity, inclination, longitude of AN, longitude of periapsis, mean longitude
+        if (ImGui::BeginTable("table Osculating Elements", 2, flags))
+        {
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Reference");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextUnformatted(ref->Name());
 
-	vlist.prm = pl.AppendGroup();
-	vlist.prm->SetTitle ("Physical parameters");
-	for (i = 0; i < nlabel_prm; i++) {
-		item = pl.AppendItem (vlist.prm);
-		item->SetLabel (label_prm[i]);
-	}
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Semi-major Axis (a)");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%s m", SciStr (el->a, 5));
 
-	const THGROUP_TYPE thgrp[3] = {THGROUP_MAIN, THGROUP_RETRO, THGROUP_HOVER};
-	bool showthgrp = false;
-	for (i = 0; i < 3; i++) {
-		showth[i] = (vessel->GetThrusterGroupMaxth (thgrp[i]) > 0.0);
-		if (showth[i]) showthgrp = true;
-	}
-	if (showthgrp) {
-		vlist.thr = pl.AppendGroup();
-		vlist.thr->SetTitle ("Thruster group ratings (vacuum)");
-		for (i = 0; i < nlabel_thr; i++) {
-			if (showth[i]) {
-				item = pl.AppendItem (vlist.thr);
-				item->SetLabel (label_thr[i]);
-			}
-		}
-	} else vlist.thr = NULL;
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Excentricity (e)");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%g", el->e);
 
-	vlist.els = pl.AppendGroup ();
-	vlist.els->SetTitle ("Osculating elements (ecliptic frame)");
-	for (i = 0; i < nlabel_els; i++) {
-		item = pl.AppendItem (vlist.els);
-		item->SetLabel (label_els[i]);
-	}
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted(u8"Inclination (igg)");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text(u8"%0.2f째", el->i*DEG);
 
-	vlist.srf = pl.AppendGroup();
-	vlist.srf->SetTitle ("Surface-relative parameters");
-	for (i = 0; i < nlabel_srf; i++) {
-		item = pl.AppendItem (vlist.srf);
-		item->SetLabel (label_srf[i]);
-	}
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Longitude of Ascending Node");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text(u8"%0.2f째", el->theta*DEG);
 
-	vlist.atm = pl.AppendGroup();
-	vlist.atm->SetTitle ("Atmospheric parameters");
-	for (i = 0; i < nlabel_atm; i++) {
-		item = pl.AppendItem (vlist.atm);
-		item->SetLabel (label_atm[i]);
-	}
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Longitude of Periapsis");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text(u8"%0.2f째", el->omegab*DEG);
 
-	vlist.aer = pl.AppendGroup();
-	vlist.aer->SetTitle ("Aerodynamic parameters");
-	for (i = 0; i < nlabel_aer; i++) {
-		item = pl.AppendItem (vlist.aer);
-		item->SetLabel (label_aer[i]);
-	}
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Mean longitude");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text(u8"%0.2f째", el->MeanLng()*DEG);
+            ImGui::EndTable();
+        }
+    }
 
-	if (vessel->nDock()) {
-		vlist.dck = pl.AppendGroup();
-		vlist.dck->SetTitle ("Docking ports");
-		char cbuf[64];
-		for (i = 0; i < vessel->nDock(); i++) {
-			item = pl.AppendItem (vlist.dck);
-			sprintf (cbuf, "Port %d", i+1);
-			item->SetLabel (cbuf);
-		}
-	} else vlist.dck = NULL;
+    const SurfParam *sp = vessel->GetSurfParam();
+    if(sp && ImGui::CollapsingHeader("Surface-relative Parameters", ImGuiTreeNodeFlags_DefaultOpen)) {
+        //reference, position, altitude, ground speed, vertical speed, heading, pitch, bank
+        if (ImGui::BeginTable("table Surface-relative Parameters", 2, flags))
+        {
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Reference");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextUnformatted(sp->ref->Name());
 
-	vlist.prp = pl.AppendGroup();
-	vlist.prp->SetTitle ("State propagation");
-	for (i = 0; i < nlabel_prp; i++) {
-		item = pl.AppendItem (vlist.prp);
-		item->SetLabel (label_prp[i]);
-	}
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Position");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text(u8"%07.3f째%c %06.3f째%c", fabs(sp->lng)*DEG, sp->lng >= 0.0 ? 'E':'W', fabs(sp->lat)*DEG, sp->lat >= 0.0 ? 'N':'S');
+
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Altitude");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%sm", DistStr (sp->alt)+1);
+
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Ground Speed");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%sm/s", FloatStr (sp->groundspd)+1);
+
+            Vector V (mul (sp->L2H, tmul (vessel->ProxyBody()->GRot(), sp->groundvel_glob)));
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Vertical Speed");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%sm/s", FloatStr (V.y)+1);
+
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Heading");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text(u8"%0.0f째", sp->dir*DEG);
+
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Pitch");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text(u8"%0.0f째", sp->pitch*DEG);
+
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Bank");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text(u8"%0.0f째 %s", fabs(sp->bank)*DEG, sp->bank >= 0.0 ? "left":"right");
+
+            ImGui::EndTable();
+        }
+    }
+
+   	if (vessel->isInAtmosphere()) {
+        if(ImGui::CollapsingHeader("Atmospheric Parameters", ImGuiTreeNodeFlags_DefaultOpen)) {
+            // Temperature, density, pressure
+            if (ImGui::BeginTable("table Atmospheric Parameters", 2, flags))
+            {
+                double T, rho, p;
+                vessel->AtmTemperature (T);
+                vessel->AtmPressureAndDensity (p, rho);
+                ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::TextUnformatted("Temperature");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::Text("%0.2f K", T);
+
+                ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::TextUnformatted("Density");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::Text("%0.4g kg/m^3", rho);
+
+                ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::TextUnformatted("Pressure");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::Text("%sPa", FloatStr(p)+1);
+
+                ImGui::EndTable();
+            }
+        }
+        if(ImGui::CollapsingHeader("Aerodynamic Parameters", ImGuiTreeNodeFlags_DefaultOpen)) {
+            // Dynamic pressure, true airspeed, mach number, lift, drag, weight, lift/drag ratio, angle of attack
+            if (ImGui::BeginTable("table Aerodynamic Parameters", 2, flags))
+            {
+                double dynp, M, L, D;
+                vessel->DynPressure (dynp);
+                L = vessel->GetLift();
+                D = vessel->GetDrag();
+                vessel->MachNumber (M);
+
+                ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::TextUnformatted("Dynamic Pressure");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::Text("%sPa", FloatStr(dynp)+1);
+
+                ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::TextUnformatted("True Airspeed");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::Text( "%sm/s", FloatStr(sp->airspd)+1);
+
+                ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::TextUnformatted("Mach Number");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::Text("%g", M);
+
+                ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::TextUnformatted("Lift");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::Text("%sN", FloatStr(L)+(L >= 0 ? 1:0));
+
+                ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::TextUnformatted("Drag");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::Text("%sN", FloatStr(D)+1);
+
+                ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::TextUnformatted("Weight");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::Text("%sN", FloatStr(vessel->GetWeight())+1);
+
+                ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::TextUnformatted("Lift/Drag Ratio");
+                    ImGui::TableSetColumnIndex(1);
+                    if (D)
+                        ImGui::Text("%g", L/D);
+                    else
+                        ImGui::TextUnformatted("N/A");
+
+                ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::TextUnformatted("Angle of Attack");
+                    ImGui::TableSetColumnIndex(1);
+                    if(sp)
+                        ImGui::Text(u8"%+0.1f째", -atan2 (sp->groundvel_ship.y, sp->groundvel_ship.z)*DEG);
+                    else
+                        ImGui::TextUnformatted("N/A");
+
+                ImGui::EndTable();
+            }
+        }
+    }
+
+    if (vessel->nDock()) {
+        if(ImGui::CollapsingHeader("Docking Ports", ImGuiTreeNodeFlags_DefaultOpen)) {
+            // port 1,2,3...
+            if (ImGui::BeginTable("table Docking Ports", 2, flags))
+            {
+                for(int i = 0;i<vessel->nDock();i++) {
+                    char buf[128];
+                    if (vessel->GetDockParams(i)->ids)
+    					sprintf (buf, "IDS %06.2f ", vessel->GetDockParams(i)->ids->GetFreq());
+                    else
+                        buf[0]='\0';
+                    Vessel *mate = vessel->DockMate (i);
+                    if (mate) sprintf (buf+strlen(buf), "[Docked to %s]", mate->Name());
+                    else strcat (buf, "[free]");
+
+                    ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text("Port %d", i+1);
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::TextUnformatted(buf);
+                }
+
+                ImGui::EndTable();
+            }
+        }
+    }
+
+    if(ImGui::CollapsingHeader("State Propagation", ImGuiTreeNodeFlags_DefaultOpen)) {
+        // update mode, state propagator, subsamples, gravity sources
+        if (ImGui::BeginTable("table State Propagation", 2, flags))
+        {
+            if (vessel->GetStatus() == FLIGHTSTATUS_LANDED) {
+                ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::TextUnformatted("Update mode");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::TextUnformatted("IDLE (landed)");
+            } else if (vessel->isAttached()) {
+                ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::TextUnformatted("Update mode");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::TextUnformatted("PASSIVE (attached)");
+            } else {
+                ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::TextUnformatted("Update mode");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::TextUnformatted("ACTIVE (dynamic)");
+
+                ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::TextUnformatted("State Propagator");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::TextUnformatted(vessel->isOrbitStabilised() ? "stabilised" : vessel->CurPropagatorStr());
+
+                ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::TextUnformatted("Subsamples");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::Text("%d", vessel->CurPropagatorSubsamples());
+
+                char cbuf[256];
+                cbuf[0] = '\0';
+                const GFieldData &gfd = vessel->GetGFieldData();
+                for (int i = 0; i < gfd.ngrav; i++) {
+                    if (i) strcat (cbuf, ", ");
+                    strcat (cbuf, g_psys->GetGravObj(gfd.gravidx[i])->Name());
+                }
+                ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::TextUnformatted("Gravity Sources");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::TextUnformatted(cbuf);
+
+            }
+            ImGui::EndTable();
+        }
+    }
 }
 
-// ======================================================================
 
-void DlgInfo::UpdateItems_vessel ()
-{
-	const THGROUP_TYPE thgrp[3] = {THGROUP_MAIN, THGROUP_RETRO, THGROUP_HOVER};
-	int i, j;
-	float f;
-	char cbuf[256];
+void DlgInfo::DrawInfoCelestialBody(CelestialBody *cbody) {
+    const Elements *el = nullptr;
+    const Planet *planet = nullptr;
+    const CELBODY *cb = cbody->GetModuleInterface();
 
-	Vessel *vessel = (Vessel*)body;
-	const Body *ref = vessel->ElRef();
+    switch (cbody->Type()) {
+    case OBJTP_PLANET:
+        planet = (Planet*)cbody;
+        el = planet->Els();
+        break;
+    }
 
-	vlist.des->GetItem (0)->SetValue (vessel->Name());
-	vlist.des->GetItem (1)->SetValue (vessel->ClassName());
-	if (vessel->GetXpdrFreq (f)) sprintf (cbuf, "%0.2fMHz", f);
-	else strcpy (cbuf, na);
-	vlist.des->GetItem (2)->SetValue (cbuf);
+    ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg;
+    if(ImGui::CollapsingHeader("Designation", ImGuiTreeNodeFlags_DefaultOpen)) {
+        if (ImGui::BeginTable("table celbody designation", 2, flags))
+        {
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Name");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextUnformatted(cbody->Name());
 
-	sprintf (cbuf, "%g kg", vessel->Mass());
-	vlist.prm->GetItem (0)->SetValue (cbuf);
-	sprintf (cbuf, "%g kg", vessel->EmptyMass());
-	vlist.prm->GetItem (1)->SetValue (cbuf);
-	sprintf (cbuf, "%g kg", vessel->FuelMass());
-	vlist.prm->GetItem (2)->SetValue (cbuf);
-	strcpy (cbuf, DistStr (vessel->Size())+1); strcat (cbuf, "m");
-	vlist.prm->GetItem (3)->SetValue (cbuf);
-	sprintf (cbuf, "(%4g, %4g, %4g) m�", vessel->PMI().x, vessel->PMI().y, vessel->PMI().z);
-	vlist.prm->GetItem (4)->SetValue (cbuf);
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Primary");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextUnformatted(cbody->ElRef() ? cbody->ElRef()->Name() : "N/A");
 
-	if (vlist.thr) {
-		for (i = j = 0; i < 3; i++) {
-			if (showth[i]) {
-				double th = vessel->GetThrusterGroupMaxth (thgrp[i]);
-				if (th) {
-					sprintf (cbuf, "%sN", FloatStr (th)+1);
-					vlist.thr->GetItem (j)->SetValue (cbuf);
-				} else vlist.thr->GetItem (j)->SetValue (na);
-				j++;
-			}
-		}
-	}
-	
-	const Elements *el = vessel->Els();
-	if (el && ref) {
-		vlist.els->GetItem (0)->SetValue (ref->Name());
-		sprintf (cbuf, "%s m", SciStr (el->a, 5));
-		vlist.els->GetItem (1)->SetValue (cbuf);
-		sprintf (cbuf, "%g", el->e);
-		vlist.els->GetItem (2)->SetValue (cbuf);
-		sprintf (cbuf, "%0.2f�", el->i*DEG);
-		vlist.els->GetItem (3)->SetValue (cbuf);
-		sprintf (cbuf, "%0.2f�", el->theta*DEG);
-		vlist.els->GetItem (4)->SetValue (cbuf);
-		sprintf (cbuf, "%0.2f�", el->omegab*DEG);
-		vlist.els->GetItem (5)->SetValue (cbuf);
-		sprintf (cbuf, "%0.2f�", el->MeanLng()*DEG);
-		vlist.els->GetItem (6)->SetValue (cbuf);
-	} else {
-		for (i = 0; i < 7; i++)
-			vlist.els->GetItem (i)->SetValue (na);
-	}
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Solar System");
+                ImGui::TableSetColumnIndex(1);
+                const char *psys_name = g_psys->Name().c_str();
+                ImGui::TextUnformatted(psys_name ? psys_name : "N/A");
 
-	const SurfParam *sp = vessel->GetSurfParam();
-	if (sp) {
-		vlist.srf->GetItem (0)->SetValue (sp->ref->Name());
-		sprintf (cbuf, "%07.3f�%c  %06.3f�%c", fabs(sp->lng)*DEG, sp->lng >= 0.0 ? 'E':'W', fabs(sp->lat)*DEG, sp->lat >= 0.0 ? 'N':'S');
-		vlist.srf->GetItem (1)->SetValue (cbuf);
-		strcpy (cbuf, DistStr (sp->alt)); strcat (cbuf, "m");
-		vlist.srf->GetItem (2)->SetValue (cbuf+1);
-		sprintf (cbuf, "%sm/s", FloatStr (sp->groundspd)+1);
-		vlist.srf->GetItem (3)->SetValue (cbuf);
-		Vector V (mul (sp->L2H, tmul (vessel->ProxyBody()->GRot(), sp->groundvel_glob)));
-		sprintf (cbuf, "%sm/s", FloatStr (V.y)+1);
-		vlist.srf->GetItem (4)->SetValue (cbuf);
-		sprintf (cbuf, "%0.0f�", sp->dir*DEG);
-		vlist.srf->GetItem (5)->SetValue (cbuf);
-		sprintf (cbuf, "%0.0f�", sp->pitch*DEG);
-		vlist.srf->GetItem (6)->SetValue (cbuf);
-		sprintf (cbuf, "%0.0f� %s", fabs(sp->bank)*DEG, sp->bank >= 0.0 ? "left":"right");
-		vlist.srf->GetItem (7)->SetValue (cbuf);
-	} else {
-		for (i = 0; i < 8; i++)
-			vlist.srf->GetItem (i)->SetValue (na);
-	}
+            ImGui::EndTable();
+        }
+    }
+    if(ImGui::CollapsingHeader("Physical Parameters", ImGuiTreeNodeFlags_DefaultOpen)) {
+        if (ImGui::BeginTable("table celbody Physical parameters", 2, flags))
+        {
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Mass");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%s kg", SciStr (cbody->Mass(), 4));
 
-	if (vessel->isInAtmosphere()) {
-		double T, rho, p;
-		vessel->AtmTemperature (T);
-		vessel->AtmPressureAndDensity (p, rho);
-		sprintf (cbuf, "%0.2f K", T);
-		vlist.atm->GetItem (0)->SetValue (cbuf);
-		sprintf (cbuf, "%0.4g kg/m^3", rho);
-		vlist.atm->GetItem (1)->SetValue (cbuf);
-		sprintf (cbuf, "%sPa", FloatStr(p)+1);
-		vlist.atm->GetItem (2)->SetValue (cbuf);
-	} else {
-		for (i = 0; i < 3; i++)
-			vlist.atm->GetItem (i)->SetValue (na);
-	}
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Mean Radius");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%s m", SciStr (cbody->Size(), 4));
 
-	if (vessel->isInAtmosphere()) {
-		double dynp, M, L, D;
-		vessel->DynPressure (dynp);
-		L = vessel->GetLift();
-		D = vessel->GetDrag();
-		sprintf (cbuf, "%sPa", FloatStr(dynp)+1);
-		vlist.aer->GetItem (0)->SetValue (cbuf);
-		if (sp) sprintf (cbuf, "%sm/s", FloatStr(sp->airspd)+1);
-		else    strcpy (cbuf, na);
-		vlist.aer->GetItem (1)->SetValue (cbuf);
-		vessel->MachNumber (M);
-		sprintf (cbuf, "%g", M);
-		vlist.aer->GetItem (2)->SetValue (cbuf);
-		sprintf (cbuf, "%sN", FloatStr(L)+(L >= 0 ? 1:0));
-		vlist.aer->GetItem (3)->SetValue (cbuf);
-		sprintf (cbuf, "%sN", FloatStr(D)+1);
-		vlist.aer->GetItem (4)->SetValue (cbuf);
-		sprintf (cbuf, "%sN", FloatStr(vessel->GetWeight())+1);
-		vlist.aer->GetItem (5)->SetValue (cbuf);
-		if (D) sprintf (cbuf, "%g", L/D);
-		else   strcpy (cbuf, na);
-		vlist.aer->GetItem (6)->SetValue (cbuf);
-		if (sp) sprintf (cbuf, "%+0.1f�", -atan2 (sp->groundvel_ship.y, sp->groundvel_ship.z)*DEG);
-		else    strcpy (cbuf, na);
-		vlist.aer->GetItem (7)->SetValue (cbuf);
-	} else {
-		for (i = 0; i < 8; i++)
-			vlist.aer->GetItem (i)->SetValue (na);
-	}
+            int nj;
+            char cbuf[128];
+            if ((nj = cbody->nJcoeff())) {
+                cbuf[0] = '\0';
+                for (int i = 0; i < nj; i++) {
+                    sprintf (cbuf + strlen(cbuf), "J%d=%s", i+2, SciStr (cbody->Jcoeff (i),3));
+                    if (i < nj-1) strcat (cbuf, ", ");
+                }
+            } else strcpy (cbuf, "N/A");
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Gravitational Moments");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextUnformatted(cbuf);
 
-	if (vlist.dck) {
-		for (i = 0; i < vlist.dck->ItemCount(); i++) {
-			if (i < vessel->nDock()) {
-				if (vessel->GetDockParams(i)->ids)
-					sprintf (cbuf, "IDS %06.2f ", vessel->GetDockParams(i)->ids->GetFreq());
-				else cbuf[0] = '\0';
-				Vessel *mate = vessel->DockMate (i);
-				if (mate) sprintf (cbuf+strlen(cbuf), "[Docked to %s]", mate->Name());
-				else strcat (cbuf, "[free]");
-				vlist.dck->GetItem (i)->SetValue (cbuf);
-			} else vlist.dck->GetItem (i)->SetValue (na);
-		}
-	}
-	if (vessel->GetStatus() == FLIGHTSTATUS_LANDED) {
-		vlist.prp->GetItem (0)->SetValue ("IDLE (landed)");
-		for (i = 1; i < 4; i++) vlist.prp->GetItem (i)->SetValue (na);
-	} else if (vessel->isAttached()) {
-		vlist.prp->GetItem (0)->SetValue ("PASSIVE (attached)");
-		for (i = 1; i < 4; i++) vlist.prp->GetItem (i)->SetValue (na);
-	} else {
-		vlist.prp->GetItem (0)->SetValue ("ACTIVE (dynamic)");
-		vlist.prp->GetItem (1)->SetValue (vessel->isOrbitStabilised() ? "stabilised" : vessel->CurPropagatorStr());
-		sprintf (cbuf, "%d", vessel->CurPropagatorSubsamples());
-		vlist.prp->GetItem (2)->SetValue (cbuf);
-		cbuf[0] = '\0';
-		const GFieldData &gfd = vessel->GetGFieldData();
-		for (i = 0; i < gfd.ngrav; i++) {
-			if (i) strcat (cbuf, ", ");
-			strcat (cbuf, g_psys->GetGravObj(gfd.gravidx[i])->Name());
-		}
-		vlist.prp->GetItem (3)->SetValue (cbuf);
-	}
-}
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Siderial day");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%s s", SciStr (cbody->RotT(), 4));
 
-// ======================================================================
+            if (el) sprintf (cbuf, "%s s", SciStr (el->OrbitT(), 4));
+            else    strcpy (cbuf, "N/A");
 
-void DlgInfo::InitItems_celbody (HWND hDlg, const CelestialBody *cbody)
-{
-	const int nlabel_des = 3;
-	const char *label_des[nlabel_des] = {
-		"Name",
-		"Primary",
-		"Solar system"
-	};
-	const int nlabel_prm = 7;
-	const char *label_prm[nlabel_prm] = {
-		"Mass",
-		"Mean radius",
-		"Gravitational moments",
-		"Siderial day",
-		"Orbit period",
-		"Obliquity of ecliptic",
-		"Atmosphere"
-	};
-	const int nlabel_atm = 5;
-	const char *label_atm[nlabel_atm] = {
-		"Atmosphere model",
-		"Surface pressure",
-		"Surface density",
-		"Specific gas constant",
-		"Specific heat ratio"
-	};
-	const int nlabel_els = 6;
-	const char *label_els[nlabel_els] = {
-		"Semi-major axis (a)",
-		"Eccentricity (e)",
-		"Inclination (i)",
-		"Longitude of asc. node",
-		"Longitude of periapsis",
-		"Mean longitude"
-	};
-	const int nlabel_loc = 2;
-	const char *label_loc[nlabel_loc] = {
-		"Right ascension (RA)",
-		"Declination (Dec)"
-	};
-	const int nlabel_ecl = 3;
-	const char *label_ecl[nlabel_ecl] = {
-		"Longitude",
-		"Latitude",
-		"Radial distance"
-	};
-	const int nlabel_prp = 2;
-	const char *label_prp[nlabel_prp] = {
-		"Mode",
-		"Gravity sources"
-	};
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Orbit Period");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextUnformatted(cbuf);
 
-	int i;
-	PropertyItem *item;
-	pl.ClearGroups();
+            if (planet) sprintf (cbuf, u8"%0.2f째", planet->Obliquity()*DEG);
+            else strcpy (cbuf, "N/A");
 
-	cblist.des = pl.AppendGroup();
-	cblist.des->SetTitle ("Designation");
-	for (i = 0; i < nlabel_des; i++) {
-		item = pl.AppendItem (cblist.des);
-		item->SetLabel (label_des[i]);
-	}
-	cblist.prm = pl.AppendGroup();
-	cblist.prm->SetTitle ("Physical parameters");
-	for (i = 0; i < nlabel_prm; i++) {
-		item = pl.AppendItem (cblist.prm);
-		item->SetLabel (label_prm[i]);
-	}
-	if (cbody->Type() == OBJTP_PLANET && ((Planet*)cbody)->AtmParams()) {
-		cblist.atm = pl.AppendGroup();
-		cblist.atm->SetTitle ("Atmosphere");
-		for (i = 0; i < nlabel_atm; i++) {
-			item = pl.AppendItem (cblist.atm);
-			item->SetLabel (label_atm[i]);
-		}
-	} else cblist.atm = NULL;
-	cblist.els = pl.AppendGroup();
-	cblist.els->SetTitle ("Osculating elements (ecliptic frame)");
-	for (i = 0; i < nlabel_els; i++) {
-		item = pl.AppendItem (cblist.els);
-		item->SetLabel (label_els[i]);
-	}
-	if (strcmp (cbody->Name(), "Earth")) {
-		cblist.loc = pl.AppendGroup();
-		cblist.loc->SetTitle ("Geocentric celestial position");
-		for (i = 0; i < nlabel_loc; i++) {
-			item = pl.AppendItem (cblist.loc);
-			item->SetLabel (label_loc[i]);
-		}
-	} else cblist.loc = NULL;
-	if (cbody->Els()) {
-		cblist.ecl = pl.AppendGroup();
-		cblist.ecl->SetTitle ("Ecliptic position from primary");
-		for (i = 0; i < nlabel_ecl; i++) {
-			item = pl.AppendItem (cblist.ecl);
-			item->SetLabel (label_ecl[i]);
-		}
-	} else cblist.ecl = NULL;
-	cblist.prp = pl.AppendGroup();
-	cblist.prp->SetTitle ("State propagation");
-	for (i = 0; i < nlabel_prp - (cbody->canDynamicPosVel() ? 0:1); i++) {
-		item = pl.AppendItem (cblist.prp);
-		item->SetLabel (label_prp[i]);
-	}
-}
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Obliquity of Ecliptic");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextUnformatted(cbuf);
 
-// ======================================================================
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Atmosphere");
+                ImGui::TableSetColumnIndex(1);
+                if(planet && planet->AtmParams()) {
+                    ImGui::TextUnformatted("Yes");
+                } else {
+                    ImGui::TextUnformatted("No");
+                }
 
-void DlgInfo::UpdateItems_celbody ()
-{
-	CelestialBody *cbody = (CelestialBody*)body;
-	CELBODY *cb = cbody->GetModuleInterface();
-	Planet *planet = 0;
-	const Elements *el = 0;
-	char cbuf[256];
-	int i, nj;
 
-	switch (body->Type()) {
-	case OBJTP_PLANET:
-		planet = (Planet*)body;
-		el = planet->Els();
-		break;
-	}
+            ImGui::EndTable();
+        }
+    }
+    if(planet && planet->AtmParams() && ImGui::CollapsingHeader("Atmosphere", ImGuiTreeNodeFlags_DefaultOpen)) {
+        if (ImGui::BeginTable("table celbody Atmosphere", 2, flags))
+        {
+            char cbuf[128];
+            const ATMCONST *ap = planet->AtmParams();
+            strcpy (cbuf, "Generic");
+            if (cb && cb->Version() >= 2) {
+                CELBODY2 *cb2 = (CELBODY2*)cb;
+                ATMOSPHERE *atm = cb2->GetAtmosphere();
+                if (atm) strcpy (cbuf, atm->clbkName());
+            }
 
-	cblist.des->GetItem (0)->SetValue (cbody->Name());
-	cblist.des->GetItem (1)->SetValue (cbody->ElRef() ? cbody->ElRef()->Name() : na);
-	const std::string& psys_name = g_psys->Name();
-	cblist.des->GetItem (2)->SetValue (psys_name.empty() ? na : psys_name.c_str());
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Atmosphere Model");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextUnformatted(cbuf);
 
-	sprintf (cbuf, "%s kg", SciStr (cbody->Mass(), 4));
-	cblist.prm->GetItem (0)->SetValue (cbuf);
-	sprintf (cbuf, "%s m", SciStr (cbody->Size(), 4));
-	cblist.prm->GetItem (1)->SetValue (cbuf);
-	if (nj = cbody->nJcoeff()) {
-		cbuf[0] = '\0';
-		for (i = 0; i < nj; i++) {
-			sprintf (cbuf + strlen(cbuf), "J%d=%s", i+2, SciStr (cbody->Jcoeff (i),3));
-			if (i < nj-1) strcat (cbuf, ", ");
-		}
-	} else strcpy (cbuf, na);
-	cblist.prm->GetItem (2)->SetValue (cbuf);
-	sprintf (cbuf, "%s s", SciStr (cbody->RotT(), 4));
-	cblist.prm->GetItem (3)->SetValue (cbuf);
-	if (el) sprintf (cbuf, "%s s", SciStr (el->OrbitT(), 4));
-	else    strcpy (cbuf, na);
-	cblist.prm->GetItem (4)->SetValue (cbuf);
-	if (planet) sprintf (cbuf, "%0.2f�", planet->Obliquity()*DEG);
-	else strcpy (cbuf, na);
-	cblist.prm->GetItem (5)->SetValue (cbuf);
-	cblist.prm->GetItem (6)->SetValue (planet && cblist.atm ? "Yes":"No");
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Surface Pressure");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%sPa", FloatStr (ap->p0)+1);
 
-	if (planet && cblist.atm) {
-		const ATMCONST *ap = planet->AtmParams();
-		if (ap) {
-			strcpy (cbuf, "Generic");
-			if (cb && cb->Version() >= 2) {
-				CELBODY2 *cb2 = (CELBODY2*)cb;
-				ATMOSPHERE *atm = cb2->GetAtmosphere();
-				if (atm) strcpy (cbuf, atm->clbkName());
-			}
-			cblist.atm->GetItem (0)->SetValue (cbuf);
-			sprintf (cbuf, "%sPa", FloatStr (ap->p0)+1);
-			cblist.atm->GetItem (1)->SetValue (cbuf);
-			sprintf (cbuf, "%skg/m^3", SciStr (ap->rho0));
-			cblist.atm->GetItem (2)->SetValue (cbuf);
-			sprintf (cbuf, "%0.2fJ/(K kg)", ap->R);
-			cblist.atm->GetItem (3)->SetValue (cbuf);
-			sprintf (cbuf, "%0.2f", ap->gamma);
-			cblist.atm->GetItem (4)->SetValue (cbuf);
-		} else {
-			for (i = 0; i < 5; i++)
-				cblist.atm->GetItem (i)->SetValue (na);
-		}
-	}
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Surface density");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%skg/m^3", SciStr (ap->rho0));
 
-	if (el) {
-		sprintf (cbuf, "%s m", SciStr (el->a, 5));
-		cblist.els->GetItem (0)->SetValue (cbuf);
-		sprintf (cbuf, "%0.5g", el->e);
-		cblist.els->GetItem (1)->SetValue (cbuf);
-		sprintf (cbuf, "%0.2f�", el->i*DEG);
-		cblist.els->GetItem (2)->SetValue (cbuf);
-		sprintf (cbuf, "%0.2f�", el->theta*DEG);
-		cblist.els->GetItem (3)->SetValue (cbuf);
-		sprintf (cbuf, "%0.2f�", el->omegab*DEG);
-		cblist.els->GetItem (4)->SetValue (cbuf);
-		sprintf (cbuf, "%0.2f�", el->MeanLng()*DEG);
-		cblist.els->GetItem (5)->SetValue (cbuf);
-	} else {
-		for (i = 0; i < 6; i++)
-			cblist.els->GetItem (i)->SetValue (na);
-	}
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Specific Gas Constant");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%0.2fJ/(K kg)", ap->R);
 
-	if (cblist.loc) {
-		Planet *earth = g_psys->GetPlanet ("Earth");
-		if (earth && earth != cbody) {
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Specific Heat Ratio");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%0.2f", ap->gamma);
+
+            ImGui::EndTable();
+        }
+    }
+
+    if(el && ImGui::CollapsingHeader("Osculating Elements (Ecliptic Frame)", ImGuiTreeNodeFlags_DefaultOpen)) {
+        if (ImGui::BeginTable("table celbody Osculating elements (ecliptic frame)", 2, flags))
+        {
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Semi-major Axis (a)");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%s m", SciStr (el->a, 5));
+
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Eccentricity (e)");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%0.5g", el->e);
+
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Inclination (i)");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text(u8"%0.2f째", el->i*DEG);
+
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Longitude of Ascending Node");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text(u8"%0.2f째", el->theta*DEG);
+
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Longitude of Periapsis");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text(u8"%0.2f째", el->omegab*DEG);
+
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Mean Longitude");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text(u8"%0.2f째", el->MeanLng()*DEG);
+
+            ImGui::EndTable();
+        }
+    }
+    if(strcmp(cbody->Name(), "Earth") && ImGui::CollapsingHeader("Geocentric Celestial Position", ImGuiTreeNodeFlags_DefaultOpen)) {
+        if (ImGui::BeginTable("table celbody Geocentric Celestial Position", 2, flags))
+        {
+            char cbuf[128];
+            Planet *earth = g_psys->GetPlanet ("Earth");
 			Vector p (cbody->GPos() - earth->GPos());
 			double r   = p.length();
 			double lng = atan2 (p.z, p.x);
@@ -863,225 +680,221 @@ void DlgInfo::UpdateItems_celbody ()
 			ras = modf (ram, &ram) * 60.0;
 			dcm = fabs (modf (dc*DEG, &dcd)) * 60.0;
 			dcs = modf (dcm, &dcm) * 60.0;
-			sprintf (cbuf, "%02.0fh %02.0fm %02.2fs", rah, ram, ras);
-			cblist.loc->GetItem (0)->SetValue (cbuf);
-			sprintf (cbuf, "%+02.0f� %02.0f' %02.2f''", dcd, dcm, dcs);
-			cblist.loc->GetItem (1)->SetValue (cbuf);
-		} else {
-			for (i = 0; i < 2; i++)
-				cblist.loc->GetItem (i)->SetValue (na);
-		}
-	}
 
-	if (cblist.ecl) {
-		if (el) {
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Right Ascension (RA)");
+                ImGui::TableSetColumnIndex(1);
+    			sprintf (cbuf, "%02.0fh %02.0fm %02.2fs", rah, ram, ras);
+                ImGui::TextUnformatted(cbuf);
+
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Declination (Dec)");
+                ImGui::TableSetColumnIndex(1);
+    			sprintf (cbuf, u8"%+02.0f째 %02.0f' %02.2f''", dcd, dcm, dcs);
+                ImGui::TextUnformatted(cbuf);
+
+            ImGui::EndTable();
+        }
+    }
+
+    if(el && ImGui::CollapsingHeader("Ecliptic position from primary", ImGuiTreeNodeFlags_DefaultOpen)) {
+        if (ImGui::BeginTable("table celbody Ecliptic position from primary", 2, flags))
+        {
 			Vector p (cbody->GPos() - cbody->ElRef()->GPos());
 			double r   = p.length();
 			double lng = atan2 (p.z, p.x);
 			double lat = p.y/r;
-			sprintf (cbuf, "%0.3f�", DEG*posangle(lng));
-			cblist.ecl->GetItem (0)->SetValue (cbuf);
-			sprintf (cbuf, "%0.3f�", DEG*lat);
-			cblist.ecl->GetItem (1)->SetValue (cbuf);
-			sprintf (cbuf, "%s m", SciStr (r));
-			cblist.ecl->GetItem (2)->SetValue (cbuf);
-		} else {
-			for (i = 0; i < 3; i++)
-				cblist.ecl->GetItem (i)->SetValue (na);
-		}
-	}
 
-	if (cbody->canDynamicPosVel()) {
-		cblist.prp->GetItem (0)->SetValue ("Numerical");
-		if (cblist.prp->ItemCount() > 1) {
-			const GFieldData &gfd = cbody->GetGFieldData();
-			if (gfd.ngrav) {
-				cbuf[0] = '\0';
-				for (i = 0; i < gfd.ngrav; i++) {
-					strcat (cbuf, g_psys->GetGravObj(gfd.gravidx[i])->Name());
-					if (i < gfd.ngrav-1) strcat (cbuf, ", ");
-				}
-				cblist.prp->GetItem (1)->SetValue (cbuf);
-			} else {
-				cblist.prp->GetItem (1)->SetValue (na);
-			}
-		}
-	} else {
-		sprintf (cbuf, "Analytic (%s)", cb ? "from module" : "2-body");
-		cblist.prp->GetItem (0)->SetValue (cbuf);
-	}
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Longitude");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text(u8"%0.3f째", DEG*posangle(lng));
+
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Latitude");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text(u8"%0.3f째", DEG*lat);
+
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Radial Distance");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%s m", SciStr (r));
+
+            ImGui::EndTable();
+        }
+    }
+    if(ImGui::CollapsingHeader("State Propagation", ImGuiTreeNodeFlags_DefaultOpen)) {
+        if (ImGui::BeginTable("table celbody State propagation", 2, flags))
+        {
+            if (cbody->canDynamicPosVel()) {
+                ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::TextUnformatted("Mode");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::TextUnformatted("Numerical");
+
+                const GFieldData &gfd = cbody->GetGFieldData();
+                if (gfd.ngrav) {
+                    char cbuf[128];
+                    cbuf[0] = '\0';
+                    for (int i = 0; i < gfd.ngrav; i++) {
+                        strcat (cbuf, g_psys->GetGravObj(gfd.gravidx[i])->Name());
+                        if (i < gfd.ngrav-1) strcat (cbuf, ", ");
+                    }
+                    ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::TextUnformatted("Gravity Sources");
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::TextUnformatted(cbuf);
+
+                }
+            } else {
+                ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::TextUnformatted("Mode");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::Text("Analytic (%s)", cb ? "from module" : "2-body");
+            }
+
+            ImGui::EndTable();
+        }
+    }
+
+}
+void DlgInfo::DrawInfoBase(Base *base) {
+    ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg;
+    if(ImGui::CollapsingHeader("Designation", ImGuiTreeNodeFlags_DefaultOpen)) {
+        if (ImGui::BeginTable("table base designation", 2, flags))
+        {
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Name");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextUnformatted(base->Name());
+
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Located on");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextUnformatted(base->RefPlanet()->Name());
+
+           	double lng, lat;
+        	base->EquPos (lng, lat);
+
+            ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Position");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text(u8"%07.3f째%c  %06.3f째%c",fabs(lng)*DEG, lng >= 0.0 ? 'E':'W',fabs(lat)*DEG, lat >= 0.0 ? 'N':'S');
+
+            ImGui::EndTable();
+        }
+    }
+
+    // Landing pads
+    //     pad 1
+    //     pad xxx
+    if(base->nPad()) {
+        if(ImGui::CollapsingHeader("Landing Pads", ImGuiTreeNodeFlags_DefaultOpen)) {
+            if (ImGui::BeginTable("table Landing Pads", 2, flags))
+            {
+                const char *c, *statusstr[3] = {"free", "", "reserved"};
+                for(int i=0;i<base->nPad();i++) {
+                    char cbuf[256];
+                    cbuf[0] = '\0';
+                    int status = base->PadStatus(i)->status;
+                    if (status == 1) c = base->PadStatus(i)->vessel->Name();
+                    else c = statusstr[status];
+                    if (base->PadStatus(i)->nav)
+                        sprintf (cbuf, "ILS %06.2f ", base->PadStatus(i)->nav->GetFreq());
+    				sprintf (cbuf+strlen (cbuf), "[%s]", c);
+
+                    ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text("Pad %d", i+1);
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::TextUnformatted(cbuf);
+                }
+                ImGui::EndTable();
+            }
+        }
+    }
+
+    // Runways
+    if(base->nRwy()) {
+        if(ImGui::CollapsingHeader("Runways", ImGuiTreeNodeFlags_DefaultOpen)) {
+            if (ImGui::BeginTable("table Runways", 2, flags))
+            {
+                for(int i=0;i<base->nRwy();i++) {
+                    char cbuf[256];
+                    const RwySpec *rwy = base->RwyStatus (i);
+                    int dir = (int)(posangle(rwy->appr1)*DEG*0.1+0.5);
+                    char ils1[20], ils2[20];
+                    if (rwy->ils1) sprintf (ils1, "%06.2f", rwy->ils1->GetFreq());
+                    else strcpy (ils1, "--");
+                    if (rwy->ils2) sprintf (ils2, "%06.2f", rwy->ils2->GetFreq());
+                    else strcpy (ils2, "--");
+                    sprintf (cbuf, "ILS %s/%s, length %0.0fm", ils1, ils2, rwy->length);
+
+                    ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text("Runway %02d/%02d", dir, (dir+18)%36);
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::TextUnformatted(cbuf);
+                }
+                ImGui::EndTable();
+            }
+        }
+    }
+
+    // VOR
+    if(base->nVOR()) {
+        if(ImGui::CollapsingHeader("VOR Transmitters", ImGuiTreeNodeFlags_DefaultOpen)) {
+            if (ImGui::BeginTable("table VOR", 2, flags))
+            {
+                for(int i=0;i<base->nVOR();i++) {
+                    const Nav *nav = base->VOR(i);
+                    if(nav->Type() == TRANSMITTER_VOR) {
+                        ImGui::TableNextRow();
+                            ImGui::TableSetColumnIndex(0);
+                            ImGui::TextUnformatted(nav->GetId());
+                            ImGui::TableSetColumnIndex(1);
+                            ImGui::Text("%06.2f, range %sm", nav->GetFreq(), DistStr (nav->GetRange()));
+                    }
+                }
+                ImGui::EndTable();
+            }
+        }
+    }
 }
 
-// ======================================================================
+void DlgInfo::OnDraw() {
+        ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar | ImGuiChildFlags_ResizeX;
+        ImGui::BeginChild("ChildL", ImVec2(250, 0), true, window_flags);
+        {
+            ImVec2 button_sz(ImVec2(ImGui::GetContentRegionAvail().x/2, 20));
 
-void DlgInfo::InitItems_base (HWND hDlg, const Base *base)
-{
-	const int nlabel_des = 3;
-	const char *label_des[nlabel_des] = {
-		"Name",
-		"Located on",
-		"Position"
-	};
+            ImGui::Button("Focus Vessel");
+            ImGui::SameLine();
+            ImGui::Button("Camera Target");
+            DrawTree();
+        }
+        ImGui::EndChild();
+        ImGui::SameLine();
+        ImGui::BeginChild("ChildR", ImVec2(0, 0), true);
+            ImVec2 button_sz(ImVec2(ImGui::GetContentRegionAvail().x, 20));
+            ImGui::Text("Object: %s", m_SelectedTarget.c_str());
 
-	int i;
-	DWORD j;
-	PropertyItem *item;
-	pl.ClearGroups();
-	blist.des = pl.AppendGroup();
-	blist.des->SetTitle ("Designation");
-	for (i = 0; i < nlabel_des; i++) {
-		item = pl.AppendItem (blist.des);
-		item->SetLabel (label_des[i]);
-	}
-	if (base->nPad()) {
-		char cbuf[64];
-		blist.pad = pl.AppendGroup();
-		blist.pad->SetTitle ("Landing pads");
-		for (i = 0; i < base->nPad(); i++) {
-			item = pl.AppendItem (blist.pad);
-			sprintf (cbuf, "Pad %d", i+1);
-			item->SetLabel (cbuf);
-		}
-	} else blist.pad = NULL;
+            DrawInfo();
 
-	if (base->nRwy()) {
-		char cbuf[64];
-		blist.rwy = pl.AppendGroup();
-		blist.rwy->SetTitle ("Runways");
-		for (j = 0; j < base->nRwy(); j++) {
-			item = pl.AppendItem (blist.rwy);
-			const RwySpec *rwy = base->RwyStatus (j);
-			int dir = (int)(posangle(rwy->appr1)*DEG*0.1+0.5);
-			sprintf (cbuf, "Runway %02d/%02d", dir, (dir+18)%36);
-			item->SetLabel (cbuf);
-		}
-	} else blist.rwy = NULL;
-
-	if (base->nVOR()) {
-		for (j = 0; j < base->nVOR(); j++)
-			if (base->VOR(j)->Type() == TRANSMITTER_VOR)
-				break;
-		if (j < base->nVOR()) {
-			blist.vor = pl.AppendGroup();
-			blist.vor->SetTitle ("VOR transmitters");
-			for (j = 0; j < base->nVOR(); j++) {
-				const Nav *nav = base->VOR(j);
-				if (nav->Type() == TRANSMITTER_VOR) {
-					item = pl.AppendItem (blist.vor);
-					item->SetLabel (nav->GetId());
-				}
-			}
-		}
-	} else blist.vor = NULL;
+        ImGui::EndChild();
 }
 
-// ======================================================================
-
-void DlgInfo::UpdateItems_base ()
-{
-	const char *c, *statusstr[3] = {"free", "", "reserved"};
-	char cbuf[256];
-	double lng, lat;
-	int i, j, status;
-
-	Base *base = (Base*)body;
-	blist.des->GetItem (0)->SetValue (base->Name());
-	blist.des->GetItem (1)->SetValue (base->RefPlanet()->Name());
-	base->EquPos (lng, lat);
-	sprintf (cbuf, "%07.3f�%c  %06.3f�%c",
-		fabs(lng)*DEG, lng >= 0.0 ? 'E':'W',
-		fabs(lat)*DEG, lat >= 0.0 ? 'N':'S'
-	);
-	blist.des->GetItem (2)->SetValue (cbuf);
-
-	if (blist.pad) {
-		for (i = 0; i < blist.pad->ItemCount(); i++) {
-			if (i < base->nPad()) {
-				cbuf[0] = '\0';
-				status = base->PadStatus(i)->status;
-				if (status == 1) c = base->PadStatus(i)->vessel->Name();
-				else c = statusstr[status];
-				if (base->PadStatus(i)->nav)
-					sprintf (cbuf, "ILS %06.2f ", base->PadStatus(i)->nav->GetFreq());
-				sprintf (cbuf+strlen (cbuf), "[%s]", c);
-				blist.pad->GetItem(i)->SetValue(cbuf);
-			} else blist.pad->GetItem(i)->SetValue(na);
-		}
-	}
-
-	if (blist.rwy) {
-		for (i = 0; i < blist.rwy->ItemCount(); i++) {
-			if (i < base->nRwy()) {
-				const RwySpec *rwy = base->RwyStatus (i);
-				char ils1[20], ils2[20];
-				if (rwy->ils1) sprintf (ils1, "%06.2f", rwy->ils1->GetFreq());
-				else strcpy (ils1, "--");
-				if (rwy->ils2) sprintf (ils2, "%06.2f", rwy->ils2->GetFreq());
-				else strcpy (ils2, "--");
-				sprintf (cbuf, "ILS %s/%s, length %0.0fm", ils1, ils2, rwy->length);
-				blist.rwy->GetItem(i)->SetValue(cbuf);
-			} else blist.rwy->GetItem(i)->SetValue(na);
-		}
-	}
-
-	if (blist.vor) {
-		for (i = j = 0; i < base->nVOR(); i++) {
-			const Nav *nav = base->VOR(i);
-			if (nav->Type() == TRANSMITTER_VOR && j < blist.vor->ItemCount()) {
-				sprintf (cbuf, "%06.2f, range %sm", nav->GetFreq(), DistStr (nav->GetRange()));
-				blist.vor->GetItem(j++)->SetValue(cbuf);
-			}
-		}
-	}
-}
-
-// ======================================================================
-
-BOOL DlgInfo::OnInitDialog (HWND hDlg, WPARAM wParam, LPARAM lParam)
-{
-	Init (hDlg);
-	return TRUE;
-}
-
-// ======================================================================
-
-BOOL DlgInfo::OnSize (HWND hDlg, WPARAM wParam, int w, int h)
-{
-	Size (w, h);
-	return DialogWin::OnSize (hDlg, wParam, w, h); // allow default processing
-}
-
-// ======================================================================
-
-BOOL DlgInfo::OnCommand (HWND hDlg, WORD id, WORD code, HWND hControl)
-{
-	switch (id) {
-	case IDHELP:
-		DefHelpContext.topic = (char*)"/objinfo.htm";
-		g_pOrbiter->OpenHelp (&DefHelpContext);
-		return TRUE;
-	case IDC_INFO_MAP:
-		OpenMap();
-		return TRUE;
-	case IDC_INFO_DDN:
-		ExpandAll (hDlg);
-		return TRUE;
-	case IDC_INFO_DUP:
-		CollapseAll (hDlg);
-		return TRUE;
-	case IDC_INFO_TYPE:
-		if (code == CBN_SELCHANGE) {
-			BuildObjectList (hDlg);
-			SelectionChanged (hDlg);
-			return TRUE;
-		}
-		break;
-	case IDC_INFO_NAME:
-		if (code == CBN_SELCHANGE) {
-			SelectionChanged (hDlg);
-			return TRUE;
-		}
-		break;
-	}
-	return DialogWin::OnCommand (hDlg, id, code, hControl);
+void DlgInfo::SetBody(Body *body) {
+	m_SelectedTarget = body->Name();
 }
