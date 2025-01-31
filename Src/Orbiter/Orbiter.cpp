@@ -1351,8 +1351,6 @@ void Orbiter::SetWarpFactor (double warp, bool force, double delay)
 	if (fabs (warp-td.Warp()) > EPS) {
 		td.SetWarp (warp, delay);
 		if (td.WarpChanged()) ApplyWarpFactor();
-		DlgTacc *pDlg = (pDlgMgr ? pDlgMgr->EntryExists<DlgTacc> (hInst) : NULL);
-		if (pDlg) pDlg->RegisterWarp(pDlg->GetHwnd(), warp, false, true, true);
 		if (bRecord && pConfig->CfgRecPlayPrm.bRecordWarp) {
 			char cbuf[256];
 			if (delay) sprintf (cbuf, "%f %f", warp, delay);

@@ -13,7 +13,7 @@
 
 extern PlanetarySystem *g_psys;
 
-DlgInfo::DlgInfo() : ImGuiDialog("Orbiter: Object info", {340, 290}) {
+DlgInfo::DlgInfo() : ImGuiDialog("Orbiter: Object info", {753,423}) {
 }
 
 void DlgInfo::AddCbodyNode(const CelestialBody *cbody) {
