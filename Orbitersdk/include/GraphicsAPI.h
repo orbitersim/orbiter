@@ -1485,6 +1485,13 @@ public:
 	virtual void clbkImGuiRenderDrawData () = 0;
 	virtual void clbkImGuiInit () = 0;
 	virtual void clbkImGuiShutdown() = 0;
+	// Returns an ImTextureID from a surface so that it can be used in
+	// ImGui widgets.
+	// Note: we use uint64_t so we don't have to include imgui.h
+	// This method should make sure the texture won't be released
+	// before the frame is ended by e.g. incrementing its reference
+	// counter and releasing it once the frame has been rendered.
+	virtual uint64_t clbkImGuiSurfaceTexture(SURFHANDLE surf) = 0;
 
 protected:
 	/** \brief Launchpad video tab indicator
