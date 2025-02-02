@@ -436,6 +436,7 @@ static void ImGuiSetStyle(bool bStyleDark_,  float alpha_)
 {
     // Setup Dear ImGui style
     ImGui::StyleColorsClassic();
+	//ImGui::StyleColorsLight();
     ImGuiStyle& style = ImGui::GetStyle();
         
     style.Alpha = 1.0f;
@@ -956,5 +957,26 @@ namespace ImGui {
 		ImGui::Dummy(ImVec2(0.0f, 0.0f));
 		ImGui::EndGroup();
 		ImGui::Dummy(ImVec2(0.0f, 0.0f));
+	}
+
+	DLLEXPORT bool MenuButton(const char *label, const char *tooltip)
+	{
+		ImGuiContext& g = *GImGui;
+		const ImGuiWindow* window = ImGui::GetCurrentWindow();
+		const ImRect titleBarRect = window->TitleBarRect();
+		const ImGuiStyle& style = g.Style;
+        ImGuiLastItemData last_item_backup = g.LastItemData;
+		ImGui::PushClipRect( titleBarRect.Min, titleBarRect.Max, false );
+		float width = strlen(label) * g.FontSize;
+		float offset = titleBarRect.Max.x - width - titleBarRect.Min.x - g.Style.FramePadding.x;
+		ImGui::SetCursorPos( ImVec2( offset, 0.0f ) );
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0,0,0,0));
+		bool ret = ImGui::Button( label );
+		ImGui::PopStyleColor();
+		if(tooltip && ImGui::IsItemHovered())
+			ImGui::SetTooltip(tooltip);
+		ImGui::PopClipRect();
+        g.LastItemData = last_item_backup;
+		return ret;
 	}
 }

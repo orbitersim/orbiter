@@ -1966,6 +1966,14 @@ DLLEXPORT HDC oapiGetDC (SURFHANDLE surf)
 	return hDC;
 }
 
+DLLEXPORT uint64_t oapiGetImTextureID (SURFHANDLE surf)
+{
+	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();
+	if (gc && surf)
+		return gc->clbkImGuiSurfaceTexture (surf);
+	return 0;
+}
+
 DLLEXPORT void oapiReleaseDC (SURFHANDLE surf, HDC hDC)
 {
 	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();

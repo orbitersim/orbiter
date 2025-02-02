@@ -701,7 +701,6 @@ protected:
 	 */
 	virtual void OnDraw() = 0;
 	bool active = false;
-private:
 	const std::string name;
 	ImGuiDefaultSize defaultSize;
 };
@@ -6153,9 +6152,28 @@ OAPIFUNC void       oapiCloseDialog (ImGuiDialog *dlg);
 OAPIFUNC void      oapiAddNotification(int type, const char *title, const char *content = "");
 
 	/**
+	* \brief Retreives a texture ID for use with ImGui.
+	* \param surf surface handle
+	* \return The value returned can be used where ImGui expects an ImTextureID argument.
+	*/
+OAPIFUNC uint64_t  oapiGetImTextureID (SURFHANDLE surf);
+	/**
 	* \brief Retrieves the context pointer of a dialog box which has been defined during the call to oapiOpenDialog().
 	* \param hDlg dialog window handle
 	* \note  This function returns NULL if no context pointer was specified in oapiOpenDialog().
+	* \n <b> Typical usage:</b>\n
+	* \code
+	* SURFHANDLE surf = m_mfd->GetDisplaySurface();
+	* if (surf) {
+	* 	ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
+	* 	ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
+	* 	ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
+	* 	ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.0f);
+	* 	ImTextureID txt = oapiGetImTextureID(surf);
+	* 	ImGui::Image(txt, ImVec2(sz.x, sz.y), uv_min, uv_max, tint_col, border_col);
+	* }
+	* \endcode
+	* 
 	*/
 OAPIFUNC void      *oapiGetDialogContext (HWND hDlg);
 
