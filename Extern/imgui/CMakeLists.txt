@@ -11,7 +11,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(imgui)
 
-install(FILES ${imgui_SOURCE_DIR}/misc/fonts/Roboto-Medium.ttf fa-solid-900.ttf
+install(FILES ${imgui_SOURCE_DIR}/misc/fonts/Roboto-Medium.ttf fa-solid-900.ttf ${imgui_SOURCE_DIR}/misc/fonts/Cousine-Regular.ttf
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
 )
 
