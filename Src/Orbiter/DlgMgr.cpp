@@ -11,6 +11,7 @@
 #include "Orbiter.h"
 #include "Log.h"
 #include "imgui.h"
+#include "imgui_extras.h"
 #include "imgui_impl_win32.h"
 #include "IconsFontAwesome6.h"
 #include <chrono>
@@ -542,8 +543,9 @@ void DialogManager::InitImGui()
 	icons_config.FontDataOwnedByAtlas = false;
 	
 	const CFG_FONTPRM &prm = g_pOrbiter->Cfg()->CfgFontPrm;
-	io.Fonts->AddFontFromFileTTF(prm.ImGui_FontFile, prm.ImGui_FontSize, &config, ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
+	defaultFont = io.Fonts->AddFontFromFileTTF(prm.ImGui_FontFile, prm.ImGui_FontSize, &config, ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
 	io.Fonts->AddFontFromFileTTF("fa-solid-900.ttf", prm.ImGui_FontSize, &icons_config, icons_ranges);
+	monoFont = io.Fonts->AddFontFromFileTTF("Cousine-Regular.ttf", prm.ImGui_FontSize, &config, ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
 	io.Fonts->Build();
 	
 
@@ -582,6 +584,15 @@ void DialogManager::ImGuiNewFrame()
 		}
 	}
 	ImGui::EndFrame();
+}
+
+ImFont *DialogManager::GetFont(ImGuiFont f)
+{
+	switch(f) {
+	case ImGuiFont::MONO: return monoFont;
+	case ImGuiFont::DEFAULT: return defaultFont;
+	default: return defaultFont;
+	}
 }
 
 ImGuiDialog::~ImGuiDialog(){
@@ -847,6 +858,11 @@ namespace ImGui {
 			ImGui::EndPopup();
 		}
 		return ret;
+	}
+
+	DLLEXPORT void PushFont(ImGuiFont f)
+	{
+		ImGui::PushFont(g_pOrbiter->DlgMgr()->GetFont(f));
 	}
 
 	// From imgui_demo.cpp, with added sameline argument
