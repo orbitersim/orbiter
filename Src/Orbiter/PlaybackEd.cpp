@@ -2,23 +2,231 @@
 // Licensed under the MIT License
 
 #include "PlaybackEd.h"
-#include "DlgMgr.h" // remove
 #include "Camera.h"
 #include "Log.h"
-#include "Resource.h"
+#include "imgui_extras.h"
 
 using namespace std;
 
 extern Orbiter *g_pOrbiter;
 extern Camera *g_camera;
 extern TimeData td;
-extern char DBG_MSG[256];
 
-INT_PTR CALLBACK RecPlayAnn_DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+static bool CompareEvents (const PlaybackEvent *first, const PlaybackEvent *second)
+{
+  return first->T0() < second->T0();
+}
+
+DlgPlaybackEditor::DlgPlaybackEditor() : ImGuiDialog("Playback Editor", {900,600}) {
+	m_sysfname = nullptr;
+	m_SelectedEvent = nullptr;
+}
+
+DlgPlaybackEditor::~DlgPlaybackEditor() {
+	ClearEvents();
+}
+
+void DlgPlaybackEditor::OnDraw() {
+	ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
+
+	ImGui::Text("Playback Editor - Simulation time : %f", td.SimT0);
+	ImGui::BeginChild("ChildL", ImVec2(ImGui::GetContentRegionAvail().x/2.0, 0), ImGuiChildFlags_ResizeX,  window_flags);
+
+    const ImGuiTableFlags flags = ImGuiTableFlags_SizingStretchProp|ImGuiTableFlags_ScrollY | ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable;
+
+    ImVec2 outer_size = ImVec2(0.0f, ImGui::GetContentRegionAvail().y - 100);
+    if (ImGui::BeginTable("table_scrolly", 3, flags, outer_size))
+    {
+        ImGui::TableSetupScrollFreeze(0, 1); // Make top row always visible
+        ImGui::TableSetupColumn("Timestamp", ImGuiTableColumnFlags_None, 0.5f);
+        ImGui::TableSetupColumn("Event", ImGuiTableColumnFlags_None, 0.5f);
+        ImGui::TableSetupColumn("Details", ImGuiTableColumnFlags_None, 2.0f);
+        ImGui::TableHeadersRow();
+
+		int i = 0;
+		bool ts_drawn = false;
+		if(m_Events.size() == 0) {
+			ImGui::TableNextRow();
+			ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0, ImColor(1.0,0,0));
+			ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg1, ImColor(1.0,0,0));
+			ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, ImColor(1.0,0,0));
+			ImGui::TableSetColumnIndex(0);
+			ImGui::Text("%0.2f", td.SimT0);
+			ImGui::TableSetColumnIndex(1);
+			ImGui::TextUnformatted("NOW");
+		}
+		for(auto &e : m_Events) {
+			i++;
+			const bool item_is_selected = e == m_SelectedEvent;
+
+			if(e->T0() > td.SimT0 && !ts_drawn) {
+				ts_drawn = true;
+				ImGui::TableNextRow();
+				ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0, ImColor(1.0,0,0));
+				ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg1, ImColor(1.0,0,0));
+				ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, ImColor(1.0,0,0));
+				ImGui::TableSetColumnIndex(0);
+				ImGui::Text("%0.2f", td.SimT0);
+				ImGui::TableSetColumnIndex(1);
+				ImGui::TextUnformatted("NOW");
+			}
+
+			ImGui::TableNextRow();
+			ImGui::TableSetColumnIndex(0);
+			char label[32];
+			sprintf(label, "%0.2f###line%d", e->T0(),i);
+			ImGuiSelectableFlags selectable_flags = ImGuiSelectableFlags_SpanAllColumns;
+			if (ImGui::Selectable(label, item_is_selected, selectable_flags))
+			{
+				m_SelectedEvent = e;
+			}
+
+			char tag[32];
+			e->TagStr(tag);
+			ImGui::TableSetColumnIndex(1);
+			ImGui::Text("%s",tag);
+			ImGui::TableSetColumnIndex(2);
+			e->DrawPreview();
+		}
+
+        ImGui::EndTable();
+    }
+
+	ImGui::BeginGroupPanel("Insert event");
+		if(ImGui::Button("NOTE")) {
+			InsertEvent(new NoteEvent (td.SimT0, "New note"));
+		}
+		ImGui::SameLine();
+		if(ImGui::Button("NOTEOFF")) {
+			InsertEvent(new NoteoffEvent (td.SimT0));
+		}
+		ImGui::SameLine();
+		if(ImGui::Button("NOTEPOS")) {
+			InsertEvent(new NoteposEvent (td.SimT0, 0.1,0.1,0.9,0.9));
+		}
+		ImGui::SameLine();
+		if(ImGui::Button("NOTECOL")) {
+			InsertEvent(new NotecolEvent (td.SimT0, 1.0, 1.0, 1.0));
+		}
+		ImGui::SameLine();
+		if(ImGui::Button("NOTESIZE")) {
+			InsertEvent(new NotesizeEvent (td.SimT0, 1.0));
+		}
+		if(ImGui::Button("TACC")) {
+			InsertEvent(new TaccEvent (td.SimT0, 1.0, 0.0));
+		}
+		ImGui::SameLine();
+		if(ImGui::Button("CAMERA")) {
+			InsertEvent(new CameraEvent (td.SimT0));
+		}
+		ImGui::SameLine();
+		if(ImGui::Button("<Other>")) {
+			InsertEvent(new GenericEvent (td.SimT0, "<TAG>", ""));
+		}
+	ImGui::EndGroupPanel();
+	if(ImGui::Button("Delete")) {
+		DeleteSelectedEvent();
+	}
+	ImGui::EndChild();
+	ImGui::SameLine();
+//	ImGui::BeginChild("ChildR", ImVec2(sz2, ImGui::GetContentRegionAvail().y), false, window_flags);
+	ImGui::BeginChild("ChildR", ImVec2(0,0), 0, window_flags);
+	ImGui::BeginChild("ChildRT", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - 40), true, window_flags);
+	if(m_SelectedEvent) {
+		m_SelectedEvent->DrawEdit();
+		if(ImGui::Button("Apply")) {
+			m_SelectedEvent->ApplyChanges();
+			m_Events.sort(CompareEvents);
+		}
+
+	}
+	ImGui::EndChild();
+	ImGui::BeginChild("ChildRB", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y), true, window_flags);
+	if(ImGui::Button("Commit changes")) {
+		SaveEventFile();
+	}
+	ImGui::SameLine();
+	if(ImGui::Button("Discard uncommited changes")) {
+		ClearEvents();
+		ScanEventFile();
+	}
+		
+	ImGui::EndChild();
+	ImGui::EndChild();
+}
+
+void DlgPlaybackEditor::InsertEvent(PlaybackEvent *e) {
+	m_Events.push_back(e);
+	m_Events.sort(CompareEvents);
+	m_SelectedEvent = e;
+}
+
+void DlgPlaybackEditor::DeleteSelectedEvent() {
+	if(m_SelectedEvent==nullptr) return;
+	PlaybackEvent *prev = nullptr;
+	for(auto it = m_Events.begin(); it!=m_Events.end();++it) {
+		if(*it==m_SelectedEvent) {
+			m_Events.erase(it);
+			if(prev) {
+				m_SelectedEvent = prev;
+			} else if(m_Events.size()>0) {
+				m_SelectedEvent = m_Events.front();
+			} else {
+				m_SelectedEvent = nullptr;
+			}
+			return;
+		}
+		prev = *it;
+	}
+}
+
+void DlgPlaybackEditor::Load(const char *ScnName) {
+	char fname[1024];
+	int i;
+	for (i = strlen(ScnName)-1; i > 0; i--)
+		if (ScnName[i-1] == '/' || ScnName[i-1] == '\\') break;
+	sprintf (fname, "Flights/%s/system.dat", ScnName+i);
+
+	if(m_sysfname) free(m_sysfname);
+	m_sysfname = strdup(fname);
+	ClearEvents();
+	ScanEventFile();
+}
+
+void DlgPlaybackEditor::ScanEventFile ()
+{
+	char line[2048];
+	ifstream ifs (m_sysfname);
+	while (ifs.getline (line, 2048)) {
+		PlaybackEvent *pe = PlaybackEvent::Create (line);
+		if (pe) {
+			m_Events.push_back(pe);
+		}
+	}
+}
+
+void DlgPlaybackEditor::SaveEventFile ()
+{
+	g_pOrbiter->FRecorder_SuspendPlayback();
+	ofstream ofs (m_sysfname);
+	for (auto &e: m_Events) {
+		e->Write (ofs);
+	}
+	ofs.close();
+	g_pOrbiter->FRecorder_RescanPlayback();
+}
+
+void DlgPlaybackEditor::ClearEvents() {
+	for(auto &e : m_Events) {
+		delete e;
+	}
+	m_Events.clear();
+	m_SelectedEvent = nullptr;
+}
 
 // =========================================================
 
-PlaybackEvent *PlaybackEvent::Create (PlaybackEditor *editor, char *event)
+PlaybackEvent *PlaybackEvent::Create (char *event)
 {
 	char *s;
 	double t;
@@ -33,45 +241,47 @@ PlaybackEvent *PlaybackEvent::Create (PlaybackEditor *editor, char *event)
 		s = strtok (NULL, " \t\n");
 		if (!s || sscanf (s, "%lf", &delay) != 1)
 			delay = 0.0;
-		TRACENEW; return new TaccEvent (editor, t, acc, delay);
+		TRACENEW; return new TaccEvent (t, acc, delay);
 	} else if (!_stricmp (s, "CAMERA")) {
-		DWORD pr;
+		int32_t pr;
 		s = strtok (NULL, " \t\n");
 		if (!s) return NULL;
 		if (!_stricmp (s, "PRESET")) {
 			s = strtok (NULL, " \t\n");
 			if (!s || sscanf (s, "%d", &pr) != 1) return NULL;
-			TRACENEW; return new CameraEvent (editor, t, pr);
+			TRACENEW; return new CameraEvent (t, pr);
 		} else if (!strcmp (s, "SET")) {
-			TRACENEW; return new CameraEvent (editor, t, s+4);
+			TRACENEW; return new CameraEvent (t, s+4);
 		}
 	} else if (!_stricmp (s, "NOTE")) {
-		TRACENEW; return new NoteEvent (editor, t, strtok (NULL, "\n"));
+		TRACENEW; return new NoteEvent (t, strtok (NULL, "\n"));
+	} else if (!_stricmp (s, "NOTEOFF")) {
+		TRACENEW; return new NoteoffEvent (t);
 	} else if (!_stricmp (s, "NOTEPOS")) {
 		double x0, y0, x1, y1;
 		int res = sscanf (s+8, "%lf %lf %lf %lf", &x0, &y0, &x1, &y1);
 		if (res != 4) return NULL;
-		else { TRACENEW; return new NoteposEvent (editor, t, x0, y0, x1, y1); }
+		else { TRACENEW; return new NoteposEvent (t, x0, y0, x1, y1); }
 	} else if (!_stricmp (s, "NOTECOL")) {
 		double r, g, b;
 		int res = sscanf (s+8, "%lf %lf %lf", &r, &g, &b);
 		if (res != 3) return NULL;
-		else { TRACENEW; return new NotecolEvent (editor, t, r, g, b); }
+		else { TRACENEW; return new NotecolEvent (t, r, g, b); }
 	} else if (!_stricmp (s, "NOTESIZE")) {
 		double scale;
 		int res = sscanf (s+9, "%lf", &scale);
 		if (!res) return NULL;
-		else { TRACENEW; return new NotesizeEvent (editor, t, scale); }
+		else { TRACENEW; return new NotesizeEvent (t, scale); }
 	} else {
-		TRACENEW; return new GenericEvent (editor, t, s, strtok (NULL, "\n"));
+		TRACENEW; return new GenericEvent (t, s, strtok (NULL, "\n"));
 	}
 	return NULL;
 }
 
-PlaybackEvent::PlaybackEvent (PlaybackEditor *_editor, double _t0)
+PlaybackEvent::PlaybackEvent (double _t0)
 {
-	editor = _editor;
 	t0 = _t0;
+	sprintf(m_tmp_t0, "%0.2f", t0);
 }
 
 void PlaybackEvent::TimeStr (char *str)
@@ -86,58 +296,16 @@ void PlaybackEvent::WriteEvent (ofstream &ofs, const char *eventtype, const char
 	ofs << endl;
 }
 
-void PlaybackEvent::EditEvent (PlaybackEditor *editor)
-{
-	HWND hEditor = editor->EditTab();
-	if (hEditor) {
-		char cbuf[64];
-		sprintf (cbuf, "%0.3f", t0);
-		SetWindowText (GetDlgItem (hEditor, IDC_EVTIME), cbuf);
-	}
+void PlaybackEvent::DrawEdit() {
+	ImGui::InputText("Event Time", m_tmp_t0, sizeof(m_tmp_t0), ImGuiInputTextFlags_CharsDecimal);
 }
 
-void PlaybackEvent::CommitEdit ()
-{
-	HWND hEdit = editor->EditTab();
-	if (hEdit) {
-		char cbuf[256];
-		double t;
-		GetWindowText (GetDlgItem (hEdit, IDC_EVTIME), cbuf, 256);
-		if (sscanf (cbuf, "%lf", &t) == 1 && fabs (t-t0) > 1e-3) {
-			t0 = t;
-			// check if we need to re-sort the event list
-			editor->SortEvent (this);
-		}
-	}
+void PlaybackEvent::ApplyChanges() {
+	t0 = atof(m_tmp_t0);
 }
-
-INT_PTR PlaybackEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_NOTIFY:
-		if (((NMHDR*)lParam)->idFrom == IDC_SPIN1) {
-			if (((NMHDR*)lParam)->code == UDN_DELTAPOS) {
-				NMUPDOWN *nmud = (NMUPDOWN*)lParam;
-				char cbuf[256];
-				double et;
-				GetWindowText (GetDlgItem (hDlg, IDC_EVTIME), cbuf, 256);
-				if (sscanf (cbuf, "%lf", &et)) {
-					et -= nmud->iDelta;
-					et = max (et, 0.0);
-					sprintf (cbuf, "%f", et);
-					SetWindowText (GetDlgItem (hDlg, IDC_EVTIME), cbuf);
-					CommitEdit();
-				}
-			}
-		}
-		break;
-	}
-	return FALSE;
-}
-
 // =========================================================
 
-GenericEvent::GenericEvent (PlaybackEditor *_editor, double _t0, const char *_tag, const char *_content): PlaybackEvent (_editor, _t0)
+GenericEvent::GenericEvent (double _t0, const char *_tag, const char *_content): PlaybackEvent (_t0)
 {
 	content = tag = 0;
 	SetTag (_tag);
@@ -146,22 +314,13 @@ GenericEvent::GenericEvent (PlaybackEditor *_editor, double _t0, const char *_ta
 
 GenericEvent::~GenericEvent ()
 {
-	if (tag) {
-		delete []tag;
-		tag = NULL;
-	}
-	if (content) {
-		delete []content;
-		content = NULL;
-	}
+	if (tag) delete []tag;
+	if (content) delete []content;
 }
 
 void GenericEvent::SetTag (const char *_tag)
 {
-	if (tag) {
-		delete []tag;
-		tag = NULL;
-	}
+	if (tag) delete []tag;
 	if (_tag) {
 		tag = new char[strlen(_tag)+1]; TRACENEW
 		strcpy (tag, _tag);
@@ -170,10 +329,7 @@ void GenericEvent::SetTag (const char *_tag)
 
 void GenericEvent::SetContent (const char *_content)
 {
-	if (content) {
-		delete []content;
-		content = NULL;
-	}
+	if (content) delete []content;
 	if (_content) {
 		content = new char[strlen(_content)+1]; TRACENEW
 		strcpy (content, _content);
@@ -196,58 +352,36 @@ void GenericEvent::Write (ofstream &ofs)
 	WriteEvent (ofs, tag, content);
 }
 
-void GenericEvent::EditEvent (PlaybackEditor *editor)
-{
-	editor->OpenEditTab (this, IDD_PBEDITOR_GENERIC, EditProc);
-	PlaybackEvent::EditEvent (editor);
-	if (tag)
-		SetWindowText (GetDlgItem (editor->EditTab(), IDC_EDIT3), tag);
+void GenericEvent::DrawPreview() {
 	if (content)
-		SetWindowText (GetDlgItem (editor->EditTab(), IDC_EDIT1), content);
+		ImGui::TextUnformatted(content);
+	else
+		ImGui::TextUnformatted("---");
 }
 
-void GenericEvent::CommitEdit ()
-{
-	PlaybackEvent::CommitEdit();
-	char cbuf[2048];
-	HWND hEdit = editor->EditTab();
-	GetWindowText (GetDlgItem (hEdit, IDC_EDIT3), cbuf, 2048);
-	SetTag (cbuf);
-	GetWindowText (GetDlgItem (hEdit, IDC_EDIT1), cbuf, 2048);
-	SetContent (cbuf);
-}
-
-INT_PTR GenericEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	return PlaybackEvent::MsgProc (hDlg, uMsg, wParam, lParam);
-}
-
-INT_PTR CALLBACK GenericEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	GenericEvent *event = (uMsg == WM_INITDIALOG ?
-		(GenericEvent*)lParam : (GenericEvent*)GetWindowLongPtr (hDlg, GWLP_USERDATA));
-	return (event ? event->MsgProc (hDlg, uMsg, wParam, lParam) : FALSE);
+void GenericEvent::DrawEdit() {
+	PlaybackEvent::DrawEdit();
+	char ltag[4096];
+	char lcontent[4096];
+	if(tag) strncpy(ltag, tag, 4095);
+	if(content) strncpy(lcontent, content, 4095);
+	ltag[4095]='\0';
+	lcontent[4095]='\0';
+	if(ImGui::InputText("Tag", ltag, sizeof(ltag))) {
+		SetTag(ltag);
+	}
+	if(ImGui::InputText("Content", lcontent, sizeof(lcontent))) {
+		SetContent(lcontent);
+	}
 }
 
 // =========================================================
 
-TaccEvent::TaccEvent (PlaybackEditor *_editor, double _t0, double _tacc, double _delay): PlaybackEvent (_editor, _t0)
+TaccEvent::TaccEvent (double _t0, double _tacc, float _delay): PlaybackEvent (_t0)
 {
-	tacc = _tacc;
+	tmp_tacc = tacc = _tacc;
 	delay = _delay;
-}
-
-void TaccEvent::SetTacc (double _tacc)
-{
-	tacc = min (1e5, max (0.1, _tacc));
-	char cbuf[256];
-	sprintf (cbuf, "%0.2f", tacc);
-	SetWindowText (GetDlgItem (editor->EditTab(), IDC_EDIT1), cbuf);
-}
-
-void TaccEvent::SetDelay (double _delay)
-{
-	delay = max (0.0, _delay);
+	sprintf(tmp_delay, "%f", delay);
 }
 
 void TaccEvent::TagStr (char *str)
@@ -272,72 +406,31 @@ void TaccEvent::Write (ofstream &ofs)
 	WriteEvent (ofs, "TACC", cbuf);
 }
 
-void TaccEvent::EditEvent (PlaybackEditor *editor)
-{
-	editor->OpenEditTab (this, IDD_PBEDITOR_TACC, EditProc);
-	PlaybackEvent::EditEvent (editor);
-	char cbuf[128];
-	sprintf (cbuf, "%0.2f", tacc);
-	SetWindowText (GetDlgItem (editor->EditTab(), IDC_EDIT1), cbuf);
-	sprintf (cbuf, "%0.2f", delay);
-	SetWindowText (GetDlgItem (editor->EditTab(), IDC_EDIT2), cbuf);
-}
-
-void TaccEvent::CommitEdit ()
-{
-	PlaybackEvent::CommitEdit();
-	char cbuf[2048];
-	double ta, dl;
-	HWND hEdit = editor->EditTab();
-	GetWindowText (GetDlgItem (hEdit, IDC_EDIT1), cbuf, 2048);
-	sscanf (cbuf, "%lf", &ta);
-	SetTacc (ta);
-	GetWindowText (GetDlgItem (hEdit, IDC_EDIT2), cbuf, 2048);
-	sscanf (cbuf, "%lf", &dl);
-	SetDelay (dl);
-}
-
-INT_PTR TaccEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_COMMAND:
-		switch (LOWORD(wParam)) {
-		case IDC_BUTTON1:
-			SetTacc (0.1);
-			return FALSE;
-		case IDC_BUTTON2:
-			SetTacc (1.0);
-			return FALSE;
-		case IDC_BUTTON3:
-			SetTacc (10.0);
-			return FALSE;
-		case IDC_BUTTON4:
-			SetTacc (1e2);
-			return FALSE;
-		case IDC_BUTTON5:
-			SetTacc (1e3);
-			return FALSE;
-		case IDC_BUTTON6:
-			SetTacc (1e4);
-			return FALSE;
-		}
-		break;
+void TaccEvent::DrawPreview() {
+	if (delay) {
+		ImGui::Text ("%0.2fx (delay %0.1f)", tacc, delay);
+	} else {
+		ImGui::Text ("%0.2fx", tacc);
 	}
-	return PlaybackEvent::MsgProc (hDlg, uMsg, wParam, lParam);
 }
 
-INT_PTR CALLBACK TaccEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	TaccEvent *event = (uMsg == WM_INITDIALOG ?
-		(TaccEvent*)lParam : (TaccEvent*)GetWindowLongPtr (hDlg, GWLP_USERDATA));
-	return (event ? event->MsgProc (hDlg, uMsg, wParam, lParam) : FALSE);
-}
+void TaccEvent::DrawEdit() {
+	PlaybackEvent::DrawEdit();
 
+    ImGui::SliderFloat("Time Acceleration", &tmp_tacc, 0.1f, 10000.0f, "%.1f", ImGuiSliderFlags_Logarithmic);
+	ImGui::InputText("Delay (s)", tmp_delay, sizeof(tmp_delay), ImGuiInputTextFlags_CharsDecimal);
+
+}
+void TaccEvent::ApplyChanges() {
+	PlaybackEvent::ApplyChanges();
+	tacc = tmp_tacc;
+	delay = atof(tmp_delay);
+}
 // =========================================================
 
-CameraEvent::CameraEvent (PlaybackEditor *_editor, double _t0, DWORD _preset): PlaybackEvent (_editor, _t0)
+CameraEvent::CameraEvent (double _t0, int _preset): PlaybackEvent (_t0)
 {
-	if (_preset != (DWORD)-1) {
+	if (_preset != -1) {
 		SetPreset (_preset);
 	} else {
 		char cbuf[256];
@@ -347,22 +440,27 @@ CameraEvent::CameraEvent (PlaybackEditor *_editor, double _t0, DWORD _preset): P
 	}
 }
 
-CameraEvent::CameraEvent (PlaybackEditor *_editor, double _t0, char *_modestr): PlaybackEvent (_editor, _t0)
+CameraEvent::CameraEvent (double _t0, char *_modestr): PlaybackEvent (_t0)
 {
 	SetInlineMode (_modestr);
 }
 
-void CameraEvent::SetPreset (DWORD _preset)
+void CameraEvent::SetPreset (int _preset, bool editmode)
 {
-	preset = _preset;
-	sprintf (modestr, "PRESET %d", preset);
+	if(!editmode) {
+		sprintf (modestr, "PRESET %d", _preset);
+	}
+	sprintf (m_tmp_modestr, "PRESET %d", _preset);
 }
 
-void CameraEvent::SetInlineMode (char *mode)
+void CameraEvent::SetInlineMode (char *mode, bool editmode)
 {
-	preset = (DWORD)-1;
-	strcpy (modestr, "SET ");
-	strcat (modestr, mode);
+	if(!editmode) {
+		strcpy (modestr, "SET ");
+		strcat (modestr, mode);
+	}
+	strcpy (m_tmp_modestr, "SET ");
+	strcat (m_tmp_modestr, mode);
 }
 
 void CameraEvent::TagStr (char *str)
@@ -380,111 +478,58 @@ void CameraEvent::Write (ofstream &ofs)
 	WriteEvent (ofs, "CAMERA", modestr);
 }
 
-void CameraEvent::EditEvent (PlaybackEditor *editor)
-{
-	editor->OpenEditTab (this, IDD_PBEDITOR_CAMPRESET, EditProc);
-	PlaybackEvent::EditEvent (editor);
-	if (preset != (DWORD)-1)
-		SendDlgItemMessage (editor->EditTab(), IDC_COMBO1, CB_SETCURSEL, preset, 0);
+void CameraEvent::DrawPreview() {
+	ImGui::TextUnformatted (modestr);
 }
 
-void CameraEvent::CommitEdit ()
-{
-	PlaybackEvent::CommitEdit();
-	HWND hEdit = editor->EditTab();
-	DWORD idx = SendDlgItemMessage (hEdit, IDC_COMBO1, CB_GETCURSEL, 0, 0);
-	if (idx != CB_ERR) SetPreset (idx);
-}
+void CameraEvent::DrawEdit() {
+	PlaybackEvent::DrawEdit();
+	ImGui::Text("Camera configuration: ");
+	ImGui::SameLine();
+	ImGui::TextUnformatted(m_tmp_modestr);
 
-void CameraEvent::ScanPresets (HWND hTab)
-{
-	// populate the list of available presets
-	DWORD i, np = g_camera->nPreset();
-	char cbuf[256], descr[256];
-	SendDlgItemMessage (hTab, IDC_COMBO1, CB_RESETCONTENT, 0, 0);
-	for (i = 0; i < np; i++) {
-		CameraMode *cm = g_camera->GetPreset (i);
-		cm->GetDescr (descr, 256);
-		sprintf (cbuf, "%d (%s)", i, descr);
-		SendDlgItemMessage (hTab, IDC_COMBO1, CB_ADDSTRING, 0, (LPARAM)cbuf);
-	}
-	if (preset < np)
-		SendDlgItemMessage (hTab, IDC_COMBO1, CB_SETCURSEL, preset, 0);
-	else
-		SetWindowText (GetDlgItem (hTab, IDC_EDIT1), modestr+4);
-}
-
-void CameraEvent::AddCurrentView (HWND hTab)
-{
-	char cbuf[256];
-	CameraMode *cm = g_camera->GetCMode();
-	cm->Store (cbuf);
-	SetInlineMode (cbuf);
-	SendDlgItemMessage (hTab, IDC_COMBO1, CB_SETCURSEL, -1, 0);
-	SetWindowText (GetDlgItem (hTab, IDC_EDIT1), cbuf);
-}
-
-INT_PTR CameraEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_INITDIALOG:
-		ScanPresets (hDlg);
-		return FALSE;
-	case WM_COMMAND:
-		switch (LOWORD (wParam)) {
-		case IDC_COMBO1:
-			if (HIWORD (wParam) == CBN_SELCHANGE) {
-				DWORD idx = SendDlgItemMessage (hDlg, IDC_COMBO1, CB_GETCURSEL, 0, 0);
-				SetPreset (idx);
-				SetWindowText (GetDlgItem (hDlg, IDC_EDIT1), "");
-				return FALSE;
+	char descr[256];
+	int np = g_camera->nPreset();
+	if(np) {
+		ImGui::Separator();
+		ImGui::TextUnformatted("Presets:");
+		for(int i=0;i<np;i++) {
+			CameraMode *cm = g_camera->GetPreset (i);
+			cm->GetDescr (descr, 256);
+			char cbuf[280];
+			sprintf(cbuf, "%d (%s)", i, descr);
+			if(ImGui::Button(cbuf)) {
+				SetPreset(i, true);
 			}
-			break;
-		case IDC_BUTTON1:
-			AddCurrentView (hDlg);
-			return FALSE;
 		}
-		break;
 	}
-	return PlaybackEvent::MsgProc (hDlg, uMsg, wParam, lParam);
+	ImGui::Separator();
+	ImGui::Text("Current view: ");
+	CameraMode *cm = g_camera->GetCMode();
+	char cbuf[256];
+	cm->Store (cbuf);
+	ImGui::SameLine();
+	if(ImGui::Button(cbuf)) {
+		SetInlineMode (cbuf, true);
+	}
 }
+void CameraEvent::ApplyChanges() {
+	PlaybackEvent::ApplyChanges();
 
-
-INT_PTR CALLBACK CameraEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	CameraEvent *event = (uMsg == WM_INITDIALOG ?
-		(CameraEvent*)lParam : (CameraEvent*)GetWindowLongPtr (hDlg, GWLP_USERDATA));
-	return (event ? event->MsgProc (hDlg, uMsg, wParam, lParam) : FALSE);
+	strcpy(modestr, m_tmp_modestr);
 }
 
 // =========================================================
 
-NoteEvent::NoteEvent (PlaybackEditor *_editor, double _t0, const char *_note): PlaybackEvent (_editor, _t0)
+NoteEvent::NoteEvent (double _t0, const char *_note): PlaybackEvent (_t0)
 {
-	note = NULL;
-	SetNote (_note);
+	note = strdup(_note);
+	strncpy(m_tmp_note, note, sizeof(m_tmp_note));
 }
 
 NoteEvent::~NoteEvent ()
 {
-	if (note) {
-		delete []note;
-		note = NULL;
-	}
-}
-
-void NoteEvent::SetNote (const char *_note)
-{
-	if (note) {
-		delete []note;
-		note = NULL;
-	}
-	if (_note) {
-		note = new char[strlen(_note)+1]; TRACENEW
-		strcpy (note, _note);
-	} else {
-		note = 0;
-	}
+	if (note) free(note);
 }
 
 void NoteEvent::TagStr (char *str)
@@ -503,37 +548,28 @@ void NoteEvent::Write (ofstream &ofs)
 	WriteEvent (ofs, "NOTE", note ? note : "");
 }
 
-void NoteEvent::EditEvent (PlaybackEditor *editor)
-{
-	editor->OpenEditTab (this, IDD_PBEDITOR_NOTE, EditProc);
-	PlaybackEvent::EditEvent (editor);
-	SetWindowText (GetDlgItem (editor->EditTab(), IDC_EDIT1), note);
+void NoteEvent::DrawPreview() {
+	if (note) {
+		ImGui::TextUnformatted (note);
+	} else {
+		ImGui::TextUnformatted ("---");
+	}
 }
 
-void NoteEvent::CommitEdit ()
-{
-	PlaybackEvent::CommitEdit();
-	char cbuf[2048];
-	HWND hEdit = editor->EditTab();
-	GetWindowText (GetDlgItem (hEdit, IDC_EDIT1), cbuf, 2048);
-	SetNote (cbuf);
+void NoteEvent::DrawEdit() {
+	PlaybackEvent::DrawEdit();
+	ImGuiInputTextFlags flags = ImGuiInputTextFlags_AllowTabInput;
+	ImGui::InputTextMultiline("##NoteEvent", m_tmp_note, IM_ARRAYSIZE(m_tmp_note), ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - 30), flags);
 }
-
-INT_PTR CALLBACK NoteEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	NoteEvent *event = (uMsg == WM_INITDIALOG ?
-		(NoteEvent*)lParam : (NoteEvent*)GetWindowLongPtr (hDlg, GWLP_USERDATA));
-	return (event ? event->MsgProc (hDlg, uMsg, wParam, lParam) : FALSE);
+void NoteEvent::ApplyChanges() {
+	PlaybackEvent::ApplyChanges();
+	if(note) free(note);
+	note = strdup(m_tmp_note);
 }
 
 // =========================================================
 
-NoteposEvent::NoteposEvent (PlaybackEditor *_editor, double _t0, double _x0, double _y0, double _x1, double _y1): PlaybackEvent (_editor, _t0)
-{
-	SetPos (_x0, _y0, _x1, _y1);
-}
-
-void NoteposEvent::SetPos (double _x0, double _y0, double _x1, double _y1)
+NoteposEvent::NoteposEvent (double _t0, double _x0, double _y0, double _x1, double _y1): PlaybackEvent (_t0)
 {
 	x0 = _x0;
 	y0 = _y0;
@@ -558,50 +594,93 @@ void NoteposEvent::Write (ofstream &ofs)
 	WriteEvent (ofs, "NOTEPOS", cbuf);
 }
 
-void NoteposEvent::EditEvent (PlaybackEditor *editor)
-{
-	char cbuf[256];
-	editor->OpenEditTab (this, IDD_PBEDITOR_NOTEPOS, EditProc);
-	PlaybackEvent::EditEvent (editor);
-	HWND hEdit = editor->EditTab();
-	sprintf (cbuf, "%0.2f", x0); SetWindowText (GetDlgItem (hEdit, IDC_EDIT1), cbuf);
-	sprintf (cbuf, "%0.2f", y0); SetWindowText (GetDlgItem (hEdit, IDC_EDIT2), cbuf);
-	sprintf (cbuf, "%0.2f", x1); SetWindowText (GetDlgItem (hEdit, IDC_EDIT3), cbuf);
-	sprintf (cbuf, "%0.2f", y1); SetWindowText (GetDlgItem (hEdit, IDC_EDIT4), cbuf);
+void NoteposEvent::DrawPreview() {
+	ImGui::Text ("%g %g %g %g", x0, y0, x1, y1);
 }
 
-void NoteposEvent::CommitEdit ()
-{
-	PlaybackEvent::CommitEdit();
-	char cbuf[256];
-	HWND hEdit = editor->EditTab();
-	double _x0, _y0, _x1, _y1;
-	GetWindowText (GetDlgItem (hEdit, IDC_EDIT1), cbuf, 256); sscanf (cbuf, "%lf", &_x0);
-	GetWindowText (GetDlgItem (hEdit, IDC_EDIT2), cbuf, 256); sscanf (cbuf, "%lf", &_y0);
-	GetWindowText (GetDlgItem (hEdit, IDC_EDIT3), cbuf, 256); sscanf (cbuf, "%lf", &_x1);
-	GetWindowText (GetDlgItem (hEdit, IDC_EDIT4), cbuf, 256); sscanf (cbuf, "%lf", &_y1);
-	SetPos (_x0, _y0, _x1, _y1);
-}
+void NoteposEvent::DrawEdit() {
+	PlaybackEvent::DrawEdit();
 
-INT_PTR CALLBACK NoteposEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	NoteposEvent *event = (uMsg == WM_INITDIALOG ?
-		(NoteposEvent*)lParam : (NoteposEvent*)GetWindowLongPtr (hDlg, GWLP_USERDATA));
-	return (event ? event->MsgProc (hDlg, uMsg, wParam, lParam) : FALSE);
+	ImVec2 virtual_screen_size(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().x * 3.0f/4.0f);
+	ImGui::InvisibleButton("##empty", virtual_screen_size);
+	ImDrawList* draw_list = ImGui::GetWindowDrawList();
+	const ImVec2 p0 = ImGui::GetItemRectMin();
+	const ImVec2 p1 = ImGui::GetItemRectMax();
+	draw_list->AddRectFilled(p0, p1, IM_COL32(90, 90, 120, 255));
+
+	ImVec2 wpos1 = ImVec2(m_offsetPos.x+p0.x+x0 * virtual_screen_size.x,m_offsetPos.y+ p0.y+y0 * virtual_screen_size.y);
+	ImVec2 wpos2 = ImVec2(m_offsetPos.x+p0.x+m_offsetSize.x+x1 * virtual_screen_size.x,m_offsetPos.y+ p0.y+m_offsetSize.y+y1 * virtual_screen_size.y);
+
+	ImGui::PushClipRect(p0, p1, true);
+	draw_list->AddRectFilled(wpos1, wpos2, IM_COL32(70, 70, 100, 255));
+	ImVec2 tri1 = ImVec2(wpos2.x - 10, wpos2.y);
+	ImVec2 tri2 = ImVec2(wpos2.x, wpos2.y - 10);
+	draw_list->AddRect(wpos1, wpos2, IM_COL32(20, 20, 40, 255));
+	draw_list->AddTriangleFilled(wpos2, tri1, tri2, IM_COL32(20, 20, 40, 255));
+	ImGui::PopClipRect();
+
+	float mx = ImGui::GetIO().MousePos.x;
+	float my = ImGui::GetIO().MousePos.y;
+	
+	if(wpos1.x<mx && mx <wpos2.x && wpos1.y<my && my<wpos2.y) {
+
+		if( wpos2.x - 10 < mx && wpos2.y - 10 < my) {
+			if(ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+				m_state = 1;
+			else
+				ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeNWSE);
+		} else {
+			if(ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+				m_state = 2;
+			else
+				ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+		}
+	}
+	if(ImGui::IsMouseReleased(ImGuiMouseButton_Left)) m_state = 0;
+
+	if(m_state == 1) {
+		ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeNWSE);
+		if(ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
+			m_offsetSize.x += ImGui::GetIO().MouseDelta.x;
+			m_offsetSize.y += ImGui::GetIO().MouseDelta.y;
+		}
+	}
+
+	if(m_state == 2) {
+		ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+		if(ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
+			m_offsetPos.x += ImGui::GetIO().MouseDelta.x;
+			m_offsetPos.y += ImGui::GetIO().MouseDelta.y;
+		}
+	}
+
+	m_tmp_x0 = (wpos1.x-p0.x)/virtual_screen_size.x;
+	m_tmp_y0 = (wpos1.y-p0.y)/virtual_screen_size.y;
+	m_tmp_x1 = (wpos2.x-p0.x)/virtual_screen_size.x;
+	m_tmp_y1 = (wpos2.y-p0.y)/virtual_screen_size.y;
+}
+void NoteposEvent::ApplyChanges() {
+	PlaybackEvent::ApplyChanges();
+	x0 = m_tmp_x0;
+	y0 = m_tmp_y0;
+	x1 = m_tmp_x1;
+	y1 = m_tmp_y1;
+
+	m_offsetPos = {0,0};
+	m_offsetSize = {0,0};
+	m_state = 0;
 }
 
 // =========================================================
 
-NotecolEvent::NotecolEvent (PlaybackEditor *_editor, double _t0, double _r, double _g, double _b): PlaybackEvent (_editor, _t0)
-{
-	SetCol (_r, _g, _b);
-}
-
-void NotecolEvent::SetCol (double _r, double _g, double _b)
+NotecolEvent::NotecolEvent (double _t0, double _r, double _g, double _b): PlaybackEvent (_t0)
 {
 	r = _r;
 	g = _g;
 	b = _b;
+	m_tmp[0] = (float)r;
+	m_tmp[1] = (float)g;
+	m_tmp[2] = (float)b;
 }
 
 void NotecolEvent::TagStr (char *str)
@@ -621,75 +700,29 @@ void NotecolEvent::Write (ofstream &ofs)
 	WriteEvent (ofs, "NOTECOL", cbuf);
 }
 
-void NotecolEvent::EditEvent (PlaybackEditor *editor)
-{
-	char cbuf[256];
-	editor->OpenEditTab (this, IDD_PBEDITOR_NOTECOL, EditProc);
-	PlaybackEvent::EditEvent (editor);
-	HWND hEdit = editor->EditTab();
-	sprintf (cbuf, "%g", r); SetWindowText (GetDlgItem (hEdit, IDC_EDIT1), cbuf);
-	sprintf (cbuf, "%g", g); SetWindowText (GetDlgItem (hEdit, IDC_EDIT2), cbuf);
-	sprintf (cbuf, "%g", b); SetWindowText (GetDlgItem (hEdit, IDC_EDIT3), cbuf);
+void NotecolEvent::DrawPreview() {
+    ImVec4 col = { (float)r,(float)g,(float)b,1.0 };
+	ImGui::TextColored(col, "COLOR");
 }
 
-void NotecolEvent::CommitEdit ()
-{
-	PlaybackEvent::CommitEdit();
-	char cbuf[256];
-	HWND hEdit = editor->EditTab();
-	double _r, _g, _b;
-	GetWindowText (GetDlgItem (hEdit, IDC_EDIT1), cbuf, 256); sscanf (cbuf, "%lf", &_r);
-	GetWindowText (GetDlgItem (hEdit, IDC_EDIT2), cbuf, 256); sscanf (cbuf, "%lf", &_g);
-	GetWindowText (GetDlgItem (hEdit, IDC_EDIT3), cbuf, 256); sscanf (cbuf, "%lf", &_b);
-	SetCol (_r, _g, _b);
+void NotecolEvent::DrawEdit() {
+	PlaybackEvent::DrawEdit();
+	ImGui::Text("Note Color");
+	ImGui::ColorPicker3("Color", m_tmp, ImGuiColorEditFlags_NoInputs|ImGuiColorEditFlags_NoLabel);
 }
-
-INT_PTR NotecolEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_NOTIFY: {
-		int editid = 0;
-		switch (((NMHDR*)lParam)->idFrom) {
-		case IDC_SPIN2: editid = IDC_EDIT1; break;
-		case IDC_SPIN3: editid = IDC_EDIT2; break;
-		case IDC_SPIN4: editid = IDC_EDIT3; break;
-		}
-		if (editid) {
-			if (((NMHDR*)lParam)->code == UDN_DELTAPOS) {
-				NMUPDOWN *nmud = (NMUPDOWN*)lParam;
-				char cbuf[256];
-				double col;
-				GetWindowText (GetDlgItem (hDlg, editid), cbuf, 256);
-				if (sscanf (cbuf, "%lf", &col)) {
-					col -= nmud->iDelta*0.1;
-					col = min (max (col, 0.0), 1.0);
-					sprintf (cbuf, "%f", col);
-					SetWindowText (GetDlgItem (hDlg, editid), cbuf);
-				}
-			}
-		}
-		} break;
-	}
-	return PlaybackEvent::MsgProc (hDlg, uMsg, wParam, lParam);
-}
-
-INT_PTR CALLBACK NotecolEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	NotecolEvent *event = (uMsg == WM_INITDIALOG ?
-		(NotecolEvent*)lParam : (NotecolEvent*)GetWindowLongPtr (hDlg, GWLP_USERDATA));
-	return (event ? event->MsgProc (hDlg, uMsg, wParam, lParam) : FALSE);
+void NotecolEvent::ApplyChanges() {
+	PlaybackEvent::ApplyChanges();
+	r = m_tmp[0];
+	g = m_tmp[1];
+	b = m_tmp[2];
 }
 
 // =========================================================
 
-NotesizeEvent::NotesizeEvent (PlaybackEditor *_editor, double _t0, double _size): PlaybackEvent (_editor, _t0)
-{
-	SetSize (_size);
-}
-
-void NotesizeEvent::SetSize (double _size)
+NotesizeEvent::NotesizeEvent (double _t0, double _size): PlaybackEvent (_t0)
 {
 	size = _size;
+	sprintf(m_tmp_size,"%f",size);
 }
 
 void NotesizeEvent::TagStr (char *str)
@@ -709,442 +742,47 @@ void NotesizeEvent::Write (ofstream &ofs)
 	WriteEvent (ofs, "NOTESIZE", cbuf);
 }
 
-void NotesizeEvent::EditEvent (PlaybackEditor *editor)
-{
-	char cbuf[256];
-	editor->OpenEditTab (this, IDD_PBEDITOR_NOTESIZE, EditProc);
-	PlaybackEvent::EditEvent (editor);
-	HWND hEdit = editor->EditTab();
-	sprintf (cbuf, "%g", size); SetWindowText (GetDlgItem (hEdit, IDC_EDIT1), cbuf);
+void NotesizeEvent::DrawPreview() {
+	ImGui::Text ("%g", size);
 }
 
-void NotesizeEvent::CommitEdit ()
-{
-	PlaybackEvent::CommitEdit();
-	char cbuf[256];
-	HWND hEdit = editor->EditTab();
-	double _size;
-	GetWindowText (GetDlgItem (hEdit, IDC_EDIT1), cbuf, 256); sscanf (cbuf, "%lf", &_size);
-	SetSize (_size);
+void NotesizeEvent::DrawEdit() {
+	PlaybackEvent::DrawEdit();
+	ImGui::InputText("Note Size", m_tmp_size, sizeof(m_tmp_size), ImGuiInputTextFlags_CharsDecimal);
 }
-
-INT_PTR NotesizeEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_NOTIFY:
-		if (((NMHDR*)lParam)->code == UDN_DELTAPOS) {
-			NMUPDOWN *nmud = (NMUPDOWN*)lParam;
-			char cbuf[256];
-			double _size;
-			GetWindowText (GetDlgItem (hDlg, IDC_EDIT1), cbuf, 256);
-			if (sscanf (cbuf, "%lf", &_size)) {
-				_size -= nmud->iDelta*0.1;
-				_size = max (_size, 0.0);
-				sprintf (cbuf, "%f", _size);
-				SetWindowText (GetDlgItem (hDlg, IDC_EDIT1), cbuf);
-			}
-		}
-		break;
-	}
-	return PlaybackEvent::MsgProc (hDlg, uMsg, wParam, lParam);
-}
-
-INT_PTR CALLBACK NotesizeEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	NotesizeEvent *event = (uMsg == WM_INITDIALOG ?
-		(NotesizeEvent*)lParam : (NotesizeEvent*)GetWindowLongPtr (hDlg, GWLP_USERDATA));
-	return (event ? event->MsgProc (hDlg, uMsg, wParam, lParam) : FALSE);
+void NotesizeEvent::ApplyChanges() {
+	PlaybackEvent::ApplyChanges();
+	size = atof(m_tmp_size);
 }
 
 // =========================================================
-// =========================================================
 
-PlaybackEditor::PlaybackEditor (Orbiter *ob, const char *ScnName)
+NoteoffEvent::NoteoffEvent (double _t0): PlaybackEvent (_t0)
 {
-	int i;
-	char fname[1024];
-
-	orbiter = ob;
-	Efirst = Elast = 0;
-	timer = 0;
-
-	for (i = strlen(ScnName)-1; i > 0; i--)
-		if (ScnName[i-1] == '\\') break;
-	sprintf (fname, "Flights\\%s\\system.dat", ScnName+i);
-
-	sysfname = new char[strlen(fname)+1]; TRACENEW
-	strcpy (sysfname, fname);
-
-	hDlg = OpenDialog();
-	hEdit = NULL;
-
-	ScanEventFile ();
-	RefreshEventList ();
-	InsertTMarker ();
 }
 
-PlaybackEditor::~PlaybackEditor ()
+void NoteoffEvent::TagStr (char *str)
 {
-	if (hEdit) {
-		CommitEdit();
-		DestroyWindow (hEdit);
-	}
-	CloseDialog();
-	if (timer) KillTimer (hDlg, timer);
+	strcpy (str, "NOTEOFF");
 }
 
-HWND PlaybackEditor::OpenDialog ()
+void NoteoffEvent::DescStr (char *str)
 {
-	return orbiter->OpenDialogEx (IDD_RECPLAY_ANNOTATE, RecPlayAnn_DlgProc,  DLG_CAPTIONCLOSE | DLG_CAPTIONHELP, this);
+	str[0] = '\0';
 }
 
-void PlaybackEditor::CloseDialog ()
+void NoteoffEvent::Write (ofstream &ofs)
 {
-	if (hDlg) {
-		orbiter->CloseDialog (hDlg);
-		hDlg = 0;
-	}
+	WriteEvent (ofs, "NOTEOFF", "");
 }
 
-HWND PlaybackEditor::OpenEditTab (PlaybackEvent *event, int resid, DLGPROC tabproc)
-{
-	if (hEdit) {
-		RegisterEdit (hEdit);  // save current edits
-		DestroyWindow (hEdit); // remove current edit tab
-	}
-	if (resid) {
-		hEdit = CreateDialogParam (orbiter->GetInstance(), MAKEINTRESOURCE(resid), hDlg, tabproc, (LPARAM)event);
-		SetWindowLongPtr (hEdit, GWLP_USERDATA, (LONG_PTR)event);
-	} else {
-		hEdit = NULL;
-	}
-	return hEdit;
+void NoteoffEvent::DrawPreview() {
+	ImGui::Text ("---", size);
 }
 
-void PlaybackEditor::RegisterEdit (HWND hEdit)
-{
-	PlaybackEvent *e = (PlaybackEvent*)GetWindowLongPtr (hEdit, GWLP_USERDATA);
-	if (e) e->CommitEdit();
-	int idx = SendDlgItemMessage (hDlg, IDC_LIST1, LB_GETCURSEL, 0, 0);
-	if (idx != LB_ERR)
-		e = (PlaybackEvent*)SendDlgItemMessage (hDlg, IDC_LIST1, LB_GETITEMDATA, idx, 0);
-	else e = 0;
-	RefreshEventList (e);
-	InsertTMarker();
+void NoteoffEvent::DrawEdit() {
+	PlaybackEvent::DrawEdit();
 }
-
-INT_PTR PlaybackEditor::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_INITDIALOG: {
-		INT tabs[2] = {40, 80};
-		SendDlgItemMessage (hDlg, IDC_LIST1, LB_SETTABSTOPS, 2, (LPARAM)tabs);
-		CreateInsertEventList (hDlg);
-		timer = SetTimer (hDlg, 1, 100, NULL);
-		} return 0;
-	case WM_TIMER:
-		RefreshTMarker();
-		break;
-	case WM_COMMAND:
-		switch (LOWORD (wParam)) {
-		case IDHELP: {
-			extern HELPCONTEXT DefHelpContext;
-			DefHelpContext.topic = (char*)"/playbackedit.htm";
-			orbiter->OpenHelp (&DefHelpContext);
-			} return TRUE;
-		case IDCANCEL:
-			orbiter->CloseDialog (hDlg);
-			orbiter->FRecorder_ToggleEditor();
-			return FALSE;
-		case IDC_BUTTON1: // delete event
-			DeleteEvent();
-			break;
-		case IDC_BUTTON2: // insert event
-			InsertEvent();
-			break;
-		case IDC_BUTTON3: // commit edits
-			SaveEventFile();
-			break;
-		case IDC_LIST1:
-			switch (HIWORD (wParam)) {
-			case LBN_SELCHANGE: {
-				int idx = SendDlgItemMessage (hDlg, IDC_LIST1, LB_GETCURSEL, 0, 0);
-				if (idx != LB_ERR && idx != tmarkidx) {
-					PlaybackEvent *e = (PlaybackEvent*)SendDlgItemMessage (hDlg, IDC_LIST1, LB_GETITEMDATA, idx, 0);
-					if (e) e->EditEvent (this);
-				}
-				} break;
-			}
-			break;
-		}
-		break;
-	}
-	return OrbiterDefDialogProc (hDlg, uMsg, wParam, lParam);
+void NoteoffEvent::ApplyChanges() {
+	PlaybackEvent::ApplyChanges();
 }
-
-void PlaybackEditor::CreateInsertEventList (HWND hDlg)
-{
-	const int nevent = 7;
-	static const char *events[nevent] = {
-		"NOTE (annotation text)",
-		"NOTEPOS (bounding box)",
-		"NOTECOL (text colour)",
-		"NOTESIZE (text size)",
-		"TACC (time acceleration)",
-		"CAMERA (view position)",
-		"<Other>"
-	};
-	SendDlgItemMessage (hDlg, IDC_COMBO1, CB_RESETCONTENT, 0, 0);
-	for (int i = 0; i < nevent; i++)
-		SendDlgItemMessage (hDlg, IDC_COMBO1, CB_ADDSTRING, 0, (LPARAM)events[i]);
-	SendDlgItemMessage (hDlg, IDC_COMBO1, CB_SETCURSEL, 0, 0);
-}
-
-void PlaybackEditor::ScanEventFile ()
-{
-	char line[2048];
-	ifstream ifs (sysfname);
-	while (ifs.getline (line, 2048)) {
-		PlaybackEvent *pe = PlaybackEvent::Create (this, line);
-		if (pe) {
-			Event *event = new Event; TRACENEW
-			event->e = pe;
-			event->next = NULL;
-			if (Elast) Elast->next = event;
-			else Efirst = event;
-			Elast = event;
-		}
-	}
-}
-
-void PlaybackEditor::SaveEventFile ()
-{
-	CommitEdit(); // commit last edits
-	orbiter->FRecorder_SuspendPlayback();
-	ofstream ofs (sysfname);
-	Event *ev;
-	for (ev = Efirst; ev; ev = ev->next) {
-		ev->e->Write (ofs);
-	}
-	ofs.close();
-	orbiter->FRecorder_RescanPlayback();
-}
-
-void PlaybackEditor::CommitEdit ()
-{
-	PlaybackEvent *e = NULL;
-	if (hEdit)
-		e = (PlaybackEvent*)GetWindowLongPtr (hEdit, GWLP_USERDATA);
-	if (e) {
-		e->CommitEdit();
-		RefreshEventList (e);
-		InsertTMarker();
-	}
-}
-
-void PlaybackEditor::RefreshEventList (PlaybackEvent *emark)
-{
-	SendDlgItemMessage (hDlg, IDC_LIST1, LB_RESETCONTENT, 0, 0);
-	Event *event;
-	char cbuf[1024], tstr[64], tagstr[64], descstr[1024];
-	int idx;
-	for (event = Efirst; event; event = event->next) {
-		event->e->TimeStr (tstr);
-		event->e->TagStr (tagstr);
-		event->e->DescStr (descstr);
-		sprintf (cbuf, "%s\t%s\t%s", tstr, tagstr, descstr);
-		idx = SendDlgItemMessage (hDlg, IDC_LIST1, LB_ADDSTRING, 0, (LPARAM)cbuf);
-		SendDlgItemMessage (hDlg, IDC_LIST1, LB_SETITEMDATA, idx, (LPARAM)event->e);
-		if (event->e == emark)
-			SendDlgItemMessage (hDlg, IDC_LIST1, LB_SETCURSEL, idx, 0);
-	}
-}
-
-int PlaybackEditor::InsertTMarker ()
-{
-	int i;
-	char cbuf[1024];
-	char tstr[1024];
-	sprintf (tstr, "%0.1f\t< < < < < < < < < < < < < < < < < < <", td.SimT0);
-	double t;
-	for (i = 0;; i++) {
-		if (SendDlgItemMessage (hDlg, IDC_LIST1, LB_GETTEXT, i, (LPARAM)cbuf) == LB_ERR)
-			break;
-		if (sscanf (cbuf, "%lf", &t) != 1) continue;
-		if (t >= td.SimT0) {
-			SendDlgItemMessage (hDlg, IDC_LIST1, LB_INSERTSTRING, i, (LPARAM)tstr);
-			tmarkidx = i;
-			return i;
-		}
-	}
-	return -1;
-}
-
-void PlaybackEditor::RefreshTMarker ()
-{
-	char cbuf[1024];
-	char tstr[1024];
-	double t, dummy;
-	if (orbiter->IsRunning()) {
-		bool blink = (modf (td.SysT0, &dummy) > 0.5);
-		if (blink) sprintf (tstr, "%0.0f", td.SimT0);
-		else sprintf (tstr, "%0.0f\t< < < < < < < < < < < < < < < < < < <", td.SimT0);
-	} else {
-		sprintf (tstr, "%0.2f\t< < < < < < < < < < < < < < < < < < < [Paused]", td.SimT0);
-	}
-	int i, topidx;
-	for (i = tmarkidx+1;; i++) {
-		if (SendDlgItemMessage (hDlg, IDC_LIST1, LB_GETTEXT, i, (LPARAM)cbuf) == LB_ERR)
-			break;
-		if (sscanf (cbuf, "%lf", &t) != 1) continue;
-		if (t >= td.SimT0) break;
-	}
-	bool replace = (tmarkidx != i-1);
-	if (!replace) {
-		SendDlgItemMessage (hDlg, IDC_LIST1, LB_GETTEXT, tmarkidx, (LPARAM)cbuf);
-		replace = (strcmp (cbuf, tstr) != 0);
-	}
-	if (replace) {
-		topidx = SendDlgItemMessage (hDlg, IDC_LIST1, LB_GETTOPINDEX, 0, 0);
-		SendDlgItemMessage (hDlg, IDC_LIST1, LB_DELETESTRING, tmarkidx, 0);
-		SendDlgItemMessage (hDlg, IDC_LIST1, LB_INSERTSTRING, tmarkidx = i-1, (LPARAM)tstr);
-		SendDlgItemMessage (hDlg, IDC_LIST1, LB_SETTOPINDEX, topidx, 0);
-	}
-	if (orbiter->IsRunning()) {
-		topidx = SendDlgItemMessage (hDlg, IDC_LIST1, LB_GETTOPINDEX, 0, 0);
-		if (topidx < max (tmarkidx-14, 0)) {
-			SendDlgItemMessage (hDlg, IDC_LIST1, LB_SETTOPINDEX, max (0, tmarkidx-14), 0);
-		} else if (topidx > tmarkidx-4) {
-			SendDlgItemMessage (hDlg, IDC_LIST1, LB_SETTOPINDEX, tmarkidx-4, 0);
-		}
-	}
-}
-
-void PlaybackEditor::InsertEvent ()
-{
-	PlaybackEvent *e = 0;
-	const double eps = 1e-3;
-	double newtime = td.SimT0-eps; // make sure the event is read when scanning the event list to current time
-	char cbuf[1024], eventstr[1024];
-	GetWindowText (GetDlgItem (hDlg, IDC_COMBO1), cbuf, 1024);
-	sscanf (cbuf, "%s", eventstr);
-	if (!_stricmp (eventstr, "NOTE")) {
-		e = new NoteEvent (this, newtime, ""); TRACENEW
-	} else if (!_stricmp (eventstr, "NOTEPOS")) {
-		e = new NoteposEvent (this, newtime, 0, 0, 1, 1); TRACENEW
-	} else if (!_stricmp (eventstr, "NOTECOL")) {
-		e = new NotecolEvent (this, newtime, 1, 1, 1); TRACENEW
-	} else if (!_stricmp (eventstr, "NOTESIZE")) {
-		e = new NotesizeEvent (this, newtime, 1); TRACENEW
-	} else if (!_stricmp (eventstr, "TACC")) {
-		e = new TaccEvent (this, newtime, 1, 0); TRACENEW
-	} else if (!_stricmp (eventstr, "CAMERA")) {
-		e = new CameraEvent (this, newtime); TRACENEW
-	} else if (!_stricmp (eventstr, "<Other>")) {
-		e = new GenericEvent (this, newtime, "<TAG>", ""); TRACENEW
-	}
-	if (e) {
-		Event *ev, *pev = 0, *event = new Event; TRACENEW
-		event->e = e;
-		event->next = NULL;
-		if (!Efirst) {
-			Efirst = event;
-		} else {
-			for (ev = Efirst; ev; ev = ev->next) {
-				if (ev->e->T0() > event->e->T0()) {
-					if (pev) {
-						pev->next = event;
-					} else {
-						Efirst = event;
-					}
-					event->next = ev;
-					break;
-				}
-				pev = ev;
-			}
-			if (!ev) { // add event to end of list
-				event->next = NULL;
-				if (pev) pev->next = event;
-				Elast->next = event;
-			}
-		}
-		if (!event->next) Elast = event;
-	}
-	RefreshEventList (e);
-	InsertTMarker ();
-	if (e) e->EditEvent (this);
-}
-
-void PlaybackEditor::DeleteEvent ()
-{
-	LRESULT idx = SendDlgItemMessage (hDlg, IDC_LIST1, LB_GETCURSEL, 0, 0);
-	if (idx == LB_ERR || idx == tmarkidx) return;
-
-	LRESULT res = SendDlgItemMessage (hDlg, IDC_LIST1, LB_GETITEMDATA, idx, 0);
-	if (res == LB_ERR || res == 0) return;
-
-	PlaybackEvent *e = (PlaybackEvent*)res;
-	Event *ev, *pev = 0;
-	for (ev = Efirst; ev; ev = ev->next) {
-		if (ev->e == e) {
-			if (hEdit) {
-				DestroyWindow (hEdit);
-				hEdit = NULL;
-			}
-			if (pev) pev->next = ev->next;
-			if (Efirst == ev) Efirst = ev->next;
-			if (Elast == ev) Elast = pev;
-			delete ev->e;
-			delete ev;
-			RefreshEventList ();
-			InsertTMarker ();
-			break;
-		}
-		pev = ev;
-	}
-}
-
-void PlaybackEditor::SortEvent (PlaybackEvent *e)
-{
-	Event *event, *ev, *pev = 0;
-	bool needsort = false;
-	for (ev = Efirst; ev; ev = ev->next) {
-		if (ev->e == e) {
-			if (pev && pev->e->T0() > e->T0()) { needsort = true; break; }
-			if (ev->next && ev->next->e->T0() < e->T0()) { needsort = true; break; }
-		}
-		pev = ev;
-	}
-	if (needsort) {
-		event = ev;
-		// prise the event out of the list
-		if (pev) pev->next = ev->next;
-		if (Efirst == ev) Efirst = ev->next;
-		if (Elast == ev) Elast = pev;
-		// and re-insert in new place
-		event->next = NULL;
-		for (ev = Efirst, pev = 0; ev; ev = ev->next) {
-			if (ev->e->T0() > e->T0()) {
-				if (pev) pev->next = event;
-				else     Efirst = event;
-				event->next = ev;
-				break;
-			}
-			pev = ev;
-		}
-		if (!event->next) Elast = event;
-	}
-}
-
-// ======================================================================
-
-INT_PTR CALLBACK RecPlayAnn_DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	PlaybackEditor *pe = g_pOrbiter->FReditor;
-	if (uMsg == WM_INITDIALOG) {
-		pe = (PlaybackEditor*)lParam;
-	}
-	if (pe) return pe->DlgProc (hDlg, uMsg, wParam, lParam);
-	else return OrbiterDefDialogProc (hDlg, uMsg, wParam, lParam);
-}
-
