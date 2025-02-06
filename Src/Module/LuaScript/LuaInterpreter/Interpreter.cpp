@@ -6810,7 +6810,8 @@ int Interpreter::oapi_keydown (lua_State *L)
 	ASSERT_LIGHTUSERDATA(L,1);
 	char *kstate = (char*)lua_touserdata(L,1);
 	ASSERT_NUMBER(L,2);
-	int key = lua_tointeger(L, 2);
+	unsigned int key = lua_tointeger(L, 2);
+	ASSERT_SYNTAX(key < 256, "Invalid key code");
 	lua_pushboolean (L, KEYDOWN(kstate,key));
 	return 1;
 }
@@ -6827,7 +6828,8 @@ int Interpreter::oapi_resetkey (lua_State *L)
 	ASSERT_LIGHTUSERDATA(L,1);
 	char *kstate = (char*)lua_touserdata(L,1);
 	ASSERT_NUMBER(L,2);
-	int key = lua_tointeger(L, 2);
+	unsigned int key = lua_tointeger(L, 2);
+	ASSERT_SYNTAX(key < 256, "Invalid key code");
 	RESETKEY(kstate,key);
 	return 0;
 }
@@ -6846,12 +6848,17 @@ int Interpreter::oapi_simulatebufferedkey (lua_State *L)
 {
 	ASSERT_NUMBER(L,1);
 	DWORD key = (DWORD)lua_tointeger(L,1);
+	ASSERT_SYNTAX(key < 256, "Invalid key code");
+
 	DWORD nmod = lua_gettop(L)-1;
 	DWORD *mod = 0;
 	if (nmod) {
 		mod = new DWORD[nmod];
-		for (DWORD i = 0; i < nmod; i++)
-			mod[i] = (DWORD)lua_tointeger(L,i+2);
+		for (DWORD i = 0; i < nmod; i++) {
+			DWORD modkey = (DWORD)lua_tointeger(L,i+2);
+			ASSERT_SYNTAX(modkey < 256, "Invalid key code");
+			mod[i] = modkey;
+		}
 	}
 	oapiSimulateBufferedKey (key, mod, nmod);
 	if (nmod) delete []mod;
@@ -6881,6 +6888,7 @@ int Interpreter::oapi_simulateimmediatekey (lua_State *L)
 	DWORD i, key, nkey = lua_gettop(L);
 	for (i = 0; i < nkey; i++) {
 		key = (DWORD)lua_tointeger(L,i+1);
+		ASSERT_SYNTAX(key < 256, "Invalid key code");
 		kstate[key] = 0x80;
 	}
 	oapiSimulateImmediateKey ((char*)kstate);
@@ -6909,7 +6917,8 @@ int Interpreter::oapi_acceptdelayedkey (lua_State *L)
 {
 	ASSERT_NUMBER(L,1);
 	ASSERT_NUMBER(L,2);
-	char key = lua_tointeger(L, 1);
+	unsigned int key = lua_tointeger(L, 1);
+	ASSERT_SYNTAX(key < 256, "Invalid key code");
 	double interval = lua_tonumber(L, 2);
 	bool ret = oapiAcceptDelayedKey (key, interval);
 	lua_pushboolean(L, ret);
