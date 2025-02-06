@@ -972,7 +972,6 @@ void Orbiter::GetRenderParameters ()
 void Orbiter::BroadcastGlobalInit ()
 {
 	Instrument::GlobalInit (gclient);
-	DlgMap::GlobalInit();
 }
 
 // =======================================================================

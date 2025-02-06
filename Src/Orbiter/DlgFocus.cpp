@@ -12,13 +12,14 @@
 #include "Camera.h"
 #include "imgui.h"
 #include <map>
+#include "IconsFontAwesome6.h"
 
 extern Camera *g_camera;
 extern PlanetarySystem *g_psys;
 extern Orbiter *g_pOrbiter;
 extern Vessel *g_focusobj, *g_pfocusobj;
 
-DlgFocus::DlgFocus() : ImGuiDialog("Orbiter: Select spacecraft", {300, 320}) {
+DlgFocus::DlgFocus() : ImGuiDialog(ICON_FA_ROCKET " Orbiter: Select spacecraft", {300, 320}) {
 }
 
 void DlgFocus::OnDraw() {

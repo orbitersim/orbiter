@@ -10,10 +10,11 @@
 #include "Astro.h"
 #include "Element.h"
 #include "imgui.h"
+#include "IconsFontAwesome6.h"
 
 extern PlanetarySystem *g_psys;
 
-DlgInfo::DlgInfo() : ImGuiDialog("Orbiter: Object info", {753,423}) {
+DlgInfo::DlgInfo() : ImGuiDialog(ICON_FA_CIRCLE_INFO " Orbiter: Object info", {753,423}) {
 }
 
 void DlgInfo::AddCbodyNode(const CelestialBody *cbody) {

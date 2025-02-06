@@ -11,11 +11,12 @@
 #include "imgui.h"
 #include "imgui_extras.h"
 #include "Orbiter.h"
+#include "IconsFontAwesome6.h"
 
 extern Orbiter *g_pOrbiter;
 extern Pane *g_pane;
 
-DlgMenuCfg::DlgMenuCfg(): ImGuiDialog("Orbiter: Configure menu bars")
+DlgMenuCfg::DlgMenuCfg(): ImGuiDialog(ICON_FA_SLIDERS " Orbiter: Configure menu bars")
 {
 }
 

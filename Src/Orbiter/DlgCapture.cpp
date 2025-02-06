@@ -7,6 +7,7 @@
 
 #include "DlgCapture.h"
 #include "Orbiter.h"
+#include "IconsFontAwesome6.h"
 
 extern Orbiter *g_pOrbiter;
 
@@ -15,7 +16,7 @@ extern Orbiter *g_pOrbiter;
 #include "imgui.h"
 #include "imgui_extras.h"
 
-DlgCapture::DlgCapture() : ImGuiDialog("Orbiter: Capture frames",{323,343}) {
+DlgCapture::DlgCapture() : ImGuiDialog(ICON_FA_VOICEMAIL " Orbiter: Capture frames",{323,343}) {
 }
 
 void DlgCapture::OnDraw() {

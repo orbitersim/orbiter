@@ -45,8 +45,8 @@ void DlgExtMFD::Display() {
     ImGui::SetNextWindowSize(ImVec2(defaultSize.width, defaultSize.height), ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSizeConstraints(ImVec2(382,366), ImVec2(FLT_MAX, FLT_MAX));
 	
-	char cbuf[256] = "MFD [";
-	oapiGetObjectName(m_mfd->GetVessel(), cbuf + 5, 250);
+	char cbuf[256] = ICON_FA_TABLET_SCREEN_BUTTON " MFD [";
+	oapiGetObjectName(m_mfd->GetVessel(), cbuf + 9, 246);
 	strcat(cbuf, "]###");
 	strcat(cbuf, name.c_str());
 

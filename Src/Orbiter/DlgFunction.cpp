@@ -8,10 +8,11 @@
 #include "DlgFunction.h"
 #include "Orbiter.h"
 #include "imgui.h"
+#include "IconsFontAwesome6.h"
 
 extern Orbiter *g_pOrbiter;
 
-DlgFunction::DlgFunction() : ImGuiDialog("Orbiter: Custom functions", {340, 290}) {
+DlgFunction::DlgFunction() : ImGuiDialog(ICON_FA_PUZZLE_PIECE " Orbiter: Custom functions", {340, 290}) {
 }
 
 void DlgFunction::OnDraw() {
