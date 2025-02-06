@@ -76,11 +76,23 @@ void Select::DrawMenu(std::list<SelectEntry>& entries) {
 }
 
 void Select::OnDraw() {
-    auto& io = ImGui::GetIO();
-
+    ImGuiIO& io = ImGui::GetIO();
+	
     if (io.MouseDown[0] && opened) {
         return;
     }
+
+	// Open the context menu inside the focused viewport
+	// so it's not hidden by it in case it's opened from
+	// a secondary viewport but its draw area fits inside
+	// the main viewport
+	ImGuiPlatformIO& pio = ImGui::GetPlatformIO();
+	for (ImGuiViewport *viewport : pio.Viewports) {
+		if(viewport->Flags & ImGuiViewportFlags_IsFocused) {
+			ImGui::SetNextWindowViewport(viewport->ID);
+			break;
+		}
+	}
 
     if (opened) {
         ImGui::OpenPopup(title.c_str());

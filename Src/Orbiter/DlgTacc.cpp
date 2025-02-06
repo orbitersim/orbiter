@@ -8,11 +8,12 @@
 #include "DlgTacc.h"
 #include "Orbiter.h"
 #include "imgui.h"
+#include "IconsFontAwesome6.h"
 
 extern TimeData td;
 extern Orbiter *g_pOrbiter;
 
-DlgTacc::DlgTacc() : ImGuiDialog("Orbiter: Time acceleration",{357,135}) {
+DlgTacc::DlgTacc() : ImGuiDialog(ICON_FA_CLOCK " Orbiter: Time acceleration",{357,135}) {
 }
 
 void DlgTacc::OnDraw() {

@@ -1,15 +1,15 @@
 // Copyright (c) Martin Schweiger
 // Licensed under the MIT License
 
-#ifdef OAPIFUNC
-#undef OAPIFUNC
-#endif
 #include "DrawAPI.h"
 
 #include "VectorMap.h"
 #include "Psys.h"
-#include "MFD.h"
+#include "Mfd.h"
 #include "Util.h"
+
+#include <cmath>
+#include <algorithm>
 
 #define OUTLINE_COAST 1
 #define OUTLINE_CONTOUR 2
@@ -24,17 +24,11 @@ using namespace std;
 extern PlanetarySystem *g_psys;
 extern Vessel *g_focusobj;
 extern TimeData td;
-extern char DBG_MSG[256];
 
 bool VectorMap::bsetup = true;
 double VectorMap::cosp[NVTX_CIRCLE] = {0};
 double VectorMap::sinp[NVTX_CIRCLE] = {0};
 
-//static COLORREF ObjectCol[3] = {
-//	Instrument::draw[0][0].col,
-//	Instrument::draw[1][0].col,
-//	Instrument::draw[2][0].col
-//};
 static COLORREF labelcol[6] = {0x00FFFF, 0xFFFF00, 0x4040FF, 0xFF00FF, 0x40FF40, 0xFF8080};
 
 // =======================================================================
@@ -55,24 +49,9 @@ VectorMap::VectorMap (const Planet *pl)
 
 VectorMap::~VectorMap ()
 {
-#ifdef ASYNC_DRAWMAP
-	WaitThread (true);
-	WaitForSingleObject (hCommMutex, INFINITE);
-	threaddata.taskid = TASKID_TERMINATE;
-	ReleaseMutex (hCommMutex);
-	SetEvent (hActivateThread);
-	DWORD res = WaitForSingleObject (hRedrawThread, 100); // wait for thread termination
-	if (res == WAIT_TIMEOUT)
-		TerminateThread (hRedrawThread, 0); // force termination
+	if(hMap)
+		oapiDestroySurface(hMap);
 
-	CloseHandle (hRedrawThread);
-	CloseHandle (hActivateThread);
-	CloseHandle (hCommMutex);
-#endif
-
-	if (hBmpDraw) DeleteObject (hBmpDraw);
-	if (hDCmem) DeleteDC (hDCmem);
-	CloseGDIResources();
 }
 
 // =======================================================================
@@ -94,7 +73,7 @@ void VectorMap::SetDefaults ()
 	latmax = latc+dlat;
 	centermode = 0;
 	dispflag = DISP_GRIDLINE | DISP_COASTLINE | DISP_CONTOURS | DISP_BASE | DISP_VESSEL | DISP_ORBITFOCUS | DISP_ORBITSEL | DISP_ORBITPLANE;
-	findflag = DISP_BASE | DISP_NAVAID | DISP_CUSTOM1 | DISP_VESSEL | DISP_MOON;
+	findflag = DISP_BASE | DISP_NAVAID | DISP_CUSTOMMARKER | DISP_VESSEL | DISP_MOON;
 	drawdata.focus_disp = drawdata.tgtv_disp = drawdata.tgtb_disp = drawdata.sun_disp = false;
 	selection.obj = NULL;
 	selection.type = 0;
@@ -108,19 +87,8 @@ void VectorMap::SetDefaults ()
 		bsetup = false;
 	}
 
-	hDCmem = NULL;
-	hBmpDraw = NULL;
+	hMap = NULL;
 	InitGDIResources();
-
-#ifdef ASYNC_DRAWMAP
-	// Initialise the redraw thread
-	threaddata.taskid = 0;
-	DWORD id;
-	hActivateThread = CreateEvent (NULL, FALSE, TRUE, "MapEvent");
-	hCommMutex     = CreateMutex (NULL, FALSE, "MapCommMutex");
-	hRedrawThread  = CreateThread (NULL, 2048, Redraw_ThreadProc, this, 0, &id);
-	SetThreadPriority (hRedrawThread, THREAD_PRIORITY_IDLE);
-#endif
 }
 
 // =======================================================================
@@ -134,26 +102,26 @@ void VectorMap::InitGDIResources ()
 	int screenh = GetSystemMetrics(SM_CYSCREEN);
 	labelsize = screenh / 100;
 	SetLabelSize(labelsize);
-
-	penGridline = CreatePen (PS_SOLID, 1, 0x505050);
-	penCoast = CreatePen (PS_SOLID, 1, Instrument::draw[4][0].col);
-	penContour = CreatePen (PS_SOLID, 1, 0x0070C0);
-	penTerminator = CreatePen (PS_SOLID, 1, 0xC0C0C0);
+ 
+	penGridline = oapiCreatePen(1, 1, 0x505050);
+	penCoast = oapiCreatePen (1, 1, Instrument::draw[4][0].col);
+	penContour = oapiCreatePen (1, 1, 0x0070C0);
+	penTerminator = oapiCreatePen (1, 1, 0xC0C0C0);
 	int idx[3] = {0,1,3};
 	for (i = 0; i < 3; i++) {
-		penOrbitFuture[i] = CreatePen (PS_SOLID, 1, Instrument::draw[idx[i]][0].col);
-		penOrbitPast[i] = CreatePen (PS_SOLID, 1, Instrument::draw[idx[i]][1].col);
+		penOrbitFuture[i] = oapiCreatePen (1, 1, Instrument::draw[idx[i]][0].col);
+		penOrbitPast[i] = oapiCreatePen (1, 1, Instrument::draw[idx[i]][1].col);
 	}
-	penFocusHorizon = CreatePen (PS_SOLID, 1, Instrument::draw[0][1].col);
-	penTargetHorizon = CreatePen (PS_SOLID, 1, Instrument::draw[1][1].col);
-	penNavmkr = CreatePen (PS_SOLID, 1, col_navaid);
-	penBase   = CreatePen (PS_SOLID, 1, Instrument::draw[2][0].col);
-	penSelection = CreatePen (PS_SOLID, 1, Instrument::draw[1][0].col);
+	penFocusHorizon = oapiCreatePen (1, 1, Instrument::draw[0][1].col);
+	penTargetHorizon = oapiCreatePen (1, 1, Instrument::draw[1][1].col);
+	penNavmkr = oapiCreatePen (1, 1, col_navaid);
+	penBase   = oapiCreatePen (1, 1, Instrument::draw[2][0].col);
+	penSelection = oapiCreatePen (1, 1, Instrument::draw[1][0].col);
 	for (i = 0; i < 3; i++)
-		penMarker[i] = CreatePen (PS_SOLID, 3, Instrument::draw[idx[i]][0].col);
+		penMarker[i] = oapiCreatePen (1, 3, Instrument::draw[idx[i]][0].col);
 	nCustomMkr = 0;
-	LOGBRUSH lb = {BS_SOLID, 0x303030, 0};
-	brushDay = CreateBrushIndirect (&lb);
+//	LOGBRUSH lb = {BS_SOLID, 0x303030, 0};
+	brushDay = oapiCreateBrush(0x303030);//CreateBrushIndirect (&lb);
 }
 
 // =======================================================================
@@ -162,12 +130,12 @@ void VectorMap::SetLabelSize(int size)
 {
 	if (fontLabel) {
 		if (size == labelsize) return; // nothing to do
-		else DeleteObject(fontLabel);
+		else oapiReleaseFont(fontLabel);
 	}
 	labelsize = size;
-	fontLabel = CreateFont(-labelsize, 0, 0, 0, 400, 0, 0, 0, 0, 3, 2, 1, 49, "Arial");
-}
 
+	fontLabel = oapiCreateFont(-labelsize, true, "Arial", FONT_NORMAL);
+}
 // =======================================================================
 
 void VectorMap::AllocCustomResources ()
@@ -176,7 +144,7 @@ void VectorMap::AllocCustomResources ()
 
 	if (nCustomMkr) {
 		for (i = 0; i < nCustomMkr; i++)
-			DeleteObject (penCustomMkr[i]);
+			oapiReleasePen (penCustomMkr[i]);
 		delete []penCustomMkr;
 		penCustomMkr = NULL;
 		delete []colCustomMkr;
@@ -184,11 +152,11 @@ void VectorMap::AllocCustomResources ()
 	}
 	nCustomMkr = mkrset.nset;
 	if (nCustomMkr) {
-		penCustomMkr = new HPEN[nCustomMkr];
+		penCustomMkr = new oapi::Pen *[nCustomMkr];
 		colCustomMkr = new COLORREF[nCustomMkr];
 		for (i = 0; i < nCustomMkr; i++) {
 			colCustomMkr[i] = labelcol[mkrset.set[i].list->colour];
-			penCustomMkr[i] = CreatePen (PS_SOLID, 1, colCustomMkr[i]);
+			penCustomMkr[i] = oapiCreatePen (1, 1, colCustomMkr[i]);
 		}
 	}
 }
@@ -198,30 +166,30 @@ void VectorMap::AllocCustomResources ()
 void VectorMap::CloseGDIResources ()
 {
 	DWORD i;
-	DeleteObject (fontLabel);
-	DeleteObject (penGridline);
-	DeleteObject (penCoast);
-	DeleteObject (penContour);
-	DeleteObject (penTerminator);
+	oapiReleaseFont (fontLabel);
+	oapiReleasePen (penGridline);
+	oapiReleasePen (penCoast);
+	oapiReleasePen (penContour);
+	oapiReleasePen (penTerminator);
 	//DeleteObject (penFocusGroundtrackFuture);
 	//DeleteObject (penFocusGroundtrackPast);
-	DeleteObject (penFocusHorizon);
+	oapiReleasePen (penFocusHorizon);
 	//DeleteObject (penTargetGroundtrackFuture);
 	//DeleteObject (penTargetGroundtrackPast);
-	DeleteObject (penTargetHorizon);
-	DeleteObject (penNavmkr);
-	DeleteObject (penBase);
-	DeleteObject (penSelection);
-	DeleteObject (brushDay);
+	oapiReleasePen (penTargetHorizon);
+	oapiReleasePen (penNavmkr);
+	oapiReleasePen (penBase);
+	oapiReleasePen (penSelection);
+	oapiReleaseBrush (brushDay);
 	for (i = 0; i < 3; i++) {
-		DeleteObject(penOrbitFuture[i]);
-		DeleteObject(penOrbitPast[i]);
+		oapiReleasePen(penOrbitFuture[i]);
+		oapiReleasePen(penOrbitPast[i]);
 	}
 	for (i = 0; i < 3; i++)
-		DeleteObject (penMarker[i]);
+		oapiReleasePen (penMarker[i]);
 	if (nCustomMkr) {
 		for (i = 0; i < nCustomMkr; i++)
-			DeleteObject (penCustomMkr[i]);
+			oapiReleasePen (penCustomMkr[i]);
 		delete []penCustomMkr;
 		penCustomMkr = NULL;
 		delete []colCustomMkr;
@@ -234,12 +202,6 @@ void VectorMap::CloseGDIResources ()
 
 void VectorMap::Update ()
 {
-#ifdef ASYNC_DRAWMAP
-	if (ThreadBusy()) return;
-	// Don't update data if drawing in progress
-	// Should we rather wait here until the thread is free again?
-#endif
-
 	double lng, lat, rad;
 	if (!cbody) return;
 
@@ -291,9 +253,6 @@ void VectorMap::Update ()
 #ifdef UNDEF
 void VectorMap::UpdateGroundtrack ()
 {
-#ifdef ASYNC_DRAWMAP
-	if (ThreadBusy()) return;
-#endif
 	if (drawdata.focus_disp) gt_this.Update();
 
 	if (selection.type == DISP_VESSEL) gt_tgt.Update();
@@ -334,33 +293,18 @@ bool VectorMap::SetCBody (const CelestialBody *body)
 
 void VectorMap::SetCanvas (void *device_context, int w, int h)
 {
-#ifdef ASYNC_DRAWMAP
-	WaitThread (true);
-	// make sure the drawing thread is not busy before replacing the bitmap
-#endif
-
 	cw = w;
 	ch = h;
 	cntx = w/2;
 	cnty = h/2;
 	SetZoom (zoom);
 
-	// Create the drawing bitmap
-	HDC hDCtgt = GetDC (NULL);
-	if (hDCmem) {
-		DeleteDC (hDCmem);                             // delete current memory DC
+	if(hMap != NULL) {
+		oapiDestroySurface(hMap);
 	}
-	if (hBmpDraw) DeleteObject (hBmpDraw);             // delete drawing bitmap
-	if (hDCtgt) {
-		hDCmem = CreateCompatibleDC (hDCtgt);
-		hBmpDraw = CreateCompatibleBitmap (hDCtgt, w, h); // create new drawing bitmap
-		SetBkMode (hDCmem, TRANSPARENT);
-		SelectObject (hDCmem, GetStockObject (NULL_BRUSH));
-	} else {
-		hDCmem = NULL;
-		hBmpDraw = NULL;
-	}
-	ReleaseDC (NULL, hDCtgt);
+
+	hMap = oapiCreateSurface(w,h);
+
 }
 
 // =======================================================================
@@ -511,7 +455,7 @@ bool VectorMap::GetObjPos (const OBJTYPE &obj, double &lng, double &lat)
 		const Nav_VOR *vor = (const Nav_VOR*)obj.obj;
 		vor->GetEquPos (lng, lat);
 		} return true;
-	case DISP_CUSTOM1: {
+	case DISP_CUSTOMMARKER: {
 		const VPoint *vp = (const VPoint*)obj.obj;
 		lng = vp->lng;
 		lat = vp->lat;
@@ -594,7 +538,7 @@ const VectorMap::OBJTYPE VectorMap::FindObject (int x, int y) const
 		}
 	}
 
-	if (dispflag & DISP_CUSTOM1 && findflag & DISP_CUSTOM1) {
+	if (dispflag & DISP_CUSTOMMARKER && findflag & DISP_CUSTOMMARKER) {
 		for (i = 0; i < mkrset.nset; i++) {
 			if (mkrset.set[i].active) {
 				const CustomMkrSpec *set = mkrset.set+i;
@@ -606,7 +550,7 @@ const VectorMap::OBJTYPE VectorMap::FindObject (int x, int y) const
 						if (dst2 < dst2min) {
 							dst2min = dst2;
 							obj.obj = set->vtx+j;
-							obj.type = DISP_CUSTOM1;
+							obj.type = DISP_CUSTOMMARKER;
 						}
 					}
 				}
@@ -657,32 +601,15 @@ const VectorMap::OBJTYPE VectorMap::FindObject (int x, int y) const
 
 // =======================================================================
 
-HBITMAP VectorMap::GetMap ()
+SURFHANDLE VectorMap::GetMap ()
 {
-#ifdef ASYNC_DRAWMAP
-	//WaitThread(); // wait for thread to finish drawing
-#endif
-	return hBmpDraw;
-}
-
-// =======================================================================
-
-HDC VectorMap::GetDeviceContext ()
-{
-#ifdef ASYNC_DRAWMAP
-	WaitThread(); // wait for thread to finish drawing
-#endif
-	return hDCmem;
+	return hMap;
 }
 
 // =======================================================================
 
 void VectorMap::DrawMap ()
 {
-#ifdef ASYNC_DRAWMAP
-	if (ThreadBusy()) return;
-#endif
-
 	DrawMap_engine();
 }
 
@@ -691,97 +618,94 @@ void VectorMap::DrawMap ()
 void VectorMap::DrawMap_engine ()
 {
 	// called either directly (by DrawMap) or from the drawing thread
+	oapiClearSurface(hMap);
+	oapi::Sketchpad *skp = oapiGetSketchpad(hMap);
+	if(skp) {
+		skp->SetFont(fontLabel);
 
-	tic();
-
-	// clear the bitmap
-	HBITMAP pBmp = (HBITMAP)SelectObject (hDCmem, hBmpDraw);
-	BitBlt (hDCmem, 0, 0, cw, ch, NULL, 0, 0, BLACKNESS);
-	HFONT pFont = (HFONT)SelectObject (hDCmem, fontLabel);
-
-	// terminator line
-	if (planet && dispflag & DISP_TERMINATOR) {
-		switch (dispflag & DISP_TERMINATOR) {
-		case DISP_TERMINATOR_LINE:
-			DrawTerminatorLine (drawdata.sunlng, drawdata.sunlat);
-			break;
-		case DISP_TERMINATOR_SHADE:
-			DrawSunnySide (drawdata.sunlng, drawdata.sunlat, false);
-			break;
-		case DISP_TERMINATOR_BOTH:
-			DrawSunnySide (drawdata.sunlng, drawdata.sunlat, true);
-			break;
-		}
-	}
-
-	// grid lines
-	if (dispflag & DISP_GRIDLINE)
-		DrawGridlines ();
-
-	if (planet) {
-
-		// coastlines
-		if (dispflag & DISP_COASTLINE)
-			DrawPolySet (&coast);
-
-		// contour lines
-		if (dispflag & DISP_CONTOURS)
-			DrawPolySet (&contour);
-
-		// navaids
-		if (dispflag & DISP_NAVAID)
-			DrawNavaids ();
-
-		// custom marker sets
-		if (dispflag & DISP_CUSTOM1) {
-			for (DWORD i = 0; i < mkrset.nset; i++) {
-				if (mkrset.set[i].active)
-					DrawCustomMarkerSet (i);
+		// terminator line
+		if (planet && dispflag & DISP_TERMINATOR) {
+			switch (dispflag & DISP_TERMINATOR) {
+			case DISP_TERMINATOR_LINE:
+				DrawTerminatorLine (skp, drawdata.sunlng, drawdata.sunlat);
+				break;
+			case DISP_TERMINATOR_SHADE:
+				DrawSunnySide (skp, drawdata.sunlng, drawdata.sunlat, false);
+				break;
+			case DISP_TERMINATOR_BOTH:
+				DrawSunnySide (skp, drawdata.sunlng, drawdata.sunlat, true);
+				break;
 			}
 		}
 
-		// base markers
-		if (dispflag & DISP_BASE)
-			DrawBases ();
+		// grid lines
+		if (dispflag & DISP_GRIDLINE)
+			DrawGridlines (skp);
 
-		// target base
-		if (drawdata.tgtb_disp) {
-			DrawMarker (drawdata.tgtblng, drawdata.tgtblat, drawdata.basename, 2);
+		if (planet) {
+
+			// coastlines
+			if (dispflag & DISP_COASTLINE)
+				DrawPolySet (skp, &coast);
+
+			// contour lines
+			if (dispflag & DISP_CONTOURS)
+				DrawPolySet (skp, &contour);
+
+			// navaids
+			if (dispflag & DISP_NAVAID)
+				DrawNavaids (skp);
+
+			// custom marker sets
+			if (dispflag & DISP_CUSTOMMARKER) {
+				for (DWORD i = 0; i < mkrset.nset; i++) {
+					if (mkrset.set[i].active)
+						DrawCustomMarkerSet (skp, i);
+				}
+			}
+
+			// base markers
+			if (dispflag & DISP_BASE)
+				DrawBases (skp);
+
+			// target base
+			if (drawdata.tgtb_disp) {
+				DrawMarker (skp, drawdata.tgtblng, drawdata.tgtblat, drawdata.basename, 2);
+			}
+
+			// natural satellites
+			if (dispflag & DISP_MOON || selection.type == DISP_MOON)
+				DrawMoons (skp);
+
+			// vessels
+			if (dispflag & DISP_VESSEL)
+				DrawVessels (skp);
 		}
 
-		// natural satellites
-		if (dispflag & DISP_MOON || selection.type == DISP_MOON)
-			DrawMoons ();
+		// target orbiter
+		if (drawdata.tgtv_disp) {
+			if (dispflag & DISP_HORIZONLINE)
+				DrawHorizon (skp, drawdata.tgtvlng, drawdata.tgtvlat, drawdata.tgtvrad, false);
+			if (dispflag & DISP_GROUNDTRACK)
+				DrawGroundtrack (skp, gt_tgt, 1);
+			else if (dispflag & DISP_ORBITPLANE)
+				DrawOrbitPlane (skp, &drawdata.tgtvel, 1);
+			DrawMarker (skp, drawdata.tgtvlng, drawdata.tgtvlat, drawdata.tgtname, 1);
+		}
 
-		// vessels
-		if (dispflag & DISP_VESSEL)
-			DrawVessels ();
+		// selection marker
+		if (selection.type)
+			DrawSelectionMarker (skp, selection);
+
+		oapiReleaseSketchpad (skp);
 	}
-
-	// target orbiter
-	if (drawdata.tgtv_disp) {
-		if (dispflag & DISP_HORIZONLINE)
-			DrawHorizon (drawdata.tgtvlng, drawdata.tgtvlat, drawdata.tgtvrad, false);
-		if (dispflag & DISP_GROUNDTRACK)
-			DrawGroundtrack (gt_tgt, 1);
-		else if (dispflag & DISP_ORBITPLANE)
-			DrawOrbitPlane (&drawdata.tgtvel, 1);
-		DrawMarker (drawdata.tgtvlng, drawdata.tgtvlat, drawdata.tgtname, 1);
-	}
-
-	// selection marker
-	if (selection.type)
-		DrawSelectionMarker (selection);
-
-	SelectObject (hDCmem, pFont);
-	SelectObject (hDCmem, pBmp);
 }
 
 // =======================================================================
 
-void VectorMap::DrawGridlines ()
+void VectorMap::DrawGridlines (oapi::Sketchpad *skp)
 {
-	HPEN ppen = (HPEN)SelectObject (hDCmem, penGridline);
+	oapi::Pen *ppen = skp->SetPen(penGridline);
 	const double step = 30.0/DEG;
 	const double eps = 1e-8;
 	double lat0 = max(latmin,-Pi05);
@@ -794,49 +718,50 @@ void VectorMap::DrawGridlines ()
 	double lat = ceil(lat0/step) * step;
 	while (lat < lat1+eps) {
 		y = mapy(lat);
-		MoveToEx (hDCmem, x0, y, NULL);
-		LineTo (hDCmem, x1, y);
+		skp->MoveTo (x0, y);
+		skp->LineTo (x1, y);
 		lat += step;
 	}
 	double lng = ceil(lng0/step) * step;
 	while (lng < lng1) {
 		x = mapx(lng);
-		MoveToEx (hDCmem, x, y0, NULL);
-		LineTo (hDCmem, x, y1);
+		skp->MoveTo (x, y0);
+		skp->LineTo (x, y1);
 		lng += step;
 	}
+
+	if(ppen) skp->SetPen(ppen);
 }
 
 // =======================================================================
 
-void VectorMap::DrawPolySet (const PolyLineSet *pls)
+void VectorMap::DrawPolySet (oapi::Sketchpad *skp, const PolyLineSet *pls)
 {
 	int j, n;
 	int mapw = (int)(cw*PI/dlng);
 	VPoint *v0;
 
-	HGDIOBJ ppen = NULL;
-
+	oapi::Pen *ppen = NULL;
 	switch (pls->type) {
 	case OUTLINE_COAST:
-		ppen = SelectObject (hDCmem, penCoast);
+		ppen = skp->SetPen(penCoast);
 		break;
 	case OUTLINE_CONTOUR:
-		ppen = SelectObject (hDCmem, penContour);
+		ppen = skp->SetPen(penContour);
 		break;
 	}
 
 	for (j = 0; j < pls->npoly; j++) {
 		v0 = pls->vtx + pls->poly[j].vofs;
 		n = (pls->poly[j].close ? pls->poly[j].nvtx : pls->poly[j].nvtx-1);
-		DrawPolyline (0, v0, n);
+		DrawPolyline (skp, 0, v0, n);
 	}
-	if (ppen) SelectObject (hDCmem, ppen);
+	if(ppen) skp->SetPen(ppen);
 }
 	
 // =======================================================================
 
-void VectorMap::DrawPolyline (int type, VPoint *vp, int n, bool close)
+void VectorMap::DrawPolyline (oapi::Sketchpad *skp, int type, VPoint *vp, int n, bool close)
 {
 	int i, x0, x1, y0, y1;
 	int mapw = (int)(cw*PI/dlng);
@@ -863,14 +788,14 @@ void VectorMap::DrawPolyline (int type, VPoint *vp, int n, bool close)
 		y0 = mapy (va->lat);
 		y1 = mapy (vb->lat);
 		if ((y0 < 0 && y1 < 0) || (y0 >= ch && y1 >= ch)) continue;
-		MoveToEx (hDCmem, x0, y0, NULL);
-		LineTo (hDCmem, x1, y1);
+		skp->MoveTo ( x0, y0);
+		skp->LineTo ( x1, y1);
 	}
 }
 
 // =======================================================================
 
-void VectorMap::DrawGroundtrackLine (int type, VPointGT *vp, int n, int n0, int n1)
+void VectorMap::DrawGroundtrackLine (oapi::Sketchpad *skp, int type, VPointGT *vp, int n, int n0, int n1)
 {
 	int i, x0, x1, y0, y1;
 	int mapw = (int)(cw*PI/dlng);
@@ -904,40 +829,39 @@ void VectorMap::DrawGroundtrackLine (int type, VPointGT *vp, int n, int n0, int 
 			double scl = (1.0-va->rad)/(vb->rad-va->rad);
 			x0 += (int)((x1-x0)*scl);
 			y0 += (int)((y1-y0)*scl);
-			Rectangle (hDCmem, x0-2, y0-2, x0+3, y0+3);
+			skp->Rectangle (x0-2, y0-2, x0+3, y0+3);
 			if (replicate)
-				Rectangle (hDCmem, x0-2-mapw, y0-2, x0+3-mapw, y0+3);
+				skp->Rectangle (x0-2-mapw, y0-2, x0+3-mapw, y0+3);
 		} else if (vb->rad < 1.0) {
 			double scl = (1.0-vb->rad)/(vb->rad-va->rad);
 			x1 += (int)((x1-x0)*scl);
 			y1 += (int)((y1-y0)*scl);
-			Rectangle (hDCmem, x1-2, y1-2, x1+3, y1+3);
+			skp->Rectangle (x1-2, y1-2, x1+3, y1+3);
 			if (replicate)
-				Rectangle (hDCmem, x1-2-mapw, y1-2, x1+3-mapw, y1+3);
+				skp->Rectangle (x1-2-mapw, y1-2, x1+3-mapw, y1+3);
 		}
 		if (replicate && x0 != x1) {
 			int xm = (cw-mapw)/2;
 			if (x0 > cntx) xm += mapw;
 			int ym = y0 + ((xm-x0)*(y1-y0))/(x1-x0);
-			MoveToEx (hDCmem, x0, y0, NULL);
-			LineTo (hDCmem, xm, ym);
+			skp->MoveTo (x0, y0);
+			skp->LineTo (xm, ym);
 			int dx = (x0 > cntx ? -mapw:mapw);
-			MoveToEx (hDCmem, xm+dx, ym, NULL);
-			LineTo (hDCmem, x1+dx, y1);
+			skp->MoveTo (xm+dx, ym);
+			skp->LineTo (x1+dx, y1);
 		} else {
-			MoveToEx (hDCmem, x0, y0, NULL);
-			LineTo (hDCmem, x1, y1);
+			skp->MoveTo (x0, y0);
+			skp->LineTo (x1, y1);
 		}
 	}
 }
 
 // =======================================================================
 
-void VectorMap::DrawNavaids ()
+void VectorMap::DrawNavaids (oapi::Sketchpad *skp)
 {
-	SetTextColor (hDCmem, col_navaid);
-	HPEN ppen = (HPEN)SelectObject (hDCmem, penNavmkr);
-	SelectObject (hDCmem, GetStockObject (NULL_BRUSH));
+	skp->SetTextColor (col_navaid);
+	oapi::Pen *ppen = skp->SetPen (penNavmkr);
 
 	if (planet && planet->nNav()) {
 		static char cbuf[32];
@@ -953,12 +877,12 @@ void VectorMap::DrawNavaids ()
 				vor->GetEquPos (lng, lat);
 				if (GetMapPos (lng, lat, x, y)) {
 					if (drawdot) {
-						SetPixel (hDCmem, x, y, col_navaid);
+						skp->Pixel (x, y, col_navaid);
 					} else {
-						Ellipse (hDCmem, x-2, y-2, x+3, y+3);
+						skp->Ellipse (x-2, y-2, x+3, y+3);
 						if (drawlabel) {
 							sprintf (cbuf, "%s %0.2f", vor->GetId(), vor->GetFreq());
-							TextOut (hDCmem, x+3, y, cbuf, strlen(cbuf));
+							skp->Text (x+3, y, cbuf, strlen(cbuf));
 						}
 					}
 				}
@@ -967,31 +891,31 @@ void VectorMap::DrawNavaids ()
 		}
 	}
 
-	SelectObject (hDCmem, ppen);
+	if(ppen) skp->SetPen (ppen);
 }
 
 // =======================================================================
 
-void VectorMap::DrawVesselOrbit (Vessel *v)
+void VectorMap::DrawVesselOrbit (oapi::Sketchpad *skp, Vessel *v)
 {
 	bool isfocus = (v == g_focusobj);
 	if (dispflag & DISP_HORIZONLINE) {
 		const SurfParam *sp = v->GetSurfParam();
 		if (sp && sp->ref == cbody) {
-			DrawHorizon (sp->lng, sp->lat, sp->rad/cbody->Size(), isfocus);
+			DrawHorizon (skp, sp->lng, sp->lat, sp->rad/cbody->Size(), isfocus);
 		}
 	}
 	if (v->ElRef() == cbody) {
 		if (dispflag & DISP_GROUNDTRACK)
-			DrawGroundtrack (isfocus ? gt_this : gt_tgt, isfocus ? 0:1);
+			DrawGroundtrack (skp, isfocus ? gt_this : gt_tgt, isfocus ? 0:1);
 		if (dispflag & DISP_ORBITPLANE)
-			DrawOrbitPlane (v->Els(), isfocus ? 0:1);
+			DrawOrbitPlane (skp, v->Els(), isfocus ? 0:1);
 	}
 }
 
 // =======================================================================
 
-void VectorMap::DrawVessels ()
+void VectorMap::DrawVessels (oapi::Sketchpad *skp)
 {
 	Vessel *v;
 	bool focus_drawn = false;
@@ -999,12 +923,12 @@ void VectorMap::DrawVessels ()
 	if (dispflag & DISP_ORBITSEL && selection.type == DISP_VESSEL) {
 		v = (Vessel*)selection.obj;
 		if (v == g_focusobj || !(dispflag & DISP_FOCUSONLY)) {
-			DrawVesselOrbit (v);
+			DrawVesselOrbit (skp, v);
 			focus_drawn = (v == g_focusobj);
 		}
 	}
 	if (dispflag & DISP_ORBITFOCUS && !focus_drawn)
-		DrawVesselOrbit (g_focusobj);
+		DrawVesselOrbit (skp, g_focusobj);
 
 	for (DWORD i = 0; i < g_psys->nVessel(); i++) {
 		v = g_psys->GetVessel(i);
@@ -1012,14 +936,14 @@ void VectorMap::DrawVessels ()
 			continue;
 		const SurfParam *sp = v->GetSurfParam();
 		if (sp && sp->ref == planet) {
-			DrawMarker (sp->lng, sp->lat, v->Name(), v == g_focusobj ? 0:1);
+			DrawMarker (skp, sp->lng, sp->lat, v->Name(), v == g_focusobj ? 0:1);
 		}
 	}
 }
 
 // =======================================================================
 
-void VectorMap::DrawMoons ()
+void VectorMap::DrawMoons (oapi::Sketchpad *skp)
 {
 	const CelestialBody *moon;
 	double lng, lat, rad;
@@ -1028,9 +952,9 @@ void VectorMap::DrawMoons ()
 		moon = (const CelestialBody*)selection.obj;
 		if (moon->ElRef() == cbody) {
 			if (dispflag & DISP_GROUNDTRACK) {
-				DrawGroundtrack (gt_tgt, 2);
+				DrawGroundtrack (skp, gt_tgt, 2);
 			} if (dispflag & DISP_ORBITPLANE) {
-				DrawOrbitPlane (moon->Els(), 2);
+				DrawOrbitPlane (skp, moon->Els(), 2);
 			}
 		}
 	}
@@ -1039,17 +963,17 @@ void VectorMap::DrawMoons ()
 		for (DWORD i = 0; i < cbody->nSecondary(); i++) {
 			moon = cbody->Secondary (i);
 			cbody->GlobalToEquatorial (moon->GPos(), lng, lat, rad);
-			DrawMarker (lng, lat, moon->Name(), 2);
+			DrawMarker (skp, lng, lat, moon->Name(), 2);
 		}
 }
 
 // =======================================================================
 
-void VectorMap::DrawBases ()
+void VectorMap::DrawBases (oapi::Sketchpad *skp)
 {
 	bool drawlabel = (mapx_scale > 700);
-	if (drawlabel) SetTextColor (hDCmem, Instrument::draw[2][0].col);
-	HPEN ppen = (HPEN)SelectObject (hDCmem, penBase);
+	if (drawlabel) skp->SetTextColor (Instrument::draw[2][0].col);
+	oapi::Pen *ppen = skp->SetPen (penBase);
 
 	if (planet && g_psys->nBase (planet)) {
 		int x, y;
@@ -1058,21 +982,21 @@ void VectorMap::DrawBases ()
 			Base *base = g_psys->GetBase (planet, i);
 			base->EquPos (lng, lat);
 			if (GetMapPos (lng, lat, x, y)) {
-				Rectangle (hDCmem, x-3, y-3, x+4, y+4);
+				skp->Rectangle (x-3, y-3, x+4, y+4);
 				if (drawlabel)
-					TextOut (hDCmem, x+3, y, base->Name(), strlen(base->Name()));
+					skp->Text (x+3, y, base->Name(), strlen(base->Name()));
 			}
 		}
 	}
 
-	SelectObject (hDCmem, ppen);
+	if(ppen) skp->SetPen (ppen);
 }
 
 // =======================================================================
 
-void VectorMap::DrawCustomMarkerSet (int idx)
+void VectorMap::DrawCustomMarkerSet (oapi::Sketchpad *skp, int idx)
 {
-	HPEN ppen = NULL;
+	oapi::Pen *ppen = NULL;
 	int i, x, y;
 	const char *label;
 
@@ -1082,79 +1006,79 @@ void VectorMap::DrawCustomMarkerSet (int idx)
 	bool drawdot = (mapx_scale < 400);
 	bool drawlabel = (mapx_scale > 1400);
 
-	if (drawlabel) SetTextColor (hDCmem, colCustomMkr[idx]);
-	if (!drawdot)  ppen = (HPEN)SelectObject (hDCmem, penCustomMkr[idx]);
+	if (drawlabel) skp->SetTextColor (colCustomMkr[idx]);
+	if (!drawdot)  ppen = skp->SetPen (penCustomMkr[idx]);
 
 	for (i = 0; i < set->nvtx; i++) {
 		if (GetMapPos (set->vtx[i].lng, set->vtx[i].lat, x, y)) {
 			if (drawdot) {
-				SetPixel (hDCmem, x, y, colCustomMkr[idx]);
+				skp->Pixel (x, y, colCustomMkr[idx]);
 			} else {
-				Ellipse (hDCmem, x-2, y-2, x+3, y+3);
+				skp->Ellipse (x-2, y-2, x+3, y+3);
 				if (drawlabel && set->list->marker[i].label[0].size()) {
 					WCHAR wlabel[256];
 					MultiByteToWideChar(CP_UTF8, 0, set->list->marker[i].label[0].c_str(), -1, wlabel, 256);
-					TextOutW (hDCmem, x+3, y, wlabel, wcslen(wlabel));
+					skp->TextW (x+3, y, wlabel, wcslen(wlabel));
 				}
 			}
 		}
 	}
-	if (ppen) SelectObject (hDCmem, ppen);
+	if (ppen) skp->SetPen (ppen);
 }
 
 // =======================================================================
 
-void VectorMap::DrawMarker (double lng, double lat, const char *name, int which)
+void VectorMap::DrawMarker (oapi::Sketchpad *skp, double lng, double lat, const char *name, int which)
 {
 	int x, y;
 	if (!GetMapPos (lng, lat, x, y))
 		return; // position not on map
 
-	HPEN ppen = (HPEN)SelectObject (hDCmem, penMarker[which]);
-	MoveToEx (hDCmem, x-10, y, NULL);
-	LineTo (hDCmem, x+11, y);
-	MoveToEx (hDCmem, x, y-10, NULL);
-	LineTo (hDCmem, x, y+11);
-	SelectObject (hDCmem, ppen);
-	SetTextColor (hDCmem, Instrument::draw[which][0].col);
-	TextOut (hDCmem, x+3, which==2 ? y:y-labelsize-3, name, min((size_t)64,strlen(name)));
+	oapi::Pen *ppen = skp->SetPen(penMarker[which]);
+	skp->MoveTo (x-10, y);
+	skp->LineTo (x+11, y);
+	skp->MoveTo (x, y-10);
+	skp->LineTo (x, y+11);
+	if (ppen) skp->SetPen (ppen);
+	skp->SetTextColor (Instrument::draw[which][0].col);
+	skp->Text (x+3, which==2 ? y:y-labelsize-3, name, min(64,(int)strlen(name)));
 }
 
 // =======================================================================
 
-void VectorMap::DrawSelectionMarker (const OBJTYPE obj)
+void VectorMap::DrawSelectionMarker (oapi::Sketchpad *skp, const OBJTYPE obj)
 {
 	double lng, lat;
 	int x, y;
 	if (GetObjPos (obj, lng, lat))
 		if (GetMapPos (lng, lat, x, y)) {
-			HPEN ppen = (HPEN)SelectObject (hDCmem, penSelection);
-			Ellipse (hDCmem, x-5, y-5, x+6, y+6);
-			Ellipse (hDCmem, x-8, y-8, x+9, y+9);
-			SelectObject (hDCmem, ppen);
+			oapi::Pen *ppen = skp->SetPen(penSelection);
+			skp->Ellipse (x-5, y-5, x+6, y+6);
+			skp->Ellipse (x-8, y-8, x+9, y+9);
+			if (ppen) skp->SetPen (ppen);
 		}
 }
 
 // =======================================================================
 
-void VectorMap::DrawTerminatorLine (double sunlng, double sunlat)
+void VectorMap::DrawTerminatorLine (oapi::Sketchpad *skp, double sunlng, double sunlat)
 {
-	HPEN ppen = (HPEN)SelectObject (hDCmem, penTerminator);
+	oapi::Pen *ppen = skp->SetPen(penTerminator);
 	VPoint *p = GreatCircle (sunlng, sunlat);
-	DrawPolyline (0, p, NVTX_CIRCLE);
-	SelectObject (hDCmem, ppen);
+	DrawPolyline (skp, 0, p, NVTX_CIRCLE);
+	if (ppen) skp->SetPen (ppen);
 }
 
 // =======================================================================
 
-void VectorMap::DrawSunnySide (double sunlng, double sunlat, bool terminator)
+void VectorMap::DrawSunnySide (oapi::Sketchpad *skp, double sunlng, double sunlat, bool terminator)
 {
 	int i, cut, ybase, idx0, idx1;
 	int mapw = (int)(cw*PI/dlng);
 	if (sunlat >= 0) ybase = max (0, mapy(Pi05));
 	else             ybase = min (ch, mapy(-Pi05));
 	VPoint *p = GreatCircle (sunlng, sunlat);
-	POINT pt[NVTX_CIRCLE], ptt[NVTX_CIRCLE+4];
+	oapi::IVECTOR2 pt[NVTX_CIRCLE+4], ptt[NVTX_CIRCLE+4];
 	for (i = 0; i < NVTX_CIRCLE; i++) {
 		pt[i].x = mapx(p[i].lng);
 		pt[i].y = mapy(p[i].lat);
@@ -1176,7 +1100,7 @@ void VectorMap::DrawSunnySide (double sunlng, double sunlat, bool terminator)
 		idx0 = 1;
 	} else {
 		for (idx0 = 2; idx0 < NVTX_CIRCLE+1; idx0++) {
-			if (ptt[idx0+1].x > 0) break;
+			if (ptt[idx0+1].x >= 0) break;
 		}
 	}
 	if (ptt[NVTX_CIRCLE+1].x < cw) {
@@ -1185,44 +1109,51 @@ void VectorMap::DrawSunnySide (double sunlng, double sunlat, bool terminator)
 		idx1 = NVTX_CIRCLE+2;
 	} else {
 		for (idx1 = NVTX_CIRCLE+1; idx1 > 2; idx1--) {
-			if (ptt[idx1-1].x < cw) break;
+			if (ptt[idx1-1].x <= cw) break;
 		}
 	}
 	if (idx1 <= idx0) return;
 	ptt[idx0-1].x = ptt[idx0].x;
-	ptt[idx0-1].y = ybase;
+	ptt[idx0-1].y = 10000;//ybase - 10000;
 	ptt[idx1+1].x = ptt[idx1].x;
-	ptt[idx1+1].y = ybase;
+	ptt[idx1+1].y = 10000;//ybase - 10000;
 
-	HPEN ppen = (HPEN)SelectObject (hDCmem, terminator ? penTerminator : GetStockObject (NULL_PEN));
-	SelectObject (hDCmem, brushDay);
-	Polygon (hDCmem, ptt+(idx0-1), idx1-idx0+3);
-	SelectObject (hDCmem, ppen);
-	SelectObject (hDCmem, GetStockObject (NULL_BRUSH));
+	oapi::Pen *ppen = NULL;
+	if(terminator)
+	 	ppen = skp->SetPen(penTerminator);
+	else {
+		//FIXME NULL_PEN
+		//ppen = skp->SetPen(penTerminator);
+	}
+	skp->SetBrush(brushDay);
+	skp->Polygon (ptt+(idx0-1), idx1-idx0+3);
+	if (ppen) skp->SetPen(ppen);
+
 }
 
 // =======================================================================
 
-void VectorMap::DrawOrbitPlane (const Elements *el, int which)
+void VectorMap::DrawOrbitPlane (oapi::Sketchpad *skp, const Elements *el, int which)
 {
-	HPEN ppen = (HPEN)SelectObject (hDCmem, penOrbitFuture[which]);
+	oapi::Pen *ppen = skp->SetPen(penOrbitFuture[which]);
+	
 	static VPoint p[NVTX_CIRCLE];
 	CalcOrbitProj (el, cbody, p);
-	DrawPolyline (OUTLINE_ORBITPLANE, p, NVTX_CIRCLE);
-	SelectObject (hDCmem, ppen);
+	DrawPolyline (skp, OUTLINE_ORBITPLANE, p, NVTX_CIRCLE);
+	if (ppen) skp->SetPen(ppen);
 }
 
 // =======================================================================
 
-void VectorMap::DrawGroundtrack (Groundtrack &gt, int which)
+void VectorMap::DrawGroundtrack (oapi::Sketchpad *skp, Groundtrack &gt, int which)
 {
-	DrawGroundtrack_past (gt, which);
-	DrawGroundtrack_future (gt, which);
+	DrawGroundtrack_past (skp, gt, which);
+	DrawGroundtrack_future (skp, gt, which);
 }
 
-void VectorMap::DrawGroundtrack_past (Groundtrack &gt, int which)
+void VectorMap::DrawGroundtrack_past (oapi::Sketchpad *skp, Groundtrack &gt, int which)
 {
-	HPEN ppen = (HPEN)SelectObject (hDCmem, penOrbitPast[which]);
+	oapi::Pen *ppen = skp->SetPen(penOrbitPast[which]);
 #ifdef UNDEF
 	if (gt.vfirst <= gt.vcurr) {
 		DrawGroundtrackLine (OUTLINE_GROUNDTRACK, gt.vtx+gt.vfirst, gt.vcurr-gt.vfirst+1);
@@ -1233,13 +1164,13 @@ void VectorMap::DrawGroundtrack_past (Groundtrack &gt, int which)
 		LineTo (hDCmem, mapx(gt.vtx[0].lng), mapy(gt.vtx[0].lat));
 	}
 #endif
-	DrawGroundtrackLine (OUTLINE_GROUNDTRACK, gt.vtx, gt.nvtx, gt.vfirst, gt.vcurr);
-	SelectObject (hDCmem, ppen);
+	DrawGroundtrackLine (skp, OUTLINE_GROUNDTRACK, gt.vtx, gt.nvtx, gt.vfirst, gt.vcurr);
+	if (ppen) skp->SetPen(ppen);
 }
 
-void VectorMap::DrawGroundtrack_future (Groundtrack &gt, int which)
+void VectorMap::DrawGroundtrack_future (oapi::Sketchpad *skp, Groundtrack &gt, int which)
 {
-	HPEN ppen = (HPEN)SelectObject (hDCmem, penOrbitFuture[which]);
+	oapi::Pen *ppen = skp->SetPen(penOrbitFuture[which]);
 #ifdef UNDEF
 	if (gt.vcurr <= gt.vlast) {
 		DrawGroundtrackLine (OUTLINE_GROUNDTRACK, gt.vtx+gt.vcurr, gt.vlast-gt.vcurr+1);
@@ -1250,19 +1181,23 @@ void VectorMap::DrawGroundtrack_future (Groundtrack &gt, int which)
 		LineTo (hDCmem, mapx(gt.vtx[0].lng), mapy(gt.vtx[0].lat));
 	}
 #endif
-	DrawGroundtrackLine (OUTLINE_GROUNDTRACK, gt.vtx, gt.nvtx, gt.vcurr, gt.vlast);
-	SelectObject (hDCmem, ppen);
+	DrawGroundtrackLine (skp, OUTLINE_GROUNDTRACK, gt.vtx, gt.nvtx, gt.vcurr, gt.vlast);
+	if (ppen) skp->SetPen(ppen);
 }
 
 // =======================================================================
 
-void VectorMap::DrawHorizon (double lng, double lat, double rad, bool focus)
+void VectorMap::DrawHorizon (oapi::Sketchpad *skp, double lng, double lat, double rad, bool focus)
 {
-	HPEN ppen = (HPEN)SelectObject (hDCmem, focus ? penFocusHorizon:penTargetHorizon);
+	// If the vessel is below ground, we need to bail out to prevent NaN issues further down the line
+	if(rad < 1.0) {
+		return;
+	}
+	oapi::Pen *ppen = skp->SetPen(focus ? penFocusHorizon:penTargetHorizon);
 	double dst = 1.0/rad;
 	VPoint *vp = SmallCircle (lng, lat, dst);
-	DrawPolyline (OUTLINE_HORIZON, vp, NVTX_CIRCLE);
-	SelectObject (hDCmem, ppen);
+	DrawPolyline (skp, OUTLINE_HORIZON, vp, NVTX_CIRCLE);
+	if (ppen) skp->SetPen(ppen);
 }
 
 // =======================================================================
@@ -1345,77 +1280,6 @@ VPoint *VectorMap::SmallCircle (double lng, double lat, double dst)
 	}
 	return vp;
 }
-
-
-// =======================================================================
-// Thread interface
-// =======================================================================
-#ifdef ASYNC_DRAWMAP
-// =======================================================================
-
-void VectorMap::WaitThread (bool abortOp)
-{
-	if (!ThreadBusy()) return;
-	if (abortOp) {
-		WaitForSingleObject (hCommMutex, INFINITE);
-		threaddata.taskid = TASKID_ABORT;
-		ReleaseMutex (hCommMutex);
-	}
-	while (ThreadBusy()) {
-		Sleep(10);
-	}
-}
-
-// =======================================================================
-// Sends a request for a redraw to the draw thread and returns immediately
-
-bool VectorMap::AsyncDrawMap ()
-{
-	if (ThreadBusy()) return false; // redraw is already in progress
-	DWORD res = WaitForSingleObject (hCommMutex, 10);
-	if (res == WAIT_TIMEOUT) return false; // could not get mutex in time
-	threaddata.taskid = TASKID_DRAW;
-	ReleaseMutex (hCommMutex);
-	SetEvent (hActivateThread);
-	return true;
-}
-
-// =======================================================================
-
-void VectorMap::thEngine ()
-{
-	const DWORD idle = 100;
-	DWORD flag;
-	bool keep_going = true;
-	while (keep_going) {
-		WaitForSingleObject (hActivateThread, INFINITE); // wait for task
-		WaitForSingleObject (hCommMutex, INFINITE); // secure comm data
-		flag = threaddata.taskid;
-		ReleaseMutex (hCommMutex);
-		switch (flag) {
-		case TASKID_TERMINATE:
-			keep_going = false;
-			break;
-		case TASKID_DRAW:
-			DrawMap_engine ();
-			break;
-		}
-		WaitForSingleObject (hCommMutex, INFINITE);
-		threaddata.taskid = 0; // signal task complete
-		ReleaseMutex (hCommMutex);
-	}
-}
-
-// =======================================================================
-
-DWORD WINAPI VectorMap::Redraw_ThreadProc (void *data)
-{
-	VectorMap *map = (VectorMap*)data;
-	map->thEngine();
-	return 0;
-}
-#endif // ASYNC_DRAWMAP
-
 
 // =======================================================================
 // =======================================================================

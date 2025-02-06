@@ -98,7 +98,7 @@ public:
 	}
 	void Display() {
 		ImGui::SetNextWindowSize(ImVec2(800,600));
-		bool visible = ImGui::Begin("Lua Console", &active);
+		bool visible = ImGui::Begin(ICON_FA_TERMINAL " Lua Console", &active);
 		if(ImGui::MenuButton(ICON_FA_TRASH, "Clear console")) {
 			lines.clear();
 		}

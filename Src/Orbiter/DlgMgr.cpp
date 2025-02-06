@@ -437,7 +437,7 @@ static void ImGuiSetStyle(bool bStyleDark_,  float alpha_)
 {
     // Setup Dear ImGui style
     ImGui::StyleColorsClassic();
-	//ImGui::StyleColorsLight();
+	ImGui::StyleColorsLight();
     ImGuiStyle& style = ImGui::GetStyle();
         
     style.Alpha = 1.0f;
@@ -448,6 +448,7 @@ static void ImGuiSetStyle(bool bStyleDark_,  float alpha_)
     style.ScrollbarRounding = 3.0f;
     style.GrabRounding = 3.0f;
     style.TabRounding = 3.0f;
+    style.WindowMenuButtonPosition = ImGuiDir_Right;
 	return;
     // light style from Pacôme Danhiez (user itamago) https://github.com/ocornut/imgui/pull/511#issuecomment-175719267
     style.Colors[ImGuiCol_Text]                  = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
@@ -522,6 +523,8 @@ static void ImGuiSetStyle(bool bStyleDark_,  float alpha_)
 
 void DialogManager::InitImGui()
 {
+	if(!gc) return;
+
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
@@ -555,6 +558,8 @@ void DialogManager::InitImGui()
 
 void DialogManager::ShutdownImGui()
 {
+	if(!gc) return;
+
 	gc->clbkImGuiShutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
@@ -562,6 +567,8 @@ void DialogManager::ShutdownImGui()
 
 void DialogManager::ImGuiNewFrame()
 {
+	if(!gc) return;
+
 	gc->clbkImGuiNewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
@@ -704,6 +711,7 @@ struct Notification
 	void ReTrigger() {
 		occurrences++;
 		creation = std::chrono::steady_clock::now() - FADE_TIME;
+		duration = 86400.0s;
 	}
 	void UpdateState(time_point_t now, float h, duration_t dt) {
 		duration_t elapsed = now - creation;
@@ -972,7 +980,7 @@ namespace ImGui {
 		ImGui::GetCurrentWindow()->Size.x                  += frameHeight;
 		ImGui::Dummy(ImVec2(0.0f, 0.0f));
 		ImGui::EndGroup();
-		ImGui::Dummy(ImVec2(0.0f, 0.0f));
+		//ImGui::Dummy(ImVec2(0.0f, 0.0f));
 	}
 
 	DLLEXPORT bool MenuButton(const char *label, const char *tooltip)
@@ -983,7 +991,7 @@ namespace ImGui {
 		const ImGuiStyle& style = g.Style;
         ImGuiLastItemData last_item_backup = g.LastItemData;
 		ImGui::PushClipRect( titleBarRect.Min, titleBarRect.Max, false );
-		float width = strlen(label) * g.FontSize;
+		float width = (strlen(label)+1) * g.FontSize;
 		float offset = titleBarRect.Max.x - width - titleBarRect.Min.x - g.Style.FramePadding.x;
 		ImGui::SetCursorPos( ImVec2( offset, 0.0f ) );
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0,0,0,0));

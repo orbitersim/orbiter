@@ -5,6 +5,7 @@
 #include "Psys.h"
 #include "imgui.h"
 #include "imgui_extras.h"
+#include "IconsFontAwesome6.h"
 
 extern PlanetarySystem *g_psys;
 extern Camera *g_camera;
@@ -12,7 +13,7 @@ extern TimeData td;
 extern Orbiter *g_pOrbiter;
 extern Vessel *g_focusobj;
 
-DlgCamera::DlgCamera() : ImGuiDialog("Orbiter: Camera", {512,359}) {
+DlgCamera::DlgCamera() : ImGuiDialog(ICON_FA_VIDEO " Orbiter: Camera", {512,359}) {
     m_SelectedPreset = -1;
 }
 

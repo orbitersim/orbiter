@@ -9,11 +9,12 @@
 #include "Orbiter.h"
 #include "OrbiterAPI.h"
 #include "imgui.h"
+#include "IconsFontAwesome6.h"
 
 extern Vessel *g_focusobj;
 extern Orbiter *g_pOrbiter;
 
-DlgRecorder::DlgRecorder() : ImGuiDialog("Flight recorder/player", {329,354}) {
+DlgRecorder::DlgRecorder() : ImGuiDialog(ICON_FA_FILM " Flight recorder/player", {329,354}) {
     strcpy(m_ScenarioFile, "test_record");
 }
 
