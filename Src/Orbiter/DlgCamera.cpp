@@ -28,21 +28,13 @@ void DlgCamera::OnDraw() {
     if(followterrain[0]=='\0')
       	sprintf (followterrain, "%0.0lf", g_camera->GroundObserver_TerrainLimit());
 
-
-    const char *tabs[] = {
-        "Control", "Target", "Track", "Ground", "FoV", "Preset"
-    };
-
-    void (DlgCamera::* func[])() = {
-        &DlgCamera::DrawControl, &DlgCamera::DrawTarget, &DlgCamera::DrawTrack, &DlgCamera::DrawGround, &DlgCamera::DrawFoV, &DlgCamera::DrawPreset
-    };
-
     ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
     if (ImGui::BeginTabBar("CameraTabBar", tab_bar_flags))
     {
         for(size_t i = 0; i < sizeof(tabs)/sizeof(tabs[0]); i++) {
-            if(ImGui::BeginTabItem(tabs[i])) {
-                (this->*func[i])();
+            if(ImGui::BeginTabItem(tabs[i].name)) {
+				SetHelp("html/orbiter.chm", tabs[i].helptopic);
+                (this->*tabs[i].func)();
                 ImGui::EndTabItem();
             }
         }

@@ -24,12 +24,15 @@ DlgMap::DlgMap() : ImGuiDialog(ICON_FA_GLOBE " Orbiter: Map", {640, 400}) {
 	selectionfilter = DISP_MOON | DISP_VESSEL | DISP_BASE;
 
 	prm = &g_pOrbiter->Cfg()->CfgMapPrm;
+
+	SetHelp("html/orbiter.chm", "/map.htm");
 }
 void DlgMap::Display() {
     ImGui::SetNextWindowSize(ImVec2(defaultSize.width, defaultSize.height), ImGuiCond_FirstUseEver);
 	
 	bool visible = ImGui::Begin(name.c_str(), &active);
-	if(ImGui::MenuButton(ICON_FA_ARROW_ROTATE_LEFT, "Reset map")) {
+	HandleHelpButton();
+	if(ImGui::MenuButton(ICON_FA_ARROW_ROTATE_LEFT, "Reset map", ImGui::GetFontSize()*1.5f)) {
 		Reset();
 	}
 	

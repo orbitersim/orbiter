@@ -687,6 +687,14 @@ public:
 	bool IsActive() { return active; }
 	void Activate() { active = true; }
 	virtual void Display();
+	void SetHelp(const char *file, const char *topic = NULL) {
+		helpfile = file;
+		if(topic)
+			helptopic = topic;
+		else
+			helptopic.clear();
+	}
+	bool HandleHelpButton();
 protected:
 	/**
 	 * \brief Callback that is executed when the dialog is closed.
@@ -703,6 +711,8 @@ protected:
 	bool active = false;
 	const std::string name;
 	ImGuiDefaultSize defaultSize;
+	std::string helpfile;
+	std::string helptopic;
 };
 
 /**

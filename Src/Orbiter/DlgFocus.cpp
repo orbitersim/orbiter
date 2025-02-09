@@ -20,6 +20,7 @@ extern Orbiter *g_pOrbiter;
 extern Vessel *g_focusobj, *g_pfocusobj;
 
 DlgFocus::DlgFocus() : ImGuiDialog(ICON_FA_ROCKET " Orbiter: Select spacecraft", {300, 320}) {
+	SetHelp("html/orbiter.chm", "/selvessel.htm");
 }
 
 void DlgFocus::OnDraw() {

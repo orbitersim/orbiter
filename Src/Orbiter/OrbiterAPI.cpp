@@ -2224,7 +2224,7 @@ DLLEXPORT INT_PTR oapiDefDialogProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 DLLEXPORT bool oapiOpenHelp (HELPCONTEXT *hcontext)
 {
-	HWND hDlg = g_pOrbiter->OpenHelp (hcontext);
+	g_pOrbiter->OpenHelp (hcontext);
 	return true;
 }
 

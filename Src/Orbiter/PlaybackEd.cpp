@@ -18,6 +18,8 @@ static bool CompareEvents (const PlaybackEvent *first, const PlaybackEvent *seco
 }
 
 DlgPlaybackEditor::DlgPlaybackEditor() : ImGuiDialog("Playback Editor", {900,600}) {
+	SetHelp("html/orbiter.chm", "/playbackedit.htm");
+
 	m_sysfname = nullptr;
 	m_SelectedEvent = nullptr;
 }

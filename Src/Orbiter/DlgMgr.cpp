@@ -30,7 +30,7 @@ static int x_fixedframe = GetSystemMetrics (SM_CXFIXEDFRAME);
 static int y_fixedframe = GetSystemMetrics (SM_CYFIXEDFRAME);
 
 static bool doflip = true;
-void RenderNotifications();
+static void RenderNotifications();
 
 // dialog thread messages
 #define TM_OPENDIALOG WM_USER
@@ -577,10 +577,10 @@ void DialogManager::ImGuiNewFrame()
 	
 	// Render notifications
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 5.f); // Round borders
-	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(43.f / 255.f, 43.f / 255.f, 43.f / 255.f, 240.f / 255.f)); // Background color
+//	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(43.f / 255.f, 43.f / 255.f, 43.f / 255.f, 240.f / 255.f)); // Background color
 	RenderNotifications(); // <-- Here we render all notifications
 	ImGui::PopStyleVar(1); // Don't forget to Pop()
-	ImGui::PopStyleColor(1);
+//	ImGui::PopStyleColor(1);
 
 	// We can't use a range-based loop here because Show() may unregister the current dialog
 	for (auto it = DlgImGuiList.begin(); it != DlgImGuiList.end();)
@@ -607,10 +607,27 @@ ImGuiDialog::~ImGuiDialog(){
 	oapiCloseDialog(this);
 }
 
+bool ImGuiDialog::HandleHelpButton() {
+	if(!helpfile.empty()) {
+		HELPCONTEXT hc;
+		hc.helpfile = const_cast<char *>(helpfile.c_str());
+		hc.topic = helptopic.empty() ? NULL : const_cast<char *>(helptopic.c_str());
+		hc.toc = (char*)"html/orbiter.chm::/orbiter.hhc";
+		hc.index = (char*)"html/orbiter.chm::/orbiter.hhk";
+
+		if(ImGui::MenuButton(ICON_FA_CIRCLE_QUESTION, "Help")) {
+			g_pOrbiter->OpenHelp(&hc);
+		}
+		return true;
+	}
+	return false;
+}
+
 void ImGuiDialog::Display() {
     ImGui::SetNextWindowSize(ImVec2(defaultSize.width, defaultSize.height), ImGuiCond_FirstUseEver);
 
 	if(ImGui::Begin(name.c_str(), &active)) {
+		HandleHelpButton();
 		OnDraw();
 	}
 	ImGui::End();
@@ -983,7 +1000,7 @@ namespace ImGui {
 		//ImGui::Dummy(ImVec2(0.0f, 0.0f));
 	}
 
-	DLLEXPORT bool MenuButton(const char *label, const char *tooltip)
+	DLLEXPORT bool MenuButton(const char *label, const char *tooltip, float xoffset)
 	{
 		ImGuiContext& g = *GImGui;
 		const ImGuiWindow* window = ImGui::GetCurrentWindow();
@@ -993,6 +1010,7 @@ namespace ImGui {
 		ImGui::PushClipRect( titleBarRect.Min, titleBarRect.Max, false );
 		float width = (strlen(label)+1) * g.FontSize;
 		float offset = titleBarRect.Max.x - width - titleBarRect.Min.x - g.Style.FramePadding.x;
+		offset -= xoffset;
 		ImGui::SetCursorPos( ImVec2( offset, 0.0f ) );
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0,0,0,0));
 		bool ret = ImGui::Button( label );
