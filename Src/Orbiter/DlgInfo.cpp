@@ -15,6 +15,7 @@
 extern PlanetarySystem *g_psys;
 
 DlgInfo::DlgInfo() : ImGuiDialog(ICON_FA_CIRCLE_INFO " Orbiter: Object info", {753,423}) {
+	SetHelp("html/orbiter.chm", "/objinfo.htm");
 }
 
 void DlgInfo::AddCbodyNode(const CelestialBody *cbody) {

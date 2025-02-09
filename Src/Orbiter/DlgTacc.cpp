@@ -14,6 +14,7 @@ extern TimeData td;
 extern Orbiter *g_pOrbiter;
 
 DlgTacc::DlgTacc() : ImGuiDialog(ICON_FA_CLOCK " Orbiter: Time acceleration",{357,135}) {
+	SetHelp("html/orbiter.chm", "/timeacc.htm");
 }
 
 void DlgTacc::OnDraw() {

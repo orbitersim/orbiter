@@ -15,6 +15,7 @@ extern Vessel *g_focusobj;
 extern Orbiter *g_pOrbiter;
 
 DlgRecorder::DlgRecorder() : ImGuiDialog(ICON_FA_FILM " Flight recorder/player", {329,354}) {
+	SetHelp("html/orbiter.chm", "/recorder.htm");
     strcpy(m_ScenarioFile, "test_record");
 }
 

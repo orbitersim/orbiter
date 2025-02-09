@@ -52,7 +52,12 @@ void DlgExtMFD::Display() {
 
 	bool visible = ImGui::Begin(cbuf, &active);
 	bool stick = m_mfd->GetStickToVessel();
-	if(ImGui::MenuButton(stick ? ICON_FA_THUMBTACK : ICON_FA_THUMBTACK_SLASH, stick ? "Unpin this MFD from the vessel":"Pin this MFD to the current vessel"))
+
+	if(ImGui::MenuButton(ICON_FA_CIRCLE_QUESTION, "Help")) {
+		m_mfd->OpenModeHelp();
+	}
+
+	if(ImGui::MenuButton(stick ? ICON_FA_THUMBTACK : ICON_FA_THUMBTACK_SLASH, stick ? "Unpin this MFD from the vessel":"Pin this MFD to the current vessel", ImGui::GetFontSize()*1.7f))
 	{
 		m_mfd->ToggleStickToVessel();
 	}

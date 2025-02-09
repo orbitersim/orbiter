@@ -13,6 +13,7 @@
 extern Orbiter *g_pOrbiter;
 
 DlgFunction::DlgFunction() : ImGuiDialog(ICON_FA_PUZZLE_PIECE " Orbiter: Custom functions", {340, 290}) {
+	SetHelp("html/orbiter.chm", "/customcmd.htm");
 }
 
 void DlgFunction::OnDraw() {

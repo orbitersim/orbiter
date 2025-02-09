@@ -16,6 +16,6 @@ namespace ImGui {
 	OAPIFUNC void HelpMarker(const char* desc, bool sameline = true);
 	OAPIFUNC void BeginGroupPanel(const char* name, const ImVec2& size = ImVec2(-1.0f, -1.0f));
 	OAPIFUNC void EndGroupPanel();
-	OAPIFUNC bool MenuButton(const char *label, const char *tooltip = NULL);
+	OAPIFUNC bool MenuButton(const char *label, const char *tooltip = NULL, float xoffset = 0.0f);
 	OAPIFUNC void PushFont(ImGuiFont);
 };
