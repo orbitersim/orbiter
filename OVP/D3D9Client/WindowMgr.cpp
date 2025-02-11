@@ -60,7 +60,7 @@ inline DWORD _Colour(const FVECTOR4 *c)
 	if (r > 0xFF) r = 0xFF;
 	if (g > 0xFF) g = 0xFF;
 	if (b > 0xFF) b = 0xFF;
-	
+
 	return (b << 16) | (g << 8) | r;
 }
 // ===============================================================================================
@@ -192,9 +192,9 @@ Node::Node(SideBar *pSB, const char *label, HWND hDlg, DWORD color, Node *pP) :
 	HDC hSrc = CreateCompatibleDC(hDC);
 	HDC hTgt = CreateCompatibleDC(hDC);
 
-	
+
 	GetObject(hTit, sizeof(BITMAP), &bm);
-	
+
 	hBmp = CreateCompatibleBitmap(hDC, bm.bmWidth, bm.bmHeight);
 
 	pSB->ReleaseDC(hDC);
@@ -205,11 +205,11 @@ Node::Node(SideBar *pSB, const char *label, HWND hDlg, DWORD color, Node *pP) :
 	// Recolorize the title bar
 
 	for (int y = 0; y < bm.bmHeight; y++) {
-		for (int x = 0; x < bm.bmWidth; x++) {		
+		for (int x = 0; x < bm.bmWidth; x++) {
 			COLORREF cr = GetPixel(hSrc, x, y);
 			FVECTOR4 c = _Colour(cr);
 			FVECTOR4 out = (clr * c.b) + (white * c.g);
-			SetPixel(hTgt, x, y, _Colour(&out));	
+			SetPixel(hTgt, x, y, _Colour(&out));
 		}
 	}
 
@@ -307,8 +307,8 @@ int Node::Paint(HDC hDC, int y)
 	int wof = 0, hof = 0;
 	DWORD ck = 0;
 
-	if (pSB->GetStyle() == gcGUI::DS_FLOAT) x += 1;	
-		
+	if (pSB->GetStyle() == gcGUI::DS_FLOAT) x += 1;
+
 	if (hBmp) {
 		if (pParent) {
 			SelectObject(hDC, pMgr->GetSubTitleFont());
@@ -324,11 +324,11 @@ int Node::Paint(HDC hDC, int y)
 		}
 	}
 
-	
+
 	// Draw Title Bars -----------------------------
 	//
 	if (hBmp) {
-		
+
 		HDC hSr = CreateCompatibleDC(hDC);
 		int z = width - bm.bmHeight - 3;
 
@@ -337,20 +337,20 @@ int Node::Paint(HDC hDC, int y)
 
 		SelectObject(hSr, hBmp);
 		BitBlt(hDC, x, y, width - 10,  bm.bmHeight, hSr, 0, 0, SRCCOPY);
-		BitBlt(hDC, width - 10 - x, y, 10, bm.bmHeight, hSr, bm.bmWidth - 10, 0, SRCCOPY);	
+		BitBlt(hDC, width - 10 - x, y, 10, bm.bmHeight, hSr, bm.bmWidth - 10, 0, SRCCOPY);
 		TextOut(hDC, wof, y + hof, Label, lstrlen(Label));
-		
+
 		DeleteDC(hSr);
 
 		if (bOpen) PaintIcon(hDC, x, y, 0);
 		else PaintIcon(hDC, x, y, 1);
 		if (bClose) PaintIcon(hDC, z, y, 2);
-			
+
 		y += bm.bmHeight;
 	}
 
 	pos = { x, y };
-	
+
 	if (bOpen && hDlg) {
 		RECT r;
 		GetWindowRect(hDlg, &r);
@@ -366,9 +366,9 @@ int Node::Paint(HDC hDC, int y)
 void Node::PaintIcon(HDC hDC, int x, int y, int id)
 {
 	WindowManager *pMgr = pSB->GetWM();
-	DWORD yell = RGB(255, 255, 0); 
-	DWORD mang = RGB(255, 0, 255); 
-	
+	DWORD yell = RGB(255, 255, 0);
+	DWORD mang = RGB(255, 0, 255);
+
 	HBITMAP hIco = pMgr->GetBitmap(gcGUI::BM_ICONS);
 
 	if (hIco) {
@@ -402,11 +402,11 @@ int Node::Spacer(HDC hDC, int y)
 
 	int width = pSB->GetWidth();
 	int h = CellSize();
-	
+
 	SelectObject(hDC, (HBRUSH)GetStockObject(GRAY_BRUSH));
 	SelectObject(hDC, (HPEN)GetStockObject(NULL_PEN));
 	Rectangle(hDC, 0, y, width + 1, y + h + 1);
-	
+
 	return y + h;
 }
 
@@ -541,7 +541,7 @@ WindowManager::WindowManager(HWND hAppMainWindow, HINSTANCE _hInst, bool bWindow
 	DWORD flags = 0;
 	if (Config->gcGUIMode == 1) flags |= CS_NOCLOSE;
 
-	WNDCLASS wc; 
+	WNDCLASS wc;
 	memset(&wc, 0, sizeof(WNDCLASS));
 	wc.style = flags | CS_OWNDC | CS_SAVEBITS;
 	wc.lpfnWndProc = SideBarWndProc;
@@ -572,7 +572,7 @@ WindowManager::WindowManager(HWND hAppMainWindow, HINSTANCE _hInst, bool bWindow
 
 	hAppFont = CreateFont(cfg.txt_main_size, 0, 0, 0, cfg.txt_main_weight, false, false, 0, 0, 0, 2, CLEARTYPE_QUALITY, 49, cfg.fnt_main);
 	hSubFont = CreateFont(cfg.txt_sub_size, 0, 0, 0, cfg.txt_sub_weight, false, false, 0, 0, 0, 2, CLEARTYPE_QUALITY, 49, cfg.fnt_sub);
-	
+
 	if (!hAppFont) LogErr("Font Not Found [%s]", cfg.fnt_main);
 	if (!hSubFont) LogErr("Font Not Found [%s]", cfg.fnt_sub);
 
@@ -611,7 +611,7 @@ WindowManager::~WindowManager()
 	oapiUnregisterCustomCmd(Cmd);
 
 	for(SideBar* sb : sbList) delete sb;
-	
+
 	UnregisterClass("SideBarWnd", hInst);
 	UnregisterClass("Floater", hInst);
 
@@ -675,7 +675,7 @@ HNODE WindowManager::RegisterApplication(gcGUIApp *pPtr, const char *label, HWND
 	if (Config->gcGUIMode >= 2) docked = gcGUI::DS_FLOAT;
 
 	if (docked == gcGUI::DS_FLOAT) pSB = NewSideBar(NULL);
-	
+
 	if (Config->gcGUIMode == 3) {
 		HWND hWnd = pSB->GetHWND();
 		SetWindowText(hWnd, label);
@@ -946,11 +946,11 @@ SideBar* WindowManager::StartDrag(Node *pAN, int x, int y)
 
 		for (Node * an : pSBOld->wList) if (an->pParent == pAN) tmp.push_back(an);
 
-		for (Node * an : tmp) 
+		for (Node * an : tmp)
 		{
-			pSBOld->RemoveWindow(an); // Cant remove directly from a list being browsed 
+			pSBOld->RemoveWindow(an); // Cant remove directly from a list being browsed
 			pSBNew->AddWindow(an);
-		}	
+		}
 	}
 
 	sbDrag = pSBNew;
@@ -959,7 +959,7 @@ SideBar* WindowManager::StartDrag(Node *pAN, int x, int y)
 	y -= ptOffset.y;
 
 	pSBNew->ResetWindow(x, y);
-	
+
 	InvalidateRect(pSBNew->GetHWND(), NULL, true);
 	InvalidateRect(pSBOld->GetHWND(), NULL, true);
 
@@ -989,7 +989,7 @@ void WindowManager::Drag(int x, int y)
 		x -= ptOffset.x;
 		y -= ptOffset.y;
 
-		RECT rect; 
+		RECT rect;
 		SystemParametersInfo(SPI_GETWORKAREA, 0, &rect, 0);
 		int t = sbDrag->GetTopNode()->bm.bmHeight;
 
@@ -1043,7 +1043,7 @@ SideBar *WindowManager::FindDestination()
 			if (a > z) { z = a;	sbDest = sb; }
 		}
 	}
-	
+
 	if (sbDest != pOld && pOld != NULL) {
 		qInsert.pTgt = NULL;
 		qInsert.List.clear();
@@ -1059,33 +1059,16 @@ SideBar *WindowManager::FindDestination()
 // ===============================================================================================
 // Orbiter Application Main Window Proc
 //
-bool WindowManager::MainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+bool WindowManager::MainWindowProc(const SDL_Event &event)
 {
 	static int xpos, ypos;
-	switch (uMsg) {
-
-	case WM_MOUSELEAVE:
-	case WM_MBUTTONDOWN:
-	case WM_LBUTTONDOWN:
-	case WM_LBUTTONUP:
-		return false;
-
-	case WM_KEYDOWN:
-	{
-		return false;
-	}
-
-	case WM_MOUSEWHEEL:
-		return false;
-
-	case WM_MOUSEMOVE:
-		xpos = GET_X_LPARAM(lParam);
-		ypos = GET_Y_LPARAM(lParam);
-		MouseMoved(xpos, ypos);
-		break;
-	}
-
-	return false;
+    if (event.type == SDL_EVENT_MOUSE_MOTION) {
+        xpos = event.motion.x;
+        ypos = event.motion.y;
+        MouseMoved(xpos, ypos);
+        return true;
+    }
+    return false;
 }
 
 
@@ -1102,7 +1085,7 @@ bool WindowManager::MainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 SideBar::SideBar(class WindowManager *_pMgr, DWORD _state)
 {
 	pMgr = _pMgr;
-	
+
 	HWND hMainWnd = pMgr->GetMainWindow();
 	hInst = pMgr->GetInstance();
 	width = pMgr->GetWidth();
@@ -1130,7 +1113,7 @@ SideBar::SideBar(class WindowManager *_pMgr, DWORD _state)
 	DWORD exstyle = 0;
 	DWORD style = 0;
 
-	if (Config->gcGUIMode == 1) {	
+	if (Config->gcGUIMode == 1) {
 		if (state == gcGUI::DS_RIGHT) xref = r.right;
 		if (state == gcGUI::DS_LEFT) xref = -width;
 		if (state == gcGUI::DS_FLOAT) xref = width, height = width;
@@ -1174,7 +1157,7 @@ SideBar::SideBar(class WindowManager *_pMgr, DWORD _state)
 // ===============================================================================================
 //
 SideBar::~SideBar()
-{	
+{
 	for (Node *v : wList)
 	{
 		if (v->hDlg) DestroyWindow(v->hDlg);
@@ -1371,8 +1354,8 @@ void SideBar::GetVisualList(vector<Node*> &tmp)
 {
 	if (Config->gcGUIMode == 3) {
 		for (Node* ap : wList) if (ap->hDlg) tmp.push_back(ap);
-	} 
-	else 
+	}
+	else
 	{
 		for (Node* ap : wList) {
 			Node* pPar = ap->pParent;
@@ -1477,7 +1460,7 @@ bool SideBar::TryInsert(SideBar *sbIn)
 	tInsert *pIns = pMgr->InsertList();
 
 	if (pIns->pTgt != this) return false;
-	
+
 	map<Node*, Node*> &wIns = pIns->List;
 	map<Node*, Node*> wPrev = wIns;
 
@@ -1486,7 +1469,7 @@ bool SideBar::TryInsert(SideBar *sbIn)
 	int yp = sbIn->GetRect().top - GetRect().top;
 	int h = sbIn->ComputeLength();
 	int y = rollpos;
-	
+
 	Node *pNode = sbIn->GetTopNode();
 	if (!pNode) return false;
 
@@ -1509,7 +1492,7 @@ bool SideBar::Apply()
 	SideBar *pDG = pMgr->GetDraged();
 	tInsert *pIns = pMgr->InsertList();
 
-	if ((pIns->pTgt == this) && (pIns->List.size()>0)) 
+	if ((pIns->pTgt == this) && (pIns->List.size()>0))
 	{
 		for (auto &var : pIns->List)
 		{
@@ -1541,189 +1524,189 @@ LRESULT SideBar::SideBarWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 	static int xof, yof;
 	static bool bUpdate = false;
 
-	HWND hMain = pMgr->GetMainWindow();
-
-	switch(uMsg) {
-
-	case WM_KEYDOWN:
-	{
-		pMgr->MainWindowProc(hWnd, uMsg, wParam, lParam);
-		break;
-	}
-
-
-	case WM_MOUSEWHEEL:
-	{
-		if (GetStyle() == gcGUI::DS_FLOAT) break;
-
-		int old = rollpos;
-		short d = GET_WHEEL_DELTA_WPARAM(wParam);
-		if (d>0) rollpos += pMgr->cfg.scroll;
-		else rollpos -= pMgr->cfg.scroll;
-		int q = height - wndlen;
-		if (q > 0) q = 0;
-		if (rollpos > 0) rollpos = 0;
-		if (rollpos < q) rollpos = q;
-		if (old != rollpos) Invalidate();
-		break;
-	}
-	
-	case WM_LBUTTONDOWN:
-	{
-		xpos = GET_X_LPARAM(lParam);
-		ypos = GET_Y_LPARAM(lParam);
-
-		for (Node* nd : wList)
-		{
-			Node *pPar = nd->pParent;
-
-			if (pPar) {
-				if (pPar->GetSideBar() == this) {
-					if (pPar->bOpen == false) continue;
-				}
-			}
-
-			if (PointInside(xpos, ypos, &(nd->trect))) {
-
-				if (nd->bClose && PointInside(xpos, ypos, &(nd->crect))) {
-					dnClose = nd;
-				}
-				else {			
-					xof = xpos - nd->trect.left;
-					yof = ypos - nd->trect.top;				
-					dnNode = nd;
-				}
-				TRACKMOUSEEVENT te; te.cbSize = sizeof(TRACKMOUSEEVENT); te.dwFlags = TME_LEAVE; te.hwndTrack = hBar;
-				TrackMouseEvent(&te);
-				break; // break for
-			}
-		}
-		break;
-	}
-
-	case WM_LBUTTONUP:
-	{
-		int xp = GET_X_LPARAM(lParam);
-		int yp = GET_Y_LPARAM(lParam);
-
-		SideBar *pDG = pMgr->GetDraged();
-
-		if (pDG) {
-			SideBar *pTgt = pMgr->FindDestination();
-			if (pTgt) pTgt->Apply();
-			pMgr->EndDrag();
-			ReleaseCapture();
-			dnNode = NULL;
-			dnClose = NULL;
-			break;
-		}
-	
-		if (dnNode) {
-			if (dnNode->GetSideBar() == this) {
-				if (PointInside(xp, yp, &(dnNode->trect))) {
-					dnNode->bOpen = !dnNode->bOpen;
-					if (IsFloater()) RescaleWindow();
-					Invalidate();
-					DWORD msg = (dnNode->bOpen ? gcGUI::MSG_OPEN_NODE : gcGUI::MSG_CLOSE_NODE);
-					dnNode->pApp->clbkMessage(msg, dnNode, 0);
-				}
-			}
-		}
-
-		if (dnClose) {
-			if (dnClose->GetSideBar() == this) {
-				if (PointInside(xp, yp, &(dnClose->crect))) {
-					if (dnClose->pApp->clbkMessage(gcGUI::MSG_CLOSE_APP, NULL, 0))
-					{
-						pMgr->CloseWindow(dnClose);
-					}
-				}
-			}
-		}
-		
-		dnNode = NULL;
-		dnClose = NULL;
-		break;
-	}
-
-
-	case WM_MOUSELEAVE:
-	{
-		dnNode = NULL;
-		dnClose = NULL;
-		break; 
-	}
-
-
-	case WM_MOUSEMOVE:
-	{
-		int dx = abs(GET_X_LPARAM(lParam) - xpos);
-		int dy = abs(GET_Y_LPARAM(lParam) - ypos);
-		int x = GET_X_LPARAM(lParam);
-		int y = GET_Y_LPARAM(lParam);
-
-		if (Config->gcGUIMode < 3) {
-
-			POINT scp = { x, y };
-			ClientToScreen(hWnd, &scp);
-				
-			// Begin Moving a Window
-			//
-			if (dnNode && IsFloater() && (GetTopNode() == dnNode) && (dx > 1 || dy > 1))
-			{
-				SetCapture(hBar);
-				pMgr->SetOffset(xof, yof);
-				pMgr->BeginMove(dnNode, scp.x, scp.y);
-				dnNode = NULL;
-				dnClose = NULL;
-				break;
-			}
-
-			// Detach a window from a dock
-			//
-			if (Config->gcGUIMode == 1) {
-				if (dnNode && dx > 25) {
-					SetCapture(hBar);
-					pMgr->SetOffset(xof, yof);
-					SideBar* pTgt = pMgr->StartDrag(dnNode, scp.x, scp.y);
-					dnNode = NULL;
-					dnClose = NULL;
-					break;
-				}
-			}
-
-			// Move a dragged window and try to insert content into a dock
-			//
-			if (pMgr->GetDraged()) {
-				pMgr->MouseMoved(scp.x, scp.y);
-				pMgr->Drag(scp.x, scp.y);
-				SideBar *pTgt = pMgr->FindDestination();
-				SideBar *pDG = pMgr->GetDraged();
-				if (pTgt) if (pTgt->IsOpen()) {
-					if (pTgt->TryInsert(pDG)) {
-						if (pTgt->GetStyle() == gcGUI::DS_FLOAT) pTgt->RescaleWindow();
-						pTgt->Invalidate();
-						pDG->Invalidate();
-					}
-				}
-				break;
-			}
-		}
-		break; 
-	}
-
-	case WM_PAINT:
-		PaintWindow();
-		break;
-		
-	case WM_ERASEBKGND:
-		return 1;
-
-	default:
-		break;
-	}
-
-
+	// HWND hMain = pMgr->GetMainWindow();
+	//
+	// switch(uMsg) {
+	//
+	// case WM_KEYDOWN:
+	// {
+	// 	pMgr->MainWindowProc(hWnd, uMsg, wParam, lParam);
+	// 	break;
+	// }
+	//
+	//
+	// case WM_MOUSEWHEEL:
+	// {
+	// 	if (GetStyle() == gcGUI::DS_FLOAT) break;
+	//
+	// 	int old = rollpos;
+	// 	short d = GET_WHEEL_DELTA_WPARAM(wParam);
+	// 	if (d>0) rollpos += pMgr->cfg.scroll;
+	// 	else rollpos -= pMgr->cfg.scroll;
+	// 	int q = height - wndlen;
+	// 	if (q > 0) q = 0;
+	// 	if (rollpos > 0) rollpos = 0;
+	// 	if (rollpos < q) rollpos = q;
+	// 	if (old != rollpos) Invalidate();
+	// 	break;
+	// }
+	//
+	// case WM_LBUTTONDOWN:
+	// {
+	// 	xpos = GET_X_LPARAM(lParam);
+	// 	ypos = GET_Y_LPARAM(lParam);
+	//
+	// 	for (Node* nd : wList)
+	// 	{
+	// 		Node *pPar = nd->pParent;
+	//
+	// 		if (pPar) {
+	// 			if (pPar->GetSideBar() == this) {
+	// 				if (pPar->bOpen == false) continue;
+	// 			}
+	// 		}
+	//
+	// 		if (PointInside(xpos, ypos, &(nd->trect))) {
+	//
+	// 			if (nd->bClose && PointInside(xpos, ypos, &(nd->crect))) {
+	// 				dnClose = nd;
+	// 			}
+	// 			else {
+	// 				xof = xpos - nd->trect.left;
+	// 				yof = ypos - nd->trect.top;
+	// 				dnNode = nd;
+	// 			}
+	// 			TRACKMOUSEEVENT te; te.cbSize = sizeof(TRACKMOUSEEVENT); te.dwFlags = TME_LEAVE; te.hwndTrack = hBar;
+	// 			TrackMouseEvent(&te);
+	// 			break; // break for
+	// 		}
+	// 	}
+	// 	break;
+	// }
+	//
+	// case WM_LBUTTONUP:
+	// {
+	// 	int xp = GET_X_LPARAM(lParam);
+	// 	int yp = GET_Y_LPARAM(lParam);
+	//
+	// 	SideBar *pDG = pMgr->GetDraged();
+	//
+	// 	if (pDG) {
+	// 		SideBar *pTgt = pMgr->FindDestination();
+	// 		if (pTgt) pTgt->Apply();
+	// 		pMgr->EndDrag();
+	// 		ReleaseCapture();
+	// 		dnNode = NULL;
+	// 		dnClose = NULL;
+	// 		break;
+	// 	}
+	//
+	// 	if (dnNode) {
+	// 		if (dnNode->GetSideBar() == this) {
+	// 			if (PointInside(xp, yp, &(dnNode->trect))) {
+	// 				dnNode->bOpen = !dnNode->bOpen;
+	// 				if (IsFloater()) RescaleWindow();
+	// 				Invalidate();
+	// 				DWORD msg = (dnNode->bOpen ? gcGUI::MSG_OPEN_NODE : gcGUI::MSG_CLOSE_NODE);
+	// 				dnNode->pApp->clbkMessage(msg, dnNode, 0);
+	// 			}
+	// 		}
+	// 	}
+	//
+	// 	if (dnClose) {
+	// 		if (dnClose->GetSideBar() == this) {
+	// 			if (PointInside(xp, yp, &(dnClose->crect))) {
+	// 				if (dnClose->pApp->clbkMessage(gcGUI::MSG_CLOSE_APP, NULL, 0))
+	// 				{
+	// 					pMgr->CloseWindow(dnClose);
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	//
+	// 	dnNode = NULL;
+	// 	dnClose = NULL;
+	// 	break;
+	// }
+	//
+	//
+	// case WM_MOUSELEAVE:
+	// {
+	// 	dnNode = NULL;
+	// 	dnClose = NULL;
+	// 	break;
+	// }
+	//
+	//
+	// case WM_MOUSEMOVE:
+	// {
+	// 	int dx = abs(GET_X_LPARAM(lParam) - xpos);
+	// 	int dy = abs(GET_Y_LPARAM(lParam) - ypos);
+	// 	int x = GET_X_LPARAM(lParam);
+	// 	int y = GET_Y_LPARAM(lParam);
+	//
+	// 	if (Config->gcGUIMode < 3) {
+	//
+	// 		POINT scp = { x, y };
+	// 		ClientToScreen(hWnd, &scp);
+	//
+	// 		// Begin Moving a Window
+	// 		//
+	// 		if (dnNode && IsFloater() && (GetTopNode() == dnNode) && (dx > 1 || dy > 1))
+	// 		{
+	// 			SetCapture(hBar);
+	// 			pMgr->SetOffset(xof, yof);
+	// 			pMgr->BeginMove(dnNode, scp.x, scp.y);
+	// 			dnNode = NULL;
+	// 			dnClose = NULL;
+	// 			break;
+	// 		}
+	//
+	// 		// Detach a window from a dock
+	// 		//
+	// 		if (Config->gcGUIMode == 1) {
+	// 			if (dnNode && dx > 25) {
+	// 				SetCapture(hBar);
+	// 				pMgr->SetOffset(xof, yof);
+	// 				SideBar* pTgt = pMgr->StartDrag(dnNode, scp.x, scp.y);
+	// 				dnNode = NULL;
+	// 				dnClose = NULL;
+	// 				break;
+	// 			}
+	// 		}
+	//
+	// 		// Move a dragged window and try to insert content into a dock
+	// 		//
+	// 		if (pMgr->GetDraged()) {
+	// 			pMgr->MouseMoved(scp.x, scp.y);
+	// 			pMgr->Drag(scp.x, scp.y);
+	// 			SideBar *pTgt = pMgr->FindDestination();
+	// 			SideBar *pDG = pMgr->GetDraged();
+	// 			if (pTgt) if (pTgt->IsOpen()) {
+	// 				if (pTgt->TryInsert(pDG)) {
+	// 					if (pTgt->GetStyle() == gcGUI::DS_FLOAT) pTgt->RescaleWindow();
+	// 					pTgt->Invalidate();
+	// 					pDG->Invalidate();
+	// 				}
+	// 			}
+	// 			break;
+	// 		}
+	// 	}
+	// 	break;
+	// }
+	//
+	// case WM_PAINT:
+	// 	PaintWindow();
+	// 	break;
+	//
+	// case WM_ERASEBKGND:
+	// 	return 1;
+	//
+	// default:
+	// 	break;
+	// }
+	//
+    // TODO TODO TODO
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
@@ -1743,7 +1726,7 @@ int SideBar::ComputeLength()
 
 	if (bInsert) for (auto &var : wIns) if (var.second == NULL) y += var.first->CellSize();
 
-	for (Node* ap : drawList) 
+	for (Node* ap : drawList)
 	{
 		y += ap->CellSize();
 		if (bInsert) for (auto &var : wIns) if (var.second == ap) y += var.first->CellSize();
@@ -1772,7 +1755,7 @@ void SideBar::PaintWindow()
 	map<Node*, Node*> &wIns = pIns->List;
 
 	bool bInsert = (pIns->pTgt == this) && (wIns.size() > 0);
-	
+
 	if (bInsert) for (auto &var : wIns)
 	{
 		if (var.second == NULL) y = var.first->Spacer(hDC, y);
@@ -1815,10 +1798,10 @@ void SideBar::PaintWindow()
 	for (Node* ap : wList) {
 		bool bFound = false;
 		for (Node* q : drawList) if (q == ap) { bFound = true; break; }
-		
+
 		if (bFound && ap->hDlg) {
 			if (ap->bOpen) ap->Move();
-			else ShowWindow(ap->hDlg, SW_HIDE);	
+			else ShowWindow(ap->hDlg, SW_HIDE);
 		}
 		else if (ap->hDlg) ShowWindow(ap->hDlg, SW_HIDE);
 	}

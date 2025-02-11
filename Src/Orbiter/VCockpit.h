@@ -63,7 +63,7 @@ public:
 	bool SetClickZone_Spherical (int i, const Vector &cnt, double rad);
 	bool SetClickZone_Quadrilateral (int i, const Vector &p1, const Vector &p2, const Vector &p3, const Vector &p4);
 
-	bool ProcessMouse (UINT event, DWORD state, int x, int y);
+	bool ProcessMouse (const SDL_Event &event, int x, int y);
 	void GetMouseState (int &idx, int &state, Vector &xs) const;
 	inline void SetMouseState (int state) { mstate = state; }
 
@@ -79,7 +79,7 @@ public:
 
 private:
 	inline int AreaIndex (int aid) const
-	{ 
+	{
 		for (int i = 0; i < narea; i++) if (area[i]->id == aid) return i;
 		return -1;
 	}

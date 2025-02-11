@@ -4,14 +4,16 @@
 #ifndef ORBITER_H
 #define ORBITER_H
 
+#include <string>
 #include "Config.h"
 #include "Input.h"
 #include "Select.h"
 #include "Keymap.h"
-#include <stdio.h>
-#include <commctrl.h>
+#include <cstdio>
+
 #include "Mesh.h"
 #include "TimeData.h"
+#include <OrbiterAPI.h>
 
 class DInput;
 class Config;
@@ -51,17 +53,17 @@ public:
 	Orbiter ();
 	~Orbiter ();
 
-    HRESULT Create (HINSTANCE);
+    bool Create ();
 	VOID Launch (const char *scenario);
 	void CloseApp (bool fast_shutdown = false);
 	int GetVersion () const;
-	HWND CreateRenderWindow (Config *pCfg, const char *scenario);
+	std::shared_ptr<sdl::UnmanagedWindow> CreateRenderWindow (Config *pCfg, const char *scenario);
 	void PreCloseSession();
 	void CloseSession ();
 	void GetRenderParameters ();
 	bool InitializeWorld (char *name);
 	void ScreenToClient (POINT *pt) const;
-    LRESULT MsgProc (HWND, UINT, WPARAM, LPARAM);
+	bool MsgProc (const SDL_Event &event, bool &wantsOut);
 	HRESULT Render3DEnvironment(bool hidedialogs = false);
 	VOID Output2DData ();
 	void OutputLoadStatus (const char *msg, int line);
@@ -72,7 +74,9 @@ public:
 	void ExitRotationMode ();
 	bool StickyFocus() const { return bKeepFocus; }
 	void OpenVideoTab() { bStartVideoTab = true; }
-	INT Run ();
+	void Run ();
+	void SetShouldQuit() { bShouldQuit = true; };
+	bool ShouldQuit() { return bShouldQuit; }
 	void SingleFrame ();
     void Pause (bool bPause);
 	void Freeze (bool bFreeze);
@@ -155,7 +159,7 @@ public:
 
 	// Accessor functions
 	inline HINSTANCE GetInstance() const { return hInst; }
-	inline HWND    GetRenderWnd() const { return hRenderWnd; }
+	inline const std::shared_ptr<sdl::UnmanagedWindow>& GetRenderWnd() const { return hRenderWnd; }
 	inline bool    IsFullscreen() const { return bFullscreen; }
 	inline DWORD   ViewW() const { return viewW; }
 	inline DWORD   ViewH() const { return viewH; }
@@ -167,6 +171,7 @@ public:
 	inline State*  PState() const { return pState; }
 	inline bool    IsActive() const { return bActive; } // temporary
 	inline bool    IsRunning() const { return bRunning; }
+	inline bool    HasSession() const { return bSession; }
 	inline bool    UseStencil() const { return bUseStencil; }
 	inline void    SetFastExit (bool fexit) { bFastExit = fexit; }
 	inline bool    UseHtmlInline() { return (pConfig->CfgDebugPrm.bHtmlScnDesc == 1 || pConfig->CfgDebugPrm.bHtmlScnDesc == 2 && !bWINEenv); }
@@ -309,8 +314,8 @@ protected:
 	void KbdInputBuffered_OnRunning  (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n);
 	void UserJoyInput_System (DIJOYSTATE2 *js);
 	void UserJoyInput_OnRunning (DIJOYSTATE2 *js);
-	bool MouseEvent (UINT event, DWORD state, DWORD x, DWORD y);
-	bool BroadcastMouseEvent (UINT event, DWORD state, DWORD x, DWORD y);
+	bool MouseEvent (const SDL_Event &event, DWORD x, DWORD y);
+	bool BroadcastMouseEvent (const SDL_Event &event, DWORD x, DWORD y);
 	bool BroadcastImmediateKeyboardEvent (char *kstate);
 	void BroadcastBufferedKeyboardEvent (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n);
 
@@ -352,7 +357,7 @@ private:
 	orbiter::ConsoleNG* m_pConsole;    // The console window opened when Orbiter server is launched without a graphics client
 	DInput         *pDI;
 	HINSTANCE       hInst;         // orbiter instance handle
-	HWND            hRenderWnd;    // render window handle (NULL if no render support)
+	std::shared_ptr<sdl::UnmanagedWindow> hRenderWnd; // render window handle (NULL if no render support)
 	HWND            hBk;           // background window handle (demo mode only)
 	BOOL            bRenderOnce;   // flag for single frame render request
 	BOOL            bEnableLighting;
@@ -393,6 +398,9 @@ private:
 	bool            bFastExit;     // terminate on simulation end?
 	bool            bSysClearType; // is cleartype enabled on the user's system?
 	bool            bRoughType;    // font-smoothing disabled?
+	bool            bShouldQuit;
+
+	std::string currentScenario;
 
 	// Manual joystick/keyboard attitude inputs
 	DWORD ctrlJoystick[15];

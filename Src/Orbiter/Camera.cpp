@@ -69,7 +69,7 @@ Camera::Camera (double _nearplane, double _farplane)
 	has_tref = false;
 	movehead = false;
 	ExtCtrlMode = 0;
-	GetCursorPos (&pm);
+	SDL_GetMouseState (&pm.x, &pm.y);
 	mmoveT = -1000.0;
 	ap_int = ap_ext = RAD*25.0;
 	ap = &ap_ext;
@@ -90,51 +90,51 @@ Camera::~Camera ()
 	ClearPresets();
 }
 
-bool Camera::ProcessMouse (UINT event, DWORD state, DWORD x, DWORD y, const char *kstate)
+bool Camera::ProcessMouse (const SDL_Event &event, DWORD x, DWORD y, const char *kstate)
 {
-	if (event != WM_MOUSEWHEEL)
+	if (event.type != SDL_EVENT_MOUSE_WHEEL)
 		mx = (int)x, my = (int)y;
 
-	switch (event) {
-	case WM_LBUTTONDOWN:
-		mbdown[0] = true;
-		return true;
-	case WM_RBUTTONDOWN:
-		mbdown[1] = true;
-		g_pOrbiter->InitRotationMode();
-		return true;
-	case WM_LBUTTONUP:
-		if (mbdown[0]) {
-			mbdown[0] = false;
-			return true;
-		}
-		break;
-	case WM_RBUTTONUP:
-		if (mbdown[1]) {
-			mbdown[1] = false;
-			g_pOrbiter->ExitRotationMode();
-			return true;
-		}
-		break;
-	case WM_MOUSEWHEEL:
-		if (KEYMOD_CONTROL(kstate)) {
-		}
-		else {
-			short zDelta = (short)HIWORD(state);
-			if (external_view)
-				ShiftDist(-zDelta*0.001);
-			else
-				g_pOrbiter->IncFOV(zDelta*(-2.0 / 120.0*RAD));
-		} return true;
-		break;
-	}
+    if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN && event.button.button == SDL_BUTTON_LEFT) {
+        mbdown[0] = true;
+        return true;
+    }
+    if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN && event.button.button == SDL_BUTTON_RIGHT) {
+        mbdown[1] = true;
+        g_pOrbiter->InitRotationMode();
+        return true;
+    }
+    if (event.type == SDL_EVENT_MOUSE_BUTTON_UP && event.button.button == SDL_BUTTON_LEFT) {
+        if (mbdown[0]) {
+            mbdown[0] = false;
+            return true;
+        }
+    }
+    if (event.type == SDL_EVENT_MOUSE_BUTTON_UP && event.button.button == SDL_BUTTON_RIGHT) {
+        if (mbdown[1]) {
+            mbdown[1] = false;
+            g_pOrbiter->ExitRotationMode();
+            return true;
+        }
+    }
+    if (event.type == SDL_EVENT_MOUSE_WHEEL) {
+        if (!KEYMOD_CONTROL(kstate)) {
+            double zDelta = event.wheel.y * 120.0;
+            if (external_view)
+                ShiftDist(-zDelta*0.001);
+            else
+                g_pOrbiter->IncFOV(zDelta*(-2.0 / 120.0*RAD));
+            return true;
+        }
+    }
+
 	return false;
 }
 
 void Camera::UpdateMouse ()
 {
-	POINT pt;
-	GetCursorPos (&pt);
+	SDL_FPoint pt;
+	SDL_GetMouseState(&pt.x, &pt.y);
 	if (pt.x != pm.x || pt.y != pm.y) {
 		pm.x = pt.x, pm.y = pt.y;
 		mmoveT = td.SysT0;
@@ -143,11 +143,9 @@ void Camera::UpdateMouse ()
 	if (mbdown[1]) {
 		int dx, dy, x0, y0;
 		x0 = pt.x, y0 = pt.y;
-		if (!g_pOrbiter->IsFullscreen())
-			ScreenToClient (g_pOrbiter->GetRenderWnd(), &pt);
 		dx = pt.x - mx;
 		dy = pt.y - my;
-		SetCursorPos (x0-dx, y0-dy);
+		SDL_WarpMouseInWindow(nullptr, x0-dx, y0-dy);
 		if (!(dx || dy)) return;
 
 		if (external_view) {
@@ -808,7 +806,7 @@ void Camera::SetGroundObserver_TargetLock (bool lock)
 			go.phi = atan2 (-hdir.x, hdir.z);
 			OutputGroundObserverParams();
 		}
-		
+
 		SendDlgMessage (2, this);
 	}
 }
@@ -829,7 +827,7 @@ void Camera::GroundObserverShift (double dx, double dz, double dh)
 {
 	if (!external_view || extmode != CAMERA_GROUNDOBSERVER) return;
 	double r;
-	
+
 	Vector dsz (grot.m13, grot.m23, grot.m33); // dz: go forward/backward w.r.t. camera view direction
 	Vector dsx (grot.m11, grot.m21, grot.m31); // dx: go sideways w.r.t. camera view direction
 	dirref->GlobalToEquatorial (gpos + dsz*dz + dsx*dx, go.lng, go.lat, r);
@@ -868,7 +866,7 @@ void Camera::OutputGroundObserverParams () const
 		HWND dlg = dlgmgr->IsEntry (g_pOrbiter->GetInstance(), IDD_CAMERA);
 		if (dlg) {
 			char cbuf[256];
-			sprintf (cbuf, "Lng = %+0.6f°\r\nLat = %+0.6f°\r\nAlt = %0.2fm\r\nPhi = %0.2f°\r\nTheta = %0.2f°",
+			sprintf (cbuf, "Lng = %+0.6fï¿½\r\nLat = %+0.6fï¿½\r\nAlt = %0.2fm\r\nPhi = %0.2fï¿½\r\nTheta = %0.2fï¿½",
 				DEG*go.lng, DEG*go.lat, go.alt, DEG*go.phi, DEG*go.tht);
 			SendDlgMessage (1, cbuf);
 		}
@@ -896,7 +894,7 @@ DWORD Camera::UpdateExternalControl (ExternalCameraControl *ecc)
 				if (ECC->clbkPoll (&data)) {
 					go.phi = data.yaw;
 					go.tht = data.pitch;
-				}	
+				}
 			}
 		} else { // track mode
 			if (cmode & CAMMODE_TRACK) {
@@ -1463,7 +1461,7 @@ bool Camera::Read (ifstream &ifs)
 			extmode = CAMERA_TARGETFROMOBJECT;
 		else if (!_stricmp (ctrackmode, "Ground") && (dirref = g_psys->GetObj (cdirref, true)))
 			extmode = CAMERA_GROUNDOBSERVER;
-		else 
+		else
 			extmode = CAMERA_TARGETRELATIVE;
 	}
 	return true;
@@ -1582,7 +1580,7 @@ CameraMode *CameraMode::Create (char *str)
 	} else {
 		cm = new CameraMode_Cockpit; TRACENEW
 	}
-	
+
 	if (!(pc = strtok (NULL, ":")) || !(cm->target = (OBJHANDLE)g_psys->GetObj (trim_string (pc), true))) {
 		delete cm;
 		return 0;
@@ -1637,7 +1635,7 @@ void CameraMode_Cockpit::Init (char *str)
 		cmode = CM_CURRENT;
 		str += 7;
 	}
-	
+
 }
 
 void CameraMode_Cockpit::GetDescr (char *str, int len)
@@ -1687,7 +1685,7 @@ void CameraMode_Track::Init (char *str)
 void CameraMode_Track::Store (char *str)
 {
 	static const char *tmstr[6] = {"CURRENT","RELATIVE", "ABSDIR", "GLOBAL", "TARGETTOREF", "TARGETFROMREF"};
-	sprintf (str, "Track:%s%:%0.2f:%s %0.3f %0.3f %0.3f", 
+	sprintf (str, "Track:%s%:%0.2f:%s %0.3f %0.3f %0.3f",
 		target ? ((Body*)target)->Name() : "-", fov,
 		tmstr[tmode], reldist, phi, theta);
 	if (tmode == TM_TARGETTOREF || tmode == TM_TARGETFROMREF) {

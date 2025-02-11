@@ -54,7 +54,7 @@ public:
 	double Separation;				///< StereoScopic 3D depth of field separation \[m\] (10.0...100.0, default=65)
 	double SunAngle;				///< Sun-angle above horizon when night-lights set it \[deg\] (0.1...20.0, default=10)
 	double BumpAmp;					///< Bump map amplification setting (0.1...10.0, default=1)
-	float PlanetGlow;				///< Intensity of planet glow effect (0.01...2.0, default=0.7)
+	double PlanetGlow;				///< Intensity of planet glow effect (0.01...2.0, default=0.7)
 	double FrameRate;				///< Frame-rate limiter
 	double OrbitalShadowMult;		///< Multiplier for cloud shadows for Orbital flight
 	int EnableLimiter;				///< Enable frame-rate limiter
@@ -97,16 +97,16 @@ public:
 	int bLocalGlares;
 	int bIrradiance;
 	int bAtmoQuality;
-	int NoPlanetAA;					///< Disable planet surface anti-aliasing to prevent white pixels at horizon 
+	int NoPlanetAA;					///< Disable planet surface anti-aliasing to prevent white pixels at horizon
 	char *DebugFont;				///< Font face for debug lines (default="Fixed")
 	char *SolCfg;					///< Solar system to use (default="Sol")
-	float GFXIntensity;			///< Post Processing | Light glow intensity (0.0...1.0, default=0.5)
-	float GFXDistance;				///< Post Processing | Light glow distance (0.0...1.0, default=0.8)
-	float GFXThreshold;			///< Post Processing | Glow threshold (0.5...2.0, default=1.1)
-	float GFXGamma;				///< Post Processing | Gamma (0.3...2.5, default=1.0)
-	float GFXSunIntensity;			///< Light Configuration| Sunlight Intensity (0.5...2.5, default=1.2)
-	float GFXLocalMax;				///< Light Configuration| Local Lights Max (0.001...1.0, default=0.5)
-	float GFXGlare;				///< Sun glare intensity| (0.001...1.0, default=0.5)
+	double GFXIntensity;			///< Post Processing | Light glow intensity (0.0...1.0, default=0.5)
+	double GFXDistance;				///< Post Processing | Light glow distance (0.0...1.0, default=0.8)
+	double GFXThreshold;			///< Post Processing | Glow threshold (0.5...2.0, default=1.1)
+	double GFXGamma;				///< Post Processing | Gamma (0.3...2.5, default=1.0)
+	double GFXSunIntensity;			///< Light Configuration| Sunlight Intensity (0.5...2.5, default=1.2)
+	double GFXLocalMax;				///< Light Configuration| Local Lights Max (0.001...1.0, default=0.5)
+	double GFXGlare;				///< Sun glare intensity| (0.001...1.0, default=0.5)
 
 	std::map<std::string, std::string> AtmoCfg;
 

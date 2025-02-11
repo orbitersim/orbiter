@@ -4,20 +4,22 @@
 #define STRICT 1
 #define OAPI_IMPLEMENTATION
 
-#include "Orbiter.h"
-#include "Launchpad.h"
-#include "LpadTab.h"
-#include "TabVideo.h"
-#include "Psys.h"
-#include "Pane.h"
-#include "VCockpit.h"
 #include "GraphicsAPI.h"
 #include "DlgMgr.h"
+#include "Launchpad.h"
 #include "Log.h"
+#include "LpadTab.h"
+#include "Orbiter.h"
+#include "Pane.h"
+#include "Psys.h"
+#include "TabVideo.h"
 #include "Util.h"
+#include "VCockpit.h"
 #include "resource.h"
-#include <wincodec.h>
+
+#include <IconsFontAwesome6.h>
 #include <filesystem>
+#include <wincodec.h>
 namespace fs = std::filesystem;
 
 using std::min;
@@ -41,7 +43,6 @@ OAPIFUNC INT_PTR CALLBACK LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wP
 
 GraphicsClient::GraphicsClient (HINSTANCE hInstance): Module (hInstance)
 {
-	hOrbiterInst = g_pOrbiter->GetInstance();
 	VideoData.fullscreen = false;
 	VideoData.forceenum = true;
 	VideoData.trystencil = false;
@@ -65,7 +66,7 @@ GraphicsClient::GraphicsClient (HINSTANCE hInstance): Module (hInstance)
     );
 	if (hr != S_OK)
 		m_pIWICFactory = NULL;
-		
+
 }
 
 // ======================================================================
@@ -81,12 +82,12 @@ GraphicsClient::~GraphicsClient ()
 bool GraphicsClient::clbkInitialise ()
 {
     // Register a window class for the render window
-    WNDCLASS wndClass = {0, ::WndProc, 0, 0, hModule,
-		LoadIcon (g_pOrbiter->GetInstance(), MAKEINTRESOURCE(IDI_MAIN_ICON)),
-		LoadCursor (NULL, IDC_ARROW),
-		(HBRUSH)GetStockObject (WHITE_BRUSH),
-		NULL, strWndClass};
-    RegisterClass (&wndClass);
+    //   WNDCLASS wndClass = {0, ::WndProc, 0, 0, hModule,
+	// LoadIcon (g_pOrbiter->GetInstance(), MAKEINTRESOURCE(IDI_MAIN_ICON)),
+	// LoadCursor (NULL, IDC_ARROW),
+	// (HBRUSH)GetStockObject (WHITE_BRUSH),
+	// NULL, strWndClass};
+    //   RegisterClass (&wndClass);
 
 	if (clbkUseLaunchpadVideoTab() && g_pOrbiter->Launchpad()) {
 		hVid = g_pOrbiter->Launchpad()->GetTab(PG_VID)->TabWnd();
@@ -268,20 +269,17 @@ const void *GraphicsClient::GetConfigParam (DWORD paramtype) const
 
 // ======================================================================
 
-HWND GraphicsClient::clbkCreateRenderWindow ()
-{
-	HWND hWnd;
+std::shared_ptr<sdl::UnmanagedWindow> GraphicsClient::clbkCreateRenderWindow() {
+    std::shared_ptr<sdl::UnmanagedWindow> window;
 
-	if (VideoData.fullscreen) {
-		hWnd = CreateWindow (strWndClass, "", // dummy window
-			WS_POPUP | WS_EX_TOPMOST| WS_VISIBLE,
-			CW_USEDEFAULT, CW_USEDEFAULT, 10, 10, 0, 0, hModule, (LPVOID)this);
-	} else {
-		hWnd = CreateWindow (strWndClass, "",
-			WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_VISIBLE,
-			CW_USEDEFAULT, CW_USEDEFAULT, VideoData.winw, VideoData.winh, 0, 0, hModule, (LPVOID)this);
-	}
-	return hWnd;
+    if (VideoData.fullscreen) {
+        window = std::make_shared<sdl::UnmanagedWindow>("", 10, 10,
+                                                        SDL_WINDOW_FULLSCREEN);
+    } else {
+        window = std::make_shared<sdl::UnmanagedWindow>("", VideoData.winw,
+                                                        VideoData.winh, 0);
+    }
+    return window;
 }
 
 // ======================================================================
@@ -429,7 +427,7 @@ HBITMAP ReadImageFromDecoder (IWICImagingFactory *m_pIWICFactory, IWICBitmapDeco
 HBITMAP GraphicsClient::ReadImageFromMemory (BYTE *pBuf, DWORD nBuf, UINT w, UINT h)
 {
 	IWICBitmapDecoder *piDecoder = NULL;
-	
+
 	IWICStream *piStream;
 	m_pIWICFactory->CreateStream(&piStream);
 	piStream->InitializeFromMemory(pBuf,nBuf);
@@ -645,40 +643,25 @@ bool GraphicsClient::clbkCopyBitmap (SURFHANDLE pdds, HBITMAP hbm,
 
 // ======================================================================
 
-HWND GraphicsClient::InitRenderWnd (HWND hWnd)
-{
-	if (!hWnd) { // create a dummy window
-		hWnd = CreateWindow (strWndClass, "",
-			WS_POPUP | WS_VISIBLE,
-			CW_USEDEFAULT, CW_USEDEFAULT, 10, 10, 0, 0, hModule, 0);
-	}
-	SetWindowLongPtr (hWnd, GWLP_USERDATA, (LONG_PTR)this);
-	// store class instance with window for access in the message handler
 
-	char title[256], cbuf[128];
-	extern const TCHAR *g_strAppTitle;
-	strcpy (title, g_strAppTitle);
-	GetWindowText (hWnd, cbuf, 128);
-	if (cbuf[0]) {
-		strcat (title, " ");
-		strcat (title, cbuf);
-	}
-	SetWindowText (hWnd, title);
-	hRenderWnd = hWnd;
-	return hRenderWnd;
+extern const TCHAR* g_strAppTitle;
+
+void GraphicsClient::InitRenderWnd(
+    std::shared_ptr<sdl::UnmanagedWindow> &window) {
+    if (!window) {
+        window = std::make_shared<sdl::UnmanagedWindow>("", 10, 10, 0);
+    }
+
+    auto title = std::string(g_strAppTitle) + " " +
+                 SDL_GetWindowTitle(window->Inner());
+    SDL_SetWindowTitle(window->Inner(), title.c_str());
 }
 
 // ======================================================================
 
-
-LRESULT GraphicsClient::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	// graphics-specific stuff to go here
-	default:
-		return g_pOrbiter->MsgProc (hWnd, uMsg, wParam, lParam);
-	}
-    return DefWindowProc (hWnd, uMsg, wParam, lParam);
+bool GraphicsClient::RenderWndProc(const SDL_Event &event,
+                                   bool &wantsOut) {
+    return g_pOrbiter->MsgProc(event, wantsOut);
 }
 
 // ======================================================================
@@ -883,27 +866,6 @@ void ScreenAnnotation::Render ()
 // ======================================================================
 // Nonmember functions
 
-//-----------------------------------------------------------------------
-// Name: WndProc()
-// Desc: Static msg handler which passes messages from the render window
-//       to the application class.
-//-----------------------------------------------------------------------
-DLLEXPORT LRESULT CALLBACK WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	GraphicsClient *gc = (GraphicsClient*)GetWindowLongPtr (hWnd, GWLP_USERDATA);
-	if (gc) return gc->RenderWndProc (hWnd, uMsg, wParam, lParam);
-	else return DefWindowProc (hWnd, uMsg, wParam, lParam);
-}
-
-// ======================================================================
-
-DLLEXPORT INT_PTR CALLBACK LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	GraphicsClient *gc = (GraphicsClient*)GetWindowLongPtr (hWnd, GWLP_USERDATA);
-	if (gc) return gc->LaunchpadVideoWndProc (hWnd, uMsg, wParam, lParam);
-	else return FALSE;
-}
-
 // ======================================================================
 // API interface: register/unregister the graphics client
 
@@ -915,4 +877,207 @@ DLLEXPORT bool oapiRegisterGraphicsClient (GraphicsClient *gc)
 DLLEXPORT bool oapiUnregisterGraphicsClient (GraphicsClient *gc)
 {
 	return g_pOrbiter->RemoveGraphicsClient (gc);
+}
+
+DLLEXPORT bool WithImCtx::ConsumeEvent(const SDL_Event &event,
+                                       bool &wantsOut) const {
+    return inner->ConsumeEvent(event, wantsOut);
+};
+
+DLLEXPORT bool WithImCtx::BeginFrame() const { return inner->BeginFrame(); }
+
+DLLEXPORT void WithImCtx::EndFrame() const { return inner->EndFrame(); }
+
+DLLEXPORT WithImCtx::WithImCtx(ImCtxBase *inner, ImGuiContext *lastContext)
+    : inner(inner), lastContext(lastContext) {}
+
+DLLEXPORT WithImCtx::~WithImCtx() {
+    if (lastContext)
+        ImGui::SetCurrentContext(lastContext);
+}
+
+DLLEXPORT ImCtxBase *WithImCtx::operator->() const { return inner; }
+
+DLLEXPORT ImCtxBase *WithImCtx::Inner() const { return inner; }
+
+DLLEXPORT WithImCtx ImCtxBase::PushLocal() {
+    const auto lastContext = ImGui::GetCurrentContext();
+    ImGui::SetCurrentContext(m_context);
+    return {this, lastContext};
+};
+
+// Styling adapted from
+// https://gist.github.com/dougbinks/8089b4bbaccaaf6fa204236978d165a9
+static void ImGuiSetStyle(bool bStyleDark_, float alpha_) {
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    // ImGui::StyleColorsClassic();
+    // ImGui::StyleColorsLight();
+    ImGuiStyle &style = ImGui::GetStyle();
+
+    style.Alpha = 1.0f;
+    style.FrameRounding = 3.0f;
+    style.WindowRounding = 3.0f;
+    style.ChildRounding = 3.0f;
+    style.PopupRounding = 3.0f;
+    style.ScrollbarRounding = 3.0f;
+    style.GrabRounding = 3.0f;
+    style.TabRounding = 3.0f;
+    style.WindowMenuButtonPosition = ImGuiDir_Right;
+    style.Colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+    style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
+    style.Colors[ImGuiCol_WindowBg] = ImVec4(0.06f, 0.06f, 0.06f, 0.94f);
+    style.Colors[ImGuiCol_ChildBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+    style.Colors[ImGuiCol_PopupBg] = ImVec4(0.08f, 0.08f, 0.08f, 0.94f);
+    style.Colors[ImGuiCol_Border] = ImVec4(0.43f, 0.43f, 0.50f, 0.50f);
+    style.Colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+    style.Colors[ImGuiCol_FrameBg] = ImVec4(0.63f, 0.13f, 0.13f, 0.50f);
+    style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.94f, 0.41f, 0.36f, 0.50f);
+    style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.78f, 0.27f, 0.24f, 0.50f);
+    style.Colors[ImGuiCol_TitleBg] = ImVec4(0.04f, 0.04f, 0.04f, 1.00f);
+    style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.63f, 0.13f, 0.13f, 0.75f);
+    style.Colors[ImGuiCol_TitleBgCollapsed] =
+        ImVec4(0.00f, 0.00f, 0.00f, 0.51f);
+    style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
+    style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.02f, 0.02f, 0.02f, 0.53f);
+    style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.31f, 0.31f, 0.31f, 1.00f);
+    style.Colors[ImGuiCol_ScrollbarGrabHovered] =
+        ImVec4(0.41f, 0.41f, 0.41f, 1.00f);
+    style.Colors[ImGuiCol_ScrollbarGrabActive] =
+        ImVec4(0.51f, 0.51f, 0.51f, 1.00f);
+    // Not very set on the white checkmark, but the light red didn't look the
+    // best either... TODO!!!
+    style.Colors[ImGuiCol_CheckMark] = ImVec4(0.94f, 0.41f, 0.36f, 1.00f);
+    style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.94f, 0.41f, 0.36f, 0.66f);
+    style.Colors[ImGuiCol_SliderGrabActive] =
+        ImVec4(0.94f, 0.41f, 0.36f, 0.66f);
+    style.Colors[ImGuiCol_Button] = ImVec4(0.63f, 0.13f, 0.13f, 0.40f);
+    style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.94f, 0.41f, 0.36f, 0.54f);
+    style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.78f, 0.27f, 0.24f, 0.54f);
+    style.Colors[ImGuiCol_Header] = ImVec4(0.63f, 0.13f, 0.13f, 0.40f);
+    style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.94f, 0.41f, 0.36f, 0.66f);
+    style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.78f, 0.27f, 0.24f, 0.66f);
+    style.Colors[ImGuiCol_Separator] = ImVec4(0.43f, 0.43f, 0.50f, 0.50f);
+    style.Colors[ImGuiCol_SeparatorHovered] =
+        ImVec4(0.94f, 0.41f, 0.36f, 0.66f);
+    style.Colors[ImGuiCol_SeparatorActive] = ImVec4(0.78f, 0.27f, 0.24f, 0.66f);
+    style.Colors[ImGuiCol_ResizeGrip] = ImVec4(0.63f, 0.13f, 0.13f, 0.40f);
+    style.Colors[ImGuiCol_ResizeGripHovered] =
+        ImVec4(0.94f, 0.41f, 0.36f, 0.66f);
+    style.Colors[ImGuiCol_ResizeGripActive] =
+        ImVec4(0.78f, 0.27f, 0.24f, 0.66f);
+    style.Colors[ImGuiCol_TabHovered] = ImVec4(0.94f, 0.41f, 0.36f, 0.66f);
+    style.Colors[ImGuiCol_Tab] = ImVec4(0.63f, 0.13f, 0.13f, 0.40f);
+    style.Colors[ImGuiCol_TabSelected] = ImVec4(0.78f, 0.27f, 0.24f, 0.66f);
+    style.Colors[ImGuiCol_TabSelectedOverline] =
+        ImVec4(0.94f, 0.41f, 0.36f, 1.00f);
+    style.Colors[ImGuiCol_TabDimmed] = ImVec4(0.63f, 0.13f, 0.13f, 0.13f);
+    style.Colors[ImGuiCol_TabDimmedSelected] =
+        ImVec4(0.78f, 0.27f, 0.24f, 0.13f);
+    style.Colors[ImGuiCol_TabDimmedSelectedOverline] =
+        ImVec4(0.94f, 0.41f, 0.36f, 0.13f);
+    style.Colors[ImGuiCol_DockingPreview] = ImVec4(0.63f, 0.13f, 0.13f, 0.40f);
+    style.Colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
+    style.Colors[ImGuiCol_PlotLines] = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
+    style.Colors[ImGuiCol_PlotLinesHovered] =
+        ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
+    style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
+    style.Colors[ImGuiCol_PlotHistogramHovered] =
+        ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
+    style.Colors[ImGuiCol_TableHeaderBg] = ImVec4(0.19f, 0.19f, 0.20f, 1.00f);
+    style.Colors[ImGuiCol_TableBorderStrong] =
+        ImVec4(0.31f, 0.31f, 0.35f, 1.00f);
+    style.Colors[ImGuiCol_TableBorderLight] =
+        ImVec4(0.23f, 0.23f, 0.25f, 1.00f);
+    style.Colors[ImGuiCol_TableRowBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+    style.Colors[ImGuiCol_TableRowBgAlt] = ImVec4(1.00f, 1.00f, 1.00f, 0.06f);
+    style.Colors[ImGuiCol_TextLink] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+    style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
+    style.Colors[ImGuiCol_DragDropTarget] = ImVec4(1.00f, 1.00f, 0.00f, 0.90f);
+    style.Colors[ImGuiCol_NavCursor] = ImVec4(0.63f, 0.13f, 0.13f, 0.40f);
+    style.Colors[ImGuiCol_NavWindowingHighlight] =
+        ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
+    style.Colors[ImGuiCol_NavWindowingDimBg] =
+        ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
+    style.Colors[ImGuiCol_ModalWindowDimBg] =
+        ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
+}
+
+DLLEXPORT ImCtxBase::ImCtxBase(Orbiter *app, ImGuiContext *context)
+    : m_app(app), m_context(context) {
+#ifdef _DEBUG
+    IMGUI_CHECKVERSION();
+#endif
+    const auto savedContext = ImGui::GetCurrentContext();
+    ImGui::SetCurrentContext(m_context);
+
+    ImGuiIO &io = ImGui::GetIO();
+    if (!m_app->IsFullscreen())
+        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.IniFilename = nullptr;
+    io.LogFilename = nullptr;
+
+    ImGuiSetStyle(false, 1.0f);
+
+    ImFontConfig config;
+
+    static constexpr ImWchar icons_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
+    ImFontConfig icons_config;
+    icons_config.MergeMode = true;
+    icons_config.PixelSnapH = true;
+    icons_config.FontDataOwnedByAtlas = false;
+    icons_config.GlyphOffset.y = 1;
+
+    const CFG_FONTPRM &prm = m_app->Cfg()->CfgFontPrm;
+
+    auto defaultFontFile =
+        std::string(prm.ImGui_FontName).append("-Regular.ttf");
+    auto italicFontFile = std::string(prm.ImGui_FontName).append("-Italic.ttf");
+    auto boldFontFile = std::string(prm.ImGui_FontName).append("-Bold.ttf");
+    auto boldItalicFontFile =
+        std::string(prm.ImGui_FontName).append("-BoldItalic.ttf");
+
+    m_defaultFont = io.Fonts->AddFontFromFileTTF(
+        defaultFontFile.c_str(), prm.ImGui_FontSize, &config,
+        ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
+    io.Fonts->AddFontFromFileTTF("fa-solid-900.ttf", prm.ImGui_FontSize,
+                                 &icons_config, icons_ranges);
+    m_italicFont = io.Fonts->AddFontFromFileTTF(
+        italicFontFile.c_str(), prm.ImGui_FontSize, &config,
+        ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
+    io.Fonts->AddFontFromFileTTF("fa-solid-900.ttf", prm.ImGui_FontSize,
+                                 &icons_config, icons_ranges);
+    m_boldFont = io.Fonts->AddFontFromFileTTF(
+        boldFontFile.c_str(), prm.ImGui_FontSize, &config,
+        ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
+    io.Fonts->AddFontFromFileTTF("fa-solid-900.ttf", prm.ImGui_FontSize,
+                                 &icons_config, icons_ranges);
+    m_boldItalicFont = io.Fonts->AddFontFromFileTTF(
+        boldItalicFontFile.c_str(), prm.ImGui_FontSize, &config,
+        ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
+    io.Fonts->AddFontFromFileTTF("fa-solid-900.ttf", prm.ImGui_FontSize,
+                                 &icons_config, icons_ranges);
+    m_hdgFont = io.Fonts->AddFontFromFileTTF(
+        defaultFontFile.c_str(), prm.ImGui_FontSize * 1.5f, &config,
+        ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
+    io.Fonts->AddFontFromFileTTF("fa-solid-900.ttf", prm.ImGui_FontSize,
+                                 &icons_config, icons_ranges);
+    // weird alignment issues otherwise, yippee (sarcastic)
+    config.GlyphOffset.y = 1;
+    m_monoFont = io.Fonts->AddFontFromFileTTF(
+        "Cousine-Regular.ttf", prm.ImGui_FontSize, &config,
+        ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
+    io.Fonts->Build();
+
+    if (savedContext)
+        ImGui::SetCurrentContext(savedContext);
+}
+
+DLLEXPORT ImCtxBase::~ImCtxBase() {
+    const auto savedContext = ImGui::GetCurrentContext();
+    ImGui::SetCurrentContext(m_context);
+    ImGui::DestroyContext();
+    if (savedContext)
+        ImGui::SetCurrentContext(savedContext);
 }

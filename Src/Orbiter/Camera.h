@@ -15,11 +15,15 @@
 #ifndef __CAMERA_H
 #define __CAMERA_H
 
-#include <d3d.h>
-#include <fstream>
+#include "CamAPI.h"
 #include "Vecmat.h"
 #include "elevmgr.h"
-#include "CamAPI.h"
+#include <SDL3/SDL_events.h>
+#include <SDL3/SDL_rect.h>
+#include <d3d.h>
+#include <filesystem>
+#include <fstream>
+namespace fs = std::filesystem;
 
 class Body;
 class Planet;
@@ -54,7 +58,7 @@ class Camera {
 public:
 	Camera (double _nearplane = 1.0, double _farplane = 1e8);
 	// Create a camera with given y-aperture [rad] and viewing fustrum limits
-	
+
 	~Camera();
 
 	void SetCMode (const CameraMode *cm);
@@ -71,7 +75,7 @@ public:
 
 	inline bool IsExternal () const { return external_view; }
 	inline bool IsInternal () const { return !external_view; }
-	
+
 	bool IsCockpitForward () const;
 	// Return true if we are in cockpit mode and the camera points forward (+z)
 
@@ -173,7 +177,7 @@ public:
 
 	void Drag (const Vector &gshift);
 	// Displace camera by 'gshift' (global coords) from its
-	// 'natural' position. The camera will automatically 
+	// 'natural' position. The camera will automatically
 	// gradually move back (external camera mode only)
 
 	void GroundObserverShift (double dx, double dz, double dh);
@@ -236,7 +240,7 @@ public:
 	void SetGroundObserver_TerrainLimit (double alt);
 	void OutputGroundObserverParams () const;
 
-	bool ProcessMouse (UINT event, DWORD state, DWORD x, DWORD y, const char *kstate);
+	bool ProcessMouse (const SDL_Event &event, DWORD x, DWORD y, const char *kstate);
 	void UpdateMouse ();
 
 	void ClearPresets ();
@@ -320,7 +324,7 @@ private:
 	DWORD ExtCtrlMode;     // if camera is externally controlled, this contains bitflags for data types
 	                       // (see CAMDATA_xxx constants in CamAPI.h)
 
-	POINT pm;              // last cursor position
+	SDL_FPoint pm;         // last cursor position
 	double mmoveT;         // time of last mouse move
 
 	Vector gpos;           // current camera pos in global coords

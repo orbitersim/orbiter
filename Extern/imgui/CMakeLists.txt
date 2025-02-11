@@ -11,9 +11,10 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(imgui)
 
-install(FILES ${imgui_SOURCE_DIR}/misc/fonts/Roboto-Medium.ttf fa-solid-900.ttf ${imgui_SOURCE_DIR}/misc/fonts/Cousine-Regular.ttf
+install(FILES Inter-Regular.ttf Inter-Italic.ttf Inter-Bold.ttf Inter-BoldItalic.ttf fa-solid-900.ttf ${imgui_SOURCE_DIR}/misc/fonts/Cousine-Regular.ttf
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
 )
+file(COPY Inter-Regular.ttf Inter-Italic.ttf Inter-Bold.ttf Inter-BoldItalic.ttf ${imgui_SOURCE_DIR}/misc/fonts/Cousine-Regular.ttf fa-solid-900.ttf DESTINATION ${ORBITER_BINARY_ROOT_DIR})
 
 install(FILES ${imgui_SOURCE_DIR}/imgui.h ${imgui_SOURCE_DIR}/imconfig.h
 	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/include

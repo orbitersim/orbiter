@@ -5,7 +5,7 @@
 // class Panel2D
 // Vessel cockpit represented by 2D instrument panels
 //
-// This replaces the 'Panel' class. It represents the panels with 
+// This replaces the 'Panel' class. It represents the panels with
 // textured 3D billboards instead of bitmap overlays
 // =======================================================================
 
@@ -123,22 +123,22 @@ public:
 	/**
 	* \brief Process a mouse event for the panel.
 	* \param event event type (see \ref panel_mouse)
-	* \param state mouse button state
 	* \param x mouse screen x position
 	* \param y mouse screen y position
 	* \return \e true if the panel processes the event.
 	*/
-	bool ProcessMouse_System(UINT event, DWORD state, int x, int y, const char *kstate);
+	bool ProcessMouse_System(const SDL_Event &event, int x, int y,
+                                 const char *kstate);
 
 	/**
 	 * \brief Process a mouse event for the panel while the simulation is active.
 	 * \param event event type (see \ref panel_mouse)
-	 * \param state mouse button state
 	 * \param x mouse screen x position
 	 * \param y mouse screen y position
 	 * \return \e true if the panel processes the event.
 	 */
-	bool ProcessMouse_OnRunning (UINT event, DWORD state, int x, int y, const char *kstate);
+	bool ProcessMouse_OnRunning (const SDL_Event &event, int x, int y,
+                                    const char *kstate);
 
 	void GetMouseState (int &idx, int &state, int &mx, int &my) const;
 
@@ -168,7 +168,7 @@ protected:
 	 * \return area list index (>= 0) or -1 if area doesn't exist
 	 */
 	inline int AreaIndex (int aid) const
-	{ 
+	{
 		for (int i = 0; i < narea; i++) if (area[i]->id == aid) return i;
 		return -1;
 	}

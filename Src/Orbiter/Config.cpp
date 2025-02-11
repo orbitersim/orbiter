@@ -229,7 +229,7 @@ CFG_FONTPRM CfgFontPrm_default = {
 	1.0f,		// dlgFont_Scale (scaling factor for inline dialog fonts)
 	"Arial",	// dlgFont1_Face (default dialog font face name)
 	14.0f,		// ImGui_FontSize
-	"Roboto-Medium.ttf" // ImGui_FontFile
+	"Inter"     // ImGui_FontFile
 };
 
 CFG_CAMERAPRM CfgCameraPrm_default = {
@@ -344,7 +344,7 @@ bool GetItemString (istream &is, const char *label, char *val)
 	while (is.getline (cbuf, 512)) {
 		cl = trim_string(cbuf);
 		if (!_stricmp(cl, "END_PARSE")) return false;
-		
+
 		for (i = 0; cl[i] && cl[i] != '='; i++);
 		cv = (cl[i] ? cl+(i+1) : cl+i);
 		for (cl[i--] = '\0'; i >= 0 && (cl[i] == ' ' || cl[i] == '\t'); i--)
@@ -461,6 +461,10 @@ Config::Config(char* fname)
 	Load(fname);
 }
 
+static bool operator==(const SDL_GUID a, const SDL_GUID b) {
+    return memcmp(&a.data, &b.data, 16) == 0;
+}
+
 bool Config::Load(const char *fname)
 {
 	int i;
@@ -531,8 +535,18 @@ bool Config::Load(const char *fname)
 	if (GetInt (ifs, "WindowHeight", i)) CfgDevPrm.WinH = (DWORD)i;
 
 	// Joystick information
-	if (GetInt (ifs, "JoystickIndex", i))
-		CfgJoystickPrm.Joy_idx = (DWORD)i;
+	if (GetString (ifs, "JoystickIndex", cbuf)) {
+	    const auto guid = SDL_StringToGUID(cbuf);
+	    auto njoy = 0;
+	    const auto joylist = SDL_GetJoysticks(&njoy);
+	    CfgJoystickPrm.Joy_idx = 0;
+	    for (int joyix = 0; joyix < njoy; joyix++) {
+            if (SDL_GetJoystickGUIDForID(joylist[joyix]) == guid) {
+                CfgJoystickPrm.Joy_idx = joylist[joyix];
+            }
+        }
+	    SDL_free(joylist);
+	}
 	if (GetInt (ifs, "JoystickThrottleAxis", i))
 		CfgJoystickPrm.ThrottleAxis = max (0, min (3, i));
 	if (GetInt (ifs, "JoystickThrottleSaturation", i))
@@ -761,7 +775,7 @@ bool Config::Load(const char *fname)
 	if (GetReal (ifs, "DialogFont_Scale", d)) CfgFontPrm.dlgFont_Scale = (float)d;
 	GetString (ifs, "DialogFont1_Face", CfgFontPrm.dlgFont1_Face);
 	if (GetReal (ifs, "ImGui_FontSize", d)) CfgFontPrm.ImGui_FontSize = (float)d;
-	GetString (ifs, "ImGui_FontFile", CfgFontPrm.ImGui_FontFile);
+	GetString (ifs, "ImGui_FontName", CfgFontPrm.ImGui_FontName);
 
 	// misc. options
 	if (GetString (ifs, "LPadRect", cbuf)) {
@@ -962,7 +976,7 @@ BOOL Config::Write (const char *fname) const
 		ofs << "LPadRect = " << rLaunchpad.left << ' ' << rLaunchpad.top
 			<< ' ' << rLaunchpad.right << ' ' << rLaunchpad.bottom << '\n';
 
-	if (strcmp (CfgDirPrm.ConfigDir, CfgDirPrm_default.ConfigDir) || 
+	if (strcmp (CfgDirPrm.ConfigDir, CfgDirPrm_default.ConfigDir) ||
 		strcmp (CfgDirPrm.MeshDir, CfgDirPrm_default.MeshDir) ||
 		strcmp (CfgDirPrm.TextureDir, CfgDirPrm_default.TextureDir) ||
 		strcmp (CfgDirPrm.HightexDir, CfgDirPrm_default.HightexDir) ||
@@ -1250,8 +1264,12 @@ BOOL Config::Write (const char *fname) const
 
 	if (memcmp (&CfgJoystickPrm, &CfgJoystickPrm_default, sizeof(CFG_JOYSTICKPRM)) || bEchoAll) {
 		ofs << "\n; === Joystick parameters ===\n";
-		if (CfgJoystickPrm.Joy_idx != CfgJoystickPrm_default.Joy_idx || bEchoAll)
-			ofs << "JoystickIndex = " << CfgJoystickPrm.Joy_idx << '\n';
+		if (CfgJoystickPrm.Joy_idx != CfgJoystickPrm_default.Joy_idx || bEchoAll) {
+            const auto guid = SDL_GetJoystickGUIDForID(CfgJoystickPrm.Joy_idx);
+	        char cbuf[33];
+		    SDL_GUIDToString(guid, cbuf, 33);
+		    ofs << "JoystickIndex = " << cbuf << '\n';
+		}
 		if (CfgJoystickPrm.ThrottleAxis != CfgJoystickPrm_default.ThrottleAxis || bEchoAll)
 			ofs << "JoystickThrottleAxis = " << CfgJoystickPrm.ThrottleAxis << '\n';
 		if (CfgJoystickPrm.ThrottleSaturation != CfgJoystickPrm_default.ThrottleSaturation || bEchoAll)
@@ -1338,8 +1356,8 @@ BOOL Config::Write (const char *fname) const
 			ofs << "DialogFont1_Face = " << CfgFontPrm.dlgFont1_Face << '\n';
 		if (CfgFontPrm.ImGui_FontSize != CfgFontPrm_default.ImGui_FontSize || bEchoAll)
 			ofs << "ImGui_FontSize = " << CfgFontPrm.ImGui_FontSize << '\n';
-		if (strcmp (CfgFontPrm.ImGui_FontFile, CfgFontPrm_default.ImGui_FontFile) || bEchoAll)
-			ofs << "ImGui_FontFile = " << CfgFontPrm.ImGui_FontFile << '\n';
+		if (strcmp (CfgFontPrm.ImGui_FontName, CfgFontPrm_default.ImGui_FontName) || bEchoAll)
+			ofs << "ImGui_FontName = " << CfgFontPrm.ImGui_FontName << '\n';
 	}
 
 	if (memcmp (&CfgWindowPos, &CfgWindowPos_default, sizeof(CFG_WINDOWPOS)) || bEchoAll) {

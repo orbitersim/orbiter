@@ -12,15 +12,15 @@
 #include "Orbitersdk.h"
 
 // key modifier list
-#define KMOD_LSHIFT 0x0100
-#define KMOD_RSHIFT 0x0200
-#define KMOD_SHIFT  (KMOD_LSHIFT|KMOD_RSHIFT)
-#define KMOD_LCTRL  0x0400
-#define KMOD_RCTRL  0x0800
-#define KMOD_CTRL   (KMOD_LCTRL|KMOD_RCTRL)
-#define KMOD_LALT   0x1000
-#define KMOD_RALT   0x2000
-#define KMOD_ALT    (KMOD_LALT|KMOD_RALT)
+#define OKMOD_LSHIFT 0x0100
+#define OKMOD_RSHIFT 0x0200
+#define OKMOD_SHIFT  (OKMOD_LSHIFT|OKMOD_RSHIFT)
+#define OKMOD_LCTRL  0x0400
+#define OKMOD_RCTRL  0x0800
+#define OKMOD_CTRL   (OKMOD_LCTRL|OKMOD_RCTRL)
+#define OKMOD_LALT   0x1000
+#define OKMOD_RALT   0x2000
+#define OKMOD_ALT    (OKMOD_LALT|OKMOD_RALT)
 
 class Keymap {
 public:

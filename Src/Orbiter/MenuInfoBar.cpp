@@ -583,7 +583,7 @@ void MenuInfoBar::Update (double t)
 		case CAMERA_GLOBALFRAME:      strcpy (cbuf, "track (global frame)"); break;
 		case CAMERA_TARGETTOOBJECT:   strcpy (cbuf, "target to "); strcat (cbuf, g_camera->GetDirRef()->Name()); break;
 		case CAMERA_TARGETFROMOBJECT: strcpy (cbuf, "target from "); strcat (cbuf, g_camera->GetDirRef()->Name()); break;
-		case CAMERA_GROUNDOBSERVER:   
+		case CAMERA_GROUNDOBSERVER:
 			strcpy (cbuf, "ground ");
 			strcat (cbuf, g_camera->GroundObserver_TargetLock() ? "(tgt-lock)" : "(free)");
 			break;
@@ -624,11 +624,11 @@ void MenuInfoBar::Update (double t)
 	}
 }
 
-bool MenuInfoBar::ProcessMouse (UINT event, DWORD state, DWORD x, DWORD y)
+bool MenuInfoBar::ProcessMouse (const SDL_Event &event, DWORD x, DWORD y)
 {
 	x = (DWORD)(x / transf.m11); // account for menu squeezing
 
-	if (event == WM_MOUSEMOVE) {
+	if (event.type == SDL_EVENT_MOUSE_MOTION) {
 		if (menumode == 2) {
 			if (y <= scrollzone && menustate != 1) {
 				menustate = 2;
@@ -658,7 +658,7 @@ bool MenuInfoBar::ProcessMouse (UINT event, DWORD state, DWORD x, DWORD y)
 			itemHighlight = item;
 		}
 	}
-	if (event == WM_LBUTTONDOWN && itemHighlight >= 0) {
+	if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN && event.button.button == SDL_BUTTON_LEFT && itemHighlight >= 0) {
 		switch (itemHighlight) {
 		case 0:
 			g_pOrbiter->DlgMgr()->EnsureEntry<DlgFocus> ();
@@ -697,11 +697,11 @@ bool MenuInfoBar::ProcessMouse (UINT event, DWORD state, DWORD x, DWORD y)
 			return true;
 		case 11:
 			g_pOrbiter->PreCloseSession();
-			DestroyWindow (g_pOrbiter->GetRenderWnd());
+			// DestroyWindow (g_pOrbiter->GetRenderWnd());
 			return true;
 		}
 	}
-	if (event == WM_RBUTTONDOWN && y <= scrollpos && x >= menuX && x < menuX+menuW) {
+	if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN && event.button.button == SDL_BUTTON_LEFT && y <= scrollpos && x >= menuX && x < menuX+menuW) {
 		g_pOrbiter->DlgMgr()->EnsureEntry<DlgMenuCfg> ();
 		return true;
 	}

@@ -175,6 +175,8 @@ target_include_directories(D3D9Client PUBLIC
 	${DXSDK_DIR}/Include
 	${imgui_SOURCE_DIR}/
 	${imgui_SOURCE_DIR}/backends/
+	SDL3::SDL3
+	SDL3_image::SDL3_image
 )
 
 target_link_directories(D3D9Client PUBLIC
@@ -203,6 +205,8 @@ target_link_libraries(D3D9Client
 	odbccp32.lib
 	version.lib
 	msimg32.lib
+	SDL3::SDL3
+	SDL3_image::SDL3_image
 )
 
 set_target_properties(D3D9Client
@@ -232,10 +236,12 @@ add_dependencies(D3D9Client
 	${OrbiterTgt}
 	Orbitersdk
 	D3D9Client_Interface
+	SDL3::SDL3
+	SDL3_image::SDL3_image
 )
 
 install(TARGETS D3D9Client
-	LIBRARY	
+	LIBRARY
 	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
 )
 

@@ -23,11 +23,13 @@
 #ifndef __WNDMGR_H
 #define __WNDMGR_H
 
-#include <Windows.h>
 #include "gcCore.h"
-#include <vector>
-#include <map>
 #include "gcGUI.h"
+#include <Windows.h>
+#include <map>
+#include <vector>
+
+#include <SDL3/SDL_events.h>
 
 using namespace std;
 
@@ -119,11 +121,11 @@ public:
 	Node *		FindClosest(vector<Node*> &vis, Node *pPar, int yval);
 	Node *		FindNode(HWND hDlg);
 	DWORD		GetAutoColor();
-	
+
 	WindowManager *GetWM() const { return pMgr; }
 
 	vector<Node*> wList;
-	
+
 private:
 
 	class		WindowManager *pMgr;
@@ -176,7 +178,7 @@ public:
 
 	// ===============================================================================================
 	//
-	bool		MainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	bool		MainWindowProc(const SDL_Event &event);
 	void		Animate();
 	int			GetWidth() const { return width; }
 	HWND		GetMainWindow() const { return hMainWnd; }
@@ -196,7 +198,7 @@ public:
 	HBITMAP		GetBitmap(int id) const;
 	HFONT		GetAppTitleFont() const { return hAppFont; }
 	HFONT		GetSubTitleFont() const { return hSubFont; }
-	
+
 
 	// ===============================================================================================
 	//
@@ -234,7 +236,7 @@ public:
 	Conf		cfg;
 
 private:
-	
+
 	tInsert		qInsert;
 	vector<SideBar*> sbList;
 	SideBar *	sbDrag;

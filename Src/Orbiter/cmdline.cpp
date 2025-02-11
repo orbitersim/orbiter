@@ -2,15 +2,22 @@
 // Licensed under the MIT License
 
 #include <iostream>
+#include <sstream>
 #include <set>
 #include "cmdline.h"
 #include "Orbiter.h"
 #include "Launchpad.h"
 
-CommandLine::CommandLine(const PSTR cmdLine)
+CommandLine::CommandLine(int argc, const char** cmdLine)
 {
-	m_cmdLine = (std::string(cmdLine ? cmdLine : ""));
-	ParseCmdLine(cmdLine);
+	auto ss = std::stringstream();
+	for (int i = 1; i < argc; i++) {
+		if (i != 1)
+			ss << " ";
+		ss << (cmdLine[i] ? cmdLine[i] : "");
+	}
+	m_cmdLine = ss.str();
+	ParseCmdLine();
 }
 
 const char* CommandLine::CmdLine() const
@@ -28,9 +35,9 @@ bool CommandLine::GetOption(UINT id, const std::string** value) const
 	return false;
 }
 
-void CommandLine::ParseCmdLine(const PSTR cmdLine)
+void CommandLine::ParseCmdLine()
 {
-	PSTR pc = cmdLine;
+	const char *pc = m_cmdLine.c_str();
 	bool groupKey = false;
 
 	while (*pc) {
@@ -42,7 +49,7 @@ void CommandLine::ParseCmdLine(const PSTR cmdLine)
 	}
 }
 
-bool CommandLine::ParseNextOption(PSTR& cmdLine, bool& groupKey, Option& option)
+bool CommandLine::ParseNextOption(const char*& cmdLine, bool& groupKey, Option& option)
 {
 	bool isLongKey;
 	bool isQuotedVal;
@@ -70,7 +77,7 @@ bool CommandLine::ParseNextOption(PSTR& cmdLine, bool& groupKey, Option& option)
 	}
 	const char* termKeyChar = (isLongKey ? " \t=" : " \t"); // '=' as key-value separator only allowed for long keys
 	std::set<char> termK(termKeyChar, termKeyChar + strlen(termKeyChar) + 1); // include '\0' in set
-	PSTR endKey = cmdLine;
+	const char* endKey = cmdLine;
 	while (termK.find(*endKey) == termK.end())
 		endKey++;
 	size_t keyLen = endKey - cmdLine;
@@ -85,7 +92,7 @@ bool CommandLine::ParseNextOption(PSTR& cmdLine, bool& groupKey, Option& option)
 	else {
 		cmdLine = endKey; // advance command line pointer
 	}
-	
+
 	// Parse value, if present
 	while (*cmdLine == ' ' || *cmdLine == '\t') cmdLine++; // skip whitespace
 	if (*cmdLine == '\0' || *cmdLine == '-') { // end of options or next item is key: no value
@@ -104,7 +111,7 @@ bool CommandLine::ParseNextOption(PSTR& cmdLine, bool& groupKey, Option& option)
 		cmdLine++; // skip starting quotes
 	const char* termValChar = (isQuotedParam || isQuotedVal ? "\"" : " \t"); // for quoted values, only accept quotes as terminator
 	std::set<char> termV(termValChar, termValChar + strlen(termValChar) + 1); // include '\0' in set
-	PSTR endVal = cmdLine;
+	const char* endVal = cmdLine;
 	while (termV.find(*endVal) == termV.end())
 		endVal++;
 	size_t valLen = endVal - cmdLine;
@@ -148,11 +155,8 @@ void CommandLine::ApplyOptions()
 	}
 }
 
-
-
-
-orbiter::CommandLine::CommandLine(Orbiter* pOrbiter, const PSTR cmdLine)
-	: ::CommandLine(cmdLine)
+orbiter::CommandLine::CommandLine(Orbiter* pOrbiter, int argc, const char **cmdLine)
+	: ::CommandLine(argc, cmdLine)
 	, m_pOrbiter(pOrbiter)
 {
 	CFG_CMDLINEPRM& cfg = m_pOrbiter->Cfg()->CfgCmdlinePrm;
@@ -259,8 +263,8 @@ void orbiter::CommandLine::PrintHelpAndExit() const
 	exit(0);
 }
 
-orbiter::CommandLine& orbiter::CommandLine::InstanceImpl(Orbiter* pOrbiter, const PSTR cmdLine)
+orbiter::CommandLine& orbiter::CommandLine::InstanceImpl(Orbiter* pOrbiter, int argc, const char **cmdLine)
 {
-	static orbiter::CommandLine instance{ pOrbiter, cmdLine };
+	static orbiter::CommandLine instance{ pOrbiter, argc, cmdLine };
 	return instance;
 }

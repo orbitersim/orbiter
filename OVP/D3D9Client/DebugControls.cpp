@@ -32,7 +32,7 @@ extern D3D9Client *g_client;
 
 // Little binary helper
 #define SETFLAG(bitmap, bit, value) (value ? bitmap |= bit : bitmap &= ~bit)
-#define CLAMP(x,a,b) min(max(a,x),b) 
+#define CLAMP(x,a,b) min(max(a,x),b)
 
 namespace DebugControls {
 
@@ -70,20 +70,27 @@ public:
 		ImGui::PushItemWidth(150.0);
 		ImGui::SeparatorText("Post Processing Configuration");
 
-
-		ImGui::SliderFloatReset("Light glow intensity", &Config->GFXIntensity, 0.0f, 1.0f, 0.5f, "%1.2f");
-		ImGui::SliderFloatReset("Light glow distance", &Config->GFXDistance, 0.0f, 1.0f, 0.8f, "%1.2f");
-		ImGui::SliderFloatReset("Glow threshold", &Config->GFXThreshold, 0.5f, 2.0f, 1.1f, "%1.2f");
-		ImGui::SliderFloatReset("Gamma", &Config->GFXGamma, 0.3f, 2.5f, 1.0f, "%1.2f");
+	    auto min = 0.0; auto max = 1.0; auto def = 0.5;
+		ImGui::SliderScalarReset("Light glow intensity", ImGuiDataType_Double, sizeof(double), &Config->GFXIntensity, &min, &max, &def, "%1.2f");
+	    min = 0.0; max = 1.0; def = 0.8;
+		ImGui::SliderScalarReset("Light glow distance", ImGuiDataType_Double, sizeof(double), &Config->GFXDistance, &min, &max, &def, "%1.2f");
+        min = 0.5; max = 2.0; def = 1.1;
+	    ImGui::SliderScalarReset("Glow threshold", ImGuiDataType_Double, sizeof(double), &Config->GFXThreshold, &min, &max, &def, "%1.2f");
+        min = 0.3; max = 2.5; def = 1.0;
+	    ImGui::SliderScalarReset("Gamma", ImGuiDataType_Double, sizeof(double), &Config->GFXGamma, &min, &max, &def, "%1.2f");
 
 		ImGui::SeparatorText("Light Configuration");
 
-		ImGui::SliderFloatReset("Sunlight Intensity", &Config->GFXSunIntensity, 0.5f, 2.5f, 1.2f, "%1.2f");
-		ImGui::SliderFloatReset("Indirect Lighting", &Config->PlanetGlow, 0.01f, 2.0f, 0.7f, "%1.2f");
-		ImGui::SliderFloatReset("Local Lights Max", &Config->GFXLocalMax, 0.001f, 1.0f, 0.5f, "%1.2f");
-		ImGui::SliderFloatReset("Sun Glare Intensity", &Config->GFXGlare, 0.001f, 1.0f, 0.5f, "%1.2f");
+	    min = 0.5; max = 2.5; def = 1.2;
+		ImGui::SliderScalarReset("Sunlight Intensity", ImGuiDataType_Double, sizeof(double), &Config->GFXSunIntensity, &min, &max, &def, "%1.2f");
+	    min = 0.01; max = 2.0; def = 0.7;
+		ImGui::SliderScalarReset("Indirect Lighting", ImGuiDataType_Double, sizeof(double), &Config->PlanetGlow, &min, &max, &def, "%1.2f");
+	    min = 0.001; max = 1.0; def = 0.5;
+		ImGui::SliderScalarReset("Local Lights Max", ImGuiDataType_Double, sizeof(double), &Config->GFXLocalMax, &min, &max, &def, "%1.2f");
+	    min = 0.001; max = 1.0; def = 0.5;
+		ImGui::SliderScalarReset("Sun Glare Intensity", ImGuiDataType_Double, sizeof(double), &Config->GFXGlare, &min, &max, &def, "%1.2f");
 
-		if(ImGui::Button("Recrete Sun/Glares")) {
+		if(ImGui::Button("Recreate Sun/Glares")) {
 			g_client->GetScene()->CreateSunGlare();
 		}
 		ImGui::PopItemWidth();
@@ -139,7 +146,7 @@ const void *GetConfigParam (DWORD paramtype)
 float GetFloatFromBox(HWND hWnd, int item)
 {
 	char lbl[32];
-	GetWindowTextA(GetDlgItem(hWnd, item), lbl, 32);	
+	GetWindowTextA(GetDlgItem(hWnd, item), lbl, 32);
 	return float(atof(lbl));
 }
 
@@ -148,14 +155,14 @@ float GetFloatFromBox(HWND hWnd, int item)
 HWND CreateToolTip(int toolID, HWND hDlg, PTSTR pszText)
 {
     if (!toolID || !hDlg || !pszText) return NULL;
-    
+
     // Get the window of the tool.
     HWND hwndTool = GetDlgItem(hDlg, toolID);
     // Create the tooltip. g_hInst is the global instance handle.
     HWND hwndTip = CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL, WS_POPUP |TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hDlg, NULL, g_hInst, NULL);
-    
+
     if (!hwndTool || !hwndTip) return NULL;
-                                                          
+
     // Associate the tooltip with the tool.
     TOOLINFO toolInfo = { 0 };
     toolInfo.cbSize = sizeof(toolInfo);
@@ -211,7 +218,7 @@ void Create()
 	dwGFX = oapiRegisterCustomCmd((char*)"D3D9 Graphics Controls", (char*)"This dialog allows to control various graphics options", OpenGFXDlgClbk, gfxDlg);
 
 	resbias = 4.0 + Config->LODBias;
-  
+
 	memset(&OpenTex, 0, sizeof(OPENFILENAME));
 	memset(OpenFileName, 0, sizeof(OpenFileName));
 
@@ -373,13 +380,13 @@ void InitMatList(WORD shader)
 {
 	LRESULT idx = SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0);
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_RESETCONTENT, 0, 0);
-	
+
 	Dropdown.clear();
 
 	if (shader == SHADER_NULL) {
 		std::list<char> list = { 0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 14, 15, 16, 17 };
 		for (auto x : list) Dropdown.push_back(PrmList[x]);
-		for (auto x : Dropdown) SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)x.name.c_str());	
+		for (auto x : Dropdown) SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)x.name.c_str());
 	}
 
 	if (shader == SHADER_METALNESS) {
@@ -501,7 +508,7 @@ void OpenDlgClbk(void *context)
 	SendDlgItemMessage(hDlg, IDC_DBG_MATADJ, TBM_SETRANGEMIN, 1, 0);
 	SendDlgItemMessage(hDlg, IDC_DBG_MATADJ, TBM_SETTICFREQ,  1, 0);
 	SendDlgItemMessage(hDlg, IDC_DBG_MATADJ, TBM_SETPOS,  1, 0);
-	
+
 	// Set the "pick" checked
 	SendDlgItemMessage(hDlg, IDC_DBG_PICK, BM_SETCHECK, 1, 0);
 
@@ -566,7 +573,7 @@ void OpenDlgClbk(void *context)
 	Params[6].var[0] = DefVar(0.5f, 2, LIN, "Angle dependency");
 	Params[6].var[1] = DefVar(0, 1, LIN, "Maximum intensity");
 	Params[6].var[2] = DefVar(10.0f, 4096.0f, SQRT, "Specular lobe size");
-	
+
 	// Emission2
 	Params[7].var[0] = DefVar(0, 2, LIN, "Red");
 	Params[7].var[1] = DefVar(0, 2, LIN, "Green");
@@ -577,10 +584,10 @@ void OpenDlgClbk(void *context)
 
 	// SpecialFX
 	Params[9].var[0] = DefVar(0, 1, LIN, "Part Temperature");
-	
+
 
 	// Unused index 10
-	
+
 	// Tuning -------------------------------------------------------------------------------------
 	// Albedo
 	int i = 11;
@@ -622,10 +629,10 @@ void SetTuningValue(int idx, D3DCOLORVALUE *pClr, DWORD clr, float value)
 		case 0: pClr->r = CLAMP(value, mi, mx); break;
 		case 1: pClr->g = CLAMP(value, mi, mx); break;
 		case 2: pClr->b = CLAMP(value, mi, mx); break;
-		case 3: 
+		case 3:
 		{
-			if (Params[idx].var[clr].bGamma) pClr->a = 1.0f / CLAMP(value, mi, mx);		
-			else pClr->a = CLAMP(value, mi, mx);			
+			if (Params[idx].var[clr].bGamma) pClr->a = 1.0f / CLAMP(value, mi, mx);
+			else pClr->a = CLAMP(value, mi, mx);
 		} break;
 	}
 }
@@ -638,7 +645,7 @@ float GetTuningValue(int idx, D3DCOLORVALUE *pClr, DWORD clr)
 		case 0: return pClr->r;
 		case 1: return pClr->g;
 		case 2: return pClr->b;
-		case 3: 
+		case 3:
 		{
 			if (Params[idx].var[clr].bGamma) return 1.0f / pClr->a;
 			else return pClr->a;
@@ -671,7 +678,7 @@ void UpdateShader()
 
 	vVessel *vVes = (vVessel *)vObj;
 	MatMgr *pMgr = vVes->GetMaterialManager();
-	
+
 	switch (Shader) {
 	case 0:
 		hMesh->SetDefaultShader(SHADER_NULL);
@@ -697,7 +704,7 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 	D3D9Mesh *hMesh = (D3D9Mesh *)vObj->GetMesh(sMesh);
 
 	if (!hMesh) return;
-	
+
 	DWORD matidx = hMesh->GetMeshGroupMaterialIdx(sGroup);
 	DWORD texidx = hMesh->GetMeshGroupTextureIdx(sGroup);
 
@@ -827,7 +834,7 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 	hMesh->SetMaterial(&Mat, matidx);
 	vVessel *vVes = (vVessel *)vObj;
 
-	vVes->GetMaterialManager()->RegisterMaterialChange(hMesh, matidx, &Mat); 
+	vVes->GetMaterialManager()->RegisterMaterialChange(hMesh, matidx, &Mat);
 }
 
 
@@ -864,7 +871,7 @@ bool IsMaterialModified(DWORD MatPrp)
 	if (!hMesh) return false;
 
 	DWORD matidx = hMesh->GetMeshGroupMaterialIdx(sGroup);
-	
+
 	D3D9MatExt Mat;
 
 	if (!hMesh->GetMaterial(&Mat, matidx)) return false;
@@ -914,7 +921,7 @@ float GetMaterialValue(DWORD MatPrp, DWORD clr)
 	DWORD texidx = hMesh->GetMeshGroupTextureIdx(sGroup);
 
 	const D3D9MatExt *pMat = hMesh->GetMaterial(matidx);
-	
+
 	if (!pMat) return 0.0f;
 
 	D3D9Tune Tune;
@@ -1088,7 +1095,7 @@ void DisplayMat(bool bRed, bool bGreen, bool bBlue, bool bAlpha)
 	char lbl[32];
 
 	DWORD MatPrp = DropdownList(DWORD(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0)));
-	
+
 	float r = GetMaterialValue(MatPrp, 0);
 	float g = GetMaterialValue(MatPrp, 1);
 	float b = GetMaterialValue(MatPrp, 2);
@@ -1097,7 +1104,7 @@ void DisplayMat(bool bRed, bool bGreen, bool bBlue, bool bAlpha)
 	if (bRed) sprintf_s(lbl,32,"%3.3f", r);
 	else	  sprintf_s(lbl,32,"");
 	SetWindowText(GetDlgItem(hDlg, IDC_DBG_RED),   lbl);
-	
+
 	if (bGreen) sprintf_s(lbl,32,"%3.3f", g);
 	else		sprintf_s(lbl,32,"");
 	SetWindowText(GetDlgItem(hDlg, IDC_DBG_GREEN), lbl);
@@ -1111,11 +1118,11 @@ void DisplayMat(bool bRed, bool bGreen, bool bBlue, bool bAlpha)
 	SetWindowText(GetDlgItem(hDlg, IDC_DBG_ALPHA), lbl);
 
 	if (bRed)   EnableWindow(GetDlgItem(hDlg, IDC_DBG_RED), true);
-	else	    EnableWindow(GetDlgItem(hDlg, IDC_DBG_RED), false);	
+	else	    EnableWindow(GetDlgItem(hDlg, IDC_DBG_RED), false);
 	if (bGreen) EnableWindow(GetDlgItem(hDlg, IDC_DBG_GREEN), true);
-	else		EnableWindow(GetDlgItem(hDlg, IDC_DBG_GREEN), false);	
+	else		EnableWindow(GetDlgItem(hDlg, IDC_DBG_GREEN), false);
 	if (bBlue)  EnableWindow(GetDlgItem(hDlg, IDC_DBG_BLUE), true);
-	else	    EnableWindow(GetDlgItem(hDlg, IDC_DBG_BLUE), false);	
+	else	    EnableWindow(GetDlgItem(hDlg, IDC_DBG_BLUE), false);
 	if (bAlpha) EnableWindow(GetDlgItem(hDlg, IDC_DBG_ALPHA), true);
 	else		EnableWindow(GetDlgItem(hDlg, IDC_DBG_ALPHA), false);
 
@@ -1133,7 +1140,7 @@ void UpdateMaterialDisplay(bool bSetup)
 
 	OBJHANDLE hObj = vObj->GetObjectA();
 	if (!oapiIsVessel(hObj)) return;
-	
+
 	D3D9Mesh *hMesh = (D3D9Mesh *)vObj->GetMesh(sMesh);
 	if (!hMesh) return;
 
@@ -1154,7 +1161,7 @@ void UpdateMaterialDisplay(bool bSetup)
 	if (bSetup) SelColor = 0;
 
 	DWORD MatPrp = DropdownList(DWORD(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0)));
-	
+
 	DisplayMat(Params[MatPrp].var[0].bUsed, Params[MatPrp].var[1].bUsed, Params[MatPrp].var[2].bUsed, Params[MatPrp].var[3].bUsed);
 
 	SetToolTip(IDC_DBG_RED, hTipRed, Params[MatPrp].var[0].tip);
@@ -1175,7 +1182,7 @@ void UpdateMaterialDisplay(bool bSetup)
 
 	sprintf_s(lbl, 256, "Mesh: %s", RemovePath(hMesh->GetName()));
 	SetWindowText(GetDlgItem(hDlg, IDC_DBG_MESHNAME), lbl);
-	
+
 	GetWindowText(GetDlgItem(hDlg, IDC_DBG_MESHGRP), lbl2, 64);
 	if (strcmp(lbl, lbl2)) SetWindowText(GetDlgItem(hDlg, IDC_DBG_MESHGRP), lbl); // Avoid causing flashing
 }
@@ -1195,8 +1202,8 @@ bool IsSelectedGroupRendered()
 void UpdateColorSlider(WORD pos)
 {
 	float val = float(pos)/255.0f;
-	
-	DWORD MatPrp = DropdownList(DWORD(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0)));	
+
+	DWORD MatPrp = DropdownList(DWORD(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0)));
 
 	bool bLink = (SendDlgItemMessageA(hDlg, IDC_DBG_LINK, BM_GETCHECK, 0, 0)==BST_CHECKED);
 	bool bExtend = (SendDlgItemMessageA(hDlg, IDC_DBG_EXTEND, BM_GETCHECK, 0, 0) == BST_CHECKED);
@@ -1214,7 +1221,7 @@ void UpdateColorSlider(WORD pos)
 
 	float old = GetMaterialValue(MatPrp, SelColor);
 	float fct = val/old;
-	
+
 	if (old<1e-4) fct = val;
 
 	if (bLink) {
@@ -1272,7 +1279,7 @@ void SetupMeshGroups()
 {
 	char lbl[256];
 
-	if (!vObj) return; 
+	if (!vObj) return;
 
 	SetWindowText(GetDlgItem(hDlg, IDC_DBG_VISUAL), visual);
 
@@ -1347,7 +1354,7 @@ void SetVisual(vObject *vo)
 //
 void UpdateVisual()
 {
-	if (!vObj || !hDlg) return; 
+	if (!vObj || !hDlg) return;
 	nMesh = vObj->GetMeshCount();
 	sprintf_s(visual, 64, "Visual: %s", vObj->GetName());
 	SetupMeshGroups();
@@ -1369,14 +1376,14 @@ void UpdateVisual()
 		for (DWORD j = 0; j < nemitter; j++) {
 
 			const LightEmitter *em = vessel->GetLightEmitter(j);
-			
+
 			if (em->GetType() == LightEmitter::LT_SPOT) {
 				const SpotLight *sl = static_cast<const SpotLight*>(em);
 				double P = sl->GetPenumbra()*DEG;
 				double U = sl->GetUmbra()*DEG;
 				double R = sl->GetRange();
 				sprintf_s(line, 64, "%s P%1.0f U%1.0f R%1.0f", _PTR(em), P, U, R);
-			}	
+			}
 
 			if (em->GetType() == LightEmitter::LT_POINT) {
 				const PointLight *pl = static_cast<const PointLight*>(em);
@@ -1443,12 +1450,12 @@ D3DXCOLOR ProcessColor(D3DXVECTOR4 C, PCParam *prm, int x, int y)
 
 	// Swap color channels
 	C = D3DXVECTOR4(C.z, C.y, C.z, C.x);
-	
+
 	if (c>0.001) {
 		D3DXVECTOR4 rnd((float)oapiRand(),(float)oapiRand(), (float)oapiRand(), (float)oapiRand());
 		C += (rnd*2.0f-1.0f) * (c/(2.0f+fMip));
 	}
-	
+
 	// Reduce contrast
 	if (prm->Func & 0x2) {
 
@@ -1484,7 +1491,7 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 	if (SendDlgItemMessageA(hDlg, IDC_DBG_NORM, BM_GETCHECK, 0, 0)==BST_CHECKED) Func |= 0x1;
 	if (SendDlgItemMessageA(hDlg, IDC_DBG_FADE, BM_GETCHECK, 0, 0)==BST_CHECKED) Func |= 0x2;
 	if (SendDlgItemMessageA(hDlg, IDC_DBG_SEAMS, BM_GETCHECK, 0, 0)==BST_CHECKED) Func |= 0x4;
-	
+
 	if (Action>=0 && Action<=2) {
 
 		LPDIRECT3DTEXTURE9 pTex = NULL;
@@ -1495,7 +1502,7 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 		HR(D3DXCreateTextureFromFileExA(pDevice, pOF->lpstrFile, D3DX_DEFAULT_NONPOW2, D3DX_DEFAULT_NONPOW2, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, &info, NULL, &pTex));
 
 		if (!pTex) {
-			LogErr("Failed to open a file [%s]", pOF->lpstrFile); 
+			LogErr("Failed to open a file [%s]", pOF->lpstrFile);
 			return false;
 		}
 
@@ -1512,7 +1519,7 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 
 			if (!pSave) return false;
 
-			
+
 			// Process texture ----------------------------------------------
 			//
 			for (DWORD n=0;n<mips;n++) {
@@ -1521,7 +1528,7 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 
 				DWORD w = info.Width>>n;
 				DWORD h = info.Height>>n;
-				HR(pTex->LockRect(n, &in, NULL, 0)); 
+				HR(pTex->LockRect(n, &in, NULL, 0));
 				HR(pWork->LockRect(n, &out, NULL, 0));
 				DWORD *pIn  = (DWORD *)in.pBits;
 				DWORD *pOut = (DWORD *)out.pBits;
@@ -1532,14 +1539,14 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 				prm.a = GetFloatFromBox(hDlg, IDC_DBG_VARA);
 				prm.b = GetFloatFromBox(hDlg, IDC_DBG_VARB);
 				prm.c = GetFloatFromBox(hDlg, IDC_DBG_VARC);
-				
+
 				for (DWORD y=0;y<h;y++) {
 					for (DWORD x=0;x<w;x++) {
 
 						D3DXCOLOR c(pIn[x + y*w]);
 						DWORD r = w-1;
 						DWORD b = h-1;
-						
+
 						if (Func&0x4) {
 							seam = c;
 							if (x==0) seam = D3DXCOLOR(pIn[r + y*w]);
@@ -1589,7 +1596,7 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 			SAFE_RELEASE(pWork);
 		}
 		else {
-			// Copy input to output	
+			// Copy input to output
 			pSave = pTex;
 		}
 
@@ -1599,7 +1606,7 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 			strcpy_s(SaveTex.lpstrFile, 255, OpenTex.lpstrFile);
 			if (GetSaveFileName(&SaveTex)) {
 				if (D3DXSaveTextureToFileA(SaveTex.lpstrFile, D3DXIFF_DDS, pSave, NULL)!=S_OK) {
-					LogErr("Failed to create a file [%s]",SaveTex.lpstrFile); 
+					LogErr("Failed to create a file [%s]",SaveTex.lpstrFile);
 					return false;
 				}
 				SAFE_RELEASE(pSave);
@@ -1610,7 +1617,7 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 		// Assign the texture for rendering -----------------------------
 		//
 		if (Target==1 || Target==2 || Target==3) {
-			vPlanet *vP = g_client->GetScene()->GetCameraProxyVisual();	
+			vPlanet *vP = g_client->GetScene()->GetCameraProxyVisual();
 			if (vP) vP->SetMicroTexture(pSave, Target-1);
 			SAFE_RELEASE(pSave);
 			return true;
@@ -1619,7 +1626,7 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 
 	return false;
 }
-			
+
 
 // =============================================================================================
 //
@@ -1692,13 +1699,13 @@ void CreateSamplingKernel()
 {
 	int s = 27;
 	int k = 0;
-	
+
 	VECTOR3 *data = new VECTOR3[s];
-	
+
 	double d = 0.0;
 	double a = 0.0;
-	
-	for (int i = 0; i < s; i++) {	
+
+	for (int i = 0; i < s; i++) {
 		double z = (oapiRand()*2.0 - 1.0) * (PI2 / 8);
 		data[i].x = sqrt(d) * sin(a+z);
 		data[i].y = sqrt(d) * cos(a+z);
@@ -1765,7 +1772,7 @@ INT_PTR CALLBACK ViewProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	static bool isOpen = false; // IDC_DBG_MORE (full or reduced width)
 
 	DWORD Prp = DropdownList(DWORD(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0)));
-	
+
 	switch (uMsg) {
 
 	case WM_INITDIALOG:
@@ -1805,7 +1812,7 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	OpenTex.hwndOwner = hWnd;
 
 	DWORD Prp = DropdownList(DWORD(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0)));
-	
+
 	switch (uMsg) {
 
 	case WM_INITDIALOG:
@@ -1821,7 +1828,7 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			if (HWND(lParam)==GetDlgItem(hWnd, IDC_DBG_SPEED)) {
 				if (pos==0) pos = WORD(SendDlgItemMessage(hDlg, IDC_DBG_SPEED, TBM_GETPOS,  0, 0));
-				double fpos = pow(2.0,double(pos)*13.0/200.0); 
+				double fpos = pow(2.0,double(pos)*13.0/200.0);
 				sprintf_s(lbl,32,"%1.0f",fpos);
 				SetWindowTextA(GetDlgItem(hWnd, IDC_DBG_SPEEDDSP), lbl);
 				camSpeed = fpos/50.0;
@@ -1847,7 +1854,7 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			case IDCANCEL:
 				Close();
 				break;
-		
+
 			case IDC_DBG_KERNEL:
 			{
 				CreateSamplingKernel();
@@ -1947,7 +1954,7 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			case IDC_DBG_MATPRP:
 				if (HIWORD(wParam)==CBN_SELCHANGE) {
 					UpdateMaterialDisplay(true);
-					SetColorSlider();	
+					SetColorSlider();
 				}
 				break;
 
@@ -1971,38 +1978,38 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				if (HIWORD(wParam)==CBN_SELCHANGE) camMode = DWORD(SendDlgItemMessage(hWnd, IDC_DBG_CAMERA, CB_GETCURSEL, 0, 0));
 				break;
 
-			case IDC_DBG_MSHUP: 
+			case IDC_DBG_MSHUP:
 				if (HIWORD(wParam)==BN_CLICKED) sMesh--;
 				SetupMeshGroups();
 				break;
 
-			case IDC_DBG_MSHDN: 
+			case IDC_DBG_MSHDN:
 				if (HIWORD(wParam)==BN_CLICKED) sMesh++;
 				SetupMeshGroups();
 				break;
 
-			case IDC_DBG_GRPUP: 
+			case IDC_DBG_GRPUP:
 				if (HIWORD(wParam)==BN_CLICKED) sGroup--;
 				SetupMeshGroups();
 				break;
 
-			case IDC_DBG_GRPDN: 
-				if (HIWORD(wParam)==BN_CLICKED) sGroup++;	
+			case IDC_DBG_GRPDN:
+				if (HIWORD(wParam)==BN_CLICKED) sGroup++;
 				SetupMeshGroups();
 				break;
 
-			
-			case IDC_DBG_MESH: 
+
+			case IDC_DBG_MESH:
 				if (HIWORD(wParam)==EN_KILLFOCUS) {
 					char cbuf[32];
-					GetWindowText(GetDlgItem(hWnd, IDC_DBG_MESH),  cbuf, 32); 
+					GetWindowText(GetDlgItem(hWnd, IDC_DBG_MESH),  cbuf, 32);
 					for (int i=0; i<32;i++) if (cbuf[i]==0 || cbuf[i]=='/') { cbuf[i]=0; break; }
 					sMesh = atoi(cbuf);
 					SetupMeshGroups();
 				}
 				break;
 
-			case IDC_DBG_GROUP: 
+			case IDC_DBG_GROUP:
 				if (HIWORD(wParam)==EN_KILLFOCUS) {
 					char cbuf[32];
 					GetWindowText(GetDlgItem(hWnd, IDC_DBG_GROUP),  cbuf, 32);
@@ -2079,8 +2086,8 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			case IDC_DBG_VARC:
 			case IDC_DBG_FILE:
 				break;
-		
-			default: 
+
+			default:
 				LogErr("LOWORD(%hu), HIWORD(0x%hX)",LOWORD(wParam),HIWORD(wParam));
 				break;
 		}

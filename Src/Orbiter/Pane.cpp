@@ -27,8 +27,8 @@ static COLORREF normalColor = RGB (  0, 255, 0);
 static COLORREF infoColor   = RGB (224, 192, 0);
 static COLORREF brightColor = RGB (255, 224, 128);
 
-			   
-Pane::Pane (oapi::GraphicsClient *gclient, HWND hwnd, int width, int height, int bpp)
+
+Pane::Pane (oapi::GraphicsClient *gclient, std::shared_ptr<sdl::UnmanagedWindow> hwnd, int width, int height, int bpp)
 {
 	// Note: gclient is assumed to be a valid pointer. Nongraphics orbiter
 	// instances should not create a Pane.
@@ -57,11 +57,11 @@ Pane::Pane (oapi::GraphicsClient *gclient, HWND hwnd, int width, int height, int
 	panel2d   = 0;
 	panel     = 0;
 	vcockpit  = 0;
-	
+
 	if (gc) mibar = new MenuInfoBar (this);
 	else    mibar = NULL;
 
-	
+
 	i = g_pOrbiter->Cfg()->CfgInstrumentPrm.bMfdPow2;
 	if (i == 2) {
 		DWORD val;
@@ -145,29 +145,31 @@ bool Pane::MFDConsumeKeyBuffered (int id, DWORD key)
 	return false;
 }
 
-bool Pane::ProcessMouse_System(UINT event, DWORD state, DWORD x, DWORD y, const char *kstate)
+bool Pane::ProcessMouse_System(const SDL_Event &event, DWORD x, DWORD y,
+                               const char *kstate)
 {
 	if (g_camera->IsExternal()) return false;
 	// respond to mouse events only in cockpit mode
 
 	bool consumed = false;
-	if (defpanel)      /*consumed = defpanel->ProcessMouse(event, state, x, y)*/;
-	else if (panel2d)  consumed = panel2d->ProcessMouse_System(event, state, x, y, kstate);
-	else if (panel)    /*consumed = panel->ProcessMouse(event, state, x, y)*/;
-	else if (vcockpit) /*consumed = vcockpit->ProcessMouse(event, state, x, y)*/;
+	if (defpanel)      /*consumed = defpanel->ProcessMouse(event, state, x, y)*/ {}
+	else if (panel2d)  {consumed = panel2d->ProcessMouse_System(event, x, y, kstate);}
+	else if (panel)    /*consumed = panel->ProcessMouse(event, state, x, y)*/ {}
+	else if (vcockpit) /*consumed = vcockpit->ProcessMouse(event, state, x, y)*/ {}
 	return consumed;
 }
 
-bool Pane::ProcessMouse_OnRunning (UINT event, DWORD state, DWORD x, DWORD y, const char *kstate)
+bool Pane::ProcessMouse_OnRunning (const SDL_Event &event, DWORD x, DWORD y,
+                                  const char *kstate)
 {
 	if (g_camera->IsExternal()) return false;
 	// respond to mouse events only in cockpit mode
 
 	bool consumed = false;
-	if (defpanel)      consumed = defpanel->ProcessMouse (event, state, x, y);
-	else if (panel2d)  consumed = panel2d->ProcessMouse_OnRunning (event, state, x, y, kstate);
-	else if (panel)    consumed = panel->ProcessMouse (event, state, x, y);
-	else if (vcockpit) consumed = vcockpit->ProcessMouse (event, state, x, y);
+	if (defpanel)      consumed = defpanel->ProcessMouse (event, x, y);
+	else if (panel2d)  consumed = panel2d->ProcessMouse_OnRunning (event, x, y, kstate);
+	else if (panel)    consumed = panel->ProcessMouse (event, x, y);
+	else if (vcockpit) consumed = vcockpit->ProcessMouse (event, x, y);
 	return consumed;
 }
 
@@ -190,7 +192,7 @@ bool Pane::SetPanelMode (int pmode, bool force)
 
 	if (pmode == panelmode && !force) return true; // nothing to do
 	panelmode = pmode;
-	
+
 	Vessel::UnsetCameraMovement();
 
 	for (i = 0; i < MAXMFD; i++) {
@@ -905,7 +907,7 @@ bool Pane::OpenMFD (INT_PTR id, int type, ifstream *ifs)
 	// Try to create a new mode with this key
 	Instrument *newinstr = 0;
 	if (ifs || type != MFD_NONE) {
-		newinstr = (ifs ? 
+		newinstr = (ifs ?
 			Instrument::Create (*ifs, this, id, spec, g_focusobj) :
 			Instrument::Create (type, this, id, spec, g_focusobj) );
 		if (!newinstr) return false; // no mode found
