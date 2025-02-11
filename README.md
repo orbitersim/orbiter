@@ -67,17 +67,7 @@ If you want to build the documentation, you need a few additional tools:
 - [Doxygen](https://www.doxygen.nl/index.html) for building the source-level
   documentation for developers.
 
-By default, the build is configured to create both graphics flavours of the
-Orbiter executable (although this can be configured with the ORBITER_GRAPHICS CMake flag):
-- ``orbiter.exe`` is the standalone Orbiter application with built-in DX7 graphics.
-- ``orbiter_ng.exe`` is a launcher for ``./Modules/Server/orbiter.exe`` which is the
-graphics server version of Orbiter. It requires an external graphics client
-plugin to be loaded via the Modules tab of the Orbiter Launchpad dialog.
-The reference D3D7Client is included with the build with essentially the same
-functionality as the built-in graphics version. Use 3rd party client
-implementations to make use of more modern graphics engines.
-
-See [README.compile](./README.compile) for details on building Orbiter.
+See [COMPILE.md](./COMPILE.md) for details on building Orbiter.
 
 ## Planet textures
 
@@ -93,6 +83,9 @@ To configure Orbiter to use the texture installation, set the
 ORBITER_PLANET_TEXTURE_INSTALL_DIR entry in CMake. For example, if Orbiter
 was installed in `C:\Orbiter`, the CMake option should be set to
 `C:/Orbiter/Textures`.
+
+This path can also be set using ORBITER_PLANET_TEXTURE_INSTALL_DIR environment variable
+
 Alternatively, you can configure the texture directory after building Orbiter
 by setting the `PlanetTexDir` entry in `Orbiter.cfg`.
 

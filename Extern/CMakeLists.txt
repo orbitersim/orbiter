@@ -4,7 +4,7 @@ if(NOT DEFINED ORBITER_BINARY_ROOT_DIR)
     message(FATAL_ERROR "ORBITER_BINARY_ROOT_DIR is not set")
 endif(NOT DEFINED ORBITER_BINARY_ROOT_DIR)
 
-add_subdirectory(lua)
+add_subdirectory(Lua)
 add_subdirectory(zlib)
 
 ## LFS

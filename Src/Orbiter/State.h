@@ -11,18 +11,21 @@
 
 #include <iostream>
 #include <fstream>
+#include <string>
 
 class State {
 public:
 	State();
 
 	double Mjd() const { return mjd; }
-	char *Solsys() { return solsys; }
-	const char *Context() const { return context[0] ? context : 0; }
-	const char *Script() const { return script[0] ? script : 0; }
-	const char *Focus() const { return focus; }
-	const char *ScnHelp() const { return (scnhelp[0] ? scnhelp : 0); }
-	const char *PlaybackDir() const { return (playback[0] ? playback : scenario); }
+	char *Solsys() { return const_cast<char *>(solsys.c_str()); }
+	const char *Context() const { return context.length() ? context.c_str() : 0; }
+	const char *SplashScreen() const { return splashscreen.length() ? splashscreen.c_str() : 0; }
+	DWORD SplashColor() const { return splashcolor; }
+	const char *Script() const { return script.length() ? script.c_str() : 0; }
+	const char *Focus() const { return focus.c_str(); }
+	const char *ScnHelp() const { return (scnhelp.length() ? scnhelp.c_str() : 0); }
+	const char *PlaybackDir() const { return (playback.length() ? playback.c_str() : scenario.c_str()); }
 	void Update ();
 
 	/// \brief Read state from scenario file
@@ -37,15 +40,17 @@ public:
 	// load/save scenario state
 
 private:
-	double mjd0;        // start time (MJD format)
-	double mjd;         // current simulation time
-	char scenario[256]; // scenario name
-	char solsys[64];    // name of planetary system
-	char context[64];   // scenario context
-	char script[128];   // scenario script
-	char focus[64];     // current focus vessel
-	char scnhelp[128];  // scenario help file
-	char playback[128]; // playback folder name, if applicable
+	double mjd0;           // start time (MJD format)
+	double mjd;            // current simulation time
+	std::string scenario;    // scenario name
+	std::string solsys;       // name of planetary system
+	std::string context;      // scenario context
+	std::string splashscreen;// scenario splash screen
+	DWORD splashcolor;     // text color on splashscreen
+	std::string script;      // scenario script
+	std::string focus;        // current focus vessel
+	std::string scnhelp;     // scenario help file
+	std::string playback;    // playback folder name, if applicable
 
 };
 

@@ -1233,6 +1233,7 @@ protected:
 	 */
 	bool clbkSplashLoadMsg (const char *msg, int line);
 
+	void clbkSetSplashScreen(const char *filename, DWORD textCol) override;
 
 	/**
 	 * \brief Store a persistent mesh template
@@ -1307,6 +1308,8 @@ private:
 	std::string				scenarioName;
 	HANDLE					hMainThread;
 	WindowManager *			pWM;
+	const char *            pCustomSplashScreen;
+	DWORD                   pSplashTextColor;
 
 	HWND hRenderWnd;        // render window handle
 

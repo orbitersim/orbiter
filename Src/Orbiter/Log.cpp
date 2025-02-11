@@ -5,8 +5,8 @@
 
 #include <string.h>
 #include <fstream>
-#include <dx7\ddraw.h>
-#include <dx7\dplay.h>
+#include <Windows.h>
+#include <Psapi.h>
 #include "Log.h"
 #include "Orbiter.h"
 
@@ -304,49 +304,6 @@ void LogOut_DIErr (HRESULT hr, const char *func, const char *file, int line) {
 	LogOut ("---------------------------------------------------------------");
 }
 
-void LogOut_DPErr (HRESULT hr, const char *func, const char *file, int line) {
-	static char errmsg[256] = ">>> ERROR: DPlay error ";
-	static char *err = errmsg+23;
-	switch (hr) {
-	case DPERR_ACCESSDENIED:				strcpy (err, "DPERR_ACCESSDENIED"); break;
-	case DPERR_AUTHENTICATIONFAILED:		strcpy (err, "DPERR_AUTHENTICATIONFAILED"); break;
-	case DPERR_BUFFERTOOSMALL:				strcpy (err, "DPERR_BUFFERTOOSMALL"); break;
-	case DPERR_BUSY:						strcpy (err, "DPERR_BUSY"); break;
-	case DPERR_CANNOTCREATESERVER:			strcpy (err, "DPERR_CANNOTCREATESERVER"); break;
-	case DPERR_CANTCREATEPLAYER:			strcpy (err, "DPERR_CANTCREATEPLAYER"); break;
-	case DPERR_CANTLOADCAPI:				strcpy (err, "DPERR_CANTLOADCAPI"); break;
-	case DPERR_CANTLOADSECURITYPACKAGE:		strcpy (err, "DPERR_CANTLOADSECURITYPACKAGE"); break;
-	case DPERR_CANTLOADSSPI:				strcpy (err, "DPERR_CANTLOADSSPI"); break;
-	case DPERR_CONNECTING:					strcpy (err, "DPERR_CONNECTING"); break;
-	case DPERR_CONNECTIONLOST:				strcpy (err, "DPERR_CONNECTIONLOST"); break;
-	case DPERR_ENCRYPTIONFAILED:			strcpy (err, "DPERR_ENCRYPTIONFAILED"); break;
-	case DPERR_ENCRYPTIONNOTSUPPORTED:		strcpy (err, "DPERR_ENCRYPTIONNOTSUPPORTED"); break;
-	case DPERR_INVALIDFLAGS:				strcpy (err, "DPERR_INVALIDFLAGS"); break;
-	case DPERR_INVALIDOBJECT:				strcpy (err, "DPERR_INVALIDOBJECT"); break;
-	case DPERR_INVALIDPARAMS:				strcpy (err, "DPERR_INVALIDPARAMS"); break;
-	case DPERR_INVALIDPASSWORD:				strcpy (err, "DPERR_INVALIDPASSWORD"); break;
-	case DPERR_INVALIDPLAYER:				strcpy (err, "DPERR_INVALIDPLAYER"); break;
-	case DPERR_INVALIDPRIORITY:				strcpy (err, "DPERR_INVALIDPRIORITY"); break;
-	case DPERR_LOGONDENIED:					strcpy (err, "DPERR_LOGONDENIED"); break;
-	case DPERR_NOCONNECTION:				strcpy (err, "DPERR_NOCONNECTION"); break;
-	case DPERR_NONEWPLAYERS:				strcpy (err, "DPERR_NONEWPLAYERS"); break;
-	case DPERR_NOSESSIONS:					strcpy (err, "DPERR_NOSESSIONS"); break;
-	case DPERR_NOTLOGGEDIN:					strcpy (err, "DPERR_NOTLOGGEDIN"); break;
-	case DPERR_SENDTOOBIG:					strcpy (err, "DPERR_SENDTOOBIG"); break;
-	case DPERR_SIGNFAILED:					strcpy (err, "DPERR_SIGNFAILED"); break;
-	case DPERR_TIMEOUT:						strcpy (err, "DPERR_TIMEOUT"); break;
-	case DPERR_UNINITIALIZED:				strcpy (err, "DPERR_UNINITIALIZED"); break;
-	case DPERR_UNSUPPORTED:					strcpy (err, "DPERR_UNSUPPORTED"); break;
-	case DPERR_USERCANCEL:					strcpy (err, "DPERR_USERCANCEL"); break;
-	default:								sprintf (err, "DPERR CODE %ld", hr); break;
-	}
-	LogOut ("---------------------------------------------------------------");
-	LogOut (errmsg);
-	sprintf (logs, ">>> [%s | %s | %d]", func, file, line);
-	LogOut();
-	LogOut ("---------------------------------------------------------------");
-}
-
 void LogOut_Warning(const char* func, const char* file, int line, const char* msg, ...)
 {
 	va_list ap;
@@ -368,6 +325,74 @@ void LogOut_Obsolete(const char* func, const char* msg)
 	}
 	LogOut_Warning_End();
 }
+
+
+void PrintModules()
+{
+	HMODULE hMods[4096];
+	HANDLE hProcess;
+	DWORD cbNeeded;
+	unsigned int i;
+
+	// Get a handle to the process.
+
+	hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, GetProcessId(GetCurrentProcess()));
+
+	if (NULL == hProcess) return;
+
+	if (EnumProcessModules(hProcess, hMods, sizeof(hMods), &cbNeeded))
+	{
+		for (i = 0; i < (cbNeeded / sizeof(HMODULE)); i++)
+		{
+			char szModName[MAX_PATH];
+
+			if (GetModuleFileNameExA(hProcess, hMods[i], szModName, sizeof(szModName)))
+			{
+				MODULEINFO mi;
+
+				GetModuleInformation(hProcess, hMods[i], &mi, sizeof(MODULEINFO));
+
+				DWORD vs = GetFileVersionInfoSize(szModName, NULL);
+
+				if (vs == 0) continue;
+
+				BYTE* Data = new BYTE[vs];
+
+				if (!GetFileVersionInfo(szModName, 0, vs, Data))
+				{
+					LogOut("GetFileVersionInfo Failed %u", GetLastError());
+					delete[]Data;
+					continue;
+				}
+
+				VS_FIXEDFILEINFO *Info = NULL;
+				UINT size = 0;
+
+				if (!VerQueryValueA(Data, TEXT("\\"), (void**)&Info, &size))
+				{
+					LogOut("VerQueryValueA Failed %u", GetLastError());
+					delete[]Data;
+					continue;
+				}
+
+				if (Info->dwSignature == 0xFEEF04BD)
+				{
+					unsigned short a = Info->dwFileVersionMS >> 16;
+					unsigned short b = Info->dwFileVersionMS & 0xFFFF;
+					unsigned short c = Info->dwFileVersionLS >> 16;
+					unsigned short d = Info->dwFileVersionLS & 0xFFFF;
+					LogOut("Module linked [%s]  Version=%hu.%hu.%hu.%hu  Size=%u", szModName, a, b, c, d, mi.SizeOfImage);
+				}
+
+				delete[]Data;
+			}
+		}
+	}
+	CloseHandle(hProcess);
+	return;
+}
+
+
 
 void tracenew (char *fname, int line)
 {

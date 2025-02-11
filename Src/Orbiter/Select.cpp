@@ -819,23 +819,7 @@ int InputBox::ConsumeKey (UINT uMsg, WPARAM wParam, WORD mod)
 #ifdef UNDEF
 SURFHANDLE AllocSurface (oapi::GraphicsClient *gc, int w, int h)
 {
-	return gc->clbkCreateSurface (w, h);
-#ifdef INLINEGRAPHICS
-//	extern Orbiter* g_pOrbiter;
-//	LPDIRECTDRAW7 pDD = g_pOrbiter->GetInlineGraphicsClient()->GetDirectDraw();
-//	DDSURFACEDESC2 ddsd;
-//	LPDIRECTDRAWSURFACE7 surf;
-//    ZeroMemory (&ddsd, sizeof(ddsd));
-//	ddsd.dwSize = sizeof(ddsd); 
-//    ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH; 
-//    ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN; 
-//    ddsd.dwWidth = w;
-	ddsd.dwHeight = h;
-	if (pDD->CreateSurface (&ddsd, &surf, NULL) != DD_OK) surf = 0;
-	return surf;
-#else
 	return NULL;
-#endif
 }
 #endif
 

@@ -102,6 +102,8 @@ The following environment parameters are supported:
 	Help & String [,String] & Scenario help file (in HTML or compressed CHM format). For a HTML page, specify the location of the page relative to the Html\textbackslash Scenarios folder and without extension (.htm is assumed). For a page in a CHM file, specify the location of the file relative to the Html\textbackslash Scenarios folder without extension (.chm is assumed), followed by a comma and the name of the page inside the file without extension (.htm is assumed). Scenario help files can be opened during the simulation with Alt+F1. Default: no help file\\
 	\hline\rule{0pt}{2ex}
 	Playback & String & Folder containing playback data, relative to "Flights" subdirectory. Default: no playback\\
+	\hline\rule{0pt}{2ex}
+	SplashScreen & String String & First argument is a CSS color string (e.g. \#ff0000 or red) indicating the color to use for the text displayed while the scenario is loading. The second argument is the path to an image that will replace the default Orbiter screen. The color name is case insensitive. Default: standard load screen\\
 	\hline
 	\end{tabularx}
 \end{table}

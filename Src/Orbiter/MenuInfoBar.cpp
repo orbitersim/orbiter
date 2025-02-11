@@ -421,13 +421,8 @@ MenuInfoBar::MenuInfoBar (const Pane *_pane)
 	scrollpos = (menumode == 0 ? scrollrange : 0.0);
 	scrollpos_info = (infomode == 0 ? menuH : 0.0);
 	scrolldir = scrolldir_info = 0;
-#ifdef INLINEGRAPHICS
-	menuSrc = gc->clbkLoadTexture("main_menu.dds", 0x4);
-	menuTgt = gc->clbkLoadTexture("main_menu_tgt.dds", 0x4);
-#else
 	menuSrc = gc->clbkLoadSurface("main_menu.dds", OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE);
 	menuTgt = gc->clbkLoadSurface("main_menu_tgt.dds", OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE);
-#endif
 	dCHECK(menuSrc && menuTgt, "MenuInfoBar: main_menu.dds or main_menu_tgt.dds could not be loaded from Textures directory.")
 	gc->clbkBlt (menuTgt, 0, tgtTexH-menuH, menuSrc, 0, 23+menuH, menuW, menuH);
 	int yofs = (menumode == 0 ? -menuH+scrollrange:-menuH);
