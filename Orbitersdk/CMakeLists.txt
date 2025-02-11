@@ -31,6 +31,8 @@ add_custom_target(copy_sdk_include
 )
 add_dependencies(Orbitersdk
 	copy_sdk_include
+	SDL3::SDL3
+	SDL3_image::SDL3_image
 )
 
 if(ORBITER_MAKE_DOC)

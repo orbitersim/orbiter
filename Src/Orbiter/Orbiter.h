@@ -4,6 +4,7 @@
 #ifndef ORBITER_H
 #define ORBITER_H
 
+#include <SDL3/SDL_loadso.h>
 #include "Config.h"
 #include "Input.h"
 #include "Select.h"
@@ -12,6 +13,7 @@
 #include <commctrl.h>
 #include "Mesh.h"
 #include "TimeData.h"
+#include <OrbiterAPI.h>
 
 class DInput;
 class Config;
@@ -46,6 +48,7 @@ class Orbiter {
 	friend class ScriptInterface;
 	friend class oapi::GraphicsClient;
 	friend class OrbiterGraphics;
+	friend OAPIFUNC HMODULE stopgapGetModuleInstance (ModHandle* module);
 
 public:
 	Orbiter ();
@@ -107,7 +110,7 @@ public:
 	void UpdateDeallocationProgress();
 
 	// plugin module loading/unloading
-	HINSTANCE LoadModule (const char *path, const char *name);   // load a plugin
+	ModHandle* LoadModule (const char *path, const char *name);   // load a plugin
 
 	/// \brief Unload a DLL plugin identified by its name
 	/// \param name DLL name
@@ -117,7 +120,7 @@ public:
 	/// \brief Unload a DLL plugin identified by its instance handle
 	/// \param hDLL DLL handle
 	/// \return true on success (module found and unloaded)
-	bool UnloadModule (HINSTANCE hDLL);
+	bool UnloadModule (ModHandle* hDLL);
 
 	Vessel *SetFocusObject (Vessel *vessel, bool setview = true);
 	// Select a new user-controlled vessel
@@ -403,7 +406,7 @@ private:
 
 	// === The plugin module interface ===
 	struct DLLModule {
-		HINSTANCE hDLL;        // DLL instance handle
+		ModHandle* hDLL;        // DLL instance handle
 		oapi::Module* pModule; // pointer to module instance, if the plugin registered one
 		std::string sName;     // DLL name
 		bool bLocalAlloc;      // locally allocated; should be freed by Orbiter core
@@ -431,7 +434,7 @@ private:
 	 */
 	void LoadStartupModules();
 
-	OPC_Proc FindModuleProc (HINSTANCE hDLL, const char *procname);
+	OPC_Proc FindModuleProc (ModHandle* hDLL, const char *procname);
 	// returns address of a procedure in a plugin module, or NULL if procedure not found
 
 	// list of custom commands

@@ -937,7 +937,7 @@ bool CELBODY2::LoadAtmosphereModule (const char *fname)
 	oapiGetObjectName (hBody, name, 256);
 	sprintf (path, "Modules\\Celbody\\%s\\Atmosphere", name);
 	if (!(hAtmModule = g_pOrbiter->LoadModule (path, fname))) return false;
-	ATMOSPHERE *(*func)(CELBODY2*) = (ATMOSPHERE*(*)(CELBODY2*))GetProcAddress (hAtmModule, "CreateAtmosphere");
+	ATMOSPHERE *(*func)(CELBODY2*) = (ATMOSPHERE*(*)(CELBODY2*))SDL_LoadFunction (reinterpret_cast<SDL_SharedObject*>(hAtmModule), "CreateAtmosphere");
 	if (!func) {
 		g_pOrbiter->UnloadModule (fname);
 		hAtmModule = NULL;
@@ -951,7 +951,7 @@ bool CELBODY2::FreeAtmosphereModule ()
 {
 	if (!hAtmModule) return false;
 	if (atm) {
-		void (*func)(ATMOSPHERE*) = (void(*)(ATMOSPHERE*))GetProcAddress(hAtmModule, "DeleteAtmosphere");
+		void (*func)(ATMOSPHERE*) = (void(*)(ATMOSPHERE*))SDL_LoadFunction(reinterpret_cast<SDL_SharedObject*>(hAtmModule), "DeleteAtmosphere");
 		if (func) {
 			func (atm);
 		} else {

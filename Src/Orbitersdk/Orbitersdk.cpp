@@ -6,32 +6,26 @@
 // Contains standard module entry point and version information.
 // ========================================================================
 
-#include <windows.h>
-#include <fstream>
-#include <stdio.h>
+typedef struct ModHandle ModHandle;
 
 #define DLLCLBK extern "C" __declspec(dllexport)
 #define OAPIFUNC __declspec(dllimport)
 
-BOOL WINAPI DllMain (HINSTANCE hModule,
-					 DWORD ul_reason_for_call,
-					 LPVOID lpReserved)
+extern OAPIFUNC void InitLib (ModHandle*);
+typedef void (*DLLEXIT)(ModHandle*);
+extern "C" OAPIFUNC DLLEXIT SDL_LoadFunction(ModHandle*, const char*);
+
+DLLCLBK void OrbitersdkModuleEntry (ModHandle* hModule, bool detach)
 {
-	OAPIFUNC void InitLib (HINSTANCE hModule);
-	typedef void (*DLLEXIT)(HINSTANCE);
 	static DLLEXIT DLLExit;
 
-	switch (ul_reason_for_call) {
-	case DLL_PROCESS_ATTACH:
+	if (!detach) {
 		InitLib (hModule);
-		DLLExit = (DLLEXIT)GetProcAddress (hModule, "ExitModule");
-		if (!DLLExit) DLLExit = (DLLEXIT)GetProcAddress (hModule, "opcDLLExit");
-		break;
-	case DLL_PROCESS_DETACH:
+		DLLExit = SDL_LoadFunction (hModule, "ExitModule");
+		if (!DLLExit) DLLExit = SDL_LoadFunction (hModule, "opcDLLExit");
+	} else {
 		if (DLLExit) (*DLLExit)(hModule);
-		break;
 	}
-	return TRUE;
 }
 
 int oapiGetModuleVersion ()

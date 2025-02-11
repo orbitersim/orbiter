@@ -107,7 +107,7 @@ class ToolKit : public gcGUIApp, public oapi::Module
 
 public:
 
-				ToolKit(HINSTANCE hDLL);
+				ToolKit(ModHandle* hDLL);
 				~ToolKit();
 
 	bool		SaveFile(OPENFILENAMEA &SaveImage);

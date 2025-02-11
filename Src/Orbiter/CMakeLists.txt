@@ -106,6 +106,7 @@ set(common_src
 	MFDAPI.cpp
 	ModuleAPI.cpp
 	OrbiterAPI.cpp
+	InputAPI.cpp
 # Graphics utils
 	D3d7util.cpp
 	D3dmath.cpp
@@ -141,6 +142,8 @@ set(Orbiter_common_libs
 	${HTMLHELP_LIB}
 	$<TARGET_FILE:Orbitersdk>
 	$<TARGET_FILE:DlgCtrl>
+	SDL3::SDL3
+	SDL3_image::SDL3_image
 )
 set(Orbiter_libs
 	dxguid.lib

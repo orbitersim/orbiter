@@ -604,7 +604,7 @@ ImFont *DialogManager::GetFont(ImGuiFont f)
 
 ImGuiDialog::~ImGuiDialog(){
 	// Make sure this dialog is no longer referenced in the DialogManager
-	oapiCloseDialog(this);
+	// TODO: oapiCloseDialog(this);
 }
 
 bool ImGuiDialog::HandleHelpButton() {

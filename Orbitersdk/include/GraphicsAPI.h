@@ -412,7 +412,7 @@ public:
 	 * with the Orbiter core via the oapiRegisterGraphicsClient function.
 	 * \param hInstance module instance handle (as passed to InitModule)
 	 */
-	GraphicsClient (HINSTANCE hInstance);
+	GraphicsClient (ModHandle* hInstance);
 
 	/**
 	 * \brief Destroy the graphics object.
@@ -1738,7 +1738,7 @@ protected:
 	/**
 	 * \brief Returns the graphics module instance handle
 	 */
-	inline HINSTANCE ModuleInstance () const { return hModule; }
+	inline ModHandle* ModuleInstance () const { return hModule; }
 
 	/**
 	 * \brief Returns the orbiter core instance handle

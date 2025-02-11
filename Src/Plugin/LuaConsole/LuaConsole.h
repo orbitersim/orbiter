@@ -22,7 +22,7 @@ class LuaConsole: public oapi::Module {
 	friend class ConsoleInterpreter;
 	friend class ConsoleConfig;
 public:
-	LuaConsole (HINSTANCE hDLL);
+	LuaConsole (ModHandle* hDLL);
 	~LuaConsole ();
 
 	void clbkSimulationStart (RenderMode mode);

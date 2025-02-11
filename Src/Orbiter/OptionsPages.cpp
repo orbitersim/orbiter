@@ -5,6 +5,7 @@
 // Template for simulation options pages
 // ======================================================================
 
+#include <SDL3/SDL.h>
 #include <windows.h>
 #include <array>
 #include "OptionsPages.h"
@@ -1210,14 +1211,18 @@ BOOL OptionsPage_Joystick::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam
 {
 	OptionsPage::OnInitDialog(hPage, wParam, lParam);
 
-	DWORD ndev;
-	DIDEVICEINSTANCE* joylist;
-	g_pOrbiter->GetDInput()->GetJoysticks(&joylist, &ndev);
+	int ndev;
+	SDL_JoystickID* joylist = SDL_GetJoysticks(&ndev);
+	if (!joylist)
+		// TODO: some sort of "Failed to enumerate joysticks" type thing.
+		return TRUE;
 
 	SendDlgItemMessage(hPage, IDC_OPT_JOY_DEVICE, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessage(hPage, IDC_OPT_JOY_DEVICE, CB_ADDSTRING, 0, (LPARAM)"<Disabled>");
-	for (int i = 0; i < ndev; i++)
-		SendDlgItemMessage(hPage, IDC_OPT_JOY_DEVICE, CB_ADDSTRING, 0, (LPARAM)(joylist[i].tszProductName));
+	for (int i = 0; i < ndev; i++) {
+		const char* prodName = SDL_GetJoystickNameForID(joylist[i]);
+		SendDlgItemMessage(hPage, IDC_OPT_JOY_DEVICE, CB_ADDSTRING, 0, (LPARAM)(prodName));
+	}
 
 	const char* thmode[4] = { "<Keyboard only>", "Z-axis", "Slider 0", "Slider 1" };
 	SendDlgItemMessage(hPage, IDC_OPT_JOY_THROTTLE, CB_RESETCONTENT, 0, 0);
@@ -1228,6 +1233,7 @@ BOOL OptionsPage_Joystick::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam
 	oapiSetGaugeParams(GetDlgItem(hPage, IDC_OPT_JOY_SAT), &gp);
 	oapiSetGaugeParams(GetDlgItem(hPage, IDC_OPT_JOY_DEAD), &gp);
 
+	SDL_free(joylist);
 	return TRUE;
 }
 

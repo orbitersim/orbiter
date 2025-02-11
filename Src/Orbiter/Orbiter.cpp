@@ -7,6 +7,11 @@
 // Enable visual styles. Source: https://msdn.microsoft.com/en-us/library/windows/desktop/bb773175(v=vs.85).aspx
 #pragma comment(linker,"\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
+// causes some collisions with Keymap.h
+#define SDL_DISABLE_OLD_NAMES
+#undef SDL_MAIN_USE_CALLBACKS
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 #include <windows.h>
 #include <direct.h>
 #include <stdio.h>
@@ -162,17 +167,16 @@ int _matherr(struct _exception *except )
 	return 0;
 }
 
-
-// =======================================================================
-// WinMain()
-// Application entry containing message loop
-
-
-INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdShow)
-{
+int main(int argc, char **argv) {
 #ifdef _CRTDBG_MAP_ALLOC
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
+	SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_EVENTS);
+
+	char version[9];
+	snprintf(version, 9, "v.%06d", GetVersion());
+
+	SDL_SetAppMetadata("OpenOrbiter", version, "orbitersim.orbiter");
 
 	// Verify working directory
 	char dir[1024];
@@ -190,7 +194,7 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdSh
 	g_pOrbiter = new Orbiter; // application instance
 
 	// Parse command line
-	orbiter::CommandLine::Parse(g_pOrbiter, strCmdLine);
+	orbiter::CommandLine::Parse(g_pOrbiter, argc, const_cast<const char**>(argv));
 
 	// Initialise the log
 	INITLOG("Orbiter.log", g_pOrbiter->Cfg()->CfgCmdlinePrm.bAppendLog); // init log file
@@ -204,6 +208,8 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdSh
 	//srand ((unsigned)time (NULL));
 	srand(12345);
 	LOGOUT("Timer precision: %g sec", fine_counter_step);
+
+	auto hInstance = GetModuleHandle(nullptr);
 
 	oapiRegisterCustomControls(hInstance);
 
@@ -220,6 +226,7 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdSh
 
 	g_pOrbiter->Run ();
 	delete g_pOrbiter;
+	SDL_Quit();
 	return 0;
 }
 
@@ -548,16 +555,21 @@ void Orbiter::LoadStartupModules()
 // Name: LoadModule()
 // Desc: Load a named plugin DLL
 //-----------------------------------------------------------------------------
-HINSTANCE Orbiter::LoadModule (const char *path, const char *name)
+ModHandle* Orbiter::LoadModule (const char *path, const char *name)
 {
+	typedef void (*ModuleEntry)(ModHandle*, bool);
+
 	register_module = NULL; // Clear the module. The loaded library may optionally populate it on LoadLibrary() call below.
 
 	// Load the module DLL
-	HINSTANCE hDLL = NULL;
+	ModHandle* hDLL = NULL;
+	ModuleEntry entry = nullptr;
+
 	char cbuf[256];
 	if (FindStandaloneDll(path, name, cbuf)) // try to find standalone plugin file
 	{
-		hDLL = LoadLibrary (cbuf);
+		hDLL = reinterpret_cast<ModHandle*>(SDL_LoadObject(cbuf));
+		entry = reinterpret_cast<ModuleEntry>(SDL_LoadFunction(reinterpret_cast<SDL_SharedObject*>(hDLL), "OrbitersdkModuleEntry"));
 	}
 	else // try to find plugin in a plugin folder
 	{
@@ -567,7 +579,8 @@ HINSTANCE Orbiter::LoadModule (const char *path, const char *name)
 			// Convert to absolute path, otherwise LoadLibraryEx fails with error code 87.
 			// See https://stackoverflow.com/questions/36275535/loadlibraryex-error-87-the-parameter-is-incorrect
 			sprintf(cbuf, "%s\\%s", cwd, cbuf2);
-			hDLL = LoadLibraryEx(cbuf, NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+			hDLL = reinterpret_cast<ModHandle*>(SDL_LoadObject(cbuf));
+			entry = reinterpret_cast<ModuleEntry>(SDL_LoadFunction(reinterpret_cast<SDL_SharedObject*>(hDLL), "OrbitersdkModuleEntry"));
 		}
 		else
 		{
@@ -576,13 +589,17 @@ HINSTANCE Orbiter::LoadModule (const char *path, const char *name)
 		}
 	}
 
+	if (hDLL && entry) {
+		entry(hDLL, false);
+	}
+
 	// Can't initialize DirectX in DllMain(), let's do it over here (jarmonik 28.12.2023) 
 	if (hDLL) {
 		if (register_module == gclient && gclient != NULL) {
 			if (gclient->clbkInitialise() == false) {
 				// If graphics initialization fails remove client
 				RemoveGraphicsClient(gclient);
-				FreeLibrary(hDLL);
+				SDL_UnloadObject(reinterpret_cast<SDL_SharedObject*>(hDLL));
 				LOGOUT_ERR("Client Initialization Failed. Unloading  %s", name);
 				hDLL = NULL;		
 				return NULL;
@@ -608,12 +625,15 @@ HINSTANCE Orbiter::LoadModule (const char *path, const char *name)
 //-----------------------------------------------------------------------------
 bool Orbiter::UnloadModule (const std::string &name)
 {
+	typedef void (*ModuleEntry)(ModHandle*, bool);
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++) {
 		if (iequal(it->sName, name)) {
 			LOGOUT("Unloading module %s", it->sName.c_str());
+			auto entry = reinterpret_cast<ModuleEntry>(SDL_LoadFunction(reinterpret_cast<SDL_SharedObject*>(it->hDLL), "OrbitersdkModuleEntry"));
+			entry(it->hDLL, true);
 			if (it->bLocalAlloc)
 				delete it->pModule;
-			FreeLibrary(it->hDLL);
+			SDL_UnloadObject(reinterpret_cast<SDL_SharedObject*>(it->hDLL));
 			m_Plugin.erase(it);
 			return true;
 		}
@@ -625,14 +645,17 @@ bool Orbiter::UnloadModule (const std::string &name)
 // Name: UnloadModule()
 // Desc: Unload a module by its instance
 //-----------------------------------------------------------------------------
-bool Orbiter::UnloadModule (HINSTANCE hDLL)
+bool Orbiter::UnloadModule (ModHandle* hDLL)
 {
+	typedef void (*ModuleEntry)(ModHandle*, bool);
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++) {
 		if (it->hDLL == hDLL) {
 			LOGOUT("Unloading module %s", it->sName.c_str());
+			auto entry = reinterpret_cast<ModuleEntry>(SDL_LoadFunction(reinterpret_cast<SDL_SharedObject*>(it->hDLL), "OrbitersdkModuleEntry"));
+			entry(it->hDLL, true);
 			if (it->bLocalAlloc)
 				delete it->pModule;
-			FreeLibrary(it->hDLL);
+			SDL_UnloadObject(reinterpret_cast<SDL_SharedObject*>(it->hDLL));
 			m_Plugin.erase(it);
 			return true;
 		}
@@ -644,9 +667,9 @@ bool Orbiter::UnloadModule (HINSTANCE hDLL)
 // Name: FindModuleProc()
 // Desc: Returns address of a procedure in a plugin module
 //-----------------------------------------------------------------------------
-OPC_Proc Orbiter::FindModuleProc (HINSTANCE hDLL, const char *procname)
+OPC_Proc Orbiter::FindModuleProc (ModHandle* hDLL, const char *procname)
 {
-	return (OPC_Proc)GetProcAddress (hDLL, procname);
+	return (OPC_Proc)SDL_LoadFunction (reinterpret_cast<SDL_SharedObject*>(hDLL), procname);
 }
 
 //-----------------------------------------------------------------------------
@@ -698,20 +721,9 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 		m_pConsole = new orbiter::ConsoleNG(this);
 	}
 
-	pDI->SetRenderWindow(hRenderWnd);
-
 	if (hRenderWnd) {
 		bActive = true;
-
-		// Create keyboard device
-		if (!pDI->CreateKbdDevice ()) {
-			CloseSession ();
-			return 0;
-		}
-
-		// Create joystick device
-		if (pDI->CreateJoyDevice ())
-			plZ4 = 1; // invalidate
+		plZ4 = 1; // invalidate
 	}
 
 	if (gclient) {
@@ -796,7 +808,7 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 
 	// let plugins read their states from the scenario file
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++) {
-		void (*opcLoadState)(FILEHANDLE) = (void(*)(FILEHANDLE))FindModuleProc(it->hDLL, "opcLoadState");
+		void (*opcLoadState)(FILEHANDLE) = (void(*)(FILEHANDLE))SDL_LoadFunction(reinterpret_cast<SDL_SharedObject*>(it->hDLL), "opcLoadState");
 		if (opcLoadState) {
 			ifstream ifs(ScnPath(scenario));
 			std::string str = "BEGIN_" + it->sName;
@@ -1458,7 +1470,7 @@ bool Orbiter::SaveScenario (const char *fname, const char *desc, int desc_type)
 
 		// let plugins save their states to the scenario file
 		for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++) {
-			void (*opcSaveState)(FILEHANDLE) = (void(*)(FILEHANDLE))FindModuleProc(it->hDLL, "opcSaveState");
+			void (*opcSaveState)(FILEHANDLE) = (void(*)(FILEHANDLE))SDL_LoadFunction(reinterpret_cast<SDL_SharedObject*>(it->hDLL), "opcSaveState");
 			if (opcSaveState) {
 				ofs << std::endl << "BEGIN_" << it->sName << std::endl;
 				opcSaveState((FILEHANDLE)&ofs);

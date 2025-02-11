@@ -57,7 +57,7 @@ string LngLat(Position p);
 // Initialize module
 // =================================================================================================
 //
-DLLCLBK void InitModule(HINSTANCE hModule)
+DLLCLBK void InitModule(ModHandle* hModule)
 {
 	// Can do very little here since graphics servises are not yet running 
 	oapiRegisterModule(new ToolKit(hModule));
@@ -66,7 +66,7 @@ DLLCLBK void InitModule(HINSTANCE hModule)
 
 // =================================================================================================
 //
-DLLCLBK void ExitModule(HINSTANCE  hModule)
+DLLCLBK void ExitModule(ModHandle*  hModule)
 {
 
 }
@@ -225,7 +225,7 @@ BOOL ToolKit::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 // Orbiter Module
 // =================================================================================================
 //
-ToolKit::ToolKit(HINSTANCE hInst) : gcGUIApp(), Module(hInst)
+ToolKit::ToolKit(ModHandle* hInst) : gcGUIApp(), Module(hInst)
 {
 	pCore = NULL;
 	hMgr = NULL;
@@ -245,7 +245,7 @@ ToolKit::ToolKit(HINSTANCE hInst) : gcGUIApp(), Module(hInst)
 
 	// Can do very little here since graphics servises are not yet running 
 	dwCmd = oapiRegisterCustomCmd((char*)"TerrainToolKit", (char*)"ToolKit for terrain and base editing", OpenToolsClbk, this);
-	gcPropertyTreeInitialize(hInst);
+	gcPropertyTreeInitialize(stopgapGetModuleInstance(hInst));
 
 	mIdent.Ident();
 }
@@ -256,7 +256,7 @@ ToolKit::ToolKit(HINSTANCE hInst) : gcGUIApp(), Module(hInst)
 ToolKit::~ToolKit()
 {
 	oapiUnregisterCustomCmd(dwCmd);
-	gcPropertyTreeRelease(hModule);
+	gcPropertyTreeRelease(stopgapGetModuleInstance(hModule));
 }
 
 
@@ -388,11 +388,12 @@ bool ToolKit::Initialize()
 	hRootNode = RegisterApplication("Terrain ToolKit V1.1", NULL, gcGUI::DS_LEFT);
 	//hMainDlg = CreateDialogParamA(hModule, MAKEINTRESOURCE(IDD_MAIN), hAppMainWnd, gDlgProc, 0);
 	//hMainNode = RegisterSubsection(hRootNode, "Main", hMainDlg);
-	hCtrlDlg = CreateDialogParamA(hModule, MAKEINTRESOURCE(IDD_EXPORT), hAppMainWnd, (DLGPROC)gDlgProc, 0);
+	auto hModule1 = stopgapGetModuleInstance(hModule);
+	hCtrlDlg = CreateDialogParamA(hModule1, MAKEINTRESOURCE(IDD_EXPORT), hAppMainWnd, (DLGPROC)gDlgProc, 0);
 	hCtrlNode = RegisterSubsection(hRootNode, "Selection Oprions", hCtrlDlg);
-	hImpoDlg = CreateDialogParam(hModule, MAKEINTRESOURCE(IDD_IMPORT), hAppMainWnd, (DLGPROC)gDlgProc, 0);
+	hImpoDlg = CreateDialogParam(hModule1, MAKEINTRESOURCE(IDD_IMPORT), hAppMainWnd, (DLGPROC)gDlgProc, 0);
 	hImpoNode = RegisterSubsection(hRootNode, "Import Options", hImpoDlg, 0xC0FFE0);
-	hDataDlg  = CreateDialogParam(hModule, MAKEINTRESOURCE(IDD_DATA), hAppMainWnd, (DLGPROC)gDlgProc, 0);
+	hDataDlg  = CreateDialogParam(hModule1, MAKEINTRESOURCE(IDD_DATA), hAppMainWnd, (DLGPROC)gDlgProc, 0);
 	hDataNode = RegisterSubsection(hRootNode, "Properties", hDataDlg);
 
 	DisplayWindow(hRootNode);
@@ -417,7 +418,7 @@ bool ToolKit::Initialize()
 	}
 
 
-	pProp = new gcPropertyTree(this, hDataDlg, IDC_DATAVIEW, (DLGPROC)gDlgProc, GetFont(0), GetModule());
+	pProp = new gcPropertyTree(this, hDataDlg, IDC_DATAVIEW, (DLGPROC)gDlgProc, GetFont(0), stopgapGetModuleInstance(GetModule()));
 
 	// ---------------------------------------------------
 	hSecCur = pProp->SubSection("Mouse cursor location");

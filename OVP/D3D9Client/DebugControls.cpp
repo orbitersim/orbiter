@@ -27,7 +27,7 @@ using namespace oapi;
 using std::min;
 using std::max;
 
-extern HINSTANCE g_hInst;
+extern ModHandle* g_hInst;
 extern D3D9Client *g_client;
 
 // Little binary helper
@@ -152,7 +152,7 @@ HWND CreateToolTip(int toolID, HWND hDlg, PTSTR pszText)
     // Get the window of the tool.
     HWND hwndTool = GetDlgItem(hDlg, toolID);
     // Create the tooltip. g_hInst is the global instance handle.
-    HWND hwndTip = CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL, WS_POPUP |TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hDlg, NULL, g_hInst, NULL);
+    HWND hwndTip = CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL, WS_POPUP |TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hDlg, NULL, stopgapGetModuleInstance(g_hInst), NULL);
     
     if (!hwndTool || !hwndTip) return NULL;
                                                           
@@ -298,7 +298,7 @@ void Release()
 {
 	vObj = NULL;
 	hDlg = NULL;
-	oapiCloseDialog(gfxDlg);
+	// TODO: oapiCloseDialog(gfxDlg);
 	delete gfxDlg;
 	gfxDlg = NULL;
 	if (dwCmd) oapiUnregisterCustomCmd(dwCmd);
@@ -409,7 +409,7 @@ void InitMatList(WORD shader)
 void OpenDlgClbk(void *context)
 {
 	DWORD idx = 0;
-	HWND l_hDlg = oapiOpenDialog(g_hInst, IDD_D3D9MESHDEBUG, WndProc);
+	HWND l_hDlg = oapiOpenDialog(stopgapGetModuleInstance(g_hInst), IDD_D3D9MESHDEBUG, WndProc);
 
 	if (l_hDlg) hDlg = l_hDlg; // otherwise open already
 	else return;
@@ -1866,7 +1866,7 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			case IDC_DBG_DATAWND:
 			{
-				HWND hW = oapiOpenDialog(g_hInst, IDD_DEBUGVIEW, ViewProc);
+				HWND hW = oapiOpenDialog(stopgapGetModuleInstance(g_hInst), IDD_DEBUGVIEW, ViewProc);
 				if (hW) hDataWnd = hW;
 			}
 				break;

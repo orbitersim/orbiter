@@ -39,7 +39,7 @@ OAPIFUNC INT_PTR CALLBACK LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wP
 // ======================================================================
 // class GraphicsClient
 
-GraphicsClient::GraphicsClient (HINSTANCE hInstance): Module (hInstance)
+GraphicsClient::GraphicsClient (ModHandle* hInstance): Module (hInstance)
 {
 	hOrbiterInst = g_pOrbiter->GetInstance();
 	VideoData.fullscreen = false;
@@ -80,8 +80,9 @@ GraphicsClient::~GraphicsClient ()
 
 bool GraphicsClient::clbkInitialise ()
 {
+	HINSTANCE moduleInstance = stopgapGetModuleInstance(hModule);
     // Register a window class for the render window
-    WNDCLASS wndClass = {0, ::WndProc, 0, 0, hModule,
+    WNDCLASS wndClass = {0, ::WndProc, 0, 0, moduleInstance,
 		LoadIcon (g_pOrbiter->GetInstance(), MAKEINTRESOURCE(IDI_MAIN_ICON)),
 		LoadCursor (NULL, IDC_ARROW),
 		(HBRUSH)GetStockObject (WHITE_BRUSH),
@@ -108,7 +109,7 @@ bool GraphicsClient::clbkInitialise ()
 	VideoData.winh       = (int)cfg->CfgDevPrm.WinH;
 
 	char fname[256];
-	GetModuleFileName(hModule, fname, 256);
+	GetModuleFileName(moduleInstance, fname, 256);
 	((orbiter::DefVideoTab*)g_pOrbiter->Launchpad()->GetTab(PG_VID))->OnGraphicsClientLoaded(this, fname);
 
 	return true;
@@ -272,14 +273,15 @@ HWND GraphicsClient::clbkCreateRenderWindow ()
 {
 	HWND hWnd;
 
+	HINSTANCE moduleInstance = stopgapGetModuleInstance(hModule);
 	if (VideoData.fullscreen) {
 		hWnd = CreateWindow (strWndClass, "", // dummy window
 			WS_POPUP | WS_EX_TOPMOST| WS_VISIBLE,
-			CW_USEDEFAULT, CW_USEDEFAULT, 10, 10, 0, 0, hModule, (LPVOID)this);
+			CW_USEDEFAULT, CW_USEDEFAULT, 10, 10, 0, 0, moduleInstance, (LPVOID)this);
 	} else {
 		hWnd = CreateWindow (strWndClass, "",
 			WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_VISIBLE,
-			CW_USEDEFAULT, CW_USEDEFAULT, VideoData.winw, VideoData.winh, 0, 0, hModule, (LPVOID)this);
+			CW_USEDEFAULT, CW_USEDEFAULT, VideoData.winw, VideoData.winh, 0, 0, moduleInstance, (LPVOID)this);
 	}
 	return hWnd;
 }
@@ -647,10 +649,11 @@ bool GraphicsClient::clbkCopyBitmap (SURFHANDLE pdds, HBITMAP hbm,
 
 HWND GraphicsClient::InitRenderWnd (HWND hWnd)
 {
+	HINSTANCE moduleInstance = stopgapGetModuleInstance(hModule);
 	if (!hWnd) { // create a dummy window
 		hWnd = CreateWindow (strWndClass, "",
 			WS_POPUP | WS_VISIBLE,
-			CW_USEDEFAULT, CW_USEDEFAULT, 10, 10, 0, 0, hModule, 0);
+			CW_USEDEFAULT, CW_USEDEFAULT, 10, 10, 0, 0, moduleInstance, 0);
 	}
 	SetWindowLongPtr (hWnd, GWLP_USERDATA, (LONG_PTR)this);
 	// store class instance with window for access in the message handler

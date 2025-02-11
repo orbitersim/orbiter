@@ -22,7 +22,7 @@ using namespace oapi;
 // class GDIClient
 // ======================================================================
 
-GDIClient::GDIClient (HINSTANCE hInstance): GraphicsClient (hInstance)
+GDIClient::GDIClient (ModHandle* hInstance): GraphicsClient (hInstance)
 {
 	refCountPen = 0;
 	refCountBrush = 0;

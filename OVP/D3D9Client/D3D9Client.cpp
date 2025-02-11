@@ -11,6 +11,7 @@
 #define ORBITER_MODULE
 
 #include <set> // ...for Brush-, Pen- and Font-accounting
+#include <SDL3/SDL_loadso.h>
 #include "Orbitersdk.h"
 #include "D3D9Client.h"
 #include "D3D9Config.h"
@@ -65,7 +66,7 @@ struct D3D9Client::GenericProcData {
 
 using namespace oapi;
 
-HINSTANCE g_hInst = 0;
+ModHandle* g_hInst = 0;
 D3D9Client *g_client = 0;
 class gcConst* g_pConst = 0;
 IDirect3D9* g_pD3DObject = 0;  // Made valid when VideoTab is created
@@ -117,7 +118,7 @@ extern "C" {
 // ==============================================================
 // Initialise module
 
-DLLCLBK void InitModule(HINSTANCE hDLL)
+DLLCLBK void InitModule(ModHandle* hDLL)
 {
 
 #ifdef _DEBUG
@@ -255,7 +256,7 @@ DLLCLBK gcConst * gcGetCoreAPI()
 // D3D9Client class implementation
 // ==============================================================
 
-D3D9Client::D3D9Client (HINSTANCE hInstance) :
+D3D9Client::D3D9Client (ModHandle* hInstance) :
 	GraphicsClient(hInstance),
 	vtab(NULL),
 	scenarioName("(none selected)"),

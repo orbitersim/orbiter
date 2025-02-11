@@ -55,6 +55,13 @@ DLLEXPORT HINSTANCE oapiGetOrbiterInstance ()
 	return g_pOrbiter->GetInstance();
 }
 
+DLLEXPORT HMODULE stopgapGetModuleInstance (ModHandle* module) {
+#if !defined(_WIN32)
+#error "stopgap module instance does not work on non-Windows. WHY IS THIS STILL HERE"
+#endif
+	return reinterpret_cast<HMODULE>(module);
+}
+
 DLLEXPORT int oapiGetOrbiterVersion ()
 {
 	return g_pOrbiter->GetVersion();
@@ -2568,9 +2575,10 @@ DLLEXPORT DWORD oapiInflate (const BYTE *inp, DWORD ninp, BYTE *outp, DWORD nout
 // Undocumented interface functions
 // ------------------------------------------------------------------------------
 
-DLLEXPORT void InitLib (HINSTANCE hModule)
+DLLEXPORT void InitLib (ModHandle* hModule)
 {
-	typedef void (*OPC_DLLInit)(HINSTANCE hDLL);
+	HINSTANCE moduleInstance = stopgapGetModuleInstance(hModule);
+	typedef void (*OPC_DLLInit)(ModHandle* hDLL);
 	OPC_DLLInit DLLInit;
 	char cbuf[256], mname[256], *mp;
 	int i, len;
@@ -2578,7 +2586,7 @@ DLLEXPORT void InitLib (HINSTANCE hModule)
 	if (td.SimT0 < 1) {
 		// don't write during simulation, since unnecessary file access
 		// can cause time waste
-		GetModuleFileName (hModule, mname, 256);
+		GetModuleFileName (moduleInstance, mname, 256);
 		for (i = 0, mp = mname; mname[i]; i++)
 			if (mname[i] == '\\') mp = mname+i+1;
 		sprintf (cbuf, "Module %s ", mp);
@@ -2587,7 +2595,7 @@ DLLEXPORT void InitLib (HINSTANCE hModule)
 			cbuf[i] = '\0';
 		}
 
-		char *(*mdate)() = (char*(*)())GetProcAddress (hModule, "ModuleDate");
+		char *(*mdate)() = (char*(*)())SDL_LoadFunction (reinterpret_cast<SDL_SharedObject*>(hModule), "ModuleDate");
 		if (mdate) {
 			int Date2Int (char *date);
 			sprintf (cbuf+strlen(cbuf), " [Build %06d", Date2Int(mdate()));
@@ -2595,7 +2603,7 @@ DLLEXPORT void InitLib (HINSTANCE hModule)
 			strcat (cbuf, " [Build ******");
 		}
 
-		int (*fversion)() = (int(*)())GetProcAddress (hModule, "GetModuleVersion");
+		int (*fversion)() = (int(*)())SDL_LoadFunction (reinterpret_cast<SDL_SharedObject*>(hModule), "GetModuleVersion");
 		if (fversion) {
 			sprintf (cbuf+strlen(cbuf), ", API %06d]", fversion());
 		} else {
@@ -2605,17 +2613,17 @@ DLLEXPORT void InitLib (HINSTANCE hModule)
 		LOGOUT (cbuf);
 	}
 
-	DLLInit = (OPC_DLLInit)GetProcAddress (hModule, "InitModule");
-	if (!DLLInit) DLLInit = (OPC_DLLInit)GetProcAddress (hModule, "opcDLLInit");
+	DLLInit = (OPC_DLLInit)SDL_LoadFunction (reinterpret_cast<SDL_SharedObject*>(hModule), "InitModule");
+	if (!DLLInit) DLLInit = (OPC_DLLInit)SDL_LoadFunction (reinterpret_cast<SDL_SharedObject*>(hModule), "opcDLLInit");
 	if (DLLInit) (*DLLInit)(hModule);
 }
 
-DLLEXPORT void ExitLib (HINSTANCE hModule)
+DLLEXPORT void ExitLib (ModHandle* hModule)
 {
-	typedef void (*OPC_DLLExit)(HINSTANCE hDLL);
+	typedef void (*OPC_DLLExit)(ModHandle* hDLL);
 	OPC_DLLExit DLLExit;
-	DLLExit = (OPC_DLLExit)GetProcAddress (hModule, "ExitModule");
-	if (!DLLExit) DLLExit = (OPC_DLLExit)GetProcAddress (hModule, "opcDLLExit");
+	DLLExit = (OPC_DLLExit)SDL_LoadFunction (reinterpret_cast<SDL_SharedObject*>(hModule), "ExitModule");
+	if (!DLLExit) DLLExit = (OPC_DLLExit)SDL_LoadFunction (reinterpret_cast<SDL_SharedObject*>(hModule), "opcDLLExit");
 	if (DLLExit) (*DLLExit)(hModule);
 }
 
