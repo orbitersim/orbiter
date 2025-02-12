@@ -440,6 +440,19 @@ bool D3D9Pad::TextW (int x, int y, const LPWSTR str, int len)
 	if (!len) return true;
 
 	D3D9TextPtr pText = static_cast<const D3D9PadFont *>(cfont)->pFont;
+	switch (tah) {
+		default:
+		case LEFT:   pText->SetTextHAlign(0); break;
+		case CENTER: pText->SetTextHAlign(1); break;
+		case RIGHT:  pText->SetTextHAlign(2); break;
+	}
+
+	switch (tav) {
+		default:
+		case TOP:      pText->SetTextVAlign(0); break;
+		case BASELINE: pText->SetTextVAlign(1); break;
+		case BOTTOM:   pText->SetTextVAlign(2); break;
+	}
 
 	int lineSpace = pText->GetLineSpace();
 
