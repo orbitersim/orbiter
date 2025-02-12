@@ -3,6 +3,7 @@
 
 #define STRICT 1
 #define OAPI_IMPLEMENTATION
+#include <SDL3/SDL_loadso.h>
 #include "Orbitersdk.h"
 #include "Orbiter.h"
 

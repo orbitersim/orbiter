@@ -4,9 +4,11 @@
 #ifndef __LAUNCHPAD_H
 #define __LAUNCHPAD_H
 
+#include <SDL3/SDL.h>
 #include <CommCtrl.h>
 #include "OrbiterAPI.h"
 #include "Config.h"
+#include "imgui.h"
 
 //-----------------------------------------------------------------------------
 // Forward declarations
@@ -27,7 +29,62 @@ INT_PTR CALLBACK WaitPageProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 namespace orbiter {
 
 	class LaunchpadTab;
+	class LaunchpadTab2;
 	class ExtraTab;
+
+	class LaunchpadDialog2 {
+		friend class Orbiter;
+		friend class LaunchpadTab2;
+
+	public:
+		LaunchpadDialog2(Orbiter* app);
+		~LaunchpadDialog2();
+
+		bool Create(bool startvideotab = true);
+
+		void OnDraw();
+
+		Orbiter* App() const { return m_app; }
+		Config* Cfg() const { return m_cfg; }
+		LaunchpadTab2* GetTab(unsigned int i) const;
+
+		void AddTab(LaunchpadTab2* tab);
+		void EnableLaunchButton(bool enable) const;
+
+		bool ConsumeEvent(const SDL_Event& event);
+		void RenderFrame();
+
+		// Register an item in the "Extra" list. If parent=0, the item is registered
+		// as a root (top level) item. Otherwise it appears as a sub-item under
+		// the parent item.
+		size_t RegisterExtraParam(LaunchpadItem* item, size_t parent = 0);
+
+		// Unregister an item in the "Extra" list.
+		bool UnregisterExtraParam(LaunchpadItem* item);
+
+		// Return item 'name' below parent 'parent', or NULL if not found
+		LaunchpadItem* FindExtraParam(const std::string_view& name, size_t parent = 0);
+
+		// allow all externally registered "Extra" items to write their data to file
+		// (internal "extra" items use the Config class to write to Orbiter.cfg)
+		void WriteExtraParams();
+
+		// save current dialog settings in application configuration
+		void UpdateConfig();
+
+		void Hide();
+		void Show();
+	private:
+		Orbiter* m_app;
+		Config* m_cfg;
+		std::vector<LaunchpadTab2*> m_tabList;
+		bool m_active;
+		SDL_Window* m_window;
+		SDL_GPUDevice* m_device;
+		ImGuiContext* m_context;
+
+		void SwitchTabPage(int pg);
+	};
 
 	//-----------------------------------------------------------------------------
 	// Name: class LaunchpadDialog

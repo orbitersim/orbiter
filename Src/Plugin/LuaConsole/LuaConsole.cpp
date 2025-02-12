@@ -196,12 +196,11 @@ public:
 // Global parameters
 
 LuaConsole *g_Module = NULL;
-ConsoleConfig *g_Config = NULL;
 
 // ==============================================================
 // class LuaConsole
 
-LuaConsole::LuaConsole (HINSTANCE hDLL): Module (hDLL)
+LuaConsole::LuaConsole (ModHandle* hDLL): Module (hDLL)
 {
 	hThread = NULL;
 	interp = NULL;
@@ -316,17 +315,15 @@ void LuaConsole::Clear()
 // ==============================================================
 // DLL entry and exit points
 
-DLLCLBK void InitModule (HINSTANCE hDLL)
+DLLCLBK void InitModule (ModHandle* hDLL)
 {
 	// Create the console instance
 	g_Module = new LuaConsole (hDLL);
 	oapiRegisterModule (g_Module);
 }
 
-DLLCLBK void ExitModule (HINSTANCE hDLL)
-{
-	delete g_Config;
-}
+DLLCLBK void ExitModule (ModHandle* hDLL)
+{}
 
 // ==============================================================
 

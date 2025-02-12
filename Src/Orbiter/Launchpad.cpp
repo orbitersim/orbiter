@@ -24,8 +24,255 @@
 #include "about.hpp"
 #include "Help.h"
 #include "Memstat.h"
+#include "imgui_impl_sdl3.h"
+#include "imgui_impl_sdlgpu3.h"
 
 using namespace std;
+
+static orbiter::LaunchpadDialog2 *g_pDlg2 = nullptr;
+
+constexpr unsigned int dlgcol = 0xF0F4F8; // main dialog background color;
+
+#include <LpadTab.h>
+#include <imgui.h>
+class DummyTabPage2 : public orbiter::LaunchpadTab2 {
+public:
+	DummyTabPage2(orbiter::LaunchpadDialog2* lp) : orbiter::LaunchpadTab2(lp) {}
+	~DummyTabPage2() override {}
+	void GetConfig(const Config *cfg) override {}
+	void SetConfig(Config *cfg) override {}
+	void OnDraw() override {
+		ImGui::Text("Hello, launchpad!");
+	}
+};
+
+orbiter::LaunchpadDialog2::LaunchpadDialog2(Orbiter *app)
+	: m_app(app), m_cfg(app->Cfg()), m_tabList(), m_active(false), m_window(nullptr), m_device(nullptr),
+	  m_context(nullptr) {
+	g_pDlg2 = this;
+	// TODO: tabs
+	AddTab(new DummyTabPage2(this));
+}
+
+bool orbiter::LaunchpadDialog2::Create(bool startvideotab) {
+	m_window = SDL_CreateWindow("OpenOrbiter", 1280, 720,
+	                            SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_HIDDEN);
+	if (m_window == nullptr) {
+		LOGOUT_ERR("SDL_CreateWindow() failed: %s", SDL_GetError());
+		return false;
+	}
+
+	m_device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_METALLIB, _DEBUG, nullptr);
+	if (m_device == nullptr) {
+		LOGOUT_ERR("SDL_CreateGPUDevice() failed: %s", SDL_GetError());
+		return false;
+	}
+
+	if (!SDL_ClaimWindowForGPUDevice(m_device, m_window)) {
+		LOGOUT_ERR("SDL_ClaimeWindowForGPUDevice() failed: %s", SDL_GetError());
+		return false;
+	}
+
+	SDL_SetGPUSwapchainParameters(m_device, m_window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC);
+
+#ifdef _DEBUG
+	IMGUI_CHECKVERSION();
+#endif
+	// TODO: this is global and needs to be fixed. ouch
+	m_context = ImGui::CreateContext();
+	auto savedContext = ImGui::GetCurrentContext();
+
+	ImGuiIO& io = ImGui::GetIO();
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+
+	// DialogManager has already handled ImGui init'ing.
+	ImGui_ImplSDL3_InitForSDLGPU(m_window);
+	ImGui_ImplSDLGPU3_InitInfo init_info = {};
+	init_info.GpuDevice = m_device;
+	init_info.ColorTargetFormat = SDL_GetGPUSwapchainTextureFormat(m_device, m_window);
+	init_info.MSAASamples = SDL_GPU_SAMPLECOUNT_1;
+	ImGui_ImplSDLGPU3_Init(&init_info);
+
+	if (startvideotab) {
+		assert(false && "TODO");
+	}
+
+	Show();
+
+	if (savedContext != nullptr) {
+		ImGui::SetCurrentContext(savedContext);
+	}
+	return true;
+}
+
+orbiter::LaunchpadDialog2::~LaunchpadDialog2() {
+	auto savedContext = ImGui::GetCurrentContext();
+	ImGui::SetCurrentContext(m_context);
+	SDL_WaitForGPUIdle(m_device);
+	ImGui_ImplSDL3_Shutdown();
+	ImGui_ImplSDLGPU3_Shutdown();
+	ImGui::DestroyContext();
+
+	if (savedContext != nullptr) {
+		ImGui::SetCurrentContext(savedContext);
+	}
+
+	SDL_ReleaseWindowFromGPUDevice(m_device, m_window);
+	SDL_DestroyGPUDevice(m_device);
+	SDL_DestroyWindow(m_window);
+
+	for (auto tab : m_tabList) {
+		delete tab;
+	}
+	m_tabList.clear();
+	g_pDlg2 = nullptr;
+}
+
+void orbiter::LaunchpadDialog2::OnDraw() {
+	ImGui::Text("Hello, launchpad! This is the top-level view.");
+}
+
+void orbiter::LaunchpadDialog2::AddTab(orbiter::LaunchpadTab2 *tab) {
+	m_tabList.push_back(tab);
+}
+
+void orbiter::LaunchpadDialog2::Show() {
+	m_active = true;
+	SDL_ShowWindow(m_window);
+}
+
+void orbiter::LaunchpadDialog2::Hide() {
+	m_active = false;
+	SDL_HideWindow(m_window);
+}
+
+bool EventIsKeyboard(Uint32 type) {
+	return type >= SDL_EVENT_KEY_UP && type < SDL_EVENT_MOUSE_MOTION;
+}
+
+bool EventIsMouse(Uint32 type) {
+	return type >= SDL_EVENT_MOUSE_MOTION && type < SDL_EVENT_JOYSTICK_AXIS_MOTION;
+}
+
+bool orbiter::LaunchpadDialog2::ConsumeEvent(const SDL_Event &event) {
+	auto savedContext = ImGui::GetCurrentContext();
+	ImGui::SetCurrentContext(m_context);
+	bool consumed = false;
+	ImGuiIO& io = ImGui::GetIO();
+	if ((io.WantCaptureMouse && EventIsMouse(event.type)) || (
+		    io.WantCaptureMouse && EventIsKeyboard(event.type))) {
+		consumed = true;
+	}
+	if (event.type == SDL_EVENT_QUIT || (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID == SDL_GetWindowID(m_window))) {
+		m_app->SetShouldQuit();
+		if (savedContext != nullptr) {
+			ImGui::SetCurrentContext(savedContext);
+		}
+		return true;
+	}
+	consumed = consumed || ImGui_ImplSDL3_ProcessEvent(&event);
+
+	if (savedContext != nullptr) {
+		ImGui::SetCurrentContext(savedContext);
+	}
+	return consumed;
+}
+
+void orbiter::LaunchpadDialog2::RenderFrame() {
+	if (SDL_GetWindowFlags(m_window) & SDL_WINDOW_MINIMIZED) {
+		return;
+	}
+	auto savedContext = ImGui::GetCurrentContext();
+	ImGui::SetCurrentContext(m_context);
+	ImGui_ImplSDLGPU3_NewFrame();
+	ImGui_ImplSDL3_NewFrame();
+	ImGui::NewFrame();
+
+	const ImGuiIO& io = ImGui::GetIO();
+
+	ImGui::SetNextWindowPos(ImVec2(0, 0));
+	ImGui::SetNextWindowSize(io.DisplaySize);
+	ImGui::Begin("OpenOrbiter Launchpad", nullptr,
+	             ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+	OnDraw();
+	ImGui::End();
+
+	ImGui::Render();
+	ImDrawData* draw_data = ImGui::GetDrawData();
+	const bool is_minimized = (draw_data->DisplaySize.x <= 0.0f || draw_data->DisplaySize.y <= 0.0f);
+
+	SDL_GPUCommandBuffer* command_buffer = SDL_AcquireGPUCommandBuffer(m_device);
+	SDL_GPUTexture* swapchain_texture;
+	SDL_AcquireGPUSwapchainTexture(command_buffer, m_window, &swapchain_texture, nullptr, nullptr);
+	if (swapchain_texture != nullptr && !is_minimized) {
+		Imgui_ImplSDLGPU3_PrepareDrawData(draw_data, command_buffer);
+
+		SDL_GPUColorTargetInfo target_info = {};
+		target_info.texture = swapchain_texture;
+		// #F0F4F8
+		target_info.clear_color = SDL_FColor{0.941, 0.957, 0.973, 1.0};
+		target_info.load_op = SDL_GPU_LOADOP_CLEAR;
+		target_info.store_op = SDL_GPU_STOREOP_STORE;
+		target_info.mip_level = 0;
+		target_info.layer_or_depth_plane = 0;
+		target_info.cycle = false;
+		SDL_GPURenderPass *render_pass = SDL_BeginGPURenderPass(command_buffer, &target_info, 1, nullptr);
+
+		ImGui_ImplSDLGPU3_RenderDrawData(draw_data, command_buffer, render_pass);
+
+		SDL_EndGPURenderPass(render_pass);
+	}
+
+	SDL_SubmitGPUCommandBuffer(command_buffer);
+
+	if (savedContext != nullptr) {
+		ImGui::SetCurrentContext(savedContext);
+	}
+}
+
+orbiter::LaunchpadTab2* orbiter::LaunchpadDialog2::GetTab(unsigned int index) const {
+	if (index >= m_tabList.size()) {
+		return nullptr;
+	}
+	return m_tabList[index];
+}
+
+// TODO
+void orbiter::LaunchpadDialog2::EnableLaunchButton(bool enable) const {
+
+}
+
+size_t orbiter::LaunchpadDialog2::RegisterExtraParam(LaunchpadItem *item, size_t parent) {
+
+	return 0;
+}
+
+bool orbiter::LaunchpadDialog2::UnregisterExtraParam(LaunchpadItem *item) {
+
+	return true;
+}
+
+LaunchpadItem *orbiter::LaunchpadDialog2::FindExtraParam(const std::string_view &name, size_t parent) {
+
+	return nullptr;
+}
+
+void orbiter::LaunchpadDialog2::WriteExtraParams() {
+}
+
+void orbiter::LaunchpadDialog2::UpdateConfig() {
+}
+
+
+
+
+
+
+
+
+
+
+
 
 //=============================================================================
 // Name: class LaunchpadDialog
@@ -35,8 +282,6 @@ using namespace std;
 static orbiter::LaunchpadDialog *g_pDlg = 0;
 static time_t time0 = 0;
 static UINT timerid = 0;
-
-const DWORD dlgcol = 0xF0F4F8; // main dialog background colour
 
 //static int mnubt[] = {
 //	IDC_MNU_SCN, IDC_MNU_OPT, IDC_MNU_MOD,
@@ -50,7 +295,7 @@ const DWORD dlgcol = 0xF0F4F8; // main dialog background colour
 orbiter::LaunchpadDialog::LaunchpadDialog (Orbiter *app)
 {
 	hDlg    = NULL;
-	hInst   = app->GetInstance();
+	hInst   = app->hInstStopgap; // TODO
 	pApp    = app;
 	pCfg    = app->Cfg();
 	g_pDlg  = this; // for nonmember callbacks

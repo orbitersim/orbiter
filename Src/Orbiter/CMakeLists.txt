@@ -122,6 +122,8 @@ set(common_src
 	Orbiter.rc
 	Orbiter.ico
 	${imgui_SOURCE_DIR}/backends/imgui_impl_win32.cpp
+	${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp
+	${imgui_SOURCE_DIR}/backends/imgui_impl_sdlgpu3.cpp
 )
 
 set(Orbiter_includes

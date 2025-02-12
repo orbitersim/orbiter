@@ -36,7 +36,7 @@ public:
 	template<typename DlgType, std::enable_if_t<std::is_base_of_v<DialogWin, DlgType>, bool> = true>
 	DlgType *EnsureEntry (HINSTANCE hInst = 0, void *context = 0)
 	{
-		if (!hInst) hInst = g_pOrbiter->GetInstance();
+		if (!hInst) hInst = g_pOrbiter->hInstStopgap;
 		DlgType *pDlg = EntryExists<DlgType> (hInst);
 		if (!pDlg) pDlg = MakeEntry<DlgType> (hInst, context);
 		return pDlg;
@@ -48,7 +48,7 @@ public:
 	template<typename DlgType, std::enable_if_t<std::is_base_of_v<DialogWin, DlgType>, bool> = true>
 	DlgType *MakeEntry (HINSTANCE hInst = 0, void *context = 0)
 	{
-		if (!hInst) hInst = g_pOrbiter->GetInstance();
+		if (!hInst) hInst = g_pOrbiter->hInstStopgap;
 		HWND hParent = g_pOrbiter->GetRenderWnd();
 		DlgType *pDlg = new DlgType (hInst, hParent, context);
 		AddEntry (pDlg);

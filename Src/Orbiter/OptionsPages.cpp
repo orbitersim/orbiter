@@ -341,7 +341,7 @@ HWND OptionsPage::HParent() const
 HTREEITEM OptionsPage::CreatePage(HWND hDlg, HTREEITEM parent)
 {
 	int winId = ResourceId();
-	m_hPage = CreateDialogParam(g_pOrbiter->GetInstance(), MAKEINTRESOURCE(winId), HParent(), s_DlgProc, (LPARAM)this);
+	m_hPage = CreateDialogParam(g_pOrbiter->hInstStopgap, MAKEINTRESOURCE(winId), HParent(), s_DlgProc, (LPARAM)this);
 	if (!m_hPage) {
 		DWORD err = GetLastError();
 		int i = 1;

@@ -3,6 +3,7 @@
 
 #define OAPI_IMPLEMENTATION
 
+#include <SDL3/SDL_loadso.h>
 #include "Script.h"
 
 const char *path = ".";

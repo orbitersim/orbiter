@@ -20,7 +20,6 @@ enum class LineType {
 
 class LuaConsole: public oapi::Module {
 	friend class ConsoleInterpreter;
-	friend class ConsoleConfig;
 public:
 	LuaConsole (ModHandle* hDLL);
 	~LuaConsole ();

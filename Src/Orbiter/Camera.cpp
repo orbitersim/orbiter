@@ -855,7 +855,7 @@ void Camera::SendDlgMessage (int msgid, void *msg) const
 {
 	DialogManager *dlgmgr = g_pOrbiter->DlgMgr();
 	if (dlgmgr) {
-		HWND dlg = dlgmgr->IsEntry (g_pOrbiter->GetInstance(), IDD_CAMERA);
+		HWND dlg = dlgmgr->IsEntry (g_pOrbiter->hInstStopgap, IDD_CAMERA);
 		if (dlg)
 			PostMessage (dlg, WM_APP, msgid, (LPARAM)msg);
 	}
@@ -865,10 +865,10 @@ void Camera::OutputGroundObserverParams () const
 {
 	DialogManager *dlgmgr = g_pOrbiter->DlgMgr();
 	if (dlgmgr) {
-		HWND dlg = dlgmgr->IsEntry (g_pOrbiter->GetInstance(), IDD_CAMERA);
+		HWND dlg = dlgmgr->IsEntry (g_pOrbiter->hInstStopgap, IDD_CAMERA);
 		if (dlg) {
 			char cbuf[256];
-			sprintf (cbuf, "Lng = %+0.6f°\r\nLat = %+0.6f°\r\nAlt = %0.2fm\r\nPhi = %0.2f°\r\nTheta = %0.2f°",
+			sprintf (cbuf, "Lng = %+0.6fï¿½\r\nLat = %+0.6fï¿½\r\nAlt = %0.2fm\r\nPhi = %0.2fï¿½\r\nTheta = %0.2fï¿½",
 				DEG*go.lng, DEG*go.lat, go.alt, DEG*go.phi, DEG*go.tht);
 			SendDlgMessage (1, cbuf);
 		}

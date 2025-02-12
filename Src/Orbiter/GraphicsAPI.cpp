@@ -41,7 +41,7 @@ OAPIFUNC INT_PTR CALLBACK LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wP
 
 GraphicsClient::GraphicsClient (ModHandle* hInstance): Module (hInstance)
 {
-	hOrbiterInst = g_pOrbiter->GetInstance();
+	hOrbiterInst = g_pOrbiter->hInstStopgap;
 	VideoData.fullscreen = false;
 	VideoData.forceenum = true;
 	VideoData.trystencil = false;
@@ -83,15 +83,17 @@ bool GraphicsClient::clbkInitialise ()
 	HINSTANCE moduleInstance = stopgapGetModuleInstance(hModule);
     // Register a window class for the render window
     WNDCLASS wndClass = {0, ::WndProc, 0, 0, moduleInstance,
-		LoadIcon (g_pOrbiter->GetInstance(), MAKEINTRESOURCE(IDI_MAIN_ICON)),
+		LoadIcon (g_pOrbiter->hInstStopgap, MAKEINTRESOURCE(IDI_MAIN_ICON)),
 		LoadCursor (NULL, IDC_ARROW),
 		(HBRUSH)GetStockObject (WHITE_BRUSH),
 		NULL, strWndClass};
     RegisterClass (&wndClass);
 
 	if (clbkUseLaunchpadVideoTab() && g_pOrbiter->Launchpad()) {
-		hVid = g_pOrbiter->Launchpad()->GetTab(PG_VID)->TabWnd();
-		SetWindowLongPtr (hVid, GWLP_USERDATA, (LONG_PTR)this);
+		hVid = NULL;
+		// TODO
+		// hVid = g_pOrbiter->Launchpad()->GetTab(PG_VID)->TabWnd();
+		// SetWindowLongPtr (hVid, GWLP_USERDATA, (LONG_PTR)this);
 	} else hVid = NULL;
 
 	// set default parameters from config data

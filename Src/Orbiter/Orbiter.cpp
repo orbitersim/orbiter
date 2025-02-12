@@ -12,12 +12,11 @@
 #undef SDL_MAIN_USE_CALLBACKS
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
-#include <windows.h>
-#include <direct.h>
+#include <cstdlib>
 #include <stdio.h>
-#include <time.h>
 #include <fstream>
-#include <process.h> 
+
+#include "about.hpp"
 #include "cmdline.h"
 #include "D3d7util.h"
 #include "D3dmath.h"
@@ -49,7 +48,6 @@
 #include "GraphicsAPI.h"
 #include "ConsoleManager.h"
 #include "imgui.h"
-#include "imgui_impl_win32.h"
 #include <filesystem>
 namespace fs = std::filesystem;
 
@@ -69,15 +67,13 @@ const int MAX_TEXTURE_BUFSIZE = 8000000;
 // Texture manager buffer size. Should be determined from
 // memory size (System or Video?)
 
-const TCHAR* g_strAppTitle = "OpenOrbiter";
+const char* g_strAppTitle = "OpenOrbiter";
 
-const TCHAR* MasterConfigFile = "Orbiter.cfg";
+constexpr auto MasterConfigFile = "Orbiter.cfg";
 
-const TCHAR* CurrentScenario = "(Current state)";
+const char* CurrentScenario = "(Current state)";
 char ScenarioName[256] = "\0";
 // some global string resources
-
-char cwd[512];
 
 // =======================================================================
 // Global variables
@@ -171,12 +167,9 @@ int main(int argc, char **argv) {
 #ifdef _CRTDBG_MAP_ALLOC
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
-	SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_EVENTS);
+	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_EVENTS);
 
-	char version[9];
-	snprintf(version, 9, "v.%06d", GetVersion());
-
-	SDL_SetAppMetadata("OpenOrbiter", version, "orbitersim.orbiter");
+	SDL_SetAppMetadata("OpenOrbiter", ORBITER_VERSION_STR, "uk.ac.ucl.medphys.orbit");
 
 	// Verify working directory
 	char dir[1024];
@@ -213,12 +206,10 @@ int main(int argc, char **argv) {
 
 	oapiRegisterCustomControls(hInstance);
 
-	HRESULT hr;
 	// Create application
-	if (FAILED (hr = g_pOrbiter->Create (hInstance))) {
+	if (!g_pOrbiter->Create()) {
 		LOGOUT("Application creation failed");
-		MessageBox (NULL, "Application creation failed!\nTerminating.",
-			"Orbiter Error", MB_OK | MB_ICONERROR);
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Orbiter Error", "Application creation failed!\nTerminating.", NULL);
 		return 0;
 	}
 
@@ -243,7 +234,6 @@ void SetEnvironmentVars ()
 	} else {
 		_putenv ("PATH=Modules");
 	}
-	_getcwd (cwd, 512);
 }
 
 // =======================================================================
@@ -292,7 +282,7 @@ VOID DestroyWorld ()
 // Name: Orbiter()
 // Desc: Application constructor. Sets attributes for the app.
 //-----------------------------------------------------------------------------
-Orbiter::Orbiter ()
+Orbiter::Orbiter () : hInstStopgap(GetModuleHandle(nullptr))
 {
 	// override base class defaults
     //m_bAppUseZBuffer  = TRUE;
@@ -335,8 +325,9 @@ Orbiter::Orbiter ()
 	bFastExit       = false;
 	bRoughType      = false;
 	bStartVideoTab  = false;
+	bShouldQuit     = false;
 	//lstatus.bkgDC   = 0;
-	cfglen          = 0;
+	cfgpath         = fs::path();
 	ncustomcmd      = 0;
 	D3DMathSetup();
 	script          = NULL;
@@ -364,46 +355,22 @@ Orbiter::~Orbiter ()
 // Name: Create()
 // Desc: This method selects a D3D device
 //-----------------------------------------------------------------------------
-HRESULT Orbiter::Create (HINSTANCE hInstance)
+bool Orbiter::Create()
 {
-	if (m_pLaunchpad) return S_OK; // already created
+	if (m_pLaunchpad) return true; // already created
 
-	HRESULT hr;
-	WNDCLASS wndClass;
-
-	// Enable tab controls
-	InitCommonControls();
-	LoadLibrary ("riched20.dll");
-
-	// parameter manager - parses from master config file
-	hInst = hInstance;
 	pConfig->Load(MasterConfigFile);
-	strcpy (cfgpath, pConfig->CfgDirPrm.ConfigDir);   cfglen = strlen (cfgpath);
-
-	if (FAILED (hr = pDI->Create (hInstance))) return hr;
+	cfgpath = std::string(pConfig->CfgDirPrm.ConfigDir);
 
 	// validate configuration
-	if (pConfig->CfgJoystickPrm.Joy_idx > GetDInput()->NumJoysticks()) pConfig->CfgJoystickPrm.Joy_idx = 0;
+	int njoy = 0;
+	SDL_free(SDL_GetJoysticks(&njoy));
+	if (pConfig->CfgJoystickPrm.Joy_idx > njoy) pConfig->CfgJoystickPrm.Joy_idx = 0;
 
 	// Read key mapping from file (or write default keymap)
 	if (!keymap.Read ("keymap.cfg")) keymap.Write ("keymap.cfg");
 
     pState = new State(); TRACENEW
-
-	// Register main dialog window class
-	GetClassInfo (hInstance, "#32770", &wndClass); // override default dialog class
-	wndClass.hIcon = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_MAIN_ICON));
-	RegisterClass (&wndClass);
-
-	// Find out if we are running under Linux/WINE
-	HKEY key;
-	long ret = RegOpenKeyEx (HKEY_CURRENT_USER, TEXT("Software\\Wine"), 0, KEY_QUERY_VALUE, &key);
-	RegCloseKey (key);
-	bWINEenv = (ret == ERROR_SUCCESS);
-
-	// Register HTML viewer class
-	RegisterHtmlCtrl (hInstance, UseHtmlInline());
-	CustomCtrl::RegisterClass (hInstance);
 
 	if (pConfig->CfgCmdlinePrm.bFastExit)
 		SetFastExit(true);
@@ -411,13 +378,14 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 		OpenVideoTab();
 
 	if (pConfig->CfgDemoPrm.bBkImage) {
-		hBk = CreateDialog (hInstance, MAKEINTRESOURCE(IDD_DEMOBK), NULL, BkMsgProc);
-		ShowWindow (hBk, SW_MAXIMIZE);
+		assert(false && "TODO");
+		// hBk = CreateDialog (hInstance, MAKEINTRESOURCE(IDD_DEMOBK), NULL, BkMsgProc);
+		// ShowWindow (hBk, SW_MAXIMIZE);
 	}
 	
 	// Create the "launchpad" main dialog window
-	m_pLaunchpad = new orbiter::LaunchpadDialog (this); TRACENEW
-	m_pLaunchpad->Create (bStartVideoTab);
+	m_pLaunchpad = new orbiter::LaunchpadDialog2 (this); TRACENEW
+	if (!m_pLaunchpad->Create(bStartVideoTab)) return false;
 
 	Instrument::RegisterBuiltinModes();
 
@@ -443,7 +411,7 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 
 	memstat = new MemStat;
 	
-	return S_OK;
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -484,7 +452,7 @@ VOID Orbiter::CloseApp (bool fast_shutdown)
 			delete []customcmd;
 			customcmd = NULL;
 		}
-		oapiUnregisterCustomControls (hInst);
+		oapiUnregisterCustomControls (hInstStopgap);
 	}
 	timeEndPeriod (1);
 }
@@ -511,18 +479,18 @@ int Orbiter::GetVersion () const
 //! Finds legacy module consisting of a single DLL
 //! @return true on success
 //! @param cbufOut returns path to the plugin DLL
-static bool FindStandaloneDll(const char *path, const char *name, char* cbufOut)
+static bool FindStandaloneDll(const char *path, const char *name, fs::path& cbufOut)
 {
-	sprintf (cbufOut, "%s\\%s.dll", path, name);
+	cbufOut = fs::path(path).append(name);
 	return fs::exists(cbufOut);
 }
 
 //! Finds module consisting of a plugin DLL inside a plugin-specific folder
 //! @return true on success
 //! @param cbufOut returns path to the plugin DLL
-static bool FindDllInPluginFolder(const char *path, const char *name, char* cbufOut)
+static bool FindDllInPluginFolder(const char *path, const char *name, fs::path& cbufOut)
 {
-	sprintf(cbufOut, "%s\\%s\\%s.dll", path, name, name);
+	cbufOut = fs::path(path).append(name).append(name);
 	return fs::exists(cbufOut);
 }
 
@@ -559,27 +527,27 @@ ModHandle* Orbiter::LoadModule (const char *path, const char *name)
 {
 	typedef void (*ModuleEntry)(ModHandle*, bool);
 
-	register_module = NULL; // Clear the module. The loaded library may optionally populate it on LoadLibrary() call below.
+	register_module = NULL; // Clear the module. The loaded library may optionally populate it on entry call below.
 
 	// Load the module DLL
 	ModHandle* hDLL = NULL;
 	ModuleEntry entry = nullptr;
 
-	char cbuf[256];
+	fs::path cbuf;
 	if (FindStandaloneDll(path, name, cbuf)) // try to find standalone plugin file
 	{
-		hDLL = reinterpret_cast<ModHandle*>(SDL_LoadObject(cbuf));
+		hDLL = reinterpret_cast<ModHandle*>(SDL_LoadObject(cbuf.u8string().c_str()));
 		entry = reinterpret_cast<ModuleEntry>(SDL_LoadFunction(reinterpret_cast<SDL_SharedObject*>(hDLL), "OrbitersdkModuleEntry"));
 	}
 	else // try to find plugin in a plugin folder
 	{
-		char cbuf2[256];
-		if (FindDllInPluginFolder(path, name, cbuf2))
+		fs::path cbuf2;
+		if (FindDllInPluginFolder(path, name, cbuf))
 		{
 			// Convert to absolute path, otherwise LoadLibraryEx fails with error code 87.
 			// See https://stackoverflow.com/questions/36275535/loadlibraryex-error-87-the-parameter-is-incorrect
-			sprintf(cbuf, "%s\\%s", cwd, cbuf2);
-			hDLL = reinterpret_cast<ModHandle*>(SDL_LoadObject(cbuf));
+			cbuf2 = fs::absolute(cbuf);
+			hDLL = reinterpret_cast<ModHandle*>(SDL_LoadObject(cbuf2.u8string().c_str()));
 			entry = reinterpret_cast<ModuleEntry>(SDL_LoadFunction(reinterpret_cast<SDL_SharedObject*>(hDLL), "OrbitersdkModuleEntry"));
 		}
 		else
@@ -737,8 +705,8 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 		g_input = new InputBox(); TRACENEW
 		pDlgMgr->AddEntry(g_input);
 
-		// playback screen annotation manager
-		snote_playback = gclient->clbkCreateAnnotation ();
+		// playback screen annotation managCreateer
+		// TODO: why is this suddenly broken snote_playback = gclient->clbkAnnotation ();
 	}
 	else {
 		pDlgMgr = new DialogManager(this, m_pConsole->WindowHandle());
@@ -836,7 +804,6 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++) {
 		it->pModule->clbkSimulationStart(rendermode);
-		CHECKCWD(cwd, it->sName.c_str());
 	}
 
 	if (g_pane) {
@@ -906,7 +873,7 @@ void Orbiter::CloseSession ()
 
 	if (pConfig->CfgDebugPrm.ShutdownMode == 0 && !bFastExit) { // normal cleanup
 		m_pLaunchpad->Show(); // show launchpad dialog again
-		m_pLaunchpad->ShowWaitPage (true, simheapsize);
+		// TODO: m_pLaunchpad->ShowWaitPage (true, simheapsize);
 		if (gclient) {
 			gclient->clbkCloseSession (false);
 			Base::DestroyStaticDeviceObjects ();
@@ -937,7 +904,7 @@ void Orbiter::CloseSession ()
 		pDI->DestroyDevices();
 		pDI->SetRenderWindow(NULL);
 
-		m_pLaunchpad->ShowWaitPage (false);
+		// TODO: m_pLaunchpad->ShowWaitPage (false);
 	} else {
 		if (pDlgMgr)  { delete pDlgMgr; pDlgMgr = 0; }
 		if (gclient) {
@@ -1018,15 +985,42 @@ void Orbiter::ScreenToClient (POINT *pt) const
 // Name: Run()
 // Desc: Message-processing loop. Idle time is used to render the scene.
 //-----------------------------------------------------------------------------
-INT Orbiter::Run ()
+void Orbiter::Run ()
 {
-    // Recieve and process Windows messages
-    BOOL  bGotMsg, bCanRender, bpCanRender = TRUE;
-    MSG   msg;
-    PeekMessage (&msg, NULL, 0U, 0U, PM_NOREMOVE);
-
 	if (!pConfig->CfgCmdlinePrm.LaunchScenario.empty())
 		Launch (pConfig->CfgCmdlinePrm.LaunchScenario.c_str());
+
+	SDL_Event event = {};
+	bool hadEvent;
+	while (!ShouldQuit()) {
+		// Use PollMessage() if the app is active, so we can use idle time to
+		// render the scene. Else, use GetMessage() to avoid eating CPU time.
+		if (bSession) {
+			hadEvent = SDL_PollEvent(&event);
+		} else {
+			hadEvent = SDL_WaitEvent(&event);
+		}
+
+		if (hadEvent) {
+			bool consumed = false;
+			if (m_pLaunchpad) {
+				consumed = consumed || m_pLaunchpad->ConsumeEvent(event);
+			}
+			if (!consumed) {
+				printf("TODO: %d\n", event.type);
+			}
+
+			if (ShouldQuit()) break;
+		} else {
+			assert(false && "TODO");
+		}
+
+		if (m_pLaunchpad) {
+			m_pLaunchpad->RenderFrame();
+		}
+	}
+
+	/*
 	// otherwise wait for the user to make a selection from the scenario
 	// list in the launchpad dialog
 
@@ -1075,9 +1069,10 @@ INT Orbiter::Run ()
 			bpCanRender = bCanRender;
 		} else
 			bpCanRender = TRUE;
+		}
     }
 	hRenderWnd = NULL;
-    return msg.wParam;
+    return msg.wParam;*/
 }
 
 void Orbiter::SingleFrame ()
@@ -1430,7 +1425,7 @@ VOID Orbiter::SetFOV (double fov, bool limit_range)
 
 	// update Camera dialog
 	HWND hCamDlg;
-	if (pDlgMgr && (hCamDlg = pDlgMgr->IsEntry (hInst, IDD_CAMERA)))
+	if (pDlgMgr && (hCamDlg = pDlgMgr->IsEntry (hInstStopgap, IDD_CAMERA)))
 		SendMessage (hCamDlg, WM_APP, 0, (LPARAM)&fov);
 }
 
@@ -1447,7 +1442,7 @@ VOID Orbiter::IncFOV (double dfov)
 
 	// update Camera dialog
 	HWND hCamDlg;
-	if (pDlgMgr && (hCamDlg = pDlgMgr->IsEntry (hInst, IDD_CAMERA)))
+	if (pDlgMgr && (hCamDlg = pDlgMgr->IsEntry (hInstStopgap, IDD_CAMERA)))
 		SendMessage (hCamDlg, WM_APP, 0, (LPARAM)&fov);
 }
 
@@ -1525,7 +1520,7 @@ void Orbiter::TogglePlanetariumMode()
 	plnFlag ^= PLN_ENABLE;
 
 	if (pDlgMgr) {
-		DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInst);
+		DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInstStopgap);
 		if (dlg) dlg->Update();
 	}
 
@@ -1539,7 +1534,7 @@ void Orbiter::ToggleLabelDisplay()
 	mkrFlag ^= MKR_ENABLE;
 
 	if (pDlgMgr) {
-		DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInst);
+		DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInstStopgap);
 		if (dlg) dlg->Update();
 	}
 }
@@ -1600,7 +1595,7 @@ void Orbiter::EndPlayback ()
 	if (snote_playback) snote_playback->ClearText();
 	bPlayback = false;
 	if (pDlgMgr) {
-		HWND hDlg = pDlgMgr->IsEntry (hInst, IDD_RECPLAY);
+		HWND hDlg = pDlgMgr->IsEntry (hInstStopgap, IDD_RECPLAY);
 		if (hDlg) PostMessage (hDlg, WM_USER+1, 0, 0);
 	}
 	if (g_pane && g_pane->MIBar()) g_pane->MIBar()->SetPlayback(false);
@@ -2777,17 +2772,17 @@ bool Orbiter::RegisterWindow (HINSTANCE hInstance, HWND hWnd, DWORD flag)
 
 void Orbiter::UpdateDeallocationProgress()
 {
-	m_pLaunchpad->UpdateWaitProgress();
+	// TODO: m_pLaunchpad->UpdateWaitProgress();
 }
 
 HWND Orbiter::OpenDialog (int id, DLGPROC pDlg, void *context)
 {
-	return OpenDialog (hInst, id, pDlg, context);
+	return OpenDialog (hInstStopgap, id, pDlg, context);
 }
 
 HWND Orbiter::OpenDialogEx (int id, DLGPROC pDlg, DWORD flag, void *context)
 {
-	return OpenDialogEx (hInst, id, pDlg, flag, context);
+	return OpenDialogEx (hInstStopgap, id, pDlg, flag, context);
 }
 
 HWND Orbiter::OpenDialog (HINSTANCE hInstance, int id, DLGPROC pDlg, void *context)

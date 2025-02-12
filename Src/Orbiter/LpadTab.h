@@ -20,6 +20,24 @@
 namespace orbiter {
 
 	class LaunchpadDialog;
+	class LaunchpadDialog2;
+
+	class LaunchpadTab2 {
+	public:
+		LaunchpadTab2(const LaunchpadDialog2* lp) : m_lp(lp), m_cfg(lp->Cfg()) {};
+		virtual ~LaunchpadTab2() {};
+
+		const LaunchpadDialog2* Launchpad() const { return m_lp; }
+		const Config* Cfg() const { return m_cfg; }
+
+		virtual void GetConfig(const Config* cfg) {}
+		virtual void SetConfig(Config* cfg) {}
+		virtual bool DynamicSize() const { return false; }
+		virtual void OnDraw() = 0;
+	protected:
+		const LaunchpadDialog2* m_lp;
+		Config* m_cfg;
+	};
 
 	//-----------------------------------------------------------------------------
 	// Name: class LaunchpadTab

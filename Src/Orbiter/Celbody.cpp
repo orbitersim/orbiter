@@ -10,6 +10,7 @@
 
 #define OAPI_IMPLEMENTATION
 
+#include <SDL3/SDL_loadso.h>
 #include "Orbiter.h"
 #include "Element.h"
 #include "Celbody.h"

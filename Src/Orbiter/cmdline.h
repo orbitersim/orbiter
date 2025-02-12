@@ -4,7 +4,6 @@
 #ifndef __cmdline_h
 #define __cmdline_h
 
-#include <windows.h>
 #include <vector>
 #include <string>
 
@@ -20,12 +19,12 @@ public:
 	void operator=(CommandLine const&) = delete;
 
 	const char* CmdLine() const;
-	bool GetOption(UINT id, const std::string** value) const;
+	bool GetOption(unsigned int id, const std::string** value) const;
 
 protected:
 	struct Key {
-		UINT id;
-		PCSTR longName;
+		unsigned int id;
+		const char* longName;
 		char shortName;
 		bool hasArgument;
 	};

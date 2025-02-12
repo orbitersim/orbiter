@@ -4,13 +4,14 @@
 #ifndef ORBITER_H
 #define ORBITER_H
 
-#include <SDL3/SDL_loadso.h>
+#include <string>
 #include "Config.h"
 #include "Input.h"
 #include "Select.h"
 #include "Keymap.h"
-#include <stdio.h>
-#include <commctrl.h>
+#include <cstdio>
+#include <filesystem>
+
 #include "Mesh.h"
 #include "TimeData.h"
 #include <OrbiterAPI.h>
@@ -32,7 +33,7 @@ class DDEServer;
 class ImageIO;
 namespace orbiter {
 	class ConsoleNG;
-	class LaunchpadDialog;
+	class LaunchpadDialog2;
 }
 
 //-----------------------------------------------------------------------------
@@ -54,7 +55,7 @@ public:
 	Orbiter ();
 	~Orbiter ();
 
-    HRESULT Create (HINSTANCE);
+    bool Create ();
 	VOID Launch (const char *scenario);
 	void CloseApp (bool fast_shutdown = false);
 	int GetVersion () const;
@@ -75,7 +76,9 @@ public:
 	void ExitRotationMode ();
 	bool StickyFocus() const { return bKeepFocus; }
 	void OpenVideoTab() { bStartVideoTab = true; }
-	INT Run ();
+	void Run ();
+	void SetShouldQuit() { bShouldQuit = true; };
+	bool ShouldQuit() { return bShouldQuit; }
 	void SingleFrame ();
     void Pause (bool bPause);
 	void Freeze (bool bFreeze);
@@ -157,7 +160,6 @@ public:
 	// Increase camera field of view by dfov
 
 	// Accessor functions
-	inline HINSTANCE GetInstance() const { return hInst; }
 	inline HWND    GetRenderWnd() const { return hRenderWnd; }
 	inline bool    IsFullscreen() const { return bFullscreen; }
 	inline DWORD   ViewW() const { return viewW; }
@@ -166,7 +168,7 @@ public:
 	inline Config* Cfg() const { return pConfig; }
 	inline ScriptInterface *Script() const { return script; }
 	inline DialogManager *DlgMgr() const { return pDlgMgr; }
-	inline orbiter::LaunchpadDialog *Launchpad() const { return m_pLaunchpad; }
+	inline orbiter::LaunchpadDialog2 *Launchpad() const { return m_pLaunchpad; }
 	inline State*  PState() const { return pState; }
 	inline bool    IsActive() const { return bActive; } // temporary
 	inline bool    IsRunning() const { return bRunning; }
@@ -304,6 +306,7 @@ public:
 
 	void OnOptionChanged(DWORD cat, DWORD item = 0);
 
+	HINSTANCE       hInstStopgap;
 protected:
 	HRESULT UserInput ();
 	void KbdInputImmediate_System    (char *kstate);
@@ -350,11 +353,10 @@ protected:
 private:
 	Config         *pConfig;
 	State          *pState;
-	orbiter::LaunchpadDialog *m_pLaunchpad;
+	orbiter::LaunchpadDialog2 *m_pLaunchpad;
 	DialogManager  *pDlgMgr;
 	orbiter::ConsoleNG* m_pConsole;    // The console window opened when Orbiter server is launched without a graphics client
 	DInput         *pDI;
-	HINSTANCE       hInst;         // orbiter instance handle
 	HWND            hRenderWnd;    // render window handle (NULL if no render support)
 	HWND            hBk;           // background window handle (demo mode only)
 	BOOL            bRenderOnce;   // flag for single frame render request
@@ -377,8 +379,7 @@ private:
 	DWORD           viewW, viewH;  // render viewport dimensions
 	DWORD			viewBPP;       // render colour depth (bits per pixel)
 
-	char            cfgpath[256];
-	int             cfglen;
+	std::filesystem::path cfgpath;
 	char            simkstate[256];// accumulated simulated key state
 
 	DWORD           ms_prev;       // used for time step calculation
@@ -396,6 +397,9 @@ private:
 	bool            bFastExit;     // terminate on simulation end?
 	bool            bSysClearType; // is cleartype enabled on the user's system?
 	bool            bRoughType;    // font-smoothing disabled?
+	bool            bShouldQuit;
+
+	std::string currentScenario;
 
 	// Manual joystick/keyboard attitude inputs
 	DWORD ctrlJoystick[15];
@@ -425,7 +429,7 @@ private:
 
 	/**
 	 * \brief Load all DLLs in a specific directory as plugin modules.
-	 * \param Module directory
+	 * \param path Module directory
 	 */
 	void LoadModules(const std::string& path);
 

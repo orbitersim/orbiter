@@ -4,6 +4,7 @@
 #define STRICT 1
 #define OAPI_IMPLEMENTATION
 
+#include <SDL3/SDL_loadso.h>
 #include "Orbiter.h"
 #include "Launchpad.h"
 #include "Psys.h"
@@ -48,11 +49,6 @@ DLLEXPORT void FormatValue (char *cbuf, int n, double f, int precision)
 {
 	char *s = FloatStr (f, precision);
 	strncpy (cbuf, s, n);
-}
-
-DLLEXPORT HINSTANCE oapiGetOrbiterInstance ()
-{
-	return g_pOrbiter->GetInstance();
 }
 
 DLLEXPORT HMODULE stopgapGetModuleInstance (ModHandle* module) {
@@ -2141,7 +2137,7 @@ DLLEXPORT bool oapiAcceptDelayedKey (char key, double interval)
 
 DLLEXPORT LAUNCHPADITEM_HANDLE oapiRegisterLaunchpadItem (LaunchpadItem *item, LAUNCHPADITEM_HANDLE parent)
 {
-	return (LAUNCHPADITEM_HANDLE)g_pOrbiter->Launchpad()->RegisterExtraParam (item, (HTREEITEM)parent);
+	return (LAUNCHPADITEM_HANDLE)g_pOrbiter->Launchpad()->RegisterExtraParam (item, (size_t)parent);
 }
 
 DLLEXPORT bool oapiUnregisterLaunchpadItem (LaunchpadItem *item)
@@ -2151,7 +2147,7 @@ DLLEXPORT bool oapiUnregisterLaunchpadItem (LaunchpadItem *item)
 
 DLLEXPORT LAUNCHPADITEM_HANDLE oapiFindLaunchpadItem (const char *name, LAUNCHPADITEM_HANDLE parent)
 {
-	return g_pOrbiter->Launchpad()->FindExtraParam (name, (HTREEITEM)parent);
+	return g_pOrbiter->Launchpad()->FindExtraParam (name, (size_t)parent);
 }
 
 DLLEXPORT DWORD oapiRegisterCustomCmd (char *label, char *desc, CustomFunc func, void *context)

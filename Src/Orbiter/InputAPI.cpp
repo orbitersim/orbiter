@@ -1,3 +1,4 @@
+#define OAPI_IMPLEMENTATION
 #include "InputAPI.h"
 #include "OrbiterAPI.h"
 

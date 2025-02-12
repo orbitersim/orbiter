@@ -25,6 +25,7 @@
 #define SIG5 "orbiter-forum.com"
 
 #define SIG7 "v.@VERSION@"
+#define ORBITER_VERSION_STR SIG7
 
 #define SIG6 "www.youtube.com/user/orbitersim"
 

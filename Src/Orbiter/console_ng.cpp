@@ -215,7 +215,7 @@ bool orbiter::ConsoleNG::ParseCmd()
 	}
 	else if (!_strnicmp(cmd, "gui", 3)) {
 		if (!DestroyStatDlg())
-			m_hStatWnd = CreateDialog(m_pOrbiter->GetInstance(), MAKEINTRESOURCE(IDD_SERVER), m_hWnd, ServerDlgProc);
+			m_hStatWnd = CreateDialog(m_pOrbiter->hInstStopgap, MAKEINTRESOURCE(IDD_SERVER), m_hWnd, ServerDlgProc);
 	}
 	else if (!_strnicmp(cmd, "dlg", 3)) {
 		DialogManager* pDlgMgr = m_pOrbiter->DlgMgr();
