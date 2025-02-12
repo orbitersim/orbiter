@@ -12,6 +12,9 @@
 #include "Resource.h"
 #include "Orbiter.h"
 #include "Launchpad.h"
+
+#include <IconsFontAwesome6.h>
+
 #include "TabScenario.h"
 #include "TabOptions.h"
 #include "TabModule.h"
@@ -35,23 +38,108 @@ constexpr unsigned int dlgcol = 0xF0F4F8; // main dialog background color;
 
 #include <LpadTab.h>
 #include <imgui.h>
-class DummyTabPage2 : public orbiter::LaunchpadTab2 {
-public:
-	DummyTabPage2(orbiter::LaunchpadDialog2* lp) : orbiter::LaunchpadTab2(lp) {}
-	~DummyTabPage2() override {}
-	void GetConfig(const Config *cfg) override {}
-	void SetConfig(Config *cfg) override {}
-	void OnDraw() override {
-		ImGui::Text("Hello, launchpad!");
-	}
-};
 
 orbiter::LaunchpadDialog2::LaunchpadDialog2(Orbiter *app)
 	: m_app(app), m_cfg(app->Cfg()), m_tabList(), m_active(false), m_window(nullptr), m_device(nullptr),
-	  m_context(nullptr) {
+	  m_context(nullptr), defaultFont(nullptr), monoFont(nullptr) {
 	g_pDlg2 = this;
 	// TODO: tabs
-	AddTab(new DummyTabPage2(this));
+	AddTab(new ScenarioTab(this));
+	// AddTab(new OptionsTab(this));
+	// AddTab(new ModuleTab(this));
+	// AddTab(new DefVideoTab(this));
+	// AddTab(new ExtraTab(this));
+	// AddTab(new AboutTab(this));
+}
+
+
+// Styling adapted from https://gist.github.com/dougbinks/8089b4bbaccaaf6fa204236978d165a9
+static void ImGuiSetStyle(bool bStyleDark_,  float alpha_)
+{
+    // Setup Dear ImGui style
+    ImGui::StyleColorsClassic();
+	ImGui::StyleColorsLight();
+    ImGuiStyle& style = ImGui::GetStyle();
+
+    style.Alpha = 1.0f;
+    style.FrameRounding = 3.0f;
+    style.WindowRounding = 3.0f;
+    style.ChildRounding = 3.0f;
+    style.PopupRounding = 3.0f;
+    style.ScrollbarRounding = 3.0f;
+    style.GrabRounding = 3.0f;
+    style.TabRounding = 3.0f;
+    style.WindowMenuButtonPosition = ImGuiDir_Right;
+	return;
+    // light style from Pacôme Danhiez (user itamago) https://github.com/ocornut/imgui/pull/511#issuecomment-175719267
+    style.Colors[ImGuiCol_Text]                  = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+    style.Colors[ImGuiCol_TextDisabled]          = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
+    style.Colors[ImGuiCol_WindowBg]              = ImVec4(0.94f, 0.94f, 0.94f, 0.94f);
+    style.Colors[ImGuiCol_PopupBg]               = ImVec4(1.00f, 1.00f, 1.00f, 0.94f);
+    style.Colors[ImGuiCol_Border]                = ImVec4(0.00f, 0.00f, 0.00f, 0.39f);
+    style.Colors[ImGuiCol_BorderShadow]          = ImVec4(1.00f, 1.00f, 1.00f, 0.10f);
+    style.Colors[ImGuiCol_FrameBg]               = ImVec4(1.00f, 1.00f, 1.00f, 0.94f);
+    style.Colors[ImGuiCol_FrameBgHovered]        = ImVec4(0.26f, 0.59f, 0.98f, 0.40f);
+    style.Colors[ImGuiCol_FrameBgActive]         = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
+    style.Colors[ImGuiCol_TitleBg]               = ImVec4(0.96f, 0.96f, 0.96f, 1.00f);
+    style.Colors[ImGuiCol_TitleBgCollapsed]      = ImVec4(1.00f, 1.00f, 1.00f, 0.51f);
+    style.Colors[ImGuiCol_TitleBgActive]         = ImVec4(0.82f, 0.82f, 0.82f, 1.00f);
+    style.Colors[ImGuiCol_MenuBarBg]             = ImVec4(0.86f, 0.86f, 0.86f, 1.00f);
+    style.Colors[ImGuiCol_ScrollbarBg]           = ImVec4(0.98f, 0.98f, 0.98f, 0.53f);
+    style.Colors[ImGuiCol_ScrollbarGrab]         = ImVec4(0.69f, 0.69f, 0.69f, 1.00f);
+    style.Colors[ImGuiCol_ScrollbarGrabHovered]  = ImVec4(0.59f, 0.59f, 0.59f, 1.00f);
+    style.Colors[ImGuiCol_ScrollbarGrabActive]   = ImVec4(0.49f, 0.49f, 0.49f, 1.00f);
+    style.Colors[ImGuiCol_CheckMark]             = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+    style.Colors[ImGuiCol_SliderGrab]            = ImVec4(0.24f, 0.52f, 0.88f, 1.00f);
+    style.Colors[ImGuiCol_SliderGrabActive]      = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+    style.Colors[ImGuiCol_Button]                = ImVec4(0.26f, 0.59f, 0.98f, 0.40f);
+    style.Colors[ImGuiCol_ButtonHovered]         = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+    style.Colors[ImGuiCol_ButtonActive]          = ImVec4(0.06f, 0.53f, 0.98f, 1.00f);
+    style.Colors[ImGuiCol_Header]                = ImVec4(0.26f, 0.59f, 0.98f, 0.31f);
+    style.Colors[ImGuiCol_HeaderHovered]         = ImVec4(0.26f, 0.59f, 0.98f, 0.80f);
+    style.Colors[ImGuiCol_HeaderActive]          = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+    style.Colors[ImGuiCol_ResizeGrip]            = ImVec4(1.00f, 1.00f, 1.00f, 0.50f);
+    style.Colors[ImGuiCol_ResizeGripHovered]     = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
+    style.Colors[ImGuiCol_ResizeGripActive]      = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
+    style.Colors[ImGuiCol_PlotLines]             = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
+    style.Colors[ImGuiCol_PlotLinesHovered]      = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
+    style.Colors[ImGuiCol_PlotHistogram]         = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
+    style.Colors[ImGuiCol_PlotHistogramHovered]  = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
+    style.Colors[ImGuiCol_TextSelectedBg]        = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
+
+    if( bStyleDark_ )
+    {
+        for (int i = 0; i <= ImGuiCol_COUNT; i++)
+        {
+            ImVec4& col = style.Colors[i];
+            float H, S, V;
+            ImGui::ColorConvertRGBtoHSV( col.x, col.y, col.z, H, S, V );
+
+            if( S < 0.1f )
+            {
+                V = 1.0f - V;
+            }
+            ImGui::ColorConvertHSVtoRGB( H, S, V, col.x, col.y, col.z );
+            if( col.w < 1.00f )
+            {
+                col.w *= alpha_;
+            }
+        }
+    }
+    else
+    {
+        for (int i = 0; i <= ImGuiCol_COUNT; i++)
+        {
+            ImVec4& col = style.Colors[i];
+            if( col.w < 1.00f )
+            {
+                col.x *= alpha_;
+                col.y *= alpha_;
+                col.z *= alpha_;
+                col.w *= alpha_;
+            }
+        }
+    }
 }
 
 bool orbiter::LaunchpadDialog2::Create(bool startvideotab) {
@@ -83,9 +171,26 @@ bool orbiter::LaunchpadDialog2::Create(bool startvideotab) {
 	auto savedContext = ImGui::GetCurrentContext();
 
 	ImGuiIO& io = ImGui::GetIO();
+	if(!m_app->IsFullscreen())
+		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-	// DialogManager has already handled ImGui init'ing.
+	ImGuiSetStyle(true, 1.0f);
+
+	ImFontConfig config;
+
+	static const ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+	ImFontConfig icons_config;
+	icons_config.MergeMode = true;
+	icons_config.PixelSnapH = true;
+	icons_config.FontDataOwnedByAtlas = false;
+
+	const CFG_FONTPRM &prm = g_pOrbiter->Cfg()->CfgFontPrm;
+	defaultFont = io.Fonts->AddFontFromFileTTF(prm.ImGui_FontFile, prm.ImGui_FontSize, &config, ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
+	io.Fonts->AddFontFromFileTTF("fa-solid-900.ttf", prm.ImGui_FontSize, &icons_config, icons_ranges);
+	monoFont = io.Fonts->AddFontFromFileTTF("Cousine-Regular.ttf", prm.ImGui_FontSize, &config, ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
+	io.Fonts->Build();
+
 	ImGui_ImplSDL3_InitForSDLGPU(m_window);
 	ImGui_ImplSDLGPU3_InitInfo init_info = {};
 	init_info.GpuDevice = m_device;
@@ -95,6 +200,10 @@ bool orbiter::LaunchpadDialog2::Create(bool startvideotab) {
 
 	if (startvideotab) {
 		assert(false && "TODO");
+	}
+
+	for (auto tab : m_tabList) {
+		tab->Create();
 	}
 
 	Show();
@@ -109,6 +218,13 @@ orbiter::LaunchpadDialog2::~LaunchpadDialog2() {
 	auto savedContext = ImGui::GetCurrentContext();
 	ImGui::SetCurrentContext(m_context);
 	SDL_WaitForGPUIdle(m_device);
+
+	for (auto tab : m_tabList) {
+		delete tab;
+	}
+	m_tabList.clear();
+	g_pDlg2 = nullptr;
+
 	ImGui_ImplSDL3_Shutdown();
 	ImGui_ImplSDLGPU3_Shutdown();
 	ImGui::DestroyContext();
@@ -120,16 +236,18 @@ orbiter::LaunchpadDialog2::~LaunchpadDialog2() {
 	SDL_ReleaseWindowFromGPUDevice(m_device, m_window);
 	SDL_DestroyGPUDevice(m_device);
 	SDL_DestroyWindow(m_window);
-
-	for (auto tab : m_tabList) {
-		delete tab;
-	}
-	m_tabList.clear();
-	g_pDlg2 = nullptr;
 }
 
 void orbiter::LaunchpadDialog2::OnDraw() {
-	ImGui::Text("Hello, launchpad! This is the top-level view.");
+	if (ImGui::BeginTabBar("LaunchpadTabs")) {
+		for (auto tab : m_tabList) {
+			if (ImGui::BeginTabItem(tab->Title())) {
+				tab->OnDraw();
+				ImGui::EndTabItem();
+			}
+		}
+		ImGui::EndTabBar();
+	}
 }
 
 void orbiter::LaunchpadDialog2::AddTab(orbiter::LaunchpadTab2 *tab) {
@@ -157,7 +275,7 @@ bool EventIsMouse(Uint32 type) {
 bool orbiter::LaunchpadDialog2::ConsumeEvent(const SDL_Event &event) {
 	auto savedContext = ImGui::GetCurrentContext();
 	ImGui::SetCurrentContext(m_context);
-	bool consumed = false;
+	bool consumed = ImGui_ImplSDL3_ProcessEvent(&event);
 	ImGuiIO& io = ImGui::GetIO();
 	if ((io.WantCaptureMouse && EventIsMouse(event.type)) || (
 		    io.WantCaptureMouse && EventIsKeyboard(event.type))) {
@@ -170,7 +288,6 @@ bool orbiter::LaunchpadDialog2::ConsumeEvent(const SDL_Event &event) {
 		}
 		return true;
 	}
-	consumed = consumed || ImGui_ImplSDL3_ProcessEvent(&event);
 
 	if (savedContext != nullptr) {
 		ImGui::SetCurrentContext(savedContext);
@@ -332,7 +449,7 @@ bool orbiter::LaunchpadDialog::Create (bool startvideotab)
 	if (!hDlg) {
 		CreateDialogParam(hInst, MAKEINTRESOURCE(IDD_MAIN), NULL, s_DlgProc, (LPARAM)this);
 		hTabContainer = GetDlgItem(hDlg, IDC_MNU_PAGECONTAINER);
-		AddTab (new ScenarioTab (this));
+		// AddTab (new ScenarioTab (this));
 		AddTab(new OptionsTab(this));
 		AddTab (new ModuleTab (this));
 		AddTab (new DefVideoTab (this));
@@ -582,10 +699,11 @@ INT_PTR orbiter::LaunchpadDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, 
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) {
 		case IDLAUNCH:
-			if (((ScenarioTab*)TabList[0])->GetSelScenario (cbuf, 256) == 1) {
-				UpdateConfig ();
-				pApp->Launch (cbuf);
-			}
+			// TODO TODO TODO
+			// if (((ScenarioTab*)TabList[0])->GetSelScenario (cbuf, 256) == 1) {
+			// 	UpdateConfig ();
+			// 	pApp->Launch (cbuf);
+			// }
 			return TRUE;
 		case IDEXIT:
 			PostMessage (hWnd, WM_CLOSE, 0, 0);

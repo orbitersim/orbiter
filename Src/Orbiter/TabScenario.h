@@ -13,16 +13,29 @@
 #include "LpadTab.h"
 #include "CustomControls.h"
 #include <filesystem>
+#include "SDLUtil.h"
 namespace fs = std::filesystem;
 
 namespace orbiter {
 
-	class ScenarioTab : public orbiter::LaunchpadTab {
+	struct ScenarioTreeItem {
+		Image* icon;
+		Image* selIcon;
+		fs::path path;
+		std::string name;
+	};
+
+	struct ScenarioTree {
+		ScenarioTreeItem item;
+		std::vector<ScenarioTree> children;
+	};
+
+	class ScenarioTab : public orbiter::LaunchpadTab2 {
 	public:
-		ScenarioTab(const orbiter::LaunchpadDialog* lp);
+		ScenarioTab(const orbiter::LaunchpadDialog2* lp);
 		~ScenarioTab();
 
-		void Create();
+		void Create() override;
 
 		void GetConfig(const Config* cfg);
 		void SetConfig(Config* cfg);
@@ -42,6 +55,8 @@ namespace orbiter {
 		BOOL OnNotify(HWND hDlg, int idCtrl, LPNMHDR pnmh);
 
 		BOOL OnMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+		void OnDraw() override;
 
 	protected:
 		void RefreshList(bool preserveSelection);
@@ -73,20 +88,21 @@ namespace orbiter {
 		static DWORD WINAPI threadWatchScnList(LPVOID pPrm);
 		// thread function for scenario list watcher
 
+		ScenarioTree BuildScnTree(ScenarioTreeItem root);
+		void RenderTree(const ScenarioTree& tree);
+
 		SplitterCtrl splitListDesc;  // splitter control for scenario list(left) and description(right)
-		HIMAGELIST imglist;      // image list for scenario icons
-		int treeicon_idx[4];     // icon indices for scenario tree
+
+		Image* img_folder1;
+		Image* img_folder2;
+		Image* img_scn1;
+		ScenarioTree tree;
+		fs::path selection;
 		char scnhelp[128];       // scenario help string, if available
-		RECT r_list0;            // initial position of scenario list - REMOVE!
-		RECT r_desc0;            // initial position of description block - REMOVE!
-		RECT r_pane;             // initial position of list/description splitter pane
-		RECT r_save0;            // initial position of "save current" button
-		RECT r_clear0;           // initial position of "clear quicksaves" button
-		RECT r_info0;            // initial position of "info" button
-		RECT r_pause0;           // initial position of "start paused" button
 		int infoId;              // IDC_SCN_HTML or IDC_SCN_INFO, depending on which is active
 		bool htmldesc;           // Use embedded html viewer for scenario description
 		HANDLE hThread;          // scenario directory tree watcher
+		bool startPaused;
 	};
 
 }

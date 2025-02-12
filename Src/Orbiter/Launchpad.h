@@ -72,6 +72,9 @@ namespace orbiter {
 		// save current dialog settings in application configuration
 		void UpdateConfig();
 
+		SDL_Window* Window() const { return m_window; }
+		SDL_GPUDevice* Device() const { return m_device; }
+
 		void Hide();
 		void Show();
 	private:
@@ -82,6 +85,8 @@ namespace orbiter {
 		SDL_Window* m_window;
 		SDL_GPUDevice* m_device;
 		ImGuiContext* m_context;
+		ImFont *defaultFont;
+		ImFont *monoFont;
 
 		void SwitchTabPage(int pg);
 	};

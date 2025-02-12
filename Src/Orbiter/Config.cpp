@@ -229,7 +229,7 @@ CFG_FONTPRM CfgFontPrm_default = {
 	1.0f,		// dlgFont_Scale (scaling factor for inline dialog fonts)
 	"Arial",	// dlgFont1_Face (default dialog font face name)
 	14.0f,		// ImGui_FontSize
-	"Roboto-Medium.ttf" // ImGui_FontFile
+	"InterVariable.ttf" // ImGui_FontFile
 };
 
 CFG_CAMERAPRM CfgCameraPrm_default = {
