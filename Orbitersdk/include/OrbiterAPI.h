@@ -24,9 +24,10 @@
 #endif
 #endif
 #include <fstream>
-#include <cmath>
+#include <windows.h>
+#include <float.h>
+#include <math.h>
 #include <vector>
-#include <SDL3/SDL_surface.h>
 
 typedef struct ModHandle ModHandle;
 
@@ -50,6 +51,13 @@ extern "C" {
 #endif
 
 #pragma warning(disable: 4201)
+
+// Message loop return type - maintain backward compatibility for 32-bit
+#ifdef _WIN64
+#define OAPI_MSGTYPE LRESULT
+#else
+#define OAPI_MSGTYPE int
+#endif
 
 // ======================================================================
 /// \defgroup constants Some useful general constants
@@ -152,7 +160,7 @@ typedef int *DEVMESHHANDLE;
 //struct DEVMESHHANDLE {
 //	DEVMESHHANDLE() { hMesh = NULL; }
 //	DEVMESHHANDLE(MESHHANDLE h) { hMesh = h; }
-//	uint32_t id;
+//	DWORD id;
 //	MESHHANDLE hMesh;
 //	operator int() { return (int)hMesh; }
 //};
@@ -285,35 +293,6 @@ typedef struct {
 	float tv;    ///< vertex v texture coordinate
 } NTVERTEX;
 
-struct Rect {
-	long left = 0;
-	long top = 0;
-	long right = 0;
-	long bottom = 0;
-
-	Rect() = default;
-
-	Rect(long left, long top, long right, long bottom) : left(left), top(top),
-		right(right), bottom(bottom) {
-	}
-};
-
-struct POINT {
-	long x = 0; long y = 0;
-
-	POINT() = default;
-	POINT(long x, long y) : x(x), y(y) {}
-};
-
-struct SIZE {
-	long cx = 0; long cy = 0;
-
-	SIZE() = default;
-	SIZE(long cx, long cy) : cx(cx), cy(cy) {}
-};
-
-typedef SIZE* LPSIZE;
-
 /**
  * \ingroup structures
  * \brief Defines a mesh group (subset of a mesh).
@@ -323,17 +302,17 @@ typedef SIZE* LPSIZE;
  */
 typedef struct {
 	NTVERTEX *Vtx;     ///< vertex list
-	uint16_t *Idx;         ///< index list
-	uint32_t nVtx;        ///< vertex count
-	uint32_t nIdx;        ///< index count
-	uint32_t MtrlIdx;     ///< material index (>= 1, 0=none)
-	uint32_t TexIdx;      ///< texture index (>= 1, 0=none)
-	uint32_t UsrFlag;     ///< user-defined flag
-	uint16_t zBias;        ///< z bias
-	uint16_t Flags;        ///< internal flags
+	WORD *Idx;         ///< index list
+	DWORD nVtx;        ///< vertex count
+	DWORD nIdx;        ///< index count
+	DWORD MtrlIdx;     ///< material index (>= 1, 0=none)
+	DWORD TexIdx;      ///< texture index (>= 1, 0=none)
+	DWORD UsrFlag;     ///< user-defined flag
+	WORD zBias;        ///< z bias
+	WORD Flags;        ///< internal flags
 } MESHGROUP;
 
-const uint32_t MAXTEX = 1;  // max. extra textures per mesh group
+const DWORD MAXTEX = 1;  // max. extra textures per mesh group
 
 /**
  * \ingroup structures
@@ -341,15 +320,15 @@ const uint32_t MAXTEX = 1;  // max. extra textures per mesh group
  */
 typedef struct {
 	NTVERTEX *Vtx;     ///< vertex list
-	uint16_t *Idx;         ///< index list
-	uint32_t nVtx;        ///< vertex count
-	uint32_t nIdx;        ///< index count
-	uint32_t MtrlIdx;     ///< material index (>= 1, 0=none)
-	uint32_t TexIdx;      ///< texture index (>= 1, 0=none)
-	uint32_t UsrFlag;     ///< user-defined flag
-	uint16_t zBias;        ///< z bias
-	uint16_t Flags;        ///< internal flags
-	uint32_t TexIdxEx[MAXTEX]; ///< additional texture indices
+	WORD *Idx;         ///< index list
+	DWORD nVtx;        ///< vertex count
+	DWORD nIdx;        ///< index count
+	DWORD MtrlIdx;     ///< material index (>= 1, 0=none)
+	DWORD TexIdx;      ///< texture index (>= 1, 0=none)
+	DWORD UsrFlag;     ///< user-defined flag
+	WORD zBias;        ///< z bias
+	WORD Flags;        ///< internal flags
+	DWORD TexIdxEx[MAXTEX]; ///< additional texture indices
 	float TexMixEx[MAXTEX]; ///< texture mix values
 } MESHGROUPEX;
 
@@ -454,11 +433,11 @@ typedef struct {
  * \sa oapiEditMeshGroup, grpedit
  */
 typedef struct {
-	uint32_t flags;   ///< flags (see \ref grpedit)
-	uint32_t UsrFlag; ///< Replacement for group UsrFlag entry
+	DWORD flags;   ///< flags (see \ref grpedit)
+	DWORD UsrFlag; ///< Replacement for group UsrFlag entry
 	NTVERTEX *Vtx; ///< Replacement for group vertices
-	uint32_t nVtx;    ///< Number of vertices to be replaced
-	uint16_t *vIdx;    ///< Index list for vertices to be replaced
+	DWORD nVtx;    ///< Number of vertices to be replaced
+	WORD *vIdx;    ///< Index list for vertices to be replaced
 } GROUPEDITSPEC;
 
 /**
@@ -468,13 +447,13 @@ typedef struct {
  */
 typedef struct {
 	NTVERTEX *Vtx;  ///< Vertex buffer
-	uint32_t nVtx;     ///< Number of vertices to return
-	uint16_t *VtxPerm;  ///< Vertex permutation index list
-	uint16_t *Idx;      ///< Triangle index buffer
-	uint32_t nIdx;     ///< Number of indices to return
-	uint16_t *IdxPerm;  ///< Triangle permutation index list
-	uint32_t MtrlIdx;  ///< Material index
-	uint32_t TexIdx;   ///< Texture index
+	DWORD nVtx;     ///< Number of vertices to return
+	WORD *VtxPerm;  ///< Vertex permutation index list
+	WORD *Idx;      ///< Triangle index buffer
+	DWORD nIdx;     ///< Number of indices to return
+	WORD *IdxPerm;  ///< Triangle permutation index list
+	DWORD MtrlIdx;  ///< Material index
+	DWORD TexIdx;   ///< Texture index
 } GROUPREQUESTSPEC;
 
 /**
@@ -635,8 +614,8 @@ typedef struct {
 	double lofs;       ///<  longitudinal offset from engine [m]
 	double modulate;   ///<  magnitude of random intensity variations (0..1)
 	SURFHANDLE tex;    ///<  custom texture handle
-	uint32_t flags;       ///<  Bit flags (see \ref exhaustflag)
-	unsigned int id;           ///<  reserved
+	DWORD flags;       ///<  Bit flags (see \ref exhaustflag)
+	UINT id;           ///<  reserved
 } EXHAUSTSPEC;
 
 /**
@@ -658,7 +637,7 @@ typedef struct {
 					 \end{array} \right. \f$
  */
 typedef struct {
-	uint32_t flags;       ///<     streamspec bitflags
+	DWORD flags;       ///<     streamspec bitflags
 	double srcsize;    ///<     particle size at creation [m]
 	double srcrate;    ///<     average particle creation rate [Hz]
 	double v0;         ///<     emission velocity [m/s]
@@ -1119,8 +1098,8 @@ protected:
  */
 typedef struct {
 	// general data
-	uint32_t type;                ///< transmitter type id
-	uint32_t ch;                  ///< transmitter channel (0..639)
+	DWORD type;                ///< transmitter type id
+	DWORD ch;                  ///< transmitter channel (0..639)
 	double power;              ///< transmitter power [arbitrary units]
 	const char *descr;         ///< pointer to transmitter description string
 	// type-specific data
@@ -1149,7 +1128,7 @@ typedef struct {
 
 /** \brief vessel beacon light parameters */
 typedef struct {
-	uint32_t shape;       ///<   beacon shape identifier (see \ref beaconshape)
+	DWORD shape;       ///<   beacon shape identifier (see \ref beaconshape)
 	VECTOR3 *pos;      ///<   pointer to position in vessel coordinates
 	VECTOR3 *col;      ///<   pointer to beacon RGB colour
 	double size;       ///<   beacon radius
@@ -1244,7 +1223,7 @@ typedef struct {
 	///   - 0: ignore fuel level, do not change fuel levels
 	///   - 1: set fuel level of first propellant resource from fuel
 	/// \note flag[1] - flag[9]: not used
-	uint32_t   flag[10];
+	DWORD   flag[10];
 } VESSELSTATUS;
 
 /**
@@ -1259,7 +1238,7 @@ typedef struct {
  */
 typedef struct {
 	/// interface version identifier (2)
-	uint32_t version;
+	DWORD version;
 
 	/**
 	* \brief bit flags
@@ -1291,7 +1270,7 @@ typedef struct {
 	*		- Set - initialise docking status for all docking ports in dockinfo.
 	* \sa VESSEL::GetStatusEx 
 	*/
-	uint32_t flag;
+	DWORD flag;
 
 	/// handle of reference body
 	OBJHANDLE rbody;
@@ -1360,35 +1339,35 @@ typedef struct {
 	double surf_hdg;
 
 	/// number of entries in the fuel list
-	uint32_t nfuel;
+	DWORD nfuel;
 
 	/// propellant list
 	struct FUELSPEC {
-		uint32_t idx;      ///< propellant index
+		DWORD idx;      ///< propellant index
 		double level;   ///< propellant level
 	} *fuel;
 
 	/// number of entries in the thruster list
-	uint32_t nthruster;
+	DWORD nthruster;
 
 	/// thruster definition list
 	struct THRUSTSPEC {
-		uint32_t idx;      ///< thruster index 
+		DWORD idx;      ///< thruster index 
 		double level;   ///< thruster level
 	} *thruster;
 
 	/// number of entries in the dockinfo list
-	uint32_t ndockinfo;
+	DWORD ndockinfo;
 
 	/// dock info list
 	struct DOCKINFOSPEC {
-		uint32_t idx;      ///< docking port index
-		uint32_t ridx;     ///< docking port index of docked vessel
+		DWORD idx;      ///< docking port index
+		DWORD ridx;     ///< docking port index of docked vessel
 		OBJHANDLE rvessel; ///< docked vessel
 	} *dockinfo;
 
 	/// transponder channel [0...640]
-	uint32_t xpdr;
+	DWORD xpdr;
 } VESSELSTATUS2;
 
 
@@ -1404,13 +1383,13 @@ typedef struct {
  */
 typedef struct {
 	char name[64];   ///< entry string
-	uint32_t flag;      ///< entry flags
+	DWORD flag;      ///< entry flags
 } LISTENTRY;
 
 /**
  * \brief Callback function for list entry selections.
  */
-typedef bool (*Listentry_clbk)(char *name, uint32_t idx, uint32_t flag, void *usrdata);
+typedef bool (*Listentry_clbk)(char *name, DWORD idx, DWORD flag, void *usrdata);
 
 /**
  * \ingroup defines
@@ -1448,6 +1427,13 @@ typedef struct {
 	char *index;
 } HELPCONTEXT;
 
+typedef struct {
+	char *name;
+	void *parent;
+	char *desc;
+	void (*clbkFunc)(HINSTANCE,HWND);
+} LP_EXTRAPRM;
+
 #pragma pack(push,1)
 /**
  * \brief This structure defines an affine mesh group transform
@@ -1476,8 +1462,8 @@ typedef struct {
 
 // Animation component (obsolete)
 typedef struct {
-	unsigned int *grp;
-	unsigned int ngrp;
+	UINT *grp;
+	UINT ngrp;
 	double state0;
 	double state1;
 	MESHGROUP_TRANSFORM trans;
@@ -1489,20 +1475,20 @@ typedef struct {
 class MGROUP_TRANSFORM {
 public:
 	MGROUP_TRANSFORM () : mesh(0), grp(0), ngrp(0) {}
-	MGROUP_TRANSFORM (unsigned int _mesh, unsigned int *_grp, unsigned int _ngrp)
+	MGROUP_TRANSFORM (UINT _mesh, UINT *_grp, UINT _ngrp)
 		: mesh(_mesh), grp(_grp), ngrp(_ngrp) {}
 	enum TYPE { NULLTRANSFORM, ROTATE, TRANSLATE, SCALE };
 	virtual TYPE Type() const { return NULLTRANSFORM; }
 
-	unsigned int mesh;
-	unsigned int *grp;
-	unsigned int ngrp;
+	UINT mesh;
+	UINT *grp;
+	UINT ngrp;
 };
 
 // Rotation
 class MGROUP_ROTATE: public MGROUP_TRANSFORM {
 public:
-	MGROUP_ROTATE (unsigned int _mesh, unsigned int *_grp, unsigned int _ngrp, const VECTOR3 &_ref, const VECTOR3 &_axis, float _angle)
+	MGROUP_ROTATE (UINT _mesh, UINT *_grp, UINT _ngrp, const VECTOR3 &_ref, const VECTOR3 &_axis, float _angle)
 		: MGROUP_TRANSFORM (_mesh, _grp, _ngrp), ref(_ref), axis(_axis), angle(_angle) {}
 	TYPE Type() const { return ROTATE; }
 
@@ -1514,7 +1500,7 @@ public:
 // Translation
 class MGROUP_TRANSLATE: public MGROUP_TRANSFORM {
 public:
-	MGROUP_TRANSLATE (unsigned int _mesh, unsigned int *_grp, unsigned int _ngrp, const VECTOR3 &_shift)
+	MGROUP_TRANSLATE (UINT _mesh, UINT *_grp, UINT _ngrp, const VECTOR3 &_shift)
 		: MGROUP_TRANSFORM (_mesh, _grp, _ngrp), shift(_shift) {}
 	TYPE Type() const { return TRANSLATE; }
 
@@ -1524,7 +1510,7 @@ public:
 // Scaling
 class MGROUP_SCALE: public MGROUP_TRANSFORM {
 public:
-	MGROUP_SCALE (unsigned int _mesh, unsigned int *_grp, unsigned int _ngrp, const VECTOR3 &_ref, const VECTOR3 &_scale)
+	MGROUP_SCALE (UINT _mesh, UINT *_grp, UINT _ngrp, const VECTOR3 &_ref, const VECTOR3 &_scale)
 		: MGROUP_TRANSFORM (_mesh, _grp, _ngrp), ref(_ref), scale(_scale) {}
 	TYPE Type() const { return SCALE; }
 
@@ -1546,7 +1532,7 @@ struct ANIMATIONCOMP {
 	MGROUP_TRANSFORM *trans;  ///< transformation
 	ANIMATIONCOMP *parent;    ///< parent transformation
 	ANIMATIONCOMP **children; ///< list of children
-	unsigned int nchildren;           ///< number of children
+	UINT nchildren;           ///< number of children
 };
 
 /**
@@ -1558,7 +1544,7 @@ struct ANIMATIONCOMP {
 struct ANIMATION {
 	double defstate;          ///< default animation state in the mesh
 	double state;             ///< current state
-	unsigned int ncomp;               ///< number of components
+	UINT ncomp;               ///< number of components
 	ANIMATIONCOMP **comp;     ///< list of components
 };
 
@@ -1569,34 +1555,34 @@ struct ANIMATION {
  * \sa VESSEL::AddAnimationComponent
  */
 //@{
-#define LOCALVERTEXLIST ((unsigned int)(-1)) ///< flags animation component as explicit vertex list
-#define MAKEGROUPARRAY(x) ((unsigned int*)x) ///< casts a vertex array into a group
+#define LOCALVERTEXLIST ((UINT)(-1)) ///< flags animation component as explicit vertex list
+#define MAKEGROUPARRAY(x) ((UINT*)x) ///< casts a vertex array into a group
 //@}
 
 
 typedef struct {
-	Rect pos;
+	RECT pos;
 	int nbt_left, nbt_right;
 	int bt_yofs, bt_ydist;
 } MFDSPEC;
 
 typedef struct {
-	uint32_t nmesh, ngroup;
+	DWORD nmesh, ngroup;
 } VCMFDSPEC;
 
 #define MFD_SHOWMODELABELS       0x0001
 #define MFD_TRANSPARENT_WHEN_OFF 0x0002
 
 typedef struct {
-	Rect pos;
-	uint32_t nmesh, ngroup;
-	uint32_t flag;
+	RECT pos;
+	DWORD nmesh, ngroup;
+	DWORD flag;
 	int nbt1, nbt2;
 	int bt_yofs, bt_ydist;
 } EXTMFDSPEC;
 
 typedef struct {
-	uint32_t nmesh, ngroup;
+	DWORD nmesh, ngroup;
 	VECTOR3 hudcnt;
 	double size;
 } VCHUDSPEC;
@@ -1610,15 +1596,15 @@ typedef struct {
 
 typedef struct {
 	char *name;
-	uint32_t key;
-	void* (*msgproc)(unsigned int,unsigned int,unsigned long long,long long);
+	DWORD key;
+	OAPI_MSGTYPE (*msgproc)(UINT,UINT,WPARAM,LPARAM);
 } MFDMODESPEC;
 
 typedef struct {
 	char *name;
-	uint32_t key;
+	DWORD key;
 	void *context;
-	void* (*msgproc)(unsigned int,unsigned int,unsigned long long,long long);
+	OAPI_MSGTYPE (*msgproc)(UINT,UINT,WPARAM,LPARAM);
 } MFDMODESPECEX;
 
 typedef struct {
@@ -1817,7 +1803,7 @@ typedef enum {
 #define EVENT_VESSEL_DELMESH      1 ///< Delete a mesh (context: mesh index, or -1 for all)
 #define EVENT_VESSEL_MESHVISMODE  2 ///< Set mesh visibility mode (context: mesh index)
 #define EVENT_VESSEL_RESETANIM    3 ///< Reset animations
-#define EVENT_VESSEL_CLEARANIM    4 ///< Clear all animations (context: unsigned int (1=reset animations, 0=leave animations at current state)
+#define EVENT_VESSEL_CLEARANIM    4 ///< Clear all animations (context: UINT (1=reset animations, 0=leave animations at current state)
 #define EVENT_VESSEL_DELANIM      5 ///< Delete an animation (context: animation index)
 #define EVENT_VESSEL_NEWANIM      6 ///< Create a new animation (context: animation index)
 #define EVENT_VESSEL_MESHOFS      7 ///< Shift a mesh (context: mesh index)
@@ -1952,7 +1938,7 @@ typedef union {
 		OBJHANDLE hRef;   ///< orbit HUD reference object (NULL for auto)
 	} HUDorbit;
 	struct {
-		uint32_t NavIdx;       ///< docking HUD nav receiver index (>= 0)
+		DWORD NavIdx;       ///< docking HUD nav receiver index (>= 0)
 	} HUDdocking;
 } HUDPARAM;
 
@@ -2088,12 +2074,12 @@ typedef union {
 #define SURF_NO_CK         0xFFFFFFFF
 #define SURF_PREDEF_CK     0xFFFFFFFE
 
-#define SURF_NO_ROTATION ((uint32_t)-1)
-#define SURF_HMIRROR     ((uint32_t)-2)
-#define SURF_VMIRROR     ((uint32_t)-3)
-#define SURF_ROTATE_90   ((uint32_t)-4)
-#define SURF_ROTATE_180  ((uint32_t)-5)
-#define SURF_ROTATE_270  ((uint32_t)-6)
+#define SURF_NO_ROTATION ((DWORD)-1)
+#define SURF_HMIRROR     ((DWORD)-2)
+#define SURF_VMIRROR     ((DWORD)-3)
+#define SURF_ROTATE_90   ((DWORD)-4)
+#define SURF_ROTATE_180  ((DWORD)-5)
+#define SURF_ROTATE_270  ((DWORD)-6)
 
 #define DLG_ALLOWMULTI     0x1
 #define DLG_CAPTIONCLOSE   0x2
@@ -2148,7 +2134,7 @@ typedef union {
 #define TRANSMITTER_XPDR 5
 //@}
 
-const unsigned int ALLDOCKS = (unsigned int)-1;
+const UINT ALLDOCKS = (UINT)-1;
 
 // ===========================================================================
 /// \ingroup defines
@@ -2158,7 +2144,7 @@ const unsigned int ALLDOCKS = (unsigned int)-1;
 //@{
 /**
  * \brief Max. resolution level for planet surface rendering.
- *   (Parameter type: uint32_t)
+ *   (Parameter type: DWORD)
  */
 #define OBJPRM_PLANET_SURFACEMAXLEVEL    0x0001
 
@@ -2322,16 +2308,34 @@ public:
 	*  return/newline sequence (\\r\\n).
 	*/
 	virtual char *Description ();
+	
+	/**
+	* \brief Opens a dialog box associated with the launchpad item.
+	* \param hInst module instance handle
+	* \param hLaunchpad launchpad window handle
+	* \param resId integer resource ID of the dialog box
+	* \param pDlg dialog box message handler
+	* \return Currently this function always returns \e true.
+	* \note This function is usually called in the body of LaunchpadItem::clbkOpen().
+	* \note It is an alternative to the standard Windows DialogBox function. It has the
+	*  advantage that a pointer to the LaunchpadItem instance is passed as lParam
+	*  to the message handler with the \c WM_INITDIALOG message. In all
+	*  subsequent calls to the handler, the LaunchpadItem instance pointer can be
+	*  obtained with a call to <i>GetWindowLongPtr (hWnd, DWLP_USER)</i>, where hWnd
+	*  is the dialog box handle passed to the message handler.
+	*/
+	virtual bool OpenDialog (HINSTANCE hInst, HWND hLaunchpad, int resId, DLGPROC pDlg);
 
 	/**
 	* \brief This method is called whenever the user opens the item by double-clicking on the list or
 	*  clicking the "Edit" button below the list.
+	* \param hLaunchpad The window handle of the Launchpad dialog
 	* \return Currently ignored. Should be \e true if the derived class processes this callback function.
 	* \n\n <b>Default action:</b> Nothing; returns false.
 	* \note The derived class can use this function to open a dialog box or some other
 	*  means of allowing the user to set addon-specific parameters.
 	*/
-	virtual bool clbkOpen ();
+	virtual bool clbkOpen (HWND hLaunchpad);
 
 	/**
 	* \brief This method is called whenever the item should write its current state to a file.
@@ -2484,6 +2488,12 @@ OAPIFUNC int oapiGetOrbiterVersion ();
 int oapiGetModuleVersion ();
 
 /**
+ * \brief Returns the instance handle for the running Orbiter application.
+ * \return Orbiter instance handle
+ */
+OAPIFUNC HINSTANCE oapiGetOrbiterInstance ();
+
+/**
  * \brief Returns a pointer to the command line with which Orbiter was invoked.
  * \return Pointer to orbiter command line string.
  * \note This method can be used to pass custom parameters to a module directly
@@ -2503,7 +2513,7 @@ OAPIFUNC const char *oapiGetCmdLine ();
  *   fullscreen resolution. For windowed modes, the viewport size corresponds
  *   to the client area of the render window.
  */
-OAPIFUNC void oapiGetViewportSize (uint32_t *w, uint32_t *h, uint32_t *bpp = 0);
+OAPIFUNC void oapiGetViewportSize (DWORD *w, DWORD *h, DWORD *bpp = 0);
 
 /**
  * \brief Register a module interface class instance
@@ -2588,7 +2598,7 @@ OAPIFUNC OBJHANDLE oapiGetObjectByIndex (int index);
  * \return object count
  * \sa oapiGetObjectByIndex, oapiGetObjectType
  */
-OAPIFUNC uint32_t oapiGetObjectCount ();
+OAPIFUNC DWORD oapiGetObjectCount ();
 
 /**
  * \brief Returns the type of an object identified by its handle.
@@ -2626,7 +2636,7 @@ OAPIFUNC int oapiGetObjectType (OBJHANDLE hObj);
  *   \endcode
  * \sa objprm
  */
-OAPIFUNC const void *oapiGetObjectParam (OBJHANDLE hObj, uint32_t paramtype);
+OAPIFUNC const void *oapiGetObjectParam (OBJHANDLE hObj, DWORD paramtype);
 
 /**
  * \brief Returns the handle of a vessel identified by its name.
@@ -2658,7 +2668,7 @@ OAPIFUNC OBJHANDLE oapiGetVesselByIndex (int index);
  * \return Vessel count.
  * \sa oapiGetVesselByIndex
  */
-OAPIFUNC uint32_t oapiGetVesselCount ();
+OAPIFUNC DWORD oapiGetVesselCount ();
 
 /**
  * \brief Checks if the specified handle is a valid vessel handle.
@@ -2716,14 +2726,14 @@ OAPIFUNC OBJHANDLE oapiGetGbodyParent (OBJHANDLE hBody);
  * \note hBody must refer to a celestial body (type = OBJTP_PLANET or OBJTP_STAR),
  *   otherwise the result is undefined.
  */
-OAPIFUNC OBJHANDLE oapiGetGbodyChild (OBJHANDLE hBody, uint32_t index);
+OAPIFUNC OBJHANDLE oapiGetGbodyChild (OBJHANDLE hBody, DWORD index);
 
 /**
  * \brief Returns the number of celestial bodies (sun, planets and moons) currently
  *   present in the simulation.
  * \return Number of objects.
  */
-OAPIFUNC uint32_t oapiGetGbodyCount ();
+OAPIFUNC DWORD oapiGetGbodyCount ();
 
 /**
  * \brief Returns the handle of a surface base on a given planet or moon.
@@ -2749,7 +2759,7 @@ OAPIFUNC OBJHANDLE oapiGetBaseByIndex (OBJHANDLE hPlanet, int index);
  * \param hPlanet handle of a planet or moon
  * \return Number of surface bases (>= 0).
  */
-OAPIFUNC uint32_t oapiGetBaseCount (OBJHANDLE hPlanet);
+OAPIFUNC DWORD oapiGetBaseCount (OBJHANDLE hPlanet);
 
 /**
  * \brief Returns the name of an object.
@@ -3017,7 +3027,7 @@ OAPIFUNC double oapiGetMaxFuelMass (OBJHANDLE hVessel);
  * \param idx propellant resource index (>=0)
  * \return propellant resource id, or NULL if idx >= # propellant resources
  */
-OAPIFUNC PROPELLANT_HANDLE oapiGetPropellantHandle (OBJHANDLE hVessel, uint32_t idx);
+OAPIFUNC PROPELLANT_HANDLE oapiGetPropellantHandle (OBJHANDLE hVessel, DWORD idx);
 
 /**
  * \brief Returns the current fuel mass [kg] of a propellant resource.
@@ -3042,7 +3052,7 @@ OAPIFUNC double oapiGetPropellantMaxMass (PROPELLANT_HANDLE ph);
  * \return docking port handle, or NULL if index is out of range
  * \sa VESSEL::GetDockHandle
  */
-OAPIFUNC DOCKHANDLE oapiGetDockHandle (OBJHANDLE hVessel, unsigned int n);
+OAPIFUNC DOCKHANDLE oapiGetDockHandle (OBJHANDLE hVessel, UINT n);
 
 /**
  * \brief Returns the handle of a vessel docked at a port.
@@ -3125,7 +3135,7 @@ enum AltitudeMode {
  * \note The handle passed to the function must refer to a vessel.
  * \sa oapiGetAltitude(OBJHANDLE,AltitudeMode,double*), VESSEL::GetAltitude
  */
-OAPIFUNC bool oapiGetAltitude (OBJHANDLE hVessel, double *alt);
+OAPIFUNC BOOL oapiGetAltitude (OBJHANDLE hVessel, double *alt);
 
 /**
  * \brief Returns the altitude of a vessel over a planetary surface.
@@ -3141,7 +3151,7 @@ OAPIFUNC bool oapiGetAltitude (OBJHANDLE hVessel, double *alt);
  * \note The handle passed to the function must refer to a vessel.
  * \sa oapiGetAltitude(OBJHANDLE,double*), VESSEL::GetAltitude
  */
-OAPIFUNC bool oapiGetAltitude (OBJHANDLE hVessel, AltitudeMode mode, double *alt);
+OAPIFUNC BOOL oapiGetAltitude (OBJHANDLE hVessel, AltitudeMode mode, double *alt);
 
 /**
  * \brief Returns a vessel's pitch angle w.r.t. the local horizon.
@@ -3155,7 +3165,7 @@ OAPIFUNC bool oapiGetAltitude (OBJHANDLE hVessel, AltitudeMode mode, double *alt
  * \note The handle passed to the function must refer to a vessel.
  * \sa oapiGetHeading, oapiGetBank, oapiGetAltitude
  */
-OAPIFUNC bool oapiGetPitch (OBJHANDLE hVessel, double *pitch);
+OAPIFUNC BOOL oapiGetPitch (OBJHANDLE hVessel, double *pitch);
 
 /**
  * \brief Returns a vessel's bank angle w.r.t. the local horizon.
@@ -3169,7 +3179,7 @@ OAPIFUNC bool oapiGetPitch (OBJHANDLE hVessel, double *pitch);
  * \note The handle passed to the function must refer to a vessel.
  * \sa oapiGetHeading, oapiGetPitch, oapiGetAltitude
  */
-OAPIFUNC bool oapiGetBank (OBJHANDLE hVessel, double *bank);
+OAPIFUNC BOOL oapiGetBank (OBJHANDLE hVessel, double *bank);
 
 /**
  * \brief Returns a vessel's heading (against geometric north) calculated for the local horizon plane.
@@ -3180,14 +3190,14 @@ OAPIFUNC bool oapiGetBank (OBJHANDLE hVessel, double *bank);
  * \note The handle passed to the function must refer to a vessel.
  * \sa oapiGetBank, oapiGetPitch, oapiGetAltitude
  */
-OAPIFUNC bool oapiGetHeading (OBJHANDLE hVessel, double *heading);
+OAPIFUNC BOOL oapiGetHeading (OBJHANDLE hVessel, double *heading);
 
 /**
  * \brief Returns the altitude of the current focus vessel over a planetary surface.
  * \param alt pointer to variable receiving altitude value [m]
  * \return Error flag (\e false on failure )
  */
-OAPIFUNC bool oapiGetFocusAltitude (double *alt);
+OAPIFUNC BOOL oapiGetFocusAltitude (double *alt);
 	
 /**
  * \brief Returns the pitch angle of the current focus vessel w.r.t. the local horizon.
@@ -3195,7 +3205,7 @@ OAPIFUNC bool oapiGetFocusAltitude (double *alt);
  * \return Error flag (\e false on failure)
  * \sa oapiGetFocusBank, oapiGetFocusHeading, oapiGetFocusAltitude
  */
-OAPIFUNC bool oapiGetFocusPitch (double *pitch);
+OAPIFUNC BOOL oapiGetFocusPitch (double *pitch);
 
 /**
  * \brief Returns the bank angle of the current focus vessel w.r.t. the local horizon.
@@ -3203,7 +3213,7 @@ OAPIFUNC bool oapiGetFocusPitch (double *pitch);
  * \return Error flag (\e false on failure)
  * \sa oapiGetFocusHeading, oapiGetFocusPitch, oapiGetFocusAltitude
  */
-OAPIFUNC bool oapiGetFocusBank (double *bank);
+OAPIFUNC BOOL oapiGetFocusBank (double *bank);
 
 /**
  * \brief Returns the heading (against geometric north) of the current focus vessel calculated for
@@ -3212,7 +3222,7 @@ OAPIFUNC bool oapiGetFocusBank (double *bank);
  * \return Error flag (\e false on failure)
  * \sa oapiGetFocusBank, oapiGetFocusPitch, oapiGetFocusAltitude
  */
-OAPIFUNC bool oapiGetFocusHeading (double *heading);
+OAPIFUNC BOOL oapiGetFocusHeading (double *heading);
 
 /**
  * \brief Returns a vessel's ground speed w.r.t. the closest planet or moon.
@@ -3221,7 +3231,7 @@ OAPIFUNC bool oapiGetFocusHeading (double *heading);
  * \return Error flag (\e false on error)
  * \sa oapiGetGroundspeedVector, oapiGetAirspeed, oapiGetAirspeedVector
  */
-OAPIFUNC bool oapiGetGroundspeed (OBJHANDLE hVessel, double *groundspeed);
+OAPIFUNC BOOL oapiGetGroundspeed (OBJHANDLE hVessel, double *groundspeed);
 
 /**
  * \brief Returns a vessel's groundspeed vector w.r.t. the closest planet or moon in the
@@ -3256,7 +3266,7 @@ OAPIFUNC bool oapiGetGroundspeedVector (OBJHANDLE hVessel, REFFRAME frame, VECTO
  *   it returns the ground speed.
  * \sa oapiGetAirspeedVector, oapiGetGroundspeed, oapiGetGroundspeedVector, VESSEL::GetAirspeed
  */
-OAPIFUNC bool oapiGetAirspeed (OBJHANDLE hVessel, double *airspeed);
+OAPIFUNC BOOL oapiGetAirspeed (OBJHANDLE hVessel, double *airspeed);
 
 /**
  * \brief Returns a vessel's true airspeed vector w.r.t. the closest planet or moon in the
@@ -3293,7 +3303,7 @@ OAPIFUNC bool oapiGetAirspeedVector (OBJHANDLE hVessel, REFFRAME frame, VECTOR3 
  * \return Error flag (\e false on failure)
  * \note The handle passed to the function must refer to a vessel.
  */
-OAPIFUNC bool oapiGetEquPos (OBJHANDLE hVessel, double *longitude, double *latitude, double *radius);
+OAPIFUNC BOOL oapiGetEquPos (OBJHANDLE hVessel, double *longitude, double *latitude, double *radius);
 
 /**
  * \brief Returns the current focus vessel's spherical equatorial coordinates (longitude, latitude
@@ -3303,7 +3313,7 @@ OAPIFUNC bool oapiGetEquPos (OBJHANDLE hVessel, double *longitude, double *latit
  * \param radius pointer to variable receiving radius value [m]
  * \return Error flag (\e false on failure)
  */
-OAPIFUNC bool oapiGetFocusEquPos (double *longitude, double *latitude, double *radius);
+OAPIFUNC BOOL oapiGetFocusEquPos (double *longitude, double *latitude, double *radius);
 
 /**
  * \brief Returns the atmospheric parameters at the current vessel position.
@@ -4030,7 +4040,7 @@ OAPIFUNC VECTOR3 oapiGetWindVector (OBJHANDLE hPlanet, double lng, double lat, d
 	*  2nd perturbation term defined for the planet.\n
 	*  Orbiter uses \f$ \epsilon = 10^{-10} \f$
 	*/
-OAPIFUNC uint32_t oapiGetPlanetJCoeffCount (OBJHANDLE hPlanet);
+OAPIFUNC DWORD oapiGetPlanetJCoeffCount (OBJHANDLE hPlanet);
 
 	/**
 	* \brief Returns a perturbation coefficient for the calculation of a planet's gravitational potential.
@@ -4052,7 +4062,7 @@ OAPIFUNC uint32_t oapiGetPlanetJCoeffCount (OBJHANDLE hPlanet);
 	*  to J2 (and not known for most planets).
 	* \sa oapiGetPlanetJCoeffCount
 	*/
-OAPIFUNC double oapiGetPlanetJCoeff (OBJHANDLE hPlanet, uint32_t n);
+OAPIFUNC double oapiGetPlanetJCoeff (OBJHANDLE hPlanet, DWORD n);
 //@}
 
 
@@ -4154,7 +4164,7 @@ OAPIFUNC void oapiGetBaseEquPos (OBJHANDLE hBase, double *lng, double *lat, doub
 	* \note hBase must be a valid base handle (e.g. from oapiGetBaseByName())
 	* \note This function only counts VTOL pads, not runways.
 	*/
-OAPIFUNC uint32_t oapiGetBasePadCount (OBJHANDLE hBase);
+OAPIFUNC DWORD oapiGetBasePadCount (OBJHANDLE hBase);
 
 	/**
 	* \brief Returns the equatorial coordinates (longitude, latitude and radius)
@@ -4170,7 +4180,7 @@ OAPIFUNC uint32_t oapiGetBasePadCount (OBJHANDLE hBase);
 	* \note 0 <= pad < oapiGetBasePadCount() is required.
 	* \note The radius pointer can be omitted if not required.
 	*/
-OAPIFUNC bool oapiGetBasePadEquPos (OBJHANDLE hBase, uint32_t pad, double *lng, double *lat, double *rad = 0);
+OAPIFUNC bool oapiGetBasePadEquPos (OBJHANDLE hBase, DWORD pad, double *lng, double *lat, double *rad = 0);
 
 	/**
 	* \brief Returns the status of a VTOL landing pad (free, occupied or cleared).
@@ -4185,7 +4195,7 @@ OAPIFUNC bool oapiGetBasePadEquPos (OBJHANDLE hBase, uint32_t pad, double *lng, 
 	*  1 = pad is occupied\n
 	*  2 = pad is cleared for an incoming vessel
 	*/
-OAPIFUNC bool oapiGetBasePadStatus (OBJHANDLE hBase, uint32_t pad, int *status);
+OAPIFUNC bool oapiGetBasePadStatus (OBJHANDLE hBase, DWORD pad, int *status);
 
 	/**
 	* \brief Returns a handle to the ILS transmitter of a VTOL landing pad, if available.
@@ -4195,7 +4205,7 @@ OAPIFUNC bool oapiGetBasePadStatus (OBJHANDLE hBase, uint32_t pad, int *status);
 	* \note hBase must be a valid base handle (e.g. from oapiGetBaseByName())
 	* \note 0 <= pad < oapiGetBasePadCount() is required.
 	*/
-OAPIFUNC NAVHANDLE oapiGetBasePadNav (OBJHANDLE hBase, uint32_t pad);
+OAPIFUNC NAVHANDLE oapiGetBasePadNav (OBJHANDLE hBase, DWORD pad);
 //@}
 
 
@@ -4357,7 +4367,7 @@ OAPIFUNC void oapiGetNavPos (NAVHANDLE hNav, VECTOR3 *gpos);
 	*  f = (108.0 + 0.05 ch) MHz
 	* \sa oapiGetNavData, oapiGetNavFreq, oapiGetNavRange, oapiGetNavPos, oapiGetNavType
 	*/
-OAPIFUNC uint32_t oapiGetNavChannel (NAVHANDLE hNav);
+OAPIFUNC DWORD oapiGetNavChannel (NAVHANDLE hNav);
 
 	/**
 	* \brief Returns the frequency of a NAV transmitter.
@@ -4409,7 +4419,7 @@ OAPIFUNC float oapiGetNavRange (NAVHANDLE hNav);
 	* - \c TRANSMITTER_XPDR (transponder)
 	* \sa oapiGetNavData, oapiGetNavDescr
 	*/
-OAPIFUNC uint32_t oapiGetNavType (NAVHANDLE hNav);
+OAPIFUNC DWORD oapiGetNavType (NAVHANDLE hNav);
 
 	/**
 	* \brief Returns information about a NAV transmitter.
@@ -4604,7 +4614,7 @@ OAPIFUNC const char* oapiGetMeshFilename(MESHHANDLE hMesh);
 	 *   variables with local scope. If the mesh groups were dynamically
 	 *   allocated, they should be deallocated by the caller after use.
 	 */
-OAPIFUNC MESHHANDLE oapiCreateMesh (uint32_t ngrp, MESHGROUP *grp);
+OAPIFUNC MESHHANDLE oapiCreateMesh (DWORD ngrp, MESHGROUP *grp);
 
 	/**
 	* \brief Removes a mesh from memory.
@@ -4621,7 +4631,7 @@ OAPIFUNC void oapiDeleteMesh (MESHHANDLE hMesh);
 	*   <tr><td>1</td><td>set: use global shadow setting (bit 0) for all groups; unset: use individual group flags</td></tr>
 	*   </table>
 	*/
-OAPIFUNC uint32_t oapiGetMeshFlags (MESHHANDLE hMesh);
+OAPIFUNC DWORD oapiGetMeshFlags (MESHHANDLE hMesh);
 
 	/**
 	* \brief Returns the number of mesh groups defined in a mesh.
@@ -4633,7 +4643,7 @@ OAPIFUNC uint32_t oapiGetMeshFlags (MESHHANDLE hMesh);
 	*  representing its geometry, and optionally a material and a texture reference.
 	* \note See 3DModel document for details of the mesh format.
 	*/
-OAPIFUNC uint32_t oapiMeshGroupCount (MESHHANDLE hMesh);
+OAPIFUNC DWORD oapiMeshGroupCount (MESHHANDLE hMesh);
 
 	/**
 	* \brief Returns a pointer to the group specification of a mesh group.
@@ -4650,13 +4660,13 @@ OAPIFUNC uint32_t oapiMeshGroupCount (MESHHANDLE hMesh);
 	*   \ref VESSEL::GetDevMesh) use \ref oapiEditMeshGroup instead.
 	* \sa oapiEditMeshGroup
 	*/
-OAPIFUNC MESHGROUP *oapiMeshGroup (MESHHANDLE hMesh, uint32_t idx);
-OAPIFUNC MESHGROUP *oapiMeshGroup (DEVMESHHANDLE hMesh, uint32_t idx);
-OAPIFUNC MESHGROUPEX *oapiMeshGroupEx (MESHHANDLE hMesh, uint32_t idx);
+OAPIFUNC MESHGROUP *oapiMeshGroup (MESHHANDLE hMesh, DWORD idx);
+OAPIFUNC MESHGROUP *oapiMeshGroup (DEVMESHHANDLE hMesh, DWORD idx);
+OAPIFUNC MESHGROUPEX *oapiMeshGroupEx (MESHHANDLE hMesh, DWORD idx);
 
-OAPIFUNC uint32_t      oapiAddMeshGroup (MESHHANDLE hMesh, MESHGROUP *grp);
-OAPIFUNC bool       oapiAddMeshGroupBlock (MESHHANDLE hMesh, uint32_t grpidx,
-										   const NTVERTEX *vtx, uint32_t nvtx, const uint16_t *idx, uint32_t nidx);
+OAPIFUNC DWORD      oapiAddMeshGroup (MESHHANDLE hMesh, MESHGROUP *grp);
+OAPIFUNC bool       oapiAddMeshGroupBlock (MESHHANDLE hMesh, DWORD grpidx,
+										   const NTVERTEX *vtx, DWORD nvtx, const WORD *idx, DWORD nidx);
 
 /**
  * \brief Retrieve mesh group data.
@@ -4693,7 +4703,7 @@ OAPIFUNC bool       oapiAddMeshGroupBlock (MESHHANDLE hMesh, uint32_t grpidx,
  *    oapiGetMeshGroup/oapiEditMesh cycles and instead keep the data stored in your own
  *    buffers once retrieved.
  */
-OAPIFUNC int oapiGetMeshGroup (DEVMESHHANDLE hMesh, uint32_t grpidx, GROUPREQUESTSPEC *grs);
+OAPIFUNC int oapiGetMeshGroup (DEVMESHHANDLE hMesh, DWORD grpidx, GROUPREQUESTSPEC *grs);
 
 /**
  * \brief Modify mesh group data.
@@ -4710,11 +4720,11 @@ OAPIFUNC int oapiGetMeshGroup (DEVMESHHANDLE hMesh, uint32_t grpidx, GROUPREQUES
  * \note This version operates on device-independent meshes, e.g. mesh templates.
  * \note oapiEditMeshGroup should be used in preference to \ref oapiMeshGroup,
  *   because it is more likely to be supported by external graphics engines.
- * \sa oapiEditMeshGroup(DEVMESHHANDLE,uint32_t,GROUPEDITSPEC*)
+ * \sa oapiEditMeshGroup(DEVMESHHANDLE,DWORD,GROUPEDITSPEC*)
  */
-OAPIFUNC int oapiEditMeshGroup (MESHHANDLE hMesh, uint32_t grpidx, GROUPEDITSPEC *ges);
+OAPIFUNC int oapiEditMeshGroup (MESHHANDLE hMesh, DWORD grpidx, GROUPEDITSPEC *ges);
 
-OAPIFUNC int oapiEditMeshGroup (DEVMESHHANDLE hMesh, uint32_t grpidx, GROUPEDITSPEC *ges);
+OAPIFUNC int oapiEditMeshGroup (DEVMESHHANDLE hMesh, DWORD grpidx, GROUPEDITSPEC *ges);
 
 /**
  * \brief Returns the number of textures associated with a mesh.
@@ -4722,7 +4732,7 @@ OAPIFUNC int oapiEditMeshGroup (DEVMESHHANDLE hMesh, uint32_t grpidx, GROUPEDITS
  * \return Number of textures
  * \sa oapiGetTextureHandle, oapiSetTexture
  */
-OAPIFUNC uint32_t oapiMeshTextureCount (MESHHANDLE hMesh);
+OAPIFUNC DWORD oapiMeshTextureCount (MESHHANDLE hMesh);
 
 	/**
 	* \brief Retrieve a surface handle for a mesh texture.
@@ -4737,7 +4747,7 @@ OAPIFUNC uint32_t oapiMeshTextureCount (MESHHANDLE hMesh);
 	*  decompress the texture when it is loaded. Blitting operations to compressed
 	*  surfaces is very inefficient on most graphics hardware.
 	*/
-OAPIFUNC SURFHANDLE oapiGetTextureHandle (MESHHANDLE hMesh, uint32_t texidx);
+OAPIFUNC SURFHANDLE oapiGetTextureHandle (MESHHANDLE hMesh, DWORD texidx);
 
 	/**
 	* \brief Load a texture from a file.
@@ -4779,8 +4789,8 @@ OAPIFUNC void oapiReleaseTexture (SURFHANDLE hTex);
 	* \note To point an individual mesh group to a different texture, use oapiMeshGroup()
 	*  to retrieve a \c MESHGROUP pointer, and modify the TexIdx entry.
 	*/
-OAPIFUNC bool oapiSetTexture (MESHHANDLE hMesh, uint32_t texidx, SURFHANDLE tex);
-OAPIFUNC bool oapiSetTexture (DEVMESHHANDLE hMesh, uint32_t texidx, SURFHANDLE tex);
+OAPIFUNC bool oapiSetTexture (MESHHANDLE hMesh, DWORD texidx, SURFHANDLE tex);
+OAPIFUNC bool oapiSetTexture (DEVMESHHANDLE hMesh, DWORD texidx, SURFHANDLE tex);
 
 	/**
 	* \brief Returns the number of materials defined in the mesh.
@@ -4792,7 +4802,7 @@ OAPIFUNC bool oapiSetTexture (DEVMESHHANDLE hMesh, uint32_t texidx, SURFHANDLE t
 	*  components of a mesh group, and also its level of transparency.
 	* \note See 3DModel document for details of the mesh format.
 	*/
-OAPIFUNC uint32_t oapiMeshMaterialCount (MESHHANDLE hMesh);
+OAPIFUNC DWORD oapiMeshMaterialCount (MESHHANDLE hMesh);
 
 	/**
 	* \brief Returns a pointer to a material specification in the material list of the mesh.
@@ -4824,7 +4834,7 @@ OAPIFUNC uint32_t oapiMeshMaterialCount (MESHHANDLE hMesh);
 	*   graphics engine). For device meshes, use \erf oapiSetMaterial instead.
 	* \sa oapiAddMaterial, oapiDeleteMaterial, oapiMeshMaterialCount
 	*/
-OAPIFUNC MATERIAL *oapiMeshMaterial (MESHHANDLE hMesh, uint32_t idx);
+OAPIFUNC MATERIAL *oapiMeshMaterial (MESHHANDLE hMesh, DWORD idx);
 
 	/**
 	 * \brief Retrieve properties of a device mesh material.
@@ -4833,7 +4843,7 @@ OAPIFUNC MATERIAL *oapiMeshMaterial (MESHHANDLE hMesh, uint32_t idx);
 	 * \param mat pointer to MATERIAL structure to be filled by the method
 	 * \return Error code (0 = success)
 	 */
-OAPIFUNC int oapiMeshMaterial (DEVMESHHANDLE hMesh, uint32_t idx, MATERIAL *mat);
+OAPIFUNC int oapiMeshMaterial (DEVMESHHANDLE hMesh, DWORD idx, MATERIAL *mat);
 
 	/**
 	 * \brief Retrieve properties of a device mesh material.
@@ -4843,7 +4853,7 @@ OAPIFUNC int oapiMeshMaterial (DEVMESHHANDLE hMesh, uint32_t idx, MATERIAL *mat)
 	 * \param out pointer to FVECTOR4 structure to be filled by the method.
 	 * \return Error code (0 = success)
 	 */
-OAPIFUNC int oapiMeshMaterialEx(DEVMESHHANDLE hMesh, uint32_t idx, MatProp prp, oapi::FVECTOR4* out);
+OAPIFUNC int oapiMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD idx, MatProp prp, oapi::FVECTOR4* out);
 
 	/**
 	 * \brief Add a material definition to a mesh.
@@ -4853,7 +4863,7 @@ OAPIFUNC int oapiMeshMaterialEx(DEVMESHHANDLE hMesh, uint32_t idx, MatProp prp, 
 	 * \note The material is appended to the mesh material list.
 	 * \sa oapiMeshMaterial, oapiDeleteMaterial, oapiMeshMaterialCount
 	 */
-OAPIFUNC uint32_t oapiAddMaterial (MESHHANDLE hMesh, MATERIAL *mat);
+OAPIFUNC DWORD oapiAddMaterial (MESHHANDLE hMesh, MATERIAL *mat);
 
 	/**
 	 * \brief Delete a material definition from the mesh.
@@ -4866,7 +4876,7 @@ OAPIFUNC uint32_t oapiAddMaterial (MESHHANDLE hMesh, MATERIAL *mat);
 	 *   (default material).
 	 * \sa oapiMeshMaterial, oapiAddMaterial, oapiMeshMaterialCount
 	 */
-OAPIFUNC bool oapiDeleteMaterial (MESHHANDLE hMesh, uint32_t idx);
+OAPIFUNC bool oapiDeleteMaterial (MESHHANDLE hMesh, DWORD idx);
 
 	/**
 	 * \brief Reset the properties of a mesh material.
@@ -4880,7 +4890,7 @@ OAPIFUNC bool oapiDeleteMaterial (MESHHANDLE hMesh, uint32_t idx);
 	 *   mesh material.
 	 * \note To add a new material, use \ref oapiAddMaterial instead.
 	 */
-OAPIFUNC int oapiSetMaterial (DEVMESHHANDLE hMesh, uint32_t matidx, const MATERIAL *mat);
+OAPIFUNC int oapiSetMaterial (DEVMESHHANDLE hMesh, DWORD matidx, const MATERIAL *mat);
 
 	/**
 	 * \brief Reset the properties of a mesh material.
@@ -4895,7 +4905,7 @@ OAPIFUNC int oapiSetMaterial (DEVMESHHANDLE hMesh, uint32_t matidx, const MATERI
 	 *   mesh material.
 	 * \note To add a new material, use \ref oapiAddMaterial instead.
 	 */
-OAPIFUNC int oapiSetMaterialEx(DEVMESHHANDLE hMesh, uint32_t matidx, MatProp prp, const oapi::FVECTOR4* in);
+OAPIFUNC int oapiSetMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp prp, const oapi::FVECTOR4* in);
 
 	/**
 	 * \brief Set custom properties for a mesh.
@@ -4908,9 +4918,9 @@ OAPIFUNC int oapiSetMaterialEx(DEVMESHHANDLE hMesh, uint32_t matidx, MatProp prp
 	 * - \c MESHPROPERTY_MODULATEMATALPHA \n \n
 	 * if value==0 (default) disable material alpha information in textured mesh groups (only use texture alpha channel).\n
 	 * if value<>0 modulate (mix) material alpha values with texture alpha maps.
-	 * \sa oapiSetMeshProperty(DEVMESHHANDLE,uint32_t,uint32_t)
+	 * \sa oapiSetMeshProperty(DEVMESHHANDLE,DWORD,DWORD)
 	 */
-OAPIFUNC bool oapiSetMeshProperty (MESHHANDLE hMesh, uint32_t property, uint32_t value);
+OAPIFUNC bool oapiSetMeshProperty (MESHHANDLE hMesh, DWORD property, DWORD value);
 
 	/**
      * \brief Set custom properties for a device-specific mesh.
@@ -4923,9 +4933,9 @@ OAPIFUNC bool oapiSetMeshProperty (MESHHANDLE hMesh, uint32_t property, uint32_t
 	 * - \c MESHPROPERTY_MODULATEMATALPHA \n \n
 	 * if value==0 (default) disable material alpha information in textured mesh groups (only use texture alpha channel).\n
 	 * if value<>0 modulate (mix) material alpha values with texture alpha maps.		
-	 * \sa oapiSetMeshProperty(MESHHANDLE,uint32_t,uint32_t)
+	 * \sa oapiSetMeshProperty(MESHHANDLE,DWORD,DWORD)
 	 */
-OAPIFUNC bool oapiSetMeshProperty (DEVMESHHANDLE hMesh, uint32_t property, uint32_t value);
+OAPIFUNC bool oapiSetMeshProperty (DEVMESHHANDLE hMesh, DWORD property, DWORD value);
 
 // Particle functions
 	/**
@@ -5097,7 +5107,7 @@ OAPIFUNC int oapiBroadcastMFDMessage (int mode, int msg, void *data);
 	*  Shift-key, for example to select a different MFD mode, to select a target body, etc.
 	* \sa \ref mfdidentifier "MFD Identifiers"
 	*/
-OAPIFUNC int oapiSendMFDKey (int mfd, uint32_t key);
+OAPIFUNC int oapiSendMFDKey (int mfd, DWORD key);
 
 	/**
 	* \brief Sends a clbkMFDMode call to the current focus vessel to allow it to dynamically update
@@ -5151,7 +5161,7 @@ OAPIFUNC const char *oapiMFDButtonLabel (int mfd, int bt);
 	* \note MFDSPEC is a structure with the following interface:
 	* \code 
 	* typedef struct {
-	*   Rect pos;       // position of MFD in panel (pixel)
+	*   RECT pos;       // position of MFD in panel (pixel)
 	*   int nbt_left;   // number of buttons on left side of MFD display
 	*   int nbt_right;  // number of buttons on right side of MFD display
 	*   int bt_yofs;    // y-offset of top button from top display edge (pixel)
@@ -5172,10 +5182,10 @@ OAPIFUNC void oapiRegisterMFD (int mfd, const MFDSPEC &spec);
 	* \note EXTMFDSPEC is a structure with the following interface:
 	* \code
 	* typedef struct {
-	*   Rect pos;     // position of MFD in panel (pixel)
-	*   uint32_t nmesh;  // mesh index (>=0)
-	*   uint32_t ngroup; // mesh group index (>=0)
-	*   uint32_t flag;   // parameter flags (see below)
+	*   RECT pos;     // position of MFD in panel (pixel)
+	*   DWORD nmesh;  // mesh index (>=0)
+	*   DWORD ngroup; // mesh group index (>=0)
+	*   DWORD flag;   // parameter flags (see below)
 	*   int nbt1;     // number of buttons in array 1 (e.g. left side of MFD display)
 	*   int nbt2;     // number of buttons in array 2 (e.g. right side of MFD display)
 	*   int bt_yofs;  // y-offset of top button from top display edge (pixel)
@@ -5205,6 +5215,8 @@ OAPIFUNC bool oapiUnregisterExternMFD (ExternMFD *emfd);
 	* \param flag property bit flags (see notes)
 	* \param ck transparency colour key
 	* \note This function will normally be called in the body of ovcLoadPanel.
+	* \note Typically the bitmap will be stored as a resource in the DLL and obtained by
+	*  a call to the Windows function LoadBitmap(...).
 	* \note \a flag defines panel properties and can be a combination of the following bitmasks:
 	*   - \c PANEL_ATTACH_{LEFT/RIGHT/TOP/BOTTOM}
 	*   - \c PANEL_MOVOUT_{LEFT/RIGHT/TOP/BOTTOM}
@@ -5220,8 +5232,8 @@ OAPIFUNC bool oapiUnregisterExternMFD (ExternMFD *emfd);
 	*   does not appear anywhere in the opaque part of the panel.
 	* \sa oapiRegisterPanelArea
 	*/
-OAPIFUNC void oapiRegisterPanelBackground (SDL_Surface* hBmp, uint32_t flag = PANEL_ATTACH_BOTTOM|PANEL_MOVEOUT_BOTTOM,
-				                           uint32_t ck = (uint32_t)-1);
+OAPIFUNC void oapiRegisterPanelBackground (HBITMAP hBmp, DWORD flag = PANEL_ATTACH_BOTTOM|PANEL_MOVEOUT_BOTTOM,
+				                           DWORD ck = (DWORD)-1);
 
 	/**
 	* \anchor register_p_a
@@ -5254,7 +5266,7 @@ OAPIFUNC void oapiRegisterPanelBackground (SDL_Surface* hBmp, uint32_t flag = PA
 	* \sa \ref panel_mouse "Mouse event identifiers", \ref panel_redraw "Panel redraw events",
 	*  oapiRegisterPanelBackground
 	*/
-OAPIFUNC void oapiRegisterPanelArea (int id, const Rect &pos, int draw_event = PANEL_REDRAW_NEVER,
+OAPIFUNC void oapiRegisterPanelArea (int id, const RECT &pos, int draw_event = PANEL_REDRAW_NEVER,
 					    int mouse_event = PANEL_MOUSE_IGNORE, int bkmode = PANEL_MAP_NONE);
 
 	/**
@@ -5480,7 +5492,7 @@ OAPIFUNC void oapiReleaseFont (oapi::Font *font);
  * \note After use, the pen should be deallocated with oapiReleasePen.
  * \sa oapiReleasePen
  */
-OAPIFUNC oapi::Pen *oapiCreatePen (int style, int width, uint32_t col);
+OAPIFUNC oapi::Pen *oapiCreatePen (int style, int width, DWORD col);
 
 /**
  * \brief Release a pen resource.
@@ -5495,7 +5507,7 @@ OAPIFUNC void oapiReleasePen (oapi::Pen *pen);
  * \note After use, the brush should be deallocated with oapiReleaseBrush.
  * \sa oapiReleaseBrush
  */
-OAPIFUNC oapi::Brush *oapiCreateBrush (uint32_t col);
+OAPIFUNC oapi::Brush *oapiCreateBrush (DWORD col);
 
 /**
  * \brief Release a brush resource.
@@ -5503,6 +5515,44 @@ OAPIFUNC oapi::Brush *oapiCreateBrush (uint32_t col);
  * \sa oapiCreateBrush
  */
 OAPIFUNC void oapiReleaseBrush (oapi::Brush *brush);
+
+/**
+ * \brief Obtain a Windows device context handle (HDC) for a surface.
+ * \param surf surface handle
+ * \return device context handle, or NULL if not supported.
+ * \warning This function uses a device-dependent drawing context handle
+ *   and may not work with all graphics clients. It has been superseded by
+ *   oapiGetSketchpad.
+ * \note This function returns a valid device handle only when Orbiter is
+ *   using its inline graphics client, or if an external client is attached
+ *   that supports GDI drawing. In all other cases, the function returns
+ *   NULL. Therefore, the caller should always check the returned value before
+ *   using it.
+ * \note If a nonzero HDC was returned, it should be released with
+ *   \ref oapiReleaseDC after drawing.
+ * \note Most graphics clients must lock the surface data buffer (and copy it
+ *   to main memory, if necessary) before GDI access can be provided. This
+ *   means that read/write access to the surface (e.g. for blitting) may be
+ *   disabled between oapiGetDC and oapiReleaseDC, and should be avoided.
+ * \sa oapiReleaseDC, oapiGetSketchpad
+ */
+OAPIFUNC HDC oapiGetDC (SURFHANDLE surf);
+
+/**
+ * \brief Release a GDI drawing device context handle.
+ * \param surf surface handle
+ * \param hDC device context handle
+ * \warning This function uses a device-dependent drawing context handle
+ *   and may not work with all graphics clients. It has been superseded by
+ *   oapiReleaseSketchpad.
+ * \note Use this function to release a device context previously acquired
+ *   with \ref oapiGetDC.
+ * \note Standard Windows device context rules apply. For example, any custom
+ *   device objects loaded via SelectObject must be unloaded before calling
+ *   oapiReleaseDC.
+ * \sa oapiGetDC, oapiGetSketchpad, oapiReleaseSketchpad
+ */
+OAPIFUNC void oapiReleaseDC (SURFHANDLE surf, HDC hDC);
 //@}
 
 
@@ -5541,7 +5591,7 @@ OAPIFUNC SURFHANDLE oapiCreateSurface (int width, int height);
 	*   for best hardware compatibility.
 	* \sa oapiDestroySurface
 	*/
-OAPIFUNC SURFHANDLE oapiCreateSurfaceEx (int width, int height, uint32_t attrib);
+OAPIFUNC SURFHANDLE oapiCreateSurfaceEx (int width, int height, DWORD attrib);
 
 	/**
 	* \brief Load a texture from a file (*.dds, *.png, *.jpg, *.bmp)
@@ -5550,7 +5600,7 @@ OAPIFUNC SURFHANDLE oapiCreateSurfaceEx (int width, int height, uint32_t attrib)
 	* \param bPath if 'true' then 'fname' must contain absolute path to a file. If 'false' a normal Orbiter texture search path is used.
 	* \return Surface handle for the loaded texture, or NULL if not found.
 	*/
-OAPIFUNC SURFHANDLE oapiLoadSurfaceEx(const char* fname, uint32_t attrib, bool bPath = false);
+OAPIFUNC SURFHANDLE oapiLoadSurfaceEx(const char* fname, DWORD attrib, bool bPath = false);
 
 	/**
 	* \brief Save the contents of a surface to a formatted image file or to the clipboard
@@ -5582,7 +5632,7 @@ OAPIFUNC bool oapiSaveSurface(const char* fname, SURFHANDLE hSrf, oapi::ImageFil
 	*  no longer needed.
 	* \sa oapiDestroySurface
 	*/
-OAPIFUNC SURFHANDLE oapiCreateSurface (SDL_Surface* hBmp, bool release_bmp = true);
+OAPIFUNC SURFHANDLE oapiCreateSurface (HBITMAP hBmp, bool release_bmp = true);
 
 	/**
 	* \brief Create a surface that can be used as a texture for a 3-D object.
@@ -5617,7 +5667,7 @@ OAPIFUNC bool oapiGetSurfaceSize(SURFHANDLE hSrf, int* width, int* height);
 	*/
 OAPIFUNC void       oapiDestroySurface (SURFHANDLE surf);
 
-OAPIFUNC void       oapiClearSurface (SURFHANDLE surf, uint32_t col = 0);
+OAPIFUNC void       oapiClearSurface (SURFHANDLE surf, DWORD col = 0);
 
 	/**
 	* \brief Define a colour key for a surface to allow transparent blitting.
@@ -5628,7 +5678,7 @@ OAPIFUNC void       oapiClearSurface (SURFHANDLE surf, uint32_t col = 0);
 	* key explicitly to oapiBlt each time, if the same colour key is used repeatedly.
 	* \sa oapiClearSurfaceColourKey, oapiBlt
 	*/
-OAPIFUNC void       oapiSetSurfaceColourKey (SURFHANDLE surf, uint32_t ck);
+OAPIFUNC void       oapiSetSurfaceColourKey (SURFHANDLE surf, DWORD ck);
 
 	/**
 	* \brief Clear a previously defined colour key.
@@ -5663,7 +5713,7 @@ OAPIFUNC void       oapiClearSurfaceColourKey (SURFHANDLE surf);
 	* \note Colour keys are only supported with Orbiter's inline graphics client. External
 	*   clients ignore the ck parameter. The use of colour keys is therefore discouraged.
 	*/
-OAPIFUNC void oapiBlt (SURFHANDLE tgt, SURFHANDLE src, int tgtx, int tgty, int srcx, int srcy, int w, int h, uint32_t ck = SURF_NO_CK);
+OAPIFUNC void oapiBlt (SURFHANDLE tgt, SURFHANDLE src, int tgtx, int tgty, int srcx, int srcy, int w, int h, DWORD ck = SURF_NO_CK);
 
 	/**
 	* \brief Copy a scaled rectangular area from one surface to another.
@@ -5685,7 +5735,7 @@ OAPIFUNC void oapiBlt (SURFHANDLE tgt, SURFHANDLE src, int tgtx, int tgty, int s
 	*   clients ignore the ck parameter. The use of colour keys is therefore discouraged.
 	* \note The rotation flag is deprecated. It has no effect.
 	*/
-OAPIFUNC void oapiBlt (SURFHANDLE tgt, SURFHANDLE src, Rect *tgtr, Rect *srcr, uint32_t ck = SURF_NO_CK, uint32_t rotate = SURF_NO_ROTATION);
+OAPIFUNC void oapiBlt (SURFHANDLE tgt, SURFHANDLE src, RECT *tgtr, RECT *srcr, DWORD ck = SURF_NO_CK, DWORD rotate = SURF_NO_ROTATION);
 
 	/**
 	 * \brief Begin a block of blitting operations to the same target surface.
@@ -5737,7 +5787,7 @@ OAPIFUNC int oapiEndBltGroup ();
 	* \note If w and h are zero (the default) the whole surface is filled. The tgtx and tgty
 	*  values are ignored in that case and can be omitted.
 	*/
-OAPIFUNC void oapiColourFill (SURFHANDLE tgt, uint32_t fillcolor, int tgtx = 0, int tgty = 0, int w = 0, int h = 0);
+OAPIFUNC void oapiColourFill (SURFHANDLE tgt, DWORD fillcolor, int tgtx = 0, int tgty = 0, int w = 0, int h = 0);
 //@}
 
 
@@ -5759,9 +5809,9 @@ OAPIFUNC void oapiColourFill (SURFHANDLE tgt, uint32_t fillcolor, int tgtx = 0, 
 	* \code
 	* typedef struct {
 	*   char *name;    // points to the name of the new mode
-	*   uint32_t key;     // mode selection key
+	*   DWORD key;     // mode selection key
 	*   void *context; // mode-specific context pointer
-	*   int (*msgproc)(unsigned int,unsigned int,unsigned long long,long long);   // address of MFD message parser
+	*   int (*msgproc)(UINT,UINT,WPARAM,LPARAM);   // address of MFD message parser
 	* } MFDMODESPEC; \endcode
 	* \note See orbitersdk\\samples\\CustomMFD for a sample MFD mode implementation.
 	* \sa oapiUnregisterMFDMode, VESSEL4::RegisterMFDMode
@@ -5826,7 +5876,7 @@ OAPIFUNC int oapiGetMFDModeSpecEx (char *name, MFDMODESPECEX **spec = 0);
 	* \param mfd MFD identifier (e.g. \c MFD_LEFT, \c MFD_RIGHT)
 	* \param spec render target specification (see notes)
 	* \note The render target specification is defined as a structure:\n
-	* \code struct VCMFDSPEC { uint32_t nmesh, ngroup }; \endcode
+	* \code struct VCMFDSPEC { DWORD nmesh, ngroup }; \endcode
 	*  where nmesh is the mesh index (>=0), and ngroup is the group index (>=0) defining the render target.
 	* \note This function should be placed in the body of the ovcLoadVC vessel module callback function.
 	* \note The addressed mesh group should define a simple square (4 vertices, 2
@@ -5853,7 +5903,7 @@ OAPIFUNC void       oapiVCRegisterMFD (int mfd, const VCMFDSPEC *spec);
 	* \note To define a mouse-sensitive volume in the virtual cockpit, use one of the
 	*  \a oapiVCSetAreaClickmode_XXX functions.
 	*/
-OAPIFUNC void oapiVCRegisterArea (int id, const Rect &tgtrect, int draw_event, int mouse_event, int bkmode, SURFHANDLE tgt);
+OAPIFUNC void oapiVCRegisterArea (int id, const RECT &tgtrect, int draw_event, int mouse_event, int bkmode, SURFHANDLE tgt);
 
 	/**
 	* \brief Define an active area in a virtual cockpit. This version is used when no dynamic texture
@@ -5934,8 +5984,8 @@ OAPIFUNC void       oapiVCTriggerRedrawArea (int vc_id, int area_id);
 	* \note VCHUDSPEC is a structure defined as:
 	* \code 
 	*  struct VCHUDSPEC {
-	*    uint32_t nmesh;    // mesh index
-	*    uint32_t ngroup;   // group index
+	*    DWORD nmesh;    // mesh index
+	*    DWORD ngroup;   // group index
 	*    VECTOR3 hudcnt; // HUD centre in vessel frame
 	*    double size;    // physical size of the HUD [m]
 	*  }; \endcode
@@ -6019,7 +6069,7 @@ typedef void (*CustomFunc)(void *context);
 	*  where context is the pointer passed to oapiRegisterCustomCmd().
 	* \sa oapiUnregisterCustomCmd
 	*/
-OAPIFUNC uint32_t      oapiRegisterCustomCmd (char *label, char *desc, CustomFunc func, void *context);
+OAPIFUNC DWORD      oapiRegisterCustomCmd (char *label, char *desc, CustomFunc func, void *context);
 
 	/**
 	* \brief Unregister a previously defined custom function.
@@ -6030,12 +6080,73 @@ OAPIFUNC uint32_t      oapiRegisterCustomCmd (char *label, char *desc, CustomFun
 OAPIFUNC bool       oapiUnregisterCustomCmd (int cmdId);
 
 	/**
+	* \brief Open a dialog box defined as a Windows resource.
+	* \param hDLLInst module instance handle (as obtained from InitModule)
+	* \param resourceId dialog resource identifier
+	* \param msgProc pointer to Windows message handler
+	* \param context optional user-defined pointer
+	* \return handle of the new dialog box, or NULL if the dialog was open already.
+	* \note Use oapiOpenDialog() instead of standard Windows methods such as
+	*  CreateWindow or DialogBox, to make sure the dialog works in fullscreen mode.
+	* \note Only one instance of a dialog box can be open at a time. A second call to
+	*  oapiOpenDialog() with the same dialog id will fail and return NULL.
+	* \note The interface of the message handler is as follows:
+	* \code INT_PTR CALLBACK MsgProc ( HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) \endcode
+	* \note See standard Windows documentation for usage of the dialog message handler.
+	* \note The context pointer can be set to user-defined data which can be retrieved
+	*  via the oapiGetDialogContext() function. This allows to pass data into the message handler.
+	* \note Note that oapiGetDialogContext() can not be used when processing the
+	* \c WM_INITDIALOG message. In this case, the context pointer can be acessed via lParam instead.
+	* \sa oapiFindDialog, oapiCloseDialog, oapiOpenDialogEx
+	*/
+OAPIFUNC HWND       oapiOpenDialog (HINSTANCE hDLLInst, int resourceId, DLGPROC msgProc, void *context = 0);
+
+	/**
 	* \brief Open a dialog box specified by an ImGuiDialog object.
 	* \param dlg pointer to an ImGuiDialog object responsible for drawing the dialog box.
 	* \note Only one instance of a dialog box can be open at a time. A second call to
 	*  oapiOpenDialog() with the same dialog will do nothing.
 	*/
 OAPIFUNC void       oapiOpenDialog (ImGuiDialog *dlg);
+
+	/**
+	* \brief Open a dialog box defined as a Windows resource. This version provides additional
+	*  functionality compared to oapiOpenDialog().
+	* \param hDLLInst module instance handle (as obtained from InitModule)
+	* \param resourceId dialog resource identifier
+	* \param msgProc pointer to Windows message handler
+	* \param flag bit-flags to define dialog box options (see notes)
+	* \param context optional user-defined pointer
+	* \return handle of the new dialog box, or NULL if the box could not be opened.
+	* \note The flag parameter can be a combination of the following values:
+	* - \c DLG_ALLOWMULTI: Allows multiple instances of the same dialog resource
+	*  to be open simultaneously.\n
+	* - \c DLG_CAPTIONCLOSE: Shows a Close button in the dialog title bar.
+	*  Pressing it produces an \c IDCANCEL notification to the message procedure.\n
+	* - \c DLG_CAPTIONHELP: Shows a Help button in the dialog title bar. Pressing it
+	*  produces an \c IDHELP notification to the message procedure.
+	* \note If customised title bar buttons are requested, the dialog box template should
+	* not contain standard title buttons, by omitting the \c WS_SYSMENU window style.
+	* \note Additional buttons can be created by using the oapiAddTitleButton function.
+	* \sa oapiFindDialog, oapiCloseDialog, oapiGetDialogContext
+	*/
+OAPIFUNC HWND       oapiOpenDialogEx (HINSTANCE hDLLInst, int resourceId, DLGPROC msgProc, DWORD flag = 0, void *context = 0);
+
+	/**
+	* \brief Returns the window handle of an open dialog box, or NULL if the specified dialog box is not open.
+	* \param hDLLInst module instance handle (as obtained from InitModule)
+	* \param resourceId dialog resource identifier
+	* \return Window handle of dialog box, or NULL if the dialog was not found.
+	*/
+OAPIFUNC HWND       oapiFindDialog (HINSTANCE hDLLInst, int resourceId);
+
+	/**
+	* \brief Close a dialog box.
+	* \param hDlg dialog window handle (as obtained by oapiOpenDialog)
+	* \note This function should be called in response to an \c IDCANCEL message in the
+	*  dialog message handler to close a dialog which was opened by oapiOpenDialog().
+	*/
+OAPIFUNC void       oapiCloseDialog (HWND hDlg);
 
 	/**
 	* \brief Close a dialog box.
@@ -6056,8 +6167,14 @@ OAPIFUNC void      oapiAddNotification(int type, const char *title, const char *
 	* \brief Retreives a texture ID for use with ImGui.
 	* \param surf surface handle
 	* \return The value returned can be used where ImGui expects an ImTextureID argument.
+	*/
+OAPIFUNC uint64_t  oapiGetImTextureID (SURFHANDLE surf);
+	/**
+	* \brief Retrieves the context pointer of a dialog box which has been defined during the call to oapiOpenDialog().
+	* \param hDlg dialog window handle
+	* \note  This function returns NULL if no context pointer was specified in oapiOpenDialog().
 	* \n <b> Typical usage:</b>\n
-    * \code
+	* \code
 	* SURFHANDLE surf = m_mfd->GetDisplaySurface();
 	* if (surf) {
 	* 	ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
@@ -6068,9 +6185,72 @@ OAPIFUNC void      oapiAddNotification(int type, const char *title, const char *
 	* 	ImGui::Image(txt, ImVec2(sz.x, sz.y), uv_min, uv_max, tint_col, border_col);
 	* }
 	* \endcode
-	*
+	* 
 	*/
-OAPIFUNC uint64_t  oapiGetImTextureID (SURFHANDLE surf);
+OAPIFUNC void      *oapiGetDialogContext (HWND hDlg);
+
+OAPIFUNC bool       oapiRegisterWindow (HINSTANCE hDLLInst, HWND hWnd, DWORD flag = 0);
+
+	/**
+	* \brief Adds a custom button in the title bar of a dialog box.
+	* \param msgid The message identifier generated by pressing the button
+	* \param hBmp bitmap containing the button images.
+	* \param flag additional parameters (see notes)
+	* \return \e true if the button could be created, \e false otherwise.
+	* \note oapiAddTitleButton can only be called while processing the
+	*  \c WM_INITDIALOG message in the dialog message procedure.
+	* \note Up to 5 buttons can be created in the title bar, including the standard buttons
+	*  defined in the call to oapiOpenDialogEx.
+	* \note Whenever the users left-clicks on the button, a \c WM_COMMAND message is
+	*  generated in the message procedure, where the low-word of the WPARAM
+	*  parameter is set to msgid.
+	* \note The button size defined in the bitmap should be 15x15 pixels large. Their
+	*  look should conform to Orbiter's standard dialog buttons.
+	* \note The following bit-flags in the flag parameter are currently supported:
+	*  \c DLG_CB_TWOSTATE: The button has two states, and clicking on it will flip
+	*  between the two states.
+	* \note If the \c DLG_CB_TWOSTATE flag is set, the bitmap must be 15x30 pixels
+	*  large, containing two images, where the upper image represents the initial
+	*  state, and the lower image represents the "checked" state.
+	* \note If the \c DLG_CB_TWOSTATE flag is set, the button state (0 or 1) is passed in
+	*  the high-word of the WPARAM parameter whenever the dialog is notified of a button press.
+	*/
+OAPIFUNC bool       oapiAddTitleButton (DWORD msgid, HBITMAP hBmp, DWORD flag);
+
+OAPIFUNC DWORD      oapiGetTitleButtonState (HWND hDlg, DWORD msgid);
+
+OAPIFUNC bool       oapiSetTitleButtonState (HWND hDlg, DWORD msgid, DWORD state);
+
+	/**
+	* \brief Default Orbiter dialog message handler.
+	* \details This function should be called from the message handler of all
+	* dialogs created with oapiOpenDialog to perform default actions
+	* for any messages not processed in the handler.
+	* \n<b> Parameters:</b> \n
+	* The parameters passed to the message handler.
+	* \return The value returned by oapiDefDialogProc should be returned by the message handler.
+	* \n <b> Typical usage:</b>\n
+	* \code
+	* INT_PTR CALLBACK MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+	* {
+	*   switch (uMsg) {
+	*   case WM_COMMAND:
+	*      switch (LOWORD (wParam)) {
+	*      case IDCANCEL: // dialog closed by user
+	*         CloseDlg (hDlg);
+	*         return TRUE;
+	*       }
+	*       break;
+	*       // add more messages to be processed here
+	*   }
+	*   return oapiDefDialogProc (hDlg, uMsg, wParam, lParam);
+	* }
+	* \endcode
+	* \note oapiDefDialogProc currently only processes the WM_SETCURSOR message,
+	*  and always returns \e false.
+	* \sa oapiCloseDialog, oapiFindDialog, oapiOpenDialog
+	*/
+OAPIFUNC INT_PTR oapiDefDialogProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	/**
 	 * \brief Opens the ingame help window on the specified help page.
@@ -6092,28 +6272,28 @@ OAPIFUNC bool oapiOpenLaunchpadHelp (HELPCONTEXT *hcontext);
 	 * \return 0=show, 1=hide, 2=auto-hide
 	 * \sa oapiSetMainMenuVisibilityMode, oapiGetMainInfoVisibilityMode, oapiSetMainInfoVisibilityMode
 	 */
-OAPIFUNC uint32_t oapiGetMainMenuVisibilityMode();
+OAPIFUNC DWORD oapiGetMainMenuVisibilityMode();
 
 	/**
 	 * \brief Set the display mode for the main menu bar.
 	 * \param mode display mode: 0=show, 1=hide, 2=auto-hide
 	 * \sa oapiGetMainMenuVisibilityMode, oapiGetMainInfoVisibilityMode, oapiSetMainInfoVisibilityMode
 	 */
-OAPIFUNC void oapiSetMainMenuVisibilityMode (uint32_t mode);
+OAPIFUNC void oapiSetMainMenuVisibilityMode (DWORD mode);
 
 	/**
 	 * \brief Returns the display mode of the two info blocks at the top left and right screen corners.
 	 * \return 0=show, 1=hide, 2=auto-hide
 	 * \sa oapiSetMainInfoVisibilityMode, oapiGetMainMenuVisibilityMode, oapiSetMainMenuVisibilityMode
 	 */
-OAPIFUNC uint32_t oapiGetMainInfoVisibilityMode();
+OAPIFUNC DWORD oapiGetMainInfoVisibilityMode();
 
 	/**
 	 * \brief Set the display mode for the two info blocks at the top left and right screen corners.
 	 * \param mode display mode: 0=show, 1=hide, 2=auto-hide
 	 * \sa oapiGetMainInfoVisibilityMode, oapiGetMainMenuVisibilityMode, oapiSetMainMenuVisibilityMode
 	 */
-OAPIFUNC void oapiSetMainInfoVisibilityMode (uint32_t mode);
+OAPIFUNC void oapiSetMainInfoVisibilityMode (DWORD mode);
 //@}
 
 
@@ -6400,7 +6580,7 @@ OAPIFUNC double oapiRand ();
 	*   returns 0.
 	* \sa oapiInflate
 	*/
-OAPIFUNC uint32_t oapiDeflate (const uint8_t *ebuf, uint32_t nebuf, uint8_t *zbuf, uint32_t nzbuf);
+OAPIFUNC DWORD oapiDeflate (const BYTE *ebuf, DWORD nebuf, BYTE *zbuf, DWORD nzbuf);
 
 	/**
 	* \brief Uncompress a data block previously compressed with oapiDeflate.
@@ -6415,7 +6595,7 @@ OAPIFUNC uint32_t oapiDeflate (const uint8_t *ebuf, uint32_t nebuf, uint8_t *zbu
 	*   function returns 0.
 	* \sa oapiDeflate
 	*/
-OAPIFUNC uint32_t oapiInflate (const uint8_t *zbuf, uint32_t nzbuf, uint8_t *ebuf, uint32_t nebuf);
+OAPIFUNC DWORD oapiInflate (const BYTE *zbuf, DWORD nzbuf, BYTE *ebuf, DWORD nebuf);
 
 	/**
 	* \brief Returns a colour value adapted to the current screen colour 
@@ -6437,7 +6617,7 @@ OAPIFUNC uint32_t oapiInflate (const uint8_t *zbuf, uint32_t nzbuf, uint8_t *ebu
 	* \note These colour values should not be used for Windows (GDI) drawing
 	*  functions where a COLORREF value is expected.
 	*/
-OAPIFUNC uint32_t oapiGetColour (uint32_t red, uint32_t green, uint32_t blue);
+OAPIFUNC DWORD oapiGetColour (DWORD red, DWORD green, DWORD blue);
 //@} 
 
 
@@ -6466,7 +6646,7 @@ OAPIFUNC uint32_t oapiGetColour (uint32_t red, uint32_t green, uint32_t blue);
 	*/
 OAPIFUNC void oapiOpenInputBox (char *title, bool (*Clbk)(void*,char*,void*), char *buf = 0, int vislen = 20, void *usrdata = 0);
 
-OAPIFUNC void oapiOpenInputBoxEx (const char *title, bool (*Clbk_enter)(void*,char*,void*), bool (*Clbk_cancel)(void*,char*,void*), char *buf = 0, int vislen = 20, void *usrdata = 0, uint32_t flags = 0);
+OAPIFUNC void oapiOpenInputBoxEx (const char *title, bool (*Clbk_enter)(void*,char*,void*), bool (*Clbk_cancel)(void*,char*,void*), char *buf = 0, int vislen = 20, void *usrdata = 0, DWORD flags = 0);
 
 /**
  * \brief Send a buffered key event to Orbiter, to be treated like a user keypress.
@@ -6476,7 +6656,7 @@ OAPIFUNC void oapiOpenInputBoxEx (const char *title, bool (*Clbk_enter)(void*,ch
  * \param onRunningOnly only send the key event if the simulation is not paused
  * \return true if key was dispatched (but not necessarily processed)
  */
-OAPIFUNC bool oapiSimulateBufferedKey (uint32_t key, uint32_t *mod = 0, uint32_t nmod = 0, bool onRunningOnly = false);
+OAPIFUNC bool oapiSimulateBufferedKey (DWORD key, DWORD *mod = 0, DWORD nmod = 0, bool onRunningOnly = false);
 
 /**
  * \brief Send a key state to Orbiter for one frame, to be treated like user keyboard input.
@@ -6592,41 +6772,41 @@ OAPIFUNC OBJHANDLE oapiGetStationByIndex (int index);
  *   This function always returns 0.
  *   Use \ref oapiGetVesselCount instead.
  */
-OAPIFUNC uint32_t oapiGetStationCount ();
+OAPIFUNC DWORD oapiGetStationCount ();
 
 /**
  * \brief Returns a vessel's airspeed vector w.r.t. the closest planet or moon in the local
  *  horizon's frame of reference.
  * \deprecated This method has been replaced by \ref oapiGetAirspeedVector(OBJHANDLE,REFFRAME,VECTOR3*)
  */
-OAPIFUNC bool oapiGetAirspeedVector (OBJHANDLE hVessel, VECTOR3 *speedvec);
+OAPIFUNC BOOL oapiGetAirspeedVector (OBJHANDLE hVessel, VECTOR3 *speedvec);
 
 /**
  * \brief Returns a vessel's airspeed vector w.r.t. the closest planet or moon in the vessel's local
  *  frame of reference.
  * \deprecated This method has been replaced by \ref oapiGetAirspeedVector(OBJHANDLE,REFFRAME,VECTOR3*)
  */
-OAPIFUNC bool oapiGetShipAirspeedVector (OBJHANDLE hVessel, VECTOR3 *speedvec);
+OAPIFUNC BOOL oapiGetShipAirspeedVector (OBJHANDLE hVessel, VECTOR3 *speedvec);
 
 /**
  * \brief Returns the current focus vessel's airspeed w.r.t. the closest planet or moon.
  * \deprecated This method has been replaced by \ref oapiGetAirspeed()
  */
-OAPIFUNC bool oapiGetFocusAirspeed (double *airspeed);
+OAPIFUNC BOOL oapiGetFocusAirspeed (double *airspeed);
 	
 /**
  * \brief Returns the current focus vessel's airspeed vector w.r.t. the closest planet or moon in
  *  the local horizon's frame of reference.
  * \deprecated This method has been replaced by \ref oapiGetAirspeedVector(OBJHANDLE,REFFRAME,VECTOR3*)
  */
-OAPIFUNC bool oapiGetFocusAirspeedVector (VECTOR3 *speedvec);
+OAPIFUNC BOOL oapiGetFocusAirspeedVector (VECTOR3 *speedvec);
 
 /**
  * \brief Returns the current focus vessel's airspeed vector w.r.t. closest planet or moon in the
  *  vessel's local frame of reference.
  * \deprecated This method has been replaced by \ref oapiGetAirspeedVector(OBJHANDLE,REFFRAME,VECTOR3*)
  */
-OAPIFUNC bool oapiGetFocusShipAirspeedVector (VECTOR3 *speedvec);
+OAPIFUNC BOOL oapiGetFocusShipAirspeedVector (VECTOR3 *speedvec);
 
 /**
  * \deprecated This function has been replaced by oapiGetAtm.
@@ -6682,6 +6862,7 @@ OAPIFUNC void oapiTriggerPanelRedrawArea (int panel_id, int area_id);
 OAPIFUNC void oapiTriggerRedrawArea (int panel_id, int vc_id, int area_id);
 //@}
 
+OAPIFUNC HMODULE stopgapGetModuleInstance (ModHandle* module);
 
 //@}  -- End of Orbiter API interface methods --
 
@@ -7495,9 +7676,9 @@ inline MATRIX4 mul (const MATRIX4 &A, const MATRIX4 &B)
 	return mat;
 }
 
-inline Rect _R (int left, int top, int right, int bottom)
+inline RECT _R (int left, int top, int right, int bottom)
 {
-	Rect r = { left, top, right, bottom }; return r;
+	RECT r = { left, top, right, bottom }; return r;
 }
 
 inline VECTOR3 POINTERTOREF (VECTOR3 *p)

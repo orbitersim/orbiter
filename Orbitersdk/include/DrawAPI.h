@@ -84,7 +84,7 @@ namespace oapi {
 			y = float(_y);
 		}
 
-		FVECTOR2(uint32_t _x, uint32_t _y)
+		FVECTOR2(DWORD _x, DWORD _y)
 		{
 			x = float(_x);
 			y = float(_y);
@@ -361,12 +361,12 @@ namespace oapi {
 	*/
 	typedef union __declspec(align(16)) FVECTOR4
 	{
-		uint32_t dword_abgr() const
+		DWORD dword_abgr() const
 		{
-			uint32_t dr = uint32_t((std::max)(0.0f, r) * 255.0f + 0.5f);
-			uint32_t dg = uint32_t((std::max)(0.0f, g) * 255.0f + 0.5f);
-			uint32_t db = uint32_t((std::max)(0.0f, b) * 255.0f + 0.5f);
-			uint32_t da = uint32_t((std::max)(0.0f, a) * 255.0f + 0.5f);
+			DWORD dr = DWORD((std::max)(0.0f, r) * 255.0f + 0.5f);
+			DWORD dg = DWORD((std::max)(0.0f, g) * 255.0f + 0.5f);
+			DWORD db = DWORD((std::max)(0.0f, b) * 255.0f + 0.5f);
+			DWORD da = DWORD((std::max)(0.0f, a) * 255.0f + 0.5f);
 			if (dr > 0xFF) dr = 0xFF;
 			if (dg > 0xFF) dg = 0xFF;
 			if (db > 0xFF) db = 0xFF;
@@ -374,12 +374,12 @@ namespace oapi {
 			return (da << 24) | (db << 16) | (dg << 8) | dr;
 		}
 
-		uint32_t dword_argb() const
+		DWORD dword_argb() const
 		{
-			uint32_t dr = uint32_t((std::max)(0.0f, r) * 255.0f + 0.5f);
-			uint32_t dg = uint32_t((std::max)(0.0f, g) * 255.0f + 0.5f);
-			uint32_t db = uint32_t((std::max)(0.0f, b) * 255.0f + 0.5f);
-			uint32_t da = uint32_t((std::max)(0.0f, a) * 255.0f + 0.5f);
+			DWORD dr = DWORD((std::max)(0.0f, r) * 255.0f + 0.5f);
+			DWORD dg = DWORD((std::max)(0.0f, g) * 255.0f + 0.5f);
+			DWORD db = DWORD((std::max)(0.0f, b) * 255.0f + 0.5f);
+			DWORD da = DWORD((std::max)(0.0f, a) * 255.0f + 0.5f);
 			if (dr > 0xFF) dr = 0xFF;
 			if (dg > 0xFF) dg = 0xFF;
 			if (db > 0xFF) db = 0xFF;
@@ -416,12 +416,12 @@ namespace oapi {
 			a = c.a;
 		}
 
-		FVECTOR4(uint32_t abgr)
+		FVECTOR4(DWORD abgr)
 		{
-			uint32_t dr = (abgr & 0xFF); abgr >>= 8;
-			uint32_t dg = (abgr & 0xFF); abgr >>= 8;
-			uint32_t db = (abgr & 0xFF); abgr >>= 8;
-			uint32_t da = (abgr & 0xFF);
+			DWORD dr = (abgr & 0xFF); abgr >>= 8;
+			DWORD dg = (abgr & 0xFF); abgr >>= 8;
+			DWORD db = (abgr & 0xFF); abgr >>= 8;
+			DWORD da = (abgr & 0xFF);
 			//if (da == 0) da = 255;
 			float q = 3.92156862e-3f;
 			r = float(dr) * q;
@@ -903,6 +903,13 @@ public:
 	 * \brief Font destructor.
 	 */
 	virtual ~Font () {}
+
+	/**
+	 * \brief Return the GDI handle for the font, if available.
+	 * \return GDI font handle
+	 * \note Non-GDI clients should not overload this method.
+	 */
+	virtual HFONT GetGDIFont () const { return 0; }
 };
 
 
@@ -921,7 +928,7 @@ protected:
 	 * \param width line width [pixel]
 	 * \param col line colour (format: 0xBBGGRR)
 	 */
-	Pen (int style, int width, uint32_t col) {}
+	Pen (int style, int width, DWORD col) {}
 
 public:
 	/**
@@ -944,7 +951,7 @@ protected:
 	 * \brief Brush constructor.
 	 * \param col brush colour (format: 0xBBGGRR)
 	 */
-	Brush (uint32_t col) {};
+	Brush (DWORD col) {};
 
 public:
 	/**
@@ -1000,8 +1007,8 @@ public:
 
 
 	typedef struct {
-		Rect intr;
-		Rect outr;
+		RECT intr;
+		RECT outr;
 	} skpRegion;
 
 	/**
@@ -1076,7 +1083,7 @@ public:
 	 * \return Previous colour setting.
 	 * \default None, returns 0.
 	 */
-	virtual uint32_t SetTextColor(uint32_t col) { assert(false); return 0; }
+	virtual DWORD SetTextColor(DWORD col) { assert(false); return 0; }
 
 	/**
 	 * \brief Set the background colour for text output.
@@ -1087,7 +1094,7 @@ public:
 	 *   is set to BK_OPAQUE.
 	 * \sa SetBackgroundMode
 	 */
-	virtual uint32_t SetBackgroundColor (uint32_t col) { assert(false); return 0; }
+	virtual DWORD SetBackgroundColor (DWORD col) { assert(false); return 0; }
 
 	/**
 	 * \brief Background modes for text output.
@@ -1125,7 +1132,7 @@ public:
 	 * \note For proportional fonts, the width value should be an approximate average
 	 *   character width.
 	 */
-	virtual uint32_t GetCharSize () { assert(false); return 0; }
+	virtual DWORD GetCharSize () { assert(false); return 0; }
 
 	/**
 	 * \brief Return the width of a text string in the currently selected font.
@@ -1135,7 +1142,7 @@ public:
 	 * \default None, returns 0.
 	 * \sa SetFont
 	 */
-	virtual uint32_t GetTextWidth (const char *str, int len = 0) { assert(false); return 0; }
+	virtual DWORD GetTextWidth (const char *str, int len = 0) { assert(false); return 0; }
 
 	/**
 	 * \brief Set the position in the surface bitmap which is mapped to the
@@ -1201,7 +1208,7 @@ public:
 	 * \param y y-coordinate of point [pixel]
 	 * \param col pixel colour (format: 0xBBGGRR)
 	 */
-	virtual void Pixel (int x, int y, uint32_t col) { assert(false); }
+	virtual void Pixel (int x, int y, DWORD col) { assert(false); }
 
 	/**
 	 * \brief Move the drawing reference to a new point.
@@ -1334,6 +1341,12 @@ public:
 	inline SURFHANDLE GetSurface() const { return surf; }
 
 	/**
+	 * \brief Obsolete function. Will return NULL.
+	 * \return NULL
+	 */
+	virtual HDC GetDC() { return NULL; }
+
+	/**
 	 * \brief Draw a text string using WCHAR.
 	 * \param x reference x position [pixel]
 	 * \param y reference y position [pixel]
@@ -1355,13 +1368,13 @@ public:
 	* \param width Pen width in pixels
 	* \param style 0 = Disabled, 1 = Solid, 2 = Dashed
 	*/
-	virtual void QuickPen(uint32_t color, float width = 1.0f, uint32_t style = 1) { assert(false); }
+	virtual void QuickPen(DWORD color, float width = 1.0f, DWORD style = 1) { assert(false); }
 
 	/**
 	* \brief [DX9] Setup a quick brush, removes any other brush from use. Set to zero to disable a brush from use.
 	* \param color Brush color in 0xAABBGGRR
 	*/
-	virtual void QuickBrush(uint32_t color) { assert(false); }
+	virtual void QuickBrush(DWORD color) { assert(false); }
 
 	/**
 	* \brief [DX9] Set up a global line width scale factor
@@ -1418,7 +1431,7 @@ public:
 	* \brief [DX9] Set up a screen space clip rectangle. Usefull when need to draw in a smaller sub section of the render target.
 	* \param pClip A pointer to clipping rectangle, Set to NULL to disable clipping.
 	*/
-	virtual void ClipRect(const Rect* pClip = NULL) { assert(false); }
+	virtual void ClipRect(const LPRECT pClip = NULL) { assert(false); }
 
 	/**
 	* \brief [DX9] Set up a world space clip cone to clip pixels within it. Does not work with orthographic projection.
@@ -1446,7 +1459,7 @@ public:
 	 * \return \e true on success, \e false on failure.
 	 * \default None, returns false.
 	 */
-	virtual bool TextW(int x, int y, const char* str, int len) { return false; }
+	virtual bool TextW(int x, int y, const LPWSTR str, int len) { return false; }
 	
 	/**
 	* \brief [DX9] Draws a mesh group or entire mesh in the render target.
@@ -1461,7 +1474,7 @@ public:
 	* \note Final color = Texture Color * Material Color, only diffure material is in use.
 	* \note To draw the entire mesh at once, use MeshFlags::RENDER_ALL flag.
 	*/
-	virtual int DrawMeshGroup(const MESHHANDLE hMesh, uint32_t grp, MeshFlags flags = MeshFlags::SMOOTH_SHADE, const SURFHANDLE hTex = NULL) { assert(false); return -2; }
+	virtual int DrawMeshGroup(const MESHHANDLE hMesh, DWORD grp, MeshFlags flags = MeshFlags::SMOOTH_SHADE, const SURFHANDLE hTex = NULL) { assert(false); return -2; }
 	
 	/**
 	* \brief [DX9] Copy 'Blit' a rectangle
@@ -1471,7 +1484,7 @@ public:
 	* \param ty Target y-coordinate
 	* \note Can alpha-blend and mirror by a use of negative width/height in source rectangle
 	*/
-	virtual void CopyRect(const SURFHANDLE hSrc, const Rect* src, int tx, int ty) { assert(false); }
+	virtual void CopyRect(const SURFHANDLE hSrc, const LPRECT src, int tx, int ty) { assert(false); }
 
 	/**
 	* \brief [DX9] Copy 'Blit' a rectangle
@@ -1480,7 +1493,7 @@ public:
 	* \param tgt Target rectangle, (or NULL for whole surface)
 	* \note Can alpha-blend and mirror by a use of negative width/height in source rectangle
 	*/
-	virtual void StretchRect(const SURFHANDLE hSrc, const Rect* src = NULL, const Rect* tgt = NULL) { assert(false); }
+	virtual void StretchRect(const SURFHANDLE hSrc, const LPRECT src = NULL, const LPRECT tgt = NULL) { assert(false); }
 
 	/**
 	* \brief [DX9] Copy 'Blit' a rectangle with rotation and scaling
@@ -1494,7 +1507,7 @@ public:
 	* \note Does not change or effect in SetWorldTransform()
 	* \note Can alpha-blend, should be able to mirror via negative scale factor.
 	*/
-	virtual void RotateRect(const SURFHANDLE hSrc, const Rect* src, int cx, int cy, float angle = 0.0f, float sw = 1.0f, float sh = 1.0f) { assert(false); }
+	virtual void RotateRect(const SURFHANDLE hSrc, const LPRECT src, int cx, int cy, float angle = 0.0f, float sw = 1.0f, float sh = 1.0f) { assert(false); }
 
 	/**
 	* \brief [DX9] Copy 'Blit' a rectangle using a color-key stored in a source surface.
@@ -1505,7 +1518,7 @@ public:
 	* \note ColorKey() does not work properly with SetWorldTransform() due to color interpolation
 	* \note Can mirror by a use of negative width/height in source rectangle
 	*/
-	virtual void ColorKey(const SURFHANDLE hSrc, const Rect* src, int tx, int ty) { assert(false); }
+	virtual void ColorKey(const SURFHANDLE hSrc, const LPRECT src, int tx, int ty) { assert(false); }
 
 	/**
 	* \brief [DX9] Write a line of text using text scaling and rotation
@@ -1515,7 +1528,7 @@ public:
 	* \param scale Text scale factor (0.0f to 1.0f)
 	* \param angle Rotation angle in radians.
 	* \sa Text()
-	* \note Rotation and scaling can result a blurry text if used with a small fonts. Rotation of ï¿½PI/2 or PI should work fine.
+	* \note Rotation and scaling can result a blurry text if used with a small fonts. Rotation of ±PI/2 or PI should work fine.
 	* \note Rotation spefified during font creation is ignored in this function.
 	*/
 	virtual void TextEx(float x, float y, const char* str, float scale = 1.0f, float angle = 0.0f) { assert(false); }
@@ -1526,7 +1539,7 @@ public:
 	* \param flags (reserved for later use, set to zero for now)
 	* \sa gcCreatePoly, gcDeletePoly
 	*/
-	virtual void DrawPoly(const HPOLY hPoly, uint32_t flags = 0) { assert(false); }
+	virtual void DrawPoly(const HPOLY hPoly, DWORD flags = 0) { assert(false); }
 
 	/**
 	* \brief [DX9] Draw a list of independent lines. 0-1, 2-3, 4-5,...
@@ -1627,7 +1640,7 @@ public:
 	* \param c2 Right or Bottom color
 	* \param bVertical Direction of the gradient.
 	*/
-	virtual void GradientFillRect(const Rect* tgt, uint32_t c1, uint32_t c2, bool bVertical = false) { assert(false); }
+	virtual void GradientFillRect(const LPRECT tgt, DWORD c1, DWORD c2, bool bVertical = false) { assert(false); }
 
 	virtual int GetVersion() { return 1; }
 
@@ -1636,12 +1649,12 @@ public:
 	* \param color Fill color
 	* \param tgt a Rect specifying the bounds, NULL for entire surface
 	*/
-	virtual void ColorFill(uint32_t color, const Rect* tgt) { assert(false); }
+	virtual void ColorFill(DWORD color, const LPRECT tgt) { assert(false); }
 
 	/**
 	* \brief [DX9] Drawing function designed for drawing GUI elements. Buttons, Windows, Boxes, etc..  
 	*/
-	virtual void StretchRegion(const skpRegion* rgn, const SURFHANDLE hSrc, const Rect* out) { assert(false); }
+	virtual void StretchRegion(const skpRegion* rgn, const SURFHANDLE hSrc, const LPRECT out) { assert(false); }
 
 	/**
 	* \brief [DX9] Copy 'Blit' a tetragon
@@ -1649,8 +1662,8 @@ public:
 	* \param sr Source rectangle, (or NULL for whole surface)
 	* \param pt Pointer to an array of 4 FVECTOR2 target points forming shape of the tetragon.
 	*/
-	virtual void CopyTetragon(const SURFHANDLE hSrc, const Rect* sr, const FVECTOR2 pt[4]) { assert(false); }
-	virtual void FillTetragon(uint32_t color, const FVECTOR2 pt[4]) { assert(false); }
+	virtual void CopyTetragon(const SURFHANDLE hSrc, const LPRECT sr, const FVECTOR2 pt[4]) { assert(false); }
+	virtual void FillTetragon(DWORD color, const FVECTOR2 pt[4]) { assert(false); }
 
 	/**
 	* \brief [DX9] Enable and Disable color compatibility mode where Pen/Brush Alpha value 0x00 is translated to 0xFF
@@ -1664,7 +1677,7 @@ public:
 	* \param bColor if true, fills the background with 'color'
 	* \param bDepth if true, clears the depth buffer (if exists)
 	*/
-	virtual void Clear(uint32_t color = 0, bool bColor = true, bool bDepth = true) { assert(false); }
+	virtual void Clear(DWORD color = 0, bool bColor = true, bool bDepth = true) { assert(false); }
 
 	/**
 	* \brief [DX9] Set near/far clip distances

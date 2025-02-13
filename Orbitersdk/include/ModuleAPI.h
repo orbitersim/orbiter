@@ -276,7 +276,7 @@ namespace oapi {
 		 * \note Mouse-processing of the Orbiter main menu cannot be blocked.
 		 * \sa clbkProcessKeyboardImmediate, clbkProcessKeyboardBuffered
 		 */
-		virtual bool clbkProcessMouse (unsigned int event, uint32_t state, uint32_t x, uint32_t y) { return false; }
+		virtual bool clbkProcessMouse (UINT event, DWORD state, DWORD x, DWORD y) { return false; }
 
 		/**
 		 * \brief Process immediate keyboard events
@@ -316,7 +316,7 @@ namespace oapi {
 		 *   the event notification.
 		 * \sa clbkProcessKeyboardImmediate, clbkProcessMouse
 		 */
-		virtual bool clbkProcessKeyboardBuffered (uint32_t key, char kstate[256], bool simRunning) { return false; }
+		virtual bool clbkProcessKeyboardBuffered (DWORD key, char kstate[256], bool simRunning) { return false; }
 
 	}; // class Module
 

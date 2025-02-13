@@ -92,9 +92,9 @@ namespace oapi {
 		virtual void RenderCelestialMarkers(oapi::Sketchpad** ppSkp);
 
 		virtual oapi::Font* MarkerFont() const;
-		virtual oapi::Pen* MarkerPen(uint32_t idx) const;
-		virtual COLORREF MarkerColor(uint32_t idx) const;
-		virtual oapi::FVECTOR4 MarkerColorFloat(uint32_t idx) const;
+		virtual oapi::Pen* MarkerPen(DWORD idx) const;
+		virtual COLORREF MarkerColor(DWORD idx) const;
+		virtual oapi::FVECTOR4 MarkerColorFloat(DWORD idx) const;
 
 		virtual void EnsureMarkerDrawingContext(oapi::Sketchpad** ppSkp, oapi::Font* font = 0, COLORREF textcol = 0, oapi::Pen* pen = 0);
 
@@ -170,8 +170,8 @@ namespace oapi {
 		double ElevationScaleRotation(const MATRIX3& R) const;
 
 		FVECTOR4 ColorAdjusted(const FVECTOR4& baseCol) const;
-		uint32_t MarkerColorAdjusted(const FVECTOR4& baseCol) const;
-		uint32_t TextColorAdjusted(const FVECTOR4& baseCol) const;
+		DWORD MarkerColorAdjusted(const FVECTOR4& baseCol) const;
+		DWORD TextColorAdjusted(const FVECTOR4& baseCol) const;
 
 		/**
 		 * \brief Returns the mesh for rendering tick labels for grids.
@@ -248,7 +248,7 @@ namespace oapi {
 
 		std::vector<oapi::GraphicsClient::LABELSPEC> m_cLabel; ///< list of constellation labels
 
-		uint32_t m_viewW, m_viewH;          ///< viewport dimensions
+		DWORD m_viewW, m_viewH;          ///< viewport dimensions
 		oapi::Font* m_cLabelFont;        ///< font for constellation labels
 		oapi::Font* m_markerFont;        ///< font for celestial sphere markers
 		oapi::Pen* m_markerPen[7];       ///< pens for celestial sphere markers

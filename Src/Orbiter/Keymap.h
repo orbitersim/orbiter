@@ -38,7 +38,7 @@ public:
 	bool IsLogicalKey (char *kstate, int lfunc) const;
 	// return true if logical function lfunc is selected by key state kstate
 
-	bool IsLogicalKey (uint32_t &key, char *kstate, int lfunc, bool clearkey = true) const;
+	bool IsLogicalKey (DWORD &key, char *kstate, int lfunc, bool clearkey = true) const;
 	// return true if logical function lfunc is selected by key and kstate
 	// (kstate only used for modifier keys)
 	// if clearkey == true then key is set to 0 on return, if a match is found

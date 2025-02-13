@@ -38,9 +38,9 @@ void InterpretEphemeris (double *data, int format, Vector *pos, Vector *vel);
 
 
 const double OAPI_RAND_MAX = 65536.0;
-static uint32_t g_seed = 0;
+static DWORD g_seed = 0;
 
-static const uint32_t g_rseed[100] = {
+static const DWORD g_rseed[100] = {
 	84351070,
   2926063127,
   1629858562,
@@ -143,8 +143,8 @@ static const uint32_t g_rseed[100] = {
   2934889985
   };
 
-inline void oapi_srand (uint32_t seed) { g_seed = seed; }
-inline uint32_t oapi_rand()
+inline void oapi_srand (DWORD seed) { g_seed = seed; }
+inline DWORD oapi_rand()
 { g_seed = 1103515245*g_seed + 12345; return g_seed >> 16; }
 
 bool Planet::bEnableWind = true;
@@ -303,10 +303,10 @@ Planet::Planet (char *fname)
 		label_version = 1;
 
 	if (GetItemInt (ifs, "MaxPatchResolution", i))
-		max_patch_level = (uint32_t)i;
+		max_patch_level = (DWORD)i;
 	else
 		max_patch_level = 8;
-	max_patch_level = min (max_patch_level, (uint32_t)SURF_MAX_PATCHLEVEL2);
+	max_patch_level = min (max_patch_level, (DWORD)SURF_MAX_PATCHLEVEL2);
 	max_patch_level = min (max_patch_level, g_pOrbiter->Cfg()->CfgVisualPrm.PlanetMaxLevel);
 
 	bHasCloudlayer = g_pOrbiter->Cfg()->CfgVisualPrm.bClouds &&
@@ -419,7 +419,7 @@ Planet::Planet (char *fname)
 Planet::~Planet ()
 {
 	int i, j, k;
-	uint32_t d;
+	DWORD d;
 
 	if (nbase) {
 		for (d = 0; d < nbase; d++)
@@ -514,7 +514,7 @@ bool Planet::AddBase (Base *base)
 
 	Base **tmp = new Base*[nbase+1];
 	if (nbase) {
-		for (uint32_t i = 0; i < nbase; i++)
+		for (DWORD i = 0; i < nbase; i++)
 			tmp[i] = baselist[i];
 		delete []baselist;
 	}
@@ -665,11 +665,11 @@ void Planet::Setup ()
 
 	if (tmgr_version == 2)
 		emgr = new ElevationManager(this);
-	for (uint32_t i = 0; i < nbase; i++)
+	for (DWORD i = 0; i < nbase; i++)
 		baselist[i]->Setup();
 }
 
-const void *Planet::GetParam (uint32_t paramtype) const
+const void *Planet::GetParam (DWORD paramtype) const
 {
 	switch (paramtype) {
 	case OBJPRM_PLANET_SURFACEMAXLEVEL:
@@ -742,7 +742,7 @@ void Planet::InitDeviceObjects ()
 
 void Planet::DestroyDeviceObjects ()
 {
-	for (uint32_t i = 0; i < nbase; i++)
+	for (DWORD i = 0; i < nbase; i++)
 		baselist[i]->DestroyDeviceObjects ();
 	CelestialBody::DestroyDeviceObjects ();
 }
@@ -760,14 +760,14 @@ void Planet::ElToEcliptic (const Elements *el_equ, Elements *el_ecl) const
 void Planet::BeginStateUpdate ()
 {
 	CelestialBody::BeginStateUpdate();
-	for (uint32_t i = 0; i < nbase; i++)
+	for (DWORD i = 0; i < nbase; i++)
 		baselist[i]->BeginStateUpdate();
 }
 
 void Planet::EndStateUpdate ()
 {
 	CelestialBody::EndStateUpdate();
-	for (uint32_t i = 0; i < nbase; i++)
+	for (DWORD i = 0; i < nbase; i++)
 		baselist[i]->EndStateUpdate();
 }
 
@@ -781,7 +781,7 @@ void Planet::Update (bool force)
 	CelestialBody::Update (force);
 
 	// Update bases
-	for (uint32_t i = 0; i < nbase; i++)
+	for (DWORD i = 0; i < nbase; i++)
 		baselist[i]->Update (force);
 
 }
@@ -817,7 +817,7 @@ const GROUNDOBSERVERSPEC *Planet::GetGroundObserver (char *site, char *addr) con
 
 Base *Planet::GetBase (const char *_name, bool ignorecase)
 {
-	for (uint32_t i = 0; i < nbase; i++)
+	for (DWORD i = 0; i < nbase; i++)
 		if (!StrComp (baselist[i]->Name(), _name, ignorecase))
 			return baselist[i];
 	return 0;
@@ -825,7 +825,7 @@ Base *Planet::GetBase (const char *_name, bool ignorecase)
 
 const Base *Planet::GetBase (const char *_name, bool ignorecase) const
 {
-	for (uint32_t i = 0; i < nbase; i++)
+	for (DWORD i = 0; i < nbase; i++)
 		if (!StrComp (baselist[i]->Name(), _name, ignorecase))
 			return baselist[i];
 	return 0;
@@ -904,7 +904,7 @@ Vector Planet::WindVelocity (double lng, double lat, double alt, int frame, Wind
 	if (bEnableWind && HasAtmosphere()) {
 		
 		int k, dim;
-		uint32_t r, rnd;
+		DWORD r, rnd;
 		Vector wv0[4];
 
 		// cubic interpolation
@@ -917,13 +917,13 @@ Vector Planet::WindVelocity (double lng, double lat, double alt, int frame, Wind
 		h10 = t3 - 2.0*t2 + t;
 		h01 = -2.0*t3 + 3.0*t2;
 		h11 = t3-t2;
-		r = (uint32_t)alt0;
+		r = (DWORD)alt0;
 		for (k = 0; k < 4; k++) {
 			oapi_srand(g_rseed[(r+k)%100]);
 			for (dim = 0; dim < 3; dim+=2) {
 				rnd = oapi_rand();
 				wv0[k].data[dim] = ((double)rnd/OAPI_RAND_MAX-0.5)*50;
-				//pert = ((double)(g_rseed[((uint32_t)(t*100)+dim+k+r)%100]>>16)/OAPI_RAND_MAX-0.5)*20;
+				//pert = ((double)(g_rseed[((DWORD)(t*100)+dim+k+r)%100]>>16)/OAPI_RAND_MAX-0.5)*20;
 				//wv0[k].data[dim] += pert;
 			}
 		}
@@ -956,7 +956,7 @@ Vector Planet::WindVelocity (double lng, double lat, double alt, int frame, Wind
 		
 
 
-		rnd0 = (uint32_t)alt0+12345;
+		rnd0 = (DWORD)alt0+12345;
 		rnd1 = rnd0+1;
 		rnd0 = oapi_rand(rnd0); rnd1 = oapi_rand(rnd1);
 		for (i = 0; i < 2; i++) {

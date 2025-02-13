@@ -64,7 +64,7 @@ void gcConst::ReleaseSwap(HSWAP hSwap)
 // Custom Camera Interface
 // ===============================================================================================
 //
-CAMERAHANDLE gcConst::SetupCustomCamera(CAMERAHANDLE hCam, OBJHANDLE hVessel, VECTOR3 &pos, VECTOR3 &dir, VECTOR3 &up, double fov, SURFHANDLE hSurf, uint32_t flags)
+CAMERAHANDLE gcConst::SetupCustomCamera(CAMERAHANDLE hCam, OBJHANDLE hVessel, VECTOR3 &pos, VECTOR3 &dir, VECTOR3 &up, double fov, SURFHANDLE hSurf, DWORD flags)
 {
 	return gcCore::SetupCustomCamera(hCam, hVessel, pos, dir, up, fov, hSurf, flags);
 }
@@ -117,7 +117,7 @@ oapi::Font* gcConst::CreateSketchpadFont(int height, char* face, int width, int 
 
 // ===============================================================================================
 //
-HPOLY gcConst::CreatePoly(HPOLY hPoly, const FVECTOR2 *pt, int npt, uint32_t flags)
+HPOLY gcConst::CreatePoly(HPOLY hPoly, const FVECTOR2 *pt, int npt, DWORD flags)
 {
 	return gcCore::CreatePoly(hPoly, pt, npt, flags);
 }
@@ -125,7 +125,7 @@ HPOLY gcConst::CreatePoly(HPOLY hPoly, const FVECTOR2 *pt, int npt, uint32_t fla
 
 // ===============================================================================================
 //
-HPOLY gcConst::CreateTriangles(HPOLY hPoly, const gcCore::clrVtx *pt, int npt, uint32_t flags)
+HPOLY gcConst::CreateTriangles(HPOLY hPoly, const gcCore::clrVtx *pt, int npt, DWORD flags)
 {
 	return gcCore::CreateTriangles(hPoly, pt, npt, flags);
 }
@@ -141,7 +141,7 @@ void gcConst::DeletePoly(HPOLY hPoly)
 
 // ===============================================================================================
 //
-uint32_t gcConst::GetTextLength(oapi::Font *hFont, const char *pText, int len)
+DWORD gcConst::GetTextLength(oapi::Font *hFont, const char *pText, int len)
 {
 	return gcCore::GetTextLength(hFont, pText, len);
 }
@@ -149,7 +149,7 @@ uint32_t gcConst::GetTextLength(oapi::Font *hFont, const char *pText, int len)
 
 // ===============================================================================================
 //
-uint32_t gcConst::GetCharIndexByPosition(oapi::Font *hFont, const char *pText, int pos, int len)
+DWORD gcConst::GetCharIndexByPosition(oapi::Font *hFont, const char *pText, int pos, int len)
 {
 	return gcCore::GetCharIndexByPosition(hFont, pText, pos, len);
 }
@@ -157,7 +157,7 @@ uint32_t gcConst::GetCharIndexByPosition(oapi::Font *hFont, const char *pText, i
 
 // ===============================================================================================
 //
-bool gcConst::RegisterRenderProc(__gcRenderProc proc, uint32_t flags, void *pParam)
+bool gcConst::RegisterRenderProc(__gcRenderProc proc, DWORD flags, void *pParam)
 {
 	return g_client->RegisterRenderProc(proc, flags, pParam);
 }
@@ -169,7 +169,7 @@ bool gcConst::RegisterRenderProc(__gcRenderProc proc, uint32_t flags, void *pPar
 // Mesh interface functions
 // ===============================================================================================
 //
-int gcConst::GetMatrix(int matrix_id, OBJHANDLE hVessel, uint32_t mesh, uint32_t group, FMATRIX4 *pMat)
+int gcConst::GetMatrix(int matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group, FMATRIX4 *pMat)
 {
 	return gcCore::GetMatrix((gcCore::MatrixId)matrix_id, hVessel, mesh, group, pMat);
 }
@@ -177,7 +177,7 @@ int gcConst::GetMatrix(int matrix_id, OBJHANDLE hVessel, uint32_t mesh, uint32_t
 
 // ===============================================================================================
 //
-int gcConst::SetMatrix(int matrix_id, OBJHANDLE hVessel, uint32_t mesh, uint32_t group, const FMATRIX4 *pMat)
+int gcConst::SetMatrix(int matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group, const FMATRIX4 *pMat)
 {
 	return gcCore::SetMatrix((gcCore::MatrixId)matrix_id, hVessel, mesh, group, pMat);
 }
@@ -185,7 +185,7 @@ int gcConst::SetMatrix(int matrix_id, OBJHANDLE hVessel, uint32_t mesh, uint32_t
 
 // ===============================================================================================
 //
-int	gcConst::MeshMaterial(DEVMESHHANDLE hMesh, uint32_t idx, int prop, FVECTOR4* value, bool bSet)
+int	gcConst::MeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, int prop, FVECTOR4* value, bool bSet)
 {
 	MatProp mat;
 	if (prop == MESHM_DIFFUSE) mat = MatProp::Diffuse;
@@ -252,7 +252,7 @@ bool gcConst::PickMesh(PickMeshStruct* pm, DEVMESHHANDLE hMesh, const FMATRIX4* 
 //
 // ===============================================================================================
 //
-SURFHANDLE gcConst::LoadSurface(const char* fname, uint32_t flags)
+SURFHANDLE gcConst::LoadSurface(const char* fname, DWORD flags)
 {
 	return g_client->clbkLoadSurface(fname, flags);
 }
@@ -260,7 +260,7 @@ SURFHANDLE gcConst::LoadSurface(const char* fname, uint32_t flags)
 
 // ===============================================================================================
 //
-void gcConst::RenderLines(const FVECTOR3* pVtx, const WORD* pIdx, int nVtx, int nIdx, const FMATRIX4* pWorld, uint32_t color)
+void gcConst::RenderLines(const FVECTOR3* pVtx, const WORD* pIdx, int nVtx, int nIdx, const FMATRIX4* pWorld, DWORD color)
 {
 	gcCore::RenderLines(pVtx, pIdx, nVtx, nIdx, pWorld, color);
 }
@@ -310,7 +310,7 @@ void gcConst::GetSystemSpecs(SystemSpecs* sp, int size)
 
 // ===============================================================================================
 //
-bool gcConst::RegisterGenericProc(__gcGenericProc proc, uint32_t id, void* pParam)
+bool gcConst::RegisterGenericProc(__gcGenericProc proc, DWORD id, void* pParam)
 {
 	return g_client->RegisterGenericProc(proc, id, pParam);
 }
@@ -341,21 +341,21 @@ int gcConst::GetElevation(HTILE hTile, double lng, double lat, double *out_elev)
 
 // ===============================================================================================
 //
-uint32_t gcConst::Color(const COLOUR4* c)
+DWORD gcConst::Color(const COLOUR4* c)
 {
 	return FVECTOR4(*c).dword_abgr();
 }
 
 // ===============================================================================================
 //
-uint32_t gcConst::Color(const oapi::FVECTOR4* c)
+DWORD gcConst::Color(const oapi::FVECTOR4* c)
 {
 	return c->dword_abgr();
 }
 
 // ===============================================================================================
 //
-COLOUR4	gcConst::Colour4(uint32_t dwABGR)
+COLOUR4	gcConst::Colour4(DWORD dwABGR)
 {
 	return FVECTOR4(dwABGR).Colour4();
 }

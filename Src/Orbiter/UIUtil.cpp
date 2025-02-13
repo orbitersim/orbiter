@@ -408,8 +408,8 @@ public:
     };
 };
 
-void ImGui::Markdown(WithLocalContext &ctx, const std::string &md,
-              std::vector<::Image *> &loadedImages) {
+void Markdown(WithLocalContext &ctx, const std::string &md,
+              std::vector<Image *> &loadedImages) {
     orbiter_md printer = {ctx, loadedImages};
     printer.print(md.c_str(), md.c_str() + md.size());
 }

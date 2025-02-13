@@ -10,6 +10,8 @@
 #define __PANE_H
 
 #define STRICT 1
+#include <windows.h>
+#include <mmsystem.h>
 #include "Orbiter.h"
 #include "Body.h"
 #include "Mfd.h"
@@ -87,12 +89,12 @@ public:
 	void SetSketchpadDefault (oapi::Sketchpad *skp);
 	// set HUD defaults for drawing objects (font, text colour, pen)
 
-	bool MFDConsumeKeyBuffered (int id, uint32_t key);
+	bool MFDConsumeKeyBuffered (int id, DWORD key);
 	// Process a buffered key for MFD id
 
-	bool ProcessMouse_System(UINT event, uint32_t state, uint32_t x, uint32_t y, const char *kstate);
+	bool ProcessMouse_System(UINT event, DWORD state, DWORD x, DWORD y, const char *kstate);
 
-	bool ProcessMouse_OnRunning (UINT event, uint32_t state, uint32_t x, uint32_t y, const char *kstate);
+	bool ProcessMouse_OnRunning (UINT event, DWORD state, DWORD x, DWORD y, const char *kstate);
 	// Process a mouse click/release
 
 	void SetFOV (double _fov);
@@ -198,7 +200,7 @@ public:
 	 * \param cat option category (see \ref optcat)
 	 * \param item option item (see \ref optitem)
 	 */
-	void OptionChanged(uint32_t cat, uint32_t item);
+	void OptionChanged(DWORD cat, DWORD item);
 
 	void RegisterMFD (int id, const MFDSPEC &spec);
 	void RegisterMFD (int id, const EXTMFDSPEC *spec);
@@ -216,9 +218,9 @@ public:
 
 	Panel2D *GetPanel2D() { return panel2d; }
 
-	void RegisterPanelBackground (HBITMAP hBmp, uint32_t flag, uint32_t ck);
-	void RegisterPanelBackground (SURFHANDLE hSurf, uint32_t flag);
-	void RegisterPanelArea (int id, const Rect &pos, int draw_mode, int mouse_mode, int bkmode);
+	void RegisterPanelBackground (HBITMAP hBmp, DWORD flag, DWORD ck);
+	void RegisterPanelBackground (SURFHANDLE hSurf, DWORD flag);
+	void RegisterPanelArea (int id, const RECT &pos, int draw_mode, int mouse_mode, int bkmode);
 	void SetPanelNeighbours (int left, int right, int top, int bottom);
 	void SetVCNeighbours (int left, int right, int top, int bottom);
 	void TriggerPanelRedrawArea (int pid, int aid);
@@ -227,7 +229,7 @@ public:
 	void RegisterVCMFD (int id, const VCMFDSPEC *spec);
 	void RegisterVCHUD (const VCHUDSPEC *spec);
 	void ShiftVC (const Vector &shift);
-	void RegisterVCArea (int id, const Rect &tgtrect, int draw_mode, int mouse_mode, int bkmode, SURFHANDLE tgt);
+	void RegisterVCArea (int id, const RECT &tgtrect, int draw_mode, int mouse_mode, int bkmode, SURFHANDLE tgt);
 	void SetVCAreaClickmode_Spherical (int id, const Vector &cnt, double rad);
 	void SetVCAreaClickmode_Quadrilateral (int id, const Vector &p1, const Vector &p2, const Vector &p3, const Vector &p4);
 	void TriggerVCRedrawArea (int vcid, int area_id);
@@ -293,7 +295,7 @@ private:
 
 	MFDspec mfd[MAXMFD];       // panel MFD displays
 	ExternMFD **emfd;          // external MFD displays
-	uint32_t nemfd;               // number of external MFDs
+	DWORD nemfd;               // number of external MFDs
 	bool mfdsize_pow2;         // force power-2 MFD sizes?
 	int mfd_hires_threshold;   // MFD size at which to switch to 512
 	int mfd_vc_size;           // texture size for VC MFD displays (256/512/1024)

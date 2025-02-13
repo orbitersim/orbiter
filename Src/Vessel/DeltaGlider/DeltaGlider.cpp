@@ -1569,7 +1569,7 @@ int DeltaGlider::clbkConsumeBufferedKey (DWORD key, bool down, char *kstate)
 	if (Playback()) return 0; // don't allow manual user input during a playback
 
 	if (!KEYMOD_ALT (kstate) && !KEYMOD_SHIFT (kstate) && KEYMOD_CONTROL (kstate) && key == OAPI_KEY_SPACE) {
-		// oapiOpenDialogEx (g_Param.hDLL, IDD_CTRL, Ctrl_DlgProc, DLG_CAPTIONCLOSE, this);
+		oapiOpenDialogEx (g_Param.hDLL, IDD_CTRL, Ctrl_DlgProc, DLG_CAPTIONCLOSE, this);
 		return 1;
 	}
 	return ComponentVessel::clbkConsumeBufferedKey (key, down, kstate);
@@ -1846,110 +1846,109 @@ DLLCLBK void secInit (HWND hEditor, OBJHANDLE hVessel)
 
 INT_PTR CALLBACK Ctrl_DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	// DeltaGlider *dg = (uMsg == WM_INITDIALOG ? (DeltaGlider*)lParam : (DeltaGlider*)oapiGetDialogContext (hWnd));
-	// // pointer to vessel instance was passed as dialog context
-	//
-	// switch (uMsg) {
-	// case WM_INITDIALOG:
-	// 	UpdateCtrlDialog (dg, hWnd);
-	// 	return FALSE;
-	// case WM_COMMAND:
-	// 	switch (LOWORD(wParam)) {
-	// 	case IDCANCEL:
-	// 		oapiCloseDialog (hWnd);
-	// 		return TRUE;
-	// 	case IDC_GEAR_UP:
-	// 		dg->SubsysGear()->RaiseGear();
-	// 		return 0;
-	// 	case IDC_GEAR_DOWN:
-	// 		dg->SubsysGear()->LowerGear();
-	// 		return 0;
-	// 	case IDC_RETRO_CLOSE:
-	// 		dg->SubsysMainRetro()->CloseRetroCover();
-	// 		return 0;
-	// 	case IDC_RETRO_OPEN:
-	// 		dg->SubsysMainRetro()->OpenRetroCover();
-	// 		return 0;
-	// 	case IDC_AIRBRAKE_RETRACT:
-	// 		if (SendDlgItemMessage (hWnd, IDC_AIRBRAKE_RETRACT, BM_GETCHECK, 0, 0) == BST_CHECKED)
-	// 			dg->SubsysAerodyn()->RetractAirbrake();
-	// 		return 0;
-	// 	case IDC_AIRBRAKE_EXTEND:
-	// 		if (SendDlgItemMessage (hWnd, IDC_AIRBRAKE_EXTEND, BM_GETCHECK, 0, 0) == BST_CHECKED)
-	// 			dg->SubsysAerodyn()->ExtendAirbrake();
-	// 		return 0;
-	// 	case IDC_NCONE_CLOSE:
-	// 		dg->SubsysDocking()->CloseNcone();
-	// 		return 0;
-	// 	case IDC_NCONE_OPEN:
-	// 		dg->SubsysDocking()->OpenNcone();
-	// 		return 0;
-	// 	case IDC_OLOCK_CLOSE:
-	// 		dg->SubsysPressure()->CloseOuterAirlock();
-	// 		return 0;
-	// 	case IDC_OLOCK_OPEN:
-	// 		dg->SubsysPressure()->OpenOuterAirlock();
-	// 		return 0;
-	// 	case IDC_ILOCK_CLOSE:
-	// 		dg->SubsysPressure()->CloseInnerAirlock();
-	// 		return 0;
-	// 	case IDC_ILOCK_OPEN:
-	// 		dg->SubsysPressure()->OpenInnerAirlock();
-	// 		return 0;
-	// 	case IDC_LADDER_RETRACT:
-	// 		dg->SubsysDocking()->RetractLadder();
-	// 		return 0;
-	// 	case IDC_LADDER_EXTEND:
-	// 		dg->SubsysDocking()->ExtendLadder();
-	// 		return 0;
-	// 	case IDC_HATCH_CLOSE:
-	// 		dg->SubsysPressure()->CloseHatch();
-	// 		return 0;
-	// 	case IDC_HATCH_OPEN:
-	// 		dg->SubsysPressure()->OpenHatch();
-	// 		return 0;
-	// 	case IDC_RADIATOR_RETRACT:
-	// 		dg->SubsysThermal()->CloseRadiator();
-	// 		return 0;
-	// 	case IDC_RADIATOR_EXTEND:
-	// 		dg->SubsysThermal()->OpenRadiator();
-	// 		return 0;
-	// 	case IDC_INSTRUMENTLIGHT:
-	// 		dg->SubsysLights()->InstrumentlightSubsys()->SetLight(SendDlgItemMessage (hWnd, IDC_INSTRUMENTLIGHT, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	// 		return 0;
-	// 	case IDC_FLOODWLIGHT:
-	// 		dg->SubsysLights()->CockpitlightSubsys()->SetLight(SendDlgItemMessage (hWnd, IDC_FLOODWLIGHT, BM_GETCHECK, 0, 0) == BST_CHECKED ? 1 : 0);
-	// 		break;
-	// 	case IDC_FLOODRLIGHT:
-	// 		dg->SubsysLights()->CockpitlightSubsys()->SetLight(SendDlgItemMessage (hWnd, IDC_FLOODRLIGHT, BM_GETCHECK, 0, 0) == BST_CHECKED ? 2 : 0);
-	// 		break;
-	// 	case IDC_DOCKINGLIGHT:
-	// 		dg->SubsysLights()->LandDocklightSubsys()->SetLight(SendDlgItemMessage (hWnd, IDC_DOCKINGLIGHT, BM_GETCHECK, 0, 0) == BST_CHECKED ? 1 : 0);
-	// 		return 0;
-	// 	case IDC_LANDINGLIGHT:
-	// 		dg->SubsysLights()->LandDocklightSubsys()->SetLight(SendDlgItemMessage (hWnd, IDC_LANDINGLIGHT, BM_GETCHECK, 0, 0) == BST_CHECKED ? 2 : 0);
-	// 		return 0;
-	// 	case IDC_STROBELIGHT:
-	// 		dg->SubsysLights()->StrobelightSubsys()->SetLight(SendDlgItemMessage (hWnd, IDC_STROBELIGHT, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	// 		return 0;
-	// 	case IDC_NAVLIGHT:
-	// 		dg->SubsysLights()->NavlightSubsys()->SetLight(SendDlgItemMessage (hWnd, IDC_NAVLIGHT, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	// 		return 0;
-	// 	//case IDC_DAMAGE:
-	// 	//	oapiOpenDialog (g_Param.hDLL, IDD_DAMAGE, Damage_DlgProc, dg);
-	//
-	// 	}
-	// 	break;
-	// }
-	// return oapiDefDialogProc (hWnd, uMsg, wParam, lParam);
-	return 0;
+	DeltaGlider *dg = (uMsg == WM_INITDIALOG ? (DeltaGlider*)lParam : (DeltaGlider*)oapiGetDialogContext (hWnd));
+	// pointer to vessel instance was passed as dialog context
+
+	switch (uMsg) {
+	case WM_INITDIALOG:
+		UpdateCtrlDialog (dg, hWnd);
+		return FALSE;
+	case WM_COMMAND:
+		switch (LOWORD(wParam)) {
+		case IDCANCEL:
+			oapiCloseDialog (hWnd);
+			return TRUE;
+		case IDC_GEAR_UP:
+			dg->SubsysGear()->RaiseGear();
+			return 0;
+		case IDC_GEAR_DOWN:
+			dg->SubsysGear()->LowerGear();
+			return 0;
+		case IDC_RETRO_CLOSE:
+			dg->SubsysMainRetro()->CloseRetroCover();
+			return 0;
+		case IDC_RETRO_OPEN:
+			dg->SubsysMainRetro()->OpenRetroCover();
+			return 0;
+		case IDC_AIRBRAKE_RETRACT:
+			if (SendDlgItemMessage (hWnd, IDC_AIRBRAKE_RETRACT, BM_GETCHECK, 0, 0) == BST_CHECKED)
+				dg->SubsysAerodyn()->RetractAirbrake();
+			return 0;
+		case IDC_AIRBRAKE_EXTEND:
+			if (SendDlgItemMessage (hWnd, IDC_AIRBRAKE_EXTEND, BM_GETCHECK, 0, 0) == BST_CHECKED)
+				dg->SubsysAerodyn()->ExtendAirbrake();
+			return 0;
+		case IDC_NCONE_CLOSE:
+			dg->SubsysDocking()->CloseNcone();
+			return 0;
+		case IDC_NCONE_OPEN:
+			dg->SubsysDocking()->OpenNcone();
+			return 0;
+		case IDC_OLOCK_CLOSE:
+			dg->SubsysPressure()->CloseOuterAirlock();
+			return 0;
+		case IDC_OLOCK_OPEN:
+			dg->SubsysPressure()->OpenOuterAirlock();
+			return 0;
+		case IDC_ILOCK_CLOSE:
+			dg->SubsysPressure()->CloseInnerAirlock();
+			return 0;
+		case IDC_ILOCK_OPEN:
+			dg->SubsysPressure()->OpenInnerAirlock();
+			return 0;
+		case IDC_LADDER_RETRACT:
+			dg->SubsysDocking()->RetractLadder();
+			return 0;
+		case IDC_LADDER_EXTEND:
+			dg->SubsysDocking()->ExtendLadder();
+			return 0;
+		case IDC_HATCH_CLOSE:
+			dg->SubsysPressure()->CloseHatch();
+			return 0;
+		case IDC_HATCH_OPEN:
+			dg->SubsysPressure()->OpenHatch();
+			return 0;
+		case IDC_RADIATOR_RETRACT:
+			dg->SubsysThermal()->CloseRadiator();
+			return 0;
+		case IDC_RADIATOR_EXTEND:
+			dg->SubsysThermal()->OpenRadiator();
+			return 0;
+		case IDC_INSTRUMENTLIGHT:
+			dg->SubsysLights()->InstrumentlightSubsys()->SetLight(SendDlgItemMessage (hWnd, IDC_INSTRUMENTLIGHT, BM_GETCHECK, 0, 0) == BST_CHECKED);
+			return 0;
+		case IDC_FLOODWLIGHT:
+			dg->SubsysLights()->CockpitlightSubsys()->SetLight(SendDlgItemMessage (hWnd, IDC_FLOODWLIGHT, BM_GETCHECK, 0, 0) == BST_CHECKED ? 1 : 0);
+			break;
+		case IDC_FLOODRLIGHT:
+			dg->SubsysLights()->CockpitlightSubsys()->SetLight(SendDlgItemMessage (hWnd, IDC_FLOODRLIGHT, BM_GETCHECK, 0, 0) == BST_CHECKED ? 2 : 0);
+			break;
+		case IDC_DOCKINGLIGHT:
+			dg->SubsysLights()->LandDocklightSubsys()->SetLight(SendDlgItemMessage (hWnd, IDC_DOCKINGLIGHT, BM_GETCHECK, 0, 0) == BST_CHECKED ? 1 : 0);
+			return 0;
+		case IDC_LANDINGLIGHT:
+			dg->SubsysLights()->LandDocklightSubsys()->SetLight(SendDlgItemMessage (hWnd, IDC_LANDINGLIGHT, BM_GETCHECK, 0, 0) == BST_CHECKED ? 2 : 0);
+			return 0;
+		case IDC_STROBELIGHT:
+			dg->SubsysLights()->StrobelightSubsys()->SetLight(SendDlgItemMessage (hWnd, IDC_STROBELIGHT, BM_GETCHECK, 0, 0) == BST_CHECKED);
+			return 0;
+		case IDC_NAVLIGHT:
+			dg->SubsysLights()->NavlightSubsys()->SetLight(SendDlgItemMessage (hWnd, IDC_NAVLIGHT, BM_GETCHECK, 0, 0) == BST_CHECKED);
+			return 0;
+		//case IDC_DAMAGE:
+		//	oapiOpenDialog (g_Param.hDLL, IDD_DAMAGE, Damage_DlgProc, dg);
+
+		}
+		break;
+	}
+	return oapiDefDialogProc (hWnd, uMsg, wParam, lParam);
 }
 
 void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd)
 {
 	static int bstatus[2] = {BST_UNCHECKED, BST_CHECKED};
 
-	// if (!hWnd) hWnd = oapiFindDialog (g_Param.hDLL, IDD_CTRL);
+	if (!hWnd) hWnd = oapiFindDialog (g_Param.hDLL, IDD_CTRL);
 	if (!hWnd) return;
 
 	int op;

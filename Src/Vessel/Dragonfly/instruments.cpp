@@ -169,7 +169,7 @@ if (!(*SRC)&&(am_i<42)) {
 SFSwitch::SFSwitch(int x, int y, int i_pos,int i_num_pos,int i_safed,Panel *i_parent):Switch(x,y,i_pos,i_num_pos,0,NULL,i_parent)
 { safed=i_safed;
  temps=oapiCreateSurface(50,61);
- // hTEMPDC=oapiGetDC(temps);
+ hTEMPDC=oapiGetDC(temps);
 type=36;//SFSwitch
 };
 void SFSwitch::RegisterMe(int index)
@@ -179,54 +179,54 @@ void SFSwitch::RegisterMe(int index)
 void SFSwitch::PaintMe()
 { int lng=24/sqrt(3.0);
 
-// HDC hDC=oapiGetDC(parent->surf);
-// SelectObject(hDC,hBRUSH_Background);SelectObject(hDC,hPEN_NULL);
-// Rectangle(hDC,0,0,51,50);
-// SelectObject(hDC,hPEN_Black);
-// Rectangle(hDC,5-5,4,5,4+40);Rectangle(hDC,5+40,4,5+45,4+40);
-// SelectObject(hDC,hBRUSH_LBkg);
-// Rectangle(hDC,5,4,5+40,4+40);
-// MoveTo(hDC,5+20-lng/2,4+8);LineTo(hDC,5+20+lng/2,4+8);
-// LineTo(hDC,5+20+lng,4+20);LineTo(hDC,5+20+lng/2,4+32);
-// LineTo(hDC,5+20-lng/2,4+32);LineTo(hDC,5+20-lng,4+20);
-// LineTo(hDC,5+20-lng/2,4+8);
-// Ellipse(hDC,5+10,4+10,5+31,4+31);
-// SelectObject(hDC,hBRUSH_FYellow);
-// Ellipse(hDC,5+12,4+12,5+29,4+29);
-// SelectObject(hDC,hPEN_NULL);
-// SelectObject(hDC,hBRUSH_LBkg);
-// Rectangle(hDC,5+20-4*pos,4+20,5+20+4*pos,4+20-7*pos);
-// Ellipse(hDC,5+17,4+17,5+24,4+24);
-// SelectObject(hDC,hPEN_Black);
-// MoveTo(hDC,5+20-4*pos,4+20);LineTo(hDC,5+20-4*pos,4+20-7*pos);
-// MoveTo(hDC,5+20+4*pos,4+20);LineTo(hDC,5+20+4*pos,4+20-7*pos);
-// Arc(hDC,5+20-4,4+20-4,5+25,4+25,5+20-4*pos,4+20,5+20+4*pos,4+20);
-//
-// Rectangle(hDC,5+12,4+15-7*pos,5+29,4+25-7*pos-(3-num_pos)*2);
-// if (num_pos==3) Rectangle(hDC,5+12,4+18-9*pos,5+29,4+23-9*pos);
-//
-//
-// BitBlt(hTEMPDC,0,0,51,50,hDC,0,0,SRCCOPY);
-// SelectObject(hDC,hBRUSH_Red);
-// if (safed)
-// {
-// Rectangle(hDC,05,0,45,59);
-//
-// BitBlt(hDC,10,15,30,15,hTEMPDC,10,15,SRCCOPY);
-// BitBlt(hDC,10,40,30,10,hTEMPDC,10,40,SRCCOPY);
-// MoveTo(hDC,10,15);LineTo(hDC,40,15);
-// LineTo(hDC,40,30);LineTo(hDC,10,30);LineTo(hDC,10,15);
-// MoveTo(hDC,10,48);LineTo(hDC,10,40);
-// LineTo(hDC,40,40);LineTo(hDC,40,48);
-// }
-// else
-// {  Rectangle(hDC,5,0,45,25);
-//    BitBlt(hDC,10,15,30,15,hTEMPDC,10,15,SRCCOPY);
-//    BitBlt(hDC,10,0,30,4,hTEMPDC,10,0,SRCCOPY);
-//
-// }
-//
-// oapiReleaseDC(parent->surf,hDC);
+HDC hDC=oapiGetDC(parent->surf);
+SelectObject(hDC,hBRUSH_Background);SelectObject(hDC,hPEN_NULL);
+Rectangle(hDC,0,0,51,50);
+SelectObject(hDC,hPEN_Black);
+Rectangle(hDC,5-5,4,5,4+40);Rectangle(hDC,5+40,4,5+45,4+40);
+SelectObject(hDC,hBRUSH_LBkg);
+Rectangle(hDC,5,4,5+40,4+40);
+MoveTo(hDC,5+20-lng/2,4+8);LineTo(hDC,5+20+lng/2,4+8);
+LineTo(hDC,5+20+lng,4+20);LineTo(hDC,5+20+lng/2,4+32);
+LineTo(hDC,5+20-lng/2,4+32);LineTo(hDC,5+20-lng,4+20);
+LineTo(hDC,5+20-lng/2,4+8);
+Ellipse(hDC,5+10,4+10,5+31,4+31);
+SelectObject(hDC,hBRUSH_FYellow);
+Ellipse(hDC,5+12,4+12,5+29,4+29);
+SelectObject(hDC,hPEN_NULL);
+SelectObject(hDC,hBRUSH_LBkg);
+Rectangle(hDC,5+20-4*pos,4+20,5+20+4*pos,4+20-7*pos);
+Ellipse(hDC,5+17,4+17,5+24,4+24);
+SelectObject(hDC,hPEN_Black);
+MoveTo(hDC,5+20-4*pos,4+20);LineTo(hDC,5+20-4*pos,4+20-7*pos);
+MoveTo(hDC,5+20+4*pos,4+20);LineTo(hDC,5+20+4*pos,4+20-7*pos);
+Arc(hDC,5+20-4,4+20-4,5+25,4+25,5+20-4*pos,4+20,5+20+4*pos,4+20);
+
+Rectangle(hDC,5+12,4+15-7*pos,5+29,4+25-7*pos-(3-num_pos)*2);
+if (num_pos==3) Rectangle(hDC,5+12,4+18-9*pos,5+29,4+23-9*pos);
+
+
+BitBlt(hTEMPDC,0,0,51,50,hDC,0,0,SRCCOPY);
+SelectObject(hDC,hBRUSH_Red);
+if (safed)
+{
+Rectangle(hDC,05,0,45,59);
+
+BitBlt(hDC,10,15,30,15,hTEMPDC,10,15,SRCCOPY);
+BitBlt(hDC,10,40,30,10,hTEMPDC,10,40,SRCCOPY);
+MoveTo(hDC,10,15);LineTo(hDC,40,15);
+LineTo(hDC,40,30);LineTo(hDC,10,30);LineTo(hDC,10,15);
+MoveTo(hDC,10,48);LineTo(hDC,10,40);
+LineTo(hDC,40,40);LineTo(hDC,40,48);
+}   
+else
+{  Rectangle(hDC,5,0,45,25);
+   BitBlt(hDC,10,15,30,15,hTEMPDC,10,15,SRCCOPY);
+   BitBlt(hDC,10,0,30,4,hTEMPDC,10,0,SRCCOPY);
+
+}                                             
+
+oapiReleaseDC(parent->surf,hDC);                                       
 
 }
 
@@ -253,7 +253,7 @@ else {
 };
  SFSwitch::~SFSwitch()
 { 
-  // oapiReleaseDC(temps,hTEMPDC);
+  oapiReleaseDC(temps,hTEMPDC);
   oapiDestroySurface(temps);
 };
 
@@ -287,34 +287,34 @@ void EGauge::RegisterMe(int index)
   POINT TR[3];
  oapiBlt(parent->surf,hEgaugeSRF,0,0,0,0,100,100); //copy the backgorund
 
-// HDC hDC=oapiGetDC(parent->surf);
-// SelectObject(hDC,hBRUSH_Gray);
-// SelectObject(hDC,hPEN_LGray);			// some of the circles
-// for (i=0;i<16;i++) {
-// MoveTo(hDC,50+cos(ang)*20,50-sin(ang)*20);// now put the small scales
-// LineTo(hDC,50+cos(ang)*24,50-sin(ang)*24);
-// ang+=Pi/12;
-// };ang=-Pi/4+Pi/8;
-// for (i=0;i<6;i++) {
-// MoveTo(hDC,50+cos(ang)*20,50-sin(ang)*20); //now the big scales
-// LineTo(hDC,50+cos(ang)*28,50-sin(ang)*28);
-// gcvt((int)(i*(MaxV-MinV)/5+MinV) ,6,intst); //convert number to char
-// SelectObject(hDC,hFNT_Panel);
-// SetTextAlign(hDC,TA_CENTER);SetBkMode(hDC,TRANSPARENT);
-// SetTextColor(hDC,RGB(140,49,49));
-// TextOut(hDC,50+cos(ang)*35,45-sin(ang)*35,intst,sizeof(char)*strlen(intst)); // and scale numbers
-// ang+=Pi/4;
-// };
-// SelectObject(hDC,hPEN_NULL);
-// Ellipse(hDC,30,30,70,70);
-// SelectObject(hDC,hBRUSH_Black);
-// Ellipse(hDC,40,40,59,59);	// the rest of the circles
-// TR[0].x=50;TR[0].y=45;		// a black triangle on the bottom
-// TR[1].x=20;TR[1].y=75;
-// TR[2].x=80;TR[2].y=75;
-// Polygon(hDC,TR,3);
-// TextOut(hDC,50,70,unit,sizeof(char)*strlen(unit));
-// oapiReleaseDC(parent->surf,hDC);
+HDC hDC=oapiGetDC(parent->surf);
+SelectObject(hDC,hBRUSH_Gray);
+SelectObject(hDC,hPEN_LGray);			// some of the circles
+for (i=0;i<16;i++) {
+MoveTo(hDC,50+cos(ang)*20,50-sin(ang)*20);// now put the small scales
+LineTo(hDC,50+cos(ang)*24,50-sin(ang)*24);
+ang+=Pi/12;
+};ang=-Pi/4+Pi/8;
+for (i=0;i<6;i++) {
+MoveTo(hDC,50+cos(ang)*20,50-sin(ang)*20); //now the big scales
+LineTo(hDC,50+cos(ang)*28,50-sin(ang)*28);
+gcvt((int)(i*(MaxV-MinV)/5+MinV) ,6,intst); //convert number to char
+SelectObject(hDC,hFNT_Panel);
+SetTextAlign(hDC,TA_CENTER);SetBkMode(hDC,TRANSPARENT); 
+SetTextColor(hDC,RGB(140,49,49));
+TextOut(hDC,50+cos(ang)*35,45-sin(ang)*35,intst,sizeof(char)*strlen(intst)); // and scale numbers
+ang+=Pi/4;
+};
+SelectObject(hDC,hPEN_NULL);
+Ellipse(hDC,30,30,70,70);
+SelectObject(hDC,hBRUSH_Black);
+Ellipse(hDC,40,40,59,59);	// the rest of the circles
+TR[0].x=50;TR[0].y=45;		// a black triangle on the bottom
+TR[1].x=20;TR[1].y=75;
+TR[2].x=80;TR[2].y=75;
+Polygon(hDC,TR,3);
+TextOut(hDC,50,70,unit,sizeof(char)*strlen(unit));
+oapiReleaseDC(parent->surf,hDC);
 oapiBlt(temps,parent->surf,0,0,30,30,40,40); //save this onto a back-surf
 
  };
@@ -323,30 +323,30 @@ oapiBlt(temps,parent->surf,0,0,30,30,40,40); //save this onto a back-surf
 void EGauge::RefreshMe()
 {
  oapiBlt(parent->surf,temps,30,30,0,0,40,40);//clean the surface 
-// HDC hDC=oapiGetDC(parent->surf);				// then get a DC to draw new pointer
-// float ang;
-// float Pi=3.1415;
-// //check for need to redraw ?
-// ang= -(((*SRC/scale)-MinV)/(MaxV-MinV)* 5*Pi/4)+5*Pi/8;          // get turn angle for the indicator
-// if (ang>5*Pi/8) ang=5*Pi/8;	// if too large
-// if (ang<-5*Pi/8) ang = -5*Pi/8;  // or too small
-// if (abs(ang-lastdraw)>0.3) ang=lastdraw+(ang>lastdraw?0.3:-0.3)+(ang-lastdraw)/100;//slowly move to the value
-// lastdraw=ang;
-//
-// POINT S[3],TR[3];
-// TR[0].x=0;TR[0].y=-20;
-// TR[1].x=5;TR[1].y=0;
-// TR[2].x=-6;TR[2].y=0;
-// for (int i=0;i<3;i++) // rotate the pointer by 'ang'
-// {
-//    S[i].x=50 + TR[i].x*cos(ang)-TR[i].y*sin(ang);
-//    S[i].y=50 + TR[i].x*sin(ang)+TR[i].y*cos(ang);
-// }
-// SelectObject(hDC,hBRUSH_Black);
-// SelectObject(hDC,hPEN_NULL);
-//
-// Polygon(hDC,S,3);// then the pointer
-// oapiReleaseDC(parent->surf,hDC);
+HDC hDC=oapiGetDC(parent->surf);				// then get a DC to draw new pointer
+float ang;
+float Pi=3.1415;
+//check for need to redraw ?
+ang= -(((*SRC/scale)-MinV)/(MaxV-MinV)* 5*Pi/4)+5*Pi/8;          // get turn angle for the indicator
+if (ang>5*Pi/8) ang=5*Pi/8;	// if too large
+if (ang<-5*Pi/8) ang = -5*Pi/8;  // or too small
+if (abs(ang-lastdraw)>0.3) ang=lastdraw+(ang>lastdraw?0.3:-0.3)+(ang-lastdraw)/100;//slowly move to the value 
+lastdraw=ang;
+
+POINT S[3],TR[3];
+TR[0].x=0;TR[0].y=-20;
+TR[1].x=5;TR[1].y=0;
+TR[2].x=-6;TR[2].y=0;
+for (int i=0;i<3;i++) // rotate the pointer by 'ang'
+{
+   S[i].x=50 + TR[i].x*cos(ang)-TR[i].y*sin(ang);
+   S[i].y=50 + TR[i].x*sin(ang)+TR[i].y*cos(ang);
+}
+SelectObject(hDC,hBRUSH_Black);
+SelectObject(hDC,hPEN_NULL);
+
+Polygon(hDC,S,3);// then the pointer
+oapiReleaseDC(parent->surf,hDC);
  };
 //----------------------------------- HGAUGE ------------------------------------------
 HGauge::HGauge(int x,int y, int i_w,int i_h,float* i_SRC1,float* i_SRC2,const char i_unit[15],int i_min,int i_max, float i_scale,int i_fig,int i_lin,Panel *parent):instrument(x,y,parent)
@@ -366,44 +366,44 @@ void HGauge::PaintMe()
 
 
  oapiBlt(parent->surf,hHgaugeSRF,0,0,0,0,85,190); //copy the backgorund
- //
- // HDC hDC=oapiGetDC(parent->surf);
- //   //Put the texts where they're supposed to be*/
- // SelectObject(hDC,hFNT_Panel);
- // SetTextAlign(hDC,TA_CENTER);  SetBkMode(hDC,TRANSPARENT);
- // SetTextColor(hDC,RGB(140,49,49));
- // TextOut(hDC,(int)85/2,15,unit,sizeof(char)*strlen(unit)); // the unit of msrm.
- // int k,j,i=0;//SetBkMode(hDC,OPAQUE);SetBkColor(hDC,RGB(0,0,0));
- // do  {
- //      gcvt((int)(i*(MaxV-MinV)/NrFig+MinV) ,6,intst); //convert number to char
- //      k=(int)(190-(40+(190-85)*i/NrFig));;          // calculate the y coord.
- //      SelectObject(hDC,hPEN_Gray);
- //      if (i<NrFig) for(j=1;j<NrLin+1;j++) { // then the scale (three lines between the numbers)
-	// 		MoveTo(hDC,23,k-(int)(190-85)*j/(NrFig*NrLin));
-	// 		LineTo(hDC,85-23,k-(int)(190-85)*j/(NrFig*NrLin));
-	// 		};
- //      TextOut(hDC,(int)85/2,k-5,intst,sizeof(char)*strlen(intst));// write the numbers
- //      i++;
- //      } while (i<NrFig+1);
- //
- //
- // oapiReleaseDC(parent->surf,hDC);
- //
+
+ HDC hDC=oapiGetDC(parent->surf);
+   //Put the texts where they're supposed to be*/
+ SelectObject(hDC,hFNT_Panel);
+ SetTextAlign(hDC,TA_CENTER);  SetBkMode(hDC,TRANSPARENT); 
+ SetTextColor(hDC,RGB(140,49,49));
+ TextOut(hDC,(int)85/2,15,unit,sizeof(char)*strlen(unit)); // the unit of msrm.
+ int k,j,i=0;//SetBkMode(hDC,OPAQUE);SetBkColor(hDC,RGB(0,0,0));
+ do  {
+      gcvt((int)(i*(MaxV-MinV)/NrFig+MinV) ,6,intst); //convert number to char
+      k=(int)(190-(40+(190-85)*i/NrFig));;          // calculate the y coord.
+      SelectObject(hDC,hPEN_Gray);
+      if (i<NrFig) for(j=1;j<NrLin+1;j++) { // then the scale (three lines between the numbers)
+			MoveTo(hDC,23,k-(int)(190-85)*j/(NrFig*NrLin));
+			LineTo(hDC,85-23,k-(int)(190-85)*j/(NrFig*NrLin));
+			};
+      TextOut(hDC,(int)85/2,k-5,intst,sizeof(char)*strlen(intst));// write the numbers
+      i++; 
+      } while (i<NrFig+1);
+ 
+ 
+ oapiReleaseDC(parent->surf,hDC);
+  
  oapiBlt(temps,parent->surf,0,0,12,0,9,190);	//save the two empty stripes
  oapiBlt(temps,parent->surf,10,0,85-22,0,9,190);
 
- // //draw the arrows
- // hDC=oapiGetDC(temps);
- // SelectObject(hDC,hBRUSH_White);
- // Rectangle(hDC,19,0,31,21);
- // POINT arrow1[3],arrow2[3];
- // arrow1[0].x=21;arrow1[0].y=1; arrow2[0].x=28;arrow2[0].y=11;
- // arrow1[1].x=21;arrow1[1].y=9;arrow2[1].x=28;arrow2[1].y=19;
- // arrow1[2].x=29;arrow1[2].y=5;arrow2[2].x=20;arrow2[2].y=15;
- // SelectObject(hDC,hBRUSH_Black);SelectObject(hDC,hPEN_NULL);
- // Polygon(hDC,arrow1,3);
- // Polygon(hDC,arrow2,3);
- // oapiReleaseDC(temps,hDC);
+ //draw the arrows
+ hDC=oapiGetDC(temps);
+ SelectObject(hDC,hBRUSH_White);
+ Rectangle(hDC,19,0,31,21);
+ POINT arrow1[3],arrow2[3];
+ arrow1[0].x=21;arrow1[0].y=1; arrow2[0].x=28;arrow2[0].y=11;
+ arrow1[1].x=21;arrow1[1].y=9;arrow2[1].x=28;arrow2[1].y=19;
+ arrow1[2].x=29;arrow1[2].y=5;arrow2[2].x=20;arrow2[2].y=15;
+ SelectObject(hDC,hBRUSH_Black);SelectObject(hDC,hPEN_NULL);
+ Polygon(hDC,arrow1,3);
+ Polygon(hDC,arrow2,3);
+ oapiReleaseDC(temps,hDC);
 
 
 
@@ -450,22 +450,22 @@ void Rotary::PaintMe()
 //  POINT E1,E2;
   float ang;
 float Pi=3.1415;
-// HDC hDC=oapiGetDC(parent->surf);
-// SelectObject(hDC,hPEN_NULL);
-// SelectObject(hDC,hBRUSH_Background);
-// Rectangle(hDC,0,0,0+162,0+142);
-// SelectObject(hDC,hFNT_Panel);
-// SetTextAlign(hDC,TA_CENTER);
-// SetTextColor(hDC,RGB(255,100,100));	// text color for powered/ unpowered
-// SetBkMode(hDC,TRANSPARENT);
-// TextOut(hDC,85,10,screentext,sizeof(char)*strlen(screentext));	// name of rotary
-// ang = (int)poznr/2; ang =Pi/2-ang*Pi/6;				// calculate the starting angle depending on poznr
-// for (int i=0; i<poznr;i++)					// now put all texts arround the circle
-// { TextOut(hDC,85-cos(ang)*70,90-sin(ang)*70,names[i],sizeof(char)*strlen(names[i]));
-//   ang+=Pi/6;
-// }
-//
-//  oapiReleaseDC(parent->surf,hDC);
+HDC hDC=oapiGetDC(parent->surf);
+SelectObject(hDC,hPEN_NULL);
+SelectObject(hDC,hBRUSH_Background);
+Rectangle(hDC,0,0,0+162,0+142); 
+SelectObject(hDC,hFNT_Panel);
+SetTextAlign(hDC,TA_CENTER);
+SetTextColor(hDC,RGB(255,100,100));	// text color for powered/ unpowered
+SetBkMode(hDC,TRANSPARENT); 
+TextOut(hDC,85,10,screentext,sizeof(char)*strlen(screentext));	// name of rotary
+ang = (int)poznr/2; ang =Pi/2-ang*Pi/6;				// calculate the starting angle depending on poznr
+for (int i=0; i<poznr;i++)					// now put all texts arround the circle
+{ TextOut(hDC,85-cos(ang)*70,90-sin(ang)*70,names[i],sizeof(char)*strlen(names[i]));
+  ang+=Pi/6;
+}
+
+ oapiReleaseDC(parent->surf,hDC);
  oapiBlt(parent->surf,hRotarySRF,36,41,400+(set-(int)(poznr/2))*100,0,100,100); //copy the backgorund
 };
 void Rotary::LBD(int x,int y)
@@ -527,14 +527,14 @@ void DigClock::RegisterMe(int index)
 
 void DigClock::PaintMe()
 {
-// HDC hDC=oapiGetDC(local_srf);
-// SelectObject(hDC,hPEN_White);
-// MoveTo(hDC,0,43);LineTo(hDC,len*22+1,43);
-// LineTo(hDC,len*22+1,0);
-// SelectObject(hDC,hPEN_Gray);
-// LineTo(hDC,0,0);LineTo(hDC,0,43);
-//
-// oapiReleaseDC(local_srf,hDC);
+HDC hDC=oapiGetDC(local_srf);
+SelectObject(hDC,hPEN_White);
+MoveTo(hDC,0,43);LineTo(hDC,len*22+1,43);
+LineTo(hDC,len*22+1,0);
+SelectObject(hDC,hPEN_Gray);
+LineTo(hDC,0,0);LineTo(hDC,0,43);
+
+oapiReleaseDC(local_srf,hDC);
 
 for (int i=0;i<len;i++)
 {	oapiBlt(local_srf,hClockSRF,22*i+1,1,220,0,22,42);//all blanc
@@ -583,18 +583,18 @@ CW::CW(int x,int y,const char *i_text,Panel *i_parent):instrument(x,y,i_parent)
  strcpy(text,i_text);alarm=1;
  temps=oapiCreateSurface(100,31);
 //
-// HDC hDC2=oapiGetDC(temps);
-// HDC hDC=oapiGetDC(hCwSRF);
-// BitBlt(hDC2,0,0,100,31,hDC,0,0,SRCCOPY);
-//    //Put the texts where they're supposed to be*/
-//  SelectObject(hDC2,hFNT_Panel);
-//  SetTextAlign(hDC2,TA_CENTER);  SetBkMode(hDC2,TRANSPARENT);
-//  SetTextColor(hDC2,RGB(255,100,100));
-//  TextOut(hDC2,25,10,text,sizeof(char)*strlen(text));
-//  SetTextColor(hDC2,RGB(149,48,48));
-//  TextOut(hDC2,75,10,text,sizeof(char)*strlen(text));
-//  oapiReleaseDC(hCwSRF,hDC);
-// oapiReleaseDC(temps,hDC2);
+HDC hDC2=oapiGetDC(temps);
+HDC hDC=oapiGetDC(hCwSRF);
+BitBlt(hDC2,0,0,100,31,hDC,0,0,SRCCOPY);
+   //Put the texts where they're supposed to be*/
+ SelectObject(hDC2,hFNT_Panel);
+ SetTextAlign(hDC2,TA_CENTER);  SetBkMode(hDC2,TRANSPARENT); 
+ SetTextColor(hDC2,RGB(255,100,100));
+ TextOut(hDC2,25,10,text,sizeof(char)*strlen(text)); 
+ SetTextColor(hDC2,RGB(149,48,48));
+ TextOut(hDC2,75,10,text,sizeof(char)*strlen(text)); 
+ oapiReleaseDC(hCwSRF,hDC);
+oapiReleaseDC(temps,hDC2);
 
 };
 CW::~CW()
@@ -639,23 +639,23 @@ oapiRegisterMFD(type,mfdspecs);
 void inst_MFD::PaintMe()
 {
 //oapiBlt(parent->surf,hMFDSRF,0,0,0,0,310,296); 
-// HDC hDC=oapiGetDC(parent->surf);
-// HDC hDC2=oapiGetDC(hMFDSRF);
-// BitBlt(hDC,0,0,350,296,hDC2,0,0,SRCCOPY);
-// SelectObject(hDC, hFNT_Panel);
-// SetTextColor (hDC, RGB(20, 20, 20));
-// SetTextAlign (hDC, TA_CENTER);
-// SetBkMode (hDC, TRANSPARENT);
-//
-// const char *label;
-// 	for (int bt = 0; bt < 12; bt++) {
-// 		if (label = oapiMFDButtonLabel (type, bt))
-// 			{if (bt<6) TextOut (hDC, 31, 58+34*bt, label, strlen(label));
-// 			else TextOut (hDC, 322, 58+34*(bt-6), label, strlen(label));}
-// 		else break;
-// 	}
-// oapiReleaseDC(parent->surf,hDC);
-// oapiReleaseDC(hMFDSRF,hDC2);
+HDC hDC=oapiGetDC(parent->surf);
+HDC hDC2=oapiGetDC(hMFDSRF);
+BitBlt(hDC,0,0,350,296,hDC2,0,0,SRCCOPY);
+SelectObject(hDC, hFNT_Panel);
+SetTextColor (hDC, RGB(20, 20, 20));
+SetTextAlign (hDC, TA_CENTER);
+SetBkMode (hDC, TRANSPARENT);
+
+const char *label;
+	for (int bt = 0; bt < 12; bt++) {
+		if (label = oapiMFDButtonLabel (type, bt))
+			{if (bt<6) TextOut (hDC, 31, 58+34*bt, label, strlen(label));
+			else TextOut (hDC, 322, 58+34*(bt-6), label, strlen(label));}
+		else break;
+	}
+oapiReleaseDC(parent->surf,hDC);
+oapiReleaseDC(hMFDSRF,hDC2);
 
 };
 
@@ -743,58 +743,58 @@ void Docker::PaintMe()
 oapiBlt(parent->surf,hDockBSRF,0,0,0,0,202,179);
 cgofs=((Dragonfly*)(parent->v))->cgofs;
 SURFHANDLE temps=oapiCreateSurface(202,179);
-// HDC hDC=oapiGetDC(temps);
-// SelectObject(hDC, hBRUSH_TotalBlack);
-// Rectangle(hDC,0,0,202,179);
-// SetTextColor(hDC,RGB(0,255,0));
-// SetTextAlign(hDC,TA_CENTER);
-// SelectObject(hDC,hFNT_Panel);
-// SetBkMode(hDC,TRANSPARENT);
-// char text[30];
-// sprintf(text, "%0.1f m", cgofs);
-// TextOut (hDC, 140, 95, text, strlen (text));
-// int loc = 102+min ((int)(cgofs*3.784), 74);
-// SelectObject (hDC, hPEN_BYellow);
-// MoveToEx (hDC, loc, 93, NULL); LineTo (hDC, loc-3, 86); LineTo (hDC, loc+3, 86); LineTo (hDC, loc, 93);
-//
-// VESSEL *vessel;
-// int docked_port=0;
-// if (sensormode)
-// 	{vessel=oapiGetVesselInterface(vs->vs);
-// 	  strcpy(text,vessel->GetName());
-// 	 TextOut(hDC,130,137,text,strlen(text));
-// 	 sprintf(text,"PORT %i",vs->port);
-// 	 TextOut(hDC,130,147,text,strlen(text));
-// 	 if (vessel->GetDockStatus(vessel->GetDockHandle(vs->port)))
-// 		{docked_port=1;
-// 		strcpy(text,"ENG");
-// 		SetTextColor (hDC, 0);
-// 		SetBkColor (hDC, RGB(255,255,0));
-// 		SetBkMode (hDC, OPAQUE);
-//         TextOut(hDC,160,147,text,strlen(text));
-// 		}
-// 	}
-// else {strcpy(text,"LOCAL");
-//       TextOut(hDC,130,137,text,strlen(text));
-// 	 sprintf(text,"PORT %i",portnr);
-// 	 TextOut(hDC,130,147,text,strlen(text));
-// 	 if (parent->v->GetDockStatus(parent->v->GetDockHandle(portnr)))
-// 		{docked_port=1;
-// 		strcpy(text,"ENG");
-// 		SetTextColor (hDC, 0);
-// 		SetBkColor (hDC, RGB(255,255,0));
-// 		SetBkMode (hDC, OPAQUE);
-//         TextOut(hDC,160,147,text,strlen(text));
-// 		}
-// 	 }
-//
-// oapiReleaseDC(temps,hDC);
-// if (dockflap){
-// 		if (docked_port)
-// 					oapiBlt(parent->surf,hDockSW1SRF,128,11,74,0,66,46);//a button you can push}
-// 		else
-//  					oapiBlt(parent->surf,hDockSW1SRF,128,11,146,0,66,46);//a button you can push
-// 	}
+HDC hDC=oapiGetDC(temps);
+SelectObject(hDC, hBRUSH_TotalBlack);
+Rectangle(hDC,0,0,202,179);
+SetTextColor(hDC,RGB(0,255,0));
+SetTextAlign(hDC,TA_CENTER);
+SelectObject(hDC,hFNT_Panel);
+SetBkMode(hDC,TRANSPARENT); 
+char text[30];
+sprintf(text, "%0.1f m", cgofs);
+TextOut (hDC, 140, 95, text, strlen (text));
+int loc = 102+min ((int)(cgofs*3.784), 74);
+SelectObject (hDC, hPEN_BYellow);
+MoveToEx (hDC, loc, 93, NULL); LineTo (hDC, loc-3, 86); LineTo (hDC, loc+3, 86); LineTo (hDC, loc, 93);
+
+VESSEL *vessel;
+int docked_port=0;
+if (sensormode) 
+	{vessel=oapiGetVesselInterface(vs->vs);
+	  strcpy(text,vessel->GetName());
+	 TextOut(hDC,130,137,text,strlen(text));
+	 sprintf(text,"PORT %i",vs->port);
+	 TextOut(hDC,130,147,text,strlen(text));
+	 if (vessel->GetDockStatus(vessel->GetDockHandle(vs->port)))
+		{docked_port=1;
+		strcpy(text,"ENG");
+		SetTextColor (hDC, 0);
+		SetBkColor (hDC, RGB(255,255,0));
+		SetBkMode (hDC, OPAQUE);
+        TextOut(hDC,160,147,text,strlen(text));
+		}
+	}
+else {strcpy(text,"LOCAL");
+      TextOut(hDC,130,137,text,strlen(text));
+	 sprintf(text,"PORT %i",portnr);
+	 TextOut(hDC,130,147,text,strlen(text));
+	 if (parent->v->GetDockStatus(parent->v->GetDockHandle(portnr)))
+		{docked_port=1;
+		strcpy(text,"ENG");
+		SetTextColor (hDC, 0);
+		SetBkColor (hDC, RGB(255,255,0));
+		SetBkMode (hDC, OPAQUE);
+        TextOut(hDC,160,147,text,strlen(text));
+		}
+	 }
+
+oapiReleaseDC(temps,hDC);
+if (dockflap){
+		if (docked_port)
+					oapiBlt(parent->surf,hDockSW1SRF,128,11,74,0,66,46);//a button you can push}
+		else   
+ 					oapiBlt(parent->surf,hDockSW1SRF,128,11,146,0,66,46);//a button you can push
+	}
 if (cgswitch)
 	oapiBlt(parent->surf,hDockSW2SRF,18,98,(cgswitch+1)*27,0,27,16);
   
@@ -943,20 +943,20 @@ if (frswitch)
 	oapiBlt(parent->surf,hDockSW2SRF,18,39,(frswitch+1)*27,0,27,16);
 if (*(((Dragonfly*)parent->v)->DC_power)>0)  {
 SURFHANDLE temps=oapiCreateSurface(101,26);
-// HDC hDC=oapiGetDC(temps);
-// SelectObject(hDC, hBRUSH_TotalBlack);
-// Rectangle(hDC,0,0,100,25);
-//
-// SetTextColor(hDC,RGB(0,255,0));
-// SetTextAlign(hDC,TA_CENTER);
-// SelectObject(hDC,hFNT_Panel);
-// SetBkMode(hDC,TRANSPARENT);
-// char text[30];
-// sprintf(text, "NAV1: %5.2f MHz", 108.0+(0.05*frq1));
-// TextOut (hDC, 10, 2, text, strlen (text));
-// sprintf(text, "NAV2: %5.2f MHz", 108.0+(0.05*frq2));
-// TextOut (hDC, 10, 13, text, strlen (text));
-// oapiReleaseDC(temps,hDC);
+HDC hDC=oapiGetDC(temps);
+SelectObject(hDC, hBRUSH_TotalBlack);
+Rectangle(hDC,0,0,100,25);
+
+SetTextColor(hDC,RGB(0,255,0));
+SetTextAlign(hDC,TA_CENTER);
+SelectObject(hDC,hFNT_Panel);
+SetBkMode(hDC,TRANSPARENT); 
+char text[30];
+sprintf(text, "NAV1: %5.2f MHz", 108.0+(0.05*frq1));
+TextOut (hDC, 10, 2, text, strlen (text));
+sprintf(text, "NAV2: %5.2f MHz", 108.0+(0.05*frq2));
+TextOut (hDC, 10, 13, text, strlen (text));
+oapiReleaseDC(temps,hDC);
 oapiBlt(parent->surf,temps,80,20,0,0,80,25);
 oapiDestroySurface(temps);
 }
@@ -1335,10 +1335,10 @@ void ADI::PaintMe()
 	glFlush();
 	glFinish();
 
-// HDC hDC=oapiGetDC(parent->surf);
-//
-// BitBlt(hDC,5,5,130,130,hDC2,15,15,SRCCOPY);//then we bitblt onto the panel. wish there
-// oapiReleaseDC(parent->surf,hDC);		// was a faster way ...
+HDC hDC=oapiGetDC(parent->surf);
+
+BitBlt(hDC,5,5,130,130,hDC2,15,15,SRCCOPY);//then we bitblt onto the panel. wish there
+oapiReleaseDC(parent->surf,hDC);		// was a faster way ...
 
 oapiBlt(parent->surf,hADIBorder,0,0,0,0,140,140,0x0);
 
@@ -1368,24 +1368,24 @@ void Radar::RegisterMe(int index)
 };
 void Radar::PaintMe()
 {
-// HDC hDC=oapiGetDC(parent->surf);
-// HDC hDC2=oapiGetDC(hRadSrfSRF);
-// BitBlt(hDC,0,0,350,296,hDC2,0,0,SRCCOPY);
-//
-// char label[5];
-// SelectObject(hDC, hFNT_Panel);
-// SetBkMode(hDC,TRANSPARENT);
-// SetTextColor(hDC,RGB(0,0,0));
-// SetTextAlign(hDC,TA_CENTER);
-//
-// strcpy(label,"R+");TextOut(hDC,31,58,label,strlen(label));
-// strcpy(label,"R-");TextOut(hDC,31,92,label,strlen(label));
-// strcpy(label,"VS");TextOut(hDC,31,129,label,strlen(label));
-// strcpy(label,"AT1");TextOut(hDC,322,58,label,strlen(label));
-// strcpy(label,"AT2");TextOut(hDC,322,92,label,strlen(label));
-//
-// oapiReleaseDC(parent->surf,hDC);
-// oapiReleaseDC(hRadSrfSRF,hDC2);
+HDC hDC=oapiGetDC(parent->surf);
+HDC hDC2=oapiGetDC(hRadSrfSRF);
+BitBlt(hDC,0,0,350,296,hDC2,0,0,SRCCOPY);
+
+char label[5];
+SelectObject(hDC, hFNT_Panel);
+SetBkMode(hDC,TRANSPARENT); 
+SetTextColor(hDC,RGB(0,0,0));
+SetTextAlign(hDC,TA_CENTER);
+
+strcpy(label,"R+");TextOut(hDC,31,58,label,strlen(label));
+strcpy(label,"R-");TextOut(hDC,31,92,label,strlen(label));
+strcpy(label,"VS");TextOut(hDC,31,129,label,strlen(label));
+strcpy(label,"AT1");TextOut(hDC,322,58,label,strlen(label));
+strcpy(label,"AT2");TextOut(hDC,322,92,label,strlen(label));
+
+oapiReleaseDC(parent->surf,hDC);
+oapiReleaseDC(hRadSrfSRF,hDC2);
   
 
 }
@@ -1402,37 +1402,37 @@ if (*(((Dragonfly*)parent->v)->DC_power)>0)
 	VECTOR3 dist;
 	VECTOR3 pos;
 	if (new_range){new_range=0;
-		// hDC=oapiGetDC(parent->surf);
-		// char label[10];
-		// sprintf(label,"R:%im",range);
-		// SelectObject(hDC,hBRUSH_TotalBlack);
-		// Rectangle(hDC,220,20,270,31);
-		// SelectObject(hDC, hFNT_Panel);
-		// SetBkMode(hDC,TRANSPARENT);
-		// SetTextColor(hDC,RGB(0,255,0));
-		// SetTextAlign(hDC,TA_CENTER);
-		// TextOut(hDC,255,20,label,strlen(label));
-		// oapiReleaseDC(parent->surf,hDC);
+		hDC=oapiGetDC(parent->surf);
+		char label[10];
+		sprintf(label,"R:%im",range);
+		SelectObject(hDC,hBRUSH_TotalBlack);
+		Rectangle(hDC,220,20,270,31);
+		SelectObject(hDC, hFNT_Panel);
+		SetBkMode(hDC,TRANSPARENT); 
+		SetTextColor(hDC,RGB(0,255,0));
+		SetTextAlign(hDC,TA_CENTER);
+		TextOut(hDC,255,20,label,strlen(label));
+		oapiReleaseDC(parent->surf,hDC);
 	};	//draw a new range 
 	if (((Dragonfly*)parent->v)->UY_pos!=last_antena_yaw) {
-		// hDC=oapiGetDC(radar_background);
-		// SelectObject(hDC,hBRUSH_TotalBlack);
-		// SelectObject(hDC,hPEN_NULL);
-		//
-		// Rectangle(hDC,0,0,101,101);
-		// last_antena_yaw=((Dragonfly*)parent->v)->UY_pos;
-		// float yaw=150.0 - ((Dragonfly*)parent->v)->UY_pos*300+15.0;
-		// yaw=yaw/180.0*acos(-1.0);
-		// float yaw1=yaw - 30.0/180.0 *acos(-1.0);
-		// float py1=cos(yaw)*45;
-		// float  px1=sin(yaw)*45;
-		//
-		// float py2=cos(yaw1)*45;
-		// float  px2=sin(yaw1)*45;
-		//
-		// SelectObject(hDC,hBRUSH_FYellow);
-		// Pie(hDC,0,0,100,100,50+px1,50-py1,50+px2,50-py2);
-		// oapiReleaseDC(radar_background,hDC);
+		hDC=oapiGetDC(radar_background);
+		SelectObject(hDC,hBRUSH_TotalBlack);
+		SelectObject(hDC,hPEN_NULL);
+
+		Rectangle(hDC,0,0,101,101);
+		last_antena_yaw=((Dragonfly*)parent->v)->UY_pos;
+		float yaw=150.0 - ((Dragonfly*)parent->v)->UY_pos*300+15.0;
+		yaw=yaw/180.0*acos(-1.0);
+		float yaw1=yaw - 30.0/180.0 *acos(-1.0);
+		float py1=cos(yaw)*45;
+		float  px1=sin(yaw)*45;
+
+		float py2=cos(yaw1)*45;
+		float  px2=sin(yaw1)*45;
+
+		SelectObject(hDC,hBRUSH_FYellow);
+		Pie(hDC,0,0,100,100,50+px1,50-py1,50+px2,50-py2);
+		oapiReleaseDC(radar_background,hDC);
 		oapiBlt(radar_background,hRadBkSRF,0,0,0,0,100,100,0x0);
 	};//new yawed background
 
@@ -1518,32 +1518,32 @@ if ((old_fuel>0)||(parent->v->GetPropellantFlowrate (((Dragonfly*)(parent->v))->
 	fuel = fuel / 4e3; //percentage of qty left;
 //	sprintf(oapiDebugString(),"%f %f",fuel,old_fuel);
 
-	// HDC hDC=oapiGetDC(parent->surf);
-	// SelectObject(hDC, hFNT_Panel);
-	// SetBkMode(hDC,TRANSPARENT);
-	// SetTextColor(hDC,RGB(0,255,0));
-	// SetTextAlign(hDC,TA_CENTER);
-	// SelectObject(hDC,hPEN_NULL);
-	// SelectObject(hDC,hBRUSH_Red);
- //
-	// Rectangle(hDC,22,35,44,45);
-	// Rectangle(hDC,22,56,44,66);
- //
- //
-	// char cbuf[10];
-	// int i;
- //
-	// i = (int)(143.0*fuel);
- //
-	// Rectangle (hDC, 23, 84, 39, 228-i);
-	// SelectObject(hDC,hBRUSH_Green);
-	// Rectangle (hDC, 23, 228-i, 39, 228);
-	// SelectObject(hDC,hBRUSH_Green);
- //    sprintf (cbuf, "%3.1f", 100.0*fuel);
-	// TextOut (hDC, 32, 35, cbuf, strlen(cbuf));
-	// sprintf (cbuf, "%3.2f",old_fuel=parent->v->GetPropellantFlowrate (((Dragonfly*)(parent->v))->ph_main));
-	// TextOut (hDC, 32, 56, cbuf, strlen(cbuf));
-	// oapiReleaseDC(parent->surf,hDC);
+	HDC hDC=oapiGetDC(parent->surf);
+	SelectObject(hDC, hFNT_Panel);
+	SetBkMode(hDC,TRANSPARENT); 
+	SetTextColor(hDC,RGB(0,255,0));
+	SetTextAlign(hDC,TA_CENTER);
+	SelectObject(hDC,hPEN_NULL);
+	SelectObject(hDC,hBRUSH_Red);
+
+	Rectangle(hDC,22,35,44,45);
+	Rectangle(hDC,22,56,44,66);
+
+
+	char cbuf[10];
+	int i;
+
+	i = (int)(143.0*fuel);
+
+	Rectangle (hDC, 23, 84, 39, 228-i);
+	SelectObject(hDC,hBRUSH_Green);
+	Rectangle (hDC, 23, 228-i, 39, 228);
+	SelectObject(hDC,hBRUSH_Green);
+    sprintf (cbuf, "%3.1f", 100.0*fuel);
+	TextOut (hDC, 32, 35, cbuf, strlen(cbuf));
+	sprintf (cbuf, "%3.2f",old_fuel=parent->v->GetPropellantFlowrate (((Dragonfly*)(parent->v))->ph_main));
+	TextOut (hDC, 32, 56, cbuf, strlen(cbuf));
+	oapiReleaseDC(parent->surf,hDC);
 	}
 }
 else

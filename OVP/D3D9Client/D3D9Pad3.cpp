@@ -18,7 +18,7 @@
 void D3D9Pad::ColorCompatibility(bool bEnable)
 {
 #ifdef SKPDBG 
-	Log("ColorCompatibility(%u)", uint32_t(bEnable));
+	Log("ColorCompatibility(%u)", DWORD(bEnable));
 #endif
 	bColorComp = bEnable;
 }
@@ -36,7 +36,7 @@ const FMATRIX4 *D3D9Pad::GetColorMatrix()
 void D3D9Pad::SetColorMatrix(const FMATRIX4 *pMatrix)
 {
 #ifdef SKPDBG 
-	Log("SetColorMatrix(0x%X)", uint32_t(pMatrix));
+	Log("SetColorMatrix(0x%X)", DWORD(pMatrix));
 #endif
 	if (pMatrix) {
 		memcpy_s(&ColorMatrix, sizeof(FMATRIX4), pMatrix, sizeof(FMATRIX4));
@@ -58,7 +58,7 @@ void D3D9Pad::SetColorMatrix(const FMATRIX4 *pMatrix)
 void D3D9Pad::SetBrightness(const FVECTOR4 *pBrightness)
 {
 #ifdef SKPDBG 
-	Log("SetBrightness(0x%X)", uint32_t(pBrightness));
+	Log("SetBrightness(0x%X)", DWORD(pBrightness));
 #endif
 	if (pBrightness == NULL) SetColorMatrix(NULL);
 	else {
@@ -89,7 +89,7 @@ FVECTOR4 D3D9Pad::GetRenderParam(RenderParam param)
 void D3D9Pad::SetRenderParam(RenderParam param, const FVECTOR4 *d)
 {
 #ifdef SKPDBG 
-	Log("SetRenderParam(%u, 0x%X)", param, uint32_t(d));
+	Log("SetRenderParam(%u, 0x%X)", param, DWORD(d));
 #endif
 	if (d == NULL) {
 		switch (param) {
@@ -107,7 +107,7 @@ void D3D9Pad::SetRenderParam(RenderParam param, const FVECTOR4 *d)
 
 // ===============================================================================================
 //
-void D3D9Pad::SetEnable(uint32_t config)
+void D3D9Pad::SetEnable(DWORD config)
 {
 	Change |= SKPCHG_EFFECTS;
 	Enable |= config;
@@ -116,7 +116,7 @@ void D3D9Pad::SetEnable(uint32_t config)
 
 // ===============================================================================================
 //
-void D3D9Pad::ClearEnable(uint32_t config)
+void D3D9Pad::ClearEnable(DWORD config)
 {
 	Change |= SKPCHG_EFFECTS;
 	Enable &= (~config);
@@ -177,7 +177,7 @@ void D3D9Pad::PopWorldTransform()
 void D3D9Pad::SetWorldScaleTransform2D(const FVECTOR2 *scl, const IVECTOR2 *trl)
 {
 #ifdef SKPDBG 
-	Log("SetWorldScaleTransform2D(0x%X, 0x%X)", uint32_t(scl), uint32_t(trl));
+	Log("SetWorldScaleTransform2D(0x%X, 0x%X)", DWORD(scl), DWORD(trl));
 #endif
 	Change |= SKPCHG_TRANSFORM;
 
@@ -200,13 +200,13 @@ void D3D9Pad::SetWorldScaleTransform2D(const FVECTOR2 *scl, const IVECTOR2 *trl)
 
 // ===============================================================================================
 //
-void D3D9Pad::GradientFillRect(const LPRECT R, uint32_t c1, uint32_t c2, bool bVertical)
+void D3D9Pad::GradientFillRect(const LPRECT R, DWORD c1, DWORD c2, bool bVertical)
 {
 #ifdef SKPDBG 
 	Log("GradientFillRect()");
 #endif
 
-	uint32_t a, b, c, d;
+	DWORD a, b, c, d;
 
 	a = d = c1; b = c = c2;
 
@@ -229,17 +229,13 @@ void D3D9Pad::GradientFillRect(const LPRECT R, uint32_t c1, uint32_t c2, bool bV
 
 // ===============================================================================================
 //
-void D3D9Pad::ColorFill(uint32_t color, const LPRECT tgt)
+void D3D9Pad::ColorFill(DWORD color, const LPRECT tgt)
 {
 #ifdef SKPDBG 
 	Log("ColorFill()");
 #endif
 	if (tgt) FillRect(tgt->left, tgt->top, tgt->right, tgt->bottom, SkpColor(color));
 	else FillRect(0, 0, tgt_desc.Width, tgt_desc.Height, SkpColor(color));
-}
-
-RECT _R1(long a, long b, long c, long d) {
-	return { a, b, c, d };
 }
 
 // ===============================================================================================
@@ -273,26 +269,26 @@ void D3D9Pad::StretchRegion(const skpRegion *rgn, const SURFHANDLE hSrc, const L
 	int ty2 = ty3 - (y3 - y2);
 
 	// Corners
-	if (x0 != x1 && y0 != y1) CopyRect(hSrc, ptr(_R1(x0, y0, x1, y1)), tx0, ty0);	// TOP-LEFT
-	if (x2 != x3 && y0 != y1) CopyRect(hSrc, ptr(_R1(x2, y0, x3, y1)), tx2, ty0);	// TOP-RIGHT
-	if (x0 != x1 && y2 != y3) CopyRect(hSrc, ptr(_R1(x0, y2, x1, y3)), tx0, ty2);	// BTM-LEFT
-	if (x2 != x3 && y2 != y3) CopyRect(hSrc, ptr(_R1(x2, y2, x3, y3)), tx2, ty2);	// BTM-RIGHT
+	if (x0 != x1 && y0 != y1) CopyRect(hSrc, ptr(_R(x0, y0, x1, y1)), tx0, ty0);	// TOP-LEFT
+	if (x2 != x3 && y0 != y1) CopyRect(hSrc, ptr(_R(x2, y0, x3, y1)), tx2, ty0);	// TOP-RIGHT
+	if (x0 != x1 && y2 != y3) CopyRect(hSrc, ptr(_R(x0, y2, x1, y3)), tx0, ty2);	// BTM-LEFT
+	if (x2 != x3 && y2 != y3) CopyRect(hSrc, ptr(_R(x2, y2, x3, y3)), tx2, ty2);	// BTM-RIGHT
 
 																					// Sides
-	if (x1 != x2 && y0 != y1) StretchRect(hSrc, ptr(_R1(x1, y0, x2, y1)), ptr(_R1(tx1, ty0, tx2, ty1)));	// TOP
-	if (x1 != x2 && y2 != y3) StretchRect(hSrc, ptr(_R1(x1, y2, x2, y3)), ptr(_R1(tx1, ty2, tx2, ty3)));	// BOTTOM
-	if (x0 != x1 && y1 != y2) StretchRect(hSrc, ptr(_R1(x0, y1, x1, y2)), ptr(_R1(tx0, ty1, tx1, ty2)));	// LEFT
-	if (x2 != x3 && y1 != y2) StretchRect(hSrc, ptr(_R1(x2, y1, x3, y2)), ptr(_R1(tx2, ty1, tx3, ty2)));	// RIGHT
+	if (x1 != x2 && y0 != y1) StretchRect(hSrc, ptr(_R(x1, y0, x2, y1)), ptr(_R(tx1, ty0, tx2, ty1)));	// TOP
+	if (x1 != x2 && y2 != y3) StretchRect(hSrc, ptr(_R(x1, y2, x2, y3)), ptr(_R(tx1, ty2, tx2, ty3)));	// BOTTOM
+	if (x0 != x1 && y1 != y2) StretchRect(hSrc, ptr(_R(x0, y1, x1, y2)), ptr(_R(tx0, ty1, tx1, ty2)));	// LEFT
+	if (x2 != x3 && y1 != y2) StretchRect(hSrc, ptr(_R(x2, y1, x3, y2)), ptr(_R(tx2, ty1, tx3, ty2)));	// RIGHT
 
 	// Center
-	StretchRect(hSrc, ptr(_R1(x1, y1, x2, y2)), ptr(_R1(tx1, ty1, tx2, ty2)));
+	StretchRect(hSrc, ptr(_R(x1, y1, x2, y2)), ptr(_R(tx1, ty1, tx2, ty2)));
 }
 
 // ===============================================================================================
 //
-void D3D9Pad::Clear(uint32_t color, bool bColor, bool bDepth)
+void D3D9Pad::Clear(DWORD color, bool bColor, bool bDepth)
 {
-	uint32_t flags = 0;
+	DWORD flags = 0;
 	if (bColor) flags |= D3DCLEAR_TARGET;
 	if (bDepth) flags |= D3DCLEAR_ZBUFFER;
 	pDev->Clear(0, NULL, flags, color, 1.0f, 0);

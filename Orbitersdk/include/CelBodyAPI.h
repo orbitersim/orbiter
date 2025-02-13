@@ -425,7 +425,7 @@ public:
 	 * \note For planets, it returns the handles of the moons.
 	 * \note If idx >= number of children, the function returns NULL.
 	 */
-	OBJHANDLE GetChild (uint32_t idx) const;
+	OBJHANDLE GetChild (DWORD idx) const;
 
 	/**
 	 * \brief Returns the siderial period of the celestial body
@@ -573,7 +573,7 @@ public:
 		double f107bar;   ///< average F10.7 flux over recent period
 		double f107;      ///< current F10.7 flux
 		double ap;        ///< magnetic index
-		uint32_t  flag;      ///< parameter flags (see \ref PRM_IN_FLAG)
+		DWORD  flag;      ///< parameter flags (see \ref PRM_IN_FLAG)
 	};
 
 	/**

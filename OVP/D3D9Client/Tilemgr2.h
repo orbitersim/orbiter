@@ -177,7 +177,7 @@ protected:
 
 	bool	CreateTexture(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DTEXTURE9 pPre, LPDIRECT3DTEXTURE9 *pTex);
 	bool	LoadTextureFile(const char *path, LPDIRECT3DTEXTURE9 *pPre);
-	bool	LoadTextureFromMemory(void *data, uint32_t ndata, LPDIRECT3DTEXTURE9 *pPre);
+	bool	LoadTextureFromMemory(void *data, DWORD ndata, LPDIRECT3DTEXTURE9 *pPre);
 
 	VBMESH *CreateMesh_quadpatch (int grdlat, int grdlng, float *elev=0, double elev_scale = 1.0, double globelev=0.0,
 		const TEXCRDRANGE2 *range=0, bool shift_origin=false, VECTOR3 *shift=0, double bb_excess=0.0);
@@ -239,7 +239,7 @@ public:
 	void Unqueue (TileManager2Base *mgr);
 	// removes all tiles of a manager from the load queue (caller must own hLoadMutex)
 
-	inline static uint32_t WaitForMutex() { return ::WaitForSingleObject (hLoadMutex, INFINITE); }
+	inline static DWORD WaitForMutex() { return ::WaitForSingleObject (hLoadMutex, INFINITE); }
 	inline static BOOL ReleaseMutex() { return ::ReleaseMutex (hLoadMutex); }
 
 private:
@@ -289,7 +289,7 @@ public:
 		bool bLights;         ///< render planet night lights?
 		bool bCloudShadow;    ///< render cloud shadows?
 		double lightfac;      ///< city light brightness factor
-		uint32_t tileLoadFlags;  ///< 0x0001: load tiles from directory tree
+		DWORD tileLoadFlags;  ///< 0x0001: load tiles from directory tree
 		                      ///< 0x0002: load tiles from compressed archive
 	} cprm;
 

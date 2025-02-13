@@ -194,7 +194,7 @@ InterpreterList::~InterpreterList ()
 
 void InterpreterList::Update (double simt, double simdt, double mjd)
 {
-	uint32_t i, j;
+	DWORD i, j;
 	for (i = 0; i < nlist; i++) {
 		for (j = 0; j < list[i].nenv; j++) {
 			Environment *env = list[i].env[j];
@@ -240,7 +240,7 @@ InterpreterList::Environment *InterpreterList::AddInterpreter (OBJHANDLE hV)
 	return env;
 }
 
-bool InterpreterList::DeleteInterpreter (OBJHANDLE hV, uint32_t idx)
+bool InterpreterList::DeleteInterpreter (OBJHANDLE hV, DWORD idx)
 {
 	VesselInterp *vi = FindVesselInterp (hV);
 	if (!vi || idx >= vi->nenv) return false;
@@ -251,7 +251,7 @@ bool InterpreterList::DeleteInterpreter (OBJHANDLE hV, uint32_t idx)
 
 	Environment **tmp = NULL;
 	if (vi->nenv > 1) {
-		uint32_t i, j;
+		DWORD i, j;
 		tmp = new Environment*[vi->nenv-1];
 		for (i = j = 0; i < vi->nenv; i++)
 			if (i != idx) tmp[j++] = vi->env[i];
@@ -267,7 +267,7 @@ bool InterpreterList::DeleteInterpreters (OBJHANDLE hV)
 	VesselInterp *vi = FindVesselInterp (hV);
 	if (!vi) return false;
 
-	uint32_t i;
+	DWORD i;
 	for (i = 0; i < vi->nenv; i++) {
 		Environment *env = vi->env[i];
 		delete env;
@@ -282,7 +282,7 @@ bool InterpreterList::DeleteInterpreters (OBJHANDLE hV)
 
 void InterpreterList::DeleteList ()
 {
-	uint32_t i, j;
+	DWORD i, j;
 	for (j = 0; j < nlist; j++) {
 		VesselInterp *vi = list+j;
 		for (i = 0; i < vi->nenv; i++) {
@@ -297,20 +297,20 @@ void InterpreterList::DeleteList ()
 
 InterpreterList::VesselInterp *InterpreterList::FindVesselInterp (OBJHANDLE hV)
 {
-	uint32_t i;
+	DWORD i;
 	for (i = 0; i < nlist; i++)
 		if (list[i].hVessel == hV) return list+i;
 	return NULL;
 }
 
-InterpreterList::Environment *InterpreterList::FindInterpreter (OBJHANDLE hV, uint32_t idx)
+InterpreterList::Environment *InterpreterList::FindInterpreter (OBJHANDLE hV, DWORD idx)
 {
 	VesselInterp *vi = FindVesselInterp (hV);
 	if (!vi) return NULL;
 	return (vi->nenv > idx ? vi->env[idx] : NULL);
 }
 
-uint32_t InterpreterList::InterpreterCount (OBJHANDLE hV)
+DWORD InterpreterList::InterpreterCount (OBJHANDLE hV)
 {
 	VesselInterp *vi = FindVesselInterp (hV);
 	return (vi ? vi->nenv : 0);

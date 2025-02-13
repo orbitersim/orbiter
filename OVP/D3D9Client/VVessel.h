@@ -64,20 +64,20 @@ public:
 	 */
 	static void GlobalExit ();
 
-	void clbkEvent(uint32_t evnt, DWORD_PTR context);
+	void clbkEvent(DWORD evnt, DWORD_PTR context);
 
 	MESHHANDLE GetMesh (UINT idx);
 	bool GetMinMaxDistance(float *zmin, float *zmax, float *dmin);
 	void GetMinMaxLightDist(float *mind, float *maxd);
-	int	 GetMatrixTransform(gcCore::MatrixId matrix_id, uint32_t mesh, uint32_t group, FMATRIX4 *pMat);
-	int  SetMatrixTransform(gcCore::MatrixId matrix_id, uint32_t mesh, uint32_t group, const FMATRIX4 *pMat);
+	int	 GetMatrixTransform(gcCore::MatrixId matrix_id, DWORD mesh, DWORD group, FMATRIX4 *pMat);
+	int  SetMatrixTransform(gcCore::MatrixId matrix_id, DWORD mesh, DWORD group, const FMATRIX4 *pMat);
 	void UpdateBoundingBox();
 	bool IsInsideShadows();
 	bool IntersectShadowVolume();
 	bool IntersectShadowTarget();
 	void ReloadTextures();
 	
-	inline uint32_t GetMeshCount();
+	inline DWORD GetMeshCount();
 
 	void PreInitObject();
 
@@ -127,8 +127,8 @@ public:
 	void RenderGrapplePoints (LPDIRECT3DDEVICE9 dev);
 	void RenderGroundShadow (LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float depth);
 	void RenderVectors (LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp);
-	bool RenderENVMap (LPDIRECT3DDEVICE9 pDev, uint32_t cnt=2, uint32_t flags=0xFF);
-	bool ProbeIrradiance(LPDIRECT3DDEVICE9 pDev, uint32_t cnt = 2, uint32_t flags = 0xFF);
+	bool RenderENVMap (LPDIRECT3DDEVICE9 pDev, DWORD cnt=2, DWORD flags=0xFF);
+	bool ProbeIrradiance(LPDIRECT3DDEVICE9 pDev, DWORD cnt = 2, DWORD flags = 0xFF);
 
 	LPDIRECT3DCUBETEXTURE9 GetEnvMap(int idx);
 	LPDIRECT3DCUBETEXTURE9 GetIrradEnv() { return pIrdEnv; }

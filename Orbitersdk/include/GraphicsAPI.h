@@ -13,7 +13,7 @@
 
 #include "Orbitersdk.h"
 #include <stdio.h>
-#include <SDL3/SDL.h>
+#include <windows.h>
 
 #ifndef _WIN32
 typedef void *HDC;
@@ -25,7 +25,7 @@ typedef void *HDC;
 
 /// Max. level of detail for rendering planetary surfaces
 /// \par Parameter type:
-///   uint32_t
+///   DWORD
 #define CFGPRM_SURFACEMAXLEVEL 0x0001
 
 /// Flag for rendering planet surfaces with specular reflections
@@ -75,7 +75,7 @@ typedef void *HDC;
 /// Bit flag for "planetarium mode" elements.
 /// For a description of the available bit flags, see \ref plnflag
 /// \par Parameter type:
-///   uint32_t
+///   DWORD
 #define CFGPRM_PLANETARIUMFLAG 0x000B
 
 /**
@@ -89,7 +89,7 @@ typedef void *HDC;
  * Ambient light level (brightness of unlit nonemissive surfaces)
  * in the range 0-255.
  * \par Parameter type:
- *   uint32_t
+ *   DWORD
  */
 #define CFGPRM_AMBIENTLEVEL    0x000E
 
@@ -192,7 +192,7 @@ typedef void *HDC;
  * - bit 1: load from individual tiles in directory tree
  * - bit 2: load from compressed archive file
  * \par Parameter type:
- *   uint32_t
+ *   DWORD
  */
 #define CFGPRM_TILELOADFLAGS 0x001C
 
@@ -221,7 +221,7 @@ typedef void *HDC;
  * Bit flags for force vector display options.
  * For a description of the available bit flags, see \ref bfvflag
  * \par Parameter type:
- *   uint32_t
+ *   DWORD
  */
 #define CFGPRM_FORCEVECTORFLAG 0x0020
 
@@ -243,7 +243,7 @@ typedef void *HDC;
  * Bit flags for frame axis display options.
  * For a description of the available bit flags, see \ref favflag
  * \par Parameter type:
- *   uint32_t
+ *   DWORD
  */
 #define CFGPRM_FRAMEAXISFLAG 0x0023
 
@@ -265,7 +265,7 @@ typedef void *HDC;
   * Bit flags for surface and object marker display options.
   * For a description of the available bit flags, see \ref mkrflag
   * \par Parameter type:
-  *   uint32_t
+  *   DWORD
   */
 #define CFGPRM_SURFMARKERFLAG 0x0026
 /// @}
@@ -337,7 +337,7 @@ typedef void *HDC;
 #define BLT_TGTCOLORKEY 0x2 ///< Use target surface colour key for transparency
 /// @}
 
-const unsigned int TEXIDX_MFD0 = (unsigned int)(-1) - MAXMFD;
+const UINT TEXIDX_MFD0 = (UINT)(-1) - MAXMFD;
 
 struct StarRenderPrm {
 	double mag_hi;
@@ -373,12 +373,12 @@ namespace oapi {
  * \brief Structure for defining a raw image.
  */
 struct ImageData {
-	uint8_t *data;    ///< pointer to image data
-	unsigned int bufsize;  ///< allocated size of \a data
-	unsigned int width;    ///< image width [pixel]
-	unsigned int height;   ///< image height [pixel]
-	unsigned int bpp;      ///< bits per pixel
-	unsigned int stride;   ///< number of bytes per scan line
+	BYTE *data;    ///< pointer to image data
+	UINT bufsize;  ///< allocated size of \a data
+	UINT width;    ///< image width [pixel]
+	UINT height;   ///< image height [pixel]
+	UINT bpp;      ///< bits per pixel
+	UINT stride;   ///< number of bytes per scan line
 };
 
 class Sketchpad;
@@ -457,7 +457,7 @@ public:
 	 * \param item option item identifier, see \ref optitem
 	 * \default None.
 	 */
-	virtual void clbkOptionChanged(uint32_t cat, uint32_t item) {}
+	virtual void clbkOptionChanged(DWORD cat, DWORD item) {}
 
 	/**
 	 * \brief Print multiple debug strings onto a screen, will be cleared when printed on screen.
@@ -501,7 +501,7 @@ public:
 	 *   clbkLoadTexture should first scan the repository. If the texture is
 	 *   already present, the function should just return a pointer to it.
 	 */
-	virtual SURFHANDLE clbkLoadTexture (const char *fname, uint32_t flags = 0) { return NULL; }
+	virtual SURFHANDLE clbkLoadTexture (const char *fname, DWORD flags = 0) { return NULL; }
 
 	/**
 	 * \brief Load a surface from file into a surface object, and return a SURFHANDLE for it.
@@ -511,9 +511,9 @@ public:
 	 * \note If the request refers to a static surface that has already be loaded, or if the
 	 *   client buffers the unmodified surfaces after loading, it can simply return a handle to
 	 *   the existing surface object, instead of reading it again from file.
-	 * \sa oapiCreateSurface(uint32_t,uint32_t,uint32_t)
+	 * \sa oapiCreateSurface(DWORD,DWORD,DWORD)
 	 */
-	virtual SURFHANDLE clbkLoadSurface (const char *fname, uint32_t attrib, bool bPath = false)
+	virtual SURFHANDLE clbkLoadSurface (const char *fname, DWORD attrib, bool bPath = false)
 	{ return NULL; }
 
 	/**
@@ -551,7 +551,7 @@ public:
 	 * \return Should return \e true if operation successful, \e false otherwise.
 	 * \default None, returns \e false.
 	 */
-	virtual bool clbkSetMeshTexture (DEVMESHHANDLE hMesh, uint32_t texidx, SURFHANDLE tex) { return false; }
+	virtual bool clbkSetMeshTexture (DEVMESHHANDLE hMesh, DWORD texidx, SURFHANDLE tex) { return false; }
 
 	/**
 	 * \brief Replace properties of an existing mesh material.
@@ -562,8 +562,8 @@ public:
 	 *   the following codes: 0="success", 3="invalid mesh handle", 4="material index out of range"
 	 * \default None, returns 2 ("client does not support operation").
 	 */
-	virtual int clbkSetMeshMaterial (DEVMESHHANDLE hMesh, uint32_t matidx, const MATERIAL *mat) { return 2; }
-	virtual int clbkSetMeshMaterialEx(DEVMESHHANDLE hMesh, uint32_t matidx, MatProp prp, const oapi::FVECTOR4* in) { return 2; }
+	virtual int clbkSetMeshMaterial (DEVMESHHANDLE hMesh, DWORD matidx, const MATERIAL *mat) { return 2; }
+	virtual int clbkSetMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp prp, const oapi::FVECTOR4* in) { return 2; }
 
 	/**
 	 * \brief Retrieve the properties of one of the mesh materials.
@@ -573,8 +573,8 @@ public:
 	 * \return true if successful, false on error (index out of range)
 	 * \default None, returns 2 ("client does not support operation").
 	 */
-	virtual int clbkMeshMaterial (DEVMESHHANDLE hMesh, uint32_t matidx, MATERIAL *mat) { return 2; }
-	virtual int clbkMeshMaterialEx(DEVMESHHANDLE hMesh, uint32_t matidx, MatProp prp, oapi::FVECTOR4* out) { return 2; }
+	virtual int clbkMeshMaterial (DEVMESHHANDLE hMesh, DWORD matidx, MATERIAL *mat) { return 2; }
+	virtual int clbkMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp prp, oapi::FVECTOR4* out) { return 2; }
 
 	/**
      * \brief Set custom properties for a device-specific mesh.
@@ -590,7 +590,7 @@ public:
 	 * if value<>0 modulate (mix) material alpha values with texture alpha maps.
 	 * \default None, returns \e false.
 	 */
-	virtual bool clbkSetMeshProperty (DEVMESHHANDLE hMesh, uint32_t property, uint32_t value) { return false; }
+	virtual bool clbkSetMeshProperty (DEVMESHHANDLE hMesh, DWORD property, DWORD value) { return false; }
 
 	// ==================================================================
 	/// \name Visual object interface
@@ -653,7 +653,7 @@ public:
 	 *   object for which the message was created.
 	 * \sa RegisterVisObject, UnregisterVisObject, visevent
 	 */
-	virtual int clbkVisEvent (OBJHANDLE hObj, VISHANDLE vis, uint32_t msg, size_t context);
+	virtual int clbkVisEvent (OBJHANDLE hObj, VISHANDLE vis, DWORD msg, DWORD_PTR context);
 
 	/**
 	 * \brief Return a mesh handle for a visual, defined by its index
@@ -665,7 +665,7 @@ public:
 	 * \note Orbiter calls this method in response to a \ref VESSEL::GetMesh
 	 *   call by an vessel module.
 	 */
-	virtual MESHHANDLE clbkGetMesh (VISHANDLE vis, unsigned int idx) { return NULL; }
+	virtual MESHHANDLE clbkGetMesh (VISHANDLE vis, UINT idx) { return NULL; }
 
 	/**
 	 * \brief Mesh group data retrieval interface for device-specific meshes.
@@ -676,7 +676,7 @@ public:
 	 * \return Should return 0 on success, or error flags > 0.
 	 * \default None, returns -2.
 	 */
-	virtual int clbkGetMeshGroup (DEVMESHHANDLE hMesh, uint32_t grpidx, GROUPREQUESTSPEC *grs) { return -2; }
+	virtual int clbkGetMeshGroup (DEVMESHHANDLE hMesh, DWORD grpidx, GROUPREQUESTSPEC *grs) { return -2; }
 
 	/**
 	 * \brief Mesh group editing interface for device-specific meshes.
@@ -690,7 +690,7 @@ public:
 	 *   include vertex values, index lists, texture and material indices,
 	 *   and user flags.
 	 */
-	virtual int clbkEditMeshGroup (DEVMESHHANDLE hMesh, uint32_t grpidx, GROUPEDITSPEC *ges) { return -2; }
+	virtual int clbkEditMeshGroup (DEVMESHHANDLE hMesh, DWORD grpidx, GROUPEDITSPEC *ges) { return -2; }
 	//@}
 
 	// ==================================================================
@@ -788,7 +788,40 @@ public:
 	/**
 	 * \brief Returns the handle of the main render window.
 	 */
-	SDL_Window* GetRenderWindow () const { return hRenderWnd; }
+	HWND GetRenderWindow () const { return hRenderWnd; }
+
+	/**
+	 * \brief Render window message handler
+	 *
+	 * Derived classes should also call the base class method to allow
+	 * default message processing.
+	 * \param hWnd render window handle
+	 * \param uMsg Windows message identifier
+	 * \param wParam WPARAM message parameter
+	 * \param lParam LPARAM message parameter
+	 * \return The return value depends on the message being processed.
+	 * \note This is the standard Windows message handler for the render
+	 *   window.
+	 * \note This method currently intercepts only the WM_CLOSE and WM_DESTROY
+	 *   messages, and passes everything else to the Orbiter core message
+	 *   handler.
+	 */
+	virtual LRESULT RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+	/**
+	 * \brief Message handler for 'video' tab in Orbiter Launchpad dialog
+	 *
+	 * Overload this method to display and retrieve video parameters using
+	 * the Launchpad video tab. This method acts like a standard Windows dialog
+	 * message handler.
+	 * \param hWnd window handle for video tab
+	 * \param uMsg Windows message
+	 * \param wParam WPARAM message value
+	 * \param lParam LPARAM message value
+	 * \return The return value depends on the message type and the action taken.
+	 * \default Do nothing, return FALSE.
+	 */
+	virtual INT_PTR LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	/**
 	 * \brief Structure containing default video options, as stored in
@@ -820,6 +853,20 @@ public:
 	inline VIDEODATA *GetVideoData() { return &VideoData; }
 
 	/**
+	 * \brief returns a list of popup windows owned by the render window.
+	 * \param [out] hPopupWnd on exit, points to a list of window handles
+	 * \return Number of entries in the list.
+	 * \note The list returned by this method contains the handles of 
+	 *   popup windows that are to be rendered on top of the render viewport
+	 *   (e.g. dialog boxes).
+	 * \note A client can use this list if it requires a special method of
+	 *   displaying the popup windows. Typically, this is the case in fullscreen
+	 *   render modes, where the dialog contents may need to be blitted manually
+	 *   into the render surface.
+	 */
+	DWORD GetPopupList (const HWND **hPopupWnd) const;
+
+	/**
 	 * \brief Fullscreen mode flag
 	 * \return true if the client is set up for running in fullscreen
 	 *   mode, false for windowed mode.
@@ -837,7 +884,7 @@ public:
 	 *   clients can also return smaller values if they only use part of the
 	 *   screen area for scene rendering.
 	 */
-	virtual void clbkGetViewportSize (uint32_t *width, uint32_t *height) const = 0;
+	virtual void clbkGetViewportSize (DWORD *width, DWORD *height) const = 0;
 
 	/**
 	 * \brief Returns a specific render parameter
@@ -846,7 +893,7 @@ public:
 	 * \return true if the specified parameter is supported by the client,
 	 *    false if not.
 	 */
-	virtual bool clbkGetRenderParam (uint32_t prm, uint32_t *value) const = 0;
+	virtual bool clbkGetRenderParam (DWORD prm, DWORD *value) const = 0;
 
 	/**
 	 * \brief Returns a pointer to an Orbiter configuration parameter.
@@ -864,7 +911,7 @@ public:
 	 * double lightscale = *(double*)GetConfigParam (CFGPRM_SURFACELIGHTBRT);
 	 * \endcode
 	 */
-	const void *GetConfigParam (uint32_t paramtype) const;
+	const void *GetConfigParam (DWORD paramtype) const;
 
 	/**
 	 * \brief Return the full path for a texture file.
@@ -921,7 +968,7 @@ public:
 	 * \param tile pointer to a list of tile specifications, or NULL if none defined
 	 * \return number of surface tiles defined for the base
 	 */
-	uint32_t GetBaseTileList (OBJHANDLE hBase, const SurftileSpec **tile) const;
+	DWORD GetBaseTileList (OBJHANDLE hBase, const SurftileSpec **tile) const;
 
 	/**
 	 * \brief Returns meshes for generic base objects
@@ -936,7 +983,7 @@ public:
 	 *   after shadows, and compressed into one mesh each, such that all objects with
 	 *   the same textures are merged into a single group.
 	 */
-	void GetBaseStructures (OBJHANDLE hBase, MESHHANDLE **mesh_bs, uint32_t *nmesh_bs, MESHHANDLE **mesh_as, uint32_t *nmesh_as) const;
+	void GetBaseStructures (OBJHANDLE hBase, MESHHANDLE **mesh_bs, DWORD *nmesh_bs, MESHHANDLE **mesh_as, DWORD *nmesh_as) const;
 
 	/**
 	 * \brief Returns base meshes in a format that can be used for shadow projections.
@@ -951,7 +998,7 @@ public:
 	 * \note the \e elev list is filled with elevation offsets of each object from the
 	 *   reference plane of the base.
 	 */
-	void GetBaseShadowGeometry (OBJHANDLE hBase, MESHHANDLE **mesh_sh, double **elev, uint32_t *nmesh_sh) const;
+	void GetBaseShadowGeometry (OBJHANDLE hBase, MESHHANDLE **mesh_sh, double **elev, DWORD *nmesh_sh) const;
 
 	/**
 	 * \brief Render an instrument panel in cockpit view as a 2D billboard.
@@ -1014,7 +1061,7 @@ public:
 	 *  - OAPISURFACE_MIPMAPS: create a full chain of mipmaps for the surface if possible
 	 *  - OAPISURFACE_NOALPHA: create a surface without an alpha channel
 	 */
-	virtual SURFHANDLE clbkCreateSurfaceEx (uint32_t w, uint32_t h, uint32_t attrib)
+	virtual SURFHANDLE clbkCreateSurfaceEx (DWORD w, DWORD h, DWORD attrib)
 	{ return NULL; }
 
 	/**
@@ -1034,7 +1081,7 @@ public:
 	 *   surface with the same pixel format.
 	 * \sa clbkCreateTexture, clbkReleaseSurface
 	 */
-	virtual SURFHANDLE clbkCreateSurface (uint32_t w, uint32_t h, SURFHANDLE hTemplate = NULL)
+	virtual SURFHANDLE clbkCreateSurface (DWORD w, DWORD h, SURFHANDLE hTemplate = NULL)
 	{ return NULL; }
 
 	/**
@@ -1053,7 +1100,7 @@ public:
 	 *   should return NULL.
 	 * \sa clbkCreateSurface, clbkReleaseSurface
 	 */
-	virtual SURFHANDLE clbkCreateTexture (uint32_t w, uint32_t h) { return NULL; }
+	virtual SURFHANDLE clbkCreateTexture (DWORD w, DWORD h) { return NULL; }
 
 	/**
 	 * \brief Create an offscreen surface from a bitmap
@@ -1064,7 +1111,7 @@ public:
 	 * \note The reference counter for the new surface is set to 1.
 	 * \sa clbkIncrSurfaceRef, clbkReleaseSurface
 	 */
-	virtual SURFHANDLE clbkCreateSurface (SDL_Surface* hBmp);
+	virtual SURFHANDLE clbkCreateSurface (HBITMAP hBmp);
 
 	/**
 	 * \brief Increment the reference counter of a surface.
@@ -1096,7 +1143,7 @@ public:
 	 * \default Sets w and h to 0 and returns false.
 	 * \sa clbkCreateSurface
 	 */
-	virtual bool clbkGetSurfaceSize (SURFHANDLE surf, uint32_t *w, uint32_t *h)
+	virtual bool clbkGetSurfaceSize (SURFHANDLE surf, DWORD *w, DWORD *h)
 	{ *w = *h = 0; return false; }
 
 	/**
@@ -1107,7 +1154,7 @@ public:
 	 * \note Derived classes should overload this method if the renderer
 	 *   supports colour key transparency for surfaces.
 	 */
-	virtual bool clbkSetSurfaceColourKey (SURFHANDLE surf, uint32_t ckey) { return false; }
+	virtual bool clbkSetSurfaceColourKey (SURFHANDLE surf, DWORD ckey) { return false; }
 
 	/**
 	 * \brief Convert an RGB colour triplet into a device-specific colour value.
@@ -1118,12 +1165,12 @@ public:
 	 * \note Derived classes should overload this method to convert RGB colour
 	 *   definitions into device-compatible colour values, taking into account
 	 *   the colour depth of the render device etc.
-	 * \default Packs the RGB values into a uint32_t of the form 0x00RRGGBB, with
+	 * \default Packs the RGB values into a DWORD of the form 0x00RRGGBB, with
 	 *   8 bits per colour component.
 	 * \sa clbkFillSurface
 	 */
-	virtual uint32_t clbkGetDeviceColour (uint8_t r, uint8_t g, uint8_t b)
-	{ return ((uint32_t)r << 16) + ((uint32_t)g << 8) + (uint32_t)b; }
+	virtual DWORD clbkGetDeviceColour (BYTE r, BYTE g, BYTE b)
+	{ return ((DWORD)r << 16) + ((DWORD)g << 8) + (DWORD)b; }
 	// @}
 
 	// ==================================================================
@@ -1147,9 +1194,9 @@ public:
 	 *   <tr><td>BLT_TGTCOLORKEY</td><td>Use the colour key defined by the target surface for transparency</td></tr>
 	 *   </table>
 	 *   If a client doesn't support some of the flags, it should quietly ignore it.
-	 * \sa clbkBlt(SURFHANDLE,uint32_t,uint32_t,SURFHANDLE,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t)
+	 * \sa clbkBlt(SURFHANDLE,DWORD,DWORD,SURFHANDLE,DWORD,DWORD,DWORD,DWORD,DWORD)
 	 */
-	virtual bool clbkBlt (SURFHANDLE tgt, uint32_t tgtx, uint32_t tgty, SURFHANDLE src, uint32_t flag = 0) const
+	virtual bool clbkBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src, DWORD flag = 0) const
 	{ return false; }
 
 	/**
@@ -1173,9 +1220,9 @@ public:
 	 *   <tr><td>BLT_TGTCOLORKEY</td><td>Use the colour key defined by the target surface for transparency</td></tr>
 	 *   </table>
 	 *   If a client doesn't support some of the flags, it should quietly ignore it.
-	 * \sa clbkBlt(SURFHANDLE,uint32_t,uint32_t,SURFHANDLE,uint32_t)
+	 * \sa clbkBlt(SURFHANDLE,DWORD,DWORD,SURFHANDLE,DWORD)
 	 */
-	virtual bool clbkBlt (SURFHANDLE tgt, uint32_t tgtx, uint32_t tgty, SURFHANDLE src, uint32_t srcx, uint32_t srcy, uint32_t w, uint32_t h, uint32_t flag = 0) const
+	virtual bool clbkBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src, DWORD srcx, DWORD srcy, DWORD w, DWORD h, DWORD flag = 0) const
 	{ return false; }
 
 	/**
@@ -1195,11 +1242,11 @@ public:
 	 * \default None, returns false.
 	 * \note By convention, tgt==NULL is valid and refers to the primary render
 	 *   surface (e.g. for copying 2-D overlay surfaces).
-	 * \sa clbkBlt(SURFHANDLE,uint32_t,uint32_t,SURFHANDLE,uint32_t),
-	 *   clbkBlt(SURFHANDLE,uint32_t,uint32_t,SURFHANDLE,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t)
+	 * \sa clbkBlt(SURFHANDLE,DWORD,DWORD,SURFHANDLE,DWORD),
+	 *   clbkBlt(SURFHANDLE,DWORD,DWORD,SURFHANDLE,DWORD,DWORD,DWORD,DWORD,DWORD)
 	 */
-	virtual bool clbkScaleBlt (SURFHANDLE tgt, uint32_t tgtx, uint32_t tgty, uint32_t tgtw, uint32_t tgth,
-		                       SURFHANDLE src, uint32_t srcx, uint32_t srcy, uint32_t srcw, uint32_t srch, uint32_t flag = 0) const
+	virtual bool clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgtw, DWORD tgth,
+		                       SURFHANDLE src, DWORD srcx, DWORD srcy, DWORD srcw, DWORD srch, DWORD flag = 0) const
 	{ return false; }
 
 	/**
@@ -1242,9 +1289,9 @@ public:
 	 * \default None, returns false.
 	 * \note Parameter col is a device-dependent colour value
 	 *   (see \ref clbkGetDeviceColour).
-	 * \sa clbkFillSurface(SURFHANDLE,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t)
+	 * \sa clbkFillSurface(SURFHANDLE,DWORD,DWORD,DWORD,DWORD,DWORD)
 	 */
-	virtual bool clbkFillSurface (SURFHANDLE surf, uint32_t col) const
+	virtual bool clbkFillSurface (SURFHANDLE surf, DWORD col) const
 	{ return false; }
 
 	/**
@@ -1259,9 +1306,9 @@ public:
 	 * \default None, returns false.
 	 * \note Parameter col is a device-dependent colour value
 	 *   (see \ref clbkGetDeviceColour).
-	 * \sa clbkFillSurface(SURFHANDLE,uint32_t)
+	 * \sa clbkFillSurface(SURFHANDLE,DWORD)
 	 */
-	virtual bool clbkFillSurface (SURFHANDLE surf, uint32_t tgtx, uint32_t tgty, uint32_t w, uint32_t h, uint32_t col) const
+	virtual bool clbkFillSurface (SURFHANDLE surf, DWORD tgtx, DWORD tgty, DWORD w, DWORD h, DWORD col) const
 	{ return false; }
 
 	/**
@@ -1276,7 +1323,7 @@ public:
 	 * \note The source bitmap area is stretched as required to fit the area of
 	 *   the target surface.
 	 */
-	virtual bool clbkCopyBitmap (SURFHANDLE pdds, SDL_Surface* hbm, int x, int y, int dx, int dy);
+	virtual bool clbkCopyBitmap (SURFHANDLE pdds, HBITMAP hbm, int x, int y, int dx, int dy);
 	// @}
 
 
@@ -1337,7 +1384,7 @@ public:
 	 * \default None, returns NULL.
 	 * \sa clbkReleasePen, oapi::Pen
 	 */
-	virtual Pen *clbkCreatePen (int style, int width, uint32_t col) const { return NULL; }
+	virtual Pen *clbkCreatePen (int style, int width, DWORD col) const { return NULL; }
 
 	/**
 	 * \brief De-allocate a pen resource.
@@ -1354,7 +1401,7 @@ public:
 	 * \default None, returns NULL.
 	 * \sa clbkReleaseBrush, oapi::Brush
 	 */
-	virtual Brush *clbkCreateBrush (uint32_t col) const { return NULL; }
+	virtual Brush *clbkCreateBrush (DWORD col) const { return NULL; }
 
 	/**
 	 * \brief De-allocate a brush resource.
@@ -1364,6 +1411,34 @@ public:
 	 */
 	virtual void clbkReleaseBrush (Brush *brush) const {}
 	//@}
+
+
+	// ==================================================================
+	/// \name GDI-related methods
+	// @{
+
+	/**
+	 * \brief Return a Windows graphics device interface handle for a surface
+	 * \param surf surface handle
+	 * \return GDI handle, or NULL on failure
+	 * \default None, returns NULL.
+	 * \note Clients which can obtain a Windows GDI handle for a surface should
+	 *   overload this method.
+	 * \todo This method should be moved into the GDIClient class
+	 */
+	virtual HDC clbkGetSurfaceDC (SURFHANDLE surf) { return NULL; }
+
+	/**
+	 * \brief Release a Windows graphics device interface
+	 * \param surf surface handle
+	 * \param hDC GDI handle
+	 * \default None.
+	 * \note Clients which can obtain a Windows GDI handle for a surface should
+	 *   overload this method to release an existing GDI.
+	 * \todo This method should be moved into the GDIClient class
+	 */
+	virtual void clbkReleaseSurfaceDC (SURFHANDLE surf, HDC hDC) {}
+	// @}
 
 	/**
 	 * \brief Constructs a synthetic elevation grid for a tile by interpolating 
@@ -1384,10 +1459,10 @@ public:
 	 *   i.e. the area of the destination tile must be contained in the ancestor area.
 	 */
 	bool ElevationGrid (ELEVHANDLE emgr, int ilat, int ilng, int lvl,
-		int pilat, int pilng, int plvl, int16_t *pelev, float *elev, double *emean=0) const;
+		int pilat, int pilng, int plvl, INT16 *pelev, float *elev, double *emean=0) const;
 
 	bool ElevationGrid(ELEVHANDLE emgr, int ilat, int ilng, int lvl,
-		int pilat, int pilng, int plvl, int16_t* pelev, int16_t* elev, double* emean = 0) const;
+		int pilat, int pilng, int plvl, INT16* pelev, INT16* elev, double* emean = 0) const;
 
 	/**
 	 * \brief Filter elevation grid data
@@ -1403,7 +1478,7 @@ public:
 	 *   terrain collision data in the same way. As soon as the internal collision tile
 	 *   is loaded in the core, the callback is invoked.
 	 */
-	virtual bool clbkFilterElevation(OBJHANDLE hPlanet, int ilat, int ilng, int lvl, double elev_res, int16_t* elev) { return false; }
+	virtual bool clbkFilterElevation(OBJHANDLE hPlanet, int ilat, int ilng, int lvl, double elev_res, INT16* elev) { return false; }
 	// @}
 
 	virtual void clbkImGuiNewFrame () = 0;
@@ -1446,7 +1521,7 @@ protected:
 	 * \note Derived classes should perform any required per-session
 	 *   initialisation of the 3D render environment here.
 	 */
-	virtual SDL_Window* clbkCreateRenderWindow ();
+	virtual HWND clbkCreateRenderWindow ();
 
 	/**
 	 * \brief Simulation startup finalisation
@@ -1565,7 +1640,7 @@ protected:
 	 * \param fname File containing the splashscreen (jpg/bmp)
 	 * \param textCol text color
 	 */
-	virtual void clbkSetSplashScreen(const char *fname, uint32_t textCol) {}
+	virtual void clbkSetSplashScreen(const char *fname, DWORD textCol) {}
 
 	/**
 	 * \brief Notifies Orbiter to to initiate rendering of the 2D scene overlay
@@ -1647,7 +1722,7 @@ protected:
 	 *   LoadResource, LockResource, SizeofResource)
 	 * \sa ReadImageFromFile, WriteImageDataToFile
 	 */
-	SDL_Surface* ReadImageFromMemory (uint8_t *pBuf, uint32_t nBuf, unsigned int w, unsigned int h);
+	HBITMAP ReadImageFromMemory (BYTE *pBuf, DWORD nBuf, UINT w, UINT h);
 
 	/**
 	 * \brief Read an image from a file into a bitmap
@@ -1658,12 +1733,26 @@ protected:
 	 * \note This function can read different image formats (bmp, jpg, png, tif)
 	 * \sa ReadImageFromMemory, WriteImageDataToFile
 	 */
-	SDL_Surface* ReadImageFromFile (const char *fname, unsigned int w=0, unsigned int h=0);
+	HBITMAP ReadImageFromFile (const char *fname, UINT w=0, UINT h=0);
 
 	/**
 	 * \brief Returns the graphics module instance handle
 	 */
 	inline ModHandle* ModuleInstance () const { return hModule; }
+
+	/**
+	 * \brief Returns the orbiter core instance handle
+	 */
+	inline HINSTANCE OrbiterInstance () const { return hOrbiterInst; }
+
+	/**
+	 * \brief Returns the window handle of the 'video' tab of the Orbiter
+	 *   Launchpad dialog.
+	 *
+	 * If clbkUseLanuchpadVideoTab() is overloaded to return false, this
+	 * function will return NULL.
+	 */
+	HWND LaunchpadVideoTab() const { return hVid; }
 
 	// ==================================================================
 	// Functions for the celestial sphere
@@ -1698,7 +1787,7 @@ public:
 		int shape;        ///< marker shape index (0-4)
 		float size;       ///< marker size factor
 		float distfac;    ///< marker distance cutout factor
-		uint32_t flag;       ///< reserved
+		DWORD flag;       ///< reserved
 		bool active;      ///< active list flag
 	};
 
@@ -1718,12 +1807,12 @@ public:
 	 * \note hObj must refer to a planet or moon. Other objects are not supported.
 	 * \sa LABELLIST
 	 */
-	uint32_t GetSurfaceMarkers (OBJHANDLE hObj, const LABELLIST **sm_list) const;
+	DWORD GetSurfaceMarkers (OBJHANDLE hObj, const LABELLIST **sm_list) const;
 
 	struct LABELTYPE {
 		char labelId;    // label type id
 		char markerId;   // marker shape id
-		uint32_t col;    // label colour
+		COLORREF col;    // label colour
 		char *name;      // label type name
 		bool active;     // label type active?
 	};
@@ -1734,8 +1823,10 @@ public:
 	 * \param lspec array of label type specs
 	 * \return length of lspec list
 	 */
-	uint32_t GetSurfaceMarkerLegend (OBJHANDLE hObj, const LABELTYPE **lspec) const;
+	DWORD GetSurfaceMarkerLegend (OBJHANDLE hObj, const LABELTYPE **lspec) const;
 	// @}
+
+	HWND hVid;              ///< Window handle of Launchpad video tab, if available
 
 protected:
 	SURFHANDLE surfBltTgt;  ///< target surface for a blitting group (-1=none, NULL=main window render surface)
@@ -1752,9 +1843,10 @@ private:
 	 * \return Render window handle
 	 * \note This is called after clbkCreateRenderWindow returns.
 	 */
-	SDL_Window* InitRenderWnd (SDL_Window* hWnd);
+	HWND InitRenderWnd (HWND hWnd);
 
-	SDL_Window* hRenderWnd;        // render window handle
+	HWND hRenderWnd;        // render window handle
+	HINSTANCE hOrbiterInst; // orbiter core instance handle
 	VIDEODATA VideoData;    // the standard video options from config
 
 	IWICImagingFactory *m_pIWICFactory; // Windows Image Component factory instance
@@ -1948,13 +2040,13 @@ public:
 
 private:
 	GraphicsClient *gc;
-	uint32_t viewW, viewH;
+	DWORD viewW, viewH;
 	int nw, nh, nx1, ny1, nx2, ny2, hf;
 	int txtlen, buflen;
 	char *txt;
 	double txtscale;
 	oapi::Font *font;
-	uint32_t txtcol, txtcol2;
+	COLORREF txtcol, txtcol2;
 };
 
 }; // namespace oapi

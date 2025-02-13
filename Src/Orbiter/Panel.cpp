@@ -5,6 +5,7 @@
 #include "Panel.h"
 #include "Pane.h"
 #include "Vessel.h"
+#include "Texture.h"
 #include "Log.h"
 
 using namespace std;
@@ -214,7 +215,7 @@ void Panel::DefineBackground (HBITMAP hBmp, DWORD flag, DWORD _ck)
 	visible = true;
 }
 
-void Panel::DefineArea (int aid, const Rect &pos, int draw_mode, int mouse_mode, int bkmode)
+void Panel::DefineArea (int aid, const RECT &pos, int draw_mode, int mouse_mode, int bkmode)
 {
 	// sanity-checks
 	if (draw_mode == PANEL_REDRAW_NEVER) bkmode = PANEL_MAP_NONE;
@@ -251,7 +252,7 @@ void Panel::DefineArea (int aid, const Rect &pos, int draw_mode, int mouse_mode,
 			area[narea]->bksurf = NULL;
 			area[narea]->bltmode = PANEL_MAP_NONE;
 			if (area[narea]->surf) {
-				Rect &r = area[narea]->pos;
+				RECT &r = area[narea]->pos;
 				gc->clbkBlt (area[narea]->surf, 0, 0, surf, r.left, r.top, r.right-r.left, r.bottom-r.top);
 			}
 			break;
@@ -260,7 +261,7 @@ void Panel::DefineArea (int aid, const Rect &pos, int draw_mode, int mouse_mode,
 			if (!(area[narea]->bksurf = gc->clbkCreateSurface (area[narea]->w, area[narea]->h))) {
 				area[narea]->bltmode = PANEL_MAP_NONE;
 			} else {
-				Rect &r = area[narea]->pos;
+				RECT &r = area[narea]->pos;
 				gc->clbkBlt (area[narea]->bksurf, 0, 0, surf, r.left, r.top, r.right-r.left, r.bottom-r.top);
 			}
 			break;
@@ -343,7 +344,7 @@ void Panel::RedrawAllAreas (int event)
 
 void Panel::RegisterMFD (int id, const MFDSPEC &spec)
 {
-	Rect &r = mfd[id].panel_pos;
+	RECT &r = mfd[id].panel_pos;
 	r = spec.pos;
 	if (scaled) {
 		r.left        = (int)(scale*r.left);
@@ -366,7 +367,7 @@ void Panel::Point2Screen (long srcX, long srcY, long &tgtX, long &tgtY) const
 	tgtY = srcY+Y0;
 }
 
-void Panel::Area2Screen (const Rect &srcR, Rect &tgtR) const
+void Panel::Area2Screen (const RECT &srcR, RECT &tgtR) const
 {
 	Point2Screen (srcR.left, srcR.top, tgtR.left, tgtR.top);
 	Point2Screen (srcR.right, srcR.bottom, tgtR.right, tgtR.bottom);

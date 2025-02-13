@@ -25,6 +25,7 @@
 #include "Log.h"
 #include "Util.h"
 #include "about.hpp"
+#include "Help.h"
 #include "Memstat.h"
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_sdlgpu3.h"
@@ -678,7 +679,7 @@ void orbiter::LaunchpadDialog::ShowWaitPage (bool show, long mem_committed)
 		for (auto tab : TabList)
 			tab->Hide();
 		mem_wait = mem_committed/1000;
-		// mem0 = pApp->memstat->HeapUsage();
+		mem0 = pApp->memstat->HeapUsage();
 		SendDlgItemMessage (hWait, IDC_PROGRESS1, PBM_SETPOS, 0, 0);
 		ShowWindow (GetDlgItem (hWait, IDC_PROGRESS1), mem_wait ? SW_SHOW:SW_HIDE);
 		ShowWindow (hWait, SW_SHOW);
@@ -697,8 +698,8 @@ void orbiter::LaunchpadDialog::ShowWaitPage (bool show, long mem_committed)
 void orbiter::LaunchpadDialog::UpdateWaitProgress ()
 {
 	if (mem_wait) {
-		// long mem = pApp->memstat->HeapUsage();
-		// SendDlgItemMessage (hWait, IDC_PROGRESS1, PBM_SETPOS, (mem0-mem)/mem_wait, 0);
+		long mem = pApp->memstat->HeapUsage();
+		SendDlgItemMessage (hWait, IDC_PROGRESS1, PBM_SETPOS, (mem0-mem)/mem_wait, 0);
 	}
 }
 

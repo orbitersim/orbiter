@@ -30,8 +30,19 @@
     extern "C" {
 #endif
 
-typedef char MD_CHAR;
-
+#if defined MD4C_USE_UTF16
+    /* Magic to support UTF-16. Note that in order to use it, you have to define
+     * the macro MD4C_USE_UTF16 both when building MD4C as well as when
+     * including this header in your code. */
+    #ifdef _WIN32
+        #include <windows.h>
+        typedef WCHAR       MD_CHAR;
+    #else
+        #error MD4C_USE_UTF16 is only supported on Windows.
+    #endif
+#else
+    typedef char            MD_CHAR;
+#endif
 
 typedef unsigned MD_SIZE;
 typedef unsigned MD_OFFSET;

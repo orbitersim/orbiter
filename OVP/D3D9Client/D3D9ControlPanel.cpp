@@ -21,12 +21,12 @@
 using namespace oapi;
 
 
-uint32_t TextureSizeInBytes(LPDIRECT3DTEXTURE9 pTex)
+DWORD TextureSizeInBytes(LPDIRECT3DTEXTURE9 pTex)
 {
 	D3DSURFACE_DESC desc;	
 	pTex->GetLevelDesc(0, &desc);
-	uint32_t lev = pTex->GetLevelCount();
-	uint32_t size = desc.Height*desc.Width;
+	DWORD lev = pTex->GetLevelCount();
+	DWORD size = desc.Height*desc.Width;
 	if (desc.Format==D3DFMT_DXT1) size=size>>1;
 	if (desc.Format==D3DFMT_A8R8G8B8) size=size<<2;
 	if (desc.Format==D3DFMT_X8R8G8B8) size=size<<2;
@@ -64,7 +64,7 @@ void Reset(D3D9Time &t)
 	t.count = t.time = t.peak = 0.0;
 }
 
-void D3D9Client::DrawTimeBar(double t, double s, double f, uint32_t color, const char *label)
+void D3D9Client::DrawTimeBar(double t, double s, double f, DWORD color, const char *label)
 {
 	static double x = 8;
 	static int z = 100;
@@ -92,7 +92,7 @@ void D3D9Client::DrawTimeBar(double t, double s, double f, uint32_t color, const
 
 void D3D9Client::RenderControlPanel()
 {
-	static std::map<uint32_t, uint32_t> TileBuf;
+	static std::map<DWORD, DWORD> TileBuf;
 	static const char *OnOff[]={"Off","On"};
 	static const char *SkpU[]={"Auto","GDI"};
 
@@ -124,13 +124,13 @@ void D3D9Client::RenderControlPanel()
 	pItemsSkp->SetFont(smallf);
 	LabelPos = 130;
 	
-	uint32_t plain_count = 0, plain_size = 0;
-	uint32_t textr_count = 0, textr_size = 0;
-	uint32_t rendt_count = 0, rendt_size = 0;
-	uint32_t rttex_count = 0, rttex_size = 0;
-	uint32_t dyntx_count = 0, dyntx_size = 0;
-	uint32_t sysme_count = 0, sysme_size = 0;
-	uint32_t duall_count = 0, duall_size = 0;
+	DWORD plain_count = 0, plain_size = 0;
+	DWORD textr_count = 0, textr_size = 0;
+	DWORD rendt_count = 0, rendt_size = 0;
+	DWORD rttex_count = 0, rttex_size = 0;
+	DWORD dyntx_count = 0, dyntx_size = 0;
+	DWORD sysme_count = 0, sysme_size = 0;
+	DWORD duall_count = 0, duall_size = 0;
 
 	size_t nSurf = SurfaceCatalog.size();
 
@@ -191,9 +191,9 @@ void D3D9Client::RenderControlPanel()
 	Label("Tiles Allocated......: %u", D3D9Stats.TilesAllocated);
 	Label("Tiles Renderred......: %s", tiles.str().c_str());
 	
-	uint32_t tot_verts = 0;
-	uint32_t tot_trans = 0;
-	uint32_t tot_group = 0;
+	DWORD tot_verts = 0;
+	DWORD tot_trans = 0;
+	DWORD tot_group = 0;
 
 	for (auto pMesh : MeshCatalog)
 	{
@@ -204,8 +204,8 @@ void D3D9Client::RenderControlPanel()
 		}
 	}
 
-	static uint32_t matchg = 0, texchg = 0;
-	static uint32_t verts = 0, grps = 0, meshes = 0;
+	static DWORD matchg = 0, texchg = 0;
+	static DWORD verts = 0, grps = 0, meshes = 0;
 	static double DCPeak = 0.0;
 	static double LockPeak = 0.0;
 
@@ -228,8 +228,8 @@ void D3D9Client::RenderControlPanel()
 
 		vObject *vObj = DebugControls::GetVisual();
 		if (vObj) {
-			uint32_t nMesh = vObj->GetMeshCount();
-			for (uint32_t i = 0; i < nMesh; i++) {
+			DWORD nMesh = vObj->GetMeshCount();
+			for (DWORD i = 0; i < nMesh; i++) {
 				D3D9Mesh *hMesh = static_cast<D3D9Mesh *>(vObj->GetMesh(i));
 				hMesh->ResetRenderStatus();
 			}
@@ -269,11 +269,11 @@ void D3D9Client::RenderControlPanel()
 		frames = D3D9Stats.Timer.Scene.count;
 		double iframes = 1.0 / frames;
 
-		matchg = uint32_t(double(D3D9Stats.Mesh.MtrlChanges) * iframes);
-		texchg = uint32_t(double(D3D9Stats.Mesh.TexChanges) * iframes);
-		verts = uint32_t(double(D3D9Stats.Mesh.Vertices) * iframes);
-		grps = uint32_t(double(D3D9Stats.Mesh.MeshGrps) * iframes);
-		meshes = uint32_t(double(D3D9Stats.Mesh.Meshes) * iframes);
+		matchg = DWORD(double(D3D9Stats.Mesh.MtrlChanges) * iframes);
+		texchg = DWORD(double(D3D9Stats.Mesh.TexChanges) * iframes);
+		verts = DWORD(double(D3D9Stats.Mesh.Vertices) * iframes);
+		grps = DWORD(double(D3D9Stats.Mesh.MeshGrps) * iframes);
+		meshes = DWORD(double(D3D9Stats.Mesh.Meshes) * iframes);
 		DCPeak = D3D9Stats.Timer.GetDC.peak;
 		LockPeak = D3D9Stats.Timer.LockWait.peak;
 

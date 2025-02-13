@@ -262,7 +262,7 @@ bool Keymap::IsLogicalKey (char *kstate, int lfunc) const
 	return IsMatchingModifier (kstate, func[lfunc]);
 }
 
-bool Keymap::IsLogicalKey (uint32_t &key, char *kstate, int lfunc, bool clearkey) const
+bool Keymap::IsLogicalKey (DWORD &key, char *kstate, int lfunc, bool clearkey) const
 {
 	// check key
 	if ((func[lfunc] & 0x00FFu) != key) return false;

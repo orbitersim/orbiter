@@ -115,16 +115,16 @@ void GDIPad::SetTextAlign (TAlign_horizontal tah, TAlign_vertical tav)
 
 // ===============================================================================================
 //
-uint32_t GDIPad::SetTextColor (uint32_t col)
+DWORD GDIPad::SetTextColor (DWORD col)
 {
-	return (uint32_t)::SetTextColor (hDC, (COLORREF)(col&0xFFFFFF));
+	return (DWORD)::SetTextColor (hDC, (COLORREF)(col&0xFFFFFF));
 }
 
 // ===============================================================================================
 //
-uint32_t GDIPad::SetBackgroundColor (uint32_t col)
+DWORD GDIPad::SetBackgroundColor (DWORD col)
 {
-	return (uint32_t)SetBkColor (hDC, (COLORREF)(col&0xFFFFFF));
+	return (DWORD)SetBkColor (hDC, (COLORREF)(col&0xFFFFFF));
 }
 
 // ===============================================================================================
@@ -142,7 +142,7 @@ void GDIPad::SetBackgroundMode (BkgMode mode)
 
 // ===============================================================================================
 //
-uint32_t GDIPad::GetCharSize ()
+DWORD GDIPad::GetCharSize ()
 {
 	TEXTMETRIC tm;
 	GetTextMetrics (hDC, &tm);
@@ -151,13 +151,13 @@ uint32_t GDIPad::GetCharSize ()
 
 // ===============================================================================================
 //
-uint32_t GDIPad::GetTextWidth (const char *str, int len)
+DWORD GDIPad::GetTextWidth (const char *str, int len)
 {
 	if (str) if (str[0] == '_') if (strcmp(str, "_SkpVerInfo") == 0) return 1;
 	SIZE size;
 	if (!len) len = lstrlen(str);
 	GetTextExtentPoint32 (hDC, str, len, &size);
-	return (uint32_t)size.cx;
+	return (DWORD)size.cx;
 }
 
 // ===============================================================================================
@@ -205,7 +205,7 @@ bool GDIPad::TextBox (int x1, int y1, int x2, int y2, const char *str, int len)
 
 // ===============================================================================================
 //
-void GDIPad::Pixel (int x, int y, uint32_t col)
+void GDIPad::Pixel (int x, int y, DWORD col)
 {
 	SetPixel (hDC, x, y, (COLORREF)col);
 }

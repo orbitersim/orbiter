@@ -62,7 +62,7 @@ public:
 	 * \param col colour description (format: 0xBBGGRR)
 	 * \return Previous colour setting.
 	 */
-	uint32_t SetTextColor (uint32_t col);
+	DWORD SetTextColor (DWORD col);
 
 	/**
 	 * \brief Set the background colour for text output.
@@ -72,7 +72,7 @@ public:
 	 *   is set to BK_OPAQUE.
 	 * \sa SetBackgroundMode
 	 */
-	uint32_t SetBackgroundColor (uint32_t col);
+	DWORD SetBackgroundColor (DWORD col);
 
 	/**
 	 * \brief Set the background mode for text output.
@@ -94,7 +94,7 @@ public:
 	 * \note The width value is given by tmAveCharWidth from the
 	 *   TEXTMETRIC structure returned by the GDI GetTextMetrics function.
 	 */
-	uint32_t GetCharSize ();
+	DWORD GetCharSize ();
 
 	/**
 	 * \brief Returns the width of a text string in the currently selected font.
@@ -103,7 +103,7 @@ public:
 	 * \return width of the string, drawn in the currently selected font [pixel]
 	 * \sa SetFont
 	 */
-	uint32_t GetTextWidth (const char *str, int len = 0);
+	DWORD GetTextWidth (const char *str, int len = 0);
 
 	/**
 	 * \brief Set the position in the surface bitmap which is mapped to the
@@ -157,7 +157,7 @@ public:
 	 * \param y y-coordinate of point [pixel]
 	 * \param col pixel colour (format: 0xBBGGRR)
 	 */
-	void Pixel (int x, int y, uint32_t col);
+	void Pixel (int x, int y, DWORD col);
 
 	/**
 	 * \brief Moves the drawing reference to a new point.

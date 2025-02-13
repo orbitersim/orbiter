@@ -51,7 +51,7 @@ void CheckMeshStats(MESHHANDLE hMesh, MeshStats *stats)
 
 		MESHGROUPEX *grp = oapiMeshGroupEx(hMesh, i);
 		
-		for (uint32_t v = 0; v < grp->nVtx; v++) {
+		for (DWORD v = 0; v < grp->nVtx; v++) {
 			XMVECTOR x = XMLoadFloat3((XMFLOAT3 *)&grp->Vtx[v].x);
 			mi = XMVectorMin(mi, x);
 			mx = XMVectorMax(mx, x);
@@ -73,7 +73,7 @@ void CheckMeshStats(MESHHANDLE hMesh, MeshStats *stats)
 vBase::vBase (OBJHANDLE _hObj, const Scene *scene, vPlanet *_vP): vObject (_hObj, scene)
 {
 	_TRACE;
-	uint32_t i,j;
+	DWORD i,j;
 
 	vP = _vP;
 	hPlanet = oapiGetBasePlanet(hObj);
@@ -112,7 +112,7 @@ vBase::vBase (OBJHANDLE _hObj, const Scene *scene, vPlanet *_vP): vObject (_hObj
 	//------------------------------------------------------------------------
 
 	// load surface tiles
-	uint32_t _ntile = gc->GetBaseTileList (_hObj, &tspec);
+	DWORD _ntile = gc->GetBaseTileList (_hObj, &tspec);
 	ntile = 0;
 	for (i=0; i<_ntile; ++i) {
 		// Only count (render) tiles where bit0 is set!
@@ -132,7 +132,7 @@ vBase::vBase (OBJHANDLE _hObj, const Scene *scene, vPlanet *_vP): vObject (_hObj
 		for (i = 0, j = 0; i < _ntile; ++i) {
 			// Only render tiles where bit0 is set!
 			if (tspec[i].texflag & 0x01) {
-				uint32_t ng = oapiMeshGroupCount(tspec[i].mesh);
+				DWORD ng = oapiMeshGroupCount(tspec[i].mesh);
 				if (ng!=1) LogErr("MeshGroup Count = %u",ng);
 				else {
 					texs[j] = tspec[i].tex;
@@ -150,7 +150,7 @@ vBase::vBase (OBJHANDLE _hObj, const Scene *scene, vPlanet *_vP): vObject (_hObj
 
 	// load meshes for generic structures
 	MESHHANDLE *sbs, *sas;
-	uint32_t nsbs, nsas;
+	DWORD nsbs, nsas;
 	gc->GetBaseStructures (_hObj, &sbs, &nsbs, &sas, &nsas);
 
 	if (nstructure_bs = nsbs) {
@@ -235,7 +235,7 @@ void vBase::CreateTaxiLights()
 //
 vBase::~vBase ()
 {
-	uint32_t i;
+	DWORD i;
 
 	if (tilemesh) delete tilemesh;
 
@@ -251,7 +251,7 @@ vBase::~vBase ()
 	}
 
 	if (runwayLights) {
-		for(i=0; i<(uint32_t)numRunwayLights; i++)
+		for(i=0; i<(DWORD)numRunwayLights; i++)
 		{
 			SAFE_DELETE(runwayLights[i]);
 		}
@@ -260,7 +260,7 @@ vBase::~vBase ()
 	}
 
 	if (taxiLights) {
-		for(i=0; i<(uint32_t)numTaxiLights; i++)
+		for(i=0; i<(DWORD)numTaxiLights; i++)
 		{
 			SAFE_DELETE(taxiLights[i]);
 		}
@@ -274,7 +274,7 @@ vBase::~vBase ()
 
 // ===========================================================================================
 //
-uint32_t vBase::GetMeshCount()
+DWORD vBase::GetMeshCount()
 {
 	if (tilemesh) return nstructure_bs + nstructure_as + 1;
 	else          return nstructure_bs + nstructure_as;
@@ -299,13 +299,13 @@ bool vBase::GetMinMaxDistance(float *zmin, float *zmax, float *dmin)
 	}
 
 	if (nstructure_bs) {
-		for (uint32_t i = 0; i < nstructure_bs; i++) {
+		for (DWORD i = 0; i < nstructure_bs; i++) {
 			D9ComputeMinMaxDistance(gc->GetDevice(), structure_bs[i]->GetAABB(), &mWorldView, &Field, zmin, zmax, dmin);
 		}
 	}
 
 	if (nstructure_as) {
-		for (uint32_t i = 0; i < nstructure_as; i++) {
+		for (DWORD i = 0; i < nstructure_as; i++) {
 			D9ComputeMinMaxDistance(gc->GetDevice(), structure_as[i]->GetAABB(), &mWorldView, &Field, zmin, zmax, dmin);
 		}
 	}
@@ -327,13 +327,13 @@ void vBase::UpdateBoundingBox()
 	if (tilemesh) D9AddAABB(tilemesh->GetAABB(), NULL, &BBox);
 		
 	if (nstructure_bs) {
-		for (uint32_t i = 0; i < nstructure_bs; i++) {
+		for (DWORD i = 0; i < nstructure_bs; i++) {
 			D9AddAABB(structure_bs[i]->GetAABB(), NULL, &BBox);
 		}
 	}
 
 	if (nstructure_as) {
-		for (uint32_t i = 0; i < nstructure_as; i++) {
+		for (DWORD i = 0; i < nstructure_as; i++) {
 			D9AddAABB(structure_as[i]->GetAABB(), NULL, &BBox);
 		}
 	}
@@ -367,7 +367,7 @@ bool vBase::Update (bool bMainScene)
 		double csun = sdir.y;
 		bool night = csun < csun_lights;
 		if (lights != night) {
-			uint32_t i;
+			DWORD i;
 			for (i = 0; i < nstructure_bs; i++)	structure_bs[i]->SetTexMixture (1, night ? 1.0f:0.0f);
 			for (i = 0; i < nstructure_as; i++)	structure_as[i]->SetTexMixture (1, night ? 1.0f:0.0f);
 			lights = night;
@@ -398,7 +398,7 @@ bool vBase::RenderSurface(LPDIRECT3DDEVICE9 dev)
 
 	// render generic objects under shadows
 	if (nstructure_bs) {
-		for (uint32_t i = 0; i < nstructure_bs; ++i) {
+		for (DWORD i = 0; i < nstructure_bs; ++i) {
 			structure_bs[i]->SetSunLight(&sunLight);
 			structure_bs[i]->Render(&mWorld, RENDER_BASEBS);
 			++uCurrentMesh;
@@ -423,7 +423,7 @@ bool vBase::RenderStructures(LPDIRECT3DDEVICE9 dev)
 	uCurrentMesh += nstructure_bs;
 
 	// render generic objects above shadows
-	for (uint32_t i=0; i<nstructure_as; i++) {
+	for (DWORD i=0; i<nstructure_as; i++) {
 		FVECTOR3 bs = structure_as[i]->GetBoundingSpherePos();
 		FVECTOR3 qw = TransformCoord(bs, mWorld);
 		D3D9Sun sp = vP->GetObjectAtmoParams(qw._V() + vP->CameraPos());
@@ -456,7 +456,7 @@ void vBase::RenderRunwayLights(LPDIRECT3DDEVICE9 dev)
 	}
 	
 	if (DebugControls::IsActive()) {
-		uint32_t flags = *(uint32_t*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
+		DWORD flags = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 		if (flags&DBG_FLAGS_SELVISONLY && this!=DebugControls::GetVisual()) return; // Used for debugging
 		if (flags&DBG_FLAGS_BOXES) {
 			D3DXMATRIX id;
@@ -497,7 +497,7 @@ void vBase::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, float alpha)
 	double prad = oapiGetSize(hPlanet);
 	D3DXVECTOR4 param = D9OffsetRange(prad, 30e3);
 
-	for (uint32_t i=0; i<nstructure_as; i++) {
+	for (DWORD i=0; i<nstructure_as; i++) {
 		
 		if (structure_as[i]->HasShadow()) {
 

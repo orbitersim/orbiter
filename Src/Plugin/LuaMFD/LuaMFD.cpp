@@ -18,7 +18,7 @@ InterpreterList *g_IList = NULL;
 // MFD class implementation
 
 // Constructor
-ScriptMFD::ScriptMFD (uint32_t w, uint32_t h, VESSEL *vessel)
+ScriptMFD::ScriptMFD (DWORD w, DWORD h, VESSEL *vessel)
 : MFD (w, h, vessel)
 {
 	hVessel = pV->GetHandle();
@@ -59,7 +59,7 @@ int ScriptMFD::ButtonMenu (const MFDBUTTONMENU **menu) const
 	return 5; // return the number of buttons used
 }
 
-bool ScriptMFD::ConsumeKeyBuffered (uint32_t key)
+bool ScriptMFD::ConsumeKeyBuffered (DWORD key)
 {
 	switch (key) {
 	case OAPI_KEY_I:
@@ -84,7 +84,7 @@ bool ScriptMFD::ConsumeKeyBuffered (uint32_t key)
 bool ScriptMFD::ConsumeButton (int bt, int event)
 {
 	if (!(event & PANEL_MOUSE_LBDOWN)) return false;
-	static const uint32_t btkey[5] = { OAPI_KEY_I, OAPI_KEY_N, OAPI_KEY_D, OAPI_KEY_PERIOD, OAPI_KEY_COMMA };
+	static const DWORD btkey[5] = { OAPI_KEY_I, OAPI_KEY_N, OAPI_KEY_D, OAPI_KEY_PERIOD, OAPI_KEY_COMMA };
 	if (bt < 5) return ConsumeKeyBuffered (btkey[bt]);
 	else return false;
 }
@@ -132,10 +132,10 @@ void ScriptMFD::DeleteInterpreter ()
 	InvalidateDisplay();
 }
 
-void ScriptMFD::SetPage (uint32_t newpg)
+void ScriptMFD::SetPage (DWORD newpg)
 {
-	uint32_t npg = vi->nenv;
-	if (newpg == (uint32_t)-1) newpg = npg-1;
+	DWORD npg = vi->nenv;
+	if (newpg == (DWORD)-1) newpg = npg-1;
 	else if  (newpg >= npg) newpg = 0;
 	if (newpg != pg) {
 		pg = newpg;
@@ -146,7 +146,7 @@ void ScriptMFD::SetPage (uint32_t newpg)
 // Repaint the MFD
 void ScriptMFD::Update (HDC hDC)
 {
-	uint32_t npg = vi->nenv;
+	DWORD npg = vi->nenv;
 	pg = min (pg, npg-1);
 	InterpreterList::Environment *env = vi->env[pg];
 	int yofs = (5*ch)/4;
@@ -168,7 +168,7 @@ void ScriptMFD::Update (HDC hDC)
 		nchar = (W-fw/2)/fw;
 		nline = (H-yofs-fh/2)/fh;
 	}
-	uint32_t nbuf = env->interp->LineCount();
+	DWORD nbuf = env->interp->LineCount();
 	MFDInterpreter::LineSpec *ls = env->interp->FirstLine();
 	int xofs = fw/2;
 	COLORREF col = 0;
@@ -187,13 +187,13 @@ void ScriptMFD::Update (HDC hDC)
 }
 
 // MFD message parser
-void* ScriptMFD::MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam)
+OAPI_MSGTYPE ScriptMFD::MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam)
 {
 	switch (msg) {
 	case OAPI_MSG_MFD_OPENED:
 		// Our new MFD mode has been selected, so we create the MFD and
 		// return a pointer to it.
-		return (void*) new ScriptMFD(LOWORD(wparam), HIWORD(wparam), (VESSEL*)lparam);
+		return (OAPI_MSGTYPE) new ScriptMFD(LOWORD(wparam), HIWORD(wparam), (VESSEL*)lparam);
 	}
 	return 0;
 }
@@ -225,7 +225,7 @@ DLLCLBK void opcPostStep (double simt, double simdt, double mjd)
 	}
 }
 
-DLLCLBK void opcOpenRenderViewport (HWND hWnd, uint32_t w, uint32_t h, BOOL bFullscreen)
+DLLCLBK void opcOpenRenderViewport (HWND hWnd, DWORD w, DWORD h, BOOL bFullscreen)
 {
 }
 

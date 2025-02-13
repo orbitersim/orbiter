@@ -342,16 +342,16 @@ void ShuttleA::InitPanel (int panel)
 
 	switch (panel) {
 	case -1: //VC resources
-		// srf[2] = oapiCreateSurface (LOADBMP (IDB_BUTTON1));
-		// srf[3] = oapiCreateSurface (LOADBMP (IDB_INDICATOR1));
-		// srf[4] = oapiCreateSurface (LOADBMP (IDB_INDICATOR2));
-		// srf[5] = oapiCreateSurface (LOADBMP (IDB_BUTTON3));
+		srf[2] = oapiCreateSurface (LOADBMP (IDB_BUTTON1));
+		srf[3] = oapiCreateSurface (LOADBMP (IDB_INDICATOR1));
+		srf[4] = oapiCreateSurface (LOADBMP (IDB_INDICATOR2));
+		srf[5] = oapiCreateSurface (LOADBMP (IDB_BUTTON3)); 
 
 		break;
 	case 0:
-		// srf[0] = oapiCreateSurface (LOADBMP (IDB_SLIDER1));
-		// srf[1] = oapiCreateSurface (LOADBMP (IDB_SWITCH1));
-		// srf[2] = oapiCreateSurface (LOADBMP (IDB_BUTTON1));
+		srf[0] = oapiCreateSurface (LOADBMP (IDB_SLIDER1));
+		srf[1] = oapiCreateSurface (LOADBMP (IDB_SWITCH1));
+		srf[2] = oapiCreateSurface (LOADBMP (IDB_BUTTON1));
 		
 		for (i = 0; i < 2; i++) {
 			sliderpos_main[i] = sliderpos_hovr[i] =
@@ -361,12 +361,12 @@ void ShuttleA::InitPanel (int panel)
 		}
 		break;
 	case 1:
-		// srf[0] = oapiCreateSurface (LOADBMP (IDB_SWITCH2));
-		// srf[1] = oapiCreateSurface (LOADBMP (IDB_SWITCH3));
-		// srf[2] = oapiCreateSurface (LOADBMP (IDB_SWITCH4));
-		// srf[3] = oapiCreateSurface (LOADBMP (IDB_INDICATOR1));
-		// srf[4] = oapiCreateSurface (LOADBMP (IDB_INDICATOR2));
-		// srf[5] = oapiCreateSurface (LOADBMP (IDB_BUTTON3));
+		srf[0] = oapiCreateSurface (LOADBMP (IDB_SWITCH2));
+		srf[1] = oapiCreateSurface (LOADBMP (IDB_SWITCH3));
+		srf[2] = oapiCreateSurface (LOADBMP (IDB_SWITCH4));
+		srf[3] = oapiCreateSurface (LOADBMP (IDB_INDICATOR1));
+		srf[4] = oapiCreateSurface (LOADBMP (IDB_INDICATOR2));
+		srf[5] = oapiCreateSurface (LOADBMP (IDB_BUTTON3));
 		break;
 	}
 }

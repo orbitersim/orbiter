@@ -79,12 +79,12 @@ void Panel2D::SetConnections (int left, int right, int top, int bottom)
 	connect[3] = bottom;
 }
 
-int Panel2D::SetBackground (SURFHANDLE *hSurface, uint32_t nsurf, MESHHANDLE hMesh, uint32_t width, uint32_t height, uint32_t baseline, uint32_t scrollflag)
+int Panel2D::SetBackground (SURFHANDLE *hSurface, DWORD nsurf, MESHHANDLE hMesh, DWORD width, DWORD height, DWORD baseline, DWORD scrollflag)
 {
 	ReleaseSurfaces();
 	if (nSurf = nsurf) {
 		hSurf = new SURFHANDLE[nSurf];
-		for (uint32_t i = 0; i < nsurf; i++) {
+		for (DWORD i = 0; i < nsurf; i++) {
 			hSurf[i] = hSurface[i];
 			if (hSurf[i]) gc->clbkIncrSurfaceRef (hSurface[i]);
 		}
@@ -158,7 +158,7 @@ int Panel2D::RegisterMFDGeometry (int MFD_id, int nmesh, int ngroup)
 		grp->TexIdx = TEXIDX_MFD0 + MFD_id;
 		float xmin, xmax, ymin, ymax;
 		xmin = xmax = grp->Vtx[0].x, ymin = ymax = grp->Vtx[0].y;
-		for (uint32_t i = 1; i < grp->nVtx; i++) {
+		for (DWORD i = 1; i < grp->nVtx; i++) {
 			xmin = min (xmin, grp->Vtx[i].x);
 			xmax = max (xmax, grp->Vtx[i].x);
 			ymin = min (ymin, grp->Vtx[i].y);
@@ -281,7 +281,7 @@ void Panel2D::Render ()
 	}
 }
 
-bool Panel2D::ProcessMouse_System(UINT event, uint32_t state, int x, int y, const char *kstate)
+bool Panel2D::ProcessMouse_System(UINT event, DWORD state, int x, int y, const char *kstate)
 {
 	// Windows event handler for mouse events
 	switch (event) {
@@ -297,7 +297,7 @@ bool Panel2D::ProcessMouse_System(UINT event, uint32_t state, int x, int y, cons
 	return false;
 }
 
-bool Panel2D::ProcessMouse_OnRunning (UINT event, uint32_t state, int x, int y, const char *kstate)
+bool Panel2D::ProcessMouse_OnRunning (UINT event, DWORD state, int x, int y, const char *kstate)
 {
 	mstate = 0;
 
@@ -394,7 +394,7 @@ void Panel2D::Update (double SimT, double SysT)
 	}
 }
 
-int Panel2D::DefineArea (int aid, const Rect &pos, int draw_mode, int mouse_mode, SURFHANDLE surf, void *context)
+int Panel2D::DefineArea (int aid, const RECT &pos, int draw_mode, int mouse_mode, SURFHANDLE surf, void *context)
 {
 	// grow area buffer
 	if (narea == nareabuf) {
@@ -424,7 +424,7 @@ int Panel2D::DefineArea (int aid, const Rect &pos, int draw_mode, int mouse_mode
 	return 0;
 }
 
-int Panel2D::DefineArea (int aid, const Rect &pos, int texid, const Rect &texpos, int draw_mode, int mouse_mode, int bkmode)
+int Panel2D::DefineArea (int aid, const RECT &pos, int texid, const RECT &texpos, int draw_mode, int mouse_mode, int bkmode)
 {
 	int draw_event_mode = draw_mode & 0xFF; // strip access flags
 
@@ -456,7 +456,7 @@ int Panel2D::DefineArea (int aid, const Rect &pos, int texid, const Rect &texpos
 		area[narea]->surf = NULL;
 		area[narea]->bksurf = NULL;
 	} else {
-		uint32_t attrib = OAPISURFACE_RENDERTARGET;
+		DWORD attrib = OAPISURFACE_RENDERTARGET;
 		if (draw_mode & PANEL_REDRAW_GDI) attrib |= OAPISURFACE_GDI;
 		if (draw_mode & PANEL_REDRAW_SKETCHPAD) attrib |= OAPISURFACE_SKETCHPAD;
 		area[narea]->surf = gc->clbkCreateSurfaceEx (area[narea]->w, area[narea]->h, attrib);
@@ -469,7 +469,7 @@ int Panel2D::DefineArea (int aid, const Rect &pos, int texid, const Rect &texpos
 			area[narea]->bksurf = NULL;
 			area[narea]->bltmode = PANEL_MAP_NONE;
 			if (area[narea]->surf) {
-				Rect &r = area[narea]->texpos;
+				RECT &r = area[narea]->texpos;
 				gc->clbkBlt (area[narea]->surf, 0, 0, hSurf[texid], r.left, r.top, r.right-r.left, r.bottom-r.top);
 			}
 			break;
@@ -478,7 +478,7 @@ int Panel2D::DefineArea (int aid, const Rect &pos, int texid, const Rect &texpos
 			if (!(area[narea]->bksurf = gc->clbkCreateSurfaceEx (area[narea]->w, area[narea]->h, OAPISURFACE_RENDERTARGET))) {
 				area[narea]->bltmode = PANEL_MAP_NONE;
 			} else {
-				Rect &r = area[narea]->texpos;
+				RECT &r = area[narea]->texpos;
 				gc->clbkBlt (area[narea]->bksurf, 0, 0, hSurf[texid], r.left, r.top, r.right-r.left, r.bottom-r.top);
 			}
 			break;

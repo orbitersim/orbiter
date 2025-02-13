@@ -80,7 +80,7 @@ bool Tile::LoadTextureFile(const char *fullpath, LPDIRECT3DTEXTURE9 *pPre)
 {
 	auto y = filesystem::status(fullpath);
 	if (filesystem::exists(y)) {
-		uint32_t Mips = 1, Filter = D3DX_FILTER_NONE;
+		DWORD Mips = 1, Filter = D3DX_FILTER_NONE;
 		if (bMipmaps) Filter = D3DX_FILTER_BOX, Mips = 0;
 		if (D3DXCreateTextureFromFileEx(mgr->Dev(), fullpath, 0, 0, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, Filter, 0, NULL, NULL, pPre) == S_OK) {
 			return true;
@@ -91,9 +91,9 @@ bool Tile::LoadTextureFile(const char *fullpath, LPDIRECT3DTEXTURE9 *pPre)
 	return false;
 }
 
-bool Tile::LoadTextureFromMemory(void *data, uint32_t ndata, LPDIRECT3DTEXTURE9 *pPre)
+bool Tile::LoadTextureFromMemory(void *data, DWORD ndata, LPDIRECT3DTEXTURE9 *pPre)
 {
-	uint32_t Mips = 1, Filter = D3DX_FILTER_NONE;
+	DWORD Mips = 1, Filter = D3DX_FILTER_NONE;
 	if (bMipmaps) Filter = D3DX_FILTER_BOX, Mips = 0;
 	if (D3DXCreateTextureFromFileInMemoryEx(mgr->Dev(), data, ndata, 0, 0, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, Filter, 0, NULL, NULL, pPre) == S_OK) {
 		return true;
@@ -320,7 +320,7 @@ bool Tile::Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir, TILEPICK &result
 
 	int idx = -1;
 
-	for (uint32_t i = 0; i<mesh->nf; i++)
+	for (DWORD i = 0; i<mesh->nf; i++)
 	{
 		WORD a = pIdc[i * 3 + 0];
 		WORD b = pIdc[i * 3 + 1];
@@ -668,8 +668,8 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, float *elev, double globelev)
 	// Angle deltas for constructing the sphere's vertices
     double fDAng   = PI / grd;
     double lng, lat = fDAng;
-	uint32_t x1 = grd;
-	uint32_t x2 = x1+1;
+	DWORD x1 = grd;
+	DWORD x2 = x1+1;
 	FLOAT du = 0.5f/(FLOAT)texres;
 	FLOAT a  = (1.0f-2.0f*du)/(FLOAT)x1;
 
@@ -821,12 +821,12 @@ TileLoader::TileLoader (const oapi::D3D9Client *gclient)
 	, hStopThread(CreateEvent(NULL, FALSE, FALSE, NULL))
 	, load_frequency(Config->PlanetLoadFrequency)
 {
-	uint32_t id;
+	DWORD id;
 
 	// Initialize statics
 	nqueue = queue_in = queue_out = 0;
 	hLoadMutex = CreateMutex (0, FALSE, NULL);
-	hLoadThread = CreateThread (NULL, 32768, Load_ThreadProc, this, 0, LPDWORD(&id));
+	hLoadThread = CreateThread (NULL, 32768, Load_ThreadProc, this, 0, &id);
 }
 
 // -----------------------------------------------------------------------
@@ -962,10 +962,10 @@ bool TileLoader::Unqueue (Tile *tile)
 
 // -----------------------------------------------------------------------
 #ifdef UNDEF
-uint32_t WINAPI TileLoader::Load_ThreadProc (void *data)
+DWORD WINAPI TileLoader::Load_ThreadProc (void *data)
 {
 	TileLoader *loader = (TileLoader*)data;
-	uint32_t idle = 1000/loader->load_frequency;
+	DWORD idle = 1000/loader->load_frequency;
 	Tile *tile;
 	bool load;
 
@@ -1010,7 +1010,7 @@ DWORD WINAPI TileLoader::Load_ThreadProc (void *data)
 {
 	const int tile_packet_size = 8; // max number of tiles to process from queue
 	TileLoader *loader = (TileLoader*)data;
-	uint32_t idle = 1000/loader->load_frequency;
+	DWORD idle = 1000/loader->load_frequency;
 	Tile *tile[tile_packet_size];
 	int nload, i;
 
@@ -1108,7 +1108,7 @@ void TileManager2Base::GlobalInit (class oapi::D3D9Client *gclient)
 	pDev = gc->GetDevice();
 
 	resolutionBias = 4.0 + Config->LODBias;
-	uint32_t w, h;
+	DWORD w, h;
 	gc->clbkGetViewportSize (&w, &h);
 	resolutionScale = 1400.0 / (double)h;
 	cprm.bSpecular = *(bool*)gclient->GetConfigParam (CFGPRM_SURFACEREFLECT);

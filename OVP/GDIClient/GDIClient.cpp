@@ -64,7 +64,7 @@ void GDIClient::clbkReleaseFont (Font *font) const
 	delete font;
 }
 
-Pen *GDIClient::clbkCreatePen (int style, int width, uint32_t col) const
+Pen *GDIClient::clbkCreatePen (int style, int width, DWORD col) const
 {
 	refCountPen++;
 	return new GDIPen (style, width, col);
@@ -76,7 +76,7 @@ void GDIClient::clbkReleasePen (Pen *pen) const
 	delete pen;
 }
 
-Brush *GDIClient::clbkCreateBrush (uint32_t col) const
+Brush *GDIClient::clbkCreateBrush (DWORD col) const
 {
 	refCountBrush++;
 	return new GDIBrush (col);
@@ -93,7 +93,7 @@ bool GDIClient::clbkSaveSurfaceToImage (SURFHANDLE surf, const char *fname, Imag
 	HDC hdc = clbkGetSurfaceDC (surf);
 	if (!hdc) return false;
 
-	uint32_t w, h;
+	DWORD w, h;
 	if (surf) clbkGetSurfaceSize (surf, &w, &h);
 	else      clbkGetViewportSize (&w, &h);
 
@@ -231,14 +231,14 @@ void GDIPad::SetTextAlign (TAlign_horizontal tah, TAlign_vertical tav)
 	::SetTextAlign (hDC, align);
 }
 
-uint32_t GDIPad::SetTextColor (uint32_t col)
+DWORD GDIPad::SetTextColor (DWORD col)
 {
-	return (uint32_t)::SetTextColor (hDC, (COLORREF)col);
+	return (DWORD)::SetTextColor (hDC, (COLORREF)col);
 }
 
-uint32_t GDIPad::SetBackgroundColor (uint32_t col)
+DWORD GDIPad::SetBackgroundColor (DWORD col)
 {
-	return (uint32_t)SetBkColor (hDC, (COLORREF)col);
+	return (DWORD)SetBkColor (hDC, (COLORREF)col);
 }
 
 void GDIPad::SetBackgroundMode (BkgMode mode)
@@ -251,19 +251,19 @@ void GDIPad::SetBackgroundMode (BkgMode mode)
 	SetBkMode (hDC, bkmode);
 }
 
-uint32_t GDIPad::GetCharSize ()
+DWORD GDIPad::GetCharSize ()
 {
 	TEXTMETRIC tm;
 	GetTextMetrics (hDC, &tm);
 	return MAKELONG(tm.tmHeight-tm.tmInternalLeading, tm.tmAveCharWidth);
 }
 
-uint32_t GDIPad::GetTextWidth (const char *str, int len)
+DWORD GDIPad::GetTextWidth (const char *str, int len)
 {
 	SIZE size;
 	if (!len) len = (int)strlen(str);
 	GetTextExtentPoint32 (hDC, str, len, &size);
-	return (uint32_t)size.cx;
+	return (DWORD)size.cx;
 }
 
 void GDIPad::SetOrigin (int x, int y)
@@ -299,7 +299,7 @@ bool GDIPad::TextBox (int x1, int y1, int x2, int y2, const char *str, int len)
 	return (DrawText (hDC, str, len, &r, DT_LEFT|DT_NOPREFIX|DT_WORDBREAK) != 0);
 }
 
-void GDIPad::Pixel (int x, int y, uint32_t col)
+void GDIPad::Pixel (int x, int y, DWORD col)
 {
 	SetPixel (hDC, x, y, (COLORREF)col);
 }
@@ -372,17 +372,17 @@ GDIFont::GDIFont (int height, bool prop, const char *face, FontStyle style, int 
 		face = (prop ? def_sansface : def_fixedface);
 	}
 	int weight = (style & FONT_BOLD ? FW_BOLD : FW_NORMAL);
-	uint32_t italic = (style & FONT_ITALIC ? TRUE : FALSE);
-	uint32_t underline = (style & FONT_UNDERLINE ? TRUE : FALSE);
-	uint32_t strikeout = (style & FONT_STRIKEOUT) ? TRUE : FALSE;
+	DWORD italic = (style & FONT_ITALIC ? TRUE : FALSE);
+	DWORD underline = (style & FONT_UNDERLINE ? TRUE : FALSE);
+	DWORD strikeout = (style & FONT_STRIKEOUT) ? TRUE : FALSE;
 	hFont = CreateFont (height, 0, orientation, orientation, weight, italic, underline, strikeout, 0, 3, 2, 1, 49, face);
 }
 
 GDIFont::GDIFont(int height, char* face, int width, int weight, FontStyle style, float spacing) : oapi::Font(height, false, face, style, 0)
 {
-	uint32_t italic = (style & FontStyle::FONT_ITALIC ? TRUE : FALSE);
-	uint32_t underline = (style & FontStyle::FONT_UNDERLINE ? TRUE : FALSE);
-	uint32_t strikeout = (style & FontStyle::FONT_STRIKEOUT ? TRUE : FALSE);
+	DWORD italic = (style & FontStyle::FONT_ITALIC ? TRUE : FALSE);
+	DWORD underline = (style & FontStyle::FONT_UNDERLINE ? TRUE : FALSE);
+	DWORD strikeout = (style & FontStyle::FONT_STRIKEOUT ? TRUE : FALSE);
 	hFont = CreateFont(height, width, 0, 0, weight, italic, underline, strikeout, 0, 3, 2, 1, 49, face);
 }
 
@@ -396,7 +396,7 @@ GDIFont::~GDIFont ()
 // class GDIPen
 // ======================================================================
 
-GDIPen::GDIPen (int style, int width, uint32_t col): oapi::Pen (style, width, col)
+GDIPen::GDIPen (int style, int width, DWORD col): oapi::Pen (style, width, col)
 {
 	int pstyle;
 	switch (style) {
@@ -417,7 +417,7 @@ GDIPen::~GDIPen ()
 // class GDIBrush
 // ======================================================================
 
-GDIBrush::GDIBrush (uint32_t col): oapi::Brush (col)
+GDIBrush::GDIBrush (DWORD col): oapi::Brush (col)
 {
 	hBrush = CreateSolidBrush ((COLORREF)col);
 }

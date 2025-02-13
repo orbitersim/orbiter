@@ -553,7 +553,7 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 	sun = unit(sun - cam);	// Vector pointing to sun from camera
 	cam = unit(cam - pla);	// Vector pointing to cam from planet
 	
-	uint32_t width, height;
+	DWORD width, height;
 	oapiGetViewportSize(&width, &height); // BUG:  Custom Camera may have different view size
 
 
@@ -902,7 +902,7 @@ void D3D9Effect::RenderTileBoundingBox(const LPD3DXMATRIX pW, VECTOR4 *pVtx, con
 }
 
 
-void D3D9Effect::RenderLines(const D3DXVECTOR3 *pVtx, const WORD *pIdx, int nVtx, int nIdx, const D3DXMATRIX *pW, uint32_t color)
+void D3D9Effect::RenderLines(const D3DXVECTOR3 *pVtx, const WORD *pIdx, int nVtx, int nIdx, const D3DXMATRIX *pW, DWORD color)
 {
 	UINT numPasses = 0;
 	pDev->SetVertexDeclaration(pPositionDecl);

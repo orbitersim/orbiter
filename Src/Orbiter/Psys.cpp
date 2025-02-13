@@ -99,14 +99,14 @@ void PlanetarySystem::Write (ostream &os)
 
 Body *PlanetarySystem::GetObj (const char *name, bool ignorecase)
 {
-	for (uint32_t i = 0; i < bodies.size(); i++)
+	for (DWORD i = 0; i < bodies.size(); i++)
 		if (!StrComp (bodies[i]->Name(), name, ignorecase)) return bodies[i];
 	return 0;
 }
 
 CelestialBody *PlanetarySystem::GetGravObj (const char *name, bool ignorecase) const
 {
-	for (uint32_t i = 0; i < celestials.size(); i++)
+	for (DWORD i = 0; i < celestials.size(); i++)
 		if (!StrComp (celestials[i]->Name(), name, ignorecase)) return celestials[i];
 	return 0;
 }
@@ -120,28 +120,28 @@ Planet *PlanetarySystem::GetPlanet (const char *name, bool ignorecase)
 
 Vessel *PlanetarySystem::GetVessel (const char *name, bool ignorecase) const
 {
-	for (uint32_t i = 0; i < vessels.size(); i++)
+	for (DWORD i = 0; i < vessels.size(); i++)
 		if (!StrComp (vessels[i]->Name(), name, ignorecase)) return vessels[i];
 	return 0;
 }
 
 bool PlanetarySystem::isObject (const Body *obj) const
 {
-	for (uint32_t i = 0; i < bodies.size(); i++)
+	for (DWORD i = 0; i < bodies.size(); i++)
 		if (bodies[i] == obj) return true;
 	return false;
 }
 
 bool PlanetarySystem::isVessel (const Vessel *v) const
 {
-	for (uint32_t i = 0; i < vessels.size(); i++)
+	for (DWORD i = 0; i < vessels.size(); i++)
 		if (vessels[i] == v) return true;
 	return false;
 }
 
 Base *PlanetarySystem::GetBase (const Planet *planet, const char *name, bool ignorecase)
 {
-	for (uint32_t i = 0; i < planet->nBase(); i++)
+	for (DWORD i = 0; i < planet->nBase(); i++)
 		if (!StrComp (planet->GetBase(i)->Name(), name, ignorecase))
 			return planet->GetBase(i);
 	return 0;
@@ -149,7 +149,7 @@ Base *PlanetarySystem::GetBase (const Planet *planet, const char *name, bool ign
 
 Base *PlanetarySystem::GetBase (const char *name, bool ignorecase)
 {
-	for (uint32_t i = 0; i < celestials.size(); i++) {
+	for (DWORD i = 0; i < celestials.size(); i++) {
 		if (celestials[i]->Type() != OBJTP_PLANET) continue;
 		Planet *planet = (Planet*)celestials[i];
 		Base *base = GetBase (planet, name, ignorecase);
@@ -158,7 +158,7 @@ Base *PlanetarySystem::GetBase (const char *name, bool ignorecase)
 	return 0;
 }
 
-void PlanetarySystem::OptionChanged(uint32_t cat, uint32_t item)
+void PlanetarySystem::OptionChanged(DWORD cat, DWORD item)
 {
 	for (size_t i = 0; i < vessels.size(); i++)
 		vessels[i]->OptionChanged(cat, item);
@@ -167,7 +167,7 @@ void PlanetarySystem::OptionChanged(uint32_t cat, uint32_t item)
 bool PlanetarySystem::Read (char *fname, const Config* config, OutputLoadStatusCallback outputLoadStatus, void* callbackContext)
 {
 	int i;
-	uint32_t j;
+	DWORD j;
 	char cbuf[256], label[128];
 	
 	ifstream ifs (config->ConfigPath(fname));
@@ -470,7 +470,7 @@ void PlanetarySystem::UndockVessel (SuperVessel *sv, Vessel *_vessel, int port, 
 void PlanetarySystem::ScanGFieldSources (const Vector *gpos, const Body *exclude, GFieldData *gfd) const
 {
 	const double min_contrib = 1e-6; // min. rel. g-field contribution threshold
-	uint32_t i, j, idx;
+	DWORD i, j, idx;
 	double a, atot = 0.0;
 	gfd->ngrav = 0; // reset gravitation source list
 	for (i = 0; i < celestials.size(); i++)
@@ -484,7 +484,7 @@ void PlanetarySystem::ScanGFieldSources (const Vector *gpos, const Body *exclude
 					gfd->gravidx[gfd->ngrav++] = i;
 				else { // find current smallest contribution
 					double a2, amin = 1e100;
-					uint32_t jmin = MAXGFIELDLIST;
+					DWORD jmin = MAXGFIELDLIST;
 					// this search is not very efficient, but shouldn't be
 					// called very often
 					for (j = 0; j < MAXGFIELDLIST; j++) {
@@ -502,9 +502,9 @@ void PlanetarySystem::ScanGFieldSources (const Vector *gpos, const Body *exclude
 
 void PlanetarySystem::UpdateGFieldSources (const Vector *gpos, const Body *exclude, GFieldData *gfd) const
 {
-	extern const uint32_t MAXGFIELDLIST;
+	extern const DWORD MAXGFIELDLIST;
 	const double min_contrib = 1e-6; // min. g-field contribution threshold
-	uint32_t i, idx, imin;
+	DWORD i, idx, imin;
 	double a, atot = 0.0, amin = 1e100;
 	Vector acc;
 	bool testnext = true;
@@ -544,7 +544,7 @@ Vector PlanetarySystem::GaccAt (double t, const Vector &gpos, const Body *exclud
 	Vector r, acc, pos, closepos;
 	CelestialBody *closep = 0;
 	const CelestialBody *sec;
-	uint32_t i;
+	DWORD i;
 	double d, dmin = 1e100;
 
 	// pass 1: sun and primary planets
@@ -676,7 +676,7 @@ Vector SingleGacc (const Vector &rpos, const CelestialBody *body)
 Vector PlanetarySystem::Gacc (const Vector &gpos, const Body *exclude, const GFieldData *gfd) const
 {
 	Vector acc;
-	uint32_t i, j;
+	DWORD i, j;
 
 	if (gfd) {
 		for (j = 0; j < gfd->ngrav; j++) {
@@ -696,7 +696,7 @@ Vector PlanetarySystem::Gacc (const Vector &gpos, const Body *exclude, const GFi
 Vector PlanetarySystem::Gacc_intermediate (const Vector &gpos, double n, const Body *exclude, GFieldData *gfd) const
 {
 	Vector acc;
-	uint32_t i, j;
+	DWORD i, j;
 	
 	if (gfd) { // use body's source list
 		for (j = 0; j < gfd->ngrav; j++) {
@@ -716,7 +716,7 @@ Vector PlanetarySystem::Gacc_intermediate (const Vector &gpos, double n, const B
 Vector PlanetarySystem::Gacc_intermediate_pert (const CelestialBody *cbody, const Vector &relpos, double n, const Body *exclude, GFieldData *gfd) const
 {
 	Vector acc;
-	uint32_t i, j;
+	DWORD i, j;
 	Vector gpos = relpos + cbody->InterpolatePosition (n);
 
 	if (gfd) { // use body's source list
@@ -743,7 +743,7 @@ Vector PlanetarySystem::Gacc_intermediate_pert (const CelestialBody *cbody, cons
 Vector PlanetarySystem::GaccRel (const Vector &rpos, const CelestialBody *cbody, double n, const Body *exclude, GFieldData *gfd) const
 {
 	Vector acc;
-	uint32_t i, j;
+	DWORD i, j;
 
 	Vector gpos (rpos + cbody->InterpolatePosition (n));
 
@@ -770,7 +770,7 @@ Vector PlanetarySystem::GaccPn_perturbation (const Vector &gpos, double n, const
 CelestialBody *PlanetarySystem::GetDominantGravitySource (const Vector &gpos, double &gfrac)
 {
 	// assumes spherical gravity sources
-	uint32_t i;
+	DWORD i;
 	double g, gtot = 0.0, gmax = 0.0;
 	CelestialBody *body = 0;
 
@@ -789,7 +789,7 @@ CelestialBody *PlanetarySystem::GetDominantGravitySource (const Vector &gpos, do
 double PlanetarySystem::GetGravityContribution (const Body *body, const Vector &gpos, bool *dominant)
 {
 	// assumes spherical gravity sources
-	uint32_t i;
+	DWORD i;
 	double g, gtot = 0.0, gbody = 0.0, gmax = 0.0;
 
 	for (i = 0; i < celestials.size(); i++) {
@@ -813,7 +813,7 @@ Vector PlanetarySystem::GetMomentumFlux (const Vector &gpos) const
 
 void PlanetarySystem::Update (bool force)
 {
-	uint32_t i;
+	DWORD i;
 	for (i = 0; i < bodies      .size(); i++) bodies      [i]->BeginStateUpdate ();
 	for (i = 0; i < stars       .size(); i++) stars       [i]->RelTrueAndBaryState();
 	for (i = 0; i < stars       .size(); i++) stars       [i]->AbsTrueState();
@@ -825,7 +825,7 @@ void PlanetarySystem::Update (bool force)
 
 void PlanetarySystem::FinaliseUpdate ()
 {
-	uint32_t i;
+	DWORD i;
 	for (i = 0; i < bodies.size(); i++) bodies[i]->EndStateUpdate ();
 	for (i = 0; i < supervessels.size(); i++) supervessels[i]->PostUpdate ();
 	for (i = 0; i < vessels.size(); i++) vessels[i]->PostUpdate ();
@@ -833,7 +833,7 @@ void PlanetarySystem::FinaliseUpdate ()
 
 void PlanetarySystem::Timejump (const TimeJumpData& jump)
 {
-	uint32_t i;
+	DWORD i;
 	for (i = 0; i < bodies.size(); i++) bodies[i]->BeginStateUpdate ();
 	for (i = 0; i < stars.size(); i++) stars[i]->RelTrueAndBaryState();
 	for (i = 0; i < stars.size(); i++) stars[i]->AbsTrueState();
@@ -846,18 +846,18 @@ void PlanetarySystem::Timejump (const TimeJumpData& jump)
 
 void PlanetarySystem::InitDeviceObjects ()
 {
-	for (uint32_t i = 0; i < bodies.size(); i++)
+	for (DWORD i = 0; i < bodies.size(); i++)
 		bodies[i]->InitDeviceObjects();
 }
 
 void PlanetarySystem::DestroyDeviceObjects ()
 {
-	for (uint32_t i = 0; i < bodies.size(); i++)
+	for (DWORD i = 0; i < bodies.size(); i++)
 		bodies[i]->DestroyDeviceObjects();
 }
 
-void PlanetarySystem::BroadcastVessel (uint32_t msg, void *data)
+void PlanetarySystem::BroadcastVessel (DWORD msg, void *data)
 {
-	for (uint32_t i = 0; i < vessels.size(); i++)
+	for (DWORD i = 0; i < vessels.size(); i++)
 		vessels[i]->ProcessMessage (msg, data);
 }

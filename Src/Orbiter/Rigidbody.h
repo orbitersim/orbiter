@@ -23,12 +23,12 @@ class RigidBody;
 // =======================================================================
 // typdefs
 
-const uint32_t MAXGFIELDLIST = 20;
+const DWORD MAXGFIELDLIST = 20;
 
 typedef struct {         // used for dynamic grav updates
-	uint32_t gravidx[MAXGFIELDLIST]; // index list for gravity source objects
-	uint32_t ngrav;                  // number of gravity sources
-	uint32_t testidx;                // index for next object to test
+	DWORD gravidx[MAXGFIELDLIST]; // index list for gravity source objects
+	DWORD ngrav;                  // number of gravity sources
+	DWORD testidx;                // index for next object to test
 	double updt;                  // time of next list update
 } GFieldData;
 
@@ -144,7 +144,7 @@ public:
 	// Trivial angular acceleration calculation: ignores cross-axis
 	// coupling terms and torque, and always returns zero
 
-	static const char *PropagatorStr (uint32_t idx, bool verbose = true);
+	static const char *PropagatorStr (DWORD idx, bool verbose = true);
 	// Returns a string describing the dynamic state propagator
 	// given by index idx.
 

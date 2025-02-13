@@ -796,51 +796,51 @@ void Dragonfly::RedrawPanel_SensorInfo (SURFHANDLE surf)
 {
 	bool engaged = false;
 	OBJHANDLE hObj = GetDockStatus (GetDockHandle (0));
-// 	HDC hDC = oapiGetDC (surf);
-// //	SelectObject (hDC, g_Param.font[1]);
-// 	SetTextColor (hDC, RGB(0,255,0));
-// 	SetBkMode (hDC, TRANSPARENT);
-// 	if (!sensormode) {
-// 		TextOut (hDC, 0, 0, "LOCAL", 5);
-// 		engaged = (hObj != NULL);
-// 	} else {
-// 		TextOut (hDC, 0, 0, "REMOTE", 6);
-// 		if (remoteport >= 0) {
-// 			char cbuf[20];
-// 			sprintf (cbuf, "DOCK %d", remoteport+1);
-// 			TextOut (hDC, 0, 10, cbuf, strlen(cbuf));
-// 			engaged = (GetDockStatus (oapiGetDockHandle (hObj, remoteport)) != NULL);
-// 		} else
-// 			TextOut (hDC, 0, 10, "NO DATA", 7);
-// 	}
-// 	if (engaged) {
-// 		SetTextColor (hDC, 0);
-// 		SetBkColor (hDC, RGB(255,255,0));
-// 		SetBkMode (hDC, OPAQUE);
-// 		TextOut (hDC, 50, 0, "ENG", 3);
-// 	}
-// 	oapiReleaseDC (surf, hDC);
+	HDC hDC = oapiGetDC (surf);
+//	SelectObject (hDC, g_Param.font[1]);
+	SetTextColor (hDC, RGB(0,255,0));
+	SetBkMode (hDC, TRANSPARENT);
+	if (!sensormode) {
+		TextOut (hDC, 0, 0, "LOCAL", 5);
+		engaged = (hObj != NULL);
+	} else {
+		TextOut (hDC, 0, 0, "REMOTE", 6);
+		if (remoteport >= 0) {
+			char cbuf[20];
+			sprintf (cbuf, "DOCK %d", remoteport+1);
+			TextOut (hDC, 0, 10, cbuf, strlen(cbuf));
+			engaged = (GetDockStatus (oapiGetDockHandle (hObj, remoteport)) != NULL);
+		} else 
+			TextOut (hDC, 0, 10, "NO DATA", 7);
+	}
+	if (engaged) {
+		SetTextColor (hDC, 0);
+		SetBkColor (hDC, RGB(255,255,0));
+		SetBkMode (hDC, OPAQUE);
+		TextOut (hDC, 50, 0, "ENG", 3);
+	}
+	oapiReleaseDC (surf, hDC);
 };
 
 void Dragonfly::RedrawPanel_CGIndicator (SURFHANDLE surf)
 {
 	char cbuf[20];
-// 	HDC hDC = oapiGetDC (surf);
-// //	SelectObject (hDC, g_Param.font[1]);
-// 	SetTextColor (hDC, RGB(0,255,0));
-// 	SetBkMode (hDC, TRANSPARENT);
-// 	sprintf (cbuf, "%0.1f m", cgofs);
-// 	TextOut (hDC, 30, 0, cbuf, strlen (cbuf));
-// 	int loc = 4+min ((int)(cgofs*3.784), 74);
-// //	SelectObject (hDC, g_Param.pen[0]);
-// 	MoveToEx (hDC, loc, 15, NULL); LineTo (hDC, loc-3, 22); LineTo (hDC, loc+3, 22); LineTo (hDC, loc, 15);
-// 	oapiReleaseDC (surf, hDC);
+	HDC hDC = oapiGetDC (surf);
+//	SelectObject (hDC, g_Param.font[1]);
+	SetTextColor (hDC, RGB(0,255,0));
+	SetBkMode (hDC, TRANSPARENT);
+	sprintf (cbuf, "%0.1f m", cgofs);
+	TextOut (hDC, 30, 0, cbuf, strlen (cbuf));
+	int loc = 4+min ((int)(cgofs*3.784), 74);
+//	SelectObject (hDC, g_Param.pen[0]);
+	MoveToEx (hDC, loc, 15, NULL); LineTo (hDC, loc-3, 22); LineTo (hDC, loc+3, 22); LineTo (hDC, loc, 15);
+	oapiReleaseDC (surf, hDC);
 };
 
 void Dragonfly::LoadPanel(int id)
 { 
 	Internals.PanelList[id].MakeYourBackground();
-	// oapiRegisterPanelBackground(Internals.PanelList[id].hBitmap,Internals.PanelList[id].ATT_mode,0xFFFFFF);
+	oapiRegisterPanelBackground(Internals.PanelList[id].hBitmap,Internals.PanelList[id].ATT_mode,0xFFFFFF);
 	oapiSetPanelNeighbours(Internals.PanelList[id].neighbours[0],Internals.PanelList[id].neighbours[1],Internals.PanelList[id].neighbours[2],Internals.PanelList[id].neighbours[3]);
 	Internals.PanelList[id].RegisterYourInstruments();
     CurrentPANEL=id;

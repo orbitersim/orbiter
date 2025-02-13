@@ -93,7 +93,7 @@ public:
 	 * \return Pointer to pen resource
 	 * \sa clbkReleasePen, GDIPen
 	 */
-	oapi::Pen *clbkCreatePen (int style, int width, uint32_t col) const;
+	oapi::Pen *clbkCreatePen (int style, int width, DWORD col) const;
 
 	/**
 	 * \brief De-allocate a pen resource.
@@ -108,7 +108,7 @@ public:
 	 * \return Pointer to brush resource
 	 * \sa clbkReleaseBrush, GDIBrush
 	 */
-	oapi::Brush *clbkCreateBrush (uint32_t col) const;
+	oapi::Brush *clbkCreateBrush (DWORD col) const;
 
 	/**
 	 * \brief De-allocate a brush resource.
@@ -197,7 +197,7 @@ public:
 	 * \param col colour description (format: 0xBBGGRR)
 	 * \return Previous colour setting.
 	 */
-	uint32_t SetTextColor (uint32_t col);
+	DWORD SetTextColor (DWORD col);
 
 	/**
 	 * \brief Set the background colour for text output.
@@ -207,7 +207,7 @@ public:
 	 *   is set to BK_OPAQUE.
 	 * \sa SetBackgroundMode
 	 */
-	uint32_t SetBackgroundColor (uint32_t col);
+	DWORD SetBackgroundColor (DWORD col);
 
 	/**
 	 * \brief Set the background mode for text and drawing operations.
@@ -232,7 +232,7 @@ public:
 	 * \note The width value is given by tmAveCharWidth from the
 	 *   TEXTMETRIC structure returned by the GDI GetTextMetrics function.
 	 */
-	uint32_t GetCharSize ();
+	DWORD GetCharSize ();
 
 	/**
 	 * \brief Returns the width of a text string in the currently selected font.
@@ -241,7 +241,7 @@ public:
 	 * \return width of the string, drawn in the currently selected font [pixel]
 	 * \sa SetFont
 	 */
-	uint32_t GetTextWidth (const char *str, int len = 0);
+	DWORD GetTextWidth (const char *str, int len = 0);
 
 	/**
 	 * \brief Set the position in the surface bitmap which is mapped to the
@@ -297,7 +297,7 @@ public:
 	 * \param y y-coordinate of point [pixel]
 	 * \param col pixel colour (format: 0xBBGGRR)
 	 */
-	void Pixel (int x, int y, uint32_t col);
+	void Pixel (int x, int y, DWORD col);
 
 	/**
 	 * \brief Moves the drawing reference to a new point.
@@ -481,7 +481,7 @@ public:
 	 * \note If \e width=0, the pen is drawn with a width of 1 pixel.
 	 * \note Dashed line styles are only valid if the width parameter is <= 1.
 	 */
-	GDIPen (int style, int width, uint32_t col);
+	GDIPen (int style, int width, DWORD col);
 
 	/**
 	 * \brief Pen destructor.
@@ -509,7 +509,7 @@ public:
 	 * \param col line colour (format: 0xBBGGRR)
 	 * \Only solid GDI brushes are supported.
 	 */
-	GDIBrush (uint32_t col);
+	GDIBrush (DWORD col);
 
 	/**
 	 * \brief Brush destructor.

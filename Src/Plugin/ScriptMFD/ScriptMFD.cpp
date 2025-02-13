@@ -137,7 +137,7 @@ DLLCLBK void ExitModule (HINSTANCE hDLL)
 	ClearVinterpList();
 }
 
-DLLCLBK void opcOpenRenderViewport(HWND,uint32_t,uint32_t,BOOL)
+DLLCLBK void opcOpenRenderViewport(HWND,DWORD,DWORD,BOOL)
 {
 }
 
@@ -180,7 +180,7 @@ DLLCLBK void opcPostStep (double simt, double simdt, double mjd)
 // MFD class implementation
 
 // Constructor
-ScriptMFD::ScriptMFD (uint32_t w, uint32_t h, VESSEL *vessel, const SCRIPTMFDMODESPEC *spec)
+ScriptMFD::ScriptMFD (DWORD w, DWORD h, VESSEL *vessel, const SCRIPTMFDMODESPEC *spec)
 : MFD2 (w, h, vessel)
 {
 	int i;
@@ -280,7 +280,7 @@ bool ScriptMFD::ConsumeButton (int bt, int event)
 }
 
 // React to a buffered key
-bool ScriptMFD::ConsumeKeyBuffered (uint32_t key)
+bool ScriptMFD::ConsumeKeyBuffered (DWORD key)
 {
 	if (bclbk[CONSUMEKEYBUFFERED]) {
 		lua_getfield (L, LUA_GLOBALSINDEX, CLBKNAME[CONSUMEKEYBUFFERED]);
@@ -445,12 +445,12 @@ void ScriptMFD::ReadStatus (FILEHANDLE scn)
 }
 
 // MFD message parser
-void* ScriptMFD::MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam)
+OAPI_MSGTYPE ScriptMFD::MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam)
 {
 	switch (msg) {
 	case OAPI_MSG_MFD_OPENEDEX: {
 		MFDMODEOPENSPEC* ospec = (MFDMODEOPENSPEC*)wparam;
-		return (void*)new ScriptMFD(ospec->w, ospec->h, (VESSEL*)lparam, (const SCRIPTMFDMODESPEC*)ospec->spec->context);
+		return (OAPI_MSGTYPE)new ScriptMFD(ospec->w, ospec->h, (VESSEL*)lparam, (const SCRIPTMFDMODESPEC*)ospec->spec->context);
 		}
 	}
 	return 0;

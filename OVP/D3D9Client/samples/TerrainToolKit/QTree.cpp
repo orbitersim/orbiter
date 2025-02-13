@@ -277,7 +277,7 @@ bool QTree::Intersect(DRECT q, DRECT *s, DRECT *d) const
 
 // ==================================================================================
 //
-bool QTree::MapRect(DRECT OvlRect, SURFHANDLE hOvlSrf, Rect &src, Rect &tgt)
+bool QTree::MapRect(DRECT OvlRect, SURFHANDLE hOvlSrf, RECT &src, RECT &tgt)
 {
 	DRECT dsrc, dtgt;
 	if (Intersect(OvlRect, &dsrc, &dtgt)) {
@@ -306,8 +306,8 @@ int QTree::SaveTile(int flags, SURFHANDLE hSurf, SURFHANDLE hTemp, DRECT bounds,
 {
 	if (level > maxlvl && maxlvl != -1) return 0;
 
-	Rect src = { 0,0,0,0 };
-	Rect tgt = { 0,0,0,0 };
+	RECT src = { 0,0,0,0 };
+	RECT tgt = { 0,0,0,0 };
 	DRECT dsrc;
 	DRECT dtgt;
 
@@ -383,7 +383,7 @@ int QTree::SaveTile(int flags, SURFHANDLE hSurf, SURFHANDLE hTemp, DRECT bounds,
 		if (st.pNode) {
 			SURFHANDLE hTex = st.pNode->GetTexture(flags);
 			if (hTex) {
-				Rect t = { 0, 0, 512, 512 };
+				RECT t = { 0, 0, 512, 512 };
 				pSkp->StretchRect(hTex, &st.range, &t); // Copy parent data into this tile
 			}
 		}

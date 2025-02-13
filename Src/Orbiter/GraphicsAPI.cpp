@@ -133,7 +133,7 @@ void GraphicsClient::UnregisterVisObject (OBJHANDLE hObj)
 
 // ======================================================================
 
-int GraphicsClient::clbkVisEvent (OBJHANDLE hObj, VISHANDLE vis, uint32_t msg, DWORD_PTR context)
+int GraphicsClient::clbkVisEvent (OBJHANDLE hObj, VISHANDLE vis, DWORD msg, DWORD_PTR context)
 {
 	return 0;
 }
@@ -204,7 +204,7 @@ bool GraphicsClient::PlanetTexturePath(const char* planetname, char* path) const
 
 // ======================================================================
 
-uint32_t GraphicsClient::GetPopupList (const HWND **hPopupWnd) const
+DWORD GraphicsClient::GetPopupList (const HWND **hPopupWnd) const
 {
 	DialogManager *dlgmgr = g_pOrbiter->DlgMgr();
 	if (dlgmgr) return dlgmgr->GetDlgList (hPopupWnd);
@@ -243,28 +243,28 @@ SURFHANDLE GraphicsClient::GetVCMFDSurface (int mfd, const VCMFDSPEC **mfdspec) 
 
 // ======================================================================
 
-uint32_t GraphicsClient::GetBaseTileList (OBJHANDLE hBase, const SurftileSpec **tile) const
+DWORD GraphicsClient::GetBaseTileList (OBJHANDLE hBase, const SurftileSpec **tile) const
 {
 	return ((Base*)hBase)->GetTileList (tile);
 }
 
 // ======================================================================
 
-void GraphicsClient::GetBaseStructures (OBJHANDLE hBase, MESHHANDLE **mesh_bs, uint32_t *nmesh_bs, MESHHANDLE **mesh_as, uint32_t *nmesh_as) const
+void GraphicsClient::GetBaseStructures (OBJHANDLE hBase, MESHHANDLE **mesh_bs, DWORD *nmesh_bs, MESHHANDLE **mesh_as, DWORD *nmesh_as) const
 {
 	((Base*)hBase)->ExportBaseStructures ((Mesh***)mesh_bs, nmesh_bs, (Mesh***)mesh_as, nmesh_as);
 }
 
 // ======================================================================
 
-void GraphicsClient::GetBaseShadowGeometry (OBJHANDLE hBase, MESHHANDLE **mesh_sh, double **elev, uint32_t *nmesh_sh) const
+void GraphicsClient::GetBaseShadowGeometry (OBJHANDLE hBase, MESHHANDLE **mesh_sh, double **elev, DWORD *nmesh_sh) const
 {
 	((Base*)hBase)->ExportShadowGeometry ((Mesh***)mesh_sh, elev, nmesh_sh);
 }
 
 // ======================================================================
 
-const void *GraphicsClient::GetConfigParam (uint32_t paramtype) const
+const void *GraphicsClient::GetConfigParam (DWORD paramtype) const
 {
 	return g_pOrbiter->Cfg()->GetParam (paramtype);
 }
@@ -331,23 +331,23 @@ bool GraphicsClient::ElevationGrid(ELEVHANDLE hElev, int ilat, int ilng, int lvl
 
 void GraphicsClient::ShowDefaultSplash ()
 {
-	const uint32_t texcol = 0xA06060;
-	uint32_t rw, rh;
+	const DWORD texcol = 0xA06060;
+	DWORD rw, rh;
 	clbkGetViewportSize (&rw, &rh);
 
-	//const uint32_t bmw = rw, bmh = (rw*10)/16; // source image is 1920x1200, i.e. 16/20 aspect ratio
-	const uint32_t bmw = min(rw, (rh*16)/10);
-	const uint32_t bmh = (bmw*10)/16;
+	//const DWORD bmw = rw, bmh = (rw*10)/16; // source image is 1920x1200, i.e. 16/20 aspect ratio
+	const DWORD bmw = min(rw, (rh*16)/10);
+	const DWORD bmh = (bmw*10)/16;
 	HMODULE hMod = GetModuleHandle(NULL);
 	HRSRC hRsrc = FindResource(hMod,MAKEINTRESOURCE(IDR_IMAGE1), "IMAGE");
 	HGLOBAL hGlob = LoadResource(hMod, hRsrc);
 	BYTE *pBuf = (BYTE*)LockResource(hGlob);
-	uint32_t nBuf = SizeofResource(hMod,hRsrc);
+	DWORD nBuf = SizeofResource(hMod,hRsrc);
 	HBITMAP hbm = ReadImageFromMemory (pBuf, nBuf, bmw, bmh);
 
 	// copy splash screen to viewport
 	SURFHANDLE surf = GraphicsClient::clbkCreateSurface (hbm);
-	uint32_t tgtx = 0, tgty = 0;
+	DWORD tgtx = 0, tgty = 0;
 	if (bmw < rw) tgtx = (rw-bmw)/2;
 	if (bmh < rh) tgty = (rh-bmh)/2;
 	if (surf) clbkBlt (NULL, tgtx, tgty, surf, 0, 0, bmw, bmh);
@@ -355,9 +355,9 @@ void GraphicsClient::ShowDefaultSplash ()
 
 	oapi::Sketchpad *skp = clbkGetSketchpad (NULL);
 	skp->SetBackgroundMode (oapi::Sketchpad::BK_TRANSPARENT);
-	uint32_t fontsize = 16; //max(rw/120,10);
-	uint32_t x0 = 10;//rw-fontsize*25;
-	uint32_t y0 = rh-fontsize; //tgty + (uint32_t)(rw*0.078);
+	DWORD fontsize = 16; //max(rw/120,10);
+	DWORD x0 = 10;//rw-fontsize*25;
+	DWORD y0 = rh-fontsize; //tgty + (DWORD)(rw*0.078);
 	if (splashFont) clbkReleaseFont (splashFont);
 	splashFont = clbkCreateFont(fontsize,true,"Arial", FONT_NORMAL);
 	skp->SetFont (splashFont);
@@ -430,7 +430,7 @@ HBITMAP ReadImageFromDecoder (IWICImagingFactory *m_pIWICFactory, IWICBitmapDeco
 
 // ======================================================================
 
-HBITMAP GraphicsClient::ReadImageFromMemory (BYTE *pBuf, uint32_t nBuf, UINT w, UINT h)
+HBITMAP GraphicsClient::ReadImageFromMemory (BYTE *pBuf, DWORD nBuf, UINT w, UINT h)
 {
 	IWICBitmapDecoder *piDecoder = NULL;
 	
@@ -613,7 +613,7 @@ bool GraphicsClient::clbkCopyBitmap (SURFHANDLE pdds, HBITMAP hbm,
     BITMAP                  bm;
     //DDSURFACEDESC2          ddsd;
     //HRESULT                 hr;
-	uint32_t                   surfW, surfH;
+	DWORD                   surfW, surfH;
 
     if (hbm == NULL || pdds == NULL)
         return false;
@@ -703,16 +703,16 @@ const std::vector<GraphicsClient::LABELLIST>& GraphicsClient::GetCelestialMarker
 
 // ==================================================================
 
-uint32_t GraphicsClient::GetSurfaceMarkers (OBJHANDLE hObj, const LABELLIST **sm_list) const
+DWORD GraphicsClient::GetSurfaceMarkers (OBJHANDLE hObj, const LABELLIST **sm_list) const
 {
 	int nlist;
 	*sm_list = ((Planet*)hObj)->LabelList (&nlist);
-	return (uint32_t)nlist;
+	return (DWORD)nlist;
 }
 
 // ==================================================================
 
-uint32_t GraphicsClient::GetSurfaceMarkerLegend (OBJHANDLE hObj, const LABELTYPE **lspec) const
+DWORD GraphicsClient::GetSurfaceMarkerLegend (OBJHANDLE hObj, const LABELTYPE **lspec) const
 {
 	Planet *planet = (Planet*)hObj;
 	*lspec = planet->LabelLegend();

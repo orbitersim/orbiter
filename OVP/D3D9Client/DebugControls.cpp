@@ -263,7 +263,7 @@ void Create()
 void Close()
 {
 	if (hDlg != NULL) {
-		// oapiCloseDialog(hDlg);
+		oapiCloseDialog(hDlg);
 		hDlg = NULL;
 	}
 	vObj = NULL;
@@ -409,10 +409,10 @@ void InitMatList(WORD shader)
 void OpenDlgClbk(void *context)
 {
 	DWORD idx = 0;
-	// HWND l_hDlg = oapiOpenDialog(stopgapGetModuleInstance(g_hInst), IDD_D3D9MESHDEBUG, WndProc);
+	HWND l_hDlg = oapiOpenDialog(stopgapGetModuleInstance(g_hInst), IDD_D3D9MESHDEBUG, WndProc);
 
-	// if (l_hDlg) hDlg = l_hDlg; // otherwise open already
-	// else return;
+	if (l_hDlg) hDlg = l_hDlg; // otherwise open already
+	else return;
 
 	RECT rect;
 	GetWindowRect(hDlg, &rect);
@@ -1780,7 +1780,7 @@ INT_PTR CALLBACK ViewProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		switch (LOWORD(wParam)) {
 
 		case IDCANCEL:
-			// oapiCloseDialog(hWnd);
+			oapiCloseDialog(hWnd);
 			if (!buffer.empty()) buffer.clear();
 			hDataWnd = NULL;
 			return TRUE;
@@ -1788,8 +1788,7 @@ INT_PTR CALLBACK ViewProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 
-	// return oapiDefDialogProc(hWnd, uMsg, wParam, lParam);
-	return 0;
+	return oapiDefDialogProc(hWnd, uMsg, wParam, lParam);
 }
 
 
@@ -1867,8 +1866,8 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			case IDC_DBG_DATAWND:
 			{
-				// HWND hW = oapiOpenDialog(stopgapGetModuleInstance(g_hInst), IDD_DEBUGVIEW, ViewProc);
-				// if (hW) hDataWnd = hW;
+				HWND hW = oapiOpenDialog(stopgapGetModuleInstance(g_hInst), IDD_DEBUGVIEW, ViewProc);
+				if (hW) hDataWnd = hW;
 			}
 				break;
 
@@ -2088,8 +2087,7 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 
-	// return oapiDefDialogProc(hWnd, uMsg, wParam, lParam);
-	return 0;
+	return oapiDefDialogProc(hWnd, uMsg, wParam, lParam);
 }
 
 // =============================================================================================

@@ -20,8 +20,8 @@ using std::max;
 extern char DBG_MSG[256];
 extern Orbiter *g_pOrbiter;
 extern Camera *g_camera;
-extern uint32_t g_vtxcount;
-extern uint32_t g_tilecount;
+extern DWORD g_vtxcount;
+extern DWORD g_tilecount;
 extern TimeData td;
 
 class MenuInfoBar;
@@ -252,7 +252,7 @@ void ViewportInfoBar::Init ()
 	char cbuf[128];
 	sprintf (cbuf, "Viewport: %dx%d, %dbpp", pane->Width(), pane->Height(), pane->BitsPerPixel());
 	TexBltString (cbuf, texofs+5, infoLine1, texofs+190);
-	uint32_t is_tl;
+	DWORD is_tl;
 	strcpy (cbuf, "T&L support: ");
 	if (gc->clbkGetRenderParam (RP_ISTLDEVICE, &is_tl))
 		strcat (cbuf, is_tl ? "yes" : "no");
@@ -276,7 +276,7 @@ protected:
 
 private:
 	int framecount;
-	uint32_t vtxsum;
+	DWORD vtxsum;
 };
 
 RenderstatInfoBar::RenderstatInfoBar (MenuInfoBar *_mibar, int side)
@@ -299,7 +299,7 @@ void RenderstatInfoBar::Update (double t, bool sys_tick)
 	vtxsum += g_vtxcount;
 	if (sys_tick && framecount) {
 		char cbuf[32];
-		uint32_t nvtx = vtxsum/framecount;
+		DWORD nvtx = vtxsum/framecount;
 		SetCurrentSample (nvtx);
 		sprintf (cbuf, "%d", g_vtxcount);
 		TexBltString (cbuf, texofs+35, infoLine1, texofs+98);
@@ -624,9 +624,9 @@ void MenuInfoBar::Update (double t)
 	}
 }
 
-bool MenuInfoBar::ProcessMouse (UINT event, uint32_t state, uint32_t x, uint32_t y)
+bool MenuInfoBar::ProcessMouse (UINT event, DWORD state, DWORD x, DWORD y)
 {
-	x = (uint32_t)(x / transf.m11); // account for menu squeezing
+	x = (DWORD)(x / transf.m11); // account for menu squeezing
 
 	if (event == WM_MOUSEMOVE) {
 		if (menumode == 2) {
@@ -826,7 +826,7 @@ void MenuInfoBar::ToggleAutohide ()
 	SetMenuMode (menumode == 0 ? 2:0);
 }
 
-void MenuInfoBar::SetMenuMode (uint32_t mode)
+void MenuInfoBar::SetMenuMode (DWORD mode)
 {
 	if (menumode != mode) {
 		menumode = mode;
@@ -839,7 +839,7 @@ void MenuInfoBar::SetMenuMode (uint32_t mode)
 	}
 }
 
-void MenuInfoBar::SetInfoMode (uint32_t mode)
+void MenuInfoBar::SetInfoMode (DWORD mode)
 {
 	if (infomode != mode) {
 		infomode = mode;
@@ -852,7 +852,7 @@ void MenuInfoBar::SetInfoMode (uint32_t mode)
 	}
 }
 
-void MenuInfoBar::SetPauseIndicatorMode (uint32_t mode)
+void MenuInfoBar::SetPauseIndicatorMode (DWORD mode)
 {
 	if (pausemode != mode) {
 		pausemode = mode;
@@ -919,9 +919,9 @@ void MenuInfoBar::SetLabelOnly (bool labelonly)
 	}
 }
 
-void MenuInfoBar::SetAuxInfobar (int side, uint32_t idx)
+void MenuInfoBar::SetAuxInfobar (int side, DWORD idx)
 {
-	uint32_t curidx = (eibar[side] ? eibar[side]->Mode() : 0);
+	DWORD curidx = (eibar[side] ? eibar[side]->Mode() : 0);
 	if (idx != curidx) {
 		if (eibar[side]) delete eibar[side];
 		eibar[side] = ExtraInfoBar::Create (this, side, idx);

@@ -40,6 +40,7 @@
 #include "Script.h"
 #include "Memstat.h"
 #include "CustomControls.h"
+#include "Help.h"
 #include "Util.h"
 #include "DlgHelp.h" // temporary
 #include "htmlctrl.h"
@@ -85,8 +86,8 @@ double          g_nearplane      = 5.0;
 double          g_farplane       = 5e6;
 const double    MinWarpLimit     = 0.1;  // make variable
 const double    MaxWarpLimit     = 1e5;  // make variable
-uint32_t           g_qsaveid        = 0;
-uint32_t           g_customcmdid    = 0;
+DWORD           g_qsaveid        = 0;
+DWORD           g_customcmdid    = 0;
 int             g_iCursorShowCount = 0;
 
 // 2D info output flags
@@ -98,9 +99,9 @@ bool g_bShowGrapple = false;
 bool g_bStateUpdate = false;
 
 // Timing parameters
-uint32_t  launch_tick;      // counts the first 3 frames
-uint32_t  g_vtxcount = 0;   // vertices/frame rendered (for diagnosis)
-uint32_t  g_tilecount = 0;  // surface tiles/frame rendered (for diagnosis)
+DWORD  launch_tick;      // counts the first 3 frames
+DWORD  g_vtxcount = 0;   // vertices/frame rendered (for diagnosis)
+DWORD  g_tilecount = 0;  // surface tiles/frame rendered (for diagnosis)
 BOOL   use_fine_counter;         // high-precision timer available?
 double fine_counter_step;        // step interval of high-precision counter (or 0 if not available)
 LARGE_INTEGER fine_counter_freq; // high-precision tick frequency
@@ -108,14 +109,14 @@ LARGE_INTEGER fine_counter;      // current high-precision time value
 TimeData td;             // timing information
 
 // Configuration parameters set from Driver.cfg
-uint32_t requestDriver     = 0;
-uint32_t requestFullscreen = 0;
-uint32_t requestSoftware   = 0;
-uint32_t requestScreenW    = 640;
-uint32_t requestScreenH    = 480;
-uint32_t requestWindowW    = 400;
-uint32_t requestWindowH    = 300;
-uint32_t requestZDepth     = 16;
+DWORD requestDriver     = 0;
+DWORD requestFullscreen = 0;
+DWORD requestSoftware   = 0;
+DWORD requestScreenW    = 640;
+DWORD requestScreenH    = 480;
+DWORD requestWindowW    = 400;
+DWORD requestWindowH    = 300;
+DWORD requestZDepth     = 16;
 
 // Logical objects
 Camera          *g_camera = 0;         // observer camera
@@ -330,7 +331,7 @@ Orbiter::Orbiter () : hInstStopgap(GetModuleHandle(nullptr))
 	ncustomcmd      = 0;
 	D3DMathSetup();
 	script          = NULL;
-	// memstat = nullptr;
+	memstat = nullptr;
 
 	simheapsize     = 0;
 
@@ -408,7 +409,7 @@ bool Orbiter::Create()
 	if (pConfig->CfgDebugPrm.bDisableSmoothFont)
 		ActivateRoughType();
 
-	// memstat = new MemStat;
+	memstat = new MemStat;
 	
 	return true;
 }
@@ -437,14 +438,14 @@ VOID Orbiter::CloseApp (bool fast_shutdown)
 
 	if (!fast_shutdown) {
 		delete pDI;
-		// if (memstat) delete memstat;
+		if (memstat) delete memstat;
 		if (pConfig)  delete pConfig;
 		if (m_pLaunchpad) delete m_pLaunchpad;
 		if (hBk) DestroyWindow (hBk);
 		if (pState)   delete pState;
 		if (script) delete script;
 		if (ncustomcmd) {
-			for (uint32_t i = 0; i < ncustomcmd; i++) {
+			for (DWORD i = 0; i < ncustomcmd; i++) {
 				delete []customcmd[i].label;
 				customcmd[i].label = NULL;
 			}
@@ -580,7 +581,7 @@ ModHandle* Orbiter::LoadModule (const char *path, const char *name)
 		LOGOUT(register_module ? "Loading module %s" : "Loading module %s (legacy interface)", name);
 		m_Plugin.push_back(module);
 	} else {
-		uint32_t err = GetLastError();
+		DWORD err = GetLastError();
 		LOGOUT_ERR ("Failed loading module %s (code %d)", cbuf, err);
 	}
 	return hDLL;
@@ -658,9 +659,9 @@ VOID Orbiter::Launch (const char *scenario)
 	}
 	//DlgHelp::SetScenarioHelp (pState->ScnHelp());
 
-	// long m0 = memstat->HeapUsage();
+	long m0 = memstat->HeapUsage();
 	CreateRenderWindow (pConfig, scenario);
-	// simheapsize = memstat->HeapUsage()-m0;
+	simheapsize = memstat->HeapUsage()-m0;
 	SetCursor (hCursor);
 }
 
@@ -670,7 +671,7 @@ VOID Orbiter::Launch (const char *scenario)
 //-----------------------------------------------------------------------------
 HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 {
-	uint32_t i;
+	DWORD i;
 
 	SetLogVerbosity (pCfg->CfgDebugPrm.bVerboseLog);
 	LOGOUT("");
@@ -708,7 +709,7 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 		// TODO: why is this suddenly broken snote_playback = gclient->clbkAnnotation ();
 	}
 	else {
-		pDlgMgr = new DialogManager(this, (HWND)0);
+		pDlgMgr = new DialogManager(this, m_pConsole->WindowHandle());
 	}
 
 	// read simulation environment state
@@ -743,7 +744,7 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 	g_focusobj = 0;
 	Vessel *vfocus = g_psys->GetVessel (pState->Focus());
 	if (!vfocus)
-		vfocus = g_psys->GetVessel ((uint32_t)0); // in case no focus vessel was defined
+		vfocus = g_psys->GetVessel ((DWORD)0); // in case no focus vessel was defined
 	SetFocusObject (vfocus, false);
 
 	LOGOUT("Finished initialising status");
@@ -849,7 +850,7 @@ void Orbiter::PreCloseSession()
 //-----------------------------------------------------------------------------
 void Orbiter::CloseSession ()
 {
-	uint32_t i;
+	DWORD i;
 
 	bSession = false;
 
@@ -889,7 +890,7 @@ Launch this scenario to return to your last simulation state
 		}
 		if (snote_playback) delete snote_playback;
 		if (nsnote) {
-			for (uint32_t i = 0; i < nsnote; i++) delete snote[i];
+			for (DWORD i = 0; i < nsnote; i++) delete snote[i];
 			delete []snote;
 			snote = NULL;
 			nsnote = 0;
@@ -946,7 +947,7 @@ void Orbiter::GetRenderParameters ()
 {
 	if (!gclient) return; // sanity check
 
-	uint32_t val;
+	DWORD val;
 	gclient->clbkGetViewportSize (&viewW, &viewH);
 	viewBPP = (gclient->clbkGetRenderParam (RP_COLOURDEPTH, &val) ? val:0);
 	bFullscreen = gclient->clbkFullscreenMode();
@@ -1168,7 +1169,7 @@ void Orbiter::ExitRotationMode ()
 	}
 }
 
-void Orbiter::OnOptionChanged(uint32_t cat, uint32_t item)
+void Orbiter::OnOptionChanged(DWORD cat, DWORD item)
 {
 	if (gclient)
 		gclient->clbkOptionChanged(cat, item);
@@ -1276,7 +1277,7 @@ void Orbiter::InsertVessel (Vessel *vessel)
 bool Orbiter::KillVessels ()
 {
 	int i, n = g_psys->nVessel();
-	uint32_t j;
+	DWORD j;
 
 	for (i = n-1; i >= 0; i--) {
 		if (g_psys->GetVessel(i)->KillPending()) {
@@ -1371,7 +1372,7 @@ void Orbiter::SetWarpFactor (double warp, bool force, double delay)
 			if (delay) sprintf (cbuf, "%f %f", warp, delay);
 			else       sprintf (cbuf, "%f", warp);
 			FRecorder_SaveEvent ("TACC", cbuf);
-			//for (uint32_t i = 0; i < g_psys->nVessel(); i++)
+			//for (DWORD i = 0; i < g_psys->nVessel(); i++)
 			//	g_psys->GetVessel(i)->FRecorder_SaveEvent ("TACC", cbuf);
 		}
 	}
@@ -1525,7 +1526,7 @@ void Orbiter::CaptureVideoFrame ()
 
 void Orbiter::TogglePlanetariumMode()
 {
-	uint32_t& plnFlag = pConfig->CfgVisHelpPrm.flagPlanetarium;
+	DWORD& plnFlag = pConfig->CfgVisHelpPrm.flagPlanetarium;
 	plnFlag ^= PLN_ENABLE;
 
 	if (pDlgMgr) {
@@ -1539,7 +1540,7 @@ void Orbiter::TogglePlanetariumMode()
 
 void Orbiter::ToggleLabelDisplay()
 {
-	uint32_t& mkrFlag = pConfig->CfgVisHelpPrm.flagMarkers;
+	DWORD& mkrFlag = pConfig->CfgVisHelpPrm.flagMarkers;
 	mkrFlag ^= MKR_ENABLE;
 
 	if (pDlgMgr) {
@@ -1598,7 +1599,7 @@ bool Orbiter::ToggleRecorder (bool force, bool append)
 
 void Orbiter::EndPlayback ()
 {
-	for (uint32_t i = 0; i < g_psys->nVessel(); i++)
+	for (DWORD i = 0; i < g_psys->nVessel(); i++)
 		g_psys->GetVessel(i)->FRecorder_EndPlayback ();
 	FRecorder_ClosePlayback();
 	if (snote_playback) snote_playback->ClearText();
@@ -1630,8 +1631,8 @@ oapi::ScreenAnnotation *Orbiter::CreateAnnotation (bool exclusive, double size, 
 	snote[nsnote++] = sn;
 	return sn;
 
-	//uint32_t w = oclient->GetFramework()->GetRenderWidth();
-	//uint32_t h = oclient->GetFramework()->GetRenderHeight();
+	//DWORD w = oclient->GetFramework()->GetRenderWidth();
+	//DWORD h = oclient->GetFramework()->GetRenderHeight();
 
 	//ScreenNote *sn = new ScreenNote (this, w, h);
 	//sn->SetSize (size);
@@ -1649,7 +1650,7 @@ oapi::ScreenAnnotation *Orbiter::CreateAnnotation (bool exclusive, double size, 
 
 bool Orbiter::DeleteAnnotation (oapi::ScreenAnnotation *sn)
 {
-	uint32_t i, j, k;
+	DWORD i, j, k;
 
 	if (!gclient) return false;
 	for (i = 0; i < nsnote; i++) {
@@ -1719,6 +1720,26 @@ void Orbiter::OutputLoadTick (int line, bool ok)
 }
 
 //-----------------------------------------------------------------------------
+// Name: InitializeGDIResources()
+// Desc: Allocate resources required for GDI display (HUD, MFD)
+//-----------------------------------------------------------------------------
+void Orbiter::InitializeGDIResources (HWND hWnd)
+{
+	// Allocate global GDI resources
+	if (g_gdires) delete g_gdires;
+	g_gdires = new GDIResources (hWnd, viewW, viewH, *pConfig); TRACENEW
+}
+
+//-----------------------------------------------------------------------------
+// Name: ReleaseGDIResources()
+// Desc: Release resources used by GDI
+//-----------------------------------------------------------------------------
+void Orbiter::ReleaseGDIResources ()
+{
+	if (g_gdires) delete g_gdires, g_gdires = 0;
+}
+
+//-----------------------------------------------------------------------------
 // Name: OpenTextureFile()
 // Desc: Return file handle for texture file (0=error)
 //       First searches in hightex dir, then in standard dir
@@ -1776,7 +1797,7 @@ VOID Orbiter::Output2DData ()
 {
 	g_pane->Draw ();
 	if (g_pane) {
-		for (uint32_t i = 0; i < nsnote; i++)
+		for (DWORD i = 0; i < nsnote; i++)
 			snote[i]->Render();
 		if (snote_playback && pConfig->CfgRecPlayPrm.bShowNotes) snote_playback->Render();
 	}
@@ -1804,7 +1825,7 @@ bool Orbiter::BeginTimeStep (bool running)
 	// an offset and increment, to avoid floating point underflow roundoff
 	// when adding the current time step
 	double deltat;
-	uint32_t ms_curr = timeGetTime ();
+	DWORD ms_curr = timeGetTime ();
 	LARGE_INTEGER hi_curr;
 	if (use_fine_counter) QueryPerformanceCounter (&hi_curr);
 
@@ -1817,7 +1838,7 @@ bool Orbiter::BeginTimeStep (bool running)
 		launch_tick--;
 	} else {
 		// standard time update
-		uint32_t ms_delta = ms_curr - ms_prev;
+		DWORD ms_delta = ms_curr - ms_prev;
 		if (ms_delta < 10000 && use_fine_counter) {
 			if (hi_curr.QuadPart <= fine_counter.QuadPart) {
 				if (hi_curr.QuadPart < fine_counter.QuadPart) {
@@ -1921,7 +1942,7 @@ void Orbiter::Suspend (void)
 
 void Orbiter::Resume (void)
 {
-	uint32_t dt = timeGetTime() - ms_suspend;
+	DWORD dt = timeGetTime() - ms_suspend;
 	ms_prev += dt;
 	if (use_fine_counter)
 		fine_counter.QuadPart += (LONGLONG)dt * (LONGLONG)(1e-3/fine_counter_step);
@@ -1931,9 +1952,9 @@ void Orbiter::Resume (void)
 // Custom command registration
 //-----------------------------------------------------------------------------
 
-uint32_t Orbiter::RegisterCustomCmd (char *label, char *desc, CustomFunc func, void *context)
+DWORD Orbiter::RegisterCustomCmd (char *label, char *desc, CustomFunc func, void *context)
 {
-	uint32_t id;
+	DWORD id;
 	CUSTOMCMD *tmp = new CUSTOMCMD[ncustomcmd+1]; TRACENEW
 	if (ncustomcmd) {
 		memcpy (tmp, customcmd, ncustomcmd*sizeof(CUSTOMCMD));
@@ -1953,7 +1974,7 @@ uint32_t Orbiter::RegisterCustomCmd (char *label, char *desc, CustomFunc func, v
 
 bool Orbiter::UnregisterCustomCmd (int cmdId)
 {
-	uint32_t i;
+	DWORD i;
 	CUSTOMCMD *tmp = 0;
 
 	for (i = 0; i < ncustomcmd; i++)
@@ -1982,7 +2003,7 @@ void Orbiter::ModulePreStep ()
 		it->pModule->clbkPreStep(td.SimT0, td.SimDT, td.MJD0);
 
 	// broadcast to vessels
-	for (uint32_t i = 0; i < g_psys->nVessel(); i++)
+	for (DWORD i = 0; i < g_psys->nVessel(); i++)
 		g_psys->GetVessel(i)->ModulePreStep (td.SimT0, td.SimDT, td.MJD0);
 }
 
@@ -1993,7 +2014,7 @@ void Orbiter::ModulePreStep ()
 void Orbiter::ModulePostStep ()
 {
 	// broadcast to vessels
-	for (uint32_t i = 0; i < g_psys->nVessel(); i++)
+	for (DWORD i = 0; i < g_psys->nVessel(); i++)
 		g_psys->GetVessel(i)->ModulePostStep (td.SimT1, td.SimDT, td.MJD1);
 
 	// broadcast to modules
@@ -2041,65 +2062,65 @@ const char *Orbiter::KeyState() const
 //-----------------------------------------------------------------------------
 HRESULT Orbiter::UserInput ()
 {
-	// static char buffer[256];
-	// DIDEVICEOBJECTDATA dod[10];
-	// LPDIRECTINPUTDEVICE8 didev;
-	// uint32_t i, dwItems = 10;
-	// HRESULT hr;
-	// bool skipkbd = false;
-	//
-	// memset(simkstate, 0, 256);
-	// for (i = 0; i < 15; i++) ctrlKeyboard[i] = ctrlJoystick[i] = 0; // reset keyboard and joystick attitude requests
-	//
-	// // skip keyboard if dialogs are open
-	// if ((g_input && g_input->IsActive()) ||
-	//     (g_select && g_select->IsActive())) skipkbd = true;
-	//
-	// if (didev = GetDInput()->GetKbdDevice()) {
-	// 	ImGuiIO& io = ImGui::GetIO();
-	// 	// keyboard input: immediate key interpretation
-	// 	hr = didev->GetDeviceState (sizeof(buffer), &buffer);
-	// 	if ((hr == DIERR_NOTACQUIRED || hr == DIERR_INPUTLOST) && SUCCEEDED (didev->Acquire()))
-	// 		hr = didev->GetDeviceState (sizeof(buffer), &buffer);
-	//
-	// 	// Direct input bypasses the proc loop so we skip it here
-	// 	if (SUCCEEDED (hr) && !io.WantCaptureKeyboard)
-	// 		for (i = 0; i < 256; i++)
-	// 			simkstate[i] |= buffer[i];
-	// 	bool consume = BroadcastImmediateKeyboardEvent (simkstate);
-	// 	if (!skipkbd && !consume) {
-	// 		KbdInputImmediate_System (simkstate);
-	// 		if (bRunning) KbdInputImmediate_OnRunning (simkstate);
-	// 	}
-	//
-	// 	// keyboard input: buffered key events
-	// 	hr = didev->GetDeviceData (sizeof(DIDEVICEOBJECTDATA), dod, &dwItems, 0);
-	// 	if ((hr == DIERR_NOTACQUIRED || hr == DIERR_INPUTLOST) && SUCCEEDED (didev->Acquire()))
-	// 		hr = didev->GetDeviceData (sizeof(DIDEVICEOBJECTDATA), dod, &dwItems, 0);
-	// 	if (SUCCEEDED (hr) && !io.WantCaptureKeyboard) {
-	// 		BroadcastBufferedKeyboardEvent (buffer, dod, dwItems);
-	// 		if (!skipkbd) {
-	// 			KbdInputBuffered_System (buffer, dod, dwItems);
-	// 			if (bRunning) KbdInputBuffered_OnRunning (buffer, dod, dwItems);
-	// 		}
-	// 	}
-	// 	//if (hr == DI_BUFFEROVERFLOW) MessageBeep (-1);
-	// }
-	//
-	// for (i = 0; i < 15; i++) ctrlTotal[i] = ctrlKeyboard[i]; // update attitude requests
-	//
-	// // joystick input
-	// DIJOYSTATE2 js;
-	// if (pDI->PollJoystick (&js)) {
-	// 	UserJoyInput_System (&js);                  // general joystick functions
-	// 	if (bRunning) UserJoyInput_OnRunning (&js); // joystick vessel control functions
-	// 	for (i = 0; i < 15; i++) ctrlTotal[i] += ctrlJoystick[i]; // update thrust requests
-	// }
-	//
-	// g_camera->UpdateMouse();
-	//
-	// // apply manual attitude control
-	// g_focusobj->ApplyUserAttitudeControls (ctrlTotal);
+	static char buffer[256];
+	DIDEVICEOBJECTDATA dod[10];
+	LPDIRECTINPUTDEVICE8 didev;
+	DWORD i, dwItems = 10;
+	HRESULT hr;
+	bool skipkbd = false;
+
+	memset(simkstate, 0, 256);
+	for (i = 0; i < 15; i++) ctrlKeyboard[i] = ctrlJoystick[i] = 0; // reset keyboard and joystick attitude requests
+
+	// skip keyboard if dialogs are open
+	if ((g_input && g_input->IsActive()) ||
+	    (g_select && g_select->IsActive())) skipkbd = true;
+
+	if (didev = GetDInput()->GetKbdDevice()) {
+		ImGuiIO& io = ImGui::GetIO();
+		// keyboard input: immediate key interpretation
+		hr = didev->GetDeviceState (sizeof(buffer), &buffer);
+		if ((hr == DIERR_NOTACQUIRED || hr == DIERR_INPUTLOST) && SUCCEEDED (didev->Acquire()))
+			hr = didev->GetDeviceState (sizeof(buffer), &buffer);
+	
+		// Direct input bypasses the proc loop so we skip it here
+		if (SUCCEEDED (hr) && !io.WantCaptureKeyboard)
+			for (i = 0; i < 256; i++)
+				simkstate[i] |= buffer[i];
+		bool consume = BroadcastImmediateKeyboardEvent (simkstate);
+		if (!skipkbd && !consume) {
+			KbdInputImmediate_System (simkstate);
+			if (bRunning) KbdInputImmediate_OnRunning (simkstate);
+		}
+
+		// keyboard input: buffered key events
+		hr = didev->GetDeviceData (sizeof(DIDEVICEOBJECTDATA), dod, &dwItems, 0);
+		if ((hr == DIERR_NOTACQUIRED || hr == DIERR_INPUTLOST) && SUCCEEDED (didev->Acquire()))
+			hr = didev->GetDeviceData (sizeof(DIDEVICEOBJECTDATA), dod, &dwItems, 0);
+		if (SUCCEEDED (hr) && !io.WantCaptureKeyboard) {
+			BroadcastBufferedKeyboardEvent (buffer, dod, dwItems);
+			if (!skipkbd) {
+				KbdInputBuffered_System (buffer, dod, dwItems);
+				if (bRunning) KbdInputBuffered_OnRunning (buffer, dod, dwItems);
+			}
+		}
+		//if (hr == DI_BUFFEROVERFLOW) MessageBeep (-1);
+	}
+
+	for (i = 0; i < 15; i++) ctrlTotal[i] = ctrlKeyboard[i]; // update attitude requests
+
+	// joystick input
+	DIJOYSTATE2 js;
+	if (pDI->PollJoystick (&js)) {
+		UserJoyInput_System (&js);                  // general joystick functions
+		if (bRunning) UserJoyInput_OnRunning (&js); // joystick vessel control functions
+		for (i = 0; i < 15; i++) ctrlTotal[i] += ctrlJoystick[i]; // update thrust requests
+	}
+
+	g_camera->UpdateMouse();
+
+	// apply manual attitude control
+	g_focusobj->ApplyUserAttitudeControls (ctrlTotal);
 
 	return S_OK;
 }
@@ -2109,7 +2130,7 @@ HRESULT Orbiter::UserInput ()
 // Desc: Simulate a buffered keyboard event
 //-----------------------------------------------------------------------------
 
-bool Orbiter::SendKbdBuffered(uint32_t key, uint32_t *mod, uint32_t nmod, bool onRunningOnly)
+bool Orbiter::SendKbdBuffered(DWORD key, DWORD *mod, DWORD nmod, bool onRunningOnly)
 {
 	if (onRunningOnly && !bRunning) return false;
 
@@ -2319,12 +2340,12 @@ void Orbiter::KbdInputImmediate_OnRunning (char *kstate)
 // Desc: General user keyboard buffered key interpretation. Processes keys
 //       which are also interpreted when simulation is paused
 //-----------------------------------------------------------------------------
-void Orbiter::KbdInputBuffered_System (char *kstate, DIDEVICEOBJECTDATA *dod, uint32_t n)
+void Orbiter::KbdInputBuffered_System (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n)
 {
-	for (uint32_t i = 0; i < n; i++) {
+	for (DWORD i = 0; i < n; i++) {
 
 		if (!(dod[i].dwData & 0x80)) continue; // only process key down events
-		uint32_t key = dod[i].dwOfs;
+		DWORD key = dod[i].dwOfs;
 
 		if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_Pause))                TogglePause();
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_Quicksave))            Quicksave();
@@ -2378,11 +2399,11 @@ void Orbiter::KbdInputBuffered_System (char *kstate, DIDEVICEOBJECTDATA *dod, ui
 // Name: KbdInputBuffered_OnRunning ()
 // Desc: User keyboard buffered key interpretation in running simulation
 //-----------------------------------------------------------------------------
-void Orbiter::KbdInputBuffered_OnRunning (char *kstate, DIDEVICEOBJECTDATA *dod, uint32_t n)
+void Orbiter::KbdInputBuffered_OnRunning (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n)
 {
-	for (uint32_t i = 0; i < n; i++) {
+	for (DWORD i = 0; i < n; i++) {
 
-		uint32_t key = dod[i].dwOfs;
+		DWORD key = dod[i].dwOfs;
 		bool bdown = (dod[i].dwData & 0x80) != 0;
 
 		if (g_focusobj->ConsumeBufferedKey (key, bdown, kstate)) // offer key to vessel for processing
@@ -2428,7 +2449,7 @@ void Orbiter::KbdInputBuffered_OnRunning (char *kstate, DIDEVICEOBJECTDATA *dod,
 void Orbiter::UserJoyInput_System (DIJOYSTATE2 *js)
 {
 	if (LOWORD (js->rgdwPOV[0]) != 0xFFFF) {
-		uint32_t dir = js->rgdwPOV[0];
+		DWORD dir = js->rgdwPOV[0];
 		if (g_camera->IsExternal()) {  // use the joystick's coolie hat to rotate external camera
 			if (js->rgbButtons[2]) { // shift instrument panel
 				if      (dir <  5000 || dir > 31000) g_camera->Rotate (0,  td.SysDT);
@@ -2498,7 +2519,7 @@ void Orbiter::UserJoyInput_OnRunning (DIJOYSTATE2 *js)
 	}
 }
 
-bool Orbiter::MouseEvent (UINT event, uint32_t state, uint32_t x, uint32_t y)
+bool Orbiter::MouseEvent (UINT event, DWORD state, DWORD x, DWORD y)
 {
 	// Prioritizes mouse handling while in rotation mode
 	if (g_pOrbiter->StickyFocus()) {
@@ -2518,7 +2539,7 @@ bool Orbiter::MouseEvent (UINT event, uint32_t state, uint32_t x, uint32_t y)
 	return false;
 }
 
-bool Orbiter::BroadcastMouseEvent (UINT event, uint32_t state, uint32_t x, uint32_t y)
+bool Orbiter::BroadcastMouseEvent (UINT event, DWORD state, DWORD x, DWORD y)
 {
 	bool consume = false;
 
@@ -2540,12 +2561,12 @@ bool Orbiter::BroadcastImmediateKeyboardEvent (char *kstate)
 	return consume;
 }
 
-void Orbiter::BroadcastBufferedKeyboardEvent (char *kstate, DIDEVICEOBJECTDATA *dod, uint32_t n)
+void Orbiter::BroadcastBufferedKeyboardEvent (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n)
 {
-	for (uint32_t i = 0; i < n; i++) {
+	for (DWORD i = 0; i < n; i++) {
 		bool consume = false;
 		if (!(dod[i].dwData & 0x80)) continue; // only process key down events
-		uint32_t key = dod[i].dwOfs;
+		DWORD key = dod[i].dwOfs;
 
 		for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++)
 			if (it->pModule && it->pModule->clbkProcessKeyboardBuffered(key, kstate, bRunning))
@@ -2755,7 +2776,7 @@ bool Orbiter::RemoveGraphicsClient (oapi::GraphicsClient *gc)
 	return true;
 }
 
-bool Orbiter::RegisterWindow (HINSTANCE hInstance, HWND hWnd, uint32_t flag)
+bool Orbiter::RegisterWindow (HINSTANCE hInstance, HWND hWnd, DWORD flag)
 {
 	return (pDlgMgr ? (pDlgMgr->AddWindow (hInstance, hWnd, hRenderWnd, flag) != NULL) : NULL);
 }
@@ -2770,7 +2791,7 @@ HWND Orbiter::OpenDialog (int id, DLGPROC pDlg, void *context)
 	return OpenDialog (hInstStopgap, id, pDlg, context);
 }
 
-HWND Orbiter::OpenDialogEx (int id, DLGPROC pDlg, uint32_t flag, void *context)
+HWND Orbiter::OpenDialogEx (int id, DLGPROC pDlg, DWORD flag, void *context)
 {
 	return OpenDialogEx (hInstStopgap, id, pDlg, flag, context);
 }
@@ -2780,7 +2801,7 @@ HWND Orbiter::OpenDialog (HINSTANCE hInstance, int id, DLGPROC pDlg, void *conte
 	return (pDlgMgr ? pDlgMgr->OpenDialog (hInstance, id, hRenderWnd, pDlg, context) : NULL);
 }
 
-HWND Orbiter::OpenDialogEx (HINSTANCE hInstance, int id, DLGPROC pDlg, uint32_t flag, void *context)
+HWND Orbiter::OpenDialogEx (HINSTANCE hInstance, int id, DLGPROC pDlg, DWORD flag, void *context)
 {
 	return (pDlgMgr ? pDlgMgr->OpenDialogEx (hInstance, id, hRenderWnd, pDlg, flag, context) : NULL);
 }
@@ -2795,7 +2816,7 @@ void Orbiter::OpenHelp (const HELPCONTEXT *hcontext)
 
 void Orbiter::OpenLaunchpadHelp (HELPCONTEXT *hcontext)
 {
-	// ::OpenHelp (0, hcontext->helpfile, hcontext->topic);
+	::OpenHelp (0, hcontext->helpfile, hcontext->topic);
 }
 
 HELPCONTEXT Orbiter::DefaultHelpPage(const char* topic)
@@ -2810,7 +2831,7 @@ void Orbiter::CloseDialog (HWND hDlg)
 	if (pDlgMgr) pDlgMgr->CloseDialog (hDlg);
 }
 
-HWND Orbiter::IsDialog (HINSTANCE hInstance, uint32_t resId)
+HWND Orbiter::IsDialog (HINSTANCE hInstance, DWORD resId)
 {
 	return (pDlgMgr ? pDlgMgr->IsEntry (hInstance, resId) : NULL);
 }

@@ -298,8 +298,8 @@ void oapi::Framerate::hookOpenDlg(void* context)
 
 void oapi::Framerate::clbkOpenDlg(void* context)
 {
-	// HWND hDlg = oapiOpenDialog(stopgapGetModuleInstance(GetModule()), IDD_FRAMERATE, hookDlgMsgProc);
-	// if (hDlg) m_hDlg = hDlg; // otherwise open already
+	HWND hDlg = oapiOpenDialog(stopgapGetModuleInstance(GetModule()), IDD_FRAMERATE, hookDlgMsgProc);
+	if (hDlg) m_hDlg = hDlg; // otherwise open already
 }
 
 // --------------------------------------------------------------
@@ -327,7 +327,7 @@ INT_PTR oapi::Framerate::DlgMsgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) {
 		case IDCANCEL:             // close dialog
-			// oapiCloseDialog(m_hDlg);
+			oapiCloseDialog(m_hDlg);
 			return TRUE;
 		case IDC_SHOW_FRAMERATE: // show/hide frame rate graph
 			if (HIWORD(wParam) == BN_CLICKED)
@@ -340,10 +340,8 @@ INT_PTR oapi::Framerate::DlgMsgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
 		}
 		break;
 	}
-	// return oapiDefDialogProc(hDlg, uMsg, wParam, lParam);
-	return 0;
+	return oapiDefDialogProc(hDlg, uMsg, wParam, lParam);
 }
-
 
 // ---------------------------------------------------------------------------------
 // Graph canvas message handler

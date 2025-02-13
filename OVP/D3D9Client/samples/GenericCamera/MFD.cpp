@@ -353,7 +353,7 @@ bool CameraMFD::Update(oapi::Sketchpad *pSkp)
 	int tbgh = 27;		 // Text backgound height
 	int edge = tbgh + 2; // Minumum spacing between cross endpoints and MFD screen edge
 
-	Rect sr = { 0, 0, long(W - 2), long(H - 3) };
+	RECT sr = { 0, 0, long(W - 2), long(H - 3) };
 	
 	pSkp->SetTextAlign(Sketchpad::TAlign_horizontal::CENTER);
 
@@ -393,7 +393,7 @@ bool CameraMFD::Update(oapi::Sketchpad *pSkp)
 			int nseg = ((H / 2) - edge) / 16;	 // Number of segments
 			int len = min(248, (nseg * 16) - 8); // Lenght (start and end to a white segment)
 
-			Rect ch = { 0, 0, len, 4 };
+			RECT ch = { 0, 0, len, 4 };
 		
 			pSkp->CopyRect(hTexture, &ch, x - len, y);
 			pSkp->CopyRect(hTexture, &ch, x, y);

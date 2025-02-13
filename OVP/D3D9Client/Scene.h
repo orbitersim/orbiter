@@ -101,7 +101,7 @@ public:
 		double		dAperture;
 		SURFHANDLE	hSurface;
 		OBJHANDLE	hVessel;
-		uint32_t		dwFlags;
+		DWORD		dwFlags;
 		int			iError;
 		bool		bActive;
 		__gcRenderProc pRenderProc;
@@ -178,7 +178,7 @@ public:
 	 */
 	static void GlobalExit();
 
-	Scene (oapi::D3D9Client *_gc, uint32_t w, uint32_t h);
+	Scene (oapi::D3D9Client *_gc, DWORD w, DWORD h);
 	~Scene ();
 
 	/**
@@ -192,19 +192,19 @@ public:
 	const D3D9Sun *GetSun() const { return &sunLight; }
 	const D3D9Light *GetLight(int index) const;
 	const D3D9Light *GetLights() const { return Lights; }
-	uint32_t GetLightCount() const { return nLights; }
+	DWORD GetLightCount() const { return nLights; }
 	D3D9Pad* GetPooledSketchpad(int id);
 	void RecallDefaultState();
 	float GetDisplayScale() const { return fDisplayScale; }
 	void CreateSunGlare();
 
 
-	uint32_t GetRenderPass() const;
-	uint32_t GetRenderFlags() const { return RenderFlags; }
-	void BeginPass(uint32_t dwPass);
+	DWORD GetRenderPass() const;
+	DWORD GetRenderFlags() const { return RenderFlags; }
+	void BeginPass(DWORD dwPass);
 	void PopPass();
 
-	inline uint32_t GetStencilDepth() const { return stencilDepth; }
+	inline DWORD GetStencilDepth() const { return stencilDepth; }
 	inline const SHADOWMAPPARAM * GetSMapData() const { return &smap; }
 	/**
 	 * \brief Get the ambient background colour
@@ -214,12 +214,12 @@ public:
 	/**
 	 * \brief Get the viewport dimension (width)
 	 */
-	inline const uint32_t ViewW() const { return viewW; }
+	inline const DWORD ViewW() const { return viewW; }
 
 	/**
 	 * \brief Get the viewport dimension (height)
 	 */
-	inline const uint32_t ViewH() const { return viewH; }
+	inline const DWORD ViewH() const { return viewH; }
 
 	bool UpdateCamVis();
 	void Initialise ();
@@ -247,7 +247,7 @@ public:
 	/**
 	 * \brief Render a secondary scene. (Env Maps, Shadow Maps, MFD Camera Views)
 	 */
-	void RenderSecondaryScene(std::set<class vVessel*> &RndList, std::set<class vVessel*> &AdditionalLightsList, uint32_t flags = 0xFF);
+	void RenderSecondaryScene(std::set<class vVessel*> &RndList, std::set<class vVessel*> &AdditionalLightsList, DWORD flags = 0xFF);
 	int RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bInternal = false, bool bListExists = false);
 
 	bool IntegrateIrradiance(vVessel *vV, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRECT3DTEXTURE9 pOut);
@@ -284,7 +284,7 @@ public:
 	void DeleteVessel (OBJHANDLE hVessel);
 
 	void AddParticleStream (class D3D9ParticleStream *_pstream);
-	void DelParticleStream (uint32_t idx);
+	void DelParticleStream (DWORD idx);
 
 	void AddLocalLight(const LightEmitter *le, const vObject *vo);
 	void ClearLocalLights();
@@ -314,7 +314,7 @@ public:
 
 	// Custom Camera Interface ======================================================================================================
 	//
-	CAMERAHANDLE	SetupCustomCamera(CAMERAHANDLE hCamera, OBJHANDLE hVessel, MATRIX3 &mRot, VECTOR3 &pos, double fov, SURFHANDLE hSurf, uint32_t flags);
+	CAMERAHANDLE	SetupCustomCamera(CAMERAHANDLE hCamera, OBJHANDLE hVessel, MATRIX3 &mRot, VECTOR3 &pos, double fov, SURFHANDLE hSurf, DWORD flags);
 	int				DeleteCustomCamera(CAMERAHANDLE hCamera);
 	void			DeleteAllCustomCameras();
 	void			CustomCameraOnOff(CAMERAHANDLE hCamera, bool bOn);
@@ -337,7 +337,7 @@ public:
 	float			CameraInSpace() const;
 
 					// Acquire camera information from the Orbiter and initialize internal camera setup
-	bool			UpdateCameraFromOrbiter(uint32_t dwPass);
+	bool			UpdateCameraFromOrbiter(DWORD dwPass);
 
 					// Manually initialize client's internal camera setup
 	bool			SetupInternalCamera(D3DXMATRIX *mView, VECTOR3 *pos, double apr, double asp);
@@ -367,7 +367,7 @@ public:
 	bool			WorldToScreenSpace(const VECTOR3& rdir, oapi::IVECTOR2* pt, D3DXMATRIX* pVP = NULL, float clip = 1.0f);
 	bool			WorldToScreenSpace2(const VECTOR3& rdir, oapi::FVECTOR2* pt, D3DXMATRIX* pVP = NULL, float clip = 1.0f);
 
-	uint32_t			GetFrameId() const { return dwFrameId; }
+	DWORD			GetFrameId() const { return dwFrameId; }
 
 	const D3DXVECTOR3 *GetCameraX() const { return &Camera.x; }
 	const D3DXVECTOR3 *GetCameraY() const { return &Camera.y; }
@@ -413,7 +413,7 @@ protected:
 
 private:
 	void		ComputeLocalLightsVisibility();
-	uint32_t		GetActiveParticleEffectCount();
+	DWORD		GetActiveParticleEffectCount();
 	float		ComputeNearClipPlane();
 	void		VisualizeCubeMap(LPDIRECT3DCUBETEXTURE9 pCube, int mip);
 	VOBJREC *	FindVisual (OBJHANDLE hObj) const;
@@ -443,17 +443,17 @@ private:
 	//
 	oapi::D3D9Client* gc;
 	LPDIRECT3DDEVICE9 pDevice; // render device
-	uint32_t viewW, viewH;        // render viewport size
-	uint32_t stencilDepth;        // stencil buffer bit depth
+	DWORD viewW, viewH;        // render viewport size
+	DWORD stencilDepth;        // stencil buffer bit depth
 	D3D9CelestialSphere* m_celSphere; // celestial sphere background
-	uint32_t iVCheck;             // index of last object checked for visibility
+	DWORD iVCheck;             // index of last object checked for visibility
 	bool  bLocalLight;         // enable local light sources
 	bool  surfLabelsActive;    // v.2 surface labels activated?
 
 	OBJHANDLE hSun;
 
 	D3D9ParticleStream **pstream; // list of particle streams
-	uint32_t                nstream; // number of streams
+	DWORD                nstream; // number of streams
 
 
 	D3DCOLOR bg_rgba;          // ambient background colour
@@ -466,7 +466,7 @@ private:
 	std::list<vVessel *> SmapRenderList;
 	std::list<vVessel *> Casters;
 	std::stack<CAMERA>	CameraStack;
-	std::stack<uint32_t>	PassStack;
+	std::stack<DWORD>	PassStack;
 	std::stack<FRUSTUM> FrustumStack;
 
 
@@ -479,12 +479,12 @@ private:
 
 	float		fDisplayScale;
 	float		lmaxdst2;
-	uint32_t		nLights;
-	uint32_t		nplanets;		// Number of distance sorted planets to render
-	uint32_t		dwTurn;
-	uint32_t		dwFrameId;
-	uint32_t		camIndex;
-	uint32_t		RenderFlags;
+	DWORD		nLights;
+	DWORD		nplanets;		// Number of distance sorted planets to render
+	DWORD		dwTurn;
+	DWORD		dwFrameId;
+	DWORD		camIndex;
+	DWORD		RenderFlags;
 	bool		bRendering;
 
 	oapi::Font *pAxisFont;

@@ -295,7 +295,7 @@ void Base::Setup ()
 		cbody->EquatorialToLocal (lng, lat, rad, rpos);
 	}
 
-	for (uint32_t i = 0; i < nobj; i++)
+	for (DWORD i = 0; i < nobj; i++)
 		obj[i]->Setup();
 }
 
@@ -303,8 +303,8 @@ bool Base::InitSurfaceTiles () const
 {
 	if (!ntile) return false;
 
-	static uint32_t nlat[10] = {128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536};
-	uint32_t i;
+	static DWORD nlat[10] = {128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536};
+	DWORD i;
 	float r = (float)rad;
 	float cphi = (float)cos (lng), sphi = (float)sin (lng);
 	float ctht = (float)cos (lat), stht = (float)sin (lat);
@@ -348,7 +348,7 @@ bool Base::InitSurfaceTiles () const
 void Base::DestroySurfaceTiles ()
 {
 	if (ntilebuf) {
-		for (uint32_t i = 0; i < ntile; i++) {
+		for (DWORD i = 0; i < ntile; i++) {
 			if (tile[i].mesh) {
 				delete (Mesh*)tile[i].mesh;
 				tile[i].mesh = NULL;
@@ -383,21 +383,21 @@ void Base::Attach (Planet *_parent)
 	rotvel.Set (-v*slng, 0.0, v*clng);        // velocity vector in non-rotating planet coords
 }
 
-uint32_t Base::GetTileList (const SurftileSpec **_tile) const
+DWORD Base::GetTileList (const SurftileSpec **_tile) const
 {
 	if (ntile && !tile[0].mesh)
 		InitSurfaceTiles();
 	*_tile = tile; return ntile;
 }
 
-void Base::ExportBaseStructures (Mesh ***mesh_us, uint32_t *nmesh_us, Mesh ***mesh_os, uint32_t *nmesh_os) const
+void Base::ExportBaseStructures (Mesh ***mesh_us, DWORD *nmesh_us, Mesh ***mesh_os, DWORD *nmesh_os) const
 {
 	ScanObjectMeshes();
 	*mesh_os = objmsh_os;  *nmesh_os = nobjmsh_os;
 	*mesh_us = objmsh_us;  *nmesh_us = nobjmsh_us;
 }
 
-void Base::ExportShadowGeometry (Mesh ***mesh_shadow, double **elev, uint32_t *nmesh_shadow) const
+void Base::ExportShadowGeometry (Mesh ***mesh_shadow, double **elev, DWORD *nmesh_shadow) const
 {
 	ScanObjectMeshes();
 	*mesh_shadow = objmsh_sh;
@@ -409,11 +409,11 @@ void Base::ScanObjectMeshes () const
 {
 	if (objmsh_valid) return; // done already
 
-	uint32_t i, j, k, ng, spec, nvtx, nidx;
+	DWORD i, j, k, ng, spec, nvtx, nidx;
 	LONGLONG texid;
 	bool undersh, groundsh;
 	GroupSpec *grp_os = 0, *grp_us = 0; // mesh groups for the meshes compiled from generic primitives (over and under shadows)
-	uint32_t ngrp_os = 0, ngrp_us = 0;
+	DWORD ngrp_os = 0, ngrp_us = 0;
 	nobjmsh_os = nobjmsh_us = nobjmsh_sh = 0;
 	bool bshadow = g_pOrbiter->Cfg()->CfgVisualPrm.bShadows;
 
@@ -425,9 +425,9 @@ void Base::ScanObjectMeshes () const
 			ng = bo->nGroup();
 			for (j = 0; j < ng; j++) {
 				if (bo->GetGroupSpec (j, nvtx, nidx, texid, undersh, groundsh)) {
-					uint32_t &ngrp     = (undersh ? ngrp_us : ngrp_os);
+					DWORD &ngrp     = (undersh ? ngrp_us : ngrp_os);
 					GroupSpec *&grp = (undersh ? grp_us : grp_os);
-					uint32_t texidx = GetGenericTextureIdx (texid);
+					DWORD texidx = GetGenericTextureIdx (texid);
 					for (k = 0; k < ngrp; k++) {
 						if (grp[k].TexIdx == texidx && (grp[k].UsrFlag & 0x1) != groundsh) {
 							grp[k].nVtx += nvtx;
@@ -458,7 +458,7 @@ void Base::ScanObjectMeshes () const
 		if (bshadow && (spec & OBJSPEC_EXPORTSHADOWMESH)) nobjmsh_sh++;
 	}
 	for (i = 0; i < 2; i++) {
-		uint32_t &ngrp = (i==0 ? ngrp_us : ngrp_os);
+		DWORD &ngrp = (i==0 ? ngrp_us : ngrp_os);
 		GroupSpec *&grp = (i==0 ? grp_us : grp_os);
 		for (j = 0; j < ngrp; j++) {
 			grp[j].Vtx = new NTVERTEX[grp[j].nVtx]; TRACENEW
@@ -480,9 +480,9 @@ void Base::ScanObjectMeshes () const
 			ng = bo->nGroup();
 			for (j = 0; j < ng; j++) {
 				bo->GetGroupSpec (j, nvtx, nidx, texid, undersh, groundsh);
-				uint32_t &ngrp     = (undersh ? ngrp_us : ngrp_os);
+				DWORD &ngrp     = (undersh ? ngrp_us : ngrp_os);
 				GroupSpec *&grp = (undersh ? grp_us : grp_os);
-				uint32_t texidx = GetGenericTextureIdx (texid);
+				DWORD texidx = GetGenericTextureIdx (texid);
 				for (k = 0; k < ngrp; k++) {
 					if (grp[k].TexIdx == texidx && (grp[k].UsrFlag & 0x1) != groundsh) break;
 				}
@@ -502,20 +502,20 @@ void Base::ScanObjectMeshes () const
 	}
 
 	for (i = 0; i < 2; i++) {
-		uint32_t &ngrp = (i==0 ? ngrp_us : ngrp_os);
+		DWORD &ngrp = (i==0 ? ngrp_us : ngrp_os);
 		if (ngrp) {
 			GroupSpec *&grp = (i==0 ? grp_us : grp_os);
 			Mesh *mesh = new Mesh; TRACENEW
 			if (i==0) genmsh_us = mesh;
 			else      genmsh_os = mesh;
 			for (j = 0; j < ngrp; j++) {
-				uint32_t texidx = grp[j].TexIdx;
-				int tidx = (texidx != (uint32_t)-1 ? mesh->AddTexture (generic_dtex[texidx]) : SPEC_DEFAULT);
+				DWORD texidx = grp[j].TexIdx;
+				int tidx = (texidx != (DWORD)-1 ? mesh->AddTexture (generic_dtex[texidx]) : SPEC_DEFAULT);
 				// note: shallow copy - don't delete vertex and index arrays!
 				int gidx = mesh->AddGroup (grp[j].Vtx, grp[j].nVtx, grp[j].Idx, grp[j].nIdx, SPEC_DEFAULT, tidx);
 				mesh->GetGroup(gidx)->UsrFlag = grp[j].UsrFlag;
 				// add night texture
-				if (texidx != (uint32_t)-1 && generic_ntex[texidx]) {
+				if (texidx != (DWORD)-1 && generic_ntex[texidx]) {
 					tidx = mesh->AddTexture (generic_ntex[texidx]);
 					mesh->GetGroup(gidx)->TexIdxEx[0] = tidx;
 				}
@@ -554,7 +554,7 @@ void Base::Rel_EquPos (const Vector &relpos, double &_lng, double &_lat) const
 	_lat = lat - relpos.x/cbody->Size();
 }
 
-void Base::Pad_EquPos (uint32_t padno, double &_lng, double &_lat) const
+void Base::Pad_EquPos (DWORD padno, double &_lng, double &_lat) const
 {
 	_lng = lng;
 	_lat = lat;
@@ -576,18 +576,18 @@ bool Base::GetGenericTexture (LONGLONG id, SURFHANDLE &daytex, SURFHANDLE &night
 	return false;
 }
 
-uint32_t Base::GetGenericTextureIdx (LONGLONG id) const
+DWORD Base::GetGenericTextureIdx (LONGLONG id) const
 {
-	for (uint32_t i = 0; i < ngenerictex; i++)
+	for (DWORD i = 0; i < ngenerictex; i++)
 		if (id == generic_tex_id[i])
 			return i;
-	return (uint32_t)-1;
+	return (DWORD)-1;
 }
 
 int Base::OccupyPad (Vessel *vessel, int pad, bool forcepad)
 {
 	int pd;
-	uint32_t i;
+	DWORD i;
 
 	if (forcepad) {
 		if (pad < 0) return -1;
@@ -623,7 +623,7 @@ int Base::OccupyPad (Vessel *vessel, double _lng, double _lat)
 {
 	const double padrad = 20.0; // landing pad size
 	double plng, plat, dist, bdir;
-	for (uint32_t i = 0; i < npad; i++) {
+	for (DWORD i = 0; i < npad; i++) {
 		Pad_EquPos (i, plng, plat);
 		Orthodome (_lng, _lat, plng, plat, dist, bdir);
 		dist *= cbody->Size();
@@ -641,7 +641,7 @@ int Base::OccupyPad (Vessel *vessel, double _lng, double _lat)
 
 void Base::ClearPad (Vessel *vessel)
 {
-	for (uint32_t i = 0; i < npad; i++)
+	for (DWORD i = 0; i < npad; i++)
 		if (lspec[i].status && lspec[i].vessel == vessel) {
 			lspec[i].status = 0;
 			lspec[i].vessel = 0;
@@ -651,18 +651,18 @@ void Base::ClearPad (Vessel *vessel)
 
 int Base::LandedAtPad (const Vessel *vessel) const
 {
-	for (uint32_t i = 0; i < npad; i++)
+	for (DWORD i = 0; i < npad; i++)
 		if (lspec[i].status == 1 && lspec[i].vessel == vessel)
 			return (int)i;
 	return -1;
 }
 
-int Base::RequestLanding (Vessel *vessel, uint32_t &padno)
+int Base::RequestLanding (Vessel *vessel, DWORD &padno)
 {
 	if (rand() < RAND_MAX/2) return 2; // keep pending
 	if (!padfree) return 1;     // deny
 	int pd = (rand()*padfree)/(RAND_MAX+1);
-	for (uint32_t i = 0; i < npad; i++) {
+	for (DWORD i = 0; i < npad; i++) {
 		if (lspec[i].status == 0) {
 			if (!pd--) {
 				lspec[i].status = 2;
@@ -685,7 +685,7 @@ int Base::RequestTakeoff ()
 
 void Base::ReportTakeoff (Vessel *vessel)
 {
-	for (uint32_t i = 0; i < npad; i++) {
+	for (DWORD i = 0; i < npad; i++) {
 		if (lspec[i].status == 1 && lspec[i].vessel == vessel) {
 			lspec[i].status = 0;
 			lspec[i].vessel = 0;
@@ -698,7 +698,7 @@ int Base::ReportTouchdown (VesselBase *vessel, double vlng, double vlat)
 {
 	const double padrad = 30.0; // landing pad size
 	double plng, plat, dist, bdir;
-	uint32_t i, padno = (uint32_t)-1;
+	DWORD i, padno = (DWORD)-1;
 	for (i = 0; i < npad; i++) {
 		Pad_EquPos (i, plng, plat);
 		Orthodome (vlng, vlat, plng, plat, dist, bdir);
@@ -712,7 +712,7 @@ int Base::ReportTouchdown (VesselBase *vessel, double vlng, double vlat)
 			break;
 		}
 	}
-	if (padno != (uint32_t)-1) { // cancel all other requests for this vessel
+	if (padno != (DWORD)-1) { // cancel all other requests for this vessel
 		if (g_pOrbiter->Cfg()->CfgLogicPrm.bPadRefuel)
 			vessel->Refuel();
 		for (i = 0; i < npad; i++) {

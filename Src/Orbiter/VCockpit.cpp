@@ -6,6 +6,7 @@
 #include "Pane.h"
 #include "Camera.h"
 #include "Vessel.h"
+#include "Texture.h"
 #include "Log.h"
 #include "Util.h"
 
@@ -58,7 +59,7 @@ void VirtualCockpit::Shift (const Vector &shift)
 	ShiftAreas (shift);
 }
 
-void VirtualCockpit::DefineArea (int aid, const Rect &texrect, int draw_mode, int mouse_mode, int bkmode, SURFHANDLE tgt)
+void VirtualCockpit::DefineArea (int aid, const RECT &texrect, int draw_mode, int mouse_mode, int bkmode, SURFHANDLE tgt)
 {
 	int draw_event_mode = draw_mode & 0xFF; // strip access flags
 
@@ -154,7 +155,7 @@ bool VirtualCockpit::BltAreaBackground (int idx, SURFHANDLE s)
 	if (gc && s) {
 		Area *a = area[idx];
 		if (a->bltmode == PANEL_MAP_BGONREQUEST && a->bksurf) {
-			Rect r = {0,0,a->w,a->h};
+			RECT r = {0,0,a->w,a->h};
 			gc->clbkBlt (s, 0, 0, a->bksurf, 0, 0, a->w, a->h);
 			return true;
 		}

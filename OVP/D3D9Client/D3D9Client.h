@@ -36,7 +36,7 @@
 #define PP_DEFAULT			0x1
 #define PP_LENSFLARE		0x2
 
-#define MAX_SCENE_LIGHTS	(uint32_t)24
+#define MAX_SCENE_LIGHTS	(DWORD)24
 #define MAX_MESH_LIGHTS		8	// Must match the setting in D3D9Client.fx
 
 #ifdef _NVAPI_H
@@ -76,11 +76,11 @@ struct _D3D9Stats
 	}
 
 	struct {
-		uint32_t Vertices;		///< Number of vertices rendered
-		uint32_t MeshGrps;		///< Number of mesh groups rendered
-		uint32_t Meshes;		///< Number of meshes rendered
-		uint32_t TexChanges;	///< Number of texture changes
-		uint32_t MtrlChanges;	///< Number of material changes
+		DWORD Vertices;		///< Number of vertices rendered
+		DWORD MeshGrps;		///< Number of mesh groups rendered
+		DWORD Meshes;		///< Number of meshes rendered
+		DWORD TexChanges;	///< Number of texture changes
+		DWORD MtrlChanges;	///< Number of material changes
 	} Mesh;					///< Mesh related statistics
 			
 	struct {
@@ -99,8 +99,8 @@ struct _D3D9Stats
 		D3D9Time GetDC;			///<
 	} Timer;					///< Render timing related statistics
 
-	uint32_t TilesAllocated;	///< Number of allocated tiles
-	std::map<uint32_t, uint32_t> TilesRendered;	///< Number of rendered tiles
+	DWORD TilesAllocated;	///< Number of allocated tiles
+	std::map<DWORD, DWORD> TilesRendered;	///< Number of rendered tiles
 };
 
 
@@ -117,7 +117,7 @@ extern _D3D9Stats D3D9Stats;
 extern bool bFreeze;
 extern bool bFreezeEnable;
 extern bool bFreezeRenderAll;
-extern uint32_t			uCurrentMesh;
+extern DWORD			uCurrentMesh;
 extern class vObject* pCurrentVisual;
 extern set<D3D9Mesh*> MeshCatalog;
 extern set<SurfNative*>	SurfaceCatalog;
@@ -204,7 +204,7 @@ public:
      * \param cat option category, see \ref optcat
      * \param item option item, see \ref optitem
      */
-	void clbkOptionChanged(uint32_t cat, uint32_t item);
+	void clbkOptionChanged(DWORD cat, DWORD item);
 
 	void clbkDebugString(const char* str);
 
@@ -244,7 +244,7 @@ public:
 	 *   clbkLoadTexture should first scan the repository. If the texture is
 	 *   already present, the function should just return a pointer to it.
 	 */
-	SURFHANDLE clbkLoadTexture (const char *fname, uint32_t flags = 0);
+	SURFHANDLE clbkLoadTexture (const char *fname, DWORD flags = 0);
 
 	/**
 	 * \brief Load a surface from file into a surface object, and return a SURFHANDLE for it.
@@ -264,9 +264,9 @@ public:
 	 *  - OAPISURFACE_NOMIPMAPS: Don't load mipmaps, even if they are available in the file
 	 *  - OAPISURFACE_NOALPHA: Load the surface without an alpha channel
 	 *  - OAPISURFACE_UNCOMPRESS: Uncompress the surface on loading.
-	 * \sa oapiCreateSurface(uint32_t,uint32_t,uint32_t)
+	 * \sa oapiCreateSurface(DWORD,DWORD,DWORD)
 	 */
-	SURFHANDLE clbkLoadSurface (const char *fname, uint32_t attrib, bool bPath = false);
+	SURFHANDLE clbkLoadSurface (const char *fname, DWORD attrib, bool bPath = false);
 
 
 	/**
@@ -322,7 +322,7 @@ public:
 	 * \return Should return \e true if operation successful, \e false otherwise.
 	 * \default None, returns \e false.
 	 */
-	bool clbkSetMeshTexture (DEVMESHHANDLE hMesh, uint32_t texidx, SURFHANDLE tex);
+	bool clbkSetMeshTexture (DEVMESHHANDLE hMesh, DWORD texidx, SURFHANDLE tex);
 
 	/**
 	 * \brief Replace properties of an existing mesh material.
@@ -333,8 +333,8 @@ public:
 	 *   the following codes: 0="success", 3="invalid mesh handle", 4="material index out of range"
 	 * \default, None, returns 2 ("client does not support operation").
 	 */
-	int clbkSetMeshMaterial(DEVMESHHANDLE hMesh, uint32_t matidx, const MATERIAL* mat);
-	int clbkSetMeshMaterialEx(DEVMESHHANDLE hMesh, uint32_t matidx, MatProp mat, const oapi::FVECTOR4* in);
+	int clbkSetMeshMaterial(DEVMESHHANDLE hMesh, DWORD matidx, const MATERIAL* mat);
+	int clbkSetMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp mat, const oapi::FVECTOR4* in);
 
 	/**
 	* \brief Retrieve the properties of one of the mesh materials.
@@ -344,8 +344,8 @@ public:
 	* \return true if successful, false on error (index out of range)
 	* \default None, returns 2 ("client does not support operation").
 	*/
-	int clbkMeshMaterial(DEVMESHHANDLE hMesh, uint32_t matidx, MATERIAL* mat);
-	int clbkMeshMaterialEx(DEVMESHHANDLE hMesh, uint32_t matidx, MatProp mat, oapi::FVECTOR4* out);
+	int clbkMeshMaterial(DEVMESHHANDLE hMesh, DWORD matidx, MATERIAL* mat);
+	int clbkMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp mat, oapi::FVECTOR4* out);
 
 	/**
      * \brief Set custom properties for a device-specific mesh.
@@ -361,7 +361,7 @@ public:
 	 * if value<>0 modulate (mix) material alpha values with texture alpha maps.
 	 * \default None, returns \e false.
 	 */
-	bool clbkSetMeshProperty (DEVMESHHANDLE hMesh, uint32_t property, uint32_t value);
+	bool clbkSetMeshProperty (DEVMESHHANDLE hMesh, DWORD property, DWORD value);
 
 	/**
 	 * \brief React to vessel creation
@@ -396,7 +396,7 @@ public:
 	 *   object for which the message was created.
 	 * \sa RegisterVisObject, UnregisterVisObject, visevent
 	 */
-	int clbkVisEvent (OBJHANDLE hObj, VISHANDLE vis, uint32_t msg, DWORD_PTR context);
+	int clbkVisEvent (OBJHANDLE hObj, VISHANDLE vis, DWORD msg, DWORD_PTR context);
 
 	/**
 	 * \brief Return a DEVMESHHANDLE handle for a visual, defined by its index. (! Return type incorrect !)
@@ -419,7 +419,7 @@ public:
 	 * \return Should return 0 on success, or error flags > 0.
 	 * \default None, returns -2.
 	 */
-	int clbkGetMeshGroup (DEVMESHHANDLE hMesh, uint32_t grpidx, GROUPREQUESTSPEC *grs);
+	int clbkGetMeshGroup (DEVMESHHANDLE hMesh, DWORD grpidx, GROUPREQUESTSPEC *grs);
 
 	/**
 	 * \brief Mesh group editing interface for device-specific meshes.
@@ -433,7 +433,7 @@ public:
 	 *   include vertex values, index lists, texture and material indices,
 	 *   and user flags.
 	 */
-	int clbkEditMeshGroup (DEVMESHHANDLE hMesh, uint32_t grpidx, GROUPEDITSPEC *ges);
+	int clbkEditMeshGroup (DEVMESHHANDLE hMesh, DWORD grpidx, GROUPEDITSPEC *ges);
 
 
 	// ==================================================================
@@ -574,7 +574,7 @@ public:
 	 *   clients can also return smaller values if they only use part of the
 	 *   screen area for scene rendering.
 	 */
-	void clbkGetViewportSize (uint32_t *width, uint32_t *height) const;
+	void clbkGetViewportSize (DWORD *width, DWORD *height) const;
 
 	/**
 	 * \brief Returns a specific render parameter
@@ -583,7 +583,7 @@ public:
 	 * \return true if the specified parameter is supported by the client,
 	 *    false if not.
 	 */
-	bool clbkGetRenderParam (uint32_t prm, uint32_t *value) const;
+	bool clbkGetRenderParam (DWORD prm, DWORD *value) const;
 
 	/**
 	 * \brief Render an instrument panel in cockpit view as a 2D billboard.
@@ -646,7 +646,7 @@ public:
 	 *  - OAPISURFACE_MIPMAPS: create a full chain of mipmaps for the surface if possible
 	 *  - OAPISURFACE_NOALPHA: create a surface without an alpha channel
 	 */
-	SURFHANDLE clbkCreateSurfaceEx (uint32_t w, uint32_t h, uint32_t attrib);
+	SURFHANDLE clbkCreateSurfaceEx (DWORD w, DWORD h, DWORD attrib);
 
 	/**
 	 * \brief Create an offscreen surface
@@ -665,7 +665,7 @@ public:
 	 *   surface with the same pixel format.
 	 * \sa clbkCreateTexture, clbkReleaseSurface
 	 */
-	SURFHANDLE clbkCreateSurface (uint32_t w, uint32_t h, SURFHANDLE hTemplate = NULL);
+	SURFHANDLE clbkCreateSurface (DWORD w, DWORD h, SURFHANDLE hTemplate = NULL);
 
 	/**
 	 * \brief Create a texture for rendering
@@ -683,7 +683,7 @@ public:
 	 *   should return NULL.
 	 * \sa clbkCreateSurface, clbkReleaseSurface
 	 */
-	SURFHANDLE clbkCreateTexture (uint32_t w, uint32_t h);
+	SURFHANDLE clbkCreateTexture (DWORD w, DWORD h);
 
 	/**
 	 * \brief Create an offscreen surface from a bitmap
@@ -726,7 +726,7 @@ public:
 	 * \default Sets w and h to 0 and returns false.
 	 * \sa clbkCreateSurface
 	 */
-	bool clbkGetSurfaceSize (SURFHANDLE surf, uint32_t *w, uint32_t *h);
+	bool clbkGetSurfaceSize (SURFHANDLE surf, DWORD *w, DWORD *h);
 
 	/**
 	 * \brief Set transparency colour key for a surface.
@@ -736,7 +736,7 @@ public:
 	 * \note Derived classes should overload this method if the renderer
 	 *   supports colour key transparency for surfaces.
 	 */
-	bool clbkSetSurfaceColourKey (SURFHANDLE surf, uint32_t ckey);
+	bool clbkSetSurfaceColourKey (SURFHANDLE surf, DWORD ckey);
 
 	/**
 	 * \brief Convert an RGB colour triplet into a device-specific colour value.
@@ -747,11 +747,11 @@ public:
 	 * \note Derived classes should overload this method to convert RGB colour
 	 *   definitions into device-compatible colour values, taking into account
 	 *   the colour depth of the render device etc.
-	 * \default Packs the RGB values into a uint32_t of the form 0x00RRGGBB, with
+	 * \default Packs the RGB values into a DWORD of the form 0x00RRGGBB, with
 	 *   8 bits per colour component.
 	 * \sa clbkFillSurface
 	 */
-	uint32_t clbkGetDeviceColour (BYTE r, BYTE g, BYTE b);
+	DWORD clbkGetDeviceColour (BYTE r, BYTE g, BYTE b);
 	// @}
 
 	// ==================================================================
@@ -775,9 +775,9 @@ public:
 	 *   <tr><td>BLT_TGTCOLORKEY</td><td>Use the colour key defined by the target surface for transparency</td></tr>
 	 *   </table>
 	 *   If a client doesn't support some of the flags, it should quietly ignore it.
-	 * \sa clbkBlt(SURFHANDLE,uint32_t,uint32_t,SURFHANDLE,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t)
+	 * \sa clbkBlt(SURFHANDLE,DWORD,DWORD,SURFHANDLE,DWORD,DWORD,DWORD,DWORD,DWORD)
 	 */
-	bool clbkBlt (SURFHANDLE tgt, uint32_t tgtx, uint32_t tgty, SURFHANDLE src, uint32_t flag = 0) const;
+	bool clbkBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src, DWORD flag = 0) const;
 
 	/**
 	 * \brief Copy a rectangle from one surface to another.
@@ -800,9 +800,9 @@ public:
 	 *   <tr><td>BLT_TGTCOLORKEY</td><td>Use the colour key defined by the target surface for transparency</td></tr>
 	 *   </table>
 	 *   If a client doesn't support some of the flags, it should quietly ignore it.
-	 * \sa clbkBlt(SURFHANDLE,uint32_t,uint32_t,SURFHANDLE,uint32_t)
+	 * \sa clbkBlt(SURFHANDLE,DWORD,DWORD,SURFHANDLE,DWORD)
 	 */
-	bool clbkBlt (SURFHANDLE tgt, uint32_t tgtx, uint32_t tgty, SURFHANDLE src, uint32_t srcx, uint32_t srcy, uint32_t w, uint32_t h, uint32_t flag = 0) const;
+	bool clbkBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src, DWORD srcx, DWORD srcy, DWORD w, DWORD h, DWORD flag = 0) const;
 
 	/**
 	 * \brief Copy a rectangle from one surface to another, stretching or shrinking as required.
@@ -821,11 +821,11 @@ public:
 	 * \default None, returns false.
 	 * \note By convention, tgt==NULL is valid and refers to the primary render
 	 *   surface (e.g. for copying 2-D overlay surfaces).
-	 * \sa clbkBlt(SURFHANDLE,uint32_t,uint32_t,SURFHANDLE,uint32_t),
-	 *   clbkBlt(SURFHANDLE,uint32_t,uint32_t,SURFHANDLE,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t)
+	 * \sa clbkBlt(SURFHANDLE,DWORD,DWORD,SURFHANDLE,DWORD),
+	 *   clbkBlt(SURFHANDLE,DWORD,DWORD,SURFHANDLE,DWORD,DWORD,DWORD,DWORD,DWORD)
 	 */
-	bool clbkScaleBlt (SURFHANDLE tgt, uint32_t tgtx, uint32_t tgty, uint32_t tgtw, uint32_t tgth,
-		                       SURFHANDLE src, uint32_t srcx, uint32_t srcy, uint32_t srcw, uint32_t srch, uint32_t flag = 0) const;
+	bool clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgtw, DWORD tgth,
+		                       SURFHANDLE src, DWORD srcx, DWORD srcy, DWORD srcw, DWORD srch, DWORD flag = 0) const;
 
 
 	/**
@@ -868,9 +868,9 @@ public:
 	 * \default None, returns false.
 	 * \note Parameter col is a device-dependent colour value
 	 *   (see \ref clbkGetDeviceColour).
-	 * \sa clbkFillSurface(SURFHANDLE,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t)
+	 * \sa clbkFillSurface(SURFHANDLE,DWORD,DWORD,DWORD,DWORD,DWORD)
 	 */
-	bool clbkFillSurface (SURFHANDLE surf, uint32_t col) const;
+	bool clbkFillSurface (SURFHANDLE surf, DWORD col) const;
 
 	/**
 	 * \brief Fill an area in a surface with a uniform colour
@@ -884,9 +884,9 @@ public:
 	 * \default None, returns false.
 	 * \note Parameter col is a device-dependent colour value
 	 *   (see \ref clbkGetDeviceColour).
-	 * \sa clbkFillSurface(SURFHANDLE,uint32_t)
+	 * \sa clbkFillSurface(SURFHANDLE,DWORD)
 	 */
-	bool clbkFillSurface (SURFHANDLE surf, uint32_t tgtx, uint32_t tgty, uint32_t w, uint32_t h, uint32_t col) const;
+	bool clbkFillSurface (SURFHANDLE surf, DWORD tgtx, DWORD tgty, DWORD w, DWORD h, DWORD col) const;
 
 
 	/**
@@ -964,7 +964,7 @@ public:
 	 * \default None, returns NULL.
 	 * \sa clbkReleasePen, oapi::Pen
 	 */
-	Pen *clbkCreatePen (int style, int width, uint32_t col) const;
+	Pen *clbkCreatePen (int style, int width, DWORD col) const;
 
 	/**
 	 * \brief De-allocate a pen resource.
@@ -981,7 +981,7 @@ public:
 	 * \default None, returns NULL.
 	 * \sa clbkReleaseBrush, oapi::Brush
 	 */
-	Brush *clbkCreateBrush (uint32_t col) const;
+	Brush *clbkCreateBrush (DWORD col) const;
 
 	/**
 	 * \brief De-allocate a brush resource.
@@ -1063,15 +1063,15 @@ public:
 	//FileParser *		GetFileParser() const { return parser; }
 	LPDIRECT3DSURFACE9	GetBackBuffer() const { return pBackBuffer; }
 	LPDIRECT3DSURFACE9	GetDepthStencil() const { return pDepthStencil; }
-	const void *		GetConfigParam (uint32_t paramtype) const;
-	bool				RegisterRenderProc(__gcRenderProc proc, uint32_t id, void *pParam = NULL);
-	bool				RegisterGenericProc(__gcGenericProc proc, uint32_t id, void *pParam = NULL);
-	void				MakeRenderProcCall(Sketchpad *pSkp, uint32_t id, LPD3DXMATRIX pV, LPD3DXMATRIX pP);
-	void				MakeGenericProcCall(uint32_t id, int iUser, void *pUser) const;
-	bool				IsGenericProcEnabled(uint32_t id) const;
+	const void *		GetConfigParam (DWORD paramtype) const;
+	bool				RegisterRenderProc(__gcRenderProc proc, DWORD id, void *pParam = NULL);
+	bool				RegisterGenericProc(__gcGenericProc proc, DWORD id, void *pParam = NULL);
+	void				MakeRenderProcCall(Sketchpad *pSkp, DWORD id, LPD3DXMATRIX pV, LPD3DXMATRIX pP);
+	void				MakeGenericProcCall(DWORD id, int iUser, void *pUser) const;
+	bool				IsGenericProcEnabled(DWORD id) const;
 	void				SetScenarioName(const std::string &path) { scenarioName = path; };
 	void				HackFriendlyHack();
-	void				PickTerrain(uint32_t uMsg, int xpos, int ypos);
+	void				PickTerrain(DWORD uMsg, int xpos, int ypos);
 	DEVMESHHANDLE		GetDevMesh(MESHHANDLE hMesh);
 	HANDLE				GetMainThread() const {	return hMainThread;	}
 
@@ -1238,7 +1238,7 @@ protected:
 	 */
 	bool clbkSplashLoadMsg (const char *msg, int line);
 
-	void clbkSetSplashScreen(const char *filename, uint32_t textCol) override;
+	void clbkSetSplashScreen(const char *filename, DWORD textCol) override;
 
 	/**
 	 * \brief Store a persistent mesh template
@@ -1289,11 +1289,11 @@ public:
 	bool OutputLoadStatus (const char *msg, int line);
 
 private:
-	void BltError(SURFHANDLE src, SURFHANDLE tgt, const Rect* s, const Rect* t, bool bHalt = true) const;
+	void BltError(SURFHANDLE src, SURFHANDLE tgt, const LPRECT s, const LPRECT t, bool bHalt = true) const;
 	void SketchPadTest();
 	void PresentScene();
 	void Label(const char *format, ...);
-	void DrawTimeBar(double t, double scale, double frames, uint32_t color, const char *label=NULL);
+	void DrawTimeBar(double t, double scale, double frames, DWORD color, const char *label=NULL);
 	bool ChkDev(const char *fnc) const;
 
 	SURFHANDLE				pBltGrpTgt;
@@ -1314,7 +1314,7 @@ private:
 	HANDLE					hMainThread;
 	WindowManager *			pWM;
 	const char *            pCustomSplashScreen;
-	uint32_t                   pSplashTextColor;
+	DWORD                   pSplashTextColor;
 
 	HWND hRenderWnd;        // render window handle
 
@@ -1329,9 +1329,9 @@ private:
 	bool bRendering;
 	bool bGDIClear;
 
-	uint32_t viewW, viewH;     // dimensions of the render viewport
-	uint32_t viewBPP;          // bit depth of render viewport
-	uint32_t frame_timer;
+	DWORD viewW, viewH;     // dimensions of the render viewport
+	DWORD viewBPP;          // bit depth of render viewport
+	DWORD frame_timer;
 
 	// device enumeration callback function
 
@@ -1361,7 +1361,7 @@ private:
 
 	Sketchpad *pItemsSkp;
 
-	uint32_t loadd_x, loadd_y, loadd_w, loadd_h;
+	DWORD loadd_x, loadd_y, loadd_w, loadd_h;
 	int LabelPos;
 
 }; // class D3D9Client
@@ -1419,7 +1419,7 @@ public:
 	 *   of certain events (e.g. adding and deleting meshes)
 	 * \note For currently supported event types, see \ref visevent.
 	 */
-	virtual void clbkEvent (uint32_t event, DWORD_PTR context) {}
+	virtual void clbkEvent (DWORD event, DWORD_PTR context) {}
 
 protected:
 	OBJHANDLE hObj;	///< Object handle associated with the visual
@@ -1445,18 +1445,18 @@ public:
 	{
 		bCaptured = true;
 		HR(pDev->GetScissorRect(&bkSR));
-		HR(pDev->GetRenderState(D3DRS_ALPHABLENDENABLE, LPDWORD(&bkABE)));
-		HR(pDev->GetRenderState(D3DRS_ZENABLE, LPDWORD(&bkZEN)));
-		HR(pDev->GetRenderState(D3DRS_ZWRITEENABLE, LPDWORD(&bkZW)));
-		HR(pDev->GetRenderState(D3DRS_CULLMODE, LPDWORD(&bkCULL)));
-		HR(pDev->GetRenderState(D3DRS_COLORWRITEENABLE, LPDWORD(&bkCW)));
-		HR(pDev->GetRenderState(D3DRS_SCISSORTESTENABLE, LPDWORD(&bkSE)));
-		HR(pDev->GetRenderState(D3DRS_FILLMODE, LPDWORD(&bkFM)));
-		HR(pDev->GetRenderState(D3DRS_STENCILENABLE, LPDWORD(&bkSTE)));
-		HR(pDev->GetRenderState(D3DRS_ALPHATESTENABLE, LPDWORD(&bkATE)));
-		HR(pDev->GetRenderState(D3DRS_BLENDOP, LPDWORD(&bkBO)));
-		HR(pDev->GetRenderState(D3DRS_SRCBLEND, LPDWORD(&bkSB)));
-		HR(pDev->GetRenderState(D3DRS_DESTBLEND, LPDWORD(&bkDB)));
+		HR(pDev->GetRenderState(D3DRS_ALPHABLENDENABLE, &bkABE));
+		HR(pDev->GetRenderState(D3DRS_ZENABLE, &bkZEN));
+		HR(pDev->GetRenderState(D3DRS_ZWRITEENABLE, &bkZW));
+		HR(pDev->GetRenderState(D3DRS_CULLMODE, &bkCULL));
+		HR(pDev->GetRenderState(D3DRS_COLORWRITEENABLE, &bkCW));
+		HR(pDev->GetRenderState(D3DRS_SCISSORTESTENABLE, &bkSE));
+		HR(pDev->GetRenderState(D3DRS_FILLMODE, &bkFM));
+		HR(pDev->GetRenderState(D3DRS_STENCILENABLE, &bkSTE));
+		HR(pDev->GetRenderState(D3DRS_ALPHATESTENABLE, &bkATE));
+		HR(pDev->GetRenderState(D3DRS_BLENDOP, &bkBO));
+		HR(pDev->GetRenderState(D3DRS_SRCBLEND, &bkSB));
+		HR(pDev->GetRenderState(D3DRS_DESTBLEND, &bkDB));
 	}
 
 	void Restore()
@@ -1478,7 +1478,7 @@ public:
 	}
 
 	RECT bkSR = {};
-	uint32_t bkABE, bkZEN, bkZW, bkCULL, bkCW, bkSE, bkFM, bkSTE, bkATE, bkBO, bkSB, bkDB;
+	DWORD bkABE, bkZEN, bkZW, bkCULL, bkCW, bkSE, bkFM, bkSTE, bkATE, bkBO, bkSB, bkDB;
 	LPDIRECT3DDEVICE9 pDev;
 	bool bCaptured;
 };

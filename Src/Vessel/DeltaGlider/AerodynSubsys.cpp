@@ -36,7 +36,7 @@ AerodynCtrlSubsystem::AerodynCtrlSubsystem (DeltaGlider *v)
 
 // --------------------------------------------------------------
 
-void AerodynCtrlSubsystem::SetMode (uint32_t mode)
+void AerodynCtrlSubsystem::SetMode (DWORD mode)
 {
 	selector->SetMode (mode);
 }
@@ -74,9 +74,9 @@ AerodynSelector::AerodynSelector (AerodynCtrlSubsystem *_subsys)
 
 // --------------------------------------------------------------
 
-void AerodynSelector::SetMode (uint32_t mode)
+void AerodynSelector::SetMode (DWORD mode)
 {
-	uint32_t curmode = DG()->GetADCtrlMode();
+	DWORD curmode = DG()->GetADCtrlMode();
 	if (curmode != mode) DG()->SetADCtrlMode (mode);
 	DG()->TriggerRedrawArea (0, 0, ELID_DIAL);
 
@@ -84,7 +84,7 @@ void AerodynSelector::SetMode (uint32_t mode)
 
 // --------------------------------------------------------------
 
-uint32_t AerodynSelector::GetMode () const
+DWORD AerodynSelector::GetMode () const
 {
 	return DG()->GetADCtrlMode();
 }
@@ -93,7 +93,7 @@ uint32_t AerodynSelector::GetMode () const
 
 bool AerodynSelector::IncMode ()
 {
-	uint32_t mode = DG()->GetADCtrlMode();
+	DWORD mode = DG()->GetADCtrlMode();
 	if (mode <= 1) {
 		DG()->SetADCtrlMode (mode ? 7 : 1);
 		return true;
@@ -104,7 +104,7 @@ bool AerodynSelector::IncMode ()
 
 bool AerodynSelector::DecMode ()
 {
-	uint32_t mode = min (DG()->GetADCtrlMode(),(uint32_t)2);
+	DWORD mode = min (DG()->GetADCtrlMode(),(DWORD)2);
 	if (mode) {
 		DG()->SetADCtrlMode (mode-1);
 		return true;
@@ -113,7 +113,7 @@ bool AerodynSelector::DecMode ()
 
 // --------------------------------------------------------------
 
-bool AerodynSelector::clbkLoadPanel2D (int panelid, PANELHANDLE hPanel, uint32_t viewW, uint32_t viewH)
+bool AerodynSelector::clbkLoadPanel2D (int panelid, PANELHANDLE hPanel, DWORD viewW, DWORD viewH)
 {
 	if (panelid != 0) return false;
 
@@ -158,7 +158,7 @@ void AerodynSelectorDial::Reset2D (int panelid, MESHHANDLE hMesh)
 void AerodynSelectorDial::ResetVC (DEVMESHHANDLE hMesh)
 {
 	DGDial1::ResetVC (hMesh);
-	uint32_t mode = vessel->GetADCtrlMode();
+	DWORD mode = vessel->GetADCtrlMode();
 	SetPosition (mode == 0 ? 0 : mode == 7 ? 1 : 2);
 }
 
@@ -175,7 +175,7 @@ bool AerodynSelectorDial::Redraw2D (SURFHANDLE surf)
 	static const float tx_dy = 43.0f;              // texture block height
 	static float tu[4] = {tx_x0/texw,(tx_x0+tx_dx)/texw,tx_x0/texw,(tx_x0+tx_dx)/texw};
 
-	float dtu = (float)(min(vessel->GetADCtrlMode(),(uint32_t)2)*40.0)/texw;
+	float dtu = (float)(min(vessel->GetADCtrlMode(),(DWORD)2)*40.0)/texw;
 	for (int i = 0; i < 4; i++)
 		grp->Vtx[vtxofs+i].tu = tu[i]+dtu;
 	return false;
@@ -185,7 +185,7 @@ bool AerodynSelectorDial::Redraw2D (SURFHANDLE surf)
 
 bool AerodynSelectorDial::RedrawVC (DEVMESHHANDLE hMesh, SURFHANDLE surf)
 {
-	uint32_t mode = component->GetMode();
+	DWORD mode = component->GetMode();
 	SetPosition(mode == 0 ? 0 : mode == 7 ? 1 : 2);
 	return DGDial1::RedrawVC (hMesh, surf);
 }
@@ -307,7 +307,7 @@ void Airbrake::clbkPostStep (double simt, double simdt, double mjd)
 
 // --------------------------------------------------------------
 
-bool Airbrake::clbkLoadPanel2D (int panelid, PANELHANDLE hPanel, uint32_t viewW, uint32_t viewH)
+bool Airbrake::clbkLoadPanel2D (int panelid, PANELHANDLE hPanel, DWORD viewW, DWORD viewH)
 {
 	if (panelid != 0) return false;
 
@@ -381,7 +381,7 @@ bool Airbrake::clbkPlaybackEvent (double simt, double event_t, const char *event
 
 // --------------------------------------------------------------
 
-int Airbrake::clbkConsumeBufferedKey (uint32_t key, bool down, char *kstate)
+int Airbrake::clbkConsumeBufferedKey (DWORD key, bool down, char *kstate)
 {
 	if (KEYMOD_ALT(kstate) || KEYMOD_SHIFT(kstate))
 		return 0;
@@ -498,7 +498,7 @@ bool ElevatorTrim::clbkParseScenarioLine (const char *line)
 
 // --------------------------------------------------------------
 
-bool ElevatorTrim::clbkLoadPanel2D (int panelid, PANELHANDLE hPanel, uint32_t viewW, uint32_t viewH)
+bool ElevatorTrim::clbkLoadPanel2D (int panelid, PANELHANDLE hPanel, DWORD viewW, DWORD viewH)
 {
 	if (panelid != 0) return false;
 
@@ -572,7 +572,7 @@ bool ElevatorTrimWheel::RedrawVC (DEVMESHHANDLE hMesh, SURFHANDLE surf)
 
 	double level = vessel->GetControlSurfaceLevel (AIRCTRL_ELEVATORTRIM);
 	if (level != trimposVC) {
-		const uint32_t nvtx = 3;
+		const DWORD nvtx = 3;
 		WORD vidx[3] = {VC_ETRIMSCALE_vofs,VC_ETRIMSCALE_vofs+1,VC_ETRIMSCALE_vofs+2};
 		NTVERTEX vtx[nvtx];
 		GROUPEDITSPEC ges;
@@ -586,7 +586,7 @@ bool ElevatorTrimWheel::RedrawVC (DEVMESHHANDLE hMesh, SURFHANDLE surf)
 		static const double z0[3] = {VC_ETRIMSCALE_ref[0].z,VC_ETRIMSCALE_ref[1].z,VC_ETRIMSCALE_ref[2].z};
 		static double range = 0.032;
 		static double dy = -range*cos(tilt), dz = -range*sin(tilt);
-		for (uint32_t i = 0; i < nvtx; i++) {
+		for (DWORD i = 0; i < nvtx; i++) {
 			vtx[i].y = (float)(y0[i] + level*dy);
 			vtx[i].z = (float)(z0[i] + level*dz);
 		}

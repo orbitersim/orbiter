@@ -133,7 +133,7 @@ void vVessel::GlobalExit ()
 
 // ============================================================================================
 //
-void vVessel::clbkEvent(uint32_t evnt, DWORD_PTR _context)
+void vVessel::clbkEvent(DWORD evnt, DWORD_PTR _context)
 {
 	UINT context = (UINT)_context;
 
@@ -160,7 +160,7 @@ void vVessel::clbkEvent(uint32_t evnt, DWORD_PTR _context)
 		case EVENT_VESSEL_MESHOFS:
 		{
 			bBSRecompute = true;
-			uint32_t idx = (uint32_t)context;
+			DWORD idx = (DWORD)context;
 			if (idx < nmesh) {
 				VECTOR3 ofs;
 				vessel->GetMeshOffset (idx, ofs);
@@ -200,7 +200,7 @@ void vVessel::clbkEvent(uint32_t evnt, DWORD_PTR _context)
 
 // ============================================================================================
 //
-uint32_t vVessel::GetMeshCount()
+DWORD vVessel::GetMeshCount()
 {
 	return nmesh;
 }
@@ -218,7 +218,7 @@ MESHHANDLE vVessel::GetMesh (UINT idx)
 //
 bool vVessel::HasExtPass()
 {
-	for (uint32_t i=0;i<nmesh;i++) if (meshlist[i].vismode&MESHVIS_EXTPASS) return true;
+	for (DWORD i=0;i<nmesh;i++) if (meshlist[i].vismode&MESHVIS_EXTPASS) return true;
 	return false;
 }
 
@@ -227,7 +227,7 @@ bool vVessel::HasExtPass()
 //
 bool vVessel::HasShadow()
 {
-	for (uint32_t i = 0; i < nmesh; i++) if (meshlist[i].mesh) if (meshlist[i].mesh->HasShadow()) return true;
+	for (DWORD i = 0; i < nmesh; i++) if (meshlist[i].mesh) if (meshlist[i].mesh->HasShadow()) return true;
 	return false;
 }
 
@@ -237,7 +237,7 @@ bool vVessel::HasShadow()
 void vVessel::PreInitObject()
 {
 	if (pMatMgr->LoadConfiguration()) {
-		for (uint32_t i=0;i<nmesh;i++) if (meshlist[i].mesh) pMatMgr->ApplyConfiguration(meshlist[i].mesh);
+		for (DWORD i=0;i<nmesh;i++) if (meshlist[i].mesh) pMatMgr->ApplyConfiguration(meshlist[i].mesh);
 		pMatMgr->LoadCameraConfig();
 	}
 	else LogErr("Failed to load a custom configuration for %s",vessel->GetClassNameA());
@@ -664,8 +664,8 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 
 	UINT i, mfd;
 
-	uint32_t flags = *(uint32_t*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
-	uint32_t displ = *(uint32_t*)gc->GetConfigParam(CFGPRM_GETDISPLAYMODE);
+	DWORD flags = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
+	DWORD displ = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDISPLAYMODE);
 
 	bool bCockpit = (oapiCameraInternal() && (hObj == oapiGetFocusObject()));
 	// render cockpit view
@@ -838,7 +838,7 @@ void vVessel::RenderVectors (LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp)
 	float alpha;
 	double len = 1e-9f; // avoids division by zero if len is not updated
 
-	uint32_t bfvmode = *(uint32_t*)gc->GetConfigParam(CFGPRM_FORCEVECTORFLAG);
+	DWORD bfvmode = *(DWORD*)gc->GetConfigParam(CFGPRM_FORCEVECTORFLAG);
 	float sclset  = *(float*)gc->GetConfigParam(CFGPRM_FORCEVECTORSCALE);
 	float scale   = float(size) / 50.0f;
 
@@ -950,7 +950,7 @@ bool vVessel::RenderExhaust()
 	ExhaustLength = 0.0f;
 	if (!active) return false;
 
-	uint32_t nexhaust = vessel->GetExhaustCount();
+	DWORD nexhaust = vessel->GetExhaustCount();
 	if (!nexhaust) return true; // nothing to do
 
 	EXHAUSTSPEC es;
@@ -958,7 +958,7 @@ bool vVessel::RenderExhaust()
 	vessel->GetRotationMatrix(R);
 	VECTOR3 cdir = tmul(R, cpos);
 
-	for (uint32_t i=0;i<nexhaust;i++) {
+	for (DWORD i=0;i<nexhaust;i++) {
 		if (vessel->GetExhaustLevel(i)==0.0) continue;
 		vessel->GetExhaustSpec(i, &es);
 		D3D9Effect::RenderExhaust(&mWorld, cdir, &es, defexhausttex);
@@ -973,7 +973,7 @@ bool vVessel::RenderExhaust()
 void vVessel::RenderBeacons(LPDIRECT3DDEVICE9 dev)
 {
 	if (nmesh < 1) return;
-	uint32_t idx = 0;
+	DWORD idx = 0;
 	const BEACONLIGHTSPEC *bls = vessel->GetBeacon(idx);
 	if (!bls) return; // nothing to do
 	bool need_setup = true;
@@ -996,7 +996,7 @@ void vVessel::RenderGrapplePoints (LPDIRECT3DDEVICE9 dev)
 {
 	if (!oapiGetShowGrapplePoints()) return; // nothing to do
 
-	uint32_t i;
+	DWORD i;
 	ATTACHMENTHANDLE hAtt;
 	VECTOR3 pos, dir, rot;
 	const float size = 0.25;
@@ -1129,13 +1129,13 @@ void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float
 // Return true if it's time to move to a next vessel
 // false, if more rendereing is required here.
 //
-bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, uint32_t cnt, uint32_t flags)
+bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 {
 
 	bool bReflective = false;
 
 	if (meshlist) {
-		for (uint32_t i=0;i<nmesh;i++) {
+		for (DWORD i=0;i<nmesh;i++) {
 			if (meshlist[i].mesh) {
 				if (meshlist[i].mesh->IsReflective()) {
 					bReflective = true;
@@ -1191,11 +1191,11 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, uint32_t cnt, uint32_t flags)
 
 	if ((eCam->flags&ENVCAM_FOCUS) == 0) RndList.erase(this);
 
-	uint32_t nAtc = vessel->AttachmentCount(false);
-	uint32_t nDoc = vessel->DockCount();
+	DWORD nAtc = vessel->AttachmentCount(false);
+	DWORD nDoc = vessel->DockCount();
 
 	if (eCam->flags & ENVCAM_OMIT_ATTC) {
-		for (uint32_t i=0;i<nAtc;i++) {
+		for (DWORD i=0;i<nAtc;i++) {
 			ATTACHMENTHANDLE hAtc = vessel->GetAttachmentHandle(false, i);
 			if (hAtc) {
 				OBJHANDLE hAtcObj = vessel->GetAttachmentStatus(hAtc);
@@ -1208,10 +1208,10 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, uint32_t cnt, uint32_t flags)
 	}
 	else {
 
-		uint32_t nAttc = eCam->nAttc;
+		DWORD nAttc = eCam->nAttc;
 
-		for (uint32_t i=0;i<nAttc;i++) {
-			uint32_t id = uint32_t(eCam->pOmitAttc[i]);
+		for (DWORD i=0;i<nAttc;i++) {
+			DWORD id = DWORD(eCam->pOmitAttc[i]);
 			ATTACHMENTHANDLE hAtc = vessel->GetAttachmentHandle(false, id);
 			if (hAtc) {
 				OBJHANDLE hAtcObj = vessel->GetAttachmentStatus(hAtc);
@@ -1241,7 +1241,7 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, uint32_t cnt, uint32_t flags)
 	LPDIRECT3DSURFACE9 pSrf = NULL;
 
 
-	for (uint32_t i=0;i<cnt;i++) {
+	for (DWORD i=0;i<cnt;i++) {
 
 		HR(pEnv[ENVMAP_MAIN]->GetCubeMapSurface(D3DCUBEMAP_FACES(eFace), 0, &pSrf));
 	
@@ -1279,7 +1279,7 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, uint32_t cnt, uint32_t flags)
 // Return true if it's time to move to a next vessel
 // false, if more rendereing is required here.
 //
-bool vVessel::ProbeIrradiance(LPDIRECT3DDEVICE9 pDev, uint32_t cnt, uint32_t flags)
+bool vVessel::ProbeIrradiance(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 {
 
 	LPDIRECT3DSURFACE9 pIrDS = GetScene()->GetIrradianceDepthStencil();
@@ -1324,10 +1324,10 @@ bool vVessel::ProbeIrradiance(LPDIRECT3DDEVICE9 pDev, uint32_t cnt, uint32_t fla
 
 	ENVCAMREC *eCam = pMatMgr->GetCamera(0);
 
-	uint32_t nAtc = vessel->AttachmentCount(false);
-	uint32_t nDoc = vessel->DockCount();
+	DWORD nAtc = vessel->AttachmentCount(false);
+	DWORD nDoc = vessel->DockCount();
 
-	for (uint32_t i = 0; i<nAtc; i++) {
+	for (DWORD i = 0; i<nAtc; i++) {
 		ATTACHMENTHANDLE hAtc = vessel->GetAttachmentHandle(false, i);
 		if (hAtc) {
 			OBJHANDLE hAtcObj = vessel->GetAttachmentStatus(hAtc);
@@ -1356,7 +1356,7 @@ bool vVessel::ProbeIrradiance(LPDIRECT3DDEVICE9 pDev, uint32_t cnt, uint32_t fla
 	D3DXVECTOR3 dir, up;
 	LPDIRECT3DSURFACE9 pSrf = NULL;
 	
-	for (uint32_t i = 0; i<cnt; i++) {
+	for (DWORD i = 0; i<cnt; i++) {
 
 		HR(pIrdEnv->GetCubeMapSurface(D3DCUBEMAP_FACES(iFace), 0, &pSrf));
 
@@ -1396,11 +1396,11 @@ void vVessel::RenderLightCone(LPD3DXMATRIX pWT)
 	if (DebugControls::sEmitter == 0) return;
 	if (DebugControls::Emitters.count(DebugControls::sEmitter) == 0) return;
 
-	uint32_t ec = vessel->LightEmitterCount();
+	DWORD ec = vessel->LightEmitterCount();
 	const LightEmitter *se = DebugControls::Emitters[DebugControls::sEmitter];
 	const LightEmitter *em = NULL;
 
-	for (uint32_t i = 0; i < ec; i++) if (vessel->GetLightEmitter(i) == se) { em = se; break; }
+	for (DWORD i = 0; i < ec; i++) if (vessel->GetLightEmitter(i) == se) { em = se; break; }
 
 	if (!em) return;
 
@@ -1479,7 +1479,7 @@ bool vVessel::ModLighting()
 		}
 	}
 	
-	uint32_t ambient = *(uint32_t*)gc->GetConfigParam(CFGPRM_AMBIENTLEVEL);
+	DWORD ambient = *(DWORD*)gc->GetConfigParam(CFGPRM_AMBIENTLEVEL);
 	sunLight.Ambient = float(ambient) * 0.0039f;
 	sunLight.Transmission = 1.0f;
 	sunLight.Incatter = 0.0f;
@@ -1767,7 +1767,7 @@ bool vVessel::GetMinMaxDistance(float *zmin, float *zmax, float *dmin)
 
 	D3DXMatrixMultiply(&mWorldView, &mWorld, scn->GetViewMatrix());
 
-	for (uint32_t i=0;i<nmesh;i++) {
+	for (DWORD i=0;i<nmesh;i++) {
 		if (meshlist[i].vismode&vismode && meshlist[i].mesh) {
 			if (meshlist[i].trans) {
 				D3DXMatrixMultiply(&mWorldViewTrans, (const D3DXMATRIX *)meshlist[i].trans, &mWorldView);
@@ -1796,7 +1796,7 @@ void vVessel::UpdateBoundingBox()
 
 	D3DXMATRIX mTF;
 
-	for (uint32_t i=0;i<nmesh;i++) {
+	for (DWORD i=0;i<nmesh;i++) {
 
 		D3DXVECTOR3 q,w;
 		if (meshlist[i].mesh==NULL) continue;
@@ -1822,11 +1822,11 @@ void vVessel::UpdateBoundingBox()
 		}
 	}
 
-	uint32_t nexhaust = vessel->GetExhaustCount();
+	DWORD nexhaust = vessel->GetExhaustCount();
 
 	if (nexhaust) {
 		EXHAUSTSPEC es;
-		for (uint32_t i=0;i<nexhaust;i++) {
+		for (DWORD i=0;i<nexhaust;i++) {
 			double lvl = vessel->GetExhaustLevel(i);
 			if (lvl==0.0) continue;
 			vessel->GetExhaustSpec(i, &es);
@@ -1835,7 +1835,7 @@ void vVessel::UpdateBoundingBox()
 			D9AddPointAABB(&BBox, &ext);
 		}
 
-		for (uint32_t i=0;i<nexhaust;i++) {
+		for (DWORD i=0;i<nexhaust;i++) {
 			vessel->GetExhaustSpec(i, &es);
 			VECTOR3 r = (*es.lpos);
 			D3DXVECTOR3 ref(float(r.x), float(r.y), float(r.z));
@@ -1853,8 +1853,8 @@ D3D9Pick vVessel::Pick(const D3DXVECTOR3 *vDir)
 	D3DXMATRIX mWT;
 	LPD3DXMATRIX pWT = NULL;
 
-	uint32_t flags = *(uint32_t*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
-	uint32_t displ = *(uint32_t*)gc->GetConfigParam(CFGPRM_GETDISPLAYMODE);
+	DWORD flags = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
+	DWORD displ = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDISPLAYMODE);
 
 	bool bCockpit = (oapiCameraInternal() && (hObj == oapiGetFocusObject()));
 	bool bVC = (bCockpit && (oapiCockpitMode() == COCKPIT_VIRTUAL));
@@ -1868,7 +1868,7 @@ D3D9Pick vVessel::Pick(const D3DXVECTOR3 *vDir)
 
 	if (!meshlist || nmesh==0) return result;
 
-	for (uint32_t i=0;i<nmesh;i++) {
+	for (DWORD i=0;i<nmesh;i++) {
 
 		D3D9Mesh *hMesh = meshlist[i].mesh;
 
@@ -1899,7 +1899,7 @@ D3D9Pick vVessel::Pick(const D3DXVECTOR3 *vDir)
 
 // ============================================================================================
 //
-int vVessel::GetMatrixTransform(gcCore::MatrixId func, uint32_t mi, uint32_t gi, FMATRIX4 *pMat)
+int vVessel::GetMatrixTransform(gcCore::MatrixId func, DWORD mi, DWORD gi, FMATRIX4 *pMat)
 {
 	if (mi >= nmesh) return -1;
 	D3D9Mesh *pMesh = meshlist[mi].mesh;
@@ -1934,7 +1934,7 @@ int vVessel::GetMatrixTransform(gcCore::MatrixId func, uint32_t mi, uint32_t gi,
 
 // ============================================================================================
 //
-int vVessel::SetMatrixTransform(gcCore::MatrixId func, uint32_t mi, uint32_t gi, const FMATRIX4 *pMat)
+int vVessel::SetMatrixTransform(gcCore::MatrixId func, DWORD mi, DWORD gi, const FMATRIX4 *pMat)
 {
 	if (mi >= nmesh) return -1;
 	D3D9Mesh *pMesh = meshlist[mi].mesh;

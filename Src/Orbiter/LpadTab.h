@@ -4,6 +4,7 @@
 #ifndef __LPADTAB_H
 #define __LPADTAB_H
 
+#include <windows.h>
 #include "Config.h"
 #include "Launchpad.h"
 #include "UIUtil.h"

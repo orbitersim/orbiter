@@ -10,8 +10,6 @@
 
 #include "Di7frame.h"
 
-struct DIJOYSTATE2 {};
-
 class DInput {
 	friend class Orbiter;
 
@@ -19,10 +17,10 @@ public:
 	DInput (Orbiter *pOrbiter);
 	~DInput ();
 
-	uint32_t Create ();
+	HRESULT Create (HINSTANCE hInst);
 	void Destroy ();
 
-	void SetRenderWindow();
+	void SetRenderWindow(HWND hWnd);
 
 	bool CreateKbdDevice();
 	bool CreateJoyDevice ();
@@ -32,7 +30,7 @@ public:
 	inline const LPDIRECTINPUTDEVICE8 GetKbdDevice() const { return diframe->GetKbdDevice(); }
 	inline const LPDIRECTINPUTDEVICE8 GetJoyDevice() const { return diframe->GetJoyDevice(); }
 
-	void OptionChanged(uint32_t cat, uint32_t item);
+	void OptionChanged(DWORD cat, DWORD item);
 
 	bool PollJoystick (DIJOYSTATE2 *js);
 
@@ -43,12 +41,13 @@ public:
 	};
 
 protected:
-	uint32_t SetJoystickProperties ();
+	HRESULT SetJoystickProperties ();
 
 private:
 	Orbiter *orbiter;
 	CDIFramework7 *diframe;
 	JoyProp joyprop;
+	HWND m_hWnd;
 };
 
 #endif // !__INPUT_H

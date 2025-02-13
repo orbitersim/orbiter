@@ -46,8 +46,7 @@ char *AtlantisConfig::Description()
 bool AtlantisConfig::clbkOpen (HWND hLaunchpad)
 {
 	// respond to user double-clicking the item in the list
-	// return OpenDialog (gParams.hInst, hLaunchpad, IDD_ACONFIG, DlgProc);
-	return false;
+	return OpenDialog (gParams.hInst, hLaunchpad, IDD_ACONFIG, DlgProc);
 }
 
 bool AtlantisConfig::TexHiresEnabled () const

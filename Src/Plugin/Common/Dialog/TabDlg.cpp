@@ -44,7 +44,7 @@ void TabbedDialog::Open (HINSTANCE hInstance, bool allowMulti)
 {
 	if (hDlg) return;
 	hInst = hInstance;
-	// hDlg = oapiOpenDialogEx (hInst, dlgId, DlgProcHook, allowMulti ? DLG_ALLOWMULTI:0, this);
+	hDlg = oapiOpenDialogEx (hInst, dlgId, DlgProcHook, allowMulti ? DLG_ALLOWMULTI:0, this);
 }
 
 // --------------------------------------------------------------
@@ -53,7 +53,7 @@ void TabbedDialog::Close ()
 {
 	if (hDlg) {
 		ClearTabs ();
-		// oapiCloseDialog (hDlg);
+		oapiCloseDialog (hDlg);
 		hDlg = NULL;
 		Closed ();
 	}
@@ -150,8 +150,7 @@ INT_PTR TabbedDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		}
 		break;
 	}
-	return 0;
-	// return oapiDefDialogProc (hWnd, uMsg, wParam, lParam);
+	return oapiDefDialogProc (hWnd, uMsg, wParam, lParam);
 }
 
 // --------------------------------------------------------------
@@ -166,8 +165,7 @@ static INT_PTR CALLBACK DlgProcHook (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 	}
 	TabbedDialog *dlg = (TabbedDialog*)GetWindowLongPtr (hWnd, GWLP_USERDATA);
 	if (dlg) return dlg->DlgProc (hWnd, uMsg, wParam, lParam);
-	// else     return oapiDefDialogProc (hWnd, uMsg, wParam, lParam);
-	return 0;
+	else     return oapiDefDialogProc (hWnd, uMsg, wParam, lParam);
 }
 
 

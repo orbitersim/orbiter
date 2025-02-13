@@ -122,8 +122,7 @@ void AtmConfig::Write (const char *celbody)
 bool AtmConfig::clbkOpen (HWND hLaunchpad)
 {
 	// respond to user double-clicking the item in the list
-	// return OpenDialog (gParams.hInst, hLaunchpad, IDD_CONFIG, DlgProc);
-	return false;
+	return OpenDialog (gParams.hInst, hLaunchpad, IDD_CONFIG, DlgProc);
 }
 
 void AtmConfig::InitDialog (HWND hWnd)

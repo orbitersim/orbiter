@@ -67,7 +67,7 @@ void OptionsPageContainer::SetWindowHandles(HWND hDlg, HWND hSplitter, HWND hPan
 
 void OptionsPageContainer::CreatePages()
 {
-	unsigned int parent;
+	HTREEITEM parent;
 	if (m_orig == LAUNCHPAD) {
 		AddPage(new OptionsPage_Visual(this));
 		AddPage(new OptionsPage_Physics(this));
@@ -136,7 +136,7 @@ void OptionsPageContainer::SetPageSize(HWND hDlg)
 
 // ----------------------------------------------------------------------
 
-unsigned int OptionsPageContainer::AddPage(OptionsPage* pPage, unsigned int parent)
+HTREEITEM OptionsPageContainer::AddPage(OptionsPage* pPage, HTREEITEM parent)
 {
 	m_pPage.push_back(pPage);
 	return pPage->CreatePage(m_hDlg, parent);
@@ -240,7 +240,7 @@ void OptionsPageContainer::OnNotifyPagelist(LPNMHDR pnmh)
 
 // ----------------------------------------------------------------------
 
-bool OptionsPageContainer::VScroll(HWND hDlg, WORD request, WORD curpos, HWND hControl)
+BOOL OptionsPageContainer::VScroll(HWND hDlg, WORD request, WORD curpos, HWND hControl)
 {
 	HWND hPage = CurrentPage()->HPage();
 
@@ -338,31 +338,31 @@ HWND OptionsPage::HParent() const
 
 // ----------------------------------------------------------------------
 
-unsigned int OptionsPage::CreatePage(HWND hDlg, unsigned int parent)
+HTREEITEM OptionsPage::CreatePage(HWND hDlg, HTREEITEM parent)
 {
-	// int winId = ResourceId();
-	// m_hPage = CreateDialogParam(g_pOrbiter->hInstStopgap, MAKEINTRESOURCE(winId), HParent(), s_DlgProc, (LPARAM)this);
-	// if (!m_hPage) {
-	// 	uint32_t err = GetLastError();
-	// 	int i = 1;
-	// }
-	//
-	// char cbuf[256];
-	// strcpy(cbuf, Name());
-	// TV_INSERTSTRUCT tvis;
-	// tvis.item.mask = TVIF_TEXT | TVIF_PARAM;
-	// tvis.item.pszText = cbuf;
-	// tvis.item.lParam = (LPARAM)this;
-	// tvis.hInsertAfter = TVI_LAST;
-	// tvis.hParent = parent;
-	// HTREEITEM hti = TreeView_InsertItem(GetDlgItem(hDlg, IDC_OPT_PAGELIST), &tvis);
-	// m_hItem = hti;
-	return 0;
+	int winId = ResourceId();
+	m_hPage = CreateDialogParam(g_pOrbiter->hInstStopgap, MAKEINTRESOURCE(winId), HParent(), s_DlgProc, (LPARAM)this);
+	if (!m_hPage) {
+		DWORD err = GetLastError();
+		int i = 1;
+	}
+
+	char cbuf[256];
+	strcpy(cbuf, Name());
+	TV_INSERTSTRUCT tvis;
+	tvis.item.mask = TVIF_TEXT | TVIF_PARAM;
+	tvis.item.pszText = cbuf;
+	tvis.item.lParam = (LPARAM)this;
+	tvis.hInsertAfter = TVI_LAST;
+	tvis.hParent = parent;
+	HTREEITEM hti = TreeView_InsertItem(GetDlgItem(hDlg, IDC_OPT_PAGELIST), &tvis);
+	m_hItem = hti;
+	return hti;
 }
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage::OnInitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam)
+BOOL OptionsPage::OnInitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
 	UpdateControls(hWnd);
 	return TRUE;
@@ -380,7 +380,7 @@ INT_PTR OptionsPage::DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_HSCROLL:
 		return OnHScroll(hWnd, wParam, lParam);
 	case WM_NOTIFY:
-		return OnNotify(hWnd, (uint32_t)wParam, (NMHDR*)lParam);
+		return OnNotify(hWnd, (DWORD)wParam, (NMHDR*)lParam);
 	default:
 		return OnMessage(hWnd, uMsg, wParam, lParam);
 	}
@@ -484,7 +484,7 @@ void OptionsPage_Visual::UpdateControls(HWND hPage)
 void OptionsPage_Visual::UpdateConfig(HWND hPage)
 {
 	char cbuf[256];
-	uint32_t i;
+	DWORD i;
 	double d;
 
 	Cfg()->CfgVisualPrm.bClouds = (SendDlgItemMessage(hPage, IDC_OPT_VIS_CLOUD, BM_GETCHECK, 0, 0) == BST_CHECKED);
@@ -501,7 +501,7 @@ void OptionsPage_Visual::UpdateConfig(HWND hPage)
 		0 : SendDlgItemMessage(hPage, IDC_OPT_VIS_ELEVMODE, CB_GETCURSEL, 0, 0) + 1);
 	GetWindowText(GetDlgItem(hPage, IDC_OPT_VIS_MAXLEVEL), cbuf, 127);
 	if (!sscanf(cbuf, "%lu", &i)) i = SURF_MAX_PATCHLEVEL2;
-	Cfg()->CfgVisualPrm.PlanetMaxLevel = max((uint32_t)1, min((uint32_t)SURF_MAX_PATCHLEVEL2, i));
+	Cfg()->CfgVisualPrm.PlanetMaxLevel = max((DWORD)1, min((DWORD)SURF_MAX_PATCHLEVEL2, i));
 	Cfg()->CfgVisualPrm.bVesselShadows = (SendDlgItemMessage(hPage, IDC_OPT_VIS_VSHADOW, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	Cfg()->CfgVisualPrm.bReentryFlames = (SendDlgItemMessage(hPage, IDC_OPT_VIS_REENTRY, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	Cfg()->CfgVisualPrm.bShadows = (SendDlgItemMessage(hPage, IDC_OPT_VIS_SHADOW, BM_GETCHECK, 0, 0) == BST_CHECKED);
@@ -515,7 +515,7 @@ void OptionsPage_Visual::UpdateConfig(HWND hPage)
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_Visual::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
+BOOL OptionsPage_Visual::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
 {
 	OptionsPage::OnInitDialog(hPage, wParam, lParam);
 	SendDlgItemMessage(hPage, IDC_OPT_VIS_ELEVMODE, CB_RESETCONTENT, 0, 0);
@@ -526,7 +526,7 @@ bool OptionsPage_Visual::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_Visual::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
+BOOL OptionsPage_Visual::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
 {
 	switch (ctrlId)
 	{
@@ -623,10 +623,10 @@ bool OptionsPage_Visual::OnCommand(HWND hPage, WORD ctrlId, WORD notification, H
 			if (notification == EN_CHANGE)
 			{
 				char cbuf[16];
-				uint32_t i;
+				DWORD i;
 				GetWindowText( GetDlgItem( hPage, IDC_OPT_VIS_MAXLEVEL ), cbuf, 16 );
 				if (!sscanf( cbuf, "%lu", &i )) i = SURF_MAX_PATCHLEVEL2;
-				Cfg()->CfgVisualPrm.PlanetMaxLevel = max((uint32_t)1, min((uint32_t)SURF_MAX_PATCHLEVEL2, i));
+				Cfg()->CfgVisualPrm.PlanetMaxLevel = max((DWORD)1, min((DWORD)SURF_MAX_PATCHLEVEL2, i));
 				return FALSE;
 			}
 			break;
@@ -682,7 +682,7 @@ bool OptionsPage_Visual::OnCommand(HWND hPage, WORD ctrlId, WORD notification, H
 			if (notification == EN_CHANGE)
 			{
 				char cbuf[16];
-				uint32_t i;
+				DWORD i;
 				GetWindowText( GetDlgItem(hPage, IDC_OPT_VIS_AMBIENT ), cbuf, 16 );
 				if (!sscanf( cbuf, "%lu", &i )) i = 15;
 				else if (i > 255) i = 255;
@@ -763,7 +763,7 @@ void OptionsPage_Physics::UpdateConfig(HWND hPage)
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_Physics::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
+BOOL OptionsPage_Physics::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
 {
 	OptionsPage::OnInitDialog(hPage, wParam, lParam);
 	return TRUE;
@@ -771,7 +771,7 @@ bool OptionsPage_Physics::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_Physics::OnCommand( HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl )
+BOOL OptionsPage_Physics::OnCommand( HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl )
 {
 	switch (ctrlId)
 	{
@@ -867,7 +867,7 @@ void OptionsPage_Instrument::UpdateControls(HWND hPage)
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_Instrument::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
+BOOL OptionsPage_Instrument::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
 {
 	OptionsPage::OnInitDialog(hPage, wParam, lParam);
 	SendDlgItemMessage(hPage, IDC_OPT_MFD_VCTEXSIZE, CB_RESETCONTENT, 0, 0);
@@ -879,7 +879,7 @@ bool OptionsPage_Instrument::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lPar
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_Instrument::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
+BOOL OptionsPage_Instrument::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
 {
 	switch (ctrlId) {
 	case IDC_OPT_MFD_INTERVAL:
@@ -917,7 +917,7 @@ bool OptionsPage_Instrument::OnCommand(HWND hPage, WORD ctrlId, WORD notificatio
 	case IDC_OPT_MFD_VCTEXSIZE:
 		if (notification == CBN_SELCHANGE) {
 			int vcmfdsize[3] = { 256, 512, 1024 };
-			uint32_t idx = (uint32_t)SendDlgItemMessage(hPage, IDC_OPT_MFD_VCTEXSIZE, CB_GETCURSEL, 0, 0);
+			DWORD idx = (DWORD)SendDlgItemMessage(hPage, IDC_OPT_MFD_VCTEXSIZE, CB_GETCURSEL, 0, 0);
 			Cfg()->CfgInstrumentPrm.VCMFDSize = vcmfdsize[idx];
 			g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_MFDVCSIZE);
 		}
@@ -952,7 +952,7 @@ bool OptionsPage_Instrument::OnCommand(HWND hPage, WORD ctrlId, WORD notificatio
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_Instrument::OnNotify(HWND hPage, uint32_t ctrlId, const NMHDR* pNmHdr)
+BOOL OptionsPage_Instrument::OnNotify(HWND hPage, DWORD ctrlId, const NMHDR* pNmHdr)
 {
 	if (pNmHdr->code == UDN_DELTAPOS) {
 		NMUPDOWN* nmud = (NMUPDOWN*)pNmHdr;
@@ -1027,7 +1027,7 @@ void OptionsPage_Vessel::UpdateControls(HWND hPage)
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_Vessel::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
+BOOL OptionsPage_Vessel::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
 {
 	OptionsPage::OnInitDialog(hPage, wParam, lParam);
 	if (Container()->Environment() == OptionsPageContainer::INLINE) {
@@ -1040,7 +1040,7 @@ bool OptionsPage_Vessel::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_Vessel::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
+BOOL OptionsPage_Vessel::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
 {
 	switch (ctrlId) {
 	case IDC_OPT_VESSEL_FUELLIMIT:
@@ -1111,13 +1111,13 @@ const HELPCONTEXT* OptionsPage_UI::HelpContext() const
 
 void OptionsPage_UI::UpdateControls(HWND hPage)
 {
-	uint32_t mode = Cfg()->CfgUIPrm.MouseFocusMode;
+	DWORD mode = Cfg()->CfgUIPrm.MouseFocusMode;
 	SendDlgItemMessage(hPage, IDC_OPT_UI_MOUSEFOCUSMODE, CB_SETCURSEL, mode, 0);
 }
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_UI::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
+BOOL OptionsPage_UI::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
 {
 	OptionsPage::OnInitDialog(hPage, wParam, lParam);
 
@@ -1131,12 +1131,12 @@ bool OptionsPage_UI::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_UI::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
+BOOL OptionsPage_UI::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
 {
 	switch (ctrlId) {
 	case IDC_OPT_UI_MOUSEFOCUSMODE:
 		if (notification == CBN_SELCHANGE) {
-			uint32_t mode = (uint32_t)SendDlgItemMessage(hPage, IDC_OPT_UI_MOUSEFOCUSMODE, CB_GETCURSEL, 0, 0);
+			DWORD mode = (DWORD)SendDlgItemMessage(hPage, IDC_OPT_UI_MOUSEFOCUSMODE, CB_GETCURSEL, 0, 0);
 			Cfg()->CfgUIPrm.MouseFocusMode = mode;
 			return FALSE;
 		}
@@ -1207,7 +1207,7 @@ void OptionsPage_Joystick::UpdateControls(HWND hPage)
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_Joystick::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
+BOOL OptionsPage_Joystick::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
 {
 	OptionsPage::OnInitDialog(hPage, wParam, lParam);
 
@@ -1239,12 +1239,12 @@ bool OptionsPage_Joystick::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_Joystick::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
+BOOL OptionsPage_Joystick::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
 {
 	switch (ctrlId) {
 	case IDC_OPT_JOY_DEVICE:
 		if (notification == CBN_SELCHANGE) {
-			uint32_t idx = (uint32_t)SendDlgItemMessage(hPage, IDC_OPT_JOY_DEVICE, CB_GETCURSEL, 0, 0);
+			DWORD idx = (DWORD)SendDlgItemMessage(hPage, IDC_OPT_JOY_DEVICE, CB_GETCURSEL, 0, 0);
 			Cfg()->CfgJoystickPrm.Joy_idx = idx;
 			g_pOrbiter->OnOptionChanged(OPTCAT_JOYSTICK, OPTITEM_JOYSTICK_DEVICE);
 			UpdateControls(hPage);
@@ -1253,7 +1253,7 @@ bool OptionsPage_Joystick::OnCommand(HWND hPage, WORD ctrlId, WORD notification,
 		break;
 	case IDC_OPT_JOY_THROTTLE:
 		if (notification == CBN_SELCHANGE) {
-			uint32_t axis = (uint32_t)SendDlgItemMessage(hPage, IDC_OPT_JOY_THROTTLE, CB_GETCURSEL, 0, 0);
+			DWORD axis = (DWORD)SendDlgItemMessage(hPage, IDC_OPT_JOY_THROTTLE, CB_GETCURSEL, 0, 0);
 			Cfg()->CfgJoystickPrm.ThrottleAxis = axis;
 			g_pOrbiter->OnOptionChanged(OPTCAT_JOYSTICK, OPTITEM_JOYSTICK_PARAM);
 			return FALSE;
@@ -1272,7 +1272,7 @@ bool OptionsPage_Joystick::OnCommand(HWND hPage, WORD ctrlId, WORD notification,
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_Joystick::OnHScroll(HWND hPage, WPARAM wParam, LPARAM lParam)
+BOOL OptionsPage_Joystick::OnHScroll(HWND hPage, WPARAM wParam, LPARAM lParam)
 {
 	int val;
 	switch (GetDlgCtrlID((HWND)lParam)) {
@@ -1336,7 +1336,7 @@ const HELPCONTEXT* OptionsPage_CelSphere::HelpContext() const
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_CelSphere::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
+BOOL OptionsPage_CelSphere::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
 {
 	OptionsPage::OnInitDialog(hPage, wParam, lParam);
 
@@ -1352,7 +1352,7 @@ bool OptionsPage_CelSphere::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lPara
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_CelSphere::OnCommand(HWND hPage, WORD id, WORD code, HWND hControl)
+BOOL OptionsPage_CelSphere::OnCommand(HWND hPage, WORD id, WORD code, HWND hControl)
 {
 	switch (id) {
 	case IDC_OPT_CSP_ENABLESTARPIX:
@@ -1399,7 +1399,7 @@ bool OptionsPage_CelSphere::OnCommand(HWND hPage, WORD id, WORD code, HWND hCont
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_CelSphere::OnHScroll(HWND hPage, WPARAM wParam, LPARAM lParam)
+BOOL OptionsPage_CelSphere::OnHScroll(HWND hPage, WPARAM wParam, LPARAM lParam)
 {
 	switch (GetDlgCtrlID((HWND)lParam)) {
 	case IDC_OPT_CSP_BGBRIGHTNESS:
@@ -1417,7 +1417,7 @@ bool OptionsPage_CelSphere::OnHScroll(HWND hPage, WPARAM wParam, LPARAM lParam)
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_CelSphere::OnNotify(HWND hPage, uint32_t ctrlId, const NMHDR* pNmHdr)
+BOOL OptionsPage_CelSphere::OnNotify(HWND hPage, DWORD ctrlId, const NMHDR* pNmHdr)
 {
 	if (pNmHdr->code == UDN_DELTAPOS) {
 		NMUPDOWN* nmud = (NMUPDOWN*)pNmHdr;
@@ -1664,23 +1664,23 @@ const HELPCONTEXT* OptionsPage_VisHelper::HelpContext() const
 
 void OptionsPage_VisHelper::UpdateControls(HWND hPage)
 {
-	uint32_t& plnFlag = Cfg()->CfgVisHelpPrm.flagPlanetarium;
+	DWORD& plnFlag = Cfg()->CfgVisHelpPrm.flagPlanetarium;
 	bool enable = plnFlag & PLN_ENABLE;
 	SendDlgItemMessage(hPage, IDC_OPT_PLN, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
-	uint32_t& mkrFlag = Cfg()->CfgVisHelpPrm.flagMarkers;
+	DWORD& mkrFlag = Cfg()->CfgVisHelpPrm.flagMarkers;
 	enable = mkrFlag & MKR_ENABLE;
 	SendDlgItemMessage(hPage, IDC_OPT_MKR, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
-	uint32_t vecFlag = Cfg()->CfgVisHelpPrm.flagBodyForce;
+	DWORD vecFlag = Cfg()->CfgVisHelpPrm.flagBodyForce;
 	enable = (vecFlag & BFV_ENABLE);
 	SendDlgItemMessage(hPage, IDC_OPT_VEC, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
-	uint32_t crdFlag = Cfg()->CfgVisHelpPrm.flagFrameAxes;
+	DWORD crdFlag = Cfg()->CfgVisHelpPrm.flagFrameAxes;
 	enable = (crdFlag & FAV_ENABLE);
 	SendDlgItemMessage(hPage, IDC_OPT_CRD, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
 }
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_VisHelper::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
+BOOL OptionsPage_VisHelper::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
 {
 	OptionsPage::OnInitDialog(hPage, wParam, lParam);
 	return TRUE;
@@ -1688,14 +1688,14 @@ bool OptionsPage_VisHelper::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lPara
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_VisHelper::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
+BOOL OptionsPage_VisHelper::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
 {
 	switch (ctrlId) {
 	case IDC_OPT_PLN:
 		if (notification == BN_CLICKED) {
 			bool check = (SendDlgItemMessage(hPage, ctrlId, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			uint32_t flag = PLN_ENABLE;
-			uint32_t& plnFlag = Cfg()->CfgVisHelpPrm.flagPlanetarium;
+			DWORD flag = PLN_ENABLE;
+			DWORD& plnFlag = Cfg()->CfgVisHelpPrm.flagPlanetarium;
 			if (check) plnFlag |= flag;
 			else       plnFlag &= ~flag;
 			return TRUE;
@@ -1704,8 +1704,8 @@ bool OptionsPage_VisHelper::OnCommand(HWND hPage, WORD ctrlId, WORD notification
 	case IDC_OPT_MKR:
 		if (notification == BN_CLICKED) {
 			bool check = (SendDlgItemMessage(hPage, ctrlId, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			uint32_t flag = MKR_ENABLE;
-			uint32_t& mkrFlag = Cfg()->CfgVisHelpPrm.flagMarkers;
+			DWORD flag = MKR_ENABLE;
+			DWORD& mkrFlag = Cfg()->CfgVisHelpPrm.flagMarkers;
 			if (check) mkrFlag |= flag;
 			else       mkrFlag &= ~flag;
 			return TRUE;
@@ -1714,8 +1714,8 @@ bool OptionsPage_VisHelper::OnCommand(HWND hPage, WORD ctrlId, WORD notification
 	case IDC_OPT_VEC:
 		if (notification == BN_CLICKED) {
 			bool check = (SendDlgItemMessage(hPage, ctrlId, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			uint32_t flag = BFV_ENABLE;
-			uint32_t& vecFlag = Cfg()->CfgVisHelpPrm.flagBodyForce;
+			DWORD flag = BFV_ENABLE;
+			DWORD& vecFlag = Cfg()->CfgVisHelpPrm.flagBodyForce;
 			if (check) vecFlag |= flag;
 			else       vecFlag &= ~flag;
 		}
@@ -1723,8 +1723,8 @@ bool OptionsPage_VisHelper::OnCommand(HWND hPage, WORD ctrlId, WORD notification
 	case IDC_OPT_CRD:
 		if (notification == BN_CLICKED) {
 			bool check = (SendDlgItemMessage(hPage, ctrlId, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			uint32_t flag = FAV_ENABLE;
-			uint32_t& crdFlag = Cfg()->CfgVisHelpPrm.flagFrameAxes;
+			DWORD flag = FAV_ENABLE;
+			DWORD& crdFlag = Cfg()->CfgVisHelpPrm.flagFrameAxes;
 			if (check) crdFlag |= flag;
 			else       crdFlag &= ~flag;
 		}
@@ -1790,7 +1790,7 @@ void OptionsPage_Planetarium::UpdateControls(HWND hPage)
 		IDC_STATIC1, IDC_STATIC2, IDC_STATIC3
 	};
 
-	uint32_t& plnFlag = Cfg()->CfgVisHelpPrm.flagPlanetarium;
+	DWORD& plnFlag = Cfg()->CfgVisHelpPrm.flagPlanetarium;
 	bool enable = plnFlag & PLN_ENABLE;
 	SendDlgItemMessage(hPage, IDC_OPT_PLN, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
 	for (auto resid : residPlanetarium)
@@ -1817,7 +1817,7 @@ void OptionsPage_Planetarium::UpdateControls(HWND hPage)
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_Planetarium::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
+BOOL OptionsPage_Planetarium::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
 {
 	OptionsPage::OnInitDialog(hPage, wParam, lParam);
 	RescanMarkerList(hPage);
@@ -1827,7 +1827,7 @@ bool OptionsPage_Planetarium::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lPa
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_Planetarium::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
+BOOL OptionsPage_Planetarium::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
 {
 	switch (ctrlId) {
 	case IDC_OPT_PLN:
@@ -1860,7 +1860,7 @@ bool OptionsPage_Planetarium::OnCommand(HWND hPage, WORD ctrlId, WORD notificati
 void OptionsPage_Planetarium::OnItemClicked(HWND hPage, WORD ctrlId)
 {
 	bool check = (SendDlgItemMessage(hPage, ctrlId, BM_GETCHECK, 0, 0) == TRUE);
-	uint32_t flag;
+	DWORD flag;
 	switch (ctrlId) {
 	case IDC_OPT_PLN:                 flag = PLN_ENABLE;    break;
 	case IDC_OPT_PLN_CELGRID:         flag = PLN_CGRID;     break;
@@ -1876,7 +1876,7 @@ void OptionsPage_Planetarium::OnItemClicked(HWND hPage, WORD ctrlId)
 	case IDC_OPT_PLN_CNSTLABEL_SHORT: flag = PLN_CNSTLONG; check = !check; break;
 	default:                          flag = 0;             break;
 	}
-	uint32_t& plnFlag = Cfg()->CfgVisHelpPrm.flagPlanetarium;
+	DWORD& plnFlag = Cfg()->CfgVisHelpPrm.flagPlanetarium;
 	if (check) plnFlag |= flag;
 	else       plnFlag &= ~flag;
 
@@ -1886,7 +1886,7 @@ void OptionsPage_Planetarium::OnItemClicked(HWND hPage, WORD ctrlId)
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_Planetarium::OnMarkerSelectionChanged(HWND hPage)
+BOOL OptionsPage_Planetarium::OnMarkerSelectionChanged(HWND hPage)
 {
 	std::vector<oapi::GraphicsClient::LABELLIST>& list = g_psys->LabelList();
 	if (list.size()) {
@@ -1959,7 +1959,7 @@ void OptionsPage_Labels::UpdateControls(HWND hPage)
 		IDC_STATIC1, IDC_STATIC2
 	};
 
-	uint32_t& mkrFlag = Cfg()->CfgVisHelpPrm.flagMarkers;
+	DWORD& mkrFlag = Cfg()->CfgVisHelpPrm.flagMarkers;
 	bool enable = mkrFlag & MKR_ENABLE;
 	SendDlgItemMessage(hPage, IDC_OPT_MKR, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
 	for (auto resid : residLabels)
@@ -1978,7 +1978,7 @@ void OptionsPage_Labels::UpdateControls(HWND hPage)
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_Labels::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
+BOOL OptionsPage_Labels::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
 {
 	OptionsPage::OnInitDialog(hPage, wParam, lParam);
 	ScanPsysBodies(hPage);
@@ -1988,7 +1988,7 @@ bool OptionsPage_Labels::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_Labels::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
+BOOL OptionsPage_Labels::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
 {
 	switch (ctrlId) {
 	case IDC_OPT_MKR:
@@ -2019,7 +2019,7 @@ bool OptionsPage_Labels::OnCommand(HWND hPage, WORD ctrlId, WORD notification, H
 void OptionsPage_Labels::OnItemClicked(HWND hPage, WORD ctrlId)
 {
 	bool check = (SendDlgItemMessage(hPage, ctrlId, BM_GETCHECK, 0, 0) == TRUE);
-	uint32_t flag;
+	DWORD flag;
 	switch (ctrlId) {
 	case IDC_OPT_MKR:          flag = MKR_ENABLE; break;
 	case IDC_OPT_MKR_VESSEL:   flag = MKR_VMARK;  break;
@@ -2029,7 +2029,7 @@ void OptionsPage_Labels::OnItemClicked(HWND hPage, WORD ctrlId)
 	case IDC_OPT_MKR_FEATURES: flag = MKR_LMARK;  break;
 	default:                   flag = 0;          break;
 	}
-	uint32_t& mkrFlag = Cfg()->CfgVisHelpPrm.flagMarkers;
+	DWORD& mkrFlag = Cfg()->CfgVisHelpPrm.flagMarkers;
 	if (check) mkrFlag |= flag;
 	else       mkrFlag &= ~flag;
 
@@ -2122,7 +2122,7 @@ void OptionsPage_Labels::RescanFeatures(HWND hPage)
 		if (!nlist) return;
 
 		for (int i = 0; i < nlist; i++) {
-			bool sel = SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATURELIST, LB_GETSEL, i, 0);
+			BOOL sel = SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATURELIST, LB_GETSEL, i, 0);
 			list[i].active = (sel ? true : false);
 		}
 
@@ -2132,7 +2132,7 @@ void OptionsPage_Labels::RescanFeatures(HWND hPage)
 	else {
 		nlist = planet->NumLabelLegend();
 		for (int i = 0; i < nlist; i++) {
-			bool sel = SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATURELIST, LB_GETSEL, i, 0);
+			BOOL sel = SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATURELIST, LB_GETSEL, i, 0);
 			planet->SetLabelActive(i, sel ? true : false);
 		}
 	}
@@ -2178,7 +2178,7 @@ void OptionsPage_Forces::UpdateControls(HWND hPage)
 		IDC_STATIC1, IDC_STATIC2, IDC_STATIC3, IDC_STATIC4, IDC_STATIC5
 	};
 
-	uint32_t vecFlag = Cfg()->CfgVisHelpPrm.flagBodyForce;
+	DWORD vecFlag = Cfg()->CfgVisHelpPrm.flagBodyForce;
 	bool enable = (vecFlag & BFV_ENABLE);
 	SendDlgItemMessage(hPage, IDC_OPT_VEC, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
 	for (auto resid : residForces)
@@ -2202,7 +2202,7 @@ void OptionsPage_Forces::UpdateControls(HWND hPage)
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_Forces::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
+BOOL OptionsPage_Forces::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
 {
 	GAUGEPARAM gp = { 0, 50, GAUGEPARAM::LEFT, GAUGEPARAM::BLACK };
 	oapiSetGaugeParams(GetDlgItem(hPage, IDC_OPT_VEC_SCALE), &gp);
@@ -2215,7 +2215,7 @@ bool OptionsPage_Forces::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_Forces::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
+BOOL OptionsPage_Forces::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
 {
 	switch (ctrlId) {
 	case IDC_OPT_VEC:
@@ -2242,7 +2242,7 @@ bool OptionsPage_Forces::OnCommand(HWND hPage, WORD ctrlId, WORD notification, H
 void OptionsPage_Forces::OnItemClicked(HWND hPage, WORD ctrlId)
 {
 	bool check = (SendDlgItemMessage(hPage, ctrlId, BM_GETCHECK, 0, 0) == TRUE);
-	uint32_t flag;
+	DWORD flag;
 	switch (ctrlId) {
 	case IDC_OPT_VEC:           flag = BFV_ENABLE;    break;
 	case IDC_OPT_VEC_WEIGHT:    flag = BFV_WEIGHT;    break;
@@ -2256,7 +2256,7 @@ void OptionsPage_Forces::OnItemClicked(HWND hPage, WORD ctrlId)
 	case IDC_OPT_VEC_LOGSCL: flag = BFV_LOGSCALE; check = true;  break;
 	default:                 flag = 0;           break;
 	}
-	uint32_t& vecFlag = Cfg()->CfgVisHelpPrm.flagBodyForce;
+	DWORD& vecFlag = Cfg()->CfgVisHelpPrm.flagBodyForce;
 	if (check) vecFlag |= flag;
 	else       vecFlag &= ~flag;
 
@@ -2265,7 +2265,7 @@ void OptionsPage_Forces::OnItemClicked(HWND hPage, WORD ctrlId)
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_Forces::OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam)
+BOOL OptionsPage_Forces::OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam)
 {
 	switch (GetDlgCtrlID((HWND)lParam)) {
 	case IDC_OPT_VEC_SCALE:
@@ -2330,7 +2330,7 @@ void OptionsPage_Axes::UpdateControls(HWND hPage)
 		IDC_STATIC1, IDC_STATIC2, IDC_STATIC3, IDC_STATIC4
 	};
 
-	uint32_t crdFlag = Cfg()->CfgVisHelpPrm.flagFrameAxes;
+	DWORD crdFlag = Cfg()->CfgVisHelpPrm.flagFrameAxes;
 	bool enable = (crdFlag & FAV_ENABLE);
 	SendDlgItemMessage(hPage, IDC_OPT_CRD, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
 	for (auto resid : residAxes)
@@ -2349,7 +2349,7 @@ void OptionsPage_Axes::UpdateControls(HWND hPage)
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_Axes::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
+BOOL OptionsPage_Axes::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
 {
 	GAUGEPARAM gp = { 0, 50, GAUGEPARAM::LEFT, GAUGEPARAM::BLACK };
 	oapiSetGaugeParams(GetDlgItem(hPage, IDC_OPT_CRD_SCALE), &gp);
@@ -2362,7 +2362,7 @@ bool OptionsPage_Axes::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_Axes::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
+BOOL OptionsPage_Axes::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
 {
 	switch (ctrlId) {
 	case IDC_OPT_CRD:
@@ -2384,7 +2384,7 @@ bool OptionsPage_Axes::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWN
 void OptionsPage_Axes::OnItemClicked(HWND hPage, WORD ctrlId)
 {
 	bool check = (SendDlgItemMessage(hPage, ctrlId, BM_GETCHECK, 0, 0) == TRUE);
-	uint32_t flag;
+	DWORD flag;
 	switch (ctrlId) {
 	case IDC_OPT_CRD:          flag = FAV_ENABLE;   break;
 	case IDC_OPT_CRD_VESSEL:   flag = FAV_VESSEL;   break;
@@ -2393,7 +2393,7 @@ void OptionsPage_Axes::OnItemClicked(HWND hPage, WORD ctrlId)
 	case IDC_OPT_CRD_NEGATIVE: flag = FAV_NEGATIVE; break;
 	default:                   flag = 0;            break;
 	}
-	uint32_t& crdFlag = Cfg()->CfgVisHelpPrm.flagFrameAxes;
+	DWORD& crdFlag = Cfg()->CfgVisHelpPrm.flagFrameAxes;
 	if (check) crdFlag |= flag;
 	else       crdFlag &= ~flag;
 
@@ -2402,7 +2402,7 @@ void OptionsPage_Axes::OnItemClicked(HWND hPage, WORD ctrlId)
 
 // ----------------------------------------------------------------------
 
-bool OptionsPage_Axes::OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam)
+BOOL OptionsPage_Axes::OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam)
 {
 	switch (GetDlgCtrlID((HWND)lParam)) {
 	case IDC_OPT_CRD_SCALE:

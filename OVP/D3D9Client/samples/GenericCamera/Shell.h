@@ -69,7 +69,7 @@ public:
 	//
 	static void	InitModule(ModHandle* hDLL);
 	static void ExitModule(HINSTANCE hDLL);
-	static void* MsgProc(UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam);
+	static OAPI_MSGTYPE MsgProc(UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam);
 
 private:
 	UINT id;			// Logical MFD identifier MFD_LEFT, MFD_RIGHT...

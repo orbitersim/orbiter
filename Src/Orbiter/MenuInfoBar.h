@@ -27,7 +27,7 @@ public:
 	MenuInfoBar (const Pane *_pane);
 	~MenuInfoBar ();
 	void Update (double t);
-	bool ProcessMouse (UINT event, uint32_t state, uint32_t x, uint32_t y);
+	bool ProcessMouse (UINT event, DWORD state, DWORD x, DWORD y);
 	void Render ();
 	void SetFOV (double fov);
 	void SetWarp (double warp);
@@ -37,16 +37,16 @@ public:
 	void SetRecording (bool rec);
 	void SetPlayback (bool pback);
 	void ToggleAutohide ();
-	void SetMenuMode (uint32_t mode);
-	void SetInfoMode (uint32_t mode);
-	void SetPauseIndicatorMode (uint32_t mode);
+	void SetMenuMode (DWORD mode);
+	void SetInfoMode (DWORD mode);
+	void SetPauseIndicatorMode (DWORD mode);
 	void SetOpacity (int opac);
 	void SetOpacityInfo (int opac);
 	void SetScrollspeed (int speed);
 	void SetLabelOnly (bool labelonly);
-	void SetAuxInfobar (int which, uint32_t idx);
-	inline uint32_t GetMenuMode() const { return menumode; }
-	inline uint32_t GetInfoMode() const { return infomode; }
+	void SetAuxInfobar (int which, DWORD idx);
+	inline DWORD GetMenuMode() const { return menumode; }
+	inline DWORD GetInfoMode() const { return infomode; }
 
 protected:
 	int TexBltString (const char *str, int tgtx, int tgty, int cleantox, char *curstr = 0, int maxn=1024);
@@ -63,7 +63,7 @@ private:
 	int itemW, itemN;
 	int flagW, flagH;
 	int itemHighlight;
-	uint32_t scrollzone;
+	DWORD scrollzone;
 	int scrollrange;
 	int scrollspeed; // 1-20
 	int opacity; // 0-10
@@ -71,7 +71,7 @@ private:
 	int menustate, infostate; // 0=hidden, 1=displayed, 2=in transition
 	double scrollpos, scrollpos_info;
 	int scrolldir, scrolldir_info; // 0=stop, 1=scrolling down, -1=scrolling up
-	uint32_t menumode, infomode, pausemode;
+	DWORD menumode, infomode, pausemode;
 	bool fixedstep;
 	bool warp_always;
 	bool warp_scientific;

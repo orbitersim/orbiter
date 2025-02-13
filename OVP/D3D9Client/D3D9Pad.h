@@ -80,7 +80,7 @@ struct SkpColor {
 		fclr = D3DXCOLOR(0, 0, 0, 0);
 	}
 
-	explicit SkpColor (uint32_t c) {
+	explicit SkpColor (DWORD c) {
 		dclr = c;
 		fclr = D3DXCOLOR(c);
 		D3DXCOLORSWAP(&fclr);
@@ -92,7 +92,7 @@ struct SkpColor {
 		D3DXCOLORSWAP(&fclr);
 	}
 
-	uint32_t dclr;
+	DWORD dclr;
 	D3DXCOLOR fclr;
 };
 
@@ -107,11 +107,11 @@ struct SkpVtx {
 	float x, y, l;			// vertex x, y, length
 	float nx, ny;			// next point
 	float px, py;			// previous point
-	uint32_t clr, fnc;
+	DWORD clr, fnc;
 };
 
 // GradientFillRect [only]
-inline void SkpVtxGF(SkpVtx &v, int _x, int _y, uint32_t c)
+inline void SkpVtxGF(SkpVtx &v, int _x, int _y, DWORD c)
 {
 	v.x = float(_x) - 0.5f;
 	v.y = float(_y) - 0.5f;
@@ -120,7 +120,7 @@ inline void SkpVtxGF(SkpVtx &v, int _x, int _y, uint32_t c)
 	v.l = 0.0f;
 }
 
-inline void SkpVtxFC(SkpVtx& v, float _x, float _y, uint32_t c)
+inline void SkpVtxFC(SkpVtx& v, float _x, float _y, DWORD c)
 {
 	v.x = _x - 0.5f;
 	v.y = _y - 0.5f;
@@ -150,7 +150,7 @@ inline void SkpVtxII(SkpVtx &v, int _tx, int _ty, int _sx, int _sy)
 };
 
 // Pattern Fill [only]
-inline void SkpVtxPF(SkpVtx &v, int _x, int _y, uint32_t c)
+inline void SkpVtxPF(SkpVtx &v, int _x, int _y, DWORD c)
 {
 	v.x = float(_x) - 0.5f;
 	v.y = float(_y) - 0.5f;
@@ -192,8 +192,8 @@ class D3D9Pad : public Sketchpad
 	friend class D3D9Text;
 
 	mutable struct {
-		uint32_t style;
-		uint32_t color;
+		DWORD style;
+		DWORD color;
 		float width;
 		bool  bEnabled;
 	} QPen;
@@ -278,7 +278,7 @@ public:
 	 * \return Previous colour setting.
 	 * \default None, returns 0.
 	 */
-	uint32_t SetTextColor (uint32_t col);
+	DWORD SetTextColor (DWORD col);
 
 	/**
 	 * \brief Set the background colour for text output.
@@ -289,7 +289,7 @@ public:
 	 *   is set to BK_OPAQUE.
 	 * \sa SetBackgroundMode
 	 */
-	uint32_t SetBackgroundColor (uint32_t col);
+	DWORD SetBackgroundColor (DWORD col);
 
 	/**
 	 * \brief Set the background mode for text output.
@@ -315,7 +315,7 @@ public:
 	 * \note For proportional fonts, the width value should be an approximate average
 	 *   character width.
 	 */
-	uint32_t GetCharSize ();
+	DWORD GetCharSize ();
 
 	/**
 	 * \brief Return the width of a text string in the currently selected font.
@@ -325,7 +325,7 @@ public:
 	 * \default None, returns 0.
 	 * \sa SetFont
 	 */
-	uint32_t GetTextWidth (const char *str, int len = 0);
+	DWORD GetTextWidth (const char *str, int len = 0);
 
 	/**
 	 * \brief Move the drawing reference to a new point.
@@ -404,7 +404,7 @@ public:
 	 * \param y y-coordinate of point [pixel]
 	 * \param col pixel colour (format: 0xBBGGRR)
 	 */
-	void Pixel (int x, int y, uint32_t col);
+	void Pixel (int x, int y, DWORD col);
 
 	/**
 	 * \brief Draw a line between two points.
@@ -482,12 +482,12 @@ public:
 	// ===============================================================================
 
 	void GetRenderSurfaceSize(LPSIZE size);
-	void QuickPen(uint32_t color, float width = 1.0f, uint32_t style = 0);
-	void QuickBrush(uint32_t color);
+	void QuickPen(DWORD color, float width = 1.0f, DWORD style = 0);
+	void QuickBrush(DWORD color);
 	void SetGlobalLineScale(float width = 1.0f, float pattern = 1.0f);
 	void SetWorldTransform(const FMATRIX4 *pWT = NULL);
 	void SetWorldTransform2D(float scale=1.0f, float rot=0.0f, const IVECTOR2 *c=NULL, const IVECTOR2 *t=NULL);
-	int  DrawMeshGroup(const MESHHANDLE hMesh, uint32_t grp, Sketchpad::MeshFlags flags, const SURFHANDLE hTex = NULL);
+	int  DrawMeshGroup(const MESHHANDLE hMesh, DWORD grp, Sketchpad::MeshFlags flags, const SURFHANDLE hTex = NULL);
 	void CopyRect(const SURFHANDLE hSrc, const LPRECT src, int tx, int ty);
 	void StretchRect(const SURFHANDLE hSrc, const LPRECT src, const LPRECT tgt);
 	void RotateRect(const SURFHANDLE hSrc, const LPRECT src, int cx, int cy, float angle, float sw = 1.0f, float sh = 1.0f);
@@ -495,7 +495,7 @@ public:
 	void TextEx(float x, float y, const char *str, float scale = 100.0f, float angle = 0.0f);
 	void ClipRect(const LPRECT clip = NULL);
 	void Clipper(int idx, const VECTOR3 *pPos = NULL, double cos_angle = 0.0, double dist = 0.0);
-	void DrawPoly(const HPOLY hPoly, uint32_t flags = 0);
+	void DrawPoly(const HPOLY hPoly, DWORD flags = 0);
 	void Lines(const FVECTOR2 *pt1, int nlines);
 	void DepthEnable(bool bEnable);
 
@@ -524,13 +524,13 @@ public:
 	void PushWorldTransform();
 	void PopWorldTransform();
 	void SetWorldScaleTransform2D(const FVECTOR2 *scl = NULL, const IVECTOR2 *trl = NULL);
-	void GradientFillRect(const LPRECT rect, uint32_t c1, uint32_t c2, bool bVertical = false);
-	void ColorFill(uint32_t color, const LPRECT tgt);
+	void GradientFillRect(const LPRECT rect, DWORD c1, DWORD c2, bool bVertical = false);
+	void ColorFill(DWORD color, const LPRECT tgt);
 	void StretchRegion(const skpRegion *rgn, const SURFHANDLE hSrc, const LPRECT out);
 	void CopyTetragon(SURFHANDLE pSrc, const LPRECT _s, const FVECTOR2 pt[4]);
 	void ColorCompatibility(bool bEnable);
-	void FillTetragon(uint32_t c, const FVECTOR2 pt[4]);
-	void Clear(uint32_t color = 0, bool bColor = true, bool bDepth = true);
+	void FillTetragon(DWORD c, const FVECTOR2 pt[4]);
+	void Clear(DWORD color = 0, bool bColor = true, bool bDepth = true);
 	void SetClipDistance(float _near, float _far);
 	void ColorKeyStretch(const SURFHANDLE hSrc, const LPRECT _s = NULL, const LPRECT t = NULL);
 	void SetWorldBillboard(const FVECTOR3& wpos, float utp = 1.0f, bool bFixed = true, const FVECTOR3* index = NULL);
@@ -556,7 +556,7 @@ public:
 	void SetViewProj(const D3DXMATRIX* pV, const D3DXMATRIX* pP);
 
 	LPD3DXMATRIX WorldMatrix();
-	uint32_t GetLineHeight(); ///< Return height of a character in the currently selected font with "internal leading"
+	DWORD GetLineHeight(); ///< Return height of a character in the currently selected font with "internal leading"
 	const char *GetName() const { return name; }
 	LPDIRECT3DSURFACE9 GetRenderTarget() const { return pTgt; }
 	bool IsStillDrawing() const { return bBeginDraw; }
@@ -569,8 +569,8 @@ public:
 private:
 
 	bool Topology(Topo tRequest);
-	void SetEnable(uint32_t config);
-	void ClearEnable(uint32_t config);
+	void SetEnable(DWORD config);
+	void ClearEnable(DWORD config);
 
 	bool HasPen() const;
 	bool HasBrush() const;
@@ -590,7 +590,7 @@ private:
 	void SetupDevice(Topo tNew);
 	RECT GetFullRect(SURFHANDLE hSrc);
 	void IsLineTopologyAllowed();
-	uint32_t ColorComp(uint32_t c) const;
+	DWORD ColorComp(DWORD c) const;
 	SkpColor ColorComp(const SkpColor &c) const;
 
 	template <typename Type> void AppendLineVertexList(const Type *pt, int npt, bool bLoop);
@@ -602,7 +602,7 @@ private:
 
 	SkpColor pencolor;
 	SkpColor brushcolor;
-	uint32_t	 Change;
+	DWORD	 Change;
 	bool	 bLine;
 
 	SkpColor		 textcolor;
@@ -626,7 +626,7 @@ private:
 	D3DXMATRIX mV, mP, mW, mO;
 	D3DXMATRIX mVOrig, mPOrig;
 	D3DXVECTOR4 vTarget;
-	uint32_t bkmode;
+	DWORD bkmode;
 	BlendState dwBlendState;
 	TAlign_horizontal tah;
 	TAlign_vertical tav;
@@ -644,8 +644,8 @@ private:
 
 
 	// Sketchpad3 --------------------------------------------------------------
-	uint32_t RenderConfig;
-	uint32_t Enable;
+	DWORD RenderConfig;
+	DWORD Enable;
 	FMATRIX4 ColorMatrix;
 	FVECTOR4 Gamma, Noise;
 
@@ -750,7 +750,7 @@ public:
 	 * \note if the specified face name is not recognised, then 'sans' is
 	 *   selected for \e prop==true, and 'fixed' is selected for \e prop==false.
 	 */
-	D3D9PadFont (int height, bool prop, const char *face, FontStyle style = FontStyle::FONT_NORMAL, int orientation=0, uint32_t flags=0);
+	D3D9PadFont (int height, bool prop, const char *face, FontStyle style = FontStyle::FONT_NORMAL, int orientation=0, DWORD flags=0);
 	D3D9PadFont (int height, char *face, int width = 0, int weight = 400, FontStyle style = FontStyle::FONT_NORMAL, float spacing = 0.0f);
 	/**
 	 * \brief Font destructor.
@@ -758,14 +758,14 @@ public:
 	~D3D9PadFont ();
 
 	HFONT	GetGDIFont () const;
-	uint32_t	GetQuality() const { return Quality; }
+	DWORD	GetQuality() const { return Quality; }
 	int		GetTextLength(const char *pText, int len) const;
 	int		GetIndexByPosition(const char *pText, int pos, int len) const;
 
 private:
 	D3D9TextPtr pFont;
 	HFONT hFont;
-	uint32_t Quality;
+	DWORD Quality;
 	float rotation;
 	static LPDIRECT3DDEVICE9 pDev;
 };
@@ -789,7 +789,7 @@ public:
 	 * \note if \e width=0, the pen is drawn with a width of 1 pixel.
 	 * \note Dashed line styles are only valid if the width parameter is <= 1.
 	 */
-	D3D9PadPen (int style, int width, uint32_t col);
+	D3D9PadPen (int style, int width, DWORD col);
 
 	/**
 	 * \brief Pen destructor.
@@ -819,7 +819,7 @@ public:
 	 * \param col line colour (format: 0xAABBGGRR)
 	 * \Only solid GDI brushes are supported.
 	 */
-	explicit D3D9PadBrush (uint32_t col);
+	explicit D3D9PadBrush (DWORD col);
 
 	/**
 	 * \brief Brush destructor.
@@ -835,7 +835,7 @@ private:
 
 class D3D9PolyBase
 {
-	uint32_t alloc_id;
+	DWORD alloc_id;
 public:
 					D3D9PolyBase(int _type) : alloc_id('POLY') { type = _type; version = 1; }
 	virtual			~D3D9PolyBase() { }

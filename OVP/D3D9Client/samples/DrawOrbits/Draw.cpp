@@ -586,7 +586,7 @@ void Orbits::Label(Sketchpad *pSkp2, IVECTOR2 *pt, VECTOR3 &plnDir, const char *
 	SIZE size;
 	pSkp2->GetRenderSurfaceSize(&size);
 
-	Rect src = { 0, 0, w, h };
+	RECT src = { 0, 0, w, h };
 
 	FVECTOR3 sd = WorldDirection(plnDir);
 
@@ -604,7 +604,7 @@ void Orbits::Label(Sketchpad *pSkp2, IVECTOR2 *pt, VECTOR3 &plnDir, const char *
 		ty = -h + 5;
 	}
 
-	Rect tgt = { pt->x + xo, pt->y + yo, pt->x + w + xo, pt->y + h + yo };
+	RECT tgt = { pt->x + xo, pt->y + yo, pt->x + w + xo, pt->y + h + yo };
 
 	pSkp2->StretchRect(hTex, &src, &tgt);
 	

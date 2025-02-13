@@ -31,7 +31,7 @@ public:
 	void Shift (const Vector &shift);
 	// shift the HUD position and active areas by vector 'shift'
 
-	void DefineArea (int aid, const Rect &texrect, int draw_mode, int mouse_mode, int bkmode, SURFHANDLE tgt);
+	void DefineArea (int aid, const RECT &texrect, int draw_mode, int mouse_mode, int bkmode, SURFHANDLE tgt);
 	// create a new active area
 
 	int AreaIndex (int aid);
@@ -104,7 +104,7 @@ private:
 	struct Area {
 		Area() {}
 		int id;       // area identifier
-		Rect texrect; // area rectangle in texture
+		RECT texrect; // area rectangle in texture
 		int w, h;     // width, height of texture area
 		int bltmode;  // blt mode: 0=return black surface, 1=return background, 2=return current panel state
 		int redraw;   // redraw trigger code: 0=no redraw, 1=each frame, 2=on mouseclick in area

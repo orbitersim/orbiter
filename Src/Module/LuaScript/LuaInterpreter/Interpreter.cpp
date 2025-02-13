@@ -666,7 +666,7 @@ void Interpreter::lua_pushsketchpad (lua_State *L, oapi::Sketchpad *skp)
 #endif
 }
 
-void Interpreter::WaitExec (uint32_t timeout)
+void Interpreter::WaitExec (DWORD timeout)
 {
 	// Called by orbiter thread or interpreter thread to wait its turn
 	// Orbiter waits for the script for 1 second to return
@@ -2796,7 +2796,7 @@ For fullscreen modes, the viewport size corresponds to the
 */
 int Interpreter::oapi_get_viewport_size (lua_State *L)
 {
-	uint32_t w, h, bpp;
+	DWORD w, h, bpp;
 	oapiGetViewportSize(&w, &h, &bpp);
 	lua_createtable(L, 0, 3);
 	lua_pushnumber(L, w);
@@ -3012,7 +3012,7 @@ Retrieve a surface handle for a mesh texture.
 int Interpreter::oapi_get_texturehandle(lua_State* L)
 {
 	MESHHANDLE hMesh = lua_tomeshhandle(L, 1);
-	uint32_t idx = lua_tonumber(L, 2);
+	DWORD idx = lua_tonumber(L, 2);
 	SURFHANDLE surf = oapiGetTextureHandle(hMesh, idx);
 	if (surf)
 		lua_pushlightuserdata(L, surf);
@@ -3149,7 +3149,7 @@ Replace a mesh texture.
 */
 int Interpreter::oapi_set_texture(lua_State* L)
 {
-	uint32_t texid = luaL_checknumber(L, 2);
+	DWORD texid = luaL_checknumber(L, 2);
 	SURFHANDLE surf = (SURFHANDLE)lua_touserdata(L, 3);
 	MESHHANDLE *hMesh = (MESHHANDLE *)luaL_tryudata(L, 1, "MESHHANDLE");
 	if(hMesh) {
@@ -3265,8 +3265,8 @@ Note : Currently only a single mesh property is recognised, but this may be exte
 */
 int Interpreter::oapi_set_meshproperty(lua_State* L)
 {
-	uint32_t property = luaL_checknumber(L, 2);
-	uint32_t value = luaL_checknumber(L, 3);
+	DWORD property = luaL_checknumber(L, 2);
+	DWORD value = luaL_checknumber(L, 3);
 	MESHHANDLE *hMesh = (MESHHANDLE *)luaL_tryudata(L, 1, "MESHHANDLE");
 	if(hMesh) {
 		bool ret = oapiSetMeshProperty(*hMesh, property, value);
@@ -3419,7 +3419,7 @@ int Interpreter::oapi_VC_register_area(lua_State* L)
 		int mouse_event = (int)lua_tointeger(L, 3);
 		oapiVCRegisterArea(id, draw_event, mouse_event);
 	} else {
-		Rect tgtrect = lua_torect(L, 2);
+		RECT tgtrect = lua_torect(L, 2);
 		int draw_event = (int)lua_tointeger(L, 3);
 		int mouse_event = (int)lua_tointeger(L, 4);
 		int bkmode = (int)lua_tointeger(L, 5);
@@ -3699,7 +3699,7 @@ Set the display mode for the main menu bar.
 int Interpreter::oapi_set_mainmenuvisibilitymode (lua_State *L)
 {
 	ASSERT_SYNTAX (lua_isnumber (L,1), "Argument 1: invalid type (expected number)");
-	uint32_t mode = (uint32_t)lua_tonumber (L,1);
+	DWORD mode = (DWORD)lua_tonumber (L,1);
 	ASSERT_SYNTAX (mode <= 2, "Argument 1: out of range");
 	oapiSetMainMenuVisibilityMode (mode);
 	return 0;
@@ -3726,7 +3726,7 @@ Set the display mode for the two info blocks at the top left and right screen co
 int Interpreter::oapi_set_maininfovisibilitymode (lua_State *L)
 {
 	ASSERT_SYNTAX (lua_isnumber (L,1), "Argument 1: invalid type (expected number)");
-	uint32_t mode = (uint32_t)lua_tonumber (L,1);
+	DWORD mode = (DWORD)lua_tonumber (L,1);
 	ASSERT_SYNTAX (mode <= 2, "Argument 1: out of range");
 	oapiSetMainInfoVisibilityMode (mode);
 	return 0;
@@ -4777,7 +4777,7 @@ int Interpreter::oapi_get_planetjcoeffcount(lua_State *L)
 	OBJHANDLE hRef;
 	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
 	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 1: invalid object");
-	uint32_t n = oapiGetPlanetJCoeffCount(hRef);
+	DWORD n = oapiGetPlanetJCoeffCount(hRef);
 	lua_pushnumber(L, n);
 	return 1;
 }
@@ -4802,7 +4802,7 @@ int Interpreter::oapi_get_planetjcoeff(lua_State *L)
 	OBJHANDLE hRef;
 	ASSERT_SYNTAX(lua_islightuserdata(L, 1), "Argument 1: invalid type (expected handle)");
 	ASSERT_SYNTAX(hRef = lua_toObject(L, 1), "Argument 1: invalid object");
-	uint32_t n = luaL_checkinteger(L, 2);
+	DWORD n = luaL_checkinteger(L, 2);
 	double coeff = oapiGetPlanetJCoeff(hRef, n);
 	lua_pushnumber(L, coeff);
 	return 1;
@@ -5567,7 +5567,7 @@ int Interpreter::oapi_get_navchannel (lua_State *L)
 	ASSERT_SYNTAX (lua_gettop(L) >= 1, "Too few arguments");
 	ASSERT_SYNTAX (lua_islightuserdata (L,1), "Argument 1: invalid type (expected handle)");
 	ASSERT_SYNTAX (hNav = (NAVHANDLE)lua_touserdata (L,1), "Argument 1: invalid object");
-	uint32_t ch = oapiGetNavChannel (hNav);
+	DWORD ch = oapiGetNavChannel (hNav);
 	lua_pushnumber (L, ch);
 	return 1;
 }
@@ -5745,7 +5745,7 @@ int Interpreter::oapi_get_navtype (lua_State *L)
 	ASSERT_SYNTAX (lua_gettop(L) >= 1, "Too few arguments");
 	ASSERT_SYNTAX (lua_islightuserdata (L,1), "Argument 1: invalid type (expected handle)");
 	ASSERT_SYNTAX (hNav = (NAVHANDLE)lua_touserdata (L,1), "Argument 1: invalid object");
-	uint32_t ntype = oapiGetNavType (hNav);
+	DWORD ntype = oapiGetNavType (hNav);
 	lua_pushnumber (L, ntype);
 	return 1;
 }
@@ -6155,7 +6155,7 @@ int Interpreter::oapi_setup_customcamera(lua_State *L)
 		VECTOR3 up = lua_tovector(L, 5);
 		double fov = luaL_checknumber(L, 6);
 		SURFHANDLE hSurf = (SURFHANDLE)lua_touserdata(L,7);
-		uint32_t flags = 255;
+		DWORD flags = 255;
 		if(lua_gettop(L)>=8) {
 			flags = luaL_checkinteger(L, 8);
 		}
@@ -6875,13 +6875,13 @@ You can specify any number of "modifier keys", they will be reflected in the kst
 int Interpreter::oapi_simulatebufferedkey (lua_State *L)
 {
 	ASSERT_NUMBER(L,1);
-	uint32_t key = (uint32_t)lua_tointeger(L,1);
-	uint32_t nmod = lua_gettop(L)-1;
-	uint32_t *mod = 0;
+	DWORD key = (DWORD)lua_tointeger(L,1);
+	DWORD nmod = lua_gettop(L)-1;
+	DWORD *mod = 0;
 	if (nmod) {
-		mod = new uint32_t[nmod];
-		for (uint32_t i = 0; i < nmod; i++)
-			mod[i] = (uint32_t)lua_tointeger(L,i+2);
+		mod = new DWORD[nmod];
+		for (DWORD i = 0; i < nmod; i++)
+			mod[i] = (DWORD)lua_tointeger(L,i+2);
 	}
 	oapiSimulateBufferedKey (key, mod, nmod);
 	if (nmod) delete []mod;
@@ -6908,9 +6908,9 @@ frames for the duration of the simulated input.
 int Interpreter::oapi_simulateimmediatekey (lua_State *L)
 {
 	unsigned char kstate[256] = {0};
-	uint32_t i, key, nkey = lua_gettop(L);
+	DWORD i, key, nkey = lua_gettop(L);
 	for (i = 0; i < nkey; i++) {
-		key = (uint32_t)lua_tointeger(L,i+1);
+		key = (DWORD)lua_tointeger(L,i+1);
 		kstate[key] = 0x80;
 	}
 	oapiSimulateImmediateKey ((char*)kstate);
@@ -7525,11 +7525,11 @@ int Interpreter::oapi_deflate (lua_State *L)
 	ASSERT_STRING(L, 1);
 
 	const BYTE *ebuf = (BYTE*)lua_tostring(L, 1);
-	uint32_t      nebuf = lua_objlen(L, 1);
+	DWORD      nebuf = lua_objlen(L, 1);
 	BYTE       *zbuf = NULL;
-	uint32_t      nzbuf = 0;
+	DWORD      nzbuf = 0;
 
-	for (uint32_t nbuf = 1024; !nzbuf; nbuf *= 2)
+	for (DWORD nbuf = 1024; !nzbuf; nbuf *= 2)
 	{
 		if (zbuf) delete[] zbuf;
 		zbuf = new BYTE[nbuf];
@@ -7561,11 +7561,11 @@ int Interpreter::oapi_inflate (lua_State *L)
 	ASSERT_STRING(L, 1);
 
 	const BYTE *zbuf = (BYTE*)lua_tostring(L, 1);
-	uint32_t      nzbuf = lua_objlen(L, 1);
+	DWORD      nzbuf = lua_objlen(L, 1);
 	BYTE       *ebuf = NULL;
-	uint32_t      nebuf = 0;
+	DWORD      nebuf = 0;
 
-	for (uint32_t nbuf = 1024; !nebuf; nbuf *= 2)
+	for (DWORD nbuf = 1024; !nebuf; nbuf *= 2)
 	{
 		if (ebuf) delete[] ebuf;
 		ebuf = new BYTE[nbuf];
@@ -7609,9 +7609,9 @@ int Interpreter::oapi_get_color (lua_State *L)
 	ASSERT_NUMBER(L, 1);
 	ASSERT_NUMBER(L, 2);
 	ASSERT_NUMBER(L, 3);
-	uint32_t r = lua_tointeger(L, 1);
-	uint32_t g = lua_tointeger(L, 2);
-	uint32_t b = lua_tointeger(L, 3);
+	DWORD r = lua_tointeger(L, 1);
+	DWORD g = lua_tointeger(L, 2);
+	DWORD b = lua_tointeger(L, 3);
 	lua_pushnumber(L, oapiGetColour(r, g, b));
 	return 1;
 }
@@ -8012,7 +8012,7 @@ int Interpreter::oapi_create_pen(lua_State* L)
 	ASSERT_NUMBER(L, 3);
 	int style = lua_tonumber(L, 1);
 	int width = lua_tonumber(L, 2);
-	uint32_t col = lua_tonumber(L, 3);
+	DWORD col = lua_tonumber(L, 3);
 
 	oapi::Pen* pen = oapiCreatePen(style, width, col);
 	if (pen) lua_pushlightuserdata(L, pen);
@@ -8049,7 +8049,7 @@ After use, the brush should be deallocated with oapi.release_brush.
 int Interpreter::oapi_create_brush(lua_State* L)
 {
 	ASSERT_NUMBER(L, 1);
-	uint32_t col = lua_tonumber(L, 1);
+	DWORD col = lua_tonumber(L, 1);
 
 	oapi::Brush* brush = oapiCreateBrush(col);
 	if (brush) lua_pushlightuserdata(L, brush);
@@ -8382,7 +8382,7 @@ The ges table can contain the following fields :
 */
 int Interpreter::oapi_edit_meshgroup(lua_State* L)
 {
-	uint32_t grpidx = luaL_checkinteger(L, 2);
+	DWORD grpidx = luaL_checkinteger(L, 2);
 	GROUPEDITSPEC ges;
 	memset(&ges, 0, sizeof(ges));
 
@@ -8492,7 +8492,7 @@ buffers once retrieved.
 int Interpreter::oapi_get_meshgroup(lua_State* L)
 {
 	DEVMESHHANDLE hDevMesh = lua_todevmeshhandle(L, 1);
-	uint32_t grpidx = luaL_checkinteger(L, 2);
+	DWORD grpidx = luaL_checkinteger(L, 2);
 	GROUPREQUESTSPEC grs;
 	memset(&grs, 0, sizeof(grs));
 	ntv_data* Vtx = NULL;
@@ -8664,9 +8664,9 @@ int Interpreter::noteSetColour (lua_State *L)
 }
 
 
-Rect Interpreter::lua_torect(lua_State* L, int idx)
+RECT Interpreter::lua_torect(lua_State* L, int idx)
 {
-	Rect r;
+	RECT r;
 	lua_getfield(L, idx, "left");
 	r.left = lua_tointeger(L, -1); lua_pop(L, 1);
 	lua_getfield(L, idx, "top");
@@ -8859,10 +8859,10 @@ int Interpreter::mfd_get_defaultpen (lua_State *L)
 	MFD2 *mfd = lua_tomfd(L,1);
 	ASSERT_SYNTAX(mfd, "Invalid MFD object");
 	ASSERT_MTDNUMBER(L,2);
-	uint32_t intens = 0, style = 1, colidx = (uint32_t)lua_tointeger(L,2);
+	DWORD intens = 0, style = 1, colidx = (DWORD)lua_tointeger(L,2);
 	if (lua_gettop(L) >= 3) {
 		ASSERT_MTDNUMBER(L,3);
-		intens = (uint32_t)lua_tointeger(L,3);
+		intens = (DWORD)lua_tointeger(L,3);
 		if (lua_gettop(L) >= 4) {
 			ASSERT_MTDNUMBER(L,4);
 			style = lua_tointeger(L,4);
@@ -8897,7 +8897,7 @@ int Interpreter::mfd_get_defaultfont (lua_State *L)
 	MFD2 *mfd = lua_tomfd(L,1);
 	ASSERT_SYNTAX(mfd, "Invalid MFD object");
 	ASSERT_MTDNUMBER(L,2);
-	uint32_t fontidx = (uint32_t)lua_tointeger(L,2);
+	DWORD fontidx = (DWORD)lua_tointeger(L,2);
 	oapi::Font *font = mfd->GetDefaultFont (fontidx);
 	if (font) lua_pushlightuserdata(L,font);
 	else     lua_pushnil(L);
@@ -9617,11 +9617,11 @@ in the range from 0 to 255), use
 */
 int Interpreter::skp_set_textcolor (lua_State *L)
 {
-	uint32_t col, pcol;
+	DWORD col, pcol;
 	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
 	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
 	ASSERT_MTDNUMBER(L,2);
-	col = (uint32_t)lua_tointeger(L,2);
+	col = (DWORD)lua_tointeger(L,2);
 	pcol = skp->SetTextColor(col);
 	lua_pushnumber (L, pcol);
 	return 1;
@@ -9640,11 +9640,11 @@ in the range from 0 to 255), use
 */
 int Interpreter::skp_set_backgroundcolor (lua_State *L)
 {
-	uint32_t col, pcol;
+	DWORD col, pcol;
 	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
 	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
 	ASSERT_MTDNUMBER(L,2);
-	col = (uint32_t)lua_tointeger(L,2);
+	col = (DWORD)lua_tointeger(L,2);
 	pcol = skp->SetBackgroundColor(col);
 	lua_pushnumber (L, pcol);
 	return 1;
@@ -9755,7 +9755,7 @@ int Interpreter::skp_get_charsize (lua_State *L)
 {
 	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
 	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
-	uint32_t size = skp->GetCharSize ();
+	DWORD size = skp->GetCharSize ();
 	lua_pushnumber(L, LOWORD(size));
 	lua_pushnumber(L, HIWORD(size));
 	return 2;
@@ -9774,7 +9774,7 @@ int Interpreter::skp_get_textwidth (lua_State *L)
 	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
 	ASSERT_MTDSTRING(L,2);
 	const char *str = lua_tostring(L,2);
-	uint32_t w = skp->GetTextWidth (str);
+	DWORD w = skp->GetTextWidth (str);
 	lua_pushnumber (L,w);
 	return 1;
 }
@@ -9795,8 +9795,8 @@ int Interpreter::skp_copy_rect (lua_State *L)
 	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
 	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
 	SURFHANDLE hSrc = (SURFHANDLE)lua_touserdata(L, 2);
-	Rect *src = nullptr;
-	Rect r;
+	RECT *src = nullptr;
+	RECT r;
 	if(!lua_isnil(L, 3)) {
 		r = lua_torect(L, 3);
 		src = &r;
@@ -9823,15 +9823,15 @@ int Interpreter::skp_stretch_rect (lua_State *L)
 	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
 	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
 	SURFHANDLE hSrc = (SURFHANDLE)lua_touserdata(L, 2);
-	Rect *src = nullptr;
-	Rect r;
+	RECT *src = nullptr;
+	RECT r;
 	if(!lua_isnil(L, 3)) {
 		r = lua_torect(L, 3);
 		src = &r;
 	}
 
-	Rect *tgt = nullptr;
-	Rect t;
+	RECT *tgt = nullptr;
+	RECT t;
 	if(!lua_isnil(L, 4)) {
 		t = lua_torect(L, 4);
 		tgt = &t;
@@ -9860,8 +9860,8 @@ int Interpreter::skp_rotate_rect (lua_State *L)
 	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
 	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
 	SURFHANDLE hSrc = (SURFHANDLE)lua_touserdata(L, 2);
-	Rect *src = nullptr;
-	Rect r;
+	RECT *src = nullptr;
+	RECT r;
 	if(!lua_isnil(L, 3)) {
 		r = lua_torect(L, 3);
 		src = &r;
@@ -9896,11 +9896,11 @@ int Interpreter::skp_quick_pen (lua_State *L)
 {
 	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
 	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
-	uint32_t color = luaL_checkinteger(L, 2);
+	DWORD color = luaL_checkinteger(L, 2);
 	float width = 1.0;
 	if(lua_gettop(L)>=3)
 		width = luaL_checknumber(L, 3);
-	uint32_t style = 1UL;
+	DWORD style = 1UL;
 	if(lua_gettop(L)>=4)
 		style = luaL_checkinteger(L, 4);
 	skp->QuickPen(color, width, style);
@@ -9917,7 +9917,7 @@ int Interpreter::skp_quick_brush (lua_State *L)
 {
 	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
 	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
-	uint32_t color = luaL_checkinteger(L, 2);
+	DWORD color = luaL_checkinteger(L, 2);
 	skp->QuickBrush(color);
 	return 0;
 }

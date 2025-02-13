@@ -30,7 +30,7 @@ void D3D9Pad::GetRenderSurfaceSize(LPSIZE size)
 
 // ===============================================================================================
 //
-void D3D9Pad::QuickPen(uint32_t color, float width, uint32_t style)
+void D3D9Pad::QuickPen(DWORD color, float width, DWORD style)
 {
 #ifdef SKPDBG 
 	Log("QuickPen(0x%X, %d, %u)", color, width, style);
@@ -56,7 +56,7 @@ void D3D9Pad::QuickPen(uint32_t color, float width, uint32_t style)
 
 // ===============================================================================================
 //
-void D3D9Pad::QuickBrush(uint32_t color)
+void D3D9Pad::QuickBrush(DWORD color)
 {
 #ifdef SKPDBG 
 	Log("QuickBrush(0x%X)", color);
@@ -98,7 +98,7 @@ RECT D3D9Pad::GetFullRect(SURFHANDLE hSrc)
 void D3D9Pad::CopyRect(const SURFHANDLE hSrc, const LPRECT _s, int tx, int ty)
 {
 #ifdef SKPDBG 
-	Log("CopyRect(0x%X)", uint32_t(hSrc));
+	Log("CopyRect(0x%X)", DWORD(hSrc));
 #endif
 
 	TexChange(hSrc);
@@ -117,7 +117,7 @@ void D3D9Pad::CopyRect(const SURFHANDLE hSrc, const LPRECT _s, int tx, int ty)
 		SkpVtxII(Vtx[vI++], tx + w, ty + h, s.right, s.bottom);
 		SkpVtxII(Vtx[vI++], tx + w, ty    , s.right, s.top   );
 
-		uint32_t x = SKPSW_TEXTURE | SKPSW_CENTER;
+		DWORD x = SKPSW_TEXTURE | SKPSW_CENTER;
 
 		Vtx[vI - 1].fnc = x;
 		Vtx[vI - 2].fnc = x;
@@ -132,7 +132,7 @@ void D3D9Pad::CopyRect(const SURFHANDLE hSrc, const LPRECT _s, int tx, int ty)
 void D3D9Pad::StretchRect(const SURFHANDLE hSrc, const LPRECT _s, const LPRECT _t)
 {
 #ifdef SKPDBG 
-	Log("StretchRect(0x%X)", uint32_t(hSrc));
+	Log("StretchRect(0x%X)", DWORD(hSrc));
 #endif
 
 	TexChange(hSrc);
@@ -149,7 +149,7 @@ void D3D9Pad::StretchRect(const SURFHANDLE hSrc, const LPRECT _s, const LPRECT _
 		SkpVtxII(Vtx[vI++], t.right, t.bottom, s.right, s.bottom);
 		SkpVtxII(Vtx[vI++], t.right, t.top   , s.right, s.top   );
 
-		uint32_t x = SKPSW_TEXTURE | SKPSW_CENTER;
+		DWORD x = SKPSW_TEXTURE | SKPSW_CENTER;
 
 		Vtx[vI - 1].fnc = x;
 		Vtx[vI - 2].fnc = x;
@@ -164,7 +164,7 @@ void D3D9Pad::StretchRect(const SURFHANDLE hSrc, const LPRECT _s, const LPRECT _
 void D3D9Pad::RotateRect(const SURFHANDLE hSrc, const LPRECT _s, int tcx, int tcy, float angle, float sw, float sh)
 {
 #ifdef SKPDBG 
-	Log("RotateRect(0x%X)", uint32_t(hSrc));
+	Log("RotateRect(0x%X)", DWORD(hSrc));
 #endif
 
 	TexChange(hSrc);
@@ -198,7 +198,7 @@ void D3D9Pad::RotateRect(const SURFHANDLE hSrc, const LPRECT _s, int tcx, int tc
 		SkpVtxFI(Vtx[vI++], cx, cy, s.right, s.bottom);
 		SkpVtxFI(Vtx[vI++], dx, dy, s.right, s.top   );
 
-		uint32_t x = SKPSW_TEXTURE | SKPSW_CENTER;
+		DWORD x = SKPSW_TEXTURE | SKPSW_CENTER;
 
 		Vtx[vI - 1].fnc = x;
 		Vtx[vI - 2].fnc = x;
@@ -213,7 +213,7 @@ void D3D9Pad::RotateRect(const SURFHANDLE hSrc, const LPRECT _s, int tcx, int tc
 void D3D9Pad::ColorKey(const SURFHANDLE hSrc, const LPRECT _s, int tx, int ty)
 {
 #ifdef SKPDBG 
-	Log("ColorKey(0x%X)", uint32_t(hSrc));
+	Log("ColorKey(0x%X)", DWORD(hSrc));
 #endif
 
 	TexChange(hSrc);
@@ -232,7 +232,7 @@ void D3D9Pad::ColorKey(const SURFHANDLE hSrc, const LPRECT _s, int tx, int ty)
 		SkpVtxII(Vtx[vI++], tx + w, ty + h, s.right, s.bottom);
 		SkpVtxII(Vtx[vI++], tx + w, ty    , s.right, s.top   );
 
-		uint32_t f = SKPSW_TEXTURE | SKPSW_COLORKEY | SKPSW_CENTER;
+		DWORD f = SKPSW_TEXTURE | SKPSW_COLORKEY | SKPSW_CENTER;
 
 		Vtx[vI - 1].fnc = f;
 		Vtx[vI - 2].fnc = f;
@@ -247,12 +247,12 @@ void D3D9Pad::ColorKey(const SURFHANDLE hSrc, const LPRECT _s, int tx, int ty)
 void D3D9Pad::ColorKeyStretch(const SURFHANDLE hSrc, const LPRECT _s, const LPRECT _t)
 {
 #ifdef SKPDBG 
-	Log("StretchRect(0x%X)", uint32_t(hSrc));
+	Log("StretchRect(0x%X)", DWORD(hSrc));
 #endif
 
 	TexChange(hSrc);
 
-	uint32_t dwBak = dwBlendState;
+	DWORD dwBak = dwBlendState;
 
 	SetBlendState(BlendState((dwBak & 0xF) | BlendState::FILTER_POINT));
 
@@ -268,7 +268,7 @@ void D3D9Pad::ColorKeyStretch(const SURFHANDLE hSrc, const LPRECT _s, const LPRE
 		SkpVtxII(Vtx[vI++], t.right, t.bottom, s.right, s.bottom);
 		SkpVtxII(Vtx[vI++], t.right, t.top   , s.right, s.top   );
 
-		uint32_t x = SKPSW_TEXTURE | SKPSW_COLORKEY | SKPSW_CENTER;
+		DWORD x = SKPSW_TEXTURE | SKPSW_COLORKEY | SKPSW_CENTER;
 
 		Vtx[vI - 1].fnc = x;
 		Vtx[vI - 2].fnc = x;
@@ -285,7 +285,7 @@ void D3D9Pad::ColorKeyStretch(const SURFHANDLE hSrc, const LPRECT _s, const LPRE
 void D3D9Pad::CopyRectNative(const LPDIRECT3DTEXTURE9 pSrc, const LPRECT _s, int tx, int ty)
 {
 #ifdef SKPDBG 
-	Log("CopyRectNative(0x%X)", uint32_t(pSrc));
+	Log("CopyRectNative(0x%X)", DWORD(pSrc));
 #endif
 
 	TexChangeNative(pSrc);
@@ -304,7 +304,7 @@ void D3D9Pad::CopyRectNative(const LPDIRECT3DTEXTURE9 pSrc, const LPRECT _s, int
 		SkpVtxII(Vtx[vI++], tx + w, ty + h, s.right - 1, s.bottom - 1);
 		SkpVtxII(Vtx[vI++], tx + w, ty    , s.right - 1, s.top       );
 
-		uint32_t x = SKPSW_TEXTURE | SKPSW_CENTER;
+		DWORD x = SKPSW_TEXTURE | SKPSW_CENTER;
 
 		Vtx[vI - 1].fnc = x;
 		Vtx[vI - 2].fnc = x;
@@ -319,7 +319,7 @@ void D3D9Pad::CopyRectNative(const LPDIRECT3DTEXTURE9 pSrc, const LPRECT _s, int
 void D3D9Pad::StretchRectNative(const LPDIRECT3DTEXTURE9 pSrc, const RECT *_s, const RECT *_t)
 {
 #ifdef SKPDBG 
-	Log("StretchRectNative(0x%X)", uint32_t(pSrc));
+	Log("StretchRectNative(0x%X)", DWORD(pSrc));
 #endif
 
 	TexChangeNative(pSrc);
@@ -336,7 +336,7 @@ void D3D9Pad::StretchRectNative(const LPDIRECT3DTEXTURE9 pSrc, const RECT *_s, c
 		SkpVtxII(Vtx[vI++], t.right, t.bottom, s.right - 1, s.bottom - 1);
 		SkpVtxII(Vtx[vI++], t.right, t.top   , s.right - 1, s.top       );
 
-		uint32_t x = SKPSW_TEXTURE | SKPSW_CENTER;
+		DWORD x = SKPSW_TEXTURE | SKPSW_CENTER;
 
 		Vtx[vI - 1].fnc = x;
 		Vtx[vI - 2].fnc = x;
@@ -351,14 +351,14 @@ void D3D9Pad::StretchRectNative(const LPDIRECT3DTEXTURE9 pSrc, const RECT *_s, c
 void D3D9Pad::CopyTetragon(const SURFHANDLE hSrc, const LPRECT _s, const FVECTOR2 tp[4])
 {
 #ifdef SKPDBG 
-	Log("CopyTetragon(0x%X)", uint32_t(pSrc));
+	Log("CopyTetragon(0x%X)", DWORD(pSrc));
 #endif
 	FVECTOR2 sp[4];
 	FVECTOR2 a, b, c, d;
 	static const int n = 6;
 	static const float step = 1.0 / float(n - 1);
 
-	uint32_t fn = SKPSW_TEXTURE | SKPSW_CENTER;
+	DWORD fn = SKPSW_TEXTURE | SKPSW_CENTER;
 
 	TexChange(hSrc);
 
@@ -407,13 +407,13 @@ void D3D9Pad::CopyTetragon(const SURFHANDLE hSrc, const LPRECT _s, const FVECTOR
 
 // ===============================================================================================
 //
-void D3D9Pad::FillTetragon(uint32_t c, const FVECTOR2 pt[4])
+void D3D9Pad::FillTetragon(DWORD c, const FVECTOR2 pt[4])
 {
 #ifdef SKPDBG 
-	Log("CopyTetragon(0x%X)", uint32_t(pSrc));
+	Log("CopyTetragon(0x%X)", DWORD(pSrc));
 #endif
 
-	uint32_t fn = SKPSW_TEXTURE | SKPSW_CENTER;
+	DWORD fn = SKPSW_TEXTURE | SKPSW_CENTER;
 
 	if (Topology(TRIANGLE)) {
 		AddRectIdx(vI);
@@ -495,7 +495,7 @@ void D3D9Pad::TextEx(float x, float y, const char *str, float scale, float angle
 void D3D9Pad::ClipRect(const LPRECT clip)
 {
 #ifdef SKPDBG 
-	Log("ClipRect(0x%X)", uint32_t(clip));
+	Log("ClipRect(0x%X)", DWORD(clip));
 #endif
 
 	Change |= SKPCHG_CLIPRECT;
@@ -539,7 +539,7 @@ void D3D9Pad::Clipper(int idx, const VECTOR3 *uDir, double cos_angle, double dis
 void D3D9Pad::DepthEnable(bool bEnable)
 {
 #ifdef SKPDBG 
-	Log("DepthEnable(%u)", uint32_t(bEnable));
+	Log("DepthEnable(%u)", DWORD(bEnable));
 #endif
 
 	Flush(); // Must Flush() here before a mode change
@@ -582,7 +582,7 @@ const FMATRIX4 *D3D9Pad::GetViewProjectionMatrix() const
 void D3D9Pad::SetViewMatrix(const FMATRIX4 *pV)
 {
 #ifdef SKPDBG 
-	Log("SetViewMatrix(0x%X)", uint32_t(pV));
+	Log("SetViewMatrix(0x%X)", DWORD(pV));
 #endif
 	Change |= SKPCHG_TRANSFORM;
 	if (pV) memcpy(&mV, pV, sizeof(FMATRIX4));
@@ -595,7 +595,7 @@ void D3D9Pad::SetViewMatrix(const FMATRIX4 *pV)
 void D3D9Pad::SetProjectionMatrix(const FMATRIX4 *pP)
 {
 #ifdef SKPDBG 
-	Log("SetProjectionMatrix(0x%X)", uint32_t(pP));
+	Log("SetProjectionMatrix(0x%X)", DWORD(pP));
 #endif
 	Change |= SKPCHG_TRANSFORM;
 	if (pP) memcpy(&mP, pP, sizeof(FMATRIX4));
@@ -608,7 +608,7 @@ void D3D9Pad::SetProjectionMatrix(const FMATRIX4 *pP)
 void D3D9Pad::SetViewMode(SkpView mode)
 {
 #ifdef SKPDBG 
-	Log("SetViewMode(0x%X)", uint32_t(mode));
+	Log("SetViewMode(0x%X)", DWORD(mode));
 #endif
 	Flush();	// Must Flush() here before a mode change
 	Change |= SKPCHG_TRANSFORM;
@@ -634,7 +634,7 @@ LPD3DXMATRIX D3D9Pad::WorldMatrix()
 void D3D9Pad::SetWorldTransform2D(float scale, float rot, const IVECTOR2 *c, const IVECTOR2 *t)
 {
 #ifdef SKPDBG 
-	Log("SetWorldTransform2D(%f, %f, 0x%X, 0x%X)", scale, rot, uint32_t(c), uint32_t(t));
+	Log("SetWorldTransform2D(%f, %f, 0x%X, 0x%X)", scale, rot, DWORD(c), DWORD(t));
 #endif
 	Change |= SKPCHG_TRANSFORM;
 
@@ -653,7 +653,7 @@ void D3D9Pad::SetWorldTransform2D(float scale, float rot, const IVECTOR2 *c, con
 void D3D9Pad::SetWorldTransform(const FMATRIX4 *pWT)
 {
 #ifdef SKPDBG 
-	Log("SetWorldTransform(0x%X)", uint32_t(pWT));
+	Log("SetWorldTransform(0x%X)", DWORD(pWT));
 #endif
 	Change |= SKPCHG_TRANSFORM;
 
@@ -744,17 +744,17 @@ void D3D9Pad::TexChange(SURFHANDLE hNew)
 
 // ===============================================================================================
 //
-int D3D9Pad::DrawMeshGroup(const MESHHANDLE hMesh, uint32_t grp, Sketchpad::MeshFlags flags, const SURFHANDLE hTex)
+int D3D9Pad::DrawMeshGroup(const MESHHANDLE hMesh, DWORD grp, Sketchpad::MeshFlags flags, const SURFHANDLE hTex)
 {
 #ifdef SKPDBG 
-	Log("DrawMeshGroup(0x%X, gpr=%u, flags=0x%X, hTex=0x%X)", uint32_t(hMesh), grp, flags, uint32_t(hTex));
+	Log("DrawMeshGroup(0x%X, gpr=%u, flags=0x%X, hTex=0x%X)", DWORD(hMesh), grp, flags, DWORD(hTex));
 #endif
 	UINT num;
 	SketchMesh* pMesh = GetSketchMesh(hMesh);
 
 	if (!pMesh) return -1;
 
-	uint32_t nGrp = pMesh->GroupCount();
+	DWORD nGrp = pMesh->GroupCount();
 
 	if (grp >= nGrp) return -1;
 

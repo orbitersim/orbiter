@@ -277,7 +277,7 @@ void PayloadBayOp::SaveState (FILEHANDLE scn)
 void PayloadBayOp::OpenDialog ()
 {
 	if (hDlg) return; // dialog already open
-	// hDlg = oapiOpenDialogEx (g_Param.hDLL, IDD_PLBAY, PlOp_DlgProc, 0, this);
+	hDlg = oapiOpenDialogEx (g_Param.hDLL, IDD_PLBAY, PlOp_DlgProc, 0, this);
 }
 
 // ==============================================================
@@ -587,7 +587,7 @@ INT_PTR PayloadBayOp::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			oapiOpenHelp (&g_hc);
 			return TRUE;
 		case IDCANCEL:
-			// oapiCloseDialog (hWnd);
+			oapiCloseDialog (hWnd);
 			hDlg = NULL;
 			return TRUE;
 		case IDC_PLBD1:
@@ -735,8 +735,7 @@ INT_PTR PayloadBayOp::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		}
 		break;
 	}
-	return 0;
-	// return oapiDefDialogProc (hWnd, uMsg, wParam, lParam);
+	return oapiDefDialogProc (hWnd, uMsg, wParam, lParam);
 }
 
 // ==============================================================

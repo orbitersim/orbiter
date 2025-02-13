@@ -9,6 +9,7 @@
 #ifndef __NAV_H
 #define __NAV_H
 
+#include <windows.h>
 #include <fstream>
 #include "Vessel.h"
 

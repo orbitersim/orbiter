@@ -140,7 +140,7 @@ public:
 	 * \note This is called by either the orbiter thread or the interpreter
 	 *   thread when they are waiting to regain execution control.
 	 */
-	virtual void WaitExec (uint32_t timeout = INFINITE);
+	virtual void WaitExec (DWORD timeout = INFINITE);
 
 	/**
 	 * \brief Release thread execution.
@@ -296,7 +296,7 @@ protected:
 	// pops an OBJHANDLE from the stack
 	static OBJHANDLE lua_toObject (lua_State *L, int idx=-1);
 
-	static Rect lua_torect(lua_State* L, int idx);
+	static RECT lua_torect(lua_State* L, int idx);
 
 	// pushes a vessel object on the stack
 	static void lua_pushvessel (lua_State *L, VESSEL *v);
@@ -1191,7 +1191,7 @@ private:
 	// checks whether stack entry idx is a VESSELSTATUS or a VESSELSTATUS2
 	static int lua_get_vesselstatus_version (lua_State *L, int idx);
 
-	static void* MsgProcMFD(UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam);
+	static OAPI_MSGTYPE MsgProcMFD(UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam);
 };
 
 #endif // !__INTERPRETER_H

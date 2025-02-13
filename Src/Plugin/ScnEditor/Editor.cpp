@@ -76,13 +76,13 @@ void ScnEditor::OpenDialog ()
 {
 	nTab  = 0;
 	cTab  = NULL;
-	// hDlg  = oapiOpenDialogEx (hInst, IDD_EDITOR, EditorProc, 0, this);
+	hDlg  = oapiOpenDialogEx (hInst, IDD_EDITOR, EditorProc, 0, this);
 }
 
 void ScnEditor::CloseDialog ()
 {
 	if (hDlg) {
-		// oapiCloseDialog (hDlg);
+		oapiCloseDialog (hDlg);
 		hDlg = NULL;
 		cTab = NULL;
 		if (nTab) {
@@ -207,7 +207,7 @@ void ScnEditor::InitDialog (HWND _hDlg)
 	AddTab (new EditorTab_Docking (this));
 	AddTab (new EditorTab_Date (this));
 	nTab0 = nTab;
-	// oapiAddTitleButton (IDPAUSE, g_hPause, DLG_CB_TWOSTATE);
+	oapiAddTitleButton (IDPAUSE, g_hPause, DLG_CB_TWOSTATE);
 	Pause (oapiGetPause());
 	ShowTab (0);
 }
@@ -265,8 +265,7 @@ INT_PTR ScnEditor::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	}
-	// return oapiDefDialogProc (hDlg, uMsg, wParam, lParam);
-	return 0;
+	return oapiDefDialogProc (hDlg, uMsg, wParam, lParam);
 }
 
 bool ScnEditor::CreateVessel (char *name, char *classname)
@@ -311,7 +310,7 @@ char *ScnEditor::ExtractVesselName (char *str)
 
 void ScnEditor::Pause (bool pause)
 {
-	// if (hDlg) oapiSetTitleButtonState (hDlg, IDPAUSE, pause ? 1:0);
+	if (hDlg) oapiSetTitleButtonState (hDlg, IDPAUSE, pause ? 1:0);
 }
 
 HINSTANCE ScnEditor::LoadVesselLibrary (const VESSEL *vessel)
@@ -1585,10 +1584,10 @@ void EditorTab_Elements::RefreshSecondaryParams (const ELEMENTS &el, const ORBIT
 
 	sprintf (cbuf, "%g m", prm.PeD); SetWindowText (GetDlgItem (hTab, IDC_PERIAPSIS), cbuf);
 	sprintf (cbuf, "%g s", prm.PeT); SetWindowText (GetDlgItem (hTab, IDC_PET), cbuf);
-	sprintf (cbuf, "%0.3f ï¿½", prm.MnA*DEG); SetWindowText (GetDlgItem (hTab, IDC_MNANM), cbuf);
-	sprintf (cbuf, "%0.3f ï¿½", prm.TrA*DEG); SetWindowText (GetDlgItem (hTab, IDC_TRANM), cbuf);
-	sprintf (cbuf, "%0.3f ï¿½", prm.MnL*DEG); SetWindowText (GetDlgItem (hTab, IDC_MNLNG), cbuf);
-	sprintf (cbuf, "%0.3f ï¿½", prm.TrL*DEG); SetWindowText (GetDlgItem (hTab, IDC_TRLNG), cbuf);
+	sprintf (cbuf, "%0.3f °", prm.MnA*DEG); SetWindowText (GetDlgItem (hTab, IDC_MNANM), cbuf);
+	sprintf (cbuf, "%0.3f °", prm.TrA*DEG); SetWindowText (GetDlgItem (hTab, IDC_TRANM), cbuf);
+	sprintf (cbuf, "%0.3f °", prm.MnL*DEG); SetWindowText (GetDlgItem (hTab, IDC_MNLNG), cbuf);
+	sprintf (cbuf, "%0.3f °", prm.TrL*DEG); SetWindowText (GetDlgItem (hTab, IDC_TRLNG), cbuf);
 	if (closed) {
 		sprintf (cbuf, "%g s", prm.T);   SetWindowText (GetDlgItem (hTab, IDC_PERIOD), cbuf);
 		sprintf (cbuf, "%g m", prm.ApD); SetWindowText (GetDlgItem (hTab, IDC_APOAPSIS), cbuf);

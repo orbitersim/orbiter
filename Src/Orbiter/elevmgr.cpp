@@ -43,7 +43,7 @@ ElevationManager::ElevationManager (const CelestialBody *_cbody)
 	maxlvl = MAXLVL_LIMIT;
 	elev_res = 1.0;
 	if (cbody->Type() == OBJTP_PLANET) {
-		maxlvl = min ((uint32_t)maxlvl, ((Planet*)cbody)->MaxPatchLevel()-7);
+		maxlvl = min ((DWORD)maxlvl, ((Planet*)cbody)->MaxPatchLevel()-7);
 		// -7: -4 for level offset of quadtree root, -3 for great-grandfather elevation access mode
 		elev_res = ((Planet*)cbody)->ElevationResolution();
 	}
@@ -112,7 +112,7 @@ bool ElevationManager::HasElevationTile(int lvl, int ilat, int ilng) const
 			if (std::filesystem::exists(path)) return true;
 		}
 		if (treeMgr[0]) {
-			if (treeMgr[0]->Idx(lvl, ilat, ilng) != uint32_t(-1)) return true;
+			if (treeMgr[0]->Idx(lvl, ilat, ilng) != DWORD(-1)) return true;
 		}
 	}
 	return false;
@@ -163,7 +163,7 @@ INT16 *ElevationManager::LoadElevationTile (int lvl, int ilat, int ilng, double 
 		}
 		if (!elev && treeMgr[0]) {
 			BYTE *buf;
-			uint32_t ndata = treeMgr[0]->ReadData(lvl, ilat, ilng, &buf);
+			DWORD ndata = treeMgr[0]->ReadData(lvl, ilat, ilng, &buf);
 			if (ndata) {
 				BYTE *p = buf;
 				elev = new INT16[ndat];
@@ -264,7 +264,7 @@ bool ElevationManager::LoadElevationTile_mod (int lvl, int ilat, int ilng, doubl
 		}
 		if (treeMgr[1]) {
 			BYTE *buf;
-			uint32_t ndata = treeMgr[1]->ReadData(lvl, ilat, ilng, &buf);
+			DWORD ndata = treeMgr[1]->ReadData(lvl, ilat, ilng, &buf);
 			if (ndata) {
 				BYTE *p = buf;
 				ELEVFILEHEADER *phdr = (ELEVFILEHEADER*)p;
@@ -390,10 +390,10 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 						// Check if higher lvl data exists for any of the quadrants, 
 						// set flag bit to mark it dirty (un-usable)
 						int qlat = ilat * 2, qlng = ilng * 2, qlvl = lvl + 1;
-						t->quadrants |= uint32_t(HasElevationTile(qlvl + 4, qlat + 0, qlng + 0)) << 0; // NW
-						t->quadrants |= uint32_t(HasElevationTile(qlvl + 4, qlat + 0, qlng + 1)) << 1;	// NE
-						t->quadrants |= uint32_t(HasElevationTile(qlvl + 4, qlat + 1, qlng + 0)) << 2; // SW
-						t->quadrants |= uint32_t(HasElevationTile(qlvl + 4, qlat + 1, qlng + 1)) << 3;	// SE
+						t->quadrants |= DWORD(HasElevationTile(qlvl + 4, qlat + 0, qlng + 0)) << 0; // NW
+						t->quadrants |= DWORD(HasElevationTile(qlvl + 4, qlat + 0, qlng + 1)) << 1;	// NE
+						t->quadrants |= DWORD(HasElevationTile(qlvl + 4, qlat + 1, qlng + 0)) << 2; // SW
+						t->quadrants |= DWORD(HasElevationTile(qlvl + 4, qlat + 1, qlng + 1)) << 3;	// SE
 					}
 
 					//int q = Quadrant(lat, lng, lvl);

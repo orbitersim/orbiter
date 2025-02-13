@@ -68,24 +68,24 @@ public:
 	void Rel_EquPos (const Vector &relpos, double &_lng, double &_lat) const;
 	// converts a base-relative position into longitude/latitude
 
-	void Pad_EquPos (uint32_t padno, double &_lng, double &_lat) const;
+	void Pad_EquPos (DWORD padno, double &_lng, double &_lat) const;
 	// Return equatorial coordinates of landing pad 'padno'
 
-	inline uint32_t nPad() const { return npad; }
+	inline DWORD nPad() const { return npad; }
 	inline LpadSpec *PadStatus (int padno) { return lspec+padno; }
 	inline const LpadSpec *PadStatus (int padno) const { return lspec+padno; }
 	// number of landing pads and pad status
 
-	inline uint32_t nRwy() const { return nrwy; }
-	inline RwySpec *RwyStatus (uint32_t rwyno) { return rwy+rwyno; }
-	inline const RwySpec *RwyStatus (uint32_t rwyno) const { return rwy+rwyno; }
+	inline DWORD nRwy() const { return nrwy; }
+	inline RwySpec *RwyStatus (DWORD rwyno) { return rwy+rwyno; }
+	inline const RwySpec *RwyStatus (DWORD rwyno) const { return rwy+rwyno; }
 
-	inline uint32_t nNav() const { return nnav; }
+	inline DWORD nNav() const { return nnav; }
 	inline const NavManager &NavMgr() const { return navlist; }
 
-	inline uint32_t nVOR() const { return nvor; }
-	inline Nav *VOR (uint32_t i) { return vor[i]; }
-	inline const Nav *VOR (uint32_t i) const { return vor[i]; }
+	inline DWORD nVOR() const { return nvor; }
+	inline Nav *VOR (DWORD i) { return vor[i]; }
+	inline const Nav *VOR (DWORD i) const { return vor[i]; }
 
 	int LandedAtPad (const Vessel *vessel) const;
 	// returns padno at which 'vessel' is landed, or -1 if not
@@ -103,7 +103,7 @@ public:
 	void ClearPad (Vessel *vessel);
 	// mark the pad occupied by or reserved for 'vessel' as free
 
-	int RequestLanding (Vessel *vessel, uint32_t &padno);
+	int RequestLanding (Vessel *vessel, DWORD &padno);
 	int RequestTakeoff ();
 	// Request for landing/takeoff. Return value is result:
 	// 1=denied, 2=still pending, 3=granted.
@@ -133,22 +133,22 @@ public:
 	inline Vector4 ShadowColor () const { return Vector4(0.0, 0.0, 0.0, 0.7); }
 	// colour and transparency of shadows. Make this planet-specific
 
-	uint32_t GetTileList (const SurftileSpec **_tile) const;
+	DWORD GetTileList (const SurftileSpec **_tile) const;
 
 	bool GetGenericTexture (LONGLONG id, SURFHANDLE &daytex, SURFHANDLE &nighttex) const;
 	// return day and night textures for given texture id
 	// if not found, returns false and sets both textures to NULL
 
-	uint32_t GetGenericTextureIdx (LONGLONG id) const;
+	DWORD GetGenericTextureIdx (LONGLONG id) const;
 	// return index of generic textures corresponding to 'id'
 
-	void ExportBaseStructures (Mesh ***mesh_us, uint32_t *nmesh_us, Mesh ***mesh_os, uint32_t *nmesh_os) const;
+	void ExportBaseStructures (Mesh ***mesh_us, DWORD *nmesh_us, Mesh ***mesh_os, DWORD *nmesh_os) const;
 	// Export base structures as mesh lists.
 	// Includes mesh objects as well as object primitives. Primitives are
 	// compacted into a single mesh.
 	// Mesh lists are separated into objects rendered under/above ground shadows
 
-	void ExportShadowGeometry (Mesh ***mesh_shadow, double **elev, uint32_t *nmesh_shadow) const;
+	void ExportShadowGeometry (Mesh ***mesh_shadow, double **elev, DWORD *nmesh_shadow) const;
 	// Export base structures as mesh lists. This version only exports
 	// "above shadow" objects, without textures and materials, and does not
 	// restructure the object elements. Can be used for shadow projection
@@ -177,32 +177,32 @@ private:
 	bool bObjmapsphere;            // map base objects onto spherical planet surface?
 	Vector rotvel;                 // base velocity as result of planet rotation in local planet coords (rotvel.y=0)
 
-	uint32_t npad;                    // number of landing pads
+	DWORD npad;                    // number of landing pads
 	int padfree;                   // number of available (unoccupied) pads
 	LpadSpec *lspec;               // list of landing pads
 
-	uint32_t nrwy;                    // number of runways
+	DWORD nrwy;                    // number of runways
 	RwySpec *rwy;                  // list of runways
 
-	uint32_t nnav;                    // number of nav transmitters
+	DWORD nnav;                    // number of nav transmitters
 	NavManager navlist;            // list of nav transmitters
 
-	uint32_t nvor;                    // number of associated VOR transmitters
+	DWORD nvor;                    // number of associated VOR transmitters
 	Nav **vor;                     // list of VOR transmitters
 
 	BaseObject **obj;              // list of base objects
-	uint32_t nobj;                    // number of base objects
+	DWORD nobj;                    // number of base objects
 
 	mutable Mesh *genmsh_os, *genmsh_us; // meshes for generic base structures (above/below shadows)
 	mutable Mesh **objmsh_os, **objmsh_us; // meshes for base structures (above/below shadows)
 	mutable Mesh **objmsh_sh;              // meshes for shadow projection calculations
 	mutable double *sh_elev;               // object elevation (for shadow projection calculation)
-	mutable uint32_t nobjmsh_os, nobjmsh_us, nobjmsh_sh; // list lenghts
+	mutable DWORD nobjmsh_os, nobjmsh_us, nobjmsh_sh; // list lenghts
 	mutable bool objmsh_valid;
 
 	SurftileSpec *tile;            // list of surface tiles
-	uint32_t ntilebuf;                // list length
-	uint32_t ntile;                   // number of surface tiles
+	DWORD ntilebuf;                // list length
+	DWORD ntile;                   // number of surface tiles
 
 	Vector sundir;                 // sun direction in base coordinates
 	double sundir_updt;            // time of next buffered sun direction update
