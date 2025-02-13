@@ -325,7 +325,7 @@ public:
         if (m_is_strong)
             return ctx->BoldFont();
 
-        if (m_hlevel >= 1)
+        if (m_hlevel == 1)
             return ctx->HdgFont();
 
         return ctx->DefaultFont();
