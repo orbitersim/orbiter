@@ -44,7 +44,6 @@ orbiter::ScenarioTab::~ScenarioTab() {
         delete i;
     }
     loadedImages.clear();
-    // TerminateThread (hThread, 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -58,22 +57,6 @@ void orbiter::ScenarioTab::Create() {
                          "Textures/OrbiterCore/Scn1.png");
 
     RefreshList(false);
-    // if (pLp->App()->UseHtmlInline()) {
-    // 	ShowWindow (GetDlgItem (hTab, IDC_SCN_DESC), SW_HIDE);
-    // 	ShowWindow (GetDlgItem (hTab, IDC_SCN_HTML), SW_SHOW);
-    // 	ShowWindow (GetDlgItem (hTab, IDC_SCN_INFO), SW_HIDE);
-    // 	infoId = IDC_SCN_HTML;
-    // } else {
-    // 	ShowWindow (GetDlgItem (hTab, IDC_SCN_HTML), SW_HIDE);
-    // 	ShowWindow (GetDlgItem (hTab, IDC_SCN_DESC), SW_SHOW);
-    // 	ShowWindow (GetDlgItem (hTab, IDC_SCN_INFO), SW_SHOW);
-    // 	infoId = IDC_SCN_DESC;
-    // }
-    //
-    // splitListDesc.SetHwnd (GetDlgItem (hTab, IDC_SCN_SPLIT1), GetDlgItem (hTab, IDC_SCN_LIST), GetDlgItem (hTab, infoId));
-
-    // create a thread to monitor changes to the scenario list
-    // hThread = CreateThread (NULL, NULL, threadWatchScnList, this, NULL, NULL);
 }
 
 //-----------------------------------------------------------------------------
@@ -81,17 +64,10 @@ void orbiter::ScenarioTab::Create() {
 void orbiter::ScenarioTab::GetConfig(const Config *cfg) {
     startPaused = cfg->CfgLogicPrm.bStartPaused;
     scnListW = cfg->CfgWindowPos.LaunchpadScnListWidth;
-    // if (!listw) {
-    // 	RECT r;
-    // 	GetClientRect (GetDlgItem (hTab, IDC_SCN_LIST), &r);
-    // 	listw = r.right-r.left;
-    // }
-    // splitListDesc.SetStaticPane (SplitterCtrl::PANE1, listw);
 }
 
 //-----------------------------------------------------------------------------
 
-// TODO: Use Description.txt for folder
 void orbiter::ScenarioTab::SetConfig(Config *cfg) {
     cfg->CfgLogicPrm.bStartPaused = startPaused;
     cfg->CfgWindowPos.LaunchpadScnListWidth = scnListW;
