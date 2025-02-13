@@ -85,6 +85,7 @@ bool orbiter::LaunchpadDialog2::Create(bool startvideotab) {
 
 	for (auto tab : m_tabList) {
 		tab->Create();
+		tab->GetConfig(m_cfg);
 	}
 
 	Show();
@@ -146,7 +147,15 @@ void orbiter::LaunchpadDialog2::Hide() {
 
 
 bool orbiter::LaunchpadDialog2::ConsumeEvent(const SDL_Event &event) const {
-	return m_imgui->PushLocal().ConsumeEvent(event);
+	bool wantsOut = false;
+	const bool res = m_imgui->PushLocal().ConsumeEvent(event, wantsOut);
+
+	if (wantsOut) {
+		UpdateConfig();
+		m_app->SetShouldQuit();
+	}
+
+	return res;
 }
 
 void orbiter::LaunchpadDialog2::RenderFrame() const {
@@ -197,7 +206,10 @@ LaunchpadItem *orbiter::LaunchpadDialog2::FindExtraParam(const std::string_view 
 void orbiter::LaunchpadDialog2::WriteExtraParams() {
 }
 
-void orbiter::LaunchpadDialog2::UpdateConfig() {
+void orbiter::LaunchpadDialog2::UpdateConfig() const {
+	for (const auto tab : m_tabList) {
+		tab->SetConfig(m_cfg);
+	}
 }
 
 

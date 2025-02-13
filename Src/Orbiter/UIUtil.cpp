@@ -167,7 +167,7 @@ bool EventIsMouse(Uint32 type) {
     return type >= SDL_EVENT_MOUSE_MOTION && type < SDL_EVENT_JOYSTICK_AXIS_MOTION;
 }
 
-bool WithLocalContext::ConsumeEvent(const SDL_Event &event) const {
+bool WithLocalContext::ConsumeEvent(const SDL_Event &event, bool& wantsOut) const {
     bool consumed = ImGui_ImplSDL3_ProcessEvent(&event);
     ImGuiIO &io = ImGui::GetIO();
     if ((io.WantCaptureMouse && EventIsMouse(event.type)) || (
@@ -176,7 +176,7 @@ bool WithLocalContext::ConsumeEvent(const SDL_Event &event) const {
     }
     if (event.type == SDL_EVENT_QUIT || (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID ==
                                          SDL_GetWindowID((*this)->Window()))) {
-        (*this)->App()->SetShouldQuit();
+        wantsOut = true;
         return true;
     }
 

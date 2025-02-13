@@ -25,7 +25,7 @@ public:
         return inner;
     }
 
-    bool ConsumeEvent(const SDL_Event& event) const;
+    bool ConsumeEvent(const SDL_Event& event, bool& wantsOut) const;
     bool BeginFrame() const;
     void EndFrame() const;
 

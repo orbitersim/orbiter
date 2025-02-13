@@ -71,7 +71,7 @@ namespace orbiter {
 		void WriteExtraParams();
 
 		// save current dialog settings in application configuration
-		void UpdateConfig();
+		void UpdateConfig() const;
 
 		SDL_Window* Window() const { return m_window; }
 		SDL_GPUDevice* Device() const { return m_device; }
