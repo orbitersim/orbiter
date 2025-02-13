@@ -196,6 +196,10 @@ void orbiter::ScenarioTab::RefreshList(bool preserveSelection) {
 }
 
 void orbiter::ScenarioTab::ScenarioChanged() {
+    for (const auto img : loadedImages) {
+        delete img;
+    }
+    loadedImages.clear();
     std::ifstream file;
     if (is_directory(selection)) {
         file.open(fs::path(selection).append("Description.txt").c_str());
