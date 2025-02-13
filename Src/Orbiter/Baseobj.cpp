@@ -277,7 +277,7 @@ void MeshObject::Deactivate ()
 #endif
 }
 
-bool MeshObject::GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
+bool MeshObject::GetGroupSpec (int grp, uint32_t &nvtx, uint32_t &nidx, LONGLONG &_texid,
 	bool &undershadow, bool &groundshadow)
 {
 	GroupSpec *gs = mesh->GetGroup (grp);
@@ -290,13 +290,13 @@ bool MeshObject::GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_tex
 	return true;
 }
 
-void MeshObject::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs)
+void MeshObject::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, uint32_t &idx_ofs)
 {
 	GroupSpec *gs = mesh->GetGroup (grp);
 	if (gs) {
 		WORD iofs = (WORD)idx_ofs;
 		memcpy (vtx, gs->Vtx, gs->nVtx*sizeof(NTVERTEX));
-		for (DWORD i = 0; i < gs->nIdx; i++)
+		for (uint32_t i = 0; i < gs->nIdx; i++)
 			idx[i] = gs->Idx[i]+iofs;
 	}
 }
@@ -310,7 +310,7 @@ Mesh* MeshObject::ExportMesh ()
 Mesh *MeshObject::ExportShadowMesh (double &shelev)
 {
 	if (!(specs & OBJSPEC_EXPORTSHADOWMESH)) return NULL;
-	DWORD i, j, nvtx = 0, nidx = 0, ngrp = mesh->nGroup();
+	uint32_t i, j, nvtx = 0, nidx = 0, ngrp = mesh->nGroup();
 	for (i = 0; i < ngrp; i++) {
 		GroupSpec *grp = mesh->GetGroup(i);
 		if (grp->UsrFlag & 0x1) continue; // no shadows
@@ -451,13 +451,13 @@ void Block::Deactivate ()
 	}
 }
 
-bool Block::GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
+bool Block::GetGroupSpec (int grp, uint32_t &nvtx, uint32_t &nidx, LONGLONG &_texid,
 	bool &undershadow, bool &groundshadow)
 {
 	if (grp < 0 || grp >= 3) return false;
 
-	static DWORD nv[3] = {8,8,4};
-	static DWORD ni[3] = {12,12,6};
+	static uint32_t nv[3] = {8,8,4};
+	static uint32_t ni[3] = {12,12,6};
 	nvtx = nv[grp];
 	nidx = ni[grp];
 	undershadow = false;
@@ -466,10 +466,10 @@ bool Block::GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
 	return true;
 }
 
-void Block::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs)
+void Block::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, uint32_t &idx_ofs)
 {
 	static WORD sidx[12] = {0,1,2,2,3,0,4,5,6,6,7,4};
-	DWORD i;
+	uint32_t i;
 	WORD iofs = (WORD)idx_ofs;
 	D3DVALUE *db = dyndata->databuf;
 
@@ -548,7 +548,7 @@ Mesh *Block::ExportShadowMesh (double &shelev)
 {
 	static WORD sidx[30] = {0,1,4, 4,1,5, 1,2,5, 5,2,6, 2,3,6, 6,3,7, 3,0,7, 7,0,4, 4,5,6, 6,7,4};
 	D3DVALUE *db = dyndata->databuf;
-	DWORD i, nvtx = 8, nidx = 30;
+	uint32_t i, nvtx = 8, nidx = 30;
 	NTVERTEX *vtx = new NTVERTEX[nvtx]; TRACENEW
 	WORD *idx = new WORD[nidx]; TRACENEW
 	memcpy (idx, sidx, nidx*sizeof(WORD));
@@ -563,7 +563,7 @@ Mesh *Block::ExportShadowMesh (double &shelev)
 }
 
 #ifdef UNDEF
-bool Block::GetShadowSpec (DWORD &nvtx, DWORD &nidx)
+bool Block::GetShadowSpec (uint32_t &nvtx, uint32_t &nidx)
 {
 	nvtx = 6;
 	nidx = 12;
@@ -573,7 +573,7 @@ bool Block::GetShadowSpec (DWORD &nvtx, DWORD &nidx)
 void Block::ExportShadow (VERTEX_XYZ *vtx, WORD *idx)
 {
 	static WORD sidx[12] = {0,1,2,2,1,3,2,3,4,4,3,5};
-	DWORD i;
+	uint32_t i;
 	for (i = 0; i < 12; i++) idx[i] = sidx[i];
 	for (i = 0; i < 6; i++) vtx[i].y = dyndata->databuf[12];
 	dyndata->shvtx = vtx;
@@ -764,13 +764,13 @@ void Hangar::Deactivate ()
 	}
 }
 
-bool Hangar::GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
+bool Hangar::GetGroupSpec (int grp, uint32_t &nvtx, uint32_t &nidx, LONGLONG &_texid,
 	bool &undershadow, bool &groundshadow)
 {
 	if (grp < 0 || grp >= 3) return false;
 
-	static DWORD nv[3] = {28,4,12};
-	static DWORD ni[3] = {54,6,30};
+	static uint32_t nv[3] = {28,4,12};
+	static uint32_t ni[3] = {54,6,30};
 	nvtx = nv[grp];
 	nidx = ni[grp];
 	_texid = texid[grp];
@@ -779,14 +779,14 @@ bool Hangar::GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
 	return true;
 }
 
-void Hangar::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs)
+void Hangar::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, uint32_t &idx_ofs)
 {
 	static WORD sidx0[54] = {0,24,7,27,7,24,25,1,26,2,26,1,6,7,2,2,3,6,5,6,3,3,4,5,
 		                     8,9,10,10,15,8,15,10,11,11,14,15,14,11,12,12,13,14,
 							 16,17,19,18,19,17,20,21,23,22,23,21};
 	static WORD sidx1[6]  = {0,1,3,2,3,1};
 	static WORD sidx2[30] = {0,1,2,3,2,1,2,3,4,5,4,3,4,5,6,7,6,5,6,7,8,9,8,7,8,9,10,11,10,9};
-	DWORD i;
+	uint32_t i;
 	WORD iofs = (WORD)idx_ofs;
 
 	switch (grp) {
@@ -813,8 +813,8 @@ Mesh *Hangar::ExportShadowMesh (double &shelev)
 		10,14,12, 0,10,12, 8,10,0, 2,8,0, 6,8,2, 4,6,2, // front wall
 		1,13,15, 11,1,15, 3,1,11, 9,3,11, 5,3,9, 7,5,9  // back wall
 	};
-	DWORD nvtx = 16;
-	DWORD nidx = 78;
+	uint32_t nvtx = 16;
+	uint32_t nidx = 78;
 	NTVERTEX *vtx = new NTVERTEX[nvtx]; TRACENEW
 	WORD *idx = new WORD[nidx]; TRACENEW
 	memcpy (vtx, dyndata->Vtx+28, 12*sizeof(NTVERTEX));
@@ -828,7 +828,7 @@ Mesh *Hangar::ExportShadowMesh (double &shelev)
 }
 
 #ifdef UNDEF
-bool Hangar::GetShadowSpec (DWORD &nvtx, DWORD &nidx)
+bool Hangar::GetShadowSpec (uint32_t &nvtx, uint32_t &nidx)
 {
 	nvtx = 10;
 	nidx = 24;
@@ -850,7 +850,7 @@ void Hangar::UpdateShadow (Vector &fromsun, double az)
 {
 	static VECTOR2D proj[16];
 	D3DVALUE dx = (D3DVALUE)fromsun.x, dz = (D3DVALUE)fromsun.z;
-	DWORD i, nCH;
+	uint32_t i, nCH;
 	WORD *CHidx;
 	D3DVERTEX *Vtx = dyndata->Vtx;
 	VERTEX_XYZ *vptr = dyndata->shvtx;
@@ -915,13 +915,13 @@ int Hangar2::ParseLine (const char *label, const char *value)
 	return res;
 }
 
-bool Hangar2::GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
+bool Hangar2::GetGroupSpec (int grp, uint32_t &nvtx, uint32_t &nidx, LONGLONG &_texid,
 	bool &undershadow, bool &groundshadow)
 {
 	if (grp < 0 || grp >= 3) return false;
 
-	static DWORD nv[3] = {10,8,8};
-	static DWORD ni[3] = {18,12,12};
+	static uint32_t nv[3] = {10,8,8};
+	static uint32_t ni[3] = {18,12,12};
 	nvtx = nv[grp];
 	nidx = ni[grp];
 	_texid = texid[grp];
@@ -930,11 +930,11 @@ bool Hangar2::GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
 	return true;
 }
 
-void Hangar2::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs)
+void Hangar2::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, uint32_t &idx_ofs)
 {
 	static WORD sidx0[18] = {0,1,2,2,4,0,4,2,3,6,5,9,9,7,6,7,9,8};
 	static WORD sidx1[12] = {0,1,3,2,3,1,5,4,6,7,6,4};
-	DWORD i;
+	uint32_t i;
 	WORD iofs = (WORD)idx_ofs;
 
 	switch (grp) {
@@ -960,8 +960,8 @@ Mesh *Hangar2::ExportShadowMesh (double &shelev)
 		0,4,5, 9,5,4, 1,6,7, 7,2,1,          // side walls
 		3,9,4, 9,3,8, 3,2,8, 2,7,8           // roof
 	};
-	DWORD nvtx = 10;
-	DWORD nidx = 42;
+	uint32_t nvtx = 10;
+	uint32_t nidx = 42;
 	NTVERTEX *vtx = new NTVERTEX[nvtx]; TRACENEW
 	WORD *idx = new WORD[nidx]; TRACENEW
 	memcpy (vtx, dyndata->Vtx, 10*sizeof(NTVERTEX));
@@ -971,7 +971,7 @@ Mesh *Hangar2::ExportShadowMesh (double &shelev)
 }
 
 #ifdef UNDEF
-bool Hangar2::GetShadowSpec (DWORD &nvtx, DWORD &nidx)
+bool Hangar2::GetShadowSpec (uint32_t &nvtx, uint32_t &nidx)
 {
 	nvtx = 7;
 	nidx = 15;
@@ -993,7 +993,7 @@ void Hangar2::UpdateShadow (Vector &fromsun, double az)
 {
 	static VECTOR2D proj[10];
 	D3DVALUE dx = (D3DVALUE)fromsun.x, dz = (D3DVALUE)fromsun.z;
-	DWORD i, nCH;
+	uint32_t i, nCH;
 	WORD *CHidx;
 	D3DVERTEX *Vtx = dyndata->Vtx;
 	VERTEX_XYZ *vptr = dyndata->shvtx;
@@ -1121,13 +1121,13 @@ int Hangar3::ParseLine (const char *label, const char *value)
 	return res;
 }
 
-bool Hangar3::GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
+bool Hangar3::GetGroupSpec (int grp, uint32_t &nvtx, uint32_t &nidx, LONGLONG &_texid,
 	bool &undershadow, bool &groundshadow)
 {
 	if (grp < 0 || grp >= 3) return false;
 
-	static DWORD nv[3] = {18,8,14};
-	static DWORD ni[3] = {36,24,36};
+	static uint32_t nv[3] = {18,8,14};
+	static uint32_t ni[3] = {36,24,36};
 	nvtx = nv[grp];
 	nidx = ni[grp];
 	_texid = texid[grp];
@@ -1136,13 +1136,13 @@ bool Hangar3::GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
 	return true;
 }
 
-void Hangar3::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs)
+void Hangar3::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, uint32_t &idx_ofs)
 {
 	static WORD sidx0[60] = {0,6,1,1,6,5,1,5,2,2,5,4,2,4,3, // back wall
 	          				 7,8,14,8,9,14,9,10,16,16,10,17,10,11,17,11,12,15,12,13,15}; // front wall
 	static WORD sidx1[24] = {0,1,5,5,4,0,6,7,4,4,5,6,2,3,7,7,6,2,1,2,6,6,5,1}; // entry
 	static WORD sidx2[36] = {0,1,7,8,7,1,1,2,8,9,8,2,2,3,9,10,9,3,3,4,10,4,11,10,4,5,11,12,11,5,5,6,12,13,12,6}; // roof
-	DWORD i;
+	uint32_t i;
 	WORD iofs = (WORD)idx_ofs;
 
 	switch (grp) {
@@ -1168,8 +1168,8 @@ Mesh *Hangar3::ExportShadowMesh (double &shelev)
 		0,6,1, 1,6,5, 1,5,2, 2,5,4, 3,2,4, // front wall
 		7,8,13, 8,12,13, 9,12,8, 9,11,12, 9,10,11 // back wall
 	}; // roof
-	DWORD nvtx = 14;
-	DWORD nidx = 66;
+	uint32_t nvtx = 14;
+	uint32_t nidx = 66;
 	NTVERTEX *vtx = new NTVERTEX[nvtx]; TRACENEW
 	WORD *idx = new WORD[nidx]; TRACENEW
 	memcpy (vtx, dyndata->Vtx+26, nvtx*sizeof(NTVERTEX));
@@ -1179,7 +1179,7 @@ Mesh *Hangar3::ExportShadowMesh (double &shelev)
 }
 
 #ifdef UNDEF
-bool Hangar3::GetShadowSpec (DWORD &nvtx, DWORD &nidx)
+bool Hangar3::GetShadowSpec (uint32_t &nvtx, uint32_t &nidx)
 {
 	nvtx = 9;
 	nidx = 21;
@@ -1201,7 +1201,7 @@ void Hangar3::UpdateShadow (Vector &fromsun, double az)
 {
 	static VECTOR2D proj[14];
 	D3DVALUE dx = (D3DVALUE)fromsun.x, dz = (D3DVALUE)fromsun.z;
-	DWORD i, nCH;
+	uint32_t i, nCH;
 	WORD *CHidx;
 	D3DVERTEX *Vtx = dyndata->Vtx;
 	VERTEX_XYZ *vptr = dyndata->shvtx;
@@ -1370,7 +1370,7 @@ void Tank::Activate ()
 	NTVERTEX *Vtx = dyndata->Vtx;
 	D3DVALUE dx, dz, dnx, dnz, fac, ifac = 1.0f/(D3DVALUE)nstep;
 	D3DVALUE srot = (D3DVALUE)sin(rot), crot = (D3DVALUE)cos(rot);
-	DWORD i, ofs1 = nstep+1, ofs2 = 2*nstep+2;
+	uint32_t i, ofs1 = nstep+1, ofs2 = 2*nstep+2;
 	double alpha;
 
 	for (i = 0; i < nstep; i++) {
@@ -1413,7 +1413,7 @@ void Tank::Deactivate ()
 	}
 }
 
-bool Tank::GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
+bool Tank::GetGroupSpec (int grp, uint32_t &nvtx, uint32_t &nidx, LONGLONG &_texid,
 	bool &undershadow, bool &groundshadow)
 {
 	switch (grp) {
@@ -1436,7 +1436,7 @@ bool Tank::GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
 	}
 }
 
-void Tank::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs)
+void Tank::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, uint32_t &idx_ofs)
 {
 	WORD i, ofs = (WORD)(nstep+1), iofs = (WORD)idx_ofs;
 
@@ -1465,8 +1465,8 @@ void Tank::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs)
 
 Mesh *Tank::ExportShadowMesh (double &shelev)
 {
-	DWORD nvtx = nstep*2;
-	DWORD nidx = nstep*6 + (nstep-2)*3;
+	uint32_t nvtx = nstep*2;
+	uint32_t nidx = nstep*6 + (nstep-2)*3;
 	NTVERTEX *vtx = new NTVERTEX[nvtx]; TRACENEW
 	WORD *id, *idx = new WORD[nidx]; TRACENEW
 	memcpy (vtx, dyndata->Vtx, nstep*sizeof(NTVERTEX));
@@ -1491,7 +1491,7 @@ Mesh *Tank::ExportShadowMesh (double &shelev)
 }
 
 #ifdef UNDEF
-bool Tank::GetShadowSpec (DWORD &nvtx, DWORD &nidx)
+bool Tank::GetShadowSpec (uint32_t &nvtx, uint32_t &nidx)
 {
 	nvtx = nstep+2;
 	nidx = nstep*3;
@@ -1511,10 +1511,10 @@ void Tank::ExportShadow (VERTEX_XYZ *vtx, WORD *idx)
 
 void Tank::UpdateShadow (Vector &fromsun, double az)
 {
-	static DWORD nproj = 24;
+	static uint32_t nproj = 24;
 	static VECTOR2D *proj = new VECTOR2D[24];
 	D3DVALUE dx = (D3DVALUE)fromsun.x, dz = (D3DVALUE)fromsun.z;
-	DWORD i, nCH;
+	uint32_t i, nCH;
 	WORD *CHidx;
 	D3DVERTEX *Vtx = dyndata->Vtx;
 	VERTEX_XYZ *vptr = dyndata->shvtx;
@@ -1632,7 +1632,7 @@ int Lpad01::ParseLine (const char *label, const char *value)
 	return res;
 }
 
-bool Lpad01::GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
+bool Lpad01::GetGroupSpec (int grp, uint32_t &nvtx, uint32_t &nidx, LONGLONG &_texid,
 	bool &undershadow, bool &groundshadow)
 {
 	if (grp == 0) {
@@ -1645,11 +1645,11 @@ bool Lpad01::GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
 	} else return false;
 }
 
-void Lpad01::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs)
+void Lpad01::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, uint32_t &idx_ofs)
 {
 	if (grp == 0) {
 		D3DVALUE cosr = scale.x*(D3DVALUE)cos(rot), sinr = scale.x*(D3DVALUE)sin(rot);
-		DWORD i;
+		uint32_t i;
 		WORD iofs = (WORD)idx_ofs;
 		NTVERTEX *src = Vtx;
 		memcpy (vtx, src, 44*sizeof(NTVERTEX));
@@ -1731,7 +1731,7 @@ int Lpad02::ParseLine (const char *label, const char *value)
 	return res;
 }
 
-bool Lpad02::GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
+bool Lpad02::GetGroupSpec (int grp, uint32_t &nvtx, uint32_t &nidx, LONGLONG &_texid,
 	bool &undershadow, bool &groundshadow)
 {
 	if (grp == 0) {
@@ -1744,11 +1744,11 @@ bool Lpad02::GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
 	} else return false;
 }
 
-void Lpad02::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs)
+void Lpad02::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, uint32_t &idx_ofs)
 {
 	if (grp == 0) {
 		D3DVALUE cosr = scale.x*(D3DVALUE)cos(rot), sinr = scale.x*(D3DVALUE)sin(rot);
-		DWORD i;
+		uint32_t i;
 		WORD iofs = (WORD)idx_ofs;
 		NTVERTEX *src = Vtx;
 		memcpy (vtx, src, 28*sizeof(NTVERTEX));
@@ -1849,7 +1849,7 @@ int Lpad02a::ParseLine (const char *label, const char *value)
 	return res;
 }
 
-bool Lpad02a::GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
+bool Lpad02a::GetGroupSpec (int grp, uint32_t &nvtx, uint32_t &nidx, LONGLONG &_texid,
 	bool &undershadow, bool &groundshadow)
 {
 	if (grp == 0) {
@@ -1862,11 +1862,11 @@ bool Lpad02a::GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
 	} else return false;
 }
 
-void Lpad02a::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs)
+void Lpad02a::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, uint32_t &idx_ofs)
 {
 	if (grp == 0) {
 		D3DVALUE cosr = scale.x*(D3DVALUE)cos(rot), sinr = scale.x*(D3DVALUE)sin(rot);
-		DWORD i;
+		uint32_t i;
 		WORD iofs = (WORD)idx_ofs;
 		NTVERTEX *src = Vtx;
 		memcpy (vtx, src, 37*sizeof(NTVERTEX));
@@ -1928,7 +1928,7 @@ Runway::~Runway ()
 	}
 }
 
-bool Runway::GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
+bool Runway::GetGroupSpec (int grp, uint32_t &nvtx, uint32_t &nidx, LONGLONG &_texid,
 	bool &undershadow, bool &groundshadow)
 {
 	switch (grp) {
@@ -1944,9 +1944,9 @@ bool Runway::GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
 	}
 }
 
-void Runway::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs)
+void Runway::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, uint32_t &idx_ofs)
 {
-	DWORD i;
+	uint32_t i;
 	WORD iofs = (WORD)idx_ofs;
 
 	switch (grp) {
@@ -1961,7 +1961,7 @@ int Runway::Read (istream &is)
 {
 	char cbuf[256], *cp, label[32];
 	int i;
-	DWORD k;
+	uint32_t k;
 
 	do {
 		if (!is.getline (cbuf, 256)) return 1; // premature end of file
@@ -1997,7 +1997,7 @@ int Runway::Read (istream &is)
 			}
 		} else if (!_strnicmp (label, "RWSEG", 5)) {
 			D3DVALUE seglen, tu0, tu1, tv0, tv1;
-			DWORD subseg;
+			uint32_t subseg;
 			sscanf (cp+5, "%d%d%f%f%f%f%f", &i, &subseg, &seglen, &tu0, &tu1, &tv0, &tv1);
 			if (--i >= 0 && i < (int)nrwseg) {
 				rwseg[i].subseg = subseg;
@@ -2020,7 +2020,7 @@ void Runway::Activate ()
 	if (dyndata) return; // active already
 	dyndata = new struct DYNDATA; TRACENEW
 
-	DWORD i, j, k, m;
+	uint32_t i, j, k, m;
 	WORD ofs;
 
 	dyndata->nRwVtx = dyndata->nRwIdx = 0;
@@ -2162,11 +2162,11 @@ void RunwayLights::Render (LPDIRECT3DDEVICE7 dev, bool day)
 {
 }
 
-void RunwayLights::VertexArray (DWORD count, const Vector &cpos, const Vector &pos, const Vector &ofs, double size, POSTEXVERTEX *&Vtx)
+void RunwayLights::VertexArray (uint32_t count, const Vector &cpos, const Vector &pos, const Vector &ofs, double size, POSTEXVERTEX *&Vtx)
 {
 	size *= 0.15; // for distance resizing (see below bsize)
 
-	DWORD i;
+	uint32_t i;
 	double bsize, ap = g_camera->Aperture();
 	Vector p(pos), bdir, v1, v2;
 
@@ -2240,7 +2240,7 @@ void RunwayLights::Update ()
 		int nwhite = (int)((alpha-papi->apprangle)/papi->aperture + 2.5);
 		if      (nwhite < 0) nwhite = 0;
 		else if (nwhite > 4) nwhite = 4;
-		dyndata->PAPIwhite = (DWORD)nwhite;
+		dyndata->PAPIwhite = (uint32_t)nwhite;
 	}
 
 	dyndata->night = (*dyndata->csun < 0.2);
@@ -2330,7 +2330,7 @@ void RunwayLights::Activate ()
 {
 	if (dyndata) return; // active already
 
-	DWORD i, j, ii, n, nv, ni, nbc, nbs, nba, nbe, nbvw, nbvr, nbwn, nbwd, nbr, nbp, nbt;
+	uint32_t i, j, ii, n, nv, ni, nbc, nbs, nba, nbe, nbvw, nbvr, nbwn, nbwd, nbr, nbp, nbt;
 	POSTEXVERTEX *Vtx;
 	WORD *Idx;
 
@@ -2470,7 +2470,7 @@ void BeaconArray::Update ()
 {
 	const double resize_fac = 0.1;
 
-	DWORD i;
+	uint32_t i;
 	Vector p, v1, v2;
 	double bsize = size;
 
@@ -2514,7 +2514,7 @@ void BeaconArray::Update ()
 
 void BeaconArray::Activate ()
 {
-	DWORD i, ii;
+	uint32_t i, ii;
 
 	Vtx = new POSTEXVERTEX[nVtx = count*4]; TRACENEW
 	Idx = new WORD[nIdx = count*6]; TRACENEW
@@ -2599,7 +2599,7 @@ void Train::Setup ()
 	end2.y += base->RefPlanet()->Elevation (lng, lat)-base->Elevation();
 }
 
-void Train::SetCabin (DWORD nvtx, const NTVERTEX *ref, NTVERTEX *res, const D3DVECTOR &pos, const D3DVECTOR &ofs)
+void Train::SetCabin (uint32_t nvtx, const NTVERTEX *ref, NTVERTEX *res, const D3DVECTOR &pos, const D3DVECTOR &ofs)
 {
 	// rotation matrix
 	D3DVALUE sinth, costh, cosph, sinph, vx, vy, vz;
@@ -2610,7 +2610,7 @@ void Train::SetCabin (DWORD nvtx, const NTVERTEX *ref, NTVERTEX *res, const D3DV
 	D3DVALUE r21 =  0.0,   r22 =  costh,       r23 = sinth;
 	D3DVALUE r31 = -sinph, r32 = -cosph*sinth, r33 = cosph*costh;
 
-	for (DWORD i = 0; i < nvtx; i++) {
+	for (uint32_t i = 0; i < nvtx; i++) {
 		const NTVERTEX &vtx = ref[i];
 		vx = vtx.x + ofs.x;
 		vy = vtx.y + ofs.y;
@@ -2735,7 +2735,7 @@ void Train1::Activate ()
 {
 	if (dyndata) return; // already active
 
-	DWORD i;
+	uint32_t i;
 	dyndata = new struct DYNDATA; TRACENEW
 	dyndata->Vtx = new NTVERTEX[38]; TRACENEW
 	dyndata->tick = rand()%10000;
@@ -2795,7 +2795,7 @@ void Train1::Deactivate ()
 	}
 }
 
-bool Train1::GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
+bool Train1::GetGroupSpec (int grp, uint32_t &nvtx, uint32_t &nidx, LONGLONG &_texid,
 	bool &undershadow, bool &groundshadow)
 {
 	switch (grp) {
@@ -2818,9 +2818,9 @@ bool Train1::GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
 	}
 }
 
-void Train1::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs)
+void Train1::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, uint32_t &idx_ofs)
 {
-	DWORD i;
+	uint32_t i;
 	WORD iofs = (WORD)idx_ofs;
 
 	switch (grp) {
@@ -2836,7 +2836,7 @@ void Train1::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs)
 	}
 }
 
-bool Train1::GetShadowSpec (DWORD &nvtx, DWORD &nidx)
+bool Train1::GetShadowSpec (uint32_t &nvtx, uint32_t &nidx)
 {
 	nvtx = 8;
 	nidx = 18;
@@ -2858,7 +2858,7 @@ void Train1::ExportShadow (VERTEX_XYZ *vtx, WORD *idx)
 
 void Train1::Update ()
 {
-	DWORD i;
+	uint32_t i;
 	// update cabin position
 	bool reset;
 	D3DVALUE shift = MoveCabin (cpos, cvel, reset);
@@ -2881,7 +2881,7 @@ void Train1::Update ()
 
 void Train1::UpdateShadow (Vector &fromsun, double az)
 {
-	static DWORD i, j, nCH, ii[12] = {2,3,4,5,6,7,10,11,12,13,14,15};
+	static uint32_t i, j, nCH, ii[12] = {2,3,4,5,6,7,10,11,12,13,14,15};
 	static VECTOR2D proj[12];
 	D3DVALUE dx = (D3DVALUE)fromsun.x, dz = (D3DVALUE)fromsun.z;
 	WORD *CHidx;
@@ -3103,7 +3103,7 @@ void Train2::Deactivate ()
 	}
 }
 
-bool Train2::GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
+bool Train2::GetGroupSpec (int grp, uint32_t &nvtx, uint32_t &nidx, LONGLONG &_texid,
 	bool &undershadow, bool &groundshadow)
 {
 	switch (grp) {
@@ -3120,9 +3120,9 @@ bool Train2::GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
 	}
 }
 
-void Train2::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs)
+void Train2::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, uint32_t &idx_ofs)
 {
-	DWORD i;
+	uint32_t i;
 	WORD iofs = (WORD)idx_ofs;
 	D3DVECTOR ofs;
 
@@ -3155,7 +3155,7 @@ void Train2::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs)
 	}
 }
 
-bool Train2::GetShadowSpec (DWORD &nvtx, DWORD &nidx)
+bool Train2::GetShadowSpec (uint32_t &nvtx, uint32_t &nidx)
 {
 	nvtx = 16;
 	nidx = 36;
@@ -3179,7 +3179,7 @@ void Train2::ExportShadow (VERTEX_XYZ *vtx, WORD *idx)
 
 void Train2::Update ()
 {
-	DWORD i, j;
+	uint32_t i, j;
 	// update cabin position
 	bool reset;
 	for (j = 0; j < 2; j++) {
@@ -3208,7 +3208,7 @@ void Train2::Update ()
 
 void Train2::UpdateShadow (Vector &fromsun, double az)
 {
-	static DWORD i, j, nCH, ii[12] = {2,3,4,5,6,7,10,11,12,13,14,15};
+	static uint32_t i, j, nCH, ii[12] = {2,3,4,5,6,7,10,11,12,13,14,15};
 	static VECTOR2D proj[12];
 	D3DVALUE dx = (D3DVALUE)fromsun.x, dz = (D3DVALUE)fromsun.z;
 	WORD *CHidx;
@@ -3251,13 +3251,13 @@ void Train2::Render (LPDIRECT3DDEVICE7 dev, bool day)
 {
 	int i;
 	NTVERTEX *vtx = dyndata->rail;
-	DWORD ambient;
+	uint32_t ambient;
 
 	dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
 	dev->SetTexture (0, day ? dyndata->dtex : dyndata->ntex);
 
 	if (!day) {
-		dev->GetRenderState (D3DRENDERSTATE_AMBIENT, &ambient);
+		dev->GetRenderState (D3DRENDERSTATE_AMBIENT, LPDWORD(&ambient));
 		dev->SetRenderState (D3DRENDERSTATE_AMBIENT, ambient*16);
 	}
 
@@ -3377,7 +3377,7 @@ void SolarPlant::RenderShadow (LPDIRECT3DDEVICE7 dev)
 void SolarPlant::Activate ()
 {
 	int i, j, idx, idx_ofs, vtx_ofs;
-	DWORD n;
+	uint32_t n;
 	D3DVALUE x, z;
 	D3DVALUE crot = (D3DVALUE)cos(rot);
 	D3DVALUE srot = (D3DVALUE)sin(rot);

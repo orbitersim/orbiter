@@ -55,13 +55,13 @@
 struct D3D9Client::RenderProcData {
 	__gcRenderProc proc;
 	void *pParam;
-	DWORD id;
+	uint32_t id;
 };
 
 struct D3D9Client::GenericProcData {
 	__gcGenericProc proc;
 	void *pParam;
-	DWORD id;
+	uint32_t id;
 };
 
 using namespace oapi;
@@ -88,7 +88,7 @@ unordered_map<string, SURFHANDLE> ClonedTextures;
 unordered_map<MESHHANDLE, class SketchMesh*> MeshMap;
 unordered_map<std::string, LPDIRECT3DTEXTURE9> MicroTextures;
 
-DWORD uCurrentMesh = 0;
+uint32_t uCurrentMesh = 0;
 vObject *pCurrentVisual = 0;
 _D3D9Stats D3D9Stats;
 
@@ -108,7 +108,7 @@ std::set<Brush *> g_brushes;
 extern list<gcGUIApp *> g_gcGUIAppList;
 
 extern "C" {
-	_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+	_declspec(dllexport) uint32_t NvOptimusEnablement = 0x00000001;
 }
 
 // ==============================================================
@@ -179,7 +179,7 @@ DLLCLBK void InitModule(ModHandle* hDLL)
 	Config = new D3D9Config();
 
 	if (Config->ShaderCacheUse) {
-		DWORD fa = GetFileAttributesA("Cache");
+		uint32_t fa = GetFileAttributesA("Cache");
 		if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA("Cache", NULL);
 		fa = GetFileAttributesA("Cache/D3D9Client");
 		if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA("Cache/D3D9Client", NULL);
@@ -325,7 +325,7 @@ bool D3D9Client::ChkDev(const char *fnc) const
 // ==============================================================
 // Overridden
 //
-const void *D3D9Client::GetConfigParam (DWORD paramtype) const
+const void *D3D9Client::GetConfigParam (uint32_t paramtype) const
 {
 	return (paramtype >= CFGPRM_TILELOADTHREAD)
 		 ? (paramtype >= CFGPRM_GETSELECTEDMESH)
@@ -443,11 +443,11 @@ HWND D3D9Client::clbkCreateRenderWindow()
 		return NULL;
 	}
 
-	RECT rect;
-	GetClientRect(hRenderWnd, &rect);
+	Rect rect;
+	GetClientRect(hRenderWnd, LPRECT(&rect));
 	HDC hWnd = GetDC(hRenderWnd);
 	HBRUSH hBr = CreateSolidBrush(RGB(0,0,0));
-	FillRect(hWnd, &rect, hBr);
+	FillRect(hWnd, LPRECT(&rect), hBr);
 	DeleteObject(hBr);
 	ReleaseDC(hRenderWnd, hWnd);
 	ValidateRect(hRenderWnd, NULL);	// avoids white flash after splash screen
@@ -625,10 +625,10 @@ void D3D9Client::SketchPadTest()
 
 	Sketchpad *pSkp = oapiGetSketchpad(hTgt);
 
-	RECT r = { 17, 1, 31, 15 };
-	RECT t = { 1, 33, 31, 63 };
-	RECT q = { 0, 16, 16, 32 };
-	RECT w = { 49, 1, 63, 15 };
+	Rect r = { 17, 1, 31, 15 };
+	Rect t = { 1, 33, 31, 63 };
+	Rect q = { 0, 16, 16, 32 };
+	Rect w = { 49, 1, 63, 15 };
 
 	pSkp->CopyRect(hSrc, &r, 1, 1);
 	pSkp->ColorKey(hSrc, &r, 33, 1);
@@ -640,7 +640,7 @@ void D3D9Client::SketchPadTest()
 	pSkp->RotateRect(hSrc, &q, 40, 24, float(PI));
 	pSkp->RotateRect(hSrc, &q, 56, 24, float(-PI05));
 
-	RECT tr = { 33, 49, 47, 63 };
+	Rect tr = { 33, 49, 47, 63 };
 	pSkp->ColorFill(0xFFFF00FF, &tr);
 
 	pSkp->QuickPen(0xFF000000);
@@ -661,7 +661,7 @@ void D3D9Client::SketchPadTest()
 	pSkp->LineTo(78, 1);
 	pSkp->LineTo(65, 1);
 
-	RECT cr = { 33, 33, 47, 47 };
+	Rect cr = { 33, 33, 47, 47 };
 	pSkp->ClipRect(&cr);
 	pSkp->ColorFill(0xFFFFFF00, NULL);
 	pSkp->ClipRect();
@@ -859,8 +859,8 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 	D3D9Effect::ShutDown();
 
 	// DEBUG: List all textures connected to meshes
-	/* DWORD cnt = MeshCatalog->CountEntries();
-	for (DWORD i=0;i<cnt;i++) {
+	/* uint32_t cnt = MeshCatalog->CountEntries();
+	for (uint32_t i=0;i<cnt;i++) {
 		D3D9Mesh *x = (D3D9Mesh*)MeshCatalog->Get(i);
 		if (x) x->DumpTextures();
 	} */
@@ -940,7 +940,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 	//
 	if (SharedTextures.size() > 0)
 	{
-		LogWrn("Texture Repository has %u entries... Releasing...", (DWORD)SharedTextures.size());
+		LogWrn("Texture Repository has %u entries... Releasing...", (uint32_t)SharedTextures.size());
 		auto Undeleted(SharedTextures);
 		for (auto srf : Undeleted) {
 			LogWrn("Texture [%s]", SURFACE(srf.second)->GetName());
@@ -952,7 +952,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 	//
 	if (SurfaceCatalog.size() > 0)
 	{
-		LogErr("UnDeleted Surfaces(s) Detected %u... Releasing...", (DWORD)SurfaceCatalog.size());
+		LogErr("UnDeleted Surfaces(s) Detected %u... Releasing...", (uint32_t)SurfaceCatalog.size());
 		auto Undeleted(SurfaceCatalog);
 		for (auto srf : Undeleted) {
 			LogErr("Surface [%s] (%u, %u)", srf->GetName(), srf->GetWidth(), srf->GetHeight());
@@ -964,7 +964,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 	//
 	if (MeshCatalog.size() > 0)
 	{
-		LogErr("UnDeleted Meshe(s) Detected %u", (DWORD)MeshCatalog.size());
+		LogErr("UnDeleted Meshe(s) Detected %u", (uint32_t)MeshCatalog.size());
 		auto Undeleted(MeshCatalog);
 		for (auto msh : Undeleted)
 		{
@@ -1213,17 +1213,17 @@ void D3D9Client::clbkRenderScene()
 
 		if (Label[0]!=0) {
 			pDevice->BeginScene();
-			RECT rect2 = _RECT(0, viewH - 60, viewW, viewH - 20);
-			pFramework->GetLargeFont()->DrawTextA(0, Label, 6, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(0, 0, 0));
+			Rect rect2 = _R(0, viewH - 60, viewW, viewH - 20);
+			pFramework->GetLargeFont()->DrawTextA(0, Label, 6, LPRECT(&rect2), DT_CENTER | DT_TOP, D3DCOLOR_XRGB(0, 0, 0));
 			rect2.left-=4; rect2.top-=4;
-			pFramework->GetLargeFont()->DrawTextA(0, Label, 6, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(255, 255, 255));
+			pFramework->GetLargeFont()->DrawTextA(0, Label, 6, LPRECT(&rect2), DT_CENTER | DT_TOP, D3DCOLOR_XRGB(255, 255, 255));
 			pDevice->EndScene();
 		}
 	}
 
 	if (bFreeze) {
-		RECT rect2 = _RECT(0, viewH - 60, viewW, viewH - 20);
-		pFramework->GetLargeFont()->DrawTextA(0, "Frozen", 6, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(0, 255, 255));
+		Rect rect2 = _R(0, viewH - 60, viewW, viewH - 20);
+		pFramework->GetLargeFont()->DrawTextA(0, "Frozen", 6, LPRECT(&rect2), DT_CENTER | DT_TOP, D3DCOLOR_XRGB(0, 255, 255));
 	}
 
 	D3D9SetTime(D3D9Stats.Timer.Scene, scene_time);
@@ -1272,9 +1272,9 @@ bool D3D9Client::clbkDisplayFrame()
 	double time = D3D9GetTime();
 
 	if (!bRunning && pDevice) {
-		RECT txt = _RECT( loadd_x, loadd_y, loadd_x+loadd_w, loadd_y+loadd_h );
+		Rect txt = _R( loadd_x, loadd_y, loadd_x+loadd_w, loadd_y+loadd_h );
 		pDevice->StretchRect(pSplashScreen, NULL, pBackBuffer, NULL, D3DTEXF_POINT);
-		pDevice->StretchRect(pTextScreen, NULL, pBackBuffer, &txt, D3DTEXF_POINT);
+		pDevice->StretchRect(pTextScreen, NULL, pBackBuffer, LPRECT(&txt), D3DTEXF_POINT);
 	}
 
 	if (Config->PresentLocation == 0) PresentScene();
@@ -1303,16 +1303,16 @@ void D3D9Client::clbkPreOpenPopup ()
 
 // =======================================================================
 
-static DWORD g_lastPopupWindowCount = 0;
-static void FixOutOfScreenPositions (const HWND *hWnd, DWORD count)
+static uint32_t g_lastPopupWindowCount = 0;
+static void FixOutOfScreenPositions (const HWND *hWnd, uint32_t count)
 {
 	// Only check if a popup window is *added*
 	if (count > g_lastPopupWindowCount)
 	{
-		for (DWORD i=0; i<count; ++i)
+		for (uint32_t i=0; i<count; ++i)
 		{
-			RECT rect;
-			GetWindowRect(hWnd[i], &rect);
+			Rect rect;
+			GetWindowRect(hWnd[i], LPRECT(&rect));
 
 			int x = -1, y, w, h; // x != -1 indicates "position change needed"
 			if (rect.left < 0) {
@@ -1360,7 +1360,7 @@ bool D3D9Client::RenderWithPopupWindows()
 	_TRACE;
 
 	const HWND *hPopupWnd;
-	DWORD count = GetPopupList(&hPopupWnd);
+	uint32_t count = GetPopupList(&hPopupWnd);
 
 	if (bFullscreen) {
 		if (count) GetDevice()->SetDialogBoxMode(true);
@@ -1370,8 +1370,8 @@ bool D3D9Client::RenderWithPopupWindows()
 	FixOutOfScreenPositions(hPopupWnd, count);
 
 	if (!bFullscreen) {
-		for (DWORD i=0;i<count;i++) {
-			DWORD val = GetWindowLongA(hPopupWnd[i], GWL_STYLE);
+		for (uint32_t i=0;i<count;i++) {
+			uint32_t val = GetWindowLongA(hPopupWnd[i], GWL_STYLE);
 			if ((val&WS_SYSMENU)==0) {
 				SetWindowLongA(hPopupWnd[i], GWL_STYLE, val|WS_SYSMENU);
 			}
@@ -1475,7 +1475,7 @@ DEVMESHHANDLE D3D9Client::GetDevMesh(MESHHANDLE hMesh)
 
 // ==============================================================
 
-bool D3D9Client::clbkSetMeshTexture(DEVMESHHANDLE hMesh, DWORD texidx, SURFHANDLE surf)
+bool D3D9Client::clbkSetMeshTexture(DEVMESHHANDLE hMesh, uint32_t texidx, SURFHANDLE surf)
 {
 	_TRACE;
 	if (hMesh && surf) return ((D3D9Mesh*)hMesh)->SetTexture(texidx, SURFACE(surf));
@@ -1484,12 +1484,12 @@ bool D3D9Client::clbkSetMeshTexture(DEVMESHHANDLE hMesh, DWORD texidx, SURFHANDL
 
 // ==============================================================
 
-int D3D9Client::clbkSetMeshMaterial(DEVMESHHANDLE hMesh, DWORD matidx, const MATERIAL *mat)
+int D3D9Client::clbkSetMeshMaterial(DEVMESHHANDLE hMesh, uint32_t matidx, const MATERIAL *mat)
 {
 	_TRACE;
 	if (!hMesh) return 3;
 	D3D9Mesh *mesh = (D3D9Mesh*)hMesh;
-	DWORD nmat = mesh->GetMaterialCount();
+	uint32_t nmat = mesh->GetMaterialCount();
 	if (matidx >= nmat) return 4; // "index out of range"
 	D3D9MatExt meshmat;
 	//mesh->GetMaterial(&meshmat, matidx);
@@ -1500,12 +1500,12 @@ int D3D9Client::clbkSetMeshMaterial(DEVMESHHANDLE hMesh, DWORD matidx, const MAT
 
 // ==============================================================
 
-int D3D9Client::clbkMeshMaterial (DEVMESHHANDLE hMesh, DWORD matidx, MATERIAL *mat)
+int D3D9Client::clbkMeshMaterial (DEVMESHHANDLE hMesh, uint32_t matidx, MATERIAL *mat)
 {
 	_TRACE;
 	if (!hMesh) return 3;
 	D3D9Mesh *mesh = (D3D9Mesh*)hMesh;
-	DWORD nmat = mesh->GetMaterialCount();
+	uint32_t nmat = mesh->GetMaterialCount();
 	if (matidx >= nmat) return 4; // "index out of range"
 	const D3D9MatExt *meshmat = mesh->GetMaterial(matidx);
 	if (meshmat) GetMatExt(meshmat, (D3DMATERIAL9 *)mat);
@@ -1514,7 +1514,7 @@ int D3D9Client::clbkMeshMaterial (DEVMESHHANDLE hMesh, DWORD matidx, MATERIAL *m
 
 // ==============================================================
 
-int D3D9Client::clbkSetMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp mat, const oapi::FVECTOR4* in)
+int D3D9Client::clbkSetMeshMaterialEx(DEVMESHHANDLE hMesh, uint32_t matidx, MatProp mat, const oapi::FVECTOR4* in)
 {
 	if (!hMesh) return 3;
 	D3D9Mesh* mesh = (D3D9Mesh*)hMesh;
@@ -1523,7 +1523,7 @@ int D3D9Client::clbkSetMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp
 
 // ==============================================================
 
-int D3D9Client::clbkMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp mat, oapi::FVECTOR4* out)
+int D3D9Client::clbkMeshMaterialEx(DEVMESHHANDLE hMesh, uint32_t matidx, MatProp mat, oapi::FVECTOR4* out)
 {
 	if (!hMesh) return 3;
 	D3D9Mesh* mesh = (D3D9Mesh*)hMesh;
@@ -1532,7 +1532,7 @@ int D3D9Client::clbkMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp ma
 
 // ==============================================================
 
-bool D3D9Client::clbkSetMeshProperty(DEVMESHHANDLE hMesh, DWORD prop, DWORD value)
+bool D3D9Client::clbkSetMeshProperty(DEVMESHHANDLE hMesh, uint32_t prop, uint32_t value)
 {
 	_TRACE;
 	D3D9Mesh *mesh = (D3D9Mesh*)hMesh;
@@ -1561,7 +1561,7 @@ MESHHANDLE D3D9Client::clbkGetMesh(VISHANDLE vis, UINT idx)
 
 // =======================================================================
 
-int D3D9Client::clbkEditMeshGroup(DEVMESHHANDLE hMesh, DWORD grpidx, GROUPEDITSPEC *ges)
+int D3D9Client::clbkEditMeshGroup(DEVMESHHANDLE hMesh, uint32_t grpidx, GROUPEDITSPEC *ges)
 {
 	_TRACE;
 	return ((D3D9Mesh*)hMesh)->EditGroup(grpidx, ges);
@@ -1570,7 +1570,7 @@ int D3D9Client::clbkEditMeshGroup(DEVMESHHANDLE hMesh, DWORD grpidx, GROUPEDITSP
 // =======================================================================
 
 
-int D3D9Client::clbkGetMeshGroup (DEVMESHHANDLE hMesh, DWORD grpidx, GROUPREQUESTSPEC *grs)
+int D3D9Client::clbkGetMeshGroup (DEVMESHHANDLE hMesh, uint32_t grpidx, GROUPREQUESTSPEC *grs)
 {
 	_TRACE;
 	return ((D3D9Mesh*)hMesh)->GetGroup (grpidx, grs);
@@ -1605,7 +1605,7 @@ void D3D9Client::clbkRefreshVideoData()
 
 // ==============================================================
 
-void D3D9Client::clbkOptionChanged(DWORD cat, DWORD item)
+void D3D9Client::clbkOptionChanged(uint32_t cat, uint32_t item)
 {
 	switch (cat) {
 	case OPTCAT_CELSPHERE:
@@ -1634,7 +1634,7 @@ bool D3D9Client::clbkFullscreenMode() const
 // ==============================================================
 // return the dimensions of the render viewport
 
-void D3D9Client::clbkGetViewportSize(DWORD *width, DWORD *height) const
+void D3D9Client::clbkGetViewportSize(uint32_t *width, uint32_t *height) const
 {
 	_TRACE;
 	*width = viewW, *height = viewH;
@@ -1643,7 +1643,7 @@ void D3D9Client::clbkGetViewportSize(DWORD *width, DWORD *height) const
 // ==============================================================
 // Returns a specific render parameter
 
-bool D3D9Client::clbkGetRenderParam(DWORD prm, DWORD *value) const
+bool D3D9Client::clbkGetRenderParam(uint32_t prm, uint32_t *value) const
 {
 	_TRACE;
 	switch (prm) {
@@ -1673,7 +1673,7 @@ bool D3D9Client::clbkGetRenderParam(DWORD prm, DWORD *value) const
 // ==============================================================
 // Responds to visual events
 
-int D3D9Client::clbkVisEvent(OBJHANDLE hObj, VISHANDLE vis, DWORD msg, DWORD_PTR context)
+int D3D9Client::clbkVisEvent(OBJHANDLE hObj, VISHANDLE vis, uint32_t msg, DWORD_PTR context)
 {
 	_TRACE;
 	VisObject *vo = (VisObject*)vis;
@@ -1689,7 +1689,7 @@ int D3D9Client::clbkVisEvent(OBJHANDLE hObj, VISHANDLE vis, DWORD msg, DWORD_PTR
 
 // ==============================================================
 //
-void D3D9Client::PickTerrain(DWORD uMsg, int xpos, int ypos)
+void D3D9Client::PickTerrain(uint32_t uMsg, int xpos, int ypos)
 {
 	bool bUD = (uMsg == WM_LBUTTONUP || uMsg == WM_RBUTTONUP || uMsg == WM_LBUTTONDOWN || uMsg == WM_RBUTTONDOWN);
 	bool bPrs = IsGenericProcEnabled(GENERICPROC_PICK_TERRAIN) && bUD;
@@ -1799,7 +1799,7 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			// With Debug Controls
 			if (DebugControls::IsActive()) {
 
-				DWORD flags = *(DWORD*)GetConfigParam(CFGPRM_GETDEBUGFLAGS);
+				uint32_t flags = *(uint32_t*)GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 
 				if (flags&DBG_FLAGS_PICK) {
 
@@ -1833,7 +1833,7 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			PickTerrain(uMsg, xp, yp);
 
 			if (DebugControls::IsActive()) {
-				DWORD flags = *(DWORD*)GetConfigParam(CFGPRM_GETDEBUGFLAGS);
+				uint32_t flags = *(uint32_t*)GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 				if (flags&DBG_FLAGS_PICK) {
 					DebugControls::SetGroupHighlight(false);
 				}
@@ -1942,7 +1942,7 @@ void D3D9Client::clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3
 	_TRACE;
 
 	SURFHANDLE surf = NULL;
-	DWORD ngrp = oapiMeshGroupCount(hMesh);
+	uint32_t ngrp = oapiMeshGroupCount(hMesh);
 
 	if (ngrp==0) return;
 
@@ -1955,7 +1955,7 @@ void D3D9Client::clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3
 	D3DXMatrixOrthoOffCenterRH(&mVP, (0.0f-dx)*sx, (vw-dx)*sx, (vh-dy)*sy, (0.0f-dy)*sy, -100.0f, 100.0f);
 	D3D9Effect::SetViewProjMatrix(&mVP);
 
-	for (DWORD i=0;i<ngrp;i++) {
+	for (uint32_t i=0;i<ngrp;i++) {
 
 		float scale = 1.0f;
 
@@ -1963,7 +1963,7 @@ void D3D9Client::clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3
 
 		if (gr->UsrFlag & 2) continue; // skip this group
 
-		DWORD TexIdx = gr->TexIdx;
+		uint32_t TexIdx = gr->TexIdx;
 
 		if (TexIdx >= TEXIDX_MFD0) {
 			int mfdidx = TexIdx - TEXIDX_MFD0;
@@ -1990,10 +1990,10 @@ void D3D9Client::clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3
 
 // =======================================================================
 
-DWORD D3D9Client::clbkGetDeviceColour (BYTE r, BYTE g, BYTE b)
+uint32_t D3D9Client::clbkGetDeviceColour (BYTE r, BYTE g, BYTE b)
 {
 	_TRACE;
-	return ((DWORD)r << 16) + ((DWORD)g << 8) + (DWORD)b;
+	return ((uint32_t)r << 16) + ((uint32_t)g << 8) + (uint32_t)b;
 }
 
 
@@ -2085,8 +2085,8 @@ bool oapi::D3D9Client::SaveSurfaceToFile (const D3DSURFACE_DESC* desc, D3DLOCKED
 	BYTE* tgt = ID.data = new BYTE[ID.bufsize];
 	BYTE* src = (BYTE*)pRect.pBits;
 
-	for (DWORD k = 0; k<desc->Height; k++) {
-		for (DWORD i = 0; i<desc->Width; i++) {
+	for (uint32_t k = 0; k<desc->Height; k++) {
+		for (uint32_t i = 0; i<desc->Width; i++) {
 			tgt[0 + i * 3] = src[0 + i * 4];
 			tgt[1 + i * 3] = src[1 + i * 4];
 			tgt[2 + i * 3] = src[2 + i * 4];
@@ -2126,12 +2126,12 @@ bool oapi::D3D9Client::SaveSurfaceToClipboard (const D3DSURFACE_DESC* desc)
 
 // ==============================================================
 
-SURFHANDLE D3D9Client::clbkLoadTexture(const char *fname, DWORD flags)
+SURFHANDLE D3D9Client::clbkLoadTexture(const char *fname, uint32_t flags)
 {
 	_TRACE;
 	if (ChkDev(__FUNCTION__)) return NULL;
 
-	DWORD attrib = OAPISURFACE_TEXTURE;
+	uint32_t attrib = OAPISURFACE_TEXTURE;
 	if (flags & 0x1) attrib |= OAPISURFACE_SYSMEM;
 	if (flags & 0x2) attrib |= OAPISURFACE_UNCOMPRESS | OAPISURFACE_RENDERTARGET;
 	if (flags & 0x4) attrib |= OAPISURFACE_NOMIPMAPS;
@@ -2142,13 +2142,13 @@ SURFHANDLE D3D9Client::clbkLoadTexture(const char *fname, DWORD flags)
 
 // ==============================================================
 
-SURFHANDLE D3D9Client::clbkLoadSurface (const char *fname, DWORD attrib, bool bPath)
+SURFHANDLE D3D9Client::clbkLoadSurface (const char *fname, uint32_t attrib, bool bPath)
 {
 	_TRACE;
 	if (ChkDev(__FUNCTION__)) return NULL;
 
-	static const DWORD val = OAPISURFACE_RENDERTARGET | OAPISURFACE_GDI | OAPISURFACE_SYSMEM;
-	static const DWORD exclude = ~(OAPISURFACE_SHARED | OAPISURFACE_ORIGIN);
+	static const uint32_t val = OAPISURFACE_RENDERTARGET | OAPISURFACE_GDI | OAPISURFACE_SYSMEM;
+	static const uint32_t exclude = ~(OAPISURFACE_SHARED | OAPISURFACE_ORIGIN);
 
 	if (!(attrib & val))
 	{
@@ -2180,7 +2180,7 @@ SURFHANDLE D3D9Client::clbkLoadSurface (const char *fname, DWORD attrib, bool bP
 		}
 		else
 		{
-			DWORD original = SURFACE(ent->second)->GetOAPIFlags();
+			uint32_t original = SURFACE(ent->second)->GetOAPIFlags();
 
 			if (original & OAPISURFACE_ORIGIN)
 			{
@@ -2224,7 +2224,7 @@ void D3D9Client::clbkReleaseTexture(SURFHANDLE hTex)
 
 // ==============================================================
 
-SURFHANDLE D3D9Client::clbkCreateSurfaceEx(DWORD w, DWORD h, DWORD attrib)
+SURFHANDLE D3D9Client::clbkCreateSurfaceEx(uint32_t w, uint32_t h, uint32_t attrib)
 {
 	_TRACE;
 	if (ChkDev(__FUNCTION__)) return NULL;
@@ -2243,13 +2243,13 @@ SURFHANDLE D3D9Client::clbkCreateSurfaceEx(DWORD w, DWORD h, DWORD attrib)
 
 // =======================================================================
 
-SURFHANDLE D3D9Client::clbkCreateSurface(DWORD w, DWORD h, SURFHANDLE hTemplate)
+SURFHANDLE D3D9Client::clbkCreateSurface(uint32_t w, uint32_t h, SURFHANDLE hTemplate)
 {
 	_TRACE;
 	if (ChkDev(__FUNCTION__)) return NULL;
 	if (w == 0 || h == 0) return NULL;	// Inline engine returns NULL for a zero surface
 
-	DWORD attrib = OAPISURFACE_PF_XRGB | OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE;
+	uint32_t attrib = OAPISURFACE_PF_XRGB | OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE;
 
 	if (hTemplate) attrib = SURFACE(hTemplate)->GetOAPIFlags();
 	
@@ -2272,7 +2272,7 @@ SURFHANDLE D3D9Client::clbkCreateSurface(HBITMAP hBmp)
 
 // =======================================================================
 
-SURFHANDLE D3D9Client::clbkCreateTexture(DWORD w, DWORD h)
+SURFHANDLE D3D9Client::clbkCreateTexture(uint32_t w, uint32_t h)
 {
 	_TRACE;
 	if (ChkDev(__FUNCTION__)) return NULL;
@@ -2321,7 +2321,7 @@ bool D3D9Client::clbkReleaseSurface(SURFHANDLE surf)
 
 // =======================================================================
 
-bool D3D9Client::clbkGetSurfaceSize(SURFHANDLE surf, DWORD *w, DWORD *h)
+bool D3D9Client::clbkGetSurfaceSize(SURFHANDLE surf, uint32_t *w, uint32_t *h)
 {
 	_TRACE;
 	if (!w || !h) return false;
@@ -2333,7 +2333,7 @@ bool D3D9Client::clbkGetSurfaceSize(SURFHANDLE surf, DWORD *w, DWORD *h)
 
 // =======================================================================
 
-bool D3D9Client::clbkSetSurfaceColourKey(SURFHANDLE surf, DWORD ckey)
+bool D3D9Client::clbkSetSurfaceColourKey(SURFHANDLE surf, uint32_t ckey)
 {
 	_TRACE;
 	if (surf==NULL) { LogErr("Surface is NULL"); return false; }
@@ -2384,7 +2384,7 @@ int D3D9Client::clbkEndBltGroup()
 
 // =======================================================================
 
-bool D3D9Client::clbkBlt(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src, DWORD flag) const
+bool D3D9Client::clbkBlt(SURFHANDLE tgt, uint32_t tgtx, uint32_t tgty, SURFHANDLE src, uint32_t flag) const
 {
 	_TRACE;
 	const D3DSURFACE_DESC* sd = SURFACE(src)->GetDesc();
@@ -2393,7 +2393,7 @@ bool D3D9Client::clbkBlt(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src,
 
 // =======================================================================
 
-bool D3D9Client::clbkBlt(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src, DWORD srcx, DWORD srcy, DWORD w, DWORD h, DWORD flag) const
+bool D3D9Client::clbkBlt(SURFHANDLE tgt, uint32_t tgtx, uint32_t tgty, SURFHANDLE src, uint32_t srcx, uint32_t srcy, uint32_t w, uint32_t h, uint32_t flag) const
 {
 	_TRACE;
 	return clbkScaleBlt(tgt, tgtx, tgty, w, h, src, srcx, srcy, w, h, flag);
@@ -2401,8 +2401,8 @@ bool D3D9Client::clbkBlt(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src,
 
 // =======================================================================
 
-bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgtw, DWORD tgth,
-                               SURFHANDLE src, DWORD srcx, DWORD srcy, DWORD srcw, DWORD srch, DWORD flag) const
+bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, uint32_t tgtx, uint32_t tgty, uint32_t tgtw, uint32_t tgth,
+                               SURFHANDLE src, uint32_t srcx, uint32_t srcy, uint32_t srcw, uint32_t srch, uint32_t flag) const
 {
 	
 	if (src==NULL) { oapiWriteLog((char*)"ERROR: oapiBlt() Source surface is NULL"); return false; }
@@ -2410,8 +2410,8 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 	if (tgt==NULL) tgt = pFramework->GetBackBufferHandle();
 
 
-	RECT rs = _RECT(srcx, srcy, srcx + srcw, srcy + srch);
-	RECT rt = _RECT(tgtx, tgty, tgtx + tgtw, tgty + tgth);
+	Rect rs = _R(srcx, srcy, srcx + srcw, srcy + srch);
+	Rect rt = _R(tgtx, tgty, tgtx + tgtw, tgty + tgth);
 
 
 	// Can't blit in a clone, declone..
@@ -2467,7 +2467,7 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 		{
 			if (src != tgt)
 			{
-				if (S_OK == pDevice->StretchRect(pss, &rs, pts, &rt, D3DTEXF_POINT)) return true;
+				if (S_OK == pDevice->StretchRect(pss, LPRECT(&rs), pts, LPRECT(&rt), D3DTEXF_POINT)) return true;
 
 				LogErr("oapiBlt() StretchRect() Failed 1");
 				BltError(src, tgt, &rs, &rt);
@@ -2479,9 +2479,9 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 				//
 				LPDIRECT3DSURFACE9 tmp = SURFACE(src)->GetTempSurface();
 
-				if (S_OK == pDevice->StretchRect(pss, &rs, tmp, &rs, D3DTEXF_POINT))
+				if (S_OK == pDevice->StretchRect(pss, LPRECT(&rs), tmp, LPRECT(&rs), D3DTEXF_POINT))
 				{
-					if (S_OK == pDevice->StretchRect(tmp, &rs, pts, &rt, D3DTEXF_POINT)) return true;
+					if (S_OK == pDevice->StretchRect(tmp, LPRECT(&rs), pts, LPRECT(&rt), D3DTEXF_POINT)) return true;
 				}
 
 				LogErr("oapiBlt() StretchRect() Failed 2");
@@ -2498,7 +2498,7 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 		// 
 		if (sd->Pool == D3DPOOL_SYSTEMMEM)
 		{
-			if (S_OK == pDevice->UpdateSurface(pss, &rs, pts, &tp))	return true;
+			if (S_OK == pDevice->UpdateSurface(pss, LPRECT(&rs), pts, &tp))	return true;
 
 			LogErr("oapiBlt() UpdateSurface() Failed");
 			BltError(src, tgt, &rs, &rt);
@@ -2533,7 +2533,7 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 
 			if (bCK)
 			{
-				if (bCL) ((D3D9Pad*)pSkp)->ColorKeyStretch(src, &rs, &rt);
+				if (bCL) ((D3D9Pad*)pSkp)->ColorKeyStretch(src, LPRECT(&rs), LPRECT(&rt));
 				else pSkp->ColorKey(src, &rs, tgtx, tgty);
 				clbkReleaseSketchpad_const(pSkp);
 				return true;
@@ -2579,10 +2579,10 @@ bool D3D9Client::clbkCopyBitmap(SURFHANDLE pdds, HBITMAP hbm, int x, int y, int 
 
 	// Get size of surface.
 	//
-	DWORD surfW = SURFACE(pdds)->GetWidth();
-	DWORD surfH = SURFACE(pdds)->GetHeight();
+	uint32_t surfW = SURFACE(pdds)->GetWidth();
+	uint32_t surfH = SURFACE(pdds)->GetHeight();
 
-	RECT r = { 0, 0, (long)surfW, (long)surfH };
+	Rect r = { 0, 0, (long)surfW, (long)surfH };
 	POINT tp = { 0, 0 };
 
 	if (SURFACE(pdds)->IsGDISurface())
@@ -2612,10 +2612,10 @@ bool D3D9Client::clbkCopyBitmap(SURFHANDLE pdds, HBITMAP hbm, int x, int y, int 
 				pSrf->ReleaseDC(hdc);
 
 				if (SURFACE(pdds)->IsRenderTarget()) {
-					HR(pDevice->StretchRect(pSrf, &r, SURFACE(pdds)->GetSurface(), &r, D3DTEXF_LINEAR));
+					HR(pDevice->StretchRect(pSrf, LPRECT(&r), SURFACE(pdds)->GetSurface(), LPRECT(&r), D3DTEXF_LINEAR));
 				}
 				else {
-					HR(pDevice->UpdateSurface(pSrf, &r, SURFACE(pdds)->GetSurface(), &tp));
+					HR(pDevice->UpdateSurface(pSrf, LPRECT(&r), SURFACE(pdds)->GetSurface(), &tp));
 				}
 
 				DeleteDC(hdcImage);
@@ -2635,7 +2635,7 @@ bool D3D9Client::clbkCopyBitmap(SURFHANDLE pdds, HBITMAP hbm, int x, int y, int 
 
 // =======================================================================
 
-bool D3D9Client::clbkFillSurface(SURFHANDLE tgt, DWORD col) const
+bool D3D9Client::clbkFillSurface(SURFHANDLE tgt, uint32_t col) const
 {
 	_TRACE;
 	if (tgt==NULL) tgt = pFramework->GetBackBufferHandle();
@@ -2645,18 +2645,18 @@ bool D3D9Client::clbkFillSurface(SURFHANDLE tgt, DWORD col) const
 
 // =======================================================================
 
-bool D3D9Client::clbkFillSurface(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD w, DWORD h, DWORD col) const
+bool D3D9Client::clbkFillSurface(SURFHANDLE tgt, uint32_t tgtx, uint32_t tgty, uint32_t w, uint32_t h, uint32_t col) const
 {
 	_TRACE;
 	if (tgt==NULL) tgt = pFramework->GetBackBufferHandle();
-	RECT r = _RECT(tgtx, tgty, tgtx+w, tgty+h);
-	bool ret = SURFACE(tgt)->Fill(&r, col);
+	Rect r = _R(tgtx, tgty, tgtx+w, tgty+h);
+	bool ret = SURFACE(tgt)->Fill(LPRECT(&r), col);
 	return ret;
 }
 
 // =======================================================================
 
-void D3D9Client::BltError(SURFHANDLE src, SURFHANDLE tgt, const LPRECT s, const LPRECT t, bool bHalt) const
+void D3D9Client::BltError(SURFHANDLE src, SURFHANDLE tgt, const Rect* s, const Rect* t, bool bHalt) const
 {
 	LogErr("Source Rect (%d,%d,%d,%d) (w=%u,h=%u)", s->left, s->top, s->right, s->bottom, abs(s->left - s->right), abs(s->top - s->bottom));
 	LogErr("Target Rect (%d,%d,%d,%d) (w=%u,h=%u)", t->left, t->top, t->right, t->bottom, abs(t->left - t->right), abs(t->top - t->bottom));
@@ -2687,10 +2687,10 @@ HDC D3D9Client::clbkGetSurfaceDC(SURFHANDLE surf)
 			if (pGDI) if (pGDI->GetDC(&hDC) == S_OK) {
 				if (bGDIClear) {
 					bGDIClear = false;
-					DWORD color = 0xF08040; // BGR "Color Key" value for transparency
+					uint32_t color = 0xF08040; // BGR "Color Key" value for transparency
 					HBRUSH hBrush = CreateSolidBrush((COLORREF)color);
-					RECT r = _RECT( 0, 0, viewW, viewH );
-					FillRect(hDC, &r, hBrush);
+					Rect r = _R( 0, 0, viewW, viewH );
+					FillRect(hDC, LPRECT(&r), hBrush);
 					DeleteObject(hBrush);
 				}
 				return hDC;
@@ -2810,7 +2810,7 @@ SURFHANDLE D3D9Client::GetBackBufferHandle() const
 
 // =======================================================================
 
-void D3D9Client::MakeRenderProcCall(Sketchpad *pSkp, DWORD id, LPD3DXMATRIX pV, LPD3DXMATRIX pP)
+void D3D9Client::MakeRenderProcCall(Sketchpad *pSkp, uint32_t id, LPD3DXMATRIX pV, LPD3DXMATRIX pP)
 {
 	for (auto it = RenderProcs.cbegin(); it != RenderProcs.cend(); ++it) {
 		if (it->id == id) {
@@ -2828,7 +2828,7 @@ void D3D9Client::MakeRenderProcCall(Sketchpad *pSkp, DWORD id, LPD3DXMATRIX pV, 
 
 // =======================================================================
 
-void D3D9Client::MakeGenericProcCall(DWORD id, int iUser, void *pUser) const
+void D3D9Client::MakeGenericProcCall(uint32_t id, int iUser, void *pUser) const
 {
 	for (auto it = GenericProcs.cbegin(); it != GenericProcs.cend(); ++it) {
 		if (it->id == id) it->proc(iUser, pUser, it->pParam);
@@ -2837,7 +2837,7 @@ void D3D9Client::MakeGenericProcCall(DWORD id, int iUser, void *pUser) const
 
 // =======================================================================
 
-bool D3D9Client::RegisterRenderProc(__gcRenderProc proc, DWORD id, void *pParam)
+bool D3D9Client::RegisterRenderProc(__gcRenderProc proc, uint32_t id, void *pParam)
 {
 	if (id)	{ // register (add)
 		RenderProcData data = { proc, pParam, id };
@@ -2859,7 +2859,7 @@ bool D3D9Client::RegisterRenderProc(__gcRenderProc proc, DWORD id, void *pParam)
 
 // =======================================================================
 
-bool D3D9Client::RegisterGenericProc(__gcGenericProc proc, DWORD id, void *pParam)
+bool D3D9Client::RegisterGenericProc(__gcGenericProc proc, uint32_t id, void *pParam)
 {
 	if (id) { // register (add)
 		GenericProcData data = { proc, pParam, id };
@@ -2881,7 +2881,7 @@ bool D3D9Client::RegisterGenericProc(__gcGenericProc proc, DWORD id, void *pPara
 
 // =======================================================================
 
-bool D3D9Client::IsGenericProcEnabled(DWORD id) const
+bool D3D9Client::IsGenericProcEnabled(uint32_t id) const
 {
 	for (const auto &val : GenericProcs) if (val.id == id) return true;
 	return false;
@@ -2914,9 +2914,9 @@ bool D3D9Client::OutputLoadStatus(const char *txt, int line)
 			return false;
 		}
 
-		RECT txt = _RECT( loadd_x, loadd_y, loadd_x+loadd_w, loadd_y+loadd_h );
+		Rect txt = _R( loadd_x, loadd_y, loadd_x+loadd_w, loadd_y+loadd_h );
 
-		pDevice->StretchRect(pSplashScreen, &txt, pTextScreen, NULL, D3DTEXF_POINT);
+		pDevice->StretchRect(pSplashScreen, LPRECT(&txt), pTextScreen, NULL, D3DTEXF_POINT);
 
 		HDC hDC;
 		HR(pTextScreen->GetDC(&hDC));
@@ -2943,7 +2943,7 @@ bool D3D9Client::OutputLoadStatus(const char *txt, int line)
 
 		HR(pTextScreen->ReleaseDC(hDC));
 		HR(pDevice->StretchRect(pSplashScreen, NULL, pBackBuffer, NULL, D3DTEXF_POINT));
-		HR(pDevice->StretchRect(pTextScreen, NULL, pBackBuffer, &txt, D3DTEXF_POINT));
+		HR(pDevice->StretchRect(pTextScreen, NULL, pBackBuffer, LPRECT(&txt), D3DTEXF_POINT));
 
 		IDirect3DSwapChain9 *pSwap;
 
@@ -2961,7 +2961,7 @@ bool D3D9Client::OutputLoadStatus(const char *txt, int line)
 }
 
 // =======================================================================
-void D3D9Client::clbkSetSplashScreen(const char *filename, DWORD textCol)
+void D3D9Client::clbkSetSplashScreen(const char *filename, uint32_t textCol)
 {
 	pCustomSplashScreen = filename;
 	pSplashTextColor = textCol;
@@ -2975,9 +2975,9 @@ void D3D9Client::SplashScreen()
 	loadd_w = viewW/3;
 	loadd_h = 80;
 
-	RECT rS;
+	Rect rS;
 
-	GetWindowRect(hRenderWnd, &rS);
+	GetWindowRect(hRenderWnd, LPRECT(&rS));
 
 	LogAlw("Splash Window Size = [%u, %u]", rS.right - rS.left, rS.bottom - rS.top);
 	LogAlw("Splash Window LeftTop = [%d, %d]", rS.left, rS.top);
@@ -3000,21 +3000,21 @@ void D3D9Client::SplashScreen()
 		double _h = (imageH * scale);
 		double _l = abs(viewW - _w)/2.0;
 		double _t = abs(viewH - _h)/2.0;
-		RECT imgRect = {
+		Rect imgRect = {
 			static_cast<LONG>( round(_l) ),
 			static_cast<LONG>( round(_t) ),
 			static_cast<LONG>( round(_w + _l) ),
 			static_cast<LONG>( round(_h + _t) )
 		};
 		HR(pDevice->ColorFill(pSplashScreen, NULL, D3DCOLOR_XRGB(0, 0, 0)));
-		HR(D3DXLoadSurfaceFromFile(pSplashScreen, NULL, &imgRect, pCustomSplashScreen, NULL, D3DX_FILTER_LINEAR, 0, NULL));
+		HR(D3DXLoadSurfaceFromFile(pSplashScreen, NULL, LPRECT(&imgRect), pCustomSplashScreen, NULL, D3DX_FILTER_LINEAR, 0, NULL));
 	} else {
 		D3DXIMAGE_INFO Info;
 		HMODULE hOrbiter =  GetModuleHandleA("orbiter.exe");
 		HRSRC hRes = FindResourceA(hOrbiter, MAKEINTRESOURCEA(292), "IMAGE");
 		HGLOBAL hImage = LoadResource(hOrbiter, hRes);
 		LPVOID pData = LockResource(hImage);
-		DWORD size = SizeofResource(hOrbiter, hRes);
+		uint32_t size = SizeofResource(hOrbiter, hRes);
 
 		// Splash screen image is 1920 x 1200 pixel
 		double scale = min(viewW / 1920.0, viewH / 1200.0);
@@ -3022,14 +3022,14 @@ void D3D9Client::SplashScreen()
 		double _h = (1200.0 * scale);
 		double _l = abs(viewW - _w)/2.0;
 		double _t = abs(viewH - _h)/2.0;
-		RECT imgRect = {
+		Rect imgRect = {
 			static_cast<LONG>( round(_l) ),
 			static_cast<LONG>( round(_t) ),
 			static_cast<LONG>( round(_w + _l) ),
 			static_cast<LONG>( round(_h + _t) )
 		};
 		HR(pDevice->ColorFill(pSplashScreen, NULL, D3DCOLOR_XRGB(0, 0, 0)));
-		HR(D3DXLoadSurfaceFromFileInMemory(pSplashScreen, NULL, &imgRect, pData, size, NULL, D3DX_FILTER_LINEAR, 0, &Info));
+		HR(D3DXLoadSurfaceFromFileInMemory(pSplashScreen, NULL, LPRECT(&imgRect), pData, size, NULL, D3DX_FILTER_LINEAR, 0, &Info));
 	}
 
 	HDC hDC;
@@ -3054,9 +3054,9 @@ void D3D9Client::SplashScreen()
 
 	const char *months[]={"???","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","???"};
 
-	DWORD d = oapiGetOrbiterVersion();
-	DWORD y = d/10000; d-=y*10000;
-	DWORD m = d/100; d-=m*100;
+	uint32_t d = oapiGetOrbiterVersion();
+	uint32_t y = d/10000; d-=y*10000;
+	uint32_t m = d/100; d-=m*100;
 	if (m>12) m=0;
 
 	char dataA[256];
@@ -3081,11 +3081,11 @@ void D3D9Client::SplashScreen()
 	TextOut(hDC, xc, yc + 1*20, dataB, lstrlen(dataB));
 	TextOut(hDC, xc, yc + 2*20, dataA, lstrlen(dataA));
 
-	DWORD VPOS = viewH - 50;
-	DWORD LSPACE = 20;
+	uint32_t VPOS = viewH - 50;
+	uint32_t LSPACE = 20;
 
 	SetTextAlign(hDC, TA_CENTER);
-	DWORD cattrib = GetFileAttributes("Modules/Server/Config");
+	uint32_t cattrib = GetFileAttributes("Modules/Server/Config");
 
 	if ((cattrib&0x10)==0 || cattrib==INVALID_FILE_ATTRIBUTES) {
 		TextOut(hDC, viewW/2, VPOS, dataD, lstrlen(dataD));
@@ -3098,8 +3098,8 @@ void D3D9Client::SplashScreen()
 	HR(pSplashScreen->ReleaseDC(hDC));
 
 
-	RECT src = _RECT( loadd_x, loadd_y, loadd_x+loadd_w, loadd_y+loadd_h );
-	pDevice->StretchRect(pSplashScreen, &src, pTextScreen, NULL, D3DTEXF_POINT);
+	Rect src = _R( loadd_x, loadd_y, loadd_x+loadd_w, loadd_y+loadd_h );
+	pDevice->StretchRect(pSplashScreen, LPRECT(&src), pTextScreen, NULL, D3DTEXF_POINT);
 	pDevice->StretchRect(pSplashScreen, NULL, pBackBuffer, NULL, D3DTEXF_POINT);
 	pDevice->Present(0, 0, 0, 0);
 }
@@ -3259,7 +3259,7 @@ void D3D9Client::clbkReleaseFont(Font *font) const
 
 // =======================================================================
 
-Pen *D3D9Client::clbkCreatePen(int style, int width, DWORD col) const
+Pen *D3D9Client::clbkCreatePen(int style, int width, uint32_t col) const
 {
 	_TRACE;
 	return *g_pens.insert(new D3D9PadPen(style, width, col)).first;
@@ -3277,7 +3277,7 @@ void D3D9Client::clbkReleasePen(Pen *pen) const
 
 // =======================================================================
 
-Brush *D3D9Client::clbkCreateBrush(DWORD col) const
+Brush *D3D9Client::clbkCreateBrush(uint32_t col) const
 {
 	_TRACE;
 	return *g_brushes.insert(new D3D9PadBrush(col)).first;

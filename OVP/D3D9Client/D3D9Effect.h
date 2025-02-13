@@ -35,7 +35,7 @@ using namespace oapi;
 
 class D3D9Effect {
 
-	DWORD d3d9id;
+	uint32_t d3d9id;
 
 public:
 	static void D3D9TechInit(D3D9Client *gc, LPDIRECT3DDEVICE9 pDev, const char *folder);
@@ -55,7 +55,7 @@ public:
 	static void InitLegacyAtmosphere(OBJHANDLE hPlanet, float GlobalAmbient);
 	static void SetViewProjMatrix(LPD3DXMATRIX pVP);
 
-	static void RenderLines(const D3DXVECTOR3 *pVtx, const WORD *pIdx, int nVtx, int nIdx, const D3DXMATRIX *pW, DWORD color);
+	static void RenderLines(const D3DXVECTOR3 *pVtx, const WORD *pIdx, int nVtx, int nIdx, const D3DXMATRIX *pW, uint32_t color);
 	static void RenderTileBoundingBox(const LPD3DXMATRIX pW, VECTOR4 *pVtx, const LPD3DXVECTOR4 color);
 	static void RenderBoundingBox(const LPD3DXMATRIX pW, const LPD3DXMATRIX pGT, const D3DXVECTOR4 *bmin, const D3DXVECTOR4 *bmax, const D3DXVECTOR4 *color);
 	static void RenderBoundingSphere(const LPD3DXMATRIX pW, const LPD3DXMATRIX pGT, const D3DXVECTOR4 *bs, const D3DXVECTOR4 *color);

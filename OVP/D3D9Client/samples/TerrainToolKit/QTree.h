@@ -8,7 +8,7 @@
 
 struct SubTex {
 	class QTree *pNode;
-	RECT range;
+	Rect range;
 };
 
 
@@ -42,7 +42,7 @@ public:
 	double		Height() { return fabs(Bounds.bottom - Bounds.top); }
 	int			SaveTile(int flags, SURFHANDLE hSurf, SURFHANDLE hTemp, DRECT bounds, int res, float alpha);
 	bool		Intersect(DRECT ovl, DRECT *src, DRECT *tgt) const;
-	bool		MapRect(DRECT OvlRect, SURFHANDLE hOvlSrf, RECT &src, RECT &tgt);
+	bool		MapRect(DRECT OvlRect, SURFHANDLE hOvlSrf, Rect &src, Rect &tgt);
 	bool		HasOwnTex(int type = 0);
 
 	// --------------------

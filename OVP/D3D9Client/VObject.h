@@ -128,7 +128,7 @@ public:
 
 	virtual void UpdateBoundingBox();
 	virtual bool IsVisible();
-	virtual DWORD GetMeshCount();
+	virtual uint32_t GetMeshCount();
 
 	D3DXVECTOR3 GetBoundingSpherePosDX();
 	VECTOR3 GetBoundingSpherePos();

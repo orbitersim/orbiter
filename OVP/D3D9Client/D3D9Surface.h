@@ -34,19 +34,19 @@
 #define OAPISURF_SKP_GDI_WARN	0x00000001
 
 LPDIRECT3DTEXTURE9	NatLoadSpecialTexture(const char* fname, const char* ext);
-SURFHANDLE			NatLoadSurface(const char* file, DWORD flags, bool bPath = false);
+SURFHANDLE			NatLoadSurface(const char* file, uint32_t flags, bool bPath = false);
 bool				NatSaveSurface(const char* file, LPDIRECT3DRESOURCE9 pResource);
-SURFHANDLE			NatCreateSurface(int width, int height, DWORD flags);
+SURFHANDLE			NatCreateSurface(int width, int height, uint32_t flags);
 SURFHANDLE			NatGetMipSublevel(SURFHANDLE hSrf, int level);
 bool				NatGenerateMipmaps(SURFHANDLE hSrf);
-SURFHANDLE			NatCompressSurface(SURFHANDLE hSurface, DWORD flags);
+SURFHANDLE			NatCompressSurface(SURFHANDLE hSurface, uint32_t flags);
 bool				NatCreateName(char* out, int mlen, const char* fname, const char* id);
-DWORD				NatConvertFormat_DX_to_OAPI(DWORD Format);
-DWORD				NatConvertFormat_OAPI_to_DX(DWORD Format);
-const char*			NatUsage(DWORD Usage);
+uint32_t				NatConvertFormat_DX_to_OAPI(uint32_t Format);
+uint32_t				NatConvertFormat_OAPI_to_DX(uint32_t Format);
+const char*			NatUsage(uint32_t Usage);
 const char*			NatPool(D3DPOOL Pool);
-const char*			NatOAPIFlags(DWORD AF);
-const char*			NatOAPIFormat(DWORD PF);
+const char*			NatOAPIFlags(uint32_t AF);
+const char*			NatOAPIFormat(uint32_t PF);
 void				NatDumpResource(LPDIRECT3DRESOURCE9 pResource);
 
 
@@ -69,15 +69,15 @@ class SurfNative
 
 public:
 
-							SurfNative(LPDIRECT3DRESOURCE9 pSrf, DWORD Flags, LPDIRECT3DSURFACE9 pDep = NULL);
+							SurfNative(LPDIRECT3DRESOURCE9 pSrf, uint32_t Flags, LPDIRECT3DSURFACE9 pDep = NULL);
 							SurfNative(SurfNative* hOrigin);
 							~SurfNative();
 
-	void					AddMap(DWORD id, LPDIRECT3DTEXTURE9 pMap);
+	void					AddMap(uint32_t id, LPDIRECT3DTEXTURE9 pMap);
 	const D3DSURFACE_DESC*	GetDesc() const { return &desc; }
 	bool					GenerateMipMaps();
 	bool					Decompress();
-	LPDIRECT3DTEXTURE9		GetGDICache(DWORD Flags);
+	LPDIRECT3DTEXTURE9		GetGDICache(uint32_t Flags);
 	void					IncRef() { RefCount++; }
 	bool					DecRef() { RefCount--; return RefCount <= 0; }
 	bool					DeClone();
@@ -85,13 +85,13 @@ public:
 
 	void					Reload();
 
-	DWORD					GetMipMaps() const { return Mipmaps; }
-	DWORD					GetWidth() const { return desc.Width; }
-	DWORD					GetHeight() const { return desc.Height; }
-	DWORD					GetOAPIFlags() const { return Flags; }
-	DWORD					GetType() const { return (DWORD)type; }
-	DWORD					GetSizeInBytes();
-	DWORD*					GetClientFlags();
+	uint32_t					GetMipMaps() const { return Mipmaps; }
+	uint32_t					GetWidth() const { return desc.Width; }
+	uint32_t					GetHeight() const { return desc.Height; }
+	uint32_t					GetOAPIFlags() const { return Flags; }
+	uint32_t					GetType() const { return (uint32_t)type; }
+	uint32_t					GetSizeInBytes();
+	uint32_t*					GetClientFlags();
 
 	const char*				GetName() const { return name; }
 	void					SetName(const char*);
@@ -118,13 +118,13 @@ public:
 	LPDIRECT3DTEXTURE9		GetMap(int type) const { return pMap[type]; }
 	LPDIRECT3DTEXTURE9		GetMap(int type, int type2) const { return (pMap[type] ? pMap[type] : pMap[type2]); }
 	D3D9Pad*				GetPooledSketchPad();
-	void					SetColorKey(DWORD ck);			// Enable and set color key
-	DWORD					GetColorKey() const { return ColorKey; }
+	void					SetColorKey(uint32_t ck);			// Enable and set color key
+	uint32_t					GetColorKey() const { return ColorKey; }
 
-	bool					Fill(LPRECT r, DWORD color);
+	bool					Fill(LPRECT r, uint32_t color);
 
-	DWORD					GetTextureSizeInBytes(LPDIRECT3DTEXTURE9 pT);
-	DWORD					GetFormatSizeInBytes(D3DFORMAT Format, DWORD pixels);
+	uint32_t					GetTextureSizeInBytes(LPDIRECT3DTEXTURE9 pT);
+	uint32_t					GetFormatSizeInBytes(D3DFORMAT Format, uint32_t pixels);
 
 	void					LogSpecs() const;
 	bool					CreateDX7();
@@ -145,10 +145,10 @@ public:
 	LPDIRECT3DSURFACE9		pDX7;
 	LPDIRECT3DTEXTURE9		pMap[MAP_MAX_COUNT];	// Additional texture maps _norm, _rghn, _spec, etc...
 	LPDIRECT3DDEVICE9		pDevice;
-	DWORD					ColorKey;
-	DWORD					Flags;					// Surface Flags/Attribs
-	DWORD					Mipmaps;				// Mipmap count. 1 = no mipmaps
-	DWORD					ClientFlags;
+	uint32_t					ColorKey;
+	uint32_t					Flags;					// Surface Flags/Attribs
+	uint32_t					Mipmaps;				// Mipmap count. 1 = no mipmaps
+	uint32_t					ClientFlags;
 	int						RefCount;
 	D3D9Pad*				pSkp;					// Pooled sketchpad interface cache
 	_HDC_LOCAL				DC;

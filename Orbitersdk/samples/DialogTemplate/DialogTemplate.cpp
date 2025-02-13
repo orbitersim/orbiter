@@ -91,7 +91,7 @@ DLLCLBK void opcLoadState (FILEHANDLE scn)
 
 void OpenDlgClbk (void *context)
 {
-	HWND hDlg = oapiOpenDialog (g_hInst, IDD_MYDIALOG, MsgProc);
+	// HWND hDlg = oapiOpenDialog (g_hInst, IDD_MYDIALOG, MsgProc);
 	// Don't use a standard Windows function like CreateWindow to
 	// open the dialog box, because it won't work in fullscreen mode
 }
@@ -101,7 +101,7 @@ void OpenDlgClbk (void *context)
 
 void CloseDlg (HWND hDlg)
 {
-	oapiCloseDialog (hDlg);
+	// oapiCloseDialog (hDlg);
 }
 
 // ==============================================================
@@ -137,5 +137,6 @@ INT_PTR CALLBACK MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	}
-	return oapiDefDialogProc (hDlg, uMsg, wParam, lParam);
+	// return oapiDefDialogProc (hDlg, uMsg, wParam, lParam);
+	return 0;
 }

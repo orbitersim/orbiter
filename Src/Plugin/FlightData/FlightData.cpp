@@ -494,8 +494,8 @@ void oapi::FlightData::hookOpenDlg(void* context)
 
 void oapi::FlightData::clbkOpenDlg(void* context)
 {
-	HWND hDlg = oapiOpenDialog(stopgapGetModuleInstance(GetModule()), IDD_FLIGHTDATA, hookDlgMsgProc);
-	if (hDlg) m_hDlg = hDlg; // otherwise open already
+	// HWND hDlg = oapiOpenDialog(stopgapGetModuleInstance(GetModule()), IDD_FLIGHTDATA, hookDlgMsgProc);
+	// if (hDlg) m_hDlg = hDlg; // otherwise open already
 }
 
 // --------------------------------------------------------------
@@ -518,7 +518,7 @@ INT_PTR oapi::FlightData::DlgMsgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) {
 		case IDCANCEL:
-			oapiCloseDialog(m_hDlg);
+			// oapiCloseDialog(m_hDlg);
 			return TRUE;
 		case IDC_VESSELLIST:
 			if (HIWORD(wParam) == CBN_SELCHANGE) {
@@ -563,7 +563,8 @@ INT_PTR oapi::FlightData::DlgMsgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 		}
 		break;
 	}
-	return oapiDefDialogProc(hDlg, uMsg, wParam, lParam);
+	// return oapiDefDialogProc(hDlg, uMsg, wParam, lParam);
+	return 0;
 }
 
 // --------------------------------------------------------------

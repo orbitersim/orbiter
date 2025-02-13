@@ -11,7 +11,7 @@
 using namespace std;
 
 extern Orbiter *g_pOrbiter;
-extern DWORD g_vtxcount;
+extern uint32_t g_vtxcount;
 extern char DBG_MSG[256];
 
 static D3DMATERIAL7 defmat = {{1,1,1,1},{1,1,1,1},{0,0,0,1},{0,0,0,1},0};
@@ -62,7 +62,7 @@ Mesh::Mesh ()
 	bModulateMatAlpha = false;
 }
 
-Mesh::Mesh (NTVERTEX *vtx, DWORD nvtx, WORD *idx, DWORD nidx, DWORD matidx, DWORD texidx)
+Mesh::Mesh (NTVERTEX *vtx, uint32_t nvtx, WORD *idx, uint32_t nidx, uint32_t matidx, uint32_t texidx)
 {
 	name = NULL;
 	nGrp = nMtrl = nTex = 0;
@@ -84,7 +84,7 @@ Mesh::Mesh (const Mesh &mesh)
 
 void Mesh::Set (const Mesh &mesh)
 {
-	DWORD i;
+	uint32_t i;
 
 	Clear ();
 	if (nGrp = mesh.nGrp) {
@@ -114,8 +114,8 @@ void Mesh::Set (const Mesh &mesh)
 		memcpy (GrpCnt, mesh.GrpCnt, nGrp*sizeof(D3DVECTOR));
 		GrpRad = new D3DVALUE[nGrp]; TRACENEW
 		memcpy (GrpRad, mesh.GrpRad, nGrp*sizeof(D3DVALUE));
-		GrpVis = new DWORD[nGrp]; TRACENEW
-		memcpy (GrpVis, mesh.GrpVis, nGrp*sizeof(DWORD));
+		GrpVis = new uint32_t[nGrp]; TRACENEW
+		memcpy (GrpVis, mesh.GrpVis, nGrp*sizeof(uint32_t));
 	} else {
 		GrpVis = 0;
 	}
@@ -130,7 +130,7 @@ Mesh::~Mesh ()
 
 void Mesh::Setup ()
 {
-	DWORD g;
+	uint32_t g;
 	if (GrpVis) { // allocated already
 		delete []GrpCnt;
 		GrpCnt = NULL;
@@ -141,7 +141,7 @@ void Mesh::Setup ()
 	}
 	GrpCnt  = new D3DVECTOR[nGrp]; TRACENEW
 	GrpRad  = new D3DVALUE[nGrp]; TRACENEW
-	GrpVis  = new DWORD[nGrp]; TRACENEW
+	GrpVis  = new uint32_t[nGrp]; TRACENEW
 	GrpSetup = true;
 	for (g = 0; g < nGrp; g++) {
 		SetupGroup (g);
@@ -151,9 +151,9 @@ void Mesh::Setup ()
 	}
 }
 
-void Mesh::SetupGroup (DWORD grp)
+void Mesh::SetupGroup (uint32_t grp)
 {
-	DWORD i;
+	uint32_t i;
 	D3DVALUE x, y, z, dx, dy, dz, d2, d2max;
 	D3DVALUE invtx = (D3DVALUE)(1.0/Grp[grp].nVtx);
 	x = y = z = 0.0f;
@@ -176,19 +176,19 @@ void Mesh::SetupGroup (DWORD grp)
 	GrpRad[grp] = (FLOAT)sqrt (d2max);
 }
 
-int Mesh::AddGroup (NTVERTEX *vtx, DWORD nvtx, WORD *idx, DWORD nidx,
-	DWORD mtrl_idx, DWORD tex_idx, WORD zbias, DWORD flag, bool deepcopy)
+int Mesh::AddGroup (NTVERTEX *vtx, uint32_t nvtx, WORD *idx, uint32_t nidx,
+	uint32_t mtrl_idx, uint32_t tex_idx, WORD zbias, uint32_t flag, bool deepcopy)
 {
-	DWORD n;
+	uint32_t n;
 	GroupSpec *g, *tmp_Grp = new GroupSpec[nGrp+1]; TRACENEW
 	D3DVECTOR *tmp_Cnt = new D3DVECTOR[nGrp+1]; TRACENEW
 	D3DVALUE *tmp_Rad = new D3DVALUE[nGrp+1]; TRACENEW
-	DWORD *tmp_Vis = new DWORD[nGrp+1]; TRACENEW
+	uint32_t *tmp_Vis = new uint32_t[nGrp+1]; TRACENEW
 	if (nGrp) {
 		memcpy (tmp_Grp, Grp, nGrp*sizeof(GroupSpec));
 		memcpy (tmp_Cnt, GrpCnt, nGrp*sizeof(D3DVECTOR));
 		memcpy (tmp_Rad, GrpRad, nGrp*sizeof(D3DVALUE));
-		memcpy (tmp_Vis, GrpVis, nGrp*sizeof(DWORD));
+		memcpy (tmp_Vis, GrpVis, nGrp*sizeof(uint32_t));
 		delete []Grp;
 		Grp = NULL;
 		delete []GrpCnt;
@@ -236,7 +236,7 @@ int Mesh::AddGroup (NTVERTEX *vtx, DWORD nvtx, WORD *idx, DWORD nidx,
 	return nGrp++;
 }
 
-bool Mesh::AddGroupBlock (DWORD grp, const NTVERTEX *vtx, DWORD nvtx, const WORD *idx, DWORD nidx)
+bool Mesh::AddGroupBlock (uint32_t grp, const NTVERTEX *vtx, uint32_t nvtx, const WORD *idx, uint32_t nidx)
 {
 	if (grp >= nGrp) return false;
 
@@ -262,7 +262,7 @@ bool Mesh::AddGroupBlock (DWORD grp, const NTVERTEX *vtx, DWORD nvtx, const WORD
 		g->Idx = NULL;
 	}
 	if (nidx) {
-		for (DWORD j = 0; j < nidx; j++)
+		for (uint32_t j = 0; j < nidx; j++)
 			i[g->nIdx+j] = idx[j] + vofs;
 	}
 	g->Idx = i;
@@ -271,14 +271,14 @@ bool Mesh::AddGroupBlock (DWORD grp, const NTVERTEX *vtx, DWORD nvtx, const WORD
 	return true;
 }
 
-bool Mesh::MakeGroupVertexBuffer (DWORD grp)
+bool Mesh::MakeGroupVertexBuffer (uint32_t grp)
 {
 	return false;
 }
 
 void Mesh::AddMesh (Mesh &mesh)
 {
-	for (DWORD i = 0; i < mesh.nGroup(); i++) {
+	for (uint32_t i = 0; i < mesh.nGroup(); i++) {
 		NTVERTEX *vtx2;
 		WORD *idx2;
 		GroupSpec *gs = mesh.GetGroup (i);
@@ -289,7 +289,7 @@ void Mesh::AddMesh (Mesh &mesh)
 	}
 }
 
-bool Mesh::DeleteGroup (DWORD grp)
+bool Mesh::DeleteGroup (uint32_t grp)
 {
 	if (nGrp == 1) { // delete the only group
 		delete []Grp;
@@ -302,7 +302,7 @@ bool Mesh::DeleteGroup (DWORD grp)
 
 		// redo group
 		GroupSpec * tmp_Grp = new GroupSpec[nGrp - 1]; TRACENEW
-		for (DWORD i = 0, j = 0; i < nGrp; i++)
+		for (uint32_t i = 0, j = 0; i < nGrp; i++)
 			if (i != grp) tmp_Grp[j++] = Grp[i];
 		delete []Grp;
 		Grp = tmp_Grp;
@@ -313,14 +313,14 @@ bool Mesh::DeleteGroup (DWORD grp)
 	return true;
 }
 
-int Mesh::GetGroup (DWORD grp, GROUPREQUESTSPEC *grs)
+int Mesh::GetGroup (uint32_t grp, GROUPREQUESTSPEC *grs)
 {
 	static NTVERTEX zero = {0,0,0, 0,0,0, 0,0};
 	if (grp >= nGrp) return 1;
 	GroupSpec *g = Grp+grp;
-	DWORD nv = g->nVtx;
-	DWORD ni = g->nIdx;
-	DWORD i, vi;
+	uint32_t nv = g->nVtx;
+	uint32_t ni = g->nIdx;
+	uint32_t i, vi;
 	int ret = 0;
 
 	if (grs->nVtx && grs->Vtx) { // vertex data requested
@@ -362,13 +362,13 @@ int Mesh::GetGroup (DWORD grp, GROUPREQUESTSPEC *grs)
 	return ret;
 }
 
-int Mesh::EditGroup (DWORD grp, GROUPEDITSPEC *ges)
+int Mesh::EditGroup (uint32_t grp, GROUPEDITSPEC *ges)
 {
 	if (grp >= nGrp) return 1;
 	GroupSpec *g = Grp+grp;
-	DWORD i, vi;
+	uint32_t i, vi;
 
-	DWORD flag = ges->flags;
+	uint32_t flag = ges->flags;
 	if (flag & GRPEDIT_SETUSERFLAG)
 		g->UsrFlag = ges->UsrFlag;
 	else if (flag & GRPEDIT_ADDUSERFLAG)
@@ -416,9 +416,9 @@ int Mesh::AddMaterial (D3DMATERIAL7 &mtrl)
 	return nMtrl++;
 }
 
-bool Mesh::DeleteMaterial (DWORD matidx)
+bool Mesh::DeleteMaterial (uint32_t matidx)
 {
-	DWORD i, j;
+	uint32_t i, j;
 	if (matidx >= nMtrl) return false;
 
 	// adjust group material indices
@@ -445,7 +445,7 @@ bool Mesh::DeleteMaterial (DWORD matidx)
 
 void Mesh::Clear ()
 {
-	for (DWORD i = 0; i < nGrp; i++) {
+	for (uint32_t i = 0; i < nGrp; i++) {
 		delete []Grp[i].Vtx;
 		delete []Grp[i].Idx;
 		Grp[i].Vtx = NULL;
@@ -478,7 +478,7 @@ void Mesh::Clear ()
 	ReleaseTextures ();
 }
 
-void Mesh::ScaleGroup (DWORD grp, D3DVALUE sx, D3DVALUE sy, D3DVALUE sz)
+void Mesh::ScaleGroup (uint32_t grp, D3DVALUE sx, D3DVALUE sy, D3DVALUE sz)
 {
 	int i, nv = Grp[grp].nVtx;
 	NTVERTEX *vtx = Grp[grp].Vtx;
@@ -503,11 +503,11 @@ void Mesh::ScaleGroup (DWORD grp, D3DVALUE sx, D3DVALUE sy, D3DVALUE sz)
 
 void Mesh::Scale (D3DVALUE sx, D3DVALUE sy, D3DVALUE sz)
 {
-	for (DWORD grp = 0; grp < nGrp; grp++)
+	for (uint32_t grp = 0; grp < nGrp; grp++)
 		ScaleGroup (grp, sx, sy, sz);
 }
 
-void Mesh::TranslateGroup (DWORD grp, D3DVALUE dx, D3DVALUE dy, D3DVALUE dz)
+void Mesh::TranslateGroup (uint32_t grp, D3DVALUE dx, D3DVALUE dy, D3DVALUE dz)
 {
 	int i, nv = Grp[grp].nVtx;
 	NTVERTEX *vtx = Grp[grp].Vtx;
@@ -529,11 +529,11 @@ void Mesh::TranslateGroup (DWORD grp, D3DVALUE dx, D3DVALUE dy, D3DVALUE dz)
 
 void Mesh::Translate (D3DVALUE dx, D3DVALUE dy, D3DVALUE dz)
 {
-	for (DWORD grp = 0; grp < nGrp; grp++)
+	for (uint32_t grp = 0; grp < nGrp; grp++)
 		TranslateGroup (grp, dx, dy, dz);
 }
 
-void Mesh::RotateGroup (DWORD grp, RotAxis axis, D3DVALUE angle)
+void Mesh::RotateGroup (uint32_t grp, RotAxis axis, D3DVALUE angle)
 {
 	int i, nv = Grp[grp].nVtx;
 	NTVERTEX *vtx = Grp[grp].Vtx;
@@ -589,11 +589,11 @@ void Mesh::RotateGroup (DWORD grp, RotAxis axis, D3DVALUE angle)
 
 void Mesh::Rotate (RotAxis axis, D3DVALUE angle)
 {
-	for (DWORD grp = 0; grp < nGrp; grp++)
+	for (uint32_t grp = 0; grp < nGrp; grp++)
 		RotateGroup (grp, axis, angle);
 }
 
-void Mesh::TransformGroup (DWORD grp, const D3DMATRIX &mat)
+void Mesh::TransformGroup (uint32_t grp, const D3DMATRIX &mat)
 {
 	int i, nv = Grp[grp].nVtx;
 	NTVERTEX *vtx = Grp[grp].Vtx;
@@ -622,11 +622,11 @@ void Mesh::TransformGroup (DWORD grp, const D3DMATRIX &mat)
 
 void Mesh::Transform (const D3DMATRIX &mat)
 {
-	for (DWORD grp = 0; grp < nGrp; grp++)
+	for (uint32_t grp = 0; grp < nGrp; grp++)
 		TransformGroup (grp, mat);
 }
 
-void Mesh::TexScaleGroup (DWORD grp, D3DVALUE su, D3DVALUE sv)
+void Mesh::TexScaleGroup (uint32_t grp, D3DVALUE su, D3DVALUE sv)
 {
 	int i, nv = Grp[grp].nVtx;
 	NTVERTEX *vtx = Grp[grp].Vtx;
@@ -638,11 +638,11 @@ void Mesh::TexScaleGroup (DWORD grp, D3DVALUE su, D3DVALUE sv)
 
 void Mesh::TexScale (D3DVALUE su, D3DVALUE sv)
 {
-	for (DWORD grp = 0; grp < nGrp; grp++)
+	for (uint32_t grp = 0; grp < nGrp; grp++)
 		TexScaleGroup (grp, su, sv);
 }
 
-void Mesh::CalcNormals (DWORD grp, bool missingonly)
+void Mesh::CalcNormals (uint32_t grp, bool missingonly)
 {
 	const float eps = 1e-8f;
 	int i, nv = Grp[grp].nVtx, nt = Grp[grp].nIdx/3;
@@ -665,7 +665,7 @@ void Mesh::CalcNormals (DWORD grp, bool missingonly)
 		}
 	}
 	for (i = 0; i < nt; i++) {
-		DWORD i0 = idx[i*3], i1 = idx[i*3+1], i2 = idx[i*3+2];
+		uint32_t i0 = idx[i*3], i1 = idx[i*3+1], i2 = idx[i*3+2];
 		if (!calcNml[i0] && !calcNml[i1] && !calcNml[i2])
 			continue; // nothing to do for this triangle
 		D3DVECTOR V01 = { vtx[i1].x - vtx[i0].x, vtx[i1].y - vtx[i0].y, vtx[i1].z - vtx[i0].z };
@@ -703,7 +703,7 @@ void Mesh::CalcNormals (DWORD grp, bool missingonly)
 	calcNml = NULL;
 }
 
-void Mesh::CalcTexCoords (DWORD grp)
+void Mesh::CalcTexCoords (uint32_t grp)
 {
 	// quick hack. not globally usable
 
@@ -723,7 +723,7 @@ void Mesh::CalcTexCoords (DWORD grp)
 
 int Mesh::AddTexture (SURFHANDLE tex)
 {
-	DWORD i;
+	uint32_t i;
 
 	// check if already present
 	for (i = 0; i < nTex; i++)
@@ -740,7 +740,7 @@ int Mesh::AddTexture (SURFHANDLE tex)
 	return nTex++;
 }
 
-bool Mesh::SetTexture (DWORD texidx, SURFHANDLE tex, bool release_old)
+bool Mesh::SetTexture (uint32_t texidx, SURFHANDLE tex, bool release_old)
 {
 	if (texidx >= nTex) return false;  // index out of range
 	if (Tex[texidx] && release_old) {
@@ -754,7 +754,7 @@ bool Mesh::SetTexture (DWORD texidx, SURFHANDLE tex, bool release_old)
 void Mesh::ReleaseTextures ()
 {
 	if (nTex) {
-		for (DWORD i = 0; i < nTex; i++)
+		for (uint32_t i = 0; i < nTex; i++)
 			if (Tex[i]) {
 				if (g_pOrbiter->GetGraphicsClient())
 					g_pOrbiter->GetGraphicsClient()->clbkReleaseTexture (Tex[i]);
@@ -765,16 +765,16 @@ void Mesh::ReleaseTextures ()
 	}
 }
 
-void Mesh::SetTexMixture (DWORD grp, DWORD ntex, float mix)
+void Mesh::SetTexMixture (uint32_t grp, uint32_t ntex, float mix)
 {
 	if (grp < nGrp && --ntex < MAXTEX && Grp[grp].TexIdxEx[ntex] != SPEC_DEFAULT)
 		Grp[grp].TexMixEx[ntex] = mix;
 }
 
-void Mesh::SetTexMixture (DWORD ntex, float mix)
+void Mesh::SetTexMixture (uint32_t ntex, float mix)
 {
 	if (--ntex < MAXTEX) {
-		for (DWORD grp = 0; grp < nGrp; grp++)
+		for (uint32_t grp = 0; grp < nGrp; grp++)
 			if (Grp[grp].TexIdxEx[ntex] != SPEC_DEFAULT)
 				Grp[grp].TexMixEx[ntex] = mix;
 	}
@@ -804,12 +804,12 @@ void Mesh::SetName(const char* n)
 	}
 }
 
-DWORD Mesh::Render (LPDIRECT3DDEVICE7 dev)
+uint32_t Mesh::Render (LPDIRECT3DDEVICE7 dev)
 {
 	return 0;
 }
 
-void Mesh::RenderGroup (LPDIRECT3DDEVICE7 dev, DWORD grp, bool setstate) const
+void Mesh::RenderGroup (LPDIRECT3DDEVICE7 dev, uint32_t grp, bool setstate) const
 {
 }
 
@@ -817,7 +817,7 @@ istream &operator>> (istream &is, Mesh &mesh)
 {
 	char cbuf[256];
 	int i, j, g, ngrp, nvtx, ntri, nidx, nmtrl, mtrl_idx, ntex, tex_idx, flag, res;
-	DWORD uflag;
+	uint32_t uflag;
 	WORD zbias;
 	D3DMATERIAL7 mtrl;
 	bool term, staticmesh = false;
@@ -983,7 +983,7 @@ istream &operator>> (istream &is, Mesh &mesh)
 
 ostream &operator<< (ostream &os, const Mesh &mesh)
 {
-	DWORD g, i, ntri;
+	uint32_t g, i, ntri;
 
 	os << "MSHX1" << endl;
 	os << "GROUPS " << mesh.nGrp << endl;
@@ -1140,13 +1140,13 @@ bool LoadMesh (const char *meshname, Mesh &mesh)
 
 // =======================================================================
 // Create a sphere patch.
-// nlng is the number of patches required to span the full 360° in longitude
-// nlat is the number of patches required to span the latitude range from 0 to 90°
+// nlng is the number of patches required to span the full 360ï¿½ in longitude
+// nlat is the number of patches required to span the latitude range from 0 to 90ï¿½
 // 0 <= ilat < nlat is the actual latitude strip the patch is to cover
 // res >= 1 is the resolution of the patch (= number of internal latitude strips in the patch)
 // bseg, if given, is the number of of polygon segments on the lower base line of the patch.
 // Default is (nlat-ilat)*res. bseg is ignored for triangular patches (i.e. where upper
-// latitude is 90°)
+// latitude is 90ï¿½)
 
 void CreateSpherePatch (Mesh &mesh, int nlng, int nlat, int ilat, int res, int bseg, bool reduce, bool outside)
 {

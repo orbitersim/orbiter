@@ -32,9 +32,9 @@ static orbiter::ConsoleNG* s_console = NULL; // access to console instance from 
 
 orbiter::ConsoleNG::ConsoleNG(Orbiter* pOrbiter)
     : m_pOrbiter(pOrbiter)
-    , m_hWnd(NULL)
-    , m_hStatWnd(NULL)
-    , m_hThread(NULL)
+    // , m_hWnd(NULL)
+    // , m_hStatWnd(NULL)
+    // , m_hThread(NULL)
 {
     static PCSTR title = "Orbiter Server Console";
     static SIZE_T stackSize = 4096;
@@ -44,27 +44,27 @@ orbiter::ConsoleNG::ConsoleNG(Orbiter* pOrbiter)
     ConsoleManager::ShowConsole(true);
     DWORD id;
     SetConsoleTitle(title);
-    m_hWnd = GetConsoleWindow();
-	if (ConsoleManager::IsConsoleExclusive())
-		DeleteMenu(GetSystemMenu(m_hWnd, false), SC_CLOSE, MF_BYCOMMAND);
-    m_hThread = CreateThread(NULL, stackSize, InputProc, this, 0, &id);
-    s_hStdO = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetLogOutFunc(&ConsoleOut); // clone log output to console
+ //    m_hWnd = GetConsoleWindow();
+	// if (ConsoleManager::IsConsoleExclusive())
+	// 	DeleteMenu(GetSystemMenu(m_hWnd, false), SC_CLOSE, MF_BYCOMMAND);
+ //    m_hThread = CreateThread(NULL, stackSize, InputProc, this, 0, &id);
+ //    s_hStdO = GetStdHandle(STD_OUTPUT_HANDLE);
+ //    SetLogOutFunc(&ConsoleOut); // clone log output to console
 }
 
 orbiter::ConsoleNG::~ConsoleNG()
 {
-	DestroyStatDlg();
-	SetLogOutFunc(0);
-	if (WaitForSingleObject(m_hThread, 1000) == WAIT_TIMEOUT) {
-		TerminateThread(m_hThread, 0);
-	}
-	if (hMutex) {
-		CloseHandle(hMutex);
-		hMutex = 0;
-	}
-	s_console = NULL;
-	s_hStdO = NULL;
+	// DestroyStatDlg();
+	// SetLogOutFunc(0);
+	// if (WaitForSingleObject(m_hThread, 1000) == WAIT_TIMEOUT) {
+	// 	TerminateThread(m_hThread, 0);
+	// }
+	// if (hMutex) {
+	// 	CloseHandle(hMutex);
+	// 	hMutex = 0;
+	// }
+	// s_console = NULL;
+	// s_hStdO = NULL;
 }
 
 bool orbiter::ConsoleNG::ParseCmd()
@@ -214,8 +214,8 @@ bool orbiter::ConsoleNG::ParseCmd()
 		Echo(cbuf);
 	}
 	else if (!_strnicmp(cmd, "gui", 3)) {
-		if (!DestroyStatDlg())
-			m_hStatWnd = CreateDialog(m_pOrbiter->hInstStopgap, MAKEINTRESOURCE(IDD_SERVER), m_hWnd, ServerDlgProc);
+		// if (!DestroyStatDlg())
+		// 	m_hStatWnd = CreateDialog(m_pOrbiter->hInstStopgap, MAKEINTRESOURCE(IDD_SERVER), m_hWnd, ServerDlgProc);
 	}
 	else if (!_strnicmp(cmd, "dlg", 3)) {
 		DialogManager* pDlgMgr = m_pOrbiter->DlgMgr();
@@ -255,13 +255,14 @@ void orbiter::ConsoleNG::EchoIntro() const
 
 bool orbiter::ConsoleNG::DestroyStatDlg()
 {
-	if (m_hStatWnd) {
-		DestroyWindow(m_hStatWnd);
-		m_hStatWnd = NULL;
-		return true;
-	}
-	else
-		return false;
+	// if (m_hStatWnd) {
+	// 	DestroyWindow(m_hStatWnd);
+	// 	m_hStatWnd = NULL;
+	// 	return true;
+	// }
+	// else
+	// 	return false;
+	return false;
 }
 
 

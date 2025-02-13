@@ -10,7 +10,6 @@
 #define __PANEL_H
 
 #define STRICT 1
-#include <windows.h>
 #include <fstream>
 
 // =======================================================================
@@ -49,12 +48,12 @@ public:
 	void Point2Screen (long srcX, long srcY, long &tgtX, long &tgtY) const;
 	// converts point from unscaled panel space to viewport space
 
-	void Area2Screen (const RECT &srcR, RECT &tgtR) const;
+	void Area2Screen (const Rect &srcR, Rect &tgtR) const;
 	// converts rectangle from unscaled panel space to viewport space
 
 	void DefineBackground (HBITMAP hBmp, DWORD flag, DWORD ck = (DWORD)-1);
 
-	void DefineArea (int aid, const RECT &pos, int draw_mode, int mouse_mode, int bkmode);
+	void DefineArea (int aid, const Rect &pos, int draw_mode, int mouse_mode, int bkmode);
 	void ReleaseAreas ();
 
 	SURFHANDLE GetArea (int idx);
@@ -109,8 +108,8 @@ private:
 	LONG X0, Y0;                // coordinates of upper left corner of scaled source rectangle in target space
 	HWND cwnd;                  // window handle for mouse position offset calculations
 	double scale, iscale;       // panel scaling factor src->tgt and tgt->src
-	RECT tgtRect;               // corners of visible part of target rectangle
-	RECT srcRect;				// visible panel area in source rectangle
+	Rect tgtRect;               // corners of visible part of target rectangle
+	Rect srcRect;				// visible panel area in source rectangle
 	bool visible;				// panel is visible?
 	bool scaled;                // true if scale != 1
 	bool has_ck;                // flag if color key is used for blitting
@@ -121,7 +120,7 @@ private:
 
 	struct Area {
 		int id;       // area identifier
-		RECT pos;     // area rectangle in source panel
+		Rect pos;     // area rectangle in source panel
 		int w, h;     // width, height of area
 		int bltmode;  // blt mode: 0=return black surface, 1=return background, 2=return current panel state
 		int redraw;   // redraw trigger code: 0=no redraw, 1=each frame, 2=on mouseclick in area
@@ -138,9 +137,9 @@ private:
 	struct MFD {
 		bool exist;      // MFD defined for this panel?
 		bool visible;    // MFD currently visible on screen
-		RECT panel_pos;  // full area of MFD in scaled panel
+		Rect panel_pos;  // full area of MFD in scaled panel
 		int w, h;        // MFD size in scaled panel
-		RECT src_vis;    // visible part of MFD source rectangle
+		Rect src_vis;    // visible part of MFD source rectangle
 		int tgtx, tgty;  // upper left corner of visible part of MFD in screen coords
 	} mfd[MAXMFD];
 };

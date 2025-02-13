@@ -265,13 +265,13 @@ CFG_WINDOWPOS CfgWindowPos_default = {
 
 // =============================================================
 
-ostream &operator<< (ostream &out, const RECT &r)
+ostream &operator<< (ostream &out, const Rect &r)
 {
 	out << r.left << ' ' << r.top << ' ' << r.right << ' ' << r.bottom;
 	return out;
 }
 
-bool operator!= (const RECT &r1, const RECT &r2)
+bool operator!= (const Rect &r1, const Rect &r2)
 {
 	return (r1.left != r2.left || r1.top != r2.top || r1.right != r2.right || r1.bottom != r2.bottom);
 }
@@ -518,21 +518,21 @@ bool Config::Load(const char *fname)
 
 	// Device information
 	GetInt  (ifs, "DeviceIndex", CfgDevPrm.Device_idx);
-	if (GetInt (ifs, "ModeIndex", i)) CfgDevPrm.Device_mode = (DWORD)i;
-	if (GetInt(ifs, "OutputIndex", i)) CfgDevPrm.Device_out = (DWORD)i;
-	if (GetInt(ifs, "Style", i)) CfgDevPrm.Device_style = (DWORD)i;
+	if (GetInt (ifs, "ModeIndex", i)) CfgDevPrm.Device_mode = (uint32_t)i;
+	if (GetInt(ifs, "OutputIndex", i)) CfgDevPrm.Device_out = (uint32_t)i;
+	if (GetInt(ifs, "Style", i)) CfgDevPrm.Device_style = (uint32_t)i;
 	GetBool (ifs, "DeviceForceEnum", CfgDevPrm.bForceEnum);
 	GetBool (ifs, "Fullscreen", CfgDevPrm.bFullscreen);
 	GetBool (ifs, "Stereo", CfgDevPrm.bStereo);
 	GetBool (ifs, "NoVSync", CfgDevPrm.bNoVsync);
 	GetBool (ifs, "StencilBuffer", CfgDevPrm.bTryStencil);
 	GetBool (ifs, "FullscreenPageflip", CfgDevPrm.bPageflip);
-	if (GetInt (ifs, "WindowWidth", i))  CfgDevPrm.WinW = (DWORD)i;
-	if (GetInt (ifs, "WindowHeight", i)) CfgDevPrm.WinH = (DWORD)i;
+	if (GetInt (ifs, "WindowWidth", i))  CfgDevPrm.WinW = (uint32_t)i;
+	if (GetInt (ifs, "WindowHeight", i)) CfgDevPrm.WinH = (uint32_t)i;
 
 	// Joystick information
 	if (GetInt (ifs, "JoystickIndex", i))
-		CfgJoystickPrm.Joy_idx = (DWORD)i;
+		CfgJoystickPrm.Joy_idx = (uint32_t)i;
 	if (GetInt (ifs, "JoystickThrottleAxis", i))
 		CfgJoystickPrm.ThrottleAxis = max (0, min (3, i));
 	if (GetInt (ifs, "JoystickThrottleSaturation", i))
@@ -564,7 +564,7 @@ bool Config::Load(const char *fname)
 
 	// map dialog parameters
 	if (GetInt (ifs, "MapDlgFlag", i))
-		CfgMapPrm.DispFlag = (DWORD)i;
+		CfgMapPrm.DispFlag = (uint32_t)i;
 
 	// Logical parameters
 	GetBool (ifs, "StartPaused", CfgLogicPrm.bStartPaused);
@@ -642,9 +642,9 @@ bool Config::Load(const char *fname)
 	GetBool (ifs, "EnableParticleStreams", CfgVisualPrm.bParticleStreams);
 	GetBool (ifs, "EnableLocalLights", CfgVisualPrm.bLocalLight);
 	if (GetInt (ifs, "MaxLights", i))
-		CfgVisualPrm.MaxLight = (DWORD)i;
+		CfgVisualPrm.MaxLight = (uint32_t)i;
 	if (GetInt (ifs, "AmbientLevel", i))
-		SetAmbientLevel ((DWORD)i);
+		SetAmbientLevel ((uint32_t)i);
 	if (GetInt (ifs, "PlanetMaxPatchLevel", i))
 		CfgVisualPrm.PlanetMaxLevel = max (1, min (SURF_MAX_PATCHLEVEL2, i));
 	if (GetReal (ifs, "PlanetPatchRes", d))
@@ -685,9 +685,9 @@ bool Config::Load(const char *fname)
 
 	// visual helper parameters
 	if (GetInt (ifs, "Planetarium", i))
-		CfgVisHelpPrm.flagPlanetarium = (DWORD)i;
+		CfgVisHelpPrm.flagPlanetarium = (uint32_t)i;
 	if (GetInt(ifs, "SurfMarkers", i))
-		CfgVisHelpPrm.flagMarkers = (DWORD)i;
+		CfgVisHelpPrm.flagMarkers = (uint32_t)i;
 	if (GetString (ifs, "Bodyforces", cbuf))
 		sscanf (cbuf, "%u%f%f", &CfgVisHelpPrm.flagBodyForce, &CfgVisHelpPrm.scaleBodyForce, &CfgVisHelpPrm.opacBodyForce);
 	if (GetString (ifs, "CoordinateAxes", cbuf))
@@ -714,9 +714,9 @@ bool Config::Load(const char *fname)
 
 	// user interface parameters
 	if (GetInt(ifs, "MouseFocusMode", i) && i >= 0 && i <= 2)
-		CfgUIPrm.MouseFocusMode = (DWORD)i;
+		CfgUIPrm.MouseFocusMode = (uint32_t)i;
 	if (GetInt (ifs, "MenubarMode", i) && i >= 0 && i <= 2)
-		CfgUIPrm.MenuMode = (DWORD)i;
+		CfgUIPrm.MenuMode = (uint32_t)i;
 	GetBool (ifs, "MenubarLabelOnly", CfgUIPrm.bMenuLabelOnly);
 	GetBool (ifs, "ShowWarpAlways", CfgUIPrm.bWarpAlways);
 	GetBool (ifs, "ShowWarpScientific", CfgUIPrm.bWarpScientific);
@@ -730,11 +730,11 @@ bool Config::Load(const char *fname)
 	if (GetInt (ifs, "MenubarOpacity", i) && i >= 0 && i <= 10)
 		CfgUIPrm.MenuOpacity = i;
 	if (GetInt (ifs, "InfobarOpacity", i) && i >= 0 && i <= 10)
-		CfgUIPrm.InfoOpacity = (DWORD)i;
+		CfgUIPrm.InfoOpacity = (uint32_t)i;
 	if (GetInt (ifs, "MenubarSpeed", i) && i >= 1 && i <= 20)
-		CfgUIPrm.MenuScrollspeed = (DWORD)i;
+		CfgUIPrm.MenuScrollspeed = (uint32_t)i;
 	if (GetInt (ifs, "PauseIndicatorMode", i) && i >= 0 && i <= 2)
-		CfgUIPrm.PauseIndMode = (DWORD)i;
+		CfgUIPrm.PauseIndMode = (uint32_t)i;
 	GetInt (ifs, "SelVesselTab", CfgUIPrm.SelVesselTab);
 	GetInt (ifs, "SelVesselRange", CfgUIPrm.SelVesselRange);
 	GetBool (ifs, "SelVesselFlat", CfgUIPrm.bSelVesselFlat);
@@ -831,9 +831,9 @@ void Config::SetDefaults ()
 	Root = 0;
 
 	bEchoAll = bEchoAll_default;
-	memset (&rLaunchpad, 0, sizeof(RECT));
+	memset (&rLaunchpad, 0, sizeof(Rect));
 
-	RECT r;
+	Rect r;
 	GetWindowRect (GetDesktopWindow(), &r);
 	CfgDevPrm_default.WinW = r.right-r.left; CfgDevPrm_default.WinH = r.bottom-r.top;
 	// use the screen size as the default render window size
@@ -867,7 +867,7 @@ void Config::SetDefaults_Capture ()
 	CfgCapturePrm = CfgCapturePrm_default;       // screen capture parameters
 }
 
-const void *Config::GetParam (DWORD paramtype) const
+const void *Config::GetParam (uint32_t paramtype) const
 {
 	switch (paramtype) {
 	case CFGPRM_SURFACEMAXLEVEL:
@@ -1566,39 +1566,4 @@ bool Config::GetVector (const char *category, Vector &val)
 	ifstream ifs (Root);
 	if (!ifs) return false;
 	return GetVector (ifs, category, val);
-}
-
-// =============================================================
-
-GDIResources::GDIResources (HWND hWnd, DWORD winW, DWORD winH, const Config &config)
-{
-	TEXTMETRIC tm;
-	int lineh = (int)(winH*0.02*config.CfgFontPrm.dlgFont_Scale);
-	if (lineh < 8) lineh = 8;
-	HDC hDC = GetDC (hWnd);
-
-	dlgF1r = CreateFont (lineh, 0, 0, 0, FW_NORMAL, 0, 0, 0, 0, 3, 2, 1, 49, config.CfgFontPrm.dlgFont1_Face);
-	HGDIOBJ ofont = SelectObject (hDC, dlgF1r);
-	GetTextMetrics (hDC, &tm);
-	dlgF1W = tm.tmAveCharWidth;
-	dlgF1H  = tm.tmHeight;
-
-	dlgF2 = CreateFont (lineh, 0, 0, 0, FW_NORMAL, 0, 0, 0, 0, 3, 2, 1, 49, "Courier New");
-	SelectObject (hDC, dlgF2);
-	GetTextMetrics (hDC, &tm);
-	dlgF2W = tm.tmAveCharWidth;
-	dlgF2H  = tm.tmHeight;
-
-	dlgF1i = CreateFont (lineh, 0, 0, 0, FW_NORMAL, TRUE, 0, 0, 0, 3, 2, 1, 49, config.CfgFontPrm.dlgFont1_Face);
-	// insert other resources here
-
-	SelectObject (hDC, ofont);
-	ReleaseDC (hWnd, hDC);
-}
-
-GDIResources::~GDIResources ()
-{
-	DeleteObject (dlgF1r);
-	DeleteObject (dlgF1i);
-	DeleteObject (dlgF2);
 }

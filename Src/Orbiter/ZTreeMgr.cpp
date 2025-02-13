@@ -19,7 +19,7 @@ TreeFileHeader::TreeFileHeader ()
 	nodeCount = 0;
 	dataOfs = size;
 	dataLength = 0;
-	rootPos1 = rootPos2 = rootPos3 = rootPos4[0] = rootPos4[1] = (DWORD)-1;
+	rootPos1 = rootPos2 = rootPos3 = rootPos4[0] = rootPos4[1] = (uint32_t)-1;
 }
 
 // -----------------------------------------------------------------------
@@ -33,20 +33,20 @@ size_t TreeFileHeader::fwrite(FILE *f)
 
 bool TreeFileHeader::fread(FILE *f)
 {
-	BYTE buf[4];
-	DWORD sz, flags;
+	uint8_t buf[4];
+	uint32_t sz, flags;
 	if (::fread(buf, 1, 4, f) < 4 || memcmp(buf, magic, 4))
 		return false;
-	if (::fread(&sz, sizeof(DWORD), 1, f) != 1 || sz != size)
+	if (::fread(&sz, sizeof(uint32_t), 1, f) != 1 || sz != size)
 		return false;
-	::fread(&flags, sizeof(DWORD), 1, f);
-	::fread(&dataOfs, sizeof(DWORD), 1, f);
-	::fread(&dataLength, sizeof(__int64), 1, f);
-	::fread(&nodeCount, sizeof(DWORD), 1, f);
-	::fread(&rootPos1, sizeof(DWORD), 1, f);
-	::fread(&rootPos2, sizeof(DWORD), 1, f);
-	::fread(&rootPos3, sizeof(DWORD), 1, f);
-	::fread(rootPos4, sizeof(DWORD), 2, f);
+	::fread(&flags, sizeof(uint32_t), 1, f);
+	::fread(&dataOfs, sizeof(uint32_t), 1, f);
+	::fread(&dataLength, sizeof(uint64_t), 1, f);
+	::fread(&nodeCount, sizeof(uint32_t), 1, f);
+	::fread(&rootPos1, sizeof(uint32_t), 1, f);
+	::fread(&rootPos2, sizeof(uint32_t), 1, f);
+	::fread(&rootPos3, sizeof(uint32_t), 1, f);
+	::fread(rootPos4, sizeof(uint32_t), 2, f);
 	return true;
 }
 
@@ -73,7 +73,7 @@ TreeTOC::~TreeTOC()
 
 // -----------------------------------------------------------------------
 
-size_t TreeTOC::fread(DWORD size, FILE *f)
+size_t TreeTOC::fread(uint32_t size, FILE *f)
 {
 	if (ntreebuf != size) {
 		TreeNode *tmp = new TreeNode[size];
@@ -138,7 +138,7 @@ bool ZTreeMgr::OpenArchive()
 	rootPos3 = tfh.rootPos3;
 	for (int i = 0; i < 2; i++)
 		rootPos4[i] = tfh.rootPos4[i];
-	dofs = (__int64)tfh.dataOfs;
+	dofs = (uint64_t)tfh.dataOfs;
 
 	if (!toc.fread(tfh.nodeCount, treef)) {
 		fclose(treef);
@@ -152,7 +152,7 @@ bool ZTreeMgr::OpenArchive()
 
 // -----------------------------------------------------------------------
 
-DWORD ZTreeMgr::Idx(int lvl, int ilat, int ilng)
+uint32_t ZTreeMgr::Idx(int lvl, int ilat, int ilng)
 {
 	if (lvl <= 4) {
 		return (lvl == 1 ? rootPos1 : lvl == 2 ? rootPos2 : lvl == 3 ? rootPos3 : rootPos4[ilng]);
@@ -160,8 +160,8 @@ DWORD ZTreeMgr::Idx(int lvl, int ilat, int ilng)
 		int plvl = lvl-1;
 		int pilat = ilat/2;
 		int pilng = ilng/2;
-		DWORD pidx = Idx(plvl, pilat, pilng);
-		if (pidx == (DWORD)-1)
+		uint32_t pidx = Idx(plvl, pilat, pilng);
+		if (pidx == (uint32_t)-1)
 			return pidx;
 		int cidx = ((ilat&1) << 1) + (ilng&1);
 		return toc[pidx].child[cidx];
@@ -170,24 +170,24 @@ DWORD ZTreeMgr::Idx(int lvl, int ilat, int ilng)
 
 // -----------------------------------------------------------------------
 
-DWORD ZTreeMgr::ReadData(DWORD idx, BYTE **outp)
+uint32_t ZTreeMgr::ReadData(uint32_t idx, uint8_t **outp)
 {
-	if (idx == (DWORD)-1) return 0; // sanity check
+	if (idx == (uint32_t)-1) return 0; // sanity check
 
-	DWORD esize = NodeSizeInflated(idx);
+	uint32_t esize = NodeSizeInflated(idx);
 	if (!esize) // node doesn't have data, but has descendants with data
 		return 0;
 
 	if (_fseeki64(treef, toc[idx].pos+dofs, SEEK_SET))
 		return 0;
 
-	DWORD zsize = NodeSizeDeflated(idx);
-	BYTE *zbuf = new BYTE[zsize];	
+	uint32_t zsize = NodeSizeDeflated(idx);
+	uint8_t *zbuf = new uint8_t[zsize];	
 	fread(zbuf, 1, zsize, treef);
 
-	BYTE *ebuf = new BYTE[esize];
+	uint8_t *ebuf = new uint8_t[esize];
 
-	DWORD ndata = Inflate(zbuf, zsize, ebuf, esize);
+	uint32_t ndata = Inflate(zbuf, zsize, ebuf, esize);
 	delete []zbuf;
 	zbuf = NULL;
 
@@ -201,9 +201,9 @@ DWORD ZTreeMgr::ReadData(DWORD idx, BYTE **outp)
 
 // -----------------------------------------------------------------------
 
-DWORD ZTreeMgr::Inflate(const BYTE *inp, DWORD ninp, BYTE *outp, DWORD noutp)
+uint32_t ZTreeMgr::Inflate(const uint8_t *inp, uint32_t ninp, uint8_t *outp, uint32_t noutp)
 {
-	DWORD ndata = noutp;
+	uLongf ndata = noutp;
 	if (uncompress (outp, &ndata, inp, ninp) != Z_OK)
 		return 0;
 	return ndata;
@@ -211,7 +211,7 @@ DWORD ZTreeMgr::Inflate(const BYTE *inp, DWORD ninp, BYTE *outp, DWORD noutp)
 
 // -----------------------------------------------------------------------
 
-void ZTreeMgr::ReleaseData(BYTE *data)
+void ZTreeMgr::ReleaseData(uint8_t *data)
 {
 	delete []data;
 	data = NULL;

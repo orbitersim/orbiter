@@ -171,11 +171,11 @@ public:
 	void clbkSaveState(FILEHANDLE scn) override;
 	void clbkLoadStateEx(FILEHANDLE scn, void* vs) override;
 	int  clbkConsumeDirectKey(char* kstate) override;
-	int  clbkConsumeBufferedKey(DWORD key, bool down, char* kstate) override;
+	int  clbkConsumeBufferedKey(uint32_t key, bool down, char* kstate) override;
 	void clbkFocusChanged(bool getfocus, OBJHANDLE hNewVessel, OBJHANDLE hOldVessel) override;
 	bool clbkPlaybackEvent(double simt, double event_t, const char* event_type, const char* event) override;
 	void clbkRCSMode(int mode) override;
-	void clbkADCtrlMode(DWORD mode) override;
+	void clbkADCtrlMode(uint32_t mode) override;
 	void clbkHUDMode(int mode) override;
 	void clbkMFDMode(int mfd, int mode) override;
 	void clbkNavMode(int mode, bool active) override;
@@ -189,7 +189,7 @@ public:
 	void clbkVisualDestroyed(VISHANDLE vis, int refcount) override;
 	bool clbkVCMouseEvent(int id, int event, VECTOR3& p) override;
 	bool clbkVCRedrawEvent(int id, int event, SURFHANDLE surf) override;
-	bool clbkLoadPanel2D (int id, PANELHANDLE hPanel, DWORD viewW, DWORD viewH) override;
+	bool clbkLoadPanel2D (int id, PANELHANDLE hPanel, uint32_t viewW, uint32_t viewH) override;
 
 	// VESSEL3
 	int clbkGeneric(int msgid, int prm, void* context) override;
@@ -438,7 +438,7 @@ int ScriptVessel::clbkConsumeDirectKey(char* kstate)
 	return 0;
 }
 
-int ScriptVessel::clbkConsumeBufferedKey(DWORD key, bool down, char* kstate)
+int ScriptVessel::clbkConsumeBufferedKey(uint32_t key, bool down, char* kstate)
 {
 	if (bclbk[CONSUMEBUFFEREDKEY]) {
 		strcpy(func + 5, "consumebufferedkey");
@@ -496,7 +496,7 @@ void ScriptVessel::clbkRCSMode(int mode)
 	}
 }
 
-void ScriptVessel::clbkADCtrlMode(DWORD mode)
+void ScriptVessel::clbkADCtrlMode(uint32_t mode)
 {
 	if (bclbk[ADCTRLMODE]) {
 		strcpy(func + 5, "ADctrlmode");
@@ -687,7 +687,7 @@ bool ScriptVessel::clbkVCRedrawEvent(int id, int event, SURFHANDLE surf)
 	return false;
 }
 
-bool ScriptVessel::clbkLoadPanel2D (int id, PANELHANDLE hPanel, DWORD viewW, DWORD viewH)
+bool ScriptVessel::clbkLoadPanel2D (int id, PANELHANDLE hPanel, uint32_t viewW, uint32_t viewH)
 {
 	if (bclbk[LOADPANEL2D]) {
 		strcpy(func + 5, "loadpanel2d");

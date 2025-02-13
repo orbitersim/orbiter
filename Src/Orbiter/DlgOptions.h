@@ -16,9 +16,6 @@
 #include "DialogWin.h"
 #include "OptionsPages.h"
 #include "CustomControls.h"
-#include <windows.h>
-#include <commctrl.h>
-#include <winuser.h>
 
 class OptionsPage;
 

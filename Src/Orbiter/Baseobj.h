@@ -39,7 +39,7 @@ public:
 	virtual int ParseLine (const char *label, const char *value) { return 0; }
 	// interpret a label/value pair read from the object description
 
-	virtual DWORD GetSpecs() const { return 0; }
+	virtual uint32_t GetSpecs() const { return 0; }
 
 	virtual void Setup();
 	// Initialisation after reading (but before activation)
@@ -50,13 +50,13 @@ public:
 	int nGroup() { return ngrp; }
 	// number of exported vertex groups
 
-	virtual bool GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &texid,
+	virtual bool GetGroupSpec (int grp, uint32_t &nvtx, uint32_t &nidx, LONGLONG &texid,
 		bool &undershadow, bool &groundshadow) { return false; }
 	// Returns specs for exported group 'grp': length of vertex and index lists,
 	// texture id and flag to indicate whether group should be rendered before shadows
 	// Only objects which set OBJSPEC_EXPORTVERTEX need to implement this
 
-	virtual void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs) {}
+	virtual void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, uint32_t &idx_ofs) {}
 	// Allow the object to export its groups into vertex list vtx and index list idx
 	// On call, idx_ofs is the current total length of the index list and should be
 	// updated by the function
@@ -67,7 +67,7 @@ public:
 
 	virtual Mesh *ExportShadowMesh (double &elev) { elev = 0.0; return NULL; }
 
-	virtual bool GetShadowSpec (DWORD &nvtx, DWORD &nidx)
+	virtual bool GetShadowSpec (uint32_t &nvtx, uint32_t &nidx)
 	{ return false; }
 	// Returns specs for exported shadow mesh
 	// Only objects which set OBJSPEC_EXPORTSHADOW need to implement this
@@ -138,13 +138,13 @@ public:
 	~MeshObject ();
 	int ParseLine (const char *label, const char *value);
 	int Read (std::istream &is);
-	DWORD GetSpecs() const { return specs; }
+	uint32_t GetSpecs() const { return specs; }
 	void Setup();
 	void Activate ();
 	void Deactivate();
-	bool GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &texid,
+	bool GetGroupSpec (int grp, uint32_t &nvtx, uint32_t &nidx, LONGLONG &texid,
 		bool &undershadow, bool &groundshadow);
-	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs);
+	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, uint32_t &idx_ofs);
 	Mesh *ExportMesh ();
 	Mesh *ExportShadowMesh (double &elev);
 	void UpdateShadow (Vector &fromsun, double az);
@@ -153,7 +153,7 @@ public:
 	
 private:
 	bool LoadMesh (char *fname); // load mesh into local buffer
-	DWORD specs;      // object specs as returned by GetSpecs()
+	uint32_t specs;      // object specs as returned by GetSpecs()
 	char *fname;      // mesh file name
 	LONGLONG texid;   // overall texture
 	bool undersh;     // render mesh before shadows?
@@ -172,12 +172,12 @@ public:
 	Block (const Base *_base);
 	~Block ();
 	int ParseLine (const char *label, const char *value);
-	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_EXPORTSHADOWMESH; }
-	bool GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &texid,
+	uint32_t GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_EXPORTSHADOWMESH; }
+	bool GetGroupSpec (int grp, uint32_t &nvtx, uint32_t &nidx, LONGLONG &texid,
 		bool &undershadow, bool &groundshadow);
-	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs);
+	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, uint32_t &idx_ofs);
 	Mesh *ExportShadowMesh (double &elev);
-	//bool GetShadowSpec (DWORD &nvtx, DWORD &nidx);
+	//bool GetShadowSpec (uint32_t &nvtx, uint32_t &nidx);
 	//void ExportShadow (VERTEX_XYZ *vtx, WORD *idx);
 	//void UpdateShadow (Vector &fromsun, double az);
 	void Activate ();
@@ -201,12 +201,12 @@ public:
 	Hangar (const Base *_base);
 	~Hangar ();
 	int ParseLine (const char *label, const char *value);
-	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_EXPORTSHADOWMESH; }
-	bool GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &texid,
+	uint32_t GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_EXPORTSHADOWMESH; }
+	bool GetGroupSpec (int grp, uint32_t &nvtx, uint32_t &nidx, LONGLONG &texid,
 		bool &undershadow, bool &groundshadow);
-	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs);
+	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, uint32_t &idx_ofs);
 	Mesh *ExportShadowMesh (double &elev);
-	//bool GetShadowSpec (DWORD &nvtx, DWORD &nidx);
+	//bool GetShadowSpec (uint32_t &nvtx, uint32_t &nidx);
 	//void ExportShadow (VERTEX_XYZ *vtx, WORD *idx);
 	//void UpdateShadow (Vector &fromsun, double az);
 	void Activate ();
@@ -229,12 +229,12 @@ public:
 	Hangar2 (const Base *_base);
 	~Hangar2 ();
 	int ParseLine (const char *label, const char *value);
-	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_EXPORTSHADOWMESH; }
-	bool GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &texid,
+	uint32_t GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_EXPORTSHADOWMESH; }
+	bool GetGroupSpec (int grp, uint32_t &nvtx, uint32_t &nidx, LONGLONG &texid,
 		bool &undershadow, bool &groundshadow);
-	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs);
+	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, uint32_t &idx_ofs);
 	Mesh *ExportShadowMesh (double &elev);
-	//bool GetShadowSpec (DWORD &nvtx, DWORD &nidx);
+	//bool GetShadowSpec (uint32_t &nvtx, uint32_t &nidx);
 	//void ExportShadow (VERTEX_XYZ *vtx, WORD *idx);
 	//void UpdateShadow (Vector &fromsun, double az);
 	void Activate ();
@@ -259,12 +259,12 @@ public:
 	Hangar3 (const Base *_base);
 	~Hangar3 ();
 	int ParseLine (const char *label, const char *value);
-	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_EXPORTSHADOWMESH; }
-	bool GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &texid,
+	uint32_t GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_EXPORTSHADOWMESH; }
+	bool GetGroupSpec (int grp, uint32_t &nvtx, uint32_t &nidx, LONGLONG &texid,
 		bool &undershadow, bool &groundshadow);
-	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs);
+	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, uint32_t &idx_ofs);
 	Mesh *ExportShadowMesh (double &elev);
-	//bool GetShadowSpec (DWORD &nvtx, DWORD &nidx);
+	//bool GetShadowSpec (uint32_t &nvtx, uint32_t &nidx);
 	//void ExportShadow (VERTEX_XYZ *vtx, WORD *idx);
 	//void UpdateShadow (Vector &fromsun, double az);
 	void Activate ();
@@ -286,12 +286,12 @@ class Tank: public BaseObject {
 public:
 	Tank (const Base *_base);
 	int ParseLine (const char *label, const char *value);
-	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_EXPORTSHADOWMESH; }
-	bool GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &texid,
+	uint32_t GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_EXPORTSHADOWMESH; }
+	bool GetGroupSpec (int grp, uint32_t &nvtx, uint32_t &nidx, LONGLONG &texid,
 		bool &undershadow, bool &groundshadow);
-	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs);
+	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, uint32_t &idx_ofs);
 	Mesh *ExportShadowMesh (double &elev);
-	//bool GetShadowSpec (DWORD &nvtx, DWORD &nidx);
+	//bool GetShadowSpec (uint32_t &nvtx, uint32_t &nidx);
 	//void ExportShadow (VERTEX_XYZ *vtx, WORD *idx);
 	//void UpdateShadow (Vector &fromsun, double az);
 	void Activate ();
@@ -300,7 +300,7 @@ public:
 private:
 	LONGLONG  texid[2];   // texture ids
 	D3DVALUE  tuscale[2], tvscale[2]; // texture scaling factors (mantle and top)
-	DWORD     nstep;      // segments for circle
+	uint32_t     nstep;      // segments for circle
 	struct DYNDATA {
 		NTVERTEX *Vtx;      // block vertices
 	} *dyndata;
@@ -312,13 +312,13 @@ private:
 class Lpad: public BaseObject {
 public:
 	Lpad (const Base *_base);
-	void SetPadno (DWORD no) { padno = no; }
-	DWORD GetPadno () const { return padno; }
+	void SetPadno (uint32_t no) { padno = no; }
+	uint32_t GetPadno () const { return padno; }
 	const Vector &GetPos () const { return relpos; }
 	const float GetILSfreq () const { return ILSfreq; }
 
 protected:
-	DWORD padno;         // pad number
+	uint32_t padno;         // pad number
 	float ILSfreq;       // frequency of pad's VTOL ILS signal transmitter [MHz]
 };
 
@@ -329,10 +329,10 @@ class Lpad01: public Lpad {
 public:
 	Lpad01 (const Base *_base);
 	int ParseLine (const char *label, const char *value);
-	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_LPAD; }
-	bool GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &texid,
+	uint32_t GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_LPAD; }
+	bool GetGroupSpec (int grp, uint32_t &nvtx, uint32_t &nidx, LONGLONG &texid,
 		bool &undershadow, bool &groundshadow);
-	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs);
+	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, uint32_t &idx_ofs);
 
 private:
 	LONGLONG texid;      // texture id
@@ -347,10 +347,10 @@ class Lpad02: public Lpad {
 public:
 	Lpad02 (const Base *_base);
 	int ParseLine (const char *label, const char *value);
-	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_LPAD; }
-	bool GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &texid,
+	uint32_t GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_LPAD; }
+	bool GetGroupSpec (int grp, uint32_t &nvtx, uint32_t &nidx, LONGLONG &texid,
 		bool &undershadow, bool &groundshadow);
-	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs);
+	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, uint32_t &idx_ofs);
 
 private:
 	LONGLONG texid;      // texture id
@@ -365,10 +365,10 @@ class Lpad02a: public Lpad {
 public:
 	Lpad02a (const Base *_base);
 	int ParseLine (const char *label, const char *value);
-	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_LPAD; }
-	bool GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &texid,
+	uint32_t GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_LPAD; }
+	bool GetGroupSpec (int grp, uint32_t &nvtx, uint32_t &nidx, LONGLONG &texid,
 		bool &undershadow, bool &groundshadow);
-	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs);
+	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, uint32_t &idx_ofs);
 
 private:
 	LONGLONG texid;      // texture id
@@ -383,7 +383,7 @@ private:
 class BeaconArray: public BaseObject {
 public:
 	BeaconArray (const Base *_base);
-	DWORD GetSpecs() const { return OBJSPEC_RENDERAFTERSHADOW | OBJSPEC_UPDATEVERTEX; }
+	uint32_t GetSpecs() const { return OBJSPEC_RENDERAFTERSHADOW | OBJSPEC_UPDATEVERTEX; }
 	int Read (std::istream &is);
 	void Render (LPDIRECT3DDEVICE7 dev, bool day=true);
 	void Update ();
@@ -392,12 +392,12 @@ public:
 
 private:
 	D3DVECTOR end1, end2;
-	DWORD count;
+	uint32_t count;
 	double size;
 	Vector *Pos;
 	POSTEXVERTEX *Vtx;
 	WORD *Idx;
-	DWORD nVtx, nIdx;
+	uint32_t nVtx, nIdx;
 	LPDIRECTDRAWSURFACE7 tex;  // texture to use
 	float col_r, col_g, col_b; // beacon colour
 	D3DMATERIAL7 *lightmat;
@@ -411,10 +411,10 @@ class Runway: public BaseObject {
 public:
 	Runway (const Base *_base);
 	~Runway ();
-	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_RWY; }
-	bool GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &texid,
+	uint32_t GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_RWY; }
+	bool GetGroupSpec (int grp, uint32_t &nvtx, uint32_t &nidx, LONGLONG &texid,
 		bool &undershadow, bool &groundshadow);
-	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs);
+	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, uint32_t &idx_ofs);
 	int Read (std::istream &is);
 	void Activate ();
 	void Deactivate();
@@ -423,17 +423,17 @@ public:
 private:
 	D3DVECTOR end1, end2;
 	float ILSfreq[2];
-	DWORD nrwseg;      // number of texture segments in runway mesh
+	uint32_t nrwseg;      // number of texture segments in runway mesh
 	struct RWSEG {                   // runway segment specs
-		DWORD subseg;                // number of sub-segments
+		uint32_t subseg;                // number of sub-segments
 		D3DVALUE len;                // segment length (1=full runway)
 		D3DVALUE tu0, tu1, tv0, tv1; // segment texture coordinates
 	} *rwseg;
 	D3DVALUE width;    // runway (half-)width [m]
 	LONGLONG texid[1]; // texture ids
 	struct DYNDATA {
-		DWORD nRwVtx;        // number of vertices for runway mesh
-		DWORD nRwIdx;        // number of indices for runway mesh
+		uint32_t nRwVtx;        // number of vertices for runway mesh
+		uint32_t nRwIdx;        // number of indices for runway mesh
 		NTVERTEX *RwVtx;    // list of runway vertices
 		WORD *RwIdx;         // list of runway indices
 	} *dyndata;
@@ -448,7 +448,7 @@ public:
 	RunwayLights (const Base *_base);
 	~RunwayLights ();
 	void Setup ();
-	DWORD GetSpecs() const { return OBJSPEC_RENDERAFTERSHADOW | OBJSPEC_UPDATEVERTEX; }
+	uint32_t GetSpecs() const { return OBJSPEC_RENDERAFTERSHADOW | OBJSPEC_UPDATEVERTEX; }
 	int Read (std::istream &is);
 	void Render (LPDIRECT3DDEVICE7 dev, bool day=true);
 	void Update ();
@@ -456,13 +456,13 @@ public:
 	void Deactivate ();
 
 private:
-	void VertexArray (DWORD count, const Vector &cpos, const Vector &pos, const Vector &ofs, double size, POSTEXVERTEX *&Vtx);
+	void VertexArray (uint32_t count, const Vector &cpos, const Vector &pos, const Vector &ofs, double size, POSTEXVERTEX *&Vtx);
 	// Calculates the billboard vertices for an array of 'count' beacons, starting at 'pos', each offset from the previous
 	// by 'ofs'. cpos is camera position, 'size' is beacon size, 'Vtx' is the result
 	// The Vtx pointer is moved past the end of the current list on return
 
 	D3DVECTOR end1, end2;
-	DWORD count1;   // number of side line beacons
+	uint32_t count1;   // number of side line beacons
 	D3DVALUE width; // runway (half-)width [m]
 	struct VASIDATA {                 // parameters for Visual Approach Slope Indicator (VASI)
 		float apprangle;              //    designated approach angle
@@ -475,9 +475,9 @@ private:
 		float ofs;                    //    offset from runway end
 	} *papi;
 	struct DYNDATA {
-		DWORD nb_centre, nb_side, nb_approach, nb_end; // number of lights: runway centre, runway side, approach path, runway end
-		DWORD nb_vasi_w, nb_vasi_r;                    // number of white and red VASI approach indicators (if any)
-		DWORD nb_tot, nb_white_night, nb_white_day, nb_red; // number of lights: total, white, red
+		uint32_t nb_centre, nb_side, nb_approach, nb_end; // number of lights: runway centre, runway side, approach path, runway end
+		uint32_t nb_vasi_w, nb_vasi_r;                    // number of white and red VASI approach indicators (if any)
+		uint32_t nb_tot, nb_white_night, nb_white_day, nb_red; // number of lights: total, white, red
 		Vector ref1; // reference point 1 (=end1)
 		Vector ref2; // reference point 2 (=end2)
 		Vector dir;  // unit vector from ref1 to ref2
@@ -493,9 +493,9 @@ private:
 		bool night;       // skip runway center and side lines during daytime
 		POSTEXVERTEX *Vtx, *Vtx_white_night, *Vtx_white_day, *Vtx_red, *Vtx_PAPI;
 		WORD *Idx, *Idx_white_night, *Idx_white_day, *Idx_red, *Idx_PAPI_w, *Idx_PAPI_r;
-		DWORD nVtx, nVtx_white_night, nVtx_white_day, nVtx_red;
-		DWORD nIdx, nIdx_white_night, nIdx_white_day, nIdx_red;
-		DWORD PAPIwhite;
+		uint32_t nVtx, nVtx_white_night, nVtx_white_day, nVtx_red;
+		uint32_t nIdx, nIdx_white_night, nIdx_white_day, nIdx_red;
+		uint32_t PAPIwhite;
 		LPDIRECTDRAWSURFACE7 tex;
 	} *dyndata;
 };
@@ -511,7 +511,7 @@ protected:
 	void Init (const D3DVECTOR &_end1, const D3DVECTOR &_end2);
 	void Setup ();
 
-	void SetCabin (DWORD nvtx, const NTVERTEX *ref, NTVERTEX *res,
+	void SetCabin (uint32_t nvtx, const NTVERTEX *ref, NTVERTEX *res,
 		const D3DVECTOR &pos, const D3DVECTOR &ofs);
 	// Place cabin, defined by vertices 'ref' at position 'pos' (relative
 	// to end1) and return transformed vertices in 'res'
@@ -541,11 +541,11 @@ public:
 	Train1 (const Base *_base);
 	~Train1 ();
 	int Read (std::istream &is);
-	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_EXPORTSHADOW | OBJSPEC_UPDATEVERTEX; }
-	bool GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
+	uint32_t GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_EXPORTSHADOW | OBJSPEC_UPDATEVERTEX; }
+	bool GetGroupSpec (int grp, uint32_t &nvtx, uint32_t &nidx, LONGLONG &_texid,
 		bool &undershadow, bool &groundshadow);
-	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs);
-	bool GetShadowSpec (DWORD &nvtx, DWORD &nidx);
+	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, uint32_t &idx_ofs);
+	bool GetShadowSpec (uint32_t &nvtx, uint32_t &nidx);
 	void ExportShadow (VERTEX_XYZ *vtx, WORD *idx);
 	void Update ();
 	void UpdateShadow (Vector &fromsun, double az);
@@ -573,12 +573,12 @@ public:
 	Train2 (const Base *_base);
 	~Train2 ();
 	int Read (std::istream &is);
-	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_EXPORTSHADOW |
+	uint32_t GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_EXPORTSHADOW |
 		OBJSPEC_RENDERAFTERSHADOW | OBJSPEC_RENDERSHADOW | OBJSPEC_UPDATEVERTEX; }
-	bool GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
+	bool GetGroupSpec (int grp, uint32_t &nvtx, uint32_t &nidx, LONGLONG &_texid,
 		bool &undershadow, bool &groundshadow);
-	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs);
-	bool GetShadowSpec (DWORD &nvtx, DWORD &nidx);
+	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, uint32_t &idx_ofs);
+	bool GetShadowSpec (uint32_t &nvtx, uint32_t &nidx);
 	void ExportShadow (VERTEX_XYZ *vtx, WORD *idx);
 	void Update ();
 	void UpdateShadow (Vector &fromsun, double az);
@@ -612,7 +612,7 @@ public:
 	SolarPlant (const Base *_base);
 	~SolarPlant ();
 	int Read (std::istream &is);
-	DWORD GetSpecs() const { return OBJSPEC_RENDERAFTERSHADOW | OBJSPEC_RENDERSHADOW | OBJSPEC_UPDATEVERTEX; }
+	uint32_t GetSpecs() const { return OBJSPEC_RENDERAFTERSHADOW | OBJSPEC_RENDERSHADOW | OBJSPEC_UPDATEVERTEX; }
 	void Render (LPDIRECT3DDEVICE7 dev, bool day=true);
 	void RenderShadow (LPDIRECT3DDEVICE7 dev);
 	void Update ();
@@ -633,8 +633,8 @@ private:
 	NTVERTEX *Vtx;            // panel vertices
 	VERTEX_XYZ *ShVtx;         // shadow vertices
 	WORD *Idx, *ShIdx;         // panel and shadow mesh indices
-	DWORD nVtx, nShVtx;        // number of vertices
-	DWORD nIdx, nShIdx;        // number of indices
+	uint32_t nVtx, nShVtx;        // number of vertices
+	uint32_t nIdx, nShIdx;        // number of indices
 	bool *flash;               // panel flashing in sunlight?
 	LPDIRECTDRAWSURFACE7 tex;  // texture to use
 	Vector nml;                // pointing direction of panels (towards sun)

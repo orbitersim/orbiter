@@ -25,6 +25,8 @@
 #include <sstream>
 #include <vector>
 
+extern RECT _R1(long a, long b, long c, long d);
+
 #define IKernelSize 150
 
 using namespace oapi;
@@ -63,7 +65,7 @@ float Rand()
 
 // ===========================================================================================
 //
-Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
+Scene::Scene(D3D9Client *_gc, uint32_t w, uint32_t h)
 {
 	_TRACE;
 
@@ -204,8 +206,8 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 
 	// Initialize envmapping and shadow maps -----------------------------------------------------------------------------------------------
 	//
-	DWORD EnvMapSize = Config->EnvMapSize;
-	DWORD ShmMapSize = Config->ShadowMapSize;
+	uint32_t EnvMapSize = Config->EnvMapSize;
+	uint32_t ShmMapSize = Config->ShadowMapSize;
 
 	if (Config->EnvMapMode) {
 		HR(pDevice->CreateDepthStencilSurface(EnvMapSize, EnvMapSize, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, true, &pEnvDS, NULL));
@@ -305,7 +307,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 		HDC hDC;
 		// Clear the GDI Overlay with transparency
 		if (psgBuffer[GBUF_GDI]->GetDC(&hDC) == S_OK) {
-			DWORD color = 0xF08040; // BGR "Color Key" value for transparency
+			uint32_t color = 0xF08040; // BGR "Color Key" value for transparency
 			HBRUSH hBrush = CreateSolidBrush((COLORREF)color);
 			RECT r = _RECT( 0, 0, viewW, viewH );
 			FillRect(hDC, &r, hBrush);
@@ -368,7 +370,7 @@ Scene::~Scene ()
 
 	// Particle Streams
 	if (nstream) {
-		for (DWORD j=0;j<nstream;j++) delete pstream[j];
+		for (uint32_t j=0;j<nstream;j++) delete pstream[j];
 		delete []pstream;
 		pstream = NULL;
 	}
@@ -440,7 +442,7 @@ void Scene::Initialise()
 
 	hSun = oapiGetGbodyByIndex(0); // generalise later
 
-	DWORD ambient = *(DWORD*)gc->GetConfigParam(CFGPRM_AMBIENTLEVEL);
+	uint32_t ambient = *(uint32_t*)gc->GetConfigParam(CFGPRM_AMBIENTLEVEL);
 
 	// Setup sunlight -------------------------------
 	//
@@ -579,7 +581,7 @@ void Scene::CheckVisual(OBJHANDLE hObj)
 //
 const D3D9Light *Scene::GetLight(int index) const
 {
-	if ((DWORD)index<MAX_SCENE_LIGHTS || index>=0) return &Lights[index];
+	if ((uint32_t)index<MAX_SCENE_LIGHTS || index>=0) return &Lights[index];
 	return NULL;
 }
 
@@ -703,11 +705,11 @@ Scene::VOBJREC *Scene::AddVisualRec(OBJHANDLE hObj)
 
 // ===========================================================================================
 //
-DWORD Scene::GetActiveParticleEffectCount()
+uint32_t Scene::GetActiveParticleEffectCount()
 {
 	// render exhaust particle system
-	DWORD count = 0;
-	for (DWORD n = 0; n < nstream; n++) if (pstream[n]->IsActive()) count++;
+	uint32_t count = 0;
+	for (uint32_t n = 0; n < nstream; n++) if (pstream[n]->IsActive()) count++;
 	return count;
 }
 
@@ -748,7 +750,7 @@ void Scene::Update ()
 
 	// update particle streams - should be skipped when paused
 	if (!oapiGetPause()) {
-		for (DWORD i=0;i<nstream;) {
+		for (uint32_t i=0;i<nstream;) {
 			if (pstream[i]->Expired()) DelParticleStream(i);
 			else pstream[i++]->Update();
 		}
@@ -758,11 +760,11 @@ void Scene::Update ()
 
 	// check object visibility (one object per frame in the interest
 	// of scalability)
-	DWORD nobj = oapiGetObjectCount();
+	uint32_t nobj = oapiGetObjectCount();
 
 	if (bFirstUpdate) {
 		bFirstUpdate = false;
-		for (DWORD i=0;i<nobj;i++) {
+		for (uint32_t i=0;i<nobj;i++) {
 			OBJHANDLE hObj = oapiGetObjectByIndex(i);
 			CheckVisual(hObj);
 		}
@@ -979,8 +981,8 @@ float Scene::ComputeNearClipPlane()
 		float fr = 0.0f;
 		float dn = 10e3;
 
-		DWORD bc = pl->GetBaseCount();
-		for (DWORD i=0;i<bc;i++) {
+		uint32_t bc = pl->GetBaseCount();
+		for (uint32_t i=0;i<bc;i++) {
 			vBase *vb = pl->GetBaseByIndex(i);
 			if (vb) {
 				if (vb->IsActive() && vb->IsVisible()) {
@@ -994,7 +996,7 @@ float Scene::ComputeNearClipPlane()
 		}
 	}
 
-	DWORD prteff = GetActiveParticleEffectCount();
+	uint32_t prteff = GetActiveParticleEffectCount();
 
 	if (farpoint==0.0) farpoint = 20e4;
 
@@ -1072,8 +1074,8 @@ bool Scene::UpdateCamVis()
 			OBJHANDLE hObj = pv->vobj->Object();
 			if (oapiGetObjectType (hObj) == OBJTP_VESSEL) {
 				VESSEL *vessel = oapiGetVesselInterface (hObj);
-				DWORD nemitter = vessel->LightEmitterCount();
-				for (DWORD j = 0; j < nemitter; j++) {
+				uint32_t nemitter = vessel->LightEmitterCount();
+				for (uint32_t j = 0; j < nemitter; j++) {
 					const LightEmitter *em = vessel->GetLightEmitter(j);
 					if ((em->GetVisibility() == LightEmitter::VIS_EXTERNAL) || (em->GetVisibility() == LightEmitter::VIS_ALWAYS))
 						AddLocalLight(em, pv->vobj);
@@ -1134,8 +1136,8 @@ void Scene::AddLocalLight(const LightEmitter *le, const vObject *vo)
 	//
 	if (nLights == MAX_SCENE_LIGHTS) {
 		if (lght.Dst2 > lmaxdst2) return;
-		DWORD imax = 0;
-		for (DWORD i = 0; i < MAX_SCENE_LIGHTS; i++) if (Lights[i].Dst2 > lmaxdst2) imax = i;
+		uint32_t imax = 0;
+		for (uint32_t i = 0; i < MAX_SCENE_LIGHTS; i++) if (Lights[i].Dst2 > lmaxdst2) imax = i;
 		Lights[imax] = lght;
 		lmaxdst2 = lght.Dst2;
 	}
@@ -1329,7 +1331,7 @@ void Scene::RenderMainScene()
 	if (dwTurn == RENDERTURN_ENVCAM) {
 
 		if (Config->EnvMapMode) {
-			DWORD flags = 0;
+			uint32_t flags = 0;
 			if (Config->EnvMapMode == 1) flags |= 0x01;
 			if (Config->EnvMapMode == 2) flags |= (0x03 | 0x20);
 
@@ -1356,7 +1358,7 @@ void Scene::RenderMainScene()
 	if (dwTurn == RENDERTURN_IRRADIANCE) {
 
 		if (Config->EnvMapMode && Config->bIrradiance) {
-			DWORD flags = 0;
+			uint32_t flags = 0;
 			if (Config->EnvMapMode == 1) flags |= 0x01;
 			if (Config->EnvMapMode == 2) flags |= (0x03 | 0x20);
 
@@ -1448,7 +1450,7 @@ void Scene::RenderMainScene()
 
 	if (DebugControls::IsActive()) {
 		HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0L));
-		DWORD flags = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
+		uint32_t flags = *(uint32_t*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 		if (flags&DBG_FLAGS_WIREFRAME) pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
 		else						   pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 	}
@@ -1466,7 +1468,7 @@ void Scene::RenderMainScene()
 
 
 	if (DebugControls::IsActive()) {
-		DWORD camMode = *(DWORD*)gc->GetConfigParam(CFGPRM_GETCAMERAMODE);
+		uint32_t camMode = *(uint32_t*)gc->GetConfigParam(CFGPRM_GETCAMERAMODE);
 		if (camMode!=0) znear_for_vessels = 0.1f;
 	}
 
@@ -1585,10 +1587,10 @@ void Scene::RenderMainScene()
 	// Render Planets
 	// ---------------------------------------------------------------------------------------------
 
-	DWORD plnmode = *(DWORD*)gc->GetConfigParam(CFGPRM_PLANETARIUMFLAG);
-	DWORD mkrmode = *(DWORD*)gc->GetConfigParam(CFGPRM_SURFMARKERFLAG);
+	uint32_t plnmode = *(uint32_t*)gc->GetConfigParam(CFGPRM_PLANETARIUMFLAG);
+	uint32_t mkrmode = *(uint32_t*)gc->GetConfigParam(CFGPRM_SURFMARKERFLAG);
 
-	for (DWORD i=0;i<nplanets;i++) {
+	for (uint32_t i=0;i<nplanets;i++) {
 
 		// double nplane, fplane;
 		// plist[i].vo->RenderZRange (&nplane, &fplane);
@@ -1629,7 +1631,7 @@ void Scene::RenderMainScene()
 						double rad = oapiGetSize(hObj);
 						double apprad = rad / (plist[i].dist * tan(GetCameraAperture()));
 						const GraphicsClient::LABELLIST *list;
-						DWORD n, nlist;
+						uint32_t n, nlist;
 						MATRIX3 prot;
 						VECTOR3 ppos, cpos;
 
@@ -1662,14 +1664,14 @@ void Scene::RenderMainScene()
 
 					if (mkrmode & MKR_BMARK) {
 
-						DWORD n = oapiGetBaseCount(hObj);
+						uint32_t n = oapiGetBaseCount(hObj);
 						MATRIX3 prot;
 						oapiGetRotationMatrix(hObj, &prot);
 						int size = (int)(viewH / 80.0);
 
 						m_celSphere->EnsureMarkerDrawingContext((oapi::Sketchpad**)&pSketch, 0, m_celSphere->MarkerColor(0), m_celSphere->MarkerPen(0));
 
-						for (DWORD i = 0; i < n; i++) {
+						for (uint32_t i = 0; i < n; i++) {
 
 							OBJHANDLE hBase = oapiGetBaseByIndex(hObj, i);
 
@@ -1719,7 +1721,7 @@ void Scene::RenderMainScene()
 		pSketch->EndDrawing(); // SKETCHPAD_PLANETARIUM
 	}
 
-	/*for (DWORD i = 0; i < nplanets; ++i)
+	/*for (uint32_t i = 0; i < nplanets; ++i)
 	{
 		OBJHANDLE hObj = plist[i].vo->Object();
 		if (oapiGetObjectType(hObj) != OBJTP_PLANET) continue;
@@ -1741,7 +1743,7 @@ void Scene::RenderMainScene()
 		m_celSphere->EnsureMarkerDrawingContext((oapi::Sketchpad**)&pSketch, 0, 0, m_celSphere->MarkerPen(6));
 
 		int fontidx = -1;
-		for (DWORD i = 0; i < nplanets; ++i)
+		for (uint32_t i = 0; i < nplanets; ++i)
 		{
 			OBJHANDLE hObj = plist[i].vo->Object();
 			if (oapiGetObjectType(hObj) != OBJTP_PLANET) { continue; }
@@ -1916,15 +1918,15 @@ void Scene::RenderMainScene()
 
 	// render exhaust particle system
 	//
-	for (DWORD n = 0; n < nstream; n++) pstream[n]->Render(pDevice);
+	for (uint32_t n = 0; n < nstream; n++) pstream[n]->Render(pDevice);
 
 
 	// -------------------------------------------------------------------------------------------------------
 	// Render vessel axis vectors
 	// -------------------------------------------------------------------------------------------------------
 
-	DWORD bfvmode = *(DWORD*)gc->GetConfigParam(CFGPRM_FORCEVECTORFLAG);
-	DWORD favmode = *(DWORD*)gc->GetConfigParam(CFGPRM_FRAMEAXISFLAG);
+	uint32_t bfvmode = *(uint32_t*)gc->GetConfigParam(CFGPRM_FORCEVECTORFLAG);
+	uint32_t favmode = *(uint32_t*)gc->GetConfigParam(CFGPRM_FRAMEAXISFLAG);
 
 	if (bfvmode & BFV_ENABLE || favmode & FAV_ENABLE)
 	{
@@ -1961,8 +1963,8 @@ void Scene::RenderMainScene()
 		if (bLocalLight) {
 			ClearLocalLights();
 			VESSEL *vessel = oapiGetFocusInterface();
-			DWORD nemitter = vessel->LightEmitterCount();
-			for (DWORD j = 0; j < nemitter; j++) {
+			uint32_t nemitter = vessel->LightEmitterCount();
+			for (uint32_t j = 0; j < nemitter; j++) {
 				const LightEmitter *em = vessel->GetLightEmitter(j);
 				if ((em->GetVisibility() == LightEmitter::VIS_COCKPIT) || (em->GetVisibility() == LightEmitter::VIS_ALWAYS))
 					AddLocalLight(em, vFocus);
@@ -2233,19 +2235,19 @@ void Scene::RenderMainScene()
 		D3DSURFACE_DESC desc;
 		if (pTab) {
 			pTab->GetLevelDesc(0, &desc);
-			pSketch->StretchRectNative(pTab, NULL, ptr(_R(0, y - desc.Height, desc.Width, y)));
+			pSketch->StretchRectNative(pTab, NULL, ptr(_R1(0, y - desc.Height, desc.Width, y)));
 			y -= (desc.Height + 5);
 		}
 		pTab = vP->GetScatterTable(MIE_LAND);
 		if (pTab) {
 			pTab->GetLevelDesc(0, &desc);
-			pSketch->StretchRectNative(pTab, NULL, ptr(_R(0, y - desc.Height, desc.Width, y)));
+			pSketch->StretchRectNative(pTab, NULL, ptr(_R1(0, y - desc.Height, desc.Width, y)));
 			y -= (desc.Height + 5);
 		}
 		pTab = vP->GetScatterTable(ATN_LAND);
 		if (pTab) {
 			pTab->GetLevelDesc(0, &desc);
-			pSketch->StretchRectNative(pTab, NULL, ptr(_R(0, y - desc.Height, desc.Width, y)));
+			pSketch->StretchRectNative(pTab, NULL, ptr(_R1(0, y - desc.Height, desc.Width, y)));
 			y -= (desc.Height + 5);
 		}
 		for (int i=0;i<9;i++)
@@ -2273,16 +2275,16 @@ void Scene::RenderMainScene()
 
 		pSketch = GetPooledSketchpad(SKETCHPAD_DEBUG_TEXT);
 
-		DWORD height = Config->DebugFontSize;
+		uint32_t height = Config->DebugFontSize;
 
 		// Display Orbiter's debug string
 		if (len > 0) {
-			DWORD width = pSketch->GetTextWidth(dbgString, len);
+			uint32_t width = pSketch->GetTextWidth(dbgString, len);
 			pSketch->Rectangle(-1, viewH - height - 1, width + 4, viewH);
 			pSketch->Text(2, viewH - 2, dbgString, len);
 		}
 
-		DWORD pos = viewH;
+		uint32_t pos = viewH;
 
 		// Display additional debug string queue
 		//
@@ -2290,7 +2292,7 @@ void Scene::RenderMainScene()
 			pos -= (height * 3) / 2;
 			std::string str = D3D9DebugQueue.front();
 			len = lstrlen(str.c_str());
-			DWORD width = pSketch->GetTextWidth(str.c_str(), len);
+			uint32_t width = pSketch->GetTextWidth(str.c_str(), len);
 			pSketch->Rectangle(-1, pos - height - 1, width + 4, pos);
 			pSketch->Text(2, pos - 2, str.c_str(), len);
 			D3D9DebugQueue.pop();
@@ -2315,7 +2317,7 @@ void Scene::RenderMainScene()
 //
 void Scene::RenderVesselMarker(vVessel *vV, D3D9Pad *pSketch)
 {
-	DWORD mkrmode = *(DWORD*)gc->GetConfigParam(CFGPRM_SURFMARKERFLAG);
+	uint32_t mkrmode = *(uint32_t*)gc->GetConfigParam(CFGPRM_SURFMARKERFLAG);
 	if ((mkrmode & (MKR_ENABLE | MKR_VMARK)) == (MKR_ENABLE | MKR_VMARK)) {
 		RenderObjectMarker(pSketch, vV->GlobalPos(), std::string(vV->GetName()), std::string(), 0, viewH / 80);
 	}
@@ -2334,7 +2336,7 @@ Scene::SUNVISPARAMS Scene::GetSunScreenVisualState()
 	oapiGetGlobalPos(oapiGetGbodyByIndex(0), &sunGPos);
 	sunGPos -= cam;
 
-	DWORD w, h;
+	uint32_t w, h;
 	oapiGetViewportSize(&w, &h);
 
 	const LPD3DXMATRIX pVP = GetProjectionViewMatrix();
@@ -2358,7 +2360,7 @@ Scene::SUNVISPARAMS Scene::GetSunScreenVisualState()
 
 	if (pick.pMesh != NULL)
 	{
-		DWORD matIndex = pick.pMesh->GetMeshGroupMaterialIdx(pick.group);
+		uint32_t matIndex = pick.pMesh->GetMeshGroupMaterialIdx(pick.group);
 		D3D9MatExt material;
 		pick.pMesh->GetMaterial(&material, matIndex);
 		D3DXCOLOR surfCol(material.Diffuse.x, material.Diffuse.y, material.Diffuse.z, material.Diffuse.w);
@@ -2562,7 +2564,7 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bI
 
 // ===========================================================================================
 //
-void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList, std::set<vVessel*> &LightsList, DWORD flags)
+void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList, std::set<vVessel*> &LightsList, uint32_t flags)
 {
 	_TRACE;
 	RenderFlags = flags;
@@ -2577,8 +2579,8 @@ void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList, std::set<vVessel*>
 		for (auto vVes : RndList) {
 			if (!vVes->IsActive()) continue;
 			VESSEL *vessel = vVes->GetInterface();
-			DWORD nemitter = vessel->LightEmitterCount();
-			for (DWORD j = 0; j < nemitter; j++) {
+			uint32_t nemitter = vessel->LightEmitterCount();
+			for (uint32_t j = 0; j < nemitter; j++) {
 				const LightEmitter *em = vessel->GetLightEmitter(j);
 				if ((em->GetVisibility() == LightEmitter::VIS_EXTERNAL) || (em->GetVisibility() == LightEmitter::VIS_ALWAYS)) AddLocalLight(em, vVes);
 			}		
@@ -2588,8 +2590,8 @@ void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList, std::set<vVessel*>
 			if (!vVes->IsActive()) continue;
 			if (RndList.count(vVes)) continue; // Already included skip it
 			VESSEL *vessel = vVes->GetInterface();
-			DWORD nemitter = vessel->LightEmitterCount();
-			for (DWORD j = 0; j < nemitter; j++) {
+			uint32_t nemitter = vessel->LightEmitterCount();
+			for (uint32_t j = 0; j < nemitter; j++) {
 				const LightEmitter *em = vessel->GetLightEmitter(j);
 				if ((em->GetVisibility() == LightEmitter::VIS_EXTERNAL) || (em->GetVisibility() == LightEmitter::VIS_ALWAYS)) AddLocalLight(em, vVes);
 			}
@@ -2605,7 +2607,7 @@ void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList, std::set<vVessel*>
 	// render planets -------------------------------------------
 	//
 	if (flags & 0x01) {
-		for (DWORD i = 0; i<nplanets; i++) {
+		for (uint32_t i = 0; i<nplanets; i++) {
 			bool isActive = plist[i].vo->IsActive();
 			if (isActive) plist[i].vo->Render(pDevice);
 			else		  plist[i].vo->RenderDot(pDevice);
@@ -2643,7 +2645,7 @@ void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList, std::set<vVessel*>
 
 	// render exhaust particle system ----------------------------
 	if (flags & 0x10) {
-		for (DWORD n = 0; n < nstream; n++) pstream[n]->Render(pDevice);
+		for (uint32_t n = 0; n < nstream; n++) pstream[n]->Render(pDevice);
 	}
 
 	// Flags 0x20 = BaseStructures
@@ -2674,7 +2676,7 @@ bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc
 
 	D3DSURFACE_DESC desc;
 	pEnvDS->GetDesc(&desc);
-	DWORD width = min((UINT)512, desc.Width);
+	uint32_t width = min((UINT)512, desc.Width);
 
 
 	if (!pBlrTemp[0]) {
@@ -2692,7 +2694,7 @@ bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc
 
 	// Create clurred mip sub-levels
 	//
-	for (DWORD i = 0; i < 6; i++) {
+	for (uint32_t i = 0; i < 6; i++) {
 		pSrc->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pSrf);
 		pBlrTemp[0]->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pTmp);
 		pDevice->StretchRect(pSrf, NULL, pTmp, NULL, D3DTEXF_POINT);
@@ -2709,7 +2711,7 @@ bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc
 		pBlur->SetBool("bDir", false);
 		pBlur->SetTextureNative("tCube", pBlrTemp[mip-1], IPF_LINEAR);
 
-		for (DWORD i = 0; i < 6; i++) {
+		for (uint32_t i = 0; i < 6; i++) {
 
 			EnvMapDirection(i, &dir, &up);
 			D3DXVec3Cross(&cp, &up, &dir);
@@ -2735,7 +2737,7 @@ bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc
 
 		pBlur->SetBool("bDir", true);
 
-		for (DWORD i = 0; i < 6; i++) {
+		for (uint32_t i = 0; i < 6; i++) {
 
 			EnvMapDirection(i, &dir, &up);
 			D3DXVec3Cross(&cp, &up, &dir);
@@ -2823,7 +2825,7 @@ bool Scene::IntegrateIrradiance(vVessel *vV, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRE
 	pIrradiance->Activate("PSPreInteg");
 	pIrradiance->SetFloat("fD", ptr(D3DXVECTOR2(1.0f / float(desc.Width), 1.0f / float(desc.Height))), sizeof(D3DXVECTOR2));
 
-	for (DWORD i = 0; i < 6; i++)
+	for (uint32_t i = 0; i < 6; i++)
 	{
 		pSrc->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pSrf);
 		pIrradTemp->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pTgt);
@@ -2922,9 +2924,9 @@ void Scene::VisualizeCubeMap(LPDIRECT3DCUBETEXTURE9 pCube, int mip)
 
 	HR(pBack->GetDesc(&bdesc));
 
-	DWORD x, y, h = bdesc.Height / 3;
+	uint32_t x, y, h = bdesc.Height / 3;
 
-	for (DWORD i=0;i<6;i++) {
+	for (uint32_t i=0;i<6;i++) {
 
 		HR(pCube->GetCubeMapSurface(D3DCUBEMAP_FACES(i), mip, &pSrf));
 
@@ -2971,7 +2973,7 @@ void Scene::RenderVesselShadows (OBJHANDLE hPlanet, float depth) const
 
 	// render particle shadows
 	LPDIRECT3DTEXTURE9 tex = 0;
-	for (DWORD j=0;j<nstream;j++) pstream[j]->RenderGroundShadow(pDevice, tex);
+	for (uint32_t j=0;j<nstream;j++) pstream[j]->RenderGroundShadow(pDevice, tex);
 }
 
 
@@ -3103,12 +3105,12 @@ void Scene::AddParticleStream (class D3D9ParticleStream *_pstream)
 
 // ===========================================================================================
 //
-void Scene::DelParticleStream (DWORD idx)
+void Scene::DelParticleStream (uint32_t idx)
 {
 
 	D3D9ParticleStream **tmp;
 	if (nstream > 1) {
-		DWORD i, j;
+		uint32_t i, j;
 		tmp = new D3D9ParticleStream*[nstream-1];
 		for (i = j = 0; i < nstream; i++)
 			if (i != idx) tmp[j++] = pstream[i];
@@ -3213,7 +3215,7 @@ FMATRIX4 Scene::PopCameraFrustumLimits()
 
 // ===========================================================================================
 //
-void Scene::BeginPass(DWORD dwPass)
+void Scene::BeginPass(uint32_t dwPass)
 {
 	PassStack.push(dwPass);
 }
@@ -3227,7 +3229,7 @@ void Scene::PopPass()
 
 // ===========================================================================================
 //
-DWORD Scene::GetRenderPass() const
+uint32_t Scene::GetRenderPass() const
 {
 	if (PassStack.empty()) return RENDERPASS_MAINSCENE;
 	return PassStack.top();
@@ -3357,7 +3359,7 @@ bool Scene::IsProxyMesh()
 //
 bool Scene::CameraPan(VECTOR3 pan, double speed)
 {
-	DWORD camMode = *(DWORD *)gc->GetConfigParam(CFGPRM_GETCAMERAMODE);
+	uint32_t camMode = *(uint32_t *)gc->GetConfigParam(CFGPRM_GETCAMERAMODE);
 	OBJHANDLE hTgt = oapiCameraTarget();
 
 	if (DebugControls::IsActive()==true && hTgt) {
@@ -3376,12 +3378,12 @@ bool Scene::CameraPan(VECTOR3 pan, double speed)
 
 // ===========================================================================================
 //
-bool Scene::UpdateCameraFromOrbiter(DWORD dwPass)
+bool Scene::UpdateCameraFromOrbiter(uint32_t dwPass)
 {
 	MATRIX3 grot;
 	VECTOR3 pos;
 
-	DWORD camMode = *(DWORD *)gc->GetConfigParam(CFGPRM_GETCAMERAMODE);
+	uint32_t camMode = *(uint32_t *)gc->GetConfigParam(CFGPRM_GETCAMERAMODE);
 
 	OBJHANDLE hTgt = oapiCameraTarget();
 
@@ -3556,7 +3558,7 @@ void Scene::DeleteAllCustomCameras()
 
 // ===========================================================================================
 //
-CAMERAHANDLE Scene::SetupCustomCamera(CAMERAHANDLE hCamera, OBJHANDLE hVessel, MATRIX3 &mRot, VECTOR3 &pos, double fov, SURFHANDLE hSurf, DWORD flags)
+CAMERAHANDLE Scene::SetupCustomCamera(CAMERAHANDLE hCamera, OBJHANDLE hVessel, MATRIX3 &mRot, VECTOR3 &pos, double fov, SURFHANDLE hSurf, uint32_t flags)
 {
 	CAMREC *pv = NULL;
 
@@ -3601,8 +3603,8 @@ void Scene::RenderCustomCameraView(CAMREC *cCur)
 {
 	VESSEL *pVes = oapiGetVesselInterface(cCur->hVessel);
 
-	DWORD w = SURFACE(cCur->hSurface)->GetWidth();
-	DWORD h = SURFACE(cCur->hSurface)->GetHeight();
+	uint32_t w = SURFACE(cCur->hSurface)->GetWidth();
+	uint32_t h = SURFACE(cCur->hSurface)->GetHeight();
 
 	LPDIRECT3DSURFACE9 pSrf = SURFACE(cCur->hSurface)->GetSurface();
 	LPDIRECT3DSURFACE9 pDSs = SURFACE(cCur->hSurface)->GetDepthStencil();

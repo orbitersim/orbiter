@@ -180,7 +180,7 @@ void gcCore::ReleaseSwap(HSWAP hSwap)
 // Custom Camera Interface
 // ===============================================================================================
 //
-CAMERAHANDLE gcCore::SetupCustomCamera(CAMERAHANDLE hCam, OBJHANDLE hVessel, VECTOR3 &pos, VECTOR3 &dir, VECTOR3 &up, double fov, SURFHANDLE hSurf, DWORD flags)
+CAMERAHANDLE gcCore::SetupCustomCamera(CAMERAHANDLE hCam, OBJHANDLE hVessel, VECTOR3 &pos, VECTOR3 &dir, VECTOR3 &up, double fov, SURFHANDLE hSurf, uint32_t flags)
 {
 	VECTOR3 x = crossp(up, dir);
 	MATRIX3 mTake;
@@ -249,7 +249,7 @@ oapi::Font* gcCore::CreateSketchpadFont(int height, char* face, int width, int w
 
 // ===============================================================================================
 //
-HPOLY gcCore::CreatePoly(HPOLY hPoly, const FVECTOR2 *pt, int npt, DWORD flags)
+HPOLY gcCore::CreatePoly(HPOLY hPoly, const FVECTOR2 *pt, int npt, uint32_t flags)
 {
 	LPDIRECT3DDEVICE9 pDev = g_client->GetDevice();
 	if (!hPoly) return new D3D9PolyLine(pDev, pt, npt, (flags&PF_CONNECT) != 0);
@@ -260,7 +260,7 @@ HPOLY gcCore::CreatePoly(HPOLY hPoly, const FVECTOR2 *pt, int npt, DWORD flags)
 
 // ===============================================================================================
 //
-HPOLY gcCore::CreateTriangles(HPOLY hPoly, const gcCore::clrVtx *pt, int npt, DWORD flags)
+HPOLY gcCore::CreateTriangles(HPOLY hPoly, const gcCore::clrVtx *pt, int npt, uint32_t flags)
 {
 	LPDIRECT3DDEVICE9 pDev = g_client->GetDevice();
 	if (!hPoly) return new D3D9Triangle(pDev, pt, npt, flags);
@@ -282,23 +282,23 @@ void gcCore::DeletePoly(HPOLY hPoly)
 
 // ===============================================================================================
 //
-DWORD gcCore::GetTextLength(oapi::Font *hFont, const char *pText, int len)
+uint32_t gcCore::GetTextLength(oapi::Font *hFont, const char *pText, int len)
 {
-	return DWORD((static_cast<D3D9PadFont *>(hFont))->GetTextLength(pText, len));
+	return uint32_t((static_cast<D3D9PadFont *>(hFont))->GetTextLength(pText, len));
 }
 
 
 // ===============================================================================================
 //
-DWORD gcCore::GetCharIndexByPosition(oapi::Font *hFont, const char *pText, int pos, int len)
+uint32_t gcCore::GetCharIndexByPosition(oapi::Font *hFont, const char *pText, int pos, int len)
 {
-	return DWORD((static_cast<D3D9PadFont *>(hFont))->GetIndexByPosition(pText, pos, len));
+	return uint32_t((static_cast<D3D9PadFont *>(hFont))->GetIndexByPosition(pText, pos, len));
 }
 
 
 // ===============================================================================================
 //
-bool gcCore::RegisterRenderProc(__gcRenderProc proc, DWORD flags, void *pParam)
+bool gcCore::RegisterRenderProc(__gcRenderProc proc, uint32_t flags, void *pParam)
 {
 	return g_client->RegisterRenderProc(proc, flags, pParam);
 }
@@ -310,7 +310,7 @@ bool gcCore::RegisterRenderProc(__gcRenderProc proc, DWORD flags, void *pParam)
 // Mesh interface functions
 // ===============================================================================================
 //
-int gcCore::GetMatrix(MatrixId matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group, FMATRIX4 *pMat)
+int gcCore::GetMatrix(MatrixId matrix_id, OBJHANDLE hVessel, uint32_t mesh, uint32_t group, FMATRIX4 *pMat)
 {
 	if (oapiGetObjectType(hVessel) != OBJTP_VESSEL) return -10;
 	Scene *pScn = g_client->GetScene();
@@ -322,7 +322,7 @@ int gcCore::GetMatrix(MatrixId matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD g
 
 // ===============================================================================================
 //
-int gcCore::SetMatrix(MatrixId matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group, const FMATRIX4 *pMat)
+int gcCore::SetMatrix(MatrixId matrix_id, OBJHANDLE hVessel, uint32_t mesh, uint32_t group, const FMATRIX4 *pMat)
 {
 	if (oapiGetObjectType(hVessel) != OBJTP_VESSEL) return -10;
 	Scene *pScn = g_client->GetScene();
@@ -334,7 +334,7 @@ int gcCore::SetMatrix(MatrixId matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD g
 
 // ===============================================================================================
 //
-int gcCore::GetMeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, MatProp prop, FVECTOR4* value)
+int gcCore::GetMeshMaterial(DEVMESHHANDLE hMesh, uint32_t idx, MatProp prop, FVECTOR4* value)
 {
 	return g_client->clbkMeshMaterialEx(hMesh, idx, prop, value);
 }
@@ -342,7 +342,7 @@ int gcCore::GetMeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, MatProp prop, FVECTO
 
 // ===============================================================================================
 //
-int gcCore::SetMeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, MatProp prop, const FVECTOR4* value)
+int gcCore::SetMeshMaterial(DEVMESHHANDLE hMesh, uint32_t idx, MatProp prop, const FVECTOR4* value)
 {
 	return g_client->clbkSetMeshMaterialEx(hMesh, idx, prop, value);
 }
@@ -411,7 +411,7 @@ bool gcCore::PickMesh(PickMeshStruct* pm, DEVMESHHANDLE hMesh, const FMATRIX4* p
 //
 // ===============================================================================================
 //
-SURFHANDLE gcCore::LoadSurface(const char* fname, DWORD flags)
+SURFHANDLE gcCore::LoadSurface(const char* fname, uint32_t flags)
 {
 	return g_client->clbkLoadSurface(fname, flags);
 }
@@ -439,7 +439,7 @@ bool gcCore::GenerateMipmaps(SURFHANDLE hSurface)
 
 // ===============================================================================================
 //
-SURFHANDLE gcCore::CompressSurface(SURFHANDLE hSurface, DWORD flags)
+SURFHANDLE gcCore::CompressSurface(SURFHANDLE hSurface, uint32_t flags)
 {
 	return NatCompressSurface(hSurface, flags);
 }
@@ -447,7 +447,7 @@ SURFHANDLE gcCore::CompressSurface(SURFHANDLE hSurface, DWORD flags)
 
 // ===============================================================================================
 //
-void gcCore::RenderLines(const FVECTOR3* pVtx, const WORD* pIdx, int nVtx, int nIdx, const FMATRIX4* pWorld, DWORD color)
+void gcCore::RenderLines(const FVECTOR3* pVtx, const WORD* pIdx, int nVtx, int nIdx, const FMATRIX4* pWorld, uint32_t color)
 {
 	D3D9Effect::RenderLines((const D3DXVECTOR3*)pVtx, pIdx, nVtx, nIdx, (const D3DXMATRIX*)pWorld, color);
 }
@@ -470,7 +470,7 @@ bool gcCore::StretchRectInScene(SURFHANDLE tgt, SURFHANDLE src, LPRECT tr, LPREC
 
 // ===============================================================================================
 //
-bool gcCore::ClearSurfaceInScene(SURFHANDLE tgt, DWORD color, LPRECT tr)
+bool gcCore::ClearSurfaceInScene(SURFHANDLE tgt, uint32_t color, LPRECT tr)
 {
 	if (S_OK == g_client->BeginScene())
 	{
@@ -549,7 +549,7 @@ bool gcCore::GetSurfaceSpecs(SURFHANDLE hSrf, SurfaceSpecs* sp, int size)
 
 // ===============================================================================================
 //
-bool gcCore::RegisterGenericProc(__gcGenericProc proc, DWORD id, void* pParam)
+bool gcCore::RegisterGenericProc(__gcGenericProc proc, uint32_t id, void* pParam)
 {
 	return g_client->RegisterGenericProc(proc, id, pParam);
 }
@@ -721,7 +721,7 @@ bool gcCore::LockSurface(SURFHANDLE hSrf, Lock* pOut, bool bWait)
 {
 	D3DLOCKED_RECT lock;
 	LPDIRECT3DRESOURCE9 pResource = SURFACE(hSrf)->GetResource();
-	DWORD flags = 0;
+	uint32_t flags = 0;
 	if (!bWait) flags |= D3DLOCK_DONOTWAIT;
 
 	if (pResource->GetType() == D3DRTYPE_SURFACE) {

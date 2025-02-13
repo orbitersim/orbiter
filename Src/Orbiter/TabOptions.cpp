@@ -6,7 +6,6 @@
 //=============================================================================
 
 #include "TabOptions.h"
-#include "Help.h"
 #include "resource.h"
 
 //=============================================================================
@@ -28,8 +27,8 @@ void orbiter::OptionsTab::Create()
 
 bool orbiter::OptionsTab::OpenHelp()
 {
-	const HELPCONTEXT* hc = (CurrentPage() ? CurrentPage()->HelpContext() : nullptr);
-	if (hc) ::OpenHelp(LaunchpadWnd(), hc->helpfile, hc->topic);
+	// const HELPCONTEXT* hc = (CurrentPage() ? CurrentPage()->HelpContext() : nullptr);
+	// if (hc) ::OpenHelp(LaunchpadWnd(), hc->helpfile, hc->topic);
 	return true;
 }
 

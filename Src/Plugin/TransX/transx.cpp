@@ -105,12 +105,12 @@ int TransxMFD::getheight()
 	return H;
 }
 
-OAPI_MSGTYPE TransxMFD::MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam)
+void* TransxMFD::MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam)
 // Standard message parser for messages passed from Orbiter
 {
 	switch (msg) {
 	case OAPI_MSG_MFD_OPENED:
-		return (OAPI_MSGTYPE) new TransxMFD (LOWORD(wparam), HIWORD(wparam), (VESSEL*)lparam, mfd);
+		return (void*) new TransxMFD (LOWORD(wparam), HIWORD(wparam), (VESSEL*)lparam, mfd);
 	}
 	return 0;
 }

@@ -43,8 +43,8 @@ struct _finddata_t;
 typedef struct {          // texture tile hierarchy element
 	WORD nSubtile;        // number of children at next higher level
 	bool bCover;          // children cover tile completely
-	DWORD ChildFlag[4];   // subtile flags. bit0: subtile area contains land; bit1: subtile area contains water; bit2: subtile is present
-	DWORD ChildIdx[4];    // texture indices for children ((DWORD)-1: child subtile not present)
+	uint32_t ChildFlag[4];   // subtile flags. bit0: subtile area contains land; bit1: subtile area contains water; bit2: subtile is present
+	uint32_t ChildIdx[4];    // texture indices for children ((uint32_t)-1: child subtile not present)
 
 	// the following fields are transient visibility flags which change
 	// with each frame
@@ -91,7 +91,7 @@ public:
 
 	int Type() const { return OBJTP_PLANET; }
 
-	const void *GetParam (DWORD paramtype) const;
+	const void *GetParam (uint32_t paramtype) const;
 
 	void SetPsys (const PlanetarySystem *_psys)
 	{ psys = _psys; }
@@ -99,16 +99,16 @@ public:
 	const PlanetarySystem *GetPsys () const
 	{ return psys; }
 
-	inline DWORD nNav() const { return nnav; }
+	inline uint32_t nNav() const { return nnav; }
 	inline NavManager &NavMgr() { return navlist; }
 	inline const NavManager &NavMgr() const { return navlist; }
 
-	inline DWORD nBase() const { return nbase; }
+	inline uint32_t nBase() const { return nbase; }
 
 	bool AddBase (Base *_base);
 	// Add _base to planet's base list. Returns false if base with this name already exists
 
-	Base *GetBase (DWORD i) const { return baselist[i]; }
+	Base *GetBase (uint32_t i) const { return baselist[i]; }
 	// return the planet's i'th surface base (assuming all children are bases)
 
 	Base *GetBase (const char *_name, bool ignorecase = false);
@@ -150,7 +150,7 @@ public:
 	inline double ShadowDepth () const { return shadowalpha; }
 	inline double CloudRotationAngle () const { return cloudrot; }
 	inline float CloudShadowDepth () const { return cloudshadowcol; }
-	inline DWORD MaxPatchLevel() const { return max_patch_level; }
+	inline uint32_t MaxPatchLevel() const { return max_patch_level; }
 	inline double BBExcess() const { return bb_excess; }
 	inline double ElevationResolution() const { return elev_res; }
 	inline int LabelFormat() const { return label_version; }
@@ -265,7 +265,7 @@ private:
 
 	const PlanetarySystem *psys; // system the planet belongs to
 
-	DWORD nbase;
+	uint32_t nbase;
 	Base **baselist;
 	// list of surface bases
 
@@ -280,7 +280,7 @@ private:
 	int nlabellist;
 	char *labelpath;
 
-	DWORD max_patch_level;
+	uint32_t max_patch_level;
 	// resolution limit for sphere patch representation of planet's visual (<= 10)
 
 	int min_cloud_level;

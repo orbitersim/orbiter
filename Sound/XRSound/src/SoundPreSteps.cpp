@@ -545,7 +545,7 @@ void AFCtrlModeDefaultSoundPreStep::clbkPreStep(const double simt, const double 
     // - bit 0: elevator enabled/disabled 
     // - bit 1: rudder enabled / disabled
     // - bit 2: ailerons enabled / disabled
-    const int afCtrlMode = min(pVessel->GetADCtrlMode(), (DWORD)2);  // 0 = OFF, 1 = PITCH (elevators), 2 = ON (more than just pitch)
+    const int afCtrlMode = min(pVessel->GetADCtrlMode(), (uint32_t)2);  // 0 = OFF, 1 = PITCH (elevators), 2 = ON (more than just pitch)
 
     if (m_previousAFCtrlMode < 0)
     {
@@ -603,7 +603,7 @@ void LogThrusterDataPreStep::clbkPreStep(const double simt, const double simdt, 
             return;         // sanity check
 
         // loop through all thrusters and log data for any that are active
-        for (DWORD i = 0; i < pVessel->GetThrusterCount(); i++)
+        for (uint32_t i = 0; i < pVessel->GetThrusterCount(); i++)
         {
             const THRUSTER_HANDLE thHandle = pVessel->GetThrusterHandleByIndex(i);
             const double thLevel = pVessel->GetThrusterLevel(thHandle);
@@ -961,25 +961,25 @@ void AutopilotOnOffSoundPreStep::clbkPreStep(const double simt, const double sim
 
     // check if any navmode (autopilot) *besides killrot* is engaged; only ONE of these other nav modes can be engaged at any one time
     /*
-    • #define NAVMODE_KILLROT 1
+    ï¿½ #define NAVMODE_KILLROT 1
     "Kill rotation" mode
     
-    • #define NAVMODE_HLEVEL 2
+    ï¿½ #define NAVMODE_HLEVEL 2
     "Hold level with horizon" mode
     
-    • #define NAVMODE_PROGRADE 3
+    ï¿½ #define NAVMODE_PROGRADE 3
     "Prograde" mode
     
-    • #define NAVMODE_RETROGRADE 4
+    ï¿½ #define NAVMODE_RETROGRADE 4
     "Retrograde" mode
     
-    • #define NAVMODE_NORMAL 5
+    ï¿½ #define NAVMODE_NORMAL 5
     "Normal to orbital plane" mode
     
-    • #define NAVMODE_ANTINORMAL 6
+    ï¿½ #define NAVMODE_ANTINORMAL 6
     "Anti-normal to orbital plane" mode
     
-    • #define NAVMODE_HOLDALT 7
+    ï¿½ #define NAVMODE_HOLDALT 7
     "Hold altitude" mode
     */
     int currentNavmode = 0;   // assume no autopilot engaged

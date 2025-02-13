@@ -34,9 +34,9 @@ public:
 	inline const char *Name() const { return name.c_str(); }
 	const std::string& FileName() const { return filename; }
 
-	virtual const void *GetParam (DWORD paramtype) const { return 0; }
+	virtual const void *GetParam (uint32_t paramtype) const { return 0; }
 
-	void BroadcastVisMsg (DWORD msg, DWORD_PTR content);
+	void BroadcastVisMsg (uint32_t msg, size_t content);
 	// send a message to all existing visuals
 
 	inline double Size() const { return size; }

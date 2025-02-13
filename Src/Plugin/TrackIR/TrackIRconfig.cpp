@@ -14,14 +14,15 @@ TrackIRconfig *TrackIRconfig::tirc = 0;
 
 char *TrackIRconfig::Description()
 {
-	return (char*)"Configure and test the NaturalPoint® TrackIR(tm) Optical Headtracker.";
+	return (char*)"Configure and test the NaturalPointï¿½ TrackIR(tm) Optical Headtracker.";
 }
 
 bool TrackIRconfig::clbkOpen (HWND hLaunchpad)
 {
 	// respond to user double-clicking the item in the list
 	tirc = this; // keep a global pointer to be used by the message handlers
-	return OpenDialog (gParams.hInst, hLaunchpad, IDD_CONFIG, DlgProc);
+	// return OpenDialog (gParams.hInst, hLaunchpad, IDD_CONFIG, DlgProc);
+	return false;
 }
 
 int TrackIRconfig::clbkWriteConfig ()

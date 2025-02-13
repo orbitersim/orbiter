@@ -241,10 +241,10 @@ void Release()
 
 void OpenDlgClbk(void *context)
 {
-	HWND l_hDlg = oapiOpenDialog(stopgapGetModuleInstance(g_hInst), IDD_D3D9SCATTER, WndProc);
+	// HWND l_hDlg = oapiOpenDialog(stopgapGetModuleInstance(g_hInst), IDD_D3D9SCATTER, WndProc);
 
-	if (l_hDlg) hDlg = l_hDlg; // otherwise open already
-	else return;
+	// if (l_hDlg) hDlg = l_hDlg; // otherwise open already
+	// else return;
 
 	Scene *scene = g_client->GetScene();
 	
@@ -523,7 +523,7 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			case IDCANCEL:  
 			case IDOK:
-				oapiCloseDialog(hWnd);
+				// oapiCloseDialog(hWnd);
 				hDlg = NULL;
 				return TRUE;
 
@@ -576,7 +576,8 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 
-	return oapiDefDialogProc(hWnd, uMsg, wParam, lParam);;
+	// return oapiDefDialogProc(hWnd, uMsg, wParam, lParam);;
+	return 0;
 }
 
 } //namespace

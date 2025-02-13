@@ -10,8 +10,6 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-//#include <d3d.h>
-#include <windows.h>
 #include "Vecmat.h"
 #include <iostream>
 #include <fstream>
@@ -111,9 +109,9 @@ struct CFG_VISUALPRM {
 	bool   bReentryFlames;		// render reentry flames?
 	bool   bParticleStreams;	// render particle streams? (exhaust, contrails, etc.)
 	bool   bLocalLight;			// enable local light sources?
-	DWORD  MaxLight;			// max number of light sources
-	DWORD  AmbientLevel;		// ambient light level (0-255)
-	DWORD  PlanetMaxLevel;		// max. planet patch resolution level
+	uint32_t  MaxLight;			// max number of light sources
+	uint32_t  AmbientLevel;		// ambient light level (0-255)
+	uint32_t  PlanetMaxLevel;		// max. planet patch resolution level
 	double PlanetPatchRes;		// resolution scaling for planet patches
 	double LightBrightness;		// brightness of planetary night lights
 	bool   bUseStarDots;        // render stars as pixels?
@@ -144,20 +142,20 @@ struct CFG_INSTRUMENTPRM {
 };
 
 struct CFG_VISHELPPRM {
-	DWORD  flagPlanetarium;		// bitflags for items to be displayed in planetarium mode
+	uint32_t  flagPlanetarium;		// bitflags for items to be displayed in planetarium mode
 		// bit 0: enable planetarium mode         bit 5: constellation patterns
 		// bit 1: celestial grid                  bit 6: constellation labels
 		// bit 2: ecliptic grid                   bit 7: long constellation names
 		// bit 3: galactic grid                   bit 8: constellation boundaries
 		// bit 4: equator of current target       bit 9: celestial sphere feature markers
-	DWORD  flagMarkers;         // bitflags for surface and object marker display
+	uint32_t  flagMarkers;         // bitflags for surface and object marker display
 	    // bit 0: enable markers                  bit 3: surface bases
 	    // bit 1: solar system bodies             bit 4: VOR transmitters
 	    // bit 2: vessels                         bit 5: surface features
-	DWORD  flagBodyForce;		// body force vector display
+	uint32_t  flagBodyForce;		// body force vector display
 	float  scaleBodyForce;		// force vector scaling factor
 	float  opacBodyForce;		// force vector opacity factor
-	DWORD  flagFrameAxes;		// frame axes vector display
+	uint32_t  flagFrameAxes;		// frame axes vector display
 	float  scaleFrameAxes;		// frame axes scaling factor
 	float  opacFrameAxes;		// frame axes opacity factor
 };
@@ -185,11 +183,11 @@ struct CFG_PLANETRENDERPRM {
 	int    PatchRes;            // power n of surface patch mesh resolution 2<<n [n=4,5]
 	int    LoadFrequency;       // tile load frequency
 	int    AnisoMode;
-	DWORD  TileLoadFlags;       // flags for planetary tile load mechanism
+	uint32_t  TileLoadFlags;       // flags for planetary tile load mechanism
 };
 
 struct CFG_MAPPRM {
-	DWORD DispFlag;
+	uint32_t DispFlag;
 };
 
 struct CFG_RECPLAYPRM {
@@ -206,29 +204,29 @@ struct CFG_RECPLAYPRM {
 
 struct CFG_DEVPRM {
 	int    Device_idx;			// index of default device
-	DWORD  Device_mode;			// index of default fullscreen mode
-	DWORD  Device_out;			// device output
-	DWORD  Device_style;		// Rendering layout
+	uint32_t  Device_mode;			// index of default fullscreen mode
+	uint32_t  Device_out;			// device output
+	uint32_t  Device_style;		// Rendering layout
 	bool   bForceEnum;			// force enumeration, bypass device.dat
 	bool   bFullscreen;			// use window mode
 	bool   bStereo;				// use stereo mode
 	bool   bNoVsync;			// no vertical sync (fullscreen only)
 	bool   bTryStencil;			// try stencil buffers when available
 	bool   bPageflip;			// allow page flipping in fullscreen mode (disabling can fix flicker problem)
-	DWORD  WinW;				// window width (pixel) for windowed mode
-	DWORD  WinH;				// window height (pixel) for windowed mode
+	uint32_t  WinW;				// window width (pixel) for windowed mode
+	uint32_t  WinH;				// window height (pixel) for windowed mode
 };
 
 struct CFG_JOYSTICKPRM {
-	DWORD  Joy_idx;				// joystick device index (0=disabled)
-	DWORD  Deadzone;			// central deadzone range for all axes (0-10000)
-	DWORD  ThrottleAxis;		// joystick throttle axis (0=none, 1=z-axis, 2=slider 0, 3=slider 1)
-	DWORD  ThrottleSaturation;	// saturation level for joystick throttle control (0-10000)
+	uint32_t  Joy_idx;				// joystick device index (0=disabled)
+	uint32_t  Deadzone;			// central deadzone range for all axes (0-10000)
+	uint32_t  ThrottleAxis;		// joystick throttle axis (0=none, 1=z-axis, 2=slider 0, 3=slider 1)
+	uint32_t  ThrottleSaturation;	// saturation level for joystick throttle control (0-10000)
 	bool   bThrottleIgnore;		// ignore joystick throttle setting on start
 };
 
 struct CFG_UIPRM {              // user interface options
-	DWORD  MouseFocusMode;	    // 0: focus requires click; 1: focus requires click for child windows only; 2: focus follow mouse
+	uint32_t  MouseFocusMode;	    // 0: focus requires click; 1: focus requires click for child windows only; 2: focus follow mouse
 	int    MenuMode;            // 0=show, 1=hide, 2=auto-hide
 	bool   bMenuLabelOnly;      // display only menu labels?
 	bool   bWarpAlways;         // always display time acceleration != 1
@@ -267,13 +265,13 @@ struct CFG_CAMERAPRM {
 };
 
 struct CFG_WINDOWPOS {
-	RECT DlgMap;                // map window position
-	RECT DlgInfo;               // info window position
-	RECT DlgCamera;             // camera dialog position
-	RECT DlgFocus;				// focus dialog position
-	RECT DlgTacc;               // time acceleration dialog position
-	RECT DlgOptions;            // options dialog position
-	RECT DlgVishelper;          // visual helper dialog position
+	Rect DlgMap;                // map window position
+	Rect DlgInfo;               // info window position
+	Rect DlgCamera;             // camera dialog position
+	Rect DlgFocus;				// focus dialog position
+	Rect DlgTacc;               // time acceleration dialog position
+	Rect DlgOptions;            // options dialog position
+	Rect DlgVishelper;          // visual helper dialog position
 	int LaunchpadScnListWidth;  // width of Launchpad scenario list
 	int LaunchpadModListWidth;  // width of Launchpad modules list
 	int LaunchpadExtListWidth;  // width of Launchpad extras list
@@ -354,7 +352,7 @@ public:
 
 	bool Load(const char* fname);
 
-	BOOL Write (const char *fname = 0) const;
+	bool Write (const char *fname = 0) const;
 	// write config parameters to file "fname"
 	// returns FALSE if write fails
 
@@ -381,13 +379,13 @@ public:
 	// fill cbuf with the complete path for file name.ext in the planetary texture directory
 
 	bool bEchoAll;          // echo all configuration parameters (or only non-default ones)?
-	RECT rLaunchpad;        // launchpad dialog position
+	Rect rLaunchpad;        // launchpad dialog position
 
 	// directory information
 	char *Root;             // master config file
 
 	// visual parameters
-	DWORD AmbientColour;         // RGBA value of ambient component
+	uint32_t AmbientColour;         // RGBA value of ambient component
 
 	CFG_DIRPRM CfgDirPrm;				// subdirectory list
 	CFG_PHYSICSPRM CfgPhysicsPrm;		// physics engine parameters
@@ -431,10 +429,10 @@ public:
 	 */
 	void DelActiveModule (const std::string& name);
 
-	inline void SetAmbientLevel (DWORD lvl)
-	{ AmbientColour = (CfgVisualPrm.AmbientLevel = std::min (lvl, (DWORD)0xff)) * 0x01010101; }
+	inline void SetAmbientLevel (uint32_t lvl)
+	{ AmbientColour = (CfgVisualPrm.AmbientLevel = std::min (lvl, (uint32_t)0xff)) * 0x01010101; }
 
-	const void *GetParam (DWORD paramtype) const;
+	const void *GetParam (uint32_t paramtype) const;
 	// return a specific parameter setting (paramtype defined in GraphicsAPI.h)
 
 	// Read items from master config
@@ -464,29 +462,4 @@ private:
 
 	std::list<std::string> m_activeModules; ///< list of active modules
 };
-
-// =============================================================
-
-class GDIResources {
-public:
-	GDIResources (HWND hWnd, DWORD winW, DWORD winH, const Config &config);
-	~GDIResources ();
-
-	// ingame dialog fonts
-	HFONT dlgF1r, dlgF1i; // standard dialog font (roman and italic) - can be variable pitch
-	int dlgF1H, dlgF1W;   // line height, average character width
-
-	HFONT dlgF2;          // fixed pitch dialog font
-	int dlgF2H, dlgF2W;   // line height, character width
-};
-
-// =============================================================
-
-// OBSOLETE!
-#ifdef __CONFIG_CPP
-GDIResources *g_gdires = 0;
-#else
-extern GDIResources *g_gdires;
-#endif
-
 #endif // !__CONFIG_H

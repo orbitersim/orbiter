@@ -64,7 +64,7 @@ Pane::Pane (oapi::GraphicsClient *gclient, HWND hwnd, int width, int height, int
 	
 	i = g_pOrbiter->Cfg()->CfgInstrumentPrm.bMfdPow2;
 	if (i == 2) {
-		DWORD val;
+		uint32_t val;
 		gc->clbkGetRenderParam (RP_REQUIRETEXPOW2, &val);
 		mfdsize_pow2 = (val > 0);
 	} else mfdsize_pow2 = (i > 0);
@@ -87,7 +87,7 @@ Pane::Pane (oapi::GraphicsClient *gclient, HWND hwnd, int width, int height, int
 
 Pane::~Pane ()
 {
-	DWORD i;
+	uint32_t i;
 	for (i = 0; i < MAXMFD; i++)
 		if (mfd[i].instr) delete mfd[i].instr;
 	if (nemfd) {
@@ -121,20 +121,20 @@ void Pane::FocusChanged (const Vessel *focus)
 	//OpenMFD (1, MFD_NONE);
 	if (panelmode) SetPanelMode (panelmode, true);
 	Instrument::ClearDisabledModes();
-	for (DWORD i = 0; i < nemfd; i++)
+	for (uint32_t i = 0; i < nemfd; i++)
 		emfd[i]->clbkFocusChanged ((OBJHANDLE)focus);
 }
 
 void Pane::DelVessel (const Vessel *vessel)
 {
-	for (DWORD i = 0; i < nemfd; i++)
+	for (uint32_t i = 0; i < nemfd; i++)
 		if ((Vessel*)emfd[i]->GetVessel() == vessel)
 			emfd[i]->SetVessel ((OBJHANDLE)g_focusobj);
 	BroadcastMFDMessage (MSG_KILLVESSEL, (void*)vessel);
 	if (hud) hud->ProcessMessage (MSG_KILLVESSEL, (void*)vessel);
 }
 
-bool Pane::MFDConsumeKeyBuffered (int id, DWORD key)
+bool Pane::MFDConsumeKeyBuffered (int id, uint32_t key)
 {
 	if (key == OAPI_KEY_ESCAPE) {
 		ToggleMFD_on (id);
@@ -145,7 +145,7 @@ bool Pane::MFDConsumeKeyBuffered (int id, DWORD key)
 	return false;
 }
 
-bool Pane::ProcessMouse_System(UINT event, DWORD state, DWORD x, DWORD y, const char *kstate)
+bool Pane::ProcessMouse_System(UINT event, uint32_t state, uint32_t x, uint32_t y, const char *kstate)
 {
 	if (g_camera->IsExternal()) return false;
 	// respond to mouse events only in cockpit mode
@@ -158,7 +158,7 @@ bool Pane::ProcessMouse_System(UINT event, DWORD state, DWORD x, DWORD y, const 
 	return consumed;
 }
 
-bool Pane::ProcessMouse_OnRunning (UINT event, DWORD state, DWORD x, DWORD y, const char *kstate)
+bool Pane::ProcessMouse_OnRunning (UINT event, uint32_t state, uint32_t x, uint32_t y, const char *kstate)
 {
 	if (g_camera->IsExternal()) return false;
 	// respond to mouse events only in cockpit mode
@@ -434,8 +434,8 @@ bool Pane::SetHUDMode (int _hudmode, const HUDPARAM *prm)
 				}
 				} break;
 			case HUD_DOCKING: {
-				DWORD curNav = ((HUD_Docking*)hud)->GetNav();
-				DWORD newNav = prm->HUDdocking.NavIdx;
+				uint32_t curNav = ((HUD_Docking*)hud)->GetNav();
+				uint32_t newNav = prm->HUDdocking.NavIdx;
 				if (curNav != newNav) {
 					((HUD_Docking*)hud)->SetNav (newNav);
 					changed = true;
@@ -475,9 +475,9 @@ void Pane::SetHUDColour (int idx, double intens, bool force)
 	if (change_col)    colidx = idx;
 	if (change_intens) hudIntens = intens;
 	COLORREF hue = col[colidx];
-	hudCol = ((DWORD)((hue & 0xff) * hudIntens)) +
-			 ((DWORD)(((hue >> 8) & 0xff) * hudIntens) << 8) +
-             ((DWORD)((hue >> 16) * hudIntens) << 16);
+	hudCol = ((uint32_t)((hue & 0xff) * hudIntens)) +
+			 ((uint32_t)(((hue >> 8) & 0xff) * hudIntens) << 8) +
+             ((uint32_t)((hue >> 16) * hudIntens) << 16);
 	if (hudpen) gc->clbkReleasePen (hudpen);
 	hudpen = gc->clbkCreatePen (1, 0, hudCol);
 	if (change_col) {
@@ -529,7 +529,7 @@ void Pane::SetWarp (double _warp)
 // Update GDI elements of 2D pane
 void Pane::Update (double simt, double syst)
 {
-	DWORD j;
+	uint32_t j;
 
 	// update menu bar
 	if (mibar) mibar->Update (simt);
@@ -657,7 +657,7 @@ void Pane::Render ()
 void Pane::Timejump ()
 {
 	int i;
-	DWORD j;
+	uint32_t j;
 	for (i = 0; i < MAXMFD; i++)
 		if (mfd[i].instr) mfd[i].instr->Timejump();
 	for (j = 0; j < nemfd; j++)
@@ -739,7 +739,7 @@ void Pane::InitResources ()
 	hudfont[1] = gc->clbkCreateFont (f2H, true, "Sans");
 	hudpen  = gc->clbkCreatePen (1, 0, RGB(0,255,0));
 
-	DWORD charsize;
+	uint32_t charsize;
 	if (skp) {
 		skp->SetFont (hudfont[0]);
 		charsize = skp->GetCharSize ();
@@ -972,7 +972,7 @@ int Pane::BroadcastMFDMessage (int mfdmode, int msg, void *data)
 	for (int i = 0; i < MAXMFD; i++)
 		if (mfd[i].instr && mfd[i].instr->Type() == mfdmode)
 			if (mfd[i].instr->ProcessMessage (msg, data)) nproc++;
-	for (DWORD j = 0; j < nemfd; j++)
+	for (uint32_t j = 0; j < nemfd; j++)
 		if (emfd[j]->Active() && emfd[j]->instr->Type() == mfdmode)
 			if (emfd[j]->instr->ProcessMessage (msg, data)) nproc++;
 	return nproc;
@@ -984,13 +984,13 @@ int Pane::BroadcastMFDMessage (int msg, void *data)
 	for (int i = 0; i < MAXMFD; i++)
 		if (mfd[i].instr)
 			if (mfd[i].instr->ProcessMessage (msg, data)) nproc++;
-	for (DWORD j = 0; j < nemfd; j++)
+	for (uint32_t j = 0; j < nemfd; j++)
 		if (emfd[j]->Active())
 			if (emfd[j]->instr->ProcessMessage (msg, data)) nproc++;
 	return nproc;
 }
 
-void Pane::OptionChanged(DWORD cat, DWORD item)
+void Pane::OptionChanged(uint32_t cat, uint32_t item)
 {
 	if (cat == OPTCAT_INSTRUMENT) {
 		if (item == OPTITEM_INSTRUMENT_MFDVCSIZE)
@@ -1054,7 +1054,7 @@ void Pane::RegisterExternMFD (ExternMFD *mfd, const MFDSPEC &spec)
 	emfd[nemfd] = mfd;
 
 //	// find a unique identifier
-//	DWORD i;
+//	uint32_t i;
 //	emfd[nemfd]->id = maxMFD;
 //	for (i = 0; i < nemfd; i++)
 //		if (emfd[i]->id >= emfd[nemfd]->id)
@@ -1066,7 +1066,7 @@ void Pane::RegisterExternMFD (ExternMFD *mfd, const MFDSPEC &spec)
 
 bool Pane::UnregisterExternMFD (ExternMFD *mfd)
 {
-	DWORD i, j, k;
+	uint32_t i, j, k;
 	for (i = 0; i < nemfd; i++) {
 		if (emfd[i] == mfd) {
 			delete emfd[i];
@@ -1091,7 +1091,7 @@ Instrument *Pane::MFD (int which)
 {
 	if (which >= 0 && which < MAXMFD)
 		return mfd[which].instr;
-	for (DWORD i = 0; i < nemfd; i++) {
+	for (uint32_t i = 0; i < nemfd; i++) {
 		assert(false); // This code section doesn't seem to run. If it does that's trouble
 		if (which == (INT_PTR)emfd[i]->Id())
 			return emfd[i]->instr;
@@ -1150,7 +1150,7 @@ const VCMFDSPEC *Pane::GetVCMFDParams (int id)
 	//return (mfd[id].exist ? mfd[id].vcs : 0);
 }
 
-void Pane::RegisterVCArea (int id, const RECT &tgtrect, int draw_mode, int mouse_mode, int bkmode, SURFHANDLE tgt)
+void Pane::RegisterVCArea (int id, const Rect &tgtrect, int draw_mode, int mouse_mode, int bkmode, SURFHANDLE tgt)
 {
 	if (vcockpit) vcockpit->DefineArea (id, tgtrect, draw_mode, mouse_mode, bkmode, tgt);
 }
@@ -1188,7 +1188,7 @@ void Pane::RepaintMFDButtons (INT_PTR id, Instrument *instr)
 		if (defpanel) defpanel->RepaintMFDButtons (id);
 	} else {
 		// check if external MFDs actually need to be repainted here
-		for (DWORD i = 0; i < nemfd; i++) {
+		for (uint32_t i = 0; i < nemfd; i++) {
 			if (emfd[i]->instr == instr) {
 				emfd[i]->clbkRefreshButtons();
 				break;
@@ -1197,18 +1197,18 @@ void Pane::RepaintMFDButtons (INT_PTR id, Instrument *instr)
 	}
 }
 
-void Pane::RegisterPanelBackground (HBITMAP hBmp, DWORD flag, DWORD ck)
+void Pane::RegisterPanelBackground (HBITMAP hBmp, uint32_t flag, uint32_t ck)
 {
 	if (panel) panel->DefineBackground (hBmp, flag, ck);
 	DeleteObject ((HGDIOBJ)hBmp);
 }
 
-void Pane::RegisterPanelBackground (SURFHANDLE hSurf, DWORD flag)
+void Pane::RegisterPanelBackground (SURFHANDLE hSurf, uint32_t flag)
 {
 	// todo
 }
 
-void Pane::RegisterPanelArea (int aid, const RECT &pos, int draw_mode, int mouse_mode, int bkmode)
+void Pane::RegisterPanelArea (int aid, const Rect &pos, int draw_mode, int mouse_mode, int bkmode)
 {
 	/*if      (panel2d) panel2d->DefineArea (aid, pos, draw_mode, mouse_mode, bkmode);
 	else*/ if (panel)   panel->DefineArea (aid, pos, draw_mode, mouse_mode, bkmode);

@@ -15,7 +15,6 @@ set(common_src
 	console_ng.cpp
 	Element.cpp
 	elevmgr.cpp
-	Help.cpp
 	Input.cpp
 	Keymap.cpp
 	LightEmitter.cpp

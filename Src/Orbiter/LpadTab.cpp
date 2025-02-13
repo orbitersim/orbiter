@@ -11,7 +11,6 @@
 #include "LpadTab.h"
 #include "Launchpad.h"
 #include "Log.h"
-#include "Help.h"
 #include "resource.h"
 
 using std::max;
@@ -63,7 +62,7 @@ void orbiter::LaunchpadTab::Hide ()
 
 void orbiter::LaunchpadTab::OpenTabHelp(const char* topic)
 {
-	::OpenDefaultHelp(LaunchpadWnd(), topic);
+	// ::OpenDefaultHelp(LaunchpadWnd(), topic);
 }
 
 //-----------------------------------------------------------------------------

@@ -14,10 +14,10 @@ VesselMFD: Class instantiated for MFDs declared inside Lua Vessel modules
 class VesselMFD : public MFD2
 {
 public:
-	VesselMFD(DWORD w, DWORD h, VESSEL* vessel, VesselMFDContext* ctx);
+	VesselMFD(uint32_t w, uint32_t h, VESSEL* vessel, VesselMFDContext* ctx);
 	virtual ~VesselMFD();
 	bool ConsumeButton(int bt, int event) override;
-	bool ConsumeKeyBuffered(DWORD key) override;
+	bool ConsumeKeyBuffered(uint32_t key) override;
 	bool ConsumeKeyImmediate(char* kstate) override;
 	char* ButtonLabel(int bt) override;
 	int ButtonMenu(const MFDBUTTONMENU** menu) const override;
@@ -124,7 +124,7 @@ int Interpreter::lua_get_vesselstatus_version (lua_State *L, int idx) // Returns
 
 	// Very crude and simple check
 	lua_getfield(L, idx, "version");
-	DWORD version = lua_tointeger(L, -1);
+	uint32_t version = lua_tointeger(L, -1);
 
 	return (version > 0 && version <= 2) ? version : 0;
 }
@@ -169,7 +169,7 @@ void Interpreter::lua_push_vessel_status (lua_State *L, const VESSELSTATUS2 &vs)
 
 	// Fuel list
 	lua_createtable(L, vs.nfuel, 0);
-	for (DWORD i = 0; i < vs.nfuel; ++i) {
+	for (uint32_t i = 0; i < vs.nfuel; ++i) {
 		lua_pushnumber(L, i + 1);  // Put key of the Nth child table on-top of Lua VM stack
 
 		lua_createtable(L, 0, 2);  // Create Nth child table of size 2 non-array elements
@@ -184,7 +184,7 @@ void Interpreter::lua_push_vessel_status (lua_State *L, const VESSELSTATUS2 &vs)
 
 	// Thruster list
 	lua_createtable(L, vs.nthruster, 0);
-	for (DWORD i = 0; i < vs.nthruster; ++i) {
+	for (uint32_t i = 0; i < vs.nthruster; ++i) {
 		lua_pushnumber(L, i + 1);
 		lua_createtable(L, 0, 2);
 		lua_pushinteger(L, vs.thruster[i].idx);
@@ -197,7 +197,7 @@ void Interpreter::lua_push_vessel_status (lua_State *L, const VESSELSTATUS2 &vs)
 
 	// Dock info list
 	lua_createtable(L, vs.ndockinfo, 0);
-	for (DWORD i = 0; i < vs.ndockinfo; ++i) {
+	for (uint32_t i = 0; i < vs.ndockinfo; ++i) {
 		lua_pushnumber(L, i + 1);
 		lua_createtable(L, 0, 3);
 		lua_pushinteger(L, vs.dockinfo[i].idx);
@@ -1344,7 +1344,7 @@ int Interpreter::v_get_touchdownpoints (lua_State *L)
 
 	if (lua_gettop(L) >= 2) // new API
 	{
-		DWORD idx = luamtd_tointeger_safe(L, 2, funcname);
+		uint32_t idx = luamtd_tointeger_safe(L, 2, funcname);
 		TOUCHDOWNVTX tdvtx;
 		if (v->GetTouchdownPoint(tdvtx, idx)) {
 			lua_pushtouchdownvtx(L, tdvtx);
@@ -1399,7 +1399,7 @@ int Interpreter::v_set_touchdownpoints (lua_State *L)
 	{
 		AssertPrmType(L, -1, PRMTP_TABLE, funcname);
 		TOUCHDOWNVTX *tdvtx;
-		DWORD ntdvtx, nbuf;
+		uint32_t ntdvtx, nbuf;
 
 		ntdvtx = nbuf = 0;
 		lua_pushnil(L);
@@ -1828,7 +1828,7 @@ int Interpreter::v_get_status(lua_State* L)
 	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
 
 	// For version 2 (or greater) the caller has to set version number as 1st parameter
-	DWORD version = (lua_gettop(L) >= 2) ? lua_tointeger(L, 2) : 2; // default to version 2
+	uint32_t version = (lua_gettop(L) >= 2) ? lua_tointeger(L, 2) : 2; // default to version 2
 	ASSERT_SYNTAX((version > 0 && version <= 2), "Invalid version");
 
 	if (version == 1)
@@ -1874,7 +1874,7 @@ int Interpreter::v_get_rawstatus(lua_State* L)
 	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
 
 	// For version 2 (or greater) the caller has to set version number as 1st parameter
-	DWORD version = (lua_gettop(L) >= 2) ? lua_tointeger(L, 2) : 2; // default to version 2
+	uint32_t version = (lua_gettop(L) >= 2) ? lua_tointeger(L, 2) : 2; // default to version 2
 	ASSERT_SYNTAX((version > 0 && version <= 2), "Invalid version");
 
 	if (version == 1)
@@ -2363,7 +2363,7 @@ int Interpreter::v_is_landed (lua_State *L)
 	static const char *funcname = "is_landed";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	DWORD status = v->GetFlightStatus();
+	uint32_t status = v->GetFlightStatus();
 	if (status & 1) {
 		OBJHANDLE hBody = v->GetSurfaceRef ();
 		lua_pushlightuserdata (L, hBody);
@@ -3668,7 +3668,7 @@ int Interpreter::v_edit_airfoil (lua_State *L)
 	// @todo: better check for nil ... (optionals) ... and build 'flag' based on that
 
 	AIRFOILHANDLE hAirfoil = (AIRFOILHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
-	DWORD flag = luamtd_tointeger_safe(L, 3, funcname);
+	uint32_t flag = luamtd_tointeger_safe(L, 3, funcname);
 	VECTOR3 ref = luamtd_tovector_safe(L, 4, funcname);
 	double c = luamtd_tonumber_safe(L, 6, funcname),
 	       S = luamtd_tonumber_safe(L, 7, funcname),
@@ -4746,7 +4746,7 @@ int Interpreter::v_get_propellantcount (lua_State *L)
 	static const char *funcname = "get_propellantcount";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	DWORD n = v->GetPropellantCount();
+	uint32_t n = v->GetPropellantCount();
 	lua_pushnumber (L, n);
 	return 1;
 }
@@ -5109,7 +5109,7 @@ int Interpreter::v_get_thrustercount (lua_State *L)
 	static const char *funcname = "get_thrustercount";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	DWORD count = v->GetThrusterCount();
+	uint32_t count = v->GetThrusterCount();
 	lua_pushnumber(L, count);
 	return 1;
 }
@@ -6759,7 +6759,7 @@ int Interpreter::v_get_attachmenthandle (lua_State *L)
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	bool toparent = luamtd_toboolean_safe(L, 2, funcname);
-	DWORD idx = (DWORD)luamtd_tointeger_safe(L, 3, funcname);
+	uint32_t idx = (uint32_t)luamtd_tointeger_safe(L, 3, funcname);
 	ATTACHMENTHANDLE hAttachment = v->GetAttachmentHandle (toparent, idx);
 	if (hAttachment) lua_pushlightuserdata (L, hAttachment);
 	else lua_pushnil (L);
@@ -6902,7 +6902,7 @@ int Interpreter::v_set_transponderchannel (lua_State *L)
 	static const char *funcname = "set_transponderchannel";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	DWORD ch = (DWORD)luamtd_tointeger_safe(L, 2, funcname);
+	uint32_t ch = (uint32_t)luamtd_tointeger_safe(L, 2, funcname);
 	ASSERT_SYNTAX(ch < 640, "Argument 1: out of range");
 	v->SetTransponderChannel (ch);
 	return 0;
@@ -6984,7 +6984,7 @@ int Interpreter::v_set_idschannel (lua_State *L)
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	DOCKHANDLE hDock = (DOCKHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
-	DWORD ch = (DWORD)luamtd_tointeger_safe(L, 3, funcname);
+	uint32_t ch = (uint32_t)luamtd_tointeger_safe(L, 3, funcname);
 	ASSERT_SYNTAX(ch < 640, "Argument 2: out of range");
 	v->SetIDSChannel (hDock, ch);
 	return 0;
@@ -7010,7 +7010,7 @@ int Interpreter::v_init_navradios (lua_State *L)
 	static const char *funcname = "init_navradios";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	DWORD nnav = (DWORD)luamtd_tointeger_safe(L, 2, funcname);
+	uint32_t nnav = (uint32_t)luamtd_tointeger_safe(L, 2, funcname);
 	ASSERT_SYNTAX(nnav < 100, "Argument 1: out of range"); // sanity check
 	v->InitNavRadios (nnav);
 	return 0;
@@ -7048,8 +7048,8 @@ int Interpreter::v_set_navchannel (lua_State *L)
 	static const char *funcname = "set_navchannel";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	DWORD n = (DWORD)lua_tointeger_safe(L, 2, funcname);
-	DWORD ch = (DWORD)lua_tointeger_safe(L, 3, funcname);
+	uint32_t n = (uint32_t)lua_tointeger_safe(L, 2, funcname);
+	uint32_t ch = (uint32_t)lua_tointeger_safe(L, 3, funcname);
 	ASSERT_SYNTAX(ch < 640, "Argument 2: out of range");
 	v->SetNavChannel (n, ch);
 	return 0;
@@ -7070,8 +7070,8 @@ int Interpreter::v_get_navchannel (lua_State *L)
 	static const char *funcname = "get_navchannel";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	DWORD n = (DWORD)lua_tointeger_safe(L, 2, funcname);
-	DWORD ch = v->GetNavChannel (n);
+	uint32_t n = (uint32_t)lua_tointeger_safe(L, 2, funcname);
+	uint32_t ch = v->GetNavChannel (n);
 	lua_pushnumber (L, ch);
 	return 1;
 }
@@ -7098,7 +7098,7 @@ int Interpreter::v_get_navsource (lua_State *L)
 	static const char *funcname = "get_navsource";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	DWORD n = (DWORD)lua_tointeger_safe(L, 2, funcname);
+	uint32_t n = (uint32_t)lua_tointeger_safe(L, 2, funcname);
 	NAVHANDLE hNav = v->GetNavSource (n);
 	if (hNav) lua_pushlightuserdata(L,hNav);
 	else      lua_pushnil (L);
@@ -7396,7 +7396,7 @@ int Interpreter::v_get_lightemitter (lua_State *L)
 	static const char *funcname = "get_lightemitter";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	DWORD idx = (DWORD)luamtd_tointeger_safe(L, 2, funcname);
+	uint32_t idx = (uint32_t)luamtd_tointeger_safe(L, 2, funcname);
 	const LightEmitter *le = v->GetLightEmitter (idx);
 	if (le) lua_pushlightemitter (L, le);
 	else    lua_pushnil (L);
@@ -7415,7 +7415,7 @@ int Interpreter::v_get_lightemittercount (lua_State *L)
 	static const char *funcname = "get_lightemittercount";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	DWORD n = v->LightEmitterCount();
+	uint32_t n = v->LightEmitterCount();
 	lua_pushinteger (L, n);
 	return 1;
 }
@@ -8515,10 +8515,10 @@ int Interpreter::v_set_panelbackground(lua_State* L)
 	}
 	
 	MESHHANDLE hMesh = lua_tomeshhandle(L, 4);
-	DWORD width = luaL_checkinteger(L, 5);
-	DWORD height = luaL_checkinteger(L, 6);
-	DWORD baseline =  luaL_checkinteger(L, 7);
-	DWORD scrollflag =  luaL_checkinteger(L, 8);
+	uint32_t width = luaL_checkinteger(L, 5);
+	uint32_t height = luaL_checkinteger(L, 6);
+	uint32_t baseline =  luaL_checkinteger(L, 7);
+	uint32_t scrollflag =  luaL_checkinteger(L, 8);
 	VESSEL3* v3 = (VESSEL3*)v;
 	v3->SetPanelBackground(hPanel, hSurf, nsurf, hMesh, width, height, baseline, scrollflag);
 	return 0;
@@ -8632,26 +8632,26 @@ int Interpreter::v_register_panelarea(lua_State* L)
 
 	PANELHANDLE hPanel = lua_touserdata(L, 2);
 	int id = luaL_checkinteger(L, 3);
-	RECT pos = lua_torect(L, 4);
+	Rect pos = lua_torect(L, 4);
 
 	if(lua_istable(L, 5)) {
-		//int RegisterPanelArea (PANELHANDLE hPanel, int id, const RECT &pos, const RECT &texpos, int draw_event, int mouse_event, int bkmode);
-		RECT texpos = lua_torect(L, 5);
+		//int RegisterPanelArea (PANELHANDLE hPanel, int id, const Rect &pos, const Rect &texpos, int draw_event, int mouse_event, int bkmode);
+		Rect texpos = lua_torect(L, 5);
 		int draw_event = luaL_checkinteger(L, 6);
 		int mouse_event = luaL_checkinteger(L, 7);
 		int bkmode = luaL_checkinteger(L, 8);
 		v4->RegisterPanelArea (hPanel, id, pos, texpos, draw_event, mouse_event, bkmode);
 	} else {
 		if(lua_istable(L, 6)) {
-			//int RegisterPanelArea (PANELHANDLE hPanel, int id, const RECT &pos, int texidx, const RECT &texpos, int draw_event, int mouse_event, int bkmode);
+			//int RegisterPanelArea (PANELHANDLE hPanel, int id, const Rect &pos, int texidx, const Rect &texpos, int draw_event, int mouse_event, int bkmode);
 			int texidx = luaL_checkinteger(L, 5);
-			RECT texpos = lua_torect(L, 6);
+			Rect texpos = lua_torect(L, 6);
 			int draw_event = luaL_checkinteger(L, 7);
 			int mouse_event = luaL_checkinteger(L, 8);
 			int bkmode = luaL_checkinteger(L, 9);
 			v4->RegisterPanelArea(hPanel, id, pos, texidx, texpos, draw_event, mouse_event, bkmode);
 		} else {
-			//int RegisterPanelArea (PANELHANDLE hPanel, int id, const RECT &pos, int draw_event, int mouse_event, SURFHANDLE surf = NULL, void *context = NULL);
+			//int RegisterPanelArea (PANELHANDLE hPanel, int id, const Rect &pos, int draw_event, int mouse_event, SURFHANDLE surf = NULL, void *context = NULL);
 			int draw_event = luaL_checkinteger(L, 5);
 			int mouse_event = luaL_checkinteger(L, 6);
 
@@ -8829,7 +8829,7 @@ int Interpreter::v_get_exhaustcount (lua_State *L)
 	static const char *funcname = "get_exhaustcount";
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	DWORD count = v->GetExhaustCount();
+	uint32_t count = v->GetExhaustCount();
 	lua_pushnumber (L, count);
 	return 1;
 }
@@ -8879,7 +8879,7 @@ int Interpreter::v_add_exhauststream(lua_State* L)
 	AssertMtdPrmType(L, idx, PRMTP_TABLE, funcname);
 
 	lua_getfield(L, idx, "flags");
-	pss.flags = (lua_isnumber(L, -1) ? (DWORD)(lua_tonumber(L, -1) + 0.5) : 0);
+	pss.flags = (lua_isnumber(L, -1) ? (uint32_t)(lua_tonumber(L, -1) + 0.5) : 0);
 	lua_pop(L, 1);
 
 	lua_getfield(L, idx, "srcsize");
@@ -9002,7 +9002,7 @@ int Interpreter::v_add_reentrystream(lua_State* L)
 	AssertMtdPrmType(L, idx, PRMTP_TABLE, funcname);
 
 	lua_getfield(L, idx, "flags");
-	pss.flags = (lua_isnumber(L, -1) ? (DWORD)(lua_tonumber(L, -1) + 0.5) : 0);
+	pss.flags = (lua_isnumber(L, -1) ? (uint32_t)(lua_tonumber(L, -1) + 0.5) : 0);
 	lua_pop(L, 1);
 
 	lua_getfield(L, idx, "srcsize");
@@ -9110,7 +9110,7 @@ int Interpreter::v_add_particlestream(lua_State* L)
 	AssertMtdPrmType(L, idx, PRMTP_TABLE, funcname);
 
 	lua_getfield(L, idx, "flags");
-	pss.flags = (lua_isnumber(L, -1) ? (DWORD)(lua_tonumber(L, -1) + 0.5) : 0);
+	pss.flags = (lua_isnumber(L, -1) ? (uint32_t)(lua_tonumber(L, -1) + 0.5) : 0);
 	lua_pop(L, 1);
 
 	lua_getfield(L, idx, "srcsize");
@@ -9547,14 +9547,14 @@ int Interpreter::v_trigger_redrawarea (lua_State *L)
 
 // We create a VesselMFD, the lua side is in charge of overloading the metatable,
 // then we save the lua object reference to be used when then core will call VesselMFD callbacks
-OAPI_MSGTYPE Interpreter::MsgProcMFD(UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam)
+void* Interpreter::MsgProcMFD(UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam)
 {
 	switch (msg) {
 		case OAPI_MSG_MFD_OPENEDEX:
 		{
 			MFDMODEOPENSPEC* ospec = (MFDMODEOPENSPEC*)wparam;
-			DWORD w = ospec->w;
-			DWORD h = ospec->h;
+			uint32_t w = ospec->w;
+			uint32_t h = ospec->h;
 			VesselMFDContext* ctx = (VesselMFDContext*)ospec->spec->context;
 			VESSEL* vessel = (VESSEL*)lparam;
 			VesselMFD* vmfd = new VesselMFD(w, h, vessel, ctx);
@@ -9575,7 +9575,7 @@ OAPI_MSGTYPE Interpreter::MsgProcMFD(UINT msg, UINT mfd, WPARAM wparam, LPARAM l
 			} else {
 				vmfd->mfd_ref = luaL_ref(L, LUA_REGISTRYINDEX);
 			}
-			return (OAPI_MSGTYPE)(vmfd);
+			return (void*)(vmfd);
 		}
 	}
 	return 0;
@@ -9770,7 +9770,7 @@ int Interpreter::v_send_bufferedkey (lua_State *L)
 }
 
 
-VesselMFD::VesselMFD(DWORD w, DWORD h, VESSEL* vessel, VesselMFDContext* ctx) : MFD2(w, h, vessel) {
+VesselMFD::VesselMFD(uint32_t w, uint32_t h, VESSEL* vessel, VesselMFDContext* ctx) : MFD2(w, h, vessel) {
 	L = ctx->L;
 	mfd_ref = LUA_REFNIL;
 }
@@ -9801,7 +9801,7 @@ bool VesselMFD::ConsumeButton(int bt, int event) {
 	lua_pop(L, 1);
 	return consumed;
 }
-bool VesselMFD::ConsumeKeyBuffered(DWORD key) {
+bool VesselMFD::ConsumeKeyBuffered(uint32_t key) {
 	lua_rawgeti(L, LUA_REGISTRYINDEX, mfd_ref);
 	lua_getfield(L, -1, "consumekeybuffered");
 	bool consumed = false;

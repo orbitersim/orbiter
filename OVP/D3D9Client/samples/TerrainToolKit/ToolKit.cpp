@@ -377,7 +377,7 @@ bool ToolKit::Initialize()
 	hGradient = oapiCreateSurfaceEx(128, 128, OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE | OAPISURFACE_MIPMAPS | OAPISURFACE_PF_ARGB);
 	
 	Sketchpad* pSkp = oapiGetSketchpad(hGradient);
-	RECT r = { 0, 0, 129, 129 };
+	Rect r = { 0, 0, 129, 129 };
 	pSkp->SetBlendState(Sketchpad::BlendState::COPY);
 	pSkp->GradientFillRect(&r, 0x00000000, 0xFFFFFFFF, true);
 	pSkp->SetBlendState();
@@ -1064,7 +1064,7 @@ bool ToolKit::UpdateBackGround(SURFHANDLE hSurf, DWORD flags)
 			if (st.pNode) {
 				SURFHANDLE hSrc = st.pNode->GetTexture(flags); // Do not release
 				if (hSrc) {
-					RECT t = { se.x * 512, se.y * 512 , (se.x + 1) * 512, (se.y + 1) * 512 };
+					Rect t = { se.x * 512, se.y * 512 , (se.x + 1) * 512, (se.y + 1) * 512 };
 					pSkp->StretchRect(hSrc, &st.range, &t);
 					
 				}

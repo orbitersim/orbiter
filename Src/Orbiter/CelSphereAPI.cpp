@@ -108,7 +108,7 @@ void oapi::CelestialSphere::RenderCelestialMarkers(oapi::Sketchpad** ppSkp)
 		if ((*it).active) {
 			int size = (int)(m_viewH / 80.0 * (*it).size + 0.5);
 			int colidx = (*it).colour;
-			DWORD col = TextColorAdjusted(MarkerColorFloat(colidx));
+			uint32_t col = TextColorAdjusted(MarkerColorFloat(colidx));
 			oapi::Pen* markerPen;
 			if (m_textBlendAdditive)
 				markerPen = MarkerPen(colidx);
@@ -135,14 +135,14 @@ oapi::Font* oapi::CelestialSphere::MarkerFont() const
 
 // --------------------------------------------------------------
 
-oapi::Pen* oapi::CelestialSphere::MarkerPen(DWORD idx) const
+oapi::Pen* oapi::CelestialSphere::MarkerPen(uint32_t idx) const
 {
 	return (idx < 7 ? m_markerPen[idx] : 0);
 }
 
 // --------------------------------------------------------------
 
-COLORREF oapi::CelestialSphere::MarkerColor(DWORD idx) const
+COLORREF oapi::CelestialSphere::MarkerColor(uint32_t idx) const
 {
 	static COLORREF col[7] = { 0x00FFFF, 0xFFFF00, 0x4040FF, 0xFF00FF, 0x40FF40, 0xFF8080, 0xFFFFFF };
 	return (idx < 7 ? col[idx] : 0xFFFFFF);
@@ -150,7 +150,7 @@ COLORREF oapi::CelestialSphere::MarkerColor(DWORD idx) const
 
 // --------------------------------------------------------------
 
-oapi::FVECTOR4 oapi::CelestialSphere::MarkerColorFloat(DWORD idx) const
+oapi::FVECTOR4 oapi::CelestialSphere::MarkerColorFloat(uint32_t idx) const
 {
 	static oapi::FVECTOR4 col[7] = {
 		FVECTOR4(1.0f, 1.0f, 0.0f, 0.0f), FVECTOR4(0.0f, 1.0f, 1.0f, 0.0f), FVECTOR4(1.0f, 0.25f, 0.25f, 0.0f),
@@ -622,12 +622,12 @@ oapi::FVECTOR4 oapi::CelestialSphere::ColorAdjusted(const FVECTOR4& baseCol) con
 	return baseCol * colAdjust; // fade against a bright background
 }
 
-DWORD oapi::CelestialSphere::MarkerColorAdjusted(const FVECTOR4& baseCol) const
+uint32_t oapi::CelestialSphere::MarkerColorAdjusted(const FVECTOR4& baseCol) const
 {
 	return ColorAdjusted(baseCol).dword_argb();
 }
 
-DWORD oapi::CelestialSphere::TextColorAdjusted(const FVECTOR4& baseCol) const
+uint32_t oapi::CelestialSphere::TextColorAdjusted(const FVECTOR4& baseCol) const
 {
 	FVECTOR4 textCol = ColorAdjusted(baseCol);
 	if (!m_textBlendAdditive) { // explicitly add background colour
@@ -647,8 +647,8 @@ const MESHHANDLE oapi::CelestialSphere::GridLabelMesh()
 		const double ticksize_v = ticksize_h * 0.371;
 
 		// create the azimuth tick labels
-		DWORD navtx = 24 * 4;
-		DWORD naidx = 24 * 6;
+		uint32_t navtx = 24 * 4;
+		uint32_t naidx = 24 * 6;
 		NTVERTEX* avtx = new NTVERTEX[navtx];
 		WORD* aidx = new WORD[naidx];
 		for (int i = 0; i < 24; i++) {
@@ -676,8 +676,8 @@ const MESHHANDLE oapi::CelestialSphere::GridLabelMesh()
 		mesh->AddGroup(avtx, navtx, aidx, naidx);
 
 		// create elevation tick labels
-		DWORD nevtx = 11 * 4;
-		DWORD neidx = 11 * 6;
+		uint32_t nevtx = 11 * 4;
+		uint32_t neidx = 11 * 6;
 		NTVERTEX* evtx = new NTVERTEX[nevtx];
 		WORD* eidx = new WORD[neidx];
 		for (int i = 1; i <= 11; i++) {

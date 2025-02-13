@@ -127,7 +127,7 @@ void vObject::Activate(bool isactive)
 
 // ===========================================================================================
 //
-DWORD vObject::GetMeshCount()
+uint32_t vObject::GetMeshCount()
 {
 	return 0;
 }
@@ -347,7 +347,7 @@ void vObject::RenderDot(LPDIRECT3DDEVICE9 dev)
 //
 void vObject::RenderVectors (LPDIRECT3DDEVICE9 dev, D3D9Pad* pSkp)
 {
-	DWORD favmode = *(DWORD*)gc->GetConfigParam(CFGPRM_FRAMEAXISFLAG);
+	uint32_t favmode = *(uint32_t*)gc->GetConfigParam(CFGPRM_FRAMEAXISFLAG);
 
 	if (favmode & FAV_ENABLE) // General AXIS rendering ON/OFF
 	{

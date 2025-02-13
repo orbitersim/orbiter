@@ -104,13 +104,13 @@ bool MFDTemplate::Update (oapi::Sketchpad *skp)
 }
 
 // MFD message parser
-OAPI_MSGTYPE MFDTemplate::MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam)
+void* MFDTemplate::MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam)
 {
 	switch (msg) {
 	case OAPI_MSG_MFD_OPENED:
 		// Our new MFD mode has been selected, so we create the MFD and
 		// return a pointer to it.
-		return (OAPI_MSGTYPE)(new MFDTemplate (LOWORD(wparam), HIWORD(wparam), (VESSEL*)lparam));
+		return (void*)(new MFDTemplate (LOWORD(wparam), HIWORD(wparam), (VESSEL*)lparam));
 	}
 	return 0;
 }

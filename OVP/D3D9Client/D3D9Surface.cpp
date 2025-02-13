@@ -20,7 +20,7 @@ using namespace oapi;
 extern D3D9Client* g_client;
 
 
-void NatCheckFlags(DWORD &flags)
+void NatCheckFlags(uint32_t &flags)
 {
 	// Append dependend flags
 	if (flags & OAPISURFACE_RENDER3D) flags |= OAPISURFACE_RENDERTARGET;
@@ -66,7 +66,7 @@ LPDIRECT3DTEXTURE9 NatLoadSpecialTexture(const char* fname, const char* ext)
 		D3DXIMAGE_INFO info;	
 		if (D3DXGetImageInfoFromFileA(path, &info) == S_OK) {
 
-			DWORD Mips = D3DFMT_FROM_FILE;
+			uint32_t Mips = D3DFMT_FROM_FILE;
 
 			if (Config->TextureMips == 2) Mips = 0;                         // Autogen all
 			if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;  // Autogen missing
@@ -85,7 +85,7 @@ LPDIRECT3DTEXTURE9 NatLoadSpecialTexture(const char* fname, const char* ext)
 // ======================================================================================
 // Main loading routine
 //
-SURFHANDLE NatLoadSurface(const char* file, DWORD flags, bool bPath)
+SURFHANDLE NatLoadSurface(const char* file, uint32_t flags, bool bPath)
 {
 	LPDIRECT3DTEXTURE9 pTex = NULL;
 	SurfNative* pNat = NULL;
@@ -101,7 +101,7 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags, bool bPath)
 		}
 	}
 	
-	DWORD pass = OAPISURFACE_TEXTURE | OAPISURFACE_SHARED;
+	uint32_t pass = OAPISURFACE_TEXTURE | OAPISURFACE_SHARED;
 
 	// Load regular texture with additional maps if exists
 	//
@@ -116,7 +116,7 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags, bool bPath)
 			if (info.ImageFileFormat == D3DXIFF_PNG) info.Format = D3DFMT_X8R8G8B8;
 			if (info.ImageFileFormat == D3DXIFF_BMP) info.Format = D3DFMT_X8R8G8B8;
 
-			DWORD Mips = D3DFMT_FROM_FILE;
+			uint32_t Mips = D3DFMT_FROM_FILE;
 			if (Config->TextureMips == 2) Mips = 0;                         // Autogen all
 			if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;  // Autogen missing
 
@@ -154,8 +154,8 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags, bool bPath)
 		if (flags & OAPISURFACE_SKETCHPAD) flags |= OAPISURFACE_RENDERTARGET;
 		if (flags & OAPISURFACE_RENDERTARGET) flags |= OAPISURFACE_UNCOMPRESS;
 
-		DWORD Mips = D3DX_FROM_FILE;
-		DWORD Usage = 0;
+		uint32_t Mips = D3DX_FROM_FILE;
+		uint32_t Usage = 0;
 		D3DFORMAT Format = info.Format;
 		D3DPOOL Pool = D3DPOOL_DEFAULT;
 		D3DMULTISAMPLE_TYPE Multi = D3DMULTISAMPLE_NONE;
@@ -263,9 +263,9 @@ bool NatSaveSurface(const char* file, LPDIRECT3DRESOURCE9 pResource)
 
 		if (desc.Usage & D3DUSAGE_RENDERTARGET) {
 			LPDIRECT3DTEXTURE9 pSys = NULL;
-			DWORD Mips = pTex->GetLevelCount();
+			uint32_t Mips = pTex->GetLevelCount();
 			HR(D3DXCreateTexture(pDev, desc.Width, desc.Height, Mips, 0, desc.Format, D3DPOOL_SYSTEMMEM, &pSys));
-			for (DWORD i = 0; i < Mips; i++) {
+			for (uint32_t i = 0; i < Mips; i++) {
 				LPDIRECT3DSURFACE9 pSrc, pTgt;
 				HR(pTex->GetSurfaceLevel(i, &pSrc));
 				HR(pSys->GetSurfaceLevel(i, &pTgt));
@@ -292,10 +292,10 @@ bool NatSaveSurface(const char* file, LPDIRECT3DRESOURCE9 pResource)
 
 // ===============================================================================================
 //
-SURFHANDLE NatCreateSurface(int width, int height, DWORD flags)
+SURFHANDLE NatCreateSurface(int width, int height, uint32_t flags)
 {
-	DWORD Mips = 1;
-	DWORD Usage = 0;
+	uint32_t Mips = 1;
+	uint32_t Usage = 0;
 	D3DPOOL Pool = D3DPOOL_DEFAULT;
 	D3DMULTISAMPLE_TYPE Multi = D3DMULTISAMPLE_NONE;
 	LPDIRECT3DDEVICE9 pDev = g_client->GetDevice();
@@ -363,7 +363,7 @@ SURFHANDLE NatCreateSurface(int width, int height, DWORD flags)
 //
 SURFHANDLE NatGetMipSublevel(SURFHANDLE hSrf, int level)
 {
-	static const DWORD fl = OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE;
+	static const uint32_t fl = OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE;
 
 	if ((SURFACE(hSrf)->Flags & fl) == fl)
 	{
@@ -383,7 +383,7 @@ SURFHANDLE NatGetMipSublevel(SURFHANDLE hSrf, int level)
 
 // ===============================================================================================
 //
-SURFHANDLE NatCompressSurface(SURFHANDLE hSurface, DWORD flags)
+SURFHANDLE NatCompressSurface(SURFHANDLE hSurface, uint32_t flags)
 {
 	D3DSURFACE_DESC desc;
 	LPDIRECT3DSURFACE9 pDest = NULL;
@@ -391,7 +391,7 @@ SURFHANDLE NatCompressSurface(SURFHANDLE hSurface, DWORD flags)
 	LPDIRECT3DDEVICE9 pDev = g_client->GetDevice();
 	LPDIRECT3DRESOURCE9 pResource = SURFACE(hSurface)->GetResource();
 
-	DWORD Mips = 1;
+	uint32_t Mips = 1;
 	D3DFORMAT Fmt = D3DFMT_DXT1;
 	D3DPOOL Pool = D3DPOOL_DEFAULT;
 
@@ -406,7 +406,7 @@ SURFHANDLE NatCompressSurface(SURFHANDLE hSurface, DWORD flags)
 		LPDIRECT3DSURFACE9 pSurf = static_cast<LPDIRECT3DSURFACE9>(pResource);
 		HR(pSurf->GetDesc(&desc));
 		HR(D3DXCreateTexture(pDev, desc.Width, desc.Height, Mips, 0, Fmt, Pool, &pTex));
-		for (DWORD i = 0; i < pTex->GetLevelCount(); i++) {
+		for (uint32_t i = 0; i < pTex->GetLevelCount(); i++) {
 			HR(pTex->GetSurfaceLevel(i, &pDest));
 			HR(D3DXLoadSurfaceFromSurface(pDest, NULL, NULL, pSurf, NULL, NULL, D3DX_FILTER_BOX, 0));
 			pDest->Release();
@@ -421,7 +421,7 @@ SURFHANDLE NatCompressSurface(SURFHANDLE hSurface, DWORD flags)
 		HR(pInp->GetLevelDesc(0, &desc));
 		HR(D3DXCreateTexture(pDev, desc.Width, desc.Height, Mips, 0, Fmt, Pool, &pTex));
 		HR(pInp->GetSurfaceLevel(0, &pSurf));
-		for (DWORD i = 0; i < pTex->GetLevelCount(); i++) {
+		for (uint32_t i = 0; i < pTex->GetLevelCount(); i++) {
 			HR(pTex->GetSurfaceLevel(i, &pDest));
 			HR(D3DXLoadSurfaceFromSurface(pDest, NULL, NULL, pSurf, NULL, NULL, D3DX_FILTER_BOX, 0));
 			pDest->Release();
@@ -441,7 +441,7 @@ bool NatGenerateMipmaps(SURFHANDLE hSrf)
 	LPDIRECT3DTEXTURE9 pTex = SURFACE(hSrf)->GetTexture();
 	if (!pTex) return false;
 
-	DWORD nMip = pTex->GetLevelCount();
+	uint32_t nMip = pTex->GetLevelCount();
 	if (nMip <= 1) return false;
 
 	LPDIRECT3DDEVICE9 pDev = g_client->GetDevice();
@@ -451,7 +451,7 @@ bool NatGenerateMipmaps(SURFHANDLE hSrf)
 	HR(pTex->GetSurfaceLevel(0, &pHigh));
 
 	if (pHigh) {
-		for (DWORD i = 1; i < nMip; i++) {
+		for (uint32_t i = 1; i < nMip; i++) {
 			if (pTex->GetSurfaceLevel(i, &pLow) == S_OK) {
 				HR(pDev->StretchRect(pHigh, NULL, pLow, NULL, D3DTEXF_LINEAR));
 				pHigh->Release();
@@ -472,7 +472,7 @@ bool NatGenerateMipmaps(SURFHANDLE hSrf)
 
 // -----------------------------------------------------------------------------------------------
 //
-SurfNative::SurfNative(LPDIRECT3DRESOURCE9 pRes, DWORD flags, LPDIRECT3DSURFACE9 _pDepth) :
+SurfNative::SurfNative(LPDIRECT3DRESOURCE9 pRes, uint32_t flags, LPDIRECT3DSURFACE9 _pDepth) :
 	pResource(pRes),
 	pDX7(NULL),
 	pSkp(NULL),
@@ -569,7 +569,7 @@ SurfNative::~SurfNative()
 
 // -----------------------------------------------------------------------------------------------
 //
-void SurfNative::AddMap(DWORD id, LPDIRECT3DTEXTURE9 _pMap)
+void SurfNative::AddMap(uint32_t id, LPDIRECT3DTEXTURE9 _pMap)
 {
 	if (id >= MAP_MAX_COUNT) return;
 	SAFE_RELEASE(pMap[id]);
@@ -619,7 +619,7 @@ LPDIRECT3DSURFACE9 SurfNative::GetSurface()
 
 // -----------------------------------------------------------------------------------------------
 //
-void SurfNative::SetColorKey(DWORD ck)
+void SurfNative::SetColorKey(uint32_t ck)
 {
 	ColorKey = ck;
 }
@@ -678,7 +678,7 @@ bool SurfNative::IsCompressed() const
 //
 bool SurfNative::IsPowerOfTwo() const
 {
-	DWORD w = desc.Width, h = desc.Height;
+	uint32_t w = desc.Width, h = desc.Height;
 	for (int i = 0; i < 14; i++) if ((w & 1) == 0) w = w >> 1; else { if (w != 1) return false; else break; }
 	for (int i = 0; i < 14; i++) if ((h & 1) == 0) h = h >> 1; else { if (h != 1) return false; else break; }
 	return true;
@@ -697,11 +697,11 @@ void SurfNative::SetName(const char* n)
 
 // -----------------------------------------------------------------------------------------------
 //
-LPDIRECT3DTEXTURE9 SurfNative::GetGDICache(DWORD Flags)
+LPDIRECT3DTEXTURE9 SurfNative::GetGDICache(uint32_t Flags)
 {
 	if (pGDICache) return pGDICache;
 	D3DPOOL Pool = (Flags & OAPISURFACE_SYSMEM) ? D3DPOOL_SYSTEMMEM : D3DPOOL_DEFAULT;
-	DWORD Usage = (Flags & OAPISURFACE_SYSMEM) ? 0 : D3DUSAGE_DYNAMIC;
+	uint32_t Usage = (Flags & OAPISURFACE_SYSMEM) ? 0 : D3DUSAGE_DYNAMIC;
 	HR(D3DXCreateTexture(pDevice, desc.Width, desc.Height, 1, Usage, D3DFMT_X8R8G8B8, Pool, (LPDIRECT3DTEXTURE9 *)&pGDICache));
 	return pGDICache;
 }
@@ -737,7 +737,7 @@ bool SurfNative::GenerateMipMaps()
 		}
 		else {
 			
-			DWORD nMip = pTex->GetLevelCount();
+			uint32_t nMip = pTex->GetLevelCount();
 			if (nMip <= 1) return false;
 
 			LPDIRECT3DSURFACE9 pHigh = NULL;
@@ -746,7 +746,7 @@ bool SurfNative::GenerateMipMaps()
 			HR(pTex->GetSurfaceLevel(0, &pHigh));
 
 			if (pHigh) {
-				for (DWORD i = 1; i < nMip; i++) {
+				for (uint32_t i = 1; i < nMip; i++) {
 					if (pTex->GetSurfaceLevel(i, &pLow) == S_OK) {
 						HR(pDevice->StretchRect(pHigh, NULL, pLow, NULL, D3DTEXF_LINEAR));
 						pHigh->Release();
@@ -796,7 +796,7 @@ void SurfNative::DX7Sync(bool bUp)
 
 // -----------------------------------------------------------------------------------------------
 //
-bool SurfNative::Fill(LPRECT rect, DWORD c)
+bool SurfNative::Fill(LPRECT rect, uint32_t c)
 {
 	
 	LPRECT r;
@@ -1028,7 +1028,7 @@ void SurfNative::Reload()
 
 		if (D3DXGetImageInfoFromFileA(path, &info) == S_OK)
 		{
-			DWORD Mips = D3DFMT_FROM_FILE;
+			uint32_t Mips = D3DFMT_FROM_FILE;
 			if (Config->TextureMips == 2) Mips = 0;                         // Autogen all
 			if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;  // Autogen missing
 
@@ -1069,18 +1069,18 @@ void SurfNative::LogSpecs() const
 
 // -----------------------------------------------------------------------------------------------
 //
-DWORD SurfNative::GetTextureSizeInBytes(LPDIRECT3DTEXTURE9 pT)
+uint32_t SurfNative::GetTextureSizeInBytes(LPDIRECT3DTEXTURE9 pT)
 {
 	if (!pT) return 0;
 	D3DSURFACE_DESC d; pT->GetLevelDesc(0,&d);
-	DWORD size = GetFormatSizeInBytes(d.Format, d.Height * d.Width);
+	uint32_t size = GetFormatSizeInBytes(d.Format, d.Height * d.Width);
 	if (pT->GetLevelCount() > 1) size += ((size>>2) + (size>>4) + (size>>6));
 	return size;
 }
 
 // -----------------------------------------------------------------------------------------------
 //
-DWORD SurfNative::GetFormatSizeInBytes(D3DFORMAT Format, DWORD pixels)
+uint32_t SurfNative::GetFormatSizeInBytes(D3DFORMAT Format, uint32_t pixels)
 {
 	if (Format == D3DFMT_DXT1) return pixels >> 1;
 	if (Format == D3DFMT_DXT3) return pixels;
@@ -1105,12 +1105,12 @@ DWORD SurfNative::GetFormatSizeInBytes(D3DFORMAT Format, DWORD pixels)
 
 // -----------------------------------------------------------------------------------------------
 //
-DWORD SurfNative::GetSizeInBytes()
+uint32_t SurfNative::GetSizeInBytes()
 {
 	if (type == D3DRTYPE_SURFACE) return GetFormatSizeInBytes(desc.Format, desc.Height * desc.Width);
 	if (type == D3DRTYPE_TEXTURE)
 	{
-		DWORD size = GetTextureSizeInBytes(static_cast<LPDIRECT3DTEXTURE9>(pResource));
+		uint32_t size = GetTextureSizeInBytes(static_cast<LPDIRECT3DTEXTURE9>(pResource));
 		for (int i = 0; i < MAP_MAX_COUNT; i++)  size += GetTextureSizeInBytes(pMap[i]);
 		return size;
 	}
@@ -1120,7 +1120,7 @@ DWORD SurfNative::GetSizeInBytes()
 
 // -----------------------------------------------------------------------------------------------
 //
-DWORD* SurfNative::GetClientFlags()
+uint32_t* SurfNative::GetClientFlags()
 {
 	return &ClientFlags;
 }
@@ -1158,9 +1158,9 @@ bool NatCreateName(char* out, int mlen, const char* fname, const char* id)
 
 // -----------------------------------------------------------------------------------------------
 //
-DWORD NatConvertFormat_DX_to_OAPI(DWORD Format)
+uint32_t NatConvertFormat_DX_to_OAPI(uint32_t Format)
 {
-	DWORD Out = OAPISURFACE_NOALPHA;
+	uint32_t Out = OAPISURFACE_NOALPHA;
 	if (Format == D3DFMT_X8R8G8B8) return Out | OAPISURFACE_PF_XRGB;
 	if (Format == D3DFMT_R5G6B5) return Out | OAPISURFACE_PF_RGB565;
 	if (Format == D3DFMT_L16) return Out | OAPISURFACE_PF_S16R;
@@ -1184,7 +1184,7 @@ DWORD NatConvertFormat_DX_to_OAPI(DWORD Format)
 
 // -----------------------------------------------------------------------------------------------
 //
-DWORD NatConvertFormat_OAPI_to_DX(DWORD Format)
+uint32_t NatConvertFormat_OAPI_to_DX(uint32_t Format)
 {
 	Format &= OAPISURFACE_PF_MASK;
 
@@ -1210,7 +1210,7 @@ DWORD NatConvertFormat_OAPI_to_DX(DWORD Format)
 
 // -----------------------------------------------------------------------------------------------
 //
-const char* NatUsage(DWORD Usage)
+const char* NatUsage(uint32_t Usage)
 {
 	static char buf[128];
 	strcpy_s(buf, 128, "");
@@ -1236,7 +1236,7 @@ const char* NatPool(D3DPOOL Pool)
 
 // -----------------------------------------------------------------------------------------------
 //
-const char* NatOAPIFlags(DWORD AF)
+const char* NatOAPIFlags(uint32_t AF)
 {
 	static char buf[512]; strcpy_s(buf, 512, "");
 
@@ -1258,11 +1258,11 @@ const char* NatOAPIFlags(DWORD AF)
 
 // -----------------------------------------------------------------------------------------------
 //
-const char* NatOAPIFormat(DWORD PF)
+const char* NatOAPIFormat(uint32_t PF)
 {
 	static char buf[64];
 	strcpy_s(buf, 64, "UNKNOWN");
-	DWORD AF = PF & OAPISURFACE_PF_MASK;
+	uint32_t AF = PF & OAPISURFACE_PF_MASK;
 
 	if (AF == OAPISURFACE_PF_XRGB)	strcpy_s(buf, 64, "OAPISURFACE_PF_XRGB ");
 	if (AF == OAPISURFACE_PF_ARGB)	strcpy_s(buf, 64, "OAPISURFACE_PF_ARGB ");
@@ -1309,7 +1309,7 @@ void NatDumpResource(LPDIRECT3DRESOURCE9 pResource)
 
 	if (type == D3DRTYPE_SURFACE || type == D3DRTYPE_TEXTURE)
 	{
-		DWORD f = NatConvertFormat_DX_to_OAPI(desc.Format);
+		uint32_t f = NatConvertFormat_DX_to_OAPI(desc.Format);
 
 		oapiWriteLogV("DX9_DUMP: Usage = %s", NatUsage(desc.Usage));
 		oapiWriteLogV("DX9_DUMP: Pool = %s", NatPool(desc.Pool));

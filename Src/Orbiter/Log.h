@@ -26,8 +26,6 @@ void LogOut_Warning(const char* func, const char* file, int line, const char* ms
 void LogOut_WarningVA(const char* func, const char* file, int line, const char* msg, va_list ap);
 void LogOut_Obsolete(const char* func, const char* msg = 0);      // Write obsolete-function warning to log file
 void LogOut_LastError (const char *func, const char *file, int line);             // Write formatted string from GetLastError
-void LogOut_DDErr (HRESULT hr, const char *func, const char *file, int line);     // Write DirectDraw error to log file
-void LogOut_DIErr (HRESULT hr, const char *func, const char *file, int line);     // Write DirectInput error to log file
 
 // Message formatting components
 void LogOut_Error_Start();
@@ -124,7 +122,7 @@ void tracenew(char *fname, int line);
 void StartProf ();
 // put this at the beginning of the section you want to profile
 
-double EndProf (DWORD *count = 0);
+double EndProf (uint32_t *count = 0);
 // put this at the end of the section to be profiled.
 // Return value is the runtime (in microseconds) of the profiled section,
 // averaged over all occurrences. If count is initialised, it receives the

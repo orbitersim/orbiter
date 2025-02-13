@@ -81,7 +81,7 @@ private:
 	int maxlvl = 0;
 	int mode = 0;  // elevation mode (0=no elevation, 1=linear interpolation, 2=cubic interpolation)
 	double elev_res = 1;  // elevation resolution [m]
-	DWORD tilesource = 2; // bit 1: try loading from cache, bit 2: try loading from archive
+	uint32_t tilesource = 2; // bit 1: try loading from cache, bit 2: try loading from archive
 	ZTreeMgr *treeMgr[5];
 	bool bDirExists, bModExists;
 	mutable std::vector<ElevationTile> *local_cache = nullptr;

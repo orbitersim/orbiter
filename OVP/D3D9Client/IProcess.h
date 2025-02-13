@@ -87,7 +87,7 @@ public:
 	// the variable passed to SetTexture function. It's then used in a shader code like
 	// tex2D(mySamp, float2(x,y))
 	// ----------------------------------------------------------------------------------
-	void	SetTexture(const char *var, SURFHANDLE hTex, DWORD flags);
+	void	SetTexture(const char *var, SURFHANDLE hTex, uint32_t flags);
 	
 	// ----------------------------------------------------------------------------------
 	// SetOutput assigns a render target to the IP interface. "id" is an index of the render
@@ -104,8 +104,8 @@ public:
 	void	SetMesh(const MESHHANDLE hMesh, const char *tex = NULL, gcIPInterface::ipicull = gcIPInterface::ipicull::None);
 
 	bool	Execute(bool bInScene = false);
-	bool	Execute(const char *shader, bool bInScene, DWORD blendop);
-	bool    Execute(DWORD blendop, bool bInScene = false, gcIPInterface::ipitemplate tmp = gcIPInterface::ipitemplate::Rect, int gpr = -1);
+	bool	Execute(const char *shader, bool bInScene, uint32_t blendop);
+	bool    Execute(uint32_t blendop, bool bInScene = false, gcIPInterface::ipitemplate tmp = gcIPInterface::ipitemplate::Rect, int gpr = -1);
 
 	// ----------------------------------------------------------------------------------
 	int		FindDefine(const char *key);
@@ -114,7 +114,7 @@ public:
 	//
 	void	SetDepthStencil(LPDIRECT3DSURFACE9 hSrf = NULL);
 	void	SetOutputNative(int id, LPDIRECT3DSURFACE9 hSrf);
-	void	SetTextureNative(const char *var, LPDIRECT3DBASETEXTURE9 hTex, DWORD flags);
+	void	SetTextureNative(const char *var, LPDIRECT3DBASETEXTURE9 hTex, uint32_t flags);
 
 private:
 
@@ -127,7 +127,7 @@ private:
 
 	struct {
 		LPDIRECT3DBASETEXTURE9 hTex;
-		DWORD flags;
+		uint32_t flags;
 	} pTextures[8];
 
 	gcIPInterface::ipicull mesh_cull;

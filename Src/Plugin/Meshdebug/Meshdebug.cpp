@@ -102,7 +102,7 @@ DLLCLBK void opcPreStep (double simt, double simdt, double mjd)
 
 void OpenDlgClbk (void *context)
 {
-	g_hDlg = oapiOpenDialog (g_hInst, IDD_DBGDIALOG, MsgProc);
+	// g_hDlg = oapiOpenDialog (g_hInst, IDD_DBGDIALOG, MsgProc);
 }
 
 
@@ -112,7 +112,7 @@ void OpenDlgClbk (void *context)
 void CloseDlg (HWND hDlg)
 {
 	ChangeMesh (-1);
-	oapiCloseDialog (hDlg);
+	// oapiCloseDialog (hDlg);
 	g_hDlg = 0;
 }
 
@@ -253,5 +253,6 @@ INT_PTR CALLBACK MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	}
-	return oapiDefDialogProc (hDlg, uMsg, wParam, lParam);
+	// return oapiDefDialogProc (hDlg, uMsg, wParam, lParam);
+	return 0;
 }

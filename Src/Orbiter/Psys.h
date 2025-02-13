@@ -63,7 +63,7 @@ public:
 
 	inline size_t nVessel() const { return vessels.size(); }
 	Vessel *GetVessel (const char *name, bool ignorecase = false) const;
-	inline Vessel *GetVessel (DWORD i) const { return vessels[i]; }
+	inline Vessel *GetVessel (uint32_t i) const { return vessels[i]; }
 	inline std::vector<Vessel *> &GetVessels() { return vessels; }
 	// Return pointer to vessel by name or index, or 0 if not present
 
@@ -73,8 +73,8 @@ public:
 	bool isVessel (const Vessel *v) const;
 	// returns true if v is a registered vessel
 
-	DWORD nBase(const Planet *planet) const { return planet->nBase(); }
-	Base *GetBase (const Planet *planet, DWORD i) { return planet->GetBase(i); }
+	uint32_t nBase(const Planet *planet) const { return planet->nBase(); }
+	Base *GetBase (const Planet *planet, uint32_t i) { return planet->GetBase(i); }
 	Base *GetBase (const Planet *planet, const char *name, bool ignorecase = false);
 	// Return pointer to planet's base by name or index
 
@@ -87,7 +87,7 @@ public:
 	 * \param cat option category (see \ref optcat)
 	 * \param item option item (see \ref optitem)
 	 */
-	void OptionChanged(DWORD cat, DWORD item);
+	void OptionChanged(uint32_t cat, uint32_t item);
 
 	bool Read (char *fname, const Config* config, OutputLoadStatusCallback outputLoadStatus, void* callbackContext);
 	// Read specs from config file
@@ -189,7 +189,7 @@ public:
 	// These functions should eventually become obsolete because none of the
 	// logical objects should contain any device objects
 
-	void BroadcastVessel (DWORD msg, void *data);
+	void BroadcastVessel (uint32_t msg, void *data);
 	// Broadcast a message to all vessels
 
 	const std::vector<oapi::GraphicsClient::LABELLIST> &LabelList() const

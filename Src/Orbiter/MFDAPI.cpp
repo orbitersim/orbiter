@@ -74,7 +74,7 @@ bool ExternMFD::ProcessButton (int bt, int event)
 	return (instr ? instr->ConsumeButton (bt, event) : false);
 }
 
-bool ExternMFD::SendKey (DWORD key)
+bool ExternMFD::SendKey (uint32_t key)
 {
 	if (key == OAPI_KEY_ESCAPE) { // needs thought
 		SetMode (instr ? MFD_NONE : pmode);

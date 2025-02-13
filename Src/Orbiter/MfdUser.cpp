@@ -146,7 +146,7 @@ void Instrument_User::WriteParams (ostream &ofs) const
 // See MFDAPI.h for interface
 // =======================================================================
 
-MFD::MFD (DWORD w, DWORD h, VESSEL *vessel)
+MFD::MFD (uint32_t w, uint32_t h, VESSEL *vessel)
 {
 	instr = 0;
 	W = w, H = h;
@@ -172,13 +172,13 @@ void MFD::InvalidateButtons ()
 	instr->RepaintButtons ();
 }
 
-HPEN MFD::SelectDefaultPen (HDC hDC, DWORD i) const
+HPEN MFD::SelectDefaultPen (HDC hDC, uint32_t i) const
 {
 	// GDI legacy code
 	return instr->SelectDefaultPen (hDC, i);
 }
 
-HFONT MFD::SelectDefaultFont (HDC hDC, DWORD i) const
+HFONT MFD::SelectDefaultFont (HDC hDC, uint32_t i) const
 {
 	// GDI legacy code
 	return instr->SelectDefaultFont (hDC, i);
@@ -201,17 +201,17 @@ void MFD2::Title (oapi::Sketchpad *skp, const char *title) const
 	instr->DisplayTitle (skp, title);
 }
 
-oapi::Pen *MFD2::GetDefaultPen (DWORD colidx, DWORD intens, DWORD style) const
+oapi::Pen *MFD2::GetDefaultPen (uint32_t colidx, uint32_t intens, uint32_t style) const
 {
 	return instr->GetDefaultPen (colidx, intens, style);
 }
 
-oapi::Font *MFD2::GetDefaultFont (DWORD fontidx) const
+oapi::Font *MFD2::GetDefaultFont (uint32_t fontidx) const
 {
 	return instr->GetDefaultFont (fontidx);
 }
 
-DWORD MFD2::GetDefaultColour (DWORD colidx, DWORD intens) const
+uint32_t MFD2::GetDefaultColour (uint32_t colidx, uint32_t intens) const
 {
 	return instr->GetDefaultColour (colidx, intens);
 }
@@ -223,7 +223,7 @@ DWORD MFD2::GetDefaultColour (DWORD colidx, DWORD intens) const
 // See orbitersdk.h for interface
 // =======================================================================
 
-GraphMFD::GraphMFD (DWORD w, DWORD h, VESSEL *vessel)
+GraphMFD::GraphMFD (uint32_t w, uint32_t h, VESSEL *vessel)
 : MFD (w, h, vessel)
 {
 	ngraph  = 0;

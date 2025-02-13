@@ -13,8 +13,6 @@
 #ifndef __OPTIONSPAGES_H
 #define __OPTIONSPAGES_H
 
-#include <windows.h>
-#include <CommCtrl.h>
 #include "CustomControls.h"
 #include "OrbiterAPI.h"
 
@@ -67,7 +65,7 @@ protected:
      * \param hDlg dialog handle
      * \param pPage pointer to new page
      */
-	HTREEITEM AddPage(OptionsPage* pPage, HTREEITEM parent = 0);
+	unsigned int AddPage(OptionsPage* pPage, unsigned int parent = 0);
 
 	const OptionsPage* FindPage(const char* name) const;
 
@@ -82,7 +80,7 @@ protected:
 
 	void Clear();
 
-	BOOL VScroll(HWND hDlg, WORD request, WORD curpos, HWND hControl);
+	bool VScroll(HWND hDlg, WORD request, WORD curpos, HWND hControl);
 
 	const HELPCONTEXT* HelpContext() const { return m_contextHelp; }
 
@@ -150,7 +148,7 @@ public:
 	/**
 	 * \brief Creates the page window and assigns \ref m_hPage.
 	 */
-	HTREEITEM CreatePage(HWND hDlg, HTREEITEM parent = 0);
+	unsigned int CreatePage(HWND hDlg, unsigned int parent = 0);
 
 	/**
 	 * \brief Show/hide the page.
@@ -181,7 +179,7 @@ protected:
 	 * \brief Default handler for WM_INITDIALOG messages.
 	 * \default Nothing, returns TRUE
 	 */
-	virtual BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
+	virtual bool OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
 
 	/**
 	 * \brief Default handler for WM_COMMAND messages.
@@ -191,14 +189,14 @@ protected:
 	 * \param hCtrl control window handle (lParam)
 	 * \default Nothing, returns FALSE
 	 */
-	virtual BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl) { return FALSE; }
+	virtual bool OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl) { return FALSE; }
 
 	/**
 	 * \brief Default handler for WM_HSCROLL messages.
 	 * \default Nothing, returns FALSE
 	 * \note This message is called by gauge controls on slider position change.
 	 */
-	virtual BOOL OnHScroll(HWND hPage, WPARAM wParam, LPARAM lParam) { return FALSE; }
+	virtual bool OnHScroll(HWND hPage, WPARAM wParam, LPARAM lParam) { return FALSE; }
 
 	/**
 	 * \brief Default handler for WM_NOTIFY messages.
@@ -207,7 +205,7 @@ protected:
 	 * \param pNmHdr pointer to a NMHDR structure with details of the notification
 	 * \default Nothing, returns FALSE
 	 */
-	virtual BOOL OnNotify(HWND hPage, DWORD ctrlId, const NMHDR* pNmHdr) { return FALSE; }
+	virtual bool OnNotify(HWND hPage, uint32_t ctrlId, const NMHDR* pNmHdr) { return FALSE; }
 
 	/**
 	 * \brief Default generic message handler.
@@ -215,7 +213,7 @@ protected:
 	 * \note This method is called for any messages which don't have an associated
 	 *    specific callback function.
 	 */
-	virtual BOOL OnMessage(HWND hPage, UINT uMsg, WPARAM wParam, LPARAM lParam) { return FALSE; }
+	virtual bool OnMessage(HWND hPage, UINT uMsg, WPARAM wParam, LPARAM lParam) { return FALSE; }
 
 	/**
 	 * \Brief page message loop.
@@ -232,7 +230,7 @@ private:
 
 	OptionsPageContainer* m_container; ///< container owning the page
 	HWND m_hPage;      ///< page window handle (0 before MakePage has been called)
-	HTREEITEM m_hItem; ///< page title in the tree view control
+	void* m_hItem; ///< page title in the tree view control
 };
 
 /************************************************************************
@@ -248,8 +246,8 @@ public:
 	void UpdateConfig(HWND hPage);
 
 protected:
-	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
+	bool OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
+	bool OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
 	void VisualsChanged(HWND hPage);
 
 };
@@ -267,8 +265,8 @@ public:
 	void UpdateConfig(HWND hPage);
 
 protected:
-	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand( HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl );
+	bool OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
+	bool OnCommand( HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl );
 };
 
 /************************************************************************
@@ -283,9 +281,9 @@ public:
 	void UpdateControls(HWND hPage);
 
 protected:
-	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
-	BOOL OnNotify(HWND hPage, DWORD ctrlId, const NMHDR* pNmHdr);
+	bool OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
+	bool OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
+	bool OnNotify(HWND hPage, uint32_t ctrlId, const NMHDR* pNmHdr);
 };
 
 /************************************************************************
@@ -300,8 +298,8 @@ public:
 	void UpdateControls(HWND hPage);
 
 protected:
-	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
+	bool OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
+	bool OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
 };
 
 /************************************************************************
@@ -316,8 +314,8 @@ public:
 	void UpdateControls(HWND hPage);
 
 protected:
-	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
+	bool OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
+	bool OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
 };
 
 /************************************************************************
@@ -332,9 +330,9 @@ public:
 	void UpdateControls(HWND hPage);
 
 protected:
-	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
-	BOOL OnHScroll(HWND hPage, WPARAM wParam, LPARAM lParam);
+	bool OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
+	bool OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
+	bool OnHScroll(HWND hPage, WPARAM wParam, LPARAM lParam);
 };
 
 /************************************************************************
@@ -349,10 +347,10 @@ public:
 	void UpdateControls(HWND hPage);
 
 protected:
-	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
-	BOOL OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam);
-	BOOL OnNotify(HWND hPage, DWORD ctrlId, const NMHDR* pNmHdr);
+	bool OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
+	bool OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
+	bool OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam);
+	bool OnNotify(HWND hPage, uint32_t ctrlId, const NMHDR* pNmHdr);
 	void PopulateStarmapList(HWND hPage);
 	void PopulateBgImageList(HWND hPage);
 	void StarPixelActivationChanged(HWND hPage);
@@ -379,8 +377,8 @@ public:
 	void UpdateControls(HWND hPage);
 
 protected:
-	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
+	bool OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
+	bool OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
 };
 
 /************************************************************************
@@ -395,11 +393,11 @@ public:
 	void UpdateControls(HWND hPage);
 
 protected:
-	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
+	bool OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
+	bool OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
 	void RescanMarkerList(HWND hPage);
 	void OnItemClicked(HWND hPage, WORD ctrlId);
-	BOOL OnMarkerSelectionChanged(HWND hPage);
+	bool OnMarkerSelectionChanged(HWND hPage);
 };
 
 /************************************************************************
@@ -414,8 +412,8 @@ public:
 	void UpdateControls(HWND hPage);
 
 protected:
-	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
+	bool OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
+	bool OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
 	void OnItemClicked(HWND hPage, WORD ctrlId);
 	void ScanPsysBodies(HWND hPage);
 	void UpdateFeatureList(HWND hPage);
@@ -434,10 +432,10 @@ public:
 	void UpdateControls(HWND hPage);
 
 protected:
-	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
+	bool OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
+	bool OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
 	void OnItemClicked(HWND hPage, WORD ctrlId);
-	BOOL OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam);
+	bool OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam);
 };
 
 /************************************************************************
@@ -452,10 +450,10 @@ public:
 	void UpdateControls(HWND hPage);
 
 protected:
-	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
+	bool OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
+	bool OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
 	void OnItemClicked(HWND hPage, WORD ctrlId);
-	BOOL OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam);
+	bool OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam);
 };
 
 #endif // !__OPTIONSPAGES_H

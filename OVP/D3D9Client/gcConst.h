@@ -93,7 +93,7 @@ public:
 		int				Width;
 		int				Height;
 		int				Mips;
-		DWORD			Flags;
+		uint32_t			Flags;
 	} SurfaceSpecs;
 
 	typedef struct {
@@ -145,7 +145,7 @@ public:
 		int				MaxTexSize;		///< Maximum texture size in pixels
 		int				DisplayMode;	///< 0 = True Fullscreen, 1 = Fullscreen Window, 2 = Windowed
 		int				MaxTexRep;		///< Maximum texture repeat count
-		DWORD			gcAPIVer;		///< gcAPI Build Date 0xYYYYMMDD
+		uint32_t			gcAPIVer;		///< gcAPI Build Date 0xYYYYMMDD
 	} SystemSpecs;
 	
 	typedef struct {
@@ -226,7 +226,7 @@ public:
 	* \note Only a cameras attached to currently active vessel are operational and recording.
 	* \note Having multiple cameras active at the same time doesn't impact in a frame rate, however, camera refresh rates are reduced.
 	*/
-	virtual CAMERAHANDLE SetupCustomCamera(CAMERAHANDLE hCam, OBJHANDLE hVessel, VECTOR3& vPos, VECTOR3& vDir, VECTOR3& vUp, double dFov, SURFHANDLE hSurf, DWORD dwFlags = 0xFF);
+	virtual CAMERAHANDLE SetupCustomCamera(CAMERAHANDLE hCam, OBJHANDLE hVessel, VECTOR3& vPos, VECTOR3& vDir, VECTOR3& vUp, double dFov, SURFHANDLE hSurf, uint32_t dwFlags = 0xFF);
 	//@}
 
 
@@ -281,7 +281,7 @@ public:
 	* \note Poly objects should be created during initialization not for every frame or update. Updating existing (pre created) poly object is pretty fast.
 	* \note During update number of points must be equal or smaller than during initial creation of poly object.
 	*/
-	virtual HPOLY		CreatePoly(HPOLY hPoly, const oapi::FVECTOR2* pt, int npt, DWORD flags = 0);
+	virtual HPOLY		CreatePoly(HPOLY hPoly, const oapi::FVECTOR2* pt, int npt, uint32_t flags = 0);
 
 
 	/**
@@ -298,7 +298,7 @@ public:
 	* \note PF_FAN Triangle fan. The first vertex is in a centre of the fan/circle and other lie at the edge. ("npt" must be "number of triangles" + 2)
 	* \note PF_STRIP Is build from quads. Where each quad requires two vertices. ("npt" must be "number of quads" * 2 + 2)
 	*/
-	virtual HPOLY		CreateTriangles(HPOLY hPoly, const gcCore::clrVtx *pt, int npt, DWORD flags);
+	virtual HPOLY		CreateTriangles(HPOLY hPoly, const gcCore::clrVtx *pt, int npt, uint32_t flags);
 
 
 	/**
@@ -314,7 +314,7 @@ public:
 	* \param pText a Pointer into a text string
 	* \param len a Length of the text string to process. -1 will scan to a NULL terminator.
 	*/
-	virtual DWORD		GetTextLength(oapi::Font* hFont, const char* pText, int len = -1);
+	virtual uint32_t		GetTextLength(oapi::Font* hFont, const char* pText, int len = -1);
 
 	/**
 	* \brief Find index of nearest "cap" between charters in specified location. (i.e. distance from start of the string in pixels)
@@ -325,7 +325,7 @@ public:
 	* \return index from 0 to number of charters. For just one char it can be either "0" or "1" depending which side is closer to "pos".
 	* \note This is used for finding a spot for a "cursor" when a text string is clicked with mouse.
 	*/
-	virtual DWORD		GetCharIndexByPosition(oapi::Font* hFont, const char* pText, int pos, int len = -1);
+	virtual uint32_t		GetCharIndexByPosition(oapi::Font* hFont, const char* pText, int pos, int len = -1);
 
 	/**
 	* \brief This function will register a custom render callback function
@@ -334,7 +334,7 @@ public:
 	* \param pParam a pointer to user data (to a class for an example)
 	* \return false if an error occurred, true otherwise.
 	*/
-	virtual bool		RegisterRenderProc(__gcRenderProc proc, DWORD id, void* pParam);
+	virtual bool		RegisterRenderProc(__gcRenderProc proc, uint32_t id, void* pParam);
 
 	/**
 	* \brief Create a Font
@@ -366,7 +366,7 @@ public:
 	* \param bSet \e true to set material value, \e false to get a material value
 	* \return -4 = Invalid handle \n -3 = Unknown property flag \n -2 = Property not specified cannot get it \n -1 = Index out of range \n 0 = Success
 	*/
-	virtual int				MeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, int prop, FVECTOR4 *value, bool bSet);
+	virtual int				MeshMaterial(DEVMESHHANDLE hMesh, uint32_t idx, int prop, FVECTOR4 *value, bool bSet);
 
 	/**
 	* \brief A Function to get a mesh transformation/animation matrix.
@@ -377,7 +377,7 @@ public:
 	* \param pMat A pointer to FMATRIX4 struct for receiving the data.
 	* \return 0 = on Success, or error code.
 	*/
-	virtual int				GetMatrix(int matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group, oapi::FMATRIX4* pMat);
+	virtual int				GetMatrix(int matrix_id, OBJHANDLE hVessel, uint32_t mesh, uint32_t group, oapi::FMATRIX4* pMat);
 
 
 	/**
@@ -389,7 +389,7 @@ public:
 	* \param pMat A pointer to FMATRIX4 containing the data to set.
 	* \return 0 = on Success, or error code.
 	*/
-	virtual int				SetMatrix(int matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group, const oapi::FMATRIX4* pMat);
+	virtual int				SetMatrix(int matrix_id, OBJHANDLE hVessel, uint32_t mesh, uint32_t group, const oapi::FMATRIX4* pMat);
 	//@}
 
 
@@ -407,28 +407,28 @@ public:
 	virtual void			GetSystemSpecs(SystemSpecs* sp, int size);
 
 	/**
-	* \brief Convert a floating point color to DWORD color value
+	* \brief Convert a floating point color to uint32_t color value
 	* \param c A pointer to a color
-	* \return DWORD color in 0xAABBGGRR
+	* \return uint32_t color in 0xAABBGGRR
 	* \note Alpha will range from 1 to 255. Zero is never returned because of backwards compatibility issues 0-alpha is mapped to 255
 	*/
-	virtual DWORD			Color(const COLOUR4 *c);
+	virtual uint32_t			Color(const COLOUR4 *c);
 
 	/**
-	* \brief Convert a floating point color to DWORD color value
+	* \brief Convert a floating point color to uint32_t color value
 	* \param c A pointer to a color
-	* \return DWORD color in 0xAABBGGRR
+	* \return uint32_t color in 0xAABBGGRR
 	* \note Alpha will range from 1 to 255. Zero is never returned because of backwards compatibility issues 0-alpha is mapped to 255
 	*/
-	virtual DWORD			Color(const oapi::FVECTOR4 *c);
+	virtual uint32_t			Color(const oapi::FVECTOR4 *c);
 
 	/**
-	* \brief Convert a DWORD color to floating point COLOUR4 value
+	* \brief Convert a uint32_t color to floating point COLOUR4 value
 	* \param dwABGR A color in 0xAABBGGRR
 	* \return COLOUR4
 	* \note Alpha will range from 1 to 255. Zero is never used because of backwards compatibility issues 0-alpha is mapped to 255
 	*/
-	virtual COLOUR4			Colour4(DWORD dwABGR);
+	virtual COLOUR4			Colour4(uint32_t dwABGR);
 
 
 	/**
@@ -437,14 +437,14 @@ public:
 	* \param bCreation if true return creation time attributes, if false return current attributes
 	* \return Surface attributes
 	*/
-	virtual DWORD			obsolete_GetSurfaceAttribs(SURFHANDLE hSurf, bool bCreation = false) { return 0; }
+	virtual uint32_t			obsolete_GetSurfaceAttribs(SURFHANDLE hSurf, bool bCreation = false) { return 0; }
 
 	/**
 	* \brief Convert an existing surface to an other type.
 	* \param hSurf handle to a surface
 	* \param attrib new attributes
 	*/
-	virtual void			obsolete_ConvertSurface(SURFHANDLE hSurf, DWORD attrib) {}
+	virtual void			obsolete_ConvertSurface(SURFHANDLE hSurf, uint32_t attrib) {}
 
 	/**
 	* \brief Load a texture into a specific type of a surface
@@ -452,7 +452,7 @@ public:
 	* \param flags surface attributes (see: OAPISURFACE_x flags)
 	* \return surface handle or NULL in a case of an error
 	*/
-	virtual SURFHANDLE		LoadSurface(const char *fname, DWORD flags);
+	virtual SURFHANDLE		LoadSurface(const char *fname, uint32_t flags);
 
 	/**
 	* \brief Load a bitmap from file (*.bmp *.png *.jpg *.gif)
@@ -474,7 +474,7 @@ public:
 	* \param pParam a pointer to user data (to a class for an example)
 	* \return false if an error occurred, true otherwise.
 	*/
-	virtual bool			RegisterGenericProc(__gcGenericProc proc, DWORD id, void* pParam);
+	virtual bool			RegisterGenericProc(__gcGenericProc proc, uint32_t id, void* pParam);
 		//@}
 
 
@@ -557,7 +557,7 @@ public:
 	* \param flags a combination of OAPISURFACE_ flags.
 	* \return NULL in a case of failure.
 	*/
-	virtual HSURFNATIVE		obsolete_LoadSurfaceNative(const char *file, DWORD flags) { return NULL; }
+	virtual HSURFNATIVE		obsolete_LoadSurfaceNative(const char *file, uint32_t flags) { return NULL; }
 
 	/**
 	* \brief Create a native DirectX 9 Surface
@@ -566,7 +566,7 @@ public:
 	* \param flags a combination of OAPISURFACE_ flags.
 	* \return Surface handle or NULL in a case of a failure.
 	*/
-	virtual HSURFNATIVE		obsolete_CreateSurfaceNative(int width, int height, DWORD flags) { return NULL; }
+	virtual HSURFNATIVE		obsolete_CreateSurfaceNative(int width, int height, uint32_t flags) { return NULL; }
 
 	/**
 	* \brief Get a handle to a specific mipmap sub-level
@@ -602,7 +602,7 @@ public:
 	* \return Handle to a compressed texture, user must release this.
 	* \note Compression is slow, separate thread recommended for realtime compression.
 	*/
-	virtual HSURFNATIVE		obsolete_CompressSurface(HSURFNATIVE hSurface, DWORD flags) { return NULL; }
+	virtual HSURFNATIVE		obsolete_CompressSurface(HSURFNATIVE hSurface, uint32_t flags) { return NULL; }
 
 	/**
 	* \brief Get device specific mesh from Orbiter mesh template
@@ -629,7 +629,7 @@ public:
 	* \param pWorld pointer to World matrix relative to camera
 	* \param color color in 0xAABBGGRR
 	*/
-	virtual void			RenderLines(const FVECTOR3 *pVtx, const WORD *pIdx, int nVtx, int nIdx, const FMATRIX4 *pWorld, DWORD color);
+	virtual void			RenderLines(const FVECTOR3 *pVtx, const WORD *pIdx, int nVtx, int nIdx, const FMATRIX4 *pWorld, uint32_t color);
 	//@}
 
 

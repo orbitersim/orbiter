@@ -11,7 +11,6 @@
 #include "Orbiter.h"
 #include "TabAbout.h"
 #include "Util.h"
-#include "Help.h"
 #include "resource.h"
 #include "about.hpp"
 
@@ -63,7 +62,7 @@ BOOL orbiter::AboutTab::OnMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 				IDT_DISCLAIMER);
 			return TRUE;
 		case IDC_ABT_CREDIT:
-			::OpenHelp(hWnd, "html\\Credit.chm", "Credit");
+			// ::OpenHelp(hWnd, "html\\Credit.chm", "Credit");
 			return TRUE;
 		}
 		break;

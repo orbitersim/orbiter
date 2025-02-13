@@ -76,7 +76,7 @@ void ToolKit::Export()
 				if (st.pNode) {
 					SURFHANDLE hSrc = st.pNode->GetTexture(flags); // Do not release
 					if (hSrc) {
-						RECT t = { se.x * 512, se.y * 512 , (se.x + 1) * 512, (se.y + 1) * 512 };
+						Rect t = { se.x * 512, se.y * 512 , (se.x + 1) * 512, (se.y + 1) * 512 };
 						pSkp->StretchRect(hSrc, &st.range, &t);
 					}
 				}

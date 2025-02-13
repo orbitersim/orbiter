@@ -191,7 +191,7 @@ void D3D9Pad::Log(const char *format, ...) const
 	if (log == NULL) return;
 	EnterCriticalSection(&LogCrit);
 	char ErrBuf[1024];
-	DWORD th = GetCurrentThreadId();
+	uint32_t th = GetCurrentThreadId();
 	va_list args;
 	va_start(args, format);
 	_vsnprintf_s(ErrBuf, 1024, 1024, format, args);
@@ -437,7 +437,7 @@ bool D3D9Pad::Flush(HPOLY hPoly)
 	}
 	
 	UINT numPasses;
-	static DWORD bkALPHA, bkZEN, bkZW, bkCULL;
+	static uint32_t bkALPHA, bkZEN, bkZW, bkCULL;
 
 	if ((iI == 0) && (hPoly == NULL)) {
 #ifdef SKPDBG 
@@ -446,8 +446,8 @@ bool D3D9Pad::Flush(HPOLY hPoly)
 		return false;
 	}
 
-	DWORD dwBlend = dwBlendState & 0xF;
-	DWORD dwFilter = dwBlendState & 0xF0;
+	uint32_t dwBlend = dwBlendState & 0xF;
+	uint32_t dwFilter = dwBlendState & 0xF0;
 	
 #ifdef SKPDBG 
 	char buf[128]; strcpy_s(buf, 128, "");
@@ -464,7 +464,7 @@ bool D3D9Pad::Flush(HPOLY hPoly)
 	Log("Flush [%s] [%s] hPloy=%s, iI=%hu", buf, buf2, _PTR(hPoly), iI);
 #endif
 
-	HR(pDev->GetRenderState(D3DRS_ALPHABLENDENABLE, &bkALPHA));
+	HR(pDev->GetRenderState(D3DRS_ALPHABLENDENABLE, LPDWORD(&bkALPHA)));
 
 	//HR(pDev->GetRenderState(D3DRS_ZENABLE, &bkZEN));
 	//HR(pDev->GetRenderState(D3DRS_ZWRITEENABLE, &bkZW));
@@ -748,7 +748,7 @@ void D3D9Pad::SetupDevice(Topo tNew)
 
 // ===============================================================================================
 //
-DWORD D3D9Pad::ColorComp(DWORD c) const
+uint32_t D3D9Pad::ColorComp(uint32_t c) const
 {
 	if (bColorComp) if ((c & 0xFF000000) == 0) return c | 0xFF000000;
 	return c;
@@ -760,7 +760,7 @@ SkpColor D3D9Pad::ColorComp(const SkpColor &c) const
 {
 	if (bColorComp) {
 		if ((c.dclr & 0xFF000000) == 0) {
-			DWORD q = c.dclr | 0xFF000000;
+			uint32_t q = c.dclr | 0xFF000000;
 			return SkpColor(q);
 		}
 	}
@@ -776,7 +776,7 @@ SkpColor D3D9Pad::ColorComp(const SkpColor &c) const
 //
 HDC D3D9Pad::GetDC()
 {
-	DWORD *cf = SURFACE(GetSurface())->GetClientFlags();
+	uint32_t *cf = SURFACE(GetSurface())->GetClientFlags();
 
 	if ((*cf & OAPISURF_SKP_GDI_WARN) == 0) {
 		*cf |= OAPISURF_SKP_GDI_WARN;
@@ -871,10 +871,10 @@ void D3D9Pad::SetTextAlign (TAlign_horizontal _tah, TAlign_vertical _tav)
 
 // ===============================================================================================
 //
-DWORD D3D9Pad::SetTextColor(DWORD col)
+uint32_t D3D9Pad::SetTextColor(uint32_t col)
 {
 	// Color stored in vertex data, no Change required
-	DWORD prev = textcolor.dclr;
+	uint32_t prev = textcolor.dclr;
 	textcolor = SkpColor(ColorComp(col));
 	return prev;
 }
@@ -882,10 +882,10 @@ DWORD D3D9Pad::SetTextColor(DWORD col)
 
 // ===============================================================================================
 //
-DWORD D3D9Pad::SetBackgroundColor(DWORD col)
+uint32_t D3D9Pad::SetBackgroundColor(uint32_t col)
 {
 	// Color stored in vertex data, no Change required
-	DWORD prev = bkcolor.dclr;
+	uint32_t prev = bkcolor.dclr;
 	bkcolor = SkpColor(ColorComp(col));
 	return prev;
 }
@@ -906,7 +906,7 @@ void D3D9Pad::SetBackgroundMode(BkgMode mode)
 
 // ===============================================================================================
 //
-DWORD D3D9Pad::GetCharSize ()
+uint32_t D3D9Pad::GetCharSize ()
 {
 	TEXTMETRIC tm;
 	if (cfont==NULL) return 0;
@@ -917,7 +917,7 @@ DWORD D3D9Pad::GetCharSize ()
 
 // ===============================================================================================
 //
-DWORD D3D9Pad::GetLineHeight () // ... *with* "internal leading"
+uint32_t D3D9Pad::GetLineHeight () // ... *with* "internal leading"
 {
 	TEXTMETRIC tm;
 	if (cfont == NULL) return 0;
@@ -928,11 +928,11 @@ DWORD D3D9Pad::GetLineHeight () // ... *with* "internal leading"
 
 // ===============================================================================================
 //
-DWORD D3D9Pad::GetTextWidth (const char *str, int len)
+uint32_t D3D9Pad::GetTextWidth (const char *str, int len)
 {
 	if (str) if (str[0] == '_') if (strcmp(str, "_SkpVerInfo") == 0) return 2;
 	if (cfont==NULL) return 0;
-	return DWORD(static_cast<D3D9PadFont *>(cfont)->pFont->Length2(str, len));
+	return uint32_t(static_cast<D3D9PadFont *>(cfont)->pFont->Length2(str, len));
 }
 
 
@@ -1121,17 +1121,17 @@ bool D3D9Pad::Text (int x, int y, const char *str, int len)
 
 // ===============================================================================================
 //
-void SwapRB(DWORD *c)
+void SwapRB(uint32_t *c)
 {
-	DWORD r = ((*c) & 0x00FF0000) >> 16;
-	DWORD b = ((*c) & 0x000000FF) << 16;
+	uint32_t r = ((*c) & 0x00FF0000) >> 16;
+	uint32_t b = ((*c) & 0x000000FF) << 16;
 	*c = ((*c) & 0xFF00FF00) | b | r;
 }
 
 
 // ===============================================================================================
 //
-void D3D9Pad::Pixel (int x, int y, DWORD col)
+void D3D9Pad::Pixel (int x, int y, uint32_t col)
 {
 	FillRect(x, y, x + 1, y + 2, ColorComp(SkpColor(col)));
 }
@@ -1248,7 +1248,7 @@ void D3D9Pad::Ellipse (int x0, int y0, int x1, int y1)
 #endif
 
 	float w = float(x1 - x0); float h = float(y1 - y0);	float fx0 = float(x0); float fy0 = float(y0);
-	DWORD z = max((x1-x0), (y1-y0));
+	uint32_t z = max((x1-x0), (y1-y0));
 
 	w *= 0.5f;
 	h *= 0.5f;
@@ -1346,7 +1346,7 @@ void D3D9Pad::Polyline (const IVECTOR2 *pt, int npt)
 
 // ===============================================================================================
 //
-void D3D9Pad::DrawPoly (HPOLY hPoly, DWORD flags)
+void D3D9Pad::DrawPoly (HPOLY hPoly, uint32_t flags)
 {
 #ifdef SKPDBG 
 	Log("DrawPoly(%s, 0x%X)", _PTR(hPoly), flags);
@@ -1811,7 +1811,7 @@ CRITICAL_SECTION D3D9Pad::LogCrit;
 // ======================================================================
 using namespace oapi;
 
-D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, FontStyle style, int orientation, DWORD flags) : Font(height, prop, face, style, orientation)
+D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, FontStyle style, int orientation, uint32_t flags) : Font(height, prop, face, style, orientation)
 {
 	const char *def_fixedface = "Courier New";
 	const char *def_sansface = "Arial";
@@ -1843,9 +1843,9 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, FontStyle styl
 	}
 
 	int weight = (style & FONT_BOLD) ? FW_BOLD : FW_NORMAL;
-	DWORD italic = (style & FONT_ITALIC) ? TRUE : FALSE;
-	DWORD underline = (style & FONT_UNDERLINE) ? TRUE : FALSE;
-	DWORD strikeout = (style & FONT_STRIKEOUT) ? TRUE : FALSE;
+	uint32_t italic = (style & FONT_ITALIC) ? TRUE : FALSE;
+	uint32_t underline = (style & FONT_UNDERLINE) ? TRUE : FALSE;
+	uint32_t strikeout = (style & FONT_STRIKEOUT) ? TRUE : FALSE;
 
 	Quality = NONANTIALIASED_QUALITY;
 
@@ -1913,9 +1913,9 @@ D3D9PadFont::D3D9PadFont(int height, char *face, int width, int weight, FontStyl
 		break;
 	}
 
-	DWORD italic = (style & FONT_ITALIC) ? TRUE : FALSE;
-	DWORD underline = (style & FONT_UNDERLINE) ? TRUE : FALSE;
-	DWORD strikeout = (style & FONT_STRIKEOUT) ? TRUE : FALSE;
+	uint32_t italic = (style & FONT_ITALIC) ? TRUE : FALSE;
+	uint32_t underline = (style & FONT_UNDERLINE) ? TRUE : FALSE;
+	uint32_t strikeout = (style & FONT_STRIKEOUT) ? TRUE : FALSE;
 
 	Quality = NONANTIALIASED_QUALITY;
 	if (Config->SketchpadFont == 1) Quality = ANTIALIASED_QUALITY;
@@ -1999,7 +1999,7 @@ void D3D9PadFont::D3D9TechInit(LPDIRECT3DDEVICE9 pDevice)
 // class GDIPen
 // ======================================================================
 
-D3D9PadPen::D3D9PadPen (int s, int w, DWORD col): oapi::Pen (style, width, col)
+D3D9PadPen::D3D9PadPen (int s, int w, uint32_t col): oapi::Pen (style, width, col)
 {
 	switch (s) {
 		case 0:  style = PS_NULL;  break;
@@ -2032,7 +2032,7 @@ void D3D9PadPen::D3D9TechInit(LPDIRECT3DDEVICE9 pDevice)
 // class GDIBrush
 // ======================================================================
 
-D3D9PadBrush::D3D9PadBrush (DWORD col): oapi::Brush (col)
+D3D9PadBrush::D3D9PadBrush (uint32_t col): oapi::Brush (col)
 {
 	hBrush = CreateSolidBrush(COLORREF(col&0xFFFFFF));
 	clr = SkpColor(col);

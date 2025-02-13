@@ -29,7 +29,7 @@ class OrbiterConnect;
 class OrbiterServer;
 class OrbiterClient;
 class PlaybackEditor;
-class MemStat;
+// class MemStat;
 class DDEServer;
 class ImageIO;
 namespace orbiter {
@@ -37,6 +37,7 @@ namespace orbiter {
 	class LaunchpadDialog2;
 }
 namespace fs = std::filesystem;
+struct DIDEVICEOBJECTDATA{};
 
 //-----------------------------------------------------------------------------
 // Structure for module callback functions
@@ -102,15 +103,15 @@ public:
 	// dialog box processing
 	HWND OpenDialog (int id, DLGPROC pDlg, void *context = 0); // This version expects the dialog resource in the Orbiter instance
 	HWND OpenDialog (HINSTANCE hInst, int id, DLGPROC pDlg, void *context = 0); // use this version for for calls from external dlls
-	HWND OpenDialogEx (int id, DLGPROC pDlg, DWORD flag = 0, void *context = 0); // extended version
-	HWND OpenDialogEx (HINSTANCE hInst, int id, DLGPROC pDlg, DWORD flag = 0, void *context = 0); // extended version
+	HWND OpenDialogEx (int id, DLGPROC pDlg, uint32_t flag = 0, void *context = 0); // extended version
+	HWND OpenDialogEx (HINSTANCE hInst, int id, DLGPROC pDlg, uint32_t flag = 0, void *context = 0); // extended version
 	void OpenHelp (const HELPCONTEXT *hcontext);
 	void OpenLaunchpadHelp (HELPCONTEXT *hcontext);
 	HELPCONTEXT DefaultHelpPage(const char* topic);
 	//void OpenDialogAsync (int id, DLGPROC pDlg, void *context = 0);
 	void CloseDialog (HWND hDlg);
-	HWND IsDialog (HINSTANCE hInst, DWORD resId);
-	bool RegisterWindow (HINSTANCE hInstance, HWND hWnd, DWORD flag);
+	HWND IsDialog (HINSTANCE hInst, uint32_t resId);
+	bool RegisterWindow (HINSTANCE hInstance, HWND hWnd, uint32_t flag);
 
 	void UpdateDeallocationProgress();
 
@@ -141,7 +142,7 @@ public:
 	bool KillVessels();
 	// Kill the vessels that have been marked for deletion in the last time step
 
-	inline double ManCtrlLevel (THGROUP_TYPE thgt, DWORD device) const {
+	inline double ManCtrlLevel (THGROUP_TYPE thgt, uint32_t device) const {
 		switch (device) {
 		case MANCTRL_KEYBOARD: return 0.001*ctrlKeyboard[thgt];
 		case MANCTRL_JOYSTICK: return 0.001*ctrlJoystick[thgt];
@@ -164,9 +165,9 @@ public:
 	// Accessor functions
 	inline HWND    GetRenderWnd() const { return hRenderWnd; }
 	inline bool    IsFullscreen() const { return bFullscreen; }
-	inline DWORD   ViewW() const { return viewW; }
-	inline DWORD   ViewH() const { return viewH; }
-	inline DWORD   ViewBPP() const { return viewBPP; }
+	inline uint32_t   ViewW() const { return viewW; }
+	inline uint32_t   ViewH() const { return viewH; }
+	inline uint32_t   ViewBPP() const { return viewBPP; }
 	inline Config* Cfg() const { return pConfig; }
 	inline ScriptInterface *Script() const { return script; }
 	inline DialogManager *DlgMgr() const { return pDlgMgr; }
@@ -184,7 +185,7 @@ public:
 	inline LPDIRECTINPUTDEVICE8 GetJoyDevice() const { return pDI->GetJoyDevice(); }
 
 	// memory monitor
-	MemStat *memstat;
+	// MemStat *memstat;
 	long simheapsize; // memory allocated during CreateRenderWindow
 
 	// Onscreen annotation
@@ -253,7 +254,7 @@ public:
 
 	TimeJumpData tjump;
 
-	DWORD RegisterCustomCmd (char *label, char *desc, CustomFunc func, void *context);
+	uint32_t RegisterCustomCmd (char *label, char *desc, CustomFunc func, void *context);
 	bool UnregisterCustomCmd (int cmdId);
 
 	MeshManager     meshmanager;    // global mesh manager
@@ -263,63 +264,57 @@ public:
 	const Mesh *LoadMeshGlobal (const char *fname, LoadMeshClbkFunc fClbk);
 
 	// graphics client shortcuts
-	inline SURFHANDLE LoadTexture (const char *fname, DWORD flags = 0)
+	inline SURFHANDLE LoadTexture (const char *fname, uint32_t flags = 0)
 	{ return (gclient ? gclient->clbkLoadTexture (fname, flags) : NULL); }
 
-	//inline SURFHANDLE CreateSurface (DWORD w, DWORD h, DWORD attrib)
+	//inline SURFHANDLE CreateSurface (uint32_t w, uint32_t h, uint32_t attrib)
 	//{ return (gclient ? gclient->clbkCreateSurfaceEx (w, h, attrib) : NULL); }
 
-	//inline SURFHANDLE CreateTexture (DWORD w, DWORD h)
+	//inline SURFHANDLE CreateTexture (uint32_t w, uint32_t h)
 	//{ return (gclient ? gclient->clbkCreateTexture (w, h) : NULL); }
 
 	inline bool ReleaseSurface (SURFHANDLE surf)
 	{ return (gclient ? gclient->clbkReleaseSurface (surf) : false); }
 
-	inline bool SetSurfaceColourKey (SURFHANDLE surf, DWORD ckey)
+	inline bool SetSurfaceColourKey (SURFHANDLE surf, uint32_t ckey)
 	{ return (gclient ? gclient->clbkSetSurfaceColourKey (surf, ckey) : false); }
 
-	inline DWORD GetDeviceColour (BYTE r, BYTE g, BYTE b)
+	inline uint32_t GetDeviceColour (BYTE r, BYTE g, BYTE b)
 	{ return (gclient ? gclient->clbkGetDeviceColour (r, g, b) : 0); }
 
-	inline bool Blt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src, DWORD flag = 0)
+	inline bool Blt (SURFHANDLE tgt, uint32_t tgtx, uint32_t tgty, SURFHANDLE src, uint32_t flag = 0)
 	{ return (gclient ? gclient->clbkBlt (tgt, tgtx, tgty, src, flag) : false); }
 
-	inline bool Blt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src, DWORD srcx, DWORD srcy, DWORD w, DWORD h, DWORD flag = 0)
+	inline bool Blt (SURFHANDLE tgt, uint32_t tgtx, uint32_t tgty, SURFHANDLE src, uint32_t srcx, uint32_t srcy, uint32_t w, uint32_t h, uint32_t flag = 0)
 	{ return (gclient ? gclient->clbkBlt (tgt, tgtx, tgty, src, srcx, srcy, w, h, flag) : false); }
 
-	inline bool FillSurface (SURFHANDLE surf, DWORD col)
+	inline bool FillSurface (SURFHANDLE surf, uint32_t col)
 	{ return (gclient ? gclient->clbkFillSurface (surf, col) : false); }
 
-	inline bool FillSurface (SURFHANDLE surf, DWORD tgtx, DWORD tgty, DWORD w, DWORD h, DWORD col)
+	inline bool FillSurface (SURFHANDLE surf, uint32_t tgtx, uint32_t tgty, uint32_t w, uint32_t h, uint32_t col)
 	{ return (gclient ? gclient->clbkFillSurface (surf, tgtx, tgty, w, h, col) : false); }
 
-	inline HDC GetSurfaceDC (SURFHANDLE surf)
-	{ return (gclient ? gclient->clbkGetSurfaceDC (surf) : NULL); }
-
-	inline void ReleaseSurfaceDC (SURFHANDLE surf, HDC hDC)
-	{ if (gclient) gclient->clbkReleaseSurfaceDC (surf, hDC); }
-
-	bool SendKbdBuffered(DWORD key, DWORD *mod = 0, DWORD nmod = 0, bool onRunningOnly = false);
+	bool SendKbdBuffered(uint32_t key, uint32_t *mod = 0, uint32_t nmod = 0, bool onRunningOnly = false);
 	// Simulate a buffered keypress with an optional list of modifier keys
 
 	bool SendKbdImmediate(char kstate[256], bool onRunningOnly = false);
 	// Simulate an immediate key state
 
-	void OnOptionChanged(DWORD cat, DWORD item = 0);
+	void OnOptionChanged(uint32_t cat, uint32_t item = 0);
 
 	HINSTANCE       hInstStopgap;
 protected:
 	HRESULT UserInput ();
 	void KbdInputImmediate_System    (char *kstate);
 	void KbdInputImmediate_OnRunning (char *buffer);
-	void KbdInputBuffered_System     (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n);
-	void KbdInputBuffered_OnRunning  (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n);
+	void KbdInputBuffered_System     (char *kstate, DIDEVICEOBJECTDATA *dod, uint32_t n);
+	void KbdInputBuffered_OnRunning  (char *kstate, DIDEVICEOBJECTDATA *dod, uint32_t n);
 	void UserJoyInput_System (DIJOYSTATE2 *js);
 	void UserJoyInput_OnRunning (DIJOYSTATE2 *js);
-	bool MouseEvent (UINT event, DWORD state, DWORD x, DWORD y);
-	bool BroadcastMouseEvent (UINT event, DWORD state, DWORD x, DWORD y);
+	bool MouseEvent (UINT event, uint32_t state, uint32_t x, uint32_t y);
+	bool BroadcastMouseEvent (UINT event, uint32_t state, uint32_t x, uint32_t y);
 	bool BroadcastImmediateKeyboardEvent (char *kstate);
-	void BroadcastBufferedKeyboardEvent (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n);
+	void BroadcastBufferedKeyboardEvent (char *kstate, DIDEVICEOBJECTDATA *dod, uint32_t n);
 
 	void BroadcastGlobalInit();
 
@@ -370,21 +365,21 @@ private:
 	long            plZ4;          // previous joystick throttle setting
 	int             video_skip_count; // count skipped frames for frame sequence capturing
 	oapi::ScreenAnnotation **snote;// onscreen annotations
-	DWORD           nsnote;        // number of annotations
+	uint32_t           nsnote;        // number of annotations
 	oapi::ScreenAnnotation *snote_playback;// onscreen annotation during playback
 	ScriptInterface *script;
 	INTERPRETERHANDLE hScnInterp;
 
 	// render parameters (only used if graphics client is present)
 	bool			bFullscreen;   // renderer in fullscreen mode
-	DWORD           viewW, viewH;  // render viewport dimensions
-	DWORD			viewBPP;       // render colour depth (bits per pixel)
+	uint32_t           viewW, viewH;  // render viewport dimensions
+	uint32_t			viewBPP;       // render colour depth (bits per pixel)
 
 	std::filesystem::path cfgpath;
 	char            simkstate[256];// accumulated simulated key state
 
-	DWORD           ms_prev;       // used for time step calculation
-	DWORD           ms_suspend;    // used for time-skipping within a step
+	uint32_t           ms_prev;       // used for time step calculation
+	uint32_t           ms_suspend;    // used for time-skipping within a step
 	bool            bActive;       // render window has focus
 	bool            bAllowInput;   // allow input processing for the next frame even if render window doesn't have focus
 	bool            bVisible;      // render window exists and is visible
@@ -403,9 +398,9 @@ private:
 	std::string currentScenario;
 
 	// Manual joystick/keyboard attitude inputs
-	DWORD ctrlJoystick[15];
-	DWORD ctrlKeyboard[15];
-	DWORD ctrlTotal[15];
+	uint32_t ctrlJoystick[15];
+	uint32_t ctrlKeyboard[15];
+	uint32_t ctrlTotal[15];
 
 	VOID SavePlaybackScn (const char *fname);
 
@@ -444,7 +439,7 @@ private:
 
 	// list of custom commands
 	CUSTOMCMD *customcmd;
-	DWORD ncustomcmd;
+	uint32_t ncustomcmd;
 	friend class DlgFunction;
 
 public:

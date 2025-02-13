@@ -1,7 +1,6 @@
 #ifndef __SDLUTIL_H
 #define __SDLUTIL_H
 
-#include <OrbiterAPI.h>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_gpu.h>
 #include <SDL3_image/SDL_image.h>
@@ -89,6 +88,10 @@ public:
         device, window, IMG_Load(path.c_str()), path) {
     }
 
+    Image(const WithLocalContext &ctx, const std::string &path) : Image(
+        ctx->Device(), ctx->Window(), path) {
+    }
+
     ~Image();
 
     int Width() const { return m_surface->w; }
@@ -111,24 +114,26 @@ private:
     SDL_GPUTextureSamplerBinding m_binding;
 };
 
-
-void Markdown(WithLocalContext &ctx, const std::string &md,
-              std::vector<Image *> &loadedImages);
-
 namespace ImGui {
+    void Markdown(WithLocalContext &ctx, const std::string &md,
+                  std::vector<::Image *> &loadedImages);
+
     bool InputText(const char *label, std::string &buf,
-                 ImGuiInputTextFlags flags = 0,
-                 ImGuiInputTextCallback callback = nullptr,
-                 void *user_data = nullptr);
-    bool InputTextWithHint(const char *label, const char *hint, std::string &buf,
-                     ImGuiInputTextFlags flags = 0,
-                     ImGuiInputTextCallback callback = nullptr,
-                     void *user_data = nullptr);
+                   ImGuiInputTextFlags flags = 0,
+                   ImGuiInputTextCallback callback = nullptr,
+                   void *user_data = nullptr);
+
+    bool InputTextWithHint(const char *label, const char *hint,
+                           std::string &buf,
+                           ImGuiInputTextFlags flags = 0,
+                           ImGuiInputTextCallback callback = nullptr,
+                           void *user_data = nullptr);
+
     bool InputTextMultiline(const char *label, std::string &buf,
-                     const ImVec2 &size = ImVec2(0, 0),
-                     ImGuiInputTextFlags flags = 0,
-                     ImGuiInputTextCallback callback = nullptr,
-                     void *user_data = nullptr);
+                            const ImVec2 &size = ImVec2(0, 0),
+                            ImGuiInputTextFlags flags = 0,
+                            ImGuiInputTextCallback callback = nullptr,
+                            void *user_data = nullptr);
 }
 
 #endif //SDLUTIL_H

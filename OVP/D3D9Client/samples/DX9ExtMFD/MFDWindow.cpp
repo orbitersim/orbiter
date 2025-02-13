@@ -28,14 +28,14 @@ MFDWindow::MFDWindow (HINSTANCE _hInst, const MFDSPEC &spec): ExternMFD (spec), 
 	vstick = false;
 	bFailed = false;
 
-	oapiOpenDialogEx (hInst, IDD_MFD, DlgProc, DLG_ALLOWMULTI|DLG_CAPTIONCLOSE|DLG_CAPTIONHELP, this);
+	// oapiOpenDialogEx (hInst, IDD_MFD, DlgProc, DLG_ALLOWMULTI|DLG_CAPTIONCLOSE|DLG_CAPTIONHELP, this);
 }
 
 MFDWindow::~MFDWindow ()
 {
 	gcCore *pCore = gcGetCoreInterface();
 	if (pCore && hSwap) pCore->ReleaseSwap(hSwap);
-	oapiCloseDialog (hDlg);
+	// oapiCloseDialog (hDlg);
 	if (hBtnFnt) DeleteObject (hBtnFnt);
 }
 
@@ -49,7 +49,7 @@ void MFDWindow::Initialise (HWND _hDlg)
 	for (int i = 0; i < 16; i++)
 		SetWindowLongPtr (GetDlgItem (hDlg, IDC_BUTTON1+i), GWLP_USERDATA, i);
 
-	oapiAddTitleButton (IDSTICK, g_hPin, DLG_CB_TWOSTATE);
+	// oapiAddTitleButton (IDSTICK, g_hPin, DLG_CB_TWOSTATE);
 	SetTitle ();
 	gap = 3;
 
@@ -275,26 +275,27 @@ INT_PTR CALLBACK DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		((MFDWindow*)lParam)->Initialise (hDlg);
 		return TRUE;
 	case WM_SIZING:
-		((MFDWindow*)oapiGetDialogContext(hDlg))->CheckAspect(LPRECT(lParam), (DWORD)wParam);
+		// ((MFDWindow*)oapiGetDialogContext(hDlg))->CheckAspect(LPRECT(lParam), (DWORD)wParam);
 		return TRUE;
 	case WM_SIZE:
-		((MFDWindow*)oapiGetDialogContext(hDlg))->Resize();
+		// ((MFDWindow*)oapiGetDialogContext(hDlg))->Resize();
 		return TRUE;
 	case WM_COMMAND:
 		switch (LOWORD (wParam)) {
 		case IDCANCEL:
-			oapiUnregisterExternMFD ((MFDWindow*)oapiGetDialogContext (hDlg));
+			// oapiUnregisterExternMFD ((MFDWindow*)oapiGetDialogContext (hDlg));
 			return TRUE;
 		case IDHELP:
-			((MFDWindow*)oapiGetDialogContext(hDlg))->OpenModeHelp ();
+			// ((MFDWindow*)oapiGetDialogContext(hDlg))->OpenModeHelp ();
 			return TRUE;
 		case IDSTICK:
-			((MFDWindow*)oapiGetDialogContext(hDlg))->StickToVessel (HIWORD(wParam) != 0);
+			// ((MFDWindow*)oapiGetDialogContext(hDlg))->StickToVessel (HIWORD(wParam) != 0);
 			return TRUE;
 		}
 		break;
 	}
-	return oapiDefDialogProc (hDlg, uMsg, wParam, lParam);
+	// return oapiDefDialogProc (hDlg, uMsg, wParam, lParam);
+	return 0;
 }
 
 
@@ -305,8 +306,8 @@ LRESULT CALLBACK MFD_WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			return 1;
 		case WM_PAINT: 
 		{
-			MFDWindow *mfdw = (MFDWindow*)oapiGetDialogContext(GetParent(hWnd));
-			mfdw->RepaintDisplay(hWnd);
+			// MFDWindow *mfdw = (MFDWindow*)oapiGetDialogContext(GetParent(hWnd));
+			// mfdw->RepaintDisplay(hWnd);
 			return 0;
 		} 
 	}
@@ -318,17 +319,17 @@ LRESULT FAR PASCAL MFD_BtnProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 {
 	switch (uMsg) {
 	case WM_PAINT: {
-		MFDWindow *mfdw = (MFDWindow*)oapiGetDialogContext (GetParent (hWnd));
-		mfdw->RepaintButton (hWnd);
+		// MFDWindow *mfdw = (MFDWindow*)oapiGetDialogContext (GetParent (hWnd));
+		// mfdw->RepaintButton (hWnd);
 		} return 0;
 	case WM_LBUTTONDOWN: {
-		MFDWindow *mfdw = (MFDWindow*)oapiGetDialogContext (GetParent (hWnd));
-		mfdw->ProcessButton ((int)GetWindowLongPtr(hWnd, GWLP_USERDATA), PANEL_MOUSE_LBDOWN);
+		// MFDWindow *mfdw = (MFDWindow*)oapiGetDialogContext (GetParent (hWnd));
+		// mfdw->ProcessButton ((int)GetWindowLongPtr(hWnd, GWLP_USERDATA), PANEL_MOUSE_LBDOWN);
 		SetCapture (hWnd);
 		} return 0;
 	case WM_LBUTTONUP: {
-		MFDWindow *mfdw = (MFDWindow*)oapiGetDialogContext (GetParent (hWnd));
-		mfdw->ProcessButton ((int)GetWindowLongPtr(hWnd, GWLP_USERDATA), PANEL_MOUSE_LBUP);
+		// MFDWindow *mfdw = (MFDWindow*)oapiGetDialogContext (GetParent (hWnd));
+		// mfdw->ProcessButton ((int)GetWindowLongPtr(hWnd, GWLP_USERDATA), PANEL_MOUSE_LBUP);
 		ReleaseCapture();
 		} return 0;
 	}

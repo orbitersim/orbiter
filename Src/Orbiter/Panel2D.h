@@ -13,7 +13,6 @@
 #define __PANEL2D_H
 
 #define STRICT 1
-#include <windows.h>
 #include "Mfd.h"
 
 // =======================================================================
@@ -71,7 +70,7 @@ public:
 	 * \param scrollflag attachment and scrolling flags
 	 * \return Always 0.
 	 */
-	int SetBackground (SURFHANDLE *hSurface, DWORD nsurf, MESHHANDLE hMesh, DWORD width, DWORD height, DWORD baseline, DWORD scrollflag);
+	int SetBackground (SURFHANDLE *hSurface, uint32_t nsurf, MESHHANDLE hMesh, uint32_t width, uint32_t height, uint32_t baseline, uint32_t scrollflag);
 
 	/**
 	 * \brief Set panel scaling factors
@@ -128,7 +127,7 @@ public:
 	* \param y mouse screen y position
 	* \return \e true if the panel processes the event.
 	*/
-	bool ProcessMouse_System(UINT event, DWORD state, int x, int y, const char *kstate);
+	bool ProcessMouse_System(UINT event, uint32_t state, int x, int y, const char *kstate);
 
 	/**
 	 * \brief Process a mouse event for the panel while the simulation is active.
@@ -138,7 +137,7 @@ public:
 	 * \param y mouse screen y position
 	 * \return \e true if the panel processes the event.
 	 */
-	bool ProcessMouse_OnRunning (UINT event, DWORD state, int x, int y, const char *kstate);
+	bool ProcessMouse_OnRunning (UINT event, uint32_t state, int x, int y, const char *kstate);
 
 	void GetMouseState (int &idx, int &state, int &mx, int &my) const;
 
@@ -150,8 +149,8 @@ public:
 	 */
 	void Update (double SimT, double SysT);
 
-	int DefineArea (int aid, const RECT &pos, int draw_mode, int mouse_mode, SURFHANDLE surf = NULL, void *context = NULL);
-	int DefineArea (int aid, const RECT &pos, int texid, const RECT &texpos, int draw_mode, int mouse_mode, int bkmode);
+	int DefineArea (int aid, const Rect &pos, int draw_mode, int mouse_mode, SURFHANDLE surf = NULL, void *context = NULL);
+	int DefineArea (int aid, const Rect &pos, int texid, const Rect &texpos, int draw_mode, int mouse_mode, int bkmode);
 	void ReleaseAreas ();
 	void SetArea (int idx, SURFHANDLE s);
 	SURFHANDLE GetArea (int idx);
@@ -198,14 +197,14 @@ private:
 	int connect[4];           // neighbour panel identifiers
 	bool visible;             // panel visible in viewport?
 	bool allowMFDNudge;       // allow nudging the MFD size to fit texture size
-	DWORD shiftflag;          // bitflags for shifting modes
+	uint32_t shiftflag;          // bitflags for shifting modes
 	//SURFHANDLE hBkgSurf;      // surface handle for panel background
 	MESHHANDLE hBkgMesh;      // mesh handle for panel background
 	SURFHANDLE *hSurf;        // surface handles for panel textures
-	DWORD nSurf;              // number of surfaces
-	DWORD panelW, panelH;     // panel width, height [pixel]
-	DWORD ybase;              // reference base line
-	DWORD viewW, viewH;       // viewport width, height [pixel]
+	uint32_t nSurf;              // number of surfaces
+	uint32_t panelW, panelH;     // panel width, height [pixel]
+	uint32_t ybase;              // reference base line
+	uint32_t viewW, viewH;       // viewport width, height [pixel]
 	double x0, y0;            // screen coordinates of top left panel corner
 	double userscale;         // user-defined scaling request
 	double panelscale;        // panel scaling factor
@@ -222,8 +221,8 @@ private:
 	struct Area {
 		int id;        // area identifier
 		int texid;     // texture index
-		RECT pos;      // area rectangle in source panel [logical]
-		RECT texpos;   // area rectangle in target texture bitmap [pixel]
+		Rect pos;      // area rectangle in source panel [logical]
+		Rect texpos;   // area rectangle in target texture bitmap [pixel]
 		int w, h;      // width, height of area
 		int bltmode;   // blt mode: 0=return black surface, 1=return background, 2=return current panel state
 		int redraw;    // redraw trigger code: 0=no redraw, 1=each frame, 2=on mouseclick in area
@@ -237,7 +236,7 @@ private:
 		int nmsh;    // mesh index
 		int ngrp;    // group index
 		float left, right, top, bottom; // the initial borders of the display (in mesh units)
-		DWORD flag;
+		uint32_t flag;
 	} mfdspec[MAXMFD];
 };
 

@@ -47,16 +47,16 @@ int cmph( const VOID* a, const VOID* b )
 
 
 
-DWORD MakeChain(VECTOR2D** pVertexPtrs, DWORD dwNumVertexPtrs,
+uint32_t MakeChain(VECTOR2D** pVertexPtrs, uint32_t dwNumVertexPtrs,
 				 int (*cmp)(const void*, const void*) ) 
 {
-	DWORD s = 1;
+	uint32_t s = 1;
 
 	qsort( pVertexPtrs, dwNumVertexPtrs, sizeof(VECTOR2D*), cmp );
 	
-	for( DWORD i=2; i<dwNumVertexPtrs; i++ ) 
+	for( uint32_t i=2; i<dwNumVertexPtrs; i++ ) 
 	{
-		DWORD j = s;
+		uint32_t j = s;
 		while( j>=1 && ccw( pVertexPtrs, i, j, j-1 ) )
 			j--;
 
@@ -74,12 +74,12 @@ DWORD MakeChain(VECTOR2D** pVertexPtrs, DWORD dwNumVertexPtrs,
 
 
 
-int ConvexHull2D( VECTOR2D** pVertexPtrs, DWORD dwNumVertexPtrs )
+int ConvexHull2D( VECTOR2D** pVertexPtrs, uint32_t dwNumVertexPtrs )
 {
 	if( !dwNumVertexPtrs )
 		return 0;
 
-	DWORD cnt = 0;
+	uint32_t cnt = 0;
 
 	// Make lower hull
 	cnt += MakeChain( &pVertexPtrs[0], dwNumVertexPtrs, cmpl );
@@ -94,21 +94,21 @@ int ConvexHull2D( VECTOR2D** pVertexPtrs, DWORD dwNumVertexPtrs )
 
 
 
-VOID Find2DConvexHull( DWORD dwNumInVertices, VECTOR2D* pInVertices,
-					   DWORD* pdwNumOutIndices, WORD** ppOutIndices )
+VOID Find2DConvexHull( uint32_t dwNumInVertices, VECTOR2D* pInVertices,
+					   uint32_t* pdwNumOutIndices, WORD** ppOutIndices )
 {
-	DWORD i;
-	static DWORD dwVtxBuf = 0;
+	uint32_t i;
+	static uint32_t dwVtxBuf = 0;
 	static WORD *pIndices;
 	// Allocate memory for the hull (max size is dwNumInVertices+1 times the
-	// the storage space for a DWORD and a ptr to a vertex
-	static DWORD dwElementSize = sizeof(DWORD) + sizeof(VECTOR2D*);
+	// the storage space for a uint32_t and a ptr to a vertex
+	static uint32_t dwElementSize = sizeof(uint32_t) + sizeof(VECTOR2D*);
 	if (dwNumInVertices > dwVtxBuf) {
 		if (dwVtxBuf) delete []pIndices;
 		pIndices = (WORD*)(new BYTE[(dwNumInVertices+1)*dwElementSize]); TRACENEW
 		dwVtxBuf = dwNumInVertices;
 	}
-    DWORD dwNumIndices  = 0;
+    uint32_t dwNumIndices  = 0;
 
 	VECTOR2D** ppVertices = (VECTOR2D**)&pIndices[dwNumInVertices+1];
 

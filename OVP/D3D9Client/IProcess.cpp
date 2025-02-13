@@ -231,7 +231,7 @@ bool ImageProcessing::Execute(bool bInScene)
 
 // ================================================================================================
 //
-bool ImageProcessing::Execute(const char *shader, bool bInScene, DWORD blendop)
+bool ImageProcessing::Execute(const char *shader, bool bInScene, uint32_t blendop)
 {
 	Activate(shader);
 	return Execute(blendop, bInScene, gcIPInterface::ipitemplate::Rect);
@@ -240,7 +240,7 @@ bool ImageProcessing::Execute(const char *shader, bool bInScene, DWORD blendop)
 
 // ================================================================================================
 //
-bool ImageProcessing::Execute(DWORD blendop, bool bInScene, gcIPInterface::ipitemplate mode, int grp)
+bool ImageProcessing::Execute(uint32_t blendop, bool bInScene, gcIPInterface::ipitemplate mode, int grp)
 {
 	if (!IsOK()) return false;
 	if (!SetupViewPort()) return false;
@@ -251,8 +251,8 @@ bool ImageProcessing::Execute(DWORD blendop, bool bInScene, gcIPInterface::ipite
 	HR(pDevice->SetPixelShader(pPixel));
 	HR(pDevice->SetVertexDeclaration(pPosTexDecl));
 
-	DWORD BakFill;
-	pDevice->GetRenderState(D3DRS_FILLMODE, &BakFill);
+	uint32_t BakFill;
+	pDevice->GetRenderState(D3DRS_FILLMODE, LPDWORD(&BakFill));
 
 	HR(pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID));
 	HR(pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
@@ -310,7 +310,7 @@ bool ImageProcessing::Execute(DWORD blendop, bool bInScene, gcIPInterface::ipite
 
 		if (pTextures[idx].hTex==NULL) continue;
 
-		DWORD flags = pTextures[idx].flags;
+		uint32_t flags = pTextures[idx].flags;
 
 		if (flags&IPF_CLAMP_U)			pDevice->SetSamplerState(idx, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
 		else if (flags&IPF_MIRROR_U)	pDevice->SetSamplerState(idx, D3DSAMP_ADDRESSU, D3DTADDRESS_MIRROR);
@@ -324,7 +324,7 @@ bool ImageProcessing::Execute(DWORD blendop, bool bInScene, gcIPInterface::ipite
 		else if (flags&IPF_MIRROR_W)	pDevice->SetSamplerState(idx, D3DSAMP_ADDRESSW, D3DTADDRESS_MIRROR);
 		else							pDevice->SetSamplerState(idx, D3DSAMP_ADDRESSW, D3DTADDRESS_WRAP);
 
-		DWORD filter = D3DTEXF_POINT;
+		uint32_t filter = D3DTEXF_POINT;
 
 		if (flags&IPF_LINEAR) filter = D3DTEXF_LINEAR;
 		if (flags&IPF_PYRAMIDAL) filter = D3DTEXF_PYRAMIDALQUAD;
@@ -361,8 +361,8 @@ bool ImageProcessing::Execute(DWORD blendop, bool bInScene, gcIPInterface::ipite
 
 		pMesh->Init();
 
-		DWORD nGrp = pMesh->GroupCount();
-		if (grp < 0) for (DWORD i=0;i<nGrp;i++) {
+		uint32_t nGrp = pMesh->GroupCount();
+		if (grp < 0) for (uint32_t i=0;i<nGrp;i++) {
 			if (mesh_tex_idx >= 0) {
 				SURFHANDLE hTex = pMesh->GetTexture(i);
 				HR(pDevice->SetTexture(mesh_tex_idx, SURFACE(hTex)->GetTexture()));
@@ -583,7 +583,7 @@ void ImageProcessing::SetVSBool(const char *var, bool val)
 
 // ================================================================================================
 //
-void ImageProcessing::SetTexture(const char *var, SURFHANDLE hTex, DWORD flags)
+void ImageProcessing::SetTexture(const char *var, SURFHANDLE hTex, uint32_t flags)
 {
 	D3DXHANDLE hVar = pPSConst->GetConstantByName(NULL, var);
 
@@ -592,7 +592,7 @@ void ImageProcessing::SetTexture(const char *var, SURFHANDLE hTex, DWORD flags)
 		return;
 	}
 
-	DWORD idx = pPSConst->GetSamplerIndex(hVar);
+	uint32_t idx = pPSConst->GetSamplerIndex(hVar);
 
 	if (!hTex) {
 		pTextures[idx].hTex = NULL;
@@ -607,7 +607,7 @@ void ImageProcessing::SetTexture(const char *var, SURFHANDLE hTex, DWORD flags)
 
 // ================================================================================================
 //
-void ImageProcessing::SetTextureNative(const char *var, LPDIRECT3DBASETEXTURE9 hTex, DWORD flags)
+void ImageProcessing::SetTextureNative(const char *var, LPDIRECT3DBASETEXTURE9 hTex, uint32_t flags)
 {
 	D3DXHANDLE hVar = pPSConst->GetConstantByName(NULL, var);
 
@@ -616,7 +616,7 @@ void ImageProcessing::SetTextureNative(const char *var, LPDIRECT3DBASETEXTURE9 h
 		return;
 	}
 
-	DWORD idx = pPSConst->GetSamplerIndex(hVar);
+	uint32_t idx = pPSConst->GetSamplerIndex(hVar);
 
 	if (!hTex) {
 		pTextures[idx].hTex = NULL;
@@ -768,7 +768,7 @@ void gcIPInterface::SetVSStruct(const char *var, const void *val, int bytes)
 	pIPI->SetVSStruct(var, val, bytes);
 }
 
-void gcIPInterface::SetTexture(const char *var, SURFHANDLE hTex, DWORD flags)
+void gcIPInterface::SetTexture(const char *var, SURFHANDLE hTex, uint32_t flags)
 {
 	pIPI->SetTexture(var, hTex, flags);
 }
@@ -798,7 +798,7 @@ bool gcIPInterface::Execute(bool bInScene)
 	return pIPI->Execute(bInScene);
 }
 
-bool gcIPInterface::Execute(DWORD blendop, bool bInScene, ipitemplate mde)
+bool gcIPInterface::Execute(uint32_t blendop, bool bInScene, ipitemplate mde)
 {
 	return pIPI->Execute(blendop, bInScene, mde);
 }

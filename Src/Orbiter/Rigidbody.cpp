@@ -522,7 +522,7 @@ void RigidBody::SetDynamicUpdate (bool dynamic)
 	}
 }
 
-const char *RigidBody::PropagatorStr (DWORD idx, bool verbose) {
+const char *RigidBody::PropagatorStr (uint32_t idx, bool verbose) {
 	static const char *ShortPropModeStr[NPROP_METHOD] = {
 		"RK2", "RK4", "RK5", "RK6", "RK7", "RK8",
 		"SY2", "SY4", "SY6", "SY8"

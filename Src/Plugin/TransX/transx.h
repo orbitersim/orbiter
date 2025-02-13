@@ -35,7 +35,7 @@ public:
 	bool Update (oapi::Sketchpad *sketchpad);
 	void WriteStatus(FILEHANDLE scn) const;
 	void ReadStatus(FILEHANDLE scn);
-	static OAPI_MSGTYPE MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam);
+	static void* MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam);
 
 	int getwidth();
 	int getheight();

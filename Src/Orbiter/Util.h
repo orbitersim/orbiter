@@ -4,7 +4,6 @@
 #ifndef __UTIL_H
 #define __UTIL_H
 
-#include <windows.h>
 #include "Vecmat.h"
 #include "OrbiterAPI.h"
 #include "Orbiter.h"

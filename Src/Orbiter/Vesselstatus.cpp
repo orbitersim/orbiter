@@ -38,7 +38,7 @@ extern char DBG_MSG[256];
 bool Vessel::ParseScenarioLine (char *line, VESSELSTATUS &vs)
 {
 	char cbuf[256], *pd, c;
-	DWORD n;
+	uint32_t n;
 	double lvl;
 
 	if (!_strnicmp (line, "STATUS", 6)) {
@@ -109,7 +109,7 @@ bool Vessel::ParseScenarioLine (char *line, VESSELSTATUS &vs)
 			}
 		}
 	} else if (!_strnicmp (line, "IDS", 3)) {
-		DWORD step, irange, m, i;
+		uint32_t step, irange, m, i;
 		for (pd = strtok (line+3, " "), n = 0; n < ndock && pd; pd = strtok (NULL, " ")) {
 			if ((m = sscanf (pd, "%d%c%d%c%d", &i, &c, &step, &c, &irange)) >= 3 && i < ndock) {
 				if (m < 5) irange = 20;
@@ -117,7 +117,7 @@ bool Vessel::ParseScenarioLine (char *line, VESSELSTATUS &vs)
 			}
 		}
 	} else if (!_strnicmp (line, "NAVFREQ", 7)) {
-		DWORD step;
+		uint32_t step;
 		for (pd = strtok (line+7, " "), n = 0; n < nnav && pd; pd = strtok (NULL, " "))
 			if (sscanf (pd, "%d", &step) == 1) {
 				nav[n].freq = (float)((nav[n].step = step)*0.05 + NAV_RADIO_FREQ_MIN);
@@ -133,7 +133,7 @@ bool Vessel::ParseScenarioLine (char *line, VESSELSTATUS &vs)
 bool Vessel::ParseScenarioLine2 (char *line, void *status)
 {
 	char cbuf[256], *pd, c;
-	DWORD nn, n;
+	uint32_t nn, n;
 	double lvl;
 	VESSELSTATUS2 *vs = (VESSELSTATUS2*)status;
 
@@ -222,7 +222,7 @@ bool Vessel::ParseScenarioLine2 (char *line, void *status)
 		if (sscanf (line+4, "%lf", &lvl)) { // old style fuel definition
 			if (vs->nfuel) delete []vs->fuel;
 			vs->fuel = new VESSELSTATUS2::FUELSPEC[vs->nfuel = 1]; TRACENEW
-			vs->fuel[0].idx = (DWORD)-1; // mark 'global'
+			vs->fuel[0].idx = (uint32_t)-1; // mark 'global'
 			vs->fuel[0].level = lvl;
 		}
 
@@ -334,7 +334,7 @@ bool Vessel::ParseScenarioLine2 (char *line, void *status)
 			el_valid = true;
 		}
 	} else if (!_strnicmp (line, "IDS", 3)) {
-		DWORD step, irange, m, i, n = 0;
+		uint32_t step, irange, m, i, n = 0;
 		char c;
 		for (pd = strtok (line+3, " "); n < ndock && pd; pd = strtok (NULL, " ")) {
 			if ((m = sscanf (pd, "%d%c%d%c%d", &i, &c, &step, &c, &irange)) >= 3 && i < ndock) {
@@ -343,7 +343,7 @@ bool Vessel::ParseScenarioLine2 (char *line, void *status)
 			}
 		}
 	} else if (!_strnicmp (line, "NAVFREQ", 7)) {
-		DWORD step, n = 0;
+		uint32_t step, n = 0;
 		for (pd = strtok (line+7, " "); n < nnav && pd; pd = strtok (NULL, " "))
 			if (sscanf (pd, "%d", &step) == 1) {
 				nav[n].freq = (float)((nav[n].step = step)*0.05 + NAV_RADIO_FREQ_MIN);
@@ -383,9 +383,9 @@ bool Vessel::ParseScenarioLineDirect (char *line)
 	return false;
 }
 
-DWORD Vessel::PackDefaultState (char **data, DWORD flag)
+uint32_t Vessel::PackDefaultState (char **data, uint32_t flag)
 {
-	DWORD size = sizeof(ScenarioData)-sizeof(char*);
+	uint32_t size = sizeof(ScenarioData)-sizeof(char*);
 	const char *cname = (fstatus == FLIGHTSTATUS_FREEFLIGHT ? cbody->Name() : proxyplanet->Name());
 	size += strlen(cname)+1;
 	if (flag & SD_NAME) {
@@ -505,7 +505,7 @@ void Vessel::SetState (const VESSELSTATUS &status)
 void Vessel::SetState2 (const void *status)
 {
 	VESSELSTATUS2 *vs = (VESSELSTATUS2*)status;
-	DWORD i, idx;
+	uint32_t i, idx;
 	double lvl;
 
 	cbody = (CelestialBody*)vs->rbody;
@@ -513,7 +513,7 @@ void Vessel::SetState2 (const void *status)
 
 	// should we call SetDefaultState() at this point?
 	landtgt = 0;
-	nport = (DWORD)-1;
+	nport = (uint32_t)-1;
 	lstatus = 0;
 
 	// set propellant status
@@ -526,7 +526,7 @@ void Vessel::SetState2 (const void *status)
 			lvl = vs->fuel[i].level;
 			if (idx < ntank)
 				SetPropellantMass (tank[idx], lvl*tank[idx]->maxmass);
-			else if (idx == (DWORD)-1) // global setting
+			else if (idx == (uint32_t)-1) // global setting
 				for (idx = 0; idx < ntank; idx++)
 					SetPropellantMass (tank[idx], lvl*tank[idx]->maxmass);
 		}
@@ -657,7 +657,7 @@ void Vessel::GetState (VESSELSTATUS &status)
 void Vessel::GetState2 (void *status)
 {
 	VESSELSTATUS2 *vs = (VESSELSTATUS2*)status;
-	DWORD i;
+	uint32_t i;
 
 	vs->rbody = (OBJHANDLE)cbody;
 	vs->base  = proxybase;

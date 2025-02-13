@@ -40,7 +40,8 @@ char *DGConfig::Description()
 bool DGConfig::clbkOpen (HWND hLaunchpad)
 {
 	// respond to user double-clicking the item in the list
-	return OpenDialog (gParams.hInst, hLaunchpad, IDD_DGCONFIG, DlgProc);
+	// return OpenDialog (gParams.hInst, hLaunchpad, IDD_DGCONFIG, DlgProc);
+	return false;
 }
 
 bool DGConfig::HiresEnabled () const

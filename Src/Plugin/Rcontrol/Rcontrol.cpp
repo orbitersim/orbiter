@@ -247,23 +247,23 @@ void oapi::RControl::hookOpenDlg(void* context)
 
 void oapi::RControl::clbkOpenDlg(void* context)
 {
-	HWND hDlg = oapiOpenDialog(stopgapGetModuleInstance(GetModule()), IDD_INTERFACE, hookDlgMsgProc);
-	if (hDlg) {
-		m_hDlg = hDlg;
-
-		GAUGEPARAM gp = { 0, 100, GAUGEPARAM::LEFT, GAUGEPARAM::BLACK };
-		oapiSetGaugeParams(GetDlgItem(hDlg, IDC_RCSLEVEL), &gp);
-		oapiSetGaugePos(GetDlgItem(hDlg, IDC_RCSLEVEL), 100);
-		gp.color = GAUGEPARAM::RED;
-		oapiSetGaugeParams(GetDlgItem(hDlg, IDC_MAIN_GAUGE), &gp);
-		oapiSetGaugePos(GetDlgItem(hDlg, IDC_MAIN_GAUGE), m_maingauge = 0);
-		gp.base = GAUGEPARAM::RIGHT;
-		oapiSetGaugeParams(GetDlgItem(hDlg, IDC_RETRO_GAUGE), &gp);
-		oapiSetGaugePos(GetDlgItem(hDlg, IDC_RETRO_GAUGE), m_retrogauge = 0);
-		gp.base = GAUGEPARAM::BOTTOM;
-		oapiSetGaugeParams(GetDlgItem(hDlg, IDC_HOVER_GAUGE), &gp);
-		oapiSetGaugePos(GetDlgItem(hDlg, IDC_HOVER_GAUGE), m_hovergauge = 0);
-	}
+	// HWND hDlg = oapiOpenDialog(stopgapGetModuleInstance(GetModule()), IDD_INTERFACE, hookDlgMsgProc);
+	// if (hDlg) {
+	// 	m_hDlg = hDlg;
+	//
+	// 	GAUGEPARAM gp = { 0, 100, GAUGEPARAM::LEFT, GAUGEPARAM::BLACK };
+	// 	oapiSetGaugeParams(GetDlgItem(hDlg, IDC_RCSLEVEL), &gp);
+	// 	oapiSetGaugePos(GetDlgItem(hDlg, IDC_RCSLEVEL), 100);
+	// 	gp.color = GAUGEPARAM::RED;
+	// 	oapiSetGaugeParams(GetDlgItem(hDlg, IDC_MAIN_GAUGE), &gp);
+	// 	oapiSetGaugePos(GetDlgItem(hDlg, IDC_MAIN_GAUGE), m_maingauge = 0);
+	// 	gp.base = GAUGEPARAM::RIGHT;
+	// 	oapiSetGaugeParams(GetDlgItem(hDlg, IDC_RETRO_GAUGE), &gp);
+	// 	oapiSetGaugePos(GetDlgItem(hDlg, IDC_RETRO_GAUGE), m_retrogauge = 0);
+	// 	gp.base = GAUGEPARAM::BOTTOM;
+	// 	oapiSetGaugeParams(GetDlgItem(hDlg, IDC_HOVER_GAUGE), &gp);
+	// 	oapiSetGaugePos(GetDlgItem(hDlg, IDC_HOVER_GAUGE), m_hovergauge = 0);
+	// }
 }
 
 // --------------------------------------------------------------
@@ -289,7 +289,7 @@ INT_PTR oapi::RControl::DlgMsgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) {
 		case IDCANCEL:
-			oapiCloseDialog(hDlg);
+			// oapiCloseDialog(hDlg);
 			return TRUE;
 		case IDC_FOCUS:
 			oapiSetFocusObject(m_pVessel->GetHandle());
@@ -356,5 +356,6 @@ INT_PTR oapi::RControl::DlgMsgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 		}
 		break;
 	}
-	return oapiDefDialogProc(hDlg, uMsg, wParam, lParam);
+	// return oapiDefDialogProc(hDlg, uMsg, wParam, lParam);
+	return 0;
 }

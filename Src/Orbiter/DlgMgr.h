@@ -5,7 +5,6 @@
 #define __DLGMGR_H
 
 #define STRICT 1
-#include <windows.h>
 
 #include "DialogWin.h"
 #include "Orbiter.h"

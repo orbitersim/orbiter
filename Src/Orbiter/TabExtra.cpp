@@ -15,7 +15,6 @@
 #include "Orbiter.h"
 #include "Rigidbody.h"
 #include "Log.h"
-#include "Help.h"
 #include "resource.h"
 #include "resource2.h"
 
@@ -239,7 +238,7 @@ BOOL orbiter::ExtraTab::OnNotify(HWND hDlg, int idCtrl, LPNMHDR pnmh)
 			tvi.mask = TVIF_PARAM;
 			if (TreeView_GetItem(GetDlgItem(hDlg, IDC_EXT_LIST), &tvi) && tvi.lParam) {
 				BuiltinLaunchpadItem* func = (BuiltinLaunchpadItem*)tvi.lParam;
-				func->clbkOpen(LaunchpadWnd());
+				// func->clbkOpen(LaunchpadWnd());
 			}
 			} return TRUE;
 		}
@@ -262,7 +261,7 @@ BOOL orbiter::ExtraTab::OnMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 			tvi.mask = TVIF_PARAM;
 			if (TreeView_GetItem (GetDlgItem (hWnd, IDC_EXT_LIST), &tvi) && tvi.lParam) {
 				BuiltinLaunchpadItem *func = (BuiltinLaunchpadItem*)tvi.lParam;
-				func->clbkOpen (LaunchpadWnd());
+				// func->clbkOpen (LaunchpadWnd());
 			}
 			} return TRUE;
 		}
@@ -286,7 +285,8 @@ BuiltinLaunchpadItem::BuiltinLaunchpadItem (const orbiter::ExtraTab *tab): Launc
 
 bool BuiltinLaunchpadItem::OpenDialog (HWND hParent, int resid, DLGPROC pDlg)
 {
-	return LaunchpadItem::OpenDialog (pTab->AppInstance(), hParent, resid, pDlg);
+	return false;
+	// return LaunchpadItem::OpenDialog (pTab->AppInstance(), hParent, resid, pDlg);
 }
 
 void BuiltinLaunchpadItem::Error (const char *msg)
@@ -506,7 +506,7 @@ bool ExtraDynamics::StoreParams (HWND hWnd)
 
 bool ExtraDynamics::OpenHelp (HWND hWnd)
 {
-	OpenDefaultHelp (hWnd, "extra_linprop");
+	// OpenDefaultHelp (hWnd, "extra_linprop");
 	return true;
 }
 
@@ -855,7 +855,7 @@ void ExtraStabilisation::ToggleEnable (HWND hWnd)
 
 bool ExtraStabilisation::OpenHelp (HWND hWnd)
 {
-	OpenDefaultHelp (hWnd, "extra_orbitstab");
+	// OpenDefaultHelp (hWnd, "extra_orbitstab");
 	return true;
 }
 
@@ -988,7 +988,7 @@ void ExtraMfdConfig::ToggleEnable (HWND hWnd)
 
 bool ExtraMfdConfig::OpenHelp (HWND hWnd)
 {
-	OpenDefaultHelp (hWnd, "extra_mfdconfig");
+	// OpenDefaultHelp (hWnd, "extra_mfdconfig");
 	return true;
 }
 
@@ -1108,7 +1108,7 @@ bool ExtraShutdown::StoreParams (HWND hWnd)
 
 bool ExtraShutdown::OpenHelp (HWND hWnd)
 {
-	OpenDefaultHelp (hWnd, "extra_shutdown");
+	// OpenDefaultHelp (hWnd, "extra_shutdown");
 	return true;
 }
 
@@ -1216,7 +1216,7 @@ void ExtraFixedStep::ToggleEnable (HWND hWnd)
 
 bool ExtraFixedStep::OpenHelp (HWND hWnd)
 {
-	OpenDefaultHelp (hWnd, "extra_fixedstep");
+	// OpenDefaultHelp (hWnd, "extra_fixedstep");
 	return true;
 }
 
@@ -1370,7 +1370,7 @@ bool ExtraTimerSettings::StoreParams (HWND hWnd)
 
 bool ExtraTimerSettings::OpenHelp (HWND hWnd)
 {
-	OpenDefaultHelp (hWnd, "extra_timer");
+	// OpenDefaultHelp (hWnd, "extra_timer");
 	return true;
 }
 
@@ -1449,7 +1449,7 @@ bool ExtraPerformanceSettings::StoreParams (HWND hWnd)
 
 bool ExtraPerformanceSettings::OpenHelp (HWND hWnd)
 {
-	OpenDefaultHelp (hWnd, "extra_performance");
+	// OpenDefaultHelp (hWnd, "extra_performance");
 	return true;
 }
 
@@ -1649,13 +1649,7 @@ char *LaunchpadItem::Description ()
 	return 0;
 }
 
-bool LaunchpadItem::OpenDialog (HINSTANCE hInst, HWND hLaunchpad, int resId, DLGPROC pDlg)
-{
-	DialogBoxParam (hInst, MAKEINTRESOURCE (resId), hLaunchpad, pDlg, (LPARAM)this);
-	return true;
-}
-
-bool LaunchpadItem::clbkOpen (HWND hLaunchpad)
+bool LaunchpadItem::clbkOpen ()
 {
 	return false;
 }

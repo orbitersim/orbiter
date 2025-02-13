@@ -5,8 +5,6 @@
 // ScenarioTab class
 //=============================================================================
 
-#include <windows.h>
-#include <direct.h>
 #include <string>
 #include "Orbiter.h"
 #include "TabScenario.h"
@@ -14,9 +12,6 @@
 //#include "Log.h"
 #include <imgui_internal.h>
 
-#include "Help.h"
-#include "htmlctrl.h"
-#include "resource.h"
 #include "UIUtil.h"
 #include <sstream>
 
@@ -140,7 +135,7 @@ void orbiter::ScenarioTab::OnDraw(WithLocalContext &ctx) {
     ImGui::BeginChild("ScnDesc", ImVec2(0, height),
                       ImGuiChildFlags_None,
                       ImGuiWindowFlags_HorizontalScrollbar);
-    Markdown(ctx, desc, loadedImages);
+    ImGui::Markdown(ctx, desc, loadedImages);
     ImGui::EndChild();
     if (ImGui::Button("Save current...")) {
         if (fs::exists(m_lp->App()->ScnPath("(Current state)"))) {

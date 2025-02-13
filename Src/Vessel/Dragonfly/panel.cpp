@@ -118,21 +118,21 @@ Panel::~Panel()
 void Panel::MakeYourBackground()
 { 
 	surf=oapiCreateSurface(Wdth,Hght);
-	hDC=oapiGetDC(surf);
-	hDC2=CreateCompatibleDC(hDC);
-	hDC3=CreateCompatibleDC(hDC);
-	hBitmap=CreateCompatibleBitmap(hDC,Wdth,Hght);
-	HBITMAP hBitmapOld=(HBITMAP)SelectObject(hDC2,hBitmap);
-	DeleteObject(hBitmapOld);
-	SelectObject(hDC2,hBRUSH_Background);
-	Rectangle(hDC2,0,0,Wdth,Hght);
-	Panel::NowPutScrews();
-	Panel::NowPutTextOnBackground();
-	Panel::NowPutCText();
-	Panel::NowPutBorders();
-	DeleteDC(hDC2);
-	oapiReleaseDC(surf,hDC);
-	oapiDestroySurface(surf);
+	// hDC=oapiGetDC(surf);
+	// hDC2=CreateCompatibleDC(hDC);
+	// hDC3=CreateCompatibleDC(hDC);
+	// hBitmap=CreateCompatibleBitmap(hDC,Wdth,Hght);
+	// HBITMAP hBitmapOld=(HBITMAP)SelectObject(hDC2,hBitmap);
+	// DeleteObject(hBitmapOld);
+	// SelectObject(hDC2,hBRUSH_Background);
+	// Rectangle(hDC2,0,0,Wdth,Hght);
+	// Panel::NowPutScrews();
+	// Panel::NowPutTextOnBackground();
+	// Panel::NowPutCText();
+	// Panel::NowPutBorders();
+	// DeleteDC(hDC2);
+	// oapiReleaseDC(surf,hDC);
+	// oapiDestroySurface(surf);
 
 	
 }
@@ -398,34 +398,34 @@ void PANEL_InitGDIResources(HINSTANCE hModule)
   hFNT_Panel=CreateFont(12,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_RASTER_PRECIS,
 			 CLIP_DEFAULT_PRECIS,PROOF_QUALITY,DEFAULT_PITCH,"Arial");
   hBITMAP_ADI=LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP1));
-  hClockSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP1)));
-  hSwitchSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP2)));
-  hHgaugeSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP3)));
-  hEgaugeSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP4)));
-  hRotarySRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP5)));
-  hTbSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP6)));
-  hCbSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP7)));
-  hSliderSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP8)));
-  hCwSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP9)));
-  hMFDSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP10)));
-  hDockBSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP14)));
-  hDockSW1SRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP16)));
-  hDockDlSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP17)));
-  hDockSW2SRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP18)));
-  hNavSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP19)));
-  hRadarSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP20)));
-  hRadBkSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP21)));
-  hRadSrfSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP22)));
-  hFuelSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP23)));
-  hVrotSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP26)));
-  hVrotBkSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP27)));
-  hADIBorder=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP28)));
-  hFront_Panel_SRF[1]=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP11)));
-  hFront_Panel_SRF[2]=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP12)));
-  hFront_Panel_SRF[3]=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP13)));
-  hFront_Panel_SRF[4]=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP15)));
-  hFront_Panel_SRF[5]=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP24)));
-  hFront_Panel_SRF[6]=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP25)));
+  // hClockSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP1)));
+  // hSwitchSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP2)));
+  // hHgaugeSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP3)));
+  // hEgaugeSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP4)));
+  // hRotarySRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP5)));
+  // hTbSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP6)));
+  // hCbSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP7)));
+  // hSliderSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP8)));
+  // hCwSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP9)));
+  // hMFDSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP10)));
+  // hDockBSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP14)));
+  // hDockSW1SRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP16)));
+  // hDockDlSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP17)));
+  // hDockSW2SRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP18)));
+  // hNavSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP19)));
+  // hRadarSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP20)));
+  // hRadBkSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP21)));
+  // hRadSrfSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP22)));
+  // hFuelSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP23)));
+  // hVrotSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP26)));
+  // hVrotBkSRF=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP27)));
+  // hADIBorder=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP28)));
+  // hFront_Panel_SRF[1]=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP11)));
+  // hFront_Panel_SRF[2]=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP12)));
+  // hFront_Panel_SRF[3]=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP13)));
+  // hFront_Panel_SRF[4]=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP15)));
+  // hFront_Panel_SRF[5]=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP24)));
+  // hFront_Panel_SRF[6]=oapiCreateSurface (LoadBitmap(hModule,MAKEINTRESOURCE(IDB_BITMAP25)));
   Panel_Resources_Loaded=1;
  }
 	

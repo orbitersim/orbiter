@@ -35,7 +35,7 @@ public:
 
 	virtual bool GetMinMaxDistance(float *zmin, float *zmax, float *dmin);
 	virtual void UpdateBoundingBox();
-	virtual DWORD GetMeshCount();
+	virtual uint32_t GetMeshCount();
 
 	bool Update (bool bMainScene);
 
@@ -78,12 +78,12 @@ private:
 	double Tchk;               // next update
 	double Tlghtchk;           // next lighting update
 	double csun_lights;
-	DWORD ntile;               // number of surface tiles
+	uint32_t ntile;               // number of surface tiles
 	const SurftileSpec *tspec; // list of tile specs
 	D3D9Mesh *tilemesh;
 	D3D9Mesh **structure_bs;
 	D3D9Mesh **structure_as;
-	DWORD nstructure_bs, nstructure_as;
+	uint32_t nstructure_bs, nstructure_as;
 	bool lights;               // use nighttextures for base objects
 	//bool bLocalLight;          // true if lighting is modified
 	class vPlanet *vP;

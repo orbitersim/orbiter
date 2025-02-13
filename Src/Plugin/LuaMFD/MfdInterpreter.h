@@ -27,7 +27,7 @@ public:
 	void LoadAPI();
 	void AddLine (const char *line, COLORREF col);
 	inline LineSpec *FirstLine() const { return lineFirst; }
-	inline DWORD LineCount() const { return nline; }
+	inline uint32_t LineCount() const { return nline; }
 	void term_strout (const char *str, bool iserr=false);
 	void term_out (lua_State *L, bool iserr=false);
 	void term_clear ();
@@ -40,7 +40,7 @@ protected:
 
 private:
 	LineSpec *lineFirst, *lineLast;
-	DWORD nline;
+	uint32_t nline;
 };
 
 // ==============================================================
@@ -60,10 +60,10 @@ public:
 	struct VesselInterp {
 		OBJHANDLE hVessel;
 		Environment **env;
-		DWORD nenv;
+		uint32_t nenv;
 	} *list;
-	DWORD nlist;
-	DWORD nbuf;
+	uint32_t nlist;
+	uint32_t nbuf;
 
 	InterpreterList();
 	~InterpreterList();
@@ -71,12 +71,12 @@ public:
 	void Update (double simt, double simdt, double mjd);
 
 	Environment *AddInterpreter (OBJHANDLE hV);
-	bool DeleteInterpreter (OBJHANDLE hV, DWORD idx);
+	bool DeleteInterpreter (OBJHANDLE hV, uint32_t idx);
 	bool DeleteInterpreters (OBJHANDLE hV);
 	void DeleteList ();
 	VesselInterp *FindVesselInterp (OBJHANDLE hV);
-	Environment *FindInterpreter (OBJHANDLE hV, DWORD idx);
-	DWORD InterpreterCount (OBJHANDLE hV);
+	Environment *FindInterpreter (OBJHANDLE hV, uint32_t idx);
+	uint32_t InterpreterCount (OBJHANDLE hV);
 };
 
 #endif // !__MFDINTERPRETER_H

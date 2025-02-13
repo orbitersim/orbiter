@@ -9,9 +9,19 @@
 #ifndef DI7FRAME_H
 #define DI7FRAME_H
 #define STRICT 1
-#include <windows.h>
-#include <dinput.h>
-#include <d3d.h>
+
+#include <cstdint>
+// #include <windows.h>
+// #include <dinput.h>
+// #include <d3d.h>
+
+struct LPDIRECTINPUT8 {};
+struct LPDIRECTINPUTDEVICE8 {};
+struct GUID {};
+typedef bool BOOL;
+struct DIDEVICEINSTANCE{};
+struct LPCDIDEVICEINSTANCE{};
+struct DIDATAFORMAT{};
 
 //-----------------------------------------------------------------------------
 // Name: CDIFramework7
@@ -24,40 +34,40 @@ class CDIFramework7
 	LPDIRECTINPUTDEVICE8 m_pdidMouseDevice; // mouse device
 	LPDIRECTINPUTDEVICE8 m_pdidJoyDevice;   // joystick device
 	GUID                 m_guidJoystick;    // GUID for the joystick
-	BOOL                 m_bUseKbd;
-	BOOL                 m_bUseJoy;
+	bool                 m_bUseKbd;
+	bool                 m_bUseJoy;
 
 	struct JLIST {
 		DIDEVICEINSTANCE*    descJoy;     // list of enumerated joystick devices
-		DWORD                nJoy;        // number of enumerated joysticks
+		uint32_t                nJoy;        // number of enumerated joysticks
 	} jList;
 
-	static BOOL CALLBACK EnumJoysticksCallback (LPCDIDEVICEINSTANCE pInst,
-		VOID* pvContext);
+	static BOOL EnumJoysticksCallback (LPCDIDEVICEINSTANCE pInst,
+		void* pvContext);
 
 public:
 	CDIFramework7();
 	~CDIFramework7();
 
-	HRESULT Create (HINSTANCE hInst);
+	uint32_t Create ();
 	// Initialize the DirectInput objects
 
-	VOID Destroy ();
+	void Destroy ();
 	// Destroys devices and DI object
 
-	VOID GetJoysticks (DIDEVICEINSTANCE **dev, DWORD *pdwCount);
+	void GetJoysticks (DIDEVICEINSTANCE **dev, uint32_t *pdwCount);
 	// Returns the list of enumerated joysticks
 
-	DWORD NumJoysticks () const { return jList.nJoy; }
+	uint32_t NumJoysticks () const { return jList.nJoy; }
 	// number of enumerated joysticks
 
-	HRESULT CreateDevice (HWND hWnd, LPDIRECTINPUT8 pDI,
+	uint32_t CreateDevice (LPDIRECTINPUT8 pDI,
 		LPDIRECTINPUTDEVICE8 pDIDevice, GUID guidDevice, const DIDATAFORMAT *pdidDataFormat,
-		DWORD dwFlags);
+		uint32_t dwFlags);
 
-	HRESULT CreateKbdDevice (HWND hWnd);
-	HRESULT CreateMouseDevice (HWND hWnd);
-	HRESULT CreateJoyDevice (HWND hWnd, DWORD idx = 0);
+	uint32_t CreateKbdDevice ();
+	uint32_t CreateMouseDevice ();
+	uint32_t CreateJoyDevice (uint32_t idx = 0);
 
 	void DestroyJoyDevice();
 	void DestroyDevices();

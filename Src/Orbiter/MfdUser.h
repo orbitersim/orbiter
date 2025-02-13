@@ -38,7 +38,7 @@ private:
 	char selkey;
 	MFD *mfd; // pointer to module interface
 	MFD2 *mfd2; // pointer to version 2 interface (0 if not applicable)
-	OAPI_MSGTYPE (*msgproc)(UINT,UINT,WPARAM,LPARAM);
+	void* (*msgproc)(UINT,UINT,WPARAM,LPARAM);
 };
 
 #endif // !__MFD_USER_H

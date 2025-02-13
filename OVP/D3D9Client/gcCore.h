@@ -208,7 +208,7 @@ public:
 	// the variable passed to SetTexture function. It's then used in a shader code like
 	// tex2D(mySamp, float2(x,y))
 	// ----------------------------------------------------------------------------------
-	virtual void	SetTexture(const char* var, SURFHANDLE hTex, DWORD flags);
+	virtual void	SetTexture(const char* var, SURFHANDLE hTex, uint32_t flags);
 
 	// ----------------------------------------------------------------------------------
 	// SetOutput assigns a render target to the IP interface. "id" is an index of the render
@@ -231,7 +231,7 @@ public:
 	virtual void	SetMesh(const MESHHANDLE hMesh, const char* tex = NULL, ipicull = ipicull::None);
 
 	virtual bool	Execute(bool bInScene = false);
-	virtual bool	Execute(DWORD blendop, bool bInScene = false, ipitemplate mde = Rect);
+	virtual bool	Execute(uint32_t blendop, bool bInScene = false, ipitemplate mde = Rect);
 
 	// ----------------------------------------------------------------------------------
 	virtual int		FindDefine(const char* key);
@@ -289,7 +289,7 @@ public:
 
 	typedef struct {
 		void* pData;
-		DWORD			Pitch;
+		uint32_t			Pitch;
 	} Lock;
 
 	typedef struct {
@@ -324,7 +324,7 @@ public:
 		int				Width;
 		int				Height;
 		int				Mips;
-		DWORD			Flags;
+		uint32_t			Flags;
 	} SurfaceSpecs;
 
 
@@ -351,13 +351,13 @@ public:
 		int				MaxTexSize;		///< Maximum texture size in pixels
 		int				DisplayMode;	///< 0 = True Fullscreen, 1 = Fullscreen Window, 2 = Windowed
 		int				MaxTexRep;		///< Maximum texture repeat count
-		DWORD			gcAPIVer;		///< gcAPI Build Date 0xYYYYMMDD
+		uint32_t			gcAPIVer;		///< gcAPI Build Date 0xYYYYMMDD
 	} SystemSpecs;
 
 
 	typedef struct {
 		FVECTOR2 pos;
-		DWORD color;
+		uint32_t color;
 	} clrVtx;
 
 
@@ -439,7 +439,7 @@ public:
 	* \note Only a cameras attached to currently active vessel are operational and recording.
 	* \note Having multiple cameras active at the same time doesn't impact in a frame rate, however, camera refresh rates are reduced.
 	*/
-	gc_interface CAMERAHANDLE SetupCustomCamera(CAMERAHANDLE hCam, OBJHANDLE hVessel, VECTOR3& vPos, VECTOR3& vDir, VECTOR3& vUp, double dFov, SURFHANDLE hSurf, DWORD dwFlags = 0xFF);
+	gc_interface CAMERAHANDLE SetupCustomCamera(CAMERAHANDLE hCam, OBJHANDLE hVessel, VECTOR3& vPos, VECTOR3& vDir, VECTOR3& vUp, double dFov, SURFHANDLE hSurf, uint32_t dwFlags = 0xFF);
 	//@}
 
 
@@ -467,7 +467,7 @@ public:
 	* \note Poly objects should be created during initialization not for every frame or update. Updating existing (pre created) poly object is pretty fast.
 	* \note During update number of points must be equal or smaller than during initial creation of poly object.
 	*/
-	gc_interface HPOLY CreatePoly(HPOLY hPoly, const oapi::FVECTOR2* pt, int npt, DWORD flags = 0);
+	gc_interface HPOLY CreatePoly(HPOLY hPoly, const oapi::FVECTOR2* pt, int npt, uint32_t flags = 0);
 
 
 	/**
@@ -484,7 +484,7 @@ public:
 	* \note PF_FAN Triangle fan. The first vertex is in the center of the fan/circle and other lie at the edge. ("npt" must be "number of triangles" + 2)
 	* \note PF_STRIP Is build from quads. Where each quad requires two vertices. ("npt" must be "number of quads" * 2 + 2)
 	*/
-	gc_interface HPOLY CreateTriangles(HPOLY hPoly, const clrVtx* pt, int npt, DWORD flags);
+	gc_interface HPOLY CreateTriangles(HPOLY hPoly, const clrVtx* pt, int npt, uint32_t flags);
 
 
 	/**
@@ -501,7 +501,7 @@ public:
 	* \param pText a Pointer into a text string
 	* \param len a Length of the text string to process. -1 will scan to a NULL terminator.
 	*/
-	gc_interface DWORD GetTextLength(oapi::Font* hFont, const char* pText, int len = -1);
+	gc_interface uint32_t GetTextLength(oapi::Font* hFont, const char* pText, int len = -1);
 
 
 	/**
@@ -513,7 +513,7 @@ public:
 	* \return index from 0 to number of charters. For just one char it can be either "0" or "1" depending which side is closer to "pos".
 	* \note This is used for finding a spot for a "cursor" when a text string is clicked with mouse.
 	*/
-	gc_interface DWORD GetCharIndexByPosition(oapi::Font* hFont, const char* pText, int pos, int len = -1);
+	gc_interface uint32_t GetCharIndexByPosition(oapi::Font* hFont, const char* pText, int pos, int len = -1);
 
 
 	/**
@@ -523,7 +523,7 @@ public:
 	* \param pParam a pointer to user data (to a class for an example)
 	* \return false if an error occurred, true otherwise.
 	*/
-	gc_interface bool RegisterRenderProc(__gcRenderProc proc, DWORD id, void* pParam);
+	gc_interface bool RegisterRenderProc(__gcRenderProc proc, uint32_t id, void* pParam);
 
 	/**
 	* \brief Create a Font
@@ -555,9 +555,9 @@ public:
 	* \param bSet \e true to set material value, \e false to get a material value
 	* \return -4 = Invalid handle \n -3 = Unknown property flag \n -2 = Property not specified cannot get it \n -1 = Index out of range \n 0 = Success
 	*/
-	gc_interface int GetMeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, MatProp prop, FVECTOR4 *value);
+	gc_interface int GetMeshMaterial(DEVMESHHANDLE hMesh, uint32_t idx, MatProp prop, FVECTOR4 *value);
 
-	gc_interface int SetMeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, MatProp prop, const FVECTOR4* value);
+	gc_interface int SetMeshMaterial(DEVMESHHANDLE hMesh, uint32_t idx, MatProp prop, const FVECTOR4* value);
 
 	/**
 	* \brief A Function to get a mesh transformation/animation matrix.
@@ -568,7 +568,7 @@ public:
 	* \param pMat A pointer to FMATRIX4 struct for receiving the data.
 	* \return 0 = on Success, or error code.
 	*/
-	gc_interface int GetMatrix(MatrixId mat, OBJHANDLE hVessel, DWORD mesh, DWORD group, oapi::FMATRIX4* pMat);
+	gc_interface int GetMatrix(MatrixId mat, OBJHANDLE hVessel, uint32_t mesh, uint32_t group, oapi::FMATRIX4* pMat);
 
 
 	/**
@@ -580,7 +580,7 @@ public:
 	* \param pMat A pointer to FMATRIX4 containing the data to set.
 	* \return 0 = on Success, or error code.
 	*/
-	gc_interface int SetMatrix(MatrixId mat, OBJHANDLE hVessel, DWORD mesh, DWORD group, const oapi::FMATRIX4* pMat);
+	gc_interface int SetMatrix(MatrixId mat, OBJHANDLE hVessel, uint32_t mesh, uint32_t group, const oapi::FMATRIX4* pMat);
 
 
 	/**
@@ -620,7 +620,7 @@ public:
 	* \param pWorld pointer to World matrix relative to camera
 	* \param color color in 0xAABBGGRR
 	*/
-	gc_interface void RenderLines(const FVECTOR3* pVtx, const WORD* pIdx, int nVtx, int nIdx, const FMATRIX4* pWorld, DWORD color);
+	gc_interface void RenderLines(const FVECTOR3* pVtx, const WORD* pIdx, int nVtx, int nIdx, const FMATRIX4* pWorld, uint32_t color);
 
 	/**
 	* \brief Get some system information
@@ -642,7 +642,7 @@ public:
 	* \param flags surface attributes (see: OAPISURFACE_x flags)
 	* \return surface handle or NULL in a case of an error
 	*/
-	gc_interface SURFHANDLE LoadSurface(const char *fname, DWORD flags);
+	gc_interface SURFHANDLE LoadSurface(const char *fname, uint32_t flags);
 
 	/**
 	* \brief Save a native DirectX surface to a file (*.dds, *.jpg, *.bmp, *.png)
@@ -676,7 +676,7 @@ public:
 	* \return Handle to a compressed texture, user must release this.
 	* \note Compression is slow, separate thread recommended for realtime compression.
 	*/
-	gc_interface SURFHANDLE	CompressSurface(SURFHANDLE hSurface, DWORD flags);
+	gc_interface SURFHANDLE	CompressSurface(SURFHANDLE hSurface, uint32_t flags);
 
 	/**
 	* \brief Load a bitmap from file (*.bmp *.png *.jpg *.gif)
@@ -698,14 +698,14 @@ public:
 	* \param pParam a pointer to user data (to a class for an example)
 	* \return false if an error occurred, true otherwise.
 	*/
-	gc_interface bool RegisterGenericProc(__gcGenericProc proc, DWORD id, void *pParam);
+	gc_interface bool RegisterGenericProc(__gcGenericProc proc, uint32_t id, void *pParam);
 
 	/**
 	* \brief Do not use these functions unless you know what's you doing.
 	*/
 	gc_interface bool StretchRectInScene(SURFHANDLE tgt, SURFHANDLE src, LPRECT tr = NULL, LPRECT sr = NULL);
 
-	gc_interface bool ClearSurfaceInScene(SURFHANDLE tgt, DWORD color, LPRECT tr = NULL);
+	gc_interface bool ClearSurfaceInScene(SURFHANDLE tgt, uint32_t color, LPRECT tr = NULL);
 
 
 	/**
@@ -727,34 +727,34 @@ public:
 	gc_interface void ReleaseLock(SURFHANDLE hSrf);
 
 	/**
-	* \brief Convert a floating point color to DWORD color value
+	* \brief Convert a floating point color to uint32_t color value
 	* \param c A pointer to a color
-	* \return DWORD color in 0xAABBGGRR
+	* \return uint32_t color in 0xAABBGGRR
 	* \note Alpha will range from 1 to 255. Zero is never returned because of backwards compatibility issues 0-alpha is mapped to 255
 	*/
-	inline DWORD Color(const COLOUR4* c)
+	inline uint32_t Color(const COLOUR4* c)
 	{
 		return FVECTOR4(*c).dword_abgr();
 	}
 
 	/**
-	* \brief Convert a floating point color to DWORD color value
+	* \brief Convert a floating point color to uint32_t color value
 	* \param c A pointer to a color
-	* \return DWORD color in 0xAABBGGRR
+	* \return uint32_t color in 0xAABBGGRR
 	* \note Alpha will range from 1 to 255. Zero is never returned because of backwards compatibility issues 0-alpha is mapped to 255
 	*/
-	inline DWORD Color(const oapi::FVECTOR4* c)
+	inline uint32_t Color(const oapi::FVECTOR4* c)
 	{
 		return c->dword_abgr();
 	}
 
 	/**
-	* \brief Convert a DWORD color to floating point COLOUR4 value
+	* \brief Convert a uint32_t color to floating point COLOUR4 value
 	* \param dwABGR A color in 0xAABBGGRR
 	* \return COLOUR4
 	* \note Alpha will range from 1 to 255. Zero is never used because of backwards compatibility issues 0-alpha is mapped to 255
 	*/
-	inline COLOUR4 Colour4(DWORD dwABGR)
+	inline COLOUR4 Colour4(uint32_t dwABGR)
 	{
 		return FVECTOR4(dwABGR).Colour4();
 	}
