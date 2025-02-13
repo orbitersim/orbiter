@@ -35,6 +35,7 @@ namespace orbiter {
 	class ConsoleNG;
 	class LaunchpadDialog2;
 }
+namespace fs = std::filesystem;
 
 //-----------------------------------------------------------------------------
 // Structure for module callback functions
@@ -197,7 +198,7 @@ public:
 		{ return pConfig->TexPath (name, ext); }
 	inline char *HTexPath   (const char *name, const char *ext = 0)
 		{ return pConfig->HTexPath (name, ext); }
-	inline const char *ScnPath    (const char *name) { return pConfig->ScnPath (name); }
+	inline fs::path ScnPath    (const char* name) const { return pConfig->ScnPath (name); }
 
 	FILE *OpenTextureFile (const char *name, const char *ext);
 	// return texture file handle. Searches in hightex and standard directories

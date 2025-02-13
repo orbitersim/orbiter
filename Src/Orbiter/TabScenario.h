@@ -52,7 +52,7 @@ namespace orbiter {
 		void SaveCurScenario();
 		// open dialog to allow saving of current scenario, if available
 
-		int SaveCurScenarioAs(const char* name, char* desc, bool replace = false);
+		int SaveCurScenarioAs(const char* name, const char* desc, bool replace = false);
 		// copy current scenario file into 'name', replacing description with 'desc'.
 		// return value: 0=ok, 1=failed, 2=file exists (only checked if replace=false)
 
@@ -70,11 +70,9 @@ namespace orbiter {
 		std::vector<Image*> loadedImages;
 		std::string desc;
 		int scnListW = 0;
-		char scnhelp[128];       // scenario help string, if available
-		int infoId;              // IDC_SCN_HTML or IDC_SCN_INFO, depending on which is active
-		bool htmldesc;           // Use embedded html viewer for scenario description
-		HANDLE hThread;          // scenario directory tree watcher
 		bool startPaused;
+		std::string saveScnName;
+		std::string saveScnDesc;
 	};
 
 }

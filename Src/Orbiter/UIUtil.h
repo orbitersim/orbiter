@@ -25,14 +25,17 @@ public:
         return inner;
     }
 
-    bool ConsumeEvent(const SDL_Event& event, bool& wantsOut) const;
+    bool ConsumeEvent(const SDL_Event &event, bool &wantsOut) const;
+
     bool BeginFrame() const;
+
     void EndFrame() const;
 
 private:
     friend class ImGuiMgr;
 
-    WithLocalContext(ImGuiMgr *inner, ImGuiContext *lastContext) : inner(inner), lastContext(lastContext) {
+    WithLocalContext(ImGuiMgr *inner, ImGuiContext *lastContext) : inner(inner),
+        lastContext(lastContext) {
     };
     ImGuiMgr *inner;
     ImGuiContext *lastContext;
@@ -78,9 +81,11 @@ private:
 class Image {
 public:
     // N.B. this takes ownership of the surface and will destroy it.
-    Image(SDL_GPUDevice *device, SDL_Window *window, SDL_Surface *surface, const std::string &path);
+    Image(SDL_GPUDevice *device, SDL_Window *window, SDL_Surface *surface,
+          const std::string &path);
 
-    Image(SDL_GPUDevice *device, SDL_Window *window, const std::string &path) : Image(
+    Image(SDL_GPUDevice *device, SDL_Window *window,
+          const std::string &path) : Image(
         device, window, IMG_Load(path.c_str()), path) {
     }
 
@@ -91,7 +96,8 @@ public:
     const std::string &Path() const { return m_path; }
 
     bool Valid() const {
-        return m_device != nullptr && m_surface != nullptr && m_texture != nullptr && m_sampler != nullptr;
+        return m_device != nullptr && m_surface != nullptr && m_texture !=
+               nullptr && m_sampler != nullptr;
     }
 
     SDL_GPUTextureSamplerBinding *Binding() { return &m_binding; }
@@ -105,7 +111,24 @@ private:
     SDL_GPUTextureSamplerBinding m_binding;
 };
 
-void Markdown(WithLocalContext &ctx, const std::string &md, std::vector<Image *> &loadedImages);
 
+void Markdown(WithLocalContext &ctx, const std::string &md,
+              std::vector<Image *> &loadedImages);
+
+namespace ImGui {
+    bool InputText(const char *label, std::string &buf,
+                 ImGuiInputTextFlags flags = 0,
+                 ImGuiInputTextCallback callback = nullptr,
+                 void *user_data = nullptr);
+    bool InputTextWithHint(const char *label, const char *hint, std::string &buf,
+                     ImGuiInputTextFlags flags = 0,
+                     ImGuiInputTextCallback callback = nullptr,
+                     void *user_data = nullptr);
+    bool InputTextMultiline(const char *label, std::string &buf,
+                     const ImVec2 &size = ImVec2(0, 0),
+                     ImGuiInputTextFlags flags = 0,
+                     ImGuiInputTextCallback callback = nullptr,
+                     void *user_data = nullptr);
+}
 
 #endif //SDLUTIL_H

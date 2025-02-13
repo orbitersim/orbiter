@@ -2265,7 +2265,7 @@ DLLEXPORT FILEHANDLE oapiOpenFile (const char *fname, FileAccessMode mode, PathR
 		strcpy (cbuf, g_pOrbiter->Cfg()->ConfigPathNoext (fname));
 		break;
 	case SCENARIOS:
-		strcpy (cbuf, g_pOrbiter->ScnPath (fname));
+		strcpy (cbuf, g_pOrbiter->ScnPath (fname).u8string().c_str());
 		break;
 	case TEXTURES:
 		strcpy (cbuf, g_pOrbiter->TexPath (fname));

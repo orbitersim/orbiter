@@ -653,7 +653,7 @@ VOID Orbiter::Launch (const char *scenario)
 	pConfig->Write (); // save current settings
 	m_pLaunchpad->WriteExtraParams ();
 
-	if (!have_state && !pState->Read (ScnPath (scenario))) {
+	if (!have_state && !pState->Read (ScnPath (scenario).u8string().c_str())) {
 		LOGOUT_ERR ("Scenario not found: %s", scenario);
 		TerminateOnError();
 	}
@@ -739,7 +739,7 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 	LOGOUT("Finished initialising world");
 	ms_prev = timeGetTime () - 1; // make sure SimDT > 0 for first frame
 
-	g_psys->InitState (ScnPath (scenario));
+	g_psys->InitState (ScnPath (scenario).u8string().c_str());
 
 	g_focusobj = 0;
 	Vessel *vfocus = g_psys->GetVessel (pState->Focus());
@@ -807,7 +807,7 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 	}
 
 	if (g_pane) {
-		g_pane->InitState (ScnPath (scenario));
+		g_pane->InitState (ScnPath (scenario).u8string().c_str());
 		LOGOUT ("Finished initialising panels");
 	}
 

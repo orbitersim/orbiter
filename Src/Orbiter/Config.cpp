@@ -1416,14 +1416,11 @@ char* Config::PTexPath(const char* name, const char* ext)
 	return ptxpath;
 }
 
-const char *Config::ScnPath (const char *name)
+fs::path Config::ScnPath (const char* name) const
 {
-	if (name[1] == ':') { // assume full absolute path
-		return name;
-	} else {
-		strcpy (scnpath+scnlen, name);
-		return strcat (scnpath, ".scn");
-	}
+	if (fs::path path = fs::path(name); path.is_absolute())
+		return path;
+	return fs::path(this->CfgDirPrm.ScnDir).append(name).replace_extension("scn");
 }
 
 void Config::TexPath (char *cbuf, const char *name, const char *ext)

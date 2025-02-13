@@ -160,15 +160,13 @@ bool orbiter::LaunchpadDialog2::ConsumeEvent(const SDL_Event &event) const {
 
 void orbiter::LaunchpadDialog2::RenderFrame() const {
 	if (WithLocalContext ctx = m_imgui->PushLocal(); ctx.BeginFrame()) {
-		const ImGuiIO& io = ImGui::GetIO();
-
 		ImGui::SetNextWindowPos(ImVec2(0, 0));
-		ImGui::SetNextWindowSize(io.DisplaySize);
+		ImGui::SetNextWindowSize(ImGui::GetMainViewport()->WorkSize);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 		ImGui::Begin("OpenOrbiter Launchpad", nullptr,
 					 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-					 ImGuiWindowFlags_NoScrollbar);
+					 ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 		ImGui::PopStyleVar(2);
 		OnDraw(ctx);
 		ImGui::End();

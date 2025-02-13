@@ -17,6 +17,7 @@
 #include <fstream>
 #include <list>
 #include "GraphicsAPI.h"
+namespace fs = std::filesystem;
 
 // dynamic state propagation methods
 #define MAX_PROP_LEVEL  5
@@ -370,7 +371,7 @@ public:
 	// If hightex dir is not defined, function returns NULL
 	char* PTexPath(const char* name, const char* ext = 0);
 	// Return full path for planetary texture file name
-	const char *ScnPath    (const char *name);
+	fs::path ScnPath    (const char* name) const;
 	// Return full path for scenario file name
 
 	void TexPath (char *cbuf, const char *name, const char *ext=0);
