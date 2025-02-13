@@ -98,6 +98,8 @@ ImGuiMgr::ImGuiMgr(Orbiter *app, SDL_GPUDevice *device, SDL_Window *window) : m_
     if (!m_app->IsFullscreen())
         io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.IniFilename = nullptr;
+    io.LogFilename = nullptr;
 
     ImGuiSetStyle(true, 1.0f);
 
