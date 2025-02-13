@@ -65,7 +65,7 @@ struct PolyLineSet {
 	PolyLineSet();
 	~PolyLineSet();
 	void Clear();
-	int Load (const char *path, int type_id);
+	int Load (const fs::path& path, int type_id);
 	int type;
 	VPoint *vtx;
 	int nvtx;

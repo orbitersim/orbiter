@@ -268,13 +268,9 @@ bool VectorMap::SetCBody (const CelestialBody *body)
 		cbody = body;
 		planet = (cbody->Type() == OBJTP_PLANET ? (const Planet*)cbody : NULL);
 		if (planet) {
-			char path[MAX_PATH], relpath[MAX_PATH];
-			sprintf (relpath, "%s\\data\\coast.vec", cbody->Name());
-			strcpy (path, g_pOrbiter->Cfg()->ConfigPathNoext (relpath));
-			coast.Load (path, OUTLINE_COAST);
-			sprintf (relpath, "%s\\data\\contour.vec", cbody->Name());
-			strcpy (path, g_pOrbiter->Cfg()->ConfigPathNoext (relpath));
-			contour.Load (path, OUTLINE_CONTOUR);
+			const fs::path relpath = fs::path(cbody->Name()).append("data");
+			coast.Load (g_pOrbiter->Cfg()->ConfigPathNoext((relpath / "coast.vec").u8string()), OUTLINE_COAST);
+			contour.Load (g_pOrbiter->Cfg()->ConfigPathNoext((relpath / "contour.vec").u8string()), OUTLINE_CONTOUR);
 			gt_this.Reset (cbody, g_focusobj->Els());
 			mkrlist = planet->LabelList (&nmkrlist);
 			mkrset.Connect (mkrlist, nmkrlist);
@@ -1311,7 +1307,7 @@ void PolyLineSet::Clear()
 	}
 }
 
-int PolyLineSet::Load (const char *path, int type_id)
+int PolyLineSet::Load (const fs::path &path, int type_id)
 {
 	char cbuf[256];
 	int npt, ofs, i, j;

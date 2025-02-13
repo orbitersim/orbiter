@@ -64,7 +64,7 @@ namespace orbiter {
 		bool UnregisterExtraParam(LaunchpadItem* item);
 
 		// Return item 'name' below parent 'parent', or NULL if not found
-		LaunchpadItem* FindExtraParam(const std::string_view& name, size_t parent = 0);
+		LaunchpadItem* FindExtraParam(std::string_view name, size_t parent = 0);
 
 		// allow all externally registered "Extra" items to write their data to file
 		// (internal "extra" items use the Config class to write to Orbiter.cfg)

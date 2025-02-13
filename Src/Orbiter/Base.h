@@ -40,7 +40,7 @@ class Base: public Body {
 	friend class VBase;
 
 public:
-	Base (char *fname, Planet *_planet, double _lng = 0, double _lat = 0);
+	Base (const std::string& fname, Planet *_planet, double _lng = 0, double _lat = 0);
 	// create a Base from a config file
 	// lng and lat are only used if not defined in the config file
 

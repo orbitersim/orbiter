@@ -39,16 +39,13 @@ void State::Update ()
 	focus = g_focusobj->Name();
 }
 
-bool State::Read (const char *fname)
+bool State::Read (const fs::path& fname)
 {
 	ifstream ifs (fname, ios::in);
 	if (!ifs) return false;
 
 	int i;
-	scenario = fname;
-	for (i = strlen(fname); i >= 0; i--)
-		if (fname[i] == '.') break;
-	if (i >= 0 && i < 256) scenario[i] = '\0';
+	scenario = fs::path(fname).replace_extension().u8string();
 
 	char cbuf[256], *pc;
 	double t;

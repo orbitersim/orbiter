@@ -1377,46 +1377,50 @@ BOOL Config::Write (const char *fname) const
 	return TRUE;
 }
 
-char *Config::ConfigPath (const char *name) const
+fs::path Config::ConfigPath (const std::string_view name) const
 {
-	strcpy (cfgpath+cfglen, name);
-	return strcat (cfgpath, ".cfg");
+	fs::path path(CfgDirPrm.ConfigDir);
+	path.append(std::string(name) + ".cfg");
+	return path;
 }
 
-char *Config::ConfigPathNoext (const char *name)
+fs::path Config::ConfigPathNoext (const std::string_view name) const
 {
-	strcpy (cfgpath+cfglen, name);
-	return cfgpath;
+	fs::path path(CfgDirPrm.ConfigDir);
+	path.append(name);
+	return path;
 }
 
-char *Config::MeshPath (const char *name)
+fs::path Config::MeshPath (const std::string_view name) const
 {
-	strcpy (mshpath+mshlen, name);
-	return strcat (mshpath, ".msh");
+	fs::path path(CfgDirPrm.MeshDir);
+	path.append(std::string(name) + ".msh");
+	return path;
 }
 
-char *Config::TexPath (const char *name, const char *ext)
+fs::path Config::TexPath (const std::string_view name, const std::optional<std::string_view> ext) const
 {
-	strcpy (texpath+texlen, name);
-	return strcat (texpath, ext ? ext : ".dds");
+	fs::path path(CfgDirPrm.TextureDir);
+	path.append(std::string(name).append(ext.value_or(".dds"sv)));
+	return path;
 }
 
-char *Config::HTexPath (const char *name, const char *ext)
-{
-	if (!htxlen) return 0;
-	strcpy (htxpath+htxlen, name);
-	return strcat (htxpath, ext ? ext : ".dds");
+fs::path Config::HTexPath (const std::string_view name, const std::optional<std::string_view> ext) const {
+	if (CfgDirPrm.HightexDir[0] == '\0') {
+		return fs::path();
+	}
+	fs::path path(CfgDirPrm.HightexDir);
+	path.append(std::string(name).append(ext.value_or(".dds"sv)));
+	return path;
 }
 
-char* Config::PTexPath(const char* name, const char* ext)
-{
-	if (!ptxlen) return 0;
-	strcpy(ptxpath + ptxlen, name);
-	if (ext) strcat(ptxpath, ext);
-	return ptxpath;
+fs::path Config::PTexPath(const std::string_view name, const std::optional<std::string_view> ext) const {
+	fs::path path(CfgDirPrm.PlanetTexDir);
+	path.append(std::string(name).append(ext.value_or(""sv)));
+	return path;
 }
 
-fs::path Config::ScnPath (const char* name) const
+fs::path Config::ScnPath (std::string_view name) const
 {
 	if (fs::path path = fs::path(name); path.is_absolute())
 		return path;
@@ -1469,11 +1473,11 @@ bool Config::GetString (istream &is, const char *category, char *val)
 	}
 
 	// cut comments
-	for (i = 0; cbuf[i] && cbuf[i] != ';'; i++);
+	for (i = 0; cbuf[i] && cbuf[i] != ';'; i++) {}
 	cbuf[i] = '\0';
 
 	// find value
-	for (i = 0; cbuf[i] && cbuf[i] != '='; i++);
+	for (i = 0; cbuf[i] && cbuf[i] != '='; i++) {}
 	if (!cbuf[i]) return false;
 	i++;
 	while (cbuf[i] == ' ' || cbuf[i] == '\t') i++;

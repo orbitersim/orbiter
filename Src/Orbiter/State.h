@@ -12,6 +12,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+namespace fs = std::filesystem;
 
 class State {
 public:
@@ -29,7 +30,7 @@ public:
 	void Update ();
 
 	/// \brief Read state from scenario file
-	bool Read (const char *fname);
+	bool Read (const fs::path &fname);
 
 	/// \brief Write state as scenario file
 	/// \param ofs scenario file stream

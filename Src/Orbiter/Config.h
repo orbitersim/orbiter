@@ -16,6 +16,7 @@
 #include <iostream>
 #include <fstream>
 #include <list>
+#include <optional>
 #include "GraphicsAPI.h"
 namespace fs = std::filesystem;
 
@@ -357,21 +358,21 @@ public:
 	// write config parameters to file "fname"
 	// returns FALSE if write fails
 
-	char *ConfigPath (const char *name) const;
+	fs::path ConfigPath (std::string_view name) const;
 	// Return full path for config file name (adds ".cfg" to name)
-	char *ConfigPathNoext (const char *name);
+	fs::path ConfigPathNoext (std::string_view name) const;
 	// Return full path for config file name (no file extension added)
-	char *MeshPath   (const char *name);
+	fs::path MeshPath   (std::string_view name) const;
 	// Return full path for mesh file name
-	char *TexPath    (const char *name, const char *ext = 0);
-	// Return full path for texture file name. default extension is ".dds" - NOT THREADSAFE
-	char *HTexPath   (const char *name, const char *ext = 0);
+	fs::path TexPath    (std::string_view name, std::optional<std::string_view> ext = {}) const;
+	// Return full path for texture file name. default extension is ".dds"
+	fs::path HTexPath   (std::string_view name, std::optional<std::string_view> ext = {}) const;
 	// Return full path for texture file name in hightex dir.
 	// Default extension is ".dds"
-	// If hightex dir is not defined, function returns NULL
-	char* PTexPath(const char* name, const char* ext = 0);
+	// If hightex dir is not defined, function returns an empty path
+	fs::path PTexPath(std::string_view name, std::optional<std::string_view> ext = {}) const;
 	// Return full path for planetary texture file name
-	fs::path ScnPath    (const char* name) const;
+	fs::path ScnPath    (std::string_view name) const;
 	// Return full path for scenario file name
 
 	void TexPath (char *cbuf, const char *name, const char *ext=0);

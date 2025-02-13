@@ -196,7 +196,7 @@ bool orbiter::LaunchpadDialog2::UnregisterExtraParam(LaunchpadItem *item) {
 	return true;
 }
 
-LaunchpadItem *orbiter::LaunchpadDialog2::FindExtraParam(const std::string_view &name, size_t parent) {
+LaunchpadItem *orbiter::LaunchpadDialog2::FindExtraParam(std::string_view name, size_t parent) {
 
 	return nullptr;
 }

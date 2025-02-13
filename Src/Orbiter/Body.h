@@ -11,6 +11,7 @@
 
 #include "OrbiterAPI.h"
 #include "Config.h"
+#include <filesystem>
 
 class Elements;
 class CelestialBody;
@@ -23,7 +24,7 @@ class Body {
 public:
 	Body ();
 	Body (double _mass, double _size);
-	Body (char *fname);
+	Body (const std::string& fname);
 	// create a body from a config file
 
 	virtual ~Body () {}
@@ -31,7 +32,7 @@ public:
 	virtual int Type() const { return OBJTP_GENERIC; }
 
 	inline const char *Name() const { return name.c_str(); }
-	inline const char* FileName() const { return filename.c_str(); }
+	const std::string& FileName() const { return filename; }
 
 	virtual const void *GetParam (DWORD paramtype) const { return 0; }
 

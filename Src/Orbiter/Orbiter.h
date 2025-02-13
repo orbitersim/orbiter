@@ -11,6 +11,7 @@
 #include "Keymap.h"
 #include <cstdio>
 #include <filesystem>
+#include <optional>
 
 #include "Mesh.h"
 #include "TimeData.h"
@@ -87,7 +88,7 @@ public:
 	bool Timejump (double _mjd, int pmode);
 	void Suspend (void); // elapsed time between Suspend() and Resume() is ignored
 	void Resume (void); // A Suspend/Resume pair must be closed within a time step
-	bool SaveScenario (const char *fname, const char *desc);
+	bool SaveScenario (const fs::path& fname, const char *desc);
 	void SaveConfig ();
 	VOID Quicksave ();
 	void StartCaptureFrames () { video_skip_count = 0; bCapture = true; }
@@ -191,16 +192,15 @@ public:
 	oapi::ScreenAnnotation *CreateAnnotation (bool exclusive, double size, COLORREF col);
 	bool DeleteAnnotation (oapi::ScreenAnnotation *sn);
 
-	// File locations - THESE FUNCTIONS ARE NOT THREADSAFE!
-	inline char *ConfigPath (const char *name) { return pConfig->ConfigPath (name); }
-	inline char *MeshPath   (const char *name) { return pConfig->MeshPath (name); }
-	inline char *TexPath    (const char *name, const char *ext = 0)
+	fs::path ConfigPath (std::string_view name) { return pConfig->ConfigPath (name); }
+	fs::path MeshPath   (std::string_view name) { return pConfig->MeshPath (name); }
+	fs::path TexPath    (std::string_view name, std::optional<std::string_view> ext = {})
 		{ return pConfig->TexPath (name, ext); }
-	inline char *HTexPath   (const char *name, const char *ext = 0)
+	fs::path HTexPath   (std::string_view name, std::optional<std::string_view> ext = {})
 		{ return pConfig->HTexPath (name, ext); }
-	inline fs::path ScnPath    (const char* name) const { return pConfig->ScnPath (name); }
+	fs::path ScnPath    (std::string_view name) const { return pConfig->ScnPath (name); }
 
-	FILE *OpenTextureFile (const char *name, const char *ext);
+	std::ifstream OpenTextureFile (std::string_view name, std::optional<std::string_view> ext);
 	// return texture file handle. Searches in hightex and standard directories
 
 	SURFHANDLE RegisterExhaustTexture (char *name);

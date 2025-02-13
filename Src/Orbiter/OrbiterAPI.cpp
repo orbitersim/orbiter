@@ -267,7 +267,7 @@ DLLEXPORT void oapiGetObjectName (OBJHANDLE hObj, char *name, int n)
 
 DLLEXPORT const char *oapiGetObjectFileName(OBJHANDLE hObj)
 {
-	return ((Body*)hObj)->FileName();
+	return ((Body*)hObj)->FileName().c_str();
 }
 
 DLLEXPORT OBJHANDLE oapiGetFocusObject ()
@@ -2259,33 +2259,33 @@ DLLEXPORT void oapiSetMainInfoVisibilityMode (DWORD mode)
 
 DLLEXPORT FILEHANDLE oapiOpenFile (const char *fname, FileAccessMode mode, PathRoot root)
 {
-	char cbuf[512];
+	fs::path path;
 	switch (root) {
 	case CONFIG:
-		strcpy (cbuf, g_pOrbiter->Cfg()->ConfigPathNoext (fname));
+		path = g_pOrbiter->Cfg()->ConfigPathNoext(fname);
 		break;
 	case SCENARIOS:
-		strcpy (cbuf, g_pOrbiter->ScnPath (fname).u8string().c_str());
+		path = g_pOrbiter->ScnPath (fname);
 		break;
 	case TEXTURES:
-		strcpy (cbuf, g_pOrbiter->TexPath (fname));
+		path = g_pOrbiter->TexPath (fname);
 		break;
 	case TEXTURES2:
-		strcpy (cbuf, g_pOrbiter->HTexPath (fname));
+		path = g_pOrbiter->HTexPath (fname);
 		break;
 	case MESHES:
-		strcpy (cbuf, g_pOrbiter->MeshPath (fname));
+		path = g_pOrbiter->MeshPath (fname);
 		break;
 	default:
-		strcpy (cbuf, fname);
+		path = fs::path(fname);
 		break;
 	}
 
 	switch (mode) {
 	case FILE_IN:
-		return (FILEHANDLE)(new ifstream (cbuf));
+		return (FILEHANDLE)(new ifstream (path));
 	case FILE_IN_ZEROONFAIL: {
-		ifstream *ifs = new ifstream (cbuf);
+		ifstream *ifs = new ifstream (path);
 		if (ifs->fail()) {
 			delete ifs;
 			ifs = 0;
@@ -2293,9 +2293,9 @@ DLLEXPORT FILEHANDLE oapiOpenFile (const char *fname, FileAccessMode mode, PathR
 		return (FILEHANDLE)ifs;
 		}
 	case FILE_OUT:
-		TRACENEW; return (FILEHANDLE)(new ofstream (cbuf));
+		TRACENEW; return (FILEHANDLE)(new ofstream (path));
 	case FILE_APP:
-		TRACENEW; return (FILEHANDLE)(new ofstream (cbuf, ios::app));
+		TRACENEW; return (FILEHANDLE)(new ofstream (path, ios::app));
 	}
 	return 0;
 }

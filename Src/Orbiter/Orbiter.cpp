@@ -653,7 +653,7 @@ VOID Orbiter::Launch (const char *scenario)
 	pConfig->Write (); // save current settings
 	m_pLaunchpad->WriteExtraParams ();
 
-	if (!have_state && !pState->Read (ScnPath (scenario).u8string().c_str())) {
+	if (!have_state && !pState->Read (ScnPath (scenario))) {
 		LOGOUT_ERR ("Scenario not found: %s", scenario);
 		TerminateOnError();
 	}
@@ -1460,11 +1460,11 @@ VOID Orbiter::IncFOV (double dfov)
 // Name: SaveScenario()
 // Desc: save current status in-game
 //-----------------------------------------------------------------------------
-bool Orbiter::SaveScenario (const char *fname, const char *desc)
+bool Orbiter::SaveScenario (const fs::path& fname, const char *desc)
 {
 	pState->Update ();
 
-	ofstream ofs (ScnPath (fname));
+	ofstream ofs (ScnPath (fname.u8string()));
 	if (ofs) {
 		// save scenario state
 		pState->Write(ofs, desc);
@@ -1744,17 +1744,18 @@ void Orbiter::ReleaseGDIResources ()
 // Desc: Return file handle for texture file (0=error)
 //       First searches in hightex dir, then in standard dir
 //-----------------------------------------------------------------------------
-FILE *Orbiter::OpenTextureFile (const char *name, const char *ext)
+std::ifstream Orbiter::OpenTextureFile (std::string_view name, std::optional<std::string_view> ext)
 {
-	FILE *ftex = 0;
-	char *pch = HTexPath (name, ext); // first try high-resolution directory
-	if (pch && (ftex = fopen (pch, "rb"))) {
+	std::ifstream ifs;
+	fs::path pch = HTexPath (name, ext); // first try high-resolution directory
+	if (!pch.empty() && (ifs = std::ifstream(pch, ios::binary)).is_open()) {
 		LOGOUT_FINE("Texture load: %s", pch);
-		return ftex;
+		return ifs;
 	}
 	pch = TexPath (name, ext);        // try standard texture directory
 	LOGOUT_FINE("Texture load: %s", pch);
-	return fopen (pch, "rb");
+	ifs.open(pch, ios::binary);
+	return ifs;
 }
 
 SURFHANDLE Orbiter::RegisterExhaustTexture (char *name)
