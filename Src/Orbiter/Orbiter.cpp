@@ -384,8 +384,7 @@ bool Orbiter::Create()
 	}
 	
 	// Create the "launchpad" main dialog window
-	m_pLaunchpad = new orbiter::LaunchpadDialog2 (this); TRACENEW
-	if (!m_pLaunchpad->Create(bStartVideoTab)) return false;
+	m_pLaunchpad = std::make_unique<orbiter::LaunchpadDialog2>(this, bStartVideoTab); TRACENEW
 
 	Instrument::RegisterBuiltinModes();
 
@@ -440,7 +439,6 @@ VOID Orbiter::CloseApp (bool fast_shutdown)
 		delete pDI;
 		if (memstat) delete memstat;
 		if (pConfig)  delete pConfig;
-		if (m_pLaunchpad) delete m_pLaunchpad;
 		if (hBk) DestroyWindow (hBk);
 		if (pState)   delete pState;
 		if (script) delete script;

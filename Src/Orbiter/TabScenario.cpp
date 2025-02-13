@@ -30,31 +30,13 @@ orbiter::ScenarioTab::ScenarioTab(const LaunchpadDialog2 *lp): LaunchpadTab2(
     startPaused(false) {
     saveScnDesc.reserve(64);
     saveScnDesc.reserve(256);
-}
 
-//-----------------------------------------------------------------------------
-
-orbiter::ScenarioTab::~ScenarioTab() {
-    if (img_folder1) {
-        delete img_folder1;
-        delete img_folder2;
-        delete img_scn1;
-    }
-    for (const auto i: loadedImages) {
-        delete i;
-    }
-    loadedImages.clear();
-}
-
-//-----------------------------------------------------------------------------
-
-void orbiter::ScenarioTab::Create() {
-    img_folder1 = new Image(m_lp->Device(), m_lp->Window(),
-                            "Textures/OrbiterCore/Folder1.png");
-    img_folder2 = new Image(m_lp->Device(), m_lp->Window(),
-                            "Textures/OrbiterCore/Folder2.png");
-    img_scn1 = new Image(m_lp->Device(), m_lp->Window(),
-                         "Textures/OrbiterCore/Scn1.png");
+    img_folder1 = std::make_shared<Image>(m_lp->Win(),
+                                          "Textures/OrbiterCore/Folder1.png");
+    img_folder2 = std::make_shared<Image>(m_lp->Win(),
+                                          "Textures/OrbiterCore/Folder2.png");
+    img_scn1 = std::make_shared<Image>(m_lp->Win(),
+                                       "Textures/OrbiterCore/Scn1.png");
 
     RefreshList(false);
 }
@@ -125,7 +107,7 @@ void orbiter::ScenarioTab::RenderTree(const ScenarioTree &tree) {
     ImGui::PopID();
 }
 
-void orbiter::ScenarioTab::OnDraw(WithLocalContext &ctx) {
+void orbiter::ScenarioTab::OnDraw(LocalImCtx &ctx) {
     const auto height = ImGui::GetContentRegionAvail().y -
                         ImGui::GetFrameHeight();
     ImGui::BeginChild("ScnList", ImVec2(static_cast<float>(scnListW), height),
@@ -140,7 +122,7 @@ void orbiter::ScenarioTab::OnDraw(WithLocalContext &ctx) {
     ImGui::BeginChild("ScnDesc", ImVec2(0, height),
                       ImGuiChildFlags_None,
                       ImGuiWindowFlags_HorizontalScrollbar);
-    Markdown(ctx, desc, loadedImages);
+    ImGui::Markdown(ctx, desc, loadedImages);
     ImGui::EndChild();
     if (ImGui::Button("Save current...")) {
         if (fs::exists(m_lp->App()->ScnPath("(Current state)"))) {
@@ -149,7 +131,7 @@ void orbiter::ScenarioTab::OnDraw(WithLocalContext &ctx) {
             // TODO: notification
             SDL_ShowSimpleMessageBox(
                 SDL_MESSAGEBOX_ERROR, "Save Error",
-                "No current simulation state available.", ctx->Window());
+                "No current simulation state available.", ctx->Win()->Inner());
         }
     }
     ImGui::SameLine();
@@ -183,7 +165,7 @@ void orbiter::ScenarioTab::OnDraw(WithLocalContext &ctx) {
                 SDL_ShowSimpleMessageBox(
                     SDL_MESSAGEBOX_ERROR, "Save Error",
                     "Scenario name too long (max 63 characters).",
-                    ctx->Window());
+                    ctx->Win()->Inner());
             } else {
                 const int res = SaveCurScenarioAs(saveScnName.c_str(),
                                                   saveScnDesc.c_str());
@@ -193,7 +175,7 @@ void orbiter::ScenarioTab::OnDraw(WithLocalContext &ctx) {
                     // TODO: notification
                     SDL_ShowSimpleMessageBox(
                         SDL_MESSAGEBOX_ERROR, "Save Error",
-                        "Error writing scenario file.", ctx->Window());
+                        "Error writing scenario file.", ctx->Win()->Inner());
                 } else {
                     RefreshList(true);
                     ImGui::CloseCurrentPopup();
@@ -219,7 +201,7 @@ void orbiter::ScenarioTab::OnDraw(WithLocalContext &ctx) {
                     // TODO: notification
                     SDL_ShowSimpleMessageBox(
                         SDL_MESSAGEBOX_ERROR, "Save Error",
-                        "Error writing scenario file.", ctx->Window());
+                        "Error writing scenario file.", ctx->Win()->Inner());
                     ImGui::CloseCurrentPopup();
                 } else {
                     RefreshList(true);
@@ -284,9 +266,6 @@ void orbiter::ScenarioTab::RefreshList(bool preserveSelection) {
 }
 
 void orbiter::ScenarioTab::ScenarioChanged() {
-    for (const auto img: loadedImages) {
-        delete img;
-    }
     loadedImages.clear();
     std::ifstream file;
     if (is_directory(selection)) {

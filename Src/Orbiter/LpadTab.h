@@ -28,7 +28,8 @@ namespace orbiter {
 		LaunchpadTab2(const LaunchpadDialog2 *lp, const char* title) : m_lp(lp), m_cfg(lp->Cfg()), m_title(title) {};
 		virtual ~LaunchpadTab2() {};
 
-		virtual void Create() = 0;
+		LaunchpadTab2(const LaunchpadTab2&) = delete;
+		LaunchpadTab2& operator=(const LaunchpadTab2&) = delete;
 
 		const LaunchpadDialog2* Launchpad() const { return m_lp; }
 		const Config* Cfg() const { return m_cfg; }
@@ -36,7 +37,7 @@ namespace orbiter {
 
 		virtual void GetConfig(const Config* cfg) {}
 		virtual void SetConfig(Config* cfg) {}
-		virtual void OnDraw(WithLocalContext& ctx) = 0;
+		virtual void OnDraw(LocalImCtx& ctx) = 0;
 	protected:
 		const LaunchpadDialog2* m_lp;
 		Config* m_cfg;

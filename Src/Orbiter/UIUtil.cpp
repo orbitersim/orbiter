@@ -95,14 +95,15 @@ static void ImGuiSetStyle(bool bStyleDark_, float alpha_) {
     }
 }
 
-ImGuiMgr::ImGuiMgr(Orbiter *app, SDL_GPUDevice *device,
-                   SDL_Window *window) : m_app(app), m_device(device),
-                                         m_window(window) {
+ImGuiMgr::ImGuiMgr(
+    Orbiter *app,
+    const std::shared_ptr<Window> &window) : m_app(app), m_window(window) {
 #ifdef _DEBUG
     IMGUI_CHECKVERSION();
 #endif
     m_context = ImGui::CreateContext();
-    WithLocalContext _ = PushLocal();
+    auto savedContext = ImGui::GetCurrentContext();
+    ImGui::SetCurrentContext(savedContext);
 
     ImGuiIO &io = ImGui::GetIO();
     if (!m_app->IsFullscreen())
@@ -154,7 +155,8 @@ ImGuiMgr::ImGuiMgr(Orbiter *app, SDL_GPUDevice *device,
     io.Fonts->AddFontFromFileTTF("fa-solid-900.ttf", prm.ImGui_FontSize,
                                  &icons_config, icons_ranges);
     m_hdgFont = io.Fonts->AddFontFromFileTTF(defaultFontFile.c_str(),
-                                             prm.ImGui_FontSize * 1.5f, &config,
+                                             prm.ImGui_FontSize * 1.5f,
+                                             &config,
                                              ImGui::GetIO().Fonts->
                                              GetGlyphRangesJapanese());
     io.Fonts->AddFontFromFileTTF("fa-solid-900.ttf", prm.ImGui_FontSize,
@@ -167,20 +169,25 @@ ImGuiMgr::ImGuiMgr(Orbiter *app, SDL_GPUDevice *device,
                                               GetGlyphRangesJapanese());
     io.Fonts->Build();
 
-    ImGui_ImplSDL3_InitForSDLGPU(m_window);
+    if (!ImGui_ImplSDL3_InitForSDLGPU(m_window->Inner()))
+        throw std::runtime_error("Failed to initialize ImGui/SDLGPU3");
+
     ImGui_ImplSDLGPU3_InitInfo init_info = {};
-    init_info.GpuDevice = m_device;
+    init_info.GpuDevice = m_window->Device();
     init_info.ColorTargetFormat = SDL_GetGPUSwapchainTextureFormat(
-        m_device, m_window);
+        m_window->Device(), m_window->Inner());
     init_info.MSAASamples = SDL_GPU_SAMPLECOUNT_1;
-    ImGui_ImplSDLGPU3_Init(&init_info);
+    if (!ImGui_ImplSDLGPU3_Init(&init_info))
+        throw std::runtime_error("Failed to initialize ImGui/SDLGPU3");
+
+    if (savedContext)
+        ImGui::SetCurrentContext(savedContext);
 }
 
 ImGuiMgr::~ImGuiMgr() {
-    if (!m_context)
-        return; {
-        WithLocalContext _ = PushLocal();
-        SDL_WaitForGPUIdle(m_device);
+    if (m_context) {
+        LocalImCtx _ = PushLocal();
+        SDL_WaitForGPUIdle(m_window->Device());
 
         ImGui_ImplSDL3_Shutdown();
         ImGui_ImplSDLGPU3_Shutdown();
@@ -197,8 +204,8 @@ bool EventIsMouse(Uint32 type) {
            SDL_EVENT_JOYSTICK_AXIS_MOTION;
 }
 
-bool WithLocalContext::ConsumeEvent(const SDL_Event &event,
-                                    bool &wantsOut) const {
+bool LocalImCtx::ConsumeEvent(const SDL_Event &event,
+                              bool &wantsOut) const {
     bool consumed = ImGui_ImplSDL3_ProcessEvent(&event);
     ImGuiIO &io = ImGui::GetIO();
     if ((io.WantCaptureMouse && EventIsMouse(event.type)) || (
@@ -208,7 +215,7 @@ bool WithLocalContext::ConsumeEvent(const SDL_Event &event,
     if (event.type == SDL_EVENT_QUIT || (
             event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.
             windowID ==
-            SDL_GetWindowID((*this)->Window()))) {
+            SDL_GetWindowID((*this)->Win()->Inner()))) {
         wantsOut = true;
         return true;
     }
@@ -216,8 +223,8 @@ bool WithLocalContext::ConsumeEvent(const SDL_Event &event,
     return consumed;
 }
 
-bool WithLocalContext::BeginFrame() const {
-    if (SDL_GetWindowFlags((*this)->Window()) & SDL_WINDOW_MINIMIZED) {
+bool LocalImCtx::BeginFrame() const {
+    if (SDL_GetWindowFlags((*this)->Win()->Inner()) & SDL_WINDOW_MINIMIZED) {
         return false;
     }
     ImGui_ImplSDLGPU3_NewFrame();
@@ -227,16 +234,16 @@ bool WithLocalContext::BeginFrame() const {
     return true;
 }
 
-void WithLocalContext::EndFrame() const {
+void LocalImCtx::EndFrame() const {
     ImGui::Render();
     ImDrawData *draw_data = ImGui::GetDrawData();
     const bool is_minimized = (draw_data->DisplaySize.x <= 0.0f || draw_data->
                                DisplaySize.y <= 0.0f);
 
     SDL_GPUCommandBuffer *command_buffer = SDL_AcquireGPUCommandBuffer(
-        (*this)->Device());
+        (*this)->Win()->Device());
     SDL_GPUTexture *swapchain_texture;
-    SDL_AcquireGPUSwapchainTexture(command_buffer, (*this)->Window(),
+    SDL_AcquireGPUSwapchainTexture(command_buffer, (*this)->Win()->Inner(),
                                    &swapchain_texture, nullptr, nullptr);
     if (swapchain_texture != nullptr && !is_minimized) {
         Imgui_ImplSDLGPU3_PrepareDrawData(draw_data, command_buffer);
@@ -263,18 +270,17 @@ void WithLocalContext::EndFrame() const {
 }
 
 
-Image::Image(SDL_GPUDevice *device, SDL_Window *window, SDL_Surface *surface,
-             const std::string &path) : m_path(path),
-                                        m_device(device), m_surface(nullptr),
-                                        m_texture(nullptr),
-                                        m_sampler(nullptr), m_binding({}) {
-    if (!surface) return;
+void Image::Load(
+    const std::shared_ptr<Window> &win, SDL_Surface *origSurface,
+    std::string_view path) {
+    if (!origSurface)
+        throw std::invalid_argument(
+            "Image::Load: surface was null");
     auto format = SDL_PIXELFORMAT_ABGR8888;
-    if (surface->format != format) {
-        m_surface = SDL_ConvertSurface(surface, format);
-        SDL_DestroySurface(surface);
-    } else {
-        m_surface = surface;
+    m_surface = origSurface;
+    if (origSurface->format != format) {
+        m_surface = SDL_ConvertSurface(origSurface, format);
+        SDL_DestroySurface(origSurface);
     }
     SDL_GPUTextureCreateInfo texture_info = {};
     texture_info.type = SDL_GPU_TEXTURETYPE_2D;
@@ -285,27 +291,48 @@ Image::Image(SDL_GPUDevice *device, SDL_Window *window, SDL_Surface *surface,
     texture_info.layer_count_or_depth = 1;
     texture_info.num_levels = 1;
     texture_info.sample_count = SDL_GPU_SAMPLECOUNT_1;
-    m_texture = SDL_CreateGPUTexture(m_device, &texture_info);
+    m_texture = SDL_CreateGPUTexture(win->Device(), &texture_info);
+    if (!m_texture) {
+        SDL_DestroySurface(m_surface);
+        throw std::runtime_error("Failed to create texture");
+    }
 
     SDL_GPUTransferBufferCreateInfo buf_info = {};
     buf_info.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
     buf_info.size = m_surface->w * m_surface->h * 4;
 
     auto transfer_buf = SDL_CreateGPUTransferBuffer(
-        m_device,
+        win->Device(),
         &buf_info
     );
+    if (!transfer_buf) {
+        SDL_ReleaseGPUTexture(win->Device(), m_texture);
+        SDL_DestroySurface(m_surface);
+        throw std::runtime_error("Failed to create transfer buffer");
+    }
 
     auto transfer_ptr = static_cast<Uint8 *>(SDL_MapGPUTransferBuffer(
-        m_device,
+        win->Device(),
         transfer_buf,
         false
     ));
+    if (!transfer_ptr) {
+        SDL_ReleaseGPUTransferBuffer(win->Device(), transfer_buf);
+        SDL_ReleaseGPUTexture(win->Device(), m_texture);
+        SDL_DestroySurface(m_surface);
+        throw std::runtime_error("Failed to map transfer buffer");
+    }
     SDL_memcpy(transfer_ptr, m_surface->pixels,
                m_surface->w * m_surface->h * 4);
-    SDL_UnmapGPUTransferBuffer(m_device, transfer_buf);
+    SDL_UnmapGPUTransferBuffer(win->Device(), transfer_buf);
 
-    auto command_buffer = SDL_AcquireGPUCommandBuffer(m_device);
+    auto command_buffer = SDL_AcquireGPUCommandBuffer(win->Device());
+    if (!command_buffer) {
+        SDL_ReleaseGPUTransferBuffer(win->Device(), transfer_buf);
+        SDL_ReleaseGPUTexture(win->Device(), m_texture);
+        SDL_DestroySurface(m_surface);
+        throw std::runtime_error("Failed to acquire command buffer");
+    }
     auto copy_pass = SDL_BeginGPUCopyPass(command_buffer);
     SDL_GPUTextureTransferInfo src_info = {};
     src_info.transfer_buffer = transfer_buf;
@@ -318,8 +345,13 @@ Image::Image(SDL_GPUDevice *device, SDL_Window *window, SDL_Surface *surface,
 
     SDL_UploadToGPUTexture(copy_pass, &src_info, &dst_info, false);
     SDL_EndGPUCopyPass(copy_pass);
-    SDL_SubmitGPUCommandBuffer(command_buffer);
-    SDL_ReleaseGPUTransferBuffer(m_device, transfer_buf);
+    if (!SDL_SubmitGPUCommandBuffer(command_buffer)) {
+        SDL_ReleaseGPUTransferBuffer(win->Device(), transfer_buf);
+        SDL_ReleaseGPUTexture(win->Device(), m_texture);
+        SDL_DestroySurface(m_surface);
+        throw std::runtime_error("Failed to submit command buffer");
+    }
+    SDL_ReleaseGPUTransferBuffer(win->Device(), transfer_buf);
 
     SDL_GPUSamplerCreateInfo sampler_info = {};
     sampler_info.min_filter = SDL_GPU_FILTER_LINEAR;
@@ -328,33 +360,38 @@ Image::Image(SDL_GPUDevice *device, SDL_Window *window, SDL_Surface *surface,
     sampler_info.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
     sampler_info.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
     sampler_info.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
-    m_sampler = SDL_CreateGPUSampler(m_device, &sampler_info);
+    m_sampler = SDL_CreateGPUSampler(win->Device(), &sampler_info);
+    if (!m_sampler) {
+        SDL_ReleaseGPUTexture(win->Device(), m_texture);
+        SDL_DestroySurface(m_surface);
+        throw std::runtime_error("Failed to create sampler");
+    }
 
-    m_binding.texture = m_texture;
-    m_binding.sampler = m_sampler;
+    m_path = std::string(path);
+    m_window = win;
+    m_binding = {m_texture, m_sampler};
 }
 
 Image::~Image() {
-    if (Valid()) {
-        SDL_ReleaseGPUSampler(m_device, m_sampler);
-        SDL_ReleaseGPUTexture(m_device, m_texture);
-        SDL_DestroySurface(m_surface);
-    }
+    SDL_ReleaseGPUSampler(m_window->Device(), m_sampler);
+    SDL_ReleaseGPUTexture(m_window->Device(), m_texture);
+    SDL_DestroySurface(m_surface);
 }
 
 struct MarkdownUserData {
-    WithLocalContext &ctx;
+    LocalImCtx &ctx;
     std::vector<Image *> &images;
 };
 
 class orbiter_md : public imgui_md {
 public:
-    orbiter_md(WithLocalContext &ctx, std::vector<Image *> &images) : ctx(ctx),
+    orbiter_md(LocalImCtx &ctx,
+               std::vector<std::shared_ptr<Image> > &images) : ctx(ctx),
         images(images) {
     }
 
-    WithLocalContext &ctx;
-    std::vector<Image *> &images;
+    LocalImCtx &ctx;
+    std::vector<std::shared_ptr<Image> > &images;
 
     ImFont *get_font() const override {
         if (m_is_code || m_is_code_block)
@@ -375,7 +412,7 @@ public:
     }
 
     bool get_image(image_info &nfo) const override {
-        Image *image = nullptr;
+        std::shared_ptr<Image> image = nullptr;
         if (m_img_src.empty()) {
             return false;
         }
@@ -385,11 +422,8 @@ public:
             }
         }
         if (!image) {
-            image = new Image(ctx->Device(), ctx->Window(), m_img_src);
-            if (!image->Valid()) {
-                delete image;
-                return false;
-            }
+            image = std::make_shared<Image>(ctx->Win(),
+                                            m_img_src);
             images.push_back(image);
         }
 
@@ -408,8 +442,8 @@ public:
     };
 };
 
-void Markdown(WithLocalContext &ctx, const std::string &md,
-              std::vector<Image *> &loadedImages) {
+void ImGui::Markdown(LocalImCtx &ctx, const std::string &md,
+                     std::vector<std::shared_ptr<::Image> > &loadedImages) {
     orbiter_md printer = {ctx, loadedImages};
     printer.print(md.c_str(), md.c_str() + md.size());
 }

@@ -19,8 +19,8 @@ namespace fs = std::filesystem;
 namespace orbiter {
 
 	struct ScenarioTreeItem {
-		Image* icon;
-		Image* selIcon;
+		std::shared_ptr<Image> icon;
+		std::shared_ptr<Image> selIcon;
 		fs::path path;
 		std::string name;
 	};
@@ -33,14 +33,11 @@ namespace orbiter {
 	class ScenarioTab : public orbiter::LaunchpadTab2 {
 	public:
 		explicit ScenarioTab(const orbiter::LaunchpadDialog2* lp);
-		~ScenarioTab() override;
-
-		void Create() override;
 
 		void GetConfig(const Config* cfg) override;
 		void SetConfig(Config* cfg) override;
 
-		void OnDraw(WithLocalContext &ctx) override;
+		void OnDraw(LocalImCtx &ctx) override;
 
 	protected:
 		void RefreshList(bool preserveSelection);
@@ -62,12 +59,12 @@ namespace orbiter {
 		ScenarioTree BuildScnTree(const ScenarioTreeItem& root);
 		void RenderTree(const ScenarioTree& tree);
 
-		Image* img_folder1;
-		Image* img_folder2;
-		Image* img_scn1;
+		std::shared_ptr<Image> img_folder1;
+		std::shared_ptr<Image> img_folder2;
+		std::shared_ptr<Image> img_scn1;
 		ScenarioTree tree;
 		fs::path selection;
-		std::vector<Image*> loadedImages;
+		std::vector<std::shared_ptr<Image>> loadedImages;
 		std::string desc;
 		int scnListW = 0;
 		bool startPaused;

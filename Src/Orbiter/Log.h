@@ -6,6 +6,7 @@
 
 #include <SDL3/SDL_filesystem.h>
 #include <stdio.h>
+#include <windows.h>
 
 // comment the following line to suppress log file output
 #define GENERATE_LOG

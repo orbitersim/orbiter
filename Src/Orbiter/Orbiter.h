@@ -170,7 +170,7 @@ public:
 	inline Config* Cfg() const { return pConfig; }
 	inline ScriptInterface *Script() const { return script; }
 	inline DialogManager *DlgMgr() const { return pDlgMgr; }
-	inline orbiter::LaunchpadDialog2 *Launchpad() const { return m_pLaunchpad; }
+	inline const std::shared_ptr<orbiter::LaunchpadDialog2> &Launchpad() const { return m_pLaunchpad; }
 	inline State*  PState() const { return pState; }
 	inline bool    IsActive() const { return bActive; } // temporary
 	inline bool    IsRunning() const { return bRunning; }
@@ -354,7 +354,7 @@ protected:
 private:
 	Config         *pConfig;
 	State          *pState;
-	orbiter::LaunchpadDialog2 *m_pLaunchpad;
+	std::shared_ptr<orbiter::LaunchpadDialog2> m_pLaunchpad;
 	DialogManager  *pDlgMgr;
 	orbiter::ConsoleNG* m_pConsole;    // The console window opened when Orbiter server is launched without a graphics client
 	DInput         *pDI;

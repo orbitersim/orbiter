@@ -114,6 +114,7 @@ set(common_src
 	UIUtil.cpp
 	md4c.c
 	imgui_md.cpp
+	SDLWrappers.cpp
 # Graphics interface base class for GDI clients
 	${GDICLIENT_DIR}/GDIClient.cpp
 # Utils
