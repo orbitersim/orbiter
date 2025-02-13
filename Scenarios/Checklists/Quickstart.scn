@@ -1,17 +1,236 @@
-BEGIN_URLDESC
-Default\Checklists\Quickstart,Quickstart
-END_URLDESC
 BEGIN_DESC
-Quickstart
+# Quickstart
 
+This section demonstrates how to take off and land with one of Orbiter's
+default spacecraft, the Delta-glider. If you are using Orbiter for the first
+time, this will help to familiarise yourself with some basic concepts of
+spacecraft and camera control. Consult the Orbiter Manual for further details.
 
-This section demonstrates how to take off and land with one of Orbiter's default
-spacecraft, the Delta-glider. If you are using Orbiter for the first time, this will
-help to familiarise yourself with some basic concepts of spacecraft and camera
-control. Consult the Orbiter Manual for further details. 
+## First things first...
+- At the simulation start, you will see in front of you Runway 33 of the SLF
+  (Shuttle Landing Facility) at the Kennedy Space Center, Cape Canaveral,
+  Florida.
+- You are in control of a Delta-glider, a powerful futuristic spacecraft,
+  aligned with the runway centerline and ready for takeoff.
+- You can always exit the simulation by pressing `Ctrl-Q` or `Alt-F4`, or by
+  clicking "Exit" on the main menu (`F4`). Orbiter saves the current simulation
+  status in the "*(Current status)*" scenario, so you can continue your flight
+  later by selecting this scenario.
 
+# Camera modes
+You are in an external camera mode, looking towards your ship.
+- You can rotate the camera around your ship by pressing and holding down the
+  `Ctrl` key and pressing a cursor key (`Up`, `Down`, `Left`, or `Right`) on
+  the cursor keypad of your keyboard.
+- Alternatively you can press the right button on your mouse and drag the mouse
+  to rotate the camera. Or, if you have a joystick with a direction controller
+  ("coolie hat"), you can use that as well.
+- To jump into the cockpit of your glider, press `F1`. (`F1` always toggles
+  between cockpit and external view of the spacecraft you are controlling).
+- In the cockpit, you can look around by rotating the camera in the same way as
+  in external views.
+- To look straight ahead, press the `Home` button.
 
-For instructions, launch the scenario, then open the Help window (Alt-F1).
+# Cockpit modes
+- At the moment, you are in "virtual cockpit" mode - that is, you are inside a
+  three-dimensional representation of the glider cockpit, with the glass pane
+  of the head-up display (HUD) in front of you, and the instruments and
+  controls arranged around you. If you look back, you can even get a glimpse of
+  your passengers in the cabin behind you!
+- You can switch to a different cockpit mode by pressing `F8`. Pressing `F8`
+  once will open the "generic" cockpit mode with only the HUD and two
+  instruments. Pressing `F8` again will open a 2-D panel mode.
+- The panel can be scrolled by pressing a cursor key (`Up`, `Down`, `Left`, and
+  `Right`) on the cursor keypad. To scroll the panel out of the way, press `Up`.
+  You should now be able to see the runway stretching in front of you.
+  Scrolling the panel is useful if you want to see more of your surroundings.
+  Also, if the panel is larger than your simulation window, you can scroll
+  different parts of the panel into view.
+- Some spacecraft have more than a single panel which can be accessed by
+  pressing `Ctrl` in combination with a cursor key. if you press `Ctrl-Up`, you
+  will see the glider's overhead panel with some additional controls. Pressing
+  `Ctrl-Down` twice will bring up the lower panel with brake and gear controls.
+  For now, switch back to the main panel with `Ctrl-Up`.
+- Not all spacecraft types support 2-D panels or 3-D virtual cockpits, but the
+  generic cockpit mode is always available.
+
+# MFD instruments
+The most important and versatile instruments are the two *multifunctional
+displays* (MFDs) in the centre of the instrument panel. Each MFD consists of a
+square LCD screen and buttons along the left, right and bottom edges.
+
+- MFDs can be set to different modes: With the mouse, click the "SEL" button at
+the bottom edge of one of the MFDs. (Alternatively, you can press `Shift-F1`.
+MFD keyboard interfaces always use `Shift` key combinations, where the `Left
+Shift` key controls the left MFD, and the `Right Shift` key controls the right
+MFD). You will see a list of available modes.
+- Click on one of the buttons along the left or right edge to select the
+corresponding mode. If you click the top-left button, the MFD switches to
+*Orbit* mode.
+- If you want to select a mode via keyboard, press `Shift-,` or `Shift-.` to
+move the highlight marker (green box) to the desired mode, then press
+`Shift-Enter` to select the mode.
+- Most modes have additional settings and parameters that can be controlled with
+the buttons as well. The button labels change to indicate the various mode
+functions. For example, the Orbit mode has a  button labelled "TGT". This can be
+used to display the orbit of a target object. Click this button - you will see a
+dialog box to select a target object. Press `Enter`, type "iss" in the text box,
+and press `Enter` again. This will show the orbital parameters of the
+International Space Station in the MFD display.
+- To see a short description of the available mode functions, click the "MNU"
+button at the bottom of the MFD. (Alternatively, use `` Shift-` ``).
+- A description of standard MFD modes can be found in the manual Orbiter can
+also be extended with addon MFD modes, so you may see additional modes in the
+list.
+- For now, switch the left MFD to *Surface mode*, and the right MFD to *HSI*
+mode.
+
+# Takeoff
+Your glider is capable of runway takeoffs and landings on Earth (and on any
+other planet, if the atmospheric density is sufficient to provide aerodynamic
+lift).
+- For takeoff, engage main engines at full thrust. You can do this by pushing
+the *Main* engine sliders at the left of the panel to the top using the mouse
+(make sure you push both sliders simultaneously!), or by pressing `Ctrl-Numpad
++` until engines are at full throttle. If you have a joystick with throttle
+control, you can use that to engage the main engines.
+- Your spacecraft will start to roll. You can check the speed (in meters/second)
+on the airspeed indicator of the Surface MFD, or on the HUD - the value in the
+green box at the top left of the screen.
+- When the airspeed reaches 100 m/s, pull back on the joystick to rotate, or
+press and hold `Numpad 2`.
+- Once clear of the runway, press `G` to raise the landing gear.
+
+![](Textures/Scenarios/Default/Checklists/Quickstart/Quickstart1.jpg)
+
+When the atmosphere is too thin to produce enough lift for a runway takeoff (for
+example when taking off from the Moon) or when no runway is available, you can
+use the glider's *hover* engines to lift off:
+
+- Move the Hover slider on the instrument panel up by clicking and dragging with
+the mouse. Alternatively, press the `Numpad 0` key until hover engines are fully
+engaged.
+- Your glider should now lift off vertically. Once clear of the ground, engage
+main engines. Note that a fully loaded and tanked glider may be too heavy to
+lift off vertically from Earth when the "realistic" flight model is used.
+- As you gain airspeed, you can gradually reduce hover thrust.
+
+# Atmospheric flight
+In the lower atmosphere, the glider behaves very much like an aircraft. Try the
+joystick controls for pitch, roll and yaw to get a feeling for the handling at
+different altitudes. Without a joystick, you can use the numerical keypad
+(`2`/`8` for pitch, `4`/`6` for roll, and `1`/`3` for yaw). The glider has
+powerful rocket engines, but their performance depends on atmospheric pressure
+(at very low altitudes, it will not even go supersonic).
+
+This is a good time to try different camera modes. Open the camera dialog
+(`Ctrl-F1`), and check the effect of different track modes and field of view
+(FOV) settings.
+
+# Landing
+- Go around and approach runway 33 of the SLF from the south. Line up with the
+runway. Your HSI instrument helps to maintain the correct approach path and
+slope. One of its two displays should already be tuned to the runway ILS system.
+The HSI contains a course pointer, deviation and glideslope indicator. It works
+like a standard aircraft instrument, so you may already be familiar with its
+use. If not, check the manual for details.
+- As you approach the runway, you will see PAPI and VASI landing aids in front
+of and beside the runway. The PAPI is of limited use here, because it is
+adjusted for the Space Shuttle's steep descent slope of 20°.
+- Throttle back and engage airbrakes (`Ctrl-B`) to reduce speed. Lower the
+landing gear (`G`).
+- After touchdown, engage left and right wheel brakes (`,` and `.`) until you
+come to a full stop.
+
+# Space flight
+So far we have treated the glider much like a conventional aircraft. Now it is
+time to aim a bit higher ...
+- Take off as before. Turn east (use the compass ribbon at the top edge of the
+HUD, or the one in the Surface MFD display), and pitch up to 50°.
+- As you gain altitude, you will notice that your craft starts to behave
+differently, due to the reduction in atmospheric pressure. One of the effects is
+a loss of lift, which causes the flight path indicator slowly to drift down.
+Another effect is the loss of response from your aerodynamic control surfaces.
+- At about 30 km altitude your glider will start to drop its nose even while you
+are pulling back on the stick. Now activate the RCS (Reaction Control System) by
+right-clicking the "RCS Mode" selector (on the right side of the instrument
+panel) or by pressing `Ctrl-Numpad /`. You are now controlling your craft with
+attitude thrusters.
+- Pitch down to about 20°. After leaving the dense part of the atmosphere, you
+need to gain tangential velocity to achieve orbit. Your flight path indicator
+should stay above 0°.
+- Now is a good time to activate the Orbit mode in one of your MFDs. This shows
+the shape of your current orbit (the green curve) in relation to the planet
+surface (the grey circle), together with a list of orbital parameters along the
+left side of the display. You should switch the display to "current orbital
+plane" projection mode, by clicking on the "PRJ" button until "Prj: SHP" is
+shown in the top right corner of the display.
+- At the moment, your orbit will be a rather eccentric ellipse, which for the
+most part is *below* Earth's surface. This means that you are still on a
+ballistic trajectory rather than in a stable orbit. As you keep gaining
+tangential velocity, the orbit will start to expand. Once the green curve is
+completely above the planet surface (and sufficiently high above the atmosphere)
+you will have entered orbit.
+- At this point, the most important pieces of information from the Orbit display
+are the orbital velocity ("Vel") and apoapsis radius ("ApR"). For a low Earth
+orbit, you need to achieve a velocity of at least 7800 m/s. Once you reach this
+value, you will see the orbit rising rapidly above Earth's surface. At the same
+time, the apoapsis distance (the highest point of the orbit) will start to grow.
+Keep firing your engines until ApD reaches about 6.670M. This corresponds to an
+altitude of 300 km. Now cut the engines.
+- You are now nearly in orbit. All that remains to do is raise the periapsis
+(the lowest point of the orbit) to a stable altitude. This is done best when you
+reach apoapsis, which should be half an orbit (or about 45 minutes) from your
+current position. Time to switch into an external camera mode and enjoy the
+view!
+- It is also a good idea to switch the HUD from surface to orbit mode now. Do
+this by clicking the "OBT" button in the top left corner of the instrument
+panel, or by pressing `H` twice. In this mode, the HUD flight path ladder is
+aligned with the orbital plane instead of the horizon plane, and there is a
+ribbon showing your orbital azimuth angle. It also shows indicators for prograde
+(the direction of your orbital velocity vector) and retrograde (the opposite
+direction).
+- When you approach apoapsis, turn your craft prograde. You can see how close
+you are to the apoapsis point by checking the ApT (time to apoapsis) value in
+the Orbit MFD. If it takes too long, press `T` to engage time acceleration, and
+`R` to switch back. To turn prograde, you can activate the RCS manually, but it
+is easier to leave it to the automatic attitude control, by simply pressing the
+"Prograde" button on the right of the instrument panel (or `[`).
+- Now fire your main engines for final orbit insertion. The two parameters to
+watch are the orbit eccentricity ("Ecc") and periapsis radius ("PeR"). The
+eccentricity value should get smaller, indicating that the orbit becomes more
+circular, while the periapsis radius approaches the apoapsis radius (ApR). Once
+the eccentricity value reaches a minimum, turn the engines off. You can also
+deactivate the prograde attitude mode by clicking "Prograde" again.
+- Congratulations! You made it into orbit!
+
+# Deorbiting
+Should you ever want to come back to Earth, you need to *deorbit*. This means to
+drop the periapsis point to an altitude where the orbit intersects the dense
+part of the atmosphere, so that your vessel is slowed down by atmospheric
+friction.
+- Deorbit burns are performed retrograde. Click the "Retrograde" button, wait
+until the vessel attitude has stabilised, and engage main thrusters.
+- Keep burning until the periapsis point is well below Earth's surface, then cut
+the engines. Strictly speaking, the deorbit burn must be timed precisely,
+because too shallow a reentry angle wil cause you to skid off the atmosphere,
+while too steep an angle will turn you into a shooting star. For now we are not
+concerned with such fine detail ...
+- Turn prograde again and wait for your altitude to drop. As you enter the lower
+part of the atmosphere, friction will cause your velocity to decrease rapidly.
+Reentries are usually performed with a high angle of attack (AOA) - about 40°
+for the Space Shuttle.
+- Once the aerodynamic control surfaces become responsive again you can turn off
+the RCS system. Your glider has now turned back into an aircraft.
+- You have probably ended up a long way from your launch point at the KSC.
+Re-entering towards a specified landing point requires some practice in timing
+the deorbit burn and the reentry flight path. We'll leave this for a later
+mission. For now, simply look for a dry patch to land your glider.
+- This completes your first orbital excursion!
+
+If you want to try some more advanced missions, check out the other scenarios in
+the "Checklists" scenario folder. First you might want to learn a bit more about
+orbital manoeuvers and docking procedures in the Orbiter Manual.
 END_DESC
 
 BEGIN_ENVIRONMENT

@@ -1,17 +1,20 @@
-BEGIN_HYPERDESC
-<h1>HST servicing mission 1 (STS-61)</h1>
-<p>After discovering major problems with Hubble's primary mirror, mission STS-61
+BEGIN_DESC
+# HST servicing mission 1 (STS-61)
+
+After discovering major problems with Hubble's primary mirror, mission STS-61
 is scheduled to capture the telescope and install the COSTAR corrective optics
-package and the Wide Field and Planetary Camera 2 (WFPC2).</p>
-<p>In this scenario, the Shuttle orbiter has already been maneuvered close to
+package and the Wide Field and Planetary Camera 2 (WFPC2).
+
+In this scenario, the Shuttle orbiter has already been maneuvered close to
 Hubble's position. Move Atlantis into position using linear RCS thrusters, and
 grapple with the manipulator arm. Use the Manned Maneuvering Unit (MMU) for an
-EVA to perform the instrument replacements. (Keyboard: E)</p>
-<p>In a departure from the historic mission, you can also try to return Hubble to
+EVA to perform the instrument replacements. (Keyboard: E)
+
+In a departure from the historic mission, you can also try to return Hubble to
 Earth. Switch focus to the HST to retract solar arrays, antennae and telescope hatch,
 then stow the telescope in the Shuttle cargo bay. Return your valuable payload back
-to KSC.</p>
-END_HYPERDESC
+to KSC.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

@@ -1,7 +1,9 @@
-BEGIN_HYPERDESC
-<h1>TransX MFD mode</h1>
-<p>These scenarios demonstrate the use of the TransX interplanetary navigation
-MFD by Duncan Sharpe.</p>
-<p>Before launching one of these, make sure that the TransX plugin is activated under
-the Modules tab.</p>
-END_HYPERDESC
+BEGIN_DESC
+# TransX MFD mode
+
+These scenarios demonstrate the use of the TransX interplanetary navigation MFD
+by Duncan Sharpe.
+
+Before launching one of these, make sure that the TransX plugin is activated
+under the Modules tab.
+END_DESC

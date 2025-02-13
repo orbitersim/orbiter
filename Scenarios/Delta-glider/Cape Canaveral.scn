@@ -1,17 +1,27 @@
-BEGIN_HYPERDESC
-<h1>Delta-glider: Cape Canaveral</h1>
-<p>A Delta-glider, parked at the visitor parking lot of the Kennedy Space Center - ready for vertical takeoff.</p>
-<p>For this scenario we use hover engines for vertical liftoff from the pad.</p>
-<p>Note that the main tank is mostly empty. This ensures that the ship is light enough to be able to lift off on hover engines from
-Earth's surface. It is more efficient to launch the glider horizontally from a runway. When taking off from the Moon or Mars, this
-problem doesn't occur because of lower gravity.</p>
-<p>Before engaging hover engines, activate the automatic hover attitude stabilisation (HOVER ATT CTRL to Auto). This causes the
-hover engines to modulate their relative thrust to maintain a stable attitude.</p>
-<p>Now engage the hover engines at about 95% of max thrust, just enough to lift off. Do not push the throttle to 100%, because that
-leaves no reserves for the differential thrust modulation.</p>
-<p>At about 100 m altitude, raise the landing gear, engage main engines and pitch up. Disengage hover thrust.</p>
+BEGIN_DESC
+# Delta-glider: Cape Canaveral
 
-END_HYPERDESC
+A Delta-glider, parked at the visitor parking lot of the Kennedy Space Center -
+ready for vertical takeoff.
+
+For this scenario we use hover engines for vertical liftoff from the pad.
+
+Note that the main tank is mostly empty. This ensures that the ship is light
+enough to be able to lift off on hover engines from Earth's surface. It is more
+efficient to launch the glider horizontally from a runway. When taking off from
+the Moon or Mars, this problem doesn't occur because of lower gravity.
+
+Before engaging hover engines, activate the automatic hover attitude
+stabilisation (HOVER ATT CTRL to Auto). This causes the hover engines to
+modulate their relative thrust to maintain a stable attitude.
+
+Now engage the hover engines at about 95% of max thrust, just enough to lift
+off. Do not push the throttle to 100%, because that leaves no reserves for the
+differential thrust modulation.
+
+At about 100 m altitude, raise the landing gear, engage main engines and pitch
+up. Disengage hover thrust.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

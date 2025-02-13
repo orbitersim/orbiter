@@ -1,15 +1,22 @@
-BEGIN_HYPERDESC
-<h1>Delta-glider: Venus takeoff</h1>
-<p>You have descended through the thick atmosphere of Venus, and set your glider down
-on the surface.</p>
-<p>Luckily, your ship is incredibly sturdy, and can withstand the atmospheric pressure.</p>
-<p>After admiring the view from the cockpit (an EVA would be unwise in this environment),
-you decide to take off again and head back.</p>
-<p>After igniting your engines, you discover a fatal flaw in your mission design:
-The enormous ambient atmospheric pressure overpowers your engines and prevents them from
-expelling any exhaust gases. You are stuck!</p>
-<p>Your only option at this point is to disable the complex flight model and cheat the laws of physics.</p>
-END_HYPERDESC
+BEGIN_DESC
+# Delta-glider: Venus takeoff
+
+You have descended through the thick atmosphere of Venus, and set your glider
+down on the surface.
+
+Luckily, your ship is incredibly sturdy, and can withstand the atmospheric
+pressure.
+
+After admiring the view from the cockpit (an EVA would be unwise in this
+environment), you decide to take off again and head back.
+
+After igniting your engines, you discover a fatal flaw in your mission design:
+The enormous ambient atmospheric pressure overpowers your engines and prevents
+them from expelling any exhaust gases. You are stuck!
+
+Your only option at this point is to disable the complex flight model and cheat
+the laws of physics.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

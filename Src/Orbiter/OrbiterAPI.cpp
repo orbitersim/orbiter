@@ -2318,7 +2318,7 @@ DLLEXPORT void oapiCloseFile (FILEHANDLE file, FileAccessMode mode)
 
 DLLEXPORT bool oapiSaveScenario (const char *fname, const char *desc)
 {
-	return g_pOrbiter->SaveScenario (fname, desc, 1);
+	return g_pOrbiter->SaveScenario (fname, desc);
 }
 
 DLLEXPORT void oapiWriteLine (FILEHANDLE file, char *line)

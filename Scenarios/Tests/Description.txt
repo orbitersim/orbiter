@@ -1,4 +1,5 @@
-BEGIN_HYPERDESC
-<h1>Tests</h1>
-<p>Scenarios to test the integrity of the Orbiter application.</p>
-END_HYPERDESC
+BEGIN_DESC
+# Tests
+
+Scenarios to test the integrity of the Orbiter application.
+END_DESC

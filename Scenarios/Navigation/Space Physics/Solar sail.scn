@@ -1,7 +1,8 @@
-BEGIN_HYPERDESC
-<h1>Solar sail</h1>
-<p>Initial test for a solar sail. Demonstrator for radiation pressure effects. Make sure to enable 'Radiation pressure' in the Launchpad Parameters tab.</p>
-END_HYPERDESC
+BEGIN_DESC
+# Solar sail
+
+Initial test for a solar sail. Demonstrator for radiation pressure effects. Make sure to enable 'Radiation pressure' in the Launchpad Parameters tab.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

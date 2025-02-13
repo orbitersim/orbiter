@@ -1,7 +1,8 @@
-BEGIN_HYPERDESC
-<h1>Lua script unit tests</h1>
+BEGIN_DESC
+# Lua script unit tests
+
 A test suite for Orbiter's Lua script interface.
-END_HYPERDESC
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

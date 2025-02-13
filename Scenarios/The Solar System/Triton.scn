@@ -1,8 +1,9 @@
-BEGIN_HYPERDESC
-<h1>Triton</h1>
-<p>Orbiter now includes Robert Stettner's Uranus and Neptune moons package.
-Here we have Neptune's colourful moon Triton.</p>
-END_HYPERDESC
+BEGIN_DESC
+# Triton
+
+Orbiter now includes Robert Stettner's Uranus and Neptune moons package.
+Here we have Neptune's colourful moon Triton.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

@@ -1,8 +1,11 @@
-BEGIN_HYPERDESC
-<h1>Delta-glider: Control surfaces</h1>
-<p>Use the joystick or keyboard cursor controls to see the Glider's elevons and rudder at work.</p>
-<p>The airbrake can be deployed with B [+ B] and retracted with Ctrl-B [+ Ctrl-B].</p>
-END_HYPERDESC
+BEGIN_DESC
+# Delta-glider: Control surfaces
+
+Use the joystick or keyboard cursor controls to see the Glider's elevons and
+rudder at work.
+
+The airbrake can be deployed with `B` and retracted with `Ctrl-B`.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

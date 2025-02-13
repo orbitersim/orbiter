@@ -1,7 +1,8 @@
-BEGIN_HYPERDESC
-<h1>HST animation</h1>
-<p>David Sundstrom's Hubble Space telescope unfolds its solar arrays.</p>
-END_HYPERDESC
+BEGIN_DESC
+# HST animation
+
+David Sundstrom's Hubble Space telescope unfolds its solar arrays.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

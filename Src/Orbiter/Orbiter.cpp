@@ -856,8 +856,18 @@ void Orbiter::CloseSession ()
 
 	if      (bRecord)   ToggleRecorder();
 	else if (bPlayback) EndPlayback();
-	const char* desc = pConfig->CfgDebugPrm.bSaveExitScreen ? "CurrentState_img" : "CurrentState";
-	SaveScenario (CurrentScenario, desc, 2);
+	const char* desc = pConfig->CfgDebugPrm.bSaveExitScreen ? u8R"(
+# Current state
+
+Launch this scenario to return to your last simulation state
+
+![](Images/CurrentState.jpg)
+)" : u8R"(
+# Current state
+
+Launch this scenario to return to your last simulation state
+)";
+	SaveScenario (CurrentScenario, desc);
 	if (hScnInterp) {
 		script->DelInterpreter (hScnInterp);
 		hScnInterp = NULL;
@@ -1450,14 +1460,14 @@ VOID Orbiter::IncFOV (double dfov)
 // Name: SaveScenario()
 // Desc: save current status in-game
 //-----------------------------------------------------------------------------
-bool Orbiter::SaveScenario (const char *fname, const char *desc, int desc_type)
+bool Orbiter::SaveScenario (const char *fname, const char *desc)
 {
 	pState->Update ();
 
 	ofstream ofs (ScnPath (fname));
 	if (ofs) {
 		// save scenario state
-		pState->Write(ofs, desc, desc_type, 0);
+		pState->Write(ofs, desc);
 		//pState->Write(ofs, 0, pConfig->CfgDebugPrm.bSaveExitScreen ? "CurrentState_img" : "CurrentState");
 		g_camera->Write (ofs);
 		if (g_pane) g_pane->Write (ofs);
@@ -1489,7 +1499,7 @@ VOID Orbiter::Quicksave ()
 	for (i = strlen(ScenarioName)-1; i > 0; i--)
 		if (ScenarioName[i-1] == '\\') break;
 	sprintf (fname, "Quicksave\\%s %04d", ScenarioName+i, ++g_qsaveid);
-	if(SaveScenario (fname, desc, 0))
+	if(SaveScenario (fname, desc))
 		oapiAddNotification(OAPINOTIF_SUCCESS, "Scenario saved successfully", fname);
 	else
 		oapiAddNotification(OAPINOTIF_ERROR, "Failed to save scenario", fname);
@@ -1548,7 +1558,7 @@ VOID Orbiter::SavePlaybackScn (const char *fname)
 	char desc[256], scn[256] = "Playback\\";
 	sprintf (desc, "Orbiter playback scenario at T = %0.0f", td.SimT0);
 	strcat (scn, fname);
-	SaveScenario (scn, desc, 0);
+	SaveScenario (scn, desc);
 }
 
 const char *Orbiter::GetDefRecordName (void) const

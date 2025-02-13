@@ -1,9 +1,11 @@
 BEGIN_DESC
 Lined up for docking at the International Space Station.
 
-Watch the approach path indicator on your left MFD and the HUD approach markers while closing in on the ISS.
+Watch the approach path indicator on your left MFD and the HUD approach markers
+while closing in on the ISS.
 
-Use your linear RCS (Reaction control system) thrusters to keep aligned with the approach path.
+Use your linear RCS (Reaction control system) thrusters to keep aligned with the
+approach path.
 
 Your final closing velocity should be less than 0.1 m/s.
 END_DESC
