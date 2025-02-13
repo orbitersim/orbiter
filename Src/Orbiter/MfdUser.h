@@ -26,7 +26,6 @@ public:
 	inline const char *BtnLabel (int bt) const { return mfd->ButtonLabel (bt); }
 	inline int BtnMenu (const MFDBUTTONMENU **menu) const { return (mfd ? mfd->ButtonMenu (menu) : 0); }
 	void UpdateDraw (oapi::Sketchpad *skp);
-	void UpdateDraw (HDC hDC);
 
 protected:
 	bool ReadParams (std::ifstream &ifs);
@@ -37,7 +36,6 @@ private:
 	char *name;
 	char selkey;
 	MFD *mfd; // pointer to module interface
-	MFD2 *mfd2; // pointer to version 2 interface (0 if not applicable)
 	OAPI_MSGTYPE (*msgproc)(UINT,UINT,WPARAM,LPARAM);
 };
 

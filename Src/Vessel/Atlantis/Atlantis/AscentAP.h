@@ -105,7 +105,7 @@ private:
 // class AscentApMfd: MFD interface for ascent autopilot
 // ==============================================================
 
-class AscentApMfd: public MFD2 {
+class AscentApMfd: public MFD {
 public:
 	AscentApMfd (DWORD w, DWORD h, VESSEL *v);
 	~AscentApMfd();

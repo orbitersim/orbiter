@@ -910,6 +910,9 @@ public:
 	 * \note Non-GDI clients should not overload this method.
 	 */
 	virtual HFONT GetGDIFont () const { return 0; }
+
+	virtual int Width() const { return 0; }
+	virtual int Height() const { return 0; }
 };
 
 
@@ -1528,7 +1531,7 @@ public:
 	* \param scale Text scale factor (0.0f to 1.0f)
 	* \param angle Rotation angle in radians.
 	* \sa Text()
-	* \note Rotation and scaling can result a blurry text if used with a small fonts. Rotation of ±PI/2 or PI should work fine.
+	* \note Rotation and scaling can result a blurry text if used with a small fonts. Rotation of ï¿½PI/2 or PI should work fine.
 	* \note Rotation spefified during font creation is ignored in this function.
 	*/
 	virtual void TextEx(float x, float y, const char* str, float scale = 1.0f, float angle = 0.0f) { assert(false); }

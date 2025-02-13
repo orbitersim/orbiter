@@ -283,7 +283,6 @@ protected:
 
 	// Drawing resources
 	oapi::Font *mfdfont[4];     // MFD font resources
-	bool use_skp_interface;     // true if drawing through Sketchpad, false for HDC
 
 public:
 	static struct DrawResource { // MFD drawing resources

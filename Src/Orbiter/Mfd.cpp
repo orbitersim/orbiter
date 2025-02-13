@@ -475,7 +475,6 @@ Instrument::Instrument (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_ves
 	id   = _id;
 	flag = spec.flag;
 	vessel = _vessel;
-	use_skp_interface = true;
 	instrDT = g_pOrbiter->Cfg()->CfgLogicPrm.InstrUpdDT;
 	updT = td.SimT0-1.0;
 	updSysT = td.SysT0-1.0;
@@ -697,7 +696,7 @@ void Instrument::AllocSurface (DWORD w, DWORD h)
 	if (IsRuningInExternMFD())
 	{
 		DWORD attrib = OAPISURFACE_NOALPHA;
-		attrib |= (use_skp_interface ? OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE : OAPISURFACE_GDI | OAPISURFACE_TEXTURE);
+		attrib |= OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE;
 		surf = gc->clbkCreateSurfaceEx(w, h, attrib);
 		//tex = gc->clbkCreateSurfaceEx(w, h, attrib); // no need for tex
 		if (surf) ClearSurface();
@@ -707,7 +706,7 @@ void Instrument::AllocSurface (DWORD w, DWORD h)
 	DWORD s_attrib = 0;
 	DWORD t_attrib = OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE | 0;
 
-	s_attrib |= (use_skp_interface ? OAPISURFACE_RENDERTARGET : OAPISURFACE_GDI | OAPISURFACE_TEXTURE);
+	s_attrib |= OAPISURFACE_RENDERTARGET; // | OAPISURFACE_TEXTURE;
 	
 	// Add mipmaps in virtual cockpit mode
 	t_attrib |= (pane->panelmode == 3 ? OAPISURFACE_MIPMAPS : 0);
@@ -796,18 +795,10 @@ bool Instrument::Update (double upDTscale)
 		blink = !blink;
 		ClearSurface ();
 		UpdateBlt ();
-		if (use_skp_interface) {
-			oapi::Sketchpad *skp = BeginDraw();
-			if (skp) {
-				UpdateDraw (skp);
-				EndDraw (skp);
-			}
-		} else {
-			HDC hDC = BeginDrawHDC();
-			if (hDC) {
-				UpdateDraw (hDC);
-				EndDrawHDC (hDC);
-			}
+		oapi::Sketchpad *skp = BeginDraw();
+		if (skp) {
+			UpdateDraw (skp);
+			EndDraw (skp);
 		}
 		if (tex) gc->clbkBlt (tex, 0, 0, surf); // 'tex' not used in ExternMFD
 		updT = td.SimT1 + instrDT * upDTscale;

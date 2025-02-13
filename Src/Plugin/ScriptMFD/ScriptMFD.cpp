@@ -181,7 +181,7 @@ DLLCLBK void opcPostStep (double simt, double simdt, double mjd)
 
 // Constructor
 ScriptMFD::ScriptMFD (DWORD w, DWORD h, VESSEL *vessel, const SCRIPTMFDMODESPEC *spec)
-: MFD2 (w, h, vessel)
+: MFD (w, h, vessel)
 {
 	int i;
 	char cmd[256];
@@ -276,7 +276,7 @@ bool ScriptMFD::ConsumeButton (int bt, int event)
 		lua_pop (L, 1);
 		return consumed;
 	}
-	return MFD2::ConsumeButton (bt, event);
+	return MFD::ConsumeButton (bt, event);
 }
 
 // React to a buffered key
@@ -290,7 +290,7 @@ bool ScriptMFD::ConsumeKeyBuffered (DWORD key)
 		lua_pop (L, 1);
 		return consumed;
 	}
-	return MFD2::ConsumeKeyBuffered (key);
+	return MFD::ConsumeKeyBuffered (key);
 }
 
 bool ScriptMFD::ConsumeKeyImmediate (char *kstate)
@@ -303,7 +303,7 @@ bool ScriptMFD::ConsumeKeyImmediate (char *kstate)
 		lua_pop (L, 1);
 		return consumed;
 	}
-	return MFD2::ConsumeKeyImmediate (kstate);
+	return MFD::ConsumeKeyImmediate (kstate);
 }
 
 // Return button labels

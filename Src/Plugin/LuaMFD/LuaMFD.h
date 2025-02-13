@@ -17,7 +17,7 @@ public:
 	int ButtonMenu (const MFDBUTTONMENU **menu) const;
 	bool ConsumeKeyBuffered (DWORD key);
 	bool ConsumeButton (int bt, int event);
-	void Update (HDC hDC);
+	bool Update (oapi::Sketchpad* skp);
 	bool Input (const char *line);
 	void QueryCommand ();
 	void CreateInterpreter ();
@@ -33,7 +33,7 @@ private:
 	InterpreterList::VesselInterp *vi;
 	OBJHANDLE hVessel;      // vessel object handle
 	HANDLE interpTh;        // interpreter thread handle
-	HFONT hFont;            // font handle
+	oapi::Font* hFont;            // font handle
 	DWORD pg;               // current page   
 	DWORD fw, fh;           // character width, height
 	DWORD nchar;            // characters per line displayed
