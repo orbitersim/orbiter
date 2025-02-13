@@ -1,4 +1,5 @@
-BEGIN_HYPERDESC
-<h1>Checklists</h1>
-<p>This folder contains starting situations for the checklist missions described in the manual.</p>
-END_HYPERDESC
+BEGIN_DESC
+# Checklists
+
+This folder contains starting situations for the checklist missions described in the manual.
+END_DESC

@@ -4,11 +4,11 @@ Include(FetchContent)
 
 # These formats we need
 set(SDLIMAGE_BMP ON)
+set(SDLIMAGE_JPG ON)
 set(SDLIMAGE_PNG ON)
+set(SDLIMAGE_GIF ON)
 # Disable auto-enabled formats that we don't need (which add some additional dependencies)
 set(SDLIMAGE_AVIF OFF)
-set(SDLIMAGE_GIF OFF)
-set(SDLIMAGE_JPG OFF)
 set(SDLIMAGE_LBM OFF)
 set(SDLIMAGE_PCX OFF)
 set(SDLIMAGE_PNM OFF)

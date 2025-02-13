@@ -9,6 +9,7 @@
 #include "OrbiterAPI.h"
 #include "Config.h"
 #include "imgui.h"
+#include "UIUtil.h"
 
 //-----------------------------------------------------------------------------
 // Forward declarations
@@ -42,7 +43,7 @@ namespace orbiter {
 
 		bool Create(bool startvideotab = true);
 
-		void OnDraw();
+		void OnDraw(WithLocalContext& ctx) const;
 
 		Orbiter* App() const { return m_app; }
 		Config* Cfg() const { return m_cfg; }
@@ -51,8 +52,8 @@ namespace orbiter {
 		void AddTab(LaunchpadTab2* tab);
 		void EnableLaunchButton(bool enable) const;
 
-		bool ConsumeEvent(const SDL_Event& event);
-		void RenderFrame();
+		bool ConsumeEvent(const SDL_Event& event) const;
+		void RenderFrame() const;
 
 		// Register an item in the "Extra" list. If parent=0, the item is registered
 		// as a root (top level) item. Otherwise it appears as a sub-item under
@@ -78,15 +79,14 @@ namespace orbiter {
 		void Hide();
 		void Show();
 	private:
-		Orbiter* m_app;
-		Config* m_cfg;
+		Orbiter* m_app = nullptr;
+		Config* m_cfg = nullptr;
+		ImGuiMgr* m_imgui = nullptr;
 		std::vector<LaunchpadTab2*> m_tabList;
-		bool m_active;
-		SDL_Window* m_window;
-		SDL_GPUDevice* m_device;
-		ImGuiContext* m_context;
-		ImFont *defaultFont;
-		ImFont *monoFont;
+		bool m_active = false;
+		SDL_Window* m_window = nullptr;
+		SDL_GPUDevice* m_device = nullptr;
+		Image* m_banner = nullptr;
 
 		void SwitchTabPage(int pg);
 	};

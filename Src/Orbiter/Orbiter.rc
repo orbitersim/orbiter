@@ -69,31 +69,31 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 // Bitmap
 //
 
-IDB_BITMAP2             BITMAP                  "Bitmaps\\Icon.bmp"
+IDB_BITMAP2             BITMAP                  "..\\..\\Textures\\OrbiterCore\\Icon.bmp"
 
-IDB_TREEICON_FOLDER1    BITMAP                  "Bitmaps\\Folder1.bmp"
+IDB_TREEICON_FOLDER1    BITMAP                  "..\\..\\Textures\\OrbiterCore\\Folder1.bmp"
 
-IDB_TREEICON_FOLDER2    BITMAP                  "Bitmaps\\Folder2.bmp"
+IDB_TREEICON_FOLDER2    BITMAP                  "..\\..\\Textures\\OrbiterCore\\Folder2.bmp"
 
-IDB_TREEICON_SCN1       BITMAP                  "Bitmaps\\Scn1.bmp"
+IDB_TREEICON_SCN1       BITMAP                  "..\\..\\Textures\\OrbiterCore\\Scn1.bmp"
 
-IDB_TREEICON_SCN2       BITMAP                  "Bitmaps\\Scn2.bmp"
+IDB_TREEICON_SCN2       BITMAP                  "..\\..\\Textures\\OrbiterCore\\Scn2.bmp"
 
-IDB_ICON64              BITMAP                  "Bitmaps\\Icon64.bmp"
+IDB_ICON64              BITMAP                  "..\\..\\Textures\\OrbiterCore\\Icon64.bmp"
 
-IDB_DEFBUTTON           BITMAP                  "Bitmaps\\bt_default.bmp"
+IDB_DEFBUTTON           BITMAP                  "..\\..\\Textures\\OrbiterCore\\bt_default.bmp"
 
-IDB_DNARROW             BITMAP                  "Bitmaps\\dnarrow.bmp"
+IDB_DNARROW             BITMAP                  "..\\..\\Textures\\OrbiterCore\\dnarrow.bmp"
 
-IDB_UPARROW             BITMAP                  "Bitmaps\\uparrow.bmp"
+IDB_UPARROW             BITMAP                  "..\\..\\Textures\\OrbiterCore\\uparrow.bmp"
 
-IDB_SHADOW              BITMAP                  "Bitmaps\\shadow.bmp"
+IDB_SHADOW              BITMAP                  "..\\..\\Textures\\OrbiterCore\\shadow.bmp"
 
-IDB_CLOSEDOWN2          BITMAP                  "Bitmaps\\Closedown.bmp"
+IDB_CLOSEDOWN2          BITMAP                  "..\\..\\Textures\\OrbiterCore\\Closedown.bmp"
 
-IDB_ARROWS              BITMAP                  "Bitmaps\\arrows.bmp"
+IDB_ARROWS              BITMAP                  "..\\..\\Textures\\OrbiterCore\\arrows.bmp"
 
-IDB_BANNER              BITMAP                  "Bitmaps\\banner.bmp"
+IDB_BANNER              BITMAP                  "..\\..\\Textures\\OrbiterCore\\banner.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -869,11 +869,11 @@ STYLE DS_SETFONT | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     GROUPBOX        "Field of view",IDC_STATIC,0,21,171,89
-    PUSHBUTTON      "30°",IDC_CAM_FOV_30,12,36,25,14
-    PUSHBUTTON      "40°",IDC_CAM_FOV_40,42,36,25,14
-    PUSHBUTTON      "50°",IDC_CAM_FOV_50,72,36,25,14
-    PUSHBUTTON      "60°",IDC_CAM_FOV_60,102,36,25,14
-    PUSHBUTTON      "70°",IDC_CAM_FOV_70,132,36,25,14
+    PUSHBUTTON      "30ï¿½",IDC_CAM_FOV_30,12,36,25,14
+    PUSHBUTTON      "40ï¿½",IDC_CAM_FOV_40,42,36,25,14
+    PUSHBUTTON      "50ï¿½",IDC_CAM_FOV_50,72,36,25,14
+    PUSHBUTTON      "60ï¿½",IDC_CAM_FOV_60,102,36,25,14
+    PUSHBUTTON      "70ï¿½",IDC_CAM_FOV_70,132,36,25,14
     CONTROL         "Slider1",IDC_CAM_FOV_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,8,55,152,24
     EDITTEXT        IDC_CAM_FOV_INPUT,33,86,40,14,ES_AUTOHSCROLL
     LTEXT           "degrees (vertical)",IDC_STATIC,79,88,55,8
@@ -1086,10 +1086,10 @@ BEGIN
     LTEXT           "Propagator:",IDC_STATIC,87,18,38,8
     LTEXT           "Step targets:",IDC_STATIC,205,18,41,8
     LTEXT           "time [s]",IDC_STATIC,192,27,23,8
-    LTEXT           "rotation [°]",IDC_STATIC,229,27,33,8
+    LTEXT           "rotation [ï¿½]",IDC_STATIC,229,27,33,8
     LTEXT           "Step limits:",IDC_STATIC,311,18,34,8
     LTEXT           "time [s]",IDC_STATIC,286,27,23,8
-    LTEXT           "rotation [°]",IDC_STATIC,323,27,33,8
+    LTEXT           "rotation [ï¿½]",IDC_STATIC,323,27,33,8
     CONTROL         "",IDC_PROP_ACTIVE0,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,37,8,14
     COMBOBOX        IDC_PROP_PROP0,41,38,132,116,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_PROP_TTGT0,183,38,40,14,ES_AUTOHSCROLL
@@ -1666,41 +1666,41 @@ END
 // remains consistent on all systems.
 IDI_MAIN_ICON           ICON                    "Orbiter.ico"
 
-IDI_STOP_ICON           ICON                    "bitmaps\\rec_icon.ico"
+IDI_STOP_ICON           ICON                    "..\\..\\Textures\\OrbiterCore\\rec_icon.ico"
 
-IDI_REC_ICON            ICON                    "bitmaps\\icon2.ico"
+IDI_REC_ICON            ICON                    "..\\..\\Textures\\OrbiterCore\\icon2.ico"
 
-IDI_LEFTARROW           ICON                    "Bitmaps\\left.ico"
+IDI_LEFTARROW           ICON                    "..\\..\\Textures\\OrbiterCore\\left.ico"
 
-IDI_RIGHTARROW          ICON                    "Bitmaps\\right.ico"
+IDI_RIGHTARROW          ICON                    "..\\..\\Textures\\OrbiterCore\\right.ico"
 
-IDI_DRIGHTARROW         ICON                    "bitmaps\\rightarr.ico"
+IDI_DRIGHTARROW         ICON                    "..\\..\\Textures\\OrbiterCore\\rightarr.ico"
 
-IDI_DDOWN               ICON                    "Bitmaps\\ddown.ico"
+IDI_DDOWN               ICON                    "..\\..\\Textures\\OrbiterCore\\ddown.ico"
 
-IDI_DUP                 ICON                    "Bitmaps\\dup.ico"
+IDI_DUP                 ICON                    "..\\..\\Textures\\OrbiterCore\\dup.ico"
 
-IDI_FINGER              ICON                    "bitmaps\\finger.ico"
+IDI_FINGER              ICON                    "..\\..\\Textures\\OrbiterCore\\finger.ico"
 
-IDI_CROSS               ICON                    "bitmaps\\cross.ico"
+IDI_CROSS               ICON                    "..\\..\\Textures\\OrbiterCore\\cross.ico"
 
-IDI_FINGER2             ICON                    "bitmaps\\finger2.ico"
+IDI_FINGER2             ICON                    "..\\..\\Textures\\OrbiterCore\\finger2.ico"
 
-IDI_LARROW              ICON                    "bitmaps\\larrow.ico"
+IDI_LARROW              ICON                    "..\\..\\Textures\\OrbiterCore\\larrow.ico"
 
-IDI_RARROW              ICON                    "bitmaps\\rarrow.ico"
+IDI_RARROW              ICON                    "..\\..\\Textures\\OrbiterCore\\rarrow.ico"
 
-IDI_UARROW              ICON                    "bitmaps\\uarrow.ico"
+IDI_UARROW              ICON                    "..\\..\\Textures\\OrbiterCore\\uarrow.ico"
 
-IDI_DARROW              ICON                    "bitmaps\\darrow.ico"
+IDI_DARROW              ICON                    "..\\..\\Textures\\OrbiterCore\\darrow.ico"
 
-IDI_UARROW_TILT         ICON                    "bitmaps\\uarrow_tilt.ico"
+IDI_UARROW_TILT         ICON                    "..\\..\\Textures\\OrbiterCore\\uarrow_tilt.ico"
 
-IDI_DARROW_TILT         ICON                    "bitmaps\\darrow_tilt.ico"
+IDI_DARROW_TILT         ICON                    "..\\..\\Textures\\OrbiterCore\\darrow_tilt.ico"
 
-IDI_LARROW_TILT         ICON                    "bitmaps\\larrow_tilt.ico"
+IDI_LARROW_TILT         ICON                    "..\\..\\Textures\\OrbiterCore\\larrow_tilt.ico"
 
-IDI_RARROW_TILT         ICON                    "bitmaps\\rarrow_tilt.ico"
+IDI_RARROW_TILT         ICON                    "..\\..\\Textures\\OrbiterCore\\rarrow_tilt.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1716,7 +1716,7 @@ IDT_DISCLAIMER          TEXT                    "Disclaimer.txt"
 // IMAGE
 //
 
-IDR_IMAGE1              IMAGE                   "bitmaps\\Splash.jpg"
+IDR_IMAGE1              IMAGE                   "..\\..\\Textures\\OrbiterCore\\Splash.jpg"
 
 
 /////////////////////////////////////////////////////////////////////////////

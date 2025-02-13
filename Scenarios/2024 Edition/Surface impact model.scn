@@ -1,10 +1,17 @@
-BEGIN_HYPERDESC
-<h1>Surface impact model</h1>
-<p>Orbiter 2016 adds a new dynamic impact model for vessel-surface interactions. Vessels define their impact volume as a convex hull, and, unlike previous versions, can now model
-surface collisions at any attitude.</p>
-<p>Docked assemblies can merge their impact volumes and compute their combined surface interaction, a feature missing in the previous Orbiter release.</p>
-<p>Watch a DG spaceplane crash onto the runway and perform a graceful ballet before coming to rest. Note that inelastic deformations and structural damage are currently not modelled in the default Orbiter vessels.</p>
-END_HYPERDESC
+BEGIN_DESC
+# Surface impact model
+
+Orbiter 2016 adds a new dynamic impact model for vessel-surface interactions.
+Vessels define their impact volume as a convex hull, and, unlike previous
+versions, can now model surface collisions at any attitude.
+
+Docked assemblies can merge their impact volumes and compute their combined
+surface interaction, a feature missing in the previous Orbiter release.
+
+Watch a DG spaceplane crash onto the runway and perform a graceful ballet
+before coming to rest. Note that inelastic deformations and structural damage
+are currently not modelled in the default Orbiter vessels.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

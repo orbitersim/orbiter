@@ -111,7 +111,9 @@ set(common_src
 	D3d7util.cpp
 	D3dmath.cpp
 	Di7frame.cpp
-	SDLUtil.cpp
+	UIUtil.cpp
+	md4c.c
+	imgui_md.cpp
 # Graphics interface base class for GDI clients
 	${GDICLIENT_DIR}/GDIClient.cpp
 # Utils

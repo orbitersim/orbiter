@@ -1,7 +1,11 @@
-BEGIN_HYPERDESC
-<h1>Space Shuttle to ISS</h1>
-<p>This is a pre-recorded tutorial launching Space Shuttle Atlantis on a mission to the International Space Station. It demonstrates the use of the launch autopilot, and techniques for aligning orbital planes, planning a rendezvous with an orbital station, and docking procedures.</p>
-END_HYPERDESC
+BEGIN_DESC
+# Space Shuttle to ISS
+
+This is a pre-recorded tutorial launching Space Shuttle Atlantis on a mission
+to the International Space Station. It demonstrates the use of the launch
+autopilot, and techniques for aligning orbital planes, planning a rendezvous
+with an orbital station, and docking procedures.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

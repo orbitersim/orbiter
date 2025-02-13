@@ -13,7 +13,7 @@
 #include "LpadTab.h"
 #include "CustomControls.h"
 #include <filesystem>
-#include "SDLUtil.h"
+#include "UIUtil.h"
 namespace fs = std::filesystem;
 
 namespace orbiter {
@@ -32,38 +32,19 @@ namespace orbiter {
 
 	class ScenarioTab : public orbiter::LaunchpadTab2 {
 	public:
-		ScenarioTab(const orbiter::LaunchpadDialog2* lp);
-		~ScenarioTab();
+		explicit ScenarioTab(const orbiter::LaunchpadDialog2* lp);
+		~ScenarioTab() override;
 
 		void Create() override;
 
-		void GetConfig(const Config* cfg);
-		void SetConfig(Config* cfg);
+		void GetConfig(const Config* cfg) override;
+		void SetConfig(Config* cfg) override;
 
-		bool OpenHelp();
-
-		bool DynamicSize() const { return true; }
-
-		BOOL OnSize(int w, int h);
-
-		int GetSelScenario(char* scn, int len);
-		// returns name of currently selected scenario file
-		// (without path or extension)
-
-		void LaunchpadShowing(bool show);
-
-		BOOL OnNotify(HWND hDlg, int idCtrl, LPNMHDR pnmh);
-
-		BOOL OnMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-		void OnDraw() override;
+		void OnDraw(WithLocalContext &ctx) override;
 
 	protected:
 		void RefreshList(bool preserveSelection);
 		// refresh the scenario list
-
-		void ScanDirectory(const fs::path &path, HTREEITEM hti);
-		// scan scenario files from a subdirectory
 
 		void ScenarioChanged();
 		// Respond to a user scenario selection
@@ -77,27 +58,18 @@ namespace orbiter {
 
 		void ClearQSFolder();
 		// remove all scenarios in the quicksave folder
-
-		void OpenScenarioHelp();
-		// open the help file associated with the current scenario
-
 	private:
-		static INT_PTR CALLBACK SaveProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-		// callback function for "scenario save" dialog
-
-		static DWORD WINAPI threadWatchScnList(LPVOID pPrm);
-		// thread function for scenario list watcher
-
-		ScenarioTree BuildScnTree(ScenarioTreeItem root);
+		ScenarioTree BuildScnTree(const ScenarioTreeItem& root);
 		void RenderTree(const ScenarioTree& tree);
-
-		SplitterCtrl splitListDesc;  // splitter control for scenario list(left) and description(right)
 
 		Image* img_folder1;
 		Image* img_folder2;
 		Image* img_scn1;
 		ScenarioTree tree;
 		fs::path selection;
+		std::vector<Image*> loadedImages;
+		std::string desc;
+		int scnListW = 0;
 		char scnhelp[128];       // scenario help string, if available
 		int infoId;              // IDC_SCN_HTML or IDC_SCN_INFO, depending on which is active
 		bool htmldesc;           // Use embedded html viewer for scenario description

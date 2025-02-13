@@ -1,6 +1,6 @@
-BEGIN_HYPERDESC
-<h1>Welcome to Orbiter 2024!</h1>
-END_HYPERDESC
+BEGIN_DESC
+# Welcome to Orbiter 2024!
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

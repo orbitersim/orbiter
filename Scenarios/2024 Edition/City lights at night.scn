@@ -1,8 +1,10 @@
-BEGIN_HYPERDESC
-<h1>City lights at night</h1>
-<p>Improved rendering of city lights: Flying over Tampa/Florida at night.</p>
-<p>Make sure you have enabled the <i>Planet night lights</i> option in the Launchpad <i>Visual effects</i> tab.</p>
-END_HYPERDESC
+BEGIN_DESC
+# City lights at night
+
+Improved rendering of city lights: Flying over Tampa/Florida at night.
+
+Make sure you have enabled the *Planet night lights* option in the Launchpad *Visual effects* tab.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

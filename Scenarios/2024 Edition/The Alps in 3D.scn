@@ -1,12 +1,14 @@
-BEGIN_URLDESC
-Default\Alps2016,Index
-END_URLDESC
 BEGIN_DESC
-Orbiter 2016: Fly across the Alps
+# Orbiter 2016: Fly across the Alps
 
+Orbiter now supports planetary surface elevations. Take a DG on a flight across
+the Alps, finally in 3D.
 
-Orbiter now supports planetary surface elevations. Take a DG on a flight across the Alps,
-finally in 3D.
+![](Textures/Scenarios/Default/Alps2016/img1.jpg)
+
+![](Textures/Scenarios/Default/Alps2016/img2.jpg)
+
+![](Textures/Scenarios/Default/Alps2016/img3.jpg)
 END_DESC
 
 BEGIN_ENVIRONMENT

@@ -7,6 +7,7 @@
 #include <windows.h>
 #include "Config.h"
 #include "Launchpad.h"
+#include "UIUtil.h"
 
 // Property page indices
 #define PG_SCN  0
@@ -35,8 +36,7 @@ namespace orbiter {
 
 		virtual void GetConfig(const Config* cfg) {}
 		virtual void SetConfig(Config* cfg) {}
-		virtual bool DynamicSize() const { return false; }
-		virtual void OnDraw() = 0;
+		virtual void OnDraw(WithLocalContext& ctx) = 0;
 	protected:
 		const LaunchpadDialog2* m_lp;
 		Config* m_cfg;

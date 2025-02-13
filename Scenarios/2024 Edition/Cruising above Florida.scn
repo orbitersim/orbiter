@@ -1,8 +1,9 @@
-BEGIN_HYPERDESC
-<h1>Cruising above Florida</h1>
-<p>A Glider in atmospheric flight across Florida, showing the new high
-resolution surface textures to their best advantage.</p>
-END_HYPERDESC
+BEGIN_DESC
+# Cruising above Florida
+
+A Glider in atmospheric flight across Florida, showing the new high
+resolution surface textures to their best advantage.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol
