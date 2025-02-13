@@ -17,7 +17,7 @@ spacecraft and camera control. Consult the Orbiter Manual for further details.
   status in the "*(Current status)*" scenario, so you can continue your flight
   later by selecting this scenario.
 
-# Camera modes
+## Camera modes
 You are in an external camera mode, looking towards your ship.
 - You can rotate the camera around your ship by pressing and holding down the
   `Ctrl` key and pressing a cursor key (`Up`, `Down`, `Left`, or `Right`) on
@@ -31,7 +31,7 @@ You are in an external camera mode, looking towards your ship.
   in external views.
 - To look straight ahead, press the `Home` button.
 
-# Cockpit modes
+## Cockpit modes
 - At the moment, you are in "virtual cockpit" mode - that is, you are inside a
   three-dimensional representation of the glider cockpit, with the glass pane
   of the head-up display (HUD) in front of you, and the instruments and
@@ -54,7 +54,7 @@ You are in an external camera mode, looking towards your ship.
 - Not all spacecraft types support 2-D panels or 3-D virtual cockpits, but the
   generic cockpit mode is always available.
 
-# MFD instruments
+## MFD instruments
 The most important and versatile instruments are the two *multifunctional
 displays* (MFDs) in the centre of the instrument panel. Each MFD consists of a
 square LCD screen and buttons along the left, right and bottom edges.
@@ -85,7 +85,7 @@ list.
 - For now, switch the left MFD to *Surface mode*, and the right MFD to *HSI*
 mode.
 
-# Takeoff
+## Takeoff
 Your glider is capable of runway takeoffs and landings on Earth (and on any
 other planet, if the atmospheric density is sufficient to provide aerodynamic
 lift).
@@ -115,7 +115,7 @@ main engines. Note that a fully loaded and tanked glider may be too heavy to
 lift off vertically from Earth when the "realistic" flight model is used.
 - As you gain airspeed, you can gradually reduce hover thrust.
 
-# Atmospheric flight
+## Atmospheric flight
 In the lower atmosphere, the glider behaves very much like an aircraft. Try the
 joystick controls for pitch, roll and yaw to get a feeling for the handling at
 different altitudes. Without a joystick, you can use the numerical keypad
@@ -127,7 +127,7 @@ This is a good time to try different camera modes. Open the camera dialog
 (`Ctrl-F1`), and check the effect of different track modes and field of view
 (FOV) settings.
 
-# Landing
+## Landing
 - Go around and approach runway 33 of the SLF from the south. Line up with the
 runway. Your HSI instrument helps to maintain the correct approach path and
 slope. One of its two displays should already be tuned to the runway ILS system.
@@ -142,7 +142,7 @@ landing gear (`G`).
 - After touchdown, engage left and right wheel brakes (`,` and `.`) until you
 come to a full stop.
 
-# Space flight
+## Space flight
 So far we have treated the glider much like a conventional aircraft. Now it is
 time to aim a bit higher ...
 - Take off as before. Turn east (use the compass ribbon at the top edge of the
@@ -204,7 +204,7 @@ the eccentricity value reaches a minimum, turn the engines off. You can also
 deactivate the prograde attitude mode by clicking "Prograde" again.
 - Congratulations! You made it into orbit!
 
-# Deorbiting
+## Deorbiting
 Should you ever want to come back to Earth, you need to *deorbit*. This means to
 drop the periapsis point to an altitude where the orbit intersects the dense
 part of the atmosphere, so that your vessel is slowed down by atmospheric
