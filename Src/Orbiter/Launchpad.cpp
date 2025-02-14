@@ -58,14 +58,14 @@ orbiter::LaunchpadDialog2::LaunchpadDialog2(Orbiter *app,
                                        SDL_WINDOW_RESIZABLE |
                                        SDL_WINDOW_HIGH_PIXEL_DENSITY |
                                        SDL_WINDOW_HIDDEN)) {
-    m_imgui = std::make_unique<ImGuiMgr>(g_pOrbiter, m_window);
-    LocalImCtx ctx = m_imgui->PushLocal();
+    m_imgui = std::make_unique<LpImCtx>(g_pOrbiter, m_window);
+    WithImCtx<LpImCtx> ctx = m_imgui->PushLocal();
 
     if (startvideotab) {
         assert(false && "TODO");
     }
 
-    m_banner = std::make_unique<Image>(ctx,
+    m_banner = std::make_unique<LpImage>(ctx,
                                        "Textures/OrbiterCore/banner.png");
 
     AddTab(std::move(std::make_unique<ScenarioTab>(this)));
@@ -78,7 +78,7 @@ orbiter::LaunchpadDialog2::~LaunchpadDialog2() {
     g_pDlg2 = nullptr;
 }
 
-void orbiter::LaunchpadDialog2::OnDraw(LocalImCtx &ctx) const {
+void orbiter::LaunchpadDialog2::OnDraw(WithImCtx<LpImCtx> &ctx) const {
     ImGui::SetCursorScreenPos(ImVec2(0.0, 0.0));
     ImGui::Image(reinterpret_cast<ImTextureID>(m_banner->Binding()),
                  ImVec2(420.0f, 60.0f));
@@ -131,7 +131,7 @@ bool orbiter::LaunchpadDialog2::ConsumeEvent(const SDL_Event &event) const {
 }
 
 void orbiter::LaunchpadDialog2::RenderFrame() const {
-    if (LocalImCtx ctx = m_imgui->PushLocal(); ctx.BeginFrame()) {
+    if (WithImCtx<LpImCtx> ctx = m_imgui->PushLocal(); ctx.BeginFrame()) {
         ImGui::SetNextWindowPos(ImVec2(0, 0));
         ImGui::SetNextWindowSize(ImGui::GetMainViewport()->WorkSize);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);

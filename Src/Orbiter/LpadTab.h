@@ -37,7 +37,7 @@ namespace orbiter {
 
 		virtual void GetConfig(const Config* cfg) {}
 		virtual void SetConfig(Config* cfg) {}
-		virtual void OnDraw(LocalImCtx& ctx) = 0;
+		virtual void OnDraw(WithImCtx<LpImCtx>& ctx) = 0;
 	protected:
 		const LaunchpadDialog2* m_lp;
 		Config* m_cfg;

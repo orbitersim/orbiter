@@ -44,7 +44,7 @@ namespace orbiter {
         LaunchpadDialog2(Orbiter* app, bool startvideotab = true);
         ~LaunchpadDialog2();
 
-        void OnDraw(LocalImCtx &ctx) const;
+        void OnDraw(WithImCtx<LpImCtx> &ctx) const;
 
         Orbiter *App() const { return m_app; }
         Config *Cfg() const { return m_cfg; }
@@ -88,11 +88,11 @@ namespace orbiter {
 
         Orbiter *m_app = nullptr;
         Config *m_cfg = nullptr;
-        std::unique_ptr<ImGuiMgr> m_imgui = nullptr;
+        std::unique_ptr<LpImCtx> m_imgui = nullptr;
         std::vector<std::unique_ptr<LaunchpadTab2> > m_tabList;
         bool m_active = false;
         std::shared_ptr<Window> m_window;
-        std::unique_ptr<Image> m_banner = nullptr;
+        std::unique_ptr<LpImage> m_banner = nullptr;
 
         void SwitchTabPage(int pg);
     };

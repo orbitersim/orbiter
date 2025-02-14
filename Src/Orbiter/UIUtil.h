@@ -1,164 +1,169 @@
 #ifndef __SDLUTIL_H
 #define __SDLUTIL_H
 
+#include "Log.h"
+#include "Orbiter.h"
+#include "SDLWrappers.h"
+#include "imgui.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_gpu.h>
 #include <SDL3_image/SDL_image.h>
-#include "imgui.h"
-#include "Orbiter.h"
-#include "Log.h"
-#include "SDLWrappers.h"
+#include <type_traits>
 
-class ImGuiMgr;
+class LpImCtx;
 
-class LocalImCtx {
+template <class Ctx> class WithImCtx;
+
+template <class Ctx> class ImCtxBase {
 public:
-    LocalImCtx(const LocalImCtx &) = delete;
+  ImCtxBase(const ImCtxBase &) = delete;
 
-    LocalImCtx &operator=(const LocalImCtx &) = delete;
+  ImCtxBase &operator=(const ImCtxBase &) = delete;
 
-    ~LocalImCtx() {
-        if (lastContext)
-            ImGui::SetCurrentContext(lastContext);
-    };
+  WithImCtx<Ctx> PushLocal() {
+    const auto lastContext = ImGui::GetCurrentContext();
+    ImGui::SetCurrentContext(m_context);
+    return WithImCtx<Ctx>(static_cast<Ctx*>(this), lastContext);
+  };
 
-    ImGuiMgr *operator->() const {
-        return inner;
-    }
+  [[nodiscard]] ImFont *DefaultFont() const { return m_defaultFont; }
+  [[nodiscard]] ImFont *ItalicFont() const { return m_italicFont; }
+  [[nodiscard]] ImFont *BoldFont() const { return m_boldFont; }
+  [[nodiscard]] ImFont *BoldItalicFont() const { return m_boldItalicFont; }
+  [[nodiscard]] ImFont *HdgFont() const { return m_hdgFont; }
+  [[nodiscard]] ImFont *MonoFont() const { return m_monoFont; }
+  [[nodiscard]] Orbiter *App() const { return m_app; }
 
-    bool ConsumeEvent(const SDL_Event &event, bool &wantsOut) const;
-
-    bool BeginFrame() const;
-
-    void EndFrame() const;
-
-private:
-    friend class ImGuiMgr;
-
-    LocalImCtx(ImGuiMgr *inner, ImGuiContext *lastContext) : inner(inner),
-        lastContext(lastContext) {
-    };
-    ImGuiMgr *inner;
-    ImGuiContext *lastContext;
+protected:
+  ImCtxBase() = default;
+  Orbiter *m_app;
+  ImGuiContext *m_context;
+  ImFont *m_defaultFont;
+  ImFont *m_italicFont;
+  ImFont *m_boldFont;
+  ImFont *m_boldItalicFont;
+  ImFont *m_hdgFont;
+  ImFont *m_monoFont;
 };
 
-class ImGuiMgr {
-private:
-    friend class std::unique_ptr<ImGuiMgr>;
-
-    ImGuiMgr() = default;
-
+template <class Ctx> class WithImCtx {
 public:
-    ImGuiMgr(const ImGuiMgr &) = delete;
+  WithImCtx(const WithImCtx &) = delete;
 
-    ImGuiMgr &operator=(const ImGuiMgr &) = delete;
+  WithImCtx &operator=(const WithImCtx &) = delete;
 
-    ImGuiMgr(Orbiter *app, const std::shared_ptr<Window> &window);
+  ~WithImCtx() {
+    if (lastContext)
+      ImGui::SetCurrentContext(lastContext);
+  }
 
-    virtual ~ImGuiMgr();
+  Ctx *operator->() const { return inner; }
 
-    LocalImCtx PushLocal() {
-        const auto lastContext = ImGui::GetCurrentContext();
-        ImGui::SetCurrentContext(m_context);
-        return {this, lastContext};
-    };
+  bool ConsumeEvent(const SDL_Event &event, bool &wantsOut) const {
+    return inner->ConsumeEvent(event, wantsOut);
+  };
 
-    [[nodiscard]] const std::shared_ptr<Window> &Win() const {
-        return m_window;
-    }
+  [[nodiscard]] bool BeginFrame() const { return inner->BeginFrame(); };
 
-    [[nodiscard]] ImFont *DefaultFont() const { return m_defaultFont; }
-    [[nodiscard]] ImFont *ItalicFont() const { return m_italicFont; }
-    [[nodiscard]] ImFont *BoldFont() const { return m_boldFont; }
-    [[nodiscard]] ImFont *BoldItalicFont() const { return m_boldItalicFont; }
-    [[nodiscard]] ImFont *HdgFont() const { return m_hdgFont; }
-    [[nodiscard]] ImFont *MonoFont() const { return m_monoFont; }
-    [[nodiscard]] Orbiter *App() const { return m_app; }
+  void EndFrame() const { return inner->EndFrame(); };
 
 private:
-    Orbiter *m_app;
-    std::shared_ptr<Window> m_window;
-    ImGuiContext *m_context;
-    ImFont *m_defaultFont;
-    ImFont *m_italicFont;
-    ImFont *m_boldFont;
-    ImFont *m_boldItalicFont;
-    ImFont *m_hdgFont;
-    ImFont *m_monoFont;
+  friend ImCtxBase<Ctx>;
+  friend Ctx;
+  WithImCtx(Ctx *inner, ImGuiContext *lastContext)
+      : inner(inner), lastContext(lastContext) {};
+  Ctx *inner;
+  ImGuiContext *lastContext;
 };
 
-
-class Image {
-private:
-    void Load(const std::shared_ptr<Window>& win,
-              SDL_Surface *origSurface,
-              std::string_view path);
+class LpImCtx final : public ImCtxBase<LpImCtx> {
+  friend std::unique_ptr<LpImCtx>;
 
 public:
-    Image(const Image &) = delete;
+  LpImCtx(Orbiter *app, const std::shared_ptr<Window> &window);
 
-    Image &operator=(const Image &) = delete;
+  ~LpImCtx();
 
-    // N.B. this takes ownership of the surface and will destroy it.
-    Image(const std::shared_ptr<Window> &win,
-          SDL_Surface *origSurface,
-          std::string_view path) { Load(win, origSurface, path); };
-
-    Image(const std::shared_ptr<Window> &win,
-          std::string_view path) {
-        auto surface = IMG_Load(path.data());
-        if (!surface) {
-            LOGOUT_ERR("Warning: load image `%s` failed: %s", path,
-                       SDL_GetError());
-            throw std::runtime_error("Failed to load image");
-        }
-        Load(win, surface, path);
-    };
-
-    Image(const LocalImCtx &ctx,
-          const std::string_view path) : Image(ctx->Win(),
-                                               path) {
-    };
-
-    ~Image();
-
-    [[nodiscard]] int Width() const { return m_surface->w; }
-    [[nodiscard]] int Height() const { return m_surface->h; }
-    [[nodiscard]] const std::string &Path() const { return m_path; }
-
-    SDL_GPUTextureSamplerBinding *Binding() { return &m_binding; }
+  [[nodiscard]] const std::shared_ptr<Window> &Win() const { return m_window; }
 
 private:
-    std::string m_path;
-    std::shared_ptr<Window> m_window;
-    SDL_Surface *m_surface;
-    SDL_GPUTexture *m_texture;
-    SDL_GPUSampler *m_sampler;
-    SDL_GPUTextureSamplerBinding m_binding;
+  friend WithImCtx<LpImCtx>;
 
-    Image() = default;
+  bool ConsumeEvent(const SDL_Event &event, bool &wantsOut) const;
+
+  [[nodiscard]] bool BeginFrame() const;
+
+  void EndFrame() const;
+
+  std::shared_ptr<Window> m_window;
+};
+
+class LpImage {
+private:
+  void Load(const std::shared_ptr<Window> &win, SDL_Surface *origSurface,
+            std::string_view path);
+
+public:
+  LpImage(const LpImage &) = delete;
+
+  LpImage &operator=(const LpImage &) = delete;
+
+  // N.B. this takes ownership of the surface and will destroy it.
+  LpImage(const std::shared_ptr<Window> &win, SDL_Surface *origSurface,
+        std::string_view path) {
+    Load(win, origSurface, path);
+  };
+
+  LpImage(const std::shared_ptr<Window> &win, std::string_view path) {
+    auto surface = IMG_Load(path.data());
+    if (!surface) {
+      LOGOUT_ERR("Warning: load image `%s` failed: %s", path, SDL_GetError());
+      throw std::runtime_error("Failed to load image");
+    }
+    Load(win, surface, path);
+  };
+
+  LpImage(const WithImCtx<LpImCtx> &ctx, const std::string_view path)
+      : LpImage(ctx->Win(), path) {};
+
+  ~LpImage();
+
+  [[nodiscard]] int Width() const { return m_surface->w; }
+  [[nodiscard]] int Height() const { return m_surface->h; }
+  [[nodiscard]] const std::string &Path() const { return m_path; }
+
+  SDL_GPUTextureSamplerBinding *Binding() { return &m_binding; }
+
+private:
+  std::string m_path;
+  std::shared_ptr<Window> m_window;
+  SDL_Surface *m_surface;
+  SDL_GPUTexture *m_texture;
+  SDL_GPUSampler *m_sampler;
+  SDL_GPUTextureSamplerBinding m_binding;
+
+  LpImage() = default;
 };
 
 namespace ImGui {
-    void Markdown(LocalImCtx &ctx, const std::string &md,
-                  std::vector<std::shared_ptr<::Image> > &loadedImages);
+void Markdown(WithImCtx<LpImCtx> &ctx, const std::string &md,
+              std::vector<std::shared_ptr<::LpImage>> &loadedImages);
 
-    bool InputText(const char *label, std::string &buf,
-                   ImGuiInputTextFlags flags = 0,
-                   ImGuiInputTextCallback callback = nullptr,
-                   void *user_data = nullptr);
+bool InputText(const char *label, std::string &buf,
+               ImGuiInputTextFlags flags = 0,
+               ImGuiInputTextCallback callback = nullptr,
+               void *user_data = nullptr);
 
-    bool InputTextWithHint(const char *label, const char *hint,
-                           std::string &buf,
-                           ImGuiInputTextFlags flags = 0,
-                           ImGuiInputTextCallback callback = nullptr,
-                           void *user_data = nullptr);
+bool InputTextWithHint(const char *label, const char *hint, std::string &buf,
+                       ImGuiInputTextFlags flags = 0,
+                       ImGuiInputTextCallback callback = nullptr,
+                       void *user_data = nullptr);
 
-    bool InputTextMultiline(const char *label, std::string &buf,
-                            const ImVec2 &size = ImVec2(0, 0),
-                            ImGuiInputTextFlags flags = 0,
-                            ImGuiInputTextCallback callback = nullptr,
-                            void *user_data = nullptr);
-}
+bool InputTextMultiline(const char *label, std::string &buf,
+                        const ImVec2 &size = ImVec2(0, 0),
+                        ImGuiInputTextFlags flags = 0,
+                        ImGuiInputTextCallback callback = nullptr,
+                        void *user_data = nullptr);
+} // namespace ImGui
 
-#endif //SDLUTIL_H
+#endif // __SDLUTIL_H

@@ -31,11 +31,11 @@ orbiter::ScenarioTab::ScenarioTab(const LaunchpadDialog2 *lp): LaunchpadTab2(
     saveScnDesc.reserve(64);
     saveScnDesc.reserve(256);
 
-    img_folder1 = std::make_shared<Image>(m_lp->Win(),
+    img_folder1 = std::make_shared<LpImage>(m_lp->Win(),
                                           "Textures/OrbiterCore/Folder1.png");
-    img_folder2 = std::make_shared<Image>(m_lp->Win(),
+    img_folder2 = std::make_shared<LpImage>(m_lp->Win(),
                                           "Textures/OrbiterCore/Folder2.png");
-    img_scn1 = std::make_shared<Image>(m_lp->Win(),
+    img_scn1 = std::make_shared<LpImage>(m_lp->Win(),
                                        "Textures/OrbiterCore/Scn1.png");
 
     RefreshList(false);
@@ -107,7 +107,7 @@ void orbiter::ScenarioTab::RenderTree(const ScenarioTree &tree) {
     ImGui::PopID();
 }
 
-void orbiter::ScenarioTab::OnDraw(LocalImCtx &ctx) {
+void orbiter::ScenarioTab::OnDraw(WithImCtx<LpImCtx> &ctx) {
     const auto height = ImGui::GetContentRegionAvail().y -
                         ImGui::GetFrameHeight();
     ImGui::BeginChild("ScnList", ImVec2(static_cast<float>(scnListW), height),

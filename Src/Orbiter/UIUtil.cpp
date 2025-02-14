@@ -95,9 +95,11 @@ static void ImGuiSetStyle(bool bStyleDark_, float alpha_) {
     }
 }
 
-ImGuiMgr::ImGuiMgr(
+LpImCtx::LpImCtx(
     Orbiter *app,
-    const std::shared_ptr<Window> &window) : m_app(app), m_window(window) {
+    const std::shared_ptr<Window> &window) : ImCtxBase() {
+    m_app = app;
+    m_window = window;
 #ifdef _DEBUG
     IMGUI_CHECKVERSION();
 #endif
@@ -184,9 +186,9 @@ ImGuiMgr::ImGuiMgr(
         ImGui::SetCurrentContext(savedContext);
 }
 
-ImGuiMgr::~ImGuiMgr() {
+LpImCtx::~LpImCtx() {
     if (m_context) {
-        LocalImCtx _ = PushLocal();
+        WithImCtx<LpImCtx> _ = PushLocal();
         SDL_WaitForGPUIdle(m_window->Device());
 
         ImGui_ImplSDL3_Shutdown();
@@ -204,7 +206,7 @@ bool EventIsMouse(Uint32 type) {
            SDL_EVENT_JOYSTICK_AXIS_MOTION;
 }
 
-bool LocalImCtx::ConsumeEvent(const SDL_Event &event,
+bool LpImCtx::ConsumeEvent(const SDL_Event &event,
                               bool &wantsOut) const {
     bool consumed = ImGui_ImplSDL3_ProcessEvent(&event);
     ImGuiIO &io = ImGui::GetIO();
@@ -215,7 +217,7 @@ bool LocalImCtx::ConsumeEvent(const SDL_Event &event,
     if (event.type == SDL_EVENT_QUIT || (
             event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.
             windowID ==
-            SDL_GetWindowID((*this)->Win()->Inner()))) {
+            SDL_GetWindowID((*this).Win()->Inner()))) {
         wantsOut = true;
         return true;
     }
@@ -223,8 +225,8 @@ bool LocalImCtx::ConsumeEvent(const SDL_Event &event,
     return consumed;
 }
 
-bool LocalImCtx::BeginFrame() const {
-    if (SDL_GetWindowFlags((*this)->Win()->Inner()) & SDL_WINDOW_MINIMIZED) {
+bool LpImCtx::BeginFrame() const {
+    if (SDL_GetWindowFlags(Win()->Inner()) & SDL_WINDOW_MINIMIZED) {
         return false;
     }
     ImGui_ImplSDLGPU3_NewFrame();
@@ -234,16 +236,16 @@ bool LocalImCtx::BeginFrame() const {
     return true;
 }
 
-void LocalImCtx::EndFrame() const {
+void LpImCtx::EndFrame() const {
     ImGui::Render();
     ImDrawData *draw_data = ImGui::GetDrawData();
     const bool is_minimized = (draw_data->DisplaySize.x <= 0.0f || draw_data->
                                DisplaySize.y <= 0.0f);
 
     SDL_GPUCommandBuffer *command_buffer = SDL_AcquireGPUCommandBuffer(
-        (*this)->Win()->Device());
+        (*this).Win()->Device());
     SDL_GPUTexture *swapchain_texture;
-    SDL_AcquireGPUSwapchainTexture(command_buffer, (*this)->Win()->Inner(),
+    SDL_AcquireGPUSwapchainTexture(command_buffer, (*this).Win()->Inner(),
                                    &swapchain_texture, nullptr, nullptr);
     if (swapchain_texture != nullptr && !is_minimized) {
         Imgui_ImplSDLGPU3_PrepareDrawData(draw_data, command_buffer);
@@ -270,7 +272,7 @@ void LocalImCtx::EndFrame() const {
 }
 
 
-void Image::Load(
+void LpImage::Load(
     const std::shared_ptr<Window> &win, SDL_Surface *origSurface,
     std::string_view path) {
     if (!origSurface)
@@ -372,26 +374,26 @@ void Image::Load(
     m_binding = {m_texture, m_sampler};
 }
 
-Image::~Image() {
+LpImage::~LpImage() {
     SDL_ReleaseGPUSampler(m_window->Device(), m_sampler);
     SDL_ReleaseGPUTexture(m_window->Device(), m_texture);
     SDL_DestroySurface(m_surface);
 }
 
 struct MarkdownUserData {
-    LocalImCtx &ctx;
-    std::vector<Image *> &images;
+    WithImCtx<LpImCtx> &ctx;
+    std::vector<LpImage *> &images;
 };
 
 class orbiter_md : public imgui_md {
 public:
-    orbiter_md(LocalImCtx &ctx,
-               std::vector<std::shared_ptr<Image> > &images) : ctx(ctx),
+    orbiter_md(WithImCtx<LpImCtx> &ctx,
+               std::vector<std::shared_ptr<LpImage> > &images) : ctx(ctx),
         images(images) {
     }
 
-    LocalImCtx &ctx;
-    std::vector<std::shared_ptr<Image> > &images;
+    WithImCtx<LpImCtx> &ctx;
+    std::vector<std::shared_ptr<LpImage> > &images;
 
     ImFont *get_font() const override {
         if (m_is_code || m_is_code_block)
@@ -412,7 +414,7 @@ public:
     }
 
     bool get_image(image_info &nfo) const override {
-        std::shared_ptr<Image> image = nullptr;
+        std::shared_ptr<LpImage> image = nullptr;
         if (m_img_src.empty()) {
             return false;
         }
@@ -422,7 +424,7 @@ public:
             }
         }
         if (!image) {
-            image = std::make_shared<Image>(ctx->Win(),
+            image = std::make_shared<LpImage>(ctx->Win(),
                                             m_img_src);
             images.push_back(image);
         }
@@ -442,8 +444,8 @@ public:
     };
 };
 
-void ImGui::Markdown(LocalImCtx &ctx, const std::string &md,
-                     std::vector<std::shared_ptr<::Image> > &loadedImages) {
+void ImGui::Markdown(WithImCtx<LpImCtx> &ctx, const std::string &md,
+                     std::vector<std::shared_ptr<::LpImage> > &loadedImages) {
     orbiter_md printer = {ctx, loadedImages};
     printer.print(md.c_str(), md.c_str() + md.size());
 }
