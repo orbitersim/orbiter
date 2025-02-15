@@ -79,7 +79,7 @@ public:
   [[nodiscard]] int Height() const { return m_surface->h; }
   [[nodiscard]] const std::string &Path() const { return m_path; }
 
-  SDL_GPUTextureSamplerBinding *Binding() { return &m_binding; }
+  ImTextureID TexID() { return reinterpret_cast<ImTextureID>(&m_binding); }
 
 private:
   std::string m_path;

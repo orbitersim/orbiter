@@ -318,6 +318,12 @@ namespace oapi {
 		 */
 		virtual bool clbkProcessKeyboardBuffered (DWORD key, char kstate[256], bool simRunning) { return false; }
 
+        /**
+         * \brief Get the copyright line to be displayed in the About tab.
+         * \return A string, which can be nullptr, indicating no copyright line.
+         * \default Returns nullptr.
+         */
+		virtual const char* clbkGetModuleCopyright() { return nullptr; }
 	}; // class Module
 
 }; // namespace oapi

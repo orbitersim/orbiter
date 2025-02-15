@@ -71,6 +71,9 @@ orbiter::LaunchpadDialog2::LaunchpadDialog2(Orbiter *app,
     AddTab(std::move(std::make_unique<ScenarioTab>(this)));
     // Options tab
     AddTab(std::move(std::make_unique<ModuleTab>(this)));
+    // Video tab
+    // Extra tab
+    AddTab(std::move(std::make_unique<AboutTab>(this)));
 
     for (const auto & tab : m_tabList) {
         tab->GetConfig(m_cfg);
@@ -86,7 +89,7 @@ orbiter::LaunchpadDialog2::~LaunchpadDialog2() {
 
 void orbiter::LaunchpadDialog2::OnDraw(oapi::WithImCtx<LpImCtx> &ctx) const {
     ImGui::SetCursorScreenPos(ImVec2(0.0, 0.0));
-    ImGui::Image(reinterpret_cast<ImTextureID>(m_banner->Binding()),
+    ImGui::Image(m_banner->TexID(),
                  ImVec2(420.0f, 60.0f));
     const auto size = ImGui::GetWindowSize();
     ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(420.0f, 0.0f),
@@ -251,7 +254,7 @@ bool orbiter::LaunchpadDialog::Create(bool startvideotab) {
         // AddTab(new ModuleTab(this));
         AddTab(new DefVideoTab(this));
         AddTab(pExtra = new ExtraTab(this));
-        AddTab(new AboutTab(this));
+        // AddTab(new AboutTab(this));
         InitTabControl(hDlg);
         InitSize(hDlg);
         SwitchTabPage(hDlg, 0);

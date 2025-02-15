@@ -61,7 +61,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 
 //#define OUTPUT_TEXTURE_INFO
 
-#define KEYDOWN(name,key) (name[key] & 0x80) 
+#define KEYDOWN(name,key) (name[key] & 0x80)
 
 const int MAX_TEXTURE_BUFSIZE = 8000000;
 // Texture manager buffer size. Should be determined from
@@ -180,7 +180,7 @@ int main(int argc, char **argv) {
     // If we're not running from actual console, hide the window
     if (ConsoleManager::IsConsoleExclusive())
         ConsoleManager::ShowConsole(false);
-    
+
     SetEnvironmentVars();
 	g_pOrbiter = new Orbiter; // application instance
 
@@ -247,10 +247,10 @@ bool Orbiter::InitializeWorld (char *name)
 	g_camera->ResizeViewport (viewW, viewH);
 	if (g_psys) delete g_psys;
 
-	auto outputCallback = [](const char* msg, int line, void* callbackContext) 
-	{ 
+	auto outputCallback = [](const char* msg, int line, void* callbackContext)
+	{
 		Orbiter* _this = static_cast<Orbiter*>(callbackContext);
-		_this->OutputLoadStatus(msg, line); 
+		_this->OutputLoadStatus(msg, line);
 	};
 
 	g_psys = new PlanetarySystem(name, pConfig, outputCallback, this); TRACENEW
@@ -380,7 +380,7 @@ bool Orbiter::Create()
 		// hBk = CreateDialog (hInstance, MAKEINTRESOURCE(IDD_DEMOBK), NULL, BkMsgProc);
 		// ShowWindow (hBk, SW_MAXIMIZE);
 	}
-	
+
 	// Create the "launchpad" main dialog window
 	m_pLaunchpad = std::make_unique<orbiter::LaunchpadDialog2>(this, bStartVideoTab); TRACENEW
 
@@ -407,7 +407,7 @@ bool Orbiter::Create()
 		ActivateRoughType();
 
 	memstat = new MemStat;
-	
+
 	return true;
 }
 
@@ -475,33 +475,38 @@ int Orbiter::GetVersion () const
 //! Finds legacy module consisting of a single DLL
 //! @return true on success
 //! @param cbufOut returns path to the plugin DLL
-static bool FindStandaloneDll(const char *path, const char *name, fs::path& cbufOut)
+static bool FindStandaloneDll(std::string_view path, std::string_view name, fs::path& cbufOut)
 {
-	cbufOut = fs::path(path).append(name);
+	cbufOut = std::move(fs::path(path));
+    cbufOut /= name;
+    cbufOut.replace_extension(ORBITER_SOFILE_EXTENSION);
 	return fs::exists(cbufOut);
 }
 
 //! Finds module consisting of a plugin DLL inside a plugin-specific folder
 //! @return true on success
 //! @param cbufOut returns path to the plugin DLL
-static bool FindDllInPluginFolder(const char *path, const char *name, fs::path& cbufOut)
+static bool FindDllInPluginFolder(std::string_view path, std::string_view name, fs::path& cbufOut)
 {
-	cbufOut = fs::path(path).append(name).append(name);
+	cbufOut = std::move(fs::path(path));
+    cbufOut /= name;
+    cbufOut /= name;
+    cbufOut.replace_extension(ORBITER_SOFILE_EXTENSION);
 	return fs::exists(cbufOut);
 }
 
 void Orbiter::LoadModules(const std::string& path, const std::list<std::string>& names)
 {
-	for (auto name : names)
-		LoadModule(path.c_str(), name.c_str());
+	for (const auto& name : names)
+		LoadModule(path, name);
 }
 
 void Orbiter::LoadModules(const std::string& path)
 {
 	for (const auto& entry : fs::directory_iterator(path)) {
-		auto fpath = entry.path();
-		if (fpath.extension().string() == ".dll") {
-			LoadModule(path.c_str(), fpath.stem().string().c_str());
+		const auto& fpath = entry.path();
+		if (fpath.extension().u8string() == ORBITER_SOFILE_EXTENSION) {
+			LoadModule(path, fpath.stem().u8string());
 		}
 	}
 }
@@ -512,14 +517,14 @@ void Orbiter::LoadModules(const std::string& path)
 //-----------------------------------------------------------------------------
 void Orbiter::LoadStartupModules()
 {
-	LoadModules("Modules\\Startup");
+	LoadModules("Modules/Startup");
 }
 
 //-----------------------------------------------------------------------------
 // Name: LoadModule()
 // Desc: Load a named plugin DLL
 //-----------------------------------------------------------------------------
-MODFILE Orbiter::LoadModule (const char *path, const char *name)
+MODFILE Orbiter::LoadModule (std::string_view path, std::string_view name)
 {
 	typedef void (*ModuleEntry)(MODFILE, bool);
 
@@ -533,22 +538,19 @@ MODFILE Orbiter::LoadModule (const char *path, const char *name)
 	if (FindStandaloneDll(path, name, cbuf)) // try to find standalone plugin file
 	{
 		hDLL = reinterpret_cast<MODFILE>(SDL_LoadObject(cbuf.u8string().c_str()));
-		entry = reinterpret_cast<ModuleEntry>(SDL_LoadFunction(reinterpret_cast<SDL_SharedObject*>(hDLL), "OrbitersdkModuleEntry"));
+		entry = reinterpret_cast<ModuleEntry>(SDL_LoadFunction(static_cast<SDL_SharedObject*>(hDLL), "OrbitersdkModuleEntry"));
 	}
 	else // try to find plugin in a plugin folder
 	{
 		fs::path cbuf2;
-		if (FindDllInPluginFolder(path, name, cbuf))
+		if (FindDllInPluginFolder(path, name, cbuf2))
 		{
-			// Convert to absolute path, otherwise LoadLibraryEx fails with error code 87.
-			// See https://stackoverflow.com/questions/36275535/loadlibraryex-error-87-the-parameter-is-incorrect
-			cbuf2 = fs::absolute(cbuf);
 			hDLL = reinterpret_cast<MODFILE>(SDL_LoadObject(cbuf2.u8string().c_str()));
-			entry = reinterpret_cast<ModuleEntry>(SDL_LoadFunction(reinterpret_cast<SDL_SharedObject*>(hDLL), "OrbitersdkModuleEntry"));
+			entry = reinterpret_cast<ModuleEntry>(SDL_LoadFunction(static_cast<SDL_SharedObject*>(hDLL), "OrbitersdkModuleEntry"));
 		}
 		else
 		{
-			LOGOUT_ERR("Could not find a module named %s. Tried %s and %s.", name, cbuf, cbuf2);
+			LOGOUT_ERR("Could not find a module named %s. Tried %s and %s.", name.data(), cbuf.u8string().c_str(), cbuf2.u8string().c_str());
 			return NULL;
 		}
 	}
@@ -557,15 +559,15 @@ MODFILE Orbiter::LoadModule (const char *path, const char *name)
 		entry(hDLL, false);
 	}
 
-	// Can't initialize DirectX in DllMain(), let's do it over here (jarmonik 28.12.2023) 
+	// Can't initialize DirectX in DllMain(), let's do it over here (jarmonik 28.12.2023)
 	if (hDLL) {
 		if (register_module == gclient && gclient != NULL) {
 			if (gclient->clbkInitialise() == false) {
 				// If graphics initialization fails remove client
 				RemoveGraphicsClient(gclient);
-				SDL_UnloadObject(reinterpret_cast<SDL_SharedObject*>(hDLL));
+				SDL_UnloadObject(static_cast<SDL_SharedObject*>(hDLL));
 				LOGOUT_ERR("Client Initialization Failed. Unloading  %s", name);
-				hDLL = NULL;		
+				hDLL = NULL;
 				return NULL;
 			}
 		}
@@ -675,7 +677,7 @@ Orbiter::CreateRenderWindow(Config *pCfg, const char *scenario)
 	LOGOUT("**** Creating simulation session");
 
 	m_pLaunchpad->Hide(); // hide launchpad dialog while the render window is visible
-	
+
 	if (gclient) {
 		if(pState->SplashScreen())
 			gclient->clbkSetSplashScreen(pState->SplashScreen(), pState->SplashColor());
@@ -949,7 +951,7 @@ void Orbiter::GetRenderParameters ()
 	gclient->clbkGetViewportSize (&viewW, &viewH);
 	viewBPP = (gclient->clbkGetRenderParam (RP_COLOURDEPTH, &val) ? val:0);
 	bFullscreen = gclient->clbkFullscreenMode();
-	bUseStencil = (pConfig->CfgDevPrm.bTryStencil && 
+	bUseStencil = (pConfig->CfgDevPrm.bTryStencil &&
 		gclient->clbkGetRenderParam (RP_STENCILDEPTH, &val) && val >= 1);
 }
 
@@ -1615,7 +1617,7 @@ oapi::ScreenAnnotation *Orbiter::CreateAnnotation (bool exclusive, double size, 
 	if (!gclient) return NULL;
 	oapi::ScreenAnnotation *sn = gclient->clbkCreateAnnotation();
 	if (!sn) return NULL;
-	
+
 	sn->SetSize (size);
 	VECTOR3 c = { (col      & 0xFF)/256.0,
 		         ((col>>8 ) & 0xFF)/256.0,
@@ -2083,7 +2085,7 @@ HRESULT Orbiter::UserInput ()
 		hr = didev->GetDeviceState (sizeof(buffer), &buffer);
 		if ((hr == DIERR_NOTACQUIRED || hr == DIERR_INPUTLOST) && SUCCEEDED (didev->Acquire()))
 			hr = didev->GetDeviceState (sizeof(buffer), &buffer);
-	
+
 		// Direct input bypasses the proc loop so we skip it here
 		if (SUCCEEDED (hr) && !io.WantCaptureKeyboard)
 			for (i = 0; i < 256; i++)

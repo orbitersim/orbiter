@@ -12,10 +12,21 @@
 #include <cstdio>
 #include <filesystem>
 #include <optional>
+#include <SDL3/SDL_platform_defines.h>
 
 #include "Mesh.h"
 #include "TimeData.h"
 #include <OrbiterAPI.h>
+
+#ifdef SDL_PLATFORM_WINDOWS
+#define ORBITER_SOFILE_EXTENSION ".dll"
+#elif defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_UNIX)
+#define ORBITER_SOFILE_EXTENSION ".so"
+#elif defined(SDL_PLATFORM_APPLE)
+#define ORBITER_SOFILE_EXTENSION ".dylib"
+#else
+#error "Sorry, your platform is unsupported at the moment."
+#endif
 
 class DInput;
 class Config;
@@ -119,7 +130,7 @@ public:
 	void UpdateDeallocationProgress();
 
 	// plugin module loading/unloading
-	MODFILE LoadModule (const char *path, const char *name);   // load a plugin
+	MODFILE LoadModule (std::string_view path, std::string_view name);   // load a plugin
 
 	/// \brief Unload a DLL plugin identified by its name
 	/// \param name DLL name
@@ -311,6 +322,14 @@ public:
 
 	void OnOptionChanged(DWORD cat, DWORD item = 0);
 
+	struct DLLModule {
+		MODFILE hDLL;          // DLL instance handle
+		oapi::Module* pModule; // pointer to module instance, if the plugin registered one
+		std::string sName;     // DLL name
+		bool bLocalAlloc;      // locally allocated; should be freed by Orbiter core
+	};
+	[[nodiscard]] const std::list<DLLModule>& LoadedModules() const {	return m_Plugin; }
+
 	HINSTANCE       hInstStopgap;
 protected:
 	HRESULT UserInput ();
@@ -414,12 +433,6 @@ private:
 	VOID SavePlaybackScn (const char *fname);
 
 	// === The plugin module interface ===
-	struct DLLModule {
-		MODFILE hDLL;        // DLL instance handle
-		oapi::Module* pModule; // pointer to module instance, if the plugin registered one
-		std::string sName;     // DLL name
-		bool bLocalAlloc;      // locally allocated; should be freed by Orbiter core
-	};
 	std::list<DLLModule> m_Plugin;
 
 	oapi::Module *register_module;  // used during module registration

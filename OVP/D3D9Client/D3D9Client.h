@@ -82,7 +82,7 @@ struct _D3D9Stats
 		DWORD TexChanges;	///< Number of texture changes
 		DWORD MtrlChanges;	///< Number of material changes
 	} Mesh;					///< Mesh related statistics
-			
+
 	struct {
 		D3D9Time Update;		///< clbkUpdate
 		D3D9Time Scene;			///< clbkRenderScene
@@ -141,7 +141,7 @@ namespace oapi {
 // The DX9 render client for Orbiter
 // ==============================================================
 
-class D3D9Client : public GraphicsClient 
+class D3D9Client : public GraphicsClient
 {
 
 	friend class ::Scene;	// <= likes to call Render2DOverlay()
@@ -1042,6 +1042,10 @@ public:
 	void clbkImGuiInit() override;
 	void clbkImGuiShutdown() override;
 	uint64_t clbkImGuiSurfaceTexture(SURFHANDLE surf) override;
+
+    const char* clbkGetModuleCopyright() override {
+    	return "D3D9Client module by Jarmo Nikkanen and Peter Schneider";
+    }
 
 	HWND				GetRenderWindow () const { return hRenderWnd; }
 	CD3DFramework9 *    GetFramework() const { return pFramework; }

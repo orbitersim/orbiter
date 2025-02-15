@@ -1,7 +1,7 @@
 // ==============================================================
 // Defines the XRSound API engine implementation; this file is not distributed with XRSound.
 // The code for this exists in XRSound.dll.
-// 
+//
 // Copyright (c) 2018-2021 Douglas Beachy
 // Licensed under the MIT License
 // ==============================================================
@@ -45,13 +45,16 @@ public:
     virtual void clbkSimulationEnd() override;
     virtual void clbkPreStep(double simt, double simdt, double mjd) override;
     virtual void clbkPause(bool paused) override;
+    const char *clbkGetModuleCopyright() override {
+        return "XRSound module Copyright (c) Doug Beachy";
+    }
 
     // Returns the linear simulation time since simulation start, ignoring any MJD changes (edits).
     // This is the same principle as oapiGetSimTime except that it always returns a value >= the previous frame's value.
-    static double GetAbsoluteSimTime() 
-    { 
+    static double GetAbsoluteSimTime()
+    {
         _ASSERTE(s_pInstance);
-        return s_pInstance->m_absoluteSimTime; 
+        return s_pInstance->m_absoluteSimTime;
     }
 
     // Returns the number of seconds since the system booted (realtime); typically has 10-16 millisecond accuracy (16 ms = 1/60th second),

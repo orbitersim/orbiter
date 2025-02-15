@@ -72,6 +72,7 @@ Select an item to see a description of the module function.
             selection = category.name;
             selectionIsCat = true;
             desc.clear();
+            loadedImages.clear();
         }
         ImGui::SameLine();
         ImGui::Text(category.name.c_str());
@@ -110,6 +111,7 @@ Select an item to see a description of the module function.
                     if (desc.empty()) {
                         desc = "This module does not provide any info.";
                     }
+                    loadedImages.clear();
                 }
                 if (enabled && !prev_enabled) {
                     item.active = true;
@@ -157,17 +159,12 @@ Select an item to see a description of the module function.
 
 //-----------------------------------------------------------------------------
 void orbiter::ModuleTab::RefreshLists() {
-    static std::string_view valid_sofile_exts[3] = {".dll"sv, ".so"sv,
-                                                    ".dylib"sv};
     categories.clear();
 
     const fs::path moddir{"Modules/Plugin"};
 
     for (const auto &file : fs::directory_iterator(moddir)) {
-        if (std::find(std::begin(valid_sofile_exts),
-                      std::end(valid_sofile_exts),
-                      file.path().extension().u8string()) !=
-            std::end(valid_sofile_exts)) {
+        if (file.path().extension().u8string() == ORBITER_SOFILE_EXTENSION) {
             auto name = file.path().stem().u8string();
             // add module record
             ModuleInfo info = {};

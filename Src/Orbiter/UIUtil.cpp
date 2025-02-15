@@ -430,7 +430,7 @@ public:
         }
 
         nfo.size = ImVec2(image->Width(), image->Height());
-        nfo.texture_id = reinterpret_cast<ImTextureID>(image->Binding());
+        nfo.texture_id = image->TexID();
         nfo.uv0 = {0, 0};
         nfo.uv1 = {1, 1};
         nfo.col_tint = {1, 1, 1, 1};

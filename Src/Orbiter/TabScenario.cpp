@@ -68,8 +68,8 @@ void orbiter::ScenarioTab::RenderTree(
         ImGui::SameLine();
         ImGui::Image(
             selected
-                ? reinterpret_cast<ImTextureID>(tree.item.selIcon->Binding())
-                : reinterpret_cast<ImTextureID>(tree.item.icon->Binding()),
+                ? tree.item.selIcon->TexID()
+                : tree.item.icon->TexID(),
             ImVec2(16, 16));
         ImGui::SameLine();
         ImGui::Text(tree.item.name.c_str());
@@ -86,8 +86,8 @@ void orbiter::ScenarioTab::RenderTree(
     }
     ImGui::SameLine(0, 0);
     ImGui::Image(
-        treeNode ? reinterpret_cast<ImTextureID>(tree.item.selIcon->Binding())
-                 : reinterpret_cast<ImTextureID>(tree.item.icon->Binding()),
+        treeNode ? tree.item.selIcon->TexID()
+                 : tree.item.icon->TexID(),
         ImVec2(16, 16));
     ImGui::SameLine();
     ImGui::Text(tree.item.name.c_str());
