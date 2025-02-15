@@ -41,7 +41,7 @@ Panel2D::Panel2D (int _id, Pane *_pane, double scale)
 	mstate = 0;
 
 	if (g_pOrbiter->IsFullscreen()) cwnd = 0;
-	else                            cwnd = g_pOrbiter->GetRenderWnd();
+	else                            cwnd = g_pOrbiter->GetRenderWnd()->StopgapWin32Handle();
 
 	for (i = 0; i < 4; i++)
 		connect[i] = -1;

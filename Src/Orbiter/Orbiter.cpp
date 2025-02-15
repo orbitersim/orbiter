@@ -67,8 +67,6 @@ const int MAX_TEXTURE_BUFSIZE = 8000000;
 // Texture manager buffer size. Should be determined from
 // memory size (System or Video?)
 
-const char* g_strAppTitle = "OpenOrbiter";
-
 constexpr auto MasterConfigFile = "Orbiter.cfg";
 
 const char* CurrentScenario = "(Current state)";
@@ -521,20 +519,20 @@ void Orbiter::LoadStartupModules()
 // Name: LoadModule()
 // Desc: Load a named plugin DLL
 //-----------------------------------------------------------------------------
-ModHandle* Orbiter::LoadModule (const char *path, const char *name)
+MODFILE Orbiter::LoadModule (const char *path, const char *name)
 {
-	typedef void (*ModuleEntry)(ModHandle*, bool);
+	typedef void (*ModuleEntry)(MODFILE, bool);
 
 	register_module = NULL; // Clear the module. The loaded library may optionally populate it on entry call below.
 
 	// Load the module DLL
-	ModHandle* hDLL = NULL;
+	MODFILE hDLL = NULL;
 	ModuleEntry entry = nullptr;
 
 	fs::path cbuf;
 	if (FindStandaloneDll(path, name, cbuf)) // try to find standalone plugin file
 	{
-		hDLL = reinterpret_cast<ModHandle*>(SDL_LoadObject(cbuf.u8string().c_str()));
+		hDLL = reinterpret_cast<MODFILE>(SDL_LoadObject(cbuf.u8string().c_str()));
 		entry = reinterpret_cast<ModuleEntry>(SDL_LoadFunction(reinterpret_cast<SDL_SharedObject*>(hDLL), "OrbitersdkModuleEntry"));
 	}
 	else // try to find plugin in a plugin folder
@@ -545,7 +543,7 @@ ModHandle* Orbiter::LoadModule (const char *path, const char *name)
 			// Convert to absolute path, otherwise LoadLibraryEx fails with error code 87.
 			// See https://stackoverflow.com/questions/36275535/loadlibraryex-error-87-the-parameter-is-incorrect
 			cbuf2 = fs::absolute(cbuf);
-			hDLL = reinterpret_cast<ModHandle*>(SDL_LoadObject(cbuf2.u8string().c_str()));
+			hDLL = reinterpret_cast<MODFILE>(SDL_LoadObject(cbuf2.u8string().c_str()));
 			entry = reinterpret_cast<ModuleEntry>(SDL_LoadFunction(reinterpret_cast<SDL_SharedObject*>(hDLL), "OrbitersdkModuleEntry"));
 		}
 		else
@@ -591,7 +589,7 @@ ModHandle* Orbiter::LoadModule (const char *path, const char *name)
 //-----------------------------------------------------------------------------
 bool Orbiter::UnloadModule (const std::string &name)
 {
-	typedef void (*ModuleEntry)(ModHandle*, bool);
+	typedef void (*ModuleEntry)(MODFILE, bool);
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++) {
 		if (iequal(it->sName, name)) {
 			LOGOUT("Unloading module %s", it->sName.c_str());
@@ -611,9 +609,9 @@ bool Orbiter::UnloadModule (const std::string &name)
 // Name: UnloadModule()
 // Desc: Unload a module by its instance
 //-----------------------------------------------------------------------------
-bool Orbiter::UnloadModule (ModHandle* hDLL)
+bool Orbiter::UnloadModule (MODFILE hDLL)
 {
-	typedef void (*ModuleEntry)(ModHandle*, bool);
+	typedef void (*ModuleEntry)(MODFILE, bool);
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++) {
 		if (it->hDLL == hDLL) {
 			LOGOUT("Unloading module %s", it->sName.c_str());
@@ -633,7 +631,7 @@ bool Orbiter::UnloadModule (ModHandle* hDLL)
 // Name: FindModuleProc()
 // Desc: Returns address of a procedure in a plugin module
 //-----------------------------------------------------------------------------
-OPC_Proc Orbiter::FindModuleProc (ModHandle* hDLL, const char *procname)
+OPC_Proc Orbiter::FindModuleProc (MODFILE hDLL, const char *procname)
 {
 	return (OPC_Proc)SDL_LoadFunction (reinterpret_cast<SDL_SharedObject*>(hDLL), procname);
 }
@@ -667,7 +665,8 @@ VOID Orbiter::Launch (const char *scenario)
 // Name: CreateRenderWindow()
 // Desc: Create the window used for rendering the scene
 //-----------------------------------------------------------------------------
-HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
+std::shared_ptr<sdl::UnmanagedWindow>
+Orbiter::CreateRenderWindow(Config *pCfg, const char *scenario)
 {
 	DWORD i;
 
@@ -680,10 +679,11 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 	if (gclient) {
 		if(pState->SplashScreen())
 			gclient->clbkSetSplashScreen(pState->SplashScreen(), pState->SplashColor());
-		hRenderWnd = gclient->InitRenderWnd (gclient->clbkCreateRenderWindow());
+		hRenderWnd = std::move(gclient->clbkCreateRenderWindow());
+		gclient->InitRenderWnd(hRenderWnd);
 		GetRenderParameters ();
 	} else {
-		hRenderWnd = NULL;
+		hRenderWnd = nullptr;
 		m_pConsole = new orbiter::ConsoleNG(this);
 	}
 
@@ -694,8 +694,8 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 
 	if (gclient) {
 		// GDI resources - NOT VALID FOR ALL CLIENTS!
-		InitializeGDIResources (hRenderWnd);
-		pDlgMgr = new DialogManager (this, hRenderWnd);
+		InitializeGDIResources (hRenderWnd->StopgapWin32Handle());
+		pDlgMgr = new DialogManager (this, hRenderWnd->StopgapWin32Handle());
 
 		// global dialog resources
 		g_select = new Select(); TRACENEW
@@ -985,8 +985,8 @@ HRESULT Orbiter::Render3DEnvironment (bool hidedialogs)
 //-----------------------------------------------------------------------------
 void Orbiter::ScreenToClient (POINT *pt) const
 {
-	if (!IsFullscreen() && hRenderWnd)
-		::ScreenToClient (hRenderWnd, pt);
+	// if (!IsFullscreen() && hRenderWnd)
+	// 	::ScreenToClient (hRenderWnd, pt);
 }
 
 //-----------------------------------------------------------------------------
@@ -1101,7 +1101,7 @@ void Orbiter::SingleFrame ()
 void Orbiter::TerminateOnError ()
 {
 	LogOut (">>> TERMINATING <<<");
-	if (hRenderWnd) ShowWindow (hRenderWnd, FALSE);
+	if (hRenderWnd) SDL_HideWindow(hRenderWnd->Inner());
 	MessageBox (NULL,
 		"Terminating after critical error. See Orbiter.log for details.",
 		"Orbiter: Critical Error", MB_OK | MB_ICONERROR);
@@ -1136,19 +1136,20 @@ void Orbiter::InitRotationMode ()
 		g_iCursorShowCount = ShowCursor(FALSE);
 	}
 
-	SetCapture (hRenderWnd);
-
-	// Limit cursor to render window confines, so we don't miss the button up event
-	if (!bFullscreen && hRenderWnd) {
-		RECT rClient;
-		GetClientRect (hRenderWnd, &rClient);
-		POINT pLeftTop = {rClient.left, rClient.top};
-		POINT pRightBottom = {rClient.right, rClient.bottom};
-		ClientToScreen (hRenderWnd, &pLeftTop);
-		ClientToScreen (hRenderWnd, &pRightBottom);
-		RECT rScreen = {pLeftTop.x, pLeftTop.y, pRightBottom.x, pRightBottom.y};
-		ClipCursor (&rScreen);
-	}
+	// TODO
+	// SetCapture (hRenderWnd);
+	//
+	// // Limit cursor to render window confines, so we don't miss the button up event
+	// if (!bFullscreen && hRenderWnd) {
+	// 	RECT rClient;
+	// 	GetClientRect (hRenderWnd, &rClient);
+	// 	POINT pLeftTop = {rClient.left, rClient.top};
+	// 	POINT pRightBottom = {rClient.right, rClient.bottom};
+	// 	ClientToScreen (hRenderWnd, &pLeftTop);
+	// 	ClientToScreen (hRenderWnd, &pRightBottom);
+	// 	RECT rScreen = {pLeftTop.x, pLeftTop.y, pRightBottom.x, pRightBottom.y};
+	// 	ClipCursor (&rScreen);
+	// }
 }
 
 void Orbiter::ExitRotationMode ()
@@ -1897,7 +1898,7 @@ void Orbiter::EndTimeStep (bool running)
 
 	// check for termination of demo mode
 	if (SessionLimitReached())
-		if (hRenderWnd) PostMessage(hRenderWnd, WM_CLOSE, 0, 0);
+		if (hRenderWnd) PostMessage(hRenderWnd->StopgapWin32Handle(), WM_CLOSE, 0, 0);
 		else CloseSession();
 }
 
@@ -2043,7 +2044,9 @@ VOID Orbiter::UpdateWorld ()
 	g_bStateUpdate = false;
 
 	if (!KillVessels())  // kill any vessels marked for deletion
-		if (hRenderWnd) DestroyWindow (hRenderWnd);
+	{}
+	// TODO
+		// if (hRenderWnd) DestroyWindow (hRenderWnd);
 
 	//g_texmanager->OutputInfo();
 }
@@ -2368,7 +2371,7 @@ void Orbiter::KbdInputBuffered_System (char *kstate, DIDEVICEOBJECTDATA *dod, DW
 			if (bPlayback) EndPlayback();
 			else ToggleRecorder ();
 		} else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_Quit)) {
-			if (hRenderWnd) PostMessage (hRenderWnd, WM_CLOSE, 0, 0);
+			if (hRenderWnd) PostMessage (hRenderWnd->StopgapWin32Handle(), WM_CLOSE, 0, 0);
 		} else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_SelectPrevVessel)) {
 			if (g_pfocusobj) SetFocusObject (g_pfocusobj);
 		}
@@ -2776,7 +2779,7 @@ bool Orbiter::RemoveGraphicsClient (oapi::GraphicsClient *gc)
 
 bool Orbiter::RegisterWindow (HINSTANCE hInstance, HWND hWnd, DWORD flag)
 {
-	return (pDlgMgr ? (pDlgMgr->AddWindow (hInstance, hWnd, hRenderWnd, flag) != NULL) : NULL);
+	return (pDlgMgr ? (pDlgMgr->AddWindow (hInstance, hWnd, hRenderWnd->StopgapWin32Handle(), flag) != NULL) : NULL);
 }
 
 void Orbiter::UpdateDeallocationProgress()
@@ -2796,12 +2799,12 @@ HWND Orbiter::OpenDialogEx (int id, DLGPROC pDlg, DWORD flag, void *context)
 
 HWND Orbiter::OpenDialog (HINSTANCE hInstance, int id, DLGPROC pDlg, void *context)
 {
-	return (pDlgMgr ? pDlgMgr->OpenDialog (hInstance, id, hRenderWnd, pDlg, context) : NULL);
+	return (pDlgMgr ? pDlgMgr->OpenDialog (hInstance, id, hRenderWnd->StopgapWin32Handle(), pDlg, context) : NULL);
 }
 
 HWND Orbiter::OpenDialogEx (HINSTANCE hInstance, int id, DLGPROC pDlg, DWORD flag, void *context)
 {
-	return (pDlgMgr ? pDlgMgr->OpenDialogEx (hInstance, id, hRenderWnd, pDlg, flag, context) : NULL);
+	return (pDlgMgr ? pDlgMgr->OpenDialogEx (hInstance, id, hRenderWnd->StopgapWin32Handle(), pDlg, flag, context) : NULL);
 }
 
 void Orbiter::OpenHelp (const HELPCONTEXT *hcontext)

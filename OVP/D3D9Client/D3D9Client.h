@@ -156,7 +156,7 @@ public:
 	 * with the Orbiter core via the oapiRegisterGraphicsClient function.
 	 * \param hInstance module instance handle (as passed to InitModule)
 	 */
-	explicit D3D9Client (ModHandle* hInstance);
+	explicit D3D9Client (MODFILE hInstance);
 
 	/**
 	 * \brief Destroy the graphics object.
@@ -1119,7 +1119,7 @@ protected:
 	 * \note Derived classes should perform any required per-session
 	 *   initialisation of the 3D render environment here.
 	 */
-	HWND clbkCreateRenderWindow ();
+	std::shared_ptr<sdl::UnmanagedWindow> clbkCreateRenderWindow ();
 
 	/**
 	 * \brief Simulation startup finalisation

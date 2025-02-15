@@ -54,12 +54,12 @@ constexpr unsigned int dlgcol = 0xF0F4F8; // main dialog background color;
 
 orbiter::LaunchpadDialog2::LaunchpadDialog2(Orbiter *app,
                                             bool startvideotab) : m_app(app),
-    m_cfg(app->Cfg()), m_window(std::make_shared<Window>("OpenOrbiter", 1280, 720,
+    m_cfg(app->Cfg()), m_window(std::make_shared<sdl::ManagedWindow>("OpenOrbiter", 1280, 720,
                                        SDL_WINDOW_RESIZABLE |
                                        SDL_WINDOW_HIGH_PIXEL_DENSITY |
                                        SDL_WINDOW_HIDDEN)) {
     m_imgui = std::make_unique<LpImCtx>(g_pOrbiter, m_window);
-    WithImCtx<LpImCtx> ctx = m_imgui->PushLocal();
+    oapi::WithImCtx<LpImCtx> ctx = m_imgui->PushLocal();
 
     if (startvideotab) {
         assert(false && "TODO");
@@ -69,6 +69,12 @@ orbiter::LaunchpadDialog2::LaunchpadDialog2(Orbiter *app,
                                        "Textures/OrbiterCore/banner.png");
 
     AddTab(std::move(std::make_unique<ScenarioTab>(this)));
+    // Options tab
+    AddTab(std::move(std::make_unique<ModuleTab>(this)));
+
+    for (const auto & tab : m_tabList) {
+        tab->GetConfig(m_cfg);
+    }
 
     Show();
 }
@@ -78,7 +84,7 @@ orbiter::LaunchpadDialog2::~LaunchpadDialog2() {
     g_pDlg2 = nullptr;
 }
 
-void orbiter::LaunchpadDialog2::OnDraw(WithImCtx<LpImCtx> &ctx) const {
+void orbiter::LaunchpadDialog2::OnDraw(oapi::WithImCtx<LpImCtx> &ctx) const {
     ImGui::SetCursorScreenPos(ImVec2(0.0, 0.0));
     ImGui::Image(reinterpret_cast<ImTextureID>(m_banner->Binding()),
                  ImVec2(420.0f, 60.0f));
@@ -131,7 +137,7 @@ bool orbiter::LaunchpadDialog2::ConsumeEvent(const SDL_Event &event) const {
 }
 
 void orbiter::LaunchpadDialog2::RenderFrame() const {
-    if (WithImCtx<LpImCtx> ctx = m_imgui->PushLocal(); ctx.BeginFrame()) {
+    if (oapi::WithImCtx<LpImCtx> ctx = m_imgui->PushLocal(); ctx.BeginFrame()) {
         ImGui::SetNextWindowPos(ImVec2(0, 0));
         ImGui::SetNextWindowSize(ImGui::GetMainViewport()->WorkSize);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
@@ -242,7 +248,7 @@ bool orbiter::LaunchpadDialog::Create(bool startvideotab) {
         hTabContainer = GetDlgItem(hDlg, IDC_MNU_PAGECONTAINER);
         // AddTab (new ScenarioTab (this));
         AddTab(new OptionsTab(this));
-        AddTab(new ModuleTab(this));
+        // AddTab(new ModuleTab(this));
         AddTab(new DefVideoTab(this));
         AddTab(pExtra = new ExtraTab(this));
         AddTab(new AboutTab(this));

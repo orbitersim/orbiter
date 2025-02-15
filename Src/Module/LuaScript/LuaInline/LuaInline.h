@@ -42,7 +42,7 @@ public:
 		static unsigned int WINAPI InterpreterThreadProc (LPVOID context);
 	};
 
-	InterpreterList (ModHandle* hDLL);
+	InterpreterList (MODFILE hDLL);
 	~InterpreterList ();
 
 	void clbkSimulationEnd () override;

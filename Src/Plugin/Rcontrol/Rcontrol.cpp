@@ -27,7 +27,7 @@ namespace oapi {
 	public:
 		/// \brief Soliton instance server for RControl plugin
 		/// \param hDLL nodule instance handle
-		static RControl* GetInstance(ModHandle* hDLL);
+		static RControl* GetInstance(MODFILE hDLL);
 
 		/// \brief Soliton instance destructor
 		static void DelInstance();
@@ -53,7 +53,7 @@ namespace oapi {
 	protected:
 		/// \brief Protected constructor 
 		/// \param hDLL module instance handle
-		RControl(ModHandle* hDLL);
+		RControl(MODFILE hDLL);
 
 		/// \brief Protected destructor
 		~RControl();
@@ -88,7 +88,7 @@ namespace oapi {
 
 /// \brief Module entry point 
 /// \param hDLL module handle
-DLLCLBK void InitModule(ModHandle* hDLL)
+DLLCLBK void InitModule(MODFILE hDLL)
 {
 	// Create and register the module
 	oapiRegisterModule(oapi::RControl::GetInstance(hDLL));
@@ -96,7 +96,7 @@ DLLCLBK void InitModule(ModHandle* hDLL)
 
 /// \brief Module exit point 
 /// \param hDLL module handle
-DLLCLBK void ExitModule(ModHandle* hDLL)
+DLLCLBK void ExitModule(MODFILE hDLL)
 {
 	// Delete the module
 	oapi::RControl::DelInstance();
@@ -111,7 +111,7 @@ oapi::RControl* oapi::RControl::self = nullptr;
 
 // --------------------------------------------------------------
 
-oapi::RControl* oapi::RControl::GetInstance(ModHandle* hDLL)
+oapi::RControl* oapi::RControl::GetInstance(MODFILE hDLL)
 {
 	if (!self)
 		self = new RControl(hDLL);
@@ -130,7 +130,7 @@ void oapi::RControl::DelInstance()
 
 // --------------------------------------------------------------
 
-oapi::RControl::RControl(ModHandle* hDLL)
+oapi::RControl::RControl(MODFILE hDLL)
 	: Module(hDLL)
 	, m_hDlg(NULL)
 {

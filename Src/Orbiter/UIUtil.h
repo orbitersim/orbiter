@@ -8,99 +8,46 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_gpu.h>
 #include <SDL3_image/SDL_image.h>
-#include <type_traits>
+#include "GraphicsAPI.h"
 
-class LpImCtx;
-
-template <class Ctx> class WithImCtx;
-
-template <class Ctx> class ImCtxBase {
+template<typename Elem>
+class SimpleTree {
 public:
-  ImCtxBase(const ImCtxBase &) = delete;
+  explicit SimpleTree(Elem item) : item(item), children() {};
 
-  ImCtxBase &operator=(const ImCtxBase &) = delete;
-
-  WithImCtx<Ctx> PushLocal() {
-    const auto lastContext = ImGui::GetCurrentContext();
-    ImGui::SetCurrentContext(m_context);
-    return WithImCtx<Ctx>(static_cast<Ctx*>(this), lastContext);
-  };
-
-  [[nodiscard]] ImFont *DefaultFont() const { return m_defaultFont; }
-  [[nodiscard]] ImFont *ItalicFont() const { return m_italicFont; }
-  [[nodiscard]] ImFont *BoldFont() const { return m_boldFont; }
-  [[nodiscard]] ImFont *BoldItalicFont() const { return m_boldItalicFont; }
-  [[nodiscard]] ImFont *HdgFont() const { return m_hdgFont; }
-  [[nodiscard]] ImFont *MonoFont() const { return m_monoFont; }
-  [[nodiscard]] Orbiter *App() const { return m_app; }
-
-protected:
-  ImCtxBase() = default;
-  Orbiter *m_app;
-  ImGuiContext *m_context;
-  ImFont *m_defaultFont;
-  ImFont *m_italicFont;
-  ImFont *m_boldFont;
-  ImFont *m_boldItalicFont;
-  ImFont *m_hdgFont;
-  ImFont *m_monoFont;
+  Elem item;
+  std::vector<SimpleTree> children;
 };
 
-template <class Ctx> class WithImCtx {
+class LpImCtx final : public oapi::ImCtxBase {
 public:
-  WithImCtx(const WithImCtx &) = delete;
+  LpImCtx(Orbiter *app, const std::shared_ptr<sdl::ManagedWindow> &window);
 
-  WithImCtx &operator=(const WithImCtx &) = delete;
+  ~LpImCtx() override;
 
-  ~WithImCtx() {
-    if (lastContext)
-      ImGui::SetCurrentContext(lastContext);
+  [[nodiscard]] const std::shared_ptr<sdl::ManagedWindow> &Win() const {
+    return m_window;
   }
 
-  Ctx *operator->() const { return inner; }
-
-  bool ConsumeEvent(const SDL_Event &event, bool &wantsOut) const {
-    return inner->ConsumeEvent(event, wantsOut);
-  };
-
-  [[nodiscard]] bool BeginFrame() const { return inner->BeginFrame(); };
-
-  void EndFrame() const { return inner->EndFrame(); };
+  oapi::WithImCtx<LpImCtx> PushLocal() {
+    return PushLocal_<LpImCtx>();
+  }
 
 private:
-  friend ImCtxBase<Ctx>;
-  friend Ctx;
-  WithImCtx(Ctx *inner, ImGuiContext *lastContext)
-      : inner(inner), lastContext(lastContext) {};
-  Ctx *inner;
-  ImGuiContext *lastContext;
-};
+  friend oapi::WithImCtx<LpImCtx>;
 
-class LpImCtx final : public ImCtxBase<LpImCtx> {
-  friend std::unique_ptr<LpImCtx>;
+  std::shared_ptr<sdl::ManagedWindow> m_window;
+protected:
+  bool ConsumeEvent(const SDL_Event &event, bool &wantsOut) override;
 
-public:
-  LpImCtx(Orbiter *app, const std::shared_ptr<Window> &window);
+  [[nodiscard]] bool BeginFrame() override;
 
-  ~LpImCtx();
-
-  [[nodiscard]] const std::shared_ptr<Window> &Win() const { return m_window; }
-
-private:
-  friend WithImCtx<LpImCtx>;
-
-  bool ConsumeEvent(const SDL_Event &event, bool &wantsOut) const;
-
-  [[nodiscard]] bool BeginFrame() const;
-
-  void EndFrame() const;
-
-  std::shared_ptr<Window> m_window;
+  void EndFrame() override;
 };
 
 class LpImage {
 private:
-  void Load(const std::shared_ptr<Window> &win, SDL_Surface *origSurface,
+  void Load(const std::shared_ptr<sdl::ManagedWindow> &win, SDL_Surface *origSurface,
             std::string_view path);
 
 public:
@@ -109,12 +56,12 @@ public:
   LpImage &operator=(const LpImage &) = delete;
 
   // N.B. this takes ownership of the surface and will destroy it.
-  LpImage(const std::shared_ptr<Window> &win, SDL_Surface *origSurface,
-        std::string_view path) {
+  LpImage(const std::shared_ptr<sdl::ManagedWindow> &win, SDL_Surface *origSurface,
+          std::string_view path) {
     Load(win, origSurface, path);
   };
 
-  LpImage(const std::shared_ptr<Window> &win, std::string_view path) {
+  LpImage(const std::shared_ptr<sdl::ManagedWindow> &win, std::string_view path) {
     auto surface = IMG_Load(path.data());
     if (!surface) {
       LOGOUT_ERR("Warning: load image `%s` failed: %s", path, SDL_GetError());
@@ -123,7 +70,7 @@ public:
     Load(win, surface, path);
   };
 
-  LpImage(const WithImCtx<LpImCtx> &ctx, const std::string_view path)
+  LpImage(const oapi::WithImCtx<LpImCtx> &ctx, const std::string_view path)
       : LpImage(ctx->Win(), path) {};
 
   ~LpImage();
@@ -136,7 +83,7 @@ public:
 
 private:
   std::string m_path;
-  std::shared_ptr<Window> m_window;
+  std::shared_ptr<sdl::ManagedWindow> m_window;
   SDL_Surface *m_surface;
   SDL_GPUTexture *m_texture;
   SDL_GPUSampler *m_sampler;
@@ -146,7 +93,7 @@ private:
 };
 
 namespace ImGui {
-void Markdown(WithImCtx<LpImCtx> &ctx, const std::string &md,
+void Markdown(oapi::WithImCtx<LpImCtx> &ctx, std::string_view md,
               std::vector<std::shared_ptr<::LpImage>> &loadedImages);
 
 bool InputText(const char *label, std::string &buf,

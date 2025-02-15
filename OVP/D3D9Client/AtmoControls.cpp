@@ -18,7 +18,7 @@
 
 using namespace oapi;
 
-extern ModHandle* g_hInst;
+extern MODFILE g_hInst;
 extern D3D9Client *g_client;
 
 // ==============================================================

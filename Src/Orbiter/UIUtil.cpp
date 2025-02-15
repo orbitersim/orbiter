@@ -97,7 +97,7 @@ static void ImGuiSetStyle(bool bStyleDark_, float alpha_) {
 
 LpImCtx::LpImCtx(
     Orbiter *app,
-    const std::shared_ptr<Window> &window) : ImCtxBase() {
+    const std::shared_ptr<sdl::ManagedWindow> &window) : ImCtxBase() {
     m_app = app;
     m_window = window;
 #ifdef _DEBUG
@@ -188,7 +188,7 @@ LpImCtx::LpImCtx(
 
 LpImCtx::~LpImCtx() {
     if (m_context) {
-        WithImCtx<LpImCtx> _ = PushLocal();
+        oapi::WithImCtx<LpImCtx> _ = PushLocal();
         SDL_WaitForGPUIdle(m_window->Device());
 
         ImGui_ImplSDL3_Shutdown();
@@ -207,7 +207,7 @@ bool EventIsMouse(Uint32 type) {
 }
 
 bool LpImCtx::ConsumeEvent(const SDL_Event &event,
-                              bool &wantsOut) const {
+                              bool &wantsOut) {
     bool consumed = ImGui_ImplSDL3_ProcessEvent(&event);
     ImGuiIO &io = ImGui::GetIO();
     if ((io.WantCaptureMouse && EventIsMouse(event.type)) || (
@@ -225,7 +225,7 @@ bool LpImCtx::ConsumeEvent(const SDL_Event &event,
     return consumed;
 }
 
-bool LpImCtx::BeginFrame() const {
+bool LpImCtx::BeginFrame() {
     if (SDL_GetWindowFlags(Win()->Inner()) & SDL_WINDOW_MINIMIZED) {
         return false;
     }
@@ -236,7 +236,7 @@ bool LpImCtx::BeginFrame() const {
     return true;
 }
 
-void LpImCtx::EndFrame() const {
+void LpImCtx::EndFrame() {
     ImGui::Render();
     ImDrawData *draw_data = ImGui::GetDrawData();
     const bool is_minimized = (draw_data->DisplaySize.x <= 0.0f || draw_data->
@@ -273,7 +273,7 @@ void LpImCtx::EndFrame() const {
 
 
 void LpImage::Load(
-    const std::shared_ptr<Window> &win, SDL_Surface *origSurface,
+    const std::shared_ptr<sdl::ManagedWindow> &win, SDL_Surface *origSurface,
     std::string_view path) {
     if (!origSurface)
         throw std::invalid_argument(
@@ -381,18 +381,18 @@ LpImage::~LpImage() {
 }
 
 struct MarkdownUserData {
-    WithImCtx<LpImCtx> &ctx;
+    oapi::WithImCtx<LpImCtx> &ctx;
     std::vector<LpImage *> &images;
 };
 
 class orbiter_md : public imgui_md {
 public:
-    orbiter_md(WithImCtx<LpImCtx> &ctx,
+    orbiter_md(oapi::WithImCtx<LpImCtx> &ctx,
                std::vector<std::shared_ptr<LpImage> > &images) : ctx(ctx),
         images(images) {
     }
 
-    WithImCtx<LpImCtx> &ctx;
+    oapi::WithImCtx<LpImCtx> &ctx;
     std::vector<std::shared_ptr<LpImage> > &images;
 
     ImFont *get_font() const override {
@@ -444,10 +444,10 @@ public:
     };
 };
 
-void ImGui::Markdown(WithImCtx<LpImCtx> &ctx, const std::string &md,
+void ImGui::Markdown(oapi::WithImCtx<LpImCtx> &ctx, std::string_view md,
                      std::vector<std::shared_ptr<::LpImage> > &loadedImages) {
     orbiter_md printer = {ctx, loadedImages};
-    printer.print(md.c_str(), md.c_str() + md.size());
+    printer.print(md.data(), md.data() + md.size());
 }
 
 struct InputTextUserData {

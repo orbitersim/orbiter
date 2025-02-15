@@ -57,7 +57,7 @@ string LngLat(Position p);
 // Initialize module
 // =================================================================================================
 //
-DLLCLBK void InitModule(ModHandle* hModule)
+DLLCLBK void InitModule(MODFILE hModule)
 {
 	// Can do very little here since graphics servises are not yet running 
 	oapiRegisterModule(new ToolKit(hModule));
@@ -66,7 +66,7 @@ DLLCLBK void InitModule(ModHandle* hModule)
 
 // =================================================================================================
 //
-DLLCLBK void ExitModule(ModHandle*  hModule)
+DLLCLBK void ExitModule(MODFILE  hModule)
 {
 
 }
@@ -225,7 +225,7 @@ BOOL ToolKit::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 // Orbiter Module
 // =================================================================================================
 //
-ToolKit::ToolKit(ModHandle* hInst) : gcGUIApp(), Module(hInst)
+ToolKit::ToolKit(MODFILE hInst) : gcGUIApp(), Module(hInst)
 {
 	pCore = NULL;
 	hMgr = NULL;

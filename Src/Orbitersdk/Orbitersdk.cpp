@@ -6,16 +6,16 @@
 // Contains standard module entry point and version information.
 // ========================================================================
 
-typedef struct ModHandle ModHandle;
+typedef void *MODFILE;
 
 #define DLLCLBK extern "C" __declspec(dllexport)
 #define OAPIFUNC __declspec(dllimport)
 
-extern OAPIFUNC void InitLib (ModHandle*);
-typedef void (*DLLEXIT)(ModHandle*);
-extern "C" OAPIFUNC DLLEXIT SDL_LoadFunction(ModHandle*, const char*);
+extern OAPIFUNC void InitLib (MODFILE);
+typedef void (*DLLEXIT)(MODFILE);
+extern "C" OAPIFUNC DLLEXIT SDL_LoadFunction(MODFILE, const char*);
 
-DLLCLBK void OrbitersdkModuleEntry (ModHandle* hModule, bool detach)
+DLLCLBK void OrbitersdkModuleEntry (MODFILE hModule, bool detach)
 {
 	static DLLEXIT DLLExit;
 

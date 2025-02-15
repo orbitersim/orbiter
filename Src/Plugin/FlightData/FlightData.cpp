@@ -28,7 +28,7 @@ namespace oapi {
 	public:
 		/// \brief Soliton instance server for FlightData plugin
 		/// \param hDLL module instance handle
-		static FlightData* GetInstance(ModHandle* hDLL);
+		static FlightData* GetInstance(MODFILE hDLL);
 
 		/// \brief Soliton instance destructor
 		static void DelInstance();
@@ -64,7 +64,7 @@ namespace oapi {
 
 	protected:
 		/// \brief Protected constructor
-		FlightData(ModHandle* hDLL);
+		FlightData(MODFILE hDLL);
 
 		/// \brief Protected destructor
 		~FlightData();
@@ -128,7 +128,7 @@ namespace oapi {
 
 /// \brief Module entry point 
 /// \param hDLL module handle
-DLLCLBK void InitModule(ModHandle* hDLL)
+DLLCLBK void InitModule(MODFILE hDLL)
 {
 	// Create and register the module
 	oapiRegisterModule(oapi::FlightData::GetInstance(hDLL));
@@ -151,7 +151,7 @@ oapi::FlightData* oapi::FlightData::self = nullptr;
 
 // --------------------------------------------------------------
 
-oapi::FlightData* oapi::FlightData::GetInstance(ModHandle* hDLL)
+oapi::FlightData* oapi::FlightData::GetInstance(MODFILE hDLL)
 {
 	if (!self)
 		self = new FlightData(hDLL);
@@ -170,7 +170,7 @@ void oapi::FlightData::DelInstance()
 
 // --------------------------------------------------------------
 
-oapi::FlightData::FlightData(ModHandle* hDLL)
+oapi::FlightData::FlightData(MODFILE hDLL)
 	: Module(hDLL)
 	, m_hDlg(NULL)
 {

@@ -66,7 +66,7 @@ public:
 	//		ShellMFD::ExitModule(hDLL);
 	// }
 	//
-	static void	InitModule(ModHandle* hDLL);
+	static void	InitModule(MODFILE hDLL);
 	static void ExitModule(HINSTANCE hDLL);
 	static OAPI_MSGTYPE MsgProc(UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam);
 

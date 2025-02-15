@@ -522,7 +522,7 @@ protected:
 
 	OBJHANDLE hBody;              ///< handle for the associated celestial body
 	ATMOSPHERE *atm;              ///< pointer to atmosphere object
-	ModHandle* hAtmModule; ///< library handle for external atmosphere module
+	MODFILE hAtmModule; ///< library handle for external atmosphere module
 };
 
 

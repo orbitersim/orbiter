@@ -51,7 +51,7 @@ DLLEXPORT void FormatValue (char *cbuf, int n, double f, int precision)
 	strncpy (cbuf, s, n);
 }
 
-DLLEXPORT HMODULE stopgapGetModuleInstance (ModHandle* module) {
+DLLEXPORT HMODULE stopgapGetModuleInstance (MODFILE module) {
 #if !defined(_WIN32)
 #error "stopgap module instance does not work on non-Windows. WHY IS THIS STILL HERE"
 #endif
@@ -2571,10 +2571,10 @@ DLLEXPORT DWORD oapiInflate (const BYTE *inp, DWORD ninp, BYTE *outp, DWORD nout
 // Undocumented interface functions
 // ------------------------------------------------------------------------------
 
-DLLEXPORT void InitLib (ModHandle* hModule)
+DLLEXPORT void InitLib (MODFILE hModule)
 {
 	HINSTANCE moduleInstance = stopgapGetModuleInstance(hModule);
-	typedef void (*OPC_DLLInit)(ModHandle* hDLL);
+	typedef void (*OPC_DLLInit)(MODFILE hDLL);
 	OPC_DLLInit DLLInit;
 	char cbuf[256], mname[256], *mp;
 	int i, len;
@@ -2614,9 +2614,9 @@ DLLEXPORT void InitLib (ModHandle* hModule)
 	if (DLLInit) (*DLLInit)(hModule);
 }
 
-DLLEXPORT void ExitLib (ModHandle* hModule)
+DLLEXPORT void ExitLib (MODFILE hModule)
 {
-	typedef void (*OPC_DLLExit)(ModHandle* hDLL);
+	typedef void (*OPC_DLLExit)(MODFILE hDLL);
 	OPC_DLLExit DLLExit;
 	DLLExit = (OPC_DLLExit)SDL_LoadFunction (reinterpret_cast<SDL_SharedObject*>(hModule), "ExitModule");
 	if (!DLLExit) DLLExit = (OPC_DLLExit)SDL_LoadFunction (reinterpret_cast<SDL_SharedObject*>(hModule), "opcDLLExit");

@@ -21,7 +21,7 @@ enum class LineType {
 class LuaConsole: public oapi::Module {
 	friend class ConsoleInterpreter;
 public:
-	LuaConsole (ModHandle* hDLL);
+	LuaConsole (MODFILE hDLL);
 	~LuaConsole ();
 
 	void clbkSimulationStart (RenderMode mode);

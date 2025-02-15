@@ -1,0 +1,9 @@
+BEGIN_DESC
+# Remote Vessel Control
+
+Operate the engines of any spacecraft from a dialog box.
+
+The remote control window can be opened by selecting the "Remote Vessel Control" entry in the Custom Functions dialog
+(Ctrl-F4).
+END_DESC
+CATEGORY Tools and dialogs

@@ -27,7 +27,7 @@ typedef pair<CString, ModuleXRSoundEngine *> CString_XRSoundEnginePtr_Pair;
 class XRSoundDLL : public oapi::Module
 {
 public:
-    XRSoundDLL(ModHandle* hDLL);
+    XRSoundDLL(MODFILE hDLL);
     virtual ~XRSoundDLL();
 
     static XRSoundDLL *s_pInstance;  // our singleton DLL object
@@ -70,7 +70,7 @@ public:
     static void ParseGlobalConfigFile();
 
 protected:
-    ModHandle* m_hDLL;  // our DLL's handle
+    MODFILE m_hDLL;  // our DLL's handle
     double m_nextSoundEnginesRefreshSimt;
     double m_nextIrrKlangUpdateRealtime;
     double m_absoluteSimTime;   // replaces simt and oapiGetSimTime(), both of which are unreliable!  See note in XRSoundDLL::clbkPreStep.

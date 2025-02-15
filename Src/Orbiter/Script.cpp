@@ -15,7 +15,7 @@ ScriptInterface::ScriptInterface (Orbiter *pOrbiter)
 	hLib = NULL;
 }
 
-ModHandle* ScriptInterface::LoadInterpreterLib ()
+MODFILE ScriptInterface::LoadInterpreterLib ()
 {
 	hLib = orbiter->LoadModule (path, libname);
 	return hLib;

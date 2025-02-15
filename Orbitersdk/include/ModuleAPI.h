@@ -11,7 +11,7 @@
 #ifndef __MODULEAPI_H
 #define __MODULEAPI_H
 
-typedef struct ModHandle ModHandle;
+typedef void *MODFILE;
 
 namespace oapi {
 
@@ -31,7 +31,7 @@ namespace oapi {
 		 * \brief Creates a new ModuleNV instance.
 		 * \param hDLL DLL library instance handle (see \ref InitModule)
 		 */
-		ModuleNV (ModHandle* hDLL);
+		explicit ModuleNV (MODFILE hDLL);
 
 		/**
 		 * \brief Module interface version
@@ -43,7 +43,7 @@ namespace oapi {
 		 * \brief Returns the module instance handle.
 		 * \return Module instance handle.
 		 */
-		inline ModHandle* GetModule() const { return hModule; }
+		inline MODFILE GetModule() const { return hModule; }
 
 		/**
 		 * \brief Returns simulation time since session start.
@@ -80,7 +80,7 @@ namespace oapi {
 
 	protected:
 		int version;
-		ModHandle* hModule;
+		MODFILE hModule;
 	}; // class ModuleNV
 
 	/**
@@ -97,7 +97,7 @@ namespace oapi {
 		 * \brief Creates a new Module instance.
 		 * \param hDLL DLL library instance handle (see \ref InitModule)
 		 */
-		Module (ModHandle* hDLL);
+		explicit Module (MODFILE hDLL);
 		virtual ~Module();
 
 		/**

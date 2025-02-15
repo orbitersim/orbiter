@@ -1,0 +1,8 @@
+BEGIN_DESC
+# Frame Rate
+
+Graphical display of frame rate (simulation frames per second) and/or time step interval (simulation seconds per frame).
+
+The frame rate window can be opened by selecting the "Performance meter" entry in the Custom Functions dialog (Ctrl-F4).
+END_DESC
+CATEGORY Tools and dialogs

@@ -430,7 +430,7 @@ void Node::Move()
 // WindowManager Implementation
 // ===============================================================================================
 //
-WindowManager::WindowManager(HWND hAppMainWindow, ModHandle* _hInst, bool bWindowed)
+WindowManager::WindowManager(HWND hAppMainWindow, MODFILE _hInst, bool bWindowed)
 {
 	char path[256];
 	char cbuf[256];

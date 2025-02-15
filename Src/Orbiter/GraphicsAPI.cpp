@@ -39,9 +39,8 @@ OAPIFUNC INT_PTR CALLBACK LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wP
 // ======================================================================
 // class GraphicsClient
 
-GraphicsClient::GraphicsClient (ModHandle* hInstance): Module (hInstance)
+GraphicsClient::GraphicsClient (MODFILE hInstance): Module (hInstance)
 {
-	hOrbiterInst = g_pOrbiter->hInstStopgap;
 	VideoData.fullscreen = false;
 	VideoData.forceenum = true;
 	VideoData.trystencil = false;
@@ -133,7 +132,7 @@ void GraphicsClient::UnregisterVisObject (OBJHANDLE hObj)
 
 // ======================================================================
 
-int GraphicsClient::clbkVisEvent (OBJHANDLE hObj, VISHANDLE vis, DWORD msg, DWORD_PTR context)
+int GraphicsClient::clbkVisEvent (OBJHANDLE hObj, VISHANDLE vis, uint32_t msg, DWORD_PTR context)
 {
 	return 0;
 }
@@ -271,21 +270,17 @@ const void *GraphicsClient::GetConfigParam (DWORD paramtype) const
 
 // ======================================================================
 
-HWND GraphicsClient::clbkCreateRenderWindow ()
-{
-	HWND hWnd;
+std::shared_ptr<sdl::UnmanagedWindow> GraphicsClient::clbkCreateRenderWindow() {
+  std::shared_ptr<sdl::UnmanagedWindow> window;
 
-	HINSTANCE moduleInstance = stopgapGetModuleInstance(hModule);
-	if (VideoData.fullscreen) {
-		hWnd = CreateWindow (strWndClass, "", // dummy window
-			WS_POPUP | WS_EX_TOPMOST| WS_VISIBLE,
-			CW_USEDEFAULT, CW_USEDEFAULT, 10, 10, 0, 0, moduleInstance, (LPVOID)this);
-	} else {
-		hWnd = CreateWindow (strWndClass, "",
-			WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_VISIBLE,
-			CW_USEDEFAULT, CW_USEDEFAULT, VideoData.winw, VideoData.winh, 0, 0, moduleInstance, (LPVOID)this);
-	}
-	return hWnd;
+  if (VideoData.fullscreen) {
+    window = std::make_shared<sdl::UnmanagedWindow>("", 10, 10,
+                                                    SDL_WINDOW_FULLSCREEN);
+  } else {
+    window = std::make_shared<sdl::UnmanagedWindow>("", VideoData.winw,
+                                                    VideoData.winh, 0);
+  }
+  return window;
 }
 
 // ======================================================================
@@ -649,49 +644,26 @@ bool GraphicsClient::clbkCopyBitmap (SURFHANDLE pdds, HBITMAP hbm,
 
 // ======================================================================
 
-HWND GraphicsClient::InitRenderWnd (HWND hWnd)
+void GraphicsClient::InitRenderWnd (std::shared_ptr<sdl::UnmanagedWindow>& window)
 {
-	HINSTANCE moduleInstance = stopgapGetModuleInstance(hModule);
-	if (!hWnd) { // create a dummy window
-		hWnd = CreateWindow (strWndClass, "",
-			WS_POPUP | WS_VISIBLE,
-			CW_USEDEFAULT, CW_USEDEFAULT, 10, 10, 0, 0, moduleInstance, 0);
+	if (!window) {
+		window = std::make_shared<sdl::UnmanagedWindow>("", 10, 10, 0);
 	}
-	SetWindowLongPtr (hWnd, GWLP_USERDATA, (LONG_PTR)this);
-	// store class instance with window for access in the message handler
 
-	char title[256], cbuf[128];
-	extern const TCHAR *g_strAppTitle;
-	strcpy (title, g_strAppTitle);
-	GetWindowText (hWnd, cbuf, 128);
-	if (cbuf[0]) {
-		strcat (title, " ");
-		strcat (title, cbuf);
-	}
-	SetWindowText (hWnd, title);
-	hRenderWnd = hWnd;
-	return hRenderWnd;
+	auto title = std::string(Orbiter::AppTitle) + " " + SDL_GetWindowTitle(window->Inner());
+	SDL_SetWindowTitle(window->Inner(), title.c_str());
 }
 
 // ======================================================================
 
-
-LRESULT GraphicsClient::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	// graphics-specific stuff to go here
-	default:
-		return g_pOrbiter->MsgProc (hWnd, uMsg, wParam, lParam);
-	}
-    return DefWindowProc (hWnd, uMsg, wParam, lParam);
+bool GraphicsClient::RenderWndConsumeEvent(const SDL_Event &event, bool &wantsOut) {
+  return false;
 }
 
 // ======================================================================
 
-INT_PTR GraphicsClient::LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	return FALSE;
-}
+void GraphicsClient::DrawLaunchpadVideoTab (const WithImCtx<ImCtxBase>& ctx)
+{}
 
 // ==================================================================
 // Functions for the celestial sphere
@@ -896,8 +868,10 @@ void ScreenAnnotation::Render ()
 DLLEXPORT LRESULT CALLBACK WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	GraphicsClient *gc = (GraphicsClient*)GetWindowLongPtr (hWnd, GWLP_USERDATA);
-	if (gc) return gc->RenderWndProc (hWnd, uMsg, wParam, lParam);
-	else return DefWindowProc (hWnd, uMsg, wParam, lParam);
+	// if (gc) return gc->RenderWndProc (hWnd, uMsg, wParam, lParam);
+	// else return DefWindowProc (hWnd, uMsg, wParam, lParam);
+	// TODO
+	return FALSE;
 }
 
 // ======================================================================
@@ -905,8 +879,10 @@ DLLEXPORT LRESULT CALLBACK WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
 DLLEXPORT INT_PTR CALLBACK LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	GraphicsClient *gc = (GraphicsClient*)GetWindowLongPtr (hWnd, GWLP_USERDATA);
-	if (gc) return gc->LaunchpadVideoWndProc (hWnd, uMsg, wParam, lParam);
-	else return FALSE;
+	// if (gc) return gc->LaunchpadVideoWndProc (hWnd, uMsg, wParam, lParam);
+	// else return FALSE;
+	// TODO
+	return FALSE;
 }
 
 // ======================================================================

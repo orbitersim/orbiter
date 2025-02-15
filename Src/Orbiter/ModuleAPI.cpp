@@ -16,7 +16,7 @@ using namespace oapi;
 // class ModuleNV
 // ======================================================================
 
-ModuleNV::ModuleNV (ModHandle* hDLL)
+ModuleNV::ModuleNV (MODFILE hDLL)
 {
 	version = 0;
 	hModule = hDLL;
@@ -47,7 +47,7 @@ double ModuleNV::GetSimMJD () const
 // class Module
 // ======================================================================
 
-Module::Module (ModHandle* hDLL): ModuleNV (hDLL)
+Module::Module (MODFILE hDLL): ModuleNV (hDLL)
 {
 	version = 1;
 }
@@ -64,7 +64,7 @@ void Module::clbkSimulationStart (RenderMode mode)
 {
 	// backward compatibility call (deprecated)
 	void (*opcOpenRenderViewport)(HWND,DWORD,DWORD,BOOL) = (void(*)(HWND,DWORD,DWORD,BOOL))SDL_LoadFunction (reinterpret_cast<SDL_SharedObject*>(hModule), "opcOpenRenderViewport");
-	if (opcOpenRenderViewport) opcOpenRenderViewport (g_pOrbiter->GetRenderWnd(), g_pOrbiter->ViewW(), g_pOrbiter->ViewH(), g_pOrbiter->IsFullscreen()?TRUE:FALSE);
+	if (opcOpenRenderViewport) opcOpenRenderViewport (g_pOrbiter->GetRenderWnd()->StopgapWin32Handle(), g_pOrbiter->ViewW(), g_pOrbiter->ViewH(), g_pOrbiter->IsFullscreen()?TRUE:FALSE);
 }
 
 // ======================================================================

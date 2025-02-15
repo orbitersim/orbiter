@@ -44,7 +44,7 @@ namespace orbiter {
         LaunchpadDialog2(Orbiter* app, bool startvideotab = true);
         ~LaunchpadDialog2();
 
-        void OnDraw(WithImCtx<LpImCtx> &ctx) const;
+        void OnDraw(oapi::WithImCtx<LpImCtx> &ctx) const;
 
         Orbiter *App() const { return m_app; }
         Config *Cfg() const { return m_cfg; }
@@ -77,7 +77,7 @@ namespace orbiter {
         // save current dialog settings in application configuration
         void UpdateConfig() const;
 
-        const std::shared_ptr<Window>& Win() const { return m_window; }
+        const std::shared_ptr<sdl::ManagedWindow>& Win() const { return m_window; }
 
         void Hide();
 
@@ -91,7 +91,7 @@ namespace orbiter {
         std::unique_ptr<LpImCtx> m_imgui = nullptr;
         std::vector<std::unique_ptr<LaunchpadTab2> > m_tabList;
         bool m_active = false;
-        std::shared_ptr<Window> m_window;
+        std::shared_ptr<sdl::ManagedWindow> m_window;
         std::unique_ptr<LpImage> m_banner = nullptr;
 
         void SwitchTabPage(int pg);

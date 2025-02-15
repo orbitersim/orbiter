@@ -43,6 +43,7 @@ namespace fs = std::filesystem;
 //-----------------------------------------------------------------------------
 typedef void (*OPC_Proc)(void);
 
+using std::operator""sv;
 //-----------------------------------------------------------------------------
 // Name: class Orbiter
 // Desc: Main application class
@@ -51,23 +52,26 @@ class Orbiter {
 	friend class ScriptInterface;
 	friend class oapi::GraphicsClient;
 	friend class OrbiterGraphics;
-	friend OAPIFUNC HMODULE stopgapGetModuleInstance (ModHandle* module);
+	friend OAPIFUNC HMODULE stopgapGetModuleInstance (MODFILE module);
 
 public:
+	static constexpr std::string_view AppTitle = "OpenOrbiter"sv;
+
 	Orbiter ();
 	~Orbiter ();
 
     bool Create ();
 	VOID Launch (const char *scenario);
 	void CloseApp (bool fast_shutdown = false);
-	int GetVersion () const;
-	HWND CreateRenderWindow (Config *pCfg, const char *scenario);
+	int GetVersion() const;
+        std::shared_ptr<sdl::UnmanagedWindow>
+        CreateRenderWindow(Config *pCfg, const char *scenario);
 	void PreCloseSession();
 	void CloseSession ();
 	void GetRenderParameters ();
 	bool InitializeWorld (char *name);
 	void ScreenToClient (POINT *pt) const;
-    LRESULT MsgProc (HWND, UINT, WPARAM, LPARAM);
+	LRESULT MsgProc (HWND, UINT, WPARAM, LPARAM);
 	HRESULT Render3DEnvironment(bool hidedialogs = false);
 	VOID Output2DData ();
 	void OutputLoadStatus (const char *msg, int line);
@@ -82,7 +86,7 @@ public:
 	void SetShouldQuit() { bShouldQuit = true; };
 	bool ShouldQuit() { return bShouldQuit; }
 	void SingleFrame ();
-    void Pause (bool bPause);
+	void Pause (bool bPause);
 	void Freeze (bool bFreeze);
 	inline void TogglePause () { Pause (bRunning); }
 	bool Timejump (double _mjd, int pmode);
@@ -115,7 +119,7 @@ public:
 	void UpdateDeallocationProgress();
 
 	// plugin module loading/unloading
-	ModHandle* LoadModule (const char *path, const char *name);   // load a plugin
+	MODFILE LoadModule (const char *path, const char *name);   // load a plugin
 
 	/// \brief Unload a DLL plugin identified by its name
 	/// \param name DLL name
@@ -125,7 +129,7 @@ public:
 	/// \brief Unload a DLL plugin identified by its instance handle
 	/// \param hDLL DLL handle
 	/// \return true on success (module found and unloaded)
-	bool UnloadModule (ModHandle* hDLL);
+	bool UnloadModule (MODFILE hDLL);
 
 	Vessel *SetFocusObject (Vessel *vessel, bool setview = true);
 	// Select a new user-controlled vessel
@@ -162,7 +166,7 @@ public:
 	// Increase camera field of view by dfov
 
 	// Accessor functions
-	inline HWND    GetRenderWnd() const { return hRenderWnd; }
+	inline const std::shared_ptr<sdl::UnmanagedWindow>& GetRenderWnd() const { return hRenderWnd; }
 	inline bool    IsFullscreen() const { return bFullscreen; }
 	inline DWORD   ViewW() const { return viewW; }
 	inline DWORD   ViewH() const { return viewH; }
@@ -358,7 +362,7 @@ private:
 	DialogManager  *pDlgMgr;
 	orbiter::ConsoleNG* m_pConsole;    // The console window opened when Orbiter server is launched without a graphics client
 	DInput         *pDI;
-	HWND            hRenderWnd;    // render window handle (NULL if no render support)
+	std::shared_ptr<sdl::UnmanagedWindow> hRenderWnd;    // render window handle (NULL if no render support)
 	HWND            hBk;           // background window handle (demo mode only)
 	BOOL            bRenderOnce;   // flag for single frame render request
 	BOOL            bEnableLighting;
@@ -411,7 +415,7 @@ private:
 
 	// === The plugin module interface ===
 	struct DLLModule {
-		ModHandle* hDLL;        // DLL instance handle
+		MODFILE hDLL;        // DLL instance handle
 		oapi::Module* pModule; // pointer to module instance, if the plugin registered one
 		std::string sName;     // DLL name
 		bool bLocalAlloc;      // locally allocated; should be freed by Orbiter core
@@ -439,7 +443,7 @@ private:
 	 */
 	void LoadStartupModules();
 
-	OPC_Proc FindModuleProc (ModHandle* hDLL, const char *procname);
+	OPC_Proc FindModuleProc (MODFILE hDLL, const char *procname);
 	// returns address of a procedure in a plugin module, or NULL if procedure not found
 
 	// list of custom commands

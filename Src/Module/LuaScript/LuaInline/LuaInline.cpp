@@ -94,7 +94,7 @@ unsigned int WINAPI InterpreterList::Environment::InterpreterThreadProc (LPVOID 
 // ==============================================================
 // class InterpreterList: implementation
 
-InterpreterList::InterpreterList (ModHandle* hDLL): Module (hDLL)
+InterpreterList::InterpreterList (MODFILE hDLL): Module (hDLL)
 {
 	nlist = nbuf = 0;
 }
@@ -169,7 +169,7 @@ int InterpreterList::DelInterpreter (InterpreterList::Environment *env)
 
 static InterpreterList *g_IList = nullptr;
 
-DLLCLBK void InitModule (ModHandle* hDLL)
+DLLCLBK void InitModule (MODFILE hDLL)
 {
 	g_IList = new InterpreterList (hDLL);
 	oapiRegisterModule (g_IList);

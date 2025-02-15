@@ -25,7 +25,7 @@ namespace oapi {
 	public:
 		/// \brief Soliton instance server for Framerate plugin
 		/// \param hDLL nodule instance handle
-		static Framerate* GetInstance(ModHandle* hDLL);
+		static Framerate* GetInstance(MODFILE hDLL);
 
 		/// \brief Soliton instance destructor
 		static void DelInstance();
@@ -53,7 +53,7 @@ namespace oapi {
 
 	protected:
 		/// \brief Protected constructor
-		Framerate(ModHandle* hDLL);
+		Framerate(MODFILE hDLL);
 
 		/// \brief Protected destructor
 		~Framerate();
@@ -95,7 +95,7 @@ namespace oapi {
 
 /// \brief Module entry point 
 /// \param hDLL module handle
-DLLCLBK void InitModule (ModHandle* hDLL)
+DLLCLBK void InitModule (MODFILE hDLL)
 {
 	// Create and register the module
 	oapiRegisterModule(oapi::Framerate::GetInstance(hDLL));
@@ -118,7 +118,7 @@ oapi::Framerate* oapi::Framerate::self = nullptr;
 
 // --------------------------------------------------------------
 
-oapi::Framerate* oapi::Framerate::GetInstance(ModHandle* hDLL)
+oapi::Framerate* oapi::Framerate::GetInstance(MODFILE hDLL)
 {
 	if (!self)
 		self = new Framerate(hDLL);
@@ -137,7 +137,7 @@ void oapi::Framerate::DelInstance()
 
 // --------------------------------------------------------------
 
-oapi::Framerate::Framerate(ModHandle* hDLL)
+oapi::Framerate::Framerate(MODFILE hDLL)
 	: Module(hDLL)
 	, m_hDlg(NULL)
 {

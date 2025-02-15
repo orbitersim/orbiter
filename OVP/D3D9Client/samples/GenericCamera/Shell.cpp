@@ -51,7 +51,7 @@ ShellMFD::~ShellMFD ()
 
 // ============================================================================================================
 //
-void ShellMFD::InitModule(ModHandle* hDLL)
+void ShellMFD::InitModule(MODFILE hDLL)
 {
 	// Construct MFD List
 	MFDList = new mfd_list[256]();

@@ -1,0 +1,9 @@
+BEGIN_DESC
+# Ascent MFD
+
+Adds a new "Ascent Profile" MFD mode. Plots altitude, pitch angle, radial and tangential velocity components as a
+function of time.
+
+This is an example for a graph-based MFD mode.
+END_DESC
+CATEGORY SDK sample plugins

@@ -66,7 +66,7 @@ struct D3D9Client::GenericProcData {
 
 using namespace oapi;
 
-ModHandle* g_hInst = 0;
+MODFILE g_hInst = 0;
 D3D9Client *g_client = 0;
 class gcConst* g_pConst = 0;
 IDirect3D9* g_pD3DObject = 0;  // Made valid when VideoTab is created
@@ -118,7 +118,7 @@ extern "C" {
 // ==============================================================
 // Initialise module
 
-DLLCLBK void InitModule(ModHandle* hDLL)
+DLLCLBK void InitModule(MODFILE hDLL)
 {
 
 #ifdef _DEBUG
@@ -256,7 +256,7 @@ DLLCLBK gcConst * gcGetCoreAPI()
 // D3D9Client class implementation
 // ==============================================================
 
-D3D9Client::D3D9Client (ModHandle* hInstance) :
+D3D9Client::D3D9Client (MODFILE hInstance) :
 	GraphicsClient(hInstance),
 	vtab(NULL),
 	scenarioName("(none selected)"),

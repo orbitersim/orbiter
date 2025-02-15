@@ -1,0 +1,9 @@
+BEGIN_DESC
+# Flight Data
+
+Display or record various spacecraft parameters during a simulation.
+
+The flight data window can be opened by selecting the "Flight data monitor" entry in the Custom Functions dialog
+(Ctrl-F4).
+END_DESC
+CATEGORY Tools and dialogs

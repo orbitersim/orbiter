@@ -1,0 +1,8 @@
+BEGIN_DESC
+# Track-IR Support
+
+Enables support for Natural Point TrackIR head tracking devices.
+
+After activating the module, tracking parameters can be set in the "Extra" tab under "TrackIR configuration".
+END_DESC
+CATEGORY Input devices

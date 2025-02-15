@@ -1,0 +1,8 @@
+BEGIN_DESC
+# Mesh Debug
+
+A small utility for developers. Meshdebug can be used to visually identify a mesh group in a vessel mesh. Set the camera
+focus on the vessel whose meshes you want to inspect. Then open the mesh debugger dialog from the Custom functions list
+(Ctrl-F4). The vessel meshes will become semi-transparent, and the selected mesh group will blink.
+END_DESC
+CATEGORY Developer resources and samples

@@ -253,8 +253,9 @@ BOOL orbiter::DefVideoTab::OnMessage (HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 	// divert video parameters to graphics clients
 	oapi::GraphicsClient *gc = pLp->App()->GetGraphicsClient();
-	if (gc)
-		gc->LaunchpadVideoWndProc (hWnd, uMsg, wParam, lParam);
+	// TODO
+	// if (gc)
+		// gc->LaunchpadVideoWndProc (hWnd, uMsg, wParam, lParam);
 
 	return FALSE;
 }

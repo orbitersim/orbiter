@@ -33,7 +33,7 @@ class GenericModule : public oapi::Module
 
 public:
 
-	GenericModule(ModHandle* hInst) : Module(hInst) {	}
+	GenericModule(MODFILE hInst) : Module(hInst) {	}
 
 	~GenericModule() {	}
 
@@ -59,7 +59,7 @@ public:
 // ============================================================================================================
 // API interface
 
-DLLCLBK void InitModule (ModHandle* hDLL)
+DLLCLBK void InitModule (MODFILE hDLL)
 {
 	GenericModule *pFly = new GenericModule(hDLL);
 	oapiRegisterModule(pFly);

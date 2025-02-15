@@ -29,7 +29,7 @@
 #include <math.h>
 #include <vector>
 
-typedef struct ModHandle ModHandle;
+typedef void *MODFILE;
 
 #if defined(_MSC_VER) && (_MSC_VER < 1920 ) // Microsoft Visual Studio Version 2017 and lower
 #include <algorithm>
@@ -6862,7 +6862,7 @@ OAPIFUNC void oapiTriggerPanelRedrawArea (int panel_id, int area_id);
 OAPIFUNC void oapiTriggerRedrawArea (int panel_id, int vc_id, int area_id);
 //@}
 
-OAPIFUNC HMODULE stopgapGetModuleInstance (ModHandle* module);
+OAPIFUNC HMODULE stopgapGetModuleInstance (MODFILE module);
 
 //@}  -- End of Orbiter API interface methods --
 

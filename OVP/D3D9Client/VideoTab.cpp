@@ -39,7 +39,7 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam)
 // ==============================================================
 // Constructor
 
-VideoTab::VideoTab(D3D9Client *gc, ModHandle* _hInst, HINSTANCE _hOrbiterInst, HWND hVideoTab)
+VideoTab::VideoTab(D3D9Client *gc, MODFILE _hInst, HINSTANCE _hOrbiterInst, HWND hVideoTab)
 {
 	gclient      = gc;
 	hInst        = _hInst;

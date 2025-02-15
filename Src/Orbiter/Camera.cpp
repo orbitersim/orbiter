@@ -69,7 +69,7 @@ Camera::Camera (double _nearplane, double _farplane)
 	has_tref = false;
 	movehead = false;
 	ExtCtrlMode = 0;
-	GetCursorPos (&pm);
+	SDL_GetMouseState (&pm.x, &pm.y);
 	mmoveT = -1000.0;
 	ap_int = ap_ext = RAD*25.0;
 	ap = &ap_ext;
@@ -133,8 +133,8 @@ bool Camera::ProcessMouse (UINT event, DWORD state, DWORD x, DWORD y, const char
 
 void Camera::UpdateMouse ()
 {
-	POINT pt;
-	GetCursorPos (&pt);
+	SDL_FPoint pt;
+	SDL_GetMouseState(&pt.x, &pt.y);
 	if (pt.x != pm.x || pt.y != pm.y) {
 		pm.x = pt.x, pm.y = pt.y;
 		mmoveT = td.SysT0;
@@ -143,11 +143,9 @@ void Camera::UpdateMouse ()
 	if (mbdown[1]) {
 		int dx, dy, x0, y0;
 		x0 = pt.x, y0 = pt.y;
-		if (!g_pOrbiter->IsFullscreen())
-			ScreenToClient (g_pOrbiter->GetRenderWnd(), &pt);
 		dx = pt.x - mx;
 		dy = pt.y - my;
-		SetCursorPos (x0-dx, y0-dy);
+		SDL_WarpMouseInWindow(nullptr, x0-dx, y0-dy);
 		if (!(dx || dy)) return;
 
 		if (external_view) {

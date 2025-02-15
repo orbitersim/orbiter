@@ -49,7 +49,7 @@ class Orbits : public oapi::Module
 
 public:
 
-				Orbits(ModHandle* hDLL);
+				Orbits(MODFILE hDLL);
 				~Orbits();
 
 	void		clbkRender(oapi::Sketchpad *pSkp);
@@ -97,7 +97,7 @@ void __cdecl RenderOrbitClbk(oapi::Sketchpad *pSkp, void *pParam)
 // Initialize module
 // =================================================================================================
 //
-DLLCLBK void InitModule(ModHandle* hModule)
+DLLCLBK void InitModule(MODFILE hModule)
 {
 	oapiRegisterModule(new Orbits(hModule));
 }
@@ -116,7 +116,7 @@ DLLCLBK void ExitModule(HINSTANCE  hModule)
 // Orbiter Module
 // =================================================================================================
 //
-Orbits::Orbits(ModHandle* hInst) : Module(hInst), pCore(NULL), Ref(NULL), pBody(NULL)
+Orbits::Orbits(MODFILE hInst) : Module(hInst), pCore(NULL), Ref(NULL), pBody(NULL)
 {
 
 	FILE *fp = fopen("Config/DrawOrbits.cfg", "rt");

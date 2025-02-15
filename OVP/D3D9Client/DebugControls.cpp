@@ -27,7 +27,7 @@ using namespace oapi;
 using std::min;
 using std::max;
 
-extern ModHandle* g_hInst;
+extern MODFILE g_hInst;
 extern D3D9Client *g_client;
 
 // Little binary helper

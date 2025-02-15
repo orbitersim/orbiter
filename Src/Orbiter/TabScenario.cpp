@@ -5,38 +5,31 @@
 // ScenarioTab class
 //=============================================================================
 
-#include <windows.h>
-#include <direct.h>
-#include <string>
-#include "Orbiter.h"
 #include "TabScenario.h"
 #include "Launchpad.h"
-//#include "Log.h"
-#include <imgui_internal.h>
-
-#include "Help.h"
-#include "htmlctrl.h"
-#include "resource.h"
+#include "Orbiter.h"
 #include "UIUtil.h"
+#include <imgui_internal.h>
 #include <sstream>
+#include <string>
 
 using namespace std;
 
 //-----------------------------------------------------------------------------
 
-orbiter::ScenarioTab::ScenarioTab(const LaunchpadDialog2 *lp): LaunchpadTab2(
-        lp, "Scenarios"), img_folder1(nullptr), img_folder2(nullptr),
-    img_scn1(nullptr), tree(),
-    startPaused(false) {
+orbiter::ScenarioTab::ScenarioTab(const LaunchpadDialog2 *lp)
+    : LaunchpadTab2(lp, "Scenarios"), img_folder1(nullptr),
+      img_folder2(nullptr), img_scn1(nullptr), tree(ScenarioTreeItem()),
+      startPaused(false) {
     saveScnDesc.reserve(64);
     saveScnDesc.reserve(256);
 
     img_folder1 = std::make_shared<LpImage>(m_lp->Win(),
-                                          "Textures/OrbiterCore/Folder1.png");
+                                            "Textures/OrbiterCore/Folder1.png");
     img_folder2 = std::make_shared<LpImage>(m_lp->Win(),
-                                          "Textures/OrbiterCore/Folder2.png");
-    img_scn1 = std::make_shared<LpImage>(m_lp->Win(),
-                                       "Textures/OrbiterCore/Scn1.png");
+                                            "Textures/OrbiterCore/Folder2.png");
+    img_scn1 =
+        std::make_shared<LpImage>(m_lp->Win(), "Textures/OrbiterCore/Scn1.png");
 
     RefreshList(false);
 }
@@ -55,7 +48,8 @@ void orbiter::ScenarioTab::SetConfig(Config *cfg) {
     cfg->CfgWindowPos.LaunchpadScnListWidth = scnListW;
 }
 
-void orbiter::ScenarioTab::RenderTree(const ScenarioTree &tree) {
+void orbiter::ScenarioTab::RenderTree(
+    const SimpleTree<ScenarioTreeItem> &tree) {
     bool selected = tree.item.path == selection;
     const bool prev_selected = selected;
     if (tree.children.empty()) {
@@ -72,11 +66,11 @@ void orbiter::ScenarioTab::RenderTree(const ScenarioTree &tree) {
             ScenarioChanged();
         }
         ImGui::SameLine();
-        ImGui::Image(selected
-                         ? reinterpret_cast<ImTextureID>(tree.item.selIcon->
-                             Binding())
-                         : reinterpret_cast<ImTextureID>(tree.item.icon->
-                             Binding()), ImVec2(16, 16));
+        ImGui::Image(
+            selected
+                ? reinterpret_cast<ImTextureID>(tree.item.selIcon->Binding())
+                : reinterpret_cast<ImTextureID>(tree.item.icon->Binding()),
+            ImVec2(16, 16));
         ImGui::SameLine();
         ImGui::Text(tree.item.name.c_str());
         return;
@@ -84,22 +78,21 @@ void orbiter::ScenarioTab::RenderTree(const ScenarioTree &tree) {
 
     ImGui::PushID(tree.item.path.u8string().c_str());
     const bool wasOpen = ImGui::TreeNodeGetOpen(ImGui::GetID("##TreeNode"));
-    const bool treeNode = ImGui::TreeNodeEx("##TreeNode",
-                                            ImGuiTreeNodeFlags_SpanAvailWidth);
+    const bool treeNode =
+        ImGui::TreeNodeEx("##TreeNode", ImGuiTreeNodeFlags_SpanAvailWidth);
     if (treeNode != wasOpen) {
         selection = tree.item.path;
         ScenarioChanged();
     }
     ImGui::SameLine(0, 0);
-    ImGui::Image(treeNode
-                     ? reinterpret_cast<ImTextureID>(tree.item.selIcon->
-                         Binding())
-                     : reinterpret_cast<ImTextureID>(tree.item.icon->Binding()),
-                 ImVec2(16, 16));
+    ImGui::Image(
+        treeNode ? reinterpret_cast<ImTextureID>(tree.item.selIcon->Binding())
+                 : reinterpret_cast<ImTextureID>(tree.item.icon->Binding()),
+        ImVec2(16, 16));
     ImGui::SameLine();
     ImGui::Text(tree.item.name.c_str());
     if (treeNode) {
-        for (const auto &subtree: tree.children) {
+        for (const auto &subtree : tree.children) {
             RenderTree(subtree);
         }
         ImGui::TreePop();
@@ -107,20 +100,19 @@ void orbiter::ScenarioTab::RenderTree(const ScenarioTree &tree) {
     ImGui::PopID();
 }
 
-void orbiter::ScenarioTab::OnDraw(WithImCtx<LpImCtx> &ctx) {
-    const auto height = ImGui::GetContentRegionAvail().y -
-                        ImGui::GetFrameHeight();
+void orbiter::ScenarioTab::OnDraw(oapi::WithImCtx<LpImCtx> &ctx) {
+    const auto height =
+        ImGui::GetContentRegionAvail().y - ImGui::GetFrameHeight();
     ImGui::BeginChild("ScnList", ImVec2(static_cast<float>(scnListW), height),
                       ImGuiChildFlags_Border | ImGuiChildFlags_ResizeX,
                       ImGuiWindowFlags_HorizontalScrollbar);
     scnListW = static_cast<int>(ImGui::GetWindowWidth());
-    for (const auto &subtree: tree.children) {
+    for (const auto &subtree : tree.children) {
         RenderTree(subtree);
     }
     ImGui::EndChild();
     ImGui::SameLine();
-    ImGui::BeginChild("ScnDesc", ImVec2(0, height),
-                      ImGuiChildFlags_None,
+    ImGui::BeginChild("ScnDesc", ImVec2(0, height), ImGuiChildFlags_None,
                       ImGuiWindowFlags_HorizontalScrollbar);
     ImGui::Markdown(ctx, desc, loadedImages);
     ImGui::EndChild();
@@ -129,9 +121,9 @@ void orbiter::ScenarioTab::OnDraw(WithImCtx<LpImCtx> &ctx) {
             ImGui::OpenPopup("Save Scenario##SaveScn");
         } else {
             // TODO: notification
-            SDL_ShowSimpleMessageBox(
-                SDL_MESSAGEBOX_ERROR, "Save Error",
-                "No current simulation state available.", ctx->Win()->Inner());
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Save Error",
+                                     "No current simulation state available.",
+                                     ctx->Win()->Inner());
         }
     }
     ImGui::SameLine();
@@ -142,7 +134,6 @@ void orbiter::ScenarioTab::OnDraw(WithImCtx<LpImCtx> &ctx) {
     ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
     ImGui::Checkbox("Start paused", &startPaused);
     ImGui::PopStyleVar();
-
 
     const ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
@@ -167,15 +158,15 @@ void orbiter::ScenarioTab::OnDraw(WithImCtx<LpImCtx> &ctx) {
                     "Scenario name too long (max 63 characters).",
                     ctx->Win()->Inner());
             } else {
-                const int res = SaveCurScenarioAs(saveScnName.c_str(),
-                                                  saveScnDesc.c_str());
+                const int res =
+                    SaveCurScenarioAs(saveScnName.c_str(), saveScnDesc.c_str());
                 if (res == 2) {
                     ImGui::OpenPopup("Warning##SaveScnOverwrite");
                 } else if (res == 1) {
                     // TODO: notification
-                    SDL_ShowSimpleMessageBox(
-                        SDL_MESSAGEBOX_ERROR, "Save Error",
-                        "Error writing scenario file.", ctx->Win()->Inner());
+                    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Save Error",
+                                             "Error writing scenario file.",
+                                             ctx->Win()->Inner());
                 } else {
                     RefreshList(true);
                     ImGui::CloseCurrentPopup();
@@ -196,12 +187,12 @@ void orbiter::ScenarioTab::OnDraw(WithImCtx<LpImCtx> &ctx) {
                                    ImGuiWindowFlags_AlwaysAutoResize)) {
             ImGui::Text("File exists. Overwrite?");
             if (ImGui::Button("Yes")) {
-                if (SaveCurScenarioAs(saveScnName.c_str(),
-                                      saveScnDesc.c_str(), true)) {
+                if (SaveCurScenarioAs(saveScnName.c_str(), saveScnDesc.c_str(),
+                                      true)) {
                     // TODO: notification
-                    SDL_ShowSimpleMessageBox(
-                        SDL_MESSAGEBOX_ERROR, "Save Error",
-                        "Error writing scenario file.", ctx->Win()->Inner());
+                    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Save Error",
+                                             "Error writing scenario file.",
+                                             ctx->Win()->Inner());
                     ImGui::CloseCurrentPopup();
                 } else {
                     RefreshList(true);
@@ -222,12 +213,11 @@ void orbiter::ScenarioTab::OnDraw(WithImCtx<LpImCtx> &ctx) {
 }
 
 // TODO: Recursion limit?
-orbiter::ScenarioTree orbiter::ScenarioTab::BuildScnTree(
-    const ScenarioTreeItem &root) {
-    auto tree = ScenarioTree{};
-    tree.item = root;
-    for (const auto &elem: fs::directory_iterator(
-             std::filesystem::path(root.path))) {
+SimpleTree<orbiter::ScenarioTreeItem>
+orbiter::ScenarioTab::BuildScnTree(const ScenarioTreeItem &root) {
+    auto tree = SimpleTree(root);
+    for (const auto &elem :
+         fs::directory_iterator(std::filesystem::path(root.path))) {
         if (elem.is_directory()) {
             auto item = ScenarioTreeItem{};
             item.icon = img_folder1;
@@ -244,8 +234,7 @@ orbiter::ScenarioTree orbiter::ScenarioTab::BuildScnTree(
             item.selIcon = img_scn1;
             item.path = elem.path();
             item.name = elem.path().stem().u8string();
-            auto subtree = ScenarioTree{};
-            subtree.item = item;
+            auto subtree = SimpleTree(item);
             tree.children.push_back(subtree);
         }
     }
@@ -294,8 +283,10 @@ void orbiter::ScenarioTab::ScenarioChanged() {
 
 //-----------------------------------------------------------------------------
 // Name: SaveCurScenarioAs()
-// Desc: copy current scenario file into 'name', replacing description with 'desc'.
-//		 return value: 0=ok, 1=failed, 2=file exists (only checked if replace=false)
+// Desc: copy current scenario file into 'name', replacing description with
+// 'desc'.
+//		 return value: 0=ok, 1=failed, 2=file exists (only checked if
+// replace=false)
 //-----------------------------------------------------------------------------
 int orbiter::ScenarioTab::SaveCurScenarioAs(const char *name, const char *desc,
                                             bool replace) {
@@ -304,12 +295,15 @@ int orbiter::ScenarioTab::SaveCurScenarioAs(const char *name, const char *desc,
     fs::path path = m_lp->App()->ScnPath(name);
     if (!replace) {
         // check if exists
-        if (fs::exists(path)) return 2;
+        if (fs::exists(path))
+            return 2;
     }
     ofstream ofs(path);
-    if (!ofs) return 1;
+    if (!ofs)
+        return 1;
     ifstream ifs(m_lp->App()->ScnPath("(Current state)"));
-    if (!ifs) return 1;
+    if (!ifs)
+        return 1;
     ofs << "BEGIN_DESC" << endl;
     ofs << desc << endl;
     ofs << "END_DESC" << endl;
