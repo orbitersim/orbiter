@@ -84,12 +84,24 @@ Select an item to see a description of the module function.
                 ImGui::PushID(item.name.c_str());
                 ImGui::PushID("Item");
 
+                if (item.locked) {
+                    ImGui::BeginDisabled();
+                    ImGui::BeginGroup();
+                }
                 ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
                 ImGui::Checkbox("##Checkbox", &enabled);
                 ImGui::PopStyleVar();
                 ImGui::SameLine();
-                ImGui::SetNextItemAllowOverlap();
                 ImGui::Selectable(item.name.c_str(), &selected);
+                if (item.locked) {
+                    ImGui::EndDisabled();
+                    ImGui::SameLine();
+                    ImGui::Text(u8"\uf059");
+                    ImGui::EndGroup();
+                    ImGui::SetItemTooltip(
+                        "This module has been requested on the command line "
+                        "and cannot be deactivated interactively.");
+                }
 
                 if (selected && !prev_selected) {
                     selection = item.name;
