@@ -274,7 +274,7 @@ function CameraMFD:update(skp)
 	
 	self:set_title(skp, text)
 
-	text = string.format("[%s] FOV=%0.0f° Ofs=%2.2f[m]", self.bParent and "Parent" or "Child", self.fov*2.0, self.offset)
+	text = string.format("[%s] FOV=%0.0fÂ° Ofs=%2.2f[m]", self.bParent and "Parent" or "Child", self.fov*2.0, self.offset)
 
 	skp:text(10, H - tbgh, text)
 	

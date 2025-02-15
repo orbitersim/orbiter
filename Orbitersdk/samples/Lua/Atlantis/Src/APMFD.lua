@@ -74,8 +74,8 @@ end
 function AscentApMfd:update_pg_prm(skp)
 	local ch, cw = skp:get_charsize()
 	if self.vessel.get_status() == 0 then
-		skp:text(cw/2, (ch*3)/2, string.format("Launch azimuth: %0.1fº", self.ap.get_launchazimuth()*DEG))
-		skp:text(cw/2, (ch*5)/2, string.format("Orbit inc:      %0.1fº", self.ap.get_targetinclination()*DEG))
+		skp:text(cw/2, (ch*3)/2, string.format("Launch azimuth: %0.1fÂ°", self.ap.get_launchazimuth()*DEG))
+		skp:text(cw/2, (ch*5)/2, string.format("Orbit inc:      %0.1fÂ°", self.ap.get_targetinclination()*DEG))
 		skp:text(cw/2, (ch*7)/2, string.format("Orbit altitude: %0.1fkm", self.ap.get_orbitaltitude()*1e-3))
 		skp:text(cw/2, (ch*9)/2, string.format("OMS2 scheduled: %s", self.ap.get_OMS2schedule() and "yes" or "no"))
 	else
@@ -93,11 +93,11 @@ function AscentApMfd:update_pg_prm(skp)
 		local alt_ap_cur = self.vessel:get_apdist() - R
 		local alt_pe_cur = self.vessel:get_pedist() - R
 		skp:text(cw*13, ch*2, "Cur    Tgt    D", 15)
-		skp:text(cw/2,  ch*3, "Azimuth [º]", 11)
+		skp:text(cw/2,  ch*3, "Azimuth [Â°]", 11)
 		skp:text(cw*13, ch*3, string.format("%0.1f", az_cur*DEG))
 		skp:text(cw*20, ch*3, string.format("%0.1f", az_tgt*DEG))
 		skp:text(cw*27, ch*3, string.format("%+0.2f", az_err*DEG))
-		skp:text(cw/2,  ch*4, "Pitch [º]", 9)
+		skp:text(cw/2,  ch*4, "Pitch [Â°]", 9)
 		skp:text(cw*13, ch*4, string.format("%0.1f", pt_cur*DEG))
 		skp:text(cw*20, ch*4, string.format("%0.1f", pt_tgt*DEG))
 		skp:text(cw*27, ch*4, string.format("%+0.2f", pt_err*DEG))
