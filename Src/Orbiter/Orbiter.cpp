@@ -576,11 +576,11 @@ MODFILE Orbiter::LoadModule (std::string_view path, std::string_view name)
 	if (hDLL) {
 		DLLModule module = { hDLL, register_module ? register_module : new oapi::Module(hDLL), std::string(name), !register_module };
 		// If the DLL doesn't provide a Module interface, create a default one which provides the legacy callbacks
-		LOGOUT(register_module ? "Loading module %s" : "Loading module %s (legacy interface)", name);
+		LOGOUT(register_module ? "Loading module %s" : "Loading module %s (legacy interface)", name.data());
 		m_Plugin.push_back(module);
 	} else {
 		DWORD err = GetLastError();
-		LOGOUT_ERR ("Failed loading module %s (code %d)", cbuf, err);
+		LOGOUT_ERR ("Failed loading module %s (code %d)", cbuf.u8string().c_str(), err);
 	}
 	return hDLL;
 }

@@ -42,7 +42,7 @@ void orbiter::AboutTab::RenderCentered(oapi::WithImCtx<LpImCtx> &ctx) {
 }
 
 void orbiter::AboutTab::OnDraw(oapi::WithImCtx<LpImCtx> &ctx) {
-    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImVec2 center = ImGui::GetContentRegionAvail();
     ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
     if (ImGui::BeginChild("##About", ImVec2(512, 512), ImGuiChildFlags_Border,
                           ImGuiWindowFlags_None)) {
