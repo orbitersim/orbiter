@@ -128,6 +128,19 @@ Select an item to see a description of the module function.
     ImGui::Markdown(ctx, desc, loadedImages);
     ImGui::EndChild();
     doExpandCollapse = false;
+    if (ImGui::Button("Expand all")) {
+        collapseExpand = true;
+        doExpandCollapse = true;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Collapse All")) {
+        collapseExpand = false;
+        doExpandCollapse = true;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Deactivate all")) {
+        DeactivateAll();
+    }
 }
 
 //-----------------------------------------------------------------------------
