@@ -35,11 +35,11 @@
 14683 NOTE Turning east for ascent to orbit, matching the Moon's orbit inclination.
 14698 CAMERA SET Cockpit:GL-01:50.00
 14698 NOTE The plane alignment MFD provides a rough guide for the correct ascent heading. Try to keep the relative inclination between your and the Moon's orbit at a minimum (indicated by the 'RInc' readout).
-14713 NOTE Initial climb rate is 30° to leave the denser part of the atmosphere quickly. You can use the trim control to adjust the pitch angle.
+14713 NOTE Initial climb rate is 30Â° to leave the denser part of the atmosphere quickly. You can use the trim control to adjust the pitch angle.
 14728 NOTE By a happy coincidence, you get a glimpse of your final destination - the Moon - directly ahead in the centre of the screen.
 14738 CAMERA SET Track:GL-01:10.00:RELATIVE 76.158 0.044 -0.021
 14748 CAMERA SET Cockpit:GL-01:50.00
-14748 NOTE During ascent, the pitch angle can be adjusted with trim or manual elevator controls. From the initial 30°, it should slowly turn towards the horizontal.
+14748 NOTE During ascent, the pitch angle can be adjusted with trim or manual elevator controls. From the initial 30Â°, it should slowly turn towards the horizontal.
 14763 NOTE We are aiming to reach orbital velocity and a horizontal flight path vector at an initial altitude of about 60km.
 14778 NOTE As you leave the denser parts of the atmosphere behind, the spaceplane no longer generates enough lift to maintain the initial pitch angle. The flight path marker (the circle with a cross) will start to move down, indicating that the ascent slope is decreasing.
 14793 NOTEPOS 0.65 0.2 0.96 0.9
@@ -74,7 +74,7 @@
 16070 NOTE Main engines engaged.
 16085 NOTE Note how the RInc readout is counting down.
 16104 NOTE Main engine cut-off.
-16114 NOTE The relative inclination ('RInc') with the Moon's orbital plane is now down to 0.02°. That's good enough!
+16114 NOTE The relative inclination ('RInc') with the Moon's orbital plane is now down to 0.02Â°. That's good enough!
 16125 NOTE In preparation for the next maneuver, we are turning into the flight path (by activating the 'Prograde' attitude mode).
 16165 NOTE Fast-forwarding to orbit circularisation burn ...
 16165 TACC 30.000000 1.000000
@@ -99,7 +99,7 @@
 17145 NOTE The predicted position of the Moon at the time when you cross the Moon's orbit, is shown as a dashed yellow line.
 17160 NOTE You now have to try and match the grey and the dashed yellow lines, so that both you and the Moon reach the intersection point simultaneously.
 17175 NOTE This is done by adjusting the time of the ejection burn, using the 'EJ-' and 'EJ+' buttons.
-17190 NOTE Press 'EJ-' and 'EJ+' until the lines match. The 'TLe' readout should read approximately 11°.
+17190 NOTE Press 'EJ-' and 'EJ+' until the lines match. The 'TLe' readout should read approximately 11Â°.
 17220 NOTE The dashed green line now indicates the position of the orbit ejection burn. As soon as your current position (solid green line) matches it, the ejection burn will be performed.
 17235 NOTE Fast-forwarding to ejection burn ...
 17235 TACC 100.000000 1.000000
@@ -147,7 +147,7 @@
 283495 NOTEPOS 0.65 0.2 0.96 0.9
 283495 NOTE With the orbital plane aligned, the next step is to adjust the periapsis (or in this case, the perilune) distance, that is, the point of closest approach to the Moon.
 283510 NOTE Currently, the orbit is intersecting the Moon's surface, so we need to raise the periapsis altitude (PeA) above zero.
-283525 NOTE This is an in-plane burn. Since we are not at periapsis, I am using a wild guess for a reasonable burn direction - 50° off the flight path.
+283525 NOTE This is an in-plane burn. Since we are not at periapsis, I am using a wild guess for a reasonable burn direction - 50Â° off the flight path.
 283595 NOTE Engaging main engines.
 283603 NOTE Engines cut-off. Perilune altitude is now approximately 150km.
 283618 NOTE Note that the orbit parameter readouts are not very reliable yet, because of strong field perturbations from the Sun and Earth. You will notice that the PeA readout is decreasing as we approach the Moon.
@@ -187,8 +187,8 @@
 307696 NOTE Engaging main thrusters for orbit departure.
 307715 NOTE When timing the deorbit burn, be careful not to be late (to avoid overshooting). If you deorbit too early, you will waste fuel on hovering above the surface.
 307730 NOTE To estimate the minimum safe distance from base for the deorbit burn with main engines, try a little mental arithmetic:
-307740 NOTE With the current fuel load, the main engines can produce an acceleration of about a = 20m/s². Orbital speed is about 1600m/s.
-307760 NOTE This means that it will take t = v/a = 80s to kill the ground speed at full main thrust. In that time we will cover a distance of x = vt - ½at² = 64km. We must start the deceleration burn before getting closer than that to the base (or correspondingly earlier if you want to use the less powerful retros for braking).
+307740 NOTE With the current fuel load, the main engines can produce an acceleration of about a = 20m/sÂ². Orbital speed is about 1600m/s.
+307760 NOTE This means that it will take t = v/a = 80s to kill the ground speed at full main thrust. In that time we will cover a distance of x = vt - Â½atÂ² = 64km. We must start the deceleration burn before getting closer than that to the base (or correspondingly earlier if you want to use the less powerful retros for braking).
 307785 NOTEPOS 0.65 0.2 0.96 0.9
 307785 NOTE By now you are within range of the Brighton Beach NAV beacon. The circular display in the VTOL MFD represents a top-down view with your position in the centre, and forward direction at 12 o'clock.
 307800 NOTE The direction of the base is indicated by the green line (it's behind you). Your velocity vector is the yellow arrow.

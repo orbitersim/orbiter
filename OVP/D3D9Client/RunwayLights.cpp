@@ -2,7 +2,7 @@
 // RunwayLights.cpp
 // Part of the ORBITER VISUALISATION PROJECT (OVP) D3D9 Client
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2012 - 2016 Émile "Bibi Uncle" Grégoire
+// Copyright (C) 2012 - 2016 Ã‰mile "Bibi Uncle" GrÃ©goire
 //				 2012 - 2016 Jarmo Nikkanen
 // ==============================================================
 

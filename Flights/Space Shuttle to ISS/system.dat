@@ -13,7 +13,7 @@
 28 CAMERA SET Cockpit:Atlantis:50.00
 37 NOTE You can adjust the launch azimuth angle by pressing the AZ- and AZ+ buttons.
 46 NOTE You can adjust the launch azimuth angle by pressing the AZ- and AZ+ buttons.    The launch azimuth is the initial heading the Shuttle will follow after launch. It governs the inclination of the orbit you enter.
-55 NOTE You want to intercept the International Space Station orbiting at an inclination of 51.6° on the descending section of its orbit, and the launch azimuth has already been set up accordingly for a SE launch.
+55 NOTE You want to intercept the International Space Station orbiting at an inclination of 51.6Â° on the descending section of its orbit, and the launch azimuth has already been set up accordingly for a SE launch.
 64 NOTE You can adjust the altitude of the target orbit with the AL- and AL+ buttons.
 73 NOTE You can adjust the altitude of the target orbit with the AL- and AL+ buttons.    This has also been adjusted to approximately match the ISS altitude at 350km.
 82 NOTE Pressing the L button will initiate the launch sequence. (In this tutorial, this will be done automatically.)
