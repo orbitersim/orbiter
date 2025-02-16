@@ -4,13 +4,13 @@
 #ifndef __LAUNCHPAD_H
 #define __LAUNCHPAD_H
 
-#include <SDL3/SDL.h>
-#include <CommCtrl.h>
-#include "OrbiterAPI.h"
 #include "Config.h"
-#include "imgui.h"
-#include "UIUtil.h"
+#include "OrbiterAPI.h"
 #include "SDLWrappers.h"
+#include "UIUtil.h"
+#include "imgui.h"
+#include <CommCtrl.h>
+#include <SDL3/SDL.h>
 
 //-----------------------------------------------------------------------------
 // Forward declarations
@@ -32,218 +32,218 @@ INT_PTR CALLBACK WaitPageProc(HWND hWnd, UINT uMsg, WPARAM wParam,
                               LPARAM lParam);
 
 namespace orbiter {
-    class LaunchpadTab;
-    class LaunchpadTab2;
-    class ExtraTab;
+class LaunchpadTab;
+class LaunchpadTab2;
+class ExtraTab;
 
-    class LaunchpadDialog2 {
-        friend class Orbiter;
-        friend class LaunchpadTab2;
+class LaunchpadDialog2 {
+    friend class Orbiter;
+    friend class LaunchpadTab2;
 
-    public:
-        LaunchpadDialog2(Orbiter* app, bool startvideotab = true);
-        ~LaunchpadDialog2();
+  public:
+    LaunchpadDialog2(Orbiter *app, bool startvideotab = true);
+    ~LaunchpadDialog2();
 
-        void OnDraw(oapi::WithImCtx<LpImCtx> &ctx) const;
+    void OnDraw(WithLpImCtx &ctx) const;
 
-        Orbiter *App() const { return m_app; }
-        Config *Cfg() const { return m_cfg; }
+    Orbiter *App() const { return m_app; }
+    Config *Cfg() const { return m_cfg; }
 
-        LaunchpadTab2* GetTab(unsigned int i) const;
+    LaunchpadTab2 *GetTab(unsigned int i) const;
 
-        void AddTab(std::unique_ptr<LaunchpadTab2> tab);
+    void AddTab(std::unique_ptr<LaunchpadTab2> tab);
 
-        void EnableLaunchButton(bool enable) const;
+    void EnableLaunchButton(bool enable) const;
 
-        bool ConsumeEvent(const SDL_Event &event) const;
+    bool ConsumeEvent(const SDL_Event &event) const;
 
-        void RenderFrame() const;
+    void RenderFrame() const;
 
-        // Register an item in the "Extra" list. If parent=0, the item is registered
-        // as a root (top level) item. Otherwise it appears as a sub-item under
-        // the parent item.
-        size_t RegisterExtraParam(LaunchpadItem *item, size_t parent = 0);
+    // Register an item in the "Extra" list. If parent=0, the item is registered
+    // as a root (top level) item. Otherwise it appears as a sub-item under
+    // the parent item.
+    size_t RegisterExtraParam(LaunchpadItem *item, size_t parent = 0);
 
-        // Unregister an item in the "Extra" list.
-        bool UnregisterExtraParam(LaunchpadItem *item);
+    // Unregister an item in the "Extra" list.
+    bool UnregisterExtraParam(LaunchpadItem *item);
 
-        // Return item 'name' below parent 'parent', or NULL if not found
-        LaunchpadItem *FindExtraParam(std::string_view name, size_t parent = 0);
+    // Return item 'name' below parent 'parent', or NULL if not found
+    LaunchpadItem *FindExtraParam(std::string_view name, size_t parent = 0);
 
-        // allow all externally registered "Extra" items to write their data to file
-        // (internal "extra" items use the Config class to write to Orbiter.cfg)
-        void WriteExtraParams();
+    // allow all externally registered "Extra" items to write their data to file
+    // (internal "extra" items use the Config class to write to Orbiter.cfg)
+    void WriteExtraParams();
 
-        // save current dialog settings in application configuration
-        void UpdateConfig() const;
+    // save current dialog settings in application configuration
+    void UpdateConfig() const;
 
-        const std::shared_ptr<sdl::ManagedWindow>& Win() const { return m_window; }
+    const std::shared_ptr<sdl::ManagedWindow> &Win() const { return m_window; }
 
-        void Hide();
+    void Hide();
 
-        void Show();
+    void Show();
 
-    private:
-        LaunchpadDialog2() = default;
+  private:
+    LaunchpadDialog2() = default;
 
-        Orbiter *m_app = nullptr;
-        Config *m_cfg = nullptr;
-        std::unique_ptr<LpImCtx> m_imgui = nullptr;
-        std::vector<std::unique_ptr<LaunchpadTab2> > m_tabList;
-        bool m_active = false;
-        std::shared_ptr<sdl::ManagedWindow> m_window;
-        std::unique_ptr<LpImage> m_banner = nullptr;
+    Orbiter *m_app = nullptr;
+    Config *m_cfg = nullptr;
+    std::unique_ptr<LpImCtx> m_imgui = nullptr;
+    std::vector<std::unique_ptr<LaunchpadTab2>> m_tabList;
+    bool m_active = false;
+    std::shared_ptr<sdl::ManagedWindow> m_window;
+    std::unique_ptr<LpImage> m_banner = nullptr;
 
-        void SwitchTabPage(int pg);
-    };
+    void SwitchTabPage(int pg);
+};
 
-    //-----------------------------------------------------------------------------
-    // Name: class LaunchpadDialog
-    // Desc: Handles the startup dialog ("Launchpad")
-    //-----------------------------------------------------------------------------
-    class LaunchpadDialog {
-        friend class Orbiter;
-        friend class LaunchpadTab;
+//-----------------------------------------------------------------------------
+// Name: class LaunchpadDialog
+// Desc: Handles the startup dialog ("Launchpad")
+//-----------------------------------------------------------------------------
+class LaunchpadDialog {
+    friend class Orbiter;
+    friend class LaunchpadTab;
 
-    public:
-        LaunchpadDialog(Orbiter *app);
+  public:
+    LaunchpadDialog(Orbiter *app);
 
-        ~LaunchpadDialog();
+    ~LaunchpadDialog();
 
-        bool Create(bool startvideotab = false);
+    bool Create(bool startvideotab = false);
 
-        // create dialog window
-        // If return value==false then the window could not be created
+    // create dialog window
+    // If return value==false then the window could not be created
 
-        void Show(); // Show the launchpad window
-        void Hide(); // Hide the launchpad window
+    void Show(); // Show the launchpad window
+    void Hide(); // Hide the launchpad window
 
-        inline bool Visible() const { return m_bVisible; }
+    inline bool Visible() const { return m_bVisible; }
 
-        bool ConsumeMessage(LPMSG msg);
+    bool ConsumeMessage(LPMSG msg);
 
-        // Consume message msg, if intended for the dialog,
-        // otherwise return false
+    // Consume message msg, if intended for the dialog,
+    // otherwise return false
 
-        const HWND GetWaitWindow() const { return hWait; }
+    const HWND GetWaitWindow() const { return hWait; }
 
-        inline Orbiter *App() const { return pApp; }
-        inline Config *Cfg() const { return pCfg; }
+    inline Orbiter *App() const { return pApp; }
+    inline Config *Cfg() const { return pCfg; }
 
-        LaunchpadTab *GetTab(UINT i) const;
+    LaunchpadTab *GetTab(UINT i) const;
 
-        HWND HTabContainer() const { return hTabContainer; }
+    HWND HTabContainer() const { return hTabContainer; }
 
-        void AddTab(LaunchpadTab *tab);
+    void AddTab(LaunchpadTab *tab);
 
-        // Inserts a new tab into the list
+    // Inserts a new tab into the list
 
-        void EnableLaunchButton(bool enable) const;
+    void EnableLaunchButton(bool enable) const;
 
-        // Enable/disable "Launch Orbiter" button
+    // Enable/disable "Launch Orbiter" button
 
-        HTREEITEM RegisterExtraParam(LaunchpadItem *item, HTREEITEM parent = 0);
+    HTREEITEM RegisterExtraParam(LaunchpadItem *item, HTREEITEM parent = 0);
 
-        // Register an item in the "Extra" list. If parent=0, the item is registered
-        // as a root (top level) item. Otherwise it appears as a sub-item under
-        // the parent item.
+    // Register an item in the "Extra" list. If parent=0, the item is registered
+    // as a root (top level) item. Otherwise it appears as a sub-item under
+    // the parent item.
 
-        bool UnregisterExtraParam(LaunchpadItem *item);
+    bool UnregisterExtraParam(LaunchpadItem *item);
 
-        // Unregister an item in the "Extra" list.
+    // Unregister an item in the "Extra" list.
 
-        HTREEITEM FindExtraParam(const char *name, const HTREEITEM parent = 0);
+    HTREEITEM FindExtraParam(const char *name, const HTREEITEM parent = 0);
 
-        // Return item 'name' below parent 'parent', or NULL if not found
+    // Return item 'name' below parent 'parent', or NULL if not found
 
-        void WriteExtraParams();
+    void WriteExtraParams();
 
-        // allow all externally registered "Extra" items to write their data to file
-        // (internal "extra" items use the Config class to write to Orbiter.cfg)
+    // allow all externally registered "Extra" items to write their data to file
+    // (internal "extra" items use the Config class to write to Orbiter.cfg)
 
-        ExtraTab *GetExtraTab() const {
-            return pExtra;
-        }
+    ExtraTab *GetExtraTab() const { return pExtra; }
 
-        // tab object
+    // tab object
 
-        void UpdateConfig();
+    void UpdateConfig();
 
-        // save current dialog settings in application configuration
+    // save current dialog settings in application configuration
 
-        void ShowWaitPage(bool show, long mem_committed = 0);
+    void ShowWaitPage(bool show, long mem_committed = 0);
 
-        void UpdateWaitProgress();
+    void UpdateWaitProgress();
 
-        long mem_wait; // amount of memory to be deallocated during wait
-        long mem0; // initial memory status
+    long mem_wait; // amount of memory to be deallocated during wait
+    long mem0;     // initial memory status
 
-    private:
-        HINSTANCE hInst; // instance handle
-        HWND hDlg; // dialog window handle
-        std::vector<LaunchpadTab *> TabList;
-        LaunchpadTab *CTab; // current tab page
-        HWND hTabContainer; // tab container window handle
-        HWND hWait; // "wait" page
-        HBRUSH hDlgBrush;
-        HANDLE hShadowImg;
-        Orbiter *pApp; // application pointer
-        Config *pCfg; // config pointer
+  private:
+    HINSTANCE hInst; // instance handle
+    HWND hDlg;       // dialog window handle
+    std::vector<LaunchpadTab *> TabList;
+    LaunchpadTab *CTab; // current tab page
+    HWND hTabContainer; // tab container window handle
+    HWND hWait;         // "wait" page
+    HBRUSH hDlgBrush;
+    HANDLE hShadowImg;
+    Orbiter *pApp; // application pointer
+    Config *pCfg;  // config pointer
 
-        void SetDemoMode();
+    void SetDemoMode();
 
-        // Set launchpad controls to demo mode
+    // Set launchpad controls to demo mode
 
-        int SelectDemoScenario();
+    int SelectDemoScenario();
 
-        // Select an arbitrary scenario from the demo folder
+    // Select an arbitrary scenario from the demo folder
 
-        void InitSize(HWND hWnd);
+    void InitSize(HWND hWnd);
 
-        BOOL Resize(HWND hWnd, DWORD w, DWORD h, DWORD mode);
+    BOOL Resize(HWND hWnd, DWORD w, DWORD h, DWORD mode);
 
-        void InitTabControl(HWND hWnd);
+    void InitTabControl(HWND hWnd);
 
-        // initialise the tabs
+    // initialise the tabs
 
-        //void InitDevicePage (D3D7Enum_DeviceInfo *devlist, DWORD ndev, D3D7Enum_DeviceInfo *dev);
-        // Set dialog controls for device tab according to device list
-        // and current device dev
+    // void InitDevicePage (D3D7Enum_DeviceInfo *devlist, DWORD ndev,
+    // D3D7Enum_DeviceInfo *dev);
+    //  Set dialog controls for device tab according to device list
+    //  and current device dev
 
-        void SwitchTabPage(HWND hWnd, int pg);
+    void SwitchTabPage(HWND hWnd, int pg);
 
-        // display a new page
+    // display a new page
 
-        INT_PTR DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+    INT_PTR DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-        INT_PTR WaitProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+    INT_PTR WaitProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-        // Dialog message callbacks
+    // Dialog message callbacks
 
-        static INT_PTR CALLBACK s_DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam,
-                                          LPARAM lParam);
+    static INT_PTR CALLBACK s_DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam,
+                                      LPARAM lParam);
 
-        friend INT_PTR CALLBACK ::WaitPageProc(HWND hWnd, UINT uMsg,
-                                               WPARAM wParam, LPARAM lParam);
+    friend INT_PTR CALLBACK ::WaitPageProc(HWND hWnd, UINT uMsg, WPARAM wParam,
+                                           LPARAM lParam);
 
-        friend LONG_PTR FAR PASCAL MsgProc_CopyrightFrame(
-            HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+    friend LONG_PTR FAR PASCAL MsgProc_CopyrightFrame(HWND hWnd, UINT uMsg,
+                                                      WPARAM wParam,
+                                                      LPARAM lParam);
 
-        RECT client0; // initial client window size
-        RECT copyr0; // initial copyright box size
-        RECT r_launch0; // initial position of launch button
-        RECT r_help0; // initial position of help button
-        RECT r_exit0; // initial position of exit button
-        RECT r_data0; // initial position of data area
-        RECT r_wait0; // initial position of wait dialog
-        RECT r_version0; // initial position of version string
+    RECT client0;    // initial client window size
+    RECT copyr0;     // initial copyright box size
+    RECT r_launch0;  // initial position of launch button
+    RECT r_help0;    // initial position of help button
+    RECT r_exit0;    // initial position of exit button
+    RECT r_data0;    // initial position of data area
+    RECT r_wait0;    // initial position of wait dialog
+    RECT r_version0; // initial position of version string
 
-        DWORD shadowh; // shadow bar height
-        int dy_bt; // button separation
-        bool m_bVisible; // launchpad dialog visible?
+    DWORD shadowh;   // shadow bar height
+    int dy_bt;       // button separation
+    bool m_bVisible; // launchpad dialog visible?
 
-        orbiter::ExtraTab *pExtra; // tab object
-    };
-}
+    orbiter::ExtraTab *pExtra; // tab object
+};
+} // namespace orbiter
 
 #endif // !__LAUNCHPAD_H

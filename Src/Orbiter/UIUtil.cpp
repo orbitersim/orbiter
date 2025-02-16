@@ -7,166 +7,11 @@
 #include "imgui_impl_sdlgpu3.h"
 #include "imgui_md.h"
 
-// Styling adapted from
-// https://gist.github.com/dougbinks/8089b4bbaccaaf6fa204236978d165a9
-static void ImGuiSetStyle(bool bStyleDark_, float alpha_) {
-    // Setup Dear ImGui style
-    ImGui::StyleColorsClassic();
-    ImGui::StyleColorsLight();
-    ImGuiStyle &style = ImGui::GetStyle();
-
-    style.Alpha = 1.0f;
-    style.FrameRounding = 3.0f;
-    style.WindowRounding = 3.0f;
-    style.ChildRounding = 3.0f;
-    style.PopupRounding = 3.0f;
-    style.ScrollbarRounding = 3.0f;
-    style.GrabRounding = 3.0f;
-    style.TabRounding = 3.0f;
-    style.WindowMenuButtonPosition = ImGuiDir_Right;
-    return;
-    // light style from Pacôme Danhiez (user itamago)
-    // https://github.com/ocornut/imgui/pull/511#issuecomment-175719267
-    style.Colors[ImGuiCol_Text] = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
-    style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
-    style.Colors[ImGuiCol_WindowBg] = ImVec4(0.94f, 0.94f, 0.94f, 0.94f);
-    style.Colors[ImGuiCol_PopupBg] = ImVec4(1.00f, 1.00f, 1.00f, 0.94f);
-    style.Colors[ImGuiCol_Border] = ImVec4(0.00f, 0.00f, 0.00f, 0.39f);
-    style.Colors[ImGuiCol_BorderShadow] = ImVec4(1.00f, 1.00f, 1.00f, 0.10f);
-    style.Colors[ImGuiCol_FrameBg] = ImVec4(1.00f, 1.00f, 1.00f, 0.94f);
-    style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.40f);
-    style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
-    style.Colors[ImGuiCol_TitleBg] = ImVec4(0.96f, 0.96f, 0.96f, 1.00f);
-    style.Colors[ImGuiCol_TitleBgCollapsed] =
-        ImVec4(1.00f, 1.00f, 1.00f, 0.51f);
-    style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.82f, 0.82f, 0.82f, 1.00f);
-    style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.86f, 0.86f, 0.86f, 1.00f);
-    style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.98f, 0.98f, 0.98f, 0.53f);
-    style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.69f, 0.69f, 0.69f, 1.00f);
-    style.Colors[ImGuiCol_ScrollbarGrabHovered] =
-        ImVec4(0.59f, 0.59f, 0.59f, 1.00f);
-    style.Colors[ImGuiCol_ScrollbarGrabActive] =
-        ImVec4(0.49f, 0.49f, 0.49f, 1.00f);
-    style.Colors[ImGuiCol_CheckMark] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-    style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.24f, 0.52f, 0.88f, 1.00f);
-    style.Colors[ImGuiCol_SliderGrabActive] =
-        ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-    style.Colors[ImGuiCol_Button] = ImVec4(0.26f, 0.59f, 0.98f, 0.40f);
-    style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-    style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.06f, 0.53f, 0.98f, 1.00f);
-    style.Colors[ImGuiCol_Header] = ImVec4(0.26f, 0.59f, 0.98f, 0.31f);
-    style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.80f);
-    style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-    style.Colors[ImGuiCol_ResizeGrip] = ImVec4(1.00f, 1.00f, 1.00f, 0.50f);
-    style.Colors[ImGuiCol_ResizeGripHovered] =
-        ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
-    style.Colors[ImGuiCol_ResizeGripActive] =
-        ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
-    style.Colors[ImGuiCol_PlotLines] = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
-    style.Colors[ImGuiCol_PlotLinesHovered] =
-        ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
-    style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
-    style.Colors[ImGuiCol_PlotHistogramHovered] =
-        ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
-    style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
-
-    if (bStyleDark_) {
-        for (int i = 0; i <= ImGuiCol_COUNT; i++) {
-            ImVec4 &col = style.Colors[i];
-            float H, S, V;
-            ImGui::ColorConvertRGBtoHSV(col.x, col.y, col.z, H, S, V);
-
-            if (S < 0.1f) {
-                V = 1.0f - V;
-            }
-            ImGui::ColorConvertHSVtoRGB(H, S, V, col.x, col.y, col.z);
-            if (col.w < 1.00f) {
-                col.w *= alpha_;
-            }
-        }
-    } else {
-        for (int i = 0; i <= ImGuiCol_COUNT; i++) {
-            ImVec4 &col = style.Colors[i];
-            if (col.w < 1.00f) {
-                col.x *= alpha_;
-                col.y *= alpha_;
-                col.z *= alpha_;
-                col.w *= alpha_;
-            }
-        }
-    }
-}
-
 LpImCtx::LpImCtx(Orbiter *app,
                  const std::shared_ptr<sdl::ManagedWindow> &window)
-    : ImCtxBase() {
-    m_app = app;
-    m_window = window;
-#ifdef _DEBUG
-    IMGUI_CHECKVERSION();
-#endif
-    m_context = ImGui::CreateContext();
-    auto savedContext = ImGui::GetCurrentContext();
+    : ImCtxBase(app, ImGui::CreateContext()), m_window(window) {
+    const auto savedContext = ImGui::GetCurrentContext();
     ImGui::SetCurrentContext(savedContext);
-
-    ImGuiIO &io = ImGui::GetIO();
-    if (!m_app->IsFullscreen())
-        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    io.IniFilename = nullptr;
-    io.LogFilename = nullptr;
-
-    ImGuiSetStyle(false, 1.0f);
-
-    ImFontConfig config;
-
-    static const ImWchar icons_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
-    ImFontConfig icons_config;
-    icons_config.MergeMode = true;
-    icons_config.PixelSnapH = true;
-    icons_config.FontDataOwnedByAtlas = false;
-    icons_config.GlyphOffset.y = 1;
-
-    const CFG_FONTPRM &prm = m_app->Cfg()->CfgFontPrm;
-
-    auto defaultFontFile =
-        std::string(prm.ImGui_FontName).append("-Regular.ttf");
-    auto italicFontFile = std::string(prm.ImGui_FontName).append("-Italic.ttf");
-    auto boldFontFile = std::string(prm.ImGui_FontName).append("-Bold.ttf");
-    auto boldItalicFontFile =
-        std::string(prm.ImGui_FontName).append("-BoldItalic.ttf");
-
-    m_defaultFont = io.Fonts->AddFontFromFileTTF(
-        defaultFontFile.c_str(), prm.ImGui_FontSize, &config,
-        ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
-    io.Fonts->AddFontFromFileTTF("fa-solid-900.ttf", prm.ImGui_FontSize,
-                                 &icons_config, icons_ranges);
-    m_italicFont = io.Fonts->AddFontFromFileTTF(
-        italicFontFile.c_str(), prm.ImGui_FontSize, &config,
-        ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
-    io.Fonts->AddFontFromFileTTF("fa-solid-900.ttf", prm.ImGui_FontSize,
-                                 &icons_config, icons_ranges);
-    m_boldFont = io.Fonts->AddFontFromFileTTF(
-        boldFontFile.c_str(), prm.ImGui_FontSize, &config,
-        ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
-    io.Fonts->AddFontFromFileTTF("fa-solid-900.ttf", prm.ImGui_FontSize,
-                                 &icons_config, icons_ranges);
-    m_boldItalicFont = io.Fonts->AddFontFromFileTTF(
-        boldItalicFontFile.c_str(), prm.ImGui_FontSize, &config,
-        ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
-    io.Fonts->AddFontFromFileTTF("fa-solid-900.ttf", prm.ImGui_FontSize,
-                                 &icons_config, icons_ranges);
-    m_hdgFont = io.Fonts->AddFontFromFileTTF(
-        defaultFontFile.c_str(), prm.ImGui_FontSize * 1.5f, &config,
-        ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
-    io.Fonts->AddFontFromFileTTF("fa-solid-900.ttf", prm.ImGui_FontSize,
-                                 &icons_config, icons_ranges);
-    // weird alignment issues otherwise, yippee (sarcastic)
-    config.GlyphOffset.y = 1;
-    m_monoFont = io.Fonts->AddFontFromFileTTF(
-        "Cousine-Regular.ttf", prm.ImGui_FontSize, &config,
-        ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
-    io.Fonts->Build();
 
     if (!ImGui_ImplSDL3_InitForSDLGPU(m_window->Inner()))
         throw std::runtime_error("Failed to initialize ImGui/SDLGPU3");
@@ -185,14 +30,16 @@ LpImCtx::LpImCtx(Orbiter *app,
 
 LpImCtx::~LpImCtx() {
     if (m_context) {
-        oapi::WithImCtx<LpImCtx> _ = PushLocal();
+        WithLpImCtx _ = PushLocal();
         SDL_WaitForGPUIdle(m_window->Device());
 
         ImGui_ImplSDL3_Shutdown();
         ImGui_ImplSDLGPU3_Shutdown();
-        ImGui::DestroyContext();
     }
 }
+
+LpImage::LpImage(const WithLpImCtx &ctx, const std::string_view path)
+    : LpImage(ctx->Win(), path) {};
 
 bool EventIsKeyboard(Uint32 type) {
     return type >= SDL_EVENT_KEY_UP && type < SDL_EVENT_MOUSE_MOTION;
@@ -369,11 +216,11 @@ LpImage::~LpImage() {
 class orbiter_md final : public imgui_md {
   public:
     orbiter_md(
-        oapi::WithImCtx<LpImCtx> &ctx,
+        const WithLpImCtx &ctx,
         const std::optional<std::vector<std::shared_ptr<LpImage>> *> images)
         : ctx(ctx), images(images) {}
 
-    oapi::WithImCtx<LpImCtx> &ctx;
+    const WithLpImCtx &ctx;
     std::optional<std::vector<std::shared_ptr<LpImage>> *> images;
 
     [[nodiscard]] ImFont *get_font() const override {
@@ -408,7 +255,8 @@ class orbiter_md final : public imgui_md {
             }
         }
         if (!image) {
-            image = std::make_shared<LpImage>(ctx->Win(), m_img_src);
+            image = std::make_shared<LpImage>(
+                dynamic_cast<LpImCtx *>(ctx.Inner())->Win(), m_img_src);
             images->push_back(image);
         }
 
@@ -428,13 +276,13 @@ class orbiter_md final : public imgui_md {
     };
 };
 
-void ImGui::Markdown(oapi::WithImCtx<LpImCtx> &ctx, const std::string_view md,
+void ImGui::Markdown(const WithLpImCtx &ctx, const std::string_view md,
                      std::vector<std::shared_ptr<::LpImage>> &loadedImages) {
     orbiter_md printer = {ctx, {&loadedImages}};
     printer.print(md.data(), md.data() + md.size());
 }
 
-void ImGui::Markdown(oapi::WithImCtx<LpImCtx> &ctx, const std::string_view md) {
+void ImGui::Markdown(const WithLpImCtx &ctx, const std::string_view md) {
     orbiter_md printer = {ctx, std::nullopt};
     printer.print(md.data(), md.data() + md.size());
 }

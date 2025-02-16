@@ -17,11 +17,11 @@ namespace orbiter {
 	public:
 		explicit AboutTab(const LaunchpadDialog2* lp);
 
-		void OnDraw(oapi::WithImCtx<LpImCtx> &ctx) override;
+		void OnDraw(WithLpImCtx &ctx) override;
 	private:
 		std::shared_ptr<LpImage> icon;
 		float savedWidth;
-		void RenderCentered(oapi::WithImCtx<LpImCtx> &ctx);
+		void RenderCentered(WithLpImCtx &ctx);
 	};
 
 }

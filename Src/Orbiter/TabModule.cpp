@@ -41,7 +41,7 @@ void orbiter::ModuleTab::SetConfig(Config *cfg) {
     cfg->CfgWindowPos.LaunchpadModListWidth = splitWidth;
 }
 
-void orbiter::ModuleTab::OnDraw(oapi::WithImCtx<LpImCtx> &ctx) {
+void orbiter::ModuleTab::OnDraw(WithLpImCtx &ctx) {
     static const std::string defaultDesc = u8R"(
 # Optional Orbiter plugin modules.
 

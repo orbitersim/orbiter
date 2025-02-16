@@ -66,11 +66,9 @@ void orbiter::ScenarioTab::RenderTree(
             ScenarioChanged();
         }
         ImGui::SameLine();
-        ImGui::Image(
-            selected
-                ? tree.item.selIcon->TexID()
-                : tree.item.icon->TexID(),
-            ImVec2(16, 16));
+        ImGui::Image(selected ? tree.item.selIcon->TexID()
+                              : tree.item.icon->TexID(),
+                     ImVec2(16, 16));
         ImGui::SameLine();
         ImGui::Text(tree.item.name.c_str());
         return;
@@ -85,10 +83,9 @@ void orbiter::ScenarioTab::RenderTree(
         ScenarioChanged();
     }
     ImGui::SameLine(0, 0);
-    ImGui::Image(
-        treeNode ? tree.item.selIcon->TexID()
-                 : tree.item.icon->TexID(),
-        ImVec2(16, 16));
+    ImGui::Image(treeNode ? tree.item.selIcon->TexID()
+                          : tree.item.icon->TexID(),
+                 ImVec2(16, 16));
     ImGui::SameLine();
     ImGui::Text(tree.item.name.c_str());
     if (treeNode) {
@@ -100,7 +97,7 @@ void orbiter::ScenarioTab::RenderTree(
     ImGui::PopID();
 }
 
-void orbiter::ScenarioTab::OnDraw(oapi::WithImCtx<LpImCtx> &ctx) {
+void orbiter::ScenarioTab::OnDraw(WithLpImCtx &ctx) {
     const auto height =
         ImGui::GetContentRegionAvail().y - ImGui::GetFrameHeight();
     ImGui::BeginChild("ScnList", ImVec2(static_cast<float>(scnListW), height),
@@ -121,9 +118,10 @@ void orbiter::ScenarioTab::OnDraw(oapi::WithImCtx<LpImCtx> &ctx) {
             ImGui::OpenPopup("Save Scenario##SaveScn");
         } else {
             // TODO: notification
-            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Save Error",
-                                     "No current simulation state available.",
-                                     ctx->Win()->Inner());
+            SDL_ShowSimpleMessageBox(
+                SDL_MESSAGEBOX_ERROR, "Save Error",
+                "No current simulation state available.",
+                dynamic_cast<LpImCtx *>(ctx.Inner())->Win()->Inner());
         }
     }
     ImGui::SameLine();
@@ -156,7 +154,7 @@ void orbiter::ScenarioTab::OnDraw(oapi::WithImCtx<LpImCtx> &ctx) {
                 SDL_ShowSimpleMessageBox(
                     SDL_MESSAGEBOX_ERROR, "Save Error",
                     "Scenario name too long (max 63 characters).",
-                    ctx->Win()->Inner());
+                    dynamic_cast<LpImCtx *>(ctx.Inner())->Win()->Inner());
             } else {
                 const int res =
                     SaveCurScenarioAs(saveScnName.c_str(), saveScnDesc.c_str());
@@ -164,9 +162,10 @@ void orbiter::ScenarioTab::OnDraw(oapi::WithImCtx<LpImCtx> &ctx) {
                     ImGui::OpenPopup("Warning##SaveScnOverwrite");
                 } else if (res == 1) {
                     // TODO: notification
-                    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Save Error",
-                                             "Error writing scenario file.",
-                                             ctx->Win()->Inner());
+                    SDL_ShowSimpleMessageBox(
+                        SDL_MESSAGEBOX_ERROR, "Save Error",
+                        "Error writing scenario file.",
+                        dynamic_cast<LpImCtx *>(ctx.Inner())->Win()->Inner());
                 } else {
                     RefreshList(true);
                     ImGui::CloseCurrentPopup();
@@ -190,9 +189,10 @@ void orbiter::ScenarioTab::OnDraw(oapi::WithImCtx<LpImCtx> &ctx) {
                 if (SaveCurScenarioAs(saveScnName.c_str(), saveScnDesc.c_str(),
                                       true)) {
                     // TODO: notification
-                    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Save Error",
-                                             "Error writing scenario file.",
-                                             ctx->Win()->Inner());
+                    SDL_ShowSimpleMessageBox(
+                        SDL_MESSAGEBOX_ERROR, "Save Error",
+                        "Error writing scenario file.",
+                        dynamic_cast<LpImCtx *>(ctx.Inner())->Win()->Inner());
                     ImGui::CloseCurrentPopup();
                 } else {
                     RefreshList(true);

@@ -370,7 +370,6 @@ class Orbiter;
 struct IWICImagingFactory;
 
 namespace oapi {
-
 /**
  * \brief Structure for defining a raw image.
  */
@@ -387,76 +386,70 @@ class Sketchpad;
 class ParticleStream;
 class ScreenAnnotation;
 
-template <class Ctx> class WithImCtx;
+class OAPIFUNC ImCtxBase;
+class OAPIFUNC WithImCtx;
 
-class ImCtxBase {
-public:
-	virtual ~ImCtxBase() {};
+class OAPIFUNC ImCtxBase {
+  public:
+    virtual ~ImCtxBase();
 
-	ImCtxBase(const ImCtxBase &) = delete;
+    ImCtxBase(const ImCtxBase &) = delete;
 
-	ImCtxBase &operator=(const ImCtxBase &) = delete;
+    ImCtxBase &operator=(const ImCtxBase &) = delete;
 
-	[[nodiscard]] ImFont *DefaultFont() const { return m_defaultFont; }
-	[[nodiscard]] ImFont *ItalicFont() const { return m_italicFont; }
-	[[nodiscard]] ImFont *BoldFont() const { return m_boldFont; }
-	[[nodiscard]] ImFont *BoldItalicFont() const { return m_boldItalicFont; }
-	[[nodiscard]] ImFont *HdgFont() const { return m_hdgFont; }
-	[[nodiscard]] ImFont *MonoFont() const { return m_monoFont; }
-	[[nodiscard]] Orbiter *App() const { return m_app; }
+    [[nodiscard]] ImFont *DefaultFont() const { return m_defaultFont; }
+    [[nodiscard]] ImFont *ItalicFont() const { return m_italicFont; }
+    [[nodiscard]] ImFont *BoldFont() const { return m_boldFont; }
+    [[nodiscard]] ImFont *BoldItalicFont() const { return m_boldItalicFont; }
+    [[nodiscard]] ImFont *HdgFont() const { return m_hdgFont; }
+    [[nodiscard]] ImFont *MonoFont() const { return m_monoFont; }
+    [[nodiscard]] Orbiter *App() const { return m_app; }
 
-protected:
-	ImCtxBase() = default;
-	Orbiter *m_app;
-	ImGuiContext *m_context;
-	ImFont *m_defaultFont;
-	ImFont *m_italicFont;
-	ImFont *m_boldFont;
-	ImFont *m_boldItalicFont;
-	ImFont *m_hdgFont;
-	ImFont *m_monoFont;
+	WithImCtx PushLocal();
+  protected:
+	friend WithImCtx;
+    ImCtxBase(Orbiter* app, ImGuiContext* context);
+    Orbiter *m_app;
+    ImGuiContext *m_context;
+    ImFont *m_defaultFont;
+    ImFont *m_italicFont;
+    ImFont *m_boldFont;
+    ImFont *m_boldItalicFont;
+    ImFont *m_hdgFont;
+    ImFont *m_monoFont;
 
-	template <class Ctx> WithImCtx<Ctx> PushLocal_() {
-		const auto lastContext = ImGui::GetCurrentContext();
-		ImGui::SetCurrentContext(m_context);
-		return WithImCtx<Ctx>(static_cast<Ctx *>(this), lastContext);
-	};
+    virtual bool ConsumeEvent(const SDL_Event &event, bool &wantsOut) = 0;
 
-	virtual bool ConsumeEvent(const SDL_Event &event, bool &wantsOut) = 0;
+    [[nodiscard]] virtual bool BeginFrame() = 0;
 
-	[[nodiscard]] virtual bool BeginFrame() = 0;
-
-	virtual void EndFrame() = 0;
+    virtual void EndFrame() = 0;
 };
 
-template <class Ctx> class WithImCtx {
-public:
-	WithImCtx(const WithImCtx &) = delete;
+class OAPIFUNC WithImCtx {
+  public:
 
-	WithImCtx &operator=(const WithImCtx &) = delete;
+    WithImCtx &operator=(const WithImCtx &) = delete;
 
-	~WithImCtx() {
-		if (lastContext)
-			ImGui::SetCurrentContext(lastContext);
-	}
+    ~WithImCtx();
 
-	Ctx *operator->() const { return inner; }
+    ImCtxBase *operator->() const;
 
-	bool ConsumeEvent(const SDL_Event &event, bool &wantsOut) {
-		return inner->ConsumeEvent(event, wantsOut);
-	};
+	[[nodiscard]] ImCtxBase *Inner() const;
 
-	[[nodiscard]] bool BeginFrame() { return inner->BeginFrame(); };
+    bool ConsumeEvent(const SDL_Event &event, bool &wantsOut) const;
 
-	void EndFrame() const { return inner->EndFrame(); };
+    [[nodiscard]] bool BeginFrame() const;
 
-private:
-	friend ImCtxBase;
-	friend Ctx;
-	WithImCtx(Ctx *inner, ImGuiContext *lastContext)
-	    : inner(inner), lastContext(lastContext) {};
-	Ctx *inner;
-	ImGuiContext *lastContext;
+    void EndFrame() const;
+
+  protected:
+    WithImCtx(const WithImCtx &) = default;
+
+  private:
+    friend ImCtxBase;
+    WithImCtx(ImCtxBase *inner, ImGuiContext *lastContext);
+    ImCtxBase *inner;
+    ImGuiContext *lastContext;
 };
 
 // ======================================================================
@@ -538,7 +531,7 @@ public:
 	 * \param str Text string to print
 	 */
 	virtual void clbkDebugString(const char *str) {}
-	
+
 	/**
 	 * \brief Texture request
 	 *
@@ -875,7 +868,7 @@ public:
         virtual bool RenderWndConsumeEvent(const SDL_Event &event,
                                            bool &wantsOut);
 
-	virtual void DrawLaunchpadVideoTab(const WithImCtx<ImCtxBase>& ctx);
+	virtual void DrawLaunchpadVideoTab(const WithImCtx& ctx);
 
 	/**
 	 * \brief Structure containing default video options, as stored in
@@ -910,7 +903,7 @@ public:
 	 * \brief returns a list of popup windows owned by the render window.
 	 * \param [out] hPopupWnd on exit, points to a list of window handles
 	 * \return Number of entries in the list.
-	 * \note The list returned by this method contains the handles of 
+	 * \note The list returned by this method contains the handles of
 	 *   popup windows that are to be rendered on top of the render viewport
 	 *   (e.g. dialog boxes).
 	 * \note A client can use this list if it requires a special method of
@@ -1095,7 +1088,7 @@ public:
 
 	/**
 	 * \brief Create a surface for texturing, as a blitting source, etc.
-	 * 
+	 *
 	 * Surfaces are used for offscreen bitmap and texture manipulation,
 	 * blitting and rendering.
 	 * Derived classes should create a device-specific surface, and
@@ -1420,7 +1413,7 @@ public:
 	 */
 	virtual Font *clbkCreateFont (int height, bool prop, const char *face, FontStyle style = FontStyle::FONT_NORMAL, int orientation = 0) const { return NULL; }
 	virtual Font* clbkCreateFontEx (int height, char* face, int width = 0, int weight = 400, FontStyle style = FontStyle::FONT_NORMAL, float spacing = 0.0f) const { return NULL; }
-		
+
 	/**
 	 * \brief De-allocate a font resource.
 	 * \param font pointer to font resource
@@ -1495,7 +1488,7 @@ public:
 	// @}
 
 	/**
-	 * \brief Constructs a synthetic elevation grid for a tile by interpolating 
+	 * \brief Constructs a synthetic elevation grid for a tile by interpolating
 	 *   ancestor elevation data
 	 * \param emgr elevation manager handle (retrieve with oapiElevationManager)
 	 * \param [in] ilat patch latitude index
@@ -1687,7 +1680,7 @@ protected:
 
 	/**
 	 * \brief Change the default splash screen
-	 * 
+	 *
 	 * Called before clbkCreateRenderWindow to override the default splash screen
 	 * image and text color.
 	 *

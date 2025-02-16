@@ -33,7 +33,7 @@ public:
   void GetConfig(const Config *cfg) override;
   void SetConfig(Config *cfg) override;
 
-  void OnDraw(oapi::WithImCtx<LpImCtx> &ctx) override;
+  void OnDraw(WithLpImCtx &ctx) override;
 
 protected:
   void RefreshLists();

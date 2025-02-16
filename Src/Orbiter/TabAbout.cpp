@@ -6,14 +6,8 @@
 //=============================================================================
 
 #include "TabAbout.h"
-#include "Help.h"
 #include "Orbiter.h"
-#include "Util.h"
 #include "about.hpp"
-#include "resource.h"
-#include <commctrl.h>
-#include <io.h>
-#include <windows.h>
 
 //-----------------------------------------------------------------------------
 // AboutTab class
@@ -26,7 +20,7 @@ orbiter::AboutTab::AboutTab(const LaunchpadDialog2 *lp)
 
 //-----------------------------------------------------------------------------
 
-void orbiter::AboutTab::RenderCentered(oapi::WithImCtx<LpImCtx> &ctx) {
+void orbiter::AboutTab::RenderCentered(WithLpImCtx &ctx) {
     ImGui::BeginGroup();
 
     ImGui::Image(icon->TexID(), ImVec2(64, 64));
@@ -41,7 +35,7 @@ void orbiter::AboutTab::RenderCentered(oapi::WithImCtx<LpImCtx> &ctx) {
     ImGui::EndGroup();
 }
 
-void orbiter::AboutTab::OnDraw(oapi::WithImCtx<LpImCtx> &ctx) {
+void orbiter::AboutTab::OnDraw(WithLpImCtx &ctx) {
     auto max = ImGui::GetContentRegionAvail();
     auto origin = ImGui::GetCursorScreenPos();
     auto center = ImVec2(max.x / 2 + origin.x, max.y / 2 + origin.y);
