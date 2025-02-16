@@ -96,6 +96,8 @@ namespace ImGui {
 void Markdown(oapi::WithImCtx<LpImCtx> &ctx, std::string_view md,
               std::vector<std::shared_ptr<::LpImage>> &loadedImages);
 
+void Markdown(oapi::WithImCtx<LpImCtx> &ctx, std::string_view md);
+
 bool InputText(const char *label, std::string &buf,
                ImGuiInputTextFlags flags = 0,
                ImGuiInputTextCallback callback = nullptr,

@@ -2,12 +2,13 @@
 
 #include <IconsFontAwesome6.h>
 
-#include "imgui_md.h"
+#include "imgui.h"
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_sdlgpu3.h"
-#include "imgui.h"
+#include "imgui_md.h"
 
-// Styling adapted from https://gist.github.com/dougbinks/8089b4bbaccaaf6fa204236978d165a9
+// Styling adapted from
+// https://gist.github.com/dougbinks/8089b4bbaccaaf6fa204236978d165a9
 static void ImGuiSetStyle(bool bStyleDark_, float alpha_) {
     // Setup Dear ImGui style
     ImGui::StyleColorsClassic();
@@ -24,7 +25,8 @@ static void ImGuiSetStyle(bool bStyleDark_, float alpha_) {
     style.TabRounding = 3.0f;
     style.WindowMenuButtonPosition = ImGuiDir_Right;
     return;
-    // light style from Pacôme Danhiez (user itamago) https://github.com/ocornut/imgui/pull/511#issuecomment-175719267
+    // light style from Pacôme Danhiez (user itamago)
+    // https://github.com/ocornut/imgui/pull/511#issuecomment-175719267
     style.Colors[ImGuiCol_Text] = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
     style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
     style.Colors[ImGuiCol_WindowBg] = ImVec4(0.94f, 0.94f, 0.94f, 0.94f);
@@ -36,19 +38,19 @@ static void ImGuiSetStyle(bool bStyleDark_, float alpha_) {
     style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
     style.Colors[ImGuiCol_TitleBg] = ImVec4(0.96f, 0.96f, 0.96f, 1.00f);
     style.Colors[ImGuiCol_TitleBgCollapsed] =
-            ImVec4(1.00f, 1.00f, 1.00f, 0.51f);
+        ImVec4(1.00f, 1.00f, 1.00f, 0.51f);
     style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.82f, 0.82f, 0.82f, 1.00f);
     style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.86f, 0.86f, 0.86f, 1.00f);
     style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.98f, 0.98f, 0.98f, 0.53f);
     style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.69f, 0.69f, 0.69f, 1.00f);
-    style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(
-        0.59f, 0.59f, 0.59f, 1.00f);
-    style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(
-        0.49f, 0.49f, 0.49f, 1.00f);
+    style.Colors[ImGuiCol_ScrollbarGrabHovered] =
+        ImVec4(0.59f, 0.59f, 0.59f, 1.00f);
+    style.Colors[ImGuiCol_ScrollbarGrabActive] =
+        ImVec4(0.49f, 0.49f, 0.49f, 1.00f);
     style.Colors[ImGuiCol_CheckMark] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
     style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.24f, 0.52f, 0.88f, 1.00f);
     style.Colors[ImGuiCol_SliderGrabActive] =
-            ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+        ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
     style.Colors[ImGuiCol_Button] = ImVec4(0.26f, 0.59f, 0.98f, 0.40f);
     style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
     style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.06f, 0.53f, 0.98f, 1.00f);
@@ -56,16 +58,16 @@ static void ImGuiSetStyle(bool bStyleDark_, float alpha_) {
     style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.80f);
     style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
     style.Colors[ImGuiCol_ResizeGrip] = ImVec4(1.00f, 1.00f, 1.00f, 0.50f);
-    style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(
-        0.26f, 0.59f, 0.98f, 0.67f);
+    style.Colors[ImGuiCol_ResizeGripHovered] =
+        ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
     style.Colors[ImGuiCol_ResizeGripActive] =
-            ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
+        ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
     style.Colors[ImGuiCol_PlotLines] = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
     style.Colors[ImGuiCol_PlotLinesHovered] =
-            ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
+        ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
     style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
-    style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(
-        1.00f, 0.60f, 0.00f, 1.00f);
+    style.Colors[ImGuiCol_PlotHistogramHovered] =
+        ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
     style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
 
     if (bStyleDark_) {
@@ -95,9 +97,9 @@ static void ImGuiSetStyle(bool bStyleDark_, float alpha_) {
     }
 }
 
-LpImCtx::LpImCtx(
-    Orbiter *app,
-    const std::shared_ptr<sdl::ManagedWindow> &window) : ImCtxBase() {
+LpImCtx::LpImCtx(Orbiter *app,
+                 const std::shared_ptr<sdl::ManagedWindow> &window)
+    : ImCtxBase() {
     m_app = app;
     m_window = window;
 #ifdef _DEBUG
@@ -127,28 +129,26 @@ LpImCtx::LpImCtx(
 
     const CFG_FONTPRM &prm = m_app->Cfg()->CfgFontPrm;
 
-    auto defaultFontFile = std::string(prm.ImGui_FontName).append(
-        "-Regular.ttf");
+    auto defaultFontFile =
+        std::string(prm.ImGui_FontName).append("-Regular.ttf");
     auto italicFontFile = std::string(prm.ImGui_FontName).append("-Italic.ttf");
     auto boldFontFile = std::string(prm.ImGui_FontName).append("-Bold.ttf");
-    auto boldItalicFontFile = std::string(prm.ImGui_FontName).append(
-        "-BoldItalic.ttf");
+    auto boldItalicFontFile =
+        std::string(prm.ImGui_FontName).append("-BoldItalic.ttf");
 
     m_defaultFont = io.Fonts->AddFontFromFileTTF(
         defaultFontFile.c_str(), prm.ImGui_FontSize, &config,
         ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
     io.Fonts->AddFontFromFileTTF("fa-solid-900.ttf", prm.ImGui_FontSize,
                                  &icons_config, icons_ranges);
-    m_italicFont = io.Fonts->AddFontFromFileTTF(italicFontFile.c_str(),
-                                                prm.ImGui_FontSize, &config,
-                                                ImGui::GetIO().Fonts->
-                                                GetGlyphRangesJapanese());
+    m_italicFont = io.Fonts->AddFontFromFileTTF(
+        italicFontFile.c_str(), prm.ImGui_FontSize, &config,
+        ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
     io.Fonts->AddFontFromFileTTF("fa-solid-900.ttf", prm.ImGui_FontSize,
                                  &icons_config, icons_ranges);
-    m_boldFont = io.Fonts->AddFontFromFileTTF(boldFontFile.c_str(),
-                                              prm.ImGui_FontSize, &config,
-                                              ImGui::GetIO().Fonts->
-                                              GetGlyphRangesJapanese());
+    m_boldFont = io.Fonts->AddFontFromFileTTF(
+        boldFontFile.c_str(), prm.ImGui_FontSize, &config,
+        ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
     io.Fonts->AddFontFromFileTTF("fa-solid-900.ttf", prm.ImGui_FontSize,
                                  &icons_config, icons_ranges);
     m_boldItalicFont = io.Fonts->AddFontFromFileTTF(
@@ -156,19 +156,16 @@ LpImCtx::LpImCtx(
         ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
     io.Fonts->AddFontFromFileTTF("fa-solid-900.ttf", prm.ImGui_FontSize,
                                  &icons_config, icons_ranges);
-    m_hdgFont = io.Fonts->AddFontFromFileTTF(defaultFontFile.c_str(),
-                                             prm.ImGui_FontSize * 1.5f,
-                                             &config,
-                                             ImGui::GetIO().Fonts->
-                                             GetGlyphRangesJapanese());
+    m_hdgFont = io.Fonts->AddFontFromFileTTF(
+        defaultFontFile.c_str(), prm.ImGui_FontSize * 1.5f, &config,
+        ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
     io.Fonts->AddFontFromFileTTF("fa-solid-900.ttf", prm.ImGui_FontSize,
                                  &icons_config, icons_ranges);
     // weird alignment issues otherwise, yippee (sarcastic)
     config.GlyphOffset.y = 1;
-    m_monoFont = io.Fonts->AddFontFromFileTTF("Cousine-Regular.ttf",
-                                              prm.ImGui_FontSize, &config,
-                                              ImGui::GetIO().Fonts->
-                                              GetGlyphRangesJapanese());
+    m_monoFont = io.Fonts->AddFontFromFileTTF(
+        "Cousine-Regular.ttf", prm.ImGui_FontSize, &config,
+        ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
     io.Fonts->Build();
 
     if (!ImGui_ImplSDL3_InitForSDLGPU(m_window->Inner()))
@@ -176,8 +173,8 @@ LpImCtx::LpImCtx(
 
     ImGui_ImplSDLGPU3_InitInfo init_info = {};
     init_info.GpuDevice = m_window->Device();
-    init_info.ColorTargetFormat = SDL_GetGPUSwapchainTextureFormat(
-        m_window->Device(), m_window->Inner());
+    init_info.ColorTargetFormat =
+        SDL_GetGPUSwapchainTextureFormat(m_window->Device(), m_window->Inner());
     init_info.MSAASamples = SDL_GPU_SAMPLECOUNT_1;
     if (!ImGui_ImplSDLGPU3_Init(&init_info))
         throw std::runtime_error("Failed to initialize ImGui/SDLGPU3");
@@ -202,22 +199,20 @@ bool EventIsKeyboard(Uint32 type) {
 }
 
 bool EventIsMouse(Uint32 type) {
-    return type >= SDL_EVENT_MOUSE_MOTION && type <
-           SDL_EVENT_JOYSTICK_AXIS_MOTION;
+    return type >= SDL_EVENT_MOUSE_MOTION &&
+           type < SDL_EVENT_JOYSTICK_AXIS_MOTION;
 }
 
-bool LpImCtx::ConsumeEvent(const SDL_Event &event,
-                              bool &wantsOut) {
+bool LpImCtx::ConsumeEvent(const SDL_Event &event, bool &wantsOut) {
     bool consumed = ImGui_ImplSDL3_ProcessEvent(&event);
     ImGuiIO &io = ImGui::GetIO();
-    if ((io.WantCaptureMouse && EventIsMouse(event.type)) || (
-            io.WantCaptureMouse && EventIsKeyboard(event.type))) {
+    if ((io.WantCaptureMouse && EventIsMouse(event.type)) ||
+        (io.WantCaptureMouse && EventIsKeyboard(event.type))) {
         consumed = true;
     }
-    if (event.type == SDL_EVENT_QUIT || (
-            event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.
-            windowID ==
-            SDL_GetWindowID((*this).Win()->Inner()))) {
+    if (event.type == SDL_EVENT_QUIT ||
+        (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED &&
+         event.window.windowID == SDL_GetWindowID((*this).Win()->Inner()))) {
         wantsOut = true;
         return true;
     }
@@ -239,11 +234,11 @@ bool LpImCtx::BeginFrame() {
 void LpImCtx::EndFrame() {
     ImGui::Render();
     ImDrawData *draw_data = ImGui::GetDrawData();
-    const bool is_minimized = (draw_data->DisplaySize.x <= 0.0f || draw_data->
-                               DisplaySize.y <= 0.0f);
+    const bool is_minimized =
+        (draw_data->DisplaySize.x <= 0.0f || draw_data->DisplaySize.y <= 0.0f);
 
-    SDL_GPUCommandBuffer *command_buffer = SDL_AcquireGPUCommandBuffer(
-        (*this).Win()->Device());
+    SDL_GPUCommandBuffer *command_buffer =
+        SDL_AcquireGPUCommandBuffer((*this).Win()->Device());
     SDL_GPUTexture *swapchain_texture;
     SDL_AcquireGPUSwapchainTexture(command_buffer, (*this).Win()->Inner(),
                                    &swapchain_texture, nullptr, nullptr);
@@ -259,8 +254,8 @@ void LpImCtx::EndFrame() {
         target_info.mip_level = 0;
         target_info.layer_or_depth_plane = 0;
         target_info.cycle = false;
-        SDL_GPURenderPass *render_pass = SDL_BeginGPURenderPass(
-            command_buffer, &target_info, 1, nullptr);
+        SDL_GPURenderPass *render_pass =
+            SDL_BeginGPURenderPass(command_buffer, &target_info, 1, nullptr);
 
         ImGui_ImplSDLGPU3_RenderDrawData(draw_data, command_buffer,
                                          render_pass);
@@ -271,13 +266,10 @@ void LpImCtx::EndFrame() {
     SDL_SubmitGPUCommandBuffer(command_buffer);
 }
 
-
-void LpImage::Load(
-    const std::shared_ptr<sdl::ManagedWindow> &win, SDL_Surface *origSurface,
-    std::string_view path) {
+void LpImage::Load(const std::shared_ptr<sdl::ManagedWindow> &win,
+                   SDL_Surface *origSurface, std::string_view path) {
     if (!origSurface)
-        throw std::invalid_argument(
-            "Image::Load: surface was null");
+        throw std::invalid_argument("Image::Load: surface was null");
     auto format = SDL_PIXELFORMAT_ABGR8888;
     m_surface = origSurface;
     if (origSurface->format != format) {
@@ -303,21 +295,15 @@ void LpImage::Load(
     buf_info.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
     buf_info.size = m_surface->w * m_surface->h * 4;
 
-    auto transfer_buf = SDL_CreateGPUTransferBuffer(
-        win->Device(),
-        &buf_info
-    );
+    auto transfer_buf = SDL_CreateGPUTransferBuffer(win->Device(), &buf_info);
     if (!transfer_buf) {
         SDL_ReleaseGPUTexture(win->Device(), m_texture);
         SDL_DestroySurface(m_surface);
         throw std::runtime_error("Failed to create transfer buffer");
     }
 
-    auto transfer_ptr = static_cast<Uint8 *>(SDL_MapGPUTransferBuffer(
-        win->Device(),
-        transfer_buf,
-        false
-    ));
+    auto transfer_ptr = static_cast<Uint8 *>(
+        SDL_MapGPUTransferBuffer(win->Device(), transfer_buf, false));
     if (!transfer_ptr) {
         SDL_ReleaseGPUTransferBuffer(win->Device(), transfer_buf);
         SDL_ReleaseGPUTexture(win->Device(), m_texture);
@@ -380,22 +366,17 @@ LpImage::~LpImage() {
     SDL_DestroySurface(m_surface);
 }
 
-struct MarkdownUserData {
-    oapi::WithImCtx<LpImCtx> &ctx;
-    std::vector<LpImage *> &images;
-};
-
-class orbiter_md : public imgui_md {
-public:
-    orbiter_md(oapi::WithImCtx<LpImCtx> &ctx,
-               std::vector<std::shared_ptr<LpImage> > &images) : ctx(ctx),
-        images(images) {
-    }
+class orbiter_md final : public imgui_md {
+  public:
+    orbiter_md(
+        oapi::WithImCtx<LpImCtx> &ctx,
+        const std::optional<std::vector<std::shared_ptr<LpImage>> *> images)
+        : ctx(ctx), images(images) {}
 
     oapi::WithImCtx<LpImCtx> &ctx;
-    std::vector<std::shared_ptr<LpImage> > &images;
+    std::optional<std::vector<std::shared_ptr<LpImage>> *> images;
 
-    ImFont *get_font() const override {
+    [[nodiscard]] ImFont *get_font() const override {
         if (m_is_code || m_is_code_block)
             return ctx->MonoFont();
         if (m_is_em && m_is_strong)
@@ -414,22 +395,25 @@ public:
     }
 
     bool get_image(image_info &nfo) const override {
+        if (!images.has_value())
+            return false;
+        auto images = this->images.value();
         std::shared_ptr<LpImage> image = nullptr;
         if (m_img_src.empty()) {
             return false;
         }
-        for (const auto loadedImg: images) {
+        for (const auto &loadedImg : *images) {
             if (loadedImg->Path() == m_img_src) {
                 image = loadedImg;
             }
         }
         if (!image) {
-            image = std::make_shared<LpImage>(ctx->Win(),
-                                            m_img_src);
-            images.push_back(image);
+            image = std::make_shared<LpImage>(ctx->Win(), m_img_src);
+            images->push_back(image);
         }
 
-        nfo.size = ImVec2(image->Width(), image->Height());
+        nfo.size = ImVec2(static_cast<float>(image->Width()),
+                          static_cast<float>(image->Height()));
         nfo.texture_id = image->TexID();
         nfo.uv0 = {0, 0};
         nfo.uv1 = {1, 1};
@@ -444,9 +428,14 @@ public:
     };
 };
 
-void ImGui::Markdown(oapi::WithImCtx<LpImCtx> &ctx, std::string_view md,
-                     std::vector<std::shared_ptr<::LpImage> > &loadedImages) {
-    orbiter_md printer = {ctx, loadedImages};
+void ImGui::Markdown(oapi::WithImCtx<LpImCtx> &ctx, const std::string_view md,
+                     std::vector<std::shared_ptr<::LpImage>> &loadedImages) {
+    orbiter_md printer = {ctx, {&loadedImages}};
+    printer.print(md.data(), md.data() + md.size());
+}
+
+void ImGui::Markdown(oapi::WithImCtx<LpImCtx> &ctx, const std::string_view md) {
+    orbiter_md printer = {ctx, std::nullopt};
     printer.print(md.data(), md.data() + md.size());
 }
 
@@ -460,8 +449,8 @@ int InputTextCallback(ImGuiInputTextCallbackData *data) {
     const auto userdata = static_cast<InputTextUserData *>(data->UserData);
     if (data->EventFlag == ImGuiInputTextFlags_CallbackResize) {
         // TODO: more efficient to use some kind of scale factor?
-        if (data->BufTextLen != userdata->buf.size() && data->BufTextLen <=
-            userdata->buf.capacity())
+        if (data->BufTextLen != userdata->buf.size() &&
+            data->BufTextLen <= userdata->buf.capacity())
             userdata->buf.resize(data->BufTextLen);
         if (data->BufTextLen <= userdata->buf.capacity())
             return 0;
@@ -476,8 +465,7 @@ int InputTextCallback(ImGuiInputTextCallbackData *data) {
 
 bool ImGui::InputText(const char *label, std::string &buf,
                       ImGuiInputTextFlags flags,
-                      const ImGuiInputTextCallback callback,
-                      void *user_data) {
+                      const ImGuiInputTextCallback callback, void *user_data) {
     ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
 #ifdef _DEBUG
     assert((flags & ImGuiInputTextFlags_CallbackResize) == 0);
@@ -492,8 +480,7 @@ bool ImGui::InputText(const char *label, std::string &buf,
 }
 
 bool ImGui::InputTextWithHint(const char *label, const char *hint,
-                              std::string &buf,
-                              ImGuiInputTextFlags flags,
+                              std::string &buf, ImGuiInputTextFlags flags,
                               const ImGuiInputTextCallback callback,
                               void *user_data) {
     ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
@@ -503,16 +490,15 @@ bool ImGui::InputTextWithHint(const char *label, const char *hint,
     flags |= ImGuiInputTextFlags_CallbackResize;
 
     InputTextUserData data{buf, callback, user_data};
-    const bool res = ImGui::InputTextWithHint(label, hint, buf.data(),
-                                              buf.capacity(), flags,
-                                              InputTextCallback, &data);
+    const bool res =
+        ImGui::InputTextWithHint(label, hint, buf.data(), buf.capacity(), flags,
+                                 InputTextCallback, &data);
     ImGui::PopStyleVar();
     return res;
 }
 
 bool ImGui::InputTextMultiline(const char *label, std::string &buf,
-                               const ImVec2 &size,
-                               ImGuiInputTextFlags flags,
+                               const ImVec2 &size, ImGuiInputTextFlags flags,
                                const ImGuiInputTextCallback callback,
                                void *user_data) {
     ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
@@ -522,9 +508,9 @@ bool ImGui::InputTextMultiline(const char *label, std::string &buf,
     flags |= ImGuiInputTextFlags_CallbackResize;
 
     InputTextUserData data{buf, callback, user_data};
-    const bool res = ImGui::InputTextMultiline(label, buf.data(),
-                                               buf.capacity(), size, flags,
-                                               InputTextCallback, &data);
+    const bool res =
+        ImGui::InputTextMultiline(label, buf.data(), buf.capacity(), size,
+                                  flags, InputTextCallback, &data);
     ImGui::PopStyleVar();
     return res;
 }
