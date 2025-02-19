@@ -13,10 +13,13 @@
 #ifndef __OPTIONSPAGES_H
 #define __OPTIONSPAGES_H
 
-#include <windows.h>
-#include <CommCtrl.h>
 #include "CustomControls.h"
 #include "OrbiterAPI.h"
+#include <CommCtrl.h>
+#include <windows.h>
+
+#include <GraphicsAPI.h>
+#include <UIUtil.h>
 
 class OptionsPage;
 class Config;
@@ -25,419 +28,255 @@ class Config;
  * \brief Container class for options pages
  */
 class OptionsPageContainer {
-public:
-	/**
-	 * \brief Enumerates where the options pages are shown.
-	 */
-	enum Originator {
-		LAUNCHPAD, ///< Show in Launchpad dialog
-		INLINE     ///< Show as inline dialog during a simulation session
-	};
-
-	OptionsPageContainer(Originator orig, Config* cfg);
-	~OptionsPageContainer();
-
-	OptionsPage* CurrentPage();
-
-	Originator Environment() const { return m_orig; }
-
-	Config* Cfg() { return m_cfg; }
-
-	void SetWindowHandles(HWND hDlg, HWND hSplitter, HWND hPane1, HWND hPane2);
-
-	const GenericCtrl* ContainerControl() const { return &m_container; }
-
-	/**
-	 * \brief Update dialog controls from config settings
-	 */
-	void UpdatePages(bool resetView);
-
-	/**
-	 * \brief Update config object from dialog controls
-	 */
-	void UpdateConfig();
-
-	void SwitchPage(const char* name);
-
-	void OnNotifyPagelist(LPNMHDR pnmh);
-
-protected:
-	/**
-     * \brief Adds a new options page.
-     * \param hDlg dialog handle
-     * \param pPage pointer to new page
+  public:
+    /**
+     * \brief Enumerates where the options pages are shown.
      */
-	HTREEITEM AddPage(OptionsPage* pPage, HTREEITEM parent = 0);
+    enum Originator {
+        LAUNCHPAD, ///< Show in Launchpad dialog
+        INLINE     ///< Show as inline dialog during a simulation session
+    };
 
-	const OptionsPage* FindPage(const char* name) const;
+    OptionsPageContainer(Originator orig, Config *cfg);
+    ~OptionsPageContainer();
 
-	void SwitchPage(size_t page);
-	void SwitchPage(const OptionsPage* page);
+    std::optional<std::shared_ptr<OptionsPage>> CurrentPage();
 
-	void CreatePages();
+    [[nodiscard]] Originator Environment() const { return m_orig; }
 
-	void ExpandAll();
+    Config *Cfg() { return m_cfg; }
 
-	void SetPageSize(HWND hDlg);
+    /**
+     * \brief Update dialog controls from config settings
+     */
+    void UpdatePages(bool resetView);
 
-	void Clear();
+    /**
+     * \brief Update config object from dialog controls
+     */
+    void UpdateConfig() const;
 
-	BOOL VScroll(HWND hDlg, WORD request, WORD curpos, HWND hControl);
+    void SwitchPage(std::string_view name);
 
-	const HELPCONTEXT* HelpContext() const { return m_contextHelp; }
+    void OnDraw(oapi::WithImCtx &ctx);
 
-private:
-	Originator m_orig;
-	Config* m_cfg;
-	SplitterCtrl m_splitter;
-	GenericCtrl m_container;
-	std::vector<OptionsPage*> m_pPage;
-	size_t m_pageIdx;
-	HWND m_hDlg;
-	HWND m_hPageList;
-	HWND m_hContainer;
-	int m_vScrollPos;
-	int m_vScrollRange;
-	int m_vScrollPage;
-	const HELPCONTEXT* m_contextHelp;
+  protected:
+    /**
+     * \brief Adds a new options page.
+     * \param pPage pointer to new page
+     * \param parent ID of parent page
+     */
+    size_t AddPage(std::shared_ptr<OptionsPage> pPage,
+                   std::optional<size_t> parent = std::nullopt);
+
+    [[nodiscard]] std::optional<std::shared_ptr<OptionsPage>>
+    FindPage(std::string_view name) const;
+
+    void SwitchPage(const std::shared_ptr<OptionsPage> &page);
+    void SwitchPage(size_t page);
+
+    void CreatePages();
+
+    void Clear();
+
+  private:
+    struct OptionTreeEntry {
+        std::shared_ptr<OptionsPage> page;
+        std::optional<std::shared_ptr<OptionsPage>> parent;
+    };
+    Originator m_orig;
+    Config *m_cfg;
+    std::vector<OptionTreeEntry> m_pages;
+    std::optional<OptionTreeEntry *> m_currentPage;
+    int splitWidth;
+    void RenderTree(oapi::WithImCtx &ctx, OptionTreeEntry *parent);
 };
 
 /************************************************************************
  * \brief Base class for options dialog pages.
  */
 class OptionsPage {
-public:
-	/**
-	 * \brief OptionsPage constructor.
-	 * \param container Container owning the page
-	 */
-	OptionsPage(OptionsPageContainer* container);
+  public:
+    /**
+     * \brief OptionsPage constructor.
+     * \param container Container owning the page
+     * \param name The name of the page, as shown in the options list.
+     */
+    explicit OptionsPage(OptionsPageContainer *container, std::string name);
 
-	/**
-	 * \brief OptionsPage destructor.
-	 */
-	virtual ~OptionsPage();
+    /**
+     * \brief OptionsPage destructor.
+     */
+    virtual ~OptionsPage() = default;
 
-	/**
-	 * \brief Derived classes return the dialog resource id.
-	 */
-	virtual int ResourceId() const = 0;
+    /**
+     * \brief Returns the container object owning the page.
+     */
+    [[nodiscard]] OptionsPageContainer *Container() const {
+        return m_container;
+    }
 
-	/**
-	 * \brief Derived classes return the page title as it appears in the tree list.
-	 */
-	virtual const char* Name() const = 0;
+    [[nodiscard]] Config *Cfg() const { return m_container->Cfg(); }
 
-	/**
-	 * \brief Returns the container object owning the page.
-	 */
-	OptionsPageContainer* Container() { return m_container; }
+    [[nodiscard]] const std::string &Name() const { return m_name; }
 
-	Config* Cfg() { return m_container->Cfg(); }
+    /**
+     * \brief Update the dialog controls from config settings.
+     */
+    virtual void UpdateControls() {}
 
-	/**
-	 * \brief Returns the parent dialog handle.
-	 * \return Parent dialog handle
-	 */
-	HWND HParent() const;
+    /**
+     * \brief Update config object from dialog control states.
+     *    Only required for pages which don't react directly to controls
+     *    being modified.
+     */
+    virtual void UpdateConfig() {}
 
-	/**
-	 * \brief Returns the page window handle.
-	 * \return Page window handle
-	 */
-	HWND HPage() const { return m_hPage; }
+  protected:
+    friend OptionsPageContainer;
+    virtual void OnDraw(oapi::WithImCtx &ctx) = 0;
 
-	/**
-	 * \brief Creates the page window and assigns \ref m_hPage.
-	 */
-	HTREEITEM CreatePage(HWND hDlg, HTREEITEM parent = 0);
-
-	/**
-	 * \brief Show/hide the page.
-	 * \param bShow Show page if true, hide if false
-	 */
-	void Show(bool bShow);
-
-	/**
-	 * \brief Update the dialog controls from config settings.
-	 * \param hPage dialog page handle
-	 */
-	virtual void UpdateControls(HWND hPage) {}
-
-	/**
-	 * \brief Update config object from dialog control states.
-	 *    Only required for pages which don't react directly to controls
-	 *    being modified.
-	 */
-	virtual void UpdateConfig(HWND hPage) {}
-
-	/**
-	 * \brief Returns the name of the option page's help page, if applicable.
-	 */
-	virtual const HELPCONTEXT* HelpContext() const { return 0; }
-
-protected:
-	/**
-	 * \brief Default handler for WM_INITDIALOG messages.
-	 * \default Nothing, returns TRUE
-	 */
-	virtual BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
-
-	/**
-	 * \brief Default handler for WM_COMMAND messages.
-	 * \param hPage dialog window handle
-	 * \param ctrlId resource identifier of the control (LOWORD(wParam))
-	 * \param notification code (HIWORD(wParam))
-	 * \param hCtrl control window handle (lParam)
-	 * \default Nothing, returns FALSE
-	 */
-	virtual BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl) { return FALSE; }
-
-	/**
-	 * \brief Default handler for WM_HSCROLL messages.
-	 * \default Nothing, returns FALSE
-	 * \note This message is called by gauge controls on slider position change.
-	 */
-	virtual BOOL OnHScroll(HWND hPage, WPARAM wParam, LPARAM lParam) { return FALSE; }
-
-	/**
-	 * \brief Default handler for WM_NOTIFY messages.
-	 * \param hPage dialog window handle
-	 * \param ctrlId resource identifier of the control (wParam)
-	 * \param pNmHdr pointer to a NMHDR structure with details of the notification
-	 * \default Nothing, returns FALSE
-	 */
-	virtual BOOL OnNotify(HWND hPage, DWORD ctrlId, const NMHDR* pNmHdr) { return FALSE; }
-
-	/**
-	 * \brief Default generic message handler.
-	 * \default Nothing, returns FALSE
-	 * \note This method is called for any messages which don't have an associated
-	 *    specific callback function.
-	 */
-	virtual BOOL OnMessage(HWND hPage, UINT uMsg, WPARAM wParam, LPARAM lParam) { return FALSE; }
-
-	/**
-	 * \Brief page message loop.
-	 */
-	virtual INT_PTR DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-private:
-	/**
-	 * \brief Message loop hook for all options page.
-	 * \note This function dereferences the page instance and then calls
-	 *    the specific page's DlgProc method.
-	 */
-	static INT_PTR CALLBACK s_DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-	OptionsPageContainer* m_container; ///< container owning the page
-	HWND m_hPage;      ///< page window handle (0 before MakePage has been called)
-	HTREEITEM m_hItem; ///< page title in the tree view control
+  private:
+    OptionsPageContainer *m_container; ///< container owning the page
+    std::string m_name;
 };
 
 /************************************************************************
  * \brief Page for visual parameters
  */
 class OptionsPage_Visual : public OptionsPage {
-public:
-	OptionsPage_Visual(OptionsPageContainer* container);
-	int ResourceId() const;
-	const char* Name() const;
-	const HELPCONTEXT* HelpContext() const;
-	void UpdateControls(HWND hPage);
-	void UpdateConfig(HWND hPage);
+  public:
+    explicit OptionsPage_Visual(OptionsPageContainer *container);
 
-protected:
-	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
-	void VisualsChanged(HWND hPage);
-
+  protected:
+    void OnDraw(oapi::WithImCtx &ctx) override;
 };
 
 /************************************************************************
-* \brief Page for physics engine options
-*/
+ * \brief Page for physics engine options
+ */
 class OptionsPage_Physics : public OptionsPage {
-public:
-	OptionsPage_Physics(OptionsPageContainer* container);
-	int ResourceId() const;
-	const char* Name() const;
-	const HELPCONTEXT* HelpContext() const;
-	void UpdateControls(HWND hPage);
-	void UpdateConfig(HWND hPage);
+  public:
+    explicit OptionsPage_Physics(OptionsPageContainer *container);
 
-protected:
-	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand( HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl );
+  protected:
+    void OnDraw(oapi::WithImCtx &ctx) override;
 };
 
 /************************************************************************
  * \brief Page for instrument and panel options
  */
 class OptionsPage_Instrument : public OptionsPage {
-public:
-	OptionsPage_Instrument(OptionsPageContainer* container);
-	int ResourceId() const;
-	const char* Name() const;
-	const HELPCONTEXT* HelpContext() const;
-	void UpdateControls(HWND hPage);
+  public:
+    explicit OptionsPage_Instrument(OptionsPageContainer *container);
 
-protected:
-	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
-	BOOL OnNotify(HWND hPage, DWORD ctrlId, const NMHDR* pNmHdr);
+  protected:
+    void OnDraw(oapi::WithImCtx &ctx) override;
 };
 
 /************************************************************************
  * \brief Page for vessel options
  */
 class OptionsPage_Vessel : public OptionsPage {
-public:
-	OptionsPage_Vessel(OptionsPageContainer* container);
-	int ResourceId() const;
-	const char* Name() const;
-	const HELPCONTEXT* HelpContext() const;
-	void UpdateControls(HWND hPage);
+  public:
+    explicit OptionsPage_Vessel(OptionsPageContainer *container);
 
-protected:
-	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
+  protected:
+    void OnDraw(oapi::WithImCtx &ctx) override;
 };
 
 /************************************************************************
-* \brief Page for user interface options
-*/
+ * \brief Page for user interface options
+ */
 class OptionsPage_UI : public OptionsPage {
-public:
-	OptionsPage_UI(OptionsPageContainer* container);
-	int ResourceId() const;
-	const char* Name() const;
-	const HELPCONTEXT* HelpContext() const;
-	void UpdateControls(HWND hPage);
+  public:
+    explicit OptionsPage_UI(OptionsPageContainer *container);
 
-protected:
-	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
+  protected:
+    void OnDraw(oapi::WithImCtx &ctx) override;
 };
 
 /************************************************************************
-* \brief Page for joystick options
-*/
+ * \brief Page for joystick options
+ */
 class OptionsPage_Joystick : public OptionsPage {
-public:
-	OptionsPage_Joystick(OptionsPageContainer* container);
-	int ResourceId() const;
-	const char* Name() const;
-	const HELPCONTEXT* HelpContext() const;
-	void UpdateControls(HWND hPage);
+  public:
+    explicit OptionsPage_Joystick(OptionsPageContainer *container);
+    ~OptionsPage_Joystick() override;
 
-protected:
-	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
-	BOOL OnHScroll(HWND hPage, WPARAM wParam, LPARAM lParam);
+    OptionsPage_Joystick(const OptionsPage_Joystick &) = delete;
+    OptionsPage_Joystick &operator=(const OptionsPage_Joystick &) = delete;
+
+  protected:
+    void OnDraw(oapi::WithImCtx &ctx) override;
+
+  private:
+    int m_njoy;
+    SDL_JoystickID *m_joylist;
 };
 
 /************************************************************************
-* \brief Page for celestial sphere rendering options.
-*/
+ * \brief Page for celestial sphere rendering options.
+ */
 class OptionsPage_CelSphere : public OptionsPage {
-public:
-	OptionsPage_CelSphere(OptionsPageContainer* container);
-	int ResourceId() const;
-	const char* Name() const;
-	const HELPCONTEXT* HelpContext() const;
-	void UpdateControls(HWND hPage);
+  public:
+    explicit OptionsPage_CelSphere(OptionsPageContainer *container);
 
-protected:
-	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
-	BOOL OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam);
-	BOOL OnNotify(HWND hPage, DWORD ctrlId, const NMHDR* pNmHdr);
-	void PopulateStarmapList(HWND hPage);
-	void PopulateBgImageList(HWND hPage);
-	void StarPixelActivationChanged(HWND hPage);
-	void StarmapActivationChanged(HWND hPage);
-	void StarmapImageChanged(HWND hPage);
-	void BackgroundActivationChanged(HWND hPage);
-	void BackgroundImageChanged(HWND hPage);
-	void BackgroundBrightnessChanged(HWND hPage, double level);
+  protected:
+    void OnDraw(oapi::WithImCtx &ctx) override;
+    void PopulateStarmapList();
+    void PopulateBgImageList();
 
-private:
-	std::vector<std::pair<std::string, std::string>> m_pathStarmap;
-	std::vector<std::pair<std::string, std::string>> m_pathBgImage;
+  private:
+    std::vector<std::pair<std::string, std::string>> m_pathStarmap;
+    std::vector<std::pair<std::string, std::string>> m_pathBgImage;
 };
 
 /************************************************************************
  * \brief Main page for visual helpers options.
  */
 class OptionsPage_VisHelper : public OptionsPage {
-public:
-	OptionsPage_VisHelper(OptionsPageContainer* container);
-	int ResourceId() const;
-	const char* Name() const;
-	const HELPCONTEXT* HelpContext() const;
-	void UpdateControls(HWND hPage);
+  public:
+    explicit OptionsPage_VisHelper(OptionsPageContainer *container);
 
-protected:
-	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
+  protected:
+    void OnDraw(oapi::WithImCtx &ctx) override;
 };
 
 /************************************************************************
  * \brief Visual helpers "Planetarium" options page.
  */
 class OptionsPage_Planetarium : public OptionsPage {
-public:
-	OptionsPage_Planetarium(OptionsPageContainer* container);
-	int ResourceId() const;
-	const char* Name() const;
-	const HELPCONTEXT* HelpContext() const;
-	void UpdateControls(HWND hPage);
+  public:
+    explicit OptionsPage_Planetarium(OptionsPageContainer *container);
 
-protected:
-	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
-	void RescanMarkerList(HWND hPage);
-	void OnItemClicked(HWND hPage, WORD ctrlId);
-	BOOL OnMarkerSelectionChanged(HWND hPage);
+  protected:
+    void OnDraw(oapi::WithImCtx &ctx) override;
 };
 
 /************************************************************************
  * \brief Visual helpers "Labels" options page.
  */
 class OptionsPage_Labels : public OptionsPage {
-public:
-	OptionsPage_Labels(OptionsPageContainer* container);
-	int ResourceId() const;
-	const char* Name() const;
-	const HELPCONTEXT* HelpContext() const;
-	void UpdateControls(HWND hPage);
+  public:
+    explicit OptionsPage_Labels(OptionsPageContainer *container);
 
-protected:
-	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
-	void OnItemClicked(HWND hPage, WORD ctrlId);
-	void ScanPsysBodies(HWND hPage);
-	void UpdateFeatureList(HWND hPage);
-	void RescanFeatures(HWND hPage);
+  protected:
+    void OnDraw(oapi::WithImCtx &ctx) override;
+    // void ScanPsysBodies();
+    // void UpdateFeatureList();
+    // void RescanFeatures();
 };
 
 /************************************************************************
  * \brief Visual helpers "Body force vectors" options page.
  */
 class OptionsPage_Forces : public OptionsPage {
-public:
-	OptionsPage_Forces(OptionsPageContainer* container);
-	int ResourceId() const;
-	const char* Name() const;
-	const HELPCONTEXT* HelpContext() const;
-	void UpdateControls(HWND hPage);
+  public:
+    explicit OptionsPage_Forces(OptionsPageContainer *container);
 
-protected:
-	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
-	void OnItemClicked(HWND hPage, WORD ctrlId);
-	BOOL OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam);
+  protected:
+    void OnDraw(oapi::WithImCtx &ctx) override;
 };
 
 /************************************************************************
@@ -445,17 +284,10 @@ protected:
  */
 class OptionsPage_Axes : public OptionsPage {
 public:
-	OptionsPage_Axes(OptionsPageContainer* container);
-	int ResourceId() const;
-	const char* Name() const;
-	const HELPCONTEXT* HelpContext() const;
-	void UpdateControls(HWND hPage);
+	explicit OptionsPage_Axes(OptionsPageContainer* container);
 
 protected:
-	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
-	void OnItemClicked(HWND hPage, WORD ctrlId);
-	BOOL OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam);
+    void OnDraw(oapi::WithImCtx &ctx) override;
 };
 
 #endif // !__OPTIONSPAGES_H

@@ -126,7 +126,7 @@ typedef void *HDC;
 /**
  * File path for celestial sphere background textures
  * \par Parameter type:
- *   *char
+ *   const std::filesystem::path*
  */
 #define CFGPRM_CSPHERETEXTURE 0x0013
 
@@ -201,7 +201,7 @@ typedef void *HDC;
 /**
  * Path to background star texture
  * \par Parameter type:
- *   *char
+ *   const std::filesystem::path*
  */
 #define CFGPRM_CSPHERESTARTEXTURE 0x001D
 

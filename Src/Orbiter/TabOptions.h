@@ -14,22 +14,16 @@
 
 namespace orbiter {
 
-	class OptionsTab : public orbiter::LaunchpadTab, public OptionsPageContainer {
+	class OptionsTab : public orbiter::LaunchpadTab2, public OptionsPageContainer {
 	public:
-		OptionsTab(const orbiter::LaunchpadDialog* lp);
-		void Create();
+		explicit OptionsTab(const orbiter::LaunchpadDialog2* lp);
 
-		bool DynamicSize() const { return true; }
-
-		void LaunchpadShowing(bool show);
-
-		void SetConfig(Config* cfg);
+		void GetConfig(const Config *cfg) override;
+		void SetConfig(Config* cfg) override;
 
 		bool OpenHelp();
 
-		BOOL OnInitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam);
-		BOOL OnSize(int w, int h);
-		BOOL OnNotify(HWND hDlg, int idCtrl, LPNMHDR pnmh);
+		void OnDraw(WithLpImCtx &ctx) override;
 	};
 }
 

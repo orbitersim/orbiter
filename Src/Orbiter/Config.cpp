@@ -100,9 +100,9 @@ CFG_VISUALPRM CfgVisualPrm_default = {
 	true,       // bUseStarDots (render background stars as pixels)
 	{2.0, 8.0, 0.1, true},	// StarPrm (bright/faint cutoff magnitude, display brightness of faintest, log mapping)
 	true,       // bUseStarImage (render background star from image)
-	"csphere\\hiptyc_2020",     // StarImagePath (path to star background image)
+	"csphere/hiptyc_2020",     // StarImagePath (path to star background image)
 	true,       // bUseBgImage (render celestial sphere background image)
-	"csphere\\milkyway_2020",   // CSphereBgPath (path to celestial background images)
+	"csphere/milkyway_2020",   // CSphereBgPath (path to celestial background images)
 	0.3,		// CSphereBgIntens (intensity of celestial sphere background image)
 	2			// ElevMode (cubic spline)
 };
@@ -193,7 +193,7 @@ CFG_DEVPRM CfgDevPrm_default = {
 };
 
 CFG_JOYSTICKPRM CfgJoystickPrm_default = {
-	0,			// Joy_idx (joystick device index, 0=disabled)
+	0,          // Joy_idx (joystick device index, 0=disabled)
 	2500,		// Deadzone (neutralise joystick axes within 20% of central position)
 	1,			// ThrottleAxis (z-axis by default)
 	9500,		// ThrottleSaturation (saturate throttle at the last 5% each end)
@@ -259,6 +259,7 @@ CFG_WINDOWPOS CfgWindowPos_default = {
 	{0,0,0,0},  // options dialog
 	{0,0,0,0},  // visual helper dialog
 	0,          // launchpad scenario list width
+    0,          // launchpad options list width
 	0,          // launchpad modules list width
 	0           // launchpad extras list width
 };
@@ -344,7 +345,7 @@ bool GetItemString (istream &is, const char *label, char *val)
 	while (is.getline (cbuf, 512)) {
 		cl = trim_string(cbuf);
 		if (!_stricmp(cl, "END_PARSE")) return false;
-		
+
 		for (i = 0; cl[i] && cl[i] != '='; i++);
 		cv = (cl[i] ? cl+(i+1) : cl+i);
 		for (cl[i--] = '\0'; i >= 0 && (cl[i] == ' ' || cl[i] == '\t'); i--)
@@ -461,6 +462,10 @@ Config::Config(char* fname)
 	Load(fname);
 }
 
+static bool operator==(const SDL_GUID a, const SDL_GUID b) {
+    return memcmp(&a.data, &b.data, 16) == 0;
+}
+
 bool Config::Load(const char *fname)
 {
 	int i;
@@ -531,8 +536,18 @@ bool Config::Load(const char *fname)
 	if (GetInt (ifs, "WindowHeight", i)) CfgDevPrm.WinH = (DWORD)i;
 
 	// Joystick information
-	if (GetInt (ifs, "JoystickIndex", i))
-		CfgJoystickPrm.Joy_idx = (DWORD)i;
+	if (GetString (ifs, "JoystickIndex", cbuf)) {
+	    const auto guid = SDL_StringToGUID(cbuf);
+	    auto njoy = 0;
+	    const auto joylist = SDL_GetJoysticks(&njoy);
+	    CfgJoystickPrm.Joy_idx = 0;
+	    for (int joyix = 0; joyix < njoy; joyix++) {
+            if (SDL_GetJoystickGUIDForID(joylist[joyix]) == guid) {
+                CfgJoystickPrm.Joy_idx = joylist[joyix];
+            }
+        }
+	    SDL_free(joylist);
+	}
 	if (GetInt (ifs, "JoystickThrottleAxis", i))
 		CfgJoystickPrm.ThrottleAxis = max (0, min (3, i));
 	if (GetInt (ifs, "JoystickThrottleSaturation", i))
@@ -660,10 +675,10 @@ bool Config::Load(const char *fname)
 	}
 	GetBool(ifs, "EnableBackgroundStarmap", CfgVisualPrm.bUseStarImage);
 	if (GetString(ifs, "CSphereStarPath", cbuf))
-		strncpy(CfgVisualPrm.StarImagePath, cbuf, 128);
+		CfgVisualPrm.StarImagePath = fs::path(cbuf);
 	GetBool(ifs, "EnableBackgroundImage", CfgVisualPrm.bUseBgImage);
 	if (GetString(ifs, "CSphereBgPath", cbuf))
-		strncpy(CfgVisualPrm.CSphereBgPath, cbuf, 128);
+		CfgVisualPrm.CSphereBgPath = fs::path(cbuf);
 	GetReal (ifs, "CSphereBgIntensity", CfgVisualPrm.CSphereBgIntens);
 
 	// screen capture parameters
@@ -791,6 +806,7 @@ bool Config::Load(const char *fname)
 		sscanf (cbuf, "%d%d%d%d", &CfgWindowPos.DlgVishelper.left, &CfgWindowPos.DlgVishelper.top,
 			&CfgWindowPos.DlgVishelper.right, &CfgWindowPos.DlgVishelper.bottom);
 	GetInt (ifs, "LpadScnListWidth", CfgWindowPos.LaunchpadScnListWidth);
+    GetInt (ifs, "LpadOptListWidth", CfgWindowPos.LaunchpadOptListWidth);
 	GetInt (ifs, "LpadModListWidth", CfgWindowPos.LaunchpadModListWidth);
 	GetInt (ifs, "LpadExtListWidth", CfgWindowPos.LaunchpadExtListWidth);
 
@@ -905,7 +921,7 @@ const void *Config::GetParam (DWORD paramtype) const
 	case CFGPRM_CSPHEREUSEBGIMAGE:
 		return (void*)&CfgVisualPrm.bUseBgImage;
 	case CFGPRM_CSPHERETEXTURE:
-		return (void*)CfgVisualPrm.CSphereBgPath;
+		return (void*)&CfgVisualPrm.CSphereBgPath;
 	case CFGPRM_CSPHEREINTENS:
 		return (void*)&CfgVisualPrm.CSphereBgIntens;
 	case CFGPRM_LOCALLIGHT:
@@ -962,7 +978,7 @@ BOOL Config::Write (const char *fname) const
 		ofs << "LPadRect = " << rLaunchpad.left << ' ' << rLaunchpad.top
 			<< ' ' << rLaunchpad.right << ' ' << rLaunchpad.bottom << '\n';
 
-	if (strcmp (CfgDirPrm.ConfigDir, CfgDirPrm_default.ConfigDir) || 
+	if (strcmp (CfgDirPrm.ConfigDir, CfgDirPrm_default.ConfigDir) ||
 		strcmp (CfgDirPrm.MeshDir, CfgDirPrm_default.MeshDir) ||
 		strcmp (CfgDirPrm.TextureDir, CfgDirPrm_default.TextureDir) ||
 		strcmp (CfgDirPrm.HightexDir, CfgDirPrm_default.HightexDir) ||
@@ -1056,12 +1072,12 @@ BOOL Config::Write (const char *fname) const
 				<< CfgVisualPrm.StarPrm.brt_min << ' ' << (CfgVisualPrm.StarPrm.map_log ? 1:0) << '\n';
 		if (CfgVisualPrm.bUseStarImage != CfgVisualPrm_default.bUseStarImage || bEchoAll)
 			ofs << "EnableBackgroundStarmap = " << BoolStr(CfgVisualPrm.bUseStarImage) << '\n';
-		if (strcmp(CfgVisualPrm.StarImagePath, CfgVisualPrm_default.StarImagePath) || bEchoAll)
-			ofs << "CSphereStarPath = " << CfgVisualPrm.StarImagePath << '\n';
+		if (CfgVisualPrm.StarImagePath != CfgVisualPrm_default.StarImagePath || bEchoAll)
+			ofs << "CSphereStarPath = " << CfgVisualPrm.StarImagePath.u8string() << '\n';
 		if (CfgVisualPrm.bUseBgImage != CfgVisualPrm_default.bUseBgImage || bEchoAll)
 			ofs << "EnableBackgroundImage = " << BoolStr(CfgVisualPrm.bUseBgImage) << '\n';
-		if (strcmp (CfgVisualPrm.CSphereBgPath, CfgVisualPrm_default.CSphereBgPath) || bEchoAll)
-			ofs << "CSphereBgPath = " << CfgVisualPrm.CSphereBgPath << '\n';
+		if (CfgVisualPrm.CSphereBgPath != CfgVisualPrm_default.CSphereBgPath || bEchoAll)
+			ofs << "CSphereBgPath = " << CfgVisualPrm.CSphereBgPath.u8string() << '\n';
 		if (CfgVisualPrm.CSphereBgIntens != CfgVisualPrm_default.CSphereBgIntens || bEchoAll)
 			ofs << "CSphereBgIntensity = " << CfgVisualPrm.CSphereBgIntens << '\n';
 		if (CfgVisualPrm.ElevMode != CfgVisualPrm_default.ElevMode || bEchoAll)
@@ -1250,8 +1266,12 @@ BOOL Config::Write (const char *fname) const
 
 	if (memcmp (&CfgJoystickPrm, &CfgJoystickPrm_default, sizeof(CFG_JOYSTICKPRM)) || bEchoAll) {
 		ofs << "\n; === Joystick parameters ===\n";
-		if (CfgJoystickPrm.Joy_idx != CfgJoystickPrm_default.Joy_idx || bEchoAll)
-			ofs << "JoystickIndex = " << CfgJoystickPrm.Joy_idx << '\n';
+		if (CfgJoystickPrm.Joy_idx != CfgJoystickPrm_default.Joy_idx || bEchoAll) {
+            const auto guid = SDL_GetJoystickGUIDForID(CfgJoystickPrm.Joy_idx);
+	        char cbuf[33];
+		    SDL_GUIDToString(guid, cbuf, 33);
+		    ofs << "JoystickIndex = " << cbuf << '\n';
+		}
 		if (CfgJoystickPrm.ThrottleAxis != CfgJoystickPrm_default.ThrottleAxis || bEchoAll)
 			ofs << "JoystickThrottleAxis = " << CfgJoystickPrm.ThrottleAxis << '\n';
 		if (CfgJoystickPrm.ThrottleSaturation != CfgJoystickPrm_default.ThrottleSaturation || bEchoAll)
@@ -1360,6 +1380,8 @@ BOOL Config::Write (const char *fname) const
 			ofs << "DlgVhelperPos = " << CfgWindowPos.DlgVishelper << '\n';
 		if (CfgWindowPos.LaunchpadScnListWidth != CfgWindowPos_default.LaunchpadScnListWidth || bEchoAll)
 			ofs << "LpadScnListWidth = " << CfgWindowPos.LaunchpadScnListWidth << '\n';
+	    if (CfgWindowPos.LaunchpadOptListWidth != CfgWindowPos_default.LaunchpadOptListWidth || bEchoAll)
+	        ofs << "LpadOptListWidth = " << CfgWindowPos.LaunchpadOptListWidth << '\n';
 		if (CfgWindowPos.LaunchpadModListWidth != CfgWindowPos_default.LaunchpadModListWidth || bEchoAll)
 			ofs << "LpadModListWidth = " << CfgWindowPos.LaunchpadModListWidth << '\n';
 		if (CfgWindowPos.LaunchpadExtListWidth != CfgWindowPos_default.LaunchpadExtListWidth || bEchoAll)

@@ -98,6 +98,9 @@ void orbiter::ScenarioTab::RenderTree(
 }
 
 void orbiter::ScenarioTab::OnDraw(WithLpImCtx &ctx) {
+    if (scnListW == 0) {
+        scnListW = static_cast<int>(0.33f * ImGui::GetContentRegionAvail().x);
+    }
     const auto height =
         ImGui::GetContentRegionAvail().y - ImGui::GetFrameHeight();
     ImGui::BeginChild("ScnList", ImVec2(static_cast<float>(scnListW), height),
@@ -129,9 +132,7 @@ void orbiter::ScenarioTab::OnDraw(WithLpImCtx &ctx) {
         ClearQSFolder();
     }
     ImGui::SameLine();
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
     ImGui::Checkbox("Start paused", &startPaused);
-    ImGui::PopStyleVar();
 
     const ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));

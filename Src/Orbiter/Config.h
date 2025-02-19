@@ -11,13 +11,15 @@
 #define __CONFIG_H
 
 //#include <d3d.h>
-#include <windows.h>
+#include "GraphicsAPI.h"
 #include "Vecmat.h"
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <list>
 #include <optional>
-#include "GraphicsAPI.h"
+#include <windows.h>
+
+#include <filesystem>
 namespace fs = std::filesystem;
 
 // dynamic state propagation methods
@@ -112,16 +114,16 @@ struct CFG_VISUALPRM {
 	bool   bParticleStreams;	// render particle streams? (exhaust, contrails, etc.)
 	bool   bLocalLight;			// enable local light sources?
 	DWORD  MaxLight;			// max number of light sources
-	DWORD  AmbientLevel;		// ambient light level (0-255)
-	DWORD  PlanetMaxLevel;		// max. planet patch resolution level
+	uint8_t AmbientLevel;		// ambient light level (0-255)
+	int    PlanetMaxLevel;      // max. planet patch resolution level
 	double PlanetPatchRes;		// resolution scaling for planet patches
 	double LightBrightness;		// brightness of planetary night lights
 	bool   bUseStarDots;        // render stars as pixels?
 	StarRenderPrm StarPrm;		// render parameters for background stars
 	bool   bUseStarImage;       // render stars as a background image?
-	char   StarImagePath[128];  // starlist image path
+	fs::path StarImagePath;     // starlist image path
 	bool   bUseBgImage;         // render celestial sphere background image?
-	char   CSphereBgPath[128];	// background image path
+	fs::path CSphereBgPath;  	// background image path
 	double CSphereBgIntens;		// intensity of background image
 	int    ElevMode;            // elevation mode: 0=none, 1=linear, 2=cubic spline
 };
@@ -220,11 +222,11 @@ struct CFG_DEVPRM {
 };
 
 struct CFG_JOYSTICKPRM {
-	DWORD  Joy_idx;				// joystick device index (0=disabled)
-	DWORD  Deadzone;			// central deadzone range for all axes (0-10000)
-	DWORD  ThrottleAxis;		// joystick throttle axis (0=none, 1=z-axis, 2=slider 0, 3=slider 1)
-	DWORD  ThrottleSaturation;	// saturation level for joystick throttle control (0-10000)
-	bool   bThrottleIgnore;		// ignore joystick throttle setting on start
+	SDL_JoystickID Joy_idx;		    // joystick device index (0=disabled)
+	DWORD    Deadzone;			    // central deadzone range for all axes (0-10000)
+	DWORD    ThrottleAxis;	    	// joystick throttle axis (0=none, 1=z-axis, 2=slider 0, 3=slider 1)
+	DWORD    ThrottleSaturation;	// saturation level for joystick throttle control (0-10000)
+	bool     bThrottleIgnore;		// ignore joystick throttle setting on start
 };
 
 struct CFG_UIPRM {              // user interface options
@@ -275,6 +277,7 @@ struct CFG_WINDOWPOS {
 	RECT DlgOptions;            // options dialog position
 	RECT DlgVishelper;          // visual helper dialog position
 	int LaunchpadScnListWidth;  // width of Launchpad scenario list
+	int LaunchpadOptListWidth;  // width of Launchpad options list
 	int LaunchpadModListWidth;  // width of Launchpad modules list
 	int LaunchpadExtListWidth;  // width of Launchpad extras list
 };
@@ -314,7 +317,7 @@ bool GetItemVector (std::istream &is, const char *label, Vector &val);
 bool GetItemVECTOR (std::istream &is, const char *label, VECTOR3 &val);
 
 bool FindLine      (std::istream &is, const char *line);
-// scans stream 'is' from beginning for a line beginning with 'line' 
+// scans stream 'is' from beginning for a line beginning with 'line'
 // and leaves file pointer on the beginning of the next line
 // return value is false if line is not found
 

@@ -68,7 +68,7 @@ orbiter::LaunchpadDialog2::LaunchpadDialog2(Orbiter *app, bool startvideotab)
         std::make_unique<LpImage>(ctx, "Textures/OrbiterCore/banner.png");
 
     AddTab(std::move(std::make_unique<ScenarioTab>(this)));
-    // Options tab
+    AddTab(std::move(std::make_unique<OptionsTab>(this)));
     AddTab(std::move(std::make_unique<ModuleTab>(this)));
     // Video tab
     // Extra tab
@@ -243,7 +243,7 @@ bool orbiter::LaunchpadDialog::Create(bool startvideotab) {
                           (LPARAM)this);
         hTabContainer = GetDlgItem(hDlg, IDC_MNU_PAGECONTAINER);
         // AddTab (new ScenarioTab (this));
-        AddTab(new OptionsTab(this));
+        // AddTab(new OptionsTab(this));
         // AddTab(new ModuleTab(this));
         AddTab(new DefVideoTab(this));
         AddTab(pExtra = new ExtraTab(this));

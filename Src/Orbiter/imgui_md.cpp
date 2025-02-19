@@ -475,13 +475,12 @@ void imgui_md::render_text(const char* str, const char* str_end)
 			if (ImGui::IsItemHovered()) {
 
 				ImGui::SetTooltip("%s", m_href.c_str());
-
-				c = s.Colors[ImGuiCol_ButtonHovered];
+				c = ImVec4(0.451f, 0.69f, 0.984f, 1.00f);
 				if (ImGui::IsMouseClicked(0)) {
 					open_url();
 				}
 			} else {
-				c = s.Colors[ImGuiCol_Button];
+				c = s.Colors[ImGuiCol_TextLink];
 			}
 			line(c, true);
 		}

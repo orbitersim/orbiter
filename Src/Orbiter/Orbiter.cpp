@@ -361,9 +361,8 @@ bool Orbiter::Create()
 	cfgpath = std::string(pConfig->CfgDirPrm.ConfigDir);
 
 	// validate configuration
-	int njoy = 0;
-	SDL_free(SDL_GetJoysticks(&njoy));
-	if (pConfig->CfgJoystickPrm.Joy_idx > njoy) pConfig->CfgJoystickPrm.Joy_idx = 0;
+    if (SDL_GetJoystickNameForID(pConfig->CfgJoystickPrm.Joy_idx) == nullptr)
+        pConfig->CfgJoystickPrm.Joy_idx = 0;
 
 	// Read key mapping from file (or write default keymap)
 	if (!keymap.Read ("keymap.cfg")) keymap.Write ("keymap.cfg");

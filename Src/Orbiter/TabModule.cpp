@@ -51,6 +51,9 @@ Check or uncheck items to activate the corresponding modules.
 
 Select an item to see a description of the module function.
 )";
+    if (splitWidth == 0) {
+        splitWidth = static_cast<int>(0.33f * ImGui::GetContentRegionAvail().x);
+    }
     const auto height =
         ImGui::GetContentRegionAvail().y - ImGui::GetFrameHeight();
     ImGui::BeginChild("ModList", ImVec2(static_cast<float>(splitWidth), height),
@@ -89,9 +92,7 @@ Select an item to see a description of the module function.
                     ImGui::BeginDisabled();
                     ImGui::BeginGroup();
                 }
-                ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
                 ImGui::Checkbox("##Checkbox", &enabled);
-                ImGui::PopStyleVar();
                 ImGui::SameLine();
                 ImGui::Selectable(item.name.c_str(), &selected);
                 if (item.locked) {

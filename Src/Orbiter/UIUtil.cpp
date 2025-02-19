@@ -314,51 +314,40 @@ int InputTextCallback(ImGuiInputTextCallbackData *data) {
 bool ImGui::InputText(const char *label, std::string &buf,
                       ImGuiInputTextFlags flags,
                       const ImGuiInputTextCallback callback, void *user_data) {
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
 #ifdef _DEBUG
     assert((flags & ImGuiInputTextFlags_CallbackResize) == 0);
 #endif
     flags |= ImGuiInputTextFlags_CallbackResize;
 
     InputTextUserData data{buf, callback, user_data};
-    const bool res = ImGui::InputText(label, buf.data(), buf.capacity(), flags,
-                                      InputTextCallback, &data);
-    ImGui::PopStyleVar();
-    return res;
+    return ImGui::InputText(label, buf.data(), buf.capacity(), flags,
+                            InputTextCallback, &data);
 }
 
 bool ImGui::InputTextWithHint(const char *label, const char *hint,
                               std::string &buf, ImGuiInputTextFlags flags,
                               const ImGuiInputTextCallback callback,
                               void *user_data) {
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
 #ifdef _DEBUG
     assert((flags & ImGuiInputTextFlags_CallbackResize) == 0);
 #endif
     flags |= ImGuiInputTextFlags_CallbackResize;
 
     InputTextUserData data{buf, callback, user_data};
-    const bool res =
-        ImGui::InputTextWithHint(label, hint, buf.data(), buf.capacity(), flags,
-                                 InputTextCallback, &data);
-    ImGui::PopStyleVar();
-    return res;
+    return ImGui::InputTextWithHint(label, hint, buf.data(), buf.capacity(),
+                                    flags, InputTextCallback, &data);
 }
 
 bool ImGui::InputTextMultiline(const char *label, std::string &buf,
                                const ImVec2 &size, ImGuiInputTextFlags flags,
                                const ImGuiInputTextCallback callback,
                                void *user_data) {
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
 #ifdef _DEBUG
     assert((flags & ImGuiInputTextFlags_CallbackResize) == 0);
 #endif
     flags |= ImGuiInputTextFlags_CallbackResize;
 
     InputTextUserData data{buf, callback, user_data};
-    const bool res =
-        ImGui::InputTextMultiline(label, buf.data(), buf.capacity(), size,
-                                  flags, InputTextCallback, &data);
-    ImGui::PopStyleVar();
-    return res;
+    return ImGui::InputTextMultiline(label, buf.data(), buf.capacity(), size,
+                                     flags, InputTextCallback, &data);
 }

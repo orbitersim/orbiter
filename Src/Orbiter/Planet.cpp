@@ -303,10 +303,10 @@ Planet::Planet (char *fname)
 		label_version = 1;
 
 	if (GetItemInt (ifs, "MaxPatchResolution", i))
-		max_patch_level = (DWORD)i;
+		max_patch_level = i;
 	else
 		max_patch_level = 8;
-	max_patch_level = min (max_patch_level, (DWORD)SURF_MAX_PATCHLEVEL2);
+	max_patch_level = min (max_patch_level, SURF_MAX_PATCHLEVEL2);
 	max_patch_level = min (max_patch_level, g_pOrbiter->Cfg()->CfgVisualPrm.PlanetMaxLevel);
 
 	bHasCloudlayer = g_pOrbiter->Cfg()->CfgVisualPrm.bClouds &&
@@ -902,7 +902,7 @@ Vector Planet::WindVelocity (double lng, double lat, double alt, int frame, Wind
 	Vector wv(0,0,0);
 
 	if (bEnableWind && HasAtmosphere()) {
-		
+
 		int k, dim;
 		DWORD r, rnd;
 		Vector wv0[4];
@@ -953,7 +953,7 @@ Vector Planet::WindVelocity (double lng, double lat, double alt, int frame, Wind
 #ifdef UNDEF
 		double fac1 = alt*1e-3 - alt0;
 		double fac0 = 1.0-fac1;
-		
+
 
 
 		rnd0 = (DWORD)alt0+12345;
