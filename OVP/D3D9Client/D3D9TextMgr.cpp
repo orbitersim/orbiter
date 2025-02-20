@@ -548,6 +548,36 @@ float D3D9Text::PrintSkp (D3D9Pad *pSkp, float xpos, float ypos, LPCWSTR str, in
 		pSkp->textcolor.dclr      // Color
 	);
 
+	LONG width = rect.right - rect.left;
+
+	switch(halign) {
+		case 1: // CENTER
+			rect.right -= width/2;
+			rect.left -= width/2;
+			break;
+		case 2: // RIGHT
+			rect.right -= width;
+			rect.left -= width;
+			break;
+		default: // LEFT
+			break;
+	}
+
+	TEXTMETRICW tm;
+	wfont->GetTextMetricsW(&tm);
+	switch(valign) {
+		case 1: // BASELINE
+			rect.top -= tm.tmAscent;
+			rect.bottom -= tm.tmAscent;
+			break;
+		case 2: // BOTTOM
+			rect.top -= tm.tmHeight;
+			rect.bottom -= tm.tmHeight;
+			break;
+		default: // TOP
+			break;
+	}
+	
 	if (bBox)
 	{
 		pSkp->FillRect(rect.left-2, rect.top+1, rect.right+2, rect.bottom-1, pSkp->bkcolor);
@@ -556,13 +586,18 @@ float D3D9Text::PrintSkp (D3D9Pad *pSkp, float xpos, float ypos, LPCWSTR str, in
 	// Must Flush() pending graphics before using ID3DXFont interface
 	pSkp->Flush();
 
+	// pSkp->textcolor.dclr is in the wrong format
+	DWORD col = pSkp->textcolor.dclr & 0xff00ff00;
+	col |= (pSkp->textcolor.dclr <<16)&0xff0000;
+	col |= (pSkp->textcolor.dclr >>16)&0xff;
+
 	wfont->DrawTextW(
 		NULL,                              // pSprite
 		str,                               // pString
 		len,                               // Count
 		&rect,                             // pRect
 		DT_VCENTER | DT_LEFT | DT_NOCLIP,  // Format
-		pSkp->textcolor.dclr               // Color
+		col                                // Color
 	);
 
 	return float(rect.right - rect.left);
