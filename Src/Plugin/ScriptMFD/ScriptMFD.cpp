@@ -29,7 +29,6 @@ int g_MFDmode; // identifier for new MFD mode
 
 SCRIPTMFDMODESPEC *modespec;
 int nmode = 0;
-static NOTEHANDLE errorbox;
 
 struct VINTERP { // list of vessel-based interpreters
 	INTERPRETERHANDLE hInterp;
@@ -73,7 +72,7 @@ int LuaCall(lua_State *L, int narg, int nres)
 	lua_remove(L, base);
 	if(res != 0) {
 		oapiWriteLogError("%s", lua_tostring(L, -1));
-		oapiAnnotationSetText(errorbox, const_cast<char *>(lua_tostring(L, -1)));
+		oapiAddNotification(OAPINOTIF_ERROR, "Lua MFD error", lua_tostring(L, -1));
 	}
 	return res;
 }
@@ -140,13 +139,10 @@ DLLCLBK void ExitModule (HINSTANCE hDLL)
 
 DLLCLBK void opcOpenRenderViewport(HWND,DWORD,DWORD,BOOL)
 {
-	errorbox = ::oapiCreateAnnotation(false, 1, _V(1.0,0,0));
-	::oapiAnnotationSetPos (errorbox, 0, 0.75, 1, 1);
 }
 
 DLLCLBK void opcCloseRenderViewport ()
 {
-	oapiDelAnnotation(errorbox);
 	ClearVinterpList();
 }
 
@@ -185,7 +181,7 @@ DLLCLBK void opcPostStep (double simt, double simdt, double mjd)
 
 // Constructor
 ScriptMFD::ScriptMFD (DWORD w, DWORD h, VESSEL *vessel, const SCRIPTMFDMODESPEC *spec)
-: MFD2 (w, h, vessel)
+: MFD (w, h, vessel)
 {
 	int i;
 	char cmd[256];
@@ -280,7 +276,7 @@ bool ScriptMFD::ConsumeButton (int bt, int event)
 		lua_pop (L, 1);
 		return consumed;
 	}
-	return MFD2::ConsumeButton (bt, event);
+	return MFD::ConsumeButton (bt, event);
 }
 
 // React to a buffered key
@@ -294,7 +290,7 @@ bool ScriptMFD::ConsumeKeyBuffered (DWORD key)
 		lua_pop (L, 1);
 		return consumed;
 	}
-	return MFD2::ConsumeKeyBuffered (key);
+	return MFD::ConsumeKeyBuffered (key);
 }
 
 bool ScriptMFD::ConsumeKeyImmediate (char *kstate)
@@ -307,7 +303,7 @@ bool ScriptMFD::ConsumeKeyImmediate (char *kstate)
 		lua_pop (L, 1);
 		return consumed;
 	}
-	return MFD2::ConsumeKeyImmediate (kstate);
+	return MFD::ConsumeKeyImmediate (kstate);
 }
 
 // Return button labels

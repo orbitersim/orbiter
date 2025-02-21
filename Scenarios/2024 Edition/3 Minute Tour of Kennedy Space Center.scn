@@ -1,13 +1,23 @@
-BEGIN_URLDESC
-Default\KSCtour2016,Index
-END_URLDESC
 BEGIN_DESC
-Orbiter 2024: A quick aerial tour of Kennedy Space Center
-
+# Orbiter 2024: A quick aerial tour of Kennedy Space Center
 
 Here is a pre-recorded flight showcasing the new look of the KSC in the latest
 Orbiter edition: higher resolution surface textures, vegetation roughness,
 improved water surfaces and remodelled launch pads.
+
+![](Textures/Scenarios/Default/KSCtour2016/img1.jpg)
+
+![](Textures/Scenarios/Default/KSCtour2016/img2.jpg)
+
+![](Textures/Scenarios/Default/KSCtour2016/img3.jpg)
+
+![](Textures/Scenarios/Default/KSCtour2016/img4.jpg)
+
+![](Textures/Scenarios/Default/KSCtour2016/img5.jpg)
+
+![](Textures/Scenarios/Default/KSCtour2016/img6.jpg)
+
+![](Textures/Scenarios/Default/KSCtour2016/img7.jpg)
 END_DESC
 
 BEGIN_ENVIRONMENT

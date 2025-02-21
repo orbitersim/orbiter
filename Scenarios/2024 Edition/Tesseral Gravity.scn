@@ -1,5 +1,6 @@
 BEGIN_DESC
-Enable non-spherical gravity and watch the Moon's MASCONS perturb the 16x16km orbit of a Deltaglder. Don't stay this low for too long...
+Enable non-spherical gravity and watch the Moon's MASCONS perturb the 16x16km
+orbit of a Deltaglder. Don't stay this low for too long...
 END_DESC
 
 BEGIN_ENVIRONMENT

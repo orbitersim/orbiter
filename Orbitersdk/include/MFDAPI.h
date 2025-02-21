@@ -37,8 +37,6 @@ class Instrument;
 // ======================================================================
 
 class OAPIFUNC MFD {
-	friend class MFD2;
-
 public:
 	/** 
 	 * \brief Constructor. Creates a new MFD.
@@ -53,7 +51,7 @@ public:
  	 *	module should respond by creating the MFD mode and returning a pointer to
 	 *	it. Orbiter will automatically destroy the MFD mode when it is turned off.
 	 */
-	MFD (DWORD w, DWORD h, VESSEL *vessel);
+	MFD (unsigned int w, unsigned int h, VESSEL *vessel);
 
 	/**
 	 * \brief MFD destructor.
@@ -61,15 +59,102 @@ public:
 	virtual ~MFD();
 
 	/**
-	 * \brief Callback function: Orbiter calls this method when the MFD needs to update its display.
-	 * \param hDC Windows device context for drawing on the MFD display surface.
+		 * \brief Returns the MFD display width.
+		 * \return MFD display width [pixel]
+		 * \sa GetHeight
+		 */
+	inline unsigned int GetWidth() const { return W; }
+
+	/**
+	 * \brief Returns the MFD display height.
+	 * \return MFD display height [pixel]
+	 * \sa GetWidth
+	 */
+	inline unsigned int GetHeight() const { return H; }
+
+	/**
+     * \brief Callback function: Orbiter calls this method when the MFD needs to update its display.
+	 * \param skp Drawing context for drawing on the MFD display surface.
 	 * \note The frequency at which this function is called corresponds to the "MFD
 	 *	refresh rate" setting in Orbiter's parameter settings, unless a redraw is forced
 	 *	by InvalidateDisplay().
-	 * \deprecated This method is deprecated. %MFD implementations should derive from MFD2
-	 *   and use the device-independent \ref MFD2::Update(oapi::Sketchpad*) method instead.
+	 * \note This function must be overwritten by derived classes.
 	 */
-	virtual void Update (HDC hDC) = 0;
+	virtual bool Update(oapi::Sketchpad *skp);
+
+	/**
+	 * \brief Displays a title string in the upper left corner of the MFD display.
+	 * \param skp Drawing context
+	 * \param title title string (null-terminated)
+	 * \note This method should be called from within Update()
+	 * \note The title string can contain up to approx. 35 characters when displayed in the
+	 *	 default Courier MFD font.
+	 * \note This method switches the text colour of the drawing context to white.
+	 */
+	void Title (oapi::Sketchpad *skp, const char *title) const;
+
+	/**
+	 * \brief Returns a predefined MFD pen resource.
+	 * \param colidx pen colour index (see notes)
+	 * \param intens pen brightness (0=bright, 1=dark)
+	 * \param style pen style (1=solid, 2=dashed)
+	 * \return pen resource
+	 * \note Valid colour indices are 0 to 4, where
+	 *  <table>
+	 *  <tr><td>Index</td><td>Function</td><td>default colour</td></tr>
+	 *  <tr><td>0</td><td>Main MFD colour</td><td>green</td></tr>
+	 *  <tr><td>1</td><td>Auxiliary colour 1</td><td>yellow</td></tr>
+	 *  <tr><td>2</td><td>Auxiliary colour 2</td><td>white</td></tr>
+	 *  <tr><td>3</td><td>Auxiliary colour 3</td><td>red</td></tr>
+	 *  <tr><td>4</td><td>Auxiliary colour 4</td><td>blue</td></tr>
+	 *  </table>
+	 * \note To select the pen for drawing in the MFD display, call the MFD
+	 *   drawing context's oapi::Sketchpad::SetPen method.
+	 * \note The default colours can be overridden by editing Config/MFD/default.cfg.
+	 * \note In principle, an MFD mode may create its own pen resources using the
+	 *	 oapi::GraphicsClient::clbkCreatePen function, but using predefined pens is
+	 *   preferred to provide a consistent MFD look, and to avoid excessive allocation
+	 *   of drawing resources.
+	 * \sa oapi::Sketchpad::SetPen
+	 */
+	oapi::Pen *GetDefaultPen (unsigned int colidx, unsigned int intens=0, unsigned int style=1) const;
+
+	/**
+	 * \brief Returns a predefined MFD font resource.
+	 * \param fontidx font index
+	 * \return font resource
+	 * \note Currently supported are font indices 0-2, where \n\n
+	 *		0 = standard MFD font (<tt>Courier, fixed pitch</tt>)\n
+	 *		1 = small font (<tt>Arial, variable pitch</tt>)\n
+	 *		2 = small font, rotated 90 degrees (<tt>Arial, variable pitch</tt>)\n\n
+	 * \note To select the font for drawing in the MFD display, call the MFD
+	 *   drawing context's oapi::Sketchpad::SetFont method.
+	 * \note In principle, an MFD mode may create its own fonts using the standard
+	 *   Windows CreateFont function, but using the predefined fonts is preferred to
+	 *   provide a consistent MFD look.
+	 * \note Default fonts are scaled automatically according to the MFD display size.
+	 */
+	oapi::Font *GetDefaultFont (unsigned int fontidx) const;
+
+	/**
+	 * \brief Returns the colour value for a specified colour index and intensity.
+	 * \param colidx colour index (see notes)
+	 * \param intens colour brightness (0=bright, 1=dark)
+	 * \return Colour value in 0xBBGGRR format.
+	 * \note Valid colour indices are 0 to 4, where
+	 *  <table>
+	 *  <tr><td>Index</td><td>Function</td><td>default colour</td></tr>
+	 *  <tr><td>0</td><td>Main MFD colour</td><td>green</td></tr>
+	 *  <tr><td>1</td><td>Auxiliary colour 1</td><td>yellow</td></tr>
+	 *  <tr><td>2</td><td>Auxiliary colour 2</td><td>white</td></tr>
+	 *  <tr><td>3</td><td>Auxiliary colour 3</td><td>red</td></tr>
+	 *  <tr><td>4</td><td>Auxiliary colour 4</td><td>blue</td></tr>
+	 *  </table>
+	 * \note The returned colour values can be used to set standard text,
+	 *   pen or brush colours for particular display elements.
+	 * \sa oapi::Sketchpad::SetTextColor
+	 */
+	unsigned int GetDefaultColour (unsigned int colidx, unsigned int intens=0) const;
 
 	/**	
 	 * \brief Force a display update in the next frame.
@@ -96,64 +181,12 @@ public:
 	 */
 	void InvalidateButtons ();
 
-	/**
-	 * \brief Displays a title string in the upper left corner of the MFD display.
-	 * \param hDC device context
-	 * \param title title string (null-terminated)
-	 * \note This method should be called from within Update()
-	 * \note The title string can contain up to approx. 35 characters when displayed in the
-	 *	 default Courier MFD font.
-	 * \note This method switches the text colour of the GDI context to white.
-	 * \deprecated This method is deprecated. %MFD implementations should derive from MFD2
-	 *   and use the device-independent \ref MFD2::Title method instead.
-	 */
-	void Title (HDC hDC, const char *title) const;
-
-	/**
-	 * \brief Selects a predefined pen into the device context.
-	 * \param hDC Windows device context
-	 * \param i pen index
-	 * \return Handle of pen being replaced.
-	 * \note Currently supported are pen indices 0-5, where\n\n
-	 *		0 = solid, HUD display colour\n
-	 *		1 = solid, light green\n
-	 *		2 = solid, medium green\n
-	 *		3 = solid, medium yellow\n
-	 *		4 = solid, dark yellow\n
-	 *		5 = solid, medium grey\n\n
-	 * \note In principle, an MFD mode may create its own pen resources using the
-	 *	 standard Windows CreatePen function, but using predefined pens is
-	 *   preferred to provide a consistent MFD look.
-	 * \deprecated This method is deprecated. %MFD implementations should derive from MFD2
-	 *   and use the device-independent \ref MFD2::GetDefaultPen method instead.
-	 */
-	HPEN SelectDefaultPen (HDC hDC, DWORD i) const;
-
-	/**
-	 * \brief Selects a predefined MFD font into the device context
-	 * \param hDC Windows device context
-	 * \param i font index
-	 * \return Handle of font being replaced.
-	 * \note Currently supported are font indices 0-3, where \n\n
-	 *		0 = standard MFD font (<tt>Courier, fixed pitch</tt>)\n
-	 *		1 = small font (<tt>Arial, variable pitch</tt>)\n
-	 *		2 = small font, rotated 90 degrees (<tt>Arial, variable pitch</tt>)\n
-	 *      3 = medium font, (<tt>Arial, variable pitch</tt>)\n\n
-	 * \note In principle, an MFD mode may create its own fonts using the standard
-	 *   Windows CreateFont function, but using the predefined fonts is preferred to
-	 *   provide a consistent MFD look.
-	 * \note Default fonts are scaled automatically according to the MFD display size.
-	 * \deprecated This method is deprecated. %MFD implementations should derive from MFD2
-	 *   and use the device-independent \ref MFD2::GetDefaultFont method instead.
-	 */
-	HFONT SelectDefaultFont (HDC hDC, DWORD i) const;
-
 	/** 
 	 * \brief MFD keyboard handler for buffered keys.
 	 * \param key key code (<i>see OAPI_KEY_xxx constants in orbitersdk.h</i>)
 	 * \return The function should return true if it recognises and processes the key, false otherwise.
 	 */ 
-	virtual bool ConsumeKeyBuffered (DWORD key) { return false; }
+	virtual bool ConsumeKeyBuffered (uint32_t key) { return false; }
 
 	/**
 	 * \brief MFD keyboard handler for immediate (unbuffered) keys.
@@ -257,154 +290,14 @@ public:
 	virtual void RecallStatus () {}
 
 protected:
-	DWORD W, H;   //!< width and height of MFD display area (pixel)
-	DWORD cw, ch; //!< character width, height of standard MFD font 0 (pixel)
+	unsigned int W, H;   //!< width and height of MFD display area (pixel)
+	unsigned int cw, ch; //!< character width, height of standard MFD font 0 (pixel)
 	VESSEL *pV;   //!< pointer to vessel interface
 
 private:
 	friend class Instrument_User;  // Orbiter private class
 	Instrument_User *instr;
 };
-
-
-
-// ======================================================================
-// class MFD2
-// ======================================================================
-/**
- * \brief Extended MFD class.
- *
- * MFD2 replaces GDI-specific functions with versions that use the generic
- * Sketchpad class. MFD addons should derive from MFD2 instead of MFD, to
- * ensure compatibility with non-GDI graphics clients.
- */
-class OAPIFUNC MFD2: public MFD {
-public:
-	/** 
-	 * \brief Constructor. Creates a new MFD.
-	 * \param w width of the MFD display (pixel)
-	 * \param h height of the MFD display (pixel)
-	 * \param vessel pointer to VESSEL interface associated with the MFD.
-	 * \note MFD is a pure virtual function, so it can't be instantiated directly. It is used as
-     *	a base class for specialised MFD modes.
-	 * \note New MFD modes are registered by a call to oapiRegisterMFDMode().
-     *	Whenever the new mode is selected by the user, Orbiter sends a
- 	 *	OAPI_MSG_MFD_OPENED signal to the message handler, to which the
- 	 *	module should respond by creating the MFD mode and returning a pointer to
-	 *	it. Orbiter will automatically destroy the MFD mode when it is turned off.
-	 */
-	MFD2 (DWORD w, DWORD h, VESSEL *vessel): MFD (w, h, vessel) {}
-
-	/**
-	 * \brief MFD destructor.
-	 */
-	~MFD2() {}
-
-	/**
-	 * \brief Returns the MFD display width.
-	 * \return MFD display width [pixel]
-	 * \sa GetHeight
-	 */
-	inline DWORD GetWidth() const { return W; }
-
-	/**
-	 * \brief Returns the MFD display height.
-	 * \return MFD display height [pixel]
-	 * \sa GetWidth
-	 */
-	inline DWORD GetHeight() const { return H; }
-
-	/**
-	 * \brief Dummy implementation of GDI-specific base class method.
-	 * \note Derived classes should overload the \ref Update(oapi::Sketchpad*) method instead.
-	 */
-	void Update (HDC hDC) {}
-
-	/**
-	 * \brief Callback function: Orbiter calls this method when the MFD needs to update its display.
-	 * \param skp Drawing context for drawing on the MFD display surface.
-	 * \note The frequency at which this function is called corresponds to the "MFD
-	 *	refresh rate" setting in Orbiter's parameter settings, unless a redraw is forced
-	 *	by InvalidateDisplay().
-	 * \note This function must be overwritten by derived classes.
-	 */
-	virtual bool Update (oapi::Sketchpad *skp);
-
-	/**
-	 * \brief Displays a title string in the upper left corner of the MFD display.
-	 * \param skp Drawing context
-	 * \param title title string (null-terminated)
-	 * \note This method should be called from within Update()
-	 * \note The title string can contain up to approx. 35 characters when displayed in the
-	 *	 default Courier MFD font.
-	 * \note This method switches the text colour of the drawing context to white.
-	 */
-	void Title (oapi::Sketchpad *skp, const char *title) const;
-
-	/**
-	 * \brief Returns a predefined MFD pen resource.
-	 * \param colidx pen colour index (see notes)
-	 * \param intens pen brightness (0=bright, 1=dark)
-	 * \param style pen style (1=solid, 2=dashed)
-	 * \return pen resource
-	 * \note Valid colour indices are 0 to 4, where
-	 *  <table>
-	 *  <tr><td>Index</td><td>Function</td><td>default colour</td></tr>
-	 *  <tr><td>0</td><td>Main MFD colour</td><td>green</td></tr>
-	 *  <tr><td>1</td><td>Auxiliary colour 1</td><td>yellow</td></tr>
-	 *  <tr><td>2</td><td>Auxiliary colour 2</td><td>white</td></tr>
-	 *  <tr><td>3</td><td>Auxiliary colour 3</td><td>red</td></tr>
-	 *  <tr><td>4</td><td>Auxiliary colour 4</td><td>blue</td></tr>
-	 *  </table>
-	 * \note To select the pen for drawing in the MFD display, call the MFD
-	 *   drawing context's oapi::Sketchpad::SetPen method.
-	 * \note The default colours can be overridden by editing Config/MFD/default.cfg.
-	 * \note In principle, an MFD mode may create its own pen resources using the
-	 *	 oapi::GraphicsClient::clbkCreatePen function, but using predefined pens is
-	 *   preferred to provide a consistent MFD look, and to avoid excessive allocation
-	 *   of drawing resources.
-	 * \sa oapi::Sketchpad::SetPen
-	 */
-	oapi::Pen *GetDefaultPen (DWORD colidx, DWORD intens=0, DWORD style=1) const;
-
-	/**
-	 * \brief Returns a predefined MFD font resource.
-	 * \param fontidx font index
-	 * \return font resource
-	 * \note Currently supported are font indices 0-2, where \n\n
-	 *		0 = standard MFD font (<tt>Courier, fixed pitch</tt>)\n
-	 *		1 = small font (<tt>Arial, variable pitch</tt>)\n
-	 *		2 = small font, rotated 90 degrees (<tt>Arial, variable pitch</tt>)\n\n
-	 * \note To select the font for drawing in the MFD display, call the MFD
-	 *   drawing context's oapi::Sketchpad::SetFont method.
-	 * \note In principle, an MFD mode may create its own fonts using the standard
-	 *   Windows CreateFont function, but using the predefined fonts is preferred to
-	 *   provide a consistent MFD look.
-	 * \note Default fonts are scaled automatically according to the MFD display size.
-	 */
-	oapi::Font *GetDefaultFont (DWORD fontidx) const;
-
-	/**
-	 * \brief Returns the colour value for a specified colour index and intensity.
-	 * \param colidx colour index (see notes)
-	 * \param intens colour brightness (0=bright, 1=dark)
-	 * \return Colour value in 0xBBGGRR format.
-	 * \note Valid colour indices are 0 to 4, where
-	 *  <table>
-	 *  <tr><td>Index</td><td>Function</td><td>default colour</td></tr>
-	 *  <tr><td>0</td><td>Main MFD colour</td><td>green</td></tr>
-	 *  <tr><td>1</td><td>Auxiliary colour 1</td><td>yellow</td></tr>
-	 *  <tr><td>2</td><td>Auxiliary colour 2</td><td>white</td></tr>
-	 *  <tr><td>3</td><td>Auxiliary colour 3</td><td>red</td></tr>
-	 *  <tr><td>4</td><td>Auxiliary colour 4</td><td>blue</td></tr>
-	 *  </table>
-	 * \note The returned colour values can be used to set standard text,
-	 *   pen or brush colours for particular display elements.
-	 * \sa oapi::Sketchpad::SetTextColor
-	 */
-	DWORD GetDefaultColour (DWORD colidx, DWORD intens=0) const;
-};
-
 
 // ======================================================================
 // class GraphMFD
@@ -424,7 +317,7 @@ public:
 	 * \param h height of the MFD display (pixel)
 	 * \param vessel pointer to VESSEL interface associated with the MFD
 	 */
-	GraphMFD (DWORD w, DWORD h, VESSEL *vessel);
+	GraphMFD (unsigned int w, unsigned int h, VESSEL *vessel);
 
 	virtual ~GraphMFD ();
 
@@ -505,7 +398,7 @@ public:
 	 * \note This function should be called from Update to paint the graph(s) into the
 	 *   provided device context.
 	 */
-	void Plot (HDC hDC, int g, int h0, int h1, const char *title = 0);
+	void Plot (oapi::Sketchpad* skp, int g, int h0, int h1, const char *title = 0);
 
 	/**
 	 * \brief Determines the range of an array of data.
@@ -582,7 +475,7 @@ public:
 	 *   identifiers are in the range 0 ... MAXMFD-1, the ExternMFD class simply
 	 *   uses its own instance pointer (UINT)this to create an identifier.
 	 */
-	UINT_PTR Id() const;
+	size_t Id() const;
 
 	/**
 	 * \brief Returns a flag indicating active/passive MFD state.
@@ -635,7 +528,7 @@ public:
 	bool ProcessButton (int bt, int event);
 
    /*! \b TODO */
-	bool SendKey (DWORD key);
+	bool SendKey (uint32_t key);
 
    /*! \b TODO */
 	bool Resize (const MFDSPEC &spec);

@@ -27,3 +27,6 @@ set_target_properties(MFDTemplate
 	PROPERTIES
 	FOLDER SDKSamples
 )
+
+install(FILES MFDTemplate.info RUNTIME DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR})
+file(COPY MFDTemplate.info DESTINATION ${ORBITER_BINARY_PLUGIN_DIR})

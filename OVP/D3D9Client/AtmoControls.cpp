@@ -18,7 +18,7 @@
 
 using namespace oapi;
 
-extern HINSTANCE g_hInst;
+extern MODFILE g_hInst;
 extern D3D9Client *g_client;
 
 // ==============================================================
@@ -241,7 +241,7 @@ void Release()
 
 void OpenDlgClbk(void *context)
 {
-	HWND l_hDlg = oapiOpenDialog(g_hInst, IDD_D3D9SCATTER, WndProc);
+	HWND l_hDlg = oapiOpenDialog(stopgapGetModuleInstance(g_hInst), IDD_D3D9SCATTER, WndProc);
 
 	if (l_hDlg) hDlg = l_hDlg; // otherwise open already
 	else return;
@@ -268,7 +268,7 @@ void OpenDlgClbk(void *context)
 	for (auto& s : Slider)
 	{
 		s.hWnd = GetDlgItem(hDlg, s.res);
-		s.hwndTip = CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hDlg, NULL, g_hInst, NULL);
+		s.hwndTip = CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hDlg, NULL, stopgapGetModuleInstance(g_hInst), NULL);
 		TOOLINFO toolInfo = { 0 };
 		toolInfo.cbSize = sizeof(toolInfo);
 		toolInfo.hwnd = hDlg;

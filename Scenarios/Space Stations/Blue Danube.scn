@@ -1,10 +1,12 @@
-BEGIN_HYPERDESC
-<h1>Blue Danube</h1>
-<p>It is not quite the Station-V from 2001: Odyssee in Space (which is available as a
+BEGIN_DESC
+# Blue Danube
+
+It is not quite the Station-V from 2001: Odyssee in Space (which is available as a
 3rd party addon), but the principle is the same: Dock the Shuttle-A freighter at the
-docking port in the hub of the rotating station.</p>
-<p>The rotation has already been synchronised to make your life easier.</p>
-END_HYPERDESC
+docking port in the hub of the rotating station.
+
+The rotation has already been synchronised to make your life easier.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

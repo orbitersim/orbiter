@@ -4,7 +4,7 @@
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2007 - 2016 Martin Schweiger
-// Copyright (C) 2011 - 2016 Jarmo Nikkanen (D3D9Client modification) 
+// Copyright (C) 2011 - 2016 Jarmo Nikkanen (D3D9Client modification)
 // ==============================================================
 
 #include "D3D9util.h"
@@ -13,8 +13,10 @@
 #include "D3D9Config.h"
 #include "D3D9Catalog.h"
 #include "Spherepatch.h"
+#include <filesystem>
 
 using namespace oapi;
+namespace fs = std::filesystem;
 
 
 // =======================================================================
@@ -59,7 +61,7 @@ CSphereManager::CSphereManager(D3D9Client *gc, const Scene *scene) : gc(gc), tex
 	scn = scene;
 
 	gc->OutputLoadStatus("Loading Celestial Sphere...",0);
-	
+
 	patchidx  = TileManager::patchidx;
 	NLNG = TileManager::NLNG;
 	NLAT = TileManager::NLAT;
@@ -73,15 +75,15 @@ CSphereManager::CSphereManager(D3D9Client *gc, const Scene *scene) : gc(gc), tex
 
 	m_bBkgImg = *(bool*)gc->GetConfigParam(CFGPRM_CSPHEREUSEBGIMAGE);
 	if (m_bBkgImg) {
-		char* c = (char*)gc->GetConfigParam(CFGPRM_CSPHERETEXTURE);
-		if (c[0]) strncpy(texname, c, 128);
+		const fs::path* c = (const fs::path*)gc->GetConfigParam(CFGPRM_CSPHERETEXTURE);
+		if (!c->empty()) strncpy(texname, c->u8string().c_str(), 128);
 		else      m_bBkgImg = false;
 	}
 
 	m_bStarImg = *(bool*)gc->GetConfigParam(CFGPRM_CSPHEREUSESTARIMAGE);
 	if (m_bStarImg) {
-		char* c = (char*)gc->GetConfigParam(CFGPRM_CSPHERESTARTEXTURE);
-		if (c[0]) strncpy(starfieldname, c, 128);
+		const fs::path* c = (const fs::path*)gc->GetConfigParam(CFGPRM_CSPHERESTARTEXTURE);
+		if (!c->empty()) strncpy(starfieldname, c->u8string().c_str(), 128);
 		else m_bStarImg = false;
 	}
 
@@ -173,33 +175,33 @@ void CSphereManager::GlobalInit(oapi::D3D9Client *gclient)
 
 	// Level 1 patch template
 	CreateSphere (dev, PATCH_TPL_1, 6, false, 0, 64);
- 
+
  	// Level 2 patch template
 	CreateSphere (dev, PATCH_TPL_2, 8, false, 0, 128);
- 
+
  	// Level 3 patch template
 	CreateSphere (dev, PATCH_TPL_3, 12, false, 0, 256);
- 
+
  	// Level 4 patch templates
 	CreateSphere (dev, PATCH_TPL_4[0], 16, true, 0, 256);
 	CreateSphere (dev, PATCH_TPL_4[1], 16, true, 1, 256);
- 
+
  	// Level 5 patch template
 	CreateSpherePatch (dev, PATCH_TPL_5, 4, 1, 0, 18);
- 
+
  	// Level 6 patch templates
 	CreateSpherePatch (dev, PATCH_TPL_6[0], 8, 2, 0, 10, 16);
 	CreateSpherePatch (dev, PATCH_TPL_6[1], 4, 2, 1, 12);
- 
+
  	// Level 7 patch templates
 	CreateSpherePatch (dev, PATCH_TPL_7[0], 16, 4, 0, 12, 12, false);
 	CreateSpherePatch (dev, PATCH_TPL_7[1], 16, 4, 1, 12, 12, false);
 	CreateSpherePatch (dev, PATCH_TPL_7[2], 12, 4, 2, 10, 16, true);
 	CreateSpherePatch (dev, PATCH_TPL_7[3],  6, 4, 3, 12, -1, true);
- 
+
 	int r = 16;
 	if (Config->LODBias<0) r = 8;
-	
+
  	// Level 8 patch templates
 	CreateSpherePatch (dev, PATCH_TPL_8[0], 32, 8, 0, (12*r)>>4, (15*r)>>4, false, true, true);
 	CreateSpherePatch (dev, PATCH_TPL_8[1], 32, 8, 1, (12*r)>>4, (15*r)>>4, false, true, true);
@@ -225,7 +227,7 @@ void CSphereManager::GlobalInit(oapi::D3D9Client *gclient)
 					CreateSpherePatch (dev, PATCH_TPL[lvl][idx], nlng8[i]*mult, n*mult, idx, 12, res8[i], false, true, true, true);
 				else
 					CreateSpherePatch (dev, PATCH_TPL[lvl][idx], nlng8[i]*mult, n*mult, idx, 12, -1, true, true, true, true);
-				
+
 				idx++;
 			}
 		}
@@ -403,7 +405,7 @@ void CSphereManager::Render (LPDIRECT3DDEVICE9 dev, int level, double bglvl)
 	float bgscale = (float)exp(-bglvl * 12.5);
 
 	if (bglvl) intens *= bgscale;
-	
+
 
 	level = min ((DWORD)level, maxlvl);
 
@@ -447,7 +449,7 @@ void CSphereManager::Render (LPDIRECT3DDEVICE9 dev, int level, double bglvl)
 		}
 		for (ilat = nlat-1; ilat >= 0; ilat--) {
 			for (ilng = 0; ilng < nlng[ilat]; ilng++) {
-				ProcessTile (startlvl, hemisp, ilat, nlat, ilng, nlng[ilat], td+idx, 
+				ProcessTile (startlvl, hemisp, ilat, nlat, ilng, nlng[ilat], td+idx,
 					range, td[idx].tex, td[idx].ltex, td[idx].flag,
 					range, td[idx].tex, td[idx].ltex, td[idx].flag);
 				idx++;
@@ -464,13 +466,13 @@ void CSphereManager::ProcessTile (int lvl, int hemisp, int ilat, int nlat, int i
 	const TEXCRDRANGE &range, LPDIRECT3DTEXTURE9 tex, LPDIRECT3DTEXTURE9 ltex, DWORD flag,
 	const TEXCRDRANGE &bkp_range, LPDIRECT3DTEXTURE9 bkp_tex, LPDIRECT3DTEXTURE9 bkp_ltex, DWORD bkp_flag)
 {
-	
+
 	static const double rad0 = sqrt(2.0)*PI05;
 	VECTOR3 cnt = TileCentre (hemisp, ilat, nlat, ilng, nlng);
 	double rad = rad0/(double)nlat;
 	double alpha = acos (dotp (RenderParam.camdir, cnt));
 	double adist = alpha - rad;
-	
+
 	if (adist > RenderParam.viewap) return;
 
 	SetWorldMatrix (ilng, nlng, ilat, nlat);
@@ -500,7 +502,7 @@ void CSphereManager::RenderTile (int lvl, int hemisp, int ilat, int nlat, int il
 	TILEDESC *tile, const TEXCRDRANGE &range, LPDIRECT3DTEXTURE9 tex, LPDIRECT3DTEXTURE9 ltex, DWORD flag)
 {
 	VBMESH &mesh = PATCH_TPL[lvl][ilat]; // patch template
-	
+
 	CelData.mWorld = mWorld;
 
 	pShader->SetTexture(hTexA, tex, IPF_CLAMP | IPF_ANISOTROPIC);

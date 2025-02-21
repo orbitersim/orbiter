@@ -1,10 +1,10 @@
-BEGIN_HYPERDESC
-<h1>Orbiter Challenges</h1>
+BEGIN_DESC
+# Orbiter Challenges
 
-<p>A set of flight missions that will challenge your planning and navigation
+A set of flight missions that will challenge your planning and navigation
 skills. You will receive a score depending on how well you completed the
-mission within the specified parameters.</p>
+mission within the specified parameters.
 
-<p>Beat yourself to the highscore, or compare your performance with other
-users!</p>
-END_HYPERDESC
+Beat yourself to the highscore, or compare your performance with other
+users!
+END_DESC

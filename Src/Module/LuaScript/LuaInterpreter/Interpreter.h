@@ -57,7 +57,7 @@ class gcCore;
 #endif
 
 class VESSEL;
-class MFD2;
+class MFD;
 class XRSound;
 
 struct AirfoilContext {
@@ -212,7 +212,7 @@ public:
 	 * \param L Lua interpreter instance
 	 * \param mfd pointer to MFD object
 	 */
-	static void lua_pushmfd (lua_State *L, MFD2 *mfd);
+	static void lua_pushmfd (lua_State *L, MFD *mfd);
 
 	/**
 	 * \brief Push a light source object onto the stack
@@ -234,10 +234,8 @@ public:
 	void term_setverbosity (int level) { term_verbose = level; }
 
 	static int LuaCall(lua_State *L, int nargs, int nres);
-	void SetErrorBox(NOTEHANDLE eb) { errorbox = eb; }
 	static void DeleteVessel (OBJHANDLE hVessel);
 protected:
-	static inline NOTEHANDLE errorbox;
 	lua_State *L;         // Lua main context
 
 	/**
@@ -334,8 +332,8 @@ protected:
 	static VECTOR3 luamtd_field_tovector_safe (lua_State *L, int idx, const char *fieldname, const char *funcname);
 
 
-	// pops an MFD2 interface from the stack
-	static MFD2 *lua_tomfd (lua_State *L, int idx=-1);
+	// pops an MFD interface from the stack
+	static MFD *lua_tomfd (lua_State *L, int idx=-1);
 
 	// pops a light emitter object from the stack
 	static LightEmitter *lua_tolightemitter (lua_State *L, int idx=-1);
@@ -403,6 +401,7 @@ protected:
 	static int oapiOpenInputBox (lua_State *L);
 	static int oapiReceiveInput (lua_State *L);
 	static int oapi_open_inputboxex (lua_State *L);
+	static int oapi_add_notification (lua_State *L);
 	static int oapi_global_to_equ(lua_State* L);
 	static int oapi_global_to_local(lua_State* L);
 	static int oapi_local_to_equ(lua_State* L);

@@ -1,0 +1,7 @@
+BEGIN_DESC
+# MFD Template
+
+Adds an "empty" dummy MFD mode. Not useful in itself, but the code can be utilised by developers as a starting point for
+MFD mode implementation.
+END_DESC
+CATEGORY SDK sample plugins

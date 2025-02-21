@@ -29,7 +29,7 @@ bool bExiting = false;
 //
 
 ShellMFD::ShellMFD (DWORD w, DWORD h, VESSEL *vessel, TRUE_MFD *TrueMFD, UINT mfd)
-: MFD2(w, h, vessel)
+: MFD(w, h, vessel)
 {
 	id = mfd;
 	hTrue = TrueMFD;
@@ -51,7 +51,7 @@ ShellMFD::~ShellMFD ()
 
 // ============================================================================================================
 //
-void ShellMFD::InitModule(HINSTANCE hDLL)
+void ShellMFD::InitModule(MODFILE hDLL)
 {
 	// Construct MFD List
 	MFDList = new mfd_list[256]();
@@ -164,11 +164,6 @@ bool ShellMFD::Update(Sketchpad *pSkp)
 {
 	if (hTrue) return hTrue->Update(pSkp);
 	return true;
-}
-
-void ShellMFD::Update (HDC hDC)
-{
-		
 }
 
 void ShellMFD::WriteStatus (FILEHANDLE scn) const

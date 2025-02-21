@@ -1,18 +1,25 @@
-BEGIN_URLDESC
-Default\Earthview2016,Index
-END_URLDESC
 BEGIN_DESC
-Earth views 2016
-
+# Earth views 2016
 
 A flyby over some of Earth's surface formations in Orbiter 2016, featuring new textures
 and elevation maps.
 
-
 Note that the default Orbiter installation only comes with a low-resolution version of
 the Earth maps. To see the full supported resolution in Orbiter, you need to install
-the full resolution maps. Go to the Orbiter home page for links and installation
-instructions. Be sure to have plenty of free space on your hard drive!
+the full resolution maps. Go to the [Orbiter home page](http://orbit.medphys.ucl.ac.uk) for
+links and installation instructions. Be sure to have plenty of free space on your hard drive!
+
+![](Textures/Scenarios/Default/Earthview2016/img1.jpg)
+
+![](Textures/Scenarios/Default/Earthview2016/img2.jpg)
+
+![](Textures/Scenarios/Default/Earthview2016/img3.jpg)
+
+![](Textures/Scenarios/Default/Earthview2016/img4.jpg)
+
+![](Textures/Scenarios/Default/Earthview2016/img5.jpg)
+
+![](Textures/Scenarios/Default/Earthview2016/img6.jpg)
 END_DESC
 
 BEGIN_ENVIRONMENT

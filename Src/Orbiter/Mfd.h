@@ -21,6 +21,7 @@
 #include "Vessel.h"
 #include "Element.h"
 #include "Select.h"
+#include <d3d.h>
 
 #define ELN 256           // polygon resolution for orbit trajectory
 #define ELNH (ELN/2)
@@ -42,8 +43,6 @@ public:
 };
 
 class Pane;
-class InputBox;
-class Select;
 class oapi::GraphicsClient;
 
 static char work_kstate[256];
@@ -284,7 +283,6 @@ protected:
 
 	// Drawing resources
 	oapi::Font *mfdfont[4];     // MFD font resources
-	bool use_skp_interface;     // true if drawing through Sketchpad, false for HDC
 
 public:
 	static struct DrawResource { // MFD drawing resources

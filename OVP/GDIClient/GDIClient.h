@@ -41,7 +41,7 @@ public:
 	 * \brief Create a GDI graphics object.
 	 * \param hInstance module instance handle (as passed to InitModule)
 	 */
-	GDIClient (HINSTANCE hInstance);
+	GDIClient (MODFILE hInstance);
 
 	// ==================================================================
 	/// \name 2-D drawing interface

@@ -1,10 +1,10 @@
-BEGIN_HYPERDESC
-<h1>Mir</h1>
+BEGIN_DESC
+# Mir
 
-<p>Burn-up? What burn-up? Space station Mir is back in orbit. Mir's orbital plane has been rotated to make it an ideal platform for lunar transits.</p>
+Burn-up? What burn-up? Space station Mir is back in orbit. Mir's orbital plane has been rotated to make it an ideal platform for lunar transits.
 
-<p>Mir model by Jason Benson (agent036).</p>
-END_HYPERDESC
+Mir model by Jason Benson (agent036).
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

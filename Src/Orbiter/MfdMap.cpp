@@ -518,15 +518,8 @@ void Instrument_Map::UpdateBlt ()
 	if (disp_mode) return;
 	if (!gc) return;
 	map->Update ();
-#ifdef ASYNC_DRAWMAP
-	if (!map->ThreadBusy()) {
-		gc->clbkCopyBitmap (surf, map->GetMap(), 0, 0, IW, IH);
-		map->AsyncDrawMap ();
-	}
-#else
 	map->DrawMap ();
-	gc->clbkCopyBitmap (surf, map->GetMap(), 0, 0, IW, IH);
-#endif
+	oapiBlt (surf, map->GetMap(), 0, 0, 0, 0, IW, IH);
 }
 
 // =======================================================================
@@ -654,8 +647,8 @@ bool Instrument_Map::ToggleDispParam (int which)
 			int i;
 			for (i = 0; i < cms.nset; i++)
 				if (cms.set[i].active) break;
-			if (i < cms.nset) dispflag = dispflag | DISP_CUSTOM1;
-			else              dispflag = dispflag & ~DISP_CUSTOM1;
+			if (i < cms.nset) dispflag = dispflag | DISP_CUSTOMMARKER;
+			else              dispflag = dispflag & ~DISP_CUSTOMMARKER;
 		}
 		return true;
 	}

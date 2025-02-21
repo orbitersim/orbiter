@@ -6,6 +6,8 @@
 #ifndef __CUSTOMCONTROLS_H
 #define __CUSTOMCONTROLS_H
 
+#include <windows.h>
+
 class CustomCtrl {
 public:
 	CustomCtrl ();

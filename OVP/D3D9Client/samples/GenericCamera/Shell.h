@@ -36,7 +36,7 @@ extern struct mfd_list *MFDList;
 extern int mfdLast;
 extern bool bExiting;
 
-class ShellMFD: public MFD2 
+class ShellMFD: public MFD
 {
 
 public:
@@ -49,7 +49,6 @@ public:
 	bool		ConsumeButton (int bt, int event);
 	char *		ButtonLabel (int bt);
 	int			ButtonMenu (const MFDBUTTONMENU **menu) const;
-	void		Update (HDC hDC);
 	bool		Update (Sketchpad *pSkp);
 	void		WriteStatus (FILEHANDLE scn) const;
 	void		ReadStatus (FILEHANDLE scn);
@@ -67,7 +66,7 @@ public:
 	//		ShellMFD::ExitModule(hDLL);
 	// }
 	//
-	static void	InitModule(HINSTANCE hDLL);
+	static void	InitModule(MODFILE hDLL);
 	static void ExitModule(HINSTANCE hDLL);
 	static OAPI_MSGTYPE MsgProc(UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam);
 

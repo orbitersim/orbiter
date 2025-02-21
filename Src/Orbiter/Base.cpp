@@ -37,7 +37,7 @@ int         Base::ngenerictex = 0;
 // ==========================================================
 // class Base
 
-Base::Base (char *fname, Planet *_planet, double _lng, double _lat)
+Base::Base (const std::string& fname, Planet *_planet, double _lng, double _lat)
 : Body (fname), lng (_lng), lat (_lat)
 {
 	char cbuf[256];

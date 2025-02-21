@@ -29,7 +29,6 @@
 
 // ==============================================================
 // class InterpreterList::Environment: implementation
-static NOTEHANDLE errorbox;
 
 InterpreterList::Environment::Environment()
 {
@@ -37,7 +36,6 @@ InterpreterList::Environment::Environment()
 	singleCmd = false;
 	hThread = NULL;
 	interp = CreateInterpreter ();
-	interp->SetErrorBox(errorbox);
 }
 
 InterpreterList::Environment::~Environment()
@@ -96,7 +94,7 @@ unsigned int WINAPI InterpreterList::Environment::InterpreterThreadProc (LPVOID 
 // ==============================================================
 // class InterpreterList: implementation
 
-InterpreterList::InterpreterList (HINSTANCE hDLL): Module (hDLL)
+InterpreterList::InterpreterList (MODFILE hDLL): Module (hDLL)
 {
 	nlist = nbuf = 0;
 }
@@ -108,17 +106,11 @@ InterpreterList::~InterpreterList ()
 
 void InterpreterList::clbkSimulationStart (RenderMode mode)
 {
-	errorbox = ::oapiCreateAnnotation(false, 1, _V(1.0,0,0));
-	::oapiAnnotationSetPos (errorbox, 0, 0.75, 1, 1);
-
-	for (int i = 0; i < nlist; i++) // prune all finished interpreters
-		list[i]->interp->SetErrorBox(errorbox);
 }
 
 void InterpreterList::clbkSimulationEnd ()
 {
 	while (nlist) DelInterpreter(list[0]);
-	oapiDelAnnotation(errorbox);
 }
 
 void InterpreterList::clbkPostStep (double simt, double simdt, double mjd)
@@ -177,7 +169,7 @@ int InterpreterList::DelInterpreter (InterpreterList::Environment *env)
 
 static InterpreterList *g_IList = nullptr;
 
-DLLCLBK void InitModule (HINSTANCE hDLL)
+DLLCLBK void InitModule (MODFILE hDLL)
 {
 	g_IList = new InterpreterList (hDLL);
 	oapiRegisterModule (g_IList);

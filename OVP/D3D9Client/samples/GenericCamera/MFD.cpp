@@ -33,7 +33,7 @@ class GenericModule : public oapi::Module
 
 public:
 
-	GenericModule(HINSTANCE hInst) : Module(hInst) {	}
+	GenericModule(MODFILE hInst) : Module(hInst) {	}
 
 	~GenericModule() {	}
 
@@ -59,7 +59,7 @@ public:
 // ============================================================================================================
 // API interface
 
-DLLCLBK void InitModule (HINSTANCE hDLL)
+DLLCLBK void InitModule (MODFILE hDLL)
 {
 	GenericModule *pFly = new GenericModule(hDLL);
 	oapiRegisterModule(pFly);
@@ -99,7 +99,7 @@ DLLCLBK void ExitModule (HINSTANCE hDLL)
 // MFD class implementation
 
 CameraMFD::CameraMFD(DWORD w, DWORD h, VESSEL *vessel)
-	: MFD2 (w, h, vessel)
+	: MFD (w, h, vessel)
 	, hVessel(vessel)
 	, hFocus(vessel)
 	, hRenderSrf(NULL)

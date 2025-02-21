@@ -1,9 +1,10 @@
-BEGIN_HYPERDESC
-<h1>Venus</h1>
-<p>The DeltaGlider in low orbit around Venus (courtesy Jim "BigJimW" Williams).
+BEGIN_DESC
+# Venus
+
+The DeltaGlider in low orbit around Venus (courtesy Jim "BigJimW" Williams).
 Drop below the cloud layer to get a glimpse at the new surface textures. But
-beware of the dense atmosphere!</p>
-END_HYPERDESC
+beware of the dense atmosphere!
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

@@ -28,46 +28,16 @@ Scenario files consist of a series of category blocks describing different aspec
 
 
 \subsection*{Description block (optional):}
-Contains a short description of the scenario which is presented to the user in Orbiter's Launchpad dialog window on highlighting the scenario. There are two versions of the description block available:
+Contains a short description of the scenario which is presented to the user in Orbiter's Launchpad dialog window on highlighting the scenario.
 
 \begin{lstlisting}[language=OSFS]
 BEGIN_DESC
-	<Text-description>
+	<Markdown-description>
 END_DESC
 \end{lstlisting}
 
 \noindent
-where <\textit{Text-description}> contains a scenario description in plain text format. The description can span multiple lines. An empty line is converted into a new line on display. More powerful formatting options are available with the alternative
-
-\begin{lstlisting}[language=OSFS]
-BEGIN_HYPERDESC
-	<HTML-description>
-END_HYPERDESC
-\end{lstlisting}
-
-\noindent
-where <\textit{HTML-description}> is passed to an HTML parser for rendering in the Launchpad window and can contain HTML formatting tags such as <h1></h1>, <b></b>, <br>, etc. However, references to external objects, such as images or links, are not allowed.
-Finally, the description can also be served from an external HTML or CHM (compiled multi-page HTML) file, using the format
-
-\begin{lstlisting}[language=OSFS]
-BEGIN_URLDESC
-	<URL>
-END_URLDESC
-\end{lstlisting}
-
-\noindent
-where <\textit{URL}> is a reference to a local HTML or CHM file containing the scenario description. The file is expected to be located in the HTML\textbackslash Scenarios directory. It can also be in a subdirectory of that directory, but the path relative to HTML\textbackslash Scenarios must then be added to the <\textit{URL}> reference. The file extension must not be included in the URL specification. For HTML files, file extension htm is expected. For CHM files, extension chm is expected. CHM references also must specify the page to display, separated by comma. For example,
-
-\begin{lstlisting}[language=OSFS]
-BEGIN_URLDESC
-	MyScenarios\MyScenarioDescription,TitlePage
-END_URLDESC
-\end{lstlisting}
-
-\noindent
-parses the description from file .\textbackslash Html\textbackslash Scenarios\textbackslash MyScenarios\textbackslash MyScenarioDescription.chm, reading page TitlePage.htm from the CHM file. CHM files can contain multiple documents, such as additional pages or images. The scenario description URL can be the same as the Help URL used for inline scenario help (see Help tag in the environment block).\\
-Note that when running Orbiter in some environments (e.g. in Linux under WINE), the HTML render function may not be available. For this case you can provide a DESC block in addition to the URLDESC or HYPERDESC block, to use as a fallback option. If no DESC block is found, Orbiter will try to convert a HYPERDESC block to plain text, but scenarios with only a URLDESC block will just show an empty description box.
-
+where <\textit{Markdown-description}> contains a scenario description in CommonMark Markdown format. The description can span multiple lines. Images are referenced as paths relative to the Orbiter root directory, and cannot be URLs.
 
 \subsection*{Environment block (optional):}
 Contains the simulation environment. Format:

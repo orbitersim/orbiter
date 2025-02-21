@@ -1,0 +1,9 @@
+BEGIN_DESC
+# Scenario Editor
+
+Create and delete spacecraft during the simulation - Edit position, orientation, orbital elements, surface location,
+fuel status and docking connections - Reset the simulation time.
+
+The scenario editor can be opened by selecting the "Scenario editor" entry in the Custom Functions dialog (Ctrl-F4).
+END_DESC
+CATEGORY Tools and dialogs

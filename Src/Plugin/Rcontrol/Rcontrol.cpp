@@ -27,7 +27,7 @@ namespace oapi {
 	public:
 		/// \brief Soliton instance server for RControl plugin
 		/// \param hDLL nodule instance handle
-		static RControl* GetInstance(HINSTANCE hDLL);
+		static RControl* GetInstance(MODFILE hDLL);
 
 		/// \brief Soliton instance destructor
 		static void DelInstance();
@@ -53,7 +53,7 @@ namespace oapi {
 	protected:
 		/// \brief Protected constructor 
 		/// \param hDLL module instance handle
-		RControl(HINSTANCE hDLL);
+		RControl(MODFILE hDLL);
 
 		/// \brief Protected destructor
 		~RControl();
@@ -88,7 +88,7 @@ namespace oapi {
 
 /// \brief Module entry point 
 /// \param hDLL module handle
-DLLCLBK void InitModule(HINSTANCE hDLL)
+DLLCLBK void InitModule(MODFILE hDLL)
 {
 	// Create and register the module
 	oapiRegisterModule(oapi::RControl::GetInstance(hDLL));
@@ -96,7 +96,7 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 
 /// \brief Module exit point 
 /// \param hDLL module handle
-DLLCLBK void ExitModule(HINSTANCE hDLL)
+DLLCLBK void ExitModule(MODFILE hDLL)
 {
 	// Delete the module
 	oapi::RControl::DelInstance();
@@ -111,7 +111,7 @@ oapi::RControl* oapi::RControl::self = nullptr;
 
 // --------------------------------------------------------------
 
-oapi::RControl* oapi::RControl::GetInstance(HINSTANCE hDLL)
+oapi::RControl* oapi::RControl::GetInstance(MODFILE hDLL)
 {
 	if (!self)
 		self = new RControl(hDLL);
@@ -130,7 +130,7 @@ void oapi::RControl::DelInstance()
 
 // --------------------------------------------------------------
 
-oapi::RControl::RControl(HINSTANCE hDLL)
+oapi::RControl::RControl(MODFILE hDLL)
 	: Module(hDLL)
 	, m_hDlg(NULL)
 {
@@ -140,7 +140,7 @@ oapi::RControl::RControl(HINSTANCE hDLL)
 		hookOpenDlg, NULL);
 
 	// Register custom dialog controls
-	oapiRegisterCustomControls(hDLL);
+	oapiRegisterCustomControls(stopgapGetModuleInstance(hDLL));
 
 	m_maingauge = 0;
 	m_retrogauge = 0;
@@ -156,7 +156,7 @@ oapi::RControl::~RControl()
 	oapiUnregisterCustomCmd(m_dwCmd);
 
 	// Unregister custom dialog controls
-	oapiUnregisterCustomControls(GetModule());
+	oapiUnregisterCustomControls(stopgapGetModuleInstance(GetModule()));
 }
 
 // --------------------------------------------------------------
@@ -247,7 +247,7 @@ void oapi::RControl::hookOpenDlg(void* context)
 
 void oapi::RControl::clbkOpenDlg(void* context)
 {
-	HWND hDlg = oapiOpenDialog(GetModule(), IDD_INTERFACE, hookDlgMsgProc);
+	HWND hDlg = oapiOpenDialog(stopgapGetModuleInstance(GetModule()), IDD_INTERFACE, hookDlgMsgProc);
 	if (hDlg) {
 		m_hDlg = hDlg;
 

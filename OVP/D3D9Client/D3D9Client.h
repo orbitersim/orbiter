@@ -82,7 +82,7 @@ struct _D3D9Stats
 		DWORD TexChanges;	///< Number of texture changes
 		DWORD MtrlChanges;	///< Number of material changes
 	} Mesh;					///< Mesh related statistics
-			
+
 	struct {
 		D3D9Time Update;		///< clbkUpdate
 		D3D9Time Scene;			///< clbkRenderScene
@@ -141,7 +141,7 @@ namespace oapi {
 // The DX9 render client for Orbiter
 // ==============================================================
 
-class D3D9Client : public GraphicsClient 
+class D3D9Client : public GraphicsClient
 {
 
 	friend class ::Scene;	// <= likes to call Render2DOverlay()
@@ -156,7 +156,7 @@ public:
 	 * with the Orbiter core via the oapiRegisterGraphicsClient function.
 	 * \param hInstance module instance handle (as passed to InitModule)
 	 */
-	explicit D3D9Client (HINSTANCE hInstance);
+	explicit D3D9Client (MODFILE hInstance);
 
 	/**
 	 * \brief Destroy the graphics object.
@@ -1037,6 +1037,15 @@ public:
 	bool clbkFilterElevation(OBJHANDLE hPlanet, int ilat, int ilng, int lvl, double elev_res, INT16* elev);
 	// @}
 
+	void clbkImGuiNewFrame() override;
+	void clbkImGuiRenderDrawData() override;
+	void clbkImGuiInit() override;
+	void clbkImGuiShutdown() override;
+	uint64_t clbkImGuiSurfaceTexture(SURFHANDLE surf) override;
+
+    const char* clbkGetModuleCopyright() override {
+    	return "D3D9Client module by Jarmo Nikkanen and Peter Schneider";
+    }
 
 	HWND				GetRenderWindow () const { return hRenderWnd; }
 	CD3DFramework9 *    GetFramework() const { return pFramework; }
@@ -1114,7 +1123,7 @@ protected:
 	 * \note Derived classes should perform any required per-session
 	 *   initialisation of the 3D render environment here.
 	 */
-	HWND clbkCreateRenderWindow ();
+	std::shared_ptr<sdl::UnmanagedWindow> clbkCreateRenderWindow ();
 
 	/**
 	 * \brief Simulation startup finalisation
@@ -1341,6 +1350,7 @@ private:
 
 	std::vector<RenderProcData> RenderProcs;
 	std::vector<GenericProcData> GenericProcs;
+	std::vector<SURFHANDLE> ImTextures;
 	mutable std::list<RenderTgtData> RenderStack;
 
 	HFONT hLblFont1;

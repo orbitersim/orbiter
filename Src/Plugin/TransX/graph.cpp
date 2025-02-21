@@ -220,7 +220,7 @@ void Graph::drawcircle(oapi::Sketchpad *sketchpad, double size)
 	sketchpad->Ellipse(lowx, lowy, highx, highy);
 }
 
-double Graph::vectorpointdisplay(oapi::Sketchpad *sketchpad, const VECTOR3 &target, MFD2 *mfd, VESSEL *vessel, bool isposition)
+double Graph::vectorpointdisplay(oapi::Sketchpad *sketchpad, const VECTOR3 &target, MFD *mfd, VESSEL *vessel, bool isposition)
 //targetvector is a vector in the global reference plane
 //isposition true
 {

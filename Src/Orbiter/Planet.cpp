@@ -303,10 +303,10 @@ Planet::Planet (char *fname)
 		label_version = 1;
 
 	if (GetItemInt (ifs, "MaxPatchResolution", i))
-		max_patch_level = (DWORD)i;
+		max_patch_level = i;
 	else
 		max_patch_level = 8;
-	max_patch_level = min (max_patch_level, (DWORD)SURF_MAX_PATCHLEVEL2);
+	max_patch_level = min (max_patch_level, SURF_MAX_PATCHLEVEL2);
 	max_patch_level = min (max_patch_level, g_pOrbiter->Cfg()->CfgVisualPrm.PlanetMaxLevel);
 
 	bHasCloudlayer = g_pOrbiter->Cfg()->CfgVisualPrm.bClouds &&
@@ -458,9 +458,9 @@ Planet::~Planet ()
 	delete emgr;
 }
 
-void Planet::ScanBases (char *path)
+void Planet::ScanBases (char* path)
 {
-	char cbuf[256], spath[256], *pc, *cut = 0;
+	char cbuf[256], *pc, *cut = 0;
 
 	// check for period limiter
 	if ((pc = strstr (path, "PERIOD")) != NULL) {
@@ -485,9 +485,8 @@ void Planet::ScanBases (char *path)
 		trim_string (path);
 	}
 
-	sprintf (spath, "%s/dummy", path);
-	strcpy (cbuf, g_pOrbiter->ConfigPath(spath));
-	fs::path configdir = fs::path(cbuf).parent_path();
+	fs::path spath = fs::path(path) / "dummy";
+	fs::path configdir = g_pOrbiter->ConfigPath(spath.u8string()).parent_path();
 	std::error_code ec;
 	for (const auto& entry : fs::directory_iterator(configdir, ec)) {
 		if (entry.path().extension().string() == ".cfg") {
@@ -498,8 +497,8 @@ void Planet::ScanBases (char *path)
 				pc = trim_string(cbuf);
 			} while (!pc[0]);
 			if (_strnicmp(pc, "BASE-V2.0", 9)) continue;
-			sprintf(spath, "%s\\%s", path, entry.path().stem().string().c_str());
-			Base* base = new Base(spath, this); TRACENEW
+			spath = fs::path(path) / entry.path().stem();
+			Base* base = new Base(spath.u8string(), this); TRACENEW
 			if (!AddBase(base))
 				delete base;
 		}
@@ -903,7 +902,7 @@ Vector Planet::WindVelocity (double lng, double lat, double alt, int frame, Wind
 	Vector wv(0,0,0);
 
 	if (bEnableWind && HasAtmosphere()) {
-		
+
 		int k, dim;
 		DWORD r, rnd;
 		Vector wv0[4];
@@ -954,7 +953,7 @@ Vector Planet::WindVelocity (double lng, double lat, double alt, int frame, Wind
 #ifdef UNDEF
 		double fac1 = alt*1e-3 - alt0;
 		double fac0 = 1.0-fac1;
-		
+
 
 
 		rnd0 = (DWORD)alt0+12345;

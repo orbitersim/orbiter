@@ -17,11 +17,11 @@ public:
 	lua_State *GetLua (INTERPRETERHANDLE hInterp);
 
 protected:
-	HINSTANCE LoadInterpreterLib();
+	MODFILE LoadInterpreterLib();
 	
 private:
 	Orbiter *orbiter;
-	HINSTANCE hLib;
+	MODFILE hLib;
 };
 
 #endif // !__INTERPRETER_H

@@ -1,5 +1,6 @@
 BEGIN_DESC
-Orbiter now has improved ephemeris calculations for planetary and lunar positions. Eclipses finally occur at the correct times!
+Orbiter now has improved ephemeris calculations for planetary and lunar
+positions. Eclipses finally occur at the correct times!
 END_DESC
 
 BEGIN_ENVIRONMENT

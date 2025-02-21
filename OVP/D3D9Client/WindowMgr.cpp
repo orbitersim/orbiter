@@ -430,7 +430,7 @@ void Node::Move()
 // WindowManager Implementation
 // ===============================================================================================
 //
-WindowManager::WindowManager(HWND hAppMainWindow, HINSTANCE _hInst, bool bWindowed)
+WindowManager::WindowManager(HWND hAppMainWindow, MODFILE _hInst, bool bWindowed)
 {
 	char path[256];
 	char cbuf[256];
@@ -545,7 +545,7 @@ WindowManager::WindowManager(HWND hAppMainWindow, HINSTANCE _hInst, bool bWindow
 	memset(&wc, 0, sizeof(WNDCLASS));
 	wc.style = flags | CS_OWNDC | CS_SAVEBITS;
 	wc.lpfnWndProc = SideBarWndProc;
-	wc.hInstance = hInst;
+	wc.hInstance = stopgapGetModuleInstance(hInst);
 #pragma warning(disable:4302)
 	wc.hCursor = LoadCursorA(NULL, MAKEINTRESOURCE(IDC_ARROW));
 	wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
@@ -556,7 +556,7 @@ WindowManager::WindowManager(HWND hAppMainWindow, HINSTANCE _hInst, bool bWindow
 	memset(&wc, 0, sizeof(WNDCLASS));
 	wc.style = flags | CS_OWNDC | CS_SAVEBITS | CS_DROPSHADOW;
 	wc.lpfnWndProc = SideBarWndProc;
-	wc.hInstance = hInst;
+	wc.hInstance = stopgapGetModuleInstance(hInst);
 	wc.hCursor = LoadCursorA(NULL, MAKEINTRESOURCE(IDC_ARROW));
 #pragma warning(default:4302)
 	wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
@@ -581,7 +581,7 @@ WindowManager::WindowManager(HWND hAppMainWindow, HINSTANCE _hInst, bool bWindow
 
 	// Smaple dialog for a proper size and scaling
 	//
-	HWND hDlg = CreateDialogParam(hInst, MAKEINTRESOURCE(IDD_MESHDEBUG), hAppMainWindow, DummyDlgProc, 0);
+	HWND hDlg = CreateDialogParam(stopgapGetModuleInstance(hInst), MAKEINTRESOURCE(IDD_MESHDEBUG), hAppMainWindow, DummyDlgProc, 0);
 
 	RECT r;
 	GetWindowRect(hDlg, &r);
@@ -612,8 +612,8 @@ WindowManager::~WindowManager()
 
 	for(SideBar* sb : sbList) delete sb;
 	
-	UnregisterClass("SideBarWnd", hInst);
-	UnregisterClass("Floater", hInst);
+	UnregisterClass("SideBarWnd", stopgapGetModuleInstance(hInst));
+	UnregisterClass("Floater", stopgapGetModuleInstance(hInst));
 
 	if (hTitle) DeleteObject(hTitle);
 	if (hSub) DeleteObject(hSub);
@@ -1155,8 +1155,9 @@ SideBar::SideBar(class WindowManager *_pMgr, DWORD _state)
 
 	if (state == gcGUI::DS_FLOAT) width += 2, height += 1; // Border
 
-	if (state == gcGUI::DS_FLOAT) hBar = CreateWindowExA(exstyle, "Floater", "Float", style, xref, ypos, width, height, hMainWnd, NULL, hInst, 0);
-	else					      hBar = CreateWindowExA(exstyle, "SideBarWnd", "Dock", style, xref, ypos, width, height, hMainWnd, NULL, hInst, 0);
+	auto hInst1 = stopgapGetModuleInstance(hInst);
+	if (state == gcGUI::DS_FLOAT) hBar = CreateWindowExA(exstyle, "Floater", "Float", style, xref, ypos, width, height, hMainWnd, NULL, hInst1, 0);
+	else					      hBar = CreateWindowExA(exstyle, "SideBarWnd", "Dock", style, xref, ypos, width, height, hMainWnd, NULL, hInst1, 0);
 
 	SetWindowLong(hBar, GWL_STYLE, style);	// Make it bordeless
 

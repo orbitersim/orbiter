@@ -137,7 +137,7 @@ ModuleXRSoundEngine *XRSoundDLL::GetXRSoundEngineInstance(const char *pUniqueMod
 // This function is called when Orbiter starts or when the module
 // is activated.
 //==============================================================
-DLLCLBK void InitModule(HINSTANCE hDLL)
+DLLCLBK void InitModule(MODFILE hDLL)
 {
 #ifdef _DEBUG
     // Enable Visual Studio's runtime heap checking for debug builds
@@ -185,7 +185,7 @@ DLLCLBK void ExitModule(HINSTANCE hDLL)
 XRSoundDLL *XRSoundDLL::s_pInstance;
 
 // Constructor
-XRSoundDLL::XRSoundDLL(HINSTANCE hDLL) :
+XRSoundDLL::XRSoundDLL(MODFILE hDLL) :
     Module(hDLL), m_hDLL(hDLL), m_nextSoundEnginesRefreshSimt(0), m_absoluteSimTime(0), m_nextIrrKlangUpdateRealtime(0)
 {
 }

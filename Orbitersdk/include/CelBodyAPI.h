@@ -520,9 +520,9 @@ protected:
      */
 	bool FreeAtmosphereModule ();
 
-	OBJHANDLE hBody;      ///< handle for the associated celestial body
-	ATMOSPHERE *atm;      ///< pointer to atmosphere object
-	HINSTANCE hAtmModule; ///< library handle for external atmosphere module
+	OBJHANDLE hBody;              ///< handle for the associated celestial body
+	ATMOSPHERE *atm;              ///< pointer to atmosphere object
+	MODFILE hAtmModule; ///< library handle for external atmosphere module
 };
 
 

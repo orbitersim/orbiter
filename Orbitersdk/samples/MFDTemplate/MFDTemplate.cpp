@@ -51,7 +51,7 @@ DLLCLBK void ExitModule (HINSTANCE hDLL)
 
 // Constructor
 MFDTemplate::MFDTemplate (DWORD w, DWORD h, VESSEL *vessel)
-: MFD2 (w, h, vessel)
+: MFD (w, h, vessel)
 {
 	font = oapiCreateFont (w/20, true, "Arial", FONT_NORMAL, 450);
 	// Add MFD initialisation here

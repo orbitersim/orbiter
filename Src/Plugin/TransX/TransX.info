@@ -1,0 +1,8 @@
+BEGIN_DESC
+# Trans-X v3.14.1
+
+A complex Orbiter navigation tool by Steve Arch and Duncan Sharpe. Activating this module enables the TransX MFD mode.
+
+See the documents in Doc/TransX for for User Manual, Quickstart reference and license.
+END_DESC
+CATEGORY MFD modes

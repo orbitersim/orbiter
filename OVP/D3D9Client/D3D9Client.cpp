@@ -11,6 +11,7 @@
 #define ORBITER_MODULE
 
 #include <set> // ...for Brush-, Pen- and Font-accounting
+#include <SDL3/SDL_loadso.h>
 #include "Orbitersdk.h"
 #include "D3D9Client.h"
 #include "D3D9Config.h"
@@ -40,7 +41,9 @@
 #include "gcConst.h"
 #include <unordered_map>
 #include <d3d9on12.h>
-
+#include "imgui.h"
+#include "imgui_impl_dx9.h"
+#include "imgui_impl_win32.h"
 
 #if defined(_MSC_VER) && (_MSC_VER <= 1700 ) // Microsoft Visual Studio Version 2012 and lower
 #define round(v) floor(v+0.5)
@@ -63,7 +66,7 @@ struct D3D9Client::GenericProcData {
 
 using namespace oapi;
 
-HINSTANCE g_hInst = 0;
+MODFILE g_hInst = 0;
 D3D9Client *g_client = 0;
 class gcConst* g_pConst = 0;
 IDirect3D9* g_pD3DObject = 0;  // Made valid when VideoTab is created
@@ -115,7 +118,7 @@ extern "C" {
 // ==============================================================
 // Initialise module
 
-DLLCLBK void InitModule(HINSTANCE hDLL)
+DLLCLBK void InitModule(MODFILE hDLL)
 {
 
 #ifdef _DEBUG
@@ -253,7 +256,7 @@ DLLCLBK gcConst * gcGetCoreAPI()
 // D3D9Client class implementation
 // ==============================================================
 
-D3D9Client::D3D9Client (HINSTANCE hInstance) :
+D3D9Client::D3D9Client (MODFILE hInstance) :
 	GraphicsClient(hInstance),
 	vtab(NULL),
 	scenarioName("(none selected)"),
@@ -2724,7 +2727,57 @@ bool D3D9Client::clbkFilterElevation(OBJHANDLE hPlanet, int ilat, int ilng, int 
 	_TRACE;
 	return FilterElevationPhysics(hPlanet, lvl, ilat, ilng, elev_res, elev);
 }
+void D3D9Client::clbkImGuiNewFrame()
+{
+	_TRACE;
+	ImGui_ImplDX9_NewFrame();
+}
+void D3D9Client::clbkImGuiRenderDrawData()
+{
+	_TRACE;
 
+	if (pDevice->BeginScene() >= 0)
+	{
+		ImGui::Render();
+		ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
+		pDevice->EndScene();
+	}
+
+	// Update and Render additional Platform Windows
+	ImGuiIO& io = ImGui::GetIO();
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	{
+		ImGui::UpdatePlatformWindows();
+		ImGui::RenderPlatformWindowsDefault();
+	}
+
+	for(auto &surf: ImTextures) {
+		clbkReleaseSurface(surf);
+	}
+	ImTextures.clear();
+}
+void D3D9Client::clbkImGuiInit()
+{
+	_TRACE;
+	ImGui_ImplDX9_Init(pDevice);
+}
+void D3D9Client::clbkImGuiShutdown()
+{
+	_TRACE;
+	// Clean up also here just in case
+	for(auto &surf: ImTextures) {
+		clbkReleaseSurface(surf);
+	}
+	ImTextures.clear();
+	ImGui_ImplDX9_Shutdown();
+}
+uint64_t D3D9Client::clbkImGuiSurfaceTexture(SURFHANDLE surf)
+{
+	ImTextures.push_back(surf);
+	clbkIncrSurfaceRef(surf);
+	LPDIRECT3DTEXTURE9 pTxt = SURFACE(surf)->GetTexture();
+	return (uint64_t)pTxt;
+}
 // =======================================================================
 
 bool D3D9Client::clbkSplashLoadMsg (const char *msg, int line)

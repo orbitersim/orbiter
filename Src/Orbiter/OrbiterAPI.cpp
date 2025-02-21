@@ -4,6 +4,7 @@
 #define STRICT 1
 #define OAPI_IMPLEMENTATION
 
+#include <SDL3/SDL_loadso.h>
 #include "Orbiter.h"
 #include "Launchpad.h"
 #include "Psys.h"
@@ -50,9 +51,11 @@ DLLEXPORT void FormatValue (char *cbuf, int n, double f, int precision)
 	strncpy (cbuf, s, n);
 }
 
-DLLEXPORT HINSTANCE oapiGetOrbiterInstance ()
-{
-	return g_pOrbiter->GetInstance();
+DLLEXPORT HMODULE stopgapGetModuleInstance (MODFILE module) {
+#if !defined(_WIN32)
+#error "stopgap module instance does not work on non-Windows. WHY IS THIS STILL HERE"
+#endif
+	return reinterpret_cast<HMODULE>(module);
 }
 
 DLLEXPORT int oapiGetOrbiterVersion ()
@@ -264,7 +267,7 @@ DLLEXPORT void oapiGetObjectName (OBJHANDLE hObj, char *name, int n)
 
 DLLEXPORT const char *oapiGetObjectFileName(OBJHANDLE hObj)
 {
-	return ((Body*)hObj)->FileName();
+	return ((Body*)hObj)->FileName().c_str();
 }
 
 DLLEXPORT OBJHANDLE oapiGetFocusObject ()
@@ -1966,6 +1969,14 @@ DLLEXPORT HDC oapiGetDC (SURFHANDLE surf)
 	return hDC;
 }
 
+DLLEXPORT uint64_t oapiGetImTextureID (SURFHANDLE surf)
+{
+	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();
+	if (gc && surf)
+		return gc->clbkImGuiSurfaceTexture (surf);
+	return 0;
+}
+
 DLLEXPORT void oapiReleaseDC (SURFHANDLE surf, HDC hDC)
 {
 	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();
@@ -2126,7 +2137,7 @@ DLLEXPORT bool oapiAcceptDelayedKey (char key, double interval)
 
 DLLEXPORT LAUNCHPADITEM_HANDLE oapiRegisterLaunchpadItem (LaunchpadItem *item, LAUNCHPADITEM_HANDLE parent)
 {
-	return (LAUNCHPADITEM_HANDLE)g_pOrbiter->Launchpad()->RegisterExtraParam (item, (HTREEITEM)parent);
+	return (LAUNCHPADITEM_HANDLE)g_pOrbiter->Launchpad()->RegisterExtraParam (item, (size_t)parent);
 }
 
 DLLEXPORT bool oapiUnregisterLaunchpadItem (LaunchpadItem *item)
@@ -2136,7 +2147,7 @@ DLLEXPORT bool oapiUnregisterLaunchpadItem (LaunchpadItem *item)
 
 DLLEXPORT LAUNCHPADITEM_HANDLE oapiFindLaunchpadItem (const char *name, LAUNCHPADITEM_HANDLE parent)
 {
-	return g_pOrbiter->Launchpad()->FindExtraParam (name, (HTREEITEM)parent);
+	return g_pOrbiter->Launchpad()->FindExtraParam (name, (size_t)parent);
 }
 
 DLLEXPORT DWORD oapiRegisterCustomCmd (char *label, char *desc, CustomFunc func, void *context)
@@ -2159,6 +2170,12 @@ DLLEXPORT HWND oapiOpenDialogEx (HINSTANCE hDLLInst, int resourceId, DLGPROC msg
 	return g_pOrbiter->OpenDialogEx (hDLLInst, resourceId, msgProc, flag, context);
 }
 
+DLLEXPORT void oapiOpenDialog(ImGuiDialog *e)
+{
+	g_pOrbiter->DlgMgr()->AddEntry(e);
+	e->Activate();
+}
+
 DLLEXPORT HWND oapiFindDialog (HINSTANCE hDLLInst, int resourceId)
 {
 	return g_pOrbiter->IsDialog (hDLLInst, resourceId);
@@ -2169,6 +2186,11 @@ DLLEXPORT void oapiCloseDialog (HWND hDlg)
 	g_pOrbiter->CloseDialog (hDlg);
 }
 
+DLLEXPORT void oapiCloseDialog(ImGuiDialog *e)
+{
+	g_pOrbiter->DlgMgr()->DelEntry(e);
+}
+
 DLLEXPORT void *oapiGetDialogContext (HWND hDlg)
 {
 	DialogManager *dlgmgr = g_pOrbiter->DlgMgr();
@@ -2177,7 +2199,7 @@ DLLEXPORT void *oapiGetDialogContext (HWND hDlg)
 
 DLLEXPORT bool oapiRegisterWindow (HINSTANCE hDLLInst, HWND hWnd, DWORD flag)
 {
-	return g_pOrbiter->RegisterWindow (hDLLInst, hWnd, flag); 
+	return g_pOrbiter->RegisterWindow (hDLLInst, hWnd, flag);
 }
 
 DLLEXPORT bool oapiAddTitleButton (DWORD msgid, HBITMAP hBmp, DWORD flag)
@@ -2205,7 +2227,7 @@ DLLEXPORT INT_PTR oapiDefDialogProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 DLLEXPORT bool oapiOpenHelp (HELPCONTEXT *hcontext)
 {
-	HWND hDlg = g_pOrbiter->OpenHelp (hcontext);
+	g_pOrbiter->OpenHelp (hcontext);
 	return true;
 }
 
@@ -2237,33 +2259,33 @@ DLLEXPORT void oapiSetMainInfoVisibilityMode (DWORD mode)
 
 DLLEXPORT FILEHANDLE oapiOpenFile (const char *fname, FileAccessMode mode, PathRoot root)
 {
-	char cbuf[512];
+	fs::path path;
 	switch (root) {
 	case CONFIG:
-		strcpy (cbuf, g_pOrbiter->Cfg()->ConfigPathNoext (fname));
+		path = g_pOrbiter->Cfg()->ConfigPathNoext(fname);
 		break;
 	case SCENARIOS:
-		strcpy (cbuf, g_pOrbiter->ScnPath (fname));
+		path = g_pOrbiter->ScnPath (fname);
 		break;
 	case TEXTURES:
-		strcpy (cbuf, g_pOrbiter->TexPath (fname));
+		path = g_pOrbiter->TexPath (fname);
 		break;
 	case TEXTURES2:
-		strcpy (cbuf, g_pOrbiter->HTexPath (fname));
+		path = g_pOrbiter->HTexPath (fname);
 		break;
 	case MESHES:
-		strcpy (cbuf, g_pOrbiter->MeshPath (fname));
+		path = g_pOrbiter->MeshPath (fname);
 		break;
 	default:
-		strcpy (cbuf, fname);
+		path = fs::path(fname);
 		break;
 	}
 
 	switch (mode) {
 	case FILE_IN:
-		return (FILEHANDLE)(new ifstream (cbuf));
+		return (FILEHANDLE)(new ifstream (path));
 	case FILE_IN_ZEROONFAIL: {
-		ifstream *ifs = new ifstream (cbuf);
+		ifstream *ifs = new ifstream (path);
 		if (ifs->fail()) {
 			delete ifs;
 			ifs = 0;
@@ -2271,9 +2293,9 @@ DLLEXPORT FILEHANDLE oapiOpenFile (const char *fname, FileAccessMode mode, PathR
 		return (FILEHANDLE)ifs;
 		}
 	case FILE_OUT:
-		TRACENEW; return (FILEHANDLE)(new ofstream (cbuf));
+		TRACENEW; return (FILEHANDLE)(new ofstream (path));
 	case FILE_APP:
-		TRACENEW; return (FILEHANDLE)(new ofstream (cbuf, ios::app));
+		TRACENEW; return (FILEHANDLE)(new ofstream (path, ios::app));
 	}
 	return 0;
 }
@@ -2296,7 +2318,7 @@ DLLEXPORT void oapiCloseFile (FILEHANDLE file, FileAccessMode mode)
 
 DLLEXPORT bool oapiSaveScenario (const char *fname, const char *desc)
 {
-	return g_pOrbiter->SaveScenario (fname, desc, 1);
+	return g_pOrbiter->SaveScenario (fname, desc);
 }
 
 DLLEXPORT void oapiWriteLine (FILEHANDLE file, char *line)
@@ -2549,9 +2571,10 @@ DLLEXPORT DWORD oapiInflate (const BYTE *inp, DWORD ninp, BYTE *outp, DWORD nout
 // Undocumented interface functions
 // ------------------------------------------------------------------------------
 
-DLLEXPORT void InitLib (HINSTANCE hModule)
+DLLEXPORT void InitLib (MODFILE hModule)
 {
-	typedef void (*OPC_DLLInit)(HINSTANCE hDLL);
+	HINSTANCE moduleInstance = stopgapGetModuleInstance(hModule);
+	typedef void (*OPC_DLLInit)(MODFILE hDLL);
 	OPC_DLLInit DLLInit;
 	char cbuf[256], mname[256], *mp;
 	int i, len;
@@ -2559,7 +2582,7 @@ DLLEXPORT void InitLib (HINSTANCE hModule)
 	if (td.SimT0 < 1) {
 		// don't write during simulation, since unnecessary file access
 		// can cause time waste
-		GetModuleFileName (hModule, mname, 256);
+		GetModuleFileName (moduleInstance, mname, 256);
 		for (i = 0, mp = mname; mname[i]; i++)
 			if (mname[i] == '\\') mp = mname+i+1;
 		sprintf (cbuf, "Module %s ", mp);
@@ -2568,7 +2591,7 @@ DLLEXPORT void InitLib (HINSTANCE hModule)
 			cbuf[i] = '\0';
 		}
 
-		char *(*mdate)() = (char*(*)())GetProcAddress (hModule, "ModuleDate");
+		char *(*mdate)() = (char*(*)())SDL_LoadFunction (reinterpret_cast<SDL_SharedObject*>(hModule), "ModuleDate");
 		if (mdate) {
 			int Date2Int (char *date);
 			sprintf (cbuf+strlen(cbuf), " [Build %06d", Date2Int(mdate()));
@@ -2576,7 +2599,7 @@ DLLEXPORT void InitLib (HINSTANCE hModule)
 			strcat (cbuf, " [Build ******");
 		}
 
-		int (*fversion)() = (int(*)())GetProcAddress (hModule, "GetModuleVersion");
+		int (*fversion)() = (int(*)())SDL_LoadFunction (reinterpret_cast<SDL_SharedObject*>(hModule), "GetModuleVersion");
 		if (fversion) {
 			sprintf (cbuf+strlen(cbuf), ", API %06d]", fversion());
 		} else {
@@ -2586,17 +2609,17 @@ DLLEXPORT void InitLib (HINSTANCE hModule)
 		LOGOUT (cbuf);
 	}
 
-	DLLInit = (OPC_DLLInit)GetProcAddress (hModule, "InitModule");
-	if (!DLLInit) DLLInit = (OPC_DLLInit)GetProcAddress (hModule, "opcDLLInit");
+	DLLInit = (OPC_DLLInit)SDL_LoadFunction (reinterpret_cast<SDL_SharedObject*>(hModule), "InitModule");
+	if (!DLLInit) DLLInit = (OPC_DLLInit)SDL_LoadFunction (reinterpret_cast<SDL_SharedObject*>(hModule), "opcDLLInit");
 	if (DLLInit) (*DLLInit)(hModule);
 }
 
-DLLEXPORT void ExitLib (HINSTANCE hModule)
+DLLEXPORT void ExitLib (MODFILE hModule)
 {
-	typedef void (*OPC_DLLExit)(HINSTANCE hDLL);
+	typedef void (*OPC_DLLExit)(MODFILE hDLL);
 	OPC_DLLExit DLLExit;
-	DLLExit = (OPC_DLLExit)GetProcAddress (hModule, "ExitModule");
-	if (!DLLExit) DLLExit = (OPC_DLLExit)GetProcAddress (hModule, "opcDLLExit");
+	DLLExit = (OPC_DLLExit)SDL_LoadFunction (reinterpret_cast<SDL_SharedObject*>(hModule), "ExitModule");
+	if (!DLLExit) DLLExit = (OPC_DLLExit)SDL_LoadFunction (reinterpret_cast<SDL_SharedObject*>(hModule), "opcDLLExit");
 	if (DLLExit) (*DLLExit)(hModule);
 }
 

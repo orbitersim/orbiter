@@ -2,15 +2,61 @@ BEGIN_URLDESC
 Default\ShuttleAscentAp,Index
 END_URLDESC
 BEGIN_DESC
-Space Shuttle ascent autopilot
+# Space Shuttle ascent autopilot
 
+*To see this help page during the simulation session, after launching the
+scenario press Alt-F1.*
 
-The default Space Shuttle Atlantis bundled with Orbiter now contains a built-in ascent
-autopilot.
+The default Space Shuttle Atlantis bundled with Orbiter now contains a built-in
+ascent autopilot.
 
+You can set it up via the *Ascent AP* MFD mode: After starting this scenario,
+switch to cockpit mode (**F1**), call up the mode selection screen for the
+left MFD (**LShift-F1**), and select the Ascent AP mode (**LShift-B**).
 
-For instructions on configuring and executing the autopilot, launch the scenario, then
-open the Help window (Alt-F1).
+The MFD display shows the commanded launch azimuth angle, initially set to 90°
+(east), the resulting orbit inclination, and the commanded orbit altitude after
+circularisation, initially set to 350km.
+
+You can change the launch azimuth angle by pressing the **AZ-** and **AZ+** MFD
+buttons. The final orbit inclination will be automatically recalculated. You
+can change the target orbit altitude by pressing the **AL-** and **AL+** MFD
+buttons.
+
+For intercepting the International Space Station you will have to set the
+launch azimuth so that the orbit inclination matches that of the ISS. With the
+ISS orbit inclination of 51.6° this will typically result in a launch azimuth
+of 43° or 137°, depending on whether the ISS is intercepted at the ascending
+or descending section of its orbit.
+
+Note that the autopilot does not check if the commanded target orbit can be
+achieved. If you select an orbit with too high altitude or a launch azimuth too
+far from 90° the autopilot will try to follow the target trajectory until it
+runs out of fuel.
+
+After setting the launch parameters, wait for the desired launch window (e.g.
+until the ISS groundtrack crosses the launch site), and press the **L** MFD
+button to launch.
+
+The autopilot will drive the gimbal angles for the Solid Rocket Boosters (SRB)
+and Space Shuttle Main Engines (SSME) to provide the required roll and pitch
+profiles.
+
+The SRBs will be jettisoned when spent, as well as the external tank (ET) after
+main engine cut-off (MECO).
+
+If the apogee altitude at MECO is lower than the commanded orbit altitude, the
+autopilot will initiate a first burn of the Orbital Maneuvering System engines
+(OMS-1), otherwise the OMS-1 burn is skipped.
+
+At apogee, a second (or only) OMS burn is initiated (OMS-2) which will raise
+the perigee altitude to the commanded orbit altitude, and circularise the orbit.
+
+After the OMS-2 burn, the autopilot will deactivate itself.
+
+From launch until MECO, you can monitor the gimbal angles of the SRB and SSME
+engines visually on the second page of the Ascent AP MFD screen: Press MFD
+buttons **PG-** and **PG+** to switch between the pages of the Ascent AP mode.
 END_DESC
 
 BEGIN_ENVIRONMENT

@@ -697,7 +697,7 @@ bool MenuInfoBar::ProcessMouse (UINT event, DWORD state, DWORD x, DWORD y)
 			return true;
 		case 11:
 			g_pOrbiter->PreCloseSession();
-			DestroyWindow (g_pOrbiter->GetRenderWnd());
+			// DestroyWindow (g_pOrbiter->GetRenderWnd());
 			return true;
 		}
 	}

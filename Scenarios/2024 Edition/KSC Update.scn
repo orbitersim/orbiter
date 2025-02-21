@@ -1,7 +1,8 @@
-BEGIN_HYPERDESC
-<h1>KSC Update</h1>
-<p>A Delta-Glider waits for takeoff at SLF Runway 33 of the new and improved Kennedy Space Center.</p>
-END_HYPERDESC
+BEGIN_DESC
+# KSC Update
+
+A Delta-Glider waits for takeoff at SLF Runway 33 of the new and improved Kennedy Space Center.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

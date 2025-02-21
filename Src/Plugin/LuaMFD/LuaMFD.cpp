@@ -93,7 +93,7 @@ void ScriptMFD::SetFontSize (double size)
 {
 	if (hFont) DeleteObject (hFont);
 	int h = (int)(H*size*9.0/200.0);
-	hFont = CreateFont (-h, 0, 0, 0, 400, 0, 0, 0, 0, 3, 2, 1, 49, "Courier New");
+	hFont = oapiCreateFont(h, true, "Courier New", FontStyle::FONT_NORMAL, 400);
 	fw = fh = 0;
 }
 
@@ -144,7 +144,7 @@ void ScriptMFD::SetPage (DWORD newpg)
 }
 
 // Repaint the MFD
-void ScriptMFD::Update (HDC hDC)
+bool ScriptMFD::Update (oapi::Sketchpad* skp)
 {
 	DWORD npg = vi->nenv;
 	pg = min (pg, npg-1);
@@ -152,19 +152,17 @@ void ScriptMFD::Update (HDC hDC)
 	int yofs = (5*ch)/4;
 	char cbuf[256];
 	sprintf (cbuf, "Term %d/%d", pg+1, npg);
-	Title (hDC, cbuf);
+	Title (skp, cbuf);
 	if (env->interp->IsBusy())
-		TextOut (hDC, W-cw*5, 1, "busy", 4);
+		skp->Text(W-cw*5, 1, "busy", 4);
 
-	SelectDefaultPen (hDC, 0);
-	MoveToEx (hDC, 0, yofs, NULL); LineTo (hDC, W, yofs);
+	skp->SetPen(GetDefaultPen (0));
+	skp->MoveTo(0, yofs); skp->LineTo(W, yofs);
 
-	HGDIOBJ oFont = SelectObject (hDC, hFont);
+	auto oFont = skp->SetFont(hFont);
 	if (!fh) {
-		TEXTMETRIC tm;
-		GetTextMetrics (hDC, &tm);
-		fw = tm.tmAveCharWidth;
-		fh = tm.tmHeight-tm.tmInternalLeading;
+		fw = hFont->Width();
+		fh = hFont->Height();
 		nchar = (W-fw/2)/fw;
 		nline = (H-yofs-fh/2)/fh;
 	}
@@ -178,12 +176,13 @@ void ScriptMFD::Update (HDC hDC)
 	for (; ls; ls = ls->next) {
 		if (ls->col != col) {
 			col = ls->col;
-			SetTextColor (hDC, col);
+			skp->SetTextColor(col);
 		}
-		TextOut (hDC, xofs, yofs, ls->buf, min(strlen(ls->buf),(size_t)nchar));
+		skp->Text(xofs, yofs, ls->buf, min(strlen(ls->buf),(size_t)nchar));
 		yofs += fh;
 	}
-	SelectObject (hDC, oFont);
+	skp->SetFont(oFont);
+	return true;
 }
 
 // MFD message parser

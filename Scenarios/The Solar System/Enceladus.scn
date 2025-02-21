@@ -1,7 +1,8 @@
-BEGIN_HYPERDESC
-<h1>Enceladus</h1>
-<p>Saturn moons: Enceladus. Now with new textures from the Cassini mission.</p>
-END_HYPERDESC
+BEGIN_DESC
+# Enceladus
+
+Saturn moons: Enceladus. Now with new textures from the Cassini mission.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

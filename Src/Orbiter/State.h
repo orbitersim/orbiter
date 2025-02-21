@@ -12,6 +12,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+namespace fs = std::filesystem;
 
 class State {
 public:
@@ -29,14 +30,13 @@ public:
 	void Update ();
 
 	/// \brief Read state from scenario file
-	bool Read (const char *fname);
+	bool Read (const fs::path &fname);
 
 	/// \brief Write state as scenario file
 	/// \param ofs scenario file stream
 	/// \param desc description string (0 for none)
-	/// \param desc_fmt description format: 0 = text (DESC), 1 = inline html (HYPERDESC), 2 = external file (URLDESC)
-	/// \param help scenario help url (html or chm,index page) (0 for none)
-	void Write (std::ostream &ofs, const char *desc = 0, int desc_fmt = 0, const char *help = 0) const;
+	/// TODO - param help scenario help url (html or chm,index page) (0 for none)
+	void Write (std::ostream &ofs, const char *desc = 0) const;
 	// load/save scenario state
 
 private:

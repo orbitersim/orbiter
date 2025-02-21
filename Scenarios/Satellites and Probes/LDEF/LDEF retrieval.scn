@@ -1,15 +1,18 @@
-BEGIN_HYPERDESC
-<h1>LDEF retrieval</h1>
-<p>Originally, the retrieval of the LDEF (Long Duration Exposure Facility) from orbit
+BEGIN_DESC
+# LDEF retrieval
+
+Originally, the retrieval of the LDEF (Long Duration Exposure Facility) from orbit
 was planned for March 19, 1985. However, the schedule slipped, also because of the
 Challenger disaster. It was finally returned from orbit by Shuttle mission STS-32 on
-January 12, 1990, shortly before it would have burned up in the atmosphere.</p>
-<p>Your mission: Launch the Space Shuttle from Kennedy Space Center pad L39A to
-retrieve the LDEF satellite from orbit.</p>
-<p>Use the ascent autopilot MFD mode to program launch azimuth 90 (due east) and orbit
+January 12, 1990, shortly before it would have burned up in the atmosphere.
+
+Your mission: Launch the Space Shuttle from Kennedy Space Center pad L39A to
+retrieve the LDEF satellite from orbit.
+
+Use the ascent autopilot MFD mode to program launch azimuth 90 (due east) and orbit
 altitude 330 km. The LDEF passes over Cape Canaveral in its next orbit, so your launch
-window is open.</p>
-END_HYPERDESC
+window is open.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

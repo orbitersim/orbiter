@@ -96,7 +96,7 @@ int Interpreter::LuaCall(lua_State *L, int narg, int nres)
 	lua_remove(L, base);
 	if(res != 0) {
 		oapiWriteLogError("%s", lua_tostring(L, -1));
-		oapiAnnotationSetText(errorbox, const_cast<char *>(lua_tostring(L, -1)));
+		oapiAddNotification(OAPINOTIF_ERROR, "Lua error", lua_tostring(L, -1));
 	}
 	return res;
 }
@@ -531,13 +531,13 @@ void Interpreter::lua_pushvessel (lua_State *L, VESSEL *v)
 	}
 }
 
-void Interpreter::lua_pushmfd (lua_State *L, MFD2 *mfd)
+void Interpreter::lua_pushmfd (lua_State *L, MFD *mfd)
 {
 	lua_pushlightuserdata(L,mfd);       // use object pointer as key
 	lua_gettable(L,LUA_REGISTRYINDEX);  // retrieve object from registry
 	if (lua_isnil(L,-1)) {              // object not found
 		lua_pop(L,1);                   // pop nil
-		MFD2 **pmfd = (MFD2**)lua_newuserdata(L,sizeof(MFD2*));
+		MFD **pmfd = (MFD**)lua_newuserdata(L,sizeof(MFD*));
 		*pmfd = mfd;
 		luaL_getmetatable (L, "MFD.vtable"); // retrieve metatable
 		lua_setmetatable (L,-2);             // and attach to new object
@@ -548,17 +548,17 @@ void Interpreter::lua_pushmfd (lua_State *L, MFD2 *mfd)
 	}
 }
 
-MFD2 *Interpreter::lua_tomfd (lua_State *L, int idx)
+MFD *Interpreter::lua_tomfd (lua_State *L, int idx)
 {
-	MFD2 **pmfd = (MFD2**)lua_touserdata(L,idx);
+	MFD **pmfd = (MFD**)lua_touserdata(L,idx);
 	return *pmfd;
 }
 
 #ifdef UNDEF
-void Interpreter::lua_pushmfd (lua_State *L, MFD2 *mfd)
+void Interpreter::lua_pushmfd (lua_State *L, MFD *mfd)
 {
 	lua_pushlightuserdata(L,mfd);
-	//MFD2 **pm = (MFD2**)lua_newuserdata (L, sizeof(MFD*));
+	//MFD **pm = (MFD**)lua_newuserdata (L, sizeof(MFD*));
 	//*pm = mfd;
 	luaL_getmetatable (L, "MFD.vtable");
 	lua_setmetatable (L, -2);
@@ -806,6 +806,7 @@ void Interpreter::LoadAPI ()
 		{"open_inputbox", oapiOpenInputBox},
 		{"receive_input", oapiReceiveInput},
 		{"open_inputboxex", oapi_open_inputboxex},
+		{"add_notification", oapi_add_notification},
 		{"del_vessel", oapi_del_vessel},
 		{"create_vessel", oapi_create_vessel},
 		{"set_focusobject", oapi_set_focusobject},
@@ -1344,6 +1345,13 @@ void Interpreter::LoadAPI ()
 	lua_createtable (L, 0, 1);
 	lua_pushnumber (L, MESHPROPERTY_MODULATEMATALPHA); lua_setfield (L, -2, "MODULATEMATALPHA");
 	lua_setglobal (L, "MESHPROPERTY");
+
+	lua_createtable (L, 0, 4);
+	lua_pushnumber (L, OAPINOTIF_SUCCESS); lua_setfield (L, -2, "SUCCESS");
+	lua_pushnumber (L, OAPINOTIF_WARNING); lua_setfield (L, -2, "WARNING");
+	lua_pushnumber (L, OAPINOTIF_ERROR); lua_setfield (L, -2, "ERROR");
+	lua_pushnumber (L, OAPINOTIF_INFO); lua_setfield (L, -2, "INFO");
+	lua_setglobal (L, "OAPINOTIF");
 }
 
 void Interpreter::LoadMFDAPI ()
@@ -4016,6 +4024,28 @@ int Interpreter::oapi_open_inputboxex (lua_State *L)
 	ctx->L = L;
 
 	oapiOpenInputBoxEx (title, Clbk_enter, Clbk_cancel, buf, vislen, ctx, flags);
+	return 0;
+}
+
+/***
+Display a notification on the screen
+
+Error notifications are persistant and must be acknowledged
+
+@function add_notification
+@tparam number type Notification type (see table OAPINOTIF)
+@tparam string title Notification title
+@tparam[opt=""] string content Notification content
+*/
+int Interpreter::oapi_add_notification (lua_State *L)
+{
+	int type = luaL_checkinteger(L, 1);
+	const char *title = luaL_checkstring(L, 2);
+	const char *content = "";
+	if(lua_gettop (L) >= 3) {
+		content = luaL_checkstring(L, 3);
+	}
+	oapiAddNotification(type, title, content);
 	return 0;
 }
 
@@ -6810,8 +6840,7 @@ int Interpreter::oapi_keydown (lua_State *L)
 	ASSERT_LIGHTUSERDATA(L,1);
 	char *kstate = (char*)lua_touserdata(L,1);
 	ASSERT_NUMBER(L,2);
-	unsigned int key = lua_tointeger(L, 2);
-	ASSERT_SYNTAX(key < 256, "Invalid key code");
+	int key = lua_tointeger(L, 2);
 	lua_pushboolean (L, KEYDOWN(kstate,key));
 	return 1;
 }
@@ -6828,8 +6857,7 @@ int Interpreter::oapi_resetkey (lua_State *L)
 	ASSERT_LIGHTUSERDATA(L,1);
 	char *kstate = (char*)lua_touserdata(L,1);
 	ASSERT_NUMBER(L,2);
-	unsigned int key = lua_tointeger(L, 2);
-	ASSERT_SYNTAX(key < 256, "Invalid key code");
+	int key = lua_tointeger(L, 2);
 	RESETKEY(kstate,key);
 	return 0;
 }
@@ -6848,17 +6876,12 @@ int Interpreter::oapi_simulatebufferedkey (lua_State *L)
 {
 	ASSERT_NUMBER(L,1);
 	DWORD key = (DWORD)lua_tointeger(L,1);
-	ASSERT_SYNTAX(key < 256, "Invalid key code");
-
 	DWORD nmod = lua_gettop(L)-1;
 	DWORD *mod = 0;
 	if (nmod) {
 		mod = new DWORD[nmod];
-		for (DWORD i = 0; i < nmod; i++) {
-			DWORD modkey = (DWORD)lua_tointeger(L,i+2);
-			ASSERT_SYNTAX(modkey < 256, "Invalid key code");
-			mod[i] = modkey;
-		}
+		for (DWORD i = 0; i < nmod; i++)
+			mod[i] = (DWORD)lua_tointeger(L,i+2);
 	}
 	oapiSimulateBufferedKey (key, mod, nmod);
 	if (nmod) delete []mod;
@@ -6888,7 +6911,6 @@ int Interpreter::oapi_simulateimmediatekey (lua_State *L)
 	DWORD i, key, nkey = lua_gettop(L);
 	for (i = 0; i < nkey; i++) {
 		key = (DWORD)lua_tointeger(L,i+1);
-		ASSERT_SYNTAX(key < 256, "Invalid key code");
 		kstate[key] = 0x80;
 	}
 	oapiSimulateImmediateKey ((char*)kstate);
@@ -6917,8 +6939,7 @@ int Interpreter::oapi_acceptdelayedkey (lua_State *L)
 {
 	ASSERT_NUMBER(L,1);
 	ASSERT_NUMBER(L,2);
-	unsigned int key = lua_tointeger(L, 1);
-	ASSERT_SYNTAX(key < 256, "Invalid key code");
+	char key = lua_tointeger(L, 1);
 	double interval = lua_tonumber(L, 2);
 	bool ret = oapiAcceptDelayedKey (key, interval);
 	lua_pushboolean(L, ret);
@@ -8783,7 +8804,7 @@ Return the size of an MFD.
 */
 int Interpreter::mfd_get_size(lua_State* L)
 {
-	MFD2* mfd = lua_tomfd(L, 1);
+	MFD* mfd = lua_tomfd(L, 1);
 	ASSERT_SYNTAX(mfd, "Invalid MFD object");
 	lua_pushnumber(L, mfd->GetWidth());
 	lua_pushnumber(L, mfd->GetHeight());
@@ -8799,7 +8820,7 @@ Set the title of an MFD.
 */
 int Interpreter::mfd_set_title (lua_State *L)
 {
-	MFD2 *mfd = lua_tomfd(L,1);
+	MFD *mfd = lua_tomfd(L,1);
 	ASSERT_SYNTAX(mfd, "Invalid MFD object");
 	oapi::Sketchpad *skp = lua_tosketchpad (L,2);
 	ASSERT_SYNTAX(skp, "Invalid Sketchpad object");
@@ -8835,7 +8856,7 @@ of drawing resources.
 */
 int Interpreter::mfd_get_defaultpen (lua_State *L)
 {
-	MFD2 *mfd = lua_tomfd(L,1);
+	MFD *mfd = lua_tomfd(L,1);
 	ASSERT_SYNTAX(mfd, "Invalid MFD object");
 	ASSERT_MTDNUMBER(L,2);
 	DWORD intens = 0, style = 1, colidx = (DWORD)lua_tointeger(L,2);
@@ -8873,7 +8894,7 @@ Default fonts are scaled automatically according to the MFD display size.
 */
 int Interpreter::mfd_get_defaultfont (lua_State *L)
 {
-	MFD2 *mfd = lua_tomfd(L,1);
+	MFD *mfd = lua_tomfd(L,1);
 	ASSERT_SYNTAX(mfd, "Invalid MFD object");
 	ASSERT_MTDNUMBER(L,2);
 	DWORD fontidx = (DWORD)lua_tointeger(L,2);
@@ -8893,7 +8914,7 @@ MFD's Update method in the next frame.
 */
 int Interpreter::mfd_invalidate_display (lua_State *L)
 {
-	MFD2 *mfd = lua_tomfd(L,1);
+	MFD *mfd = lua_tomfd(L,1);
 	ASSERT_SYNTAX(mfd, "Invalid MFD object");
 	mfd->InvalidateDisplay();
 	return 0;
@@ -8918,7 +8939,7 @@ buttons are updated internally.
 */
 int Interpreter::mfd_invalidate_buttons (lua_State *L)
 {
-	MFD2 *mfd = lua_tomfd(L,1);
+	MFD *mfd = lua_tomfd(L,1);
 	ASSERT_SYNTAX(mfd, "Invalid MFD object");
 	mfd->InvalidateButtons();
 	return 0;

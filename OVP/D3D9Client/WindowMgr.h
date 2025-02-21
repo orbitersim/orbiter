@@ -128,7 +128,7 @@ private:
 
 	class		WindowManager *pMgr;
 	HWND		hBar;
-	HINSTANCE   hInst;
+	MODFILE hInst;
 	DWORD		state;
 	float		anim_state;
 	bool		bOpening, bIsOpen, bValidate, bLock, bFirstTime, bWin;
@@ -170,7 +170,7 @@ class WindowManager : public gcGUIBase
 public:
 
 
-				WindowManager(HWND hAppMainWindow, HINSTANCE hInst, bool bWindowed);
+				WindowManager(HWND hAppMainWindow, MODFILE hInst, bool bWindowed);
 				~WindowManager();
 
 
@@ -180,7 +180,7 @@ public:
 	void		Animate();
 	int			GetWidth() const { return width; }
 	HWND		GetMainWindow() const { return hMainWnd; }
-	HINSTANCE	GetInstance() const { return hInst; }
+	MODFILE GetInstance() const { return hInst; }
 	SideBar *	GetSideBar(HWND hWnd);
 	SideBar *	NewSideBar(Node *pAN);
 	void		ReleaseSideBar(SideBar *pSB);
@@ -243,7 +243,7 @@ private:
 	POINT		ptOffset;
 	int			width;
 	HWND		hMainWnd;
-	HINSTANCE   hInst;
+	MODFILE hInst;
 	HFONT		hAppFont;
 	HFONT		hSubFont;
 	HBITMAP		hTitle;

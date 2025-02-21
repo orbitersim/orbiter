@@ -69,7 +69,7 @@ Camera::Camera (double _nearplane, double _farplane)
 	has_tref = false;
 	movehead = false;
 	ExtCtrlMode = 0;
-	GetCursorPos (&pm);
+	SDL_GetMouseState (&pm.x, &pm.y);
 	mmoveT = -1000.0;
 	ap_int = ap_ext = RAD*25.0;
 	ap = &ap_ext;
@@ -133,8 +133,8 @@ bool Camera::ProcessMouse (UINT event, DWORD state, DWORD x, DWORD y, const char
 
 void Camera::UpdateMouse ()
 {
-	POINT pt;
-	GetCursorPos (&pt);
+	SDL_FPoint pt;
+	SDL_GetMouseState(&pt.x, &pt.y);
 	if (pt.x != pm.x || pt.y != pm.y) {
 		pm.x = pt.x, pm.y = pt.y;
 		mmoveT = td.SysT0;
@@ -143,11 +143,9 @@ void Camera::UpdateMouse ()
 	if (mbdown[1]) {
 		int dx, dy, x0, y0;
 		x0 = pt.x, y0 = pt.y;
-		if (!g_pOrbiter->IsFullscreen())
-			ScreenToClient (g_pOrbiter->GetRenderWnd(), &pt);
 		dx = pt.x - mx;
 		dy = pt.y - my;
-		SetCursorPos (x0-dx, y0-dy);
+		SDL_WarpMouseInWindow(nullptr, x0-dx, y0-dy);
 		if (!(dx || dy)) return;
 
 		if (external_view) {
@@ -855,7 +853,7 @@ void Camera::SendDlgMessage (int msgid, void *msg) const
 {
 	DialogManager *dlgmgr = g_pOrbiter->DlgMgr();
 	if (dlgmgr) {
-		HWND dlg = dlgmgr->IsEntry (g_pOrbiter->GetInstance(), IDD_CAMERA);
+		HWND dlg = dlgmgr->IsEntry (g_pOrbiter->hInstStopgap, IDD_CAMERA);
 		if (dlg)
 			PostMessage (dlg, WM_APP, msgid, (LPARAM)msg);
 	}
@@ -865,10 +863,10 @@ void Camera::OutputGroundObserverParams () const
 {
 	DialogManager *dlgmgr = g_pOrbiter->DlgMgr();
 	if (dlgmgr) {
-		HWND dlg = dlgmgr->IsEntry (g_pOrbiter->GetInstance(), IDD_CAMERA);
+		HWND dlg = dlgmgr->IsEntry (g_pOrbiter->hInstStopgap, IDD_CAMERA);
 		if (dlg) {
 			char cbuf[256];
-			sprintf (cbuf, "Lng = %+0.6f°\r\nLat = %+0.6f°\r\nAlt = %0.2fm\r\nPhi = %0.2f°\r\nTheta = %0.2f°",
+			sprintf (cbuf, "Lng = %+0.6fï¿½\r\nLat = %+0.6fï¿½\r\nAlt = %0.2fm\r\nPhi = %0.2fï¿½\r\nTheta = %0.2fï¿½",
 				DEG*go.lng, DEG*go.lat, go.alt, DEG*go.phi, DEG*go.tht);
 			SendDlgMessage (1, cbuf);
 		}

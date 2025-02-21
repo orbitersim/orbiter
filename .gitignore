@@ -24,6 +24,9 @@ Sound/XRSound/**/Release-with-OrbiterRelease/
 .kdev/
 [Bb]uild/
 
+# CLion-specific files
+.idea
+
 Extern/irrKlang
 
 Doc/**/*.log

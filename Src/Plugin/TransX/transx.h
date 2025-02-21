@@ -23,7 +23,7 @@
 #include "OrbiterAPI.h"
 #include "graph.h"
 
-class TransxMFD: public MFD2 {
+class TransxMFD: public MFD {
 public:
 	TransxMFD (DWORD w, DWORD h, VESSEL *Vessel, UINT mfd);
 	~TransxMFD();

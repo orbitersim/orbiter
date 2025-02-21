@@ -1,8 +1,10 @@
-BEGIN_HYPERDESC
-<h1>Delta-glider: Atmospheric autopilot</h1>
-<p>This scenario provides a guided tour of the Delta-glider atmospheric autopilot functions.
-Make sure that the "Lua MFD" module is activated under the "Modules" tab.</p>
-END_HYPERDESC
+BEGIN_DESC
+# Delta-glider: Atmospheric autopilot
+
+This scenario provides a guided tour of the Delta-glider atmospheric autopilot
+functions. Make sure that the "Lua MFD" module is activated under the "Modules"
+tab.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

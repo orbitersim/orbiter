@@ -1,8 +1,12 @@
-BEGIN_HYPERDESC
-<h1>Mojave to Edwards</h1>
-<p>A short recorded flight from Mojave Spaceport to Edwards Airforce base next door.</p>
-<p>To work correctly, this scenario requires the Antelope Valley addon texture pack to be installed. You can get it from the Download page at the <a href="http://orbit.medphys.ucl.ac.uk">Orbiter</a> site.</p>
-END_HYPERDESC
+BEGIN_DESC
+# Mojave to Edwards
+
+A short recorded flight from Mojave Spaceport to Edwards Airforce base next door.
+
+To work correctly, this scenario requires the Antelope Valley addon texture pack
+to be installed. You can get it from the Download page at the
+[Orbiter](http://orbit.medphys.ucl.ac.uk) site.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

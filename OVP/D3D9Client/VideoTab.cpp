@@ -39,7 +39,7 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam)
 // ==============================================================
 // Constructor
 
-VideoTab::VideoTab(D3D9Client *gc, HINSTANCE _hInst, HINSTANCE _hOrbiterInst, HWND hVideoTab)
+VideoTab::VideoTab(D3D9Client *gc, MODFILE _hInst, HINSTANCE _hOrbiterInst, HWND hVideoTab)
 {
 	gclient      = gc;
 	hInst        = _hInst;
@@ -147,7 +147,8 @@ BOOL VideoTab::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case IDC_VID_INFO:
-			DialogBoxParamA(hInst, MAKEINTRESOURCE(IDD_D3D9SETUP), hTab, SetupDlgProcWrp, (LPARAM)this);
+			auto hInst1 = stopgapGetModuleInstance(hInst);
+			DialogBoxParamA(hInst1, MAKEINTRESOURCE(IDD_D3D9SETUP), hTab, SetupDlgProcWrp, (LPARAM)this);
 			return TRUE;
 		}
 		break;
@@ -515,7 +516,7 @@ INT_PTR CALLBACK VideoTab::SetupDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 		}
 		return false;
 	}
-
+	auto hInst1 = stopgapGetModuleInstance(hInst);
 	switch (LOWORD(wParam)) {
 
 		case IDC_MESH_DEBUGGER:
@@ -528,7 +529,7 @@ INT_PTR CALLBACK VideoTab::SetupDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 
 		case IDC_CREDITS:
 			LoadLibrary("riched20.dll");
-			DialogBoxParamA(hInst, MAKEINTRESOURCEA(IDD_D3D9CREDITS), hWnd, CreditsDlgProcWrp, (LPARAM)this);
+			DialogBoxParamA(hInst1, MAKEINTRESOURCEA(IDD_D3D9CREDITS), hWnd, CreditsDlgProcWrp, (LPARAM)this);
 			break;
 
 		case IDC_SRFPRELOAD:

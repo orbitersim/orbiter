@@ -1,7 +1,8 @@
-BEGIN_HYPERDESC
-<h1>Iapetus</h1>
-<p>Saturn moons: Iapetus. Now with new textures from the Cassini mission.</p>
-END_HYPERDESC
+BEGIN_DESC
+# Iapetus
+
+Saturn moons: Iapetus. Now with new textures from the Cassini mission.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

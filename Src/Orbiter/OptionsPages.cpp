@@ -5,2418 +5,1048 @@
 // Template for simulation options pages
 // ======================================================================
 
-#include <windows.h>
-#include <array>
 #include "OptionsPages.h"
+#include "Camera.h"
 #include "DlgCtrl.h"
 #include "Orbiter.h"
 #include "Psys.h"
-#include "Camera.h"
-#include "resource.h"
 #include "Uxtheme.h"
+#include "resource.h"
+#include <SDL3/SDL.h>
+#include <array>
+#include <cstdint>
+#include <imgui_internal.h>
+#include <utility>
+#include <windows.h>
 
-using std::min;
 using std::max;
+using std::min;
 
-extern Orbiter* g_pOrbiter;
-extern PlanetarySystem* g_psys;
-extern Camera* g_camera;
+extern Orbiter *g_pOrbiter;
+extern PlanetarySystem *g_psys;
+extern Camera *g_camera;
 
 // ======================================================================
 
-OptionsPageContainer::OptionsPageContainer(Originator orig, Config* cfg)
-	: m_orig(orig)
-	, m_cfg(cfg)
-{
-	m_hDlg = 0;
-	m_pageIdx = 0;
-	m_vScrollPage = 0;
-	m_vScrollRange = 0;
-	m_vScrollPos = 0;
-	m_contextHelp = 0;
+OptionsPageContainer::OptionsPageContainer(Originator orig, Config *cfg)
+    : m_orig(orig), m_cfg(cfg), m_pages(), m_currentPage(std::nullopt),
+      splitWidth(0) {}
+
+// ----------------------------------------------------------------------
+
+OptionsPageContainer::~OptionsPageContainer() { Clear(); }
+
+// ----------------------------------------------------------------------
+
+std::optional<std::shared_ptr<OptionsPage>>
+OptionsPageContainer::CurrentPage() {
+    if (!m_currentPage.has_value())
+        return std::nullopt;
+    return m_currentPage.value()->page;
 }
 
 // ----------------------------------------------------------------------
 
-OptionsPageContainer::~OptionsPageContainer()
-{
-	Clear();
+void OptionsPageContainer::CreatePages() {
+    if (m_orig == LAUNCHPAD) {
+        AddPage(std::move(std::make_shared<OptionsPage_Visual>(this)));
+        AddPage(std::move(std::make_shared<OptionsPage_Physics>(this)));
+    }
+    AddPage(std::move(std::make_shared<OptionsPage_Instrument>(this)));
+    AddPage(std::move(std::make_shared<OptionsPage_Vessel>(this)));
+    size_t parent = AddPage(std::move(std::make_shared<OptionsPage_UI>(this)));
+    AddPage(std::move(std::make_shared<OptionsPage_Joystick>(this)), parent);
+    AddPage(std::move(std::make_shared<OptionsPage_CelSphere>(this)));
+    parent = AddPage(std::move(std::make_shared<OptionsPage_VisHelper>(this)));
+    AddPage(std::move(std::make_shared<OptionsPage_Planetarium>(this)), parent);
+    AddPage(std::move(std::make_shared<OptionsPage_Labels>(this)), parent);
+    AddPage(std::move(std::make_shared<OptionsPage_Forces>(this)), parent);
+    AddPage(std::move(std::make_shared<OptionsPage_Axes>(this)), parent);
 }
 
 // ----------------------------------------------------------------------
 
-OptionsPage* OptionsPageContainer::CurrentPage()
-{
-	return (m_pageIdx < m_pPage.size() ? m_pPage[m_pageIdx] : nullptr);
+size_t OptionsPageContainer::AddPage(std::shared_ptr<OptionsPage> pPage,
+                                     std::optional<size_t> parent) {
+
+    std::optional<std::shared_ptr<OptionsPage>> parentEnt = std::nullopt;
+    if (parent.has_value() && parent.value() < m_pages.size()) {
+        const auto parentPos =
+            m_pages.cbegin() + static_cast<ptrdiff_t>(parent.value());
+        parentEnt = parentPos->page;
+    }
+
+    m_pages.push_back({std::move(pPage), std::move(parentEnt)});
+    return m_pages.size() - 1;
 }
 
 // ----------------------------------------------------------------------
 
-void OptionsPageContainer::SetWindowHandles(HWND hDlg, HWND hSplitter, HWND hPane1, HWND hPane2)
-{
-	m_hDlg = hDlg;
-	m_hPageList = hPane1;
-	m_hContainer = hPane2;
-	m_splitter.SetHwnd(hSplitter, m_hPageList, m_hContainer);
-	m_container.SetHwnd(m_hContainer);
-	m_splitter.SetStaticPane(SplitterCtrl::PANE1, 120);
+std::optional<std::shared_ptr<OptionsPage>>
+OptionsPageContainer::FindPage(std::string_view name) const {
+    for (const auto &entry : m_pages) {
+        if (entry.page->Name() == name) {
+            return entry.page;
+        }
+    }
+    return std::nullopt;
 }
 
 // ----------------------------------------------------------------------
 
-void OptionsPageContainer::CreatePages()
-{
-	HTREEITEM parent;
-	if (m_orig == LAUNCHPAD) {
-		AddPage(new OptionsPage_Visual(this));
-		AddPage(new OptionsPage_Physics(this));
-	}
-	AddPage(new OptionsPage_Instrument(this));
-	AddPage(new OptionsPage_Vessel(this));
-	parent = AddPage(new OptionsPage_UI(this));
-	AddPage(new OptionsPage_Joystick(this), parent);
-	AddPage(new OptionsPage_CelSphere(this));
-	parent = AddPage(new OptionsPage_VisHelper(this));
-	AddPage(new OptionsPage_Planetarium(this), parent);
-	AddPage(new OptionsPage_Labels(this), parent);
-	AddPage(new OptionsPage_Forces(this), parent);
-	AddPage(new OptionsPage_Axes(this), parent);
-	TreeView_SelectItem(m_hPageList, TreeView_GetRoot(m_hPageList));
+void OptionsPageContainer::SwitchPage(const std::string_view name) {
+    for (auto &entry : m_pages) {
+        if (entry.page->Name() == name) {
+            m_currentPage = &entry;
+            return;
+        }
+    }
+    m_currentPage = std::nullopt;
+}
+
+void OptionsPageContainer::SwitchPage(const size_t page) {
+    m_currentPage = &m_pages.at(page);
 }
 
 // ----------------------------------------------------------------------
 
-void OptionsPageContainer::ExpandAll()
-{
-	bool expand = true;
-	HWND hTree = GetDlgItem(m_hDlg, IDC_OPT_PAGELIST);
-	UINT code = (expand ? TVE_EXPAND : TVE_COLLAPSE);
-	TVITEM catitem;
-	catitem.mask = NULL;
-	catitem.hItem = TreeView_GetRoot(hTree);
-	while (TreeView_GetItem(hTree, &catitem)) {
-		TreeView_Expand(hTree, catitem.hItem, code);
-		catitem.hItem = TreeView_GetNextSibling(hTree, catitem.hItem);
-	}
+void OptionsPageContainer::SwitchPage(
+    const std::shared_ptr<OptionsPage> &page) {
+    for (auto &entry : m_pages) {
+        if (entry.page == page) {
+            m_currentPage = &entry;
+            return;
+        }
+    }
+    m_currentPage = std::nullopt;
 }
 
 // ----------------------------------------------------------------------
 
-void OptionsPageContainer::SetPageSize(HWND hDlg)
-{
-	if (m_pageIdx >= m_pPage.size()) return; // sanity check
+void OptionsPageContainer::Clear() { m_pages.clear(); }
 
-	RECT r0, r1;
-	GetClientRect(m_container.HWnd(), &r0);
-	GetClientRect(m_pPage[m_pageIdx]->HPage(), &r1);
-	bool bVscroll = r1.bottom > r0.bottom;
-	ShowWindow(GetDlgItem(hDlg, IDC_SCROLLBAR1), bVscroll ? SW_SHOW : SW_HIDE);
+// ----------------------------------------------------------------------
 
-	if (bVscroll) {
-		m_vScrollRange = (r1.bottom - r0.bottom);
-		SCROLLINFO scrollinfo;
-		scrollinfo.cbSize = sizeof(SCROLLINFO);
-		scrollinfo.nMin = 0;
-		scrollinfo.nMax = r1.bottom;
-		scrollinfo.nPage = m_vScrollPage = r0.bottom;
-		scrollinfo.nPos = min(m_vScrollPos, m_vScrollRange);
-		scrollinfo.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;
-		SetScrollInfo(GetDlgItem(hDlg, IDC_SCROLLBAR1), SB_CTL, &scrollinfo, TRUE);
-		int dy = m_vScrollPos - scrollinfo.nPos;
-		m_vScrollPos = scrollinfo.nPos;
-		if (dy)
-			ScrollWindow(m_pPage[m_pageIdx]->HPage(), 0, dy, NULL, NULL);
-	}
-	else if (m_vScrollPos) {
-		ScrollWindow(m_pPage[m_pageIdx]->HPage(), 0, m_vScrollPos, NULL, NULL);
-		m_vScrollPos = 0;
-	}
+void OptionsPageContainer::UpdatePages(bool resetView) {
+    splitWidth = m_cfg->CfgWindowPos.LaunchpadOptListWidth;
+    for (const auto &entry : m_pages) {
+        entry.page->UpdateControls();
+    }
+    if (resetView) {
+        m_currentPage = &m_pages.front();
+    }
 }
 
 // ----------------------------------------------------------------------
 
-HTREEITEM OptionsPageContainer::AddPage(OptionsPage* pPage, HTREEITEM parent)
-{
-	m_pPage.push_back(pPage);
-	return pPage->CreatePage(m_hDlg, parent);
+void OptionsPageContainer::UpdateConfig() const {
+    m_cfg->CfgWindowPos.LaunchpadOptListWidth = splitWidth;
+    for (const auto &entry : m_pages) {
+        entry.page->UpdateConfig();
+    }
 }
 
-// ----------------------------------------------------------------------
+void OptionsPageContainer::RenderTree(oapi::WithImCtx &ctx,
+                                      OptionTreeEntry *parent) {
+    ImGui::SetNextItemOpen(true, ImGuiCond_Appearing);
+    auto hasChildren =
+        std::any_of(m_pages.begin(), m_pages.end(), [parent](const auto &page) {
+            return page.parent == parent->page;
+        });
 
-const OptionsPage* OptionsPageContainer::FindPage(const char* name) const
-{
-	for (auto page : m_pPage)
-		if (!strcmp(name, page->Name()))
-			return page;
-	return 0;
+    bool selected =
+        m_currentPage.has_value() && m_currentPage.value() == parent;
+    const bool prev_selected = selected;
+
+    if (hasChildren) {
+        ImGui::PushID(parent->page->Name().c_str());
+        ImGui::SetNextItemOpen(true, ImGuiCond_Appearing);
+        const bool treeNode = ImGui::TreeNodeEx(
+            "##TreeNode", ImGuiTreeNodeFlags_SpanAvailWidth |
+                              ImGuiTreeNodeFlags_OpenOnDoubleClick |
+                              (selected ? ImGuiTreeNodeFlags_Selected
+                                        : ImGuiTreeNodeFlags_None));
+        if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
+            m_currentPage = parent;
+        }
+        ImGui::SameLine(0, 0);
+        ImGui::Text(parent->page->Name().c_str());
+        if (treeNode) {
+            bool foundStart = false;
+            for (auto entry = m_pages.begin(); entry != m_pages.end();
+                 ++entry) {
+                if (entry->parent == parent->page) {
+                    foundStart = true;
+                    RenderTree(ctx, &*entry);
+                } else if (entry->parent != parent->page && foundStart) {
+                    break;
+                }
+            }
+            ImGui::TreePop();
+        }
+        ImGui::PopID();
+    } else {
+        ImGui::SetNextItemAllowOverlap();
+        ImGui::PushID(parent->page->Name().c_str());
+        ImGui::Selectable("##Select", &selected);
+        ImGui::PopID();
+        ImGui::SameLine(0.0, 0.0);
+        ImGui::Bullet();
+
+        if (selected && !prev_selected) {
+            m_currentPage = parent;
+        }
+        ImGui::SameLine();
+        ImGui::Text(parent->page->Name().c_str());
+    }
 }
 
-// ----------------------------------------------------------------------
-
-void OptionsPageContainer::SwitchPage(const char* name)
-{
-	char cbuf[256];
-	TVITEM tvi;
-	tvi.hItem = TreeView_GetRoot(m_hPageList);
-	tvi.pszText = cbuf;
-	tvi.cchTextMax = 256;
-	tvi.cChildren = 0;
-	tvi.mask = TVIF_HANDLE | TVIF_TEXT | TVIF_CHILDREN;
-	while (tvi.hItem) {
-		TreeView_GetItem(m_hPageList, &tvi);
-		if (!stricmp(cbuf, name)) {
-			TreeView_SelectItem(m_hPageList, tvi.hItem);
-			break;
-		}
-		TVITEM tvi_child;
-		tvi_child.hItem = TreeView_GetChild(m_hPageList, tvi.hItem);
-		tvi_child.pszText = cbuf;
-		tvi_child.cchTextMax = 256;
-		tvi_child.cChildren = 0;
-		tvi_child.mask = TVIF_HANDLE | TVIF_TEXT | TVIF_CHILDREN;
-		while (tvi_child.hItem) {
-			TreeView_GetItem(m_hPageList, &tvi_child);
-			if (!stricmp(cbuf, name)) {
-				TreeView_SelectItem(m_hPageList, tvi_child.hItem);
-				break;
-			}
-			tvi_child.hItem = TreeView_GetNextSibling(m_hPageList, tvi_child.hItem);
-		}
-		tvi.hItem = TreeView_GetNextSibling(m_hPageList, tvi.hItem);
-	}
-}
-
-
-// ----------------------------------------------------------------------
-
-void OptionsPageContainer::SwitchPage(size_t page)
-{
-	if (page < 0 || page >= m_pPage.size())
-		return;
-	m_pageIdx = page;
-	for (size_t pg = 0; pg < m_pPage.size(); pg++)
-		if (pg != m_pageIdx) m_pPage[pg]->Show(false);
-	m_pPage[m_pageIdx]->Show(true);
-	m_pPage[m_pageIdx]->UpdateControls(m_pPage[m_pageIdx]->HPage());
-	m_vScrollPos = 0;
-	m_vScrollRange = 0;
-	m_vScrollPage = 0;
-	m_contextHelp = m_pPage[m_pageIdx]->HelpContext();
-
-	SetPageSize(m_hDlg);
-	InvalidateRect(m_hDlg, NULL, TRUE);
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPageContainer::SwitchPage(const OptionsPage* page)
-{
-	for (size_t i = 0; i < m_pPage.size(); i++)
-		if (m_pPage[i] == page) {
-			SwitchPage(i);
-			break;
-		}
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPageContainer::Clear()
-{
-	for (auto pPage : m_pPage)
-		delete pPage;
-	m_pPage.clear();
-}
-
-void OptionsPageContainer::OnNotifyPagelist(LPNMHDR pnmh)
-{
-	NM_TREEVIEW* pnmtv = (NM_TREEVIEW FAR*)pnmh;
-	if (pnmtv->hdr.code == TVN_SELCHANGED) {
-		OptionsPage* page = (OptionsPage*)pnmtv->itemNew.lParam;
-		SwitchPage(page);
-		TreeView_Expand(GetDlgItem(m_hDlg, IDC_OPT_PAGELIST), pnmtv->itemNew.hItem, TVE_EXPAND);
-	}
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPageContainer::VScroll(HWND hDlg, WORD request, WORD curpos, HWND hControl)
-{
-	HWND hPage = CurrentPage()->HPage();
-
-	SCROLLINFO scrollinfo;
-	scrollinfo.cbSize = sizeof(SCROLLINFO);
-	GetScrollInfo(hControl, SB_CTL, &scrollinfo);
-	int pos = -1;
-
-	switch (request) {
-	case SB_BOTTOM:
-		pos = m_vScrollRange;
-		break;
-	case SB_TOP:
-		pos = 0;
-		break;
-	case SB_LINEDOWN:
-		pos = min(m_vScrollPos + 10, m_vScrollRange);
-		break;
-	case SB_LINEUP:
-		pos = max(m_vScrollPos - 10, 0);
-		break;
-	case SB_PAGEDOWN:
-		pos = min(m_vScrollPos + m_vScrollPage, m_vScrollRange);
-		break;
-	case SB_PAGEUP:
-		pos = max(m_vScrollPos - m_vScrollPage, 0);
-		break;
-	case SB_THUMBPOSITION:
-	case SB_THUMBTRACK:
-		pos = curpos;
-		break;
-	}
-	if (pos >= 0 && pos != m_vScrollPos) {
-		int dy = -(pos - m_vScrollPos);
-		scrollinfo.nPos = m_vScrollPos = pos;
-		scrollinfo.fMask = SIF_POS;
-		SetScrollInfo(hControl, SB_CTL, &scrollinfo, TRUE);
-		ScrollWindow(hPage, 0, dy, NULL, NULL);
-		UpdateWindow(hPage);
-	}
-	return FALSE;
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPageContainer::UpdatePages(bool resetView)
-{
-	for (auto pPage : m_pPage)
-		pPage->UpdateControls(pPage->HPage());
-	if (resetView)
-		TreeView_SelectItem(m_hPageList, TreeView_GetRoot(m_hPageList));
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPageContainer::UpdateConfig()
-{
-	for (auto pPage : m_pPage)
-		pPage->UpdateConfig(pPage->HPage());
+void OptionsPageContainer::OnDraw(oapi::WithImCtx &ctx) {
+    if (splitWidth == 0) {
+        splitWidth = static_cast<int>(0.33f * ImGui::GetContentRegionAvail().x);
+    }
+    ImGui::BeginChild("PageList", ImVec2(static_cast<float>(splitWidth), 0.0),
+                      ImGuiChildFlags_Border | ImGuiChildFlags_ResizeX,
+                      ImGuiWindowFlags_None);
+    splitWidth = static_cast<int>(ImGui::GetWindowWidth());
+    for (auto entry = m_pages.begin(); entry != m_pages.end(); ++entry) {
+        if (!entry->parent.has_value())
+            RenderTree(ctx, &*entry);
+    }
+    ImGui::EndChild();
+    ImGui::SameLine();
+    ImGui::BeginChild("PageOpts", ImVec2(0.0, 0.0), ImGuiChildFlags_None,
+                      ImGuiWindowFlags_HorizontalScrollbar);
+    if (m_currentPage.has_value()) {
+        m_currentPage.value()->page->OnDraw(ctx);
+    }
+    ImGui::EndChild();
 }
 
 // ======================================================================
 
-OptionsPage::OptionsPage(OptionsPageContainer* container)
-	: m_container(container)
-	, m_hPage(0)
-	, m_hItem(0)
-{
-}
+OptionsPage::OptionsPage(OptionsPageContainer *container, std::string name)
+    : m_container(container), m_name(std::move(name)) {}
+
+// ======================================================================
+
+OptionsPage_Visual::OptionsPage_Visual(OptionsPageContainer *container)
+    : OptionsPage(container, "Visual settings") {}
 
 // ----------------------------------------------------------------------
 
-OptionsPage::~OptionsPage()
-{
-	// Remove the object reference from the window.
-	// This is so that object methods will no longer be called from the message loop
-	// while the window hasn't been destroyed.
-	if (m_hPage)
-		SetWindowLongPtr(m_hPage, DWLP_USER, 0);
+void OptionsPage_Visual::OnDraw(oapi::WithImCtx &ctx) {
+    ImGui::SeparatorText("Planetary effects");
+    if (ImGui::BeginTable("##Checkboxes", 2,
+                          ImGuiTableFlags_SizingStretchProp)) {
+        ImGui::TableSetupColumn("##Col1", ImGuiTableColumnFlags_WidthFixed);
+
+        ImGui::TableNextColumn();
+        ImGui::Checkbox("Cloud layers", &Cfg()->CfgVisualPrm.bClouds);
+        ImGui::TableNextColumn();
+        ImGui::BeginDisabled(!Cfg()->CfgVisualPrm.bClouds);
+        ImGui::Checkbox("Cloud shadows", &Cfg()->CfgVisualPrm.bCloudShadows);
+        ImGui::EndDisabled();
+
+        ImGui::TableNextColumn();
+        ImGui::Checkbox("Horizon haze", &Cfg()->CfgVisualPrm.bHaze);
+        ImGui::TableNextColumn();
+        ImGui::Checkbox("Distance fog", &Cfg()->CfgVisualPrm.bFog);
+
+        ImGui::TableNextColumn();
+        ImGui::Checkbox("Specular water reflections",
+                        &Cfg()->CfgVisualPrm.bWaterreflect);
+        ImGui::TableNextColumn();
+        ImGui::BeginDisabled(!Cfg()->CfgVisualPrm.bWaterreflect);
+        ImGui::Checkbox("Specular ripples",
+                        &Cfg()->CfgVisualPrm.bSpecularRipple);
+        ImGui::EndDisabled();
+
+        ImGui::TableNextColumn();
+        ImGui::Checkbox("Planet night lights, at level (0-1):",
+                        &Cfg()->CfgVisualPrm.bNightlights);
+        ImGui::TableNextColumn();
+        ImGui::SetNextItemWidth(64.0f);
+        ImGui::BeginDisabled(!Cfg()->CfgVisualPrm.bNightlights);
+        ImGui::InputDouble("##NightLights",
+                           &Cfg()->CfgVisualPrm.LightBrightness, 0, 0, "%.2f");
+        Cfg()->CfgVisualPrm.LightBrightness =
+            std::clamp(Cfg()->CfgVisualPrm.LightBrightness, 0.0, 1.0);
+        ImGui::EndDisabled();
+
+        ImGui::TableNextColumn();
+        ImGui::AlignTextToFramePadding();
+        ImGui::TextUnformatted("Surface elevation mode");
+        auto elevMode = "disabled";
+        if (Cfg()->CfgVisualPrm.ElevMode == 1) {
+            elevMode = "linear interpolation";
+        } else if (Cfg()->CfgVisualPrm.ElevMode == 2) {
+            elevMode = "cubic interpolation";
+        }
+        ImGui::TableNextColumn();
+        ImGui::SetNextItemWidth(150.0f);
+        if (ImGui::BeginCombo("##SurfElev", elevMode)) {
+            if (ImGui::Selectable("disabled",
+                                  Cfg()->CfgVisualPrm.ElevMode == 0)) {
+                Cfg()->CfgVisualPrm.ElevMode = 0;
+            }
+            if (ImGui::Selectable("linear interpolation",
+                                  Cfg()->CfgVisualPrm.ElevMode == 1)) {
+                Cfg()->CfgVisualPrm.ElevMode = 1;
+            }
+            if (ImGui::Selectable("cubic interpolation",
+                                  Cfg()->CfgVisualPrm.ElevMode == 2)) {
+                Cfg()->CfgVisualPrm.ElevMode = 2;
+            }
+            ImGui::EndCombo();
+        }
+
+        ImGui::TableNextColumn();
+        ImGui::AlignTextToFramePadding();
+        ImGui::TextUnformatted("Max resolution level (1-21)");
+        ImGui::TableNextColumn();
+        ImGui::SetNextItemWidth(64.0f);
+        ImGui::InputInt("##ResLvl", &Cfg()->CfgVisualPrm.PlanetMaxLevel, 0, 0);
+        Cfg()->CfgVisualPrm.PlanetMaxLevel =
+            std::clamp(Cfg()->CfgVisualPrm.PlanetMaxLevel, 1, 21);
+
+        ImGui::EndTable();
+    }
+
+    ImGui::SeparatorText("General effects");
+    if (ImGui::BeginTable("##GeneralEffects", 2,
+                          ImGuiTableFlags_SizingStretchProp)) {
+        ImGui::TableSetupColumn("##Col1", ImGuiTableColumnFlags_WidthFixed);
+
+        ImGui::TableNextColumn();
+        ImGui::Checkbox("Vessel shadows", &Cfg()->CfgVisualPrm.bVesselShadows);
+        ImGui::TableNextColumn();
+        ImGui::Checkbox("Reentry flames", &Cfg()->CfgVisualPrm.bReentryFlames);
+
+        ImGui::TableNextColumn();
+        ImGui::Checkbox("Object shadows", &Cfg()->CfgVisualPrm.bShadows);
+        ImGui::TableNextColumn();
+        ImGui::Checkbox("Particle streams",
+                        &Cfg()->CfgVisualPrm.bParticleStreams);
+
+        ImGui::TableNextColumn();
+        ImGui::Checkbox("Specular object reflections",
+                        &Cfg()->CfgVisualPrm.bSpecular);
+        ImGui::TableNextColumn();
+        ImGui::Checkbox("Local light sources",
+                        &Cfg()->CfgVisualPrm.bLocalLight);
+
+        ImGui::TableNextColumn();
+        ImGui::AlignTextToFramePadding();
+        ImGui::TextUnformatted("Ambient light level (0-255)");
+        ImGui::TableNextColumn();
+        ImGui::SetNextItemWidth(64.0f);
+        int val = Cfg()->CfgVisualPrm.AmbientLevel;
+        ImGui::InputInt("##AmbLtLvl", &val, 0, 0);
+        Cfg()->CfgVisualPrm.AmbientLevel =
+            static_cast<uint8_t>(std::clamp(val, 0, 255));
+
+        ImGui::EndTable();
+    }
+
+    ImGui::SeparatorText("");
+    ImGui::TextWrapped("Some graphics clients may ignore, override or extend "
+                       "some of these settings.");
 }
 
-// ----------------------------------------------------------------------
+OptionsPage_Physics::OptionsPage_Physics(OptionsPageContainer *container)
+    : OptionsPage(container, "Physics settings") {}
 
-void OptionsPage::Show(bool bShow)
-{
-	ShowWindow(m_hPage, bShow ? SW_SHOW : SW_HIDE);
-}
+void OptionsPage_Physics::OnDraw(oapi::WithImCtx &ctx) {
+    ImGui::SeparatorText("Perturbations");
 
-// ----------------------------------------------------------------------
-
-HWND OptionsPage::HParent() const
-{
-	return m_container->ContainerControl()->HWnd();
-}
-
-// ----------------------------------------------------------------------
-
-HTREEITEM OptionsPage::CreatePage(HWND hDlg, HTREEITEM parent)
-{
-	int winId = ResourceId();
-	m_hPage = CreateDialogParam(g_pOrbiter->GetInstance(), MAKEINTRESOURCE(winId), HParent(), s_DlgProc, (LPARAM)this);
-	if (!m_hPage) {
-		DWORD err = GetLastError();
-		int i = 1;
-	}
-
-	char cbuf[256];
-	strcpy(cbuf, Name());
-	TV_INSERTSTRUCT tvis;
-	tvis.item.mask = TVIF_TEXT | TVIF_PARAM;
-	tvis.item.pszText = cbuf;
-	tvis.item.lParam = (LPARAM)this;
-	tvis.hInsertAfter = TVI_LAST;
-	tvis.hParent = parent;
-	HTREEITEM hti = TreeView_InsertItem(GetDlgItem(hDlg, IDC_OPT_PAGELIST), &tvis);
-	m_hItem = hti;
-	return hti;
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage::OnInitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam)
-{
-	UpdateControls(hWnd);
-	return TRUE;
-}
-
-// ----------------------------------------------------------------------
-
-INT_PTR OptionsPage::DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_INITDIALOG:
-		return OnInitDialog(hWnd, wParam, lParam);
-	case WM_COMMAND:
-		return OnCommand(hWnd, LOWORD(wParam), HIWORD(wParam), (HWND)lParam);
-	case WM_HSCROLL:
-		return OnHScroll(hWnd, wParam, lParam);
-	case WM_NOTIFY:
-		return OnNotify(hWnd, (DWORD)wParam, (NMHDR*)lParam);
-	default:
-		return OnMessage(hWnd, uMsg, wParam, lParam);
-	}
-}
-
-// ----------------------------------------------------------------------
-
-INT_PTR CALLBACK OptionsPage::s_DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	OptionsPage* pPage;
-	switch (uMsg) {
-	case WM_INITDIALOG:
-		EnableThemeDialogTexture(hWnd, ETDT_ENABLE);
-		SetWindowLongPtr(hWnd, DWLP_USER, lParam);
-		pPage = (OptionsPage*)lParam;
-		break;
-	default:
-		pPage = (OptionsPage*)GetWindowLongPtr(hWnd, DWLP_USER);
-		break;
-	}
-	return (pPage ? pPage->DlgProc(hWnd, uMsg, wParam, lParam) : DefWindowProc(hWnd, uMsg, wParam, lParam));
+    ImGui::Checkbox("Nonspherical gravity sources",
+                    &Cfg()->CfgPhysicsPrm.bNonsphericalGrav);
+    ImGui::Checkbox("Radiation pressure",
+                    &Cfg()->CfgPhysicsPrm.bRadiationPressure);
+    ImGui::Checkbox("Gravity-gradient torque",
+                    &Cfg()->CfgPhysicsPrm.bDistributedMass);
+    ImGui::Checkbox("Atmospheric wind effects", &Cfg()->CfgPhysicsPrm.bAtmWind);
 }
 
 // ======================================================================
 
-OptionsPage_Visual::OptionsPage_Visual(OptionsPageContainer* container)
-	: OptionsPage(container)
-{
+OptionsPage_Instrument::OptionsPage_Instrument(OptionsPageContainer *container)
+    : OptionsPage(container, "Instruments & panels") {}
+
+void OptionsPage_Instrument::OnDraw(oapi::WithImCtx &ctx) {
+    ImGui::SeparatorText("Multi-functional displays");
+
+    if (ImGui::BeginTable("##MFD", 2, ImGuiTableFlags_SizingStretchProp)) {
+        ImGui::TableSetupColumn("##Col1", ImGuiTableColumnFlags_WidthFixed);
+
+        ImGui::TableNextColumn();
+        ImGui::AlignTextToFramePadding();
+        ImGui::TextUnformatted("MFD refresh interval [s]:");
+        ImGui::TableNextColumn();
+        ImGui::SetNextItemWidth(64.0f);
+        ImGui::InputDouble("##MFDRefreshInt", &Cfg()->CfgLogicPrm.InstrUpdDT, 0,
+                           0, "%.2f");
+        Cfg()->CfgLogicPrm.InstrUpdDT =
+            std::max(0.01, Cfg()->CfgLogicPrm.InstrUpdDT);
+
+        ImGui::TableNextColumn();
+        ImGui::AlignTextToFramePadding();
+        ImGui::TextUnformatted("Glass cockpit MFD size:");
+        ImGui::TableNextColumn();
+        ImGui::SetNextItemWidth(64.0f);
+        ImGui::InputInt("##MFDGCSize", &Cfg()->CfgLogicPrm.MFDSize, 0, 0);
+        Cfg()->CfgLogicPrm.MFDSize =
+            std::clamp(Cfg()->CfgLogicPrm.MFDSize, 1, 10);
+
+        ImGui::TableNextColumn();
+        ImGui::Checkbox("Transparent glass cockpit MFD",
+                        &Cfg()->CfgLogicPrm.bMfdTransparent);
+        ImGui::TableNextColumn();
+
+        ImGui::TableNextColumn();
+        ImGui::AlignTextToFramePadding();
+        ImGui::TextUnformatted("Virtual cockpit MFD texture size:");
+        ImGui::TableNextColumn();
+        const char *size = "";
+        switch (Cfg()->CfgInstrumentPrm.VCMFDSize) {
+        case 256:
+            size = "256x256";
+            break;
+        case 512:
+            size = "512x512";
+            break;
+        case 1024:
+            size = "1024x1024";
+            break;
+        default:
+            break;
+        }
+        ImGui::SetNextItemWidth(128.0f);
+        if (ImGui::BeginCombo("##VCMFDSize", size)) {
+            if (ImGui::Selectable("256x256",
+                                  Cfg()->CfgInstrumentPrm.VCMFDSize == 256)) {
+                Cfg()->CfgInstrumentPrm.VCMFDSize = 256;
+            }
+            if (ImGui::Selectable("512x512",
+                                  Cfg()->CfgInstrumentPrm.VCMFDSize == 512)) {
+                Cfg()->CfgInstrumentPrm.VCMFDSize = 512;
+            }
+            if (ImGui::Selectable("1024x1024",
+                                  Cfg()->CfgInstrumentPrm.VCMFDSize == 1024)) {
+                Cfg()->CfgInstrumentPrm.VCMFDSize = 1024;
+            }
+            ImGui::EndCombo();
+        }
+
+        ImGui::EndTable();
+    }
+
+    ImGui::SeparatorText("Instrument panels");
+    if (ImGui::BeginTable("##InstPanels", 2,
+                          ImGuiTableFlags_SizingStretchProp)) {
+        ImGui::TableSetupColumn("##Col1", ImGuiTableColumnFlags_WidthFixed);
+
+        ImGui::TableNextColumn();
+        ImGui::AlignTextToFramePadding();
+        ImGui::TextUnformatted("Panel scroll speed:");
+        ImGui::TableNextColumn();
+        ImGui::SetNextItemWidth(64.0f);
+        auto val = Cfg()->CfgLogicPrm.PanelScrollSpeed * 0.1;
+        ImGui::InputDouble("##ScrollSpeed", &val, 0, 0, "%.2f");
+        Cfg()->CfgLogicPrm.PanelScrollSpeed =
+            std::clamp(val, -100.0, 100.0) * 10.0;
+
+        ImGui::TableNextColumn();
+        ImGui::AlignTextToFramePadding();
+        ImGui::TextUnformatted("2D panel scale:");
+        ImGui::TableNextColumn();
+        ImGui::SetNextItemWidth(64.0f);
+        ImGui::InputDouble("##PanelScale", &Cfg()->CfgLogicPrm.PanelScale, 0, 0,
+                           "%.2f");
+        Cfg()->CfgLogicPrm.PanelScale =
+            std::clamp(Cfg()->CfgLogicPrm.PanelScale, 0.25, 4.0);
+
+        ImGui::EndTable();
+    }
 }
 
-// ----------------------------------------------------------------------
+OptionsPage_Vessel::OptionsPage_Vessel(OptionsPageContainer *container)
+    : OptionsPage(container, "Vessel settings") {}
 
-int OptionsPage_Visual::ResourceId() const
-{
-	return IDD_OPTIONS_VISUAL;
-}
-
-// ----------------------------------------------------------------------
-
-const char* OptionsPage_Visual::Name() const
-{
-	const char* name = "Visual settings";
-	return name;
-}
-
-// ----------------------------------------------------------------------
-
-const HELPCONTEXT* OptionsPage_Visual::HelpContext() const
-{
-	static HELPCONTEXT hcontext = g_pOrbiter->DefaultHelpPage("/tab_visual.htm"); // this needs to be updated
-	return &hcontext;
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_Visual::UpdateControls(HWND hPage)
-{
-	char cbuf[256];
-
-	SendDlgItemMessage(hPage, IDC_OPT_VIS_CLOUD, BM_SETCHECK,
-		Cfg()->CfgVisualPrm.bClouds ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_VIS_CSHADOW, BM_SETCHECK,
-		Cfg()->CfgVisualPrm.bCloudShadows ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_VIS_HAZE, BM_SETCHECK,
-		Cfg()->CfgVisualPrm.bHaze ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_VIS_FOG, BM_SETCHECK,
-		Cfg()->CfgVisualPrm.bFog ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_VIS_REFWATER, BM_SETCHECK,
-		Cfg()->CfgVisualPrm.bWaterreflect ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_VIS_RIPPLE, BM_SETCHECK,
-		Cfg()->CfgVisualPrm.bSpecularRipple ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_VIS_LIGHTS, BM_SETCHECK,
-		Cfg()->CfgVisualPrm.bNightlights ? BST_CHECKED : BST_UNCHECKED, 0);
-	sprintf(cbuf, "%0.2f", Cfg()->CfgVisualPrm.LightBrightness);
-	SetWindowText(GetDlgItem(hPage, IDC_OPT_VIS_LTLEVEL), cbuf);
-	SendDlgItemMessage(hPage, IDC_OPT_VIS_ELEV, BM_SETCHECK,
-		Cfg()->CfgVisualPrm.ElevMode ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_VIS_ELEVMODE, CB_SETCURSEL, Cfg()->CfgVisualPrm.ElevMode < 2 ? 0 : 1, 0);
-	sprintf(cbuf, "%d", Cfg()->CfgVisualPrm.PlanetMaxLevel);
-	SetWindowText(GetDlgItem(hPage, IDC_OPT_VIS_MAXLEVEL), cbuf);
-	SendDlgItemMessage(hPage, IDC_OPT_VIS_VSHADOW, BM_SETCHECK,
-		Cfg()->CfgVisualPrm.bVesselShadows ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_VIS_REENTRY, BM_SETCHECK,
-		Cfg()->CfgVisualPrm.bReentryFlames ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_VIS_SHADOW, BM_SETCHECK,
-		Cfg()->CfgVisualPrm.bShadows ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_VIS_PARTICLE, BM_SETCHECK,
-		Cfg()->CfgVisualPrm.bParticleStreams ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_VIS_SPECULAR, BM_SETCHECK,
-		Cfg()->CfgVisualPrm.bSpecular ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_VIS_LOCALLIGHT, BM_SETCHECK,
-		Cfg()->CfgVisualPrm.bLocalLight ? BST_CHECKED : BST_UNCHECKED, 0);
-	sprintf(cbuf, "%d", Cfg()->CfgVisualPrm.AmbientLevel);
-	SetWindowText(GetDlgItem(hPage, IDC_OPT_VIS_AMBIENT), cbuf);
-
-	VisualsChanged(hPage);
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_Visual::UpdateConfig(HWND hPage)
-{
-	char cbuf[256];
-	DWORD i;
-	double d;
-
-	Cfg()->CfgVisualPrm.bClouds = (SendDlgItemMessage(hPage, IDC_OPT_VIS_CLOUD, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	Cfg()->CfgVisualPrm.bCloudShadows = (SendDlgItemMessage(hPage, IDC_OPT_VIS_CSHADOW, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	Cfg()->CfgVisualPrm.bHaze = (SendDlgItemMessage(hPage, IDC_OPT_VIS_HAZE, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	Cfg()->CfgVisualPrm.bFog = (SendDlgItemMessage(hPage, IDC_OPT_VIS_FOG, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	Cfg()->CfgVisualPrm.bWaterreflect = (SendDlgItemMessage(hPage, IDC_OPT_VIS_REFWATER, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	Cfg()->CfgVisualPrm.bSpecularRipple = (SendDlgItemMessage(hPage, IDC_OPT_VIS_RIPPLE, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	Cfg()->CfgVisualPrm.bNightlights = (SendDlgItemMessage(hPage, IDC_OPT_VIS_LIGHTS, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	GetWindowText(GetDlgItem(hPage, IDC_OPT_VIS_LTLEVEL), cbuf, 255);
-	if (!sscanf(cbuf, "%lf", &d)) d = 0.5; else if (d < 0) d = 0.0; else if (d > 1) d = 1.0;
-	Cfg()->CfgVisualPrm.LightBrightness = d;
-	Cfg()->CfgVisualPrm.ElevMode = (SendDlgItemMessage(hPage, IDC_OPT_VIS_ELEV, BM_GETCHECK, 0, 0) != BST_CHECKED ?
-		0 : SendDlgItemMessage(hPage, IDC_OPT_VIS_ELEVMODE, CB_GETCURSEL, 0, 0) + 1);
-	GetWindowText(GetDlgItem(hPage, IDC_OPT_VIS_MAXLEVEL), cbuf, 127);
-	if (!sscanf(cbuf, "%lu", &i)) i = SURF_MAX_PATCHLEVEL2;
-	Cfg()->CfgVisualPrm.PlanetMaxLevel = max((DWORD)1, min((DWORD)SURF_MAX_PATCHLEVEL2, i));
-	Cfg()->CfgVisualPrm.bVesselShadows = (SendDlgItemMessage(hPage, IDC_OPT_VIS_VSHADOW, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	Cfg()->CfgVisualPrm.bReentryFlames = (SendDlgItemMessage(hPage, IDC_OPT_VIS_REENTRY, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	Cfg()->CfgVisualPrm.bShadows = (SendDlgItemMessage(hPage, IDC_OPT_VIS_SHADOW, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	Cfg()->CfgVisualPrm.bParticleStreams = (SendDlgItemMessage(hPage, IDC_OPT_VIS_PARTICLE, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	Cfg()->CfgVisualPrm.bSpecular = (SendDlgItemMessage(hPage, IDC_OPT_VIS_SPECULAR, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	Cfg()->CfgVisualPrm.bLocalLight = (SendDlgItemMessage(hPage, IDC_OPT_VIS_LOCALLIGHT, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	GetWindowText(GetDlgItem(hPage, IDC_OPT_VIS_AMBIENT), cbuf, 255);
-	if (!sscanf(cbuf, "%lu", &i)) i = 15; else if (i > 255) i = 255;
-	Cfg()->SetAmbientLevel(i);
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_Visual::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
-{
-	OptionsPage::OnInitDialog(hPage, wParam, lParam);
-	SendDlgItemMessage(hPage, IDC_OPT_VIS_ELEVMODE, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_VIS_ELEVMODE, CB_ADDSTRING, 0, (LPARAM)"linear interpolation");
-	SendDlgItemMessage(hPage, IDC_OPT_VIS_ELEVMODE, CB_ADDSTRING, 0, (LPARAM)"cubic interpolation");
-	return TRUE;
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_Visual::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
-{
-	switch (ctrlId)
-	{
-		case IDC_OPT_VIS_CLOUD:
-			if (notification == BN_CLICKED)
-			{
-				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_CLOUD, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
-				Cfg()->CfgVisualPrm.bClouds = check;
-				VisualsChanged( hPage );
-				return FALSE;
-			}
-			break;
-		case IDC_OPT_VIS_CSHADOW:
-			if (notification == BN_CLICKED)
-			{
-				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_CSHADOW, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
-				Cfg()->CfgVisualPrm.bCloudShadows = check;
-				return FALSE;
-			}
-			break;
-		case IDC_OPT_VIS_HAZE:
-			if (notification == BN_CLICKED)
-			{
-				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_HAZE, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
-				Cfg()->CfgVisualPrm.bHaze = check;
-				return FALSE;
-			}
-			break;
-		case IDC_OPT_VIS_FOG:
-			if (notification == BN_CLICKED)
-			{
-				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_FOG, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
-				Cfg()->CfgVisualPrm.bFog = check;
-				return FALSE;
-			}
-			break;
-		case IDC_OPT_VIS_REFWATER:
-			if (notification == BN_CLICKED)
-			{
-				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_REFWATER, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
-				Cfg()->CfgVisualPrm.bWaterreflect = check;
-				VisualsChanged( hPage );
-				return FALSE;
-			}
-			break;
-		case IDC_OPT_VIS_RIPPLE:
-			if (notification == BN_CLICKED)
-			{
-				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_RIPPLE, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
-				Cfg()->CfgVisualPrm.bSpecularRipple = check;
-				return FALSE;
-			}
-			break;
-		case IDC_OPT_VIS_LIGHTS:
-			if (notification == BN_CLICKED)
-			{
-				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_LIGHTS, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
-				Cfg()->CfgVisualPrm.bNightlights = check;
-				VisualsChanged( hPage );
-				return FALSE;
-			}
-			break;
-		case IDC_OPT_VIS_LTLEVEL:
-			if (notification == EN_CHANGE)
-			{
-				char cbuf[16];
-				double d;
-				GetWindowText( GetDlgItem( hPage, IDC_OPT_VIS_LTLEVEL ), cbuf, 16 );
-				if (!sscanf( cbuf, "%lf", &d )) d = 0.5;
-				else if (d < 0) d = 0.0;
-				else if (d > 1) d = 1.0;
-				Cfg()->CfgVisualPrm.LightBrightness = d;
-				return FALSE;
-			}
-			break;
-		case IDC_OPT_VIS_ELEV:
-			if (notification == BN_CLICKED)
-			{
-				int elevmode = SendDlgItemMessage( hPage, IDC_OPT_VIS_ELEV, BM_GETCHECK, 0, 0 ) != BST_CHECKED ? 0 : (SendDlgItemMessage( hPage, IDC_OPT_VIS_ELEVMODE, CB_GETCURSEL, 0, 0 ) + 1);
-				Cfg()->CfgVisualPrm.ElevMode = elevmode;
-				VisualsChanged( hPage );
-				return FALSE;
-			}
-			break;
-		case IDC_OPT_VIS_ELEVMODE:
-			if (notification == CBN_SELCHANGE)
-			{
-				int elevmode = SendDlgItemMessage( hPage, IDC_OPT_VIS_ELEV, BM_GETCHECK, 0, 0 ) != BST_CHECKED ? 0 : (SendDlgItemMessage( hPage, IDC_OPT_VIS_ELEVMODE, CB_GETCURSEL, 0, 0 ) + 1);
-				Cfg()->CfgVisualPrm.ElevMode = elevmode;
-				return FALSE;
-			}
-			break;
-		case IDC_OPT_VIS_MAXLEVEL:
-			if (notification == EN_CHANGE)
-			{
-				char cbuf[16];
-				DWORD i;
-				GetWindowText( GetDlgItem( hPage, IDC_OPT_VIS_MAXLEVEL ), cbuf, 16 );
-				if (!sscanf( cbuf, "%lu", &i )) i = SURF_MAX_PATCHLEVEL2;
-				Cfg()->CfgVisualPrm.PlanetMaxLevel = max((DWORD)1, min((DWORD)SURF_MAX_PATCHLEVEL2, i));
-				return FALSE;
-			}
-			break;
-		case IDC_OPT_VIS_VSHADOW:
-			if (notification == BN_CLICKED)
-			{
-				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_VSHADOW, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
-				Cfg()->CfgVisualPrm.bVesselShadows = check;
-				return FALSE;
-			}
-			break;
-		case IDC_OPT_VIS_REENTRY:
-			if (notification == BN_CLICKED)
-			{
-				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_REENTRY, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
-				Cfg()->CfgVisualPrm.bReentryFlames = check;
-				return FALSE;
-			}
-			break;
-		case IDC_OPT_VIS_SHADOW:
-			if (notification == BN_CLICKED)
-			{
-				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_SHADOW, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
-				Cfg()->CfgVisualPrm.bShadows = check;
-				return FALSE;
-			}
-			break;
-		case IDC_OPT_VIS_PARTICLE:
-			if (notification == BN_CLICKED)
-			{
-				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_PARTICLE, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
-				Cfg()->CfgVisualPrm.bParticleStreams = check;
-				return FALSE;
-			}
-			break;
-		case IDC_OPT_VIS_SPECULAR:
-			if (notification == BN_CLICKED)
-			{
-				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_SPECULAR, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
-				Cfg()->CfgVisualPrm.bSpecular = check;
-				return FALSE;
-			}
-			break;
-		case IDC_OPT_VIS_LOCALLIGHT:
-			if (notification == BN_CLICKED)
-			{
-				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_LOCALLIGHT, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
-				Cfg()->CfgVisualPrm.bLocalLight = check;
-				return FALSE;
-			}
-			break;
-		case IDC_OPT_VIS_AMBIENT:
-			if (notification == EN_CHANGE)
-			{
-				char cbuf[16];
-				DWORD i;
-				GetWindowText( GetDlgItem(hPage, IDC_OPT_VIS_AMBIENT ), cbuf, 16 );
-				if (!sscanf( cbuf, "%lu", &i )) i = 15;
-				else if (i > 255) i = 255;
-				Cfg()->SetAmbientLevel( i );
-				return FALSE;
-			}
-			break;
-	}
-	return TRUE;
-}
-
-//-----------------------------------------------------------------------------
-
-void OptionsPage_Visual::VisualsChanged(HWND hPage)
-{
-	EnableWindow(GetDlgItem(hPage, IDC_OPT_VIS_CSHADOW),
-		SendDlgItemMessage(hPage, IDC_OPT_VIS_CLOUD, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	EnableWindow(GetDlgItem(hPage, IDC_OPT_VIS_RIPPLE),
-		SendDlgItemMessage(hPage, IDC_OPT_VIS_REFWATER, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	EnableWindow( GetDlgItem( hPage, IDC_OPT_VIS_ELEVMODE ), SendDlgItemMessage( hPage, IDC_OPT_VIS_ELEV, BM_GETCHECK, 0, 0 ) == BST_CHECKED );
-	EnableWindow( GetDlgItem( hPage, IDC_OPT_VIS_LTLEVEL ), SendDlgItemMessage( hPage, IDC_OPT_VIS_LIGHTS, BM_GETCHECK, 0, 0 ) == BST_CHECKED );
-	return;
+void OptionsPage_Vessel::OnDraw(oapi::WithImCtx &ctx) {
+    ImGui::Checkbox("Limited fuel", &Cfg()->CfgLogicPrm.bLimitedFuel);
+    ImGui::Checkbox("Auto-refuel on pad", &Cfg()->CfgLogicPrm.bPadRefuel);
+    auto flightModel = Cfg()->CfgLogicPrm.FlightModelLevel != 0;
+    ImGui::Checkbox("Complex flight model", &flightModel);
+    Cfg()->CfgLogicPrm.FlightModelLevel = flightModel ? 1 : 0;
+    auto damageSetting = Cfg()->CfgLogicPrm.DamageSetting != 0;
+    ImGui::Checkbox("Damage and failure simulation", &damageSetting);
+    Cfg()->CfgLogicPrm.DamageSetting = damageSetting ? 1 : 0;
 }
 
 // ======================================================================
 
-OptionsPage_Physics::OptionsPage_Physics(OptionsPageContainer* container)
-	: OptionsPage(container)
-{
-}
-
-// ----------------------------------------------------------------------
-
-int OptionsPage_Physics::ResourceId() const
-{
-	return IDD_OPTIONS_PHYSICS;
-}
-
-// ----------------------------------------------------------------------
-
-const char* OptionsPage_Physics::Name() const
-{
-	const char* name = "Physics settings";
-	return name;
-}
-
-// ----------------------------------------------------------------------
-
-const HELPCONTEXT* OptionsPage_Physics::HelpContext() const
-{
-	static HELPCONTEXT hcontext = g_pOrbiter->DefaultHelpPage("/tab_param.htm"); // this needs to be updated
-	return &hcontext;
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_Physics::UpdateControls(HWND hPage)
-{
-	SendDlgItemMessage(hPage, IDC_OPT_PHYS_COMPLEXGRAV, BM_SETCHECK,
-		Cfg()->CfgPhysicsPrm.bNonsphericalGrav ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_PHYS_RPRESSURE, BM_SETCHECK,
-		Cfg()->CfgPhysicsPrm.bRadiationPressure ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_PHYS_DISTMASS, BM_SETCHECK,
-		Cfg()->CfgPhysicsPrm.bDistributedMass ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_PHYS_WIND, BM_SETCHECK,
-		Cfg()->CfgPhysicsPrm.bAtmWind ? BST_CHECKED : BST_UNCHECKED, 0);
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_Physics::UpdateConfig(HWND hPage)
-{
-	Cfg()->CfgPhysicsPrm.bDistributedMass = (SendDlgItemMessage(hPage, IDC_OPT_PHYS_DISTMASS, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	Cfg()->CfgPhysicsPrm.bNonsphericalGrav = (SendDlgItemMessage(hPage, IDC_OPT_PHYS_COMPLEXGRAV, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	Cfg()->CfgPhysicsPrm.bRadiationPressure = (SendDlgItemMessage(hPage, IDC_OPT_PHYS_RPRESSURE, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	Cfg()->CfgPhysicsPrm.bAtmWind = (SendDlgItemMessage(hPage, IDC_OPT_PHYS_WIND, BM_GETCHECK, 0, 0) == BST_CHECKED);
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_Physics::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
-{
-	OptionsPage::OnInitDialog(hPage, wParam, lParam);
-	return TRUE;
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_Physics::OnCommand( HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl )
-{
-	switch (ctrlId)
-	{
-		case IDC_OPT_PHYS_DISTMASS:
-			if (notification == BN_CLICKED)
-			{
-				bool check = (SendDlgItemMessage( hPage, IDC_OPT_PHYS_DISTMASS, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
-				Cfg()->CfgPhysicsPrm.bDistributedMass = check;
-				return FALSE;
-			}
-			break;
-		case IDC_OPT_PHYS_COMPLEXGRAV:
-			if (notification == BN_CLICKED)
-			{
-				bool check = (SendDlgItemMessage( hPage, IDC_OPT_PHYS_COMPLEXGRAV, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
-				Cfg()->CfgPhysicsPrm.bNonsphericalGrav = check;
-				return FALSE;
-			}
-			break;
-		case IDC_OPT_PHYS_RPRESSURE:
-			if (notification == BN_CLICKED)
-			{
-				bool check = (SendDlgItemMessage( hPage, IDC_OPT_PHYS_RPRESSURE, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
-				Cfg()->CfgPhysicsPrm.bRadiationPressure = check;
-				return FALSE;
-			}
-			break;
-		case IDC_OPT_PHYS_WIND:
-			if (notification == BN_CLICKED)
-			{
-				bool check = (SendDlgItemMessage( hPage, IDC_OPT_PHYS_WIND, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
-				Cfg()->CfgPhysicsPrm.bAtmWind = check;
-				return FALSE;
-			}
-			break;
-	}
-	return TRUE;
-}
-
-// ======================================================================
-
-OptionsPage_Instrument::OptionsPage_Instrument(OptionsPageContainer* container)
-	: OptionsPage(container)
-{
-}
-
-// ----------------------------------------------------------------------
-
-int OptionsPage_Instrument::ResourceId() const
-{
-	return IDD_OPTIONS_INSTRUMENT;
-}
-
-// ----------------------------------------------------------------------
-
-const char* OptionsPage_Instrument::Name() const
-{
-	const char* name = "Instruments & panels";
-	return name;
-}
-
-// ----------------------------------------------------------------------
-
-const HELPCONTEXT* OptionsPage_Instrument::HelpContext() const
-{
-	static HELPCONTEXT hcontext = g_pOrbiter->DefaultHelpPage("/tab_param.htm"); // this needs to be updated
-	return &hcontext;
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_Instrument::UpdateControls(HWND hPage)
-{
-	char cbuf[256];
-	double mfdUpdDt = Cfg()->CfgLogicPrm.InstrUpdDT;
-	sprintf(cbuf, "%0.2f", mfdUpdDt);
-	SetWindowText(GetDlgItem(hPage, IDC_OPT_MFD_INTERVAL), cbuf);
-	int mfdSize = Cfg()->CfgLogicPrm.MFDSize;
-	sprintf(cbuf, "%d", mfdSize);
-	SetWindowText(GetDlgItem(hPage, IDC_OPT_MFD_SIZE), cbuf);
-	bool enable = Cfg()->CfgLogicPrm.bMfdTransparent;
-	SendDlgItemMessage(hPage, IDC_OPT_MFD_TRANSP, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
-	int vcmfdsize = Cfg()->CfgInstrumentPrm.VCMFDSize;
-	int idx = (vcmfdsize == 1024 ? 2 : vcmfdsize == 512 ? 1 : 0);
-	SendDlgItemMessage(hPage, IDC_OPT_MFD_VCTEXSIZE, CB_SETCURSEL, idx, 0);
-	double scrollSpeed = Cfg()->CfgLogicPrm.PanelScrollSpeed;
-	sprintf(cbuf, "%0.0f", scrollSpeed * 0.1);
-	SetWindowText(GetDlgItem(hPage, IDC_OPT_PANEL_SCROLLSPEED), cbuf);
-	double panelSize = Cfg()->CfgLogicPrm.PanelScale;
-	sprintf(cbuf, "%0.2f", panelSize);
-	SetWindowText(GetDlgItem(hPage, IDC_OPT_PANEL_SCALE), cbuf);
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_Instrument::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
-{
-	OptionsPage::OnInitDialog(hPage, wParam, lParam);
-	SendDlgItemMessage(hPage, IDC_OPT_MFD_VCTEXSIZE, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_MFD_VCTEXSIZE, CB_ADDSTRING, 0, (LPARAM)"256 x 256");
-	SendDlgItemMessage(hPage, IDC_OPT_MFD_VCTEXSIZE, CB_ADDSTRING, 0, (LPARAM)"512 x 512");
-	SendDlgItemMessage(hPage, IDC_OPT_MFD_VCTEXSIZE, CB_ADDSTRING, 0, (LPARAM)"1024 x 1024");
-	return TRUE;
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_Instrument::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
-{
-	switch (ctrlId) {
-	case IDC_OPT_MFD_INTERVAL:
-		if (notification == EN_CHANGE) {
-			char cbuf[256];
-			double updDt;
-			GetWindowText(GetDlgItem(hPage, IDC_OPT_MFD_INTERVAL), cbuf, 255);
-			if (sscanf(cbuf, "%lf", &updDt)) {
-				Cfg()->CfgLogicPrm.InstrUpdDT = max(0.01, updDt);
-				g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_MFDUPDATEINTERVAL);
-			}
-			return FALSE;
-		}
-		break;
-	case IDC_OPT_MFD_SIZE:
-		if (notification == EN_CHANGE) {
-			char cbuf[256];
-			int size;
-			GetWindowText(GetDlgItem(hPage, IDC_OPT_MFD_SIZE), cbuf, 256);
-			if (sscanf(cbuf, "%d", &size)) {
-				Cfg()->CfgLogicPrm.MFDSize = max(1, min(10, size));
-				g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_MFDGENERICSIZE);
-			}
-			return FALSE;
-		}
-		break;
-	case IDC_OPT_MFD_TRANSP:
-		if (notification == BN_CLICKED) {
-			bool check = (SendDlgItemMessage(hPage, IDC_OPT_MFD_TRANSP, BM_GETCHECK, 0, 0) == TRUE);
-			Cfg()->CfgLogicPrm.bMfdTransparent = check;
-			g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_MFDGENERICTRANSP);
-			return FALSE;
-		}
-		break;
-	case IDC_OPT_MFD_VCTEXSIZE:
-		if (notification == CBN_SELCHANGE) {
-			int vcmfdsize[3] = { 256, 512, 1024 };
-			DWORD idx = (DWORD)SendDlgItemMessage(hPage, IDC_OPT_MFD_VCTEXSIZE, CB_GETCURSEL, 0, 0);
-			Cfg()->CfgInstrumentPrm.VCMFDSize = vcmfdsize[idx];
-			g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_MFDVCSIZE);
-		}
-		break;
-	case IDC_OPT_PANEL_SCROLLSPEED:
-		if (notification == EN_CHANGE) {
-			char cbuf[256];
-			double speed;
-			GetWindowText(GetDlgItem(hPage, IDC_OPT_PANEL_SCROLLSPEED), cbuf, 256);
-			if (sscanf(cbuf, "%lf", &speed)) {
-				Cfg()->CfgLogicPrm.PanelScrollSpeed = 10.0 * max(-100.0, min(100.0, speed));
-				g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_PANELSCROLLSPEED);
-			}
-			return FALSE;
-		}
-		break;
-	case IDC_OPT_PANEL_SCALE:
-		if (notification == EN_CHANGE) {
-			char cbuf[256];
-			double scale;
-			GetWindowText(GetDlgItem(hPage, IDC_OPT_PANEL_SCALE), cbuf, 256);
-			if (sscanf(cbuf, "%lf", &scale)) {
-				Cfg()->CfgLogicPrm.PanelScale = max(0.25, min(4.0, scale));
-				g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_PANELSCALE);
-			}
-			return FALSE;
-		}
-		break;
-	}
-	return TRUE;
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_Instrument::OnNotify(HWND hPage, DWORD ctrlId, const NMHDR* pNmHdr)
-{
-	if (pNmHdr->code == UDN_DELTAPOS) {
-		NMUPDOWN* nmud = (NMUPDOWN*)pNmHdr;
-		int delta = -nmud->iDelta;
-		switch (pNmHdr->idFrom) {
-		case IDC_OPT_MFD_INTERVALSPIN:
-			Cfg()->CfgLogicPrm.InstrUpdDT = max(0.01, Cfg()->CfgLogicPrm.InstrUpdDT + delta * 0.01);
-			g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_MFDUPDATEINTERVAL);
-			break;
-		case IDC_OPT_MFD_SIZESPIN:
-			Cfg()->CfgLogicPrm.MFDSize = max(1, min(10, Cfg()->CfgLogicPrm.MFDSize + delta));
-			g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_MFDGENERICSIZE);
-			break;
-		case IDC_OPT_PANEL_SCROLLSPEEDSPIN:
-			Cfg()->CfgLogicPrm.PanelScrollSpeed = 10.0 * max(-100.0, min(100.0, 0.1 * Cfg()->CfgLogicPrm.PanelScrollSpeed + delta));
-			g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_PANELSCROLLSPEED);
-			break;
-		case IDC_OPT_PANEL_SCALESPIN:
-			Cfg()->CfgLogicPrm.PanelScale = max(0.25, min(4.0, Cfg()->CfgLogicPrm.PanelScale + delta * 0.01));
-			g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_PANELSCALE);
-			break;
-		}
-		UpdateControls(hPage);
-		return TRUE;
-	}
-	return FALSE;
-}
-
-// ======================================================================
-
-OptionsPage_Vessel::OptionsPage_Vessel(OptionsPageContainer* container)
-	: OptionsPage(container)
-{
-}
-
-// ----------------------------------------------------------------------
-
-int OptionsPage_Vessel::ResourceId() const
-{
-	return IDD_OPTIONS_VESSEL;
-}
-
-// ----------------------------------------------------------------------
-
-const char* OptionsPage_Vessel::Name() const
-{
-	const char* name = "Vessel settings";
-	return name;
-}
-
-// ----------------------------------------------------------------------
-
-const HELPCONTEXT* OptionsPage_Vessel::HelpContext() const
-{
-	static HELPCONTEXT hcontext = g_pOrbiter->DefaultHelpPage("/tab_param.htm"); // this needs to be updated
-	return &hcontext;
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_Vessel::UpdateControls(HWND hPage)
-{
-	SendDlgItemMessage(hPage, IDC_OPT_VESSEL_FUELLIMIT, BM_SETCHECK,
-		Cfg()->CfgLogicPrm.bLimitedFuel ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_VESSEL_PADFUEL, BM_SETCHECK,
-		Cfg()->CfgLogicPrm.bPadRefuel ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_VESSEL_COMPLEXMODEL, BM_SETCHECK,
-		Cfg()->CfgLogicPrm.FlightModelLevel ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_VESSEL_DAMAGE, BM_SETCHECK,
-		Cfg()->CfgLogicPrm.DamageSetting ? BST_CHECKED : BST_UNCHECKED, 0);
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_Vessel::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
-{
-	OptionsPage::OnInitDialog(hPage, wParam, lParam);
-	if (Container()->Environment() == OptionsPageContainer::INLINE) {
-		UpdateControls(hPage);
-		EnableWindow(GetDlgItem(hPage, IDC_OPT_VESSEL_COMPLEXMODEL), FALSE);
-		EnableWindow(GetDlgItem(hPage, IDC_OPT_VESSEL_DAMAGE), FALSE);
-	}
-	return TRUE;
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_Vessel::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
-{
-	switch (ctrlId) {
-	case IDC_OPT_VESSEL_FUELLIMIT:
-		if (notification == BN_CLICKED) {
-			bool check = (SendDlgItemMessage(hPage, IDC_OPT_VESSEL_FUELLIMIT, BM_GETCHECK, 0, 0) == TRUE);
-			Cfg()->CfgLogicPrm.bLimitedFuel = check;
-			g_pOrbiter->OnOptionChanged(OPTCAT_VESSEL, OPTITEM_VESSEL_LIMITEDFUEL);
-			return FALSE;
-		}
-		break;
-	case IDC_OPT_VESSEL_PADFUEL:
-		if (notification == BN_CLICKED) {
-			bool check = (SendDlgItemMessage(hPage, IDC_OPT_VESSEL_PADFUEL, BM_GETCHECK, 0, 0) == TRUE);
-			Cfg()->CfgLogicPrm.bPadRefuel = check;
-			g_pOrbiter->OnOptionChanged(OPTCAT_VESSEL, OPTITEM_VESSEL_PADREFUEL);
-			return FALSE;
-		}
-		break;
-	case IDC_OPT_VESSEL_COMPLEXMODEL:
-		if (notification == BN_CLICKED) {
-			bool check = (SendDlgItemMessage(hPage, IDC_OPT_VESSEL_COMPLEXMODEL, BM_GETCHECK, 0, 0) == TRUE);
-			Cfg()->CfgLogicPrm.FlightModelLevel = check;
-			return FALSE;
-		}
-		break;
-	case IDC_OPT_VESSEL_DAMAGE:
-		if (notification == BN_CLICKED) {
-			bool check = (SendDlgItemMessage(hPage, IDC_OPT_VESSEL_DAMAGE, BM_GETCHECK, 0, 0) == TRUE);
-			Cfg()->CfgLogicPrm.DamageSetting = check;
-			return FALSE;
-		}
-		break;
-	}
-	return TRUE;
-}
-
-// ======================================================================
-
-OptionsPage_UI::OptionsPage_UI(OptionsPageContainer* container)
-	: OptionsPage(container)
-{
-}
-
-// ----------------------------------------------------------------------
-
-int OptionsPage_UI::ResourceId() const
-{
-	return IDD_OPTIONS_UI;
-}
-
-// ----------------------------------------------------------------------
-
-const char* OptionsPage_UI::Name() const
-{
-	const char* name = "User interface";
-	return name;
-}
-
-// ----------------------------------------------------------------------
-
-const HELPCONTEXT* OptionsPage_UI::HelpContext() const
-{
-	static HELPCONTEXT hcontext = g_pOrbiter->DefaultHelpPage("/tab_param.htm"); // this needs to be updated
-	return &hcontext;
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_UI::UpdateControls(HWND hPage)
-{
-	DWORD mode = Cfg()->CfgUIPrm.MouseFocusMode;
-	SendDlgItemMessage(hPage, IDC_OPT_UI_MOUSEFOCUSMODE, CB_SETCURSEL, mode, 0);
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_UI::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
-{
-	OptionsPage::OnInitDialog(hPage, wParam, lParam);
-
-	SendDlgItemMessage(hPage, IDC_OPT_UI_MOUSEFOCUSMODE, CB_RESETCONTENT, 0, 0);
-	const char* strMouseMode[3] = { "Focus requires click", "Hybrid: Click required only for child windows", "Focus follows mouse" };
-	for (int i = 0; i < 3; i++)
-		SendDlgItemMessage(hPage, IDC_OPT_UI_MOUSEFOCUSMODE, CB_ADDSTRING, 0, (LPARAM)strMouseMode[i]);
-
-	return TRUE;
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_UI::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
-{
-	switch (ctrlId) {
-	case IDC_OPT_UI_MOUSEFOCUSMODE:
-		if (notification == CBN_SELCHANGE) {
-			DWORD mode = (DWORD)SendDlgItemMessage(hPage, IDC_OPT_UI_MOUSEFOCUSMODE, CB_GETCURSEL, 0, 0);
-			Cfg()->CfgUIPrm.MouseFocusMode = mode;
-			return FALSE;
-		}
-		break;
-	}
-	return TRUE;
-}
-
-// ======================================================================
-
-OptionsPage_Joystick::OptionsPage_Joystick(OptionsPageContainer* container)
-	: OptionsPage(container)
-{
-}
-
-// ----------------------------------------------------------------------
-
-int OptionsPage_Joystick::ResourceId() const
-{
-	return IDD_OPTIONS_JOYSTICK;
-}
-
-// ----------------------------------------------------------------------
-
-const char* OptionsPage_Joystick::Name() const
-{
-	const char* name = "Joystick";
-	return name;
-}
-
-// ----------------------------------------------------------------------
-
-const HELPCONTEXT* OptionsPage_Joystick::HelpContext() const
-{
-	static HELPCONTEXT hcontext = g_pOrbiter->DefaultHelpPage("/tab_joystick.htm");
-	return &hcontext;
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_Joystick::UpdateControls(HWND hPage)
-{
-	char cbuf[256];
-
-	SendDlgItemMessage(hPage, IDC_OPT_JOY_DEVICE, CB_SETCURSEL, (WPARAM)Cfg()->CfgJoystickPrm.Joy_idx, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_JOY_THROTTLE, CB_SETCURSEL, (WPARAM)Cfg()->CfgJoystickPrm.ThrottleAxis, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_JOY_INIT, BM_SETCHECK, Cfg()->CfgJoystickPrm.bThrottleIgnore ? BST_CHECKED : BST_UNCHECKED, 0);
-
-	int sat = Cfg()->CfgJoystickPrm.ThrottleSaturation / 10;
-	oapiSetGaugePos(GetDlgItem(hPage, IDC_OPT_JOY_SAT), sat);
-	sprintf(cbuf, "%d", sat);
-	SetWindowText(GetDlgItem(hPage, IDC_OPT_JOY_STATIC1), cbuf);
-
-	int dz = Cfg()->CfgJoystickPrm.Deadzone / 10;
-	oapiSetGaugePos(GetDlgItem(hPage, IDC_OPT_JOY_DEAD), dz);
-	sprintf(cbuf, "%d", dz);
-	SetWindowText(GetDlgItem(hPage, IDC_OPT_JOY_STATIC2), cbuf);
-
-	int residJoystick[] = {
-		IDC_OPT_JOY_THROTTLE, IDC_OPT_JOY_INIT, IDC_OPT_JOY_SAT, IDC_OPT_JOY_DEAD,
-		IDC_OPT_JOY_STATIC1, IDC_OPT_JOY_STATIC2, IDC_OPT_JOY_STATIC3, IDC_OPT_JOY_STATIC4
-	};
-	bool enable = Cfg()->CfgJoystickPrm.Joy_idx > 0;
-	for (int i = 0; i < ARRAYSIZE(residJoystick); i++) {
-		EnableWindow(GetDlgItem(hPage, residJoystick[i]), enable);
-	}
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_Joystick::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
-{
-	OptionsPage::OnInitDialog(hPage, wParam, lParam);
-
-	DWORD ndev;
-	DIDEVICEINSTANCE* joylist;
-	g_pOrbiter->GetDInput()->GetJoysticks(&joylist, &ndev);
-
-	SendDlgItemMessage(hPage, IDC_OPT_JOY_DEVICE, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_JOY_DEVICE, CB_ADDSTRING, 0, (LPARAM)"<Disabled>");
-	for (int i = 0; i < ndev; i++)
-		SendDlgItemMessage(hPage, IDC_OPT_JOY_DEVICE, CB_ADDSTRING, 0, (LPARAM)(joylist[i].tszProductName));
-
-	const char* thmode[4] = { "<Keyboard only>", "Z-axis", "Slider 0", "Slider 1" };
-	SendDlgItemMessage(hPage, IDC_OPT_JOY_THROTTLE, CB_RESETCONTENT, 0, 0);
-	for (int i = 0; i < ARRAYSIZE(thmode); i++)
-		SendDlgItemMessage(hPage, IDC_OPT_JOY_THROTTLE, CB_ADDSTRING, 0, (LPARAM)thmode[i]);
-
-	GAUGEPARAM gp = { 0, 1000, GAUGEPARAM::LEFT, GAUGEPARAM::BLACK };
-	oapiSetGaugeParams(GetDlgItem(hPage, IDC_OPT_JOY_SAT), &gp);
-	oapiSetGaugeParams(GetDlgItem(hPage, IDC_OPT_JOY_DEAD), &gp);
-
-	return TRUE;
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_Joystick::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
-{
-	switch (ctrlId) {
-	case IDC_OPT_JOY_DEVICE:
-		if (notification == CBN_SELCHANGE) {
-			DWORD idx = (DWORD)SendDlgItemMessage(hPage, IDC_OPT_JOY_DEVICE, CB_GETCURSEL, 0, 0);
-			Cfg()->CfgJoystickPrm.Joy_idx = idx;
-			g_pOrbiter->OnOptionChanged(OPTCAT_JOYSTICK, OPTITEM_JOYSTICK_DEVICE);
-			UpdateControls(hPage);
-			return FALSE;
-		}
-		break;
-	case IDC_OPT_JOY_THROTTLE:
-		if (notification == CBN_SELCHANGE) {
-			DWORD axis = (DWORD)SendDlgItemMessage(hPage, IDC_OPT_JOY_THROTTLE, CB_GETCURSEL, 0, 0);
-			Cfg()->CfgJoystickPrm.ThrottleAxis = axis;
-			g_pOrbiter->OnOptionChanged(OPTCAT_JOYSTICK, OPTITEM_JOYSTICK_PARAM);
-			return FALSE;
-		}
-		break;
-	case IDC_OPT_JOY_INIT:
-		if (notification == BN_CLICKED) {
-			bool check = (SendDlgItemMessage(hPage, IDC_OPT_JOY_INIT, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			Cfg()->CfgJoystickPrm.bThrottleIgnore = check;
-			break;
-		}
-		break;
-	}
-	return TRUE;
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_Joystick::OnHScroll(HWND hPage, WPARAM wParam, LPARAM lParam)
-{
-	int val;
-	switch (GetDlgCtrlID((HWND)lParam)) {
-	case IDC_OPT_JOY_SAT:
-		switch (LOWORD(wParam)) {
-		case SB_THUMBTRACK:
-		case SB_LINELEFT:
-		case SB_LINERIGHT:
-			val = HIWORD(wParam);
-			Cfg()->CfgJoystickPrm.ThrottleSaturation = val * 10;
-			UpdateControls(hPage);
-			g_pOrbiter->OnOptionChanged(OPTCAT_JOYSTICK, OPTITEM_JOYSTICK_PARAM);
-			return 0;
-		}
-		break;
-	case IDC_OPT_JOY_DEAD:
-		switch (LOWORD(wParam)) {
-		case SB_THUMBTRACK:
-		case SB_LINELEFT:
-		case SB_LINERIGHT:
-			val = HIWORD(wParam);
-			Cfg()->CfgJoystickPrm.Deadzone = val * 10;
-			UpdateControls(hPage);
-			g_pOrbiter->OnOptionChanged(OPTCAT_JOYSTICK, OPTITEM_JOYSTICK_PARAM);
-			return 0;
-		}
-		break;
-	}
-	return FALSE;
-}
-
-// ======================================================================
-
-OptionsPage_CelSphere::OptionsPage_CelSphere(OptionsPageContainer* container)
-	: OptionsPage(container)
-{
-}
-
-// ----------------------------------------------------------------------
-
-int OptionsPage_CelSphere::ResourceId() const
-{
-	return IDD_OPTIONS_CELSPHERE;
-}
-
-// ----------------------------------------------------------------------
-
-const char* OptionsPage_CelSphere::Name() const
-{
-	const char* name = "Celestial sphere";
-	return name;
-}
-
-// ----------------------------------------------------------------------
-
-const HELPCONTEXT* OptionsPage_CelSphere::HelpContext() const
-{
-	static HELPCONTEXT hcontext = g_pOrbiter->DefaultHelpPage("/opt_celsphere.htm");
-	return &hcontext;
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_CelSphere::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
-{
-	OptionsPage::OnInitDialog(hPage, wParam, lParam);
-
-	GAUGEPARAM gp = { 0, 100, GAUGEPARAM::LEFT, GAUGEPARAM::BLACK };
-	oapiSetGaugeParams(GetDlgItem(hPage, IDC_OPT_CSP_BGBRIGHTNESS), &gp);
-
-	PopulateStarmapList(hPage);
-	PopulateBgImageList(hPage);
-	UpdateControls(hPage);
-
-	return TRUE;
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_CelSphere::OnCommand(HWND hPage, WORD id, WORD code, HWND hControl)
-{
-	switch (id) {
-	case IDC_OPT_CSP_ENABLESTARPIX:
-		if (code == BN_CLICKED) {
-			StarPixelActivationChanged(hPage);
-			return FALSE;
-		}
-		break;
-	case IDC_OPT_CSP_ENABLESTARMAP:
-		if (code == BN_CLICKED) {
-			StarmapActivationChanged(hPage);
-			return FALSE;
-		}
-		break;
-	case IDC_OPT_CSP_ENABLEBKGMAP:
-		if (code == BN_CLICKED) {
-			BackgroundActivationChanged(hPage);
-			return FALSE;
-		}
-		break;
-	case IDC_OPT_CSP_STARMAPIMAGE:
-		if (code == LBN_SELCHANGE) {
-			StarmapImageChanged(hPage);
-			return false;
-		}
-		break;
-	case IDC_OPT_CSP_BKGIMAGE:
-		if (code == LBN_SELCHANGE) {
-			BackgroundImageChanged(hPage);
-			return FALSE;
-		}
-		break;
-	case IDC_OPT_CSP_STARMAPLIN:
-	case IDC_OPT_CSP_STARMAPEXP:
-		if (code == BN_CLICKED) {
-			Cfg()->CfgVisualPrm.StarPrm.map_log = (id == IDC_OPT_CSP_STARMAPEXP);
-			g_pOrbiter->OnOptionChanged(OPTCAT_CELSPHERE, OPTITEM_CELSPHERE_STARDISPLAYPARAM);
-			return FALSE;
-		}
-		break;
-	}
-	return TRUE;
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_CelSphere::OnHScroll(HWND hPage, WPARAM wParam, LPARAM lParam)
-{
-	switch (GetDlgCtrlID((HWND)lParam)) {
-	case IDC_OPT_CSP_BGBRIGHTNESS:
-		switch (LOWORD(wParam)) {
-		case SB_THUMBTRACK:
-		case SB_LINELEFT:
-		case SB_LINERIGHT:
-			BackgroundBrightnessChanged(hPage, 0.01 * HIWORD(wParam));
-			return 0;
-		}
-		break;
-	}
-	return FALSE;
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_CelSphere::OnNotify(HWND hPage, DWORD ctrlId, const NMHDR* pNmHdr)
-{
-	if (pNmHdr->code == UDN_DELTAPOS) {
-		NMUPDOWN* nmud = (NMUPDOWN*)pNmHdr;
-		int delta = -nmud->iDelta;
-		StarRenderPrm& prm = Cfg()->CfgVisualPrm.StarPrm;
-		switch (pNmHdr->idFrom) {
-		case IDC_OPT_CSP_STARMAGHISPIN:
-			prm.mag_hi = min(prm.mag_lo, max(-2.0, prm.mag_hi + delta * 0.1));
-			break;
-		case IDC_OPT_CSP_STARMAGLOSPIN:
-			prm.mag_lo = min(15.0, max(prm.mag_hi, prm.mag_lo + delta * 0.1));
-			break;
-		case IDC_OPT_CSP_STARMINBRTSPIN:
-			prm.brt_min = min(1.0, max(0.0, prm.brt_min + delta * 0.01));
-			break;
-		}
-		UpdateControls(hPage);
-		g_pOrbiter->OnOptionChanged(OPTCAT_CELSPHERE, OPTITEM_CELSPHERE_STARDISPLAYPARAM);
-		return TRUE;
-	}
-	return FALSE;
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_CelSphere::UpdateControls(HWND hPage)
-{
-	char cbuf[256];
-
-	std::string starpath = std::string(Cfg()->CfgVisualPrm.StarImagePath);
-	for (int idx = 0; idx < m_pathStarmap.size(); idx++)
-		if (!starpath.compare(m_pathStarmap[idx].second)) {
-			SendDlgItemMessage(hPage, IDC_OPT_CSP_STARMAPIMAGE, CB_SETCURSEL, idx, 0);
-			break;
-		}
-
-	std::string bgpath = std::string(Cfg()->CfgVisualPrm.CSphereBgPath);
-	for (int idx = 0; idx < m_pathBgImage.size(); idx++)
-		if (!bgpath.compare(m_pathBgImage[idx].second)) {
-			SendDlgItemMessage(hPage, IDC_OPT_CSP_BKGIMAGE, CB_SETCURSEL, idx, 0);
-			break;
-		}
-
-	bool checked = Cfg()->CfgVisualPrm.bUseStarImage;
-	SendDlgItemMessage(hPage, IDC_OPT_CSP_ENABLESTARMAP, BM_SETCHECK, checked ? BST_CHECKED : BST_UNCHECKED, 0);
-	EnableWindow(GetDlgItem(hPage, IDC_OPT_CSP_STARMAPIMAGE), checked ? TRUE : FALSE);
-
-	checked = Cfg()->CfgVisualPrm.bUseBgImage;
-	SendDlgItemMessage(hPage, IDC_OPT_CSP_ENABLEBKGMAP, BM_SETCHECK, checked ? BST_CHECKED : BST_UNCHECKED, 0);
-	int brt = (int)(Cfg()->CfgVisualPrm.CSphereBgIntens * 100.0);
-	oapiSetGaugePos(GetDlgItem(hPage, IDC_OPT_CSP_BGBRIGHTNESS), brt);
-	EnableWindow(GetDlgItem(hPage, IDC_OPT_CSP_BKGIMAGE), checked ? TRUE : FALSE);
-	EnableWindow(GetDlgItem(hPage, IDC_STATIC1), checked ? TRUE : FALSE);
-	EnableWindow(GetDlgItem(hPage, IDC_OPT_CSP_BGBRIGHTNESS), checked ? TRUE : FALSE);
-
-	checked = Cfg()->CfgVisualPrm.bUseStarDots;
-	SendDlgItemMessage(hPage, IDC_OPT_CSP_ENABLESTARPIX, BM_SETCHECK, checked ? BST_CHECKED : BST_UNCHECKED, 0);
-	sprintf(cbuf, "%0.1f", Cfg()->CfgVisualPrm.StarPrm.mag_hi);
-	SetWindowText(GetDlgItem(hPage, IDC_OPT_CSP_STARMAGHI), cbuf);
-	sprintf(cbuf, "%0.1f", Cfg()->CfgVisualPrm.StarPrm.mag_lo);
-	SetWindowText(GetDlgItem(hPage, IDC_OPT_CSP_STARMAGLO), cbuf);
-	sprintf(cbuf, "%0.2f", Cfg()->CfgVisualPrm.StarPrm.brt_min);
-	SetWindowText(GetDlgItem(hPage, IDC_OPT_CSP_STARMINBRT), cbuf);
-	SendDlgItemMessage(hPage, IDC_OPT_CSP_STARMAPLIN, BM_SETCHECK,
-		Cfg()->CfgVisualPrm.StarPrm.map_log ? BST_UNCHECKED : BST_CHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_CSP_STARMAPEXP, BM_SETCHECK,
-		Cfg()->CfgVisualPrm.StarPrm.map_log ? BST_CHECKED : BST_UNCHECKED, 0);
-	std::vector<int> ctrlStarPix{
-		IDC_STATIC2, IDC_STATIC3, IDC_STATIC4, IDC_STATIC5, IDC_STATIC6,
-		IDC_OPT_CSP_STARMAGHISPIN, IDC_OPT_CSP_STARMAGLOSPIN, IDC_OPT_CSP_STARMINBRTSPIN,
-		IDC_OPT_CSP_STARMAGHI, IDC_OPT_CSP_STARMAGLO, IDC_OPT_CSP_STARMINBRT, IDC_OPT_CSP_STARMAPLIN, IDC_OPT_CSP_STARMAPEXP
-	};
-	for (auto ctrl : ctrlStarPix)
-		EnableWindow(GetDlgItem(hPage, ctrl), checked ? TRUE : FALSE);
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_CelSphere::PopulateStarmapList(HWND hPage)
-{
-	SendDlgItemMessage(hPage, IDC_OPT_CSP_STARMAPIMAGE, CB_RESETCONTENT, 0, 0);
-	m_pathStarmap.clear();
-
-	std::ifstream ifs(Cfg()->ConfigPath("CSphere\\bkgimage"));
-	if (ifs) {
-		char* c;
-		char cbuf[256];
-		bool found = false;
-		while (ifs.getline(cbuf, 256)) {
-			if (!found) {
-				if (!strcmp(cbuf, "BEGIN_STARMAPS"))
-					found = true;
-				continue;
-			}
-			if (!strcmp(cbuf, "END_STARMAPS"))
-				break;
-			c = strtok(cbuf, "|");
-			if (c) {
-				SendDlgItemMessage(hPage, IDC_OPT_CSP_STARMAPIMAGE, CB_ADDSTRING, 0, (LPARAM)c);
-				std::string label(c);
-				c = strtok(NULL, "\n");
-				std::string path(c);
-				m_pathStarmap.push_back(std::make_pair(label, path));
-			}
-		}
-	}
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_CelSphere::PopulateBgImageList(HWND hPage)
-{
-	SendDlgItemMessage(hPage, IDC_OPT_CSP_BKGIMAGE, CB_RESETCONTENT, 0, 0);
-	m_pathBgImage.clear();
-
-	std::ifstream ifs(Cfg()->ConfigPath("CSphere\\bkgimage"));
-	if (ifs) {
-		char* c;
-		char cbuf[256];
-		bool found = false;
-		while (ifs.getline(cbuf, 256)) {
-			if (!found) {
-				if (!strcmp(cbuf, "BEGIN_BACKGROUNDS"))
-					found = true;
-				continue;
-			}
-			if (!strcmp(cbuf, "END_BACKGROUNDS"))
-				break;
-			c = strtok(cbuf, "|");
-			if (c) {
-				SendDlgItemMessage(hPage, IDC_OPT_CSP_BKGIMAGE, CB_ADDSTRING, 0, (LPARAM)c);
-				std::string label(c);
-				c = strtok(NULL, "\n");
-				std::string path(c);
-				m_pathBgImage.push_back(std::make_pair(label, path));
-			}
-		}
-	}
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_CelSphere::StarPixelActivationChanged(HWND hPage)
-{
-	bool activated = SendDlgItemMessage(hPage, IDC_OPT_CSP_ENABLESTARPIX, BM_GETCHECK, 0, 0) == BST_CHECKED;
-	bool active = Cfg()->CfgVisualPrm.bUseStarDots;
-
-	if (activated != active) {
-		Cfg()->CfgVisualPrm.bUseStarDots = activated;
-		g_pOrbiter->OnOptionChanged(OPTCAT_CELSPHERE, OPTITEM_CELSPHERE_ACTIVATESTARDOTS);
-	}
-	UpdateControls(hPage);
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_CelSphere::StarmapActivationChanged(HWND hPage)
-{
-	bool activated = SendDlgItemMessage(hPage, IDC_OPT_CSP_ENABLESTARMAP, BM_GETCHECK, 0, 0) == BST_CHECKED;
-	bool active = Cfg()->CfgVisualPrm.bUseStarImage;
-
-	if (activated != active) {
-		Cfg()->CfgVisualPrm.bUseStarImage = activated;
-		g_pOrbiter->OnOptionChanged(OPTCAT_CELSPHERE, OPTITEM_CELSPHERE_ACTIVATESTARIMAGE);
-	}
-	UpdateControls(hPage);
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_CelSphere::StarmapImageChanged(HWND hPage)
-{
-	int idx = SendDlgItemMessage(hPage, IDC_OPT_CSP_STARMAPIMAGE, CB_GETCURSEL, 0, 0);
-	std::string& path = m_pathStarmap[idx].second;
-	strncpy(Cfg()->CfgVisualPrm.StarImagePath, path.c_str(), 128);
-	g_pOrbiter->OnOptionChanged(OPTCAT_CELSPHERE, OPTITEM_CELSPHERE_STARIMAGECHANGED);
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_CelSphere::BackgroundActivationChanged(HWND hPage)
-{
-	bool activated = SendDlgItemMessage(hPage, IDC_OPT_CSP_ENABLEBKGMAP, BM_GETCHECK, 0, 0) == BST_CHECKED;
-	bool active = Cfg()->CfgVisualPrm.bUseBgImage;
-
-	if (activated != active) {
-		Cfg()->CfgVisualPrm.bUseBgImage = activated;
-		g_pOrbiter->OnOptionChanged(OPTCAT_CELSPHERE, OPTITEM_CELSPHERE_ACTIVATEBGIMAGE);
-	}
-	UpdateControls(hPage);
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_CelSphere::BackgroundImageChanged(HWND hPage)
-{
-	int idx = SendDlgItemMessage(hPage, IDC_OPT_CSP_BKGIMAGE, CB_GETCURSEL, 0, 0);
-	std::string& path = m_pathBgImage[idx].second;
-	strncpy(Cfg()->CfgVisualPrm.CSphereBgPath, path.c_str(), 128);
-	g_pOrbiter->OnOptionChanged(OPTCAT_CELSPHERE, OPTITEM_CELSPHERE_BGIMAGECHANGED);
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_CelSphere::BackgroundBrightnessChanged(HWND hPage, double level)
-{
-	if (level != Cfg()->CfgVisualPrm.CSphereBgIntens) {
-		Cfg()->CfgVisualPrm.CSphereBgIntens = level;
-		g_pOrbiter->OnOptionChanged(OPTCAT_CELSPHERE, OPTITEM_CELSPHERE_BGIMAGEBRIGHTNESS);
-	}
-}
-
-// ======================================================================
-
-OptionsPage_VisHelper::OptionsPage_VisHelper(OptionsPageContainer* container)
-	: OptionsPage(container)
-{
-}
-
-// ----------------------------------------------------------------------
-
-int OptionsPage_VisHelper::ResourceId() const
-{
-	return IDD_OPTIONS_VISHELPER;
-}
-
-// ----------------------------------------------------------------------
-
-const char* OptionsPage_VisHelper::Name() const
-{
-	const char* name = "Visual helpers";
-	return name;
-}
-
-// ----------------------------------------------------------------------
-
-const HELPCONTEXT* OptionsPage_VisHelper::HelpContext() const
-{
-	static HELPCONTEXT hcontext = g_pOrbiter->DefaultHelpPage("/vishelper.htm");
-	return &hcontext;
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_VisHelper::UpdateControls(HWND hPage)
-{
-	DWORD& plnFlag = Cfg()->CfgVisHelpPrm.flagPlanetarium;
-	bool enable = plnFlag & PLN_ENABLE;
-	SendDlgItemMessage(hPage, IDC_OPT_PLN, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
-	DWORD& mkrFlag = Cfg()->CfgVisHelpPrm.flagMarkers;
-	enable = mkrFlag & MKR_ENABLE;
-	SendDlgItemMessage(hPage, IDC_OPT_MKR, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
-	DWORD vecFlag = Cfg()->CfgVisHelpPrm.flagBodyForce;
-	enable = (vecFlag & BFV_ENABLE);
-	SendDlgItemMessage(hPage, IDC_OPT_VEC, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
-	DWORD crdFlag = Cfg()->CfgVisHelpPrm.flagFrameAxes;
-	enable = (crdFlag & FAV_ENABLE);
-	SendDlgItemMessage(hPage, IDC_OPT_CRD, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_VisHelper::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
-{
-	OptionsPage::OnInitDialog(hPage, wParam, lParam);
-	return TRUE;
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_VisHelper::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
-{
-	switch (ctrlId) {
-	case IDC_OPT_PLN:
-		if (notification == BN_CLICKED) {
-			bool check = (SendDlgItemMessage(hPage, ctrlId, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			DWORD flag = PLN_ENABLE;
-			DWORD& plnFlag = Cfg()->CfgVisHelpPrm.flagPlanetarium;
-			if (check) plnFlag |= flag;
-			else       plnFlag &= ~flag;
-			return TRUE;
-		}
-		break;
-	case IDC_OPT_MKR:
-		if (notification == BN_CLICKED) {
-			bool check = (SendDlgItemMessage(hPage, ctrlId, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			DWORD flag = MKR_ENABLE;
-			DWORD& mkrFlag = Cfg()->CfgVisHelpPrm.flagMarkers;
-			if (check) mkrFlag |= flag;
-			else       mkrFlag &= ~flag;
-			return TRUE;
-		}
-		break;
-	case IDC_OPT_VEC:
-		if (notification == BN_CLICKED) {
-			bool check = (SendDlgItemMessage(hPage, ctrlId, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			DWORD flag = BFV_ENABLE;
-			DWORD& vecFlag = Cfg()->CfgVisHelpPrm.flagBodyForce;
-			if (check) vecFlag |= flag;
-			else       vecFlag &= ~flag;
-		}
-		break;
-	case IDC_OPT_CRD:
-		if (notification == BN_CLICKED) {
-			bool check = (SendDlgItemMessage(hPage, ctrlId, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			DWORD flag = FAV_ENABLE;
-			DWORD& crdFlag = Cfg()->CfgVisHelpPrm.flagFrameAxes;
-			if (check) crdFlag |= flag;
-			else       crdFlag &= ~flag;
-		}
-		break;
-	case IDC_OPT_VHELP_PLN:
-		if (notification == BN_CLICKED)
-			Container()->SwitchPage("Planetarium");
-		break;
-	case IDC_OPT_VHELP_MKR:
-		if (notification == BN_CLICKED)
-			Container()->SwitchPage("Labels");
-		break;
-	case IDC_OPT_VHELP_VEC:
-		if (notification == BN_CLICKED)
-			Container()->SwitchPage("Body forces");
-		break;
-	case IDC_OPT_VHELP_CRD:
-		if (notification == BN_CLICKED)
-			Container()->SwitchPage("Object axes");
-		break;
-	}
-	return FALSE;
-}
-
-// ======================================================================
-
-OptionsPage_Planetarium::OptionsPage_Planetarium(OptionsPageContainer* container)
-	: OptionsPage(container)
-{
-}
-
-// ----------------------------------------------------------------------
-
-int OptionsPage_Planetarium::ResourceId() const
-{
-	return IDD_OPTIONS_PLANETARIUM;
-}
-
-// ----------------------------------------------------------------------
-
-const char* OptionsPage_Planetarium::Name() const
-{
-	const char* name = "Planetarium";
-	return name;
-}
-
-// ----------------------------------------------------------------------
-
-const HELPCONTEXT* OptionsPage_Planetarium::HelpContext() const
-{
-	static HELPCONTEXT hcontext = g_pOrbiter->DefaultHelpPage("/vh_planetarium.htm");
-	return &hcontext;
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_Planetarium::UpdateControls(HWND hPage)
-{
-	std::array<int, 15> residPlanetarium = {
-		IDC_OPT_PLN_CELGRID, IDC_OPT_PLN_ECLGRID, IDC_OPT_PLN_GALGRID, IDC_OPT_PLN_HRZGRID, IDC_OPT_PLN_EQU,
-		IDC_OPT_PLN_CNSTLABEL, IDC_OPT_PLN_CNSTLABEL_FULL, IDC_OPT_PLN_CNSTLABEL_SHORT, IDC_OPT_PLN_CNSTBND,
-		IDC_OPT_PLN_CNSTPATTERN, IDC_OPT_PLN_MARKER, IDC_OPT_PLN_MKRLIST,
-		IDC_STATIC1, IDC_STATIC2, IDC_STATIC3
-	};
-
-	DWORD& plnFlag = Cfg()->CfgVisHelpPrm.flagPlanetarium;
-	bool enable = plnFlag & PLN_ENABLE;
-	SendDlgItemMessage(hPage, IDC_OPT_PLN, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
-	for (auto resid : residPlanetarium)
-		EnableWindow(GetDlgItem(hPage, resid), enable ? TRUE : FALSE);
-	if (enable && !(plnFlag & PLN_CNSTLABEL)) {
-		EnableWindow(GetDlgItem(hPage, IDC_OPT_PLN_CNSTLABEL_FULL), FALSE);
-		EnableWindow(GetDlgItem(hPage, IDC_OPT_PLN_CNSTLABEL_SHORT), FALSE);
-	}
-	if (enable && !(plnFlag & PLN_CCMARK))
-		EnableWindow(GetDlgItem(hPage, IDC_OPT_PLN_MKRLIST), FALSE);
-
-	SendDlgItemMessage(hPage, IDC_OPT_PLN_CELGRID, BM_SETCHECK, plnFlag & PLN_CGRID ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_PLN_ECLGRID, BM_SETCHECK, plnFlag & PLN_EGRID ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_PLN_GALGRID, BM_SETCHECK, plnFlag & PLN_GGRID ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_PLN_HRZGRID, BM_SETCHECK, plnFlag & PLN_HGRID ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_PLN_EQU, BM_SETCHECK, plnFlag & PLN_EQU ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_PLN_CNSTLABEL, BM_SETCHECK, plnFlag & PLN_CNSTLABEL ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_PLN_CNSTBND, BM_SETCHECK, plnFlag & PLN_CNSTBND ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_PLN_CNSTPATTERN, BM_SETCHECK, plnFlag & PLN_CONST ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_PLN_MARKER, BM_SETCHECK, plnFlag & PLN_CCMARK ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_PLN_CNSTLABEL_FULL, BM_SETCHECK, plnFlag & PLN_CNSTLONG ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_PLN_CNSTLABEL_SHORT, BM_SETCHECK, plnFlag & PLN_CNSTLONG ? BST_UNCHECKED : BST_CHECKED, 0);
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_Planetarium::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
-{
-	OptionsPage::OnInitDialog(hPage, wParam, lParam);
-	RescanMarkerList(hPage);
-
-	return TRUE;
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_Planetarium::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
-{
-	switch (ctrlId) {
-	case IDC_OPT_PLN:
-	case IDC_OPT_PLN_CELGRID:
-	case IDC_OPT_PLN_ECLGRID:
-	case IDC_OPT_PLN_GALGRID:
-	case IDC_OPT_PLN_HRZGRID:
-	case IDC_OPT_PLN_EQU:
-	case IDC_OPT_PLN_CNSTLABEL:
-	case IDC_OPT_PLN_CNSTBND:
-	case IDC_OPT_PLN_CNSTPATTERN:
-	case IDC_OPT_PLN_MARKER:
-	case IDC_OPT_PLN_CNSTLABEL_FULL:
-	case IDC_OPT_PLN_CNSTLABEL_SHORT:
-		if (notification == BN_CLICKED) {
-			OnItemClicked(hPage, ctrlId);
-			return TRUE;
-		}
-		break;
-	case IDC_OPT_PLN_MKRLIST:
-		if (notification == LBN_SELCHANGE)
-			return OnMarkerSelectionChanged(hPage);
-		break;
-	}
-	return FALSE;
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_Planetarium::OnItemClicked(HWND hPage, WORD ctrlId)
-{
-	bool check = (SendDlgItemMessage(hPage, ctrlId, BM_GETCHECK, 0, 0) == TRUE);
-	DWORD flag;
-	switch (ctrlId) {
-	case IDC_OPT_PLN:                 flag = PLN_ENABLE;    break;
-	case IDC_OPT_PLN_CELGRID:         flag = PLN_CGRID;     break;
-	case IDC_OPT_PLN_ECLGRID:         flag = PLN_EGRID;     break;
-	case IDC_OPT_PLN_GALGRID:         flag = PLN_GGRID;     break;
-	case IDC_OPT_PLN_HRZGRID:         flag = PLN_HGRID;     break;
-	case IDC_OPT_PLN_EQU:             flag = PLN_EQU;       break;
-	case IDC_OPT_PLN_CNSTLABEL:       flag = PLN_CNSTLABEL; break;
-	case IDC_OPT_PLN_CNSTBND:         flag = PLN_CNSTBND;   break;
-	case IDC_OPT_PLN_CNSTPATTERN:     flag = PLN_CONST;     break;
-	case IDC_OPT_PLN_MARKER:          flag = PLN_CCMARK;    break;
-	case IDC_OPT_PLN_CNSTLABEL_FULL:  flag = PLN_CNSTLONG;  break;
-	case IDC_OPT_PLN_CNSTLABEL_SHORT: flag = PLN_CNSTLONG; check = !check; break;
-	default:                          flag = 0;             break;
-	}
-	DWORD& plnFlag = Cfg()->CfgVisHelpPrm.flagPlanetarium;
-	if (check) plnFlag |= flag;
-	else       plnFlag &= ~flag;
-
-	g_pOrbiter->OnOptionChanged(OPTCAT_PLANETARIUM, OPTITEM_PLANETARIUM_DISPFLAG);
-	UpdateControls(hPage);
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_Planetarium::OnMarkerSelectionChanged(HWND hPage)
-{
-	std::vector<oapi::GraphicsClient::LABELLIST>& list = g_psys->LabelList();
-	if (list.size()) {
-		for (int i = 0; i < list.size(); i++) {
-			int sel = SendDlgItemMessage(hPage, IDC_OPT_PLN_MKRLIST, LB_GETSEL, i, 0);
-			list[i].active = (sel ? true : false);
-		}
-		std::ifstream fcfg(Cfg()->ConfigPath(g_psys->Name().c_str()));
-		g_psys->ScanLabelLists(fcfg);
-	}
-	return 0;
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_Planetarium::RescanMarkerList(HWND hPage)
-{
-	SendDlgItemMessage(hPage, IDC_OPT_PLN_MKRLIST, LB_RESETCONTENT, 0, 0);
-
-	if (!g_psys) return;
-	const std::vector< oapi::GraphicsClient::LABELLIST>& list = g_psys->LabelList();
-	if (!list.size()) return;
-
-	int n = 0;
-	g_psys->ForEach(FILETYPE_MARKER, [&](const fs::directory_entry& entry) {
-		SendDlgItemMessage(hPage, IDC_OPT_PLN_MKRLIST, LB_ADDSTRING, 0, (LPARAM)entry.path().stem().string().c_str());
-		if (n < list.size() && list[n].active)
-			SendDlgItemMessage(hPage, IDC_OPT_PLN_MKRLIST, LB_SETSEL, TRUE, n);
-		n++;
-	});
-}
-
-// ======================================================================
-
-OptionsPage_Labels::OptionsPage_Labels(OptionsPageContainer* container)
-	: OptionsPage(container)
-{
-}
-
-// ----------------------------------------------------------------------
-
-int OptionsPage_Labels::ResourceId() const
-{
-	return IDD_OPTIONS_LABELS;
-}
-
-// ----------------------------------------------------------------------
-
-const char* OptionsPage_Labels::Name() const
-{
-	const char* name = "Labels";
-	return name;
-}
-
-// ----------------------------------------------------------------------
-
-const HELPCONTEXT* OptionsPage_Labels::HelpContext() const
-{
-	static HELPCONTEXT hcontext = g_pOrbiter->DefaultHelpPage("/vh_labels.htm");
-	return &hcontext;
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_Labels::UpdateControls(HWND hPage)
-{
-	std::array<int, 10> residLabels = {
-		IDC_OPT_MKR_VESSEL, IDC_OPT_MKR_CELBODY, IDC_OPT_MKR_FEATUREBODY, IDC_OPT_MKR_BASE,
-		IDC_OPT_MKR_BEACON, IDC_OPT_MKR_FEATURES, IDC_OPT_MKR_FEATUREBODY, IDC_OPT_MKR_FEATURELIST,
-		IDC_STATIC1, IDC_STATIC2
-	};
-
-	DWORD& mkrFlag = Cfg()->CfgVisHelpPrm.flagMarkers;
-	bool enable = mkrFlag & MKR_ENABLE;
-	SendDlgItemMessage(hPage, IDC_OPT_MKR, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
-	for (auto resid : residLabels)
-		EnableWindow(GetDlgItem(hPage, resid), enable ? TRUE : FALSE);
-	if (enable && !(mkrFlag & MKR_LMARK)) {
-		EnableWindow(GetDlgItem(hPage, IDC_OPT_MKR_FEATUREBODY), FALSE);
-		EnableWindow(GetDlgItem(hPage, IDC_OPT_MKR_FEATURELIST), FALSE);
-	}
-
-	SendDlgItemMessage(hPage, IDC_OPT_MKR_VESSEL, BM_SETCHECK, mkrFlag & MKR_VMARK ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_MKR_CELBODY, BM_SETCHECK, mkrFlag & MKR_CMARK ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_MKR_BASE, BM_SETCHECK, mkrFlag & MKR_BMARK ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_MKR_BEACON, BM_SETCHECK, mkrFlag & MKR_RMARK ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATURES, BM_SETCHECK, mkrFlag & MKR_LMARK ? BST_CHECKED : BST_UNCHECKED, 0);
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_Labels::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
-{
-	OptionsPage::OnInitDialog(hPage, wParam, lParam);
-	ScanPsysBodies(hPage);
-
-	return TRUE;
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_Labels::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
-{
-	switch (ctrlId) {
-	case IDC_OPT_MKR:
-	case IDC_OPT_MKR_VESSEL:
-	case IDC_OPT_MKR_CELBODY:
-	case IDC_OPT_MKR_BASE:
-	case IDC_OPT_MKR_BEACON:
-	case IDC_OPT_MKR_FEATURES:
-		if (notification == BN_CLICKED) {
-			OnItemClicked(hPage, ctrlId);
-			return TRUE;
-		}
-		break;
-	case IDC_OPT_MKR_FEATUREBODY:
-		if (notification == CBN_SELCHANGE)
-			UpdateFeatureList(hPage);
-		return TRUE;
-	case IDC_OPT_MKR_FEATURELIST:
-		if (notification == LBN_SELCHANGE)
-			RescanFeatures(hPage);
-		return TRUE;
-	}
-	return FALSE;
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_Labels::OnItemClicked(HWND hPage, WORD ctrlId)
-{
-	bool check = (SendDlgItemMessage(hPage, ctrlId, BM_GETCHECK, 0, 0) == TRUE);
-	DWORD flag;
-	switch (ctrlId) {
-	case IDC_OPT_MKR:          flag = MKR_ENABLE; break;
-	case IDC_OPT_MKR_VESSEL:   flag = MKR_VMARK;  break;
-	case IDC_OPT_MKR_CELBODY:  flag = MKR_CMARK;  break;
-	case IDC_OPT_MKR_BASE:     flag = MKR_BMARK;  break;
-	case IDC_OPT_MKR_BEACON:   flag = MKR_RMARK;  break;
-	case IDC_OPT_MKR_FEATURES: flag = MKR_LMARK;  break;
-	default:                   flag = 0;          break;
-	}
-	DWORD& mkrFlag = Cfg()->CfgVisHelpPrm.flagMarkers;
-	if (check) mkrFlag |= flag;
-	else       mkrFlag &= ~flag;
-
-	if (g_psys && ctrlId == IDC_OPT_MKR_FEATURES)
-		g_psys->ActivatePlanetLabels(mkrFlag & MKR_ENABLE && mkrFlag & MKR_LMARK);
-
-	UpdateControls(hPage);
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_Labels::ScanPsysBodies(HWND hPage)
-{
-	if (!g_psys) return;
-	const Body* sel = nullptr;
-	for (int i = 0; i < g_psys->nPlanet(); i++) {
-		Planet* planet = g_psys->GetPlanet(i);
-		if (planet == g_camera->Target())
-			sel = planet;
-		if (planet->isMoon())
-			continue;
-		SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATUREBODY, CB_ADDSTRING, 0, (LPARAM)planet->Name());
-		for (int j = 0; j < planet->nSecondary(); j++) {
-			char cbuf[256] = "    ";
-			strncpy(cbuf + 4, planet->Secondary(j)->Name(), 252);
-			SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATUREBODY, CB_ADDSTRING, 0, (LPARAM)cbuf);
-		}
-	}
-	if (!sel) {
-		Body* tgt = g_camera->Target();
-		if (tgt->Type() == OBJTP_VESSEL)
-			sel = ((Vessel*)tgt)->GetSurfParam()->ref;
-	}
-	int idx = (sel ? SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATUREBODY, CB_FINDSTRINGEXACT, -1, (LPARAM)sel->Name()) : 0);
-	SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATUREBODY, CB_SETCURSEL, idx, 0);
-	UpdateFeatureList(hPage);
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_Labels::UpdateFeatureList(HWND hPage)
-{
-	int n, nlist;
-	char cbuf[256], cpath[256];
-	int idx = SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATUREBODY, CB_GETCURSEL, 0, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATUREBODY, CB_GETLBTEXT, idx, (LPARAM)cbuf);
-	SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATURELIST, LB_RESETCONTENT, 0, 0);
-	Planet* planet = g_psys->GetPlanet(trim_string(cbuf), true);
-	if (!planet) return;
-
-	if (planet->LabelFormat() < 2) {
-		oapi::GraphicsClient::LABELLIST* list = planet->LabelList(&nlist);
-		if (!nlist) return;
-
-		n = 0;
-		planet->ForEach(FILETYPE_MARKER, [&](const fs::directory_entry& entry) {
-				SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATURELIST, LB_ADDSTRING, 0, (LPARAM)entry.path().stem().string().c_str());
-				if (n < nlist && list[n].active)
-					SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATURELIST, LB_SETSEL, TRUE, n);
-				n++;
-			});
-	}
-	else {
-		int nlabel = planet->NumLabelLegend();
-		if (nlabel) {
-			const oapi::GraphicsClient::LABELTYPE* lspec = planet->LabelLegend();
-			for (int i = 0; i < nlabel; i++) {
-				SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATURELIST, LB_ADDSTRING, 0, (LPARAM)lspec[i].name);
-				if (lspec[i].active)
-					SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATURELIST, LB_SETSEL, TRUE, i);
-			}
-		}
-	}
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_Labels::RescanFeatures(HWND hPage)
-{
-	char cbuf[256];
-	int nlist;
-
-	int idx = SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATUREBODY, CB_GETCURSEL, 0, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATUREBODY, CB_GETLBTEXT, idx, (LPARAM)cbuf);
-	Planet* planet = g_psys->GetPlanet(trim_string(cbuf), true);
-	if (!planet) return;
-
-	if (planet->LabelFormat() < 2) {
-		oapi::GraphicsClient::LABELLIST* list = planet->LabelList(&nlist);
-		if (!nlist) return;
-
-		for (int i = 0; i < nlist; i++) {
-			BOOL sel = SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATURELIST, LB_GETSEL, i, 0);
-			list[i].active = (sel ? true : false);
-		}
-
-		std::ifstream fcfg(Cfg()->ConfigPath(planet->Name()));
-		planet->ScanLabelLists(fcfg);
-	}
-	else {
-		nlist = planet->NumLabelLegend();
-		for (int i = 0; i < nlist; i++) {
-			BOOL sel = SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATURELIST, LB_GETSEL, i, 0);
-			planet->SetLabelActive(i, sel ? true : false);
-		}
-	}
-}
-
-// ======================================================================
-
-OptionsPage_Forces::OptionsPage_Forces(OptionsPageContainer* container)
-	: OptionsPage(container)
-{
-}
-
-// ----------------------------------------------------------------------
-
-int OptionsPage_Forces::ResourceId() const
-{
-	return IDD_OPTIONS_BODYFORCE;
-}
-
-// ----------------------------------------------------------------------
-
-const char* OptionsPage_Forces::Name() const
-{
-	const char* name = "Body forces";
-	return name;
-}
-
-// ----------------------------------------------------------------------
-
-const HELPCONTEXT* OptionsPage_Forces::HelpContext() const
-{
-	static HELPCONTEXT hcontext = g_pOrbiter->DefaultHelpPage("/vh_force.htm");
-	return &hcontext;
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_Forces::UpdateControls(HWND hPage)
-{
-	std::array<int, 16> residForces = {
-		IDC_OPT_VEC_WEIGHT, IDC_OPT_VEC_THRUST, IDC_OPT_VEC_LIFT, IDC_OPT_VEC_DRAG, IDC_OPT_VEC_SIDEFORCE, IDC_OPT_VEC_TOTAL,
-		IDC_OPT_VEC_TORQUE, IDC_OPT_VEC_LINSCL, IDC_OPT_VEC_LOGSCL, IDC_OPT_VEC_SCALE, IDC_OPT_VEC_OPACITY,
-		IDC_STATIC1, IDC_STATIC2, IDC_STATIC3, IDC_STATIC4, IDC_STATIC5
-	};
-
-	DWORD vecFlag = Cfg()->CfgVisHelpPrm.flagBodyForce;
-	bool enable = (vecFlag & BFV_ENABLE);
-	SendDlgItemMessage(hPage, IDC_OPT_VEC, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
-	for (auto resid : residForces)
-		EnableWindow(GetDlgItem(hPage, resid), enable ? TRUE : FALSE);
-
-	SendDlgItemMessage(hPage, IDC_OPT_VEC_WEIGHT, BM_SETCHECK, vecFlag & BFV_WEIGHT ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_VEC_THRUST, BM_SETCHECK, vecFlag & BFV_THRUST ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_VEC_LIFT, BM_SETCHECK, vecFlag & BFV_LIFT ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_VEC_DRAG, BM_SETCHECK, vecFlag & BFV_DRAG ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_VEC_SIDEFORCE, BM_SETCHECK, vecFlag & BFV_SIDEFORCE ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_VEC_TOTAL, BM_SETCHECK, vecFlag & BFV_TOTAL ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_VEC_TORQUE, BM_SETCHECK, vecFlag & BFV_TORQUE ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_VEC_LINSCL, BM_SETCHECK, vecFlag & BFV_LOGSCALE ? BST_UNCHECKED : BST_CHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_VEC_LOGSCL, BM_SETCHECK, vecFlag & BFV_LOGSCALE ? BST_CHECKED : BST_UNCHECKED, 0);
-
-	int scalePos = (int)(25.0 * (1.0 + 0.5 * log(Cfg()->CfgVisHelpPrm.scaleBodyForce) / log(2.0)));
-	oapiSetGaugePos(GetDlgItem(hPage, IDC_OPT_VEC_SCALE), scalePos);
-	int opacPos = (int)(Cfg()->CfgVisHelpPrm.opacBodyForce * 50.0);
-	oapiSetGaugePos(GetDlgItem(hPage, IDC_OPT_VEC_OPACITY), opacPos);
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_Forces::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
-{
-	GAUGEPARAM gp = { 0, 50, GAUGEPARAM::LEFT, GAUGEPARAM::BLACK };
-	oapiSetGaugeParams(GetDlgItem(hPage, IDC_OPT_VEC_SCALE), &gp);
-	oapiSetGaugeParams(GetDlgItem(hPage, IDC_OPT_VEC_OPACITY), &gp);
-
-	UpdateControls(hPage);
-
-	return TRUE;
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_Forces::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
-{
-	switch (ctrlId) {
-	case IDC_OPT_VEC:
-	case IDC_OPT_VEC_WEIGHT:
-	case IDC_OPT_VEC_THRUST:
-	case IDC_OPT_VEC_LIFT:
-	case IDC_OPT_VEC_DRAG:
-	case IDC_OPT_VEC_SIDEFORCE:
-	case IDC_OPT_VEC_TOTAL:
-	case IDC_OPT_VEC_TORQUE:
-	case IDC_OPT_VEC_LINSCL:
-	case IDC_OPT_VEC_LOGSCL:
-		if (notification == BN_CLICKED) {
-			OnItemClicked(hPage, ctrlId);
-			return FALSE;
-		}
-		break;
-	}
-	return FALSE;
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_Forces::OnItemClicked(HWND hPage, WORD ctrlId)
-{
-	bool check = (SendDlgItemMessage(hPage, ctrlId, BM_GETCHECK, 0, 0) == TRUE);
-	DWORD flag;
-	switch (ctrlId) {
-	case IDC_OPT_VEC:           flag = BFV_ENABLE;    break;
-	case IDC_OPT_VEC_WEIGHT:    flag = BFV_WEIGHT;    break;
-	case IDC_OPT_VEC_THRUST:    flag = BFV_THRUST;    break;
-	case IDC_OPT_VEC_LIFT:      flag = BFV_LIFT;      break;
-	case IDC_OPT_VEC_DRAG:      flag = BFV_DRAG;      break;
-	case IDC_OPT_VEC_SIDEFORCE: flag = BFV_SIDEFORCE; break;
-	case IDC_OPT_VEC_TOTAL:     flag = BFV_TOTAL;     break;
-	case IDC_OPT_VEC_TORQUE:    flag = BFV_TORQUE;    break;
-	case IDC_OPT_VEC_LINSCL:    flag = BFV_LOGSCALE; check = false; break;
-	case IDC_OPT_VEC_LOGSCL: flag = BFV_LOGSCALE; check = true;  break;
-	default:                 flag = 0;           break;
-	}
-	DWORD& vecFlag = Cfg()->CfgVisHelpPrm.flagBodyForce;
-	if (check) vecFlag |= flag;
-	else       vecFlag &= ~flag;
-
-	UpdateControls(hPage);
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_Forces::OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam)
-{
-	switch (GetDlgCtrlID((HWND)lParam)) {
-	case IDC_OPT_VEC_SCALE:
-		switch (LOWORD(wParam)) {
-		case SB_THUMBTRACK:
-		case SB_LINELEFT:
-		case SB_LINERIGHT:
-			Cfg()->CfgVisHelpPrm.scaleBodyForce = (float)pow(2.0, (HIWORD(wParam) - 25) * 0.08);
-			return 0;
-		}
-		break;
-	case IDC_OPT_VEC_OPACITY:
-		switch (LOWORD(wParam)) {
-		case SB_THUMBTRACK:
-		case SB_LINELEFT:
-		case SB_LINERIGHT:
-			Cfg()->CfgVisHelpPrm.opacBodyForce = (float)(HIWORD(wParam) * 0.02);
-			return 0;
-		}
-		break;
-	}
-	return FALSE;
-}
-
-// ======================================================================
-
-OptionsPage_Axes::OptionsPage_Axes(OptionsPageContainer* container)
-	: OptionsPage(container)
-{
-}
-
-// ----------------------------------------------------------------------
-
-int OptionsPage_Axes::ResourceId() const
-{
-	return IDD_OPTIONS_FRAMEAXES;
-}
-
-// ----------------------------------------------------------------------
-
-const char* OptionsPage_Axes::Name() const
-{
-	const char* name = "Object axes";
-	return name;
-}
-
-// ----------------------------------------------------------------------
-
-const HELPCONTEXT* OptionsPage_Axes::HelpContext() const
-{
-	static HELPCONTEXT hcontext = g_pOrbiter->DefaultHelpPage("/vh_coord.htm");
-	return &hcontext;
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_Axes::UpdateControls(HWND hPage)
-{
-	std::array<int, 10> residAxes = {
-		IDC_OPT_CRD_VESSEL, IDC_OPT_CRD_CELBODY, IDC_OPT_CRD_BASE, IDC_OPT_CRD_NEGATIVE,
-		IDC_OPT_CRD_SCALE, IDC_OPT_CRD_OPACITY,
-		IDC_STATIC1, IDC_STATIC2, IDC_STATIC3, IDC_STATIC4
-	};
-
-	DWORD crdFlag = Cfg()->CfgVisHelpPrm.flagFrameAxes;
-	bool enable = (crdFlag & FAV_ENABLE);
-	SendDlgItemMessage(hPage, IDC_OPT_CRD, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
-	for (auto resid : residAxes)
-		EnableWindow(GetDlgItem(hPage, resid), enable ? TRUE : FALSE);
-
-	SendDlgItemMessage(hPage, IDC_OPT_CRD_VESSEL, BM_SETCHECK, crdFlag & FAV_VESSEL ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_CRD_CELBODY, BM_SETCHECK, crdFlag & FAV_CELBODY ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_CRD_BASE, BM_SETCHECK, crdFlag & FAV_BASE ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage(hPage, IDC_OPT_CRD_NEGATIVE, BM_SETCHECK, crdFlag & FAV_NEGATIVE ? BST_CHECKED : BST_UNCHECKED, 0);
-
-	int scalePos = (int)(25.0 * (1.0 + 0.5 * log(Cfg()->CfgVisHelpPrm.scaleFrameAxes) / log(2.0)));
-	oapiSetGaugePos(GetDlgItem(hPage, IDC_OPT_CRD_SCALE), scalePos);
-	int opacPos = (int)(Cfg()->CfgVisHelpPrm.opacFrameAxes * 50.0);
-	oapiSetGaugePos(GetDlgItem(hPage, IDC_OPT_CRD_OPACITY), opacPos);
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_Axes::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
-{
-	GAUGEPARAM gp = { 0, 50, GAUGEPARAM::LEFT, GAUGEPARAM::BLACK };
-	oapiSetGaugeParams(GetDlgItem(hPage, IDC_OPT_CRD_SCALE), &gp);
-	oapiSetGaugeParams(GetDlgItem(hPage, IDC_OPT_CRD_OPACITY), &gp);
-
-	UpdateControls(hPage);
-
-	return TRUE;
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_Axes::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl)
-{
-	switch (ctrlId) {
-	case IDC_OPT_CRD:
-	case IDC_OPT_CRD_VESSEL:
-	case IDC_OPT_CRD_CELBODY:
-	case IDC_OPT_CRD_BASE:
-	case IDC_OPT_CRD_NEGATIVE:
-		if (notification == BN_CLICKED) {
-			OnItemClicked(hPage, ctrlId);
-			return FALSE;
-		}
-		break;
-	}
-	return FALSE;
-}
-
-// ----------------------------------------------------------------------
-
-void OptionsPage_Axes::OnItemClicked(HWND hPage, WORD ctrlId)
-{
-	bool check = (SendDlgItemMessage(hPage, ctrlId, BM_GETCHECK, 0, 0) == TRUE);
-	DWORD flag;
-	switch (ctrlId) {
-	case IDC_OPT_CRD:          flag = FAV_ENABLE;   break;
-	case IDC_OPT_CRD_VESSEL:   flag = FAV_VESSEL;   break;
-	case IDC_OPT_CRD_CELBODY:  flag = FAV_CELBODY;  break;
-	case IDC_OPT_CRD_BASE:     flag = FAV_BASE;     break;
-	case IDC_OPT_CRD_NEGATIVE: flag = FAV_NEGATIVE; break;
-	default:                   flag = 0;            break;
-	}
-	DWORD& crdFlag = Cfg()->CfgVisHelpPrm.flagFrameAxes;
-	if (check) crdFlag |= flag;
-	else       crdFlag &= ~flag;
-
-	UpdateControls(hPage);
-}
-
-// ----------------------------------------------------------------------
-
-BOOL OptionsPage_Axes::OnHScroll(HWND hTab, WPARAM wParam, LPARAM lParam)
-{
-	switch (GetDlgCtrlID((HWND)lParam)) {
-	case IDC_OPT_CRD_SCALE:
-		switch (LOWORD(wParam)) {
-		case SB_THUMBTRACK:
-		case SB_LINELEFT:
-		case SB_LINERIGHT:
-			Cfg()->CfgVisHelpPrm.scaleFrameAxes = (float)pow(2.0, (HIWORD(wParam) - 25) * 0.08);
-			return 0;
-		}
-		break;
-	case IDC_OPT_CRD_OPACITY:
-		switch (LOWORD(wParam)) {
-		case SB_THUMBTRACK:
-		case SB_LINELEFT:
-		case SB_LINERIGHT:
-			Cfg()->CfgVisHelpPrm.opacFrameAxes = (float)(HIWORD(wParam) * 0.02);
-			return 0;
-		}
-		break;
-	}
-	return FALSE;
+OptionsPage_UI::OptionsPage_UI(OptionsPageContainer *container)
+    : OptionsPage(container, "User interface & input") {}
+
+void OptionsPage_UI::OnDraw(oapi::WithImCtx &ctx) {
+    const char *strMouseMode[3] = {
+        "Focus requires click", "Hybrid: Click required only for child windows",
+        "Focus follows mouse"};
+    ImGui::AlignTextToFramePadding();
+    ImGui::TextUnformatted("Mouse focus behaviour");
+    ImGui::PushItemWidth(350.0f);
+    if (ImGui::BeginCombo("##FocusBhv",
+                          strMouseMode[Cfg()->CfgUIPrm.MouseFocusMode])) {
+        if (ImGui::Selectable(strMouseMode[0],
+                              Cfg()->CfgUIPrm.MouseFocusMode == 0)) {
+            Cfg()->CfgUIPrm.MouseFocusMode = 0;
+        }
+        if (ImGui::Selectable(strMouseMode[1],
+                              Cfg()->CfgUIPrm.MouseFocusMode == 1)) {
+            Cfg()->CfgUIPrm.MouseFocusMode = 1;
+        }
+        if (ImGui::Selectable(strMouseMode[2],
+                              Cfg()->CfgUIPrm.MouseFocusMode == 2)) {
+            Cfg()->CfgUIPrm.MouseFocusMode = 2;
+        }
+        ImGui::EndCombo();
+    }
+}
+
+OptionsPage_Joystick::OptionsPage_Joystick(OptionsPageContainer *container)
+    : OptionsPage(container, "Joystick"), m_njoy(0) {
+    m_joylist = SDL_GetJoysticks(&m_njoy);
+}
+
+OptionsPage_Joystick::~OptionsPage_Joystick() {
+    if (m_joylist) {
+        SDL_free(m_joylist);
+    }
+}
+
+void OptionsPage_Joystick::OnDraw(oapi::WithImCtx &ctx) {
+    ImGui::AlignTextToFramePadding();
+    ImGui::TextUnformatted("Joystick device");
+
+    ImGui::SameLine();
+    // TODO: profile this and see if realtime enumeration actually hurts
+    if (ImGui::Button("Refresh joystick list")) {
+        if (m_joylist)
+            SDL_free(m_joylist);
+        m_njoy = 0;
+        m_joylist = SDL_GetJoysticks(&m_njoy);
+    }
+
+    auto selJoyName = SDL_GetJoystickNameForID(Cfg()->CfgJoystickPrm.Joy_idx);
+    if (Cfg()->CfgJoystickPrm.Joy_idx == 0) {
+        selJoyName = "<Disabled>";
+    } else if (selJoyName == nullptr) {
+        selJoyName = "<Could not find selected joystick>";
+    }
+    if (ImGui::BeginCombo("##Joylist", selJoyName)) {
+        if (ImGui::Selectable("<Disabled>",
+                              Cfg()->CfgJoystickPrm.Joy_idx == 0)) {
+            Cfg()->CfgJoystickPrm.Joy_idx = 0;
+        }
+        for (int i = 0; i < m_njoy; i++) {
+            auto joyName = SDL_GetJoystickNameForID(m_joylist[i]);
+            if (joyName == nullptr) {
+                joyName = "<Could not get joystick name>";
+            }
+            if (ImGui::Selectable(joyName, Cfg()->CfgJoystickPrm.Joy_idx ==
+                                               m_joylist[i])) {
+                Cfg()->CfgJoystickPrm.Joy_idx = m_joylist[i];
+            }
+        }
+        ImGui::EndCombo();
+    }
+
+    ImGui::TextUnformatted("TODO - new input system WIP");
+}
+
+OptionsPage_CelSphere::OptionsPage_CelSphere(OptionsPageContainer *container)
+    : OptionsPage(container, "Celestial sphere") {
+    PopulateStarmapList();
+    PopulateBgImageList();
+}
+
+static bool operator!=(const StarRenderPrm &lhs, const StarRenderPrm &rhs) {
+    return lhs.brt_min != rhs.brt_min || lhs.mag_hi != rhs.mag_hi ||
+           lhs.mag_lo != rhs.mag_lo || lhs.map_log != rhs.map_log;
+}
+
+void OptionsPage_CelSphere::OnDraw(oapi::WithImCtx &ctx) {
+    ImGui::Separator();
+    bool changed = ImGui::Checkbox("Background stars: show as pixels",
+                                   &Cfg()->CfgVisualPrm.bUseStarDots);
+    if (changed) {
+        g_pOrbiter->OnOptionChanged(OPTCAT_CELSPHERE,
+                                    OPTITEM_CELSPHERE_ACTIVATESTARDOTS);
+    }
+
+    auto &starPrm = Cfg()->CfgVisualPrm.StarPrm;
+    const auto oldPrm = starPrm;
+    ImGui::AlignTextToFramePadding();
+    ImGui::TextUnformatted("Map app. magnitude");
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(48.0f);
+    ImGui::InputDouble("##AppMagMax", &starPrm.mag_hi, 0, 0, "%.1f");
+    starPrm.mag_hi = std::clamp(starPrm.mag_hi, -2.0, starPrm.mag_lo);
+    ImGui::SameLine();
+    ImGui::TextUnformatted("to max. brightness 1");
+
+    ImGui::AlignTextToFramePadding();
+    ImGui::TextUnformatted("Map app. magnitude");
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(48.0);
+    ImGui::InputDouble("##AppMagMin", &starPrm.mag_lo, 0, 0, "%.1f");
+    starPrm.mag_lo = std::clamp(starPrm.mag_lo, starPrm.mag_hi, 15.0);
+    ImGui::SameLine();
+    ImGui::TextUnformatted("to min. brightness");
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(48.0);
+    ImGui::InputDouble("##BrtMin", &starPrm.brt_min, 0, 0, "%.2f");
+    starPrm.brt_min = std::clamp(starPrm.brt_min, 0.0, 1.0);
+
+    ImGui::AlignTextToFramePadding();
+    ImGui::TextUnformatted("Magnitude-brightness mapping:");
+    ImGui::SameLine();
+    auto mapping = starPrm.map_log ? 1 : 0;
+    ImGui::RadioButton("linear", &mapping, 0);
+    ImGui::SameLine();
+    ImGui::RadioButton("exponential", &mapping, 1);
+    starPrm.map_log = mapping == 1;
+
+    if (starPrm != oldPrm) {
+        g_pOrbiter->OnOptionChanged(OPTCAT_CELSPHERE,
+                                    OPTITEM_CELSPHERE_STARDISPLAYPARAM);
+    }
+
+    ImGui::Separator();
+    changed = ImGui::Checkbox("Background stars: show as image",
+                              &Cfg()->CfgVisualPrm.bUseStarImage);
+    if (changed) {
+        g_pOrbiter->OnOptionChanged(OPTCAT_CELSPHERE,
+                                    OPTITEM_CELSPHERE_ACTIVATESTARIMAGE);
+    }
+    auto starpath = Cfg()->CfgVisualPrm.StarImagePath.u8string();
+    const auto starpathNameIt =
+        std::find_if(m_pathStarmap.cbegin(), m_pathStarmap.cend(),
+                     [starpath](auto &p) { return p.second == starpath; });
+    auto starpathName = std::string("<No starmap images installed>");
+    if (starpathNameIt != m_pathStarmap.cend()) {
+        starpathName = starpathNameIt->first;
+    }
+    ImGui::SetNextItemWidth(300.0f);
+    if (ImGui::BeginCombo("##Starmap", starpathName.c_str())) {
+        for (const auto &[name, path] : m_pathStarmap) {
+            if (ImGui::Selectable(name.c_str(), starpath == path)) {
+                Cfg()->CfgVisualPrm.StarImagePath = path;
+                g_pOrbiter->OnOptionChanged(OPTCAT_CELSPHERE,
+                                            OPTITEM_CELSPHERE_STARIMAGECHANGED);
+            }
+        }
+        ImGui::EndCombo();
+    }
+    ImGui::Separator();
+    changed =
+        ImGui::Checkbox("Background map", &Cfg()->CfgVisualPrm.bUseBgImage);
+    if (changed) {
+        g_pOrbiter->OnOptionChanged(OPTCAT_CELSPHERE,
+                                    OPTITEM_CELSPHERE_ACTIVATEBGIMAGE);
+    }
+    auto bgpath = Cfg()->CfgVisualPrm.CSphereBgPath.u8string();
+    const auto bgpathNameIt =
+        std::find_if(m_pathBgImage.cbegin(), m_pathBgImage.cend(),
+                     [bgpath](auto &p) { return p.second == bgpath; });
+    auto bgpathName = std::string("<No background images installed>");
+    if (bgpathNameIt != m_pathBgImage.cend()) {
+        bgpathName = bgpathNameIt->first;
+    }
+    ImGui::SetNextItemWidth(300.0f);
+    if (ImGui::BeginCombo("##BgMap", bgpathName.c_str())) {
+        for (const auto &[name, path] : m_pathBgImage) {
+            if (ImGui::Selectable(name.c_str(), bgpathName == path)) {
+                Cfg()->CfgVisualPrm.CSphereBgPath = path;
+                g_pOrbiter->OnOptionChanged(OPTCAT_CELSPHERE,
+                                            OPTITEM_CELSPHERE_BGIMAGECHANGED);
+            }
+        }
+        ImGui::EndCombo();
+    }
+    constexpr auto brtMin = 0.0;
+    constexpr auto brtMax = 100.0;
+    auto brt = Cfg()->CfgVisualPrm.CSphereBgIntens;
+    ImGui::SetNextItemWidth(300.0f);
+    changed = ImGui::SliderScalar("Brightness", ImGuiDataType_Double, &brt,
+                                  &brtMin, &brtMax, "%.1f");
+    Cfg()->CfgVisualPrm.CSphereBgIntens = std::clamp(brt, 0.0, 100.0);
+    if (changed) {
+        g_pOrbiter->OnOptionChanged(OPTCAT_CELSPHERE,
+                                    OPTITEM_CELSPHERE_BGIMAGEBRIGHTNESS);
+    }
+}
+
+void OptionsPage_CelSphere::PopulateStarmapList() {
+    m_pathStarmap.clear();
+
+    if (std::ifstream ifs(Cfg()->ConfigPath("CSphere/bkgimage")); ifs) {
+        std::string line;
+        bool found = false;
+        while (std::getline(ifs, line)) {
+            if (!found) {
+                if (line.find("BEGIN_STARMAPS") != std::string::npos) {
+                    found = true;
+                }
+                continue;
+            }
+            if (line.find("END_STARMAPS") != std::string::npos) {
+                break;
+            }
+            if (const auto ix = line.find_first_of('|');
+                ix != std::string::npos) {
+                std::string name = line.substr(0, ix);
+                std::string path = line.substr(ix + 1);
+                m_pathStarmap.push_back(std::move(
+                    std::make_pair(std::move(name), std::move(path))));
+            }
+        }
+    }
+}
+
+void OptionsPage_CelSphere::PopulateBgImageList() {
+    m_pathBgImage.clear();
+
+    if (std::ifstream ifs(Cfg()->ConfigPath("CSphere/bkgimage")); ifs) {
+        std::string line;
+        bool found = false;
+        while (std::getline(ifs, line)) {
+            if (!found) {
+                if (line.find("BEGIN_BACKGROUNDS") != std::string::npos) {
+                    found = true;
+                }
+                continue;
+            }
+            if (line.find("BEGIN_BACKGROUNDS") != std::string::npos) {
+                break;
+            }
+            if (const auto ix = line.find_first_of('|');
+                ix != std::string::npos) {
+                std::string name = line.substr(0, ix);
+                std::string path = line.substr(ix + 1);
+                m_pathBgImage.push_back(std::move(
+                    std::make_pair(std::move(name), std::move(path))));
+            }
+        }
+    }
+}
+
+OptionsPage_VisHelper::OptionsPage_VisHelper(OptionsPageContainer *container)
+    : OptionsPage(container, "Visual helpers") {}
+
+void OptionsPage_VisHelper::OnDraw(oapi::WithImCtx &ctx) {
+    ImGui::TextWrapped(
+        "Options for displaying markers and gridlines on the celestial sphere, "
+        "labels for planetary surface features, as well as coordinate axes and "
+        "force vectors.");
+    ImGui::Separator();
+    ImGui::NewLine();
+
+    if (ImGui::BeginTable("##Table", 2, ImGuiTableFlags_SizingStretchProp)) {
+        ImGui::TableSetupColumn("##Col1", ImGuiTableColumnFlags_WidthFixed);
+
+        ImGui::TableNextColumn();
+        auto plnEnable =
+            (Cfg()->CfgVisHelpPrm.flagPlanetarium & PLN_ENABLE) != 0;
+        ImGui::Checkbox("Planetarium mode (F9)", &plnEnable);
+        if (plnEnable)
+            Cfg()->CfgVisHelpPrm.flagPlanetarium |= PLN_ENABLE;
+        else
+            Cfg()->CfgVisHelpPrm.flagPlanetarium &= ~PLN_ENABLE;
+        ImGui::TableNextColumn();
+        if (ImGui::Button("Planetarium options", ImVec2(150.0f, 0.0f))) {
+            Container()->SwitchPage("Planetarium");
+        }
+
+        ImGui::TableNextColumn();
+        auto mkrEnable = (Cfg()->CfgVisHelpPrm.flagMarkers & MKR_ENABLE) != 0;
+        ImGui::Checkbox("Surface/object labels (Alt-F9)", &mkrEnable);
+        if (mkrEnable)
+            Cfg()->CfgVisHelpPrm.flagMarkers |= MKR_ENABLE;
+        else
+            Cfg()->CfgVisHelpPrm.flagMarkers &= ~MKR_ENABLE;
+        ImGui::TableNextColumn();
+        if (ImGui::Button("Label options", ImVec2(150.0f, 0.0f))) {
+            Container()->SwitchPage("Labels");
+        }
+
+        ImGui::TableNextColumn();
+        auto bodyVecEnable =
+            (Cfg()->CfgVisHelpPrm.flagBodyForce & BFV_ENABLE) != 0;
+        ImGui::Checkbox("Body force vectors", &bodyVecEnable);
+        if (bodyVecEnable)
+            Cfg()->CfgVisHelpPrm.flagBodyForce |= BFV_ENABLE;
+        else
+            Cfg()->CfgVisHelpPrm.flagBodyForce &= ~BFV_ENABLE;
+        ImGui::TableNextColumn();
+        if (ImGui::Button("Body force options", ImVec2(150.0f, 0.0f))) {
+            Container()->SwitchPage("Body forces");
+        }
+
+        ImGui::TableNextColumn();
+        auto frameAxesEnable =
+            (Cfg()->CfgVisHelpPrm.flagFrameAxes & FAV_ENABLE) != 0;
+        ImGui::Checkbox("Object frame axes", &frameAxesEnable);
+        if (frameAxesEnable)
+            Cfg()->CfgVisHelpPrm.flagFrameAxes |= FAV_ENABLE;
+        else
+            Cfg()->CfgVisHelpPrm.flagFrameAxes &= ~FAV_ENABLE;
+        ImGui::TableNextColumn();
+        if (ImGui::Button("Frame axis options", ImVec2(150.0f, 0.0f))) {
+            Container()->SwitchPage("Object axes");
+        }
+
+        ImGui::EndTable();
+    }
+}
+
+static void SetOrClearFlag(bool enabled, DWORD &val, const DWORD flag) {
+    if (enabled)
+        val |= flag;
+    else
+        val &= ~flag;
+}
+
+OptionsPage_Planetarium::OptionsPage_Planetarium(
+    OptionsPageContainer *container)
+    : OptionsPage(container, "Planetarium") {}
+
+void OptionsPage_Planetarium::OnDraw(oapi::WithImCtx &ctx) {
+    auto &flag = Cfg()->CfgVisHelpPrm.flagPlanetarium;
+    const auto oldFlag = flag;
+    auto plnEnable = (flag & PLN_ENABLE) != 0;
+    ImGui::Checkbox("Planetarium mode (F9)", &plnEnable);
+    SetOrClearFlag(plnEnable, flag, PLN_ENABLE);
+    if (!plnEnable) {
+        ImGui::BeginDisabled();
+    }
+
+    ImGui::SeparatorText("Grids and circles");
+    auto horizGrid = (flag & PLN_HGRID) != 0;
+    auto celGrid = (flag & PLN_CGRID) != 0;
+    auto eclGrid = (flag & PLN_EGRID) != 0;
+    auto galGrid = (flag & PLN_GGRID) != 0;
+    auto tgtEquator = (flag & PLN_EQU) != 0;
+    ImGui::Checkbox("Local horizon grid", &horizGrid);
+    ImGui::Checkbox("Celestial grid", &celGrid);
+    ImGui::Checkbox("Ecliptic grid", &eclGrid);
+    ImGui::Checkbox("Galactic grid", &galGrid);
+    ImGui::Checkbox("Target equator", &tgtEquator);
+    SetOrClearFlag(horizGrid, flag, PLN_HGRID);
+    SetOrClearFlag(celGrid, flag, PLN_CGRID);
+    SetOrClearFlag(eclGrid, flag, PLN_EGRID);
+    SetOrClearFlag(galGrid, flag, PLN_GGRID);
+    SetOrClearFlag(tgtEquator, flag, PLN_EQU);
+
+    ImGui::SeparatorText("Constellations");
+    auto labels = (flag & PLN_CNSTLABEL) != 0;
+    ImGui::Checkbox("Labels", &labels);
+    SetOrClearFlag(labels, flag, PLN_CNSTLABEL);
+    if (!labels)
+        ImGui::BeginDisabled();
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Full", (flag & PLN_CNSTLONG) != 0)) {
+        flag |= PLN_CNSTLONG;
+    }
+    ImGui::SameLine();
+    if (ImGui::RadioButton("3-letter", (flag & PLN_CNSTLONG) == 0)) {
+        flag &= ~PLN_CNSTLONG;
+    }
+    if (!labels)
+        ImGui::EndDisabled();
+
+    auto boundaries = (flag & PLN_CNSTBND) != 0;
+    ImGui::Checkbox("Boundaries", &boundaries);
+    SetOrClearFlag(boundaries, flag, PLN_CNSTBND);
+    auto patterns = (flag & PLN_CONST) != 0;
+    ImGui::Checkbox("Patterns", &patterns);
+    SetOrClearFlag(patterns, flag, PLN_CONST);
+
+    ImGui::SeparatorText("Celestial markers");
+    auto markers = (flag & PLN_CCMARK) != 0;
+    ImGui::Checkbox("Show markers", &markers);
+    SetOrClearFlag(markers, flag, PLN_CCMARK);
+    if (!markers)
+        ImGui::BeginDisabled();
+    ImGui::BeginChild("##MarkerList", ImVec2(0, 0), ImGuiChildFlags_Borders);
+    if (g_psys) {
+        for (auto &entry : g_psys->LabelList()) {
+            if (ImGui::Selectable(entry.name.c_str(), entry.active)) {
+                entry.active = true;
+                std::ifstream fcfg(Cfg()->ConfigPath(g_psys->Name()));
+                g_psys->ScanLabelLists(fcfg);
+            }
+        }
+    }
+
+    ImGui::EndChild();
+    if (!markers)
+        ImGui::EndDisabled();
+
+    if (!plnEnable)
+        ImGui::EndDisabled();
+
+    if (oldFlag != flag) {
+        g_pOrbiter->OnOptionChanged(OPTCAT_PLANETARIUM,
+                                    OPTITEM_PLANETARIUM_DISPFLAG);
+    }
+}
+
+OptionsPage_Labels::OptionsPage_Labels(OptionsPageContainer *container)
+    : OptionsPage(container, "Labels") {}
+
+void OptionsPage_Labels::OnDraw(oapi::WithImCtx &ctx) {
+    auto &flag = Cfg()->CfgVisHelpPrm.flagMarkers;
+    const auto oldFlag = flag;
+    auto mkrEnable = (flag & MKR_ENABLE) != 0;
+    ImGui::Checkbox("Surface and object labels (Alt-F9)", &mkrEnable);
+    SetOrClearFlag(mkrEnable, flag, MKR_ENABLE);
+    if (!mkrEnable)
+        ImGui::BeginDisabled();
+
+    ImGui::SeparatorText("Object markers");
+    auto vessels = (flag & MKR_VMARK) != 0;
+    auto celbody = (flag & MKR_CMARK) != 0;
+    auto surfbase = (flag & MKR_BMARK) != 0;
+    auto vortx = (flag & MKR_RMARK) != 0;
+    ImGui::Checkbox("Vessels", &vessels);
+    ImGui::Checkbox("Celestial bodies", &celbody);
+    ImGui::Checkbox("Surface bases", &surfbase);
+    ImGui::Checkbox("VOR transmitters", &vortx);
+    SetOrClearFlag(vessels, flag, MKR_VMARK);
+    SetOrClearFlag(celbody, flag, MKR_CMARK);
+    SetOrClearFlag(surfbase, flag, MKR_BMARK);
+    SetOrClearFlag(vortx, flag, MKR_RMARK);
+
+    ImGui::SeparatorText("Surface features");
+    // FIXME FIXME FIXME: wait till I'm done with getting all the render window
+    // and GC shit done so I can actually implement this
+
+    if (!mkrEnable)
+        ImGui::EndDisabled();
+}
+
+OptionsPage_Forces::OptionsPage_Forces(OptionsPageContainer *container)
+    : OptionsPage(container, "Body forces") {}
+
+void OptionsPage_Forces::OnDraw(oapi::WithImCtx &ctx) {
+    auto &flag = Cfg()->CfgVisHelpPrm.flagBodyForce;
+    const auto oldFlag = flag;
+    auto bfvEnable = (flag & BFV_ENABLE) != 0;
+    ImGui::Checkbox("Body force vectors", &bfvEnable);
+    SetOrClearFlag(bfvEnable, flag, BFV_ENABLE);
+    if (!bfvEnable)
+        ImGui::BeginDisabled();
+
+    ImGui::SeparatorText("Linear forces");
+    auto weight = (flag & BFV_WEIGHT) != 0;
+    auto lift = (flag & BFV_LIFT) != 0;
+    auto thrust = (flag & BFV_THRUST) != 0;
+    auto drag = (flag & BFV_DRAG) != 0;
+    auto side = (flag & BFV_SIDEFORCE) != 0;
+    auto total = (flag & BFV_TOTAL) != 0;
+    ImGui::Checkbox("Weight", &weight);
+    ImGui::Checkbox("Lift", &lift);
+    ImGui::Checkbox("Thrust", &thrust);
+    ImGui::Checkbox("Drag", &drag);
+    ImGui::Checkbox("Side force", &side);
+    ImGui::Checkbox("Total", &total);
+    SetOrClearFlag(weight, flag, BFV_WEIGHT);
+    SetOrClearFlag(lift, flag, BFV_LIFT);
+    SetOrClearFlag(thrust, flag, BFV_THRUST);
+    SetOrClearFlag(drag, flag, BFV_DRAG);
+    SetOrClearFlag(side, flag, BFV_SIDEFORCE);
+    SetOrClearFlag(total, flag, BFV_TOTAL);
+
+    ImGui::SeparatorText("Angular moments");
+    auto torque = (flag & BFV_TORQUE) != 0;
+    ImGui::Checkbox("Torque", &torque);
+    SetOrClearFlag(torque, flag, BFV_TORQUE);
+
+    ImGui::SeparatorText("Display");
+
+    ImGui::AlignTextToFramePadding();
+    ImGui::TextUnformatted("Scale:");
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Linear", (flag & BFV_LOGSCALE) == 0)) {
+        flag &= ~BFV_LOGSCALE;
+    }
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Logarithmic", (flag & BFV_LOGSCALE) != 0)) {
+        flag |= BFV_LOGSCALE;
+    }
+
+    auto scalePos =
+        25.0f * (1.0f + 0.5f * std::log2(Cfg()->CfgVisHelpPrm.scaleBodyForce));
+    ImGui::SetNextItemWidth(300.0f);
+    ImGui::SliderFloat("##Scale", &scalePos, 0.0f, 50.0f, "");
+    Cfg()->CfgVisHelpPrm.scaleBodyForce =
+        std::pow(2.0f, 0.08f * (scalePos - 25.0f));
+
+    ImGui::TextUnformatted("Opacity:");
+    auto opacPos = Cfg()->CfgVisHelpPrm.opacBodyForce * 50.0f;
+    ImGui::SetNextItemWidth(300.0f);
+    ImGui::SliderFloat("##OpacPos", &opacPos, 0.0f, 50.0f, "");
+    Cfg()->CfgVisHelpPrm.opacBodyForce = opacPos * 0.02f;
+
+    if (!bfvEnable)
+        ImGui::EndDisabled();
+}
+
+OptionsPage_Axes::OptionsPage_Axes(OptionsPageContainer *container)
+    : OptionsPage(container, "Object axes") {}
+
+void OptionsPage_Axes::OnDraw(oapi::WithImCtx &ctx) {
+    auto &flag = Cfg()->CfgVisHelpPrm.flagFrameAxes;
+    const auto oldFlag = flag;
+    auto favEnable = (flag & FAV_ENABLE) != 0;
+    ImGui::Checkbox("Object frame axes", &favEnable);
+    SetOrClearFlag(favEnable, flag, FAV_ENABLE);
+    if (!favEnable)
+        ImGui::BeginDisabled();
+
+    ImGui::SeparatorText("Objects");
+    auto vessels = (flag & FAV_VESSEL) != 0;
+    auto celbody = (flag & FAV_CELBODY) != 0;
+    auto surfbase = (flag & FAV_BASE) != 0;
+    ImGui::Checkbox("Vessels", &vessels);
+    ImGui::Checkbox("Celestial bodies", &celbody);
+    ImGui::Checkbox("Surface bases", &surfbase);
+    SetOrClearFlag(vessels, flag, FAV_VESSEL);
+    SetOrClearFlag(celbody, flag, FAV_CELBODY);
+    SetOrClearFlag(surfbase, flag, FAV_BASE);
+
+    ImGui::SeparatorText("Display");
+    auto negAxes = (flag & FAV_NEGATIVE) != 0;
+    ImGui::Checkbox("Show negative axes", &negAxes);
+    SetOrClearFlag(negAxes, flag, FAV_NEGATIVE);
+
+    ImGui::TextUnformatted("Scale:");
+    auto scalePos =
+        25.0f * (1.0f + 0.5f * std::log2(Cfg()->CfgVisHelpPrm.scaleFrameAxes));
+    ImGui::SetNextItemWidth(300.0f);
+    ImGui::SliderFloat("##Scale", &scalePos, 0.0f, 50.0f, "");
+    Cfg()->CfgVisHelpPrm.scaleFrameAxes =
+        std::pow(2.0f, 0.08f * (scalePos - 25.0f));
+
+    ImGui::TextUnformatted("Opacity:");
+    auto opacPos = Cfg()->CfgVisHelpPrm.opacFrameAxes * 50.0f;
+    ImGui::SetNextItemWidth(300.0f);
+    ImGui::SliderFloat("##OpacPos", &opacPos, 0.0f, 50.0f, "");
+    Cfg()->CfgVisHelpPrm.opacFrameAxes = opacPos * 0.02f;
+
+    if (!favEnable)
+        ImGui::EndDisabled();
 }

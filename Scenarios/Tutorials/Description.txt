@@ -1,4 +1,5 @@
-BEGIN_HYPERDESC
-<h1>Tutorials</h1>
-<p>This folder contains a collection of pre-recorded scenarios demonstrating various procedures and techniques, from launch, rendezvous and docking to a complete lunar transfer.</p>
-END_HYPERDESC
+BEGIN_DESC
+# Tutorials
+
+This folder contains a collection of pre-recorded scenarios demonstrating various procedures and techniques, from launch, rendezvous and docking to a complete lunar transfer.
+END_DESC

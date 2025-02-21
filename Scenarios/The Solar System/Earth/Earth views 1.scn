@@ -1,10 +1,12 @@
-BEGIN_HYPERDESC
-<h1>Homeworld: The Blue Planet.</h1>
-<p>A list of sights and places can be selected from the Preset list of the Camera
-dialog (Ctrl-F1).</p>
-<p>For most spectacular results, make sure you have a high-resolution Earth texture
-packs installed.</p>
-END_HYPERDESC
+BEGIN_DESC
+Homeworld: The Blue Planet.
+
+A list of sights and places can be selected from the Preset list of the Camera
+dialog (Ctrl-F1).
+
+For most spectacular results, make sure you have a high-resolution Earth texture
+packs installed.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

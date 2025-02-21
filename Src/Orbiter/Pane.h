@@ -55,7 +55,7 @@ class Pane {
 	friend class MenuInfoBar;
 
 public:
-	Pane (oapi::GraphicsClient *gclient, HWND hwnd, int width, int height, int bpp);
+	Pane (oapi::GraphicsClient *gclient, std::shared_ptr<sdl::UnmanagedWindow> hwnd, int width, int height, int bpp);
 	// Create a new pane with dimension width x height x bpp
 
 	~Pane ();
@@ -271,7 +271,7 @@ private:
 	oapi::GraphicsClient *gc; // client instance
 	int W, H, BPP;            // pane dimensions
 	int scaleW;
-	HWND hWnd;               // window handle
+	std::shared_ptr<sdl::UnmanagedWindow> hWnd; // window handle
 	int colidx;              // HUD colour index
 	COLORREF hudCol;         // HUD colour
 	double hudIntens;        // HUD intensity (VC only)

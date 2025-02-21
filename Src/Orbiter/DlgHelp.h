@@ -7,11 +7,12 @@
 
 #ifndef __DLGHELP_H
 #define __DLGHELP_H
+#include "OrbiterAPI.h"
 
-#include "DialogWin.h"
+//#include "DialogWin.h"
 
 // ======================================================================
-
+/*
 class DlgHelp: public DialogWin {
 public:
 	DlgHelp (HINSTANCE hInstance, HWND hParent, void *context);
@@ -34,5 +35,16 @@ private:
 	int dlgw, dlgh;
 	POINT pClose;
 };
+*/
 
+class DlgHelp: public ImGuiDialog
+{
+public:
+    DlgHelp();
+    void OnDraw() override;
+	void Display() override;
+	void OpenHelp(const HELPCONTEXT *hc);
+//	static void SetScenarioHelp (const char *_helpf);
+//	static void SetVesselHelp (const char *_helpf);
+};
 #endif // !__DLGHELP_H

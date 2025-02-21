@@ -1,8 +1,9 @@
-BEGIN_HYPERDESC
-<h1>Cloud microtextures</h1>
-<p>Microtexturing provides more detail in cloud rendering. Here is an example
-from the surface of Venus.</p1>
-END_HYPERDESC
+BEGIN_DESC
+# Cloud microtextures
+
+Microtexturing provides more detail in cloud rendering. Here is an example
+from the surface of Venus.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

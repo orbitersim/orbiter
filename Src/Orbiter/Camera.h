@@ -20,6 +20,7 @@
 #include "Vecmat.h"
 #include "elevmgr.h"
 #include "CamAPI.h"
+#include <SDL3/SDL_rect.h>
 
 class Body;
 class Planet;
@@ -320,7 +321,7 @@ private:
 	DWORD ExtCtrlMode;     // if camera is externally controlled, this contains bitflags for data types
 	                       // (see CAMDATA_xxx constants in CamAPI.h)
 
-	POINT pm;              // last cursor position
+	SDL_FPoint pm;         // last cursor position
 	double mmoveT;         // time of last mouse move
 
 	Vector gpos;           // current camera pos in global coords
