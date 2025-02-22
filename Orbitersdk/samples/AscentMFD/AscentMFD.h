@@ -12,7 +12,7 @@ public:
 	bool ConsumeButton (int bt, int event);
 	char *ButtonLabel (int bt);
 	int  ButtonMenu (const MFDBUTTONMENU **menu) const;
-	bool Update (oapi::Sketchpad* skp);
+	void Update (HDC hDC);
 	bool SetAltRange (char *rstr);
 	bool SetVradRange (char *rstr);
 	bool SetVtanRange (char *rstr);

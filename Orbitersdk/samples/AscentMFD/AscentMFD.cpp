@@ -227,9 +227,9 @@ int AscentMFD::ButtonMenu (const MFDBUTTONMENU **menu) const
 	return 4;
 }
 
-bool AscentMFD::Update (oapi::Sketchpad* skp)
+void AscentMFD::Update (HDC hDC)
 {
-	Title (skp, "Ascent profile");
+	Title (hDC, "Ascent profile");
 
 	if (alt_auto) {
 		float altmin, altmax, tmp;
@@ -248,18 +248,17 @@ bool AscentMFD::Update (oapi::Sketchpad* skp)
 	switch (page) {
 	case 0:
 		SetAutoRange (0, 0);
-		Plot (skp, 0, ch, (H+ch)/2, "Altitude");
+		Plot (hDC, 0, ch, (H+ch)/2, "Altitude");
 		SetAutoRange (1, 1);
-		Plot (skp, 1, (H+ch)/2, H, "Pitch");
+		Plot (hDC, 1, (H+ch)/2, H, "Pitch");
 		break;
 	case 1:
 		if (vrad_auto) SetAutoRange (2, 1, 0);
-		Plot (skp, 2, ch, (H+ch)/2, "V rad");
+		Plot (hDC, 2, ch, (H+ch)/2, "V rad");
 		if (vtan_auto) SetAutoRange (3, 1, 0);
-		Plot (skp, 3, (H+ch)/2, H, "V tan");
+		Plot (hDC, 3, (H+ch)/2, H, "V tan");
 		break;
 	}
-	return true;
 }
 
 bool AscentMFD::SetAltRange (char *rstr)

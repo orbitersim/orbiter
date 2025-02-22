@@ -57,7 +57,7 @@ class gcCore;
 #endif
 
 class VESSEL;
-class MFD;
+class MFD2;
 class XRSound;
 
 struct AirfoilContext {
@@ -212,7 +212,7 @@ public:
 	 * \param L Lua interpreter instance
 	 * \param mfd pointer to MFD object
 	 */
-	static void lua_pushmfd (lua_State *L, MFD *mfd);
+	static void lua_pushmfd (lua_State *L, MFD2 *mfd);
 
 	/**
 	 * \brief Push a light source object onto the stack
@@ -332,8 +332,8 @@ protected:
 	static VECTOR3 luamtd_field_tovector_safe (lua_State *L, int idx, const char *fieldname, const char *funcname);
 
 
-	// pops an MFD interface from the stack
-	static MFD *lua_tomfd (lua_State *L, int idx=-1);
+	// pops an MFD2 interface from the stack
+	static MFD2 *lua_tomfd (lua_State *L, int idx=-1);
 
 	// pops a light emitter object from the stack
 	static LightEmitter *lua_tolightemitter (lua_State *L, int idx=-1);

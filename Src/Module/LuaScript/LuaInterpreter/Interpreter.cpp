@@ -531,13 +531,13 @@ void Interpreter::lua_pushvessel (lua_State *L, VESSEL *v)
 	}
 }
 
-void Interpreter::lua_pushmfd (lua_State *L, MFD *mfd)
+void Interpreter::lua_pushmfd (lua_State *L, MFD2 *mfd)
 {
 	lua_pushlightuserdata(L,mfd);       // use object pointer as key
 	lua_gettable(L,LUA_REGISTRYINDEX);  // retrieve object from registry
 	if (lua_isnil(L,-1)) {              // object not found
 		lua_pop(L,1);                   // pop nil
-		MFD **pmfd = (MFD**)lua_newuserdata(L,sizeof(MFD*));
+		MFD2 **pmfd = (MFD2**)lua_newuserdata(L,sizeof(MFD2*));
 		*pmfd = mfd;
 		luaL_getmetatable (L, "MFD.vtable"); // retrieve metatable
 		lua_setmetatable (L,-2);             // and attach to new object
@@ -548,17 +548,17 @@ void Interpreter::lua_pushmfd (lua_State *L, MFD *mfd)
 	}
 }
 
-MFD *Interpreter::lua_tomfd (lua_State *L, int idx)
+MFD2 *Interpreter::lua_tomfd (lua_State *L, int idx)
 {
-	MFD **pmfd = (MFD**)lua_touserdata(L,idx);
+	MFD2 **pmfd = (MFD2**)lua_touserdata(L,idx);
 	return *pmfd;
 }
 
 #ifdef UNDEF
-void Interpreter::lua_pushmfd (lua_State *L, MFD *mfd)
+void Interpreter::lua_pushmfd (lua_State *L, MFD2 *mfd)
 {
 	lua_pushlightuserdata(L,mfd);
-	//MFD **pm = (MFD**)lua_newuserdata (L, sizeof(MFD*));
+	//MFD2 **pm = (MFD2**)lua_newuserdata (L, sizeof(MFD*));
 	//*pm = mfd;
 	luaL_getmetatable (L, "MFD.vtable");
 	lua_setmetatable (L, -2);
@@ -8804,7 +8804,7 @@ Return the size of an MFD.
 */
 int Interpreter::mfd_get_size(lua_State* L)
 {
-	MFD* mfd = lua_tomfd(L, 1);
+	MFD2* mfd = lua_tomfd(L, 1);
 	ASSERT_SYNTAX(mfd, "Invalid MFD object");
 	lua_pushnumber(L, mfd->GetWidth());
 	lua_pushnumber(L, mfd->GetHeight());
@@ -8820,7 +8820,7 @@ Set the title of an MFD.
 */
 int Interpreter::mfd_set_title (lua_State *L)
 {
-	MFD *mfd = lua_tomfd(L,1);
+	MFD2 *mfd = lua_tomfd(L,1);
 	ASSERT_SYNTAX(mfd, "Invalid MFD object");
 	oapi::Sketchpad *skp = lua_tosketchpad (L,2);
 	ASSERT_SYNTAX(skp, "Invalid Sketchpad object");
@@ -8856,7 +8856,7 @@ of drawing resources.
 */
 int Interpreter::mfd_get_defaultpen (lua_State *L)
 {
-	MFD *mfd = lua_tomfd(L,1);
+	MFD2 *mfd = lua_tomfd(L,1);
 	ASSERT_SYNTAX(mfd, "Invalid MFD object");
 	ASSERT_MTDNUMBER(L,2);
 	DWORD intens = 0, style = 1, colidx = (DWORD)lua_tointeger(L,2);
@@ -8894,7 +8894,7 @@ Default fonts are scaled automatically according to the MFD display size.
 */
 int Interpreter::mfd_get_defaultfont (lua_State *L)
 {
-	MFD *mfd = lua_tomfd(L,1);
+	MFD2 *mfd = lua_tomfd(L,1);
 	ASSERT_SYNTAX(mfd, "Invalid MFD object");
 	ASSERT_MTDNUMBER(L,2);
 	DWORD fontidx = (DWORD)lua_tointeger(L,2);
@@ -8914,7 +8914,7 @@ MFD's Update method in the next frame.
 */
 int Interpreter::mfd_invalidate_display (lua_State *L)
 {
-	MFD *mfd = lua_tomfd(L,1);
+	MFD2 *mfd = lua_tomfd(L,1);
 	ASSERT_SYNTAX(mfd, "Invalid MFD object");
 	mfd->InvalidateDisplay();
 	return 0;
@@ -8939,7 +8939,7 @@ buttons are updated internally.
 */
 int Interpreter::mfd_invalidate_buttons (lua_State *L)
 {
-	MFD *mfd = lua_tomfd(L,1);
+	MFD2 *mfd = lua_tomfd(L,1);
 	ASSERT_SYNTAX(mfd, "Invalid MFD object");
 	mfd->InvalidateButtons();
 	return 0;

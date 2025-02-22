@@ -44,7 +44,7 @@ typedef struct {
 } SCRIPTMFDMODESPEC;
 
 
-class ScriptMFD: public MFD {
+class ScriptMFD: public MFD2 {
 public:
 	ScriptMFD (DWORD w, DWORD h, VESSEL *vessel, const SCRIPTMFDMODESPEC *spec);
 	~ScriptMFD ();

@@ -40,7 +40,7 @@ int TransxMFD::MfdCount=0;
 double debug;
 
 TransxMFD::TransxMFD (DWORD w, DWORD h, VESSEL *vessel, UINT mfd)
-: MFD (w, h, vessel)
+: MFD2 (w, h, vessel)
 
 // Initialise TransXMFD
 {

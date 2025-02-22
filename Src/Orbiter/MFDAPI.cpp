@@ -32,9 +32,9 @@ ExternMFD::~ExternMFD ()
 	if (instr) delete instr;
 }
 
-size_t ExternMFD::Id () const
+UINT_PTR ExternMFD::Id () const
 {
-	return (size_t)this;
+	return (UINT_PTR)this;
 }
 
 bool ExternMFD::Active () const
@@ -74,7 +74,7 @@ bool ExternMFD::ProcessButton (int bt, int event)
 	return (instr ? instr->ConsumeButton (bt, event) : false);
 }
 
-bool ExternMFD::SendKey (uint32_t key)
+bool ExternMFD::SendKey (DWORD key)
 {
 	if (key == OAPI_KEY_ESCAPE) { // needs thought
 		SetMode (instr ? MFD_NONE : pmode);

@@ -537,7 +537,7 @@ bool AscentAP::ParseScenarioLine (const char *line)
 // ==============================================================
 
 AscentApMfd::AscentApMfd (DWORD w, DWORD h, VESSEL *v)
-: MFD (w, h, v)
+: MFD2 (w, h, v)
 {
 	ap = ((Atlantis*)v)->AscentAutopilot();
 	ap->SetLaunchAzimuth (ap->GetLaunchAzimuth());
@@ -584,9 +584,9 @@ void AscentApMfd::UpdatePg_Prm (oapi::Sketchpad *skp)
 	char cbuf[256];
 
 	if (!ap->GetVessel()->status) {
-		sprintf (cbuf, "Launch azimuth: %0.1fï¿½", ap->GetLaunchAzimuth()*DEG);
+		sprintf (cbuf, "Launch azimuth: %0.1fº", ap->GetLaunchAzimuth()*DEG);
 		skp->Text (cw/2, (ch*3)/2, cbuf, strlen(cbuf));
-		sprintf (cbuf, "Orbit inc:      %0.1fï¿½", ap->GetTargetInclination()*DEG);
+		sprintf (cbuf, "Orbit inc:      %0.1fº", ap->GetTargetInclination()*DEG);
 		skp->Text (cw/2, (ch*5)/2, cbuf, strlen(cbuf));
 		sprintf (cbuf, "Orbit altitude: %0.1fkm", ap->GetOrbitAltitude()*1e-3);
 		skp->Text (cw/2, (ch*7)/2, cbuf, strlen(cbuf));
@@ -609,14 +609,14 @@ void AscentApMfd::UpdatePg_Prm (oapi::Sketchpad *skp)
 		ap->GetVessel()->GetPeDist(alt_pe_cur);
 		alt_ap_cur -= R; alt_pe_cur -= R;
 		skp->Text (cw*13, ch*2, "Cur    Tgt    D", 15);
-		skp->Text (cw/2, ch*3, "Azimuth [ï¿½]", 11);
+		skp->Text (cw/2, ch*3, "Azimuth [º]", 11);
 		sprintf (cbuf, "%0.1lf", az_cur*DEG);
 		skp->Text (cw*13, ch*3, cbuf, strlen(cbuf));
 		sprintf (cbuf, "%0.1lf", az_tgt*DEG);
 		skp->Text (cw*20, ch*3, cbuf, strlen(cbuf));
 		sprintf (cbuf, "%+0.2f", az_err*DEG);
 		skp->Text (cw*27, ch*3, cbuf, strlen(cbuf));
-		skp->Text (cw/2, ch*4, "Pitch [ï¿½]", 9);
+		skp->Text (cw/2, ch*4, "Pitch [º]", 9);
 		sprintf (cbuf, "%0.1lf", pt_cur*DEG);
 		skp->Text (cw*13, ch*4, cbuf, strlen(cbuf));
 		sprintf (cbuf, "%0.1lf", pt_tgt*DEG);

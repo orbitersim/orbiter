@@ -99,7 +99,7 @@ DLLCLBK void ExitModule (HINSTANCE hDLL)
 // MFD class implementation
 
 CameraMFD::CameraMFD(DWORD w, DWORD h, VESSEL *vessel)
-	: MFD (w, h, vessel)
+	: MFD2 (w, h, vessel)
 	, hVessel(vessel)
 	, hFocus(vessel)
 	, hRenderSrf(NULL)

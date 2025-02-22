@@ -11,13 +11,13 @@
 /*
 VesselMFD: Class instantiated for MFDs declared inside Lua Vessel modules
 */
-class VesselMFD : public MFD
+class VesselMFD : public MFD2
 {
 public:
 	VesselMFD(DWORD w, DWORD h, VESSEL* vessel, VesselMFDContext* ctx);
 	virtual ~VesselMFD();
 	bool ConsumeButton(int bt, int event) override;
-	bool ConsumeKeyBuffered(uint32_t key) override;
+	bool ConsumeKeyBuffered(DWORD key) override;
 	bool ConsumeKeyImmediate(char* kstate) override;
 	char* ButtonLabel(int bt) override;
 	int ButtonMenu(const MFDBUTTONMENU** menu) const override;
@@ -9770,7 +9770,7 @@ int Interpreter::v_send_bufferedkey (lua_State *L)
 }
 
 
-VesselMFD::VesselMFD(DWORD w, DWORD h, VESSEL* vessel, VesselMFDContext* ctx) : MFD(w, h, vessel) {
+VesselMFD::VesselMFD(DWORD w, DWORD h, VESSEL* vessel, VesselMFDContext* ctx) : MFD2(w, h, vessel) {
 	L = ctx->L;
 	mfd_ref = LUA_REFNIL;
 }
@@ -9801,7 +9801,7 @@ bool VesselMFD::ConsumeButton(int bt, int event) {
 	lua_pop(L, 1);
 	return consumed;
 }
-bool VesselMFD::ConsumeKeyBuffered(uint32_t key) {
+bool VesselMFD::ConsumeKeyBuffered(DWORD key) {
 	lua_rawgeti(L, LUA_REGISTRYINDEX, mfd_ref);
 	lua_getfield(L, -1, "consumekeybuffered");
 	bool consumed = false;

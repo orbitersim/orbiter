@@ -16,7 +16,7 @@
 #ifndef __MFDTEMPLATE_H
 #define __MFDTEMPLATE_H
 
-class MFDTemplate: public MFD {
+class MFDTemplate: public MFD2 {
 public:
 	MFDTemplate (DWORD w, DWORD h, VESSEL *vessel);
 	~MFDTemplate ();

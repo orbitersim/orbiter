@@ -43,7 +43,7 @@ public:
 	void drawmarker(oapi::Sketchpad *sketchpad, const VECTOR3 & location, Shape shape);	// draws a marker at the specified location
 	void drawtwovector(oapi::Sketchpad *sketchpad, const VECTOR3 &line1, const VECTOR3 &line2);//Draw two vectors using current projection & scaling
 	void draworbit(const class OrbitElements &element, oapi::Sketchpad *sketchpad, bool drawradius);//Calls draworbit in orbitelements
-	double vectorpointdisplay(oapi::Sketchpad *sketchpad, const VECTOR3 &target, MFD *mfd, VESSEL *vessel, bool isposition);//Nice little pointer utility
+	double vectorpointdisplay(oapi::Sketchpad *sketchpad, const VECTOR3 &target, MFD2 *mfd, VESSEL *vessel, bool isposition);//Nice little pointer utility
 	void setviewscale(const class OrbitElements &orbit);//Set scale of picture using orbit size
 	void setviewscale(double temp);//Set scale using a number
 	void setviewscalesize(double temp);//Set scale using a distance size

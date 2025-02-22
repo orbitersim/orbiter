@@ -9,7 +9,7 @@
 
 #include "gcCoreAPI.h"
 
-class CameraMFD : public MFD {
+class CameraMFD : public MFD2 {
 
 public:
 	CameraMFD(DWORD w, DWORD h, VESSEL *vessel);
