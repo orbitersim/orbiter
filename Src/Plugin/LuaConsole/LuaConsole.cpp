@@ -120,7 +120,7 @@ public:
 					LineType type = lines[line_no].type;
 
 					switch(type) {
-						case LineType::LUA_IN: 
+						case LineType::LUA_IN:
 							ImGui::Text("%%%s", lines[line_no].text.c_str());
 							break;
 						case LineType::LUA_OUT:
@@ -137,7 +137,7 @@ public:
 				ImGui::SetScrollHereY(1.0f);
 		ImGui::EndChild();
 	}
-	
+
 	void DrawInput() {
 		ImGui::BeginChild("##LuaInput");
 			ImGui::PushFont(ImGuiFont::MONO);
@@ -148,7 +148,7 @@ public:
 			ImGui::PopFont();
 
 			ImGui::SetItemDefaultFocus(); // This does not seem to work...
-			
+
 			ImGui::SameLine();
 			ImGui::BeginChild("##LuaTermCommands");
 				if(ImGui::Button(ICON_FA_PLAY)) {
@@ -157,7 +157,7 @@ public:
 				ImGui::SetItemTooltip("Execute the command buffer");
 				ImGui::SameLine();
 				ImGui::CheckboxFlags("Single line", &flags, ImGuiInputTextFlags_CtrlEnterForNewLine);
-				
+
 				ImGui::SetItemTooltip("When checked, the command buffer is sent when pressing Enter\n"
 									"Otherwise, you can enter multiple lines at once and execute\n"
 									"them with Ctrl-Enter or the " ICON_FA_PLAY " button");
@@ -180,9 +180,9 @@ public:
 					}
 					ImGui::SetItemTooltip("Clear history");
 				ImGui::EndGroupPanel();
-				
+
 			ImGui::EndChild();
-			
+
 		ImGui::EndChild();
 	}
 
@@ -200,7 +200,7 @@ LuaConsole *g_Module = NULL;
 // ==============================================================
 // class LuaConsole
 
-LuaConsole::LuaConsole (MODFILE hDLL): Module (hDLL)
+LuaConsole::LuaConsole (HINSTANCE hDLL): Module (hDLL)
 {
 	hThread = NULL;
 	interp = NULL;
@@ -315,14 +315,14 @@ void LuaConsole::Clear()
 // ==============================================================
 // DLL entry and exit points
 
-DLLCLBK void InitModule (MODFILE hDLL)
+DLLCLBK void InitModule (HINSTANCE hDLL)
 {
 	// Create the console instance
 	g_Module = new LuaConsole (hDLL);
 	oapiRegisterModule (g_Module);
 }
 
-DLLCLBK void ExitModule (MODFILE hDLL)
+DLLCLBK void ExitModule (HINSTANCE hDLL)
 {}
 
 // ==============================================================

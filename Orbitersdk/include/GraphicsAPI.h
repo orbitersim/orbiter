@@ -126,7 +126,7 @@ typedef void *HDC;
 /**
  * File path for celestial sphere background textures
  * \par Parameter type:
- *   const std::filesystem::path*
+ *   const char*
  */
 #define CFGPRM_CSPHERETEXTURE 0x0013
 
@@ -201,7 +201,7 @@ typedef void *HDC;
 /**
  * Path to background star texture
  * \par Parameter type:
- *   const std::filesystem::path*
+ *   const char*
  */
 #define CFGPRM_CSPHERESTARTEXTURE 0x001D
 
@@ -339,7 +339,7 @@ typedef void *HDC;
 #define BLT_TGTCOLORKEY 0x2 ///< Use target surface colour key for transparency
 /// @}
 
-const uint32_t TEXIDX_MFD0 = (uint32_t)(-1) - MAXMFD;
+const UINT TEXIDX_MFD0 = (UINT)(-1) - MAXMFD;
 
 struct StarRenderPrm {
 	double mag_hi;
@@ -374,12 +374,12 @@ namespace oapi {
  * \brief Structure for defining a raw image.
  */
 struct ImageData {
-	uint8_t  *data;    ///< pointer to image data
-	uint16_t bufsize;  ///< allocated size of \a data
-	uint16_t width;    ///< image width [pixel]
-	uint16_t height;   ///< image height [pixel]
-	uint16_t bpp;      ///< bits per pixel
-	uint16_t stride;   ///< number of bytes per scan line
+	BYTE *data;    ///< pointer to image data
+	UINT bufsize;  ///< allocated size of \a data
+	UINT width;    ///< image width [pixel]
+	UINT height;   ///< image height [pixel]
+	UINT bpp;      ///< bits per pixel
+	UINT stride;   ///< number of bytes per scan line
 };
 
 class Sketchpad;
@@ -479,7 +479,7 @@ public:
 	 * with the Orbiter core via the oapiRegisterGraphicsClient function.
 	 * \param hInstance module instance handle (as passed to InitModule)
 	 */
-	GraphicsClient (MODFILE hInstance);
+	GraphicsClient (HINSTANCE hInstance);
 
 	/**
 	 * \brief Destroy the graphics object.
@@ -524,7 +524,7 @@ public:
 	 * \param item option item identifier, see \ref optitem
 	 * \default None.
 	 */
-	virtual void clbkOptionChanged(uint32_t cat, uint32_t item) {}
+	virtual void clbkOptionChanged(DWORD cat, DWORD item) {}
 
 	/**
 	 * \brief Print multiple debug strings onto a screen, will be cleared when printed on screen.
@@ -568,7 +568,7 @@ public:
 	 *   clbkLoadTexture should first scan the repository. If the texture is
 	 *   already present, the function should just return a pointer to it.
 	 */
-	virtual SURFHANDLE clbkLoadTexture (const char *fname, uint32_t flags = 0) { return NULL; }
+	virtual SURFHANDLE clbkLoadTexture (const char *fname, DWORD flags = 0) { return NULL; }
 
 	/**
 	 * \brief Load a surface from file into a surface object, and return a SURFHANDLE for it.
@@ -580,7 +580,7 @@ public:
 	 *   the existing surface object, instead of reading it again from file.
 	 * \sa oapiCreateSurface(DWORD,DWORD,DWORD)
 	 */
-	virtual SURFHANDLE clbkLoadSurface (const char *fname, uint32_t attrib, bool bPath = false)
+	virtual SURFHANDLE clbkLoadSurface (const char *fname, DWORD attrib, bool bPath = false)
 	{ return NULL; }
 
 	/**
@@ -618,7 +618,7 @@ public:
 	 * \return Should return \e true if operation successful, \e false otherwise.
 	 * \default None, returns \e false.
 	 */
-	virtual bool clbkSetMeshTexture (DEVMESHHANDLE hMesh, uint32_t texidx, SURFHANDLE tex) { return false; }
+	virtual bool clbkSetMeshTexture (DEVMESHHANDLE hMesh, DWORD texidx, SURFHANDLE tex) { return false; }
 
 	/**
 	 * \brief Replace properties of an existing mesh material.
@@ -629,8 +629,8 @@ public:
 	 *   the following codes: 0="success", 3="invalid mesh handle", 4="material index out of range"
 	 * \default None, returns 2 ("client does not support operation").
 	 */
-	virtual int clbkSetMeshMaterial (DEVMESHHANDLE hMesh, uint32_t matidx, const MATERIAL *mat) { return 2; }
-	virtual int clbkSetMeshMaterialEx(DEVMESHHANDLE hMesh, uint32_t matidx, MatProp prp, const oapi::FVECTOR4* in) { return 2; }
+	virtual int clbkSetMeshMaterial (DEVMESHHANDLE hMesh, DWORD matidx, const MATERIAL *mat) { return 2; }
+	virtual int clbkSetMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp prp, const oapi::FVECTOR4* in) { return 2; }
 
 	/**
 	 * \brief Retrieve the properties of one of the mesh materials.
@@ -640,8 +640,8 @@ public:
 	 * \return true if successful, false on error (index out of range)
 	 * \default None, returns 2 ("client does not support operation").
 	 */
-	virtual int clbkMeshMaterial (DEVMESHHANDLE hMesh, uint32_t matidx, MATERIAL *mat) { return 2; }
-	virtual int clbkMeshMaterialEx(DEVMESHHANDLE hMesh, uint32_t matidx, MatProp prp, oapi::FVECTOR4* out) { return 2; }
+	virtual int clbkMeshMaterial (DEVMESHHANDLE hMesh, DWORD matidx, MATERIAL *mat) { return 2; }
+	virtual int clbkMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp prp, oapi::FVECTOR4* out) { return 2; }
 
 	/**
      * \brief Set custom properties for a device-specific mesh.
@@ -657,7 +657,7 @@ public:
 	 * if value<>0 modulate (mix) material alpha values with texture alpha maps.
 	 * \default None, returns \e false.
 	 */
-	virtual bool clbkSetMeshProperty (DEVMESHHANDLE hMesh, uint32_t property, uint32_t value) { return false; }
+	virtual bool clbkSetMeshProperty (DEVMESHHANDLE hMesh, DWORD property, uint32_t value) { return false; }
 
 	// ==================================================================
 	/// \name Visual object interface
@@ -720,7 +720,7 @@ public:
 	 *   object for which the message was created.
 	 * \sa RegisterVisObject, UnregisterVisObject, visevent
 	 */
-	virtual int clbkVisEvent (OBJHANDLE hObj, VISHANDLE vis, uint32_t msg, DWORD_PTR context);
+	virtual int clbkVisEvent (OBJHANDLE hObj, VISHANDLE vis, DWORD msg, DWORD_PTR context);
 
 	/**
 	 * \brief Return a mesh handle for a visual, defined by its index
@@ -732,7 +732,7 @@ public:
 	 * \note Orbiter calls this method in response to a \ref VESSEL::GetMesh
 	 *   call by an vessel module.
 	 */
-	virtual MESHHANDLE clbkGetMesh (VISHANDLE vis, uint32_t idx) { return NULL; }
+	virtual MESHHANDLE clbkGetMesh (VISHANDLE vis, UINT idx) { return NULL; }
 
 	/**
 	 * \brief Mesh group data retrieval interface for device-specific meshes.
@@ -743,7 +743,7 @@ public:
 	 * \return Should return 0 on success, or error flags > 0.
 	 * \default None, returns -2.
 	 */
-	virtual int clbkGetMeshGroup (DEVMESHHANDLE hMesh, uint32_t grpidx, GROUPREQUESTSPEC *grs) { return -2; }
+	virtual int clbkGetMeshGroup (DEVMESHHANDLE hMesh, DWORD grpidx, GROUPREQUESTSPEC *grs) { return -2; }
 
 	/**
 	 * \brief Mesh group editing interface for device-specific meshes.
@@ -757,7 +757,7 @@ public:
 	 *   include vertex values, index lists, texture and material indices,
 	 *   and user flags.
 	 */
-	virtual int clbkEditMeshGroup (DEVMESHHANDLE hMesh, uint32_t grpidx, GROUPEDITSPEC *ges) { return -2; }
+	virtual int clbkEditMeshGroup (DEVMESHHANDLE hMesh, DWORD grpidx, GROUPEDITSPEC *ges) { return -2; }
 	//@}
 
 	// ==================================================================
@@ -857,16 +857,16 @@ public:
 	 */
 	const std::shared_ptr<sdl::UnmanagedWindow>& GetRenderWindow () const { return hRenderWnd; }
 
-        /**
-         * \brief Event handler for the render window.
-         *
-         * Be sure to call ConsumeEvent on your ImCtx here.
-         * \param event The event to consume
-         * \param wantsOut Set to true if the render window should be closed
-         * \return True if the event was consumed
-         */
-        virtual bool RenderWndConsumeEvent(const SDL_Event &event,
-                                           bool &wantsOut);
+    /**
+     * \brief Event handler for the render window.
+     *
+     * Be sure to call ConsumeEvent on your ImCtx here.
+     * \param event The event to consume
+     * \param wantsOut Set to true if the render window should be closed
+     * \return True if the event was consumed
+     */
+	virtual bool RenderWndProc(const SDL_Event &event,
+                               bool &wantsOut);
 
 	virtual void DrawLaunchpadVideoTab(const WithImCtx& ctx);
 
@@ -1785,7 +1785,12 @@ protected:
 	/**
 	 * \brief Returns the graphics module instance handle
 	 */
-	inline MODFILE ModuleInstance () const { return hModule; }
+	inline HINSTANCE ModuleInstance () const { return hModule; }
+
+	/**
+	 * \brief Returns the orbiter core instance handle
+	 */
+	inline HINSTANCE OrbiterInstance () const { return hOrbiterInst; }
 
 	// ==================================================================
 	// Functions for the celestial sphere
@@ -1878,7 +1883,8 @@ private:
 	 */
 	void InitRenderWnd (std::shared_ptr<sdl::UnmanagedWindow>& hWnd);
 
-	std::shared_ptr<sdl::UnmanagedWindow> hRenderWnd;        // render window handle
+	std::shared_ptr<sdl::UnmanagedWindow> hRenderWnd; // render window handle
+	HINSTANCE hOrbiterInst; // orbiter core instance handle
 	VIDEODATA VideoData;    // the standard video options from config
 
 	IWICImagingFactory *m_pIWICFactory; // Windows Image Component factory instance

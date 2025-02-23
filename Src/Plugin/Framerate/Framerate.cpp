@@ -25,7 +25,7 @@ namespace oapi {
 	public:
 		/// \brief Soliton instance server for Framerate plugin
 		/// \param hDLL nodule instance handle
-		static Framerate* GetInstance(MODFILE hDLL);
+		static Framerate* GetInstance(HINSTANCE hDLL);
 
 		/// \brief Soliton instance destructor
 		static void DelInstance();
@@ -53,7 +53,7 @@ namespace oapi {
 
 	protected:
 		/// \brief Protected constructor
-		Framerate(MODFILE hDLL);
+		Framerate(HINSTANCE hDLL);
 
 		/// \brief Protected destructor
 		~Framerate();
@@ -93,15 +93,15 @@ namespace oapi {
 // API interface
 // ==============================================================
 
-/// \brief Module entry point 
+/// \brief Module entry point
 /// \param hDLL module handle
-DLLCLBK void InitModule (MODFILE hDLL)
+DLLCLBK void InitModule (HINSTANCE hDLL)
 {
 	// Create and register the module
 	oapiRegisterModule(oapi::Framerate::GetInstance(hDLL));
 }
 
-/// \brief Module exit point 
+/// \brief Module exit point
 /// \param hDLL module handle
 DLLCLBK void ExitModule (HINSTANCE hDLL)
 {
@@ -118,7 +118,7 @@ oapi::Framerate* oapi::Framerate::self = nullptr;
 
 // --------------------------------------------------------------
 
-oapi::Framerate* oapi::Framerate::GetInstance(MODFILE hDLL)
+oapi::Framerate* oapi::Framerate::GetInstance(HINSTANCE hDLL)
 {
 	if (!self)
 		self = new Framerate(hDLL);
@@ -137,7 +137,7 @@ void oapi::Framerate::DelInstance()
 
 // --------------------------------------------------------------
 
-oapi::Framerate::Framerate(MODFILE hDLL)
+oapi::Framerate::Framerate(HINSTANCE hDLL)
 	: Module(hDLL)
 	, m_hDlg(NULL)
 {
@@ -147,7 +147,7 @@ oapi::Framerate::Framerate(MODFILE hDLL)
 	wndClass.lpfnWndProc = hookGraphMsgProc;
 	wndClass.cbClsExtra = 0;
 	wndClass.cbWndExtra = 4;
-	wndClass.hInstance = stopgapGetModuleInstance(hDLL);
+	wndClass.hInstance = hDLL;
 	wndClass.hIcon = NULL;
 	wndClass.hCursor = LoadCursor(NULL, IDC_CROSS);
 	wndClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
@@ -176,7 +176,7 @@ oapi::Framerate::Framerate(MODFILE hDLL)
 oapi::Framerate::~Framerate()
 {
 	// Unregister the window class for the graph
-	UnregisterClass("PerfGraphWindow", stopgapGetModuleInstance(GetModule()));
+	UnregisterClass("PerfGraphWindow", GetModule());
 
 	Graph::FreeGDI();
 
@@ -298,7 +298,7 @@ void oapi::Framerate::hookOpenDlg(void* context)
 
 void oapi::Framerate::clbkOpenDlg(void* context)
 {
-	HWND hDlg = oapiOpenDialog(stopgapGetModuleInstance(GetModule()), IDD_FRAMERATE, hookDlgMsgProc);
+	HWND hDlg = oapiOpenDialog(GetModule(), IDD_FRAMERATE, hookDlgMsgProc);
 	if (hDlg) m_hDlg = hDlg; // otherwise open already
 }
 

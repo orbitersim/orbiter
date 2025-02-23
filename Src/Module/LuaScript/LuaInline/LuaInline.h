@@ -42,14 +42,14 @@ public:
 		static unsigned int WINAPI InterpreterThreadProc (LPVOID context);
 	};
 
-	InterpreterList (MODFILE hDLL);
+	InterpreterList (HINSTANCE hDLL);
 	~InterpreterList ();
 
 	void clbkSimulationEnd () override;
 	void clbkPostStep (double simt, double simdt, double mjd) override;
 	void clbkSimulationStart (RenderMode mode) override;
 	void clbkDeleteVessel (OBJHANDLE hVessel) override;
-	
+
 	Environment *AddInterpreter ();
 	int DelInterpreter (Environment *env);
 

@@ -41,7 +41,7 @@ public:
 	 * \brief Create a GDI graphics object.
 	 * \param hInstance module instance handle (as passed to InitModule)
 	 */
-	GDIClient (MODFILE hInstance);
+	GDIClient (HINSTANCE hInstance);
 
 	// ==================================================================
 	/// \name 2-D drawing interface
@@ -426,7 +426,7 @@ class GDICLIENTEXPORT GDIFont: public oapi::Font {
 
 public:
 	/**
-	 * \brief Font constructor. 
+	 * \brief Font constructor.
 	 * \param height cell or character height [pixel]
 	 * \param prop proportional/fixed width flag
 	 * \param face font face name

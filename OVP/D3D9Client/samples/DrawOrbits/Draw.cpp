@@ -49,14 +49,14 @@ class Orbits : public oapi::Module
 
 public:
 
-				Orbits(MODFILE hDLL);
+				Orbits(HINSTANCE hDLL);
 				~Orbits();
 
 	void		clbkRender(oapi::Sketchpad *pSkp);
 	void		clbkSimulationStart(RenderMode rm);
 	void		clbkSimulationEnd();
 	void		clbkPreStep(double simt, double simdt, double mjd);
-	
+
 private:
 	void		Label(Sketchpad *pSkp2, IVECTOR2 *pt, VECTOR3 &plnDir, const char *label);
 	void		DrawOrbit(Sketchpad *pSkp2, COrbit *pOrb, OBJHANDLE hRef, oapi::FVECTOR4 &color, DWORD flags = 0);
@@ -70,10 +70,10 @@ private:
 	HPOLY		pHyperbolic[NTEMP];
 
 	DWORD		upidx;
-	
+
 	Clipper		Clip[2];
 	VECTOR3     CamPos;
-	
+
 	SURFHANDLE  hTex;
 	oapi::Font  *hFnt;
 	const oapi::FMATRIX4* pVP;
@@ -97,7 +97,7 @@ void __cdecl RenderOrbitClbk(oapi::Sketchpad *pSkp, void *pParam)
 // Initialize module
 // =================================================================================================
 //
-DLLCLBK void InitModule(MODFILE hModule)
+DLLCLBK void InitModule(HINSTANCE hModule)
 {
 	oapiRegisterModule(new Orbits(hModule));
 }
@@ -116,7 +116,7 @@ DLLCLBK void ExitModule(HINSTANCE  hModule)
 // Orbiter Module
 // =================================================================================================
 //
-Orbits::Orbits(MODFILE hInst) : Module(hInst), pCore(NULL), Ref(NULL), pBody(NULL)
+Orbits::Orbits(HINSTANCE hInst) : Module(hInst), pCore(NULL), Ref(NULL), pBody(NULL)
 {
 
 	FILE *fp = fopen("Config/DrawOrbits.cfg", "rt");
@@ -147,7 +147,7 @@ void Orbits::clbkSimulationStart(RenderMode rm)
 	upidx = 0;
 
 	oapiWriteLog((char*)"oapi::Module::clbkSimulationStart");
-	
+
 	size_t bcnt{ oapiGetGbodyCount() };
 	Ref = new ReferenceClass();
 	pBody = new Body[bcnt+1];
@@ -186,11 +186,11 @@ void Orbits::clbkSimulationEnd()
 {
 	oapiWriteLog((char*)"oapi::Module::clbkSimulationEnd");
 
-	if (pCore) 
+	if (pCore)
 	{
 		//oapiReleaseTexture(hTex);
 		//oapiReleaseFont(hFnt);
-		//gcRegisterRenderProc(RenderOrbitClbk, RENDERPROC_DELETE, NULL);	// Unregister callback 
+		//gcRegisterRenderProc(RenderOrbitClbk, RENDERPROC_DELETE, NULL);	// Unregister callback
 
 		int i = 0;
 		while (pBody[i].hObj) {
@@ -251,7 +251,7 @@ void Orbits::clbkPreStep(double simt, double simdt, double mjd)
 
 		f *= (b*b);
 		f *= (a*a);
-		
+
 		pBody[upidx].fInts = f;
 	}
 
@@ -269,7 +269,7 @@ void Orbits::clbkRender(oapi::Sketchpad *pSkp2)
 	oapiCameraGlobalPos(&CamPos);
 
 	if (oapiCameraInternal() == false)
-	{	
+	{
 
 		pVP = pSkp2->GetViewProjectionMatrix();
 
@@ -314,7 +314,7 @@ void Orbits::clbkRender(oapi::Sketchpad *pSkp2)
 
 
 // =================================================================================================
-// 
+//
 void Orbits::SetClipper(Sketchpad *pSkp2, OBJHANDLE hObj, DWORD idx)
 {
 	VECTOR3 bpos;
@@ -331,10 +331,10 @@ void Orbits::SetClipper(Sketchpad *pSkp2, OBJHANDLE hObj, DWORD idx)
 		double len2 = dotp(Clip[idx].Pos, Clip[idx].Pos);
 		double hdst = sqrt(len2 - dRad*dRad);
 		double ilen = 1.0 / sqrt(len2);
-		
-		Clip[idx].uPos = Clip[idx].Pos * ilen;		// Object position [unit] 
+
+		Clip[idx].uPos = Clip[idx].Pos * ilen;		// Object position [unit]
 		Clip[idx].vcov = hdst * ilen;				// View coverage
-		
+
 		if (idx == PLN_MOON) Clip[idx].hdst = 0.0;
 		else				 Clip[idx].hdst = hdst;
 
@@ -370,7 +370,7 @@ bool Orbits::WorldToScreenSpace(const VECTOR3& wpos, oapi::IVECTOR2* pt, const F
 	if (homog.w < 0.0f) return false;
 
 	homog.xyz /= homog.w;
-	
+
 	bool bVis = true;
 	if (homog.x < -clip || homog.x > clip || homog.y < -clip || homog.y > clip) bVis = false;
 
@@ -405,7 +405,7 @@ bool Orbits::IsVisible(VECTOR3 pos, oapi::IVECTOR2 *pt, const SIZE &s)
 // =================================================================================================
 //
 void Orbits::DrawOrbit(Sketchpad *pSkp2, COrbit *pOrb, OBJHANDLE hRef, oapi::FVECTOR4 &color, DWORD of)
-{	
+{
 	double smi = 0.0;
 	double ecc = pOrb->Ecc();
 	double diff = 1e6;
@@ -448,7 +448,7 @@ void Orbits::DrawOrbit(Sketchpad *pSkp2, COrbit *pOrb, OBJHANDLE hRef, oapi::FVE
 	pSkp2->SetViewMode(Sketchpad::USER);
 	pSkp2->SetClipDistance(1.0f, 1e13f);
 	pSkp2->QuickPen(draw, 2.0f);
-	
+
 
 	if (ecc<1.0) pSkp2->DrawPoly(pElliptic[idx]);
 	else		 pSkp2->DrawPoly(pHyperbolic[idx]);
@@ -532,10 +532,10 @@ void Orbits::DrawOrbit(Sketchpad *pSkp2, COrbit *pOrb, OBJHANDLE hRef, oapi::FVE
 	}
 
 	if (of&ODR_APS) {
-		if (pOrb->IsTrAValid(dLPe)) 
+		if (pOrb->IsTrAValid(dLPe))
 		{
 			VECTOR3 pos = pOrb->PosByTrA(dLPe);
-			if (IsVisible(pos, &pt, screen)) 
+			if (IsVisible(pos, &pt, screen))
 			{
 				pSkp2->QuickBrush(draw);
 				pSkp2->Ellipse(pt.x - s, pt.y - s, pt.x + s, pt.y + s);
@@ -582,7 +582,7 @@ void Orbits::Label(Sketchpad *pSkp2, IVECTOR2 *pt, VECTOR3 &plnDir, const char *
 	int yo = 5;
 	int tx = 18;
 	int ty = 20;
-	
+
 	SIZE size;
 	pSkp2->GetRenderSurfaceSize(&size);
 
@@ -607,7 +607,7 @@ void Orbits::Label(Sketchpad *pSkp2, IVECTOR2 *pt, VECTOR3 &plnDir, const char *
 	RECT tgt = { pt->x + xo, pt->y + yo, pt->x + w + xo, pt->y + h + yo };
 
 	pSkp2->StretchRect(hTex, &src, &tgt);
-	
+
 	int x = pt->x + tx;
 	int y = pt->y + ty;
 
@@ -629,14 +629,14 @@ void Orbits::CreateOrbitTemplates()
 {
 	FVECTOR2 points[512];
 
-	for (int i = 0; i < NTEMP; i++) 
+	for (int i = 0; i < NTEMP; i++)
 	{
 		double ecc = eEll[i];
 		double smi = sqrt(1.0 - ecc*ecc);
 		double nra = 0.0;
 		double stp = PI2 / 512.0;
 
-		for (int i = 0; i < 511; i++) 
+		for (int i = 0; i < 511; i++)
 		{
 			double eca = nra2eca(nra, ecc);
 			points[i].x = float(cos(eca));
@@ -648,14 +648,14 @@ void Orbits::CreateOrbitTemplates()
 	}
 
 
-	for (int i = 0; i < NTEMP; i++) 
+	for (int i = 0; i < NTEMP; i++)
 	{
 		double ecc = eHyp[i];
 		double smi = sqrt(ecc*ecc-1.0);
 		double nra = eca2nra(6.0, ecc);
 		double stp = abs(nra*2.0) / 511.0;
 		nra = PI2-nra;
-		for (int i = 0; i < 512; i++) 
+		for (int i = 0; i < 512; i++)
 		{
 			nra = limit(nra);
 			double eca = nra2eca(nra, ecc);

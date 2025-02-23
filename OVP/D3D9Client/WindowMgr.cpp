@@ -60,7 +60,7 @@ inline DWORD _Colour(const FVECTOR4 *c)
 	if (r > 0xFF) r = 0xFF;
 	if (g > 0xFF) g = 0xFF;
 	if (b > 0xFF) b = 0xFF;
-	
+
 	return (b << 16) | (g << 8) | r;
 }
 // ===============================================================================================
@@ -192,9 +192,9 @@ Node::Node(SideBar *pSB, const char *label, HWND hDlg, DWORD color, Node *pP) :
 	HDC hSrc = CreateCompatibleDC(hDC);
 	HDC hTgt = CreateCompatibleDC(hDC);
 
-	
+
 	GetObject(hTit, sizeof(BITMAP), &bm);
-	
+
 	hBmp = CreateCompatibleBitmap(hDC, bm.bmWidth, bm.bmHeight);
 
 	pSB->ReleaseDC(hDC);
@@ -205,11 +205,11 @@ Node::Node(SideBar *pSB, const char *label, HWND hDlg, DWORD color, Node *pP) :
 	// Recolorize the title bar
 
 	for (int y = 0; y < bm.bmHeight; y++) {
-		for (int x = 0; x < bm.bmWidth; x++) {		
+		for (int x = 0; x < bm.bmWidth; x++) {
 			COLORREF cr = GetPixel(hSrc, x, y);
 			FVECTOR4 c = _Colour(cr);
 			FVECTOR4 out = (clr * c.b) + (white * c.g);
-			SetPixel(hTgt, x, y, _Colour(&out));	
+			SetPixel(hTgt, x, y, _Colour(&out));
 		}
 	}
 
@@ -307,8 +307,8 @@ int Node::Paint(HDC hDC, int y)
 	int wof = 0, hof = 0;
 	DWORD ck = 0;
 
-	if (pSB->GetStyle() == gcGUI::DS_FLOAT) x += 1;	
-		
+	if (pSB->GetStyle() == gcGUI::DS_FLOAT) x += 1;
+
 	if (hBmp) {
 		if (pParent) {
 			SelectObject(hDC, pMgr->GetSubTitleFont());
@@ -324,11 +324,11 @@ int Node::Paint(HDC hDC, int y)
 		}
 	}
 
-	
+
 	// Draw Title Bars -----------------------------
 	//
 	if (hBmp) {
-		
+
 		HDC hSr = CreateCompatibleDC(hDC);
 		int z = width - bm.bmHeight - 3;
 
@@ -337,20 +337,20 @@ int Node::Paint(HDC hDC, int y)
 
 		SelectObject(hSr, hBmp);
 		BitBlt(hDC, x, y, width - 10,  bm.bmHeight, hSr, 0, 0, SRCCOPY);
-		BitBlt(hDC, width - 10 - x, y, 10, bm.bmHeight, hSr, bm.bmWidth - 10, 0, SRCCOPY);	
+		BitBlt(hDC, width - 10 - x, y, 10, bm.bmHeight, hSr, bm.bmWidth - 10, 0, SRCCOPY);
 		TextOut(hDC, wof, y + hof, Label, lstrlen(Label));
-		
+
 		DeleteDC(hSr);
 
 		if (bOpen) PaintIcon(hDC, x, y, 0);
 		else PaintIcon(hDC, x, y, 1);
 		if (bClose) PaintIcon(hDC, z, y, 2);
-			
+
 		y += bm.bmHeight;
 	}
 
 	pos = { x, y };
-	
+
 	if (bOpen && hDlg) {
 		RECT r;
 		GetWindowRect(hDlg, &r);
@@ -366,9 +366,9 @@ int Node::Paint(HDC hDC, int y)
 void Node::PaintIcon(HDC hDC, int x, int y, int id)
 {
 	WindowManager *pMgr = pSB->GetWM();
-	DWORD yell = RGB(255, 255, 0); 
-	DWORD mang = RGB(255, 0, 255); 
-	
+	DWORD yell = RGB(255, 255, 0);
+	DWORD mang = RGB(255, 0, 255);
+
 	HBITMAP hIco = pMgr->GetBitmap(gcGUI::BM_ICONS);
 
 	if (hIco) {
@@ -402,11 +402,11 @@ int Node::Spacer(HDC hDC, int y)
 
 	int width = pSB->GetWidth();
 	int h = CellSize();
-	
+
 	SelectObject(hDC, (HBRUSH)GetStockObject(GRAY_BRUSH));
 	SelectObject(hDC, (HPEN)GetStockObject(NULL_PEN));
 	Rectangle(hDC, 0, y, width + 1, y + h + 1);
-	
+
 	return y + h;
 }
 
@@ -430,7 +430,7 @@ void Node::Move()
 // WindowManager Implementation
 // ===============================================================================================
 //
-WindowManager::WindowManager(HWND hAppMainWindow, MODFILE _hInst, bool bWindowed)
+WindowManager::WindowManager(HWND hAppMainWindow, HINSTANCE _hInst, bool bWindowed)
 {
 	char path[256];
 	char cbuf[256];
@@ -541,11 +541,11 @@ WindowManager::WindowManager(HWND hAppMainWindow, MODFILE _hInst, bool bWindowed
 	DWORD flags = 0;
 	if (Config->gcGUIMode == 1) flags |= CS_NOCLOSE;
 
-	WNDCLASS wc; 
+	WNDCLASS wc;
 	memset(&wc, 0, sizeof(WNDCLASS));
 	wc.style = flags | CS_OWNDC | CS_SAVEBITS;
 	wc.lpfnWndProc = SideBarWndProc;
-	wc.hInstance = stopgapGetModuleInstance(hInst);
+	wc.hInstance = hInst;
 #pragma warning(disable:4302)
 	wc.hCursor = LoadCursorA(NULL, MAKEINTRESOURCE(IDC_ARROW));
 	wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
@@ -556,7 +556,7 @@ WindowManager::WindowManager(HWND hAppMainWindow, MODFILE _hInst, bool bWindowed
 	memset(&wc, 0, sizeof(WNDCLASS));
 	wc.style = flags | CS_OWNDC | CS_SAVEBITS | CS_DROPSHADOW;
 	wc.lpfnWndProc = SideBarWndProc;
-	wc.hInstance = stopgapGetModuleInstance(hInst);
+	wc.hInstance = hInst;
 	wc.hCursor = LoadCursorA(NULL, MAKEINTRESOURCE(IDC_ARROW));
 #pragma warning(default:4302)
 	wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
@@ -572,7 +572,7 @@ WindowManager::WindowManager(HWND hAppMainWindow, MODFILE _hInst, bool bWindowed
 
 	hAppFont = CreateFont(cfg.txt_main_size, 0, 0, 0, cfg.txt_main_weight, false, false, 0, 0, 0, 2, CLEARTYPE_QUALITY, 49, cfg.fnt_main);
 	hSubFont = CreateFont(cfg.txt_sub_size, 0, 0, 0, cfg.txt_sub_weight, false, false, 0, 0, 0, 2, CLEARTYPE_QUALITY, 49, cfg.fnt_sub);
-	
+
 	if (!hAppFont) LogErr("Font Not Found [%s]", cfg.fnt_main);
 	if (!hSubFont) LogErr("Font Not Found [%s]", cfg.fnt_sub);
 
@@ -581,7 +581,7 @@ WindowManager::WindowManager(HWND hAppMainWindow, MODFILE _hInst, bool bWindowed
 
 	// Smaple dialog for a proper size and scaling
 	//
-	HWND hDlg = CreateDialogParam(stopgapGetModuleInstance(hInst), MAKEINTRESOURCE(IDD_MESHDEBUG), hAppMainWindow, DummyDlgProc, 0);
+	HWND hDlg = CreateDialogParam(hInst, MAKEINTRESOURCE(IDD_MESHDEBUG), hAppMainWindow, DummyDlgProc, 0);
 
 	RECT r;
 	GetWindowRect(hDlg, &r);
@@ -611,9 +611,9 @@ WindowManager::~WindowManager()
 	oapiUnregisterCustomCmd(Cmd);
 
 	for(SideBar* sb : sbList) delete sb;
-	
-	UnregisterClass("SideBarWnd", stopgapGetModuleInstance(hInst));
-	UnregisterClass("Floater", stopgapGetModuleInstance(hInst));
+
+	UnregisterClass("SideBarWnd", hInst);
+	UnregisterClass("Floater", hInst);
 
 	if (hTitle) DeleteObject(hTitle);
 	if (hSub) DeleteObject(hSub);
@@ -675,7 +675,7 @@ HNODE WindowManager::RegisterApplication(gcGUIApp *pPtr, const char *label, HWND
 	if (Config->gcGUIMode >= 2) docked = gcGUI::DS_FLOAT;
 
 	if (docked == gcGUI::DS_FLOAT) pSB = NewSideBar(NULL);
-	
+
 	if (Config->gcGUIMode == 3) {
 		HWND hWnd = pSB->GetHWND();
 		SetWindowText(hWnd, label);
@@ -946,11 +946,11 @@ SideBar* WindowManager::StartDrag(Node *pAN, int x, int y)
 
 		for (Node * an : pSBOld->wList) if (an->pParent == pAN) tmp.push_back(an);
 
-		for (Node * an : tmp) 
+		for (Node * an : tmp)
 		{
-			pSBOld->RemoveWindow(an); // Cant remove directly from a list being browsed 
+			pSBOld->RemoveWindow(an); // Cant remove directly from a list being browsed
 			pSBNew->AddWindow(an);
-		}	
+		}
 	}
 
 	sbDrag = pSBNew;
@@ -959,7 +959,7 @@ SideBar* WindowManager::StartDrag(Node *pAN, int x, int y)
 	y -= ptOffset.y;
 
 	pSBNew->ResetWindow(x, y);
-	
+
 	InvalidateRect(pSBNew->GetHWND(), NULL, true);
 	InvalidateRect(pSBOld->GetHWND(), NULL, true);
 
@@ -989,7 +989,7 @@ void WindowManager::Drag(int x, int y)
 		x -= ptOffset.x;
 		y -= ptOffset.y;
 
-		RECT rect; 
+		RECT rect;
 		SystemParametersInfo(SPI_GETWORKAREA, 0, &rect, 0);
 		int t = sbDrag->GetTopNode()->bm.bmHeight;
 
@@ -1043,7 +1043,7 @@ SideBar *WindowManager::FindDestination()
 			if (a > z) { z = a;	sbDest = sb; }
 		}
 	}
-	
+
 	if (sbDest != pOld && pOld != NULL) {
 		qInsert.pTgt = NULL;
 		qInsert.List.clear();
@@ -1102,7 +1102,7 @@ bool WindowManager::MainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 SideBar::SideBar(class WindowManager *_pMgr, DWORD _state)
 {
 	pMgr = _pMgr;
-	
+
 	HWND hMainWnd = pMgr->GetMainWindow();
 	hInst = pMgr->GetInstance();
 	width = pMgr->GetWidth();
@@ -1130,7 +1130,7 @@ SideBar::SideBar(class WindowManager *_pMgr, DWORD _state)
 	DWORD exstyle = 0;
 	DWORD style = 0;
 
-	if (Config->gcGUIMode == 1) {	
+	if (Config->gcGUIMode == 1) {
 		if (state == gcGUI::DS_RIGHT) xref = r.right;
 		if (state == gcGUI::DS_LEFT) xref = -width;
 		if (state == gcGUI::DS_FLOAT) xref = width, height = width;
@@ -1155,7 +1155,7 @@ SideBar::SideBar(class WindowManager *_pMgr, DWORD _state)
 
 	if (state == gcGUI::DS_FLOAT) width += 2, height += 1; // Border
 
-	auto hInst1 = stopgapGetModuleInstance(hInst);
+	auto hInst1 = hInst;
 	if (state == gcGUI::DS_FLOAT) hBar = CreateWindowExA(exstyle, "Floater", "Float", style, xref, ypos, width, height, hMainWnd, NULL, hInst1, 0);
 	else					      hBar = CreateWindowExA(exstyle, "SideBarWnd", "Dock", style, xref, ypos, width, height, hMainWnd, NULL, hInst1, 0);
 
@@ -1175,7 +1175,7 @@ SideBar::SideBar(class WindowManager *_pMgr, DWORD _state)
 // ===============================================================================================
 //
 SideBar::~SideBar()
-{	
+{
 	for (Node *v : wList)
 	{
 		if (v->hDlg) DestroyWindow(v->hDlg);
@@ -1372,8 +1372,8 @@ void SideBar::GetVisualList(vector<Node*> &tmp)
 {
 	if (Config->gcGUIMode == 3) {
 		for (Node* ap : wList) if (ap->hDlg) tmp.push_back(ap);
-	} 
-	else 
+	}
+	else
 	{
 		for (Node* ap : wList) {
 			Node* pPar = ap->pParent;
@@ -1478,7 +1478,7 @@ bool SideBar::TryInsert(SideBar *sbIn)
 	tInsert *pIns = pMgr->InsertList();
 
 	if (pIns->pTgt != this) return false;
-	
+
 	map<Node*, Node*> &wIns = pIns->List;
 	map<Node*, Node*> wPrev = wIns;
 
@@ -1487,7 +1487,7 @@ bool SideBar::TryInsert(SideBar *sbIn)
 	int yp = sbIn->GetRect().top - GetRect().top;
 	int h = sbIn->ComputeLength();
 	int y = rollpos;
-	
+
 	Node *pNode = sbIn->GetTopNode();
 	if (!pNode) return false;
 
@@ -1510,7 +1510,7 @@ bool SideBar::Apply()
 	SideBar *pDG = pMgr->GetDraged();
 	tInsert *pIns = pMgr->InsertList();
 
-	if ((pIns->pTgt == this) && (pIns->List.size()>0)) 
+	if ((pIns->pTgt == this) && (pIns->List.size()>0))
 	{
 		for (auto &var : pIns->List)
 		{
@@ -1568,7 +1568,7 @@ LRESULT SideBar::SideBarWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		if (old != rollpos) Invalidate();
 		break;
 	}
-	
+
 	case WM_LBUTTONDOWN:
 	{
 		xpos = GET_X_LPARAM(lParam);
@@ -1589,9 +1589,9 @@ LRESULT SideBar::SideBarWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				if (nd->bClose && PointInside(xpos, ypos, &(nd->crect))) {
 					dnClose = nd;
 				}
-				else {			
+				else {
 					xof = xpos - nd->trect.left;
-					yof = ypos - nd->trect.top;				
+					yof = ypos - nd->trect.top;
 					dnNode = nd;
 				}
 				TRACKMOUSEEVENT te; te.cbSize = sizeof(TRACKMOUSEEVENT); te.dwFlags = TME_LEAVE; te.hwndTrack = hBar;
@@ -1618,7 +1618,7 @@ LRESULT SideBar::SideBarWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 			dnClose = NULL;
 			break;
 		}
-	
+
 		if (dnNode) {
 			if (dnNode->GetSideBar() == this) {
 				if (PointInside(xp, yp, &(dnNode->trect))) {
@@ -1641,7 +1641,7 @@ LRESULT SideBar::SideBarWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				}
 			}
 		}
-		
+
 		dnNode = NULL;
 		dnClose = NULL;
 		break;
@@ -1652,7 +1652,7 @@ LRESULT SideBar::SideBarWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 	{
 		dnNode = NULL;
 		dnClose = NULL;
-		break; 
+		break;
 	}
 
 
@@ -1667,7 +1667,7 @@ LRESULT SideBar::SideBarWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 			POINT scp = { x, y };
 			ClientToScreen(hWnd, &scp);
-				
+
 			// Begin Moving a Window
 			//
 			if (dnNode && IsFloater() && (GetTopNode() == dnNode) && (dx > 1 || dy > 1))
@@ -1710,13 +1710,13 @@ LRESULT SideBar::SideBarWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				break;
 			}
 		}
-		break; 
+		break;
 	}
 
 	case WM_PAINT:
 		PaintWindow();
 		break;
-		
+
 	case WM_ERASEBKGND:
 		return 1;
 
@@ -1744,7 +1744,7 @@ int SideBar::ComputeLength()
 
 	if (bInsert) for (auto &var : wIns) if (var.second == NULL) y += var.first->CellSize();
 
-	for (Node* ap : drawList) 
+	for (Node* ap : drawList)
 	{
 		y += ap->CellSize();
 		if (bInsert) for (auto &var : wIns) if (var.second == ap) y += var.first->CellSize();
@@ -1773,7 +1773,7 @@ void SideBar::PaintWindow()
 	map<Node*, Node*> &wIns = pIns->List;
 
 	bool bInsert = (pIns->pTgt == this) && (wIns.size() > 0);
-	
+
 	if (bInsert) for (auto &var : wIns)
 	{
 		if (var.second == NULL) y = var.first->Spacer(hDC, y);
@@ -1816,10 +1816,10 @@ void SideBar::PaintWindow()
 	for (Node* ap : wList) {
 		bool bFound = false;
 		for (Node* q : drawList) if (q == ap) { bFound = true; break; }
-		
+
 		if (bFound && ap->hDlg) {
 			if (ap->bOpen) ap->Move();
-			else ShowWindow(ap->hDlg, SW_HIDE);	
+			else ShowWindow(ap->hDlg, SW_HIDE);
 		}
 		else if (ap->hDlg) ShowWindow(ap->hDlg, SW_HIDE);
 	}

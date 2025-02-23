@@ -16,38 +16,40 @@
 #include <stdio.h>
 #include <fstream>
 
-#include "about.hpp"
-#include "cmdline.h"
+#include "Astro.h"
+#include "Base.h"
+#include "Camera.h"
+#include "ConsoleManager.h"
+#include "CustomControls.h"
 #include "D3d7util.h"
 #include "D3dmath.h"
-#include "Log.h"
-#include "console_ng.h"
-#include "State.h"
-#include "Astro.h"
-#include "Camera.h"
-#include "Pane.h"
-#include "Select.h"
-#include "DlgMgr.h"
-#include "Psys.h"
-#include "Base.h"
-#include "Vessel.h"
-#include "resource.h"
-#include "Orbiter.h"
-#include "Launchpad.h"
-#include "MenuInfoBar.h"
-#include "Dialogs.h"
 #include "DialogWin.h"
-#include "Script.h"
-#include "Memstat.h"
-#include "CustomControls.h"
-#include "Help.h"
-#include "Util.h"
-#include "DlgHelp.h" // temporary
-#include "htmlctrl.h"
+#include "Dialogs.h"
 #include "DlgCtrl.h"
+#include "DlgHelp.h" // temporary
+#include "DlgMgr.h"
 #include "GraphicsAPI.h"
-#include "ConsoleManager.h"
+#include "Help.h"
+#include "Launchpad.h"
+#include "Log.h"
+#include "Memstat.h"
+#include "MenuInfoBar.h"
+#include "Orbiter.h"
+#include "Pane.h"
+#include "Psys.h"
+#include "Script.h"
+#include "Select.h"
+#include "State.h"
+#include "Util.h"
+#include "Vessel.h"
+#include "about.hpp"
+#include "cmdline.h"
+#include "console_ng.h"
+#include "htmlctrl.h"
 #include "imgui.h"
+#include "resource.h"
+
+#include <direct.h>
 #include <filesystem>
 namespace fs = std::filesystem;
 
@@ -72,6 +74,8 @@ constexpr auto MasterConfigFile = "Orbiter.cfg";
 const char* CurrentScenario = "(Current state)";
 char ScenarioName[256] = "\0";
 // some global string resources
+
+char cwd[512];
 
 // =======================================================================
 // Global variables
@@ -232,6 +236,7 @@ void SetEnvironmentVars ()
 	} else {
 		_putenv ("PATH=Modules");
 	}
+    _getcwd (cwd, 512);
 }
 
 // =======================================================================
@@ -280,7 +285,7 @@ VOID DestroyWorld ()
 // Name: Orbiter()
 // Desc: Application constructor. Sets attributes for the app.
 //-----------------------------------------------------------------------------
-Orbiter::Orbiter () : hInstStopgap(GetModuleHandle(nullptr))
+Orbiter::Orbiter ()
 {
 	// override base class defaults
     //m_bAppUseZBuffer  = TRUE;
@@ -294,6 +299,7 @@ Orbiter::Orbiter () : hInstStopgap(GetModuleHandle(nullptr))
 		fine_counter_step = 1.0 / freq;
 	}
 
+    hInst           = GetModuleHandle(nullptr);
 	pDI             = new DInput(this); TRACENEW
 	pConfig         = new Config; TRACENEW
 	pState          = NULL;
@@ -357,6 +363,13 @@ bool Orbiter::Create()
 {
 	if (m_pLaunchpad) return true; // already created
 
+    HRESULT hr;
+    WNDCLASS wndClass;
+
+    // Enable tab controls
+    InitCommonControls();
+    LoadLibrary ("riched20.dll");
+
 	pConfig->Load(MasterConfigFile);
 	cfgpath = std::string(pConfig->CfgDirPrm.ConfigDir);
 
@@ -369,15 +382,29 @@ bool Orbiter::Create()
 
     pState = new State(); TRACENEW
 
+    // Register main dialog window class
+    GetClassInfo (hInst, "#32770", &wndClass); // override default dialog class
+    wndClass.hIcon = LoadIcon (hInst, MAKEINTRESOURCE (IDI_MAIN_ICON));
+    RegisterClass (&wndClass);
+
+    // Find out if we are running under Linux/WINE
+    HKEY key;
+    long ret = RegOpenKeyEx (HKEY_CURRENT_USER, TEXT("Software\\Wine"), 0, KEY_QUERY_VALUE, &key);
+    RegCloseKey (key);
+    bWINEenv = (ret == ERROR_SUCCESS);
+
+    // Register HTML viewer class
+    RegisterHtmlCtrl (hInst, UseHtmlInline());
+    CustomCtrl::RegisterClass (hInst);
+
 	if (pConfig->CfgCmdlinePrm.bFastExit)
 		SetFastExit(true);
 	if (pConfig->CfgCmdlinePrm.bOpenVideoTab)
 		OpenVideoTab();
 
 	if (pConfig->CfgDemoPrm.bBkImage) {
-		assert(false && "TODO");
-		// hBk = CreateDialog (hInstance, MAKEINTRESOURCE(IDD_DEMOBK), NULL, BkMsgProc);
-		// ShowWindow (hBk, SW_MAXIMIZE);
+		hBk = CreateDialog (hInst, MAKEINTRESOURCE(IDD_DEMOBK), NULL, BkMsgProc);
+		ShowWindow (hBk, SW_MAXIMIZE);
 	}
 
 	// Create the "launchpad" main dialog window
@@ -447,7 +474,7 @@ VOID Orbiter::CloseApp (bool fast_shutdown)
 			delete []customcmd;
 			customcmd = NULL;
 		}
-		oapiUnregisterCustomControls (hInstStopgap);
+		oapiUnregisterCustomControls (hInst);
 	}
 	timeEndPeriod (1);
 }
@@ -474,38 +501,33 @@ int Orbiter::GetVersion () const
 //! Finds legacy module consisting of a single DLL
 //! @return true on success
 //! @param cbufOut returns path to the plugin DLL
-static bool FindStandaloneDll(std::string_view path, std::string_view name, fs::path& cbufOut)
+static bool FindStandaloneDll(const char *path, const char *name, char* cbufOut)
 {
-	cbufOut = std::move(fs::path(path));
-    cbufOut /= name;
-    cbufOut.replace_extension(ORBITER_SOFILE_EXTENSION);
+	sprintf (cbufOut, "%s\\%s.dll", path, name);
 	return fs::exists(cbufOut);
 }
 
 //! Finds module consisting of a plugin DLL inside a plugin-specific folder
 //! @return true on success
 //! @param cbufOut returns path to the plugin DLL
-static bool FindDllInPluginFolder(std::string_view path, std::string_view name, fs::path& cbufOut)
+static bool FindDllInPluginFolder(const char *path, const char *name, char* cbufOut)
 {
-	cbufOut = std::move(fs::path(path));
-    cbufOut /= name;
-    cbufOut /= name;
-    cbufOut.replace_extension(ORBITER_SOFILE_EXTENSION);
+	sprintf(cbufOut, "%s\\%s\\%s.dll", path, name, name);
 	return fs::exists(cbufOut);
 }
 
 void Orbiter::LoadModules(const std::string& path, const std::list<std::string>& names)
 {
-	for (const auto& name : names)
-		LoadModule(path, name);
+	for (auto name : names)
+		LoadModule(path.c_str(), name.c_str());
 }
 
 void Orbiter::LoadModules(const std::string& path)
 {
 	for (const auto& entry : fs::directory_iterator(path)) {
-		const auto& fpath = entry.path();
-		if (fpath.extension().u8string() == ORBITER_SOFILE_EXTENSION) {
-			LoadModule(path, fpath.stem().u8string());
+		auto fpath = entry.path();
+		if (fpath.extension().string() == ".dll") {
+			LoadModule(path.c_str(), fpath.stem().string().c_str());
 		}
 	}
 }
@@ -516,46 +538,39 @@ void Orbiter::LoadModules(const std::string& path)
 //-----------------------------------------------------------------------------
 void Orbiter::LoadStartupModules()
 {
-	LoadModules("Modules/Startup");
+	LoadModules("Modules\\Startup");
 }
 
 //-----------------------------------------------------------------------------
 // Name: LoadModule()
 // Desc: Load a named plugin DLL
 //-----------------------------------------------------------------------------
-MODFILE Orbiter::LoadModule (std::string_view path, std::string_view name)
+HINSTANCE Orbiter::LoadModule (const char *path, const char *name)
 {
-	typedef void (*ModuleEntry)(MODFILE, bool);
-
-	register_module = NULL; // Clear the module. The loaded library may optionally populate it on entry call below.
+	register_module = NULL; // Clear the module. The loaded library may optionally populate it on LoadLibrary() call below.
 
 	// Load the module DLL
-	MODFILE hDLL = NULL;
-	ModuleEntry entry = nullptr;
-
-	fs::path cbuf;
+	HINSTANCE hDLL = NULL;
+	char cbuf[256];
 	if (FindStandaloneDll(path, name, cbuf)) // try to find standalone plugin file
 	{
-		hDLL = reinterpret_cast<MODFILE>(SDL_LoadObject(cbuf.u8string().c_str()));
-		entry = reinterpret_cast<ModuleEntry>(SDL_LoadFunction(static_cast<SDL_SharedObject*>(hDLL), "OrbitersdkModuleEntry"));
+		hDLL = LoadLibrary (cbuf);
 	}
 	else // try to find plugin in a plugin folder
 	{
-		fs::path cbuf2;
+		char cbuf2[256];
 		if (FindDllInPluginFolder(path, name, cbuf2))
 		{
-			hDLL = reinterpret_cast<MODFILE>(SDL_LoadObject(cbuf2.u8string().c_str()));
-			entry = reinterpret_cast<ModuleEntry>(SDL_LoadFunction(static_cast<SDL_SharedObject*>(hDLL), "OrbitersdkModuleEntry"));
+			// Convert to absolute path, otherwise LoadLibraryEx fails with error code 87.
+			// See https://stackoverflow.com/questions/36275535/loadlibraryex-error-87-the-parameter-is-incorrect
+			sprintf(cbuf, "%s\\%s", cwd, cbuf2);
+			hDLL = LoadLibraryEx(cbuf, NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
 		}
 		else
 		{
-			LOGOUT_ERR("Could not find a module named %s. Tried %s and %s.", name.data(), cbuf.u8string().c_str(), cbuf2.u8string().c_str());
+			LOGOUT_ERR("Could not find a module named %s. Tried %s and %s.", name, cbuf, cbuf2);
 			return NULL;
 		}
-	}
-
-	if (hDLL && entry) {
-		entry(hDLL, false);
 	}
 
 	// Can't initialize DirectX in DllMain(), let's do it over here (jarmonik 28.12.2023)
@@ -564,7 +579,7 @@ MODFILE Orbiter::LoadModule (std::string_view path, std::string_view name)
 			if (gclient->clbkInitialise() == false) {
 				// If graphics initialization fails remove client
 				RemoveGraphicsClient(gclient);
-				SDL_UnloadObject(static_cast<SDL_SharedObject*>(hDLL));
+				FreeLibrary(hDLL);
 				LOGOUT_ERR("Client Initialization Failed. Unloading  %s", name);
 				hDLL = NULL;
 				return NULL;
@@ -575,11 +590,11 @@ MODFILE Orbiter::LoadModule (std::string_view path, std::string_view name)
 	if (hDLL) {
 		DLLModule module = { hDLL, register_module ? register_module : new oapi::Module(hDLL), std::string(name), !register_module };
 		// If the DLL doesn't provide a Module interface, create a default one which provides the legacy callbacks
-		LOGOUT(register_module ? "Loading module %s" : "Loading module %s (legacy interface)", name.data());
+		LOGOUT(register_module ? "Loading module %s" : "Loading module %s (legacy interface)", name);
 		m_Plugin.push_back(module);
 	} else {
 		DWORD err = GetLastError();
-		LOGOUT_ERR ("Failed loading module %s (code %d)", cbuf.u8string().c_str(), err);
+		LOGOUT_ERR ("Failed loading module %s (code %d)", cbuf, err);
 	}
 	return hDLL;
 }
@@ -590,15 +605,12 @@ MODFILE Orbiter::LoadModule (std::string_view path, std::string_view name)
 //-----------------------------------------------------------------------------
 bool Orbiter::UnloadModule (const std::string &name)
 {
-	typedef void (*ModuleEntry)(MODFILE, bool);
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++) {
 		if (iequal(it->sName, name)) {
 			LOGOUT("Unloading module %s", it->sName.c_str());
-			auto entry = reinterpret_cast<ModuleEntry>(SDL_LoadFunction(reinterpret_cast<SDL_SharedObject*>(it->hDLL), "OrbitersdkModuleEntry"));
-			entry(it->hDLL, true);
 			if (it->bLocalAlloc)
 				delete it->pModule;
-			SDL_UnloadObject(reinterpret_cast<SDL_SharedObject*>(it->hDLL));
+			FreeLibrary(it->hDLL);
 			m_Plugin.erase(it);
 			return true;
 		}
@@ -610,17 +622,14 @@ bool Orbiter::UnloadModule (const std::string &name)
 // Name: UnloadModule()
 // Desc: Unload a module by its instance
 //-----------------------------------------------------------------------------
-bool Orbiter::UnloadModule (MODFILE hDLL)
+bool Orbiter::UnloadModule (HINSTANCE hDLL)
 {
-	typedef void (*ModuleEntry)(MODFILE, bool);
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++) {
 		if (it->hDLL == hDLL) {
 			LOGOUT("Unloading module %s", it->sName.c_str());
-			auto entry = reinterpret_cast<ModuleEntry>(SDL_LoadFunction(reinterpret_cast<SDL_SharedObject*>(it->hDLL), "OrbitersdkModuleEntry"));
-			entry(it->hDLL, true);
 			if (it->bLocalAlloc)
 				delete it->pModule;
-			SDL_UnloadObject(reinterpret_cast<SDL_SharedObject*>(it->hDLL));
+			FreeLibrary(it->hDLL);
 			m_Plugin.erase(it);
 			return true;
 		}
@@ -632,9 +641,9 @@ bool Orbiter::UnloadModule (MODFILE hDLL)
 // Name: FindModuleProc()
 // Desc: Returns address of a procedure in a plugin module
 //-----------------------------------------------------------------------------
-OPC_Proc Orbiter::FindModuleProc (MODFILE hDLL, const char *procname)
+OPC_Proc Orbiter::FindModuleProc (HINSTANCE hDLL, const char *procname)
 {
-	return (OPC_Proc)SDL_LoadFunction (reinterpret_cast<SDL_SharedObject*>(hDLL), procname);
+	return (OPC_Proc)GetProcAddress (hDLL, procname);
 }
 
 //-----------------------------------------------------------------------------
@@ -1435,7 +1444,7 @@ VOID Orbiter::SetFOV (double fov, bool limit_range)
 
 	// update Camera dialog
 	HWND hCamDlg;
-	if (pDlgMgr && (hCamDlg = pDlgMgr->IsEntry (hInstStopgap, IDD_CAMERA)))
+	if (pDlgMgr && (hCamDlg = pDlgMgr->IsEntry (hInst, IDD_CAMERA)))
 		SendMessage (hCamDlg, WM_APP, 0, (LPARAM)&fov);
 }
 
@@ -1452,7 +1461,7 @@ VOID Orbiter::IncFOV (double dfov)
 
 	// update Camera dialog
 	HWND hCamDlg;
-	if (pDlgMgr && (hCamDlg = pDlgMgr->IsEntry (hInstStopgap, IDD_CAMERA)))
+	if (pDlgMgr && (hCamDlg = pDlgMgr->IsEntry (hInst, IDD_CAMERA)))
 		SendMessage (hCamDlg, WM_APP, 0, (LPARAM)&fov);
 }
 
@@ -1530,7 +1539,7 @@ void Orbiter::TogglePlanetariumMode()
 	plnFlag ^= PLN_ENABLE;
 
 	if (pDlgMgr) {
-		DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInstStopgap);
+		DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInst);
 		if (dlg) dlg->Update();
 	}
 
@@ -1544,7 +1553,7 @@ void Orbiter::ToggleLabelDisplay()
 	mkrFlag ^= MKR_ENABLE;
 
 	if (pDlgMgr) {
-		DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInstStopgap);
+		DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInst);
 		if (dlg) dlg->Update();
 	}
 }
@@ -1605,7 +1614,7 @@ void Orbiter::EndPlayback ()
 	if (snote_playback) snote_playback->ClearText();
 	bPlayback = false;
 	if (pDlgMgr) {
-		HWND hDlg = pDlgMgr->IsEntry (hInstStopgap, IDD_RECPLAY);
+		HWND hDlg = pDlgMgr->IsEntry (hInst, IDD_RECPLAY);
 		if (hDlg) PostMessage (hDlg, WM_USER+1, 0, 0);
 	}
 	if (g_pane && g_pane->MIBar()) g_pane->MIBar()->SetPlayback(false);
@@ -2790,12 +2799,12 @@ void Orbiter::UpdateDeallocationProgress()
 
 HWND Orbiter::OpenDialog (int id, DLGPROC pDlg, void *context)
 {
-	return OpenDialog (hInstStopgap, id, pDlg, context);
+	return OpenDialog (hInst, id, pDlg, context);
 }
 
 HWND Orbiter::OpenDialogEx (int id, DLGPROC pDlg, DWORD flag, void *context)
 {
-	return OpenDialogEx (hInstStopgap, id, pDlg, flag, context);
+	return OpenDialogEx (hInst, id, pDlg, flag, context);
 }
 
 HWND Orbiter::OpenDialog (HINSTANCE hInstance, int id, DLGPROC pDlg, void *context)

@@ -28,7 +28,7 @@ namespace oapi {
 	public:
 		/// \brief Soliton instance server for FlightData plugin
 		/// \param hDLL module instance handle
-		static FlightData* GetInstance(MODFILE hDLL);
+		static FlightData* GetInstance(HINSTANCE hDLL);
 
 		/// \brief Soliton instance destructor
 		static void DelInstance();
@@ -47,7 +47,7 @@ namespace oapi {
 		void clbkNewVessel(OBJHANDLE hVessel);
 
 		/// \brief Vessel deletion notification callback
-		/// \param hVessel Handle of vessel to be deleted 
+		/// \param hVessel Handle of vessel to be deleted
 		void clbkDeleteVessel(OBJHANDLE hVessel);
 
 		/// \brief Entry point for dialog message procedure
@@ -64,7 +64,7 @@ namespace oapi {
 
 	protected:
 		/// \brief Protected constructor
-		FlightData(MODFILE hDLL);
+		FlightData(HINSTANCE hDLL);
 
 		/// \brief Protected destructor
 		~FlightData();
@@ -75,14 +75,14 @@ namespace oapi {
 		/// \brief Destroy dialog message handler
 		INT_PTR DestroyDialog();
 
-		/// \brief Re-initialise the vessel selection list 
+		/// \brief Re-initialise the vessel selection list
 		/// \param hDlg dialog handle
 		void ResetVesselList(HWND hDlg);
 
 		/// \brief Reset all data graphs
 		void ResetData();
 
-		/// \brief Switch monitoring focus to a new vessel 
+		/// \brief Switch monitoring focus to a new vessel
 		void PickVesselFromList(HWND hDlg);
 
 		/// \brief Add a new data graph to the stack
@@ -126,15 +126,15 @@ namespace oapi {
 // API interface
 // ==============================================================
 
-/// \brief Module entry point 
+/// \brief Module entry point
 /// \param hDLL module handle
-DLLCLBK void InitModule(MODFILE hDLL)
+DLLCLBK void InitModule(HINSTANCE hDLL)
 {
 	// Create and register the module
 	oapiRegisterModule(oapi::FlightData::GetInstance(hDLL));
 }
 
-/// \brief Module exit point 
+/// \brief Module exit point
 /// \param hDLL module handle
 DLLCLBK void ExitModule(HINSTANCE hDLL)
 {
@@ -151,7 +151,7 @@ oapi::FlightData* oapi::FlightData::self = nullptr;
 
 // --------------------------------------------------------------
 
-oapi::FlightData* oapi::FlightData::GetInstance(MODFILE hDLL)
+oapi::FlightData* oapi::FlightData::GetInstance(HINSTANCE hDLL)
 {
 	if (!self)
 		self = new FlightData(hDLL);
@@ -170,7 +170,7 @@ void oapi::FlightData::DelInstance()
 
 // --------------------------------------------------------------
 
-oapi::FlightData::FlightData(MODFILE hDLL)
+oapi::FlightData::FlightData(HINSTANCE hDLL)
 	: Module(hDLL)
 	, m_hDlg(NULL)
 {
@@ -180,7 +180,7 @@ oapi::FlightData::FlightData(MODFILE hDLL)
 	wndClass.lpfnWndProc = hookGraphMsgProc;
 	wndClass.cbClsExtra = 0;
 	wndClass.cbWndExtra = 0;
-	wndClass.hInstance = stopgapGetModuleInstance(hDLL);
+	wndClass.hInstance = hDLL;
 	wndClass.hIcon = NULL;
 	wndClass.hCursor = LoadCursor(NULL, IDC_CROSS);
 	wndClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
@@ -208,7 +208,7 @@ oapi::FlightData::FlightData(MODFILE hDLL)
 oapi::FlightData::~FlightData()
 {
 	// Unregister the window class for the graph
-	UnregisterClass("GraphWindow", stopgapGetModuleInstance(GetModule()));
+	UnregisterClass("GraphWindow", GetModule());
 
 	Graph::FreeGDI();
 
@@ -494,7 +494,7 @@ void oapi::FlightData::hookOpenDlg(void* context)
 
 void oapi::FlightData::clbkOpenDlg(void* context)
 {
-	HWND hDlg = oapiOpenDialog(stopgapGetModuleInstance(GetModule()), IDD_FLIGHTDATA, hookDlgMsgProc);
+	HWND hDlg = oapiOpenDialog(GetModule(), IDD_FLIGHTDATA, hookDlgMsgProc);
 	if (hDlg) m_hDlg = hDlg; // otherwise open already
 }
 

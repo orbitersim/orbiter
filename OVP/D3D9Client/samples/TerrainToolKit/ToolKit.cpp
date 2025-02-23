@@ -57,16 +57,16 @@ string LngLat(Position p);
 // Initialize module
 // =================================================================================================
 //
-DLLCLBK void InitModule(MODFILE hModule)
+DLLCLBK void InitModule(HINSTANCE hModule)
 {
-	// Can do very little here since graphics servises are not yet running 
+	// Can do very little here since graphics servises are not yet running
 	oapiRegisterModule(new ToolKit(hModule));
 }
 
 
 // =================================================================================================
 //
-DLLCLBK void ExitModule(MODFILE  hModule)
+DLLCLBK void ExitModule(HINSTANCE  hModule)
 {
 
 }
@@ -225,7 +225,7 @@ BOOL ToolKit::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 // Orbiter Module
 // =================================================================================================
 //
-ToolKit::ToolKit(MODFILE hInst) : gcGUIApp(), Module(hInst)
+ToolKit::ToolKit(HINSTANCE hInst) : gcGUIApp(), Module(hInst)
 {
 	pCore = NULL;
 	hMgr = NULL;
@@ -243,9 +243,9 @@ ToolKit::ToolKit(MODFILE hInst) : gcGUIApp(), Module(hInst)
 	sel_corner = -1;
 	bGo = false;
 
-	// Can do very little here since graphics servises are not yet running 
+	// Can do very little here since graphics servises are not yet running
 	dwCmd = oapiRegisterCustomCmd((char*)"TerrainToolKit", (char*)"ToolKit for terrain and base editing", OpenToolsClbk, this);
-	gcPropertyTreeInitialize(stopgapGetModuleInstance(hInst));
+	gcPropertyTreeInitialize(hInst);
 
 	mIdent.Ident();
 }
@@ -256,7 +256,7 @@ ToolKit::ToolKit(MODFILE hInst) : gcGUIApp(), Module(hInst)
 ToolKit::~ToolKit()
 {
 	oapiUnregisterCustomCmd(dwCmd);
-	gcPropertyTreeRelease(stopgapGetModuleInstance(hModule));
+	gcPropertyTreeRelease(hModule);
 }
 
 
@@ -269,11 +269,11 @@ void ToolKit::clbkShutdown()
 
 	pCore->RegisterGenericProc(RenderClbk, GENERICPROC_DELETE, this);
 	pCore->RegisterGenericProc(MouseClickClbk, GENERICPROC_DELETE, this);
-	
+
 	if (hOverlay) pCore->AddGlobalOverlay(hMgr, _V(0, 0, 0, 0), gcCore::OlayType::RELEASE_ALL, NULL, hOverlay);
 	if (hOverlaySrf) oapiReleaseTexture(hOverlaySrf);
 	if (dmSphere) pCore->ReleaseDevMesh(dmSphere);
-		
+
 	selection.area.clear();
 	oldsel.area.clear();
 
@@ -357,12 +357,12 @@ bool ToolKit::Initialize()
 	// Register a mouse callback for terrain clicks
 	pCore->RegisterGenericProc(MouseClickClbk, GENERICPROC_PICK_TERRAIN, this);
 
-	
+
 	SetupPlanet(oapiCameraProxyGbody());
 
 
 	// Create Root Node ----------------------------------------------------------------------------
-	// 
+	//
 	pRoot = new QTree(pCore, hPlanet);
 
 	dmSphere = pCore->LoadDevMeshGlobal("D3D9Sphere");
@@ -375,7 +375,7 @@ bool ToolKit::Initialize()
 	// Create edge-blend gradient
 	//
 	hGradient = oapiCreateSurfaceEx(128, 128, OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE | OAPISURFACE_MIPMAPS | OAPISURFACE_PF_ARGB);
-	
+
 	Sketchpad* pSkp = oapiGetSketchpad(hGradient);
 	RECT r = { 0, 0, 129, 129 };
 	pSkp->SetBlendState(Sketchpad::BlendState::COPY);
@@ -388,12 +388,11 @@ bool ToolKit::Initialize()
 	hRootNode = RegisterApplication("Terrain ToolKit V1.1", NULL, gcGUI::DS_LEFT);
 	//hMainDlg = CreateDialogParamA(hModule, MAKEINTRESOURCE(IDD_MAIN), hAppMainWnd, gDlgProc, 0);
 	//hMainNode = RegisterSubsection(hRootNode, "Main", hMainDlg);
-	auto hModule1 = stopgapGetModuleInstance(hModule);
-	hCtrlDlg = CreateDialogParamA(hModule1, MAKEINTRESOURCE(IDD_EXPORT), hAppMainWnd, (DLGPROC)gDlgProc, 0);
+	hCtrlDlg = CreateDialogParamA(hModule, MAKEINTRESOURCE(IDD_EXPORT), hAppMainWnd, (DLGPROC)gDlgProc, 0);
 	hCtrlNode = RegisterSubsection(hRootNode, "Selection Oprions", hCtrlDlg);
-	hImpoDlg = CreateDialogParam(hModule1, MAKEINTRESOURCE(IDD_IMPORT), hAppMainWnd, (DLGPROC)gDlgProc, 0);
+	hImpoDlg = CreateDialogParam(hModule, MAKEINTRESOURCE(IDD_IMPORT), hAppMainWnd, (DLGPROC)gDlgProc, 0);
 	hImpoNode = RegisterSubsection(hRootNode, "Import Options", hImpoDlg, 0xC0FFE0);
-	hDataDlg  = CreateDialogParam(hModule1, MAKEINTRESOURCE(IDD_DATA), hAppMainWnd, (DLGPROC)gDlgProc, 0);
+	hDataDlg  = CreateDialogParam(hModule, MAKEINTRESOURCE(IDD_DATA), hAppMainWnd, (DLGPROC)gDlgProc, 0);
 	hDataNode = RegisterSubsection(hRootNode, "Properties", hDataDlg);
 
 	DisplayWindow(hRootNode);
@@ -418,7 +417,7 @@ bool ToolKit::Initialize()
 	}
 
 
-	pProp = new gcPropertyTree(this, hDataDlg, IDC_DATAVIEW, (DLGPROC)gDlgProc, GetFont(0), stopgapGetModuleInstance(GetModule()));
+	pProp = new gcPropertyTree(this, hDataDlg, IDC_DATAVIEW, (DLGPROC)gDlgProc, GetFont(0), GetModule());
 
 	// ---------------------------------------------------
 	hSecCur = pProp->SubSection("Mouse cursor location");
@@ -446,13 +445,13 @@ bool ToolKit::Initialize()
 		pProp->AddComboBoxItem(hBLvs, buf);
 	}
 	pProp->SetComboBoxSelection(hBLvs, 0);
-	
+
 	pProp->SetSliderScale(hCEdg, 1.0, 480.0, gcPropertyTree::Scale::LOG);
 	pProp->SetSliderValue(hCEdg, 32.0);
 
 	pProp->Update();
 
-	
+
 	memset(&SaveImage, 0, sizeof(OPENFILENAME));
 	memset(&SaveDDS, 0, sizeof(OPENFILENAME));
 	memset(&SaveElevation, 0, sizeof(OPENFILENAME));
@@ -467,7 +466,7 @@ bool ToolKit::Initialize()
 	SaveImage.nMaxFileTitle = sizeof(SaveFileTitle);
 	SaveImage.lpstrInitialDir = "";
 	SaveImage.lpstrDefExt = NULL;
-	SaveImage.lpstrFilter = 
+	SaveImage.lpstrFilter =
 "Image Files\0*.dds;*.png;*.jpg;*.bmp\0\
 Direct Draw Surface (.dds)\0*.dds\0\
 Windows Bitmap (.bmp)\0*.bmp\0\
@@ -509,7 +508,7 @@ Direct Draw Surface (.dds)\0*.dds\0\0";
 	SaveElevation.lpstrFileTitle = NULL;
 	SaveElevation.nMaxFileTitle = 0;
 	SaveElevation.Flags = OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR;
-	
+
 	bGo = true;
 	return true;
 }
@@ -536,7 +535,7 @@ int ToolKit::SelectionFlags()
 void ToolKit::clbkRender()
 {
 	static COLOUR4 mat[5] = {
-	{ 0, 1, 0, 0.6f },	
+	{ 0, 1, 0, 0.6f },
 	{ 1, 0, 0, 0.6f },
 	{ 1, 0, 1, 0.6f },
 	{ 0.2f, 0.2f, 1, 0.6f },
@@ -550,7 +549,7 @@ void ToolKit::clbkRender()
 	bool bGuides = false; // (SendDlgItemMessageA(hCtrlDlg, IDC_GUIDES, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	bool bAutoHighlight = (SendDlgItemMessageA(hCtrlDlg, IDC_AUTOHIGHLIGHT, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	bool bHideClip = (SendDlgItemMessageA(hCtrlDlg, IDC_DISPSEL, BM_GETCHECK, 0, 0) != BST_CHECKED);
-	
+
 	int select = SendDlgItemMessage(hCtrlDlg, IDC_SELECT, CB_GETCURSEL, 0, 0);
 	int flags = SelectionFlags();
 
@@ -559,20 +558,20 @@ void ToolKit::clbkRender()
 
 
 	// ---------------------------------------------------------------------
-	// Optain infomation about mouse cursor location  
+	// Optain infomation about mouse cursor location
 	// ---------------------------------------------------------------------
 
 	pg = pCore->ScanScreen(xpos, ypos);
 	if (pFirst && !pSecond) pHover = pRoot->FindNode(pg.lng, pg.lat, pFirst->level);
-	
+
 
 
 
 	// ---------------------------------------------------------------------
-	// Highlight the tile where mouse is hovering and print some information 
+	// Highlight the tile where mouse is hovering and print some information
 	// ---------------------------------------------------------------------
 
-	if (select == Select::SRender) 
+	if (select == Select::SRender)
 	{
 		QTree* pSel = pRoot->FindNode(pg.lng, pg.lat, pg.level);
 		if (pSel) {
@@ -580,9 +579,9 @@ void ToolKit::clbkRender()
 			UpdateTileInfo(flags, pSel, &pg);
 		}
 	}
-	else 
+	else
 	{
-		if (select == Select::SHighestOwn) 
+		if (select == Select::SHighestOwn)
 		{
 			QTree *pSel = pRoot->HighestOwn(flags, pg.lng, pg.lat);
 			if (pSel) {
@@ -590,7 +589,7 @@ void ToolKit::clbkRender()
 				UpdateTileInfo(flags, pSel, &pg);
 			}
 		}
-		else 
+		else
 		{
 			int lvl = SelectedLevel();
 			if (lvl > 0) {
@@ -602,11 +601,11 @@ void ToolKit::clbkRender()
 			}
 		}
 	}
-	
-	
 
 
-	
+
+
+
 
 	if (pFirst && (pHover || pSecond))
 	{
@@ -690,18 +689,18 @@ void ToolKit::clbkRender()
 				for (auto& x : selection.area) parents.push_back(x.pNode->GetParent());
 				parents.unique();
 
-				for (auto x : parents) grands.push_back(x->GetParent());		
+				for (auto x : parents) grands.push_back(x->GetParent());
 				grands.unique();
 
 				RenderSelection(grands, 1, 0xFFFF00FF);
-				RenderSelection(parents, 1, 0xFF00FFFF);			
+				RenderSelection(parents, 1, 0xFF00FFFF);
 			}
 		}
 	}
 
 
 
-	if (oldsel.area.size() != 0) 
+	if (oldsel.area.size() != 0)
 	{
 		// ---------------------------------------------------------------------
 		// Draw tile outlines for old selection
@@ -709,7 +708,7 @@ void ToolKit::clbkRender()
 		if (!bHideClip) RenderSelection(&oldsel, 1, 0xFF0000FF);
 	}
 
-	if (selection.area.size() != 0) 
+	if (selection.area.size() != 0)
 	{
 		// ---------------------------------------------------------------------
 		// Draw tile outlines for selection
@@ -735,14 +734,14 @@ void ToolKit::clbkRender()
 
 			int c = i;
 			if (sel_corner == i) c = 4;
-		
+
 			FVECTOR4 base = mat[c];
 			FVECTOR4 emis = mat[c];
-			emis.rgb *= 0.5f;	
-	
+			emis.rgb *= 0.5f;
+
 			VECTOR3 uSP = GetSurfacePosUnit(points[i].lng, points[i].lat) * (oapiGetSize(hPlanet) + points[i].elev);
 			float scale = float(tan(0.75*RAD) * length(uSP - cpos));
-			
+
 			points[i].mWorld = CreateWorldMatrix(hPlanet, points[i].lng, points[i].lat, points[i].elev, scale);
 
 			pCore->SetMeshMaterial(dmSphere, 0, MatProp::Diffuse, &base);
@@ -775,7 +774,7 @@ bool ToolKit::UpdateOverlay(int olay)
 
 	SURFHANDLE hSrf = NULL;
 	Layer* pLr = NULL;
-	
+
 	if (olay == 0) {
 		hSrf = hOverlaySrf;
 		pLr = GetLayer(Layer::LayerType::TEXTURE);
@@ -785,7 +784,7 @@ bool ToolKit::UpdateOverlay(int olay)
 		hSrf = hOverlayMsk;
 		pLr = GetLayer(Layer::LayerType::NIGHT);
 	}
-	
+
 	if (!hSrf) return false;
 
 	bool bWater = IsLayerValid(Layer::LayerType::WATER);
@@ -807,7 +806,7 @@ bool ToolKit::UpdateOverlay(int olay)
 	// Acquire Sketchpad for Overlay Surface
 	Sketchpad *pSkp = oapiGetSketchpad(hSrf);
 
-	if (pSkp) 
+	if (pSkp)
 	{
 		FVECTOR4 clr = 1.0f;
 		FVECTOR4 adj = FVECTOR4(0, 1, 0, 0);
@@ -846,7 +845,7 @@ bool ToolKit::UpdateOverlay(int olay)
 			pt[i].x = float((points[i].lng - selection.bounds.left) / w) * float(size.cx);
 			pt[i].y = float((selection.bounds.top - points[i].lat) / h) * float(size.cy);
 		}
-		
+
 		for (int i = 0; i < 4; i++) {
 			int q = (i - 1) < 0 ? 3 : i - 1;
 			int w = (i + 1) > 3 ? 0 : i + 1;
@@ -858,7 +857,7 @@ bool ToolKit::UpdateOverlay(int olay)
 
 		// Create Surface Overlay
 		//
-		if (olay == 0) 
+		if (olay == 0)
 		{
 			if (bSurf && pLr) {
 				pSkp->SetColorMatrix(&mColor);	// Setup a color matrix for corrections
@@ -868,24 +867,24 @@ bool ToolKit::UpdateOverlay(int olay)
 			}
 			hOverlay = pCore->AddGlobalOverlay(hMgr, selection.bounds.vec, gcCore::OlayType::SURFACE, hOverlaySrf, hOverlay);
 		}
-		
+
 
 		// Create Nightlights/Water Overlay
 		//
 		if (olay == 1)
 		{
-			if (bNight && pLr) 
+			if (bNight && pLr)
 			{
 				pSkp->SetColorMatrix(&mColor);	// Setup a color matrix for corrections
 				pSkp->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, ptr(FVECTOR4(adj.y, adj.y, adj.y, 1.0f))); // Setup gamma correction
 
 				int mode = pLr->GetWaterMode();
 
-				if (mode == 0) // No Water in Alpha 
+				if (mode == 0) // No Water in Alpha
 				{
 					pSkp->SetBlendState(Sketchpad::BlendState::COPY_COLOR);
 					pSkp->CopyTetragon(pLr->hSource, NULL, pt);
-					
+
 					if (bWater) // Use additional water layer if available
 					{
 						Layer* pWaterLr = GetLayer(Layer::LayerType::WATER);
@@ -894,7 +893,7 @@ bool ToolKit::UpdateOverlay(int olay)
 						pSkp->SetColorMatrix(&mMix); // Mix green channel to alpha
 						pSkp->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA);
 						pSkp->SetBlendState(Sketchpad::BlendState::COPY_ALPHA);
-						pSkp->CopyTetragon(pWaterLr->hSource, NULL, pt); // Copy to destination alpha	
+						pSkp->CopyTetragon(pWaterLr->hSource, NULL, pt); // Copy to destination alpha
 					}
 				}
 
@@ -913,8 +912,8 @@ bool ToolKit::UpdateOverlay(int olay)
 					pSkp->FillTetragon(0xFF000000, pt);
 				}
 			}
-			else 
-			{		
+			else
+			{
 				// No Nightlights, just a water layer
 				pSkp->SetBlendState(Sketchpad::BlendState::COPY_COLOR);
 				pSkp->FillTetragon(0, pt);
@@ -926,7 +925,7 @@ bool ToolKit::UpdateOverlay(int olay)
 					FMATRIX4 mMix; mMix.Zero(); mMix.m24 = 1.0f;
 					pSkp->SetColorMatrix(&mMix); // Mix green channel to alpha
 					pSkp->SetBlendState(Sketchpad::BlendState::COPY_ALPHA);
-					pSkp->CopyTetragon(pWaterLr->hSource, NULL, pt); // Copy to destination alpha	
+					pSkp->CopyTetragon(pWaterLr->hSource, NULL, pt); // Copy to destination alpha
 				}
 			}
 
@@ -977,7 +976,7 @@ bool ToolKit::UpdateOverlay(int olay)
 //
 bool ToolKit::CreateOverlays()
 {
-	
+
 	int Width = selection.selw * 512;
 	int Height = selection.selh * 512;
 
@@ -987,7 +986,7 @@ bool ToolKit::CreateOverlays()
 	bool bNight = IsLayerValid(Layer::LayerType::NIGHT);
 	bool bSurf = IsLayerValid(Layer::LayerType::TEXTURE);
 
-	if (hOverlaySrf) 
+	if (hOverlaySrf)
 	{
 		gcCore::SurfaceSpecs ovlspecs;
 		if (pCore->GetSurfaceSpecs(hOverlaySrf, &ovlspecs, sizeof(gcCore::SurfaceSpecs))) {
@@ -1053,7 +1052,7 @@ bool ToolKit::UpdateBackGround(SURFHANDLE hSurf, DWORD flags)
 
 	Sketchpad* pSkp = oapiGetSketchpad(hSurf);
 
-	if (pSkp) 
+	if (pSkp)
 	{
 		pSkp->SetColorMatrix();
 		pSkp->SetBlendState(Sketchpad::BlendState::COPY);
@@ -1066,7 +1065,7 @@ bool ToolKit::UpdateBackGround(SURFHANDLE hSurf, DWORD flags)
 				if (hSrc) {
 					RECT t = { se.x * 512, se.y * 512 , (se.x + 1) * 512, (se.y + 1) * 512 };
 					pSkp->StretchRect(hSrc, &st.range, &t);
-					
+
 				}
 			}
 		}
@@ -1100,10 +1099,10 @@ void ToolKit::clbkMouseClick(int iUser, void *pData)
 	if (what == Select::WTexture) flags |= gcTileFlags::TEXTURE;
 	if (what == Select::WNightlight) flags |= gcTileFlags::MASK;
 	if (what == Select::WElevation) flags |= gcTileFlags::ELEVATION | gcTileFlags::ELEV_MOD;
-	
-	if (pPick->hTile) 
+
+	if (pPick->hTile)
 	{
-		if (selection.area.size() == 0 || !hOverlay) 
+		if (selection.area.size() == 0 || !hOverlay)
 		{
 			if (pPick->msg == WM_LBUTTONDOWN)
 			{
@@ -1120,7 +1119,7 @@ void ToolKit::clbkMouseClick(int iUser, void *pData)
 			}
 		}
 
-		if (pFirst && !pSecond) 
+		if (pFirst && !pSecond)
 		{
 			if (pPick->msg == WM_LBUTTONUP)
 			{

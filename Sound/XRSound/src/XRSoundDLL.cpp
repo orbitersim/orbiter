@@ -27,11 +27,11 @@ DLLCLBK XRSoundEngine *GetModuleXRSoundEngineInstance(const char *pUniqueModuleN
 }
 
 // This is the single entry point for acquiring an XRSoundEngine instance for a given *vessel*.
-// It returns the existing XRSoundEngine instance for the supplied vessel if one already exists, otherwise it creates 
-// a new XREngine instance and returns that *if* the vessel should have any default sounds *or* it was invoked via a vessel's custom code. 
+// It returns the existing XRSoundEngine instance for the supplied vessel if one already exists, otherwise it creates
+// a new XREngine instance and returns that *if* the vessel should have any default sounds *or* it was invoked via a vessel's custom code.
 // Otherwise, it returns nullptr.
 //
-// You must use XRSoundEngine::DestroyInstance to destroy all XRSoundEngine objects created here; they are not 
+// You must use XRSoundEngine::DestroyInstance to destroy all XRSoundEngine objects created here; they are not
 // reference-counted, and will be destroyed when the owning vessel is destroyed.
 //
 // Params:
@@ -54,7 +54,7 @@ VesselXRSoundEngine *XRSoundDLL::GetXRSoundEngineInstance(const OBJHANDLE hVesse
 
     VESSEL *pVessel = oapiGetVesselInterface(hVessel);
     _ASSERTE(pVessel);
-    
+
     // sanity check: bail out now if this is not a valid vessel for unknown reason
     if (!pVessel)
         return nullptr;
@@ -85,13 +85,13 @@ VesselXRSoundEngine *XRSoundDLL::GetXRSoundEngineInstance(const OBJHANDLE hVesse
 }
 
 // This is the single entry point for acquiring an XRSoundEngine instance for a given *module*.
-// It returns the existing instance for the supplied module if one already exists, otherwise it creates 
+// It returns the existing instance for the supplied module if one already exists, otherwise it creates
 // a new XREngine instance and returns that.
 //
 // Note that unlike the vessel-bound version of this method, there are no default sounds for modules: sounds are
 // only playable manually via the XRSound C++ API.
 //
-// You must use XRSoundEngine::DestroyInstance to destroy all XRSoundEngine objects created here; they are not 
+// You must use XRSoundEngine::DestroyInstance to destroy all XRSoundEngine objects created here; they are not
 // destroyed automatically when Orbiter exits to the launch pad.
 //
 // Params:
@@ -121,7 +121,7 @@ ModuleXRSoundEngine *XRSoundDLL::GetXRSoundEngineInstance(const char *pUniqueMod
         if (pEngine)
         {
             // add the new engine to our master map for modules
-            s_pInstance->m_allModulesMap.insert(CString_XRSoundEnginePtr_Pair(pUniqueModuleName, pEngine));  
+            s_pInstance->m_allModulesMap.insert(CString_XRSoundEnginePtr_Pair(pUniqueModuleName, pEngine));
         }
         else
         {
@@ -129,7 +129,7 @@ ModuleXRSoundEngine *XRSoundDLL::GetXRSoundEngineInstance(const char *pUniqueMod
         }
         s_pInstance->WriteLog(csMsg);
     }
-    
+
     return pEngine;   // may be nullptr
 }
 
@@ -137,7 +137,7 @@ ModuleXRSoundEngine *XRSoundDLL::GetXRSoundEngineInstance(const char *pUniqueMod
 // This function is called when Orbiter starts or when the module
 // is activated.
 //==============================================================
-DLLCLBK void InitModule(MODFILE hDLL)
+DLLCLBK void InitModule(HINSTANCE hDLL)
 {
 #ifdef _DEBUG
     // Enable Visual Studio's runtime heap checking for debug builds
@@ -149,7 +149,7 @@ DLLCLBK void InitModule(MODFILE hDLL)
 
     XRSoundDLL::s_pInstance = new XRSoundDLL(hDLL);
     oapiRegisterModule(XRSoundDLL::s_pInstance);
-    
+
     // parse this immediately so we can read it from the start
     XRSoundDLL::ParseGlobalConfigFile();
 
@@ -185,7 +185,7 @@ DLLCLBK void ExitModule(HINSTANCE hDLL)
 XRSoundDLL *XRSoundDLL::s_pInstance;
 
 // Constructor
-XRSoundDLL::XRSoundDLL(MODFILE hDLL) :
+XRSoundDLL::XRSoundDLL(HINSTANCE hDLL) :
     Module(hDLL), m_hDLL(hDLL), m_nextSoundEnginesRefreshSimt(0), m_absoluteSimTime(0), m_nextIrrKlangUpdateRealtime(0)
 {
 }
@@ -215,7 +215,7 @@ void XRSoundDLL::clbkSimulationStart(RenderMode mode)
     // is the first call that must be made before any other XRSoundEngine calls can be made.
 
     m_nextSoundEnginesRefreshSimt = 0;  // reset so our clbkPreStep runs immediately on startup
-    m_absoluteSimTime = 0;              // reset since sim is restarting            
+    m_absoluteSimTime = 0;              // reset since sim is restarting
     XRSoundEngine::ResetStaticSimulationData();
 }
 
@@ -226,7 +226,7 @@ void XRSoundDLL::clbkSimulationEnd()
 
     // Note: *modules* are not loaded or unloaded when the simulation starts or ends: they are only loaded or unloaded via
     // the Orbiter launch pad, either when 1) the launch pad loads or exits, or 2) when a module is manually loaded or unloaded via its checkbox
-    // in the Modules tab.  Each module that uses XRSound must initialize its own sounds in clbkSimulationStart and delete its XRSoundImpl proxy object 
+    // in the Modules tab.  Each module that uses XRSound must initialize its own sounds in clbkSimulationStart and delete its XRSoundImpl proxy object
     // in its clbkSimulationEnd handler.  However, since we own each engine object's lifecycle, we must free up any XRSoundEngine objects for each module
     // here as well.  (See comments in XRSoundImpl::~XRSoundImpl() for details about why this is so.)
     for (auto it = m_allModulesMap.begin(); it != m_allModulesMap.end(); it++)
@@ -285,7 +285,7 @@ ModuleXRSoundEngine *XRSoundDLL::FindXRSoundEngineForModule(const char *pUniqueM
 }
 
 // Should be called in a given timestep before m_allVesselsMap is accessed; walks through through m_allVesselsMap and:
-//    1) removes any vessels that no longer exist (and terminating their sounds), and 
+//    1) removes any vessels that no longer exist (and terminating their sounds), and
 //    2) adds any new vessels, creating a default XRSoundEngine for each
 void XRSoundDLL::UpdateAllVesselsMap()
 {
@@ -299,7 +299,7 @@ void XRSoundDLL::UpdateAllVesselsMap()
         if (!oapiIsVessel(hVessel))
             deletedVesselHandles.push_back(hVessel);   // we can't modify m_allVesselsMap while we are iterating over it, so we have to make a new list
 
-#if 0   // DEV DEBUGGING ONLY        
+#if 0   // DEV DEBUGGING ONLY
         if (oapiIsVessel(hVessel))
         {
             VESSEL *pVessel = oapiGetVesselInterface(hVessel);
@@ -327,7 +327,7 @@ void XRSoundDLL::UpdateAllVesselsMap()
         }
     }
 
-    // 2) add any new vessels to our m_allVesselsMap, creating a new (default) XRSoundEngine instance for each 
+    // 2) add any new vessels to our m_allVesselsMap, creating a new (default) XRSoundEngine instance for each
     vector<OBJHANDLE> allVesselHandles = GetAllActiveVesselsFromOrbiter();
     for (unsigned int i = 0; i < allVesselHandles.size(); i++)
     {
@@ -352,7 +352,7 @@ void XRSoundDLL::UpdateAllVesselsMap()
 }
 
 
-// Invoked every timestep before Orbiter state update.  This is not called if the simulation is paused, even if 
+// Invoked every timestep before Orbiter state update.  This is not called if the simulation is paused, even if
 // the user moves the camera.
 // Params:
 //   simt simulation time after the currently processed step  [DO NOT USE -- SEE NOTE]
@@ -367,9 +367,9 @@ void XRSoundDLL::clbkPreStep(double simtDoNotUse, double simdt, double mjd)
     // (The Orbiter core does not invoke clkbPreStep for MJD edits: it adjusts simt but not *simdt* on the next call, so that makes it easy.)
     //
     // Note: do NOT use simt in any way for this: simt adjusts with MJD, but simdt does not.
-    // WARNING: XRSOUND CODE SHOULD *NEVER* INVOKE oapiGetSimTime(): it varies by MJD and so is unreliable for time deltas (which 
-    // was the whole point of simt in the first place).  Instead, you should always use simt we pass to our PreStep objects (since we 
-    // pass absoluteSimtTime in it instead), or invoke XRSoundDLL::GetAbsoluteSimTime() if a local simt is not available.  
+    // WARNING: XRSOUND CODE SHOULD *NEVER* INVOKE oapiGetSimTime(): it varies by MJD and so is unreliable for time deltas (which
+    // was the whole point of simt in the first place).  Instead, you should always use simt we pass to our PreStep objects (since we
+    // pass absoluteSimtTime in it instead), or invoke XRSoundDLL::GetAbsoluteSimTime() if a local simt is not available.
     //
     // I added a #define oapiGetSimTime error to XRSoundEngine.h to prevent XRSound code from accidentally trying to invoke it.
     //**************************************************************************************************************
@@ -417,7 +417,7 @@ void XRSoundDLL::clbkPreStep(double simtDoNotUse, double simdt, double mjd)
 double XRSoundDLL::GetSystemUptime()
 {
     // Even though we lose some precision going from 2^64 max down to 2^53 (53 bits mantissia in a double), that's still enough
-    // precision to track 104,249,991.37 days, or 285,616 years of uptime right down to the millisecond.  
+    // precision to track 104,249,991.37 days, or 285,616 years of uptime right down to the millisecond.
     // See https://stackoverflow.com/questions/1848700/biggest-integer-that-can-be-stored-in-a-double
     const double uptimeMilli = static_cast<double>(GetTickCount64());  // GetTickCount64 requires Vista or higher, but that is our minimum target OS anyway
     return (uptimeMilli / 1000);  // convert to seconds
@@ -428,7 +428,7 @@ void XRSoundDLL::clbkPause(bool paused)
 {
     if (paused)
     {
-        // Walk through all vessels and pause all the sounds for each; all normal vessel sounds will automatically 
+        // Walk through all vessels and pause all the sounds for each; all normal vessel sounds will automatically
         // be unpaused by our UpdateAllSoundStates later when the simulation resumes.
         for (auto it = m_allVesselsMap.begin(); it != m_allVesselsMap.end(); it++)
         {

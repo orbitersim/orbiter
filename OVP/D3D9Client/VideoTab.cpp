@@ -29,7 +29,7 @@ const UINT IDC_SCENARIO_TREE = (oapiGetOrbiterVersion() >= 111105) ? 1090 : 1088
 BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam)
 {
 	if (GetDlgItem(hwnd, IDC_SCENARIO_TREE)) {
-		*(HWND*)lParam = hwnd; 
+		*(HWND*)lParam = hwnd;
 		return false;
 	}
 	return true;
@@ -39,7 +39,7 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam)
 // ==============================================================
 // Constructor
 
-VideoTab::VideoTab(D3D9Client *gc, MODFILE _hInst, HINSTANCE _hOrbiterInst, HWND hVideoTab)
+VideoTab::VideoTab(D3D9Client *gc, HINSTANCE _hInst, HINSTANCE _hOrbiterInst, HWND hVideoTab)
 {
 	gclient      = gc;
 	hInst        = _hInst;
@@ -51,7 +51,7 @@ VideoTab::VideoTab(D3D9Client *gc, MODFILE _hInst, HINSTANCE _hOrbiterInst, HWND
 
 VideoTab::~VideoTab()
 {
-	
+
 }
 
 // ==============================================================
@@ -128,7 +128,7 @@ BOOL VideoTab::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case IDC_VID_STENCIL:
 			return TRUE;
 			break;
-			
+
 		case IDC_VID_ASPECT:
 			if (HIWORD(wParam) == BN_CLICKED) {
 				SelectWidth();
@@ -147,7 +147,7 @@ BOOL VideoTab::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case IDC_VID_INFO:
-			auto hInst1 = stopgapGetModuleInstance(hInst);
+			auto hInst1 = hInst;
 			DialogBoxParamA(hInst1, MAKEINTRESOURCE(IDD_D3D9SETUP), hTab, SetupDlgProcWrp, (LPARAM)this);
 			return TRUE;
 		}
@@ -225,23 +225,23 @@ bool VideoTab::Initialise()
 
 	SendDlgItemMessage(hTab, IDC_VID_MODE, CB_SETCURSEL, data->modeidx, 0);
 	SendDlgItemMessage(hTab, IDC_VID_VSYNC, BM_SETCHECK, data->novsync ? BST_CHECKED : BST_UNCHECKED, 0);
-		
+
 	SetWindowText(GetDlgItem(hTab, IDC_VID_WIDTH), std::to_string(data->winw).c_str());
 	SetWindowText(GetDlgItem(hTab, IDC_VID_HEIGHT), std::to_string(data->winh).c_str());
 
 	aspect_idx = 0;
-		
+
 	if (data->winw == (4*data->winh)/3 || data->winh == (3*data->winw)/4)	aspect_idx = 1;
 	else if (data->winw == (16*data->winh)/10 || data->winh == (10*data->winw)/16) aspect_idx = 2;
 	else if (data->winw == (16*data->winh)/9 || data->winh == (9*data->winw)/16) aspect_idx = 3;
-		
+
 	SendDlgItemMessage(hTab, IDC_VID_ASPECT, BM_SETCHECK, aspect_idx ? BST_CHECKED : BST_UNCHECKED, 0);
 	if (aspect_idx) aspect_idx--;
 	SendDlgItemMessage(hTab, IDC_VID_4X3+aspect_idx, BM_SETCHECK, BST_CHECKED, 0);
 
 	SendDlgItemMessage(hTab, IDC_VID_STENCIL,  BM_SETCHECK, data->trystencil, 0); // GDI Compatibility mode
-	SendDlgItemMessage(hTab, IDC_VID_ENUM,     BM_SETCHECK, data->forceenum, 0);  
-	SendDlgItemMessage(hTab, IDC_VID_PAGEFLIP, BM_SETCHECK, data->pageflip, 0);	  // Full scrren Window	
+	SendDlgItemMessage(hTab, IDC_VID_ENUM,     BM_SETCHECK, data->forceenum, 0);
+	SendDlgItemMessage(hTab, IDC_VID_PAGEFLIP, BM_SETCHECK, data->pageflip, 0);	  // Full scrren Window
 
 	bool bRet = SelectAdapter(data->deviceidx);
 
@@ -256,7 +256,7 @@ bool VideoTab::Initialise()
 
 
 // ==============================================================
-// 
+//
 void VideoTab::SelectMode(DWORD index)
 {
 	GraphicsClient::VIDEODATA *data = gclient->GetVideoData();
@@ -271,7 +271,7 @@ void VideoTab::SelectMode(DWORD index)
 bool VideoTab::SelectAdapter(DWORD index)
 {
 
-	SelectedAdapterIdx = index; 
+	SelectedAdapterIdx = index;
 
 	GraphicsClient::VIDEODATA *data = gclient->GetVideoData();
 
@@ -283,7 +283,7 @@ bool VideoTab::SelectAdapter(DWORD index)
 
 		char cbuf[32];
 		D3DDISPLAYMODE mode, curMode;
-	
+
 		if (g_pD3DObject->GetAdapterCount()<=index) {
 			LogErr("Adapter Index out of range");
 			return false;
@@ -296,7 +296,7 @@ bool VideoTab::SelectAdapter(DWORD index)
 		DWORD nModes = g_pD3DObject->GetAdapterModeCount(index, D3DFMT_X8R8G8B8);
 
 		if (nModes == 0) {
-			LogErr("VideoTab::SelectAdapter() No Display Modes Available");	
+			LogErr("VideoTab::SelectAdapter() No Display Modes Available");
 		}
 
 		for (DWORD k=0;k<nModes;k++) {
@@ -408,7 +408,7 @@ void VideoTab::UpdateConfigData()
 	data->forceenum  = (SendDlgItemMessage (hTab, IDC_VID_ENUM, BM_GETCHECK, 0, 0) == BST_CHECKED);
 
 	GetWindowText(GetDlgItem(hTab, IDC_VID_WIDTH),  cbuf, 32); data->winw = atoi(cbuf);
-	GetWindowText(GetDlgItem(hTab, IDC_VID_HEIGHT), cbuf, 32); data->winh = atoi(cbuf);	
+	GetWindowText(GetDlgItem(hTab, IDC_VID_HEIGHT), cbuf, 32); data->winh = atoi(cbuf);
 
 
 	HWND hChild = NULL;
@@ -456,7 +456,7 @@ void VideoTab::UpdateConfigData()
 			// Note: The returned text will not necessarily be stored in the
 			//       original buffer passed by the application.
 			//       It is possible that pszText will point to text in a
-			//       new buffer rather than place it in the old buffer. 
+			//       new buffer rather than place it in the old buffer.
 			path += "\\"; path += tvItem.pszText;
 		}
 		path += ".scn";
@@ -483,7 +483,7 @@ INT_PTR CALLBACK VideoTab::SetupDlgProcWrp(HWND hWnd, UINT uMsg, WPARAM wParam, 
 {
 	static class VideoTab *VTab = NULL;
 	switch (uMsg) {
-		case WM_INITDIALOG: 
+		case WM_INITDIALOG:
 			VTab = (class VideoTab *)lParam;
 			VTab->InitSetupDialog(hWnd);
 			return true;
@@ -516,7 +516,6 @@ INT_PTR CALLBACK VideoTab::SetupDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 		}
 		return false;
 	}
-	auto hInst1 = stopgapGetModuleInstance(hInst);
 	switch (LOWORD(wParam)) {
 
 		case IDC_MESH_DEBUGGER:
@@ -529,7 +528,7 @@ INT_PTR CALLBACK VideoTab::SetupDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 
 		case IDC_CREDITS:
 			LoadLibrary("riched20.dll");
-			DialogBoxParamA(hInst1, MAKEINTRESOURCEA(IDD_D3D9CREDITS), hWnd, CreditsDlgProcWrp, (LPARAM)this);
+			DialogBoxParamA(hInst, MAKEINTRESOURCEA(IDD_D3D9CREDITS), hWnd, CreditsDlgProcWrp, (LPARAM)this);
 			break;
 
 		case IDC_SRFPRELOAD:
@@ -546,7 +545,7 @@ INT_PTR CALLBACK VideoTab::SetupDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 			EndDialog (hWnd, 0);
 			break;
 	}
-	
+
 	return false;
 }
 
@@ -571,7 +570,7 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	if (g_pD3DObject->CheckDeviceMultiSampleType(SelectedAdapterIdx, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, true, D3DMULTISAMPLE_2_SAMPLES, NULL)==S_OK) aamax=2;
 	if (g_pD3DObject->CheckDeviceMultiSampleType(SelectedAdapterIdx, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, true, D3DMULTISAMPLE_4_SAMPLES, NULL)==S_OK) aamax=4;
 	if (g_pD3DObject->CheckDeviceMultiSampleType(SelectedAdapterIdx, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, true, D3DMULTISAMPLE_8_SAMPLES, NULL)==S_OK) aamax=8;
-	
+
 	LogAlw("InitSetupDialog() Enum Device AA capability = %u",aamax);
 
 
@@ -582,7 +581,7 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	if (aamax>=2)  SendDlgItemMessageA(hWnd, IDC_AA, CB_ADDSTRING, 0, (LPARAM)"2x");
 	if (aamax>=4)  SendDlgItemMessageA(hWnd, IDC_AA, CB_ADDSTRING, 0, (LPARAM)"4x");
 	if (aamax>=8)  SendDlgItemMessageA(hWnd, IDC_AA, CB_ADDSTRING, 0, (LPARAM)"8x");
-	
+
 
 	// AF -----------------------------------------
 
@@ -592,7 +591,7 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	if (caps.MaxAnisotropy>=8) SendDlgItemMessageA(hWnd, IDC_AF, CB_ADDSTRING, 0, (LPARAM)"8x");
 	if (caps.MaxAnisotropy>=12) SendDlgItemMessageA(hWnd, IDC_AF, CB_ADDSTRING, 0, (LPARAM)"12x");
 	if (caps.MaxAnisotropy>=16) SendDlgItemMessageA(hWnd, IDC_AF, CB_ADDSTRING, 0, (LPARAM)"16x");
-	
+
 
 	// DEBUG --------------------------------------
 
@@ -602,14 +601,14 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessageA(hWnd, IDC_DEBUG, CB_ADDSTRING, 0, (LPARAM)"2");
 	SendDlgItemMessageA(hWnd, IDC_DEBUG, CB_ADDSTRING, 0, (LPARAM)"3");
 	SendDlgItemMessageA(hWnd, IDC_DEBUG, CB_ADDSTRING, 0, (LPARAM)"4");
-	
+
 	// SKETCHPAD --------------------------------------
 
 	SendDlgItemMessage(hWnd, IDC_FONT, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hWnd, IDC_FONT, CB_ADDSTRING, 0, (LPARAM)"Crisp");
 	SendDlgItemMessageA(hWnd, IDC_FONT, CB_ADDSTRING, 0, (LPARAM)"Antialiased");
 	SendDlgItemMessageA(hWnd, IDC_FONT, CB_ADDSTRING, 0, (LPARAM)"Cleartype");
-	
+
 	// ENVMAP MODE --------------------------------------
 
 	SendDlgItemMessage(hWnd, IDC_ENVMODE, CB_RESETCONTENT, 0, 0);
@@ -651,7 +650,7 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessageA(hWnd, IDC_MICROFILTER, CB_ADDSTRING, 0, (LPARAM)"Anisotropic 8x");
 	SendDlgItemMessageA(hWnd, IDC_MICROFILTER, CB_ADDSTRING, 0, (LPARAM)"Anisotropic 16x (Slow/Best)");
 	SendDlgItemMessage(hWnd,  IDC_MICROFILTER, CB_SETCURSEL, 0, 0);
-	
+
 	// MICROTEX FILTER --------------------------------------------
 
 	SendDlgItemMessage(hWnd,  IDC_MICROMODE, CB_RESETCONTENT, 0, 0);
@@ -661,7 +660,7 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 
 
 	// MICROTEX BLEND MODE -----------------------------------------
-	
+
 	SendDlgItemMessage(hWnd,  IDC_BLENDMODE, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hWnd, IDC_BLENDMODE, CB_ADDSTRING, 0, (LPARAM)"Soft light");
 	SendDlgItemMessageA(hWnd, IDC_BLENDMODE, CB_ADDSTRING, 0, (LPARAM)"Normal light");
@@ -744,7 +743,7 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 			break;
 		}
 	}
-		
+
 
 
 	// Write values in controls ----------------
@@ -764,11 +763,11 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessage(hWnd, IDC_CONVERGENCE, TBM_SETRANGEMAX, 1, 100);
 	SendDlgItemMessage(hWnd, IDC_CONVERGENCE, TBM_SETRANGEMIN, 1, 5);
 	SendDlgItemMessage(hWnd, IDC_CONVERGENCE, TBM_SETTICFREQ, 5, 0);
-	
+
 	SendDlgItemMessage(hWnd, IDC_SEPARATION, TBM_SETRANGEMAX,  1, 100);
 	SendDlgItemMessage(hWnd, IDC_SEPARATION, TBM_SETRANGEMIN,  1, 10);
 	SendDlgItemMessage(hWnd, IDC_SEPARATION, TBM_SETTICFREQ,  5, 0);
-	
+
 	SendDlgItemMessage(hWnd, IDC_LODBIAS, TBM_SETRANGEMAX, 1, 10);
 	SendDlgItemMessage(hWnd, IDC_LODBIAS, TBM_SETRANGEMIN, 1, -10);
 	SendDlgItemMessage(hWnd, IDC_LODBIAS, TBM_SETTICFREQ, 1, 0);
@@ -776,11 +775,11 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessage(hWnd, IDC_MICROBIAS, TBM_SETRANGEMAX, 1, 10);
 	SendDlgItemMessage(hWnd, IDC_MICROBIAS, TBM_SETRANGEMIN, 1, 0);
 	SendDlgItemMessage(hWnd, IDC_MICROBIAS, TBM_SETTICFREQ, 1, 0);
-	
+
 
 	sprintf_s(cbuf,32,"%1.1fm",float(Config->Convergence));
 	SetWindowTextA(GetDlgItem(hWnd, IDC_CONV_DSP), cbuf);
-			
+
 	sprintf_s(cbuf,32,"%1.0f%%",float(Config->Separation));
 	SetWindowTextA(GetDlgItem(hWnd, IDC_SEPA_DSP), cbuf);
 
@@ -829,7 +828,7 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessage(hWnd, IDC_BASEVIS,    BM_SETCHECK, Config->PreLBaseVis==1, 0);
 	SendDlgItemMessage(hWnd, IDC_NEARPLANE,  BM_SETCHECK, Config->NearClipPlane==1, 0);
 	SendDlgItemMessage(hWnd, IDC_BREAK,		 BM_SETCHECK, Config->DebugBreak == 1, 0);
-	
+
 	sprintf_s(cbuf,32,"%d", Config->PlanetLoadFrequency);
 	SetWindowText(GetDlgItem(hWnd, IDC_HZ), cbuf);
 
@@ -1032,7 +1031,7 @@ INT_PTR CALLBACK VideoTab::CreditsDlgProcWrp(HWND hWnd, UINT uMsg, WPARAM wParam
 {
 	static class VideoTab *VTab = NULL;
 	switch (uMsg) {
-		case WM_INITDIALOG: 
+		case WM_INITDIALOG:
 			VTab = (class VideoTab *)lParam;
 			VTab->InitCreditsDialog(hWnd);
 			return true;
@@ -1057,7 +1056,7 @@ INT_PTR CALLBACK VideoTab::CreditsDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
 
 void VideoTab::InitCreditsDialog(HWND hWnd)
 {
-	HANDLE hFile = CreateFile("Modules/D3D9Client/Credits.rtf", GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL); 
+	HANDLE hFile = CreateFile("Modules/D3D9Client/Credits.rtf", GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
 	if (hFile==INVALID_HANDLE_VALUE) {
 		LogErr("Failed to open a file /Modules/D3D9Client/Credits.rtf");
@@ -1111,7 +1110,7 @@ void VideoTab::ScanAtmoCfgs()
 	if (hFile != INVALID_HANDLE_VALUE) {
 		do {
 			if (FileInformation.cFileName[0] != '.') {
-				if (!(FileInformation.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {		
+				if (!(FileInformation.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
 					string cfgname, planet;
 					if (GetConfigName(FileInformation.cFileName, cfgname, planet)) {
 						_AtmoCfg cfg = { cfgname, FileInformation.cFileName };

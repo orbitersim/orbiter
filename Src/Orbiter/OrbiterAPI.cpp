@@ -51,13 +51,6 @@ DLLEXPORT void FormatValue (char *cbuf, int n, double f, int precision)
 	strncpy (cbuf, s, n);
 }
 
-DLLEXPORT HMODULE stopgapGetModuleInstance (MODFILE module) {
-#if !defined(_WIN32)
-#error "stopgap module instance does not work on non-Windows. WHY IS THIS STILL HERE"
-#endif
-	return reinterpret_cast<HMODULE>(module);
-}
-
 DLLEXPORT int oapiGetOrbiterVersion ()
 {
 	return g_pOrbiter->GetVersion();
@@ -2571,10 +2564,9 @@ DLLEXPORT DWORD oapiInflate (const BYTE *inp, DWORD ninp, BYTE *outp, DWORD nout
 // Undocumented interface functions
 // ------------------------------------------------------------------------------
 
-DLLEXPORT void InitLib (MODFILE hModule)
+DLLEXPORT void InitLib (HINSTANCE hModule)
 {
-	HINSTANCE moduleInstance = stopgapGetModuleInstance(hModule);
-	typedef void (*OPC_DLLInit)(MODFILE hDLL);
+	typedef void (*OPC_DLLInit)(HINSTANCE hDLL);
 	OPC_DLLInit DLLInit;
 	char cbuf[256], mname[256], *mp;
 	int i, len;
@@ -2582,7 +2574,7 @@ DLLEXPORT void InitLib (MODFILE hModule)
 	if (td.SimT0 < 1) {
 		// don't write during simulation, since unnecessary file access
 		// can cause time waste
-		GetModuleFileName (moduleInstance, mname, 256);
+		GetModuleFileName (hModule, mname, 256);
 		for (i = 0, mp = mname; mname[i]; i++)
 			if (mname[i] == '\\') mp = mname+i+1;
 		sprintf (cbuf, "Module %s ", mp);
@@ -2614,9 +2606,9 @@ DLLEXPORT void InitLib (MODFILE hModule)
 	if (DLLInit) (*DLLInit)(hModule);
 }
 
-DLLEXPORT void ExitLib (MODFILE hModule)
+DLLEXPORT void ExitLib (HINSTANCE hModule)
 {
-	typedef void (*OPC_DLLExit)(MODFILE hDLL);
+	typedef void (*OPC_DLLExit)(HINSTANCE hDLL);
 	OPC_DLLExit DLLExit;
 	DLLExit = (OPC_DLLExit)SDL_LoadFunction (reinterpret_cast<SDL_SharedObject*>(hModule), "ExitModule");
 	if (!DLLExit) DLLExit = (OPC_DLLExit)SDL_LoadFunction (reinterpret_cast<SDL_SharedObject*>(hModule), "opcDLLExit");

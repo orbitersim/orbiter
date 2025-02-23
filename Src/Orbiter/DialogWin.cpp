@@ -276,7 +276,7 @@ void DialogWin::PaintTitleButtons ()
 	x0 += r.right-r.left-15;
 	HDC hDC = GetWindowDC (hWnd);
 	HDC hDCsrc = CreateCompatibleDC (hDC);
-	HBITMAP hBmp = (HBITMAP)LoadImage (g_pOrbiter->hInstStopgap, MAKEINTRESOURCE(IDB_DEFBUTTON), IMAGE_BITMAP, 15, 30, 0);
+	HBITMAP hBmp = (HBITMAP)LoadImage (g_pOrbiter->GetInstance(), MAKEINTRESOURCE(IDB_DEFBUTTON), IMAGE_BITMAP, 15, 30, 0);
 	SelectObject (hDCsrc, hBmp);
 	int i = 0;
 	if (flag & DLG_CAPTIONCLOSE) {

@@ -16,7 +16,7 @@ using namespace oapi;
 // class ModuleNV
 // ======================================================================
 
-ModuleNV::ModuleNV (MODFILE hDLL)
+ModuleNV::ModuleNV (HINSTANCE hDLL)
 {
 	version = 0;
 	hModule = hDLL;
@@ -47,7 +47,7 @@ double ModuleNV::GetSimMJD () const
 // class Module
 // ======================================================================
 
-Module::Module (MODFILE hDLL): ModuleNV (hDLL)
+Module::Module (HINSTANCE hDLL): ModuleNV (hDLL)
 {
 	version = 1;
 }

@@ -806,7 +806,7 @@ void Camera::SetGroundObserver_TargetLock (bool lock)
 			go.phi = atan2 (-hdir.x, hdir.z);
 			OutputGroundObserverParams();
 		}
-		
+
 		SendDlgMessage (2, this);
 	}
 }
@@ -827,7 +827,7 @@ void Camera::GroundObserverShift (double dx, double dz, double dh)
 {
 	if (!external_view || extmode != CAMERA_GROUNDOBSERVER) return;
 	double r;
-	
+
 	Vector dsz (grot.m13, grot.m23, grot.m33); // dz: go forward/backward w.r.t. camera view direction
 	Vector dsx (grot.m11, grot.m21, grot.m31); // dx: go sideways w.r.t. camera view direction
 	dirref->GlobalToEquatorial (gpos + dsz*dz + dsx*dx, go.lng, go.lat, r);
@@ -853,7 +853,7 @@ void Camera::SendDlgMessage (int msgid, void *msg) const
 {
 	DialogManager *dlgmgr = g_pOrbiter->DlgMgr();
 	if (dlgmgr) {
-		HWND dlg = dlgmgr->IsEntry (g_pOrbiter->hInstStopgap, IDD_CAMERA);
+		HWND dlg = dlgmgr->IsEntry (g_pOrbiter->GetInstance(), IDD_CAMERA);
 		if (dlg)
 			PostMessage (dlg, WM_APP, msgid, (LPARAM)msg);
 	}
@@ -863,7 +863,7 @@ void Camera::OutputGroundObserverParams () const
 {
 	DialogManager *dlgmgr = g_pOrbiter->DlgMgr();
 	if (dlgmgr) {
-		HWND dlg = dlgmgr->IsEntry (g_pOrbiter->hInstStopgap, IDD_CAMERA);
+		HWND dlg = dlgmgr->IsEntry (g_pOrbiter->GetInstance(), IDD_CAMERA);
 		if (dlg) {
 			char cbuf[256];
 			sprintf (cbuf, "Lng = %+0.6f�\r\nLat = %+0.6f�\r\nAlt = %0.2fm\r\nPhi = %0.2f�\r\nTheta = %0.2f�",
@@ -894,7 +894,7 @@ DWORD Camera::UpdateExternalControl (ExternalCameraControl *ecc)
 				if (ECC->clbkPoll (&data)) {
 					go.phi = data.yaw;
 					go.tht = data.pitch;
-				}	
+				}
 			}
 		} else { // track mode
 			if (cmode & CAMMODE_TRACK) {
@@ -1461,7 +1461,7 @@ bool Camera::Read (ifstream &ifs)
 			extmode = CAMERA_TARGETFROMOBJECT;
 		else if (!_stricmp (ctrackmode, "Ground") && (dirref = g_psys->GetObj (cdirref, true)))
 			extmode = CAMERA_GROUNDOBSERVER;
-		else 
+		else
 			extmode = CAMERA_TARGETRELATIVE;
 	}
 	return true;
@@ -1580,7 +1580,7 @@ CameraMode *CameraMode::Create (char *str)
 	} else {
 		cm = new CameraMode_Cockpit; TRACENEW
 	}
-	
+
 	if (!(pc = strtok (NULL, ":")) || !(cm->target = (OBJHANDLE)g_psys->GetObj (trim_string (pc), true))) {
 		delete cm;
 		return 0;
@@ -1635,7 +1635,7 @@ void CameraMode_Cockpit::Init (char *str)
 		cmode = CM_CURRENT;
 		str += 7;
 	}
-	
+
 }
 
 void CameraMode_Cockpit::GetDescr (char *str, int len)
@@ -1685,7 +1685,7 @@ void CameraMode_Track::Init (char *str)
 void CameraMode_Track::Store (char *str)
 {
 	static const char *tmstr[6] = {"CURRENT","RELATIVE", "ABSDIR", "GLOBAL", "TARGETTOREF", "TARGETFROMREF"};
-	sprintf (str, "Track:%s%:%0.2f:%s %0.3f %0.3f %0.3f", 
+	sprintf (str, "Track:%s%:%0.2f:%s %0.3f %0.3f %0.3f",
 		target ? ((Body*)target)->Name() : "-", fov,
 		tmstr[tmode], reldist, phi, theta);
 	if (tmode == TM_TARGETTOREF || tmode == TM_TARGETFROMREF) {

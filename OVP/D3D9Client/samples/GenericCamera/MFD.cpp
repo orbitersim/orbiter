@@ -33,7 +33,7 @@ class GenericModule : public oapi::Module
 
 public:
 
-	GenericModule(MODFILE hInst) : Module(hInst) {	}
+	GenericModule(HINSTANCE hInst) : Module(hInst) {	}
 
 	~GenericModule() {	}
 
@@ -43,7 +43,7 @@ public:
 
 	void clbkFocusChanged(OBJHANDLE hNew, OBJHANDLE hOld)
 	{
-	
+
 		VESSEL *o = NULL;
 		if (hOld) o = oapiGetVesselInterface(hOld);
 
@@ -59,7 +59,7 @@ public:
 // ============================================================================================================
 // API interface
 
-DLLCLBK void InitModule (MODFILE hDLL)
+DLLCLBK void InitModule (HINSTANCE hDLL)
 {
 	GenericModule *pFly = new GenericModule(hDLL);
 	oapiRegisterModule(pFly);
@@ -119,7 +119,7 @@ CameraMFD::CameraMFD(DWORD w, DWORD h, VESSEL *vessel)
 {
 
 	font = oapiCreateFont (w/20, true, "Arial", (FontStyle)(FONT_BOLD | FONT_ITALIC), 450);
-	
+
 	hTexture = oapiLoadTexture("samples/Crosshairs.dds");
 
 	// Create 3D render target
@@ -127,8 +127,8 @@ CameraMFD::CameraMFD(DWORD w, DWORD h, VESSEL *vessel)
 		                                    OAPISURFACE_RENDERTARGET | OAPISURFACE_NOMIPMAPS);
 
 	// Clear the surface
-	oapiClearSurface(hRenderSrf);	
-	
+	oapiClearSurface(hRenderSrf);
+
 
 	SelectVessel(hVessel, Type::Dock);
 }
@@ -180,7 +180,7 @@ void CameraMFD::FocusChanged(bool bGained)
 void CameraMFD::UpdateDimensions(DWORD w, DWORD h)
 {
 	W = w; H = h;
-	FocusChanged(true);	
+	FocusChanged(true);
 }
 
 
@@ -249,7 +249,7 @@ void CameraMFD::SelectVessel(VESSEL *hVes, Type _type)
 		else return;
 	}
 
-	// Actual rendering of the camera view into hRenderSrf will occur when the client is ready for it and 
+	// Actual rendering of the camera view into hRenderSrf will occur when the client is ready for it and
 	// a lagg of a few frames may occur depending about graphics/performance options.
 	// Update will continue untill the camera is turned off via ogciCustomCameraOnOff() or deleted via ogciDeleteCustomCamera()
 	// Camera orientation can be changed by calling this function again with an existing camera handle instead of NULL.
@@ -341,9 +341,9 @@ int CameraMFD::ButtonMenu (const MFDBUTTONMENU **menu) const
 //
 bool CameraMFD::Update(oapi::Sketchpad *pSkp)
 {
-	
+
 	hShell->InvalidateDisplay();
-	
+
 	// Call to update attachments
 	SelectVessel(hVessel, type);
 
@@ -354,7 +354,7 @@ bool CameraMFD::Update(oapi::Sketchpad *pSkp)
 	int edge = tbgh + 2; // Minumum spacing between cross endpoints and MFD screen edge
 
 	RECT sr = { 0, 0, long(W - 2), long(H - 3) };
-	
+
 	pSkp->SetTextAlign(Sketchpad::TAlign_horizontal::CENTER);
 
 	if (hRenderSrf) {
@@ -394,7 +394,7 @@ bool CameraMFD::Update(oapi::Sketchpad *pSkp)
 			int len = min(248, (nseg * 16) - 8); // Lenght (start and end to a white segment)
 
 			RECT ch = { 0, 0, len, 4 };
-		
+
 			pSkp->CopyRect(hTexture, &ch, x - len, y);
 			pSkp->CopyRect(hTexture, &ch, x, y);
 
@@ -412,7 +412,7 @@ bool CameraMFD::Update(oapi::Sketchpad *pSkp)
 		pSkp->Text(W / 2, H / 2, msg, lstrlen(msg));
 		return true;
 	}
-	
+
 
 	if (!hCamera) {
 		static const char *msg = { "Custom Cameras Disabled" };
@@ -439,19 +439,19 @@ bool CameraMFD::Update(oapi::Sketchpad *pSkp)
 
 	sprintf_s(text, 256, "Viewing %s %s%d)%s", hVessel->GetName(), mode[type], index, atchId.c_str());
 
-	
+
 	pSkp->QuickBrush(0xA0000000);
 	pSkp->QuickPen(0);
 	pSkp->Rectangle(1, 1, W - 1, tbgh);
 	pSkp->Rectangle(1, H - tbgh, W - 1, H - 1);
-	
+
 
 	hShell->Title (pSkp, text);
 
 	sprintf_s(text, 256, "[%s] FOV=%0.0f%c Ofs=%2.2f[m]", paci[bParent], fov*2.0, (char)176/*°*/, offset);
 
 	pSkp->Text(10, H - tbgh, text, lstrlen(text));
-	
+
 	return true;
 }
 
@@ -474,7 +474,7 @@ void CameraMFD::DrawOverlay(oapi::Sketchpad *pSkp)
 //
 bool CameraMFD::ConsumeKeyBuffered(DWORD key)
 {
-	
+
 	switch (key) {
 
 
@@ -557,7 +557,7 @@ bool CameraMFD::ConsumeButton(int bt, int event)
 	static const DWORD btkey[12] = { OAPI_KEY_1, OAPI_KEY_2, OAPI_KEY_3, OAPI_KEY_4, OAPI_KEY_5, OAPI_KEY_6,
 		OAPI_KEY_7, OAPI_KEY_8, OAPI_KEY_9, OAPI_KEY_0, OAPI_KEY_B, OAPI_KEY_C };
 
-	if (event&PANEL_MOUSE_LBDOWN) {					
+	if (event&PANEL_MOUSE_LBDOWN) {
 		return ConsumeKeyBuffered(btkey[bt]);
 	}
 

@@ -119,16 +119,16 @@ public:
 	Node *		FindClosest(vector<Node*> &vis, Node *pPar, int yval);
 	Node *		FindNode(HWND hDlg);
 	DWORD		GetAutoColor();
-	
+
 	WindowManager *GetWM() const { return pMgr; }
 
 	vector<Node*> wList;
-	
+
 private:
 
 	class		WindowManager *pMgr;
 	HWND		hBar;
-	MODFILE hInst;
+	HINSTANCE   hInst;
 	DWORD		state;
 	float		anim_state;
 	bool		bOpening, bIsOpen, bValidate, bLock, bFirstTime, bWin;
@@ -170,7 +170,7 @@ class WindowManager : public gcGUIBase
 public:
 
 
-				WindowManager(HWND hAppMainWindow, MODFILE hInst, bool bWindowed);
+				WindowManager(HWND hAppMainWindow, HINSTANCE hInst, bool bWindowed);
 				~WindowManager();
 
 
@@ -180,7 +180,7 @@ public:
 	void		Animate();
 	int			GetWidth() const { return width; }
 	HWND		GetMainWindow() const { return hMainWnd; }
-	MODFILE GetInstance() const { return hInst; }
+	HINSTANCE   GetInstance() const { return hInst; }
 	SideBar *	GetSideBar(HWND hWnd);
 	SideBar *	NewSideBar(Node *pAN);
 	void		ReleaseSideBar(SideBar *pSB);
@@ -196,7 +196,7 @@ public:
 	HBITMAP		GetBitmap(int id) const;
 	HFONT		GetAppTitleFont() const { return hAppFont; }
 	HFONT		GetSubTitleFont() const { return hSubFont; }
-	
+
 
 	// ===============================================================================================
 	//
@@ -234,7 +234,7 @@ public:
 	Conf		cfg;
 
 private:
-	
+
 	tInsert		qInsert;
 	vector<SideBar*> sbList;
 	SideBar *	sbDrag;
@@ -243,7 +243,7 @@ private:
 	POINT		ptOffset;
 	int			width;
 	HWND		hMainWnd;
-	MODFILE hInst;
+	HINSTANCE   hInst;
 	HFONT		hAppFont;
 	HFONT		hSubFont;
 	HBITMAP		hTitle;

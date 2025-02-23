@@ -206,7 +206,7 @@ static UINT timerid = 0;
 //-----------------------------------------------------------------------------
 orbiter::LaunchpadDialog::LaunchpadDialog(Orbiter *app) {
     hDlg = NULL;
-    hInst = app->hInstStopgap; // TODO
+    hInst = app->GetInstance(); // TODO
     pApp = app;
     pCfg = app->Cfg();
     g_pDlg = this; // for nonmember callbacks

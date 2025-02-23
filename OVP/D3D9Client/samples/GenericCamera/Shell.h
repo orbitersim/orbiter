@@ -31,16 +31,16 @@ struct mfd_list {
 	UINT		idMFD;
 	TRUE_MFD *	hTrue;
 };
- 
+
 extern struct mfd_list *MFDList;
 extern int mfdLast;
 extern bool bExiting;
 
-class ShellMFD: public MFD2 
+class ShellMFD: public MFD2
 {
 
 public:
-	
+
 				ShellMFD (DWORD w, DWORD h, VESSEL *vessel, TRUE_MFD *TrueMFD, UINT id);
 				~ShellMFD ();
 
@@ -54,20 +54,20 @@ public:
 	void		WriteStatus (FILEHANDLE scn) const;
 	void		ReadStatus (FILEHANDLE scn);
 	void		StoreStatus (void) const;
-	void		RecallStatus (void);	
+	void		RecallStatus (void);
 
 	UINT		GetMFDId(void) const { return id; }
 	TRUE_MFD *  GetTrueMFD(void) const { return hTrue; }
 
 	// Call these functions from global InitModule and ExitModule callbacks for initialization and cleanup.
 	// Like:
-	// 
+	//
 	// DLLCLBK void ExitModule(HINSTANCE hDLL)
 	// {
 	//		ShellMFD::ExitModule(hDLL);
 	// }
 	//
-	static void	InitModule(MODFILE hDLL);
+	static void	InitModule(HINSTANCE hDLL);
 	static void ExitModule(HINSTANCE hDLL);
 	static OAPI_MSGTYPE MsgProc(UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam);
 
@@ -76,4 +76,4 @@ private:
 	TRUE_MFD *hTrue;	// Pointer to true MFD
 };
 
-#endif 
+#endif

@@ -66,7 +66,7 @@ struct D3D9Client::GenericProcData {
 
 using namespace oapi;
 
-MODFILE g_hInst = 0;
+HINSTANCE g_hInst = 0;
 D3D9Client *g_client = 0;
 class gcConst* g_pConst = 0;
 IDirect3D9* g_pD3DObject = 0;  // Made valid when VideoTab is created
@@ -118,7 +118,7 @@ extern "C" {
 // ==============================================================
 // Initialise module
 
-DLLCLBK void InitModule(MODFILE hDLL)
+DLLCLBK void InitModule(HINSTANCE hDLL)
 {
 
 #ifdef _DEBUG
@@ -256,7 +256,7 @@ DLLCLBK gcConst * gcGetCoreAPI()
 // D3D9Client class implementation
 // ==============================================================
 
-D3D9Client::D3D9Client (MODFILE hInstance) :
+D3D9Client::D3D9Client (HINSTANCE hInstance) :
 	GraphicsClient(hInstance),
 	vtab(NULL),
 	scenarioName("(none selected)"),
@@ -313,7 +313,7 @@ D3D9Client::~D3D9Client()
 
 
 // ==============================================================
-// 
+//
 bool D3D9Client::ChkDev(const char *fnc) const
 {
 	if (pDevice) return false;
@@ -392,7 +392,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	if (!g_pD3DObject) return NULL;
 
 	Config->WriteParams();
-	
+
 	uEnableLog		 = Config->DebugLvl;
 	pSplashScreen    = NULL;
 	pBackBuffer      = NULL;
@@ -673,9 +673,9 @@ void D3D9Client::SketchPadTest()
 	oapiReleaseTexture(hSrc);
 	oapiReleaseTexture(hTgt);
 
-	 
+
 	// Run Different Kind of Tests
-	// 
+	//
 
 	hTgt = oapiCreateSurfaceEx(768, 512, OAPISURFACE_RENDERTARGET);
 
@@ -717,11 +717,11 @@ void D3D9Client::SketchPadTest()
 	HPOLY hOutline = pCore->CreatePoly(NULL, Pol, 6, PF_CONNECT);
 	HPOLY hOutline2 = pCore->CreatePoly(NULL, Pol, 6);
 
-	Vtx[0].color = 0xFFFF0000;    
-	Vtx[1].color = 0xFFFFFF00;	  
-	Vtx[2].color = 0xFFF0FF00;   
-	Vtx[3].color = 0xFF00FFFF;	
-	Vtx[4].color = 0xFF0000FF;    
+	Vtx[0].color = 0xFFFF0000;
+	Vtx[1].color = 0xFFFFFF00;
+	Vtx[2].color = 0xFFF0FF00;
+	Vtx[3].color = 0xFF00FFFF;
+	Vtx[4].color = 0xFF0000FF;
 	Vtx[5].color = 0xFFFF00FF;
 
 	Vtx[0].pos = FVECTOR2(-1, 0);
@@ -735,7 +735,7 @@ void D3D9Client::SketchPadTest()
 
 
 	Vtx[0].color = 0xFF00FF00;    // Green
-	Vtx[1].color = 0xFF00FF00;	  // Green	
+	Vtx[1].color = 0xFF00FF00;	  // Green
 	Vtx[2].color = 0xFFFF00FF;    // Mangenta
 	Vtx[3].color = 0xFFFF00FF;	  // Mangenta
 	Vtx[4].color = 0xFF0000FF;    // Blue
@@ -2202,7 +2202,7 @@ SURFHANDLE D3D9Client::clbkLoadSurface (const char *fname, DWORD attrib, bool bP
 		}
 		*/
 	}
-	
+
 	return NatLoadSurface(fname, attrib, bPath);
 }
 
@@ -2252,7 +2252,7 @@ SURFHANDLE D3D9Client::clbkCreateSurface(DWORD w, DWORD h, SURFHANDLE hTemplate)
 	DWORD attrib = OAPISURFACE_PF_XRGB | OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE;
 
 	if (hTemplate) attrib = SURFACE(hTemplate)->GetOAPIFlags();
-	
+
 	SURFHANDLE hNew = NatCreateSurface(w, h, attrib);
 	SURFACE(hNew)->SetName("clbkCreateSurface");
 	return hNew;
@@ -2404,7 +2404,7 @@ bool D3D9Client::clbkBlt(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src,
 bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgtw, DWORD tgth,
                                SURFHANDLE src, DWORD srcx, DWORD srcy, DWORD srcw, DWORD srch, DWORD flag) const
 {
-	
+
 	if (src==NULL) { oapiWriteLog((char*)"ERROR: oapiBlt() Source surface is NULL"); return false; }
 
 	if (tgt==NULL) tgt = pFramework->GetBackBufferHandle();
@@ -2495,7 +2495,7 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 	{
 
 		// Texture Update: Source is in system memory and target is a texture
-		// 
+		//
 		if (sd->Pool == D3DPOOL_SYSTEMMEM)
 		{
 			if (S_OK == pDevice->UpdateSurface(pss, &rs, pts, &tp))	return true;
@@ -2507,14 +2507,14 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 
 
 		// Screen Capture: Target is in system memory and source is a render taeget
-		// 
+		//
 		if ((td->Pool == D3DPOOL_SYSTEMMEM) && (sd->Usage & D3DUSAGE_RENDERTARGET))
 		{
 			if (S_OK == pDevice->GetRenderTargetData(pss, pts)) {
 				SURFACE(tgt)->Flags |= OAPISURFACE_CAPTURE;
 				return true;
 			}
-		
+
 			LogErr("oapiBlt() GetRenderTargetData() Failed");
 			BltError(src, tgt, &rs, &rt);
 			return false;
@@ -2539,7 +2539,7 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 				return true;
 			}
 			else
-			{		
+			{
 				pSkp->StretchRect(src, &rs, &rt);
 				clbkReleaseSketchpad_const(pSkp);
 				return true;
@@ -2595,7 +2595,7 @@ bool D3D9Client::clbkCopyBitmap(SURFHANDLE pdds, HBITMAP hbm, int x, int y, int 
 		SURFACE(pdds)->SetName("clbkCopyBitmap");
 		return true;
 	}
-	else 
+	else
 	{
 		LPDIRECT3DTEXTURE9 pTemp = NULL;
 		LPDIRECT3DSURFACE9 pSrf = NULL;
@@ -2626,7 +2626,7 @@ bool D3D9Client::clbkCopyBitmap(SURFHANDLE pdds, HBITMAP hbm, int x, int y, int 
 			else {
 				pSrf->Release();
 				assert(false);
-			}		
+			}
 		}
 	}
 	DeleteDC(hdcImage);

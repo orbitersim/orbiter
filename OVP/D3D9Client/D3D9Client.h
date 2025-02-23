@@ -156,7 +156,7 @@ public:
 	 * with the Orbiter core via the oapiRegisterGraphicsClient function.
 	 * \param hInstance module instance handle (as passed to InitModule)
 	 */
-	explicit D3D9Client (MODFILE hInstance);
+	explicit D3D9Client (HINSTANCE hInstance);
 
 	/**
 	 * \brief Destroy the graphics object.

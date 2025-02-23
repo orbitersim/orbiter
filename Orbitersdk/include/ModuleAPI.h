@@ -11,8 +11,6 @@
 #ifndef __MODULEAPI_H
 #define __MODULEAPI_H
 
-typedef void *MODFILE;
-
 namespace oapi {
 
 	/**
@@ -31,7 +29,7 @@ namespace oapi {
 		 * \brief Creates a new ModuleNV instance.
 		 * \param hDLL DLL library instance handle (see \ref InitModule)
 		 */
-		explicit ModuleNV (MODFILE hDLL);
+		explicit ModuleNV (HINSTANCE hDLL);
 
 		/**
 		 * \brief Module interface version
@@ -43,7 +41,7 @@ namespace oapi {
 		 * \brief Returns the module instance handle.
 		 * \return Module instance handle.
 		 */
-		inline MODFILE GetModule() const { return hModule; }
+		inline HINSTANCE GetModule() const { return hModule; }
 
 		/**
 		 * \brief Returns simulation time since session start.
@@ -80,7 +78,7 @@ namespace oapi {
 
 	protected:
 		int version;
-		MODFILE hModule;
+		HINSTANCE hModule;
 	}; // class ModuleNV
 
 	/**
@@ -97,7 +95,7 @@ namespace oapi {
 		 * \brief Creates a new Module instance.
 		 * \param hDLL DLL library instance handle (see \ref InitModule)
 		 */
-		explicit Module (MODFILE hDLL);
+		explicit Module (HINSTANCE hDLL);
 		virtual ~Module();
 
 		/**
@@ -319,7 +317,7 @@ namespace oapi {
 		virtual bool clbkProcessKeyboardBuffered (DWORD key, char kstate[256], bool simRunning) { return false; }
 
         /**
-         * \brief Get the copyright line to be displayed in the About tab.
+         * \brief Get the copyright line to be displayed in the About tab of the Launchpad.
          * \return A string, which can be nullptr, indicating no copyright line.
          * \default Returns nullptr.
          */
