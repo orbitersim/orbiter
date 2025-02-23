@@ -75,15 +75,15 @@ CSphereManager::CSphereManager(D3D9Client *gc, const Scene *scene) : gc(gc), tex
 
 	m_bBkgImg = *(bool*)gc->GetConfigParam(CFGPRM_CSPHEREUSEBGIMAGE);
 	if (m_bBkgImg) {
-		const char* c = (const char*)gc->GetConfigParam(CFGPRM_CSPHERETEXTURE);
-		if (c[0] != '\0') strncpy(texname, c, 128);
+		const fs::path* c = (const fs::path*)gc->GetConfigParam(CFGPRM_CSPHERETEXTURE);
+		if (!c->empty()) strncpy(texname, c->u8string().c_str(), 128);
 		else      m_bBkgImg = false;
 	}
 
 	m_bStarImg = *(bool*)gc->GetConfigParam(CFGPRM_CSPHEREUSESTARIMAGE);
 	if (m_bStarImg) {
-		const char* c = (const char*)gc->GetConfigParam(CFGPRM_CSPHERESTARTEXTURE);
-		if (c[0] != '\0') strncpy(starfieldname, c, 128);
+		const fs::path* c = (const fs::path*)gc->GetConfigParam(CFGPRM_CSPHERESTARTEXTURE);
+		if (!c->empty()) strncpy(starfieldname, c->u8string().c_str(), 128);
 		else m_bStarImg = false;
 	}
 

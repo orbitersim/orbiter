@@ -631,7 +631,7 @@ bool Orbiter::UnloadModule (HINSTANCE hDLL)
 			LOGOUT("Unloading module %s", it->sName.c_str());
 			if (it->bLocalAlloc)
 				delete it->pModule;
-			FreeLibrary(it->hDLL);
+		    FreeLibrary(it->hDLL);
 			m_Plugin.erase(it);
 			return true;
 		}
@@ -1091,6 +1091,10 @@ void Orbiter::Run() {
         if (m_pLaunchpad != nullptr && m_pLaunchpad->IsActive()) {
             m_pLaunchpad->RenderFrame();
         }
+    }
+    if (bSession) {
+        PreCloseSession();
+        CloseSession();
     }
 }
 
