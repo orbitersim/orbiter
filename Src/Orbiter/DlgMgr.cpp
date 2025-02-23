@@ -816,13 +816,28 @@ namespace ImGui {
 
     DLLEXPORT bool SliderScalarReset(const char* label, ImGuiDataType dtype, const size_t t_size, void* v, const void *v_min, const void *v_max, const void *v_default, const char* display_format)
 	{
-	    bool ret = ImGui::SliderScalar(label, dtype, v, &v_min, &v_max, display_format);
+	    bool ret = ImGui::SliderScalar(label, dtype, v, v_min, v_max, display_format);
 	    if (ImGui::BeginPopupContextItem(label))
 	    {
 	        char buf[64];
 	        char fmt[64];
 	        snprintf(fmt, 64, "Reset to %s", display_format);
-	        snprintf(buf, 64, fmt, v_default);
+	        if (dtype == ImGuiDataType_S32 || dtype == ImGuiDataType_U32)
+	            snprintf(buf, 64, fmt, *(const ImU32*)v_default);
+	        if (dtype == ImGuiDataType_S64 || dtype == ImGuiDataType_U64)
+	            snprintf(buf, 64, fmt, *(const ImU64*)v_default);
+	        if (dtype == ImGuiDataType_Float)
+	            snprintf(buf, 64, fmt, *(const float*)v_default);
+	        if (dtype == ImGuiDataType_Double)
+	            snprintf(buf, 64, fmt, *(const double*)v_default);
+	        if (dtype == ImGuiDataType_S8)
+	            snprintf(buf, 64, fmt, *(const ImS8*)v_default);
+	        if (dtype == ImGuiDataType_U8)
+	            snprintf(buf, 64, fmt, *(const ImU8*)v_default);
+	        if (dtype == ImGuiDataType_S16)
+	            snprintf(buf, 64, fmt, *(const ImS16*)v_default);
+	        if (dtype == ImGuiDataType_U16)
+	            snprintf(buf, 64, fmt, *(const ImU16*)v_default);
 	        if (ImGui::MenuItem(buf))
 	            memcpy(v, v_default, t_size);
 	        ImGui::MenuItem("Close");

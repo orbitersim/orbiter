@@ -90,7 +90,7 @@ public:
 	    min = 0.001; max = 1.0; def = 0.5;
 		ImGui::SliderScalarReset("Sun Glare Intensity", ImGuiDataType_Double, sizeof(double), &Config->GFXGlare, &min, &max, &def, "%1.2f");
 
-		if(ImGui::Button("Recrete Sun/Glares")) {
+		if(ImGui::Button("Recreate Sun/Glares")) {
 			g_client->GetScene()->CreateSunGlare();
 		}
 		ImGui::PopItemWidth();
