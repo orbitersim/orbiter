@@ -39,16 +39,13 @@ void State::Update ()
 	focus = g_focusobj->Name();
 }
 
-bool State::Read (const char *fname)
+bool State::Read (const fs::path& fname)
 {
 	ifstream ifs (fname, ios::in);
 	if (!ifs) return false;
 
 	int i;
-	scenario = fname;
-	for (i = strlen(fname); i >= 0; i--)
-		if (fname[i] == '.') break;
-	if (i >= 0 && i < 256) scenario[i] = '\0';
+	scenario = fs::path(fname).replace_extension().u8string();
 
 	char cbuf[256], *pc;
 	double t;
@@ -109,19 +106,16 @@ bool State::Read (const char *fname)
 	return true;
 }
 
-void State::Write (ostream &ofs, const char *desc, int desc_fmt, const char *help) const
+void State::Write (ostream &ofs, const char *desc) const
 {
-	const std::string descTypeStr[3] = { "DESC", "HYPERDESC", "URLDESC" };
-
 	ofs.setf (ios::fixed, ios::floatfield);
 	ofs.precision (10); // need very high precision MJD output
 	if (desc) {
-		if (desc_fmt < 0 || desc_fmt > 2) desc_fmt = 0;
-		ofs << "BEGIN_" << descTypeStr[desc_fmt] << std::endl;
+		ofs << "BEGIN_DESC" << endl;
 		for (const char* c = desc; *c; c++)
 			if (*c != '\r') ofs << *c; // DOS madness! Get rid of CR so output stream can add it again ... 
 		ofs << endl;
-		ofs << "END_" << descTypeStr[desc_fmt] << endl << endl;
+		ofs << "END_DESC" << endl;
 	}
 	ofs << "BEGIN_ENVIRONMENT" << endl;
 	ofs << "  System " << solsys << endl;
@@ -134,8 +128,8 @@ void State::Write (ostream &ofs, const char *desc, int desc_fmt, const char *hel
 		ofs << "  Script " << script << endl;
 	if (scnhelp.length())
 		ofs << "  Help " << scnhelp << endl;
-	else if (help)
-		ofs << "  Help " << help << endl;
+	// else if (help)
+	// 	ofs << "  Help " << help << endl;
 	if (playback.length())
 		ofs << "  Playback " << playback << endl;
 	ofs << "END_ENVIRONMENT" << endl << endl;

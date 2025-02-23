@@ -27,3 +27,6 @@ set_target_properties(DialogTemplate
 	PROPERTIES
 	FOLDER SDKSamples
 )
+
+install(FILES DialogTemplate.info DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR})
+file(COPY DialogTemplate.info DESTINATION ${ORBITER_BINARY_PLUGIN_DIR})

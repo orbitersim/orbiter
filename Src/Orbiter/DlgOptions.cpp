@@ -50,10 +50,10 @@ void DlgOptions::Update()
 
 BOOL DlgOptions::OnInitDialog(HWND hDlg, WPARAM wParam, LPARAM lParam)
 {
-	SetWindowHandles(hDlg, GetDlgItem(hDlg, IDC_OPT_SPLIT), GetDlgItem(hDlg, IDC_OPT_PAGELIST), GetDlgItem(hDlg, IDC_OPT_PAGECONTAINER));
-	SetSize(hDlg);
-	CreatePages();
-	ExpandAll();
+	// SetWindowHandles(hDlg, GetDlgItem(hDlg, IDC_OPT_SPLIT), GetDlgItem(hDlg, IDC_OPT_PAGELIST), GetDlgItem(hDlg, IDC_OPT_PAGECONTAINER));
+	// SetSize(hDlg);
+	// CreatePages();
+	// ExpandAll();
 
 	return TRUE;
 }
@@ -62,15 +62,15 @@ BOOL DlgOptions::OnInitDialog(HWND hDlg, WPARAM wParam, LPARAM lParam)
 
 BOOL DlgOptions::OnCommand(HWND hDlg, WORD ctrlId, WORD notification, HWND hCtrl)
 {
-	switch (ctrlId) {
-	case IDHELP:
-		if (notification == BN_CLICKED) {
-			if (HelpContext())
-			g_pOrbiter->OpenHelp(HelpContext());
-			return TRUE;
-		}
-		break;
-	}
+	// switch (ctrlId) {
+	// case IDHELP:
+	// 	if (notification == BN_CLICKED) {
+	// 		if (HelpContext())
+	// 		g_pOrbiter->OpenHelp(HelpContext());
+	// 		return TRUE;
+	// 	}
+	// 	break;
+	// }
 	return DialogWin::OnCommand(hDlg, ctrlId, notification, hCtrl);
 }
 
@@ -86,17 +86,18 @@ BOOL DlgOptions::OnSize(HWND hDlg, WPARAM wParam, int w, int h)
 
 BOOL DlgOptions::OnVScroll(HWND hDlg, WORD request, WORD curpos, HWND hControl)
 {
-	return VScroll(hDlg, request, curpos, hControl);
+	// return VScroll(hDlg, request, curpos, hControl);
+    return FALSE;
 }
 
 // ----------------------------------------------------------------------
 
 BOOL DlgOptions::OnNotify(HWND hDlg, int idCtrl, LPNMHDR pnmh)
 {
-	if (idCtrl == IDC_OPT_PAGELIST) {
-		OnNotifyPagelist(pnmh);
-		return TRUE;
-	}
+	// if (idCtrl == IDC_OPT_PAGELIST) {
+	// 	OnNotifyPagelist(pnmh);
+	// 	return TRUE;
+	// }
 	return FALSE;
 }
 
@@ -116,5 +117,5 @@ void DlgOptions::SetSize(HWND hDlg)
 	InvalidateRect(hDlg, NULL, TRUE);
 	UpdateWindow(hDlg);
 
-	SetPageSize(hDlg);
+	// SetPageSize(hDlg);
 }

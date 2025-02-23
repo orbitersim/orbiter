@@ -38,7 +38,7 @@ namespace oapi {
 		/// \brief Open dialog callback
 		void clbkOpenDlg(void* context);
 
-		/// \brief Callback for time frame start 
+		/// \brief Callback for time frame start
 		/// \param simt simulation time [s]
 		/// \param simdt simulation step [s]
 		/// \param mjd MJD date [days]
@@ -51,7 +51,7 @@ namespace oapi {
 		INT_PTR DlgMsgProc(HWND hDlg, UINT uInt, WPARAM wParam, LPARAM lParam);
 
 	protected:
-		/// \brief Protected constructor 
+		/// \brief Protected constructor
 		/// \param hDLL module instance handle
 		RControl(HINSTANCE hDLL);
 
@@ -86,7 +86,7 @@ namespace oapi {
 // API interface
 // ==============================================================
 
-/// \brief Module entry point 
+/// \brief Module entry point
 /// \param hDLL module handle
 DLLCLBK void InitModule(HINSTANCE hDLL)
 {
@@ -94,7 +94,7 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 	oapiRegisterModule(oapi::RControl::GetInstance(hDLL));
 }
 
-/// \brief Module exit point 
+/// \brief Module exit point
 /// \param hDLL module handle
 DLLCLBK void ExitModule(HINSTANCE hDLL)
 {

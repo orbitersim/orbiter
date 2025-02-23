@@ -1,12 +1,14 @@
-BEGIN_HYPERDESC
-<h1>LDEF deployment</h1>
-<p>Deploy the LDEF (Long Duration Exposure Facility) platform in orbit using
+BEGIN_DESC
+# LDEF deployment
+
+Deploy the LDEF (Long Duration Exposure Facility) platform in orbit using
 the Shuttle's remote manipulator arm.
 Press Ctrl-Space and pick "RMS operation" to bring up the dialog for controlling
-the arm.</p>
-<p>After releasing the satellite, return the Shuttle back to Kennedy
-Space Center.</p>
-END_HYPERDESC
+the arm.
+
+After releasing the satellite, return the Shuttle back to Kennedy
+Space Center.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

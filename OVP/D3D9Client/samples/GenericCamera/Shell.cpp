@@ -44,7 +44,7 @@ ShellMFD::~ShellMFD ()
 
 	if (bExiting) {
 		for (int i=0;i<256;i++) if (MFDList[i].hTrue) {
-			delete MFDList[i].hTrue; MFDList[i].hTrue = NULL;	
+			delete MFDList[i].hTrue; MFDList[i].hTrue = NULL;
 		}
 	}
 }
@@ -85,8 +85,8 @@ void ShellMFD::ExitModule(HINSTANCE hDLL)
 OAPI_MSGTYPE ShellMFD::MsgProc(UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam)
 {
 
-    if (msg==OAPI_MSG_MFD_OPENED && MFDList) {	
-		
+    if (msg==OAPI_MSG_MFD_OPENED && MFDList) {
+
 		// Search for existing true MFD ----------------------
 		//
 		for (int i=0;i<mfdLast;i++) {
@@ -108,14 +108,14 @@ OAPI_MSGTYPE ShellMFD::MsgProc(UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam)
 		//
 		if (MFDList[mfdLast].hTrue) return 0;
 		if (mfdLast>=254)			return 0;
-		
-		
+
+
 		TRUE_MFD *TrMFD = new TRUE_MFD(LOWORD(wparam), HIWORD(wparam), (VESSEL*)lparam);
-		
+
 		MFDList[mfdLast].hVessel = (VESSEL *)lparam;
 		MFDList[mfdLast].idMFD   = mfd;
 		MFDList[mfdLast].hTrue   = TrMFD;
-		
+
 		mfdLast++;
 
 		// Create new Shell MFD and bind true MFD into the shell
@@ -145,7 +145,7 @@ bool ShellMFD::ConsumeKeyBuffered (DWORD key)
 bool ShellMFD::ConsumeButton (int bt, int event)
 {
 	if (hTrue) return hTrue->ConsumeButton(bt, event);
-	return false;	
+	return false;
 }
 
 char *ShellMFD::ButtonLabel (int bt)
@@ -168,22 +168,22 @@ bool ShellMFD::Update(Sketchpad *pSkp)
 
 void ShellMFD::Update (HDC hDC)
 {
-		
+
 }
 
 void ShellMFD::WriteStatus (FILEHANDLE scn) const
 {
 	bExiting = true;
-	if (hTrue) hTrue->WriteStatus(scn);	
+	if (hTrue) hTrue->WriteStatus(scn);
 }
 
 void ShellMFD::ReadStatus (FILEHANDLE scn)
 {
-	if (hTrue) hTrue->ReadStatus(scn);	  
+	if (hTrue) hTrue->ReadStatus(scn);
 }
 
 void ShellMFD::StoreStatus (void) const
-{	
+{
 }
 
 void ShellMFD::RecallStatus (void)

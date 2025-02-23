@@ -1,7 +1,7 @@
-BEGIN_HYPERDESC
-<h1>DG at Edwards AFB</h1>
-<p>A DG spaceplane is ready for takeoff on runway 04R at Edwards Airforce Base.</p>
-END_HYPERDESC
+BEGIN_DESC
+# DG at Edwards AFB
+A DG spaceplane is ready for takeoff on runway 04R at Edwards Airforce Base.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

@@ -47,18 +47,18 @@ Body::Body (double _mass, double _size)
 	size = _size;
 }
 
-Body::Body(char* fname)
+Body::Body(const std::string& fname)
 	: Body()
 {
-	char *cpath = g_pOrbiter->ConfigPath (fname);
+	fs::path cpath = g_pOrbiter->ConfigPath (fname);
 
 	//g_pOrbiter->OutputLoadStatus (fname, 0);
-	g_pOrbiter->OutputLoadStatus (cpath, 1);
+	g_pOrbiter->OutputLoadStatus (cpath.u8string().c_str(), 1);
 
 	ifstream ifs (cpath);
 	if (!ifs) return;
 	
-	filename = cpath;
+	filename = cpath.u8string();
 
 	char cbuf[256], *_name = 0;
 	if (GetItemString (ifs, "Name", cbuf)) _name = cbuf;

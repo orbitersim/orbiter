@@ -16,7 +16,7 @@ class VideoTab {
 
 	struct _AtmoCfg { string cfg, file; };
 public:
-	VideoTab(oapi::D3D9Client *gc, HINSTANCE _hInst, HINSTANCE _hOrbiterInst, HWND hVideoTab);
+	VideoTab(oapi::D3D9Client *gc, HINSTANCE _hInst, HINSTANCE _hOrbiterInst);
 	~VideoTab();
 
 	BOOL WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -51,11 +51,10 @@ private:
 	void SaveSetupState(HWND hWnd);
 	void ScanAtmoCfgs();
 	bool GetConfigName(const char* file, string& cfg, string& planet);
-	
+
 	oapi::D3D9Client *gclient;
-	HINSTANCE hOrbiterInst; // orbiter instance handle
-	HINSTANCE hInst;        // module instance handle
-	HWND hTab;              // window handle of the video tab
+	HINSTANCE hOrbiterInst;  // orbiter instance handle
+	HINSTANCE hInst; // module instance handle
 	int aspect_idx;
 	DWORD SelectedAdapterIdx;
 	bool bHasMultiSample;

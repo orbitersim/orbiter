@@ -30,7 +30,7 @@ public:
 	// Render the glass cockpit overlay on top of the target surface
 	void Render ();
 
-	bool ProcessMouse (UINT event, DWORD state, int x, int y);
+	bool ProcessMouse (const SDL_Event &event, int x, int y);
 	void GetButtonState (int &state, int &mfd, int &btn);
 	inline void SetMouseState (int state) { mstate = state; }
 	inline void SetNavDisplayMode (int mode) { navdispmode = mode; }

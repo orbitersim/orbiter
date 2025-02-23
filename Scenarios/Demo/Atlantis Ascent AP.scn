@@ -1,7 +1,6 @@
 BEGIN_DESC
 Current scenario state
 
-
 Contains the latest simulation state.
 END_DESC
 

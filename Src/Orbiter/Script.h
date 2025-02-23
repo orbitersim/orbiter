@@ -18,7 +18,7 @@ public:
 
 protected:
 	HINSTANCE LoadInterpreterLib();
-	
+
 private:
 	Orbiter *orbiter;
 	HINSTANCE hLib;

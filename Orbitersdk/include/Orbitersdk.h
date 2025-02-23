@@ -10,6 +10,11 @@
 #ifndef __ORBITERSDK_H
 #define __ORBITERSDK_H
 
+#ifndef SDL_DISABLE_OLD_NAMES
+#define SDL_DISABLE_OLD_NAMES
+#endif
+#undef SDL_ENABLE_OLD_NAMES
+
 #include "DrawAPI.h"
 #include "OrbiterAPI.h"
 #include "ModuleAPI.h"

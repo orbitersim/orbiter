@@ -93,7 +93,7 @@ namespace oapi {
 // API interface
 // ==============================================================
 
-/// \brief Module entry point 
+/// \brief Module entry point
 /// \param hDLL module handle
 DLLCLBK void InitModule (HINSTANCE hDLL)
 {
@@ -101,7 +101,7 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 	oapiRegisterModule(oapi::Framerate::GetInstance(hDLL));
 }
 
-/// \brief Module exit point 
+/// \brief Module exit point
 /// \param hDLL module handle
 DLLCLBK void ExitModule (HINSTANCE hDLL)
 {

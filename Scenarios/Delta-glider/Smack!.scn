@@ -1,8 +1,9 @@
-BEGIN_HYPERDESC
-<h1>Delta-glider: Smack!</h1>
-<p>Featuring the new vessel-vessel docking capabilities:
-Two delta-gliders about to make contact (rotating for added effect ;-)</p>
-END_HYPERDESC
+BEGIN_DESC
+# Delta-glider: Smack!
+
+Featuring the new vessel-vessel docking capabilities: Two delta-gliders about to
+make contact (rotating for added effect ;-)
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

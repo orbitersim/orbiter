@@ -1,7 +1,8 @@
-BEGIN_HYPERDESC
-<h1>Lunar transfer - Stage 2</h1>
-<p>After ejection burn.</p>
-END_HYPERDESC
+BEGIN_DESC
+# Lunar transfer - Stage 2
+
+After ejection burn.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

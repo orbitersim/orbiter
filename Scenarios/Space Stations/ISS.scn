@@ -1,10 +1,10 @@
-BEGIN_HYPERDESC
-<h1>International Space Station</h1>
+BEGIN_DESC
+# International Space Station
 
-<p>Start the Simulator with Atlantis docked to the ISS. The Leonardo MPLM is in the Atlantis cargo bay.</p>
+Start the Simulator with Atlantis docked to the ISS. The Leonardo MPLM is in the Atlantis cargo bay.
 
-<p>ISS model by Andrew Farnaby (F-A-D).</p>
-END_HYPERDESC
+ISS model by Andrew Farnaby (F-A-D).
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

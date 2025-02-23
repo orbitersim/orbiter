@@ -1,0 +1,6 @@
+BEGIN_DESC
+# Terminal MFD
+
+Adds the "Terminal" MFD mode - allows the execution of Lua commands and scripts from a spacecraft's MFD instrument.
+END_DESC
+CATEGORY MFD modes

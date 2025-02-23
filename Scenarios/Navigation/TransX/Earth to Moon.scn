@@ -1,5 +1,6 @@
 BEGIN_DESC
-Use the TransX to plan and execute maneuvers to take a Delta-Glider from Earth orbit to Lunar orbit.
+Use the TransX to plan and execute maneuvers to take a Delta-Glider from Earth
+orbit to Lunar orbit.
 END_DESC
 
 BEGIN_ENVIRONMENT

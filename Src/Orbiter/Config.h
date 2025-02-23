@@ -11,12 +11,16 @@
 #define __CONFIG_H
 
 //#include <d3d.h>
-#include <windows.h>
-#include "Vecmat.h"
-#include <iostream>
-#include <fstream>
-#include <list>
 #include "GraphicsAPI.h"
+#include "Vecmat.h"
+#include <fstream>
+#include <iostream>
+#include <list>
+#include <optional>
+#include <windows.h>
+
+#include <filesystem>
+namespace fs = std::filesystem;
 
 // dynamic state propagation methods
 #define MAX_PROP_LEVEL  5
@@ -110,16 +114,16 @@ struct CFG_VISUALPRM {
 	bool   bParticleStreams;	// render particle streams? (exhaust, contrails, etc.)
 	bool   bLocalLight;			// enable local light sources?
 	DWORD  MaxLight;			// max number of light sources
-	DWORD  AmbientLevel;		// ambient light level (0-255)
-	DWORD  PlanetMaxLevel;		// max. planet patch resolution level
+	uint8_t AmbientLevel;		// ambient light level (0-255)
+	int    PlanetMaxLevel;      // max. planet patch resolution level
 	double PlanetPatchRes;		// resolution scaling for planet patches
 	double LightBrightness;		// brightness of planetary night lights
 	bool   bUseStarDots;        // render stars as pixels?
 	StarRenderPrm StarPrm;		// render parameters for background stars
 	bool   bUseStarImage;       // render stars as a background image?
-	char   StarImagePath[128];  // starlist image path
+	fs::path StarImagePath;     // starlist image path
 	bool   bUseBgImage;         // render celestial sphere background image?
-	char   CSphereBgPath[128];	// background image path
+	fs::path CSphereBgPath;  	// background image path
 	double CSphereBgIntens;		// intensity of background image
 	int    ElevMode;            // elevation mode: 0=none, 1=linear, 2=cubic spline
 };
@@ -218,25 +222,25 @@ struct CFG_DEVPRM {
 };
 
 struct CFG_JOYSTICKPRM {
-	DWORD  Joy_idx;				// joystick device index (0=disabled)
-	DWORD  Deadzone;			// central deadzone range for all axes (0-10000)
-	DWORD  ThrottleAxis;		// joystick throttle axis (0=none, 1=z-axis, 2=slider 0, 3=slider 1)
-	DWORD  ThrottleSaturation;	// saturation level for joystick throttle control (0-10000)
-	bool   bThrottleIgnore;		// ignore joystick throttle setting on start
+	SDL_JoystickID Joy_idx;		    // joystick device index (0=disabled)
+	DWORD    Deadzone;			    // central deadzone range for all axes (0-10000)
+	DWORD    ThrottleAxis;	    	// joystick throttle axis (0=none, 1=z-axis, 2=slider 0, 3=slider 1)
+	DWORD    ThrottleSaturation;	// saturation level for joystick throttle control (0-10000)
+	bool     bThrottleIgnore;		// ignore joystick throttle setting on start
 };
 
 struct CFG_UIPRM {              // user interface options
 	DWORD  MouseFocusMode;	    // 0: focus requires click; 1: focus requires click for child windows only; 2: focus follow mouse
-	DWORD  MenuMode;            // 0=show, 1=hide, 2=auto-hide
+	int    MenuMode;            // 0=show, 1=hide, 2=auto-hide
 	bool   bMenuLabelOnly;      // display only menu labels?
 	bool   bWarpAlways;         // always display time acceleration != 1
 	bool   bWarpScientific;     // display time acceleration in scientific notation?
-	DWORD  InfoMode;            // 0=show, 1=hide, 2=auto-hide
-	DWORD  InfoAuxIdx[2];       // index for auxiliary info bars left/right (0=none)
-	DWORD  MenuOpacity;         // menubar opacity (0-10)
-	DWORD  InfoOpacity;         // infobar opacity (0-20)
-	DWORD  MenuScrollspeed;     // menubar scroll speed (1-20)
-	DWORD  PauseIndMode;        // 0=flash on pause/resume, 1=show on pause, 2=don't show
+	int    InfoMode;            // 0=show, 1=hide, 2=auto-hide
+	int    InfoAuxIdx[2];       // index for auxiliary info bars left/right (0=none)
+	int    MenuOpacity;         // menubar opacity (0-10)
+	int    InfoOpacity;         // infobar opacity (0-20)
+	int    MenuScrollspeed;     // menubar scroll speed (1-20)
+	int    PauseIndMode;        // 0=flash on pause/resume, 1=show on pause, 2=don't show
 	int    SelVesselTab;        // tab to open in vessel selection dialog
  	int    SelVesselRange;      // "nearby" range for vessel selection dialog
 	bool   bSelVesselFlat;      // flat assemblies for vessel selection dialog
@@ -251,8 +255,11 @@ struct CFG_DEMOPRM {
 };
 
 struct CFG_FONTPRM {
-	float  dlgFont_Scale;		// font scaling factor
-	char   dlgFont1_Face[64];	// dialog font face name
+	float  dlgFont_Scale;		      // font scaling factor
+	char   dlgFont1_Face[64];	      // dialog font face name
+	float  ImGui_FontSize;		      // Font size for ImGui dialogs
+	char   ImGui_FontName[256];	      // Font name (file: `{FontName}-{Weight}.ttf`) where
+	                                  // Weight is `Regular`, `Italic`, `Bold`, or `BoldItalic`
 };
 
 struct CFG_CAMERAPRM {
@@ -270,6 +277,7 @@ struct CFG_WINDOWPOS {
 	RECT DlgOptions;            // options dialog position
 	RECT DlgVishelper;          // visual helper dialog position
 	int LaunchpadScnListWidth;  // width of Launchpad scenario list
+	int LaunchpadOptListWidth;  // width of Launchpad options list
 	int LaunchpadModListWidth;  // width of Launchpad modules list
 	int LaunchpadExtListWidth;  // width of Launchpad extras list
 };
@@ -309,7 +317,7 @@ bool GetItemVector (std::istream &is, const char *label, Vector &val);
 bool GetItemVECTOR (std::istream &is, const char *label, VECTOR3 &val);
 
 bool FindLine      (std::istream &is, const char *line);
-// scans stream 'is' from beginning for a line beginning with 'line' 
+// scans stream 'is' from beginning for a line beginning with 'line'
 // and leaves file pointer on the beginning of the next line
 // return value is false if line is not found
 
@@ -353,21 +361,21 @@ public:
 	// write config parameters to file "fname"
 	// returns FALSE if write fails
 
-	char *ConfigPath (const char *name) const;
+	fs::path ConfigPath (std::string_view name) const;
 	// Return full path for config file name (adds ".cfg" to name)
-	char *ConfigPathNoext (const char *name);
+	fs::path ConfigPathNoext (std::string_view name) const;
 	// Return full path for config file name (no file extension added)
-	char *MeshPath   (const char *name);
+	fs::path MeshPath   (std::string_view name) const;
 	// Return full path for mesh file name
-	char *TexPath    (const char *name, const char *ext = 0);
-	// Return full path for texture file name. default extension is ".dds" - NOT THREADSAFE
-	char *HTexPath   (const char *name, const char *ext = 0);
+	fs::path TexPath    (std::string_view name, std::optional<std::string_view> ext = {}) const;
+	// Return full path for texture file name. default extension is ".dds"
+	fs::path HTexPath   (std::string_view name, std::optional<std::string_view> ext = {}) const;
 	// Return full path for texture file name in hightex dir.
 	// Default extension is ".dds"
-	// If hightex dir is not defined, function returns NULL
-	char* PTexPath(const char* name, const char* ext = 0);
+	// If hightex dir is not defined, function returns an empty path
+	fs::path PTexPath(std::string_view name, std::optional<std::string_view> ext = {}) const;
 	// Return full path for planetary texture file name
-	const char *ScnPath    (const char *name);
+	fs::path ScnPath    (std::string_view name) const;
 	// Return full path for scenario file name
 
 	void TexPath (char *cbuf, const char *name, const char *ext=0);

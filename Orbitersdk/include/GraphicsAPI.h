@@ -12,8 +12,10 @@
 #define __GRAPHICSAPI_H
 
 #include "Orbitersdk.h"
+
+#include <SDLWrappers.h>
 #include <stdio.h>
-#include <windows.h>
+#include "imgui.h"
 
 #ifndef _WIN32
 typedef void *HDC;
@@ -124,7 +126,7 @@ typedef void *HDC;
 /**
  * File path for celestial sphere background textures
  * \par Parameter type:
- *   *char
+ *   const std::filesystem::path*
  */
 #define CFGPRM_CSPHERETEXTURE 0x0013
 
@@ -199,7 +201,7 @@ typedef void *HDC;
 /**
  * Path to background star texture
  * \par Parameter type:
- *   *char
+ *   const std::filesystem::path*
  */
 #define CFGPRM_CSPHERESTARTEXTURE 0x001D
 
@@ -368,7 +370,6 @@ class Orbiter;
 struct IWICImagingFactory;
 
 namespace oapi {
-
 /**
  * \brief Structure for defining a raw image.
  */
@@ -384,6 +385,72 @@ struct ImageData {
 class Sketchpad;
 class ParticleStream;
 class ScreenAnnotation;
+
+class OAPIFUNC ImCtxBase;
+class OAPIFUNC WithImCtx;
+
+class OAPIFUNC ImCtxBase {
+  public:
+    virtual ~ImCtxBase();
+
+    ImCtxBase(const ImCtxBase &) = delete;
+
+    ImCtxBase &operator=(const ImCtxBase &) = delete;
+
+    [[nodiscard]] ImFont *DefaultFont() const { return m_defaultFont; }
+    [[nodiscard]] ImFont *ItalicFont() const { return m_italicFont; }
+    [[nodiscard]] ImFont *BoldFont() const { return m_boldFont; }
+    [[nodiscard]] ImFont *BoldItalicFont() const { return m_boldItalicFont; }
+    [[nodiscard]] ImFont *HdgFont() const { return m_hdgFont; }
+    [[nodiscard]] ImFont *MonoFont() const { return m_monoFont; }
+    [[nodiscard]] Orbiter *App() const { return m_app; }
+
+	WithImCtx PushLocal();
+  protected:
+	friend WithImCtx;
+    ImCtxBase(Orbiter* app, ImGuiContext* context);
+    Orbiter *m_app;
+    ImGuiContext *m_context;
+    ImFont *m_defaultFont;
+    ImFont *m_italicFont;
+    ImFont *m_boldFont;
+    ImFont *m_boldItalicFont;
+    ImFont *m_hdgFont;
+    ImFont *m_monoFont;
+
+    virtual bool ConsumeEvent(const SDL_Event &event, bool &wantsOut) = 0;
+
+    [[nodiscard]] virtual bool BeginFrame() = 0;
+
+    virtual void EndFrame() = 0;
+};
+
+class OAPIFUNC WithImCtx {
+  public:
+
+    WithImCtx &operator=(const WithImCtx &) = delete;
+
+    ~WithImCtx();
+
+    ImCtxBase *operator->() const;
+
+	[[nodiscard]] ImCtxBase *Inner() const;
+
+    bool ConsumeEvent(const SDL_Event &event, bool &wantsOut) const;
+
+    [[nodiscard]] bool BeginFrame() const;
+
+    void EndFrame() const;
+
+  protected:
+    WithImCtx(const WithImCtx &) = default;
+
+  private:
+    friend ImCtxBase;
+    WithImCtx(ImCtxBase *inner, ImGuiContext *lastContext);
+    ImCtxBase *inner;
+    ImGuiContext *lastContext;
+};
 
 // ======================================================================
 // class GraphicsClient
@@ -464,7 +531,7 @@ public:
 	 * \param str Text string to print
 	 */
 	virtual void clbkDebugString(const char *str) {}
-	
+
 	/**
 	 * \brief Texture request
 	 *
@@ -590,7 +657,7 @@ public:
 	 * if value<>0 modulate (mix) material alpha values with texture alpha maps.
 	 * \default None, returns \e false.
 	 */
-	virtual bool clbkSetMeshProperty (DEVMESHHANDLE hMesh, DWORD property, DWORD value) { return false; }
+	virtual bool clbkSetMeshProperty (DEVMESHHANDLE hMesh, DWORD property, uint32_t value) { return false; }
 
 	// ==================================================================
 	/// \name Visual object interface
@@ -788,40 +855,20 @@ public:
 	/**
 	 * \brief Returns the handle of the main render window.
 	 */
-	HWND GetRenderWindow () const { return hRenderWnd; }
+	const std::shared_ptr<sdl::UnmanagedWindow>& GetRenderWindow () const { return hRenderWnd; }
 
-	/**
-	 * \brief Render window message handler
-	 *
-	 * Derived classes should also call the base class method to allow
-	 * default message processing.
-	 * \param hWnd render window handle
-	 * \param uMsg Windows message identifier
-	 * \param wParam WPARAM message parameter
-	 * \param lParam LPARAM message parameter
-	 * \return The return value depends on the message being processed.
-	 * \note This is the standard Windows message handler for the render
-	 *   window.
-	 * \note This method currently intercepts only the WM_CLOSE and WM_DESTROY
-	 *   messages, and passes everything else to the Orbiter core message
-	 *   handler.
-	 */
-	virtual LRESULT RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+    /**
+     * \brief Event handler for the render window.
+     *
+     * Be sure to call ConsumeEvent on your ImCtx here.
+     * \param event The event to consume
+     * \param wantsOut Set to true if the render window should be closed
+     * \return True if the event was consumed
+     */
+	virtual bool RenderWndProc(const SDL_Event &event,
+                               bool &wantsOut);
 
-	/**
-	 * \brief Message handler for 'video' tab in Orbiter Launchpad dialog
-	 *
-	 * Overload this method to display and retrieve video parameters using
-	 * the Launchpad video tab. This method acts like a standard Windows dialog
-	 * message handler.
-	 * \param hWnd window handle for video tab
-	 * \param uMsg Windows message
-	 * \param wParam WPARAM message value
-	 * \param lParam LPARAM message value
-	 * \return The return value depends on the message type and the action taken.
-	 * \default Do nothing, return FALSE.
-	 */
-	virtual INT_PTR LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	virtual void DrawLaunchpadVideoTab(const WithImCtx& ctx);
 
 	/**
 	 * \brief Structure containing default video options, as stored in
@@ -856,7 +903,7 @@ public:
 	 * \brief returns a list of popup windows owned by the render window.
 	 * \param [out] hPopupWnd on exit, points to a list of window handles
 	 * \return Number of entries in the list.
-	 * \note The list returned by this method contains the handles of 
+	 * \note The list returned by this method contains the handles of
 	 *   popup windows that are to be rendered on top of the render viewport
 	 *   (e.g. dialog boxes).
 	 * \note A client can use this list if it requires a special method of
@@ -1041,7 +1088,7 @@ public:
 
 	/**
 	 * \brief Create a surface for texturing, as a blitting source, etc.
-	 * 
+	 *
 	 * Surfaces are used for offscreen bitmap and texture manipulation,
 	 * blitting and rendering.
 	 * Derived classes should create a device-specific surface, and
@@ -1366,7 +1413,7 @@ public:
 	 */
 	virtual Font *clbkCreateFont (int height, bool prop, const char *face, FontStyle style = FontStyle::FONT_NORMAL, int orientation = 0) const { return NULL; }
 	virtual Font* clbkCreateFontEx (int height, char* face, int width = 0, int weight = 400, FontStyle style = FontStyle::FONT_NORMAL, float spacing = 0.0f) const { return NULL; }
-		
+
 	/**
 	 * \brief De-allocate a font resource.
 	 * \param font pointer to font resource
@@ -1441,7 +1488,7 @@ public:
 	// @}
 
 	/**
-	 * \brief Constructs a synthetic elevation grid for a tile by interpolating 
+	 * \brief Constructs a synthetic elevation grid for a tile by interpolating
 	 *   ancestor elevation data
 	 * \param emgr elevation manager handle (retrieve with oapiElevationManager)
 	 * \param [in] ilat patch latitude index
@@ -1481,6 +1528,18 @@ public:
 	virtual bool clbkFilterElevation(OBJHANDLE hPlanet, int ilat, int ilng, int lvl, double elev_res, INT16* elev) { return false; }
 	// @}
 
+	virtual void clbkImGuiNewFrame () = 0;
+	virtual void clbkImGuiRenderDrawData () = 0;
+	virtual void clbkImGuiInit () = 0;
+	virtual void clbkImGuiShutdown() = 0;
+	// Returns an ImTextureID from a surface so that it can be used in
+	// ImGui widgets.
+	// Note: we use uint64_t so we don't have to include imgui.h
+	// This method should make sure the texture won't be released
+	// before the frame is ended by e.g. incrementing its reference
+	// counter and releasing it once the frame has been rendered.
+	virtual uint64_t clbkImGuiSurfaceTexture(SURFHANDLE surf) = 0;
+
 protected:
 	/** \brief Launchpad video tab indicator
 	 *
@@ -1509,7 +1568,7 @@ protected:
 	 * \note Derived classes should perform any required per-session
 	 *   initialisation of the 3D render environment here.
 	 */
-	virtual HWND clbkCreateRenderWindow ();
+	virtual std::shared_ptr<sdl::UnmanagedWindow> clbkCreateRenderWindow ();
 
 	/**
 	 * \brief Simulation startup finalisation
@@ -1621,7 +1680,7 @@ protected:
 
 	/**
 	 * \brief Change the default splash screen
-	 * 
+	 *
 	 * Called before clbkCreateRenderWindow to override the default splash screen
 	 * image and text color.
 	 *
@@ -1733,15 +1792,6 @@ protected:
 	 */
 	inline HINSTANCE OrbiterInstance () const { return hOrbiterInst; }
 
-	/**
-	 * \brief Returns the window handle of the 'video' tab of the Orbiter
-	 *   Launchpad dialog.
-	 *
-	 * If clbkUseLanuchpadVideoTab() is overloaded to return false, this
-	 * function will return NULL.
-	 */
-	HWND LaunchpadVideoTab() const { return hVid; }
-
 	// ==================================================================
 	// Functions for the celestial sphere
 public:
@@ -1831,9 +1881,9 @@ private:
 	 * \return Render window handle
 	 * \note This is called after clbkCreateRenderWindow returns.
 	 */
-	HWND InitRenderWnd (HWND hWnd);
+	void InitRenderWnd (std::shared_ptr<sdl::UnmanagedWindow>& hWnd);
 
-	HWND hRenderWnd;        // render window handle
+	std::shared_ptr<sdl::UnmanagedWindow> hRenderWnd; // render window handle
 	HINSTANCE hOrbiterInst; // orbiter core instance handle
 	VIDEODATA VideoData;    // the standard video options from config
 
@@ -2055,5 +2105,7 @@ private:
 OAPIFUNC bool oapiRegisterGraphicsClient (oapi::GraphicsClient *gc);
 
 OAPIFUNC bool oapiUnregisterGraphicsClient (oapi::GraphicsClient *gc);
+
+OAPIFUNC oapi::WithImCtx oapiPushDialogImCtx();
 
 #endif // !__GRAPHICSAPI_H

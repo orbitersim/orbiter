@@ -229,7 +229,7 @@ protected:
 							 // 2: use obsolete <Planet>_AtmPrm module function
 	                         // 3: use CELBODY::clbkAtmParam interface
 	                         // 4: use CELBODY2::clbkAtmParam interface
-	ATMCONST atm;            // atmospheric parameters	
+	ATMCONST atm;            // atmospheric parameters
 	double atm_attenuationalt; // altitude limit for calculation of light attenuation on vessels (should be moved into ATMCONST!)
 
 	bool bHasCloudlayer;     // planet has separate cloud layer
@@ -280,7 +280,7 @@ private:
 	int nlabellist;
 	char *labelpath;
 
-	DWORD max_patch_level;
+	int max_patch_level;
 	// resolution limit for sphere patch representation of planet's visual (<= 10)
 
 	int min_cloud_level;

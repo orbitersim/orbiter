@@ -1,0 +1,7 @@
+BEGIN_DESC
+# Script MFD
+
+The driver module for script-based MFD (multifunctional display) modes. By activating this module, all script-based MFD
+modes become available during the simulation.
+END_DESC
+CATEGORY Script tools and drivers

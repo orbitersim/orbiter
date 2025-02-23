@@ -140,12 +140,12 @@ void Create()
 	}
 
 	// Style flags
-	// 0x1 = unit in [km] 
+	// 0x1 = unit in [km]
 	// 0x2 = same for orbital and surface setup
 	// 0x8 = x^2 "linearization"
 	// 0x10 = x^0.5 "linearization"
 	// 0x20 = x^4 "linearization"
-	// 0x40 = no 'lerp', special handling 
+	// 0x40 = no 'lerp', special handling
 
 	// Slider ID, Value ID, Page ID, Label, min, max, flags
 
@@ -247,7 +247,7 @@ void OpenDlgClbk(void *context)
 	else return;
 
 	Scene *scene = g_client->GetScene();
-	
+
 	if (scene) vObj = scene->GetCameraNearVisual();
 
 	if (vObj) param = vObj->GetAtmoParams(atmmode);
@@ -273,7 +273,7 @@ void OpenDlgClbk(void *context)
 		toolInfo.cbSize = sizeof(toolInfo);
 		toolInfo.hwnd = hDlg;
 		toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
-		toolInfo.uId = (UINT_PTR)s.hWnd;	
+		toolInfo.uId = (UINT_PTR)s.hWnd;
 		toolInfo.lpszText = "ToolTip";
 		SendMessage(s.hwndTip, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
 	}
@@ -368,7 +368,7 @@ void SetSlider(sSlider& s)
 	if (v->style & 32) x = pow(x, 4.0);
 
 	double val = v->min * (1.0 - x) + v->max * x;
-		
+
 	if (v->style&2) {
 		vObj->GetAtmoParams(1)->data[v->sprm] = val;
 		vObj->GetAtmoParams(2)->data[v->sprm] = val;
@@ -424,7 +424,7 @@ void UpdateSlider(sSlider& q, bool bSetPos)
 		strcpy_s(buf, 32, " ");
 		SendDlgItemMessage(hDlg, q.res, TBM_SETPOS, 1, 0);
 	}
-	
+
 	SetWindowTextA(GetDlgItem(hDlg, q.dsp), buf);
 	return;
 }
@@ -447,7 +447,7 @@ void SetVisual(vObject *vo)
 	}
 
 	if (!hDlg || !dwCmd) return;
-	
+
 	OBJHANDLE hObj = vo->GetObjectA();
 
 	if (oapiGetObjectType(hObj)!=OBJTP_PLANET) {
@@ -484,7 +484,7 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 	case WM_TIMER:
 	{
-		if (vObj) {	
+		if (vObj) {
 			char title[256]; string file = "??";
 			sprintf_s(title, 256, "Atmospheric Controls [%s]", vObj->GetName());
 
@@ -499,11 +499,11 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (vObj->GetAtmoMode() == 1) sprintf_s(title, 256, "Atmospheric Controls [%s][%s] [Surface] (%3.1f%%)", file.c_str(), vObj->GetName(), (1.0 - vd) * 100.0);
 			if (vObj->GetAtmoMode() == 2) sprintf_s(title, 256, "Atmospheric Controls [%s][%s] [LowOrbit] (%3.1f%%)", file.c_str(), vObj->GetName(), vd * 100.0);
 			if (vObj->GetAtmoMode() == 3) sprintf_s(title, 256, "Atmospheric Controls [%s][%s] [HighOrbit] (%3.1f%%)", file.c_str(), vObj->GetName(), (1.0 - vd) * 100.0);
-		
+
 			SetWindowTextA(hDlg, title);
 			UpdateSliders();
 		}
-		break;	
+		break;
 	}
 
 	case WM_VSCROLL:
@@ -521,7 +521,7 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		switch (LOWORD(wParam))
 		{
-			case IDCANCEL:  
+			case IDCANCEL:
 			case IDOK:
 				oapiCloseDialog(hWnd);
 				hDlg = NULL;
@@ -540,7 +540,7 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			case IDC_ATM_COPYTO:
 				if (vObj) {
-					if (vObj->GetAtmoParams(1) != param) memcpy(vObj->GetAtmoParams(1), param, sizeof(ScatterParams));			
+					if (vObj->GetAtmoParams(1) != param) memcpy(vObj->GetAtmoParams(1), param, sizeof(ScatterParams));
 				}
 				break;
 
@@ -569,7 +569,7 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				}
 				break;
 
-			default: 
+			default:
 				//LogErr("LOWORD(%hu), HIWORD(0x%hX)",LOWORD(wParam),HIWORD(wParam));
 				break;
 		}

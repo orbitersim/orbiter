@@ -1,11 +1,16 @@
-BEGIN_HYPERDESC
-<h1>STS-125 finals at Edwards</h1>
-<p>Space Shuttle Atlantis returning from the last Hubble servicing mission to runway 22 at Edwards Air Force Base.</p>
-<p>The approach is from the east over the dry Rogers lakebed. Runway 22 is the marked paved runway.</p>
-<p>Approach heading is 240 deg (true north).</p>
-<p>Align with the runway and maintain an initial descent angle of 20 deg.</p>
-<p>Extend airbrakes [Ctrl-b]. Lower landing gear [g] about 10 seconds before touchdown. Flare before touchdown (pull up the nose) to reduce rate of descent.</p>
-END_HYPERDESC
+BEGIN_DESC
+# STS-125 finals at Edwards
+
+Space Shuttle Atlantis returning from the last Hubble servicing mission to runway 22 at Edwards Air Force Base.
+
+The approach is from the east over the dry Rogers lakebed. Runway 22 is the marked paved runway.
+
+Approach heading is 240 deg (true north).
+
+Align with the runway and maintain an initial descent angle of 20 deg.
+
+Extend airbrakes (**Ctrl-b**). Lower landing gear (**g**) about 10 seconds before touchdown. Flare before touchdown (pull up the nose) to reduce rate of descent.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

@@ -1,7 +1,9 @@
-BEGIN_HYPERDESC
-<h1>Palmdale launchpad</h1>
-<p>A (fictional) Delta-glider spaceplane ready for liftoff from the (fictional) VTOL launchpad at the (real) Palmdale USAF Plant 42 site.</p>
-END_HYPERDESC
+BEGIN_DESC
+# Palmdale launchpad
+
+A (fictional) Delta-glider spaceplane ready for liftoff from the (fictional)
+VTOL launchpad at the (real) Palmdale USAF Plant 42 site.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

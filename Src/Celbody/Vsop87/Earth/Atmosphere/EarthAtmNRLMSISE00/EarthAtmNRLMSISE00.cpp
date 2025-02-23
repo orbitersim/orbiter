@@ -54,7 +54,7 @@ bool EarthAtmosphere_NRLMSISE00::clbkParams (const PRM_IN *prm_in, PRM_OUT *prm)
 	// second in the day calculation
 	double h, ijd;
 	h = 24.0 * modf (mjd, &ijd); // hour in the day
-	
+
 	// day in year calculation
 	if ((int)mjd != pmjd) { // do this only when the day number changes
 		double c, e, mjd2;

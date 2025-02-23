@@ -54,7 +54,7 @@ namespace oapi {
 		* \brief 32-bit floating point 2D vector type.
 		* \note This structure is compatible with the D3DXVECTOR2 type.
 		*/
-	typedef struct FVECTOR2 
+	typedef struct FVECTOR2
 	{
 		FVECTOR2()
 		{
@@ -351,7 +351,7 @@ namespace oapi {
 #endif
 		struct { float x, y, z; };
 		struct { float r, g, b; };
-		FVECTOR2 xy; 
+		FVECTOR2 xy;
 	} FVECTOR3;
 
 
@@ -871,7 +871,7 @@ public:
  *   typeface, slant, weight, etc. Fonts can be selected into a Sketchpad
  *   and then apply to all subsequent Text calls.
  */
-class OAPIFUNC Font : public DrawingTool 
+class OAPIFUNC Font : public DrawingTool
 {
 protected:
 	/**
@@ -975,7 +975,7 @@ public:
  * derived graphics clients. An example for a DrawingObject implementation
  * is via the Windows GDI (graphics device interface).
  */
-class OAPIFUNC Sketchpad 
+class OAPIFUNC Sketchpad
 {
 public:
 
@@ -985,7 +985,7 @@ public:
 	};
 
 	enum BlendState {
-		ALPHABLEND = 0x1,				///< AlphaBlend source.color to destination.color, will retain destination alpha unchanged (if exists). 
+		ALPHABLEND = 0x1,				///< AlphaBlend source.color to destination.color, will retain destination alpha unchanged (if exists).
 		COPY = 0x2,						///< Copy source color and alpha to destination
 		COPY_ALPHA = 0x3,				///< Copy source.alpha to destination.alpha, will retain destination color unchanged
 		COPY_COLOR = 0x4,				///< Copy source.color to destination.color, will retain destination alpha unchanged
@@ -995,8 +995,8 @@ public:
 	};
 
 	enum RenderParam {
-		PRM_GAMMA = 1,			///< Enable/Setup Gamma correction	
-		PRM_NOISE = 2			///< Enable/Setup Noise generation	
+		PRM_GAMMA = 1,			///< Enable/Setup Gamma correction
+		PRM_NOISE = 2			///< Enable/Setup Noise generation
 	};
 
 	enum MeshFlags {
@@ -1280,7 +1280,7 @@ public:
 	 * \param pt list of vertex points
 	 * \param npt number of points in the list
 	 * \default None.
-	 * \note Implementations should draw the outline of the 
+	 * \note Implementations should draw the outline of the
 	 *   polygon with the current pen, and fill it with the
 	 *   current brush.
 	 * \note The polygon should be closed, i.e. the last point
@@ -1460,7 +1460,7 @@ public:
 	 * \default None, returns false.
 	 */
 	virtual bool TextW(int x, int y, const LPWSTR str, int len) { return false; }
-	
+
 	/**
 	* \brief [DX9] Draws a mesh group or entire mesh in the render target.
 	* \param hMesh Pointer to mesh containing the geometry.
@@ -1475,7 +1475,7 @@ public:
 	* \note To draw the entire mesh at once, use MeshFlags::RENDER_ALL flag.
 	*/
 	virtual int DrawMeshGroup(const MESHHANDLE hMesh, DWORD grp, MeshFlags flags = MeshFlags::SMOOTH_SHADE, const SURFHANDLE hTex = NULL) { assert(false); return -2; }
-	
+
 	/**
 	* \brief [DX9] Copy 'Blit' a rectangle
 	* \param hSrc Source surface handle
@@ -1652,7 +1652,7 @@ public:
 	virtual void ColorFill(DWORD color, const LPRECT tgt) { assert(false); }
 
 	/**
-	* \brief [DX9] Drawing function designed for drawing GUI elements. Buttons, Windows, Boxes, etc..  
+	* \brief [DX9] Drawing function designed for drawing GUI elements. Buttons, Windows, Boxes, etc..
 	*/
 	virtual void StretchRegion(const skpRegion* rgn, const SURFHANDLE hSrc, const LPRECT out) { assert(false); }
 
@@ -1691,7 +1691,7 @@ public:
 	* \param wpos Camera centric location in ECL frame.
 	* \param scl Drawing scale factor.
 	* \param bFixed If 'true' drawing will retain a constant size recardless of camera distance. (One drawing unit is aprox. one pixel)
-	* \param index Direction of drawing stace x-axis in ecliptic frame. If 'NULL' drawing is orientated with screen (i.e. display) 
+	* \param index Direction of drawing stace x-axis in ecliptic frame. If 'NULL' drawing is orientated with screen (i.e. display)
 	* \Note Only works in perspective projection
 	*/
 	virtual void SetWorldBillboard(const FVECTOR3& wpos, float scl = 1.0f, bool bFixed = true, const FVECTOR3 *index = NULL) { assert(false); }

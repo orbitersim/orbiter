@@ -60,7 +60,7 @@ void ToolKit::Export()
 		ExportElev();
 		return;
 	}
-	
+
 	SURFHANDLE hSrf = oapiCreateSurfaceEx(selw * 512, selh * 512, OAPISURFACE_RENDERTARGET | srff);
 
 	if (hSrf) {
@@ -90,7 +90,7 @@ void ToolKit::Export()
 		if (SaveFile(SaveImage)) {
 			if (!pCore->SaveSurface(SaveImage.lpstrFile, hSrf)) {
 				oapiWriteLogV("Failed to create a file [%s]", SaveImage.lpstrFile);
-			}	
+			}
 		}
 
 		oapiReleaseTexture(hSrf);
@@ -116,7 +116,7 @@ void ToolKit::ExportElev()
 	}
 
 
-	if (GetSaveFileNameA(&SaveElevation)) 
+	if (GetSaveFileNameA(&SaveElevation))
 	{
 		int type = 0;
 
@@ -141,7 +141,7 @@ void ToolKit::ExportElev()
 			if (!pCore->SaveSurface(SaveImage.lpstrFile, hSrf)) {
 				MessageBoxA(pCore->GetRenderWindow(), "Failed to Save a file", "Error:", MB_OK);
 				return;
-			}	
+			}
 			oapiReleaseTexture(hSrf);
 		}
 	}
@@ -164,7 +164,7 @@ void ToolKit::BakeImport()
 
 	int nTiles = selection.area.size();
 	nTiles += (nTiles / 2 + nTiles / 4 + nTiles / 8);
-	
+
 	hProgDlg = CreateDialogParamA(hModule, MAKEINTRESOURCE(IDD_PROGRESS), hAppMainWnd, (DLGPROC)gDlgProc, 0);
 	SendDlgItemMessage(hProgDlg, IDC_PROGBAR, PBM_SETRANGE, 0, MAKELONG(0, nTiles));
 	SendDlgItemMessage(hProgDlg, IDC_PROGBAR, PBM_SETPOS, 0, 0);
@@ -173,7 +173,7 @@ void ToolKit::BakeImport()
 
 	// ------------------------------------------------------------------
 	//
-	if (bSurf) 
+	if (bSurf)
 	{
 		SURFHANDLE hTemp = oapiCreateSurfaceEx(512, 512, OAPISURFACE_PF_XRGB | OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE);
 
@@ -185,7 +185,7 @@ void ToolKit::BakeImport()
 
 		for (auto s : selection.area)
 		{
-			if (s.pNode->SaveTile(flags, hOverlaySrf, hTemp, selection.bounds, selection.slvl, 1.0f) < 0) 
+			if (s.pNode->SaveTile(flags, hOverlaySrf, hTemp, selection.bounds, selection.slvl, 1.0f) < 0)
 			{
 				oapiWriteLogV("ERROR: s.pNode->SaveTile() failed");
 				return;
@@ -219,7 +219,7 @@ void ToolKit::BakeImport()
 
 		for (auto s : selection.area)
 		{
-			if (s.pNode->SaveTile(flags, hOverlayMsk, hTemp, selection.bounds, selection.slvl, 1.0f) < 0) 
+			if (s.pNode->SaveTile(flags, hOverlayMsk, hTemp, selection.bounds, selection.slvl, 1.0f) < 0)
 			{
 				oapiWriteLogV("ERROR: s.pNode->SaveTile() failed");
 				return;
@@ -255,7 +255,7 @@ void ToolKit::BakeParents(SURFHANDLE hOvrl, SURFHANDLE hTemp, int flags, list<QT
 			MakeProgress();
 			grands.push_back(qt->GetParent());
 
-			if (qt->SaveTile(flags, hOvrl, hTemp, selection.bounds, -1, alpha) < 0) 
+			if (qt->SaveTile(flags, hOvrl, hTemp, selection.bounds, -1, alpha) < 0)
 			{
 				oapiWriteLogV("ERROR: qt->SaveTile() failed");
 				return;
@@ -277,7 +277,7 @@ void ToolKit::OpenImage(Layer::LayerType lr)
 
 	auto Lr = pLr[(int)lr];
 
-	if (GetOpenFileNameA(&SaveImage)) 
+	if (GetOpenFileNameA(&SaveImage))
 	{
 		if (Lr) {
 			if (Lr->hSource) {
@@ -297,9 +297,9 @@ void ToolKit::OpenImage(Layer::LayerType lr)
 				return;
 			}
 
-			pLr[(int)lr] = new Layer(pProp, pCore, hSrf, lr, string(SaveImage.lpstrFileTitle));			
+			pLr[(int)lr] = new Layer(pProp, pCore, hSrf, lr, string(SaveImage.lpstrFileTitle));
 		}
-		else 
+		else
 		{
 			pLr[(int)lr] = new Layer(pProp, pCore, NULL, lr, string(SaveImage.lpstrFileTitle));
 		}

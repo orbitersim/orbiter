@@ -4,14 +4,29 @@
 #ifndef ORBITER_H
 #define ORBITER_H
 
+#include <string>
 #include "Config.h"
 #include "Input.h"
 #include "Select.h"
 #include "Keymap.h"
-#include <stdio.h>
-#include <commctrl.h>
+#include <cstdio>
+#include <filesystem>
+#include <optional>
+#include <SDL3/SDL_platform_defines.h>
+
 #include "Mesh.h"
 #include "TimeData.h"
+#include <OrbiterAPI.h>
+
+#ifdef SDL_PLATFORM_WINDOWS
+#define ORBITER_SOFILE_EXTENSION ".dll"
+#elif defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_UNIX)
+#define ORBITER_SOFILE_EXTENSION ".so"
+#elif defined(SDL_PLATFORM_APPLE)
+#define ORBITER_SOFILE_EXTENSION ".dylib"
+#else
+#error "Sorry, your platform is unsupported at the moment."
+#endif
 
 class DInput;
 class Config;
@@ -30,14 +45,16 @@ class DDEServer;
 class ImageIO;
 namespace orbiter {
 	class ConsoleNG;
-	class LaunchpadDialog;
+	class LaunchpadDialog2;
 }
+namespace fs = std::filesystem;
 
 //-----------------------------------------------------------------------------
 // Structure for module callback functions
 //-----------------------------------------------------------------------------
 typedef void (*OPC_Proc)(void);
 
+using std::operator""sv;
 //-----------------------------------------------------------------------------
 // Name: class Orbiter
 // Desc: Main application class
@@ -48,21 +65,23 @@ class Orbiter {
 	friend class OrbiterGraphics;
 
 public:
+	static constexpr std::string_view AppTitle = "OpenOrbiter"sv;
+
 	Orbiter ();
 	~Orbiter ();
 
-    HRESULT Create (HINSTANCE);
-	VOID Launch (const char *scenario);
+    bool Create ();
+	VOID Launch (const fs::path& scenario);
 	void CloseApp (bool fast_shutdown = false);
-	int GetVersion () const;
-	HWND CreateRenderWindow (Config *pCfg, const char *scenario);
+	int GetVersion() const;
+	std::shared_ptr<sdl::UnmanagedWindow> CreateRenderWindow(Config *pCfg, const fs::path& scenario);
 	void PreCloseSession();
 	void CloseSession ();
 	void GetRenderParameters ();
 	bool InitializeWorld (char *name);
 	void ScreenToClient (POINT *pt) const;
-    LRESULT MsgProc (HWND, UINT, WPARAM, LPARAM);
-	HRESULT Render3DEnvironment();
+	bool MsgProc (const SDL_Event &event, bool &wantsOut);
+	HRESULT Render3DEnvironment(bool hidedialogs = false);
 	VOID Output2DData ();
 	void OutputLoadStatus (const char *msg, int line);
 	void OutputLoadTick (int line, bool ok = true);
@@ -72,15 +91,17 @@ public:
 	void ExitRotationMode ();
 	bool StickyFocus() const { return bKeepFocus; }
 	void OpenVideoTab() { bStartVideoTab = true; }
-	INT Run ();
+	void Run ();
+	void SetShouldQuit() { bShouldQuit = true; };
+	bool ShouldQuit() { return bShouldQuit; }
 	void SingleFrame ();
-    void Pause (bool bPause);
+	void Pause (bool bPause);
 	void Freeze (bool bFreeze);
 	inline void TogglePause () { Pause (bRunning); }
 	bool Timejump (double _mjd, int pmode);
 	void Suspend (void); // elapsed time between Suspend() and Resume() is ignored
 	void Resume (void); // A Suspend/Resume pair must be closed within a time step
-	bool SaveScenario (const char *fname, const char *desc, int desc_type);
+	bool SaveScenario (const fs::path& fname, const char *desc);
 	void SaveConfig ();
 	VOID Quicksave ();
 	void StartCaptureFrames () { video_skip_count = 0; bCapture = true; }
@@ -96,7 +117,7 @@ public:
 	HWND OpenDialog (HINSTANCE hInst, int id, DLGPROC pDlg, void *context = 0); // use this version for for calls from external dlls
 	HWND OpenDialogEx (int id, DLGPROC pDlg, DWORD flag = 0, void *context = 0); // extended version
 	HWND OpenDialogEx (HINSTANCE hInst, int id, DLGPROC pDlg, DWORD flag = 0, void *context = 0); // extended version
-	HWND OpenHelp (const HELPCONTEXT *hcontext);
+	void OpenHelp (const HELPCONTEXT *hcontext);
 	void OpenLaunchpadHelp (HELPCONTEXT *hcontext);
 	HELPCONTEXT DefaultHelpPage(const char* topic);
 	//void OpenDialogAsync (int id, DLGPROC pDlg, void *context = 0);
@@ -155,7 +176,7 @@ public:
 
 	// Accessor functions
 	inline HINSTANCE GetInstance() const { return hInst; }
-	inline HWND    GetRenderWnd() const { return hRenderWnd; }
+	inline const std::shared_ptr<sdl::UnmanagedWindow>& GetRenderWnd() const { return hRenderWnd; }
 	inline bool    IsFullscreen() const { return bFullscreen; }
 	inline DWORD   ViewW() const { return viewW; }
 	inline DWORD   ViewH() const { return viewH; }
@@ -163,10 +184,11 @@ public:
 	inline Config* Cfg() const { return pConfig; }
 	inline ScriptInterface *Script() const { return script; }
 	inline DialogManager *DlgMgr() const { return pDlgMgr; }
-	inline orbiter::LaunchpadDialog *Launchpad() const { return m_pLaunchpad; }
+	inline const std::shared_ptr<orbiter::LaunchpadDialog2> &Launchpad() const { return m_pLaunchpad; }
 	inline State*  PState() const { return pState; }
 	inline bool    IsActive() const { return bActive; } // temporary
 	inline bool    IsRunning() const { return bRunning; }
+	inline bool    HasSession() const { return bSession; }
 	inline bool    UseStencil() const { return bUseStencil; }
 	inline void    SetFastExit (bool fexit) { bFastExit = fexit; }
 	inline bool    UseHtmlInline() { return (pConfig->CfgDebugPrm.bHtmlScnDesc == 1 || pConfig->CfgDebugPrm.bHtmlScnDesc == 2 && !bWINEenv); }
@@ -185,16 +207,15 @@ public:
 	oapi::ScreenAnnotation *CreateAnnotation (bool exclusive, double size, COLORREF col);
 	bool DeleteAnnotation (oapi::ScreenAnnotation *sn);
 
-	// File locations - THESE FUNCTIONS ARE NOT THREADSAFE!
-	inline char *ConfigPath (const char *name) { return pConfig->ConfigPath (name); }
-	inline char *MeshPath   (const char *name) { return pConfig->MeshPath (name); }
-	inline char *TexPath    (const char *name, const char *ext = 0)
+	fs::path ConfigPath (std::string_view name) { return pConfig->ConfigPath (name); }
+	fs::path MeshPath   (std::string_view name) { return pConfig->MeshPath (name); }
+	fs::path TexPath    (std::string_view name, std::optional<std::string_view> ext = {})
 		{ return pConfig->TexPath (name, ext); }
-	inline char *HTexPath   (const char *name, const char *ext = 0)
+	fs::path HTexPath   (std::string_view name, std::optional<std::string_view> ext = {})
 		{ return pConfig->HTexPath (name, ext); }
-	inline const char *ScnPath    (const char *name) { return pConfig->ScnPath (name); }
+	fs::path ScnPath    (std::string_view name) const { return pConfig->ScnPath (name); }
 
-	FILE *OpenTextureFile (const char *name, const char *ext);
+	std::ifstream OpenTextureFile (std::string_view name, std::optional<std::string_view> ext);
 	// return texture file handle. Searches in hightex and standard directories
 
 	SURFHANDLE RegisterExhaustTexture (char *name);
@@ -210,7 +231,7 @@ public:
 	std::ifstream *FRsys_stream; // system event playback file
 	double frec_sys_simt;        // system event timer
 	PlaybackEditor *FReditor;    // playback editor instance
-	void ToggleRecorder (bool force = false, bool append = false);
+	bool ToggleRecorder (bool force = false, bool append = false);
 	void EndPlayback ();
 	inline int RecorderStatus() const { return (bRecord ? 1 : bPlayback ? 2 : 0); }
 	inline bool IsPlayback() const { return bPlayback; }
@@ -301,6 +322,13 @@ public:
 
 	void OnOptionChanged(DWORD cat, DWORD item = 0);
 
+	struct DLLModule {
+		HINSTANCE hDLL;        // DLL instance handle
+		oapi::Module* pModule; // pointer to module instance, if the plugin registered one
+		std::string sName;     // DLL name
+		bool bLocalAlloc;      // locally allocated; should be freed by Orbiter core
+	};
+	[[nodiscard]] const std::list<DLLModule>& LoadedModules() const { return m_Plugin; }
 protected:
 	HRESULT UserInput ();
 	void KbdInputImmediate_System    (char *kstate);
@@ -309,8 +337,8 @@ protected:
 	void KbdInputBuffered_OnRunning  (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n);
 	void UserJoyInput_System (DIJOYSTATE2 *js);
 	void UserJoyInput_OnRunning (DIJOYSTATE2 *js);
-	bool MouseEvent (UINT event, DWORD state, DWORD x, DWORD y);
-	bool BroadcastMouseEvent (UINT event, DWORD state, DWORD x, DWORD y);
+	bool MouseEvent (const SDL_Event &event, DWORD x, DWORD y);
+	bool BroadcastMouseEvent (const SDL_Event &event, DWORD x, DWORD y);
 	bool BroadcastImmediateKeyboardEvent (char *kstate);
 	void BroadcastBufferedKeyboardEvent (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n);
 
@@ -347,12 +375,12 @@ protected:
 private:
 	Config         *pConfig;
 	State          *pState;
-	orbiter::LaunchpadDialog *m_pLaunchpad;
+	std::shared_ptr<orbiter::LaunchpadDialog2> m_pLaunchpad;
 	DialogManager  *pDlgMgr;
 	orbiter::ConsoleNG* m_pConsole;    // The console window opened when Orbiter server is launched without a graphics client
 	DInput         *pDI;
 	HINSTANCE       hInst;         // orbiter instance handle
-	HWND            hRenderWnd;    // render window handle (NULL if no render support)
+	std::shared_ptr<sdl::UnmanagedWindow> hRenderWnd; // render window handle (NULL if no render support)
 	HWND            hBk;           // background window handle (demo mode only)
 	BOOL            bRenderOnce;   // flag for single frame render request
 	BOOL            bEnableLighting;
@@ -374,8 +402,7 @@ private:
 	DWORD           viewW, viewH;  // render viewport dimensions
 	DWORD			viewBPP;       // render colour depth (bits per pixel)
 
-	char            cfgpath[256];
-	int             cfglen;
+	std::filesystem::path cfgpath;
 	char            simkstate[256];// accumulated simulated key state
 
 	DWORD           ms_prev;       // used for time step calculation
@@ -393,6 +420,9 @@ private:
 	bool            bFastExit;     // terminate on simulation end?
 	bool            bSysClearType; // is cleartype enabled on the user's system?
 	bool            bRoughType;    // font-smoothing disabled?
+	bool            bShouldQuit;
+
+	std::string currentScenario;
 
 	// Manual joystick/keyboard attitude inputs
 	DWORD ctrlJoystick[15];
@@ -402,12 +432,6 @@ private:
 	VOID SavePlaybackScn (const char *fname);
 
 	// === The plugin module interface ===
-	struct DLLModule {
-		HINSTANCE hDLL;        // DLL instance handle
-		oapi::Module* pModule; // pointer to module instance, if the plugin registered one
-		std::string sName;     // DLL name
-		bool bLocalAlloc;      // locally allocated; should be freed by Orbiter core
-	};
 	std::list<DLLModule> m_Plugin;
 
 	oapi::Module *register_module;  // used during module registration
@@ -422,7 +446,7 @@ private:
 
 	/**
 	 * \brief Load all DLLs in a specific directory as plugin modules.
-	 * \param Module directory
+	 * \param path Module directory
 	 */
 	void LoadModules(const std::string& path);
 

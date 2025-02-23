@@ -56,8 +56,8 @@ struct Position {
 };
 
 
-class Layer 
-{	
+class Layer
+{
 public:
 
 	enum class LayerType { TEXTURE = 0, NIGHT = 1, WATER = 2, ELEVATION = 3 };
@@ -98,9 +98,9 @@ class ToolKit : public gcGUIApp, public oapi::Module
 {
 	struct sSelection
 	{
-		vector<selentry> area;	// List of selected tiles 
+		vector<selentry> area;	// List of selected tiles
 		DRECT bounds;			// Selection bounds (min, max) * (lng, lat)
-		int	selw, selh, slvl;	// Number of tiles selected (w,h) and a level 
+		int	selw, selh, slvl;	// Number of tiles selected (w,h) and a level
 		QTree *pLeftTop;
 		QTree *pRightBottom;
 	};
@@ -125,7 +125,7 @@ public:
 	void		clbkShutdown();
 	bool		clbkMessage(DWORD uMsg, HNODE hNode, int data);
 
-				// From oapi::Module			
+				// From oapi::Module
 	void		clbkSimulationStart(RenderMode rm);
 	void		clbkSimulationEnd();
 	void		clbkPreStep(double simt, double simdt, double mjd);
@@ -143,7 +143,7 @@ private:
 	void		RenderTileBounds(gcCore::PickGround &pg, DWORD color);
 	void		DrawBox(FVECTOR3 *box, DWORD color);
 
-	// ------------------------------------------------------ 
+	// ------------------------------------------------------
 	DRECT		GetBounds(list<QTree*> sel);
 	bool		CreateOverlays();
 	bool		UpdateBackGround(SURFHANDLE hSrf, DWORD flags);
@@ -183,7 +183,7 @@ private:
 	gcCore2				*pCore;
 	QTree				*pRoot;
 	QTree				*pFirst, *pSecond;
-	
+
 	int					xpos, ypos;
 	int					selw, selh;		// Selection size in tiles
 	int					sel_corner;
@@ -198,7 +198,7 @@ private:
 	HPROP				hCLng, hCLat, hCEle, hCFil, hCLvl, hBLvs, hCEdg, hSLng, hSLat, hMLng, hMLat, hSXPx, hSYPx;
 	HPROP				hIFil, hIWid, hIHei, hILog;
 
-	
+
 
 	HWND				hProgDlg;
 

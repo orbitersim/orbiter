@@ -1,10 +1,12 @@
-BEGIN_HYPERDESC
-<h1>HST launch (Mission STS-31R)</h1>
-<p>Space Shuttle Atlantis is ready for launching the Hubble Space Telescope from
-Pad 39B at the Kennedy Space Center.</p>
-<p>Historically, mission STS-31R was flown by Space Shuttle Discovery, launched on
-24 April 1990. In Orbiter, Atlantis is repurposed for the mission.</p>
-END_HYPERDESC
+BEGIN_DESC
+# HST launch (Mission STS-31R)
+
+Space Shuttle Atlantis is ready for launching the Hubble Space Telescope from
+Pad 39B at the Kennedy Space Center.
+
+Historically, mission STS-31R was flown by Space Shuttle Discovery, launched on
+24 April 1990. In Orbiter, Atlantis is repurposed for the mission.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

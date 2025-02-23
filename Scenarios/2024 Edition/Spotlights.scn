@@ -1,8 +1,12 @@
-BEGIN_HYPERDESC
-<h1>Spotlights</h1>
-<p>A demonstration of spotlight support in Orbiter. A DeltaGlider with its docking lights is rotating in front of the ISS, as both enter Earth's shadow.</p>
-<p>Make sure that <i>Local light sources</i> is enabled under the <i>Visual effects</i> tab before running this scenario.</p>
-END_HYPERDESC
+BEGIN_DESC
+# Spotlights
+
+A demonstration of spotlight support in Orbiter. A DeltaGlider with its docking
+lights is rotating in front of the ISS, as both enter Earth's shadow.
+
+Make sure that *Local light sources* is enabled under the *Visual effects* tab
+before running this scenario.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

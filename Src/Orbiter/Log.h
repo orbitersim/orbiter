@@ -4,6 +4,7 @@
 #ifndef __LOG_H
 #define __LOG_H
 
+#include <SDL3/SDL_filesystem.h>
 #include <stdio.h>
 #include <windows.h>
 
@@ -104,8 +105,6 @@ void PrintModules();
 #define dVERIFY(test,msg,...) (test)
 #define dCHECK(test,msg,...)
 #endif
-
-#define CHECKCWD(cwd,name) { char c[512]; _getcwd(c,512); if(strcmp(c,cwd)) { _chdir(cwd); sprintf (c,"CWD modified by module %s - Fixing.",name); LOGOUT_WARN(c); } }
 
 #ifndef __LOG_CPP
 extern char logs[256];

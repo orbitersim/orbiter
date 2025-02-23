@@ -16,7 +16,7 @@ set(Headers
 set(Other
 	AscentMFD.rc
 )
-	
+
 source_group(APIHeaders FILES ${APIHeaders})
 source_group(Headers FILES ${Headers})
 source_group(Sources FILES ${Sources})

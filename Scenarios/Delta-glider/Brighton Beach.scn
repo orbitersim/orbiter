@@ -1,8 +1,9 @@
-BEGIN_HYPERDESC
-<h1>Delta-glider: Brighton Beach</h1>
-<p>Launch from the Moon: A Delta-glider ready for takeoff
-from a pad at Brighton Beach Lunar Spaceport.</p>
-END_HYPERDESC
+BEGIN_DESC
+# Delta-glider: Brighton Beach
+
+Launch from the Moon: A Delta-glider ready for takeoff from a pad at Brighton
+Beach Lunar Spaceport.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

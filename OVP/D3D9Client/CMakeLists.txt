@@ -2,6 +2,7 @@
 project(D3D9Client VERSION 31.0)
 
 configure_file(D3D9ClientConfig.h.in D3D9ClientConfig.h)
+FetchContent_MakeAvailable(imgui)
 
 # specify the C++ standard
 # set(CMAKE_CXX_STANDARD 11)
@@ -67,6 +68,7 @@ set(SourceFiles
 	WindowMgr.cpp
 	ZTreeMgr.cpp
 	Tilemgr2_imp.hpp
+	${imgui_SOURCE_DIR}/backends/imgui_impl_dx9.cpp
 )
 
 set(IncludeFiles
@@ -171,6 +173,10 @@ add_library(D3D9Client MODULE
 target_include_directories(D3D9Client PUBLIC
 	${ORBITER_SOURCE_SDK_INCLUDE_DIR}
 	${DXSDK_DIR}/Include
+	${imgui_SOURCE_DIR}/
+	${imgui_SOURCE_DIR}/backends/
+	SDL3::SDL3
+	SDL3_image::SDL3_image
 )
 
 target_link_directories(D3D9Client PUBLIC
@@ -199,12 +205,15 @@ target_link_libraries(D3D9Client
 	odbccp32.lib
 	version.lib
 	msimg32.lib
+	SDL3::SDL3
+	SDL3_image::SDL3_image
 )
 
 set_target_properties(D3D9Client
 	PROPERTIES
 	LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/Modules/Plugin
 	LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/Modules/Plugin
+    LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBUGINFO ${CMAKE_BINARY_DIR}/Modules/Plugin
 	COMPILE_DEFINITIONS D3D9CLIENT_EXPORTS
 	FOLDER OVP
 )
@@ -228,10 +237,12 @@ add_dependencies(D3D9Client
 	${OrbiterTgt}
 	Orbitersdk
 	D3D9Client_Interface
+	SDL3::SDL3
+	SDL3_image::SDL3_image
 )
 
 install(TARGETS D3D9Client
-	LIBRARY	
+	LIBRARY
 	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
 )
 
@@ -250,3 +261,6 @@ install(DIRECTORY ${D3D9_SOURCE_DIR}/samples/DX9ExtMFD/ DESTINATION ${ORBITER_IN
 install(DIRECTORY ${D3D9_SOURCE_DIR}/samples/GenericCamera/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/GenericCamera ${Exclude})
 install(FILES ${INCLUDE_TARGET_DIR}/gcCoreAPI.h DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/include)
 install(FILES ${INCLUDE_TARGET_DIR}/gcGUI.h DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/include)
+
+install(FILES D3D9Client.info DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR})
+file(COPY D3D9Client.info DESTINATION ${ORBITER_BINARY_PLUGIN_DIR})

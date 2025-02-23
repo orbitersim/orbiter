@@ -426,7 +426,7 @@ class GDICLIENTEXPORT GDIFont: public oapi::Font {
 
 public:
 	/**
-	 * \brief Font constructor. 
+	 * \brief Font constructor.
 	 * \param height cell or character height [pixel]
 	 * \param prop proportional/fixed width flag
 	 * \param face font face name

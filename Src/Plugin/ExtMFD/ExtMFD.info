@@ -1,0 +1,8 @@
+BEGIN_DESC
+# External MFD
+
+Provides support for displaying MFD (multi-functional display) instruments in separate windows.
+
+External MFD windows can be opened by selecting the "External MFD" entry in the Custom Functions dialog (Ctrl-F4).
+END_DESC
+CATEGORY Tools and dialogs

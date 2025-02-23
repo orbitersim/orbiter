@@ -1,9 +1,10 @@
-BEGIN_HYPERDESC
-<h1>Playback: Glider in orbit 1</h1>
-<p>The Delta-glider performs some attitude maneuvers in orbit, using its
+BEGIN_DESC
+# Playback: Glider in orbit 1
+
+The Delta-glider performs some attitude maneuvers in orbit, using its
 Reaction Control System. Note how the rotation oscillates between different
-vessel axes due to its inertia properties.</p>
-END_HYPERDESC
+vessel axes due to its inertia properties.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

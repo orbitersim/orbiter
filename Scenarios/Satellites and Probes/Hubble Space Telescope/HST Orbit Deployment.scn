@@ -1,11 +1,12 @@
-BEGIN_HYPERDESC
-<h1>HST orbit deployment (Mission STS-31R)</h1>
-<p>The Hubble Space Telescope is being pulled out of the Shuttle Cargo Bay.
+BEGIN_DESC
+# HST orbit deployment (Mission STS-31R)
+
+The Hubble Space Telescope is being pulled out of the Shuttle Cargo Bay.
 Complete the deployment operation using the Manipulator Arm control pad
 (Ctrl-Space). After detaching the telescope, switch focus (F3) to the HST
 and unfold the solar arrays (Ctrl-3), deploy the high-gain antennae (Ctrl-1),
-and open the main telescope hatch (Ctrl-2).</p>
-END_HYPERDESC
+and open the main telescope hatch (Ctrl-2).
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

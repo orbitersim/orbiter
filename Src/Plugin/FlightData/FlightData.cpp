@@ -47,7 +47,7 @@ namespace oapi {
 		void clbkNewVessel(OBJHANDLE hVessel);
 
 		/// \brief Vessel deletion notification callback
-		/// \param hVessel Handle of vessel to be deleted 
+		/// \param hVessel Handle of vessel to be deleted
 		void clbkDeleteVessel(OBJHANDLE hVessel);
 
 		/// \brief Entry point for dialog message procedure
@@ -75,14 +75,14 @@ namespace oapi {
 		/// \brief Destroy dialog message handler
 		INT_PTR DestroyDialog();
 
-		/// \brief Re-initialise the vessel selection list 
+		/// \brief Re-initialise the vessel selection list
 		/// \param hDlg dialog handle
 		void ResetVesselList(HWND hDlg);
 
 		/// \brief Reset all data graphs
 		void ResetData();
 
-		/// \brief Switch monitoring focus to a new vessel 
+		/// \brief Switch monitoring focus to a new vessel
 		void PickVesselFromList(HWND hDlg);
 
 		/// \brief Add a new data graph to the stack
@@ -126,7 +126,7 @@ namespace oapi {
 // API interface
 // ==============================================================
 
-/// \brief Module entry point 
+/// \brief Module entry point
 /// \param hDLL module handle
 DLLCLBK void InitModule(HINSTANCE hDLL)
 {
@@ -134,7 +134,7 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 	oapiRegisterModule(oapi::FlightData::GetInstance(hDLL));
 }
 
-/// \brief Module exit point 
+/// \brief Module exit point
 /// \param hDLL module handle
 DLLCLBK void ExitModule(HINSTANCE hDLL)
 {

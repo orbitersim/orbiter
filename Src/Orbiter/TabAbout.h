@@ -13,17 +13,15 @@
 
 namespace orbiter {
 
-	class AboutTab : public LaunchpadTab {
+	class AboutTab : public LaunchpadTab2 {
 	public:
-		AboutTab(const LaunchpadDialog* lp);
+		explicit AboutTab(LaunchpadDialog2* lp);
 
-		void Create();
-		bool OpenHelp();
-
-		BOOL OnMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
+		void OnDraw(WithLpImCtx &ctx) override;
 	private:
-		static INT_PTR CALLBACK AboutProc(HWND, UINT, WPARAM, LPARAM);
+		std::shared_ptr<LpImage> icon;
+		float savedWidth;
+		void RenderCentered(WithLpImCtx &ctx);
 	};
 
 }

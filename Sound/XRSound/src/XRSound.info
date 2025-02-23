@@ -1,0 +1,15 @@
+BEGIN_DESC
+# XRSound for Orbiter 2016
+
+* Automatically adds sounds to all Orbiter vessels that define thrusters.
+* Includes a default library of over 450 sounds, including all XR vessel voice callouts by actress Sally Beaumont and
+  141 ATC callouts from STS-114 and STS-121 featuring CAPCOM Julie Payette.
+* All sounds are fully configurable via `$ORBITER_ROOT\XRSound\XRSound.cfg`.
+* Includes a simple-to-use C++ API and support for vessel class-specific configuration files to add custom sounds to
+  your own Orbiter vessels.
+
+Please refer to the XRSound User Manual installed to `$ORBITER_ROOT\Doc\XRSound User Manual.pdf` for more information.
+
+As always, the latest version of XRSound is available at <http://www.alteaaerospace.com>.  Happy orbiting!
+END_DESC
+CATEGORY Sound module for Orbiter

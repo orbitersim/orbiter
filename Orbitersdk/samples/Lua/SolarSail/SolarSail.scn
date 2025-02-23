@@ -1,7 +1,8 @@
-BEGIN_HYPERDESC
-<h1>Solar sail</h1>
-<p>Solar sail. Please enable solar radiation pressure to use this scenario</p>
-END_HYPERDESC
+BEGIN_DESC
+# Solar sail
+
+Solar sail. Please enable solar radiation pressure to use this scenario
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

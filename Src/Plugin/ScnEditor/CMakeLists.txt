@@ -50,6 +50,8 @@ install(TARGETS ScnEditor
 install(FILES ScnEditorAPI.h
 	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/include
 )
+install(FILES ScnEditor.info DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR})
+file(COPY ScnEditor.info DESTINATION ${ORBITER_BINARY_PLUGIN_DIR})
 
 if(ORBITER_MAKE_DOC)
 	add_subdirectory(Help)

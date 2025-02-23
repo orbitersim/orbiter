@@ -10,9 +10,9 @@
 /**
  * \file OrbiterAPI.h
  * \brief General API interface functions
- * \todo Check functions in VESSELSTATUS2::arot and oapiGetPlanetObliquityMatrix(), 
+ * \todo Check functions in VESSELSTATUS2::arot and oapiGetPlanetObliquityMatrix(),
  *	minus sign has changed a place in a matrix. Is this correct??
- * \todo class CameraMode documentation 
+ * \todo class CameraMode documentation
 */
 
 #ifndef __ORBITERAPI_H
@@ -20,7 +20,7 @@
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1300 ) // Microsoft Visual Studio Version 2003 and higher
 #if !defined(_CRT_SECURE_NO_DEPRECATE)
-#define _CRT_SECURE_NO_DEPRECATE 
+#define _CRT_SECURE_NO_DEPRECATE
 #endif
 #endif
 #include <fstream>
@@ -265,7 +265,7 @@ typedef union {      // 4x4 matrix
 } MATRIX4;
 //@}
 
-/** 
+/**
  * \ingroup structures
  * \brief colour definition
  */
@@ -278,7 +278,7 @@ typedef struct {
 
 /**
  * \ingroup structures
- * \brief vertex definition including normals and texture coordinates 
+ * \brief vertex definition including normals and texture coordinates
  */
 typedef struct {
 	float x;     ///< vertex x position
@@ -314,7 +314,7 @@ const DWORD MAXTEX = 1;  // max. extra textures per mesh group
 
 /**
  * \ingroup structures
- * \brief extended mesh group definition 
+ * \brief extended mesh group definition
  */
 typedef struct {
 	NTVERTEX *Vtx;     ///< vertex list
@@ -353,6 +353,20 @@ typedef struct {
 #define OAPISURFACE_RENDER3D     0x0400 ///< Create a surface that can act as a target for rendering a 3D scene
 #define OAPISURFACE_ANTIALIAS    0x0800 ///< Create a surface with anti-aliasing the level will depend on launchpad settings.
 #define OAPISURFACE_SHARED		 0x1000 ///< Create a shared resource
+//@}
+
+
+/**
+ * \ingroup defines
+ * \defgroup notification Notification type
+ * These constants specified the type of notification to display.
+ * \sa oapiAddNotification
+ */
+//@{
+#define OAPINOTIF_SUCCESS 0 ///< Success
+#define OAPINOTIF_WARNING 1 ///< Warning
+#define OAPINOTIF_ERROR   2 ///< Error
+#define OAPINOTIF_INFO    3 ///< Info
 //@}
 
 /**
@@ -409,7 +423,7 @@ typedef struct {
  *   Vtx array need to be assigned.
  * \note to replace individual vertices in the group, the nVtx entry
  *   should contain the number of vertices to be replaced, the vIdx
- *   array should contain the indices (>= 0) of the vertices to be 
+ *   array should contain the indices (>= 0) of the vertices to be
  *   replaced, and Vtx should contain the new vertex values of those
  *   vertices. If vIdx==NULL, vertices are replaced in sequence from
  *   the beginning of the group's vertex list.
@@ -442,7 +456,7 @@ typedef struct {
 
 /**
  * \ingroup structures
- * \brief material definition 
+ * \brief material definition
  */
 typedef struct {
 	COLOUR4 diffuse;   ///< diffuse component
@@ -462,7 +476,7 @@ enum MatProp {
 	Reflect,			///< Reflectivity [.rgb]
 	Smooth,				///< Smoothness in [.r] (1 = smooth, 0 = rough)
 	Metal,				///< Meralness in [.r]  (1 = metal, 0 = non-metal)
-	Fresnel,			///< Fresnel terms for fresnel effect. Used in older 2nd generation shader. 
+	Fresnel,			///< Fresnel terms for fresnel effect. Used in older 2nd generation shader.
 	SpecialFX			///< Heat map effect control variable in [.r] (i.e. average part temperature)
 };
 
@@ -501,7 +515,7 @@ namespace oapi {
  *   fully define an object's state in space (position and velocity
  *   vectors). These include the position of the orbited body, the
  *   orientation of the reference coordinate system, and the date to which
- *   the mean longitude parameter refers. 
+ *   the mean longitude parameter refers.
  * \sa ORBITPARAM, \subpage orbit
  */
 typedef struct {
@@ -648,6 +662,58 @@ typedef struct {
 	SURFHANDLE tex;    ///<     particle texture handle (NULL for default)
 } PARTICLESTREAMSPEC;
 
+/**
+ * \defgroup imguidialog ImGui dialog
+ *
+ * This group defines ImGuiDialog definition.
+ */
+//@{
+/**
+ * \brief Base class for defining an ImGui dialog.
+ */
+class OAPIFUNC ImGuiDialog {
+	struct ImGuiDefaultSize {
+		float width;
+		float height;
+	};
+public:
+	/**
+	 * \brief Create an ImGui dialog object.
+	 * \param name Name of the dialog window
+	 * \note This class must by derived from in order to define a custom ImGui dialog
+	 */
+	ImGuiDialog(const char *n, ImGuiDefaultSize ds = {350.0,280.0}):name(n),defaultSize(ds) {}
+	virtual ~ImGuiDialog();
+	bool IsActive() { return active; }
+	void Activate() { active = true; }
+	virtual void Display();
+	void SetHelp(const char *file, const char *topic = NULL) {
+		helpfile = file;
+		if(topic)
+			helptopic = topic;
+		else
+			helptopic.clear();
+	}
+	bool HandleHelpButton();
+protected:
+	/**
+	 * \brief Callback that is executed when the dialog is closed.
+	 * \note The default behavior is to do nothing
+	 */
+	virtual void OnClose() {};
+	/**
+	 * \brief Callback that is executed when the dialog should be drawn.
+	 * \note Orbiter takes care of doing the ImGui::Begin() / ImGui::End() pair
+	 * required to create the window and handle its visibility.
+	 * \note ImGui documentation is available at https://github.com/ocornut/imgui
+	 */
+	virtual void OnDraw() = 0;
+	bool active = false;
+	const std::string name;
+	ImGuiDefaultSize defaultSize;
+	std::string helpfile;
+	std::string helptopic;
+};
 
 /**
  * \defgroup locallight Local lighting interface
@@ -1166,7 +1232,7 @@ typedef struct {
  * compatibility. \n
  * \note The version specification is an input parameter for all function calls
  *  (including GetStatus) and must be set by the user to tell Orbiter which interface to use.
- * \sa VESSEL::GetStatusEx 
+ * \sa VESSEL::GetStatusEx
  */
 typedef struct {
 	/// interface version identifier (2)
@@ -1200,7 +1266,7 @@ typedef struct {
 	*		- Get - request a docking port status list in dockinfo. The module is
 	*		  responsible for deleting the list after use.
 	*		- Set - initialise docking status for all docking ports in dockinfo.
-	* \sa VESSEL::GetStatusEx 
+	* \sa VESSEL::GetStatusEx
 	*/
 	DWORD flag;
 
@@ -1235,14 +1301,14 @@ typedef struct {
 
 	/**
 	* \brief vessel orientation against ecliptic frame
-	* \details \b arot (\f$ \alpha, \beta, \gamma \f$) contains angles of rotation [rad] 
+	* \details \b arot (\f$ \alpha, \beta, \gamma \f$) contains angles of rotation [rad]
 	*  around \e x, \e y, \e z axes in ecliptic
 	*  frame to produce this rotation matrix \b R for mapping from the vessel's local
 	*  frame of reference to the global frame of reference:
-	* \f[ R = 
+	* \f[ R =
 	*	\left[ \begin{array}{ccc} 1 & 0 & 0 \\	0 & \cos\alpha & \sin\alpha \\ 0 & -\sin\alpha & \cos\alpha \end{array} \right]
 	*	\left[ \begin{array}{ccc} \cos\beta & 0 & -\sin\beta \\ 0 & 1 & 0 \\ \sin\beta & 0 & \cos\beta \end{array} \right]
-	*	\left[ \begin{array}{ccc} \cos\gamma & \sin\gamma & 0 \\ -\sin\gamma & \cos\gamma & 0 \\ 0 & 0 & 1 \end{array} \right]	 
+	*	\left[ \begin{array}{ccc} \cos\gamma & \sin\gamma & 0 \\ -\sin\gamma & \cos\gamma & 0 \\ 0 & 0 & 1 \end{array} \right]
 	* \f]
 	* such that \b r<sub>global</sub> = \b R \b r<sub>local</sub> + \b p \n
 	* where \b p is the vessel's global position.
@@ -1284,7 +1350,7 @@ typedef struct {
 
 	/// thruster definition list
 	struct THRUSTSPEC {
-		DWORD idx;      ///< thruster index 
+		DWORD idx;      ///< thruster index
 		double level;   ///< thruster level
 	} *thruster;
 
@@ -1353,7 +1419,7 @@ typedef bool (*Listentry_clbk)(char *name, DWORD idx, DWORD flag, void *usrdata)
  * \sa oapiOpenHelp
  */
 typedef struct {
-	char *helpfile; 
+	char *helpfile;
 	char *topic;
 	char *toc;
 	char *index;
@@ -1950,7 +2016,7 @@ typedef union {
 
 // ===========================================================================
 /**
- * \ingroup defines 
+ * \ingroup defines
  * \defgroup panel_mouse Mouse event identifiers
  *
  * These constants are used to refer to cockpit mouse event types during
@@ -2240,7 +2306,7 @@ public:
 	*  return/newline sequence (\\r\\n).
 	*/
 	virtual char *Description ();
-	
+
 	/**
 	* \brief Opens a dialog box associated with the launchpad item.
 	* \param hInst module instance handle
@@ -2462,7 +2528,7 @@ OAPIFUNC void oapiRegisterModule (oapi::Module *module);
 /**
  * \brief Returns a pointer to a string which will be displayed in the lower left corner of the viewport.
  * \return Pointer to debugging string.
- * \note This function should only be used for debugging purposes. 
+ * \note This function should only be used for debugging purposes.
  *  Do not use it in published modules!
  * \note The returned pointer refers to a global char[256] in the Orbiter core. It is the
  *  responsibility of the module to ensure that no overflow occurs.
@@ -2829,7 +2895,7 @@ OAPIFUNC bool oapiDeleteVessel (OBJHANDLE hVessel, OBJHANDLE hAlternativeCameraT
  *  all involved celestial bodies are considered point masses, and the barycentre
  *  is defined as
  * \f[
- * \vec{r}_B = \left(\sum_i m_i\right)^{-1} \sum_i m_i \vec{r_i} 
+ * \vec{r}_B = \left(\sum_i m_i\right)^{-1} \sum_i m_i \vec{r_i}
  * \f]
  * \note hObj must be the handle of a celestial body.
  * \note The summation involves the body itself and all its secondaries, e.g. a planet and its moons.
@@ -2858,7 +2924,7 @@ OAPIFUNC double oapiGetSize (OBJHANDLE hObj);
  * \sa oapiGetMaxFuelMass, oapiGetEmptyMass
  */
 OAPIFUNC double oapiGetMass (OBJHANDLE hObj);
-	
+
 /**
  * \brief Returns the position of an object in the global reference frame.
  * \param hObj object handle
@@ -2952,7 +3018,7 @@ OAPIFUNC double oapiGetFuelMass (OBJHANDLE hVessel);
  * \note For multistage configurations, this returns the sum of the max fuel mass of active stages only.
  */
 OAPIFUNC double oapiGetMaxFuelMass (OBJHANDLE hVessel);
-	
+
 /**
  * \brief Returns an identifier of a vessel's propellant resource.
  * \param hVessel vessel handle
@@ -3130,7 +3196,7 @@ OAPIFUNC BOOL oapiGetHeading (OBJHANDLE hVessel, double *heading);
  * \return Error flag (\e false on failure )
  */
 OAPIFUNC BOOL oapiGetFocusAltitude (double *alt);
-	
+
 /**
  * \brief Returns the pitch angle of the current focus vessel w.r.t. the local horizon.
  * \param pitch pointer to variable receiving pitch value
@@ -3273,7 +3339,7 @@ OAPIFUNC void oapiGetAtm (OBJHANDLE hVessel, ATMPARAM *prm, OBJHANDLE *hAtmRef =
 	*  valid range for hover thrusters is [0,+1].
 	* \note \c ENGINESTATUS has the following components:
 	* \code
-	* typedef struct {       
+	* typedef struct {
 	*   double main;   // -1 (full retro) .. +1 (full main)
 	*   double hover;  // 0 .. +1 (full hover)
 	*   int attmode;   // 0=rotation, 1=translation
@@ -3298,7 +3364,7 @@ OAPIFUNC void oapiGetFocusEngineStatus (ENGINESTATUS *es);
 	* \note Setting main thrusters > 0 implies setting retro thrusters to 0 and vice versa.
 	* \note Setting main thrusters to -level is equivalent to setting retro thrusters to
 	*  +level and vice versa.
-	*/	
+	*/
 OAPIFUNC void oapiSetEngineLevel (OBJHANDLE hVessel, ENGINETYPE engine, double level);
 
 	/**
@@ -3519,7 +3585,7 @@ OAPIFUNC bool oapiGetShowGrapplePoints ();
 	* \note The full drag coefficient required by the airfoil callback function consists of
 	*  several components: profile drag c<sub>D,e</sub>, induced drag c<sub>D,i</sub> and wave drag c<sub>D,w</sub>
 	* \f[
-	*  c_{_D} = c_{_D,e} + c_{_D,i} + c_{_D,w} 
+	*  c_{_D} = c_{_D,e} + c_{_D,i} + c_{_D,w}
 	* \f]
 	*  where c<sub>D,e</sub> is caused by skin friction and pressure components, and c<sub>D,w</sub> is a
 	*  result of the shock wave and flow separation in transonic and supersonic flight.
@@ -3530,10 +3596,10 @@ OAPIFUNC bool oapiGetShowGrapplePoints ();
 	* \note This function can be interpreted slightly differently by moving the angle of
 	*  attack-dependency of the profile drag into the induced drag component:
 	* \f[
-	*  c_{_D} = c_{_{D,0}} + \acute{c_{_D,}}_i + c_{_D,w} 
+	*  c_{_D} = c_{_{D,0}} + \acute{c_{_D,}}_i + c_{_D,w}
 	* \f]
-	*  where c<sub>D,0</sub> is the zero-lift component of the profile drag, and 
-	*  \f$ \acute{c_{_D,}}_i \f$ is a modified induced drag obtained by replacing the shape 
+	*  where c<sub>D,0</sub> is the zero-lift component of the profile drag, and
+	*  \f$ \acute{c_{_D,}}_i \f$ is a modified induced drag obtained by replacing the shape
 	*  factor e with the Oswald efficiency factor. See Programmer's Guide for more details.
 	*/
 OAPIFUNC double oapiGetInducedDrag (double cl, double A, double e);
@@ -3739,7 +3805,7 @@ OAPIFUNC void oapiCameraSetCockpitDir (double polar, double azimuth, bool transi
 
 	/**
 	* \brief Attach the camera to a new target, or switch between internal and external camera mode.
-	* \param hObj handle of the new camera target 
+	* \param hObj handle of the new camera target
 	* \param mode camera mode (0=internal, 1=external, 2=don't change)
 	* \note If the new target is not a vessel, the camera mode is always set to external,
 	*  regardless of the value of mode.
@@ -3785,7 +3851,7 @@ OAPIFUNC bool oapiMoveGroundCamera (double forward, double right=0, double up=0)
 	* \sa oapiGetPlanetObliquity, oapiGetPlanetTheta
 	*/
 OAPIFUNC double oapiGetPlanetPeriod (OBJHANDLE hPlanet);
-	
+
 	/**
 	* \brief Returns the obliquity of the planet's rotation axis (the angle between the rotation axis
 	*  and the ecliptic zenith).
@@ -3814,7 +3880,7 @@ OAPIFUNC double oapiGetPlanetTheta (OBJHANDLE hPlanet);
 	*  coordinates into global coordinates.
 	* \param hPlanet planet handle
 	* \param mat pointer to a matrix receiving the rotation data
-	* \note The returned matrix is given by 
+	* \note The returned matrix is given by
 	* \f[
 	*  R_a = \left[ \begin{array}{ccc} \cos\theta & 0 & -\sin\theta \\ 0 & 1 & 0 \\
 	*  \sin\theta & 0 & \cos\theta \end{array} \right] \left[ \begin{array}{ccc} 1 & 0 & 0 \\
@@ -3861,8 +3927,8 @@ OAPIFUNC bool oapiPlanetHasAtmosphere (OBJHANDLE hPlanet);
 	* \note If the atmosphere model is position- as well as altitude-dependent, this
 	*   function assumes longitude=0 and latitude=0.
 	* \note \c ATMPARAM has the following components:
-	* \code 
-	* typedef struct {      
+	* \code
+	* typedef struct {
 	*   double T;      // temperature [K]
 	*   double p;      // pressure [Pa]
 	*   double rho;    // density [kg/m^3]
@@ -3981,10 +4047,10 @@ OAPIFUNC DWORD oapiGetPlanetJCoeffCount (OBJHANDLE hPlanet);
 	* \return Perturbation coefficient \f$ J_{n+2} \f$
 	* \note Valid indices \a n are 0 to oapiGetPlanetJCoeffCount()-1
 	* \note Orbiter calculates the planet's gravitational potential \a U for a given distance \a r
-	*  and latitude \f$ \phi \f$ by 
+	*  and latitude \f$ \phi \f$ by
 	* \f[
 	* U(r,\phi) = \frac{GM}{r}\left[ 1 - \sum^{N}_{n=2} J_n\left(\frac{R}{r}\right)^2 P_n(\sin\phi) \right]
-	* \f] 
+	* \f]
 	* where \a R is the planet's equatorial radius, \a M is its mass, \a G is the gravitational
 	* constant, and \f$ P_n \f$ is the Legendre polynomial of order n.
 	* \note Orbiter currently considers perturbations to be only a function of latitude
@@ -4106,7 +4172,7 @@ OAPIFUNC DWORD oapiGetBasePadCount (OBJHANDLE hBase);
 	* \param lng pointer to variable to receive longitude value [rad]
 	* \param lat pointer to variable to receive latitude value [rad]
 	* \param rad pointer to variable to receive radius value [m]
-	* \return \e false indicates failure (pad index out of range). 
+	* \return \e false indicates failure (pad index out of range).
 	*  In that case, the return values are undefined.
 	* \note hBase must be a valid base handle (e.g. from oapiGetBaseByName())
 	* \note 0 <= pad < oapiGetBasePadCount() is required.
@@ -4197,7 +4263,7 @@ OAPIFUNC double oapiGetSimMJD ();
 	*/
 OAPIFUNC double oapiGetSysMJD ();
 
-	/** 
+	/**
 	* \brief Set the current simulation time. The simulation session performs a jump to the new time.
 	* \param mjd new simulation time
 	* \param pmode vessel propagation modes (see notes)
@@ -4205,7 +4271,7 @@ OAPIFUNC double oapiGetSysMJD ();
 	* \note The new time can be set before or after the current simulation time.
 	* \note Deterministic objects (planets controlled by Keplerian elements or
 	* perturbation code) are propagated directly. Vessels are propagated
-	* according to pmode, which can be a combination of 
+	* according to pmode, which can be a combination of
 	* <table>
 	* <tr><td><b>Orbital vessels</b></td><td>.</td></tr>
 	* <tr><td>PROP_ORBITAL_ELEMENTS</td><td>Move the vessel along its current
@@ -4282,7 +4348,7 @@ OAPIFUNC void oapiSetPause (bool pause);
 // =============================================================================================
 //@{
 	/**
-	* \brief Returns the current position of a NAV transmitter 
+	* \brief Returns the current position of a NAV transmitter
 	*  (in global coordinates, i.e. heliocentric ecliptic).
 	* \param hNav NAV transmitter handle
 	* \param gpos pointer to variable to receive global position
@@ -4473,8 +4539,8 @@ OAPIFUNC VISHANDLE *oapiObjectVisualPtr (OBJHANDLE hObject);
 OAPIFUNC MESHHANDLE oapiLoadMesh (const char *fname);
 
 	/**
-	* \brief Retrieves a mesh handle from the global mesh manager. 
-	* \details When called for the first time for any given file name, the mesh is loaded from file 
+	* \brief Retrieves a mesh handle from the global mesh manager.
+	* \details When called for the first time for any given file name, the mesh is loaded from file
 	* and stored as a system resource. Every further request for the same mesh directly returns
 	* a handle to the stored mesh without additional file I/O.
 	* \param fname mesh file name
@@ -4621,7 +4687,7 @@ OAPIFUNC bool       oapiAddMeshGroupBlock (MESHHANDLE hMesh, DWORD grpidx,
  *    VtxPerm is NULL, only the first nVtx vertics are returned.
  * \note If an arbitrary subset of vertices should be returned, assign the VtxPerm buffer
  *    to at least size nVtx, and fill it with the indices of the vertices you want returned.
- *    The order of vertices returned in Vtx will correspond to VtxPerm. If VtxPerm 
+ *    The order of vertices returned in Vtx will correspond to VtxPerm. If VtxPerm
  *    contains any indices outside the valid range, the corresponding entries in Vtx will
  *    be filled with {0} vertices, and the function will return 2.
  * \note If no vertex data are requested, set Vtx to NULL and/or nVtx to 0.
@@ -4693,7 +4759,7 @@ OAPIFUNC SURFHANDLE oapiGetTextureHandle (MESHHANDLE hMesh, DWORD texidx);
 	*  standard way, i.e. first searches the HitexDir directory (usually Textures2),
 	*  then the TextureDir directory (usually Textures). All search paths are relative
 	*  to the texture root directories. For example, oapiLoadTexture()
-	*  ("myvessel\mytex.dds") would first search for Textures2\\myvessel\\mytex.dds, 
+	*  ("myvessel\mytex.dds") would first search for Textures2\\myvessel\\mytex.dds,
 	*  then for Textures\\myvessel\\mytex.dds.
 	*/
 OAPIFUNC SURFHANDLE oapiLoadTexture (const char *fname, bool dynamic = false);
@@ -4864,7 +4930,7 @@ OAPIFUNC bool oapiSetMeshProperty (MESHHANDLE hMesh, DWORD property, DWORD value
 	 *  extended in future versions:
 	 * - \c MESHPROPERTY_MODULATEMATALPHA \n \n
 	 * if value==0 (default) disable material alpha information in textured mesh groups (only use texture alpha channel).\n
-	 * if value<>0 modulate (mix) material alpha values with texture alpha maps.		
+	 * if value<>0 modulate (mix) material alpha values with texture alpha maps.
 	 * \sa oapiSetMeshProperty(MESHHANDLE,DWORD,DWORD)
 	 */
 OAPIFUNC bool oapiSetMeshProperty (DEVMESHHANDLE hMesh, DWORD property, DWORD value);
@@ -5008,7 +5074,7 @@ OAPIFUNC void oapiToggleMFD_on (int mfd);
 	/**
 	* \brief Get the current mode of the specified MFD.
 	* \param mfd MFD identifier (e.g. \c MFD_LEFT, \c MFD_RIGHT)
-	* \return \ref mfdmode "MFD Mode" 
+	* \return \ref mfdmode "MFD Mode"
 	* \sa \ref mfdidentifier "MFD Identifiers"
 	*/
 OAPIFUNC int oapiGetMFDMode (int mfd);
@@ -5029,7 +5095,7 @@ OAPIFUNC int oapiGetMFDMode (int mfd);
 OAPIFUNC double oapiSetMFDRefreshIntervalMultiplier (int mfd, double multiplier=1.0);
 
 OAPIFUNC int oapiBroadcastMFDMessage (int mode, int msg, void *data);
-	
+
 	/**
 	* \brief Sends a keystroke to an MFD.
 	* \param mfd MFD identifier (e.g. \c MFD_LEFT, \c MFD_RIGHT)
@@ -5071,7 +5137,7 @@ OAPIFUNC void oapiRefreshMFDButtons (int mfd, OBJHANDLE hVessel = 0);
 	*  event) will execute this action.
 	*/
 OAPIFUNC bool oapiProcessMFDButton (int mfd, int bt, int event);
-	
+
 	/**
 	* \brief Retrieves a default label for an MFD button.
 	* \param mfd MFD identifier (e.g. \c MFD_LEFT, \c MFD_RIGHT)
@@ -5091,7 +5157,7 @@ OAPIFUNC const char *oapiMFDButtonLabel (int mfd, int bt);
 	* \note Should be called in the body of VESSEL2::clbkLoadPanel() for panels which define MFDs.
 	* \note Defining more than 2 or 3 MFDs per panel can degrade performance.
 	* \note MFDSPEC is a structure with the following interface:
-	* \code 
+	* \code
 	* typedef struct {
 	*   RECT pos;       // position of MFD in panel (pixel)
 	*   int nbt_left;   // number of buttons on left side of MFD display
@@ -5217,7 +5283,7 @@ OAPIFUNC void oapiSetPanelNeighbours (int left, int right, int top, int bottom);
 
 	/**
 	* \brief Copies the stored background of a panel area into the provided surface.
-	* \details This function should only be called from within the repaint callback 
+	* \details This function should only be called from within the repaint callback
 	*  function of an area registered with the \c PANEL_MAP_BGONREQUEST flag.
 	* \param area_id area identifier
 	* \param surf surface handle
@@ -5264,7 +5330,7 @@ OAPIFUNC void oapiSetDefNavDisplay (int mode);
 	* - 1 RCS buttons are shown and can be operated with the mouse (default)
 	*/
 OAPIFUNC void oapiSetDefRCSDisplay (int mode);
-	
+
 	/**
 	* \brief Switch to a neighbour instrument panel in 2-D panel cockpit mode.
 	* \param direction neighbour direction (see notes)
@@ -5358,7 +5424,7 @@ enum FontStyle {
 	FONT_BOLD = 0x1,
 	FONT_ITALIC = 0x2,
 	FONT_UNDERLINE = 0x4,
-	FONT_STRIKEOUT = 0x8,		
+	FONT_STRIKEOUT = 0x8,
 	FONT_CRISP = 0x10,			///< Override app-default, No Antialiasing
 	FONT_ANTIALIAS = 0x20		///< Override app-default, Use Antialiashing
 };
@@ -5726,7 +5792,7 @@ OAPIFUNC void oapiColourFill (SURFHANDLE tgt, DWORD fillcolor, int tgtx = 0, int
 // =============================================================================================
 /// \defgroup CustomMFD Custom MFD mode definition
 // =============================================================================================
-//@{ 
+//@{
 	/**
 	* \brief Register a custom MFD mode.
 	* \param spec MFD specs (see notes below)
@@ -5802,7 +5868,7 @@ OAPIFUNC int oapiGetMFDModeSpecEx (char *name, MFDMODESPECEX **spec = 0);
 // =============================================================================================
 /// \defgroup VirtualCockpit Virtual cockpit functions
 // =============================================================================================
-//@{ 
+//@{
 	/**
 	* \brief Define a render target for rendering an MFD display in a virtual cockpit.
 	* \param mfd MFD identifier (e.g. \c MFD_LEFT, \c MFD_RIGHT)
@@ -5871,7 +5937,7 @@ OAPIFUNC void       oapiVCSetAreaClickmode_Spherical (int id, const VECTOR3 &cnt
 	*  projection of the quadrilateral region on the render window. The mouse
 	*  event handler will receive the relative position within the area at which the
 	*  mouse event occurred, where the top left corner has coordinates (0,0), and
-	*  the bottom right corner has coordinates (1,1). 
+	*  the bottom right corner has coordinates (1,1).
 	* \note The area can define any flat quadrilateral in space. It is not limited to
 	*  rectangles, but all 4 points should be in the same plane.
 	* \sa VESSEL2::clbkVCMouseEvent
@@ -5914,7 +5980,7 @@ OAPIFUNC void       oapiVCTriggerRedrawArea (int vc_id, int area_id);
 	* \param spec hud specification (see notes)
 	* \note This function should be placed in the body of the VESSEL2::ovcLoadVC() vessel module callback function.
 	* \note VCHUDSPEC is a structure defined as:
-	* \code 
+	* \code
 	*  struct VCHUDSPEC {
 	*    DWORD nmesh;    // mesh index
 	*    DWORD ngroup;   // group index
@@ -5936,7 +6002,7 @@ OAPIFUNC void       oapiVCRegisterHUD (const VCHUDSPEC *spec);
 // =============================================================================================
 /// \defgroup Dialog Customisation - custom menu, dialogs
 // =============================================================================================
-//@{ 
+//@{
 	/**
 	* \brief Register a new item in the parameter list of the "Extra" tab of the Orbiter Launchpad dialog.
 	* \param item pointer to LaunchpadItem structure (see notes)
@@ -6034,6 +6100,14 @@ OAPIFUNC bool       oapiUnregisterCustomCmd (int cmdId);
 OAPIFUNC HWND       oapiOpenDialog (HINSTANCE hDLLInst, int resourceId, DLGPROC msgProc, void *context = 0);
 
 	/**
+	* \brief Open a dialog box specified by an ImGuiDialog object.
+	* \param dlg pointer to an ImGuiDialog object responsible for drawing the dialog box.
+	* \note Only one instance of a dialog box can be open at a time. A second call to
+	*  oapiOpenDialog() with the same dialog will do nothing.
+	*/
+OAPIFUNC void       oapiOpenDialog (ImGuiDialog *dlg);
+
+	/**
 	* \brief Open a dialog box defined as a Windows resource. This version provides additional
 	*  functionality compared to oapiOpenDialog().
 	* \param hDLLInst module instance handle (as obtained from InitModule)
@@ -6073,9 +6147,43 @@ OAPIFUNC HWND       oapiFindDialog (HINSTANCE hDLLInst, int resourceId);
 OAPIFUNC void       oapiCloseDialog (HWND hDlg);
 
 	/**
+	* \brief Close a dialog box.
+	* \param dlg object pointer that was used to open the dialog box.
+	*/
+OAPIFUNC void       oapiCloseDialog (ImGuiDialog *dlg);
+
+	/**
+	* \brief Show a notification.
+	* \param type Type of notification
+	* \param title One liner title of the notification
+	* \param content Content of the notification (possibly multiline)
+	* \note  title and content are copied and can be safely overwritten/freed after the call
+	*/
+OAPIFUNC void      oapiAddNotification(int type, const char *title, const char *content = "");
+
+	/**
+	* \brief Retreives a texture ID for use with ImGui.
+	* \param surf surface handle
+	* \return The value returned can be used where ImGui expects an ImTextureID argument.
+	*/
+OAPIFUNC uint64_t  oapiGetImTextureID (SURFHANDLE surf);
+	/**
 	* \brief Retrieves the context pointer of a dialog box which has been defined during the call to oapiOpenDialog().
 	* \param hDlg dialog window handle
 	* \note  This function returns NULL if no context pointer was specified in oapiOpenDialog().
+	* \n <b> Typical usage:</b>\n
+	* \code
+	* SURFHANDLE surf = m_mfd->GetDisplaySurface();
+	* if (surf) {
+	* 	ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
+	* 	ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
+	* 	ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
+	* 	ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.0f);
+	* 	ImTextureID txt = oapiGetImTextureID(surf);
+	* 	ImGui::Image(txt, ImVec2(sz.x, sz.y), uv_min, uv_max, tint_col, border_col);
+	* }
+	* \endcode
+	*
 	*/
 OAPIFUNC void      *oapiGetDialogContext (HWND hDlg);
 
@@ -6190,7 +6298,7 @@ OAPIFUNC void oapiSetMainInfoVisibilityMode (DWORD mode);
 // =============================================================================================
 /// \defgroup FileIO File IO Functions
 // =============================================================================================
-//@{ 
+//@{
 	/**
 	* \brief Open a file for reading or writing.
 	* \param fname file name (with optional path)
@@ -6341,7 +6449,7 @@ OAPIFUNC bool oapiReadScenario_nextline (FILEHANDLE scn, char *&line);
 	* \return \e true if tag was found in the file, \e false if not.
 	* \note The tag-value entries of a configuration file have the format \<tag\> = \<value\>
 	* \note The functions search the complete file independent of the current position of the file pointer.
-	* \note Whitespace around tag and value are discarded, as well as comments 
+	* \note Whitespace around tag and value are discarded, as well as comments
 	*  beginning with a semicolon (;) to the end of the line.
 	* \note String values can contain internal whitespace.
 	*/
@@ -6388,7 +6496,7 @@ OAPIFUNC bool oapiReadItem_bool (FILEHANDLE f, char *item, bool &b);
 	* \sa oapiReadItem_string for more details.
 	*/
 OAPIFUNC bool oapiReadItem_vec (FILEHANDLE f, char *item, VECTOR3 &vec);
-	
+
 	/**
 	* \brief Write a tag and its value to a configuration file.
 	* \param f file handle
@@ -6396,7 +6504,7 @@ OAPIFUNC bool oapiReadItem_vec (FILEHANDLE f, char *item, VECTOR3 &vec);
 	* \param string character-string value
 	* \note Use these functions to write items (tags and values) to configuration files.
 	* \note The format of the written items is recognised by the corresponding \b oapiReadItem_xxx functions.
-	* \note For historic reasons, the format for scenario file entries is different. 
+	* \note For historic reasons, the format for scenario file entries is different.
 	*  Use the oapiWriteLine function.
 	* \sa oapiReadItem_string
 	*/
@@ -6439,7 +6547,7 @@ OAPIFUNC void oapiWriteItem_bool (FILEHANDLE f, char *item, bool b);
 	* \sa oapiWriteItem_string for more details
 	*/
 OAPIFUNC void oapiWriteItem_vec (FILEHANDLE f, char *item, const VECTOR3 &vec);
-//@} 
+//@}
 
 
 // =============================================================================================
@@ -6488,7 +6596,7 @@ OAPIFUNC DWORD oapiDeflate (const BYTE *ebuf, DWORD nebuf, BYTE *zbuf, DWORD nzb
 OAPIFUNC DWORD oapiInflate (const BYTE *zbuf, DWORD nzbuf, BYTE *ebuf, DWORD nebuf);
 
 	/**
-	* \brief Returns a colour value adapted to the current screen colour 
+	* \brief Returns a colour value adapted to the current screen colour
 	*  depth for given red, green and blue components.
 	* \param red red component (0-255)
 	* \param green green component (0-255)
@@ -6508,11 +6616,11 @@ OAPIFUNC DWORD oapiInflate (const BYTE *zbuf, DWORD nzbuf, BYTE *ebuf, DWORD neb
 	*  functions where a COLORREF value is expected.
 	*/
 OAPIFUNC DWORD oapiGetColour (DWORD red, DWORD green, DWORD blue);
-//@} 
+//@}
 
 
 // =============================================================================================
-/// \defgroup UserInput User input functions 
+/// \defgroup UserInput User input functions
 // =============================================================================================
 //@{
 	/**
@@ -6560,7 +6668,7 @@ OAPIFUNC bool oapiSimulateBufferedKey (DWORD key, DWORD *mod = 0, DWORD nmod = 0
  *   frames for the duration of the simulated input.
  */
 OAPIFUNC bool oapiSimulateImmediateKey (char kstate[256], bool onRunningOnly = false);
-//@} 
+//@}
 
 
 // =============================================================================================
@@ -6683,7 +6791,7 @@ OAPIFUNC BOOL oapiGetShipAirspeedVector (OBJHANDLE hVessel, VECTOR3 *speedvec);
  * \deprecated This method has been replaced by \ref oapiGetAirspeed()
  */
 OAPIFUNC BOOL oapiGetFocusAirspeed (double *airspeed);
-	
+
 /**
  * \brief Returns the current focus vessel's airspeed vector w.r.t. the closest planet or moon in
  *  the local horizon's frame of reference.

@@ -77,7 +77,7 @@ bool EarthAtmosphere_J71G::clbkParams (const PRM_IN *prm_in, PRM_OUT *prm)
 		oapiGetGlobalPos (hBody, &gsun);
 		oapiGlobalToEqu (hBody, -gsun, &atmprm.Slng, &atmprm.Slat, &r);
 		atmprm.mjd = mjd;
-	}	
+	}
 	double Slat = atmprm.Slat;
 	double Slng = atmprm.Slng - PI2*(mjd-atmprm.mjd)*86400.0/cbody->SidRotPeriod();
 	if (Slng < -PI) Slng += PI2;
@@ -95,7 +95,7 @@ bool EarthAtmosphere_J71G::clbkParams (const PRM_IN *prm_in, PRM_OUT *prm)
 
 		// night-time global exospheric temperature
 		double Tc = 379.0 + 3.24*Fbar;
-	
+
 		// modified hour angle of the sun
 		double H = lng - Slng;
 		double tau = H - 0.64577 + 0.10472*sin (H+0.7505) + 3.0*PI;
@@ -146,7 +146,7 @@ bool EarthAtmosphere_J71G::clbkParams (const PRM_IN *prm_in, PRM_OUT *prm)
 		double d_He = 0.65*fabs(Slat)/0.4091609 *
 			(pow(sin(0.25*PI-0.5*lat*(Slat>=0?1:-1)),3) - 0.3535534);
 		d_He = pow10(helium_fit(Z,Tinf) + (d_He-1.0)) * m_He/c;
-	
+
 		prm->T = J77_Temp (Z, Tinf);  // temperature at altitude
 		prm->rho = pow10(dens_fit (Z, Tinf)+d_Gm+d_Sa+d_Sl) + d_He;
 		// density at altitude
@@ -355,7 +355,7 @@ double J77_Dens_low (double Z)
 			y = pow (10.0, (-3.7469+(sZ-85)*(0.226434-(sZ-85)*5.945e-3)));
 			WM = wm0*(1-y);
 
-			CM = pCM*(pT/T)*(WM/pWM) * exp( - 0.5897446*( 
+			CM = pCM*(pT/T)*(WM/pWM) * exp( - 0.5897446*(
 				(pWM/pT)*pow ((1+pZ/6356.766),-2)
 				+ (WM/T)*pow((1+sZ/6356.766),-2) ));
 
@@ -404,24 +404,24 @@ double J77_MW_low (double Z)
 
 
 // -----------------------------------------------------------------
-// 
+//
 //  Function DENS_FIT
-// 
+//
 //  Purpose:
-// 
+//
 //  Evaluation of density polynomials
-// 
+//
 //  Input:
-// 
+//
 //  Z     Satellite height [km]
 //  Tinf  Exospheric temperature [K]
-// 
+//
 //  Output:
-// 
+//
 //  DENS_FIT Logarithm of density value [cg/m^3]
-// 
+//
 //  Note:
-// 
+//
 //  The density values from the Jacchia 1971 atmospheric model
 //  have been fitted in the height regime [90km,2500km) and the
 //  temperature regime [500K,1900K] using a polynomial approach.
@@ -431,7 +431,7 @@ double J77_MW_low (double Z)
 //  a smooth variation of the density with varying height.
 //  The different sections along with the maximum encountered
 //  density differences [%] are given in the sequel.
-// 
+//
 //  ____________________________________
 //  |                 |                |
 //  |  500 -  850 K   |  850 - 1900 K  |
@@ -457,8 +457,8 @@ double J77_MW_low (double Z)
 //  |     2.1%        |     7.7%       |
 //  |                 |                |
 //  ____________________________________
-// 
-// 
+//
+//
 // -----------------------------------------------------------------
 
 double dens_fit (double Z, double Tinf)

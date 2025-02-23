@@ -75,7 +75,7 @@ struct Sample {
 	* \section first_steps First Steps:
 	*  To start on your planet module, you should create a new "dynamic link library" project with
 	*  your C++ compiler. Add the \e Orbiter.lib and \e Orbitersdk.lib files to the project (<i>found in
-	*  Orbitersdk\\lib</i>). Add <i>Orbitersdk\\include</i> to your include path. Create a C++ source 
+	*  Orbitersdk\\lib</i>). Add <i>Orbitersdk\\include</i> to your include path. Create a C++ source
 	*  file for your project, and add the essential API interface functions:
 	*
 	* \code
@@ -127,7 +127,7 @@ struct Sample {
 	* class to add the required functionality. Check the API Reference manual for a complete list of
 	* class methods. A typical implementation might look like this:
 	* \code
-	*  class MyPlanet: public CELBODY 
+	*  class MyPlanet: public CELBODY
 	*  {
 	*  public:
 	*         MyPlanet();
@@ -203,12 +203,12 @@ struct Sample {
 	* returned as spherical polar coordinates, or \c EPHEM_TRUEISBARY if the true and barycentric
 	* coordinates are identical (i.e. the celestial body does not have child bodies).
 	*
-	* \note The older standalone module callback functions (opcXXX) are obsolete and should no 
+	* \note The older standalone module callback functions (opcXXX) are obsolete and should no
 	*  longer be used.
 	*
 	* \sa CELBODY
 	*/
-	
+
 
 
 // ======================================================================
@@ -236,21 +236,21 @@ public:
 	* \brief Returns \e true or \e false depending on whether the module supports ephemeris calculation.
 	* \return If your module supports ephemeris calculation (that is, if it defines the
 	*  clbkEphemeris and clbkFastEphemeris methods) return \e true. Otherwise return \e false.
-	* \par Default action: 
+	* \par Default action:
 	*  Returns \e false.
 	*/
 	virtual bool bEphemeris() const;
-	
+
 	/**
 	* \brief Called when the planet is initialised at the beginning of a simulation run.
-	* \details This function allows to read any parameters from the configuration file, 
+	* \details This function allows to read any parameters from the configuration file,
 	*  and perform additional initialisation tasks such as reading data files.
 	* \param cfg file handle of configuration file
-	* \par Default action: 
+	* \par Default action:
 	*  None.
 	*/
 	virtual void clbkInit (FILEHANDLE cfg);
-	
+
 	/**
 	* \brief Called when Orbiter requires (non-sequential) ephemeris data from the planet
 	*  for a given time.
@@ -258,7 +258,7 @@ public:
 	* \param req data request bitflags (see notes)
 	* \param ret pointer to result vector
 	* \return bitflags describing returned data (see notes)
-	* \par Default action: 
+	* \par Default action:
 	*  None, returning 0
 	* \note The ephemeris data should be calculated with respect to the body's parent
 	*  body, in the ecliptic frame (J2000 equator and equinox).
@@ -310,7 +310,7 @@ public:
 	*  arbitrary time point is required, e.g. by an instrument calculating a transfer orbit.
 	*/
 	virtual int clbkEphemeris (double mjd, int req, double *ret);
-	
+
 	/**
 	* \brief Called by Orbiter to update the body's state to the next simulation frame.
 	* \param simt simulation time (seconds)
@@ -330,19 +330,19 @@ public:
 	*  rounding errors in the time variable, and allows higher temporal resolutions.
 	*/
 	virtual int clbkFastEphemeris (double simt, int req, double *ret);
-	
+
 	/**
 	* \brief Called by Orbiter to obtain atmospheric parameters at a given altitude.
 	* \param alt altitude over planet mean radius
 	* \param prm pointer to ATMPARAM structure receiving results
-	* \return \e true if parameters have been retrieved sucessfully, \e false to indicate 
+	* \return \e true if parameters have been retrieved sucessfully, \e false to indicate
 	*  that the planet has no atmosphere, or if alt is above the cutoff limit for atmospheric
 	*  calculations.
 	* \par Default action
 	*  None, returning false.
 	* \note The \c ATMPARAM structure contains the following fields:
-	* \code 
-	* typedef struct {      
+	* \code
+	* typedef struct {
 	*   double T;      // temperature [K]
 	*   double p;      // pressure [Pa]
 	*   double rho;    // density [kg/m<sup>3</sup>]
@@ -351,13 +351,13 @@ public:
 	*  only. Local variations ("weather") are not yet supported.
 	*/
 	virtual bool clbkAtmParam (double alt, ATMPARAM *prm);
-	
+
 protected:
 	/**
 	* \brief Convert from polar to cartesian coordinates
 	*/
 	void Pol2Crt (double *pol, double *crt);
-	
+
 	short version;	///< version number
 };
 

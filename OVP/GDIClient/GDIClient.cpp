@@ -104,27 +104,27 @@ bool GDIClient::clbkSaveSurfaceToImage (SURFHANDLE surf, const char *fname, Imag
 
 	if (fname == NULL) {
 		// copy device-dependent bitmap to clipboard
-		if (OpenClipboard (GetRenderWindow())) {
-		    EmptyClipboard();
-			SetClipboardData(CF_BITMAP,hbm);
-			CloseClipboard(); 
-		}
+		// TODO: if (OpenClipboard (GetRenderWindow())) {
+		//     EmptyClipboard();
+		// 	SetClipboardData(CF_BITMAP,hbm);
+		// 	CloseClipboard();
+		// }
 	} else {
 		BITMAP bmp;
 		BITMAPINFOHEADER bi;
 		GetObject (hbm, sizeof(BITMAP), &bmp);
 
 		// map to device-independent bitmap
-		bi.biSize = sizeof(BITMAPINFOHEADER);    
-		bi.biWidth = bmp.bmWidth;    
+		bi.biSize = sizeof(BITMAPINFOHEADER);
+		bi.biWidth = bmp.bmWidth;
 		bi.biHeight = -bmp.bmHeight;
-		bi.biPlanes = 1;    
-		bi.biBitCount = 24;    
-		bi.biCompression = BI_RGB;    
-		bi.biSizeImage = 0;  
+		bi.biPlanes = 1;
+		bi.biBitCount = 24;
+		bi.biCompression = BI_RGB;
+		bi.biSizeImage = 0;
 		bi.biXPelsPerMeter = 0;
 		bi.biYPelsPerMeter = 0;
-		bi.biClrUsed = 0;    
+		bi.biClrUsed = 0;
 		bi.biClrImportant = 0;
 
 		oapi::ImageData imgdata;
@@ -141,7 +141,7 @@ bool GDIClient::clbkSaveSurfaceToImage (SURFHANDLE surf, const char *fname, Imag
 
 		WriteImageDataToFile (imgdata, fname, fmt, quality);
 
-		GlobalUnlock(hDIB);    
+		GlobalUnlock(hDIB);
 		GlobalFree(hDIB);
 	}
     DeleteObject(hbm);

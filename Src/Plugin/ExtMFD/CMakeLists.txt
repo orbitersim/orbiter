@@ -3,7 +3,6 @@
 
 add_library(ExtMFD SHARED
 	ExtMFD.cpp
-	ExtMFD.rc
 	MFDWindow.cpp
 )
 
@@ -15,11 +14,13 @@ target_include_directories(ExtMFD
 target_link_libraries(ExtMFD
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
+	imgui
 )
 
 add_dependencies(ExtMFD
 	${OrbiterTgt}
 	Orbitersdk
+	imgui
 )
 
 set_target_properties(ExtMFD
@@ -32,3 +33,6 @@ install(TARGETS ExtMFD
 	RUNTIME
 	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
 )
+
+install(FILES ExtMFD.info DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR})
+file(COPY ExtMFD.info DESTINATION ${ORBITER_BINARY_PLUGIN_DIR})

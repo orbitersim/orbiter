@@ -100,9 +100,9 @@ CFG_VISUALPRM CfgVisualPrm_default = {
 	true,       // bUseStarDots (render background stars as pixels)
 	{2.0, 8.0, 0.1, true},	// StarPrm (bright/faint cutoff magnitude, display brightness of faintest, log mapping)
 	true,       // bUseStarImage (render background star from image)
-	"csphere\\hiptyc_2020",     // StarImagePath (path to star background image)
+	"csphere/hiptyc_2020",     // StarImagePath (path to star background image)
 	true,       // bUseBgImage (render celestial sphere background image)
-	"csphere\\milkyway_2020",   // CSphereBgPath (path to celestial background images)
+	"csphere/milkyway_2020",   // CSphereBgPath (path to celestial background images)
 	0.3,		// CSphereBgIntens (intensity of celestial sphere background image)
 	2			// ElevMode (cubic spline)
 };
@@ -193,7 +193,7 @@ CFG_DEVPRM CfgDevPrm_default = {
 };
 
 CFG_JOYSTICKPRM CfgJoystickPrm_default = {
-	0,			// Joy_idx (joystick device index, 0=disabled)
+	0,          // Joy_idx (joystick device index, 0=disabled)
 	2500,		// Deadzone (neutralise joystick axes within 20% of central position)
 	1,			// ThrottleAxis (z-axis by default)
 	9500,		// ThrottleSaturation (saturate throttle at the last 5% each end)
@@ -227,7 +227,9 @@ CFG_DEMOPRM CfgDemoPrm_default = {
 
 CFG_FONTPRM CfgFontPrm_default = {
 	1.0f,		// dlgFont_Scale (scaling factor for inline dialog fonts)
-	"Arial"		// dlgFont1_Face (default dialog font face name)
+	"Arial",	// dlgFont1_Face (default dialog font face name)
+	14.0f,		// ImGui_FontSize
+	"Inter"     // ImGui_FontFile
 };
 
 CFG_CAMERAPRM CfgCameraPrm_default = {
@@ -257,6 +259,7 @@ CFG_WINDOWPOS CfgWindowPos_default = {
 	{0,0,0,0},  // options dialog
 	{0,0,0,0},  // visual helper dialog
 	0,          // launchpad scenario list width
+    0,          // launchpad options list width
 	0,          // launchpad modules list width
 	0           // launchpad extras list width
 };
@@ -342,7 +345,7 @@ bool GetItemString (istream &is, const char *label, char *val)
 	while (is.getline (cbuf, 512)) {
 		cl = trim_string(cbuf);
 		if (!_stricmp(cl, "END_PARSE")) return false;
-		
+
 		for (i = 0; cl[i] && cl[i] != '='; i++);
 		cv = (cl[i] ? cl+(i+1) : cl+i);
 		for (cl[i--] = '\0'; i >= 0 && (cl[i] == ' ' || cl[i] == '\t'); i--)
@@ -459,6 +462,10 @@ Config::Config(char* fname)
 	Load(fname);
 }
 
+static bool operator==(const SDL_GUID a, const SDL_GUID b) {
+    return memcmp(&a.data, &b.data, 16) == 0;
+}
+
 bool Config::Load(const char *fname)
 {
 	int i;
@@ -529,8 +536,18 @@ bool Config::Load(const char *fname)
 	if (GetInt (ifs, "WindowHeight", i)) CfgDevPrm.WinH = (DWORD)i;
 
 	// Joystick information
-	if (GetInt (ifs, "JoystickIndex", i))
-		CfgJoystickPrm.Joy_idx = (DWORD)i;
+	if (GetString (ifs, "JoystickIndex", cbuf)) {
+	    const auto guid = SDL_StringToGUID(cbuf);
+	    auto njoy = 0;
+	    const auto joylist = SDL_GetJoysticks(&njoy);
+	    CfgJoystickPrm.Joy_idx = 0;
+	    for (int joyix = 0; joyix < njoy; joyix++) {
+            if (SDL_GetJoystickGUIDForID(joylist[joyix]) == guid) {
+                CfgJoystickPrm.Joy_idx = joylist[joyix];
+            }
+        }
+	    SDL_free(joylist);
+	}
 	if (GetInt (ifs, "JoystickThrottleAxis", i))
 		CfgJoystickPrm.ThrottleAxis = max (0, min (3, i));
 	if (GetInt (ifs, "JoystickThrottleSaturation", i))
@@ -658,10 +675,10 @@ bool Config::Load(const char *fname)
 	}
 	GetBool(ifs, "EnableBackgroundStarmap", CfgVisualPrm.bUseStarImage);
 	if (GetString(ifs, "CSphereStarPath", cbuf))
-		strncpy(CfgVisualPrm.StarImagePath, cbuf, 128);
+		CfgVisualPrm.StarImagePath = fs::path(cbuf);
 	GetBool(ifs, "EnableBackgroundImage", CfgVisualPrm.bUseBgImage);
 	if (GetString(ifs, "CSphereBgPath", cbuf))
-		strncpy(CfgVisualPrm.CSphereBgPath, cbuf, 128);
+		CfgVisualPrm.CSphereBgPath = fs::path(cbuf);
 	GetReal (ifs, "CSphereBgIntensity", CfgVisualPrm.CSphereBgIntens);
 
 	// screen capture parameters
@@ -719,14 +736,14 @@ bool Config::Load(const char *fname)
 	GetBool (ifs, "ShowWarpAlways", CfgUIPrm.bWarpAlways);
 	GetBool (ifs, "ShowWarpScientific", CfgUIPrm.bWarpScientific);
 	if (GetInt (ifs, "InfobarMode", i) && i >= 0 && i <= 2)
-		CfgUIPrm.InfoMode = (DWORD)i;
+		CfgUIPrm.InfoMode = i;
 	if (GetString (ifs, "InfoAuxIdx", cbuf)) {
 		sscanf (cbuf, "%d%d", CfgUIPrm.InfoAuxIdx+0, CfgUIPrm.InfoAuxIdx+1);
 		for (i = 0; i < 2; i++)
 			if (CfgUIPrm.InfoAuxIdx[i] > 3) CfgUIPrm.InfoAuxIdx[i] = 0;
 	}
 	if (GetInt (ifs, "MenubarOpacity", i) && i >= 0 && i <= 10)
-		CfgUIPrm.MenuOpacity = (DWORD)i;
+		CfgUIPrm.MenuOpacity = i;
 	if (GetInt (ifs, "InfobarOpacity", i) && i >= 0 && i <= 10)
 		CfgUIPrm.InfoOpacity = (DWORD)i;
 	if (GetInt (ifs, "MenubarSpeed", i) && i >= 1 && i <= 20)
@@ -758,6 +775,8 @@ bool Config::Load(const char *fname)
 	// font characteristics
 	if (GetReal (ifs, "DialogFont_Scale", d)) CfgFontPrm.dlgFont_Scale = (float)d;
 	GetString (ifs, "DialogFont1_Face", CfgFontPrm.dlgFont1_Face);
+	if (GetReal (ifs, "ImGui_FontSize", d)) CfgFontPrm.ImGui_FontSize = (float)d;
+	GetString (ifs, "ImGui_FontName", CfgFontPrm.ImGui_FontName);
 
 	// misc. options
 	if (GetString (ifs, "LPadRect", cbuf)) {
@@ -787,6 +806,7 @@ bool Config::Load(const char *fname)
 		sscanf (cbuf, "%d%d%d%d", &CfgWindowPos.DlgVishelper.left, &CfgWindowPos.DlgVishelper.top,
 			&CfgWindowPos.DlgVishelper.right, &CfgWindowPos.DlgVishelper.bottom);
 	GetInt (ifs, "LpadScnListWidth", CfgWindowPos.LaunchpadScnListWidth);
+    GetInt (ifs, "LpadOptListWidth", CfgWindowPos.LaunchpadOptListWidth);
 	GetInt (ifs, "LpadModListWidth", CfgWindowPos.LaunchpadModListWidth);
 	GetInt (ifs, "LpadExtListWidth", CfgWindowPos.LaunchpadExtListWidth);
 
@@ -901,7 +921,7 @@ const void *Config::GetParam (DWORD paramtype) const
 	case CFGPRM_CSPHEREUSEBGIMAGE:
 		return (void*)&CfgVisualPrm.bUseBgImage;
 	case CFGPRM_CSPHERETEXTURE:
-		return (void*)CfgVisualPrm.CSphereBgPath;
+		return (void*)&CfgVisualPrm.CSphereBgPath;
 	case CFGPRM_CSPHEREINTENS:
 		return (void*)&CfgVisualPrm.CSphereBgIntens;
 	case CFGPRM_LOCALLIGHT:
@@ -958,7 +978,7 @@ BOOL Config::Write (const char *fname) const
 		ofs << "LPadRect = " << rLaunchpad.left << ' ' << rLaunchpad.top
 			<< ' ' << rLaunchpad.right << ' ' << rLaunchpad.bottom << '\n';
 
-	if (strcmp (CfgDirPrm.ConfigDir, CfgDirPrm_default.ConfigDir) || 
+	if (strcmp (CfgDirPrm.ConfigDir, CfgDirPrm_default.ConfigDir) ||
 		strcmp (CfgDirPrm.MeshDir, CfgDirPrm_default.MeshDir) ||
 		strcmp (CfgDirPrm.TextureDir, CfgDirPrm_default.TextureDir) ||
 		strcmp (CfgDirPrm.HightexDir, CfgDirPrm_default.HightexDir) ||
@@ -1052,12 +1072,12 @@ BOOL Config::Write (const char *fname) const
 				<< CfgVisualPrm.StarPrm.brt_min << ' ' << (CfgVisualPrm.StarPrm.map_log ? 1:0) << '\n';
 		if (CfgVisualPrm.bUseStarImage != CfgVisualPrm_default.bUseStarImage || bEchoAll)
 			ofs << "EnableBackgroundStarmap = " << BoolStr(CfgVisualPrm.bUseStarImage) << '\n';
-		if (strcmp(CfgVisualPrm.StarImagePath, CfgVisualPrm_default.StarImagePath) || bEchoAll)
-			ofs << "CSphereStarPath = " << CfgVisualPrm.StarImagePath << '\n';
+		if (CfgVisualPrm.StarImagePath != CfgVisualPrm_default.StarImagePath || bEchoAll)
+			ofs << "CSphereStarPath = " << CfgVisualPrm.StarImagePath.u8string() << '\n';
 		if (CfgVisualPrm.bUseBgImage != CfgVisualPrm_default.bUseBgImage || bEchoAll)
 			ofs << "EnableBackgroundImage = " << BoolStr(CfgVisualPrm.bUseBgImage) << '\n';
-		if (strcmp (CfgVisualPrm.CSphereBgPath, CfgVisualPrm_default.CSphereBgPath) || bEchoAll)
-			ofs << "CSphereBgPath = " << CfgVisualPrm.CSphereBgPath << '\n';
+		if (CfgVisualPrm.CSphereBgPath != CfgVisualPrm_default.CSphereBgPath || bEchoAll)
+			ofs << "CSphereBgPath = " << CfgVisualPrm.CSphereBgPath.u8string() << '\n';
 		if (CfgVisualPrm.CSphereBgIntens != CfgVisualPrm_default.CSphereBgIntens || bEchoAll)
 			ofs << "CSphereBgIntensity = " << CfgVisualPrm.CSphereBgIntens << '\n';
 		if (CfgVisualPrm.ElevMode != CfgVisualPrm_default.ElevMode || bEchoAll)
@@ -1246,8 +1266,12 @@ BOOL Config::Write (const char *fname) const
 
 	if (memcmp (&CfgJoystickPrm, &CfgJoystickPrm_default, sizeof(CFG_JOYSTICKPRM)) || bEchoAll) {
 		ofs << "\n; === Joystick parameters ===\n";
-		if (CfgJoystickPrm.Joy_idx != CfgJoystickPrm_default.Joy_idx || bEchoAll)
-			ofs << "JoystickIndex = " << CfgJoystickPrm.Joy_idx << '\n';
+		if (CfgJoystickPrm.Joy_idx != CfgJoystickPrm_default.Joy_idx || bEchoAll) {
+            const auto guid = SDL_GetJoystickGUIDForID(CfgJoystickPrm.Joy_idx);
+	        char cbuf[33];
+		    SDL_GUIDToString(guid, cbuf, 33);
+		    ofs << "JoystickIndex = " << cbuf << '\n';
+		}
 		if (CfgJoystickPrm.ThrottleAxis != CfgJoystickPrm_default.ThrottleAxis || bEchoAll)
 			ofs << "JoystickThrottleAxis = " << CfgJoystickPrm.ThrottleAxis << '\n';
 		if (CfgJoystickPrm.ThrottleSaturation != CfgJoystickPrm_default.ThrottleSaturation || bEchoAll)
@@ -1332,6 +1356,10 @@ BOOL Config::Write (const char *fname) const
 			ofs << "DialogFont_Scale = " << CfgFontPrm.dlgFont_Scale << '\n';
 		if (strcmp (CfgFontPrm.dlgFont1_Face, CfgFontPrm_default.dlgFont1_Face) || bEchoAll)
 			ofs << "DialogFont1_Face = " << CfgFontPrm.dlgFont1_Face << '\n';
+		if (CfgFontPrm.ImGui_FontSize != CfgFontPrm_default.ImGui_FontSize || bEchoAll)
+			ofs << "ImGui_FontSize = " << CfgFontPrm.ImGui_FontSize << '\n';
+		if (strcmp (CfgFontPrm.ImGui_FontName, CfgFontPrm_default.ImGui_FontName) || bEchoAll)
+			ofs << "ImGui_FontName = " << CfgFontPrm.ImGui_FontName << '\n';
 	}
 
 	if (memcmp (&CfgWindowPos, &CfgWindowPos_default, sizeof(CFG_WINDOWPOS)) || bEchoAll) {
@@ -1352,6 +1380,8 @@ BOOL Config::Write (const char *fname) const
 			ofs << "DlgVhelperPos = " << CfgWindowPos.DlgVishelper << '\n';
 		if (CfgWindowPos.LaunchpadScnListWidth != CfgWindowPos_default.LaunchpadScnListWidth || bEchoAll)
 			ofs << "LpadScnListWidth = " << CfgWindowPos.LaunchpadScnListWidth << '\n';
+	    if (CfgWindowPos.LaunchpadOptListWidth != CfgWindowPos_default.LaunchpadOptListWidth || bEchoAll)
+	        ofs << "LpadOptListWidth = " << CfgWindowPos.LaunchpadOptListWidth << '\n';
 		if (CfgWindowPos.LaunchpadModListWidth != CfgWindowPos_default.LaunchpadModListWidth || bEchoAll)
 			ofs << "LpadModListWidth = " << CfgWindowPos.LaunchpadModListWidth << '\n';
 		if (CfgWindowPos.LaunchpadExtListWidth != CfgWindowPos_default.LaunchpadExtListWidth || bEchoAll)
@@ -1369,53 +1399,54 @@ BOOL Config::Write (const char *fname) const
 	return TRUE;
 }
 
-char *Config::ConfigPath (const char *name) const
+fs::path Config::ConfigPath (const std::string_view name) const
 {
-	strcpy (cfgpath+cfglen, name);
-	return strcat (cfgpath, ".cfg");
+	fs::path path(CfgDirPrm.ConfigDir);
+	path.append(std::string(name) + ".cfg");
+	return path;
 }
 
-char *Config::ConfigPathNoext (const char *name)
+fs::path Config::ConfigPathNoext (const std::string_view name) const
 {
-	strcpy (cfgpath+cfglen, name);
-	return cfgpath;
+	fs::path path(CfgDirPrm.ConfigDir);
+	path.append(name);
+	return path;
 }
 
-char *Config::MeshPath (const char *name)
+fs::path Config::MeshPath (const std::string_view name) const
 {
-	strcpy (mshpath+mshlen, name);
-	return strcat (mshpath, ".msh");
+	fs::path path(CfgDirPrm.MeshDir);
+	path.append(std::string(name) + ".msh");
+	return path;
 }
 
-char *Config::TexPath (const char *name, const char *ext)
+fs::path Config::TexPath (const std::string_view name, const std::optional<std::string_view> ext) const
 {
-	strcpy (texpath+texlen, name);
-	return strcat (texpath, ext ? ext : ".dds");
+	fs::path path(CfgDirPrm.TextureDir);
+	path.append(std::string(name).append(ext.value_or(".dds"sv)));
+	return path;
 }
 
-char *Config::HTexPath (const char *name, const char *ext)
-{
-	if (!htxlen) return 0;
-	strcpy (htxpath+htxlen, name);
-	return strcat (htxpath, ext ? ext : ".dds");
-}
-
-char* Config::PTexPath(const char* name, const char* ext)
-{
-	if (!ptxlen) return 0;
-	strcpy(ptxpath + ptxlen, name);
-	if (ext) strcat(ptxpath, ext);
-	return ptxpath;
-}
-
-const char *Config::ScnPath (const char *name)
-{
-	if (name[1] == ':') { // assume full absolute path
-		return name;
-	} else {
-		strcpy (scnpath+scnlen, name);
-		return strcat (scnpath, ".scn");
+fs::path Config::HTexPath (const std::string_view name, const std::optional<std::string_view> ext) const {
+	if (CfgDirPrm.HightexDir[0] == '\0') {
+		return fs::path();
 	}
+	fs::path path(CfgDirPrm.HightexDir);
+	path.append(std::string(name).append(ext.value_or(".dds"sv)));
+	return path;
+}
+
+fs::path Config::PTexPath(const std::string_view name, const std::optional<std::string_view> ext) const {
+	fs::path path(CfgDirPrm.PlanetTexDir);
+	path.append(std::string(name).append(ext.value_or(""sv)));
+	return path;
+}
+
+fs::path Config::ScnPath (std::string_view name) const
+{
+	if (fs::path path = fs::path(name); path.is_absolute())
+		return path;
+	return fs::path(this->CfgDirPrm.ScnDir).append(name).replace_extension("scn");
 }
 
 void Config::TexPath (char *cbuf, const char *name, const char *ext)
@@ -1464,11 +1495,11 @@ bool Config::GetString (istream &is, const char *category, char *val)
 	}
 
 	// cut comments
-	for (i = 0; cbuf[i] && cbuf[i] != ';'; i++);
+	for (i = 0; cbuf[i] && cbuf[i] != ';'; i++) {}
 	cbuf[i] = '\0';
 
 	// find value
-	for (i = 0; cbuf[i] && cbuf[i] != '='; i++);
+	for (i = 0; cbuf[i] && cbuf[i] != '='; i++) {}
 	if (!cbuf[i]) return false;
 	i++;
 	while (cbuf[i] == ' ' || cbuf[i] == '\t') i++;

@@ -1,7 +1,8 @@
-BEGIN_HYPERDESC
-<h1>In low orbit over Africa</h1>
-<p>In low orbit crossing over central Africa, with Lake Victoria below.</p>
-END_HYPERDESC
+BEGIN_DESC
+# In low orbit over Africa
+
+In low orbit crossing over central Africa, with Lake Victoria below.
+END_DESC
 
 BEGIN_ENVIRONMENT
   System Sol

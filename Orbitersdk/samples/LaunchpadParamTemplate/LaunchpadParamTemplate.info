@@ -1,0 +1,9 @@
+BEGIN_DESC
+# Launchpad Parameter Template
+
+This SDK sample creates a root entry ("My root entry") and sub-entry ("My sub-item") in the Extra tab of the Orbiter
+launchpad.
+
+This addon is not very useful - it is intended as a starting point for developers.
+END_DESC
+CATEGORY SDK sample plugins

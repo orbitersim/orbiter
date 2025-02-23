@@ -21,7 +21,7 @@ target_link_libraries(ScriptMFD
 
 add_dependencies(ScriptMFD
 	${OrbiterTgt}
-	Orbitersdk	
+	Orbitersdk
 	LuaInterpreter
 )
 
@@ -35,3 +35,6 @@ install(TARGETS ScriptMFD
 	RUNTIME
 	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
 )
+
+install(FILES ScriptMFD.info DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR})
+file(COPY ScriptMFD.info DESTINATION ${ORBITER_BINARY_PLUGIN_DIR})
