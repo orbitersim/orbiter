@@ -814,6 +814,23 @@ namespace ImGui {
 		return ret;
 	}
 
+    DLLEXPORT bool SliderScalarReset(const char* label, ImGuiDataType dtype, const size_t t_size, void* v, const void *v_min, const void *v_max, const void *v_default, const char* display_format)
+	{
+	    bool ret = ImGui::SliderScalar(label, dtype, v, &v_min, &v_max, display_format);
+	    if (ImGui::BeginPopupContextItem(label))
+	    {
+	        char buf[64];
+	        char fmt[64];
+	        snprintf(fmt, 64, "Reset to %s", display_format);
+	        snprintf(buf, 64, fmt, v_default);
+	        if (ImGui::MenuItem(buf))
+	            memcpy(v, v_default, t_size);
+	        ImGui::MenuItem("Close");
+	        ImGui::EndPopup();
+	    }
+	    return ret;
+	}
+
 	DLLEXPORT void PushFont(ImGuiFont f)
 	{
 		ImGui::PushFont(g_pOrbiter->DlgMgr()->GetFont(f));
