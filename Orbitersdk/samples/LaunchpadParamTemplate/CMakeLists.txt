@@ -28,5 +28,5 @@ set_target_properties(LaunchpadParamTemplate
 	FOLDER SDKSamples
 )
 
-install(FILES LaunchpadParamTemplate.info RUNTIME DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR})
+install(FILES LaunchpadParamTemplate.info DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR})
 file(COPY LaunchpadParamTemplate.info DESTINATION ${ORBITER_BINARY_PLUGIN_DIR})

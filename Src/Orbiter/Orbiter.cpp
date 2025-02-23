@@ -1037,11 +1037,11 @@ void Orbiter::Run() {
 
         if (hadEvent) {
             bool consumed = false;
-            if (m_pLaunchpad.get() != nullptr && m_pLaunchpad->IsActive()) {
+            if (m_pLaunchpad != nullptr && m_pLaunchpad->IsActive()) {
                 consumed = consumed || m_pLaunchpad->ConsumeEvent(event);
             }
 
-            if (gclient && hRenderWnd.get() != nullptr) {
+            if (gclient && hRenderWnd != nullptr) {
                 consumed = consumed || pDlgMgr->ConsumeEvent(event, bShouldQuit);
                 consumed = consumed || gclient->RenderWndProc(event, bShouldQuit);
             }
@@ -1050,7 +1050,7 @@ void Orbiter::Run() {
                 break;
         } else {
             if (bSession) {
-                bActive = hRenderWnd.get() != nullptr && bVisible &&
+                bActive = hRenderWnd != nullptr && bVisible &&
                           (SDL_GetKeyboardFocus() == hRenderWnd->Inner());
                 if (bAllowInput)
                     bActive = true, bAllowInput = false;
@@ -1088,7 +1088,7 @@ void Orbiter::Run() {
             bpCanRender = true;
         }
 
-        if (m_pLaunchpad.get() != nullptr && m_pLaunchpad->IsActive()) {
+        if (m_pLaunchpad != nullptr && m_pLaunchpad->IsActive()) {
             m_pLaunchpad->RenderFrame();
         }
     }

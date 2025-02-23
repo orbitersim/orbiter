@@ -1721,7 +1721,7 @@ bool D3D9Client::RenderWndProc(const SDL_Event &event, bool &wantsOut) {
 
     D3D9Pick pick;
 
-    if (hRenderWnd.get() == nullptr) {
+    if (hRenderWnd == nullptr) {
         LogErr("Invalid Window !! RenderWndProc() called after calling "
                "clbkDestroyRenderWindow()");
         return false;
